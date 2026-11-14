@@ -1,0 +1,91 @@
+{
+  "schema": "vaep-n8.21-g-test-ci/v1",
+  "scope": "N8.21.G",
+  "parent": "N8.21",
+  "branch": "Desarrollo",
+  "generated_at_utc": "2026-09-16T16:15:17Z",
+  "lease_token": "SUP00-N821G-CLOSER-20260916T161417Z",
+  "base_head": "30a4efe71a96146bcb8e4f8c608681c77ae1d908",
+  "material_chain": {
+    "backup_restore": {
+      "run_id": 35111491587,
+      "status": "success",
+      "receipt": "vaep/evidence/receipts/N8.21.C_LISTO_REAL_20260916T150637Z_SUP36.json",
+      "backup_real": true,
+      "restore_isolated": true,
+      "same_encrypted_artifact": true,
+      "checksums_verified": true,
+      "all_table_row_counts_verified": true,
+      "base_tables": 132,
+      "ef_migrations": 104,
+      "foreign_keys": 240,
+      "indexes": 542
+    },
+    "sanity": {
+      "run_id": 35113349678,
+      "status": "success",
+      "receipt": "vaep/evidence/receipts/N8.21.D_LISTO_REAL_20260916T152700Z_SUP12.json",
+      "backend_build": true,
+      "health": true,
+      "ready": true,
+      "database_connected": true,
+      "migration_compatible": true,
+      "read_only_critical_reads": true,
+      "tenant_isolation_directed_tests": true
+    },
+    "security_cleanup": {
+      "run_id": 35120379562,
+      "status": "success",
+      "receipt": "vaep/evidence/receipts/N8.21.F_LISTO_REAL_20260916T161355Z_SUP00.json",
+      "temporary_full_backup_artifact_retained": false,
+      "secrets_exposed": 0,
+      "production_touched": false
+    }
+  },
+  "db_cleanup_candidates": [
+    {
+      "id": "ARCH-02",
+      "prior_classification": "REMOVE_SAFE_DB_AFTER_BACKUP",
+      "prior_scope": "Any future physical consolidation/removal of historical EF migration roots or artifacts",
+      "current_facts": {
+        "backup_real_gate": "PASS",
+        "restore_isolated_gate": "PASS",
+        "migration_root_1": "backend/src/Infrastructure/Migrations",
+        "migration_root_1_current_classification": "KEEP",
+        "migration_root_2": "backend/src/Infrastructure/Persistence/Migrations",
+        "migration_root_2_current_classification": "KEEP",
+        "demonstrated_duplicate_or_dead_migration_artifact_to_delete": false
+      },
+      "resolution": "CLOSED_NO_PHYSICAL_ACTION_REQUIRED",
+      "reason": "ARCH-02 was a conditional safety gate for any future destructive consolidation, not evidence that a concrete migration root was deletable. N8.18.C explicitly classified both physical roots KEEP/PRESERVE_UNCHANGED. After backup/restore proof, there is still no demonstrated concrete artifact eligible for destructive deletion, so deleting or squashing history would be speculative and prohibited.",
+      "destructive_ddl_or_history_rewrite_performed": false
+    }
+  ],
+  "historical_reconciliation": {
+    "N8.8": {
+      "prior_blocker": "N8.8.G MANAGED_MYSQL_PROVIDER_BACKUP_STATE_AND_ISOLATED_RESTORE_ACCESS_UNAVAILABLE",
+      "new_causal_evidence": [35111491587,35113349678],
+      "blocker_disposition": "SUPERSEDED_BY_NEW_N8.21_CAUSAL_BACKUP_RESTORE_EVIDENCE",
+      "sheet_reconciliation_point": "N8.21.H final documentation certification"
+    },
+    "N8.9": {
+      "prior_state": "PENDIENTE_BEHIND_N8.8.H",
+      "new_causal_evidence": [35111491587,35113349678],
+      "restore_real": true,
+      "restore_sanity": true,
+      "sheet_reconciliation_point": "N8.21.H after N8.8.H dependency is reconciled; dependency order must not be skipped"
+    }
+  },
+  "acceptance": {
+    "material_backup_restore_sanity_chain": true,
+    "n8_8_n8_9_causal_mapping_complete": true,
+    "remove_safe_db_after_backup_pending": 0,
+    "p0": 0,
+    "p1": 0,
+    "production_touched": false,
+    "main_touched": false,
+    "deploy_touched": false,
+    "secrets_exposed": 0,
+    "pr2_touched": false
+  }
+}

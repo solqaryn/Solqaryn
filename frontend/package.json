@@ -1,0 +1,68 @@
+{
+  "name": "solqaryn-frontend",
+  "version": "1.0.0",
+  "scripts": {
+    "preinstall": "node scripts/verify-toolchain.mjs",
+    "verify:toolchain": "node scripts/verify-toolchain.mjs",
+    "ng": "ng serve",
+    "start": "ng serve",
+    "build": "ng build",
+    "build:prod": "ng build --configuration production",
+    "lint": "node --test scripts/toolchain-policy.test.mjs && tsc --noEmit -p tsconfig.app.json && node scripts/lint-quality.mjs && node scripts/validate-scanner-2c4.mjs && node scripts/validate-storefront-fase1.mjs && node scripts/validate-storefront-fase2.mjs && node scripts/validate-storefront-fase3.mjs && node scripts/validate-storefront-fase4.mjs && node scripts/validate-storefront-fase5.mjs && node scripts/validate-storefront-fase6.mjs && node scripts/validate-storefront-mvp.mjs && node scripts/validate-storefront-fase7.mjs && node scripts/validate-storefront-fase8.mjs && node scripts/validate-storefront-fase9.mjs && node scripts/validate-storefront-fase10.mjs && node --check api/seo.js && node --check api/robots.js && node --check api/sitemap.js && node --check server/seo-utils.js && node scripts/validate-storefront-fase11.mjs && node scripts/validate-storefront-fase12.mjs && node scripts/validate-storefront-transversal.mjs && node scripts/validate-http-cache-contract.mjs && node scripts/validate-cloudinary-responsive.mjs && node scripts/validate-angular-bundle-policy.mjs && node scripts/validate-environment-routing.mjs && node scripts/validate-api-availability.mjs && node scripts/validate-public-store-binding.mjs",
+    "test:e2e:storefront-fase1": "playwright test e2e/storefront-fase1.spec.ts --config=playwright.config.ts",
+    "test:e2e:storefront-fase2": "playwright test e2e/storefront-fase2.spec.ts --config=playwright.config.ts",
+    "test:e2e:storefront-fase3": "playwright test e2e/storefront-fase3.spec.ts --config=playwright.config.ts",
+    "test:e2e:storefront-fase4": "playwright test e2e/storefront-fase4.spec.ts --config=playwright.config.ts",
+    "test:e2e:storefront-fase5": "playwright test e2e/storefront-fase5.spec.ts --config=playwright.config.ts",
+    "test:e2e:storefront-fase6": "playwright test e2e/storefront-fase6.spec.ts --config=playwright.config.ts",
+    "test:e2e:storefront-fase7": "playwright test e2e/storefront-fase7.spec.ts --config=playwright.config.ts",
+    "test:responsive": "playwright test e2e/responsive-global.spec.ts --config=playwright.config.ts",
+    "watch": "ng build --watch --configuration development",
+    "test": "ng test",
+    "test:e2e:storefront-fase8": "playwright test e2e/storefront-fase8.spec.ts --config=playwright.config.ts",
+    "test:e2e:storefront-fase9": "playwright test e2e/storefront-fase9.spec.ts --config=playwright.config.ts",
+    "test:e2e:storefront-fase10": "playwright test e2e/storefront-fase10.spec.ts --config=playwright.config.ts",
+    "test:e2e:storefront-fase11": "playwright test e2e/storefront-fase11.spec.ts --config=playwright.config.ts",
+    "test:e2e:storefront-fase12": "playwright test e2e/storefront-fase12.spec.ts --config=playwright.config.ts",
+    "perf:bundle-baseline": "npm run build:stats && node scripts/performance-bundle-baseline.mjs && node scripts/analyze-angular-stats.mjs",
+    "build:stats": "ng build --configuration production --stats-json",
+    "test:unit": "ng test --watch=false --no-progress"
+  },
+  "private": true,
+  "dependencies": {
+    "@angular/animations": "22.2.1",
+    "@angular/cdk": "22.2.1",
+    "@angular/common": "22.2.1",
+    "@angular/compiler": "22.2.1",
+    "@angular/core": "22.2.1",
+    "@angular/forms": "22.2.1",
+    "@angular/material": "22.2.1",
+    "@angular/platform-browser": "22.2.1",
+    "@angular/router": "22.2.1",
+    "html5-qrcode": "2.3.8",
+    "rxjs": "7.8.2",
+    "tslib": "2.8.1",
+    "zone.js": "0.16.3"
+  },
+  "devDependencies": {
+    "@angular/build": "22.2.1",
+    "@angular/cli": "22.2.1",
+    "@angular/compiler-cli": "22.2.1",
+    "@playwright/test": "1.63.0",
+    "jsdom": "30.0.1",
+    "typescript": "6.0.3",
+    "vitest": "5.0.3"
+  },
+  "overrides": {
+    "@babel/core": "7.29.7",
+    "http-proxy-middleware": "3.0.7",
+    "@modelcontextprotocol/server": "2.3.1",
+    "vite": "8.3.4",
+    "zod": "4.6.6"
+  },
+  "engines": {
+    "node": "24.x",
+    "npm": "11.19.0"
+  },
+  "packageManager": "npm@11.19.0"
+}

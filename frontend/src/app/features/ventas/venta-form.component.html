@@ -1,0 +1,152 @@
+<div class="header-row">
+  <a routerLink="/ventas" mat-icon-button aria-label="Volver a ventas"><mat-icon>arrow_back</mat-icon></a>
+  <h1 class="page-title">{{ isEdit() ? 'Editar venta (Borrador)' : 'Nueva venta' }}</h1>
+</div>
+
+@if (loading()) {
+  <div class="loading"><mat-spinner></mat-spinner></div>
+} @else {
+  <form class="card form" [formGroup]="form" (ngSubmit)="submit()">
+    <h2 class="section-title">Datos del cliente</h2>
+    <div class="fields-grid">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Buscar cliente existente (nombre, identidad/RTN, teléfono o correo)</mat-label>
+        <input matInput [formControl]="buscadorCliente" [matAutocomplete]="autoCliente" placeholder="Escribe al menos 2 caracteres...">
+        @if (buscandoCliente()) { <mat-spinner matSuffix diameter="18" style="margin-right: 8px;"></mat-spinner> }
+        @else if (clienteSeleccionado()) { <button matSuffix mat-icon-button type="button" title="Quitar selección" aria-label="Quitar cliente seleccionado" (click)="limpiarClienteSeleccionado()"><mat-icon>close</mat-icon></button> }
+        <mat-autocomplete #autoCliente="matAutocomplete" [displayWith]="displayCliente" (optionSelected)="onClienteSeleccionado($event)">
+          @for (c of opcionesCliente(); track c.id) { <mat-option [value]="c"><strong>{{ c.nombre }}</strong><span class="opcion-detalle">{{ c.identidadORTN || c.telefono || c.correo || '' }}</span></mat-option> }
+          @if (opcionesCliente().length === 0 && buscadorCliente.value && buscadorCliente.value.length >= 2 && !buscandoCliente()) { <mat-option disabled>Sin resultados — se creará un cliente nuevo con los datos de abajo.</mat-option> }
+        </mat-autocomplete>
+        @if (errorBusquedaCliente()) { <mat-error>{{ errorBusquedaCliente() }}</mat-error> }
+      </mat-form-field>
+
+      @if (clienteSeleccionado()) { <p class="cliente-modo cliente-existente full-width"><mat-icon>check_circle</mat-icon> Cliente existente seleccionado: <strong>{{ clienteSeleccionado()!.nombre }}</strong></p> }
+      @else { <p class="cliente-modo cliente-nuevo full-width"><mat-icon>person_add</mat-icon> Se registrará como cliente nuevo con los datos que completes abajo.</p> }
+
+      <mat-form-field appearance="outline"><mat-label>Nombre del cliente</mat-label><input matInput formControlName="clienteNombre"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Teléfono (opcional)</mat-label><input matInput formControlName="clienteTelefono"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Identidad/RTN (opcional)</mat-label><input matInput formControlName="clienteIdentidadORTN"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Correo (opcional)</mat-label><input matInput formControlName="clienteCorreo"></mat-form-field>
+    </div>
+
+    <h2 class="section-title">Productos</h2>
+    <div class="producto-busqueda-remota">
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Buscar producto por nombre, marca, modelo, color, SKU o código de barras</mat-label>
+        <input
+          matInput
+          data-testid="venta-producto-autocomplete"
+          [formControl]="buscadorProducto"
+          [matAutocomplete]="autoProductoVenta"
+          placeholder="Escribe al menos 2 caracteres..."
+          autocomplete="off">
+        @if (buscandoProducto()) { <mat-spinner matSuffix diameter="18" style="margin-right: 8px;"></mat-spinner> }
+        <mat-autocomplete
+          #autoProductoVenta="matAutocomplete"
+          [displayWith]="displayProductoOperacion"
+          (optionSelected)="onProductoBuscadoSeleccionado($event)">
+          @for (item of opcionesProducto(); track item.productoVarianteId) {
+            <mat-option [value]="item">
+              <strong>{{ item.productoNombre }}</strong>
+              <span class="opcion-detalle">
+                {{ item.colorNombre || 'Predeterminada' }} · {{ item.sku }} · stock {{ item.cantidadDisponible }} · L. {{ item.precio | number:'1.2-2' }}
+              </span>
+            </mat-option>
+          }
+          @if (!buscandoProducto() && opcionesProducto().length === 0 && typeof buscadorProducto.value === 'string' && (buscadorProducto.value || '').trim().length >= 2 && !errorBusquedaProducto()) {
+            <mat-option disabled>No se encontraron variantes disponibles para la venta.</mat-option>
+          }
+        </mat-autocomplete>
+        <mat-hint>La consulta es remota y devuelve como máximo 30 variantes con stock.</mat-hint>
+        @if (errorBusquedaProducto()) { <mat-error>{{ errorBusquedaProducto() }}</mat-error> }
+      </mat-form-field>
+      @if (mensajeBusquedaProducto()) { <p class="producto-busqueda-mensaje" role="status"><mat-icon>check_circle</mat-icon>{{ mensajeBusquedaProducto() }}</p> }
+    </div>
+
+    <app-codigo-scanner-input
+      [procesando]="procesandoEscaneo()"
+      [mensaje]="mensajeEscaneo()"
+      [error]="errorEscaneo()"
+      etiqueta="Escanear SKU o código de barras para la venta"
+      (codigoLeido)="procesarCodigoEscaner($event)">
+    </app-codigo-scanner-input>
+
+    <div class="detalles" formArrayName="detalles">
+      @for (grupo of detalles.controls; track $index; let i = $index) {
+        <div class="detalle-row" [formGroupName]="i">
+          <div class="col-imagen">
+            @if (productoSeleccionado(grupo); as producto) {
+              <app-producto-imagen variant="line" [src]="producto.imagenPrincipalUrl" [alt]="'Imagen de ' + producto.nombre" [fallbackLabel]="producto.nombre + ' no tiene imagen disponible'" loading="lazy"></app-producto-imagen>
+            } @else {
+              <app-producto-imagen variant="line" [src]="null" fallbackLabel="Selecciona un producto para mostrar su imagen" fallbackText="Selecciona"></app-producto-imagen>
+            }
+          </div>
+          <mat-form-field appearance="outline" class="col-producto">
+            <mat-label>Producto</mat-label>
+            <mat-select formControlName="productoId" (selectionChange)="onProductoSeleccionado(i, $event.value)">
+              @for (p of productos(); track p.id) {
+                <mat-option [value]="p.id" [disabled]="p.estaAgotado || p.cantidad === 0">
+                  {{ p.nombre }} — {{ p.marca }} {{ p.modelo }} ({{ p.estaAgotado ? 'Agotado' : 'stock: ' + p.cantidad }})
+                </mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+          @if (variantesDisponibles(grupo).length > 0) {
+            <mat-form-field appearance="outline" class="col-variante">
+              <mat-label>Color / SKU</mat-label>
+              <mat-select formControlName="productoVarianteId" required (selectionChange)="onVarianteSeleccionada(i, $event.value)">
+                @for (v of variantesDisponibles(grupo); track v.id) {
+                  <mat-option [value]="v.id" [disabled]="v.cantidad <= 0">
+                    {{ v.colorNombre || 'Predeterminada' }} · {{ v.sku }} · stock {{ v.cantidad }} · L. {{ v.precio | number:'1.2-2' }}
+                  </mat-option>
+                }
+              </mat-select>
+              <mat-error>Selecciona una variante.</mat-error>
+            </mat-form-field>
+          }
+          <mat-form-field appearance="outline" class="col-cantidad"><mat-label>Cantidad</mat-label><input matInput type="number" min="1" formControlName="cantidad"></mat-form-field>
+          <mat-form-field appearance="outline" class="col-costo"><mat-label>Precio unitario (catálogo)</mat-label><input matInput type="number" formControlName="precioUnitario" readonly aria-readonly="true"></mat-form-field>
+          <span class="col-subtotal">L. {{ subtotalDetalle(grupo) | number:'1.2-2' }}</span>
+          <button class="action-danger col-eliminar" mat-icon-button type="button" (click)="quitarDetalle(i)" title="Quitar" aria-label="Quitar producto de la venta"><mat-icon>close</mat-icon></button>
+        </div>
+      }
+    </div>
+    <button mat-button type="button" (click)="agregarDetalle()"><mat-icon>add</mat-icon> Agregar fila manual</button>
+
+    <h2 class="section-title">Pago, envío y totales</h2>
+    <div class="fields-grid">
+      <app-metodo-pago-select formControlName="metodoPago" [preservarValorActual]="isEdit()"></app-metodo-pago-select>
+      <mat-form-field appearance="outline"><mat-label>Estado de pago</mat-label><mat-select formControlName="estadoPago"><mat-option value="Pendiente">Pendiente</mat-option><mat-option value="Pagado">Pagado</mat-option><mat-option value="Parcial">Parcial</mat-option></mat-select></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Código promocional (opcional)</mat-label><input matInput formControlName="codigoPromocional" placeholder="Ej. VERANO10"></mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Costo de envío</mat-label>
+        <mat-select formControlName="costoEnvioId" [disabled]="form.value.envioExonerado === true">
+          @for (envio of costosEnvio(); track envio.id) { <mat-option [value]="envio.id">{{ envio.nombre }} — L. {{ envio.monto | number:'1.2-2' }}{{ envio.esPredeterminado ? ' (Predeterminado)' : '' }}</mat-option> }
+        </mat-select>
+      </mat-form-field>
+      <mat-checkbox formControlName="envioExonerado" class="full-width">Exonerar excepcionalmente el costo de envío</mat-checkbox>
+      @if (form.value.envioExonerado) {
+        <mat-form-field appearance="outline" class="full-width"><mat-label>Motivo obligatorio de exoneración</mat-label><textarea matInput formControlName="motivoExoneracionEnvio" rows="2" maxlength="500"></textarea><mat-hint align="end">{{ form.value.motivoExoneracionEnvio?.length || 0 }}/500</mat-hint></mat-form-field>
+      }
+      <mat-form-field appearance="outline" class="full-width"><mat-label>Notas (opcional)</mat-label><textarea matInput formControlName="notas" rows="2"></textarea></mat-form-field>
+    </div>
+
+    <div class="totales">
+      @if (calculando()) { <p class="calculando"><mat-spinner diameter="16"></mat-spinner> Calculando descuentos, impuestos y envío...</p> }
+      @if (resultado(); as r) {
+        <div><span>Total comercial</span><span>L. {{ r.importeBruto | number:'1.2-2' }}</span></div>
+        <div><span>Importe de productos antes de descuentos</span><span>L. {{ r.importeProductos | number:'1.2-2' }}</span></div>
+        @for (d of r.descuentosAplicados; track d.descuentoId) { <div class="linea-descuento"><span>Descuento: {{ d.nombre }}</span><span>- L. {{ d.monto | number:'1.2-2' }}</span></div> }
+        <div><span>Subtotal sin impuesto</span><span>L. {{ r.subtotal | number:'1.2-2' }}</span></div>
+        @for (i of r.impuestosAplicados; track i.impuestoId) { <div class="linea-impuesto"><span>{{ i.nombre }} ({{ i.tasa }}%) {{ i.incluidoEnPrecio ? 'incluido' : 'adicional' }}</span><span>{{ i.incluidoEnPrecio ? '' : '+' }} L. {{ i.monto | number:'1.2-2' }}</span></div> }
+        <div><span>{{ r.envioExonerado ? 'Envío exonerado' : (r.costoEnvioNombre || 'Costo de envío') }}</span><span>{{ r.envioExonerado ? 'L. 0.00' : ('L. ' + (r.costoEnvio | number:'1.2-2')) }}</span></div>
+        @if (r.envioExonerado && r.motivoExoneracionEnvio) { <div class="linea-descuento"><span>Motivo de exoneración</span><span>{{ r.motivoExoneracionEnvio }}</span></div> }
+        <div class="total"><span>Total a cobrar</span><span>L. {{ r.total | number:'1.2-2' }}</span></div>
+      } @else { <p class="hint">Busca o escanea un producto para ver el desglose financiero real.</p> }
+    </div>
+
+    @if (errorMessage()) { <p class="error" role="alert">{{ errorMessage() }}</p> }
+    <div class="form-actions"><a routerLink="/ventas" mat-button type="button">Cancelar</a><button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || detalles.length === 0 || !resultado() || saving()">Guardar borrador</button></div>
+  </form>
+}

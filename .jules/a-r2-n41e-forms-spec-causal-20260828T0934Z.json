@@ -1,0 +1,10 @@
+{
+  "dispatchId": "VAEP-JULES-A-R2-N41E-FORMS-SPEC-CAUSAL-A9-20260828T0934Z",
+  "taskId": "N4.1.E.FORMS_SPEC_CROSS_QA_A9",
+  "workerId": "JULES_A",
+  "expectedBranch": "Desarrollo",
+  "primaryBaseHead": "7fabba77c3a6c50359ca683a5cf183fec671e618",
+  "taskAttempt": 2,
+  "fileScopeHint": "docs/qa/N4_1_E_FORMS_SPEC_CAUSAL_R2_A9.md",
+  "prompt": "R2 FINAL. Re-evaluate only the causal executability of frontend/src/app/features/caja/caja-flujo-shell.component.spec.ts against the repository's actual configured Angular test runner and exact-functional CI. Do not install packages, do not touch package-lock/package.json, and do not modify product code. Distinguish reproducible CI blocker from sandbox/tooling artifact. Produce only docs/qa/N4_1_E_FORMS_SPEC_CAUSAL_R2_A9.md with exact commands/evidence, P0/P1/P2 classification, limitations, and two independent self-reviews. If no causal blocker exists, state P0=0/P1=0 for this scope. R2 is final; R3 prohibited."
+}

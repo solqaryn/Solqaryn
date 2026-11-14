@@ -1,0 +1,198 @@
+name: N8.21.D - Backend smoke against isolated restore
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - .github/workflows/backup-restore-backend-smoke.yml
+      - .github/checkpoints/backup-request
+
+permissions:
+  contents: read
+
+jobs:
+  backend-smoke:
+    name: Restore aislado + backend health + tenant isolation
+    if: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, '[SOLQARYN-BACKUP-SMOKE]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    environment: DEV
+    services:
+      mysql-m11-restore:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: m11-ci-root-only
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -pm11-ci-root-only --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+
+      - name: Backup real read-only de DEV
+        id: backup
+        shell: bash
+        env:
+          SOLQARYN_ENVIRONMENT: dev
+          DB_HOST: ${{ vars.SOLQARYN_DEV_DB_HOST }}
+          DB_PORT: ${{ vars.SOLQARYN_DEV_DB_PORT }}
+          DB_NAME: ${{ vars.SOLQARYN_DEV_DB_NAME }}
+          DB_USER: ${{ vars.SOLQARYN_DEV_DB_USER }}
+          DB_PASSWORD: ${{ secrets.SOLQARYN_DEV_DB_PASSWORD }}
+          DB_SSL_MODE: REQUIRED
+          BACKUP_PASSPHRASE: ${{ secrets.SOLQARYN_DEV_BACKUP_PASSPHRASE }}
+          OUTPUT_DIR: ${{ runner.temp }}/n821d-backups
+          RETENTION_DAYS: '0'
+          BACKUP_LABEL: dev
+        run: |
+          set -euo pipefail
+          chmod +x scripts/backup_dev.sh
+          scripts/backup_dev.sh | tee "$RUNNER_TEMP/n821d-backup.log"
+          backup_file="$(grep '^SOLQARYN_BACKUP_FILE=' "$RUNNER_TEMP/n821d-backup.log" | cut -d= -f2-)"
+          checksum_file="$(grep '^SOLQARYN_BACKUP_SHA256=' "$RUNNER_TEMP/n821d-backup.log" | cut -d= -f2-)"
+          test -s "$backup_file" && test -s "$checksum_file"
+          echo "backup_file=$backup_file" >> "$GITHUB_OUTPUT"
+          echo "checksum_file=$checksum_file" >> "$GITHUB_OUTPUT"
+
+      - name: Restore same-artifact en MySQL descartable
+        id: restore
+        shell: bash
+        env:
+          RESTORE_ENVIRONMENT: ci
+          TARGET_DB_HOST: 127.0.0.1
+          TARGET_DB_PORT: '3306'
+          TARGET_DB_NAME: solqaryn_m11_restore_drill
+          TARGET_DB_USER: root
+          TARGET_DB_PASSWORD: m11-ci-root-only
+          TARGET_DB_SSL_MODE: DISABLED
+          BACKUP_PASSPHRASE: ${{ secrets.SOLQARYN_DEV_BACKUP_PASSPHRASE }}
+          BACKUP_FILE: ${{ steps.backup.outputs.backup_file }}
+          BACKUP_CHECKSUM_FILE: ${{ steps.backup.outputs.checksum_file }}
+          ALLOW_DESTRUCTIVE_RESTORE: YES_SOLQARYN_DISPOSABLE_RESTORE
+          RESTORE_FILES_DIR: ${{ runner.temp }}/n821d-restored-files
+          RESTORE_REPORT_PATH: ${{ runner.temp }}/n821d-restore-report.json
+        run: |
+          set -euo pipefail
+          chmod +x scripts/restore_dev.sh
+          scripts/restore_dev.sh | tee "$RUNNER_TEMP/n821d-restore.log"
+          report_file="$(grep '^SOLQARYN_RESTORE_REPORT=' "$RUNNER_TEMP/n821d-restore.log" | cut -d= -f2-)"
+          test -s "$report_file"
+          grep -q '"status": "SUCCESS"' "$report_file"
+          grep -q '"productionTouched": false' "$report_file"
+          echo "report_file=$report_file" >> "$GITHUB_OUTPUT"
+
+      - name: Read-only sanity sobre restore y migraciones
+        id: dbsanity
+        shell: bash
+        run: |
+          set -euo pipefail
+          q() { MYSQL_PWD=m11-ci-root-only mysql --protocol=TCP -h 127.0.0.1 -P 3306 -uroot --ssl-mode=DISABLED solqaryn_m11_restore_drill --batch --raw --skip-column-names -e "$1"; }
+          TABLES="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE';")"
+          MIGRATIONS="$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")"
+          test "$TABLES" -gt 0
+          test "$MIGRATIONS" -gt 0
+          echo "base_tables=$TABLES" >> "$GITHUB_OUTPUT"
+          echo "migrations=$MIGRATIONS" >> "$GITHUB_OUTPUT"
+
+      - name: Build backend exact HEAD
+        shell: bash
+        run: dotnet build backend/src/API/Solqaryn.API.csproj -c Release --nologo
+
+      - name: Tenant isolation directed tests
+        shell: bash
+        run: >-
+          dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj -c Release --no-restore --nologo
+          --filter "FullyQualifiedName~N65BTenantIsolationDomainContractsTests|FullyQualifiedName~N65FTenantPermissionIsolationTests|FullyQualifiedName~N67FTenantMutationFailClosedTests"
+
+      - name: Start temporary backend against restored DB
+        shell: bash
+        env:
+          ASPNETCORE_ENVIRONMENT: Development
+          ASPNETCORE_URLS: http://127.0.0.1:5088
+          ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=solqaryn_m11_restore_drill;User=root;Password=m11-ci-root-only;SslMode=Disabled
+          Database__ServerVersion: 8.4.0
+          Database__ApplyMigrationsOnStartup: 'false'
+          Jwt__Secret: n821d-ci-only-long-random-secret-32chars-minimum
+          Cors__AllowedOrigins__0: http://127.0.0.1:4200
+          Smtp__Host: 127.0.0.1
+          Smtp__Port: '9'
+          Smtp__RequiereAutenticacion: 'false'
+          Smtp__CorreoRemitente: ci-invalid@example.invalid
+          Cloudinary__CloudName: ci-invalid
+          Cloudinary__ApiKey: ci-invalid
+          Cloudinary__ApiSecret: ci-invalid
+        run: |
+          set -euo pipefail
+          dotnet run --project backend/src/API/Solqaryn.API.csproj -c Release --no-build > "$RUNNER_TEMP/n821d-api.log" 2>&1 &
+          echo $! > "$RUNNER_TEMP/n821d-api.pid"
+          for i in $(seq 1 45); do
+            if curl --fail --silent http://127.0.0.1:5088/health > "$RUNNER_TEMP/health.json"; then break; fi
+            sleep 1
+          done
+          curl --fail --silent http://127.0.0.1:5088/health | tee "$RUNNER_TEMP/health.json"
+          curl --fail --silent http://127.0.0.1:5088/health/ready | tee "$RUNNER_TEMP/ready.json"
+          grep -q '"status":"ok"' "$RUNNER_TEMP/health.json"
+          grep -q '"status":"ready"' "$RUNNER_TEMP/ready.json"
+          grep -q '"database":"connected"' "$RUNNER_TEMP/ready.json"
+
+      - name: Verify restored DB unchanged by smoke
+        shell: bash
+        env:
+          EXPECTED_MIGRATIONS: ${{ steps.dbsanity.outputs.migrations }}
+        run: |
+          set -euo pipefail
+          ACTUAL="$(MYSQL_PWD=m11-ci-root-only mysql --protocol=TCP -h 127.0.0.1 -P 3306 -uroot --ssl-mode=DISABLED solqaryn_m11_restore_drill --batch --raw --skip-column-names -e 'SELECT COUNT(*) FROM __EFMigrationsHistory;')"
+          test "$ACTUAL" = "$EXPECTED_MIGRATIONS"
+
+      - name: Write safe backend smoke report
+        shell: bash
+        env:
+          BASE_TABLES: ${{ steps.dbsanity.outputs.base_tables }}
+          MIGRATIONS: ${{ steps.dbsanity.outputs.migrations }}
+          REPORT: ${{ runner.temp }}/n821d-backend-smoke.json
+        run: |
+          python3 - <<'PY'
+          import json, os
+          from datetime import datetime, timezone
+          x={
+            "task":"N8.21.D","status":"PASS","createdAtUtc":datetime.now(timezone.utc).isoformat(),
+            "backendBuild":True,"health":True,"ready":True,"migrationCompatibility":True,
+            "readOnlyCriticalReads":True,"tenantIsolationDirectedTests":True,
+            "baseTableCount":int(os.environ["BASE_TABLES"]),"efMigrationCount":int(os.environ["MIGRATIONS"]),
+            "sourceDevelopmentDbAccess":"READ_ONLY_BACKUP","temporaryRestoreOnly":True,
+            "emailSent":False,"whatsappSent":False,"realTransactions":False,
+            "activeDevelopmentDbMutated":False,"productionTouched":False,"secretsExposed":0
+          }
+          open(os.environ["REPORT"],"w").write(json.dumps(x,indent=2)+"\n")
+          PY
+          cat "$REPORT"
+
+      - name: Upload safe smoke evidence only
+        uses: actions/upload-artifact@v4
+        with:
+          name: n821d-backend-smoke-${{ github.run_id }}
+          path: ${{ runner.temp }}/n821d-backend-smoke.json
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Cleanup temporary process and encrypted backup
+        if: always()
+        shell: bash
+        env:
+          BACKUP_FILE: ${{ steps.backup.outputs.backup_file }}
+          BACKUP_CHECKSUM_FILE: ${{ steps.backup.outputs.checksum_file }}
+        run: |
+          set -euo pipefail
+          if [ -f "$RUNNER_TEMP/n821d-api.pid" ]; then kill "$(cat "$RUNNER_TEMP/n821d-api.pid")" 2>/dev/null || true; fi
+          [ -z "${BACKUP_FILE:-}" ] || rm -f "$BACKUP_FILE"
+          [ -z "${BACKUP_CHECKSUM_FILE:-}" ] || rm -f "$BACKUP_CHECKSUM_FILE"

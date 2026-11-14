@@ -1,0 +1,95 @@
+{
+  "schemaVersion": "SOLQARYN_MODERNIZATION_BASELINE_V1",
+  "capturedFromDevHead": "1c8e6781469532bc3ec80261343d3c484f06964b",
+  "purpose": "Congelar el estado técnico previo a la modernización; no define versiones objetivo ni autoridad paralela.",
+  "runtimeResolvedVersions": "Se capturan en el artifact del workflow Modernización - Fase 0 baseline técnico para el GITHUB_SHA certificado.",
+  "sourceFiles": {
+    "frontend/package.json": "b29b90dd4892c5573fd4f7c880a2f124b1ddf24f",
+    "frontend/package-lock.json": "632e779f2340690fca5be5d7487308ea47aa755b",
+    "backend/src/API/Solqaryn.API.csproj": "fb1e5de34e4b18b30c47d2f3d9c2fecff715e1e6",
+    "backend/src/Application/Solqaryn.Application.csproj": "e138916d8626c6a21827dee71fdd620a4b2f03b5",
+    "backend/src/Infrastructure/Solqaryn.Infrastructure.csproj": "4d2f85ea35a92d3d65ae436e456311066cb5bd46",
+    "backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj": "835b93230ae450d3134a8db5bd2daaee092a5e08",
+    "backend/Dockerfile": "3fed26cb2032be1a43f69f55e4bd008266991e37",
+    "render.yaml": "f64d291425e2bbfdd9b6466d268753f8f8d86b3d"
+  },
+  "backend": {
+    "targetFramework": "net8.0",
+    "dockerSdk": "mcr.microsoft.com/dotnet/sdk:8.0",
+    "dockerRuntime": "mcr.microsoft.com/dotnet/aspnet:8.0",
+    "packages": {
+      "Microsoft.AspNetCore.Authentication.JwtBearer": "8.0.8",
+      "Microsoft.EntityFrameworkCore": "8.0.2",
+      "Microsoft.EntityFrameworkCore.Design": "8.0.2",
+      "Microsoft.Extensions.Caching.Memory": "8.0.1",
+      "Pomelo.EntityFrameworkCore.MySql": "8.0.2",
+      "MySqlConnector": "2.3.7",
+      "FluentValidation": "11.9.2",
+      "FluentValidation.AspNetCore": "11.3.0",
+      "Microsoft.AspNetCore.Http.Features": "5.0.17",
+      "BCrypt.Net-Next": "4.0.3",
+      "Swashbuckle.AspNetCore": "6.6.2",
+      "System.IdentityModel.Tokens.Jwt": "7.6.2",
+      "System.Text.Json": "8.0.5",
+      "CloudinaryDotNet": "1.25.1",
+      "MailKit": "4.17.0",
+      "QuestPDF": "2024.3.6",
+      "ClosedXML": "0.104.2",
+      "SixLabors.ImageSharp": "3.1.12"
+    },
+    "testing": {
+      "Microsoft.NET.Test.Sdk": "17.10.0",
+      "xunit": "2.8.1",
+      "xunit.runner.visualstudio": "2.8.2",
+      "Moq": "4.20.70",
+      "Microsoft.EntityFrameworkCore.InMemory": "8.0.8",
+      "Microsoft.EntityFrameworkCore.Sqlite": "8.0.8",
+      "SQLitePCLRaw.bundle_e_sqlite3": "2.1.13"
+    }
+  },
+  "frontend": {
+    "dependencies": {
+      "@angular/animations": "20.3.33",
+      "@angular/cdk": "20.2.14",
+      "@angular/common": "20.3.33",
+      "@angular/compiler": "20.3.33",
+      "@angular/core": "20.3.33",
+      "@angular/forms": "20.3.33",
+      "@angular/material": "20.2.14",
+      "@angular/platform-browser": "20.3.33",
+      "@angular/platform-browser-dynamic": "20.3.33",
+      "@angular/router": "20.3.33",
+      "html5-qrcode": "2.3.8",
+      "rxjs": "~7.8.1",
+      "tslib": "^2.6.3",
+      "zone.js": "~0.15.0"
+    },
+    "devDependencies": {
+      "@angular-devkit/build-angular": "20.3.33",
+      "@angular/cli": "20.3.33",
+      "@angular/compiler-cli": "20.3.33",
+      "@playwright/test": "1.62.1",
+      "jsdom": "^29.1.1",
+      "typescript": "~5.8.3",
+      "vitest": "^3.2.7"
+    },
+    "lockfileVersion": 3
+  },
+  "data": {
+    "engine": "MySQL",
+    "configuredServerVersion": "8.4.8",
+    "ciServiceTag": "mysql:8.4",
+    "liveDevVersion": "RESOLVED_BY_CERTIFICATION_WORKFLOW"
+  },
+  "ci": {
+    "declaredNode": "20",
+    "declaredDotnet": "8.0.x",
+    "runner": "ubuntu-latest",
+    "exactNodeNpmDotnetOs": "RESOLVED_BY_CERTIFICATION_WORKFLOW"
+  },
+  "deployment": {
+    "backend": "Docker Linux on Render",
+    "frontend": "Vercel",
+    "database": "Aiven MySQL 8.4 family"
+  }
+}

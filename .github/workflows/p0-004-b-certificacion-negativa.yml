@@ -1,0 +1,34 @@
+name: P0-004.B - MySQL DEV negative read-only certification
+
+on:
+  push:
+    branches: [work/solqaryn-p0-004-b]
+    paths:
+      - 'scripts/verify-p0-004-b-certificacion-negativa.mjs'
+      - '.github/workflows/p0-004-b-certificacion-negativa.yml'
+      - 'docs/P0-004-B-CERTIFICACION-NEGATIVA-MYSQL-DEV.md'
+  pull_request:
+    branches: [dev]
+    paths:
+      - 'scripts/verify-p0-004-b-certificacion-negativa.mjs'
+      - '.github/workflows/p0-004-b-certificacion-negativa.yml'
+      - 'docs/P0-004-B-CERTIFICACION-NEGATIVA-MYSQL-DEV.md'
+
+permissions:
+  contents: read
+
+jobs:
+  reject-mutable-sql:
+    name: P0-004.B - Read-only negative tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Validate metadata-only SQL with adversarial fixtures
+        run: node scripts/verify-p0-004-b-certificacion-negativa.mjs

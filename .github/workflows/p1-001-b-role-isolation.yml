@@ -1,0 +1,35 @@
+name: P1-001.B - Role assignment denial at direct PR HEAD
+
+on:
+  push:
+    branches: [work/solqaryn-p1-001-b]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/P1001BRoleAssignmentCertificationTests.cs'
+      - '.github/workflows/p1-001-b-role-isolation.yml'
+  pull_request:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/P1001BRoleAssignmentCertificationTests.cs'
+      - '.github/workflows/p1-001-b-role-isolation.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  role-denials:
+    name: P1-001.B - 5 negative scenarios + own-role positive
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Restore test project
+        run: dotnet restore backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj
+      - name: Execute direct-head tenant role assignment negatives
+        run: dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --no-restore --filter FullyQualifiedName~P1001BRoleAssignmentCertificationTests --logger 'console;verbosity=normal'

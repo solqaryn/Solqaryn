@@ -1,0 +1,9 @@
+# P5-010.C — Delimitacion de paginacion y filtros de listas (DEV)
+
+- Autoridad: Plan Comercial Inicial V3, microtarea P5-010.C; origen P5-010.A; predecesor P1-016.B verificado LISTO en PLAN/COLA.
+- TARGET_PATH: `frontend/src/app/core/navigation/list-navigation-state.service.ts`, BASELINE_BLOB_SHA `513765de62e3ad2fac85f1495054448cfea2ba9e` verificado en `dev`; es el unico archivo de producto seleccionado y NO se edita.
+- Escenario: `ListNavigationStateService.restore` y `persist` de estado de filtros y paginacion en listas. Defaults determinan claves permitidas; query params sobreescriben almacenamiento de sesion; navegacion actualiza URL sin crear historial redundante. Coercion numerica rechaza NaN/Infinity y admite fallback, y sessionStorage fallido no impide la URL.
+- Prueba dirigida sobre el archivo real: `scripts/tests/p5-010-c-delimitacion-paginacion.test.mjs`; control estructural positivo y negativos de lista abierta de claves, query param inconsistente, replaceUrl falso, namespace de usuario eliminado, fallback numerico y almacenamiento sin excepciones. Ejecutar `node --check` y `node --test` con Node 22.16.0 (5/5).
+- Limitaciones: DELIMITAR no equivale a implementar paginacion de servidor, conservar filtros para todo rol ni certificar UX real en Angular/Playwright. `nombreUsuario` no demuestra aislamiento entre empresas con el mismo usuario; el backend debe imponer tenant y RBAC. No probar MySQL, JWT, APIs, browser ni QA/main/PROD con estos fixtures; futuras pruebas de interfaz y backend requieren herramientas especificas.
+- Riesgos: el estado de sesion no es autoridad de permisos, ni los query params deben transformar filtros en consultas SQL inseguras. No introducir secretos, nuevos paquetes ni permisos.
+- Rollback: revert aditivo selectivo de prueba, nota y CHANGELOG en `dev` sin force-push ni alterar archivos/commits de otros Scopes.

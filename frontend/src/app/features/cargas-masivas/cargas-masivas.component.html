@@ -1,0 +1,302 @@
+<main class="bulk-page">
+  <header class="page-hero">
+    <div>
+      <span class="eyebrow">Administración de datos</span>
+      <h1>Cargas masivas profesionales</h1>
+      <p>Importa información con plantilla versionada, validación previa, vista de errores, progreso por etapas y confirmación transaccional.</p>
+    </div>
+    <div class="hero-badge">
+      <mat-icon>fact_check</mat-icon>
+      <div>
+        <strong>Sin cambios parciales</strong>
+        <span>La información se guarda únicamente después de confirmar.</span>
+      </div>
+    </div>
+  </header>
+
+  @if (error()) {
+    <app-feedback-state
+      type="error"
+      title="No se pudo completar la operación"
+      [message]="error() ?? ''" />
+  }
+  @if (mensaje()) {
+    <app-feedback-state
+      type="success"
+      title="Operación completada"
+      [message]="mensaje() ?? ''" />
+  }
+
+  @if (loading()) {
+    <app-feedback-state
+      type="loading"
+      title="Cargando configuración…"
+      message="Preparando plantillas, permisos y reglas de importación." />
+  } @else {
+    <section class="workflow-grid">
+      <mat-card class="control-card">
+        <mat-card-header>
+          <div mat-card-avatar class="step-number">1</div>
+          <mat-card-title>Selecciona el tipo de información</mat-card-title>
+          <mat-card-subtitle>
+            Plantilla vigente {{ configuracion()?.versionPlantillaActual }} · lote operativo {{ configuracion()?.tamanoLoteProcesamiento }} filas.
+          </mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <mat-form-field appearance="outline" class="full-width">
+            <mat-label>Tipo de carga</mat-label>
+            <mat-select [(ngModel)]="tipoSeleccionado" (selectionChange)="reiniciar()">
+              @for (tipo of configuracion()?.tipos ?? []; track tipo.tipo) {
+                <mat-option [value]="tipo.tipo">{{ tipo.nombre }}</mat-option>
+              }
+            </mat-select>
+          </mat-form-field>
+
+          @if (tipoActual; as tipo) {
+            <div class="type-description">
+              <mat-icon>info</mat-icon>
+              <p>{{ tipo.descripcion }} · Versión {{ tipo.versionPlantilla }}</p>
+            </div>
+            <div class="columns-list" aria-label="Columnas de la plantilla">
+              @for (columna of tipo.columnas; track columna) {
+                <span>{{ columna }}</span>
+              }
+            </div>
+          }
+
+          <div class="button-row">
+            <button mat-stroked-button type="button" (click)="descargarPlantilla('xlsx')" [disabled]="descargando()">
+              <mat-icon>table_view</mat-icon> Plantilla Excel
+            </button>
+            <button mat-stroked-button type="button" (click)="descargarPlantilla('csv')" [disabled]="descargando()">
+              <mat-icon>description</mat-icon> Plantilla CSV
+            </button>
+          </div>
+        </mat-card-content>
+      </mat-card>
+
+      <mat-card class="control-card">
+        <mat-card-header>
+          <div mat-card-avatar class="step-number">2</div>
+          <mat-card-title>Carga y valida el archivo</mat-card-title>
+          <mat-card-subtitle>No se guardarán datos durante esta etapa.</mat-card-subtitle>
+        </mat-card-header>
+        <mat-card-content>
+          <label class="upload-zone" [class.has-file]="archivo()">
+            <input type="file" accept=".csv,.xlsx" (change)="seleccionarArchivo($event)">
+            <mat-icon>{{ archivo() ? 'task_alt' : 'upload_file' }}</mat-icon>
+            @if (archivo(); as file) {
+              <strong>{{ file.name }}</strong>
+              <span>{{ formatearBytes(file.size) }}</span>
+            } @else {
+              <strong>Selecciona un archivo CSV o XLSX</strong>
+              <span>Máximo {{ formatearBytes(configuracion()?.maximoBytes ?? 0) }} y {{ configuracion()?.maximoFilas }} filas.</span>
+            }
+          </label>
+
+          <button mat-flat-button color="primary" class="primary-action" type="button"
+                  (click)="validar()" [disabled]="!archivo() || validando()">
+            @if (validando()) { <mat-spinner diameter="20"></mat-spinner> }
+            @else { <mat-icon>rule</mat-icon> }
+            <span>{{ validando() ? 'Validando archivo…' : 'Validar y generar vista previa' }}</span>
+          </button>
+        </mat-card-content>
+      </mat-card>
+    </section>
+  }
+
+  @if (detalle(); as carga) {
+    <section class="preview-section" aria-labelledby="preview-title">
+      <div class="section-heading">
+        <div>
+          <span class="eyebrow">Paso 3</span>
+          <h2 id="preview-title">Vista previa de la carga #{{ carga.id }}</h2>
+          <p>{{ carga.nombreArchivo }} · {{ formatearBytes(carga.tamanoBytes) }}</p>
+        </div>
+        <span class="status-pill" [class]="'status-pill status-' + carga.estado.toLowerCase()">
+          {{ etiquetaEstado(carga.estado) }}
+        </span>
+      </div>
+
+      @if (progreso(); as avance) {
+        <mat-card class="control-card" aria-label="Progreso de la carga masiva">
+          <mat-card-header>
+            <mat-card-title>{{ avance.porcentaje }}% · {{ avance.etapaActual }}</mat-card-title>
+            <mat-card-subtitle>Contrato de plantilla {{ avance.versionPlantilla }}</mat-card-subtitle>
+          </mat-card-header>
+          <mat-card-content>
+            <mat-progress-bar mode="determinate" [value]="avance.porcentaje"></mat-progress-bar>
+            <div class="summary-grid">
+              <article class="valid"><span>Correctas</span><strong>{{ avance.filasCorrectas }}</strong></article>
+              <article class="invalid"><span>Errores</span><strong>{{ avance.filasConError }}</strong></article>
+              <article class="warning"><span>Omitidas</span><strong>{{ avance.filasOmitidas }}</strong></article>
+              <article><span>Procesadas</span><strong>{{ avance.filasProcesadas }}/{{ avance.totalFilas }}</strong></article>
+            </div>
+            <div class="columns-list" aria-label="Etapas del proceso">
+              @for (etapa of avance.etapas; track etapa.codigo) {
+                <span>{{ etapa.nombre }} · {{ etapa.estado }}</span>
+              }
+            </div>
+          </mat-card-content>
+        </mat-card>
+      }
+
+      <div class="summary-grid">
+        <article><span>Total de filas</span><strong>{{ carga.totalFilas }}</strong></article>
+        <article class="valid"><span>Filas válidas</span><strong>{{ carga.filasValidas }}</strong></article>
+        <article class="invalid"><span>Con errores</span><strong>{{ carga.filasConError }}</strong></article>
+        <article class="warning"><span>Advertencias</span><strong>{{ carga.filasConAdvertencia }}</strong></article>
+      </div>
+
+      @if (carga.errorGeneral) {
+        <app-feedback-state
+          type="error"
+          title="La carga requiere atención"
+          [message]="carga.errorGeneral" />
+      }
+
+      <div class="table-shell preview-table" tabindex="0" aria-label="Vista previa de filas">
+        <table>
+          <thead>
+            <tr>
+              <th>Fila</th>
+              <th>Acción</th>
+              @for (columna of columnasVistaPrevia; track columna) { <th>{{ columna }}</th> }
+              <th>Validación</th>
+            </tr>
+          </thead>
+          <tbody>
+            @for (fila of carga.filas.slice(0, limiteVistaPrevia); track fila.numeroFila) {
+              <tr [class.row-error]="!fila.esValida">
+                <td>{{ fila.numeroFila }}</td>
+                <td><span class="action-pill" [class.update]="fila.accion === 'Actualizar'">{{ fila.accion }}</span></td>
+                @for (columna of columnasVistaPrevia; track columna) {
+                  <td [title]="valorFila(fila.datos, columna)">{{ valorFila(fila.datos, columna) }}</td>
+                }
+                <td>
+                  @if (fila.esValida) {
+                    <span class="validation-ok"><mat-icon>check_circle</mat-icon> Válida</span>
+                  } @else {
+                    <span class="validation-error" [matTooltip]="fila.mensajes.join(' · ')"><mat-icon>cancel</mat-icon> Revisar</span>
+                  }
+                </td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      @if (carga.filas.length > limiteVistaPrevia) {
+        <p class="table-note">Se muestran las primeras {{ limiteVistaPrevia }} filas. El informe descargable conserva todos los errores y códigos.</p>
+      }
+
+      @if (carga.errores.length > 0) {
+        <section class="errors-panel">
+          <div class="errors-heading">
+            <div>
+              <h3>Observaciones encontradas</h3>
+              <p>Corrige los errores en el archivo y vuelve a validarlo. Cada observación conserva un código técnico consistente.</p>
+            </div>
+            <div class="button-row compact">
+              <button mat-stroked-button type="button" (click)="descargarErrores('xlsx')" [disabled]="descargando()">
+                <mat-icon>download</mat-icon> Excel
+              </button>
+              <button mat-stroked-button type="button" (click)="descargarErrores('csv')" [disabled]="descargando()">
+                <mat-icon>download</mat-icon> CSV
+              </button>
+            </div>
+          </div>
+          <div class="error-list">
+            @for (item of carga.errores.slice(0, 30); track $index) {
+              <div [class.warning-item]="item.esAdvertencia">
+                <mat-icon>{{ item.esAdvertencia ? 'warning_amber' : 'error_outline' }}</mat-icon>
+                <span class="row-number">Fila {{ item.numeroFila }}</span>
+                <strong>{{ item.codigo }} · {{ item.campo || 'Archivo' }}</strong>
+                <span>{{ item.mensaje }}</span>
+              </div>
+            }
+          </div>
+        </section>
+      }
+
+      <footer class="confirmation-bar">
+        <div>
+          @if (carga.puedeConfirmarse) {
+            <strong>La carga está lista para confirmarse.</strong>
+            <span>Se procesarán {{ carga.filasValidas }} filas conservando la atomicidad de la transacción.</span>
+          } @else if (carga.estado === 'Confirmada') {
+            <strong>Carga confirmada.</strong>
+            <span>{{ carga.registrosCreados }} creados y {{ carga.registrosActualizados }} actualizados.</span>
+          } @else {
+            <strong>La carga no puede confirmarse todavía.</strong>
+            <span>Resuelve todos los errores y valida nuevamente.</span>
+          }
+        </div>
+        <div class="button-row">
+          <button mat-button type="button" (click)="reiniciar()">Nueva carga</button>
+          <button mat-flat-button color="primary" type="button" (click)="confirmar()"
+                  [disabled]="!carga.puedeConfirmarse || confirmando()">
+            @if (confirmando()) { <mat-spinner diameter="20"></mat-spinner> }
+            @else { <mat-icon>published_with_changes</mat-icon> }
+            <span>{{ confirmando() ? 'Confirmando…' : 'Confirmar importación' }}</span>
+          </button>
+        </div>
+      </footer>
+    </section>
+  }
+
+  <section class="history-section">
+    <div class="section-heading">
+      <div>
+        <span class="eyebrow">Trazabilidad</span>
+        <h2>Historial de cargas</h2>
+        <p>Consulta validaciones, resultados y usuario responsable.</p>
+      </div>
+      <mat-form-field appearance="outline" class="search-field">
+        <mat-label>Buscar archivo</mat-label>
+        <mat-icon matPrefix>search</mat-icon>
+        <input matInput [(ngModel)]="busqueda" (keyup.enter)="cargarHistorial()">
+      </mat-form-field>
+    </div>
+
+    <div class="table-shell history-table">
+      <table mat-table [dataSource]="historial()">
+        <ng-container matColumnDef="archivo">
+          <th mat-header-cell *matHeaderCellDef>Archivo</th>
+          <td mat-cell *matCellDef="let item"><strong>{{ item.nombreArchivo }}</strong><small>#{{ item.id }}</small></td>
+        </ng-container>
+        <ng-container matColumnDef="tipo">
+          <th mat-header-cell *matHeaderCellDef>Tipo</th>
+          <td mat-cell *matCellDef="let item">{{ item.tipo }}</td>
+        </ng-container>
+        <ng-container matColumnDef="estado">
+          <th mat-header-cell *matHeaderCellDef>Estado</th>
+          <td mat-cell *matCellDef="let item"><span class="status-pill" [class]="'status-pill status-' + item.estado.toLowerCase()">{{ etiquetaEstado(item.estado) }}</span></td>
+        </ng-container>
+        <ng-container matColumnDef="filas">
+          <th mat-header-cell *matHeaderCellDef>Filas</th>
+          <td mat-cell *matCellDef="let item">{{ item.filasValidas }}/{{ item.totalFilas }} válidas</td>
+        </ng-container>
+        <ng-container matColumnDef="resultado">
+          <th mat-header-cell *matHeaderCellDef>Resultado</th>
+          <td mat-cell *matCellDef="let item">{{ item.registrosCreados }} creados · {{ item.registrosActualizados }} actualizados</td>
+        </ng-container>
+        <ng-container matColumnDef="fecha">
+          <th mat-header-cell *matHeaderCellDef>Fecha</th>
+          <td mat-cell *matCellDef="let item">{{ item.fechaCreacion | date:'dd/MM/yyyy HH:mm' }}</td>
+        </ng-container>
+        <ng-container matColumnDef="acciones">
+          <th mat-header-cell *matHeaderCellDef></th>
+          <td mat-cell *matCellDef="let item"><button mat-icon-button type="button" matTooltip="Ver detalle" (click)="verCarga(item)"><mat-icon>visibility</mat-icon></button></td>
+        </ng-container>
+        <tr mat-header-row *matHeaderRowDef="columnasHistorial"></tr>
+        <tr mat-row *matRowDef="let row; columns: columnasHistorial"></tr>
+      </table>
+      @if (historial().length === 0) {
+        <app-feedback-state
+          type="empty"
+          title="Todavía no hay cargas registradas"
+          message="Las validaciones e importaciones aparecerán aquí para mantener su trazabilidad." />
+      }
+    </div>
+  </section>
+</main>

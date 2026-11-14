@@ -1,0 +1,44 @@
+#!/usr/bin/env sh
+
+# PROJECT_SCOPE_LOCK=STRICT
+# EXTERNAL_PROJECT_CONTEXT=DENY_BY_DEFAULT
+# PROJECT_SCOPE_POLICY=docs/PROJECT_SCOPE_LOCK.md
+# PROJECT_SKILL=.agents/skills/solqaryn-project-governance/SKILL.md
+# EXTERNAL_SKILL_REGISTRY=docs/REGISTRO_REFERENCIAS_SKILLS_SOLQARYN.md
+# LOCAL_SKILL_COUNT=1
+
+EXPECTED_REPO="solqaryn/Solqaryn"
+EXPECTED_BRANCH="dev"
+
+fail() {
+  echo "[Solqaryn][pre-commit] $1" >&2
+  exit 1
+}
+
+command -v node >/dev/null 2>&1 || fail "Node.js es obligatorio para ejecutar el PROJECT_SCOPE_LOCK."
+node scripts/verify-project-scope.mjs >/dev/null 2>&1 || fail "PROJECT_SCOPE_LOCK invalido. No se permite continuar."
+
+branch="$(git branch --show-current 2>/dev/null)"
+[ "$branch" = "$EXPECTED_BRANCH" ] || fail "Rama '$branch' no autorizada. Debes trabajar en '$EXPECTED_BRANCH'."
+
+origin_url="$(git remote get-url origin 2>/dev/null)" || fail "No existe remote origin."
+case "$origin_url" in
+  "https://github.com/solqaryn/Solqaryn"|"https://github.com/solqaryn/Solqaryn.git"|"git@github.com:solqaryn/Solqaryn.git"|"ssh://git@github.com/solqaryn/Solqaryn.git") ;;
+  *) fail "origin='$origin_url' no corresponde a $EXPECTED_REPO. Posible confusión de proyecto." ;;
+esac
+
+[ -f AGENTS.md ] || fail "Falta AGENTS.md."
+[ -f PROJECT_CONTEXT.md ] || fail "Falta PROJECT_CONTEXT.md."
+[ -f TASKS.md ] || fail "Falta TASKS.md."
+[ -f CHANGELOG_AI.md ] || fail "Falta CHANGELOG_AI.md."
+
+grep -Fq 'solqaryn/Solqaryn' PROJECT_CONTEXT.md || fail "PROJECT_CONTEXT.md no confirma $EXPECTED_REPO."
+grep -Fq 'PROJECT_ID: SOLQARYN' PROJECT_CONTEXT.md || fail "PROJECT_CONTEXT.md no confirma PROJECT_ID=SOLQARYN."
+
+staged="$(git diff --cached --name-only --diff-filter=ACMR)"
+if [ -n "$staged" ] && ! printf '%s\n' "$staged" | grep -qx 'CHANGELOG_AI.md'; then
+  fail "Todo changeset intencional debe incluir evidencia en CHANGELOG_AI.md."
+fi
+
+echo "[Solqaryn][pre-commit] Gate OK: $EXPECTED_REPO / $EXPECTED_BRANCH / evidencia presente."
+exit 0

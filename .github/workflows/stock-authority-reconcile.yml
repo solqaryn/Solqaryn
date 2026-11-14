@@ -1,0 +1,248 @@
+name: DEV - Reconciliar stock autoritativo
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - .github/checkpoints/stock-authority-reconcile
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  reconcile:
+    name: Backfill fail-closed ProductoVariante -> ExistenciaVariante
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: DEV
+    env:
+      DB_HOST: ${{ vars.SOLQARYN_DEV_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_DEV_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_DEV_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_DEV_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_DEV_DB_PASSWORD }}
+    steps:
+      - name: Instalar cliente MySQL
+        run: sudo apt-get update && sudo apt-get install -y mysql-client
+
+      - name: Reconciliar stock DEV
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$DB_NAME" = "solqaryn_dev"
+          export MYSQL_PWD="$DB_PASSWORD"
+
+          mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" <<'SQL'
+          DROP PROCEDURE IF EXISTS sp_solqaryn_dev_reconcile_stock;
+          DELIMITER $$
+
+          CREATE PROCEDURE sp_solqaryn_dev_reconcile_stock()
+          BEGIN
+              DECLARE v_db VARCHAR(128);
+              DECLARE v_almacenes INT DEFAULT 0;
+              DECLARE v_almacen_id INT DEFAULT NULL;
+              DECLARE v_negativas INT DEFAULT 0;
+              DECLARE v_existing_mismatch INT DEFAULT 0;
+              DECLARE v_missing_before INT DEFAULT 0;
+              DECLARE v_inserted INT DEFAULT 0;
+              DECLARE v_missing_after INT DEFAULT 0;
+              DECLARE v_mismatch_after INT DEFAULT 0;
+              DECLARE v_legacy_total BIGINT DEFAULT 0;
+              DECLARE v_physical_total BIGINT DEFAULT 0;
+
+              DECLARE EXIT HANDLER FOR SQLEXCEPTION
+              BEGIN
+                  ROLLBACK;
+                  RESIGNAL;
+              END;
+
+              SELECT DATABASE() INTO v_db;
+              IF v_db <> 'solqaryn_dev' THEN
+                  SIGNAL SQLSTATE '45000'
+                    SET MESSAGE_TEXT='Abortado: este reconciliador solo puede operar sobre solqaryn_dev';
+              END IF;
+
+              SELECT COUNT(*), MIN(a.Id)
+                INTO v_almacenes, v_almacen_id
+                FROM Almacenes a
+                JOIN Sucursales s ON s.Id=a.SucursalId
+               WHERE a.Activo=1
+                 AND a.Eliminado=0
+                 AND a.Tipo IN (1,2)
+                 AND s.Activa=1
+                 AND s.Eliminado=0;
+
+              IF v_almacenes <> 1 THEN
+                  SIGNAL SQLSTATE '45000'
+                    SET MESSAGE_TEXT='Abortado: se requiere exactamente un almacen operativo activo para asignacion determinista';
+              END IF;
+
+              SELECT COUNT(*)
+                INTO v_negativas
+                FROM ProductoVariantes pv
+                JOIN Productos p ON p.Id=pv.ProductoId
+               WHERE pv.Eliminado=0
+                 AND p.Eliminado=0
+                 AND p.Activo=1
+                 AND pv.Cantidad < 0;
+
+              IF v_negativas <> 0 THEN
+                  SIGNAL SQLSTATE '45000'
+                    SET MESSAGE_TEXT='Abortado: existen cantidades legacy negativas';
+              END IF;
+
+              SELECT COUNT(*)
+                INTO v_existing_mismatch
+                FROM (
+                    SELECT pv.Id, pv.Cantidad, COALESCE(SUM(ev.StockFisico),0) AS StockFisico
+                      FROM ProductoVariantes pv
+                      JOIN Productos p ON p.Id=pv.ProductoId
+                      JOIN ExistenciasVariante ev ON ev.ProductoVarianteId=pv.Id
+                     WHERE pv.Eliminado=0
+                       AND p.Eliminado=0
+                       AND p.Activo=1
+                     GROUP BY pv.Id,pv.Cantidad
+                    HAVING pv.Cantidad <> COALESCE(SUM(ev.StockFisico),0)
+                ) x;
+
+              IF v_existing_mismatch <> 0 THEN
+                  SIGNAL SQLSTATE '45000'
+                    SET MESSAGE_TEXT='Abortado: ya existen variantes cuya autoridad fisica difiere del bridge legacy';
+              END IF;
+
+              SELECT COUNT(*)
+                INTO v_missing_before
+                FROM ProductoVariantes pv
+                JOIN Productos p ON p.Id=pv.ProductoId
+                LEFT JOIN ExistenciasVariante ev ON ev.ProductoVarianteId=pv.Id
+               WHERE pv.Eliminado=0
+                 AND p.Eliminado=0
+                 AND p.Activo=1
+                 AND ev.Id IS NULL;
+
+              SELECT COALESCE(SUM(pv.Cantidad),0)
+                INTO v_legacy_total
+                FROM ProductoVariantes pv
+                JOIN Productos p ON p.Id=pv.ProductoId
+               WHERE pv.Eliminado=0
+                 AND p.Eliminado=0
+                 AND p.Activo=1;
+
+              START TRANSACTION;
+
+              INSERT INTO ExistenciasVariante (
+                  ProductoVarianteId,
+                  AlmacenId,
+                  UbicacionAlmacenId,
+                  StockFisico,
+                  StockReservado,
+                  StockTransito,
+                  StockMinimo,
+                  StockMaximo,
+                  FechaCreacion,
+                  FechaActualizacion,
+                  CreadoPorUsuarioId,
+                  CreadoPorNombreUsuario,
+                  ActualizadoPorUsuarioId,
+                  ActualizadoPorNombreUsuario
+              )
+              SELECT
+                  pv.Id,
+                  v_almacen_id,
+                  NULL,
+                  pv.Cantidad,
+                  0,
+                  0,
+                  GREATEST(COALESCE(pv.UmbralStockBajo,0),0),
+                  NULL,
+                  UTC_TIMESTAMP(6),
+                  UTC_TIMESTAMP(6),
+                  NULL,
+                  'SOLQARYN DEV stock reconciliation 2026-09-25',
+                  NULL,
+                  NULL
+                FROM ProductoVariantes pv
+                JOIN Productos p ON p.Id=pv.ProductoId
+                LEFT JOIN ExistenciasVariante ev ON ev.ProductoVarianteId=pv.Id
+               WHERE pv.Eliminado=0
+                 AND p.Eliminado=0
+                 AND p.Activo=1
+                 AND ev.Id IS NULL
+               ORDER BY pv.Id;
+
+              SET v_inserted = ROW_COUNT();
+
+              IF v_inserted <> v_missing_before THEN
+                  SIGNAL SQLSTATE '45000'
+                    SET MESSAGE_TEXT='Abortado: filas insertadas no coinciden con variantes faltantes';
+              END IF;
+
+              SELECT COUNT(*)
+                INTO v_missing_after
+                FROM ProductoVariantes pv
+                JOIN Productos p ON p.Id=pv.ProductoId
+                LEFT JOIN ExistenciasVariante ev ON ev.ProductoVarianteId=pv.Id
+               WHERE pv.Eliminado=0
+                 AND p.Eliminado=0
+                 AND p.Activo=1
+                 AND ev.Id IS NULL;
+
+              SELECT COUNT(*)
+                INTO v_mismatch_after
+                FROM (
+                    SELECT pv.Id, pv.Cantidad, COALESCE(SUM(ev.StockFisico),0) AS StockFisico
+                      FROM ProductoVariantes pv
+                      JOIN Productos p ON p.Id=pv.ProductoId
+                      LEFT JOIN ExistenciasVariante ev ON ev.ProductoVarianteId=pv.Id
+                     WHERE pv.Eliminado=0
+                       AND p.Eliminado=0
+                       AND p.Activo=1
+                     GROUP BY pv.Id,pv.Cantidad
+                    HAVING pv.Cantidad <> COALESCE(SUM(ev.StockFisico),0)
+                ) x;
+
+              SELECT COALESCE(SUM(ev.StockFisico),0)
+                INTO v_physical_total
+                FROM ExistenciasVariante ev
+                JOIN ProductoVariantes pv ON pv.Id=ev.ProductoVarianteId
+                JOIN Productos p ON p.Id=pv.ProductoId
+               WHERE pv.Eliminado=0
+                 AND p.Eliminado=0
+                 AND p.Activo=1;
+
+              IF v_missing_after <> 0 OR v_mismatch_after <> 0 OR v_physical_total <> v_legacy_total THEN
+                  SIGNAL SQLSTATE '45000'
+                    SET MESSAGE_TEXT='Abortado: postcheck de reconciliacion no coincide';
+              END IF;
+
+              COMMIT;
+
+              SELECT
+                  'SUCCESS' AS Status,
+                  v_almacen_id AS AlmacenId,
+                  v_missing_before AS ExistenciasCreadas,
+                  v_legacy_total AS StockLegacyActivo,
+                  v_physical_total AS StockFisicoActivo,
+                  v_missing_after AS VariantesSinExistencia,
+                  v_mismatch_after AS VariantesConDiferencia,
+                  FALSE AS ProductionTouched;
+          END$$
+
+          DELIMITER ;
+          CALL sp_solqaryn_dev_reconcile_stock();
+          DROP PROCEDURE IF EXISTS sp_solqaryn_dev_reconcile_stock;
+
+          SELECT
+              'PRODUCT',
+              p.Id,
+              p.Nombre,
+              COALESCE(SUM(CASE WHEN pv.Eliminado=0 THEN pv.Cantidad ELSE 0 END),0) AS AdminBridge,
+              COALESCE(SUM(CASE WHEN pv.Eliminado=0 AND pv.Activo=1 THEN ev.StockDisponible ELSE 0 END),0) AS StorefrontDisponible
+            FROM Productos p
+            LEFT JOIN ProductoVariantes pv ON pv.ProductoId=p.Id
+            LEFT JOIN ExistenciasVariante ev ON ev.ProductoVarianteId=pv.Id
+           WHERE p.Eliminado=0 AND p.Activo=1
+           GROUP BY p.Id,p.Nombre
+           ORDER BY p.Id;
+          SQL

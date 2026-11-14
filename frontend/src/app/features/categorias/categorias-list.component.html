@@ -1,0 +1,87 @@
+<div class="header-row">
+  <h1 class="page-title">Categorías</h1>
+  @if (puedeCrear()) {
+    <a routerLink="/categorias/nueva" mat-flat-button color="primary">
+      <mat-icon>add</mat-icon> Nueva categoría
+    </a>
+  }
+</div>
+
+<div class="card">
+  @if (loading()) {
+    <div class="loading"><mat-spinner></mat-spinner></div>
+  } @else {
+    <table class="table table-desktop">
+      <thead>
+        <tr>
+          <th>Nombre</th>
+          <th>Descripción</th>
+          <th>Productos</th>
+          <th>Registrada por</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (c of categorias(); track c.id) {
+          <tr>
+            <td>{{ c.nombre }}</td>
+            <td>{{ c.descripcion || '—' }}</td>
+            <td>{{ c.totalProductos }}</td>
+            <td>{{ c.creadoPorNombreUsuario || '—' }}</td>
+            <td>
+              @if (puedeCambiarEstado(c)) {
+                <mat-slide-toggle [checked]="c.activa" (change)="toggleActiva(c)" [aria-label]="(c.activa ? 'Desactivar ' : 'Activar ') + c.nombre"></mat-slide-toggle>
+              } @else {
+                <span class="badge" [class.success]="c.activa" [class.muted]="!c.activa">{{ c.activa ? 'Activa' : 'Inactiva' }}</span>
+              }
+            </td>
+            <td class="actions">
+              @if (puedeEditar()) {
+                <a [routerLink]="['/categorias', c.id, 'editar']" mat-icon-button title="Editar">
+                  <mat-icon>edit</mat-icon>
+                </a>
+              }
+              @if (puedeEliminar()) {
+                <button mat-icon-button title="Eliminar" (click)="eliminar(c)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="6" class="empty">No hay categorías registradas.</td></tr>
+        }
+      </tbody>
+    </table>
+
+    <div class="cards-mobile">
+      @for (c of categorias(); track c.id) {
+        <div class="item-card">
+          <div class="item-card-header">
+            <strong>{{ c.nombre }}</strong>
+            @if (puedeCambiarEstado(c)) {
+              <mat-slide-toggle [checked]="c.activa" (change)="toggleActiva(c)" [aria-label]="(c.activa ? 'Desactivar ' : 'Activar ') + c.nombre"></mat-slide-toggle>
+            } @else {
+              <span class="badge" [class.success]="c.activa" [class.muted]="!c.activa">{{ c.activa ? 'Activa' : 'Inactiva' }}</span>
+            }
+          </div>
+          <p class="item-card-desc">{{ c.descripcion || 'Sin descripción' }}</p>
+          <div class="item-card-meta"><span>{{ c.totalProductos }} productos</span></div>
+          @if (puedeEditar() || puedeEliminar()) {
+            <div class="item-card-actions">
+              @if (puedeEditar()) {
+                <a [routerLink]="['/categorias', c.id, 'editar']" mat-button><mat-icon>edit</mat-icon> Editar</a>
+              }
+              @if (puedeEliminar()) {
+                <button mat-button type="button" (click)="eliminar(c)"><mat-icon>delete</mat-icon> Eliminar</button>
+              }
+            </div>
+          }
+        </div>
+      } @empty {
+        <p class="empty">No hay categorías registradas.</p>
+      }
+    </div>
+  }
+</div>

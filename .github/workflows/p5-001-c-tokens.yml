@@ -1,0 +1,32 @@
+name: P5-001.C - Contrato tokens institucionales
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'scripts/tests/p5-001-c-tokens.test.mjs'
+      - 'frontend/src/styles.scss'
+      - '.github/workflows/p5-001-c-tokens.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: p5-001-c-tokens-dev
+  cancel-in-progress: true
+jobs:
+  p5-001-c:
+    name: Tokens reales y ocho tests negativos/positivos
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Checkout exact SHA
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+      - name: Validar contrato
+        run: |
+          node --check scripts/tests/p5-001-c-tokens.test.mjs
+          node --test scripts/tests/p5-001-c-tokens.test.mjs

@@ -1,0 +1,8 @@
+# P5-009.C — Delimitación de scroll, foco y Escape (DEV)
+
+- Fuente: Plan Comercial Inicial V3, microtarea P5-009.C; origen P5-009.A; dependencia P1-016.B LISTO en PLAN/COLA.
+- Única superficie objetivo: `frontend/src/app/app.component.ts`; blob base de producto `11aa993b011119d33e402f3f2bc1d08f133e34bd` de `dev`, conservado sin cambios funcionales.
+- Escenario concreto: shell administrativo autenticado, menú lateral responsivo, foco inicial del botón de cierre, retorno al botón `menu-toggle` al cerrar con Escape, bloqueo reversible de scroll del documento y foco del contenido central tras navegación. El control de contexto limpia `tenantContext` y `permisosRuntime` al cambiar empresa/salir.
+- Prueba dirigida `scripts/tests/p5-009-c-delimitacion-scroll-foco-escape.test.mjs` sobre el archivo real: control positivo y cinco negativos dirigidos (Escape ausente, foco no restaurado, bloqueo de scroll persistente, foco de contenido ausente, limpieza de contexto eliminada). Node 22.16.0, `node --check` y `node --test` 6/6; SHA256 test `b0aed580f93e6f272b00d1201650b57a70d5d0583568cbf712fb5fa30fc42740`.
+- Límites: lectura estática de implementación existente. No es una prueba de teclado, foco, scroll, lector de pantalla ni experiencia táctil en navegador. No verifica Angular runtime, seguridad JWT real, autorización tenant, MySQL, QA ni PROD. Cambios UI posteriores requieren Angular/Playwright y verificación en el navegador.
+- Superficie de cambio: prueba, esta nota de delimitación y CHANGELOG_AI.md, sin modificar código Angular ejecutable, API/DTO, esquema, datos ni secretos. Revert selectivo y aditivo sobre commit dev, sin force-push. A5 revisión independiente requerida antes de QA/main/PROD.

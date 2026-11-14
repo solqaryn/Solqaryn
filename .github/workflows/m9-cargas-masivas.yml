@@ -1,0 +1,266 @@
+name: M9 - Cargas masivas profesionales
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - .github/workflows/m9-cargas-masivas.yml
+      - backend/src/API/Controllers/CargasMasivasController.cs
+      - backend/src/Application/DTOs/CargaMasivaDto.cs
+      - backend/src/Application/Interfaces/ICargaMasivaService.cs
+      - backend/src/Domain/Entities/CargaMasiva*.cs
+      - backend/src/Infrastructure/Services/CargaMasiva*.cs
+      - backend/tests/Solqaryn.Tests/M9CargaMasivaProfesionalTests.cs
+      - backend/tests/Solqaryn.Tests/CargaMasivaConcurrencyTests.cs
+      - frontend/src/app/core/models/carga-masiva.model.ts
+      - frontend/src/app/services/carga-masiva.service.ts
+      - frontend/src/app/features/cargas-masivas/**
+      - frontend/e2e/m9-cargas-masivas-profesionales.spec.ts
+      - frontend/e2e/fase5-cargas-masivas.spec.ts
+  pull_request:
+    branches:
+      - dev
+      - main
+    paths:
+      - .github/workflows/m9-cargas-masivas.yml
+      - backend/src/API/Controllers/CargasMasivasController.cs
+      - backend/src/Application/DTOs/CargaMasivaDto.cs
+      - backend/src/Infrastructure/Services/CargaMasiva*.cs
+      - backend/tests/Solqaryn.Tests/M9CargaMasivaProfesionalTests.cs
+      - frontend/src/app/core/models/carga-masiva.model.ts
+      - frontend/src/app/services/carga-masiva.service.ts
+      - frontend/src/app/features/cargas-masivas/**
+      - frontend/e2e/m9-cargas-masivas-profesionales.spec.ts
+      - frontend/e2e/fase5-cargas-masivas.spec.ts
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: m9-cargas-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  m9:
+    name: MySQL, backend, Angular y Playwright M9
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: solqaryn_m9_e2e
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+
+    env:
+      ASPNETCORE_ENVIRONMENT: Development
+      PORT: '5005'
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m9_e2e;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      Database__ServerVersion: '8.4.0'
+      Database__ApplyMigrationsOnStartup: 'true'
+      Jwt__Secret: 'M9-E2E-Only-Secret-With-More-Than-32-Characters-2026'
+      Jwt__Issuer: 'Solqaryn.API'
+      Jwt__Audience: 'Solqaryn.Frontend'
+      Jwt__ExpiraMinutos: '120'
+      Security__LoginRateLimitPerMinute: '300'
+      SeedAdmin__Username: 'e2e_admin'
+      SeedAdmin__Password: 'E2E.Admin#2026!'
+      Cors__AllowedOrigins__0: 'http://127.0.0.1:4200'
+      Cors__AllowedOrigins__1: 'http://localhost:4200'
+      AppSettings__BackendPublicUrl: 'https://preview.solqaryn.invalid'
+      AppSettings__LogoPublicUrl: 'https://solqaryn-dev.vercel.app/assets/storefront-logo.png'
+      Cloudinary__CloudName: 'e2e-not-used'
+      Cloudinary__ApiKey: 'e2e-not-used'
+      Cloudinary__ApiSecret: 'e2e-not-used'
+      PHASE7_API_URL: 'http://127.0.0.1:5005'
+      PHASE7_ADMIN_USERNAME: 'e2e_admin'
+      PHASE7_ADMIN_PASSWORD: 'E2E.Admin#2026!'
+      E2E_TENANT_ID: '1'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+
+    steps:
+      - name: Checkout DEV
+        uses: actions/checkout@v4
+
+      - name: Configurar .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+          cache: true
+          cache-dependency-path: backend/**/*.csproj
+
+      - name: Restaurar y compilar backend
+        working-directory: backend
+        run: |
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+
+      - name: Ejecutar regresión backend M9
+        working-directory: backend
+        run: |
+          dotnet test Solqaryn.sln \
+            --configuration Release \
+            --no-build \
+            --filter "FullyQualifiedName~M9CargaMasivaProfesionalTests|FullyQualifiedName~CargaMasivaConcurrencyTests" \
+            --logger "trx;LogFileName=m9-tests.trx"
+
+      # OracleBaseline adopta un esquema físico ya existente: nunca aplicar
+      # migraciones sobre MySQL vacío. Usar el bootstrap canónico y descartable.
+      - name: Crear baseline Oracle en MySQL efímero
+        working-directory: backend
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+        run: |
+          set -euo pipefail
+          dotnet run --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj \
+            --configuration Release --no-build --no-launch-profile
+
+      - name: Iniciar API con MySQL descartable
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup dotnet run \
+            --project src/API/Solqaryn.API.csproj \
+            --configuration Release \
+            --no-build \
+            --no-launch-profile \
+            > m9-api.log 2>&1 &
+          echo $! > m9-api.pid
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:5005/health > /dev/null && \
+               curl --fail --silent http://127.0.0.1:5005/health/ready > /dev/null; then
+              echo 'API M9 lista y MySQL conectado.'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat m9-api.log >&2 || true
+          exit 1
+
+      - name: Preparar tenant E2E para SeedAdmin
+        shell: bash
+        run: |
+          set -euo pipefail
+          mysql_container="$(docker ps --filter 'ancestor=mysql:8.4' --format '{{.ID}}' | head -n 1)"
+          if [[ -z "$mysql_container" ]]; then
+            echo 'No se encontró el contenedor MySQL 8.4 de la suite M9.' >&2
+            exit 1
+          fi
+
+          docker exec -i "$mysql_container" mysql -uroot -proot solqaryn_m9_e2e <<'SQL'
+          INSERT INTO `Empresas` (`Id`,`Nombre`,`Activa`,`FechaCreacion`,`FechaActualizacion`)
+          VALUES (1,'Empresa E2E M9',TRUE,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6))
+          ON DUPLICATE KEY UPDATE
+            `Activa`=TRUE,
+            `FechaActualizacion`=UTC_TIMESTAMP(6);
+
+          INSERT INTO `UsuarioEmpresas` (`UsuarioId`,`EmpresaId`,`RolId`,`Activa`,`FechaCreacion`,`FechaActualizacion`)
+          SELECT u.`Id`,1,u.`RolId`,TRUE,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)
+          FROM `Usuarios` u
+          WHERE u.`NombreUsuario`='e2e_admin'
+            AND NOT EXISTS (
+              SELECT 1
+              FROM `UsuarioEmpresas` ue
+              WHERE ue.`UsuarioId`=u.`Id` AND ue.`EmpresaId`=1
+            );
+          -- Plantilla XLSX Clientes trae "Sin clasificar". El seed global
+          -- con EmpresaId=NULL no es visible bajo el filtro RBAC del tenant.
+          -- Preparar sólo el default de la empresa 1 en esta DB descartable.
+          INSERT INTO `TipoClientes`
+            (`EmpresaId`,`Codigo`,`EsSistema`,`Nombre`,`NombreNormalizado`,`Descripcion`,
+             `ColorHex`,`Activo`,`Orden`,`EsPredeterminado`,`Eliminado`,
+             `FechaCreacion`,`FechaActualizacion`)
+          SELECT 1,'SIN_CLASIFICAR',TRUE,'Sin clasificar','SIN CLASIFICAR',
+                 'Cliente sin clasificar','#9E9E9E',TRUE,0,TRUE,FALSE,
+                 UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)
+          WHERE NOT EXISTS
+            (SELECT 1 FROM `TipoClientes`
+             WHERE `EmpresaId`=1 AND `Codigo`='SIN_CLASIFICAR');
+          SQL
+
+          tipo_default_count="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_m9_e2e -Nse "SELECT COUNT(*) FROM TipoClientes WHERE EmpresaId=1 AND Codigo='SIN_CLASIFICAR' AND EsPredeterminado=TRUE AND Activo=TRUE AND Eliminado=FALSE;")"
+          if [[ "$tipo_default_count" != '1' ]]; then
+            echo "El tipo de cliente predeterminado E2E no pertenece a empresa 1: count=$tipo_default_count" >&2
+            exit 1
+          fi
+
+          membership_count="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_m9_e2e -Nse "SELECT COUNT(*) FROM UsuarioEmpresas ue INNER JOIN Usuarios u ON u.Id=ue.UsuarioId INNER JOIN Empresas e ON e.Id=ue.EmpresaId WHERE u.NombreUsuario='e2e_admin' AND e.Id=1 AND e.Activa=TRUE AND ue.Activa=TRUE;")"
+          if [[ "$membership_count" != '1' ]]; then
+            echo "La membresía tenant E2E del SeedAdmin no quedó materializada: count=$membership_count" >&2
+            exit 1
+          fi
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('frontend/package-lock.json') }}
+
+      - name: Instalar, lint y build frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run lint
+          npm run build:prod
+          npx playwright install --with-deps chromium
+
+      # PORT=5005 del job corresponde a la API. Angular lee PORT incluso
+      # si npm start recibe --port 4200: evitar colision sin cambiar la API.
+      - name: Iniciar Angular
+        working-directory: frontend
+        shell: bash
+        env:
+          PORT: '4200'
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > m9-frontend.log 2>&1 &
+          echo $! > m9-frontend.pid
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:4200/login > /dev/null; then
+              echo 'Angular M9 listo.'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat m9-frontend.log >&2 || true
+          exit 1
+
+      - name: Ejecutar Playwright M9 y regresión de cargas
+        working-directory: frontend
+        run: |
+          npx playwright test \
+            e2e/m9-cargas-masivas-profesionales.spec.ts \
+            e2e/fase5-cargas-masivas.spec.ts \
+            --config=playwright.config.ts
+
+      - name: Publicar evidencia M9
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m9-cargas-masivas-profesionales
+          path: |
+            backend/m9-api.log
+            backend/**/m9-tests.trx
+            frontend/m9-frontend.log
+            frontend/playwright-report/
+            frontend/test-results/
+          if-no-files-found: warn
+          retention-days: 14

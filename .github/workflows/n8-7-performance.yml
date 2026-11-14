@@ -1,0 +1,187 @@
+name: N8.7.G - Performance proof
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/scripts/performance/n8_7_g_auth_perf.py'
+      - '.github/workflows/n8-7-performance.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: n8-7-performance-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  authenticated-performance:
+    name: Authenticated load stress concurrency endurance volume
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: solqaryn_perf
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      ASPNETCORE_ENVIRONMENT: Development
+      ASPNETCORE_URLS: http://127.0.0.1:5080
+      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=solqaryn_perf;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;
+      Database__ServerVersion: 8.4.0
+      Database__ApplyMigrationsOnStartup: 'false'
+      Jwt__Secret: N87-Performance-CI-Only-Secret-More-Than-32-Characters-2026
+      Jwt__Issuer: Solqaryn.CI
+      Jwt__Audience: Solqaryn.CI.Frontend
+      Jwt__ExpiraMinutos: '35'
+      N87_PERF_USER: n87_perf_ci
+      N87_PERF_PASSWORD: N87PerfOnly-2026!
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+          cache: true
+          cache-dependency-path: backend/**/*.csproj
+
+      - name: Restore and build exact head
+        run: |
+          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+
+      - name: Directed concurrency and performance guard tests
+        run: |
+          set -euo pipefail
+          dotnet test Solqaryn.sln --configuration Release --no-build --filter 'FullyQualifiedName~CargaMasivaConcurrencyTests' --logger 'trx;LogFileName=n87-concurrency.trx'
+          dotnet test Solqaryn.sln --configuration Release --no-build --filter 'FullyQualifiedName~BusquedaRendimiento' --logger 'trx;LogFileName=n87-search-performance.trx'
+          dotnet test Solqaryn.sln --configuration Release --no-build --filter 'FullyQualifiedName~RequestObservabilityTests|FullyQualifiedName~SecurityBoundaryContractTests' --logger 'trx;LogFileName=n87-observability-security.trx'
+
+      - name: Apply current schema to ephemeral MySQL
+        run: |
+          set -euo pipefail
+          dotnet tool install --global dotnet-ef --version 10.0.12
+          dotnet ef database update \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
+            --context AppDbContext
+
+      - name: Seed synthetic relational-role performance identity
+        working-directory: .
+        run: |
+          set -euo pipefail
+          mysql_container='${{ job.services.mysql.id }}'
+          mkdir -p /tmp/n87-hasher
+          cat > /tmp/n87-hasher/n87-hasher.csproj <<'EOF'
+          <Project Sdk="Microsoft.NET.Sdk">
+            <PropertyGroup>
+              <OutputType>Exe</OutputType>
+              <TargetFramework>net10.0</TargetFramework>
+              <ImplicitUsings>enable</ImplicitUsings>
+              <Nullable>enable</Nullable>
+            </PropertyGroup>
+            <ItemGroup><PackageReference Include="BCrypt.Net-Next" Version="4.0.3" /></ItemGroup>
+          </Project>
+          EOF
+          cat > /tmp/n87-hasher/Program.cs <<'EOF'
+          var password = System.Environment.GetEnvironmentVariable("N87_PERF_PASSWORD")
+              ?? throw new System.InvalidOperationException("Synthetic CI password missing");
+          System.Console.Write(BCrypt.Net.BCrypt.HashPassword(password, workFactor: 5));
+          EOF
+          password_hash="$(dotnet run --project /tmp/n87-hasher/n87-hasher.csproj --configuration Release --nologo)"
+          if [[ "$password_hash" != '$2'* ]]; then
+            echo 'BCrypt hash generation failed.' >&2
+            exit 1
+          fi
+          docker exec "$mysql_container" mysql -uroot -proot solqaryn_perf \
+            -e "INSERT INTO Roles (Id, Nombre, NombreNormalizado, Descripcion, EsSistema, EsAdministrador, Activo, Eliminado, FechaCreacion) VALUES (900001, 'N87 Performance CI', 'N87 PERFORMANCE CI', 'Synthetic CI-only performance role', 1, 0, 1, 0, UTC_TIMESTAMP(6)) ON DUPLICATE KEY UPDATE Activo=1, Eliminado=0;"
+          docker exec "$mysql_container" mysql -uroot -proot solqaryn_perf \
+            -e "INSERT INTO Usuarios (Id, NombreUsuario, NombreCompleto, PasswordHash, RolId, Activo, Bloqueado, Eliminado, FechaCreacion) VALUES (900001, 'n87_perf_ci', 'N8.7 Performance CI', '${password_hash}', 900001, 1, 0, 0, UTC_TIMESTAMP(6)) ON DUPLICATE KEY UPDATE PasswordHash=VALUES(PasswordHash), RolId=900001, Activo=1, Bloqueado=0, Eliminado=0;"
+          echo 'Synthetic identity seeded with a runtime BCrypt.Net-Next hash.'
+
+      - name: Start Development API against ephemeral database
+        run: |
+          set -euo pipefail
+          nohup dotnet run --project src/API/Solqaryn.API.csproj --configuration Release --no-build > /tmp/n87-api.log 2>&1 &
+          echo $! > /tmp/n87-api.pid
+          for i in $(seq 1 45); do
+            if curl --silent --fail --max-time 2 http://127.0.0.1:5080/health >/dev/null; then
+              echo 'API health is ready.'
+              exit 0
+            fi
+            sleep 2
+          done
+          echo 'API did not become healthy.' >&2
+          tail -n 120 /tmp/n87-api.log >&2
+          exit 1
+
+      - name: Execute bounded authenticated material profiles
+        working-directory: .
+        run: |
+          set -euo pipefail
+          python3 backend/scripts/performance/n8_7_g_auth_perf.py \
+            --base-url http://127.0.0.1:5080 \
+            --output n8_7_g_perf_results.json
+
+      - name: Verify safety and material result contract
+        working-directory: .
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import json
+          p='n8_7_g_perf_results.json'
+          d=json.load(open(p, encoding='utf-8'))
+          assert d['totalRequests'] >= 1200, d['totalRequests']
+          assert d['totalFailures'] == 0, d['totalFailures']
+          assert {x['name'] for x in d['profiles']} == {'load','stress','endurance','volume'}
+          assert all(x['requests'] > 0 for x in d['profiles'])
+          assert d['security']['productionTraffic'] == 0
+          assert d['security']['productionData'] == 0
+          assert d['security']['authBypass'] is False
+          assert d['security']['rateLimitDisabled'] is False
+          assert d['security']['syntheticDataOnly'] is True
+          assert d['acceptance']['latencySlaClaimed'] is False
+          print('N8.7.G material performance contract PASS')
+          PY
+
+      - name: Capture sanitized API tail
+        if: always()
+        working-directory: .
+        run: |
+          if [ -f /tmp/n87-api.log ]; then
+            tail -n 250 /tmp/n87-api.log \
+              | sed -E 's/(Bearer )[A-Za-z0-9._-]+/\1[REDACTED]/g' \
+              > n8_7_g_api_tail.log
+          fi
+
+      - name: Stop local API
+        if: always()
+        working-directory: .
+        run: |
+          if [ -f /tmp/n87-api.pid ]; then kill "$(cat /tmp/n87-api.pid)" 2>/dev/null || true; fi
+
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: n8-7-g-performance-evidence
+          path: |
+            n8_7_g_perf_results.json
+            n8_7_g_api_tail.log
+            backend/**/TestResults/n87-*.trx
+          if-no-files-found: warn
+          retention-days: 14

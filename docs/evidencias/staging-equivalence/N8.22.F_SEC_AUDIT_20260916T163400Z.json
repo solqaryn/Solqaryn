@@ -1,0 +1,21 @@
+{
+  "schema":"vaep-n8.22-equivalence/v1",
+  "scope":"N8.22.F",
+  "stage":"SEC_AUDIT",
+  "captured_at_utc":"2026-09-16T16:34:00Z",
+  "lease_token":"SUP00-N822F-CLOSER-20260916T163345Z",
+  "matrix":[
+    {"dimension":"jwt_configuration_shape","dev":"Jwt Secret/Issuer/Audience/ExpiraMinutos keys","prod_code_baseline":"same key shape","classification":"EQUIVALENT"},
+    {"dimension":"logging_baseline","dev":"Default Information; Microsoft.AspNetCore Warning","prod_code_baseline":"same","classification":"EQUIVALENT"},
+    {"dimension":"cors_configuration_shape","dev":"Cors.AllowedOrigins list","prod_code_baseline":"Cors.AllowedOrigins list","classification":"EQUIVALENT"},
+    {"dimension":"database_migration_startup_policy","dev":"ApplyMigrationsOnStartup=false explicit","prod_code_baseline":"setting absent in historical main baseline","classification":"EXPECTED_ENV_DIFFERENCE","reason":"candidate hardening is explicit in Desarrollo; no PROD write is authorized"},
+    {"dimension":"rate_limit_policy_shape","dev":"Security.LoginRateLimitPerMinute present","prod_code_baseline":"setting absent","classification":"EXPECTED_ENV_DIFFERENCE","reason":"candidate security capability is intentionally ahead of current production release"},
+    {"dimension":"correlation_and_request_observability_middleware","dev":"CorrelationIdMiddleware and RequestObservabilityMiddleware present in candidate","prod_code_baseline":"not present at main merge-base","classification":"EXPECTED_ENV_DIFFERENCE","reason":"release-candidate code delta, not silently treated as environment parity"},
+    {"dimension":"render_secret_and_env_name_parity","dev":"actual names not exposed by current read-only connector","prod":"actual names not exposed by current read-only connector","classification":"UNKNOWN","owner_action":"provide/authorize sanitized env-variable NAME inventories only; do not provide values"},
+    {"dimension":"vercel_env_name_parity","dev":"not exposed by current project metadata response","prod":"authoritative PROD project and env-name inventario not exposed","classification":"UNKNOWN","owner_action":"confirm authoritative PROD project and provide/authorize sanitized environment-variable NAME inventario only"},
+    {"dimension":"production_health_policy_control_plane","dev":"Render healthCheckPath=/health/ready","prod":"Render healthCheckPath empty","classification":"MATERIAL_GAP","owner_action":"production control-plane change/decision required outside this authorized Desarrollo-only run"}
+  ],
+  "summary":{"EQUIVALENT":3,"EXPECTED_ENV_DIFFERENCE":3,"MATERIAL_GAP":1,"UNKNOWN":2,"P0":0,"P1":0},
+  "certification_effect":"Security classification is complete, but final N8.22 certification remains blocked by non-secret metadata unknowns and the production health policy gap.",
+  "guards":{"prod_write":0,"prod_business_data_read":false,"prod_log_payload_read":false,"prod_secret_values_read":false,"main_write":0,"manual_deploy":0,"secrets_exposed":0}
+}

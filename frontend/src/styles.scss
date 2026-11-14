@@ -1,0 +1,417 @@
+@use './styles/enterprise-design-system';
+@use './styles/m10-accessibility';
+
+* {
+  box-sizing: border-box;
+}
+
+:root {
+  --color-primary: #0369a1;
+  --color-primary-dark: #075985;
+  --color-accent: #f97316;
+  --color-bg: #f3f7fb;
+  --color-surface: #ffffff;
+  --color-card: var(--color-surface);
+  --color-sidebar: #08131f;
+  --color-topbar: #ffffff;
+  --color-heading: #0f172a;
+  --color-button: #0369a1;
+  --color-text: #111827;
+  --color-text-muted: #5b6472;
+  --color-border: #d9e0e8;
+  --color-danger: #dc2626;
+  --color-success: #059669;
+  --color-warning: #d97706;
+  --color-info: #2563eb;
+  --color-on-primary: #ffffff;
+  --color-on-danger: #ffffff;
+  --color-icon: var(--color-text);
+  --radius: 14px;
+  --shadow-card: 0 1px 3px rgba(15, 23, 42, 0.06), 0 1px 2px rgba(15, 23, 42, 0.04);
+  --focus-ring: 0 0 0 3px color-mix(in srgb, var(--color-primary) 28%, transparent);
+}
+
+html {
+  min-width: 320px;
+  height: 100%;
+  scroll-behavior: smooth;
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100%;
+  margin: 0;
+  font-family: var(--font-sans);
+  background: var(--color-bg);
+  color: var(--color-text);
+  line-height: var(--line-height-normal);
+  -webkit-font-smoothing: antialiased;
+}
+
+button,
+input,
+textarea,
+select {
+  font: inherit;
+}
+
+img,
+svg,
+video,
+canvas {
+  max-width: 100%;
+  height: auto;
+}
+
+/* Contrato global de encogimiento: componentes flex/grid y controles nativos
+   no pueden imponer la anchura de su contenido al viewport. Las tablas usan
+   los shells de datos definidos en el design system para su scroll interno. */
+:where(
+  app-root,
+  router-outlet,
+  main,
+  section,
+  article,
+  form,
+  fieldset,
+  .mat-mdc-card,
+  .mat-mdc-dialog-content,
+  .mat-mdc-tab-body-content
+) {
+  min-width: 0;
+}
+
+:where(input, select, textarea, button) {
+  max-width: 100%;
+}
+
+:where(input, select, textarea) {
+  min-width: 0;
+}
+
+:where(input:not([type='checkbox']):not([type='radio']), select, textarea) {
+  width: 100%;
+}
+
+:where(.mat-mdc-form-field, .mat-form-field) {
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+}
+
+:where(.mat-mdc-form-field-infix, .mat-mdc-text-field-wrapper, .mdc-text-field) {
+  min-width: 0;
+  max-width: 100%;
+}
+
+:where(.mat-mdc-form-field-infix) input,
+:where(.mat-mdc-form-field-infix) textarea,
+:where(.mat-mdc-form-field-infix) select {
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+}
+
+:where(pre, code, .long-text) {
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  white-space: pre-wrap;
+}
+
+button,
+a,
+input,
+textarea,
+select,
+[tabindex] {
+  &:focus-visible {
+    outline: 2px solid var(--color-primary);
+    outline-offset: 2px;
+    box-shadow: var(--focus-ring);
+  }
+}
+
+::selection {
+  background: color-mix(in srgb, var(--color-primary) 22%, transparent);
+}
+
+.mat-mdc-raised-button.mat-primary,
+.mat-mdc-unelevated-button.mat-primary,
+.mat-mdc-fab.mat-primary,
+.mat-mdc-mini-fab.mat-primary {
+  --mdc-protected-button-container-color: var(--color-button);
+  --mdc-protected-button-label-text-color: var(--color-on-primary);
+  --mdc-filled-button-container-color: var(--color-button);
+  --mdc-filled-button-label-text-color: var(--color-on-primary);
+  --mat-fab-foreground-color: var(--color-on-primary);
+  background-color: var(--color-button) !important;
+  color: var(--color-on-primary) !important;
+}
+
+.mat-mdc-raised-button.mat-primary mat-icon,
+.mat-mdc-unelevated-button.mat-primary mat-icon,
+.mat-mdc-fab.mat-primary mat-icon,
+.mat-mdc-mini-fab.mat-primary mat-icon {
+  color: currentColor !important;
+}
+
+.mat-mdc-button.mat-primary,
+.mat-mdc-icon-button.mat-primary,
+.mat-mdc-outlined-button.mat-primary {
+  color: var(--color-primary) !important;
+}
+
+.mat-mdc-button:not(.mat-primary),
+.mat-mdc-icon-button:not(.mat-primary),
+.mat-mdc-outlined-button:not(.mat-primary) {
+  color: var(--color-text);
+}
+
+.mat-icon,
+mat-icon {
+  color: currentColor;
+  fill: currentColor;
+}
+
+.action-edit,
+.action-view {
+  color: var(--color-primary) !important;
+}
+
+.action-delete,
+.action-danger {
+  color: var(--color-danger) !important;
+}
+
+.action-success {
+  color: var(--color-success) !important;
+}
+
+.mat-mdc-progress-spinner.mat-primary circle,
+.mat-mdc-slide-toggle.mat-primary .mdc-switch--selected .mdc-switch__track {
+  --mdc-circular-progress-active-indicator-color: var(--color-primary);
+  stroke: var(--color-primary);
+}
+
+.mat-mdc-tab-group.mat-primary .mdc-tab-indicator__content--underline,
+.mat-mdc-tab-nav-bar.mat-primary .mdc-tab-indicator__content--underline {
+  border-color: var(--color-primary) !important;
+}
+
+.mat-mdc-form-field {
+  min-width: 0;
+  color: var(--color-text);
+}
+
+.mat-mdc-form-field-subscript-wrapper {
+  line-height: 1.25;
+}
+
+.mat-mdc-button-base {
+  min-height: var(--target-min);
+}
+
+.mat-mdc-icon-button.mat-mdc-button-base {
+  min-width: var(--target-min);
+}
+
+.mat-mdc-dialog-container {
+  --mdc-dialog-container-color: var(--color-surface);
+  --mdc-dialog-subhead-color: var(--color-text);
+  --mdc-dialog-supporting-text-color: var(--color-text-muted);
+}
+
+.mat-mdc-dialog-container .mdc-dialog__surface {
+  width: min(100%, 720px);
+  max-width: calc(100vw - 24px);
+  max-height: calc(100dvh - 24px);
+  overflow: auto;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius);
+  background: var(--color-surface) !important;
+  color: var(--color-text) !important;
+}
+
+.cdk-overlay-pane {
+  max-width: calc(100vw - 24px) !important;
+}
+
+.cdk-overlay-pane .mat-mdc-dialog-container {
+  max-width: 100%;
+  max-height: calc(100dvh - 24px);
+}
+
+/* Los paneles de select/autocomplete viven en el overlay global. En móvil no
+   deben heredar el ancho intrínseco accidental de un trigger comprimido: el
+   panel conserva un mínimo legible y nunca rebasa el viewport. */
+.mat-mdc-select-panel,
+.mat-mdc-autocomplete-panel {
+  width: auto !important;
+  min-width: min(320px, calc(100vw - 24px)) !important;
+  max-width: calc(100vw - 24px) !important;
+}
+
+.mat-mdc-option {
+  min-height: 48px;
+  height: auto !important;
+  white-space: normal !important;
+  line-height: 1.35;
+  overflow-wrap: anywhere;
+}
+
+.app-alert-dialog-panel .mat-mdc-dialog-surface {
+  overflow: visible;
+}
+
+.mat-mdc-snack-bar-container {
+  --mdc-snackbar-container-shape: 10px;
+  margin: 12px !important;
+}
+
+.card {
+  min-width: 0;
+  background: var(--color-surface);
+  border: 1px solid color-mix(in srgb, var(--color-border) 88%, transparent);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow-card);
+  padding: 20px;
+  color: var(--color-text);
+}
+
+h1,
+h2,
+h3,
+.page-title {
+  color: var(--color-heading);
+  overflow-wrap: anywhere;
+}
+
+.page-title {
+  line-height: var(--line-height-tight);
+}
+
+.page-subtitle,
+.subtitle,
+.hint,
+.empty,
+.error,
+.success {
+  line-height: var(--line-height-normal);
+  overflow-wrap: anywhere;
+}
+
+.error {
+  color: var(--color-danger);
+}
+
+.success {
+  color: var(--color-success);
+}
+
+.table-scroll,
+.table-responsive {
+  width: 100%;
+  overflow-x: auto;
+  overscroll-behavior-inline: contain;
+  -webkit-overflow-scrolling: touch;
+}
+
+.table {
+  color: var(--color-text);
+}
+
+.table th {
+  white-space: nowrap;
+  color: var(--color-heading);
+}
+
+.table td,
+.table th {
+  vertical-align: middle;
+  border-color: var(--color-border);
+}
+
+.table tbody tr:hover {
+  background: color-mix(in srgb, var(--color-primary) 4%, var(--color-surface));
+}
+
+.table tbody tr:last-child td {
+  border-bottom: 0;
+}
+
+.select-swatch {
+  display: inline-block;
+  width: 16px;
+  height: 16px;
+  margin-right: 7px;
+  vertical-align: -2px;
+  border: 1px solid var(--color-border);
+  border-radius: 50%;
+}
+
+.topbar-icon-button,
+.profile-button,
+.menu-toggle {
+  color: var(--color-icon) !important;
+}
+
+.topbar-icon-button .material-icons,
+.profile-button .material-icons,
+.menu-toggle .material-icons {
+  color: currentColor !important;
+}
+
+@media (max-width: 768px) {
+  .card {
+    padding: 16px;
+    border-radius: 12px;
+  }
+
+  .mat-mdc-snack-bar-container {
+    width: calc(100vw - 20px) !important;
+    max-width: calc(100vw - 20px) !important;
+    margin: 10px !important;
+  }
+
+  .mat-mdc-dialog-container .mdc-dialog__surface {
+    width: 100%;
+  }
+}
+
+@media (max-width: 480px) {
+  .card {
+    padding: 14px;
+  }
+
+  .page-title {
+    font-size: clamp(20px, 6vw, 24px) !important;
+  }
+
+  .mat-mdc-dialog-container .mdc-dialog__surface {
+    max-width: calc(100vw - 20px);
+    max-height: calc(100dvh - 20px);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+@media print {
+  body {
+    background: #fff;
+  }
+}

@@ -1,0 +1,92 @@
+{
+  "schema": "vaep-n8.18-d-backend-refactor/v1",
+  "parent": "N8.18.D",
+  "stage": "BACKEND_API",
+  "branch": "dev",
+  "sources": {
+    "refactor_plan": "docs/matrices-evaluacion/00_GOBERNANZA/N8_18_A_REFACTOR_PLAN.md",
+    "domain_boundaries": "docs/matrices-evaluacion/00_GOBERNANZA/N8_18_B_DOMAIN_BOUNDARIES.json",
+    "backend_contract": "docs/matrices-evaluacion/00_GOBERNANZA/N8_17_D_BACKEND_CONTRACTS.json"
+  },
+  "runtime_delta": "NONE__LOGICAL_REORGANIZATION_AND_ARCHITECTURE_GUARD",
+  "unresolved": [],
+  "domain_count": 9,
+  "contract_root_count": 49,
+  "arch_03_disposition": {
+    "classification": "CONSOLIDATE_WITH_PROOF_ONLY",
+    "physical_relocation_required": false,
+    "rationale": "Reference, DI and API inspection does not demonstrate a duplicate banking application service or a safe cross-domain bulk move. The existing Bancos slice is already a domain-owned use-case boundary; shared Services, DTOs and Interfaces contain cross-domain contracts and remain shared until per-file ownership and compatibility proof exists.",
+    "paths": [
+      {
+        "path": "backend/src/Application/Bancos",
+        "owner_domain": "CASH_BANKS",
+        "disposition": "DOMAIN_SLICE_KEEP",
+        "required_files": [
+          "BancosIdempotencyKey.cs",
+          "BancosOperationPolicy.cs",
+          "CuentaBancariaPage.cs",
+          "CuentaBancariaQueryFilter.cs",
+          "OperacionBancariaService.cs"
+        ]
+      },
+      {
+        "path": "backend/src/Application/Services",
+        "owner_domain": "CROSS_DOMAIN_SHARED",
+        "disposition": "KEEP_PENDING_PER_FILE_MOVE_PROOF"
+      },
+      {
+        "path": "backend/src/Application/DTOs",
+        "owner_domain": "CROSS_DOMAIN_SHARED",
+        "disposition": "KEEP_PENDING_PER_FILE_MOVE_PROOF"
+      },
+      {
+        "path": "backend/src/Application/Interfaces",
+        "owner_domain": "CROSS_DOMAIN_SHARED",
+        "disposition": "KEEP_PENDING_PER_FILE_MOVE_PROOF"
+      }
+    ]
+  },
+  "banking_use_case": {
+    "application_service": "backend/src/Application/Bancos/OperacionBancariaService.cs",
+    "service_interface": "backend/src/Application/Interfaces/IOperacionBancariaService.cs",
+    "idempotency_value_object": "backend/src/Application/Bancos/BancosIdempotencyKey.cs",
+    "operation_policy": "backend/src/Application/Bancos/BancosOperationPolicy.cs",
+    "duplicate_application_service_demonstrated": false,
+    "duplicate_endpoint_demonstrated": false,
+    "authority": "SERVER_SIDE",
+    "tenant_and_permission_authority_preserved": true,
+    "idempotency_preserved": true,
+    "audit_trace_preserved": true,
+    "api_compatibility_delta": "NONE"
+  },
+  "backend_authority_contract": {
+    "business_rules": "SERVER_REVALIDATES",
+    "tenant_scope": "SERVER_FAIL_CLOSED",
+    "permissions": "SERVER_FAIL_CLOSED",
+    "totals_and_transitions": "SERVER_AUTHORITATIVE",
+    "persistence": "APPLICATION_SERVICE_AND_REPOSITORY_BOUNDARY",
+    "client_state_grants_authority": false
+  },
+  "forbidden_changes": [
+    "SPECULATIVE_PHYSICAL_MOVE",
+    "SPECULATIVE_DELETE_OR_RENAME",
+    "API_BREAK_WITHOUT_MIGRATION_TESTS",
+    "CLIENT_SIDE_BUSINESS_AUTHORITY",
+    "AUTHZ_OR_TENANT_BYPASS",
+    "DESTRUCTIVE_DDL"
+  ],
+  "acceptance": {
+    "all_49_backend_contracts_preserved": true,
+    "canonical_domain_count_preserved": 9,
+    "banking_domain_slice_explicit": true,
+    "banking_interface_contract_preserved": true,
+    "banking_idempotency_contract_preserved": true,
+    "demonstrated_duplicate_services_consolidated_or_none": true,
+    "demonstrated_duplicate_endpoints_consolidated_or_none": true,
+    "speculative_relocations": 0,
+    "speculative_deletions": 0,
+    "api_compatibility_breaks": 0,
+    "security_bypasses": 0,
+    "destructive_db_changes": 0
+  }
+}

@@ -1,0 +1,103 @@
+.page-title { margin: 0 0 4px; font-size: 22px; }
+.subtitle { margin: 0 0 20px; font-size: 13px; color: var(--color-text-muted); }
+.loading { display: flex; justify-content: center; padding: 40px 0; }
+.hint { font-size: 12px; color: var(--color-text-muted); }
+.readonly-hint {
+  display: flex; align-items: center; gap: 6px; background: #eef2ff; color: var(--color-primary);
+  padding: 8px 12px; border-radius: 6px; margin-bottom: 16px;
+  mat-icon { font-size: 18px; width: 18px; height: 18px; }
+}
+
+.form-card { width: min(100%, 980px); box-sizing: border-box; overflow: hidden; padding: 24px; }
+
+.settings-section {
+  border-bottom: 1px solid var(--color-border);
+  padding-bottom: 18px;
+  margin-bottom: 22px;
+
+  &:last-of-type {
+    border-bottom: 0;
+    margin-bottom: 12px;
+  }
+
+  h2 {
+    margin: 0 0 14px;
+    font-size: 16px;
+    color: var(--color-text);
+  }
+}
+
+.logo-row { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; }
+.logo-preview {
+  width: 96px; height: 96px; border-radius: 12px; object-fit: contain; border: 1px solid var(--color-border); background: #020617;
+  &.placeholder { display: flex; align-items: center; justify-content: center; background: #f3f4f6; color: var(--color-text-muted); mat-icon { font-size: 30px; width: 30px; height: 30px; } }
+}
+.logo-actions { display: flex; flex-direction: column; gap: 8px; min-width: 0; }
+.inline-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+
+.fields-grid {
+  display: grid; grid-template-columns: 1fr 1fr; gap: 4px 16px;
+  .full-width { grid-column: 1 / -1; }
+  mat-form-field { width: 100%; }
+}
+.check-row {
+  min-height: 40px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--color-text);
+  font-size: 13px;
+
+  input { width: 16px; height: 16px; accent-color: var(--color-primary); }
+}
+
+.success { color: var(--color-success); font-size: 13px; margin: 8px 0; }
+.error { color: var(--color-danger); font-size: 13px; margin: 8px 0; }
+.form-actions { display: flex; justify-content: flex-end; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+.tema-card { width: min(100%, 900px); box-sizing: border-box; overflow: hidden; padding: 24px; margin-top: 20px; }
+.section-title { margin: 0 0 4px; font-size: 17px; }
+
+.colores-grid {
+  display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr)); gap: 16px 20px; margin: 16px 0;
+}
+.color-field {
+  display: flex; flex-direction: column; gap: 6px;
+  label { font-size: 12px; color: var(--color-text-muted); font-weight: 500; }
+}
+.color-input-row {
+  display: flex; align-items: center; gap: 8px; min-width: 0;
+  input[type="color"] {
+    width: 40px; height: 36px; padding: 2px; border: 1px solid var(--color-border);
+    border-radius: 6px; cursor: pointer; flex-shrink: 0;
+  }
+  .hex-input {
+    flex: 1; min-width: 0; height: 36px; padding: 0 10px; border: 1px solid var(--color-border);
+    border-radius: 6px; font-family: monospace; font-size: 13px;
+    &:focus { outline: 2px solid var(--color-primary); outline-offset: -1px; }
+  }
+}
+
+/* La vista de 1024 px conserva el sidebar de escritorio, por lo que el ancho
+   efectivo de contenido es menor que el viewport. Colapsamos el layout del
+   panel de correo antes de que sus filtros mínimos desborden el documento. */
+@media (max-width: 1100px) {
+  :host ::ng-deep app-email-empresarial-card .layout-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .form-card { padding: 16px; max-width: 100%; }
+  .fields-grid { grid-template-columns: 1fr; }
+  .logo-row { flex-direction: column; align-items: flex-start; }
+  .inline-actions { width: 100%; }
+  .inline-actions button { width: 100%; }
+  .form-actions button { width: 100%; }
+  .tema-card { padding: 16px; }
+  .colores-grid { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 380px) {
+  .colores-grid { grid-template-columns: 1fr; }
+}

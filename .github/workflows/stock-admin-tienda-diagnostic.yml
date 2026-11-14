@@ -1,0 +1,82 @@
+name: DEV - Diagnóstico stock admin vs tienda
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - .github/checkpoints/stock-admin-tienda-diagnostic
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  diagnose:
+    name: Comparar ProductoVariante vs ExistenciaVariante
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    environment: DEV
+    env:
+      DB_HOST: ${{ vars.SOLQARYN_DEV_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_DEV_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_DEV_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_DEV_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_DEV_DB_PASSWORD }}
+    steps:
+      - name: Instalar cliente MySQL
+        run: sudo apt-get update && sudo apt-get install -y mysql-client
+
+      - name: Diagnóstico read-only
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$DB_NAME" = "solqaryn_dev"
+          export MYSQL_PWD="$DB_PASSWORD"
+          mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME"             --batch --raw --skip-column-names -e "
+              SELECT 'SUMMARY',
+                     (SELECT COUNT(*) FROM ProductoVariantes WHERE Eliminado=0) AS variantes,
+                     (SELECT COUNT(*) FROM ExistenciasVariante) AS existencias,
+                     (SELECT COUNT(*) FROM ProductoVariantes pv WHERE pv.Eliminado=0 AND pv.Cantidad>0) AS variantes_legacy_stock_positivo,
+                     (SELECT COUNT(*) FROM ProductoVariantes pv
+                        LEFT JOIN ExistenciasVariante ev ON ev.ProductoVarianteId=pv.Id
+                       WHERE pv.Eliminado=0 AND pv.Cantidad>0 AND ev.Id IS NULL) AS variantes_stock_sin_existencia,
+                     (SELECT COALESCE(SUM(Cantidad),0) FROM ProductoVariantes WHERE Eliminado=0) AS total_variante_cantidad,
+                     (SELECT COALESCE(SUM(StockFisico),0) FROM ExistenciasVariante) AS total_stock_fisico,
+                     (SELECT COALESCE(SUM(StockReservado),0) FROM ExistenciasVariante) AS total_reservado,
+                     (SELECT COALESCE(SUM(StockDisponible),0) FROM ExistenciasVariante) AS total_disponible;
+
+              SELECT 'WAREHOUSE', a.Id, a.Codigo, a.Nombre, a.Tipo, a.Activo, a.Eliminado,
+                     s.Id, s.Nombre, s.Activa, s.Eliminado
+                FROM Almacenes a
+                JOIN Sucursales s ON s.Id=a.SucursalId
+               ORDER BY a.Id;
+
+              SELECT 'VARIANT',
+                     p.Id AS ProductoId, p.Nombre,
+                     pv.Id AS VarianteId, COALESCE(pv.Sku,''),
+                     pv.Activo, pv.Eliminado, pv.Cantidad AS CantidadAdmin,
+                     COALESCE(SUM(ev.StockFisico),0) AS StockFisico,
+                     COALESCE(SUM(ev.StockReservado),0) AS Reservado,
+                     COALESCE(SUM(ev.StockDisponible),0) AS DisponibleTienda,
+                     COUNT(ev.Id) AS FilasExistencia
+                FROM ProductoVariantes pv
+                JOIN Productos p ON p.Id=pv.ProductoId
+                LEFT JOIN ExistenciasVariante ev ON ev.ProductoVarianteId=pv.Id
+               WHERE pv.Eliminado=0 AND p.Eliminado=0
+               GROUP BY p.Id,p.Nombre,pv.Id,pv.Sku,pv.Activo,pv.Eliminado,pv.Cantidad
+               ORDER BY p.Id,pv.Id;
+
+              SELECT 'MISMATCH',
+                     p.Id, p.Nombre, pv.Id, COALESCE(pv.Sku,''),
+                     pv.Cantidad,
+                     COALESCE(SUM(ev.StockFisico),0),
+                     COALESCE(SUM(ev.StockDisponible),0),
+                     COUNT(ev.Id)
+                FROM ProductoVariantes pv
+                JOIN Productos p ON p.Id=pv.ProductoId
+                LEFT JOIN ExistenciasVariante ev ON ev.ProductoVarianteId=pv.Id
+               WHERE pv.Eliminado=0 AND p.Eliminado=0
+               GROUP BY p.Id,p.Nombre,pv.Id,pv.Sku,pv.Cantidad
+              HAVING pv.Cantidad <> COALESCE(SUM(ev.StockFisico),0)
+               ORDER BY p.Id,pv.Id;
+            "

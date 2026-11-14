@@ -1,0 +1,30 @@
+name: P0-006.B - Negative route guard regression
+
+on:
+  pull_request:
+    branches: [dev]
+    paths:
+      - 'scripts/verify-p0-006-b-route-guards.mjs'
+      - 'frontend/src/app/app.routes.ts'
+      - 'frontend/src/app/app.config.ts'
+      - 'frontend/src/app/shared/navigation/app-navigation-menu.component.ts'
+      - 'frontend/src/app/core/guards/auth.guard.ts'
+      - 'frontend/src/app/core/guards/permiso.guard.ts'
+      - '.github/workflows/p0-006-b-route-guards.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  negative-route-guards:
+    name: P0-006.B - Native route guard negative checks
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+      - name: Run static invariants and four negative mutations on checkout
+        run: node scripts/verify-p0-006-b-route-guards.mjs --self-test

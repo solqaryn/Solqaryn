@@ -1,0 +1,166 @@
+<div class="storefront account-page">
+  <app-storefront-header></app-storefront-header>
+
+  <main class="container account-main" [attr.aria-busy]="estado() === 'loading'">
+    <header class="account-hero">
+      <div>
+        <p class="eyebrow">TU CUENTA, SI LA QUIERES</p>
+        <h1>Compra como invitado o guarda tus preferencias</h1>
+        <p>La cuenta es opcional. El catálogo, carrito y checkout siguen funcionando sin iniciar sesión.</p>
+      </div>
+      <a class="secondary-link" [routerLink]="enlaces.productos">Seguir comprando</a>
+    </header>
+
+    @if (aviso()) {
+      <div class="feedback success" role="status">{{ aviso() }}</div>
+    }
+    @if (error()) {
+      <div class="feedback error" role="alert">{{ error() }}</div>
+    }
+
+    @if (cargando()) {
+      <section class="panel" aria-busy="true"><p>Cargando tu cuenta…</p></section>
+    } @else if (!cuenta.autenticado()) {
+      <section class="auth-shell" aria-label="Acceso de cliente">
+        <div class="auth-tabs" role="tablist" aria-label="Acceso de cliente">
+          <button type="button" role="tab" [attr.aria-selected]="modo() === 'login'" (click)="cambiarModo('login')">Iniciar sesión</button>
+          <button type="button" role="tab" [attr.aria-selected]="modo() === 'registro'" (click)="cambiarModo('registro')">Crear cuenta</button>
+        </div>
+
+        @if (modo() === 'login') {
+          <form class="panel auth-form" [formGroup]="loginForm" (ngSubmit)="login()">
+            <h2>Bienvenido de nuevo</h2>
+            <label>Correo
+              <input type="email" autocomplete="email" formControlName="correo" inputmode="email" maxlength="150">
+            </label>
+            <label>Contraseña
+              <input type="password" autocomplete="current-password" formControlName="clave">
+            </label>
+            <button class="primary-button" type="submit" [disabled]="procesando() || loginForm.invalid">
+              {{ procesando() ? 'Ingresando…' : 'Iniciar sesión' }}
+            </button>
+          </form>
+        } @else {
+          <form class="panel auth-form" [formGroup]="registroForm" (ngSubmit)="registrar()">
+            <h2>Crear cuenta de cliente</h2>
+            <label>Nombre
+              <input type="text" autocomplete="name" formControlName="nombre">
+            </label>
+            <label>Correo
+              <input type="email" autocomplete="email" formControlName="correo" inputmode="email" maxlength="150">
+            </label>
+            <label>Contraseña
+              <input type="password" autocomplete="new-password" formControlName="clave" aria-describedby="clave-ayuda">
+            </label>
+            <small id="clave-ayuda">Usa al menos 10 caracteres.</small>
+            <button class="primary-button" type="submit" [disabled]="procesando() || registroForm.invalid">
+              {{ procesando() ? 'Creando…' : 'Crear cuenta' }}
+            </button>
+          </form>
+        }
+      </section>
+    } @else {
+      <section class="account-summary panel">
+        <div>
+          <p class="eyebrow">CUENTA ACTIVA</p>
+          <h2>{{ cuenta.perfil()?.nombre }}</h2>
+          <p>{{ cuenta.perfil()?.correo }}</p>
+        </div>
+        <button type="button" class="secondary-button" (click)="cerrarSesion()">Cerrar sesión</button>
+      </section>
+
+      <div class="account-grid">
+        <section class="panel" aria-labelledby="notificaciones-title">
+          <h2 id="notificaciones-title">Estado de tus pedidos</h2>
+          @if (notificaciones().length) {
+            <ul class="notification-list">
+              @for (notificacion of notificaciones(); track notificacion.pedidoId) {
+                <li>
+                  <strong>{{ notificacion.mensaje }}</strong>
+                  <small>{{ notificacion.fechaUtc | date:'medium' }}</small>
+                </li>
+              }
+            </ul>
+          } @else {
+            <p>No tienes notificaciones de pedidos todavía.</p>
+          }
+        </section>
+
+        <section class="panel" aria-labelledby="direcciones-title">
+          <h2 id="direcciones-title">Direcciones guardadas</h2>
+          @if (direcciones().length) {
+            <div class="address-list">
+              @for (direccion of direcciones(); track direccion.id) {
+                <article class="address-card">
+                  <div>
+                    <strong>{{ direccion.alias }} @if (direccion.predeterminada) { <span class="badge">Principal</span> }</strong>
+                    <p>{{ direccion.recibe }} · {{ direccion.telefono }}</p>
+                    <p>{{ direccion.direccion }}</p>
+                  </div>
+                  <button type="button" (click)="eliminarDireccion(direccion.id)" [disabled]="procesando()">Eliminar</button>
+                </article>
+              }
+            </div>
+          }
+
+          <form class="address-form" [formGroup]="direccionForm" (ngSubmit)="guardarDireccion()">
+            <label>Alias <input type="text" formControlName="alias" placeholder="Casa"></label>
+            <label>Recibe <input type="text" formControlName="recibe" autocomplete="name"></label>
+            <label>Teléfono <input type="tel" formControlName="telefono" autocomplete="tel" inputmode="tel"></label>
+            <label class="wide">Dirección <textarea rows="3" formControlName="direccion" autocomplete="street-address"></textarea></label>
+            <label class="check wide"><input type="checkbox" formControlName="predeterminada"> Usar como dirección principal</label>
+            <button class="primary-button wide" type="submit" [disabled]="procesando() || direccionForm.invalid">Guardar dirección</button>
+          </form>
+        </section>
+      </div>
+
+      <section class="panel" aria-labelledby="favoritos-title">
+        <div class="section-heading">
+          <div><p class="eyebrow">LISTA DE DESEOS</p><h2 id="favoritos-title">Favoritos</h2></div>
+          <a [routerLink]="enlaces.productos">Ver catálogo</a>
+        </div>
+        @if (productosFavoritos().length) {
+          <div class="favorite-grid">
+            @for (producto of productosFavoritos(); track producto.id) {
+              <article>
+                <div><strong>{{ producto.nombre }}</strong><p>{{ producto.categoria }}</p></div>
+                <div class="favorite-actions">
+                  <a [routerLink]="['/tienda/producto', producto.slug]">Ver producto</a>
+                  <button type="button" (click)="quitarFavorito(producto.id)">Quitar</button>
+                </div>
+              </article>
+            }
+          </div>
+        } @else {
+          <p>Aún no guardaste productos. Puedes agregarlos desde el detalle del producto.</p>
+        }
+      </section>
+
+      <section class="panel" aria-labelledby="pedidos-title">
+        <div class="section-heading">
+          <div><p class="eyebrow">HISTORIAL</p><h2 id="pedidos-title">Tus pedidos</h2></div>
+        </div>
+        @if (pedidos().length) {
+          <div class="orders-list">
+            @for (pedido of pedidos(); track pedido.id) {
+              <details>
+                <summary>
+                  <span><strong>Pedido #{{ pedido.id }}</strong><small>{{ pedido.fechaUtc | date:'mediumDate' }}</small></span>
+                  <span><strong>{{ moneda(pedido.total) }}</strong><small>{{ pedido.estado }}</small></span>
+                </summary>
+                <div class="order-lines">
+                  @for (linea of pedido.lineas; track linea.productoId + ':' + (linea.productoVarianteId || 0)) {
+                    <div><span>{{ linea.nombre }} @if (linea.modelo) { · {{ linea.modelo }} }</span><strong>{{ linea.cantidad }} × {{ moneda(linea.precioUnitario) }}</strong></div>
+                  }
+                </div>
+                <button type="button" class="primary-button" (click)="recompra(pedido)">Recomprar con stock y precio actuales</button>
+              </details>
+            }
+          </div>
+        } @else {
+          <p>No hay pedidos ERP asociados a esta cuenta todavía. El checkout invitado sigue disponible.</p>
+        }
+      </section>
+    }
+  </main>
+</div>

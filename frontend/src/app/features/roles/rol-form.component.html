@@ -1,0 +1,38 @@
+<div class="header-row">
+  <a routerLink="/roles" mat-icon-button title="Volver"><mat-icon>arrow_back</mat-icon></a>
+  <h1 class="page-title">{{ isEdit() ? 'Editar rol' : 'Nuevo rol' }}</h1>
+</div>
+
+<form [formGroup]="form" (ngSubmit)="submit()" class="card form-card">
+  @if (esSistema()) {
+    <p class="warning">Este es un rol de sistema. El nombre no se puede modificar.</p>
+  }
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Nombre</mat-label>
+    <input matInput formControlName="nombre" [readonly]="esSistema()" />
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="full-width">
+    <mat-label>Descripción</mat-label>
+    <textarea matInput formControlName="descripcion" rows="3"></textarea>
+  </mat-form-field>
+
+  @if (!isEdit()) {
+    <mat-checkbox formControlName="esAdministrador">
+      Acceso total (administrador)
+    </mat-checkbox>
+    <p class="hint">Un rol con acceso total puede administrar todos los módulos del sistema, incluyendo usuarios, roles y permisos.</p>
+  }
+
+  @if (errorMessage()) {
+    <p class="error">{{ errorMessage() }}</p>
+  }
+
+  <div class="form-actions">
+    <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving()">
+      {{ saving() ? 'Guardando...' : 'Guardar' }}
+    </button>
+    <a routerLink="/roles" mat-button>Cancelar</a>
+  </div>
+</form>

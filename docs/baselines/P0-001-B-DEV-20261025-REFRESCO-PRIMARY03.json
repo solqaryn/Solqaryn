@@ -1,0 +1,50 @@
+{
+  "schema": "solqaryn.p0-001-b.dev-parity.v1",
+  "microtask": "P0-001.B",
+  "repository": "solqaryn/Solqaryn",
+  "branch": "dev",
+  "observed_at_utc": "2026-10-25T23:46:36.253Z",
+  "dev_head": "6a6d6e8870b0a53db9b3dc19f197be409082b6e6",
+  "ci": [
+    {
+      "name": "verify-solqaryn-project-scope",
+      "conclusion": "success",
+      "head_sha": "6a6d6e8870b0a53db9b3dc19f197be409082b6e6",
+      "url": "https://github.com/solqaryn/Solqaryn/actions/runs/40243330357/job/121319605641"
+    },
+    {
+      "name": "SOLQARYN - Seguridad multiempresa",
+      "conclusion": "success",
+      "head_sha": "6a6d6e8870b0a53db9b3dc19f197be409082b6e6",
+      "url": "https://github.com/solqaryn/Solqaryn/actions/runs/40243330365/job/121319606103"
+    },
+    {
+      "name": "SOLQARYN - Build y pruebas backend",
+      "conclusion": "success",
+      "head_sha": "6a6d6e8870b0a53db9b3dc19f197be409082b6e6",
+      "url": "https://github.com/solqaryn/Solqaryn/actions/runs/40243330365/job/121319606095"
+    }
+  ],
+  "render": {
+    "service_name": "solqaryn-api-dev",
+    "service_id": "srv-daqvla49v7es738up9vg",
+    "deployment_id": null,
+    "status": "NOT_VERIFIED",
+    "sha": null,
+    "url": "https://dashboard.render.com/web/srv-daqvla49v7es738up9vg",
+    "reason": "Render connector requires an owner-confirmed workspaceId; no workspace selected in this noninteractive Task."
+  },
+  "vercel": {
+    "project_name": "solqaryn-dev",
+    "project_id": "prj_1Anhx5mWyXEBX89lWC24Py6JXe7A",
+    "deployment_id": "dpl_CJoQyqx56iM3GKVCz1GXdm2Wra3u",
+    "state": "CANCELED",
+    "sha": "bafcde53ce2562f70d5b4115184df51e5c48483d",
+    "url": "https://vercel.com/solqaryn/solqaryn-dev/CJoQyqx56iM3GKVCz1GXdm2Wra3u",
+    "first_ready_deployment_id": "dpl_8UsFYE5z3qUYdpsj8wj4kYXaMRJv",
+    "first_ready_sha": "29dbcb06fe8034c01e508b08f13bfc171e08f4c9",
+    "first_ready_url": "https://vercel.com/solqaryn/solqaryn-dev/8UsFYE5z3qUYdpsj8wj4kYXaMRJv"
+  },
+  "parity_result": "NO_GO",
+  "limit": "Only historical provider metadata, not authenticated health/CORS/smoke/tenant proof; no promotion to QA/main/PROD and no deploy actions."
+}

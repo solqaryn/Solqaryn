@@ -1,0 +1,222 @@
+<header class="header-row">
+  <div>
+    <p class="eyebrow">Inventario empresarial</p>
+    <h1 class="page-title">Kardex de inventario</h1>
+    <p class="subtitle">Trazabilidad por variante, contexto físico, causa, documento origen y correlación.</p>
+  </div>
+</header>
+
+<div class="card">
+  <section class="filters" aria-labelledby="kardex-filters-title">
+    <div class="filters-heading">
+      <div>
+        <h2 id="kardex-filters-title">Filtros del Kardex</h2>
+        <p>La consulta se ejecuta en servidor y conserva la paginación real del historial.</p>
+      </div>
+      <span class="result-count" aria-live="polite">{{ totalCount() }} movimiento{{ totalCount() === 1 ? '' : 's' }}</span>
+    </div>
+
+    <div class="filter-grid">
+      <mat-form-field appearance="outline">
+        <mat-label>Producto</mat-label>
+        <mat-select [(ngModel)]="productoId" (selectionChange)="onProductoChange()">
+          <mat-option [value]="null">Todos los productos</mat-option>
+          @for (producto of productos(); track producto.id) {
+            <mat-option [value]="producto.id">{{ producto.nombre }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Variante</mat-label>
+        <mat-select [(ngModel)]="productoVarianteId" [disabled]="!productoId || cargandoVariantes()">
+          <mat-option [value]="null">Todas las variantes</mat-option>
+          @for (variante of variantes(); track variante.id) {
+            <mat-option [value]="variante.id">{{ etiquetaVariante(variante) }}</mat-option>
+          }
+        </mat-select>
+        @if (productoId && !cargandoVariantes() && variantes().length === 0) {
+          <mat-hint>El producto no tiene variantes activas.</mat-hint>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Almacén</mat-label>
+        <mat-select [(ngModel)]="almacenId" (selectionChange)="onAlmacenChange()">
+          <mat-option [value]="null">Todos los almacenes</mat-option>
+          @for (almacen of almacenes(); track almacen.id) {
+            <mat-option [value]="almacen.id">{{ almacen.codigo }} · {{ almacen.nombre }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Ubicación</mat-label>
+        <mat-select [(ngModel)]="ubicacionAlmacenId" [disabled]="!almacenId || cargandoUbicaciones()">
+          <mat-option [value]="null">Todas las ubicaciones</mat-option>
+          @for (ubicacion of ubicaciones(); track ubicacion.id) {
+            <mat-option [value]="ubicacion.id">{{ ubicacion.codigo }} · {{ ubicacion.nombre }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Tipo de movimiento</mat-label>
+        <mat-select [(ngModel)]="filtroTipo">
+          <mat-option value="">Todos los tipos</mat-option>
+          @for (tipo of tipos; track tipo.valor) {
+            <mat-option [value]="tipo.valor">{{ tipo.etiqueta }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Causa</mat-label>
+        <mat-select [(ngModel)]="filtroCausa">
+          <mat-option value="">Todas las causas</mat-option>
+          @for (causa of causas; track causa.valor) {
+            <mat-option [value]="causa.valor">{{ causa.etiqueta }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Documento origen</mat-label>
+        <mat-select [(ngModel)]="origenTipo">
+          <mat-option value="">Todos los orígenes</mat-option>
+          @for (origen of origenes; track origen.valor) {
+            <mat-option [value]="origen.valor">{{ origen.etiqueta }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>ID de origen</mat-label>
+        <input matInput type="number" min="1" step="1" [(ngModel)]="origenId" placeholder="Ej. 125" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="correlation-field">
+        <mat-label>Correlation ID</mat-label>
+        <input matInput [(ngModel)]="correlationId" maxlength="64" autocomplete="off" placeholder="venta:125:confirmar" />
+        <mat-hint>Coincidencia exacta del identificador durable.</mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Desde</mat-label>
+        <input matInput type="date" [(ngModel)]="desde" />
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Hasta</mat-label>
+        <input matInput type="date" [(ngModel)]="hasta" />
+      </mat-form-field>
+    </div>
+
+    <div class="filter-actions">
+      <button mat-flat-button color="primary" type="button" (click)="aplicarFiltros()" [disabled]="loading()">
+        <mat-icon>filter_alt</mat-icon> Aplicar filtros
+      </button>
+      <button mat-stroked-button type="button" (click)="limpiarFiltros()" [disabled]="loading()">
+        <mat-icon>filter_alt_off</mat-icon> Limpiar
+      </button>
+    </div>
+  </section>
+
+  @if (error()) {
+    <div class="feedback error" role="alert">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ error() }}</span>
+      <button mat-stroked-button type="button" (click)="cargar()">Reintentar</button>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="loading" aria-live="polite">
+      <mat-spinner diameter="40"></mat-spinner>
+      <span>Cargando Kardex…</span>
+    </div>
+  } @else {
+    <p class="scroll-hint"><mat-icon>swipe</mat-icon> En pantallas pequeñas, desliza la tabla horizontalmente.</p>
+    <div class="table-scroll" tabindex="0" aria-label="Tabla desplazable del Kardex empresarial">
+      <table class="table">
+        <caption class="sr-only">Historial paginado de movimientos del Kardex empresarial</caption>
+        <thead>
+          <tr>
+            <th><span class="sr-only">Imagen</span></th>
+            <th>Fecha</th>
+            <th>Producto / variante</th>
+            <th>Contexto físico</th>
+            <th>Movimiento</th>
+            <th>Cantidad / stock</th>
+            <th>Valor unitario</th>
+            <th>Origen</th>
+            <th>Correlación</th>
+            <th>Responsable</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (m of movimientos(); track m.id) {
+            <tr>
+              <td class="producto-imagen-cell">
+                <app-producto-imagen
+                  variant="thumbnail"
+                  [src]="m.productoImagenPrincipalUrl"
+                  [alt]="'Imagen de ' + m.productoNombre"
+                  [fallbackLabel]="m.productoNombre + ' no tiene imagen disponible'"
+                  loading="lazy">
+                </app-producto-imagen>
+              </td>
+              <td class="nowrap">
+                <strong>{{ m.fecha | date:'dd/MM/yyyy' }}</strong><br />
+                <small>{{ m.fecha | date:'HH:mm:ss' }}</small>
+              </td>
+              <td>
+                <strong>{{ m.productoNombre }}</strong><br />
+                <small>{{ m.productoSku || ('Variante #' + (m.productoVarianteId || '—')) }}</small>
+                @if (m.productoColor) { <span class="detail-line">{{ m.productoColor }}</span> }
+              </td>
+              <td>
+                <strong>{{ etiquetaAlmacen(m.almacenId) }}</strong><br />
+                <small>{{ etiquetaUbicacion(m.ubicacionAlmacenId) }}</small>
+              </td>
+              <td>
+                <span class="tipo" [class.entrada]="m.tipo === 'Entrada'" [class.salida]="m.tipo === 'Salida'" [class.reversion]="m.tipo === 'Reversion'">
+                  {{ m.tipo === 'Reversion' ? 'Reversión' : m.tipo }}
+                </span>
+                <span class="detail-line">{{ etiquetaCausa(m.causa) }}</span>
+              </td>
+              <td class="numbers">
+                <strong>{{ m.cantidad }}</strong>
+                <small>{{ m.stockAnterior }} → {{ m.stockNuevo }}</small>
+              </td>
+              <td class="numbers">
+                <span>Costo: {{ m.costoUnitario == null ? '—' : (m.costoUnitario | currency:'HNL':'symbol-narrow':'1.2-2') }}</span>
+                <small>Precio: {{ m.precioUnitario == null ? '—' : (m.precioUnitario | currency:'HNL':'symbol-narrow':'1.2-2') }}</small>
+              </td>
+              <td>
+                <strong>{{ etiquetaOrigen(m) }}</strong>
+                @if (m.descripcion) { <small class="description" [title]="m.descripcion">{{ m.descripcion }}</small> }
+              </td>
+              <td class="correlation-cell">
+                <code [title]="m.correlationId || ''">{{ m.correlationId || '—' }}</code>
+              </td>
+              <td>{{ m.creadoPorNombreUsuario || '—' }}</td>
+            </tr>
+          } @empty {
+            <tr><td colspan="10" class="empty">No hay movimientos registrados con los filtros seleccionados.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <mat-paginator
+      [length]="totalCount()"
+      [pageSize]="pageSize"
+      [pageIndex]="page - 1"
+      [pageSizeOptions]="[10, 25, 50, 100]"
+      [showFirstLastButtons]="true"
+      aria-label="Paginación del Kardex"
+      (page)="onPageChange($event)">
+    </mat-paginator>
+  }
+</div>

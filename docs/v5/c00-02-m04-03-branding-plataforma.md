@@ -1,0 +1,11 @@
+# C00-02.M04.03 — aislamiento de branding y configuración V5
+
+**Entrega ejecutable (Angular 22.2.1):** el componente raíz `AppComponent` resuelve si la ruta es exactamente `/plataforma` o cualquier subruta `/plataforma/...`, eliminando query, hash y barra final. Se ejecuta `ThemeApplierService.aplicarTemaPlataforma()` y `EmpresaIdentidadService.usarPlataforma()` **antes** de procesar un contexto empresarial autenticado; la consola global no hereda tokens, colores ni identidad de la última empresa.
+
+**Compatibilidad:** para rutas empresariales normales, el shell conserva `ThemeApplierService.aplicarTemaGuardado()` y la identidad del tenant verificado. Las rutas públicas `/tienda` conservan el tratamiento existente, incluyendo rechazo de respuestas asíncronas obsoletas. No se conceden permisos por tenant, URL ni CSS; autorización global sigue en backend `/plataforma/sesion`.
+
+**Pruebas nuevas:** tres pruebas Vitest en `frontend/src/app/app.component.spec.ts`: (1) cuenta empresarial verificada no impone branding al abrir V5, (2) retorno desde ERP a cobertura global borra tema y preserva comportamiento empresarial fuera de la consola, (3) prefijo malicioso como `/plataforma-externa` no recibe tratamiento privilegiado. Se extiende el gate `.github/workflows/v5-plataforma-ui-tests.yml` con prueba dirigida de `AppComponent`, Node 24/npm11, acceso `contents: read` y sin secretos ni despliegues.
+
+**Impacto:** requiere_node_angular=SI; requiere_security=SI (separación de contexto tenant/plataforma), requiere_scope_lock=SI; requiere_dotnet/mysql/docker/e2e=NO_APLICA al diff (sin nuevas APIs ni migraciones, navegación cubierta por tests unitarios de ruta y shell). La protección JWT/RBAC y tenancy permanece server-side; este fix no certifica pruebas MySQL.
+
+**Cierre:** A0 estático previa publicación; A1 navegación positiva/negativa, A2 limpieza de tokens y no elevación, A3 unit+lint+build SHA exacto, A4 readback + Scope Lock, A5 por otro Javier. Rollback por commit revert aditivo, sin QA/main/PROD, PR ni ramas. Los 6 precedentes M03 están LISTO; DAG F=VALIDADO/G=SI y COLA G/O al claim.

@@ -1,0 +1,53 @@
+.sales-report {
+  display: grid;
+  gap: 1.25rem;
+  padding: 1.5rem;
+  max-width: 1600px;
+  margin: 0 auto;
+}
+
+.page-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1rem;
+}
+
+.page-header h1 {
+  margin: 0;
+  color: #0f172a;
+  font-size: clamp(1.5rem, 3vw, 2rem);
+}
+
+.eyebrow,
+.subtitle,
+.page-error {
+  margin: 0;
+}
+
+.eyebrow {
+  color: #475569;
+  font-size: .8rem;
+  font-weight: 600;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+
+.subtitle {
+  margin-top: .35rem;
+  color: #64748b;
+}
+
+.page-error {
+  padding: .75rem 1rem;
+  border: 1px solid #fecaca;
+  border-radius: 6px;
+  background: #fef2f2;
+  color: #b91c1c;
+}
+
+@media (max-width: 720px) {
+  .sales-report {
+    padding: 1rem;
+  }
+}

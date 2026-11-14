@@ -1,0 +1,5 @@
+# SOLQARYN V5 — C00-03.M05.02: contrato API/DTO de cobertura y errores seguros
+
+Resultado exigido: ejecutar un contrato API/DTO real y validar errores seguros. Se agrega suite xUnit que usa ASP.NET Core TestServer, V5CoverageTenantProjectionService de Application y ExceptionHandlingMiddleware de API sin cambiar endpoints productivos. Un caso HTTP 200 verifica ApiResponse, ID, SHA y EVIDENCE_NOT_VERIFIED. Cuatro negativos HTTP 400 prueban actor no permitido, tenant cruzado, SHA desplazado y requisito desconocido, sin detalles internos filtrados.
+
+LIMITES: Ruta exclusiva de TestServer, NO API publicada, NO JWT/RBAC live, NO MySQL, NO CAS Sheets, NO revision A5. require_dotnet=SI; require_node_angular=NO; require_mysql=NO; require_docker=NO; require_e2e=NO; require_security=SI; require_scope_lock=SI. A0 diff, secretos, codigo y CHANGELOG; A1 pruebas HTTP positivas/negativas; A2 no divulgacion en TestServer (sin autentificacion live); A3 CI .NET 10 xUnit y seguridad pertinente; A4 SHA exacto, checks requeridos, rollback git revert y readback institucional; A5_PENDIENTE de otra Task Javier. No QA/main/PROD.

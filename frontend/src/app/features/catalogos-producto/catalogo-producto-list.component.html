@@ -1,0 +1,155 @@
+<div class="header-row">
+  <div class="title-group">
+    <span class="title-icon" aria-hidden="true"><mat-icon>{{ icono }}</mat-icon></span>
+    <div>
+      <h1 class="page-title">{{ titulo }}</h1>
+      <p class="page-subtitle">Administra opciones reutilizables para productos, compras, ventas e inventario.</p>
+    </div>
+  </div>
+
+  @if (puedeCrear()) {
+    <button mat-flat-button color="primary" type="button" (click)="nuevo()">
+      <mat-icon>add</mat-icon> Nuevo {{ singular.toLowerCase() }}
+    </button>
+  }
+</div>
+
+@if (mostrandoFormulario()) {
+  <form class="card catalog-form" [formGroup]="form" (ngSubmit)="guardar()">
+    <div class="form-heading">
+      <h2>{{ editandoId() ? 'Editar' : 'Crear' }} {{ singular.toLowerCase() }}</h2>
+      <button mat-icon-button type="button" aria-label="Cerrar formulario" (click)="cancelar()">
+        <mat-icon>close</mat-icon>
+      </button>
+    </div>
+
+    <div class="form-grid">
+      <mat-form-field appearance="outline">
+        <mat-label>Nombre</mat-label>
+        <input matInput formControlName="nombre" maxlength="120" autocomplete="off">
+        @if (form.controls.nombre.hasError('required')) { <mat-error>El nombre es obligatorio.</mat-error> }
+        @if (form.controls.nombre.hasError('minlength')) { <mat-error>Escribe al menos 2 caracteres.</mat-error> }
+      </mat-form-field>
+
+      @if (esModelo) {
+        <mat-form-field appearance="outline">
+          <mat-label>Marca</mat-label>
+          <mat-select formControlName="catalogoPadreId">
+            @for (marca of marcas(); track marca.id) {
+              <mat-option [value]="marca.id">{{ marca.nombre }}</mat-option>
+            }
+          </mat-select>
+          <mat-error>Selecciona una marca.</mat-error>
+        </mat-form-field>
+      }
+
+      @if (esColor) {
+        <div class="color-field">
+          <label for="catalog-color">Color visual</label>
+          <div class="color-input-row">
+            <input id="catalog-color" type="color" formControlName="codigoVisual" aria-label="Seleccionar color">
+            <mat-form-field appearance="outline">
+              <mat-label>Código hexadecimal</mat-label>
+              <input matInput formControlName="codigoVisual" maxlength="7" placeholder="#1D4ED8">
+              <mat-error>Usa el formato #RRGGBB.</mat-error>
+            </mat-form-field>
+          </div>
+        </div>
+      }
+
+      <mat-form-field appearance="outline">
+        <mat-label>Orden</mat-label>
+        <input matInput type="number" min="0" formControlName="orden">
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="full-width">
+        <mat-label>Descripción (opcional)</mat-label>
+        <textarea matInput rows="2" maxlength="500" formControlName="descripcion"></textarea>
+      </mat-form-field>
+    </div>
+
+    <div class="form-actions">
+      <button mat-button type="button" (click)="cancelar()">Cancelar</button>
+      <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving()">
+        @if (saving()) { <mat-spinner diameter="20"></mat-spinner> } @else { Guardar }
+      </button>
+    </div>
+  </form>
+}
+
+<div class="card catalog-card">
+  <div class="toolbar">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Buscar</mat-label>
+      <mat-icon matPrefix>search</mat-icon>
+      <input matInput [value]="buscar()" (input)="buscarAhora($event)" [placeholder]="'Buscar en ' + titulo.toLowerCase()">
+    </mat-form-field>
+    <span class="result-count" aria-live="polite">{{ elementos().length }} registro(s)</span>
+  </div>
+
+  @if (loading()) {
+    <div class="loading"><mat-spinner></mat-spinner></div>
+  } @else {
+    <div class="table-scroll">
+      <table class="table">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            @if (esColor) { <th>Color</th> }
+            @if (esModelo) { <th>Marca</th> }
+            <th>Descripción</th>
+            <th>Uso</th>
+            <th>Estado</th>
+            <th class="actions-heading">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (elemento of elementos(); track elemento.id) {
+            <tr>
+              <td><strong>{{ elemento.nombre }}</strong></td>
+              @if (esColor) {
+                <td>
+                  <span class="color-swatch" [style.background]="elemento.codigoVisual || '#64748B'" [attr.aria-label]="elemento.codigoVisual || 'Sin código visual'"></span>
+                  <span>{{ elemento.codigoVisual || '—' }}</span>
+                </td>
+              }
+              @if (esModelo) { <td>{{ elemento.catalogoPadreNombre || '—' }}</td> }
+              <td>{{ elemento.descripcion || '—' }}</td>
+              <td>
+                {{ elemento.totalProductos }} producto(s)
+                @if (elemento.totalModelos > 0) { · {{ elemento.totalModelos }} modelo(s) }
+              </td>
+              <td>
+                @if (puedeCambiarEstado(elemento)) {
+                  <mat-slide-toggle
+                    [checked]="elemento.activo"
+                    (change)="cambiarEstado(elemento)"
+                    [aria-label]="(elemento.activo ? 'Desactivar ' : 'Activar ') + elemento.nombre">
+                  </mat-slide-toggle>
+                } @else {
+                  <span class="badge" [class.success]="elemento.activo" [class.muted]="!elemento.activo">
+                    {{ elemento.activo ? 'Activo' : 'Inactivo' }}
+                  </span>
+                }
+              </td>
+              <td class="actions">
+                @if (puedeEditar()) {
+                  <button class="action-button action-edit" mat-icon-button type="button" title="Editar" [attr.aria-label]="'Editar ' + elemento.nombre" (click)="editar(elemento)">
+                    <mat-icon>edit</mat-icon>
+                  </button>
+                }
+                @if (puedeEliminar()) {
+                  <button class="action-button action-delete" mat-icon-button type="button" title="Eliminar" [attr.aria-label]="'Eliminar ' + elemento.nombre" (click)="eliminar(elemento)">
+                    <mat-icon>delete</mat-icon>
+                  </button>
+                }
+              </td>
+            </tr>
+          } @empty {
+            <tr><td [attr.colspan]="esColor || esModelo ? 7 : 6" class="empty">No hay registros para mostrar.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+  }
+</div>

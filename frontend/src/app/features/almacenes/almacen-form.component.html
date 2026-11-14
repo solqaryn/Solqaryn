@@ -1,0 +1,91 @@
+<div class="header-row">
+  <a routerLink="/almacenes" mat-icon-button aria-label="Volver a almacenes"><mat-icon>arrow_back</mat-icon></a>
+  <div>
+    <h1 class="page-title">{{ isEdit() ? 'Editar almacén' : 'Nuevo almacén' }}</h1>
+    <p class="page-subtitle">El estado se administra desde la lista; este formulario mantiene exclusivamente la topología maestra del almacén.</p>
+  </div>
+</div>
+
+<form class="card form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  @if (loading()) {
+    <div class="loading" role="status" aria-live="polite">
+      <mat-spinner diameter="42"></mat-spinner>
+      <span class="visually-hidden">Cargando configuración de almacén</span>
+    </div>
+  } @else {
+    <section aria-labelledby="ubicacion-heading">
+      <h2 id="ubicacion-heading">Sucursal y clasificación</h2>
+      <div class="form-grid two-cols">
+        <mat-form-field appearance="outline">
+          <mat-label>Sucursal</mat-label>
+          <mat-select formControlName="sucursalId" required>
+            @for (s of sucursales(); track s.id) {
+              <mat-option [value]="s.id">
+                {{ s.codigo }} · {{ s.nombre }}{{ s.activa ? '' : ' (inactiva · solo conservación)' }}
+              </mat-option>
+            }
+          </mat-select>
+          <mat-hint>Crear, mover o reactivar requiere una sucursal activa.</mat-hint>
+          @if (form.controls.sucursalId.touched && form.controls.sucursalId.invalid) {
+            <mat-error>Selecciona una sucursal válida.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Tipo de almacén</mat-label>
+          <mat-select formControlName="tipo" required>
+            @for (t of tipos(); track t.codigo) {
+              <mat-option [value]="t.codigo">{{ t.nombre }}</mat-option>
+            }
+          </mat-select>
+          <mat-hint>Tienda, bodega, tránsito, devolución o cuarentena.</mat-hint>
+          @if (form.controls.tipo.touched && form.controls.tipo.hasError('required')) {
+            <mat-error>El tipo es obligatorio.</mat-error>
+          }
+        </mat-form-field>
+      </div>
+    </section>
+
+    <section aria-labelledby="identificacion-heading">
+      <h2 id="identificacion-heading">Identificación</h2>
+      <div class="form-grid two-cols">
+        <mat-form-field appearance="outline">
+          <mat-label>Código</mat-label>
+          <input matInput formControlName="codigo" maxlength="40" autocomplete="off" required>
+          <mat-hint>Único entre almacenes activos/no eliminados.</mat-hint>
+          @if (form.controls.codigo.touched && form.controls.codigo.hasError('required')) {
+            <mat-error>El código es obligatorio.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Nombre</mat-label>
+          <input matInput formControlName="nombre" maxlength="150" autocomplete="organization" required>
+          @if (form.controls.nombre.touched && form.controls.nombre.hasError('required')) {
+            <mat-error>El nombre es obligatorio.</mat-error>
+          }
+        </mat-form-field>
+      </div>
+    </section>
+
+    <div class="scope-note" role="note">
+      <mat-icon>info</mat-icon>
+      <span>Las ubicaciones internas y existencias por almacén se incorporan en ERP-N1.3/N1.4; este formulario no modifica stock.</span>
+    </div>
+
+    @if (errorMessage()) {
+      <div class="form-error" role="alert">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <div class="form-actions">
+      <a routerLink="/almacenes" mat-button type="button">Cancelar</a>
+      <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving() || loading()">
+        @if (saving()) { <mat-spinner diameter="20"></mat-spinner> }
+        <span>{{ saving() ? 'Guardando…' : 'Guardar almacén' }}</span>
+      </button>
+    </div>
+  }
+</form>

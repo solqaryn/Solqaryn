@@ -1,0 +1,31 @@
+<main class="rentabilidad-page" aria-labelledby="rentabilidad-title">
+  <header class="rentabilidad-header">
+    <div>
+      <h1 id="rentabilidad-title">Rentabilidad de ventas</h1>
+      <p>Consulta venta, costo y utilidad bruta por vendedor, cliente, producto o categoría.</p>
+    </div>
+    <app-rentabilidad-agrupacion
+      [value]="agrupacion"
+      [disabled]="cargando"
+      (valueChange)="cambiarAgrupacion($event)"
+    />
+  </header>
+
+  <app-rentabilidad-filtros
+    [disabled]="cargando"
+    (filterChanged)="aplicarFiltros($event)"
+  />
+
+  @if (resultados.length > 0) {
+    <app-rentabilidad-disclosure
+      [semantica]="resultados[0].semantica"
+      [incluyeDescuentoEncabezadoEnUtilidad]="resultados[0].incluyeDescuentoEncabezadoEnUtilidad"
+    />
+  }
+
+  <app-rentabilidad-resultados-tabla
+    [resultados]="resultados"
+    [isLoading]="cargando"
+    [error]="error || null"
+  />
+</main>

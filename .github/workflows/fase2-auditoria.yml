@@ -1,0 +1,160 @@
+name: Fase 2 - Auditoría de configuración y dependencias
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - .github/workflows/fase2-auditoria.yml
+      - backend/**
+      - frontend/package.json
+      - frontend/package-lock.json
+      - frontend/vercel.json
+      - frontend/api/backend-proxy.js
+      - frontend/server/environment-binding.js
+      - frontend/server/seo-utils.js
+      - frontend/scripts/validate-environment-routing.mjs
+      - render.yaml
+  pull_request:
+    branches:
+      - main
+    paths:
+      - .github/workflows/fase2-auditoria.yml
+      - backend/**
+      - frontend/package.json
+      - frontend/package-lock.json
+      - frontend/vercel.json
+      - frontend/api/backend-proxy.js
+      - frontend/server/environment-binding.js
+      - frontend/server/seo-utils.js
+      - frontend/scripts/validate-environment-routing.mjs
+      - render.yaml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: fase2-auditoria-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  configuration:
+    name: Configuración, aislamiento y endurecimiento
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Validar configuración declarativa
+        shell: bash
+        run: |
+          set -euo pipefail
+          ruby -e "require 'yaml'; YAML.safe_load(File.read('render.yaml'), permitted_classes: [], aliases: true)"
+          node -e "JSON.parse(require('fs').readFileSync('frontend/vercel.json', 'utf8'))"
+
+          grep -q 'branch: dev' render.yaml
+          grep -q 'name: solqaryn-api-dev' render.yaml
+          grep -q 'healthCheckPath: /health' render.yaml
+          grep -A1 'AllowedHosts' render.yaml | grep -q 'solqaryn-api-dev-fxx8.onrender.com'
+          grep -A1 'Database__ApplyMigrationsOnStartup' render.yaml | grep -q '"true"'
+          grep -A1 'Security__LoginRateLimitPerMinute' render.yaml | grep -q '"20"'
+          grep -A1 'Cloudinary__EnvironmentPrefix' render.yaml | grep -q 'solqaryn_dev'
+          node frontend/scripts/validate-environment-routing.mjs
+
+          grep -Fq 'USER $APP_UID' backend/Dockerfile
+          grep -q 'AddRateLimiter' backend/src/API/Program.cs
+          grep -q '/health/ready' backend/src/API/Program.cs
+          grep -q 'X-Content-Type-Options' backend/src/API/Program.cs
+          grep -q 'EnableRateLimiting("AuthLogin")' backend/src/API/Controllers/AuthController.cs
+
+          grep -q 'Smtp__OAuth2ClientId' render.yaml
+          grep -q 'Smtp__OAuth2RefreshToken' render.yaml
+          ! grep -q 'Smtp__PasswordSmtp' render.yaml
+          ! grep -q 'Smtp__OAuth2ClientSecret' render.yaml
+          ! grep -q 'Smtp__AuthenticationMode' render.yaml
+          ! grep -q 'Smtp__OAuth2TokenEndpoint' render.yaml
+          ! grep -q 'Smtp__OAuth2Scope' render.yaml
+          ! grep -q 'Smtp__UsarSsl' render.yaml
+          ! grep -q 'Smtp__RequiereAutenticacion' render.yaml
+          ! grep -q 'Smtp__CorreoRemitente' render.yaml
+          ! grep -q 'Smtp__CorreoRespuesta' render.yaml
+          ! grep -q 'AppSettings__LogoPublicUrl' render.yaml
+          ! grep -q '"LogoPublicUrl"' backend/src/API/appsettings.json
+          ! grep -Fq 'AppSettings:LogoPublicUrl' backend/src/Infrastructure/Services/QuestPdfFacturaPerfilesService.cs
+
+          ruby <<'RUBY'
+          require 'yaml'
+          config = YAML.safe_load(File.read('render.yaml'), permitted_classes: [], aliases: true)
+          expected = %w[solqaryn-api-dev solqaryn-api-qa solqaryn-api-prod]
+          services = config.fetch('services').select { |service| expected.include?(service['name']) }
+          abort 'Deben existir exactamente DEV, QA y PROD' unless services.map { |s| s['name'] }.sort == expected.sort
+          by_name = services.to_h { |service| [service.fetch('name'), service.fetch('envVars').map { |item| item.fetch('key') }] }
+          dev = by_name.fetch('solqaryn-api-dev')
+          qa = by_name.fetch('solqaryn-api-qa')
+          prod = by_name.fetch('solqaryn-api-prod')
+          abort "Paridad DEV/QA inválida: DEV=#{dev.size}, QA=#{qa.size}" unless dev == qa
+          abort "Paridad DEV/PROD inválida: DEV=#{dev.size}, PROD=#{prod.size}" unless dev == prod
+          abort "Contrato Render esperado=28, actual=#{dev.size}" unless dev.size == 28
+          RUBY
+
+  backend-dependencies:
+    name: Dependencias vulnerables de .NET
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+          cache: true
+          cache-dependency-path: backend/**/*.csproj
+
+      - name: Restaurar
+        working-directory: backend
+        run: dotnet restore Solqaryn.sln
+
+      - name: Auditar paquetes vulnerables
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet list Solqaryn.sln package --vulnerable --include-transitive | tee dotnet-vulnerabilities.txt
+          if grep -q 'has the following vulnerable packages' dotnet-vulnerabilities.txt; then
+            echo 'Se detectaron paquetes .NET vulnerables.' >&2
+            exit 1
+          fi
+
+      - name: Publicar evidencia .NET
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: fase2-dotnet-dependencies
+          path: backend/dotnet-vulnerabilities.txt
+          if-no-files-found: warn
+          retention-days: 14
+
+  frontend-dependencies:
+    name: Dependencias productivas de npm
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Instalar dependencias exactas
+        run: npm ci
+
+      - name: Auditar vulnerabilidades altas o críticas
+        run: npm audit --omit=dev --audit-level=high

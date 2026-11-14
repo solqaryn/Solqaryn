@@ -1,0 +1,135 @@
+.tipo-cliente-form-container {
+  padding: 20px;
+  max-width: 600px;
+  margin: 0 auto;
+
+  .header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+
+    h1 {
+      margin: 0;
+      font-size: 24px;
+    }
+
+    a {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+  }
+
+  .form-container {
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    padding: 24px;
+
+    form {
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+
+      mat-form-field {
+        width: 100%;
+      }
+    }
+
+    .system-badge {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px;
+      background: #f3f4f6;
+      border-left: 4px solid #9e9e9e;
+      border-radius: 4px;
+      font-size: 13px;
+      color: #666;
+      mat-icon {
+        font-size: 18px;
+        width: 18px;
+        height: 18px;
+      }
+    }
+
+    .color-picker-container {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+
+      .color-preview {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+      }
+
+      .hex-input {
+        flex: 1;
+      }
+
+      .native-color-picker {
+        width: 48px;
+        height: 48px;
+        border-radius: 8px;
+        border: 1px solid #ccc;
+        padding: 0;
+        cursor: pointer;
+        background: transparent;
+      }
+    }
+
+    .toggle-group {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-top: 8px;
+
+      .toggle-desc {
+        font-size: 11px;
+        color: #777;
+        padding-left: 8px;
+      }
+    }
+
+    .error-message {
+      color: #f44336;
+      padding: 12px;
+      background: #ffebee;
+      border-radius: 4px;
+      margin: 8px 0;
+    }
+
+    .actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 16px;
+
+      button,
+      a {
+        flex: 1;
+      }
+    }
+  }
+
+  .loading-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px;
+    gap: 16px;
+
+    p {
+      margin: 0;
+      color: #666;
+    }
+  }
+}
+
+@media (max-width: 480px) {
+  .form-container { padding: 16px; }
+  .actions { flex-direction: column; }
+}

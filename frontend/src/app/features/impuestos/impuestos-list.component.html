@@ -1,0 +1,73 @@
+<div class="header-row">
+  <h1 class="page-title">Impuestos</h1>
+  @if (puedeCrear()) {
+    <a routerLink="/impuestos/nuevo" mat-flat-button color="primary">
+      <mat-icon>add</mat-icon> Nuevo impuesto
+    </a>
+  }
+</div>
+
+<div class="card">
+  @if (loading()) {
+    <div class="loading"><mat-spinner></mat-spinner></div>
+  } @else {
+    <table class="table table-desktop">
+      <thead>
+        <tr><th>Nombre</th><th>Código</th><th>Tipo</th><th>Tasa/Monto</th><th>Operaciones</th><th>Estado</th><th>Acciones</th></tr>
+      </thead>
+      <tbody>
+        @for (i of impuestos(); track i.id) {
+          <tr>
+            <td>{{ i.nombre }}</td>
+            <td>{{ i.codigo }}</td>
+            <td>{{ i.tipo }}</td>
+            <td>{{ i.tipo === 'Porcentaje' ? i.tasa + '%' : ('L. ' + i.montoFijo) }}</td>
+            <td>{{ i.operaciones.join(', ') }}</td>
+            <td>
+              @if (puedeCambiarEstado(i)) {
+                <mat-slide-toggle [checked]="i.activo" (change)="toggleActivo(i)" [aria-label]="(i.activo ? 'Desactivar ' : 'Activar ') + i.nombre"></mat-slide-toggle>
+              } @else {
+                <span class="badge" [class.success]="i.activo" [class.muted]="!i.activo">
+                  {{ i.activo ? 'Activo' : 'Inactivo' }}
+                </span>
+              }
+            </td>
+            <td class="actions">
+              @if (puedeEditar()) { <a [routerLink]="['/impuestos', i.id, 'editar']" mat-icon-button title="Editar"><mat-icon>edit</mat-icon></a> }
+              @if (puedeDuplicar()) { <button mat-icon-button title="Duplicar" (click)="duplicar(i)"><mat-icon>content_copy</mat-icon></button> }
+              @if (puedeEliminar()) { <button mat-icon-button title="Eliminar" (click)="eliminar(i)"><mat-icon>delete_outline</mat-icon></button> }
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="7" class="empty">No hay impuestos registrados.</td></tr>
+        }
+      </tbody>
+    </table>
+
+    <div class="cards-mobile">
+      @for (i of impuestos(); track i.id) {
+        <div class="item-card">
+          <div class="item-card-header">
+            <strong>{{ i.nombre }}</strong>
+            @if (puedeCambiarEstado(i)) {
+              <mat-slide-toggle [checked]="i.activo" (change)="toggleActivo(i)" [aria-label]="(i.activo ? 'Desactivar ' : 'Activar ') + i.nombre"></mat-slide-toggle>
+            } @else {
+              <span class="badge" [class.success]="i.activo" [class.muted]="!i.activo">
+                {{ i.activo ? 'Activo' : 'Inactivo' }}
+              </span>
+            }
+          </div>
+          <p class="item-card-desc">{{ i.codigo }} · {{ i.tipo === 'Porcentaje' ? i.tasa + '%' : ('L. ' + i.montoFijo) }}</p>
+          <div class="item-card-meta"><span>{{ i.operaciones.join(', ') }}</span></div>
+          <div class="item-card-actions">
+            @if (puedeEditar()) { <a [routerLink]="['/impuestos', i.id, 'editar']" mat-button><mat-icon>edit</mat-icon> Editar</a> }
+            @if (puedeDuplicar()) { <button mat-button (click)="duplicar(i)"><mat-icon>content_copy</mat-icon> Duplicar</button> }
+            @if (puedeEliminar()) { <button mat-button (click)="eliminar(i)"><mat-icon>delete_outline</mat-icon> Eliminar</button> }
+          </div>
+        </div>
+      } @empty {
+        <p class="empty">No hay impuestos registrados.</p>
+      }
+    </div>
+  }
+</div>

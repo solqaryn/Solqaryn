@@ -1,0 +1,87 @@
+name: N8.3 - Compatibilidad de navegadores
+
+# Current-standard revalidation trigger for N8.3.E (DEV only).
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - .github/workflows/n8-3-browser-compatibility.yml
+      - frontend/e2e/n83-browser-compatibility.spec.ts
+      - frontend/playwright.n83.config.ts
+      - frontend/src/**
+      - frontend/angular.json
+      - frontend/package.json
+      - frontend/package-lock.json
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: n8-3-browser-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  browser-compatibility:
+    name: Chromium, Firefox y WebKit
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      PLAYWRIGHT_TEST_BASE_URL: http://127.0.0.1:4200
+    steps:
+      - name: Checkout DEV
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build producción
+        run: npm run build:prod
+
+      - name: Instalar Chromium, Firefox y WebKit
+        run: npx playwright install --with-deps chromium firefox webkit
+
+      - name: Iniciar Angular
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > n83-frontend.log 2>&1 &
+          echo $! > n83-frontend.pid
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:4200/storefront > /dev/null; then
+              echo 'Angular listo para N8.3.'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat n83-frontend.log >&2 || true
+          exit 1
+
+      - name: Ejecutar regresión cross-browser N8.3
+        run: npx playwright test e2e/n83-browser-compatibility.spec.ts --config=playwright.n83.config.ts
+
+      - name: Publicar evidencia N8.3
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: n8-3-browser-compatibility
+          path: |
+            frontend/n83-frontend.log
+            frontend/playwright-report-n83/
+            frontend/test-results/
+          if-no-files-found: warn
+          retention-days: 14

@@ -1,0 +1,85 @@
+name: N8.2 - Compatibilidad de dispositivos
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - .github/workflows/n8-2-device-compatibility.yml
+      - frontend/e2e/n82-device-compatibility.spec.ts
+      - frontend/e2e/c00-01-m04-01-route.spec.ts
+      - frontend/src/**
+      - frontend/angular.json
+      - frontend/package.json
+      - frontend/package-lock.json
+      - frontend/playwright.config.ts
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: n8-2-device-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  device-compatibility:
+    name: Desktop, laptop, tablet, Android e iPhone
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout DEV
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Instalar dependencias
+        run: npm ci
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Build producción
+        run: npm run build:prod
+
+      - name: Instalar Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Iniciar Angular
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > n82-frontend.log 2>&1 &
+          echo $! > n82-frontend.pid
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:4200/storefront > /dev/null; then
+              echo 'Angular listo para N8.2.'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat n82-frontend.log >&2 || true
+          exit 1
+
+      - name: Ejecutar regresión N8.2 y rutas públicas V5
+        run: npx playwright test e2e/n82-device-compatibility.spec.ts e2e/c00-01-m04-01-route.spec.ts --config=playwright.config.ts
+
+      - name: Publicar evidencia N8.2
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: n8-2-device-compatibility
+          path: |
+            frontend/n82-frontend.log
+            frontend/playwright-report/
+            frontend/test-results/
+          if-no-files-found: warn
+          retention-days: 14

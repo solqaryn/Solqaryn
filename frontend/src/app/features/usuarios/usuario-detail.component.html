@@ -1,0 +1,45 @@
+<div class="header-row">
+  <a routerLink="/usuarios" mat-icon-button title="Volver"><mat-icon>arrow_back</mat-icon></a>
+  <h1 class="page-title">Detalle de usuario</h1>
+</div>
+
+@if (loading()) {
+  <div class="loading"><mat-spinner></mat-spinner></div>
+} @else if (notFound()) {
+  <p class="empty">El usuario no existe o fue eliminado.</p>
+} @else if (usuario(); as u) {
+  <div class="card detail-card">
+    <div class="detail-header">
+      <div class="avatar"><mat-icon>account_circle</mat-icon></div>
+      <div>
+        <h2>{{ u.nombreCompleto }}</h2>
+        <p class="subtitle">&#64;{{ u.nombreUsuario }}</p>
+      </div>
+      <div class="estado-badges">
+        @if (u.bloqueado) {
+          <span class="badge danger">Bloqueado</span>
+        } @else if (u.activo) {
+          <span class="badge success">Activo</span>
+        } @else {
+          <span class="badge">Inactivo</span>
+        }
+      </div>
+    </div>
+
+    <div class="detail-grid">
+      <div><span class="label">Rol</span><span>{{ u.rolNombre || u.rol }}</span></div>
+      <div><span class="label">Miembro desde</span><span>{{ u.fechaCreacion | date:'dd/MM/yyyy' }}</span></div>
+      @if (u.fechaActualizacion) {
+        <div><span class="label">Última actualización</span><span>{{ u.fechaActualizacion | date:'dd/MM/yyyy HH:mm' }}</span></div>
+      }
+      @if (u.bloqueado) {
+        <div class="full-width"><span class="label">Motivo del bloqueo</span><span>{{ u.motivoBloqueo }}</span></div>
+        <div><span class="label">Fecha de bloqueo</span><span>{{ u.fechaBloqueo | date:'dd/MM/yyyy HH:mm' }}</span></div>
+      }
+    </div>
+
+    <div class="form-actions">
+      <a [routerLink]="['/usuarios']" mat-button>Volver al listado</a>
+    </div>
+  </div>
+}

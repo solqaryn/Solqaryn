@@ -1,0 +1,179 @@
+{
+  "schema": "vaep-n8.19-b-domain-forensic/v1",
+  "parent": "N8.19.B",
+  "macro_parent": "N8.19",
+  "stage": "DOMAIN",
+  "branch": "Desarrollo",
+  "repo": "jmejia31/Solqaryn",
+  "authority": "docs/VAEP_AUTHORITY.md",
+  "base_head": "a4234269ac0e2690dbc39a686c722e41a9dbe6e9",
+  "scope_source": "docs/evidencias/auditoria-forense-n8/N8_19_A_PRE_SCOPE.json",
+  "method": "For every DOMAIN-stage item in the frozen N8.6.G+ forensic scope, reconstruct dependency, review, lease, work/inspection, candidate head, directed gate, receipt and successor using underlying evidence. Historical receipts are indexes, not sole proof. Missing historical per-stage receipt is not backfilled or fabricated; later macro certification may supersede the granularity gap only when it proves the same scope and preserves history.",
+  "classifications": [
+    {
+      "task": "N8.7.B",
+      "sheet_state": "LISTO",
+      "dependency": "N8.7.A receipt read back before DOMAIN review",
+      "review": "vaep/evidence/reviews/N8.7.B_REVIEW_FIRST_20260915T210200Z_SUP48.json",
+      "lease": "SUP48-N87B-20260915T210030Z",
+      "work": "Directed domain inspection concluded performance validation introduced no business entity/invariant/domain delta; persistence/API/UI/security/performance concerns were routed to C/D/E/F/G.",
+      "candidate_head": "afe09905ac5e77c6a00b70afcf2e07fea6211107",
+      "gate": "Directed REVIEW_FIRST DOMAIN N/A, P0=0, P1=0, P2=0; no build is causal for a zero-domain-delta determination.",
+      "receipt": "vaep/evidence/receipts/N8.7.B_LISTO_REAL_20260915T210220Z_SUP48.json",
+      "next": "N8.7.C",
+      "classification": "N_A_JUSTIFIED",
+      "reason": "The N/A decision is materially reasoned and causally bounded; it does not hide implementation work belonging to DOMAIN."
+    },
+    {
+      "task": "N8.8.B",
+      "sheet_state": "LISTO",
+      "dependency": "N8.8.A satisfied before review",
+      "review": "vaep/evidence/reviews/N8.8.B_REVIEW_FIRST_20260915T211005Z_SUP48.json",
+      "lease": "historical lease recorded by the review/receipt chain",
+      "work": "Directed inspection determined backup/restore is operational data protection, not a business-domain model change; provider verification belongs to TEST_CI and documentation to DOC_CERT.",
+      "candidate_head": "5c1264ab482d561727b38b5534c31d21e3517832",
+      "gate": "Directed REVIEW_FIRST DOMAIN N/A with P0=0/P1=0/P2=0.",
+      "receipt": "vaep/evidence/receipts/N8.8.B_LISTO_REAL_20260915T211015Z_SUP48.json",
+      "next": "N8.8.C",
+      "classification": "N_A_JUSTIFIED",
+      "reason": "No domain entity/invariant is required to represent an operational backup/restore capability."
+    },
+    {
+      "task": "N8.9.B",
+      "sheet_state": "PENDIENTE",
+      "classification": "PENDING_UNEXECUTED__NO_CLOSURE_CLAIM",
+      "reason": "There is no historical LISTO_REAL claim to validate or reopen."
+    },
+    {
+      "task": "N8.10.B",
+      "sheet_state": "PENDIENTE",
+      "classification": "PENDING_UNEXECUTED__NO_CLOSURE_CLAIM",
+      "reason": "There is no historical LISTO_REAL claim to validate or reopen."
+    },
+    {
+      "task": "N8.11.B",
+      "sheet_state": "LISTO",
+      "dependency": "N8.11.A satisfied before review",
+      "review": "vaep/evidence/reviews/N8.11.B_REVIEW_FIRST_20260915T211700Z_SUP48.json",
+      "work": "Directed inspection references backend/src/Domain/Security/ContextoTenantActual.cs and concludes auth hardening belongs to API/infra/policy rather than a missing business-domain invariant.",
+      "candidate_head": "2a41be419bb69579d2e733e1a5794042bb8690ac",
+      "gate": "Directed REVIEW_FIRST DOMAIN N/A with P0=0/P1=0/P2=0.",
+      "receipt": "vaep/evidence/receipts/N8.11.B_LISTO_REAL_20260915T211710Z_SUP48.json",
+      "next": "N8.11.C",
+      "classification": "N_A_JUSTIFIED",
+      "reason": "Existing tenant context/domain boundary was physically inspected; no new domain model was causally required."
+    },
+    {
+      "task": "N8.12.B",
+      "sheet_state": "LISTO",
+      "dependency": "N8.12.A LISTO_REAL receipt consumed",
+      "review": "vaep/evidence/reviews/N8.12.B_REVIEW_FIRST_20260915T220425Z_SUP48.json",
+      "work": "Directed inspection concluded observability is application/infrastructure telemetry and does not introduce a business-domain model delta.",
+      "candidate_head": "ed26b312a9c6342fce1550bdbdd595b4ae062ae9",
+      "gate": "Directed REVIEW_FIRST DOMAIN N/A with P0=0/P1=0/P2=0.",
+      "receipt": "vaep/evidence/receipts/N8.12.B_LISTO_REAL_20260915T220440Z_SUP48.json",
+      "next": "N8.12.C",
+      "classification": "N_A_JUSTIFIED",
+      "reason": "Telemetry ownership is correctly outside business-domain entity/invariant modeling."
+    },
+    {
+      "task": "N8.13.B",
+      "sheet_state": "PENDIENTE",
+      "classification": "PENDING_UNEXECUTED__NO_CLOSURE_CLAIM",
+      "reason": "There is no historical LISTO_REAL claim to validate or reopen."
+    },
+    {
+      "task": "N8.14.B",
+      "sheet_state": "PENDIENTE",
+      "classification": "PENDING_UNEXECUTED__NO_CLOSURE_CLAIM",
+      "reason": "There is no historical LISTO_REAL claim to validate or reopen."
+    },
+    {
+      "task": "N8.15.B",
+      "sheet_state": "LISTO",
+      "dependency": "COLA records N8.15.A -> N8.15.B and baseline 7f6da862a8ae3173b93fb48f8faeeee7f2223d8a",
+      "lease": "SUP53-N815B-20260915T235719Z",
+      "work": "docs/matrices-evaluacion/00_GOBERNANZA/N8_15_B_DOMAIN_inventario.md physically inventories 9 bounded areas, ownership, cross-domain dependencies and alias/coupling policy with P0=0/P1=0.",
+      "candidate_head": "80e63559500fbed7864b834027f024e890346740",
+      "gate": "N8.15.G and N8.15.H later validate/certify A-G against static references and causal CI without claiming a runtime delta for B.",
+      "receipt": "No standalone N8.15.B receipt exists in the current receipt corpus; the macro closure is vaep/evidence/receipts/N8.15.H_LISTO_REAL_20260916T000800Z_SUP53.json.",
+      "next": "N8.15.C",
+      "classification": "SUPERSEDED_BY_LATER_EVIDENCE",
+      "reason": "The historical per-stage receipt granularity is incomplete, so this audit does not fabricate one. The B artifact, sheet lease/candidate chain, A-G certification and macro H receipt independently preserve and supersede the same scope; no product/domain work is reopened."
+    },
+    {
+      "task": "N8.16.B",
+      "sheet_state": "LISTO",
+      "dependency": "N8.16.A -> N8.16.B recorded in COLA; baseline 43d95efa72e11842f7750a5c40ee6e101e0fedbb",
+      "lease": "SUP53-N816B-20260916T000900Z",
+      "work": "docs/matrices-evaluacion/00_GOBERNANZA/N8_16_B_DOMAIN_GOVERNANCE.md defines 9 owners, stable MATRIX_ID rules, parent-child DAG, aliases and backend authority with P0=0/P1=0.",
+      "gate": "N8.16.H proves 49/49 MATRIX_ID reconciliation and exact-head matrix-governance SUCCESS run 35046402412 / check 104637043158.",
+      "receipt": "No standalone N8.16.B receipt exists in the current receipt corpus; macro closure receipt is vaep/evidence/receipts/N8.16.H_LISTO_REAL_20260916T020400Z_SUP48.json.",
+      "next": "N8.16.C",
+      "classification": "SUPERSEDED_BY_LATER_EVIDENCE",
+      "reason": "Per-stage historical receipt granularity is incomplete, but the concrete B artifact plus later exact-head catalog gate and macro H receipt supersede the evidence gap without falsifying a retroactive B receipt."
+    },
+    {
+      "task": "N8.17.B",
+      "sheet_state": "LISTO",
+      "dependency": "N8.17.A LISTO_REAL -> N8.17.B",
+      "review": "Receipt embeds REVIEW_FIRST P0=0/P1=0/P2=0 and the domain-contract artifact is independently readable.",
+      "lease": "SUP24-N817B-20260916T023410Z",
+      "work": "docs/matrices-evaluacion/00_GOBERNANZA/N8_17_B_DOMAIN_CONTRACTS.json completes 49/49 frozen MATRIX_ID business contracts; missing/duplicate/extra/mismatch counts are zero.",
+      "candidate_head": "22b09f8c68e0e8836785e091af36243f6fd6e8d4",
+      "gate": "Desarrollo - Gobierno de matrices run 35048740124 / job 104644281776 SUCCESS on exact candidate.",
+      "receipt": "vaep/evidence/receipts/N8.17.B_LISTO_REAL_20260916T024000Z_SUP24.json",
+      "next": "N8.17.C",
+      "classification": "CONFIRMED_LISTO_REAL",
+      "reason": "Full contract artifact, review, exact-head gate, receipt and successor are all causally aligned."
+    },
+    {
+      "task": "N8.18.B",
+      "sheet_state": "LISTO",
+      "dependency": "N8.18.A LISTO_REAL -> N8.18.B",
+      "review": "Receipt records REVIEW_FIRST P0=0/P1=0/P2=0.",
+      "lease": "SUP36-N818B-20260916T035936Z",
+      "work": "docs/matrices-evaluacion/00_GOBERNANZA/N8_18_B_DOMAIN_BOUNDARIES.json plus validator establish 9 canonical domains, 49/49 owned contract roots, zero cycles, zero ambiguous aliases and 4/4 product-lookup consolidation.",
+      "candidate_head": "ba6a140eec0108e540a24ef99e3a67453e09fbff",
+      "gate": "Desarrollo - Gobierno de matrices run 35053978785 / check 104660137614 SUCCESS on exact candidate.",
+      "receipt": "vaep/evidence/receipts/N8.18.B_LISTO_REAL_20260916T040248Z_SUP36.json",
+      "next": "N8.18.C",
+      "classification": "CONFIRMED_LISTO_REAL",
+      "reason": "Dependency, implementation evidence, review, exact-head gate, receipt and successor are aligned."
+    }
+  ],
+  "aggregate": {
+    "domain_stage_items_in_scope": 12,
+    "historical_closure_claims": 8,
+    "pending_unexecuted_without_closure_claim": 4,
+    "N_A_JUSTIFIED": 4,
+    "SUPERSEDED_BY_LATER_EVIDENCE": 2,
+    "CONFIRMED_LISTO_REAL": 2,
+    "REOPEN_REQUIRED": 0,
+    "BLOCKER_CONFIRMED": 0,
+    "false_domain_na_detected": 0,
+    "retroactive_receipts_fabricated": 0
+  },
+  "recovery": {
+    "historical_granularity_gap": ["N8.15.B", "N8.16.B"],
+    "action": "Recovered same-run by publishing this forensic superseding reconstruction anchored to the original artifacts, sheet lease/candidate facts and later macro certification; historical receipts/rows were not rewritten.",
+    "requires_product_rework": false
+  },
+  "guardrails": {
+    "history_preserved": true,
+    "main_touched": false,
+    "production_touched": false,
+    "deploy_touched": false,
+    "secrets_exposed": 0,
+    "pr2_touched": false
+  },
+  "acceptance": {
+    "every_historical_domain_closure_classified": true,
+    "every_na_closure_materially_reasoned": true,
+    "missing_standalone_receipts_not_fabricated": true,
+    "reopen_required": 0,
+    "p0": 0,
+    "p1": 0
+  },
+  "next_parent": "N8.19.C"
+}

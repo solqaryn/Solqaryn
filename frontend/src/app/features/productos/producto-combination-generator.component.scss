@@ -1,0 +1,24 @@
+:host { display: block; }
+.combination-generator { margin: 1rem 0 1.25rem; padding: 1rem; border: 1px solid rgb(148 163 184 / 30%); border-radius: 14px; background: rgb(248 250 252 / 55%); }
+.generator-heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
+.generator-heading h3 { margin: 0 0 .25rem; font-size: 1rem; }
+.generator-heading p { margin: 0; color: var(--text-secondary, #64748b); max-width: 780px; }
+.limit-badge { flex: 0 0 auto; border-radius: 999px; background: rgb(37 99 235 / 10%); color: #1d4ed8; font-weight: 700; font-size: .78rem; padding: .3rem .65rem; }
+.generator-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: .85rem; align-items: start; }
+.generator-actions { grid-column: 1 / -1; display: flex; gap: .6rem; flex-wrap: wrap; }
+.generator-error { margin: .85rem 0 0; padding: .7rem .85rem; border-radius: 10px; background: #fee2e2; color: #991b1b; }
+.preview-panel { margin-top: 1rem; border-top: 1px solid rgb(148 163 184 / 30%); padding-top: 1rem; }
+.preview-heading { display: flex; justify-content: space-between; align-items: center; gap: 1rem; margin-bottom: .75rem; }
+.preview-heading span { color: var(--text-secondary, #64748b); }
+.preview-list { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .55rem; max-height: 320px; overflow: auto; padding-right: .25rem; }
+.preview-row { display: flex; flex-direction: column; gap: .15rem; padding: .7rem .8rem; border: 1px solid rgb(148 163 184 / 25%); border-radius: 10px; background: var(--surface-card, #fff); }
+.preview-row strong { overflow-wrap: anywhere; }
+.preview-row span { color: var(--text-secondary, #64748b); font-size: .82rem; }
+.preview-note { display: flex; align-items: center; gap: .45rem; margin: .8rem 0 0; color: var(--text-secondary, #64748b); font-size: .82rem; }
+.preview-note mat-icon { width: 18px; height: 18px; font-size: 18px; }
+@media (max-width: 1050px) { .generator-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+@media (max-width: 640px) {
+  .generator-heading, .preview-heading { flex-direction: column; align-items: stretch; }
+  .generator-grid, .preview-list { grid-template-columns: 1fr; }
+  .preview-heading button { width: 100%; }
+}

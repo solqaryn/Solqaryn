@@ -1,0 +1,181 @@
+name: N8.23.G - Dry-run go-live runbooks DEV
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - .github/workflows/n8-23-g-dry-run-dev.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: n8-23-g-dry-run-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  migration-dry-run:
+    name: Migration runbook on ephemeral MySQL 8.4
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: n823g_bootstrap
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+
+    env:
+      ASPNETCORE_ENVIRONMENT: Development
+      Database__ServerVersion: '8.4.0'
+
+    steps:
+      - name: Checkout exact DEV head
+        uses: actions/checkout@v4
+
+      - name: Set up .NET 8
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+          cache: true
+          cache-dependency-path: backend/**/*.csproj
+
+      - name: Restore backend and EF tool
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          dotnet tool install --global dotnet-ef --version 10.0.12
+
+      - name: Create isolated database with random temporary credentials
+        id: ephemeral
+        shell: bash
+        run: |
+          set -euo pipefail
+          mysql_container="${{ job.services.mysql.id }}"
+          db_name="n823g_${GITHUB_RUN_ID}_${GITHUB_RUN_ATTEMPT}"
+          db_user="n823g_${GITHUB_RUN_ID}"
+          db_user="${db_user:0:28}"
+          db_pass="$(openssl rand -hex 24)"
+          echo "::add-mask::$db_pass"
+
+          # The product migration chain creates triggers. GitHub's MySQL 8.4
+          # service has binary logging enabled, so an unprivileged application
+          # user needs this server-local trust flag for the isolated CI instance.
+          # This changes only the ephemeral disposable service container.
+          docker exec "$mysql_container" mysql -uroot -proot -e "SET GLOBAL log_bin_trust_function_creators = 1;"
+          docker exec "$mysql_container" mysql -uroot -proot -e "CREATE DATABASE \`${db_name}\`; CREATE USER '${db_user}'@'%' IDENTIFIED BY '${db_pass}'; GRANT ALL PRIVILEGES ON \`${db_name}\`.* TO '${db_user}'@'%'; FLUSH PRIVILEGES;"
+
+          connection="Server=127.0.0.1;Port=3306;Database=${db_name};User=${db_user};Password=${db_pass};SslMode=None;AllowPublicKeyRetrieval=True;"
+          echo "ConnectionStrings__DefaultConnection=$connection" >> "$GITHUB_ENV"
+          echo "DB_NAME=$db_name" >> "$GITHUB_ENV"
+          echo "DB_USER=$db_user" >> "$GITHUB_ENV"
+          echo "DB_PASS=$db_pass" >> "$GITHUB_ENV"
+          echo "db_name=$db_name" >> "$GITHUB_OUTPUT"
+          echo "db_user=$db_user" >> "$GITHUB_OUTPUT"
+
+          mkdir -p "$RUNNER_TEMP/n823g"
+          version="$(docker exec "$mysql_container" mysql -uroot -proot -Nse 'SELECT VERSION();')"
+          printf 'scope=N8.23.G\nenvironment=Development\nproduction_touched=false\nmysql_version=%s\nhead=%s\n' "$version" "$GITHUB_SHA" > "$RUNNER_TEMP/n823g/migration-dry-run.txt"
+
+      - name: List migrations and build Release
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+          dotnet ef migrations list \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
+            --context AppDbContext \
+            | tee "$RUNNER_TEMP/n823g/migrations-list.txt"
+
+          expected="$(grep -Ec '^[0-9]{14}_' "$RUNNER_TEMP/n823g/migrations-list.txt" || true)"
+          test "$expected" -gt 0
+          echo "EXPECTED_MIGRATIONS=$expected" >> "$GITHUB_ENV"
+          echo "expected_migrations=$expected" >> "$RUNNER_TEMP/n823g/migration-dry-run.txt"
+
+      - name: Apply migrations twice and prove idempotency
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          mysql_container="${{ job.services.mysql.id }}"
+
+          first_start="$(date +%s%3N)"
+          dotnet ef database update \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
+            --context AppDbContext \
+            | tee "$RUNNER_TEMP/n823g/first-apply.log"
+          first_end="$(date +%s%3N)"
+
+          history_first="$(docker exec "$mysql_container" mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" -Nse 'SELECT COUNT(*) FROM __EFMigrationsHistory;')"
+          test "$history_first" = "$EXPECTED_MIGRATIONS"
+
+          second_start="$(date +%s%3N)"
+          dotnet ef database update \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
+            --context AppDbContext \
+            | tee "$RUNNER_TEMP/n823g/second-apply.log"
+          second_end="$(date +%s%3N)"
+
+          history_second="$(docker exec "$mysql_container" mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" -Nse 'SELECT COUNT(*) FROM __EFMigrationsHistory;')"
+          test "$history_second" = "$history_first"
+
+          pending="$(dotnet ef migrations list \
+            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
+            --context AppDbContext \
+            | grep -c '(Pending)' || true)"
+          test "$pending" = 0
+
+          tables="$(docker exec "$mysql_container" mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE();")"
+          fks="$(docker exec "$mysql_container" mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE();")"
+          indexes="$(docker exec "$mysql_container" mysql -u"$DB_USER" -p"$DB_PASS" "$DB_NAME" -Nse "SELECT COUNT(DISTINCT TABLE_NAME, INDEX_NAME) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE();")"
+
+          first_ms="$((first_end-first_start))"
+          second_ms="$((second_end-second_start))"
+          printf 'first_apply_ms=%s\nsecond_apply_ms=%s\nhistory_first=%s\nhistory_second=%s\npending_after_second=%s\ntables=%s\nforeign_keys=%s\nindexes=%s\nidempotency=PASS\n' \
+            "$first_ms" "$second_ms" "$history_first" "$history_second" "$pending" "$tables" "$fks" "$indexes" \
+            >> "$RUNNER_TEMP/n823g/migration-dry-run.txt"
+
+      - name: Verify non-production guard and publish summary
+        shell: bash
+        run: |
+          set -euo pipefail
+          grep -q '^environment=Development$' "$RUNNER_TEMP/n823g/migration-dry-run.txt"
+          grep -q '^production_touched=false$' "$RUNNER_TEMP/n823g/migration-dry-run.txt"
+          grep -q '^idempotency=PASS$' "$RUNNER_TEMP/n823g/migration-dry-run.txt"
+          cat "$RUNNER_TEMP/n823g/migration-dry-run.txt"
+
+      - name: Destroy isolated database and credentials
+        if: always()
+        shell: bash
+        run: |
+          set +e
+          mysql_container="${{ job.services.mysql.id }}"
+          if [ -n "${DB_NAME:-}" ] && [ -n "${DB_USER:-}" ]; then
+            docker exec "$mysql_container" mysql -uroot -proot -e "DROP DATABASE IF EXISTS \`${DB_NAME}\`; DROP USER IF EXISTS '${DB_USER}'@'%'; FLUSH PRIVILEGES;"
+          fi
+
+      - name: Upload dry-run evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: n8-23-g-migration-dry-run
+          path: ${{ runner.temp }}/n823g
+          if-no-files-found: error
+          retention-days: 14

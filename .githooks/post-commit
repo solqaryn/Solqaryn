@@ -1,0 +1,42 @@
+#!/usr/bin/env sh
+
+# PROJECT_SCOPE_LOCK=STRICT
+# EXTERNAL_PROJECT_CONTEXT=DENY_BY_DEFAULT
+# PROJECT_SCOPE_POLICY=docs/PROJECT_SCOPE_LOCK.md
+# PROJECT_SKILL=.agents/skills/solqaryn-project-governance/SKILL.md
+# EXTERNAL_SKILL_REGISTRY=docs/REGISTRO_REFERENCIAS_SKILLS_SOLQARYN.md
+# LOCAL_SKILL_COUNT=1
+
+EXPECTED_REPO="solqaryn/Solqaryn"
+if ! command -v node >/dev/null 2>&1 || ! node scripts/verify-project-scope.mjs >/dev/null 2>&1; then
+  echo "[Solqaryn] BLOQUEADO: PROJECT_SCOPE_LOCK invalido; no se realizara push automatico." >&2
+  exit 0
+fi
+
+branch="$(git branch --show-current 2>/dev/null)"
+
+if [ "$branch" != "dev" ]; then
+  echo "[Solqaryn] Commit local creado en '$branch'. No se realizará push automático." >&2
+  echo "[Solqaryn] La rama oficial es 'dev'. Revisa el contexto antes de continuar." >&2
+  exit 0
+fi
+
+origin_url="$(git remote get-url origin 2>/dev/null)"
+case "$origin_url" in
+  "https://github.com/solqaryn/Solqaryn"|"https://github.com/solqaryn/Solqaryn.git"|"git@github.com:solqaryn/Solqaryn.git"|"ssh://git@github.com/solqaryn/Solqaryn.git") ;;
+  *)
+    echo "[Solqaryn] BLOQUEADO: origin='$origin_url' no corresponde a $EXPECTED_REPO." >&2
+    echo "[Solqaryn] No se realizó ningún push. Verifica que no estés en otro proyecto." >&2
+    exit 0
+    ;;
+esac
+
+echo "[Solqaryn] Publicando el commit en origin/dev..."
+
+if git push origin dev; then
+  echo "[Solqaryn] GitHub quedó actualizado correctamente."
+else
+  echo "[Solqaryn] No fue posible publicar el commit automáticamente." >&2
+  echo "[Solqaryn] El commit permanece seguro en local. Reintenta con: git push origin dev" >&2
+  exit 0
+fi

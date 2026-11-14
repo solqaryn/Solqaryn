@@ -1,0 +1,26 @@
+<section class="sales-report" aria-labelledby="sales-report-title">
+  <header class="page-header">
+    <div>
+      <p class="eyebrow">Centro de reportes</p>
+      <h1 id="sales-report-title">Reporte de ventas</h1>
+      <p class="subtitle">Consulta ventas por período y dimensiones comerciales autorizadas.</p>
+    </div>
+  </header>
+
+  <app-reporte-ventas-filtros (filterChanged)="aplicarFiltros($event)" />
+
+  @if (error) {
+    <p class="page-error" role="alert">{{ error }}</p>
+  }
+
+  <app-reporte-ventas-resumen
+    [resumen]="resumen"
+    [cargando]="cargando"
+    [error]="error" />
+
+  <app-reporte-ventas-detalle
+    [detalle]="detalle"
+    [cargando]="cargando"
+    [error]="error"
+    (paginaChange)="cambiarPagina($event)" />
+</section>

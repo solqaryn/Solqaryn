@@ -1,0 +1,31 @@
+name: P0-005.A - Fail-closed DEV restore evidence (offline)
+
+on:
+  pull_request:
+    branches:
+      - dev
+    paths:
+      - .github/workflows/p0-005-a-restore-evidence.yml
+      - scripts/verify-p0-005-a-restore-evidence.mjs
+      - docs/P0-005-A-BACKUP-RESTORE-DEV-NO-GO.md
+      - CHANGELOG_AI.md
+
+permissions:
+  contents: read
+
+jobs:
+  restore-evidence-negative-fixtures:
+    name: P0-005.A - restore proof contract (20 negatives)
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact PR HEAD
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify offline and fail-closed behavior
+        run: node scripts/verify-p0-005-a-restore-evidence.mjs --self-test

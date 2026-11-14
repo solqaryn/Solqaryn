@@ -1,0 +1,136 @@
+<a class="skip-link" [href]="destinoSaltar">{{ etiquetaSaltar }}</a>
+
+@if (identidad.config().encabezadoActivo) {
+  <div class="utility-bar">
+    <div class="container utility-inner">
+      <span class="utility-message">
+        <app-store-icon nombre="pin" />
+        {{ identidad.config().encabezadoTexto || identidad.config().eslogan }}
+      </span>
+      <div class="utility-actions">
+        <a [routerLink]="'/tienda/cuenta'">Mi cuenta</a>
+        <a [href]="enlaces.contacto">Atención y contacto</a>
+      </div>
+    </div>
+  </div>
+}
+
+<header class="store-header">
+  <div class="container header-main">
+    <a class="brand" [routerLink]="enlaces.inicio" [attr.aria-label]="(identidad.config().nombreComercial || 'Tienda') + ', inicio'">
+      @if (mostrarLogo()) {
+        <img [src]="identidad.logoUrl()" alt="" width="46" height="46" (error)="reportarErrorLogo(identidad.logoUrl())">
+      } @else {
+        <span class="brand-mark" aria-hidden="true">{{ (identidad.config().nombreComercial || 'Tienda').charAt(0) }}</span>
+      }
+      <span class="brand-copy">
+        <strong>{{ (identidad.config().nombreComercial || 'Tienda') }}</strong>
+        <small>{{ identidad.config().eslogan || 'Tu tienda en línea' }}</small>
+      </span>
+    </a>
+
+    <form class="search-box" role="search" (submit)="enviarBusqueda($event)">
+      <app-store-icon nombre="buscar" />
+      <label class="sr-only" for="buscar-productos">Buscar productos, marcas o modelos</label>
+      <input
+        #buscador
+        id="buscar-productos"
+        type="search"
+        autocomplete="off"
+        enterkeyhint="search"
+        placeholder="¿Qué estás buscando?"
+        [value]="busqueda"
+        (input)="actualizarBusqueda(buscador.value)">
+      <button type="submit" aria-label="Buscar productos"><app-store-icon nombre="flecha" /></button>
+    </form>
+
+    @if (permiteWhatsapp && telefono()) {
+      <a class="header-whatsapp" [href]="enlaceWhatsapp()" target="_blank" rel="noopener noreferrer" aria-label="Contactar por WhatsApp">
+        <app-store-icon nombre="chat" />
+        <span>WhatsApp<small>Consultar</small></span>
+      </a>
+    }
+
+    <button class="cart-trigger" type="button" (click)="solicitarCarrito()" [attr.aria-label]="etiquetaCarrito()">
+      <span class="cart-icon">
+        <app-store-icon nombre="bolsa" />
+        @if (totalUnidades !== null) { <b aria-hidden="true">{{ totalUnidades }}</b> }
+      </span>
+      <span class="cart-copy">Mi carrito<small>{{ textoSubtotalCarrito() }}</small></span>
+    </button>
+
+    <button
+      #botonMenu
+      class="mobile-menu-trigger"
+      type="button"
+      aria-label="Abrir navegación"
+      aria-controls="storefront-menu-movil"
+      [attr.aria-expanded]="menuAbierto()"
+      (click)="abrirMenuMovil()">
+      <span aria-hidden="true"></span><span aria-hidden="true"></span><span aria-hidden="true"></span>
+    </button>
+  </div>
+
+  <nav class="container store-nav" aria-label="Navegación de tienda">
+    <a [routerLink]="enlaces.inicio">Inicio</a>
+    <a [routerLink]="enlaces.productos">Productos</a>
+    <a [routerLink]="enlaces.ofertas">Ofertas</a>
+    <a [routerLink]="enlaces.categorias">Categorías</a>
+    <span class="nav-divider" aria-hidden="true"></span>
+    <button type="button" class="nav-all" [attr.aria-pressed]="!categoriaActiva" (click)="seleccionarCategoria('')"><app-store-icon nombre="rejilla" /> Todas</button>
+    @for (categoria of categorias.slice(0, 5); track categoria) {
+      <button type="button" [class.active]="categoriaActiva === categoria" [attr.aria-pressed]="categoriaActiva === categoria" (click)="seleccionarCategoria(categoria)">{{ categoria }}</button>
+    }
+  </nav>
+</header>
+
+<dialog
+  #menuMovil
+  id="storefront-menu-movil"
+  class="mobile-menu"
+  aria-labelledby="menu-movil-title"
+  (close)="alCerrarDialogo()"
+  (click)="cerrarDesdeFondo($event)">
+  <div class="mobile-menu-panel">
+    <header>
+      <div>
+        <small>NAVEGACIÓN</small>
+        <h2 id="menu-movil-title">{{ (identidad.config().nombreComercial || 'Tienda') }}</h2>
+      </div>
+      <button type="button" class="mobile-close" aria-label="Cerrar navegación" (click)="cerrarMenuMovil(true)">
+        <app-store-icon nombre="cerrar" />
+      </button>
+    </header>
+
+    <nav aria-label="Navegación móvil">
+      <a #primerEnlaceMovil [routerLink]="enlaces.inicio" (click)="cerrarMenuMovil(false)">Inicio</a>
+      <a [routerLink]="enlaces.productos" (click)="cerrarMenuMovil(false)">Productos</a>
+      <a [routerLink]="enlaces.ofertas" (click)="cerrarMenuMovil(false)">Ofertas</a>
+      <a [routerLink]="enlaces.categorias" (click)="cerrarMenuMovil(false)">Categorías</a>
+      <a [routerLink]="'/tienda/cuenta'" (click)="cerrarMenuMovil(false)">Mi cuenta</a>
+      <a [href]="enlaces.contacto" (click)="cerrarMenuMovil(false)">Contacto</a>
+    </nav>
+
+    @if (categorias.length) {
+      <section class="mobile-categories" aria-labelledby="menu-categorias-title">
+        <h3 id="menu-categorias-title">Explorar categorías</h3>
+        <button type="button" [class.active]="!categoriaActiva" [attr.aria-pressed]="!categoriaActiva" (click)="seleccionarCategoria('')">Todos los productos</button>
+        @for (categoria of categorias.slice(0, 8); track categoria) {
+          <button type="button" [class.active]="categoriaActiva === categoria" [attr.aria-pressed]="categoriaActiva === categoria" (click)="seleccionarCategoria(categoria)">{{ categoria }}</button>
+        }
+      </section>
+    }
+
+    <div class="mobile-actions">
+      <button type="button" class="mobile-cart" (click)="solicitarCarrito()">
+        <span><app-store-icon nombre="bolsa" /> Carrito</span>
+        @if (totalUnidades !== null) { <strong aria-hidden="true">{{ totalUnidades }}</strong> }
+      </button>
+      @if (permiteWhatsapp && telefono()) {
+        <a class="mobile-whatsapp" [href]="enlaceWhatsapp()" target="_blank" rel="noopener noreferrer">
+          <app-store-icon nombre="chat" /> Consultar por WhatsApp
+        </a>
+      }
+    </div>
+  </div>
+</dialog>

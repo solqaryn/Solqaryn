@@ -1,0 +1,159 @@
+/* M10 — contrato transversal UI/UX + accesibilidad.
+   Complementa enterprise-design-system sin reemplazar personalización temática. */
+
+:root {
+  --content-readable: 72ch;
+  --control-gap: 0.75rem;
+  --section-gap: clamp(1rem, 0.75rem + 0.8vw, 1.75rem);
+  --z-sticky: 30;
+  --z-overlay: 100;
+  --z-skip-link: 2000;
+}
+
+/* El destino del skip-link y los encabezados conservan contexto bajo barras sticky. */
+#main-content,
+:where(h1, h2, h3, [id]) {
+  scroll-margin-top: 5rem;
+}
+
+/* El main recibe foco programático tras navegación. Se conserva una geometría de foco
+   transparente para no romper forced-colors; los controles interactivos mantienen
+   el foco visible reforzado definido por enterprise-design-system. */
+#main-content:focus {
+  outline: 1px solid transparent;
+  outline-offset: 0;
+}
+
+#main-content:focus-visible {
+  box-shadow: none !important;
+}
+
+.app-section {
+  min-width: 0;
+  display: grid;
+  gap: var(--section-gap);
+}
+
+.app-section-heading {
+  min-width: 0;
+  display: grid;
+  gap: var(--space-2);
+  max-width: var(--content-readable);
+}
+
+.app-section-title {
+  margin: 0;
+  color: var(--color-heading);
+  font-size: var(--font-size-xl);
+  font-weight: var(--font-weight-bold);
+  line-height: var(--line-height-tight);
+  text-wrap: balance;
+  overflow-wrap: anywhere;
+}
+
+.app-section-description {
+  margin: 0;
+  color: var(--color-text-muted);
+  font-size: var(--font-size-sm);
+  line-height: var(--line-height-relaxed);
+  overflow-wrap: anywhere;
+}
+
+.app-toolbar {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-3);
+  flex-wrap: wrap;
+}
+
+.app-field-grid {
+  min-width: 0;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 240px), 1fr));
+  gap: var(--space-4);
+  align-items: start;
+}
+
+.app-control-group {
+  min-width: 0;
+  display: flex;
+  align-items: center;
+  gap: var(--control-gap);
+  flex-wrap: wrap;
+}
+
+.app-readable {
+  max-width: var(--content-readable);
+}
+
+:where(.mat-mdc-form-field-hint, .mat-mdc-form-field-error, .app-form-help, .app-form-error) {
+  max-width: var(--content-readable);
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.app-form-error {
+  color: var(--color-danger);
+  font-size: var(--font-size-sm);
+  font-weight: var(--font-weight-medium);
+}
+
+.app-selected {
+  border-inline-start: 4px solid var(--color-primary);
+  background: color-mix(in srgb, var(--color-primary) 7%, var(--color-surface));
+}
+
+.app-icon-action {
+  min-inline-size: var(--target-min);
+  min-block-size: var(--target-min);
+  display: inline-grid;
+  place-items: center;
+}
+
+:where(.app-page, .app-section, .app-toolbar, .app-field-grid, .app-control-group, .app-surface-card) > * {
+  min-width: 0;
+}
+
+@media (max-width: 680px) {
+  .app-toolbar,
+  .app-control-group {
+    align-items: stretch;
+  }
+
+  .app-toolbar > *,
+  .app-control-group > * {
+    max-width: 100%;
+  }
+}
+
+@media (pointer: coarse) {
+  :where(button:not(.overlay), a[role='button'], .mat-mdc-button-base) {
+    min-inline-size: var(--target-min);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skip-link,
+  .app-surface-card--interactive {
+    transition: none !important;
+    transform: none !important;
+  }
+}
+
+@media (forced-colors: active) {
+  #main-content:focus {
+    outline-color: Canvas;
+  }
+
+  .app-selected {
+    border-inline-start-color: Highlight;
+    background: Canvas;
+  }
+
+  .app-form-error {
+    color: CanvasText;
+    text-decoration: underline;
+  }
+}

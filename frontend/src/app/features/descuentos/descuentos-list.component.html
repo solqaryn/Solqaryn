@@ -1,0 +1,88 @@
+<div class="header-row">
+  <h1 class="page-title">Descuentos</h1>
+  @if (puedeCrear()) {
+    <a routerLink="/descuentos/nuevo" mat-flat-button color="primary">
+      <mat-icon>add</mat-icon> Nuevo descuento
+    </a>
+  }
+</div>
+
+<div class="card">
+  @if (loading()) {
+    <div class="loading"><mat-spinner></mat-spinner></div>
+  } @else {
+    <table class="table table-desktop">
+      <thead>
+        <tr>
+          <th>Nombre</th><th>Código</th><th>Tipo</th><th>Valor</th><th>Vigencia</th><th>Usos</th><th>Estado</th><th>Acciones</th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (d of descuentos(); track d.id) {
+          <tr>
+            <td>{{ d.nombre }}</td>
+            <td>{{ d.codigoPromocional || '—' }}</td>
+            <td>{{ d.tipo }}</td>
+            <td>{{ d.tipo === 'Porcentaje' ? d.valor + '%' : ('L. ' + d.valor) }}</td>
+            <td>
+              @if (d.fechaInicio || d.fechaFin) {
+                {{ (d.fechaInicio | date:'shortDate') || '...' }} - {{ (d.fechaFin | date:'shortDate') || '...' }}
+              } @else { Sin límite }
+            </td>
+            <td>{{ d.usosRealizados }}{{ d.limiteTotalUsos ? ' / ' + d.limiteTotalUsos : '' }}</td>
+            <td>
+              @if (puedeCambiarEstado(d)) {
+                <mat-slide-toggle [checked]="d.activo" (change)="toggleActivo(d)" [aria-label]="(d.activo ? 'Desactivar ' : 'Activar ') + d.nombre"></mat-slide-toggle>
+              } @else {
+                <span class="badge" [class.success]="d.activo" [class.muted]="!d.activo">
+                  {{ d.activo ? 'Activo' : 'Inactivo' }}
+                </span>
+              }
+            </td>
+            <td class="actions">
+              @if (puedeEditar()) {
+                <a [routerLink]="['/descuentos', d.id, 'editar']" mat-icon-button title="Editar"><mat-icon>edit</mat-icon></a>
+              }
+              @if (puedeDuplicar()) {
+                <button mat-icon-button title="Duplicar" (click)="duplicar(d)"><mat-icon>content_copy</mat-icon></button>
+              }
+              @if (puedeEliminar()) {
+                <button mat-icon-button title="Eliminar" (click)="eliminar(d)"><mat-icon>delete_outline</mat-icon></button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="8" class="empty">No hay descuentos registrados.</td></tr>
+        }
+      </tbody>
+    </table>
+
+    <div class="cards-mobile">
+      @for (d of descuentos(); track d.id) {
+        <div class="item-card">
+          <div class="item-card-header">
+            <strong>{{ d.nombre }}</strong>
+            @if (puedeCambiarEstado(d)) {
+              <mat-slide-toggle [checked]="d.activo" (change)="toggleActivo(d)" [aria-label]="(d.activo ? 'Desactivar ' : 'Activar ') + d.nombre"></mat-slide-toggle>
+            } @else {
+              <span class="badge" [class.success]="d.activo" [class.muted]="!d.activo">
+                {{ d.activo ? 'Activo' : 'Inactivo' }}
+              </span>
+            }
+          </div>
+          <p class="item-card-desc">{{ d.tipo === 'Porcentaje' ? d.valor + '%' : ('L. ' + d.valor) }} @if (d.codigoPromocional) { · Código: {{ d.codigoPromocional }} }</p>
+          <div class="item-card-meta">
+            <span>{{ d.usosRealizados }}{{ d.limiteTotalUsos ? ' / ' + d.limiteTotalUsos : '' }} usos</span>
+          </div>
+          <div class="item-card-actions">
+            @if (puedeEditar()) { <a [routerLink]="['/descuentos', d.id, 'editar']" mat-button><mat-icon>edit</mat-icon> Editar</a> }
+            @if (puedeDuplicar()) { <button mat-button (click)="duplicar(d)"><mat-icon>content_copy</mat-icon> Duplicar</button> }
+            @if (puedeEliminar()) { <button mat-button (click)="eliminar(d)"><mat-icon>delete_outline</mat-icon> Eliminar</button> }
+          </div>
+        </div>
+      } @empty {
+        <p class="empty">No hay descuentos registrados.</p>
+      }
+    </div>
+  }
+</div>

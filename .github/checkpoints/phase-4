@@ -1,0 +1,5 @@
+Checkpoint de validación controlada de la Fase 4.
+Fecha: 2026-07-22
+Revisión: 3
+Incluye edición administrativa de usuarios, autogestión de nombre y usuario, contraseña segura, fotografía de perfil en Cloudinary, sincronización visual de sesión, documentación y auditoría correcta del rol nuevo.
+Objetivo: compilar backend, ejecutar pruebas existentes y compilar frontend sin desplegar producción.

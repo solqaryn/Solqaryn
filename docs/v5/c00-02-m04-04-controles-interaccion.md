@@ -1,0 +1,9 @@
+# C00-02.M04.04 — verificaciones de interacción y navegación V5
+
+**Artefacto ejecutable:** tres pruebas Angular/Vitest adicionales sobre la superficie de contrato privado `/plataforma/flujo-v5`. La funcionalidad de interfaz ya reside en `PlataformaComponent` con guard server-side `plataformaGuard`, estado de validación y enlaces de navegación. No se modifica API ni se inventa una nueva pantalla.
+
+**Aceptación:** (1) enlaces visibles de retorno a administración global y acceso empresarial, guard server-side y ausencia de formularios/acciones de negocio; (2) al llamar dos veces `revalidar()` mientras una sola petición continúa pendiente, `PlataformaSesionService.obtener` se invoca solo una vez, y el botón permanece deshabilitado hasta terminar; (3) error de autorización 403 produce mensaje seguro sin imprimir detalles internos, permite un solo retry solicitado y libera estado de carga. El test no afirma que la API live haya sido consultada ni constituye auditoría de un formulario que esta pantalla no tiene.
+
+**Clasificación:** TIPO3, Node/Angular=SI, security=SI por mensajes/guard; Scope Lock=SI; dotnet=NO, mysql=NO, docker=NO, e2e=NO_APLICA a la verificación unit de control de acción; forms operativos=NO_APLICA (vista solo lectura). A0 diff y secretos, A1 Vitest positivos/negativos, A2 no exponer error 403 + guard preexistente, A3 build/lint y prueba dirigida en CI exact SHA, A4 commit, controles y readback, A5 revisión distinta Javier. Rollback con git revert normal.
+
+**Dependencias:** seis C00-02.M03 LISTO, COLA G/O=SI y DAG F=VALIDADO/G=SI al reclamar. Este scope no promueve QA/main/PROD, no crea Task ni dispatcher ni cambia tenant/JWT/RBAC real.

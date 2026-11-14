@@ -1,0 +1,50 @@
+{
+  "schema_version": 1,
+  "project": "SOLQARYN",
+  "repository": "solqaryn/Solqaryn",
+  "environment": "DEV",
+  "certificate_scope": "public_store_binding_identity_isolation_hmac_replay",
+  "attested_security_commit": "49195f34d6c00e0c0b7684465619af0a96afeba5",
+  "historical_readback": {
+    "workflow_run_id": 39084418982,
+    "run_head": "db75a59fad08159534ed1c16f17e2445ac4dc26b",
+    "suspended_attempt": 5,
+    "suspended_job_id": 117567817345,
+    "active_attempt": 6,
+    "active_job_id": 117568173016,
+    "suspended_result": "HTTP_SUSPENDED=503 CODE=TENANT_DATA_ISOLATION_REQUIRED",
+    "active_result": "POSITIVE_AB_BINDINGS_VERIFIED=2",
+    "historical_workflow_outcome": "BLOCKED"
+  },
+  "render_hmac": {
+    "service_id": "srv-daqvla49v7es738up9vg",
+    "accepted_replay_fresh": "first=200 replay=503 fresh=200 ledger=PASS company_binding=PASS",
+    "verified_log_ids": [
+      "4ae84eb2-c823-4a39-8fb0-c2a5fa2d0967",
+      "4dfcfc7c-edc1-425a-bfbd-e5dfc1f71e77",
+      "78134dab-d60b-43e0-9982-e426a0cfca1d"
+    ],
+    "render_rollback_deploy": "dep-dbaeb65g1s2s73bpkbdg",
+    "disabled_flag": "PublicStore__ReplayLiveCertificationOnStartup=false"
+  },
+  "audited_attestation": {
+    "github_pr_number": 3666,
+    "github_comment_id": 6251764256,
+    "github_author_id": 318818775,
+    "github_author_login": "solqaryn-platform",
+    "created_at": "2026-10-18T15:36:19Z"
+  },
+  "invariants_git_paths": [
+    "backend/src/API/Middleware/UnscopedCommercialTenantGuardMiddleware.cs",
+    "backend/src/API/Middleware/PublicStoreProxyProof.cs",
+    "backend/src/API/Middleware/PublicStoreProofReplayStore.cs",
+    "backend/src/API/Controllers/TiendaBindingController.cs",
+    "frontend/server/public-store-proxy-context.js"
+  ],
+  "policy": {
+    "live_checks_required": true,
+    "preserve_historical_failures_as_audit": true,
+    "historical_checks_attested_not_executed_in_current_run": true,
+    "qa_prod_not_in_scope": true
+  }
+}

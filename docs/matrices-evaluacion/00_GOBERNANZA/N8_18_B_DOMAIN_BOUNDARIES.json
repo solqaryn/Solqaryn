@@ -1,0 +1,80 @@
+{
+  "schema": "vaep-n8.18-b-domain-boundaries/v1",
+  "parent": "N8.18.B",
+  "branch": "Desarrollo",
+  "source_manifest": "docs/matrices-evaluacion/00_GOBERNANZA/N8_17_A_BATCH_MANIFEST.json",
+  "source_catalog": "docs/matrices-evaluacion/00_GOBERNANZA/CATALOGO_MATRICES.md",
+  "source_certification": "docs/matrices-evaluacion/00_GOBERNANZA/N8_17_H_CERTIFICATION.json",
+  "canonical_parent_rule": "VAEP-DOMAIN::<DOMAIN> owns every frozen MATRIX_ID whose manifest batch and MATRIX_ID domain segment equal <DOMAIN>; APP_SHELL composes navigation only and does not own domain business rules.",
+  "domain_count": 9,
+  "contract_root_count": 49,
+  "domains": [
+    {"domain":"IDENTITY_ACCESS","parent_id":"VAEP-DOMAIN::IDENTITY_ACCESS","ownership":"identity, authentication profile, users, roles and permissions"},
+    {"domain":"PRODUCT_CATALOG","parent_id":"VAEP-DOMAIN::PRODUCT_CATALOG","ownership":"product master, categories and typed product lookup catalogs"},
+    {"domain":"CUSTOMERS_COMMERCIAL","parent_id":"VAEP-DOMAIN::CUSTOMERS_COMMERCIAL","ownership":"customers, commercial documents, sales, invoicing and storefront orchestration"},
+    {"domain":"PURCHASES_SUPPLIERS","parent_id":"VAEP-DOMAIN::PURCHASES_SUPPLIERS","ownership":"suppliers and purchasing lifecycle"},
+    {"domain":"INVENTARIO_LOGISTICA","parent_id":"VAEP-DOMAIN::INVENTARIO_LOGISTICA","ownership":"warehouses, stock, locations and fulfillment"},
+    {"domain":"CASH_BANKS","parent_id":"VAEP-DOMAIN::CASH_BANKS","ownership":"cash sessions, bank accounts and payment-method treasury configuration"},
+    {"domain":"FINANCE_ACCOUNTING","parent_id":"VAEP-DOMAIN::FINANCE_ACCOUNTING","ownership":"ledger, receivables, financial statements, taxes, periods and chart of accounts"},
+    {"domain":"BI_REPORTING","parent_id":"VAEP-DOMAIN::BI_REPORTING","ownership":"reporting/read models; source-domain authorization remains authoritative"},
+    {"domain":"GOV_CONFIG_INTEGRATIONS","parent_id":"VAEP-DOMAIN::GOV_CONFIG_INTEGRATIONS","ownership":"app shell, audit, configuration, bulk ingestion and integration/governance surfaces"}
+  ],
+  "composition": {
+    "navigation_root": "VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL",
+    "rule": "shell/menu/routes compose domain children but do not transfer backend authority or business-rule ownership",
+    "cycles_allowed": false,
+    "cross_domain_business_rule_aliases_allowed": false
+  },
+  "consolidations": [
+    {
+      "id": "ARCH-01",
+      "domain": "PRODUCT_CATALOG",
+      "status": "CONSOLIDATED_AND_GUARDED",
+      "owner_matrix_id": "VAEP-MX::PRODUCT_CATALOG::CATALOGOS_PRODUCTO",
+      "shared_frontend_root": "frontend/src/app/features/catalogos-producto",
+      "shared_service": "frontend/src/app/services/catalogo-producto.service.ts",
+      "typed_interfaces": ["Color","Talla","Marca","Modelo"],
+      "routes": ["colores","tallas","marcas","modelos"],
+      "forbidden_parallel_feature_roots": [
+        "frontend/src/app/features/colores",
+        "frontend/src/app/features/tallas",
+        "frontend/src/app/features/marcas",
+        "frontend/src/app/features/modelos"
+      ],
+      "siblings_not_aliases": [
+        "VAEP-MX::PRODUCT_CATALOG::CATEGORIAS",
+        "VAEP-MX::PRODUCT_CATALOG::PRODUCTOS"
+      ],
+      "rationale": "Color/Talla/Marca/Modelo are one demonstrated CRUD shape already consolidated through a typed component/service. Categorias and Productos remain distinct contract roots and must not be folded into the generic lookup CRUD."
+    },
+    {
+      "id": "ARCH-03",
+      "domain": "CROSS_DOMAIN_APPLICATION_LAYER",
+      "status": "OWNERSHIP_EXPLICIT_MOVE_DEFERRED_TO_BACKEND_STAGE",
+      "paths": [
+        "backend/src/Application/Bancos",
+        "backend/src/Application/Services",
+        "backend/src/Application/DTOs",
+        "backend/src/Application/Interfaces"
+      ],
+      "rationale": "The mixed Application layout is not sufficient evidence for a safe move. N8.18.B fixes ownership/naming policy; any physical backend relocation/consolidation requires reference/DI/API analysis in N8.18.D."
+    }
+  ],
+  "deletion_policy": {
+    "remove_safe_count": 0,
+    "deprecate_count": 0,
+    "unknown_blocks_deletion": true,
+    "speculative_delete_allowed": false,
+    "destructive_db_change_allowed": false
+  },
+  "acceptance": {
+    "all_49_contract_roots_owned_by_exactly_one_domain": true,
+    "domain_name_matches_matrix_id_segment": true,
+    "parent_child_cycles": 0,
+    "ambiguous_business_rule_aliases": 0,
+    "product_lookup_parallel_feature_roots": 0,
+    "product_lookup_routes_reuse_shared_component": "4/4",
+    "product_lookup_types_reuse_shared_service": "4/4",
+    "certified_contracts_preserved": true
+  }
+}

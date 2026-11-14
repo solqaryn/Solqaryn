@@ -1,0 +1,28 @@
+{
+  "schema":"vaep-n8.22-equivalence-gate/v1",
+  "scope":"N8.22.G",
+  "parent":"N8.22",
+  "stage":"TEST_CI",
+  "branch":"Desarrollo",
+  "captured_at_utc":"2026-09-16T16:47:19Z",
+  "closer":"Tarea Supervisión :36",
+  "lease_token":"SUP36-N822G-CLOSER-20260916T164503Z",
+  "observed_head":"9f5d300160317cb7fe5e713cbc57862ad6a33abb",
+  "dependency":{"scope":"N8.22.F","status":"LISTO_REAL","receipt":"vaep/evidence/receipts/N8.22.F_LISTO_REAL_20260916T164432Z_SUP36.json"},
+  "acceptance":{"staging_equivalent_requires_zero_material_gap":true,"staging_equivalent_requires_zero_unknown":true,"P0_required":0,"P1_required":0},
+  "provider_readback":{
+    "render_dev":{"service":"solqaryn-api-desarrollo","branch":"Desarrollo","region":"oregon","plan":"free","healthCheckPath":"/health/ready"},
+    "render_prod":{"service":"solqaryn-api","branch":"main","region":"virginia","plan":"free","healthCheckPath":""},
+    "vercel_team":"Solqaryn",
+    "vercel_visible_projects":[{"name":"solqaryn-desarrollo","id":"prj_JkRGpdSnGlMQ4Qc3eqw4bscY4Flu"},{"name":"SOLQARYN","id":"prj_djMCand2yYeY3AvaUWsjwHDDJDkM"}],
+    "vercel_SOLQARYN_recent_deployments_observed":"recent connector-visible deployments are GitHub ref Desarrollo / PR #2 / target null; therefore they are not accepted as authoritative production-frontend parity evidence"
+  },
+  "matrix_gate":{
+    "MATERIAL_GAP":[{"dimension":"production_health_policy_control_plane","dev":"/health/ready","prod":"empty","status":"CONFIRMED_REAL_GAP","required_action":"owner-authorized production control-plane decision/change outside this Desarrollo-only run"}],
+    "UNKNOWN":[{"dimension":"render_sanitized_env_name_parity","reason":"current authorized Render connector exposes service metadata but no read operation for environment-variable names","required_action":"authorize/provide sanitized variable NAME inventario only; never values"},{"dimension":"vercel_authoritative_prod_project_settings_and_sanitized_env_name_parity","reason":"visible production-named project lacks authoritative production deployment/settings/env-name evidence through current read-only connector; recent SOLQARYN deployments are Desarrollo PR #2 previews/target-null","required_action":"authorize/provide authoritative PROD project/settings and sanitized variable NAME inventario only; never values"}]
+  },
+  "directed_dev_tests":{"required":false,"reason":"no DEV product/control-plane gap was corrected in this invocation; TEST_CI criterion only calls for directed DEV tests if a gap was corrected"},
+  "result":{"status":"BLOCKER_EXTERNAL_CAUSAL","staging_equivalent":false,"P0":0,"P1":0,"P2":0},
+  "independent_work_scan":{"N8.22.H":"dependency-gated by N8.22.G","N8.23.A":"dependency-gated by N8.22.H","N8.24.A":"dependency-gated by N8.23.H","other_known_external_scope":"N8.7.G already independently BLOCKED_EXTERNAL_CAUSAL; no safe automated closure path exposed"},
+  "guards":{"main_write":0,"production_write":0,"deploy":0,"secret_values_read":false,"secret_values_exposed":0,"pr_2_write":0}
+}

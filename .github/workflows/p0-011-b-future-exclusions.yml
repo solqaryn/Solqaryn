@@ -1,0 +1,29 @@
+name: P0-011.B - Exclusiones comerciales futuras (read-only)
+
+on:
+  pull_request:
+    branches: [dev]
+    paths:
+      - 'docs/P0-011-A-FRONTERA-VERSION-INICIAL-DEV.md'
+      - 'docs/P0-011-B-CERTIFICACION-NEGATIVA-ALCANCE-DEV.md'
+      - 'scripts/verify-p0-011-b-future-exclusions.mjs'
+      - '.github/workflows/p0-011-b-future-exclusions.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  negative-future-exclusions:
+    name: P0-011.B - Doce negativos de alcance
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verificar frontera futura exact-HEAD sin credenciales
+        run: node scripts/verify-p0-011-b-future-exclusions.mjs --self-test

@@ -1,0 +1,44 @@
+name: Promotion Source Guard
+
+on:
+  pull_request:
+    branches:
+      - qa
+      - main
+
+permissions:
+  contents: read
+  pull-requests: read
+
+jobs:
+  source-branch:
+    name: Enforce DEV -> QA -> PROD
+    runs-on: ubuntu-latest
+    steps:
+      - name: Validar rama fuente autorizada
+        shell: bash
+        env:
+          BASE_REF: ${{ github.base_ref }}
+          HEAD_REF: ${{ github.head_ref }}
+        run: |
+          set -euo pipefail
+
+          case "$BASE_REF" in
+            qa)
+              test "$HEAD_REF" = "dev" || {
+                echo "Promoción QA bloqueada: sólo dev puede promover a qa; recibido '$HEAD_REF'." >&2
+                exit 1
+              }
+              ;;
+            main)
+              test "$HEAD_REF" = "qa" || {
+                echo "Promoción PROD bloqueada: sólo qa puede promover a main; recibido '$HEAD_REF'." >&2
+                exit 1
+              }
+              ;;
+            *)
+              echo "Base fuera del scope del guard: $BASE_REF"
+              ;;
+          esac
+
+          echo "PROMOTION_SOURCE_GUARD=PASS"

@@ -1,0 +1,207 @@
+name: SOLQARYN - Backup/restore topology exactness
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - .github/workflows/backup-restore-topology.yml
+      - scripts/backup_dev.sh
+      - scripts/restore_dev.sh
+      - .github/checkpoints/backup-request
+
+permissions:
+  contents: read
+
+jobs:
+  validate-restored-topology:
+    name: Backup real + restore aislado + topology exactness
+    if: ${{ github.event_name == 'push' && contains(github.event.head_commit.message, '[SOLQARYN-BACKUP-TOPOLOGY]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    environment: DEV
+
+    services:
+      mysql-m11-restore:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: m11-ci-root-only
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -pm11-ci-root-only --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+
+    steps:
+      - name: Checkout DEV exact HEAD
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.sha }}
+
+      - name: Crear backup real cifrado de DEV
+        id: backup
+        shell: bash
+        env:
+          SOLQARYN_ENVIRONMENT: dev
+          DB_HOST: ${{ vars.SOLQARYN_DEV_DB_HOST }}
+          DB_PORT: ${{ vars.SOLQARYN_DEV_DB_PORT }}
+          DB_NAME: ${{ vars.SOLQARYN_DEV_DB_NAME }}
+          DB_USER: ${{ vars.SOLQARYN_DEV_DB_USER }}
+          DB_PASSWORD: ${{ secrets.SOLQARYN_DEV_DB_PASSWORD }}
+          DB_SSL_MODE: REQUIRED
+          BACKUP_PASSPHRASE: ${{ secrets.SOLQARYN_DEV_BACKUP_PASSPHRASE }}
+          OUTPUT_DIR: ${{ runner.temp }}/m11-n821c-backups
+          RETENTION_DAYS: '0'
+          BACKUP_LABEL: dev
+        run: |
+          set -euo pipefail
+          chmod +x scripts/backup_dev.sh
+          scripts/backup_dev.sh | tee "$RUNNER_TEMP/n821c-backup.log"
+          backup_file="$(grep '^SOLQARYN_BACKUP_FILE=' "$RUNNER_TEMP/n821c-backup.log" | cut -d= -f2-)"
+          checksum_file="$(grep '^SOLQARYN_BACKUP_SHA256=' "$RUNNER_TEMP/n821c-backup.log" | cut -d= -f2-)"
+          metadata_file="$(grep '^SOLQARYN_BACKUP_METADATA=' "$RUNNER_TEMP/n821c-backup.log" | cut -d= -f2-)"
+          test -s "$backup_file"
+          test -s "$checksum_file"
+          test -s "$metadata_file"
+          echo "backup_file=$backup_file" >> "$GITHUB_OUTPUT"
+          echo "checksum_file=$checksum_file" >> "$GITHUB_OUTPUT"
+          echo "metadata_file=$metadata_file" >> "$GITHUB_OUTPUT"
+
+      - name: Restore del mismo artifact en MySQL local descartable
+        id: restore
+        shell: bash
+        env:
+          RESTORE_ENVIRONMENT: ci
+          TARGET_DB_HOST: 127.0.0.1
+          TARGET_DB_PORT: '3306'
+          TARGET_DB_NAME: solqaryn_m11_restore_drill
+          TARGET_DB_USER: root
+          TARGET_DB_PASSWORD: m11-ci-root-only
+          TARGET_DB_SSL_MODE: DISABLED
+          BACKUP_PASSPHRASE: ${{ secrets.SOLQARYN_DEV_BACKUP_PASSPHRASE }}
+          BACKUP_FILE: ${{ steps.backup.outputs.backup_file }}
+          BACKUP_CHECKSUM_FILE: ${{ steps.backup.outputs.checksum_file }}
+          ALLOW_DESTRUCTIVE_RESTORE: YES_SOLQARYN_DISPOSABLE_RESTORE
+          RESTORE_FILES_DIR: ${{ runner.temp }}/m11-n821c-restored-files
+          RESTORE_REPORT_PATH: ${{ runner.temp }}/m11-n821c-restore-report.json
+        run: |
+          set -euo pipefail
+          chmod +x scripts/restore_dev.sh
+          scripts/restore_dev.sh | tee "$RUNNER_TEMP/n821c-restore.log"
+          report_file="$(grep '^SOLQARYN_RESTORE_REPORT=' "$RUNNER_TEMP/n821c-restore.log" | cut -d= -f2-)"
+          test -s "$report_file"
+          grep -q '"checksumsVerified": true' "$report_file"
+          grep -q '"allTableRowCountsVerified": true' "$report_file"
+          grep -q '"productionTouched": false' "$report_file"
+          grep -q '"status": "SUCCESS"' "$report_file"
+          echo "restore_report=$report_file" >> "$GITHUB_OUTPUT"
+
+      - name: Comparar schema migrations FKs e indexes fuente vs restore
+        id: topology
+        shell: bash
+        env:
+          SOURCE_DB_HOST: ${{ vars.SOLQARYN_DEV_DB_HOST }}
+          SOURCE_DB_PORT: ${{ vars.SOLQARYN_DEV_DB_PORT }}
+          SOURCE_DB_NAME: ${{ vars.SOLQARYN_DEV_DB_NAME }}
+          SOURCE_DB_USER: ${{ vars.SOLQARYN_DEV_DB_USER }}
+          SOURCE_DB_PASSWORD: ${{ secrets.SOLQARYN_DEV_DB_PASSWORD }}
+          TARGET_DB_HOST: 127.0.0.1
+          TARGET_DB_PORT: '3306'
+          TARGET_DB_NAME: solqaryn_m11_restore_drill
+          TARGET_DB_USER: root
+          TARGET_DB_PASSWORD: m11-ci-root-only
+          TOPOLOGY_REPORT: ${{ runner.temp }}/m11-n821c-topology-report.json
+        run: |
+          set -euo pipefail
+
+          source_sql() {
+            MYSQL_PWD="$SOURCE_DB_PASSWORD" mysql --protocol=TCP -h "$SOURCE_DB_HOST" -P "$SOURCE_DB_PORT" -u "$SOURCE_DB_USER" --default-character-set=utf8mb4 --ssl-mode=REQUIRED "$SOURCE_DB_NAME" --batch --raw --skip-column-names -e "$1"
+          }
+          target_sql() {
+            MYSQL_PWD="$TARGET_DB_PASSWORD" mysql --protocol=TCP -h "$TARGET_DB_HOST" -P "$TARGET_DB_PORT" -u "$TARGET_DB_USER" --default-character-set=utf8mb4 --ssl-mode=DISABLED "$TARGET_DB_NAME" --batch --raw --skip-column-names -e "$1"
+          }
+          hash_source() { source_sql "$1" | sha256sum | awk '{print $1}'; }
+          hash_target() { target_sql "$1" | sha256sum | awk '{print $1}'; }
+
+          table_count_sql="SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE';"
+          migration_count_sql="SELECT IF(EXISTS(SELECT 1 FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='__EFMigrationsHistory'), (SELECT COUNT(*) FROM __EFMigrationsHistory), 0);"
+          fk_count_sql="SELECT COUNT(*) FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE();"
+          index_count_sql="SELECT COUNT(*) FROM (SELECT DISTINCT TABLE_NAME, INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE()) AS idx;"
+          table_sig_sql="SELECT CONCAT(TABLE_NAME,'|',ENGINE,'|',COALESCE(TABLE_COLLATION,'')) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME;"
+          fk_sig_sql="SELECT CONCAT(TABLE_NAME,'|',CONSTRAINT_NAME,'|',REFERENCED_TABLE_NAME,'|',UNIQUE_CONSTRAINT_NAME) FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() ORDER BY TABLE_NAME,CONSTRAINT_NAME;"
+          index_sig_sql="SELECT CONCAT(TABLE_NAME,'|',INDEX_NAME,'|',SEQ_IN_INDEX,'|',COALESCE(COLUMN_NAME,''),'|',NON_UNIQUE,'|',INDEX_TYPE) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() ORDER BY TABLE_NAME,INDEX_NAME,SEQ_IN_INDEX;"
+
+          SRC_TABLES="$(source_sql "$table_count_sql")"
+          DST_TABLES="$(target_sql "$table_count_sql")"
+          SRC_MIGRATIONS="$(source_sql "$migration_count_sql")"
+          DST_MIGRATIONS="$(target_sql "$migration_count_sql")"
+          SRC_FKS="$(source_sql "$fk_count_sql")"
+          DST_FKS="$(target_sql "$fk_count_sql")"
+          SRC_INDEXES="$(source_sql "$index_count_sql")"
+          DST_INDEXES="$(target_sql "$index_count_sql")"
+          SRC_TABLE_HASH="$(hash_source "$table_sig_sql")"
+          DST_TABLE_HASH="$(hash_target "$table_sig_sql")"
+          SRC_FK_HASH="$(hash_source "$fk_sig_sql")"
+          DST_FK_HASH="$(hash_target "$fk_sig_sql")"
+          SRC_INDEX_HASH="$(hash_source "$index_sig_sql")"
+          DST_INDEX_HASH="$(hash_target "$index_sig_sql")"
+
+          test "$SRC_TABLES" = "$DST_TABLES"
+          test "$SRC_MIGRATIONS" = "$DST_MIGRATIONS"
+          test "$SRC_FKS" = "$DST_FKS"
+          test "$SRC_INDEXES" = "$DST_INDEXES"
+          test "$SRC_TABLE_HASH" = "$DST_TABLE_HASH"
+          test "$SRC_FK_HASH" = "$DST_FK_HASH"
+          test "$SRC_INDEX_HASH" = "$DST_INDEX_HASH"
+
+          export SRC_TABLES SRC_MIGRATIONS SRC_FKS SRC_INDEXES SRC_TABLE_HASH SRC_FK_HASH SRC_INDEX_HASH TOPOLOGY_REPORT
+          python3 - <<'PY'
+          import json, os
+          from datetime import datetime, timezone
+          report = {
+              "task": "N8.21.C",
+              "status": "PASS",
+              "createdAtUtc": datetime.now(timezone.utc).isoformat(),
+              "sourceReadOnly": True,
+              "targetDisposableLocal": True,
+              "productionTouched": False,
+              "secretsExposed": 0,
+              "baseTableCount": int(os.environ["SRC_TABLES"]),
+              "efMigrationCount": int(os.environ["SRC_MIGRATIONS"]),
+              "foreignKeyCount": int(os.environ["SRC_FKS"]),
+              "indexCount": int(os.environ["SRC_INDEXES"]),
+              "tableTopologySha256": os.environ["SRC_TABLE_HASH"],
+              "foreignKeyTopologySha256": os.environ["SRC_FK_HASH"],
+              "indexTopologySha256": os.environ["SRC_INDEX_HASH"],
+              "sourceEqualsRestore": True,
+          }
+          with open(os.environ["TOPOLOGY_REPORT"], "w", encoding="utf-8") as f:
+              json.dump(report, f, ensure_ascii=False, indent=2)
+              f.write("\n")
+          PY
+          cat "$TOPOLOGY_REPORT"
+          echo "topology_report=$TOPOLOGY_REPORT" >> "$GITHUB_OUTPUT"
+
+      - name: Publicar solo evidencia segura de validación
+        uses: actions/upload-artifact@v4
+        with:
+          name: n821c-restore-validation-${{ github.run_id }}
+          path: |
+            ${{ steps.backup.outputs.metadata_file }}
+            ${{ steps.restore.outputs.restore_report }}
+            ${{ steps.topology.outputs.topology_report }}
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Eliminar backup cifrado efímero del runner
+        if: always()
+        shell: bash
+        env:
+          BACKUP_FILE: ${{ steps.backup.outputs.backup_file }}
+          BACKUP_CHECKSUM_FILE: ${{ steps.backup.outputs.checksum_file }}
+        run: |
+          set -euo pipefail
+          if [ -n "${BACKUP_FILE:-}" ]; then rm -f "$BACKUP_FILE"; fi
+          if [ -n "${BACKUP_CHECKSUM_FILE:-}" ]; then rm -f "$BACKUP_CHECKSUM_FILE"; fi

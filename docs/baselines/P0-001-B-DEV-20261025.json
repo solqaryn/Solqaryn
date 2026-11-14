@@ -1,0 +1,47 @@
+{
+  "schema": "solqaryn.p0-001-b.dev-parity.v1",
+  "microtask": "P0-001.B",
+  "repository": "solqaryn/Solqaryn",
+  "branch": "dev",
+  "observed_at_utc": "2026-10-25T15:07:00.057Z",
+  "dev_head": "05e6a67a7bbbd2a94b4aeaf1322258ece90c730b",
+  "ci": [
+    {
+      "name": "verify-solqaryn-project-scope",
+      "conclusion": "success",
+      "head_sha": "05e6a67a7bbbd2a94b4aeaf1322258ece90c730b",
+      "url": "https://github.com/solqaryn/Solqaryn/actions/runs/40204990980/job/121203916461"
+    },
+    {
+      "name": "SOLQARYN - Seguridad multiempresa",
+      "conclusion": "success",
+      "head_sha": "05e6a67a7bbbd2a94b4aeaf1322258ece90c730b",
+      "url": "https://github.com/solqaryn/Solqaryn/actions/runs/40204991001/job/121203917078"
+    },
+    {
+      "name": "SOLQARYN - Build y pruebas backend",
+      "conclusion": "success",
+      "head_sha": "05e6a67a7bbbd2a94b4aeaf1322258ece90c730b",
+      "url": "https://github.com/solqaryn/Solqaryn/actions/runs/40204991001/job/121203916940"
+    }
+  ],
+  "render": {
+    "service_name": "solqaryn-api-dev",
+    "service_id": "srv-daqvla49v7es738up9vg",
+    "deployment_id": "dep-dbf1kouq1p3s73eng1n0",
+    "status": "live",
+    "sha": "05e6a67a7bbbd2a94b4aeaf1322258ece90c730b",
+    "finished_at_utc": "2026-10-25T15:05:45.559Z",
+    "url": "https://dashboard.render.com/web/srv-daqvla49v7es738up9vg"
+  },
+  "vercel": {
+    "project_name": "solqaryn-dev",
+    "project_id": "prj_1Anhx5mWyXEBX89lWC24Py6JXe7A",
+    "deployment_id": "dpl_AxCj2iPM9NCPfgweeCa9254VL65q",
+    "state": "CANCELED",
+    "sha": "05e6a67a7bbbd2a94b4aeaf1322258ece90c730b",
+    "url": "https://vercel.com/solqaryn/solqaryn-dev/AxCj2iPM9NCPfgweeCa9254VL65q"
+  },
+  "parity_result": "NO_GO",
+  "limit": "Provider metadata only. Not an HTTP health check, deployed frontend equivalence, or QA/PROD approval."
+}

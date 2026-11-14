@@ -1,0 +1,84 @@
+{
+  "schema": "solqaryn-secret-registry-metadata-v1",
+  "project": "SOLQARYN",
+  "scope": "P0-008.A",
+  "mode": "METADATA_ONLY",
+  "observedAtUtc": "2026-10-26T05:06:52.816Z",
+  "devHead": "785911f1095f13c0b6c0e859c35e0a7b733fcb3c",
+  "source": "Provider metadata read-only through connected Render/Vercel tools; NOT runtime secret verification",
+  "providers": {
+    "vercel": {
+      "projectName": "solqaryn-dev",
+      "projectId": "prj_1Anhx5mWyXEBX89lWC24Py6JXe7A",
+      "decrypt": "false",
+      "variables": [
+        {
+          "key": "SOLQARYN_PUBLIC_STORE_SIGNING_KEY",
+          "targets": [
+            "production"
+          ],
+          "type": "sensitive"
+        },
+        {
+          "key": "SOLQARYN_PUBLIC_STORE_PROOF_ENABLED",
+          "targets": [
+            "production"
+          ],
+          "type": "encrypted"
+        },
+        {
+          "key": "SEO_INDEXING_ENABLED",
+          "targets": [
+            "production",
+            "preview",
+            "development"
+          ],
+          "type": "encrypted"
+        },
+        {
+          "key": "PUBLIC_ORIGIN",
+          "targets": [
+            "production",
+            "preview",
+            "development"
+          ],
+          "type": "encrypted"
+        },
+        {
+          "key": "API_UPSTREAM",
+          "targets": [
+            "production",
+            "preview",
+            "development"
+          ],
+          "type": "encrypted"
+        },
+        {
+          "key": "SOLQARYN_ENV",
+          "targets": [
+            "production",
+            "preview",
+            "development"
+          ],
+          "type": "encrypted"
+        }
+      ]
+    },
+    "render": {
+      "workspace": "SOLQARYN",
+      "workspaceId": "tea-dapjfom7bikc73fncodg",
+      "devService": "solqaryn-api-dev",
+      "serviceId": "srv-daqvla49v7es738up9vg",
+      "branch": "dev",
+      "envRegistryReadable": false
+    },
+    "github": {
+      "repository": "solqaryn/Solqaryn",
+      "secretMetadataReadable": false
+    }
+  },
+  "conclusion": "PARTIAL_NO_GO",
+  "deploymentParityAccredited": false,
+  "actualSecretValuesInspected": false,
+  "devSecretsComplete": false
+}

@@ -1,0 +1,225 @@
+@if (modoFormulario()) {
+  <div class="header-row">
+    <div>
+      <button class="back-button" mat-button type="button" (click)="volverListado()"><mat-icon>arrow_back</mat-icon> Volver a solicitudes</button>
+      <h1 class="page-title">{{ modoFormulario() === 'editar' ? 'Editar solicitud de compra' : 'Nueva solicitud de compra' }}</h1>
+      <p class="page-subtitle">Prepara el borrador documental sin afectar stock, Kardex ni finanzas.</p>
+    </div>
+  </div>
+
+  <form class="card form-card" #solicitudForm="ngForm" (ngSubmit)="guardar()" novalidate>
+    @if (catalogosLoading()) {
+      <div class="state-panel compact-state" role="status" aria-live="polite"><mat-spinner diameter="36"></mat-spinner><span>Cargando catálogos…</span></div>
+    }
+
+    @if (formError()) {
+      <div class="form-alert" role="alert"><mat-icon>error_outline</mat-icon><span>{{ formError() }}</span></div>
+    }
+
+    <div class="form-grid">
+      <mat-form-field appearance="outline">
+        <mat-label>Proveedor</mat-label>
+        <mat-select [(ngModel)]="formProveedorId" name="proveedorId">
+          <mat-option [value]="null">Sin proveedor asignado</mat-option>
+          @for (proveedor of proveedores(); track proveedor.id) { <mat-option [value]="proveedor.id">{{ proveedor.nombre }}</mat-option> }
+        </mat-select>
+        <mat-hint>Opcional mientras la solicitud permanezca en borrador.</mat-hint>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" class="notas-field">
+        <mat-label>Notas</mat-label>
+        <textarea matInput rows="3" maxlength="1000" [(ngModel)]="formNotas" name="notas"></textarea>
+      </mat-form-field>
+    </div>
+
+    <div class="section-heading">
+      <div>
+        <h2>Productos solicitados</h2>
+        <p>Selecciona producto y, cuando aplique, su variante exacta.</p>
+      </div>
+      <button mat-stroked-button type="button" (click)="agregarLinea()"><mat-icon>add</mat-icon> Agregar línea</button>
+    </div>
+
+    <div class="lineas-list">
+      @for (linea of lineas; track $index; let i = $index) {
+        <section class="linea-card" [attr.aria-labelledby]="'linea-title-' + i">
+          <div class="linea-heading">
+            <h3 [id]="'linea-title-' + i">Línea {{ i + 1 }}</h3>
+            <button mat-icon-button type="button" (click)="quitarLinea(i)" [attr.aria-label]="'Eliminar línea ' + (i + 1)" title="Eliminar línea"><mat-icon>delete_outline</mat-icon></button>
+          </div>
+          <div class="linea-grid">
+            <mat-form-field appearance="outline" class="producto-field">
+              <mat-label>Producto</mat-label>
+              <mat-select [(ngModel)]="linea.productoId" [name]="'producto-' + i" required (selectionChange)="productoCambiado(linea)">
+                @for (producto of productos(); track producto.id) { <mat-option [value]="producto.id">{{ etiquetaProducto(producto) }}</mat-option> }
+              </mat-select>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Variante</mat-label>
+              <mat-select [(ngModel)]="linea.productoVarianteId" [name]="'variante-' + i" [disabled]="!linea.productoId || linea.cargandoVariantes">
+                <mat-option [value]="null">Sin variante específica</mat-option>
+                @for (variante of linea.variantes; track variante.id) { <mat-option [value]="variante.id">{{ etiquetaVariante(variante) }}</mat-option> }
+              </mat-select>
+              @if (linea.cargandoVariantes) { <mat-hint>Cargando variantes…</mat-hint> }
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Cantidad</mat-label>
+              <input matInput type="number" min="0.001" step="0.001" required [(ngModel)]="linea.cantidadSolicitada" [name]="'cantidad-' + i">
+            </mat-form-field>
+
+            <mat-form-field appearance="outline">
+              <mat-label>Costo estimado unitario</mat-label>
+              <input matInput type="number" min="0" step="0.01" [(ngModel)]="linea.costoEstimadoUnitario" [name]="'costo-' + i">
+              <span matTextPrefix>L.&nbsp;</span>
+            </mat-form-field>
+
+            <mat-form-field appearance="outline" class="observacion-field">
+              <mat-label>Observación</mat-label>
+              <input matInput maxlength="500" [(ngModel)]="linea.observacion" [name]="'observacion-' + i">
+            </mat-form-field>
+          </div>
+        </section>
+      }
+    </div>
+
+    <div class="form-footer">
+      <div class="estimate-total"><span>Total estimado</span><strong>L. {{ costoEstimadoFormulario() | number:'1.2-2' }}</strong></div>
+      <div class="form-actions">
+        <button mat-stroked-button type="button" (click)="volverListado()">Cancelar</button>
+        <button mat-flat-button color="primary" type="submit" [disabled]="guardando() || catalogosLoading() || solicitudForm.invalid">
+          @if (guardando()) { <mat-spinner diameter="20"></mat-spinner> }
+          <mat-icon>save</mat-icon> Guardar borrador
+        </button>
+      </div>
+    </div>
+  </form>
+} @else if (detalleId()) {
+  <div class="header-row">
+    <div>
+      <button class="back-button" mat-button type="button" (click)="volverListado()"><mat-icon>arrow_back</mat-icon> Volver a solicitudes</button>
+      <h1 class="page-title">Detalle de solicitud de compra</h1>
+    </div>
+  </div>
+
+  @if (detalleLoading()) {
+    <div class="state-panel" role="status" aria-live="polite"><mat-spinner diameter="42"></mat-spinner><span>Cargando solicitud…</span></div>
+  } @else if (detalleError()) {
+    <div class="state-panel error-panel" role="alert">
+      <mat-icon>error_outline</mat-icon><span>{{ detalleError() }}</span>
+      <button mat-stroked-button type="button" (click)="recargarDetalle()">Reintentar</button>
+    </div>
+  } @else if (detalle(); as solicitud) {
+    <section class="detail-card" aria-labelledby="solicitud-numero">
+      <div class="detail-heading">
+        <div>
+          <span class="eyebrow">Solicitud</span>
+          <h2 id="solicitud-numero">{{ solicitud.numeroSolicitud }}</h2>
+        </div>
+        <span class="badge" [class.borrador]="solicitud.estado === 'Borrador'" [class.solicitada]="solicitud.estado === 'Solicitada'" [class.aprobada]="solicitud.estado === 'Aprobada'" [class.rechazada]="solicitud.estado === 'Rechazada'">{{ solicitud.estado }}</span>
+      </div>
+
+      <div class="lifecycle-actions" aria-label="Acciones de la solicitud">
+        @if (solicitud.estado === 'Borrador' && puede('Editar')) {
+          <button mat-stroked-button type="button" (click)="abrirEdicion(solicitud.id)"><mat-icon>edit</mat-icon> Editar borrador</button>
+        }
+        @if (solicitud.estado === 'Borrador' && puede('Confirmar')) {
+          <button mat-flat-button color="primary" type="button" [disabled]="accionando()" (click)="enviar(solicitud)"><mat-icon>send</mat-icon> Enviar</button>
+        }
+        @if (solicitud.estado === 'Solicitada' && puede('Aprobar')) {
+          <button mat-flat-button color="primary" type="button" [disabled]="accionando()" (click)="aprobar(solicitud)"><mat-icon>check_circle</mat-icon> Aprobar</button>
+        }
+        @if (solicitud.estado === 'Solicitada' && puede('Rechazar')) {
+          <button mat-stroked-button type="button" [disabled]="accionando()" (click)="rechazar(solicitud)"><mat-icon>cancel</mat-icon> Rechazar</button>
+        }
+      </div>
+
+      <dl class="metadata-grid">
+        <div><dt>Proveedor</dt><dd>{{ solicitud.proveedorNombre || 'Sin proveedor asignado' }}</dd></div>
+        <div><dt>Líneas</dt><dd>{{ solicitud.detalles.length }}</dd></div>
+        <div><dt>Enviada</dt><dd>{{ solicitud.fechaSolicitudUtc ? (solicitud.fechaSolicitudUtc | date:'dd/MM/yyyy HH:mm') : 'Aún no enviada' }}</dd></div>
+        <div><dt>Solicitada por</dt><dd>{{ solicitud.solicitadaPorNombreSnapshot || '—' }}</dd></div>
+        <div><dt>Decisión</dt><dd>{{ solicitud.fechaDecisionUtc ? (solicitud.fechaDecisionUtc | date:'dd/MM/yyyy HH:mm') : 'Pendiente' }}</dd></div>
+        <div><dt>Decidida por</dt><dd>{{ solicitud.decididaPorNombreSnapshot || '—' }}</dd></div>
+      </dl>
+
+      @if (solicitud.notas) { <div class="notes"><strong>Notas</strong><p>{{ solicitud.notas }}</p></div> }
+      @if (solicitud.motivoRechazo) { <div class="rejection" role="note"><strong>Motivo de rechazo</strong><p>{{ solicitud.motivoRechazo }}</p></div> }
+
+      <div class="table-wrap">
+        <table class="table detail-table">
+          <thead><tr><th>Producto</th><th>SKU</th><th>Cantidad</th><th>Costo estimado</th><th>Subtotal estimado</th></tr></thead>
+          <tbody>
+            @for (d of solicitud.detalles; track d.id || $index) {
+              <tr>
+                <td><strong>{{ referenciaProducto(d) }}</strong>@if (atributosVariante(d)) { <small>{{ atributosVariante(d) }}</small> }</td>
+                <td>{{ d.productoSkuSnapshot || '—' }}</td>
+                <td>{{ d.cantidadSolicitada | number:'1.0-3' }}</td>
+                <td>{{ d.costoEstimadoUnitario != null ? ('L. ' + (d.costoEstimadoUnitario | number:'1.2-2')) : '—' }}</td>
+                <td>{{ d.costoEstimadoUnitario != null ? ('L. ' + ((d.costoEstimadoUnitario * d.cantidadSolicitada) | number:'1.2-2')) : '—' }}</td>
+              </tr>
+            }
+          </tbody>
+        </table>
+      </div>
+      <div class="detail-total"><span>Total estimado</span><strong>L. {{ costoEstimadoTotal(solicitud) | number:'1.2-2' }}</strong></div>
+    </section>
+  }
+} @else {
+  <div class="header-row">
+    <div>
+      <h1 class="page-title">Solicitudes de compra</h1>
+      <p class="page-subtitle">Borradores y solicitudes sometidas a decisión antes de generar una compra.</p>
+    </div>
+    @if (puede('Crear')) { <button mat-flat-button color="primary" type="button" (click)="abrirNueva()"><mat-icon>add</mat-icon> Nueva solicitud</button> }
+  </div>
+
+  <section class="card filters-card" aria-labelledby="filtros-title">
+    <h2 id="filtros-title" class="sr-only">Filtros de solicitudes</h2>
+    <div class="filters-grid">
+      <mat-form-field appearance="outline"><mat-label>Número de solicitud</mat-label><input matInput [(ngModel)]="numero" (keyup.enter)="aplicarFiltros()" autocomplete="off"><mat-icon matSuffix>search</mat-icon></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Estado</mat-label><mat-select [(ngModel)]="estado"><mat-option value="">Todos</mat-option>@for (item of estados; track item) { <mat-option [value]="item">{{ item }}</mat-option> }</mat-select></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Proveedor</mat-label><mat-select [(ngModel)]="proveedorId"><mat-option [value]="null">Todos</mat-option>@for (proveedor of proveedores(); track proveedor.id) { <mat-option [value]="proveedor.id">{{ proveedor.nombre }}</mat-option> }</mat-select></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Desde</mat-label><input matInput type="date" [(ngModel)]="desde"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Hasta</mat-label><input matInput type="date" [(ngModel)]="hasta"></mat-form-field>
+    </div>
+    <div class="filter-actions"><button mat-flat-button color="primary" type="button" (click)="aplicarFiltros()"><mat-icon>filter_alt</mat-icon> Aplicar filtros</button><button mat-stroked-button type="button" (click)="limpiarFiltros()"><mat-icon>filter_alt_off</mat-icon> Limpiar</button></div>
+  </section>
+
+  <section class="card" aria-live="polite">
+    @if (loading()) {
+      <div class="state-panel" role="status"><mat-spinner diameter="42"></mat-spinner><span>Cargando solicitudes…</span></div>
+    } @else if (error()) {
+      <div class="state-panel error-panel" role="alert"><mat-icon>error_outline</mat-icon><span>{{ error() }}</span><button mat-stroked-button type="button" (click)="cargar()">Reintentar</button></div>
+    } @else {
+      <div class="table-wrap table-desktop">
+        <table class="table">
+          <thead><tr><th>Número</th><th>Proveedor</th><th>Estado</th><th>Líneas</th><th>Enviada</th><th>Decisión</th><th><span class="sr-only">Acciones</span></th></tr></thead>
+          <tbody>
+            @for (solicitud of solicitudes(); track solicitud.id) {
+              <tr>
+                <td><strong>{{ solicitud.numeroSolicitud }}</strong></td><td>{{ solicitud.proveedorNombre || 'Sin asignar' }}</td>
+                <td><span class="badge" [class.borrador]="solicitud.estado === 'Borrador'" [class.solicitada]="solicitud.estado === 'Solicitada'" [class.aprobada]="solicitud.estado === 'Aprobada'" [class.rechazada]="solicitud.estado === 'Rechazada'">{{ solicitud.estado }}</span></td>
+                <td>{{ solicitud.detalles.length }}</td><td>{{ solicitud.fechaSolicitudUtc ? (solicitud.fechaSolicitudUtc | date:'dd/MM/yyyy HH:mm') : '—' }}</td><td>{{ solicitud.fechaDecisionUtc ? (solicitud.fechaDecisionUtc | date:'dd/MM/yyyy HH:mm') : '—' }}</td>
+                <td class="actions"><button mat-icon-button type="button" (click)="abrirDetalle(solicitud.id)" [attr.aria-label]="'Ver detalle de ' + solicitud.numeroSolicitud" title="Ver detalle"><mat-icon>visibility</mat-icon></button>@if (solicitud.estado === 'Borrador' && puede('Editar')) { <button mat-icon-button type="button" (click)="abrirEdicion(solicitud.id)" [attr.aria-label]="'Editar ' + solicitud.numeroSolicitud" title="Editar borrador"><mat-icon>edit</mat-icon></button> }</td>
+              </tr>
+            } @empty { <tr><td colspan="7" class="empty">No hay solicitudes que coincidan con los filtros.</td></tr> }
+          </tbody>
+        </table>
+      </div>
+
+      <div class="cards-mobile">
+        @for (solicitud of solicitudes(); track solicitud.id) {
+          <button class="request-card" type="button" (click)="abrirDetalle(solicitud.id)">
+            <div class="request-card__heading"><strong>{{ solicitud.numeroSolicitud }}</strong><span class="badge" [class.borrador]="solicitud.estado === 'Borrador'" [class.solicitada]="solicitud.estado === 'Solicitada'" [class.aprobada]="solicitud.estado === 'Aprobada'" [class.rechazada]="solicitud.estado === 'Rechazada'">{{ solicitud.estado }}</span></div>
+            <p>{{ solicitud.proveedorNombre || 'Sin proveedor asignado' }}</p>
+            <div class="request-card__meta"><span>{{ solicitud.detalles.length }} línea(s)</span><span>{{ solicitud.fechaSolicitudUtc ? (solicitud.fechaSolicitudUtc | date:'dd/MM/yyyy') : 'Borrador' }}</span></div>
+          </button>
+        } @empty { <p class="empty">No hay solicitudes que coincidan con los filtros.</p> }
+      </div>
+
+      <mat-paginator [length]="totalCount()" [pageSize]="pageSize" [pageIndex]="page - 1" [pageSizeOptions]="[10, 25, 50]" (page)="onPageChange($event)"></mat-paginator>
+    }
+  </section>
+}

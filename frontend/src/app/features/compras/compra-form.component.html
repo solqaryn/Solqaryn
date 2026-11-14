@@ -1,0 +1,122 @@
+<div class="header-row"><a routerLink="/compras" mat-icon-button aria-label="Volver a compras"><mat-icon>arrow_back</mat-icon></a><h1 class="page-title">{{ isEdit() ? 'Editar compra (Borrador)' : 'Nueva compra' }}</h1></div>
+@if (loading()) { <div class="loading"><mat-spinner></mat-spinner></div> } @else {
+<form class="card form" [formGroup]="form" (ngSubmit)="submit()">
+  <h2 class="section-title">Datos del proveedor</h2>
+  <div class="fields-grid">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Buscar proveedor existente (nombre, documento/RTN o teléfono)</mat-label>
+      <input matInput [formControl]="buscadorProveedor" [matAutocomplete]="autoProveedor" placeholder="Escribe al menos 2 caracteres...">
+      @if (buscandoProveedor()) { <mat-spinner matSuffix diameter="18"></mat-spinner> } @else if (proveedorSeleccionado()) { <button matSuffix mat-icon-button type="button" (click)="limpiarProveedorSeleccionado()"><mat-icon>close</mat-icon></button> }
+      <mat-autocomplete #autoProveedor="matAutocomplete" [displayWith]="displayProveedor" (optionSelected)="onProveedorSeleccionado($event)">
+        @for (p of opcionesProveedor(); track p.id) { <mat-option [value]="p"><strong>{{ p.nombre }}</strong><span class="opcion-detalle">{{ p.documento || p.telefono || '' }}</span></mat-option> }
+      </mat-autocomplete>
+      @if (errorBusquedaProveedor()) { <mat-error>{{ errorBusquedaProveedor() }}</mat-error> }
+    </mat-form-field>
+    @if (proveedorSeleccionado()) { <p class="proveedor-modo proveedor-existente full-width"><mat-icon>check_circle</mat-icon> Proveedor existente: <strong>{{ proveedorSeleccionado()!.nombre }}</strong></p> }
+    @else { <p class="proveedor-modo proveedor-nuevo full-width"><mat-icon>person_add</mat-icon> Se registrará un proveedor nuevo.</p> }
+    <mat-form-field appearance="outline"><mat-label>Nombre</mat-label><input matInput formControlName="proveedorNombre"></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Teléfono</mat-label><input matInput formControlName="proveedorTelefono"></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Documento/RTN</mat-label><input matInput formControlName="proveedorDocumento"></mat-form-field>
+    <mat-form-field appearance="outline"><mat-label>Factura o referencia</mat-label><input matInput formControlName="documentoReferencia"></mat-form-field>
+  </div>
+
+  <h2 class="section-title">Productos y variantes</h2>
+  <div class="producto-busqueda-remota">
+    <mat-form-field appearance="outline" class="full-width">
+      <mat-label>Buscar producto por nombre, marca, modelo, color, SKU o código de barras</mat-label>
+      <input
+        matInput
+        data-testid="compra-producto-autocomplete"
+        [formControl]="buscadorProducto"
+        [matAutocomplete]="autoProductoCompra"
+        placeholder="Escribe al menos 2 caracteres..."
+        autocomplete="off">
+      @if (buscandoProducto()) { <mat-spinner matSuffix diameter="18"></mat-spinner> }
+      <mat-autocomplete
+        #autoProductoCompra="matAutocomplete"
+        [displayWith]="displayProductoOperacion"
+        (optionSelected)="onProductoBuscadoSeleccionado($event)">
+        @for (item of opcionesProducto(); track item.productoVarianteId) {
+          <mat-option [value]="item">
+            <strong>{{ item.productoNombre }}</strong>
+            <span class="opcion-detalle">
+              {{ item.colorNombre || 'Predeterminada' }} · {{ item.sku }} · stock actual {{ item.cantidadDisponible }} · costo L. {{ item.costo | number:'1.2-2' }}
+            </span>
+          </mat-option>
+        }
+        @if (!buscandoProducto() && opcionesProducto().length === 0 && buscadorProducto.value && buscadorProducto.value.toString().trim().length >= 2 && !errorBusquedaProducto()) {
+          <mat-option disabled>No se encontraron variantes activas para la compra.</mat-option>
+        }
+      </mat-autocomplete>
+      <mat-hint>La consulta es remota, admite stock cero y devuelve como máximo 30 variantes.</mat-hint>
+      @if (errorBusquedaProducto()) { <mat-error>{{ errorBusquedaProducto() }}</mat-error> }
+    </mat-form-field>
+    @if (mensajeBusquedaProducto()) { <p class="producto-busqueda-mensaje" role="status"><mat-icon>check_circle</mat-icon>{{ mensajeBusquedaProducto() }}</p> }
+  </div>
+
+  <app-codigo-scanner-input
+    [procesando]="procesandoEscaneo()"
+    [mensaje]="mensajeEscaneo()"
+    [error]="errorEscaneo()"
+    etiqueta="Escanear SKU o código de barras para la compra"
+    (codigoLeido)="procesarCodigoEscaner($event)">
+  </app-codigo-scanner-input>
+
+  <div class="detalles" formArrayName="detalles">
+    @for (grupo of detalles.controls; track $index; let i = $index) {
+      <div class="detalle-row" [formGroupName]="i">
+        <div class="col-imagen">@if (productoSeleccionado(grupo); as producto) { <app-producto-imagen variant="line" [src]="producto.imagenPrincipalUrl" [alt]="'Imagen de ' + producto.nombre" loading="lazy"></app-producto-imagen> } @else { <app-producto-imagen variant="line" [src]="null" fallbackText="Selecciona"></app-producto-imagen> }</div>
+        <mat-form-field appearance="outline" class="col-producto">
+          <mat-label>Producto activo</mat-label>
+          <mat-select formControlName="productoId" (selectionChange)="onProductoSeleccionado(i, $event.value)">
+            @for (p of productos(); track p.id) { <mat-option [value]="p.id">{{ p.nombre }} — {{ p.marca }} {{ p.modelo }} · stock {{ p.cantidad }}</mat-option> }
+          </mat-select>
+        </mat-form-field>
+        @if (variantesDisponibles(grupo).length > 0) {
+          <mat-form-field appearance="outline" class="col-variante">
+            <mat-label>Color / SKU</mat-label>
+            <mat-select formControlName="productoVarianteId" required (selectionChange)="onVarianteSeleccionada(i, $event.value)">
+              @for (v of variantesDisponibles(grupo); track v.id) { <mat-option [value]="v.id">{{ v.colorNombre || 'Predeterminada' }} · {{ v.sku }} · stock {{ v.cantidad }} · costo L. {{ v.costo | number:'1.2-2' }}</mat-option> }
+            </mat-select>
+            <mat-error>Selecciona una variante.</mat-error>
+          </mat-form-field>
+        }
+        <mat-form-field appearance="outline" class="col-cantidad"><mat-label>Cantidad</mat-label><input matInput type="number" min="1" formControlName="cantidad"></mat-form-field>
+        <mat-form-field appearance="outline" class="col-costo"><mat-label>Costo unitario</mat-label><input matInput type="number" min="0.01" step="0.01" formControlName="costoUnitario"></mat-form-field>
+        <span class="col-subtotal">L. {{ subtotalDetalle(grupo) | number:'1.2-2' }}</span>
+        <button class="action-danger col-eliminar" mat-icon-button type="button" (click)="quitarDetalle(i)" aria-label="Quitar producto"><mat-icon>close</mat-icon></button>
+      </div>
+    }
+  </div>
+  <button mat-button type="button" (click)="agregarDetalle()"><mat-icon>add</mat-icon> Agregar fila manual</button>
+
+  <h2 class="section-title">Pago y totales</h2>
+  <div class="fields-grid">
+    <mat-form-field appearance="outline">
+      <mat-label>Método de pago</mat-label>
+      <mat-select formControlName="metodoPago">
+        @for (metodo of metodosPago(); track metodo.id) {
+          <mat-option [value]="metodo.codigo">{{ metodo.nombre }}</mat-option>
+        }
+      </mat-select>
+      @if (cargandoMetodosPago()) { <mat-hint>Cargando métodos de pago...</mat-hint> }
+      @if (errorMetodosPago()) { <mat-error>{{ errorMetodosPago() }}</mat-error> }
+    </mat-form-field>
+    @if (errorMetodosPago() && metodosPago().length === 0 && !cargandoMetodosPago()) {
+      <button mat-button type="button" (click)="cargarMetodosPagoActivos()"><mat-icon>refresh</mat-icon> Reintentar métodos de pago</button>
+    }
+    <mat-form-field appearance="outline"><mat-label>Estado de pago</mat-label><mat-select formControlName="estadoPago"><mat-option value="Pendiente">Pendiente</mat-option><mat-option value="Pagado">Pagado</mat-option><mat-option value="Parcial">Parcial</mat-option></mat-select></mat-form-field>
+    <mat-form-field appearance="outline" class="full-width"><mat-label>Notas</mat-label><textarea matInput formControlName="notas" rows="2"></textarea></mat-form-field>
+  </div>
+  <div class="totales">
+    @if (calculando()) { <p class="calculando"><mat-spinner diameter="16"></mat-spinner> Calculando impuestos...</p> }
+    @if (resultado(); as r) {
+      <div><span>Importe bruto</span><span>L. {{ r.importeBruto | number:'1.2-2' }}</span></div><div><span>Subtotal sin impuesto</span><span>L. {{ (r.subtotalNeto ?? r.subtotal) | number:'1.2-2' }}</span></div>
+      @for (i of r.impuestosAplicados; track i.impuestoId) { <div class="linea-impuesto"><span>{{ i.nombre }} ({{ i.tasa }}%)</span><span>L. {{ i.monto | number:'1.2-2' }}</span></div> }
+      <div class="total"><span>Total proveedor</span><span>L. {{ r.total | number:'1.2-2' }}</span></div>
+    } @else { <p class="hint">Busca o escanea un producto para calcular.</p> }
+  </div>
+  @if (errorMessage()) { <p class="error" role="alert">{{ errorMessage() }}</p> }
+  <div class="form-actions"><a routerLink="/compras" mat-button>Cancelar</a><button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || detalles.length === 0 || !resultado() || saving() || cargandoMetodosPago() || metodosPago().length === 0 || !!errorMetodosPago()">Guardar borrador</button></div>
+</form>
+}

@@ -1,0 +1,97 @@
+<div class="header-row">
+  <a routerLink="/usuarios" mat-icon-button aria-label="Volver a usuarios" title="Volver a usuarios">
+    <mat-icon>arrow_back</mat-icon>
+  </a>
+  <div class="header-copy">
+    <h1 class="page-title">Editar usuario</h1>
+    <p class="page-subtitle">Actualiza la información administrativa de <strong>{{ usuarioOriginal() }}</strong>.</p>
+  </div>
+</div>
+
+@if (loading()) {
+  <div class="loading" aria-live="polite"><mat-spinner></mat-spinner></div>
+} @else {
+  <form class="card form" [formGroup]="form" (ngSubmit)="guardar()">
+    <div class="info-banner" role="note">
+      <mat-icon aria-hidden="true">security</mat-icon>
+      <div>
+        <strong>Edición protegida por acción</strong>
+        <span>Los datos generales, el rol y la contraseña se autorizan de manera independiente.</span>
+      </div>
+    </div>
+
+    <div class="fields-grid">
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Nombre de usuario</mat-label>
+        <input matInput formControlName="nombreUsuario" autocomplete="username">
+        <mat-hint>3 a 50 caracteres: letras, números, punto, guion o guion bajo.</mat-hint>
+        @if (form.controls.nombreUsuario.hasError('required')) {
+          <mat-error>El nombre de usuario es obligatorio.</mat-error>
+        }
+        @if (form.controls.nombreUsuario.hasError('pattern')) {
+          <mat-error>El nombre de usuario no tiene un formato válido.</mat-error>
+        }
+      </mat-form-field>
+
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Nombre completo</mat-label>
+        <input matInput formControlName="nombreCompleto" autocomplete="name">
+        <mat-hint>Nombre que se mostrará en la cabecera y en los registros de actividad.</mat-hint>
+        @if (form.controls.nombreCompleto.hasError('required')) {
+          <mat-error>El nombre completo es obligatorio.</mat-error>
+        }
+        @if (form.controls.nombreCompleto.hasError('minlength')) {
+          <mat-error>Debe contener al menos 3 caracteres.</mat-error>
+        }
+      </mat-form-field>
+
+      @if (puedeAsignarRol()) {
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Rol</mat-label>
+          <mat-select formControlName="rolId">
+            @for (rol of roles(); track rol.id) {
+              <mat-option [value]="rol.id">{{ rol.nombre }}</mat-option>
+            }
+          </mat-select>
+          <mat-hint>Requiere el permiso <span class="permission-code">Usuarios:AsignarRol</span>.</mat-hint>
+        </mat-form-field>
+      } @else {
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Rol actual</mat-label>
+          <input matInput [value]="rolActualNombre()" disabled>
+          <mat-hint>No tienes permiso para cambiar roles.</mat-hint>
+        </mat-form-field>
+      }
+
+      @if (puedeRestablecerPassword()) {
+        <mat-form-field appearance="outline" subscriptSizing="dynamic">
+          <mat-label>Nueva contraseña (opcional)</mat-label>
+          <input matInput type="password" formControlName="nuevaPassword" autocomplete="new-password">
+          <mat-hint>10 caracteres o más, con mayúscula, minúscula, número y símbolo.</mat-hint>
+          @if (form.controls.nuevaPassword.hasError('pattern')) {
+            <mat-error>La contraseña no cumple los requisitos de seguridad.</mat-error>
+          }
+        </mat-form-field>
+      }
+    </div>
+
+    @if (errorMessage()) {
+      <p class="message error" role="alert">{{ errorMessage() }}</p>
+    }
+
+    <div class="form-actions">
+      <a routerLink="/usuarios" mat-button type="button">Cancelar</a>
+      <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving()">
+        @if (saving()) {
+          <mat-spinner diameter="18"></mat-spinner>
+          <span>Guardando...</span>
+        } @else {
+          <ng-container>
+            <mat-icon>save</mat-icon>
+            <span>Guardar cambios</span>
+          </ng-container>
+        }
+      </button>
+    </div>
+  </form>
+}

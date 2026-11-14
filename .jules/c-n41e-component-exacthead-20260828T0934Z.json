@@ -1,0 +1,10 @@
+{
+  "dispatchId": "VAEP-JULES-C-N41E-COMPONENT-EXACTHEAD-RECON-C6-20260828T0934Z",
+  "taskId": "N4.1.E.COMPONENT_EXACTHEAD_RECON_C6",
+  "workerId": "JULES_C",
+  "expectedBranch": "Desarrollo",
+  "primaryBaseHead": "2a66cf41844ebd0c652bbb1bbeab55f0ceab9735",
+  "taskAttempt": 1,
+  "fileScopeHint": "docs/qa/N4_1_E_COMPONENT_EXACTHEAD_RECON_C6.md",
+  "prompt": "Read-only/evidence-only SAME_PARENT task. Audit the current Caja component spec/forms/selectors on functional authority e7f7cc6e6c14b17087b4b04504e88ef27e76d8f6 against the repository's real test configuration without installing or changing dependencies. Determine only reproducible causal P0/P1 gaps relevant to N4.1.E. Do not invent HTTP/controller/RBAC/client routes. Produce only docs/qa/N4_1_E_COMPONENT_EXACTHEAD_RECON_C6.md and perform two independent self-reviews."
+}

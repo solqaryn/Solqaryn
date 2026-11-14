@@ -1,0 +1,120 @@
+{
+  "schema": "vaep-n8.17-batch-manifest/v1",
+  "parent": "N8.17.A",
+  "branch": "Desarrollo",
+  "source_catalog": "docs/matrices-evaluacion/00_GOBERNANZA/CATALOGO_MATRICES.md",
+  "source_catalog_state_head": "fcf4c00390faa6483cafdf33cd922405fd138074",
+  "source_n8_16_receipt_head": "6d0862cbdb93a4706fb386c2810cd414507159df",
+  "frozen_matrix_id_count": 49,
+  "partition_rule": "one batch per canonical domain; APP_SHELL remains in GOV_CONFIG_INTEGRATIONS; every frozen MATRIX_ID appears exactly once",
+  "batches": [
+    {
+      "batch": "IDENTITY_ACCESS",
+      "count": 5,
+      "matrix_ids": [
+        "VAEP-MX::IDENTITY_ACCESS::LOGIN",
+        "VAEP-MX::IDENTITY_ACCESS::PERFIL",
+        "VAEP-MX::IDENTITY_ACCESS::PERMISOS",
+        "VAEP-MX::IDENTITY_ACCESS::ROLES",
+        "VAEP-MX::IDENTITY_ACCESS::USUARIOS"
+      ]
+    },
+    {
+      "batch": "PRODUCT_CATALOG",
+      "count": 3,
+      "matrix_ids": [
+        "VAEP-MX::PRODUCT_CATALOG::CATALOGOS_PRODUCTO",
+        "VAEP-MX::PRODUCT_CATALOG::CATEGORIAS",
+        "VAEP-MX::PRODUCT_CATALOG::PRODUCTOS"
+      ]
+    },
+    {
+      "batch": "CUSTOMERS_COMMERCIAL",
+      "count": 9,
+      "matrix_ids": [
+        "VAEP-MX::CUSTOMERS_COMMERCIAL::CLIENTES",
+        "VAEP-MX::CUSTOMERS_COMMERCIAL::COSTOS_ENVIO",
+        "VAEP-MX::CUSTOMERS_COMMERCIAL::COTIZACIONES",
+        "VAEP-MX::CUSTOMERS_COMMERCIAL::DESCUENTOS",
+        "VAEP-MX::CUSTOMERS_COMMERCIAL::FACTURAS",
+        "VAEP-MX::CUSTOMERS_COMMERCIAL::PEDIDOS_VENTA",
+        "VAEP-MX::CUSTOMERS_COMMERCIAL::TIPO_CLIENTES",
+        "VAEP-MX::CUSTOMERS_COMMERCIAL::STOREFRONT",
+        "VAEP-MX::CUSTOMERS_COMMERCIAL::VENTAS"
+      ]
+    },
+    {
+      "batch": "PURCHASES_SUPPLIERS",
+      "count": 5,
+      "matrix_ids": [
+        "VAEP-MX::PURCHASES_SUPPLIERS::COMPRAS",
+        "VAEP-MX::PURCHASES_SUPPLIERS::ORDENES_COMPRA",
+        "VAEP-MX::PURCHASES_SUPPLIERS::PROVEEDORES",
+        "VAEP-MX::PURCHASES_SUPPLIERS::RECEPCIONES_COMPRA",
+        "VAEP-MX::PURCHASES_SUPPLIERS::SOLICITUDES_COMPRA"
+      ]
+    },
+    {
+      "batch": "INVENTARIO_LOGISTICA",
+      "count": 5,
+      "matrix_ids": [
+        "VAEP-MX::INVENTARIO_LOGISTICA::ALMACENES",
+        "VAEP-MX::INVENTARIO_LOGISTICA::INVENTARIO",
+        "VAEP-MX::INVENTARIO_LOGISTICA::PREPARACIONES_PEDIDO_VENTA",
+        "VAEP-MX::INVENTARIO_LOGISTICA::SUCURSALES",
+        "VAEP-MX::INVENTARIO_LOGISTICA::UBICACIONES_ALMACEN"
+      ]
+    },
+    {
+      "batch": "CASH_BANKS",
+      "count": 3,
+      "matrix_ids": [
+        "VAEP-MX::CASH_BANKS::CAJA",
+        "VAEP-MX::CASH_BANKS::CUENTAS_BANCARIAS",
+        "VAEP-MX::CASH_BANKS::METODOS_PAGO"
+      ]
+    },
+    {
+      "batch": "FINANCE_ACCOUNTING",
+      "count": 8,
+      "matrix_ids": [
+        "VAEP-MX::FINANCE_ACCOUNTING::ASIENTOS_CONTABLES",
+        "VAEP-MX::FINANCE_ACCOUNTING::CENTROS_COSTO",
+        "VAEP-MX::FINANCE_ACCOUNTING::CUENTAS_POR_COBRAR",
+        "VAEP-MX::FINANCE_ACCOUNTING::ESTADOS_FINANCIEROS",
+        "VAEP-MX::FINANCE_ACCOUNTING::FINANZAS",
+        "VAEP-MX::FINANCE_ACCOUNTING::IMPUESTOS",
+        "VAEP-MX::FINANCE_ACCOUNTING::PERIODOS_CONTABLES",
+        "VAEP-MX::FINANCE_ACCOUNTING::PLAN_CUENTAS"
+      ]
+    },
+    {
+      "batch": "BI_REPORTING",
+      "count": 7,
+      "matrix_ids": [
+        "VAEP-MX::BI_REPORTING::CENTRO_REPORTES",
+        "VAEP-MX::BI_REPORTING::DASHBOARD",
+        "VAEP-MX::BI_REPORTING::RENTABILIDAD",
+        "VAEP-MX::BI_REPORTING::REPORTES_ADMINISTRATIVOS",
+        "VAEP-MX::BI_REPORTING::REPORTES_COMPRAS",
+        "VAEP-MX::BI_REPORTING::REPORTES_INVENTARIO",
+        "VAEP-MX::BI_REPORTING::REPORTES_VENTAS"
+      ]
+    },
+    {
+      "batch": "GOV_CONFIG_INTEGRATIONS",
+      "count": 4,
+      "matrix_ids": [
+        "VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL",
+        "VAEP-MX::GOV_CONFIG_INTEGRATIONS::AUDITORIA",
+        "VAEP-MX::GOV_CONFIG_INTEGRATIONS::CARGAS_MASIVAS",
+        "VAEP-MX::GOV_CONFIG_INTEGRATIONS::CONFIGURACION"
+      ]
+    }
+  ],
+  "expected_batch_count": 9,
+  "expected_total": 49,
+  "zero_missing_required": true,
+  "zero_duplicates_required": true,
+  "notes": "This freezes only the 49 N8.16 contract roots. N8.17 may add material child contracts only after discovery/materiality review and stable MATRIX_ID assignment; such additions must be reconciled additively and do not retroactively alter this PRE freeze."
+}

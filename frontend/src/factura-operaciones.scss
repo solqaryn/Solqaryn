@@ -1,0 +1,121 @@
+.thermal-driver-warning {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  padding: 12px 14px;
+  border: 1px solid color-mix(in srgb, var(--color-warning) 42%, var(--color-border));
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--color-warning) 9%, var(--color-surface));
+  color: var(--color-text);
+  font-size: 12px;
+  line-height: 1.5;
+}
+
+.thermal-driver-warning mat-icon {
+  flex: 0 0 auto;
+  color: var(--color-warning);
+}
+
+.profile-measure {
+  margin-top: 3px;
+  color: var(--color-heading) !important;
+  font-weight: 700;
+}
+
+.panel-correo .correo-field {
+  margin-top: 14px;
+}
+
+.smtp-summary {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--color-bg) 60%, var(--color-surface));
+}
+
+.smtp-summary > div {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.smtp-summary span {
+  color: var(--color-text-muted);
+  font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+
+.smtp-summary strong {
+  overflow-wrap: anywhere;
+  font-size: 12px;
+}
+
+.smtp-status {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin: 10px 0 14px;
+  padding: 12px 14px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  background: var(--color-surface);
+  color: var(--color-text);
+  font-size: 12px;
+  line-height: 1.45;
+}
+
+.smtp-status mat-icon,
+.smtp-status mat-spinner {
+  flex: 0 0 auto;
+}
+
+.smtp-status p {
+  margin: 2px 0;
+}
+
+.smtp-status small {
+  display: block;
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+}
+
+.smtp-loading {
+  align-items: center;
+  background: color-mix(in srgb, var(--color-info) 6%, var(--color-surface));
+}
+
+.smtp-ok {
+  border-color: color-mix(in srgb, var(--color-success) 42%, var(--color-border));
+  background: color-mix(in srgb, var(--color-success) 8%, var(--color-surface));
+}
+
+.smtp-ok mat-icon {
+  color: var(--color-success);
+}
+
+.smtp-error {
+  border-color: color-mix(in srgb, var(--color-danger) 42%, var(--color-border));
+  background: color-mix(in srgb, var(--color-danger) 7%, var(--color-surface));
+}
+
+.smtp-error mat-icon {
+  color: var(--color-danger);
+}
+
+@media (max-width: 600px) {
+  .smtp-summary {
+    grid-template-columns: 1fr;
+  }
+
+  .thermal-driver-warning,
+  .smtp-status {
+    padding: 10px 11px;
+  }
+}

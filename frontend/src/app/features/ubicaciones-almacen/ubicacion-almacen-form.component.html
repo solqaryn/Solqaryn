@@ -1,0 +1,100 @@
+<div class="header-row">
+  <a routerLink="/ubicaciones-almacen" mat-icon-button aria-label="Volver a ubicaciones internas"><mat-icon>arrow_back</mat-icon></a>
+  <div>
+    <h1 class="page-title">{{ isEdit() ? 'Editar ubicación' : 'Nueva ubicación' }}</h1>
+    <p class="page-subtitle">Define la topología interna del almacén. El stock y las existencias se administrarán en ERP-N1.4.</p>
+  </div>
+</div>
+
+<form class="card form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+  @if (loading()) {
+    <div class="loading" role="status" aria-live="polite">
+      <mat-spinner diameter="42"></mat-spinner>
+      <span class="visually-hidden">Cargando ubicación</span>
+    </div>
+  } @else {
+    <section aria-labelledby="estructura-heading">
+      <h2 id="estructura-heading">Estructura interna</h2>
+      <div class="form-grid two-cols">
+        <mat-form-field appearance="outline">
+          <mat-label>Almacén</mat-label>
+          <mat-select formControlName="almacenId" required (selectionChange)="onAlmacenSeleccionado()">
+            @for (a of almacenes(); track a.id) {
+              <mat-option [value]="a.id">{{ a.codigo }} · {{ a.nombre }}{{ a.activo ? '' : ' (inactivo · solo conservación)' }}</mat-option>
+            }
+          </mat-select>
+          <mat-hint>Crear, mover o reactivar requiere almacén y sucursal activos.</mat-hint>
+          @if (form.controls.almacenId.touched && form.controls.almacenId.invalid) {
+            <mat-error>Selecciona un almacén válido.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Ubicación padre</mat-label>
+          <mat-select formControlName="ubicacionPadreId" [disabled]="loadingPadres() || !form.controls.almacenId.value">
+            <mat-option [value]="null">Sin padre · nivel raíz</mat-option>
+            @for (p of padres(); track p.id) {
+              <mat-option [value]="p.id">{{ p.codigo }} · {{ p.nombre }}{{ p.activa ? '' : ' (inactiva · solo conservación)' }}</mat-option>
+            }
+          </mat-select>
+          <mat-hint>Solo ubicaciones del mismo almacén; ciclos y padres inactivos se rechazan.</mat-hint>
+        </mat-form-field>
+      </div>
+    </section>
+
+    <section aria-labelledby="identificacion-heading">
+      <h2 id="identificacion-heading">Identificación</h2>
+      <div class="form-grid two-cols">
+        <mat-form-field appearance="outline">
+          <mat-label>Código</mat-label>
+          <input matInput formControlName="codigo" maxlength="60" autocomplete="off" required>
+          <mat-hint>Único entre ubicaciones activas del mismo almacén.</mat-hint>
+          @if (form.controls.codigo.touched && form.controls.codigo.hasError('required')) {
+            <mat-error>El código es obligatorio.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Nombre</mat-label>
+          <input matInput formControlName="nombre" maxlength="150" autocomplete="off" required>
+          @if (form.controls.nombre.touched && form.controls.nombre.hasError('required')) {
+            <mat-error>El nombre es obligatorio.</mat-error>
+          }
+        </mat-form-field>
+
+        <mat-form-field appearance="outline">
+          <mat-label>Tipo</mat-label>
+          <mat-select formControlName="tipo" required>
+            @for (t of tipos(); track t.codigo) {
+              <mat-option [value]="t.codigo">{{ t.nombre }}</mat-option>
+            }
+          </mat-select>
+          <mat-hint>Pasillo, estante, rack, sección, bin u otra.</mat-hint>
+          @if (form.controls.tipo.touched && form.controls.tipo.hasError('required')) {
+            <mat-error>El tipo es obligatorio.</mat-error>
+          }
+        </mat-form-field>
+      </div>
+    </section>
+
+    <div class="scope-note" role="note">
+      <mat-icon>info</mat-icon>
+      <span>Este mantenimiento solo define topología. No modifica cantidades, reservas, movimientos ni existencias por almacén.</span>
+    </div>
+
+    @if (errorMessage()) {
+      <div class="form-error" role="alert">
+        <mat-icon>error_outline</mat-icon>
+        <span>{{ errorMessage() }}</span>
+      </div>
+    }
+
+    <div class="form-actions">
+      <a routerLink="/ubicaciones-almacen" mat-button type="button">Cancelar</a>
+      <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving() || loading()">
+        @if (saving()) { <mat-spinner diameter="20"></mat-spinner> }
+        <span>{{ saving() ? 'Guardando…' : 'Guardar ubicación' }}</span>
+      </button>
+    </div>
+  }
+</form>

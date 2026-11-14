@@ -1,0 +1,43 @@
+.header-row { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; min-width: 0; .page-title { margin: 0; font-size: 22px; } }
+.loading { display: flex; justify-content: center; padding: 40px 0; }
+.form { width: 100%; max-width: 1180px; }
+.section-title { font-size: 14px; font-weight: 700; margin: 20px 0 10px; &:first-of-type { margin-top: 0; } }
+.fields-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 16px; .full-width { grid-column: 1 / -1; } mat-form-field { width: 100%; min-width: 0; } }
+.cliente-modo { display: flex; align-items: center; gap: 6px; margin: -4px 0 6px; font-size: 12px; line-height: 1.4; mat-icon { flex: 0 0 16px; font-size: 16px; width: 16px; height: 16px; } }
+.cliente-existente { color: var(--color-success); }
+.cliente-nuevo { color: var(--color-text-muted); }
+.opcion-detalle { margin-left: 8px; font-size: 11px; color: var(--color-text-muted); }
+.producto-busqueda-remota { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; .full-width { width: 100%; } }
+.producto-busqueda-mensaje { display: flex; align-items: center; gap: 6px; margin: -8px 0 6px; color: var(--color-success); font-size: 12px; mat-icon { font-size: 16px; width: 16px; height: 16px; } }
+.detalles { display: flex; flex-direction: column; gap: 4px; }
+.detalle-row { display: grid; grid-template-columns: 52px minmax(190px, 2.4fr) minmax(190px, 2fr) minmax(78px, .7fr) minmax(105px, 1fr) minmax(90px, auto) auto; gap: 8px; align-items: center; min-width: 0;
+  .col-imagen { align-self: start; padding-top: 2px; }
+  .col-producto, .col-variante, .col-cantidad, .col-costo { width: 100%; min-width: 0; }
+  .col-subtotal { font-size: 13px; font-weight: 700; text-align: right; padding-right: 4px; white-space: nowrap; }
+}
+.totales { width: 100%; max-width: 380px; margin: 12px 0 0 auto; display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border: 1px solid var(--color-border); border-radius: 10px; background: color-mix(in srgb, var(--color-bg) 70%, var(--color-surface)); font-size: 13px;
+  div { display: flex; justify-content: space-between; gap: 12px; }
+  .total { font-weight: 800; font-size: 15px; border-top: 1px solid var(--color-border); padding-top: 7px; margin-top: 4px; }
+  .linea-descuento { color: #059669; }
+  .linea-impuesto { color: var(--color-text-muted); }
+}
+.calculando { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--color-text-muted); }
+.hint { font-size: 12px; color: var(--color-text-muted); text-align: right; }
+.error { color: var(--color-danger); font-size: 13px; }
+.form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; a[mat-button] { text-decoration: none; } }
+@media (max-width: 960px) {
+  .detalle-row { grid-template-columns: 52px repeat(3, minmax(0, 1fr)) auto; grid-template-areas: "imagen producto producto producto eliminar" "imagen variante variante cantidad costo"; row-gap: 2px; }
+  .col-imagen { grid-area: imagen; } .col-producto { grid-area: producto; } .col-variante { grid-area: variante; } .col-cantidad { grid-area: cantidad; } .col-costo { grid-area: costo; } .col-eliminar { grid-area: eliminar; justify-self: end; } .col-subtotal { display: none; }
+}
+@media (max-width: 640px) {
+  .fields-grid { grid-template-columns: 1fr; } .fields-grid .full-width { grid-column: auto; }
+  /* Mantén cantidad y precio como dos columnas reales. La columna `auto`
+     permitía que el precio tomara todo el ancho y comprimía cantidad hasta
+     solapar su outline/label con el siguiente control. */
+  /* Reservar una columna táctil estable para cantidad y otra flexible para
+     precio evita que un área de producto que ocupa dos columnas colapse la
+     cantidad a 0 px en viewports angostos. */
+  .detalle-row { grid-template-columns: 52px minmax(64px, max-content) minmax(0, 1fr) 48px; grid-template-areas: "imagen producto producto eliminar" "imagen variante variante ." ". cantidad costo ."; }
+  .header-row { align-items: flex-start; } .form { padding: 14px; } .totales { max-width: none; } .hint { text-align: left; }
+  .form-actions { flex-direction: column-reverse; align-items: stretch; button, a { width: 100%; } }
+}

@@ -1,0 +1,244 @@
+<section class="reportes-page" aria-labelledby="reportes-title">
+  <header class="page-header">
+    <div>
+      <span class="eyebrow">Administración y control</span>
+      <h1 id="reportes-title">Reportes administrativos</h1>
+      <p>Diagnóstico de accesos, privilegios, roles y actividad registrada en la bitácora.</p>
+    </div>
+
+    <div class="periodo" aria-label="Período del reporte">
+      <mat-form-field appearance="outline">
+        <mat-label>Desde</mat-label>
+        <input matInput type="date" [(ngModel)]="desde">
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Hasta</mat-label>
+        <input matInput type="date" [(ngModel)]="hasta">
+      </mat-form-field>
+      <button mat-flat-button type="button" (click)="cargar()" [disabled]="loading()">
+        <mat-icon>refresh</mat-icon>
+        Actualizar
+      </button>
+    </div>
+  </header>
+
+  @if (error()) {
+    <div class="error-banner" role="alert">
+      <mat-icon>error_outline</mat-icon>
+      <span>{{ error() }}</span>
+    </div>
+  }
+
+  @if (loading()) {
+    <div class="loading-state" aria-live="polite">
+      <mat-spinner diameter="42"></mat-spinner>
+      <span>Consolidando datos administrativos…</span>
+    </div>
+  } @else if (resumen(); as r) {
+    <div class="metrics-grid" aria-label="Indicadores administrativos">
+      <article class="metric-card">
+        <mat-icon>group</mat-icon>
+        <div><strong>{{ r.usuariosActivos }}</strong><span>Usuarios habilitados</span></div>
+        <small>{{ r.usuariosTotales }} registrados</small>
+      </article>
+      <article class="metric-card">
+        <mat-icon>admin_panel_settings</mat-icon>
+        <div><strong>{{ r.usuariosPrivilegiados }}</strong><span>Usuarios privilegiados</span></div>
+        <small>Administradores o con permisos sensibles</small>
+      </article>
+      <article class="metric-card">
+        <mat-icon>badge</mat-icon>
+        <div><strong>{{ r.rolesActivos }}</strong><span>Roles activos</span></div>
+        <small>{{ r.rolesSinPermisos }} sin permisos</small>
+      </article>
+      <article class="metric-card">
+        <mat-icon>policy</mat-icon>
+        <div><strong>{{ r.permisosCatalogados }}</strong><span>Permisos catalogados</span></div>
+        <small>Fuente única de módulo y acción</small>
+      </article>
+      <article class="metric-card">
+        <mat-icon>receipt_long</mat-icon>
+        <div><strong>{{ r.eventosAuditoria }}</strong><span>Eventos auditados</span></div>
+        <small>{{ r.eventosExitosos }} exitosos</small>
+      </article>
+      <article class="metric-card metric-danger">
+        <mat-icon>gpp_bad</mat-icon>
+        <div><strong>{{ r.eventosRechazados + r.eventosConError }}</strong><span>Rechazos y errores</span></div>
+        <small>{{ r.eventosRechazados }} rechazados · {{ r.eventosConError }} con error</small>
+      </article>
+    </div>
+
+    @if (r.alertas.length) {
+      <section class="alerts-panel" aria-labelledby="alerts-title">
+        <div class="section-heading">
+          <div>
+            <h2 id="alerts-title">Alertas administrativas</h2>
+            <p>Hallazgos que requieren revisión, no cambios automáticos.</p>
+          </div>
+          <span class="counter">{{ r.alertas.length }}</span>
+        </div>
+        <div class="alerts-grid">
+          @for (alerta of r.alertas; track alerta.codigo) {
+            <article class="alert-card" [class]="claseEstado(alerta.severidad)">
+              <mat-icon>{{ alerta.severidad === 'Alta' ? 'priority_high' : 'info' }}</mat-icon>
+              <div>
+                <strong>{{ alerta.cantidad }} · {{ alerta.severidad }}</strong>
+                <span>{{ alerta.mensaje }}</span>
+              </div>
+            </article>
+          }
+        </div>
+      </section>
+    }
+
+    <mat-tab-group animationDuration="150ms" class="reports-tabs">
+      <mat-tab label="Usuarios y accesos">
+        <section class="tab-panel">
+          <div class="toolbar">
+            <mat-form-field appearance="outline" class="search-field">
+              <mat-label>Buscar usuario, nombre, rol o estado</mat-label>
+              <mat-icon matPrefix>search</mat-icon>
+              <input matInput [(ngModel)]="filtroUsuarios">
+            </mat-form-field>
+            <div class="export-actions">
+              <button mat-stroked-button type="button" (click)="exportar('usuarios', 'csv')" [disabled]="exporting() !== null">
+                <mat-icon>table_view</mat-icon> CSV
+              </button>
+              <button mat-flat-button type="button" (click)="exportar('usuarios', 'xlsx')" [disabled]="exporting() !== null">
+                <mat-icon>download</mat-icon> Excel
+              </button>
+              <button mat-flat-button color="primary" type="button" (click)="exportar('usuarios', 'pdf')" [disabled]="exporting() !== null" aria-label="Descargar reporte de usuarios en PDF">
+                <mat-icon>picture_as_pdf</mat-icon> PDF
+              </button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table mat-table [dataSource]="usuariosFiltrados()" aria-label="Reporte de usuarios y accesos">
+              <ng-container matColumnDef="usuario">
+                <th mat-header-cell *matHeaderCellDef>Usuario</th>
+                <td mat-cell *matCellDef="let item">
+                  <strong>{{ item.nombreUsuario }}</strong>
+                  <span>{{ item.nombreCompleto }}</span>
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="rol">
+                <th mat-header-cell *matHeaderCellDef>Rol</th>
+                <td mat-cell *matCellDef="let item">
+                  {{ item.rol }}
+                  @if (item.esAdministrador) { <mat-icon class="inline-icon" matTooltip="Administrador">verified_user</mat-icon> }
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="estado">
+                <th mat-header-cell *matHeaderCellDef>Estado de acceso</th>
+                <td mat-cell *matCellDef="let item">
+                  <span class="status-pill" [class]="claseEstado(item.estadoAcceso)">{{ item.estadoAcceso }}</span>
+                </td>
+              </ng-container>
+              <ng-container matColumnDef="permisos">
+                <th mat-header-cell *matHeaderCellDef>Permisos efectivos</th>
+                <td mat-cell *matCellDef="let item">{{ item.permisosEfectivos }}</td>
+              </ng-container>
+              <ng-container matColumnDef="sensibles">
+                <th mat-header-cell *matHeaderCellDef>Sensibles</th>
+                <td mat-cell *matCellDef="let item">
+                  <span [class.sensitive]="item.permisosSensibles > 0">{{ item.permisosSensibles }}</span>
+                </td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="columnasUsuarios"></tr>
+              <tr mat-row *matRowDef="let row; columns: columnasUsuarios"></tr>
+            </table>
+          </div>
+          @if (!usuariosFiltrados().length) { <p class="empty-state">No hay usuarios que coincidan con el filtro.</p> }
+        </section>
+      </mat-tab>
+
+      <mat-tab label="Roles y permisos">
+        <section class="tab-panel">
+          <div class="toolbar">
+            <mat-form-field appearance="outline" class="search-field">
+              <mat-label>Buscar rol, nivel o estado</mat-label>
+              <mat-icon matPrefix>search</mat-icon>
+              <input matInput [(ngModel)]="filtroRoles">
+            </mat-form-field>
+            <div class="export-actions">
+              <button mat-stroked-button type="button" (click)="exportar('roles', 'csv')" [disabled]="exporting() !== null">
+                <mat-icon>table_view</mat-icon> CSV
+              </button>
+              <button mat-flat-button type="button" (click)="exportar('roles', 'xlsx')" [disabled]="exporting() !== null">
+                <mat-icon>download</mat-icon> Excel
+              </button>
+              <button mat-flat-button color="primary" type="button" (click)="exportar('roles', 'pdf')" [disabled]="exporting() !== null" aria-label="Descargar reporte de roles en PDF">
+                <mat-icon>picture_as_pdf</mat-icon> PDF
+              </button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table mat-table [dataSource]="rolesFiltrados()" aria-label="Reporte de roles y permisos">
+              <ng-container matColumnDef="rol">
+                <th mat-header-cell *matHeaderCellDef>Rol</th>
+                <td mat-cell *matCellDef="let item"><strong>{{ item.rol }}</strong><span>{{ item.esSistema ? 'Rol de sistema' : 'Rol administrable' }}</span></td>
+              </ng-container>
+              <ng-container matColumnDef="usuarios"><th mat-header-cell *matHeaderCellDef>Usuarios</th><td mat-cell *matCellDef="let item">{{ item.usuariosAsignados }}</td></ng-container>
+              <ng-container matColumnDef="permisos"><th mat-header-cell *matHeaderCellDef>Permisos</th><td mat-cell *matCellDef="let item">{{ item.permisosAsignados }} <small>({{ item.permisosSensibles }} sensibles)</small></td></ng-container>
+              <ng-container matColumnDef="cobertura"><th mat-header-cell *matHeaderCellDef>Cobertura</th><td mat-cell *matCellDef="let item">{{ item.porcentajeCobertura | number:'1.0-2' }}%</td></ng-container>
+              <ng-container matColumnDef="privilegio"><th mat-header-cell *matHeaderCellDef>Nivel</th><td mat-cell *matCellDef="let item"><span class="status-pill" [class]="claseEstado(item.nivelPrivilegio)">{{ item.nivelPrivilegio }}</span></td></ng-container>
+              <ng-container matColumnDef="estado"><th mat-header-cell *matHeaderCellDef>Configuración</th><td mat-cell *matCellDef="let item"><span class="status-pill" [class]="claseEstado(item.estadoConfiguracion)">{{ item.estadoConfiguracion }}</span></td></ng-container>
+              <ng-container matColumnDef="detalle">
+                <th mat-header-cell *matHeaderCellDef>Detalle</th>
+                <td mat-cell *matCellDef="let item">
+                  <button mat-icon-button type="button" (click)="toggleRol(item.rolId)" [attr.aria-label]="'Ver permisos del rol ' + item.rol">
+                    <mat-icon>{{ rolExpandido() === item.rolId ? 'expand_less' : 'expand_more' }}</mat-icon>
+                  </button>
+                </td>
+              </ng-container>
+              <tr mat-header-row *matHeaderRowDef="columnasRoles"></tr>
+              <tr mat-row *matRowDef="let row; columns: columnasRoles"></tr>
+            </table>
+          </div>
+
+          @for (rol of rolesFiltrados(); track rol.rolId) {
+            @if (rolExpandido() === rol.rolId) {
+              <div class="permission-detail" aria-live="polite">
+                <h3>Permisos efectivos de {{ rol.rol }}</h3>
+                <div class="permission-list">
+                  @for (permiso of rol.permisos; track permiso) { <span>{{ permiso }}</span> }
+                </div>
+              </div>
+            }
+          }
+        </section>
+      </mat-tab>
+
+      <mat-tab label="Actividad de auditoría">
+        <section class="tab-panel">
+          <div class="toolbar audit-toolbar">
+            <div class="audit-summary">
+              <span><strong>{{ auditoria()?.total ?? 0 }}</strong> eventos</span>
+              <span><strong>{{ auditoria()?.usuariosUnicos ?? 0 }}</strong> usuarios</span>
+              <span><strong>{{ auditoria()?.rechazados ?? 0 }}</strong> rechazados</span>
+            </div>
+            <div class="export-actions">
+              <button mat-stroked-button type="button" (click)="exportar('auditoria', 'csv')" [disabled]="exporting() !== null"><mat-icon>table_view</mat-icon> CSV</button>
+              <button mat-flat-button type="button" (click)="exportar('auditoria', 'xlsx')" [disabled]="exporting() !== null"><mat-icon>download</mat-icon> Excel</button>
+              <button mat-flat-button color="primary" type="button" (click)="exportar('auditoria', 'pdf')" [disabled]="exporting() !== null" aria-label="Descargar reporte de auditoría en PDF"><mat-icon>picture_as_pdf</mat-icon> PDF</button>
+            </div>
+          </div>
+
+          <div class="table-wrap">
+            <table mat-table [dataSource]="auditoria()?.porModulo ?? []" aria-label="Actividad de auditoría por módulo">
+              <ng-container matColumnDef="modulo"><th mat-header-cell *matHeaderCellDef>Módulo</th><td mat-cell *matCellDef="let item"><strong>{{ item.modulo }}</strong></td></ng-container>
+              <ng-container matColumnDef="total"><th mat-header-cell *matHeaderCellDef>Total</th><td mat-cell *matCellDef="let item">{{ item.total }}</td></ng-container>
+              <ng-container matColumnDef="exitosos"><th mat-header-cell *matHeaderCellDef>Éxitos</th><td mat-cell *matCellDef="let item">{{ item.exitosos }}</td></ng-container>
+              <ng-container matColumnDef="rechazados"><th mat-header-cell *matHeaderCellDef>Rechazos</th><td mat-cell *matCellDef="let item">{{ item.rechazados }}</td></ng-container>
+              <ng-container matColumnDef="errores"><th mat-header-cell *matHeaderCellDef>Errores</th><td mat-cell *matCellDef="let item">{{ item.conError }}</td></ng-container>
+              <tr mat-header-row *matHeaderRowDef="columnasActividad"></tr>
+              <tr mat-row *matRowDef="let row; columns: columnasActividad"></tr>
+            </table>
+          </div>
+        </section>
+      </mat-tab>
+    </mat-tab-group>
+  }
+</section>

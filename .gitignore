@@ -1,0 +1,76 @@
+# Herramientas y espacios locales de agentes
+.dotnet_cli_home/
+.mysql-data/
+.agents/
+.codex/
+.antigravity/
+.chatgpt/
+.claude/
+
+# Variables locales, secretos y certificados
+.env
+.env.*
+!.env.example
+*.local
+*.secrets.json
+secrets.json
+**/appsettings.Production.json
+**/appsettings.*.local.json
+*.pfx
+*.p12
+*.pem
+*.key
+
+# .NET / ASP.NET Core
+**/bin/
+**/obj/
+**/TestResults/
+*.user
+*.suo
+*.userosscache
+*.sln.docstates
+artifacts/
+
+# Angular / Node.js
+**/node_modules/
+**/dist/
+**/.angular/
+**/coverage/
+**/playwright-report/
+**/test-results/
+*.tsbuildinfo
+.npm/
+
+# Registros, temporales y cachés
+*.log
+*.tmp
+*.temp
+*.bak
+*.swp
+*.swo
+*.cache
+.cache/
+tmp/
+temp/
+logs/
+
+# Sistema operativo y editores
+.DS_Store
+Thumbs.db
+Desktop.ini
+.vscode/
+.idea/
+.vs/
+
+# Archivos comprimidos o respaldos locales
+*.zip
+*.7z
+*.rar
+*.tar
+*.gz
+*.gpg
+*.sql.bak
+*.backup
+.m11-backups/
+m11-restored-files/
+m11-restore-report.json

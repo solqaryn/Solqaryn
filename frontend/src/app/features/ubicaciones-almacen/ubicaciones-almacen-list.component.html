@@ -1,0 +1,194 @@
+<div class="header-row">
+  <div>
+    <h1 class="page-title">Ubicaciones internas</h1>
+    <p class="page-subtitle">Modela pasillos, racks, estantes, secciones y bins dentro de cada almacén. Las existencias se incorporan en ERP-N1.4.</p>
+  </div>
+  @if (puedeCrear()) {
+    <a routerLink="/ubicaciones-almacen/nueva" mat-flat-button color="primary">
+      <mat-icon>add_location_alt</mat-icon> Nueva ubicación
+    </a>
+  }
+</div>
+
+<div class="card">
+  <div class="toolbar" aria-label="Búsqueda y filtros de ubicaciones internas">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Buscar ubicación</mat-label>
+      <input
+        matInput
+        [ngModel]="buscar"
+        (ngModelChange)="onSearchChange($event)"
+        autocomplete="off"
+        placeholder="Código, nombre, almacén o padre">
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Almacén</mat-label>
+      <mat-select [(ngModel)]="almacenId" (selectionChange)="onAlmacenChange()" [disabled]="loadingCatalogos()">
+        <mat-option [value]="null">Todos</mat-option>
+        @for (a of almacenes(); track a.id) {
+          <mat-option [value]="a.id">{{ a.codigo }} · {{ a.nombre }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Nivel / padre</mat-label>
+      <mat-select [(ngModel)]="padreFiltro" (selectionChange)="aplicarFiltros()" [disabled]="!almacenId || loadingPadres()">
+        <mat-option value="todos">Todos los niveles</mat-option>
+        <mat-option value="raiz">Solo raíz</mat-option>
+        @for (p of padresDisponibles(); track p.id) {
+          <mat-option [value]="p.id">Hijos de {{ p.codigo }} · {{ p.nombre }}</mat-option>
+        }
+      </mat-select>
+      @if (!almacenId) { <mat-hint>Selecciona un almacén para filtrar por padre.</mat-hint> }
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Tipo</mat-label>
+      <mat-select [(ngModel)]="tipo" (selectionChange)="aplicarFiltros()" [disabled]="loadingCatalogos()">
+        <mat-option value="">Todos</mat-option>
+        @for (t of tipos(); track t.codigo) {
+          <mat-option [value]="t.codigo">{{ t.nombre }}</mat-option>
+        }
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Estado</mat-label>
+      <mat-select [(ngModel)]="estado" (selectionChange)="aplicarFiltros()">
+        <mat-option value="todos">Todos</mat-option>
+        <mat-option value="activas">Activas</mat-option>
+        <mat-option value="inactivas">Inactivas</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <button mat-stroked-button type="button" (click)="limpiarFiltros()">
+      <mat-icon>filter_alt_off</mat-icon> Limpiar
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading" role="status" aria-live="polite">
+      <mat-spinner diameter="42"></mat-spinner>
+      <span class="visually-hidden">Cargando ubicaciones internas</span>
+    </div>
+  } @else if (errorMessage()) {
+    <div class="error-state" role="alert">
+      <mat-icon>cloud_off</mat-icon>
+      <div>
+        <strong>No fue posible cargar las ubicaciones</strong>
+        <p>{{ errorMessage() }}</p>
+      </div>
+      <button mat-stroked-button type="button" (click)="cargar()"><mat-icon>refresh</mat-icon> Reintentar</button>
+    </div>
+  } @else {
+    <div class="results-summary" aria-live="polite">
+      {{ total() }} ubicación{{ total() === 1 ? '' : 'es' }} encontrada{{ total() === 1 ? '' : 's' }}
+      @if (totalPaginas() > 1) { · Página {{ pagina }} de {{ totalPaginas() }} }
+    </div>
+
+    <table class="table table-desktop">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Nombre</th>
+          <th>Almacén</th>
+          <th>Padre</th>
+          <th>Tipo</th>
+          <th>Estado</th>
+          <th><span class="visually-hidden">Acciones</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (u of ubicaciones(); track u.id) {
+          <tr>
+            <td><span class="code-chip">{{ u.codigo }}</span></td>
+            <td>
+              <strong>{{ u.nombre }}</strong>
+              <span class="audit-copy">Creado por {{ u.creadoPorNombreUsuario || '—' }}</span>
+            </td>
+            <td>
+              <span class="warehouse-code">{{ u.almacenCodigo }}</span>
+              <span class="warehouse-name">{{ u.almacenNombre }}</span>
+            </td>
+            <td>
+              @if (u.ubicacionPadreId) {
+                <span class="parent-copy">{{ u.ubicacionPadreCodigo }} · {{ u.ubicacionPadreNombre }}</span>
+              } @else {
+                <span class="root-chip">Raíz</span>
+              }
+            </td>
+            <td><span class="type-chip">{{ u.tipo }}</span></td>
+            <td>
+              @if (puedeCambiarEstado(u)) {
+                <mat-slide-toggle
+                  [checked]="u.activa"
+                  [disabled]="estaOperando(u.id)"
+                  (change)="toggleActiva(u)"
+                  [aria-label]="(u.activa ? 'Desactivar ' : 'Activar ') + u.nombre">
+                </mat-slide-toggle>
+              } @else {
+                <span class="badge" [class.success]="u.activa" [class.muted]="!u.activa">{{ u.activa ? 'Activa' : 'Inactiva' }}</span>
+              }
+            </td>
+            <td class="actions">
+              @if (puedeEditar()) {
+                <a [routerLink]="['/ubicaciones-almacen', u.id, 'editar']" mat-icon-button [attr.aria-label]="'Editar ' + u.nombre" title="Editar"><mat-icon>edit</mat-icon></a>
+              }
+              @if (puedeEliminar()) {
+                <button mat-icon-button type="button" [disabled]="estaOperando(u.id)" [attr.aria-label]="'Eliminar ' + u.nombre" title="Eliminar" (click)="eliminar(u)"><mat-icon>delete</mat-icon></button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="7" class="empty"><mat-icon>account_tree</mat-icon><span>No hay ubicaciones que coincidan con los filtros.</span></td></tr>
+        }
+      </tbody>
+    </table>
+
+    <div class="cards-mobile">
+      @for (u of ubicaciones(); track u.id) {
+        <article class="item-card">
+          <div class="item-card-header">
+            <div>
+              <span class="code-chip">{{ u.codigo }}</span>
+              <h2>{{ u.nombre }}</h2>
+            </div>
+            @if (puedeCambiarEstado(u)) {
+              <mat-slide-toggle [checked]="u.activa" [disabled]="estaOperando(u.id)" (change)="toggleActiva(u)" [aria-label]="(u.activa ? 'Desactivar ' : 'Activar ') + u.nombre"></mat-slide-toggle>
+            } @else {
+              <span class="badge" [class.success]="u.activa" [class.muted]="!u.activa">{{ u.activa ? 'Activa' : 'Inactiva' }}</span>
+            }
+          </div>
+
+          <dl class="item-details">
+            <div><dt>Almacén</dt><dd>{{ u.almacenCodigo }} · {{ u.almacenNombre }}</dd></div>
+            <div><dt>Padre</dt><dd>{{ etiquetaPadre(u) }}</dd></div>
+            <div><dt>Tipo</dt><dd>{{ u.tipo }}</dd></div>
+          </dl>
+
+          @if (puedeEditar() || puedeEliminar()) {
+            <div class="item-card-actions">
+              @if (puedeEditar()) { <a [routerLink]="['/ubicaciones-almacen', u.id, 'editar']" mat-button><mat-icon>edit</mat-icon> Editar</a> }
+              @if (puedeEliminar()) { <button mat-button type="button" [disabled]="estaOperando(u.id)" (click)="eliminar(u)"><mat-icon>delete</mat-icon> Eliminar</button> }
+            </div>
+          }
+        </article>
+      } @empty {
+        <div class="empty mobile-empty"><mat-icon>account_tree</mat-icon><span>No hay ubicaciones que coincidan con los filtros.</span></div>
+      }
+    </div>
+
+    <mat-paginator
+      [length]="total()"
+      [pageSize]="tamanoPagina"
+      [pageIndex]="pagina - 1"
+      [pageSizeOptions]="[10, 25, 50, 100]"
+      [showFirstLastButtons]="true"
+      aria-label="Paginación de ubicaciones internas"
+      (page)="onPageChange($event)">
+    </mat-paginator>
+  }
+</div>

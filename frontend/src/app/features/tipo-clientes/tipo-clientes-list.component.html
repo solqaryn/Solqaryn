@@ -1,0 +1,111 @@
+<div class="header-row">
+  <h1 class="page-title">Clasificaciones de Clientes</h1>
+  @if (puedeCrear()) {
+    <a routerLink="/tipo-clientes/nuevo" mat-flat-button color="primary">
+      <mat-icon>add</mat-icon> Nueva clasificación
+    </a>
+  }
+</div>
+
+<div class="card">
+  @if (loading()) {
+    <div class="loading"><mat-spinner></mat-spinner></div>
+  } @else {
+    <table class="table table-desktop">
+      <thead>
+        <tr>
+          <th>Orden</th>
+          <th>Nombre / Código</th>
+          <th>Descripción</th>
+          <th>Predeterminado</th>
+          <th>Clientes Asignados</th>
+          <th>Estado</th>
+          <th></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (t of tipos(); track t.id) {
+          <tr>
+            <td>{{ t.orden }}</td>
+            <td>
+              <div class="title-container">
+                <span class="badge-tipo" [style.background-color]="t.colorHex">{{ t.nombre }}</span>
+                <span class="codigo-tecnico">({{ t.codigo }})</span>
+                @if (t.esSistema) {
+                  <mat-icon class="lock-icon" title="Clasificación de Sistema (No editable/eliminar)">lock</mat-icon>
+                }
+              </div>
+            </td>
+            <td>{{ t.descripcion || '—' }}</td>
+            <td>
+              @if (t.esPredeterminado) {
+                <mat-icon class="star-icon" title="Tipo por Defecto">star</mat-icon>
+              } @else {
+                <span class="text-muted">—</span>
+              }
+            </td>
+            <td>{{ t.totalClientesAsignados }}</td>
+            <td>
+              @if (puedeCambiarEstado(t)) {
+                <mat-slide-toggle [checked]="t.activo" (change)="toggleActivo(t)" [aria-label]="(t.activo ? 'Desactivar ' : 'Activar ') + t.nombre"></mat-slide-toggle>
+              } @else {
+                <span class="badge" [class.success]="t.activo" [class.muted]="!t.activo">{{ t.activo ? 'Activo' : 'Inactivo' }}</span>
+              }
+            </td>
+            <td class="actions">
+              @if (puedeEditar()) {
+                <a [routerLink]="['/tipo-clientes', t.id, 'editar']" mat-icon-button title="Editar"><mat-icon>edit</mat-icon></a>
+              }
+              @if (puedeEliminar() && !t.esSistema && !t.esPredeterminado && t.totalClientesAsignados === 0) {
+                <button mat-icon-button title="Eliminar" (click)="eliminar(t)"><mat-icon>delete</mat-icon></button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr><td colspan="7" class="empty">No hay clasificaciones registradas.</td></tr>
+        }
+      </tbody>
+    </table>
+
+    <div class="cards-mobile">
+      @for (t of tipos(); track t.id) {
+        <div class="item-card">
+          <div class="item-card-header">
+            <div class="title-container">
+              <span class="badge-tipo" [style.background-color]="t.colorHex">{{ t.nombre }}</span>
+              @if (t.esPredeterminado) {
+                <mat-icon class="star-icon-small">star</mat-icon>
+              }
+              @if (t.esSistema) {
+                <mat-icon class="lock-icon-small">lock</mat-icon>
+              }
+            </div>
+            @if (puedeCambiarEstado(t)) {
+              <mat-slide-toggle [checked]="t.activo" (change)="toggleActivo(t)" [aria-label]="(t.activo ? 'Desactivar ' : 'Activar ') + t.nombre"></mat-slide-toggle>
+            } @else {
+              <span class="badge" [class.success]="t.activo" [class.muted]="!t.activo">{{ t.activo ? 'Activo' : 'Inactivo' }}</span>
+            }
+          </div>
+          <p class="item-card-desc">{{ t.descripcion || 'Sin descripción' }}</p>
+          <div class="item-card-meta">
+            <span>Código: {{ t.codigo }}</span>
+            <span>Orden: {{ t.orden }}</span>
+            <span>{{ t.totalClientesAsignados }} clientes</span>
+          </div>
+          @if (puedeEditar() || (puedeEliminar() && !t.esSistema && !t.esPredeterminado && t.totalClientesAsignados === 0)) {
+            <div class="item-card-actions">
+              @if (puedeEditar()) {
+                <a [routerLink]="['/tipo-clientes', t.id, 'editar']" mat-button><mat-icon>edit</mat-icon> Editar</a>
+              }
+              @if (puedeEliminar() && !t.esSistema && !t.esPredeterminado && t.totalClientesAsignados === 0) {
+                <button mat-button type="button" (click)="eliminar(t)"><mat-icon>delete</mat-icon> Eliminar</button>
+              }
+            </div>
+          }
+        </div>
+      } @empty {
+        <p class="empty">No hay clasificaciones registradas.</p>
+      }
+    </div>
+  }
+</div>

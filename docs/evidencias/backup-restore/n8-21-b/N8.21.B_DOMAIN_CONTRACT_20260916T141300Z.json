@@ -1,0 +1,54 @@
+{
+  "task": "N8.21.B",
+  "stage": "DOMAIN",
+  "status": "CONTRACT_VERIFIED",
+  "created_at": "2026-09-16T14:13:00Z",
+  "authority": "docs/VAEP_AUTHORITY.md",
+  "candidate_code_head": "3f6670b2f1a85f38c1109b4ddda71e069aa33f09",
+  "scope": {
+    "source_environment": "Desarrollo",
+    "source_provider": "Aiven",
+    "source_service": "solqaryn-mysql",
+    "source_engine": "MySQL 8.4.8",
+    "source_access": "read-only logical export",
+    "production_excluded": true,
+    "restore_environment": "GitHub Actions runner / CI disposable",
+    "restore_database": "solqaryn_m11_restore_drill",
+    "restore_host_policy": "loopback-only: 127.0.0.1, localhost or ::1"
+  },
+  "backup_contract": {
+    "transaction_consistency": "mysqldump --single-transaction --skip-lock-tables",
+    "artifact_encryption": "GPG symmetric AES256",
+    "external_integrity": "SHA-256 of encrypted artifact",
+    "internal_integrity": "MANIFEST.sha256 covering payload files",
+    "captured_database_invariants": ["base-table count", "__EFMigrationsHistory count when present", "exact row counts for every base table"],
+    "captured_non_database_assets": ["configuration snapshot without secrets", "repository backup/restore documentation", "external asset references"],
+    "sensitive_row_values_logged": false,
+    "dump_committed_to_repository": false
+  },
+  "restore_contract": {
+    "allowed_environments": ["ci", "desarrollo-descartable", "development-disposable"],
+    "destructive_restore_guard": "ALLOW_DESTRUCTIVE_RESTORE=YES_M11",
+    "destination_name_must_be_explicitly_disposable": true,
+    "source_and_target_database_must_differ": true,
+    "remote_database_host_rejected_fail_closed": true,
+    "encrypted_artifact_sha_verified_before_decrypt": true,
+    "internal_manifest_verified_before_restore": true,
+    "post_restore_invariants": ["base-table count equals source manifest", "EF migration count equals source manifest", "exact row count for every base table equals source manifest", "configuration/docs/reference payload extracted"]
+  },
+  "recovery_contract": {
+    "database_integrity_and_sanity": "verify in N8.21.C against a fresh real DEV backup restored to the disposable runner DB",
+    "tenant_and_application_recovery": "verify causally in N8.21.D by temporary backend smoke against the same restored artifact; this contract does not claim that runtime pass",
+    "security_retention_cleanup": "verify in N8.21.F",
+    "end_to_end_backup_restore_sanity": "verify in N8.21.G",
+    "rpo_rto": "measure from actual N8.21.C/N8.21.G execution evidence; static CI is not sufficient"
+  },
+  "review_first_correction": {
+    "finding_severity": "P1",
+    "finding": "standalone restore script previously allowed a remote TARGET_DB_HOST and therefore did not itself fail closed before destructive DROP/CREATE",
+    "correction_commit": "3f6670b2f1a85f38c1109b4ddda71e069aa33f09",
+    "correction": "normalize TARGET_DB_HOST and reject every non-loopback host before any destructive operation",
+    "gate": {"workflow": "M11 - Backup operativo de Desarrollo", "run_id": 35106858032, "job_id": 104830220198, "job": "Validar definición y protecciones M11", "head_sha": "3f6670b2f1a85f38c1109b4ddda71e069aa33f09", "conclusion": "success"}
+  },
+  "claims_not_made": ["N8.21.C real backup/restore has not yet been certified by this contract", "no production restore was performed", "no tenant/application runtime recovery PASS is inferred from static validation"]
+}

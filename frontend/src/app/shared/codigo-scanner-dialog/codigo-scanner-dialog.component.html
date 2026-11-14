@@ -1,0 +1,63 @@
+<h2 mat-dialog-title>
+  <mat-icon>qr_code_scanner</mat-icon>
+  Escanear código
+</h2>
+
+<mat-dialog-content>
+  <p class="scanner-description">
+    Usa la cámara trasera o selecciona una imagen local. La imagen se procesa únicamente en este navegador.
+  </p>
+
+  <div class="reader-shell" [class.reader-active]="camaraActiva()">
+    <div [id]="readerId" class="reader" aria-label="Vista de cámara para escanear códigos"></div>
+    @if (!camaraActiva() && !iniciando()) {
+      <div class="reader-placeholder">
+        <mat-icon>photo_camera</mat-icon>
+        <span>La cámara está detenida</span>
+      </div>
+    }
+    @if (iniciando()) {
+      <div class="reader-placeholder">
+        <mat-spinner diameter="38"></mat-spinner>
+        <span>Solicitando permiso de cámara…</span>
+      </div>
+    }
+  </div>
+
+  @if (error()) {
+    <p class="scanner-dialog-error" role="alert">
+      <mat-icon>error</mat-icon>
+      {{ error() }}
+    </p>
+  }
+
+  <input
+    #archivoInput
+    type="file"
+    hidden
+    accept=".jpg,.jpeg,.png,.webp,image/jpeg,image/png,image/webp"
+    (change)="seleccionarArchivo($event)">
+</mat-dialog-content>
+
+<mat-dialog-actions align="end">
+  <button
+    mat-stroked-button
+    type="button"
+    (click)="alternarCamara()"
+    [disabled]="iniciando() || procesandoArchivo()">
+    <mat-icon>{{ camaraActiva() ? 'videocam_off' : 'photo_camera' }}</mat-icon>
+    {{ camaraActiva() ? 'Detener cámara' : 'Activar cámara' }}
+  </button>
+
+  <button
+    mat-stroked-button
+    type="button"
+    (click)="archivoInput.click()"
+    [disabled]="iniciando() || procesandoArchivo()">
+    @if (procesandoArchivo()) { <mat-spinner diameter="18"></mat-spinner> }
+    @else { <mat-icon>image_search</mat-icon> }
+    Leer imagen
+  </button>
+
+  <button mat-button type="button" (click)="cerrar()">Cerrar</button>
+</mat-dialog-actions>

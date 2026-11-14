@@ -1,0 +1,12 @@
+{
+  "caseId": "G0-006.F",
+  "kind": "SYNTHETIC_TEST_FIXTURE_NOT_AN_INSTITUTIONAL_RECEIPT",
+  "condition": "A G0-006.F traceability receipt cannot reuse G0-006.E's requirement identifier",
+  "scopeId": "G0-006.F",
+  "replayedRequirementId": "G0-006.E",
+  "expectedError": "contract",
+  "source": "scripts/quality/direct-dev-traceability.mjs",
+  "test": "scripts/tests/g0-006-f-traceability-case.test.mjs",
+  "negativeControl": "stale test tree hash also must reject",
+  "externalCertification": false
+}

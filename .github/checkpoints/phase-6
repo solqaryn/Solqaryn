@@ -1,0 +1,16 @@
+Checkpoint final de certificación controlada de la Fase 6.
+Fecha original: 2026-07-22
+Revisión histórica: 6
+Incluye migración EF exclusivamente aditiva, SQL forward generado desde la migración inmediatamente anterior, validación de modelo, build Release backend, pruebas de permisos, finanzas, eliminación lógica, cálculos fiscales, enlaces públicos y perfil, y build de producción Angular.
+
+Ciclo funcional complementario — Fase 6 administrativa
+Fecha de certificación: 2026-07-29
+Incluye acceso total implícito e inmutable del administrador, diagnóstico de usuarios y roles, permisos sensibles, resumen de auditoría, alertas administrativas, exportaciones CSV/XLSX protegidas, respuestas 403 para roles no administrativos e interfaz responsive integrada en Auditoría.
+
+Evidencia funcional:
+- commit 4e590f48ce8297318b61717a0da3525224ce3c1e
+- compilación 30445998761: success
+- aceptación 30445998912: success
+- auditoría 30445999042: success
+
+Prohibido: aplicar migraciones a Aiven, desplegar producción, modificar main, habilitar auto-merge o fusionar el PR #2 durante este checkpoint.

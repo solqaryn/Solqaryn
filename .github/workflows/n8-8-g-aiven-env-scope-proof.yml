@@ -1,0 +1,125 @@
+name: N8.8.G - Aiven DEV Environment Token Scope Proof
+# Canonical SOLQARYN Aiven environment proof.
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - dev
+    paths:
+      - '.github/workflows/n8-8-g-aiven-env-scope-proof.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  prove-environment-token:
+    name: Prove normalized Aiven token from GitHub Environment without exposing secrets
+    environment: DEV
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Guard secret presence
+        shell: bash
+        env:
+          SOLQARYN_AIVEN_TOKEN: ${{ secrets.SOLQARYN_AIVEN_TOKEN }}
+          DEV_DB: Server=${{ vars.SOLQARYN_DEV_DB_HOST }};Port=${{ vars.SOLQARYN_DEV_DB_PORT }};Database=${{ vars.SOLQARYN_DEV_DB_NAME }};User Id=${{ vars.SOLQARYN_DEV_DB_USER }};Password=${{ secrets.SOLQARYN_DEV_DB_PASSWORD }};SslMode=Required;
+        run: |
+          set -euo pipefail
+          test -n "$SOLQARYN_AIVEN_TOKEN" || { echo 'SOLQARYN_AIVEN_TOKEN unavailable in effective job scope'; exit 20; }
+          test -n "${{ vars.SOLQARYN_DEV_DB_HOST }}" || { echo 'SOLQARYN_DEV_DB_HOST unavailable in DEV'; exit 21; }
+          test -n "${{ secrets.SOLQARYN_DEV_DB_PASSWORD }}" || { echo 'SOLQARYN_DEV_DB_PASSWORD unavailable in DEV'; exit 22; }
+          echo 'Required secret names are available; values are not printed.'
+
+      - name: Normalize token in-memory and prove exact DEV MySQL backup control plane
+        shell: bash
+        env:
+          SOLQARYN_AIVEN_TOKEN: ${{ secrets.SOLQARYN_AIVEN_TOKEN }}
+          DEV_DB: Server=${{ vars.SOLQARYN_DEV_DB_HOST }};Port=${{ vars.SOLQARYN_DEV_DB_PORT }};Database=${{ vars.SOLQARYN_DEV_DB_NAME }};User Id=${{ vars.SOLQARYN_DEV_DB_USER }};Password=${{ secrets.SOLQARYN_DEV_DB_PASSWORD }};SslMode=Required;
+          PROJECT: solqaryn
+          SERVICE: solqaryn-mysql
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import hashlib, json, os, re, urllib.request, urllib.error
+          from urllib.parse import quote
+
+          raw=os.environ['SOLQARYN_AIVEN_TOKEN']
+          token=raw.strip()
+          if len(token) >= 2 and token[0] == token[-1] and token[0] in ('"', "'"):
+              token=token[1:-1].strip()
+          if not token:
+              raise SystemExit('Normalized SOLQARYN_AIVEN_TOKEN is empty')
+
+          conn=os.environ['DEV_DB']
+          project=os.environ['PROJECT']
+          service=os.environ['SERVICE']
+          root='https://api.aiven.io/v1'
+
+          def get(path):
+              req=urllib.request.Request(root+path, headers={
+                  'Authorization': f'aivenv1 {token}',
+                  'Accept':'application/json',
+                  'User-Agent':'Solqaryn-N8.8.G-normalized-token-proof/1.0'})
+              try:
+                  with urllib.request.urlopen(req, timeout=30) as r:
+                      return json.load(r)
+              except urllib.error.HTTPError as e:
+                  raise SystemExit(f'Aiven API HTTP {e.code} for sanitized control-plane path')
+
+          cs={}
+          for part in conn.split(';'):
+              if '=' in part:
+                  k,v=part.split('=',1)
+                  cs[k.strip().lower()]=v.strip()
+          dev_host=cs.get('server') or cs.get('host') or cs.get('data source')
+          if not dev_host:
+              raise SystemExit('Could not parse DEV MySQL host from configured connection string')
+          dev_hash=hashlib.sha256(dev_host.lower().encode()).hexdigest()
+
+          svc_payload=get(f'/project/{quote(project, safe="")}/service/{quote(service, safe="")}')
+          svc=svc_payload.get('service', svc_payload)
+          if svc.get('service_type') != 'mysql':
+              raise SystemExit('Exact Aiven DEV service is not MySQL')
+
+          hosts=[]
+          def walk(v):
+              if isinstance(v, dict):
+                  for x in v.values(): walk(x)
+              elif isinstance(v, list):
+                  for x in v: walk(x)
+              elif isinstance(v, str):
+                  hosts.extend(h.lower() for h in re.findall(r'([A-Za-z0-9._-]+\.aivencloud\.com)', v))
+          walk(svc)
+          if not any(hashlib.sha256(h.encode()).hexdigest()==dev_hash for h in hosts):
+              raise SystemExit('Aiven service does not match configured DEV MySQL endpoint; refusing cross-service proof')
+
+          plan=svc.get('plan') or svc.get('service_plan')
+          if not plan:
+              raise SystemExit('Aiven service plan missing from control-plane response')
+          plan_payload=get(f'/project/{quote(project, safe="")}/service-types/mysql/plans/{quote(plan, safe="")}')
+          plan_obj=plan_payload.get('service_plan') if isinstance(plan_payload.get('service_plan'), dict) else plan_payload
+          backup_cfg=plan_obj.get('backup_config') or {}
+          backups_payload=get(f'/project/{quote(project, safe="")}/service/{quote(service, safe="")}/backups')
+          backups=backups_payload.get('backups', [])
+          recovery_mode=backup_cfg.get('recovery_mode')
+          if not backup_cfg or recovery_mode is None or not isinstance(backups, list):
+              raise SystemExit('Automatic-backup control-plane proof incomplete')
+
+          result={
+              'task':'N8.8.G',
+              'status':'PASS_AIVEN_NORMALIZED_TOKEN_CURRENT',
+              'provider':'AIVEN',
+              'serviceType':'mysql',
+              'plan':plan,
+              'state':svc.get('state'),
+              'backupCount':len(backups),
+              'recoveryMode':recovery_mode,
+              'pointInTimeRecoveryAvailable': recovery_mode not in (None,'','basic'),
+              'devEndpointMatch':True,
+              'normalizationApplied': token != raw,
+              'productionTouched':False,
+              'secretValuesPrinted':False
+          }
+          print(json.dumps(result, separators=(',',':')))
+          PY

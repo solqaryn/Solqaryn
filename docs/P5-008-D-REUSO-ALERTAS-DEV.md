@@ -1,0 +1,8 @@
+# P5-008.D — AJUSTAR por REUSE: alertas institucionales existentes (DEV)
+
+- Autoridad: Plan Comercial Inicial V3, P5-008.D, origen P5-008.A, depende de P5-008.C LISTO. Decisión `REUSE` sin cambios a la interfaz o lógica Angular ejecutable.
+- TARGET: `frontend/src/app/shared/alerts/app-toast.service.ts` blob exacto `0478821b246cae5fdf3016a5c25081a1726f925a`. El servicio existente `AppToastService` ya contiene niveles tipados info/success/warning/error, duración 6500 ms para error y 4200 ms para otros, acción texto Cerrar, posición arriba-derecha y anuncio assertive para error.
+- Prueba dirigida `scripts/tests/p5-008-d-reuso-alertas.test.mjs`: contrato del código real y cinco negativos que rechazan duración uniforme, HTML/componente arbitrario, error no assertive, wrapper sin variante y acción de cierre vacía. Node 22.16.0, `node --check` y `node --test` 6/6. SHA256 de test `89721265805b7f22b4121d61df2790a1de6bc32ee365e07ce1fd82c9325bead2`.
+- Impacto: test reproducible + esta nota de reuso + CHANGELOG. No cambios funcionales en frontend, API, DTO, JWT, BCrypt, RBAC, tenants, base de datos, secretos o infraestructura. Comprobar integración Angular y lectores de pantalla en fases de modificación de UI; no inferir comportamiento live desde tests estructurales.
+- Seguridad: `MatSnackBar.open` de texto no sustituye autorización del servidor ni sanitiza HTML que algún componente adicional pudiera introducir. La severidad recibida por código externo debe validarse en consumidores.
+- Rollback: revert selectivo aditivo del commit en dev, sin force-push, respetando trabajo concurrente. A5 independiente pendiente para promoción QA/main/PROD.

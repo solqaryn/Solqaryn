@@ -1,0 +1,26 @@
+{
+  "schema":"solqaryn-dr-domain-contract/v1",
+  "authority":"docs/VAEP_AUTHORITY.md",
+  "scope":"N8.10.B",
+  "parent":"N8.10",
+  "branch":"Desarrollo",
+  "captured_at_utc":"2026-09-16T16:55:20Z",
+  "lease_token":"SUP36-N810B-CLOSER-20260916T165435Z",
+  "dependency":{"scope":"N8.10.A","status":"LISTO_REAL","receipt":"vaep/evidence/receipts/N8.10.A_LISTO_REAL_20260916T165425Z_SUP36.json"},
+  "domain_code_change_required":false,
+  "reason":"Disaster Recovery is an operational recovery contract over existing application/data boundaries; it introduces no new business entity, aggregate, endpoint DTO, or persistence invariant in product code.",
+  "operational_invariants":[
+    "Never restore over the active source database.",
+    "Recovery candidate must be isolated/new until validation succeeds.",
+    "Application rollback selects immutable known-good revisions.",
+    "Durable MySQL engineering RPO baseline is <=24h until a tighter PITR objective is measured and accepted.",
+    "End-to-end engineering RTO baseline is <=60m.",
+    "Outbound business side effects stay disabled during recovery-candidate sanity.",
+    "P0=0 and P1=0 are mandatory before cutover recommendation.",
+    "Secret values never enter evidence.",
+    "Failed recovery candidates are not promoted and do not overwrite the only known-good copy."
+  ],
+  "contract_source":"docs/evidencias/dr-runbook.md",
+  "validation":{"domain_compilation_required":false,"directed_domain_tests_required":false,"contract_consistent":true,"na_documented":true},
+  "guards":{"main_write":0,"production_write":0,"deploy":0,"secret_values_read":false,"pr_2_write":0}
+}

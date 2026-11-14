@@ -1,0 +1,145 @@
+name: DEV - Tenant commercial provenance read-only
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - .github/workflows/dev-tenant-commercial-provenance-readonly.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  tenant-provenance:
+    name: Atribucion comercial agregada y relaciones - DEV
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: DEV
+    env:
+      DB_HOST: ${{ vars.SOLQARYN_DEV_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_DEV_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_DEV_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_DEV_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_DEV_DB_PASSWORD }}
+    steps:
+      - name: Validar identidad aislada DEV y credencial
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = "solqaryn/Solqaryn"
+          test "$GITHUB_REF_NAME" = "dev"
+          test "$DB_HOST" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
+          test "$DB_PORT" = "14402"
+          test "$DB_NAME" = "solqaryn_dev"
+          test "$DB_USER" = "solqaryn_dev_user"
+          test -n "$DB_PASSWORD"
+
+      - name: Instalar cliente MySQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq >/dev/null
+          sudo apt-get install -y -qq mysql-client >/dev/null
+
+      - name: Diagnostico agregado de ownership y FKs sin leer PII
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD="$DB_PASSWORD"
+          q() {
+            mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names -e "$1"
+          }
+          test "$(q "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name IN ('Productos','Clientes','Proveedores','Compras','Ventas') AND column_name='EmpresaId';")" = 5
+          # No imprimir SQL con identificadores personales ni valores de registros.
+          mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names <<'SQL'
+          SET SESSION TRANSACTION READ ONLY;
+          START TRANSACTION READ ONLY;
+
+          -- Los candidatos por membresia ACTUAL son indicio de revision, NO prueba de
+          -- pertenencia historica. Nunca ejecutar backfill a partir de este informe.
+          WITH raices AS (
+            SELECT 'Productos' AS Tabla, EmpresaId, CreadoPorUsuarioId FROM Productos
+            UNION ALL SELECT 'Clientes', EmpresaId, CreadoPorUsuarioId FROM Clientes
+            UNION ALL SELECT 'Proveedores', EmpresaId, CreadoPorUsuarioId FROM Proveedores
+            UNION ALL SELECT 'Compras', EmpresaId, CreadoPorUsuarioId FROM Compras
+            UNION ALL SELECT 'Ventas', EmpresaId, CreadoPorUsuarioId FROM Ventas
+          ),
+          candidatas AS (
+            SELECT ue.UsuarioId, COUNT(DISTINCT ue.EmpresaId) AS EmpresasActuales
+            FROM UsuarioEmpresas ue
+            JOIN Empresas e ON e.Id=ue.EmpresaId AND e.Activa=1
+            WHERE ue.Activa=1
+            GROUP BY ue.UsuarioId
+          )
+          SELECT CONCAT('TABLA=',r.Tabla,
+              ';TOTAL=',COUNT(*),
+              ';SIN_OWNER=',SUM(r.EmpresaId IS NULL),
+              ';SIN_USUARIO_ORIGEN=',SUM(r.CreadoPorUsuarioId IS NULL),
+              ';MEMBRESIA_ACTUAL_CERO=',SUM(r.CreadoPorUsuarioId IS NOT NULL AND COALESCE(c.EmpresasActuales,0)=0),
+              ';MEMBRESIA_ACTUAL_MULTIPLE=',SUM(COALESCE(c.EmpresasActuales,0)>1))
+          FROM raices r
+          LEFT JOIN candidatas c ON c.UsuarioId=r.CreadoPorUsuarioId
+          GROUP BY r.Tabla ORDER BY r.Tabla;
+
+          SELECT CONCAT('RELACION=Ventas_Clientes;ENLACES=',COUNT(*),
+              ';OWNER_INCOMPLETO=',COALESCE(SUM(v.EmpresaId IS NULL OR c.EmpresaId IS NULL),0),
+              ';CONFLICTOS=',COALESCE(SUM(v.EmpresaId <> c.EmpresaId),0))
+          FROM Ventas v JOIN Clientes c ON c.Id=v.ClienteId;
+
+          SELECT CONCAT('RELACION=Compras_Proveedores;ENLACES=',COUNT(*),
+              ';OWNER_INCOMPLETO=',COALESCE(SUM(c.EmpresaId IS NULL OR p.EmpresaId IS NULL),0),
+              ';CONFLICTOS=',COALESCE(SUM(c.EmpresaId <> p.EmpresaId),0))
+          FROM Compras c JOIN Proveedores p ON p.Id=c.ProveedorId;
+
+          SELECT CONCAT('RELACION=VentaDetalles_Productos;ENLACES=',COUNT(*),
+              ';OWNER_INCOMPLETO=',COALESCE(SUM(v.EmpresaId IS NULL OR p.EmpresaId IS NULL),0),
+              ';CONFLICTOS=',COALESCE(SUM(v.EmpresaId <> p.EmpresaId),0))
+          FROM VentaDetalles d JOIN Ventas v ON v.Id=d.VentaId JOIN Productos p ON p.Id=d.ProductoId;
+
+          SELECT CONCAT('RELACION=CompraDetalles_Productos;ENLACES=',COUNT(*),
+              ';OWNER_INCOMPLETO=',COALESCE(SUM(c.EmpresaId IS NULL OR p.EmpresaId IS NULL),0),
+              ';CONFLICTOS=',COALESCE(SUM(c.EmpresaId <> p.EmpresaId),0))
+          FROM CompraDetalles d JOIN Compras c ON c.Id=d.CompraId JOIN Productos p ON p.Id=d.ProductoId;
+          COMMIT;
+          SQL
+          unset MYSQL_PWD
+
+
+      - name: Diagnostico temporal conservador sin PII y sin backfill
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD="$DB_PASSWORD"
+          mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME" --batch --skip-column-names <<'SQL'
+          SET SESSION TRANSACTION READ ONLY;
+          START TRANSACTION READ ONLY;
+          -- Membresia documental preexistente no equivale a propiedad demostrada.
+          WITH raices AS (
+              SELECT 'Productos' AS Tabla, CreadoPorUsuarioId, FechaCreacion FROM Productos
+              UNION ALL SELECT 'Clientes', CreadoPorUsuarioId, FechaCreacion FROM Clientes
+              UNION ALL SELECT 'Proveedores', CreadoPorUsuarioId, FechaCreacion FROM Proveedores
+              UNION ALL SELECT 'Compras', CreadoPorUsuarioId, FechaCreacion FROM Compras
+              UNION ALL SELECT 'Ventas', CreadoPorUsuarioId, FechaCreacion FROM Ventas
+          ), temporal AS (
+              SELECT r.Tabla, r.CreadoPorUsuarioId,
+                  (SELECT COUNT(DISTINCT ue.EmpresaId)
+                   FROM UsuarioEmpresas ue JOIN Empresas e ON e.Id=ue.EmpresaId
+                   WHERE ue.UsuarioId=r.CreadoPorUsuarioId
+                     AND ue.FechaCreacion<=r.FechaCreacion
+                     AND e.FechaCreacion<=r.FechaCreacion) AS MembresiasEnFecha,
+                  (SELECT COUNT(*) FROM Empresas e WHERE e.FechaCreacion<=r.FechaCreacion)
+                      AS EmpresasEnFecha
+              FROM raices r
+          )
+          SELECT CONCAT('TEMPORAL_TABLA=',Tabla,
+              ';TOTAL=',COUNT(*),
+              ';SIN_AUTOR=',COALESCE(SUM(CreadoPorUsuarioId IS NULL),0),
+              ';SIN_EMPRESA_PREEXISTENTE=',COALESCE(SUM(EmpresasEnFecha=0),0),
+              ';SIN_MEMBRESIA_PREEXISTENTE=',COALESCE(SUM(MembresiasEnFecha=0),0),
+              ';MULTIPLES_CANDIDATOS_PREVIOS=',COALESCE(SUM(MembresiasEnFecha>1),0),
+              ';UN_CANDIDATO_NO_PRUEBA_OWNER=',COALESCE(SUM(MembresiasEnFecha=1),0))
+          FROM temporal GROUP BY Tabla ORDER BY Tabla;
+          COMMIT;
+          SQL
+          unset MYSQL_PWD

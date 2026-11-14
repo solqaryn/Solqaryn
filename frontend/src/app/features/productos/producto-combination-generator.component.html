@@ -1,0 +1,89 @@
+<section class="combination-generator" aria-labelledby="generador-combinaciones-title">
+  <div class="generator-heading">
+    <div>
+      <h3 id="generador-combinaciones-title">Generador de combinaciones</h3>
+      <p>Selecciona múltiples Modelos, Colores y Tallas. Primero se genera una vista previa; nada se agrega al producto hasta que confirmes.</p>
+    </div>
+    <span class="limit-badge">Máx. {{ maxCombinaciones }}</span>
+  </div>
+
+  <form [formGroup]="form" class="generator-grid" (ngSubmit)="$event.preventDefault(); generarVistaPrevia()">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Marca base (opcional)</mat-label>
+      <mat-select formControlName="marcaId" (selectionChange)="onMarcaChange()">
+        <mat-option [value]="null">No aplica</mat-option>
+        @for (marca of marcas; track marca.id) { <mat-option [value]="marca.id">{{ marca.nombre }}</mat-option> }
+      </mat-select>
+      <mat-hint>Los Modelos disponibles se filtran por esta Marca.</mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Modelos</mat-label>
+      <mat-select formControlName="modeloIds" multiple [disabled]="!form.controls.marcaId.value" (selectionChange)="limpiarPreview()">
+        @for (modelo of modelosDeMarca(); track modelo.id) { <mat-option [value]="modelo.id">{{ modelo.nombre }}</mat-option> }
+      </mat-select>
+      <mat-hint>Vacío = generar sin Modelo específico.</mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Colores</mat-label>
+      <mat-select formControlName="colorIds" multiple (selectionChange)="limpiarPreview()">
+        @for (color of colores; track color.id) { <mat-option [value]="color.id">{{ color.nombre }}</mat-option> }
+      </mat-select>
+      <mat-hint>Vacío = Color no aplica.</mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Tallas / tamaños</mat-label>
+      <mat-select formControlName="tallaIds" multiple (selectionChange)="limpiarPreview()">
+        @for (talla of tallas; track talla.id) { <mat-option [value]="talla.id">{{ talla.nombre }}</mat-option> }
+      </mat-select>
+      <mat-hint>Vacío = Talla no aplica.</mat-hint>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Cantidad inicial por combinación</mat-label>
+      <input matInput type="number" min="0" formControlName="cantidad" inputmode="numeric" (input)="limpiarPreview()">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Costo unitario (L.)</mat-label>
+      <input matInput type="number" min="0" step="0.01" formControlName="costo" inputmode="decimal" (input)="limpiarPreview()">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Precio de venta (L.)</mat-label>
+      <input matInput type="number" min="0.01" step="0.01" formControlName="precio" inputmode="decimal" (input)="limpiarPreview()">
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" subscriptSizing="dynamic">
+      <mat-label>Umbral de stock bajo</mat-label>
+      <input matInput type="number" min="0" formControlName="umbralStockBajo" inputmode="numeric" (input)="limpiarPreview()">
+    </mat-form-field>
+
+    <div class="generator-actions">
+      <button mat-stroked-button type="submit"><mat-icon>preview</mat-icon>Generar vista previa</button>
+      @if (preview().length > 0) { <button mat-button type="button" (click)="limpiarPreview()">Limpiar vista previa</button> }
+    </div>
+  </form>
+
+  @if (errorMessage()) { <p class="generator-error" role="alert">{{ errorMessage() }}</p> }
+
+  @if (preview().length > 0) {
+    <div class="preview-panel" aria-live="polite">
+      <div class="preview-heading">
+        <div><strong>{{ preview().length }} combinación(es) nuevas</strong>@if (omitidasDuplicadas() > 0) { <span> · {{ omitidasDuplicadas() }} duplicada(s) omitida(s)</span> }</div>
+        <button mat-flat-button color="primary" type="button" (click)="confirmar()"><mat-icon>done_all</mat-icon>Confirmar y agregar</button>
+      </div>
+      <div class="preview-list">
+        @for (fila of preview(); track fila.clave) {
+          <div class="preview-row">
+            <strong>{{ fila.etiqueta }}</strong>
+            <span>{{ fila.cantidad }} u. · L. {{ fila.costo | number:'1.2-2' }} → L. {{ fila.precio | number:'1.2-2' }}</span>
+          </div>
+        }
+      </div>
+      <p class="preview-note"><mat-icon>info</mat-icon>El SKU se deja vacío para que el backend genere uno único al guardar, salvo que luego lo completes manualmente.</p>
+    </div>
+  }
+</section>

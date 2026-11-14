@@ -1,0 +1,244 @@
+# M10 revalidacion operativa 2026-11-13: Playwright autorizado, solo disparo CI, sin cambio de comportamiento.
+name: M10 - UI UX empresarial y accesibilidad
+
+on:
+  push:
+    branches:
+      - dev
+    paths:
+      - .github/workflows/m10-ui-ux-accesibilidad.yml
+      - frontend/src/styles.scss
+      - frontend/src/styles/**
+      - frontend/src/app/app.component.*
+      - frontend/src/app/services/theme-applier.service.ts
+      - frontend/src/app/services/color-contrast.service.ts
+      - frontend/src/app/services/movimiento-inventario.service.ts
+      - frontend/src/app/core/models/movimiento-inventario.model.ts
+      - frontend/src/app/shared/feedback-state/**
+      - frontend/src/app/features/cargas-masivas/**
+      - frontend/src/app/features/inventario/movimientos-list.component.*
+      - frontend/e2e/m10-ui-ux-accesibilidad.spec.ts
+      - frontend/e2e/c00-01-m04-04-login-flujo.spec.ts
+      - frontend/e2e/n1-5-kardex.spec.ts
+  pull_request:
+    branches:
+      - dev
+      - main
+    paths:
+      - .github/workflows/m10-ui-ux-accesibilidad.yml
+      - frontend/src/styles.scss
+      - frontend/src/styles/**
+      - frontend/src/app/app.component.*
+      - frontend/src/app/services/theme-applier.service.ts
+      - frontend/src/app/services/color-contrast.service.ts
+      - frontend/src/app/services/movimiento-inventario.service.ts
+      - frontend/src/app/core/models/movimiento-inventario.model.ts
+      - frontend/src/app/shared/feedback-state/**
+      - frontend/src/app/features/cargas-masivas/**
+      - frontend/src/app/features/inventario/movimientos-list.component.*
+      - frontend/e2e/m10-ui-ux-accesibilidad.spec.ts
+      - frontend/e2e/c00-01-m04-04-login-flujo.spec.ts
+      - frontend/e2e/n1-5-kardex.spec.ts
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: m10-ui-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  m10:
+    name: MySQL, Angular, WCAG, teclado y responsive
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: solqaryn_m10_e2e
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+
+    env:
+      ASPNETCORE_ENVIRONMENT: Development
+      PORT: '5005'
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_m10_e2e;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      Database__ServerVersion: '8.4.0'
+      Database__ApplyMigrationsOnStartup: 'true'
+      Jwt__Secret: 'M10-E2E-Only-Secret-With-More-Than-32-Characters-2026'
+      Jwt__Issuer: 'Solqaryn.API'
+      Jwt__Audience: 'Solqaryn.Frontend'
+      Jwt__ExpiraMinutos: '120'
+      Security__LoginRateLimitPerMinute: '300'
+      SeedAdmin__Username: 'e2e_admin'
+      SeedAdmin__Password: 'E2E.Admin#2026!'
+      Cors__AllowedOrigins__0: 'http://127.0.0.1:4200'
+      Cors__AllowedOrigins__1: 'http://localhost:4200'
+      AppSettings__BackendPublicUrl: 'https://preview.solqaryn.invalid'
+      AppSettings__LogoPublicUrl: 'https://solqaryn-dev.vercel.app/assets/storefront-logo.png'
+      Cloudinary__CloudName: 'e2e-not-used'
+      Cloudinary__ApiKey: 'e2e-not-used'
+      Cloudinary__ApiSecret: 'e2e-not-used'
+      PHASE7_API_URL: 'http://127.0.0.1:5005'
+      PHASE7_ADMIN_USERNAME: 'e2e_admin'
+      PHASE7_ADMIN_PASSWORD: 'E2E.Admin#2026!'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+
+    steps:
+      - name: Checkout DEV
+        uses: actions/checkout@v4
+
+      - name: Configurar .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+          cache: true
+          cache-dependency-path: backend/**/*.csproj
+
+      - name: Restaurar y compilar backend
+        working-directory: backend
+        run: |
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+
+      # OracleBaseline sobre una base vacía sólo comprueba metadatos;
+      # materializar el modelo EF (137 tablas) y el ledger anti-replay (1) en MySQL descartable
+      # con el bootstrap EF10 canónico ANTES del seeding de la API.
+      - name: Inicializar esquema EF10 Oracle en MySQL descartable
+        working-directory: backend
+        shell: bash
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+          MYSQL_PWD: root
+        run: |
+          set -euo pipefail
+          dotnet run \
+            --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj \
+            --configuration Release --no-build \
+            | tee "$RUNNER_TEMP/m10-oracle-fresh-bootstrap.log"
+          grep -Fx 'SOLQARYN_ORACLE_BOOTSTRAP=PASS mode=fresh tables=139 pending=0' \
+            "$RUNNER_TEMP/m10-oracle-fresh-bootstrap.log"
+          test "$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -uroot \
+            solqaryn_m10_e2e --batch --skip-column-names \
+            -e "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")" = 1
+          test "$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -uroot \
+            solqaryn_m10_e2e --batch --skip-column-names \
+            -e "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261016095000_PublicStoreBindingsPersistence';")" = 1
+          test "$(mysql --protocol=TCP -h 127.0.0.1 -P 3306 -uroot \
+            solqaryn_m10_e2e --batch --skip-column-names \
+            -e "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261016200000_PublicStoreProofReplayGuard';")" = 1
+          echo "M10_MYSQL_EF10_FRESH_BOOTSTRAP=PASS"
+
+      - name: Iniciar API con MySQL descartable
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup dotnet run \
+            --project src/API/Solqaryn.API.csproj \
+            --configuration Release \
+            --no-build \
+            --no-launch-profile \
+            > m10-api.log 2>&1 &
+          echo $! > m10-api.pid
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:5005/health > /dev/null && \
+               curl --fail --silent http://127.0.0.1:5005/health/ready > /dev/null; then
+              echo 'API M10 lista y MySQL conectado.'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat m10-api.log >&2 || true
+          exit 1
+
+      - name: Preparar membresía tenant E2E
+        shell: bash
+        run: |
+          set -euo pipefail
+          mysql --protocol=tcp -h 127.0.0.1 -P 3306 -uroot -proot solqaryn_m10_e2e <<'SQL'
+          INSERT INTO Empresas (Nombre, Activa, FechaCreacion, FechaActualizacion)
+          VALUES ('M10 E2E', 1, UTC_TIMESTAMP(), UTC_TIMESTAMP());
+          SET @empresa_id = LAST_INSERT_ID();
+          INSERT INTO UsuarioEmpresas (UsuarioId, EmpresaId, RolId, Activa, FechaCreacion, FechaActualizacion)
+          SELECT Id, @empresa_id, RolId, 1, UTC_TIMESTAMP(), UTC_TIMESTAMP()
+          FROM Usuarios
+          WHERE NombreUsuario = 'e2e_admin';
+          SQL
+          EMPRESA_ID="$(mysql --protocol=tcp -h 127.0.0.1 -P 3306 -uroot -proot solqaryn_m10_e2e --batch --skip-column-names -e "SELECT ue.EmpresaId FROM UsuarioEmpresas ue INNER JOIN Usuarios u ON u.Id = ue.UsuarioId WHERE u.NombreUsuario = 'e2e_admin' AND ue.Activa = 1 ORDER BY ue.EmpresaId LIMIT 1;")"
+          if ! [[ "$EMPRESA_ID" =~ ^[1-9][0-9]*$ ]]; then
+            echo 'No se pudo materializar una membresía tenant activa para e2e_admin.' >&2
+            exit 1
+          fi
+          echo "PHASE7_EMPRESA_ID=$EMPRESA_ID" >> "$GITHUB_ENV"
+
+      - name: Configurar Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+
+      - name: Cache Playwright browsers
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/ms-playwright
+          key: ${{ runner.os }}-playwright-${{ hashFiles('frontend/package-lock.json') }}
+
+      - name: Instalar, lint y build frontend
+        working-directory: frontend
+        run: |
+          npm ci
+          npm run lint
+          npm run build:prod
+          npx playwright install --with-deps chromium
+
+      - name: Iniciar Angular
+        working-directory: frontend
+        shell: bash
+        env:
+          PORT: '4200'
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > m10-frontend.log 2>&1 &
+          echo $! > m10-frontend.pid
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:4200/login > /dev/null; then
+              echo 'Angular M10 listo.'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat m10-frontend.log >&2 || true
+          exit 1
+
+      - name: Ejecutar Playwright M10 y Kardex N1.5
+        working-directory: frontend
+        run: |
+          npx playwright test \
+            e2e/m10-ui-ux-accesibilidad.spec.ts \
+            e2e/c00-01-m04-04-login-flujo.spec.ts \
+            e2e/n1-5-kardex.spec.ts \
+            --config=playwright.config.ts
+
+      - name: Publicar evidencia M10
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: m10-ui-ux-accesibilidad
+          path: |
+            backend/m10-api.log
+            frontend/m10-frontend.log
+            frontend/playwright-report/
+            frontend/test-results/
+          if-no-files-found: warn
+          retention-days: 14

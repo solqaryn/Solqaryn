@@ -1,0 +1,25 @@
+<div class="header-row">
+  <a routerLink="/categorias" mat-icon-button><mat-icon>arrow_back</mat-icon></a>
+  <h1 class="page-title">{{ isEdit() ? 'Editar categoría' : 'Nueva categoría' }}</h1>
+</div>
+
+<form class="card form" [formGroup]="form" (ngSubmit)="submit()">
+  <mat-form-field appearance="outline">
+    <mat-label>Nombre</mat-label>
+    <input matInput formControlName="nombre">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Descripción (opcional)</mat-label>
+    <textarea matInput formControlName="descripcion" rows="2"></textarea>
+  </mat-form-field>
+
+  @if (errorMessage()) {
+    <p class="error">{{ errorMessage() }}</p>
+  }
+
+  <div class="form-actions">
+    <a routerLink="/categorias" mat-button type="button">Cancelar</a>
+    <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving()">Guardar</button>
+  </div>
+</form>

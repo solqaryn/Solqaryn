@@ -1,0 +1,27 @@
+name: P0-009.B - Historical quota failures remain visible
+
+on:
+  pull_request:
+    branches: [dev]
+    paths:
+      - 'scripts/verify-p0-009-a-ci-evidence.mjs'
+      - 'scripts/verify-p0-009-b-ci-status-boundary.mjs'
+      - 'docs/P0-009-A-INVENTARIO-CI-CHECKS-DEV.md'
+      - 'docs/P0-009-B-NEGATIVOS-ESTADO-CI-DEV.md'
+      - '.github/workflows/p0-009-b-ci-status-boundary.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  historical-status-negative-checks:
+    name: P0-009.B - Native quota-failure negative fixtures
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+      - name: Reject false PROD readiness from green DEV CI
+        run: node scripts/verify-p0-009-b-ci-status-boundary.mjs --self-test

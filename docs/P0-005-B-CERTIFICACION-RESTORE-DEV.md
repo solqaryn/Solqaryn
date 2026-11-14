@@ -1,0 +1,28 @@
+# P0-005.B — Certificación acotada y fail-closed de restore reproducible en DEV
+
+**Candidato, NO es declaración de LISTO.** SOLQARYN / `dev` / `PROJECT_SCOPE_LOCK=STRICT`. Microtarea `P0-005.B`, responsable `PRIMARY_DEV_02`, TASK_ID `6adc2e4bd8a48191ac7d8641ed95a1a3`, GitHub `jmejia31`. Fuente comercial única: Plan Comercial Inicial, `PLAN_MAESTRO!11` (L1/L14). Dependencias verificadas: `P0-005.A=LISTO`, `P0-012.B=LISTO`, `COLA!G11=SI`.
+
+## Certificado de evidencia **observada**, no de disponibilidad futura
+
+Se verificó directamente la ejecución autenticada de GitHub Actions [#40739107659](https://github.com/solqaryn/Solqaryn/actions/runs/40739107659), `workflow_dispatch`, estado `completed/success`, `head_sha=018df83b36d32f2225af4025f4b69f640041c2b2`, el **28 de octubre de 2026**. El job [122995681966](https://github.com/solqaryn/Solqaryn/actions/runs/40739107659/job/122995681966) «Backup cifrado de DEV real + restore/drill same-artifact» finalizó `success` y todos sus pasos de backup, restore, smoke de API, publicación y limpieza fueron `success`. El job de proveedor DEV [del mismo run](https://github.com/solqaryn/Solqaryn/actions/runs/40739107659) también terminó `success`. El job alternativo de definición quedó `skipped` por selección de modalidad: **no se cuenta como un restore**.
+
+**Cadena causal comprobada en GitHub Actions:** backup de Aiven DEV cifrado AES256 y archivo SHA-256, verificación de integridad interna/externa, restore del **mismo backup** a `127.0.0.1` / base MySQL CI descartable, igualdad de tablas, filas y migraciones, ejecución de la API en loopback sin migraciones en startup, `RESTORE_API_READY=PASS attempts=2`, `RESTORE_API_STARTUP_MIGRATIONS=UNCHANGED`, `DISPOSABLE_DATABASE=CLEANED` (el runner comprobó ausencia posterior al DROP). Los dos últimos marcadores constan en el log del job a las 17:50:45Z y 17:50:46Z; el primer intento de conexión a loopback fue rechazado durante bootstrap y no se contó como éxito, el segundo fue `PASS`.
+
+**Artefacto:** [GitHub artifact 12837184798](https://github.com/solqaryn/Solqaryn/actions/runs/40739107659/artifacts/12837184798), nombre `solqaryn-backup-dev-40739107659`, 5,489,142 bytes; `expired=false` al verificar el 28/10 y vencimiento reportado 11/11/2026 UTC. El artefacto permanece cifrado: esta Task **no lo descargó ni descifró**, no recibió secretos y no ejecutó instrucciones SQL.
+
+**Revisión y trazabilidad del código ejecutado:** [PR #3781](https://github.com/solqaryn/Solqaryn/pull/3781) recibió `APPROVED` de `morales35alex` el 28/10 a las 17:45:25Z, **antes** del merge a `dev` del SHA `018df83b36d32f2225af4025f4b69f640041c2b2` a las 17:45:36Z. [PR documental #3782](https://github.com/solqaryn/Solqaryn/pull/3782) recibió revisión de Alex el 28/10 a las 17:55:56Z, antes del merge `eff22b96aeeba323f43ef77c5e8ea54416b29cd2` a las 17:56:48Z. En ese HEAD de `dev`, checks `verify-solqaryn-project-scope`, `SOLQARYN - Seguridad multiempresa` y `SOLQARYN - Build y pruebas backend` terminaron los tres en `success`; este HEAD contiene cambios documentales posteriores al SHA del backup, por lo que **no se presenta como un nuevo restore en eff22b96**.
+
+## Prueba negativa obligatoria — anunciar recuperación sin restore probado
+
+**La salida del validador offline NO certifica procedencia de un backup**, aunque su fixture positivo sintético sea aceptado. El contrato existente `scripts/verify-p0-005-a-restore-evidence.mjs --self-test` ejecuta un positivo expresamente sintético y **20 negativas**, con salida fail-closed si: backup `skipped`, origen PROD, cifrado/hash ausentes, artefacto distinto, restore omitido/remoto, conteos diferentes, API no ready, falta de cleanup, secreto expuesto, SHA inconsistente o timestamps falsos. La condición real es **GitHub run terminal success + job de restore real success + artefacto verificable + logs causales**. Una página HTTP 200 o declaración JSON autoafirmada jamás sustituyen estas evidencias.
+
+Como control negativo real, el workflow [#40736901522](https://github.com/solqaryn/Solqaryn/actions/runs/40736901522) falló al arrancar API por `Cors:AllowedOrigins`; no fue aprobado como restore integral ni publicó certificado final. Del mismo modo, [#40704276606](https://github.com/solqaryn/Solqaryn/actions/runs/40704276606) terminó `skipped`, tres jobs omitidos y cero artefactos. **NO anunciar recuperacion** con esas ejecuciones, con tests sintéticos aislados o con un SHA que solo tiene CI de compilación.
+
+## Alcance, límites y criterios de cierre
+
+- Este es un **certificado retrospectivo de un único ejercicio exitoso de DEV en un runner CI descartable**. No demuestra tiempo objetivo RTO/RPO futuro, segundo restore independiente, calendario automático efectivo, retención después del 11/11 ni validez de otra base/otro artefacto.
+- No modificar la API, DTO, Angular, MySQL de DEV persistente, esquema, migraciones, usuarios, proveedores o secretos. No operar `qa`, `main`, PROD, VAEP o Jules. Datos y frontera de seguridad intactos.
+- Para declarar **P0-005.B LISTO**, exigir revisión **formal e independiente** de este PR por otro login, checks obligatorios 3/3 `success` en su SHA final, merge protegido a `dev`, y readback final `PLAN_MAESTRO!H11:M11`, `COLA!E11` por fórmula (sin editarla) y `BITACORA` idempotente.
+- Reversión: revert protegido de esta acta sin borrar evidencia histórica de backup/restore; no efectuar operaciones destructivas en servidores. La prueba negativa conserva siempre `NO_GO` frente a evidencias incompletas.
+
+**Dictamen técnico delimitado:** `RESTORE_PROBADO_EN_CI_DEV_RUN_40739107659=PASS`. **Dictamen de microtarea en esta rama: `EN_PROGRESO` hasta cierre independiente y readback.**

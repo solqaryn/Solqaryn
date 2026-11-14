@@ -1,0 +1,119 @@
+{
+  "schema": "solqaryn.database-provider-certification.v1",
+  "authority": "docs/VAEP_AUTHORITY.md",
+  "task": "N8.20.H",
+  "macro_parent": "N8.20",
+  "branch": "Desarrollo",
+  "certified_at_utc": "2026-09-16T13:50:53Z",
+  "candidate_head": "b77598a8730e139b4129ca30a109f46fcff04d65",
+  "status": "PASS_PROVIDER_IDENTIFIED",
+  "database": {
+    "engine": "MYSQL",
+    "server_version": "8.4.8",
+    "provider": "AIVEN",
+    "project": "solqaryn",
+    "service": "solqaryn-mysql",
+    "service_type": "mysql",
+    "plan": "free-1-1gb",
+    "cloud": "do-sfo",
+    "state": "RUNNING",
+    "dev_db_host_sha256": "882e3047e65019d8f36ee8d8c3b5559e34308693e729d1a728145908608e8ee0"
+  },
+  "backup_and_recovery": {
+    "recovery_mode": "pitr",
+    "point_in_time_recovery_available": true,
+    "retention_policy": {
+      "frequent_interval_minutes": null,
+      "frequent_oldest_age_minutes": null,
+      "infrequent_interval_minutes": null,
+      "infrequent_oldest_age_minutes": null,
+      "interval": 24,
+      "max_count": 0,
+      "source_semantics": "raw provider control-plane retention fields captured without inventing derived retention days"
+    },
+    "backup_schedule": {
+      "hour": 5,
+      "minute": 2
+    },
+    "actual_backups": {
+      "endpoint_readback_proven": true,
+      "count_observed": 3,
+      "latest_backup_time": "2026-09-16T05:02:11.137924Z",
+      "latest_backup_storage_location": "do-sfo2",
+      "latest_backup_size_bytes": 329572146
+    },
+    "restore": {
+      "provider_managed_backup_endpoint_proven": true,
+      "restore_path": "AIVEN_FORK_AND_RESTORE_CONTROL_PLANE",
+      "permission_readback_proven": true,
+      "effective_project_membership_names": ["admin", "role:organization:admin"],
+      "effective_restore_authority_names": ["admin", "role:organization:admin"],
+      "restore_authorization_proven": true,
+      "restore_execution_performed": false
+    }
+  },
+  "cost_and_plan": {
+    "actual_plan_tier_proven": true,
+    "current_plan_is_free_tier": true,
+    "base_price_usd_observed": null,
+    "potential_impact": "A restore/fork creates or changes provider-managed service capacity and can have provider pricing impact; no fork/restore/plan change was executed in this proof.",
+    "paid_action_executed": false,
+    "plan_changed": false,
+    "restore_executed": false
+  },
+  "causal_sources": [
+    {
+      "task": "N8.20.C",
+      "path": "docs/evidencias/database-provider/n8-20-c/github-actions/35093112813-1/N8.20.C_DB_PROVIDER_EVIDENCE.json",
+      "workflow_run_id": 35093112813,
+      "workflow_conclusion": "success",
+      "proves": ["MYSQL engine", "8.4.8 server version", "AIVEN provider", "runtime DEV host hash"]
+    },
+    {
+      "task": "N8.20.F",
+      "path": "docs/evidencias/database-provider/n8-20-f/github-actions/35101887861-1/N8.20.F_AIVEN_CAPABILITIES_EVIDENCE.json",
+      "git_blob_sha": "4e3ea5a57fdfde6fa460ad7e89e20baee2645e60",
+      "workflow_run_id": 35101887861,
+      "workflow_conclusion": "success",
+      "proves": ["actual Aiven service/plan/cloud/state", "backup/PITR/retention raw policy", "actual backups", "restore path/authorization", "cost guardrails", "control-plane DEV host hash"]
+    },
+    {
+      "task": "N8.20.G",
+      "path": "docs/evidencias/database-provider/n8-20-g/N8.20.G_PROVIDER_REVALIDATION_20260916T134708Z.json",
+      "proves": ["cross-source DEV identity match", "generic documentation not used as fact source", "noncausal PostgreSQL sample excluded"]
+    }
+  ],
+  "identity_cross_check": {
+    "runtime_dev_host_sha256": "882e3047e65019d8f36ee8d8c3b5559e34308693e729d1a728145908608e8ee0",
+    "control_plane_dev_host_sha256": "882e3047e65019d8f36ee8d8c3b5559e34308693e729d1a728145908608e8ee0",
+    "match": true
+  },
+  "acceptance": {
+    "engine_proven": true,
+    "version_proven": true,
+    "provider_proven": true,
+    "plan_proven": true,
+    "backup_state_proven": true,
+    "pitr_state_proven": true,
+    "retention_policy_proven": true,
+    "restore_capability_proven": true,
+    "restore_authorization_proven": true,
+    "cost_constraint_proven": true,
+    "readback_sources_committed": true,
+    "p0": 0,
+    "p1": 0
+  },
+  "security_flags": {
+    "production_touched": false,
+    "main_touched": false,
+    "deploy_touched": false,
+    "pr2_touched": false,
+    "secrets_exposed": 0,
+    "connection_string_persisted": false,
+    "aiven_token_persisted": false,
+    "database_password_persisted": false,
+    "full_db_host_persisted": false,
+    "paid_action_executed": false,
+    "restore_executed": false
+  }
+}

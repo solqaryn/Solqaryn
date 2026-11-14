@@ -1,0 +1,116 @@
+{
+  "schema": "vaep-n8.19-a-forensic-pre/v1",
+  "parent": "N8.19.A",
+  "macro_parent": "N8.19",
+  "stage": "PRE",
+  "branch": "Desarrollo",
+  "repo": "jmejia31/Solqaryn",
+  "authority": "docs/VAEP_AUTHORITY.md",
+  "base_head": "78ba3f7b708d02464e8d8674c23452758536fc74",
+  "scope_rule": "Audit every task at or after N8.6.G that had historical or intervention relevance before N8.19.A; receipts are indexes, never sole proof.",
+  "sheet_segments": [
+    {
+      "kind": "HISTORICAL_PLAN",
+      "range": "COLA rows 750-815",
+      "first": "N8.6.G",
+      "last": "N8.14.H",
+      "task_count": 66
+    },
+    {
+      "kind": "OWNER_INTERVENTION_EXECUTED_AFTER_HISTORICAL_ADVANCE",
+      "range": "COLA rows 641-672",
+      "first": "N8.15.A",
+      "last": "N8.18.H",
+      "task_count": 32
+    }
+  ],
+  "task_count": 98,
+  "tasks": {
+    "N8.6": ["N8.6.G", "N8.6.H"],
+    "N8.7": ["N8.7.A", "N8.7.B", "N8.7.C", "N8.7.D", "N8.7.E", "N8.7.F", "N8.7.G", "N8.7.H"],
+    "N8.8": ["N8.8.A", "N8.8.B", "N8.8.C", "N8.8.D", "N8.8.E", "N8.8.F", "N8.8.G", "N8.8.H"],
+    "N8.9": ["N8.9.A", "N8.9.B", "N8.9.C", "N8.9.D", "N8.9.E", "N8.9.F", "N8.9.G", "N8.9.H"],
+    "N8.10": ["N8.10.A", "N8.10.B", "N8.10.C", "N8.10.D", "N8.10.E", "N8.10.F", "N8.10.G", "N8.10.H"],
+    "N8.11": ["N8.11.A", "N8.11.B", "N8.11.C", "N8.11.D", "N8.11.E", "N8.11.F", "N8.11.G", "N8.11.H"],
+    "N8.12": ["N8.12.A", "N8.12.B", "N8.12.C", "N8.12.D", "N8.12.E", "N8.12.F", "N8.12.G", "N8.12.H"],
+    "N8.13": ["N8.13.A", "N8.13.B", "N8.13.C", "N8.13.D", "N8.13.E", "N8.13.F", "N8.13.G", "N8.13.H"],
+    "N8.14": ["N8.14.A", "N8.14.B", "N8.14.C", "N8.14.D", "N8.14.E", "N8.14.F", "N8.14.G", "N8.14.H"],
+    "N8.15": ["N8.15.A", "N8.15.B", "N8.15.C", "N8.15.D", "N8.15.E", "N8.15.F", "N8.15.G", "N8.15.H"],
+    "N8.16": ["N8.16.A", "N8.16.B", "N8.16.C", "N8.16.D", "N8.16.E", "N8.16.F", "N8.16.G", "N8.16.H"],
+    "N8.17": ["N8.17.A", "N8.17.B", "N8.17.C", "N8.17.D", "N8.17.E", "N8.17.F", "N8.17.G", "N8.17.H"],
+    "N8.18": ["N8.18.A", "N8.18.B", "N8.18.C", "N8.18.D", "N8.18.E", "N8.18.F", "N8.18.G", "N8.18.H"]
+  },
+  "minimum_mandatory_scope": [
+    "N8.6.G", "N8.6.H",
+    "N8.7.A", "N8.7.B", "N8.7.C", "N8.7.D", "N8.7.E", "N8.7.F", "N8.7.G", "N8.7.H",
+    "N8.8.A", "N8.8.B", "N8.8.C", "N8.8.D", "N8.8.E", "N8.8.F", "N8.8.G", "N8.8.H"
+  ],
+  "fresh_sheet_observations_not_yet_verdicts": {
+    "N8.7.G": "BLOQUEADO",
+    "N8.7.H": "PENDIENTE",
+    "N8.8.G": "BLOQUEADO",
+    "N8.8.H": "PENDIENTE",
+    "N8.12.F": "EN_PROGRESO",
+    "N8.9_to_N8.10": "PENDIENTE",
+    "N8.13_to_N8.14": "PENDIENTE",
+    "N8.15_to_N8.18": "EXECUTED_UNDER_OWNER_INTERVENTION__REVIEW_FORENSICALLY_WITH_UNDERLYING_EVIDENCE"
+  },
+  "expected_causal_chain": [
+    "DEPENDENCY",
+    "REVIEW_FIRST",
+    "LEASE",
+    "WORK",
+    "TESTS",
+    "CANDIDATE_HEAD",
+    "GATE",
+    "RECEIPT",
+    "LISTO_REAL",
+    "NEXT"
+  ],
+  "allowed_final_classifications": [
+    "CONFIRMED_LISTO_REAL",
+    "N_A_JUSTIFIED",
+    "REOPEN_REQUIRED",
+    "BLOCKER_CONFIRMED",
+    "STALE_CONTROL_ONLY",
+    "SUPERSEDED_BY_LATER_EVIDENCE"
+  ],
+  "fresh_sources": {
+    "github_head": "78ba3f7b708d02464e8d8674c23452758536fc74",
+    "sheet": "Solqaryn - PLAN MAESTRO DE AUTOMATIZACIONES / COLA+CONFIG+CONTROL_TOWER",
+    "receipts_root": "vaep/evidence/receipts/**",
+    "reviews_root": "vaep/evidence/reviews/** plus legacy vaep/evidence/*REVIEW*",
+    "ci": "GitHub Actions runs/check suites by exact candidate head",
+    "git_history": "Desarrollo commits/diffs",
+    "runtime_and_schema_evidence": "only when causally required; no Production writes"
+  },
+  "special_investigations_reserved_for_later_n8_19_stages": [
+    "N8.7.E suspicious timestamp and correction receipt",
+    "N8.7.G performance blocker and authorized DEV harness availability",
+    "N8.7/N8.8 DB and N/A claims",
+    "frontend/backend/security N/A claims",
+    "receipts whose declaration is not backed by exact-head or equivalent causal evidence"
+  ],
+  "guardrails": {
+    "historical_receipts_mutated": false,
+    "historical_rows_rewritten_by_pre": false,
+    "false_pass_or_na_allowed": false,
+    "main_touched": false,
+    "production_touched": false,
+    "deploy_touched": false,
+    "secrets_exposed": 0,
+    "pr2_touched": false
+  },
+  "acceptance": {
+    "fresh_head_read": true,
+    "fresh_sheet_read": true,
+    "receipts_and_reviews_in_scope": true,
+    "ci_exact_head_method_frozen": true,
+    "complete_task_list_frozen": true,
+    "causal_chain_frozen": true,
+    "task_count": 98,
+    "p0": 0,
+    "p1": 0
+  },
+  "next_parent": "N8.19.B"
+}

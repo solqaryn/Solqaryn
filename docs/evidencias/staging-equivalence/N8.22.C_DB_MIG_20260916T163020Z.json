@@ -1,0 +1,48 @@
+{
+  "schema":"vaep-n8.22-equivalence/v1",
+  "scope":"N8.22.C",
+  "stage":"DB_MIG",
+  "captured_at_utc":"2026-09-16T16:30:20Z",
+  "lease_token":"SUP00-N822C-CLOSER-20260916T162945Z",
+  "matrix":[
+    {
+      "dimension":"ef_mysql_provider",
+      "dev":"Pomelo.EntityFrameworkCore.MySql 8.0.2",
+      "prod_code_baseline":"Pomelo.EntityFrameworkCore.MySql 8.0.2",
+      "classification":"EQUIVALENT"
+    },
+    {
+      "dimension":"migration_mechanism",
+      "dev":"EF Core 8 migrations via Infrastructure project",
+      "prod_code_baseline":"EF Core 8 migrations via Infrastructure project",
+      "classification":"EQUIVALENT"
+    },
+    {
+      "dimension":"dev_database_runtime",
+      "dev":"Aiven MySQL 8.4.8, service solqaryn-mysql, plan free-1-1gb",
+      "prod":"not inferred from DEV service",
+      "classification":"EXPECTED_ENV_DIFFERENCE",
+      "reason":"DEV runtime is independently proven; a production database must not be assumed to be the same service"
+    },
+    {
+      "dimension":"prod_database_engine_major_and_service_binding",
+      "dev":"MySQL 8.4.8 proven",
+      "prod":"not exposed by the currently authorized Render metadata surface; no secret values or PROD business data were read",
+      "classification":"UNKNOWN"
+    },
+    {
+      "dimension":"prod_database_storage_or_plan_class",
+      "dev":"Aiven free-1-1gb proven",
+      "prod":"not exposed by current non-secret metadata tools",
+      "classification":"UNKNOWN"
+    }
+  ],
+  "evidence_refs":[
+    "docs/evidencias/database-provider/n8-20-f/github-actions/35101887861-1/N8.20.F_AIVEN_CAPABILITIES_EVIDENCE.json",
+    "backend/src/Infrastructure/Solqaryn.Infrastructure.csproj@Desarrollo",
+    "backend/src/Infrastructure/Solqaryn.Infrastructure.csproj@main"
+  ],
+  "summary":{"EQUIVALENT":2,"EXPECTED_ENV_DIFFERENCE":1,"MATERIAL_GAP":0,"UNKNOWN":2,"P0":0,"P1":0},
+  "certification_effect":"UNKNOWN blocks N8.22.G/H until authoritative PROD DB metadata is available; this stage records the unknown rather than fabricating parity.",
+  "guards":{"prod_write":0,"prod_business_data_read":false,"prod_secret_values_read":false,"main_write":0,"manual_deploy":0,"secrets_exposed":0}
+}

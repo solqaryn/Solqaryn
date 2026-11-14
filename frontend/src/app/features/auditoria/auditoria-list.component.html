@@ -1,0 +1,158 @@
+<app-reportes-administrativos></app-reportes-administrativos>
+
+<section class="bitacora-section" aria-labelledby="bitacora-title">
+<h2 id="bitacora-title" class="page-title">Bitácora detallada</h2>
+<p class="subtitle">Consulta cronológica y filtrable de las acciones realizadas en el sistema.</p>
+
+<div class="card filters" aria-label="Filtros de auditoría">
+  <mat-form-field appearance="outline">
+    <mat-label>Módulo</mat-label>
+    <mat-select [(ngModel)]="filtroModulo" (selectionChange)="aplicarFiltros()">
+      <mat-option value="">Todos</mat-option>
+      @for (m of modulos; track m) { <mat-option [value]="m">{{ m }}</mat-option> }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Acción</mat-label>
+    <mat-select [(ngModel)]="filtroAccion" (selectionChange)="aplicarFiltros()">
+      <mat-option value="">Todas</mat-option>
+      @for (a of acciones; track a) { <mat-option [value]="a">{{ a }}</mat-option> }
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Resultado</mat-label>
+    <mat-select [(ngModel)]="filtroResultado" (selectionChange)="aplicarFiltros()">
+      <mat-option value="">Todos</mat-option>
+      <mat-option value="Exito">Éxito</mat-option>
+      <mat-option value="Rechazado">Rechazado</mat-option>
+      <mat-option value="Error">Error</mat-option>
+    </mat-select>
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Desde</mat-label>
+    <input matInput type="date" [(ngModel)]="filtroDesde" (change)="aplicarFiltros()">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline">
+    <mat-label>Hasta</mat-label>
+    <input matInput type="date" [(ngModel)]="filtroHasta" (change)="aplicarFiltros()">
+  </mat-form-field>
+
+  <mat-form-field appearance="outline" class="filtro-texto">
+    <mat-label>Buscar por usuario, descripción o motivo</mat-label>
+    <input matInput [(ngModel)]="filtroTexto" (ngModelChange)="programarFiltro()" placeholder="Texto libre..." autocomplete="off">
+    <button matSuffix mat-icon-button type="button" (click)="aplicarFiltros()" aria-label="Aplicar búsqueda"><mat-icon>search</mat-icon></button>
+  </mat-form-field>
+</div>
+
+<div class="card audit-results-card">
+  @if (loading()) {
+    <div class="loading" aria-live="polite"><mat-spinner></mat-spinner><span class="sr-only">Cargando registros de auditoría...</span></div>
+  } @else {
+    <div class="table-scroll audit-table-scroll" tabindex="0" aria-label="Tabla de registros de auditoría; desplázate horizontalmente cuando sea necesario">
+      <table class="table table-desktop">
+        <caption class="sr-only">Registros de auditoría del sistema</caption>
+        <thead>
+          <tr><th scope="col">Fecha</th><th scope="col">Usuario</th><th scope="col">Módulo</th><th scope="col">Acción</th><th scope="col">Detalle</th><th scope="col">Resultado</th><th scope="col">Acciones</th></tr>
+        </thead>
+        <tbody>
+          @for (r of registros(); track r.id) {
+            <tr [class.error-row]="r.resultado === 'Error' || r.resultado === 'Rechazado'">
+              <td>{{ r.fecha | date:'dd/MM/yyyy HH:mm' }}</td>
+              <td>{{ r.nombreUsuario }}</td>
+              <td>{{ r.modulo }}</td>
+              <td>
+                <span class="badge" [class.confirmar]="r.accion === 'Confirmar'" [class.anular]="r.accion === 'Anular'" [class.eliminar]="r.accion.startsWith('Eliminar')">
+                  {{ r.accion }}
+                </span>
+              </td>
+              <td>{{ r.descripcion }}</td>
+              <td><span class="badge" [class.error-badge]="r.resultado === 'Error' || r.resultado === 'Rechazado'">{{ r.resultado }}</span></td>
+              <td>
+                <button
+                  mat-icon-button
+                  type="button"
+                  (click)="toggleDetalle(r.id)"
+                  [attr.aria-expanded]="expandidoId() === r.id"
+                  [attr.aria-label]="(expandidoId() === r.id ? 'Ocultar' : 'Mostrar') + ' detalle del registro'">
+                  <mat-icon>{{ expandidoId() === r.id ? 'expand_less' : 'expand_more' }}</mat-icon>
+                </button>
+              </td>
+            </tr>
+            @if (expandidoId() === r.id) {
+              <tr class="detalle-row">
+                <td colspan="7">
+                  <div class="detalle-panel">
+                    <div class="detalle-meta">
+                      <span><strong>IP:</strong> {{ r.ip || '—' }}</span>
+                      <span><strong>Motivo:</strong> {{ r.motivo || '—' }}</span>
+                      <span><strong>Correlación:</strong> {{ r.correlationId || '—' }}</span>
+                      @if (r.error) { <span class="error-text"><strong>Error:</strong> {{ r.error }}</span> }
+                    </div>
+                    @if (r.valoresAnteriores || r.valoresNuevos) {
+                      <div class="comparacion">
+                        <div>
+                          <h4>Antes</h4>
+                          <pre>{{ formatearJson(r.valoresAnteriores) }}</pre>
+                        </div>
+                        <div>
+                          <h4>Después</h4>
+                          <pre>{{ formatearJson(r.valoresNuevos) }}</pre>
+                        </div>
+                      </div>
+                    }
+                  </div>
+                </td>
+              </tr>
+            }
+          } @empty {
+            <tr><td colspan="7" class="empty">No hay registros de auditoría con estos filtros.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cards-mobile">
+      @for (r of registros(); track r.id) {
+        <div
+          class="audit-card"
+          [class.error-row]="r.resultado === 'Error' || r.resultado === 'Rechazado'"
+          role="button"
+          tabindex="0"
+          [attr.aria-expanded]="expandidoId() === r.id"
+          (click)="toggleDetalle(r.id)"
+          (keydown.enter)="toggleDetalle(r.id)"
+          (keydown.space)="$event.preventDefault(); toggleDetalle(r.id)">
+          <div class="audit-card-header">
+            <span class="badge" [class.error-badge]="r.resultado === 'Error' || r.resultado === 'Rechazado'">{{ r.accion }}</span>
+            <span class="fecha">{{ r.fecha | date:'dd/MM HH:mm' }}</span>
+          </div>
+          <p class="audit-card-desc">{{ r.descripcion }}</p>
+          <div class="audit-card-meta"><span>{{ r.nombreUsuario }}</span><span>{{ r.modulo }}</span></div>
+          @if (expandidoId() === r.id) {
+            <div class="detalle-panel">
+              <div class="detalle-meta">
+                <span><strong>IP:</strong> {{ r.ip || '—' }}</span>
+                <span><strong>Motivo:</strong> {{ r.motivo || '—' }}</span>
+              </div>
+              @if (r.valoresAnteriores || r.valoresNuevos) {
+                <div class="comparacion">
+                  <div><h4>Antes</h4><pre>{{ formatearJson(r.valoresAnteriores) }}</pre></div>
+                  <div><h4>Después</h4><pre>{{ formatearJson(r.valoresNuevos) }}</pre></div>
+                </div>
+              }
+            </div>
+          }
+        </div>
+      } @empty {
+        <p class="empty">No hay registros de auditoría con estos filtros.</p>
+      }
+    </div>
+
+    <mat-paginator [length]="totalCount()" [pageSize]="pageSize" [pageIndex]="page - 1" [pageSizeOptions]="[25, 50, 100]" (page)="onPageChange($event)"></mat-paginator>
+  }
+</div>
+</section>

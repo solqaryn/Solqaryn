@@ -1,0 +1,70 @@
+{
+  "schema": "solqaryn.backup-restore-preflight.v1",
+  "authority": "docs/VAEP_AUTHORITY.md",
+  "task": "N8.21.A",
+  "branch": "Desarrollo",
+  "captured_at_utc": "2026-09-16T13:57:26Z",
+  "candidate_head": "21e95dd11472516c968d0d354e1ae0d986005ebc",
+  "status": "PASS",
+  "dependency": {
+    "task": "N8.20.H",
+    "status": "LISTO_REAL",
+    "receipt": "vaep/evidence/receipts/N8.20.H_LISTO_REAL_20260916T135053Z_SUP00.json",
+    "provider_certification": "docs/evidencias/database-provider/n8-20-h/N8.20_DATABASE_PROVIDER_CERTIFICATION_20260916T135053Z.json"
+  },
+  "source_database": {
+    "provider": "AIVEN",
+    "service": "solqaryn-mysql",
+    "engine": "MYSQL",
+    "server_version": "8.4.8",
+    "plan": "free-1-1gb",
+    "access_mode_for_drill": "READ_ONLY_LOGICAL_EXPORT",
+    "active_dev_restore_allowed": false,
+    "production_in_scope": false
+  },
+  "backup_source": {
+    "real_provider_backups_observed": 3,
+    "provider_pitr_available": true,
+    "operational_same_artifact_drill_workflow": ".github/workflows/m11-backup-desarrollo-operativo.yml",
+    "backup_script": "scripts/m11_backup_desarrollo.sh",
+    "restore_script": "scripts/m11_restore_desarrollo.sh",
+    "encrypted_artifact_required": true,
+    "retention_days_for_drill_artifact": 14
+  },
+  "isolated_restore_target": {
+    "execution_surface": "GitHub Actions ephemeral ubuntu runner",
+    "database_runtime": "mysql:8.4 service container",
+    "database_name": "solqaryn_m11_restore_drill",
+    "network_scope": "runner-local 127.0.0.1",
+    "destructive_restore_guard": "ALLOW_DESTRUCTIVE_RESTORE=YES_M11",
+    "disposable": true,
+    "active_dev_database_name": "REDACTED_BY_POLICY",
+    "active_dev_target_prohibited": true,
+    "production_target_prohibited": true,
+    "cleanup_boundary": "runner destruction plus 14-day encrypted artifact retention"
+  },
+  "permissions_and_cost": {
+    "provider_restore_authorization_previously_proven": true,
+    "logical_export_credentials_are_external_environment_secrets": true,
+    "secrets_read_or_persisted_by_supervisor": false,
+    "paid_aiven_fork_required_for_selected_drill": false,
+    "plan_change_required": false,
+    "restore_to_provider_service_required": false,
+    "cost_boundary": "use existing GitHub Actions disposable MySQL target; no Aiven paid action or plan change"
+  },
+  "liveness": {
+    "workers_sheet_active_external_workers": 0,
+    "conflicting_db_owner_observed": false,
+    "current_single_writer": "SUP00-N821A-CLOSER-20260916T135530Z"
+  },
+  "hard_guards": {
+    "active_dev_db_mutation": false,
+    "production_touched": false,
+    "main_touched": false,
+    "deploy_touched": false,
+    "pr2_touched": false,
+    "secrets_exposed": 0,
+    "restore_executed_in_preflight": false
+  },
+  "preflight_decision": "SAFE_TO_PROCEED_TO_DOMAIN_CONTRACT_AND_THEN_REAL_DEV_LOGICAL_BACKUP_PLUS_EPHEMERAL_ISOLATED_RESTORE"
+}

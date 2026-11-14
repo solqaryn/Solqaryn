@@ -1,0 +1,20 @@
+.container {
+  padding: 1rem;
+}
+
+.actions {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.total-row {
+  font-weight: 600;
+  margin-top: 1rem;
+}
+
+.balance-error {
+  color: #b3261e;
+  margin-top: .5rem;
+}

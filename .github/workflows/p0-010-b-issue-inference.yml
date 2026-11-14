@@ -1,0 +1,36 @@
+name: P0-010.B - Reject zero-issue false-clean certification
+
+on:
+  push:
+    branches: [work/solqaryn-p0-010-b]
+    paths:
+      - 'scripts/verify-p0-010-b-issue-inference.mjs'
+      - '.github/workflows/p0-010-b-issue-inference.yml'
+      - 'docs/baselines/P0-010-B-DEV-20261030.json'
+      - 'docs/P0-010-B-ISSUE-NO-DEFECT-FALLACY-DEV.md'
+  pull_request:
+    branches: [dev]
+    paths:
+      - 'scripts/verify-p0-010-b-issue-inference.mjs'
+      - '.github/workflows/p0-010-b-issue-inference.yml'
+      - 'docs/baselines/P0-010-B-DEV-20261030.json'
+      - 'docs/P0-010-B-ISSUE-NO-DEFECT-FALLACY-DEV.md'
+
+permissions:
+  contents: read
+
+jobs:
+  no-false-clean:
+    name: P0-010.B - Issue absence is not defect absence
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha || github.sha }}
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Reject unsupported clean claims using dated data and 12 negatives
+        run: node scripts/verify-p0-010-b-issue-inference.mjs

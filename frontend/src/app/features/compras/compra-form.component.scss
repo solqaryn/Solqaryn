@@ -1,0 +1,18 @@
+.header-row { display: flex; align-items: center; gap: 8px; margin-bottom: 20px; min-width: 0; .page-title { margin: 0; font-size: 22px; } }
+.loading { display: flex; justify-content: center; padding: 40px 0; }
+.form { width: 100%; max-width: 1180px; }
+.section-title { font-size: 14px; font-weight: 700; margin: 20px 0 10px; &:first-of-type { margin-top: 0; } }
+.fields-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 4px 16px; .full-width { grid-column: 1 / -1; } mat-form-field { width: 100%; min-width: 0; } }
+.proveedor-modo { display: flex; align-items: center; gap: 6px; margin: -4px 0 6px; font-size: 12px; line-height: 1.4; mat-icon { flex: 0 0 16px; font-size: 16px; width: 16px; height: 16px; } }
+.proveedor-existente { color: var(--color-success); } .proveedor-nuevo { color: var(--color-text-muted); } .opcion-detalle { margin-left: 8px; font-size: 11px; color: var(--color-text-muted); }
+.producto-busqueda-remota { display: flex; flex-direction: column; gap: 4px; margin-bottom: 10px; .full-width { width: 100%; } }
+.producto-busqueda-mensaje { display: flex; align-items: center; gap: 6px; margin: -8px 0 6px; color: var(--color-success); font-size: 12px; mat-icon { font-size: 16px; width: 16px; height: 16px; } }
+.detalles { display: flex; flex-direction: column; gap: 4px; }
+.detalle-row { display: grid; grid-template-columns: 52px minmax(190px, 2.4fr) minmax(190px, 2fr) minmax(78px, .7fr) minmax(105px, 1fr) minmax(90px, auto) auto; gap: 8px; align-items: center; min-width: 0;
+  .col-imagen { align-self: start; padding-top: 2px; } .col-producto, .col-variante, .col-cantidad, .col-costo { width: 100%; min-width: 0; } .col-subtotal { font-size: 13px; font-weight: 700; text-align: right; white-space: nowrap; }
+}
+.totales { width: 100%; max-width: 360px; margin: 12px 0 0 auto; display: flex; flex-direction: column; gap: 6px; padding: 12px 14px; border: 1px solid var(--color-border); border-radius: 10px; background: color-mix(in srgb, var(--color-bg) 70%, var(--color-surface)); font-size: 13px; div { display: flex; justify-content: space-between; gap: 12px; } .total { font-weight: 800; font-size: 15px; border-top: 1px solid var(--color-border); padding-top: 7px; } .linea-impuesto { color: var(--color-text-muted); } }
+.calculando { display: flex; align-items: center; gap: 8px; font-size: 12px; color: var(--color-text-muted); } .hint { font-size: 12px; color: var(--color-text-muted); } .error { color: var(--color-danger); font-size: 13px; }
+.form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; a[mat-button] { text-decoration: none; } }
+@media (max-width: 960px) { .detalle-row { grid-template-columns: 52px repeat(3, minmax(0, 1fr)) auto; grid-template-areas: "imagen producto producto producto eliminar" "imagen variante variante cantidad costo"; } .col-imagen { grid-area: imagen; } .col-producto { grid-area: producto; } .col-variante { grid-area: variante; } .col-cantidad { grid-area: cantidad; } .col-costo { grid-area: costo; } .col-eliminar { grid-area: eliminar; } .col-subtotal { display: none; } }
+@media (max-width: 640px) { .fields-grid { grid-template-columns: 1fr; } .fields-grid .full-width { grid-column: auto; } .detalle-row { grid-template-columns: 52px minmax(0, 1fr) auto; grid-template-areas: "imagen producto eliminar" "imagen variante variante" ". cantidad costo"; } .form { padding: 14px; } .totales { max-width: none; } .form-actions { flex-direction: column-reverse; button, a { width: 100%; } } }

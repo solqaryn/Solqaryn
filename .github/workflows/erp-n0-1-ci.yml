@@ -1,0 +1,134 @@
+name: ERP-N0.1 - Certificación ProductoVariante
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/scripts/preflight-erp-n0-1-producto-variante.sql'
+      - 'backend/scripts/backfill-erp-n0-1-producto-variante.sql'
+      - 'backend/src/**'
+      - 'backend/tests/**'
+      - '.github/workflows/erp-n0-1-ci.yml'
+  pull_request:
+    branches: [dev]
+    paths:
+      - 'backend/scripts/preflight-erp-n0-1-producto-variante.sql'
+      - 'backend/scripts/backfill-erp-n0-1-producto-variante.sql'
+      - 'backend/src/**'
+      - 'backend/tests/**'
+      - '.github/workflows/erp-n0-1-ci.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: erp-n0-1-ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  autoridad-producto-variante:
+    name: Preflight, backfill y autoridad en MySQL 8.4
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: solqaryn_n01_ci
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=solqaryn_n01_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;
+      Database__ServerVersion: 8.4.0
+      Database__ApplyMigrationsOnStartup: 'false'
+      Jwt__Secret: ERP-N0-1-CI-Only-Secret-With-More-Than-32-Characters-2026
+      Jwt__Issuer: Solqaryn.CI
+      Jwt__Audience: Solqaryn.CI.Frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Restaurar y compilar backend
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+      - name: Crear esquema actual con bootstrap Oracle canónico
+        working-directory: backend
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+        run: |
+          set -euo pipefail
+          dotnet run \
+            --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj \
+            --configuration Release \
+            --no-build
+      - name: Sembrar producto legacy sin variante
+        run: |
+          set -euo pipefail
+          mysql_container="${{ job.services.mysql.id }}"
+          docker exec "$mysql_container" mysql -uroot -proot solqaryn_n01_ci -e "
+            INSERT INTO Productos
+              (Nombre, Marca, Modelo, Cantidad, Costo, Precio, UmbralStockBajo, Activo, Eliminado, FechaCreacion, FechaActualizacion)
+            VALUES
+              ('ERP N0.1 Legacy CI', 'Marca legacy CI', 'Modelo legacy CI', 7, 12.50, 25.00, 2, 1, 0, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6));"
+          count="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_n01_ci -Nse "
+            SELECT COUNT(*)
+            FROM ProductoVariantes pv
+            JOIN Productos p ON p.Id = pv.ProductoId
+            WHERE p.Nombre = 'ERP N0.1 Legacy CI' AND pv.Eliminado = 0;")"
+          test "$count" = '0'
+      - name: Ejecutar preflight N0.1 previo
+        run: |
+          set -euo pipefail
+          mysql_container="${{ job.services.mysql.id }}"
+          docker exec -i "$mysql_container" mysql -uroot -proot solqaryn_n01_ci \
+            < backend/scripts/preflight-erp-n0-1-producto-variante.sql \
+            > /tmp/n01-preflight-before.txt
+          test -s /tmp/n01-preflight-before.txt
+      - name: Ejecutar backfill N0.1
+        run: |
+          set -euo pipefail
+          mysql_container="${{ job.services.mysql.id }}"
+          resultado="$(docker exec -i "$mysql_container" mysql -uroot -proot solqaryn_n01_ci --batch --skip-column-names \
+            < backend/scripts/backfill-erp-n0-1-producto-variante.sql | tail -n 1)"
+          test "$resultado" = '0'
+      - name: Validar autoridad N0.1 posterior
+        run: |
+          set -euo pipefail
+          mysql_container="${{ job.services.mysql.id }}"
+          errores="$(docker exec -i "$mysql_container" mysql -uroot -proot solqaryn_n01_ci --batch --skip-column-names \
+            < backend/scripts/preflight-erp-n0-1-producto-variante.sql | tail -n 1)"
+          test "$errores" = '0'
+
+          variante="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_n01_ci -Nse "
+            SELECT CONCAT(pv.EsTecnica, '|', pv.Cantidad, '|', FORMAT(pv.Costo, 2), '|', FORMAT(pv.Precio, 2))
+            FROM ProductoVariantes pv
+            JOIN Productos p ON p.Id = pv.ProductoId
+            WHERE p.Nombre = 'ERP N0.1 Legacy CI' AND pv.Eliminado = 0;")"
+          test "$variante" = '1|7|12.50|25.00'
+
+          alineado="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_n01_ci -Nse "
+            SELECT COUNT(*)
+            FROM Productos p
+            JOIN ProductoVariantes pv ON pv.ProductoId = p.Id AND pv.Eliminado = 0
+            WHERE p.Nombre = 'ERP N0.1 Legacy CI'
+              AND p.Cantidad = pv.Cantidad
+              AND ABS(p.Costo - pv.Costo) < 0.01
+              AND ABS(p.Precio - pv.Precio) < 0.01
+              AND p.UmbralStockBajo = pv.UmbralStockBajo;")"
+          test "$alineado" = '1'
+      - name: Ejecutar pruebas de autoridad N0.1
+        working-directory: backend
+        run: |
+          dotnet test Solqaryn.sln --configuration Release \
+            --filter "FullyQualifiedName~ProductoVarianteAuthorityTests"

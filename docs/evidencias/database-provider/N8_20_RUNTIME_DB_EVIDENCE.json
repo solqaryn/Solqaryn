@@ -1,0 +1,63 @@
+{
+  "schema": "vaep-database-provider-evidence/v1",
+  "authority": "docs/VAEP_AUTHORITY.md",
+  "repo": "jmejia31/Solqaryn",
+  "branch": "Desarrollo",
+  "observed_at": "2026-09-16T07:39:24Z",
+  "base_head": "2631ba4b98947c866cff25f9e0ee89ea7fb78ec4",
+  "scope": "N8.20",
+  "safety": {
+    "production_touched": false,
+    "main_touched": false,
+    "deploy_triggered": false,
+    "secrets_read": false,
+    "secrets_exposed": 0,
+    "pr2_touched": false,
+    "paid_action": false
+  },
+  "dev_runtime": {
+    "render_service": "solqaryn-api-desarrollo",
+    "render_service_id": "srv-d9jblq7avr4c73c74jng",
+    "render_branch": "Desarrollo",
+    "render_region": "oregon",
+    "render_hosting_plan": "free",
+    "render_health_path": "/health/ready",
+    "runtime_db_activity": "CONFIRMED",
+    "runtime_db_activity_evidence": "Render DEV app logs at 2026-09-16T02:03:40Z show Microsoft.EntityFrameworkCore.Database.Command[20101] and successful Executed DbCommand statements against backtick-quoted application tables; parameter values are redacted."
+  },
+  "code_provider": {
+    "ef_core": "8.0.2",
+    "ef_provider": "Pomelo.EntityFrameworkCore.MySql 8.0.2",
+    "driver": "MySqlConnector 2.3.7",
+    "registration": "UseMySql(connectionString, new MySqlServerVersion(mysqlServerVersion))",
+    "configured_server_version": "8.4.3",
+    "configured_server_version_status": "CONFIGURED_NOT_RUNTIME_VERIFIED",
+    "migration_provider_evidence": "AppDbContextModelSnapshot uses MySqlModelBuilderExtensions and MySqlPropertyBuilderExtensions with EF ProductVersion 8.0.2",
+    "engine_family": "MySQL",
+    "engine_family_status": "CONFIRMED_BY_ACTIVE_EF_MYSQL_RUNTIME_PATH_AND_SQL_DIALECT"
+  },
+  "provider_control_plane": {
+    "vendor": "NOT_VERIFIED",
+    "db_plan_tier": "NOT_VERIFIED",
+    "db_region": "NOT_VERIFIED",
+    "backup_real": "NOT_VERIFIED",
+    "pitr": "NOT_VERIFIED",
+    "retention": "NOT_VERIFIED",
+    "restore_capability": "NOT_VERIFIED",
+    "actual_server_version": "NOT_VERIFIED",
+    "blocking_reason": "Current connected tools provide Render service/log reads but no Render environment-value read or shell, no authenticated database query tool, and no Aiven/provider control-plane connector. Historical provider mentions are not accepted as proof by N8.20."
+  },
+  "source_refs": [
+    "backend/src/Infrastructure/Solqaryn.Infrastructure.csproj",
+    "backend/src/API/Program.cs",
+    "backend/src/API/appsettings.json",
+    "backend/src/Infrastructure/Migrations/AppDbContextModelSnapshot.cs",
+    "Render DEV service metadata and logs"
+  ],
+  "assessment": {
+    "N8.20.A": "PRECHECK_COMPLETE_WITH_TOOL_BOUNDARY_IDENTIFIED",
+    "N8.20.B": "ENGINE_ARCHITECTURE_CONFIRMED; PROVIDER_VENDOR_NOT_TESTED",
+    "N8.20.C": "BLOCKED_PENDING_ACTUAL_SERVER_VERSION_READONLY_QUERY_OR_EQUIVALENT",
+    "PASS_PROVIDER_IDENTIFIED": false
+  }
+}

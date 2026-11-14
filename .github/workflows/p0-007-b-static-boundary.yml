@@ -1,0 +1,27 @@
+name: P0-007.B - Static UX evidence boundary (DEV)
+
+on:
+  pull_request:
+    branches: [dev]
+    paths:
+      - 'docs/P0-007-A-INVENTARIO-COMPONENTES-DEV.md'
+      - 'docs/P0-007-B-LIMITES-CERTIFICACION-UX-DEV.md'
+      - 'scripts/verify-p0-007-a-component-catalog.mjs'
+      - 'scripts/verify-p0-007-b-static-boundary.mjs'
+      - '.github/workflows/p0-007-b-static-boundary.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  static-boundary:
+    name: P0-007.B - Native negative UX evidence fixtures
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+      - name: Verify catalog and reject false UX certification
+        run: node scripts/verify-p0-007-b-static-boundary.mjs --self-test

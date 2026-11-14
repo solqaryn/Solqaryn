@@ -1,0 +1,692 @@
+using System.Security.Claims;
+using System.Text.Json;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Moq;
+using Solqaryn.API.Controllers;
+using Solqaryn.API.Middleware;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Enums;
+using Solqaryn.Infrastructure.Persistence;
+using Solqaryn.Infrastructure.Services;
+using Xunit;
+
+namespace Solqaryn.Tests.API.Controllers;
+
+public sealed class PlataformaEmpresasOnboardingSecurityTests
+{
+    [Fact]
+    public async Task P1014A_ConfirmacionGuiadaNoEludeGatesNiCreaDatosSinAutorizacion()
+    {
+        // El asistente de Angular solo presenta pasos; este endpoint sigue
+        // aplicando la autoridad real y no crea datos si un gate está OFF.
+        var denied = await PrepararAsync(false, true, true);
+        await using (var db = denied.Db)
+        {
+            var result = await denied.Controller.AltaControlada(new()
+            {
+                Nombre = "Empresa guiada",
+                AdministradorUsuarioId = denied.AdministradorId
+            }, CancellationToken.None);
+
+            Assert.Equal(503, Assert.IsType<ObjectResult>(result).StatusCode);
+            Assert.Empty(await db.Set<Empresa>().ToListAsync());
+            Assert.Empty(await db.Set<UsuarioEmpresa>().ToListAsync());
+            Assert.Empty(await db.Set<ConfigEmpresa>().ToListAsync());
+        }
+
+        // Con autoridad de plataforma y ambos gates vigentes, una sola
+        // confirmación reutiliza la transacción, ConfigEmpresa y membresía.
+        var allowed = await PrepararAsync(true, true, true);
+        await using (var db = allowed.Db)
+        {
+            var result = await allowed.Controller.AltaControlada(new()
+            {
+                Nombre = "Empresa guiada",
+                AdministradorUsuarioId = allowed.AdministradorId
+            }, CancellationToken.None);
+
+            Assert.IsType<CreatedResult>(result);
+            var empresa = Assert.Single(await db.Set<Empresa>().ToListAsync());
+            var config = Assert.Single(await db.Set<ConfigEmpresa>().ToListAsync());
+            var membresia = Assert.Single(await db.Set<UsuarioEmpresa>().ToListAsync());
+            Assert.Equal(empresa.Id, config.EmpresaId);
+            Assert.Equal(empresa.Id, membresia.EmpresaId);
+            Assert.Equal(allowed.AdministradorId, membresia.UsuarioId);
+            Assert.False(await db.Set<UsuarioRolPlataforma>()
+                .AnyAsync(x => x.UsuarioId == allowed.AdministradorId));
+        }
+    }
+
+    [Fact]
+    public void EndpointDePlataformaExigeJwt()
+    {
+        Assert.NotNull(Attribute.GetCustomAttribute(
+            typeof(PlataformaEmpresasController), typeof(AuthorizeAttribute)));
+    }
+
+    // P1-013.A: la disponibilidad del alta se calcula con ambos gates; un
+    // solo flag no promociona empresas ni habilita operaciones comerciales.
+    [Theory]
+    [InlineData(false, false, false)]
+    [InlineData(false, true, false)]
+    [InlineData(true, false, false)]
+    [InlineData(true, true, true)]
+    public async Task P1013A_DirectorioNoAnunciaAltaSinDobleGate(
+        bool onboarding, bool aislamiento, bool puedeCrear)
+    {
+        var fixture = await PrepararAsync(onboarding, aislamiento, true);
+        await using var db = fixture.Db;
+        var result = Assert.IsType<OkObjectResult>(
+            await fixture.Controller.Listar(cancellationToken: CancellationToken.None));
+        var response = Assert.IsType<ApiResponse<object>>(result.Value);
+        Assert.True(response.Success);
+        var data = JsonSerializer.SerializeToElement(response.Data);
+        Assert.Equal(puedeCrear, data.GetProperty("puedeCrear").GetBoolean());
+        // Listar no crea empresas, membresías ni configuración comercial.
+        Assert.Empty(await db.Set<Empresa>().ToListAsync());
+        Assert.Empty(await db.Set<UsuarioEmpresa>().ToListAsync());
+        Assert.Empty(await db.Set<ConfigEmpresa>().ToListAsync());
+        Assert.Single(await db.Set<RegistroAuditoria>().ToListAsync());
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public async Task P1013A_AltaRechazadaPorCualquierGateApagado(
+        bool onboarding, bool aislamiento)
+    {
+        var fixture = await PrepararAsync(onboarding, aislamiento, true);
+        await using var db = fixture.Db;
+        var result = await fixture.Controller.AltaControlada(new()
+        {
+            Nombre = "B",
+            AdministradorUsuarioId = fixture.AdministradorId
+        }, CancellationToken.None);
+        Assert.Equal(503, Assert.IsType<ObjectResult>(result).StatusCode);
+        Assert.Empty(await db.Set<Empresa>().ToListAsync());
+        Assert.Empty(await db.Set<UsuarioEmpresa>().ToListAsync());
+        Assert.Empty(await db.Set<ConfigEmpresa>().ToListAsync());
+        Assert.Empty(await db.Set<RegistroAuditoria>().ToListAsync());
+    }
+
+    [Fact]
+    public async Task AdministradorEmpresarialSinRolDePlataformaNoPuedeCrearEmpresa()
+    {
+        var fixture = await PrepararAsync(true, true, false);
+        await using var db = fixture.Db;
+        var result = await fixture.Controller.AltaControlada(new()
+        {
+            Nombre = "B",
+            AdministradorUsuarioId = fixture.AdministradorId
+        }, CancellationToken.None);
+        Assert.IsType<ForbidResult>(result);
+        Assert.Empty(await db.Set<Empresa>().ToListAsync());
+        Assert.Empty(await db.Set<UsuarioEmpresa>().ToListAsync());
+    }
+
+    [Fact]
+    public async Task LaIdentidadDelJwtSinSesionActualVerificadaNoConcedeAlta()
+    {
+        var fixture = await PrepararAsync(true, true, true, currentUserValid: false);
+        await using var db = fixture.Db;
+        var result = await fixture.Controller.AltaControlada(new()
+        {
+            Nombre = "B",
+            AdministradorUsuarioId = fixture.AdministradorId
+        }, CancellationToken.None);
+        Assert.IsType<ForbidResult>(result);
+        Assert.Empty(await db.Set<Empresa>().ToListAsync());
+    }
+
+    [Fact]
+    public async Task P1012A_PlataformaCreaEmpresaConAdminRegistradoSinEscaladaGlobal()
+    {
+        var fixture = await PrepararAsync(true, true, true);
+        await using var db = fixture.Db;
+        db.Set<Empresa>().Add(new Empresa("A histórica"));
+        await db.SaveChangesAsync();
+
+        // P1-012.A: modalidad legacy exige reutilizar el usuario ya registrado.
+        var usuarioOriginal = await db.Usuarios.IgnoreQueryFilters().AsNoTracking()
+            .SingleAsync(x => x.Id == fixture.AdministradorId);
+        var totalUsuariosPrevio = await db.Usuarios.IgnoreQueryFilters().CountAsync();
+        var rolOriginalId = usuarioOriginal.RolId;
+
+        var result = await fixture.Controller.AltaControlada(new()
+        {
+            Nombre = "  Empresa B  ",
+            AdministradorUsuarioId = fixture.AdministradorId
+        }, CancellationToken.None);
+
+        var created = Assert.IsType<CreatedResult>(result);
+        Assert.NotNull(created.Value);
+
+        var companies = await db.Set<Empresa>()
+            .IgnoreQueryFilters().OrderBy(x => x.Id).ToListAsync();
+        Assert.Equal(2, companies.Count);
+        var nueva = Assert.Single(companies.Where(x => x.Nombre == "Empresa B"));
+        Assert.True(nueva.Activa);
+        Assert.Equal(fixture.ActorId, nueva.CreadoPorUsuarioId);
+
+        var member = Assert.Single(await db.Set<UsuarioEmpresa>().ToListAsync());
+        Assert.True(member.Activa);
+        Assert.Equal(nueva.Id, member.EmpresaId);
+        Assert.Equal(fixture.AdministradorId, member.UsuarioId);
+        var config = Assert.Single(await db.Set<ConfigEmpresa>().ToListAsync());
+        Assert.Equal(nueva.Id, config.EmpresaId);
+        Assert.Equal(fixture.ActorId, config.CreadoPorUsuarioId);
+        Assert.Equal("HNL", config.Moneda);
+        Assert.Equal("America/Tegucigalpa", config.ZonaHoraria);
+        Assert.Equal(1L, config.Version);
+        var role = await db.Roles.SingleAsync(x => x.Id == member.RolId);
+        Assert.Equal(AmbitoAutorizacion.Empresa, role.Ambito);
+        Assert.True(role.EsAdministrador);
+        Assert.Null(role.EmpresaId);
+
+        var audit = Assert.Single(await db.Set<RegistroAuditoria>().ToListAsync());
+        Assert.Equal(nueva.Id, audit.EmpresaId);
+        Assert.Equal(AmbitoAutorizacion.Plataforma, audit.AmbitoAutoridad);
+        Assert.Equal(OrigenAutorizacion.RolPlataforma, audit.OrigenAutorizacion);
+        Assert.Equal(fixture.ActorId, audit.UsuarioId);
+        Assert.Equal(AccionPermiso.Crear, audit.Accion);
+        Assert.Contains("\"ConfigEmpresaId\"", audit.ValoresNuevos ?? "");
+
+        // La creación de la empresa no crea otra identidad ni promueve al
+        // administrador empresarial a autoridad de plataforma.
+        Assert.Equal(totalUsuariosPrevio,
+            await db.Usuarios.IgnoreQueryFilters().CountAsync());
+        var usuarioFinal = await db.Usuarios.IgnoreQueryFilters().AsNoTracking()
+            .SingleAsync(x => x.Id == fixture.AdministradorId);
+        Assert.Equal(usuarioOriginal.NombreUsuario, usuarioFinal.NombreUsuario);
+        Assert.Equal(rolOriginalId, usuarioFinal.RolId);
+        Assert.True(usuarioFinal.Activo);
+        Assert.False(await db.Set<UsuarioRolPlataforma>().IgnoreQueryFilters()
+            .AnyAsync(x => x.UsuarioId == fixture.AdministradorId));
+    }
+
+    [Fact]
+    public async Task P1012B_AltaRepetidaNoDuplicaIdentidadMembresiaNiAuditoria()
+    {
+        var fixture = await PrepararAsync(true, true, true);
+        await using var db = fixture.Db;
+        var adminAntes = await db.Usuarios.AsNoTracking()
+            .SingleAsync(u => u.Id == fixture.AdministradorId);
+        var totalUsuarios = await db.Usuarios.CountAsync();
+
+        var request = new AltaEmpresaPlataformaRequest
+        {
+            Nombre = "Empresa de alta única",
+            AdministradorUsuarioId = fixture.AdministradorId
+        };
+        Assert.IsType<CreatedResult>(
+            await fixture.Controller.AltaControlada(request, CancellationToken.None));
+        Assert.IsType<ConflictObjectResult>(
+            await fixture.Controller.AltaControlada(request, CancellationToken.None));
+
+        var empresa = Assert.Single(await db.Set<Empresa>().IgnoreQueryFilters().ToListAsync());
+        var membresia = Assert.Single(await db.Set<UsuarioEmpresa>()
+            .IgnoreQueryFilters().ToListAsync());
+        Assert.Equal(empresa.Id, membresia.EmpresaId);
+        Assert.Equal(fixture.AdministradorId, membresia.UsuarioId);
+        Assert.Single(await db.Set<ConfigEmpresa>().IgnoreQueryFilters().ToListAsync());
+        Assert.Single(await db.Set<RegistroAuditoria>().IgnoreQueryFilters().ToListAsync());
+        Assert.Equal(totalUsuarios, await db.Usuarios.IgnoreQueryFilters().CountAsync());
+        var adminDespues = await db.Usuarios.IgnoreQueryFilters().AsNoTracking()
+            .SingleAsync(u => u.Id == fixture.AdministradorId);
+        Assert.Equal(adminAntes.RolId, adminDespues.RolId);
+        Assert.False(await db.Set<UsuarioRolPlataforma>().IgnoreQueryFilters()
+            .AnyAsync(x => x.UsuarioId == fixture.AdministradorId));
+    }
+
+    [Fact]
+    public async Task P1012B_AdminYaMiembroDeA_NoTransfiereRolPrivadoAOtraEmpresa()
+    {
+        var fixture = await PrepararAsync(true, true, true);
+        await using var db = fixture.Db;
+        var empresaA = new Empresa("Empresa A previa");
+        db.Set<Empresa>().Add(empresaA);
+        await db.SaveChangesAsync();
+
+        var rolPrivadoA = new Rol
+        {
+            Nombre = "Administrador privado A",
+            NombreNormalizado = "ADMIN_PRIVADO_A_P1012B",
+            EmpresaId = empresaA.Id,
+            Ambito = AmbitoAutorizacion.Empresa,
+            EsAdministrador = true,
+            EsSistema = false,
+            Activo = true
+        };
+        db.Roles.Add(rolPrivadoA);
+        await db.SaveChangesAsync();
+        db.Set<UsuarioEmpresa>().Add(new UsuarioEmpresa(
+            fixture.AdministradorId, empresaA.Id, rolPrivadoA.Id));
+        await db.SaveChangesAsync();
+
+        var adminOriginal = await db.Usuarios.IgnoreQueryFilters().AsNoTracking()
+            .SingleAsync(x => x.Id == fixture.AdministradorId);
+        Assert.IsType<CreatedResult>(
+            await fixture.Controller.AltaControlada(new AltaEmpresaPlataformaRequest
+            {
+                Nombre = "Empresa B aislada",
+                AdministradorUsuarioId = fixture.AdministradorId
+            }, CancellationToken.None));
+
+        var empresaB = await db.Set<Empresa>().IgnoreQueryFilters()
+            .SingleAsync(x => x.Nombre == "Empresa B aislada");
+        var miembros = await db.Set<UsuarioEmpresa>().IgnoreQueryFilters().AsNoTracking()
+            .Where(x => x.UsuarioId == fixture.AdministradorId).ToListAsync();
+        Assert.Equal(2, miembros.Count);
+        Assert.Equal(2, miembros.Select(x => x.EmpresaId).Distinct().Count());
+        Assert.Equal(rolPrivadoA.Id,
+            Assert.Single(miembros.Where(x => x.EmpresaId == empresaA.Id)).RolId);
+
+        var nuevoRolId = Assert.Single(miembros.Where(x => x.EmpresaId == empresaB.Id)).RolId;
+        Assert.NotEqual(rolPrivadoA.Id, nuevoRolId);
+        var rolDeB = await db.Roles.IgnoreQueryFilters().AsNoTracking()
+            .SingleAsync(x => x.Id == nuevoRolId);
+        Assert.Equal(AmbitoAutorizacion.Empresa, rolDeB.Ambito);
+        Assert.True(rolDeB.EsSistema);
+        Assert.True(rolDeB.EsAdministrador);
+        Assert.Null(rolDeB.EmpresaId);
+        var adminFinal = await db.Usuarios.IgnoreQueryFilters().AsNoTracking()
+            .SingleAsync(x => x.Id == fixture.AdministradorId);
+        Assert.Equal(adminOriginal.RolId, adminFinal.RolId);
+        Assert.False(await db.Set<UsuarioRolPlataforma>().IgnoreQueryFilters()
+            .AnyAsync(x => x.UsuarioId == fixture.AdministradorId));
+        Assert.Single(await db.Set<ConfigEmpresa>().IgnoreQueryFilters().ToListAsync());
+        Assert.Single(await db.Set<RegistroAuditoria>().IgnoreQueryFilters().ToListAsync());
+    }
+
+    [Fact]
+    public async Task NoCreaEmpresaConAdministradorInactivoNiRepiteNombre()
+    {
+        var fixture = await PrepararAsync(true, true, true);
+        await using var db = fixture.Db;
+        var admin = await db.Usuarios.SingleAsync(x => x.Id == fixture.AdministradorId);
+        admin.Activo = false;
+        await db.SaveChangesAsync();
+
+        var result = await fixture.Controller.AltaControlada(new()
+        {
+            Nombre = "B", AdministradorUsuarioId = fixture.AdministradorId
+        }, CancellationToken.None);
+        Assert.IsType<BadRequestObjectResult>(result);
+        Assert.Empty(await db.Set<Empresa>().ToListAsync());
+
+        admin.Activo = true;
+        db.Set<Empresa>().Add(new Empresa("B"));
+        await db.SaveChangesAsync();
+        result = await fixture.Controller.AltaControlada(new()
+        {
+            Nombre = "B", AdministradorUsuarioId = fixture.AdministradorId
+        }, CancellationToken.None);
+        Assert.IsType<ConflictObjectResult>(result);
+        Assert.Single(await db.Set<Empresa>().ToListAsync());
+        Assert.Empty(await db.Set<UsuarioEmpresa>().ToListAsync());
+    }
+
+    [Fact]
+    public async Task AltaAtomicaActivaSoloIdentidadPendienteCreadaPorOperadorGlobal()
+    {
+        var fixture = await PrepararAsync(true, true, true);
+        await using var db = fixture.Db;
+        var usuario = await db.Usuarios.SingleAsync(u => u.Id == fixture.AdministradorId);
+        usuario.Activo = false;
+        usuario.CreadoPorUsuarioId = fixture.ActorId;
+        await db.SaveChangesAsync();
+
+        var respuesta = await fixture.Controller.AltaControlada(new()
+        {
+            Nombre = "Empresa nueva mínima",
+            AdministradorUsuarioId = fixture.AdministradorId
+        }, CancellationToken.None);
+
+        Assert.IsType<CreatedResult>(respuesta);
+        Assert.True(usuario.Activo);
+        var empresa = Assert.Single(await db.Set<Empresa>().ToListAsync());
+        var membresia = Assert.Single(await db.Set<UsuarioEmpresa>().ToListAsync());
+        Assert.Equal(empresa.Id, membresia.EmpresaId);
+        Assert.Equal(fixture.AdministradorId, membresia.UsuarioId);
+        Assert.Equal(empresa.Id,
+            Assert.Single(await db.Set<ConfigEmpresa>().ToListAsync()).EmpresaId);
+        Assert.Single(await db.Set<RegistroAuditoria>().ToListAsync());
+    }
+
+
+    [Fact]
+    public async Task P1011B_FalloBCryptInyectadoNoDejaUsuarioNiEmpresaHuerfanos()
+    {
+        var llamadasHash = 0;
+        var fixture = await PrepararAsync(true, true, true, passwordHasher: password =>
+        {
+            Assert.Equal("ClaveSegura!42", password);
+            llamadasHash++;
+            throw new InvalidOperationException("P1011B: fallo BCrypt inyectado.");
+        });
+        await using var db = fixture.Db;
+        var usuariosAntes = await db.Usuarios.IgnoreQueryFilters().CountAsync();
+        var auditoriasAntes = await db.Set<RegistroAuditoria>()
+            .IgnoreQueryFilters().CountAsync();
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            fixture.Controller.AltaControlada(new AltaEmpresaPlataformaRequest
+            {
+                Nombre = "Empresa fallo BCrypt",
+                AdministradorNuevo = new AdministradorNuevoEmpresaRequest
+                {
+                    NombreUsuario = "admin.fallo.bcrypt",
+                    NombreCompleto = "Administrador de prueba BCrypt",
+                    Password = "ClaveSegura!42"
+                }
+            }, CancellationToken.None));
+        Assert.Contains("fallo BCrypt inyectado", error.Message);
+        Assert.Equal(1, llamadasHash);
+        Assert.Equal(usuariosAntes, await db.Usuarios.IgnoreQueryFilters().CountAsync());
+        Assert.DoesNotContain(await db.Usuarios.IgnoreQueryFilters().ToListAsync(),
+            usuario => usuario.NombreUsuario == "admin.fallo.bcrypt");
+        Assert.Empty(await db.Set<Empresa>().IgnoreQueryFilters().ToListAsync());
+        Assert.Empty(await db.Set<ConfigEmpresa>().IgnoreQueryFilters().ToListAsync());
+        Assert.Empty(await db.Set<UsuarioEmpresa>().IgnoreQueryFilters().ToListAsync());
+        Assert.Equal(auditoriasAntes, await db.Set<RegistroAuditoria>()
+            .IgnoreQueryFilters().CountAsync());
+        Assert.DoesNotContain(db.ChangeTracker.Entries(),
+            entry => entry.State is EntityState.Added or EntityState.Modified or EntityState.Deleted);
+    }
+
+    [Fact]
+    public async Task P1011A_NuevoAdministradorSeCreaConBCryptRolBaseYUnaMembresiaDeEmpresa()
+    {
+        var fixture = await PrepararAsync(true, true, true);
+        await using var db = fixture.Db;
+        const string password = "ClaveSegura!42";
+        var result = await fixture.Controller.AltaControlada(new()
+        {
+            Nombre = "Empresa con admin nuevo",
+            AdministradorNuevo = new()
+            {
+                NombreUsuario = "empresa.nuevo",
+                NombreCompleto = "Administrador Empresa Nuevo",
+                Password = password
+            }
+        }, CancellationToken.None);
+        var created = Assert.IsType<CreatedResult>(result);
+        var nuevoId = (int)created.Value!.GetType().GetProperty("administradorUsuarioId")!
+            .GetValue(created.Value)!;
+        var usuario = await db.Usuarios.IgnoreQueryFilters().SingleAsync(u => u.Id == nuevoId);
+        Assert.Equal("empresa.nuevo", usuario.NombreUsuario);
+        Assert.True(usuario.Activo);
+        Assert.StartsWith("$2", usuario.PasswordHash);
+        Assert.True(BCrypt.Net.BCrypt.Verify(password, usuario.PasswordHash));
+        Assert.NotEqual(password, usuario.PasswordHash);
+        Assert.Equal(fixture.ActorId, usuario.CreadoPorUsuarioId);
+
+        var rolBase = await db.Roles.IgnoreQueryFilters().SingleAsync(r => r.Id == usuario.RolId);
+        Assert.Equal(AmbitoAutorizacion.Empresa, rolBase.Ambito);
+        Assert.False(rolBase.EsAdministrador);
+        Assert.Empty(await db.Set<UsuarioRolPlataforma>().IgnoreQueryFilters()
+            .Where(x => x.UsuarioId == nuevoId).ToArrayAsync());
+
+        var empresa = Assert.Single(await db.Set<Empresa>().IgnoreQueryFilters().ToListAsync());
+        var configuracion = Assert.Single(await db.Set<ConfigEmpresa>().IgnoreQueryFilters().ToListAsync());
+        Assert.Equal(empresa.Id, configuracion.EmpresaId);
+        var miembro = Assert.Single(await db.Set<UsuarioEmpresa>().IgnoreQueryFilters().ToListAsync());
+        Assert.Equal(empresa.Id, miembro.EmpresaId);
+        Assert.Equal(nuevoId, miembro.UsuarioId);
+        var rolAdmin = await db.Roles.IgnoreQueryFilters().SingleAsync(r => r.Id == miembro.RolId);
+        Assert.Equal(AmbitoAutorizacion.Empresa, rolAdmin.Ambito);
+        Assert.True(rolAdmin.EsAdministrador);
+        Assert.True(rolAdmin.EsSistema);
+        Assert.Null(rolAdmin.EmpresaId);
+        var audit = Assert.Single(await db.Set<RegistroAuditoria>().IgnoreQueryFilters().ToListAsync());
+        Assert.Equal(fixture.ActorId, audit.UsuarioId);
+        Assert.True(System.Text.Json.JsonDocument.Parse(audit.ValoresNuevos ?? "{}")
+            .RootElement.GetProperty("UsuarioCreadoEnAlta").GetBoolean());
+        Assert.DoesNotContain(password, audit.ValoresNuevos ?? "");
+        Assert.DoesNotContain(usuario.PasswordHash, audit.ValoresNuevos ?? "");
+    }
+
+    [Fact]
+    public async Task P1011A_NuevoAdminRechazaClaveDebilDuplicadoYModalidadesMezcladas()
+    {
+        var fixture = await PrepararAsync(true, true, true);
+        await using var db = fixture.Db;
+        var weak = await fixture.Controller.AltaControlada(new()
+        {
+            Nombre = "Nueva empresa",
+            AdministradorNuevo = new()
+            {
+                NombreUsuario = "cuenta.nueva",
+                NombreCompleto = "Administrador Cuenta",
+                Password = "clave-debil"
+            }
+        }, CancellationToken.None);
+        Assert.IsType<BadRequestObjectResult>(weak);
+
+        var duplicate = await fixture.Controller.AltaControlada(new()
+        {
+            Nombre = "Nueva empresa",
+            AdministradorNuevo = new()
+            {
+                NombreUsuario = "empresa-admin-test",
+                NombreCompleto = "Administrador Cuenta",
+                Password = "ClaveSegura!42"
+            }
+        }, CancellationToken.None);
+        Assert.IsType<ConflictObjectResult>(duplicate);
+
+        var ambiguous = await fixture.Controller.AltaControlada(new()
+        {
+            Nombre = "Nueva empresa",
+            AdministradorUsuarioId = fixture.AdministradorId,
+            AdministradorNuevo = new()
+            {
+                NombreUsuario = "cuenta.nueva",
+                NombreCompleto = "Administrador Cuenta",
+                Password = "ClaveSegura!42"
+            }
+        }, CancellationToken.None);
+        Assert.IsType<BadRequestObjectResult>(ambiguous);
+        Assert.Empty(await db.Set<Empresa>().ToListAsync());
+        Assert.Empty(await db.Set<ConfigEmpresa>().ToListAsync());
+        Assert.Empty(await db.Set<UsuarioEmpresa>().ToListAsync());
+        Assert.Empty(await db.Set<RegistroAuditoria>().ToListAsync());
+        Assert.Equal(2, await db.Usuarios.CountAsync());
+    }
+
+    [Fact]
+    public async Task P1011A_NuevoAdminNoSorteaDobleGateNiAutoridadGlobal()
+    {
+        var fixture = await PrepararAsync(false, true, true);
+        await using var db = fixture.Db;
+        var dto = new AltaEmpresaPlataformaRequest
+        {
+            Nombre = "Nueva empresa",
+            AdministradorNuevo = new()
+            {
+                NombreUsuario = "cuenta.nueva",
+                NombreCompleto = "Administrador Cuenta",
+                Password = "ClaveSegura!42"
+            }
+        };
+        Assert.Equal(503, Assert.IsType<ObjectResult>(
+            await fixture.Controller.AltaControlada(dto, CancellationToken.None)).StatusCode);
+        Assert.Equal(2, await db.Usuarios.CountAsync());
+
+        var withoutPlatform = await PrepararAsync(true, true, false);
+        await using var dbNoPlatform = withoutPlatform.Db;
+        Assert.IsType<ForbidResult>(
+            await withoutPlatform.Controller.AltaControlada(dto, CancellationToken.None));
+        Assert.Equal(2, await dbNoPlatform.Usuarios.CountAsync());
+        Assert.Empty(await dbNoPlatform.Set<Empresa>().ToListAsync());
+    }
+
+    [Fact]
+    public async Task BorradorSinActivacionComercialFijaOwnerOriginalYSeAudita()
+    {
+        var fixture = await PrepararAsync(false, false, true);
+        await using var db = fixture.Db;
+        var original = new Empresa("Empresa original");
+        db.Set<Empresa>().Add(original);
+        await db.SaveChangesAsync();
+
+        var created = await fixture.Controller.CrearBorrador(
+            new BorradorEmpresaPlataformaRequest { Nombre = "Nuevo comercio" },
+            CancellationToken.None);
+        Assert.IsType<CreatedResult>(created);
+        var companies = await db.Set<Empresa>().IgnoreQueryFilters()
+            .OrderBy(x => x.Id).ToListAsync();
+        Assert.Equal(2, companies.Count);
+        Assert.True(companies[0].Activa);
+        Assert.False(companies[1].Activa);
+        Assert.Equal("Nuevo comercio", companies[1].Nombre);
+        var pinned = Assert.Single(await db.PublicStoreBindings.ToListAsync());
+        Assert.Equal("solqaryn-api-dev-fxx8.onrender.com", pinned.Host);
+        Assert.Equal(string.Empty, pinned.StoreKey);
+        Assert.Equal(original.Id, pinned.EmpresaId);
+        Assert.True(pinned.Activa);
+        Assert.Single(await db.Set<RegistroAuditoria>().ToListAsync());
+    }
+
+    [Fact]
+    public async Task P1013A_MiddlewareSoloDejaPasarRutaExactaConDobleGateYJwt()
+    {
+        var fixture = await PrepararAsync(true, true, true);
+        await using var db = fixture.Db;
+        db.Set<Empresa>().AddRange(new Empresa("A"), new Empresa("B"));
+        await db.SaveChangesAsync();
+
+        var calls = 0;
+        var middleware = new UnscopedCommercialTenantGuardMiddleware(ctx =>
+        {
+            calls++;
+            ctx.Response.StatusCode = 204;
+            return Task.CompletedTask;
+        });
+
+        async Task<int> RequestAsync(string method, string path,
+            bool auth, bool onboarding, bool certified)
+        {
+            var settings = new ConfigurationBuilder().AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    ["MultiEmpresa:PlatformOnboardingEnabled"] = onboarding.ToString(),
+                    ["MultiEmpresa:CommercialIsolationCertified"] = certified.ToString()
+                }).Build();
+            var services = new ServiceCollection()
+                .AddSingleton<IConfiguration>(settings).BuildServiceProvider();
+            var ctx = new DefaultHttpContext { RequestServices = services };
+            ctx.Request.Method = method;
+            ctx.Request.Path = path;
+            ctx.Response.Body = new MemoryStream();
+            ctx.User = new ClaimsPrincipal(new ClaimsIdentity(
+                auth ? new[] { new Claim(ClaimTypes.NameIdentifier, "7") } :
+                       Array.Empty<Claim>(), auth ? "TestJwt" : null));
+            await middleware.InvokeAsync(ctx, db);
+            return ctx.Response.StatusCode;
+        }
+
+        Assert.Equal(503, await RequestAsync("POST",
+            "/plataforma/empresas/alta-controlada", true, false, true));
+        Assert.Equal(503, await RequestAsync("POST",
+            "/plataforma/empresas/alta-controlada", true, true, false));
+        Assert.Equal(503, await RequestAsync("POST",
+            "/plataforma/empresas/alta-controlada", false, true, true));
+        Assert.Equal(503, await RequestAsync("POST",
+            "/empresas", true, true, true));
+        Assert.Equal(503, await RequestAsync("POST",
+            "/plataforma/empresas/alta-controlada/extra", true, true, true));
+        Assert.Equal(503, await RequestAsync("GET",
+            "/plataforma/empresas/alta-controlada", true, true, true));
+        Assert.Equal(204, await RequestAsync("POST",
+            "/plataforma/empresas/alta-controlada", true, true, true));
+        Assert.Equal(1, calls);
+    }
+
+    private static async Task<Fixture> PrepararAsync(
+        bool onboarding, bool aislamiento, bool platformMembership,
+        bool currentUserValid = true,
+        Func<string, string>? passwordHasher = null)
+    {
+        var db = new AppDbContext(new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase("platform-onboarding-" + Guid.NewGuid().ToString("N"))
+            .Options);
+        var rolePlatform = new Rol
+        {
+            Nombre = "PLATFORM_ADMIN_TEST",
+            NombreNormalizado = "PLATFORM_ADMIN_TEST",
+            Ambito = AmbitoAutorizacion.Plataforma,
+            EsAdministrador = true, EsSistema = true, Activo = true
+        };
+        var roleEmpresa = new Rol
+        {
+            Nombre = "ADMIN_EMPRESA_TEST",
+            NombreNormalizado = "ADMIN_EMPRESA_TEST",
+            Ambito = AmbitoAutorizacion.Empresa,
+            EsAdministrador = true, EsSistema = true, Activo = true
+        };
+        var roleBaseEmpresa = new Rol
+        {
+            Nombre = "USUARIO_BASE_EMPRESA_TEST",
+            NombreNormalizado = "USUARIO_BASE_EMPRESA_TEST",
+            Ambito = AmbitoAutorizacion.Empresa,
+            EsAdministrador = false, EsSistema = true, Activo = true
+        };
+        db.Roles.AddRange(rolePlatform, roleEmpresa, roleBaseEmpresa);
+        await db.SaveChangesAsync();
+        var actor = new Usuario
+        {
+            NombreUsuario = "platform-test", NombreCompleto = "Operador Plataforma",
+            RolId = rolePlatform.Id, PasswordHash = "test-not-a-real-credential",
+            Activo = true
+        };
+        var administrator = new Usuario
+        {
+            NombreUsuario = "empresa-admin-test", NombreCompleto = "Operador Empresa",
+            RolId = roleEmpresa.Id, PasswordHash = "test-not-a-real-credential",
+            Activo = true
+        };
+        db.Usuarios.AddRange(actor, administrator);
+        await db.SaveChangesAsync();
+        if (platformMembership)
+        {
+            db.Set<UsuarioRolPlataforma>().Add(
+                new UsuarioRolPlataforma(actor.Id, rolePlatform.Id));
+            await db.SaveChangesAsync();
+        }
+
+        var config = new ConfigurationBuilder().AddInMemoryCollection(
+            new Dictionary<string, string?>
+            {
+                ["MultiEmpresa:PlatformOnboardingEnabled"] = onboarding.ToString(),
+                ["MultiEmpresa:CommercialIsolationCertified"] = aislamiento.ToString(),
+                ["PublicStore:LegacyUpstreamHost"] = "solqaryn-api-dev-fxx8.onrender.com"
+            }).Build();
+        var current = new Mock<ICurrentUserService>();
+        current.SetupGet(x => x.EstaAutenticado).Returns(currentUserValid);
+        current.SetupGet(x => x.UsuarioId).Returns(actor.Id);
+        current.SetupGet(x => x.NombreUsuario).Returns(actor.NombreUsuario);
+        var http = new DefaultHttpContext();
+        http.User = new ClaimsPrincipal(new ClaimsIdentity(
+            new[] { new Claim(ClaimTypes.NameIdentifier, actor.Id.ToString()) },
+            "TestJwt"));
+        var scopeService = new PlataformaScopeService(db, current.Object);
+        var controller = passwordHasher is null
+            ? new PlataformaEmpresasController(db, current.Object, config, scopeService)
+            : new PlataformaEmpresasController(db, current.Object, config, scopeService, passwordHasher);
+        controller.ControllerContext = new ControllerContext { HttpContext = http };
+        return new Fixture(db, controller, actor.Id, administrator.Id);
+    }
+
+    private sealed record Fixture(
+        AppDbContext Db, PlataformaEmpresasController Controller,
+        int ActorId, int AdministradorId);
+}

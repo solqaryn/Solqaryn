@@ -1,0 +1,5 @@
+Checkpoint de validación controlada de la Fase 5.
+Fecha: 2026-07-22
+Revisión: 1
+Incluye login responsivo, layout global, formularios, tablas, facturas, permisos, auditoría, Dashboard, finanzas, movimientos, alertas, accesibilidad y revisión ortográfica.
+Objetivo: compilar backend, ejecutar pruebas existentes y compilar frontend sin desplegar producción.

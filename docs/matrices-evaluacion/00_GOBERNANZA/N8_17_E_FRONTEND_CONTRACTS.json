@@ -1,0 +1,51 @@
+{
+  "schema": "vaep-n8.17-frontend-contracts/v1",
+  "parent": "N8.17.E",
+  "branch": "Desarrollo",
+  "source_manifest": "docs/matrices-evaluacion/00_GOBERNANZA/N8_17_A_BATCH_MANIFEST.json",
+  "source_catalog": "docs/matrices-evaluacion/00_GOBERNANZA/CATALOGO_MATRICES.md",
+  "expected_total": 49,
+  "coverage_mode": "EVERY_FROZEN_MATRIX_ID_INHERITS_SHARED_UI_CONTRACT_WITH_EXPLICIT_OVERRIDES",
+  "runtime_delta": "NONE_RECONCILIATION_ONLY",
+  "unresolved": [],
+  "shared_ui_contract": {
+    "route_contract": "Each material surface resolves through the canonical Angular route/shell ownership; route guards and server authority remain separate from presentation state.",
+    "component_contract": "The catalog IMPLEMENTATION_REF is the canonical feature/shell ownership root; child components remain subordinate unless separately promoted to a MATERIAL MATRIX_ID.",
+    "action_contract": "Visible actions must map to an authoritative application/API capability and must not fabricate successful business mutations client-side.",
+    "loading_state": "Async data/action surfaces expose a non-destructive loading/busy state and prevent accidental duplicate submission while the authoritative operation is pending.",
+    "empty_state": "Collection/detail surfaces represent valid no-data/not-yet-created conditions distinctly from errors.",
+    "error_state": "Controlled failures surface reusable user feedback without leaking secrets or leaving UI state falsely committed.",
+    "forbidden_state": "Unauthorized or capability-forbidden operations are hidden/disabled or denied clearly; UI state never grants permission.",
+    "readonly_state": "Read-only contexts remain inspectable without exposing mutation controls as authoritative capability.",
+    "responsive_contract": "Layouts must reflow without horizontal overflow or inaccessible primary actions across supported desktop/laptop/tablet/mobile viewports.",
+    "accessibility_contract": "Interactive controls require semantic/keyboard-operable behavior, meaningful labels, focus-safe dialogs, and non-color-only critical feedback.",
+    "modal_contract": "Confirmation/cancellation/scanner-style interactions reuse shared dialog primitives when semantics match; no new generic duplicate modal is planned by this reconciliation.",
+    "feedback_contract": "Success/warning/error/loading/empty feedback reuses shared alert/feedback-state primitives where applicable instead of feature-local generic duplicates.",
+    "primitive_contract": "Reusable cross-feature UI behavior belongs under frontend/src/app/shared; feature-specific presentation stays inside the catalog-owned feature root."
+  },
+  "shared_primitives_evidence": [
+    "frontend/src/app/shared/alerts",
+    "frontend/src/app/shared/confirm-dialog.component.ts",
+    "frontend/src/app/shared/anular-dialog.component.ts",
+    "frontend/src/app/shared/feedback-state"
+  ],
+  "matrix_overrides": [
+    {
+      "matrix_id": "VAEP-MX::GOV_CONFIG_INTEGRATIONS::APP_SHELL",
+      "resolution": "SHELL_ROUTE_AND_LAYOUT_OWNER",
+      "reason": "APP_SHELL owns application composition/navigation rather than a standalone feature CRUD surface; business actions remain delegated to child feature/API authorities."
+    }
+  ],
+  "review_assertions": {
+    "all_49_have_catalog_implementation_ref": true,
+    "all_49_have_route_or_shell_disposition": true,
+    "all_49_have_action_disposition": true,
+    "all_49_have_loading_empty_error_forbidden_readonly_disposition": true,
+    "all_49_have_responsive_accessibility_disposition": true,
+    "all_49_have_modal_primitive_disposition": true,
+    "shared_alerts_and_feedback_reused": true,
+    "no_generic_duplicate_modal_planned": true,
+    "no_new_runtime_claimed": true
+  },
+  "notes": "N8.17.E specifies the UI/UX contract for every frozen matrix root against its catalog-owned implementation root. This is reconciliation/specification only: it does not claim every child primitive is independently material, nor does it alter runtime behavior. N8.17.G must independently prove executable coverage and N8.17.H controls lifecycle promotion."
+}

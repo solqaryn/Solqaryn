@@ -1,0 +1,22 @@
+{
+  "schema":"solqaryn-staging-equivalence-cert/v2",
+  "parent":"N8.22",
+  "task":"N8.22.H",
+  "stage":"DOC_CERT",
+  "status":"VALIDANDO",
+  "branch":"Desarrollo",
+  "certified_at_utc":"2026-09-16T19:28:14Z",
+  "authority":"docs/VAEP_AUTHORITY.md",
+  "lease_token":"SUP12-N822H-REVALIDATION-20260916T192741Z",
+  "certificate_document":"docs/STAGING_EQUIVALENCE.md",
+  "certificate_doc_commit":"095a5a1a836c0e67993a963dd300a0d757448a7c",
+  "current_prerequisite_receipts":[
+    "vaep/evidence/receipts/N8.22.E_LISTO_20260916T192028Z_SUP12.json",
+    "vaep/evidence/receipts/N8.22.F_LISTO_20260916T192420Z_SUP12.json",
+    "vaep/evidence/receipts/N8.22.G_LISTO_20260916T192646Z_SUP12.json"
+  ],
+  "gate":{"STAGING_EQUIVALENT_CERTIFIED":true,"MATERIAL_GAP":0,"UNKNOWN":0,"P0":0,"P1":0,"P2":0},
+  "fresh_provider_basis":{"render_readback":true,"vercel_identity_readback":true,"owner_control_plane_build_settings":true,"sanitized_render_env_names":true},
+  "exact_head_equivalence":{"functional_base":"09efe1b691b4614ff0ce608fd45bad838851ad6c","certificate_doc_head":"095a5a1a836c0e67993a963dd300a0d757448a7c","delta":"docs/STAGING_EQUIVALENCE.md only","product_runtime_delta":0},
+  "guards":{"production_write":0,"main_write":0,"deploy":0,"secret_values_read":false,"secret_values_exposed":0,"production_business_data_read":0,"pr_2_write":0}
+}

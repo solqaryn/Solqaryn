@@ -1,0 +1,10 @@
+{
+  "dispatchId": "VAEP-JULES-D-N41E-CLOSURE-AUTHORITY-D8-20260828T0934Z",
+  "taskId": "N4.1.E.CLOSURE_AUTHORITY_AUDIT_D8",
+  "workerId": "JULES_D",
+  "expectedBranch": "Desarrollo",
+  "primaryBaseHead": "cde15ba1c0d97601e9214136679288561698b426",
+  "taskAttempt": 1,
+  "fileScopeHint": "docs/qa/N4_1_E_CLOSURE_AUTHORITY_D8.md",
+  "prompt": "Read-only/evidence-only SAME_PARENT closure authority audit. Reconcile N4.1.E functional SHA e7f7cc6e6c14b17087b4b04504e88ef27e76d8f6, Issue #1293 current constraints, and causal CI only. Identify remaining promotion blockers versus stale/superseded evidence; preserve DECISION_PENDING for absent Caja HTTP/controller/RBAC contracts. Do not modify product/workflows/dependencies. Produce only docs/qa/N4_1_E_CLOSURE_AUTHORITY_D8.md with P0/P1 and exact closure decision criteria; two independent self-reviews required."
+}

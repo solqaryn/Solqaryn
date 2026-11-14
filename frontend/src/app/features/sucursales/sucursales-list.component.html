@@ -1,0 +1,210 @@
+<div class="header-row">
+  <div>
+    <h1 class="page-title">Sucursales</h1>
+    <p class="page-subtitle">Administra los puntos operativos con su empresa propietaria visible y trazable.</p>
+  </div>
+  @if (puedeCrear()) {
+    <a routerLink="/sucursales/nueva" mat-flat-button color="primary">
+      <mat-icon>add_business</mat-icon> Nueva sucursal
+    </a>
+  }
+</div>
+
+<div class="card">
+  <div class="toolbar" aria-label="Búsqueda y filtros de sucursales">
+    <mat-form-field appearance="outline" class="search-field">
+      <mat-label>Buscar sucursal</mat-label>
+      <input
+        matInput
+        [ngModel]="buscar"
+        (ngModelChange)="onSearchChange($event)"
+        autocomplete="off"
+        placeholder="Código, nombre, dirección, teléfono o correo">
+      <mat-icon matSuffix>search</mat-icon>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline">
+      <mat-label>Estado</mat-label>
+      <mat-select [(ngModel)]="estado" (selectionChange)="aplicarFiltros()">
+        <mat-option value="todas">Todas</mat-option>
+        <mat-option value="activas">Activas</mat-option>
+        <mat-option value="inactivas">Inactivas</mat-option>
+      </mat-select>
+    </mat-form-field>
+
+    <mat-form-field appearance="outline" class="empresa-filter">
+      <mat-label>Empresa propietaria</mat-label>
+      <mat-select [(ngModel)]="empresaId" (selectionChange)="aplicarFiltros()" aria-label="Filtrar por empresa propietaria">
+        <mat-option [value]="null">Todas las empresas</mat-option>
+        @if (empresasLoading()) {
+          <mat-option disabled>Cargando empresas…</mat-option>
+        }
+        @for (empresa of empresas(); track empresa.id) {
+          <mat-option [value]="empresa.id">{{ empresa.nombre }}{{ empresa.activa ? '' : ' · Inactiva' }}</mat-option>
+        }
+      </mat-select>
+      <mat-hint>{{ empresasError() || 'Filtra por la Empresa raíz responsable.' }}</mat-hint>
+    </mat-form-field>
+
+    <button mat-stroked-button type="button" (click)="limpiarFiltros()">
+      <mat-icon>filter_alt_off</mat-icon> Limpiar
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading" role="status" aria-live="polite">
+      <mat-spinner diameter="42"></mat-spinner>
+      <span class="sr-status">Cargando sucursales</span>
+    </div>
+  } @else if (errorMessage()) {
+    <div class="error-state" role="alert">
+      <mat-icon>cloud_off</mat-icon>
+      <div>
+        <strong>No fue posible cargar las sucursales</strong>
+        <p>{{ errorMessage() }}</p>
+      </div>
+      <button mat-stroked-button type="button" (click)="cargar()">
+        <mat-icon>refresh</mat-icon> Reintentar
+      </button>
+    </div>
+  } @else {
+    <div class="results-summary" aria-live="polite">
+      {{ total() }} sucursal{{ total() === 1 ? '' : 'es' }} encontrada{{ total() === 1 ? '' : 's' }}
+      @if (totalPaginas() > 1) { · Página {{ pagina }} de {{ totalPaginas() }} }
+    </div>
+
+    <table class="table table-desktop">
+      <thead>
+        <tr>
+          <th>Código</th>
+          <th>Nombre</th>
+          <th>Contacto</th>
+          <th>Dirección</th>
+          <th>Zona horaria</th>
+          <th>Empresa propietaria</th>
+          <th>Estado</th>
+          <th><span class="visually-hidden">Acciones</span></th>
+        </tr>
+      </thead>
+      <tbody>
+        @for (s of sucursales(); track s.id) {
+          <tr>
+            <td><span class="code-chip">{{ s.codigo }}</span></td>
+            <td>
+              <strong>{{ s.nombre }}</strong>
+              <span class="audit-copy">Creada por {{ s.creadoPorNombreUsuario || '—' }}</span>
+            </td>
+            <td>
+              <span>{{ s.telefono || '—' }}</span>
+              @if (s.correo) { <a class="contact-link" [href]="'mailto:' + s.correo">{{ s.correo }}</a> }
+            </td>
+            <td>{{ s.direccion || '—' }}</td>
+            <td>{{ s.zonaHoraria }}</td>
+            <td>
+              @if (s.empresaId) {
+                <span class="code-chip" [attr.aria-label]="'Empresa propietaria ' + nombreEmpresa(s.empresaId)">{{ nombreEmpresa(s.empresaId) }}</span>
+              } @else {
+                <span class="badge muted" title="Registro legado pendiente de ownership">Sin asignar</span>
+              }
+            </td>
+            <td>
+              @if (puedeCambiarEstado(s)) {
+                <mat-slide-toggle
+                  [checked]="s.activa"
+                  [disabled]="estaOperando(s.id)"
+                  (change)="toggleActiva(s)"
+                  [aria-label]="(s.activa ? 'Desactivar ' : 'Activar ') + s.nombre">
+                </mat-slide-toggle>
+              } @else {
+                <span class="badge" [class.success]="s.activa" [class.muted]="!s.activa">
+                  {{ s.activa ? 'Activa' : 'Inactiva' }}
+                </span>
+              }
+            </td>
+            <td class="actions">
+              @if (puedeEditar()) {
+                <a [routerLink]="['/sucursales', s.id, 'editar']" mat-icon-button [attr.aria-label]="'Editar ' + s.nombre" title="Editar">
+                  <mat-icon>edit</mat-icon>
+                </a>
+              }
+              @if (puedeEliminar()) {
+                <button
+                  mat-icon-button
+                  type="button"
+                  [disabled]="estaOperando(s.id)"
+                  [attr.aria-label]="'Eliminar ' + s.nombre"
+                  title="Eliminar"
+                  (click)="eliminar(s)">
+                  <mat-icon>delete</mat-icon>
+                </button>
+              }
+            </td>
+          </tr>
+        } @empty {
+          <tr>
+            <td colspan="8" class="empty">
+              <mat-icon>storefront</mat-icon>
+              <span>No hay sucursales que coincidan con los filtros.</span>
+            </td>
+          </tr>
+        }
+      </tbody>
+    </table>
+
+    <div class="cards-mobile">
+      @for (s of sucursales(); track s.id) {
+        <article class="item-card">
+          <div class="item-card-header">
+            <div>
+              <span class="code-chip">{{ s.codigo }}</span>
+              <h2>{{ s.nombre }}</h2>
+            </div>
+            @if (puedeCambiarEstado(s)) {
+              <mat-slide-toggle
+                [checked]="s.activa"
+                [disabled]="estaOperando(s.id)"
+                (change)="toggleActiva(s)"
+                [aria-label]="(s.activa ? 'Desactivar ' : 'Activar ') + s.nombre">
+              </mat-slide-toggle>
+            } @else {
+              <span class="badge" [class.success]="s.activa" [class.muted]="!s.activa">{{ s.activa ? 'Activa' : 'Inactiva' }}</span>
+            }
+          </div>
+
+          <dl class="item-details">
+            <div><dt>Dirección</dt><dd>{{ s.direccion || '—' }}</dd></div>
+            <div><dt>Teléfono</dt><dd>{{ s.telefono || '—' }}</dd></div>
+            <div><dt>Correo</dt><dd>{{ s.correo || '—' }}</dd></div>
+            <div><dt>Zona horaria</dt><dd>{{ s.zonaHoraria }}</dd></div>
+            <div><dt>Empresa propietaria</dt><dd>{{ nombreEmpresa(s.empresaId) }}</dd></div>
+          </dl>
+
+          @if (puedeEditar() || puedeEliminar()) {
+            <div class="item-card-actions">
+              @if (puedeEditar()) {
+                <a [routerLink]="['/sucursales', s.id, 'editar']" mat-button><mat-icon>edit</mat-icon> Editar</a>
+              }
+              @if (puedeEliminar()) {
+                <button mat-button type="button" [disabled]="estaOperando(s.id)" (click)="eliminar(s)">
+                  <mat-icon>delete</mat-icon> Eliminar
+                </button>
+              }
+            </div>
+          }
+        </article>
+      } @empty {
+        <div class="empty mobile-empty"><mat-icon>storefront</mat-icon><span>No hay sucursales que coincidan con los filtros.</span></div>
+      }
+    </div>
+
+    <mat-paginator
+      [length]="total()"
+      [pageSize]="tamanoPagina"
+      [pageIndex]="pagina - 1"
+      [pageSizeOptions]="[10, 25, 50, 100]"
+      [showFirstLastButtons]="true"
+      aria-label="Paginación de sucursales"
+      (page)="onPageChange($event)">
+    </mat-paginator>
+  }
+</div>

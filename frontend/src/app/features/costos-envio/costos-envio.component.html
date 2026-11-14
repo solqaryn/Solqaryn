@@ -1,0 +1,108 @@
+<div class="page-header">
+  <div>
+    <h1>Costos de envío</h1>
+    <p>Administra tarifas por departamento, ciudad, zona y modalidad, con prioridad y vigencia.</p>
+  </div>
+</div>
+
+@if (error()) {
+  <div class="error" role="alert">{{ error() }}</div>
+}
+
+<section class="card editor">
+  <h2>{{ editandoId() ? 'Editar costo de envío' : 'Nuevo costo de envío' }}</h2>
+  <form [formGroup]="form" (ngSubmit)="guardar()">
+    <div class="grid">
+      <mat-form-field appearance="outline">
+        <mat-label>Nombre</mat-label>
+        <input matInput formControlName="nombre" maxlength="150">
+      </mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Departamento</mat-label><input matInput formControlName="departamento" maxlength="120"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Ciudad</mat-label><input matInput formControlName="ciudad" maxlength="120"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Zona</mat-label><input matInput formControlName="zona" maxlength="150"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Modalidad</mat-label><input matInput formControlName="modalidad" maxlength="80"></mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Monto</mat-label>
+        <span matTextPrefix>L.&nbsp;</span>
+        <input matInput type="number" min="0" step="0.01" formControlName="monto">
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Prioridad</mat-label>
+        <input matInput type="number" min="0" formControlName="prioridad">
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Vigente desde</mat-label>
+        <input matInput type="date" formControlName="vigenteDesde">
+      </mat-form-field>
+      <mat-form-field appearance="outline">
+        <mat-label>Vigente hasta</mat-label>
+        <input matInput type="date" formControlName="vigenteHasta">
+      </mat-form-field>
+      <mat-form-field appearance="outline" class="full">
+        <mat-label>Descripción</mat-label>
+        <textarea matInput rows="2" maxlength="500" formControlName="descripcion"></textarea>
+      </mat-form-field>
+      <mat-checkbox formControlName="esPredeterminado">Usar como costo predeterminado</mat-checkbox>
+      <mat-checkbox formControlName="activo">Activo</mat-checkbox>
+    </div>
+    <div class="actions">
+      @if (editandoId()) {
+        <button mat-button type="button" (click)="cancelar()">Cancelar edición</button>
+      }
+      <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving()">
+        @if (saving()) { <mat-spinner diameter="18"></mat-spinner> }
+        {{ editandoId() ? 'Actualizar' : 'Crear' }}
+      </button>
+    </div>
+  </form>
+</section>
+
+<section class="card table-card">
+  @if (loading()) {
+    <div class="loading"><mat-spinner></mat-spinner></div>
+  } @else {
+    <table mat-table [dataSource]="items()">
+      <ng-container matColumnDef="nombre">
+        <th mat-header-cell *matHeaderCellDef>Nombre</th>
+        <td mat-cell *matCellDef="let item">
+          <strong>{{ item.nombre }}</strong>
+          @if (item.descripcion) { <small>{{ item.descripcion }}</small> }
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="cobertura">
+        <th mat-header-cell *matHeaderCellDef>Cobertura / modalidad</th>
+        <td mat-cell *matCellDef="let item">{{ cobertura(item) }}</td>
+      </ng-container>
+      <ng-container matColumnDef="monto">
+        <th mat-header-cell *matHeaderCellDef>Monto</th>
+        <td mat-cell *matCellDef="let item">L. {{ item.monto | number:'1.2-2' }}</td>
+      </ng-container>
+      <ng-container matColumnDef="vigencia">
+        <th mat-header-cell *matHeaderCellDef>Vigencia</th>
+        <td mat-cell *matCellDef="let item">
+          {{ item.vigenteDesde ? (item.vigenteDesde | date:'dd/MM/yyyy') : 'Sin inicio' }} —
+          {{ item.vigenteHasta ? (item.vigenteHasta | date:'dd/MM/yyyy') : 'Sin fin' }}
+        </td>
+      </ng-container>
+      <ng-container matColumnDef="estado">
+        <th mat-header-cell *matHeaderCellDef>Estado</th>
+        <td mat-cell *matCellDef="let item"><span class="badge" [class.inactive]="!item.activo">{{ !item.activo ? 'Inactivo' : (item.estaVigente ? 'Vigente' : 'Fuera de vigencia') }}</span></td>
+      </ng-container>
+      <ng-container matColumnDef="predeterminado">
+        <th mat-header-cell *matHeaderCellDef>Uso</th>
+        <td mat-cell *matCellDef="let item">{{ item.esPredeterminado ? 'Predeterminado' : 'Opcional' }}</td>
+      </ng-container>
+      <ng-container matColumnDef="acciones">
+        <th mat-header-cell *matHeaderCellDef>Acciones</th>
+        <td mat-cell *matCellDef="let item" class="row-actions">
+          <button mat-icon-button type="button" (click)="editar(item)" aria-label="Editar costo de envío"><mat-icon>edit</mat-icon></button>
+          <button mat-icon-button type="button" (click)="cambiarEstado(item)" [attr.aria-label]="item.activo ? 'Desactivar costo de envío' : 'Activar costo de envío'"><mat-icon>{{ item.activo ? 'toggle_off' : 'toggle_on' }}</mat-icon></button>
+          <button mat-icon-button color="warn" type="button" (click)="eliminar(item)" aria-label="Eliminar costo de envío"><mat-icon>delete</mat-icon></button>
+        </td>
+      </ng-container>
+      <tr mat-header-row *matHeaderRowDef="columnas"></tr>
+      <tr mat-row *matRowDef="let row; columns: columnas"></tr>
+    </table>
+    @if (items().length === 0) { <p class="empty">No hay costos de envío registrados.</p> }
+  }
+</section>

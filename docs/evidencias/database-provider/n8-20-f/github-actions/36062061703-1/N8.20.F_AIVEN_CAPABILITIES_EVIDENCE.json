@@ -1,0 +1,94 @@
+{
+  "schema": "solqaryn.aiven-capabilities-proof.v5",
+  "authority": "docs/VAEP_AUTHORITY.md",
+  "task": "N8.20.F",
+  "status": "PASS_AIVEN_CAPABILITIES_IDENTIFIED",
+  "capturedAtUtc": "2026-09-24T21:32:30.456679+00:00",
+  "branch": "dev",
+  "functionalHead": "eaf7c64996626ee596d9f5c1090d57f21bf21fc4",
+  "githubActions": {
+    "runId": "36062061703",
+    "attempt": "1"
+  },
+  "service": {
+    "provider": "AIVEN",
+    "serviceType": "mysql",
+    "servicePlan": "free-1-1gb",
+    "cloudName": "do-sfo",
+    "state": "RUNNING",
+    "projectName": "solqaryn",
+    "serviceName": "solqaryn-mysql",
+    "devDbHostSha256": "f8869201e664918f394ce1ef0afe8492a6e8a64c19fa91d9d7ed95dad951a531"
+  },
+  "backupPolicy": {
+    "recoveryMode": "pitr",
+    "pointInTimeRecoveryAvailable": true,
+    "retention": {
+      "frequent_interval_minutes": null,
+      "frequent_oldest_age_minutes": null,
+      "infrequent_interval_minutes": null,
+      "infrequent_oldest_age_minutes": null,
+      "interval": 24,
+      "max_count": 0
+    },
+    "backupHour": 17,
+    "backupMinute": 17
+  },
+  "actualBackups": {
+    "endpointReadbackProven": true,
+    "countObserved": 2,
+    "latestBackupTime": "2026-09-24T17:17:08.690200Z",
+    "latestBackupStorageLocation": "do-sfo2",
+    "latestBackupSizeBytes": 286614515
+  },
+  "restoreCapability": {
+    "providerManagedBackupEndpointProven": true,
+    "recoveryMode": "pitr",
+    "restorePath": "AIVEN_FORK_AND_RESTORE_CONTROL_PLANE",
+    "permissionReadbackProven": true,
+    "matchingDirectPrincipalRecords": 0,
+    "directPermissionNames": [],
+    "effectiveProjectMembershipNames": [
+      "admin",
+      "role:organization:admin"
+    ],
+    "effectiveRestoreAuthorityNames": [
+      "admin",
+      "role:organization:admin"
+    ],
+    "restoreAuthorizationProven": true,
+    "restorePermissionReference": "https://aiven.io/docs/platform/concepts/permissions",
+    "restoreExecutionPerformed": false
+  },
+  "cost": {
+    "actualPlanTierProven": true,
+    "currentPlanIsFreeTier": true,
+    "basePriceUsdObserved": null,
+    "potentialImpact": "A restore/fork creates or changes provider-managed service capacity and can have provider pricing impact; no fork/restore/plan change was executed in this proof.",
+    "paidActionExecuted": false,
+    "planChanged": false,
+    "restoreExecuted": false,
+    "constraint": "READ_ONLY_PROOF_ONLY__NO_PURCHASE__NO_UPGRADE__NO_RESTORE_EXECUTION"
+  },
+  "guardrails": {
+    "readOnlyApiCallsOnly": true,
+    "connectionStringPersisted": false,
+    "aivenTokenPersisted": false,
+    "databasePasswordPersisted": false,
+    "fullDbHostPersisted": false,
+    "productionTouched": false,
+    "mainTouched": false,
+    "secretsExposed": 0
+  },
+  "acceptance": {
+    "actualPlanTierProven": true,
+    "actualBackupStateProven": true,
+    "actualPitrStateProven": true,
+    "actualRetentionPolicyProven": true,
+    "actualRestoreCapabilityProven": true,
+    "actualRestoreAuthorizationProven": true,
+    "costImpactConstraintProven": true,
+    "p0": 0,
+    "p1": 0
+  }
+}

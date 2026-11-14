@@ -1,0 +1,48 @@
+{
+  "schema":"vaep-n8.19-g-test-ci-forensic/v1",
+  "authority":"docs/VAEP_AUTHORITY.md",
+  "parent":"N8.19.G",
+  "macro_parent":"N8.19",
+  "stage":"TEST_CI",
+  "branch":"Desarrollo",
+  "repo":"jmejia31/Solqaryn",
+  "base_head":"fe027a7626267aa8b88c10ba84ee999df28c8163",
+  "target_historical_task":"N8.7.G",
+  "historical_evidence":[
+    "vaep/evidence/reviews/N8.7.G_REVIEW_FIRST_20260915T211200Z_SUP48.json",
+    "vaep/evidence/receipts/N8.7.G_BLOCKER_EXTERNAL_20260915T211230Z_SUP48.json"
+  ],
+  "required_performance_proof":"Controlled authorized non-production concurrency with latency distribution including p50/p95/p99, error/5xx rate, effective throttling/saturation behavior, and business-integrity validation.",
+  "fresh_revalidation":{
+    "repo_native_load_harness":{"status":"NOT_FOUND","checks":["repository search: k6","repository search: performance","recursive tree search: k6/stress/performance",".github/workflows inventario"],"finding":"No repository-native controlled-load harness or dedicated performance workflow was found that can safely satisfy the acceptance without external target/auth context."},
+    "authorized_nonprod_identity":{"status":"MISSING","finding":"No authorized test tenant/user/API credential or safe authentication mechanism is available to this invocation for controlled concurrent write/read load."},
+    "approved_test_data_path":{"status":"MISSING","finding":"No approved disposable test dataset/write-return path is available for integrity-preserving load."},
+    "load_runner":{"status":"MISSING_OR_UNCONFIRMED","finding":"No currently authorized runner capable of real concurrent HTTP load is available from the repository/runtime tools without introducing unapproved external execution."},
+    "render_tooling":{"status":"NOT_AUTHORIZED_FOR_SERVICE_ACCESS","finding":"The Render connector exposes one workspace but no workspace is selected. Its service operations require explicit workspace confirmation before access; this non-interactive run cannot infer/select it. Even service metrics alone would not replace authorized load identity and a permitted load runner."},
+    "public_smoke":{"status":"INSUFFICIENT","finding":"Reachability or anonymous/read-only smoke cannot prove authenticated business concurrency, throttling, saturation or post-load integrity."}
+  },
+  "safety_decision":{
+    "production_load":false,
+    "unauthorized_flooding":false,
+    "secret_discovery_or_printing":false,
+    "deploy_or_infra_change":false,
+    "simulated_metrics":false,
+    "reason":"Running load without an authorized DEV identity/tenant and controlled runner would violate the performance DoD and VAEP security/scope constraints."
+  },
+  "verdict":{
+    "underlying_N8.7.G":"BLOCKER_EXTERNAL_CAUSAL_CONFIRMED",
+    "underlying_status_mutation":"NONE__REMAINS_BLOQUEADO",
+    "performance_baseline":"NOT_EXECUTED__EXTERNAL_BARRIER",
+    "sole_external_barrier_demonstrated":true,
+    "barrier":"Authorized non-production identity/test tenant plus approved controlled-load runner/data path are required to produce real performance evidence safely.",
+    "N8.19.G_acceptance_path":"UNICA_BARRERA_EXTERNA_DEMOSTRADA",
+    "reopen_underlying_task":false,
+    "false_performance_pass":false,
+    "p0":0,
+    "p1":0,
+    "p2":0
+  },
+  "result_candidate":"LISTO_REAL__FORENSIC_BARRIER_CONFIRMED__UNDERLYING_N8.7.G_REMAINS_BLOQUEADO",
+  "next_parent":"N8.19.H",
+  "guards":{"main_untouched":true,"production_untouched":true,"deploy_untouched":true,"secrets_untouched":true,"pr2_untouched":true}
+}

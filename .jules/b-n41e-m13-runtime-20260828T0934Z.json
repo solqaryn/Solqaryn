@@ -1,0 +1,10 @@
+{
+  "dispatchId": "VAEP-JULES-B-N41E-M13-RUNTIME-RECON-B10-20260828T0934Z",
+  "taskId": "N4.1.E.M13_RUNTIME_RECON_B10",
+  "workerId": "JULES_B",
+  "expectedBranch": "Desarrollo",
+  "primaryBaseHead": "261cc93a064a183f28cc210d829fbb1ceb1f6c4c",
+  "taskAttempt": 1,
+  "fileScopeHint": "docs/qa/N4_1_E_M13_RUNTIME_RECON_B10.md",
+  "prompt": "Read-only/evidence-only SAME_PARENT closure task. Reconcile exact-functional M13 run 33158422075 for functional SHA e7f7cc6e6c14b17087b4b04504e88ef27e76d8f6, especially Runtime/security HTTP/Playwright. Do not alter product, dependencies, workflows, manifests, or API/RBAC authority. Produce only docs/qa/N4_1_E_M13_RUNTIME_RECON_B10.md with terminal/nonterminal job evidence, causal P0/P1 only, DECISION_PENDING boundaries, and exact next gate. Two independent self-reviews required."
+}

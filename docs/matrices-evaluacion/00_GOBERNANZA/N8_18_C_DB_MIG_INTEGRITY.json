@@ -1,0 +1,64 @@
+{
+  "schema": "vaep-n8.18-c-db-mig/v1",
+  "parent": "N8.18.C",
+  "stage": "DB_MIG",
+  "branch": "Desarrollo",
+  "base_head": "dcb63731ccb463a17be4977b18d0121f60a864c9",
+  "decision": "NO_SCHEMA_DELTA_REQUIRED__PRESERVE_HISTORY",
+  "sources": {
+    "baseline_db_inventario": "docs/matrices-evaluacion/00_GOBERNANZA/N8_15_C_DB_MIG_INVENTARIO.md",
+    "data_contracts": "docs/matrices-evaluacion/00_GOBERNANZA/N8_17_C_DATA_CONTRACTS.json",
+    "refactor_plan": "docs/matrices-evaluacion/00_GOBERNANZA/N8_18_A_REFACTOR_PLAN.md",
+    "domain_boundaries": "docs/matrices-evaluacion/00_GOBERNANZA/N8_18_B_DOMAIN_BOUNDARIES.json",
+    "db_context": "backend/src/Infrastructure/Persistence/AppDbContext.cs"
+  },
+  "review_first": {
+    "result": "PASS",
+    "p0_count": 0,
+    "p1_count": 0,
+    "p2_count": 0,
+    "notes": [
+      "N8.17.C resolves persisted data contracts with unknowns=[] and keeps field/constraint/index authority in entity plus EF configuration plus migration history.",
+      "AppDbContext continues applying all IEntityTypeConfiguration mappings from the Infrastructure assembly.",
+      "No demonstrated integrity/model gap requires additive DDL in this stage; inventing a migration would violate evidence-over-declaration and minimal safe change.",
+      "Both physical migration roots remain historical evidence and are preserved unchanged."
+    ]
+  },
+  "migration_roots": [
+    {
+      "path": "backend/src/Infrastructure/Migrations",
+      "classification": "KEEP",
+      "action": "PRESERVE_UNCHANGED"
+    },
+    {
+      "path": "backend/src/Infrastructure/Persistence/Migrations",
+      "classification": "KEEP",
+      "action": "PRESERVE_UNCHANGED"
+    }
+  ],
+  "acceptance": {
+    "non_destructive_model_change_required": false,
+    "non_destructive_model_changes_applied": 0,
+    "destructive_ddl_applied": 0,
+    "migration_history_preserved": true,
+    "migration_roots_preserved": 2,
+    "n8_17_data_contract_unknowns": 0,
+    "app_db_context_configuration_discovery_preserved": true,
+    "production_touched": false,
+    "main_touched": false,
+    "deploy_touched": false,
+    "secrets_exposed": 0,
+    "pr2_touched": false
+  },
+  "deferred_to_n8_21": [
+    {
+      "id": "ARCH-02",
+      "classification": "REMOVE_SAFE_DB_AFTER_BACKUP",
+      "scope": "Any future physical consolidation/removal of historical EF migration roots or artifacts",
+      "gate": "N8.21 BACKUP_REAL=PASS and RESTORE_ISOLATED=PASS before any destructive cleanup",
+      "current_action": "DO_NOT_MOVE_DELETE_REGENERATE_OR_SQUASH_MIGRATION_HISTORY"
+    }
+  ],
+  "result_candidate": "LISTO_REAL_AFTER_EXACT_HEAD_VALIDATOR_AND_RECEIPT",
+  "next_parent": "N8.18.D"
+}

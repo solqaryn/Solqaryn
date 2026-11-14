@@ -1,0 +1,231 @@
+<div class="header-row">
+  <div class="header-copy">
+    <h1 class="page-title">Productos</h1>
+    <p class="page-subtitle">Consulta existencias, clasificación, precios y estado del inventario.</p>
+  </div>
+  @if (puedeCrear()) {
+    <a routerLink="/productos/nuevo" mat-flat-button color="primary">
+      <mat-icon>add</mat-icon>
+      <span>Nuevo producto</span>
+    </a>
+  }
+</div>
+
+<div class="card products-card">
+  <div class="product-toolbar" aria-label="Búsqueda y filtros de inventario">
+    <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
+      <mat-label>Buscar productos</mat-label>
+      <input matInput [ngModel]="search" (ngModelChange)="onSearchChange($event)" autocomplete="off">
+      <mat-icon matSuffix>search</mat-icon>
+      <mat-hint>Nombre, marca, modelo, color o talla.</mat-hint>
+    </mat-form-field>
+
+    <div class="filters-grid">
+      <mat-form-field appearance="outline">
+        <mat-label>Marca</mat-label>
+        <mat-select [ngModel]="marcaId" (ngModelChange)="onMarcaFilterChange($event)" [disabled]="loadingFilters()">
+          <mat-option [value]="null">Todas</mat-option>
+          @for (marca of marcas(); track marca.id) {
+            <mat-option [value]="marca.id">{{ marca.nombre }}{{ marca.activo ? '' : ' (inactiva)' }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Modelo</mat-label>
+        <mat-select [(ngModel)]="modeloId" (selectionChange)="aplicarFiltros()" [disabled]="!marcaId">
+          <mat-option [value]="null">Todos</mat-option>
+          @for (modelo of modelos(); track modelo.id) {
+            <mat-option [value]="modelo.id">{{ modelo.nombre }}{{ modelo.activo ? '' : ' (inactivo)' }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Color</mat-label>
+        <mat-select [(ngModel)]="colorId" (selectionChange)="aplicarFiltros()" [disabled]="loadingFilters()">
+          <mat-option [value]="null">Todos</mat-option>
+          @for (color of colores(); track color.id) {
+            <mat-option [value]="color.id">
+              <span class="select-swatch" [style.background]="color.codigoVisual || '#64748B'"></span>
+              {{ color.nombre }}{{ color.activo ? '' : ' (inactivo)' }}
+            </mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Talla o tamaño</mat-label>
+        <mat-select [(ngModel)]="tallaId" (selectionChange)="aplicarFiltros()" [disabled]="loadingFilters()">
+          <mat-option [value]="null">Todas</mat-option>
+          @for (talla of tallas(); track talla.id) {
+            <mat-option [value]="talla.id">{{ talla.nombre }}{{ talla.activo ? '' : ' (inactiva)' }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Categoría</mat-label>
+        <mat-select [(ngModel)]="categoriaId" (selectionChange)="aplicarFiltros()" [disabled]="loadingFilters()">
+          <mat-option [value]="null">Todas</mat-option>
+          @for (categoria of categorias(); track categoria.id) {
+            <mat-option [value]="categoria.id">{{ categoria.nombre }}{{ categoria.activa ? '' : ' (inactiva)' }}</mat-option>
+          }
+        </mat-select>
+      </mat-form-field>
+
+      <mat-form-field appearance="outline">
+        <mat-label>Estado</mat-label>
+        <mat-select [(ngModel)]="estado" (selectionChange)="aplicarFiltros()">
+          <mat-option value="todos">Todos</mat-option>
+          <mat-option value="activos">Activos</mat-option>
+          <mat-option value="inactivos">Inactivos</mat-option>
+          <mat-option value="agotados">Agotados</mat-option>
+          <mat-option value="disponibles">Con existencia</mat-option>
+        </mat-select>
+      </mat-form-field>
+    </div>
+
+    <button mat-stroked-button type="button" class="clear-filters" (click)="limpiarFiltros()">
+      <mat-icon>filter_alt_off</mat-icon>
+      <span>Limpiar filtros</span>
+    </button>
+  </div>
+
+  @if (loading()) {
+    <div class="loading" aria-live="polite"><mat-spinner></mat-spinner></div>
+  } @else {
+    <div class="table-scroll">
+      <table class="table table-desktop">
+        <thead>
+          <tr>
+            <th scope="col" class="image-column"><span class="visually-hidden">Imagen</span></th>
+            <th scope="col" (click)="ordenarPor('Nombre')" class="sortable">Nombre</th>
+            <th scope="col" (click)="ordenarPor('Marca')" class="sortable">Marca / modelo</th>
+            <th scope="col">Color / talla</th>
+            <th scope="col">Categoría</th>
+            <th scope="col" (click)="ordenarPor('Cantidad')" class="sortable">Stock</th>
+            <th scope="col" (click)="ordenarPor('Costo')" class="sortable">Costo</th>
+            <th scope="col" (click)="ordenarPor('Precio')" class="sortable">Precio</th>
+            <th scope="col">Estado</th>
+            <th scope="col" class="actions-column">Acciones</th>
+          </tr>
+        </thead>
+        <tbody>
+          @for (p of productos(); track p.id) {
+            <tr>
+              <td class="image-cell">
+                <div class="thumb-wrapper">
+                  <app-producto-imagen
+                    variant="thumbnail"
+                    [src]="p.imagenPrincipalUrl"
+                    [alt]="'Imagen principal de ' + p.nombre"
+                    [fallbackLabel]="p.nombre + ' no tiene imagen disponible'"
+                    loading="lazy">
+                  </app-producto-imagen>
+                  @if (p.totalImagenes > 1) {
+                    <span class="img-count" [attr.aria-label]="(p.totalImagenes - 1) + ' imágenes adicionales'">+{{ p.totalImagenes - 1 }}</span>
+                  }
+                </div>
+              </td>
+              <td class="product-name-cell"><strong class="product-name">{{ p.nombre }}</strong></td>
+              <td>
+                <div class="cell-primary">{{ p.marca }}</div>
+                <small>{{ p.modelo }}</small>
+              </td>
+              <td>
+                @if (p.colorNombre) {
+                  <div class="color-value">
+                    <span class="select-swatch" [style.background]="p.colorCodigoVisual || '#64748B'"></span>
+                    <span>{{ p.colorNombre }}</span>
+                  </div>
+                } @else { — }
+                @if (p.tallaNombre) { <div><small>Talla: {{ p.tallaNombre }}</small></div> }
+              </td>
+              <td>{{ p.categoriaNombre || '—' }}</td>
+              <td class="number-cell">{{ p.cantidad }}</td>
+              <td class="money-cell">L. {{ p.costo | number:'1.2-2' }}</td>
+              <td class="money-cell">L. {{ p.precio | number:'1.2-2' }}</td>
+              <td class="status-cell">
+                <div class="status-group">
+                  @if (puedeCambiarEstado(p)) {
+                    <mat-slide-toggle class="status-toggle" [checked]="p.activo" (change)="cambiarEstado(p)" [aria-label]="(p.activo ? 'Desactivar ' : 'Activar ') + p.nombre"></mat-slide-toggle>
+                  } @else {
+                    <span class="badge" [class.success]="p.activo" [class.muted]="!p.activo">{{ p.activo ? 'Activo' : 'Inactivo' }}</span>
+                  }
+                  @if (p.activo && p.estaAgotado) {
+                    <span class="badge danger">Agotado</span>
+                  }
+                </div>
+              </td>
+              <td class="actions">
+                <div class="actions-group">
+                  <a class="action-view" [routerLink]="['/productos', p.id]" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver ' + p.nombre"><mat-icon>visibility</mat-icon></a>
+                  @if (puedeEditar()) {
+                    <a class="action-edit" [routerLink]="['/productos', p.id, 'editar']" mat-icon-button title="Editar" [attr.aria-label]="'Editar ' + p.nombre"><mat-icon>edit</mat-icon></a>
+                  }
+                  @if (puedeEliminar()) {
+                    <button class="action-delete" mat-icon-button title="Eliminar lógicamente" [attr.aria-label]="'Eliminar ' + p.nombre" (click)="eliminar(p)"><mat-icon>delete</mat-icon></button>
+                  }
+                </div>
+              </td>
+            </tr>
+          } @empty {
+            <tr><td colspan="10" class="empty">No se encontraron productos con los filtros seleccionados.</td></tr>
+          }
+        </tbody>
+      </table>
+    </div>
+
+    <div class="cards-mobile">
+      @for (p of productos(); track p.id) {
+        <article class="item-card producto-card">
+          <div class="producto-card-top">
+            <div class="thumb-wrapper">
+              <app-producto-imagen
+                variant="card"
+                [src]="p.imagenPrincipalUrl"
+                [alt]="'Imagen principal de ' + p.nombre"
+                [fallbackLabel]="p.nombre + ' no tiene imagen disponible'"
+                loading="lazy">
+              </app-producto-imagen>
+              @if (p.totalImagenes > 1) {
+                <span class="img-count" [attr.aria-label]="(p.totalImagenes - 1) + ' imágenes adicionales'">+{{ p.totalImagenes - 1 }}</span>
+              }
+            </div>
+            <div class="producto-card-info">
+              <strong>{{ p.nombre }}</strong>
+              <span class="producto-card-sub">{{ p.marca }} · {{ p.modelo }}</span>
+              <span class="producto-card-sub">{{ p.colorNombre || 'Sin color' }} · {{ p.tallaNombre || 'Sin talla' }}</span>
+              <span class="producto-card-sub">{{ p.categoriaNombre || 'Sin categoría' }}</span>
+            </div>
+            @if (puedeCambiarEstado(p)) {
+              <mat-slide-toggle class="status-toggle" [checked]="p.activo" (change)="cambiarEstado(p)" [aria-label]="(p.activo ? 'Desactivar ' : 'Activar ') + p.nombre"></mat-slide-toggle>
+            }
+          </div>
+          <div class="item-card-meta">
+            <span>Stock: <strong>{{ p.cantidad }}</strong></span>
+            <span>Precio: <strong>L. {{ p.precio | number:'1.2-2' }}</strong></span>
+            <span class="badge" [class.success]="p.activo" [class.muted]="!p.activo">{{ p.activo ? 'Activo' : 'Inactivo' }}</span>
+            @if (p.activo && p.estaAgotado) {
+              <span class="badge danger">Agotado</span>
+            }
+          </div>
+          <div class="item-card-actions">
+            <a [routerLink]="['/productos', p.id]" mat-button><mat-icon>visibility</mat-icon><span>Ver</span></a>
+            @if (puedeEditar()) {
+              <a [routerLink]="['/productos', p.id, 'editar']" mat-button><mat-icon>edit</mat-icon><span>Editar</span></a>
+            }
+            @if (puedeEliminar()) {
+              <button class="action-delete" mat-button (click)="eliminar(p)"><mat-icon>delete</mat-icon><span>Eliminar</span></button>
+            }
+          </div>
+        </article>
+      } @empty {
+        <p class="empty">No se encontraron productos con los filtros seleccionados.</p>
+      }
+    </div>
+
+    <mat-paginator [length]="totalCount()" [pageSize]="pageSize" [pageIndex]="page - 1" [pageSizeOptions]="[10, 25, 50]" (page)="onPageChange($event)"></mat-paginator>
+  }
+</div>

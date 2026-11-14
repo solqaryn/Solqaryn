@@ -1,0 +1,50 @@
+{
+  "schema":"vaep-n8.19-h-final-cert/v1",
+  "authority":"docs/VAEP_AUTHORITY.md",
+  "parent":"N8.19.H",
+  "macro_parent":"N8.19",
+  "stage":"DOC_CERT",
+  "branch":"Desarrollo",
+  "repo":"jmejia31/Solqaryn",
+  "base_head":"897787282ab7b241c3c58abdae3a08bd28d66314",
+  "readme":"docs/evidencias/auditoria-forense-n8/README.md",
+  "scope":{"first":"N8.6.G","last":"N8.18.H","tasks":98,"historical_segment":66,"owner_intervention_segment":32},
+  "task_ledger_counts":{
+    "CONFIRMED_LISTO_REAL":33,
+    "N_A_JUSTIFIED":16,
+    "SUPERSEDED_BY_LATER_EVIDENCE":10,
+    "BLOCKER_CONFIRMED":2,
+    "STALE_CONTROL_ONLY":1,
+    "PENDING_OR_DEPENDENCY_GATED__NO_CLOSURE_CLAIM":36,
+    "total":98
+  },
+  "forensic_stage_receipts":[
+    "vaep/evidence/receipts/N8.19.A_LISTO_REAL_20260916T063900Z_SUP24.json",
+    "vaep/evidence/receipts/N8.19.B_LISTO_REAL_20260916T064500Z_SUP24.json",
+    "vaep/evidence/receipts/N8.19.C_LISTO_REAL_20260916T065400Z_SUP53.json",
+    "vaep/evidence/receipts/N8.19.D_LISTO_REAL_20260916T065900Z_SUP53.json",
+    "vaep/evidence/receipts/N8.19.E_LISTO_REAL_20260916T070400Z_SUP53.json",
+    "vaep/evidence/receipts/N8.19.F_LISTO_REAL_20260916T071200Z_SUP53.json",
+    "vaep/evidence/receipts/N8.19.G_LISTO_REAL_20260916T071800Z_SUP53.json"
+  ],
+  "corrections":[
+    {"task":"N8.7.E","kind":"STALE_TIMESTAMP_METADATA","ref":"vaep/evidence/receipts/N8.7.E_TIMELINE_CORRECTION_20260916T070800Z_N8.19.F.json","reopen":false},
+    {"task":"N8.12.F","kind":"STALE_ACTIVE_CONTROL","ref":"vaep/evidence/receipts/N8.12.F_STALE_CONTROL_CORRECTION_20260916T070900Z_N8.19.F.json","closure_claim":false,"operational_state":"PENDIENTE"}
+  ],
+  "preserved_external_blockers":[
+    {"task":"N8.7.G","status":"BLOQUEADO","reason":"Authorized DEV identity/test tenant + approved data path + controlled concurrent runner required for real performance evidence.","ref":"vaep/evidence/receipts/N8.7.G_BLOCKER_EXTERNAL_20260915T211230Z_SUP48.json"},
+    {"task":"N8.8.G","status":"BLOQUEADO","reason":"Authorized managed-MySQL provider backup/read/restore access plus isolated non-production restore/fork required.","ref":"vaep/evidence/receipts/N8.8.G_BLOCKER_EXTERNAL_20260915T211345Z_SUP48.json"}
+  ],
+  "truth_constraints":{
+    "historical_receipts_mutated":0,
+    "retroactive_receipts_fabricated":0,
+    "false_listo_confirmed":0,
+    "historical_closure_reopen_required":0,
+    "blockers_converted_to_pass":0,
+    "pending_tasks_converted_to_pass":0
+  },
+  "review_expectation":{"P0":0,"P1":0,"P2":0},
+  "macro_verdict":"N8.19_CAN_CLOSE_AS_FORENSIC_CERTIFICATION_WITH_UNDERLYING_BLOCKERS_AND_PENDING_TASKS_TRUTHFULLY_PRESERVED",
+  "next_parent":"N8.20.A",
+  "guards":{"main_untouched":true,"production_untouched":true,"deploy_untouched":true,"secrets_untouched":true,"pr2_untouched":true}
+}

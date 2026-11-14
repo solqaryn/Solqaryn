@@ -1,0 +1,34 @@
+.rentabilidad-page {
+  display: grid;
+  gap: 1rem;
+  padding: 1rem;
+  max-width: 1200px;
+  margin: 0 auto;
+}
+
+.rentabilidad-header {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  align-items: end;
+  justify-content: space-between;
+}
+
+.rentabilidad-header h1 {
+  margin: 0;
+}
+
+.rentabilidad-header p {
+  margin: .35rem 0 0;
+  max-width: 70ch;
+}
+
+@media (max-width: 720px) {
+  .rentabilidad-page {
+    padding: .75rem;
+  }
+
+  .rentabilidad-header {
+    align-items: stretch;
+  }
+}

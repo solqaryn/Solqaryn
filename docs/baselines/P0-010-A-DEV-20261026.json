@@ -1,0 +1,64 @@
+{
+  "snapshotType": "AS_OF_ONLY_NOT_LIVE",
+  "project": "SOLQARYN",
+  "repository": "solqaryn/Solqaryn",
+  "branch": "dev",
+  "devHead": "acf5bca44a94d1bce9a39a6b30be1380e4e5f464",
+  "observedUtc": "2026-10-26T02:05:06Z",
+  "source": {
+    "sheetId": "1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU",
+    "sheetRange": "PLAN_MAESTRO!A2:I100",
+    "issuesQuery": "repo:solqaryn/Solqaryn is:issue is:open",
+    "openGithubIssueCount": 1,
+    "openGithubIssueClassification": "LEGACY_COORDINATION_NOT_PRODUCT_DEFECT",
+    "openCommercialPrNumbers": [
+      3758,
+      3761
+    ]
+  },
+  "totalPlanMicrotasks": 56,
+  "byPriority": {
+    "P0": {
+      "total": 24,
+      "states": {
+        "LISTO": 14,
+        "PENDIENTE": 6,
+        "EN_PROGRESO": 3,
+        "VALIDANDO": 1
+      }
+    },
+    "P1": {
+      "total": 32,
+      "states": {
+        "PENDIENTE": 32
+      }
+    }
+  },
+  "incompleteP0Ids": [
+    "P0-001.B",
+    "P0-003.B",
+    "P0-004.A",
+    "P0-004.B",
+    "P0-005.A",
+    "P0-005.B",
+    "P0-008.A",
+    "P0-008.B",
+    "P0-010.A",
+    "P0-010.B"
+  ],
+  "claims": {
+    "noKnownDefects": false,
+    "untrackedIncidents": "NOT_VERIFIED",
+    "p0p1PlanRowsAreDefects": false,
+    "allP0P1Closed": false,
+    "devProviderParity": "NO_ACREDITADA",
+    "p0_001_bProviderParity": "NO_GO"
+  },
+  "limitations": [
+    "DATED_SNAPSHOT_ONLY_RECHECK_SHEET_AND_GITHUB_BEFORE_ACTION",
+    "ISSUE_3730_IS_COORDINATION_NOT_EVIDENCE_OF_PRODUCT_DEFECT",
+    "PLAN_BACKLOG_IS_NOT_EQUAL_TO_REPRODUCED_PRODUCTION_DEFECTS",
+    "RENDER_VERCEL_PARITY_NOT_CERTIFIED",
+    "UNTRACKED_INCIDENTS_NOT_VERIFIED"
+  ]
+}

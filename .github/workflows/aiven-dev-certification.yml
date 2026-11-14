@@ -1,0 +1,214 @@
+name: DEV - Certificación canónica Aiven
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - .github/workflows/aiven-dev-certification.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  certify-aiven-dev:
+    name: Certificar ownership, servicio y usuario MySQL DEV
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: DEV
+    env:
+      AIVEN_TOKEN: ${{ secrets.SOLQARYN_AIVEN_TOKEN }}
+      DB_HOST: ${{ vars.SOLQARYN_DEV_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_DEV_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_DEV_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_DEV_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_DEV_DB_PASSWORD }}
+      EXPECTED_PROJECT: solqaryn
+      EXPECTED_SERVICE: solqaryn-mysql
+      EXPECTED_DB: solqaryn_dev
+      EXPECTED_DB_USER: solqaryn_dev_user
+      EXPECTED_CORPORATE_EMAIL: solqaryn.platform@outlook.com
+
+    steps:
+      - name: Instalar cliente MySQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+
+      - name: Certificar control-plane Aiven sin exponer secretos
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -n "$AIVEN_TOKEN"
+          test -n "$DB_HOST"
+          test -n "$DB_PORT"
+          test -n "$DB_NAME"
+          test -n "$DB_USER"
+          test -n "$DB_PASSWORD"
+          mkdir -p evidence
+          python3 - <<'PY'
+          import hashlib, json, os, re, urllib.request, urllib.error
+
+          root='https://api.aiven.io/v1'
+          token=os.environ['AIVEN_TOKEN'].strip()
+          expected_project=os.environ['EXPECTED_PROJECT']
+          expected_service=os.environ['EXPECTED_SERVICE']
+          expected_email=os.environ['EXPECTED_CORPORATE_EMAIL'].lower()
+          db_host=os.environ['DB_HOST'].lower()
+
+          def request(path, method='GET', body=None):
+              data=None
+              headers={
+                  'Authorization': f'aivenv1 {token}',
+                  'Accept': 'application/json',
+                  'User-Agent': 'SOLQARYN-Aiven-DEV-Certification/1.0'
+              }
+              if body is not None:
+                  data=json.dumps(body).encode()
+                  headers['Content-Type']='application/json'
+              req=urllib.request.Request(root+path, data=data, headers=headers, method=method)
+              try:
+                  with urllib.request.urlopen(req, timeout=30) as resp:
+                      return json.load(resp)
+              except urllib.error.HTTPError as exc:
+                  raise SystemExit(f'Aiven API HTTP {exc.code} on sanitized path {path.split("?")[0]}')
+
+          projects_payload=request('/project')
+          projects=projects_payload.get('projects', [])
+          project=next((p for p in projects if p.get('project_name')==expected_project), None)
+          if not project:
+              raise SystemExit('Canonical Aiven project solqaryn not found for DEV token')
+          account_id=project.get('account_id')
+          if not account_id:
+              raise SystemExit('Aiven project does not expose account_id')
+
+          organizations_payload=request('/organizations')
+          organizations=organizations_payload.get('organizations', [])
+          organization=next((o for o in organizations if o.get('account_id')==account_id), None)
+          if not organization:
+              raise SystemExit('Could not map canonical project account to an Aiven organization')
+          organization_id=organization.get('organization_id')
+          if not organization_id:
+              raise SystemExit('Mapped Aiven organization does not expose organization_id')
+
+          users_payload=request(f'/organization/{organization_id}/user')
+          user_records=[]
+          def collect_user_records(v):
+              if isinstance(v, dict):
+                  if 'user_email' in v:
+                      user_records.append(v)
+                  for x in v.values():
+                      collect_user_records(x)
+              elif isinstance(v, list):
+                  for x in v:
+                      collect_user_records(x)
+          collect_user_records(users_payload)
+          matches=[u for u in user_records if str(u.get('user_email','')).lower()==expected_email]
+          if not matches:
+              raise SystemExit('Corporate SOLQARYN email is not a member of the Aiven organization containing project solqaryn')
+
+          service_payload=request(f'/project/{expected_project}/service/{expected_service}')
+          svc=service_payload.get('service', service_payload)
+          if svc.get('service_type') != 'mysql':
+              raise SystemExit('Canonical Aiven service is not MySQL')
+          if svc.get('service_name') not in (None, expected_service):
+              raise SystemExit('Unexpected Aiven service name')
+
+          found_hosts=[]
+          def walk(v):
+              if isinstance(v, dict):
+                  for x in v.values(): walk(x)
+              elif isinstance(v, list):
+                  for x in v: walk(x)
+              elif isinstance(v, str):
+                  found_hosts.extend(h.lower() for h in re.findall(r'([A-Za-z0-9._-]+\.aivencloud\.com)', v))
+          walk(svc)
+          if db_host not in found_hosts:
+              expected_hash=hashlib.sha256(db_host.encode()).hexdigest()
+              host_hashes={hashlib.sha256(h.encode()).hexdigest() for h in found_hosts}
+              if expected_hash not in host_hashes:
+                  raise SystemExit('Configured DEV DB host does not belong to canonical Aiven service')
+
+          role_summary=sorted({
+              str(x)
+              for u in matches
+              for x in (u.get('member_type'), u.get('team_name'))
+              if x
+          })
+
+          report={
+              'status':'PASS',
+              'project':expected_project,
+              'service':expected_service,
+              'serviceType':svc.get('service_type'),
+              'serviceState':svc.get('state'),
+              'accountName':project.get('account_name'),
+              'organizationName':organization.get('organization_name'),
+              'corporateEmailPresent':True,
+              'corporateMembership':role_summary,
+              'devEndpointMatchesCanonicalService':True,
+              'secretValuesPrinted':False,
+              'productionTouched':False
+          }
+          with open('evidence/aiven-control-plane.json','w',encoding='utf-8') as f:
+              json.dump(report,f,indent=2); f.write('\n')
+          print(json.dumps(report,separators=(',',':')))
+          PY
+
+      - name: Certificar identidad MySQL efectiva de DEV
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$DB_NAME" = "$EXPECTED_DB"
+          test "$DB_USER" = "$EXPECTED_DB_USER"
+          export MYSQL_PWD="$DB_PASSWORD"
+
+          result="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME"             --batch --skip-column-names -e "
+              SELECT DATABASE(), SUBSTRING_INDEX(CURRENT_USER(),'@',1), VERSION();
+            ")"
+          IFS=$'\t' read -r actual_db actual_user mysql_version <<< "$result"
+
+          test "$actual_db" = "$EXPECTED_DB"
+          test "$actual_user" = "$EXPECTED_DB_USER"
+
+          tables="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME"             --batch --skip-column-names -e "
+              SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
+              WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE';
+            ")"
+          migrations="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME"             --batch --skip-column-names -e "SELECT COUNT(*) FROM __EFMigrationsHistory;")"
+          products="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME"             --batch --skip-column-names -e "SELECT COUNT(*) FROM Productos;")"
+          categories="$(mysql --protocol=TCP -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --ssl-mode=REQUIRED "$DB_NAME"             --batch --skip-column-names -e "SELECT COUNT(*) FROM Categorias;")"
+
+          test "$tables" -gt 0
+          test "$migrations" -gt 0
+          test "$products" -gt 0
+          test "$categories" -gt 0
+
+          python3 - "$actual_db" "$actual_user" "$mysql_version" "$tables" "$migrations" "$products" "$categories" <<'PY'
+          import json, sys
+          report={
+              'status':'PASS',
+              'database':sys.argv[1],
+              'effectiveUser':sys.argv[2],
+              'mysqlVersion':sys.argv[3],
+              'baseTables':int(sys.argv[4]),
+              'efMigrations':int(sys.argv[5]),
+              'products':int(sys.argv[6]),
+              'categories':int(sys.argv[7]),
+              'sslRequired':True,
+              'secretValuesPrinted':False,
+              'productionTouched':False
+          }
+          with open('evidence/aiven-mysql-dev.json','w',encoding='utf-8') as f:
+              json.dump(report,f,indent=2); f.write('\n')
+          print(json.dumps(report,separators=(',',':')))
+          PY
+
+      - name: Publicar evidencia no sensible
+        uses: actions/upload-artifact@v4
+        with:
+          name: aiven-dev-certification-${{ github.run_id }}
+          retention-days: 14
+          path: evidence/

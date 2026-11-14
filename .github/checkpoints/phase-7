@@ -1,0 +1,60 @@
+Checkpoint final controlado de la Fase 7 automatizada.
+Fecha: 2026-07-23
+Revisión: 7
+
+Incluye:
+- MySQL 8.4 temporal y descartable.
+- Aplicación completa de migraciones EF Core fuera de Aiven.
+- API ASP.NET Core y Angular locales en GitHub Actions.
+- Permisos resueltos desde Usuario.Id y Rol.Id dinámico vigente.
+- Eliminación del fallback de autorización por enum legacy Vendedor.
+- Vinculación segura de usuarios legacy con su rol dinámico antes de emitir JWT.
+- Alcance estricto por UsuarioId para ventas, compras, facturas, finanzas y movimientos.
+- Parámetros UsuarioIdScope ignorados para usuarios no administradores.
+- Matriz exacta sin Compras ni Proveedores para el rol vendedor de prueba.
+- Dos vendedores con ventas, finanzas y movimientos separados y verificados.
+- Respuestas 403 para módulos sin permiso y 404 para documentos de otro usuario.
+- Menú y guardas frontend sin módulos no concedidos.
+- PDF público autorizado únicamente por hash y FacturaId dentro de la solicitud actual.
+- Acceso público directo por ID bloqueado.
+- Perfil reorganizado con jerarquía, separación y ayudas visuales legibles.
+- Etiquetas de permisos humanizadas en español.
+- Frontend productivo usando proxy same-origin /api de Vercel hacia Render.
+
+Prohibido durante este checkpoint:
+- usar Aiven, Render, Gmail o Cloudinary productivos;
+- fusionar a main;
+- aplicar migraciones productivas.
+
+---
+
+Cierre complementario de validación integral.
+Fecha: 2026-07-29
+Revisión: 8
+
+Commit funcional certificado:
+- 183696e3b25904172ca2857e193a9d6fc04961b6
+
+Evidencia:
+- Compilación y pruebas 30464538356: success.
+- Aceptación funcional integral 30464538385: success.
+- Auditoría de configuración y dependencias 30464538838: success.
+- Playwright: 75 aprobadas, 0 fallos.
+- Artefacto 8729297367.
+- Digest SHA-256: 67b159329b0f56cf84fbe8e469da59f8ac737e10214c2c06559e79747776e507.
+
+Incluye:
+- desglose fiscal exacto con impuesto incluido y descuento separado;
+- numeración de ventas y facturas segura ante concurrencia;
+- producto con variantes 4/3/3 y stock consolidado;
+- ventas, compras, anulaciones y sobreventa por variante;
+- costo de envío predeterminado, edición, exoneración y auditoría;
+- pagos parciales y totales;
+- PDF A4 y correo SMTP aislado;
+- cargas masivas inválidas, informe CSV y códigos estructurados;
+- regresión integral de permisos, aislamiento, interfaz, responsive, imágenes, impresión, sesión y contraste.
+
+Estado:
+- FASE 7 COMPLEMENTARIA COMPLETADA Y CERTIFICADA.
+- PR #2 debe permanecer abierto y en borrador.
+- main y Producción permanecen congeladas.

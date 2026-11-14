@@ -1,0 +1,250 @@
+<div class="storefront">
+  <app-storefront-header
+    [busqueda]="busqueda()"
+    [categorias]="categoriasNavegacion()"
+    [categoriaActiva]="categoriaActiva()"
+    [totalUnidades]="totalUnidades()"
+    [subtotal]="subtotal()"
+    [permiteWhatsapp]="permiteWhatsapp"
+    destinoSaltar="#catalogo-productos"
+    etiquetaSaltar="Saltar al catálogo de productos"
+    (busquedaActualizada)="actualizarBusqueda($event)"
+    (buscarSolicitado)="buscar()"
+    (categoriaSeleccionada)="seleccionarCategoria($event)"
+    (carritoSolicitado)="abrirCarrito()" />
+
+  @if (controlesVistaPrevia) {
+    <section class="container preview-panel" aria-label="Opciones de vista previa">
+      <div class="preview-copy">
+        <app-store-icon nombre="sol" />
+        <span><strong>Vista previa de catálogo</strong><small>La fuente puede alternarse solo fuera de producción.</small></span>
+      </div>
+      <div class="segmented" role="group" aria-label="Origen de datos">
+        <button type="button" [class.active]="!utilizarDatosBaseDatos()" [attr.aria-pressed]="!utilizarDatosBaseDatos()" (click)="cambiarFuente(false)">Datos de ejemplo</button>
+        <button type="button" [class.active]="utilizarDatosBaseDatos()" [attr.aria-pressed]="utilizarDatosBaseDatos()" (click)="cambiarFuente(true)">Base de datos</button>
+      </div>
+    </section>
+  }
+
+  @if (!utilizarDatosBaseDatos()) {
+    <p class="container demo-note"><strong>Modo demostración:</strong> este catálogo usa fixtures de vista previa. No sustituye silenciosamente una falla de la fuente real.</p>
+  }
+
+  <main id="catalogo-productos" class="container products-page" [attr.aria-busy]="estadoCatalogo() === 'loading'">
+    <header class="page-heading">
+      <div>
+        <p class="eyebrow">{{ soloOfertasPagina() ? 'PROMOCIONES VIGENTES' : 'CATÁLOGO PÚBLICO' }}</p>
+        <h1>{{ soloOfertasPagina() ? 'Ofertas' : 'Productos' }}</h1>
+        <p>{{ soloOfertasPagina()
+          ? 'Promociones vigentes calculadas por la tienda. Cuando vence una oferta, el precio vuelve automáticamente a su valor normal.'
+          : 'Busca, filtra y compara el catálogo disponible de ' + identidad.config().nombreComercial + '.' }}</p>
+      </div>
+      <span class="source-indicator"><i></i>{{ utilizarDatosBaseDatos() ? 'Datos de la tienda' : 'Datos de ejemplo' }}</span>
+    </header>
+
+    @if (categoriaFiltroInvalida()) {
+      <div class="catalog-notice" role="alert">
+        <app-store-icon nombre="filtro" />
+        <span>La categoría indicada ya no está disponible. Mostramos el catálogo sin ese filtro.</span>
+      </div>
+    }
+
+    <div class="catalog-layout">
+      <aside class="filters" [class.open]="filtrosAbiertos()" aria-label="Filtros del catálogo">
+        <div class="filters-title">
+          <strong><app-store-icon nombre="filtro" /> Filtros</strong>
+          @if (hayFiltros()) { <button type="button" class="text-link" (click)="limpiarFiltros()">Limpiar</button> }
+        </div>
+
+        <fieldset>
+          <legend>Categorías</legend>
+          <button type="button" [class.active]="!categoriaSlug()" (click)="seleccionarCategoria('')">
+            <span>Todos los productos</span>
+          </button>
+          @if (cargandoCategorias()) {
+            <p class="filter-note" role="status">Cargando categorías…</p>
+          } @else if (errorCategorias()) {
+            <p class="filter-note error" role="alert">{{ errorCategorias() }}</p>
+          } @else {
+            @for (categoria of categorias(); track categoria.id) {
+              <button type="button" [class.active]="categoriaSlug() === categoria.slug" (click)="seleccionarCategoriaPorSlug(categoria.slug)">
+                <span>{{ categoria.nombre }}</span>
+                <small>{{ categoria.cantidadProductos === null ? '—' : categoria.cantidadProductos }}</small>
+              </button>
+            }
+          }
+        </fieldset>
+
+        <fieldset>
+          <legend>Disponibilidad</legend>
+          <label class="check">
+            <input #disponibles type="checkbox" [checked]="soloDisponibles()" (change)="cambiarDisponibilidad(disponibles.checked)">
+            <span>Solo disponibles</span>
+          </label>
+        </fieldset>
+
+        @if (!soloOfertasPagina()) {
+          <fieldset>
+            <legend>Promociones</legend>
+            <label class="check">
+              <input #ofertas type="checkbox" [checked]="soloOfertas()" (change)="cambiarOfertas(ofertas.checked)">
+              <span>Solo productos en oferta</span>
+            </label>
+          </fieldset>
+        }
+
+        <fieldset>
+          <legend>Rango de precio</legend>
+          <div class="price-range">
+            <label class="price-field">
+              <span>{{ identidad.config().moneda || 'HNL' }}</span>
+              <input #precioMin type="number" min="0" step="0.01" placeholder="Mínimo" [value]="precioMinimo() ?? ''" (input)="cambiarPrecioMinimo(precioMin.value)" aria-label="Precio mínimo">
+            </label>
+            <span class="price-separator" aria-hidden="true">—</span>
+            <label class="price-field">
+              <span>{{ identidad.config().moneda || 'HNL' }}</span>
+              <input #precio type="number" min="0" step="0.01" placeholder="Máximo" [value]="precioMaximo() ?? ''" (input)="cambiarPrecio(precio.value)" aria-label="Precio máximo">
+            </label>
+          </div>
+        </fieldset>
+      </aside>
+
+      <section class="catalog-content" aria-labelledby="catalog-results-title">
+        <div class="catalog-toolbar">
+          <div>
+            <p class="eyebrow" id="catalog-results-title">{{ categoriaActiva() || 'TODOS LOS PRODUCTOS' }}</p>
+            <p class="result-count" role="status" aria-live="polite">{{ cargando() ? 'Cargando productos…' : totalResultadosMostrados() + ' productos encontrados' }}</p>
+          </div>
+          <button type="button" class="button ghost mobile-filters" [attr.aria-expanded]="filtrosAbiertos()" (click)="filtrosAbiertos.set(!filtrosAbiertos())">
+            <app-store-icon nombre="filtro" /> Filtros
+          </button>
+          <label class="sort-field">Ordenar por
+            <select #ordenar [value]="orden()" (change)="cambiarOrden(ordenar.value)">
+              <option value="relevancia">Relevancia</option>
+              <option value="precio-asc">Menor precio</option>
+              <option value="precio-desc">Mayor precio</option>
+              <option value="recientes">Más recientes</option>
+              <option value="nombre">Nombre A-Z</option>
+            </select>
+          </label>
+        </div>
+
+        @if (estadoCatalogo() === 'loading') {
+          <div class="product-grid" aria-hidden="true">
+            @for (n of [1,2,3,4,5,6,7,8]; track n) {
+              <article class="skeleton"><div></div><span></span><span></span><span></span></article>
+            }
+          </div>
+        } @else if (estadoCatalogo() === 'error') {
+          <div class="state-card" role="alert">
+            <app-store-icon nombre="envio" />
+            <h2>No pudimos cargar el catálogo</h2>
+            <p>{{ errorCatalogo() }}</p>
+            <button type="button" class="button primary" (click)="cargarCatalogo()">Intentar de nuevo</button>
+          </div>
+        } @else if (estadoCatalogo() === 'empty') {
+          <div class="state-card">
+            <app-store-icon nombre="bolsa" />
+            <h2>Aún no hay productos públicos disponibles</h2>
+            <p>Cuando la tienda publique productos activos aparecerán en este catálogo.</p>
+          </div>
+        } @else if (!totalResultadosMostrados()) {
+          <div class="state-card">
+            <app-store-icon nombre="buscar" />
+            <h2>No encontramos coincidencias</h2>
+            <p>Prueba otra búsqueda o ajusta los filtros del catálogo.</p>
+            <button type="button" class="button primary" (click)="limpiarFiltros()">Limpiar filtros</button>
+          </div>
+        } @else {
+          <div class="product-grid">
+            @for (producto of productosVisibles(); track producto.id) {
+              @let modelo = modeloSeleccionado(producto);
+              <article class="product-card">
+                <div class="product-media">
+                  <span class="availability" [class.off]="!modelo.disponible" [class.low]="stockBajo(modelo)">
+                    {{ textoDisponibilidad(modelo) }}
+                  </span>
+                  @if (tieneOferta(modelo)) {
+                    <span class="discount-badge">-{{ porcentajeAhorro(modelo) }}%</span>
+                  }
+                  @if (imagenValida(modelo.imagenes[0])) {
+                    <img [src]="imagenCloudinary(modelo.imagenes[0], 640)" [attr.srcset]="srcsetCloudinary(modelo.imagenes[0])" sizes="(max-width: 720px) 92vw, (max-width: 1180px) 44vw, 280px" [alt]="producto.nombre" width="800" height="600" loading="lazy" decoding="async" (error)="errorImagen(modelo.imagenes[0])">
+                  } @else {
+                    <app-store-art [tipo]="producto.ilustracion || 'paquete'" />
+                  }
+                </div>
+
+                <div class="product-body">
+                  <p class="product-category">{{ producto.categoria }}</p>
+                  <h2>{{ producto.nombre }}</h2>
+                  <p class="description">{{ producto.descripcion || 'Información comercial disponible en la tienda.' }}</p>
+
+                  @if (producto.modelos.length > 1) {
+                    <label class="model-field">Modelo
+                      <select #modeloSelect [value]="modelo.clave" (change)="seleccionarModelo(producto, modeloSelect.value)" [attr.aria-label]="'Modelo de ' + producto.nombre">
+                        @for (opcion of producto.modelos; track opcion.clave) {
+                          <option [value]="opcion.clave" [selected]="opcion.clave === modelo.clave" [disabled]="!opcion.disponible">{{ opcion.nombre }}{{ opcion.disponible ? '' : ' — agotado' }}</option>
+                        }
+                      </select>
+                    </label>
+                  } @else {
+                    <div class="model-summary">
+                      @if (modelo.marca) { <span>{{ modelo.marca }}</span> }
+                      @if (modelo.nombre && modelo.nombre !== 'Modelo general') { <span>{{ modelo.nombre }}</span> }
+                    </div>
+                  }
+
+                  <div class="product-meta">
+                    @if (modelo.sku) { <small>SKU {{ modelo.sku }}</small> }
+                    <small>{{ modelo.stock }} {{ modelo.stock === 1 ? 'unidad disponible' : 'unidades disponibles' }}</small>
+                  </div>
+
+                  <div class="product-bottom">
+                    <div class="price-copy">
+                      @if (tieneOferta(modelo)) {
+                        <span><del>{{ moneda(modelo.precio) }}</del> · Ahorras {{ moneda(ahorro(modelo)) }}</span>
+                        <strong>{{ moneda(precioActual(producto, modelo)) }}</strong>
+                      } @else {
+                        <span>{{ producto.modelos.length > 1 ? 'Precio del modelo' : 'Precio' }}</span>
+                        <strong>{{ moneda(precioActual(producto, modelo)) }}</strong>
+                      }
+                    </div>
+                    <div class="product-actions">
+                      @if (producto.slug) {
+                        <a class="button ghost" [href]="'/tienda/producto/' + producto.slug" (click)="abrirProducto($event, producto)">Ver producto</a>
+                      }
+                      <button type="button" class="button primary add-button" [disabled]="!disponibleParaAgregar(producto)" (click)="agregar(producto)" [attr.aria-label]="'Agregar ' + producto.nombre">
+                        <app-store-icon nombre="mas" /> {{ disponibleParaAgregar(producto) ? 'Agregar' : 'Sin unidades' }}
+                      </button>
+                    </div>
+                  </div>
+                </div>
+              </article>
+            }
+          </div>
+
+          @if (totalPaginas() > 1) {
+            <nav class="pagination" aria-label="Paginación del catálogo">
+              <button type="button" class="button ghost" [disabled]="pagina() === 1" (click)="cambiarPagina(-1)">← Anterior</button>
+              <span>Página <strong>{{ pagina() }}</strong> de {{ totalPaginas() }}</span>
+              <button type="button" class="button ghost" [disabled]="pagina() === totalPaginas()" (click)="cambiarPagina(1)">Siguiente →</button>
+            </nav>
+          }
+        }
+      </section>
+    </div>
+  </main>
+
+  @if (identidad.config().piePaginaActivo) {
+    <footer class="store-footer">
+      <div class="container footer-grid">
+        <div><strong>{{ (identidad.config().nombreComercial || 'Tienda') }}</strong><p>{{ identidad.config().piePaginaTexto || identidad.config().eslogan }}</p></div>
+        <div><b>Tienda</b><a [href]="enlaces.inicio">Inicio</a><a [href]="enlaces.productos">Productos</a><a [href]="enlaces.ofertas">Ofertas</a><a [href]="enlaces.categorias">Categorías</a></div>
+        <div><b>Ayuda</b><a [href]="enlaces.contacto">Contacto</a>@if (permiteWhatsapp) { <span>Pedidos por WhatsApp</span> }</div>
+      </div>
+      <div class="container footer-bottom">@if (identidad.mostrarCopyright()) { <small>{{ identidad.copyright() }}</small> }</div>
+    </footer>
+  }
+
+  <div class="sr-only" role="status" aria-live="polite">{{ aviso() }}</div>
+</div>
