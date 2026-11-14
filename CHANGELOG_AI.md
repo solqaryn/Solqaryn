@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C06-03.M01.04: riesgos y decisiones de sitios editoriales y mapas [Javier :00]
+- Documenta doce riesgos potenciales R01–R12, ocho supuestos falsables S01–S08 y ocho decisiones D01–D08 PENDIENTES; evita afirmar vulnerabilidades, permisos o implementación de CMS/mapas.
+- Coteja contratos M01.01–03 y fuentes reales SEO/storefront/sitemap con blobs Git; P01–P06/N01–N12 son escenarios FUTUROS NO_EJECUTADOS, no CI de producto.
+- Solo docs/v5 y CHANGELOG en dev; exige Scope Lock y provenance V5 exact SHA, readback PLAN/COLA/BITACORA y A5 independiente; sin JWT/MySQL/Angular, eventos, proveedores, secretos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C06-03.M01.03: inventario causal de fuentes editoriales y mapas [Javier :50]
 - Contrasta doce fuentes V5, Angular/storefront, autorización solicitada y SEO/robots/sitemap por blobs Git y registra ocho brechas pendientes G01–G08 de sitios editoriales y mapas por tenant, sin inventar implementación.
 - Los oráculos futuros P01–P06/N01–N12 son NO_EJECUTADOS; no se presenta inventario selectivo como auditoría backend exhaustiva ni como certificación live.
