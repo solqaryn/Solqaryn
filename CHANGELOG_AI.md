@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-02.M05.03: integración del selector y proveedor de estados en memoria [Javier :00]
+- Se añade suite xUnit real que conecta V5WorkItemQueueSelector y V5WorkItemMemoryAdapter, verifica intención sin mutación, claim y replay idempotente, rechazo de competidor y puertas de área/HEAD/DAG.
+- Este provider es exclusivamente in-process y no implementa Sheets CAS, MySQL, JWT ni lease distribuido; no cambia runtime, permisos o infraestructura. CI .NET, seguridad proporcional, CHANGELOG y Scope Lock exact-SHA siguen exigibles; A5 independiente.
+- Documento dirigido: docs/v5/c00-02-m05-03-provider-integration.md. Revert ordinario; sin QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-03.M05.03: integración de proveedor de cobertura en memoria [Javier :00]
 - Se añade suite xUnit de integración real entre V5CoverageMemoryAdapter y V5CoverageTenantProjectionService: guardado/lectura/proyección, namespace de scope, revisión obsoleta y evidencia no certificada.
 - El proveedor es estrictamente en memoria; NO prueba MySQL, Sheets, JWT HTTP ni CAS institucional, y no añade un backend durable. Requiere .NET, controles de seguridad por scope, CHANGELOG y Scope Lock exact-SHA antes de LISTO_DEV; A5 independiente.
