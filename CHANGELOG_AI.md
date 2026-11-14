@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C11-02.M01.03: inventario de contratos API por blobs [Javier :00]
+- Inventaría 16 fuentes reales de API, Application, middleware, filtros y .NET/EF, con blobs y lectura acotada de Auth/tenant/plataforma, DTO, errores y soporte read-only; no declara cobertura completa.
+- Enumera G01–G12 brechas de evidencia NO_FALLOS_CONFIRMADOS y pruebas P01–P08/N01–N12 FUTUROS_NO_EJECUTADOS; preserva JWT/RBAC/tenant A/B y compatibilidad Angular.
+- Dos Markdown por CAS fast-forward dev, checks Scope Lock/V5 exact-SHA y A5 independiente pendiente; sin runtime, SQL, eventos, secretos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C11-03.M01.01: contrato documental Outbox y eventos [Javier :10]
 - Define alcance y no-regresion NR01–NR16, P01–P08/N01–N12 FUTUROS_NO_EJECUTADOS para un futuro outbox/relay tenant-bound con idempotencia, correlacion y fallo parcial.
 - Traza seis fuentes del repositorio con blobs Git; OutboxRetryProcessor no contiene scheduler y CorrelationId no concede autorizacion. No se implementan eventos, webhooks ni ejecucion entre Tasks.
