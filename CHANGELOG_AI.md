@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C12-02.M01.01: alcance de frontend separado [Javier :50]
+- Define NR01-NR16 invariantes, P01-P16 positivos y N01-N16 negativos FUTUROS_NO_EJECUTADOS de Angular 22.2.1, Zone.js, routing/guards, Vercel, proxy, headers, cache, build y rollback.
+- Contrasta diez fuentes Git por blob, incluido script ignore-build por rama y contratos de Render; mantiene Vercel/Render/Aiven/Cloudinary sin activar CDN nuevo, DNS, host ni secretos.
+- Dos Markdown en dev por CAS fast-forward y checks Scope Lock/V5 del SHA; A5 independiente pendiente, sin builds/smoke de proveedor declarados PASS, QA/main/PROD ni gastos.
+
 ## 2026-11-14 — V5 C12-01.M01.05: criterios observables de topologia futura [Javier :50]
 - Especifica P01-P16 positivos, N01-N16 negativos y NF01-NF10 no funcionales para API, DB privada, proxy, JWT/RBAC/tenant, contenedores, DNS/TLS, restore y rollback.
 - Todos son FUTUROS_NO_EJECUTADOS, sin umbrales SLO/RTO ficticios; conserva infraestructura Vercel/Render/Aiven/Cloudinary y no activa Hostinger, Cloudflare, migraciones o webhooks.
