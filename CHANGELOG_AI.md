@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-01.M01.05 criterios de aceptación de cobertura [Javier :40]
+- Define 16 pares de aceptación positiva/negativa FUTUROS_NO_EJECUTADOS para requisitos, PLAN/COLA/DAG, autoría, Git/CI, tenant A/B, A5, seguridad y cierre causal.
+- Propone doce requisitos no funcionales NO_MEDIDOS y formato de evidencia por CASE_ID; la meta de cero huérfanos/duplicados críticos permanece NO_CERTIFICADA.
+- Sólo documento y CHANGELOG en dev, A0–A4 proporcionales y A5 independiente pendiente; sin pruebas runtime inventadas, workers, eventos, QA/main/PROD o tareas nuevas.
+
 ## 2026-11-14 — V5 C15-01.M01.04 riesgos y decisiones de cobertura [Javier :40]
 - Delimita 14 riesgos POTENCIALES_NO_VERIFICADOS, diez supuestos pendientes y diez decisiones abiertas sobre requisitos, IDs, DAG, BITACORA, Git/CI y seguridad multiempresa.
 - Prepara diez pares P/N FUTUROS_NO_EJECUTADOS, preservando que cero huérfanos/duplicados críticos y P0/P1=0 no están certificados; no inventa vulnerabilidades.
