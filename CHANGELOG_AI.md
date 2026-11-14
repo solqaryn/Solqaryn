@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-02.M05.01: regresiones unitarias de ciclo y autoría [Javier :50]
+- Se incorpora suite xUnit reproducible de reglas V5 para seis Task IDs autorizadas, rechazo de Task retirada, puertas COLA/DAG, doble claim, SHA, auditorías y A5 independiente.
+- Solo se verifica lógica pura de dominio; no se simulan permisos reales, CAS de Sheets, JWT, MySQL, llamadas a Tasks ni producción.
+- Build/tests .NET 10, seguridad pertinente, V5 provenance y Scope Lock requieren SUCCESS sobre el commit exacto publicado; A5 por otra Task Javier, sin QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-03.M04.03: branding permitido y contraste local [Javier :00]
 - La matriz privada de cobertura muestra identidad oficial y ofrece un control de alto contraste accesible con dos estados tipados y limitados al mat-card de cobertura; sin configuracion CSS libre, nuevo endpoint o cambio de tema de otra empresa.
 - Angular usa los tokens globales seguros para modo normal y una paleta local de contraste alto; entradas query/tenant no gobiernan el switch y no crean datos de cobertura, grants ni operacion de escritura.
