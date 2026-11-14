@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C11-01.M01.04: riesgos, supuestos y decisiones relacionales [Javier :50]
+- Registra R01-R16 riesgos POTENCIALES, S01-S10 supuestos NO_VERIFICADOS y D01-D10 decisiones PENDIENTES sobre tenant A/B, claves FK, historial nullable, migraciones, índices y rollback.
+- Traza código real de Empresa, Cliente, Sucursal, UsuarioEmpresa, EF, filtros y constraints, sin inferir migraciones aplicadas ni defectos certificados; P01-P08/N01-N12 FUTUROS_NO_EJECUTADOS.
+- Sólo docs/v5 + CHANGELOG con Scope Lock y V5 provenance exact-SHA en dev, A5 independiente pendiente; cero SQL/Aiven, permisos, eventos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C11-01.M01.03: inventario de fuentes y brechas del modelo relacional [Javier :50]
 - Documenta 15 fuentes Git con blobs y clasificación de evidencia para FK/indices/tenant/EF/MySQL, incluyendo legacy nullable, constraints fisicos y migrations sin confundir existencia con esquema aplicado.
 - Registra G01-G12 como brechas de evidencias, P01-P08/N01-N12 FUTUROS_NO_EJECUTADOS; no certifica MySQL, tests, integridad cross-tenant ni migraciones reales.
