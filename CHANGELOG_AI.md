@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C12-01.M01.03: inventario causal de topologia objetivo [Javier :50]
+- Audita 14 rutas Git por blob SHA e identifica 12 brechas y evidencia futura de red privada, MySQL, DNS/TLS, seguridad, workers, rutas y rollback; distingue configuraciones versionadas de servicios reales.
+- Documenta guards de Render/Aiven, Dockerfile, Vercel y stack Angular/.NET sin modificar codigo, proveedor, cuentas, API ni infraestructura; criterios runtime futuros NO_EJECUTADOS, A5 independiente pendiente.
+- Unicamente docs/v5 y CHANGELOG en dev, publicacion fast-forward CAS con Scope Lock/V5 exact-SHA requerido; sin migraciones, eventos, webhooks, QA/main/PROD, secretos o compras.
+
 ## 2026-11-14 — V5 C12-01.M01.02: actores y fronteras de topologia objetivo [Javier :40]
 - Documenta A01–A14 actores, I/O01–I/O12 y F01–F14 fronteras para futura segregación Angular/.NET/MySQL, red privada, secretos, backups y reversión, sin crear infraestructura real.
 - Traza nueve fuentes Git y ocho pares de aceptación/rechazo FUTUROS_NO_EJECUTADOS; mantiene Vercel, Render, Aiven y Cloudinary actuales sin declarar Hostinger/Cloudflare activos ni inventar costos.
