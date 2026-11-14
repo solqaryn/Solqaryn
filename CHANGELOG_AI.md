@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C11-02.M01.02: actores I/O y fronteras API modular [Javier :00]
+- Matriz A01–A12 de actores, I/O01–I/O12 de entradas/salidas y F01–F10 de fronteras de confianza para API modular; P01–P08/N01–N12 escenarios FUTUROS_NO_EJECUTADOS.
+- Traza AuthController, TenantContextController, PlataformaSesionController, Program y versiones .NET/EF con blobs; preserva fail-closed, JWT/RBAC, tenant A/B, plataforma separada y soporte read-only.
+- Solo preparación docs/v5 y CHANGELOG, fast-forward CAS y checks Scope Lock/V5 exact-SHA, A5 independiente pendiente; sin endpoints, workers, DB, secrets, QA/main/PROD.
+
 ## 2026-11-14 — V5 C11-02.M01.01: contrato de alcance API modular [Javier :00]
 - Delimita puertos/casos de uso, DTO, validación, compatibilidad y errores seguros sin implementar endpoints; NR01–NR14 y escenarios P01–P08/N01–N12 FUTUROS_NO_EJECUTADOS.
 - Traza AuthController, TenantContextController, PlataformaSesionController, Program y referencias .NET/EF con blobs reales; preserva JWT/RBAC/tenant A/B, soporte read-only y separación plataforma/empresa.
