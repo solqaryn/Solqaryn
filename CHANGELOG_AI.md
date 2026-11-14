@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C09-02.M01.02: actores, interfaces y fronteras de fidelizacion [Javier :00]
+- Identifica A01–A14 actores, I01–I12 interfaces futuras y F01–F09 fronteras de confianza para puntos, promociones, resenas, moderacion y posventa; contrasta seis blobs originales sin suponer codigo de fidelizacion vivo.
+- Documenta P01–P08/N01–N08 FUTUROS_NO_EJECUTADOS sobre tenant A/B, JWT/RBAC, PII, canjes concurrentes, replay, consentimiento y antifraude, sin afirmar PASS runtime.
+- Sólo docs/v5 y CHANGELOG en dev mediante CAS fast-forward, Scope Lock/V5 exact-SHA y A5 pendiente de otra Task; sin pagos, worker, eventos, secretos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C09-02.M01.01: alcance y no-regresion de fidelizacion/reputacion [Javier :00]
 - Delimita puntos, promociones, resenas, moderacion y postventa como alcance FUTURO; contrasta seis blobs de Cliente, Venta, TiendaCuentaCliente, CreditoCliente, Auditoria y UsuarioEmpresa, sin confundir puntos con dinero o credito.
 - Establece NR01–NR14 y P01–P08/N01–N08 FUTUROS_NO_EJECUTADOS para tenant A/B, JWT/RBAC, antifraude, replay, privacidad, moderacion, consentimiento, idempotencia y rollback, sin afirmar PASS runtime.
