@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C04-01.M01.03: inventario comprobado de código y evidencia SaaS [Javier :10]
+- Registra doce blobs reales Domain/Application/API/EF/Angular/tests de SuscripcionesSaaS, siete capacidades con certeza limitada y cinco brechas de catálogo comercial versionado.
+- Diferencia explícitamente código leído, tests Moq existentes, snapshot EF y CI runtime realmente ejecutada; no inventa precios, monedas, migraciones aplicadas, accesos tenant ni certificaciones.
+- Solo M01.03 documental, sin tocar código ni habilitar M01.06/M02, billing, eventos o QA/main/PROD. A0–A4 con Scope Lock/V5 exact-SHA, A5 independiente y rollback git revert normal.
+
 ## 2026-11-14 — V5 C04-01.M01.02: actores, entradas, salidas y superficies SaaS [Javier :10]
 - Documento de frontera con ocho actores, seis bordes API/Application/Infrastructure/Angular, seis fronteras de confianza y diez negativos futuros; referencias a blobs reales del catálogo SaaS existente.
 - Delimita contrato futuro de versiones, precios, periodicidad y upgrade sin inventar tarifas ni ampliar RBAC, tenant, MySQL, endpoint, worker, webhook, pasarela o secreto; las pruebas P/N están especificadas pero no ejecutadas como runtime.
