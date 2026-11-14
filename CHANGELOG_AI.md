@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C00-04.M03.05: integracion local inerte de gobierno [Javier :40]
+- Implementa .NET 10 Infrastructure→Application entre guard tenant/RBAC vigente y copia efímera institucional sin autoridad; el diagnóstico local nunca concede ejecución, aprobación, permisos ni escritura.
+- Agrega siete pruebas xUnit positivas/negativas de tenant B, revocación, SHA distinto/ausente, propuesta NO_GO, ID manipulado y null; no agrega API, DI, MySQL, worker, eventos, webhook ni proveedor.
+- Desarrollo exclusivo dev con CAS, CI backend/seguridad/Scope Lock/V5 exact SHA y A5 independiente; sin QA/main/PROD ni claims de integración distribuida.
+
 ## 2026-11-14 — V5 C12-01.M01.01: alcance topologia objetivo sin activacion [Javier :30]
 - Fija alcance documental de frontend, API, workers, MySQL y red privada objetivo Hostinger/Cloudflare, conservando Render/Vercel/Aiven/Cloudinary actuales sin migracion ni compras.
 - Ancla nueve blobs Git, NR01–NR16, P01–P08/N01–N08 FUTUROS_NO_EJECUTADOS y diez gates futuros sin afirmar VPS, DNS, backup o despliegue certificado.
