@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-02.M01.02 actores e interfaces de auditoria de migracion [Javier :50]
+- Prepara 12 participantes, 12 contratos de entrada/salida y 10 fronteras de confianza sobre frontend, API JWT/RBAC, tenant A/B, MySQL/EF, archivos, workers, CI y DNS/TLS.
+- Propone ocho pares P/N FUTUROS_NO_EJECUTADOS; la topologia objetivo Hostinger/Cloudflare/R2 no se declara desplegada ni auditada.
+- Solo Markdown y CHANGELOG en dev, A0-A4 documentales y A5 independiente pendiente; sin credenciales, QA/main/PROD, eventos, migracion ni compras.
+
 ## 2026-11-14 — V5 C15-02.M01.01 alcance de auditoria de arquitectura/migracion [Javier :50]
 - Define alcance documental, topologia actual declarada y objetivo futuro Hostinger/Cloudflare/R2, sin afirmar proveedores activos ni migracion ejecutada.
 - Fija 16 invariantes NR y 8 pares ARQ positivos/negativos FUTUROS_NO_EJECUTADOS para JWT/RBAC/tenant A/B, backup/restore MySQL, archivos, DNS/TLS, jobs y exact-SHA CI.
