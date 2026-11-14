@@ -2,6 +2,7 @@
 - La ruta protegida de cobertura distingue permiso confirmado, vacio institucional honesto, revalidacion en curso y denegacion/error generico sin divulgar respuestas del servidor.
 - Reutiliza exclusivamente el GET de sesion global existente; no carga ni simula datos institucionales de cobertura y no concede JWT/RBAC ni operaciones de escritura.
 - Playwright Chromium agrega pruebas positivas/negativas de vacio, una sola revalidacion, 403 y no filtracion. Angular lint/build, Scope Lock y procedencia CHANGELOG requieren checks del SHA publicado; MySQL/.NET/Docker no aplican a este diff frontend.
+- La regresión Chromium 18/19 localizó dos alertas tras 403; se conserva un único mensaje accesible compatible con la prueba previa y se evita la tarjeta duplicada al fallar la sesión de cobertura.
 - A5 independiente otra Task Javier; rollback por git revert normal, sin QA/main/PROD ni nuevas rutas.
 
 ## 2026-11-13 — V5 M04.01: Chromium real para rutas privadas de flujo y cobertura [Javier :50]

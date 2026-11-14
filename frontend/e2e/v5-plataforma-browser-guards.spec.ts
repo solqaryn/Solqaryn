@@ -333,7 +333,7 @@ test.describe('C00-03.M04.02 - estados seguros de cobertura V5', () => {
     expect(requests).toBe(1);
     release?.();
     await expect(button).toBeEnabled();
-    await expect(page.getByRole('alert').filter({ hasText: 'No se pudo verificar el permiso de cobertura' })).toBeVisible();
+    await expect(page.getByRole('alert').filter({ hasText: 'La sesión global dejó de estar autorizada' })).toBeVisible();
     await expect(page.locator('body')).not.toContainText('NO_MOSTRAR_SECRETO_DEL_BACKEND');
     await expect(page.getByText('Identidad de plataforma verificada')).toHaveCount(0);
   });

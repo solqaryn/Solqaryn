@@ -15,3 +15,5 @@
 **No aplica:** .NET, MySQL, Docker y E2E con base productiva, pues no se cambian API, datos, grants o persistencia. **Riesgo residual:** acceso real multitenant debe verificarse en un scope backend separado y nunca se infiere de mocks.
 
 **Reversión:** commit inverso no destructivo sobre `dev`; no force-push ni QA/main/PROD.
+
+**Corrección regresión E2E:** el resultado 18 PASS / 1 FAIL del primer SHA fue causado por dos mensajes `role=alert` simultáneos tras 403. El SHA correctivo conserva un único alert y mantiene la prueba negativa anterior y la nueva. No se declara PASS sin la repetición causal de Chromium.

@@ -59,7 +59,7 @@ import { PlataformaGestionMvpComponent } from './plataforma-gestion-mvp.componen
           @if (validando()) {
             <p role="status"><mat-spinner diameter="20" aria-label="Revalidando permiso de cobertura"></mat-spinner> Comprobando permiso de cobertura…</p>
           } @else if (error()) {
-            <p role="alert" class="v5-feedback-error">No se pudo verificar el permiso de cobertura. No se mostrará información institucional.</p>
+            <p role="alert" class="v5-feedback-error">La sesión global dejó de estar autorizada o no pudo verificarse. No se permite ninguna operación.</p>
           } @else if (!sesion()) {
             <p role="alert">Sin permiso de plataforma confirmado. La cobertura permanece restringida.</p>
           } @else {
@@ -204,7 +204,7 @@ import { PlataformaGestionMvpComponent } from './plataforma-gestion-mvp.componen
         </mat-card>
         <app-plataforma-gestion-mvp [directorio]="directorio()" (actualizarDirectorio)="cargarEmpresas()"></app-plataforma-gestion-mvp>
         }
-      } @else if (!validando()) {
+      } @else if (!validando() && !vistaCoberturaV5) {
         <mat-card class="denied">
           <mat-card-content>
             <mat-icon aria-hidden="true">gpp_bad</mat-icon>
