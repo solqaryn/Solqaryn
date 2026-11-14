@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C01-01.M03.02: revalidación Application de identidad universal [Javier :00]
+- Servicio real `IdentidadUniversalApplicationService` y contrato de lectura server-side `IIdentidadUniversalSnapshotSource`: comprueba tenant autenticado antes del I/O, vuelve a validar membresía/rol/sucursal desde datos confiables y deniega drift, revocación o tenant B.
+- Suite xUnit dirigida `IdentidadUniversalApplicationServiceTests.cs` con positivos y negativos de aislamiento A/B, rol cambiado, usuario ajeno, sucursal inexistente/ajena, ausencia de fuente, revocación y no-escalamiento implícito. No registra DI, API/endpoint, JWT, migración/SQL, workers ni webhooks.
+- TASK_ID `6adbb9fff1548191a1bd5b30d9e9984a`; DAG146 VALIDADO/SI individual. A0–A4 sólo con CI real exact SHA; A5 por Task Javier distinta, solo dev. Rollback: git revert sin force-push.
+
 ## 2026-11-14 — V5 C03-01.M01.04: reparación documental A5_FAIL sobre autoridad aprobadora [Javier :40]
 - Corrección por autor original TASK_ID `6adc2e55f47c81919f6374e561687076` del documento `docs/v5/c03-01-m01-04-riesgos-supuestos-decisiones-autenticacion.md`: D01–D08 ahora identifican explícitamente el rol responsable de futura aprobación y el dictamen técnico previo, sin asumir personas designadas, decisiones aprobadas ni cambios de proveedores.
 - Conserva el A5_FAIL independiente histórico del SHA `e214487251a9c09028382594fa33f63770afa01e`; requiere nuevo A0–A4 en SHA corregido y nueva A5 de otra Task Javier. Scope documental solamente; JWT/RBAC/tenant, API, DB, MFA, workers, QA/main/PROD y programación intactos. Rollback: git revert normal.
