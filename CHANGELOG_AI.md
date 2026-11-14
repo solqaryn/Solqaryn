@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-02.M06.03: riesgos, limitaciones y decisiones [Javier :30]
+- Se documentan once riesgos y cinco decisiones causales sobre C00-02 M05/M06: seis SHA fuente, controles, dueños y límites reales de tests xUnit, TestServer y Chromium. No certificar CAS Sheets, JWT/RBAC live ni MySQL mediante fixtures.
+- Se preservan jobs CANCELLED sin PASS, independencia A5 entre seis Tasks Javier, BITACORA 26 columnas y M06.06 como gate distinto. No se activan despachos ni se autorizan QA/main/PROD.
+- Nuevo docs/v5/c00-02-m06-03-risks-decisions.md; A0-A4 documentales con Scope Lock y procedencia de CHANGELOG exact-SHA, A5_PENDIENTE y rollback por git revert normal.
+
 ## 2026-11-13 — V5 C00-02.M06.02: manifiesto reproducible de evidencia y versionado [Javier :10]
 - Se registra una matriz causal de las seis microtareas M05.01–06, commits, blobs y alcance real de suites xUnit/TestServer/Chromium; se diferencia el SHA origen cancelado de la verificación causal por descendiente con blob intacto.
 - La guía de reproducción distingue evidencia verificada de comandos de referencia, y no certifica CAS distribuido de Sheets, JWT/RBAC live, MySQL ni tenant A/B persistido. Cambio exclusivamente documental; A5 por otra Task Javier.
