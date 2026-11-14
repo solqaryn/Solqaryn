@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C07-03.M01.02: actores e interfaces de inventario/compras [Javier :40]
+- Identifica 12 actores A01–A12, 12 interfaces I01–I12 y 10 fronteras B01–B10 de ERP, compras, reservas, conciliación y costeo; no cambia roles, stock ni código.
+- Contrasta diez blobs reales API y distingue dos superficies pendientes de auditoría M01.03; P01–P06 y N01–N10 son FUTUROS NO_EJECUTADOS, no pruebas de aislamiento HTTP/MySQL.
+- Sólo docs/v5 y CHANGELOG en dev, DAG VALIDADO/SI, Scope Lock/V5 exact-SHA, A5 independiente pendiente; sin migraciones, pagos, workers ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C07-03.M01.01: alcance y no-regresión inventario, compras y operaciones [Javier :40]
 - Define alcance documental y doce invariantes NR01–NR12 para tenant/sucursal/almacén, reservas, transferencias, compras idempotentes, conteos, costeo histórico y conciliación; no cambia existencias ni código.
 - Contrasta diez blobs Git de Domain/API de inventario y compras; P01–P06 y N01–N08 son oráculos FUTUROS NO_EJECUTADOS, no certificación .NET/MySQL, RBAC HTTP o aislamiento A/B runtime.
