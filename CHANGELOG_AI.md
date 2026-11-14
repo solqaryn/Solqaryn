@@ -1203,3 +1203,8 @@
 - Nueva guardia Application .NET 10 fail-closed: membresía actual del servidor, rol empresarial activo, permiso relacional explícito por módulo/acción y sucursal de la misma empresa; rol global legacy no concede acceso.
 - xUnit positivos tenant A y sucursal A, negativos empresa B antes de I/O, revocación de membresía, cambio de rol, permisos ausentes/inactivos/foreign, módulo inválido y sucursal B. La fuente es un fixture controlado, no HTTP/JWT/EF/MySQL real.
 - A0-A4 requieren CI backend y seguridad SHA exacto, Scope Lock, integridad de CHANGELOG y readback. A5 reservado para Javier independiente. Sin nueva ruta/DI/API, migración, trabajador, eventos, QA/main/PROD; rollback revert normal.
+
+## 2026-11-14 — SOLQARYN V5 C00-04.M03.03 consulta de gobierno tenant-safe [Javier :10]
+- Nuevo servicio Application Governance inerte con preflight tenant antes de I/O, permiso relacional actual Configuracion/Administrar y negativa de rol legacy; no ejecuta, aprueba ni persiste cambios.
+- xUnit positivos tenant A/sucursal A; negativos empresa B, revocacion, rol cambiado, permiso ausente o accion incorrecta, sucursal B, propuesta sensible NO_GO y solicitud manipulada.
+- A0-A4 validacion por CI .NET10/seguridad/autorizacion y Scope Lock exact SHA, CHANGELOG autocontenido y readback; A5 por otro Javier. Sin API/DI/JWT/DB/worker/webhook/QA/main/PROD; rollback git revert normal.
