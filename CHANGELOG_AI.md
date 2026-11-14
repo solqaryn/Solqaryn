@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C07-04.M01.03: inventario de contratos de pedidos y pagos [Javier :30]
+- Contrasta doce blobs Git de Domain y controladores API para cotizaciones, pedidos, ventas, facturas, pagos online y fiscalidad, sin declarar integración universal ya ejecutada.
+- Registra diez brechas G01–G10 de prueba por tenant, idempotencia durable, conciliación, snapshots, proveedor, PDF y rollback; P01–P06/N01–N12 son oráculos FUTUROS NO_EJECUTADOS.
+- Solo docs/v5 y CHANGELOG en dev; DAG preparatorio VALIDADO/SI, Scope Lock y V5 provenance exact-SHA, A5 independiente; sin código, migraciones, secretos, pagos reales, eventos, workers ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C07-02.M01.02: actores e interfaces de storefront/checkout [Javier :20]
 - Define 12 actores A01–A12, 12 interfaces I01–I12 y 10 fronteras B01–B10 de host/tenant, carrito, precio server-side, HMAC/replay futuro, accesibilidad y pagos no implementados.
 - Contrasta seis blobs Git de API, Application, Domain, Angular y contrato M01.01; P01–P06/N01–N12 son FUTUROS NO_EJECUTADOS, sin afirmar reserva, pedido ERP o PSP.
