@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C13-03.M01.05 aceptacion de rendimiento y ligereza [Javier :30]
+- Define dieciseis P/N futuros y doce criterios NF de bundle, rutas lazy, cache, imagenes, tablas, LCP/INP/CLS, accesibilidad y tenant A/B; NO_EJECUTADOS.
+- Mantiene budget 650/750kB como configuracion y discrepancia del script 1MiB/2MiB como pendiente de codigo separado; no inventa medidas ni cambia CI o seguridad.
+- Solo documento y CHANGELOG, Scope Lock/V5 exact-SHA y A5 por otra Task; sin QA/main/PROD.
+
 ## 2026-11-14 — V5 C13-03.M01.04 riesgos y decisiones de rendimiento [Javier :40]
 - Registra R01–R14 riesgos potenciales, S01–S10 supuestos NO_VERIFICADOS y D01–D10 decisiones ABIERTAS sobre budgets, lazy/preload, requests, cache tenant, medios, PII y observabilidad.
 - Coteja M01.01/M01.02 y fuentes Angular autenticas; M01.03 estaba EN_PROGRESO ajena y no se declara terminada. Ocho pares P/N FUTUROS_NO_EJECUTADOS; no se fingen LCP, INP, CLS, pruebas ni SLAs.
