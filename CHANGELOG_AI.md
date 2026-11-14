@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C09-01.M01.01: alcance y no-regresion de CRM universal [Javier :40]
+- Delimita ficha, timeline, segmentos, oportunidades y actividades por Empresa reutilizando Cliente/UsuarioEmpresa; contrasta cinco blobs reales en Domain y Angular sin afirmar CRM funcional.
+- Define NR01–NR14 y P01–P08/N01–N12 FUTUROS_NO_EJECUTADOS para JWT/RBAC, tenant A/B, PII, ownership NULL, idempotencia, consentimientos, exportaciones y accesibilidad.
+- Sólo docs/v5 y CHANGELOG en dev mediante FF/CAS; Scope Lock/provenance V5 exact-SHA y A5 pendiente por Task distinta, sin mensajería, workers, migraciones, secretos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C08-04.M01.04: riesgos, supuestos y decisiones de extensiones por rubro [Javier :40]
 - Clasifica R01–R16 como riesgos POTENCIALES, S01–S08 como supuestos NO_VERIFICADOS y D01–D08 como decisiones PENDIENTES, anclados a documentos M01.01–03/M01.05 y blobs reales de Empresa, UsuarioEmpresa y guard Angular.
 - Define TP01–TP08/TN01–TN08 FUTUROS_NO_EJECUTADOS para tenant A/B, JWT/RBAC, host confiable, legacy NULL, replay, revocación, versiones, accesibilidad y rollback; no afirma fallos reales ni PASS de runtime.
