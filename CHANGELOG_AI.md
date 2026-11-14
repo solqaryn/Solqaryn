@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-03.M01.05 criterios de promoción controlada [Javier :10]
+- Define 16 pares P/N FUTUROS_NO_EJECUTADOS y 10 requisitos NF NO_MEDIDOS para SHA/artefacto, CI, JWT/RBAC/tenant, MySQL, accesibilidad, rollback y auditoría.
+- Distingue pruebas causales de Angular/.NET/Playwright/MySQL y autorización separada DEV/QA/main/PROD; no certifica ni despliega infraestructura.
+- Solo Markdown y CHANGELOG en dev con Scope Lock/V5 exact SHA y A5 independiente pendiente; sin secretos, migraciones, pagos ni eventos.
+
 ## 2026-11-14 — V5 C14-03.M01.04 riesgos de promoción controlada [Javier :10]
 - Registra 14 riesgos POTENCIALES, 8 supuestos NO_VERIFICADOS y 8 decisiones ABIERTAS sobre CI exact-SHA, JWT/RBAC/tenant, paridad y rollback.
 - Define ocho parejas P/N FUTURAS_NO_EJECUTADAS; no declara seguridad/QA/PROD certificadas ni vulnerabilidades demostradas.
