@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C06-01.M01.01: alcance y no-regresión de sitio público SaaS [Javier :10]
+- Delimita propuesta de valor, planes/sectores, demo, contacto, legal y SEO con doce invariantes NR01–NR12; la ruta raíz actual redirige a login y no prueba una landing comercial terminada.
+- Define P01–P06/N01–N14 como pruebas FUTURAS NO_EJECUTADAS de privacidad, anti-spam, rutas públicas/privadas, sitemap, tenant A/B, accesibilidad y no inventar ofertas ni metadatos aprobados.
+- Solo docs/v5 y CHANGELOG en dev; Scope Lock/V5 exact-SHA, PLAN/COLA/BITACORA y A5 independiente; sin UI/API/SMTP/planes reales, secretos, trabajadores, QA/main/PROD ni eventos.
+
 ## 2026-11-14 — V5 C10-01.M01.05: aceptación de storage neutral [Javier :10]
 - Define AC01–AC16 y N01–N16 de pruebas FUTURAS NO_EJECUTADAS para storage provider-neutral: JWT/RBAC, tenant A/B, MIME real, tamaños, checksum, TTL, errores y rollback.
 - Alinea NR01–NR12, I01–I12, R01–R12, S01–S08 y D01–D08 pendientes; no atribuye migración, Cloudinary/R2, datos reales, xUnit/Playwright ni aprobación de proveedores.
