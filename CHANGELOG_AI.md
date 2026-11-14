@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C11-01.M01.02: actores interfaces y fronteras del modelo relacional [Javier :50]
+- Define A01-A12, I01/O01-I12/O12 y F01-F09 para claves/FK, ownership, transacciones, EF/MySQL, API y tenant A/B; los contratos son FUTUROS_NO_IMPLEMENTADOS.
+- Traza Empresa, Cliente.EmpresaId nullable y AppDbContext con blobs de dev, preservando soporte read-only y frontera pública; P01-P06/N01-N10 son escenarios NO_EJECUTADOS.
+- Exclusivamente docs/v5 y CHANGELOG por CAS fast-forward dev y checks exact-SHA Scope Lock/V5; A5 independiente pendiente, sin SQL, endpoints, workers, permisos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C11-01.M01.01: alcance y no-regresion de modelo relacional [Javier :50]
 - Fija objetivo/limitaciones de PK, FK, indices, ownership, MySQL y estrategia reversible; NR01-NR14, P01-P07/N01-N10 son criterios futuros NO_EJECUTADOS.
 - Traza Empresa, Cliente.EmpresaId nullable historico, AppDbContext y pin EF/MySQL mediante blobs exactos; no confunde documentos, permisos o migraciones aplicadas.
