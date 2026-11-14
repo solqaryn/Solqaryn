@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C08-04.M01.04: riesgos, supuestos y decisiones de extensiones por rubro [Javier :40]
+- Clasifica R01–R16 como riesgos POTENCIALES, S01–S08 como supuestos NO_VERIFICADOS y D01–D08 como decisiones PENDIENTES, anclados a documentos M01.01–03/M01.05 y blobs reales de Empresa, UsuarioEmpresa y guard Angular.
+- Define TP01–TP08/TN01–TN08 FUTUROS_NO_EJECUTADOS para tenant A/B, JWT/RBAC, host confiable, legacy NULL, replay, revocación, versiones, accesibilidad y rollback; no afirma fallos reales ni PASS de runtime.
+- Sólo Markdown y CHANGELOG en dev, publicación fast-forward/CAS con Scope Lock y procedencia V5 exact-SHA, A5 independiente pendiente; sin módulos vivos, migraciones, eventos, secretos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C08-04.M01.05: criterios de aceptacion de extensiones por rubro [Javier :30]
 - Define AC01–AC14/N01–N14 FUTUROS_NO_EJECUTADOS para capacidades por empresa, JWT/RBAC, tenant A/B, reservas, membresias, catalogo, host confiable, idempotencia y rollback.
 - Establece NFR01–NFR10 y matriz futura .NET/MySQL/Angular/Playwright con fuentes M01.01–03 y blobs reales; no inventa implementacion, test runtime ni vulnerabilidad demostrada.
