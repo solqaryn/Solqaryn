@@ -1311,3 +1311,9 @@
 - Incluye plan expand/rollback condicionado y 4 fixtures positivos/10 negativos simbólicos para aislamiento A/B, MFA/reauth, abuso de scope, simultaneidad, expiración y falla de auditoría; no son pruebas MySQL.
 - Sólo Markdown y CHANGELOG: ningún grant, endpoint, migración, base productiva, worker o evento real. A5 independiente, Scope Lock/V5 exact-SHA, rollback documental git revert y sin QA/main/PROD.
 
+
+## 2026-11-14 — V5 C02-04.M02.04: configuración y flags seguros de consola global (contrato) [Javier :00]
+- Define opciones tipadas futuras, ámbitos y precedencia fail-closed frente a configuración real existente de `PlataformaEmpresasController`; no cambia valores de flags, proveedor, appsettings, scopes ni privilegios.
+- Documenta doce invariantes, 4 casos positivos y 14 negativos simbólicos de identidad global, MFA/reauth, TTL, cuotas, no-store, auditoría y kill-switch; no son pruebas ejecutadas ni activaciones de consola.
+- Solo documento y CHANGELOG, con Scope Lock/V5 exact-SHA, BITACORA/PLAN/COLA readback, A5 independiente posterior. Sin código, SQL, JWT/RBAC nuevo, workers, eventos, QA/main/PROD. Rollback git revert normal.
+
