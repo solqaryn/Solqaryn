@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C05-04.M01.05: aceptación observable de ligereza [Javier :00]
+- Define AC01–AC14/N01–N14 como oráculos FUTUROS NO_EJECUTADOS para bundle, Core Web Vitals, preload, HTTP, A/B, JWT/RBAC, ARIA, móvil 320px, privacidad y rollback.
+- Preserva R01–R12, S01–S08 y D01–D08 PENDIENTE de M01.04; no aprueba umbrales CWV ni presupuestos nuevos, coteja ocho blobs de documentación/Angular.
+- Solo dos Markdown en dev, Scope Lock y V5 provenance exact-SHA, A5 distinta y rollback normal; sin código, métricas runtime, eventos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C10-01.M01.04: riesgos y decisiones de storage neutral [Javier :10]
 - Inventaría R01–R12 riesgos potenciales, S01–S08 supuestos falsables y D01–D08 decisiones PENDIENTES de ownership, MIME, tamaño, checksum, TTL, rollback y proveedores; no afirma incidentes probados.
 - Especifica P01–P05/N01–N12 como escenarios FUTUROS NO_EJECUTADOS, exige JWT/RBAC y aislamiento tenant A/B, Cloudinary vigente y R2/Hostinger solo como objetivo condicional.
