@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C12-04.M01.01: alcance de restore y reversión [Javier :20]
+- Define límites de exportación, restore de ensayo, comparación, ventana de cambio y rollback futuros; M01 es únicamente documental, sin conexión a datos productivos.
+- Establece NR01–NR16 de no-regresión y P01–P10/N01–N10 FUTUROS_NO_EJECUTADOS para tenant A/B, JWT/RBAC, checksums, conteos, schema, transacciones y cutover.
+- Solo docs/v5 y CHANGELOG en dev con Scope Lock/V5 exact SHA y A5 independiente pendiente; sin MySQL real, DNS, proveedores, compras, QA/main/PROD.
+
 ## 2026-11-14 — V5 C12-03.M01.05: criterios observables backend/worker [Javier :20]
 - Define AC01–AC16 y N01–N16 para API, tenant A/B, JWT/RBAC, idempotencia, retry, health, DDL único, secret ausente, seguridad y rollback; todos FUTUROS_NO_EJECUTADOS.
 - Registra NF01–NF10 mediciones futuras sin SLO inventado, rutas de evidencia M02–M06 y bloqueo estricto de runtime hasta CI causal exact-SHA.
