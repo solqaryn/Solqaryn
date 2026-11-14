@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C10-03.M01.04: riesgos, supuestos y decisiones de archivos [Javier :00]
+- Clasifica 14 riesgos POTENCIALES, ocho supuestos falsables y ocho decisiones PENDIENTES; no presume cero objetos históricos ni declara vulnerabilidades comprobadas.
+- Define P01–P08/N01–N12 FUTUROS NO_EJECUTADOS para inventario conciliado, tenant A/B, MIME, TTL/replay, retención y rollback.
+- Sólo docs/v5 y CHANGELOG en dev, Scope Lock/V5 exact-SHA y A5 de otra Task Javier; sin R2/DNS, migración real, secretos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C10-03.M01.02: actores y fronteras de inventario de archivos [Javier :00]
 - Define A01–A14, interfaces candidatas I/O01–14 y F01–F09 para inventario de medios y almacenamiento futuro, manteniendo INVENTARIO_DESCONOCIDO distinto de cero acreditado.
 - Documenta P01–P08/N01–N12 FUTUROS NO_EJECUTADOS para tenant A/B, MIME, TTL, retención, reconciliación y rollback; no conecta proveedores ni inventaría datos reales.
