@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C01-02.M02.06 contrato de dependencias y salida capabilities [Javier :10]
+- Concilia seis antecedentes M01.06/M02.01–05 con blobs Git y A5 independiente; define gates causales de arquitectura, seguridad JWT/RBAC/tenant A/B y DAG antes de M03.
+- Cuatro escenarios positivos y dieciseis negativos FUTUROS_NO_EJECUTADOS; no crea permisos, endpoints, tablas MySQL, workers, eventos ni nuevas Tasks.
+- Solo Markdown en dev; Scope Lock/V5 exact SHA y A5 de otra Task Javier requeridos, rollback git revert; sin QA/main/PROD.
+
 ## 2026-11-14 — V5 C13-01.M01.01 privacidad y consentimiento, preparacion [Javier :00]
 - Define alcance de versionado de políticas, consentimiento donde corresponda, revocación y retención sin afirmar obligaciones legales no verificadas o existencia de banner/runtime.
 - Traza cuatro archivos Git y 16 invariantes con cuatro positivos y doce negativos FUTUROS_NO_EJECUTADOS, preservando JWT/RBAC/tenancy y PII.
