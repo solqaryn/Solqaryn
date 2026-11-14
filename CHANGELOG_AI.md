@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C06-02.M01.05: aceptación de landing por tenant [Javier :30]
+- Establece AC01–AC14 positivos y N01–N14 negativos FUTUROS NO_EJECUTADOS para host/slug, JWT/RBAC, preview noindex, tenant A/B, SEO, cache, publicación CAS y rollback.
+- Contrasta M01.01–M01.04 y blobs de router/interceptor/seo-utils; D01–D08 siguen PENDIENTES. No declara pruebas Playwright, HTTP/.NET, MySQL, host binding, DNS/TLS ni seguridad runtime.
+- Dos Markdown en dev con Scope Lock/V5 exact-SHA, PLAN/COLA/BITACORA y A5 independiente; sin cambios de código, eventos, workers, secretos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C06-02.M01.04: riesgos y decisiones landing tenant [Javier :30]
 - Documenta R01–R12 riesgos potenciales, S01–S08 supuestos falsables y D01–D08 decisiones PENDIENTES para host/tenant, preview, noindex, SEO, cache, RBAC, publicación, rollback y DNS/TLS.
 - Contrasta tres documentos de fase y blobs de router, storefront, interceptor y seo-utils; P01–P06/N01–N12 son oráculos FUTUROS NO_EJECUTADOS, no vulnerabilidades ni tests runtime confirmados.
