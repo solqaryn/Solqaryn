@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C08-01.M01.01: alcance y no-regresion reservas y agenda [Javier :00]
+- Delimita citas, horarios, disponibilidad, personal, recursos, cancelaciones, zonas IANA y conflictos de agenda con doce invariantes NR01–NR12; no declara la agenda implementada.
+- Define P01–P08 y N01–N12 FUTUROS NO_EJECUTADOS, incluyendo concurrencia, tenant A/B, DST, idempotencia, privacidad y accesibilidad móvil; ninguna prueba runtime pasa por redactarlos.
+- Solo docs/v5 y CHANGELOG en dev, 60/60 predecesores documentales, DAG VALIDADO/SI; Scope Lock/V5 provenance exact SHA obligatorios, A5 independiente pendiente, sin migraciones, cobros, workers, secretos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C07-04.M01.05: criterios de aceptación pedidos, pagos y documentos [Javier :50]
 - Define 14 escenarios positivos P01–P14 y 14 negativos N01–N14 FUTUROS NO_EJECUTADOS para tenant, idempotencia, stock, facturación, pago, cambio, anulación, PSP, fiscalidad, exportación y reversión.
 - Traza cuatro contratos anteriores M01.01–04 y blobs reales de PedidoVenta, FacturaPago y controladores; las ocho decisiones D01–D08 permanecen PENDIENTES y no se declara certificación transaccional.
