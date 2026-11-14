@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C07-03.M01.01: alcance y no-regresión inventario, compras y operaciones [Javier :40]
+- Define alcance documental y doce invariantes NR01–NR12 para tenant/sucursal/almacén, reservas, transferencias, compras idempotentes, conteos, costeo histórico y conciliación; no cambia existencias ni código.
+- Contrasta diez blobs Git de Domain/API de inventario y compras; P01–P06 y N01–N08 son oráculos FUTUROS NO_EJECUTADOS, no certificación .NET/MySQL, RBAC HTTP o aislamiento A/B runtime.
+- Sólo docs/v5 y CHANGELOG en dev, DAG VALIDADO/SI, Scope Lock y V5 provenance exact-SHA; A5 independiente pendiente, sin migración, workers, pagos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C07-04.M01.04: riesgos y decisiones de pedidos y pagos [Javier :30]
 - Registra doce riesgos R01–R12, ocho supuestos falsables S01–S08 y ocho decisiones D01–D08 PENDIENTES sobre tenant, idempotencia, pagos/cambio, fiscalidad, snapshots y rollback; no identifica fallos confirmados.
 - Traza contratos M01.01–03 y cuatro blobs actuales Domain/API; P01–P06/N01–N14 son oráculos FUTUROS NO_EJECUTADOS y no validación runtime de JWT/MySQL/proveedor.
