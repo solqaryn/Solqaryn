@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-02.M06.01: auditoría de suficiencia causal de pruebas [Javier :10]
+- Se documenta auditoría real de seis pruebas M05.01–06: reglas puras .NET, HTTP TestServer con ruta de prueba, adaptador in-memory, aceptación positiva con flags, guard de autorización con fixtures y Chromium con sesión simulada.
+- El resultado se limita a los contratos efectivamente implementados; NO certifica CAS institucional Sheets, JWT/RBAC live, MySQL, tenant A/B persistido ni despliegues. Se conservan CANCELLED/SKIPPED/IN_PROGRESS como no PASS.
+- Documento docs/v5/c00-02-m06-01-test-sufficiency-audit.md. Cambio sólo documental, con Scope Lock, procedencia V5, readback y A5 independiente; rollback git revert normal, sin QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-02.M05.03: integración del selector y proveedor de estados en memoria [Javier :00]
 - Se añade suite xUnit real que conecta V5WorkItemQueueSelector y V5WorkItemMemoryAdapter, verifica intención sin mutación, claim y replay idempotente, rechazo de competidor y puertas de área/HEAD/DAG.
 - Este provider es exclusivamente in-process y no implementa Sheets CAS, MySQL, JWT ni lease distribuido; no cambia runtime, permisos o infraestructura. CI .NET, seguridad proporcional, CHANGELOG y Scope Lock exact-SHA siguen exigibles; A5 independiente.
