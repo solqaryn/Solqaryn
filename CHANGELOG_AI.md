@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C08-03.M01.04: riesgos, supuestos y decisiones de membresías [Javier :10]
+- Define R01–R14 POTENCIALES, S01–S08 NO_VERIFICADOS y D01–D08 PENDIENTES, sobre evidencias de 12 blobs reales del inventario M01.03.
+- Especifica TP01–TP08/TN01–TN12 FUTUROS NO_EJECUTADOS para JWT/RBAC, tenant A/B, expiración, suspensión, replay e idempotencia, sin certificar gimnasio real.
+- Sólo docs/v5 y CHANGELOG en dev por FF/CAS, Scope Lock y provenance V5 exact-SHA, A5 independiente; sin código, migraciones, hardware, pagos o QA/main/PROD.
+
 ## 2026-11-14 — V5 C08-03.M01.03: inventario de código y evidencias de membresías [Javier :10]
 - Inventario documental de 12 archivos y blobs reales: Cliente, UsuarioEmpresa, Suscripción SaaS, servicios, controladores, Angular y stack .NET/MySQL; no se inventa módulo de gimnasio.
 - Registra H01–H06, G01–G10 y P01–P06/N01–N12 FUTUROS NO_EJECUTADOS para seguridad A/B, expiración, suspensión, idempotencia y auditoría.
