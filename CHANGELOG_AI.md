@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C04-03.M01.02: actores, entradas y superficies de metering [Javier :20]
+- Documenta diez actores y catorce fronteras futuras para medición de usuarios, operaciones, almacenamiento, archivos y proyecciones con tenant resuelto en servidor; conserva blobs reales y límites de evidencia.
+- Establece P01–P05 y N01–N12 como oráculos posteriores no ejecutados: replay, correlación, unidad y corte, conciliación, RBAC y aislamiento A/B.
+- Exclusivamente M01.02 documental: sin API, MySQL, workers, eventos, cobros, QA/main/PROD; Scope Lock/V5 exact-SHA, A5 por otro Javier y rollback git revert ordinario.
+
 ## 2026-11-14 — V5 C04-02.M01.02: actores y superficies contractuales [Javier :30]
 - Delimita ocho actores del ciclo de suscripciones, cinco bordes de entrada/salida SaaS y siete fronteras de confianza, distinguiendo código vigente de cobros y morosidad futuros.
 - Especifica cinco oráculos positivos y diez negativos futuros para aislamiento tenant A/B, JWT/RBAC, idempotencia, suspensión, cancelación, renovación y falla de proveedor; ninguno se declara ejecutado como runtime.
