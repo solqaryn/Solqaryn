@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C04-02.M01.05: aceptación contractual observable [Javier :30]
+- Define catorce criterios AC01–AC14 y negativos N01–N14 para alta, estados, renovación, cancelación, mora, tenant/JWT/RBAC, replay, MySQL, UI accesible, auditoría y release seguro.
+- Distingue oráculos FUTUROS no ejecutados de la evidencia existente Domain/Application/API/EF/xUnit/Angular y mantiene ocho decisiones comerciales sin aprobación ni precios inventados.
+- M01.05 solo documental en dev, Scope Lock/procedencia V5 exact-SHA y A5 independiente; no habilita M01.06/M02, cobros, migraciones, events, workers, QA/main/PROD. Rollback git revert normal.
+
 ## 2026-11-14 — V5 C04-03.M01.04: riesgos y decisiones del metering [Javier :20]
 - Registra R01–R12 riesgos posibles, S01–S08 supuestos falsables y D01–D08 decisiones PENDIENTE con rol de aprobador futuro; no aprueba cuotas, retención, facturación o políticas.
 - Diferencia ledger idempotente de onboarding, límites PlanLimite y UI de cualquier medidor real; cuatro P/ocho N documentales no ejecutados, sin falsas vulnerabilidades A/B confirmadas.
