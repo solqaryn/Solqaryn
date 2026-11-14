@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C07-04.M01.02: actores y fronteras de pedidos, pagos y documentos [Javier :30]
+- Inventaría doce actores A01–A12, doce interfaces I01–I12 y ocho fronteras B01–B08 de cotizaciones, pedidos, ventas, facturas, pagos online y emisión fiscal, con alcance por tenant y permisos backend.
+- Contrasta seis controladores y blobs Git; P01–P08/N01–N14 son oráculos FUTUROS NO_EJECUTADOS, no ejecución .NET/EF/MySQL, pagos, fiscal ni autorización productiva.
+- Solo docs/v5 y CHANGELOG en dev; DAG VALIDADO/SI, Scope Lock y V5 provenance en SHA exacto, A5 de otra Task Javier; sin API/Angular, JWT/RBAC, migraciones, secretos, trabajadores ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C07-04.M01.01: alcance y no-regresión de pedidos, pagos y documentos [Javier :30]
 - Define frontera documental de cotizaciones, pedidos, ventas, facturas, cobros, caja y comprobantes; NR01–NR12 de aislamiento tenant, EmpresaId NULL, idempotencia, snapshots, conciliación, autorización, reversión y concurrencia.
 - Contrasta seis blobs reales de Domain/API; P01–P06 y N01–N14 son oráculos FUTUROS NO_EJECUTADOS, sin afirmar certificación HTTP/EF/MySQL, pagos, fiscalidad ni stock real.
