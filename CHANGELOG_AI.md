@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C01-02.M02.01 modelo conceptual de capabilities y ownership [Javier :40]
+- Define entidades conceptuales DefinicionCapacidad, ReglaCapacidadPlan, AsignacionPlanEmpresa y RestriccionCapacidadRecurso; intersecta membresía verificada, grants RBAC, filtro comercial y propiedad de recurso sin conceder permisos por plan ni rol legacy.
+- Diez invariantes de denegación tenant A/B, rol, ownership, caducidad y auditoría; tres escenarios positivos y ocho negativos documentales NO_EJECUTADOS, con fuentes Git exactas.
+- Solo documentación M02.01 y CHANGELOG en dev; sin entidades EF, migraciones MySQL, endpoint, JWT real, workers, webhooks, cobros, QA/main/PROD. A0–A4 documentales y A5 independiente posterior; rollback git revert ordinario.
+
 ## 2026-11-14 — V5 C12-04.M01.05: criterios de aceptación MySQL/cutover [Javier :30]
 - Define AC01–AC16 positivos y N01–N16 negativos, más NF01–NF10 de tenant A/B, JWT/RBAC, hash, FK, DDL único, idempotencia, readiness, freeze, rollback y redacción de secretos; todos FUTUROS_NO_EJECUTADOS.
 - Traza NR01–NR16, G01–G14, R01–R14 y D01–D10 a gates de M02–M06, sin afirmar RPO/RTO, volúmenes, checksums de datos ni restore reales.
