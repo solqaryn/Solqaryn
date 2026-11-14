@@ -1492,3 +1492,8 @@
 - Delimita builder FUTURO de páginas/secciones configurables con catálogo allowlisted de componentes/campos, sin HTML/JS/SQL ejecutable, URLs peligrosas, payloads excesivos ni bypass JWT/RBAC/tenant.
 - Coteja seis blobs reales Angular/SCSS/API de tema y rutas; NR01–NR12, P01–P05 y N01–N12 son contratos de no-regresión y pruebas FUTURAS NO_EJECUTADAS, no una implementación de builder.
 - Solo Markdown/CHANGELOG dev; A0–A3 documentales, A4 Scope Lock/V5 exact SHA y readback, A5 revisión independiente, rollback git revert, sin QA/main/PROD ni cambios ejecutables.
+
+## 2026-11-14 — V5 C10-01.M01.02: actores y fronteras de storage neutral [Javier :30]
+- Documenta doce actores/superficies y doce interfaces futuras de upload, descarga, exportación, metadatos, revocación, auditoría, verificación MIME/size/checksum y migración reversible; NO implementa endpoints, SDK ni buckets.
+- Registra P01–P05/N01–N12 como oráculos futuros NO_EJECUTADOS, con rechazo cross-tenant, JWT/RBAC backend, control de URL temporal, seguridad de PII y fallos sin objeto parcial.
+- Solo documento y CHANGELOG, con Scope Lock/V5 provenance exact-SHA, readback PLAN/COLA/BITACORA y A5 independiente posterior. Cloudinary sigue vigente; R2/Hostinger objetivo no activado, sin QA/main/PROD.
