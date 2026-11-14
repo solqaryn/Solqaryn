@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C03-03.M01.06: puertas de auditoría de seguridad documental [Javier :20]
+- Cierra únicamente la definición M01 de bloqueo, rollback y salida para auditoría de autorización/denegación con cinco documentos M01 y C02-04.M01.06 LISTO/A5; conserva R01–R14 y AU01–AU16 como pendientes de evidencia runtime.
+- Establece G01–G07, cuatro oráculos P y doce negativos N: aislamiento tenant A/B, permisos backend, correlación segura, minimización de secretos, falla DB, idempotencia, retención y revisión independiente.
+- No implementa ni certifica auditoría HTTP/MySQL/EF, JWT/RBAC, MFA, retención, workers, eventos, QA/main/PROD; A0–A4 documentales y Scope Lock/V5 exact-SHA, A5 de otra Task Javier, rollback git revert normal.
+
 ## 2026-11-14 — V5 C04-01.M01.05: criterios observables del catálogo SaaS [Javier :10]
 - Define 14 criterios AC con respectivos negativos N01–N14 para versión inmutable, límites, tarifas aprobadas, A/B tenant, JWT/RBAC, replay, integridad MySQL, API, UI, privacidad y gate CI exact-SHA.
 - AC/N son contratos futuros y NO pruebas runtime ejecutadas; no inventa precios, monedas, impuestos, autorización comercial, migraciones, workers o cobros.
