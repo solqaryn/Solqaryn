@@ -1,0 +1,7 @@
+# SOLQARYN V5 — C00-03.M05.05: regresion negativa de seguridad y aislamiento
+
+Resultado exigido: ejecutar casos negativos de seguridad, aislamiento o abuso sobre la matriz V5 integrada. La suite `V5C0003M0505CoverageIsolationTests` usa la clase real `V5CoverageTenantProjectionService` de Application. Ejecuta un caso positivo de lectura y 11 escenarios negativos de actor revocado/desconocido, scope ajeno, tenant cruzado, casing distinto, y bindings de work item o requisito ausentes/ajenos. Cada rechazo verifica codigo acotado, cero filas y ausencia de secreto privado en el codigo; el positivo conserva `EVIDENCE_NOT_VERIFIED` incluso cuando la fuente indica LISTO.
+
+Clasificacion: require_dotnet=SI (xUnit .NET 10); require_node_angular=NO (no frontend); require_mysql=NO (sin persistencia); require_docker=NO; require_e2e=NO (sin navegador); require_security=SI (guard de contexto y denegaciones); require_scope_lock=SI. Pruebas requeridas: build/test .NET, suite de seguridad multiempresa, verificador de procedencia y Scope Lock en el SHA publicado. Los resultados se acreditan solo con check-runs reales de dicho SHA.
+
+Limites: fixtures de snapshots confiables creadas en el test, no autenticacion JWT/RBAC live, no autorizacion desde HTTP, no MySQL, no cas de Google Sheets, no promocion de A5 ni despliegue. No se altera el servicio productivo, el esquema o el modelo de tenencia. Rollback: git revert normal del commit sobre dev, sin reescritura de historia.

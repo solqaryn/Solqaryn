@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-03.M05.05: negativos de aislamiento de cobertura [Javier :30]
+- Se incorpora xUnit .NET 10 sobre V5CoverageTenantProjectionService: un positivo sin certificacion ficticia y 11 rechazos dirigidos de actor, tenant, scope, item y requisito; ningun cambio de API o persistencia.
+- El contrato no prueba JWT/MySQL live, no escribe Sheet ni otorga A5. Requiere CI .NET, seguridad y Scope Lock exact-SHA; rollback por git revert ordinario.
+
 ## 2026-11-13 — V5 C00-03.M05.02: contrato HTTP de cobertura y errores seguros [Javier :20]
 - Se agrega suite xUnit TestServer del servicio real V5CoverageTenantProjectionService y middleware productivo; HTTP 200 conserva DTO y EVIDENCE_NOT_VERIFIED; 400 rechaza actor, tenant, SHA o requisito invalido sin filtracion.
 - Ruta exclusiva de tests, no API publicada ni autenticacion JWT live/MySQL/Sheets/A5; se exige .NET CI y Scope Lock exact-SHA, provenance y A5 por otra Task Javier.
