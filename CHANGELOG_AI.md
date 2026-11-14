@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C01-03.M02.06 salida contractual de configuración dinámica [Javier :00]
+- Concilia los seis contratos M01.06/M02.01-05 con blobs Git exactos y delimita gates por fase, capas, tenant A/B, JWT/RBAC y versión; sin asumir implementación.
+- Documenta cuatro casos positivos y doce negativos FUTUROS_NO_EJECUTADOS, idempotencia/correlación teóricas y NO activación de eventos, workers, API, MySQL ni despliegues.
+- Entrega sólo Markdown en dev, Scope Lock/V5 exact-SHA, A5 de otra Task Javier y rollback git revert normal; sin QA/main/PROD.
+
 ## 2026-11-14 — V5 C01-02.M02.05 eventos e idempotencia conceptual de capabilities [Javier :50]
 - Especifica envelope versionado, correlacion opaca e idempotencia tenant+actor con commit transaccional FUTURO; sin despacho de eventos, webhooks ni Tasks.
 - Contrasta nueve fuentes Git y documenta 4 positivos/16 negativos FUTUROS_NO_EJECUTADOS sobre JWT/RBAC, revocacion, plan y aislamiento A/B.
