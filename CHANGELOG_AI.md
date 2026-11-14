@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C04-02.M01.04: riesgos y decisiones contractuales [Javier :30]
+- Documenta doce riesgos R01–R12, ocho supuestos S01–S08 y ocho decisiones D01–D08 pendientes sobre renovación, mora, cancelación, factura y autoridad económica, sin aprobar reglas financieras.
+- Cinco verificaciones documentales y diez negativos futuros delimitan aislamiento tenant A/B, JWT/RBAC, replay, rollback, MySQL, UI, CI y A5; no atribuyen pruebas runtime.
+- M01.04 exclusivamente en dev, exact-SHA Scope Lock/procedencia V5 y A5 independiente; sin cobros, migraciones, callbacks, workers, nuevas Tasks, QA/main/PROD. Revert normal no destructivo.
+
 ## 2026-11-14 — V5 C04-03.M01.03: inventario de codigo y evidencia metering [Javier :20]
 - Inspección autenticada de once blobs Domain/Application/DTO/API/EF/repository/tests/Angular/documentos V5, diferenciando límites y ledger de onboarding del metering futuro no acreditado.
 - Identifica seis brechas y cinco escenarios P/doce N documentales no ejecutados: replay por consumo, tenant A/B, unidad/periodo, conciliación, privacidad y persistencia.
