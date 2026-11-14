@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C00-04.M02.01: entidades, ownership e invariantes del gobierno de cambios [Javier :10]
+- Documento contractual `docs/v5/c00-04-m02-01-entidades-ownership-invariantes.md`: define nueve entidades lógicas de gobierno, diez invariantes y relaciones de decisión, autorización, owner, riesgo, auditoría y rollback; no crea tablas, DTO, API ni automatizaciones.
+- Entrada causal: seis `C00-04.M01.01–06` LISTO con A5 correctiva/independiente, DAG145 `VALIDADO/SI`; propiedad exclusiva `C00-04.M02.01`, sin liberar M02.02–06, IAM, JWT/RBAC, migraciones ni QA/main/PROD por inferencia.
+- Verificación documental A0–A4, Scope Lock y control V5 de procedencia sobre SHA exacto de publicación; `A5_PENDIENTE` hasta revisor Javier distinto, BITACORA A:Z append-only, rollback por revert ordinario.
+
 ## 2026-11-14 — V5 C01-01.M03.01: invariantes de identidad universal tenant-aware [Javier :00]
 - Código real de Domain en `backend/src/Domain/Security/IdentidadUniversalReglas.cs`: usuario/empresa activos, membresía vigente y rol empresarial asignable, sin grants por `Usuario.RolId` legacy, rol de plataforma o tenant B; sucursal exige propietario verificable y estado habilitado.
 - Suite xUnit `IdentidadUniversalReglasTests.cs` con positivos y negativos de tenant A/B, revocación, roles, empresa, usuario bloqueado y sucursal sin owner. El guard puro no reemplaza JWT/RBAC ni middleware API, no ejecuta migraciones MySQL ni incorpora endpoints, Angular o eventos.
