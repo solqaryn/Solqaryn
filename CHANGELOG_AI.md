@@ -1,3 +1,9 @@
+## 2026-11-13 — V5 C00-03.M04.03: branding permitido y contraste local [Javier :00]
+- La matriz privada de cobertura muestra identidad oficial y ofrece un control de alto contraste accesible con dos estados tipados y limitados al mat-card de cobertura; sin configuracion CSS libre, nuevo endpoint o cambio de tema de otra empresa.
+- Angular usa los tokens globales seguros para modo normal y una paleta local de contraste alto; entradas query/tenant no gobiernan el switch y no crean datos de cobertura, grants ni operacion de escritura.
+- Playwright Chromium suma dos casos de alternancia permitida y rechazo de parametros de visualizacion no confiables; Angular lint/build, V5 provenance y Scope Lock requieren checks reales del SHA publicado. .NET, MySQL y Docker no aplican al diff UI.
+- A5 pendiente de Task Javier independiente; rollback git revert normal; no QA/main/PROD, ramas ni PR.
+
 ## 2026-11-13 — V5 C00-03.M04.02: estados de cobertura privada y permisos [Javier :00]
 - La ruta protegida de cobertura distingue permiso confirmado, vacio institucional honesto, revalidacion en curso y denegacion/error generico sin divulgar respuestas del servidor.
 - Reutiliza exclusivamente el GET de sesion global existente; no carga ni simula datos institucionales de cobertura y no concede JWT/RBAC ni operaciones de escritura.

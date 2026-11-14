@@ -108,7 +108,7 @@ import { PlataformaGestionMvpComponent } from './plataforma-gestion-mvp.componen
           </mat-card>
 
         } @else if (vistaCoberturaV5) {
-          <mat-card class="v5-card" aria-labelledby="cobertura-v5-title">
+          <mat-card class="v5-card" [class.v5-coverage-contrast]="contrasteCobertura()" aria-labelledby="cobertura-v5-title">
             <mat-card-content>
               <div class="v5-overview">
                 <div>
@@ -117,6 +117,13 @@ import { PlataformaGestionMvpComponent } from './plataforma-gestion-mvp.componen
                   <p>El contrato conecta requisitos, microtareas, pruebas y evidencia. No hay datos de cobertura en vivo conectados a esta pantalla.</p>
                 </div>
                 <span class="v5-readonly"><mat-icon aria-hidden="true">lock_outline</mat-icon> Sin escritura</span>
+              </div>
+              <div class="v5-coverage-branding" role="group" aria-label="Presentación visual de la matriz">
+                <span class="v5-brand-mark"><mat-icon aria-hidden="true">verified</mat-icon> Identidad SOLQARYN</span>
+                <button mat-stroked-button type="button" (click)="contrasteCobertura.update(value => !value)"
+                        [attr.aria-pressed]="contrasteCobertura()" aria-label="Alto contraste de cobertura">
+                  <mat-icon aria-hidden="true">contrast</mat-icon> Alto contraste
+                </button>
               </div>
               <div class="v5-coverage-scroll" role="region" aria-label="Columnas del contrato de cobertura" tabindex="0">
                 <table class="v5-coverage">
@@ -260,6 +267,19 @@ import { PlataformaGestionMvpComponent } from './plataforma-gestion-mvp.componen
     .v5-boundary { display: flex; align-items: flex-start; gap: 10px; margin: 24px 0 0; padding: 14px; border-radius: 10px; background: var(--color-background, #f5f7fa); font-size: .9rem; }
     .v5-boundary mat-icon { flex: 0 0 24px; }
     @media (max-width: 760px) { .v5-steps { grid-template-columns: 1fr; } }
+    .v5-coverage-branding { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 20px; }
+    .v5-brand-mark { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; color: var(--color-primary, #165da0); }
+    .v5-brand-mark mat-icon { width: 20px; height: 20px; font-size: 20px; }
+    .v5-coverage-branding button { min-height: 44px; }
+    .v5-coverage-contrast { background-color: #0b1220; color: #f8fafc; }
+    .v5-coverage-contrast .v5-kicker, .v5-coverage-contrast .v5-brand-mark { color: #b7e2ff; }
+    .v5-coverage-contrast .v5-readonly { background-color: #334155; color: #f8fafc; }
+    .v5-coverage-contrast .v5-coverage-scroll { border-color: #94a3b8; }
+    .v5-coverage-contrast .v5-coverage th { background-color: #1e293b; color: #f8fafc; border-color: #64748b; }
+    .v5-coverage-contrast .v5-coverage td { color: #f8fafc; border-color: #64748b; }
+    .v5-coverage-contrast .v5-coverage .v5-empty { color: #e2e8f0; }
+    .v5-coverage-contrast .v5-boundary { background-color: #1e293b; color: #f8fafc; }
+    .v5-coverage-contrast .v5-coverage-branding button { color: #f8fafc; border-color: #94a3b8; }
     .v5-coverage-scroll { max-width: 100%; overflow: auto; margin-top: 24px; border: 1px solid #dfe5ec; border-radius: 12px; }
     .v5-coverage { min-width: 650px; width: 100%; border-collapse: collapse; }
     .v5-coverage th, .v5-coverage td { padding: 16px; text-align: left; border-bottom: 1px solid #dfe5ec; }
@@ -289,6 +309,8 @@ export class PlataformaComponent {
   private readonly plataforma = inject(PlataformaSesionService);
   private readonly empresasApi = inject(PlataformaEmpresasService);
   readonly sesion = this.plataforma.sesion;
+  // Preferencia visual local con dos estados permitidos; no recibe CSS del cliente ni altera otros tenants.
+  readonly contrasteCobertura = signal(false);
   readonly validando = signal(false);
   readonly error = signal<string | null>(null);
   readonly directorio = signal<DirectorioPlataforma | null>(null);

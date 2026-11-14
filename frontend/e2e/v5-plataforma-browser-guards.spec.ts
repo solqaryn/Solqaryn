@@ -338,3 +338,39 @@ test.describe('C00-03.M04.02 - estados seguros de cobertura V5', () => {
     await expect(page.getByText('Identidad de plataforma verificada')).toHaveCount(0);
   });
 });
+
+
+test.describe('C00-03.M04.03 - identidad y contraste permitido de cobertura', () => {
+  test.describe.configure({ retries: 0 });
+
+  test('branding oficial mantiene tabla vacia y alterna modo de alto contraste solo en cobertura', async ({ page }) => {
+    await syntheticToken(page);
+    await mockPlatformSession(page, true);
+    await page.goto('/plataforma/cobertura-v5');
+    const button = page.getByRole('button', { name: 'Alto contraste de cobertura' });
+    const card = page.locator('.v5-card');
+    await expect(page.getByText('Identidad SOLQARYN')).toBeVisible();
+    await expect(button).toHaveAttribute('aria-pressed', 'false');
+    await expect(card).not.toHaveClass(/v5-coverage-contrast/);
+    await button.click();
+    await expect(button).toHaveAttribute('aria-pressed', 'true');
+    await expect(card).toHaveClass(/v5-coverage-contrast/);
+    await expect(card).toHaveCSS('background-color', 'rgb(11, 18, 32)');
+    await expect(page.getByRole('columnheader')).toHaveCount(5);
+    await expect(page.getByText('Sin datos de cobertura verificados', { exact: false })).toBeVisible();
+    await button.click();
+    await expect(button).toHaveAttribute('aria-pressed', 'false');
+    await expect(card).not.toHaveClass(/v5-coverage-contrast/);
+  });
+
+  test('query no confiable no concede temas ni inyecta componentes en el DOM', async ({ page }) => {
+    await syntheticToken(page);
+    await mockPlatformSession(page, true);
+    await page.goto('/plataforma/cobertura-v5?tema=javascript%3Aalert%281%29&contraste=true');
+    await expect(page.getByRole('button', { name: 'Alto contraste de cobertura' })).toHaveAttribute('aria-pressed', 'false');
+    await expect(page.locator('.v5-card')).not.toHaveClass(/v5-coverage-contrast/);
+    await expect(page.getByText('Sin datos de cobertura verificados', { exact: false })).toBeVisible();
+    await expect(page.locator('.v5-coverage tbody tr')).toHaveCount(1);
+    await expect(page.locator('form, input, textarea, select')).toHaveCount(0);
+  });
+});
