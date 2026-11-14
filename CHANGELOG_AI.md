@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C08-02.M01.04: riesgos, supuestos y decisiones de mesas/QR [Javier :50]
+- Documenta catorce riesgos R01–R14, ocho supuestos falsables S01–S08 y ocho decisiones D01–D08 PENDIENTES para mesa ajena, QR falso, tenant A/B, idempotencia, cierre y consistencia comercial.
+- Define TP01–TP08 positivos/negativos FUTUROS NO_EJECUTADOS; hipótesis no significan bugs certificados ni PASS de .NET/Angular/MySQL/Playwright.
+- Sólo docs/v5 y CHANGELOG en dev, Scope Lock y procedencia V5 exact-SHA obligatorios, A5 pendiente de otra Task Javier, rollback normal; sin pagos, eventos, migraciones, QA/main/PROD.
+
 ## 2026-11-14 — V5 C10-02.M01.05: aceptación observable R2 y dominios [Javier :00]
 - Define AC01–AC14 con P01–P14 y N01–N14 FUTUROS NO_EJECUTADOS para tenant A/B, JWT/RBAC, firma/TTL, replay, caché, MIME, retención y rollback.
 - Establece fixtures F01–F06, NFR01–NFR08 y trazabilidad a los cuatro documentos M01 previos; no ejecuta tests ni habilita R2/DNS/migración.
