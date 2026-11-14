@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C13-02.M01.03 inventario codigo de accesibilidad [Javier :20]
+- Inventaria doce fuentes Git exactas de Angular, guards, Playwright, Vitest, SCSS y contratos; no confunde archivo de test con ejecucion o cumplimiento WCAG.
+- Registra catorce brechas de evidencia B01–B14 y ocho pares P/N FUTUROS_NO_EJECUTADOS de teclado, foco, formularios, contraste, reflow, semantica y tenant A/B.
+- Solo dos Markdown en dev, Scope Lock/V5 exact SHA y A5 independiente; sin nuevos componentes, backend, MySQL, eventos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C13-03.M01.01 alcance y no-regresion de rendimiento [Javier :30]
 - Define rendimiento y ligereza con 14 invariantes, 4 positivos y 12 negativos FUTUROS_NO_EJECUTADOS; exige baseline SHA/device/red/cache antes de cualquier metrica PASS.
 - Contrasta blobs Git de angular.json, package, rutas lazy, politica bundle, Playwright y C05-04/C12-02; mantiene budget 650/750kB como configuracion, no resultado medido.
