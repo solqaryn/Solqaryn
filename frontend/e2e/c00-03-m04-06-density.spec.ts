@@ -86,3 +86,51 @@ test.describe('C00-03.M04.06 - densidad y progreso seguro cobertura V5', () => {
     expect(requests).toEqual(['GET']);
   });
 });
+
+test.describe('C00-03.M05.06 - regresion responsive, rendimiento y accesibilidad V5', () => {
+  test.describe.configure({ retries: 0 });
+
+  test('navegacion visible con presupuesto local, teclado y dos viewports sin llamadas institucionales', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 });
+    await tokenLocal(page);
+    await allowMockSession(page);
+    const forbidden: string[] = [];
+    await page.route(/\/(?:plan-maestro|bitacora|cola|v5\/claims)(?:\/|\?|$)/i, route => {
+      forbidden.push(route.request().url());
+      return route.abort();
+    });
+    const startedAt = Date.now();
+    await page.goto('/plataforma/cobertura-v5');
+    await expect(page.getByRole('heading', { name: 'Cadena de trazabilidad' })).toBeVisible();
+    expect(Date.now() - startedAt).toBeLessThan(25000);
+    const navigation = await page.evaluate(() => {
+      const entry = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+      return entry?.domContentLoadedEventEnd ?? -1;
+    });
+    expect(navigation).toBeGreaterThan(0);
+    expect(navigation).toBeLessThan(25000);
+
+    const region = page.getByRole('region', { name: 'Columnas del contrato de cobertura' });
+    await expect(region).toBeVisible();
+    await expect(page.getByRole('columnheader')).toHaveCount(5);
+    await region.focus();
+    await expect(region).toBeFocused();
+    await page.keyboard.press('ArrowRight');
+    await expect.poll(() => region.evaluate(el => el.scrollLeft)).toBeGreaterThan(0);
+
+    for (const width of [390, 1280]) {
+      await page.setViewportSize({ width, height: 844 });
+      const overflow = await page.evaluate(() =>
+        Math.max(document.body.scrollWidth, document.documentElement.scrollWidth) - window.innerWidth);
+      expect(overflow).toBeLessThanOrEqual(1);
+    }
+    expect(forbidden).toEqual([]);
+  });
+
+  test('sin token ni autorizacion previa permanece denegada la cobertura', async ({ page }) => {
+    await page.goto('/plataforma/cobertura-v5');
+    await expect(page).toHaveURL(/\/login(?:\?|$)/);
+    await expect(page.getByRole('heading', { name: 'Cadena de trazabilidad' })).toHaveCount(0);
+    await expect(page.getByRole('table')).toHaveCount(0);
+  });
+});

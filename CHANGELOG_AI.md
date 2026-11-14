@@ -1,3 +1,7 @@
+## 2026-11-13 — V5 C00-03.M05.06: regresion y accesibilidad de cobertura [Javier :30]
+- Se amplian pruebas Chromium reales de la ruta Angular V5 con dos casos dirigidos: presupuesto de carga, no overflow 390/1280, tabla y scroll de teclado, ausencia de llamadas institucionales, y denegacion sin token.
+- Solo tests de interfaz con sesion simulada, no JWT, MySQL ni certificacion A5 live; require_node_angular/e2e/seguridad/Scope Lock, rollback por git revert normal.
+
 ## 2026-11-13 — V5 C00-03.M05.05: negativos de aislamiento de cobertura [Javier :30]
 - Se incorpora xUnit .NET 10 sobre V5CoverageTenantProjectionService: un positivo sin certificacion ficticia y 11 rechazos dirigidos de actor, tenant, scope, item y requisito; ningun cambio de API o persistencia.
 - El contrato no prueba JWT/MySQL live, no escribe Sheet ni otorga A5. Requiere CI .NET, seguridad y Scope Lock exact-SHA; rollback por git revert ordinario.
