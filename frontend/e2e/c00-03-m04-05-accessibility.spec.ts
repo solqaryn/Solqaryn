@@ -122,4 +122,33 @@ test.describe('C00-03.M04.05 - accesibilidad de cobertura V5 con Chromium real',
     });
     expect(ratio).toBeGreaterThanOrEqual(4.5);
   });
+  test('C00-03.M05.04 - aceptacion positiva de cobertura sin escritura ni certificacion ficticia', async ({ page }) => {
+    await page.setViewportSize({ width: 1280, height: 800 });
+    await tokenDePrueba(page);
+    const respuestas = await simularSesion(page, true);
+    const forbidden: string[] = [];
+    await page.route(/\/(?:v5\/claims|plan-maestro|bitacora|cola)(?:\/|\?|$)/i, route => {
+      forbidden.push(route.request().url());
+      return route.abort();
+    });
+
+    await page.goto('/plataforma/cobertura-v5');
+    await expect(page.getByRole('heading', { name: 'Cadena de trazabilidad' })).toBeVisible();
+    await expect(page.getByRole('table')).toHaveCount(1);
+    await expect(page.getByRole('columnheader')).toHaveCount(5);
+    await expect(page.getByText('Sin datos de cobertura verificados', { exact: false })).toBeVisible();
+    await expect(page.getByRole('status').filter({ hasText: 'Permiso de consulta confirmado' })).toBeVisible();
+
+    const beforeRefresh = respuestas.length;
+    const refresh = page.getByRole('button', { name: /Revalidar sesión/ });
+    await expect(refresh).toBeEnabled();
+    await refresh.click();
+    await expect.poll(() => respuestas.length).toBeGreaterThan(beforeRefresh);
+    await expect(page.getByRole('status').filter({ hasText: 'Permiso de consulta confirmado' })).toBeVisible();
+    await expect(page.getByRole('table')).toHaveCount(1);
+    await expect(page.getByText('Sin datos de cobertura verificados', { exact: false })).toBeVisible();
+    expect(forbidden).toEqual([]);
+    expect(respuestas.every(status => status === 200)).toBe(true);
+  });
+
 });

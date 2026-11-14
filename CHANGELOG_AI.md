@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-03.M05.04: aceptación positiva de cobertura V5 en Chromium [Javier :00]
+- Se amplía la suite Playwright de cobertura V5 con aceptación positiva real de navegador: sesión simulada 200, tabla de cinco columnas, estado sin datos verificados y revalidación explícita sin escritura a PLAN_MAESTRO, COLA, BITACORA ni claims.
+- La autenticación usada en este test es deliberadamente sintética y no acredita JWT/RBAC, MySQL ni datos entre empresas. La experiencia conserva controles de lectura sin certificar estados institucionales.
+- Requiere Angular lint/build y Chromium/Playwright en el workflow V5 de browser exact-SHA, Scope Lock y procedencia CHANGELOG. A5 por otra Task Javier; sin QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-03.M05.01: pruebas unitarias de reglas de cobertura [Javier :00]
 - Se incorpora la suite xUnit real V5CoverageM05RuleRegressionTests para estados PENDIENTE/EN_PROGRESO/VALIDANDO/LISTO, cobertura de catálogo, duplicados, falta de evidencia, SHA movido, resultado exigido vacío e identidad de snapshot inconsistente.
 - Los negativos fallan de forma cerrada y no producen filas parciales; LISTO no equivale a A5_PASS ni a evidencia causal verificada. Sólo se prueban reglas puras Application/Domain; no se simulan HTTP, autenticación JWT, MySQL, navegador ni revisión A5.
