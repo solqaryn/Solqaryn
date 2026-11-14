@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C01-02.M02.05 eventos e idempotencia conceptual de capabilities [Javier :50]
+- Especifica envelope versionado, correlacion opaca e idempotencia tenant+actor con commit transaccional FUTURO; sin despacho de eventos, webhooks ni Tasks.
+- Contrasta nueve fuentes Git y documenta 4 positivos/16 negativos FUTUROS_NO_EJECUTADOS sobre JWT/RBAC, revocacion, plan y aislamiento A/B.
+- Solo documento y CHANGELOG en dev; Scope Lock/V5 exact SHA y A5 independiente requeridos; sin runtime, MySQL/QA/main/PROD ni compras.
+
 ## 2026-11-14 — V5 C01-02.M02.04 configuracion tipada y flags de capabilities [Javier :50]
 - Contrasta diez fuentes Git (FeatureFlagsSaaS, ConfigEmpresa/EF, DTO y contratos M02); define límites plan/rubro/tenant/sucursal/recurso sin duplicar RBAC.
 - Diseña tipado, defaults DENY, versionado/revocación y 4 positivos/14 negativos FUTUROS_NO_EJECUTADOS; no crea permisos, endpoints, flags, tablas o servicios.
