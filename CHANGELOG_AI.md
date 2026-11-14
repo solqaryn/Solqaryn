@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C09-03.M01.03: inventario de codigo y brechas Social Hub/campanas [Javier :10]
+- Contrasta 14 rutas y blobs reales de Domain/Application/API/Infrastructure/Angular (Cliente, UsuarioEmpresa, Tenant, ClienteService, Outbox, SMTP, auditoria y guards), delimitando hechos y capacidad futura no acreditada.
+- Trazabilidad de M01.01/.02 y CRM/mensajería; G01-G14 preguntas de evidencia y P01-P04/N01-N08 FUTUROS_NO_EJECUTADOS con tenant A/B, JWT/RBAC, opt-out, replay y privacidad; no declara defectos ni PASS runtime.
+- Solo docs/v5 y CHANGELOG por fast-forward CAS, checks Scope Lock/V5 exact SHA; A5 pendiente, sin envío, eventos, workers, migraciones, secretos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C09-03.M01.02: actores e interfaces Social Hub/campanas [Javier :10]
 - Documenta A01-A14 actores conceptuales, I01-I14 entradas/salidas propuestas y F01-F10 fronteras para campañas, contenidos, calendarios, consentimiento, opt-out, métricas y aislamiento tenant, sin crear roles o endpoints live.
 - Traza los blobs de C09-03.M01.01, Cliente, UsuarioEmpresa, MensajeOutbox, Auditoria y guard Angular; P01-P04/N01-N08 quedan FUTUROS_NO_EJECUTADOS, sin atribuir PASS runtime.
