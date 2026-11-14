@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C10-04.M01.04: riesgos, supuestos y decisiones cache/jobs/backups [Javier :40]
+- Registra R01–R16 como riesgos POTENCIALES, S01–S10 NO_VERIFICADOS y D01–D10 PENDIENTES, con controles tenant A/B, JWT/RBAC, idempotencia, reintentos, cifrado, restauración, exportación y PII.
+- Traza blobs reales de caché, OutboxRetryProcessor, worker Cloudinary DEV opt-in y documentos M01 previos; P01–P08/N01–N12 son FUTUROS_NO_EJECUTADOS, no defectos ni pruebas confirmados.
+- Solo Markdown y CHANGELOG en dev, A5 independiente pendiente; no backups, cambios MySQL, dispatcher entre Tasks, proveedores, secretos, QA/main/PROD ni migración.
+
 ## 2026-11-14 — V5 C10-04.M01.03: inventario de fuentes de cache, jobs, backups y exportaciones [Javier :40]
 - Inspecciona diez rutas fuente con blobs Git exactos de PublicStoreCache, OutboxRetryProcessor, cache HTTP, xUnit y Cloudinary DEV opt-in, distinguiendo código existente de ejecución certificada.
 - Clasifica G01–G12 como brechas de EVIDENCIA, no bugs confirmados; oráculos P01–P08/N01–N12 FUTUROS_NO_EJECUTADOS. Mantiene histórico de archivos NO_VERIFICADO, no cero.
