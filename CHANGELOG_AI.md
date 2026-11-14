@@ -1269,3 +1269,8 @@
 - Cuatro positivos y doce negativos diseñados de cross-tenant, revocación, inyección, scopes, concurrencia y flags reservados, sin implementar API, BD, Angular, workers, eventos ni privilegios.
 - A0–A4 documentales supeditadas a Scope Lock y CHANGELOG V5 exact-SHA, readback institucional, A5 pendiente de otra Task Javier; no QA/main/PROD. Rollback git revert normal.
 
+## 2026-11-14 — SOLQARYN V5 C02-01.M02.02 contrato API, DTO, errores y compatibilidad tenant [Javier :40]
+- Define comportamiento de rutas tenant-context existentes y DTO/host-resolution futuros sin implementarlos; 12 validaciones V01-V12, cuatro positivos y doce negativos documentales de JWT, membresía, RBAC, aislamiento A/B, spoofing y errores seguros.
+- Contrato M02 documental con fuente de tres blobs de código observados y gate institucional por ID; no crea API, migraciones, permisos, JWT, workers, eventos, cuentas o datos productivos.
+- A0-A4 documentales sujetos a Scope Lock/V5 provenance SHA exacto y BITACORA/PLAN/COLA readback; A5 pendiente de otra Task Javier. Sin QA/main/PROD, rollback git revert normal.
+
