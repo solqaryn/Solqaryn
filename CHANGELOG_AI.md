@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C09-01.M01.02: actores e interfaces de CRM universal [Javier :40]
+- Mapea A01–A14 actores, I01–I12 interfaces y F01–F09 fronteras futuras para CRM, con fuente M01.01 y cinco blobs reales de Domain y Angular; no acredita CRM operativo.
+- Documenta P01–P08/N01–N12 FUTUROS_NO_EJECUTADOS para tenant A/B, RBAC, PII, ownership NULL, replay, consentimiento y exportación segura sin atribuir PASS runtime.
+- Sólo docs/v5 y CHANGELOG en dev, FF/CAS Scope Lock/V5 provenance exact-SHA, A5 por Task independiente; sin mensajes, jobs, migraciones, secretos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C09-01.M01.01: alcance y no-regresion de CRM universal [Javier :40]
 - Delimita ficha, timeline, segmentos, oportunidades y actividades por Empresa reutilizando Cliente/UsuarioEmpresa; contrasta cinco blobs reales en Domain y Angular sin afirmar CRM funcional.
 - Define NR01–NR14 y P01–P08/N01–N12 FUTUROS_NO_EJECUTADOS para JWT/RBAC, tenant A/B, PII, ownership NULL, idempotencia, consentimientos, exportaciones y accesibilidad.
