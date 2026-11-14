@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C08-02.M01.03: inventario de fuentes reales para mesas y QR [Javier :50]
+- Inspecciona siete blobs exactos en Domain, Application, EF/repositorio y modelo Angular de pedido comercial, preparando la integración futura de restaurante sin asumir endpoint ni módulo completo.
+- Registra G01–G10 brechas y P01–P06/N01–N12 FUTUROS NO_EJECUTADOS de QR falso, mesa ajena, tenant A/B, idempotencia, cocina/caja y cierre sin dobles cobros.
+- Solo docs/v5 y CHANGELOG en dev, Scope Lock/V5 exact-SHA requerido, A5 pendiente de otra Task, git revert normal; ninguna prueba runtime declarada PASS ni implementación de eventos/QA/main/PROD.
+
 ## 2026-11-14 — V5 C08-02.M01.02: actores e interfaces de restaurante, mesas y QR [Javier :50]
 - Define catorce actores A01–A14, catorce contratos I01–I14 y nueve fronteras F01–F09 para mesas, QR, menú, pedidos, cocina, caja y auditoría.
 - Documenta P01–P06/N01–N06 FUTUROS NO_EJECUTADOS y denegación de mesa ajena, QR falso, replay, permisos JWT/RBAC y aislamiento tenant A/B; no se implementan API ni runtime.
