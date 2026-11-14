@@ -1208,3 +1208,8 @@
 - Nuevo servicio Application Governance inerte con preflight tenant antes de I/O, permiso relacional actual Configuracion/Administrar y negativa de rol legacy; no ejecuta, aprueba ni persiste cambios.
 - xUnit positivos tenant A/sucursal A; negativos empresa B, revocacion, rol cambiado, permiso ausente o accion incorrecta, sucursal B, propuesta sensible NO_GO y solicitud manipulada.
 - A0-A4 validacion por CI .NET10/seguridad/autorizacion y Scope Lock exact SHA, CHANGELOG autocontenido y readback; A5 por otro Javier. Sin API/DI/JWT/DB/worker/webhook/QA/main/PROD; rollback git revert normal.
+
+## 2026-11-14 — SOLQARYN V5 C01-01.M03.04 adaptador EF read-only identidad tenant [Javier :50]
+- Fuente EF Core 10 de instantanea actual para Application: membresia empresa/usuario, rol vigente con permisos relacionales, sucursal vinculada; filtros AsNoTracking y denegacion por defecto sin usar rol legacy.
+- xUnit InMemory positivo A y negativos tenant B, revocacion, rol ajeno, usuario bloqueado y sucursal invalida; prueba Integration MySQL efimero local para A/B y revocacion, sin acceso remoto.
+- A0-A4 requieren GitHub Actions .NET, seguridad, MySQL, Scope Lock, CHANGELOG SHA exacto y readback. Sin migracion, DI/API/JWT, escritura, worker/webhook, QA/main/PROD; A5 por Javier independiente; revert git normal.
