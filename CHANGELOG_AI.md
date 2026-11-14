@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C11-04.M01.03: inventario de evidencia de observabilidad [Javier :30]
+- Ancla once fuentes con blobs exactos de API, middleware, EF, métricas, xUnit y documentos M01; separa código existente, pruebas definidas y funciones NO_CERTIFICADAS.
+- Registra doce brechas G01–G12 no confirmadas como bugs, y ocho escenarios positivos/negativos FUTUROS_NO_EJECUTADOS; preserva JWT/RBAC, tenant A/B, PII y soporte read-only.
+- Solo docs/v5 y CHANGELOG mediante CAS fast-forward en dev; Scope Lock/procedencia V5 exact-SHA y A5 independiente; sin exporters, alertas, infraestructura, cambios runtime ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C11-04.M01.02: actores I/O y fronteras de observabilidad [Javier :20]
 - Define A01–A14 actores, I01/O01–I14/O14 superficies y F01–F12 de confianza para logs, métricas, trazas, costos, SLI/SLO y diagnósticos.
 - Ancla seis fuentes Git con blobs reales y distingue instrumentos in-process existentes de exporter, collector y tableros FUTUROS_NO_IMPLEMENTADOS; preserva tenant A/B, JWT/RBAC y protección PII.
