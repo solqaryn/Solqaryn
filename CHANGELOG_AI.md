@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C08-04.M01.03: inventario de fuentes y brechas sectoriales [Javier :20]
+- Revisa once blobs reales de dominio y frontend para Empresa, UsuarioEmpresa, Producto, Sucursal, Cliente, host binding, rutas, permisos y contexto tenant, diferenciando código existente de capabilities sectoriales aún no acreditadas.
+- Registra G01–G10 como brechas de evidencia y P01–P08/N01–N08 como pruebas FUTURAS NO_EJECUTADAS; no declara vulnerabilidades, integración ni aislamiento runtime certificados por una lectura documental.
+- Sólo Markdown y CHANGELOG en dev, A0–A3 documentales y A4 por Scope Lock/V5 exact-SHA más PLAN/COLA/BITACORA; A5 independiente pendiente, git revert sin QA/main/PROD.
+
 ## 2026-11-14 — V5 C08-04.M01.02: actores y contratos de interfaces sectoriales [Javier :20]
 - Identifica A01–A14 actores/superficies e I01–I12 entradas, salidas y fronteras de capacidades futuras de agenda, membresias, catalogo, sitios, tenancy y auditoria.
 - Coteja seis blobs reales incluyendo Empresa, UsuarioEmpresa, permisoGuard e interceptor; documenta T01–T06 positivos/negativos FUTUROS NO_EJECUTADOS, sin atribuir nueva funcionalidad, backend ni pruebas runtime.
