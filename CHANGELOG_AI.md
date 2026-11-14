@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C12-04.M01.05: criterios de aceptación MySQL/cutover [Javier :30]
+- Define AC01–AC16 positivos y N01–N16 negativos, más NF01–NF10 de tenant A/B, JWT/RBAC, hash, FK, DDL único, idempotencia, readiness, freeze, rollback y redacción de secretos; todos FUTUROS_NO_EJECUTADOS.
+- Traza NR01–NR16, G01–G14, R01–R14 y D01–D10 a gates de M02–M06, sin afirmar RPO/RTO, volúmenes, checksums de datos ni restore reales.
+- Solo dos Markdown en dev por CAS fast-forward, Scope Lock/V5 SHA exacto y A5 de otra Task; no MySQL, Hostinger, DNS, QA/main/PROD, secretos ni compras.
+
 ## 2026-11-14 — V5 C12-04.M01.04: riesgos y decisiones MySQL/cutover [Javier :30]
 - Documenta R01–R14 riesgos potenciales de snapshot, tenant A/B, JWT/RBAC, DDL único, FK, escrituras financieras, red, DNS y rollback sin declarar incidentes ni exposición real.
 - Conserva S01–S10 como NO_VERIFICADOS y D01–D10 como decisiones ABIERTAS con responsables; ocho pares P/N de pruebas futuras NO_EJECUTADAS y G01–G14 como brechas.
