@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-03.M05.01: pruebas unitarias de reglas de cobertura [Javier :00]
+- Se incorpora la suite xUnit real V5CoverageM05RuleRegressionTests para estados PENDIENTE/EN_PROGRESO/VALIDANDO/LISTO, cobertura de catálogo, duplicados, falta de evidencia, SHA movido, resultado exigido vacío e identidad de snapshot inconsistente.
+- Los negativos fallan de forma cerrada y no producen filas parciales; LISTO no equivale a A5_PASS ni a evidencia causal verificada. Sólo se prueban reglas puras Application/Domain; no se simulan HTTP, autenticación JWT, MySQL, navegador ni revisión A5.
+- Requiere dotnet build/test y Scope Lock + procedencia CHANGELOG SUCCESS sobre el SHA exacto antes de LISTO_DEV. A5_PENDIENTE para otra Task Javier; sin cambios en QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-02.M05.02: regresión HTTP de DTO y errores seguros [Javier :50]
 - Se agregan pruebas xUnit reales sobre TestServer HTTP y middleware de excepciones para respuesta correcta, denegación segura 400, conflicto 409 y error interno 500 sin detalles privados de otras empresas.
 - La ruta de prueba es un stub, no un endpoint nuevo ni permiso de producción; no se simula autorización JWT, CAS Sheets ni persistencia MySQL.
