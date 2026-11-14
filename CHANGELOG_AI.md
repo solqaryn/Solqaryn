@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C04-02.M01.03: inventario real de contratos y suscripciones [Javier :30]
+- Relee doce archivos con blobs verificables Domain/Application/DTO/API/EF/MySQL repository/xUnit/Angular y distingue estados SaaS de renovaciones, mora y cobros futuros.
+- Documenta seis contrastes positivos y diez negativos de evidencia, seguridad tenant/JWT/RBAC, idempotencia, compatibilidad y rollback; ningún test de runtime se atribuye por haber leído el código.
+- Solo inventario M01.03 en dev, Scope Lock/procedencia V5 sobre SHA exacto y A5 independiente; sin alterar API, DB, UI, pagos, migraciones, workers, eventos, QA/main/PROD. Rollback git revert ordinario.
+
 ## 2026-11-14 — V5 C04-03.M01.02: actores, entradas y superficies de metering [Javier :20]
 - Documenta diez actores y catorce fronteras futuras para medición de usuarios, operaciones, almacenamiento, archivos y proyecciones con tenant resuelto en servidor; conserva blobs reales y límites de evidencia.
 - Establece P01–P05 y N01–N12 como oráculos posteriores no ejecutados: replay, correlación, unidad y corte, conciliación, RBAC y aislamiento A/B.
