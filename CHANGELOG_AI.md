@@ -1254,3 +1254,8 @@
 - Tres positivos y diez negativas documentales de A/B, RBAC, revocación, inyección, versión y secretos; no crea ni modifica endpoints, código .NET/Angular, BD, flags, workers o eventos.
 - Scope Lock y procedencia V5 exact-SHA requeridos para A4, readback institucional y A5 independiente pendiente de otra Task Javier; sin QA/main/PROD, rollback por git revert.
 
+## 2026-11-14 — SOLQARYN V5 C01-03.M02.03 persistencia, índices, migraciones y fixtures [Javier :30]
+- Contrato documental de catálogo tipado por scope/owner, índices propuestos, revisión CAS, auditoría e idempotencia, distinguiendo ConfigEmpresas tenant-first de EmpresaConfiguraciones legacy global; revisa migración N67C vigente sin ejecutarla.
+- Doce fixtures simbólicos (cuatro positivos y ocho negativos) y plan de expansión/rollback futuro con MySQL/EF efímero; no crea tablas, datos, migraciones, scripts activos, workers o autorizaciones.
+- A0–A4 documentales sujetos a checks Scope Lock y CHANGELOG V5 exact-SHA y readback institucional. A5 por Javier distinto de la autoría, sin QA/main/PROD; rollback del documento por git revert normal.
+
