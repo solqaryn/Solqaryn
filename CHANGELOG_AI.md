@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C10-02.M01.03: inventario verificable R2/domains [Javier :30]
+- Inspecciona diez blobs Git exactos de interfaces/storage tenant, adaptadores Cloudinary, seguridad de imágenes, xUnit y contratos C10-02; separa evidencia presente de objetivo R2 futuro.
+- Registra G01–G12 brechas sobre prefijos A/B, URLs firmadas, expiración, replay, CDN, lifecycle, datos, secrets y rollback; escenarios P/N FUTUROS NO_EJECUTADOS.
+- Solo docs/v5 y CHANGELOG en dev; CI runtime NO_APLICA al Markdown, Scope Lock/V5 exact-SHA y A5 independiente pendiente, sin DNS/R2/PROD.
+
 ## 2026-11-14 — V5 C10-02.M01.02: actores e interfaces R2/domains [Javier :30]
 - Define A01–A14 actores conceptuales, I/O01–12 entradas/salidas y F01–F08 fronteras de confianza para objetos privados, prefijos tenant, URL firmada, TTL, replay, caché y lifecycle.
 - Exige JWT/RBAC/owner resuelto en backend y separación tenant A/B; P/N son FUTUROS NO_EJECUTADOS, no se implementaron DTO/API, R2, DNS, secretos, caché ni lifecycle.
