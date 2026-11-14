@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C01-01.M02.06: dependencias técnicas y contrato de salida M02 [Javier :10]
+- Nuevo contrato documental `docs/v5/c01-01-m02-06-dependencias-contrato-salida.md`: cinco fuentes M02 con blobs exactos y M01.06, 14 predecesoras LISTO, DAG F143 VALIDADO/G143 SI, matriz de consumidores y oráculos positivos/negativos P01–P04/N01–N08.
+- La salida solo cierra diseño M02: no libera automáticamente M03/M04/M05/M06, IAM/JWT/RBAC, EF/MySQL, Angular, eventos, webhooks, workers ni QA/main/PROD. Los consumidores requieren nuevo DAG individual, A0–A4 reales y A5 independiente.
+- Cambios estrictamente Markdown; Scope Lock y control V5 de CHANGELOG exact-SHA requeridos para LISTO_DEV. A5 queda pendiente de otra Task Javier; rollback por git revert normal sin reescritura.
+
 ## 2026-11-13 — V5 C01-01.M02.05: contrato de eventos e idempotencia, sin implementación [Javier :30]
 - Diseño documental `docs/v5/c01-01-m02-05-contrato-eventos-idempotencia-correlacion.md`: cinco blobs de código real (correlación, observabilidad, outbox, servicio y retry), seis futuros eventos de identidad, 12 oráculos EVT01–12 con positivos/negativos.
 - Diferencia EventoId, ClaveIdempotencia por EmpresaId y CorrelationId, límites, claims/leases, deduplicación y fail-closed tenant JWT/RBAC, sin crear webhook, dispatcher, workers, notificaciones, mensajes ni datos en proveedor.
