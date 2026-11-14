@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C11-04.M01.05: criterios de aceptación de observabilidad [Javier :40]
+- Define AC01–AC18, N01–N18 y RNF01–RNF12 como oráculos FUTUROS_NO_EJECUTADOS para correlación, métricas, SLI/SLO, alertas y costos; ningún umbral o runtime PASS inventado.
+- Preserva privacidad, JWT/RBAC, tenant A/B, soporte de lectura, cardinalidad y aislamiento de fallos; sin crear exporters, Tasks, eventos ni proveedores externos.
+- Sólo documentación docs/v5 + CHANGELOG en dev; Scope Lock y procedencia V5 exact-SHA, readbacks y A5 ajeno pendientes; sin QA/main/PROD.
+
 ## 2026-11-14 — V5 C11-04.M01.04: riesgos y decisiones de observabilidad [Javier :30]
 - Documenta doce riesgos R01–R12 POTENCIALES, ocho supuestos S01–S08 NO_VERIFICADOS y ocho decisiones D01–D08 PENDIENTES sobre privacidad, costos, cardinalidad, roles y SLO.
 - Ancla ocho blobs Git, relaciona M01.01–03 e incluye ocho pares positivos/negativos FUTUROS_NO_EJECUTADOS; no diagnostica vulnerabilidades confirmadas ni inventa pruebas runtime.
