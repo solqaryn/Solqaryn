@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-03.M01.02 actores, interfaces y fronteras de promoción [Javier :10]
+- Documenta 12 actores de análisis, 12 fuentes Git/Sheets y ocho pares P/N FUTUROS_NO_EJECUTADOS para separación DEV/QA/PROD, paridad, autorización y rollback.
+- Delimita SHA/artefacto, Scope Lock, CI causal, JWT/RBAC/tenant A/B y secreto mínimo; existencia de workflows no se trata como ejecución o aprobación de release.
+- Solo Markdown y CHANGELOG en dev; Scope Lock/V5 exact SHA y A5 independiente pendiente. No modifica pipelines, ramas, infraestructura, cuentas ni eventos.
+
 ## 2026-11-14 — V5 C14-03.M01.01 alcance de promoción controlada [Javier :10]
 - Establece objetivo DEV/QA/PROD separados, checklist futuro de SHA/artefacto/configuración, 16 invariantes NR y diez pares P/N FUTUROS_NO_EJECUTADOS.
 - Declara gates de JWT/RBAC/tenant A/B, MySQL, CI exact SHA, aprobación independiente y reversión; no certifica paridad de ambientes ni despliega fuera de dev.
