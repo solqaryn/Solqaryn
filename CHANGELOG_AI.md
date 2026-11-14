@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-03.M01.01 alcance de promoción controlada [Javier :10]
+- Establece objetivo DEV/QA/PROD separados, checklist futuro de SHA/artefacto/configuración, 16 invariantes NR y diez pares P/N FUTUROS_NO_EJECUTADOS.
+- Declara gates de JWT/RBAC/tenant A/B, MySQL, CI exact SHA, aprobación independiente y reversión; no certifica paridad de ambientes ni despliega fuera de dev.
+- Solo Markdown + CHANGELOG; Scope Lock/V5 exact SHA y A5 independiente pendiente. Sin secrets, producción, ramas/PR, servicios de pago ni eventos.
+
 ## 2026-11-14 — V5 C14-01.M01.05 criterios observables de aceptación funcional [Javier :10]
 - Especifica 16 pares P/N de prueba FUTUROS_NO_EJECUTADOS para superficies públicas/privadas, sesión, RBAC, tenant A/B, ventas, inventario, contabilidad, accesibilidad y sectores.
 - Vincula NR01–NR14 y documentos M01.01–04, evidencia requerida por SHA exacto y gates de no-regresión; no atribuye PASS HTTP, Angular, Playwright, MySQL o pagos inexistentes.
