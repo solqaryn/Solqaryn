@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C12-01.M01.02: actores y fronteras de topologia objetivo [Javier :40]
+- Documenta A01–A14 actores, I/O01–I/O12 y F01–F14 fronteras para futura segregación Angular/.NET/MySQL, red privada, secretos, backups y reversión, sin crear infraestructura real.
+- Traza nueve fuentes Git y ocho pares de aceptación/rechazo FUTUROS_NO_EJECUTADOS; mantiene Vercel, Render, Aiven y Cloudinary actuales sin declarar Hostinger/Cloudflare activos ni inventar costos.
+- Sólo docs/v5 y CHANGELOG en dev, con CAS fast-forward, Scope Lock/V5 exact-SHA, A5 independiente pendiente; sin worker, eventos, DNS, cuentas, QA/main/PROD o pago.
+
 ## 2026-11-14 — V5 C00-04.M03.05: correccion compilacion namespace tenant [Javier :40]
 - GitHub Actions detecto CS0246 en Infrastructure/GobiernoCambiosIntegracionLocal.cs (ContextoTenantActual no resuelto): se agrega using Solqaryn.Domain.Security, sin cambios de comportamiento ni ampliacion de permisos.
 - Se exige nueva compilacion y pruebas .NET 10, seguridad tenant, Scope Lock y procedencia V5 sobre SHA nuevo; el SHA anterior con CI FAIL no se cuenta como PASS ni autoriza LISTO.
