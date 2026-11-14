@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C07-01.M01.04: riesgos y decisiones de catálogo universal [Javier :00]
+- Registra doce riesgos R01–R12, ocho supuestos falsables S01–S08 y ocho decisiones D01–D08 PENDIENTES; no declara vulnerabilidades ni autoriza cambios estructurales.
+- Traza los contratos M01.01–03 con blobs Git, casos P01–P06/N01–N12 FUTUROS NO_EJECUTADOS y especial cautela frente a EmpresaId NULL, categorías, impuestos, inventario y caché A/B.
+- Solo docs/v5 y CHANGELOG en dev; prerequisitos 60/60 LISTO y DAG VALIDADO/SI para preparación, Scope Lock/V5 exact SHA y A5 independiente; sin runtime, migraciones, QA/main/PROD.
+
 ## 2026-11-14 — V5 C07-01.M01.03: inventario causal de contratos y código de catálogo [Javier :00]
 - Contrasta diecisiete blobs Git de Domain, Application, Infrastructure, API y Angular; identifica rutas reales de productos, variantes, impuestos y tienda pública sin afirmar implementación universal.
 - Registra brechas G01–G08 de aislamiento/ownership, NULL legado, caché pública, impuesto y factura; P01–P06/N01–N12 son FUTUROS NO_EJECUTADOS, no pruebas runtime.
