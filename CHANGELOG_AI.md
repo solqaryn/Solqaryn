@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C11-04.M01.02: actores I/O y fronteras de observabilidad [Javier :20]
+- Define A01–A14 actores, I01/O01–I14/O14 superficies y F01–F12 de confianza para logs, métricas, trazas, costos, SLI/SLO y diagnósticos.
+- Ancla seis fuentes Git con blobs reales y distingue instrumentos in-process existentes de exporter, collector y tableros FUTUROS_NO_IMPLEMENTADOS; preserva tenant A/B, JWT/RBAC y protección PII.
+- Solo docs/v5 + CHANGELOG con CAS fast-forward dev y checks Scope Lock/V5 exact-SHA; A5 independiente pendiente; sin runtime, proveedores, alertas ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C11-04.M01.01: alcance observabilidad sin datos sensibles [Javier :20]
 - Define objetivo y fronteras de logs, métricas, trazas, alertas, SLO y costos; 16 invariantes NR, 6 casos positivos y 8 negativos FUTUROS_NO_EJECUTADOS.
 - Ancla seis fuentes Git reales, distingue counters y CorrelationId existentes de exporters externos y SLO certificados; preserva aislamiento tenant A/B, secretos y soporte read-only.
