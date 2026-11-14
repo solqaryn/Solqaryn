@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-03.M06.03: riesgos y decisiones de matriz integrada [Javier :10]
+- Se documentan doce riesgos R01-R12 y cinco decisiones D01-D05 con responsabilidad técnica y seis SHA de cobertura M05; se contrastan M06.01 y el manifiesto M06.02 que corrigió rutas de Chromium.
+- Se acotan TestServer, adaptador en memoria y sesiones Chromium simuladas; ninguna es prueba de CAS Sheets, JWT/RBAC live, MySQL durable ni tenancy persistida. Cancelled/skipped/in-progress no son PASS.
+- Archivo docs/v5/c00-03-m06-03-coverage-risks-decisions.md. Scope Lock y verificador CHANGELOG exact-SHA, A5 independiente y readback requeridos; no liberar M06.06 ni QA/main/PROD, rollback ordinario git revert.
+
 ## 2026-11-13 — V5 C00-03.M06.05: solicitud de revisión independiente del lote de cobertura [Javier :00]
 - Se documenta paquete A5 de seis implementaciones M05 con SHA, contratos, checks y casos positivos/negativos para un revisor Javier distinto, sin declarar revisión realizada ni despachar nuevas Tasks.
 - La solicitud preserva límites de JWT/RBAC/tenant, Sheets CAS, MySQL y pruebas con fixtures/sesiones sintéticas; no certifica LIVE ni cambia QA/main/PROD.
