@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C08-01.M01.05: criterios observables de reservas y agenda [Javier :40]
+- Define AC01–AC12 pares positivo/negativo FUTUROS NO_EJECUTADOS para citas, horarios, capacidad concurrente, UTC/IANA/DST, tenant A/B, JWT/RBAC, idempotencia y no regresión de inventario.
+- Añade NFR01–NFR08, evidencia causal requerida para Domain, Application, MySQL, API y Angular/Playwright y NO_GO de seguridad; no reclama PASS runtime ni implementación de agenda.
+- Solo Markdown en dev, CAS owner C08-01.M01.05, checks Scope Lock y procedencia V5 exact-SHA, A5 independiente pendiente, rollback git revert; sin cambios API/DB/events/QA/main/PROD.
+
 ## 2026-11-14 — V5 C08-01.M01.04: riesgos, supuestos y decisiones de reservas [Javier :40]
 - Registra R01–R16 riesgos de doble ocupación, JWT/RBAC/tenant A/B, DST UTC/IANA, replay, estados, PII, accesibilidad y compatibilidad con inventario: brechas, no bugs certificados.
 - Ordena S01–S08 supuestos, D01–D08 decisiones pendientes y TP01–TP08 escenarios positivos/negativos FUTUROS NO_EJECUTADOS; no crea citas, workers, colas ni migraciones.
