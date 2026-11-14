@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-02.M01.01 alcance y no-regresion de aceptacion de seguridad [Javier :00]
+- Fija objetivo y exclusiones de aceptacion de seguridad: BOLA/IDOR, JWT/RBAC, tenant A/B, host, archivos, jobs, cache, backups y sesiones; sin ejecutar pruebas ni declarar cero P0/P1.
+- Define NR01-NR18 y diez pares de escenarios SEC-01 a SEC-10 FUTUROS_NO_EJECUTADOS, separando preparacion documental M01.01 de certificacion funcional y release.
+- Solo Markdown + CHANGELOG en dev por fast-forward/CAS; Scope Lock y V5 exact-SHA, A5 por otra Task Javier, rollback git revert; sin runtime, migraciones, QA/main/PROD ni webhooks.
+
 ## 2026-11-14 — V5 C14-01.M01.03 inventario causal de aceptacion funcional [Javier :30]
 - Inventaria diez fuentes Git blob de storefront, aislamiento, browser guards, responsive, accesibilidad, fixtures tenant, rutas, permiso Angular, test API .NET y Scope Lock; distingue test fuente de ejecucion real.
 - Declara B01–B14 brechas y ocho pares P/N FUTUROS_NO_EJECUTADOS para flujos publicos, autentificados, pedidos, inventario, tenancy, JWT/RBAC, UI y CI, sin certificacion falsa.
