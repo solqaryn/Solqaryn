@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C08-02.M01.01: alcance y no-regresión de mesas, QR y autoservicio [Javier :40]
+- Delimita mesas, QR, menú publicado, pedidos internos, cocina y caja con pertenencia tenant/sucursal y autorización server-side; no afirma implementación de POS ni QR real.
+- Define NR01–NR14 y P01–P10/N01–N14 FUTUROS NO_EJECUTADOS para QR falso, mesa ajena, precio/cierre de pedido, idempotencia, privacidad, permisos y regresión ERP.
+- Sólo Markdown en dev, claim CAS exclusivo, Scope Lock y procedencia V5 exact-SHA; A5 pendiente de otra Task, git revert normal, sin cobros, eventos, migraciones, secretos o QA/main/PROD.
+
 ## 2026-11-14 — V5 C08-01.M01.05: criterios observables de reservas y agenda [Javier :40]
 - Define AC01–AC12 pares positivo/negativo FUTUROS NO_EJECUTADOS para citas, horarios, capacidad concurrente, UTC/IANA/DST, tenant A/B, JWT/RBAC, idempotencia y no regresión de inventario.
 - Añade NFR01–NFR08, evidencia causal requerida para Domain, Application, MySQL, API y Angular/Playwright y NO_GO de seguridad; no reclama PASS runtime ni implementación de agenda.
