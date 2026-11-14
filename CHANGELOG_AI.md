@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C09-02.M01.01: alcance y no-regresion de fidelizacion/reputacion [Javier :00]
+- Delimita puntos, promociones, resenas, moderacion y postventa como alcance FUTURO; contrasta seis blobs de Cliente, Venta, TiendaCuentaCliente, CreditoCliente, Auditoria y UsuarioEmpresa, sin confundir puntos con dinero o credito.
+- Establece NR01–NR14 y P01–P08/N01–N08 FUTUROS_NO_EJECUTADOS para tenant A/B, JWT/RBAC, antifraude, replay, privacidad, moderacion, consentimiento, idempotencia y rollback, sin afirmar PASS runtime.
+- Solo docs/v5 y CHANGELOG_AI.md en dev con CAS fast-forward y Scope Lock/V5 exact-SHA; A5 independiente pendiente, sin pagos, eventos, workers, secretos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C09-01.M01.05: aceptacion observable y pruebas futuras de CRM universal [Javier :00]
 - Especifica AC01–AC14 positivos/N01–N14 negativos FUTUROS_NO_EJECUTADOS para ficha, timeline, oportunidades, segmento, export, consentimiento, tenant A/B, JWT/RBAC, legacy NULL y replay.
 - Define NFR01–NFR10 y matriz futura .NET 10, MySQL 8.4/EF, Angular 22.2.1 y Playwright sin inventar umbrales, suites ejecutadas o autorización de implementación.
