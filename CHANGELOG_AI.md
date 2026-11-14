@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-01.M01.03 inventario causal de aceptacion funcional [Javier :30]
+- Inventaria diez fuentes Git blob de storefront, aislamiento, browser guards, responsive, accesibilidad, fixtures tenant, rutas, permiso Angular, test API .NET y Scope Lock; distingue test fuente de ejecucion real.
+- Declara B01–B14 brechas y ocho pares P/N FUTUROS_NO_EJECUTADOS para flujos publicos, autentificados, pedidos, inventario, tenancy, JWT/RBAC, UI y CI, sin certificacion falsa.
+- Solo docs/v5 y CHANGELOG fast-forward CAS dev, Scope Lock/V5 exact SHA y A5 de otra Task Javier. Sin runtime, MySQL, pagos, QA/main/PROD ni eventos.
+
 ## 2026-11-14 — V5 C14-01.M01.02 actores y contratos de aceptacion funcional [Javier :50]
 - Define doce actores, doce interfaces y ocho fronteras de confianza para flujos publicos, privados, admin, sectoriales y tenant A/B, sin introducir permisos nuevos.
 - Describe ocho pares P/N FUTUROS_NO_EJECUTADOS sobre storefront, RBAC/JWT, errores, inventario, accesibilidad y exact-SHA; .spec no implica PASS.
