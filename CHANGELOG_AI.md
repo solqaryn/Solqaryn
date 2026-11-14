@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C04-02.M01.02: actores y superficies contractuales [Javier :30]
+- Delimita ocho actores del ciclo de suscripciones, cinco bordes de entrada/salida SaaS y siete fronteras de confianza, distinguiendo código vigente de cobros y morosidad futuros.
+- Especifica cinco oráculos positivos y diez negativos futuros para aislamiento tenant A/B, JWT/RBAC, idempotencia, suspensión, cancelación, renovación y falla de proveedor; ninguno se declara ejecutado como runtime.
+- Únicamente preparación M01.02 documental con Scope Lock y procedencia V5 exact-SHA, A5 pendiente de Task Javier distinta; no migraciones, endpoints, workers, eventos, pagos, QA/main/PROD. Rollback git revert normal.
+
 ## 2026-11-14 — V5 C04-03.M01.01: alcance y no-regresion del metering SaaS [Javier :20]
 - Define preparación documental de conteo de usuarios, almacenamiento, operaciones y archivos por tenant con métrica/unidad, corte temporal, idempotencia y conciliación futuros; lectura de blobs reales de PlanLimite y SuscripcionesSaaS, sin asumir ledger ya implementado.
 - Documenta NR01–NR14 y P01–P05/N01–N12 como oráculos futuros no ejecutados; separa JWT/RBAC/tenant server-side, entitlement, replay, cuotas, confidencialidad y estado de suscripción.
