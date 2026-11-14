@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-01.M01.02 actores y contratos de aceptacion funcional [Javier :50]
+- Define doce actores, doce interfaces y ocho fronteras de confianza para flujos publicos, privados, admin, sectoriales y tenant A/B, sin introducir permisos nuevos.
+- Describe ocho pares P/N FUTUROS_NO_EJECUTADOS sobre storefront, RBAC/JWT, errores, inventario, accesibilidad y exact-SHA; .spec no implica PASS.
+- Solo docs/v5 y CHANGELOG por FF/CAS dev, Scope Lock/V5 y A5 independiente; sin .NET/Angular/MySQL runtime ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C14-01.M01.01 alcance y no-regresion de aceptacion funcional [Javier :50]
 - Define objetivo y exclusiones de aceptacion, catorce invariantes, diez blobs fuente y ocho pares P/N FUTUROS_NO_EJECUTADOS de storefront, sesion, JWT/RBAC, tenant A/B, inventario, UI y CI.
 - Distingue DOC_M01_PREP de pruebas E2E reales, autorizacion de release y gates terminales; no inventa PASS de tests, WCAG, pago, MySQL ni QA.
