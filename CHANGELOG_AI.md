@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C06-02.M01.03: inventario de fuentes de landing tenant [Javier :30]
+- Verifica 14 archivos y blobs Git de contratos, Angular, guards/interceptor, storefront, robots/sitemap y SEO; distingue tienda actual de host binding y publicación FUTUROS.
+- Registra G01–G10 brechas no certificadas y P01–P06/N01–N12 oráculos FUTUROS NO_EJECUTADOS; hostFromRequest usa x-forwarded-host/host sin afirmar vulnerabilidad explotable.
+- Solo dos Markdown en dev; Scope Lock/V5 exact-SHA, PLAN/COLA/BITACORA y A5 independiente; sin Angular/API/MySQL, JWT/RBAC, DNS/TLS, CDN, eventos, secrets ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C06-02.M01.02: actores y fronteras de landing por tenant [Javier :30]
 - Identifica A01–A12 actores e I01–I12 interfaces futuras de host/slug, draft/preview, editor, RBAC, publicación, SEO, CDN y rollback con B01–B08 fronteras fail-closed.
 - Contrasta cinco blobs reales Angular/guards/storefront y el alcance M01.01; P01–P06/N01–N12 son oráculos FUTUROS NO_EJECUTADOS, no bindings, DNS/TLS, API ni permisos implementados.
