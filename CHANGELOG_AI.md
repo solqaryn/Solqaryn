@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C09-04.M01.03: inventario de codigo y brechas de mensajeria multicanal [Javier :50]
+- Inventaría catorce rutas reales y sus blobs de Domain/Application/API/Infrastructure para Outbox, email y WhatsApp; distingue intención durable de envío, dispatcher, marketing y webhook aún no certificados.
+- Documenta G01–G12 como preguntas verificables, P01–P08/N01–N12 FUTUROS_NO_EJECUTADOS para JWT/RBAC, tenant A/B, PII, consentimiento, idempotencia, secretos y retry; no declara fallos ni PASS runtime no demostrados.
+- Sólo docs/v5 y CHANGELOG en dev con CAS fast-forward; Scope Lock y procedencia V5 exact-SHA, A5 pendiente por otra Task; sin servicios externos, eventos, migraciones, QA/main/PROD.
+
 ## 2026-11-14 — V5 C09-04.M01.02: actores, interfaces y fronteras de mensajeria multicanal [Javier :50]
 - Define A01–A14 actores, I01–I12 contratos de entrada/salida y F01–F09 fronteras para email/WhatsApp, tenant A/B, idempotencia, consentimiento y replay; propuesta documental, sin activar transportes ni eventos.
 - Relaciona nueve fuentes reales de Outbox/Email/WhatsApp/SMTP con sus blobs; P01–P08/N01–N12 quedan FUTUROS_NO_EJECUTADOS y se conserva la exigencia de permisos backend, sin supuestos de certificación runtime.
