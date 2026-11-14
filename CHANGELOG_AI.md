@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C13-02.M01.05 criterios de aceptacion accesible [Javier :30]
+- Define P01–P14/N01–N14 y NF01–NF10 verificables de teclado, foco, formularios, overlays, contraste, reflow, lector, idioma y tenant A/B; TODOS FUTUROS_NO_EJECUTADOS.
+- Preserva NR01–NR14 y brechas B01–B14; ningun WCAG certificado, test runtime ni cumplimiento general se declara por escribir Markdown.
+- Solo docs/v5 + CHANGELOG, Scope Lock/V5 exact-SHA y A5 independiente; sin Angular/API/MySQL/JWT/RBAC/QA/main/PROD.
+
 ## 2026-11-14 — V5 C13-02.M01.04 riesgos y decisiones de accesibilidad [Javier :40]
 - Registra R01–R14 riesgos potenciales, S01–S10 supuestos NO_VERIFICADOS y D01–D10 decisiones ABIERTAS para teclado, foco, formularios, contraste, reflow, lector, permisos y tenant A/B.
 - Concilia contratos M01.01–03, blobs de inventario y ocho pares P/N FUTUROS_NO_EJECUTADOS; no confunde archivos de tests con ejecuciones o conformidad WCAG.
