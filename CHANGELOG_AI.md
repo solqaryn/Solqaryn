@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C12-01.M01.01: alcance topologia objetivo sin activacion [Javier :30]
+- Fija alcance documental de frontend, API, workers, MySQL y red privada objetivo Hostinger/Cloudflare, conservando Render/Vercel/Aiven/Cloudinary actuales sin migracion ni compras.
+- Ancla nueve blobs Git, NR01–NR16, P01–P08/N01–N08 FUTUROS_NO_EJECUTADOS y diez gates futuros sin afirmar VPS, DNS, backup o despliegue certificado.
+- Solo docs/v5 y CHANGELOG por CAS fast-forward dev; Scope Lock/V5 exact SHA y A5 independiente pendiente; sin infra, secretos, migraciones, QA/main/PROD.
+
 ## 2026-11-14 — V5 C11-04.M01.05: criterios de aceptación de observabilidad [Javier :40]
 - Define AC01–AC18, N01–N18 y RNF01–RNF12 como oráculos FUTUROS_NO_EJECUTADOS para correlación, métricas, SLI/SLO, alertas y costos; ningún umbral o runtime PASS inventado.
 - Preserva privacidad, JWT/RBAC, tenant A/B, soporte de lectura, cardinalidad y aislamiento de fallos; sin crear exporters, Tasks, eventos ni proveedores externos.
