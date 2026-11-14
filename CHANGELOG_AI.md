@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-04.M01.03 inventario para puesta en marcha [Javier :20]
+- Verifica 19 rutas y blobs Git de gobierno, frontend SEO, API, CI, backups y arquitectura sobre HEAD exacto; no confunde archivos existentes con sistemas operativos.
+- Identifica 12 brechas NO_ACREDITADO y ocho pares P/N FUTUROS_NO_EJECUTADOS para dominios, tenant A/B, archivos, restore, alertas, accesibilidad y promoción.
+- Sólo documento más CHANGELOG dev, A0–A4 documental y A5 independiente pendiente; sin HTTP/MySQL/Playwright reales, QA/main/PROD, Cloudflare/R2, eventos ni secretos.
+
 ## 2026-11-14 — V5 C14-04.M01.02 actores y fronteras de puesta en marcha [Javier :20]
 - Registra 14 actores, 12 entradas, 12 salidas, diez fronteras de confianza y diez pares PN FUTUROS_NO_EJECUTADOS para lanzamiento, soporte, dominios, storage, alertas y backup.
 - Preserva separación DEV/QA/PROD, JWT/RBAC/tenant A/B, archivos, MySQL y secretos; ningún proveedor, alerta, restore, SLO o interfaz se afirma implementado.
