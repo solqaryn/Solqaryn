@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C09-04.M01.04: riesgos, supuestos y decisiones pendientes de mensajeria [Javier :50]
+- Registra R01–R14, S01–S08 y D01–D08 como riesgos, hipotesis falsables y decisiones abiertas para consentimientos, opt-out, tenant A/B, HMAC/replay, idempotencia, secretos y rollback, sin inferir fallos reales.
+- Vincula tres artefactos M01 previos con blobs reales de Outbox/Email/WhatsApp; P01–P08/N01–N12 FUTUROS_NO_EJECUTADOS y sin activar trabajadores, proveedores, eventos o webhooks.
+- Publicacion documental estricta en dev por CAS fast-forward, Scope Lock y procedencia V5 exact SHA; A5 independiente pendiente, sin migraciones, QA/main/PROD.
+
 ## 2026-11-14 — V5 C09-04.M01.03: inventario de codigo y brechas de mensajeria multicanal [Javier :50]
 - Inventaría catorce rutas reales y sus blobs de Domain/Application/API/Infrastructure para Outbox, email y WhatsApp; distingue intención durable de envío, dispatcher, marketing y webhook aún no certificados.
 - Documenta G01–G12 como preguntas verificables, P01–P08/N01–N12 FUTUROS_NO_EJECUTADOS para JWT/RBAC, tenant A/B, PII, consentimiento, idempotencia, secretos y retry; no declara fallos ni PASS runtime no demostrados.
