@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-02.M05.06: regresión responsive accesible de flujo V5 [Javier :00]
+- Se amplía Playwright Chromium con una regresión dirigida para la vista de cuatro pasos V5 en tres anchos (390, 768 y 1280), sin desbordamiento horizontal exterior y con navegación por foco/teclado.
+- El navegador comprueba que no se llaman endpoints institucionales de escritura. La sesión es sintética exclusivamente para UI; no afirma autenticar JWT, aislar tenants mediante HTTP real ni medir latencia de backend.
+- Requiere build/lint Angular y browser V5 exact-SHA, Scope Lock y procedencia CHANGELOG. A5 independiente por otra Task Javier; sin QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-02.M05.04: aceptación positiva .NET del ciclo V5 [Javier :10]
 - Se añade la suite xUnit real V5C0002M0504PositiveAcceptanceTests: CLAIM autorizado, paso a VALIDANDO, LISTO con auditorías declaradas y readback de propiedad en el adaptador en memoria; dos ítems independientes conservan sus autores.
 - El test NO implementa un CAS institucional de Sheets, JWT vivo, base MySQL, A5 independiente ni eventos entre Tasks. Un PASS de estas pruebas no sustituye controles reales A0-A4 del SHA exacto.

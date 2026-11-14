@@ -374,3 +374,39 @@ test.describe('C00-03.M04.03 - identidad y contraste permitido de cobertura', ()
     await expect(page.locator('form, input, textarea, select')).toHaveCount(0);
   });
 });
+
+test.describe('C00-02.M05.06 - regresion responsive y accesibilidad del flujo V5', () => {
+  test.describe.configure({ retries: 0 });
+
+  test('mantiene cuatro pasos, foco y cero solicitudes operativas en tres anchos', async ({ page }) => {
+    await syntheticToken(page);
+    const sessionResponses = await mockPlatformSession(page, true);
+    const unexpectedRequests: string[] = [];
+    await page.route(/\/(?:v5\/claims|cola|bitacora|plan-maestro)(?:\/|\?|$)/i, route => {
+      unexpectedRequests.push(route.request().url());
+      return route.abort();
+    });
+
+    await page.setViewportSize({ width: 390, height: 844 });
+    await page.goto('/plataforma/flujo-v5');
+    const steps = page.getByRole('list', { name: 'Secuencia contractual de estados' }).locator('li');
+    await expect(page.getByRole('heading', { name: 'De la solicitud a la evidencia DEV' })).toBeVisible();
+    await expect(steps).toHaveCount(4);
+
+    for (const width of [390, 768, 1280]) {
+      await page.setViewportSize({ width, height: 844 });
+      await expect(steps).toHaveCount(4);
+      const overflow = await page.evaluate(() =>
+        Math.max(document.body.scrollWidth, document.documentElement.scrollWidth) - window.innerWidth);
+      expect(overflow).toBeLessThanOrEqual(1);
+    }
+
+    const refresh = page.getByRole('button', { name: /Revalidar sesión/ });
+    await refresh.focus();
+    await expect(refresh).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('link', { name: /Administración/ })).toBeFocused();
+    expect(sessionResponses).toContain(200);
+    expect(unexpectedRequests).toEqual([]);
+  });
+});
