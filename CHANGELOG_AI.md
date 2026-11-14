@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C05-02.M01.04: riesgos, supuestos y decisiones de marca [Javier :00]
+- Registra R01–R12 riesgos hipotéticos, S01–S08 supuestos falsables y D01–D08 decisiones PENDIENTE sobre tema global vs tenant, logos, presets, caché, autorización, versionado, publicación y rollback; sin afirmar vulnerabilidades.
+- Siete blobs Domain/API/EF/Angular sustentan cinco oráculos positivos y doce negativos FUTUROS no ejecutados; IAM/JWT/RBAC/tenant y acceso público permanecen bajo autorización backend.
+- M01.04 documental dev, Scope Lock/V5 exact-SHA, A5 independiente y revert ordinario; sin cambiar código, migraciones, eventos, workers, datos, Tasks, QA/main/PROD.
+
 ## 2026-11-14 — V5 C05-02.M01.03: inventario real de branding [Javier :00]
 - Inspecciona 13 blobs exactos Domain/Application/API/EF/Angular: TemaVisual global Id=1, GET público colores, PUT protegido, reset a default, sanitización de hex y pruebas frontend existentes sin atribuir ejecución.
 - Separa seis brechas técnicas de vulnerabilidades no demostradas; seis oráculos positivos y doce negativos FUTUROS cubren tenant A/B, JWT/RBAC, versionado CAS, caché, contrastes, logo y rollback.
