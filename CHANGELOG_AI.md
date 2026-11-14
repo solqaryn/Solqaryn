@@ -1412,3 +1412,8 @@
 - Se inventarian doce actores, dieciseis interfaces y fronteras de confianza de cobros por enlace, webhook, conciliación y reversión en \`docs/v5/c04-04-m01-02-actores-interfaces-superficies-cobros.md\`; no se implementan proveedores ni pagos.
 - Se distinguen componentes ya existentes de funciones futuras no desplegadas, con diez invariantes, cinco positivos y doce negativos propuestos, preservando tenant/JWT/RBAC, firmas e idempotencia.
 - A0–A3 son documentales; A4 requiere Scope Lock y procedencia CHANGELOG exact-SHA con readback PLAN/COLA/BITACORA; A5 independiente queda pendiente. Sin QA/main/PROD.
+
+## 2026-11-14 — SOLQARYN V5 C04-04.M01.03 auditoría causal de fuentes de cobros (PRIMARY DEV 05 JAVIER)
+- Se inventarian trece fuentes con blobs GitHub y límites de verificación para pagos online, ingress webhook, EF, xUnit y certificaciones históricas en `docs/v5/c04-04-m01-03-auditoria-fuentes-contratos-cobros.md`.
+- Se registran doce brechas técnicas y escenarios documentales futuros, sin suponer pasarela live, CAS distribuido, migración MySQL real o ejecución de xUnit con un cambio Markdown.
+- A0–A3 documentales; A4 depende de diff, Scope Lock y procedencia de CHANGELOG exact-SHA y readback institucional. A5 independiente pendiente. Sin QA/main/PROD.
