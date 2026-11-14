@@ -1327,3 +1327,9 @@
 - Documenta doce invariantes, 4 casos positivos y 14 negativos simbólicos de identidad global, MFA/reauth, TTL, cuotas, no-store, auditoría y kill-switch; no son pruebas ejecutadas ni activaciones de consola.
 - Solo documento y CHANGELOG, con Scope Lock/V5 exact-SHA, BITACORA/PLAN/COLA readback, A5 independiente posterior. Sin código, SQL, JWT/RBAC nuevo, workers, eventos, QA/main/PROD. Rollback git revert normal.
 
+
+## 2026-11-14 — V5 C02-04.M02.05: diseño inerte de eventos, idempotencia y correlación [Javier :00]
+- Contrato documental de sobre conceptual, cuotas, replay, deduplicación y correlación opaca; rastrea RegistroAuditoria y control de plataforma por blobs reales, sin sustituir BITACORA institucional.
+- Doce invariantes y 5 positivos/14 negativos simbólicos; no son pruebas runtime ni autorizan emitir, consumir, instalar, ejecutar o programar eventos, webhooks, brokers, workers o Tasks.
+- Scope Lock y V5 provenance exact SHA, PLAN/COLA/BITACORA readback, A5 independiente pendiente; sin API/JWT/MySQL/secretos ni QA/main/PROD, rollback git revert normal.
+
