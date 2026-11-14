@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C11-02.M01.04: riesgos y decisiones de API modular [Javier :00]
+- Registra R01–R16 POTENCIALES, S01–S10 NO_VERIFICADOS y D01–D10 PENDIENTES sobre API, contratos, tenant A/B, JWT/RBAC, errores, compatibilidad y soporte; no afirma vulnerabilidades.
+- Ancla ocho superficies API/Application en blobs reales y P01–P08/N01–N12 FUTUROS_NO_EJECUTADOS, preservando separación plataforma/empresa, validación backend y rollback.
+- Documento M01.04 + CHANGELOG solo en dev por CAS fast-forward, con Scope Lock/V5 exact-SHA y A5 independiente pendiente; sin endpoints, SQL, workers, secretos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C11-03.M01.02: actores contratos y fronteras Outbox [Javier :10]
 - Define actores A01–A14, interfaces I/O01–I/O12 y fronteras F01–F12 tenant A/B, UoW, idempotencia, dispatcher y proveedor futuro, sin ejecutar ni habilitar eventos o Tasks.
 - Traza seis fuentes con blobs reales y P01–P08/N01–N14 FUTUROS_NO_EJECUTADOS; no confunde interfaces con infraestructura, transacciones o workers certificados.
