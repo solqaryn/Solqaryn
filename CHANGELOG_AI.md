@@ -1,3 +1,7 @@
+## 2026-11-14 — V5 C00-04.M02.03: diseño documental de persistencia y rollback del gobierno [Javier :00]
+- Modelo de fuentes institucionales PLAN/COLA/DAG/BITACORA y Git; catálogo de proyecciones FUTURAS no autoritativas, índices lógicos y ocho fixtures negativos/positivos. Ocho predecesores C00-04.M01.01–06/M02.01–02 LISTO con A5 independiente; DAG148 F=VALIDADO/G=SI individual.
+- Solo documentación y CHANGELOG; ninguna entidad EF, MySQL, SQL, migración, webhook, worker, API, JWT/RBAC, tenant, Task, QA/main/PROD o datos reales. A0–A4 documentales requieren Scope Lock y procedencia V5 exact SHA; A5 por otra Javier. Rollback con revert ordinario.
+
 ## 2026-11-14 — V5 C00-04.M02.02: contratos documentales API/DTO del gobierno de cambios [Javier :40]
 - Definición tipada de consultas, decisiones propuestas, condiciones de ejecución, evidencia idempotente, errores y compatibilidad; siete predecesores LISTO con A5 independiente, DAG147 VALIDADO/SI para este ID exclusivamente.
 - Alcance documental: ninguna ruta HTTP, servicio, autorización, JWT/RBAC/tenant, migración, worker, webhook o Task nueva; exigir A0–A4 con Scope Lock y procedencia exact-SHA y A5 por otra Javier. Rollback git revert sin force-push; QA/main/PROD no autorizados.
