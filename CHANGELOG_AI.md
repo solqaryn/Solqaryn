@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C09-03.M01.04: riesgos supuestos y decisiones Social Hub [Javier :10]
+- Registra R01-R14 riesgos POTENCIALES, S01-S08 supuestos NO_VERIFICADOS y D01-D08 decisiones PENDIENTES sobre consentimiento/opt-out, tenant A/B, JWT/RBAC, segmentación, contenido, proveedores, métricas y rollback; sin declarar vulnerabilidades existentes.
+- Traza M01.01-03 y blobs reales de Cliente, UsuarioEmpresa, MensajeOutbox y guard Angular; P01-P06/N01-N10 son FUTUROS_NO_EJECUTADOS, no se atribuye PASS runtime.
+- Solo docs/v5 y CHANGELOG, CAS fast-forward exact-HEAD y Scope Lock/V5 del SHA; A5 pendiente distinto Task, sin eventos, workers, proveedores, secretos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C09-03.M01.03: inventario de codigo y brechas Social Hub/campanas [Javier :10]
 - Contrasta 14 rutas y blobs reales de Domain/Application/API/Infrastructure/Angular (Cliente, UsuarioEmpresa, Tenant, ClienteService, Outbox, SMTP, auditoria y guards), delimitando hechos y capacidad futura no acreditada.
 - Trazabilidad de M01.01/.02 y CRM/mensajería; G01-G14 preguntas de evidencia y P01-P04/N01-N08 FUTUROS_NO_EJECUTADOS con tenant A/B, JWT/RBAC, opt-out, replay y privacidad; no declara defectos ni PASS runtime.
