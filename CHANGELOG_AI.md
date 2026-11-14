@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C00-02.M06.02: manifiesto reproducible de evidencia y versionado [Javier :10]
+- Se registra una matriz causal de las seis microtareas M05.01–06, commits, blobs y alcance real de suites xUnit/TestServer/Chromium; se diferencia el SHA origen cancelado de la verificación causal por descendiente con blob intacto.
+- La guía de reproducción distingue evidencia verificada de comandos de referencia, y no certifica CAS distribuido de Sheets, JWT/RBAC live, MySQL ni tenant A/B persistido. Cambio exclusivamente documental; A5 por otra Task Javier.
+- Archivo docs/v5/c00-02-m06-02-reproducibility-manifest.md. Se exige Scope Lock y procedencia CHANGELOG exact-SHA antes de LISTO DEV; rollback por git revert normal, sin QA/main/PROD.
+
 ## 2026-11-13 — V5 C00-02.M06.01: auditoría de suficiencia causal de pruebas [Javier :10]
 - Se documenta auditoría real de seis pruebas M05.01–06: reglas puras .NET, HTTP TestServer con ruta de prueba, adaptador in-memory, aceptación positiva con flags, guard de autorización con fixtures y Chromium con sesión simulada.
 - El resultado se limita a los contratos efectivamente implementados; NO certifica CAS institucional Sheets, JWT/RBAC live, MySQL, tenant A/B persistido ni despliegues. Se conservan CANCELLED/SKIPPED/IN_PROGRESS como no PASS.
