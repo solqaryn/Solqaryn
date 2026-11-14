@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C07-02.M01.03: inventario causal de storefront y checkout [Javier :50]
+- Contrasta doce blobs Git reales de contratos M01.01/M01.02 y backend/frontend storefront, binding, catálogo, identidad y SEO; registrar fuentes no demuestra certificación live.
+- Identifica brechas G01–G10 para host/proxy, tenant A/B, caché, checkout, pedido/idempotencia, HMAC/replay, PSP y accesibilidad; P01–P06/N01–N12 son FUTUROS NO_EJECUTADOS.
+- Solo docs/v5 y CHANGELOG en dev; DAG documental VALIDADO/SI, Scope Lock/V5 exact-SHA y A5 independiente pendientes; M01.01 sigue VALIDANDO por CI CANCELLED, sin pagos, migraciones, secretos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C07-03.M01.03: inventario causal ERP inventario/compras [Javier :40]
 - Inventaría veinte blobs Git de Domain/API/Application/Infrastructure y cinco pruebas existentes para compras, reservas, transferencias, conteos, costeo, reportes, aislamiento y concurrencia; no se ejecutaron tests.
 - Identifica diez brechas G01–G10 para tenant A/B, NULL legado, stock concurrente, idempotencia, transferencias, costo/censura y rollback; son hipótesis, no fallos certificados.
