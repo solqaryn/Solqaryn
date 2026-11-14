@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C01-01.M03.01: invariantes de identidad universal tenant-aware [Javier :00]
+- Código real de Domain en `backend/src/Domain/Security/IdentidadUniversalReglas.cs`: usuario/empresa activos, membresía vigente y rol empresarial asignable, sin grants por `Usuario.RolId` legacy, rol de plataforma o tenant B; sucursal exige propietario verificable y estado habilitado.
+- Suite xUnit `IdentidadUniversalReglasTests.cs` con positivos y negativos de tenant A/B, revocación, roles, empresa, usuario bloqueado y sucursal sin owner. El guard puro no reemplaza JWT/RBAC ni middleware API, no ejecuta migraciones MySQL ni incorpora endpoints, Angular o eventos.
+- Task-ID `6adbb9fff1548191a1bd5b30d9e9984a`, Scope `C01-01.M03.01`, DAG144 individual. Evidencia A0–A4 y CI dirigida del commit exact-SHA obligatoria; A5 independiente por otra Task Javier, solo dev y rollback por revert ordinario.
+
 ## 2026-11-13 — V5 C01-01.M02.06: dependencias técnicas y contrato de salida M02 [Javier :10]
 - Nuevo contrato documental `docs/v5/c01-01-m02-06-dependencias-contrato-salida.md`: cinco fuentes M02 con blobs exactos y M01.06, 14 predecesoras LISTO, DAG F143 VALIDADO/G143 SI, matriz de consumidores y oráculos positivos/negativos P01–P04/N01–N08.
 - La salida solo cierra diseño M02: no libera automáticamente M03/M04/M05/M06, IAM/JWT/RBAC, EF/MySQL, Angular, eventos, webhooks, workers ni QA/main/PROD. Los consumidores requieren nuevo DAG individual, A0–A4 reales y A5 independiente.
