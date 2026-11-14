@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C11-03.M01.05: aceptacion observable Outbox y eventos [Javier :10]
+- Define AC01–AC18, N01–N18 y RNF01–RNF12 como oraculos FUTUROS_NO_EJECUTADOS de atomo UoW, tenant A/B, claims, idempotencia, reintentos y fallos parciales.
+- Distingue pruebas xUnit/SQLite existentes de MySQL/HTTP/dispatch real no ejecutado; no inventa PASS, throughput, garantias exactly-once ni autoriza provider.
+- Solo docs/v5 y CHANGELOG con fast-forward CAS dev, checks Scope Lock/V5 exact SHA y A5 independiente pendiente, sin eventos, workers, SQL, secrets, QA/main/PROD.
+
 ## 2026-11-14 — V5 C11-03.M01.04: riesgos supuestos y decisiones Outbox [Javier :10]
 - Registra R01–R16 como riesgos POTENCIALES, S01–S10 NO_VERIFICADOS y D01–D10 PENDIENTES sobre transaccion, tenant A/B, idempotencia, reintentos, orden y seguridad.
 - Traza contratos Domain/Application/Infrastructure y evidencia xUnit no ejecutada; P01–P08/N01–N12 son FUTUROS_NO_EJECUTADOS, no bugs ni pruebas certificadas.
