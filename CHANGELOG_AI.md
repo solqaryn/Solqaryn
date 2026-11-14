@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C10-01.M01.03: inventario real de almacenamiento [Javier :40]
+- Coteja diez blobs de interfaces, Cloudinary actual, StorageTenantContext, ImagenUploadSecurity y fuentes xUnit; distingue código actual de abstracción provider-neutral FUTURA sin R2 activo.
+- Identifica seis brechas de evidencia y P01–P05/N01–N12 como oráculos FUTUROS NO EJECUTADOS: MIME, tamaño, hash real, tenant A/B, ACL, URL temporal, auditoría, migración y rollback.
+- M01.03 solo documental dev, Scope Lock/V5 exact SHA y A5 independiente; sin transferir objetos, secretos, buckets, migraciones, pruebas live ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C05-03.M01.05: aceptación observable del builder [Javier :50]
 - Fija 14 criterios AC01–AC14 y 14 negativos N01–N14 con condiciones observables y suites FUTURAS (no ejecutadas) para catálogo allowlisted, tenant A/B, JWT/RBAC, preview, CAS, accesibilidad 320px y rollback.
 - Mantiene D01–D08 PENDIENTE del contrato M01.04, coteja línea base de 12 blobs de M01.03 y no afirma builder ni autoriza editor/API/DB, workers, eventos o publicación.
