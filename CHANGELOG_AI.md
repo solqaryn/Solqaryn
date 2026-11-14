@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C13-01.M01.05 criterios de aceptacion de privacidad [Javier :20]
+- Define AC01–AC16 positivos, N01–N16 negativos y NF01–NF10 de privacidad/versionado/revocacion, tenant A/B, JWT/RBAC y datos propios, todos FUTUROS_NO_EJECUTADOS.
+- Concilia M01.01–04, brechas B01–B12 y decisiones D01–D10 sin afirmar legal compliance, consentimiento activo, cookies o tests runtime.
+- Solo Markdown y CHANGELOG en dev, Scope Lock/V5 SHA exacto, A5 independiente y rollback git revert; sin endpoints, MySQL, eventos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C13-01.M01.04 riesgos y decisiones de privacidad [Javier :20]
 - Registra R01–R14 riesgos, S01–S10 supuestos NO_VERIFICADOS y D01–D10 decisiones ABIERTAS sobre cookies, retencion, versionado, revocacion, PII y tenant A/B.
 - Contrasta M01.01–03 y fuentes Git autenticas; ocho pares P/N FUTUROS_NO_EJECUTADOS, sin afirmar consentimiento activo, cumplimiento juridico ni ejecucion runtime.
