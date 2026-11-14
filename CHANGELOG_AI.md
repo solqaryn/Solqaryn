@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C09-02.M01.04: riesgos, supuestos y decisiones fidelizacion [Javier :30]
+- Documenta R01-R14 riesgos POTENCIALES (no vulnerabilidades acreditadas), S01-S08 supuestos con estatus verificable y D01-D08 decisiones pendientes para puntos, promociones, reseñas y posventa, preservando la frontera tenant A/B.
+- Traza los blobs M01.01/02/03 y las entidades Cliente, Venta, CreditoCliente y UsuarioEmpresa; P01-P08/N01-N08 son FUTUROS_NO_EJECUTADOS, nunca PASS runtime.
+- Exclusivamente docs/v5 + CHANGELOG por CAS fast-forward dev y CI Scope Lock/V5 en SHA exacto; A5 independiente pendiente, sin JWT/RBAC nuevo, migraciones, eventos, proveedores, QA/main/PROD.
+
 ## 2026-11-14 — V5 C09-02.M01.03: inventario de codigo y brechas de fidelizacion [Javier :30]
 - Contrasta 12 rutas originales con blobs exactos de Domain, Application, Infrastructure, API y Angular para delimitar Cliente, Venta, CreditoCliente, auditoria y permisos frente a futuros puntos, promociones y reseñas.
 - Formula G01-G12 de evidencia y P01-P08/N01-N08 FUTUROS_NO_EJECUTADOS; no confunde ausencia de prueba con defecto real ni afirma runtime certificado.
