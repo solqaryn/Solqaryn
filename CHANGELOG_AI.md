@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C07-01.M01.03: inventario causal de contratos y código de catálogo [Javier :00]
+- Contrasta diecisiete blobs Git de Domain, Application, Infrastructure, API y Angular; identifica rutas reales de productos, variantes, impuestos y tienda pública sin afirmar implementación universal.
+- Registra brechas G01–G08 de aislamiento/ownership, NULL legado, caché pública, impuesto y factura; P01–P06/N01–N12 son FUTUROS NO_EJECUTADOS, no pruebas runtime.
+- Sólo docs/v5 y CHANGELOG en dev; DAG 60/60 prerequisitos LISTO, Scope Lock/V5 provenance exact-SHA, A5 independiente pendiente, sin nuevos permisos, migraciones, endpoints, eventos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C07-01.M01.02: actores e interfaces del catalogo universal [Javier :10]
 - Define 12 actores A01–A12, 12 interfaces I01–I12 y 10 fronteras B01–B10 de ERP, tienda, variantes, precios, stock, impuestos y servicios futuros, sin crear rutas ni permisos.
 - Coteja ocho fuentes Git; P01–P08/N01–N12 son oraculos FUTUROS NO_EJECUTADOS. No atribuye cierre a M01.01 de otro autor ni universalidad a entidades existentes.
