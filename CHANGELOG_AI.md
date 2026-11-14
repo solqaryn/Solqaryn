@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C03-02.M01.06 puertas de RBAC/ABAC y privacidad [Javier :00]
+- Concilia cinco artefactos previos M01.01–05 con blobs Git exactos; fija bloqueos de identidad, membresia, recurso/sucursal, exportacion, URLs de media y soporte restringido.
+- Documenta cuatro positivos y doce negativos FUTUROS_NO_EJECUTADOS, reglas de pruebas HTTP/EF/MySQL posteriores, no confunde test source con PASS runtime.
+- Solo Markdown y CHANGELOG dev, Scope Lock/V5 exact SHA, A5 independiente Javier y rollback git revert; sin cambios JWT/RBAC/API/DB, eventos, workers o QA/main/PROD.
+
 ## 2026-11-14 — V5 C01-03.M02.06 salida contractual de configuración dinámica [Javier :00]
 - Concilia los seis contratos M01.06/M02.01-05 con blobs Git exactos y delimita gates por fase, capas, tenant A/B, JWT/RBAC y versión; sin asumir implementación.
 - Documenta cuatro casos positivos y doce negativos FUTUROS_NO_EJECUTADOS, idempotencia/correlación teóricas y NO activación de eventos, workers, API, MySQL ni despliegues.
