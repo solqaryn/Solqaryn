@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C01-01.M02.05: contrato de eventos e idempotencia, sin implementación [Javier :30]
+- Diseño documental `docs/v5/c01-01-m02-05-contrato-eventos-idempotencia-correlacion.md`: cinco blobs de código real (correlación, observabilidad, outbox, servicio y retry), seis futuros eventos de identidad, 12 oráculos EVT01–12 con positivos/negativos.
+- Diferencia EventoId, ClaveIdempotencia por EmpresaId y CorrelationId, límites, claims/leases, deduplicación y fail-closed tenant JWT/RBAC, sin crear webhook, dispatcher, workers, notificaciones, mensajes ni datos en proveedor.
+- C01-01 M01.01–06/M02.01–04 y tres cierres C00 LISTO; DAG F142 VALIDADO/G142 SI, claim CAS. Solo documento y CHANGELOG, A0–A4 proporcionales, A5 pendiente revisión independiente, no M02.06/M03/QA/main/PROD.
+
 ## 2026-11-13 — V5 C01-01.M02.04: diseño de configuración tipada y flags fail-closed [Javier :30]
 - Contrato `docs/v5/c01-01-m02-04-configuracion-tipada-ambitos-flags.md` contrastado contra seis fuentes dev: ConfigEmpresa, EF, PlanModulo/PoliticaModulosSaaS, TenantPermissionContext, VerifiedPlatformSupportTenant y ADR de precedencia.
 - Define ámbitos lógicos y diez casos CFG01–CFG10 positivos/negativos de tenant A/B, RBAC, suscripción, versión CAS, caché y referencias opacas sin credenciales; ningún flag, JWT, API, DB, plan o configuración ejecutable se modifica.
