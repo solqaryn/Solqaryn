@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C12-04.M01.04: riesgos y decisiones MySQL/cutover [Javier :30]
+- Documenta R01–R14 riesgos potenciales de snapshot, tenant A/B, JWT/RBAC, DDL único, FK, escrituras financieras, red, DNS y rollback sin declarar incidentes ni exposición real.
+- Conserva S01–S10 como NO_VERIFICADOS y D01–D10 como decisiones ABIERTAS con responsables; ocho pares P/N de pruebas futuras NO_EJECUTADAS y G01–G14 como brechas.
+- Solo dos Markdown en dev por CAS fast-forward, Scope Lock/V5 exact-SHA y A5 de otra Task; sin MySQL real, dumps, migraciones, Hostinger, Cloudflare, QA/main/PROD ni compras.
+
 ## 2026-11-14 — V5 C12-04.M01.03: inventario Git MySQL privado y cutover [Javier :30]
 - Inventaria 16 blobs Git del HEAD 213d08d6 (DbContext, API, EF/MySQL migrations, arquitectura, frontend y contratos C10/C12), diferenciando código versionado de datos/servicios live NO_VERIFICADOS.
 - Registra G01–G14 brechas de exportación, restore, conteos, checksum, FK, tenancy A/B, DDL único, seguridad, infraestructura y rollback; ocho pares P/N FUTUROS_NO_EJECUTADOS.
