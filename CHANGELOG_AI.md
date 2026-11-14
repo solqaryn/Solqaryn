@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C12-03.M01.03: inventario Git backend y workers [Javier :10]
+- Registra quince fuentes versionadas con SHA de blob comprobable de API, Application, Domain, Infrastructure, DbContext, migraciones, governance y documentos M01, sin afirmar workers desplegados.
+- Expone G01-G12 brechas verificables de cola, tenant fuera de HttpContext, RBAC diferido, idempotencia, migración única, restart y secretos; ocho pares P/N FUTUROS_NO_EJECUTADOS.
+- Solo dos Markdown en dev, CAS fast-forward, Scope Lock/V5 exact-SHA y A5 independiente pendiente; sin workers, MySQL, QA/main/PROD, DNS ni compras.
+
 ## 2026-11-14 — V5 C12-03.M01.02: actores y fronteras backend/worker [Javier :10]
 - Describe A01-A14 actores, F01-F12 entradas/salidas y fronteras de confianza API, Application, Domain, DbContext/VerifiedTenant, MySQL y worker futuro, sin introducir runtime.
 - Ocho pares P/N de aceptación FUTURA_NO_EJECUTADA; la ausencia de HttpContext en worker no autoriza tenant global ni bypass JWT/RBAC; secretos y transacciones fail-closed.
