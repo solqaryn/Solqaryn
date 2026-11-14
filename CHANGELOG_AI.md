@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C12-01.M01.04: riesgos y decisiones de topologia futura [Javier :50]
+- Registra R01-R16 riesgos, S01-S10 supuestos falsables y D01-D10 decisiones pendientes para topologia objetivo, con evidencia Git de Render/Aiven, proxy Vercel, Docker, tenant y rollback.
+- Mantiene todos los riesgos abiertos; no acredita red privada, proveedor, backups, IAM, DNS, workers o restauracion como hechos ejecutados ni activa servicios/pagos.
+- Solo docs/v5 y CHANGELOG en dev, publicacion CAS fast-forward y Scope Lock/V5 exact-SHA; A5 pendiente de otra Task Javier; sin QA/main/PROD, secretos o webhooks.
+
 ## 2026-11-14 — V5 C12-01.M01.03: inventario causal de topologia objetivo [Javier :50]
 - Audita 14 rutas Git por blob SHA e identifica 12 brechas y evidencia futura de red privada, MySQL, DNS/TLS, seguridad, workers, rutas y rollback; distingue configuraciones versionadas de servicios reales.
 - Documenta guards de Render/Aiven, Dockerfile, Vercel y stack Angular/.NET sin modificar codigo, proveedor, cuentas, API ni infraestructura; criterios runtime futuros NO_EJECUTADOS, A5 independiente pendiente.
