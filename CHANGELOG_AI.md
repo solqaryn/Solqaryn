@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C06-04.M01.04: riesgos y decisiones pendientes del portal de cliente [Javier :40]
+- Registra R01–R12 riesgos potenciales, S01–S08 supuestos falsables y D01–D08 decisiones PENDIENTES sin otorgar aprobaciones, privilegios ni cambios de arquitectura.
+- Coteja M01.01–03 y sesión storefront vigente; P01–P06/N01–N14 son oráculos FUTUROS NO_EJECUTADOS, no hallazgos de vulnerabilidad ni pruebas de portal completado.
+- Solo docs/v5 y CHANGELOG dev, Scope Lock/V5 exact SHA, A5 independiente pendiente; sin JWT/MySQL/Angular, SMTP, workers, eventos, secretos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C06-04.M01.03: inventario causal del portal de cliente [Javier :40]
 - Contrasta 16 blobs reales Angular/storefront/ERP: ya existe cuenta de tienda con login, registro, direcciones, favoritos, pedidos y notificaciones; separa esas interfaces de la certificación integral de portal C06-04.
 - Registra G01–G12 brechas de pruebas/contratos no certificadas, y P01–P06/N01–N14 como oráculos FUTUROS NO_EJECUTADOS; no imputa vulnerabilidades ni ausencia global sin evidencia.
