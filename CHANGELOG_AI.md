@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C05-04.M01.03: inventario real de fuentes de ligereza [Javier :00]
+- Inspecciona diez referencias de preparación, Angular, router, preload selectivo, SCSS responsive, estados ARIA y scripts; blobs exactos y límites de inferencia, sin benchmark.
+- Documenta diez brechas de evidencia y P06/N12 oráculos FUTUROS NO_EJECUTADOS para bundle, Core Web Vitals, HTTP, tenant A/B, accesibilidad, preload y rollback.
+- Solo dos Markdown en dev; Scope Lock/procedencia CHANGELOG exact-SHA, A5 independiente y revert normal, sin runtime, secretos, eventos, workers, QA/main/PROD.
+
 ## 2026-11-14 — V5 C05-04.M01.02: actores y fronteras de ligereza [Javier :00]
 - Delimita 12 actores y 12 entradas/salidas futuras de rendimiento percibido: lazy routing, preload explícito, feedback ARIA, métricas repetibles y aislamiento tenant A/B.
 - Contrasta cinco blobs de Angular y M01.01 con P01–P06/N01–N12 como oráculos FUTUROS NO_EJECUTADOS; el budget 650/750 kB es configuración, no prueba de build.
