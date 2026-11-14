@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C01-02.M02.02 contratos API/DTO y compatibilidad capabilities [Javier :40]
+- Diseña contratos conceptuales de evaluación de capacidades, catálogo y plan versionado, validaciones de ingreso y rutas FUTURAS no registradas; mantiene endpoints reales de permisos/matriz sin modificación.
+- Documenta JWT/RBAC y tenant A/B fail-closed, códigos 401/403/404/409/422/503, tres oráculos positivos y diez negativos documentales NO_EJECUTADOS; sin autoridad por DTO, UI o plan.
+- Únicamente Markdown M02.02 y CHANGELOG en dev; no hay DTO/endpoint MySQL/EF, workers/webhooks/eventos ni QA/main/PROD. Scope Lock/V5 exact-SHA, A5 pendiente y rollback git revert normal.
+
 ## 2026-11-14 — V5 C01-02.M02.01 modelo conceptual de capabilities y ownership [Javier :40]
 - Define entidades conceptuales DefinicionCapacidad, ReglaCapacidadPlan, AsignacionPlanEmpresa y RestriccionCapacidadRecurso; intersecta membresía verificada, grants RBAC, filtro comercial y propiedad de recurso sin conceder permisos por plan ni rol legacy.
 - Diez invariantes de denegación tenant A/B, rol, ownership, caducidad y auditoría; tres escenarios positivos y ocho negativos documentales NO_EJECUTADOS, con fuentes Git exactas.
