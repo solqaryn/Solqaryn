@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C13-01.M01.04 riesgos y decisiones de privacidad [Javier :20]
+- Registra R01–R14 riesgos, S01–S10 supuestos NO_VERIFICADOS y D01–D10 decisiones ABIERTAS sobre cookies, retencion, versionado, revocacion, PII y tenant A/B.
+- Contrasta M01.01–03 y fuentes Git autenticas; ocho pares P/N FUTUROS_NO_EJECUTADOS, sin afirmar consentimiento activo, cumplimiento juridico ni ejecucion runtime.
+- Entrega solo dos Markdown en dev por fast-forward/CAS, Scope Lock/V5 exact SHA, A5 de otra Task Javier, rollback git revert; sin API, MySQL, eventos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C13-01.M01.03 inventario codigo privacidad y consentimiento [Javier :10]
 - Inventaria once archivos reales con blobs exactos, auth localStorage, tenant server-side, proxy, E2E y auditoria; diferencia lectura estatica de prueba real de cookies/consentimiento.
 - Documenta doce brechas de evidencia, cuatro positivos y dieciseis negativos FUTUROS_NO_EJECUTADOS con controles JWT/RBAC/tenant A/B y sin declaracion de cumplimiento legal.
