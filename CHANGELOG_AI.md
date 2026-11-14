@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C05-02.M01.03: inventario real de branding [Javier :00]
+- Inspecciona 13 blobs exactos Domain/Application/API/EF/Angular: TemaVisual global Id=1, GET público colores, PUT protegido, reset a default, sanitización de hex y pruebas frontend existentes sin atribuir ejecución.
+- Separa seis brechas técnicas de vulnerabilidades no demostradas; seis oráculos positivos y doce negativos FUTUROS cubren tenant A/B, JWT/RBAC, versionado CAS, caché, contrastes, logo y rollback.
+- M01.03 solo inventario documental en dev, sin migrar tema global a per-tenant ni cambiar API/DB/UI; Scope Lock/V5 exact SHA, A5 independiente, rollback revert normal, no QA/main/PROD.
+
 ## 2026-11-14 — V5 C05-02.M01.02: actores y superficies de branding [Javier :00]
 - Traza ocho actores, nueve entradas/salidas y nueve fronteras de confianza para tema visual, presets futuros, logo, identidad pública y estado multiempresa, sin conceder autoridad desde el cliente.
 - Coteja ocho blobs Angular/SCSS; seis positivos y doce negativos de aceptación FUTUROS (no ejecutados), diferenciando `restaurar` existente de versionado CAS/publicación aún sin acreditar.
