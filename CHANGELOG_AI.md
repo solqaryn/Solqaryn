@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C09-03.M01.05: aceptacion observable Social Hub [Javier :10]
+- Define AC01-AC16 con dieciseis positivos P y dieciseis negativos N FUTUROS_NO_EJECUTADOS para campañas, segmentos, opt-out, idempotencia, tenant A/B, JWT/RBAC, métricas, auditoría y rollback, sin atribuir PASS runtime.
+- Registra RNF01-RNF10 y traza cuatro documentos M01 anteriores y blobs Cliente, UsuarioEmpresa, MensajeOutbox; .NET/MySQL/Angular/Playwright se reservan para fases de código real y CI dirigida.
+- Sólo docs/v5 + CHANGELOG por CAS fast-forward y checks Scope Lock/V5 exact SHA; A5 independiente pendiente, sin eventos, workers, proveedores, secretos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C09-03.M01.04: riesgos supuestos y decisiones Social Hub [Javier :10]
 - Registra R01-R14 riesgos POTENCIALES, S01-S08 supuestos NO_VERIFICADOS y D01-D08 decisiones PENDIENTES sobre consentimiento/opt-out, tenant A/B, JWT/RBAC, segmentación, contenido, proveedores, métricas y rollback; sin declarar vulnerabilidades existentes.
 - Traza M01.01-03 y blobs reales de Cliente, UsuarioEmpresa, MensajeOutbox y guard Angular; P01-P06/N01-N10 son FUTUROS_NO_EJECUTADOS, no se atribuye PASS runtime.
