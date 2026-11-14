@@ -1,3 +1,8 @@
+## 2026-11-13 — V5 C01-01.M02.01: contratos de entidades, ownership e invariantes de identidad universal [Javier :30]
+- Documento `docs/v5/c01-01-m02-01-contratos-entidades-ownership-invariantes.md`: matriz de siete fuentes de código reales con blob, grafo de pertenencia y doce invariantes positivas/negativas, tenant A/B, revocación, rol y privacidad.
+- Preflight individual C01-01.M01.01–06 + C00-01.M06.06 + C00-03.M01.06 + C00-03.M06.06 LISTO; DAG F138 VALIDADO/G138 SI y claim CAS exclusivo; COLA sola no constituye autorización general.
+- TIPO 1 diseño documental: NO implementa .NET, API, Angular, EF/MySQL, JWT/RBAC, workers ni eventos; no desbloquea M02.02–06/M03/M06/QA/main/PROD; requiere Scope Lock y V5 provenance SUCCESS exact-SHA, A5_PENDIENTE otra Task Javier.
+
 ## 2026-11-13 — V5 C00-02.M06.06: cierre DEV y mapa de dependencias del modelo de Tasks [Javier :30]
 - Inventario 35/35 predecesoras LISTO (M01–M05 completos, M06.01–05), gate DAG F113 VALIDADO/G113 SI, COLA G73/O73 SI y cuenta Javier verificados antes de reclamar C00-02.M06.06.
 - Cierre documental controlado: 136 entradas DAG examinadas sin sucesoras explícitas de C00-02.M06.06; no se liberan tareas sin DAG validado, no se modifican fórmulas ni se crea dispatcher, webhook, PR, rama, Task o permisos.
