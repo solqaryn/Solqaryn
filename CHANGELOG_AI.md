@@ -1238,3 +1238,8 @@
 - Cierra solo el contrato documental M01 de contexto tenant: seis predecesores LISTO/A5 Javier, 3 casos positivos y 7 negativos sobre spoofing host/headers, pertenencia revocada, RBAC, sucursal, A/B, caché y privacidad.
 - No implementa resolver host, API, JWT, middleware, EF/MySQL ni DNS; ningún worker/evento/Task nuevo. Evaluación M02 exclusivamente por DAG técnico individual y CAS readback; QA/main/PROD no autorizados.
 - A0–A4 documentales condicionadas a Scope Lock y proveniencia CHANGELOG exact SHA y BITACORA A:Z; A5 independiente por otro Javier; rollback git revert normal.
+
+## 2026-11-14 — SOLQARYN V5 C02-04.M01.06 salida documental consola global [Javier :20]
+- Contrato de bloqueo, rollback y salida M01 de consola global auditada; 40/40 antecedentes M01 LISTO+A5 Javier, DAG por ID VALIDADO/SI y CAS único. No libera M02/privilegios en cascada.
+- Separa plataforma de ERP con requisitos futuros de MFA/reauth, motivo, TTL, scope por tenant/recurso/acción, auditoría crítica e idempotencia. P01-P03 y N01-N07 son oráculos documentales, no tests de privilegio en vivo.
+- A0-A4 documentales con Scope Lock y V5 CHANGELOG SUCCESS exact-SHA + BITACORA 26 campos y PLAN/COLA readback; A5 por Task Javier distinta. Sin MFA/JWT/MySQL/API/worker/eventos nuevos, QA/main/PROD; rollback git revert normal.
