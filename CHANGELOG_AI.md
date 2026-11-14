@@ -1388,3 +1388,7 @@
 - Doce invariantes y 5 positivos/14 negativos simbólicos; no son pruebas runtime ni autorizan emitir, consumir, instalar, ejecutar o programar eventos, webhooks, brokers, workers o Tasks.
 - Scope Lock y V5 provenance exact SHA, PLAN/COLA/BITACORA readback, A5 independiente pendiente; sin API/JWT/MySQL/secretos ni QA/main/PROD, rollback git revert normal.
 
+## 2026-11-14 — SOLQARYN V5 C04-04.M01.01 alcance documental de cobros por enlace (PRIMARY DEV 05 JAVIER)
+- Se delimita objetivo y no-alcance de pagos por enlace, webhook firmado, replay, conciliación y reversión provider-neutral en `docs/v5/c04-04-m01-01-alcance-cobros-enlaces-provider-neutral.md`, sin ejecutar pagos ni activar proveedores.
+- Preflight DAG documental validado con 60/60 prerrequisitos LISTO; se distinguen invariantes NR01–NR10, cinco positivos y doce negativos FUTUROS, no tests runtime.
+- A0–A3 son controles documentales; A4 requiere checks Scope Lock y procedencia del CHANGELOG en SHA publicado y readback institucional; revisión A5 separada, solo otra Task Javier. No QA/main/PROD.
