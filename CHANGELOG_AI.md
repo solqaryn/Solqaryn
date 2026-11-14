@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C05-03.M01.03: inventario causal builder gobernado [Javier :50]
+- Audita 12 blobs exactos en frontend, Application, API y estilos: tema visual, filtros de permisos, tenant verificado, configuración empresarial y diseño; NO afirma que exista builder funcional.
+- Distingue patrones reutilizables de siete brechas: catálogo cerrado, XSS/SSRF, JWT/RBAC/tenant A/B, versionado CAS, UI accesible, persistencia y preview/publicación; P01–P05/N01–N12 son criterios FUTUROS, no pruebas ejecutadas.
+- Solo dos Markdown en dev, sin runtime/DB/worker/eventos; Scope Lock y procedencia de CHANGELOG exact-SHA requeridos, A5 de Task Javier distinta y rollback normal mediante git revert; sin QA/main/PROD.
+
 ## 2026-11-14 — V5 C05-03.M01.02: actores y fronteras del builder [Javier :40]
 - Documenta 12 actores y 12 entradas/salidas FUTURAS de builder allowlisted con preview aislada, publicación versionada y permisos backend/tenant.
 - Coteja seis blobs de tema Angular/SCSS/API/rutas; P01–P05 y N01–N12 son oráculos FUTUROS NO EJECUTADOS sobre código inyectado, URL/SSRF, A/B, JWT/RBAC, profundidad y CAS.
