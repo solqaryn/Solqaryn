@@ -1,3 +1,15 @@
+## 2026-11-15 — V5 C13-04.M02.03 modelo de evidencia, índices y fixtures visuales [Javier :10]
+- Diseña cinco entidades conceptuales de evidencia reproducible, claves y diez fixtures positivos/negativos; no introduce MySQL, índices ejecutables ni migraciones.
+- Preserva tenant A/B, privacidad, WCAG y Playwright como validación futura, con A5 independiente y Scope Lock STRICT.
+
+## 2026-11-15 — V5 C13-04.M02.04 configuración tipada y ámbitos visuales [Javier :10]
+- Propone doce claves tipadas y doce reglas de rechazo, preservando Angular 22.2.1, tema tenant y reduced motion sin activar feature flags operativos.
+- Seguridad backend y regresión accesible permanecen pendientes de tests reales; sin cambio de CSS, API, JWT, MySQL o despliegue.
+
+## 2026-11-15 — V5 C13-04.M02.05 contrato futuro de eventos UX e idempotencia [Javier :10]
+- Define cuatro mensajes conceptuales, envelope de diez campos, doce reglas de idempotencia/correlación y ocho pares de pruebas futuras no ejecutadas.
+- No instala webhook, cola, dispatcher, workers ni telemetría externa; mantiene auditoría append-only, Scope Lock y A5 independiente.
+
 ## 2026-11-15 — V5 C13-04.M02.01 entidades y ownership de experiencia visual [Javier :50]
 - Define catorce entidades lógicas UI/tenant/foco/estado y catorce invariantes no-regresión, con ocho pares P/N FUTUROS_NO_EJECUTADOS.
 - Conserva JWT/RBAC y tenant A/B desde backend, foco/responsive/accesibilidad como pruebas por ejecutar; ningún cambio Angular, CSS, API, tokens operativos o DB.
