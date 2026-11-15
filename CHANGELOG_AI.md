@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C05-01.M02.02 contrato API/DTO seguro de design system [Javier :20]
+- Define ocho operaciones futuras, ocho DTO tipados, doce errores seguros, dieciseis validaciones y diez pares P/N FUTUROS_NO_EJECUTADOS para tema, token, branding, preview, idempotencia y aislamiento A/B.
+- No crea endpoints, controllers, DTO .NET, componentes Angular, CSS, EF/MySQL o rutas de despliegue; JWT/RBAC y ownership siguen siendo autoridad exclusiva del backend, NO_APLICA runtime al diff Markdown.
+- Entrega R0 individual V16 con Scope Lock STRICT y A0-A4 documentales en SHA causal; A5 requiere otra Task Javier, sin QA/main/PROD y rollback git revert ordinario.
+
 ## 2026-11-15 — V16 C05-01.M02.01 entidades y ownership de design system [Javier :20]
 - Define catorce entidades conceptuales, dieciocho invariantes fail-closed, relaciones por tenant y diez pares positivos/negativos FUTUROS_NO_EJECUTADOS para tokens, temas, componentes, branding, seguridad y accesibilidad.
 - Preserva autenticacion/RBAC y propiedad A-B desde backend; ninguna entidad EF, API, CSS ni migracion fue implementada, ni se reclama ejecutar MySQL/Playwright o certificar WCAG.
