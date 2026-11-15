@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C12-04.M02.02 contrato conceptual API/DTO de cutover MySQL privado [Javier :10]
+- Propone nueve operaciones, diez DTO, catorce errores saneados y ocho pares P/N futuros para preflight, manifiestos, comparaciones, restore efímero y aprobación separada de cutover.
+- Mantiene rutas simbólicas NO_IMPLEMENTADAS y control tenant JWT/RBAC, checksum, SHA, CAS/lease, revocación y fail-closed; sin acciones sobre Aiven/MySQL productivo ni migraciones.
+- Documento y CHANGELOG únicamente en dev, Scope Lock/V5 SHA exacto, A0–A4 documental, A5 independiente; prohíbe QA/main/PROD, DNS, secrets y permisos comerciales.
+
 ## 2026-11-15 — V5 C12-04.M02.01 entidades ownership MySQL privado cutover documental [Javier :20]
 - Define doce entidades conceptuales, dieciseis invariantes de tenant/PK/FK/manifest/privilegios y diez pares positivos-negativos FUTUROS_NO_EJECUTADOS, sin inventar resultados MySQL.
 - Conserva compatibilidad .NET 10/EF Core 10.0.12/MySql.EntityFrameworkCore 10.0.9, Verified* y autorizacion de migrador unico; Hostinger/Cloudflare son objetivos NO ACTIVADOS.
