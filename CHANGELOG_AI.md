@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C01-02.M03.02 preflight Application de capabilities [Javier :10]
+- Nuevo C0102CapabilityApplicationPreflight no autorizante que verifica tenant, sucursal y rechaza políticas, grants, escritura y exportación del cliente antes de invocar Domain; todas las propiedades de acceso permanecen false.
+- Doce tests xUnit positivos/negativos de contexto ausente, tenant B, branch, RBAC relacional, revocación, permisos y allowlist; exigir CI backend/seguridad/autorización exact SHA, no documentar PASS sin resultado real.
+- R2 Application-only sin API, EF/MySQL, Angular, jobs runtime, secretos o producción; Scope Lock STRICT, A0–A4 y A5 independiente, rollback git revert.
+
 ## 2026-11-15 — V16 C05-01.M03.01 Domain de tokens de design system [Javier :50]
 - Implementada prevalidacion pura ASP.NET Core 10 Domain de tokens tipados y allowlisted, contexto backend tenant A/B, RBAC, revocacion, epoch y revision optimista; nunca concede autorizacion ni actualiza temas.
 - Incluidas 15 pruebas xUnit con asserts positivos, negativos, limites pixel, XSS/CSS, token desconocido, cross-tenant, revision, revocacion e idempotencia GUID; pruebas CI se acreditan solo con job real SUCCESS.
