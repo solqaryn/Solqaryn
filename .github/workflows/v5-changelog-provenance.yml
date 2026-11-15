@@ -10,8 +10,8 @@ on:
 permissions:
   contents: read
 concurrency:
-  group: solqaryn-v5-changelog-dev
-  cancel-in-progress: true
+  group: solqaryn-v5-changelog-${{ github.ref }}-${{ github.sha }}
+  cancel-in-progress: false
 jobs:
   provenance:
     name: V5 - Sin encabezados vacios ni atribucion cruzada

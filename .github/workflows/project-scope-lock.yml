@@ -10,10 +10,10 @@ on:
       - dev
       - main
 
-# Cancel superseded SHA runs; never cancel one PR's checks because of another PR.
+# Keep checks per immutable SHA so another dev push cannot cancel an audit.
 concurrency:
-  group: scope-lock-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
-  cancel-in-progress: true
+  group: scope-lock-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}-${{ github.sha }}
+  cancel-in-progress: false
 
 jobs:
   verify-solqaryn-project-scope:

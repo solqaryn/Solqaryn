@@ -29,8 +29,8 @@ permissions:
   contents: read
 
 concurrency:
-  group: priority4-quality-${{ github.ref }}
-  cancel-in-progress: true
+  group: priority4-quality-${{ github.ref }}-${{ github.sha }}
+  cancel-in-progress: false
 
 jobs:
   quality:

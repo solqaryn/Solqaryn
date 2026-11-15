@@ -1,3 +1,8 @@
+## 2026-11-15 — CI auditada por SHA sin cancelaciones entre commits [Javier propietario]
+- Preserva ejecuciones independientes de los cinco controles críticos en dev: backend, seguridad y pruebas, calidad ERP, Scope Lock y procedencia V5 mediante grupos de concurrencia por SHA con cancel-in-progress desactivado.
+- No retira jobs, pruebas, pasos, filtros, permisos, validaciones, autoría ni branch protections. Cada ejecución mantiene su SHA, logs y resultado; CANCELLED, SKIPPED, FAIL e IN_PROGRESS jamás se clasifican como PASS.
+- A0–A4 y A5 independiente continúan requiriendo evidencia verdadera. Reversión mediante git revert ordinario, preservando el historial y sin tocar QA/main/PROD, datos, proveedores ni secretos.
+
 ## 2026-11-15 — V5 C10-03.M02.01 entidades y ownership de inventario condicionado [Javier :50]
 - Diseña 13 objetos lógicos futuros de inventario/medios, 14 invariantes tenant-aware y 10 pares de pruebas FUTURAS; inventario histórico permanece NO_VERIFICADO, nunca cero supuesto.
 - Distingue cero autenticado (sin migración histórica), positivo conciliado y estado inconsistente; mantiene MIME/URL temporal/JWT/RBAC/hold y aislamiento A/B fail-closed sin ejecutar Cloudinary/R2/SQL.

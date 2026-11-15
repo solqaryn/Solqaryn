@@ -20,8 +20,8 @@ permissions:
   actions: read
 
 concurrency:
-  group: priority3-security-${{ github.ref }}
-  cancel-in-progress: true
+  group: priority3-security-${{ github.ref }}-${{ github.sha }}
+  cancel-in-progress: false
 
 jobs:
   authorization-files-secrets:
