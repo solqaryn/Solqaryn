@@ -1,3 +1,7 @@
+## 2026-11-15 — V5 C10-01.M02.04: configuración tipada y banderas seguras de storage neutral [Javier :20]
+- Especifica doce contratos tipados conceptuales, dieciséis invariantes de autoridad, límites y tenancy y ocho pares de casos futuros para políticas de almacenamiento por tipo, empresa y entorno.
+- Banderas nuevas apagadas por defecto; sin código, cambios de DI/EF/MySQL, nuevos proveedores o eventos. Cloudinary permanece; R2/Hostinger y promoción QA/main/PROD no autorizados. A5 independiente pendiente.
+
 ## 2026-11-15 — V5 C10-01.M02.02 API, DTO y errores de storage neutral [Javier :50]
 - Especifica ocho operaciones, siete DTO conceptuales y doce denegaciones con JWT/RBAC, tenant A/B, MIME real, SHA-256, tamaño y URLs temporales; escenarios P/N FUTUROS_NO_EJECUTADOS.
 - Mantiene interfaces Cloudinary actuales, cero R2/HTTP real, sin migración, credenciales ni cambios QA/main/PROD; requiere A5 independiente y CI causal del SHA documental.
