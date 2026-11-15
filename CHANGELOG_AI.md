@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C08-01.M02.02 API DTO y errores seguros de citas/agenda [Javier :10]
+- Define contratos R0 OP01–OP12, DTO01–DTO12, ERR01–ERR14 y VAL01–VAL18 de cita, recursos, personal, disponibilidad y cancelación con UTC/IANA/DST, A/B, JWT/RBAC y control de concurrencia.
+- Doce pares T01–T12 FUTUROS_NO_EJECUTADOS; no endpoint, API real, MySQL, EF, UI, Playwright, evento, migración ni modificación de reservas ERP; métricas runtime NO_MEDIDO.
+- Solo documento y sección CHANGELOG autocontenida, fast-forward/CAS en dev, Scope Lock y V5 exact SHA, BITACORA/readback y A5 distinto Javier pendiente; sin QA/main/PROD.
+
 ## 2026-11-15 — V16 C08-01.M02.01 entidades y ownership conceptual citas/agenda [Javier :10]
 - Contrato documental R0 con E01–E14, INV01–INV18, REL01–REL12 para empresa, sucursal, servicio, profesional, recurso, citas, reprogramación y cancelación; separa cita de reservas de existencias.
 - Doce pares T01–T12 FUTUROS_NO_EJECUTADOS sobre tenant A/B, JWT/RBAC, UTC/IANA/DST, doble booking, CAS, rollback e idempotencia; 0 tests runtime, MySQL 8.4 y concurrencia real pendientes para código R2.
