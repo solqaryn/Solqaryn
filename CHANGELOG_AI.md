@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C10-04.M03.04 adaptador aislado de caché y jobs sin grants [Javier :50]
+- Añade Infrastructure .NET10 aislado read-only con captura de operación allowlisted inmutable, tenant/actor/version scoped y reutilización de Domain/Application; nunca emite lease, queue, exportación, backup o grant R2.
+- Incorpora 12 xUnit de negativos de identidad, tenant A/B, versión, permiso revocado, mutation del allowlist, service grant, payload inválido, deadline, retry, cancelación y ausencia de capacidades. Requiere CI backend/security/auth causal.
+- Sin conexiones HTTP, JWT real, EF/MySQL, R2 o workers; A4 Scope Lock/V5 y A5 independiente obligatorios, sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C15-03.M03.04 adaptador aislado de evidencia tenancy y seguridad [Javier :50]
 - Implementa Infrastructure .NET 10 read-only que compara recurso/actor/tenant/SHA capturados, reutiliza Application+Domain y deniega cualquier acceso, persistencia, descarga, job, control plane o bypass.
 - Incorpora 12 xUnit reales de preflight sin grant, tenant A/B, revocación, SHA, evidencia adulterada, branch, URL vencida, intentos de bypass/escritura y cancelación; su CI backend/seguridad/autorización debe certificar SHA causal.
