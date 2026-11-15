@@ -1,3 +1,13 @@
+## 2026-11-15 — V5 C10-02.M02.04 opciones tipadas y dominios de archivos futuros [Javier :10]
+- Documenta 18 opciones conceptuales, 4 ámbitos de precedencia, 12 reglas fail-closed y 12 pares de aceptación FUTUROS_NO_EJECUTADOS para prefijos privados, enlaces firmados, hosts y lifecycle.
+- Tenant A/B y JWT/RBAC sólo server-side, TTL/replay, retención, cache y secreto fuera del repo; no activa R2, DNS, migraciones, flags, runtime ni producción.
+- Documento docs/v5 y CHANGELOG autocontenido, Scope Lock/V5 exact SHA para LISTO, A5 independiente y rollback git revert.
+
+## 2026-11-15 — V5 C10-02.M02.05 eventos inertes, deduplicacion y limites futuros [Javier :10]
+- Especifica 12 eventos propuestos, 14 invariantes de idempotencia/replay, 5 grupos de consumidores y 12 pares PN FUTUROS_NO_EJECUTADOS para archivo, URL firmada y dominios.
+- Mantiene Cloudinary vigente, tenant A/B, privacidad y retención; cero webhooks, workers, colas, outbox, R2 o DNS reales.
+- Publicacion documental de dos IDs independientes en un commit fast-forward CAS, cada ID con auditorias A0–A4 y A5 ajena pendiente.
+
 ## 2026-11-15 — V5 C10-02.M02.03 persistencia conceptual y fixtures de archivos [Javier :00]
 - Define doce proyecciones de persistencia, doce índices candidatos, doce invariantes de integridad y doce pares de fixtures FUTUROS_NO_EJECUTADOS para archivos privados, TTL, retención y migración reversible.
 - Sin SQL, MySQL, EF, Cloudinary/R2/DNS, proveedor, API ni QA/main/PROD; no ejecuta restauración ni autoriza archivos externos.
