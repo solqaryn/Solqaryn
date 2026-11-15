@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C11-04.M03.04 adapter snapshot privado de observabilidad [Javier :40]
+- Anade Infrastructure .NET10 aislado con snapshot sintetico inmutable y copia profunda de labels; compone gate Application con identidad tenant y SHA exactos, no expone telemetria, no consulta bases reales ni certifica SLO.
+- 11 xUnit adversariales cubren tenant A/B, JWT/RBAC/revocacion, SHA, etiquetas PII, NO_MEDIDO, cambio mutable de labels, correlacion y cancelacion; CI Release/seguridad/Authorization/Scope Lock/V5 causal requerida.
+- V15 R2, V17 single-active; A5 de Task Javier distinta, integraciones MySQL/HTTP no aplican a artefacto aislado; rollback git revert normal, sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C07-04.M03.05 lote acotado de revisión comercial sin efectos [Javier :40]
 - Implementa procesador Infrastructure .NET 10 de hasta 16 tickets; reutiliza adaptador de lectura M03.04 con validación backend de tenant, actor, pertenencia y permiso. Idempotencia intra-lote y rechazos de comandos inconsistentes, sin transacciones, pagos, exportaciones ni hosted worker.
 - Diez xUnit adversariales: tenant B, revocación, SHA, importe, versión, divisa, operación fiscal, duplicado/replay, batch size y cancelación. CI Release, Seguridad multiempresa, Authorization, Scope Lock y V5 requeridos por SHA.
