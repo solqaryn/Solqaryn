@@ -4296,3 +4296,8 @@
 - Implementado preflight puro .NET 10 de asignacion shared/dedicated por tenant y revision CAS; JWT/membresia/RBAC servidor, binding opaco de catalogo y rechazo de destino tenant B.
 - Anadidos once tests xUnit positivos/negativos: DSN de cliente, fallback cruzado, cutover y DDL destructivos, version caduca, rol revocado, idempotencia faltante y ausencia de backup/restore de prueba.
 - Riesgo V15 R2; veredicto nunca autoriza conexion ni migracion; sin EF/MySQL, API, infraestructura real ni secretos. CI backend/seguridad/autorizacion/Scope Lock/V5 por SHA, A5 independiente y rollback git revert.
+
+## 2026-11-15 — V16 C07-03.M01.06 bloqueo y rollback inventario y compras [Javier :10]
+- Cierra contrato DOCUMENTAL de M01 con dieciseis BL01-BL16 para tenencia A/B, almacen/sucursal, idempotencia, transferencias, costos, stock, fallos parciales, Scope Lock, CI y A5.
+- Define diez alternativas RB01-RB10 y doce condiciones SAL01-SAL12; relaciona NR01-12, R01-12, D01-08 y P01-14/N01-14 FUTUROS NO_EJECUTADOS, sin afirmar test SQL/HTTP ejecutado.
+- R0, solo documento y CHANGELOG, sin API, JWT, DB, facturas, workers o UI; Scope Lock y V5 exact-SHA antes de LISTO, A5 otra Task Javier, rollback git revert sin QA/main/PROD.
