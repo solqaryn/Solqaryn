@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C04-02.M02.02 contratos propuestos API y DTO SaaS [Javier :50]
+- Define sólo en documentos 10 operaciones contractuales futuras, nueve DTO, doce errores y 12 pares positivos/negativos para SaaS billing, con rutas inactivas y compatibilidad explícita del onboarding existente.
+- Preserva JWT/RBAC, tenant A/B, versiones inmutables, idempotencia, BOLA/IDOR y decisiones D01–D08 aún no aprobadas; no implementa API, Angular, MySQL, cobros ni eventos.
+- Entrega individual y secuencial en dev, CHANGELOG autocontenido, Scope Lock/V5 exact-SHA y A5 independiente pendiente; sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C04-02.M02.01 entidades y ownership de contratos SaaS [Javier :50]
 - Define diseño exclusivamente documental de 16 objetos contractuales, sus relaciones por EmpresaId y 18 invariantes fail-closed; diferencia contrato legal futuro de Suscripcion SaaS existente.
 - Registra 12 pares de escenarios positivos/negativos FUTUROS, puertas D01–D08 económicas aún abiertas y restricciones JWT/RBAC/tenant A/B, idempotencia y auditoría sin activar runtime, MySQL, pagos ni eventos.
