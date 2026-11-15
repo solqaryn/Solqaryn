@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C01-03.M03.03 gate de autorización de configuración dinámica [.NET 10 Javier :50]
+- Implementa gate Application que obtiene JWT/membresía/RBAC/entitlement actuales desde backend, valida tenant propietario y catálogo ordinal exacto y compone Domain/Application sin conceder escritura.
+- Agrega doce xUnit de rutas positivas, negativas y errores, incluida regresión OrdinalIgnoreCase de M03.01; se exigen GitHub Actions backend, seguridad, autorización, Scope Lock y procedencia V5.
+- Es código R2 de prevalidación sin DI/API/EF/MySQL ni mutación durable; resultado positivo requiere adaptador autenticado con CAS y A5 de otra Task Javier; rollback git revert normal.
+
 ## 2026-11-15 — V17 C14-01.M03.03 autorización fail-closed de aceptación funcional [Javier :50]
 - Implementa gate Application .NET 10 con lector backend confiable, JWT actual, membresía/RBAC/ownership/tenant, SHA y catálogos verificados; nunca acepta elevación declarada por cliente.
 - Añade trece pruebas xUnit positivas/negativas: tenant A/B, revocación, límites, SHA, privacidad, error, cancelación y ausencia de concesión; CI del SHA requerido para A0–A4.
