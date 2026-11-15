@@ -3076,3 +3076,23 @@
 - Define E01–E08, INV01–INV14 y cinco positivos/diez negativos futuros de UX ligera, tenancy A/B, deduplicación HTTP, acceso RBAC y medición de budget/CWV sin fingir valores medidos.
 - Contrato M02.01 documental con M01.01–06 LISTO+A5, sin crear tablas, DTO, CSS, Angular, endpoints, métricas reales ni scripts de CI.
 - Dev fast-forward/CAS, Scope Lock y provenance V5 SHA exacto, A5 de otra Task Javier pendiente y rollback git revert; no QA/main/PROD.
+
+## 2026-11-15 — V5 C05-04.M02.02: Contratos API, DTO, errores y compatibilidad de ligereza UI [Javier :10]
+- Contrato M02 documental de C05-04.M02.02 con escenarios positivos/negativos FUTUROS_NO_EJECUTADOS, fuentes Git reales y límites tenant A/B, JWT/RBAC, privacidad, accesibilidad y seguridad fail-closed.
+- Sin cambios runtime de Angular/.NET, endpoints, DTO compilados, MySQL, flags, dispatcher, webhooks ni eventos; métricas bundle/CWV HTTP NO_MEDIDAS; M02.06 sigue sujeto a DAG y A5.
+- Solamente docs/v5 y CHANGELOG en dev con CAS, Scope Lock y check V5 exact-SHA; A5 independiente pendiente; rollback git revert sin QA/main/PROD.
+
+## 2026-11-15 — V5 C05-04.M02.03: Persistencia, índices, migraciones y datos de prueba de ligereza UI [Javier :10]
+- Contrato M02 documental de C05-04.M02.03 con escenarios positivos/negativos FUTUROS_NO_EJECUTADOS, fuentes Git reales y límites tenant A/B, JWT/RBAC, privacidad, accesibilidad y seguridad fail-closed.
+- Sin cambios runtime de Angular/.NET, endpoints, DTO compilados, MySQL, flags, dispatcher, webhooks ni eventos; métricas bundle/CWV HTTP NO_MEDIDAS; M02.06 sigue sujeto a DAG y A5.
+- Solamente docs/v5 y CHANGELOG en dev con CAS, Scope Lock y check V5 exact-SHA; A5 independiente pendiente; rollback git revert sin QA/main/PROD.
+
+## 2026-11-15 — V5 C05-04.M02.04: Configuración tipada, ámbitos y flags seguros de ligereza UI [Javier :10]
+- Contrato M02 documental de C05-04.M02.04 con escenarios positivos/negativos FUTUROS_NO_EJECUTADOS, fuentes Git reales y límites tenant A/B, JWT/RBAC, privacidad, accesibilidad y seguridad fail-closed.
+- Sin cambios runtime de Angular/.NET, endpoints, DTO compilados, MySQL, flags, dispatcher, webhooks ni eventos; métricas bundle/CWV HTTP NO_MEDIDAS; M02.06 sigue sujeto a DAG y A5.
+- Solamente docs/v5 y CHANGELOG en dev con CAS, Scope Lock y check V5 exact-SHA; A5 independiente pendiente; rollback git revert sin QA/main/PROD.
+
+## 2026-11-15 — V5 C05-04.M02.05: Eventos conceptuales, idempotencia, correlación y límites de ligereza UI [Javier :10]
+- Contrato M02 documental de C05-04.M02.05 con escenarios positivos/negativos FUTUROS_NO_EJECUTADOS, fuentes Git reales y límites tenant A/B, JWT/RBAC, privacidad, accesibilidad y seguridad fail-closed.
+- Sin cambios runtime de Angular/.NET, endpoints, DTO compilados, MySQL, flags, dispatcher, webhooks ni eventos; métricas bundle/CWV HTTP NO_MEDIDAS; M02.06 sigue sujeto a DAG y A5.
+- Solamente docs/v5 y CHANGELOG en dev con CAS, Scope Lock y check V5 exact-SHA; A5 independiente pendiente; rollback git revert sin QA/main/PROD.
