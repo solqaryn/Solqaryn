@@ -67,7 +67,9 @@ test('C15-05.M04.05: landmarks, jerarquía, etiquetas y contraste AA estático',
   await expect(main.locator('ol.controls > li > h3')).toHaveCount(4);
   await expect(page.getByRole('region', { name: 'Alcance y fuente de esta pantalla' })).toBeVisible();
   await expect(page.getByRole('link', { name: 'Regresar a administración de plataforma' })).toHaveCount(1);
-  await expect(main.locator('form, input, button')).toHaveCount(0);
+  // M04.02 agrega exclusivamente la revalidación de sesión: no permite formularios ni acciones operativas.
+  await expect(main.getByRole('button', { name: 'Revalidar sesión de auditoría' })).toHaveCount(1);
+  await expect(main.locator('form, input, button:not([aria-label="Revalidar sesión de auditoría"])')).toHaveCount(0);
 
   const ratios = await page.evaluate(() => {
     function rgb(value: string): number[] {
