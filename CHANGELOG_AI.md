@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-01.M02.02 contratos API/DTO, errores y compatibilidad de cobertura [Javier :50]
+- Propone OP01–OP08 lecturas de auditoria, E01–E12 respuestas de error y VAL01–VAL10 de validacion con T01–T12 positivos/negativos FUTUROS_NO_EJECUTADOS; no agrega endpoints.
+- Contrasta AuditoriaController, AutomatizacionesController y PlataformaSesionController reales sin confundir la auditoria comercial con el control institucional ni atribuir autoridad del cliente.
+- Cambios exclusivamente documentales en dev y CHANGELOG autocontenido, Scope Lock/V5 exact-SHA, A5 ajeno pendiente; sin implementaciones MySQL/JWT/RBAC, webhooks, migraciones, QA/main/PROD.
+
 ## 2026-11-14 — V5 C15-05.M02.03 persistencia, índices y fixtures auditoría operativa [Javier :00]
 - Define PD01–PD12 como invariantes de fuente autorizada, IX01–IX06 como índices hipotéticos y FX01–FX12 como escenarios sintéticos FUTUROS_NO_EJECUTADOS; no crea EF migrations ni tablas.
 - Contrasta modelos C15-05.M02.01/M02.02 con PLAN/COLA/DAG/BITACORA, A5 independiente, SHA CI y seguridad tenant A/B, JWT/RBAC; no atribuye transacción distribuida al Sheet.
