@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C11-04.M02.05 eventos, idempotencia y correlación observabilidad [Javier :50]
+- Especifica EVT01–EVT14 futuros, INV01–INV16 de aislamiento/privacidad/idempotencia, correlación causal y límites fail-closed; NO crea exporter, collector, worker, webhook, alerta, endpoint ni proveedor.
+- T01–T14 positivos/negativos FUTUROS_NO_EJECUTADOS (0/14), p95, SLO y costos NO_MEDIDO; cuotas sin aprobación quedan DISABLED y tenant A/B/JWT/RBAC protegidos por servidor.
+- Únicamente R0 Markdown en dev + CHANGELOG_AI.md autocontenido mediante FF/CAS, Scope Lock/V5 exact-SHA; A5 independiente otro Javier, sin QA/main/PROD.
+
 ## 2026-11-15 — V16 C13-03.M02.05 contrato documental de eventos, idempotencia y correlación [Javier :50]
 - Define EVT01–EVT12 eventos conceptuales, INV01–INV14 de idempotencia/tenant, correlación causal y cuotas fail-closed; NO implementa workers, webhooks, mensajería, telemetría ni proveedores.
 - T01–T12 positivos/negativos FUTUROS_NO_EJECUTADOS (0/12), LCP/INP/CLS NO_MEDIDO y conflicto de bundle 650–750 KB vs 1–2 MiB SIN_RESOLVER. Seguridad JWT/RBAC/tenant A/B prevalece.
