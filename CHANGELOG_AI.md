@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-05.M01.05 criterios de aceptación de auditoría operativa [Javier :40]
+- Define 16 pares P/N FUTUROS_NO_EJECUTADOS sobre PLAN/COLA/DAG, claims CAS, BITACORA, CI exact-SHA, A5 y señales nativas.
+- Fija 12 requisitos NF NO_MEDIDOS y evidencia exigida para 2340 IDs; cero huérfanos, duplicados críticos y P0/P1 permanecen NO_CERTIFICADOS.
+- Cambio documental en dev, sin runtime/DB/worker/webhooks/QA/main/PROD; A5 pendiente de otra Task Javier, rollback git revert normal.
+
 ## 2026-11-14 — Corrección dirigida C15-03.M01.04 para recuperar Scope Lock
 - Se sustituye en D02 un término heredado no permitido por `inventario causal`; no cambia el sentido técnico, el alcance del documento ni el verificador.
 - Recuperación solicitada por el propietario. Se mantendrá VALIDANDO hasta verificar el SHA de `dev` con CI causal y revisión A5 independiente; sin operaciones en QA/main/PROD.
