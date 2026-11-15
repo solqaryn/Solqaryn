@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C12-02.M02.02 contratos API DTO errores frontend separado [Javier :30]
+- Contrato R0 de ocho operaciones OP01-OP08, ocho DTO D01-D08, doce errores ERR01-ERR12 y catorce validaciones V01-V14.
+- Diez pares T01-T10 FUTUROS_NO_EJECUTADOS; sin endpoints, TypeScript/C#, migraciones, CDN, DNS, host bindings ni publicación.
+- A0-A4 Scope Lock/V5 por SHA y BITACORA; A5 de otra Task Javier, D01-D10 pendientes. Sin QA/main/PROD.
+
 ## 2026-11-15 — V16 C05-03.M02.03 persistencia e indices conceptuales builder [Javier :40]
 - Contrato R0 documental: 12 estructuras P01-P12, 10 indices IDX01-IDX10 y 6 fases futuras MIG01-MIG06 con ownership por tenant, CAS, revocacion, host y migrador unico.
 - 12 fixtures FX01-FX12 con pares positivos/negativos FUTUROS_NO_EJECUTADOS (0 ejecutados); no EF/MySQL, DDL, API, builder runtime, migracion ni QA/main/PROD.
