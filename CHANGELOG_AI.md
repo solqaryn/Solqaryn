@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C10-02.M02.02 API/DTO conceptuales de archivos privados [Javier :00]
+- Documenta doce operaciones futuras, ocho DTO, catorce errores fail-closed y doce pares P/N FUTUROS_NO_EJECUTADOS; tenant A/B, firma/TTL, replay, integridad y retención.
+- Sin endpoints, Cloudinary/R2, DNS, proveedores, credenciales, MySQL, UI o QA/main/PROD; no se ejecutaron pruebas HTTP ni de archivos.
+- GitHub dev por fast-forward/CAS, doc y sección de CHANGELOG autocontenida, Scope Lock y V5 CI causal, A5 independiente.
+
 ## 2026-11-15 — V5 C10-02.M02.01 entidades y ownership R2/dominios [Javier :00]
 - Especifica doce proyecciones conceptuales y dieciséis invariantes de almacenamiento privado, tenant A/B, URL/TTL, replay, caché y retención; doce pares P/N FUTUROS NO_EJECUTADOS.
 - No activa R2, DNS, Cloudinary, credenciales, redes, migraciones, API, MySQL ni QA/main/PROD; A5 independiente por otra Task Javier.
