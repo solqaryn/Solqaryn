@@ -2586,3 +2586,8 @@
 - Delimita landing, storefront, portal, ERP y builder futuro, responsive, teclado/foco, formularios, lectura asistida, ligereza visual y carga progresiva con evidencias exigibles; no certifica WCAG ni métricas o implementación inexistentes.
 - Coteja fuentes Git Angular/SCSS y Playwright con blobs exactos, define NR01–NR14 y P01–P08/N01–N08 como oráculos FUTUROS NO_EJECUTADOS sin inventar tests ni umbrales.
 - Sólo documentación de M01.01 en dev, A0–A4 documentales, Scope Lock/V5 exact SHA tras publicar y A5 independiente; rollback git revert, sin cambios de código, datos, secretos, QA/main/PROD.
+
+## 2026-11-14 — V5 C15-04.M01.02: actores, interfaces y fronteras de UX/accesibilidad [Javier :20]
+- Identifica A01–A12 actores y consumidores, IO01–IO12 entradas/salidas y F01–F10 fronteras de confianza para landing, portal, ERP, teclado, foco, formularios, responsive, motion, red y tenancy.
+- Trazabilidad contra M01.01, cinco fuentes Angular/SCSS/Playwright con blobs observados; casos positivos/negativos FUTUROS NO_EJECUTADOS, sin afirmar cumplimiento WCAG ni implementaciones de builder/checkout.
+- Sólo Markdown/CHANGELOG en dev; A0–A4 documentales y CI Scope Lock/V5 exact-SHA, A5 independiente de otro Javier; rollback git revert, sin cambios runtime, QA/main/PROD.
