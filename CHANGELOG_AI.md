@@ -4320,3 +4320,8 @@
 ## 2026-11-15 — V16 CI_REPAIR C08-04.M03.01 evidencia nombre capability tenant neutral [Javier :10]
 - Reparacion Scope Lock fail-closed del commit b7989a8a: fixture de tests reemplaza identificador de proyecto retirado por clave sector.stock y variante case sector.Stock sin modificar semantica, dominios, autorizacion ni revisiones.
 - Causa exacta: GitHub Actions verify-solqaryn-project-scope y Seguridad multiempresa reportaron retired identity token en el archivo de tests. No se desactivan controles; se exige nueva CI exact-SHA y A5 independiente.
+
+## 2026-11-15 — V16 C05-01.M02.04 configuracion tipada design system multiempresa [Javier :10]
+- Contrato Markdown de catorce opciones OPT01-OPT14 para tokens semanticos, preset, revision, branding, accesibilidad, sesion/epoch y rollback, siempre con fuente backend/ownership de tenant verificado.
+- Dieciocho reglas V01-V18 y diez pares P/N FUTUROS_NO_EJECUTADOS sobre JWT/RBAC, A/B, CSS/URL injection, cache, contraste, foco, idempotencia y revocacion; no se activaron flags ni implementaron endpoints.
+- Riesgo documental R0, solo docs/v5 y CHANGELOG en dev, Scope Lock y V5 exact-SHA, A5 de otra Task Javier y rollback git revert, sin Angular/EF/MySQL/QA/main/PROD.
