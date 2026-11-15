@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-02.M03.01 dominio real para preflight de arquitectura y migración [Javier :50]
+- Añade validador .NET 10 de dominio puro, fail-closed, para SHA, tenancy, inventario, proveedores, permisos, backup/restore sandbox, rollback y hallazgos críticos, sin ejecutar migraciones ni DNS.
+- Pruebas xUnit positivas y negativas de tenant A/B, proveedor no autorizado, privilegios, QA/PROD, evidencias incompletas y cambios destructivos; estado READY_FOR_TRUSTED_ARCHITECTURE_REVIEW no autoriza despliegue.
+- Sólo dev, commit fast-forward/CAS, Scope Lock/V5 y backend/security CI exact-SHA antes de LISTO_DEV, A5 independiente posterior; sin infraestructura, webhooks, QA/main/PROD.
+
 ## 2026-11-14 — V5 C14-02.M03.01 reglas reales de dominio para aceptación de seguridad [Javier :50]
 - Agrega guard .NET 10 de dominio puro fail-closed para JWT/membresía/permiso, BOLA/IDOR, tenant A/B, sucursal, host, archivos, jobs, idempotencia y SHA; veredicto no concede acceso ni publicación.
 - Pruebas xUnit positivas y negativas; integración HTTP/EF/MySQL y pentest siguen SIN_EJECUTAR, nunca se certifica P0/P1=0 con estos tests de dominio.
