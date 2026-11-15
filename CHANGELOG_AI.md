@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-02.M01.04 riesgos y decisiones de auditoría arquitectura/migración [Javier :00]
+- Registra 14 riesgos POTENCIALES_NO_VERIFICADOS, diez supuestos falsables y diez decisiones ABIERTAS basadas en 21 fuentes Git y 12 brechas de M01.03; no declara P0/P1 reales.
+- Define ocho escenarios positivos/negativos FUTUROS_NO_EJECUTADOS de JWT/RBAC/tenant A/B, MySQL/restore, Cloudinary/R2, DNS/TLS, CI exact-SHA e independencia A5.
+- Sólo Markdown y CHANGELOG en dev, sin migración, eventos, secretos, pruebas de proveedores, QA/main/PROD ni autorización de cutover.
+
 ## 2026-11-14 — V5 C15-02.M01.03 inventario contrastable de auditoría arquitectura/migración [Javier :00]
 - Inventaría 21 fuentes Git con blobs, distingue código existente de infraestructura activa y conserva SHA/cadena de evidencia para la futura auditoría C15-02.
 - Registra 12 brechas NO_ACREDITADAS y ocho pares P/N FUTUROS_NO_EJECUTADOS para tenancy JWT/RBAC, MySQL, Cloudinary/R2, DNS/TLS, CI, restauración y rollback.
