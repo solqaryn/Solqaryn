@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C05-01.M03.01 Domain de tokens de design system [Javier :50]
+- Implementada prevalidacion pura ASP.NET Core 10 Domain de tokens tipados y allowlisted, contexto backend tenant A/B, RBAC, revocacion, epoch y revision optimista; nunca concede autorizacion ni actualiza temas.
+- Incluidas 15 pruebas xUnit con asserts positivos, negativos, limites pixel, XSS/CSS, token desconocido, cross-tenant, revision, revocacion e idempotencia GUID; pruebas CI se acreditan solo con job real SUCCESS.
+- Riesgo V15 R2; A0-A4 y A5 independiente, Scope Lock STRICT y procedencia V5 exigidos en SHA; sin cambios a EF/MySQL, HTTP, Angular, UI, QA/main/PROD o despliegue.
+
 ## 2026-11-15 — V16 C12-02.M01.06 bloqueos y rollback documental de frontend separado [Javier :10]
 - Define 16 bloqueos BL01–BL16, ocho procedimientos REV01–REV08, doce gates LG01–LG12 y ocho parejas T01–T08 FUTUROS_NO_EJECUTADOS para Angular, proxy, cache, headers, SEO, accesibilidad y rollback.
 - D01–D10 permanecen PENDIENTES; preserva JWT/RBAC/tenant A/B, ERP privado, Scope Lock y proveedores declarados; no mueve hosting, DNS, CDN, TLS, Vercel, Render, MySQL ni despliega nada.
