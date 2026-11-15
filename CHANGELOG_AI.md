@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-04.M02.05 eventos conceptuales e idempotencia de puesta en marcha [Javier :20]
+- Especifica EV01–EV14 señales NO_EMITIDAS, CT01–CT12 campos de contrato, ID01–ID12 políticas y PN01–PN10 pares FUTUROS_NO_EJECUTADOS sin instalar dispatcher ni webhooks.
+- Diferencia BITACORA append-only, recalculo reactivo DAG/COLA y las seis Tasks Javier de un runtime de eventos; exige seguridad tenant A/B, JWT/RBAC y límites de retries/cuota.
+- Entrega dos Markdown exclusivamente dev con CAS fast-forward, Scope Lock/V5 exact-SHA y A5 independiente; rollback git revert y sin QA/main/PROD.
+
 ## 2026-11-14 — V5 C14-04.M02.04 configuracion tipada y flags de puesta en marcha [Javier :20]
 - Define CFG01–CFG16 claves hipotéticas tipadas, IV01–IV12 invariantes y FT01–FT10 casos positivos/negativos FUTUROS_NO_EJECUTADOS; no crea configuración runtime.
 - Preserva JWT/RBAC/tenant A/B, secretos fuera de Git, separación de grant QA/main/PROD y Cloudinary vigente frente a R2 futuro; nunca confunde flag con permiso.
