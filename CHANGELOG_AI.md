@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 reparación R2 C01-03.M03.01 allowlist ordinal [Javier :20]
+- Repara defecto A5_FAIL detectado: el `Contains` de un `IReadOnlySet` con comparador `OrdinalIgnoreCase` podía aceptar una clave de configuración con casing no canónico pese al catálogo exacto.
+- Aplica comparación `StringComparison.Ordinal` y agrega prueba xUnit negativa para variante `UI.compactMode` y positiva para `ui.compactMode` con el mismo `HashSet`; sin introducir grants, endpoints ni persistencia.
+- El código afectado es Domain R2: CI backend/seguridad/autorización/Scope Lock/V5 del SHA nuevo obligatoria. Se conserva A5_FAIL hasta revisión por otra Task, historial aditivo y rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C15-05.M04.03 branding tipado de auditoría [Javier :20]
 - Añade identidad visual institucional o neutra mediante input/computed Angular con fallback fail-closed, sin CSS/HTML arbitrario ni identidad de tenant; conserva guard, revalidación y consulta de solo lectura.
 - Incorpora cuatro Vitest y cuatro Playwright Chromium con casos positivos, negativos 403/anónimo, payload hostil y responsive; GitHub-hosted Node24/npm11, build/lint, sin simular JWT de backend como PASS.

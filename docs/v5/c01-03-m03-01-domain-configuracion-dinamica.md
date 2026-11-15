@@ -18,3 +18,8 @@ El veredicto `TRUSTED_BACKEND_AUTHORIZATION_CAS_REQUIRED` exige servicios de App
 - A5: revisión independiente posterior por Task Javier distinta, puede rechazar requisitos/cobertura y encontrar defectos.
 
 **Rollback:** revert del commit en dev, conservando HEAD y BITACORA. Sin QA/main/PROD, secretos, migraciones o cuentas externas.
+
+## Corrección de defecto A5 V17 (revisión independiente DEV03)
+Se identificó un defecto de canonicalidad en el preflight de Domain, severidad P2: el método `approvedCatalogKeys.Contains(change.Key!)` respetaba el comparador interno de un `HashSet<string>` posiblemente `OrdinalIgnoreCase` y podía aceptar una clave con casing distinto al catálogo nominal. El resultado aún **no otorgaba autorización de escritura**, pero infringía la intersección exacta fail-closed.
+
+Corrección propuesta y publicada por DEV03 como asistencia técnica a la entrega de DEV06 recuperada por DEV01: comparar cada llave del catálogo con `StringComparison.Ordinal`, independientemente del comparador de la colección. Añadir xUnit con conjunto case-insensitive y variante `UI.compactMode` rechazada, más control positivo con llave exacta. Exigir .NET 10 Release/xUnit, seguridad tenant, autorización, Scope Lock, procedencia V5 del nuevo SHA y **A5 nuevamente por una Task Javier distinta de DEV03 y de DEV06**. Historial A5_FAIL se conserva; no se certifica PASS por este cambio ni se ejecuta un CAS real.

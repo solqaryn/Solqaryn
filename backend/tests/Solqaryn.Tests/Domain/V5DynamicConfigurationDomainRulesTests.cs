@@ -140,6 +140,23 @@ public sealed class V5DynamicConfigurationDomainRulesTests
     }
 
     [Fact]
+    public void CaseInsensitiveCatalogComparerCannotWidenExactCanonicalAllowlist()
+    {
+        // R2 regression: callers may accidentally construct a backend catalog
+        // with OrdinalIgnoreCase; Domain must still enforce exact canonical keys.
+        var caseInsensitive = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "ui.compactMode"
+        };
+        var alteredDefinition = Key() with { CanonicalKey = "UI.compactMode" };
+        var alteredChange = Change() with { Key = "UI.compactMode" };
+        Assert.Equal("CATALOG_KEY_NOT_ALLOWED",
+            Eval(definition: alteredDefinition, change: alteredChange, catalog: caseInsensitive).Code);
+        Assert.Equal("TRUSTED_BACKEND_AUTHORIZATION_CAS_REQUIRED",
+            Eval(catalog: caseInsensitive).Code);
+    }
+
+    [Fact]
     public void NullCatalogAndNullInputsCannotBeTrusted()
     {
         Assert.Throws<ArgumentNullException>(() =>

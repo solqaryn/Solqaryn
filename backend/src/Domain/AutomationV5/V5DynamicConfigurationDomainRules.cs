@@ -67,7 +67,7 @@ public static class V5DynamicConfigurationDomainRules
         if (definition is null || !ValidKey(definition.CanonicalKey) ||
             !ValidKey(change.Key) ||
             !string.Equals(definition.CanonicalKey, change.Key, StringComparison.Ordinal) ||
-            !approvedCatalogKeys.Contains(change.Key!) ||
+            !approvedCatalogKeys.Any(approved => string.Equals(approved, change.Key, StringComparison.Ordinal)) ||
             IsReserved(change.Key!))
             return new("CATALOG_KEY_NOT_ALLOWED");
 
