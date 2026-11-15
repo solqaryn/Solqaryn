@@ -1,0 +1,13 @@
+<section class="identidad-contexto" aria-labelledby="identidad-contexto-titulo">
+  <h2 id="identidad-contexto-titulo">Contexto de acceso</h2>
+  @if (tenant.contextoVerificado(); as contexto) {
+    <p role="status" aria-live="polite">
+      Empresa confirmada: <strong>{{ contexto.empresaId }}</strong>
+      <span class="separador" aria-hidden="true">·</span>
+      Rol vigente: <strong>{{ contexto.rolNombre }}</strong>
+    </p>
+  } @else {
+    <p role="status" aria-live="polite">No hay una empresa confirmada por el servidor.</p>
+  }
+  <p class="aviso">Esta información no otorga permisos. Toda operación se autoriza en el servidor.</p>
+</section>

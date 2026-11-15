@@ -3413,3 +3413,8 @@
 - Formaliza dieciseis gates fail-closed G01–G16 y ocho rutas R01–R08 diferenciando git revert documental de restauracion futura de datos, sin ejecutar router, MySQL ni migraciones.
 - Traza M01.01–05 y el A5 historico independiente de M01.01 documentado en BITACORA; preserva autorizacion JWT/RBAC/tenant A/B y DSN server-only sin validar operaciones runtime.
 - Documenta P-DOC01–04/N-DOC01–04 futuros, Scope Lock/V5 y A0–A4 exact SHA; A5 independiente requerida antes de despachar M02, sin QA/main/PROD.
+
+## 2026-11-15 — V5 C01-01.M04.01 superficie privada contexto empresarial verificado [Javier :20]
+- Integra en /usuarios existente una superficie Angular read-only alimentada solo por TenantContextService.contextoVerificado, protegida por los guards y permisos ya existentes sin crear ruta o autoridad nueva.
+- Agrega pruebas unitarias de contexto no confirmado, revocacion A y nueva seleccion B, y escape de HTML en rol; CSS ligero accesible sin cambios de API/EF/MySQL/secretos.
+- CI frontend/tests, Scope Lock y V5 exact-SHA obligatorios para A0–A4; A5 independiente, rollback git revert, sin QA/main/PROD.
