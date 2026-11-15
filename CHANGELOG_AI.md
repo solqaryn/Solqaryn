@@ -2909,3 +2909,7 @@
 - Propone ocho operaciones de lectura OP01–OP08, ocho DTO mínimos, doce errores E01–E12 y doce pares positivos/negativos V01–V12 como futuros contratos de seguridad/tenancy, sin nuevos endpoints.
 - Distingue JWT/RBAC real y empresa A/B desde backend de datos no confiables del cliente; no reclama ejecutar pentest, tests de API ni certificar cero hallazgos.
 - Exclusivamente docs/v5 y CHANGELOG en dev, gates exact-SHA Scope Lock/V5 y A5 de otra Task; sin migraciones, dispatcher, secretos, QA/main/PROD ni servicios reales.
+## 2026-11-14 — V5 C15-03.M02.04: configuración segura de auditoría [Javier :30]
+- Documenta jerarquía SYS/ENV/TEN/PRN/RUN/DOC, CFG01–CFG16, IV01–IV12 y diez pares T01–T10 FUTUROS_NO_EJECUTADOS para opciones de auditoría de seguridad/tenant.
+- Mantiene deny-by-default JWT/RBAC/tenant A/B, credenciales fuera de Git, membresía revocable y distinción de lectura de Tasks frente a concesión de autoridad.
+- Sólo docs/v5 y CHANGELOG en dev; sin activar flags, secret management, workers, API o migraciones; A5 independiente y controles Scope Lock/V5 exact-SHA antes de cierre.
