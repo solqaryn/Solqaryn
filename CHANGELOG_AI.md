@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C05-02.M02.05 contratos futuros de eventos branding [Javier :50]
+- Define diez senales S01-S10 NO EMITIDAS, 16 campos F01-F16 y catorce invariantes I01-I14 de correlacion, CAS, idempotencia, revocacion y tenant A/B.
+- Especifica cuatro escenarios positivos y diez negativos FUTUROS_NO_EJECUTADOS sin instalar eventos, dispatcher, worker, webhook ni Tasks nuevas.
+- Solo Markdown dev con Scope Lock/V5 exact SHA y A5 independiente; no toca API, SQL, Angular ni QA/main/PROD.
+
 ## 2026-11-15 — V5 C05-02.M02.04 configuracion tipada y flags seguros [Javier :50]
 - Distingue TemaVisual global y ConfigEmpresa tenant existentes; define 14 claves conceptuales K01-K14 con defaults denegados y seis niveles de precedencia.
 - Registra 14 reglas fail-closed R01-R14 y 4 positivos/10 negativos FUTUROS_NO_EJECUTADOS de cambio A/B, CAS, assets, accesibilidad y scopes.
