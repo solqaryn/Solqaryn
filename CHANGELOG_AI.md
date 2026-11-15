@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C06-04.M03.01 validadores dominio portal cliente [Javier :40]
+- Implementa guards .NET 10 de propiedad cliente/tenant, cuenta y sesion privada activa, expiracion/revocacion y version optimista; los ID autoritativos deben resolverse en servidor, sin nuevas rutas ni JWT.
+- Agrega xUnit positivas/negativas para A/B y A1/A2, cuenta ajena, owner legacy null, sesion revocada/vencida y CAS esperado; Scope Lock, pruebas backend y seguridad exact SHA antes de LISTO.
+- No activa portal HTTP, migracion, jobs, eventos, webhooks, backup, R2 ni QA/main/PROD; A5 independiente y rollback git revert.
+
 ## 2026-11-15 — V5 C01-01.M05.03 MySQL efimero identidad universal [Javier :40]
 - Agrega una prueba real de integración .NET/MySQL 8.4 aislada de producción que persiste usuario global, empresas A/B, roles tenant-owned y membresías, limpia EF ChangeTracker y vuelve a leer filas.
 - Verifica contexto A/B positivo y rechazos por rol cruzado, recurso de otra empresa y membresía revocada, con cleanup de base efímera localhost y sin migraciones nuevas.
