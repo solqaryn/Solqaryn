@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C11-04.M01.06: barreras y rollback documental de observabilidad [Javier :50]
+- Establece 16 gates de M01, condición de A5 ajeno antes de M02, y ocho pasos de rollback con conservación de JWT/RBAC, tenant A/B y BITACORA.
+- Distingue criterios P01–P10/N01–N10 FUTUROS_NO_EJECUTADOS, decisiones D01–D08 PENDIENTES y SLO/dashboards NO_MEDIDO; no se implementan exporters, alertas ni servicios.
+- Sólo nuevo docs/v5 y sección CHANGELOG autocontenida en dev; A0–A4 R0 y Scope Lock/V5 exact-SHA requeridos, A5 ajeno pendiente; sin QA/main/PROD.
+
 ## 2026-11-15 — V16 C07-03.M02.02 API DTO errores inventario y compras [Javier :40]
 - Contrato R0 documental de 12 operaciones OP01-OP12, 12 DTO DTO01-DTO12, 12 errores ERR01-ERR12 y 16 validaciones VAL01-VAL16 con propiedad de almacenes, stock, compra, costo y tenancy.
 - 12 pares T01-T12 FUTUROS_NO_EJECUTADOS; no endpoints nuevos, HTTP, EF/MySQL, movimientos, autorizaciones, migraciones ni QA/main/PROD.
