@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-04.M02.04 configuración tipada y feature flags UX [Javier :10]
+- Especifica CFG01–CFG14 como claves PROPUESTAS no implementadas y VAL01–VAL12 como pruebas negativas futuras, con defaults cerrados, separación de fuentes y ámbitos.
+- Contrasta environment development/production, tenant-context backend-verified y permisos runtime; no crea flags, endpoints, migraciones ni cambios en configuración productiva.
+- Documenta solo este Markdown y CHANGELOG completo con Scope Lock/V5 exact-SHA, rollback git revert y A5 independiente pendiente; sin QA/main/PROD.
+
 ## 2026-11-14 — V5 C15-04.M02.03 persistencia, índices, migraciones y fixtures UX [Javier :20]
 - Define PD01–PD12 de evidencia mínima, IX01–IX06 de índices condicionales y FX01–FX12 de pruebas sintéticas FUTURAS_NO_EJECUTADAS; ningún esquema, tabla, índice o migración real es alterado.
 - Contrasta AppDbContext, guards de tenant, relaciones físicas compuestas y M01/M02 documentales; preserva JWT/RBAC, separación A/B, privacidad y fail-closed.
