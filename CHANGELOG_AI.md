@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C00-04.M04.02 reparación de decorator Angular [Javier :20]
+- La CI Frontend producción del SHA 30dea308 detectó TS1206 porque el nuevo alias `EstadoGobiernoV5` quedó entre `@Component` y la clase decorada. Se confirma la causa exacta y se corrige su ubicación antes del decorador.
+- Conserva la clase, el guard y todas las pruebas positivas/negativas sin deshabilitar controles; requiere nueva CI exact SHA, no se acepta el FAIL anterior como PASS.
+- Sin cambios a RBAC/JWT, endpoints, MySQL, ramas ajenas, QA/main/PROD ni permisos.
+
 ## 2026-11-15 — V5 C00-04.M04.02 estados y revalidación Angular [Javier :20]
 - Implementa cinco estados visibles accesibles para la consulta de gobierno, con sesión validada por servidor, vacío institucional honesto y pantalla fail-closed ante 401/403 o errores de red.
 - Revalidación single-flight sin doble petición, sin filtración de payload y sin conceder permisos; agrega cinco tests Vitest positivos/negativos y actualiza la aserción anterior de M04.01 a un único botón seguro.

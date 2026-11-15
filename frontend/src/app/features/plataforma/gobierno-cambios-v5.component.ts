@@ -4,6 +4,8 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
 import { RouterLink } from '@angular/router';
 
+export type EstadoGobiernoV5 = 'cargando' | 'vacio' | 'error' | 'exito' | 'sin_permiso';
+
 /**
  * C00-04.M04.01: contractual, protected read-only surface.
  * The plataformaGuard verifies the platform session with the backend.
@@ -87,8 +89,6 @@ import { RouterLink } from '@angular/router';
     @media (prefers-reduced-motion: reduce) { .return-link { transition: none; } }
   `]
 })
-export type EstadoGobiernoV5 = 'cargando' | 'vacio' | 'error' | 'exito' | 'sin_permiso';
-
 export class GobiernoCambiosV5Component {
   private readonly plataforma = inject(PlataformaSesionService);
   private readonly destroyRef = inject(DestroyRef);
