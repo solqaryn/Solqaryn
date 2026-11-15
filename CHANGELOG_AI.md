@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-05.M02.06 gates y contrato de salida de auditoria operativa [Javier :30]
+- Concilia M01.01–06 y M02.01–05 en LISTO+A5 independiente con blobs originales, mas DAG/COLA calculados; no presupone certificacion global de 2340 IDs.
+- Define B01–B16 gates, RB01–RB10 rollback y A01–A12 pares positivos/negativos FUTUROS_NO_EJECUTADOS para owner, CI exact-SHA, auditoria append-only y aislamiento JWT/RBAC/tenant A/B.
+- Publicacion solo de dos Markdown dev por fast-forward/expected HEAD; Scope Lock/V5 exact-SHA, A5 ajeno pendiente y git revert normal; sin eventos runtime, QA/main/PROD ni migraciones.
+
 ## 2026-11-14 — V5 C14-02.M02.05 eventos, idempotencia y correlacion de aceptacion seguridad [Javier :30]
 - Define EV01–EV12 eventos conceptuales, ID01–ID10 contratos de idempotencia, LM01–LM12 limites, y CA01–CA12 positivos/negativos FUTUROS_NO_EJECUTADOS.
 - Preserva JWT/RBAC/tenant A/B, CI exact-SHA, A5 independiente, owner exclusivo y BITACORA append-only; distingue autoinforme de run nativo y prohíbe afirmar CAS distribuido con Sheets sin primitiva real.
