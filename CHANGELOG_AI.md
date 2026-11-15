@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-03.M03.01 reglas reales .NET 10 de tenancy y pruebas xUnit [Javier :20]
+- Domain guard fail-closed para propiedad tenant A/B, NULL legado, sucursal, archivos revocados/expirados, jobs y control plane, con denegación de bypass de filtros y enumeración.
+- Pruebas xUnit positivas/negativas; el resultado READY_FOR_SERVER_SECURITY_ENFORCEMENT no autoriza consultas y no certifica reparación del TenantQueryBypassGuard sin integración HTTP/EF/MySQL.
+- Sólo dev y A0–A4/CI exact-SHA antes de LISTO, A5 independiente posterior; sin secretos, migraciones, nuevos dispatchers, QA/main/PROD.
+
 ## 2026-11-14 — V5 C07-04.M03.01 reglas de dominio comerciales reales .NET 10 y xUnit [Javier :20]
 - Implementa Domain `V5CommercialDocumentDomainRules`: contexto backend confiable, propiedad tenant A/B y NULL legado, versión, moneda, importe, estado, grants, fingerprint SHA-256, fiscalidad y PSP fail-closed.
 - Añade pruebas xUnit positivas/negativas de permisos, estados, concurrencia, A/B, idempotencia y autoridad; el veredicto positivo exige aún controles Application/API/DB, sin ejecutar pagos ni emitir facturas.
