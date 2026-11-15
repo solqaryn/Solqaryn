@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C13-04.M03.02 caso Application para consistencia visual multiempresa [.NET 10 Javier :40]
+- Implementa servicio real de Application sobre las reglas Domain C13-04.M03.01, con validación server-side de tenant, actor, permisos, catálogo de pantallas, SHA, lote máximo y rechazo de observaciones inconsistentes.
+- Agrega nueve xUnit positivos/negativos con tenant A/B, revocación, catálogo vacío, límites de capacidad, superficie forjada, teclado, contraste, privacidad y SHA; solo prepara revisión externa y A5 independiente.
+- No incorpora endpoints, DI runtime, UI, migraciones, JWT/roles nuevos, Playwright, accesos productivos, eventos, webhooks o permisos de publicación; exige CI .NET/seguridad, Scope Lock y procedencia V5 exact SHA antes de LISTO_DEV.
+
 ## 2026-11-15 — V5 C02-04.M02.06 salida documental de consola global [Javier :00]
 - Consolida cinco contratos M02 revisados, dieciseis gates y diez pares positivos/negativos FUTUROS_NO_EJECUTADOS para seguridad de consola global y aislamiento tenant A/B.
 - Exige IAM/MFA, JWT/RBAC, pruebas y autorización posterior antes de cualquier implementación; no crea API, consola, EF/MySQL, cuentas, flags, eventos ni elevaciones.
