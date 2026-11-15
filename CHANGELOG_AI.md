@@ -3388,3 +3388,8 @@
 - Añade xUnit positivos/negativos de SHA, autoridad, tenant A/B, entorno PROD, CI cancelled/stale, auto-A5 y aceptación no ejecutada.
 - No DI ni HTTP, EF/MySQL, workers, flags, secrets, despliegues, QA/main/PROD; el resultado positivo exige verificación externa real.
 - CI backend y Scope Lock/V5 exact-SHA obligatorios antes de LISTO, A5 de otra Task y rollback git revert.
+
+## 2026-11-15 — V5 C05-02.M01.06 bloqueo, rollback y liberación documental de branding [Javier :20]
+- Define catorce bloqueos fail-closed y ocho rutas de recuperación diferenciando revert documental de rollback de implementación futura; decisiones D01–D08 siguen pendientes.
+- Distingue tema global existente de presets por tenant no implementados; registra oráculos documentales positivos/negativos sin inventar pruebas Angular, API, MySQL, browser ni seguridad runtime.
+- Requiere A0–A4 con Scope Lock/V5 exact-SHA, owner exclusivo y readback PLAN/COLA/DAG/BITACORA; A5 independiente anterior a M02, sin QA/main/PROD.
