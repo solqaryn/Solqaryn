@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C07-01.M02.02 contratos conceptuales API/DTO, errores y compatibilidad de catálogo [Javier :10]
+- Especifica doce operaciones propuestas, siete perfiles DTO, catorce errores seguros y doce pares positivos/negativos FUTUROS NO_EJECUTADOS para catálogo universal, variantes, categorías, impuestos y storefront.
+- Preserva autoridad server-side JWT/RBAC/tenant A/B, NULL legacy en Producto/Variante, categoría sin EmpresaId asumida, snapshots financieros/stock y separación público/privado; sin runtime API, EF/MySQL, Angular, secretos ni despliegues.
+- Un documento docs/v5 y sección autocontenida CHANGELOG_AI.md, fast-forward CAS en dev, Scope Lock/V5 exact SHA antes LISTO; A5 independiente pendiente y rollback git revert, no QA/main/PROD.
+
 ## 2026-11-15 — V5 C07-01.M02.01 entidades y ownership del catálogo universal [Javier :00]
 - Contrato documental de doce conceptos y veinte invariantes sobre tenant A/B, NULL legado, variantes, categorías, precios, stock, servicio y storefront; doce pares positivos/negativos FUTUROS NO_EJECUTADOS.
 - Sin nuevas clases, API, MySQL, Angular, JWT/RBAC, cambios económicos, secretos, QA/main/PROD ni proveedores; A5 por otra Task Javier.
