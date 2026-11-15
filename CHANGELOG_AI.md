@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C11-02.M02.01 entidades e invariantes de API modular [Javier :50]
+- Consolida 16 entidades lógicas y owners, 18 invariantes fail-closed, 10 fallas y 10 pares P/N FUTUROS_NO_EJECUTADOS con aislamiento tenant A/B, JWT/RBAC, permisos de soporte y DTO seguros.
+- Contrasta el código real ASP.NET Core 10, API, Application, EF/MySQL, contrato ApiResponse y gate documental M01 con A5 independiente; no introduce endpoints, clases, esquema, migraciones, workers ni eventos.
+- Entrega dos Markdown en dev con fast-forward/CAS, Scope Lock/V5 exact SHA, A0–A4 y A5 de otra Task Javier; sin QA/main/PROD, rollback por git revert normal.
+
 ## 2026-11-15 — V5 C11-02.M02.02 contratos API/DTO/errores y compatibilidad [Javier :00]
 - Define 10 superficies/operaciones conceptuales, 16 invariantes de seguridad/compatibilidad, 10 pares P/N FUTUROS_NO_EJECUTADOS y 8 medidas de rollback para API modular, con JWT/RBAC/tenant A/B fail-closed.
 - Contrasta AuthController, TenantContextController, PlataformaSesionController, UsuariosController, ApiResponse, DTOs, filtros y middleware existentes sin modificar ejecutables, rutas, EF/MySQL ni clientes.
