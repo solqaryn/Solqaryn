@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C15-05.M04.04 navegación sin mutaciones de auditoría [Javier :00]
+- Añade cuatro casos reales Angular/Vitest sobre ruta privada, mensaje honesto sin datos vivos, enlace accesible de retorno, ausencia de formularios/botones/doble-submit y denegación sin administrador.
+- La vista existente es solo lectura; no inventa endpoints, estado de carga, mutaciones, pagos ni JWT real. La prueba de navegador de otra unidad no sustituye este CI exact-SHA.
+- R1 test-only, A4 Angular/Scope Lock/V5 y checks pertinentes aún requeridos antes de LISTO, A5 por revisor Javier distinto, sin QA/main/PROD.
+
 ## 2026-11-15 — Corrección de seguridad P2 C01-04.M03.04: membresía y permiso explícitos
 - En el adaptador de lectura aislado, una lectura de origen backend no implica autorización: se exigen `MembershipActive` y `ExplicitPermissionGranted` verificadas antes de consultar expediente; sus valores reales llegan al ServerAuthority en lugar de asumir dos `true`.
 - xUnit negativo para lectura confiable con membresía inactiva, permiso no concedido o ambas condiciones denegadas; conservados aislamiento tenant A/B, consulta read-only y las negativas existentes.
