@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C13-03.M01.06 gates y rollback de rendimiento/ligereza [Javier :30]
+- Contrato documental R0: consolidacion de M01.01-05+A5, 16 barreras G01-G16, ocho acciones RB01-RB08 y diez pares P/N T01-T10 FUTUROS_NO_EJECUTADOS.
+- Budget actual 650-750 KB frente a propuesta 1-2 MiB permanece discrepancia ABIERTA; LCP/INP/CLS y latencias NO_MEDIDO hasta CI/browser y dispositivos reproducibles.
+- A0-A4 documentales y A5 independiente; no cambio de Angular/API, MySQL, cache runtime, infraestructura, dominios, secretos, QA/main/PROD.
+
 ## 2026-11-15 — V16 C05-03.M02.02 API DTO y errores contractuales builder [Javier :20]
 - Contrato R0 de ocho operaciones OP01-OP08, ocho DTO D01-D08, doce errores ERR01-ERR12 y catorce validaciones V01-V14 fail-closed por tenant/rol/version.
 - Diez pares P/N T01-T10 FUTUROS_NO_EJECUTADOS; sin rutas API reales, Angular, SQL/EF, migraciones, HTML/JS libre, workers, webhooks, proveedores o publicacion.
