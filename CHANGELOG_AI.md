@@ -2987,3 +2987,9 @@
 - Implementa en Domain .NET 10 reglas de release DEV: grant explícito, SHA/manifest/digest coherentes, CI completed/success exact-SHA, A5 independiente y aislamiento tenant A/B.
 - Añade pruebas xUnit positivas y negativas de entornos QA/PROD, permisos, SHA, checks cancelados/fallidos, autoaprobación, rollback y criterios no ejecutados; READY_FOR_EXTERNAL_EVIDENCE_REVIEW no implica producción ni A5.
 - Agrega contrato de alcance y rollback; sin API, MySQL, migraciones, dispatcher, webhooks, workers, secretos, QA/main/PROD ni despliegues. Validación CI causal obligatoria antes de LISTO_DEV.
+
+## 2026-11-14 — V5 C15-02.M02.01: entidades, ownership e invariantes conceptuales de auditoría de migración [Javier :30]
+- Define ENT01–ENT16 y relaciones auditables para tenants, recursos, backups, objetos, dominios, TLS, secretos opacos, rollback y evidencia independiente, sin crear tablas ni desplegar proveedores.
+- Fija INV01–INV16 y ocho pares P/N FUTUROS_NO_EJECUTADOS para aislamiento, idempotencia, restauración, CI exact-SHA, permisos y A5; no declara un entorno externo auditado.
+- Sólo docs/v5 y CHANGELOG autocontenido en dev. A0–A4 documentales y Scope Lock/V5 exact SHA requeridos, A5 pendiente de otra Task Javier; sin migraciones, QA/main/PROD, DNS, datos reales o secretos.
+
