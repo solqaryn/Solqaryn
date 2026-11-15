@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C03-04.M02.01 entidades e invariantes de respuesta y recuperacion [Javier :40]
+- Define doce entidades conceptuales y propiedad verificable de incidente, evidencia, respaldo, restauracion y rollback, sin crear entidades EF, tablas ni endpoints.
+- Establece dieciseis invariantes fail-closed sobre identidad, JWT/RBAC, aislamiento tenant A/B, allowlist de CI/dev, secretos, concurrencia y pruebas de recuperacion futuras.
+- Contrasta cinco fuentes M01 y cinco archivos reales, con cuatro positivos y doce negativos FUTUROS_NO_EJECUTADOS; solo dos Markdown en dev, Scope Lock/V5 exact SHA, A5 ajeno y rollback git revert.
+
 ## 2026-11-14 — V5 C01-04.M02.03 persistencia e índices del expediente universal [Javier :50]
 - Define P01–P12 registros conceptuales, IX01–IX08 índices/restricciones candidatos, seis pasos de migración FUTURA_NO_EJECUTADA y FT01–FT12 pares positivos/negativos FUTUROS_NO_EJECUTADOS.
 - Explicita ownership compuesto por tenant, paginación estable UTC+ID, idempotencia, versiones CAS, cuarentena de EmpresaId legacy nulo, adjuntos privados y pruebas A/B; no atribuye código o base de datos ejecutados.
