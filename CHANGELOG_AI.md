@@ -3133,3 +3133,9 @@
 - Añade pruebas xUnit de SHA, revisión fuente, owner, A5 independiente, IDs, evidencia incompleta, catálogo y rechazo de mutaciones de entrada.
 - Nunca autentica GitHub/Sheets/CI ni permite persistencia, bypass tenant, escrituras institucionales, EF/MySQL, migraciones o certificación de las 2.340 filas.
 - CI .NET, Scope Lock y V5 exact SHA antes de LISTO; A5 solo por Task Javier diferente; git revert, sin QA/main/PROD.
+
+## 2026-11-15 — V5 C14-04.M03.02 Application preflight readiness DEV [Javier :30]
+- Implementa servicio .NET 10 con frontera de evidencia backend y composición Domain readiness para SHA, tenant, CI, rollback y revisión, sin autorizar release.
+- Añade xUnit positivos/negativos de SHA, autoridad, tenant A/B, entorno PROD, CI cancelled/stale, auto-A5 y aceptación no ejecutada.
+- No DI ni HTTP, EF/MySQL, workers, flags, secrets, despliegues, QA/main/PROD; el resultado positivo exige verificación externa real.
+- CI backend y Scope Lock/V5 exact-SHA obligatorios antes de LISTO, A5 de otra Task y rollback git revert.
