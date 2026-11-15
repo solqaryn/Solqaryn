@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C11-04.M02.06 salida contractual de observabilidad [Javier :10]
+- Establece G01–G16 de autorización tenant/JWT/RBAC, privacidad, idempotencia, cardinalidad, SLI/SLO, diagnóstico, costos, CI y A5 independiente; define RB01–RB08 de contención/rollback futuro.
+- Especifica T01–T12 positivos/negativos FUTUROS_NO_EJECUTADOS (0/12) y SLO/p95/p99/costos NO_MEDIDO. No activa collector, exporter, alarmas, API, MySQL, workers, browser ni proveedor.
+- Cambios R0 solo Markdown + CHANGELOG_AI.md en dev, publicación secuencial FF/CAS; exigir Scope Lock/V5 completed/success exact-SHA y readback A0–A4 antes de LISTO, A5 por otra Task Javier. Sin QA/main/PROD.
+
 ## 2026-11-15 — V16 C08-01.M02.06 salida y rollback contractual de citas/agenda [Javier :50]
 - Define 16 gates G01–G16 de tenancy A/B, RBAC, concurrencia de slots, idempotencia, DST, capacidad, MySQL efímero y CI causal, más ocho rutas RB01–RB08 de reversión futura.
 - Diez pares T01–T10 positivos/negativos FUTUROS_NO_EJECUTADOS (0/10), métricas NO_MEDIDO; no se activan citas, calendarios, mensajes, workers, proveedores, MySQL ni API.
