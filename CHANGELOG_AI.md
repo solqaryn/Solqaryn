@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C07-01.M02.03 persistencia conceptual de catálogo [Javier :00]
+- Contrato de doce proyecciones, doce índices candidatos, doce reglas de integridad y doce pares de fixtures FUTUROS NO_EJECUTADOS; legado NULL y tenant A/B fail-closed.
+- No SQL, EF/MySQL, API, UI, cambios de stock/precios, proveedores, secretos ni QA/main/PROD; A5 independiente y pruebas de runtime futuras.
+- Dev fast-forward/CAS con CHANGELOG autocontenido, Scope Lock y V5 exact-SHA y readbacks institucionales.
+
 ## 2026-11-15 — V5 C07-01.M02.02 contratos conceptuales API/DTO, errores y compatibilidad de catálogo [Javier :10]
 - Especifica doce operaciones propuestas, siete perfiles DTO, catorce errores seguros y doce pares positivos/negativos FUTUROS NO_EJECUTADOS para catálogo universal, variantes, categorías, impuestos y storefront.
 - Preserva autoridad server-side JWT/RBAC/tenant A/B, NULL legacy en Producto/Variante, categoría sin EmpresaId asumida, snapshots financieros/stock y separación público/privado; sin runtime API, EF/MySQL, Angular, secretos ni despliegues.
