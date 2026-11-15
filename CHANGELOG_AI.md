@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C04-01.M02.05 eventos hipoteticos e idempotencia de planes [Javier :10]
+- Define ocho senales NO EMITIDAS, quince campos conceptuales, catorce reglas fail-closed y doce pares P/N FUTUROS_NO_EJECUTADOS.
+- No implementa dispatcher, webhook, worker, SQL, planes de precios, cobros ni grants JWT/RBAC/tenant; toda autoridad permanece en backend y fuentes institucionales.
+- Solo contrato docs/v5 y CHANGELOG con Scope Lock/V5 exact SHA, A5 independiente, rollback git revert y sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C04-01.M02.04 configuración tipada y flags seguros de planes SaaS [Javier :00]
 - Propone dieciséis campos CFG, doce flags desactivadas, doce pares P/N FUTUROS_NO_EJECUTADOS y ocho rutas de recuperación para catálogo, versionado, límites y visibilidad.
 - Mantiene autoridad backend JWT/RBAC/tenant A/B, deny-by-default, consentimiento/precio/moneda/impuesto sin aprobación, separación de grants y entitlements, Scope Lock STRICT y A5 independiente.
