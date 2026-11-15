@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C07-01.M02.01 entidades y ownership del catálogo universal [Javier :00]
+- Contrato documental de doce conceptos y veinte invariantes sobre tenant A/B, NULL legado, variantes, categorías, precios, stock, servicio y storefront; doce pares positivos/negativos FUTUROS NO_EJECUTADOS.
+- Sin nuevas clases, API, MySQL, Angular, JWT/RBAC, cambios económicos, secretos, QA/main/PROD ni proveedores; A5 por otra Task Javier.
+- Dos archivos Markdown únicamente en dev, con fast-forward/CAS, Scope Lock y verificador V5 exact-SHA y readbacks causales.
+
 ## 2026-11-15 — V5 C02-04.M03.02: preflight Application de consola global fail-closed [.NET 10 Javier :50]
 - Implementa servicio Application no autorizante sobre reglas Domain de consola global: validación UTC, tenant A/B, rechazo de autoridad de cliente, mutación/exportación, MFA, reautenticación, grants y aprobación excepcional.
 - Añade nueve pruebas reales xUnit con rutas positivas/negativas de tenant/rol/excepción y política GrantsAccess=false; ningún resultado concede acceso ni emite credenciales, eventos o auditoría live.
