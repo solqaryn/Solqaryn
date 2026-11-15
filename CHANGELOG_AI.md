@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C07-03.M02.05 contratos futuros eventos, idempotencia y límites [Javier :10]
+- Propone EV01–EV12, IDEM01–IDEM12, COR01–COR10 y LIM01–LIM12 para inventario, reservas, compras, transferencias, stock y costeo con tenant A/B y RBAC fail-closed; eventos NO EMITIDOS.
+- Diez pares T01–T10 de pruebas FUTURAS_NO_EJECUTADAS para replay, rollback, commit causal, revocación, correlación y costos; no outbox, broker, worker, webhook, DB, endpoint ni proceso nuevo.
+- Sólo documento R0 y CHANGELOG autocontenido en dev mediante fast-forward/CAS; A0–A4 Scope Lock/V5 exact SHA, A5 de otra Task Javier pendiente, sin QA/main/PROD.
+
 ## 2026-11-15 — V16 C07-03.M02.04 opciones tipadas y flags seguros inventario/compras [Javier :10]
 - Contrato R0 de OPT01–OPT14, VAL01–VAL16 y R01–R08 para configuración fail-closed por tenant, sucursal, almacén y RBAC; ningún appsettings, IOptions, flag, EF, API o dato real modificado.
 - Diez pares T01–T10 FUTUROS_NO_EJECUTADOS sobre A/B, permisos, revocación, rangos, CAS, caché, costos, idempotencia y fallo de proveedor; métricas runtime NO_MEDIDO.
