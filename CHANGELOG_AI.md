@@ -1,3 +1,7 @@
+## 2026-11-15 — V5 C10-01.M02.05 eventos, idempotencia y límites de storage neutral [Javier :50]
+- Define ocho eventos conceptuales NO_EMITIDOS, envelope saneado, catorce reglas de deduplicación/correlación y nueve pares P/N FUTUROS_NO_EJECUTADOS para objetos con tenant/JWT/RBAC.
+- No instala worker, broker, dispatcher, webhook, R2, migración ni Tasks; Scope Lock STRICT, A5 ajena, rollback normal y evidencias exact-SHA para eventual implementación.
+
 ## 2026-11-15 — V5 C10-01.M02.04: configuración tipada y banderas seguras de storage neutral [Javier :20]
 - Especifica doce contratos tipados conceptuales, dieciséis invariantes de autoridad, límites y tenancy y ocho pares de casos futuros para políticas de almacenamiento por tipo, empresa y entorno.
 - Banderas nuevas apagadas por defecto; sin código, cambios de DI/EF/MySQL, nuevos proveedores o eventos. Cloudinary permanece; R2/Hostinger y promoción QA/main/PROD no autorizados. A5 independiente pendiente.
