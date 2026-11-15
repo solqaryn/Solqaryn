@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C08-03.M02.05 eventos, idempotencia y correlación de gimnasio [Javier :00]
+- Define dieciséis eventos conceptuales EV01–EV16, dieciocho invariantes INV01–INV18, diez límites L01–L10 y doce escenarios T01–T12 positivos/negativos FUTUROS NO_EJECUTADOS.
+- Protege aislamiento tenant/sede A/B, separación SaaS/gimnasio, ERP de pagos, UTC/DST, revocación/QR, idempotencia y denegación offline; no declara valores medidos de TTL o cuotas.
+- Entrega R0 sólo documento Markdown/CHANGELOG sin bus, outbox, worker, webhook, PSP, hardware, MySQL o API real; Scope Lock/V5 exact SHA, candado V17, A5 independiente y rollback Git revert; sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C08-03.M02.04 configuración tipada segura membresías gimnasio [Javier :10]
 - Contrato R0 de seis ámbitos, dieciséis opciones tipadas O01–O16 con defaults fail-closed y distinción PositiveInteger/NonNegativeInteger; prohíbe acceso concedido por flags, QR o UI.
 - Doce controles FG01–FG12 y diez pares T01–T10 FUTUROS_NO_EJECUTADOS: tenant A/B, JWT/RBAC, revocación, UTC/DST, idempotencia, offline y rollback; D01–D08 M01 siguen abiertas.
