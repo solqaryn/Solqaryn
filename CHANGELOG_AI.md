@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-02.M02.02 API y DTO de aceptacion de seguridad [Javier :10]
+- Define doce operaciones y contratos de API PROPUESTOS_NO_IMPLEMENTADOS, envelope DTO V1 conceptual, doce condiciones de error y semantica fail-closed tenant A/B JWT/RBAC.
+- Documenta cuatro positivos y doce negativos FUTUROS_NO_EJECUTADOS, compatibilidad de consumidores y prohibicion de declarar P0/P1 cero, restauracion o pentest sin evidencia.
+- Solo documento y CHANGELOG en dev, Scope Lock/V5 exact-SHA, A5 independiente pendiente y rollback git revert; sin endpoints, permisos, QA/main/PROD ni eventos runtime.
+
 ## 2026-11-14 — V5 C03-04.M01.06 bloqueos, rollback y liberacion documental de continuidad [Javier :10]
 - Concilia las cinco entregas M01.01-05 con sus blobs Git y el baseline de backup/restore dev sin atribuir restauraciones ejecutadas.
 - Define B01-B12, RB01-RB08, L01-L12 y catorce oraculos P/N FUTUROS_NO_EJECUTADOS; mantiene JWT/RBAC, tenant A/B, permisos y RPO/RTO fail-closed.
