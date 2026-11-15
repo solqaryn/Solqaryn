@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C10-04.M02.06 salida documental cache jobs backups y exportaciones [Javier :30]
+- Consolida cinco contratos M02 y sus A5 independientes, dieciseis gates G01-G16 y handoff Domain/Application/Infrastructure/API, cache, jobs, exportaciones y respaldos sin activar runtime.
+- Documenta RB01-RB08 y doce pares P/N FUTUROS_NO_EJECUTADOS con aislamiento tenant A/B, usuarios A1/A2, JWT/RBAC, version CAS, cuotas e idempotencia fail-closed; no DDL, eventos, dispatcher, backups, endpoints ni proveedores.
+- Solo docs/v5 + CHANGELOG_AI.md, Scope Lock/V5 exact-SHA, A0-A4 documentales y A5 otra Task Javier; rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C06-04.M02.06 contrato de salida M02 portal de cliente [Javier :20]
 - Consolida los contratos documentales M02.01–05 y sus A5 independientes, diez frentes de dependencia y dieciseis invariantes fail-closed para portal CUSTOMER/ERP y tenants A/B, clientes A1/A2.
 - Define doce parejas de aceptacion POS/NEG FUTURAS_NO_EJECUTADAS y condiciones A0–A5, exact-SHA, rollback y DAG para M03; no implementa API, JWT, migracion, UI, eventos ni dispatcher.
