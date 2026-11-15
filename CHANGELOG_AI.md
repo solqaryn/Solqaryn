@@ -3468,3 +3468,8 @@
 - Incorpora cinco pruebas unitarias Angular/Vitest para validar formulario inválido, permisos de rol/contraseña, bloqueo del doble envío, rechazo HTTP 403 y ruta con ID inválido.
 - Añade GitHub Actions dirigido de test, lint y Angular build en Node 24/npm fijo, sin alterar runtime, endpoint, JWT/RBAC/tenant ni datos de MySQL.
 - A0–A4 y Scope Lock/V5 requieren resultados exact-SHA completed/success y readback institucional; A5 independiente y rollback git revert, sin QA/main/PROD.
+
+## 2026-11-15 — V5 C01-01.M04.05 regresion Chromium de responsive y accesibilidad [Javier :20]
+- Añade cuatro pruebas browser reales del login privado: 360px sin recorte de controles, teclado y boton ver contraseña, contraste WCAG 4.5:1 del encabezado y denegacion de /usuarios anonimo.
+- CI Playwright Chromium en GitHub-hosted, Node 24/npm fijo, Angular local, lint y build de produccion, sin autenticacion a backend real ni cambios de UI, JWT, RBAC, tenant o MySQL.
+- Requiere checks exact-SHA completed/success y readback A0–A4 antes de LISTO_DEV; A5 independiente, git revert normal y ninguna promocion QA/main/PROD.
