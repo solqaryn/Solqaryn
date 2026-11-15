@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C04-02.M02.05 eventos futuros e idempotencia contractual [Javier :50]
+- Define doce eventos conceptuales inertes, envelope mínimo y doce reglas de idempotencia/correlación, con 12 pares de pruebas FUTURAS sin emitir ni implementar mensajes.
+- Distingue ledger actual de onboarding de futuras renovaciones, cobros y outbox; tenant A/B, JWT/RBAC, D01–D08, privacidad y callbacks se mantienen fail-closed.
+- Entrega secuencial Markdown en dev con Scope Lock/V5 exact-SHA, A5 pendiente de Task Javier ajena y rollback git revert; sin eventos, workers, migraciones, QA/main/PROD.
+
 ## 2026-11-15 — V5 C04-02.M02.04 opciones tipadas contractuales y flags [Javier :50]
 - Especifica 18 opciones contractuales inactivas, precedencia restrictiva, doce reglas fail-closed y 12 pares de pruebas FUTURAS, sin registrar valores ejecutables.
 - Preserva tenant A/B, JWT/RBAC, membresía, idempotencia, auditoría y decisiones económicas D01–D08 abiertas; feature flags no autorizan cobros, mora, permisos o promoción.
