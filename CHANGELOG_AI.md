@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C12-02.M02.04 configuracion tipada y flags frontend separado [Javier :30]
+- Contrato R0 con catorce opciones CFG01-CFG14, seis ámbitos de confianza, catorce validaciones V01-V14 y diez pares T01-T10 FUTUROS_NO_EJECUTADOS.
+- Sin configuración aplicada, DNS, CDN, frontend runtime, HTTP, JWT/RBAC modificados, MySQL, credenciales ni proveedores.
+- V15 A0-A4 y Scope Lock/V5 exact SHA, A5 independiente para otra Task Javier; decisiones D01-D10 pendientes, sin QA/main/PROD.
+
 ## 2026-11-15 — V16 C12-02.M02.02 contratos API DTO errores frontend separado [Javier :30]
 - Contrato R0 de ocho operaciones OP01-OP08, ocho DTO D01-D08, doce errores ERR01-ERR12 y catorce validaciones V01-V14.
 - Diez pares T01-T10 FUTUROS_NO_EJECUTADOS; sin endpoints, TypeScript/C#, migraciones, CDN, DNS, host bindings ni publicación.
