@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C06-01.M02.03 persistencia conceptual de landing SaaS [Javier :10]
+- Define 12 familias P01–P12, 12 índices IDX01–IDX12, 12 etapas MIG01–MIG12 y diez pares FX01–FX10 FUTUROS_NO_EJECUTADOS para publicaciones, SEO, contacto, consentimiento y demo.
+- Mantiene CAS e historia de versiones, aislamiento tenant A/B, fuente comercial/legal aprobada, retención PII y autoridad JWT/RBAC backend. No hay tablas EF, DDL, MySQL, API, Angular, SMTP ni migración real.
+- Alcance V16/V15 R2 documental, A0–A4 con Scope Lock/V5 exact SHA, A5 independiente de otra Task Javier; rollback git revert; sin QA/main/PROD.
+
 ## 2026-11-15 — V16 C06-01.M02.04 configuracion tipada y flags inertes de landing SaaS [Javier :30]
 - Define catorce opciones conceptuales OPT01-OPT14, dieciseis validaciones V01-V16 y ocho pares P/N FUTUROS_NO_EJECUTADOS de rutas, planes, demo, contacto, legales, SEO, tenant y accesibilidad.
 - No escribe flags efectivos, frontend, backend, API, EF/MySQL, workers, SMTP, catalogos de precios, secretos, QA/main/PROD ni servicios; JWT/RBAC sigue en servidor.
