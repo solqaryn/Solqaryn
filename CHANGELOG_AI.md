@@ -1,3 +1,7 @@
+## 2026-11-15 — V5 C04-04.M02.01 entidades, ownership e invariantes de cobros [Javier :20]
+- Define diez entidades conceptuales y veinte invariantes tenant/RBAC, HMAC anti-replay, idempotencia contable y propiedad de enlaces/pagos; diez pares de oráculos P/N futuros no ejecutados.
+- Contrato documental sin proveedores, endpoints, webhooks, transacciones, migrations o cambios financieros; decisiones comerciales D01-D10 abiertas y A5 ajena pendiente. Sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C10-01.M02.05 eventos, idempotencia y límites de storage neutral [Javier :50]
 - Define ocho eventos conceptuales NO_EMITIDOS, envelope saneado, catorce reglas de deduplicación/correlación y nueve pares P/N FUTUROS_NO_EJECUTADOS para objetos con tenant/JWT/RBAC.
 - No instala worker, broker, dispatcher, webhook, R2, migración ni Tasks; Scope Lock STRICT, A5 ajena, rollback normal y evidencias exact-SHA para eventual implementación.
