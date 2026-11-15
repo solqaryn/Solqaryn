@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C12-04.M03.01 guard Domain R2 para cutover MySQL privado [Javier :50]
+- Implementa prevalidación pura .NET 10 fail-closed de rol/MFA/tenant A/B, SHA manifiesto, grants mínimos sin WITH GRANT OPTION, CI, evidencia de MySQL 8.4 efímero, backup/restore, lease y rollback; nunca autoriza SQL, DNS ni cutover real.
+- Añade pruebas xUnit positivas, negativas y de frontera para revocación, producción/QA, doble escritor, manifest incorrecto, P0/P1, grants, reintentos y secretos. Booleanos de evidencia requieren comprobación externa real, no certifican infraestructura.
+- Cuatro archivos (Domain/test/docs/v5/CHANGELOG), dev FF/CAS; A0–A4 requieren CI backend, seguridad y Scope Lock/V5 exact-SHA, A5 independiente otra Task Javier; sin QA/main/PROD ni migración real.
+
 ## 2026-11-15 — V16 C11-04.M02.05 eventos, idempotencia y correlación observabilidad [Javier :50]
 - Especifica EVT01–EVT14 futuros, INV01–INV16 de aislamiento/privacidad/idempotencia, correlación causal y límites fail-closed; NO crea exporter, collector, worker, webhook, alerta, endpoint ni proveedor.
 - T01–T14 positivos/negativos FUTUROS_NO_EJECUTADOS (0/14), p95, SLO y costos NO_MEDIDO; cuotas sin aprobación quedan DISABLED y tenant A/B/JWT/RBAC protegidos por servidor.
