@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C02-03.M02.05 eventos futuros idempotencia y correlacion [Javier :50]
+- Especifica 10 senales conceptuales NO EMITIDAS, 16 campos de sobre propuesto y 14 invariantes de entrega, versionado CAS, revocacion y compensacion.
+- Registra cuatro casos positivos y diez negativos FUTUROS_NO_EJECUTADOS; nunca emplea tenant, host, DSN o rol cliente como autoridad ni introduce bus, dispatcher, worker o webhook.
+- Documentacion solo dev con Scope Lock/V5 del SHA exacto, A5 independiente y rollback git revert; no modifica .NET, Angular, MySQL, QA/main/PROD.
+
 ## 2026-11-15 — V5 C02-03.M02.03 contrato de persistencia e idempotencia de lifecycle [Javier :40]
 - Establece cinco modelos FUTUROS, ocho índices, seis pasos de migración condicionada y doce fixtures A/B, reintento, fallo parcial y retención sin ejecutar SQL ni desplegar.
 - Contrasta blobs de Empresa, UsuarioEmpresa, ContextoTenantActual y UsuarioScopeService; distingue Activa y Eliminado NotMapped de un soft-delete real, mantiene unicidad y segregación de actores.
