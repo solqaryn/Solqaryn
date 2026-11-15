@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C14-01.M02.01 modelo de entidades y ownership de aceptación [Javier :50]
+- Define dieciséis entidades conceptuales y dieciséis invariantes de autoridad, trazabilidad y aceptación funcional; no crea tablas, DTO ni API y no infiere permisos por tenant cliente.
+- Propone cuatro oráculos positivos y doce negativos futuros, incluidas revocación JWT/RBAC, tenant A/B, privacidad, transacciones, responsive y CI; todos FUTUROS_NO_EJECUTADOS.
+- Documento exclusivo dev, Scope Lock STRICT y checks V5 exact-SHA antes de LISTO, A5 independiente posterior; sin E2E, MySQL, pagos, datos, QA/main/PROD.
+
 ## 2026-11-15 — V5 C15-01.M03.02 servicio Application de preflight de cobertura [Javier :40]
 - Implementa servicio .NET 10 read-only sobre validador Domain de M03.01: verifica SHA, revisión, catálogos y límites, sin autenticar fuentes institucionales ni certificar cobertura real.
 - Añade xUnit positivos/negativos de SHA, catálogo, requisitos sin mapa, duplicados, evidencia insegura y capacidad; el resultado compatible nunca concede escritura, A5 ni promoción.
