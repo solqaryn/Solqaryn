@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-04.M02.01 entidades y ownership de puesta en marcha [Javier :20]
+- Formaliza PM01–PM16 registros conceptuales, INV01–INV16 de integridad y T01–T10 escenarios positivos/negativos FUTUROS_NO_EJECUTADOS, con evidencias y límites explícitos.
+- Relaciona candidato SHA, manifest, autorización de entorno, tenant, salud, soporte, alertas, backup, restore y rollback sin crear tablas, APIs, eventos o servicios.
+- Documentación exclusiva dev y CHANGELOG autocontenido; exige Scope Lock/V5 exact-SHA, A5 independiente y rollback git revert. Sin QA/main/PROD, migraciones, datos reales o secretos.
+
 ## 2026-11-14 — V5 C14-04.M01.06 contrato de bloqueo y salida de puesta en marcha [Javier :10]
 - Define B01–B14 bloqueos fail-closed, RB01–RB10 medidas preventivas y L01–L14 condiciones de salida con predecesores, A5 independiente y recálculo DAG/COLA.
 - Registra ocho pares positivos/negativos FUTUROS_NO_EJECUTADOS y deja NF NO_MEDIDOS para JWT/RBAC/tenant A/B, archivos, backups, alertas, CI, accesibilidad y rollback; sin pruebas de runtime ficticias.
