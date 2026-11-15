@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C13-03.M02.04 opciones tipadas y flags seguros rendimiento [Javier :20]
+- Contrato documental R0 de catorce opciones OPT01–OPT14, dieciséis validaciones VAL01–VAL16 y ocho fallos fail-closed FAL01–FAL08; ninguna configuración IOptions, appsettings, flag, caché o endpoint real activado.
+- Diez pares T01–T10 positivos/negativos FUTUROS_NO_EJECUTADOS para tenant A/B, JWT/RBAC, caché, PII, accesibilidad y disponibilidad; LCP/INP/CLS NO_MEDIDO y conflicto de bundle 650–750 KB vs 1–2 MiB SIN_RESOLVER.
+- Sólo documento y CHANGELOG Markdown autocontenido en dev por fast-forward/CAS; A0–A4 R0 sujetos a Scope Lock/V5 exact-SHA, A5 pendiente otra Task Javier, sin QA/main/PROD ni proveedor o DB real.
+
 ## 2026-11-15 — V16 C11-04.M02.01 contrato de entidades e invariantes de observabilidad [Javier :30]
 - Define doce entidades E01–E12, dieciséis invariantes INV01–INV16, diez relaciones REL01–REL10 y doce pares T01–T12 FUTUROS_NO_EJECUTADOS sobre señales, correlación, roles, SLI/SLO, privacidad y alertas seguras.
 - R0 documental, sin cambiar middleware .NET, exporter, collector, dashboard, alerts, MySQL, Angular, proveedores, credenciales ni Tasks; p95, error budget, SLO, costo, retención y overhead NO_MEDIDO.
