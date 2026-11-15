@@ -1,3 +1,8 @@
+## 2026-11-15 — Reparación P2 de evidencia positiva de membresía/permiso C01-04.M03.04 [auditoría autorizada]
+- Corrige el adaptador de lectura aislado para que un read de fuente backend, incluso verdadero, NO implique automáticamente MembershipActive ni ExplicitPermissionGranted; ambos valores ahora deben verificarse afirmativamente y gatear antes de buscar expediente por tenant.
+- Propaga al ServerAuthority únicamente membresía activa y permiso explícito del snapshot confiable, elimina hardcodes positivos, añade tres xUnit negativos para revocación conceptual de grant/membresía aun con procedencia backend y conserva los casos de aislamiento A/B.
+- Cambio R2 puramente Infrastructure + xUnit + documentación, sin MySQL real, DI, API, frontend, producción, secretos ni privilegios. A0–A4 sujetos a CI exact-SHA; el A5_FAIL previo sigue vigente hasta nueva revisión independiente de Task distinta de DEV05. No considerar el commit por sí solo cierre A5.
+
 ## 2026-11-15 — V17 C15-03.M03.04 adaptador aislado de evidencia tenancy y seguridad [Javier :50]
 - Implementa Infrastructure .NET 10 read-only que compara recurso/actor/tenant/SHA capturados, reutiliza Application+Domain y deniega cualquier acceso, persistencia, descarga, job, control plane o bypass.
 - Incorpora 12 xUnit reales de preflight sin grant, tenant A/B, revocación, SHA, evidencia adulterada, branch, URL vencida, intentos de bypass/escritura y cancelación; su CI backend/seguridad/autorización debe certificar SHA causal.

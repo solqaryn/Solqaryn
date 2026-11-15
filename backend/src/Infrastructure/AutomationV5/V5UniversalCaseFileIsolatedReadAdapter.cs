@@ -48,7 +48,8 @@ public sealed class V5UniversalCaseFileIsolatedReadAdapter : IV5UniversalCaseFil
     public sealed record ActorSnapshot(
         int ActorId, int TenantId, int? BranchId, string? SourceSha,
         bool ServerAuthenticationVerified, bool MembershipReadFromTrustedBackend,
-        bool PermissionReadFromTrustedBackend, bool PermissionRevoked);
+        bool PermissionReadFromTrustedBackend, bool PermissionRevoked,
+        bool MembershipActive, bool ExplicitPermissionGranted);
 
     public sealed record CaseSnapshot(
         int CaseFileId, int OwnerTenantId, int? OwnerBranchId,
@@ -71,10 +72,13 @@ public sealed class V5UniversalCaseFileIsolatedReadAdapter : IV5UniversalCaseFil
             actor.BranchId is <= 0 || !FullSha(actor.SourceSha) ||
             !actor.ServerAuthenticationVerified ||
             !actor.MembershipReadFromTrustedBackend ||
-            !actor.PermissionReadFromTrustedBackend || actor.PermissionRevoked)
+            !actor.PermissionReadFromTrustedBackend || actor.PermissionRevoked ||
+            !actor.MembershipActive || !actor.ExplicitPermissionGranted)
             return null;
 
         cancellationToken.ThrowIfCancellationRequested();
+        // A successful trusted-source lookup is not proof of an ACTIVE membership
+        // or an explicitly GRANTED permission. Both were verified above before I/O.
         // The tenant identifier originates from the trusted source, never from a URL/header.
         var stored = await _cases.ReadAsync(actor.TenantId, caseFileId, cancellationToken);
         if (stored is null || stored.CaseFileId != caseFileId ||
@@ -89,7 +93,8 @@ public sealed class V5UniversalCaseFileIsolatedReadAdapter : IV5UniversalCaseFil
 
         var authority = new Rules.ServerAuthority(
             actor.ActorId, actor.TenantId, actor.BranchId,
-            actor.ServerAuthenticationVerified, true, true, true);
+            actor.ServerAuthenticationVerified, actor.MembershipActive,
+            actor.ExplicitPermissionGranted, true);
         var caseFile = new Rules.StoredCase(
             stored.OwnerTenantId, stored.OwnerBranchId, stored.Version,
             true, false, stored.Archived);
@@ -98,7 +103,9 @@ public sealed class V5UniversalCaseFileIsolatedReadAdapter : IV5UniversalCaseFil
         // It does not authorize a write, read response, attachment, or transaction.
         return new V5UniversalCaseFileAuthorizationGate.VerifiedEvidence(
             actor.SourceSha, stored.CaseFileId, actor.ActorId, actor.TenantId,
-            true, true, true, false, true, authority, caseFile,
+            actor.ServerAuthenticationVerified, actor.MembershipReadFromTrustedBackend,
+            actor.PermissionReadFromTrustedBackend, actor.PermissionRevoked,
+            stored.OwnershipVerifiedFromPersistence, authority, caseFile,
             stored.IndependentDecisionReviewVerified,
             stored.AttachmentOwnershipVerified, stored.AttachmentLinkExpired);
     }
