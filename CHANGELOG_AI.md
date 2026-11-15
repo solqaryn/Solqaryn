@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C02-02.M02.02 contratos conceptuales API y DTO placement [Javier :30]
+- Define ocho operaciones futuras, cinco DTO conceptuales, doce errores seguros, catorce validaciones y diez pares P/N FUTUROS_NO_EJECUTADOS para almacenamiento shared/dedicated.
+- Preserva JWT/RBAC/tenant A/B server-only, rechazo de DSN desde cliente, version y fence, idempotencia, restore e integridad sin crear endpoints, migraciones ni conexiones.
+- Cambio exclusivamente Markdown, Scope Lock/V5 exact SHA y A5 independiente pendiente; rollback con git revert, sin secretos ni QA/main/PROD.
+
 ## 2026-11-15 — V5 C02-02.M02.01 contrato de entidades y ownership shared/dedicated [Javier :30]
 - Define catorce entidades conceptuales TEN01–TEN14, cardinalidades, versiones y dieciseis invariantes para placement shared/dedicated, mapping opaco y segregacion tenant A/B.
 - Agrega ocho pares P/N FUTUROS_NO_EJECUTADOS, rollback documental y limites de auth, snapshot, restore, cutover y CAS; no crea EF/MySQL, API, secretos, DNS ni runtime.
