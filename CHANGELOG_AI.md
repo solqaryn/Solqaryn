@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C15-04.M03.03 guard de autorización de auditoría UX en Application [Javier :20]
+- Implementa wrapper .NET 10 de preflight UX que exige JWT, membresía, permiso, contexto tenant y SHA verificables por backend; restringe catálogo autorizado de superficies y criterios.
+- Añade xUnit positivos y negativos de tenant A/B, ausencia de autoridad, SHA obsoleto, presupuesto y catálogo ampliado por cliente; no concede acceso, escritura ni certifca métricas externas.
+- Dev-only, CHANGELOG/Scope Lock y CI backend/seguridad exact-SHA antes de LISTO; A5 independiente. Sin endpoint real, API/EF/MySQL, browser/Playwright, eventos ni QA/main/PROD.
+
 ## 2026-11-15 — V5 C15-02.M03.02 servicio Application de preflight de migración [Javier :20]
 - Agrega servicio .NET 10 de Application read-only para evaluar candidatos acotados con reglas M03.01, deteniendo en el primer rechazo y denegando siempre permisos de despliegue o migración.
 - Agrega xUnit positivos/negativos para tenant A/B, SHA, scopes, proveedores, backup/restore, capacidad y hallazgos críticos. No prueba HTTP/EF/MySQL, DNS, Hostinger ni R2 reales.
