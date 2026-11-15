@@ -1,3 +1,11 @@
+## 2026-11-15 — V5 C10-01.M02.02 API, DTO y errores de storage neutral [Javier :50]
+- Especifica ocho operaciones, siete DTO conceptuales y doce denegaciones con JWT/RBAC, tenant A/B, MIME real, SHA-256, tamaño y URLs temporales; escenarios P/N FUTUROS_NO_EJECUTADOS.
+- Mantiene interfaces Cloudinary actuales, cero R2/HTTP real, sin migración, credenciales ni cambios QA/main/PROD; requiere A5 independiente y CI causal del SHA documental.
+
+## 2026-11-15 — V5 C10-01.M02.03 persistencia, índices y fixtures de storage neutral [Javier :50]
+- Diseña siete entidades conceptuales, seis claves de consulta, diez fixtures y siete etapas de migración futura con hashes, versionado y ownership tenant server-side.
+- No crea tablas, índices, EF migrations, datos o bucket R2; rollback documental git revert, Scope Lock STRICT, A5 de otra Task y pruebas reales pendientes.
+
 ## 2026-11-15 — V5 C10-01.M02.01: entidades y ownership storage neutral [Javier :20]
 - Contrato documental de ocho entidades conceptuales, dieciocho invariantes tenant/RBAC/integridad y ocho pares de escenarios futuros positivos/negativos para recursos, versiones, propietarios y localizadores opacos.
 - Conserva interfaces Cloudinary existentes, no modifica código, EF, MySQL, servicios, permisos ni proveedores; M02/M03 mantienen sus DAG y A5 independiente. No declara pruebas runtime ejecutadas.
