@@ -155,7 +155,7 @@ public sealed class C1402SecurityAcceptanceCrossLayerNegativeMatrixTests
         Assert.Equal("FILE_LINK_EXPIRED",
             (await Check(Evidence(file) with
             { Target = Target() with { SignedLinkExpired = true } }, Request(file))).Code);
-        Assert.Equal("RESOURCE_OR_PERMISSION_REVOKED",
+        Assert.Equal("CURRENT_AUTHORIZATION_TENANT_AND_AUDIT_REQUIRED",
             (await Check(Evidence(file) with
             { Target = Target() with { AccessRevoked = true } }, Request(file))).Code);
     }

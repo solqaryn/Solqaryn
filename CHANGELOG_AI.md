@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 reparación CI C14-02.M03.05 denegación por revocación [Javier :00]
+- Repara una única aserción xUnit cuyo código esperaba RESOURCE_OR_PERMISSION_REVOKED aunque el gate Application seguro rechaza antes con CURRENT_AUTHORIZATION_TENANT_AND_AUDIT_REQUIRED.
+- Causa exacta acreditada por GitHub Actions seguridad multiempresa job 132996317941: 1620 PASS, 1 FAIL, error de comparación en FileDownloadIsNeverGrantedWhenLinkExpiredOrOwnershipRevoked, línea 158; no degradar denegación ni desactivar tests.
+- Prueba y código de seguridad permanecen separados: solo se corrige la expectativa de rechazo temprano; exigir nuevo CI completo por SHA, Scope Lock, V5, backend, autorización y pruebas R2; A5 independiente sigue pendiente.
+
 ## 2026-11-15 — V17 C14-02.M03.05 matriz negativa de aceptación de seguridad [Javier :00]
 - Agrega catorce métodos xUnit .NET 10 sobre Domain/Application/Infrastructure aislados: BOLA/IDOR tenant A/B, actor/recurso, sucursal, host, archivos, jobs, caché, restauración, JWT/RBAC, revocación, spoofing, SHA y cancelación.
 - Exige Backend Release, seguridad multiempresa, Authorization, Scope Lock y procedencia V5 con SUCCESS causal antes de LISTO; un preflight nominal nunca concede accesos, escrituras, jobs ni despliegue.
