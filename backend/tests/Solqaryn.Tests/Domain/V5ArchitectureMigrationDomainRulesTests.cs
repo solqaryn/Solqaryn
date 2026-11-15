@@ -55,12 +55,12 @@ public sealed class V5ArchitectureMigrationDomainRulesTests
     }
 
     [Fact]
-    public void CrossTenantAndUnverifiedInventoryAreDenied()
+    public void CrossTenantAndUnverifiedCatalogAreDenied()
     {
         Assert.Equal("TENANT_OWNERSHIP_OR_MAPPING_UNVERIFIED",
             Check(candidate: Candidate() with { TenantId = "tenant-B" }));
         Assert.Equal("TENANT_OWNERSHIP_OR_MAPPING_UNVERIFIED",
-            Check(candidate: Candidate() with { SourceOwnershipFromTrustedInventory = false }));
+            Check(candidate: Candidate() with { SourceOwnershipFromTrustedCatalog = false }));
         Assert.Equal("TENANT_OWNERSHIP_OR_MAPPING_UNVERIFIED",
             Check(candidate: Candidate() with { TargetOwnershipVerified = false }));
         Assert.Equal("TENANT_OWNERSHIP_OR_MAPPING_UNVERIFIED",

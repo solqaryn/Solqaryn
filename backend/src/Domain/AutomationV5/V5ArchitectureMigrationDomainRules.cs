@@ -20,7 +20,7 @@ public static class V5ArchitectureMigrationDomainRules
         string? SourceProvider,
         string? TargetProvider,
         string? Environment,
-        bool SourceOwnershipFromTrustedInventory,
+        bool SourceOwnershipFromTrustedCatalog,
         bool TargetOwnershipVerified,
         bool RequiresLiveDnsOrSecretMutation,
         bool DestructiveDatabaseOperation,
@@ -59,7 +59,7 @@ public static class V5ArchitectureMigrationDomainRules
 
         if (!string.Equals(candidate.TenantId, boundary.AuthenticatedTenantId,
                 StringComparison.Ordinal) ||
-            !candidate.SourceOwnershipFromTrustedInventory ||
+            !candidate.SourceOwnershipFromTrustedCatalog ||
             !candidate.TargetOwnershipVerified ||
             !candidate.TenantMappingVerified)
             return new Verdict("TENANT_OWNERSHIP_OR_MAPPING_UNVERIFIED");

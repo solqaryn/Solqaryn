@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-02.M03.01 reparación dirigida de Scope Lock [Javier :50]
+- Sustituye una denominación técnica inglesa heredada en Domain y xUnit por SourceOwnershipFromTrustedCatalog, preservando todas las condiciones fail-closed y las aserciones.
+- Corrige únicamente el token rechazado por el verificador de identidad, sin desactivar reglas, tests ni analizadores; se exige nuevo Scope Lock, V5 y CI .NET/seguridad del SHA reparado.
+- Reparación dev fast-forward, sin cambios en JWT/RBAC, infraestructura, datos, QA/main/PROD o el owner de la microtarea.
+
 ## 2026-11-14 — V5 C15-02.M03.01 dominio real para preflight de arquitectura y migración [Javier :50]
 - Añade validador .NET 10 de dominio puro, fail-closed, para SHA, tenancy, inventario, proveedores, permisos, backup/restore sandbox, rollback y hallazgos críticos, sin ejecutar migraciones ni DNS.
 - Pruebas xUnit positivas y negativas de tenant A/B, proveedor no autorizado, privilegios, QA/PROD, evidencias incompletas y cambios destructivos; estado READY_FOR_TRUSTED_ARCHITECTURE_REVIEW no autoriza despliegue.
