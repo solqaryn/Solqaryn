@@ -3022,3 +3022,8 @@
 - Incluso con contexto lógico válido, deniega escritura institucional: falta autenticación real del adaptador, pruebas HTTP/EF/MySQL y A5 independiente; ninguna nueva API, migración, worker, dispatcher, webhook o permiso productivo.
 - Alcance sólo dev con CI backend/seguridad, Scope Lock/V5 exact-SHA, CAS y readbacks por estado; no QA/main/PROD, rollback git revert.
 
+## 2026-11-14 — V5 C15-04.M03.02 preflight de auditoría UX en Application .NET 10 [Javier :40]
+- Implementa `V5UxAuditApplicationService` y xUnit, reutilizando `V5UxAuditRules` sin modificar el Domain: catálogo/superficie, tenant A/B, SHA, presupuesto y evidencia fail-closed.
+- Una observación válida sigue exigiendo fuente autenticada, medición externa real y revisión A5 ajena; todas las salidas niegan escritura institucional, acceso y certificación externa.
+- Solo dev con Scope Lock/V5, backend y seguridad CI dirigidos; sin endpoints, Playwright live, DB, worker, webhooks, QA/main/PROD ni activación de infraestructura.
+
