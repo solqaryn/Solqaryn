@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C05-01.M03.03 fence de design tokens y RBAC [Javier :40]
+- Integra guard de identidad relacional vigente en Application .NET 10 con permiso Configuracion/Editar, evidencia de catálogo backend por tenant y sesión/revisión; reutiliza el caso de uso M03.02 y reglas Domain M03.01.
+- Añade 12 xUnit adversariales tenant A/B, RBAC/membresía, sesión, catálogo ordinal, CSS malicioso y cancelación; requiere Backend Release, Seguridad multiempresa, Authorization, Scope Lock y V5 exact-SHA.
+- Resultado de preflight nunca concede tema, sesión JWT, write, API ni MySQL. R2, backend provider y HTTP por acreditar, A5 independiente, rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C10-04.M03.05 cola acotada de revisión de jobs [Javier :40]
 - Integra worker .NET 10 de revisión en memoria con Channel de capacidad 32 y composición del adaptador Infrastructure, gate Application y reglas Domain existentes; sin despachar jobs/restore/exportaciones ni conceder leases.
 - Incorpora 12 xUnit adversariales de tenant A/B, actor, versión, replay, digest de idempotencia, payload, revocación, servicio, retry, deadline, capacidad y cancelación; requieren Backend Release, seguridad, Authorization, Scope Lock y V5 exact-SHA.
