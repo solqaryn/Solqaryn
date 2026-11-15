@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C06-01.M02.06 contrato salida landing SaaS [Javier :50]
+- Contrato R0 documental con 16 puertas G, ocho rollbacks RB y ocho pares positivos/negativos T FUTUROS_NO_EJECUTADOS para planes, demo, legal, SEO, contacto y tenant A/B.
+- Mantiene D01-D08 PENDIENTES, JWT/RBAC backend, consentimiento, privacidad, idempotencia y separación de entornos; no implementa Angular, API, MySQL, correo, eventos, proveedores o deploy.
+- Entrega SINGLE_ACTIVE_DEV por FF/CAS, Scope Lock STRICT, V5 provenance y readbacks A0-A4 por SHA; A5 otra Task Javier. Sin QA/main/PROD, DNS ni secretos.
+
 ## 2026-11-15 — V16 C02-02.M03.02 Application preflight shared/dedicated [Javier :50]
 - Implementado contrato de lector de evidencia backend, ownership tenant y catálogo de binding para Domain de placement; el veredicto nunca autoriza conexión, migración ni cutover.
 - Incorporadas doce pruebas xUnit con escenarios de JWT/RBAC, A/B, DSN, snapshot, CAS, restore, idempotencia y cancelación; CI real pendiente de acreditar.
