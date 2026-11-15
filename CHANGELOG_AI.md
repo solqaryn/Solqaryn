@@ -1,3 +1,7 @@
+## 2026-11-15 — V5 C14-03.M02.02 API/DTO y errores de promoción controlada [Javier :20]
+- Documenta diez operaciones conceptuales, seis DTO futuros, doce códigos de error y dieciséis invariantes de identidad, SHA, CAS, A5 y permisos por ambiente; diez pares P/N futuros no ejecutados.
+- Contrato exclusivamente dev sin rutas HTTP, workflows, deploys, secretos o DB; no autoriza QA/main/PROD y A5 independiente queda pendiente.
+
 ## 2026-11-15 — V5 C14-03.M02.01: modelo de entidades y ownership de promoción controlada [Javier :20]
 - Define doce entidades conceptuales, veinte invariantes de SHA/CI/Scope Lock/tenant/seguridad/aprobación por ambiente y diez pares P/N futuros no ejecutados para release candidates y evidencia.
 - Contrato documental exclusivo dev sin desplegar QA/main/PROD ni crear CI, secretos, migraciones o eventos; revisión A5 independiente pendiente.
