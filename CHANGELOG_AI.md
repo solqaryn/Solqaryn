@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C06-03.M02.02 contratos API/DTO editoriales [Javier :40]
+- Define diez operaciones y diez DTO conceptuales, dieciséis errores seguros y doce pares futuros positivos/negativos de editoriales, horarios, contactos, sucursales y mapas opcionales.
+- Conserva JWT/RBAC editor/moderador/publicador, aislamiento A/B, Host no confiable, preview noindex, mapa opt-in con fallback textual y cero proveedores externos instalados.
+- Sólo contrato documental A0–A4 Scope Lock/V5 exact-SHA; A5 otro Task Javier pendiente. Sin endpoints, migraciones, geocodificación, DNS, eventos, QA/main/PROD; rollback git revert.
+
 ## 2026-11-15 — V5 C06-03.M02.01 entidades editoriales y mapas [Javier :40]
 - Define 15 entidades conceptuales, 16 invariantes de aislamiento/ownership y 12 pares futuros positivos/negativos para sitios editoriales, contacto, horarios, sucursales, moderación y mapas opcionales.
 - Conserva los gates G01–G16 y RB01–RB08 de M01.06: host/proxy no confieren permiso; proveedor de mapas opt-in, sin geocodificación, CDN/DNS, SQL, API, UI ni credenciales ejecutadas.
