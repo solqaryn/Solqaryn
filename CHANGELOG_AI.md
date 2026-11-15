@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-02.M03.01 reglas reales de dominio para aceptación de seguridad [Javier :50]
+- Agrega guard .NET 10 de dominio puro fail-closed para JWT/membresía/permiso, BOLA/IDOR, tenant A/B, sucursal, host, archivos, jobs, idempotencia y SHA; veredicto no concede acceso ni publicación.
+- Pruebas xUnit positivas y negativas; integración HTTP/EF/MySQL y pentest siguen SIN_EJECUTAR, nunca se certifica P0/P1=0 con estos tests de dominio.
+- Publicación exclusiva dev; Scope Lock, CHANGELOG V5, backend/security CI exact-SHA requeridos antes de LISTO; A5 sólo por otra Task Javier, sin eventos, migraciones, QA/main/PROD.
+
 ## 2026-11-14 — V5 C15-03.M03.01 reglas reales .NET 10 de tenancy y pruebas xUnit [Javier :20]
 - Domain guard fail-closed para propiedad tenant A/B, NULL legado, sucursal, archivos revocados/expirados, jobs y control plane, con denegación de bypass de filtros y enumeración.
 - Pruebas xUnit positivas/negativas; el resultado READY_FOR_SERVER_SECURITY_ENFORCEMENT no autoriza consultas y no certifica reparación del TenantQueryBypassGuard sin integración HTTP/EF/MySQL.
