@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C15-03.M03.03 gate de autorización tenant .NET 10 [Javier :20]
+- Incorpora preautorización .NET 10 fail-closed con evidencia servidor/tenancy/ownership/permiso, SHA exacto y composición Domain M03.01; nunca concede query bypass, lecturas reales ni escrituras institucionales.
+- Agrega nueve xUnit positivos/negativos para tenant A/B, mismo-tenant distinto recurso, revocación, sucursal, enlaces, jobs, control plane y SHA; requiere CI backend, seguridad y Scope Lock/V5 exact-SHA.
+- Sin adaptador de identidad/persistencia conectado, HTTP/EF/MySQL, migración, secreto, webhook ni QA/main/PROD; el riesgo de TenantQueryBypassGuard sigue abierto y A5 exige revisor distinto.
+
 ## 2026-11-15 — V5 C06-04.M01.06: salida de preparación del portal de cliente [Javier :20]
 - Relaciona cinco fuentes documentales originales y documenta B01–B16 bloqueos de seguridad, H01–H08 de contrato M02 y RB01–RB08 reversión del portal consumidor multiempresa.
 - Preserva cuenta storefront ya existente sin certificar recuperación, pedidos ajenos, membresías ni descargas; pruebas P/N FUTURAS NO_EJECUTADAS, A/B y RBAC servidor pendientes.
