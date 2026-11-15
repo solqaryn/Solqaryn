@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C12-03.M01.06 gates rollback backend/workers [Javier :30]
+- Cierra preparación M01 documental de backend/workers separados con 16 NO_GO preventivos, diez pasos de rollback y ocho pares P/N FUTUROS_NO_EJECUTADOS, ligados a quince fuentes e identidad tenant fuera de HttpContext.
+- Mantiene explícitos bloqueos JWT/RBAC, A/B, datos, MySQL, worker, retry idempotente, migrador único, secretos, readiness, proveedor y continuidad; no activa ningún servicio, topología, migración, DNS o QA/main/PROD.
+- Requiere Scope Lock y procedencia V5 completed/success exact-SHA, A5 independiente, readback institucional y revert normal antes de nuevos gates.
+
 ## 2026-11-15 — V5 C11-03.M02.05 contrato inerte de eventos y límites [Javier :40]
 - Define 12 campos conceptuales, 16 invariantes de tenant/idempotencia/CAS, 10 límites, 10 señales NO EMITIDAS y 10 pares de prueba FUTUROS_NO_EJECUTADOS sobre el outbox existente.
 - NO IMPLEMENTAR EVENTOS TODAVÍA: sin bus, dispatcher, worker, webhook, cron, scheduler, llamadas entre Tasks, SQL/EF, endpoints, credenciales, proveedores, métricas emitidas, QA/main/PROD ni efectos externos.
