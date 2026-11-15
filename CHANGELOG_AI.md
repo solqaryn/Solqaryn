@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C14-02.M03.04 adaptador aislado de aceptación de seguridad [Javier :30]
+- Implementa Infrastructure .NET 10 aislado read-only con snapshot de actor, tenant, recurso y SHA; reutiliza Domain/Application sin habilitar acceso, restauración, descarga, job o release.
+- Incorpora 13 pruebas xUnit positivas/negativas de BOLA/IDOR, tenant A/B, revocación, autenticación declarada, permisos, auditoría, SHA, host, archivo expirado y cancelación; GH Actions debe acreditarlas causalmente.
+- Riesgo V15 R2; V17 candado exclusivo fila 2069, A0–A4 y A5 independiente obligatorios. Ningún test JWT HTTP/MySQL real ni QA/main/PROD; rollback git revert normal.
+
 ## 2026-11-15 — V17 C08-04.M03.03 segunda reparación puntual Scope Lock [Javier :20]
 - En el check exacto de 82612c80 subsistía una sola variante de fixture de módulo con mayúsculas. El primer reemplazo había corregido tres apariciones minúsculas, pero no la variante capitalizada; se corrigió ahora esa cuarta aparición en la prueba negativa, conservando el comportamiento y los asserts.
 - Revisión del archivo completo contra patrones retirados del validador, 0 coincidencias. No se desactiva ni modifica Scope Lock o controles de seguridad; fallos anteriores conservados. Revalidar CI en SHA nuevo, mantener VALIDANDO hasta éxito de A0-A4.
