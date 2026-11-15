@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C02-03.M02.03 contrato de persistencia e idempotencia de lifecycle [Javier :40]
+- Establece cinco modelos FUTUROS, ocho índices, seis pasos de migración condicionada y doce fixtures A/B, reintento, fallo parcial y retención sin ejecutar SQL ni desplegar.
+- Contrasta blobs de Empresa, UsuarioEmpresa, ContextoTenantActual y UsuarioScopeService; distingue Activa y Eliminado NotMapped de un soft-delete real, mantiene unicidad y segregación de actores.
+- Preparación documental con Scope Lock y procedencia exact-SHA requeridos, A5 independiente; migraciones EF/MySQL y JWT/RBAC siguen prohibidos sin gates M03; rollback git revert solo dev.
+
 ## 2026-11-15 — V5 C02-03.M02.01 modelo de ownership e invariantes lifecycle [Javier :50]
 - Define 14 objetos logicos E01-E14 diferenciando Empresa y UsuarioEmpresa existentes de propuestas futuras; relaciona propiedad empresarial y versionado/idempotencia sin migraciones.
 - Especifica 16 invariantes I01-I16 y 12 escenarios documentales P/N FUTUROS_NO_EJECUTADOS para rol plataforma, tenant A/B, revocacion, retencion, carreras y rollback.
