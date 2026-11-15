@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C12-03.M02.05 contrato inerte API/worker eventos [Javier :40]
+- Fija 12 campos conceptuales, 16 invariantes A/B/CAS/identidad servicio, 10 políticas de cuota, 10 señales NO_EMITIDAS y 10 pares P/N FUTUROS_NO_EJECUTADOS para la separación API/worker.
+- NO IMPLEMENTAR EVENTOS TODAVÍA: no crea bus, relays, scheduler, trabajador, webhook, llamada entre Tasks, SQL/EF, migración, API, proveedor externo ni proceso en ejecución; ninguna autoridad de QA/main/PROD.
+- Dos Markdown en dev publicados por CAS fast-forward, Scope Lock/V5 exact-SHA, A0–A4 documental, A5 independiente y rollback con git revert normal.
+
 ## 2026-11-15 — V5 C12-03.M02.04 opciones tipadas y flags de workers [Javier :10]
 - Describe dieciséis opciones F01-F16, dieciocho validaciones V01-V18 y diez pares P/N FUTUROS_NO_EJECUTADOS para separar backend/workers, identidad de servicio, tenant A/B, readiness, cuota, lease CAS, idempotencia y logs seguros.
 - Contrasta OutboxRetryProcessorOptions.Validar(), IMensajeOutboxRepository, Domain MensajeOutbox y API Program.cs; NO cambia opciones reales, DI, procesos, proveedores, MySQL, eventos entre Tasks, cron, webhooks, workers o infraestructura.
