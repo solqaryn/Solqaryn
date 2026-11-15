@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C02-02.M03.04 rehearsal reversible aislado de placement [Javier :40]
+- Implementa journal Infrastructure .NET 10 inerte con staging y rollback de un solo intento en memoria; compone el preflight M03.03, CAS monotono, idempotencia y checks tenant/actor/SHA; no abre conexiones ni activa migracion o cutover.
+- Incorpora 12 xUnit adversariales: tenant A/B, JWT/RBAC revocacion, DSN/cutover, alias, replay, concurrencia 24 intentos, revision, rollback y cancelacion. Exige CI Backend Release, seguridad multiempresa, Authorization, Scope Lock y V5 en SHA exacto.
+- R2 V15, V17 single-active, A5 por otra Task Javier; sin EF/MySQL/HTTP/DI/QA/main/PROD ni certificados de integracion real. Rollback mediante git revert normal.
+
 ## 2026-11-15 — V17 corrección preventiva CI C02-04.M03.05 params null xUnit [Javier :20]
 - Corrige una sola expectativa xUnit de ticket nulo: en C# Preview(null) invoca la variante params con un arreglo completo nulo y obtiene CONTROL_PLANE_BATCH_REQUIRED; ahora se pasa explicitamente un arreglo de un ticket null para esperar CONTROL_PLANE_TICKET_INVALID.
 - Hipotesis causal comprobable por fallo identico de C03-04.M03.05 (job 133000165419, 4702 PASS/1 FAIL) y log de C02-04.M03.05 job 133001145821 con la misma prueba previa; no se cambia codigo de runtime, control de tenant, MFA, grants ni validadores.
