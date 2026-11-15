@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-04.M02.02 contrato API/DTO, errores y compatibilidad UX [Javier :10]
+- Modela OP01–OP08 y contratos Audit*V1 como propuesta NO_IMPLEMENTADA, ERR01–ERR10 y matriz de compatibilidad con DashboardController, authGuard y permisoGuard existentes.
+- Preserva backend como autoridad JWT/RBAC/tenant, evita exponer PII y separa resultados NO_EJECUTADOS de PASS; no añade endpoints, EF, migraciones, datos o eventos.
+- Publica solo documento y CHANGELOG íntegro por fast-forward CAS, Scope Lock y V5 exact-SHA, rollback git revert y A5 independiente pendiente.
+
 ## 2026-11-14 — V5 C15-04.M02.01 modelo conceptual UX, propiedad e invariantes [Javier :10]
 - Delimita UX01–UX12 como registros de evidencia propuestos, INV01–INV16 de seguridad/accesibilidad y AT01–AT10 futuros sin atribuir pruebas WCAG o métricas ejecutadas.
 - Conserva seis antecedentes C15-04.M01.01–06 LISTO/A5 independientes y separa modelo M02 de API, datos, eventos, M03 y permisos productivos.
