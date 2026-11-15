@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C08-01.M01.06: bloqueos y rollback documental de reservas y agenda [Javier :50]
+- Define 16 gates y diez pares positivos/negativos FUTUROS_NO_EJECUTADOS sobre recursos, JWT/RBAC, tenant A/B, doble reserva MySQL, DST UTC/IANA, estados e idempotencia.
+- Separa el cierre documental M01 de pruebas runtime, decisiones D01–D08 pendientes, A5 ajeno antes de M02 y regresiones reales de inventario/calendario; sin activar API, migrations, eventos o proveedores.
+- Un documento docs/v5 y una sección CHANGELOG juntos, fast-forward/CAS dev, Scope Lock/V5 exact SHA, BITACORA/readback; no QA/main/PROD ni cuentas externas.
+
 ## 2026-11-15 — V5 C11-04.M01.06: barreras y rollback documental de observabilidad [Javier :50]
 - Establece 16 gates de M01, condición de A5 ajeno antes de M02, y ocho pasos de rollback con conservación de JWT/RBAC, tenant A/B y BITACORA.
 - Distingue criterios P01–P10/N01–N10 FUTUROS_NO_EJECUTADOS, decisiones D01–D08 PENDIENTES y SLO/dashboards NO_MEDIDO; no se implementan exporters, alertas ni servicios.
