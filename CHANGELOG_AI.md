@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-02.M01.05 criterios de aceptación de auditoría arquitectura/migración [Javier :00]
+- Define 16 pares positivos/negativos FUTUROS_NO_EJECUTADOS para inventario Git, JWT/RBAC/tenant A/B, MySQL/restore, Cloudinary/R2, DNS/TLS y SHA/CI/A5 independientes.
+- Propone doce requisitos no funcionales NO_MEDIDOS; distingue documentación contractual de evidencia real y preserva gate DAG NO para M01.06/M02.
+- Sólo Markdown y CHANGELOG dev, A5 independiente pendiente; sin servicios Cloudflare/Hostinger, secretos, workers, migración, QA/main/PROD ni pruebas runtime declaradas.
+
 ## 2026-11-14 — V5 C15-02.M01.04 riesgos y decisiones de auditoría arquitectura/migración [Javier :00]
 - Registra 14 riesgos POTENCIALES_NO_VERIFICADOS, diez supuestos falsables y diez decisiones ABIERTAS basadas en 21 fuentes Git y 12 brechas de M01.03; no declara P0/P1 reales.
 - Define ocho escenarios positivos/negativos FUTUROS_NO_EJECUTADOS de JWT/RBAC/tenant A/B, MySQL/restore, Cloudinary/R2, DNS/TLS, CI exact-SHA e independencia A5.
