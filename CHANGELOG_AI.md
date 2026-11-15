@@ -4325,3 +4325,8 @@
 - Contrato Markdown de catorce opciones OPT01-OPT14 para tokens semanticos, preset, revision, branding, accesibilidad, sesion/epoch y rollback, siempre con fuente backend/ownership de tenant verificado.
 - Dieciocho reglas V01-V18 y diez pares P/N FUTUROS_NO_EJECUTADOS sobre JWT/RBAC, A/B, CSS/URL injection, cache, contraste, foco, idempotencia y revocacion; no se activaron flags ni implementaron endpoints.
 - Riesgo documental R0, solo docs/v5 y CHANGELOG en dev, Scope Lock y V5 exact-SHA, A5 de otra Task Javier y rollback git revert, sin Angular/EF/MySQL/QA/main/PROD.
+
+## 2026-11-15 — V16 C05-01.M02.05 eventos inertes design system [Javier :10]
+- Contratos de doce eventos futuros EV01-EV12 para tokens, presets, asignacion, intent, rollback y epoch de sesion, con envelope tipado sin secretos, JWT, PII ni datos tenant ajeno.
+- Define catorce reglas ID01-ID14 de version CAS, digest/idempotencia, dedupe y no-regresion; diez pares F01-F10 de pruebas FUTURAS_NO_EJECUTADAS sobre replay, revocacion, A/B, rollback, fallo de proveedor y sesion.
+- Solo documento Markdown y CHANGELOG; ningun evento, outbox, API, broker, worker, webhook, MySQL, CSS, infraestructura o permiso activado; Scope Lock/V5 exact SHA, A5 otro Javier, rollback git revert.
