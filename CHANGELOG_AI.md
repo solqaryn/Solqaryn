@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C15-04.M03.04 adaptador aislado de snapshots UX [Javier :00]
+- Implementa adaptador Infrastructure .NET 10 que copia observaciones y catalogos, valida SHA y tenant, y reutiliza preflight Application M03.03 sin escritura.
+- Siete pruebas xUnit positivas y negativas de JWT/RBAC/tenant, SHA, catalogo, presupuesto UX y aislamiento de colecciones; requieren CI real exact-SHA.
+- No certifica WCAG ni Playwright, JWT real, MySQL, permisos, desplegados ni A5; Scope Lock STRICT, rollback git revert y otra Task Javier para A5; sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C15-02.M03.04 adaptador aislado de snapshots de migracion [Javier :00]
 - Implementa adaptador real .NET 10 en Infrastructure con copias defensivas, comparacion SHA/tenant, lote maximo 64 y delegacion de solo lectura a preflight Application M03.03.
 - Siete pruebas xUnit positivas y negativas de sujeto, RBAC, tenant A/B, SHA, QA, DNS/secretos, restore y mutacion de colecciones; checks causales sobre SHA.
