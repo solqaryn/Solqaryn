@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C08-03.M02.06 contrato terminal M02 membresías gimnasio [Javier :10]
+- Define barreras B01–B16, doce pares E01–E12 futuros NO_EJECUTADOS y ocho rutas RB01–RB08 de rollback para membresía/ingreso físico; mantiene tenant A/B, JWT/RBAC, revocación y UTC/DST fail-closed.
+- Consolida M02.01–05 documentales solo como precondiciones; ninguno activa QR, hardware, pago, MySQL, API, worker ni eventos. M03 sujeto a DAG y A5 independiente real.
+- Entrega R0 solo Markdown/CHANGELOG en dev, CI Scope Lock/V5 exact-SHA, bitácora, candado V17 y rollback git revert normal, sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C08-02.M02.06 contrato terminal restaurante QR y rollback [Javier :00]
 - Concilia cinco M02 LISTO con A5 independientes, dieciséis barreras B01–B16, doce pares E01–E12 FUTUROS_NO_EJECUTADOS y ocho reversas RB01–RB08 para QR falso, aislamiento, pedidos y cierre ERP idempotente.
 - Conserva ERP como autoridad de precio, IVA, stock y factura, JWT/RBAC/tenant server-side, revocación, privacidad, concurrencia y reintentos seguros; no libera M03 sin DAG y A5 propio.
