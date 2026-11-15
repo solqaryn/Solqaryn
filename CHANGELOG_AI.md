@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C00-04.M03.06 auditoría de gobierno .NET 10 [Javier :50]
+- Implementa envoltura Application de consulta de gobierno con logging estructurado de resultado y denegaciones, reutilizando el guard tenant/RBAC actual; ningún log concede aprobación, escritura ni ejecución.
+- Agrega nueve xUnit positivos/negativos, incluidos tenant A/B sin I/O, revocación, entrada manipulada, auditoría deshabilitada y error del proveedor; exige CI backend, seguridad, Scope Lock y procedencia V5 del SHA exacto.
+- Sin integración HTTP, MySQL, DI, dispatcher, webhook, Workers, secreto ni QA/main/PROD; A5 revisada exclusivamente por otra Task Javier; rollback con git revert normal.
+
 ## 2026-11-15 — V5 C13-04.M02.06 contrato de salida UX y DAG [Javier :40]
 - Consolida seis documentos M01 y cinco M02 con A5 independiente, blobs Git y gates dinámicos antes de habilitar código real M03.
 - Define dieciséis barreras y doce pares positivos/negativos FUTUROS_NO_EJECUTADOS para rol/tenant A-B, responsive, estados, foco, idempotencia y SHA de pruebas.
