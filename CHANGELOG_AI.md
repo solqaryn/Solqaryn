@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C03-04.M02.02 contratos API/DTO futuros de continuidad [Javier :40]
+- Documenta doce operaciones propuestas, catorce validaciones, once errores genericos y contrato versionado para incidentes, evidencia, backup, restore y rollback, sin endpoints reales.
+- Define cuatro positivos y doce negativos FUTUROS_NO_EJECUTADOS de JWT/RBAC/tenant A/B, PII, correlacion, idempotencia, concurrencia y destinos CI/dev permitidos.
+- Solo documento y CHANGELOG autocontenidos dev con Scope Lock/V5 exact SHA, A5 independiente y rollback git revert; sin API, migraciones, worker, eventos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C01-04.M02.04 configuracion tipada y flags del expediente universal [Javier :50]
 - Define CFG01–CFG16 opciones conceptuales PROPUESTAS_NO_IMPLEMENTADAS por ámbito de plataforma, plan, tenant, sucursal, recurso y rol, con precedencia fail-closed y sin concesión RBAC.
 - Incluye VT01–VT12 pares positivos/negativos FUTUROS_NO_EJECUTADOS, cache tenant-aware, invalidación de membresía, cursor seguro, decisiones, adjuntos privados y rollback aditivo.
