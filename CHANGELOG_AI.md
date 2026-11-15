@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C03-02.M02.06 contrato terminal de salida RBAC/ABAC [Javier :00]
+- Consolida dieciséis condiciones RBA de aislamiento backend, doce pares positivos/negativos FUTUROS_NO_EJECUTADOS y ocho rutas de recuperación sobre JWT, RBAC/ABAC, tenant, sucursal, soporte, exportaciones y medios.
+- Preserva requisitos M01.01–06 y M02.01–05 LISTO+A5 más C01-02/C02-01 M01.06+A5, Scope Lock STRICT, SHA exacto, CAS institucional, A5 independiente y rollback normal.
+- Entrega documental sin nuevas rutas API, código de autorización, migraciones MySQL, eventos, workers, secretos, QA/main/PROD ni pruebas runtime; A0–A4 se auditan y A5 posterior queda pendiente.
+
 ## 2026-11-15 — V5 C03-02.M02.05 eventos e idempotencia conceptual RBAC/ABAC [Javier :50]
 - Define ocho señales NO EMITIDAS, quince campos hipotéticos, catorce reglas fail-closed y doce pares P/N FUTUROS_NO_EJECUTADOS para permisos, revocación y auditoría multiempresa.
 - Requiere origen backend validado, deduplicación por tenant, JWT/RBAC/ABAC, sucursal, export/medios y correlación saneada; no instala dispatcher, queue, worker, webhook, API ni MySQL.
