@@ -398,3 +398,11 @@ La nueva superficie protegida de consulta para gobierno de cambios agrega un arc
 - `frontend/src/app/features/plataforma/gobierno-cambios-v5.component.ts`
 
 Se actualizan únicamente los recuentos exactos del verificador P0-007.A y se conserva la detección fail-closed de altas no inventariadas y archivos desaparecidos. El guard servidor sigue siendo `plataformaGuard`; registrar un componente no concede JWT, RBAC, acceso tenant, autorización de cambios, QA/main/PROD ni certifica UX o Playwright. Evidencia de CI dirigida para C00-04.M04.01 y reversión mediante `git revert` normal, sin reescribir la lista histórica.
+
+## Actualización aditiva V17 C15-05.M04.01 — 15 de noviembre de 2026
+
+La pantalla privada de auditoría operativa añade un componente real a la carpeta plataforma. Total verificable actual: **142 archivos (134 features y 8 shared)**. Los recuentos de SHAs históricos permanecen documentados sin reescritura.
+
+- `frontend/src/app/features/plataforma/auditoria-operativa-v5.component.ts`
+
+El verificador conserva comparaciones estrictas de paths reales, duplicados, faltantes y no catalogados. El alta NO certifica JWT, consultas institucionales, datos vivos, acciones de CLAIM/A5, backend ni UX/Playwright; esas pruebas se acreditan por jobs propios. Rollback: revert normal de este ajuste junto al cambio que introdujo el componente.
