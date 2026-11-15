@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C08-01.M02.01 entidades y ownership conceptual citas/agenda [Javier :10]
+- Contrato documental R0 con E01–E14, INV01–INV18, REL01–REL12 para empresa, sucursal, servicio, profesional, recurso, citas, reprogramación y cancelación; separa cita de reservas de existencias.
+- Doce pares T01–T12 FUTUROS_NO_EJECUTADOS sobre tenant A/B, JWT/RBAC, UTC/IANA/DST, doble booking, CAS, rollback e idempotencia; 0 tests runtime, MySQL 8.4 y concurrencia real pendientes para código R2.
+- Solo documento Markdown y sección CHANGELOG autocontenida por fast-forward/CAS dev; A0–A4 documental, A5 de otra Task Javier, sin migraciones, HTTP, UI, QA/main/PROD.
+
 ## 2026-11-15 — V16 C07-03.M02.05 contratos futuros eventos, idempotencia y límites [Javier :10]
 - Propone EV01–EV12, IDEM01–IDEM12, COR01–COR10 y LIM01–LIM12 para inventario, reservas, compras, transferencias, stock y costeo con tenant A/B y RBAC fail-closed; eventos NO EMITIDOS.
 - Diez pares T01–T10 de pruebas FUTURAS_NO_EJECUTADAS para replay, rollback, commit causal, revocación, correlación y costos; no outbox, broker, worker, webhook, DB, endpoint ni proceso nuevo.
