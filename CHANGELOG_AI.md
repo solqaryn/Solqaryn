@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C09-02.M02.05 eventos conceptuales fidelizacion y reputacion [Javier :10]
+- Disena sobre logico tipado, doce contratos EV01-EV12 de puntos, canjes, promos, moderacion, posventa y consentimiento; doce invariantes ID01-ID12 de idempotencia, version CAS, antireplay y aislamiento tenant A/B.
+- Doce pares P/N FUTUROS_NO_EJECUTADOS sobre replay, revocacion, fraude, XSS, IDOR, opt-out y poison events. Sin broker, webhook, worker, outbox, servicios, EF/MySQL, API, mensajes, codigo ejecutable ni metricas reales.
+- Documento R0 V17 lock SQV17_C09_02_M02_05 fila 1344, Source SHA a verificar, Scope Lock/V5 exact-SHA A0-A4 y A5 independiente Javier; rollback git revert; sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C09-02.M02.04 configuracion tipada y flags seguros de fidelizacion [Javier :00]
 - Propone seis ambitos restrictivos global/empresa/sucursal/programa/canal/sesion y dieciseis opciones tipadas O01-O16 con defaults false, cero, null o conjunto vacio para puntos, promociones, resenas, posventa, moderacion y consentimiento.
 - Define doce reglas fail-closed de precedencia, tenant A/B, JWT/RBAC, revocacion, EmpresaId=NULL, idempotencia y cache mas doce pares P/N FUTUROS_NO_EJECUTADOS; no crea flags runtime, endpoints, MySQL, mensajes o campañas, pruebas NO_MEDIDO.
