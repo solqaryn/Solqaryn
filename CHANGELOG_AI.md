@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C03-04.M02.03 persistencia e integridad futura de continuidad [Javier :40]
+- Define once agregados propuestos con ownership tenant-first, catorce invariantes de indices, claves, permisos, auditoria append-only e idempotencia, sin crear schema ni migraciones.
+- Documenta seis pasos de migracion/rollback FUTUROS_NO_EJECUTADOS en MySQL 8.4 efimero, mas 4 positivos y 12 negativos de aislamiento A/B y recuperacion.
+- Solo dos Markdown en dev, CI Scope Lock/V5 exact SHA, A5 independiente pendiente, rollback git revert; sin acceso Aiven real, backups/restores, workers, QA/main/PROD.
+
 ## 2026-11-14 — V5 C03-04.M02.02 contratos API/DTO futuros de continuidad [Javier :40]
 - Documenta doce operaciones propuestas, catorce validaciones, once errores genericos y contrato versionado para incidentes, evidencia, backup, restore y rollback, sin endpoints reales.
 - Define cuatro positivos y doce negativos FUTUROS_NO_EJECUTADOS de JWT/RBAC/tenant A/B, PII, correlacion, idempotencia, concurrencia y destinos CI/dev permitidos.
