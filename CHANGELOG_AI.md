@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C07-04.M02.06 dependencias y contrato de salida de pedidos/pagos [Javier :00]
+- Verifica M01.01–06 y M02.01–05 LISTO con A5 independiente, cinco SHAs/blobs fuente y DAG/COLA G/O SI; define 16 condiciones OUT, 12 pares FUT y seis reglas de salida.
+- Todo es documento FUTURO_NO_EJECUTADO: sin PSP, pagos, endpoints, migraciones, workers, dispatcher, eventos ni cambios runtime; seguridad JWT/RBAC/tenant A/B y reversión obligatorias.
+- Cambios limitados a dos Markdown por fast-forward/CAS en dev, Scope Lock/V5 exact-SHA y A5 de otra Task pendiente; no QA/main/PROD.
+
 ## 2026-11-14 — V5 C07-04.M02.05 eventos conceptuales e idempotencia de pedidos/pagos [Javier :50]
 - Especifica 14 eventos NO_EMITIDOS, 14 campos conceptuales, 12 reglas de idempotencia y 12 límites para cotización, pedido, factura, pago, stock y compensación.
 - Define 12 pares positivos/negativos FUTUROS_NO_EJECUTADOS; no crea dispatcher, webhooks, Tasks, PSP, SQL, eventos runtime ni efectos económicos.
