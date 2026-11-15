@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C01-01.M06.05 solicitud de revisión independiente del lote [Javier :20]
+- Formaliza petición de A5 separada para M06.01 y M06.02 con SHAs/blobs y seis controles auditables, sin atribuir PASS al autor ni reservar revisor.
+- Reconoce A5_PASS ya existentes para M05.01–06, respeta M06.03 con owner DEV02 y M06.04 pendiente; M06.06 continúa DAG G=NO hasta gates reales.
+- Publicación documental única en dev, evento institucional y readback; no despierta Tasks, configura webhooks, ni modifica QA/main/PROD.
+
 ## 2026-11-15 — V5 C01-01.M06.03 riesgos y decisiones de identidad universal [Javier :10]
 - Audita seis alcances M05: Domain xUnit, contrato Controller ScopeStub, integración EF Oracle MySQL local, aceptación y denegaciones Application/Domain, regresión y Chromium; identifica riesgos de JWT/HTTP y tenancy no cubiertos.
 - Corrige atribución de CI MySQL M05.03: SHA 71eac84 es ancestro sin test nuevo; job Category=Integration del SHA fuente 11c6e30 reportó 47 PASS, 0 FAIL, 0 SKIPPED, sin Aiven/prod.
