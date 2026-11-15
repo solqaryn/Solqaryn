@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-01.M02.01 modelo de propiedad y trazabilidad de cobertura [Javier :50]
+- Define CT01–CT16 entidades conceptuales, CT06 matriz de enlaces requisito-ID y CV01–CV12 de casos positivos/negativos FUTUROS_NO_EJECUTADOS, sin afirmar cero huerfanos o P0/P1.
+- Delimita contratos contra STANDARD/PLAN/COLA/DAG/BITACORA, A5 independiente y CAS, con controles JWT/RBAC/tenant y prohibicion de falsificar SI o reescribir historia.
+- Sólo dos Markdown en dev, Scope Lock/V5 exact-SHA exigidos, rollback git revert, sin migraciones, endpoints, eventos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C15-05.M02.01 modelo de ownership e invariantes de auditoría operativa [Javier :20]
 - Formaliza OM01–OM14 registros conceptuales, INV01–INV16 de seguridad/concurrencia y AT01–AT12 de casos FUTUROS_NO_EJECUTADOS para gobierno de 2340 IDs.
 - Traza PLAN/COLA/DAG/BITACORA, seis Tasks Javier, Scope Lock y M01.06 A5 independiente; separa telemetría de último reporte frente al estado nativo, sin certificar cero carreras ni cobertura runtime.
