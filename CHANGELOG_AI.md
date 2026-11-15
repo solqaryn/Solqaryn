@@ -2967,3 +2967,8 @@
 - Define EV01–EV12 conceptuales, envelope mínimo, ID01–ID12 de idempotencia y cuota y diez pares T01–T10 FUTUROS_NO_EJECUTADOS para tenancy, hallazgos y revisión A5.
 - No crea webhooks, dispatcher, workers, colas, reintentos, programaciones ni privilegios; BITACORA A:Z sigue siendo evidencia histórica institucional.
 - Sólo documento y CHANGELOG en dev, con Scope Lock y procedencia exact-SHA, readback y A5 posterior por otra Task Javier; sin afectar MySQL, JWT/RBAC runtime ni QA/main/PROD.
+
+## 2026-11-14 — V5 C14-04.M03.01: validación pura de evidencias DEV para puesta en marcha [Javier :10]
+- Implementa en Domain .NET 10 reglas de release DEV: grant explícito, SHA/manifest/digest coherentes, CI completed/success exact-SHA, A5 independiente y aislamiento tenant A/B.
+- Añade pruebas xUnit positivas y negativas de entornos QA/PROD, permisos, SHA, checks cancelados/fallidos, autoaprobación, rollback y criterios no ejecutados; READY_FOR_EXTERNAL_EVIDENCE_REVIEW no implica producción ni A5.
+- Agrega contrato de alcance y rollback; sin API, MySQL, migraciones, dispatcher, webhooks, workers, secretos, QA/main/PROD ni despliegues. Validación CI causal obligatoria antes de LISTO_DEV.
