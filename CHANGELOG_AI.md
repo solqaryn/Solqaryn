@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C01-04.M02.06 contrato de salida documental del expediente universal [Javier :00]
+- Establece OUT01–OUT14 con pruebas futuras positivas/negativas para expediente, tenant A/B, JWT/RBAC, cronologia, observaciones, decisiones, adjuntos, versionado, CAS e idempotencia.
+- Define entradas reales M03.01–06, expediente de evidencias y RB01–RB10 de contencion/rollback; separa M02 LISTO_DEV documental de API, migraciones, seguridad, UI o eventos implementados.
+- Publica unicamente dos Markdown en dev con fast-forward/CAS, Scope Lock y V5 exact-SHA, A5 independiente pendiente; sin QA/main/PROD, secretos ni datos vivos.
+
 ## 2026-11-14 — V5 C14-02.M02.06 contrato de salida de aceptación de seguridad [Javier :00]
 - Cierra documentalmente el modelo M02 con SEC01–SEC12 para BOLA/IDOR, spoofing, JWT/RBAC/tenant A/B, archivos, jobs, cache, backups, sesiones, P0/P1 y publicación; exige negativos y evidencia futura real, sin afirmar cero vulnerabilidades.
 - Define entradas M03.01–06, expediente causal, estados NOT_EVALUATED/FAIL/PASS_DEV/A5 y RB01–RB08 de contención y rollback; separa entrega documental de pentest, CI runtime, migraciones y promoción.
