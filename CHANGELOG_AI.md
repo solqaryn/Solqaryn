@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C07-02.M02.05 eventos conceptuales e idempotencia de storefront/checkout [Javier :40]
+- Contrato R0 de doce eventos E01–E12 INERTES, catorce campos de sobre, catorce invariantes de idempotencia/correlación y doce pares positivos/negativos FUTUROS_NO_EJECUTADOS; no introduce API, colas, workers o mensajería real.
+- Tenant A/B, host, JWT/RBAC/revocación, HMAC/nonce/replay PSP, orden/stock, TTL, CAS e integridad financiera quedan fail-closed; validar checkout jamás equivale a cobrar o reservar.
+- Un solo documento C07-02.M02.05 y sección autocontenida de CHANGELOG; V17 named range fila 1056 y A0–A4 por SHA, A5 independiente; sin credenciales, migraciones, QA/main/PROD.
+
 ## 2026-11-15 — V17 C09-02.M01.06 gates y liberacion condicional fidelizacion [Javier :10]
 - Establece G01–G16 como puertas causales, 12 pares P/N FUTUROS_NO_EJECUTADOS, fuentes M01.01–05 con blobs y condiciones de no-regresion para tenant A/B, ledger, antifraude, moderacion, consentimiento y posventa.
 - Separa puntos de CreditoCliente/Venta y saldo monetario, preserva EmpresaId=NULL sin ownership, A5 independiente y pruebas xUnit/MySQL 8.4/Angular/Playwright solo en etapas de codigo; cero runtime o campanas habilitados.
