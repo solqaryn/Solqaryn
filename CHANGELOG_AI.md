@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C04-01.M02.04 configuración tipada y flags seguros de planes SaaS [Javier :00]
+- Propone dieciséis campos CFG, doce flags desactivadas, doce pares P/N FUTUROS_NO_EJECUTADOS y ocho rutas de recuperación para catálogo, versionado, límites y visibilidad.
+- Mantiene autoridad backend JWT/RBAC/tenant A/B, deny-by-default, consentimiento/precio/moneda/impuesto sin aprobación, separación de grants y entitlements, Scope Lock STRICT y A5 independiente.
+- Entrega documental exclusivamente: no registra flags, planes reales, cobros, PSP, MySQL, Angular, QA/main/PROD o eventos; rollback mediante git revert.
+
 ## 2026-11-15 — V5 C04-01.M02.03 persistencia e indices futuros de planes SaaS [Javier :10]
 - Define diez estructuras relacionales hipoteticas, ocho indices candidatos, seis pasos de migracion futura y doce fixtures positivos/negativos FUTUROS_NO_EJECUTADOS.
 - Conserva Plan, PlanLimite y Suscripcion implementados; sin DDL, EF migration, Aiven real, tarifas, cobros, workers ni grants JWT/RBAC/tenant.
