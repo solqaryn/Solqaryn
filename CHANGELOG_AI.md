@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C11-02.M01.06 gates, rollback y salida de API modular [Javier :30]
+- Cierra contrato documental terminal de M01 con G01-G16, seis escenarios positivos y diez negativos FUTUROS_NO_EJECUTADOS, ocho pasos de rollback normal, autorizacion backend JWT/RBAC/tenant A/B y compatibilidad de API.
+- Delimita fuentes M01.01-.05 ya LISTO con revisiones A5 independientes y C01-03.M01.06; no asume que el documento ejecuta API, MySQL, migraciones, workflows, eventos ni QA/main/PROD.
+- Scope Lock y procedencia V5 exact-SHA exigibles, CI runtime no causal NO_APLICA, A5 por otra Task Javier, BITACORA y readback por transicion; revert normal sin force-push.
+
 ## 2026-11-15 — V5 C15-05.M03.06 correccion build CS0246 [Javier :30]
 - Repara error real de GitHub-hosted Backend Release y authorization gate: incorpora using Solqaryn.Domain.AutomationV5 para V5OperationalAuditSecurityGate en la envoltura de observabilidad.
 - Mantiene sin cambios clasificacion de logs, denegacion por defecto, tenant A/B, pruebas xUnit y controles de seguridad; no desactiva analizadores ni atribuye los jobs failed/cancelled como PASS.
