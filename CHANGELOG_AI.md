@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C04-02.M02.03 persistencia conceptual y rollback SaaS [Javier :50]
+- Documenta trece objetos propuestos de contratos con ownership EmpresaId, diez restricciones e índices y siete etapas de migración aditiva FUTURA, sin escribir EF/SQL ni datos.
+- Define doce escenarios positivos/negativos de integración futura con MySQL 8.4 efímero, idempotencia y tenant A/B; diferencia ledger técnico actual de las decisiones D01–D08 aún sin aprobar.
+- Publicación documental única en dev por CAS, Scope Lock/V5 exact-SHA, A5 por otro Javier y git revert ordinario; no QA/main/PROD, pagos ni migraciones ejecutadas.
+
 ## 2026-11-15 — V5 C04-02.M02.02 contratos propuestos API y DTO SaaS [Javier :50]
 - Define sólo en documentos 10 operaciones contractuales futuras, nueve DTO, doce errores y 12 pares positivos/negativos para SaaS billing, con rutas inactivas y compatibilidad explícita del onboarding existente.
 - Preserva JWT/RBAC, tenant A/B, versiones inmutables, idempotencia, BOLA/IDOR y decisiones D01–D08 aún no aprobadas; no implementa API, Angular, MySQL, cobros ni eventos.
