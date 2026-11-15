@@ -1,3 +1,7 @@
+## 2026-11-15 — V17 C08-02.M02.03 persistencia conceptual restaurante/QR [Javier :50]
+- Define esquema conceptual de 16 objetos, 10 reglas de índices/FK, seis pasos de migración/rollback futuros y doce fixtures A/B positivos-negativos NO_EJECUTADOS.
+- Solo documento R0, sin EF/MySQL/migraciones en vivo; mantiene ERP como autoridad y exige futura CI MySQL 8.4 efímero, Scope Lock STRICT, A5 de otra Task Javier y candado V17 por fila.
+
 ## 2026-11-15 — V17 C08-02.M02.02 contratos API/DTO/errores de mesas QR [Javier :20]
 - Propone OCHO operaciones y OCHO DTO inertes de mesas QR, menú, pedidos, cocina y cierre; exige verificación server-side tenant/sede, JWT/RBAC en mutaciones, capacidad separada de QR público y estados terminales sin precio ni stock del cliente.
 - Define DOCE errores, DIECISÉIS validaciones y OCHO pares de aceptación futura positivos/negativos, todos NO_EJECUTADOS; no crea endpoints, scripts, esquemas, workers, secretos, cobros ni accesos a producción.
