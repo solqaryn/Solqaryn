@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C07-02.M02.01 storefront y checkout: modelo conceptual y ownership [Javier :20]
+- Documenta 16 conceptos E01-E16, 20 invariantes INV01-INV20, 12 pares P/N FUTUROS_NO_EJECUTADOS y 12 relaciones sobre tenant/host, catálogo, stock, carrito, checkout, orden, HMAC y PSP sin implementar recursos.
+- Conserva rechazo de host/tenant B, firma/replay, costos y PII; validar checkout no constituye pedido/pago. R0 documental, A0-A4 exact-SHA y A5 independiente, D01-D08 pendientes.
+- Un solo scope M02.01: docs/v5 y CHANGELOG, candado V17 fila 1052, Scope Lock/V5 y BITACORA/readback; sin API/EF/MySQL/Angular/PSP, QA/main/PROD, secretos ni pagos; rollback git revert.
+
 ## 2026-11-15 — V17 C09-01.M02.03 CRM universal: persistencia, índices y migraciones conceptuales [Javier :30]
 - Define contratos lógicos multiempresa, 12 índices candidatos I01–I12, 8 etapas futuras M01–M08 de migración reversible y 12 fixtures sintéticos F01–F12 con positivos/negativos; no crea ni ejecuta EF, MySQL, SQL, pruebas o datos.
 - Preserva owner de Cliente.EmpresaId=NULL legado, JWT/RBAC y tenant A/B fail-closed, idempotencia, CAS, PII, consentimiento, opt-out y reversión sin drop implícito; EXPLAIN/Category=Integration siguen NO_MEDIDO.
