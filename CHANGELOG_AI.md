@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C00-04.M04.01 Vitest dirigido en GitHub Actions [Javier :20]
+- Añade al workflow V5 de estados de plataforma una ejecución real en GitHub-hosted Node 24 del nuevo `app.routes.governance-v5.spec.ts`, incluidos guard privado, ruta única, lazy-load y render accesible sin botones operativos.
+- Agrega únicamente los paths necesarios para activar la prueba en cambios de componente/spec. Conserva los jobs históricos de permisos y branding, sin deshabilitar comprobaciones ni manipular resultados.
+- El CI exact-SHA debe completar SUCCESS antes de A0–A4/LISTO; fallo/queued/cancelled no es PASS. Sin API, MySQL, JWT, QA/main/PROD ni webhook.
+
 ## 2026-11-15 — V5 C00-04.M04.01 reconciliación reproducible de catálogo Angular [Javier :20]
 - Corrige P0-007.A catalog drift del SHA 1ecaac0c: el componente nuevo de gobierno se había publicado sin registrar su ruta `.component.ts` en el inventario histórico-aditivo.
 - Registra exclusivamente la nueva ruta de archivo; mantiene el detector de omisiones, fuentes faltantes y test negativo, actualizando recuento de 140 a 141 (133 features, 8 shared).
