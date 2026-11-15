@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-04.M02.02 contratos API DTO y errores de puesta en marcha [Javier :20]
+- Define OP01–OP10 operaciones conceptuales, doce campos DTO, ER01–ER12 y AC01–AC10 pares de casos FUTUROS_NO_EJECUTADOS; no implementa endpoints.
+- Revisa las rutas reales PlataformaSoporteController y AuditoriaController sin modificar API, JWT/RBAC, tenants, SQL ni servicios; evita prometer restauración, observabilidad o release probados.
+- Documento y CHANGELOG autocontenido en dev, exact-SHA Scope Lock/V5, A5 independiente y rollback git revert; sin QA/main/PROD, secretos ni datos reales.
+
 ## 2026-11-14 — V5 C14-04.M02.01 entidades y ownership de puesta en marcha [Javier :20]
 - Formaliza PM01–PM16 registros conceptuales, INV01–INV16 de integridad y T01–T10 escenarios positivos/negativos FUTUROS_NO_EJECUTADOS, con evidencias y límites explícitos.
 - Relaciona candidato SHA, manifest, autorización de entorno, tenant, salud, soporte, alertas, backup, restore y rollback sin crear tablas, APIs, eventos o servicios.
