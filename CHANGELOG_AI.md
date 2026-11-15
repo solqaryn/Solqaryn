@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C02-04.M03.02: preflight Application de consola global fail-closed [.NET 10 Javier :50]
+- Implementa servicio Application no autorizante sobre reglas Domain de consola global: validación UTC, tenant A/B, rechazo de autoridad de cliente, mutación/exportación, MFA, reautenticación, grants y aprobación excepcional.
+- Añade nueve pruebas reales xUnit con rutas positivas/negativas de tenant/rol/excepción y política GrantsAccess=false; ningún resultado concede acceso ni emite credenciales, eventos o auditoría live.
+- Solo Application + xUnit + docs/v5 + CHANGELOG en dev, Scope Lock y CI dirigida exact-SHA; sin API/DI, JWT live, MySQL, QA/main/PROD.
+
 ## 2026-11-15 — V5 C07-01.M01.06: gates, rollback y liberación documental de catálogo universal [Javier :50]
 - Define K01–K14 como puertas de ownership tenant, NULL legacy, variantes, impuestos/precios/snapshots, inventario y storefront sin atribuir implementación universal.
 - Separa LISTO_DEV documental, A5 independiente y M02 con DAG/COLA/CAS nuevos; incorpora reversión aditiva y oráculos P01–P06/N01–N12 FUTUROS NO_EJECUTADOS.
