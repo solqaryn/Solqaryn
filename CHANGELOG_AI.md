@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C10-04.M03.05 cola acotada de revisión de jobs [Javier :40]
+- Integra worker .NET 10 de revisión en memoria con Channel de capacidad 32 y composición del adaptador Infrastructure, gate Application y reglas Domain existentes; sin despachar jobs/restore/exportaciones ni conceder leases.
+- Incorpora 12 xUnit adversariales de tenant A/B, actor, versión, replay, digest de idempotencia, payload, revocación, servicio, retry, deadline, capacidad y cancelación; requieren Backend Release, seguridad, Authorization, Scope Lock y V5 exact-SHA.
+- R2: worker no persistente, sin MySQL/Cloudflare/R2 ni proveedor o restauración real. A0–A4 y revisión A5 de otra Task Javier; rollback git revert normal, no QA/main/PROD.
+
 ## 2026-11-15 — V17 C01-02.M03.03 fence de capabilities y RBAC [Javier :40]
 - Implementa Application .NET 10 de intersección fail-closed por empresa, rol efectivo, sucursal, recurso, plan, rubro y capability; reconsulta identidad y RBAC relacional vigentes mediante IdentidadUniversalAuthorizationGuard.
 - Añade 12 xUnit genuinos positivos/negativos de tenant A/B, revocación, grant falso, propiedad, dominio, fuente ausente, clave ordinal y cancelación; exigir Backend Release, seguridad, Authorization, Scope Lock y V5 exact-SHA.
