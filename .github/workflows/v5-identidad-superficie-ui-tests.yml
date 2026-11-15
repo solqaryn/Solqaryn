@@ -1,0 +1,45 @@
+name: V5 - Identidad tenant verificada en Usuarios
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/src/app/features/usuarios/identidad-sesion-verificada.component*'
+      - 'frontend/src/app/features/usuarios/usuarios.component.ts'
+      - 'frontend/src/app/features/usuarios/usuarios.component.html'
+      - '.github/workflows/v5-identidad-superficie-ui-tests.yml'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: v5-identidad-usuarios-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  identidad-contexto-verificado:
+    name: V5 - Identidad A/B y vista privada (Vitest/Angular)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout SHA exacto
+        uses: actions/checkout@v4
+      - name: Configurar Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Instalar npm del repositorio
+        run: npm install --global npm@11.19.0
+      - name: Instalar dependencias fijas
+        run: npm ci
+      - name: Vitest aislamiento tenant y HTML escapado
+        run: npm test -- --no-watch --no-progress --include=src/app/features/usuarios/identidad-sesion-verificada.component.spec.ts
+      - name: Comprobar tipos y calidad del frontend
+        run: npm run lint
+      - name: Compilar produccion
+        run: npm run build:prod

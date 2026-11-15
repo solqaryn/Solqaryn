@@ -13,3 +13,7 @@ Nueva superficie Angular read-only incrustada en la ruta existente /usuarios. La
 - A4: commit fast-forward/CAS en dev, Scope Lock/V5, Angular build y tests causales completed/success exact SHA, PLAN/COLA/BITACORA readback. Backend/MySQL sin cambios se clasifica NO_APLICA.
 - A5: revisión independiente posterior por otra Task Javier y comprobación SHA, pruebas y límites.
 Rollback normal git revert, sin force-push, QA/main/PROD ni despliegue.
+
+## Prueba dirigida con runner GitHub-hosted
+
+Se añade el workflow V5 de identidad Usuarios en GitHub Actions, con Node 24.21.0 y npm fijo, Vitest incluyendo la spec de este scope, lint y compilación de producción. Su ejecución real en el SHA publicado debe finalizar completed/success; un workflow queued, cancelled o failed NO certifica A1/A4. Este workflow no despliega ni altera secretos, cuentas, programaciones o bases reales.

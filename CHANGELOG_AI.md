@@ -3433,3 +3433,8 @@
 - Corrige drift determinista del catalogo tras agregar un componente real: inventario aditivo de la nueva ruta fuente y recuento vigente 139 (131 features, 8 shared), preservando la foto historica original.
 - Mantiene checks negativos exact-HEAD, deteccion de archivos no registrados y borrados, sin saltar verificaciones ni ampliar JWT/RBAC, API o SQL.
 - Reejecutar CI relevante del nuevo SHA, Scope Lock y V5; reparacion de baseline relacionada con M04.01, sin QA/main/PROD.
+
+## 2026-11-15 — V5 C01-01.M04.01 CI dirigida Vitest Angular [Javier :20]
+- Agrega job GitHub-hosted exact SHA con Vitest de contexto A/B, interpolacion segura de rol, lint y build Angular, sin dependencias de servicios de produccion.
+- Mantiene concurrente por SHA sin cancelar pruebas por nuevos commits y deja A4 bloqueada hasta success real, sin tratar queued/cancelled como PASS.
+- Solo dev, sin nuevas Tasks, PR, ramas, secretos, cambios de seguridad o despliegues.
