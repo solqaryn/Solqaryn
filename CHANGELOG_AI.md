@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-04.M01.06 contrato de bloqueo y salida de puesta en marcha [Javier :10]
+- Define B01–B14 bloqueos fail-closed, RB01–RB10 medidas preventivas y L01–L14 condiciones de salida con predecesores, A5 independiente y recálculo DAG/COLA.
+- Registra ocho pares positivos/negativos FUTUROS_NO_EJECUTADOS y deja NF NO_MEDIDOS para JWT/RBAC/tenant A/B, archivos, backups, alertas, CI, accesibilidad y rollback; sin pruebas de runtime ficticias.
+- Entrega sólo documento y CHANGELOG autocontenido en dev con CAS fast-forward, checks Scope Lock/V5 exact-SHA, A5 posterior de otra Task Javier y prohibición de QA/main/PROD, DNS, datos, secretos y eventos.
+
 ## 2026-11-14 — V5 C03-04.M02.06 contrato de salida de continuidad y rollback [Javier :00]
 - Cierra documentalmente M02 con CONT01–CONT14 para incidentes, revocacion, JWT/RBAC, backup/restore, aislamiento tenant A/B, idempotencia, RPO/RTO y auditoria; todos los casos runtime FUTUROS_NO_EJECUTADOS.
 - Define dependencias de M03 y contratos base para C10/C12, evidencia causal, denegacion por defecto y RB01–RB10; no certifica restores, backups, cambios de estado de servidores ni objetivos de recuperacion.
