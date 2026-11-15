@@ -4286,3 +4286,8 @@
 - Implementado preflight ejecutable .NET 10 de identidad, tenant, membresia vigente, RBAC, host mapping unico/fresco desde backend y ownership A/B de recursos y sucursales; ninguna cabecera o ruta crea autoridad.
 - Agregados doce metodos xUnit positivos, negativos y frontera: JWT ausente, host falso/forwarded no confiable, tenant B, rol revocado, membresia desactivada, tenant suspendido, proveedor sin autoridad, fallback cliente y errores de superficie.
 - Riesgo V15 R2: no modifica middleware, JWT HTTP real, EF/MySQL ni API; el veredicto solo exige enforcement independiente en backend. CI backend/security/auth/Scope Lock/V5 exact-SHA obligatoria; A5 de Task Javier distinta y rollback git revert.
+
+## 2026-11-15 — V16 C02-02.M03.01 Domain placement seguro shared-dedicated [Javier :10]
+- Implementado preflight puro .NET 10 de asignacion shared/dedicated por tenant y revision CAS; JWT/membresia/RBAC servidor, binding opaco de catalogo y rechazo de destino tenant B.
+- Anadidos once tests xUnit positivos/negativos: DSN de cliente, fallback cruzado, cutover y DDL destructivos, version caduca, rol revocado, idempotencia faltante y ausencia de backup/restore de prueba.
+- Riesgo V15 R2; veredicto nunca autoriza conexion ni migracion; sin EF/MySQL, API, infraestructura real ni secretos. CI backend/seguridad/autorizacion/Scope Lock/V5 por SHA, A5 independiente y rollback git revert.
