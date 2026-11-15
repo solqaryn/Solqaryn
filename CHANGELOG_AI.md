@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C11-04.M02.04 opciones tipadas y flags seguros observabilidad [Javier :40]
+- Contrato R0 OPT01–OPT20, FL01–FL12, VAL01–VAL18 y política restrictiva por plataforma/tenant/componente; exporters, tracing remoto, alertas, captura PII/SQL y labels arbitrarios OFF, sin configuración ejecutable.
+- Doce pares T01–T12 positivos/negativos FUTUROS_NO_EJECUTADOS (0/12) de RBAC, revocación, redacción, cardinalidad, política CAS, fallas y rollback; SLO, p95, retención y costos NO_MEDIDO.
+- Dos Markdown en dev con fast-forward/CAS y Scope Lock/V5 exact SHA, A0–A4 R0, A5 independiente pendiente; sin cambios API, MySQL, Angular, collector, QA/main/PROD ni proveedores.
+
 ## 2026-11-15 — V16 C11-04.M02.03 persistencia conceptual observabilidad [Javier :40]
 - R0 documental de P01–P12, IDX01–IDX12 y MIG01–MIG08 FUTUROS para logs, métricas, trazas, redacción de PII, SLI/SLO, auditoría scoped y costo agregado; ninguna tabla, EF/MySQL ni collector implementados.
 - Doce pares F01–F12 positivos/negativos FUTUROS_NO_EJECUTADOS (0/12); JWT/RBAC/tenant A/B, revocación, cardinalidad, rollback y denegaciones previstas, con p95/SLO/costos NO_MEDIDO.
