@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C14-04.M03.03 puerta de autorización DEV .NET 10 [Javier :40]
+- Incorpora gate Application con identidad autenticada sólo desde backend confiable, membresía, grant explícito, rol revisor independiente, tenant A/B y SHA/CI causal fail-closed antes de revisión de release DEV.
+- Agrega xUnit positivos/negativos de revocación, cross-tenant, task no autorizada, QA/PROD, impersonación, tests cancelados y SHA distinto; autorización de despliegue y escritura sigue siempre false.
+- Sin proveedor de autenticación runtime conectado, HTTP/MySQL, secretos, cambios de IAM, flags, webhooks o QA/main/PROD; exige Backend Release, seguridad, Scope Lock/V5 exact SHA y A5 independiente antes del cierre.
+
 ## 2026-11-15 — V5 C00-04.M03.06 auditoría de gobierno .NET 10 [Javier :50]
 - Implementa envoltura Application de consulta de gobierno con logging estructurado de resultado y denegaciones, reutilizando el guard tenant/RBAC actual; ningún log concede aprobación, escritura ni ejecución.
 - Agrega nueve xUnit positivos/negativos, incluidos tenant A/B sin I/O, revocación, entrada manipulada, auditoría deshabilitada y error del proveedor; exige CI backend, seguridad, Scope Lock y procedencia V5 del SHA exacto.
