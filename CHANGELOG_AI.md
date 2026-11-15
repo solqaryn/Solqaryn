@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C02-04.M03.03 control de autorizacion de consola global [Javier :30]
+- Implementa gate Application .NET10 fail-closed y lector tipado de evidencia backend para actor/tenant/SHA, sin conceder permisos JWT, tenant, MFA ni lectura de datos, ni derivarlos de hints del cliente.
+- Agrega siete pruebas xUnit dirigidas de revocacion, evidencia, MFA/reautenticacion, tenant A/B, grants de plataforma distintos al ERP, lease excepcional con aprobador y cancelacion; ninguna prueba se declara PASS antes de GitHub Actions causal.
+- Reutiliza Domain M03.01 y Application M03.02, no incorpora HTTP/DI/EF/MySQL ni grant real; Scope Lock y V5 por SHA, A5 independiente, rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-15 — V5 reparación Scope Lock C10-03.M02.04/.05 [Javier :20]
 - Sustituye once apariciones de un nombre técnico en inglés reservado por el verificador de identidad del proyecto, sólo en los dos contratos documentales nuevos.
 - Corrige causa exacta de FAIL en Scope Lock y seguridad multiempresa del SHA c695a998; preserva los 18 campos conceptuales, 12 señales, invariantes y ausencia de datos reales.
