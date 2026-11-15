@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C09-01.M02.02 CRM universal: contratos API y validaciones conceptuales [Javier :20]
+- Define 8 operaciones O01-O08, 8 DTO D01-D08, 12 errores X01-X12, 16 validaciones V01-V16 y 10 pares P/N FUTUROS_NO_EJECUTADOS de CRM universal, sin endpoints ni permisos implementados.
+- Preserva JWT/RBAC/tenant A/B, Cliente.EmpresaId=NULL legado, PII, consentimiento, idempotencia y CAS fail-closed; D01-D08 abiertas; A0-A4 documentales y A5 independiente.
+- Una sola microtarea M02.02, dos Markdown, candado V17 fila 1305, Scope Lock/V5 exact SHA, BITACORA/readback y rollback con git revert; sin MySQL/Angular/API reales, QA/main/PROD ni secretos.
+
 ## 2026-11-15 — V17 C09-01.M02.01 CRM universal: entidades y ownership conceptual [Javier :20]
 - Especifica 16 conceptos E01-E16, 20 invariantes INV01-INV20, relaciones por Empresa y 12 pares P/N FUTUROS_NO_EJECUTADOS para Cliente, timeline, actividad, oportunidad, segmentos, consentimiento e idempotencia.
 - Preserva Cliente.EmpresaId=NULL como SIN_OWNER_CONFIRMADO, JWT/RBAC y tenant A/B fail-closed; decisiones D01-D08 abiertas. No implementa tablas, endpoints, mensajería, migraciones ni pruebas runtime; A0-A4 documentales y A5 independiente exigidos.
