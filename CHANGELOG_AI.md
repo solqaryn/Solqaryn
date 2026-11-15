@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C10-04.M03.01 reglas de dominio cache, jobs y artefactos [Javier :40]
+- Implementa validadores reales .NET 10 puros para contexto tenant/actor, solicitudes idempotentes, limites de intento/deadline, lease y artefactos con checksum, sin conceder permisos ni efectos de runtime.
+- Agrega pruebas xUnit positivas y negativas sobre A/B, actor cruzado, payload, versiones y artefactos incompletos; A0-A4 requieren CI backend/seguridad/Scope Lock/V5 exact SHA antes de LISTO.
+- No implementa CAS de repositorio, API, JWT, EF/MySQL, workers, backups, restore, R2, eventos ni webhook; A5 independiente y rollback git revert; sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C01-01.M05.05 rechazo negativo aislamiento identidad universal .NET 10 [Javier :30]
 - Incorpora seis xUnit reales de rechazo: consulta A a B sin I/O, snapshot B, actor A1/A2, membresía revocada, rol cambiado y sucursal B tras cambio de owner.
 - Ejecuta Application/Domain con fuente de prueba en memoria y oráculos de excepción/lectura; no certifica HTTP/JWT/EF/MySQL ni cambia código de producción.
