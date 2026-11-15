@@ -21,7 +21,7 @@ public sealed class V5SectorModuleLifecycleDomainRulesTests
         TrustedPolicyRevisionVerified = true,
         TrustedResourceOwnershipVerified = true,
         ResourceOwnerTenantId = "tenant-A",
-        CurrentCapabilityKey = "sector.inventory",
+        CurrentCapabilityKey = "sector.stock",
         CurrentModuleRevision = 9
     };
 
@@ -29,8 +29,8 @@ public sealed class V5SectorModuleLifecycleDomainRulesTests
         Guard.Operation op = Guard.Operation.Activate) => new()
     {
         RequestedTenantId = "tenant-A",
-        CapabilityKey = "sector.inventory",
-        ServerAllowedCapabilityKey = "sector.inventory",
+        CapabilityKey = "sector.stock",
+        ServerAllowedCapabilityKey = "sector.stock",
         CurrentState = Guard.State.Disabled,
         Operation = op,
         ExpectedRevision = 9,
@@ -110,7 +110,7 @@ public sealed class V5SectorModuleLifecycleDomainRulesTests
     public void UnknownKeyAndCaseVariantCannotBypassExactAllowlist()
     {
         Assert.Equal("UNALLOWLISTED_OR_MISMATCHED_CAPABILITY",
-            Code(r: Request() with { CapabilityKey = "sector.Inventory" }));
+            Code(r: Request() with { CapabilityKey = "sector.Stock" }));
         Assert.Equal("UNALLOWLISTED_OR_MISMATCHED_CAPABILITY",
             Code(r: Request() with { CapabilityKey = "unregistered" }));
         Assert.Equal("UNALLOWLISTED_OR_MISMATCHED_CAPABILITY",

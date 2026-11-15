@@ -4316,3 +4316,7 @@
 - Implementado Domain .NET 10 para prevalidar ciclo Disabled/Enabled/Suspended/Retired de capacidades sectoriales, con backend JWT/RBAC, membresia, allowlist tipada, pertenencia A/B, plan/rubro/tenant, denylist, idempotencia y revision CAS.
 - Doce metodos xUnit positivos, negativos y fronteras sobre rol revocado, tenant cruzado, capabilities desconocidas, overrides del cliente, estado ilegal y version stale. Todo veredicto NO autoriza runtime, DB, API ni activacion efectiva.
 - V15 riesgo R2: CI backend Release, autorizacion, seguridad, Scope Lock y V5 exact-SHA antes de LISTO; A5 Task Javier distinta, sin MySQL/EF, Angular, API, secrets, webhook, produccion ni rollout.
+
+## 2026-11-15 — V16 CI_REPAIR C08-04.M03.01 evidencia nombre capability tenant neutral [Javier :10]
+- Reparacion Scope Lock fail-closed del commit b7989a8a: fixture de tests reemplaza identificador de proyecto retirado por clave sector.stock y variante case sector.Stock sin modificar semantica, dominios, autorizacion ni revisiones.
+- Causa exacta: GitHub Actions verify-solqaryn-project-scope y Seguridad multiempresa reportaron retired identity token en el archivo de tests. No se desactivan controles; se exige nueva CI exact-SHA y A5 independiente.
