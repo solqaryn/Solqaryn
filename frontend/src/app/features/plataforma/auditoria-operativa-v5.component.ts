@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, input, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
@@ -36,6 +36,11 @@ export type EstadoAuditoriaOperativaV5 = 'cargando' | 'vacio' | 'error' | 'exito
       </section>
 
       @if (accesoPlataforma() && (estado() === 'vacio' || estado() === 'exito')) {
+        <section class="audit-branding" [class.audit-branding--neutral]="modoIdentidad() !== 'institucional'" aria-label="Identidad visual de auditoría">
+          <span class="audit-branding-mark" aria-hidden="true">{{ modoIdentidad() === 'institucional' ? 'S' : '·' }}</span>
+          <div><strong>{{ identidadAuditada().nombre }}</strong><p>{{ identidadAuditada().descripcion }}</p></div>
+        </section>
+
         <section class="notice" aria-label="Alcance y fuente de esta pantalla">
           <strong>Guía estática · sin operaciones institucionales</strong>
           <p>Los estados, propietarios, SHA y revisiones deben verificarse en sus fuentes autorizadas. Esta pantalla no sustituye PLAN, COLA, DAG, BITACORA ni CI.</p>
@@ -71,6 +76,11 @@ export type EstadoAuditoriaOperativaV5 = 'cargando' | 'vacio' | 'error' | 'exito
     .refresh-button { border: 1px solid currentColor; border-radius: .5rem; padding: .65rem 1rem; font: inherit; font-weight: 600; color: inherit; background: transparent; cursor: pointer; }
     .refresh-button[disabled] { opacity: .65; cursor: progress; }
     .refresh-button:focus-visible { outline: 3px solid var(--mat-sys-primary, #2157a3); outline-offset: 3px; }
+    .audit-branding { display: flex; gap: .85rem; align-items: center; padding: .85rem 1rem; border: 1px solid var(--mat-sys-outline-variant, #a7b2bd); border-radius: .75rem; background: var(--mat-sys-surface-container-low, #f5f7fa); }
+    .audit-branding strong { display: block; }
+    .audit-branding p { margin: .2rem 0 0; }
+    .audit-branding-mark { flex: none; display: grid; place-items: center; width: 2.3rem; height: 2.3rem; border-radius: .6rem; background: var(--mat-sys-primary, #2157a3); color: var(--mat-sys-on-primary, #fff); font-weight: 800; }
+    .audit-branding--neutral .audit-branding-mark { background: var(--mat-sys-outline, #66727e); color: #fff; }
     .notice { padding: 1rem; margin: 1.25rem 0; border: 1px solid var(--mat-sys-outline-variant, #a7b2bd); border-radius: .75rem; background: var(--mat-sys-surface-container-low, #f5f7fa); }
     .notice p { margin-bottom: 0; }
     .controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; padding: 0; list-style: none; }
@@ -83,6 +93,12 @@ export type EstadoAuditoriaOperativaV5 = 'cargando' | 'vacio' | 'error' | 'exito
   `]
 })
 export class AuditoriaOperativaV5Component {
+  /** C15-05.M04.03: solo dos opciones visuales estáticas, no identidad ni permiso tenant. */
+  readonly modoIdentidad = input<'institucional' | 'neutra'>('institucional');
+  readonly identidadAuditada = computed(() => this.modoIdentidad() === 'institucional'
+    ? { nombre: 'SOLQARYN · Auditoría operativa', descripcion: 'Marca institucional · lectura sin datos de empresas' }
+    : { nombre: 'Interfaz neutra', descripcion: 'Sin identidad empresarial ni autoridad de ejecución' });
+
   private readonly plataforma = inject(PlataformaSesionService);
   private readonly destroyRef = inject(DestroyRef);
   readonly accesoPlataforma = computed(() => {

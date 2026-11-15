@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C15-05.M04.03 branding tipado de auditoría [Javier :20]
+- Añade identidad visual institucional o neutra mediante input/computed Angular con fallback fail-closed, sin CSS/HTML arbitrario ni identidad de tenant; conserva guard, revalidación y consulta de solo lectura.
+- Incorpora cuatro Vitest y cuatro Playwright Chromium con casos positivos, negativos 403/anónimo, payload hostil y responsive; GitHub-hosted Node24/npm11, build/lint, sin simular JWT de backend como PASS.
+- Trabajo R1 de una sola microtarea, Scope Lock/procedencia y CI exact-SHA obligatorios antes de LISTO; A5 exclusivamente por otra Task Javier, rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C08-03.M02.06 contrato terminal M02 membresías gimnasio [Javier :10]
 - Define barreras B01–B16, doce pares E01–E12 futuros NO_EJECUTADOS y ocho rutas RB01–RB08 de rollback para membresía/ingreso físico; mantiene tenant A/B, JWT/RBAC, revocación y UTC/DST fail-closed.
 - Consolida M02.01–05 documentales solo como precondiciones; ninguno activa QR, hardware, pago, MySQL, API, worker ni eventos. M03 sujeto a DAG y A5 independiente real.
