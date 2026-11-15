@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C12-04.M02.06 contrato salida M02 MySQL privado y cutover [Javier :20]
+- Documento R0 con antecedentes M01/M02, dieciseis gates G01-G16 de tenancy, seguridad, migrador unico, permisos MySQL y consistencia transaccional.
+- Ocho pasos RB01-RB08 y diez pares T01-T10 FUTUROS_NO_EJECUTADOS; no migracion EF, MySQL, restore, DNS, secrets, workers, servicios ni cutover real.
+- V15 A0-A4 Scope Lock/V5 y BITACORA por SHA causal; A5 por Task Javier distinta, M03 R2 requiere MySQL 8.4 efimero y autorizacion futura. Sin QA/main/PROD.
+
 ## 2026-11-15 — V16 C07-01.M02.06 contrato salida M02 catalogo universal [Javier :20]
 - Consolidado contrato R0 con seis antecedentes, dieciseis gates G01-G16 de seguridad tenant/JWT/RBAC, precios/stock y compatibilidad ERP.
 - Ocho pasos RB01-RB08 y diez pares T01-T10 FUTUROS_NO_EJECUTADOS, sin API, DB, Angular, migracion, workers, eventos, flags ni despliegues.
