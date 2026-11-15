@@ -1,3 +1,7 @@
+## 2026-11-15 — V17 C11-04.M03.03 gate autenticado tenant observabilidad R2 [Javier :00]
+- Implementa gate .NET 10 de verificacion previa con principal JWT/membresia/RBAC vigente de fuente backend, sin tenant del cliente, lector particionado por identidad autenticada y cotejos Ordinal de tenant A/B.
+- Reutiliza Application M03.02 y Domain M03.01, agrega xUnit adversariales de revocacion, rol/grant, SHA, senal/correlacion, PII, NO_MEDIDO, fuente ajena y cancelacion; requiere GitHub Actions backend Release/seguridad/autorizacion/Scope Lock/V5 SHA causal.
+- El resultado es siempre NO autorizante: sin API, JWT middleware, EF/MySQL, export, SLO medido, grants, QA/main/PROD ni datos reales; A5 de otra Task Javier, rollback git revert normal.
 ## 2026-11-15 — V17 C14-04.M03.04 adaptador aislado snapshot readiness DEV [Javier :00]
 - Implementa interfaz read-only de snapshot DEV y clase .NET 10 Application; usa solo tenant de identidad backend verificada, SHA exacto, auditoria, ownership, version y rollback para rechazo seguro, sin devolver datos.
 - Agrega xUnit positivos/negativos de tenant A/B, JWT/RBAC/revocacion, QA/PROD, source SHA, digest, snapshot mutable, evidencia ausente, CI cancelada y self-review; CI backend Release, seguridad, autorizacion, Scope Lock y V5 por SHA obligatoria.
