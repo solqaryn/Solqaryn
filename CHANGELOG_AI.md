@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C11-03.M02.05 contrato inerte de eventos y límites [Javier :40]
+- Define 12 campos conceptuales, 16 invariantes de tenant/idempotencia/CAS, 10 límites, 10 señales NO EMITIDAS y 10 pares de prueba FUTUROS_NO_EJECUTADOS sobre el outbox existente.
+- NO IMPLEMENTAR EVENTOS TODAVÍA: sin bus, dispatcher, worker, webhook, cron, scheduler, llamadas entre Tasks, SQL/EF, endpoints, credenciales, proveedores, métricas emitidas, QA/main/PROD ni efectos externos.
+- Cambios solo en dos Markdown de dev, Scope Lock y procedencia V5 exact-SHA, A0-A4 documentales, A5 independiente y rollback por git revert normal.
+
 ## 2026-11-15 — V5 C11-03.M02.04 configuración tipada y flags seguros del outbox [Javier :10]
 - Define catorce opciones conceptuales F01-F14, dieciséis validaciones V01-V16 y diez pares P/N FUTUROS_NO_EJECUTADOS con defaults fail-closed, aislamiento tenant A/B, JWT/RBAC, cuota, CAS, idempotencia y privacidad.
 - NO IMPLEMENTAR EVENTOS TODAVIA: ninguna variable real, HostedService, worker, dispatcher, webhook, API, EF/MySQL, cambio de proveedor, credencial o relé habilitado; coteja las fuentes Domain/Application y contratos C11-03.M01/M02 vigentes.
