@@ -1,3 +1,9 @@
+## 2026-11-15 — V15 calidad adaptativa A0–A5, respaldo y single-active [Javier propietario]
+- Copia Drive privada PRECAMBIO del Sheet completo, plan y seis prompts nativos con IDs/horarios; respaldo no operativo.
+- Riesgo R0–R3, pruebas negativas/adversariales e integración pertinente, A5 independiente, medición de defectos reales y reparación con regresión.
+- MAX_ACTIVE_WRITES_PER_TASK=1 en capacidad, documentos y validadores de doble CLAIM; V13/1000 pasa a histórico no operativo, sin borrar bitácora.
+- Scope Lock STRICT, solo seis Javier en dev; ninguna promoción QA/main/PROD, proveedor productivo o secretos.
+
 ## 2026-11-15 — V5 C01-01.M06.05 solicitud de revisión independiente del lote [Javier :20]
 - Formaliza petición de A5 separada para M06.01 y M06.02 con SHAs/blobs y seis controles auditables, sin atribuir PASS al autor ni reservar revisor.
 - Reconoce A5_PASS ya existentes para M05.01–06, respeta M06.03 con owner DEV02 y M06.04 pendiente; M06.06 continúa DAG G=NO hasta gates reales.

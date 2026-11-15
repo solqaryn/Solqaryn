@@ -43,6 +43,8 @@ JAVIER_PEER_WATCH_SCOPE=SIX_EXISTING_TASK_IDS
 JAVIER_PEER_AUTORESUME=AUTHORIZED_SINGLE_ATTEMPT_WITH_READBACK
 WORK_BRANCH_CREATION_ALLOWED=FALSE
 QUALITY_PROTOCOL_VERSION=V13_A0_A5
+ACTIVE_RISK_AUDIT_POLICY=V15_RISK_ADAPTIVE_A0_A5
+ACTIVE_DEV_OWNED_LIMIT_PER_TASK=1
 TIMEZONE=America/Tegucigalpa
 EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA
 SHEET_ID=1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU
@@ -79,3 +81,7 @@ SHEET_ID=1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU
 
 ## Regla de precedencia
 Esta autoridad posterior reemplaza instrucciones operativas anteriores sobre ocho Tasks. Cualquier referencia heredada no autoriza reclamos ni revisiones. Para ampliar o modificar el alcance consultar `docs/PROJECT_SCOPE_LOCK.md`, la Skill canónica y HEAD de dev. No eludir permisos del proveedor, A0–A5 ni pruebas requeridas.
+
+## Política de calidad V15 vigente (2026-11-15)
+
+Una única EN_PROGRESO y escritura de desarrollo por Task Javier: ACTIVE_DEV_OWNED_LIMIT_PER_TASK=1. Los contadores V13/1000 restantes son capacidades teóricas y no autorizan reservas simultáneas. Conserva A0–A5, A5 independiente, pruebas negativas y de integración reales según riesgo R0–R3 (ver docs/QUALITY_RISK_AUDIT_V15.md). No declarar PASS de un CI incompleto, un mock como prueba MySQL, ni un histórico como autoridad. Respaldos privados anteriores etiquetados NO OPERATIVOS; BITACORA nunca se borra.

@@ -19,8 +19,8 @@ TASK_NATIVE_REASONING_CONTROL=OWNER_OR_PLATFORM_SETTING
 MAX_CONCURRENT_SCOPES=1000
 MAX_OPEN_WORK_BRANCHES=1000
 MAX_OWNED_SCOPES_PER_TASK=1000
-MAX_ACTIVE_WRITES_PER_TASK=1000
-CAPACITY_POLICY_VERSION=V13_1000_FIFO_BATCH
+MAX_ACTIVE_WRITES_PER_TASK=1
+CAPACITY_POLICY_VERSION=V15_SINGLE_ACTIVE_DEV_QUALITY
 FORMAL_APPROVAL_ROUTINE_COMMERCIAL_REQUIRED=FALSE
 FORMAL_APPROVAL_GOVERNANCE_REQUIRED=FALSE
 GOAL_MIN_LISTO_PER_RUN=1
@@ -47,6 +47,8 @@ JAVIER_PEER_WATCH_SCOPE=SIX_EXISTING_TASK_IDS
 JAVIER_PEER_AUTORESUME=AUTHORIZED_SINGLE_ATTEMPT_WITH_READBACK
 WORK_BRANCH_CREATION_ALLOWED=FALSE
 QUALITY_PROTOCOL_VERSION=V13_A0_A5
+ACTIVE_RISK_AUDIT_POLICY=V15_RISK_ADAPTIVE_A0_A5
+ACTIVE_DEV_OWNED_LIMIT_PER_TASK=1
 TIMEZONE=America/Tegucigalpa
 EXECUTION_PLAN_DRIVE_FILE_ID=1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA
 SHEET_ID=1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU
@@ -87,3 +89,7 @@ No se importa un reservador de Sheets. Los claims se realizan con lectura actual
 ### V5 continuo (contrato posterior 2026-11-13)
 
 Consultar `docs/AUTOMATION_STATUS.md` para el bucle sin cuota rígida, continuidad de CI, rescate seguro entre seis IDs Javier y monitor de último reporte en Dashboard/TAREAS_PROGRAMADAS. Esto NO habilita run_now entre Tasks como ejecución persistente ni instala un dispatcher de eventos. La seguridad y el allowlist original prevalecen.
+
+## Política de calidad V15 vigente (2026-11-15)
+
+Una única EN_PROGRESO y escritura de desarrollo por Task Javier: ACTIVE_DEV_OWNED_LIMIT_PER_TASK=1. Los contadores V13/1000 restantes son capacidades teóricas y no autorizan reservas simultáneas. Conserva A0–A5, A5 independiente, pruebas negativas y de integración reales según riesgo R0–R3 (ver docs/QUALITY_RISK_AUDIT_V15.md). No declarar PASS de un CI incompleto, un mock como prueba MySQL, ni un histórico como autoridad. Respaldos privados anteriores etiquetados NO OPERATIVOS; BITACORA nunca se borra.

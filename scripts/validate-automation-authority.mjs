@@ -36,6 +36,8 @@ export function validateAuthority(input) {
     need(body, 'BRANCH', 'dev', label);
     need(body, 'AUTO_CERTIFICATION_MODE', 'DIRECT_DEV_FOUR_AUDITS', label);
     need(body, 'QUALITY_PROTOCOL_VERSION', 'V13_A0_A5', label);
+    need(body, 'ACTIVE_RISK_AUDIT_POLICY', 'V15_RISK_ADAPTIVE_A0_A5', label);
+    need(body, 'ACTIVE_DEV_OWNED_LIMIT_PER_TASK', '1', label);
     need(body, 'GOAL_MAX_LISTO_PER_RUN', 'NONE_WITHIN_PROVIDER_RUN', label);
     need(body, 'TASK_REASONING_PREFERENCE', 'MAX_AVAILABLE_REASONING', label);
     need(body, 'TASK_IDENTITY_EVIDENCE_POLICY', 'ACCOUNT_TASK_CONTEXT_NATIVE_PEEK_AND_SOURCE_LINKS', label);
@@ -99,6 +101,9 @@ if (errors.length) {
     ['fake audit',{authority:source.authority.replace('AUTO_CERTIFICATION_MODE=DIRECT_DEV_FOUR_AUDITS','AUTO_CERTIFICATION_MODE=DISABLED')}],
     ['remove A0 A5',{agents:source.agents.replace('QUALITY_PROTOCOL_VERSION=V13_A0_A5','QUALITY_PROTOCOL_VERSION=DISABLED')}],
     ['premature stop after 3',{status:source.status.replace('GOAL_MAX_LISTO_PER_RUN=NONE_WITHIN_PROVIDER_RUN','GOAL_MAX_LISTO_PER_RUN=3')}],
+    ['overbroad writes',{status:source.status.replace('MAX_ACTIVE_WRITES_PER_TASK=1','MAX_ACTIVE_WRITES_PER_TASK=1000')}],
+    ['risk policy removed',{agents:source.agents.replace('ACTIVE_RISK_AUDIT_POLICY=V15_RISK_ADAPTIVE_A0_A5','ACTIVE_RISK_AUDIT_POLICY=OFF')}],
+    ['multiple claims',{scope:source.scope.replace('ACTIVE_DEV_OWNED_LIMIT_PER_TASK=1','ACTIVE_DEV_OWNED_LIMIT_PER_TASK=3')}],
     ['bad peer scope',{authority:source.authority.replace('JAVIER_PEER_AUTORESUME=AUTHORIZED_SINGLE_ATTEMPT_WITH_READBACK','JAVIER_PEER_AUTORESUME=ANY_ACCOUNT')}],
     ['bad thinking',{agents:source.agents.replace('TASK_REASONING_PREFERENCE=MAX_AVAILABLE_REASONING','TASK_REASONING_PREFERENCE=INSTANT')}],
     ['identity false denial regression',{status:source.status.replace('TASK_FALSE_SELF_OWNED_POLICY=DIAGNOSTIC_ONLY_NOT_ACCOUNT_DENIAL','TASK_FALSE_SELF_OWNED_POLICY=AUTO_NO_GO')}],

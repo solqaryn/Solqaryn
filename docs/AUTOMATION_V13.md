@@ -1,3 +1,5 @@
+> HISTORICO NO OPERATIVO V13: no ejecutar, reclamar ni revisar bajo 8 Tasks, Alex o limites de 1000. Solo conservar para auditoria y restauracion autorizada; fuente actual V15 en 6 Javier, dev y plan comercial.
+
 # SOLQARYN — V13 vigente: ejecución directa en DEV con A0–A5
 
 ## RESCATE CRUZADO EXCLUSIVO V5 2026-11-13 — AUTORIZACIÓN OPERATIVA DEL PROPIETARIO

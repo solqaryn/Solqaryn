@@ -59,6 +59,8 @@ export function selectWork(tasks,status,account,activeReviewIds=new Set(),taskId
   if (!Array.isArray(tasks) || !ID.test(taskId||'') || !authorized.includes(taskId) ||
       !['JAVIER_CHATGPT','ALEX_CHATGPT'].includes(account)||!ownershipReadbackVerified)
     return {action:'NO_ELIGIBLE',reason:'IDENTITY_OR_READBACK_REQUIRED'};
+  // Prevent concurrent development claims by the same physical Javier Task.
+  if(tasks.some(t=>t?.state==='EN_PROGRESO'&&t.ownerTaskId===taskId))return {action:'NO_ELIGIBLE',reason:'OWN_ACTIVE_DEVELOPMENT_MUST_FINISH'};
   const isAlex=['6adbbc9ad9e88191bea8eb69104afb25','6adcc98a80a48191b71a5156624c21df'].includes(taskId);
   if ((isAlex?'ALEX_CHATGPT':'JAVIER_CHATGPT')!==account)
     return {action:'NO_ELIGIBLE',reason:'ACCOUNT_MISMATCH'};
@@ -119,6 +121,9 @@ else if(process.argv.includes('--self-test')) {
     dependencies:[],permissionsVerified:true};
   const pick=selectWork([scope],{},'JAVIER_CHATGPT',new Set(),task,true);
   if(pick.action!=='CLAIM'||pick.auditCount!==4||pick.qualityControls.length!==6||pick.noFixedClosureCap!==true||pick.continueWhileEligible!==true)throw Error('direct DEV claim test failed');
+  const own={...scope,id:'C00-01.M03.04',state:'EN_PROGRESO',ownerTaskId:task};
+  if(selectWork([scope,own],{},'JAVIER_CHATGPT',new Set(),task,true).reason!=='OWN_ACTIVE_DEVELOPMENT_MUST_FINISH')throw Error('V15 double claim accepted');
+  if(selectWork([scope,{...own,ownerTaskId:'f'.repeat(32)}],{},'JAVIER_CHATGPT',new Set(),task,true).action!=='CLAIM')throw Error('V15 other owner wrongly blocked');
   const blocked={...scope,id:'C00-01.M03.02',requiredTools:['dotnet']};
   const fallback={...scope,id:'C00-01.M03.03',requiredTools:['node']};
   const feasible=selectWork([blocked,fallback],{},'JAVIER_CHATGPT',new Set(),task,true,{availableTools:['node']});
