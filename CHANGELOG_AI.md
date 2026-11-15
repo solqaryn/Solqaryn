@@ -3127,3 +3127,9 @@
 - Añade pruebas xUnit positivas y negativas: SHA/evidencia, identidad y membresía, tenant A/B/NULL, consulta con bypass, sucursal, archivos, jobs/idempotencia y control plane.
 - No añade endpoint ni DI activa, consultas EF/MySQL, workers, acceso a archivos ni acciones privilegiadas; sigue pendiente resolver TenantQueryBypassGuard con contexto nulo e integración real antes de declarar seguridad end-to-end.
 - Scope Lock y CI causal exact-SHA requeridos antes de LISTO_DEV; A5 sólo por otra Task Javier; rollback git revert, sin QA/main/PROD.
+
+## 2026-11-15 — V5 C15-05.M03.04 adaptador aislado .NET10 auditoría operacional [Javier :30]
+- Implementa adaptador Infrastructure read-only en memoria con copia defensiva de snapshot autorizado y composición Application/Domain sin mutar las fuentes.
+- Añade pruebas xUnit de SHA, revisión fuente, owner, A5 independiente, IDs, evidencia incompleta, catálogo y rechazo de mutaciones de entrada.
+- Nunca autentica GitHub/Sheets/CI ni permite persistencia, bypass tenant, escrituras institucionales, EF/MySQL, migraciones o certificación de las 2.340 filas.
+- CI .NET, Scope Lock y V5 exact SHA antes de LISTO; A5 solo por Task Javier diferente; git revert, sin QA/main/PROD.
