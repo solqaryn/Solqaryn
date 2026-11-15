@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C08-04.M03.03 reparación Scope Lock R2 [Javier :20]
+- Corrige únicamente el identificador de fixture de módulo en xUnit a la clave sector.orders, sin variar verificaciones positivas o negativas, autorización JWT/RBAC/tenant ni el test de denylist.
+- En SHA 13ccfd71, Scope Lock y seguridad multiempresa fallaron por coincidencia accidental de identidad retirada en el fixture; fallo original permanece registrado, no se desactivó el verificador.
+- Requiere nueva CI exact-SHA Backend Release, seguridad, Authorization, Scope Lock y procedencia V5, más readback institucional; mantiene VALIDANDO y A5 independiente.
+
 ## 2026-11-15 — V17 C08-04.M03.03 tenant module authorization fence R2 [Javier :20]
 - Añade fence Application real no autorizante con lectores separados de actor backend vigente y recurso sectorial tenant, cotejo ordinal de clave/owner/SHA, revisión, JWT/RBAC/membresía y política actual.
 - Incorpora xUnit positivos/negativos, rechazo A/B, revocación, catálogo, denylist, errores y cancelación. No registra DI, ejecuta SQL, activa módulos ni muta permisos; resultado exige adaptador transaccional futuro autenticado.

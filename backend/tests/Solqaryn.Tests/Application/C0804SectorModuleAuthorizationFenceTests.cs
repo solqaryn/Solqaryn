@@ -14,14 +14,14 @@ public sealed class C0804SectorModuleAuthorizationFenceTests
         CurrentPlanAllowsCapability = true, CurrentRubroAllowsCapability = true,
         CurrentTenantAllowsCapability = true, TrustedPolicyRevisionVerified = true,
         TrustedResourceOwnershipVerified = true, ResourceOwnerTenantId = "tenant-A",
-        CurrentCapabilityKey = "sector.inventory", CurrentModuleRevision = 7
+        CurrentCapabilityKey = "sector.orders", CurrentModuleRevision = 7
     };
     private static C0804SectorModuleAuthorizationFence.ActorEvidence Actor() =>
         new("tenant-A", true, true, true, true, Policy());
     private static C0804SectorModuleAuthorizationFence.ModuleEvidence Module() =>
-        new("sector.inventory", "tenant-A", Sha, Rules.State.Disabled, 7, true, true);
+        new("sector.orders", "tenant-A", Sha, Rules.State.Disabled, 7, true, true);
     private static C0804SectorModuleAuthorizationFence.Intent Intent() =>
-        new("sector.inventory", "tenant-A", Sha, Rules.Operation.Activate, 7, "request-001");
+        new("sector.orders", "tenant-A", Sha, Rules.Operation.Activate, 7, "request-001");
 
     private sealed class Actors(C0804SectorModuleAuthorizationFence.ActorEvidence? response, bool fail = false)
         : IC0804CurrentActorSource
