@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C05-02.M02.03 diseno de persistencia branding y presets [Javier :50]
+- Distingue TemaVisual global de ConfigEmpresa tenant real; propone 10 estructuras logicas, 10 constraints y 8 etapas FUTURAS_NO_EJECUTADAS de migracion reversible.
+- Define ocho fixtures sinteticos futuros con aislamiento A/B, CAS, tokens seguros, versionado y rollback; no crea SQL, EF, datos reales ni indices.
+- Solo Markdown dev con Scope Lock/V5 del SHA exacto y A5 independiente; prohibida implementacion de migraciones o QA/main/PROD desde este documento.
+
 ## 2026-11-15 — V5 C05-02.M02.01 entidades branding por empresa y presets [Javier :50]
 - Distingue TemaVisual GLOBAL de Empresa/ConfigEmpresa reales y define 14 objetos logicos E01-E14 de branding tenant propuesto, sin materializar tablas o endpoints.
 - Documenta 16 invariantes I01-I16 y 4 positivos/10 negativos FUTUROS_NO_EJECUTADOS para ownership, CAS, contraste, revisiones, assets y contexto A/B.
