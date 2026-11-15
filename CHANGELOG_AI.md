@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-01.M02.04 configuracion tipada, ambitos y flags de cobertura [Javier :50]
+- Define CFG01–CFG16 de claves PROPUESTAS_NO_IMPLEMENTADAS con defaults fail-closed y VAL01–VAL12 escenarios positivos/negativos FUTUROS_NO_EJECUTADOS para auditoria institucional.
+- Separa gobierno/HEAD, auditoria, microtarea, ejecucion nativa y frontera tenant JWT/RBAC; no modifica CONFIG, formulas, flags runtime, tareas o autorizaciones.
+- Solo documento y CHANGELOG autocontenido en dev con Scope Lock y V5 exact-SHA, A5 independiente pendiente, rollback git revert y sin QA/main/PROD ni eventos.
+
 ## 2026-11-14 — V5 C14-02.M02.01 ownership e invariantes de aceptación de seguridad [Javier :00]
 - Modela SE01–SE14 y SI01–SI16 para sujeto, membresía, RBAC, tenant A/B, hosts, medios, hallazgos y revisión independiente, sin crear tablas ni endpoints.
 - Especifica SA01–SA12 escenarios positivos/negativos FUTUROS_NO_EJECUTADOS; no inventa pentest, BOLA/IDOR certificados ni ausencia de P0/P1.
