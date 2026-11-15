@@ -3066,3 +3066,8 @@
 - Cierra únicamente contrato M02 de C02-01, con BL01–BL16 y RB01–RB10 de JWT/RBAC, tenant A/B, host/ownership, eventos futuros e idempotencia; ningún evento o worker implementado.
 - Revalida precedentes M01 6/6 y M02 5/5 LISTO+A5 y C01-01.M01.06, con última A5 independiente M02.05; pruebas positivas y negativas runtime permanecen NO_EJECUTADAS.
 - Dos Markdown en dev con publicación fast-forward/CAS, Scope Lock y procedencia V5 exact-SHA, A5 pendiente otra Task Javier; sin MySQL, migraciones, QA/main/PROD ni secretos.
+
+## 2026-11-14 — V5 C08-04.M01.06 salida documental de extensiones sectoriales [Javier :00]
+- Contrato terminal M01 de capabilities sectoriales sin duplicar entidades/tenants ni implementar módulos; enumera BL01–BL16 y RB01–RB10 para rollback y no-regresión.
+- Prerrequisitos M01.01–05 LISTO+A5 y DAG individual verificados, A5 de M01.04 independiente; activación/desactivación real, JWT/RBAC, MySQL y tenant A/B quedan NO_EJECUTADOS.
+- Publicación solo documento+CHANGELOG en dev por FF/CAS, Scope Lock/V5 exact SHA, A5 pendiente de otra Task Javier y reversión git revert; no QA/main/PROD.
