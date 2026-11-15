@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C08-02.M02.06 contrato terminal restaurante QR y rollback [Javier :00]
+- Concilia cinco M02 LISTO con A5 independientes, dieciséis barreras B01–B16, doce pares E01–E12 FUTUROS_NO_EJECUTADOS y ocho reversas RB01–RB08 para QR falso, aislamiento, pedidos y cierre ERP idempotente.
+- Conserva ERP como autoridad de precio, IVA, stock y factura, JWT/RBAC/tenant server-side, revocación, privacidad, concurrencia y reintentos seguros; no libera M03 sin DAG y A5 propio.
+- Únicamente R0 documental sin QR/API/Angular/MySQL/eventos/PSP/hardware ejecutables, con Scope Lock/V5 exact SHA, lock V17/bitácora/readback y rollback git revert; sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C08-03.M02.05 eventos, idempotencia y correlación de gimnasio [Javier :00]
 - Define dieciséis eventos conceptuales EV01–EV16, dieciocho invariantes INV01–INV18, diez límites L01–L10 y doce escenarios T01–T12 positivos/negativos FUTUROS NO_EJECUTADOS.
 - Protege aislamiento tenant/sede A/B, separación SaaS/gimnasio, ERP de pagos, UTC/DST, revocación/QR, idempotencia y denegación offline; no declara valores medidos de TTL o cuotas.
