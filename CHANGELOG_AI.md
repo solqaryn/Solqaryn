@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C12-03.M02.04 opciones tipadas y flags de workers [Javier :10]
+- Describe dieciséis opciones F01-F16, dieciocho validaciones V01-V18 y diez pares P/N FUTUROS_NO_EJECUTADOS para separar backend/workers, identidad de servicio, tenant A/B, readiness, cuota, lease CAS, idempotencia y logs seguros.
+- Contrasta OutboxRetryProcessorOptions.Validar(), IMensajeOutboxRepository, Domain MensajeOutbox y API Program.cs; NO cambia opciones reales, DI, procesos, proveedores, MySQL, eventos entre Tasks, cron, webhooks, workers o infraestructura.
+- Solo dos Markdown en dev, Scope Lock y procedencia V5 SHA exacto, A0-A4 documentales y A5 independiente; rollback git revert normal, sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C12-03.M02.03 persistencia conceptual API/workers [Javier :40]
 - Define 12 proyecciones de persistencia, 8 índices candidatos, 6 pasos de migración FUTURA_NO_EJECUTADA y 12 fixtures sintéticos A/B, CAS, idempotencia, UTC, migrador único y rollback.
 - No ejecuta SQL, EF, MySQL, migraciones, worker, scheduler, hosting, DNS, secretos, Task nueva, pruebas runtime ni despliegues; contrato solo en Markdown y fuentes Git versionadas.
