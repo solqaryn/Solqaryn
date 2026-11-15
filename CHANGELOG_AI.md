@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-05.M02.01 modelo de ownership e invariantes de auditoría operativa [Javier :20]
+- Formaliza OM01–OM14 registros conceptuales, INV01–INV16 de seguridad/concurrencia y AT01–AT12 de casos FUTUROS_NO_EJECUTADOS para gobierno de 2340 IDs.
+- Traza PLAN/COLA/DAG/BITACORA, seis Tasks Javier, Scope Lock y M01.06 A5 independiente; separa telemetría de último reporte frente al estado nativo, sin certificar cero carreras ni cobertura runtime.
+- Sólo nuevo Markdown y CHANGELOG autocontenido en dev, Scope Lock y verificador V5 exact-SHA obligatorios, A5 pendiente de otra Task, rollback git revert y sin eventos/webhooks/QA/main/PROD.
+
 ## 2026-11-14 — V5 C15-04.M02.05 eventos, idempotencia, correlación y límites UX [Javier :20]
 - Especifica EV01–EV08, ID01–ID08, LM01–LM10 y doce pares positivos/negativos FUTUROS_NO_EJECUTADOS para señales documentales de auditoría UX, sin activar transporte.
 - Contrasta MensajeOutbox existente, AppDbContext, contratos UX M01/M02 y seguridad tenant A/B, JWT/RBAC, sin afirmar un dispatcher o webhook real.
