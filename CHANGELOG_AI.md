@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C12-04.M03.02 servicio Application privado de revisión MySQL [Javier :40]
+- Agrega servicio .NET 10 aislado con interfaz de lectura de evidencia, verificación fail-closed de actor/tenant/SHA y reutilización Domain C12-04.M03.01; jamás autoriza SQL, migración, cutover o deployment.
+- Incluye ocho pruebas xUnit con caso de revisión dev acotada, rechazos JWT/RBAC/MFA/tenant A/B, grants, restore, fencing, SHA cruzado, cancelación y fallo del proveedor; lectores falsos no prueban MySQL ni HTTP reales.
+- Sólo Application + xUnit + docs/V5 + CHANGELOG, Scope Lock STRICT, CI dirigida exact-SHA y A5 independiente; sin QA/main/PROD, bases reales, secretos o migraciones.
+
 ## 2026-11-15 — V17 C11-04.M03.02 prevalidación Application de observabilidad privada [Javier :50]
 - Implementa `C1104ObservabilityApplicationService` e interfaz de lectura confiable para agregados privados, fuente SHA, JWT/RBAC/membresía actual, propiedad tenant A/B y fence de auditoría; nunca concede acceso, exportación, mutación ni certifica SLO/costo.
 - Añade 13 casos xUnit con positivos, rechazos antes de I/O, comparación ordinal tenant/SHA, revocación, etiqueta prohibida, límites UTC/conteos/NO_MEDIDO y cancelación; backend Release y seguridad/autorización CI obligatorias en SHA causal, sin atribuir PASS hasta que terminen.
