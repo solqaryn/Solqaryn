@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C15-01.M03.02 servicio Application de preflight de cobertura [Javier :40]
+- Implementa servicio .NET 10 read-only sobre validador Domain de M03.01: verifica SHA, revisión, catálogos y límites, sin autenticar fuentes institucionales ni certificar cobertura real.
+- Añade xUnit positivos/negativos de SHA, catálogo, requisitos sin mapa, duplicados, evidencia insegura y capacidad; el resultado compatible nunca concede escritura, A5 ni promoción.
+- Dev-only, Scope Lock STRICT, backend/security tests y procedencia V5 exact-SHA antes de LISTO; A5 independiente otra Task Javier. Sin API, EF/MySQL, eventos, dispatcher, workers o QA/main/PROD.
+
 ## 2026-11-15 — V5 C07-04.M03.02 Application preflight comercial .NET 10 [Javier :50]
 - Incorpora servicio de aplicación real sobre reglas Domain de pedidos, facturas, pagos y exportación; verifica contratos de SHA/evidencia y conserva todas las operaciones como no autorizadas hasta adaptador autenticado.
 - Añade xUnit positivos/negativos de tenant A/B, NULL legado, versiones, RBAC, idempotencia, importes, moneda, PSP y fiscal; jamás cobra, factura, persiste ni exporta mediante el preflight.
