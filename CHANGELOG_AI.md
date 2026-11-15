@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C11-03.M02.04 configuración tipada y flags seguros del outbox [Javier :10]
+- Define catorce opciones conceptuales F01-F14, dieciséis validaciones V01-V16 y diez pares P/N FUTUROS_NO_EJECUTADOS con defaults fail-closed, aislamiento tenant A/B, JWT/RBAC, cuota, CAS, idempotencia y privacidad.
+- NO IMPLEMENTAR EVENTOS TODAVIA: ninguna variable real, HostedService, worker, dispatcher, webhook, API, EF/MySQL, cambio de proveedor, credencial o relé habilitado; coteja las fuentes Domain/Application y contratos C11-03.M01/M02 vigentes.
+- Dos Markdown en dev; A0-A4 documentales con Scope Lock y procedencia V5 exact-SHA, A5 independiente de otra Task Javier, readbacks institucionales y rollback por git revert normal; no QA/main/PROD.
+
 ## 2026-11-15 — V5 C11-03.M02.03 persistencia e índices conceptuales outbox [Javier :40]
 - Define 12 proyecciones de persistencia, 8 índices candidatos, 6 etapas de migración condicionadas FUTURAS_NO_EJECUTADAS y 12 fixtures sintéticos positivos/negativos, con tenant A/B, CAS, UTC, idempotencia, privacidad y rollback.
 - Coteja entidades, repositorio EF, contrato de Application, procesador outbox y prueba MySQL de concurrencia solamente como fuentes versionadas; NO ejecuta DDL, EF/MySQL, cambios de entidad, worker, relay, dispatcher, webhooks, eventos entre Tasks o proveedores externos.
