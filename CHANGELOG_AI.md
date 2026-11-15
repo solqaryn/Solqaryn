@@ -1,3 +1,7 @@
+## 2026-11-15 — V17 C14-04.M03.04 adaptador aislado snapshot readiness DEV [Javier :00]
+- Implementa interfaz read-only de snapshot DEV y clase .NET 10 Application; usa solo tenant de identidad backend verificada, SHA exacto, auditoria, ownership, version y rollback para rechazo seguro, sin devolver datos.
+- Agrega xUnit positivos/negativos de tenant A/B, JWT/RBAC/revocacion, QA/PROD, source SHA, digest, snapshot mutable, evidencia ausente, CI cancelada y self-review; CI backend Release, seguridad, autorizacion, Scope Lock y V5 por SHA obligatoria.
+- No implementa EF/MySQL, restore real, endpoints, DDL, backups, provider, scheduler ni despliegue; A5 independiente y revert normal, sin QA/main/PROD.
 ## 2026-11-15 — V17 C07-04.M03.04 adaptador aislado de documentos comerciales R2 [Javier :10]
 - Agrega Infrastructure read-only con fuentes de identidad/roles vigentes y documento por tenant+ID, validando pertenencia A/B, NULL legado, version, SHA y referencia antes de reutilizar la puerta Application comercial.
 - Anade xUnit positivos, negativos, limites, revocacion, origen indisponible, identidad, permisos, monto, version y cancelacion; requiere CI backend Release, seguridad, autorizacion, Scope Lock y procedencia V5 en SHA causal.
