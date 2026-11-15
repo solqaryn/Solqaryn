@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C13-02.M02.02 contratos accesibles API/DTO y errores [Javier :10]
+- Define ocho operaciones O01–O08 y ocho DTO D01–D08 CONCEPTUALES, doce errores seguros X01–X12 y dieciseis validaciones V01–V16 para teclado/foco/estados/routing y fronteras API sin crear codigo, rutas ni CSS.
+- Propone doce pares P/N FUTUROS_NO_EJECUTADOS, con permisos JWT/RBAC y tenant A/B resueltos en backend, revocacion, mensajes y reflow 320px, sin certificar WCAG, HTTP, browser o pruebas reales.
+- R0 solo documento docs/v5 y CHANGELOG en dev, candado V17 fila 1917 ID 2000001917, A0–A4 pendientes de Scope Lock/V5 exact-SHA y A5 independiente; sin cambios UI/API/DB, QA/main/PROD ni secretos.
+
 ## 2026-11-15 — V17 C13-02.M02.01 modelo conceptual de accesibilidad [Javier :50]
 - Define 16 entidades conceptuales, 20 invariantes de ownership/tenant A-B/teclado/foco/contraste/privacidad y 12 pares de escenarios FUTUROS_NO_EJECUTADOS para contrato documental M02 de accesibilidad; no modifica UI/API/DB.
 - Conserva autoridad WCAG NO_CERTIFICADA, tests Playwright/MySQL/JWT NO_APLICA al diff R0, referencias a M01.01–06 y A5 independiente previo de C13-02.M01.06; cada sucesora requiere gates dinámicos reales.
