@@ -1,3 +1,11 @@
+## 2026-11-15 — V5 C08-04.M02.01 entidades, ownership e invariantes sectoriales [Javier :50]
+- Define seis objetos conceptuales de capacidades, catorce invariantes tenant/RBAC y ocho pares P/N futuros; reutiliza Empresa, UsuarioEmpresa y recursos sin duplicar identidad.
+- Ninguna tabla, API, migración, permiso o capability activa: sólo contrato documental; Scope Lock STRICT, A5 independiente y rollback Git normal.
+
+## 2026-11-15 — V5 C08-04.M02.02 API, DTO, errores y compatibilidad sectorial [Javier :50]
+- Diseña ocho operaciones hipotéticas, seis DTO conceptuales y doce errores/denegaciones para módulos por rubro, con JWT/RBAC y propiedad empresa/sucursal.
+- No implementa HTTP, DTO compilados, permisos, MySQL ni eventos; pruebas positivas y negativas futuras no ejecutadas, A5 pendiente de otra Task Javier.
+
 ## 2026-11-15 — V5 C08-04.M02.03 persistencia y fixtures sectoriales [Javier :10]
 - Define seis entidades conceptuales, cinco claves de consulta y diez fixtures para módulos sectoriales, con propiedad empresa/tenant y esquema compartido.
 - No crea tablas, índices, migraciones ni grants; pruebas .NET/MySQL y revisión A5 independientes quedan pendientes.
