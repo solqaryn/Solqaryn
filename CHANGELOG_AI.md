@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C14-03.M02.05: señales conceptuales e idempotencia de promoción [Javier :30]
+- Contrato documental de ocho señales NO EMITIDAS, quince campos hipotéticos, catorce reglas fail-closed y doce pares P/N FUTUROS_NO_EJECUTADOS para separación DEV/QA/PROD.
+- Toda promoción futura requiere SHA/checks exactos, identidad y RBAC, A5 distinta, autorización de ambiente, rollback y readback real; una señal no equivale a PASS ni despierta Tasks.
+- Sólo docs/v5 y sección CHANGELOG; sin dispatcher, webhook, pipeline, MySQL, secretos, infraestructura o deploy QA/main/PROD. A5 independiente posterior y rollback git revert.
+
 ## 2026-11-15 — V5 C14-03.M02.04 configuración tipada y flags seguros [Javier :40]
 - Especifica 16 campos tipados, 12 flags apagados, 6 reglas de precedencia y 12 pares P/N futuros para revisión de promoción controlada, sin crear configuración runtime.
 - Preserva JWT/RBAC/tenant A/B, evidencia CI exact SHA, Scope Lock y autorización distinta por ambiente; no toca QA/main/PROD ni secretos.
