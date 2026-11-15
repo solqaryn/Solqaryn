@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C09-02.M02.03 persistencia y fixtures conceptuales fidelizacion [Javier :10]
+- Contrato R0 documental de persistencia futura: entidades tenant-scoped, doce indices propuestos I01-I12, ocho etapas aditivas/reversibles y doce pares F01-F12 positivos/negativos FUTUROS_NO_EJECUTADOS.
+- Incluye ledger separado de dinero/credito, idempotencia, antifraude, canje CAS, resenas/moderacion, consentimiento/revocacion y aislamiento A/B/legacy NULL; ningun esquema, migracion, API, test MySQL ni modulo runtime ejecutado, metricas NO_MEDIDO.
+- V17 candado SQV17_C09_02_M02_03 fila 1342; A0-A4 documentales sujetos a Scope Lock/V5 SUCCESS causal, PLAN/BITACORA/readback y A5 independiente Javier. Sin QA/main/PROD; rollback git revert.
+
 ## 2026-11-15 — V17 C13-02.M02.05 contratos de eventos accesibilidad [Javier :50]
 - Define 12 eventos conceptuales accesibilidad, 18 invariantes de tenant/PII/idempotencia/correlación/orden y 12 pares P/N FUTUROS_NO_EJECUTADOS, con envelope y política de replay/TTL; ningún emisor/consumidor runtime instalado.
 - No crea webhooks, workers, broker, API, MySQL, Angular ni eventos entre Tasks; no certifica WCAG, JWT, integración o navegador en el alcance R0 documental. Seguridad y pruebas reales exigibles en futura R2.
