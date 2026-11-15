@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C02-03.M02.01 modelo de ownership e invariantes lifecycle [Javier :50]
+- Define 14 objetos logicos E01-E14 diferenciando Empresa y UsuarioEmpresa existentes de propuestas futuras; relaciona propiedad empresarial y versionado/idempotencia sin migraciones.
+- Especifica 16 invariantes I01-I16 y 12 escenarios documentales P/N FUTUROS_NO_EJECUTADOS para rol plataforma, tenant A/B, revocacion, retencion, carreras y rollback.
+- Solo Markdown en dev; Scope Lock y procedencia de CHANGELOG exact SHA requeridos; A5 de otra Task Javier y ninguna API/SQL/worker/QA/main/PROD nueva.
+
 ## 2026-11-15 — V5 C01-01.M04.03 tematizacion contextual sin autoridad nueva [Javier :40]
 - Amplia branding Angular en /usuarios solo con empresa confirmada por TenantContextService; oculta marca durante revocacion A->B, sin mostrar identidad empresarial no verificada.
 - Consume tokens dinamicos seguros --color-primary/--color-on-primary del ThemeApplierService existente y fallback forced-colors; agrega dos Vitest de ausencia y A/B junto a tres existentes.
