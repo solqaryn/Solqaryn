@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-05.M03.01 reglas de dominio para auditoría operativa [Javier :50]
+- Implementa validador puro .NET 10 para snapshots de auditoría: fuente, IDs, estados, owner permitido, SHA, revisores A5 diferentes y referencias de evidencias; no certifica datos suministrados sin verificación externa.
+- Añade pruebas xUnit positivas/negativas y contrato de alcance; sin eventos, dispatcher, migraciones, IAM/JWT/RBAC nuevos, QA/main/PROD.
+- Requiere CI backend y seguridad real, Scope Lock y V5 exact-SHA; mantener VALIDANDO hasta A0-A4 y A5 independiente posterior; rollback git revert normal.
+
 ## 2026-11-14 — V5 C15-03.M02.03 persistencia y fixtures de auditoría de seguridad/tenancy [Javier :40]
 - Define PD01–PD12 modelos conceptuales, IX01–IX08 índices hipotéticos, MF01–MF06 pasos condicionales y FX01–FX12 pares FUTUROS_NO_EJECUTADOS, sin instalar SQL ni migraciones.
 - Traza AppDbContext, doce FK compuestas comerciales, guard de consultas y escrituras, JWT/RBAC y aislamiento tenant A/B; exige MySQL efímero y evidencia antes de M03.
