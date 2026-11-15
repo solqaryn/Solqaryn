@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C05-04.M03.04 adaptador aislado de snapshots UI [Javier :50]
+- Implementado Infrastructure .NET 10 con snapshot de solo lectura, bounds de recurso/SHA y aislamiento A/B; nueve xUnit positivos, adversariales, frontera y cancelación para Application/Domain sin autorizar acceso.
+- No se incorpora DI, API, EF/MySQL, cache real, Angular, navegador, mediciones CWV, credenciales ni datos productivos; el snapshot por sí solo no certifica membresía/JWT externos.
+- Riesgo V15 R2, controles CI backend/seguridad/Scope Lock/V5 necesarios por SHA antes de LISTO, A5 independiente de otra Task Javier, rollback git revert sin QA/main/PROD.
+
 ## 2026-11-15 — V16 continuidad secuencial sin cuotas por corrida [Javier propietario]
 - Respaldo privado anterior verificado del Sheet integral, plan comercial y seis prompts con IDs/RRULE exactos; no operativo y BITACORA preservada.
 - Aclara MAX_ACTIVE_WRITES_PER_TASK=1 como concurrencia real, no cantidad acumulada. Se mantiene capacidad advisory hasta 1000 scopes, sin reservas múltiples por Task.
