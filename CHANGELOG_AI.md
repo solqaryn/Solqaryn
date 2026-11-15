@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C07-04.M02.03 persistencia, índices y fixtures de pedidos/pagos [Javier :50]
+- Diseña 12 asociaciones lógicas, 10 índices hipotéticos, 8 pasos aditivos reversibles y 12 pares de fixtures futuros para cotización, pedidos, factura, caja, pagos y stock.
+- Separa código/guardas tenant EF inspeccionados de tablas y migraciones NO IMPLEMENTADAS; mantiene EmpresaId NULL legado aislado, JWT/RBAC y tenant A/B fail-closed.
+- Sólo documento y CHANGELOG dev con CAS fast-forward y Scope Lock/V5 exact SHA; A5 independiente pendiente, pruebas MySQL futuras NO_EJECUTADAS, sin QA/main/PROD.
+
 ## 2026-11-14 — V5 C07-04.M02.02 contratos API/DTO de pedidos, facturas y pagos [Javier :50]
 - Diseña 10 operaciones, 12 DTO, 14 errores y 10 reglas de compatibilidad para pedidos/pagos sin añadir endpoints, contratos runtime, PSP ni esquemas MySQL.
 - Registra 10 pares positivos/negativos futuros de tenant A/B, JWT/RBAC, idempotencia, permisos, fiscalidad y exportación; casos NO_EJECUTADOS sin afirmar CI HTTP funcional.
