@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C08-02.M02.02 contratos API/DTO/errores de mesas QR [Javier :20]
+- Propone OCHO operaciones y OCHO DTO inertes de mesas QR, menú, pedidos, cocina y cierre; exige verificación server-side tenant/sede, JWT/RBAC en mutaciones, capacidad separada de QR público y estados terminales sin precio ni stock del cliente.
+- Define DOCE errores, DIECISÉIS validaciones y OCHO pares de aceptación futura positivos/negativos, todos NO_EJECUTADOS; no crea endpoints, scripts, esquemas, workers, secretos, cobros ni accesos a producción.
+- Una microtarea R0 documental en dev, Scope Lock/V5 exact-SHA y BITACORA/readback; A5 independiente de otra Task Javier, rollback git revert normal y ningún QA/main/PROD.
+
 ## 2026-11-15 — V17 C08-03.M01.06: contrato terminal de membresías y acceso [Javier :40]
 - Define 16 barreras B01–B16, 12 casos E01–E12 FUTUROS NO_EJECUTADOS y ocho reversas RB01–RB08 para membresía empresarial/comercial, vigencia UTC/DST, suspensión, control de acceso e idempotencia.
 - Concilia antecedentes M01.01–05 LISTO+A5 y dependencias técnicas calculadas; M02 requiere A5 independiente de esta M01.06 cuando lo exija el DAG vivo, sin forzar fórmulas ni resolver por inferencia D01–D08 pendientes.
