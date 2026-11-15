@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C11-02.M02.03 persistencia/índices/fixtures propuestos para API modular [Javier :00]
+- Documenta 12 proyecciones de datos, 8 índices candidatos NO CREADOS, 6 etapas futuras de migración y 10 fixtures positivos/negativos FUTUROS_NO_EJECUTADOS, con aislamiento tenant A/B y compatibilidad de API.
+- Coteja AppDbContext, IUsuarioRepository, UsuarioEmpresa, IUsuarioScopeService, PagedRequest y el interceptor de soporte, sin cambios en EF/MySQL, migraciones o datos.
+- Solo dos archivos Markdown por fast-forward/CAS en dev; Scope Lock y procedencia V5 exact SHA, A0–A4 documentales, A5 independiente, rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C11-02.M02.01 entidades e invariantes de API modular [Javier :50]
 - Consolida 16 entidades lógicas y owners, 18 invariantes fail-closed, 10 fallas y 10 pares P/N FUTUROS_NO_EJECUTADOS con aislamiento tenant A/B, JWT/RBAC, permisos de soporte y DTO seguros.
 - Contrasta el código real ASP.NET Core 10, API, Application, EF/MySQL, contrato ApiResponse y gate documental M01 con A5 independiente; no introduce endpoints, clases, esquema, migraciones, workers ni eventos.
