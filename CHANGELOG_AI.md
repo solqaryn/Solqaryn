@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-05.M02.02 contrato API/DTO, errores y compatibilidad auditoría operativa [Javier :00]
+- Define siete operaciones lógicas NO_IMPLEMENTADAS, ocho DTO conceptuales, doce códigos de error y doce pares positivos/negativos FUTUROS_NO_EJECUTADOS de auditoría operativa.
+- Preserva AuditoriaController, JWT/RBAC/tenant A/B, seis Tasks Javier, SHA exacto, CAS, A5 independiente y distinción telemetría local/proveedor nativo; sin crear endpoint ni transportar datos.
+- Changeset sólo de dos Markdown en dev, Scope Lock y procedencia V5 exact-SHA requeridos; rollback git revert, sin QA/main/PROD ni webhook/event dispatcher.
+
 ## 2026-11-14 — V5 C15-01.M02.01 modelo de propiedad y trazabilidad de cobertura [Javier :50]
 - Define CT01–CT16 entidades conceptuales, CT06 matriz de enlaces requisito-ID y CV01–CV12 de casos positivos/negativos FUTUROS_NO_EJECUTADOS, sin afirmar cero huerfanos o P0/P1.
 - Delimita contratos contra STANDARD/PLAN/COLA/DAG/BITACORA, A5 independiente y CAS, con controles JWT/RBAC/tenant y prohibicion de falsificar SI o reescribir historia.
