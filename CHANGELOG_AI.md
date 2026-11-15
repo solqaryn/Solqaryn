@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C08-02.M02.04 configuración tipada segura mesas QR [Javier :20]
+- Especifica SEIS ámbitos deny-first y DIECISÉIS opciones O01–O16 conceptuales; límites NonNegativeInteger con cero expresamente deshabilitado, sin inferir permiso de flags, host, QR o frontend.
+- Define DOCE reglas FG01–FG12 y DIEZ pares T01–T10 de prueba futura NO_EJECUTADOS: aislamiento A/B, firma/revocación, idempotencia, rol, cierre, auditoría y caché segura.
+- Entrega R0 sólo documental en dev, Scope Lock/V5 por SHA, BITACORA/readback y A5 por otra Task Javier; sin configurar módulos, API, workers, eventos, MySQL, QA/main/PROD.
+
 ## 2026-11-15 — V17 C08-02.M02.02 reparación causal del Scope Lock [Javier :20]
 - Corregido únicamente el código de error conceptual ER10: el identificador inglés previo coincidía con un patrón de identidad retirada del verificador de alcance; ahora STOCK_OR_PRICE_CONFLICT conserva la semántica de stock y precio canónico.
 - Se mantiene intacta la arquitectura, las ocho operaciones, ocho DTO, doce errores, dieciséis validaciones y los pares de pruebas futuras; sin desactivar Scope Lock, seguridad ni otros checks.
