@@ -1,3 +1,7 @@
+## 2026-11-14 — Corrección dirigida C15-03.M01.04 para recuperar Scope Lock
+- Se sustituye en D02 un término heredado no permitido por `inventario causal`; no cambia el sentido técnico, el alcance del documento ni el verificador.
+- Recuperación solicitada por el propietario. Se mantendrá VALIDANDO hasta verificar el SHA de `dev` con CI causal y revisión A5 independiente; sin operaciones en QA/main/PROD.
+
 ## 2026-11-14 — V5 C15-03.M01.04: riesgos y decisiones de seguridad/tenancy [Javier :10]
 - Registra R01–R14 riesgos potenciales, S01–S08 supuestos NO_VERIFICADOS y D01–D08 decisiones pendientes, enlazados a quince blobs reales de M01.03 y contratos M01.01/M01.02.
 - Define P01/N01–P08/N08 como casos FUTUROS_NO_EJECUTADOS; trata la consulta EF sin scope y su cuarentena externa como hipótesis a probar, nunca como vulnerabilidad certificada.

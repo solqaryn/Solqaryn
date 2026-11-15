@@ -49,7 +49,7 @@ La presencia de una fuente que contiene un guard, o una suite de tests que decla
 | ID | Decisión pendiente | Límite actual |
 | --- | --- | --- |
 | D01 | Aprobar fixture aislado tenant A/B, usuarios/roles y sucursales | Pendiente, sin tocar Aiven productivo |
-| D02 | Precisar catálogo exhaustivo de endpoints, exports y medios alcanzables | Pendiente de inventory causal |
+| D02 | Precisar catálogo exhaustivo de endpoints, exports y medios alcanzables | Pendiente de inventario causal |
 | D03 | Diseñar test fail-closed de IgnoreQueryFilters sin marca con cuarentena exterior | Pendiente, exige test integrado |
 | D04 | Definir contrato para filas legacy NULL con backfill reversible y autorizado | Pendiente, ninguna migración por este doc |
 | D05 | Definir política operativa de soporte y grant/expiry por plataforma | Pendiente, no ampliar roles |
