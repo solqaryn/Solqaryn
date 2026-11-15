@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C01-04.M02.04 configuracion tipada y flags del expediente universal [Javier :50]
+- Define CFG01–CFG16 opciones conceptuales PROPUESTAS_NO_IMPLEMENTADAS por ámbito de plataforma, plan, tenant, sucursal, recurso y rol, con precedencia fail-closed y sin concesión RBAC.
+- Incluye VT01–VT12 pares positivos/negativos FUTUROS_NO_EJECUTADOS, cache tenant-aware, invalidación de membresía, cursor seguro, decisiones, adjuntos privados y rollback aditivo.
+- Cambia sólo documento V5 y CHANGELOG en dev, con Scope Lock/V5 exact-SHA y A5 independiente pendiente; no flags runtime, API, MySQL, secretos, QA/main/PROD ni dispatcher.
+
 ## 2026-11-14 — V5 C03-04.M02.01 entidades e invariantes de respuesta y recuperacion [Javier :40]
 - Define doce entidades conceptuales y propiedad verificable de incidente, evidencia, respaldo, restauracion y rollback, sin crear entidades EF, tablas ni endpoints.
 - Establece dieciseis invariantes fail-closed sobre identidad, JWT/RBAC, aislamiento tenant A/B, allowlist de CI/dev, secretos, concurrencia y pruebas de recuperacion futuras.
