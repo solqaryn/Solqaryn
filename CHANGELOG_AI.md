@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C11-02.M02.02 contratos API/DTO/errores y compatibilidad [Javier :00]
+- Define 10 superficies/operaciones conceptuales, 16 invariantes de seguridad/compatibilidad, 10 pares P/N FUTUROS_NO_EJECUTADOS y 8 medidas de rollback para API modular, con JWT/RBAC/tenant A/B fail-closed.
+- Contrasta AuthController, TenantContextController, PlataformaSesionController, UsuariosController, ApiResponse, DTOs, filtros y middleware existentes sin modificar ejecutables, rutas, EF/MySQL ni clientes.
+- Documento y CHANGELOG_AI.md únicamente, publicados en dev por fast-forward/CAS; controles Scope Lock/V5 exact SHA, A0–A4 documentales y A5 independiente, sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C11-03.M02.06 contrato de salida documental Outbox/eventos [Javier :00]
 - Establece 16 barreras de salida, 10 pares P/N FUTUROS_NO_EJECUTADOS y 10 medidas de rollback para la frontera Outbox/eventos; conserva idempotencia, claim tenant-bound, A5 independiente y privacidad sin activar ninguna mensajería.
 - Contrasta los cinco contratos C11-03.M02.01–05 con A5 independiente, el M01.06 y C10-04.M01.06; distingue documentación, código vigente y pruebas runtime aún no ejecutadas.
