@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-02.M02.06 contrato de salida de aceptación de seguridad [Javier :00]
+- Cierra documentalmente el modelo M02 con SEC01–SEC12 para BOLA/IDOR, spoofing, JWT/RBAC/tenant A/B, archivos, jobs, cache, backups, sesiones, P0/P1 y publicación; exige negativos y evidencia futura real, sin afirmar cero vulnerabilidades.
+- Define entradas M03.01–06, expediente causal, estados NOT_EVALUATED/FAIL/PASS_DEV/A5 y RB01–RB08 de contención y rollback; separa entrega documental de pentest, CI runtime, migraciones y promoción.
+- Cambia sólo documento y CHANGELOG autocontenido en dev por fast-forward/CAS exact-HEAD, requiere Scope Lock/V5 exact-SHA y A5 independiente; sin secretos, endpoints, workers, SQL, QA/main/PROD.
+
 ## 2026-11-14 — V5 C03-04.M02.05 eventos e idempotencia documental de continuidad [Javier :50]
 - Define EV01–EV14 señales conceptuales NO_PUBLICADAS, ID01–ID10 reglas futuras de idempotencia y LM01–LM12 limites de backup, restore, revocacion, incidente y rollback.
 - Incorpora FT01–FT12 positivos/negativos FUTUROS_NO_EJECUTADOS; separa job nativo y autorreporte, exige hash/manifest, tenant A/B, permiso destructivo, RPO/RTO medidos y evidencia causal.
