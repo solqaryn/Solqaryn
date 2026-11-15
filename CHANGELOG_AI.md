@@ -1,3 +1,7 @@
+## 2026-11-15 — V5 C05-04.M02.06 dependencias y contrato de salida de ligereza UI [Javier :50]
+- Consolida diez puertas de calidad, ocho pares P/N FUTUROS_NO_EJECUTADOS y dependencias LISTO+A5 de M01 y M02; budget Angular inicial 650kb/750kb y estilos 16kb/32kb son política configurada, no métricas medidas.
+- No implementa código ni eventos, migraciones, telemetría, webhooks o despliegues; las CWV, Playwright, APIs y pruebas de aislamiento A/B quedan condicionadas a M03 con CI causal, A5 ajena y Scope Lock STRICT.
+
 ## 2026-11-15 — V5 C08-04.M02.01 entidades, ownership e invariantes sectoriales [Javier :50]
 - Define seis objetos conceptuales de capacidades, catorce invariantes tenant/RBAC y ocho pares P/N futuros; reutiliza Empresa, UsuarioEmpresa y recursos sin duplicar identidad.
 - Ninguna tabla, API, migración, permiso o capability activa: sólo contrato documental; Scope Lock STRICT, A5 independiente y rollback Git normal.
