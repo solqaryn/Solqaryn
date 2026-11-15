@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C11-03.M02.06 contrato de salida documental Outbox/eventos [Javier :00]
+- Establece 16 barreras de salida, 10 pares P/N FUTUROS_NO_EJECUTADOS y 10 medidas de rollback para la frontera Outbox/eventos; conserva idempotencia, claim tenant-bound, A5 independiente y privacidad sin activar ninguna mensajería.
+- Contrasta los cinco contratos C11-03.M02.01–05 con A5 independiente, el M01.06 y C10-04.M01.06; distingue documentación, código vigente y pruebas runtime aún no ejecutadas.
+- Solo documento y CHANGELOG_AI.md en dev por fast-forward/CAS; Scope Lock/V5 exact-SHA, A0–A4 documentales y A5 independiente posterior. Sin workers, webhooks, SQL, migraciones, secretos, QA/main/PROD; rollback git revert normal.
+
 ## 2026-11-15 — V5 C12-03.M02.06 cierre documental backend/workers [Javier :50]
 - Consolidación del contrato M02 de backend/workers: M01.01–06, M02.01–05 y C10-04/C11-03 terminales con A5; 16 gates de seguridad/tenancy/CAS/rollback y 10 escenarios P/N FUTUROS_NO_EJECUTADOS.
 - Verifica fronteras reales API ASP.NET Core 10, EF/MySQL y OutboxRetryProcessor existente sin crear procesos, endpoints, eventos, dispatchers, webhooks, migraciones, conectores entre Tasks ni infraestructura.
