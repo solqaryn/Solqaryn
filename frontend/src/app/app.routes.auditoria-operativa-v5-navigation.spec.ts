@@ -45,10 +45,11 @@ describe('C15-05.M04.04 - consulta de auditoría sin acciones duplicables', () =
     fixture.destroy();
   });
 
-  it('carece de formularios, botones y doble envío: solo navegación de lectura', async () => {
+  it('no permite formularios ni botones operativos, solo revalidación acotada y navegación', async () => {
     const fixture = await render(true);
     const root: HTMLElement = fixture.nativeElement;
-    expect(root.querySelectorAll('form, input, select, textarea, button, [role="button"]')).toHaveLength(0);
+    expect(root.querySelectorAll('button[aria-label="Revalidar sesión de auditoría"]')).toHaveLength(1);
+    expect(root.querySelectorAll('form, input, select, textarea, [role="button"], button:not([aria-label="Revalidar sesión de auditoría"])')).toHaveLength(0);
     expect(root.querySelectorAll('a')).toHaveLength(1);
     const returnLink = root.querySelector('a');
     expect(returnLink?.getAttribute('href')).toBe('/plataforma');
@@ -57,12 +58,13 @@ describe('C15-05.M04.04 - consulta de auditoría sin acciones duplicables', () =
     fixture.destroy();
   });
 
-  it('deniega controles a no-admin y no ofrece acciones de reintento o aprobación', async () => {
+  it('deniega contenido privado a no-admin sin botón de aprobación ni formulario', async () => {
     const fixture = await render(false);
     const root: HTMLElement = fixture.nativeElement;
-    expect(root.querySelector('[role="alert"]')?.textContent).toContain('Acceso de plataforma no confirmado');
+    expect(root.querySelector('[role="alert"]')?.textContent).toContain('Sin permiso de plataforma confirmado');
     expect(root.querySelectorAll('ol.controls > li')).toHaveLength(0);
-    expect(root.querySelectorAll('form, button, input, [role="button"]')).toHaveLength(0);
+    expect(root.querySelectorAll('button[aria-label="Revalidar sesión de auditoría"]')).toHaveLength(1);
+    expect(root.querySelectorAll('form, input, select, textarea, [role="button"], button:not([aria-label="Revalidar sesión de auditoría"])')).toHaveLength(0);
     expect(root.textContent).not.toContain('Propiedad exclusiva');
     fixture.destroy();
   });

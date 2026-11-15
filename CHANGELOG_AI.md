@@ -4,6 +4,7 @@
 - Una única unidad R1 con candado V17 fila 2325, commit dev FF/CAS, checks A0–A4 pertinentes y A5 independiente pendiente; conserva Scope Lock, CHANGELOG autocontenido y rollback git revert.
 - Reparación dirigida por fallo Chromium real en SHA 20d61e82: M04.05 exigía 0 botones y rechazó la nueva revalidación legítima; ahora permite exactamente ese botón con etiqueta accesible y conserva 0 formularios, entradas y botones operativos no autorizados. CI debe ejecutarse de nuevo, sin bypass.
 - Conecta el nuevo Vitest dirigido C15-05.M04.02 al workflow de plataforma en SHA exacto (ruta y paso explícitos), preserva todas las pruebas existentes y no confunde tipado o build con asserts ejecutados.
+- Repara dos fallos reales Vitest de navegación M04.04 (job 132948182785): prueba que sólo existe el botón permitido de revalidación y cero acciones operativas, y alinea el mensaje de denegación con el nuevo estado fail-closed; conserva los controles de autorización y rechazo.
 
 ## 2026-11-15 — V17 C04-02.M02.06 contrato de salida tecnico documental [Javier :10]
 - Define dieciseis gates G01-G16 y doce pares positivos/negativos FUTUROS_NO_EJECUTADOS para contratos y suscripciones, firma, version, tenant A/B, conciliacion, transiciones invalidas, idempotencia, pruebas MySQL efimero y rollback.
