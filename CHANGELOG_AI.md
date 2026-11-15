@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C09-02.M02.04 configuracion tipada y flags seguros de fidelizacion [Javier :00]
+- Propone seis ambitos restrictivos global/empresa/sucursal/programa/canal/sesion y dieciseis opciones tipadas O01-O16 con defaults false, cero, null o conjunto vacio para puntos, promociones, resenas, posventa, moderacion y consentimiento.
+- Define doce reglas fail-closed de precedencia, tenant A/B, JWT/RBAC, revocacion, EmpresaId=NULL, idempotencia y cache mas doce pares P/N FUTUROS_NO_EJECUTADOS; no crea flags runtime, endpoints, MySQL, mensajes o campañas, pruebas NO_MEDIDO.
+- Una unidad R0 M02.04 + CHANGELOG en dev, candado V17 fila 1343 ID 2000001343; A0-A4 sujetos a Scope Lock/V5 del SHA, A5 independiente, BITACORA/readback; rollback revert Git normal, sin QA/main/PROD ni secretos.
+
 ## 2026-11-15 — V17 C09-02.M02.03 persistencia y fixtures conceptuales fidelizacion [Javier :10]
 - Contrato R0 documental de persistencia futura: entidades tenant-scoped, doce indices propuestos I01-I12, ocho etapas aditivas/reversibles y doce pares F01-F12 positivos/negativos FUTUROS_NO_EJECUTADOS.
 - Incluye ledger separado de dinero/credito, idempotencia, antifraude, canje CAS, resenas/moderacion, consentimiento/revocacion y aislamiento A/B/legacy NULL; ningun esquema, migracion, API, test MySQL ni modulo runtime ejecutado, metricas NO_MEDIDO.
