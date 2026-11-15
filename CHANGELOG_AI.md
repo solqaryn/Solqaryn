@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C02-04.M02.06 salida documental de consola global [Javier :00]
+- Consolida cinco contratos M02 revisados, dieciseis gates y diez pares positivos/negativos FUTUROS_NO_EJECUTADOS para seguridad de consola global y aislamiento tenant A/B.
+- Exige IAM/MFA, JWT/RBAC, pruebas y autorización posterior antes de cualquier implementación; no crea API, consola, EF/MySQL, cuentas, flags, eventos ni elevaciones.
+- Publicación documental en dev con Scope Lock y procedencia V5 exact SHA; A0–A4 causales, A5 pendiente de otra Task Javier, rollback Git normal; sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C02-03.M02.06 salida documental de lifecycle tenant [Javier :00]
 - Consolida cinco contratos M02 y A5 independientes de C02-03 con dieciseis controles OUT y diez pares positivos/negativos FUTUROS_NO_EJECUTADOS sobre lifecycle y permisos de plataforma.
 - Mantiene M03 sujeto a M02.06 LISTO+A5 y C02-02.M06.06; no implementa endpoints, EF/MySQL, flags, eventos, restauracion, workers ni cambios de empresa.
