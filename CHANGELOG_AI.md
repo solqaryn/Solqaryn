@@ -1,3 +1,8 @@
+## 2026-11-15 - V5 C13-04.M03.01 consistencia visual de dominio [.NET 10 Javier :50]
+- Agrega validacion puramente de dominio de tenant/permiso/SHA/superficie/estado/viewport, teclado, contraste y privacy; nunca autoriza acceso, WCAG ni release.
+- Pruebas xUnit positivas/negativas por tenant A/B, revocacion, manipulacion, datos sensibles, UI state y contraste; requiere CI backend, seguridad, Scope Lock y V5 exact SHA.
+- Sin cambios Angular, Playwright, API, JWT real, MySQL, DI, worker, webhooks ni QA/main/PROD; A5 independiente otra Task y rollback git revert.
+
 ## 2026-11-15 — V5 C14-04.M03.03 puerta de autorización DEV .NET 10 [Javier :40]
 - Incorpora gate Application con identidad autenticada sólo desde backend confiable, membresía, grant explícito, rol revisor independiente, tenant A/B y SHA/CI causal fail-closed antes de revisión de release DEV.
 - Agrega xUnit positivos/negativos de revocación, cross-tenant, task no autorizada, QA/PROD, impersonación, tests cancelados y SHA distinto; autorización de despliegue y escritura sigue siempre false.
