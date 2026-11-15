@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C12-02.M02.05 contratos inertes de eventos e idempotencia [Javier :50]
+- Propone EVT01–EVT12, ID01–ID12 y diez oráculos T01–T10 positivos/negativos FUTUROS_NO_EJECUTADOS para build, hashes, versión, caché/host, smoke y rollback; sin dispatcher, webhook ni workers reales.
+- Preserva JWT/RBAC, tenant A/B, privacidad, CSP/CORS y controles de SHA; D01–D10 de proveedor/CDN siguen pendientes, ningún DNS/host/pago/PROD modificado.
+- Sólo docs/v5 y sección CHANGELOG autocontenida, fast-forward/CAS dev y Scope Lock/V5 exact-SHA; A0–A4 R0, A5 distinto Javier pendiente, sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C08-01.M01.06: bloqueos y rollback documental de reservas y agenda [Javier :50]
 - Define 16 gates y diez pares positivos/negativos FUTUROS_NO_EJECUTADOS sobre recursos, JWT/RBAC, tenant A/B, doble reserva MySQL, DST UTC/IANA, estados e idempotencia.
 - Separa el cierre documental M01 de pruebas runtime, decisiones D01–D08 pendientes, A5 ajeno antes de M02 y regresiones reales de inventario/calendario; sin activar API, migrations, eventos o proveedores.
