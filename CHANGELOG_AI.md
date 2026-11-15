@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C06-01.M02.05 contrato de eventos e idempotencia del sitio publico [Javier :40]
+- Define doce eventos conceptuales EV01–EV12, catorce invariantes ID01–ID14 y un sobre de correlacion opaca para landing, planes, contacto, demo, legal y SEO.
+- Especifica diez pares P/N FUTUROS_NO_EJECUTADOS, aislamiento tenant A/B, JWT/RBAC, consentimiento, deduplicacion, reintentos acotados y privacidad sin API, workers, MySQL, SMTP ni dispatcher ejecutable.
+- Publicacion individual R0 en dev bajo Scope Lock STRICT, A0-A4 por SHA real y A5 solo de otra Task Javier; rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-15 — V16 C06-01.M02.03 persistencia conceptual de landing SaaS [Javier :10]
 - Define 12 familias P01–P12, 12 índices IDX01–IDX12, 12 etapas MIG01–MIG12 y diez pares FX01–FX10 FUTUROS_NO_EJECUTADOS para publicaciones, SEO, contacto, consentimiento y demo.
 - Mantiene CAS e historia de versiones, aislamiento tenant A/B, fuente comercial/legal aprobada, retención PII y autoridad JWT/RBAC backend. No hay tablas EF, DDL, MySQL, API, Angular, SMTP ni migración real.
