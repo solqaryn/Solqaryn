@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C14-02.M03.05 matriz negativa de aceptación de seguridad [Javier :00]
+- Agrega catorce métodos xUnit .NET 10 sobre Domain/Application/Infrastructure aislados: BOLA/IDOR tenant A/B, actor/recurso, sucursal, host, archivos, jobs, caché, restauración, JWT/RBAC, revocación, spoofing, SHA y cancelación.
+- Exige Backend Release, seguridad multiempresa, Authorization, Scope Lock y procedencia V5 con SUCCESS causal antes de LISTO; un preflight nominal nunca concede accesos, escrituras, jobs ni despliegue.
+- R2 de pruebas in-memory: no certifica JWT HTTP, MySQL/EF, backups/R2 ni proveedores productivos; A5 distinta Task Javier, rollback git revert, solo dev.
+
 ## 2026-11-15 — V17 C10-04.M03.06 auditoria estructurada segura cache/jobs [Javier :10]
 - Implementa servicio .NET 10 Infrastructure con ILogger y lector de contexto autenticado, operaciones acotadas, tenant A/B y RBAC/revocacion fail-closed; solo codigo operacional y correlacion confiable sin secretos en logs.
 - Nueve pruebas xUnit positivas/negativas de spoof, sink, autoridad, permisos revocados, errores sanitizados, cancelacion y no concesion, requieren Release/security/auth/Scope Lock/V5 causal.
