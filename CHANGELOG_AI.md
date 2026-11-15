@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C13-04.M01.06 contrato de bloqueos, rollback y liberación de experiencia visual [Javier :40]
+- Completa contrato M01 documental: dieciséis barreras de salida, diez escenarios de rollback y doce pares positivos/negativos futuros, con cinco predecesores LISTO + A5 independiente por TASK_ID.
+- Conserva límites JWT/RBAC/tenant A/B, foco, estados, reflow y pruebas causales; las matrices propuestas NO son WCAG/Playwright/HTTP ejecutados ni permiten habilitar sucesoras fuera de DAG.
+- Sólo dos archivos Markdown, Scope Lock STRICT, publicación fast-forward/CAS, A0–A4 documentales y A5 por otra Task Javier; sin frontend/runtime, MySQL, migraciones, dispatcher, QA/main/PROD.
+
 ## 2026-11-15 — V5 C15-04.M03.03 guard de autorización de auditoría UX en Application [Javier :20]
 - Implementa wrapper .NET 10 de preflight UX que exige JWT, membresía, permiso, contexto tenant y SHA verificables por backend; restringe catálogo autorizado de superficies y criterios.
 - Añade xUnit positivos y negativos de tenant A/B, ausencia de autoridad, SHA obsoleto, presupuesto y catálogo ampliado por cliente; no concede acceso, escritura ni certifca métricas externas.
