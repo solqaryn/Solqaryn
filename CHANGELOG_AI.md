@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C06-03.M02.06 salida documental editoriales/mapas [Javier :00]
+- Consolida cinco contratos M02.01–05 con blobs y A5 independientes verificables, dieciseis gates G01-G16, seis fronteras por capa y ocho planes RB01-RB08 FUTUROS_NO_EJECUTADOS.
+- Conserva tenant A/B, JWT/RBAC, Host/proxy sin autoridad, publicacion CAS, preview noindex, contacto y horarios aprobados, mapas opcionales con fallback textual; ningun runtime ni geolocalizacion se activa.
+- A0-A4 documentales con Scope Lock/V5 exact-SHA, A5 de otra Task Javier pendiente; M03 exige codigo y CI real, sin MySQL, eventos, webhooks, DNS, proveedores, QA/main/PROD; rollback git revert.
+
 ## 2026-11-15 — V5 C06-03.M02.05 eventos conceptuales editoriales [Javier :00]
 - Documenta doce intenciones EV01-EV12, doce invariantes ID01-ID12 y doce pares PN01-PN12 FUTUROS_NO_EJECUTADOS para sitios, moderacion, contacto, horarios y mapas opcionales por tenant.
 - Conserva JWT/RBAC, separacion A/B, host/proxy sin autoridad, publicacion CAS, preview noindex, privacidad de ubicacion y fallback textual; ninguna cola, dispatcher, webhook, worker o evento runtime fue creado.
