@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C14-01.M02.02 reparación causal de Scope Lock [Javier :50]
+- Corrige dos identificadores contractuales ingleses heredados en API10 por la nomenclatura neutral `stock`, conservando método, permiso y límites backend/tenant.
+- Respuesta al fallo exact-SHA de verify-solqaryn-project-scope; no se desactivan verificadores, no se modifican API ejecutables y se exigen checks del nuevo SHA.
+- Reparación sólo dev, rollback por git revert sin reescribir historia; sin secretos, datos, QA/main/PROD.
+
 ## 2026-11-15 — V5 C14-01.M02.03 persistencia conceptual e índices de aceptación [Javier :50]
 - Define doce agregados lógicos de evidencia de aceptación, ocho índices candidatos, doce fixtures A/B sintéticos y seis etapas de migración reversible FUTURA_NO_EJECUTADA.
 - Separación fail-closed de hechos observados frente a oráculos, recibos exact-SHA y datos sensibles; sin DDL, EF/MySQL ejecutado, HTTP, PII ni prueba de backup/restore real.

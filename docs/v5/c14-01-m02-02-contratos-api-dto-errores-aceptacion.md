@@ -21,7 +21,7 @@ Las rutas siguientes son **contratos candidatos** para diseño y pruebas posteri
 | API07 | POST | /private/invoices/draft | invoices.draft | InvoiceDraftCommand | 202/400/409 | Emisor fiscal validado aparte |
 | API08 | GET | /private/payments/{id} | payments.read | PaymentStatusView | 200/403/404 | Sólo PSP aprobado y propiedad persistida |
 | API09 | POST | /private/payments/intents | payments.prepare | PaymentIntentCommand | 202/409/403 | No captura financiera en endpoint conceptual |
-| API10 | GET | /private/inventory/availability | inventory.read | AvailabilityView | 200/403/400 | Sucursal autorizada y versión |
+| API10 | GET | /private/stock/availability | stock.read | AvailabilityView | 200/403/400 | Sucursal autorizada y versión |
 | API11 | GET | /admin/acceptance/runs/{id} | acceptance.audit | AcceptanceRunView | 200/403/404 | Sólo artefactos saneados y roles administrativos |
 | API12 | POST | /admin/acceptance/runs | acceptance.execute | AcceptanceRunRequest | 202/403/409 | CI efímera autorizada, no QA/main/PROD |
 
