@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C01-04.M02.02 contratos API DTO y errores del expediente universal [Javier :30]
+- Documenta API01–12 operaciones propuestas, E01–14 errores, T01–14 pares positivos/negativos FUTUROS_NO_EJECUTADOS, cursores, idempotencia y version de observaciones/decisiones/adjuntos.
+- No crea endpoints, DTO compilados, MySQL, Angular, JWT/RBAC ni permisos: tenant A/B y recursos propios siempre se verificaran en backend, sin reutilizar auditoria existente por deduccion.
+- Changeset solo dos Markdown en dev, CAS expected HEAD, Scope Lock y V5 exact-SHA, A5 independiente pendiente y rollback git revert; no QA/main/PROD.
+
 ## 2026-11-14 — V5 C01-04.M02.01 modelo y ownership de expediente universal [Javier :30]
 - Formaliza EX01–EX16 agregados conceptuales, IN01–IN18 invariantes y EV01–EV12 pares de escenarios FUTUROS_NO_EJECUTADOS de timeline, decisiones, observaciones, adjuntos y versiones.
 - Preserva autoridad backend JWT/RBAC, tenant A/B, permiso/sucursal/ownership, retencion y procedencia real; nunca atribuye API, SQL, storage o UI implementados.
