@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C06-04.M02.05 eventos e idempotencia inertes portal cliente [Javier :10]
+- Especifica doce contratos de eventos futuros, envelope acotado, diez reglas de deduplicacion/reintentos/cuotas y ocho pares PN FUTUROS_NO_EJECUTADOS; no crea dispatcher, worker, bus, cola ni webhook.
+- Preserva tenant A/B y A1/A2, principal CUSTOMER/ERP separado, idempotencia scope-bound, correlationId no autorizante, payload minimo y secreto fuera de log/evento.
+- Cambio Markdown+CHANGELOG, check Scope Lock/V5 exact-SHA, A5 ajena pendiente, git revert sin force; no QA/main/PROD.
+
 ## 2026-11-15 — V5 C06-04.M02.04 configuracion tipada portal cliente [Javier :10]
 - Define catorce opciones tipadas propuestas, doce reglas de validacion, cuatro ambitos y ocho pares PN FUTUROS_NO_EJECUTADOS; no activa flags, IAM, JWT, backend ni Angular.
 - Conserva tenant A/B y clientes A1/A2, defaults fail-closed, politica de seguridad global, consentimiento/ownership, TTL y secreto fuera de configuracion publica.
