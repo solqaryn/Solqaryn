@@ -56,7 +56,7 @@ Los nombres, cardinalidades y codificación son aspiracionales; su migración a 
 | ER07 VERSION_CONFLICT | Pedido cambiado desde expectedVersion | 409, pedir refresco sin mutación parcial |
 | ER08 IDEMPOTENCY_CONFLICT | Misma clave, payload/fingerprint distinto | 409, no duplicar efectos |
 | ER09 ORDER_TERMINAL | Pedido cerrado/cancelado | No reabrir por transición accidental |
-| ER10 INVENTORY_OR_PRICE_CONFLICT | Stock o precio canónico inválido | Denegar sin cálculo económico del cliente |
+| ER10 STOCK_OR_PRICE_CONFLICT | Stock o precio canónico inválido | Denegar sin cálculo económico del cliente |
 | ER11 DEPENDENCY_UNAVAILABLE | ERP, cocina o autorización no disponible | Retries acotados, estado real no ficticio |
 | ER12 CLOSE_NOT_VERIFIED | No se verificó cierre/cobro conciliado | No facturar, no marcar pagado y auditar mínimo |
 

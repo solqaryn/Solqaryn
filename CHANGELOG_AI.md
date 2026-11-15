@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C08-02.M02.02 reparación causal del Scope Lock [Javier :20]
+- Corregido únicamente el código de error conceptual ER10: el identificador inglés previo coincidía con un patrón de identidad retirada del verificador de alcance; ahora STOCK_OR_PRICE_CONFLICT conserva la semántica de stock y precio canónico.
+- Se mantiene intacta la arquitectura, las ocho operaciones, ocho DTO, doce errores, dieciséis validaciones y los pares de pruebas futuras; sin desactivar Scope Lock, seguridad ni otros checks.
+- Reparación documental R0 en dev, con nueva comprobación CI del SHA publicado y A5 independiente pendiente; no se crean API, migraciones, cobros ni despliegues.
+
 ## 2026-11-15 — V17 C08-02.M02.03 persistencia conceptual restaurante/QR [Javier :50]
 - Define esquema conceptual de 16 objetos, 10 reglas de índices/FK, seis pasos de migración/rollback futuros y doce fixtures A/B positivos-negativos NO_EJECUTADOS.
 - Solo documento R0, sin EF/MySQL/migraciones en vivo; mantiene ERP como autoridad y exige futura CI MySQL 8.4 efímero, Scope Lock STRICT, A5 de otra Task Javier y candado V17 por fila.
