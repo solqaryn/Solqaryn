@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C08-01.M02.03 persistencia conceptual de citas/agenda [Javier :40]
+- Contrato R0 P01–P12, IDX01–IDX12 y MIG01–MIG08 FUTUROS de sede, profesionales, recursos, ocupación, transiciones e idempotencia tenant-scoped, sin tablas, DDL ni EF/MySQL real.
+- Doce pares F01–F12 positivos/negativos FUTUROS_NO_EJECUTADOS (0/12): UTC/IANA/DST, 64 intentos de doble booking, RBAC/tenant A/B, CAS, replay, revocación, rollback y separación ERP; rendimiento y concurrencia NO_MEDIDO.
+- Únicamente este documento y CHANGELOG autocontenido por fast-forward/CAS en dev; Scope Lock/V5 exact SHA y A0–A4 R0, A5 de otra Task Javier, sin QA/main/PROD.
+
 ## 2026-11-15 — V16 C13-03.M02.04 opciones tipadas y flags seguros rendimiento [Javier :20]
 - Contrato documental R0 de catorce opciones OPT01–OPT14, dieciséis validaciones VAL01–VAL16 y ocho fallos fail-closed FAL01–FAL08; ninguna configuración IOptions, appsettings, flag, caché o endpoint real activado.
 - Diez pares T01–T10 positivos/negativos FUTUROS_NO_EJECUTADOS para tenant A/B, JWT/RBAC, caché, PII, accesibilidad y disponibilidad; LCP/INP/CLS NO_MEDIDO y conflicto de bundle 650–750 KB vs 1–2 MiB SIN_RESOLVER.
