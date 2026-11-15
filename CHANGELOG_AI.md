@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C14-01.M03.03 autorización fail-closed de aceptación funcional [Javier :50]
+- Implementa gate Application .NET 10 con lector backend confiable, JWT actual, membresía/RBAC/ownership/tenant, SHA y catálogos verificados; nunca acepta elevación declarada por cliente.
+- Añade trece pruebas xUnit positivas/negativas: tenant A/B, revocación, límites, SHA, privacidad, error, cancelación y ausencia de concesión; CI del SHA requerido para A0–A4.
+- Permanece preflight aislado sin DI/HTTP/EF/MySQL/UI/PSP real; resultado favorable requiere adaptador autenticado, aceptación externa y A5 independiente. Solo dev y rollback git revert normal.
+
 ## 2026-11-15 — V17 C05-01.M03.03 fence de design tokens y RBAC [Javier :40]
 - Integra guard de identidad relacional vigente en Application .NET 10 con permiso Configuracion/Editar, evidencia de catálogo backend por tenant y sesión/revisión; reutiliza el caso de uso M03.02 y reglas Domain M03.01.
 - Añade 12 xUnit adversariales tenant A/B, RBAC/membresía, sesión, catálogo ordinal, CSS malicioso y cancelación; requiere Backend Release, Seguridad multiempresa, Authorization, Scope Lock y V5 exact-SHA.
