@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C13-02.M02.03 persistencia conceptual accesibilidad [Javier :50]
+- Documenta 12 registros/constraints, 12 claves e índices, plan MIG-01–06 de evolución y reversa, fixtures TENANT_A/TENANT_B, 12 pares de casos FUTUROS_NO_EJECUTADOS de aislamiento, auditoría, MySQL e idempotencia, sin crear esquema ni clases EF.
+- No hay migración, backend, Angular, API, navegador, JWT o MySQL ejecutados en esta unidad R0; sus pruebas son NO_APLICA aquí y obligatorias R2 cuando haya cambios runtime. No declarar WCAG ni liberar M03/M04 por inferencia.
+- V17 candado SQV17_C13_02_M02_03 PLAN fila 1918; commit exact SHA, Scope Lock/V5 y A0–A4 documentales a confirmar, A5 posterior por otra Task Javier; rollback git revert normal, sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C13-02.M02.02 contratos accesibles API/DTO y errores [Javier :10]
 - Define ocho operaciones O01–O08 y ocho DTO D01–D08 CONCEPTUALES, doce errores seguros X01–X12 y dieciseis validaciones V01–V16 para teclado/foco/estados/routing y fronteras API sin crear codigo, rutas ni CSS.
 - Propone doce pares P/N FUTUROS_NO_EJECUTADOS, con permisos JWT/RBAC y tenant A/B resueltos en backend, revocacion, mensajes y reflow 320px, sin certificar WCAG, HTTP, browser o pruebas reales.
