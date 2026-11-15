@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C05-02.M02.04 configuracion tipada y flags seguros [Javier :50]
+- Distingue TemaVisual global y ConfigEmpresa tenant existentes; define 14 claves conceptuales K01-K14 con defaults denegados y seis niveles de precedencia.
+- Registra 14 reglas fail-closed R01-R14 y 4 positivos/10 negativos FUTUROS_NO_EJECUTADOS de cambio A/B, CAS, assets, accesibilidad y scopes.
+- Solo Markdown dev, sin flags activos ni API/SQL/Angular; Scope Lock y V5 exact SHA con A5 independiente, rollback git revert.
+
 ## 2026-11-15 — V5 C05-02.M02.03 diseno de persistencia branding y presets [Javier :50]
 - Distingue TemaVisual global de ConfigEmpresa tenant real; propone 10 estructuras logicas, 10 constraints y 8 etapas FUTURAS_NO_EJECUTADAS de migracion reversible.
 - Define ocho fixtures sinteticos futuros con aislamiento A/B, CAS, tokens seguros, versionado y rollback; no crea SQL, EF, datos reales ni indices.
