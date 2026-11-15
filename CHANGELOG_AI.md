@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C10-04.M02.05 contrato conceptual de señales e idempotencia [Javier :20]
+- Documenta dieciseis campos, diez senales FUTURAS_NO_EJECUTADAS, dieciseis invariantes y diez pares de oraculos P/N sobre tenant A/B, revocacion, lease CAS, retry, privacidad y rollback.
+- NO IMPLEMENTAR EVENTOS TODAVIA: no crea outbox, scheduler, dispatcher, consumidor, webhook, cron, Tasks, APIs, migraciones, proveedores ni escrituras externas.
+- Solo docs/v5 + CHANGELOG_AI.md en dev, Scope Lock/V5 exact SHA, A0-A4 documentales y A5 independiente pendiente; sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C10-04.M02.02 API/DTO y denegaciones futuras de cache, jobs, respaldo y exportación [Javier :40]
 - Define únicamente ocho rutas REST propuestas, DTO internos/externos y respuestas de error fail-closed: la pertenencia y permisos tenant A/B provienen del servidor, nunca de EmpresaId/slug/header aportados por cliente.
 - Consolida doce oráculos positivos/negativos futuros NO_EJECUTADOS para retries, claves idempotentes, leasing, CSV formula injection, enlaces temporales, manifiestos backup y restore exclusivamente efímero.
