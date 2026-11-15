@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C15-05.M04.04 CI de pruebas reales de navegación [Javier :00]
+- Integra la suite de cuatro Vitest al workflow existente `v5-plataforma-ui-tests.yml` con disparo por archivo y comando específico en GitHub-hosted; el anterior CI `Frontend tipado y build` compilaba pero no ejecutaba estos tests.
+- Mantiene la concurrencia por SHA con cancel-in-progress=false y todos los casos previos; A4 exige nuevo SUCCESS causal de Vitest, Scope Lock, procedencia V5 y controles pertinentes, sin atribuir PASS al build solamente.
+- Reparación de evidencia R1 test-only, sin cambiar UI ni permisos de JWT/RBAC, API, DB, datos reales o entornos QA/main/PROD. A5 independiente requerida.
+
 ## 2026-11-15 — V17 C07-02.M01.06 contrato de gates y rollback storefront [Javier :10]
 - Define 16 puertas causales y 12 pares positivos/negativos FUTUROS_NO_EJECUTADOS para host/storeKey, tenant A/B, caché, validación, idempotencia, HMAC/replay, callbacks, privacidad, móvil y pruebas pertinentes; no certifica checkout o pagos.
 - Acredita preparación M01.01–05+A5 por readback DAG/COLA y conserva D01–D08 pendientes. LISTO_DEV documental requiere Scope Lock/V5 exact-SHA, BITACORA y readback; A5 independiente distinto del autor antes de liberar M02.

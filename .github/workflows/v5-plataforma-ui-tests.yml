@@ -9,6 +9,7 @@ on:
       - 'frontend/src/app/features/plataforma/gobierno-cambios-v5.component.ts'
       - 'frontend/src/app/features/plataforma/gobierno-cambios-v5.component.spec.ts'
       - 'frontend/src/app/app.routes.governance-v5.spec.ts'
+      - 'frontend/src/app/app.routes.auditoria-operativa-v5-navigation.spec.ts'
       - 'frontend/src/app/features/plataforma/plataforma-gestion-mvp.component.spec.ts'
       - 'frontend/src/app/app.component.ts'
       - 'frontend/src/app/app.component.spec.ts'
@@ -47,5 +48,7 @@ jobs:
         run: npm test -- --no-watch --no-progress --include=src/app/app.routes.governance-v5.spec.ts
       - name: C00-04.M04.03 - Vitest branding tipado positivo y negativo
         run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/gobierno-cambios-v5.component.spec.ts
+      - name: C15-05.M04.04 - Vitest navegación y ausencia de doble acción
+        run: npm test -- --no-watch --no-progress --include=src/app/app.routes.auditoria-operativa-v5-navigation.spec.ts
       - name: Probar aislamiento de branding de plataforma
         run: npm test -- --no-watch --no-progress --include=src/app/app.component.spec.ts
