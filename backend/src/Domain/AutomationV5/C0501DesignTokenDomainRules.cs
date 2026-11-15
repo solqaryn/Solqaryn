@@ -56,7 +56,8 @@ public static class C0501DesignTokenDomainRules
             return new Verdict("THEME_REVISION_CONFLICT");
 
         if (!SafeTokenKey(proposed.TokenKey) ||
-            !serverApprovedTokenKeys.Contains(proposed.TokenKey))
+            !serverApprovedTokenKeys.Any(approvedKey =>
+                string.Equals(approvedKey, proposed.TokenKey, StringComparison.Ordinal)))
             return new Verdict("UNKNOWN_OR_UNSAFE_TOKEN");
 
         if (string.IsNullOrWhiteSpace(proposed.IdempotencyKey) ||

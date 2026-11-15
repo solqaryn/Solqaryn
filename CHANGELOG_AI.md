@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C05-01.M03.01 reparación comparación ordinal de tokens R2 [Javier :30]
+- Repara A5_FAIL P2: el `IReadOnlySet` de claves podía usar comparador `OrdinalIgnoreCase` y aceptar una clave no canónica del catálogo. Exige coincidencia `StringComparison.Ordinal` sin depender del comparador del set.
+- Agrega xUnit negativo para catálogo `PRIMARY-COLOR` con solicitud `primary-color` y positivo para catálogo exacto, aunque ambos sets utilicen comparación insensible; ningún veredicto otorga JWT/RBAC, mutación de tema ni permisos reales.
+- Reparación Domain+test+CHANGELOG bajo V17 en dev; A5_FAIL y autoría previa se conservan. CI .NET/seguridad/autorización/Scope Lock/V5 del nuevo SHA y revisión independiente por otra Task antes de A5_PASS. Rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-15 — V17 reparación R2 C01-03.M03.01 allowlist ordinal [Javier :20]
 - Repara defecto A5_FAIL detectado: el `Contains` de un `IReadOnlySet` con comparador `OrdinalIgnoreCase` podía aceptar una clave de configuración con casing no canónico pese al catálogo exacto.
 - Aplica comparación `StringComparison.Ordinal` y agrega prueba xUnit negativa para variante `UI.compactMode` y positiva para `ui.compactMode` con el mismo `HashSet`; sin introducir grants, endpoints ni persistencia.

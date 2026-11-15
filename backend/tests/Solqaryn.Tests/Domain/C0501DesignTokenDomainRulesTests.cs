@@ -80,6 +80,26 @@ public sealed class C0501DesignTokenDomainRulesTests
     }
 
     [Fact]
+    public void SuppliedCaseInsensitiveAllowlistCannotBypassExactCatalogKey()
+    {
+        IReadOnlySet<string> mismatchedCatalog = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "PRIMARY-COLOR"
+        };
+        var rejected = C0501DesignTokenDomainRules.Evaluate(Authority(), Token(), mismatchedCatalog);
+        Assert.Equal("UNKNOWN_OR_UNSAFE_TOKEN", rejected.Code);
+        Assert.False(rejected.AuthorizesThemeMutation);
+
+        IReadOnlySet<string> canonicalCatalog = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "primary-color"
+        };
+        var accepted = C0501DesignTokenDomainRules.Evaluate(Authority(), Token(), canonicalCatalog);
+        Assert.True(accepted.ReadyForTrustedApplicationReview);
+        Assert.False(accepted.AuthorizesTenantAccess);
+    }
+
+    [Fact]
     public void HtmlCssJavascriptAndExternalUrlsAreRejected()
     {
         Assert.Equal("UNSAFE_OR_UNTYPED_VALUE", Check(token: Token() with { TokenValue = "url(javascript:alert(1))" }).Code);
