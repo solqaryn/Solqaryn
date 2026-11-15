@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C09-02.M01.06 gates y liberacion condicional fidelizacion [Javier :10]
+- Establece G01–G16 como puertas causales, 12 pares P/N FUTUROS_NO_EJECUTADOS, fuentes M01.01–05 con blobs y condiciones de no-regresion para tenant A/B, ledger, antifraude, moderacion, consentimiento y posventa.
+- Separa puntos de CreditoCliente/Venta y saldo monetario, preserva EmpresaId=NULL sin ownership, A5 independiente y pruebas xUnit/MySQL 8.4/Angular/Playwright solo en etapas de codigo; cero runtime o campanas habilitados.
+- Entrega R0 limitada a este documento y CHANGELOG, claim V17 fila 1339/candado 2000001339, A0–A4 documentales sujetos a Scope Lock/V5 exact-SHA, BITACORA/readback y rollback git revert; sin QA/main/PROD.
+
 ## 2026-11-15 — V17 CI_REPAIR C07-02.M02.04 identificador de flag compatible con Scope Lock [Javier :40]
 - Corrige únicamente la nomenclatura propuesta de F05 a `StockReservation` para respetar el verificador de identidad del repositorio; no altera la semántica, defaults `OFF`, autorización, tenant, PSP, datos o runtime.
 - Fallo Scope Lock reproducido en el SHA inicial 6b2c7a5c; reparación dirigida y reevaluación de CI por nuevo SHA, sin deshabilitar reglas, verificadores ni pruebas; A5 sigue independiente.
