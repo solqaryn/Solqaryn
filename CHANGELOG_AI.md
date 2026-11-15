@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C01-04.M02.03 persistencia e índices del expediente universal [Javier :50]
+- Define P01–P12 registros conceptuales, IX01–IX08 índices/restricciones candidatos, seis pasos de migración FUTURA_NO_EJECUTADA y FT01–FT12 pares positivos/negativos FUTUROS_NO_EJECUTADOS.
+- Explicita ownership compuesto por tenant, paginación estable UTC+ID, idempotencia, versiones CAS, cuarentena de EmpresaId legacy nulo, adjuntos privados y pruebas A/B; no atribuye código o base de datos ejecutados.
+- Cambios exclusivamente documentales en dev, Scope Lock/V5 exigidos en SHA exacto, rollback git revert, A5 independiente pendiente; no EF/MySQL/API/QA/main/PROD/eventos.
+
 ## 2026-11-14 — V5 C01-04.M02.02 contratos API DTO y errores del expediente universal [Javier :30]
 - Documenta API01–12 operaciones propuestas, E01–14 errores, T01–14 pares positivos/negativos FUTUROS_NO_EJECUTADOS, cursores, idempotencia y version de observaciones/decisiones/adjuntos.
 - No crea endpoints, DTO compilados, MySQL, Angular, JWT/RBAC ni permisos: tenant A/B y recursos propios siempre se verificaran en backend, sin reutilizar auditoria existente por deduccion.
