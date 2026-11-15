@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C03-04.M02.04 configuracion tipada y flags de continuidad [Javier :40]
+- Especifica dieciseis claves CFG propuestas NO_IMPLEMENTADAS, scopes PLATFORM/TENANT/CI y reglas V01-V16 fail-closed, sin instalar configuracion ni alterar JWT/RBAC.
+- Documenta cuatro positivos y doce negativos FUTUROS_NO_EJECUTADOS sobre tenant A/B, restauracion descartable, flags, versionado y secretos.
+- Publica solo dos Markdown dev por fast-forward/CAS, Scope Lock/V5 exact-SHA y A5 independiente posterior; rollback git revert, sin MySQL, workers, QA/main/PROD.
+
 ## 2026-11-14 — V5 C01-04.M02.05 eventos conceptuales e idempotencia de expediente [Javier :50]
 - Define EV01–EV14 señales PROPUESTAS_NO_IMPLEMENTADAS, ID01–ID10 reglas futuras de idempotencia y LM01–LM12 limites de cuotas, retencion, correlacion, CAS y tenancy A/B.
 - Incluye FT01–FT12 positivos/negativos FUTUROS_NO_EJECUTADOS; niega entregas exactly-once, webhooks, workers o eventos runtime y preserva autorizacion de empresa/recurso/rol.
