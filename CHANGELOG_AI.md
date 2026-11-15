@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C02-03.M01.06 gates y rollback de ciclo de vida tenant [Javier :30]
+- Concilia M01.01–05 y A5 de antecesores, dieciseis gates G01–G16 y ocho rutas R01–R08 para alta, suspension, reactivacion, archivado y baja logica FUTURAS.
+- Distingue Empresa.Activa real de Empresa.Eliminado false NotMapped y los AC01–AC24 FUTUROS_NO_EJECUTADOS; sin soft-delete, worker, MySQL, datos, JWT nuevo ni runtime activo.
+- Solo Markdown, Scope Lock/V5 exact SHA y A5 independiente pendiente; rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C02-02.M02.05 senales futuras e idempotencia placement [Javier :30]
 - Define ocho senales SIG01–08 NO EMITIDAS, quince campos de sobre EVT01–15, catorce reglas fail-closed y diez pares P/N FUTUROS_NO_EJECUTADOS de migracion shared/dedicated.
 - Sin dispatcher, webhook, workers, tareas nuevas ni eventos reales; conserva JWT/RBAC/tenant A/B, SHA exacto, idempotencia y redaccion de secretos/PII.
