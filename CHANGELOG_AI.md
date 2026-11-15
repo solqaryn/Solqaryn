@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C06-03.M02.05 eventos conceptuales editoriales [Javier :00]
+- Documenta doce intenciones EV01-EV12, doce invariantes ID01-ID12 y doce pares PN01-PN12 FUTUROS_NO_EJECUTADOS para sitios, moderacion, contacto, horarios y mapas opcionales por tenant.
+- Conserva JWT/RBAC, separacion A/B, host/proxy sin autoridad, publicacion CAS, preview noindex, privacidad de ubicacion y fallback textual; ninguna cola, dispatcher, webhook, worker o evento runtime fue creado.
+- Auditorias A0-A4 documentales y A5 independiente pendiente; exigir Scope Lock/V5 exact-SHA y readbacks. Sin MySQL, API, mapas de terceros, DNS, QA/main/PROD; rollback git revert.
+
 ## 2026-11-15 — V5 C06-03.M02.04 configuracion tipada y flags editoriales/mapas [Javier :50]
 - Documenta 20 opciones futuras tipadas, ámbitos plataforma/tenant/site/location, defaults restrictivos y prioridad fail-closed sin código runtime.
 - Define 12 pares P/N FUTUROS_NO_EJECUTADOS de seguridad tenant A/B, host/forwarded, RBAC, publicación CAS, preview, contacto, horarios, mapas opt-in y cache.
