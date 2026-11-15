@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C15-05.M04.05 accesibilidad real de auditoría operativa [Javier :00]
+- Incorpora cuatro pruebas Playwright/Chromium para 320–1280 px, teclado y foco, landmarks/labels/contraste WCAG AA, y negación sin rol administrador; asserts ejecutables, no escenarios inventados.
+- Extiende únicamente el workflow de navegador V5 para incluir esta suite, sin desactivar controles ni cambiar concurrencia. Sesión sintética no equivale a JWT/API/tenant reales.
+- R1 frontend/test/CI/documentación; A4 CI exact-SHA aún requerida antes de LISTO, A5 por Task Javier independiente. Sin datos reales, QA/main/PROD ni permisos externos.
+
 ## 2026-11-15 — V17 C10-04.M03.04 adaptador aislado de caché y jobs sin grants [Javier :50]
 - Añade Infrastructure .NET10 aislado read-only con captura de operación allowlisted inmutable, tenant/actor/version scoped y reutilización de Domain/Application; nunca emite lease, queue, exportación, backup o grant R2.
 - Incorpora 12 xUnit de negativos de identidad, tenant A/B, versión, permiso revocado, mutation del allowlist, service grant, payload inválido, deadline, retry, cancelación y ausencia de capacidades. Requiere CI backend/security/auth causal.
