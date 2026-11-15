@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C07-03.M02.04 opciones tipadas y flags seguros inventario/compras [Javier :10]
+- Contrato R0 de OPT01–OPT14, VAL01–VAL16 y R01–R08 para configuración fail-closed por tenant, sucursal, almacén y RBAC; ningún appsettings, IOptions, flag, EF, API o dato real modificado.
+- Diez pares T01–T10 FUTUROS_NO_EJECUTADOS sobre A/B, permisos, revocación, rangos, CAS, caché, costos, idempotencia y fallo de proveedor; métricas runtime NO_MEDIDO.
+- Solo dos Markdown y encabezado con viñetas contiguas; A0–A4 documental/Scope Lock/V5 por SHA, BITACORA/readback, A5 pendiente de otro Javier; sin QA/main/PROD.
+
 ## 2026-11-15 — V16 C07-03.M02.03 contrato documental de persistencia e índices para inventario/compras [Javier :10]
 - Define P01–P12 de persistencia por tenant, IDX01–IDX12 candidatos y MIG01–MIG08 de migración futura reversible, sin crear DDL, tablas, índices, EF migration ni tocar existencias o costos reales.
 - Establece F01–F12 positivos/negativos FUTUROS_NO_EJECUTADOS, con MySQL 8.4 aislado y Category=Integration exigibles solamente en implementación R2; los resultados runtime actuales son NO_MEDIDO.
