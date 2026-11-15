@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C14-02.M03.03 autorización fail-closed seguridad [Javier :50]
+- Añade puerta Application `C1402SecurityAcceptanceAuthorizationGate` sobre contrato previo Domain/Application, lector backend de evidencia confiable, exact-SHA, recurso, membresía/JWT/RBAC y aislamiento tenant A/B; nunca concede acceso ni certifica seguridad HTTP/PROD.
+- Incluye doce xUnit para negativos de spoofing, revocación, BOLA, SHA, overrides antes del lector, superficies, prueba insegura, fuente ausente y cancelación, más flujo válido no autorizante. .NET Release, seguridad, autorización, Scope Lock y V5 exact SHA son obligatorios para LISTO, sin PASS inventado.
+- R2 aislado: sin EF/MySQL, API/HTTP, navegador, proveedores ni backup real; A5 solo por revisor Javier distinto, candado V17 con BITACORA/readback, rollback git revert, no QA/main/PROD.
+
 ## 2026-11-15 — V17 C12-04.M03.02 reparación defensiva de IDs y snapshot R2 [Javier :40]
 - Endurece servicio Application para rechazar IDs actor/tenant no canónicos o mayores de 128 antes de consultar el proveedor de evidencias; no aceptar caracteres de control, URLs ni identificadores con separadores inseguros.
 - Rechaza snapshots nulos de proveedor defectuoso con EVIDENCE_PROVENANCE_MISMATCH sin aceptar veredictos de autoridad ni hacer SQL/cutover; agrega dos xUnit negativos de regresión.
