@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C04-02.M02.01 entidades y ownership de contratos SaaS [Javier :50]
+- Define diseño exclusivamente documental de 16 objetos contractuales, sus relaciones por EmpresaId y 18 invariantes fail-closed; diferencia contrato legal futuro de Suscripcion SaaS existente.
+- Registra 12 pares de escenarios positivos/negativos FUTUROS, puertas D01–D08 económicas aún abiertas y restricciones JWT/RBAC/tenant A/B, idempotencia y auditoría sin activar runtime, MySQL, pagos ni eventos.
+- Entrega única en dev con diff de dos Markdown y A0–A4 documentales; requiere Scope Lock/V5 exact-SHA, readback institucional y A5 independiente de otro Javier, nunca QA/main/PROD.
+
 ## 2026-11-15 — V5 C05-01.M01.06 cierre documental del sistema de diseño [Javier :40]
 - Consolida cinco documentos M01 de design tokens y componentes con A5 independiente, 16 barreras fail-closed, diez pares positivos/negativos futuros y ocho reversas condicionadas.
 - Conserva decisiones D01–D08 pendientes, riesgo de foco/contraste/responsive/branding tenant A-B y pruebas Angular/Playwright NO_EJECUTADAS; el menú y el tema no conceden JWT/RBAC.
