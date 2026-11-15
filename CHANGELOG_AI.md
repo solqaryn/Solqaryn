@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C06-03.M02.04 configuracion tipada y flags editoriales/mapas [Javier :50]
+- Documenta 20 opciones futuras tipadas, ámbitos plataforma/tenant/site/location, defaults restrictivos y prioridad fail-closed sin código runtime.
+- Define 12 pares P/N FUTUROS_NO_EJECUTADOS de seguridad tenant A/B, host/forwarded, RBAC, publicación CAS, preview, contacto, horarios, mapas opt-in y cache.
+- Solo contrato documental de A0–A4 con Scope Lock/V5 exact-SHA; A5 otra Task Javier, sin geolocalización, API, migraciones, eventos ni QA/main/PROD; rollback git revert.
+
 ## 2026-11-15 — V5 C06-03.M02.03 persistencia documental editoriales [Javier :40]
 - Propone doce estructuras conceptuales tenant-bound, diez índices, seis fases condicionadas de migración y doce pares futuros de fixtures de editoriales, contactos, horarios y mapa opcional.
 - Conserva separación A/B, host/proxy no confiables, editor/moderador/publicador, preview noindex, SEO/caché y fallback textual sin ubicación privada ni proveedores reales.
