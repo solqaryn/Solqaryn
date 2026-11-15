@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C06-04.M02.03 persistencia conceptual portal cliente [Javier :10]
+- Propone doce agrupaciones conceptuales de datos, diez índices/constraints y ocho pares de fixtures FUTUROS_NO_EJECUTADOS; cero tablas, migraciones EF, seeds o accesos MySQL reales.
+- Preserva tenant A/B y cliente A1/A2, FK compuesta, CAS, challenge hash único uso, grants privados y reversión transaccional como requisitos futuros.
+- Publicación documental SHA exacto Scope Lock/V5, A5 independiente pendiente y rollback git revert; sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C06-04.M02.02 API/DTO de portal cliente [Javier :10]
 - Define ocho rutas futuras propuestas, DTO de confianza, doce errores seguros y ocho parejas de aceptación FUTUROS_NO_EJECUTADOS; no implementa endpoints, OAuth, MySQL, Angular, workers ni proveedores.
 - Mantiene aislamiento por tenant A/B y cliente A1/A2, separación JWT cliente/ERP, recuperación no enumerable, versión CAS, grants temporales, no-store y denegación por defecto.
