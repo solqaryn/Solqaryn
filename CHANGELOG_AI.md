@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C02-01.M03.03 resolucion segura login 0/1/N [Javier :10]
+- Implementa politica Application .NET 10 de identidad/JWT respaldados por lector backend, membresias actuales, RBAC, sesion, preferencia por usuario, revocacion y cambio seguro: no concede permisos HTTP ni JWT.
+- Anade 15 pruebas xUnit de tenant A/B, sesion vencida, cross-account, host/role spoofing, error de proveedor, limites y cancelacion; CI backend/security/auth/Scope Lock/V5 causal obligatoria.
+- Riesgo R2: solo politica ejecutable Application, sin modificar API/EF/MySQL/UI/produccion; exige integracion futura y A5 ajena, git revert normal.
+
 ## 2026-11-15 — V17 C15-03.M03.05 matriz negativa cruzada seguridad y tenancy [Javier :00]
 - Añade catorce métodos xUnit reales sobre Domain/Application/Infrastructure aislados: tenant A/B, sucursal, propietario, SHA, roles, revocación, archivos, jobs, control plane, bypass, enumeración y cancelación.
 - Los preflights nominales nunca conceden lectura, descarga, escritura, job ni control plane; exigir Backend Release, seguridad multiempresa, Authorization, Scope Lock y V5 exact-SHA antes de LISTO.
