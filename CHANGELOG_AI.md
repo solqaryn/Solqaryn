@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C13-03.M02.06 contrato de salida rendimiento y ligereza [Javier :10]
+- Define gates G01–G16 de budget, seguridad, tenant, accesibilidad, navegación y pruebas; T01–T12 positivos/negativos FUTUROS_NO_EJECUTADOS (0/12), RB01–RB08 de reversión.
+- Mantiene SIN_RESOLVER presupuesto de bundle 650–750 KB frente a 1–2 MiB y métricas LCP/INP/CLS/p95/costos NO_MEDIDO; no se atribuye Playwright ni benchmark real.
+- Únicamente R0 Markdown en dev con FF/CAS, Scope Lock/V5 exact SHA, A0–A4 y A5 independiente otra Javier, sin QA/main/PROD, MySQL ni runtime.
+
 ## 2026-11-15 — V16 C11-04.M02.06 salida contractual de observabilidad [Javier :10]
 - Establece G01–G16 de autorización tenant/JWT/RBAC, privacidad, idempotencia, cardinalidad, SLI/SLO, diagnóstico, costos, CI y A5 independiente; define RB01–RB08 de contención/rollback futuro.
 - Especifica T01–T12 positivos/negativos FUTUROS_NO_EJECUTADOS (0/12) y SLO/p95/p99/costos NO_MEDIDO. No activa collector, exporter, alarmas, API, MySQL, workers, browser ni proveedor.
