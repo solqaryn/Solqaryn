@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C11-02.M02.04 configuración tipada y flags API modular [Javier :50]
+- Contrato documental de 16 opciones tipadas propuestas, 18 validaciones y 10 pares P/N FUTUROS_NO_EJECUTADOS: precedencia plataforma/tenant, JWT/RBAC, soporte lectura, CORS, rate limits, idempotencia y errores sin secretos.
+- Contrasta API ASP.NET Core 10, Program.cs, AuthController, EF/MySQL y preparación M01 sin modificar appsettings, DI, endpoints, código, esquema, procesos, permisos, eventos ni infraestructura.
+- Dos Markdown en dev, fast-forward/CAS, A0–A4 con Scope Lock/V5 exact-SHA, A5 por otra Task Javier y git revert normal; jamás QA/main/PROD.
+
 ## 2026-11-15 — V5 C11-02.M02.03 persistencia/índices/fixtures propuestos para API modular [Javier :00]
 - Documenta 12 proyecciones de datos, 8 índices candidatos NO CREADOS, 6 etapas futuras de migración y 10 fixtures positivos/negativos FUTUROS_NO_EJECUTADOS, con aislamiento tenant A/B y compatibilidad de API.
 - Coteja AppDbContext, IUsuarioRepository, UsuarioEmpresa, IUsuarioScopeService, PagedRequest y el interceptor de soporte, sin cambios en EF/MySQL, migraciones o datos.
