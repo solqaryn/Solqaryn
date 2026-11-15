@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C09-01.M02.01 CRM universal: entidades y ownership conceptual [Javier :20]
+- Especifica 16 conceptos E01-E16, 20 invariantes INV01-INV20, relaciones por Empresa y 12 pares P/N FUTUROS_NO_EJECUTADOS para Cliente, timeline, actividad, oportunidad, segmentos, consentimiento e idempotencia.
+- Preserva Cliente.EmpresaId=NULL como SIN_OWNER_CONFIRMADO, JWT/RBAC y tenant A/B fail-closed; decisiones D01-D08 abiertas. No implementa tablas, endpoints, mensajería, migraciones ni pruebas runtime; A0-A4 documentales y A5 independiente exigidos.
+- Un solo scope M02.01, dos archivos Markdown; Scope Lock y procedencia V5 exact-SHA, claim exclusivo V17 fila 1304, BITACORA/readback y rollback por git revert; sin QA/main/PROD ni secretos.
+
 ## 2026-11-15 — V17 C13-02.M01.06 accesibilidad: gates, rollback y liberación [Javier :10]
 - Establece 16 gates bloqueantes y 12 pares de escenarios FUTUROS_NO_EJECUTADOS sobre teclado/foco, formularios, modal, contraste, reflow, lector, tenant A/B y evidencias WCAG sin atribuir certificación normativa o prueba browser.
 - Cierra contrato R0 M01 con A0–A4 sujetos a Scope Lock/V5 exact-SHA y BITACORA/readback; preserva S01–S10 NO_VERIFICADOS, D01–D10 ABIERTAS y A5 de otra Task Javier antes de M02.
