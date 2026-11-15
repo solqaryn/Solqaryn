@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C07-04.M03.05 lote acotado de revisión comercial sin efectos [Javier :40]
+- Implementa procesador Infrastructure .NET 10 de hasta 16 tickets; reutiliza adaptador de lectura M03.04 con validación backend de tenant, actor, pertenencia y permiso. Idempotencia intra-lote y rechazos de comandos inconsistentes, sin transacciones, pagos, exportaciones ni hosted worker.
+- Diez xUnit adversariales: tenant B, revocación, SHA, importe, versión, divisa, operación fiscal, duplicado/replay, batch size y cancelación. CI Release, Seguridad multiempresa, Authorization, Scope Lock y V5 requeridos por SHA.
+- V15 R2 / V17 single-active, A5 revisor Javier distinto; PSP/MySQL/HTTP no aplican a este código aislado, integración real pendiente de otro scope; revert normal, sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C02-01.M03.04 preferencia tenant aislada read-only [Javier :30]
 - Integra adapter Infrastructure .NET 10 no autoritativo con instantánea de preferencia por usuario, validación ordinal de actor/revisión/SHA y copia de membresías para evitar mutación externa.
 - Incorpora 16 pruebas xUnit genuinas de tenant 0/1/N, preferencia revocada/ajena, sesión caducada, roles, fraude de browser/host, CAS, casos negativos y cancelación.
