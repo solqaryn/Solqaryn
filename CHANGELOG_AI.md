@@ -1,3 +1,9 @@
+## 2026-11-15 — V17 C03-04.M03.05 worker aislado read-only de incidentes [Javier :20]
+- Añade componente Application .NET 10 para previsualizar hasta 24 tickets de incidentes sin activar hosted worker, proveedor o restauracion real; resultados son decisiones fail-closed y nunca autorizan lectura, mutacion, evidencias ni backups.
+- Incorpora suite xUnit con positivos, negativos y fronteras para tenant A/B, sucursal, SHA, idempotencia ordinal, procedencia, revocacion, sanitizacion, version, mutacion/restore, lotes limitados y cancelacion.
+- Riesgo V15 R2, una microtarea propia EN_PROGRESO V17 y un commit causal; A0-A4 dependen de GitHub-hosted CI backend, seguridad, autorizacion, Scope Lock y procedencia V5 exact-SHA. A5 debe hacerla otra Task Javier.
+- No hay JWT HTTP real, EF/MySQL, persistencia, cola externa, secretos, credenciales, IAM vivo, API ni autorizacion de QA/main/PROD; rollback por git revert normal.
+
 ## 2026-11-15 — V17 reparación CI C14-02.M03.05 denegación por revocación [Javier :00]
 - Repara una única aserción xUnit cuyo código esperaba RESOURCE_OR_PERMISSION_REVOKED aunque el gate Application seguro rechaza antes con CURRENT_AUTHORIZATION_TENANT_AND_AUDIT_REQUIRED.
 - Causa exacta acreditada por GitHub Actions seguridad multiempresa job 132996317941: 1620 PASS, 1 FAIL, error de comparación en FileDownloadIsNeverGrantedWhenLinkExpiredOrOwnershipRevoked, línea 158; no degradar denegación ni desactivar tests.
