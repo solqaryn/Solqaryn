@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-01.M02.06 contrato de salida y gates de cobertura [Javier :30]
+- Concilia C15-01.M01.01–06, M02.01–05 y C00-03.M01.06 con LISTO+A5 de autor distinto, blobs Git, PLAN/COLA/DAG y BITACORA; no certifica cobertura completa de 2340 IDs.
+- Define B01–B16 bloqueos, RB01–RB10 rollback y AT01–AT12 positivos/negativos FUTUROS_NO_EJECUTADOS para trazabilidad, CI, concurrencia, seguridad JWT/RBAC/tenant A/B y A5.
+- Sólo dos Markdown en dev por fast-forward/expected HEAD, Scope Lock y procedencia V5 exact-SHA, A5 ajeno pendiente y git revert; sin runtime, QA/main/PROD ni eventos.
+
 ## 2026-11-14 — V5 C15-05.M02.06 gates y contrato de salida de auditoria operativa [Javier :30]
 - Concilia M01.01–06 y M02.01–05 en LISTO+A5 independiente con blobs originales, mas DAG/COLA calculados; no presupone certificacion global de 2340 IDs.
 - Define B01–B16 gates, RB01–RB10 rollback y A01–A12 pares positivos/negativos FUTUROS_NO_EJECUTADOS para owner, CI exact-SHA, auditoria append-only y aislamiento JWT/RBAC/tenant A/B.
