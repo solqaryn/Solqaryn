@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C01-02.M03.01 capabilities Domain fail-closed [Javier :30]
+- Implementa reglas .NET 10 Domain de intersección ordinal de capability, empresa/rol/membresía, ownership recurso, sucursal, plan/rubro y denylist; ningún entitlement crea grant RBAC.
+- Añade 13 pruebas xUnit positivas/negativas contra actor/tenant cruzado, revocación, sucursal ajena, plan vencido, permiso faltante, matriz incompleta y capability deshabilitada; PASS sólo con CI del SHA.
+- No activa JWT/HTTP, EF/MySQL, roles, flags, cobros, workers ni permisos de runtime; exige A0–A4 y A5 independiente, Scope Lock STRICT, dev únicamente y git revert.
+
 ## 2026-11-15 — V5 C05-04.M03.04 adaptador aislado de snapshots UI [Javier :50]
 - Implementado Infrastructure .NET 10 con snapshot de solo lectura, bounds de recurso/SHA y aislamiento A/B; nueve xUnit positivos, adversariales, frontera y cancelación para Application/Domain sin autorizar acceso.
 - No se incorpora DI, API, EF/MySQL, cache real, Angular, navegador, mediciones CWV, credenciales ni datos productivos; el snapshot por sí solo no certifica membresía/JWT externos.
