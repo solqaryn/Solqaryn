@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C06-01.M02.04 configuracion tipada y flags inertes de landing SaaS [Javier :30]
+- Define catorce opciones conceptuales OPT01-OPT14, dieciseis validaciones V01-V16 y ocho pares P/N FUTUROS_NO_EJECUTADOS de rutas, planes, demo, contacto, legales, SEO, tenant y accesibilidad.
+- No escribe flags efectivos, frontend, backend, API, EF/MySQL, workers, SMTP, catalogos de precios, secretos, QA/main/PROD ni servicios; JWT/RBAC sigue en servidor.
+- Entrega V15 R0 individual, Scope Lock STRICT y procedencia V5 exact-SHA, readback y A5 pendiente de otra Task Javier; rollback git revert documental.
+
 ## 2026-11-15 — V16 C06-01.M02.02 contrato API/DTO seguro para landing SaaS [Javier :40]
 - Define ocho operaciones logicas y ocho DTO conceptuales, doce errores seguros, dieciseis validaciones y diez pares positivos/negativos FUTUROS_NO_EJECUTADOS para propuesta, planes, demo, contacto, legal y SEO.
 - Protege rutas privadas/ERP, JWT/RBAC/tenant A/B, consentimiento, idempotencia y PII; D01-D08 siguen PENDIENTES. No crea API HTTP, Angular, MySQL/EF, SMTP, indexacion ni runtime.
