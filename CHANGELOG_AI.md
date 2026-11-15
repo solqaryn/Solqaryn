@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C01-03.M03.02 servicio Application de configuración segura R2 [Javier :10]
+- Implementa Application .NET10 con lecturas tipadas de identidad confiable y catálogo por tenant backend, compara tenant, SHA, versión y clave canónica y delega al Domain validado.
+- Agrega nueve xUnit positivos/negativos para revocación, RBAC, A/B, catálogos falsos, variantes de casing, CAS pendiente, datos inseguros, errores y cancelación; la ruta favorable nunca escribe ni autoriza un override.
+- No registra DI/endpoint, ni SQL/EF/MySQL, flags efectivos o operaciones productivas; exige CI Release/seguridad/autorización/Scope Lock/V5 SHA causal, A5 de Task Javier distinta y rollback mediante git revert.
+
 ## 2026-11-15 — V17 C11-04.M03.03 gate autenticado tenant observabilidad R2 [Javier :00]
 - Implementa gate .NET 10 de verificacion previa con principal JWT/membresia/RBAC vigente de fuente backend, sin tenant del cliente, lector particionado por identidad autenticada y cotejos Ordinal de tenant A/B.
 - Reutiliza Application M03.02 y Domain M03.01, agrega xUnit adversariales de revocacion, rol/grant, SHA, senal/correlacion, PII, NO_MEDIDO, fuente ajena y cancelacion; requiere GitHub Actions backend Release/seguridad/autorizacion/Scope Lock/V5 SHA causal.
