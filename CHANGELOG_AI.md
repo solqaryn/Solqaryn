@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C12-02.M02.01 entidades y ownership frontend separado [Javier :30]
+- Modelo documental R0: doce entidades E01-E12, dieciséis invariantes INV01-INV16 y diez pares positivos/negativos T01-T10 FUTUROS_NO_EJECUTADOS.
+- Rutas, bundle, cache, SPA, manifest y tenant conservan dueño y límites; edge/CDN no sustituye JWT/RBAC backend; no servicios desplegados ni DNS cambiados.
+- V15 A0-A4 Scope Lock/V5 por SHA y readback; A5 independiente requerido; D01-D10 de M01 siguen PENDIENTES. Sin QA/main/PROD.
+
 ## 2026-11-15 — V16 C13-03.M01.06 gates y rollback de rendimiento/ligereza [Javier :30]
 - Contrato documental R0: consolidacion de M01.01-05+A5, 16 barreras G01-G16, ocho acciones RB01-RB08 y diez pares P/N T01-T10 FUTUROS_NO_EJECUTADOS.
 - Budget actual 650-750 KB frente a propuesta 1-2 MiB permanece discrepancia ABIERTA; LCP/INP/CLS y latencias NO_MEDIDO hasta CI/browser y dispositivos reproducibles.
