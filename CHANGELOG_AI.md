@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C02-02.M03.02 Application preflight shared/dedicated [Javier :50]
+- Implementado contrato de lector de evidencia backend, ownership tenant y catálogo de binding para Domain de placement; el veredicto nunca autoriza conexión, migración ni cutover.
+- Incorporadas doce pruebas xUnit con escenarios de JWT/RBAC, A/B, DSN, snapshot, CAS, restore, idempotencia y cancelación; CI real pendiente de acreditar.
+- Riesgo V15 R2 y SINGLE_ACTIVE_DEV, A0–A4 exact-SHA y A5 independiente; sin EF/MySQL/HTTP/UI, DNS, QA/main/PROD ni secretos.
+
 ## 2026-11-15 — V16 C02-01.M03.02 Application tenant resolution preflight [Javier :10]
 - Servicio Application fail-closed no autorizante para tenant server-side, host confiable, recurso/sucursal A/B, revocación, membership y JWT verificados por backend; no permite host/rol/tenant/fallback del cliente.
 - Doce pruebas xUnit adversariales con switch A→B, host spoof, store unavailable, tenant mismatch, revocación, sucursal B y datos ausentes; CI backend Release/seguridad/autorización exact SHA obligatoria.
