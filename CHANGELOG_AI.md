@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C06-01.M02.01 entidades y ownership conceptual de landing SaaS [Javier :10]
+- Define 14 entidades E01–E14, 18 invariantes INV01–INV18 y diez parejas P/N FUTUROS_NO_EJECUTADOS para contenido público, planes, legal, SEO, contacto y demo sin cruzar tenants.
+- Preserva autoridad comercial/legal D01–D08 PENDIENTES, backend JWT/RBAC/tenant A/B, privacidad, CAS, consentimiento, SEO allowlisted y guards ERP; solo diseño documental sin Angular, .NET runtime, EF/MySQL, rutas, SMTP o publicación.
+- Entrega individual V16/V15 R0 con A0–A4 documentales y checks Scope Lock/V5 exact-SHA, A5 pendiente de otra Task Javier, rollback git revert; QA/main/PROD no autorizados.
+
 ## 2026-11-15 — V16 C05-01.M02.06 dependencias y salida de design system [Javier :30]
 - Define dieciseis puertas de M03-M06, ocho procedimientos de rollback y ocho pares P/N FUTUROS_NO_EJECUTADOS para tokens, temas, accesibilidad, API, MySQL, seguridad, tenant A/B y version CAS.
 - Integra solo documentos M02.01-.05 con A5 independientes y blobs auditados; no implementa Angular, CSS, .NET, EF, MySQL, eventos, UI, secretos, migracion ni deploy.
