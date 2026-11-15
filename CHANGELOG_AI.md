@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C02-02.M02.06 contrato de salida shared/dedicated [Javier :00]
+- Consolida cinco contratos M02 con A5 independiente, dieciseis condiciones SAL y diez pares positivos/negativos FUTUROS_NO_EJECUTADOS para placement con aislamiento tenant A/B.
+- Deja M03 bloqueado hasta sus prerequisitos LISTO+A5, pruebas runtime dirigidas y autorizaciones; no hay router, EF/MySQL, eventos, flags, backup ni restore ejecutados.
+- Entrega documental en dev, Scope Lock y procedencia V5 exact SHA, A0–A4 dirigidas, A5 pendiente por otra Task Javier y rollback Git normal; sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C12-04.M01.06 salida M01 MySQL/cutover documental [Javier :40]
 - Consolida M01.01–05 LISTO+A5 y blobs originales, dieciséis bloqueos B01–B16 de exportación, restore, aislamiento tenant, checks y autorización humana futura.
 - Define doce pares positivos/negativos FUTUROS_NO_EJECUTADOS y diez rutas RB de recuperación sin afirmar DDL, dump, backup, restore, métricas RTO/RPO ni cutover efectuados.
