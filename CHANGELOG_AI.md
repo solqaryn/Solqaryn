@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C06-04.M03.03 gate Authorization de portal cliente [Javier :50]
+- Implementado Application .NET 10 que combina evidencia backend, JWT/token/sesión, membership/RBAC, recurso/tenant A/B, auditoría y versión contra preflight Application/Domain existente; respuestas siempre no autorizantes.
+- Incluidos nueve métodos xUnit con asserts positivos, negativos, revocación, error, frontera, cross-tenant, propiedad, token y cancelación; no afirmar JWT HTTP real ni permisos de producción.
+- Riesgo V15 R2. CI backend/seguridad/autorización/Scope Lock/V5 por SHA pendiente antes de LISTO; A5 independiente y git revert como rollback, sin DB/UI, QA/main/PROD.
+
 ## 2026-11-15 — V5 C02-04.M03.04 adaptador aislado de consola global [Javier :50]
 - Implementado Infrastructure .NET 10 de snapshot read-only para el gate Application de control plane: actor, tenant, SHA y evidencia se verifican por identidad exacta, sin grants, proveedores, DI ni persistencia real.
 - Añadidos nueve métodos xUnit positivos, negativos, adversariales y frontera para tenant A/B, revocación, MFA, permisos de plataforma, bypass cliente, cancelación, error y versión obsoleta.
