@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C07-04.M03.04 adaptador aislado de documentos comerciales R2 [Javier :10]
+- Agrega Infrastructure read-only con fuentes de identidad/roles vigentes y documento por tenant+ID, validando pertenencia A/B, NULL legado, version, SHA y referencia antes de reutilizar la puerta Application comercial.
+- Anade xUnit positivos, negativos, limites, revocacion, origen indisponible, identidad, permisos, monto, version y cancelacion; requiere CI backend Release, seguridad, autorizacion, Scope Lock y procedencia V5 en SHA causal.
+- El adaptador no se registra en DI ni ejecuta pagos, facturas, SQL, migraciones, PSP, HTTP, exportacion o transacciones; resultado siempre sin permiso de efecto, A5 independiente y rollback git revert sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C15-01.M03.04 adaptador aislado read-only de requisitos [Javier :50]
 - Implementa adaptador .NET Infrastructure con puerto de snapshot institucional verificado, SHA exacto, catálogo ordinal, evidencia de lector y capacidad acotada; compone Application/Domain existentes sin leer Sheets directamente ni habilitar A5/escritura o declarar cobertura completa.
 - Añade 12 xUnit positivos/negativos, incluyendo regresión de `IReadOnlySet` ordinal-insensible, fuente falsa, SHA, duplicados, estados, capacidad, revisor y cancelación; backend Release, seguridad, Scope Lock y V5 requeridos en SHA antes de LISTO.
