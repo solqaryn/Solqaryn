@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C00-04.M04.01 ruta protegida de gobierno de cambios [Javier :20]
+- Implementa una superficie Angular standalone, OnPush, responsive y accesible para consultar la secuencia contractual de decisiones, sin datos institucionales en vivo ni acciones operativas.
+- La nueva ruta lazy `plataforma/gobierno-cambios-v5` exige `plataformaGuard`, que revalida la sesión frente al backend; agrega pruebas Angular positivas/negativas de guard, navegación y ausencia de permisos/operaciones.
+- Scope Lock STRICT en dev, A0–A4 con CI de frontend y procedencia V5 exact-SHA; A5 corresponde a otra Task Javier. Sin endpoints, JWT/RBAC, MySQL, eventos, webhooks, QA/main/PROD; rollback `git revert` normal.
+
 ## 2026-11-15 — V5 C03-03.M02.05 contrato inerte de eventos e idempotencia de auditoria [Javier :10]
 - Documenta 12 eventos futuros, 16 campos de sobre saneado, diez invariantes de retries y 12 pares positivos/negativos FUTUROS_NO_EJECUTADOS para auditoría de seguridad por tenant.
 - Separa decision JWT/RBAC backend, correlacion, identidad del efecto e idempotencia; eventos historicos no conceden grants, no exponen PII/JWT y auditoría strict debe fallar cerrado.
