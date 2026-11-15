@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C06-04.M01.06: salida de preparación del portal de cliente [Javier :20]
+- Relaciona cinco fuentes documentales originales y documenta B01–B16 bloqueos de seguridad, H01–H08 de contrato M02 y RB01–RB08 reversión del portal consumidor multiempresa.
+- Preserva cuenta storefront ya existente sin certificar recuperación, pedidos ajenos, membresías ni descargas; pruebas P/N FUTURAS NO_EJECUTADAS, A/B y RBAC servidor pendientes.
+- Solo dos Markdown en dev, Scope Lock y V5 exact SHA antes de LISTO, A5 independiente posterior; sin APIs, migraciones, providers, webhooks, secrets ni QA/main/PROD.
+
 ## 2026-11-15 — V5 C06-02.M01.06: contrato de salida de landing por tenant [Javier :20]
 - Cierra el contrato documental M01 con 16 bloqueos G01–G16, seis reglas de handoff M02 y ocho rutas de rollback RB01–RB08; liga cinco documentos originales por sus blobs Git.
 - Conserva como futuros NO_EJECUTADOS los oráculos positivos/negativos, aislamiento A/B, host binding, noindex, RBAC y pruebas HTTP/MySQL/Playwright; no activa landing, dominios, DNS, R2, eventos ni despliegues.
