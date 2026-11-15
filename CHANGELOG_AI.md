@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-03.M01.03: fuentes y brechas de auditoría security/tenancy [Javier :10]
+- Inventaría quince rutas y blobs Git reales de filtros JWT/RBAC/tenant, middleware, consultas y escritura EF, control plane, storefront y tests; lista explícita sin declarar suites ejecutadas ni cobertura total.
+- Identifica doce brechas G01–G12 como NO_VERIFICADAS/FUTURAS y mapea NR01–NR16 e IO/T anteriores; la dependencia de la cuarentena del bypass EF requiere prueba integrada, no se declara vulnerabilidad.
+- Solo Markdown y CHANGELOG, A5 independiente pendiente, rollback git revert; sin nuevos endpoints, DB, workers, secretos, QA/main/PROD ni tests de runtime atribuidos.
+
 ## 2026-11-14 — V5 C15-03.M01.02: actores e interfaces de auditoría de seguridad/tenancy [Javier :10]
 - Delimita doce actores A01–A12 y doce entradas/salidas IO01–IO12, diferenciando JWT/RBAC/empresa/sucursal, soporte, tienda pública, archivos y jobs futuros sin inventar endpoints.
 - Define T01–T10 positivos/negativos FUTUROS_NO_EJECUTADOS para fronteras cliente/API, membresía, EF, asociaciones, Host público, soporte, medios, worker y auditoría; fuentes Git reales con blobs.
