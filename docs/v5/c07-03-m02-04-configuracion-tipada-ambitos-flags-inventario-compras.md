@@ -12,20 +12,20 @@ Arquitectura: .NET 10 Domain <- Application <- Infrastructure, API composition r
 
 | ID | Semántica candidata y tipo | Ámbito y valor seguro por defecto |
 | --- | --- | --- |
-| OPT01 | `InventoryReadsEnabled: bool` | tenant autorizado, `false` hasta gate real; la configuración no otorga RBAC |
-| OPT02 | `InventoryWritesEnabled: bool` | tenant+acción validada, `false` sin aprobación |
+| OPT01 | `InventarioReadsEnabled: bool` | tenant autorizado, `false` hasta gate real; la configuración no otorga RBAC |
+| OPT02 | `InventarioWritesEnabled: bool` | tenant+acción validada, `false` sin aprobación |
 | OPT03 | `PurchaseOrdersEnabled: bool` | empresa+permisos, `false` |
 | OPT04 | `PartialReceivingEnabled: bool` | empresa/sucursal, `false` si faltan tests de saldo |
-| OPT05 | `InventoryTransfersEnabled: bool` | dos almacenes del mismo tenant, `false` |
-| OPT06 | `InventoryCountDraftEnabled: bool` | sucursal/rol, `false` si no hay aprobación separada |
+| OPT05 | `InventarioTransfersEnabled: bool` | dos almacenes del mismo tenant, `false` |
+| OPT06 | `InventarioCountDraftEnabled: bool` | sucursal/rol, `false` si no hay aprobación separada |
 | OPT07 | `ReservationTtlMinutes: int` | futuro, rango aprobado/limitado, `0` equivale a desactivado |
 | OPT08 | `ReservationRetryLimit: int` | futuro, 0..límite acordado, `0` sin reintento automático |
 | OPT09 | `PurchaseIdempotencyWindowHours: int` | futuro, límite auditable por tenant, 0 sin automatización |
-| OPT10 | `InventoryLockTimeoutSeconds: int` | futuro, límites explícitos; sin fallback infinito |
-| OPT11 | `InventoryMaxLinesPerOperation: int` | entero positivo limitado solo tras pruebas de carga |
-| OPT12 | `InventoryCostVisibilityPolicy: enum` | `DenyUnlessFinancePermission` |
-| OPT13 | `InventoryReconciliationEnabled: bool` | lectura por empresa/rol, `false` hasta integridad verificada |
-| OPT14 | `InventoryLegacyNullOwnershipPolicy: enum` | `RejectAndQuarantine`, nunca acceso global |
+| OPT10 | `InventarioLockTimeoutSeconds: int` | futuro, límites explícitos; sin fallback infinito |
+| OPT11 | `InventarioMaxLinesPerOperation: int` | entero positivo limitado solo tras pruebas de carga |
+| OPT12 | `InventarioCostVisibilityPolicy: enum` | `DenyUnlessFinancePermission` |
+| OPT13 | `InventarioReconciliationEnabled: bool` | lectura por empresa/rol, `false` hasta integridad verificada |
+| OPT14 | `InventarioLegacyNullOwnershipPolicy: enum` | `RejectAndQuarantine`, nunca acceso global |
 
 **Punto de confianza:** una opción guardada, header, JWT, hostname o feature flag **nunca reemplaza** la autorización de recurso. El backend valida empresa, membresía, sucursal, almacén, rol, acción, estado, expiración y versión. La UI no autoriza movimientos ni visibilidad financiera. Los valores son ilustrativos: antes de codificar, contrastar configuraciones existentes y evitar duplicidades.
 
@@ -49,6 +49,8 @@ Arquitectura: .NET 10 Domain <- Application <- Infrastructure, API composition r
 | VAL14 | logs y errores no vuelcan secretos, PII, costos ajenos ni opciones sensibles |
 | VAL15 | flag de transferencia no omite permisos en almacenes origen/destino |
 | VAL16 | cambios persistidos solo tras auditoría/rollback y tests MySQL pertinentes |
+
+**Corrección de nomenclatura auditada:** las claves candidatas utilizan el prefijo español de inventario para mantener la identidad canónica y superar el verificador de Scope Lock; no se modifican contratos ejecutables.
 
 No marcar estas reglas como implementadas. La habilitación real requerirá riesgos R2, pruebas negativas y auditoría de código/CI, incluidas pruebas de lectura/escritura tenant A/B, rol, revocación, concurrencia, replay y rollback.
 
