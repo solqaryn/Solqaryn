@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 reparación CI C03-04.M03.05 params null xUnit [Javier :20]
+- Repara asercion de borde sin alterar comportamiento productivo: en C# un argumento null para metodo params nullable array significa lote null, no un array con un ticket null; la prueba ahora pasa explicitamente un array de un elemento null.
+- Diagnostico causal: Backend Release job 133000165419 y Backend tests 133000165134 fallaron 1/4703 xUnit en NullEmptyMalformedAndOverLimitBatchesFailClosed, esperado INCIDENT_TICKET_INVALID frente a INCIDENT_BATCH_REQUIRED; la implementacion seguia denegando correctamente, 4702 PASS, ningun acceso concedido.
+- No modifica compiladores, validadores, seguridad, Scope Lock, codigo de produccion ni comportamiento de autorizacion. Requiere CI xUnit/Backend/Seguridad/Authorization/ScopeLock/V5 nueva exact-SHA, estado VALIDANDO hasta PASS. Reversibilidad git revert.
+
 ## 2026-11-15 — V17 C02-04.M03.05 worker aislado read-only de control plane [Javier :20]
 - Implementa worker Infrastructure .NET 10 de previsualizacion limitada a 24 tickets por llamada, compuesto con el adapter M03.04 y gate Application/Domain; no registra hosted runtime ni realiza ninguna operacion institucional.
 - Incluye nueve metodos xUnit con positivos/negativos y fronteras: tenant A/B, actor, SHA, origen sintético no confiable, revocacion, MFA, grant separado, duplicado ordinal, exportacion, idempotencia y cancelacion.

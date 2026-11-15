@@ -113,7 +113,7 @@ public sealed class C0304IsolatedIncidentReadOnlyDispatchWorkerTests
         Assert.Equal("INCIDENT_TICKET_INVALID", Assert.Single(
             await Preview(Ticket("../bad"))).Code);
         Assert.Equal("INCIDENT_TICKET_INVALID", Assert.Single(
-            await Preview(null)).Code);
+            await Preview(new Worker.WorkTicket?[] { null })).Code);
         var excess = Enumerable.Range(1, Worker.MaximumBatchSize + 1)
             .Select(i => (Worker.WorkTicket?)Ticket("key_" + i)).ToArray();
         Assert.Equal("INCIDENT_BATCH_LIMIT_DENIED", Assert.Single(
