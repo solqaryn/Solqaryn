@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C10-03.M02.06 salida documental condicionada de archivos [Javier :10]
+- Define G01–G16 de inventario auténtico, privacidad, tenant A/B, retención, MIME, idempotencia, MySQL efímero y A5; RB01–RB08 de reversión y T01–T12 futuros positivos/negativos, 0 ejecutados.
+- Histórico NO_VERIFICADO no significa cero; si cero verificado omitir pipelines; si positivo exigir manifiesto/conciliación; inconsistente bloquea cutover. Sin Cloudinary/R2/DB/API/proveedor real.
+- Cambio R0 unitario Markdown y CHANGELOG en dev FF/CAS, A0–A4 con Scope Lock/V5 exact SHA y posterior A5 independiente otra Javier; sin QA/main/PROD.
+
 ## 2026-11-15 — V16 C03-04.M03.03 autorización y tenancy fail-closed incidentes [Javier :10]
 - Implementa gate Application .NET 10 con fuente de evidencia verificada, SHA, ownership tenant A/B, permiso vigente, revocación, auditoría y composición M03.01–02; incluso el caso positivo exige adaptador autenticado y no concede lectura, escritura, restauración ni JWT.
 - Agrega xUnit positivos y negativos de cliente/rol, tenant, SHA, usuario, sucursal, versión, revocación, errores y cancelación; ninguna llamada HTTP, MySQL o integración externa está activa. Requiere CI backend/security/auth exact-SHA.
