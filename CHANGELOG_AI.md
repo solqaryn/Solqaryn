@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C07-02.M02.02 contratos API conceptuales storefront [Javier :20]
+- Define 8 operaciones, 8 DTO, 12 errores, 16 validaciones y 12 pares P/N FUTUROS_NO_EJECUTADOS para host, catálogo, stock, cotización, checkout, HMAC/PSP y autorización tenant A/B.
+- No crea endpoints, pagos, pedidos, reservas, migraciones ni secretos; contratos R0 y D01-D08 pendientes; A0-A4 documentales y A5 independiente, sin afirmar ejecución HTTP/MySQL/Playwright.
+- Una sola unidad M02.02 y dos Markdown, candado V17 fila 1053, fast-forward CAS, Scope Lock/V5 exact-SHA y BITACORA/readback; rollback git revert, no QA/main/PROD.
+
 ## 2026-11-15 — V17 C07-02.M02.01 storefront y checkout: modelo conceptual y ownership [Javier :20]
 - Documenta 16 conceptos E01-E16, 20 invariantes INV01-INV20, 12 pares P/N FUTUROS_NO_EJECUTADOS y 12 relaciones sobre tenant/host, catálogo, stock, carrito, checkout, orden, HMAC y PSP sin implementar recursos.
 - Conserva rechazo de host/tenant B, firma/replay, costos y PII; validar checkout no constituye pedido/pago. R0 documental, A0-A4 exact-SHA y A5 independiente, D01-D08 pendientes.
