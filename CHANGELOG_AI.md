@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-05.M02.05 eventos e idempotencia documental de auditoria operativa [Javier :20]
+- Define EV01–EV12, ID01–ID10, LM01–LM12 y doce pares positivos/negativos FUTUROS_NO_EJECUTADOS para procedencia, owner, CI, A5, rescate y rollback sin eventos runtime.
+- Separa run nativo de autorreporte, impide doble autor/owner, distingue eventos conceptuales de transportes instalados y preserva JWT/RBAC/tenant A/B y BITACORA append-only.
+- Dos Markdown solo en dev mediante fast-forward/CAS, Scope Lock/V5 exact-SHA y A5 independiente; sin dispatcher, webhooks, workers, SQL, QA/main/PROD ni compras.
+
 ## 2026-11-14 — V5 C15-05.M02.04 configuracion tipada y ambitos de auditoria operativa [Javier :20]
 - Define CFG01–CFG16 PROPUESTAS_NO_IMPLEMENTADAS y VAL01–VAL12 positivos/negativos NO_EJECUTADOS para gobierno, owner, readback, CI exact-SHA, A5, telemetria y tenant A/B.
 - Reusa M02.01–03, STANDARD/PLAN/COLA/DAG/BITACORA y separa ultimo autorreporte de run nativo; prohibe forzar gates o declarar CAS transaccional sin soporte real.
