@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C01-01.M06.04 ensayo aislado de rollback sin pérdida de datos [Javier :40]
+- Ejecutado ensayo REAL en Git temporal sintético: 6/6 comprobaciones de cambio allowlisted, rechazo de alteración de datos, git revert y preservación de tres membresías A/B; SHA256 del fixture 8ade74dd43af6babefc3392df2e24dbc87a127ec470914701585918a46b1fcbc.
+- Documentado runbook fail-closed de desactivación/reversión con evidencia positiva y negativa; NO se ejecutó rollback de SOLQARYN, JWT/HTTP, EF/MySQL, migraciones ni restauración de datos reales.
+- Entrega individual C01-01.M06.04 sólo documento docs/v5 y esta sección; Scope Lock/V5 exact SHA y A5 por Task Javier distinta de DEV05, sin QA/main/PROD.
+
 ## 2026-11-15 — V15 calidad adaptativa A0–A5, respaldo y single-active [Javier propietario]
 - Copia Drive privada PRECAMBIO del Sheet completo, plan y seis prompts nativos con IDs/horarios; respaldo no operativo.
 - Riesgo R0–R3, pruebas negativas/adversariales e integración pertinente, A5 independiente, medición de defectos reales y reparación con regresión.
