@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C15-02.M03.02 servicio Application de preflight de migración [Javier :20]
+- Agrega servicio .NET 10 de Application read-only para evaluar candidatos acotados con reglas M03.01, deteniendo en el primer rechazo y denegando siempre permisos de despliegue o migración.
+- Agrega xUnit positivos/negativos para tenant A/B, SHA, scopes, proveedores, backup/restore, capacidad y hallazgos críticos. No prueba HTTP/EF/MySQL, DNS, Hostinger ni R2 reales.
+- Sólo dev y Scope Lock STRICT, CI backend/seguridad y CHANGELOG V5 exact-SHA antes de LISTO; A5 independiente; sin secretos, infraestructura, eventos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C03-04.M03.01 reglas Domain de incidentes y continuidad [Javier :50]
 - Añade preflight .NET 10 fail-closed para incidente, contención y resolución, JWT/RBAC/tenant A/B, versionado, propiedad, sucursal, evidencia saneada e idempotencia.
 - xUnit positivo/negativo para revocación, acceso cruzado, estados de incidente, permisos, razón y restore separado; no realiza backup/restore ni entrega acceso o autorización.
