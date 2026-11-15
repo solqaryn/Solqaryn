@@ -1,0 +1,14 @@
+<section class="estados-listado" aria-label="Estado del listado de usuarios" aria-atomic="true">
+  @if (cargando()) {
+    <p class="mensaje" role="status" aria-live="polite">Cargando usuarios…</p>
+  } @else if (tieneError()) {
+    <p class="mensaje error" role="alert">No se pudo actualizar la lista de usuarios. Revisa el mensaje de error.</p>
+  } @else if (cantidad() === 0) {
+    <p class="mensaje" role="status" aria-live="polite">No hay usuarios para mostrar con los filtros actuales.</p>
+  } @else {
+    <p class="mensaje" role="status" aria-live="polite">{{ cantidad() }} {{ cantidad() === 1 ? 'usuario visible' : 'usuarios visibles' }} en esta página.</p>
+  }
+  @if (!cargando() && !puedeCrear()) {
+    <p class="permiso">No tienes permiso para crear usuarios desde esta pantalla. Puedes consultar el listado autorizado.</p>
+  }
+</section>

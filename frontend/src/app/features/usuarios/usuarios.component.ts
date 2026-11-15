@@ -21,6 +21,7 @@ import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service
 import { AuthService } from '../../core/auth/auth.service';
 import { AppAlertService } from '../../shared/alerts/app-alert.service';
 import { IdentidadSesionVerificadaComponent } from './identidad-sesion-verificada.component';
+import { UsuariosEstadoListadoComponent } from './usuarios-estado-listado.component';
 
 const USUARIO_VALIDO = /^[a-zA-Z0-9._-]{3,50}$/;
 const PASSWORD_SEGURA = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{10,128}$/;
@@ -32,6 +33,7 @@ const PASSWORD_SEGURA = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{10,1
     ReactiveFormsModule,
     RouterLink,
     IdentidadSesionVerificadaComponent,
+    UsuariosEstadoListadoComponent,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,

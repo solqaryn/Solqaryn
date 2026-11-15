@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C01-01.M04.02 estados de usuarios y permisos [Javier :40]
+- Integra componente Angular standalone OnPush en /usuarios existente: carga, vacio, error, exito por pagina y consulta sin permiso de crear, con aria-live.
+- Seis pruebas Angular/Vitest dirigidas y workflow GitHub-hosted para Vitest, lint y build; CI exact-SHA requerida antes de LISTO_DEV, A5 independiente.
+- Conserva JWT/RBAC/tenant A/B, guards, rutas, APIs y MySQL; sin QA/main/PROD, rollback git revert.
+
 ## 2026-11-15 — V5 C02-03.M01.06 gates y rollback de ciclo de vida tenant [Javier :30]
 - Concilia M01.01–05 y A5 de antecesores, dieciseis gates G01–G16 y ocho rutas R01–R08 para alta, suspension, reactivacion, archivado y baja logica FUTURAS.
 - Distingue Empresa.Activa real de Empresa.Eliminado false NotMapped y los AC01–AC24 FUTUROS_NO_EJECUTADOS; sin soft-delete, worker, MySQL, datos, JWT nuevo ni runtime activo.

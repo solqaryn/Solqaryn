@@ -1,0 +1,13 @@
+:host { display: block; }
+.estados-listado {
+  margin: 0 0 1rem;
+  padding: .625rem .875rem;
+  border: 1px solid var(--color-border, #cbd5e1);
+  border-radius: .625rem;
+  color: var(--color-text, #0f172a);
+  background: var(--color-surface, #fff);
+}
+.mensaje, .permiso { margin: 0; line-height: 1.5; overflow-wrap: anywhere; }
+.error { color: var(--color-danger, #9f1239); }
+.permiso { margin-top: .375rem; font-size: .875rem; color: var(--color-text, #0f172a); }
+@media (max-width: 420px) { .estados-listado { padding: .625rem; } }

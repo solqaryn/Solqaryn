@@ -7,6 +7,7 @@ on:
       - 'frontend/src/app/features/usuarios/identidad-sesion-verificada.component*'
       - 'frontend/src/app/features/usuarios/usuarios.component.ts'
       - 'frontend/src/app/features/usuarios/usuarios.component.html'
+      - 'frontend/src/app/features/usuarios/usuarios-estado-listado.component*'
       - '.github/workflows/v5-identidad-superficie-ui-tests.yml'
 
 permissions:
@@ -39,6 +40,8 @@ jobs:
         run: npm ci
       - name: Vitest aislamiento tenant y HTML escapado
         run: npm test -- --no-watch --no-progress --include=src/app/features/usuarios/identidad-sesion-verificada.component.spec.ts
+      - name: Vitest estados de Usuarios y permisos
+        run: npm test -- --no-watch --no-progress --include=src/app/features/usuarios/usuarios-estado-listado.component.spec.ts
       - name: Comprobar tipos y calidad del frontend
         run: npm run lint
       - name: Compilar produccion

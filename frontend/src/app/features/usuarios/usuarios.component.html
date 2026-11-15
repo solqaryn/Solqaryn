@@ -16,6 +16,12 @@
   <mat-icon matSuffix>search</mat-icon>
 </mat-form-field>
 
+<app-usuarios-estado-listado
+  [cargando]="loading()"
+  [tieneError]="!!errorMessage() && usuarios().length === 0 && !mostrarFormulario()"
+  [cantidad]="usuarios().length"
+  [puedeCrear]="puedeCrear()" />
+
 @if (errorMessage() && !mostrarFormulario()) {
   <p class="error">{{ errorMessage() }}</p>
 }
