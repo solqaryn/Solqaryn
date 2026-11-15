@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C09-01.M02.04 CRM universal: configuración tipada y flags conceptuales [Javier :30]
+- Define 16 opciones tipadas futuras O01–O16 con defaults fail-closed, 12 reglas R01–R12 de precedencia global/tenant/sucursal y 12 pares P/N FUTUROS_NO_EJECUTADOS; no crea flags ejecutables, endpoints, migraciones ni proveedores.
+- Preserva JWT/RBAC y tenant A/B, Cliente.EmpresaId=NULL legado, consentimiento/opt-out, idempotencia, revocación, CAS, PII, límites y reversión sin habilitar contactos/export por configuración.
+- Una sola microtarea R0, docs/v5 y CHANGELOG en dev, candado V17 fila 1307; A0–A4 documentales sujetos a CI exact-SHA/readback y A5 independiente; sin QA/main/PROD, secretos o datos reales.
+
 ## 2026-11-15 — V17 C07-02.M02.04 configuración tipada y flags seguros de storefront/checkout [Javier :40]
 - Define contrato futuro R0 para 6 ámbitos restrictivos, 16 campos tipados C01–C16, 12 flags inertes F01–F12, precedencias fail-closed y 12 pares positivos/negativos FUTUROS_NO_EJECUTADOS, sin implementar configuración ni runtime.
 - Aislamiento Empresa A/B y host confiable, JWT/RBAC, HMAC/replay, protección PSP, stock/IVA y PII; cobro/pedido/reserva deshabilitados por defecto, A5 independiente; pruebas runtime NO_MEDIDO.
