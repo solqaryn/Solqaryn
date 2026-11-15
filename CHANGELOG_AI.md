@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-03.M01.01: alcance y no-regresión de auditoría de seguridad/tenancy [Javier :10]
+- Define NR01–NR16 y P01/N01–P08/N08 como contrato FUTURO_NO_EJECUTADO de aislamiento tenant A/B, sucursal, propiedad, archivos, jobs y control plane; ninguna prueba HTTP/MySQL ni certificación de seguridad se atribuye.
+- Vincula nueve fuentes reales y sus blobs del HEAD, destacando que TenantQueryBypassGuard sin empresa autorizada depende de cuarentena exterior y requiere test negativo, sin afirmar una vulnerabilidad probada.
+- Sólo nuevo Markdown y CHANGELOG; A5 independiente pendiente, rollback git revert, sin IAM/JWT/RBAC/DB/servicios/QA/main/PROD ni liberación automática M01.06.
+
 ## 2026-11-14 — V5 C15-02.M01.05 criterios de aceptación de auditoría arquitectura/migración [Javier :00]
 - Define 16 pares positivos/negativos FUTUROS_NO_EJECUTADOS para inventario Git, JWT/RBAC/tenant A/B, MySQL/restore, Cloudinary/R2, DNS/TLS y SHA/CI/A5 independientes.
 - Propone doce requisitos no funcionales NO_MEDIDOS; distingue documentación contractual de evidencia real y preserva gate DAG NO para M01.06/M02.
