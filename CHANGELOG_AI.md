@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C00-04.M04.05 Chromium real responsive y accesibilidad [Javier :50]
+- Incorpora cinco regresiones Playwright Chromium para ruta privada del gobierno de cambios: anónimo, 403, 390/1280px, foco/teclado, etiquetas y contraste >=4.5:1.
+- CI GitHub-hosted Node24/npm fijo ejecuta Angular lint/build, navegador local y tests dirigidos; la sesión HTTP es sintética solo para la interfaz, no certifica JWT/RBAC ni MySQL reales.
+- Mantiene intactos archivos de M04.01 y autorización backend; requiere CI exact-SHA Scope Lock/V5/browser, A5 independiente y rollback git revert; sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C03-03.M02.06 dependencias y salida contractual de auditoría [Javier :50]
 - Consolida cinco contratos M02 de auditoría de seguridad y prerrequisitos del DAG por ID exacto, con diez gates S01–S10 para M03 y doce pares P/N de aceptación FUTUROS_NO_EJECUTADOS.
 - Preserva JWT/RBAC, aislamiento tenant A/B, auditoría strict frente a best-effort, correlación saneada, idempotencia futura, aprobación separada y política de retención no implementada.

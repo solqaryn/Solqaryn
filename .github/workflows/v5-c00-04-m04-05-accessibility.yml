@@ -1,0 +1,73 @@
+name: V5 C00-04.M04.05 - Browser de accesibilidad del gobierno
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/e2e/c00-04-m04-05-accessibility.spec.ts'
+      - '.github/workflows/v5-c00-04-m04-05-accessibility.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: v5-c00-04-m04-05-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  browser:
+    name: V5 C00-04.M04.05 - Chromium responsive foco contraste
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout SHA exacto
+        uses: actions/checkout@v4
+      - name: Node 24 fijado
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm bloqueado
+        run: npm install --global npm@11.19.0
+      - name: Dependencias reproducibles
+        run: npm ci
+      - name: Lint y build Angular
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Angular local en loopback (no PROD)
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > m0405-governance-angular.log 2>&1 &
+          for attempt in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then
+              echo 'ANGULAR_LOCAL_READY=PASS'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat m0405-governance-angular.log >&2
+          exit 1
+      - name: Cinco pruebas Chromium reales y respuestas de sesion sinteticas
+        run: npx playwright test e2e/c00-04-m04-05-accessibility.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Evidencia del navegador
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v5-c00-04-m04-05-chromium
+          path: |
+            frontend/m0405-governance-angular.log
+            frontend/playwright-report/
+            frontend/test-results/
+          if-no-files-found: warn
+          retention-days: 14
