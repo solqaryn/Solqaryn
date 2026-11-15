@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C06-01.M01.06 bloqueos, rollback y liberacion documental de landing SaaS [Javier :30]
+- Publica 16 barreras BL01-BL16, ocho procedimientos REV01-REV08 y ocho pares T01-T08 FUTUROS_NO_EJECUTADOS para rutas, planes, demo, contacto, legal, SEO, acceso tenant y accesibilidad.
+- Preserva decisiones D01-D08 PENDIENTES, identidad JWT/RBAC y aislamiento A/B; no crea landing, API, integracion MySQL, SMTP, datos, servicios, despliegue ni permisos.
+- Riesgo V15 R0; Scope Lock STRICT y procedencia V5 exact SHA obligatorios antes de LISTO_DEV; A5 solo de otra Task Javier; rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-15 — V16 C05-01.M02.03 persistencia e indices conceptuales de design system [Javier :20]
 - Documenta doce familias de persistencia, doce accesos de indices, doce fases de migracion condicional y diez fixtures A/B positivos/negativos FUTUROS_NO_EJECUTADOS; no crea entidades EF, DDL ni datos reales.
 - Distingue exclusividad transaccional de tema ACTIVO de un mero indice ambiguo, con aislamiento tenant, revocacion, idempotencia, seguridad CSS y rollback que necesita restore real futuro en MySQL efimero.
