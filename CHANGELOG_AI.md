@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C06-01.M02.02 contrato API/DTO seguro para landing SaaS [Javier :40]
+- Define ocho operaciones logicas y ocho DTO conceptuales, doce errores seguros, dieciseis validaciones y diez pares positivos/negativos FUTUROS_NO_EJECUTADOS para propuesta, planes, demo, contacto, legal y SEO.
+- Protege rutas privadas/ERP, JWT/RBAC/tenant A/B, consentimiento, idempotencia y PII; D01-D08 siguen PENDIENTES. No crea API HTTP, Angular, MySQL/EF, SMTP, indexacion ni runtime.
+- Entrega unica V15 R0 en dev con Scope Lock STRICT, A0-A4 documentales y CI pertinente SHA; A5 exige otra Task Javier, git revert sin QA/main/PROD.
+
 ## 2026-11-15 — V16 C06-01.M02.01 entidades y ownership conceptual de landing SaaS [Javier :10]
 - Define 14 entidades E01–E14, 18 invariantes INV01–INV18 y diez parejas P/N FUTUROS_NO_EJECUTADOS para contenido público, planes, legal, SEO, contacto y demo sin cruzar tenants.
 - Preserva autoridad comercial/legal D01–D08 PENDIENTES, backend JWT/RBAC/tenant A/B, privacidad, CAS, consentimiento, SEO allowlisted y guards ERP; solo diseño documental sin Angular, .NET runtime, EF/MySQL, rutas, SMTP o publicación.
