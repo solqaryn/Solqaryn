@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-05.M01.06 bloqueos, rollback y cierre de auditoría operativa [Javier :10]
+- Define B01–B14 para identidad, PLAN/COLA/DAG, CAS, BITACORA, CI exact-SHA, procedencia de CHANGELOG, A5 y protección de ambientes; pruebas de concurrencia y cero P0/P1 siguen NO_CERTIFICADOS.
+- Verifica M01.01–05 LISTO/A5 independientes y condiciona M02 a nuevo preflight y A5 propio de M01.06; no libera runtime, migraciones, QA/main/PROD ni eventos.
+- Cambia solamente el nuevo Markdown y una sección completa de CHANGELOG; rollback git revert normal, Scope Lock y V5 requeridos en SHA publicado.
+
 ## 2026-11-14 — V5 C15-04.M01.06 bloqueos y salida documental UX/accesibilidad/rendimiento [Javier :00]
 - Fija B01–B12 para teclado, foco, zoom, formularios, motion, temas, tenancy, estados de red, CI SHA y A5; no afirma WCAG ni métricas ejecutadas.
 - Valida M01.01–05 LISTO y A5 independiente por otra Task; el avance a M02 exige nuevo preflight sin autorizar migraciones, QA/main/PROD ni endpoints.
