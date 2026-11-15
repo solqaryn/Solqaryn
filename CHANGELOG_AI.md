@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C02-01.M03.02 Application tenant resolution preflight [Javier :10]
+- Servicio Application fail-closed no autorizante para tenant server-side, host confiable, recurso/sucursal A/B, revocación, membership y JWT verificados por backend; no permite host/rol/tenant/fallback del cliente.
+- Doce pruebas xUnit adversariales con switch A→B, host spoof, store unavailable, tenant mismatch, revocación, sucursal B y datos ausentes; CI backend Release/seguridad/autorización exact SHA obligatoria.
+- Solo preflight, sin middleware/HTTP, registros de host, EF/MySQL, secretos, QA/main/PROD ni grants; V15 R2, Scope Lock STRICT, A5 independiente, rollback git revert.
+
 ## 2026-11-15 — V16 C08-04.M03.02 Application gate sectorial [Javier :50]
 - Creado lector de evidencia server-side de actor, tenant, permisos y módulo que alimenta reglas Domain de C08-04.M03.01; preflight nunca autoriza cambios, grants, EF ni acceso.
 - Incluidas 14 pruebas xUnit con tenant A/B, revocación, permisos, fuente SHA, política, versión, lifecycle, cancelación y errores; CI real debe aprobar antes de LISTO.
