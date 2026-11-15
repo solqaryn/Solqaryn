@@ -2621,3 +2621,8 @@
 - Verifica ocho fuentes Git originales y SHA de AGENTS, Scope Lock, autoridad/status V5, Skill, arquitectura, procedencia CHANGELOG y contexto; la lectura no sustituye pruebas de automatización nativa.
 - Registra doce brechas G01–G12 y ocho pares P01–P08/N01–N08 FUTUROS_NO_EJECUTADOS para CAS, DAG, BITACORA, CI SHA, A5, telemetría y rollback; sin afirmar ausencia de defectos.
 - Sólo Markdown y CHANGELOG en dev, A0–A4 documentales y Scope Lock/V5 exact-SHA; A5 independiente posterior, sin Tasks nuevas, scopes externos, QA/main/PROD o modificaciones de runtime.
+
+## 2026-11-14 — V5 C15-05.M01.04: riesgos y decisiones de auditoría operativa [Javier :30]
+- Clasifica R01–R12 como riesgos potenciales NO_REPRODUCIDOS de identidad, CAS, DAG, BITACORA, CI, CHANGELOG, A5, monitor y rollback; no los presenta como incidentes observados.
+- Registra S01–S08 NO_VERIFICADOS, D01–D08 PENDIENTES y P01–P08/N01–N08 FUTUROS_NO_EJECUTADOS con fuentes M01.01–03 y brechas G01–G12.
+- Sólo documentación dev y sección CHANGELOG; A0–A4 documentales exact-SHA, A5 independiente posterior, sin cambios JWT/RBAC, DB, schedules, QA/main/PROD o infraestructura.
