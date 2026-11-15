@@ -3423,3 +3423,8 @@
 - Integra en /usuarios existente una superficie Angular read-only alimentada solo por TenantContextService.contextoVerificado, protegida por los guards y permisos ya existentes sin crear ruta o autoridad nueva.
 - Agrega pruebas unitarias de contexto no confirmado, revocacion A y nueva seleccion B, y escape de HTML en rol; CSS ligero accesible sin cambios de API/EF/MySQL/secretos.
 - CI frontend/tests, Scope Lock y V5 exact-SHA obligatorios para A0–A4; A5 independiente, rollback git revert, sin QA/main/PROD.
+
+## 2026-11-15 — V5 C01-01.M04.01 reparacion causal catalogo Angular P0-007.A [Javier :20]
+- Corrige drift determinista del catalogo tras agregar un componente real: inventario aditivo de la nueva ruta fuente y recuento vigente 139 (131 features, 8 shared), preservando la foto historica original.
+- Mantiene checks negativos exact-HEAD, deteccion de archivos no registrados y borrados, sin saltar verificaciones ni ampliar JWT/RBAC, API o SQL.
+- Reejecutar CI relevante del nuevo SHA, Scope Lock y V5; reparacion de baseline relacionada con M04.01, sin QA/main/PROD.

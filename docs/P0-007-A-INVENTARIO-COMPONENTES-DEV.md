@@ -374,3 +374,11 @@ El inventario histórico P0-007.A de 137 rutas permanece como evidencia del SHA 
 - `frontend/src/app/features/shared/not-found.component.ts`
 
 Validación: `node scripts/verify-p0-007-a-component-catalog.mjs --self-test` (casos negativos de entradas faltantes y no documentadas) y verificación Scope Lock sobre el SHA exacto. Las evidencias UI/Playwright pertenecen exclusivamente a V5 M04.01; rollback por revert no destructivo.
+
+## Actualización aditiva V5 C01-01.M04.01 — 15 de noviembre de 2026
+
+La nueva superficie informativa de contexto confirmado en la vista privada /usuarios añade un componente independiente. El catálogo vigente pasa a **139 archivos**: **131 en features** y **8 en shared**. Los recuentos históricos de los SHA anteriores permanecen como evidencia y no se reescriben. El detector sigue comparando por ruta/extensión y falla ante archivos nuevos no inventariados o archivos borrados.
+
+- `frontend/src/app/features/usuarios/identidad-sesion-verificada.component.ts`
+
+Esta entrada no concede permisos ni certifica UX/tenant, HTTP, accesibilidad E2E o despliegue. La revisión funcional/negativa pertenece a C01-01.M04.01; rollback normal de Git.
