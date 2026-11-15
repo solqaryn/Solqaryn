@@ -3398,3 +3398,8 @@
 - Define catorce bloqueos fail-closed y ocho rutas de recuperación diferenciando revert documental de rollback de implementación futura; decisiones D01–D08 siguen pendientes.
 - Distingue tema global existente de presets por tenant no implementados; registra oráculos documentales positivos/negativos sin inventar pruebas Angular, API, MySQL, browser ni seguridad runtime.
 - Requiere A0–A4 con Scope Lock/V5 exact-SHA, owner exclusivo y readback PLAN/COLA/DAG/BITACORA; A5 independiente anterior a M02, sin QA/main/PROD.
+
+## 2026-11-15 — V5 C02-02.M01.06 gates y rollback documental shared/dedicated [Javier :20]
+- Formaliza dieciseis gates fail-closed G01–G16 y ocho rutas R01–R08 diferenciando git revert documental de restauracion futura de datos, sin ejecutar router, MySQL ni migraciones.
+- Traza M01.01–05 y el A5 historico independiente de M01.01 documentado en BITACORA; preserva autorizacion JWT/RBAC/tenant A/B y DSN server-only sin validar operaciones runtime.
+- Documenta P-DOC01–04/N-DOC01–04 futuros, Scope Lock/V5 y A0–A4 exact SHA; A5 independiente requerida antes de despachar M02, sin QA/main/PROD.
