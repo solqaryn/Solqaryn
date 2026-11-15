@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C08-01.M02.06 salida y rollback contractual de citas/agenda [Javier :50]
+- Define 16 gates G01–G16 de tenancy A/B, RBAC, concurrencia de slots, idempotencia, DST, capacidad, MySQL efímero y CI causal, más ocho rutas RB01–RB08 de reversión futura.
+- Diez pares T01–T10 positivos/negativos FUTUROS_NO_EJECUTADOS (0/10), métricas NO_MEDIDO; no se activan citas, calendarios, mensajes, workers, proveedores, MySQL ni API.
+- Alcance R0 dev Markdown y CHANGELOG_AI.md secuencial por fast-forward/CAS, Scope Lock y procedencia V5 exact-SHA, A5 independiente de otra Task Javier; sin QA/main/PROD.
+
 ## 2026-11-15 — V16 C12-04.M03.01 guard Domain R2 para cutover MySQL privado [Javier :50]
 - Implementa prevalidación pura .NET 10 fail-closed de rol/MFA/tenant A/B, SHA manifiesto, grants mínimos sin WITH GRANT OPTION, CI, evidencia de MySQL 8.4 efímero, backup/restore, lease y rollback; nunca autoriza SQL, DNS ni cutover real.
 - Añade pruebas xUnit positivas, negativas y de frontera para revocación, producción/QA, doble escritor, manifest incorrecto, P0/P1, grants, reintentos y secretos. Booleanos de evidencia requieren comprobación externa real, no certifican infraestructura.
