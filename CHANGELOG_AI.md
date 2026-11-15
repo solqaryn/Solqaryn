@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C13-02.M02.06 contrato terminal de salida accesibilidad [Javier :00]
+- Fija G01-G16 como puertas causales de M02 hacia runtime y doce pares P/N FUTUROS_NO_EJECUTADOS para teclado/foco, zoom/reflow, contraste, semantica, tenant A/B, JWT/RBAC, privacidad, evidencia CI y rollback; sin declarar conformidad WCAG.
+- Referencia seis fuentes M01/M02, cinco revisiones A5 independientes de M02.01-05, contratos conceptuales de entidades/API/persistencia/flags/eventos; no hay SQL, Angular, API, eventos o Playwright implementados ni pruebas runtime ejecutadas.
+- Unidad unica R0 C13-02.M02.06 + CHANGELOG dev, candado V17 fila 1921 ID 2000001921; A0-A4 documental Scope Lock/V5 exact-SHA, A5 propia pendiente para otra Task Javier; sin QA/main/PROD, secretos, datos reales; rollback normal git revert.
+
 ## 2026-11-15 — V17 C09-02.M02.05 eventos conceptuales fidelizacion y reputacion [Javier :10]
 - Disena sobre logico tipado, doce contratos EV01-EV12 de puntos, canjes, promos, moderacion, posventa y consentimiento; doce invariantes ID01-ID12 de idempotencia, version CAS, antireplay y aislamiento tenant A/B.
 - Doce pares P/N FUTUROS_NO_EJECUTADOS sobre replay, revocacion, fraude, XSS, IDOR, opt-out y poison events. Sin broker, webhook, worker, outbox, servicios, EF/MySQL, API, mensajes, codigo ejecutable ni metricas reales.
