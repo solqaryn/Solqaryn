@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C12-03.M02.01 ownership conceptual API y workers [Javier :40]
+- Documenta 12 componentes/futuros responsables, 16 invariantes tenant A/B, CAS, JWT/RBAC, no HttpContext, idempotencia y migrador único, 8 contratos de falla y 10 pares P/N FUTUROS_NO_EJECUTADOS.
+- Sin implementar workers, scheduler, dispatcher, webhooks, Tasks, SQL/EF, migraciones, hosting ni cambios de API; fuentes NET10/EF/Outbox existentes referenciadas por blobs y ausencia de permiso PROD explícita.
+- Cambia solo doc V5 y CHANGELOG en dev, bajo CAS fast-forward, Scope Lock y V5 exact SHA, A0–A4 documentales, A5 por otra Task Javier y rollback git revert normal; no QA/main/PROD.
+
 ## 2026-11-15 — V5 C12-03.M01.06 gates rollback backend/workers [Javier :30]
 - Cierra preparación M01 documental de backend/workers separados con 16 NO_GO preventivos, diez pasos de rollback y ocho pares P/N FUTUROS_NO_EJECUTADOS, ligados a quince fuentes e identidad tenant fuera de HttpContext.
 - Mantiene explícitos bloqueos JWT/RBAC, A/B, datos, MySQL, worker, retry idempotente, migrador único, secretos, readiness, proveedor y continuidad; no activa ningún servicio, topología, migración, DNS o QA/main/PROD.
