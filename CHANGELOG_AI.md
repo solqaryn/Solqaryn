@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C05-04.M03.03 preflight autenticado de ligereza por tenant [Javier :10]
+- Incorpora gate Application .NET 10 con evidencia backend, tenant A/B, propietario persistido, RBAC vigente, invalidación por revocación y SHA exacto. Rechaza bypass cliente, precarga privada y telemetría sensible.
+- Añade diez tests xUnit positivos/negativos sobre identidad, revocación, cross-tenant, caché, versión y presupuestos. El veredicto nominal no concede JWT/HTTP ni Core Web Vitals: requiere adaptador runtime posterior.
+- Alcance individual dev, commit CAS fast-forward y Scope Lock/V5; pruebas A0-A4 solo con CI real, A5 independiente. No cambia Angular, EF/MySQL, secretos, QA/main/PROD; reversión git revert.
+
 ## 2026-11-15 — V5 C10-03.M02.03 persistencia e índices conceptuales de inventario [Javier :00]
 - Documenta 12 proyecciones futuras, 12 índices candidatos, 14 invariantes, siete etapas de migración condicionadas y doce pares sintéticos FUTUROS_NO_EJECUTADOS para archivos privados.
 - Conserva inventario histórico NO_VERIFICADO, evita inferir cero, exige conciliación real, tenant A/B, JWT/RBAC, MIME por bytes, retención/hold, hash e idempotencia; Cloudinary existente no cambia.
