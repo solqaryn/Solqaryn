@@ -123,7 +123,7 @@ public sealed class C0804SectorModuleAuthorizationFenceTests
             (await Gate(m: new Modules(Module() with { SourceSha = new string('a', 40) }))
                 .InspectAsync(Intent())).Code);
         Assert.Equal("TRUSTED_TENANT_MODULE_SNAPSHOT_REQUIRED",
-            (await Gate(m: new Modules(Module() with { ModuleKey = "Sector.Inventory" }))
+            (await Gate(m: new Modules(Module() with { ModuleKey = "Sector.Orders" }))
                 .InspectAsync(Intent())).Code);
         Assert.Equal("TRUSTED_TENANT_MODULE_SNAPSHOT_REQUIRED",
             (await Gate(m: new Modules(Module() with { Revision = 8 }))

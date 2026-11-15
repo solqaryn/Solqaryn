@@ -1,3 +1,7 @@
+## 2026-11-15 — V17 C08-04.M03.03 segunda reparación puntual Scope Lock [Javier :20]
+- En el check exacto de 82612c80 subsistía una sola variante de fixture de módulo con mayúsculas. El primer reemplazo había corregido tres apariciones minúsculas, pero no la variante capitalizada; se corrigió ahora esa cuarta aparición en la prueba negativa, conservando el comportamiento y los asserts.
+- Revisión del archivo completo contra patrones retirados del validador, 0 coincidencias. No se desactiva ni modifica Scope Lock o controles de seguridad; fallos anteriores conservados. Revalidar CI en SHA nuevo, mantener VALIDANDO hasta éxito de A0-A4.
+
 ## 2026-11-15 — V17 C08-04.M03.03 reparación Scope Lock R2 [Javier :20]
 - Corrige únicamente el identificador de fixture de módulo en xUnit a la clave sector.orders, sin variar verificaciones positivas o negativas, autorización JWT/RBAC/tenant ni el test de denylist.
 - En SHA 13ccfd71, Scope Lock y seguridad multiempresa fallaron por coincidencia accidental de identidad retirada en el fixture; fallo original permanece registrado, no se desactivó el verificador.
