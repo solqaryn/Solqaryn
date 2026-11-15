@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C15-03.M03.04 adaptador aislado de evidencia tenancy y seguridad [Javier :50]
+- Implementa Infrastructure .NET 10 read-only que compara recurso/actor/tenant/SHA capturados, reutiliza Application+Domain y deniega cualquier acceso, persistencia, descarga, job, control plane o bypass.
+- Incorpora 12 xUnit reales de preflight sin grant, tenant A/B, revocación, SHA, evidencia adulterada, branch, URL vencida, intentos de bypass/escritura y cancelación; su CI backend/seguridad/autorización debe certificar SHA causal.
+- R2: no integra JWT HTTP, EF/MySQL ni cambia producción, secretos o permisos. El riesgo heredado de TenantQueryBypassGuard sin marca permanece abierto. Scope Lock/V5 y A5 independiente requeridos.
+
 ## 2026-11-15 — C15-05.M04.01 pantalla privada de auditoría operativa V5 [Javier :40]
 - Introduce ruta Angular lazy `/plataforma/auditoria-operativa-v5` con `plataformaGuard` backend, pantalla read-only responsive y cuatro controles del ciclo de auditoría sin fingir estado en vivo.
 - Incluye Vitest positivos/negativos de rutas, acceso y contenido; Playwright/Chromium sintético para anónimo, 403, móvil y teclado, sin confundir mocks con pruebas JWT/tenant reales.
