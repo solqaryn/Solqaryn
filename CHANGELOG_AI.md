@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C07-03.M02.06 salida documental M02 inventario y compras [Javier :30]
+- Contrato R0 de 16 gates G01–G16, 8 rollback RB01–RB08 y 12 pares P/N FUTUROS_NO_EJECUTADOS para ownership de almacenes, reservas, compras, recepciones, transferencias, costos y trazabilidad.
+- Prerrequisitos M01 y M02.01–05+A5 y C07-01.M01.06+A5 confirmados por DAG dinámico; falla Scope Lock previa de M02.04 conservada y reparación comprobada, sin convertir SHA fallido en PASS.
+- Sólo Markdown y CHANGELOG; 0/12 tests runtime, ninguna transacción, EF/migración MySQL, evento, worker, webhook, QA/main/PROD ni dato real modificado; A5 de otro Javier obligatoria.
+
 ## 2026-11-15 — V16 C08-01.M02.03 persistencia conceptual de citas/agenda [Javier :40]
 - Contrato R0 P01–P12, IDX01–IDX12 y MIG01–MIG08 FUTUROS de sede, profesionales, recursos, ocupación, transiciones e idempotencia tenant-scoped, sin tablas, DDL ni EF/MySQL real.
 - Doce pares F01–F12 positivos/negativos FUTUROS_NO_EJECUTADOS (0/12): UTC/IANA/DST, 64 intentos de doble booking, RBAC/tenant A/B, CAS, replay, revocación, rollback y separación ERP; rendimiento y concurrencia NO_MEDIDO.
