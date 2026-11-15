@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C02-04.M03.01 reglas Domain de consola global fail-closed [.NET 10 Javier :10]
+- Implementa tres prevalidaciones de solo lectura para operador de tenant, directorio de plataforma y acceso excepcional con grant temporal, MFA, reautenticación, auditoría y doble control.
+- Añade ocho pruebas xUnit de aislamiento tenant A/B, ausencia de grants, revocación, manipulación cliente, ventana temporal y autoaprobación; la salida nunca autoriza ejecución runtime.
+- No registra DI/API, cambia JWT/RBAC live, MFA real, EF/MySQL, datos, secretos, eventos ni QA/main/PROD; exige CI .NET/seguridad/Scope Lock/V5 exact SHA y A5 independiente antes de LISTO.
+
 ## 2026-11-15 — V5 C07-04.M03.03 puerta de autorización comercial fail-closed [.NET 10 Javier :40]
 - Añade un gate Application que recibe identidad y pertenencia backend verificadas, propiedad persistida tenant A/B y catálogo de permisos, sin aceptar del cliente TrustedContext ni snapshots de autorización.
 - Integra Domain y el servicio M03.02 para validar operaciones, versión, moneda, importe, estado, idempotencia y controles PSP/fiscales; nueve xUnit positivos/negativos, sin ejecutar mutaciones comerciales.
