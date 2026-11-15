@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C01-01.M03.06 auditoria segura Application de identidad [Javier :40]
+- Incorpora adaptador .NET 10 sobre la guardia vigente, EventId fijo, correlacion obligatoria y codigos de decision sin PII, JWT, secretos ni excepciones.
+- Incluye ocho pruebas xUnit positivas/negativas tenant A/B, revocacion, permisos, correlacion, errores y cancelacion; no amplia autoridad RBAC ni altera fuente de membresias.
+- Solo Application, tests, documento y CHANGELOG en dev; CI pertinente exact-SHA y A5 independiente, rollback git revert normal; sin DI/API runtime, MySQL, workers, eventos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C15-01.M02.06 contrato de salida y gates de cobertura [Javier :30]
 - Concilia C15-01.M01.01–06, M02.01–05 y C00-03.M01.06 con LISTO+A5 de autor distinto, blobs Git, PLAN/COLA/DAG y BITACORA; no certifica cobertura completa de 2340 IDs.
 - Define B01–B16 bloqueos, RB01–RB10 rollback y AT01–AT12 positivos/negativos FUTUROS_NO_EJECUTADOS para trazabilidad, CI, concurrencia, seguridad JWT/RBAC/tenant A/B y A5.
