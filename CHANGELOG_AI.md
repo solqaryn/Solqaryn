@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C07-01.M02.06 contrato salida M02 catalogo universal [Javier :20]
+- Consolidado contrato R0 con seis antecedentes, dieciseis gates G01-G16 de seguridad tenant/JWT/RBAC, precios/stock y compatibilidad ERP.
+- Ocho pasos RB01-RB08 y diez pares T01-T10 FUTUROS_NO_EJECUTADOS, sin API, DB, Angular, migracion, workers, eventos, flags ni despliegues.
+- Single-active DEV, A0-A4 por Scope Lock/V5 exact SHA y readback; A5 independiente, DAG antes de M03 y sin QA/main/PROD.
+
 ## 2026-11-15 — V16 C06-01.M02.06 contrato salida landing SaaS [Javier :50]
 - Contrato R0 documental con 16 puertas G, ocho rollbacks RB y ocho pares positivos/negativos T FUTUROS_NO_EJECUTADOS para planes, demo, legal, SEO, contacto y tenant A/B.
 - Mantiene D01-D08 PENDIENTES, JWT/RBAC backend, consentimiento, privacidad, idempotencia y separación de entornos; no implementa Angular, API, MySQL, correo, eventos, proveedores o deploy.
