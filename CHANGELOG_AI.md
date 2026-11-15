@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C01-04.M02.05 eventos conceptuales e idempotencia de expediente [Javier :50]
+- Define EV01–EV14 señales PROPUESTAS_NO_IMPLEMENTADAS, ID01–ID10 reglas futuras de idempotencia y LM01–LM12 limites de cuotas, retencion, correlacion, CAS y tenancy A/B.
+- Incluye FT01–FT12 positivos/negativos FUTUROS_NO_EJECUTADOS; niega entregas exactly-once, webhooks, workers o eventos runtime y preserva autorizacion de empresa/recurso/rol.
+- Solo documento V5 y CHANGELOG en dev, Scope Lock/V5 exact-SHA y A5 independiente pendiente; rollback git revert, sin API, DB, QA/main/PROD ni nuevas Tasks.
+
 ## 2026-11-14 — V5 C03-04.M02.03 persistencia e integridad futura de continuidad [Javier :40]
 - Define once agregados propuestos con ownership tenant-first, catorce invariantes de indices, claves, permisos, auditoria append-only e idempotencia, sin crear schema ni migraciones.
 - Documenta seis pasos de migracion/rollback FUTUROS_NO_EJECUTADOS en MySQL 8.4 efimero, mas 4 positivos y 12 negativos de aislamiento A/B y recuperacion.
