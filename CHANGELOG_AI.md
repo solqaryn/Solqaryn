@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C08-01.M02.05 eventos conceptuales e idempotencia agenda [Javier :40]
+- Documento R0 con EV01–EV12, IDEM01–IDEM14, COR01–COR12 de cita, personal, recursos, correlación, retries y protección tenant/JWT/RBAC sin emitir mensajes ni crear infraestructura de eventos.
+- Doce pares T01–T12 positivos/negativos FUTUROS_NO_EJECUTADOS (0/12), incluidos DST, 64 solicitudes concurrentes, cancelación única, CAS, replay y separación `ReservaInventario`; MySQL, API y entrega de eventos NO_MEDIDO.
+- Solo Markdown de contrato y CHANGELOG autocontenido en dev por fast-forward/CAS, A0–A4 R0 con Scope Lock/V5 exact SHA, A5 de otra Task Javier, sin QA/main/PROD.
+
 ## 2026-11-15 — V16 C11-04.M02.02 contratos de API DTO y errores observabilidad [Javier :30]
 - Contrato R0 con OP01–OP08, DTO01–DTO08, ERR01–ERR12, VAL01–VAL16 y T01–T10 FUTUROS_NO_EJECUTADOS para señales, correlación, SLI/SLO, roles y diagnósticos sin PII.
 - Ningún endpoint .NET, token, rol, exporter, collector, dashboard, alerta, MySQL, Angular, proveedor, webhook o Tasks nuevos; 0/10 tests runtime y SLO/p95/costos NO_MEDIDO.
