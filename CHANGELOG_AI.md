@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C06-02.M02.03 persistencia tenant-first de landing [Javier :40]
+- Define documentalmente 13 estructuras, 11 índices/restricciones, seis etapas de migración futura y doce pares positivos/negativos de fixtures para host aprobado, draft, preview, publicación CAS, SEO y caché aislada.
+- Preserva G01–G16, RB01–RB08, A/B, RBAC de editor/publicador y prohibición de autoridad desde Host/forwarded-host; no crea tablas, migraciones, endpoints, DNS, workers ni datos reales.
+- Exige A0–A4 documental/Scope Lock/V5 exact-SHA y A5 independiente; CI runtime solo NO_APLICA por diff Markdown, rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C00-04.M04.04 verificación real formularios y navegación [Javier :30]
 - Cuatro pruebas Vitest Angular sobre ruta privada, retorno, revalidación single-flight, HTTP 403 fail-closed y alta empresarial sin doble envío ni falso éxito antes de respuesta.
 - Integra CI Node 24/npm 11 con Vitest dirigido, lint y build de Angular, conservando intactos componentes y guards de otras Tasks; no presenta simulación frontend como COMMIT MySQL real.
