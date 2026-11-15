@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C09-01.M02.03 CRM universal: persistencia, índices y migraciones conceptuales [Javier :30]
+- Define contratos lógicos multiempresa, 12 índices candidatos I01–I12, 8 etapas futuras M01–M08 de migración reversible y 12 fixtures sintéticos F01–F12 con positivos/negativos; no crea ni ejecuta EF, MySQL, SQL, pruebas o datos.
+- Preserva owner de Cliente.EmpresaId=NULL legado, JWT/RBAC y tenant A/B fail-closed, idempotencia, CAS, PII, consentimiento, opt-out y reversión sin drop implícito; EXPLAIN/Category=Integration siguen NO_MEDIDO.
+- Una sola microtarea R0 en docs/v5 y CHANGELOG, dev estricto, A0–A4 documentales condicionados a checks exact-SHA y readback, A5 únicamente por otra Task Javier; sin QA/main/PROD, credenciales ni datos reales.
+
 ## 2026-11-15 — V17 C09-01.M02.05 eventos conceptuales CRM [Javier :10]
 - Establece 12 tipos semánticos INERTES, 14 campos mínimos de envelope, 16 rechazos futuros sobre tenant A/B, membresía, CAS, replay, PII, segmentación, consentimiento y contabilidad, sin declarar eventos o pruebas ejecutadas.
 - Idempotencia futura por empresa/actor/operación/huella, auditoría mínima, opt-out prioritario y outbox sólo bajo implementación técnica autorizada y pruebas xUnit/MySQL pertinentes. Las decisiones D01–D08 siguen pendientes.
