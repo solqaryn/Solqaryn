@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C04-01.M02.01 contrato de entidades, ownership e invariantes de planes [Javier :10]
+- Documenta doce objetos logicos, doce invariantes y doce pares P/N FUTUROS_NO_EJECUTADOS para catalogo SaaS, con fuente real Plan, PlanLimite y Suscripcion.
+- Versionado, limites, precios y cambios de plan futuros no crean tablas, tarifas, privilegios, migraciones, cobros o webhooks; JWT/RBAC/tenant A/B fail-closed.
+- Solo docs/v5 y CHANGELOG; exigir Scope Lock/V5 exact-SHA, A5 por otra Task Javier, sin QA/main/PROD; rollback git revert.
+
 ## 2026-11-15 — V5 C03-02.M02.06 contrato terminal de salida RBAC/ABAC [Javier :00]
 - Consolida dieciséis condiciones RBA de aislamiento backend, doce pares positivos/negativos FUTUROS_NO_EJECUTADOS y ocho rutas de recuperación sobre JWT, RBAC/ABAC, tenant, sucursal, soporte, exportaciones y medios.
 - Preserva requisitos M01.01–06 y M02.01–05 LISTO+A5 más C01-02/C02-01 M01.06+A5, Scope Lock STRICT, SHA exacto, CAS institucional, A5 independiente y rollback normal.
