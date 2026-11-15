@@ -3463,3 +3463,8 @@
 - Agrega job GitHub-hosted exact SHA con Vitest de contexto A/B, interpolacion segura de rol, lint y build Angular, sin dependencias de servicios de produccion.
 - Mantiene concurrente por SHA sin cancelar pruebas por nuevos commits y deja A4 bloqueada hasta success real, sin tratar queued/cancelled como PASS.
 - Solo dev, sin nuevas Tasks, PR, ramas, secretos, cambios de seguridad o despliegues.
+
+## 2026-11-15 — V5 C01-01.M04.04 regresión real formularios Usuarios y doble accion [Javier :20]
+- Incorpora cinco pruebas unitarias Angular/Vitest para validar formulario inválido, permisos de rol/contraseña, bloqueo del doble envío, rechazo HTTP 403 y ruta con ID inválido.
+- Añade GitHub Actions dirigido de test, lint y Angular build en Node 24/npm fijo, sin alterar runtime, endpoint, JWT/RBAC/tenant ni datos de MySQL.
+- A0–A4 y Scope Lock/V5 requieren resultados exact-SHA completed/success y readback institucional; A5 independiente y rollback git revert, sin QA/main/PROD.
