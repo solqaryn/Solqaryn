@@ -3012,3 +3012,8 @@
 - Contrato exclusivamente documental: sin DDL, EF migrations, MySQL real, recursos externos, DNS, R2, workers, webhooks ni ejecución de pruebas de restauración; origen del esquema NO_ACREDITADO hasta análisis posterior.
 - Publicación dev mediante SHA/CAS fast-forward y checks Scope Lock/V5 exactos; A0–A4 documentales, A5 de otra Task Javier y rollback git revert; no QA/main/PROD.
 
+## 2026-11-14 — V5 C15-02.M02.05: señales futuras, idempotencia y correlación de migración [Javier :30]
+- Contrato documental EV01–EV14, envelope mínimo y reglas ID01–ID12 de idempotencia, correlación, cuotas y fail-closed, sin crear webhooks, eventos runtime, jobs ni Task nuevas.
+- Define diez pares T01–T10 FUTUROS_NO_EJECUTADOS, preservando contexto tenant A/B, A5 independiente, SHA causal y BITACORA append-only sin atribuir pruebas de proveedores.
+- Sólo docs/v5 más CHANGELOG autocontenido en dev, A0–A4 documentales y checks Scope Lock/V5 exact SHA antes de LISTO, A5 por otro Javier; sin QA/main/PROD, secretos ni infraestructura.
+
