@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C15-05.M03.05 frontera de proveedor read-only de auditoria [Javier :10]
+- Incorpora interfaz y gateway .NET 10 para snapshots de evidencia con comprobacion previa de tenant, SHA, seis Task IDs, revocacion y denegacion de escritura.
+- Anade xUnit positivos/negativos para respuesta ajena A/B, origen obsoleto, A5 faltante, error redactado y cancelacion; un snapshot completo sigue exigiendo AUTHENTICATED_EVIDENCE_REQUIRED.
+- No conecta proveedores reales, workers, colas, eventos, webhooks ni DB; requiere CI .NET/seguridad, Scope Lock/V5 exact SHA y A5 independiente; rollback por git revert.
+
 ## 2026-11-15 — V5 C05-02.M02.06 contrato de salida de branding y presets [Javier :10]
 - Fija los prerrequisitos LISTO + A5 de M01/M02 y C01-03.M01.06, con evidencia de reparacion de M01.02 y preservacion del A5_FAIL historico; no fuerza DAG.
 - Define 16 gates G01-G16 y seis positivos/doce negativos FUTUROS_NO_EJECUTADOS para tenancy A/B, RBAC, CAS, seguridad visual, idempotencia, accesibilidad y auditoria.
