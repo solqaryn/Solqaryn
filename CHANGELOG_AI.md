@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C14-01.M02.03 persistencia conceptual e índices de aceptación [Javier :50]
+- Define doce agregados lógicos de evidencia de aceptación, ocho índices candidatos, doce fixtures A/B sintéticos y seis etapas de migración reversible FUTURA_NO_EJECUTADA.
+- Separación fail-closed de hechos observados frente a oráculos, recibos exact-SHA y datos sensibles; sin DDL, EF/MySQL ejecutado, HTTP, PII ni prueba de backup/restore real.
+- Documentos exclusivos dev con Scope Lock STRICT, CHANGELOG V5, A0–A4 exact SHA y A5 independiente; sin QA/main/PROD ni servicios externos.
+
 ## 2026-11-15 — V5 C14-01.M02.02 contratos API/DTO y errores de aceptación [Javier :50]
 - Documenta doce rutas candidatas y DTO, catorce validaciones backend y doce errores seguros para aceptación pública, privada, administrativa y comercial; no crea endpoints ni altera contratos runtime.
 - Incluye cuatro escenarios positivos y doce negativos FUTUROS_NO_EJECUTADOS, con límites JWT/RBAC/tenant A/B, PSP, fiscal, versión e idempotencia sin asumir resultados E2E.
