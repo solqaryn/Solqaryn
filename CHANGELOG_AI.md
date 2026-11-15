@@ -1,3 +1,8 @@
+## 2026-11-15 - V5 C14-01.M03.01 preflight de aceptacion funcional .NET 10 [Javier :50]
+- Agrega regla pura Domain para validar autoridad tenant/permiso/ownership, SHA, caso y accion allowlisted, evidencia, casos positivo-negativo y reversibilidad sin autorizar efectos ni QA.
+- Suma 11 xUnit positivos y negativos de tenant A/B, rol revocado, datos privados, SHA, prueba incompleta, pago, rollback e idempotencia; se requiere CI backend/security y Scope Lock/V5 del SHA real.
+- Sin cambios HTTP, EF/MySQL, Angular, PSP, secretos, eventos ni QA/main/PROD; A5 por otra Task Javier y rollback por git revert.
+
 ## 2026-11-15 - V5 C13-04.M03.01 consistencia visual de dominio [.NET 10 Javier :50]
 - Agrega validacion puramente de dominio de tenant/permiso/SHA/superficie/estado/viewport, teclado, contraste y privacy; nunca autoriza acceso, WCAG ni release.
 - Pruebas xUnit positivas/negativas por tenant A/B, revocacion, manipulacion, datos sensibles, UI state y contraste; requiere CI backend, seguridad, Scope Lock y V5 exact SHA.
