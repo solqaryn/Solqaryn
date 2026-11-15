@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C01-01.M05.03 MySQL efimero identidad universal [Javier :40]
+- Agrega una prueba real de integración .NET/MySQL 8.4 aislada de producción que persiste usuario global, empresas A/B, roles tenant-owned y membresías, limpia EF ChangeTracker y vuelve a leer filas.
+- Verifica contexto A/B positivo y rechazos por rol cruzado, recurso de otra empresa y membresía revocada, con cleanup de base efímera localhost y sin migraciones nuevas.
+- La CI MySQL/backend/seguridad/Scope Lock/V5 exact-SHA debe acreditar A0-A4; A5 por otra Task Javier y rollback git revert, sin JWT HTTP ni QA/main/PROD.
+
 ## 2026-11-15 — V5 C10-04.M03.01 reglas de dominio cache, jobs y artefactos [Javier :40]
 - Implementa validadores reales .NET 10 puros para contexto tenant/actor, solicitudes idempotentes, limites de intento/deadline, lease y artefactos con checksum, sin conceder permisos ni efectos de runtime.
 - Agrega pruebas xUnit positivas y negativas sobre A/B, actor cruzado, payload, versiones y artefactos incompletos; A0-A4 requieren CI backend/seguridad/Scope Lock/V5 exact SHA antes de LISTO.
