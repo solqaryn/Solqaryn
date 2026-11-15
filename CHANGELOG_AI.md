@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C04-02.M01.06 barreras y rollback de contratos SaaS [Javier :40]
+- Define 16 puertas fail-closed, matriz de transiciones positivas/negativas futuras y ocho respuestas de rollback para contratos SaaS sin ejecutar pagos, MySQL, JWT/HTTP ni migraciones.
+- Conserva D01–D08 como decisiones económicas abiertas; M01.01–.05 con A5 independiente y C04-01.M01.06 son antecedentes, no autoridad para elevar permisos, publicar ni abrir M02 sin su DAG.
+- Entrega documental exclusivamente en dev mediante diff Markdown y sección CHANGELOG autocontenida, Scope Lock y procedencia V5 exact-SHA; exige A5 posterior de otra Task Javier y rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C05-04.M03.02 caso Application de ligereza y tenancy [Javier :20]
 - Implementa servicio .NET 10 de preflight con fuente de evidencia backend, validación tenant A/B antes de I/O y veredicto no-autorizante sobre caché/budgets.
 - Añade ocho xUnit reales de denegación cross-tenant, revocación, evidencia ausente, cancelación y revisión obsoleta; no afirma Core Web Vitals medidos ni integración HTTP/EF.
