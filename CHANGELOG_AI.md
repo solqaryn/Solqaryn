@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C01-01.M05.01 xUnit identidad y membresia tenant [Javier :20]
+- Anade cinco casos de pruebas .NET 10 (tres variantes Theory y dos Fact) sobre rol empresarial vigente, revocacion, tenant A/B, IDs invalidos y rechazo de RolId legacy, sin modificar codigo de produccion.
+- El PASS exige pruebas backend GitHub Actions exact-SHA, Scope Lock y procedencia V5; reglas Domain no certifican JWT, MySQL, filtros EF ni seguridad HTTP en vivo.
+- Entrega pruebas mas contrato documental, A5 independiente pendiente, git revert normal; sin Angular, QA/main/PROD, eventos, webhooks ni dispatchers.
+
 ## 2026-11-15 — V5 C10-04.M02.06 salida documental cache jobs backups y exportaciones [Javier :30]
 - Consolida cinco contratos M02 y sus A5 independientes, dieciseis gates G01-G16 y handoff Domain/Application/Infrastructure/API, cache, jobs, exportaciones y respaldos sin activar runtime.
 - Documenta RB01-RB08 y doce pares P/N FUTUROS_NO_EJECUTADOS con aislamiento tenant A/B, usuarios A1/A2, JWT/RBAC, version CAS, cuotas e idempotencia fail-closed; no DDL, eventos, dispatcher, backups, endpoints ni proveedores.

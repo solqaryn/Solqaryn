@@ -178,4 +178,60 @@ public sealed class IdentidadUniversalReglasTests
         Assert.Throws<ArgumentNullException>(() =>
             IdentidadUniversalReglas.ExigirSucursal(Contexto(), null!));
     }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(-1)]
+    [InlineData(22)]
+    public void ContextoVerificado_NoPuedeReutilizarseParaOtraEmpresa(int empresaSolicitada)
+    {
+        var contextoA = Contexto();
+        if (empresaSolicitada <= 0)
+            Assert.Throws<ArgumentOutOfRangeException>(() => contextoA.ExigirEmpresa(empresaSolicitada));
+        else
+            Assert.Throws<InvalidOperationException>(() => contextoA.ExigirEmpresa(empresaSolicitada));
+        contextoA.ExigirEmpresa(11);
+        Assert.Equal(11, contextoA.EmpresaId);
+    }
+
+    [Fact]
+    public void CambioDeRolDeMembresia_NoAceptaRolLegacyNiRolDesactualizado()
+    {
+        var (usuario, empresa, membresia, rol) = Vigentes();
+        usuario.RolId = 19;
+        membresia.CambiarRol(20);
+
+        Assert.Throws<InvalidOperationException>(() =>
+            IdentidadUniversalReglas.CrearContextoVerificado(usuario, empresa, membresia, rol));
+
+        rol.Id = 20;
+        var contextoNuevo = IdentidadUniversalReglas.CrearContextoVerificado(usuario, empresa, membresia, rol);
+        Assert.Equal(20, contextoNuevo.RolId);
+        Assert.Equal(11, contextoNuevo.EmpresaId);
+
+        membresia.Desactivar();
+        Assert.Throws<InvalidOperationException>(() =>
+            IdentidadUniversalReglas.CrearContextoVerificado(usuario, empresa, membresia, rol));
+    }
+
+    [Fact]
+    public void MismoUsuarioEnEmpresasAyb_NoCruzaContextosNiRoles()
+    {
+        var (usuario, empresaA, membresiaA, rolA) = Vigentes();
+        var empresaB = new Empresa("B") { Id = 22 };
+        var membresiaB = new UsuarioEmpresa(usuario.Id, 22, 29);
+        var rolB = new Rol { Id = 29, EmpresaId = 22, Activo = true };
+
+        var contextoA = IdentidadUniversalReglas.CrearContextoVerificado(
+            usuario, empresaA, membresiaA, rolA);
+        var contextoB = IdentidadUniversalReglas.CrearContextoVerificado(
+            usuario, empresaB, membresiaB, rolB);
+
+        Assert.Equal(19, contextoA.RolId);
+        Assert.Equal(29, contextoB.RolId);
+        Assert.Throws<InvalidOperationException>(() => contextoA.ExigirEmpresa(contextoB.EmpresaId));
+        Assert.Throws<InvalidOperationException>(() => contextoB.ExigirEmpresa(contextoA.EmpresaId));
+        Assert.Throws<InvalidOperationException>(() =>
+            IdentidadUniversalReglas.CrearContextoVerificado(usuario, empresaB, membresiaA, rolB));
+    }
 }
