@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C02-04.M03.04 adaptador aislado de consola global [Javier :50]
+- Implementado Infrastructure .NET 10 de snapshot read-only para el gate Application de control plane: actor, tenant, SHA y evidencia se verifican por identidad exacta, sin grants, proveedores, DI ni persistencia real.
+- Añadidos nueve métodos xUnit positivos, negativos, adversariales y frontera para tenant A/B, revocación, MFA, permisos de plataforma, bypass cliente, cancelación, error y versión obsoleta.
+- Riesgo V15 R2; CI backend, autorización, seguridad, Scope Lock y V5 requerida antes de LISTO. No JWT HTTP, EF/MySQL, QA/main/PROD. Revisión A5 de otra Task Javier, rollback git revert.
+
 ## 2026-11-15 — V5 C01-02.M03.01 capabilities Domain fail-closed [Javier :30]
 - Implementa reglas .NET 10 Domain de intersección ordinal de capability, empresa/rol/membresía, ownership recurso, sucursal, plan/rubro y denylist; ningún entitlement crea grant RBAC.
 - Añade 13 pruebas xUnit positivas/negativas contra actor/tenant cruzado, revocación, sucursal ajena, plan vencido, permiso faltante, matriz incompleta y capability deshabilitada; PASS sólo con CI del SHA.
