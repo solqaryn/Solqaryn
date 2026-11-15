@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C14-03.M02.06 contrato terminal de dependencias de promoción controlada [Javier :50]
+- Fija dieciséis gates de diseño, dieciséis pares positivos/negativos FUTUROS_NO_EJECUTADOS y criterios de salida M02, separados de M03, QA/main/PROD y autorizaciones por entorno.
+- Conserva Scope Lock STRICT, SHA/CI exactos, JWT/RBAC/tenant A/B, A5 independiente, owner CAS, rollback y defaults fail-closed; sin crear API, MySQL, webhooks, workers, secretos ni desplegar.
+- Entrega documental con A0–A4 y readbacks individuales; Scope Lock y procedencia V5 deben aprobar el SHA publicado, A5 queda pendiente de otra Task Javier y rollback es git revert.
+
 ## 2026-11-15 — V5 C14-03.M02.05: señales conceptuales e idempotencia de promoción [Javier :30]
 - Contrato documental de ocho señales NO EMITIDAS, quince campos hipotéticos, catorce reglas fail-closed y doce pares P/N FUTUROS_NO_EJECUTADOS para separación DEV/QA/PROD.
 - Toda promoción futura requiere SHA/checks exactos, identidad y RBAC, A5 distinta, autorización de ambiente, rollback y readback real; una señal no equivale a PASS ni despierta Tasks.
