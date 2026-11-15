@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C13-02.M02.04 configuración segura accesibilidad [Javier :50]
+- Contrato R0 con 24 opciones tipadas propuestas, precedencia PLATFORM/TENANT/MODULE/SURFACE/USER, 16 invariantes, seis P y seis N FUTUROS_NO_EJECUTADOS; no se instalaron flags o controles ejecutables.
+- Seguridad JWT/RBAC/tenant A/B y revocación no pueden degradarse por UI o valores de menor ámbito; no se hicieron tests Angular/Playwright/MySQL ni certificación WCAG, únicamente definición de obligaciones futuras.
+- V17 lock SQV17_C13_02_M02_04 fila 1919, commit dev con Scope Lock/V5 necesarios exact SHA; A0–A4 documental y A5 distinta Task Javier para posterior; rollback git revert normal, sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C09-02.M02.01 modelo conceptual de fidelizacion y reputacion [Javier :00]
 - Define E01-E16 entidades conceptuales, relaciones tenant-bound e INV01-INV20 para programa, puntos, promocion, antifraude, resenas, moderacion, apelacion, posventa, consentimiento y auditoria; Cliente.EmpresaId=NULL no demuestra ownership.
 - Propone doce pares P/N FUTUROS_NO_EJECUTADOS para tenant A/B, JWT/RBAC, revocacion, replay, canje concurrente, PII, saneamiento y opt-out; runtime xUnit/MySQL/API/Angular/Playwright NO_APLICA al diff exclusivamente Markdown, pruebas reales NO_MEDIDO.
