@@ -179,4 +179,34 @@ public sealed class C1204PrivateMySqlReadinessApplicationServiceTests
         await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
             service.ReviewAsync(Actor(), Request(), cancellation.Token));
     }
+
+    [Fact]
+    public async Task UnsafeActorOrTenantIdentifiersNeverReachTheEvidenceReader()
+    {
+        var reader = new Reader();
+        var service = new C1204PrivateMySqlReadinessApplicationService(reader);
+        Assert.Equal("VERIFIED_SERVER_ACTOR_REQUIRED",
+            (await service.ReviewAsync(
+                Actor() with { ActorId = "actor/unsafe" }, Request())).Code);
+        Assert.Equal("VERIFIED_SERVER_ACTOR_REQUIRED",
+            (await service.ReviewAsync(
+                Actor() with { TenantId = "tenant-A\r\nheader" }, Request())).Code);
+        Assert.Equal("VERIFIED_SERVER_ACTOR_REQUIRED",
+            (await service.ReviewAsync(
+                Actor() with { ActorId = new string('x', 129) }, Request())).Code);
+        Assert.Equal(0, reader.Calls);
+    }
+
+    [Fact]
+    public async Task MalformedEvidenceReaderSnapshotFailsClosedInsteadOfThrowing()
+    {
+        var reader = new Reader
+        {
+            Evidence = new C1204VerifiedEvidence("actor-01", "tenant-A", Sha, null!)
+        };
+        var result = await new C1204PrivateMySqlReadinessApplicationService(reader)
+            .ReviewAsync(Actor(), Request());
+        Assert.Equal("EVIDENCE_PROVENANCE_MISMATCH", result.Code);
+        Assert.False(result.AuthorizesSqlOrMigration);
+    }
 }

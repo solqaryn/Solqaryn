@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C12-04.M03.02 reparación defensiva de IDs y snapshot R2 [Javier :40]
+- Endurece servicio Application para rechazar IDs actor/tenant no canónicos o mayores de 128 antes de consultar el proveedor de evidencias; no aceptar caracteres de control, URLs ni identificadores con separadores inseguros.
+- Rechaza snapshots nulos de proveedor defectuoso con EVIDENCE_PROVENANCE_MISMATCH sin aceptar veredictos de autoridad ni hacer SQL/cutover; agrega dos xUnit negativos de regresión.
+- Reparación mínima sobre cuatro archivos de la microtarea VALIDANDO, V17, SHA nuevo y revalidación backend/seguridad/autorización/ScopeLock/V5; A5 ajena, sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C12-04.M03.02 servicio Application privado de revisión MySQL [Javier :40]
 - Agrega servicio .NET 10 aislado con interfaz de lectura de evidencia, verificación fail-closed de actor/tenant/SHA y reutilización Domain C12-04.M03.01; jamás autoriza SQL, migración, cutover o deployment.
 - Incluye ocho pruebas xUnit con caso de revisión dev acotada, rechazos JWT/RBAC/MFA/tenant A/B, grants, restore, fencing, SHA cruzado, cancelación y fallo del proveedor; lectores falsos no prueban MySQL ni HTTP reales.

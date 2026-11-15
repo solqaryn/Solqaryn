@@ -68,8 +68,8 @@ public sealed class C1204PrivateMySqlReadinessApplicationService
         cancellationToken.ThrowIfCancellationRequested();
 
         if (trustedActor is null || request is null ||
-            string.IsNullOrWhiteSpace(trustedActor.ActorId) ||
-            string.IsNullOrWhiteSpace(trustedActor.TenantId) ||
+            !SafeOpaqueId(trustedActor.ActorId) ||
+            !SafeOpaqueId(trustedActor.TenantId) ||
             !trustedActor.JwtAuthenticatedByServer ||
             !trustedActor.MembershipCurrent ||
             !trustedActor.CanReviewCutover ||
@@ -112,6 +112,9 @@ public sealed class C1204PrivateMySqlReadinessApplicationService
         if (evidence is null)
             return new("EVIDENCE_NOT_VERIFIED");
 
+        if (evidence.Snapshot is null)
+            return new("EVIDENCE_PROVENANCE_MISMATCH");
+
         if (!string.Equals(evidence.ActorId, trustedActor.ActorId,
                 StringComparison.Ordinal) ||
             !string.Equals(evidence.TenantId, trustedActor.TenantId,
@@ -130,4 +133,10 @@ public sealed class C1204PrivateMySqlReadinessApplicationService
         var verdict = Guard.Evaluate(evidence.Snapshot, request);
         return new(verdict.Code);
     }
+
+    private static bool SafeOpaqueId(string? value) =>
+        value is { Length: >= 1 and <= 128 } &&
+        value.All(c => (c >= 'a' && c <= 'z') ||
+                       (c >= 'A' && c <= 'Z') ||
+                       (c >= '0' && c <= '9') || c is '-' or '_' or '.');
 }

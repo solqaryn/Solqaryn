@@ -27,3 +27,7 @@ Un único changeset en dev bajo candado V17 por fila 1851, commit fast-forward c
 ## A5 y reversión
 
 A5 requiere Task de Javier distinta de DEV05 con lectura independiente de tests y límites. El autor jamás se autoaprueba. Reversión: git revert normal de los cuatro archivos de este ID, sin force-push ni reescritura histórica; nunca promover QA/main/PROD ni usar datos/secretos de Aiven o producción.
+
+## Reparación defensiva R2 — alcance propio
+
+Se impide pasar al futuro lector de evidencias identificadores actor/tenant con delimitadores, caracteres de control o longitud superior a 128; el patrón opaco admite únicamente alfanuméricos ASCII, guion, guion bajo y punto. Se añade guard explícito para snapshot nulo aunque un proveedor defectuoso incumpla su contrato. Dos pruebas xUnit nuevas comprueban el rechazo sin invocar el lector y fallo seguro ante un snapshot nulo. Ninguna prueba o implementación autentica JWT ni se conecta a MySQL. Se publicará mediante SHA nuevo y se revalidará CI exacta antes de LISTO_DEV.
