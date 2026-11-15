@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C03-03.M02.02 contratos de auditoría API/DTO y errores seguros [Javier :10]
+- Especifica ocho operaciones actuales o futuras, 14 errores seguros y ocho pares positivos/negativos FUTUROS_NO_EJECUTADOS de auditoría: autorización, cambios críticos, acceso excepcional, correlación y no exposición.
+- Preserva la diferencia best-effort/strict de AuditoriaService, control backend JWT/RBAC y tenant A/B, BOLA/IDOR, PII, fail-closed; no confunde correlación con idempotencia ni documento con prueba.
+- Cambio exclusivamente documental en dev; sin API ejecutable, EF/MySQL, IAM, worker, webhook, retención activa, QA/main/PROD; Scope Lock/V5 exact-SHA, A0–A4, A5 independiente y rollback git revert.
+
 ## 2026-11-15 — V5 C03-03.M02.01 entidades y aislamiento de auditoría de seguridad [Javier :50]
 - Documenta 16 entidades conceptuales/owners de auditoría, 18 invariantes A/B, JWT/RBAC, redacción y fallo estricto, 10 fallas y 10 pares P/N FUTUROS_NO_EJECUTADOS.
 - Distingue AuditoriaController, AuditoriaService best-effort/estricto y AuditoriaRepository sin afirmar fuga ni aislamiento HTTP/MySQL ya certificado; no cambia código, permisos, retención, consultas, DB ni eventos.
