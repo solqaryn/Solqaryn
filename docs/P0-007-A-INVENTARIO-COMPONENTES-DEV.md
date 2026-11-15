@@ -390,3 +390,11 @@ La nueva superficie de estados accesibles de usuarios agrega una ruta al inventa
 - `frontend/src/app/features/usuarios/usuarios-estado-listado.component.ts`
 
 Este registro no equivale a certificar interacción real, accesibilidad, E2E ni despliegue; la prueba UI corresponde a C01-01.M04.02 y exige GitHub-hosted CI exact SHA y revisión A5 independiente.
+
+## Actualización aditiva V5 C00-04.M04.01 — 15 de noviembre de 2026
+
+La nueva superficie protegida de consulta para gobierno de cambios agrega un archivo `.component.ts` real de Angular al inventario vigente: **141 archivos (133 features y 8 shared)**. El inventario histórico de 137, y los cortes aditivos de 138/139/140, permanecen intactos como evidencia de sus SHAs originales.
+
+- `frontend/src/app/features/plataforma/gobierno-cambios-v5.component.ts`
+
+Se actualizan únicamente los recuentos exactos del verificador P0-007.A y se conserva la detección fail-closed de altas no inventariadas y archivos desaparecidos. El guard servidor sigue siendo `plataformaGuard`; registrar un componente no concede JWT, RBAC, acceso tenant, autorización de cambios, QA/main/PROD ni certifica UX o Playwright. Evidencia de CI dirigida para C00-04.M04.01 y reversión mediante `git revert` normal, sin reescribir la lista histórica.

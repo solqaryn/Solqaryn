@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C00-04.M04.01 reconciliación reproducible de catálogo Angular [Javier :20]
+- Corrige P0-007.A catalog drift del SHA 1ecaac0c: el componente nuevo de gobierno se había publicado sin registrar su ruta `.component.ts` en el inventario histórico-aditivo.
+- Registra exclusivamente la nueva ruta de archivo; mantiene el detector de omisiones, fuentes faltantes y test negativo, actualizando recuento de 140 a 141 (133 features, 8 shared).
+- No cambia guards, JWT, RBAC, tenant, API, base de datos ni reglas de QA/main/PROD; CI GitHub del SHA de reparación obligatoria antes de LISTO.
+
 ## 2026-11-15 — V5 C00-04.M04.01 reparación causal del control de rutas ERP [Javier :20]
 - GitHub Actions ERP - Contratos, pruebas y build falló en el SHA 7124d178 por FRONTEND_ROUTE_SECURITY_CONTRACT: el escáner de rutas mantenía un allowlist literal que no conocía la nueva ruta de plataforma.
 - Extiende únicamente el conjunto de rutas exactas de plataforma reconocidas por el auditor, conservando las verificaciones obligatorias de plataformaGuard, JWT autenticado, sesión backend, ámbito Plataforma y esAdministrador verdadero; no permite rutas arbitrarias, públicas, ERP ni tiendas.
