@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-02.M01.06 bloqueo, rollback y liberación documental de arquitectura/migración [Javier :20]
+- Cierra el contrato terminal de preparación M01 con BL01–BL16, RB01–RB08 y ocho puertas E01–E08; exige M01.01–05 LISTO+A5 independientes, sin inventar pruebas de infraestructura.
+- Distingue Vercel/Render/Aiven/Cloudinary declarados de Hostinger/Cloudflare/R2 objetivos; no activa DNS, datos, JWT/RBAC, migraciones, webhooks, servicios ni QA/main/PROD.
+- Sólo Markdown en dev, CI Scope Lock y procedencia V5 exact-SHA, estado LISTO_DEV sujeto a A0–A4, A5 posterior de otra Task Javier; rollback Git normal sin reescribir historia.
+
 ## 2026-11-14 — V5 C15-03.M02.06 dependencias y salida documental de auditoría de seguridad/tenancy [Javier :00]
 - Cierra el contrato conceptual de M02 tras M01 y cinco M02 LISTO+A5 independientes: 16 controles SECOUT, 12 pares NEG futuros y 8 bloqueos explícitos.
 - Riesgos de TenantQueryBypassGuard, NULL legado, FK compuestas, JWT/RBAC, archivos, jobs, control plane e idempotencia requieren pruebas .NET/HTTP/MySQL reales en M03, NO_EJECUTADAS.
