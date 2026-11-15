@@ -4,7 +4,7 @@
 
 ## 1. Fuente y preflight de autorización
 
-Autoridad de alcance: [STANDARD V5 FINAL](https://docs.google.com/document/d/1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA/edit) y [Sheet institucional](https://docs.google.com/spreadsheets/d/1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU/edit); Skill local y canónica, AGENTS.md, Scope Lock y arquitectura vigente. La preparación M01 está documentada en [M01.06](c14-04-m01-06-bloqueos-rollback-liberacion-puesta-en-marcha.md); verificar en Git su ruta y contenido antes de cualquier implementación.
+Autoridad de alcance: [STANDARD V5 FINAL](https://docs.google.com/document/d/1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA/edit) y [Sheet institucional](https://docs.google.com/spreadsheets/d/1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU/edit); Skill local y canónica, AGENTS.md, Scope Lock y arquitectura vigente. La preparación M01 está documentada en [M01.06](c14-04-m01-06-bloqueo-rollback-liberacion-puesta-en-marcha.md); verificar en Git su ruta y contenido antes de cualquier implementación.
 
 Para este único ID, `PLAN_MAESTRO!H2137=PENDIENTE` e I vacía en el preflight; `COLA!G2137/O2137=SI` y `DAG_TECNICO!F2098=VALIDADO/G2098=SI` tras cinco A5 independientes. El DAG exige `C14-04.M01.01–06+A5` y `C14-04.M02.01–05+A5`. El claim debe registrarse con un owner y readback; leer/escribir Sheets no es, por sí solo, una transacción CAS distribuida. No inferir autorización futura desde esta fotografía.
 

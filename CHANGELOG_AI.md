@@ -2895,3 +2895,5 @@
 - Consolida dieciséis gates G01–G16, diez escenarios de rollback R01–R10 y diez pares positivos/negativos T01–T10 FUTUROS_NO_EJECUTADOS de go-live, soporte y monitoreo.
 - Referencia M01 y cinco contratos M02 con sus SHA originales y revisiones A5 de otra Task; el documento no valida smoke real, backup/restore, DNS, TLS o disponibilidad.
 - Sólo documento V5 y CHANGELOG en dev; Scope Lock y procedencia exact-SHA antes de LISTO_DEV, A5 independiente posterior, sin cambios MySQL, eventos, runtime, QA/main/PROD ni servicios reales.
+## 2026-11-14 — V5 C14-04.M02.06: corrección de enlace documental [Javier :30]
+- Rectifica la referencia a M01.06 contra el archivo existente en dev, manteniendo invariantes de seguridad, gates, alcance documental y A5 pendiente; no cambia runtime ni entornos.
