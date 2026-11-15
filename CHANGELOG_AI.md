@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C07-04.M03.03 puerta de autorización comercial fail-closed [.NET 10 Javier :40]
+- Añade un gate Application que recibe identidad y pertenencia backend verificadas, propiedad persistida tenant A/B y catálogo de permisos, sin aceptar del cliente TrustedContext ni snapshots de autorización.
+- Integra Domain y el servicio M03.02 para validar operaciones, versión, moneda, importe, estado, idempotencia y controles PSP/fiscales; nueve xUnit positivos/negativos, sin ejecutar mutaciones comerciales.
+- El resultado positivo exige adaptador autenticado durable y A5 independiente; no añade HTTP, EF/MySQL, JWT/RBAC live, secretos, pagos, facturas, eventos, QA/main/PROD. CI exact SHA .NET/seguridad/Scope Lock/V5 requerida.
+
 ## 2026-11-15 — V5 C14-01.M03.02 caso Application de aceptación funcional y seguridad [.NET 10 Javier :40]
 - Implementa caso real Application que compone reglas Domain para solicitudes de aceptación con tenant, ownership, rol vigente, acción/caso allowlisted, SHA y presupuesto finito de observaciones.
 - Añade nueve xUnit positivos/negativos de revocación, tenant A/B, casos y acciones no autorizados, ausencia de catálogo, lote nulo/excesivo, privacidad, rollback, idempotencia y efectos productivos.
