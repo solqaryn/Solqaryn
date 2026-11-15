@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C11-03.M01.06 puertas de salida y reversión de outbox/eventos [Javier :10]
+- Consolida B01–B14 de aislamiento/actor/tenant, CAS/lease, idempotencia, orden, cuota y seguridad de payload; define RB01–RB10 de contención y rollback futuro.
+- Propone diez pares P/N de aceptación FUTUROS_NO_EJECUTADOS, conserva contratos Outbox existentes, exige A5 independiente antes de M02 y CI real para código M03.
+- Entrega documental, sin crear relay, webhooks, workers, migraciones, colas, proveedores o QA/main/PROD; requiere Scope Lock/V5 exact-SHA y BITACORA/PLAN/COLA readback.
+
 ## 2026-11-15 — V5 C10-04.M02.05 contrato conceptual de señales e idempotencia [Javier :20]
 - Documenta dieciseis campos, diez senales FUTURAS_NO_EJECUTADAS, dieciseis invariantes y diez pares de oraculos P/N sobre tenant A/B, revocacion, lease CAS, retry, privacidad y rollback.
 - NO IMPLEMENTAR EVENTOS TODAVIA: no crea outbox, scheduler, dispatcher, consumidor, webhook, cron, Tasks, APIs, migraciones, proveedores ni escrituras externas.
