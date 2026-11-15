@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C01-02.M03.03 fence de capabilities y RBAC [Javier :40]
+- Implementa Application .NET 10 de intersección fail-closed por empresa, rol efectivo, sucursal, recurso, plan, rubro y capability; reconsulta identidad y RBAC relacional vigentes mediante IdentidadUniversalAuthorizationGuard.
+- Añade 12 xUnit genuinos positivos/negativos de tenant A/B, revocación, grant falso, propiedad, dominio, fuente ausente, clave ordinal y cancelación; exigir Backend Release, seguridad, Authorization, Scope Lock y V5 exact-SHA.
+- Resultado no autoriza endpoints, datos, exportaciones, activación ni override tenant; lector de política persistida y adaptador HTTP son integración futura independiente. R2, A5 por otra Task Javier, rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C02-02.M03.03 adaptador aislado de contexto de ubicación tenant [Javier :30]
 - Implementa Infrastructure .NET 10 con captura read-only de tenant, actor, revisión CAS y SHA, reutilizando Domain/Application sin seleccionar conexión, ejecutar MySQL, migraciones ni cutover.
 - Añade 13 xUnit reales de tenant A/B, fuente obsoleta, propietario falsificado, RBAC, revocación, binding, restauración y idempotencia; exigir GH Actions Release, seguridad, autorización, Scope Lock y V5 exact-SHA.
