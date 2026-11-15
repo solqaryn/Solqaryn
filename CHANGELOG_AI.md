@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C03-03.M02.04 configuración tipada y flags de auditoría [Javier :50]
+- Define 16 opciones conceptuales, 18 invariantes fail-closed y 10 pares P/N FUTUROS_NO_EJECUTADOS para tenant A/B, JWT/RBAC, redacción, auditoría estricta, límites y retención sin políticas inventadas.
+- Contrasta AuditoriaController, AuditoriaService best-effort/estricto, AuditoriaRepository y CorrelationIdMiddleware sin afirmar fuga, acceso excepcional, HTTP/MySQL o retención certificados; ninguna variable, servicio, secreto o base modificados.
+- Sólo dos Markdown en dev, fast-forward/CAS, Scope Lock/V5 SHA exacto, A0–A4 documentales y A5 independiente; sin QA/main/PROD, revert normal.
+
 ## 2026-11-15 — V5 C03-03.M02.02 contratos de auditoría API/DTO y errores seguros [Javier :10]
 - Especifica ocho operaciones actuales o futuras, 14 errores seguros y ocho pares positivos/negativos FUTUROS_NO_EJECUTADOS de auditoría: autorización, cambios críticos, acceso excepcional, correlación y no exposición.
 - Preserva la diferencia best-effort/strict de AuditoriaService, control backend JWT/RBAC y tenant A/B, BOLA/IDOR, PII, fail-closed; no confunde correlación con idempotencia ni documento con prueba.
