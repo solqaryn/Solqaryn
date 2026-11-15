@@ -34,7 +34,7 @@ La precedencia efectiva es `PLATFORM_SECURITY (invariante) -> DEPLOYMENT_ENV -> 
 | CFG-09 | `TaxRuleMode: enum` | `SERVER_VALIDATED` | Impuesto legal no controlado por cliente |
 | CFG-10 | `PublicProjectionEnabled: bool` | false | Requiere binding host y publicación aprobados |
 | CFG-11 | `PublicFieldsAllowlist: set<field>` | campos mínimos | Prohibir costo, draft, PII, stock interno, owner |
-| CFG-12 | `InventoryAvailabilityMode: enum` | `REQUIRE_SERVER_PROOF` | Stock transaccional por sucursal/variante |
+| CFG-12 | `StockAvailabilityMode: enum` | `REQUIRE_SERVER_PROOF` | Stock transaccional por sucursal/variante |
 | CFG-13 | `PageSizeMax: int` | límite conservador | Paginación server-side y cuotas |
 | CFG-14 | `OperationRateLimit: int/duration` | techo platform | Política por tenant, usuario y host sin fuga |
 | CFG-15 | `IdempotencyTtlSeconds: int` | deshabilitado sin store fiable | TTL acotado y namespace tenant+actor+operación |

@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 reparación dirigida Scope Lock C07-01.M02.04/M02.05 [Javier :10]
+- Corrige dos nombres conceptuales que contenían una palabra inglesa reservada por el verificador de identidad del proyecto; usa StockAvailabilityMode y CatalogStockAvailabilityChanged sin alterar reglas, seguridad ni datos.
+- Origen: check verify-solqaryn-project-scope FAILED en SHA 927e4a54 con dos rutas docs/v5; reparación mínima preserva pruebas y controles y requiere nueva CI exact-SHA SUCCESS antes LISTO_DEV.
+- Solo dos Markdown y CHANGELOG, commit fast-forward con control de HEAD, sin desactivar analizador ni modificar runtime/QA/main/PROD.
+
 ## 2026-11-15 — V5 C07-01.M02.04 configuracion tipada conceptual y flags de catalogo [Javier :10]
 - Define dieciocho opciones tipadas propuestas, cuatro ámbitos de precedencia, catorce reglas de validación y catorce pares PN FUTUROS_NO_EJECUTADOS para catálogo universal.
 - Conserva tenant A/B y rol actual verificado en backend, NULL legacy en Producto/Variante y categoría sin EmpresaId asumida; presets fail-closed, sin secretos ni activación runtime.

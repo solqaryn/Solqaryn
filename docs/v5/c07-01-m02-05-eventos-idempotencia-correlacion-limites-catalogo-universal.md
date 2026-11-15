@@ -41,7 +41,7 @@ EventEnvelopeV1 {
 | EVT-07 | `CatalogPriceVersionPublished` | Servicio de precios | ID/version/vigencia; precio por servidor, snapshots intactos |
 | EVT-08 | `CatalogItemPublished` | Application | item/host aprobados, no draft/costo/PII |
 | EVT-09 | `CatalogItemUnpublished` | Application | versión y razón segura; invalidación futura scoped |
-| EVT-10 | `CatalogInventoryAvailabilityChanged` | Servicio inventario | identificador propio y disponibilidad resumida, sin cantidades B |
+| EVT-10 | `CatalogStockAvailabilityChanged` | Servicio inventario | identificador propio y disponibilidad resumida, sin cantidades B |
 | EVT-11 | `CatalogLegacyItemQuarantined` | Proceso autorizado de revisión | ID pseudónimo, clasificación y razón acotada, NULL no público |
 | EVT-12 | `CatalogItemArchived` | Application | ID, tombstone/version, sin borrar documentos históricos |
 
