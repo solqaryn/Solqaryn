@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C08-02.M01.06: contrato terminal de mesas, QR y reversas [Javier :40]
+- Documenta 16 barreras B01–B16, 12 evidencias E01–E12 FUTURAS NO_EJECUTADAS y 8 rutas de rollback RB01–RB08 para QR falso, mesa ajena, pedido, idempotencia y cierre seguro.
+- Concilia las cinco M01.01–05 LISTO con revisiones A5 independientes y las dependencias técnicas/fase calculadas, sin forzar COLA/DAG. M02 requiere gates propios y A5 independiente de esta M01.06 cuando corresponda.
+- Sólo Markdown y CHANGELOG en dev, R0 sin API, JWT, MySQL, Angular, PSP, migración, worker, webhook o QR ejecutable; Scope Lock/V5 exact-SHA, BITACORA/readback y A5 de otra Task Javier. Rollback git revert normal, sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C15-05.M04.02 estados accesibles de auditoría operativa [Javier :20]
 - Implementa carga, vacío, error, éxito y denegación en la ruta privada existente; revalidación single-flight mediante sesión del backend, sin leer microtareas ni conceder permisos por UI.
 - Añade Vitest positivos, negativos y bordes de permisos, y Chromium sintético de revalidación/móvil/teclado; los mocks no certifican JWT ni backend tenant real.
