@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C07-04.M03.01 reglas de dominio comerciales reales .NET 10 y xUnit [Javier :20]
+- Implementa Domain `V5CommercialDocumentDomainRules`: contexto backend confiable, propiedad tenant A/B y NULL legado, versión, moneda, importe, estado, grants, fingerprint SHA-256, fiscalidad y PSP fail-closed.
+- Añade pruebas xUnit positivas/negativas de permisos, estados, concurrencia, A/B, idempotencia y autoridad; el veredicto positivo exige aún controles Application/API/DB, sin ejecutar pagos ni emitir facturas.
+- Publicación sólo dev con A0–A4 y CI causal exact-SHA; A5 independiente pendiente, sin migraciones, eventos, QA/main/PROD ni cambios de secretos.
+
 ## 2026-11-14 — V5 C15-02.M01.06 bloqueo, rollback y liberación documental de arquitectura/migración [Javier :20]
 - Cierra el contrato terminal de preparación M01 con BL01–BL16, RB01–RB08 y ocho puertas E01–E08; exige M01.01–05 LISTO+A5 independientes, sin inventar pruebas de infraestructura.
 - Distingue Vercel/Render/Aiven/Cloudinary declarados de Hostinger/Cloudflare/R2 objetivos; no activa DNS, datos, JWT/RBAC, migraciones, webhooks, servicios ni QA/main/PROD.
