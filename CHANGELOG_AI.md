@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C14-03.M02.04 configuración tipada y flags seguros [Javier :40]
+- Especifica 16 campos tipados, 12 flags apagados, 6 reglas de precedencia y 12 pares P/N futuros para revisión de promoción controlada, sin crear configuración runtime.
+- Preserva JWT/RBAC/tenant A/B, evidencia CI exact SHA, Scope Lock y autorización distinta por ambiente; no toca QA/main/PROD ni secretos.
+- Sólo contrato documental con A0-A4 y check V5 exact-SHA; A5 corresponde a Task Javier independiente y no sustituye permisos de release.
+
 ## 2026-11-15 — V5 C14-03.M02.03 contrato de persistencia para promoción controlada [Javier :40]
 - Define diez entidades conceptuales, ocho índices propuestos, seis gates de migración futura y diez fixtures sintéticos para releases con SHA y digest trazables; no crea tablas ni migraciones.
 - Mantiene JWT/RBAC/tenant A/B, Scope Lock y autorización independiente por ambiente; QA/main/PROD, MySQL real, eventos y webhooks permanecen sin cambios.
