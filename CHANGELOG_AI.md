@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C01-01.M06.01 auditoría de cobertura real e insuficiencia de dobles [Javier :20]
+- Audita seis entregas M05 con evidencias de pruebas Domain, Application, controlador, EF/MySQL local y Chromium, separando dobles legítimos de ejecución integrada real.
+- Documenta brechas de JWT/HTTP, filtros de persistencia, rendimiento p95 y cobertura WCAG sin inventar PASS ni ejecutar servicios; Scope Lock y seguridad tenant A/B intactos.
+- Entrega individual en dev, A0-A4 documentales y A5 independiente pendiente; reversión git revert, sin QA/main/PROD ni proveedores reales.
+
 ## 2026-11-15 — V5 C05-04.M03.03 preflight autenticado de ligereza por tenant [Javier :10]
 - Incorpora gate Application .NET 10 con evidencia backend, tenant A/B, propietario persistido, RBAC vigente, invalidación por revocación y SHA exacto. Rechaza bypass cliente, precarga privada y telemetría sensible.
 - Añade diez tests xUnit positivos/negativos sobre identidad, revocación, cross-tenant, caché, versión y presupuestos. El veredicto nominal no concede JWT/HTTP ni Core Web Vitals: requiere adaptador runtime posterior.
