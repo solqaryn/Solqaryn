@@ -3071,3 +3071,8 @@
 - Contrato terminal M01 de capabilities sectoriales sin duplicar entidades/tenants ni implementar módulos; enumera BL01–BL16 y RB01–RB10 para rollback y no-regresión.
 - Prerrequisitos M01.01–05 LISTO+A5 y DAG individual verificados, A5 de M01.04 independiente; activación/desactivación real, JWT/RBAC, MySQL y tenant A/B quedan NO_EJECUTADOS.
 - Publicación solo documento+CHANGELOG en dev por FF/CAS, Scope Lock/V5 exact SHA, A5 pendiente de otra Task Javier y reversión git revert; no QA/main/PROD.
+
+## 2026-11-14 — V5 C05-04.M02.01 modelo conceptual de ligereza UI [Javier :00]
+- Define E01–E08, INV01–INV14 y cinco positivos/diez negativos futuros de UX ligera, tenancy A/B, deduplicación HTTP, acceso RBAC y medición de budget/CWV sin fingir valores medidos.
+- Contrato M02.01 documental con M01.01–06 LISTO+A5, sin crear tablas, DTO, CSS, Angular, endpoints, métricas reales ni scripts de CI.
+- Dev fast-forward/CAS, Scope Lock y provenance V5 SHA exacto, A5 de otra Task Javier pendiente y rollback git revert; no QA/main/PROD.
