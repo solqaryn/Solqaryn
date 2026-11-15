@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C07-04.M02.05 eventos conceptuales e idempotencia de pedidos/pagos [Javier :50]
+- Especifica 14 eventos NO_EMITIDOS, 14 campos conceptuales, 12 reglas de idempotencia y 12 límites para cotización, pedido, factura, pago, stock y compensación.
+- Define 12 pares positivos/negativos FUTUROS_NO_EJECUTADOS; no crea dispatcher, webhooks, Tasks, PSP, SQL, eventos runtime ni efectos económicos.
+- Sólo doc+CHANGELOG en dev con CAS fast-forward, Scope Lock/V5 exact-SHA y A5 independiente pendiente; JWT/RBAC/tenant A/B y rollback git revert.
+
 ## 2026-11-14 — V5 C07-04.M02.04 configuración tipada, ámbito y flags de pedidos/pagos [Javier :50]
 - Diseña 18 parámetros/estados conceptuales y 14 validaciones fail-closed sobre plan, tenant, sucursal, RBAC, factura, caja, PSP e idempotencia; sin activar flags reales.
 - Establece 12 pares positivos/negativos FUTUROS_NO_EJECUTADOS; los overrides no habilitan efectos económicos ni saltan seguridad/Scope Lock/A5.
