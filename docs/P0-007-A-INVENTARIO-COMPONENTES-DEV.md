@@ -382,3 +382,11 @@ La nueva superficie informativa de contexto confirmado en la vista privada /usua
 - `frontend/src/app/features/usuarios/identidad-sesion-verificada.component.ts`
 
 Esta entrada no concede permisos ni certifica UX/tenant, HTTP, accesibilidad E2E o despliegue. La revisión funcional/negativa pertenece a C01-01.M04.01; rollback normal de Git.
+
+## Actualización aditiva V5 C01-01.M04.02 — 15 de noviembre de 2026
+
+La nueva superficie de estados accesibles de usuarios agrega una ruta al inventario reproducible: **140 archivos** (132 feature y 8 shared). Las cifras de los cortes previos se preservan como evidencia histórica. El validador mantiene fallos positivos ante rutas faltantes o nuevas sin registro; no se relaja Scope Lock, JWT, RBAC ni tenancy.
+
+- `frontend/src/app/features/usuarios/usuarios-estado-listado.component.ts`
+
+Este registro no equivale a certificar interacción real, accesibilidad, E2E ni despliegue; la prueba UI corresponde a C01-01.M04.02 y exige GitHub-hosted CI exact SHA y revisión A5 independiente.

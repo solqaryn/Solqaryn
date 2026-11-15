@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C01-01.M04.02 reparación causal P0-007.A de catálogo [Javier :40]
+- El check exact-SHA detectó componente nuevo sin inventario; se añade la ruta a docs/P0-007-A-INVENTARIO-COMPONENTES-DEV.md y se actualiza el total 140 (132 feature, 8 shared).
+- Mantiene la comprobación fail-closed de altas, bajas y rutas duplicadas; no se desactiva P0-007.A, Scope Lock, JWT/RBAC ni tenancy. CI exact-SHA pendiente; A5 de otro Javier.
+- Solo dev, rollback git revert sin tocar QA/main/PROD.
+
 ## 2026-11-15 — V5 C01-01.M04.02 estados de usuarios y permisos [Javier :40]
 - Integra componente Angular standalone OnPush en /usuarios existente: carga, vacio, error, exito por pagina y consulta sin permiso de crear, con aria-live.
 - Seis pruebas Angular/Vitest dirigidas y workflow GitHub-hosted para Vitest, lint y build; CI exact-SHA requerida antes de LISTO_DEV, A5 independiente.
