@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C10-03.M02.03 persistencia e índices conceptuales de inventario [Javier :00]
+- Documenta 12 proyecciones futuras, 12 índices candidatos, 14 invariantes, siete etapas de migración condicionadas y doce pares sintéticos FUTUROS_NO_EJECUTADOS para archivos privados.
+- Conserva inventario histórico NO_VERIFICADO, evita inferir cero, exige conciliación real, tenant A/B, JWT/RBAC, MIME por bytes, retención/hold, hash e idempotencia; Cloudinary existente no cambia.
+- Entrega individual Markdown en dev con Scope Lock/V5 exact-SHA, A5 pendiente de otra Task Javier y revert ordinario; sin EF/SQL, MySQL real, R2/DNS, migraciones, QA/main/PROD.
+
 ## 2026-11-15 — V5 C10-03.M02.02 contratos propuestos API y DTO de inventario condicionado [Javier :00]
 - Define 12 operaciones futuras, 12 DTO contractuales, 16 errores seguros y 12 pares positivos/negativos FUTUROS_NO_EJECUTADOS para inventario histórico NO_VERIFICADO y archivos privados.
 - Preserva JWT/RBAC, tenant A/B, Cloudinary existente, MIME por bytes, límites de tamaño, firmas/TTL, retención, idempotencia y estados ZERO_VERIFIED/POSITIVE_VERIFIED sólo con evidencia real.
