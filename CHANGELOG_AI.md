@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C14-01.M02.06 contrato terminal de aceptación funcional [Javier :00]
+- Establece dieciséis condiciones AF de cierre, doce pares P/N FUTUROS_NO_EJECUTADOS y ocho rutas de recuperación y rollback para aceptación pública/privada multitenant.
+- Preflight PLAN/COLA/DAG y M01.01–06 más M02.01–05 con A5 independiente; exige Scope Lock, SHA exacto, JWT/RBAC/tenant A/B y owner CAS sin sustituir pruebas runtime.
+- No implementa API, SQL/MySQL, pagos, eventos, workers, E2E ni despliegues QA/main/PROD; A5 queda para otra Task Javier, reversión por git revert.
+
 ## 2026-11-15 — V5 C03-02.M02.01 entidades, ownership e invariantes RBAC/ABAC [Javier :50]
 - Define 16 objetos conceptuales, 12 reglas fail-closed y 12 pares positivos/negativos FUTUROS_NO_EJECUTADOS para tenant, sucursal, recursos, export, medios y revocación.
 - Protege JWT/RBAC/ABAC y aislamiento A/B; los controles actuales y contratos M01 son fuentes de diseño, no PASS runtime. No crea DB, API, policies ni workers.
