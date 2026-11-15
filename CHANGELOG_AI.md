@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-04.M02.06 gates y rollback de contratos UX [Javier :00]
+- Verifica precondiciones M02.01–05 LISTO/A5 y define B01–B14 para seguridad, WCAG, UX, rendimiento, integraciones y reversión, sin atribuir certificación de runtime.
+- Registra AT01–AT12 positivos/negativos FUTUROS_NO_EJECUTADOS; M03 depende del nuevo DAG y del A5 independiente de este terminal, jamás del texto del CHANGELOG.
+- Publica sólo nuevo Markdown y sección autocontenida de CHANGELOG en dev por fast-forward/CAS; Scope Lock/V5 exact SHA, rollback git revert, sin QA/main/PROD ni eventos.
+
 ## 2026-11-14 — V5 C15-01.M02.02 contratos API/DTO, errores y compatibilidad de cobertura [Javier :50]
 - Propone OP01–OP08 lecturas de auditoria, E01–E12 respuestas de error y VAL01–VAL10 de validacion con T01–T12 positivos/negativos FUTUROS_NO_EJECUTADOS; no agrega endpoints.
 - Contrasta AuditoriaController, AutomatizacionesController y PlataformaSesionController reales sin confundir la auditoria comercial con el control institucional ni atribuir autoridad del cliente.
