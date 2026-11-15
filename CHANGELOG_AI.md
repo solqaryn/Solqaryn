@@ -2918,3 +2918,7 @@
 - Documenta jerarquía SYS/ENV/TEN/PRN/RUN/DOC, CFG01–CFG16, IV01–IV12 y diez pares T01–T10 FUTUROS_NO_EJECUTADOS para opciones de auditoría de seguridad/tenant.
 - Mantiene deny-by-default JWT/RBAC/tenant A/B, credenciales fuera de Git, membresía revocable y distinción de lectura de Tasks frente a concesión de autoridad.
 - Sólo docs/v5 y CHANGELOG en dev; sin activar flags, secret management, workers, API o migraciones; A5 independiente y controles Scope Lock/V5 exact-SHA antes de cierre.
+## 2026-11-14 — V5 C15-03.M02.05: señales de auditoría de seguridad [Javier :30]
+- Define EV01–EV12 conceptuales, envelope mínimo, ID01–ID12 de idempotencia y cuota y diez pares T01–T10 FUTUROS_NO_EJECUTADOS para tenancy, hallazgos y revisión A5.
+- No crea webhooks, dispatcher, workers, colas, reintentos, programaciones ni privilegios; BITACORA A:Z sigue siendo evidencia histórica institucional.
+- Sólo documento y CHANGELOG en dev, con Scope Lock y procedencia exact-SHA, readback y A5 posterior por otra Task Javier; sin afectar MySQL, JWT/RBAC runtime ni QA/main/PROD.
