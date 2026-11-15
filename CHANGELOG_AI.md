@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C08-04.M03.02 Application gate sectorial [Javier :50]
+- Creado lector de evidencia server-side de actor, tenant, permisos y módulo que alimenta reglas Domain de C08-04.M03.01; preflight nunca autoriza cambios, grants, EF ni acceso.
+- Incluidas 14 pruebas xUnit con tenant A/B, revocación, permisos, fuente SHA, política, versión, lifecycle, cancelación y errores; CI real debe aprobar antes de LISTO.
+- Riesgo V15 R2, entrega secuencial single-active; A0–A4 y A5 independiente, Scope Lock/V5, rollback normal; sin QA/main/PROD ni integraciones reales.
+
 ## 2026-11-15 — V16 C01-02.M03.02 preflight Application de capabilities [Javier :10]
 - Nuevo C0102CapabilityApplicationPreflight no autorizante que verifica tenant, sucursal y rechaza políticas, grants, escritura y exportación del cliente antes de invocar Domain; todas las propiedades de acceso permanecen false.
 - Doce tests xUnit positivos/negativos de contexto ausente, tenant B, branch, RBAC relacional, revocación, permisos y allowlist; exigir CI backend/seguridad/autorización exact SHA, no documentar PASS sin resultado real.
