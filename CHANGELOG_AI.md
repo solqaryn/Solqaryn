@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C12-03.M02.02 contratos API DTO y errores de backend-workers [Javier :10]
+- Define diez operaciones conceptuales, catorce campos DTO propuestos, dieciséis errores seguros y diez pares positivos/negativos FUTUROS_NO_EJECUTADOS de separación API/worker, tenant A/B, JWT/RBAC, idempotencia y CAS.
+- Comprueba contratos reales de MensajeOutbox, IMensajeOutboxRepository, OutboxRetryProcessor y API Program.cs; NO implementa APIs, trabajadores, relays, scheduling, webhooks, migraciones, infraestructura, proveedores ni eventos entre Tasks.
+- Solo dos Markdown en dev, control Scope Lock y procedencia V5 SHA exacto, A0-A4 documentales, A5 por otra Task Javier; git revert normal y ninguna autorización QA/main/PROD.
+
 ## 2026-11-15 — V5 C12-03.M02.01 ownership conceptual API y workers [Javier :40]
 - Documenta 12 componentes/futuros responsables, 16 invariantes tenant A/B, CAS, JWT/RBAC, no HttpContext, idempotencia y migrador único, 8 contratos de falla y 10 pares P/N FUTUROS_NO_EJECUTADOS.
 - Sin implementar workers, scheduler, dispatcher, webhooks, Tasks, SQL/EF, migraciones, hosting ni cambios de API; fuentes NET10/EF/Outbox existentes referenciadas por blobs y ausencia de permiso PROD explícita.
