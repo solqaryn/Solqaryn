@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C05-03.M02.03 persistencia e indices conceptuales builder [Javier :40]
+- Contrato R0 documental: 12 estructuras P01-P12, 10 indices IDX01-IDX10 y 6 fases futuras MIG01-MIG06 con ownership por tenant, CAS, revocacion, host y migrador unico.
+- 12 fixtures FX01-FX12 con pares positivos/negativos FUTUROS_NO_EJECUTADOS (0 ejecutados); no EF/MySQL, DDL, API, builder runtime, migracion ni QA/main/PROD.
+- A0-A4 requieren Scope Lock/V5 exact-SHA y BITACORA/readback; A5 de otra Task Javier, decisiones D01-D08 y gates M03 pendientes.
+
 ## 2026-11-15 — V16 C12-02.M02.01 entidades y ownership frontend separado [Javier :30]
 - Modelo documental R0: doce entidades E01-E12, dieciséis invariantes INV01-INV16 y diez pares positivos/negativos T01-T10 FUTUROS_NO_EJECUTADOS.
 - Rutas, bundle, cache, SPA, manifest y tenant conservan dueño y límites; edge/CDN no sustituye JWT/RBAC backend; no servicios desplegados ni DNS cambiados.
