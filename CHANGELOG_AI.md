@@ -3007,3 +3007,8 @@
 - Define precedencia PR01–PR08 y negativos N01–N12 FUTUROS_NO_EJECUTADOS; ningún flag autoriza DNS, backend tenant, tareas externas, QA/main/PROD ni servicios de pago.
 - Modifica sólo documento docs/v5 y CHANGELOG autocontenido en dev; requiere A0–A4 documentales con Scope Lock/V5 exact SHA y A5 independiente de otra Task Javier.
 
+## 2026-11-14 — V5 C15-02.M02.03 persistencia, índices y fixtures conceptuales de auditoría arquitectónica [Javier :40]
+- Define DAT01–DAT12, IDX01–IDX12, MIG01–MIG08 y FX01–FX12 positivos/negativos FUTUROS_NO_EJECUTADOS, preservando fail-closed para tenant A/B, NULL legado y autorización JWT/RBAC.
+- Contrato exclusivamente documental: sin DDL, EF migrations, MySQL real, recursos externos, DNS, R2, workers, webhooks ni ejecución de pruebas de restauración; origen del esquema NO_ACREDITADO hasta análisis posterior.
+- Publicación dev mediante SHA/CAS fast-forward y checks Scope Lock/V5 exactos; A0–A4 documentales, A5 de otra Task Javier y rollback git revert; no QA/main/PROD.
+
