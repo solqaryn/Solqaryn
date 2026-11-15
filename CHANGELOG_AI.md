@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C13-02.M01.06 accesibilidad: gates, rollback y liberación [Javier :10]
+- Establece 16 gates bloqueantes y 12 pares de escenarios FUTUROS_NO_EJECUTADOS sobre teclado/foco, formularios, modal, contraste, reflow, lector, tenant A/B y evidencias WCAG sin atribuir certificación normativa o prueba browser.
+- Cierra contrato R0 M01 con A0–A4 sujetos a Scope Lock/V5 exact-SHA y BITACORA/readback; preserva S01–S10 NO_VERIFICADOS, D01–D10 ABIERTAS y A5 de otra Task Javier antes de M02.
+- Sólo documentación docs/v5 y CHANGELOG en dev. No se cambian Angular/CSS/API/MySQL/JWT/RBAC, proveedores, secretos, schedulers, QA/main/PROD; rollback con git revert aditivo.
+
 ## 2026-11-15 — V17 C09-01.M01.06 CRM universal: bloqueos, rollback y liberación [Javier :10]
 - Define 16 gates de preparación CRM y 12 pares positivos/negativos FUTUROS_NO_EJECUTADOS sobre ownership de Cliente, timeline, segmentos, oportunidades, permisos, datos legados, consentimiento, export, accesibilidad y transacciones.
 - Contrasta cinco documentos M01 anteriores y A5 independientes, preserva R01–R16 potenciales y D01–D08 pendientes; LISTO_DEV documental sólo A0–A4 exact-SHA y A5 ajeno antes de M02.
