@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C11-03.M02.02 contratos conceptuales API DTO outbox [Javier :30]
+- Fija OP01-OP10 con las operaciones existentes y propuestas del outbox, E01-E16 para errores seguros, ocho positivos y doce negativos FUTUROS_NO_EJECUTADOS; coteja entidad MensajeOutbox, servicio RegistrarAsync y repositorio con CAS.
+- Preserva aislamiento tenant A/B, JWT/RBAC, idempotencia, versionado y compatibilidad; no implementa endpoints, proveedores, colas, eventos, dispatcher, migraciones MySQL ni tasks nuevas.
+- Publicacion fast-forward/CAS, Scope Lock y procedencia V5 exact-SHA, A5 independiente, BITACORA y readback; rollback git revert sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C11-03.M02.01 entidades y ownership conceptual outbox [Javier :40]
 - Define 14 elementos conceptuales, 16 invariantes tenant-bound/idempotencia/CAS/UTC/privacidad y 12 pares P/N FUTUROS_NO_EJECUTADOS para C11-03; verifica cinco blobs de código y documentos del contrato previo.
 - Conserva los contratos outbox existentes y el A5 independiente de M01.06; no crea tablas, migraciones, workers, webhooks, relays, dispatcher, eventos entre Tasks, endpoints, proveedores ni cambios de runtime.
