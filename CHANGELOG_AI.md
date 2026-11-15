@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C06-04.M02.04 configuracion tipada portal cliente [Javier :10]
+- Define catorce opciones tipadas propuestas, doce reglas de validacion, cuatro ambitos y ocho pares PN FUTUROS_NO_EJECUTADOS; no activa flags, IAM, JWT, backend ni Angular.
+- Conserva tenant A/B y clientes A1/A2, defaults fail-closed, politica de seguridad global, consentimiento/ownership, TTL y secreto fuera de configuracion publica.
+- Entrega Markdown+CHANGELOG autocontenida, Scope Lock y check V5 exact-SHA, A5 independiente pendiente y rollback git revert; sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C06-04.M02.03 persistencia conceptual portal cliente [Javier :10]
 - Propone doce agrupaciones conceptuales de datos, diez índices/constraints y ocho pares de fixtures FUTUROS_NO_EJECUTADOS; cero tablas, migraciones EF, seeds o accesos MySQL reales.
 - Preserva tenant A/B y cliente A1/A2, FK compuesta, CAS, challenge hash único uso, grants privados y reversión transaccional como requisitos futuros.
