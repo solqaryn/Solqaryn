@@ -3002,3 +3002,8 @@
 - Corrige únicamente el nombre del error ERR09 a PROVIDER_CATALOG_UNVERIFIED en el contrato documental M02.02; se preservan semántica, pruebas futuras, contratos y propiedad.
 - No altera scripts de seguridad, reglas de autorización, checks ni controles: el commit anterior quedó VALIDANDO con Scope Lock FAILED y este SHA nuevo exige CI causal SUCCESS antes de LISTO_DEV; rollback mediante git revert normal.
 
+## 2026-11-14 — V5 C15-02.M02.04: ámbitos y configuración tipada de auditoría de migración [Javier :30]
+- Contrato documental S01–S06 de scopes y CFG01–CFG14 de valores allowlisted con defaults fail-closed, sin crear settings reales, secrets ni migraciones.
+- Define precedencia PR01–PR08 y negativos N01–N12 FUTUROS_NO_EJECUTADOS; ningún flag autoriza DNS, backend tenant, tareas externas, QA/main/PROD ni servicios de pago.
+- Modifica sólo documento docs/v5 y CHANGELOG autocontenido en dev; requiere A0–A4 documentales con Scope Lock/V5 exact SHA y A5 independiente de otra Task Javier.
+
