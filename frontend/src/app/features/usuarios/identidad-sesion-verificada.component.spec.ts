@@ -45,4 +45,27 @@ describe('C01-01.M04.01 IdentidadSesionVerificadaComponent', () => {
     expect(fixture.nativeElement.querySelector('img')).toBeNull();
     expect(fixture.nativeElement.textContent).toContain('<img src=x');
   });
+  it('no aplica la marca corporativa a un tenant no confirmado', () => {
+    const fixture = TestBed.createComponent(IdentidadSesionVerificadaComponent);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.marca-verificada')).toBeNull();
+    verificado.set({ usuarioId: 7, empresaId: 11, rolId: 3, rolNombre: 'Operador A', esAdministrador: false });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.marca-nombre')?.textContent).toContain('SOLQARYN');
+    expect(fixture.nativeElement.querySelector('.marca-contexto')?.textContent).toContain('Empresa 11 verificada');
+  });
+
+  it('revoca branding A antes de presentar el contexto B', () => {
+    const fixture = TestBed.createComponent(IdentidadSesionVerificadaComponent);
+    verificado.set({ usuarioId: 7, empresaId: 11, rolId: 3, rolNombre: 'A', esAdministrador: false });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Empresa 11 verificada');
+    verificado.set(null);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.marca-verificada')).toBeNull();
+    verificado.set({ usuarioId: 7, empresaId: 22, rolId: 4, rolNombre: 'B', esAdministrador: false });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('Empresa 22 verificada');
+    expect(fixture.nativeElement.textContent).not.toContain('Empresa 11 verificada');
+  });
 });

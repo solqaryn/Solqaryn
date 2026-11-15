@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C01-01.M04.03 tematizacion contextual sin autoridad nueva [Javier :40]
+- Amplia branding Angular en /usuarios solo con empresa confirmada por TenantContextService; oculta marca durante revocacion A->B, sin mostrar identidad empresarial no verificada.
+- Consume tokens dinamicos seguros --color-primary/--color-on-primary del ThemeApplierService existente y fallback forced-colors; agrega dos Vitest de ausencia y A/B junto a tres existentes.
+- Sin alterar JWT/RBAC/tenant A/B, temas arbitrarios, permisos, backend, SQL ni rutas; CI exact-SHA y A5 independiente, rollback git revert solo dev.
+
 ## 2026-11-15 — V5 C01-01.M04.02 reparación causal P0-007.A de catálogo [Javier :40]
 - El check exact-SHA detectó componente nuevo sin inventario; se añade la ruta a docs/P0-007-A-INVENTARIO-COMPONENTES-DEV.md y se actualiza el total 140 (132 feature, 8 shared).
 - Mantiene la comprobación fail-closed de altas, bajas y rutas duplicadas; no se desactiva P0-007.A, Scope Lock, JWT/RBAC ni tenancy. CI exact-SHA pendiente; A5 de otro Javier.

@@ -1,6 +1,11 @@
 <section class="identidad-contexto" aria-labelledby="identidad-contexto-titulo">
   <h2 id="identidad-contexto-titulo">Contexto de acceso</h2>
   @if (tenant.contextoVerificado(); as contexto) {
+    <div class="marca-verificada" aria-label="Identidad visual del contexto empresarial confirmado">
+      <span class="marca-insignia" aria-hidden="true">S</span>
+      <span class="marca-nombre">SOLQARYN</span>
+      <span class="marca-contexto">Empresa {{ contexto.empresaId }} verificada</span>
+    </div>
     <p role="status" aria-live="polite">
       Empresa confirmada: <strong>{{ contexto.empresaId }}</strong>
       <span class="separador" aria-hidden="true">·</span>

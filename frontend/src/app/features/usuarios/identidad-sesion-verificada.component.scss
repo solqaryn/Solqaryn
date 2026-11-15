@@ -12,3 +12,34 @@ p { margin: .25rem 0; line-height: 1.5; overflow-wrap: anywhere; }
 .separador { padding: 0 .5rem; }
 .aviso { font-size: .875rem; color: var(--color-text-muted, #475569); }
 @media (max-width: 360px) { .separador { display: block; height: 0; } }
+
+/* C01-01.M04.03: tokens del tema empresarial ya validados por ThemeApplierService. */
+.marca-verificada {
+  display: flex;
+  align-items: center;
+  gap: .625rem;
+  flex-wrap: wrap;
+  margin-bottom: .625rem;
+  padding: .5rem .75rem;
+  border-radius: .625rem;
+  background: var(--color-primary, #1d4ed8);
+  color: var(--color-on-primary, #fff);
+}
+.marca-insignia {
+  display: grid;
+  place-items: center;
+  width: 1.75rem;
+  height: 1.75rem;
+  border: 1px solid currentColor;
+  border-radius: .5rem;
+  font-weight: 700;
+}
+.marca-nombre { font-weight: 700; letter-spacing: .02em; }
+.marca-contexto { margin-left: auto; font-size: .875rem; font-variant-numeric: tabular-nums; }
+@media (max-width: 420px) {
+  .marca-verificada { padding: .625rem; align-items: flex-start; }
+  .marca-contexto { width: 100%; margin-left: 0; }
+}
+@media (forced-colors: active) {
+  .marca-verificada { border: 1px solid CanvasText; background: Canvas; color: CanvasText; }
+}
