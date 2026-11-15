@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C15-02.M03.03 preflight autorización, RBAC y tenancy para migración [Javier :40]
+- Añade guard Application .NET 10 fail-closed de principal, identidad/tenant, permisos backend declarados, Scope Lock y SHA antes de evaluar el servicio de migración M03.02.
+- Agrega xUnit de sesión no autenticada, rol ausente, tenant A/B, sujeto falseado, QA/PROD, proveedor no autorizado, DNS/secrets y recuperación insuficiente; no comprueba JWT firmado ni datos MySQL reales.
+- El veredicto nunca autoriza migración, deploy ni A5; Scope Lock STRICT, CI backend/autorización/seguridad y CHANGELOG exact-SHA antes de LISTO; A5 independiente. Sin API, eventos ni QA/main/PROD.
+
 ## 2026-11-15 — V5 C14-01.M02.01 modelo de entidades y ownership de aceptación [Javier :50]
 - Define dieciséis entidades conceptuales y dieciséis invariantes de autoridad, trazabilidad y aceptación funcional; no crea tablas, DTO ni API y no infiere permisos por tenant cliente.
 - Propone cuatro oráculos positivos y doce negativos futuros, incluidas revocación JWT/RBAC, tenant A/B, privacidad, transacciones, responsive y CI; todos FUTUROS_NO_EJECUTADOS.
