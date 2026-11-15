@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-04.M02.03 persistencia índices fixtures de puesta en marcha [Javier :20]
+- Documenta DB01–DB14 registros conceptuales, IX01–IX10 índices hipotéticos y FX01–FX12 pares de pruebas FUTUROS_NO_EJECUTADOS, sin afirmar mediciones, migraciones o restores.
+- Referencia AppDbContext EF Core real y preserva ownership, JWT/RBAC, aislamiento tenant A/B, evidencia exact-SHA y rollback; ninguna modificación de código, SQL o infraestructura.
+- Sólo dos Markdown con sección CHANGELOG autocontenida en dev, Scope Lock/V5 exact SHA, A5 independiente y git revert; sin QA/main/PROD.
+
 ## 2026-11-14 — V5 C14-04.M02.02 contratos API DTO y errores de puesta en marcha [Javier :20]
 - Define OP01–OP10 operaciones conceptuales, doce campos DTO, ER01–ER12 y AC01–AC10 pares de casos FUTUROS_NO_EJECUTADOS; no implementa endpoints.
 - Revisa las rutas reales PlataformaSoporteController y AuditoriaController sin modificar API, JWT/RBAC, tenants, SQL ni servicios; evita prometer restauración, observabilidad o release probados.
