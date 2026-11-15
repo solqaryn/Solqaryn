@@ -2576,3 +2576,8 @@
 - Documenta doce actores/superficies y doce interfaces futuras de upload, descarga, exportación, metadatos, revocación, auditoría, verificación MIME/size/checksum y migración reversible; NO implementa endpoints, SDK ni buckets.
 - Registra P01–P05/N01–N12 como oráculos futuros NO_EJECUTADOS, con rechazo cross-tenant, JWT/RBAC backend, control de URL temporal, seguridad de PII y fallos sin objeto parcial.
 - Solo documento y CHANGELOG, con Scope Lock/V5 provenance exact-SHA, readback PLAN/COLA/BITACORA y A5 independiente posterior. Cloudinary sigue vigente; R2/Hostinger objetivo no activado, sin QA/main/PROD.
+
+## 2026-11-14 — V5 C15-03.M01.05: aceptación observable de auditoría de seguridad y tenancy [Javier :20]
+- Define AC01–AC16 y N01–N16 como positivos y negativos FUTUROS NO_EJECUTADOS para JWT/RBAC, selector de empresa, sucursales, lecturas EF, escrituras, host, soporte, archivos, jobs, errores, caché y CI exact-SHA.
+- Especifica fixture A/B y MySQL efímero, evidencias HTTP/DB/logs, ocho requisitos no funcionales y condición NO_APLICA para funcionalidades no implementadas; no declara ausencia de vulnerabilidades ni pruebas runtime realizadas.
+- Preparación documental M01.05 sólo en dev, con A0–A4 y Scope Lock/procedencia SHA verificables después de publicar; A5 corresponde a otra Task Javier y M01.06 no se libera automáticamente; rollback por git revert, sin QA/main/PROD.
