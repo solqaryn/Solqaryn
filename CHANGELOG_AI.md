@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C10-04.M02.03 contrato documental de persistencia e indices cache/jobs/backups [Javier :20]
+- Define nueve proyecciones conceptuales, doce invariantes y seis pasos expand/contract FUTUROS_NO_EJECUTADOS, sin DDL, EF migration, backfill ni acceso a MySQL/Aiven.
+- Incluye diez pares de fixtures positivos y negativos futuros para tenant A/B, CAS, idempotencia, exportaciones, auditoria y restore efimero; ninguna prueba o restauracion runtime se atribuye a esta entrega.
+- Solo docs/v5 y CHANGELOG_AI.md en dev, Scope Lock/procedencia V5 exact SHA, A0-A4 documentales y A5 independiente; sin proveedores, QA/main/PROD ni eventos.
+
 ## 2026-11-15 — V5 C10-04.M02.01 modelo documental de entidades y ownership cache/jobs/backup/export [Javier :20]
 - Documenta doce objetos logicos, 18 invariantes tenant/RBAC/lease/idempotencia/integridad, y diez pares de oraculos POS/NEG FUTUROS_NO_EJECUTADOS con fuentes de codigo verificadas.
 - No crea tablas EF/MySQL, API, jobs, dispatcher, eventos, buckets, backups, exportaciones ni permisos; solo docs/v5 y CHANGELOG, A5 independiente pendiente.
