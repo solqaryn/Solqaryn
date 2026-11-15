@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C12-03.M02.03 persistencia conceptual API/workers [Javier :40]
+- Define 12 proyecciones de persistencia, 8 índices candidatos, 6 pasos de migración FUTURA_NO_EJECUTADA y 12 fixtures sintéticos A/B, CAS, idempotencia, UTC, migrador único y rollback.
+- No ejecuta SQL, EF, MySQL, migraciones, worker, scheduler, hosting, DNS, secretos, Task nueva, pruebas runtime ni despliegues; contrato solo en Markdown y fuentes Git versionadas.
+- Publicación fast-forward/CAS dev, Scope Lock y V5 exact-SHA, A0–A4 documentales, A5 independiente por otra Task Javier; sin QA/main/PROD, revert normal.
+
 ## 2026-11-15 — V5 C12-03.M02.02 contratos API DTO y errores de backend-workers [Javier :10]
 - Define diez operaciones conceptuales, catorce campos DTO propuestos, dieciséis errores seguros y diez pares positivos/negativos FUTUROS_NO_EJECUTADOS de separación API/worker, tenant A/B, JWT/RBAC, idempotencia y CAS.
 - Comprueba contratos reales de MensajeOutbox, IMensajeOutboxRepository, OutboxRetryProcessor y API Program.cs; NO implementa APIs, trabajadores, relays, scheduling, webhooks, migraciones, infraestructura, proveedores ni eventos entre Tasks.
