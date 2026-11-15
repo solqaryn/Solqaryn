@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-02.M01.03 inventario contrastable de auditoría arquitectura/migración [Javier :00]
+- Inventaría 21 fuentes Git con blobs, distingue código existente de infraestructura activa y conserva SHA/cadena de evidencia para la futura auditoría C15-02.
+- Registra 12 brechas NO_ACREDITADAS y ocho pares P/N FUTUROS_NO_EJECUTADOS para tenancy JWT/RBAC, MySQL, Cloudinary/R2, DNS/TLS, CI, restauración y rollback.
+- Sólo documento de inventario y CHANGELOG en dev; sin pruebas HTTP/MySQL/Playwright ejecutadas, sin eventos, migración, secretos, QA/main/PROD; A5 independiente pendiente.
+
 ## 2026-11-14 — V5 C15-02.M01.02 actores e interfaces de auditoria de migracion [Javier :50]
 - Prepara 12 participantes, 12 contratos de entrada/salida y 10 fronteras de confianza sobre frontend, API JWT/RBAC, tenant A/B, MySQL/EF, archivos, workers, CI y DNS/TLS.
 - Propone ocho pares P/N FUTUROS_NO_EJECUTADOS; la topologia objetivo Hostinger/Cloudflare/R2 no se declara desplegada ni auditada.
