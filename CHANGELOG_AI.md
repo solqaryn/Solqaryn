@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C10-03.M01.06 contrato de salida, bloqueos y rollback de archivos [Javier :20]
+- Define BL01–BL16 y RB01–RB08 como requisitos documentales futuros, distinguiendo inventario NO_VERIFICADO del cero autenticado sin simular consultas.
+- Constata M01.01–05 y C10-01/02.M01.06 LISTO+A5 al preflight; M02 solo después de A5 independiente de esta unidad y DAG/COLA reactivos reales.
+- Docs y CHANGELOG dev, sin Cloudinary/R2/DNS, migración, MySQL, secrets, QA/main/PROD; Scope Lock/V5 exact SHA y rollback git revert.
+
 ## 2026-11-15 — V5 C10-02.M02.04 opciones tipadas y dominios de archivos futuros [Javier :10]
 - Documenta 18 opciones conceptuales, 4 ámbitos de precedencia, 12 reglas fail-closed y 12 pares de aceptación FUTUROS_NO_EJECUTADOS para prefijos privados, enlaces firmados, hosts y lifecycle.
 - Tenant A/B y JWT/RBAC sólo server-side, TTL/replay, retención, cache y secreto fuera del repo; no activa R2, DNS, migraciones, flags, runtime ni producción.
