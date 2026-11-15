@@ -1,3 +1,7 @@
+## 2026-11-15 — V17 C08-03.M02.01 modelo membresías y acceso de gimnasio [Javier :50]
+- Diseña veinte entidades, relaciones Empresa/Sucursal/Miembro/Plan/Acceso, veinte invariantes y doce pares futuros positivos-negativos sobre caducidad UTC/DST, suspensión, tenant A/B, QR y revocación.
+- Solo contrato documental R0, sin dispositivos, cobro, JWT, API o MySQL reales; conserva autoridad ERP, Scope Lock/V5 exact-SHA, gates DAG y A5 independiente pendiente, rollback git revert normal.
+
 ## 2026-11-15 — V17 C08-02.M02.05 contratos de eventos/idempotencia restaurante [Javier :50]
 - Documenta dieciséis eventos futuros, envelope sin secretos, dieciséis invariantes anti-replay y doce pares de pruebas positivas/negativas NO_EJECUTADAS para mesas QR, cocina, ERP y cierre idempotente.
 - Entrega R0 sin bus, colas, worker, webhook, PSP, API ni MySQL; Scope Lock y V5 exact-SHA, A5 independiente, candado V17 y rollback git revert normal.
