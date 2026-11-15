@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C01-01.M05.05 rechazo negativo aislamiento identidad universal .NET 10 [Javier :30]
+- Incorpora seis xUnit reales de rechazo: consulta A a B sin I/O, snapshot B, actor A1/A2, membresía revocada, rol cambiado y sucursal B tras cambio de owner.
+- Ejecuta Application/Domain con fuente de prueba en memoria y oráculos de excepción/lectura; no certifica HTTP/JWT/EF/MySQL ni cambia código de producción.
+- Requiere CI backend/seguridad pertinente, Scope Lock y V5 exact SHA, A5 independiente y rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C01-01.M05.04 aceptación positiva identidad universal .NET 10 [Javier :30]
 - Añade tres casos xUnit reales para el servicio Application/Domain: contextos A/B mismo usuario, sucursal propia explícita y revalidación de snapshots por solicitud.
 - Usa únicamente fuente in-memory como costura de pruebas; no certifica JWT HTTP, EF/MySQL ni datos vivos y no modifica código de producción ni permisos tenant/RBAC.
