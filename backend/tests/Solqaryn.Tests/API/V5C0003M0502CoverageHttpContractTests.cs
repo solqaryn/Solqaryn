@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Solqaryn.API.Middleware;
 using Solqaryn.Application.AutomationV5;
 using Solqaryn.Application.Common;
@@ -29,8 +30,8 @@ public sealed class V5C0003M0502CoverageHttpContractTests
     [Fact]
     public async Task AllowedCoverageUsesHttp200TypedDtoButNeverCertifiesEvidence()
     {
-        using var server = Host(Actor, Tenant, Sha);
-        using var client = server.CreateClient();
+        using var host = await HostAsync(Actor, Tenant, Sha);
+        using var client = host.GetTestServer().CreateClient();
         using var response = await client.GetAsync(Route);
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
@@ -51,8 +52,8 @@ public sealed class V5C0003M0502CoverageHttpContractTests
     public async Task DeniedActorTenantShaOrRequirementIsSafeHttp400(
         string actor, string tenant, string sha, string requirement)
     {
-        using var server = Host(actor, tenant, sha, requirement);
-        using var client = server.CreateClient();
+        using var host = await HostAsync(actor, tenant, sha, requirement);
+        using var client = host.GetTestServer().CreateClient();
         using var response = await client.GetAsync(Route);
         var body = await response.Content.ReadAsStringAsync();
         Assert.Equal(HttpStatusCode.BadRequest, response.StatusCode);
@@ -67,8 +68,10 @@ public sealed class V5C0003M0502CoverageHttpContractTests
         Assert.DoesNotContain(Item, body, StringComparison.Ordinal);
     }
 
-    private static TestServer Host(string actor, string tenant, string sha, string requirement = "R-A") =>
-        new(new WebHostBuilder()
+    private static async Task<IHost> HostAsync(string actor, string tenant, string sha, string requirement = "R-A")
+    {
+        var host = new HostBuilder()
+            .ConfigureWebHost(webHost => webHost.UseTestServer()
             .ConfigureServices(s => s.AddLogging())
             .Configure(app =>
             {
@@ -108,5 +111,9 @@ public sealed class V5C0003M0502CoverageHttpContractTests
                             })
                         }, "read-only coverage"), Json));
                 });
-            }));
+            }))
+            .Build();
+        await host.StartAsync();
+        return host;
+    }
 }

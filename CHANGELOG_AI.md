@@ -1,3 +1,9 @@
+## 2026-11-14 — Reparación de CI para C01-01.M03.05 (orden directa del propietario)
+- Reutilizar la contraseña validada al calcular su hash para evitar el argumento nullable, sin relajar las reglas de alta empresarial.
+- Migrar tres contratos HTTP al HostBuilder y servidor de pruebas moderno de .NET 10, preservando rutas, respuestas y middleware de seguridad.
+- Actualizar dos aserciones xUnit a las formas admitidas por los analizadores; conservar sus comprobaciones.
+- Cambio técnico correctivo sobre dev para desbloquear A4; DEV 06 conserva la microtarea y A5 requiere Task distinta. Sin QA/main/PROD ni cambios a migraciones o secretos.
+
 ## 2026-11-14 — V5 C14-02.M01.06 bloqueos y liberación documental de aceptación de seguridad [Javier :40]
 - Define B01–B12 como gates futuros sobre tenant A/B, JWT/RBAC, BOLA/IDOR, hosts, archivos, jobs, backups, CI exact SHA y revisión A5 separada.
 - Documenta contención, rollback sin force-push y liberación condicionada: cero P0/P1 permanece NO_CERTIFICADO; M02 no gana permisos de runtime o despliegue.

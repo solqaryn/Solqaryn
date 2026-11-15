@@ -55,8 +55,8 @@ public sealed class P2001AMatrizCrudComercialTests
 
         var http = metodo.GetCustomAttributes().OfType<HttpMethodAttribute>().ToArray();
         Assert.Single(http);
-        Assert.True(http[0].HttpMethods.Any(
-            actual => string.Equals(actual, verbo, StringComparison.OrdinalIgnoreCase)));
+        Assert.Contains(http[0].HttpMethods,
+            actual => string.Equals(actual, verbo, StringComparison.OrdinalIgnoreCase));
 
         var permiso = metodo.GetCustomAttribute<RequierePermisoAttribute>(inherit: true);
         Assert.NotNull(permiso);

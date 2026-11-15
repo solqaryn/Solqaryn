@@ -19,7 +19,7 @@ public sealed class G0002CEmpresaServiceDiCompositionTests
         var program = File.ReadAllText(FindRepositoryFile("backend/src/API/Program.cs"));
 
         const string scopedRegistration = @"\bbuilder\.Services\.AddScoped<IEmpresaService,\s*EmpresaService>\s*\(\s*\)\s*;";
-        Assert.Equal(1, Regex.Matches(program, scopedRegistration).Count);
+        Assert.Single(Regex.Matches(program, scopedRegistration));
         Assert.DoesNotContain("new EmpresaService(", program);
     }
 

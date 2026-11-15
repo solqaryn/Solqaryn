@@ -254,18 +254,18 @@ public sealed class PlataformaEmpresasController : ControllerBase
 
         string? usuarioNuevo = null;
         string? nombreCompletoNuevo = null;
+        var passwordNuevo = nuevo?.Password ?? string.Empty;
         if (nuevo is not null)
         {
             usuarioNuevo = nuevo.NombreUsuario?.Trim() ?? string.Empty;
             nombreCompletoNuevo = nuevo.NombreCompleto?.Trim() ?? string.Empty;
-            var password = nuevo.Password ?? string.Empty;
             // Mantener el contrato de creación de cuentas de /plataforma/gestion/usuarios.
             if (!NombreUsuarioValido.IsMatch(usuarioNuevo) ||
                 nombreCompletoNuevo.Length is < 3 or > 150 ||
-                password.Length is < 10 or > 128 ||
-                !password.Any(char.IsUpper) || !password.Any(char.IsLower) ||
-                !password.Any(char.IsDigit) ||
-                !password.Any(c => !char.IsLetterOrDigit(c)))
+                passwordNuevo.Length is < 10 or > 128 ||
+                !passwordNuevo.Any(char.IsUpper) || !passwordNuevo.Any(char.IsLower) ||
+                !passwordNuevo.Any(char.IsDigit) ||
+                !passwordNuevo.Any(c => !char.IsLetterOrDigit(c)))
                 return BadRequest(ApiResponse<object>.Fail("Usuario, nombre o contraseña inválidos."));
             if (await _db.Usuarios.IgnoreQueryFilters().AsNoTracking()
                 .AnyAsync(u => u.NombreUsuario == usuarioNuevo, cancellationToken))
@@ -332,7 +332,7 @@ public sealed class PlataformaEmpresasController : ControllerBase
         // El coste BCrypt se calcula antes de abrir la transacción, sin writes;
         // la creación del Usuario y toda su persistencia sí comparten el commit.
         var hashNuevo = nuevo is null ? null :
-            _hashPasswordForOnboarding(nuevo.Password);
+            _hashPasswordForOnboarding(passwordNuevo);
         await using var transaction = _db.Database.IsRelational()
             ? await _db.Database.BeginTransactionAsync(cancellationToken)
             : null;

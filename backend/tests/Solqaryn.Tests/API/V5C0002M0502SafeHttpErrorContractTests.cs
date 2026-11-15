@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Solqaryn.API.Middleware;
 using Solqaryn.Application.Common;
 using Xunit;
@@ -25,13 +26,13 @@ public sealed class V5C0002M0502SafeHttpErrorContractTests
     [Fact]
     public async Task SuccessfulHttpResponseContainsTypedEnvelopeWithoutClaimsMutation()
     {
-        using var server = Host(async context =>
+        using var host = await CreateHostAsync(async context =>
         {
             context.Response.ContentType = "application/json";
             await context.Response.WriteAsync(JsonSerializer.Serialize(
                 ApiResponse<string>.Ok("read-only", "contrato de prueba"), WebJson));
         });
-        using var client = server.CreateClient();
+        using var client = host.GetTestServer().CreateClient();
         using var response = await client.GetAsync(Path);
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -49,8 +50,8 @@ public sealed class V5C0002M0502SafeHttpErrorContractTests
     [InlineData("password=never-log-this")]
     public async Task InvalidArgumentReturnsSafe400WithoutReflectingSensitiveInput(string untrustedDetail)
     {
-        using var server = Host(_ => throw new ArgumentException(untrustedDetail));
-        using var client = server.CreateClient();
+        using var host = await CreateHostAsync(_ => throw new ArgumentException(untrustedDetail));
+        using var client = host.GetTestServer().CreateClient();
         using var response = await client.GetAsync(Path);
         var body = await response.Content.ReadAsStringAsync();
 
@@ -67,8 +68,8 @@ public sealed class V5C0002M0502SafeHttpErrorContractTests
     public async Task OptimisticConcurrencyConflictReturnsSafe409WithoutTenantDetail()
     {
         const string secret = "tenant-other-company-id=hidden";
-        using var server = Host(_ => throw new DbUpdateConcurrencyException(secret));
-        using var client = server.CreateClient();
+        using var host = await CreateHostAsync(_ => throw new DbUpdateConcurrencyException(secret));
+        using var client = host.GetTestServer().CreateClient();
         using var response = await client.GetAsync(Path);
         var body = await response.Content.ReadAsStringAsync();
 
@@ -83,8 +84,8 @@ public sealed class V5C0002M0502SafeHttpErrorContractTests
     public async Task UnexpectedFailureUsesSafe500EnvelopeWithoutImplementationDetail()
     {
         const string privateDetail = "authorizationKey=private";
-        using var server = Host(_ => throw new InvalidOperationException(privateDetail));
-        using var client = server.CreateClient();
+        using var host = await CreateHostAsync(_ => throw new InvalidOperationException(privateDetail));
+        using var client = host.GetTestServer().CreateClient();
         using var response = await client.GetAsync(Path);
         var body = await response.Content.ReadAsStringAsync();
 
@@ -97,12 +98,18 @@ public sealed class V5C0002M0502SafeHttpErrorContractTests
         Assert.DoesNotContain(privateDetail, body, StringComparison.Ordinal);
     }
 
-    private static TestServer Host(RequestDelegate next) =>
-        new(new WebHostBuilder()
+    private static async Task<IHost> CreateHostAsync(RequestDelegate next)
+    {
+        var host = new HostBuilder()
+            .ConfigureWebHost(webHost => webHost.UseTestServer()
             .ConfigureServices(services => services.AddLogging())
             .Configure(app =>
             {
                 app.UseMiddleware<ExceptionHandlingMiddleware>();
                 app.Run(next);
-            }));
+            }))
+            .Build();
+        await host.StartAsync();
+        return host;
+    }
 }

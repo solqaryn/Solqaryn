@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Solqaryn.API.Middleware;
 using Solqaryn.Application.Common;
 using Xunit;
@@ -24,13 +25,13 @@ public sealed class V5C00M0502ApiDtoContractTests
     [Fact]
     public async Task ExitoHttp200_ConservaContratoApiResponseConDatos()
     {
-        using var server = CreateServer(async context =>
+        using var host = await CreateHostAsync(async context =>
         {
             context.Response.ContentType = "application/json";
             await context.Response.WriteAsync(JsonSerializer.Serialize(
                 ApiResponse<string>.Ok("confirmado", "operacion exitosa"), WebJson));
         });
-        using var client = server.CreateClient();
+        using var client = host.GetTestServer().CreateClient();
         using var response = await client.GetAsync("/api/v5/contrato");
 
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
@@ -47,8 +48,8 @@ public sealed class V5C00M0502ApiDtoContractTests
     [InlineData("tenant-B; sql=SELECT * FROM Usuarios")]
     public async Task ArgumentoInvalidoHttp400_NoExponeDetallePrivado(string detail)
     {
-        using var server = CreateServer(_ => throw new ArgumentException(detail));
-        using var client = server.CreateClient();
+        using var host = await CreateHostAsync(_ => throw new ArgumentException(detail));
+        using var client = host.GetTestServer().CreateClient();
         using var response = await client.GetAsync("/api/v5/contrato");
         var body = await response.Content.ReadAsStringAsync();
 
@@ -67,8 +68,8 @@ public sealed class V5C00M0502ApiDtoContractTests
     public async Task ConcurrenciaHttp409_UsaProblemDetailsGenericoSinDetalleDeTenant()
     {
         const string secret = "tenant-B-secret-mismatch";
-        using var server = CreateServer(_ => throw new DbUpdateConcurrencyException(secret));
-        using var client = server.CreateClient();
+        using var host = await CreateHostAsync(_ => throw new DbUpdateConcurrencyException(secret));
+        using var client = host.GetTestServer().CreateClient();
         using var response = await client.GetAsync("/api/v5/contrato");
         var body = await response.Content.ReadAsStringAsync();
 
@@ -84,8 +85,8 @@ public sealed class V5C00M0502ApiDtoContractTests
     public async Task ErrorNoControladoHttp500_ConservaEnvelopeSinDetalleTecnico()
     {
         const string secret = "password=internal-unhandled-exception-secret";
-        using var server = CreateServer(_ => throw new InvalidOperationException(secret));
-        using var client = server.CreateClient();
+        using var host = await CreateHostAsync(_ => throw new InvalidOperationException(secret));
+        using var client = host.GetTestServer().CreateClient();
         using var response = await client.GetAsync("/api/v5/contrato");
         var body = await response.Content.ReadAsStringAsync();
 
@@ -99,13 +100,18 @@ public sealed class V5C00M0502ApiDtoContractTests
         Assert.DoesNotContain(secret, body, StringComparison.Ordinal);
     }
 
-    private static TestServer CreateServer(RequestDelegate next) => new(
-        new WebHostBuilder()
+    private static async Task<IHost> CreateHostAsync(RequestDelegate next)
+    {
+        var host = new HostBuilder()
+            .ConfigureWebHost(webHost => webHost.UseTestServer()
             .ConfigureServices(services => services.AddLogging())
             .Configure(app =>
             {
                 app.UseMiddleware<ExceptionHandlingMiddleware>();
                 app.Run(next);
-            }));
-
+            }))
+            .Build();
+        await host.StartAsync();
+        return host;
+    }
 }
