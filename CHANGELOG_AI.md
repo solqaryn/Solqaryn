@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C01-03.M03.01 Domain configuración dinámica segura [Javier :50]
+- Añadidas reglas ejecutables .NET 10 de catálogo allowlisted/typed, límites tenant A/B, identidad+RBAC+entitlement, versión optimista, scope plataforma independiente y denegación de claves peligrosas.
+- Incluidos diez xUnit positivos/negativos, límites de valor, scripts CSS/HTML, roles revocados, flags de seguridad, concurrency y errores; veredicto nunca concede escritura, JWT o CAS real.
+- Riesgo V15 R2, validación CI backend/security/Scope Lock/V5 obligatoria sobre SHA; A5 de Task Javier diferente, no EF/MySQL/UI, rollback git revert sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C06-04.M03.03 gate Authorization de portal cliente [Javier :50]
 - Implementado Application .NET 10 que combina evidencia backend, JWT/token/sesión, membership/RBAC, recurso/tenant A/B, auditoría y versión contra preflight Application/Domain existente; respuestas siempre no autorizantes.
 - Incluidos nueve métodos xUnit con asserts positivos, negativos, revocación, error, frontera, cross-tenant, propiedad, token y cancelación; no afirmar JWT HTTP real ni permisos de producción.
