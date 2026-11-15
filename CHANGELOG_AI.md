@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C07-02.M02.04 configuración tipada y flags seguros de storefront/checkout [Javier :40]
+- Define contrato futuro R0 para 6 ámbitos restrictivos, 16 campos tipados C01–C16, 12 flags inertes F01–F12, precedencias fail-closed y 12 pares positivos/negativos FUTUROS_NO_EJECUTADOS, sin implementar configuración ni runtime.
+- Aislamiento Empresa A/B y host confiable, JWT/RBAC, HMAC/replay, protección PSP, stock/IVA y PII; cobro/pedido/reserva deshabilitados por defecto, A5 independiente; pruebas runtime NO_MEDIDO.
+- Un solo scope C07-02.M02.04 en docs/v5 y CHANGELOG, candado V17 fila 1055; Scope Lock/V5 por SHA y BITACORA/readback obligatorios, sin MySQL/Angular/API, QA/main/PROD, secretos o pagos reales.
+
 ## 2026-11-15 — V17 C07-02.M02.02 contratos API conceptuales storefront [Javier :20]
 - Define 8 operaciones, 8 DTO, 12 errores, 16 validaciones y 12 pares P/N FUTUROS_NO_EJECUTADOS para host, catálogo, stock, cotización, checkout, HMAC/PSP y autorización tenant A/B.
 - No crea endpoints, pagos, pedidos, reservas, migraciones ni secretos; contratos R0 y D01-D08 pendientes; A0-A4 documentales y A5 independiente, sin afirmar ejecución HTTP/MySQL/Playwright.
