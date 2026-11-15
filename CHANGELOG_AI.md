@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C02-02.M02.03 persistencia e indices conceptuales shared/dedicated [Javier :30]
+- Define once familias de entidades de almacenamiento y propiedad, diez indices tentativos compatibles a validar en MySQL 8.4 y ocho etapas futuras de migracion con rollback y aislamiento.
+- Documenta doce fixtures FUTUROS_NO_EJECUTADOS y doce invariantes JWT/RBAC/tenant A/B; no ejecuta EF, SQL, MySQL, backups, restore, DNS, secretos ni cambia proveedores.
+- Scope Lock y V5 exact SHA, A0–A4 documentales y A5 independiente pendiente, rollback git revert; solo dev y nunca QA/main/PROD.
+
 ## 2026-11-15 — V5 C02-02.M02.02 contratos conceptuales API y DTO placement [Javier :30]
 - Define ocho operaciones futuras, cinco DTO conceptuales, doce errores seguros, catorce validaciones y diez pares P/N FUTUROS_NO_EJECUTADOS para almacenamiento shared/dedicated.
 - Preserva JWT/RBAC/tenant A/B server-only, rechazo de DSN desde cliente, version y fence, idempotencia, restore e integridad sin crear endpoints, migraciones ni conexiones.
