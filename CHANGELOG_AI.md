@@ -3562,3 +3562,9 @@
 - Contrato documental real sobre rutas existentes empresa-configuracion, seis DTO FUTUROS preview/publicacion/rollback, catorce invariantes, diez errores y ocho pares positivos/negativos de cross-tenant y accesibilidad.
 - Distingue tema y logo actuales de capacidades no implementadas de presets y publicacion revisionada; conserva validacion hex, permisos tenant A/B y bloqueo de URLs/activos ajenos.
 - Solo Markdown, sin nuevos endpoints, estilos, storage ni flags runtime; Scope Lock/V5 exact-SHA y A5 independiente, rollback git revert, sin QA/main/PROD.
+
+## 2026-11-15 — V5 C01-01.M04.06 densidad y carga visual progresiva de usuarios [Javier :30]
+- Agrega tres indicadores visuales de carga de peso ligero al listado protegido de usuarios, ocultos a accesibilidad pero con estado textual anunciado; no generan datos ni permisos ficticios.
+- CSS responsive con tokens del tema, contraste forzado y animacion eliminada con prefers-reduced-motion; conserva loading, vacio, error, resultados y solo lectura.
+- Amplia Vitest dirigido con dos casos de aparicion y desaparicion de placeholders tras exito/fallo; Scope Lock, frontend y V5 de SHA causal obligatorios antes de LISTO.
+- Sin paginacion real nueva, API, JWT/RBAC/tenant backend, EF/MySQL, migraciones, servicios, QA/main/PROD; A5 independiente y git revert normal.

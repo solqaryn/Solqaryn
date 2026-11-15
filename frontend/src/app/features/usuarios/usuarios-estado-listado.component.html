@@ -1,6 +1,11 @@
 <section class="estados-listado" aria-label="Estado del listado de usuarios" aria-atomic="true">
   @if (cargando()) {
     <p class="mensaje" role="status" aria-live="polite">Cargando usuarios…</p>
+    <div class="carga-progresiva" aria-hidden="true">
+      <span class="carga-linea carga-linea-larga"></span>
+      <span class="carga-linea carga-linea-media"></span>
+      <span class="carga-linea carga-linea-corta"></span>
+    </div>
   } @else if (tieneError()) {
     <p class="mensaje error" role="alert">No se pudo actualizar la lista de usuarios. Revisa el mensaje de error.</p>
   } @else if (cantidad() === 0) {

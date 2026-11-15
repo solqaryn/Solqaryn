@@ -11,3 +11,32 @@
 .error { color: var(--color-danger, #9f1239); }
 .permiso { margin-top: .375rem; font-size: .875rem; color: var(--color-text, #0f172a); }
 @media (max-width: 420px) { .estados-listado { padding: .625rem; } }
+
+/* C01-01.M04.06: indicacion ligera de progreso, nunca datos ficticios. */
+.carga-progresiva {
+  display: grid;
+  gap: .375rem;
+  width: 100%;
+  max-width: 28rem;
+  margin-top: .625rem;
+}
+.carga-linea {
+  display: block;
+  height: .5rem;
+  border-radius: .375rem;
+  background: var(--color-border, #cbd5e1);
+  animation: carga-pulso 1.6s ease-in-out infinite alternate;
+}
+.carga-linea-larga { width: 100%; }
+.carga-linea-media { width: 76%; }
+.carga-linea-corta { width: 52%; }
+@keyframes carga-pulso {
+  from { opacity: .5; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .carga-linea { animation: none; }
+}
+@media (forced-colors: active) {
+  .carga-linea { border: 1px solid CanvasText; background: Canvas; }
+}

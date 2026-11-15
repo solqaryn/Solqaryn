@@ -50,4 +50,26 @@ describe('C01-01.M04.02 estados de Usuarios', () => {
     expect(f.nativeElement.textContent).toContain('1 usuario visible');
     expect(f.nativeElement.textContent).not.toContain('Cargando usuarios');
   });
+
+  it('presenta marca ligera de carga oculta a lectores sin exponer datos antiguos', () => {
+    const f = mostrar(true, false, 100, false);
+    const skeleton = f.nativeElement.querySelector('.carga-progresiva');
+    expect(skeleton?.getAttribute('aria-hidden')).toBe('true');
+    expect(f.nativeElement.querySelectorAll('.carga-linea').length).toBe(3);
+    expect(f.nativeElement.textContent).toContain('Cargando usuarios');
+    expect(f.nativeElement.textContent).not.toContain('100 usuarios visibles');
+  });
+
+  it('retira placeholders al resolver o fallar la carga sin mostrar datos ficticios', () => {
+    const f = mostrar(true, false, 0, true);
+    f.componentRef.setInput('cargando', false);
+    f.componentRef.setInput('cantidad', 1);
+    f.detectChanges();
+    expect(f.nativeElement.querySelector('.carga-progresiva')).toBeNull();
+    expect(f.nativeElement.textContent).toContain('1 usuario visible');
+    f.componentRef.setInput('tieneError', true);
+    f.detectChanges();
+    expect(f.nativeElement.querySelector('.carga-progresiva')).toBeNull();
+    expect(f.nativeElement.textContent).toContain('No se pudo actualizar');
+  });
 });
