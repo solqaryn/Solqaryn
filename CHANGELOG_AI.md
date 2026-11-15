@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C10-02.M02.06 contrato de salida M02 archivos y dominios [Javier :20]
+- Consolida predecesores M02.01–05 LISTO+A5 y define G01–G16 gates reales y R01–R08 reversión futura, sin confundir docs con CI o inventario de proveedores.
+- Mantiene tenant A/B JWT/RBAC server-side, TTL/replay, idempotencia, hold, secretos fuera del repo y estado inventario NO_VERIFICADO.
+- Solo docs/v5 y CHANGELOG en dev por fast-forward/CAS; Scope Lock y V5 SHA causal, A5 independiente antes de M03, sin R2/DNS/QA/main/PROD.
+
 ## 2026-11-15 — V5 C06-04.M03.02 servicio Application del portal cliente [Javier :10]
 - Implementa Application .NET10 de prevalidacion privada CUSTOMER con fuente verificada, enlazando C0604PortalClienteDomainRules; rechaza tenant B, cliente A2, owner NULL, sesion revocada/expirada, JWT no acreditado y CAS stale.
 - Agrega diez tests xUnit positivos/negativos para permiso/tenant/cuenta/sesion/recurso/version, sin endpoint, DI, MySQL, pedidos, pagos, workers ni tokens.
