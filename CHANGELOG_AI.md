@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C07-04.M03.02 Application preflight comercial .NET 10 [Javier :50]
+- Incorpora servicio de aplicación real sobre reglas Domain de pedidos, facturas, pagos y exportación; verifica contratos de SHA/evidencia y conserva todas las operaciones como no autorizadas hasta adaptador autenticado.
+- Añade xUnit positivos/negativos de tenant A/B, NULL legado, versiones, RBAC, idempotencia, importes, moneda, PSP y fiscal; jamás cobra, factura, persiste ni exporta mediante el preflight.
+- Sólo dev, Scope Lock STRICT, verificación V5 y CI causal exact-SHA para A0–A4; A5 independiente. Sin API/EF/MySQL en vivo, webhooks, secretos, QA/main/PROD.
+
 ## 2026-11-15 — V5 C14-01.M01.06 barreras y rollback de aceptación funcional [Javier :40]
 - Cierra preparación documental M01 de aceptación funcional: dieciséis gates, diez escenarios de reversión y doce oráculos P/N FUTUROS_NO_EJECUTADOS sobre acceso, comercio, inventario, responsive y CI.
 - Contrasta cinco predecesores LISTO con A5 independiente; el documento no ejecuta Playwright, HTTP, JWT/RBAC, MySQL, cobros, pruebas A/B ni autoriza QA/main/PROD.
