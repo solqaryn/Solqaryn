@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-04.M02.05 eventos, idempotencia, correlación y límites UX [Javier :20]
+- Especifica EV01–EV08, ID01–ID08, LM01–LM10 y doce pares positivos/negativos FUTUROS_NO_EJECUTADOS para señales documentales de auditoría UX, sin activar transporte.
+- Contrasta MensajeOutbox existente, AppDbContext, contratos UX M01/M02 y seguridad tenant A/B, JWT/RBAC, sin afirmar un dispatcher o webhook real.
+- Dos Markdown en dev, Scope Lock y procedencia V5 exact-SHA requeridos, readback institucional, A5 de otra Task Javier pendiente; ningún evento entre Tasks ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C15-04.M02.04 configuración tipada y feature flags UX [Javier :10]
 - Especifica CFG01–CFG14 como claves PROPUESTAS no implementadas y VAL01–VAL12 como pruebas negativas futuras, con defaults cerrados, separación de fuentes y ámbitos.
 - Contrasta environment development/production, tenant-context backend-verified y permisos runtime; no crea flags, endpoints, migraciones ni cambios en configuración productiva.
