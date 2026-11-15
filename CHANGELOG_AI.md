@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C09-02.M02.02 contratos API/DTO conceptuales de fidelizacion [Javier :00]
+- Define ocho operaciones logicas O01-O08, ocho DTO D01-D08, doce errores seguros X01-X12 y dieciseis validaciones V01-V16 para puntos, promociones, resenas, moderacion, posventa y consentimiento, sin publicar endpoints.
+- Propone doce pares P/N FUTUROS_NO_EJECUTADOS para empresa A/B, revocacion JWT/RBAC, legacy NULL, canje concurrente, replay, PII, moderacion, opt-out y errores; ninguna prueba HTTP/MySQL/Playwright real, metricas NO_MEDIDO.
+- R0 documental con un solo scope C09-02.M02.02 y CHANGELOG en dev, candado V17 fila 1341 ID 2000001341; A0-A4 por Scope Lock/V5 exact-SHA y BITACORA/readback; A5 independiente. Sin datos, cobros, mensajes, QA/main/PROD; rollback git revert.
+
 ## 2026-11-15 — V17 C13-02.M02.04 configuración segura accesibilidad [Javier :50]
 - Contrato R0 con 24 opciones tipadas propuestas, precedencia PLATFORM/TENANT/MODULE/SURFACE/USER, 16 invariantes, seis P y seis N FUTUROS_NO_EJECUTADOS; no se instalaron flags o controles ejecutables.
 - Seguridad JWT/RBAC/tenant A/B y revocación no pueden degradarse por UI o valores de menor ámbito; no se hicieron tests Angular/Playwright/MySQL ni certificación WCAG, únicamente definición de obligaciones futuras.
