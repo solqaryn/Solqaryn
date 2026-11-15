@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C11-02.M02.05 idempotencia y correlación de API modular [Javier :00]
+- Define 10 contratos de frontera EV, 16 invariantes ID, 10 pares P/N FUTUROS_NO_EJECUTADOS y 8 barreras RB para seguridad tenant/JWT/RBAC, idempotencia, cuotas y correlation IDs sin permisos.
+- Revisa API CorrelationIdMiddleware, ApiResponse, ExceptionHandling y servicios Outbox existentes; NO IMPLEMENTAR EVENTOS TODAVÍA, sin worker, relay, SQL, webhook ni llamadas entre Tasks.
+- Cambio únicamente documental en dev por fast-forward/CAS, Scope Lock/V5 exact-SHA, A0–A4 reales para Markdown, A5 independiente posterior y rollback git revert; no QA/main/PROD.
+
 ## 2026-11-15 — V5 C11-02.M02.04 configuración tipada y flags API modular [Javier :50]
 - Contrato documental de 16 opciones tipadas propuestas, 18 validaciones y 10 pares P/N FUTUROS_NO_EJECUTADOS: precedencia plataforma/tenant, JWT/RBAC, soporte lectura, CORS, rate limits, idempotencia y errores sin secretos.
 - Contrasta API ASP.NET Core 10, Program.cs, AuthController, EF/MySQL y preparación M01 sin modificar appsettings, DI, endpoints, código, esquema, procesos, permisos, eventos ni infraestructura.
