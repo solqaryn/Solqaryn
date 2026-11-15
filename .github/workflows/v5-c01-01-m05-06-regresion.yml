@@ -1,0 +1,71 @@
+name: V5 C01-01.M05.06 - Regresion identidad y accesibilidad
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/Application/V5C0101M0506RegresionTests.cs'
+      - 'frontend/e2e/c01-01-m05-06-regresion.spec.ts'
+      - '.github/workflows/v5-c01-01-m05-06-regresion.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: v5-c01-01-m05-06-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  browser:
+    name: V5 C01-01.M05.06 - Chromium accesibilidad y ruta privada
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout exact SHA
+        uses: actions/checkout@v4
+      - name: Node 24 fijo
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm fijo
+        run: npm install --global npm@11.19.0
+      - name: Dependencias reproducibles
+        run: npm ci
+      - name: Lint y build produccion
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Chromium efimero
+        run: npx playwright install --with-deps chromium
+      - name: Angular local sin backend de produccion
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > m0506-angular.log 2>&1 &
+          for attempt in $(seq 1 65); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then
+              echo 'LOCAL_FRONTEND_READY=PASS'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat m0506-angular.log >&2
+          exit 1
+      - name: Dos regresiones Playwright reales
+        run: npx playwright test e2e/c01-01-m05-06-regresion.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Evidencias de browser
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v5-c01-01-m05-06-regresion
+          path: |
+            frontend/m0506-angular.log
+            frontend/playwright-report/
+            frontend/test-results/
+          if-no-files-found: warn
+          retention-days: 14

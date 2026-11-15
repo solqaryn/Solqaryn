@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C01-01.M05.06 regresiones reales y accesibilidad [Javier :20]
+- Agrega cinco pruebas xUnit sobre identidad tenant A/B con costo de lecturas acotado, cancelación y revocación; no sustituye benchmarks de producción o MySQL real.
+- Añade dos pruebas Chromium de foco, reduced-motion y ruta privada, con workflow efímero de GitHub-hosted, sin credenciales ni API productiva.
+- Pruebas, documento y CHANGELOG en dev; Scope Lock/CI exact-SHA, A5 independiente y rollback normal, sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C10-04.M03.02 Application preflight cache jobs backups exports [.NET10 Javier :10]
 - Implementa clase Application real con proveedor de contexto verificado, frontera read-only y enlace a C1004CacheJobsDomainRules; deniega cross-tenant A/B, permisos revocados, version stale, operaciones no allowlisted y reintentos fuera de politica.
 - Agrega diez pruebas xUnit para casos positivos/negativos, hint cliente, SHA, version, expiry y cancelacion, todos los flags Allows... false; un preflight no concede lease, CI ni proveedor real.
