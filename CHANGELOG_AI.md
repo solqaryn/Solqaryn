@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C07-02.M01.06 contrato de gates y rollback storefront [Javier :10]
+- Define 16 puertas causales y 12 pares positivos/negativos FUTUROS_NO_EJECUTADOS para host/storeKey, tenant A/B, caché, validación, idempotencia, HMAC/replay, callbacks, privacidad, móvil y pruebas pertinentes; no certifica checkout o pagos.
+- Acredita preparación M01.01–05+A5 por readback DAG/COLA y conserva D01–D08 pendientes. LISTO_DEV documental requiere Scope Lock/V5 exact-SHA, BITACORA y readback; A5 independiente distinto del autor antes de liberar M02.
+- Sólo Markdown docs/v5 y CHANGELOG en dev. Sin API/Angular/EF/MySQL, provider PSP, pedidos, secreto, workers, QA/main/PROD; rollback por git revert y eventos aditivos.
+
 ## 2026-11-15 — V17 C15-05.M04.04 navegación sin mutaciones de auditoría [Javier :00]
 - Añade cuatro casos reales Angular/Vitest sobre ruta privada, mensaje honesto sin datos vivos, enlace accesible de retorno, ausencia de formularios/botones/doble-submit y denegación sin administrador.
 - La vista existente es solo lectura; no inventa endpoints, estado de carga, mutaciones, pagos ni JWT real. La prueba de navegador de otra unidad no sustituye este CI exact-SHA.
