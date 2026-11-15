@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C12-02.M01.06 bloqueos y rollback documental de frontend separado [Javier :10]
+- Define 16 bloqueos BL01–BL16, ocho procedimientos REV01–REV08, doce gates LG01–LG12 y ocho parejas T01–T08 FUTUROS_NO_EJECUTADOS para Angular, proxy, cache, headers, SEO, accesibilidad y rollback.
+- D01–D10 permanecen PENDIENTES; preserva JWT/RBAC/tenant A/B, ERP privado, Scope Lock y proveedores declarados; no mueve hosting, DNS, CDN, TLS, Vercel, Render, MySQL ni despliega nada.
+- V15 R0 contractual, A0–A4 documentales y checks exact SHA, A5 independiente de otra Task Javier; rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-15 — V16 C06-01.M02.05 contrato de eventos e idempotencia del sitio publico [Javier :40]
 - Define doce eventos conceptuales EV01–EV12, catorce invariantes ID01–ID14 y un sobre de correlacion opaca para landing, planes, contacto, demo, legal y SEO.
 - Especifica diez pares P/N FUTUROS_NO_EJECUTADOS, aislamiento tenant A/B, JWT/RBAC, consentimiento, deduplicacion, reintentos acotados y privacidad sin API, workers, MySQL, SMTP ni dispatcher ejecutable.
