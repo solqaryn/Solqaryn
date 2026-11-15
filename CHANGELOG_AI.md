@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C04-01.M02.02 contratos API, DTO, errores y compatibilidad del catálogo SaaS [Javier :00]
+- Documenta doce operaciones API conceptuales, doce DTO, catorce validaciones, doce errores y doce pares P/N FUTUROS_NO_EJECUTADOS sobre planes versionados y límites por tenant.
+- Preserva JWT/RBAC, membresía, aislamiento tenant A/B, versionado, idempotencia y decisiones comerciales de precios, moneda e impuestos aún no aprobadas; capacidad SaaS no otorga permisos.
+- No modifica APIs, DTO reales, cobros, MySQL, PSP, Angular, secretos ni QA/main/PROD; A0–A4 y CI documental exact-SHA, A5 independiente y rollback git revert.
+
 ## 2026-11-15 — V5 C04-01.M02.01 contrato de entidades, ownership e invariantes de planes [Javier :10]
 - Documenta doce objetos logicos, doce invariantes y doce pares P/N FUTUROS_NO_EJECUTADOS para catalogo SaaS, con fuente real Plan, PlanLimite y Suscripcion.
 - Versionado, limites, precios y cambios de plan futuros no crean tablas, tarifas, privilegios, migraciones, cobros o webhooks; JWT/RBAC/tenant A/B fail-closed.
