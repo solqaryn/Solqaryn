@@ -4281,3 +4281,8 @@
 - Incluye siete pruebas xUnit positivas/negativas para contexto no autenticado, tenant B, permisos revocados, SHA, solicitud incoherente y requisitos sin mapeo.
 - Incluso con un corte internamente consistente exige adaptador externo autenticado y A5 ajena; nunca concede acceso, escritura, certificacion de 2340 tareas ni promocion de entornos.
 - Sin nuevas API, JWT/EF/MySQL real, migraciones, jobs, secrets, QA/main/PROD; CI backend/seguridad/Scope Lock/V5 exact-SHA y git revert sin force.
+
+## 2026-11-15 — V16 C02-01.M03.01 resolucion Domain segura de tenant [Javier :10]
+- Implementado preflight ejecutable .NET 10 de identidad, tenant, membresia vigente, RBAC, host mapping unico/fresco desde backend y ownership A/B de recursos y sucursales; ninguna cabecera o ruta crea autoridad.
+- Agregados doce metodos xUnit positivos, negativos y frontera: JWT ausente, host falso/forwarded no confiable, tenant B, rol revocado, membresia desactivada, tenant suspendido, proveedor sin autoridad, fallback cliente y errores de superficie.
+- Riesgo V15 R2: no modifica middleware, JWT HTTP real, EF/MySQL ni API; el veredicto solo exige enforcement independiente en backend. CI backend/security/auth/Scope Lock/V5 exact-SHA obligatoria; A5 de Task Javier distinta y rollback git revert.
