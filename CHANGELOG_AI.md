@@ -3056,3 +3056,8 @@
 - Cierra solo el contrato documental terminal M01 de C10-01: BL01–BL14, RB01–RB10 y gate de paso a diseño M02 sin activar Cloudinary/R2/Hostinger ni migrar objetos.
 - Contrasta cinco documentos M01.01–05 con blobs y A5 independientes, el precedente C01-03.M01.06, JWT/RBAC y tenant A/B; los tests HTTP/MySQL/checksum/restore siguen NO_EJECUTADOS.
 - Dos Markdown dev por fast-forward/CAS, Scope Lock y V5 exact-SHA antes de LISTO_DEV; A5 pendiente de otra Task Javier, rollback git revert sin QA/main/PROD.
+
+## 2026-11-14 — V5 C02-01.M02.06 salida documental de identidad/tenant [Javier :00]
+- Cierra únicamente contrato M02 de C02-01, con BL01–BL16 y RB01–RB10 de JWT/RBAC, tenant A/B, host/ownership, eventos futuros e idempotencia; ningún evento o worker implementado.
+- Revalida precedentes M01 6/6 y M02 5/5 LISTO+A5 y C01-01.M01.06, con última A5 independiente M02.05; pruebas positivas y negativas runtime permanecen NO_EJECUTADAS.
+- Dos Markdown en dev con publicación fast-forward/CAS, Scope Lock y procedencia V5 exact-SHA, A5 pendiente otra Task Javier; sin MySQL, migraciones, QA/main/PROD ni secretos.
