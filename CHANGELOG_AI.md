@@ -3512,3 +3512,8 @@
 - Define contrato documental de 18 opciones tipadas, defaults restrictivos, 12 precedencias fail-closed y ocho pares P/N para futura alta, suspension, reactivacion, archivo y baja logica.
 - Mantiene autoridad global distinta de tenant A/B, JWT/RBAC, version CAS, idempotencia, retencion, CI exact-SHA y A5 independiente; no habilita ninguna feature flag real.
 - Solo Markdown sin cambios backend, frontend, EF/MySQL ni webhooks: Scope Lock/V5 y A0–A4 documentales exact-SHA obligatorios antes de LISTO, rollback git revert, sin QA/main/PROD.
+
+## 2026-11-15 — V5 C05-02.M02.02 API DTO branding y presets versionados [Javier :20]
+- Contrato documental real sobre rutas existentes empresa-configuracion, seis DTO FUTUROS preview/publicacion/rollback, catorce invariantes, diez errores y ocho pares positivos/negativos de cross-tenant y accesibilidad.
+- Distingue tema y logo actuales de capacidades no implementadas de presets y publicacion revisionada; conserva validacion hex, permisos tenant A/B y bloqueo de URLs/activos ajenos.
+- Solo Markdown, sin nuevos endpoints, estilos, storage ni flags runtime; Scope Lock/V5 exact-SHA y A5 independiente, rollback git revert, sin QA/main/PROD.
