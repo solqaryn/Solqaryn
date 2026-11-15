@@ -2611,3 +2611,8 @@
 - Delimita auditoría V5 de PLAN/COLA/DAG, autoridad exclusiva de seis Tasks Javier, CAS owner, BITACORA A:Z, telemetría auto-reportada, CI exact-SHA y A5 independiente; sin modificar runtime ni programación.
 - Define NR01–NR14 y P01–P08/N01–N08 como oráculos FUTUROS_NO_EJECUTADOS sobre concurrencia, duplicados, permisos, evidencia, rollback y fail-closed; trazabilidad a fuentes actuales y riesgos a comprobar.
 - Entrega documental en dev con A0–A4 y Scope Lock/V5 del commit exacto; A5 pendiente de otra Task Javier, sin QA/main/PROD, secretos, migraciones o infraestructura productiva.
+
+## 2026-11-14 — V5 C15-05.M01.02: actores, interfaces y fronteras de auditoría operativa [Javier :30]
+- Delimita A01–A12 actores/roles de las seis Tasks Javier, GitHub, Drive, CI, revisor A5 y consumidor institucional, sin atribuir nuevas autorizaciones físicas ni cuentas.
+- Define IO01–IO12 entradas/salidas y F01–F10 fronteras con positivos/negativos FUTUROS_NO_EJECUTADOS: claim CAS, DAG, BITACORA append-only, telemetría local vs runtime nativo, CI exact-SHA y A5 diferenciado.
+- Sólo documentación dev y CHANGELOG; A0–A4 documentales y checks Scope Lock/V5 SHA exacto, A5 independiente posterior; sin runtime nuevo, QA/main/PROD ni programación alterada.
