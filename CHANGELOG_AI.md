@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C10-04.M03.03 gate de autorización cache/jobs fail-closed [Javier :30]
+- Implementa barrera real Application .NET 10 con fuente verificada, owner persistido, contexto tenant A/B, membresía/RBAC, grant de servicio y operaciones allowlisted; sin permisos efectivos ni efectos runtime.
+- Incorpora doce tests xUnit positivos/negativos: suplantación, revocación, empresa cruzada, clave/hash, versión, deadline, fuente y cancelación. CI causal exacta pendiente hasta finalizar checks requeridos.
+- No publica HTTP, workers, EF/MySQL, backup/restore, R2, leases ni secretos; A0–A4 causales y A5 independiente por otra Task Javier; rollback git revert y dev únicamente.
+
 ## 2026-11-15 — V5 C01-01.M06.04 ensayo aislado de rollback sin pérdida de datos [Javier :40]
 - Ejecutado ensayo REAL en Git temporal sintético: 6/6 comprobaciones de cambio allowlisted, rechazo de alteración de datos, git revert y preservación de tres membresías A/B; SHA256 del fixture 8ade74dd43af6babefc3392df2e24dbc87a127ec470914701585918a46b1fcbc.
 - Documentado runbook fail-closed de desactivación/reversión con evidencia positiva y negativa; NO se ejecutó rollback de SOLQARYN, JWT/HTTP, EF/MySQL, migraciones ni restauración de datos reales.
