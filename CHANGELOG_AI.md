@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C15-01.M03.04 adaptador aislado read-only de requisitos [Javier :50]
+- Implementa adaptador .NET Infrastructure con puerto de snapshot institucional verificado, SHA exacto, catálogo ordinal, evidencia de lector y capacidad acotada; compone Application/Domain existentes sin leer Sheets directamente ni habilitar A5/escritura o declarar cobertura completa.
+- Añade 12 xUnit positivos/negativos, incluyendo regresión de `IReadOnlySet` ordinal-insensible, fuente falsa, SHA, duplicados, estados, capacidad, revisor y cancelación; backend Release, seguridad, Scope Lock y V5 requeridos en SHA antes de LISTO.
+- R2 de sólo lectura; sin MySQL/EF, API/HTTP, proveedores, runtime de Work ni cambios de fórmula. Cadena V17 y readbacks, A5 independiente, rollback git revert sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C03-04.M03.04 adaptador aislado de incidentes [Javier :40]
 - Añade proyeccion .NET 10 de metadatos de incidente sin EF ni MySQL; niega tenant B, branch ajena, SHA incorrecto, revocacion y evidencia insegura, sin conceder permisos reales.
 - Ocho metodos xUnit positivos/negativos y frontera, solo para validacion del adaptador, no para certificar JWT, DB o restauracion; A5 independiente obligatoria.
