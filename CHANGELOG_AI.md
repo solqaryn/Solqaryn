@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C12-02.M02.03 persistencia conceptual de frontend separado [Javier :30]
+- Documento R0 con P01–P12, IDX01–IDX10, MIG01–MIG08, F01–F12 y 12 pares T01–T12 FUTUROS_NO_EJECUTADOS para metadatos de release, assets, rutas, proxy, caché y rollback.
+- Sin tablas, índices SQL, migraciones EF/MySQL, backend, Angular, HTTP, CDN, DNS, hosting ni datos reales; 0/12 tests runtime, LCP/INP/CLS NO_MEDIDO, conflicto de presupuesto 650–750KB vs 1–2MiB pendiente.
+- Un changeset dev de dos Markdown, Scope Lock/V5 exact SHA; A5 independiente necesaria, sin QA/main/PROD ni autorización implícita de migración.
+
 ## 2026-11-15 — V16 C13-03.M02.02 API y DTO conceptuales de rendimiento [Javier :20]
 - Contrato documental R0 de ocho operaciones futuras OP01–OP08, ocho DTO conceptuales, doce errores seguros ERR01–ERR12 y dieciséis reglas VAL01–VAL16 para experiencia ligera, API y privacidad, sin crear endpoints ni DTO compilados.
 - Diez casos T01–T10 positivos/negativos FUTUROS_NO_EJECUTADOS; el conflicto del bundle 650–750 KB contra 1–2 MiB continúa SIN_RESOLVER y LCP/INP/CLS permanecen NO_MEDIDO; no se adjudica PASS de runtime.
