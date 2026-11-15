@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C00-04.M04.03 branding tipado de gobierno [Javier :30]
+- Agrega marca de plataforma o variante neutra mediante Angular 22 Signals `input`/`computed`, clases y tokens visuales controlados, sin interpolación de CSS, HTML arbitrario o identidad de tenant.
+- Incorpora cuatro pruebas Vitest positivas/negativas (autoridad, fallback, payload hostil y falta de sesión) en un job real Node 24 GitHub Actions; mantiene `plataformaGuard` y consulta de solo lectura.
+- Sin API, MySQL, JWT/RBAC, trabajadores, despliegue ni QA/main/PROD; exigir A0-A4 con Scope Lock, build, pruebas dirigidas exact-SHA, A5 ajeno y rollback `git revert`.
+
 ## 2026-11-15 — V5 C06-02.M02.01 modelo de landing por tenant [Javier :50]
 - Documenta 16 entidades conceptuales y 16 invariantes de ownership de landing/host/preview/publicacion/cache/SEO, con diez pares P/N FUTUROS_NO_EJECUTADOS y aislamiento tenant A/B.
 - Alinea G01–G16 y RB01–RB08 de M01.06, roles editor/publicador, host confiable y caché particionada sin afirmar endpoints, MySQL, resolución de host ni publicación real.

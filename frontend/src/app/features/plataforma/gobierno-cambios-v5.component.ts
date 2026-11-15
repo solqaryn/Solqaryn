@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal, computed, input } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
@@ -44,6 +44,10 @@ export type EstadoGobiernoV5 = 'cargando' | 'vacio' | 'error' | 'exito' | 'sin_p
       </section>
 
       @if (estado() === 'exito' || estado() === 'vacio') {
+      <section class="brand-context" [class.brand-context--neutral]="modoMarca() !== 'plataforma'" aria-label="Identidad visual de gobierno V5">
+        <span class="brand-emblem" aria-hidden="true">{{ modoMarca() === 'plataforma' ? 'S' : '·' }}</span>
+        <div><strong>{{ identidadVisual().nombre }}</strong><p>{{ identidadVisual().descripcion }}</p></div>
+      </section>
       <section class="notice" aria-label="Límites de esta pantalla">
         <strong>Solo lectura · sin autoridad operativa</strong>
         <p>Una sesión de plataforma verificada permite consultar esta explicación, pero no autoriza migraciones, permisos, publicaciones ni cambios de empresa.</p>
@@ -80,6 +84,11 @@ export type EstadoGobiernoV5 = 'cargando' | 'vacio' | 'error' | 'exito' | 'sin_p
     .return-link[disabled] { opacity: .65; cursor: progress; }
     .notice { margin-top: 1.25rem; padding: 1rem 1.15rem; border-radius: .8rem; border: 1px solid var(--mat-sys-outline, #6e7782); background: var(--mat-sys-surface-container-low, #f5f7fa); }
     .notice p { margin-bottom: 0; }
+    .brand-context { display: flex; gap: .9rem; align-items: center; margin-top: 1.2rem; padding: .85rem 1rem; border: 1px solid var(--mat-sys-outline-variant, #c0c7cf); border-radius: .75rem; background: var(--mat-sys-surface-container-low, #f5f7fa); }
+    .brand-context strong { display: block; }
+    .brand-context p { margin: .2rem 0 0; }
+    .brand-emblem { flex: none; display: grid; place-items: center; width: 2.4rem; height: 2.4rem; border-radius: .65rem; background: var(--mat-sys-primary, #2157a3); color: var(--mat-sys-on-primary, #fff); font-weight: 800; }
+    .brand-context--neutral .brand-emblem { background: var(--mat-sys-outline, #66727e); color: #fff; }
     .steps { padding: 0; list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .85rem; }
     .steps li { border: 1px solid var(--mat-sys-outline-variant, #c0c7cf); border-radius: .75rem; padding: 1rem; display: flex; gap: .85rem; min-width: 0; }
     .steps p { margin: 0; }
@@ -90,6 +99,12 @@ export type EstadoGobiernoV5 = 'cargando' | 'vacio' | 'error' | 'exito' | 'sin_p
   `]
 })
 export class GobiernoCambiosV5Component {
+  // C00-04.M04.03: lista cerrada de branding sin CSS arbitrario ni identidad tenant.
+  readonly modoMarca = input<'plataforma' | 'neutra'>('plataforma');
+  readonly identidadVisual = computed(() => this.modoMarca() === 'plataforma'
+    ? { nombre: 'SOLQARYN · Plataforma', descripcion: 'Marca institucional · controles visuales permitidos' }
+    : { nombre: 'Interfaz neutra', descripcion: 'Sin marca empresarial ni autoridad operativa' });
+
   private readonly plataforma = inject(PlataformaSesionService);
   private readonly destroyRef = inject(DestroyRef);
   readonly estado = signal<EstadoGobiernoV5>(this.plataforma.sesion() ? 'vacio' : 'sin_permiso');
