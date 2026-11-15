@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C07-02.M02.03 persistencia y fixtures conceptuales storefront [Javier :10]
+- Define 12 agrupaciones de persistencia propuestas D01-D12 y 12 índices/uniques candidatos I01-I12 con aislamiento por empresa, host confiable y separación de carrito, cotización, pedido, reserva y PSP; ninguna tabla, migración o EF creada.
+- Propone 8 fases reversibles M01-M08 y 12 pares de fixtures sintéticos F01-F12 FUTUROS_NO_EJECUTADOS con fail-closed tenant A/B, idempotencia, JWT/RBAC, HMAC/replay, stock e inventario; 0 tests MySQL/xUnit/Playwright ejecutados y métricas NO_MEDIDO.
+- Entrega R0 documental únicamente este Markdown y CHANGELOG en dev, candado V17 fila 1054 id 2000001054, A0-A4 contra SHA y A5 independiente pendiente; sin API, cobros, Aiven, secretos, QA/main/PROD; rollback git revert.
+
 ## 2026-11-15 — V17 C07-02.M02.05 eventos conceptuales e idempotencia de storefront/checkout [Javier :40]
 - Contrato R0 de doce eventos E01–E12 INERTES, catorce campos de sobre, catorce invariantes de idempotencia/correlación y doce pares positivos/negativos FUTUROS_NO_EJECUTADOS; no introduce API, colas, workers o mensajería real.
 - Tenant A/B, host, JWT/RBAC/revocación, HMAC/nonce/replay PSP, orden/stock, TTL, CAS e integridad financiera quedan fail-closed; validar checkout jamás equivale a cobrar o reservar.
