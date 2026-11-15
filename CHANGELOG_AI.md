@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C01-04.M03.01 reglas Domain reales de expediente universal [Javier :50]
+- Implementa validador .NET 10 de dominio puro para timeline/observaciones/decisiones/adjuntos, tenant A/B, sucursal, membresía, permiso, versión, clave idempotente y archivado fail-closed.
+- Incluye xUnit positivo/negativo; la respuesta READY_FOR_TRUSTED_CASEFILE_ENFORCEMENT no concede acceso, escritura, descarga ni certifica MySQL/HTTP/QA.
+- Sólo dev, fast-forward con Scope Lock/V5 y backend/security CI exact-SHA requeridos, A5 independiente posterior; sin migraciones, eventos, workers, secretos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C15-02.M03.01 reparación dirigida de Scope Lock [Javier :50]
 - Sustituye una denominación técnica inglesa heredada en Domain y xUnit por SourceOwnershipFromTrustedCatalog, preservando todas las condiciones fail-closed y las aserciones.
 - Corrige únicamente el token rechazado por el verificador de identidad, sin desactivar reglas, tests ni analizadores; se exige nuevo Scope Lock, V5 y CI .NET/seguridad del SHA reparado.
