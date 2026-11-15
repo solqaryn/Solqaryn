@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C15-03.M03.05 matriz negativa cruzada seguridad y tenancy [Javier :00]
+- Añade catorce métodos xUnit reales sobre Domain/Application/Infrastructure aislados: tenant A/B, sucursal, propietario, SHA, roles, revocación, archivos, jobs, control plane, bypass, enumeración y cancelación.
+- Los preflights nominales nunca conceden lectura, descarga, escritura, job ni control plane; exigir Backend Release, seguridad multiempresa, Authorization, Scope Lock y V5 exact-SHA antes de LISTO.
+- R2: fakes no certifican JWT HTTP, MySQL/EF ni proveedor productivo; A5 solo por otra Task Javier, rollback git revert normal; sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C01-03.M03.03 gate de autorización de configuración dinámica [.NET 10 Javier :50]
 - Implementa gate Application que obtiene JWT/membresía/RBAC/entitlement actuales desde backend, valida tenant propietario y catálogo ordinal exacto y compone Domain/Application sin conceder escritura.
 - Agrega doce xUnit de rutas positivas, negativas y errores, incluida regresión OrdinalIgnoreCase de M03.01; se exigen GitHub Actions backend, seguridad, autorización, Scope Lock y procedencia V5.
