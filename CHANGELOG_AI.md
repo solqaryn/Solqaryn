@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C08-03.M02.02 contratos API/DTO de membresías gimnasio [Javier :00]
+- Define ocho operaciones conceptuales, ocho DTO lógicos, doce errores seguros, dieciséis validaciones y diez pares de pruebas FUTURAS NO_EJECUTADAS para membresía, vigencia UTC/DST, suspensión y acceso.
+- Separa UsuarioEmpresa/SuscripcionesSaaS de planes comerciales, impone tenant/sede server-side, JWT/RBAC, revocación, idempotencia y denegación offline; D01–D08 previas siguen pendientes.
+- Solo R0 documental en dev, sin API, MySQL, Angular, pagos, QR, hardware ni pruebas runtime; Scope Lock/V5 exact-SHA, candado V17, readback institucional, A5 independiente y rollback git revert normal.
+
 ## 2026-11-15 — V17 C08-03.M02.01 modelo membresías y acceso de gimnasio [Javier :50]
 - Diseña veinte entidades, relaciones Empresa/Sucursal/Miembro/Plan/Acceso, veinte invariantes y doce pares futuros positivos-negativos sobre caducidad UTC/DST, suspensión, tenant A/B, QR y revocación.
 - Solo contrato documental R0, sin dispositivos, cobro, JWT, API o MySQL reales; conserva autoridad ERP, Scope Lock/V5 exact-SHA, gates DAG y A5 independiente pendiente, rollback git revert normal.
