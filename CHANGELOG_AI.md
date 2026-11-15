@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-01.M02.03 persistencia e indices de auditoria de cobertura [Javier :50]
+- Propone PD01–PD12 registros logicos, IX01–IX06 indices condicionales y FX01–FX12 casos positivos/negativos FUTUROS_NO_EJECUTADOS; no crea tablas ni migraciones.
+- Contrasta AppDbContext, TenantQueryBypassGuard y CanonicalMySqlPhysicalContract reales con la autoridad STANDARD/PLAN/COLA/DAG/BITACORA; no certifica cero huerfanos, P0/P1 ni integridad runtime.
+- Solo nuevo Markdown y CHANGELOG autocontenido en dev, Scope Lock/V5 exact-SHA, A5 independiente pendiente y rollback git revert; sin API, datos, migraciones, eventos ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C15-04.M02.06 gates y rollback de contratos UX [Javier :00]
 - Verifica precondiciones M02.01–05 LISTO/A5 y define B01–B14 para seguridad, WCAG, UX, rendimiento, integraciones y reversión, sin atribuir certificación de runtime.
 - Registra AT01–AT12 positivos/negativos FUTUROS_NO_EJECUTADOS; M03 depende del nuevo DAG y del A5 independiente de este terminal, jamás del texto del CHANGELOG.
