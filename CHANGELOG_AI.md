@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C08-03.M02.04 configuración tipada segura membresías gimnasio [Javier :10]
+- Contrato R0 de seis ámbitos, dieciséis opciones tipadas O01–O16 con defaults fail-closed y distinción PositiveInteger/NonNegativeInteger; prohíbe acceso concedido por flags, QR o UI.
+- Doce controles FG01–FG12 y diez pares T01–T10 FUTUROS_NO_EJECUTADOS: tenant A/B, JWT/RBAC, revocación, UTC/DST, idempotencia, offline y rollback; D01–D08 M01 siguen abiertas.
+- Solo documento Markdown en dev; sin API, MySQL, lectores, pagos, UI ni eventos ejecutables. Candado V17, Scope Lock/procedencia SHA, BITACORA y A5 independiente; rollback git revert normal.
+
 ## 2026-11-15 — V17 C08-03.M02.03 persistencia conceptual membresías de gimnasio [Javier :00]
 - Define dieciséis proyecciones conceptuales, doce restricciones/índices candidatos, ocho etapas FUTURAS de migración/rollback y doce fixtures positivos-negativos NO_EJECUTADOS para membresía, vigencia y acceso.
 - Preserva tenant/sede, UTC/DST, suspensión, QR revocado, idempotencia transaccional y ERP comercial como autoridad; D01–D08 siguen pendientes, sin inventar esquema MySQL existente.
