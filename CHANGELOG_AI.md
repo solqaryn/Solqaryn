@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C05-03.M02.05 eventos e idempotencia builder [Javier :40]
+- Contrato R0 de doce intenciones EV01-EV12, doce defensas IDEM01-IDEM12, ocho límites LIM01-LIM08, correlación y CAS fail-closed por tenant y recurso.
+- Doce pares P/N T01-T12 FUTUROS_NO_EJECUTADOS; no worker, bus, outbox, webhook, API, MySQL, flags ni publicación runtime; 0 eventos ejecutados.
+- A0-A4 documentales Scope Lock/V5 exact SHA y BITACORA/readback; A5 independiente pendiente y D01-D08/QA/main/PROD sin liberar.
+
 ## 2026-11-15 — V16 C05-03.M02.04 configuración tipada y feature flags builder [Javier :40]
 - Contrato R0 documental: 16 campos CFG01-CFG16, 12 flags FF01-FF12 propuestos OFF y 8 precedencias PREC01-PREC08 de denegación por defecto/tenant/RBAC/revocación.
 - Doce pares T01-T12 FUTUROS_NO_EJECUTADOS; no CONFIG, appsettings, flags reales, .NET, Angular, MySQL, API, secretos, workers, QA/main/PROD.
