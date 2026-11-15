@@ -2887,3 +2887,7 @@
 - Registro DI Scoped de fuente EF de identidad y servicios de aplicación/autorización; no se añaden endpoints, workers, eventos ni migraciones.
 - Pruebas xUnit de resolución y aislamiento de scopes, pertenencia tenant A/B, denegación por permiso ausente y membresía revocada; documentación de límites y rollback.
 - A5 permanece pendiente de revisión independiente; no autoriza QA, main ni producción.
+## 2026-11-14 — V5 C15-01.M03.01: reglas de dominio para cobertura [Javier :30]
+- Implementa validador puro en Domain para conjuntos de requisitos autorizados y microtareas existentes, cotejo de revisión de fuente, formato de ID, referencias seguras, duplicidad y requisitos sin correspondencia.
+- Añade pruebas xUnit positivas y negativas de revisión obsoleta, ID desconocido, duplicados, referencias con controles y cobertura incompleta; sin inventar requisitos ni liberar gates técnicos.
+- Un resultado READY_FOR_EVIDENCE_REVIEW no es certificación de 2.340 IDs ni A5/CI/tenant; sin API, migración, dispatcher, escritura de Sheet desde backend, QA/main/PROD o infraestructura real.
