@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C03-04.M03.03 autorización y tenancy fail-closed incidentes [Javier :10]
+- Implementa gate Application .NET 10 con fuente de evidencia verificada, SHA, ownership tenant A/B, permiso vigente, revocación, auditoría y composición M03.01–02; incluso el caso positivo exige adaptador autenticado y no concede lectura, escritura, restauración ni JWT.
+- Agrega xUnit positivos y negativos de cliente/rol, tenant, SHA, usuario, sucursal, versión, revocación, errores y cancelación; ninguna llamada HTTP, MySQL o integración externa está activa. Requiere CI backend/security/auth exact-SHA.
+- Un único cambio R2 en dev FF/CAS, Scope Lock/V5 y readback A0–A4; A5 pendiente de otra Task Javier; sin QA/main/PROD, secretos, DB ni deploy.
+
 ## 2026-11-15 — V16 C13-03.M02.06 contrato de salida rendimiento y ligereza [Javier :10]
 - Define gates G01–G16 de budget, seguridad, tenant, accesibilidad, navegación y pruebas; T01–T12 positivos/negativos FUTUROS_NO_EJECUTADOS (0/12), RB01–RB08 de reversión.
 - Mantiene SIN_RESOLVER presupuesto de bundle 650–750 KB frente a 1–2 MiB y métricas LCP/INP/CLS/p95/costos NO_MEDIDO; no se atribuye Playwright ni benchmark real.
