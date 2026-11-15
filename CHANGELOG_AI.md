@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C13-04.M02.06 contrato de salida UX y DAG [Javier :40]
+- Consolida seis documentos M01 y cinco M02 con A5 independiente, blobs Git y gates dinámicos antes de habilitar código real M03.
+- Define dieciséis barreras y doce pares positivos/negativos FUTUROS_NO_EJECUTADOS para rol/tenant A-B, responsive, estados, foco, idempotencia y SHA de pruebas.
+- Sólo Markdown/CHANGELOG, sin UI/API/DB/eventos runtime; Scope Lock y V5 exact SHA, A0-A4, A5 por otro Task Javier, rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C15-03.M03.03 gate de autorización tenant .NET 10 [Javier :20]
 - Incorpora preautorización .NET 10 fail-closed con evidencia servidor/tenancy/ownership/permiso, SHA exacto y composición Domain M03.01; nunca concede query bypass, lecturas reales ni escrituras institucionales.
 - Agrega nueve xUnit positivos/negativos para tenant A/B, mismo-tenant distinto recurso, revocación, sucursal, enlaces, jobs, control plane y SHA; requiere CI backend, seguridad y Scope Lock/V5 exact-SHA.
