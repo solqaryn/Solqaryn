@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C02-02.M03.03 adaptador aislado de contexto de ubicación tenant [Javier :30]
+- Implementa Infrastructure .NET 10 con captura read-only de tenant, actor, revisión CAS y SHA, reutilizando Domain/Application sin seleccionar conexión, ejecutar MySQL, migraciones ni cutover.
+- Añade 13 xUnit reales de tenant A/B, fuente obsoleta, propietario falsificado, RBAC, revocación, binding, restauración y idempotencia; exigir GH Actions Release, seguridad, autorización, Scope Lock y V5 exact-SHA.
+- V15 R2, V17 single-active con candado fila 340; preflight no autoriza almacenamiento compartido/dedicado, necesita A5 de Task distinta y no toca QA/main/PROD.
+
 ## 2026-11-15 — V17 C14-02.M03.04 adaptador aislado de aceptación de seguridad [Javier :30]
 - Implementa Infrastructure .NET 10 aislado read-only con snapshot de actor, tenant, recurso y SHA; reutiliza Domain/Application sin habilitar acceso, restauración, descarga, job o release.
 - Incorpora 13 pruebas xUnit positivas/negativas de BOLA/IDOR, tenant A/B, revocación, autenticación declarada, permisos, auditoría, SHA, host, archivo expirado y cancelación; GH Actions debe acreditarlas causalmente.
