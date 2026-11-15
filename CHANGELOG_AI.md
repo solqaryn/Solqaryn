@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C08-01.M02.04 configuración y flags seguros de agenda [Javier :40]
+- Contrato documental R0 de OPT01–OPT18, FL01–FL12, VAL01–VAL16 y precedencia restrictiva tenant/sucursal/recurso con defaults OFF fail-closed, JWT/RBAC/tenant A/B, versiones CAS, DST y privacidad.
+- Doce pares T01–T12 FUTUROS_NO_EJECUTADOS (0/12); sin IOptions, configuración real, MySQL/EF, API, Angular, calendario, webhook o worker; 64 reservas concurrentes y métricas NO_MEDIDO.
+- Solo este documento y CHANGELOG autocontenido por fast-forward/CAS dev, Scope Lock/V5 exact SHA y A0–A4 R0; A5 de otra Task Javier pendiente, sin QA/main/PROD.
+
 ## 2026-11-15 — V16 C07-03.M02.06 salida documental M02 inventario y compras [Javier :30]
 - Contrato R0 de 16 gates G01–G16, 8 rollback RB01–RB08 y 12 pares P/N FUTUROS_NO_EJECUTADOS para ownership de almacenes, reservas, compras, recepciones, transferencias, costos y trazabilidad.
 - Prerrequisitos M01 y M02.01–05+A5 y C07-01.M01.06+A5 confirmados por DAG dinámico; falla Scope Lock previa de M02.04 conservada y reparación comprobada, sin convertir SHA fallido en PASS.
