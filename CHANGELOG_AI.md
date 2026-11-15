@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C10-04.M02.01 modelo documental de entidades y ownership cache/jobs/backup/export [Javier :20]
+- Documenta doce objetos logicos, 18 invariantes tenant/RBAC/lease/idempotencia/integridad, y diez pares de oraculos POS/NEG FUTUROS_NO_EJECUTADOS con fuentes de codigo verificadas.
+- No crea tablas EF/MySQL, API, jobs, dispatcher, eventos, buckets, backups, exportaciones ni permisos; solo docs/v5 y CHANGELOG, A5 independiente pendiente.
+- Exigir Scope Lock y procedencia V5 exact-SHA, A0-A4 documentales y readback PLAN/COLA/DAG/BITACORA antes de LISTO; no QA/main/PROD.
+
 ## 2026-11-15 — V5 C05-04.M03.01 reglas de dominio de presupuesto y caché tenant [.NET10 Javier :10]
 - Implementa guardia C# real para aislamiento de caché A/B, pertenencia, revocación, protección de recursos privados, revisiones y evidencia de build por SHA exacto.
 - Añade ocho pruebas xUnit de rechazo de autoridad cliente, respuestas 401/403 ocultas, datos JWT/PII en telemetría, budgets de Angular excedidos o advertidos y pruebas sin medición.
