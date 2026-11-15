@@ -2897,3 +2897,7 @@
 - Sólo documento V5 y CHANGELOG en dev; Scope Lock y procedencia exact-SHA antes de LISTO_DEV, A5 independiente posterior, sin cambios MySQL, eventos, runtime, QA/main/PROD ni servicios reales.
 ## 2026-11-14 — V5 C14-04.M02.06: corrección de enlace documental [Javier :30]
 - Rectifica la referencia a M01.06 contra el archivo existente en dev, manteniendo invariantes de seguridad, gates, alcance documental y A5 pendiente; no cambia runtime ni entornos.
+## 2026-11-14 — V5 C15-04.M03.01: reglas de dominio de auditoría UX [Javier :30]
+- Agrega validación server-side pura de observaciones de UX/accesibilidad/rendimiento: superficie y criterio allowlisted, tenant de sesión, SHA de origen, evidencia, comparación MIN/MAX y presupuestos medidos.
+- Incluye pruebas xUnit positivas y negativas para aislamiento tenant A/B, origen obsoleto, latencia fuera de presupuesto, contraste inferior, referencias inseguras y métricas inválidas.
+- READY_FOR_EVIDENCE_REVIEW no es una prueba Playwright, WCAG o p95 real, ni aprobación A5; no añade endpoints, workers, despliegues, migraciones, secretos, QA/main/PROD ni métricas inventadas.
