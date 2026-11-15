@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-03.M01.06 bloqueos y liberación documental de auditoría de seguridad/tenancy [Javier :00]
+- Fija B01–B12 sobre JWT/RBAC, tenant A/B, sucursales, EF, FK, hosts, soporte, medios, CI exact-SHA y A5; pruebas negativas de runtime y cero P0/P1 permanecen NO_CERTIFICADOS.
+- Contrasta M01.01–05 LISTO/A5 independiente y define rollback fail-closed; M02 exige nuevo preflight y jamás se autorizan despliegues o migraciones por contrato.
+- Publicación sólo de dos Markdown en dev, CHANGELOG indivisible, A5 propia pendiente de otra Task; sin MySQL real, secretos, QA/main/PROD ni event dispatcher.
+
 ## 2026-11-14 — V5 C15-01.M01.06 bloqueos y salida documental de cobertura [Javier :00]
 - Establece B01–B12 para censo de 2340 IDs, huérfanos, duplicados, DAG, CAS, CI SHA, A5 independiente, seguridad y entorno; cero huérfanos/P0/P1 sigue NO_CERTIFICADO.
 - Revisa M01.01–05 LISTO/A5 independiente y C00-03.M01.06 A5; M02 sólo se considera bajo nuevo preflight sin liberar runtime, migraciones ni QA/main/PROD.
