@@ -3,6 +3,7 @@
 - Incluye Vitest positivos/negativos de rutas, acceso y contenido; Playwright/Chromium sintético para anónimo, 403, móvil y teclado, sin confundir mocks con pruebas JWT/tenant reales.
 - Cambios R1 solo frontend, test, documentación y este CHANGELOG, sin endpoints, base de datos, Claims, A5, recursos externos, QA/main/PROD. A0-A4 y CI causal necesarios para LISTO; A5 por otra Task.
 - Recuperación CI P0-007.A: el catálogo fail-closed detectó el componente nuevo, se actualiza inventario aditivo 142 (134 features/8 shared) y los conteos del verificador, sin omitir el control ni relajar pruebas.
+- Corrección CI sin bypass: auditoría ERP reconoce exclusivamente la nueva ruta protegida por `plataformaGuard` y Chromium V5 ejecutará las tres pruebas E2E específicas; conservar gates JWT/backend y fallos históricos.
 
 ## 2026-11-15 — V16 C11-02.M02.06 salida documental API modular [Javier :10]
 - Define G01–G16 de DTO/API, identidad JWT/RBAC/tenant A/B, soporte read-only, paginación, errores seguros, EF/MySQL futuro, CI y A5; RB01–RB08 de reversión, T01–T12 futuros positivos/negativos (0 ejecutados).
