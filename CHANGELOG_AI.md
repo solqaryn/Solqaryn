@@ -2606,3 +2606,8 @@
 - Define AC01–AC16 positivos y negativos FUTUROS_NO_EJECUTADOS para rutas, teclado/foco, responsive, semántica, motion, estados de error, tokens, caché tenant A/B y métricas reproducibles, sin declarar auditoría ejecutada.
 - Especifica RNF01–RNF10 PENDIENTE_MEDICION y matriz de evidencia por viewport, navegador, red, fixture sintético, SHA y CI; enlaza M01.01–04 y brechas G01–G12, sin inventar presupuestos ni WCAG PASS.
 - Documentación exclusiva en dev, A0–A4 documentales con Scope Lock/V5 exact-SHA y A5 independiente posterior; no Angular ejecutable, .NET, MySQL, DNS, QA/main/PROD ni permisos de migración.
+
+## 2026-11-14 — V5 C15-05.M01.01: alcance y no-regresión de auditoría operativa [Javier :30]
+- Delimita auditoría V5 de PLAN/COLA/DAG, autoridad exclusiva de seis Tasks Javier, CAS owner, BITACORA A:Z, telemetría auto-reportada, CI exact-SHA y A5 independiente; sin modificar runtime ni programación.
+- Define NR01–NR14 y P01–P08/N01–N08 como oráculos FUTUROS_NO_EJECUTADOS sobre concurrencia, duplicados, permisos, evidencia, rollback y fail-closed; trazabilidad a fuentes actuales y riesgos a comprobar.
+- Entrega documental en dev con A0–A4 y Scope Lock/V5 del commit exacto; A5 pendiente de otra Task Javier, sin QA/main/PROD, secretos, migraciones o infraestructura productiva.
