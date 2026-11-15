@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C05-03.M02.01 entidades e invariantes de builder gobernado [Javier :20]
+- Modelo R0 con doce entidades conceptuales E01-E12, ownership por tenant/pagina/revision y dieciseis invariantes INV01-INV16 para controles backend fail-closed.
+- Diez escenarios positivos/negativos T01-T10 FUTUROS_NO_EJECUTADOS; sin builder ejecutable, Angular, HTML/JS libre, API, EF/MySQL, migraciones, flags ni publicacion.
+- Single-active DEV, A0-A4 Scope Lock/V5 exact SHA y readback; A5 de otra Task Javier, decisiones D01-D08 y puertas M03 pendientes. Sin QA/main/PROD.
+
 ## 2026-11-15 — V16 C12-04.M02.06 contrato salida M02 MySQL privado y cutover [Javier :20]
 - Documento R0 con antecedentes M01/M02, dieciseis gates G01-G16 de tenancy, seguridad, migrador unico, permisos MySQL y consistencia transaccional.
 - Ocho pasos RB01-RB08 y diez pares T01-T10 FUTUROS_NO_EJECUTADOS; no migracion EF, MySQL, restore, DNS, secrets, workers, servicios ni cutover real.
