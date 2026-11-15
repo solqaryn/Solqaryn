@@ -2581,3 +2581,8 @@
 - Define AC01–AC16 y N01–N16 como positivos y negativos FUTUROS NO_EJECUTADOS para JWT/RBAC, selector de empresa, sucursales, lecturas EF, escrituras, host, soporte, archivos, jobs, errores, caché y CI exact-SHA.
 - Especifica fixture A/B y MySQL efímero, evidencias HTTP/DB/logs, ocho requisitos no funcionales y condición NO_APLICA para funcionalidades no implementadas; no declara ausencia de vulnerabilidades ni pruebas runtime realizadas.
 - Preparación documental M01.05 sólo en dev, con A0–A4 y Scope Lock/procedencia SHA verificables después de publicar; A5 corresponde a otra Task Javier y M01.06 no se libera automáticamente; rollback por git revert, sin QA/main/PROD.
+
+## 2026-11-14 — V5 C15-04.M01.01: alcance y no-regresión UX, accesibilidad y rendimiento [Javier :20]
+- Delimita landing, storefront, portal, ERP y builder futuro, responsive, teclado/foco, formularios, lectura asistida, ligereza visual y carga progresiva con evidencias exigibles; no certifica WCAG ni métricas o implementación inexistentes.
+- Coteja fuentes Git Angular/SCSS y Playwright con blobs exactos, define NR01–NR14 y P01–P08/N01–N08 como oráculos FUTUROS NO_EJECUTADOS sin inventar tests ni umbrales.
+- Sólo documentación de M01.01 en dev, A0–A4 documentales, Scope Lock/V5 exact SHA tras publicar y A5 independiente; rollback git revert, sin cambios de código, datos, secretos, QA/main/PROD.
