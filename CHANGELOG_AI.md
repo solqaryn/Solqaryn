@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C05-03.M02.04 configuración tipada y feature flags builder [Javier :40]
+- Contrato R0 documental: 16 campos CFG01-CFG16, 12 flags FF01-FF12 propuestos OFF y 8 precedencias PREC01-PREC08 de denegación por defecto/tenant/RBAC/revocación.
+- Doce pares T01-T12 FUTUROS_NO_EJECUTADOS; no CONFIG, appsettings, flags reales, .NET, Angular, MySQL, API, secretos, workers, QA/main/PROD.
+- A0-A4 Scope Lock/V5 exact SHA y BITACORA readback; A5 independiente por otra Task Javier y decisiones D01-D08 pendientes.
+
 ## 2026-11-15 — V16 C12-02.M02.04 configuracion tipada y flags frontend separado [Javier :30]
 - Contrato R0 con catorce opciones CFG01-CFG14, seis ámbitos de confianza, catorce validaciones V01-V14 y diez pares T01-T10 FUTUROS_NO_EJECUTADOS.
 - Sin configuración aplicada, DNS, CDN, frontend runtime, HTTP, JWT/RBAC modificados, MySQL, credenciales ni proveedores.
