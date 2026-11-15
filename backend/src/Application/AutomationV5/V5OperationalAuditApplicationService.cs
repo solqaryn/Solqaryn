@@ -67,6 +67,21 @@ public sealed class V5OperationalAuditApplicationService
         return new Result("AUTHENTICATED_EVIDENCE_REQUIRED", domain.ItemsExamined);
     }
 
+    /// <summary>
+    /// Adds tenant/rbac denial before the existing read-only source preflight.
+    /// Caller-supplied facts still require real authentication by a future
+    /// adapter. Neither branch ever enables institutional writes.
+    /// </summary>
+    public Result PrepareWithTenantSecurityPreflight(
+        Request request, V5OperationalAuditSecurityGate.Context context)
+    {
+        ArgumentNullException.ThrowIfNull(request);
+        var security = V5OperationalAuditSecurityGate.Evaluate(context);
+        if (!security.NeedsExternalAdapterVerification)
+            return Deny(security.Code);
+        return Prepare(request);
+    }
+
     private static Result Deny(string code) => new(code, 0);
 
     private static bool FullSha(string? sha) =>

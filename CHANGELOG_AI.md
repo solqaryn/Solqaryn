@@ -3017,3 +3017,8 @@
 - Define diez pares T01–T10 FUTUROS_NO_EJECUTADOS, preservando contexto tenant A/B, A5 independiente, SHA causal y BITACORA append-only sin atribuir pruebas de proveedores.
 - Sólo docs/v5 más CHANGELOG autocontenido en dev, A0–A4 documentales y checks Scope Lock/V5 exact SHA antes de LISTO, A5 por otro Javier; sin QA/main/PROD, secretos ni infraestructura.
 
+## 2026-11-14 — V5 C15-05.M03.03 reglas .NET 10 de autorización y tenancy fail-closed [Javier :40]
+- Añade Domain `V5OperationalAuditSecurityGate`, método Application de preflight protegido y pruebas xUnit positivas/negativas para tenant A/B, JWT/membresía, revocación, actor servicio, cliente spoofing, bypass de filtros y SHA.
+- Incluso con contexto lógico válido, deniega escritura institucional: falta autenticación real del adaptador, pruebas HTTP/EF/MySQL y A5 independiente; ninguna nueva API, migración, worker, dispatcher, webhook o permiso productivo.
+- Alcance sólo dev con CI backend/seguridad, Scope Lock/V5 exact-SHA, CAS y readbacks por estado; no QA/main/PROD, rollback git revert.
+
