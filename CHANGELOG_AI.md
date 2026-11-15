@@ -2901,3 +2901,7 @@
 - Agrega validación server-side pura de observaciones de UX/accesibilidad/rendimiento: superficie y criterio allowlisted, tenant de sesión, SHA de origen, evidencia, comparación MIN/MAX y presupuestos medidos.
 - Incluye pruebas xUnit positivas y negativas para aislamiento tenant A/B, origen obsoleto, latencia fuera de presupuesto, contraste inferior, referencias inseguras y métricas inválidas.
 - READY_FOR_EVIDENCE_REVIEW no es una prueba Playwright, WCAG o p95 real, ni aprobación A5; no añade endpoints, workers, despliegues, migraciones, secretos, QA/main/PROD ni métricas inventadas.
+## 2026-11-14 — V5 C15-03.M02.01: modelo de seguridad y tenancy [Javier :30]
+- Define SEC01–SEC16 (modelo lógico), INV01–INV12 (fronteras de autoridad y auditoría) y diez pares positivos/negativos T01–T10 FUTUROS_NO_EJECUTADOS para auditoría de seguridad y tenant.
+- Deriva precedencias de M01.06 con A5 independiente y fuentes PLAN/COLA/DAG, sin declarar cero P0/P1, ejecutar pentest ni conceder acceso JWT/RBAC.
+- Únicamente documento V5 y CHANGELOG en dev; gates exact-SHA, A5 posterior de otra Task Javier, sin cambios en API, MySQL, frontend, secretos, QA/main/PROD ni proveedores.
