@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-03.M02.06 dependencias y salida documental de auditoría de seguridad/tenancy [Javier :00]
+- Cierra el contrato conceptual de M02 tras M01 y cinco M02 LISTO+A5 independientes: 16 controles SECOUT, 12 pares NEG futuros y 8 bloqueos explícitos.
+- Riesgos de TenantQueryBypassGuard, NULL legado, FK compuestas, JWT/RBAC, archivos, jobs, control plane e idempotencia requieren pruebas .NET/HTTP/MySQL reales en M03, NO_EJECUTADAS.
+- Sólo documento+CHANGELOG dev con CAS fast-forward, Scope Lock y V5 exact SHA; A5 por otra Task Javier pendiente, sin migraciones, eventos, secretos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C15-05.M03.02 preflight real de auditoría operativa en Application [Javier :00]
 - Implementa servicio .NET10 de sólo lectura para snapshots V5: SHA/revisión/catálogo/capacidad y Domain; resultados no autorizan CAS, cierre, A5 ni ejecución de eventos.
 - Añade seis pruebas xUnit con positivos y negativos de SHA obsoleto, revisión, allowlist, A5 propia, incompletitud, tamaño e IDs duplicados o ajenos; sin API, SQL, dispatcher ni cambios tenant/JWT/RBAC.
