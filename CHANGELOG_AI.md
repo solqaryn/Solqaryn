@@ -1,3 +1,13 @@
+## 2026-11-15 — V5 C10-03.M02.04 opciones tipadas para inventario condicionado [Javier :20]
+- Define 18 opciones conceptuales, 4 ámbitos restrictivos, 12 reglas y 12 pares P/N FUTUROS_NO_EJECUTADOS; NO_VERIFICADO no se convierte en cero.
+- Mantiene JWT/RBAC tenant A/B, retención, MIME, URL TTL/replay, sin flags runtime, R2, proveedor, DNS o inventario real.
+- Entrega Markdown independiente en dev con Scope Lock/V5, A5 ajeno y git revert; no QA/main/PROD.
+
+## 2026-11-15 — V5 C10-03.M02.05 eventos inertes de inventario y archivos [Javier :20]
+- Documenta 12 señales hipotéticas, envelope mínimo, 14 invariantes de idempotencia/cuota/replay y 12 pares P/N futuros sin emitir eventos.
+- Un inventario desconocido no habilita migración; no bus, worker, dispatcher, webhook, outbox, firmas, Cloudinary/R2/MySQL reales.
+- Publicación documental independiente con trazabilidad y A0–A4 por ID, A5 otra Task Javier y rollback normal.
+
 ## 2026-11-15 — V5 C01-04.M03.03 case-file tenant authorization fail-closed [Javier :30]
 - Implementa gate Application .NET 10 con evidencia de servidor, SHA exacto y ownership persistido para expediente/timeline; deniega tenant A/B ajeno, membresia revocada, branch incorrecta, bypass de filtros y escrituras institucionales.
 - Agrega once pruebas xUnit positivas/negativas de autorizacion, idempotencia, version, adjuntos, revision independiente y cancelacion. Todo resultado carece de concesion runtime: requiere adaptador autenticado posterior, sin JWT HTTP, EF/MySQL, Cloudinary ni API activados.
