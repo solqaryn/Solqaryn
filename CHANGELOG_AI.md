@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C11-02.M02.06 salida documental API modular [Javier :10]
+- Define G01–G16 de DTO/API, identidad JWT/RBAC/tenant A/B, soporte read-only, paginación, errores seguros, EF/MySQL futuro, CI y A5; RB01–RB08 de reversión, T01–T12 futuros positivos/negativos (0 ejecutados).
+- Prohíbe inferir endpoints, pruebas HTTP/MySQL, SLO, workers o promoción de contratos Markdown. No cambios en API, DB, Angular, secretos, infraestructura, QA/main/PROD.
+- Entrega R0 unitaria Markdown y CHANGELOG autocontenido por FF/CAS en dev, A0–A4 con Scope Lock/V5 exact-SHA y A5 por otra Task Javier.
+
 ## 2026-11-15 — V16 C12-02.M02.06 contrato salida build CDN headers cache [Javier :10]
 - Define G01–G16 de build tipado, host/proxy, CSP/CORS/TLS, tenant A/B, JWT/RBAC, cache privado y CI; RB01–RB08 de reversión y T01–T12 futuros positivos/negativos (0/12 ejecutados).
 - TTFB, cache hit, CDN, DNS, costo y smoke live NO_MEDIDO/NO_VERIFICADO; ninguna configuración de DNS, proveedor, CDN, Vercel/Render o producción cambiada.
