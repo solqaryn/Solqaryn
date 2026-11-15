@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C06-03.M02.03 persistencia documental editoriales [Javier :40]
+- Propone doce estructuras conceptuales tenant-bound, diez índices, seis fases condicionadas de migración y doce pares futuros de fixtures de editoriales, contactos, horarios y mapa opcional.
+- Conserva separación A/B, host/proxy no confiables, editor/moderador/publicador, preview noindex, SEO/caché y fallback textual sin ubicación privada ni proveedores reales.
+- A0–A4 estrictamente documentales, Scope Lock/V5 exact-SHA y A5 de otro Javier pendiente; sin DDL, MySQL, DNS, eventos, QA/main/PROD; rollback git revert.
+
 ## 2026-11-15 — V5 C06-03.M02.02 contratos API/DTO editoriales [Javier :40]
 - Define diez operaciones y diez DTO conceptuales, dieciséis errores seguros y doce pares futuros positivos/negativos de editoriales, horarios, contactos, sucursales y mapas opcionales.
 - Conserva JWT/RBAC editor/moderador/publicador, aislamiento A/B, Host no confiable, preview noindex, mapa opt-in con fallback textual y cero proveedores externos instalados.
