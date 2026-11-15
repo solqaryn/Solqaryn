@@ -3482,3 +3482,8 @@
 ## 2026-11-15 — V5 C01-01.M04.05 ajuste causal Playwright del runner [Javier :20]
 - Corrige la expresion regular TypeScript de navegacion privada y elimina el selector --project ausente del config Playwright, sin modificar tests de seguridad ni desactivar verificaciones.
 - La prueba Chromium real, lint, build y Scope Lock/V5 siguen requiriendo SUCCESS exact-SHA sobre commit corregido, con A5 posterior independiente y sin QA/main/PROD.
+
+## 2026-11-15 — V5 C02-03.M02.02 contrato API DTO y errores de lifecycle tenant [Javier :20]
+- Documenta las rutas existentes de empresas y plataforma y un endpoint FUTURO no implementado de transiciones con DTO versionado, CAS, autoridad global e idempotencia por operacion.
+- Fija matriz de ocho transiciones, doce validaciones de errores y ocho pares positivos/negativos documentales, preservando JWT/RBAC/tenant A/B, revocacion, retencion y rechazo fail-closed.
+- Sin endpoints ni codigo, EF/MySQL, workers, credenciales o activaciones reales; A0–A4 Scope Lock/V5 exact-SHA y A5 independiente para desbloquear etapas posteriores, revert normal.
