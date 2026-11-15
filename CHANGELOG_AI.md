@@ -2993,3 +2993,8 @@
 - Fija INV01–INV16 y ocho pares P/N FUTUROS_NO_EJECUTADOS para aislamiento, idempotencia, restauración, CI exact-SHA, permisos y A5; no declara un entorno externo auditado.
 - Sólo docs/v5 y CHANGELOG autocontenido en dev. A0–A4 documentales y Scope Lock/V5 exact SHA requeridos, A5 pendiente de otra Task Javier; sin migraciones, QA/main/PROD, DNS, datos reales o secretos.
 
+## 2026-11-14 — V5 C15-02.M02.02: API/DTO conceptuales, validación y compatibilidad de auditoría [Javier :30]
+- Contrato de 12 operaciones futuras API01–API12, 16 validaciones V01–V16 y 12 errores ERR01–ERR12 para inventario, tenancy, backup, restore, dominios y evidencia, sin endpoints reales ni ampliación de privilegios.
+- Fija compatibilidad aditiva y ocho pares T01–T08 FUTUROS_NO_EJECUTADOS; los negativos de SHA/CI, A5, JWT/RBAC, host y tenant siguen fail-closed, sin declarar recursos externos comprobados.
+- Dev y documento M02.02 + CHANGELOG autocontenido exclusivamente; A0–A4 documentales y checks Scope Lock/V5 exact-SHA, A5 pendiente de otra Task Javier; sin migraciones, eventos, secretos ni QA/main/PROD.
+
