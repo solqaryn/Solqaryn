@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C03-04.M03.04 adaptador aislado de incidentes [Javier :40]
+- Añade proyeccion .NET 10 de metadatos de incidente sin EF ni MySQL; niega tenant B, branch ajena, SHA incorrecto, revocacion y evidencia insegura, sin conceder permisos reales.
+- Ocho metodos xUnit positivos/negativos y frontera, solo para validacion del adaptador, no para certificar JWT, DB o restauracion; A5 independiente obligatoria.
+- Un commit de cuatro archivos sobre dev con V17, Scope Lock STRICT y CI exact-SHA; sin QA/main/PROD, secretos o datos productivos.
+
 ## 2026-11-15 — V17 C14-02.M03.03 autorización fail-closed seguridad [Javier :50]
 - Añade puerta Application `C1402SecurityAcceptanceAuthorizationGate` sobre contrato previo Domain/Application, lector backend de evidencia confiable, exact-SHA, recurso, membresía/JWT/RBAC y aislamiento tenant A/B; nunca concede acceso ni certifica seguridad HTTP/PROD.
 - Incluye doce xUnit para negativos de spoofing, revocación, BOLA, SHA, overrides antes del lector, superficies, prueba insegura, fuente ausente y cancelación, más flujo válido no autorizante. .NET Release, seguridad, autorización, Scope Lock y V5 exact SHA son obligatorios para LISTO, sin PASS inventado.
