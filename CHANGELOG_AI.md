@@ -1,3 +1,15 @@
+## 2026-11-15 — V5 C08-04.M02.03 persistencia y fixtures sectoriales [Javier :10]
+- Define seis entidades conceptuales, cinco claves de consulta y diez fixtures para módulos sectoriales, con propiedad empresa/tenant y esquema compartido.
+- No crea tablas, índices, migraciones ni grants; pruebas .NET/MySQL y revisión A5 independientes quedan pendientes.
+
+## 2026-11-15 — V5 C08-04.M02.04 configuración tipada y flags sectoriales [Javier :10]
+- Propone doce opciones tipadas y doce criterios de rechazo de flags, RBAC, pertenencia y caché por tenant; preserva núcleo y fallback denegatorio.
+- No activa flags ni cambia API/Angular/MySQL ni secretos; requiere CI documental y A5 ajena.
+
+## 2026-11-15 — V5 C08-04.M02.05 contratos de eventos e idempotencia futuros [Javier :10]
+- Documenta cinco mensajes hipotéticos, doce campos y doce controles de deduplicación, correlación y falla segura para capacidades por rubro.
+- Ningún evento/dispatcher/worker/webhook se implementó; sin efecto runtime, A5 de otra Task y sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C13-04.M02.03 modelo de evidencia, índices y fixtures visuales [Javier :10]
 - Diseña cinco entidades conceptuales de evidencia reproducible, claves y diez fixtures positivos/negativos; no introduce MySQL, índices ejecutables ni migraciones.
 - Preserva tenant A/B, privacidad, WCAG y Playwright como validación futura, con A5 independiente y Scope Lock STRICT.
