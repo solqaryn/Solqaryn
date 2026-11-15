@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C08-03.M02.03 persistencia conceptual membresías de gimnasio [Javier :00]
+- Define dieciséis proyecciones conceptuales, doce restricciones/índices candidatos, ocho etapas FUTURAS de migración/rollback y doce fixtures positivos-negativos NO_EJECUTADOS para membresía, vigencia y acceso.
+- Preserva tenant/sede, UTC/DST, suspensión, QR revocado, idempotencia transaccional y ERP comercial como autoridad; D01–D08 siguen pendientes, sin inventar esquema MySQL existente.
+- Entrega R0 solo Markdown y CHANGELOG, sin EF, MySQL, API, hardware ni PSP reales; Scope Lock/V5 exact-SHA, candado V17/readback y A5 independiente; rollback git revert, no QA/main/PROD.
+
 ## 2026-11-15 — V17 C08-03.M02.02 contratos API/DTO de membresías gimnasio [Javier :00]
 - Define ocho operaciones conceptuales, ocho DTO lógicos, doce errores seguros, dieciséis validaciones y diez pares de pruebas FUTURAS NO_EJECUTADAS para membresía, vigencia UTC/DST, suspensión y acceso.
 - Separa UsuarioEmpresa/SuscripcionesSaaS de planes comerciales, impone tenant/sede server-side, JWT/RBAC, revocación, idempotencia y denegación offline; D01–D08 previas siguen pendientes.
