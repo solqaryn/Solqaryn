@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-01.M01.06 bloqueos y salida documental de cobertura [Javier :00]
+- Establece B01–B12 para censo de 2340 IDs, huérfanos, duplicados, DAG, CAS, CI SHA, A5 independiente, seguridad y entorno; cero huérfanos/P0/P1 sigue NO_CERTIFICADO.
+- Revisa M01.01–05 LISTO/A5 independiente y C00-03.M01.06 A5; M02 sólo se considera bajo nuevo preflight sin liberar runtime, migraciones ni QA/main/PROD.
+- Dos Markdown en dev, reversión por git revert normal y BITACORA append-only; A5 de esta nueva entrega pendiente de otra Task Javier.
+
 ## 2026-11-14 — Reparación de CI para C01-01.M03.05 (orden directa del propietario)
 - Reutilizar la contraseña validada al calcular su hash para evitar el argumento nullable, sin relajar las reglas de alta empresarial.
 - Migrar tres contratos HTTP al HostBuilder y servidor de pruebas moderno de .NET 10, preservando rutas, respuestas y middleware de seguridad.
