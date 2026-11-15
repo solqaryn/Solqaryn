@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C03-02.M02.01 entidades, ownership e invariantes RBAC/ABAC [Javier :50]
+- Define 16 objetos conceptuales, 12 reglas fail-closed y 12 pares positivos/negativos FUTUROS_NO_EJECUTADOS para tenant, sucursal, recursos, export, medios y revocación.
+- Protege JWT/RBAC/ABAC y aislamiento A/B; los controles actuales y contratos M01 son fuentes de diseño, no PASS runtime. No crea DB, API, policies ni workers.
+- Únicamente docs/v5 + sección CHANGELOG autocontenida, A0–A4 con checks Scope Lock/V5 exact-SHA y A5 pendiente de otra Javier; sin QA/main/PROD ni secretos.
+
 ## 2026-11-15 — V5 C14-03.M02.06 contrato terminal de dependencias de promoción controlada [Javier :50]
 - Fija dieciséis gates de diseño, dieciséis pares positivos/negativos FUTUROS_NO_EJECUTADOS y criterios de salida M02, separados de M03, QA/main/PROD y autorizaciones por entorno.
 - Conserva Scope Lock STRICT, SHA/CI exactos, JWT/RBAC/tenant A/B, A5 independiente, owner CAS, rollback y defaults fail-closed; sin crear API, MySQL, webhooks, workers, secretos ni desplegar.
