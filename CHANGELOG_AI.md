@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C06-03.M01.06 bloqueos y salida de sitios editoriales [Javier :30]
+- Consolida cinco contratos M01 con blobs verificables, G01–G16 de aislamiento, permisos, publicación editorial y mapas opcionales, más RB01–RB08 de reversión sin activar proveedores.
+- Conserva pendientes los riesgos y decisiones D01–D08, y los 14 pares P/N FUTUROS NO_EJECUTADOS; M02 requiere LISTO+A5 independiente y DAG dinámico, sin liberar M03/QA/PROD.
+- Sólo dos archivos Markdown en dev, sin API, mapa, geocoding, pagos, MySQL, R2, DNS ni webhooks; A0–A4 documental con Scope Lock/V5 exact SHA, readback y A5 independiente; rollback git revert.
+
 ## 2026-11-15 — V5 C06-02.M02.05 contratos conceptuales de eventos [Javier :40]
 - Documenta doce intenciones EV, doce reglas ID de idempotencia/correlación y doce pares PN FUTUROS_NO_EJECUTADOS para landing por tenant; no implementa ni emite eventos, dispatcher, webhook, cola, worker o Task.
 - Delimita tenant A/B, Host no confiable, aprobación editor/publicador, publicación CAS, cache/SEO por versión, trazas minimizadas, errores fail-closed y rechazo de secretos/PII.
