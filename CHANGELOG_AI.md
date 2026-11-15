@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C10-02.M02.03 persistencia conceptual y fixtures de archivos [Javier :00]
+- Define doce proyecciones de persistencia, doce índices candidatos, doce invariantes de integridad y doce pares de fixtures FUTUROS_NO_EJECUTADOS para archivos privados, TTL, retención y migración reversible.
+- Sin SQL, MySQL, EF, Cloudinary/R2/DNS, proveedor, API ni QA/main/PROD; no ejecuta restauración ni autoriza archivos externos.
+- Documental dev por fast-forward/CAS, CHANGELOG autocontenido, Scope Lock/V5 exact-SHA y A5 independiente pendiente.
+
 ## 2026-11-15 — V5 C10-02.M02.02 API/DTO conceptuales de archivos privados [Javier :00]
 - Documenta doce operaciones futuras, ocho DTO, catorce errores fail-closed y doce pares P/N FUTUROS_NO_EJECUTADOS; tenant A/B, firma/TTL, replay, integridad y retención.
 - Sin endpoints, Cloudinary/R2, DNS, proveedores, credenciales, MySQL, UI o QA/main/PROD; no se ejecutaron pruebas HTTP ni de archivos.
