@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C03-04.M02.06 contrato de salida de continuidad y rollback [Javier :00]
+- Cierra documentalmente M02 con CONT01–CONT14 para incidentes, revocacion, JWT/RBAC, backup/restore, aislamiento tenant A/B, idempotencia, RPO/RTO y auditoria; todos los casos runtime FUTUROS_NO_EJECUTADOS.
+- Define dependencias de M03 y contratos base para C10/C12, evidencia causal, denegacion por defecto y RB01–RB10; no certifica restores, backups, cambios de estado de servidores ni objetivos de recuperacion.
+- Solo documento V5 y CHANGELOG autocontenido en dev, fast-forward/CAS y Scope Lock/V5 exact-SHA con A5 de otra Task Javier; sin migraciones, jobs, webhooks, secretos, QA/main/PROD.
+
 ## 2026-11-14 — V5 C01-04.M02.06 contrato de salida documental del expediente universal [Javier :00]
 - Establece OUT01–OUT14 con pruebas futuras positivas/negativas para expediente, tenant A/B, JWT/RBAC, cronologia, observaciones, decisiones, adjuntos, versionado, CAS e idempotencia.
 - Define entradas reales M03.01–06, expediente de evidencias y RB01–RB10 de contencion/rollback; separa M02 LISTO_DEV documental de API, migraciones, seguridad, UI o eventos implementados.
