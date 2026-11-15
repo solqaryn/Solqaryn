@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C13-03.M02.03 persistencia conceptual y fixtures de rendimiento [Javier :20]
+- Especificación documental R0 de P01–P12, IDX01–IDX12 y MIG01–MIG08 FUTUROS: no se crea migración EF, índice, tabla, telemetría, endpoint o modificación de MySQL, y se mantiene intacto el aislamiento tenant.
+- Doce pares F01–F12 positivos/negativos FUTUROS_NO_EJECUTADOS (0/12) de SHA, caché, retención, presupuestos, accesibilidad, rollback y privacidad; LCP/INP/CLS NO_MEDIDO y conflicto 650–750 KB vs 1–2 MiB SIN_RESOLVER.
+- Sólo documento Markdown y CHANGELOG autocontenido mediante fast-forward/CAS dev; A0–A4 R0 sujetos a Scope Lock/V5 exact-SHA y readback; A5 requiere otra Task Javier, sin QA/main/PROD ni datos reales.
+
 ## 2026-11-15 — V16 C12-02.M02.03 persistencia conceptual de frontend separado [Javier :30]
 - Documento R0 con P01–P12, IDX01–IDX10, MIG01–MIG08, F01–F12 y 12 pares T01–T12 FUTUROS_NO_EJECUTADOS para metadatos de release, assets, rutas, proxy, caché y rollback.
 - Sin tablas, índices SQL, migraciones EF/MySQL, backend, Angular, HTTP, CDN, DNS, hosting ni datos reales; 0/12 tests runtime, LCP/INP/CLS NO_MEDIDO, conflicto de presupuesto 650–750KB vs 1–2MiB pendiente.
