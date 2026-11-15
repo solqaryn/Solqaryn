@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C07-03.M02.03 contrato documental de persistencia e índices para inventario/compras [Javier :10]
+- Define P01–P12 de persistencia por tenant, IDX01–IDX12 candidatos y MIG01–MIG08 de migración futura reversible, sin crear DDL, tablas, índices, EF migration ni tocar existencias o costos reales.
+- Establece F01–F12 positivos/negativos FUTUROS_NO_EJECUTADOS, con MySQL 8.4 aislado y Category=Integration exigibles solamente en implementación R2; los resultados runtime actuales son NO_MEDIDO.
+- Solo dos archivos Markdown, CHANGELOG autocontenido, fast-forward/CAS dev, Scope Lock y procedencia V5 exact-SHA, BITACORA y readback; A5 otro Javier pendiente, sin QA/main/PROD.
+
 ## 2026-11-15 — V16 C12-02.M02.05 contratos inertes de eventos e idempotencia [Javier :50]
 - Propone EVT01–EVT12, ID01–ID12 y diez oráculos T01–T10 positivos/negativos FUTUROS_NO_EJECUTADOS para build, hashes, versión, caché/host, smoke y rollback; sin dispatcher, webhook ni workers reales.
 - Preserva JWT/RBAC, tenant A/B, privacidad, CSP/CORS y controles de SHA; D01–D10 de proveedor/CDN siguen pendientes, ningún DNS/host/pago/PROD modificado.
