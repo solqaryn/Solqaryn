@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C13-03.M02.02 API y DTO conceptuales de rendimiento [Javier :20]
+- Contrato documental R0 de ocho operaciones futuras OP01–OP08, ocho DTO conceptuales, doce errores seguros ERR01–ERR12 y dieciséis reglas VAL01–VAL16 para experiencia ligera, API y privacidad, sin crear endpoints ni DTO compilados.
+- Diez casos T01–T10 positivos/negativos FUTUROS_NO_EJECUTADOS; el conflicto del bundle 650–750 KB contra 1–2 MiB continúa SIN_RESOLVER y LCP/INP/CLS permanecen NO_MEDIDO; no se adjudica PASS de runtime.
+- Sólo documento Markdown y CHANGELOG autocontenido en dev mediante fast-forward/CAS, A0–A4 documentales con Scope Lock/V5 exact-SHA; A5 pendiente de otra Task Javier, sin QA/main/PROD ni cambios DB, HTTP, UI o secretos.
+
 ## 2026-11-15 — V16 C13-03.M02.01 modelo conceptual de rendimiento y ligereza [Javier :20]
 - Define 14 conceptos E01–E14 de evidencia, ownership, rutas, medios, caché, datos y rollback, 12 relaciones REL01–REL12 y 18 invariantes INV01–INV18; no crea entidades EF ni cambia frontend/backend.
 - Diez oráculos T01–T10 positivos/negativos FUTUROS_NO_EJECUTADOS para métricas, móvil, navegación, caché, tenant A/B y accesibilidad. LCP/INP/CLS siguen NO_MEDIDO; conflicto de bundle 650–750 KB frente a 1–2 MiB permanece SIN_RESOLVER.
