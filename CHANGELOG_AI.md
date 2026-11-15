@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C06-04.M02.02 API/DTO de portal cliente [Javier :10]
+- Define ocho rutas futuras propuestas, DTO de confianza, doce errores seguros y ocho parejas de aceptación FUTUROS_NO_EJECUTADOS; no implementa endpoints, OAuth, MySQL, Angular, workers ni proveedores.
+- Mantiene aislamiento por tenant A/B y cliente A1/A2, separación JWT cliente/ERP, recuperación no enumerable, versión CAS, grants temporales, no-store y denegación por defecto.
+- Cambio exclusivamente documental con fast-forward/CAS, Scope Lock y V5 exact-SHA, A5 independiente pendiente y rollback git revert; sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C06-04.M02.01 entidades de portal de cliente [Javier :00]
 - Define dieciseis entidades conceptuales, dieciseis invariantes y doce pares positivos/negativos FUTUROS_NO_EJECUTADOS de ownership por tenant y cliente, pedidos, direcciones, reservas, documentos y recuperacion.
 - Conserva aislamiento tenant A/B e intra-tenant A1/A2, JWT cliente distinto de ERP, RBAC, CAS, PII y respuestas neutras; ninguna tabla, endpoint, Angular, migracion o servicio se activa.
