@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C06-04.M03.02 servicio Application del portal cliente [Javier :10]
+- Implementa Application .NET10 de prevalidacion privada CUSTOMER con fuente verificada, enlazando C0604PortalClienteDomainRules; rechaza tenant B, cliente A2, owner NULL, sesion revocada/expirada, JWT no acreditado y CAS stale.
+- Agrega diez tests xUnit positivos/negativos para permiso/tenant/cuenta/sesion/recurso/version, sin endpoint, DI, MySQL, pedidos, pagos, workers ni tokens.
+- A0-A4 requieren GitHub Actions backend, seguridad, autorización y ScopeLock/V5 exact SHA; A5 independiente, rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C01-01.M05.06 regresiones reales y accesibilidad [Javier :20]
 - Agrega cinco pruebas xUnit sobre identidad tenant A/B con costo de lecturas acotado, cancelación y revocación; no sustituye benchmarks de producción o MySQL real.
 - Añade dos pruebas Chromium de foco, reduced-motion y ruta privada, con workflow efímero de GitHub-hosted, sin credenciales ni API productiva.
