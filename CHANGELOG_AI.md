@@ -1,3 +1,9 @@
+## 2026-11-15 — V16 continuidad secuencial sin cuotas por corrida [Javier propietario]
+- Respaldo privado anterior verificado del Sheet integral, plan comercial y seis prompts con IDs/RRULE exactos; no operativo y BITACORA preservada.
+- Aclara MAX_ACTIVE_WRITES_PER_TASK=1 como concurrencia real, no cantidad acumulada. Se mantiene capacidad advisory hasta 1000 scopes, sin reservas múltiples por Task.
+- Meta de cierres UNBOUNDED_WITHIN_PROVIDER_RUN: REVIEW_FIRST, cerrar A0-A4 y A5 ajena, alternar VALIDANDO con CI externa, desarrollar solo una EN_PROGRESO a la vez y seguir en bucle mientras haya trabajo seguro y tiempo real del proveedor.
+- Corrige selectWork target fijo 3 y añade pruebas de reconfirmación tras cierre, espera CI, duplicidad concurrente y salida segura. No crear Task ni tocar QA/main/PROD, secrets, permisos o A0-A5.
+
 ## 2026-11-15 — V5 C01-01.M06.06 cierre documental y gates del mapa de identidad [Javier :40]
 - Reconciliados seis M05 y cinco M06 anteriores LISTO con A5 independiente real en PLAN/ COLA/DAG; incluida evidencia MySQL 8.4 efímera Category=Integration de M05.03 y ensayo sintético de git revert M06.04, sin extender esas pruebas a JWT/HTTP/PROD.
 - Registradas fronteras de release: no hay certificación de JWT end-to-end, EF transversal, p95, WCAG completa ni QA; no se fuerzan gates G/O y este M06.06 necesita su propio A5 posterior.

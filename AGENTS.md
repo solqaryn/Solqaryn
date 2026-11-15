@@ -20,8 +20,13 @@ TASK_NATIVE_REASONING_CONTROL=OWNER_OR_PLATFORM_SETTING
 FORMAL_APPROVAL_ROUTINE_COMMERCIAL_REQUIRED=FALSE
 FORMAL_APPROVAL_GOVERNANCE_REQUIRED=FALSE
 GOAL_MIN_LISTO_PER_RUN=1
-GOAL_TARGET_LISTO_PER_RUN=3
+GOAL_TARGET_LISTO_PER_RUN=UNBOUNDED_WITHIN_PROVIDER_RUN
 CONTINUE_WHILE_ELIGIBLE=TRUE
+CONTINUITY_POLICY=V16_CI_PIPELINED_SEQUENTIAL
+CLAIM_PARALLEL_LIMIT=1
+CLAIM_SEQUENTIAL_LIMIT=UNBOUNDED_WITHIN_PROVIDER_RUN
+VALIDANDO_ASYNC_HANDOFF=TRUE
+RUN_EXIT_POLICY=NO_ACTIONABLE_WORK_OR_PROVIDER_LIMIT
 LOCAL_SKILL_COUNT=1
 COMMERCIAL_AUTHORITY_MODE=CURRENT_PLAN_ONLY
 LEGACY_MASTER_EXECUTABLE=FALSE
@@ -85,3 +90,7 @@ Esta autoridad posterior reemplaza instrucciones operativas anteriores sobre och
 ## Política de calidad V15 vigente (2026-11-15)
 
 Una única EN_PROGRESO y escritura de desarrollo por Task Javier: ACTIVE_DEV_OWNED_LIMIT_PER_TASK=1. Los contadores V13/1000 restantes son capacidades teóricas y no autorizan reservas simultáneas. Conserva A0–A5, A5 independiente, pruebas negativas y de integración reales según riesgo R0–R3 (ver docs/QUALITY_RISK_AUDIT_V15.md). No declarar PASS de un CI incompleto, un mock como prueba MySQL, ni un histórico como autoridad. Respaldos privados anteriores etiquetados NO OPERATIVOS; BITACORA nunca se borra.
+
+## Continuidad secuencial V16 — autoridad complementaria del propietario (2026-11-15)
+
+Una sola EN_PROGRESO propia por Task Javier no limita el NUMERO SECUENCIAL de microtareas que resuelve en una corrida. MAX_ACTIVE_WRITES_PER_TASK=1 mide escrituras SIMULTANEAS, no escrituras acumuladas; MAX_OWNED_SCOPES_PER_TASK=1000 sigue siendo umbral advisory de scope WIP, no reclamaciones paralelas. El objetivo por corrida es UNBOUNDED_WITHIN_PROVIDER_RUN, nunca terminar tras 1/3/5 LISTO o A5 si hay otra acción elegible y tiempo útil. Ciclo obligatorio: REVIEW_FIRST VALIDANDO propias listas y A5 elegibles de otro autor; resolver/reparar con evidencia; si CI sigue externa con run/SHA real, conservar VALIDANDO, tomar UNA PENDIENTE independiente, desarrollar, entregar o cerrar y repetir. No dejar EN_PROGRESO sin entrega ni handoff seguro por decisión voluntaria. Si el proveedor finaliza antes de que termine CI externa, es obligatorio conservar VALIDANDO con run/SHA, motivo y reanudación REVIEW_FIRST en la siguiente corrida o relevo seguro; jamás inventar PASS ni deshabilitar Tasks. Cada salida debe registrar motivo real y disponibilidad nueva en DAG/COLA, sin confundir fin de ventana del proveedor con fin de trabajo. A0–A5 y PROJECT_SCOPE_LOCK=STRICT intactos. Historial anterior no operativo si contradice este mandato; BITACORA se preserva.

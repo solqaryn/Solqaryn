@@ -45,6 +45,11 @@ export function validateAuthority(input) {
     need(body, 'TASK_DEFINITION_404_POLICY', 'USE_PEEK_READBACK_NO_AUTO_DENIAL', label);
     need(body, 'TASK_CANDIDATE_TRIAGE', 'SCAN_ALL_ELIGIBLE_WITH_REAL_TOOLCHAIN_PREFLIGHT', label);
     need(body, 'TASK_NATIVE_REASONING_CONTROL', 'OWNER_OR_PLATFORM_SETTING', label);
+    need(body, 'CONTINUITY_POLICY', 'V16_CI_PIPELINED_SEQUENTIAL', label);
+    need(body, 'CLAIM_PARALLEL_LIMIT', '1', label);
+    need(body, 'CLAIM_SEQUENTIAL_LIMIT', 'UNBOUNDED_WITHIN_PROVIDER_RUN', label);
+    need(body, 'VALIDANDO_ASYNC_HANDOFF', 'TRUE', label);
+    need(body, 'RUN_EXIT_POLICY', 'NO_ACTIONABLE_WORK_OR_PROVIDER_LIMIT', label);
     need(body, 'JAVIER_PEER_WATCH_SCOPE', 'SIX_EXISTING_TASK_IDS', label);
     need(body, 'JAVIER_PEER_AUTORESUME', 'AUTHORIZED_SINGLE_ATTEMPT_WITH_READBACK', label);
     need(body, 'ALEX_PEER_WATCH_SCOPE', 'NONE', label);
@@ -67,7 +72,7 @@ export function validateAuthority(input) {
     need(body,'FORMAL_APPROVAL_ROUTINE_COMMERCIAL_REQUIRED','FALSE',label);
     need(body,'FORMAL_APPROVAL_GOVERNANCE_REQUIRED','FALSE',label);
     need(body,'GOAL_MIN_LISTO_PER_RUN','1',label);
-    need(body,'GOAL_TARGET_LISTO_PER_RUN','3',label);
+    need(body,'GOAL_TARGET_LISTO_PER_RUN','UNBOUNDED_WITHIN_PROVIDER_RUN',label);
     need(body,'CONTINUE_WHILE_ELIGIBLE','TRUE',label);
     const registered = roster(key(body,'REGISTERED_TASK_IDS'));
     const authorized = roster(key(body,'AUTHORIZED_COMMERCIAL_TASK_IDS'));
@@ -101,6 +106,9 @@ if (errors.length) {
     ['fake audit',{authority:source.authority.replace('AUTO_CERTIFICATION_MODE=DIRECT_DEV_FOUR_AUDITS','AUTO_CERTIFICATION_MODE=DISABLED')}],
     ['remove A0 A5',{agents:source.agents.replace('QUALITY_PROTOCOL_VERSION=V13_A0_A5','QUALITY_PROTOCOL_VERSION=DISABLED')}],
     ['premature stop after 3',{status:source.status.replace('GOAL_MAX_LISTO_PER_RUN=NONE_WITHIN_PROVIDER_RUN','GOAL_MAX_LISTO_PER_RUN=3')}],
+    ['three closures as a target ceiling',{status:source.status.replace('GOAL_TARGET_LISTO_PER_RUN=UNBOUNDED_WITHIN_PROVIDER_RUN','GOAL_TARGET_LISTO_PER_RUN=3')}],
+    ['parallel claims authorized',{scope:source.scope.replace('CLAIM_PARALLEL_LIMIT=1','CLAIM_PARALLEL_LIMIT=3')}],
+    ['early run exit',{agents:source.agents.replace('RUN_EXIT_POLICY=NO_ACTIONABLE_WORK_OR_PROVIDER_LIMIT','RUN_EXIT_POLICY=AFTER_ONE_TASK')}],
     ['overbroad writes',{status:source.status.replace('MAX_ACTIVE_WRITES_PER_TASK=1','MAX_ACTIVE_WRITES_PER_TASK=1000')}],
     ['risk policy removed',{agents:source.agents.replace('ACTIVE_RISK_AUDIT_POLICY=V15_RISK_ADAPTIVE_A0_A5','ACTIVE_RISK_AUDIT_POLICY=OFF')}],
     ['multiple claims',{scope:source.scope.replace('ACTIVE_DEV_OWNED_LIMIT_PER_TASK=1','ACTIVE_DEV_OWNED_LIMIT_PER_TASK=3')}],

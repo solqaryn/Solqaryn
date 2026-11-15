@@ -11,6 +11,8 @@ export function countDistinctWip(tasks) {
  if(active.some(t=>typeof t.id!=='string'||!t.id.trim()))return null;
  return new Set(active.map(t=>t.id.trim().toUpperCase())).size;
 }
+// 'writes' is the LIVE EN_PROGRESO count of this Task, NOT the number of writes or closures completed this run.
+// After LISTO or true external-CI VALIDANDO, reset writes to 0 for the next sequential claim.
 export function admitNewScope({wip,branches,owned,writes,resume=false}={}) {
  if(![wip,branches,owned,writes].every(n=>Number.isInteger(n)&&n>=0))return {allow:false,reason:'COUNTS_UNVERIFIED'};
  if(resume)return {allow:true,reason:'RESUME_EXISTING_SCOPE'};
@@ -29,6 +31,12 @@ export function selfTestCapacityV13(){
  assert.deepEqual(admitNewScope(running),{allow:false,reason:'ACTIVE_WRITES_SINGLE_DEV'});
  assert.deepEqual(admitNewScope({...running,resume:true}),{allow:true,reason:'RESUME_EXISTING_SCOPE'});
  assert.equal(admitNewScope({wip:0,branches:-1,owned:0,writes:0}).allow,false);
+ // Pipeline: one active writer blocks another; a waiting VALIDANDO does not.
+ assert.equal(admitNewScope({wip:3,branches:0,owned:3,writes:1}).allow,false);
+ assert.equal(admitNewScope({wip:3,branches:0,owned:3,writes:0}).allow,true);
+ for(let previousClosed=1;previousClosed<=5;previousClosed++){
+  assert.equal(admitNewScope({wip:previousClosed,branches:0,owned:previousClosed,writes:0}).allow,true);
+ }
  console.log('SOLQARYN V15 SINGLE_ACTIVE_DEV CAPACITY SELF_TEST=PASS');
 }
 if(process.argv.includes('--self-test'))selfTestCapacityV13();

@@ -71,7 +71,7 @@ export function selectWork(tasks,status,account,activeReviewIds=new Set(),taskId
   const triage=work.map(t=>({task:t,feasibility:candidateFeasibility(t,capabilities)}));
   const next=triage.find(x=>x.feasibility.possible)?.task;
   return next?{action:'CLAIM',task:next,skippedUnfeasible:triage.filter(x=>!x.feasibility.possible).map(x=>({id:x.task.id,reason:x.feasibility.reason})),requiresNativeCurrentReadback:true,
-    commitMode:'DIRECT_DEV_FAST_FORWARD',auditCount:4,qualityControls:['A0','A1','A2','A3','A4','A5'],targetListoPerRun:3,noFixedClosureCap:true,continueWhileEligible:true}:
+    commitMode:'DIRECT_DEV_FAST_FORWARD',auditCount:4,qualityControls:['A0','A1','A2','A3','A4','A5'],targetListoPerRun:null,noFixedClosureCap:true,continueWhileEligible:true}:
     {action:'NO_ELIGIBLE',reason:work.length?'NO_VERIFIABLE_CAPABILITY_IN_ELIGIBLE_SET':'NO_FREE_ELIGIBLE_SCOPE',inspected:work.length,missingCapabilities:triage.map(x=>({id:x.task.id,reason:x.feasibility.reason}))};
 }
 export function validateProposedRun(p) {
@@ -120,10 +120,16 @@ else if(process.argv.includes('--self-test')) {
   const scope={id:'C00-01.M03.01',state:'PENDIENTE',developmentEnabled:'SI',
     dependencies:[],permissionsVerified:true};
   const pick=selectWork([scope],{},'JAVIER_CHATGPT',new Set(),task,true);
-  if(pick.action!=='CLAIM'||pick.auditCount!==4||pick.qualityControls.length!==6||pick.noFixedClosureCap!==true||pick.continueWhileEligible!==true)throw Error('direct DEV claim test failed');
+  if(pick.action!=='CLAIM'||pick.auditCount!==4||pick.qualityControls.length!==6||pick.noFixedClosureCap!==true||pick.continueWhileEligible!==true||pick.targetListoPerRun!==null)throw Error('direct DEV claim test failed');
   const own={...scope,id:'C00-01.M03.04',state:'EN_PROGRESO',ownerTaskId:task};
   if(selectWork([scope,own],{},'JAVIER_CHATGPT',new Set(),task,true).reason!=='OWN_ACTIVE_DEVELOPMENT_MUST_FINISH')throw Error('V15 double claim accepted');
   if(selectWork([scope,{...own,ownerTaskId:'f'.repeat(32)}],{},'JAVIER_CHATGPT',new Set(),task,true).action!=='CLAIM')throw Error('V15 other owner wrongly blocked');
+  const pendingCI={...scope,id:'C00-01.M03.05',state:'VALIDANDO',ownerTaskId:task,externalCiPending:true};
+  if(selectWork([scope,pendingCI],{},'JAVIER_CHATGPT',new Set(),task,true).action!=='CLAIM')
+    throw Error('V16 legitimate CI pipeline should allow one new claim');
+  const alreadyClosed={...own,state:'LISTO'};
+  if(selectWork([scope,alreadyClosed],{},'JAVIER_CHATGPT',new Set(),task,true).action!=='CLAIM')
+    throw Error('V16 later sequential claim should be allowed');
   const blocked={...scope,id:'C00-01.M03.02',requiredTools:['dotnet']};
   const fallback={...scope,id:'C00-01.M03.03',requiredTools:['node']};
   const feasible=selectWork([blocked,fallback],{},'JAVIER_CHATGPT',new Set(),task,true,{availableTools:['node']});
