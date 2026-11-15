@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C05-01.M01.06 cierre documental del sistema de diseño [Javier :40]
+- Consolida cinco documentos M01 de design tokens y componentes con A5 independiente, 16 barreras fail-closed, diez pares positivos/negativos futuros y ocho reversas condicionadas.
+- Conserva decisiones D01–D08 pendientes, riesgo de foco/contraste/responsive/branding tenant A-B y pruebas Angular/Playwright NO_EJECUTADAS; el menú y el tema no conceden JWT/RBAC.
+- Publica sólo Markdown y CHANGELOG en dev con Scope Lock/V5 exact-SHA y A5 pendiente de otra Task Javier; sin alterar CSS/UI en runtime, QA/main/PROD, bases de datos ni Tasks.
+
 ## 2026-11-15 — V5 C08-04.M02.06 contrato de salida de extensiones sectoriales [Javier :40]
 - Consolida seis antecedentes M01/M02 con A5 independiente, modelo de capacidades sin duplicar Empresa/Sucursal/Usuario y 16 gates técnicos fail-closed para una implementación futura de módulos por rubro.
 - Define doce pares de aceptación/denegación FUTUROS_NO_EJECUTADOS y ocho mecanismos de reversión condicionados a JWT/RBAC, tenant A/B, CAS, auditoría, MySQL efímero y alcance.
