@@ -2596,3 +2596,8 @@
 - Verifica doce fuentes y blobs Git de Angular/SCSS/Playwright y antecedentes V5; inventario parcial, no afirmación de auditoría completa ni certificación WCAG.
 - Registra doce brechas G01–G12 no verificadas, matriz de superficies y pruebas futuras P01–P08/N01–N08, fuentes exactas, dispositivo, captura y SHA, sin inventar resultados E2E, Lighthouse, lector asistivo o tenant.
 - Cambios sólo Markdown/CHANGELOG en dev, A0–A4 documentales y checks Scope Lock/V5 exact SHA, A5 independiente; sin código, datos, secretos, QA/main/PROD ni servicios.
+
+## 2026-11-14 — V5 C15-04.M01.04: riesgos, supuestos y decisiones UX/accesibilidad/rendimiento [Javier :30]
+- Documenta R01–R12 riesgos potenciales de responsive, teclado/foco, formularios, contrastes, loading, rendimiento, aislamiento tenant A/B y CI exact-SHA; no declara defectos o cumplimiento WCAG confirmados.
+- Registra S01–S08 supuestos NO_VERIFICADOS, D01–D08 decisiones pendientes y P01–P08/N01–N08 como escenarios FUTUROS_NO_EJECUTADOS; trazabilidad causal a M01.01–03 y G01–G12.
+- Diff sólo Markdown y CHANGELOG en dev; A0–A4 documentales con Scope Lock/V5 en SHA exacto, A5 independiente; sin Angular, API, DB, secretos, QA/main/PROD o infraestructura real.
