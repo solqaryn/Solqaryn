@@ -1,6 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
+
+export type EstadoAuditoriaOperativaV5 = 'cargando' | 'vacio' | 'error' | 'exito' | 'sin_permiso';
 
 /**
  * C15-05.M04.01 — superficie privada de consulta de auditoria operativa.
@@ -18,9 +22,20 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
         <p class="eyebrow">SOLQARYN · Auditoría operativa</p>
         <h1 id="audit-view-title">Controles de ejecución y evidencia</h1>
         <p>Referencia de lectura para el ciclo DEV. No presenta telemetría ni microtareas en vivo.</p>
+        <button class="refresh-button" type="button" (click)="revalidar()" [disabled]="estado() === 'cargando'" aria-label="Revalidar sesión de auditoría">Revalidar sesión</button>
       </header>
 
-      @if (accesoPlataforma()) {
+      <section class="audit-state" aria-live="polite" aria-atomic="true" aria-label="Estado de acceso y consulta">
+        @switch (estado()) {
+          @case ('cargando') { <p role="status">Verificando permisos con el servidor…</p> }
+          @case ('sin_permiso') { <p role="alert">Sin permiso de plataforma confirmado. La guía privada permanece oculta.</p> }
+          @case ('error') { <p role="alert">No fue posible verificar la sesión. El acceso permanece restringido; vuelve a intentarlo.</p> }
+          @case ('vacio') { <p role="status">Sesión verificada. No hay datos institucionales conectados; esta guía es de solo lectura.</p> }
+          @case ('exito') { <p role="status">Sesión de plataforma revalidada correctamente. No se consultan registros operativos en vivo.</p> }
+        }
+      </section>
+
+      @if (accesoPlataforma() && (estado() === 'vacio' || estado() === 'exito')) {
         <section class="notice" aria-label="Alcance y fuente de esta pantalla">
           <strong>Guía estática · sin operaciones institucionales</strong>
           <p>Los estados, propietarios, SHA y revisiones deben verificarse en sus fuentes autorizadas. Esta pantalla no sustituye PLAN, COLA, DAG, BITACORA ni CI.</p>
@@ -51,6 +66,11 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
     h2 { font-size: 1.35rem; margin-top: 1.6rem; }
     h3 { font-size: 1.05rem; margin: 0 0 .45rem; }
     p { line-height: 1.55; }
+    .audit-state { border: 1px solid var(--mat-sys-outline-variant, #a7b2bd); border-radius: .75rem; padding: .65rem 1rem; margin: 1rem 0; }
+    .audit-state p { margin: .25rem 0; }
+    .refresh-button { border: 1px solid currentColor; border-radius: .5rem; padding: .65rem 1rem; font: inherit; font-weight: 600; color: inherit; background: transparent; cursor: pointer; }
+    .refresh-button[disabled] { opacity: .65; cursor: progress; }
+    .refresh-button:focus-visible { outline: 3px solid var(--mat-sys-primary, #2157a3); outline-offset: 3px; }
     .notice { padding: 1rem; margin: 1.25rem 0; border: 1px solid var(--mat-sys-outline-variant, #a7b2bd); border-radius: .75rem; background: var(--mat-sys-surface-container-low, #f5f7fa); }
     .notice p { margin-bottom: 0; }
     .controls { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; padding: 0; list-style: none; }
@@ -64,8 +84,23 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
 })
 export class AuditoriaOperativaV5Component {
   private readonly plataforma = inject(PlataformaSesionService);
+  private readonly destroyRef = inject(DestroyRef);
   readonly accesoPlataforma = computed(() => {
     const sesion = this.plataforma.sesion();
     return sesion?.ambito === 'Plataforma' && sesion.esAdministrador === true;
   });
+  readonly estado = signal<EstadoAuditoriaOperativaV5>(this.accesoPlataforma() ? 'vacio' : 'sin_permiso');
+
+  /** A new check always comes from the server; browser tokens never grant permissions. */
+  revalidar(): void {
+    if (this.estado() === 'cargando') return;
+    this.estado.set('cargando');
+    this.plataforma.obtener().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => this.estado.set(this.accesoPlataforma() ? 'exito' : 'sin_permiso'),
+      error: (error: unknown) => {
+        const status = error instanceof HttpErrorResponse ? error.status : 0;
+        this.estado.set(status === 401 || status === 403 ? 'sin_permiso' : 'error');
+      }
+    });
+  }
 }

@@ -47,6 +47,11 @@ test('viewport móvil y teclado muestran solo guía estática para sesión simul
   await page.goto('/plataforma/auditoria-operativa-v5');
   await expect(page.getByRole('heading', { name: 'Controles de ejecución y evidencia' })).toBeVisible();
   await expect(page.locator('.controls li')).toHaveCount(4);
+  await expect(page.getByText('Sesión verificada. No hay datos institucionales conectados; esta guía es de solo lectura.')).toBeVisible();
+  const revalidar = page.getByRole('button', { name: 'Revalidar sesión de auditoría' });
+  await revalidar.click();
+  await expect(page.getByText('Sesión de plataforma revalidada correctamente. No se consultan registros operativos en vivo.')).toBeVisible();
+  await expect(page.locator('.controls li')).toHaveCount(4);
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(2);
   const back = page.getByRole('link', { name: 'Regresar a administración de plataforma' });

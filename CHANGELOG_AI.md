@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C15-05.M04.02 estados accesibles de auditoría operativa [Javier :20]
+- Implementa carga, vacío, error, éxito y denegación en la ruta privada existente; revalidación single-flight mediante sesión del backend, sin leer microtareas ni conceder permisos por UI.
+- Añade Vitest positivos, negativos y bordes de permisos, y Chromium sintético de revalidación/móvil/teclado; los mocks no certifican JWT ni backend tenant real.
+- Una única unidad R1 con candado V17 fila 2325, commit dev FF/CAS, checks A0–A4 pertinentes y A5 independiente pendiente; conserva Scope Lock, CHANGELOG autocontenido y rollback git revert.
+
 ## 2026-11-15 — V17 C04-02.M02.06 contrato de salida tecnico documental [Javier :10]
 - Define dieciseis gates G01-G16 y doce pares positivos/negativos FUTUROS_NO_EJECUTADOS para contratos y suscripciones, firma, version, tenant A/B, conciliacion, transiciones invalidas, idempotencia, pruebas MySQL efimero y rollback.
 - Predecesoras M02.01-05 cuentan con A5 independientes por DEV02; no se asumen aprobadas D01-D08 comerciales ni se instala API, worker, PSP, migracion o codigo ejecutable. Requiere A5 independiente de ESTE contrato antes de M03.
