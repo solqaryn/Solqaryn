@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C11-04.M02.03 persistencia conceptual observabilidad [Javier :40]
+- R0 documental de P01–P12, IDX01–IDX12 y MIG01–MIG08 FUTUROS para logs, métricas, trazas, redacción de PII, SLI/SLO, auditoría scoped y costo agregado; ninguna tabla, EF/MySQL ni collector implementados.
+- Doce pares F01–F12 positivos/negativos FUTUROS_NO_EJECUTADOS (0/12); JWT/RBAC/tenant A/B, revocación, cardinalidad, rollback y denegaciones previstas, con p95/SLO/costos NO_MEDIDO.
+- Solo documento Markdown + CHANGELOG autocontenido por fast-forward/CAS dev; A0–A4 R0 con Scope Lock/V5 exact SHA y A5 distinta Javier pendiente; sin QA/main/PROD ni proveedores.
+
 ## 2026-11-15 — V16 C08-01.M02.05 eventos conceptuales e idempotencia agenda [Javier :40]
 - Documento R0 con EV01–EV12, IDEM01–IDEM14, COR01–COR12 de cita, personal, recursos, correlación, retries y protección tenant/JWT/RBAC sin emitir mensajes ni crear infraestructura de eventos.
 - Doce pares T01–T12 positivos/negativos FUTUROS_NO_EJECUTADOS (0/12), incluidos DST, 64 solicitudes concurrentes, cancelación única, CAS, replay y separación `ReservaInventario`; MySQL, API y entrega de eventos NO_MEDIDO.
