@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C13-02.M02.05 contratos de eventos accesibilidad [Javier :50]
+- Define 12 eventos conceptuales accesibilidad, 18 invariantes de tenant/PII/idempotencia/correlación/orden y 12 pares P/N FUTUROS_NO_EJECUTADOS, con envelope y política de replay/TTL; ningún emisor/consumidor runtime instalado.
+- No crea webhooks, workers, broker, API, MySQL, Angular ni eventos entre Tasks; no certifica WCAG, JWT, integración o navegador en el alcance R0 documental. Seguridad y pruebas reales exigibles en futura R2.
+- V17 lock SQV17_C13_02_M02_05 fila 1920, un scope + CHANGELOG autocontenido con gates Scope Lock/V5 exact SHA y A5 otra Task Javier; rollback git revert normal, sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C09-02.M02.02 contratos API/DTO conceptuales de fidelizacion [Javier :00]
 - Define ocho operaciones logicas O01-O08, ocho DTO D01-D08, doce errores seguros X01-X12 y dieciseis validaciones V01-V16 para puntos, promociones, resenas, moderacion, posventa y consentimiento, sin publicar endpoints.
 - Propone doce pares P/N FUTUROS_NO_EJECUTADOS para empresa A/B, revocacion JWT/RBAC, legacy NULL, canje concurrente, replay, PII, moderacion, opt-out y errores; ninguna prueba HTTP/MySQL/Playwright real, metricas NO_MEDIDO.
