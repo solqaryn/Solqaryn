@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C10-03.M02.02 contratos propuestos API y DTO de inventario condicionado [Javier :00]
+- Define 12 operaciones futuras, 12 DTO contractuales, 16 errores seguros y 12 pares positivos/negativos FUTUROS_NO_EJECUTADOS para inventario histórico NO_VERIFICADO y archivos privados.
+- Preserva JWT/RBAC, tenant A/B, Cloudinary existente, MIME por bytes, límites de tamaño, firmas/TTL, retención, idempotencia y estados ZERO_VERIFIED/POSITIVE_VERIFIED sólo con evidencia real.
+- Entrega individual Markdown en dev con Scope Lock/V5 exact-SHA, A5 por otra Task Javier y git revert ordinario; sin endpoints, EF/MySQL, inventario real, R2/DNS, QA/main/PROD.
+
 ## 2026-11-15 — CI auditada por SHA sin cancelaciones entre commits [Javier propietario]
 - Preserva ejecuciones independientes de los cinco controles críticos en dev: backend, seguridad y pruebas, calidad ERP, Scope Lock y procedencia V5 mediante grupos de concurrencia por SHA con cancel-in-progress desactivado.
 - No retira jobs, pruebas, pasos, filtros, permisos, validaciones, autoría ni branch protections. Cada ejecución mantiene su SHA, logs y resultado; CANCELLED, SKIPPED, FAIL e IN_PROGRESS jamás se clasifican como PASS.
