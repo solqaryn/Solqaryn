@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C09-01.M01.06 CRM universal: bloqueos, rollback y liberación [Javier :10]
+- Define 16 gates de preparación CRM y 12 pares positivos/negativos FUTUROS_NO_EJECUTADOS sobre ownership de Cliente, timeline, segmentos, oportunidades, permisos, datos legados, consentimiento, export, accesibilidad y transacciones.
+- Contrasta cinco documentos M01 anteriores y A5 independientes, preserva R01–R16 potenciales y D01–D08 pendientes; LISTO_DEV documental sólo A0–A4 exact-SHA y A5 ajeno antes de M02.
+- Únicamente docs/v5 y CHANGELOG en dev, sin tocar Domain/API/Angular/MySQL/JWT/RBAC, PII, proveedores, workers, QA/main/PROD; revert normal auditado si falla.
+
 ## 2026-11-15 — V17 C15-05.M04.04 CI de pruebas reales de navegación [Javier :00]
 - Integra la suite de cuatro Vitest al workflow existente `v5-plataforma-ui-tests.yml` con disparo por archivo y comando específico en GitHub-hosted; el anterior CI `Frontend tipado y build` compilaba pero no ejecutaba estos tests.
 - Mantiene la concurrencia por SHA con cancel-in-progress=false y todos los casos previos; A4 exige nuevo SUCCESS causal de Vitest, Scope Lock, procedencia V5 y controles pertinentes, sin atribuir PASS al build solamente.
