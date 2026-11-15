@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 corrección preventiva CI C02-04.M03.05 params null xUnit [Javier :20]
+- Corrige una sola expectativa xUnit de ticket nulo: en C# Preview(null) invoca la variante params con un arreglo completo nulo y obtiene CONTROL_PLANE_BATCH_REQUIRED; ahora se pasa explicitamente un arreglo de un ticket null para esperar CONTROL_PLANE_TICKET_INVALID.
+- Hipotesis causal comprobable por fallo identico de C03-04.M03.05 (job 133000165419, 4702 PASS/1 FAIL) y log de C02-04.M03.05 job 133001145821 con la misma prueba previa; no se cambia codigo de runtime, control de tenant, MFA, grants ni validadores.
+- Proteger A0-A5: nueva CI exact-SHA obligatoria Backend Release/xUnit, seguridad, Authorization, Scope Lock y V5; mantener ambas unidades VALIDANDO hasta SUCCESS verdadero; rollback mediante git revert normal, sin QA/main/PROD.
+
 ## 2026-11-15 — V17 reparación CI C03-04.M03.05 params null xUnit [Javier :20]
 - Repara asercion de borde sin alterar comportamiento productivo: en C# un argumento null para metodo params nullable array significa lote null, no un array con un ticket null; la prueba ahora pasa explicitamente un array de un elemento null.
 - Diagnostico causal: Backend Release job 133000165419 y Backend tests 133000165134 fallaron 1/4703 xUnit en NullEmptyMalformedAndOverLimitBatchesFailClosed, esperado INCIDENT_TICKET_INVALID frente a INCIDENT_BATCH_REQUIRED; la implementacion seguia denegando correctamente, 4702 PASS, ningun acceso concedido.

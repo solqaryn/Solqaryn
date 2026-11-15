@@ -136,7 +136,7 @@ public sealed class V5GlobalControlPlaneIsolatedDispatchWorkerTests
         Assert.Equal("CONTROL_PLANE_TICKET_INVALID", Assert.Single(
             await Preview(Ticket("../bad"))).Code);
         Assert.Equal("CONTROL_PLANE_TICKET_INVALID", Assert.Single(
-            await Preview(null)).Code);
+            await Preview(new Worker.Ticket?[] { null })).Code);
         var tooMany = Enumerable.Range(1, Worker.MaximumBatchSize + 1)
             .Select(i => (Worker.Ticket?)Ticket("job_" + i)).ToArray();
         Assert.Equal("CONTROL_PLANE_BATCH_LIMIT_DENIED", Assert.Single(
