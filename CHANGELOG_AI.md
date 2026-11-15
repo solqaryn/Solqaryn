@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C03-03.M02.03 persistencia, indices y fixtures conceptuales de auditoría [Javier :10]
+- Diseña 12 agregados/ownership de auditoría, ocho índices tenant-bound propuestos, estrategia de migración/rollback FUTURA_NO_EJECUTADA y 10 pares de oráculos P/N sintéticos para MySQL 8.4.
+- Preserva auditoría estricta frente a best-effort, separación empresa A/B y plataforma, política de retención, minimización y protección de JWT/PII; no afirma filtrar datos o EXPLAIN verificados en runtime.
+- Modifica solo documentación y CHANGELOG autocontenido en dev, sin SQL ni migration real, IAM, workers, endpoints ni QA/main/PROD; exige A0–A4 documental, CI ScopeLock/V5 exact SHA y A5 independiente.
+
 ## 2026-11-15 — V5 C03-03.M02.04 configuración tipada y flags de auditoría [Javier :50]
 - Define 16 opciones conceptuales, 18 invariantes fail-closed y 10 pares P/N FUTUROS_NO_EJECUTADOS para tenant A/B, JWT/RBAC, redacción, auditoría estricta, límites y retención sin políticas inventadas.
 - Contrasta AuditoriaController, AuditoriaService best-effort/estricto, AuditoriaRepository y CorrelationIdMiddleware sin afirmar fuga, acceso excepcional, HTTP/MySQL o retención certificados; ninguna variable, servicio, secreto o base modificados.
