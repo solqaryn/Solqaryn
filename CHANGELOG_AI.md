@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C01-01.M06.02 manifiesto reproducible de pruebas y blobs [Javier :20]
+- Registra SHAs de origen, ocho blobs actuales de siete archivos de pruebas más la auditoría M06.01, y comandos dirigidos .NET 10, MySQL 8.4 local y Chromium.
+- Distingue código existente de pruebas efectivamente ejecutadas: no finge PASS JWT/HTTP, Category=Integration, p95 ni WCAG por un documento.
+- Una sola unidad documental en dev, A0-A4 exact-SHA con Scope Lock/V5 y A5 independiente posterior; revert normal sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C01-01.M06.01 auditoría de cobertura real e insuficiencia de dobles [Javier :20]
 - Audita seis entregas M05 con evidencias de pruebas Domain, Application, controlador, EF/MySQL local y Chromium, separando dobles legítimos de ejecución integrada real.
 - Documenta brechas de JWT/HTTP, filtros de persistencia, rendimiento p95 y cobertura WCAG sin inventar PASS ni ejecutar servicios; Scope Lock y seguridad tenant A/B intactos.
