@@ -3497,3 +3497,8 @@
 - Documenta las rutas existentes de empresas y plataforma y un endpoint FUTURO no implementado de transiciones con DTO versionado, CAS, autoridad global e idempotencia por operacion.
 - Fija matriz de ocho transiciones, doce validaciones de errores y ocho pares positivos/negativos documentales, preservando JWT/RBAC/tenant A/B, revocacion, retencion y rechazo fail-closed.
 - Sin endpoints ni codigo, EF/MySQL, workers, credenciales o activaciones reales; A0–A4 Scope Lock/V5 exact-SHA y A5 independiente para desbloquear etapas posteriores, revert normal.
+
+## 2026-11-15 — V5 C02-03.M02.04 configuracion tipada flags lifecycle tenant [Javier :20]
+- Define contrato documental de 18 opciones tipadas, defaults restrictivos, 12 precedencias fail-closed y ocho pares P/N para futura alta, suspension, reactivacion, archivo y baja logica.
+- Mantiene autoridad global distinta de tenant A/B, JWT/RBAC, version CAS, idempotencia, retencion, CI exact-SHA y A5 independiente; no habilita ninguna feature flag real.
+- Solo Markdown sin cambios backend, frontend, EF/MySQL ni webhooks: Scope Lock/V5 y A0–A4 documentales exact-SHA obligatorios antes de LISTO, rollback git revert, sin QA/main/PROD.
