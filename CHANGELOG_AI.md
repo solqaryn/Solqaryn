@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C04-01.M02.06 contrato terminal de salida catalogo de planes [Javier :10]
+- Concilia cinco documentos M02.01-05 y A5 independientes; define dieciseis gates de seguridad, contratos de dependencia y doce pares P/N FUTUROS_NO_EJECUTADOS.
+- Preserva Plan, PlanLimite y Suscripcion actuales; no crea SQL, EF, importes, cobros, workers, eventos runtime, permisos RBAC ni nuevos releases.
+- Solo Markdown y CHANGELOG con Scope Lock/V5 exact SHA, A5 por otra Task Javier, rollback git revert; sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C04-01.M02.05 eventos hipoteticos e idempotencia de planes [Javier :10]
 - Define ocho senales NO EMITIDAS, quince campos conceptuales, catorce reglas fail-closed y doce pares P/N FUTUROS_NO_EJECUTADOS.
 - No implementa dispatcher, webhook, worker, SQL, planes de precios, cobros ni grants JWT/RBAC/tenant; toda autoridad permanece en backend y fuentes institucionales.
