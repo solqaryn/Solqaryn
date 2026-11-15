@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C02-02.M02.01 contrato de entidades y ownership shared/dedicated [Javier :30]
+- Define catorce entidades conceptuales TEN01–TEN14, cardinalidades, versiones y dieciseis invariantes para placement shared/dedicated, mapping opaco y segregacion tenant A/B.
+- Agrega ocho pares P/N FUTUROS_NO_EJECUTADOS, rollback documental y limites de auth, snapshot, restore, cutover y CAS; no crea EF/MySQL, API, secretos, DNS ni runtime.
+- Scope Lock y V5 por SHA exacto, A0–A4 documentales y A5 pendiente por otra Task Javier; sin QA/main/PROD y con git revert normal.
+
 ## 2026-11-15 — V5 C15-04.M03.04 adaptador aislado de snapshots UX [Javier :00]
 - Implementa adaptador Infrastructure .NET 10 que copia observaciones y catalogos, valida SHA y tenant, y reutiliza preflight Application M03.03 sin escritura.
 - Siete pruebas xUnit positivas y negativas de JWT/RBAC/tenant, SHA, catalogo, presupuesto UX y aislamiento de colecciones; requieren CI real exact-SHA.
