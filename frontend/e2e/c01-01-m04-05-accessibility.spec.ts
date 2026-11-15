@@ -44,7 +44,7 @@ test.describe('V5 C01-01.M04.05 responsive, teclado y etiquetas', () => {
     await page.keyboard.press('Enter');
     await expect(page.getByRole('button', { name: 'Ocultar contraseña' })).toBeVisible();
     await expect(enviar).toBeDisabled();
-    await expect(page).toHaveURL(/\\/login(?:$|[?#])/);
+    await expect(page).toHaveURL(/\/login(?:$|[?#])/);
   });
 
   test('escritorio 1366px conserva contraste legible del título del formulario', async ({ page }) => {
@@ -82,7 +82,7 @@ test.describe('V5 C01-01.M04.05 responsive, teclado y etiquetas', () => {
 
   test('la ruta privada niega el acceso anónimo y mantiene el login etiquetado', async ({ page }) => {
     await page.goto('/usuarios');
-    await expect(page).toHaveURL(/\\/login(?:$|[?#])/);
+    await expect(page).toHaveURL(/\/login(?:$|[?#])/);
     await expect(page.getByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
     await expect(page.getByRole('textbox', { name: 'Nombre de usuario' })).toBeVisible();
     await expect(page.getByLabel('Contraseña', { exact: true })).toBeVisible();
