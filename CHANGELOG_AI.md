@@ -3106,3 +3106,8 @@
 - Implementa Application .NET10 read-only que compone reglas Domain M03.01, valida SHA y evidencia depurada, y siempre niega escritura, restauración o exposición de incidentes sin adaptador autenticado.
 - Añade xUnit de rechazo por tenant A/B, JWT/membresía revocada, sucursal, idempotencia, versión, evidencia insegura y solicitudes de restauración; CI exact-SHA requerida para LISTO_DEV.
 - No API, DI activa, MySQL/EF, migraciones, backup, worker, eventos ni QA/main/PROD; A5 independiente pendiente, rollback git revert.
+
+## 2026-11-15 — V5 C14-02.M03.02 preflight Application de aceptación de seguridad [Javier :10]
+- Implementa Application .NET10 fail-closed que compone la política Domain M03.01 con SHA coherente y referencia de evidencia saneada; jamás concede acceso, release ni escritura.
+- Añade pruebas xUnit positivas/negativas de JWT/RBAC, tenant A/B, BOLA, host, adjuntos, jobs, filtro y restore; CI exact-SHA y revisión A5 ajena obligatorias antes de certificación.
+- Sin DI activa, endpoints, EF/MySQL, migraciones, workers, secretos, runtime PROD o QA/main; revert normal preserva controles.
