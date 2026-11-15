@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C02-02.M02.04 configuracion conceptual tipada y flags seguras [Javier :30]
+- Establece dieciseis campos CFG, doce flags futuras apagadas salvo exigencia de restore, ocho reglas de precedencia y doce validaciones fail-closed de placement shared/dedicated.
+- Define ocho pares P/N FUTUROS_NO_EJECUTADOS; no activa flags, DSN, MySQL, router, secretos, dual-write ni conexiones, y preserva JWT/RBAC/tenant A/B.
+- Solo Markdown, Scope Lock/V5 exact SHA y A5 por otra Task; rollback git revert y ninguna autorizacion QA/main/PROD.
+
 ## 2026-11-15 — V5 C02-02.M02.03 persistencia e indices conceptuales shared/dedicated [Javier :30]
 - Define once familias de entidades de almacenamiento y propiedad, diez indices tentativos compatibles a validar en MySQL 8.4 y ocho etapas futuras de migracion con rollback y aislamiento.
 - Documenta doce fixtures FUTUROS_NO_EJECUTADOS y doce invariantes JWT/RBAC/tenant A/B; no ejecuta EF, SQL, MySQL, backups, restore, DNS, secretos ni cambia proveedores.
