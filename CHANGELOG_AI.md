@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C09-01.M02.06 contrato terminal M02 de CRM universal [Javier :40]
+- Contrato de salida R0 documental con ocho predecesores/grupos A5, 16 gates, 12 pares P/N FUTUROS_NO_EJECUTADOS y ocho reversas para CRM multiempresa; sin implementar API, bases, migraciones, campañas ni flags ejecutables.
+- Tenant A/B, JWT/RBAC/revocación, Cliente.EmpresaId=NULL legado, consentimiento/PII, CAS/idempotencia, consultas y MySQL efímero quedan como exigencias técnicas futuras con pruebas reales; ninguna aprobación M03/QA/main/PROD por inferencia.
+- Un scope C09-01.M02.06 más CHANGELOG, V17 lock fila 1309 y checks exact-SHA Scope Lock/V5; LISTO_DEV A0–A4 documental requiere A5 independiente posterior.
+
 ## 2026-11-15 — V17 C07-02.M02.03 persistencia y fixtures conceptuales storefront [Javier :10]
 - Define 12 agrupaciones de persistencia propuestas D01-D12 y 12 índices/uniques candidatos I01-I12 con aislamiento por empresa, host confiable y separación de carrito, cotización, pedido, reserva y PSP; ninguna tabla, migración o EF creada.
 - Propone 8 fases reversibles M01-M08 y 12 pares de fixtures sintéticos F01-F12 FUTUROS_NO_EJECUTADOS con fail-closed tenant A/B, idempotencia, JWT/RBAC, HMAC/replay, stock e inventario; 0 tests MySQL/xUnit/Playwright ejecutados y métricas NO_MEDIDO.
