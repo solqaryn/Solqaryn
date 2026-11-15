@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C08-03.M01.06: contrato terminal de membresías y acceso [Javier :40]
+- Define 16 barreras B01–B16, 12 casos E01–E12 FUTUROS NO_EJECUTADOS y ocho reversas RB01–RB08 para membresía empresarial/comercial, vigencia UTC/DST, suspensión, control de acceso e idempotencia.
+- Concilia antecedentes M01.01–05 LISTO+A5 y dependencias técnicas calculadas; M02 requiere A5 independiente de esta M01.06 cuando lo exija el DAG vivo, sin forzar fórmulas ni resolver por inferencia D01–D08 pendientes.
+- Únicamente R0 documental en dev, sin hardware, QR ejecutable, pagos, JWT, API, MySQL, Angular, PSP, worker o webhook; CI Scope Lock/V5 exact-SHA, BITACORA/readback y rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C08-02.M02.01 modelo conceptual restaurantes y QR [Javier :50]
 - Define 20 entidades conceptuales, ownership Empresa/Sucursal/Mesa, 20 invariantes y 12 pares futuros/no ejecutados de QR falso, tenant A/B, roles revocados, idempotencia, pedido y cierre seguro.
 - Entrega R0 solo Markdown, sin runtime, SQL, API ni cobros; ERP conserva autoridad, Scope Lock STRICT, sucesoras bajo DAG/A5 independiente y rollback git revert normal.
