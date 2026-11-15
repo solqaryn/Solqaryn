@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-04.M02.04 configuracion tipada y flags de puesta en marcha [Javier :20]
+- Define CFG01–CFG16 claves hipotéticas tipadas, IV01–IV12 invariantes y FT01–FT10 casos positivos/negativos FUTUROS_NO_EJECUTADOS; no crea configuración runtime.
+- Preserva JWT/RBAC/tenant A/B, secretos fuera de Git, separación de grant QA/main/PROD y Cloudinary vigente frente a R2 futuro; nunca confunde flag con permiso.
+- Solo documento + CHANGELOG autocontenido dev, Scope Lock/V5 exact SHA, A5 independiente y rollback git revert; sin cambios de proveedor, datos ni código.
+
 ## 2026-11-14 — V5 C14-04.M02.03 persistencia índices fixtures de puesta en marcha [Javier :20]
 - Documenta DB01–DB14 registros conceptuales, IX01–IX10 índices hipotéticos y FX01–FX12 pares de pruebas FUTUROS_NO_EJECUTADOS, sin afirmar mediciones, migraciones o restores.
 - Referencia AppDbContext EF Core real y preserva ownership, JWT/RBAC, aislamiento tenant A/B, evidencia exact-SHA y rollback; ninguna modificación de código, SQL o infraestructura.
