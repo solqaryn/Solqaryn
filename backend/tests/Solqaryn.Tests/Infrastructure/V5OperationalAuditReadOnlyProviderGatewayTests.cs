@@ -1,7 +1,7 @@
 using Solqaryn.Domain.AutomationV5;
 using Solqaryn.Infrastructure.AutomationV5;
 using Xunit;
-using Domain = Solqaryn.Domain.AutomationV5.V5OperationalAuditDomainRules;
+using AuditRules = Solqaryn.Domain.AutomationV5.V5OperationalAuditDomainRules;
 
 namespace Solqaryn.Tests.Infrastructure;
 
@@ -44,7 +44,7 @@ public sealed class V5OperationalAuditReadOnlyProviderGatewayTests
         "tenant-A", Revision, Sha,
         new HashSet<string>(StringComparer.Ordinal) { Id },
         new HashSet<string>(Tasks, StringComparer.Ordinal),
-        new[] { new Domain.WorkItem(
+        new[] { new AuditRules.WorkItem(
             Id, "LISTO", "6af16bbad26881918c283abe06e1f32a",
             Sha, "6af16bb9492c8191b8e8c7d606f11507",
             "check:exact-sha", "a5:independent") });

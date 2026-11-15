@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C15-05.M03.05 fix CS0234 alias xUnit [Javier :10]
+- Corrige el conflicto de nombres en tests Infrastructure: el alias Domain colisionaba con Solqaryn.Tests.Domain y resolvia WorkItem al namespace equivocado.
+- Renombra exclusivamente el alias a AuditRules y su constructor de WorkItem, sin cambios de reglas de negocio, permisos, adaptador, eventos ni migraciones.
+- Requiere nuevamente CI backend y seguridad reales, Scope Lock y V5 exact-SHA antes de A4; no convierte el fallo original en PASS ni libera A5 propia.
+
 ## 2026-11-15 — V5 C15-05.M03.05 frontera de proveedor read-only de auditoria [Javier :10]
 - Incorpora interfaz y gateway .NET 10 para snapshots de evidencia con comprobacion previa de tenant, SHA, seis Task IDs, revocacion y denegacion de escritura.
 - Anade xUnit positivos/negativos para respuesta ajena A/B, origen obsoleto, A5 faltante, error redactado y cancelacion; un snapshot completo sigue exigiendo AUTHENTICATED_EVIDENCE_REQUIRED.
