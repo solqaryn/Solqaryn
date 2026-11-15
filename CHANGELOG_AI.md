@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C02-03.M02.06 salida documental de lifecycle tenant [Javier :00]
+- Consolida cinco contratos M02 y A5 independientes de C02-03 con dieciseis controles OUT y diez pares positivos/negativos FUTUROS_NO_EJECUTADOS sobre lifecycle y permisos de plataforma.
+- Mantiene M03 sujeto a M02.06 LISTO+A5 y C02-02.M06.06; no implementa endpoints, EF/MySQL, flags, eventos, restauracion, workers ni cambios de empresa.
+- Documento y CHANGELOG por fast-forward/CAS en dev, Scope Lock/procedencia V5 exact SHA y A5 pendiente por otra Task; ninguna autorizacion QA/main/PROD.
+
 ## 2026-11-15 — V5 C02-02.M02.06 contrato de salida shared/dedicated [Javier :00]
 - Consolida cinco contratos M02 con A5 independiente, dieciseis condiciones SAL y diez pares positivos/negativos FUTUROS_NO_EJECUTADOS para placement con aislamiento tenant A/B.
 - Deja M03 bloqueado hasta sus prerequisitos LISTO+A5, pruebas runtime dirigidas y autorizaciones; no hay router, EF/MySQL, eventos, flags, backup ni restore ejecutados.
