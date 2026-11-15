@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C04-02.M02.04 opciones tipadas contractuales y flags [Javier :50]
+- Especifica 18 opciones contractuales inactivas, precedencia restrictiva, doce reglas fail-closed y 12 pares de pruebas FUTURAS, sin registrar valores ejecutables.
+- Preserva tenant A/B, JWT/RBAC, membresía, idempotencia, auditoría y decisiones económicas D01–D08 abiertas; feature flags no autorizan cobros, mora, permisos o promoción.
+- Publicación Markdown única por CAS dev, Scope Lock/V5 exact-SHA, A5 pendiente de Javier distinto y rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C04-02.M02.03 persistencia conceptual y rollback SaaS [Javier :50]
 - Documenta trece objetos propuestos de contratos con ownership EmpresaId, diez restricciones e índices y siete etapas de migración aditiva FUTURA, sin escribir EF/SQL ni datos.
 - Define doce escenarios positivos/negativos de integración futura con MySQL 8.4 efímero, idempotencia y tenant A/B; diferencia ledger técnico actual de las decisiones D01–D08 aún sin aprobar.
