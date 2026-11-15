@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-02.M02.03 persistencia, indices y fixtures de aceptacion de seguridad [Javier :10]
+- Define doce agregados y ocho restricciones de persistencia PROPUESTOS_NO_IMPLEMENTADOS, seguridad tenant A/B JWT/RBAC y control de version CAS.
+- Documenta seis pasos de migracion/rollback FUTUROS y 4 positivos +12 negativos FUTUROS_NO_EJECUTADOS sin tocar MySQL, EF, backups ni QA/PROD.
+- Solo dos Markdown en dev con Scope Lock/V5 exact SHA, A5 independiente pendiente y revert normal; sin migraciones, endpoints ni despacho de eventos.
+
 ## 2026-11-14 — V5 C14-02.M02.02 API y DTO de aceptacion de seguridad [Javier :10]
 - Define doce operaciones y contratos de API PROPUESTOS_NO_IMPLEMENTADOS, envelope DTO V1 conceptual, doce condiciones de error y semantica fail-closed tenant A/B JWT/RBAC.
 - Documenta cuatro positivos y doce negativos FUTUROS_NO_EJECUTADOS, compatibilidad de consumidores y prohibicion de declarar P0/P1 cero, restauracion o pentest sin evidencia.
