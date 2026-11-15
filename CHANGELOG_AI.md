@@ -2636,3 +2636,8 @@
 - Clasifica R01–R12 como riesgos potenciales NO_REPRODUCIDOS de identidad, CAS, DAG, BITACORA, CI, CHANGELOG, A5, monitor y rollback; no los presenta como incidentes observados.
 - Registra S01–S08 NO_VERIFICADOS, D01–D08 PENDIENTES y P01–P08/N01–N08 FUTUROS_NO_EJECUTADOS con fuentes M01.01–03 y brechas G01–G12.
 - Sólo documentación dev y sección CHANGELOG; A0–A4 documentales exact-SHA, A5 independiente posterior, sin cambios JWT/RBAC, DB, schedules, QA/main/PROD o infraestructura.
+
+## 2026-11-14 — C01-01.M03.05 — integración de identidad universal (DEV)
+- Registro DI Scoped de fuente EF de identidad y servicios de aplicación/autorización; no se añaden endpoints, workers, eventos ni migraciones.
+- Pruebas xUnit de resolución y aislamiento de scopes, pertenencia tenant A/B, denegación por permiso ausente y membresía revocada; documentación de límites y rollback.
+- A5 permanece pendiente de revisión independiente; no autoriza QA, main ni producción.

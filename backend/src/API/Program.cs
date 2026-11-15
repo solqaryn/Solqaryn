@@ -77,6 +77,8 @@ builder.Services.AddDbContext<AppDbContext>((serviceProvider, options) =>
         .AddInterceptors(
             serviceProvider.GetRequiredService<DbQueryTimingInterceptor>(),
             serviceProvider.GetRequiredService<SupportReadOnlyCommandInterceptor>()));
+// C01-01.M03.05: integra servicios de identidad sin exponer endpoints nuevos.
+builder.Services.AddIdentidadUniversalIntegration();
 builder.Services.Configure<ObservabilityOptions>(builder.Configuration.GetSection("Observability"));
 builder.Services.AddSingleton<RequestObservability>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
