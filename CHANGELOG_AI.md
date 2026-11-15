@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-03.M02.03 persistencia y fixtures de auditoría de seguridad/tenancy [Javier :40]
+- Define PD01–PD12 modelos conceptuales, IX01–IX08 índices hipotéticos, MF01–MF06 pasos condicionales y FX01–FX12 pares FUTUROS_NO_EJECUTADOS, sin instalar SQL ni migraciones.
+- Traza AppDbContext, doce FK compuestas comerciales, guard de consultas y escrituras, JWT/RBAC y aislamiento tenant A/B; exige MySQL efímero y evidencia antes de M03.
+- Sólo documento y CHANGELOG en dev por fast-forward/CAS, Scope Lock/V5 exact-SHA, A5 independiente pendiente y rollback git revert; sin QA/main/PROD, secretos, workers ni eventos.
+
 ## 2026-11-14 — V5 C14-04.M02.05 eventos conceptuales e idempotencia de puesta en marcha [Javier :20]
 - Especifica EV01–EV14 señales NO_EMITIDAS, CT01–CT12 campos de contrato, ID01–ID12 políticas y PN01–PN10 pares FUTUROS_NO_EJECUTADOS sin instalar dispatcher ni webhooks.
 - Diferencia BITACORA append-only, recalculo reactivo DAG/COLA y las seis Tasks Javier de un runtime de eventos; exige seguridad tenant A/B, JWT/RBAC y límites de retries/cuota.
