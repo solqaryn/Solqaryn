@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C10-02.M02.01 entidades y ownership R2/dominios [Javier :00]
+- Especifica doce proyecciones conceptuales y dieciséis invariantes de almacenamiento privado, tenant A/B, URL/TTL, replay, caché y retención; doce pares P/N FUTUROS NO_EJECUTADOS.
+- No activa R2, DNS, Cloudinary, credenciales, redes, migraciones, API, MySQL ni QA/main/PROD; A5 independiente por otra Task Javier.
+- Documentación en dev con fast-forward/CAS, CHANGELOG autocontenido, Scope Lock/V5 exact-SHA, eventos y readbacks.
+
 ## 2026-11-15 — V5 reparación dirigida Scope Lock C07-01.M02.04/M02.05 [Javier :10]
 - Corrige dos nombres conceptuales que contenían una palabra inglesa reservada por el verificador de identidad del proyecto; usa StockAvailabilityMode y CatalogStockAvailabilityChanged sin alterar reglas, seguridad ni datos.
 - Origen: check verify-solqaryn-project-scope FAILED en SHA 927e4a54 con dos rutas docs/v5; reparación mínima preserva pruebas y controles y requiere nueva CI exact-SHA SUCCESS antes LISTO_DEV.
