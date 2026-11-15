@@ -2616,3 +2616,8 @@
 - Delimita A01–A12 actores/roles de las seis Tasks Javier, GitHub, Drive, CI, revisor A5 y consumidor institucional, sin atribuir nuevas autorizaciones físicas ni cuentas.
 - Define IO01–IO12 entradas/salidas y F01–F10 fronteras con positivos/negativos FUTUROS_NO_EJECUTADOS: claim CAS, DAG, BITACORA append-only, telemetría local vs runtime nativo, CI exact-SHA y A5 diferenciado.
 - Sólo documentación dev y CHANGELOG; A0–A4 documentales y checks Scope Lock/V5 SHA exacto, A5 independiente posterior; sin runtime nuevo, QA/main/PROD ni programación alterada.
+
+## 2026-11-14 — V5 C15-05.M01.03: fuentes y brechas de auditoría operativa [Javier :30]
+- Verifica ocho fuentes Git originales y SHA de AGENTS, Scope Lock, autoridad/status V5, Skill, arquitectura, procedencia CHANGELOG y contexto; la lectura no sustituye pruebas de automatización nativa.
+- Registra doce brechas G01–G12 y ocho pares P01–P08/N01–N08 FUTUROS_NO_EJECUTADOS para CAS, DAG, BITACORA, CI SHA, A5, telemetría y rollback; sin afirmar ausencia de defectos.
+- Sólo Markdown y CHANGELOG en dev, A0–A4 documentales y Scope Lock/V5 exact-SHA; A5 independiente posterior, sin Tasks nuevas, scopes externos, QA/main/PROD o modificaciones de runtime.
