@@ -1,3 +1,13 @@
+## 2026-11-15 — V5 C13-04.M02.01 entidades y ownership de experiencia visual [Javier :50]
+- Define catorce entidades lógicas UI/tenant/foco/estado y catorce invariantes no-regresión, con ocho pares P/N FUTUROS_NO_EJECUTADOS.
+- Conserva JWT/RBAC y tenant A/B desde backend, foco/responsive/accesibilidad como pruebas por ejecutar; ningún cambio Angular, CSS, API, tokens operativos o DB.
+- Scope Lock STRICT, dos Markdown y A0–A4 documentales exact SHA con A5 independiente; no QA/main/PROD.
+
+## 2026-11-15 — V5 C13-04.M02.02 contratos futuros de DTO y errores visuales [Javier :50]
+- Propone doce rutas/DTO y doce errores con doce validaciones de autoridad backend y compatibilidad aditiva; ningún endpoint, controller o guard se modifica.
+- Define ocho pares P/N de tenant A/B, revocación, estado accesible y privacidad de evidencia, todos FUTUROS_NO_EJECUTADOS.
+- Dev exclusivo, Scope Lock/V5 exact-SHA, A0–A4 y A5 independiente; sin E2E, cambios de UX ejecutables, QA/main/PROD.
+
 ## 2026-11-15 — V5 C14-03.M01.06 bloqueos y reversión de promoción controlada [Javier :50]
 - Documenta dieciséis barreras de salida, diez rutas de rollback y doce pares P/N futuros para separar evidencias DEV, permiso QA y eventual autorización PROD; no efectúa ningún despliegue.
 - Verifica cinco predecesores LISTO+A5 independientes y blobs de fuentes, conserva riesgos y decisiones abiertas, exige SHA, JWT/RBAC/tenant A/B, CI causal y reversión probada para fases futuras.
