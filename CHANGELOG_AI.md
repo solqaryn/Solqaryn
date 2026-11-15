@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C05-03.M01.06 bloqueos y rollback documental del builder [Javier :10]
+- Define 16 bloqueos BL01–BL16, diez pasos de rollback REV01–REV10, doce gates LG01–LG12 y diez pares de pruebas FUTUROS_NO_EJECUTADOS para catálogo tipado y aislamiento A/B.
+- Conserva D01–D08 PENDIENTES y las fronteras JWT/RBAC, SSRF/XSS, CAS, versiones, permisos, accesibilidad y secretos; no implementa Angular, API, MySQL, editor, runtime ni publicación.
+- Entrega individual V16/V15 R0 bajo Scope Lock STRICT, A0–A4 documentales y checks exact SHA; A5 solo otro Javier, rollback git revert; sin QA/main/PROD.
+
 ## 2026-11-15 — V16 C06-01.M01.06 bloqueos, rollback y liberacion documental de landing SaaS [Javier :30]
 - Publica 16 barreras BL01-BL16, ocho procedimientos REV01-REV08 y ocho pares T01-T08 FUTUROS_NO_EJECUTADOS para rutas, planes, demo, contacto, legal, SEO, acceso tenant y accesibilidad.
 - Preserva decisiones D01-D08 PENDIENTES, identidad JWT/RBAC y aislamiento A/B; no crea landing, API, integracion MySQL, SMTP, datos, servicios, despliegue ni permisos.
