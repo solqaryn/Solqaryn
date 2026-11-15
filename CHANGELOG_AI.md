@@ -1,3 +1,7 @@
+## 2026-11-15 — V5 C04-04.M02.04 políticas tipadas y flags seguros de cobros [Javier :20]
+- Define dieciséis opciones tipadas conceptuales, dieciséis invariantes de tenant/JWT/RBAC/PSP, HMAC/idempotencia y diez pares P/N futuros para enlaces de pago y conciliación.
+- Flags de cobro deshabilitados por defecto, sin alterar código, proveedores, dinero, secretos, datos ni eventos; decisiones comerciales D01–D10 siguen abiertas, A5 de otra Task pendiente.
+
 ## 2026-11-15 — V5 C04-04.M02.01 entidades, ownership e invariantes de cobros [Javier :20]
 - Define diez entidades conceptuales y veinte invariantes tenant/RBAC, HMAC anti-replay, idempotencia contable y propiedad de enlaces/pagos; diez pares de oráculos P/N futuros no ejecutados.
 - Contrato documental sin proveedores, endpoints, webhooks, transacciones, migrations o cambios financieros; decisiones comerciales D01-D10 abiertas y A5 ajena pendiente. Sin QA/main/PROD.
