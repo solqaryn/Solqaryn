@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C06-03.M02.01 entidades editoriales y mapas [Javier :40]
+- Define 15 entidades conceptuales, 16 invariantes de aislamiento/ownership y 12 pares futuros positivos/negativos para sitios editoriales, contacto, horarios, sucursales, moderación y mapas opcionales.
+- Conserva los gates G01–G16 y RB01–RB08 de M01.06: host/proxy no confieren permiso; proveedor de mapas opt-in, sin geocodificación, CDN/DNS, SQL, API, UI ni credenciales ejecutadas.
+- Entrega documental A0–A4 con Scope Lock/V5 exact-SHA y A5 independiente pendiente; runtime no causal NO_APLICA, sin QA/main/PROD. Rollback git revert normal.
+
 ## 2026-11-15 — V5 C06-02.M02.06 handoff documental de landing [Javier :40]
 - Consolida cinco contratos M02 con evidencia A5 independiente, 16 gates futuros G01–G16, ocho reversas RB01–RB08 y seis fronteras de implementación Domain/Application/Infrastructure/API/UI/Operación.
 - Sin landing instalada, tablas MySQL, migraciones, host binding, eventos, workers, dispatcher, webhooks, DNS/TLS ni servicios; M03 exige código real y CI dirigida.
