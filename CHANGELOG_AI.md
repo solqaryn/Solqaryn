@@ -1,3 +1,8 @@
+## 2026-11-15 — Corrección de seguridad P2 C01-04.M03.04: membresía y permiso explícitos
+- En el adaptador de lectura aislado, una lectura de origen backend no implica autorización: se exigen `MembershipActive` y `ExplicitPermissionGranted` verificadas antes de consultar expediente; sus valores reales llegan al ServerAuthority en lugar de asumir dos `true`.
+- xUnit negativo para lectura confiable con membresía inactiva, permiso no concedido o ambas condiciones denegadas; conservados aislamiento tenant A/B, consulta read-only y las negativas existentes.
+- Sin API/DI/MySQL/Angular ni cambios de datos productivos. No falsear pruebas CI ni A5: revisión independiente A5_FAIL sigue pendiente de repetición sobre corrección con evidencia exact-SHA; rollback git revert.
+
 ## 2026-11-15 — V17 C15-05.M04.05 reparación CI Chromium de denegación [Javier :00]
 - Corrige aserción demasiado específica de alert global: el guard redirige al usuario sin privilegio antes de montar la vista; ahora exige ausencia del encabezado y controles privados, preservando el caso negativo fail-closed.
 - En SHA 79e2d024, 31/32 tests browser aprobaron, uno falló por strict mode ante dos alertas legítimas; ese FAIL no se considera PASS. La corrección requiere nuevo Chromium SUCCESS exact-SHA, Scope Lock/V5 y readback.

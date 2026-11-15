@@ -41,7 +41,7 @@ public sealed class V5UniversalCaseFileIsolatedReadAdapterTests
     }
 
     private static Adapter.ActorSnapshot ValidActor() =>
-        new(11, 100, 5, Sha, true, true, true, false);
+        new(11, 100, 5, Sha, true, true, true, false, true, true);
 
     private static Adapter.CaseSnapshot ValidCase() =>
         new(41, 100, 5, 3, Sha, true, false, false, false, false, false);
@@ -58,6 +58,8 @@ public sealed class V5UniversalCaseFileIsolatedReadAdapterTests
         Assert.Equal(41, cases.SeenCase);
         Assert.Equal(11, evidence.VerifiedActorId);
         Assert.Equal(100, evidence.VerifiedTenantId);
+        Assert.True(evidence.Authority!.MembershipActive);
+        Assert.True(evidence.Authority.ExplicitPermissionCurrent);
         var gate = new V5UniversalCaseFileAuthorizationGate(bridge);
         var request = new V5UniversalCaseFileAuthorizationGate.Request(
             41, Rules.CaseAction.ReadTimeline, Sha, null,
@@ -100,6 +102,32 @@ public sealed class V5UniversalCaseFileIsolatedReadAdapterTests
         };
         var cases = new Cases();
         Assert.Null(await new Adapter(actors, cases).ReadAsync(41, CancellationToken.None));
+        Assert.Equal(0, cases.Calls);
+    }
+
+    [Theory]
+    [InlineData(false, true)]
+    [InlineData(true, false)]
+    [InlineData(false, false)]
+    public async Task TrustedReadWithoutActiveMembershipOrExplicitGrantFailsClosed(
+        bool membershipActive, bool explicitPermissionGranted)
+    {
+        // A successfully read server snapshot is not an authorization.
+        var actors = new Actors
+        {
+            Snapshot = ValidActor() with
+            {
+                MembershipReadFromTrustedBackend = true,
+                PermissionReadFromTrustedBackend = true,
+                PermissionRevoked = false,
+                MembershipActive = membershipActive,
+                ExplicitPermissionGranted = explicitPermissionGranted
+            }
+        };
+        var cases = new Cases();
+        var bridge = new Adapter(actors, cases);
+        Assert.Null(await bridge.ReadAsync(41, CancellationToken.None));
+        Assert.Equal(1, actors.Calls);
         Assert.Equal(0, cases.Calls);
     }
 

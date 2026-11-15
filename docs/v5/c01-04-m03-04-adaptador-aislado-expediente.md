@@ -20,3 +20,9 @@ La suite xUnit `backend/tests/Solqaryn.Tests/Infrastructure/V5UniversalCaseFileI
 - **A5:** requiere Task Javier distinta del autor DEV05; LISTO_DEV no autoriza QA/main/PROD.
 
 **Rollback:** `git revert` ordinario del commit individual. Al no registrar el adaptador en DI ni modificar esquema o datos, la reversión no necesita operaciones de bases; revalidar CI tras revertir. Ninguna futura implementación persistente queda autorizada ni simulada por este documento.
+
+## Corrección P2 de revisión A5 — 2026-11-15
+
+La revisión independiente A5_FAIL identificó que las banderas `MembershipReadFromTrustedBackend` y `PermissionReadFromTrustedBackend` establecían únicamente procedencia, no el resultado afirmativo de la autorización. `ActorSnapshot` ahora exige `MembershipActive` y `ExplicitPermissionGranted` como booleanos explícitos sin valores por defecto. Antes de consultar expedientes, `ReadAsync` rechaza pertenencia inactiva o permiso denegado aunque los lectores de servidor hayan respondido correctamente; `ServerAuthority` recibe las decisiones verificadas y no un `true` fabricado. Se añaden pruebas xUnit con tres combinaciones negativas, además de aserciones positivas de pertenencia/permiso en el preflight.
+
+No se incorporan endpoints, registros DI, MySQL, migraciones, acceso a archivos ni cambios de JWT. La corrección no convierte el adaptador aislado en permiso de lectura/escritura. Los controles .NET 10, xUnit, seguridad multiempresa, autorización, Scope Lock y procedencia V5 deben aprobarse en el SHA causal. El A5_FAIL anterior **permanece vigente** hasta nueva revisión independiente por una Task Javier diferente de DEV 05; no desbloquear el DAG ni afirmar cierre por la sola publicación. Reversión mediante git revert ordinario, sin force-push ni tocar QA/main/PROD.
