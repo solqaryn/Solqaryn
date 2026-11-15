@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C05-01.M02.06 dependencias y salida de design system [Javier :30]
+- Define dieciseis puertas de M03-M06, ocho procedimientos de rollback y ocho pares P/N FUTUROS_NO_EJECUTADOS para tokens, temas, accesibilidad, API, MySQL, seguridad, tenant A/B y version CAS.
+- Integra solo documentos M02.01-.05 con A5 independientes y blobs auditados; no implementa Angular, CSS, .NET, EF, MySQL, eventos, UI, secretos, migracion ni deploy.
+- V15 R0 y SINGLE_ACTIVE_DEV; Scope Lock STRICT/procedencia V5 exact-SHA antes de LISTO, A5 por otra Task Javier; rollback git revert normal; no QA/main/PROD.
+
 ## 2026-11-15 — V16 C05-03.M01.06 bloqueos y rollback documental del builder [Javier :10]
 - Define 16 bloqueos BL01–BL16, diez pasos de rollback REV01–REV10, doce gates LG01–LG12 y diez pares de pruebas FUTUROS_NO_EJECUTADOS para catálogo tipado y aislamiento A/B.
 - Conserva D01–D08 PENDIENTES y las fronteras JWT/RBAC, SSRF/XSS, CAS, versiones, permisos, accesibilidad y secretos; no implementa Angular, API, MySQL, editor, runtime ni publicación.
