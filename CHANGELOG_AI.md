@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C14-03.M02.03 contrato de persistencia para promoción controlada [Javier :40]
+- Define diez entidades conceptuales, ocho índices propuestos, seis gates de migración futura y diez fixtures sintéticos para releases con SHA y digest trazables; no crea tablas ni migraciones.
+- Mantiene JWT/RBAC/tenant A/B, Scope Lock y autorización independiente por ambiente; QA/main/PROD, MySQL real, eventos y webhooks permanecen sin cambios.
+- Entrega documental bajo A0-A4 y CI de gobernanza exact-SHA; casos MySQL y seguridad runtime son FUTUROS_NO_EJECUTADOS, A5 deberá ser de otra Task Javier.
+
 ## 2026-11-15 — V5 reparación técnica independiente de C05-02.M01.02, conteo de tokens de marca [Javier :30]
 - Corrige tres referencias documentales de 16 a 15 campos de color, asignaciones CAMPOS_TEMA y oráculo P02; contraste de blob real frontend/Angular y Domain TemaVisual con exactamente quince colores.
 - Mantiene íntegros los permisos, arquitectura, rutas, diseño y autoría histórica de PRIMARY DEV 01; sólo cambia Markdown, sin código, MySQL, IAM, UI runtime, QA/main/PROD.
