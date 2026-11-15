@@ -56,7 +56,7 @@ Los rangos numéricos son **propuestas de diseño**, no límites efectivos del p
 | F02 `AnonymousCart` | `OFF` | ownership de sesión, expiración y cuotas seguras |
 | F03 `CheckoutQuote` | `OFF` | backend recalcula stock/precio/IVA, sin efecto durable |
 | F04 `OrderSubmit` | `OFF` | transacción, idempotencia, CAS y prueba negativa |
-| F05 `InventoryReservation` | `OFF` | MySQL 8.4 efímero, rollback y concurrencia sin oversell |
+| F05 `StockReservation` | `OFF` | MySQL 8.4 efímero, rollback y concurrencia sin oversell |
 | F06 `PaymentRedirect` | `OFF` | PSP aprobado, consentimiento, importe autoritativo |
 | F07 `PaymentCallback` | `OFF` | firma/TTL/nonce/replay, tenant e idempotencia verificados |
 | F08 `OrderConfirmation` | `OFF` | evidencia server-side de orden/estado, nunca redirect solo |

@@ -1,3 +1,7 @@
+## 2026-11-15 — V17 CI_REPAIR C07-02.M02.04 identificador de flag compatible con Scope Lock [Javier :40]
+- Corrige únicamente la nomenclatura propuesta de F05 a `StockReservation` para respetar el verificador de identidad del repositorio; no altera la semántica, defaults `OFF`, autorización, tenant, PSP, datos o runtime.
+- Fallo Scope Lock reproducido en el SHA inicial 6b2c7a5c; reparación dirigida y reevaluación de CI por nuevo SHA, sin deshabilitar reglas, verificadores ni pruebas; A5 sigue independiente.
+
 ## 2026-11-15 — V17 C09-01.M02.04 CRM universal: configuración tipada y flags conceptuales [Javier :30]
 - Define 16 opciones tipadas futuras O01–O16 con defaults fail-closed, 12 reglas R01–R12 de precedencia global/tenant/sucursal y 12 pares P/N FUTUROS_NO_EJECUTADOS; no crea flags ejecutables, endpoints, migraciones ni proveedores.
 - Preserva JWT/RBAC y tenant A/B, Cliente.EmpresaId=NULL legado, consentimiento/opt-out, idempotencia, revocación, CAS, PII, límites y reversión sin habilitar contactos/export por configuración.
