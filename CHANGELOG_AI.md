@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-04.M01.06 bloqueos y salida documental UX/accesibilidad/rendimiento [Javier :00]
+- Fija B01–B12 para teclado, foco, zoom, formularios, motion, temas, tenancy, estados de red, CI SHA y A5; no afirma WCAG ni métricas ejecutadas.
+- Valida M01.01–05 LISTO y A5 independiente por otra Task; el avance a M02 exige nuevo preflight sin autorizar migraciones, QA/main/PROD ni endpoints.
+- Dos Markdown en dev y CHANGELOG autocontenido, rollback git revert y BITACORA append-only; A5 de esta nueva unidad pendiente de Task distinta.
+
 ## 2026-11-14 — V5 C15-03.M01.06 bloqueos y liberación documental de auditoría de seguridad/tenancy [Javier :00]
 - Fija B01–B12 sobre JWT/RBAC, tenant A/B, sucursales, EF, FK, hosts, soporte, medios, CI exact-SHA y A5; pruebas negativas de runtime y cero P0/P1 permanecen NO_CERTIFICADOS.
 - Contrasta M01.01–05 LISTO/A5 independiente y define rollback fail-closed; M02 exige nuevo preflight y jamás se autorizan despliegues o migraciones por contrato.
