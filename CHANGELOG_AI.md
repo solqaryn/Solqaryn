@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C12-02.M02.06 contrato salida build CDN headers cache [Javier :10]
+- Define G01–G16 de build tipado, host/proxy, CSP/CORS/TLS, tenant A/B, JWT/RBAC, cache privado y CI; RB01–RB08 de reversión y T01–T12 futuros positivos/negativos (0/12 ejecutados).
+- TTFB, cache hit, CDN, DNS, costo y smoke live NO_MEDIDO/NO_VERIFICADO; ninguna configuración de DNS, proveedor, CDN, Vercel/Render o producción cambiada.
+- Solo R0 Markdown y sección autocontenida CHANGELOG en dev por FF/CAS; A0–A4 Scope Lock/V5 exact-SHA, A5 de otra Task Javier; sin QA/main/PROD.
+
 ## 2026-11-15 — V16 C10-03.M02.06 salida documental condicionada de archivos [Javier :10]
 - Define G01–G16 de inventario auténtico, privacidad, tenant A/B, retención, MIME, idempotencia, MySQL efímero y A5; RB01–RB08 de reversión y T01–T12 futuros positivos/negativos, 0 ejecutados.
 - Histórico NO_VERIFICADO no significa cero; si cero verificado omitir pipelines; si positivo exigir manifiesto/conciliación; inconsistente bloquea cutover. Sin Cloudinary/R2/DB/API/proveedor real.
