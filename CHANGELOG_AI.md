@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C13-03.M02.01 modelo conceptual de rendimiento y ligereza [Javier :20]
+- Define 14 conceptos E01–E14 de evidencia, ownership, rutas, medios, caché, datos y rollback, 12 relaciones REL01–REL12 y 18 invariantes INV01–INV18; no crea entidades EF ni cambia frontend/backend.
+- Diez oráculos T01–T10 positivos/negativos FUTUROS_NO_EJECUTADOS para métricas, móvil, navegación, caché, tenant A/B y accesibilidad. LCP/INP/CLS siguen NO_MEDIDO; conflicto de bundle 650–750 KB frente a 1–2 MiB permanece SIN_RESOLVER.
+- Sólo dos Markdown y publicación fast-forward/CAS, A0–A4 documentales sujetos a checks Scope Lock/V5 exact-SHA; A5 independiente pendiente; sin pruebas runtime, producción, datos ni secretos.
+
 ## 2026-11-15 — V16 C08-01.M02.02 API DTO y errores seguros de citas/agenda [Javier :10]
 - Define contratos R0 OP01–OP12, DTO01–DTO12, ERR01–ERR14 y VAL01–VAL18 de cita, recursos, personal, disponibilidad y cancelación con UTC/IANA/DST, A/B, JWT/RBAC y control de concurrencia.
 - Doce pares T01–T12 FUTUROS_NO_EJECUTADOS; no endpoint, API real, MySQL, EF, UI, Playwright, evento, migración ni modificación de reservas ERP; métricas runtime NO_MEDIDO.
