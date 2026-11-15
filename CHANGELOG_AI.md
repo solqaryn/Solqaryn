@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C05-02.M02.06 contrato de salida de branding y presets [Javier :10]
+- Fija los prerrequisitos LISTO + A5 de M01/M02 y C01-03.M01.06, con evidencia de reparacion de M01.02 y preservacion del A5_FAIL historico; no fuerza DAG.
+- Define 16 gates G01-G16 y seis positivos/doce negativos FUTUROS_NO_EJECUTADOS para tenancy A/B, RBAC, CAS, seguridad visual, idempotencia, accesibilidad y auditoria.
+- Solo documento en dev; sin presets runtime, endpoints, SQL, migraciones, eventos, workers, webhooks ni QA/main/PROD; Scope Lock y V5 exact-SHA, A5 independiente y rollback por git revert.
+
 ## 2026-11-15 — V5 C05-02.M02.05 contratos futuros de eventos branding [Javier :50]
 - Define diez senales S01-S10 NO EMITIDAS, 16 campos F01-F16 y catorce invariantes I01-I14 de correlacion, CAS, idempotencia, revocacion y tenant A/B.
 - Especifica cuatro escenarios positivos y diez negativos FUTUROS_NO_EJECUTADOS sin instalar eventos, dispatcher, worker, webhook ni Tasks nuevas.
