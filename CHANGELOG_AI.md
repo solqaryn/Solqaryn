@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C01-04.M02.01 modelo y ownership de expediente universal [Javier :30]
+- Formaliza EX01–EX16 agregados conceptuales, IN01–IN18 invariantes y EV01–EV12 pares de escenarios FUTUROS_NO_EJECUTADOS de timeline, decisiones, observaciones, adjuntos y versiones.
+- Preserva autoridad backend JWT/RBAC, tenant A/B, permiso/sucursal/ownership, retencion y procedencia real; nunca atribuye API, SQL, storage o UI implementados.
+- Sólo documento V5 + bloque autocontenido CHANGELOG en dev con CAS expected SHA, Scope Lock/V5 exact-SHA, A5 independiente pendiente, rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-14 — V5 C01-01.M03.06 auditoria segura Application de identidad [Javier :40]
 - Incorpora adaptador .NET 10 sobre la guardia vigente, EventId fijo, correlacion obligatoria y codigos de decision sin PII, JWT, secretos ni excepciones.
 - Incluye ocho pruebas xUnit positivas/negativas tenant A/B, revocacion, permisos, correlacion, errores y cancelacion; no amplia autoridad RBAC ni altera fuente de membresias.
