@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C12-04.M02.05 contrato conceptual de senales MySQL cutover [Javier :20]
+- Define dieciseis campos de sobre, diez senales FUTURAS_NO_EMITIDAS, dieciseis invariantes de tenancy/idempotencia/CAS y diez pares P/N de ensayo y rollback NO EJECUTADOS.
+- NO IMPLEMENTAR EVENTOS TODAVIA: no se activa dispatcher, worker, webhook, Task, API, EF/MySQL, backup, restore, migracion o DNS; Hostinger/Cloudflare no activados.
+- Dos Markdown solo en dev, Scope Lock/V5 exact-SHA, A0-A4 documentales, A5 independiente pendiente, sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C12-04.M02.04 opciones seguras de cutover MySQL privado [Javier :10]
 - Define catorce opciones tipadas, catorce validaciones y diez pares P/N futuros de integridad, autoridad, tenant A/B, CAS, restore efímero y separacion de aprobaciones.
 - Mantiene flags de cutover, escrituras, restore y producción apagadas, sin modificar configuración real, DNS, credenciales, Aiven/Render/MySQL ni ejecutar migraciones o pruebas inexistentes.
