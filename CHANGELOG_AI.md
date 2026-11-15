@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C11-04.M02.02 contratos de API DTO y errores observabilidad [Javier :30]
+- Contrato R0 con OP01–OP08, DTO01–DTO08, ERR01–ERR12, VAL01–VAL16 y T01–T10 FUTUROS_NO_EJECUTADOS para señales, correlación, SLI/SLO, roles y diagnósticos sin PII.
+- Ningún endpoint .NET, token, rol, exporter, collector, dashboard, alerta, MySQL, Angular, proveedor, webhook o Tasks nuevos; 0/10 tests runtime y SLO/p95/costos NO_MEDIDO.
+- Un commit serial dev de dos Markdown, Scope Lock/V5 exact SHA, BITACORA/readback; A5 independiente Javier requerida antes de gate técnico, sin QA/main/PROD.
+
 ## 2026-11-15 — V16 C08-01.M02.04 configuración y flags seguros de agenda [Javier :40]
 - Contrato documental R0 de OPT01–OPT18, FL01–FL12, VAL01–VAL16 y precedencia restrictiva tenant/sucursal/recurso con defaults OFF fail-closed, JWT/RBAC/tenant A/B, versiones CAS, DST y privacidad.
 - Doce pares T01–T12 FUTUROS_NO_EJECUTADOS (0/12); sin IOptions, configuración real, MySQL/EF, API, Angular, calendario, webhook o worker; 64 reservas concurrentes y métricas NO_MEDIDO.
