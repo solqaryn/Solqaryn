@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C11-04.M03.02 prevalidación Application de observabilidad privada [Javier :50]
+- Implementa `C1104ObservabilityApplicationService` e interfaz de lectura confiable para agregados privados, fuente SHA, JWT/RBAC/membresía actual, propiedad tenant A/B y fence de auditoría; nunca concede acceso, exportación, mutación ni certifica SLO/costo.
+- Añade 13 casos xUnit con positivos, rechazos antes de I/O, comparación ordinal tenant/SHA, revocación, etiqueta prohibida, límites UTC/conteos/NO_MEDIDO y cancelación; backend Release y seguridad/autorización CI obligatorias en SHA causal, sin atribuir PASS hasta que terminen.
+- R2 aislado Domain->Application: sin endpoint, MySQL/EF, Angular/Playwright, proveedor o datos reales. Scope Lock STRICT, V5/procedencia, candado V17, A0-A4 y A5 independiente; rollback git revert normal, sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C05-01.M03.01 reparación comparación ordinal de tokens R2 [Javier :30]
 - Repara A5_FAIL P2: el `IReadOnlySet` de claves podía usar comparador `OrdinalIgnoreCase` y aceptar una clave no canónica del catálogo. Exige coincidencia `StringComparison.Ordinal` sin depender del comparador del set.
 - Agrega xUnit negativo para catálogo `PRIMARY-COLOR` con solicitud `primary-color` y positivo para catálogo exacto, aunque ambos sets utilicen comparación insensible; ningún veredicto otorga JWT/RBAC, mutación de tema ni permisos reales.
