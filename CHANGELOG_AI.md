@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C14-01.M03.02 caso Application de aceptación funcional y seguridad [.NET 10 Javier :40]
+- Implementa caso real Application que compone reglas Domain para solicitudes de aceptación con tenant, ownership, rol vigente, acción/caso allowlisted, SHA y presupuesto finito de observaciones.
+- Añade nueve xUnit positivos/negativos de revocación, tenant A/B, casos y acciones no autorizados, ausencia de catálogo, lote nulo/excesivo, privacidad, rollback, idempotencia y efectos productivos.
+- No configura DI/API, backend IAM live, pagos, EF/MySQL, UI, secrets ni QA/main/PROD; exige CI backend/seguridad, Scope Lock, procedencia V5 exact SHA y A5 independiente antes de declarar cierre.
+
 ## 2026-11-15 — V5 C13-04.M03.02 caso Application para consistencia visual multiempresa [.NET 10 Javier :40]
 - Implementa servicio real de Application sobre las reglas Domain C13-04.M03.01, con validación server-side de tenant, actor, permisos, catálogo de pantallas, SHA, lote máximo y rechazo de observaciones inconsistentes.
 - Agrega nueve xUnit positivos/negativos con tenant A/B, revocación, catálogo vacío, límites de capacidad, superficie forjada, teclado, contraste, privacidad y SHA; solo prepara revisión externa y A5 independiente.
