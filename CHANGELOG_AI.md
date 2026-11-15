@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C12-03.M02.06 cierre documental backend/workers [Javier :50]
+- Consolidación del contrato M02 de backend/workers: M01.01–06, M02.01–05 y C10-04/C11-03 terminales con A5; 16 gates de seguridad/tenancy/CAS/rollback y 10 escenarios P/N FUTUROS_NO_EJECUTADOS.
+- Verifica fronteras reales API ASP.NET Core 10, EF/MySQL y OutboxRetryProcessor existente sin crear procesos, endpoints, eventos, dispatchers, webhooks, migraciones, conectores entre Tasks ni infraestructura.
+- Entrega exclusivamente documental; A0–A4, Scope Lock y V5 exact-SHA, A5 por Task Javier distinta de DEV06 antes de sucesoras, sin QA/main/PROD y git revert normal.
+
 ## 2026-11-15 — V5 C12-03.M02.05 contrato inerte API/worker eventos [Javier :40]
 - Fija 12 campos conceptuales, 16 invariantes A/B/CAS/identidad servicio, 10 políticas de cuota, 10 señales NO_EMITIDAS y 10 pares P/N FUTUROS_NO_EJECUTADOS para la separación API/worker.
 - NO IMPLEMENTAR EVENTOS TODAVÍA: no crea bus, relays, scheduler, trabajador, webhook, llamada entre Tasks, SQL/EF, migración, API, proveedor externo ni proceso en ejecución; ninguna autoridad de QA/main/PROD.
