@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-02.M02.05 eventos, idempotencia y correlacion de aceptacion seguridad [Javier :30]
+- Define EV01–EV12 eventos conceptuales, ID01–ID10 contratos de idempotencia, LM01–LM12 limites, y CA01–CA12 positivos/negativos FUTUROS_NO_EJECUTADOS.
+- Preserva JWT/RBAC/tenant A/B, CI exact-SHA, A5 independiente, owner exclusivo y BITACORA append-only; distingue autoinforme de run nativo y prohíbe afirmar CAS distribuido con Sheets sin primitiva real.
+- Solo dos Markdown documentales en dev con Scope Lock/V5 exact-SHA, rollback git revert y A5 ajeno; sin eventos runtime, worker, webhook, SQL, QA/main/PROD.
+
 ## 2026-11-14 — V5 C14-02.M02.04 configuracion tipada y flags de aceptacion de seguridad [Javier :30]
 - Define CFG01–CFG16 claves propuestas no implementadas, limites por ambito y precedencia fail-closed para JWT/RBAC/tenant A/B, scope, host, medios, CI y A5.
 - Documenta VAL01–VAL12 positivos/negativos FUTUROS_NO_EJECUTADOS y distingue documento de pentest o certificacion P0/P1; sin alterar configuracion, servicios, eventos, QA/main/PROD.
