@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-04.M02.03 persistencia, índices, migraciones y fixtures UX [Javier :20]
+- Define PD01–PD12 de evidencia mínima, IX01–IX06 de índices condicionales y FX01–FX12 de pruebas sintéticas FUTURAS_NO_EJECUTADAS; ningún esquema, tabla, índice o migración real es alterado.
+- Contrasta AppDbContext, guards de tenant, relaciones físicas compuestas y M01/M02 documentales; preserva JWT/RBAC, separación A/B, privacidad y fail-closed.
+- Changeset exclusivamente documental en dev, Scope Lock y procedencia V5 exact-SHA obligatorios, readback institucional y A5 pendiente de otra Task Javier; rollback git revert y sin QA/main/PROD.
+
 ## 2026-11-14 — V5 C15-04.M02.02 contrato API/DTO, errores y compatibilidad UX [Javier :10]
 - Modela OP01–OP08 y contratos Audit*V1 como propuesta NO_IMPLEMENTADA, ERR01–ERR10 y matriz de compatibilidad con DashboardController, authGuard y permisoGuard existentes.
 - Preserva backend como autoridad JWT/RBAC/tenant, evita exponer PII y separa resultados NO_EJECUTADOS de PASS; no añade endpoints, EF, migraciones, datos o eventos.
