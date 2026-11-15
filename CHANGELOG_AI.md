@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C11-03.M02.01 entidades y ownership conceptual outbox [Javier :40]
+- Define 14 elementos conceptuales, 16 invariantes tenant-bound/idempotencia/CAS/UTC/privacidad y 12 pares P/N FUTUROS_NO_EJECUTADOS para C11-03; verifica cinco blobs de código y documentos del contrato previo.
+- Conserva los contratos outbox existentes y el A5 independiente de M01.06; no crea tablas, migraciones, workers, webhooks, relays, dispatcher, eventos entre Tasks, endpoints, proveedores ni cambios de runtime.
+- Solo documento V5 y CHANGELOG en dev, Scope Lock/validación de procedencia exact-SHA, A0–A4 documental, A5 por otra Task Javier y rollback por git revert normal; nunca QA/main/PROD.
+
 ## 2026-11-15 — V5 C11-02.M01.06 gates, rollback y salida de API modular [Javier :30]
 - Cierra contrato documental terminal de M01 con G01-G16, seis escenarios positivos y diez negativos FUTUROS_NO_EJECUTADOS, ocho pasos de rollback normal, autorizacion backend JWT/RBAC/tenant A/B y compatibilidad de API.
 - Delimita fuentes M01.01-.05 ya LISTO con revisiones A5 independientes y C01-03.M01.06; no asume que el documento ejecuta API, MySQL, migraciones, workflows, eventos ni QA/main/PROD.
