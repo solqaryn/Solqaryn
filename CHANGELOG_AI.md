@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C03-03.M02.05 contrato inerte de eventos e idempotencia de auditoria [Javier :10]
+- Documenta 12 eventos futuros, 16 campos de sobre saneado, diez invariantes de retries y 12 pares positivos/negativos FUTUROS_NO_EJECUTADOS para auditoría de seguridad por tenant.
+- Separa decision JWT/RBAC backend, correlacion, identidad del efecto e idempotencia; eventos historicos no conceden grants, no exponen PII/JWT y auditoría strict debe fallar cerrado.
+- NO IMPLEMENTAR EVENTOS TODAVÍA: solo documento y sección CHANGELOG autocontenida; sin cola, worker, dispatcher, webhook, migración ni QA/main/PROD, con A0-A4 documental, ScopeLock/V5 exact SHA y A5 independiente.
+
 ## 2026-11-15 — V5 C03-03.M02.03 persistencia, indices y fixtures conceptuales de auditoría [Javier :10]
 - Diseña 12 agregados/ownership de auditoría, ocho índices tenant-bound propuestos, estrategia de migración/rollback FUTURA_NO_EJECUTADA y 10 pares de oráculos P/N sintéticos para MySQL 8.4.
 - Preserva auditoría estricta frente a best-effort, separación empresa A/B y plataforma, política de retención, minimización y protección de JWT/PII; no afirma filtrar datos o EXPLAIN verificados en runtime.
