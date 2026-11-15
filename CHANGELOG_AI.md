@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C13-02.M02.01 modelo conceptual de accesibilidad [Javier :50]
+- Define 16 entidades conceptuales, 20 invariantes de ownership/tenant A-B/teclado/foco/contraste/privacidad y 12 pares de escenarios FUTUROS_NO_EJECUTADOS para contrato documental M02 de accesibilidad; no modifica UI/API/DB.
+- Conserva autoridad WCAG NO_CERTIFICADA, tests Playwright/MySQL/JWT NO_APLICA al diff R0, referencias a M01.01–06 y A5 independiente previo de C13-02.M01.06; cada sucesora requiere gates dinámicos reales.
+- Exclusividad V17 candado SQV17_C13_02_M02_01 fila 1916; un alcance, SHA causal y Scope Lock/V5 pendientes de comprobación antes de LISTO_DEV; A5 propia a Task Javier distinta. Rollback git revert normal, sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C09-01.M02.06 contrato terminal M02 de CRM universal [Javier :40]
 - Contrato de salida R0 documental con ocho predecesores/grupos A5, 16 gates, 12 pares P/N FUTUROS_NO_EJECUTADOS y ocho reversas para CRM multiempresa; sin implementar API, bases, migraciones, campañas ni flags ejecutables.
 - Tenant A/B, JWT/RBAC/revocación, Cliente.EmpresaId=NULL legado, consentimiento/PII, CAS/idempotencia, consultas y MySQL efímero quedan como exigencias técnicas futuras con pruebas reales; ninguna aprobación M03/QA/main/PROD por inferencia.
