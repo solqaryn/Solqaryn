@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C00-04.M04.02 estados y revalidación Angular [Javier :20]
+- Implementa cinco estados visibles accesibles para la consulta de gobierno, con sesión validada por servidor, vacío institucional honesto y pantalla fail-closed ante 401/403 o errores de red.
+- Revalidación single-flight sin doble petición, sin filtración de payload y sin conceder permisos; agrega cinco tests Vitest positivos/negativos y actualiza la aserción anterior de M04.01 a un único botón seguro.
+- Exige CI dirigida Angular, Scope Lock y procedencia V5 sobre SHA causal, readbacks institucionales y A5 independiente; sin API/DB/JWT nuevo, webhooks ni QA/main/PROD.
+
 ## 2026-11-15 — V5 C00-04.M04.05 Chromium real responsive y accesibilidad [Javier :50]
 - Incorpora cinco regresiones Playwright Chromium para ruta privada del gobierno de cambios: anónimo, 403, 390/1280px, foco/teclado, etiquetas y contraste >=4.5:1.
 - CI GitHub-hosted Node24/npm fijo ejecuta Angular lint/build, navegador local y tests dirigidos; la sesión HTTP es sintética solo para la interfaz, no certifica JWT/RBAC ni MySQL reales.

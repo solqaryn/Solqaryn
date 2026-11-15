@@ -1,4 +1,7 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
 import { RouterLink } from '@angular/router';
 
 /**
@@ -19,9 +22,26 @@ import { RouterLink } from '@angular/router';
           <h1 id="governance-title">Decisiones y controles V5</h1>
           <p class="intro">Referencia de consulta para cambios de la plataforma. Esta pantalla no accede al plan institucional ni muestra estados vigentes.</p>
         </div>
+        <button class="return-link" type="button" (click)="revalidar()" [disabled]="estado() === 'cargando'" aria-label="Revalidar sesión de plataforma">Revalidar sesión</button>
         <a class="return-link" routerLink="/plataforma" aria-label="Volver a administración de plataforma">Volver a plataforma</a>
       </header>
 
+      <section class="state-banner" aria-live="polite" aria-atomic="true" aria-label="Estado de acceso y consulta">
+        @if (estado() === 'cargando') {
+          <p role="status">Verificando permisos con el servidor…</p>
+        } @else if (estado() === 'sin_permiso') {
+          <p role="alert">Sin permiso de plataforma confirmado. No se muestra contenido protegido.</p>
+        } @else if (estado() === 'error') {
+          <p role="alert">No fue posible verificar la sesión. El acceso permanece restringido; reintenta la comprobación.</p>
+        } @else if (estado() === 'vacio') {
+          <p role="status">Sesión verificada. Sin datos institucionales conectados; solo está disponible el contrato de consulta.</p>
+        } @else {
+          <p role="status">Sesión de plataforma revalidada correctamente. La vista sigue siendo solo lectura.</p>
+          <p>Sin datos institucionales conectados: no hay estados reales de cambios para mostrar.</p>
+        }
+      </section>
+
+      @if (estado() === 'exito' || estado() === 'vacio') {
       <section class="notice" aria-label="Límites de esta pantalla">
         <strong>Solo lectura · sin autoridad operativa</strong>
         <p>Una sesión de plataforma verificada permite consultar esta explicación, pero no autoriza migraciones, permisos, publicaciones ni cambios de empresa.</p>
@@ -38,6 +58,7 @@ import { RouterLink } from '@angular/router';
       </section>
 
       <p class="footnote" role="note">Contenido estático: no se consultan microtareas, JWT, permisos, bases de datos o auditorías en vivo. No existen acciones para aprobar, ejecutar o desplegar desde esta vista.</p>
+      }
     </main>
   `,
   styles: [`
@@ -52,6 +73,9 @@ import { RouterLink } from '@angular/router';
     .intro { max-width: 49rem; }
     .return-link { flex-shrink: 0; padding: .65rem .85rem; border: 1px solid currentColor; border-radius: .6rem; color: inherit; text-decoration: none; font-weight: 600; }
     .return-link:focus-visible { outline: 3px solid var(--mat-sys-primary, #2157a3); outline-offset: 4px; }
+    .state-banner { margin: 1.25rem 0; padding: .8rem 1rem; border: 1px solid var(--mat-sys-outline-variant, #c0c7cf); border-radius: .75rem; }
+    .state-banner p { margin: .25rem 0; }
+    .return-link[disabled] { opacity: .65; cursor: progress; }
     .notice { margin-top: 1.25rem; padding: 1rem 1.15rem; border-radius: .8rem; border: 1px solid var(--mat-sys-outline, #6e7782); background: var(--mat-sys-surface-container-low, #f5f7fa); }
     .notice p { margin-bottom: 0; }
     .steps { padding: 0; list-style: none; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: .85rem; }
@@ -63,4 +87,23 @@ import { RouterLink } from '@angular/router';
     @media (prefers-reduced-motion: reduce) { .return-link { transition: none; } }
   `]
 })
-export class GobiernoCambiosV5Component {}
+export type EstadoGobiernoV5 = 'cargando' | 'vacio' | 'error' | 'exito' | 'sin_permiso';
+
+export class GobiernoCambiosV5Component {
+  private readonly plataforma = inject(PlataformaSesionService);
+  private readonly destroyRef = inject(DestroyRef);
+  readonly estado = signal<EstadoGobiernoV5>(this.plataforma.sesion() ? 'vacio' : 'sin_permiso');
+
+  /** Revalidation is single-flight and never infers authority from JWT claims. */
+  revalidar(): void {
+    if (this.estado() === 'cargando') return;
+    this.estado.set('cargando');
+    this.plataforma.obtener().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => this.estado.set('exito'),
+      error: (error: unknown) => {
+        const status = error instanceof HttpErrorResponse ? error.status : 0;
+        this.estado.set(status === 401 || status === 403 ? 'sin_permiso' : 'error');
+      }
+    });
+  }
+}
