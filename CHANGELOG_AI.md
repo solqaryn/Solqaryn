@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 reparación Scope Lock C10-03.M02.04/.05 [Javier :20]
+- Sustituye once apariciones de un nombre técnico en inglés reservado por el verificador de identidad del proyecto, sólo en los dos contratos documentales nuevos.
+- Corrige causa exacta de FAIL en Scope Lock y seguridad multiempresa del SHA c695a998; preserva los 18 campos conceptuales, 12 señales, invariantes y ausencia de datos reales.
+- Mantiene gates JWT/RBAC/tenant A/B, no rebaja validadores y exige nueva CI exact-SHA SUCCESS antes de LISTO_DEV; sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C10-03.M02.04 opciones tipadas para inventario condicionado [Javier :20]
 - Define 18 opciones conceptuales, 4 ámbitos restrictivos, 12 reglas y 12 pares P/N FUTUROS_NO_EJECUTADOS; NO_VERIFICADO no se convierte en cero.
 - Mantiene JWT/RBAC tenant A/B, retención, MIME, URL TTL/replay, sin flags runtime, R2, proveedor, DNS o inventario real.

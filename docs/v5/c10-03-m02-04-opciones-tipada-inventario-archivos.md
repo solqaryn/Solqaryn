@@ -23,13 +23,13 @@ Precedencia PLATFORM_GOVERNANCE > ENV_PROVIDER > TENANT_FILES > RESOURCE_POLICY.
 
 | ID | Opción propuesta | Valor seguro sin autorización |
 | --- | --- | --- |
-| CFG01 | HistoricalInventoryState: enum UNKNOWN/ZERO_VERIFIED/POSITIVE_VERIFIED/INCONSISTENT | UNKNOWN |
-| CFG02 | HistoricalInventoryReadEnabled: bool | false |
+| CFG01 | HistoricalInventarioState: enum UNKNOWN/ZERO_VERIFIED/POSITIVE_VERIFIED/INCONSISTENT | UNKNOWN |
+| CFG02 | HistoricalInventarioReadEnabled: bool | false |
 | CFG03 | HistoricalExportEnabled: bool | false |
 | CFG04 | HistoricalMigrationEnabled: bool | false |
-| CFG05 | TrustedInventorySourceSet: allowlist | vacía |
-| CFG06 | InventoryAsOfUtc: timestamp opcional | null |
-| CFG07 | InventoryReconciliationDigest: digest | ausente hasta evidencia |
+| CFG05 | TrustedInventarioSourceSet: allowlist | vacía |
+| CFG06 | InventarioAsOfUtc: timestamp opcional | null |
+| CFG07 | InventarioReconciliationDigest: digest | ausente hasta evidencia |
 | CFG08 | ProposedObjectProvider: enum | CURRENT_ONLY |
 | CFG09 | PrivateFilesByDefault: bool | true |
 | CFG10 | TenantPrefixAuthority: enum | SERVER_ONLY |

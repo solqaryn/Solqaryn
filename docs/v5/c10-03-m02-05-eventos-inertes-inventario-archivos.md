@@ -23,7 +23,7 @@ PrivateStorageSignalV1 {
   causationId: nonauthorizing-reference;
   correlationId: nonauthorizing-reference;
   idempotencyDigest: scoped-server-digest;
-  inventoryState: UNKNOWN_OR_VERIFIED;
+  InventarioState: UNKNOWN_OR_VERIFIED;
   redactedPayload: minimal;
 }
 ```
@@ -34,11 +34,11 @@ No URL firmadas, JWT, HMAC, secretos, PII, claves reales, paths de proveedor ni 
 
 | ID | Nombre propuesto | Autoridad futura indispensable |
 | --- | --- | --- |
-| EVT01 | `FileInventoryRequested` | Operador y fuente autenticados; sin ejecución por este diseño |
-| EVT02 | `FileInventoryReconciled` | Conteos de DB/proveedor y timestamp auditables |
-| EVT03 | `FileInventoryMismatchDetected` | Discrepancia produce NO_GO migración |
-| EVT04 | `HistoricalInventoryZeroVerified` | Conteo completo 0 acreditado, no inferido |
-| EVT05 | `HistoricalInventoryPositiveVerified` | Manifiesto y hash por tenant |
+| EVT01 | `FileInventarioRequested` | Operador y fuente autenticados; sin ejecución por este diseño |
+| EVT02 | `FileInventarioReconciled` | Conteos de DB/proveedor y timestamp auditables |
+| EVT03 | `FileInventarioMismatchDetected` | Discrepancia produce NO_GO migración |
+| EVT04 | `HistoricalInventarioZeroVerified` | Conteo completo 0 acreditado, no inferido |
+| EVT05 | `HistoricalInventarioPositiveVerified` | Manifiesto y hash por tenant |
 | EVT06 | `NewFileValidated` | MIME bytes/tamaño/tenant/owner y política vigente |
 | EVT07 | `PrivateObjectVersionRecorded` | CAS de versión sin borrar histórico |
 | EVT08 | `SignedReadCapabilityPrepared` | Actor/verbo/objeto/TTL/replay autorizados |
