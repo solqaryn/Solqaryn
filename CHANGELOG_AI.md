@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C04-02.M02.06 contrato de salida tecnico documental [Javier :10]
+- Define dieciseis gates G01-G16 y doce pares positivos/negativos FUTUROS_NO_EJECUTADOS para contratos y suscripciones, firma, version, tenant A/B, conciliacion, transiciones invalidas, idempotencia, pruebas MySQL efimero y rollback.
+- Predecesoras M02.01-05 cuentan con A5 independientes por DEV02; no se asumen aprobadas D01-D08 comerciales ni se instala API, worker, PSP, migracion o codigo ejecutable. Requiere A5 independiente de ESTE contrato antes de M03.
+- R0 documental con V17 candado fila 625 ID 2000000625; Scope Lock/V5 exact-SHA y BITACORA/readback para A0-A4, datos/test de runtime NO_APLICA/NO_MEDIDO; sin QA/main/PROD, rollback git revert.
+
 ## 2026-11-15 — V17 C13-02.M02.06 contrato terminal de salida accesibilidad [Javier :00]
 - Fija G01-G16 como puertas causales de M02 hacia runtime y doce pares P/N FUTUROS_NO_EJECUTADOS para teclado/foco, zoom/reflow, contraste, semantica, tenant A/B, JWT/RBAC, privacidad, evidencia CI y rollback; sin declarar conformidad WCAG.
 - Referencia seis fuentes M01/M02, cinco revisiones A5 independientes de M02.01-05, contratos conceptuales de entidades/API/persistencia/flags/eventos; no hay SQL, Angular, API, eventos o Playwright implementados ni pruebas runtime ejecutadas.
