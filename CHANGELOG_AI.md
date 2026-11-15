@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C15-05.M03.06 logs estructurados y errores seguros [Javier :30]
+- Agrega envoltura .NET 10 Infrastructure de observabilidad para gateway read-only V5, con EventId 150506-150509 y codigos de auditoria estructurados de vocabulario fijo, sin exponer tenant, principal, SHA, secretos ni excepciones.
+- Incluye cinco pruebas xUnit positivas/negativas de verificacion externa obligatoria, aislamiento tenant A/B, errores redactados, cancelacion y dependencias nulas; pruebas CI GitHub-hosted requeridas, no se atribuyen como PASS antes de completion.
+- No conecta proveedor real, migraciones, dispatcher, eventos, webhooks, API, A5 propia, QA/main/PROD; Scope Lock y procedencia V5 exact-SHA, posterior readback, y rollback por git revert normal.
+
 ## 2026-11-15 — V5 C12-04.M02.03 contrato documental de persistencia indices y fixtures [Javier :20]
 - Registra doce proyecciones conceptuales, catorce invariantes y seis pasos expand/contract FUTUROS_NO_EJECUTADOS; no crea entidades EF, SQL, DDL, migraciones ni acceso Aiven/Hostinger.
 - Diez pares P/N futuros requieren version EF/MySQL, control tenant A/B, manifest, hash, FK, migrador unico y ensayo de restore efimero con rollback; no se atribuyen tests realizados.
