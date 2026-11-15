@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C06-02.M02.01 modelo de landing por tenant [Javier :50]
+- Documenta 16 entidades conceptuales y 16 invariantes de ownership de landing/host/preview/publicacion/cache/SEO, con diez pares P/N FUTUROS_NO_EJECUTADOS y aislamiento tenant A/B.
+- Alinea G01–G16 y RB01–RB08 de M01.06, roles editor/publicador, host confiable y caché particionada sin afirmar endpoints, MySQL, resolución de host ni publicación real.
+- Solo documento y CHANGELOG en dev con A0–A4 Scope Lock/V5 exact SHA y A5 independiente; no DNS/TLS, provider R2, eventos, QA/main/PROD; rollback git revert.
+
 ## 2026-11-15 — V5 C00-04.M04.02 reparación de decorator Angular [Javier :20]
 - La CI Frontend producción del SHA 30dea308 detectó TS1206 porque el nuevo alias `EstadoGobiernoV5` quedó entre `@Component` y la clase decorada. Se confirma la causa exacta y se corrige su ubicación antes del decorador.
 - Conserva la clase, el guard y todas las pruebas positivas/negativas sin deshabilitar controles; requiere nueva CI exact SHA, no se acepta el FAIL anterior como PASS.
