@@ -3121,3 +3121,9 @@
 - Implementa Application .NET10 fail-closed que compone la política Domain M03.01 con SHA coherente y referencia de evidencia saneada; jamás concede acceso, release ni escritura.
 - Añade pruebas xUnit positivas/negativas de JWT/RBAC, tenant A/B, BOLA, host, adjuntos, jobs, filtro y restore; CI exact-SHA y revisión A5 ajena obligatorias antes de certificación.
 - Sin DI activa, endpoints, EF/MySQL, migraciones, workers, secretos, runtime PROD o QA/main; revert normal preserva controles.
+
+## 2026-11-15 — V5 C15-03.M03.02 servicio Application fail-closed de auditoría tenancy [Javier :30]
+- Implementa .NET 10 Application service sobre M03.01, fuente de autoridad backend verificada y lector de propiedad persistida scoped por tenant, sin aceptar contexto de cliente como permiso.
+- Añade pruebas xUnit positivas y negativas: SHA/evidencia, identidad y membresía, tenant A/B/NULL, consulta con bypass, sucursal, archivos, jobs/idempotencia y control plane.
+- No añade endpoint ni DI activa, consultas EF/MySQL, workers, acceso a archivos ni acciones privilegiadas; sigue pendiente resolver TenantQueryBypassGuard con contexto nulo e integración real antes de declarar seguridad end-to-end.
+- Scope Lock y CI causal exact-SHA requeridos antes de LISTO_DEV; A5 sólo por otra Task Javier; rollback git revert, sin QA/main/PROD.
