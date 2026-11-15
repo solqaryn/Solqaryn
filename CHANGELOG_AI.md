@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C11-03.M02.03 persistencia e índices conceptuales outbox [Javier :40]
+- Define 12 proyecciones de persistencia, 8 índices candidatos, 6 etapas de migración condicionadas FUTURAS_NO_EJECUTADAS y 12 fixtures sintéticos positivos/negativos, con tenant A/B, CAS, UTC, idempotencia, privacidad y rollback.
+- Coteja entidades, repositorio EF, contrato de Application, procesador outbox y prueba MySQL de concurrencia solamente como fuentes versionadas; NO ejecuta DDL, EF/MySQL, cambios de entidad, worker, relay, dispatcher, webhooks, eventos entre Tasks o proveedores externos.
+- Changeset documental acotado a dos Markdown en dev; A0–A4 y Scope Lock/V5 exact-SHA, A5 independiente de otra Task Javier, rollback por git revert normal; sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C11-03.M02.02 contratos conceptuales API DTO outbox [Javier :30]
 - Fija OP01-OP10 con las operaciones existentes y propuestas del outbox, E01-E16 para errores seguros, ocho positivos y doce negativos FUTUROS_NO_EJECUTADOS; coteja entidad MensajeOutbox, servicio RegistrarAsync y repositorio con CAS.
 - Preserva aislamiento tenant A/B, JWT/RBAC, idempotencia, versionado y compatibilidad; no implementa endpoints, proveedores, colas, eventos, dispatcher, migraciones MySQL ni tasks nuevas.
