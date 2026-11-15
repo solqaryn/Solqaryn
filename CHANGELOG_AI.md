@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-03.M01.04: riesgos y decisiones de seguridad/tenancy [Javier :10]
+- Registra R01–R14 riesgos potenciales, S01–S08 supuestos NO_VERIFICADOS y D01–D08 decisiones pendientes, enlazados a quince blobs reales de M01.03 y contratos M01.01/M01.02.
+- Define P01/N01–P08/N08 como casos FUTUROS_NO_EJECUTADOS; trata la consulta EF sin scope y su cuarentena externa como hipótesis a probar, nunca como vulnerabilidad certificada.
+- Solo documento y CHANGELOG, Scope Lock y procedencia V5 exact SHA al publicar; A5 ajeno pendiente, rollback git revert, sin IAM/JWT/DB/QA/main/PROD ni dispatcher.
+
 ## 2026-11-14 — V5 C15-03.M01.03: fuentes y brechas de auditoría security/tenancy [Javier :10]
 - Inventaría quince rutas y blobs Git reales de filtros JWT/RBAC/tenant, middleware, consultas y escritura EF, control plane, storefront y tests; lista explícita sin declarar suites ejecutadas ni cobertura total.
 - Identifica doce brechas G01–G12 como NO_VERIFICADAS/FUTURAS y mapea NR01–NR16 e IO/T anteriores; la dependencia de la cuarentena del bypass EF requiere prueba integrada, no se declara vulnerabilidad.
