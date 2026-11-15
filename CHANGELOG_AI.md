@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C01-01.M06.03 riesgos y decisiones de identidad universal [Javier :10]
+- Audita seis alcances M05: Domain xUnit, contrato Controller ScopeStub, integración EF Oracle MySQL local, aceptación y denegaciones Application/Domain, regresión y Chromium; identifica riesgos de JWT/HTTP y tenancy no cubiertos.
+- Corrige atribución de CI MySQL M05.03: SHA 71eac84 es ancestro sin test nuevo; job Category=Integration del SHA fuente 11c6e30 reportó 47 PASS, 0 FAIL, 0 SKIPPED, sin Aiven/prod.
+- Documenta R01–R12 y decisiones D01–D06, rollback y A5 independiente; entrega individual solo Markdown/CHANGELOG, sin código, infraestructura ni QA/main/PROD; Scope Lock y V5 requeridos por SHA exacto.
+
 ## 2026-11-15 — V5 C01-01.M06.02 manifiesto reproducible de pruebas y blobs [Javier :20]
 - Registra SHAs de origen, ocho blobs actuales de siete archivos de pruebas más la auditoría M06.01, y comandos dirigidos .NET 10, MySQL 8.4 local y Chromium.
 - Distingue código existente de pruebas efectivamente ejecutadas: no finge PASS JWT/HTTP, Category=Integration, p95 ni WCAG por un documento.
