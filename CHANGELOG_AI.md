@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C01-01.M06.06 cierre documental y gates del mapa de identidad [Javier :40]
+- Reconciliados seis M05 y cinco M06 anteriores LISTO con A5 independiente real en PLAN/ COLA/DAG; incluida evidencia MySQL 8.4 efímera Category=Integration de M05.03 y ensayo sintético de git revert M06.04, sin extender esas pruebas a JWT/HTTP/PROD.
+- Registradas fronteras de release: no hay certificación de JWT end-to-end, EF transversal, p95, WCAG completa ni QA; no se fuerzan gates G/O y este M06.06 necesita su propio A5 posterior.
+- Cambio individual documental con rollback git revert, controles Scope Lock/V5 exact-SHA, BITACORA/readback y sin editar código runtime, cuentas, infraestructura o migraciones.
+
 ## 2026-11-15 — V5 C01-04.M03.04 adaptador Infrastructure aislado y sin grants [Javier :40]
 - Implementado código real .NET 10: adaptador read-only tenant-scoped que combina dos fuentes backend confiables para preflight del expediente, deniega cross-tenant/legacy/revocación/SHA obsoleto y no registra DI, API, EF ni migraciones.
 - Añadidas pruebas xUnit positivas/negativas que ejercitan el gate Application sin permisos de lectura/escritura. CI backend/seguridad obligatoria por SHA; no atribuir PASS antes de GitHub Actions.
