@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C02-01.M03.04 preferencia tenant aislada read-only [Javier :30]
+- Integra adapter Infrastructure .NET 10 no autoritativo con instantánea de preferencia por usuario, validación ordinal de actor/revisión/SHA y copia de membresías para evitar mutación externa.
+- Incorpora 16 pruebas xUnit genuinas de tenant 0/1/N, preferencia revocada/ajena, sesión caducada, roles, fraude de browser/host, CAS, casos negativos y cancelación.
+- Riesgo V15 R2 y candado único V17: requieren GitHub Actions backend, autorización, seguridad, Scope Lock y procedencia en SHA causal; A5 corresponde a otra Task Javier. Sin DB/EF/MySQL live, JWT HTTP, cambios UI, QA/main/PROD.
+
 ## 2026-11-15 — V17 C02-02.M03.04 rehearsal reversible aislado de placement [Javier :40]
 - Implementa journal Infrastructure .NET 10 inerte con staging y rollback de un solo intento en memoria; compone el preflight M03.03, CAS monotono, idempotencia y checks tenant/actor/SHA; no abre conexiones ni activa migracion o cutover.
 - Incorpora 12 xUnit adversariales: tenant A/B, JWT/RBAC revocacion, DSN/cutover, alias, replay, concurrencia 24 intentos, revision, rollback y cancelacion. Exige CI Backend Release, seguridad multiempresa, Authorization, Scope Lock y V5 en SHA exacto.
