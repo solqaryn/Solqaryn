@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C05-01.M02.01 entidades y ownership de design system [Javier :20]
+- Define catorce entidades conceptuales, dieciocho invariantes fail-closed, relaciones por tenant y diez pares positivos/negativos FUTUROS_NO_EJECUTADOS para tokens, temas, componentes, branding, seguridad y accesibilidad.
+- Preserva autenticacion/RBAC y propiedad A-B desde backend; ninguna entidad EF, API, CSS ni migracion fue implementada, ni se reclama ejecutar MySQL/Playwright o certificar WCAG.
+- Entrega R0 individual bajo Scope Lock STRICT con A0-A4 documentales, checks exact-SHA, readback PLAN/COLA/BITACORA y A5 independiente pendiente; rollback por git revert normal, sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C01-03.M03.01 Domain configuración dinámica segura [Javier :50]
 - Añadidas reglas ejecutables .NET 10 de catálogo allowlisted/typed, límites tenant A/B, identidad+RBAC+entitlement, versión optimista, scope plataforma independiente y denegación de claves peligrosas.
 - Incluidos diez xUnit positivos/negativos, límites de valor, scripts CSS/HTML, roles revocados, flags de seguridad, concurrency y errores; veredicto nunca concede escritura, JWT o CAS real.
