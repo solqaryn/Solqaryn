@@ -3096,3 +3096,8 @@
 - Contrato M02 documental de C05-04.M02.05 con escenarios positivos/negativos FUTUROS_NO_EJECUTADOS, fuentes Git reales y límites tenant A/B, JWT/RBAC, privacidad, accesibilidad y seguridad fail-closed.
 - Sin cambios runtime de Angular/.NET, endpoints, DTO compilados, MySQL, flags, dispatcher, webhooks ni eventos; métricas bundle/CWV HTTP NO_MEDIDAS; M02.06 sigue sujeto a DAG y A5.
 - Solamente docs/v5 y CHANGELOG en dev con CAS, Scope Lock y check V5 exact-SHA; A5 independiente pendiente; rollback git revert sin QA/main/PROD.
+
+## 2026-11-15 — V5 C01-04.M03.02 aplicación de expediente universal fail-closed [Javier :10]
+- Implementa servicio Application .NET 10 que compone las reglas Domain M03.01 con verificación de SHA y referencia de evidencia, y niega autorización definitiva de persistencia y medios.
+- Añade pruebas xUnit positivas y negativas de tenant A/B, revocación, idempotencia, versión, SHA, adjuntos y revisión de decisiones; requiere CI exact-SHA antes de LISTO_DEV.
+- Sin endpoints, DTO HTTP, DI, MySQL, migraciones, dispatcher, eventos, secretos, QA/main/PROD; rollback git revert, A5 independiente pendiente.
