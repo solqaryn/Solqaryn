@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-02.M01.06 bloqueos y liberación documental de aceptación de seguridad [Javier :40]
+- Define B01–B12 como gates futuros sobre tenant A/B, JWT/RBAC, BOLA/IDOR, hosts, archivos, jobs, backups, CI exact SHA y revisión A5 separada.
+- Documenta contención, rollback sin force-push y liberación condicionada: cero P0/P1 permanece NO_CERTIFICADO; M02 no gana permisos de runtime o despliegue.
+- Sólo nuevo Markdown y CHANGELOG en dev; A5 independiente pendiente, sin pruebas HTTP/MySQL reales ni QA/main/PROD, proveedores, webhooks o nuevas Tasks.
+
 ## 2026-11-14 — V5 C15-05.M01.05 criterios de aceptación de auditoría operativa [Javier :40]
 - Define 16 pares P/N FUTUROS_NO_EJECUTADOS sobre PLAN/COLA/DAG, claims CAS, BITACORA, CI exact-SHA, A5 y señales nativas.
 - Fija 12 requisitos NF NO_MEDIDOS y evidencia exigida para 2340 IDs; cero huérfanos, duplicados críticos y P0/P1 permanecen NO_CERTIFICADOS.
