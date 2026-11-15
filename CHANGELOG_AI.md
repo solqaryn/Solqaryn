@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C01-01.M05.04 aceptación positiva identidad universal .NET 10 [Javier :30]
+- Añade tres casos xUnit reales para el servicio Application/Domain: contextos A/B mismo usuario, sucursal propia explícita y revalidación de snapshots por solicitud.
+- Usa únicamente fuente in-memory como costura de pruebas; no certifica JWT HTTP, EF/MySQL ni datos vivos y no modifica código de producción ni permisos tenant/RBAC.
+- Scope Lock, backend xUnit y seguridad pertinentes exact SHA requeridos, A5 ajena pendiente y rollback git revert; sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C01-01.M05.02 pruebas contrato API DTO tenant-context [Javier :20]
 - Incorpora cinco casos xUnit .NET10 de TenantContextController: empresa 0/-1 rechazada antes de servicio, tenant sin membresia forbidded, scope valido con DTO y selector limitado a fuente servidora.
 - Contrato real de controlador con ScopeStub determinista, NO certifica HTTP JWT EF MySQL de extremo a extremo; checks backend y seguridad exact-SHA obligatorios antes de LISTO_DEV.
