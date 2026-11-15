@@ -2891,3 +2891,7 @@
 - Implementa validador puro en Domain para conjuntos de requisitos autorizados y microtareas existentes, cotejo de revisión de fuente, formato de ID, referencias seguras, duplicidad y requisitos sin correspondencia.
 - Añade pruebas xUnit positivas y negativas de revisión obsoleta, ID desconocido, duplicados, referencias con controles y cobertura incompleta; sin inventar requisitos ni liberar gates técnicos.
 - Un resultado READY_FOR_EVIDENCE_REVIEW no es certificación de 2.340 IDs ni A5/CI/tenant; sin API, migración, dispatcher, escritura de Sheet desde backend, QA/main/PROD o infraestructura real.
+## 2026-11-14 — V5 C14-04.M02.06: dependencias de puesta en marcha [Javier :30]
+- Consolida dieciséis gates G01–G16, diez escenarios de rollback R01–R10 y diez pares positivos/negativos T01–T10 FUTUROS_NO_EJECUTADOS de go-live, soporte y monitoreo.
+- Referencia M01 y cinco contratos M02 con sus SHA originales y revisiones A5 de otra Task; el documento no valida smoke real, backup/restore, DNS, TLS o disponibilidad.
+- Sólo documento V5 y CHANGELOG en dev; Scope Lock y procedencia exact-SHA antes de LISTO_DEV, A5 independiente posterior, sin cambios MySQL, eventos, runtime, QA/main/PROD ni servicios reales.
