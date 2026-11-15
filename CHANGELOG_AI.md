@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C07-04.M02.01 entidades, ownership e invariantes de pedidos/pagos [Javier :50]
+- Modela 12 objetos conceptuales y 14 invariantes fail-closed para cotizaciones, pedidos, facturas, cobros, stock y exportaciones; distingue código inspeccionado de contratos NO IMPLEMENTADOS.
+- Define 10 pares de pruebas futuras positivas/negativas sobre tenant A/B, JWT/RBAC, fiscalidad, idempotencia y rollback, sin ejecutarlas ni cambiar runtime, SQL, pagos o proveedores.
+- Sólo docs/v5 y CHANGELOG en dev; exige Scope Lock/V5 exact-SHA, A0–A4 documentales y A5 independiente; QA/main/PROD prohibidos y rollback git revert.
+
 ## 2026-11-14 — V5 C15-05.M03.01 reglas de dominio para auditoría operativa [Javier :50]
 - Implementa validador puro .NET 10 para snapshots de auditoría: fuente, IDs, estados, owner permitido, SHA, revisores A5 diferentes y referencias de evidencias; no certifica datos suministrados sin verificación externa.
 - Añade pruebas xUnit positivas/negativas y contrato de alcance; sin eventos, dispatcher, migraciones, IAM/JWT/RBAC nuevos, QA/main/PROD.
