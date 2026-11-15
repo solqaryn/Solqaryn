@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C15-05.M04.05 reparación CI Chromium de denegación [Javier :00]
+- Corrige aserción demasiado específica de alert global: el guard redirige al usuario sin privilegio antes de montar la vista; ahora exige ausencia del encabezado y controles privados, preservando el caso negativo fail-closed.
+- En SHA 79e2d024, 31/32 tests browser aprobaron, uno falló por strict mode ante dos alertas legítimas; ese FAIL no se considera PASS. La corrección requiere nuevo Chromium SUCCESS exact-SHA, Scope Lock/V5 y readback.
+- No cambia permisos, guard, rutas, API ni datos institucionales; sólo prueba dirigida y este CHANGELOG, A5 sigue independiente.
+
 ## 2026-11-15 — V17 C11-04.M03.01 reglas de dominio observabilidad privada [Javier :00]
 - Agrega validador .NET 10 puro de señales allowlisted, correlación segura, etiquetas de baja cardinalidad, ventanas UTC, conteos y NO_MEDIDO; rechaza tenant A/B cruzado, membresía revocada y permiso denegado, sin conceder autoridad API.
 - Incorpora 8 métodos xUnit con positivos, negativos y fronteras; backend/seguridad/Scope Lock/V5 exact-SHA deben finalizar SUCCESS antes de LISTO. Sin API real, JWT autenticado, MySQL, exporter, alertas, SLO ni proveedores.
