@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-05.M03.02 preflight real de auditoría operativa en Application [Javier :00]
+- Implementa servicio .NET10 de sólo lectura para snapshots V5: SHA/revisión/catálogo/capacidad y Domain; resultados no autorizan CAS, cierre, A5 ni ejecución de eventos.
+- Añade seis pruebas xUnit con positivos y negativos de SHA obsoleto, revisión, allowlist, A5 propia, incompletitud, tamaño e IDs duplicados o ajenos; sin API, SQL, dispatcher ni cambios tenant/JWT/RBAC.
+- Requiere CI backend/security real y Scope Lock/V5 exact-SHA antes de LISTO_DEV, A5 posterior de otra Task Javier; rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-14 — V5 C07-04.M02.06 dependencias y contrato de salida de pedidos/pagos [Javier :00]
 - Verifica M01.01–06 y M02.01–05 LISTO con A5 independiente, cinco SHAs/blobs fuente y DAG/COLA G/O SI; define 16 condiciones OUT, 12 pares FUT y seis reglas de salida.
 - Todo es documento FUTURO_NO_EJECUTADO: sin PSP, pagos, endpoints, migraciones, workers, dispatcher, eventos ni cambios runtime; seguridad JWT/RBAC/tenant A/B y reversión obligatorias.
