@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C08-04.M03.03 tenant module authorization fence R2 [Javier :20]
+- Añade fence Application real no autorizante con lectores separados de actor backend vigente y recurso sectorial tenant, cotejo ordinal de clave/owner/SHA, revisión, JWT/RBAC/membresía y política actual.
+- Incorpora xUnit positivos/negativos, rechazo A/B, revocación, catálogo, denylist, errores y cancelación. No registra DI, ejecuta SQL, activa módulos ni muta permisos; resultado exige adaptador transaccional futuro autenticado.
+- A0–A4 con .NET GitHub-hosted, seguridad/autorización, Scope Lock y procedencia V5 causal; A5 por otra Task Javier, rollback git revert; sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C05-01.M03.02 Application design token preflight R2 [Javier :20]
 - Incorpora un caso de uso Application real, read-only y fail-closed con identidad backend, catálogo tenant y reglas Domain M03.01, sin permisos de escritura ni endpoints, EF/MySQL o adaptadores de proveedor.
 - Añade xUnit con rechazo A/B, RBAC/JWT/revocación, clave ordinal, revisión/sesión, CSS inseguro, idempotencia, errores y cancelación. No declara éxito antes de GitHub Actions de SHA causal.
