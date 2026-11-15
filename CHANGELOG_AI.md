@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C06-02.M02.05 contratos conceptuales de eventos [Javier :40]
+- Documenta doce intenciones EV, doce reglas ID de idempotencia/correlación y doce pares PN FUTUROS_NO_EJECUTADOS para landing por tenant; no implementa ni emite eventos, dispatcher, webhook, cola, worker o Task.
+- Delimita tenant A/B, Host no confiable, aprobación editor/publicador, publicación CAS, cache/SEO por versión, trazas minimizadas, errores fail-closed y rechazo de secretos/PII.
+- A0–A4 documentales y checks Scope Lock/V5 exact-SHA; CI runtime no causal NO_APLICA y A5 independiente pendiente; rollback git revert y sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C06-02.M02.04 configuración tipada y flags de landing [Javier :30]
 - Define 18 opciones futuras con ámbitos server/global/tenant y defaults fail-closed: host validado, preview noindex/no-store, publicación RBAC/CAS, caché particionada, assets y SEO. No instala flags.
 - Propone 12 pares positivos/negativos FUTUROS NO_EJECUTADOS; conserva las fronteras y bloqueos de M01.06/M02.01–03 y distingue tienda vinculada actual de landing CMS aún no desarrollada.
