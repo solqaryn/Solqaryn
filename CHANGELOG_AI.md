@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C13-03.M02.05 contrato documental de eventos, idempotencia y correlación [Javier :50]
+- Define EVT01–EVT12 eventos conceptuales, INV01–INV14 de idempotencia/tenant, correlación causal y cuotas fail-closed; NO implementa workers, webhooks, mensajería, telemetría ni proveedores.
+- T01–T12 positivos/negativos FUTUROS_NO_EJECUTADOS (0/12), LCP/INP/CLS NO_MEDIDO y conflicto de bundle 650–750 KB vs 1–2 MiB SIN_RESOLVER. Seguridad JWT/RBAC/tenant A/B prevalece.
+- Alcance R0 sólo docs/v5 y CHANGELOG_AI.md, publicación dev fast-forward/CAS, Scope Lock/V5 exact-SHA pendiente de acreditación, A5 independiente otra Task Javier, sin QA/main/PROD.
+
 ## 2026-11-15 — V16 C11-04.M02.04 opciones tipadas y flags seguros observabilidad [Javier :40]
 - Contrato R0 OPT01–OPT20, FL01–FL12, VAL01–VAL18 y política restrictiva por plataforma/tenant/componente; exporters, tracing remoto, alertas, captura PII/SQL y labels arbitrarios OFF, sin configuración ejecutable.
 - Doce pares T01–T12 positivos/negativos FUTUROS_NO_EJECUTADOS (0/12) de RBAC, revocación, redacción, cardinalidad, política CAS, fallas y rollback; SLO, p95, retención y costos NO_MEDIDO.
