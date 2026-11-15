@@ -2601,3 +2601,8 @@
 - Documenta R01–R12 riesgos potenciales de responsive, teclado/foco, formularios, contrastes, loading, rendimiento, aislamiento tenant A/B y CI exact-SHA; no declara defectos o cumplimiento WCAG confirmados.
 - Registra S01–S08 supuestos NO_VERIFICADOS, D01–D08 decisiones pendientes y P01–P08/N01–N08 como escenarios FUTUROS_NO_EJECUTADOS; trazabilidad causal a M01.01–03 y G01–G12.
 - Diff sólo Markdown y CHANGELOG en dev; A0–A4 documentales con Scope Lock/V5 en SHA exacto, A5 independiente; sin Angular, API, DB, secretos, QA/main/PROD o infraestructura real.
+
+## 2026-11-14 — V5 C15-04.M01.05: aceptación observable UX/accesibilidad/rendimiento [Javier :30]
+- Define AC01–AC16 positivos y negativos FUTUROS_NO_EJECUTADOS para rutas, teclado/foco, responsive, semántica, motion, estados de error, tokens, caché tenant A/B y métricas reproducibles, sin declarar auditoría ejecutada.
+- Especifica RNF01–RNF10 PENDIENTE_MEDICION y matriz de evidencia por viewport, navegador, red, fixture sintético, SHA y CI; enlaza M01.01–04 y brechas G01–G12, sin inventar presupuestos ni WCAG PASS.
+- Documentación exclusiva en dev, A0–A4 documentales con Scope Lock/V5 exact-SHA y A5 independiente posterior; no Angular ejecutable, .NET, MySQL, DNS, QA/main/PROD ni permisos de migración.
