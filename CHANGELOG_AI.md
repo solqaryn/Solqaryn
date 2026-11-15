@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C06-02.M02.04 configuración tipada y flags de landing [Javier :30]
+- Define 18 opciones futuras con ámbitos server/global/tenant y defaults fail-closed: host validado, preview noindex/no-store, publicación RBAC/CAS, caché particionada, assets y SEO. No instala flags.
+- Propone 12 pares positivos/negativos FUTUROS NO_EJECUTADOS; conserva las fronteras y bloqueos de M01.06/M02.01–03 y distingue tienda vinculada actual de landing CMS aún no desarrollada.
+- Cambia solo dos Markdown en dev, sin API, MySQL, DNS/TLS, R2, CDN, eventos, worker ni QA/main/PROD; exige Scope Lock/V5 exact-SHA, A0–A4 y A5 independiente. Rollback git revert.
+
 ## 2026-11-15 — V5 C06-02.M02.03 persistencia tenant-first de landing [Javier :40]
 - Define documentalmente 13 estructuras, 11 índices/restricciones, seis etapas de migración futura y doce pares positivos/negativos de fixtures para host aprobado, draft, preview, publicación CAS, SEO y caché aislada.
 - Preserva G01–G16, RB01–RB08, A/B, RBAC de editor/publicador y prohibición de autoridad desde Host/forwarded-host; no crea tablas, migraciones, endpoints, DNS, workers ni datos reales.
