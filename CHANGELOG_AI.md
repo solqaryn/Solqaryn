@@ -3568,3 +3568,9 @@
 - CSS responsive con tokens del tema, contraste forzado y animacion eliminada con prefers-reduced-motion; conserva loading, vacio, error, resultados y solo lectura.
 - Amplia Vitest dirigido con dos casos de aparicion y desaparicion de placeholders tras exito/fallo; Scope Lock, frontend y V5 de SHA causal obligatorios antes de LISTO.
 - Sin paginacion real nueva, API, JWT/RBAC/tenant backend, EF/MySQL, migraciones, servicios, QA/main/PROD; A5 independiente y git revert normal.
+
+## 2026-11-15 — V5 C15-01.M03.03 autorizacion y tenancy fail-closed para cobertura [Javier :30]
+- Agrega servicio .NET10 de solo lectura que coteja principal backend, subject, tenant, membresia, RBAC coverage.review, SHA exacto y Scope Lock antes de invocar el preflight de cobertura previo.
+- Incluye siete pruebas xUnit positivas/negativas para contexto no autenticado, tenant B, permisos revocados, SHA, solicitud incoherente y requisitos sin mapeo.
+- Incluso con un corte internamente consistente exige adaptador externo autenticado y A5 ajena; nunca concede acceso, escritura, certificacion de 2340 tareas ni promocion de entornos.
+- Sin nuevas API, JWT/EF/MySQL real, migraciones, jobs, secrets, QA/main/PROD; CI backend/seguridad/Scope Lock/V5 exact-SHA y git revert sin force.
