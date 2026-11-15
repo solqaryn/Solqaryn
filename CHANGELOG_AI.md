@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C10-02.M01.06: gates de salida y reversión documental R2/dominios [Javier :50]
+- Define B01–B12 para predecesores LISTO+A5, owner CAS, Scope Lock, JWT/RBAC/tenant A/B, TTL/replay, privacidad, retención e inventario sin activar proveedores ni infraestructura.
+- Separa LISTO_DEV documental, A5 independiente y habilitación M02 reactiva; aporta niveles de rollback documental/futuro y P01–P06/N01–N12 FUTUROS NO_EJECUTADOS.
+- Solo docs/v5 y CHANGELOG_AI.md, fast-forward CAS en dev, sin R2/DNS/cutover, MySQL real ni QA/main/PROD.
+
 ## 2026-11-15 — V5 C06-04.M03.01 validadores dominio portal cliente [Javier :40]
 - Implementa guards .NET 10 de propiedad cliente/tenant, cuenta y sesion privada activa, expiracion/revocacion y version optimista; los ID autoritativos deben resolverse en servidor, sin nuevas rutas ni JWT.
 - Agrega xUnit positivas/negativas para A/B y A1/A2, cuenta ajena, owner legacy null, sesion revocada/vencida y CAS esperado; Scope Lock, pruebas backend y seguridad exact SHA antes de LISTO.
