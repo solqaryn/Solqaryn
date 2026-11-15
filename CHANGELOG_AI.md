@@ -1,3 +1,13 @@
+## 2026-11-15 — V5 C07-01.M02.04 configuracion tipada conceptual y flags de catalogo [Javier :10]
+- Define dieciocho opciones tipadas propuestas, cuatro ámbitos de precedencia, catorce reglas de validación y catorce pares PN FUTUROS_NO_EJECUTADOS para catálogo universal.
+- Conserva tenant A/B y rol actual verificado en backend, NULL legacy en Producto/Variante y categoría sin EmpresaId asumida; presets fail-closed, sin secretos ni activación runtime.
+- Sólo documento docs/v5 y sección íntegra CHANGELOG; Scope Lock/V5 exact SHA, A5 pendiente de otro Javier, rollback git revert, sin QA/main/PROD.
+
+## 2026-11-15 — V5 C07-01.M02.05 eventos conceptuales y limites catalogo universal [Javier :10]
+- Define doce eventos FUTUROS_INERTES, envelope mínimo, diez reglas de idempotencia/replay/cuotas, consumidores objetivo y doce pares PN FUTUROS_NO_EJECUTADOS.
+- Preserva ownership server-side tenant A/B, compatibilidad ERP, snapshots/precios/stock y cuarentena de NULL legacy, sin bus, workers, outbox, webhook ni payload real.
+- Dos documentos independientes compartieron publicación documental fast-forward CAS; Scope Lock/V5 exact SHA, A5 ajena, no QA/main/PROD.
+
 ## 2026-11-15 — V5 C07-01.M02.03 persistencia conceptual de catálogo [Javier :00]
 - Contrato de doce proyecciones, doce índices candidatos, doce reglas de integridad y doce pares de fixtures FUTUROS NO_EJECUTADOS; legado NULL y tenant A/B fail-closed.
 - No SQL, EF/MySQL, API, UI, cambios de stock/precios, proveedores, secretos ni QA/main/PROD; A5 independiente y pruebas de runtime futuras.
