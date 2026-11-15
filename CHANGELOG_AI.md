@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C10-04.M03.02 Application preflight cache jobs backups exports [.NET10 Javier :10]
+- Implementa clase Application real con proveedor de contexto verificado, frontera read-only y enlace a C1004CacheJobsDomainRules; deniega cross-tenant A/B, permisos revocados, version stale, operaciones no allowlisted y reintentos fuera de politica.
+- Agrega diez pruebas xUnit para casos positivos/negativos, hint cliente, SHA, version, expiry y cancelacion, todos los flags Allows... false; un preflight no concede lease, CI ni proveedor real.
+- Requiere CI backend/security/auth/ScopeLock/V5 exact SHA antes LISTO; A5 independiente; sin workers, DB, backup, R2, QA/main/PROD.
+
 ## 2026-11-15 — V5 C10-03.M01.06 contrato de salida, bloqueos y rollback de archivos [Javier :20]
 - Define BL01–BL16 y RB01–RB08 como requisitos documentales futuros, distinguiendo inventario NO_VERIFICADO del cero autenticado sin simular consultas.
 - Constata M01.01–05 y C10-01/02.M01.06 LISTO+A5 al preflight; M02 solo después de A5 independiente de esta unidad y DAG/COLA reactivos reales.
