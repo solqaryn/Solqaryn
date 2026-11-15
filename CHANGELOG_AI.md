@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C07-03.M02.02 API DTO errores inventario y compras [Javier :40]
+- Contrato R0 documental de 12 operaciones OP01-OP12, 12 DTO DTO01-DTO12, 12 errores ERR01-ERR12 y 16 validaciones VAL01-VAL16 con propiedad de almacenes, stock, compra, costo y tenancy.
+- 12 pares T01-T12 FUTUROS_NO_EJECUTADOS; no endpoints nuevos, HTTP, EF/MySQL, movimientos, autorizaciones, migraciones ni QA/main/PROD.
+- A0-A4 documentales con Scope Lock/V5 exact SHA y BITACORA/readback; A5 de otra Task Javier, decisiones D01-D08 sin certificar.
+
 ## 2026-11-15 — V16 C07-03.M02.01 entidades e invariantes de inventario/compras [Javier :40]
 - Contrato R0 documental de 12 relaciones de entidades E01-E12, 16 invariantes INV01-INV16 y 10 relaciones REL01-REL10 para sucursal, almacen, reserva, compra, recepcion, transferencia, conteo, costeo y reconciliacion.
 - 12 pares T01-T12 FUTUROS_NO_EJECUTADOS con negativos tenant A/B, legacy NULL, RBAC, stock doble, idempotencia, MySQL/concurrencia y censura de costo; 0 tests ejecutados.
