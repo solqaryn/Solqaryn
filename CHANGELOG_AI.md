@@ -1,3 +1,7 @@
+## 2026-11-15 — V5 C14-03.M02.01: modelo de entidades y ownership de promoción controlada [Javier :20]
+- Define doce entidades conceptuales, veinte invariantes de SHA/CI/Scope Lock/tenant/seguridad/aprobación por ambiente y diez pares P/N futuros no ejecutados para release candidates y evidencia.
+- Contrato documental exclusivo dev sin desplegar QA/main/PROD ni crear CI, secretos, migraciones o eventos; revisión A5 independiente pendiente.
+
 ## 2026-11-15 — V5 C10-01.M02.06 contrato terminal de dependencias y salida storage neutral [Javier :30]
 - Documenta doce gates de diseño, contratos Domain/Application/Infrastructure/API, doce pares positivos/negativos FUTUROS_NO_EJECUTADOS y prerequisitos M01/M02 LISTO+A5; sin inferir autorización de M03.
 - Conserva Cloudinary, tenant A/B/JWT/RBAC server-side, MIME y SHA-256 de bytes reales como requisitos futuros; no crea EF/MySQL, R2, workers, eventos, feature flags, secretos, endpoints, QA/main ni PROD.
