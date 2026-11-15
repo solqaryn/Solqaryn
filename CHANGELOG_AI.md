@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C07-03.M02.01 entidades e invariantes de inventario/compras [Javier :40]
+- Contrato R0 documental de 12 relaciones de entidades E01-E12, 16 invariantes INV01-INV16 y 10 relaciones REL01-REL10 para sucursal, almacen, reserva, compra, recepcion, transferencia, conteo, costeo y reconciliacion.
+- 12 pares T01-T12 FUTUROS_NO_EJECUTADOS con negativos tenant A/B, legacy NULL, RBAC, stock doble, idempotencia, MySQL/concurrencia y censura de costo; 0 tests ejecutados.
+- Solo 2 Markdown; sin transacciones, migraciones, backend/frontend, datos reales, QA/main/PROD; A0-A4 Scope Lock/V5 por SHA y A5 distinta pendiente.
+
 ## 2026-11-15 — V16 C05-03.M02.05 eventos e idempotencia builder [Javier :40]
 - Contrato R0 de doce intenciones EV01-EV12, doce defensas IDEM01-IDEM12, ocho límites LIM01-LIM08, correlación y CAS fail-closed por tenant y recurso.
 - Doce pares P/N T01-T12 FUTUROS_NO_EJECUTADOS; no worker, bus, outbox, webhook, API, MySQL, flags ni publicación runtime; 0 eventos ejecutados.
