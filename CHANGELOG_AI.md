@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C03-02.M02.03 persistencia e índices RBAC/ABAC [Javier :50]
+- Define diez entidades lógicas, ocho índices, seis pasos de migración futura y doce fixtures positivos/negativos FUTUROS_NO_EJECUTADOS para tenant, sucursal, grants y privacidad.
+- Mantiene JWT/RBAC/ABAC/tenant A/B, revocación, auditoría sin PII y rollback; no crea DDL, EF, MySQL, exports, API, workers, eventos ni permisos.
+- Documentación independiente con Scope Lock/V5 exact SHA, A0–A4 verificables y A5 pendiente de otra Task Javier; sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C03-02.M02.02 API/DTO, errores y compatibilidad RBAC/ABAC [Javier :50]
 - Especifica doce operaciones API conceptuales, ocho DTO, catorce errores seguros, dieciséis invariantes y doce pares P/N FUTUROS_NO_EJECUTADOS sobre autorización multiempresa.
 - Conserva JWT, RolPermiso, ABAC por recurso/sucursal, exportaciones y enlaces a medios; contratos propuestos no crean endpoints, SQL, workers ni tests runtime.
