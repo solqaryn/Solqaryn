@@ -1,3 +1,9 @@
+## 2026-11-15 — V17 C02-04.M03.05 worker aislado read-only de control plane [Javier :20]
+- Implementa worker Infrastructure .NET 10 de previsualizacion limitada a 24 tickets por llamada, compuesto con el adapter M03.04 y gate Application/Domain; no registra hosted runtime ni realiza ninguna operacion institucional.
+- Incluye nueve metodos xUnit con positivos/negativos y fronteras: tenant A/B, actor, SHA, origen sintético no confiable, revocacion, MFA, grant separado, duplicado ordinal, exportacion, idempotencia y cancelacion.
+- Riesgo R2 V15, Scope Lock STRICT; A0-A4 causal con GitHub-hosted .NET, seguridad, Authorization, procedencia V5, y A5 independiente por otra Task Javier. Un resultado favorable solo exige adapter autenticado posterior, NUNCA concede un permiso.
+- No JWT/HTTP live, MySQL/EF, colas/proveedores, secrets, cambios de DI o autorizacion QA/main/PROD. Rollback git revert, sin force-push.
+
 ## 2026-11-15 — V17 C03-04.M03.05 worker aislado read-only de incidentes [Javier :20]
 - Añade componente Application .NET 10 para previsualizar hasta 24 tickets de incidentes sin activar hosted worker, proveedor o restauracion real; resultados son decisiones fail-closed y nunca autorizan lectura, mutacion, evidencias ni backups.
 - Incorpora suite xUnit con positivos, negativos y fronteras para tenant A/B, sucursal, SHA, idempotencia ordinal, procedencia, revocacion, sanitizacion, version, mutacion/restore, lotes limitados y cancelacion.
