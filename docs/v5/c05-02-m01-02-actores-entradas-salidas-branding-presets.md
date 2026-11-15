@@ -24,7 +24,7 @@ Esta unidad **delimita** quién inicia una acción de tema, identidad, logo o pr
 | Entrada / canal | Forma vigente leída | Salida/caso de error exigido |
 | --- | --- | --- |
 | \`TemaVisualService.get/update/restaurar\` | \`GET/PUT /tema-visual\`, \`POST /tema-visual/restaurar\` | \`ApiResponse<TemaVisual>\` en el cliente; errores deben mantener tema seguro. |
-| \`TemaVisual\` y \`CAMPOS_TEMA\` | 16 campos conocidos de colores y destino CSS específico | Solo tokens permitidos; string hex \`#RGB\` o \`#RRGGBB\`; sin CSS libre. |
+| \`TemaVisual\` y \`CAMPOS_TEMA\` | 15 campos conocidos de colores y destino CSS específico | Solo tokens permitidos; string hex \`#RGB\` o \`#RRGGBB\`; sin CSS libre. |
 | \`ThemeApplierService\` | \`aplicarTemaGuardado\`, \`aplicarTemaPlataforma\`, \`aplicar\` | Aplicación al \`document.documentElement\` con limpieza previa, contraste y rechazo de respuestas anteriores. |
 | \`EmpresaIdentidadService\` | \`getPublica\`, estado Signals, \`usarPlataforma\` | Nombre/logo de contexto vigente, fallback seguro; el texto no atribuye tenant. |
 | \`EmpresaConfiguracionService\` | \`getPublica\`, \`update\`, \`updateLogo\`, \`restaurarLogo\`, rutas \`/tenant/{empresaId}\` y logo tenant | DTO y URL de logo según API; **no asumir** permiso de edición por \`empresaId\` solicitado. |
@@ -38,7 +38,7 @@ Las rutas y clases anteriores son evidencia de código, no una garantía de ejec
 
 | Fuente | SHA blob | Observación |
 | --- | --- | --- |
-| \`frontend/src/app/core/models/tema-visual.model.ts\` | \`9d99a1da70c9c6da408d9a564e91512150b4aedd\` | Lista \`TemaVisual\` y \`CAMPOS_TEMA\`, 16 asignaciones CSS. |
+| \`frontend/src/app/core/models/tema-visual.model.ts\` | \`9d99a1da70c9c6da408d9a564e91512150b4aedd\` | Lista \`TemaVisual\` y \`CAMPOS_TEMA\`, 15 asignaciones CSS. |
 | \`frontend/src/app/services/tema-visual.service.ts\` | \`588aa46fc4c10f8d6be85628e919a7bd89f366ac\` | API de tema actual. |
 | \`frontend/src/app/services/theme-applier.service.ts\` | \`cbccc2795cb1b010f74ce5b2b4dc1fb20f0b41f3\` | Regex hex, limpieza y protección frente a respuesta obsoleta. |
 | \`frontend/src/app/services/theme-applier.service.spec.ts\` | \`99529c4f26a075f58d1b0a08f6817c4d42003814\` | Define casos unitarios positivos/negativos para colores, CSS ajeno y carreras A/B; se inspeccionó el archivo, **no se ejecutó**. |
@@ -64,7 +64,7 @@ Las rutas y clases anteriores son evidencia de código, no una garantía de ejec
 | Positivo futuro | Negativo futuro |
 | --- | --- |
 | P01: empleado autorizado ve y edita solo tema de su empresa | N01: usuario sin permiso intenta \`PUT /tema-visual\` |
-| P02: tema válido pasa por 16 campos y conserva contraste | N02: payload CSS o clave de campo no permitida |
+| P02: tema válido pasa por 15 campos y conserva contraste | N02: payload CSS o clave de campo no permitida |
 | P03: A→B elimina tokens y respuesta tardía de A | N03: respuesta A llega después de cambiar a B |
 | P04: visitante ve identidad de tienda resuelta por host | N04: \`storeKey\` o \`empresaId\` de A pretende datos B |
 | P05: preview de preset futuro no persiste ni eleva rol | N05: preview provoca escritura o filtra claims JWT |

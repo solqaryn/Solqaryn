@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 reparación técnica independiente de C05-02.M01.02, conteo de tokens de marca [Javier :30]
+- Corrige tres referencias documentales de 16 a 15 campos de color, asignaciones CAMPOS_TEMA y oráculo P02; contraste de blob real frontend/Angular y Domain TemaVisual con exactamente quince colores.
+- Mantiene íntegros los permisos, arquitectura, rutas, diseño y autoría histórica de PRIMARY DEV 01; sólo cambia Markdown, sin código, MySQL, IAM, UI runtime, QA/main/PROD.
+- A5_FAIL original se conserva como evidencia; esta reparación exige nueva revisión A5 independiente por Task Javier distinta de la Task reparadora J30; Scope Lock y procedencia V5 del nuevo SHA, rollback git revert.
+
 ## 2026-11-15 — V5 C14-03.M02.02 API/DTO y errores de promoción controlada [Javier :20]
 - Documenta diez operaciones conceptuales, seis DTO futuros, doce códigos de error y dieciséis invariantes de identidad, SHA, CAS, A5 y permisos por ambiente; diez pares P/N futuros no ejecutados.
 - Contrato exclusivamente dev sin rutas HTTP, workflows, deploys, secretos o DB; no autoriza QA/main/PROD y A5 independiente queda pendiente.
