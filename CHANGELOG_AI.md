@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C04-01.M02.03 persistencia e indices futuros de planes SaaS [Javier :10]
+- Define diez estructuras relacionales hipoteticas, ocho indices candidatos, seis pasos de migracion futura y doce fixtures positivos/negativos FUTUROS_NO_EJECUTADOS.
+- Conserva Plan, PlanLimite y Suscripcion implementados; sin DDL, EF migration, Aiven real, tarifas, cobros, workers ni grants JWT/RBAC/tenant.
+- Solo contrato docs/v5 y CHANGELOG; Scope Lock/V5 exact SHA, A5 independiente, rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C04-01.M02.02 contratos API, DTO, errores y compatibilidad del catálogo SaaS [Javier :00]
 - Documenta doce operaciones API conceptuales, doce DTO, catorce validaciones, doce errores y doce pares P/N FUTUROS_NO_EJECUTADOS sobre planes versionados y límites por tenant.
 - Preserva JWT/RBAC, membresía, aislamiento tenant A/B, versionado, idempotencia y decisiones comerciales de precios, moneda e impuestos aún no aprobadas; capacidad SaaS no otorga permisos.
