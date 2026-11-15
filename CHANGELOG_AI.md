@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C06-02.M01.06: contrato de salida de landing por tenant [Javier :20]
+- Cierra el contrato documental M01 con 16 bloqueos G01–G16, seis reglas de handoff M02 y ocho rutas de rollback RB01–RB08; liga cinco documentos originales por sus blobs Git.
+- Conserva como futuros NO_EJECUTADOS los oráculos positivos/negativos, aislamiento A/B, host binding, noindex, RBAC y pruebas HTTP/MySQL/Playwright; no activa landing, dominios, DNS, R2, eventos ni despliegues.
+- Sólo dos Markdown en dev con control de Scope Lock/V5 exact-SHA, evidencias A0–A4 y A5 independiente pendiente; revert normal sin modificar historia BITACORA.
+
 ## 2026-11-15 — V5 C15-05.M03.05 fix CS0234 alias xUnit [Javier :10]
 - Corrige el conflicto de nombres en tests Infrastructure: el alias Domain colisionaba con Solqaryn.Tests.Domain y resolvia WorkItem al namespace equivocado.
 - Renombra exclusivamente el alias a AuditRules y su constructor de WorkItem, sin cambios de reglas de negocio, permisos, adaptador, eventos ni migraciones.
