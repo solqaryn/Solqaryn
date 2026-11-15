@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C03-02.M02.05 eventos e idempotencia conceptual RBAC/ABAC [Javier :50]
+- Define ocho señales NO EMITIDAS, quince campos hipotéticos, catorce reglas fail-closed y doce pares P/N FUTUROS_NO_EJECUTADOS para permisos, revocación y auditoría multiempresa.
+- Requiere origen backend validado, deduplicación por tenant, JWT/RBAC/ABAC, sucursal, export/medios y correlación saneada; no instala dispatcher, queue, worker, webhook, API ni MySQL.
+- Entrega solo docs/v5 y CHANGELOG autocontenido, Scope Lock/V5 exact-SHA y A5 independiente; sin QA/main/PROD, secretos ni runtime autónomo.
+
 ## 2026-11-15 — V5 C03-02.M02.04 configuración tipada y flags seguros RBAC/ABAC [Javier :00]
 - Define dieciséis claves de política conceptual, doce flags desactivadas y doce pares P/N FUTUROS_NO_EJECUTADOS de tenancy, grants, revocación, soporte, export y medios.
 - Preserva JWT/RBAC backend, tenant/sucursal A/B, deny-by-default, ausencia de secretos y autoridad institucional; no crea configuración ejecutable ni autoriza QA/main/PROD.
