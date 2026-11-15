@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C06-04.M02.06 contrato de salida M02 portal de cliente [Javier :20]
+- Consolida los contratos documentales M02.01–05 y sus A5 independientes, diez frentes de dependencia y dieciseis invariantes fail-closed para portal CUSTOMER/ERP y tenants A/B, clientes A1/A2.
+- Define doce parejas de aceptacion POS/NEG FUTURAS_NO_EJECUTADAS y condiciones A0–A5, exact-SHA, rollback y DAG para M03; no implementa API, JWT, migracion, UI, eventos ni dispatcher.
+- Entrega exclusivamente documental con CHANGELOG autocontenido; Scope Lock/V5 dirigidos, A5 independiente pendiente y prohibicion de QA/main/PROD.
+
 ## 2026-11-15 — V5 C06-04.M02.05 eventos e idempotencia inertes portal cliente [Javier :10]
 - Especifica doce contratos de eventos futuros, envelope acotado, diez reglas de deduplicacion/reintentos/cuotas y ocho pares PN FUTUROS_NO_EJECUTADOS; no crea dispatcher, worker, bus, cola ni webhook.
 - Preserva tenant A/B y A1/A2, principal CUSTOMER/ERP separado, idempotencia scope-bound, correlationId no autorizante, payload minimo y secreto fuera de log/evento.
