@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-01.M02.05 eventos e idempotencia documental de cobertura [Javier :20]
+- Define EV01–EV10 senales conceptuales, ID01–ID08 contratos de idempotencia, LM01–LM12 limites y T01–T12 pares positivos/negativos FUTUROS_NO_EJECUTADOS para auditoria de cobertura.
+- Enlaza STANDARD, PLAN/COLA/DAG/BITACORA y contratos C15-01.M01.06/M02.01–04; separa run nativo, causalidad, SHA exacto, A5 independiente y aislamiento tenant A/B sin suplantar CAS.
+- Solo Markdown y CHANGELOG autocontenido en dev con Scope Lock/V5 exact-SHA, rollback git revert; sin ejecutar event dispatcher, webhook, MySQL, UI ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C14-02.M02.03 persistencia, indices y fixtures de aceptacion de seguridad [Javier :10]
 - Define doce agregados y ocho restricciones de persistencia PROPUESTOS_NO_IMPLEMENTADOS, seguridad tenant A/B JWT/RBAC y control de version CAS.
 - Documenta seis pasos de migracion/rollback FUTUROS y 4 positivos +12 negativos FUTUROS_NO_EJECUTADOS sin tocar MySQL, EF, backups ni QA/PROD.
