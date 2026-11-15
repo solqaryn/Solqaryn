@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C05-01.M03.02 Application design token preflight R2 [Javier :20]
+- Incorpora un caso de uso Application real, read-only y fail-closed con identidad backend, catálogo tenant y reglas Domain M03.01, sin permisos de escritura ni endpoints, EF/MySQL o adaptadores de proveedor.
+- Añade xUnit con rechazo A/B, RBAC/JWT/revocación, clave ordinal, revisión/sesión, CSS inseguro, idempotencia, errores y cancelación. No declara éxito antes de GitHub Actions de SHA causal.
+- A0–A4 CI Release/seguridad/autorización/Scope Lock/V5 y readbacks son obligatorios; A5 independiente posterior. Rollback git revert y sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C01-03.M03.02 servicio Application de configuración segura R2 [Javier :10]
 - Implementa Application .NET10 con lecturas tipadas de identidad confiable y catálogo por tenant backend, compara tenant, SHA, versión y clave canónica y delega al Domain validado.
 - Agrega nueve xUnit positivos/negativos para revocación, RBAC, A/B, catálogos falsos, variantes de casing, CAS pendiente, datos inseguros, errores y cancelación; la ruta favorable nunca escribe ni autoriza un override.
