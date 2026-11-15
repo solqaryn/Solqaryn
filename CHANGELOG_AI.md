@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C10-04.M02.02 API/DTO y denegaciones futuras de cache, jobs, respaldo y exportación [Javier :40]
+- Define únicamente ocho rutas REST propuestas, DTO internos/externos y respuestas de error fail-closed: la pertenencia y permisos tenant A/B provienen del servidor, nunca de EmpresaId/slug/header aportados por cliente.
+- Consolida doce oráculos positivos/negativos futuros NO_EJECUTADOS para retries, claves idempotentes, leasing, CSV formula injection, enlaces temporales, manifiestos backup y restore exclusivamente efímero.
+- Coteja IPublicStoreCache, OutboxRetryProcessor e ICompraDocumentoStorageService sin modificarlos. Solo diseño Markdown; Scope Lock/V5 exact-SHA y A5 independiente, sin APIs, DDL/MySQL, workers, R2, secretos, QA/main/PROD.
+
 ## 2026-11-15 — V5 C10-04.M02.04 opciones tipadas, ámbitos y flags seguros documentales [Javier :10]
 - Define catorce propuestas tipadas, 14 reglas V01–V14 y diez pares P/N de caché, jobs, backups y exportaciones, vinculadas a interfaces existentes en dev.
 - Mantiene caché privada, dispatcher, exportaciones, R2 y restore apagados; sin activar flags ni migraciones, ni inventar cuotas medidas, SQL, HTTP o reintentos reales.
