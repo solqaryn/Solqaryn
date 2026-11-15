@@ -1,5 +1,6 @@
 using Microsoft.Extensions.Logging;
 using Solqaryn.Application.AutomationV5;
+using Solqaryn.Domain.AutomationV5;
 
 namespace Solqaryn.Infrastructure.AutomationV5;
 

@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C15-05.M03.06 correccion build CS0246 [Javier :30]
+- Repara error real de GitHub-hosted Backend Release y authorization gate: incorpora using Solqaryn.Domain.AutomationV5 para V5OperationalAuditSecurityGate en la envoltura de observabilidad.
+- Mantiene sin cambios clasificacion de logs, denegacion por defecto, tenant A/B, pruebas xUnit y controles de seguridad; no desactiva analizadores ni atribuye los jobs failed/cancelled como PASS.
+- CI backend/authorization/seguridad/Scope Lock/V5 debe ejecutarse en nuevo SHA antes de A4; rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C12-04.M02.05 contrato conceptual de senales MySQL cutover [Javier :20]
 - Define dieciseis campos de sobre, diez senales FUTURAS_NO_EMITIDAS, dieciseis invariantes de tenancy/idempotencia/CAS y diez pares P/N de ensayo y rollback NO EJECUTADOS.
 - NO IMPLEMENTAR EVENTOS TODAVIA: no se activa dispatcher, worker, webhook, Task, API, EF/MySQL, backup, restore, migracion o DNS; Hostinger/Cloudflare no activados.
