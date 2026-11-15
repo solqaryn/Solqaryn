@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C12-04.M01.06 salida M01 MySQL/cutover documental [Javier :40]
+- Consolida M01.01–05 LISTO+A5 y blobs originales, dieciséis bloqueos B01–B16 de exportación, restore, aislamiento tenant, checks y autorización humana futura.
+- Define doce pares positivos/negativos FUTUROS_NO_EJECUTADOS y diez rutas RB de recuperación sin afirmar DDL, dump, backup, restore, métricas RTO/RPO ni cutover efectuados.
+- Solo dos Markdown en dev: Scope Lock y procedencia V5 exact SHA, A0–A4 documentales, A5 independiente y rollback Git; no MySQL live, R2, DNS, QA/main/PROD ni pagos.
+
 ## 2026-11-15 - V5 C14-01.M03.01 preflight de aceptacion funcional .NET 10 [Javier :50]
 - Agrega regla pura Domain para validar autoridad tenant/permiso/ownership, SHA, caso y accion allowlisted, evidencia, casos positivo-negativo y reversibilidad sin autorizar efectos ni QA.
 - Suma 11 xUnit positivos y negativos de tenant A/B, rol revocado, datos privados, SHA, prueba incompleta, pago, rollback e idempotencia; se requiere CI backend/security y Scope Lock/V5 del SHA real.
