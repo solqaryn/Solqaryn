@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C10-04.M02.04 opciones tipadas, ámbitos y flags seguros documentales [Javier :10]
+- Define catorce propuestas tipadas, 14 reglas V01–V14 y diez pares P/N de caché, jobs, backups y exportaciones, vinculadas a interfaces existentes en dev.
+- Mantiene caché privada, dispatcher, exportaciones, R2 y restore apagados; sin activar flags ni migraciones, ni inventar cuotas medidas, SQL, HTTP o reintentos reales.
+- Solo docs/v5 y CHANGELOG, Scope Lock y procedencia V5 exact SHA, A0–A4 documentales y A5 independiente; prohibidos secretos, QA/main/PROD y alteraciones de Tasks.
+
 ## 2026-11-15 — V5 C10-04.M02.03 contrato documental de persistencia e indices cache/jobs/backups [Javier :20]
 - Define nueve proyecciones conceptuales, doce invariantes y seis pasos expand/contract FUTUROS_NO_EJECUTADOS, sin DDL, EF migration, backfill ni acceso a MySQL/Aiven.
 - Incluye diez pares de fixtures positivos y negativos futuros para tenant A/B, CAS, idempotencia, exportaciones, auditoria y restore efimero; ninguna prueba o restauracion runtime se atribuye a esta entrega.
