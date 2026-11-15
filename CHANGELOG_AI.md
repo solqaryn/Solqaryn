@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-02.M02.04 configuracion tipada y flags de aceptacion de seguridad [Javier :30]
+- Define CFG01–CFG16 claves propuestas no implementadas, limites por ambito y precedencia fail-closed para JWT/RBAC/tenant A/B, scope, host, medios, CI y A5.
+- Documenta VAL01–VAL12 positivos/negativos FUTUROS_NO_EJECUTADOS y distingue documento de pentest o certificacion P0/P1; sin alterar configuracion, servicios, eventos, QA/main/PROD.
+- Cambia solo documento V5 y CHANGELOG autocontenido en dev, Scope Lock y procedencia exact-SHA, rollback git revert normal, A5 independiente pendiente.
+
 ## 2026-11-14 — V5 C15-05.M02.05 eventos e idempotencia documental de auditoria operativa [Javier :20]
 - Define EV01–EV12, ID01–ID10, LM01–LM12 y doce pares positivos/negativos FUTUROS_NO_EJECUTADOS para procedencia, owner, CI, A5, rescate y rollback sin eventos runtime.
 - Separa run nativo de autorreporte, impide doble autor/owner, distingue eventos conceptuales de transportes instalados y preserva JWT/RBAC/tenant A/B y BITACORA append-only.
