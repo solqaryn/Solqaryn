@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-03.M01.02: actores e interfaces de auditoría de seguridad/tenancy [Javier :10]
+- Delimita doce actores A01–A12 y doce entradas/salidas IO01–IO12, diferenciando JWT/RBAC/empresa/sucursal, soporte, tienda pública, archivos y jobs futuros sin inventar endpoints.
+- Define T01–T10 positivos/negativos FUTUROS_NO_EJECUTADOS para fronteras cliente/API, membresía, EF, asociaciones, Host público, soporte, medios, worker y auditoría; fuentes Git reales con blobs.
+- Sólo Markdown y CHANGELOG en dev; A5 independiente pendiente, rollback git revert; sin seguridad/runtime/DB/Cloudflare/QA/main/PROD ni liberación documental de fases terminales.
+
 ## 2026-11-14 — V5 C15-03.M01.01: alcance y no-regresión de auditoría de seguridad/tenancy [Javier :10]
 - Define NR01–NR16 y P01/N01–P08/N08 como contrato FUTURO_NO_EJECUTADO de aislamiento tenant A/B, sucursal, propiedad, archivos, jobs y control plane; ninguna prueba HTTP/MySQL ni certificación de seguridad se atribuye.
 - Vincula nueve fuentes reales y sus blobs del HEAD, destacando que TenantQueryBypassGuard sin empresa autorizada depende de cuarentena exterior y requiere test negativo, sin afirmar una vulnerabilidad probada.
