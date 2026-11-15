@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C11-04.M03.01 reglas de dominio observabilidad privada [Javier :00]
+- Agrega validador .NET 10 puro de señales allowlisted, correlación segura, etiquetas de baja cardinalidad, ventanas UTC, conteos y NO_MEDIDO; rechaza tenant A/B cruzado, membresía revocada y permiso denegado, sin conceder autoridad API.
+- Incorpora 8 métodos xUnit con positivos, negativos y fronteras; backend/seguridad/Scope Lock/V5 exact-SHA deben finalizar SUCCESS antes de LISTO. Sin API real, JWT autenticado, MySQL, exporter, alertas, SLO ni proveedores.
+- R2 fail-closed, una sola microtarea, cuatro archivos aditivos; A5 independiente, no QA/main/PROD.
+
 ## 2026-11-15 — V17 C15-05.M04.05 accesibilidad real de auditoría operativa [Javier :00]
 - Incorpora cuatro pruebas Playwright/Chromium para 320–1280 px, teclado y foco, landmarks/labels/contraste WCAG AA, y negación sin rol administrador; asserts ejecutables, no escenarios inventados.
 - Extiende únicamente el workflow de navegador V5 para incluir esta suite, sin desactivar controles ni cambiar concurrencia. Sesión sintética no equivale a JWT/API/tenant reales.
