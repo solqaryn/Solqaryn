@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C09-01.M02.05 eventos conceptuales CRM [Javier :10]
+- Establece 12 tipos semánticos INERTES, 14 campos mínimos de envelope, 16 rechazos futuros sobre tenant A/B, membresía, CAS, replay, PII, segmentación, consentimiento y contabilidad, sin declarar eventos o pruebas ejecutadas.
+- Idempotencia futura por empresa/actor/operación/huella, auditoría mínima, opt-out prioritario y outbox sólo bajo implementación técnica autorizada y pruebas xUnit/MySQL pertinentes. Las decisiones D01–D08 siguen pendientes.
+- Únicamente un Markdown de docs/v5 y esta sección de CHANGELOG en dev; A0–A4 R0 exact-SHA, A5 de otra Task Javier. No webhook, worker, API, base, secretos, QA/main/PROD.
+
 ## 2026-11-15 — V17 C09-01.M02.02 CRM universal: contratos API y validaciones conceptuales [Javier :20]
 - Define 8 operaciones O01-O08, 8 DTO D01-D08, 12 errores X01-X12, 16 validaciones V01-V16 y 10 pares P/N FUTUROS_NO_EJECUTADOS de CRM universal, sin endpoints ni permisos implementados.
 - Preserva JWT/RBAC/tenant A/B, Cliente.EmpresaId=NULL legado, PII, consentimiento, idempotencia y CAS fail-closed; D01-D08 abiertas; A0-A4 documentales y A5 independiente.
