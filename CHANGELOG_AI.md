@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C03-04.M03.01 reglas Domain de incidentes y continuidad [Javier :50]
+- Añade preflight .NET 10 fail-closed para incidente, contención y resolución, JWT/RBAC/tenant A/B, versionado, propiedad, sucursal, evidencia saneada e idempotencia.
+- xUnit positivo/negativo para revocación, acceso cruzado, estados de incidente, permisos, razón y restore separado; no realiza backup/restore ni entrega acceso o autorización.
+- Sólo dev, Scope Lock/V5 y CI backend/seguridad exact SHA, A5 independiente posterior; sin datos, migraciones, webhooks ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C01-04.M03.01 reglas Domain reales de expediente universal [Javier :50]
 - Implementa validador .NET 10 de dominio puro para timeline/observaciones/decisiones/adjuntos, tenant A/B, sucursal, membresía, permiso, versión, clave idempotente y archivado fail-closed.
 - Incluye xUnit positivo/negativo; la respuesta READY_FOR_TRUSTED_CASEFILE_ENFORCEMENT no concede acceso, escritura, descarga ni certifica MySQL/HTTP/QA.
