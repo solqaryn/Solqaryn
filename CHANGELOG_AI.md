@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C03-03.M02.01 entidades y aislamiento de auditoría de seguridad [Javier :50]
+- Documenta 16 entidades conceptuales/owners de auditoría, 18 invariantes A/B, JWT/RBAC, redacción y fallo estricto, 10 fallas y 10 pares P/N FUTUROS_NO_EJECUTADOS.
+- Distingue AuditoriaController, AuditoriaService best-effort/estricto y AuditoriaRepository sin afirmar fuga ni aislamiento HTTP/MySQL ya certificado; no cambia código, permisos, retención, consultas, DB ni eventos.
+- Dos Markdown en dev con CAS fast-forward, Scope Lock/V5 exact SHA, A0–A4 documentales y A5 de Task Javier distinta; git revert normal, sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C11-02.M02.05 idempotencia y correlación de API modular [Javier :00]
 - Define 10 contratos de frontera EV, 16 invariantes ID, 10 pares P/N FUTUROS_NO_EJECUTADOS y 8 barreras RB para seguridad tenant/JWT/RBAC, idempotencia, cuotas y correlation IDs sin permisos.
 - Revisa API CorrelationIdMiddleware, ApiResponse, ExceptionHandling y servicios Outbox existentes; NO IMPLEMENTAR EVENTOS TODAVÍA, sin worker, relay, SQL, webhook ni llamadas entre Tasks.
