@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C01-04.M03.03 case-file tenant authorization fail-closed [Javier :30]
+- Implementa gate Application .NET 10 con evidencia de servidor, SHA exacto y ownership persistido para expediente/timeline; deniega tenant A/B ajeno, membresia revocada, branch incorrecta, bypass de filtros y escrituras institucionales.
+- Agrega once pruebas xUnit positivas/negativas de autorizacion, idempotencia, version, adjuntos, revision independiente y cancelacion. Todo resultado carece de concesion runtime: requiere adaptador autenticado posterior, sin JWT HTTP, EF/MySQL, Cloudinary ni API activados.
+- A0-A4 sujetos a GitHub Actions reales por SHA, Scope Lock y V5; A5 de otra Task Javier, rollback git revert, ningun cambio a QA/main/PROD ni secretos.
+
 ## 2026-11-15 — V5 C10-02.M02.06 contrato de salida M02 archivos y dominios [Javier :20]
 - Consolida predecesores M02.01–05 LISTO+A5 y define G01–G16 gates reales y R01–R08 reversión futura, sin confundir docs con CI o inventario de proveedores.
 - Mantiene tenant A/B JWT/RBAC server-side, TTL/replay, idempotencia, hold, secretos fuera del repo y estado inventario NO_VERIFICADO.
