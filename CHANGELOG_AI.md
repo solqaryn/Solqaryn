@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-05.M02.04 configuracion tipada y ambitos de auditoria operativa [Javier :20]
+- Define CFG01–CFG16 PROPUESTAS_NO_IMPLEMENTADAS y VAL01–VAL12 positivos/negativos NO_EJECUTADOS para gobierno, owner, readback, CI exact-SHA, A5, telemetria y tenant A/B.
+- Reusa M02.01–03, STANDARD/PLAN/COLA/DAG/BITACORA y separa ultimo autorreporte de run nativo; prohibe forzar gates o declarar CAS transaccional sin soporte real.
+- Changeset solo de dos Markdown en dev, Scope Lock/V5 exact-SHA y A5 ajeno requeridos, rollback git revert; sin flags runtime, webhook, eventos, SQL, QA/main/PROD.
+
 ## 2026-11-14 — V5 C15-01.M02.05 eventos e idempotencia documental de cobertura [Javier :20]
 - Define EV01–EV10 senales conceptuales, ID01–ID08 contratos de idempotencia, LM01–LM12 limites y T01–T12 pares positivos/negativos FUTUROS_NO_EJECUTADOS para auditoria de cobertura.
 - Enlaza STANDARD, PLAN/COLA/DAG/BITACORA y contratos C15-01.M01.06/M02.01–04; separa run nativo, causalidad, SHA exacto, A5 independiente y aislamiento tenant A/B sin suplantar CAS.
