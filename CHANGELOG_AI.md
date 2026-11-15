@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C05-04.M03.01 reglas de dominio de presupuesto y caché tenant [.NET10 Javier :10]
+- Implementa guardia C# real para aislamiento de caché A/B, pertenencia, revocación, protección de recursos privados, revisiones y evidencia de build por SHA exacto.
+- Añade ocho pruebas xUnit de rechazo de autoridad cliente, respuestas 401/403 ocultas, datos JWT/PII en telemetría, budgets de Angular excedidos o advertidos y pruebas sin medición.
+- Ningún CWV, browser ni HTTP real se reporta medido; sin API, DI, EF/MySQL, Angular, cambios de budgets, webhooks, QA/main/PROD; exige CI .NET/seguridad/Scope Lock/V5 y A5 ajena.
+
 ## 2026-11-15 — V5 C02-04.M03.01 reglas Domain de consola global fail-closed [.NET 10 Javier :10]
 - Implementa tres prevalidaciones de solo lectura para operador de tenant, directorio de plataforma y acceso excepcional con grant temporal, MFA, reautenticación, auditoría y doble control.
 - Añade ocho pruebas xUnit de aislamiento tenant A/B, ausencia de grants, revocación, manipulación cliente, ventana temporal y autoaprobación; la salida nunca autoriza ejecución runtime.
