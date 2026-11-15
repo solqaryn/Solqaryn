@@ -2591,3 +2591,8 @@
 - Identifica A01–A12 actores y consumidores, IO01–IO12 entradas/salidas y F01–F10 fronteras de confianza para landing, portal, ERP, teclado, foco, formularios, responsive, motion, red y tenancy.
 - Trazabilidad contra M01.01, cinco fuentes Angular/SCSS/Playwright con blobs observados; casos positivos/negativos FUTUROS NO_EJECUTADOS, sin afirmar cumplimiento WCAG ni implementaciones de builder/checkout.
 - Sólo Markdown/CHANGELOG en dev; A0–A4 documentales y CI Scope Lock/V5 exact-SHA, A5 independiente de otro Javier; rollback git revert, sin cambios runtime, QA/main/PROD.
+
+## 2026-11-14 — V5 C15-04.M01.03: fuentes y brechas auditables UX/accesibilidad/rendimiento [Javier :20]
+- Verifica doce fuentes y blobs Git de Angular/SCSS/Playwright y antecedentes V5; inventario parcial, no afirmación de auditoría completa ni certificación WCAG.
+- Registra doce brechas G01–G12 no verificadas, matriz de superficies y pruebas futuras P01–P08/N01–N08, fuentes exactas, dispositivo, captura y SHA, sin inventar resultados E2E, Lighthouse, lector asistivo o tenant.
+- Cambios sólo Markdown/CHANGELOG en dev, A0–A4 documentales y checks Scope Lock/V5 exact SHA, A5 independiente; sin código, datos, secretos, QA/main/PROD ni servicios.
