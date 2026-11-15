@@ -1,0 +1,40 @@
+name: V5 C00-04.M04.04 - Formularios navegacion single-flight
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/src/app/features/plataforma/gobierno-cambios-v5-formularios.spec.ts'
+      - '.github/workflows/v5-c00-04-m04-04-formularios.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v5-c00-04-m04-04-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  controles-formularios:
+    name: V5 C00-04.M04.04 - Formularios navegacion mensajes y accion unica
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout SHA
+        uses: actions/checkout@v4
+      - name: Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Instalar npm fijado
+        run: npm install --global npm@11.19.0
+      - name: Instalar dependencias
+        run: npm ci
+      - name: Vitest positivo negativo del flujo real
+        run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/gobierno-cambios-v5-formularios.spec.ts
+      - name: Lint y tipado
+        run: npm run lint
+      - name: Build Angular
+        run: npm run build:prod

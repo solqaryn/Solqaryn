@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C00-04.M04.04 verificación real formularios y navegación [Javier :30]
+- Cuatro pruebas Vitest Angular sobre ruta privada, retorno, revalidación single-flight, HTTP 403 fail-closed y alta empresarial sin doble envío ni falso éxito antes de respuesta.
+- Integra CI Node 24/npm 11 con Vitest dirigido, lint y build de Angular, conservando intactos componentes y guards de otras Tasks; no presenta simulación frontend como COMMIT MySQL real.
+- Sólo pruebas UI, sin migraciones, JWT/RBAC, API, ambientes, QA/main/PROD ni A5 propia; Scope Lock/V5 y A5 independiente son necesarios. Rollback por git revert.
+
 ## 2026-11-15 — V5 C06-02.M02.02 API/DTO/errores de landing por tenant [Javier :50]
 - Contrato documental de diez operaciones futuras, nueve DTO, dieciséis errores seguros y doce pares P/N FUTUROS_NO_EJECUTADOS para landing pública separada por tenant.
 - Distingue editor y publicador RBAC, host/forwarded no confiables, preview noindex, CAS de revisión, caché por host+tenant, política SEO y aislamiento A/B, sin endpoints ni autorizaciones nuevas.
