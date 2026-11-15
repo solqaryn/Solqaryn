@@ -3101,3 +3101,8 @@
 - Implementa servicio Application .NET 10 que compone las reglas Domain M03.01 con verificación de SHA y referencia de evidencia, y niega autorización definitiva de persistencia y medios.
 - Añade pruebas xUnit positivas y negativas de tenant A/B, revocación, idempotencia, versión, SHA, adjuntos y revisión de decisiones; requiere CI exact-SHA antes de LISTO_DEV.
 - Sin endpoints, DTO HTTP, DI, MySQL, migraciones, dispatcher, eventos, secretos, QA/main/PROD; rollback git revert, A5 independiente pendiente.
+
+## 2026-11-15 — V5 C03-04.M03.02 preflight Application para incidentes [Javier :10]
+- Implementa Application .NET10 read-only que compone reglas Domain M03.01, valida SHA y evidencia depurada, y siempre niega escritura, restauración o exposición de incidentes sin adaptador autenticado.
+- Añade xUnit de rechazo por tenant A/B, JWT/membresía revocada, sucursal, idempotencia, versión, evidencia insegura y solicitudes de restauración; CI exact-SHA requerida para LISTO_DEV.
+- No API, DI activa, MySQL/EF, migraciones, backup, worker, eventos ni QA/main/PROD; A5 independiente pendiente, rollback git revert.
