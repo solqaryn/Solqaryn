@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C09-02.M02.01 modelo conceptual de fidelizacion y reputacion [Javier :00]
+- Define E01-E16 entidades conceptuales, relaciones tenant-bound e INV01-INV20 para programa, puntos, promocion, antifraude, resenas, moderacion, apelacion, posventa, consentimiento y auditoria; Cliente.EmpresaId=NULL no demuestra ownership.
+- Propone doce pares P/N FUTUROS_NO_EJECUTADOS para tenant A/B, JWT/RBAC, revocacion, replay, canje concurrente, PII, saneamiento y opt-out; runtime xUnit/MySQL/API/Angular/Playwright NO_APLICA al diff exclusivamente Markdown, pruebas reales NO_MEDIDO.
+- Un solo scope M02.01 + CHANGELOG en dev, V17 lock fila 1340 ID 2000001340; A0-A4 documentales requieren Scope Lock/V5 exact-SHA y readback institucional; A5 por Task Javier distinta. Sin ledger, migraciones, puntos, campanas, secretos, QA/main/PROD; rollback git revert.
+
 ## 2026-11-15 — V17 C13-02.M02.03 persistencia conceptual accesibilidad [Javier :50]
 - Documenta 12 registros/constraints, 12 claves e índices, plan MIG-01–06 de evolución y reversa, fixtures TENANT_A/TENANT_B, 12 pares de casos FUTUROS_NO_EJECUTADOS de aislamiento, auditoría, MySQL e idempotencia, sin crear esquema ni clases EF.
 - No hay migración, backend, Angular, API, navegador, JWT o MySQL ejecutados en esta unidad R0; sus pruebas son NO_APLICA aquí y obligatorias R2 cuando haya cambios runtime. No declarar WCAG ni liberar M03/M04 por inferencia.
