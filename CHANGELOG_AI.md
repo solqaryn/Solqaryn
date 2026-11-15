@@ -1,3 +1,13 @@
+## 2026-11-15 — V5 C14-01.M02.04 configuración tipada de aceptación [Javier :50]
+- Define dieciséis claves conceptuales CFG y doce validaciones VT con precedencia restrictiva global/tenant/rubro/sucursal/recurso; deny domina y flags de cliente no conceden permisos.
+- Propone cuatro positivos y doce negativos FUTUROS_NO_EJECUTADOS, sin modificar appsettings, Angular, JWT, RBAC ni feature flags reales.
+- Solo documentos dev con Scope Lock STRICT y V5 por SHA, A5 por otra Task Javier; sin E2E, pagos, DB, QA/main/PROD.
+
+## 2026-11-15 — V5 C14-01.M02.05 contrato futuro de idempotencia y eventos [Javier :50]
+- Documenta catorce mensajes futuros EV, diez claves de deduplicación ID y doce límites LM; no activa webhook, Task, worker, cola ni dispatcher.
+- Conserva evidencia exact-SHA, A/B y JWT/RBAC, sin declarar PASS CI por eventos ni transacciones comerciales; escenarios FUTUROS_NO_EJECUTADOS.
+- Solo Markdown dev, Scope Lock y provenance V5, A5 independiente posterior; sin datos, proveedor, QA/main/PROD.
+
 ## 2026-11-15 — V5 C14-01.M02.02 reparación causal de Scope Lock [Javier :50]
 - Corrige dos identificadores contractuales ingleses heredados en API10 por la nomenclatura neutral `stock`, conservando método, permiso y límites backend/tenant.
 - Respuesta al fallo exact-SHA de verify-solqaryn-project-scope; no se desactivan verificadores, no se modifican API ejecutables y se exigen checks del nuevo SHA.
