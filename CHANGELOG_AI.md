@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C03-04.M02.05 eventos e idempotencia documental de continuidad [Javier :50]
+- Define EV01–EV14 señales conceptuales NO_PUBLICADAS, ID01–ID10 reglas futuras de idempotencia y LM01–LM12 limites de backup, restore, revocacion, incidente y rollback.
+- Incorpora FT01–FT12 positivos/negativos FUTUROS_NO_EJECUTADOS; separa job nativo y autorreporte, exige hash/manifest, tenant A/B, permiso destructivo, RPO/RTO medidos y evidencia causal.
+- Solo dos Markdown en dev por CAS de HEAD, Scope Lock/V5 exact SHA, A5 ajeno pendiente y rollback git revert; sin eventos, webhooks, workers, backup/restore, MySQL ni QA/main/PROD.
+
 ## 2026-11-14 — V5 C03-04.M02.04 configuracion tipada y flags de continuidad [Javier :40]
 - Especifica dieciseis claves CFG propuestas NO_IMPLEMENTADAS, scopes PLATFORM/TENANT/CI y reglas V01-V16 fail-closed, sin instalar configuracion ni alterar JWT/RBAC.
 - Documenta cuatro positivos y doce negativos FUTUROS_NO_EJECUTADOS sobre tenant A/B, restauracion descartable, flags, versionado y secretos.
