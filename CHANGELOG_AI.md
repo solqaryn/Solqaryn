@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-04.M02.01 modelo conceptual UX, propiedad e invariantes [Javier :10]
+- Delimita UX01–UX12 como registros de evidencia propuestos, INV01–INV16 de seguridad/accesibilidad y AT01–AT10 futuros sin atribuir pruebas WCAG o métricas ejecutadas.
+- Conserva seis antecedentes C15-04.M01.01–06 LISTO/A5 independientes y separa modelo M02 de API, datos, eventos, M03 y permisos productivos.
+- Entrega únicamente Markdown y CHANGELOG autocontenido, Scope Lock y procedencia V5 exact-SHA requeridos, reversión git revert y A5 ajeno pendiente.
+
 ## 2026-11-14 — V5 C15-05.M01.06 bloqueos, rollback y cierre de auditoría operativa [Javier :10]
 - Define B01–B14 para identidad, PLAN/COLA/DAG, CAS, BITACORA, CI exact-SHA, procedencia de CHANGELOG, A5 y protección de ambientes; pruebas de concurrencia y cero P0/P1 siguen NO_CERTIFICADOS.
 - Verifica M01.01–05 LISTO/A5 independientes y condiciona M02 a nuevo preflight y A5 propio de M01.06; no libera runtime, migraciones, QA/main/PROD ni eventos.
