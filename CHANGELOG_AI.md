@@ -3027,3 +3027,8 @@
 - Una observación válida sigue exigiendo fuente autenticada, medición externa real y revisión A5 ajena; todas las salidas niegan escritura institucional, acceso y certificación externa.
 - Solo dev con Scope Lock/V5, backend y seguridad CI dirigidos; sin endpoints, Playwright live, DB, worker, webhooks, QA/main/PROD ni activación de infraestructura.
 
+## 2026-11-14 — V5 C15-02.M02.06 contrato de salida de arquitectura/migración [Javier :40]
+- Cierra sólo el diseño M02: OUT01–OUT16 barreras, RB01–RB08 rollback y EV01–EV08 evidencias futuras, apoyado en cinco M02 LISTO+A5 diferentes.
+- El inventario cloud, restore, migraciones, JWT/RBAC/tenant A/B, DNS/TLS y seguridad HTTP/MySQL permanecen NO_ACREDITADOS o NO_EJECUTADOS; el contrato no activa proveedores ni libera QA/main/PROD.
+- Documento+CHANGELOG autocontenidos en dev con publicación FF/CAS, Scope Lock/V5 exact SHA, A0–A4 documentales y A5 pendiente de otra Task Javier; rollback git revert.
+
