@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C10-04.M03.06 auditoria estructurada segura cache/jobs [Javier :10]
+- Implementa servicio .NET 10 Infrastructure con ILogger y lector de contexto autenticado, operaciones acotadas, tenant A/B y RBAC/revocacion fail-closed; solo codigo operacional y correlacion confiable sin secretos en logs.
+- Nueve pruebas xUnit positivas/negativas de spoof, sink, autoridad, permisos revocados, errores sanitizados, cancelacion y no concesion, requieren Release/security/auth/Scope Lock/V5 causal.
+- R2: no activa worker, cola, MySQL, HTTP, secretos ni proveedor real; sink durable requiere adaptador independiente y A5 otra Task Javier, rollback git revert.
+
 ## 2026-11-15 — V17 C02-01.M03.03 resolucion segura login 0/1/N [Javier :10]
 - Implementa politica Application .NET 10 de identidad/JWT respaldados por lector backend, membresias actuales, RBAC, sesion, preferencia por usuario, revocacion y cambio seguro: no concede permisos HTTP ni JWT.
 - Anade 15 pruebas xUnit de tenant A/B, sesion vencida, cross-account, host/role spoofing, error de proveedor, limites y cancelacion; CI backend/security/auth/Scope Lock/V5 causal obligatoria.
