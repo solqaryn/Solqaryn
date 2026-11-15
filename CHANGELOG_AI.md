@@ -1,3 +1,7 @@
+## 2026-11-15 — V5 C04-04.M02.05 eventos, idempotencia y límites de cobros [Javier :20]
+- Especifica contrato documental de dieciséis campos de evento, veinte invariantes fail-closed HMAC/RBAC/tenant/idempotencia y diez pares P/N futuros no ejecutados para correlación y conciliación.
+- No instala webhooks, colas, dispatchers, pagos, PSP, secretos ni cambios .NET/MySQL; A5 independiente pendiente y decisiones comerciales D01–D10 abiertas.
+
 ## 2026-11-15 — V5 C04-04.M02.02 contratos API/DTO y errores de cobros [Javier :50]
 - Define ocho operaciones hipotéticas, seis DTO y catorce denegaciones HMAC/RBAC/tenant/moneda, con ocho pares P/N FUTUROS_NO_EJECUTADOS; preserva PagoOnline e ingreso firmado existentes.
 - Cero PSP live, enlaces activados, webhooks ejecutados, cobros, reembolsos, migraciones o secretos; A5 ajena y CI Scope Lock/V5 exact-SHA requeridas.
