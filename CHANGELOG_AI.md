@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C01-01.M05.02 pruebas contrato API DTO tenant-context [Javier :20]
+- Incorpora cinco casos xUnit .NET10 de TenantContextController: empresa 0/-1 rechazada antes de servicio, tenant sin membresia forbidded, scope valido con DTO y selector limitado a fuente servidora.
+- Contrato real de controlador con ScopeStub determinista, NO certifica HTTP JWT EF MySQL de extremo a extremo; checks backend y seguridad exact-SHA obligatorios antes de LISTO_DEV.
+- Sin alterar codigo de produccion ni permisos, rutas, DB, eventos, webhooks o QA/main/PROD; A5 independiente y rollback git revert.
+
 ## 2026-11-15 — V5 C01-01.M05.01 xUnit identidad y membresia tenant [Javier :20]
 - Anade cinco casos de pruebas .NET 10 (tres variantes Theory y dos Fact) sobre rol empresarial vigente, revocacion, tenant A/B, IDs invalidos y rechazo de RolId legacy, sin modificar codigo de produccion.
 - El PASS exige pruebas backend GitHub Actions exact-SHA, Scope Lock y procedencia V5; reglas Domain no certifican JWT, MySQL, filtros EF ni seguridad HTTP en vivo.
