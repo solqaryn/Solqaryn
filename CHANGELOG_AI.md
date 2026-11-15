@@ -2905,3 +2905,7 @@
 - Define SEC01–SEC16 (modelo lógico), INV01–INV12 (fronteras de autoridad y auditoría) y diez pares positivos/negativos T01–T10 FUTUROS_NO_EJECUTADOS para auditoría de seguridad y tenant.
 - Deriva precedencias de M01.06 con A5 independiente y fuentes PLAN/COLA/DAG, sin declarar cero P0/P1, ejecutar pentest ni conceder acceso JWT/RBAC.
 - Únicamente documento V5 y CHANGELOG en dev; gates exact-SHA, A5 posterior de otra Task Javier, sin cambios en API, MySQL, frontend, secretos, QA/main/PROD ni proveedores.
+## 2026-11-14 — V5 C15-03.M02.02: API y DTO de auditoría de seguridad [Javier :30]
+- Propone ocho operaciones de lectura OP01–OP08, ocho DTO mínimos, doce errores E01–E12 y doce pares positivos/negativos V01–V12 como futuros contratos de seguridad/tenancy, sin nuevos endpoints.
+- Distingue JWT/RBAC real y empresa A/B desde backend de datos no confiables del cliente; no reclama ejecutar pentest, tests de API ni certificar cero hallazgos.
+- Exclusivamente docs/v5 y CHANGELOG en dev, gates exact-SHA Scope Lock/V5 y A5 de otra Task; sin migraciones, dispatcher, secretos, QA/main/PROD ni servicios reales.
