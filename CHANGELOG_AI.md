@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C07-01.M01.06: gates, rollback y liberación documental de catálogo universal [Javier :50]
+- Define K01–K14 como puertas de ownership tenant, NULL legacy, variantes, impuestos/precios/snapshots, inventario y storefront sin atribuir implementación universal.
+- Separa LISTO_DEV documental, A5 independiente y M02 con DAG/COLA/CAS nuevos; incorpora reversión aditiva y oráculos P01–P06/N01–N12 FUTUROS NO_EJECUTADOS.
+- Un documento docs/v5 y sección íntegra CHANGELOG_AI.md en dev por fast-forward CAS; sin migraciones, API, JWT/RBAC runtime, QA/main/PROD.
+
 ## 2026-11-15 — V5 C10-02.M01.06: gates de salida y reversión documental R2/dominios [Javier :50]
 - Define B01–B12 para predecesores LISTO+A5, owner CAS, Scope Lock, JWT/RBAC/tenant A/B, TTL/replay, privacidad, retención e inventario sin activar proveedores ni infraestructura.
 - Separa LISTO_DEV documental, A5 independiente y habilitación M02 reactiva; aporta niveles de rollback documental/futuro y P01–P06/N01–N12 FUTUROS NO_EJECUTADOS.
