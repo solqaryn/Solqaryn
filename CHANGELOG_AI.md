@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C02-02.M02.05 senales futuras e idempotencia placement [Javier :30]
+- Define ocho senales SIG01–08 NO EMITIDAS, quince campos de sobre EVT01–15, catorce reglas fail-closed y diez pares P/N FUTUROS_NO_EJECUTADOS de migracion shared/dedicated.
+- Sin dispatcher, webhook, workers, tareas nuevas ni eventos reales; conserva JWT/RBAC/tenant A/B, SHA exacto, idempotencia y redaccion de secretos/PII.
+- Cambios solo Markdown con Scope Lock/V5 y A5 de otro Javier pendiente; rollback git revert sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C02-02.M02.04 configuracion conceptual tipada y flags seguras [Javier :30]
 - Establece dieciseis campos CFG, doce flags futuras apagadas salvo exigencia de restore, ocho reglas de precedencia y doce validaciones fail-closed de placement shared/dedicated.
 - Define ocho pares P/N FUTUROS_NO_EJECUTADOS; no activa flags, DSN, MySQL, router, secretos, dual-write ni conexiones, y preserva JWT/RBAC/tenant A/B.
