@@ -62,7 +62,7 @@ Los códigos HTTP siguientes son **oráculos de diseño** para una futura API; n
 | ERR06 | CONCURRENT_CHANGE | 409 conceptual | Cambio de owner o revisión concurrente |
 | ERR07 | PRECONDITION_MISSING | 412 conceptual | Gate DAG o A5 aún no satisfecho |
 | ERR08 | CHECK_NOT_PASS | 409 conceptual | CI requerido cancelled/skipped/queued/failed |
-| ERR09 | INVENTORY_UNVERIFIED | 412 conceptual | Proveedor, archivo o DNS sin inventario |
+| ERR09 | PROVIDER_CATALOG_UNVERIFIED | 412 conceptual | Proveedor, archivo o DNS sin inventario |
 | ERR10 | RESTORE_NOT_PROVEN | 412 conceptual | Backup sin restore exitoso |
 | ERR11 | RATE_LIMITED | 429 conceptual | Exceso de peticiones o recursos |
 | ERR12 | OPERATION_NOT_AUTHORIZED | 403 conceptual | Migración/cutover sin orden de entorno |

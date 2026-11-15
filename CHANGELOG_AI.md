@@ -2998,3 +2998,7 @@
 - Fija compatibilidad aditiva y ocho pares T01–T08 FUTUROS_NO_EJECUTADOS; los negativos de SHA/CI, A5, JWT/RBAC, host y tenant siguen fail-closed, sin declarar recursos externos comprobados.
 - Dev y documento M02.02 + CHANGELOG autocontenido exclusivamente; A0–A4 documentales y checks Scope Lock/V5 exact-SHA, A5 pendiente de otra Task Javier; sin migraciones, eventos, secretos ni QA/main/PROD.
 
+## 2026-11-14 — V5 C15-02.M02.02: reparación del guard Scope Lock [Javier :30]
+- Corrige únicamente el nombre del error ERR09 a PROVIDER_CATALOG_UNVERIFIED en el contrato documental M02.02; se preservan semántica, pruebas futuras, contratos y propiedad.
+- No altera scripts de seguridad, reglas de autorización, checks ni controles: el commit anterior quedó VALIDANDO con Scope Lock FAILED y este SHA nuevo exige CI causal SUCCESS antes de LISTO_DEV; rollback mediante git revert normal.
+
