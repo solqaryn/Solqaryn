@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C06-04.M02.01 entidades de portal de cliente [Javier :00]
+- Define dieciseis entidades conceptuales, dieciseis invariantes y doce pares positivos/negativos FUTUROS_NO_EJECUTADOS de ownership por tenant y cliente, pedidos, direcciones, reservas, documentos y recuperacion.
+- Conserva aislamiento tenant A/B e intra-tenant A1/A2, JWT cliente distinto de ERP, RBAC, CAS, PII y respuestas neutras; ninguna tabla, endpoint, Angular, migracion o servicio se activa.
+- A0-A4 documentales y Scope Lock/V5 exact-SHA, A5 independiente pendiente; rollback git revert, sin webhooks, datos reales, secretos ni QA/main/PROD.
+
 ## 2026-11-15 — V5 C06-03.M02.06 salida documental editoriales/mapas [Javier :00]
 - Consolida cinco contratos M02.01–05 con blobs y A5 independientes verificables, dieciseis gates G01-G16, seis fronteras por capa y ocho planes RB01-RB08 FUTUROS_NO_EJECUTADOS.
 - Conserva tenant A/B, JWT/RBAC, Host/proxy sin autoridad, publicacion CAS, preview noindex, contacto y horarios aprobados, mapas opcionales con fallback textual; ningun runtime ni geolocalizacion se activa.
