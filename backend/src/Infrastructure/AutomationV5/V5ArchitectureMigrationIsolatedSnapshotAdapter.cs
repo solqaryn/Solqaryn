@@ -22,7 +22,7 @@ public sealed class V5ArchitectureMigrationIsolatedSnapshotAdapter
         _boundary = boundary with
         {
             ApprovedProviderCatalog = new HashSet<string>(
-                boundary.ApprovedProviderCatalog ?? Array.Empty<string>(),
+                boundary.ApprovedProviderCatalog ?? new HashSet<string>(StringComparer.Ordinal),
                 StringComparer.Ordinal)
         };
         _items = items.ToArray();
