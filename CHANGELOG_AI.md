@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C03-02.M02.04 configuración tipada y flags seguros RBAC/ABAC [Javier :00]
+- Define dieciséis claves de política conceptual, doce flags desactivadas y doce pares P/N FUTUROS_NO_EJECUTADOS de tenancy, grants, revocación, soporte, export y medios.
+- Preserva JWT/RBAC backend, tenant/sucursal A/B, deny-by-default, ausencia de secretos y autoridad institucional; no crea configuración ejecutable ni autoriza QA/main/PROD.
+- Documento y CHANGELOG publicados por fast-forward/CAS con controles Scope Lock y procedencia V5; A5 independiente posterior y rollback git revert.
+
 ## 2026-11-15 — V5 C03-02.M02.03 persistencia e índices RBAC/ABAC [Javier :50]
 - Define diez entidades lógicas, ocho índices, seis pasos de migración futura y doce fixtures positivos/negativos FUTUROS_NO_EJECUTADOS para tenant, sucursal, grants y privacidad.
 - Mantiene JWT/RBAC/ABAC/tenant A/B, revocación, auditoría sin PII y rollback; no crea DDL, EF, MySQL, exports, API, workers, eventos ni permisos.
