@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C07-04.M02.02 contratos API/DTO de pedidos, facturas y pagos [Javier :50]
+- Diseña 10 operaciones, 12 DTO, 14 errores y 10 reglas de compatibilidad para pedidos/pagos sin añadir endpoints, contratos runtime, PSP ni esquemas MySQL.
+- Registra 10 pares positivos/negativos futuros de tenant A/B, JWT/RBAC, idempotencia, permisos, fiscalidad y exportación; casos NO_EJECUTADOS sin afirmar CI HTTP funcional.
+- Sólo docs/v5 y CHANGELOG en dev con CAS fast-forward; Scope Lock/V5 exact SHA, A5 independiente pendiente, rollback git revert y sin QA/main/PROD.
+
 ## 2026-11-14 — V5 C07-04.M02.01 entidades, ownership e invariantes de pedidos/pagos [Javier :50]
 - Modela 12 objetos conceptuales y 14 invariantes fail-closed para cotizaciones, pedidos, facturas, cobros, stock y exportaciones; distingue código inspeccionado de contratos NO IMPLEMENTADOS.
 - Define 10 pares de pruebas futuras positivas/negativas sobre tenant A/B, JWT/RBAC, fiscalidad, idempotencia y rollback, sin ejecutarlas ni cambiar runtime, SQL, pagos o proveedores.
