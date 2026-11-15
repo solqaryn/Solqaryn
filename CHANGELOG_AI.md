@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C15-02.M03.04 adaptador aislado de snapshots de migracion [Javier :00]
+- Implementa adaptador real .NET 10 en Infrastructure con copias defensivas, comparacion SHA/tenant, lote maximo 64 y delegacion de solo lectura a preflight Application M03.03.
+- Siete pruebas xUnit positivas y negativas de sujeto, RBAC, tenant A/B, SHA, QA, DNS/secretos, restore y mutacion de colecciones; checks causales sobre SHA.
+- No ejecuta MySQL, DNS, R2, despliegue, JWT real ni A5; rollback git revert, Scope Lock STRICT y otra Task Javier para A5; sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C04-01.M02.06 contrato terminal de salida catalogo de planes [Javier :10]
 - Concilia cinco documentos M02.01-05 y A5 independientes; define dieciseis gates de seguridad, contratos de dependencia y doce pares P/N FUTUROS_NO_EJECUTADOS.
 - Preserva Plan, PlanLimite y Suscripcion actuales; no crea SQL, EF, importes, cobros, workers, eventos runtime, permisos RBAC ni nuevos releases.
