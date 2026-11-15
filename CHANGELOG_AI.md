@@ -1,3 +1,7 @@
+## 2026-11-15 — V5 C10-01.M02.01: entidades y ownership storage neutral [Javier :20]
+- Contrato documental de ocho entidades conceptuales, dieciocho invariantes tenant/RBAC/integridad y ocho pares de escenarios futuros positivos/negativos para recursos, versiones, propietarios y localizadores opacos.
+- Conserva interfaces Cloudinary existentes, no modifica código, EF, MySQL, servicios, permisos ni proveedores; M02/M03 mantienen sus DAG y A5 independiente. No declara pruebas runtime ejecutadas.
+
 ## 2026-11-15 — V5 C05-04.M02.06 dependencias y contrato de salida de ligereza UI [Javier :50]
 - Consolida diez puertas de calidad, ocho pares P/N FUTUROS_NO_EJECUTADOS y dependencias LISTO+A5 de M01 y M02; budget Angular inicial 650kb/750kb y estilos 16kb/32kb son política configurada, no métricas medidas.
 - No implementa código ni eventos, migraciones, telemetría, webhooks o despliegues; las CWV, Playwright, APIs y pruebas de aislamiento A/B quedan condicionadas a M03 con CI causal, A5 ajena y Scope Lock STRICT.
