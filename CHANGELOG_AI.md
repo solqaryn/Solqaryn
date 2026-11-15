@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C15-05.M02.03 persistencia, índices y fixtures auditoría operativa [Javier :00]
+- Define PD01–PD12 como invariantes de fuente autorizada, IX01–IX06 como índices hipotéticos y FX01–FX12 como escenarios sintéticos FUTUROS_NO_EJECUTADOS; no crea EF migrations ni tablas.
+- Contrasta modelos C15-05.M02.01/M02.02 con PLAN/COLA/DAG/BITACORA, A5 independiente, SHA CI y seguridad tenant A/B, JWT/RBAC; no atribuye transacción distribuida al Sheet.
+- Sólo dos Markdown publicados en dev con CAS/fast-forward, Scope Lock y procedencia V5 requeridos, rollback git revert; sin bases reales, QA/main/PROD, Tasks ni eventos.
+
 ## 2026-11-14 — V5 C15-05.M02.02 contrato API/DTO, errores y compatibilidad auditoría operativa [Javier :00]
 - Define siete operaciones lógicas NO_IMPLEMENTADAS, ocho DTO conceptuales, doce códigos de error y doce pares positivos/negativos FUTUROS_NO_EJECUTADOS de auditoría operativa.
 - Preserva AuditoriaController, JWT/RBAC/tenant A/B, seis Tasks Javier, SHA exacto, CAS, A5 independiente y distinción telemetría local/proveedor nativo; sin crear endpoint ni transportar datos.
