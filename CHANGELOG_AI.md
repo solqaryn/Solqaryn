@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C07-04.M02.04 configuración tipada, ámbito y flags de pedidos/pagos [Javier :50]
+- Diseña 18 parámetros/estados conceptuales y 14 validaciones fail-closed sobre plan, tenant, sucursal, RBAC, factura, caja, PSP e idempotencia; sin activar flags reales.
+- Establece 12 pares positivos/negativos FUTUROS_NO_EJECUTADOS; los overrides no habilitan efectos económicos ni saltan seguridad/Scope Lock/A5.
+- Sólo docs/v5 y CHANGELOG en dev con CAS fast-forward y CI documental exact SHA; A5 independiente pendiente y rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-14 — V5 C07-04.M02.03 persistencia, índices y fixtures de pedidos/pagos [Javier :50]
 - Diseña 12 asociaciones lógicas, 10 índices hipotéticos, 8 pasos aditivos reversibles y 12 pares de fixtures futuros para cotización, pedidos, factura, caja, pagos y stock.
 - Separa código/guardas tenant EF inspeccionados de tablas y migraciones NO IMPLEMENTADAS; mantiene EmpresaId NULL legado aislado, JWT/RBAC y tenant A/B fail-closed.
