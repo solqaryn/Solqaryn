@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C10-01.M02.06 contrato terminal de dependencias y salida storage neutral [Javier :30]
+- Documenta doce gates de diseño, contratos Domain/Application/Infrastructure/API, doce pares positivos/negativos FUTUROS_NO_EJECUTADOS y prerequisitos M01/M02 LISTO+A5; sin inferir autorización de M03.
+- Conserva Cloudinary, tenant A/B/JWT/RBAC server-side, MIME y SHA-256 de bytes reales como requisitos futuros; no crea EF/MySQL, R2, workers, eventos, feature flags, secretos, endpoints, QA/main ni PROD.
+- Entrega sólo Markdown + sección CHANGELOG autocontenida; A0–A4 documentales y Scope Lock/V5 exact SHA requeridos antes de LISTO_DEV, A5 por otra Task Javier y rollback git revert.
+
 ## 2026-11-15 — V5 C04-04.M02.05 eventos, idempotencia y límites de cobros [Javier :20]
 - Especifica contrato documental de dieciséis campos de evento, veinte invariantes fail-closed HMAC/RBAC/tenant/idempotencia y diez pares P/N futuros no ejecutados para correlación y conciliación.
 - No instala webhooks, colas, dispatchers, pagos, PSP, secretos ni cambios .NET/MySQL; A5 independiente pendiente y decisiones comerciales D01–D10 abiertas.
