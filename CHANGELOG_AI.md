@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C00-04.M04.01 reparación causal del control de rutas ERP [Javier :20]
+- GitHub Actions ERP - Contratos, pruebas y build falló en el SHA 7124d178 por FRONTEND_ROUTE_SECURITY_CONTRACT: el escáner de rutas mantenía un allowlist literal que no conocía la nueva ruta de plataforma.
+- Extiende únicamente el conjunto de rutas exactas de plataforma reconocidas por el auditor, conservando las verificaciones obligatorias de plataformaGuard, JWT autenticado, sesión backend, ámbito Plataforma y esAdministrador verdadero; no permite rutas arbitrarias, públicas, ERP ni tiendas.
+- Requiere nueva CI exact-SHA de calidad ERP, Angular, Scope Lock y procedencia V5; no se considera PASS un job fallido, cancelado o aún en progreso, y no se cambia ningún guard ni permiso.
+
 ## 2026-11-15 — V5 C00-04.M04.01 ruta protegida de gobierno de cambios [Javier :20]
 - Implementa una superficie Angular standalone, OnPush, responsive y accesible para consultar la secuencia contractual de decisiones, sin datos institucionales en vivo ni acciones operativas.
 - La nueva ruta lazy `plataforma/gobierno-cambios-v5` exige `plataformaGuard`, que revalida la sesión frente al backend; agrega pruebas Angular positivas/negativas de guard, navegación y ausencia de permisos/operaciones.

@@ -125,7 +125,7 @@ for path in route_files:
             # Solo las rutas privadas exactas del control plane reutilizan el
             # mismo guard JWT + sesion de plataforma verificada por servidor.
             # Nunca aceptar comodines, prefijos arbitrarios ni tiendas/ERP.
-            and route_path in {"plataforma", "plataforma/flujo-v5", "plataforma/cobertura-v5"}
+            and route_path in {"plataforma", "plataforma/flujo-v5", "plataforma/cobertura-v5", "plataforma/gobierno-cambios-v5"}
             and re.search(r"canActivate\s*:\s*\[\s*plataformaGuard\s*\]", block) is not None
             and "if (!auth.isAuthenticated())" in plataforma_guard
             and "return plataforma.obtener().pipe(" in plataforma_guard
