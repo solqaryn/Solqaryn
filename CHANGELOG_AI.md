@@ -1,3 +1,11 @@
+## 2026-11-15 — V5 C04-04.M02.02 contratos API/DTO y errores de cobros [Javier :50]
+- Define ocho operaciones hipotéticas, seis DTO y catorce denegaciones HMAC/RBAC/tenant/moneda, con ocho pares P/N FUTUROS_NO_EJECUTADOS; preserva PagoOnline e ingreso firmado existentes.
+- Cero PSP live, enlaces activados, webhooks ejecutados, cobros, reembolsos, migraciones o secretos; A5 ajena y CI Scope Lock/V5 exact-SHA requeridas.
+
+## 2026-11-15 — V5 C04-04.M02.03 persistencia, índices y fixtures de cobros [Javier :50]
+- Diseña ocho contratos conceptuales, siete consultas/index candidates, diez fixtures y seis pasos de migración futura; evita doble cobro, replay y cruce de tenants.
+- No crea índices, tablas, migraciones EF/MySQL, asientos, proveedor, webhook ni movimientos monetarios; rollback Git normal, A5 independiente y Scope Lock STRICT.
+
 ## 2026-11-15 — V5 C04-04.M02.04 políticas tipadas y flags seguros de cobros [Javier :20]
 - Define dieciséis opciones tipadas conceptuales, dieciséis invariantes de tenant/JWT/RBAC/PSP, HMAC/idempotencia y diez pares P/N futuros para enlaces de pago y conciliación.
 - Flags de cobro deshabilitados por defecto, sin alterar código, proveedores, dinero, secretos, datos ni eventos; decisiones comerciales D01–D10 siguen abiertas, A5 de otra Task pendiente.
