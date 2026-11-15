@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C01-04.M03.04 adaptador Infrastructure aislado y sin grants [Javier :40]
+- Implementado código real .NET 10: adaptador read-only tenant-scoped que combina dos fuentes backend confiables para preflight del expediente, deniega cross-tenant/legacy/revocación/SHA obsoleto y no registra DI, API, EF ni migraciones.
+- Añadidas pruebas xUnit positivas/negativas que ejercitan el gate Application sin permisos de lectura/escritura. CI backend/seguridad obligatoria por SHA; no atribuir PASS antes de GitHub Actions.
+- Documentados límites de snapshot simulado frente a JWT/HTTP/MySQL real, rollback normal y A5 pendiente de otra Task Javier; Scope Lock STRICT, sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C10-04.M03.03 gate de autorización cache/jobs fail-closed [Javier :30]
 - Implementa barrera real Application .NET 10 con fuente verificada, owner persistido, contexto tenant A/B, membresía/RBAC, grant de servicio y operaciones allowlisted; sin permisos efectivos ni efectos runtime.
 - Incorpora doce tests xUnit positivos/negativos: suplantación, revocación, empresa cruzada, clave/hash, versión, deadline, fuente y cancelación. CI causal exacta pendiente hasta finalizar checks requeridos.
