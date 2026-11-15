@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C12-04.M02.03 contrato documental de persistencia indices y fixtures [Javier :20]
+- Registra doce proyecciones conceptuales, catorce invariantes y seis pasos expand/contract FUTUROS_NO_EJECUTADOS; no crea entidades EF, SQL, DDL, migraciones ni acceso Aiven/Hostinger.
+- Diez pares P/N futuros requieren version EF/MySQL, control tenant A/B, manifest, hash, FK, migrador unico y ensayo de restore efimero con rollback; no se atribuyen tests realizados.
+- Solo docs/v5 + CHANGELOG en dev con Scope Lock/V5 exact-SHA, A0-A4 documentales, A5 independiente; no QA/main/PROD ni cambios de proveedores.
+
 ## 2026-11-15 — V5 C12-04.M02.02 contrato conceptual API/DTO de cutover MySQL privado [Javier :10]
 - Propone nueve operaciones, diez DTO, catorce errores saneados y ocho pares P/N futuros para preflight, manifiestos, comparaciones, restore efímero y aprobación separada de cutover.
 - Mantiene rutas simbólicas NO_IMPLEMENTADAS y control tenant JWT/RBAC, checksum, SHA, CAS/lease, revocación y fail-closed; sin acciones sobre Aiven/MySQL productivo ni migraciones.
