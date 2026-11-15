@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C03-04.M01.06 bloqueos, rollback y liberacion documental de continuidad [Javier :10]
+- Concilia las cinco entregas M01.01-05 con sus blobs Git y el baseline de backup/restore dev sin atribuir restauraciones ejecutadas.
+- Define B01-B12, RB01-RB08, L01-L12 y catorce oraculos P/N FUTUROS_NO_EJECUTADOS; mantiene JWT/RBAC, tenant A/B, permisos y RPO/RTO fail-closed.
+- Solo documento y CHANGELOG en dev, A5 independiente pendiente, Scope Lock/V5 exact-SHA, rollback git revert; sin QA/main/PROD ni runtime nuevo.
+
 ## 2026-11-14 — V5 C15-01.M02.04 configuracion tipada, ambitos y flags de cobertura [Javier :50]
 - Define CFG01–CFG16 de claves PROPUESTAS_NO_IMPLEMENTADAS con defaults fail-closed y VAL01–VAL12 escenarios positivos/negativos FUTUROS_NO_EJECUTADOS para auditoria institucional.
 - Separa gobierno/HEAD, auditoria, microtarea, ejecucion nativa y frontera tenant JWT/RBAC; no modifica CONFIG, formulas, flags runtime, tareas o autorizaciones.
