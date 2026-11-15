@@ -1,3 +1,8 @@
+## 2026-11-15 — V16 C05-01.M02.03 persistencia e indices conceptuales de design system [Javier :20]
+- Documenta doce familias de persistencia, doce accesos de indices, doce fases de migracion condicional y diez fixtures A/B positivos/negativos FUTUROS_NO_EJECUTADOS; no crea entidades EF, DDL ni datos reales.
+- Distingue exclusividad transaccional de tema ACTIVO de un mero indice ambiguo, con aislamiento tenant, revocacion, idempotencia, seguridad CSS y rollback que necesita restore real futuro en MySQL efimero.
+- Entrega individual R2 de frontera documental con Scope Lock STRICT, A0-A4 estaticas y checks exact-SHA, A5 pendiente de otra Task Javier, sin QA/main/PROD ni secreto o base modificada.
+
 ## 2026-11-15 — V16 C05-01.M02.02 contrato API/DTO seguro de design system [Javier :20]
 - Define ocho operaciones futuras, ocho DTO tipados, doce errores seguros, dieciseis validaciones y diez pares P/N FUTUROS_NO_EJECUTADOS para tema, token, branding, preview, idempotencia y aislamiento A/B.
 - No crea endpoints, controllers, DTO .NET, componentes Angular, CSS, EF/MySQL o rutas de despliegue; JWT/RBAC y ownership siguen siendo autoridad exclusiva del backend, NO_APLICA runtime al diff Markdown.
