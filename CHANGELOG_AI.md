@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C05-04.M03.02 caso Application de ligereza y tenancy [Javier :20]
+- Implementa servicio .NET 10 de preflight con fuente de evidencia backend, validación tenant A/B antes de I/O y veredicto no-autorizante sobre caché/budgets.
+- Añade ocho xUnit reales de denegación cross-tenant, revocación, evidencia ausente, cancelación y revisión obsoleta; no afirma Core Web Vitals medidos ni integración HTTP/EF.
+- Commit en dev con CHANGELOG autocontenido, Scope Lock y CI de backend/seguridad exact-SHA; A5 independiente, sin QA/main/PROD.
+
 ## 2026-11-15 — V5 C02-04.M03.03 control de autorizacion de consola global [Javier :30]
 - Implementa gate Application .NET10 fail-closed y lector tipado de evidencia backend para actor/tenant/SHA, sin conceder permisos JWT, tenant, MFA ni lectura de datos, ni derivarlos de hints del cliente.
 - Agrega siete pruebas xUnit dirigidas de revocacion, evidencia, MFA/reautenticacion, tenant A/B, grants de plataforma distintos al ERP, lease excepcional con aprobador y cancelacion; ninguna prueba se declara PASS antes de GitHub Actions causal.
