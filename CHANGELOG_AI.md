@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C06-02.M02.02 API/DTO/errores de landing por tenant [Javier :50]
+- Contrato documental de diez operaciones futuras, nueve DTO, dieciséis errores seguros y doce pares P/N FUTUROS_NO_EJECUTADOS para landing pública separada por tenant.
+- Distingue editor y publicador RBAC, host/forwarded no confiables, preview noindex, CAS de revisión, caché por host+tenant, política SEO y aislamiento A/B, sin endpoints ni autorizaciones nuevas.
+- Solo Markdown en dev, Scope Lock/V5 exact-SHA, A0–A4 documentales y A5 independiente; cero MySQL, DNS/TLS, provider R2, eventos, QA/main/PROD; rollback git revert.
+
 ## 2026-11-15 — V5 C00-04.M04.03 branding tipado de gobierno [Javier :30]
 - Agrega marca de plataforma o variante neutra mediante Angular 22 Signals `input`/`computed`, clases y tokens visuales controlados, sin interpolación de CSS, HTML arbitrario o identidad de tenant.
 - Incorpora cuatro pruebas Vitest positivas/negativas (autoridad, fallback, payload hostil y falta de sesión) en un job real Node 24 GitHub Actions; mantiene `plataformaGuard` y consulta de solo lectura.
