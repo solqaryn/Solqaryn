@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C12-04.M02.01 entidades ownership MySQL privado cutover documental [Javier :20]
+- Define doce entidades conceptuales, dieciseis invariantes de tenant/PK/FK/manifest/privilegios y diez pares positivos-negativos FUTUROS_NO_EJECUTADOS, sin inventar resultados MySQL.
+- Conserva compatibilidad .NET 10/EF Core 10.0.12/MySql.EntityFrameworkCore 10.0.9, Verified* y autorizacion de migrador unico; Hostinger/Cloudflare son objetivos NO ACTIVADOS.
+- Solo docs/v5 y CHANGELOG_AI.md en dev; Scope Lock/V5 exact SHA, A0-A4 documentales, A5 independiente; sin DDL, dump, backup, restore, QA/main/PROD o proveedores.
+
 ## 2026-11-15 — V5 C11-03.M01.06 puertas de salida y reversión de outbox/eventos [Javier :10]
 - Consolida B01–B14 de aislamiento/actor/tenant, CAS/lease, idempotencia, orden, cuota y seguridad de payload; define RB01–RB10 de contención y rollback futuro.
 - Propone diez pares P/N de aceptación FUTUROS_NO_EJECUTADOS, conserva contratos Outbox existentes, exige A5 independiente antes de M02 y CI real para código M03.
