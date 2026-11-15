@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C14-03.M01.06 bloqueos y reversión de promoción controlada [Javier :50]
+- Documenta dieciséis barreras de salida, diez rutas de rollback y doce pares P/N futuros para separar evidencias DEV, permiso QA y eventual autorización PROD; no efectúa ningún despliegue.
+- Verifica cinco predecesores LISTO+A5 independientes y blobs de fuentes, conserva riesgos y decisiones abiertas, exige SHA, JWT/RBAC/tenant A/B, CI causal y reversión probada para fases futuras.
+- Dev y dos Markdown solamente, Scope Lock STRICT y V5 exact SHA, A5 posterior de otra Task; sin migraciones, secretos, QA/main/PROD, eventos, servicios ni pagos.
+
 ## 2026-11-15 — V5 C14-01.M02.04 configuración tipada de aceptación [Javier :50]
 - Define dieciséis claves conceptuales CFG y doce validaciones VT con precedencia restrictiva global/tenant/rubro/sucursal/recurso; deny domina y flags de cliente no conceden permisos.
 - Propone cuatro positivos y doce negativos FUTUROS_NO_EJECUTADOS, sin modificar appsettings, Angular, JWT, RBAC ni feature flags reales.
