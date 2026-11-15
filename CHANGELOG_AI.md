@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C14-01.M02.02 contratos API/DTO y errores de aceptación [Javier :50]
+- Documenta doce rutas candidatas y DTO, catorce validaciones backend y doce errores seguros para aceptación pública, privada, administrativa y comercial; no crea endpoints ni altera contratos runtime.
+- Incluye cuatro escenarios positivos y doce negativos FUTUROS_NO_EJECUTADOS, con límites JWT/RBAC/tenant A/B, PSP, fiscal, versión e idempotencia sin asumir resultados E2E.
+- Dos Markdown dev, Scope Lock STRICT, V5 exact-SHA y A5 independiente; no API operativa, EF/MySQL, migraciones, cobros, webhooks, QA/main/PROD.
+
 ## 2026-11-15 — V5 C15-02.M03.03 preflight autorización, RBAC y tenancy para migración [Javier :40]
 - Añade guard Application .NET 10 fail-closed de principal, identidad/tenant, permisos backend declarados, Scope Lock y SHA antes de evaluar el servicio de migración M03.02.
 - Agrega xUnit de sesión no autenticada, rol ausente, tenant A/B, sujeto falseado, QA/PROD, proveedor no autorizado, DNS/secrets y recuperación insuficiente; no comprueba JWT firmado ni datos MySQL reales.
