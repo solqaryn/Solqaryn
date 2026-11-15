@@ -1,3 +1,8 @@
+## 2026-11-14 — V5 C14-02.M02.01 ownership e invariantes de aceptación de seguridad [Javier :00]
+- Modela SE01–SE14 y SI01–SI16 para sujeto, membresía, RBAC, tenant A/B, hosts, medios, hallazgos y revisión independiente, sin crear tablas ni endpoints.
+- Especifica SA01–SA12 escenarios positivos/negativos FUTUROS_NO_EJECUTADOS; no inventa pentest, BOLA/IDOR certificados ni ausencia de P0/P1.
+- Sólo dos Markdown en dev por fast-forward CAS con Scope Lock/V5 exact SHA, rollback git revert y A5 por otra Task Javier; sin QA/main/PROD.
+
 ## 2026-11-14 — V5 C15-01.M02.03 persistencia e indices de auditoria de cobertura [Javier :50]
 - Propone PD01–PD12 registros logicos, IX01–IX06 indices condicionales y FX01–FX12 casos positivos/negativos FUTUROS_NO_EJECUTADOS; no crea tablas ni migraciones.
 - Contrasta AppDbContext, TenantQueryBypassGuard y CanonicalMySqlPhysicalContract reales con la autoridad STANDARD/PLAN/COLA/DAG/BITACORA; no certifica cero huerfanos, P0/P1 ni integridad runtime.
