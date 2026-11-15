@@ -4306,3 +4306,8 @@
 - Cierra contrato DOCUMENTAL de M01 con dieciseis BL01-BL16 para tenencia A/B, almacen/sucursal, idempotencia, transferencias, costos, stock, fallos parciales, Scope Lock, CI y A5.
 - Define diez alternativas RB01-RB10 y doce condiciones SAL01-SAL12; relaciona NR01-12, R01-12, D01-08 y P01-14/N01-14 FUTUROS NO_EJECUTADOS, sin afirmar test SQL/HTTP ejecutado.
 - R0, solo documento y CHANGELOG, sin API, JWT, DB, facturas, workers o UI; Scope Lock y V5 exact-SHA antes de LISTO, A5 otra Task Javier, rollback git revert sin QA/main/PROD.
+
+## 2026-11-15 — V16 C08-04.M03.01 Domain ciclo modulos sectoriales [Javier :10]
+- Implementado Domain .NET 10 para prevalidar ciclo Disabled/Enabled/Suspended/Retired de capacidades sectoriales, con backend JWT/RBAC, membresia, allowlist tipada, pertenencia A/B, plan/rubro/tenant, denylist, idempotencia y revision CAS.
+- Doce metodos xUnit positivos, negativos y fronteras sobre rol revocado, tenant cruzado, capabilities desconocidas, overrides del cliente, estado ilegal y version stale. Todo veredicto NO autoriza runtime, DB, API ni activacion efectiva.
+- V15 riesgo R2: CI backend Release, autorizacion, seguridad, Scope Lock y V5 exact-SHA antes de LISTO; A5 Task Javier distinta, sin MySQL/EF, Angular, API, secrets, webhook, produccion ni rollout.
