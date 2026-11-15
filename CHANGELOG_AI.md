@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C03-03.M02.06 dependencias y salida contractual de auditoría [Javier :50]
+- Consolida cinco contratos M02 de auditoría de seguridad y prerrequisitos del DAG por ID exacto, con diez gates S01–S10 para M03 y doce pares P/N de aceptación FUTUROS_NO_EJECUTADOS.
+- Preserva JWT/RBAC, aislamiento tenant A/B, auditoría strict frente a best-effort, correlación saneada, idempotencia futura, aprobación separada y política de retención no implementada.
+- Entrega documental únicamente, sin API/SQL/eventos/worker/webhook ni QA/main/PROD; exige CI Scope Lock/V5 exact-SHA, A0–A4 con readback y A5 independiente, rollback git revert.
+
 ## 2026-11-15 — V5 C00-04.M04.01 Vitest dirigido en GitHub Actions [Javier :20]
 - Añade al workflow V5 de estados de plataforma una ejecución real en GitHub-hosted Node 24 del nuevo `app.routes.governance-v5.spec.ts`, incluidos guard privado, ruta única, lazy-load y render accesible sin botones operativos.
 - Agrega únicamente los paths necesarios para activar la prueba en cambios de componente/spec. Conserva los jobs históricos de permisos y branding, sin deshabilitar comprobaciones ni manipular resultados.
