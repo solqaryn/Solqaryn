@@ -3047,3 +3047,7 @@
 - El inventario cloud, restore, migraciones, JWT/RBAC/tenant A/B, DNS/TLS y seguridad HTTP/MySQL permanecen NO_ACREDITADOS o NO_EJECUTADOS; el contrato no activa proveedores ni libera QA/main/PROD.
 - Documento+CHANGELOG autocontenidos en dev con publicación FF/CAS, Scope Lock/V5 exact SHA, A0–A4 documentales y A5 pendiente de otra Task Javier; rollback git revert.
 
+## 2026-11-14 — V5 C10-01.M01.06: bloqueo, rollback y salida de storage neutral [Javier :00]
+- Cierra solo el contrato documental terminal M01 de C10-01: BL01–BL14, RB01–RB10 y gate de paso a diseño M02 sin activar Cloudinary/R2/Hostinger ni migrar objetos.
+- Contrasta cinco documentos M01.01–05 con blobs y A5 independientes, el precedente C01-03.M01.06, JWT/RBAC y tenant A/B; los tests HTTP/MySQL/checksum/restore siguen NO_EJECUTADOS.
+- Dos Markdown dev por fast-forward/CAS, Scope Lock y V5 exact-SHA antes de LISTO_DEV; A5 pendiente de otra Task Javier, rollback git revert sin QA/main/PROD.
