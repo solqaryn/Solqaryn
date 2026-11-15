@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C05-02.M02.01 entidades branding por empresa y presets [Javier :50]
+- Distingue TemaVisual GLOBAL de Empresa/ConfigEmpresa reales y define 14 objetos logicos E01-E14 de branding tenant propuesto, sin materializar tablas o endpoints.
+- Documenta 16 invariantes I01-I16 y 4 positivos/10 negativos FUTUROS_NO_EJECUTADOS para ownership, CAS, contraste, revisiones, assets y contexto A/B.
+- Solo Markdown dev; Scope Lock y V5 exact-SHA, A5 independiente; sin Angular, MySQL, API, workers, migraciones ni QA/main/PROD.
+
 ## 2026-11-15 — V5 C02-03.M02.05 eventos futuros idempotencia y correlacion [Javier :50]
 - Especifica 10 senales conceptuales NO EMITIDAS, 16 campos de sobre propuesto y 14 invariantes de entrega, versionado CAS, revocacion y compensacion.
 - Registra cuatro casos positivos y diez negativos FUTUROS_NO_EJECUTADOS; nunca emplea tenant, host, DSN o rol cliente como autoridad ni introduce bus, dispatcher, worker o webhook.
