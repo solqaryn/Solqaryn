@@ -1,3 +1,8 @@
+## 2026-11-15 — V5 C03-02.M02.02 API/DTO, errores y compatibilidad RBAC/ABAC [Javier :50]
+- Especifica doce operaciones API conceptuales, ocho DTO, catorce errores seguros, dieciséis invariantes y doce pares P/N FUTUROS_NO_EJECUTADOS sobre autorización multiempresa.
+- Conserva JWT, RolPermiso, ABAC por recurso/sucursal, exportaciones y enlaces a medios; contratos propuestos no crean endpoints, SQL, workers ni tests runtime.
+- Entrega solo docs/v5 + CHANGELOG con Scope Lock/V5 exact-SHA y A5 independiente posterior, sin QA/main/PROD ni nuevos permisos.
+
 ## 2026-11-15 — V5 C14-01.M02.06 contrato terminal de aceptación funcional [Javier :00]
 - Establece dieciséis condiciones AF de cierre, doce pares P/N FUTUROS_NO_EJECUTADOS y ocho rutas de recuperación y rollback para aceptación pública/privada multitenant.
 - Preflight PLAN/COLA/DAG y M01.01–06 más M02.01–05 con A5 independiente; exige Scope Lock, SHA exacto, JWT/RBAC/tenant A/B y owner CAS sin sustituir pruebas runtime.
