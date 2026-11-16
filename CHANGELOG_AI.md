@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C05-01.M03.04 adaptador aislado de design tokens, tenant y revision [Javier :50]
+- Implementa Infrastructure .NET 10 de solo lectura sobre Application/Domain de design tokens, con captura inmutable del catálogo ordinal, actor/tenant, sesión/revisión y SHA; nunca crea provider MySQL, JWT, ruta, DI o cambio real de tema.
+- Incorpora 15 pruebas xUnit adversariales R2 de tenant A/B, RBAC/revocación, SHA, CSS seguro, alteración posterior del allowlist, catálogos obsoletos, errores y cancelación; resultado positivo siempre exige un adaptador autenticado separado.
+- Requiere CI causal Backend Release, seguridad, autorización, Scope Lock, V5, lectura institucional y A5 de Task Javier distinta; riesgo R2, rollback git revert normal, sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C01-02.M03.04 snapshot aislado de capabilities tenant/rol [Javier :20]
 - Implementa adaptador Infrastructure de captura sintética tenant/recurso con claves ordinales congeladas y flags de persistencia, RBAC y autorización forzados a false; nunca concede permisos ni accede MySQL/JWT real.
 - Agrega 9 xUnit adversariales: tenant A/B, resource/ownership, colecciones mutables, comparer case-insensitive, capturas incompletas, cancelación y ausencia de promociones; pruebas reales pendientes GitHub-hosted.
