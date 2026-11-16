@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C11-04.M06.01 auditoría falsable de evidencias reales vs mocks [Javier :30]
+- Confronta seis microtareas M05 de observabilidad con SHA, suite real en GitHub-hosted y alcance demostrable; identifica dónde el navegador es real pero la sesión/HTTP está simulada.
+- Declara NO_MEDIDO para SLO, Core Web Vitals, costes y exportadores reales; NO certifica JWT, RBAC, tenant A/B HTTP ni MySQL a partir de unit tests o fixtures.
+- R0 documental: A0–A4 exige Scope Lock/procedencia exact-SHA y readback del Sheet; A5 pendiente de Task Javier independiente, rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-16 — V18 reparación P2 C13-04.M03.06 recibo honesto ante logger deshabilitado [Javier :50]
 - Corrige `Recorded=true` falso: IsEnabled(Information/Warning)=false devuelve AUDIT_SINK_DISABLED y Recorded=false; errores del logger permanecen opacos.
 - Añade cuatro regresiones xUnit con niveles deshabilitados, NullLogger y fallos del proveedor; CI .NET 10 Release por SHA y nueva A5 independiente, conservando A5_FAIL histórico. No certifica auditoría durable, JWT ni MySQL.
