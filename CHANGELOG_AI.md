@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C02-02.M03.05 previsualización de cola de placement aislada [Javier :10]
+- Añade Infrastructure .NET 10 C0202PlacementIsolatedDispatchQueue: admisión sintética única, mutex y fingerprint ordinal sobre journal M03.04; ningún hosted worker, provider, DB, migración, red ni cutover real.
+- Incorpora 11 xUnit positivos/negativos de tenant A/B, actor/SHA, JWT-RBAC/revocación, DSN, idempotencia/replay, concurrencia de 24, cancelación y constructor fail-closed; requeridos Backend Release, seguridad, Authorization, Scope Lock y V5 por SHA.
+- V15 R2 / V17 single-active, A5 de otra Task Javier; no atribuir pruebas MySQL/HTTP, no QA/main/PROD; git revert normal como rollback.
+
 ## 2026-11-15 — V17 C14-02.M03.06 auditoría segura de aceptación [Javier :50]
 - Implementa sink Infrastructure .NET 10 que resume decisiones del gate Application en evento tipado y redactado: resultados fijos, correlación sólo con contexto verificado, sin tenant/actor/recurso/SHA ni PII/JWT/secretos en logs.
 - Incluye 11 xUnit positivos/negativos de tenant A/B, JWT/RBAC revocado simulado, SHA, resource spoof, error, bypass y restauración, cancelación y logger fallido; la auditoría in-memory no certifica proveedor duradero.
