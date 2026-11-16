@@ -33,7 +33,7 @@ async function reader(page: Page, allowed = true): Promise<void> {
       body: JSON.stringify({ success: true, data: {
         permisos: allowed ? ['Ventas:Ver'] : [],
         capacidadesHabilitadas: allowed ? ['Ventas:Ver'] : [],
-        rutasHabilitadas: allowed ? ['pedidos-venta'] : [],
+        rutasHabilitadas: allowed ? ['pedidos-venta', 'pedidos-venta/:id'] : [],
         operacionMultiEmpresaRestringida: true, esAdministrador: false
       } }) });
   });

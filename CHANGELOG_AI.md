@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 corrección fixture de ruta detalle C07-04.M04.04 [Javier :40]
+- Chromium SHA 305f1300 acreditó 9/10 PASS y un FAIL: guard real denegó el detalle porque el fixture solo permitía la ruta listado, no pedidos-venta/:id. No se cuenta CI fallida como éxito.
+- Añade al allowlist SIMULADO del test la ruta de consulta explícita del detalle, sin cambiar permiso backend, producto, guard ni acciones mutadoras; conserva anónimo/403 y single-flight.
+- Nueva CI GitHub-hosted exact-SHA, Scope Lock/V5 y A5 distinta requeridas. R2 por pedidos, solo dev, sin pagos, JWT real, QA/main/PROD.
+
 ## 2026-11-16 — V17 reparación regresión de cobertura por C14-04.M04.02 [Javier :40]
 - Chromium del SHA 05e875f4 pasó 46/48 pruebas; dos casos de cobertura fallaron al recibir mensaje sin_permiso en lugar de su error de revocación existente. Ninguna ejecución fallida es PASS.
 - Restringe la nueva clasificación HTTP 401/403 solamente a /plataforma/flujo-v5; preserva intacta la vista de cobertura y sus pruebas antiguas, además de los cinco escenarios nuevos de readiness.
