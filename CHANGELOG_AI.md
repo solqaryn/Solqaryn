@@ -5820,3 +5820,8 @@
 - Añade suite Playwright/Chromium de cinco casos causales para guard sin sesión, denegación 403, teclado Tab y Enter real sin foco programático, etiquetas, foco visible, 320/375/768/1280 y contraste WCAG AA 4,5:1 calculado.
 - Agrega workflow aislado por SHA, cancel-in-progress=false, Node/Angular build y Chromium loopback con fixtures sintéticos; no acredita JWT, MySQL, tenancy backend ni Web Vitals reales.
 - A0 R1 y rollback documentados; A1-A4 sujetos a validación GitHub Actions y Scope Lock exact-SHA; A5 otra Task Javier. V17 lock 2000000852 y solo dev.
+
+## 2026-11-16 — V17 C07-04.M04.02 pruebas reales estados y permisos pedidos [Javier :00]
+- Añade cinco pruebas Playwright/Chromium: anónimo y permiso Ventas:Ver denegado, carga a vacío, error 503 con retry a éxito, lectura autorizada sin acciones ni HTTP mutador a 320/768/1280.
+- Nuevo workflow dirigido por SHA exacto y cancel-in-progress=false con Angular lint/build y Chromium en loopback, fixtures sintéticos, sin certificar JWT/tenant backend, MySQL, caja, pagos ni fiscalidad.
+- Alcance R2, A0 estática y rollback git revert documentados; A1-A4 sujetos a CI exact-SHA y readback; A5 otra Task Javier, V17 lock 2000001137; no QA/main/PROD.
