@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C01-04.M03.05 proyección acotada de cronología privada [Javier :50]
+- Agrega un worker .NET 10 in-process, determinista y read-only para un máximo de 64 eventos de expediente; rechaza tenant A/B, expediente cruzado, versión futura, eventos duplicados, UTC inválido y evidencia insegura sin producir resultados parciales.
+- Incluye diez pruebas xUnit positivas/negativas/frontera, snapshot de salida inmutable, cancelación, documento de límites y rollback. El resultado NO autoriza lectura, persistencia ni medios; no hay adaptador real EF/MySQL/JWT HTTP ni DI/endpoint.
+- Riesgo R2, A0-A4 sujetos a CI causal GitHub-hosted y Scope Lock/V5 exact SHA, A5 por Task Javier distinta. Sin QA/main/PROD ni secretos; rollback git revert normal.
+
 ## 2026-11-16 — V17 C02-04.M04.03 branding seguro allowlisted de consola global [Javier :30]
 - Agrega marca visual dinámica estrictamente local entre dos presets estáticos en la superficie privada del control plane, sin CSS remoto, nuevas llamadas, permisos, grants, tenancy ni datos reales.
 - Conservar guard, comprobación de sesión del backend y acceso fail-closed: la selección no autoriza operaciones y se oculta ante 403 o revocación.
