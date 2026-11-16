@@ -1,3 +1,8 @@
+## 2026-11-15 - V17 C09-03.M02.04 configuracion tipada y feature flags seguros Social Hub [Javier :40]
+- Define doce flags conceptuales por plataforma/empresa/canal, doce restricciones fail-closed y doce pares de pruebas FUTUROS_NO_EJECUTADOS (0/12 runtime); R0 Markdown, no valores configurados en produccion.
+- Mantiene denegacion por defecto, tenant A/B, consentimiento, opt-out, roles revocados, idempotencia y proveedor allowlist sin crear endpoints, schedulers, credenciales, workers o envios reales.
+- Exige Scope Lock/V5 por SHA y A5 independiente; .NET/MySQL/HTTP/Chromium NO_APLICA a este diff; no habilita QA/main/PROD.
+
 ## 2026-11-15 - V17 C09-03.M02.02 contratos API DTO y errores Social Hub [Javier :40]
 - Define doce operaciones conceptuales, doce DTO, dieciseis errores tipados y doce pares positivos/negativos FUTUROS_NO_EJECUTADOS (0/12 runtime) para campanas, consentimiento y opt-out.
 - Especifica identidad de empresa del backend, RBAC/revocacion, aislamiento A/B, clave de idempotencia con digest separado, versionado, control de errores y rollback; R0 Markdown sin rutas, proveedores, envios ni tablas reales.
