@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C10-04.M04.02 estados privados y permisos Angular [Javier :20]
+- Refuerza estados carga/vacío/error/éxito/sin-permiso, oculta la guía ante revocación de sesión y evita declarar éxito con respuesta inválida o vacía; mantiene ruta guard y solo lectura.
+- Amplía Vitest adversarial y agrega CI dirigida GitHub-hosted con lint, build Angular 22.2.1 y Chromium Playwright con API sintética, sin atribuir autorización HTTP/JWT/DB real.
+- Entrega individual con candado V17, Scope Lock/V5 exact SHA, A5 de otra Task Javier y rollback por revert, sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C02-02.M03.06 auditoría segura de cola de placement [Javier :50]
 - Implementa sink Infrastructure .NET 10 de resultado estructurado y redactado para cola sintética M03.05; token, tenant, actor, SHA, DSN, idempotencia, PII y errores externos nunca salen en logs, ni se autoriza migración o acceso.
 - Añade 13 xUnit para nominal no autorizante, denegaciones tenant A/B, membresía/revocación, SHA y correlación, código desconocido, cantidad inválida, contexto/constructor, cancelación y logger fallido.
