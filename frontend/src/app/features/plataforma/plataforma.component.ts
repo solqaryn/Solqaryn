@@ -1,6 +1,7 @@
 import { Component, ChangeDetectionStrategy, inject, signal } from '@angular/core';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { finalize } from 'rxjs';
+import { HttpErrorResponse } from '@angular/common/http';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCardModule } from '@angular/material/card';
 import { MatIconModule } from '@angular/material/icon';
@@ -201,6 +202,26 @@ import { DesignSystemV5Component } from './design-system-v5.component';
                 {{ ligerezaCompacta() ? 'Ver criterios' : 'Reducir detalles' }}
               </button>
             </div>
+        <div class="ui-lightness-v5__feedback" aria-live="polite" aria-atomic="true" data-testid="c0504-feedback">
+          @if (cargandoEmpresas()) {
+            <p role="status" data-testid="c0504-loading">Cargando datos autorizados del directorio…</p>
+          } @else if (errorEmpresas()) {
+            @if (directorioSinPermiso()) {
+              <p role="alert" data-testid="c0504-permission">Permiso insuficiente. No se muestran datos de empresas ni detalles del servidor.</p>
+            } @else {
+              <p role="alert" data-testid="c0504-error">No se pudo actualizar el directorio. Puede reintentarse sin perder los controles de acceso.</p>
+              <button mat-stroked-button type="button" [disabled]="cargandoEmpresas()" (click)="cargarEmpresas()">Reintentar directorio</button>
+            }
+          } @else if (directorio(); as resultado) {
+            @if (resultado.items.length === 0) {
+              <p role="status" data-testid="c0504-empty">Consulta completada: no hay empresas que mostrar.</p>
+            } @else {
+              <p role="status" data-testid="c0504-success">Consulta completada: {{ resultado.items.length }} empresas en esta página autorizada.</p>
+            }
+          } @else {
+            <p role="status" data-testid="c0504-pending">Esperando resultado de consulta autorizada.</p>
+          }
+        </div>
             @if (ligerezaCompacta()) {
               <p class="ui-lightness-v5__status" role="status">Resumen compacto: tres criterios disponibles sin solicitudes adicionales.</p>
             } @else {
@@ -343,6 +364,10 @@ import { DesignSystemV5Component } from './design-system-v5.component';
     .ui-lightness-v5__checks strong { display: block; margin-bottom: 8px; }
     .ui-lightness-v5__checks span, .ui-lightness-v5__boundary { color: var(--color-text-muted); }
     .ui-lightness-v5__boundary { margin: 12px 0 0; }
+    .ui-lightness-v5__feedback { margin: 14px 0; padding: 12px 16px; border: 1px solid #dfe5ec; border-radius: 10px; background: var(--color-background, #f8fafc); overflow-wrap: anywhere; }
+    .ui-lightness-v5__feedback p { margin: 4px 0 10px; }
+    .ui-lightness-v5__feedback button { min-height: 44px; }
+    .ui-lightness-v5__feedback [role='alert'] { color: var(--color-danger, #b3261e); }
     @media (max-width: 760px) { .ui-lightness-v5__checks { grid-template-columns: 1fr; } }
     .directory-card { margin-top: 20px; }
     .directory-card mat-card-content { padding: 20px 24px; }
@@ -376,6 +401,7 @@ export class PlataformaComponent {
   readonly directorio = signal<DirectorioPlataforma | null>(null);
   readonly cargandoEmpresas = signal(false);
   readonly errorEmpresas = signal<string | null>(null);
+  readonly directorioSinPermiso = signal(false);
 
   constructor() {
     if (!this.vistaFlujoV5 && !this.vistaCoberturaV5) this.cargarEmpresas();
@@ -385,11 +411,15 @@ export class PlataformaComponent {
     if (this.cargandoEmpresas()) return;
     this.cargandoEmpresas.set(true);
     this.errorEmpresas.set(null);
+    this.directorioSinPermiso.set(false);
     this.directorio.set(null);
     this.empresasApi.listar(pagina).pipe(finalize(() => this.cargandoEmpresas.set(false)))
       .subscribe({
         next: respuesta => this.directorio.set(respuesta),
-        error: () => this.errorEmpresas.set('No se pudo consultar el directorio global. No se mostrará información de empresas sin autorización verificada.')
+        error: (err: unknown) => {
+          this.directorioSinPermiso.set(err instanceof HttpErrorResponse && (err.status === 401 || err.status === 403));
+          this.errorEmpresas.set('No se pudo consultar el directorio global. No se mostrará información de empresas sin autorización verificada.');
+        }
       });
   }
 

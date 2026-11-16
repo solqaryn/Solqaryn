@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C05-04.M04.02 estados de lectura privada y denegación segura [Javier :30]
+- Conecta el feedback de ligereza a los cinco estados reales de GET directorio existente: carga, vacío, error recuperable, éxito y falta de permiso; no muestra nombres ni respuestas crudas en el nuevo panel.
+- Mantiene guard de plataforma, no añade endpoints ni llamadas de escritura y aplica reintento GET explícito protegido contra doble activación; incorpora seis pruebas Chromium causales y workflow SHA-aislado.
+- Angular 22.2.1, riesgo R1; validación exact-SHA y A5 independiente exigidas. No certifica JWT/MySQL live ni LCP/CLS reales, sin QA/main/PROD; rollback git revert normal.
+
 ## 2026-11-16 — V17 C02-04.M04.05 accesibilidad y contraste de consola global [Javier :20]
 - Cinco pruebas Playwright Chromium comprueban anónimo/403, responsive 320/375/768/1280, labels, teclado Tab/foco y blanco 44px y contraste calculado >=4.5:1.
 - Se amplía workflow SHA-aislado de consola para ejecutar pruebas anteriores y nuevas con Angular lint/build sin bajar gates; no se cambia código de permisos, rutas ni backend.

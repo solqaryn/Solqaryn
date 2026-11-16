@@ -1,0 +1,71 @@
+name: V19 C05-04.M04.02 - superficie privada de estados de ligereza UI
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/src/app/features/plataforma/plataforma.component.ts'
+      - 'frontend/e2e/c05-04-m04-02-feedback.spec.ts'
+      - '.github/workflows/v19-c05-04-m04-02-feedback.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c0504-m0402-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  ui-feedback:
+    name: C05-04.M04.02 - Angular build y Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm compatible
+        run: npm install --global npm@11.19.0
+      - name: Instalar dependencias reproducibles
+        working-directory: frontend
+        run: npm ci
+      - name: Typecheck, lint y build real
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Preparar Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Servir Angular local
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > v19-c0504-m0402.log 2>&1 &
+          for attempt in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login > /dev/null; then
+              echo 'ANGULAR_LOCAL_READY=PASS'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat v19-c0504-m0402.log >&2
+          exit 1
+      - name: Playwright Chromium - rutas, denegacion, teclado y responsive
+        working-directory: frontend
+        run: npx playwright test e2e/c05-04-m04-02-feedback.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Evidencia de fallo
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v19-c0504-m0402
+          path: |
+            frontend/v19-c0504-m0402.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 14
