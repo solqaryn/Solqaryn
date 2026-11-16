@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C01-02.M03.04 snapshot aislado de capabilities tenant/rol [Javier :20]
+- Implementa adaptador Infrastructure de captura sintética tenant/recurso con claves ordinales congeladas y flags de persistencia, RBAC y autorización forzados a false; nunca concede permisos ni accede MySQL/JWT real.
+- Agrega 9 xUnit adversariales: tenant A/B, resource/ownership, colecciones mutables, comparer case-insensitive, capturas incompletas, cancelación y ausencia de promociones; pruebas reales pendientes GitHub-hosted.
+- Riesgo R2: exigir backend Release, seguridad, authorization, Scope Lock y procedencia V5 exact SHA. Mantener VALIDANDO hasta CI real; A5 por otra Task Javier, rollback git revert convencional, no QA/main/PROD.
+
 ## 2026-11-15 — V17 C01-03.M03.04 adaptador aislado de snapshot de configuración dinámica [Javier :20]
 - Implementa adaptador Infrastructure→Application de captura sintética read-only con tenant/clave ordinal, revisión y SHA exactos; no integra EF/MySQL ni concede escritura, CAS durable, JWT vivo o permisos de plataforma.
 - Añade 9 pruebas xUnit de escenarios nominales y adversariales: tenant A/B, allowlist case-sensitive, colección mutable, versión/SHA stale, ownership, cancelación y no-promoción a escritura al componer el gate M03.03.
