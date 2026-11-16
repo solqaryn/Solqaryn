@@ -13,12 +13,13 @@ describe('C02-02.M04.01 - placement privado no operativo', () => {
   const verified: PlataformaSesion = {
     nombreUsuario: 'Plataforma', rolNombre: 'Admin', ambito: 'Plataforma', esAdministrador: true
   };
-  async function render(value: PlataformaSesion | null) {
+  async function render(value: PlataformaSesion | null, lanzarSincrono = false) {
     TestBed.resetTestingModule();
     const sesion = signal(value);
     const respuesta = new Subject<PlataformaSesion>();
     const obtener = vi.fn(() => {
       sesion.set(null); // production service invalidates old grant before GET.
+      if (lanzarSincrono) throw new Error('SECRET_DSN_NEVER_DISPLAY');
       return respuesta.asObservable().pipe(tap(grant => sesion.set(grant)));
     });
     await TestBed.configureTestingModule({
@@ -143,4 +144,43 @@ describe('C02-02.M04.01 - placement privado no operativo', () => {
     expect(fixture.nativeElement.querySelectorAll('.modalidades article')).toHaveLength(0);
   });
 
+
+  it('C02-02.M04.04 - excepción síncrona de lector no deja spinner ni filtra secretos', async () => {
+    const { fixture, obtener } = await render(verified, true);
+    fixture.componentInstance.revalidar();
+    fixture.detectChanges();
+    expect(obtener).toHaveBeenCalledOnce();
+    expect(fixture.componentInstance.estadoVisible()).toBe('error');
+    expect(fixture.nativeElement.querySelectorAll('.modalidades article')).toHaveLength(0);
+    expect(fixture.nativeElement.querySelector('button')?.disabled).toBe(false);
+    expect(fixture.nativeElement.textContent).not.toContain('SECRET_DSN_NEVER_DISPLAY');
+  });
+
+  it('C02-02.M04.04 - 401 niega y conserva navegación sin operación de placement', async () => {
+    const { fixture, respuesta } = await render(verified);
+    expect(fixture.nativeElement.querySelector('a[aria-label="Regresar a administración de plataforma"]')?.getAttribute('href')).toBe('/plataforma');
+    expect(fixture.nativeElement.querySelectorAll('form, input, textarea')).toHaveLength(0);
+    fixture.componentInstance.revalidar();
+    respuesta.error(new HttpErrorResponse({ status: 401, error: { message: 'PRIVATE_POOL_DSN' } }));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.estadoVisible()).toBe('sin_permiso');
+    expect(fixture.nativeElement.querySelectorAll('.modalidades article')).toHaveLength(0);
+    expect(fixture.nativeElement.textContent).not.toContain('PRIVATE_POOL_DSN');
+  });
+
+  it('C02-02.M04.04 - estado cargando anuncia bloqueo y solo una solicitud', async () => {
+    const { fixture, obtener, respuesta } = await render(verified);
+    fixture.componentInstance.revalidar();
+    fixture.componentInstance.revalidar();
+    fixture.detectChanges();
+    expect(obtener).toHaveBeenCalledTimes(1);
+    expect(fixture.nativeElement.querySelector('section.estado')?.getAttribute('aria-live')).toBe('polite');
+    expect(fixture.nativeElement.querySelector('section.estado')?.getAttribute('aria-busy')).toBe('true');
+    expect(fixture.nativeElement.querySelectorAll('form, input, textarea')).toHaveLength(0);
+    respuesta.next(verified);
+    respuesta.complete();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.estadoVisible()).toBe('exito');
+    expect(fixture.nativeElement.querySelectorAll('.modalidades article')).toHaveLength(2);
+  });
 });

@@ -81,3 +81,28 @@ test('C02-02.M04.02: 503 durante revalidación oculta información y no filtra p
   await expect(page.getByText('DSN_SECRETO_BROWSER')).toHaveCount(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(2);
 });
+
+test('C02-02.M04.04: navegación segura, 403 posterior y mensaje sin datos privados', async ({ page }) => {
+  await grant(page, true);
+  await page.goto('/plataforma/placement-v5');
+  await expect(page.locator('.modalidades article')).toHaveCount(2);
+  await expect(page.getByRole('link', { name: 'Regresar a administración de plataforma' }))
+    .toHaveAttribute('href', '/plataforma');
+  await page.route(sessionUrl, async route => {
+    const headers = {
+      'Access-Control-Allow-Origin': 'http://127.0.0.1:4200',
+      'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-Empresa-Id',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS'
+    };
+    if (route.request().method() === 'OPTIONS') {
+      await route.fulfill({ status: 204, headers }); return;
+    }
+    await route.fulfill({ status: 403, headers, contentType: 'application/json',
+      body: JSON.stringify({ success: false, data: null, message: 'DSN_NOT_FOR_BROWSER' }) });
+  });
+  await page.getByRole('button', { name: 'Revalidar sesión de placement' }).click();
+  await expect(page.getByText('Sesión administrativa no confirmada. Placement privado oculto.').first()).toBeVisible();
+  await expect(page.locator('.modalidades article')).toHaveCount(0);
+  await expect(page.getByText('DSN_NOT_FOR_BROWSER')).toHaveCount(0);
+  await expect(page.locator('.placement-review form, .placement-review input')).toHaveCount(0);
+});

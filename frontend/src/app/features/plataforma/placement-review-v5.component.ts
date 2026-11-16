@@ -1,6 +1,7 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { defer } from 'rxjs';
 import { RouterLink } from '@angular/router';
 import { PLACEMENT_PRESENTACION_V5, normalizarPresentacionPlacementV5 } from './placement-presentacion-v5';
 import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
@@ -116,9 +117,9 @@ export class PlacementReviewV5Component {
   ] as const;
 
   revalidar(): void {
-    if (this.estado() === 'cargando') return; // single-flight, no duplicate request.
+    if (this.estado() === 'cargando') return; // C02-02.M04.04: single-flight; never duplicate a request.
     this.estado.set('cargando'); // hide all protected guidance before external I/O.
-    this.plataforma.obtener().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    defer(() => this.plataforma.obtener()).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (sesion) => {
         const actual = this.plataforma.sesion();
         const confirmado = sesion?.ambito === 'Plataforma' &&

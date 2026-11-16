@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C02-02.M04.04 navegación y mensajes seguros de placement [Javier :00]
+- Robustecida revalidación Angular privada con defer ante excepción síncrona, estado fail-closed y botón single-flight; ruta de regreso y ausencia de formularios peligrosos preservadas.
+- Añadidos tres Vitest dirigidos y Chromium sintético de navegación y 403 posterior, sin filtrar DSN ni autorizar migraciones; CI causal Angular/Chromium mediante workflows ya existentes.
+- Riesgo R2: A0–A4 y checks exact-SHA obligatorios antes de LISTO; A5 por Task Javier distinta. Sin HTTP JWT real, MySQL, proveedores, QA/main/PROD; rollback git revert.
+
 ## 2026-11-15 — V17 C15-02.M03.05 worker acotado de revisión de arquitectura [Javier :50]
 - Agrega worker Infrastructure .NET 10 de previsualización en memoria de hasta 12 probes; valida SHA, tenant, claves ordinales, no mutación, conjunto coherente y readback aislado antes de devolver únicamente evidencia requerida.
 - Incorpora once pruebas xUnit de casos válidos y rechazo por tenant B, SHA stale, autoridad revocada, duplicados, batch mixto, comandos externos, error de proveedor de lectura, límites y cancelación; gates backend/security/Scope Lock/V5 requeridos.
