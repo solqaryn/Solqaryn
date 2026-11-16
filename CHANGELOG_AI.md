@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 CI_REPAIR_C0504_M0403_SELECTOR_STATUS_20261116 [Javier :30]
+- Detecta regresión P2 de selector ambiguo en Chromium C05-04.M04.01 tras branding de M04.03: dos roles status dentro de ligereza; job 133489542420 FAILURE en SHA 144819e8.
+- Repara solo la aserción Playwright de la prueba predecesora con `.ui-lightness-v5__status`, preservando expectativa de «tres criterios», teclado y ausencia de POST/PUT/PATCH/DELETE; sin cambios de runtime, tenant, JWT/RBAC ni MySQL.
+- Reparación R2 por integración CI, A0/A1 y A4 pendientes de CI exact-SHA y readback; A5 independiente; no atribuir PASS anticipado, sin QA/main/PROD y rollback git revert.
+
 ## 2026-11-16 — V17 C01-03.M03.05 worker tenant de configuración [Javier :50]
 - Implementa worker .NET 10 de catálogo de configuración con lotes 1–16 y claves allowlisted: validates actor/backend, membresía/RBAC/entitlement/revocación, tenant A/B y SHA, sin exponer valores ni otorgar permisos o CAS.
 - Añade pruebas xUnit de positivos, negativos, frontera 16/17, duplicación, secretos, fallos de proveedor, cancelación e inmutabilidad; no relaja tests existentes.

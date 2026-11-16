@@ -13,3 +13,6 @@ Guard y autorización backend continúan como frontera efectiva; comprobación U
 
 ## A4/A5 — estado y rollback
 Validar diff, blobs, Scope Lock, procedencia V5, frontend y Chromium SUCCESS exact-SHA antes de LISTO. Queued/in_progress no es PASS; conservar VALIDANDO/owner/SHA/RUN hasta pruebas. A5 independiente por Task Javier distinta. Rollback mediante git revert normal; no QA/main/PROD.
+
+## Reparación CI causada por incorporación del estado de branding — 16 de noviembre de 2026
+GitHub Actions `C05-04.M04.01 - Angular build y Chromium` falló en SHA `144819e8e22ecfe1735af1d5f5b6be41b4abe64c`, job `133489542420`: la aserción `getByRole('status')` pasó a resolver dos nodos por el nuevo estado de branding introducido en M04.03. La corrección es estrictamente del selector de la prueba de M04.01: se delimita a `.ui-lightness-v5__status` y se mantiene el texto esperado «tres criterios», el uso real de teclado y la prohibición de escrituras HTTP. No se modifica producto ni permisos. Clasificación R2 por CI compartida, P2 de prueba; no se acredita PASS hasta rerun exact-SHA de Chromium, frontend, Scope Lock y V5. Autor/reparador DEV04; A5 independiente pendiente, sin QA/main/PROD. Rollback mediante git revert normal.

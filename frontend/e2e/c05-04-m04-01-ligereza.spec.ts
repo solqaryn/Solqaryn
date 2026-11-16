@@ -61,7 +61,7 @@ test('C05-04.M04.01 consulta accesible y modo compacto con teclado, sin escritur
   await expect(toggle).toBeFocused();
   await page.keyboard.press('Enter');
   await expect(panel.locator('.ui-lightness-v5__checks li')).toHaveCount(0);
-  await expect(panel.getByRole('status')).toContainText('tres criterios');
+  await expect(panel.locator('.ui-lightness-v5__status')).toContainText('tres criterios');
   await expect(panel.getByRole('button', { name: 'Ver criterios' })).toHaveAttribute('aria-pressed', 'true');
   expect(writes, 'la consulta no debe enviar POST/PUT/PATCH/DELETE').toEqual([]);
 });
