@@ -1,3 +1,8 @@
+## 2026-11-15 - V17 C09-03.M02.01 entidades, ownership y contratos de Social Hub [Javier :20]
+- Documenta 16 entidades lógicas con relaciones/empresa, 18 invariantes fail-closed y diez pares P/N FUTUROS_NO_EJECUTADOS para campañas, consentimiento por canal, opt-out, calendario, idempotencia y métricas agregadas.
+- R0 Markdown sin código ni servicios nuevos; bloquea cross-tenant A/B, JWT/RBAC asumidos, envíos sin consentimiento y proveedor no autorizado como requisitos de futuras implementaciones.
+- Mantiene V17 candado, Scope Lock/V5 exact-SHA y A5 de otra Task Javier; no aplica pruebas HTTP/MySQL/Angular a este diff ni autoriza QA/main/PROD.
+
 ## 2026-11-15 - V17 C11-01.M02.02 contratos API DTO errores y compatibilidad relacional [Javier :30]
 - Define ocho operaciones conceptuales y doce DTO de lectura, mutacion, membresia, ownership, concurrencia y esquema relacional, sin crear rutas ni codigo .NET.
 - Especifica dieciseis errores futuros y doce pares P/N FUTUROS_NO_EJECUTADOS (0/12 runtime), con aislamiento A/B, RBAC, legacy NULL y transacciones all-or-nothing.
