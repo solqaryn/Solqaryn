@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C11-04.M05.05 caso negativo 429 y confidencialidad [Javier :30]
+- Añade prueba Playwright Chromium negativa para sesión 200 seguida de 429: cuatro tarjetas y branding privado se ocultan, payload con secreto no aparece y no hay reintento ni exporter.
+- Conserva prueba positiva M05.04 y regresiones 403/503; el 429 es sintético, no acredita JWT/HTTP/tenant server-side, y no modifica runtime, MySQL ni proveedores.
+- Requiere CI exact-SHA de Scope Lock/V5/frontend/Chromium antes de LISTO, A5 de otra Task Javier; rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-16 — V17 C11-04.M05.04 aceptación positiva de observabilidad privada [Javier :30]
 - Añade un Playwright Chromium dirigido para HTTP 200 sintético, revalidación sin GET duplicado, cuatro tarjetas read-only, responsive 320/1280 y ausencia de exporter.
 - Preserva negativos existentes 403/503, revocación, foco, carga y seguridad; no modifica producto, backend, JWT/RBAC, MySQL o proveedores y no atribuye autenticación HTTP real al mock.

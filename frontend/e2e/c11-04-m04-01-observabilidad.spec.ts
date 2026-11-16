@@ -363,3 +363,43 @@ test('M05.04: aceptación positiva 200 conserva observabilidad privada read-only
   }
   expect(forbidden, 'ninguna integración/exportador activado por una aceptación read-only').toEqual([]);
 });
+
+
+test('M05.05: 429 tras sesión autorizada revoca guía privada y redacta payload sin fallback', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('solqaryn_token', 'synthetic-c11-04-m05-05-not-jwt');
+    localStorage.setItem('solqaryn_expira_en', '2099-01-01T00:00:00Z');
+  });
+  let status = 200;
+  let gets = 0;
+  const forbidden: string[] = [];
+  await page.route(/\/plataforma\/sesion(?:\?|$)/, async route => {
+    const headers = {
+      'Access-Control-Allow-Origin': 'http://127.0.0.1:4200',
+      'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-Empresa-Id',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS'
+    };
+    if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers });
+    gets++;
+    return route.fulfill({ status, headers, contentType: 'application/json',
+      body: JSON.stringify(status === 200
+        ? { success: true, data: { nombreUsuario: 'Admin', rolNombre: 'Admin', ambito: 'Plataforma', esAdministrador: true } }
+        : { success: false, data: null, message: 'SECRET_TENANT_B_429' }) });
+  });
+  await page.route(/\/(?:telemetry|metrics\/export|traces|alerts\/dispatch)(?:\/|\?|$)/i, route => {
+    forbidden.push(route.request().url());
+    return route.abort();
+  });
+  await page.goto('/plataforma/observabilidad-v5');
+  await expect(page.locator('.obs-points li')).toHaveCount(4);
+  status = 429;
+  const revalidate = page.getByRole('button', { name: 'Revalidar acceso de observabilidad' });
+  await revalidate.click();
+  await expect(page.getByText('No se pudo revalidar la sesión. Observabilidad privada oculta.')).toBeVisible();
+  await expect(page.locator('.obs-points li')).toHaveCount(0);
+  await expect(page.getByRole('region', { name: 'Identidad visual de observabilidad' })).toHaveCount(0);
+  await expect(page.getByText('SECRET_TENANT_B_429')).toHaveCount(0);
+  await expect(revalidate).toBeEnabled();
+  expect(gets, 'solo GET inicial y único GET de revalidación denegado').toBe(2);
+  expect(forbidden, 'sin exporter ni despachos como ruta alternativa ante 429').toEqual([]);
+});
