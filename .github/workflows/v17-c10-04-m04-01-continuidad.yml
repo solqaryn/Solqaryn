@@ -1,0 +1,44 @@
+name: V17 - C10-04.M04.01 continuidad privada Angular
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v17-c10-04-m04-01-continuidad.yml'
+      - 'frontend/src/app/app.routes.ts'
+      - 'frontend/src/app/features/plataforma/continuidad-operativa-v5.component.ts'
+      - 'frontend/src/app/features/plataforma/continuidad-operativa-v5.component.spec.ts'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: v17-continuidad-ui-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  frontend-v17-continuidad:
+    name: C10-04.M04.01 - ruta privada y seis Vitest
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm bloqueado
+        run: npm install --global npm@11.19.0
+      - name: Dependencias reproducibles
+        run: npm ci
+      - name: Vitest positivo negativo y fail-closed
+        run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/continuidad-operativa-v5.component.spec.ts
+      - name: Calidad, tipado y build Angular
+        run: |
+          npm run lint
+          npm run build:prod

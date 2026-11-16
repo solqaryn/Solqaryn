@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C10-04.M04.01 pantalla privada de continuidad operativa [Javier :20]
+- Añade ruta lazy de plataforma con plataformaGuard y componente Angular 22.2.1 solo lectura; cuatro controles, denegacion fail-closed y revalidacion single-flight, sin acciones de restore, permisos o proveedores.
+- Agrega seis Vitest positivos/negativos con GitHub Actions Node 24/npm 11, lint y build; no certificar PASS antes de CI exacta ni afirmar MySQL/HTTP/Playwright no aplicables a la interfaz documental.
+- R1 V15/V17 candado 2000001568 y A0–A4 por SHA; A5 independiente de otra Task Javier. Solo dev, sin QA/main/PROD; rollback git revert.
+
 ## 2026-11-15 — V17 C04-03.M01.06 contrato terminal de bloqueo y reversión de metering [Javier :10]
 - Documenta B01–B16 de NO-GO, prerequisitos M01.01–05 con cinco A5 independientes y C01-03.M01.06+A5, riesgos y ocho decisiones comerciales D01–D08 aún PENDIENTE; DAG F/G VALIDADO/SI permite contrato M01.06, nunca aprobación de metering o cobro real.
 - Añade ocho positivos y doce negativos FUTUROS_NO_EJECUTADOS para tenant A/B, idempotencia de consumo, cuotas, unidades, límites, privacidad, UTC, rollback, CI y A5; sin introducir API, DB, workers, eventos, proveedores ni cuotas activas.

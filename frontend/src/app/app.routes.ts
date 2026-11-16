@@ -25,6 +25,7 @@ export const routes: Routes = [
   { path: 'plataforma/cobertura-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/plataforma.component').then(m => m.PlataformaComponent) },
   { path: 'plataforma/flujo-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/plataforma.component').then(m => m.PlataformaComponent) },
   { path: 'plataforma/auditoria-operativa-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/auditoria-operativa-v5.component').then(m => m.AuditoriaOperativaV5Component) },
+  { path: 'plataforma/continuidad-operativa-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/continuidad-operativa-v5.component').then(m => m.ContinuidadOperativaV5Component) },
   { path: 'plataforma/gobierno-cambios-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/gobierno-cambios-v5.component').then(m => m.GobiernoCambiosV5Component) },
   { path: 'plataforma', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/plataforma.component').then(m => m.PlataformaComponent) },
   { path: 'dashboard', canActivate: [authGuard, permisoGuard], data: { modulo: 'Dashboard', accion: 'Ver' }, loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) },
