@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C14-02.M03.06 auditoría segura de aceptación [Javier :50]
+- Implementa sink Infrastructure .NET 10 que resume decisiones del gate Application en evento tipado y redactado: resultados fijos, correlación sólo con contexto verificado, sin tenant/actor/recurso/SHA ni PII/JWT/secretos en logs.
+- Incluye 11 xUnit positivos/negativos de tenant A/B, JWT/RBAC revocado simulado, SHA, resource spoof, error, bypass y restauración, cancelación y logger fallido; la auditoría in-memory no certifica proveedor duradero.
+- V15 R2 / V17 one-active y Scope Lock STRICT: requeridos Backend Release, seguridad, Authorization y V5 en SHA exacto; A5 de Task Javier independiente; sin EF/MySQL/HTTP/Angular/QA/main/PROD, revert normal.
+
 ## 2026-11-15 — V17 C15-01.M03.05 revisión secuencial de cobertura en lotes [Javier :50]
 - Implementa runner Infrastructure .NET 10 de máximo 16 requisitos; prevalidación íntegra de ID, SHA y unicidad ordinal antes de leer fuente, composición con adaptador existente M03.04; no certifica cobertura global ni escribe PLAN/Sheets.
 - Añade 11 xUnit positivos/negativos de duplicidad, lote nulo/excesivo, SHA mezclado, fuente negada, excepción opaca y cancelación. CI Backend Release, seguridad multiempresa, autorización, Scope Lock y V5 requerida por SHA.
