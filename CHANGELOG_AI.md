@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 reparación CI C15-01.M04.01 alcance y catálogo [Javier :10]
+- Repara Playwright Chromium fallido por verificar controles de todo el shell compartido; el assert pasa a comprobar exclusivamente la superficie privada propia, sin ocultar botones ajenos.
+- Agrega ruta guardada exacta al allowlist cerrado de auditoría ERP; mantiene el requisito `canActivate: [plataformaGuard]` y validación de sesión servidor, sin abrir prefijos genéricos.
+- Registra 151 componentes (143 features + 8 shared) en el catálogo P0-007.A, preservando comparación exacta y pruebas negativas. Conserva SHA original fallido, exige CI causal nueva y A5 de otra Task.
+
 ## 2026-11-16 — V17 C15-01.M04.01 superficie privada de trazabilidad de cobertura [Javier :10]
 - Implementa nueva ruta lazy protegida por plataformaGuard y componente Angular reactivo de solo lectura para describir cuatro dimensiones de comparación del plan.
 - Declara NO_MEDIDO y SIN_VERIFICAR hasta obtener datos reales: no inventa cobertura, no expone datos a un usuario anónimo ni al ámbito Empresa y no añade llamadas HTTP.

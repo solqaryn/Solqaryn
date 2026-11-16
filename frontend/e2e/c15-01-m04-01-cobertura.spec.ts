@@ -37,7 +37,7 @@ test('C15-01.M04.01 vista autorizada 320/1280 sin scroll y sin escrituras', asyn
     await expect(page.getByText('NO_MEDIDO')).toBeVisible();
     const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow).toBeLessThanOrEqual(2);
-    await expect(page.locator('form,button,input,textarea')).toHaveCount(0);
+    await expect(page.locator('.coverage-shell form, .coverage-shell button, .coverage-shell input, .coverage-shell textarea')).toHaveCount(0);
   }
 });
 

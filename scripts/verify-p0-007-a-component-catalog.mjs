@@ -34,7 +34,7 @@ function comparePaths(actualPaths, documentedPaths) {
 }
 function requirePass(ok, description) { if (!ok) throw new Error('P0-007.A FAIL: ' + description); }
 
-requirePass(expected.length === 150, '150 documented source paths');
+requirePass(expected.length === 151, '151 documented source paths');
 requirePass(expectedRaw.length === expected.length, 'manifest entries must be unique');
 requirePass(expected.every(path => /^frontend\/src\/app\/(features|shared)\//.test(path)),
   'features/shared-only scope');
@@ -60,7 +60,7 @@ if (process.argv.includes('--self-test')) {
 }
 
 const shared = actual.filter(path => path.startsWith('frontend/src/app/shared/')).length;
-requirePass(shared === 8 && actual.length - shared === 142, '142 feature / 8 shared current V17 catalog');
+requirePass(shared === 8 && actual.length - shared === 143, '143 feature / 8 shared current V17 catalog');
 console.log(`P0-007.A STATIC catalog PASS: ${actual.length} .component.ts paths (${actual.length - shared} feature, ${shared} shared).`);
 if (process.argv.includes('--self-test')) console.log('P0-007.A NEGATIVE PASS: deleted/undocumented files and scope exclusions detected.');
 console.log('LIMIT: no UX, accessibility, E2E, RBAC, tenant or deployment certification.');

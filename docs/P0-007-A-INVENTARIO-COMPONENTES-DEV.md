@@ -450,3 +450,11 @@ El registro reproducible incorpora la nueva consola global privada y conserva lo
 - `frontend/src/app/features/plataforma/consola-global-auditada-v5.component.ts`
 
 La detección negativa de rutas faltantes, nuevas sin inventariar y duplicadas permanece exigible; registrar esta pantalla no aprueba seguridad de backend, grants, JWT HTTP, MFA, tenant A/B ni producción. El único acceso permitido conserva el mismo `plataformaGuard` con validación servidor; revisar CI exact SHA, pruebas Angular y navegador sintético. Rollback mediante `git revert` normal.
+
+## Actualización aditiva V17 C15-01.M04.01 — 16 de noviembre de 2026
+
+Nueva superficie privada de trazabilidad registrada en el catálogo exacto: **151 archivos `.component.ts` (143 features y 8 shared)**. Se conservan sin modificar los conteos históricos anteriores y el control negativo de rutas omitidas, ficticias o duplicadas.
+
+- `frontend/src/app/features/plataforma/cobertura-trazabilidad-v5.component.ts`
+
+La ruta `plataforma/trazabilidad-cobertura-v5` se incorpora explícitamente al allowlist cerrado de rutas del control-plane y mantiene `canActivate: [plataformaGuard]` con sesión verificada por servidor. No se añaden rutas públicas, comodines ni bypass del validador de seguridad. Inventariar este componente no acredita comparación global del plan, JWT real, tenancy HTTP, QA/main/PROD ni permisos de despliegue. Cambio causal para reparar P0-007.A y calidad ERP del SHA 07169caa. Rollback normal, CI exact-SHA y A5 independiente.

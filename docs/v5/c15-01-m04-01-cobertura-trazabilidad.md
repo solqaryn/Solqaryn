@@ -11,3 +11,7 @@ A1: autorizado ve cuatro dimensiones, anónimo y Empresa quedan denegados, revoc
 A3: Angular build + pruebas Vitest y Playwright Chromium en runner GitHub-hosted; MySQL/EF/externos no aplican porque no hay cambios de persistencia ni integraciones. A4: dev SHA publicado, checks requeridos completed/success, Scope Lock/V5, readback PLAN/COLA/DAG/BITACORA. No contar en progreso/cancelled/skipped como éxito. A5: revisor Javier Task ID diferente debe aprobar o rechazar.
 
 Los textos SIN_VERIFICAR y NO_MEDIDO evitan declarar una comparación total del plan que esta UI todavía no realiza; siguientes etapas integrarán evidencia de forma segura. Revertir con git revert ordinario, nunca force push, sin QA/main/PROD.
+
+## Reparación causal de CI — 16 noviembre 2026
+
+SHA inicial 07169caaabd2909263ae74a7f0313495b2a8bd3c: Chromium propio 2/3 PASS y 1 FAIL por selector global que veía 5 controles externos de plataforma; ERP audit FAIL por no registrar explícitamente nueva ruta guardada; catálogo P0-007.A FAIL por componente nuevo no inventariado. Reparación mínima: selector limitado al componente, inscripción exacta de ruta en allowlist sin aflojar guard y adición de archivo al manifiesto con conteos 151/143/8. No desactivar checks, no aceptar skipped/cancelled/in_progress. Las suites deben ser ejecutadas otra vez por GitHub-hosted sobre el SHA reparado; A5 independiente posterior. Rollback normal, sin QA/main/PROD.
