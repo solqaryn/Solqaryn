@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C05-04.M05.04 aceptación positiva combinada en Chromium [Javier :30]
+- Añade cuatro E2E Playwright Chromium reales con sesión/HTTP sintéticos, directorio 25 filas y ambos controles de ligereza y marca alternados sin GET duplicado, cero operaciones de escritura y anchura 320/1280.
+- Comprueba además vacío seguro 200, rechazo 403 y error 503 opaco, de forma independiente y falsable; workflow GitHub-hosted Angular lint/build y Chromium con concurrencia aislada por SHA.
+- No afirma JWT/RBAC/tenant real ni MySQL/productores live; LCP/CLS NO_MEDIDO, A0–A4 solo tras CI exact-SHA y A5 por otra Task Javier; sin QA/main/PROD. Rollback git revert normal.
+
 ## 2026-11-16 — V18 C05-04.M05.01 regla unitaria reproducible de presupuesto inicial [Javier :30]
 - Añade siete tests Node ejecutando el analizador existente de bundle sobre builds aislados: exclusión de chunk lazy, gzip/brotli, límites 1/2 MiB, error sin index y cero inicial sin referencias; pruebas falsables, no auditoría vacía.
 - CI GitHub-hosted Node/npm y build Angular real con reporte JSON de bytes de assets; ejecuta pruebas únicamente en dev, con concurrency SHA y cancel-in-progress=false. Requiere A0-A4 y CI exact-SHA para cerrar LISTO; A5 independiente.

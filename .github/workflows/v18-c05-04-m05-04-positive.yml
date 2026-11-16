@@ -1,0 +1,71 @@
+name: V18 C05-04.M05.04 - aceptacion positiva de ligereza
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v18-c05-04-m05-04-positive.yml'
+      - 'frontend/e2e/c05-04-m05-04-positive.spec.ts'
+      - 'frontend/src/app/features/plataforma/plataforma.component.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v18-c0504-m0504-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  positive-chromium:
+    name: C05-04.M05.04 - Angular build y Chromium positivo
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm compatible
+        run: npm install --global npm@11.19.0
+      - name: Instalar dependencias
+        working-directory: frontend
+        run: npm ci
+      - name: Lint y build productivo
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Instalar Chromium GitHub hosted
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Angular local para pruebas
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > v18-c0504-m0504.log 2>&1 &
+          for i in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then
+              echo 'ANGULAR_LOCAL_READY=PASS'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat v18-c0504-m0504.log >&2
+          exit 1
+      - name: Aceptacion positiva y rechazos en Chromium real
+        working-directory: frontend
+        run: npx playwright test e2e/c05-04-m05-04-positive.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Artefacto de fallos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v18-c0504-m0504
+          path: |
+            frontend/v18-c0504-m0504.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 14
