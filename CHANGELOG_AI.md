@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C04-03.M02.06 contrato terminal de metering [Javier :40]
+- Cierra el documento de dependencias M02 con dieciseis puertas verificables, doce pares de pruebas futuras y ocho rutas de reversion, sin implementar API, MySQL, eventos o cobros.
+- Confirma predecesoras M01 y M02.01-05 LISTO+A5; separa G/O dinamicos, idempotencia sin doble ledger y decisiones comerciales D01-D08 aun pendientes.
+- R0 documental con V17 lock 2000000661, Scope Lock y procedencia exact-SHA, A5 de otra Task Javier y ninguna autorizacion QA/main/PROD.
+
 ## 2026-11-15 — V17 C03-04.M03.06 auditoría segura de incidentes y continuidad [Javier :50]
 - Implementa sink Infrastructure .NET 10 de logging estructurado no durable para preview de continuidad: evento fijo, códigos seguros y correlación sólo bajo contexto backend verificado; no registra claves, tenant, actor, SHA, PII, JWT o excepciones.
 - Añade 13 métodos xUnit de positivo, negaciones tenant A/B/revocación, SHA stale, lote, duplicidad no confiable, errores y cancelación; incluye composición in-memory real con worker Application M03.05 y cero permisos concedidos.
