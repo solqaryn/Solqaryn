@@ -6,7 +6,7 @@ import { provideRouter } from '@angular/router';
 import { PlataformaSesionService, type PlataformaSesion } from '../../core/auth/plataforma-sesion.service';
 import { plataformaGuard } from '../../core/guards/plataforma.guard';
 import { routes } from '../../app.routes';
-import { RespuestaIncidentesV5Component } from './respuesta-incidentes-v5.component';
+import { RespuestaIncidentesV5Component, normalizarPresentacionIncidentesV5 } from './respuesta-incidentes-v5.component';
 
 describe('C03-04.M04.01 - respuesta a incidentes privada', () => {
   const autorizado: PlataformaSesion = {
@@ -50,7 +50,7 @@ describe('C03-04.M04.01 - respuesta a incidentes privada', () => {
     expect(fixture.componentInstance.autorizado()).toBe(true);
     expect(fixture.nativeElement.querySelectorAll('.incident-review li')).toHaveLength(4);
     expect(fixture.nativeElement.querySelectorAll('form, input, textarea')).toHaveLength(0);
-    expect(fixture.nativeElement.querySelectorAll('button')).toHaveLength(1);
+    expect(fixture.nativeElement.querySelectorAll('button')).toHaveLength(2);
     expect(fixture.nativeElement.textContent).toContain('NO_MEDIDO');
   });
   it('sesión de empresa no puede elevarse a plataforma', async () => {
@@ -114,4 +114,43 @@ describe('C03-04.M04.01 - respuesta a incidentes privada', () => {
     expect(fixture.nativeElement.querySelectorAll('.incident-review li')).toHaveLength(0);
   });
 
+
+  it('C03-04.M04.03 acepta solo marca densidad contraste conocidos', () => {
+    expect(normalizarPresentacionIncidentesV5(null)).toEqual({ marca: 'SOLQARYN', densidad: 'comoda', contraste: 'normal' });
+    expect(normalizarPresentacionIncidentesV5({ marca: 'SOLQARYN Plataforma', densidad: 'compacta', contraste: 'alto' }))
+      .toEqual({ marca: 'SOLQARYN Plataforma', densidad: 'compacta', contraste: 'alto' });
+    expect(normalizarPresentacionIncidentesV5({ marca: '<img onerror=alert(1)>', densidad: 'color:red', contraste: 'url(javascript:evil)' }))
+      .toEqual({ marca: 'SOLQARYN', densidad: 'comoda', contraste: 'normal' });
+    expect(normalizarPresentacionIncidentesV5([])).toEqual({ marca: 'SOLQARYN', densidad: 'comoda', contraste: 'normal' });
+  });
+  it('C03-04.M04.03 actualiza densidad y contraste sin HTML arbitrario', async () => {
+    const { fixture } = await montar(autorizado);
+    const root = fixture.nativeElement.querySelector('.incident-guide') as HTMLElement;
+    expect(root.getAttribute('data-densidad')).toBe('comoda');
+    fixture.componentInstance.alternarDensidad();
+    fixture.detectChanges();
+    expect(root.getAttribute('data-densidad')).toBe('compacta');
+    fixture.componentInstance.aplicarPresentacion({ marca: '<img src=x>', densidad: 'evil', contraste: 'red' });
+    fixture.detectChanges();
+    expect(root.getAttribute('data-densidad')).toBe('comoda');
+    expect(root.getAttribute('data-contraste')).toBe('normal');
+    expect(fixture.nativeElement.querySelectorAll('.incident-guide img')).toHaveLength(0);
+    fixture.componentInstance.aplicarPresentacion({ marca: 'SOLQARYN Plataforma', densidad: 'compacta', contraste: 'alto' });
+    fixture.detectChanges();
+    expect(root.getAttribute('data-contraste')).toBe('alto');
+    expect(fixture.nativeElement.textContent).toContain('SOLQARYN Plataforma');
+  });
+  it('C03-04.M04.03 anónimo no cambia configuración ni abre la guía', async () => {
+    const { fixture, sesion } = await montar(null);
+    fixture.componentInstance.aplicarPresentacion({ densidad: 'compacta' });
+    expect(fixture.componentInstance.presentacion().densidad).toBe('comoda');
+    sesion.set(autorizado);
+    fixture.detectChanges();
+    fixture.componentInstance.aplicarPresentacion({ densidad: 'compacta' });
+    sesion.set(null);
+    fixture.detectChanges();
+    fixture.componentInstance.alternarDensidad();
+    expect(fixture.componentInstance.presentacion().densidad).toBe('compacta');
+    expect(fixture.nativeElement.querySelectorAll('.incident-review li')).toHaveLength(0);
+  });
 });

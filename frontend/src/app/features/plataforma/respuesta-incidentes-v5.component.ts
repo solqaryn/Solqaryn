@@ -4,6 +4,22 @@ import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
 
+/** C03-04.M04.03: presentacion segura, solo opciones locales exactas. */
+export type PresentacionIncidentesV5 = Readonly<{
+  marca: 'SOLQARYN' | 'SOLQARYN Plataforma';
+  densidad: 'comoda' | 'compacta';
+  contraste: 'normal' | 'alto';
+}>;
+export function normalizarPresentacionIncidentesV5(valor: unknown): PresentacionIncidentesV5 {
+  const v: Record<string, unknown> = valor !== null && typeof valor === 'object' && !Array.isArray(valor)
+    ? valor as Record<string, unknown> : {};
+  return {
+    marca: v['marca'] === 'SOLQARYN Plataforma' ? 'SOLQARYN Plataforma' : 'SOLQARYN',
+    densidad: v['densidad'] === 'compacta' ? 'compacta' : 'comoda',
+    contraste: v['contraste'] === 'alto' ? 'alto' : 'normal'
+  };
+}
+
 /** C03-04.M04.01: guía de incidentes privada, sin consultar ni operar restauraciones. */
 @Component({
   selector: 'app-respuesta-incidentes-v5',
@@ -11,10 +27,10 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="incident-guide" aria-labelledby="incident-title">
+    <main class="incident-guide" [attr.data-densidad]="presentacion().densidad" [attr.data-contraste]="presentacion().contraste" aria-labelledby="incident-title">
       <a class="skip-link" href="#incident-title" (click)="irAlContenido($event)">Ir al contenido de incidentes</a>
       <header>
-        <p class="eyebrow">SOLQARYN · Respuesta a incidentes</p>
+        <p class="eyebrow">{{ presentacion().marca }} · Respuesta a incidentes</p>
         <h1 #incidentTitle id="incident-title" tabindex="-1">Respuesta, revocación y recuperación segura</h1>
         <p>Guía de comprobación futura, sin incidentes ni respaldos conectados.</p>
         <a routerLink="/plataforma" aria-label="Regresar a plataforma">Regresar a plataforma</a>
@@ -33,6 +49,7 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
             }
           </p>
           <button type="button" (click)="revalidarSesion()">Revalidar sesión de plataforma</button>
+          <button type="button" (click)="alternarDensidad()">{{ presentacion().densidad === "compacta" ? "Usar vista cómoda" : "Usar vista compacta" }}</button>
         </section>
         <section class="notice" aria-label="Estado vacío del registro">
           <h2>Sin incidentes conectados</h2>
@@ -72,6 +89,8 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
     header a:focus-visible { outline:3px solid var(--mat-sys-primary, #2157a3); outline-offset:3px; }
     button { min-height:44px; padding:.65rem .9rem; border:1px solid currentColor; border-radius:.55rem; color:inherit; background:var(--mat-sys-surface, #fff); cursor:pointer; }
     button:focus-visible { outline:3px solid var(--mat-sys-primary, #2157a3); outline-offset:3px; }
+    .incident-guide[data-densidad="compacta"] .incident-review li { padding:.65rem; }
+    .incident-guide[data-contraste="alto"] .notice, .incident-guide[data-contraste="alto"] .incident-review li { border-width:2px; }
     .notice { border:1px solid var(--mat-sys-outline-variant, #aeb8c1); border-radius:.7rem; padding:1rem; margin-top:1rem; }
     .incident-review { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); list-style:none; gap:.8rem; padding:0; }
     .incident-review li { min-width:0; overflow-wrap:anywhere; border:1px solid var(--mat-sys-outline-variant, #aeb8c1); border-radius:.7rem; padding:.9rem; }
@@ -93,6 +112,16 @@ export class RespuestaIncidentesV5Component {
   irAlContenido(event: MouseEvent): void {
     event.preventDefault();
     this.titulo().nativeElement.focus();
+  }
+  /** La marca y densidad son cosméticas, nunca autoridad. */
+  readonly presentacion = signal<PresentacionIncidentesV5>(normalizarPresentacionIncidentesV5(null));
+  aplicarPresentacion(valor: unknown): void {
+    if (!this.autorizado()) return;
+    this.presentacion.set(normalizarPresentacionIncidentesV5(valor));
+  }
+  alternarDensidad(): void {
+    if (!this.autorizado()) return;
+    this.aplicarPresentacion({ ...this.presentacion(), densidad: this.presentacion().densidad === 'compacta' ? 'comoda' : 'compacta' });
   }
   /** Solo la sesión backend vigente es fuente del grant. No confiar en JWT local ni EmpresaId. */
   readonly autorizado = computed(() => {

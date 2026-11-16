@@ -93,3 +93,22 @@ test('C03-04.M04.02 503 posterior no expone guía ni diagnóstico de servidor', 
   await expect(page.locator('.incident-review li')).toHaveCount(0);
   await expect(page.getByText('UPSTREAM_SECRET_DIAGNOSTIC')).toHaveCount(0);
 });
+
+test('C03-04.M04.03 densidad compacta real, 320px, sin acciones operativas', async ({ page }) => {
+  await tokenSimulado(page);
+  await sesionSimulada(page, true);
+  await page.setViewportSize({ width: 320, height: 720 });
+  const operaciones: string[] = [];
+  await page.route(url => /(?:restore|backup|dispatch|revocar)/i.test(url.toString()), route => {
+    operaciones.push(route.request().url());
+    return route.abort();
+  });
+  await page.goto('/plataforma/respuesta-incidentes-v5');
+  const guia = page.locator('.incident-guide');
+  await expect(guia).toHaveAttribute('data-densidad', 'comoda');
+  await page.getByRole('button', { name: 'Usar vista compacta' }).click();
+  await expect(guia).toHaveAttribute('data-densidad', 'compacta');
+  await expect(page.locator('.incident-review li')).toHaveCount(4);
+  expect(operaciones).toEqual([]);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(2);
+});

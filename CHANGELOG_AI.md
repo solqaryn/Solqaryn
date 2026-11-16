@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C03-04.M04.03 presentación segura Reactiva [Javier :10]
+- Integra Angular Signals con marca, densidad y contraste por allowlist estricta; excluye CSS, HTML, URL y tokens arbitrarios.
+- Añade un control accesible de densidad, pruebas Vitest negativas de inyección/revocación y Chromium 320 px sin solicitudes operativas.
+- Riesgo R2 de UI privada: no certifica JWT/MySQL/RESTORE reales; requiere exact-SHA CI, Scope Lock y V5, A5 distinto, sin QA/main/PROD.
+
 ## 2026-11-16 - V17 C11-04.M04.06 densidad y pintado progresivo observabilidad [Javier :40]
 - Añade content-visibility:auto y tamaño intrínseco de reserva a cuatro tarjetas descriptivas, con padding fluido; conserva árbol semántico y guard privado.
 - Amplía Playwright Chromium real con comprobación CSS, scroll, 320/768/1280, denegación de token y ausencia de exporter; exige lint, build, Scope Lock y procedencia V5.
