@@ -153,4 +153,33 @@ describe('C03-04.M04.01 - respuesta a incidentes privada', () => {
     expect(fixture.componentInstance.presentacion().densidad).toBe('compacta');
     expect(fixture.nativeElement.querySelectorAll('.incident-review li')).toHaveLength(0);
   });
+  it('C03-04.M04.04 click repetido no dispara dos consultas ni expone datos mientras carga', async () => {
+    const { fixture, sesion, solicitudes } = await montar(autorizado);
+    const boton = fixture.nativeElement.querySelector('button') as HTMLButtonElement;
+    expect(boton.textContent).toContain('Revalidar sesión de plataforma');
+    boton.click();
+    boton.click();
+    fixture.detectChanges();
+    expect(solicitudes).toHaveLength(1);
+    expect(fixture.componentInstance.estadoVista()).toBe('cargando');
+    expect(fixture.nativeElement.querySelectorAll('.incident-review li')).toHaveLength(0);
+    sesion.set(autorizado);
+    solicitudes[0].next(autorizado);
+    solicitudes[0].complete();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.estadoVista()).toBe('exito');
+    expect(fixture.nativeElement.querySelectorAll('.incident-review li')).toHaveLength(4);
+  });
+
+  it('C03-04.M04.04 retorno a plataforma sin formularios y revocación inmediata', async () => {
+    const { fixture, sesion } = await montar(autorizado);
+    const enlace = fixture.nativeElement.querySelector('header a[href="/plataforma"]') as HTMLAnchorElement | null;
+    expect(enlace).not.toBeNull();
+    expect(enlace?.textContent).toContain('Regresar a plataforma');
+    expect(fixture.nativeElement.querySelectorAll('form, input, textarea, button[type="submit"]')).toHaveLength(0);
+    sesion.set(null);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('.incident-review li, .notice button')).toHaveLength(0);
+    expect(fixture.nativeElement.textContent).toContain('Guía protegida oculta');
+  });
 });

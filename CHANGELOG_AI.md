@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C03-04.M04.04 navegación, mensajes y doble acción [Javier :10]
+- Añade regresiones Vitest de doble click, retorno a plataforma, ausencia de formularios y revocación inmediata de la guía privada.
+- Amplía Chromium dirigido con navegación positiva y 429 sintético retardado: un solo GET, guía oculta y diagnóstico interno no visible. Exige CI GitHub-hosted exact-SHA, Scope Lock, V5 y A5 independiente.
+- Sólo pruebas y documentación R2 por superficie privada; ningún cambio runtime, API, JWT/RBAC, tenant, MySQL ni restauración. Solo dev; rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-16 — V17 reparación P0-007.A C05-01.M04.01 [Javier :40]
 - Repara el fallo de inventario exact-HEAD del SHA `0509d36948f2` agregando la ruta real `frontend/src/app/features/plataforma/design-system-v5.component.ts`, preservando la historia anterior.
 - Actualiza umbrales estrictos a 149 rutas (141 features y 8 shared), manteniendo pruebas negativas de archivos faltantes, ficticios y duplicados; requiere GitHub Actions exact-SHA.

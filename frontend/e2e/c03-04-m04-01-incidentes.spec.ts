@@ -112,3 +112,48 @@ test('C03-04.M04.03 densidad compacta real, 320px, sin acciones operativas', asy
   expect(operaciones).toEqual([]);
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(2);
 });
+
+test('C03-04.M04.04 retorno navegable con sesión simulada y sin formularios', async ({ page }) => {
+  await tokenSimulado(page);
+  await sesionSimulada(page, true);
+  await page.goto('/plataforma/respuesta-incidentes-v5');
+  await expect(page.getByRole('heading', { name: 'Respuesta, revocación y recuperación segura' })).toBeVisible();
+  await expect(page.locator('.incident-guide form, .incident-guide input, .incident-guide textarea')).toHaveCount(0);
+  await page.getByRole('link', { name: 'Regresar a plataforma' }).click();
+  await expect(page).toHaveURL(/\/plataforma(?:\?.*)?$/);
+});
+
+test('C03-04.M04.04 doble click no duplica GET y 429 oculta guía y diagnóstico', async ({ page }) => {
+  await tokenSimulado(page);
+  await sesionSimulada(page, true);
+  await page.goto('/plataforma/respuesta-incidentes-v5');
+  await expect(page.locator('.incident-review li')).toHaveCount(4);
+  let consultas = 0;
+  let liberar!: () => void;
+  const pendiente = new Promise<void>(resolve => { liberar = resolve; });
+  await page.route(/\/plataforma\/sesion(?:\?|$)/, async route => {
+    const headers = {
+      'Access-Control-Allow-Origin': 'http://127.0.0.1:4200',
+      'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-Empresa-Id',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS'
+    };
+    if (route.request().method() === 'OPTIONS') {
+      await route.fulfill({ status: 204, headers });
+      return;
+    }
+    consultas += 1;
+    await pendiente;
+    await route.fulfill({ status: 429, headers, contentType: 'application/json',
+      body: JSON.stringify({ success: false, message: 'INTERNAL_RATE_LIMIT_SECRET_DIAGNOSTIC' }) });
+  });
+  await page.getByRole('button', { name: 'Revalidar sesión de plataforma' }).evaluate(element => {
+    (element as HTMLButtonElement).click();
+    (element as HTMLButtonElement).click();
+  });
+  await expect.poll(() => consultas).toBe(1);
+  await expect(page.locator('.incident-review li')).toHaveCount(0);
+  liberar();
+  await expect(page.getByRole('alert')).toBeVisible();
+  await expect(page.locator('.incident-review li')).toHaveCount(0);
+  await expect(page.getByText('INTERNAL_RATE_LIMIT_SECRET_DIAGNOSTIC')).toHaveCount(0);
+});
