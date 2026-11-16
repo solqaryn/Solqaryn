@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C02-01.M03.05 worker acotado de revalidación de preferencia tenant [Javier :50]
+- Añade worker Infrastructure .NET 10 real y secuencial para previsualizar hasta 12 solicitudes sintéticas, con validación atómica de keys, actor, revisión, SHA, selección coherente y hints no confiables.
+- Añade once pruebas xUnit positivas y negativas: 1/N empresas, tenant ajeno, preferencia revocada, identidad/SHA obsoletos, claves repetidas, mezcla de selección, cancelación y límites; CI GitHub-hosted obligatoria.
+- Riesgo R2, sin JWT emitido, permisos reales, MySQL, cambios de sesión, cola durable, browser, proveedores ni QA/main/PROD. A0-A4 causales y A5 independiente Javier; rollback git revert.
+
 ## 2026-11-15 — V17 C10-04.M04.05 accesibilidad y pruebas Chromium de continuidad privada [Javier :40]
 - Reforzado aria-labelledby en lista de controles, wrap seguro para 320px y foco de alto contraste, manteniendo guard de plataforma, sesión y estados fail-closed sin nuevas operaciones.
 - Añade cinco Playwright reales sobre sesión sintética: anónimo, 403, 320/768/1280, foco/labels/contraste fuerte y error 503 sin filtración; workflow GitHub-hosted Node24/npm11 Angular lint/build/Chromium, exact SHA.
