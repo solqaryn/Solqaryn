@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C08-04.M05.02 contrato seguro de DTO y errores [Javier :00]
+- Repara la propagación de excepciones privadas del lector Application; respuestas fallidas usan un código opaco, sin conceder autorizaciones ni mutaciones.
+- Añade cuatro regresiones xUnit adversariales y workflow GitHub-hosted de .NET 10 por SHA, con cancel-in-progress=false.
+- A0–A4 requieren CI y Scope Lock exactos; la API HTTP sectorial, MySQL, JWT middleware y proveedores no están implementados ni certificados por este incremento. A5 independiente y git revert como rollback.
+
 ## 2026-11-16 — V18 C08-04.M05.03 contrato de integración aislada [Javier :50]
 - Seis pruebas xUnit reales de Application/Infrastructure: adaptador de snapshot y fence fallan cerrado ante tenant B, revocación, spoof de permisos, revisión obsoleta y cancelación, sin llamar al proveedor.
 - CI GitHub-hosted .NET 10 Release dirigida por SHA, documentación y A5 independiente pendiente; no certifica proveedor vivo, JWT HTTP ni MySQL/EF. Reversión por git revert.

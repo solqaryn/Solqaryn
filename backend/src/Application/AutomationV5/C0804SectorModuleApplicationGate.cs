@@ -60,7 +60,18 @@ public sealed class C0804SectorModuleApplicationGate
             request.RequestsGlobalGrantOrSchemaMutation)
             return new("UNTRUSTED_PRIVILEGE_OR_SCHEMA_OVERRIDE");
 
-        var evidence = await _reader.ReadAsync(request.ModuleKey, cancellationToken);
+        VerifiedEvidence? evidence;
+        try
+        {
+            evidence = await _reader.ReadAsync(request.ModuleKey, cancellationToken);
+        }
+        catch (OperationCanceledException) { throw; }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            // Untrusted evidence failures must not expose exception messages,
+            // credentials, resource identifiers or partial authorization.
+            return new("TRUSTED_MODULE_EVIDENCE_UNAVAILABLE");
+        }
         if (evidence is null || !string.Equals(evidence.ObservedSourceSha,
                 request.ExpectedSourceSha, StringComparison.Ordinal) ||
             !string.Equals(evidence.PersistedModuleKey, request.ModuleKey,

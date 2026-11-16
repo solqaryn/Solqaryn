@@ -172,4 +172,68 @@ public sealed class C0804SectorModuleApplicationGateTests
             async () => await gate.EvaluateAsync(Request(), cts.Token));
         Assert.Equal(0, reader.Calls);
     }
+
+    // C08-04.M05.02: real Application DTO/error-contract regressions.
+    // These in-process assertions do not claim an authenticated HTTP endpoint.
+    private sealed class FaultingEvidenceReader(Exception error) : IC0804SectorModuleEvidenceReader
+    {
+        public int Calls { get; private set; }
+        public ValueTask<C0804SectorModuleApplicationGate.VerifiedEvidence?> ReadAsync(
+            string moduleKey, CancellationToken cancellationToken)
+        {
+            Calls++;
+            throw error;
+        }
+    }
+
+    [Fact]
+    public async Task C0804M0502_EvidenceReadFailureIsOpaqueAndCannotAuthorize()
+    {
+        var reader = new FaultingEvidenceReader(
+            new InvalidOperationException("SECRET_JWT_AND_TENANT_B"));
+        var gate = new C0804SectorModuleApplicationGate(reader);
+        var result = await gate.EvaluateAsync(Request());
+        Assert.Equal("TRUSTED_MODULE_EVIDENCE_UNAVAILABLE", result.Code);
+        Assert.DoesNotContain("SECRET", result.Code);
+        Assert.False(result.RequiresAuthenticatedMutationAdapter);
+        Assert.False(result.AuthorizesTenantAccess);
+        Assert.False(result.AuthorizesModuleActivation);
+        Assert.False(result.WritesToDatabase);
+        Assert.Equal(1, reader.Calls);
+    }
+
+    [Fact]
+    public async Task C0804M0502_TimeoutAlsoReturnsSafeErrorWithoutGrant()
+    {
+        var reader = new FaultingEvidenceReader(
+            new TimeoutException("PRIVATE_PROVIDER_HOST_AND_PASSWORD"));
+        var result = await new C0804SectorModuleApplicationGate(reader).EvaluateAsync(Request());
+        Assert.Equal("TRUSTED_MODULE_EVIDENCE_UNAVAILABLE", result.Code);
+        Assert.False(result.AuthorizesTenantAccess);
+        Assert.False(result.RequiresAuthenticatedMutationAdapter);
+        Assert.Equal(1, reader.Calls);
+    }
+
+    [Fact]
+    public async Task C0804M0502_CancellationFromEvidenceReaderIsNotConvertedToSuccess()
+    {
+        var reader = new FaultingEvidenceReader(new OperationCanceledException("cancelled"));
+        var gate = new C0804SectorModuleApplicationGate(reader);
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            async () => await gate.EvaluateAsync(Request()));
+        Assert.Equal(1, reader.Calls);
+    }
+
+    [Fact]
+    public async Task C0804M0502_InvalidDtoFailsBeforeFaultingBackendEvidence()
+    {
+        var reader = new FaultingEvidenceReader(new InvalidOperationException("SECRET"));
+        var gate = new C0804SectorModuleApplicationGate(reader);
+        var invalid = Request() with { ExpectedSourceSha = "bad", RequestedTenantId = "tenant-B" };
+        var result = await gate.EvaluateAsync(invalid);
+        Assert.Equal("INVALID_REQUEST_OR_SOURCE_SHA", result.Code);
+        Assert.Equal(0, reader.Calls);
+        Assert.False(result.AuthorizesTenantAccess);
+    }
+
 }
