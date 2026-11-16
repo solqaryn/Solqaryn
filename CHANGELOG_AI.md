@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C13-04.M03.03 autoridad actual y tenancy fail-closed de auditoría visual [Javier :00]
+- Introduce Infrastructure .NET 10 sobre Application/Domain con fuente confiable e independiente de la petición, validando identidad, tenant A/B, membresía/permiso/revocación, SHA ordinal, vigencia corta y allowlist de superficies server-side.
+- Añade doce pruebas xUnit R2 de positivos/negativos, fronteras, replay de SHA, datos sensibles, fallo opaco y cancelación; no crea endpoint, DI real, MySQL, JWT HTTP ni medición WCAG.
+- Requiere CI backend/seguridad/autorización, Scope Lock y V5 exact-SHA antes de LISTO_DEV y A5 por otra Task Javier; sin QA/main/PROD. Rollback mediante revert normal.
+
 ## 2026-11-15 — V17 reparación de baseline P0-007.A y rutas privadas de control plane [Javier :00]
 - Sin cambiar autorización ni rutas, incorpora a inventario exacto dos componentes Angular privados ya publicados: auditoría de tenancy y revisión de placement; 145 archivos (137 features, 8 shared), preservando cortes históricos.
 - Corrige el falso negativo ERP admitiendo únicamente dos rutas `plataforma/...` literales que ya exigen `plataformaGuard` y sesión administrativa validada por servidor; ningún comodín, auth bypass, nueva API ni integración productiva.
