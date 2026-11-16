@@ -1,3 +1,8 @@
+## 2026-11-16 - V17 reparacion A5_FAIL P2 C12-01.M02.05 idempotencia documental [Javier :30]
+- Corrige ENV10 con logicalRequestId estable y scope actor/ambiente/tenant/operacion/version; no fusionar solicitudes distintas por payload identico.
+- Corrige ENV12 con HMAC versionado sobre contenido canonico completo antes de redaccion, y I01/I02/P02/P03 con concurrencia, PII diferente y conflictos negativos.
+- Preserva A5_FAIL P2 DEV05; exige revisor Javier independiente y Scope Lock/V5 exact-SHA. Solo R0 documental y seis pruebas futuras NO_EJECUTADAS; sin MySQL/HTTP/Hostinger/QA/main/PROD.
+
 ## 2026-11-16 - V17 C02-02.M04.05 reparacion P2 foco alto contraste [Javier :40]
 - Corrige la precedencia CSS del contorno de foco: el design system global fuerza 3px con !important y los controles privados de placement requieren 4px en teclado/alto contraste.
 - Mantiene las pruebas reales Chromium de Tab, 320/768/1280 y revocacion 403 sin atenuar aserciones. El CI original fallido no se contabiliza como PASS; exigir repeticion y Scope Lock/V5 en SHA de reparacion.

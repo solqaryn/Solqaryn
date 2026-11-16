@@ -42,18 +42,18 @@ Diseñar un catálogo inactivo de señales de propuesta/revisión de topología 
 | ENV07 | tenantScopeRef (referencia opaca opcional) | No confiar en header/host/slug del cliente |
 | ENV08 | correlationId (cadena generada servidor) | Trazar operación sin datos sensibles |
 | ENV09 | causationId (referencia a evento precedente) | Evitar ciclos y referencias cross-tenant |
-| ENV10 | idempotencyKey (digest canónico propuesto) | Scope por actor + ambiente + tenant + operación + versión |
+| ENV10 | idempotencyKey (identidad estable por solicitud lógica) | Backend deriva idempotencia desde logicalRequestId único y durable + actor + ambiente + tenant + operación + versión; reintentos de la misma solicitud comparten clave, solicitudes distintas no se fusionan por tener payload igual |
 | ENV11 | occurredAtUtc (timestamp UTC servidor) | Rechazar reloj inválido/futuro fuera de ventana |
-| ENV12 | payloadDigest (hash de contenido redactado) | No transportar secretos/PII ni payload original |
+| ENV12 | payloadDigest (HMAC del payload íntegro canónico) | Backend calcula HMAC versionado de todos los campos relevantes, incluidos campos sensibles, ANTES de redacción para bitácora; nunca del texto redactado ni de hashes suministrados por clientes |
 
-Estas claves no son columnas, DTO compilados ni mensajes realmente transmitidos. El digest de idempotencia se construiría con canonización y hash criptográfico revisados en una microtarea R2 posterior; nunca almacenar el secreto de firma ni confiar en digest calculado por cliente.
+Estas claves no son columnas, DTO compilados ni mensajes realmente transmitidos. ENV10 requiere `logicalRequestId` estable entre reintentos de una misma operación autenticada, pero distinto para cada solicitud lógica y derivado/validado en backend junto a su scope actor, entorno, tenant, operación y versión. ENV12 debe calcularse con serialización canónica completa y versionada **antes de redactar** cualquier dato; HMAC con clave segregada fuera del repositorio (o mecanismo criptográfico equivalente revisado), sin registrar payload, JWT, PII ni clave. Igual representación redactada de dos payloads no implica digest igual. La implementación posterior R2 probará transacción, unicidad durable y concurrencia en MySQL 8.4 efímero; este documento R0 no ejecuta tales pruebas.
 
 ## I01–I12 — Invariantes de idempotencia, orden, reintento y límites
 
 | Regla | Invariante exigible en futura implementación |
 | --- | --- |
-| I01 | Misma clave+digest+scope => misma decisión durable; nunca dos efectos |
-| I02 | Misma clave y payload distinto => conflicto, no sobrescritura |
+| I01 | Mismo logicalRequestId+scope y mismo HMAC del payload completo => una decisión durable y a lo sumo un efecto aun con dos consumidores concurrentes; exige unicidad transaccional futura |
+| I02 | Mismo logicalRequestId+scope y cualquier cambio de payload canónico, aunque sólo varíe PII que se redacta igual => conflicto sin sobreescritura; solicitudes distintas con payload igual permanecen independientes |
 | I03 | Tenant A y B no comparten espacio de idempotencia ni mensajes |
 | I04 | Environment DEV/QA/PROD no comparte evento, secreto ni consumer lease |
 | I05 | Roles revocados o JWT inválidos no se validan por una caché positiva antigua |
@@ -100,8 +100,8 @@ Los valores numéricos de cuota, SLA y retención quedan pendientes de fuentes y
 | Par | Positivo de laboratorio autorizado futuro | Negativo adversarial obligatorio |
 | --- | --- | --- |
 | P01/N01 | EV01 versionado y scoped | Borrador sin propietario procesado |
-| P02/N02 | Misma clave+payload devuelve misma decisión | Replay produce efecto duplicado |
-| P03/N03 | Misma clave con payload distinto genera conflicto | Payload cambiado sobrescribe registro |
+| P02/N02 | Dos reintentos simultáneos con mismo logicalRequestId/scope/payload => misma decisión durable | Dos consumidores aceptan replay y crean dos efectos por falta de unicidad transaccional |
+| P03/N03 | Mismo logicalRequestId con payload cambiado sólo en un campo sensible => HMAC distinto y conflicto | Dos payloads con logs idénticos después de redacción se tratan como iguales, o solicitudes distintas con payload igual se fusionan |
 | P04/N04 | Tenant A/B segregados en cola y métricas | Mensaje de B procesado en contexto A |
 | P05/N05 | DEV y QA con identidad separada | Credencial DEV usada para PROD |
 | P06/N06 | Autor autenticado con rol vigente | Principal revocado acepta EV10 |
@@ -113,6 +113,12 @@ Los valores numéricos de cuota, SLA y retención quedan pendientes de fuentes y
 | P12/N12 | EV10 permanece documental con F12=false | Mensaje activa DNS/Hostinger sin R3 |
 
 **Resultado de esta entrega R0:** 0 de 12 pares ejecutados, 0 mensajes enviados y 0 pruebas reales de .NET, Angular, MySQL, HTTP, broker, Playwright, VPS, DNS, backup o proveedor. A1 es inspección documental de EV01–12, ENV01–12, I01–12, LIM01–08, ER-EV01–08 y 12 pares. A2 revisa aislamiento conceptual tenant A/B, IAM, roles, revocación, secretos, integridad y límites. A3 de runtime = NO_APLICA porque no hay código ni infraestructura modificada. La existencia de tablas y escenarios no prueba que los controles funcionen.
+
+## Reparación del A5_FAIL P2 y matriz negativa futura (sin runtime)
+
+La revisión independiente DEV05 registró QA_DEFECT_FOUND y A5_FAIL del SHA `7fb04d40fd159b5b2dbe9a4456fdf5fd1a7da93c`: ENV10 omitía la identidad de solicitud lógica; ENV12 derivaba el digest de contenido redactado, con riesgo de colisión semántica de PII o deduplicación de solicitudes distintas. Se corrige el contrato, sin borrar la evidencia histórica ni asumir nueva aprobación A5.
+
+**Pruebas R2 futuras, todas FUTUROS_NO_EJECUTADOS:** T1: mismo logicalRequestId + mismo payload en dos consumidores concurrentes produce exactamente una decisión durable; T2: dos logicalRequestId distintos con payload igual producen decisiones separadas; T3: mismo logicalRequestId, sólo PII alterada y logs igualmente redactados produce conflicto; T4: A/B y DEV/QA reutilizan identificador externo sin cruce de identidad; T5: timeout/rollback transaccional permite reintento sin doble efecto; T6: clave de cliente manipulada, ausente o inválida se rechaza sin fallback. **Resultado 0/6 pruebas runtime**, A1/A2 = revisión conceptual positiva/negativa/seguridad, A3 = NO_APLICA R0 sin código, MySQL, HTTP ni broker, A4 requiere nueva CI de Scope Lock y V5 exact-SHA, A5 exclusivamente otra Task Javier. No activar proveedor, VPS, DNS ni producción. Revertir sólo mediante git revert normal preservando BITACORA.
 
 ## A4, gates, A5, recuperación y reversión
 
