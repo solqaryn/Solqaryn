@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C03-04.M04.01 respuesta privada a incidentes [Javier :20]
+- Agrega una ruta lazy protegida con plataformaGuard y una vista solo lectura para contención, integridad, ensayo de respaldo y rollback sin operar restauración, revocación o proveedor.
+- Implementa cinco Vitest adversariales (anónimo, empresa, grant, revocación, guard) y tres Chromium sintéticos; CI GitHub-hosted valida lint, build, Scope Lock y procedencia V5 por SHA antes del cierre.
+- Riesgo R2: pruebas simuladas no acreditan JWT/MySQL/tenant A-B/backup real, RTO-RPO NO_MEDIDO; A5 corresponde a otro Task Javier. Rollback git revert normal, sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C10-04.M04.04 navegación y doble acción privada [Javier :10]
 - Corrige falla síncrona del proveedor de sesión mediante defer RxJS, manteniendo la UI fail-closed y el botón recuperable, sin alterar JWT, tenant, backend ni rutas de autoridad.
 - Agrega siete pruebas Vitest de navegación interna, ausencia de formularios, single-flight, revocación, errores 403/503 y excepción síncrona; workflow propio con npm, build/lint y Playwright Chromium sintético.

@@ -29,6 +29,7 @@ export const routes: Routes = [
   { path: 'plataforma/placement-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/placement-review-v5.component').then(m => m.PlacementReviewV5Component) },
   { path: 'plataforma/auditoria-tenancy-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/auditoria-tenancy-v5.component').then(m => m.AuditoriaTenancyV5Component) },
   { path: 'plataforma/gobierno-cambios-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/gobierno-cambios-v5.component').then(m => m.GobiernoCambiosV5Component) },
+  { path: 'plataforma/respuesta-incidentes-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/respuesta-incidentes-v5.component').then(m => m.RespuestaIncidentesV5Component) },
   { path: 'plataforma', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/plataforma.component').then(m => m.PlataformaComponent) },
   { path: 'dashboard', canActivate: [authGuard, permisoGuard], data: { modulo: 'Dashboard', accion: 'Ver' }, loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) },
   { path: 'productos', canActivate: [authGuard, permisoGuard], data: { modulo: 'Productos', accion: 'Ver' }, loadComponent: () => import('./features/productos/productos-list.component').then(m => m.ProductosListComponent) },
