@@ -7,6 +7,7 @@
 - Añade enlace de salto protegido, foco visible de alto contraste, etiquetas para matriz de auditoría, mejoras responsive y navegación por teclado a la ruta privada existente sin otorgar permisos.
 - Pruebas reales Chromium con sesiones sintéticas positiva, 403, anónimo, keyboard/focus, 320/768 px; requiere lint, build, Scope Lock y procedencia V5 exact SHA.
 - Riesgo R2 UI: no certifica HTTP JWT, MySQL, tenants A/B ni pentest; candado V17 exclusivo, A5 independiente y rollback git revert.
+- CI_REPAIR GitHub job133032969860: 3/4 Chromium PASS, assertion global detectó cinco controles del shell externo; el test ahora limita la ausencia de acciones al componente `.tenancy-audit`, sin esconder controles globales ni desactivar denegaciones. Revalidar en SHA nuevo.
 
 ## 2026-11-15 — V17 C15-01.M03.06 auditoría segura de cobertura de requisitos [Javier :00]
 - Implementa sink Infrastructure .NET 10 no autorizante para la revisión acotada M03.05, con evento ILogger seguro y sin escritura institucional ni certificación global/A5.
