@@ -43,3 +43,13 @@ el assert al párrafo único `p[role="note"]`, mantiene verificación del texto,
 cuatro tarjetas, negativas de permiso, responsive y ausencia de controles
 transaccionales. Se exige CI nueva en SHA causal; nunca contar el fallo como
 PASS ni cerrar LISTO antes de que todos los checks requeridos finalicen.
+
+## Diagnóstico adicional de responsive (SHA reparado 6399072d)
+
+La nueva CI `43913325430` dejó la prueba de accesibilidad con 2 PASS y
+1 FAIL real: a 320 px el documento excede su viewport 75 px. La primera
+reparación del selector fue correcta y las autorizaciones sintéticas
+aprobaron. Se instrumenta únicamente geometría (etiquetas, clases y cajas)
+para identificar el elemento causante, **sin volcar datos**, manteniendo
+el assert global de overflow como prueba obligatoria; no declarar PASS
+ni culpar al nuevo panel hasta aislar causalmente el elemento. R2 UI.

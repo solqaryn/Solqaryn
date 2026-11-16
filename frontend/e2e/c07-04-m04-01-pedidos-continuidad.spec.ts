@@ -56,9 +56,24 @@ test('C07-04.M04.01 lector autorizado ve cuatro contratos read-only a 320 y 1280
     await expect(panel.locator('li')).toHaveCount(4);
     await expect(panel.locator('p[role="note"]')).toContainText('NO_MEDIDO');
     await expect(panel.locator('form, input, textarea, button')).toHaveCount(0);
-    const overflow=await page.evaluate(() =>
-      document.documentElement.scrollWidth-document.documentElement.clientWidth);
-    expect(overflow).toBeLessThanOrEqual(2);
+    const measurement = await page.evaluate(() => {
+      const viewport = document.documentElement.clientWidth;
+      const overflow = document.documentElement.scrollWidth - viewport;
+      const offenders = [...document.querySelectorAll('body *')].map(el => {
+        const rect = el.getBoundingClientRect();
+        return {
+          tag: el.tagName.toLowerCase(),
+          cls: typeof el.className === 'string' ? el.className.slice(0, 85) : '',
+          left: Math.round(rect.left), right: Math.round(rect.right),
+          width: Math.round(rect.width)
+        };
+      }).filter(x => x.right > viewport + 2 && x.width > 0)
+        .sort((a, b) => b.right - a.right).slice(0, 10);
+      return { viewport, overflow, offenders };
+    });
+    // Diagnóstico estructural sin datos ni contenido del tenant; assert global intacto.
+    console.log('C0704_LAYOUT_OVERFLOW_DIAG=' + JSON.stringify(measurement));
+    expect(measurement.overflow).toBeLessThanOrEqual(2);
   }
 });
 

@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 diagnóstico causal de overflow C07-04.M04.01 [Javier :10]
+- Tras corregir el selector Playwright, el SHA 6399072d mantiene 2 Chromium PASS y 1 FAIL real por overflow global de 75 px a 320; se conserva el fallo como gate obligatorio.
+- Instrumenta solo geometría de elementos (sin textos ni datos privados) y mantiene intacto el assert global para localizar el elemento causal antes de corregir CSS; no permite saltar pruebas.
+- A4 y A5 pendientes, no se declara LISTO; R2 UI, Scope Lock STRICT, dev exclusivo, rollback normal.
+
 ## 2026-11-16 — V17 C13-04.M03.04 adaptador aislado de snapshots de revisión visual [Javier :50]
 - Añade en Infrastructure .NET 10 un adaptador EN MEMORIA con snapshots por tenant, revisión optimista CAS, máximo 64 claves por tenant y copias inmutables; NO habilita persistencia MySQL/EF, DI live ni HTTP/JWT.
 - Doce pruebas xUnit adversariales cubren tenants A/B, revocación, autorización actual, SHA ordinal, expiración, límites, snapshots mutables, cancelación, errores opacos y colisiones concurrentes; necesitan CI real exact-SHA, no son PASS por estar escritas.
