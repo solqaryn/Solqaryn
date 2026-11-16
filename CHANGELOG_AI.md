@@ -5830,3 +5830,8 @@
 - Añade cinco pruebas Playwright/Chromium: anónimo y permiso Ventas:Ver denegado, carga a vacío, error 503 con retry a éxito, lectura autorizada sin acciones ni HTTP mutador a 320/768/1280.
 - Nuevo workflow dirigido por SHA exacto y cancel-in-progress=false con Angular lint/build y Chromium en loopback, fixtures sintéticos, sin certificar JWT/tenant backend, MySQL, caja, pagos ni fiscalidad.
 - Alcance R2, A0 estática y rollback git revert documentados; A1-A4 sujetos a CI exact-SHA y readback; A5 otra Task Javier, V17 lock 2000001137; no QA/main/PROD.
+
+## 2026-11-16 — V17 C02-04.M04.04 pruebas de interacción privada de control plane [Javier :00]
+- Añade cinco pruebas Playwright/Chromium con guard anónimo, 403 sin fuga, teclado real Tab/Enter, navegación, error 503 con recuperación y botón single-flight ante segunda pulsación, sin formularios ni escrituras.
+- Nuevo CI dirigido por SHA, cancel-in-progress=false, npm lint/build y Chromium loopback; fixtures sintéticos no certifican JWT, MFA, tenancy A/B, MySQL ni grants de plataforma backend.
+- Alcance R2 test-only con A0 y rollback git revert; A1-A4 sujetas a ejecución exact-SHA, A5 solo Task Javier distinta, V17 lock 2000000419. Sin QA/main/PROD.
