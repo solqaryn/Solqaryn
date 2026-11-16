@@ -28,7 +28,7 @@ Todos llevan `schemaVersion`, `eventId`, `correlationId`, `causationId`, `record
 | EV06 | WarehouseAssignmentVerified | Almacén/sucursal con propietario confirmado |
 | EV07 | CommercialUnitCommitted | Venta/detalle/stock/factura confirmados en una sola unidad |
 | EV08 | PaymentAllocated | Pago aplicado a factura propia sin duplicación |
-| EV09 | InventoryMovementCommitted | Movimiento validado con producto, almacén y actor scoped |
+| EV09 | MovimientoInventarioConfirmado | Movimiento validado con producto, almacén y actor scoped |
 | EV10 | AuditReferencePersisted | Referencia y resultado seguro, sin PII/JWT/SQL crudos |
 | EV11 | SchemaCompatibilityObserved | Lectura no destructiva de compatibilidad de mapping/versiones |
 | EV12 | RecoveryCompensationRecorded | Compensación formal y auditable, no borrado de historial |
