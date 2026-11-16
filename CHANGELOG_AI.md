@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C02-04.M04.05 reparación A5_FAIL P2 de teclado real [Javier :20]
+- Sustituye el atajo Playwright link.focus() por recorrido Tab acotado desde foco inicial, con aserción de alcance real; mantiene foco/blanco 44px y exige Shift+Tab + Enter de retorno.
+- Conserva denegaciones anónimo/403, responsive y contraste calculado >=4.5:1; exige Chromium GitHub-hosted exact-SHA, Scope Lock/V5 y revisor A5 distinto. A5_FAIL previo no se borra.
+- Sin cambios de UI productiva, JWT/RBAC/tenant, HTTP, MySQL, QA/main/PROD ni secretos; rollback git revert normal.
+
 ## 2026-11-16 — V17 C15-01.M04.03 reparación A5_FAIL P2 de getters [Javier :20]
 - Captura marca/densidad una sola vez y rechaza getters que lanzan o Proxy revocado antes de renderizar; mantiene lista blanca, fallback neutro y permisos intactos.
 - Añade tres pruebas adversariales Vitest: TOCTOU de getters cambiantes, error/Proxy revocado y montaje Angular sin filtrar diagnósticos; requiere CI exact-SHA, Scope Lock/V5 y nueva A5 independiente.

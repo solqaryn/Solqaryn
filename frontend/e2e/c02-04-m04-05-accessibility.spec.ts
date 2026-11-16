@@ -56,7 +56,17 @@ test('C02-04.M04.05 teclado Tab y foco visible 44px', async ({ page }) => {
   await page.goto('/plataforma/consola-global-v5');
   const link = page.getByRole('link', { name: 'Volver a administración de plataforma' });
   const button = page.getByRole('button', { name: 'Revalidar sesión global' });
-  await link.focus();
+  // A5 P2: desde el foco inicial REAL, no forzar focus() sobre el enlace.
+  let enlaceAlcanzado = false;
+  for (let paso = 0; paso < 100; paso++) {
+    await page.keyboard.press('Tab');
+    if (await link.evaluate(el => el === document.activeElement)) {
+      enlaceAlcanzado = true;
+      break;
+    }
+  }
+  expect(enlaceAlcanzado, 'el enlace de retorno debe ser alcanzable por Tab desde la pagina').toBe(true);
+  await expect(link).toBeFocused();
   await page.keyboard.press('Tab');
   await expect(button).toBeFocused();
   const style = await button.evaluate(el => {
@@ -67,6 +77,11 @@ test('C02-04.M04.05 teclado Tab y foco visible 44px', async ({ page }) => {
   expect(style.width).toBeGreaterThanOrEqual(44);
   expect(style.outline).toBeGreaterThanOrEqual(2);
   expect(style.kind).not.toBe('none');
+  // Shift+Tab y Enter recorren y activan el retorno sin atajo programatico.
+  await page.keyboard.press('Shift+Tab');
+  await expect(link).toBeFocused();
+  await page.keyboard.press('Enter');
+  await expect(page).toHaveURL(/\/plataforma(?:\?|$)/);
 });
 test('C02-04.M04.05 contraste calculado de texto en tarjeta >= 4.5:1', async ({ page }) => {
   await session(page, 200);

@@ -9,3 +9,11 @@ Cinco Playwright/Chromium: anónimo, 403 sin payload privado, 320/375/768/1280 s
 
 ## A4 y A5
 CI exact SHA y logs obligatorios, Scope Lock/V5, readback PLAN/COLA/DAG/BITACORA y revisión A5 por otra Task Javier. Nunca usar skipped/cancelled/queued como PASS. Sin QA/main/PROD.
+
+## Reparación de A5_FAIL P2: ruta de teclado real (16 de noviembre de 2026)
+
+La revisión independiente detectó que el test inicial empleaba `await link.focus()` sobre el enlace de retorno, lo que podía ocultar que fuera inalcanzable desde una secuencia de Tab real. No se comprobó una vulnerabilidad efectiva de acceso o un fallo de usuario final; la brecha era la calidad de la prueba.
+
+La regresión sustituye el foco forzado por una búsqueda acotada de 100 pulsaciones Tab desde el foco inicial, exige que el enlace sea alcanzable, mantiene la transición Tab a Revalidar y sus propiedades de foco/blanco mínimo de 44 px, vuelve mediante Shift+Tab y activa el enlace con Enter verificando que abandona la ruta. Este assert es capaz de fallar si el enlace se retira del orden de tabulación o Enter no navega. Los cuatro escenarios restantes de denegación, labels, responsive y ratio de contraste >=4.5:1 se conservan.
+
+R2 por ruta de consola global privada; cambia sólo pruebas, documento y CHANGELOG, no implementación, IAM/JWT/RBAC, tenant, API, MySQL ni producción. Requiere Vitest y Chromium GitHub-hosted del SHA reparado, Scope Lock/V5 y A5 nueva por otra Task Javier, preservando el A5_FAIL histórico. Rollback `git revert` ordinario, dev exclusivamente.
