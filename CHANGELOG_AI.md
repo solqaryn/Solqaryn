@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C02-04.M05.01 inventario global de rutas y pruebas Chromium [Javier :40]
+- Se incorpora inventario versionado de 13 rutas de plataforma con ID, import y guard reales del HEAD; cinco fixtures negativos detectan desalineación y prohíben afirmar autorización backend desde UI.
+- Se añaden 29 pruebas Playwright de navegador real sobre denegación anónima/403 sintético, lectura autorizada sintética y 503 opaco; su PASS depende del job GitHub-hosted exact-SHA, no del manifiesto.
+- Riesgo R2; autoridad JWT/RBAC/MFA/tenant A-B y MySQL real NO_MEDIDO/NO_APLICA según scope. Sin cambios de runtime, secretos, QA/main/PROD. A5 por otra Task Javier, rollback git revert.
+
 ## 2026-11-16 — V18 C14-04.M04.06 reparación de aserción fail-closed ante 503 [Javier :10]
 - CI real 5ceaa490 ejecutó 55 escenarios (54 PASS, 1 FAIL): después de HTTP 503 el contrato privado desapareció correctamente, pero el test esperaba texto dentro de un elemento ausente; error de aserción, no evidencia de fuga.
 - Actualiza exclusivamente la prueba negativa para exigir eliminación total del contrato, manteniendo denegación, error opaco, ausencia de spinner y conteo GET; solicita nuevamente Chromium dirigido, Scope Lock, V5 y regresión exact-SHA.

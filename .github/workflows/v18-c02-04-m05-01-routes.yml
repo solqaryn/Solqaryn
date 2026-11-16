@@ -1,0 +1,60 @@
+name: V18 C02-04.M05.01 - route inventory verification
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v18-c02-04-m05-01-routes.yml'
+      - 'docs/v5/c02-04-m05-01-routes.json'
+      - 'scripts/quality/verify-c02-04-m05-01-routes.mjs'
+      - 'frontend/e2e/c02-04-m05-01-routes.spec.ts'
+      - 'frontend/src/app/app.routes.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v18-c0204-m0501
+  cancel-in-progress: false
+jobs:
+  routes:
+    name: C02-04.M05.01 - 13 source routes and Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm install --global npm@11.19.0
+      - name: Static inventory and 5 negative fixtures
+        run: node scripts/quality/verify-c02-04-m05-01-routes.mjs --self-test
+      - name: Install frontend
+        working-directory: frontend
+        run: npm ci
+      - name: Angular lint and prod build
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Install Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Serve frontend
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > v18-c0204-m0501.log 2>&1 &
+          for attempt in $(seq 1 75); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat v18-c0204-m0501.log >&2
+          exit 1
+      - name: 29 Chromium browser checks with mocked backend
+        working-directory: frontend
+        run: npx playwright test e2e/c02-04-m05-01-routes.spec.ts --config=playwright.config.ts --workers=1 --retries=0

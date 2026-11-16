@@ -1,0 +1,110 @@
+{
+  "schemaVersion": "C02-04.M05.01/v18.1",
+  "routeSource": "frontend/src/app/app.routes.ts",
+  "routes": [
+    {
+      "id": "GV01",
+      "path": "plataforma",
+      "component": "./features/plataforma/plataforma.component",
+      "guard": "plataformaGuard",
+      "serverAuth": "NO_MEDIDO",
+      "browserState": "CI_REQUIRED"
+    },
+    {
+      "id": "GV02",
+      "path": "plataforma/cobertura-v5",
+      "component": "./features/plataforma/plataforma.component",
+      "guard": "plataformaGuard",
+      "serverAuth": "NO_MEDIDO",
+      "browserState": "CI_REQUIRED"
+    },
+    {
+      "id": "GV03",
+      "path": "plataforma/flujo-v5",
+      "component": "./features/plataforma/plataforma.component",
+      "guard": "plataformaGuard",
+      "serverAuth": "NO_MEDIDO",
+      "browserState": "CI_REQUIRED"
+    },
+    {
+      "id": "GV04",
+      "path": "plataforma/auditoria-operativa-v5",
+      "component": "./features/plataforma/auditoria-operativa-v5.component",
+      "guard": "plataformaGuard",
+      "serverAuth": "NO_MEDIDO",
+      "browserState": "CI_REQUIRED"
+    },
+    {
+      "id": "GV05",
+      "path": "plataforma/continuidad-operativa-v5",
+      "component": "./features/plataforma/continuidad-operativa-v5.component",
+      "guard": "plataformaGuard",
+      "serverAuth": "NO_MEDIDO",
+      "browserState": "CI_REQUIRED"
+    },
+    {
+      "id": "GV06",
+      "path": "plataforma/placement-v5",
+      "component": "./features/plataforma/placement-review-v5.component",
+      "guard": "plataformaGuard",
+      "serverAuth": "NO_MEDIDO",
+      "browserState": "CI_REQUIRED"
+    },
+    {
+      "id": "GV07",
+      "path": "plataforma/consola-global-v5",
+      "component": "./features/plataforma/consola-global-auditada-v5.component",
+      "guard": "plataformaGuard",
+      "serverAuth": "NO_MEDIDO",
+      "browserState": "CI_REQUIRED"
+    },
+    {
+      "id": "GV08",
+      "path": "plataforma/auditoria-tenancy-v5",
+      "component": "./features/plataforma/auditoria-tenancy-v5.component",
+      "guard": "plataformaGuard",
+      "serverAuth": "NO_MEDIDO",
+      "browserState": "CI_REQUIRED"
+    },
+    {
+      "id": "GV09",
+      "path": "plataforma/gobierno-cambios-v5",
+      "component": "./features/plataforma/gobierno-cambios-v5.component",
+      "guard": "plataformaGuard",
+      "serverAuth": "NO_MEDIDO",
+      "browserState": "CI_REQUIRED"
+    },
+    {
+      "id": "GV10",
+      "path": "plataforma/respuesta-incidentes-v5",
+      "component": "./features/plataforma/respuesta-incidentes-v5.component",
+      "guard": "plataformaGuard",
+      "serverAuth": "NO_MEDIDO",
+      "browserState": "CI_REQUIRED"
+    },
+    {
+      "id": "GV11",
+      "path": "plataforma/revision-amenazas-v5",
+      "component": "./features/plataforma/revision-amenazas-v5.component",
+      "guard": "plataformaGuard",
+      "serverAuth": "NO_MEDIDO",
+      "browserState": "CI_REQUIRED"
+    },
+    {
+      "id": "GV12",
+      "path": "plataforma/trazabilidad-cobertura-v5",
+      "component": "./features/plataforma/cobertura-trazabilidad-v5.component",
+      "guard": "plataformaGuard",
+      "serverAuth": "NO_MEDIDO",
+      "browserState": "CI_REQUIRED"
+    },
+    {
+      "id": "GV13",
+      "path": "plataforma/observabilidad-v5",
+      "component": "./features/plataforma/observabilidad-privada-v5.component",
+      "guard": "plataformaGuard",
+      "serverAuth": "NO_MEDIDO",
+      "browserState": "CI_REQUIRED"
+    }
+  ]
+}
