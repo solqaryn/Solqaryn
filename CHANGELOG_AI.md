@@ -1,3 +1,9 @@
+## 2026-11-16 — V17 C02-04.M04.03 branding seguro allowlisted de consola global [Javier :30]
+- Agrega marca visual dinámica estrictamente local entre dos presets estáticos en la superficie privada del control plane, sin CSS remoto, nuevas llamadas, permisos, grants, tenancy ni datos reales.
+- Conservar guard, comprobación de sesión del backend y acceso fail-closed: la selección no autoriza operaciones y se oculta ante 403 o revocación.
+- Añade cinco escenarios Playwright Chromium para acceso anónimo/403, dos presets, teclado/responsive 320/375/768/1280, no duplicación de llamadas y revocación; sesiones HTTP sintéticas, sin certificar JWT/MFA o MySQL reales.
+- Riesgo R2; GitHub-hosted lint/build, Vitest, Chromium, Scope Lock y V5 exact-SHA requeridos antes de LISTO, A5 independiente, rollback git revert, solo dev.
+
 ## 2026-11-16 — V17 C14-04.M04.02 estados seguros de readiness privada [Javier :40]
 - Diferencia carga, exito de sesion, vacio de evidencias, error y permiso denegado en /plataforma/flujo-v5 con panel fail-closed y revalidacion GET sin dobles acciones.
 - Añade cinco pruebas Playwright/Chromium adversariales, incluido 403 con payload sensible, 503 recuperable y carga diferida, al workflow V5 SHA-aislado sin eliminar pruebas existentes.

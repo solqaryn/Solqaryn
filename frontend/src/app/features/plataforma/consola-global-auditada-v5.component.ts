@@ -43,6 +43,19 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
       </section>
 
       @if (estadoVisible() === 'vacio' || estadoVisible() === 'exito') {
+        <section class="control-brand" role="group" aria-label="Marca visual autorizada de consola global"
+          data-testid="c0204-branding" [class.control-brand--contrast]="marcaConsola() === 'contraste'">
+          <h2>Presentación visual permitida</h2>
+          <p>Opciones locales de apariencia. Ninguna selección concede permisos ni modifica una empresa.</p>
+          <div class="control-brand__actions">
+            @for (opcion of marcasPermitidas; track opcion.id) {
+              <button type="button" [attr.data-testid]="'c0204-brand-' + opcion.id"
+                [attr.aria-pressed]="marcaConsola() === opcion.id"
+                (click)="seleccionarMarcaConsola(opcion.id)">{{ opcion.nombre }}</button>
+            }
+          </div>
+          <p role="status" data-testid="c0204-brand-state">{{ marcaConsola() === 'contraste' ? 'Contraste alto seleccionado' : 'Institucional seleccionado' }}</p>
+        </section>
         <section aria-labelledby="controles-title">
           <h2 id="controles-title">Fronteras de control plane</h2>
           <ol class="control-cards">
@@ -75,6 +88,14 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
     nav button:disabled { opacity:.6; cursor:progress; }
     nav :is(a,button):focus-visible { outline:3px solid var(--mat-sys-primary,#2157a3); outline-offset:3px; }
     .notice { border:1px solid var(--mat-sys-outline-variant,#aeb8c1); border-radius:.65rem; padding:1rem; margin:1.1rem 0; }
+    .control-brand { box-sizing:border-box; margin:1.25rem 0; padding:1rem; border:1px solid #8b9eb0; border-radius:.75rem; background:#f4f7fb; color:#18324d; overflow-wrap:anywhere; }
+    .control-brand h2 { margin:.25rem 0 .65rem; }
+    .control-brand__actions { display:flex; flex-wrap:wrap; gap:.75rem; margin:1rem 0; }
+    .control-brand__actions button { min-height:44px; padding:.65rem 1rem; border:1px solid currentColor; border-radius:.5rem; background:transparent; color:inherit; font:inherit; cursor:pointer; }
+    .control-brand__actions button:focus-visible { outline:3px solid currentColor; outline-offset:3px; }
+    .control-brand--contrast { background:#0b1829; color:#fff; border-color:#b8e2ff; }
+    .control-brand--contrast .control-brand__actions button { border-color:#fff; color:#fff; }
+    @media(max-width:375px) { .control-brand__actions { flex-direction:column; align-items:stretch; } }
     .control-cards { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.9rem;
       list-style:none; padding:0; margin:0; }
     .control-cards li { box-sizing:border-box; min-width:0; border:1px solid var(--mat-sys-outline-variant,#aeb8c1);
@@ -90,6 +111,21 @@ export class ConsolaGlobalAuditadaV5Component {
     return sesion?.ambito === 'Plataforma' && sesion.esAdministrador === true;
   });
   readonly verificacion = signal<'inicial' | 'cargando' | 'confirmada' | 'denegada' | 'error'>('inicial');
+  // C02-04.M04.03: sólo tokens locales allowlisted, no CSS remoto, grants ni estado persistido.
+  readonly marcasPermitidas = [
+    { id: 'institucional', nombre: 'Institucional' },
+    { id: 'contraste', nombre: 'Contraste alto' }
+  ] as const;
+  readonly marcaConsola = signal<'institucional' | 'contraste'>('institucional');
+
+  seleccionarMarcaConsola(id: string): boolean {
+    const estado = this.estadoVisible();
+    if (!this.accesoVerificado() || (estado !== 'vacio' && estado !== 'exito')) return false;
+    const opcion = this.marcasPermitidas.find(item => item.id === id);
+    if (!opcion || this.marcaConsola() === opcion.id) return false;
+    this.marcaConsola.set(opcion.id);
+    return true;
+  }
   readonly estadoVisible = computed(() => {
     const estado = this.verificacion();
     if (estado === 'cargando' || estado === 'error') return estado;

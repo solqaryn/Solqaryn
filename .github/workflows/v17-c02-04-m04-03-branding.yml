@@ -1,0 +1,72 @@
+name: V17 C02-04.M04.03 - consola global auditada
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v17-c02-04-m04-03-branding.yml'
+      - 'frontend/src/app/features/plataforma/consola-global-auditada-v5.component.ts'
+      - 'frontend/src/app/features/plataforma/consola-global-auditada-v5.component.spec.ts'
+      - 'frontend/e2e/c02-04-m04-03-branding.spec.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v17-c0204-m0403-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  consola-global:
+    name: C02-04.M04.03 - branding privado y Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm fijado
+        run: npm install --global npm@11.19.0
+      - name: Instalar dependencias
+        working-directory: frontend
+        run: npm ci
+      - name: Diez Vitest de ruta, permisos y denegación
+        working-directory: frontend
+        run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/consola-global-auditada-v5.component.spec.ts
+      - name: Lint y compilación Angular de producción
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Instalar Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Servidor Angular sin backend real
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > v17-c0204-consola.log 2>&1 &
+          for attempt in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat v17-c0204-consola.log >&2
+          exit 1
+      - name: Chromium consola y C02-04.M04.05 accesibilidad
+        working-directory: frontend
+        run: npx playwright test e2e/c02-04-m04-01-consola.spec.ts e2e/c02-04-m04-03-branding.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Artefactos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v17-c0204-m0403-consola
+          path: |
+            frontend/v17-c0204-consola.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 14
