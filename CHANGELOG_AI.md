@@ -1,3 +1,8 @@
+## 2026-11-16 — V19 C05-04.M04.01 superficie privada de ligereza visual [Javier :50]
+- Agrega en /plataforma ya protegida una superficie Angular de consulta de presupuestos y objetivos LCP/CLS explícitamente NO_MEDIDOS, con resumen compacto por Signal y semántica accesible.
+- Cuatro casos Chromium dirigidos de acceso, 403, teclado/Enter sin HTTP de escritura y responsive 320/375/768/1280; flujo CI exact-SHA SHA-aislado con lint/build; A0–A4 pendientes de resultados externos, A5 independiente.
+- No crea ruta, privilegios, APIs ni datos; Scope Lock STRICT, rollback git revert y ninguna escritura en QA/main/PROD.
+
 ## 2026-11-16 — Reparación causal CI del catálogo y guard exacto C02-04.M04.01 [Javier :00]
 - El SHA 55af37d5 expuso dos fallos de validación: P0-007.A detectó componente nuevo sin registrar y la auditoría ERP rechazó la ruta nueva pese a canActivate: [plataformaGuard].
 - Agrega exclusivamente la ruta exacta al allowlist del auditor, que sigue exigiendo guard, autenticación y sesión servidor; actualiza el catálogo reproducible 150/150 sin desactivar verificadores ni pruebas negativas.

@@ -173,6 +173,32 @@ import { DesignSystemV5Component } from './design-system-v5.component';
           <summary>Biblioteca visual · tokens y componentes</summary>
           <app-design-system-v5 />
         </details>
+        <details class="ui-lightness-v5" aria-label="Contrato de ligereza de interfaz">
+          <summary>Ligereza y percepción · revisión de interfaz</summary>
+          <section class="ui-lightness-v5__content" aria-labelledby="ui-lightness-v5-title">
+            <div class="ui-lightness-v5__heading">
+              <div>
+                <h2 id="ui-lightness-v5-title">Presupuesto de ligereza visual</h2>
+                <p>Contrato de revisión para pantallas ERP. Los umbrales son objetivos, no mediciones obtenidas del dispositivo.</p>
+              </div>
+              <button mat-stroked-button type="button" class="ui-lightness-v5__toggle"
+                [attr.aria-pressed]="ligerezaCompacta()"
+                (click)="ligerezaCompacta.update(actual => !actual)">
+                {{ ligerezaCompacta() ? 'Ver criterios' : 'Reducir detalles' }}
+              </button>
+            </div>
+            @if (ligerezaCompacta()) {
+              <p class="ui-lightness-v5__status" role="status">Resumen compacto: tres criterios disponibles sin solicitudes adicionales.</p>
+            } @else {
+              <ul class="ui-lightness-v5__checks" aria-label="Criterios de ligereza">
+                <li><strong>Carga inicial</strong><span>Verificar el presupuesto de bundle en la compilación; tamaño real: no medido aquí.</span></li>
+                <li><strong>Respuesta visual</strong><span>Objetivos: LCP ≤ 2,5 s y CLS ≤ 0,1; sin resultados de campo certificados.</span></li>
+                <li><strong>Operaciones</strong><span>Evitar duplicar llamadas y mantener navegación y lectura sin nuevas escrituras.</span></li>
+              </ul>
+            }
+            <p class="ui-lightness-v5__boundary" role="note">Consulta local sin configuraciones persistentes, permisos adicionales ni acceso a otras empresas.</p>
+          </section>
+        </details>
         <mat-card class="directory-card" aria-label="Directorio de empresas">
           <mat-card-header>
             <mat-card-title>Directorio global de empresas</mat-card-title>
@@ -290,6 +316,20 @@ import { DesignSystemV5Component } from './design-system-v5.component';
     .v5-coverage th, .v5-coverage td { padding: 16px; text-align: left; border-bottom: 1px solid #dfe5ec; }
     .v5-coverage th { font-weight: 750; font-size: .85rem; background: var(--color-background, #f5f7fa); }
     .v5-coverage .v5-empty { color: var(--color-text-muted); line-height: 1.6; }
+    .ui-lightness-v5 { margin-top: 20px; border: 1px solid #dfe5ec; border-radius: 12px; }
+    .ui-lightness-v5 > summary { cursor: pointer; padding: 16px 20px; font-weight: 700; min-height: 44px; }
+    .ui-lightness-v5 > summary:focus-visible { outline: 3px solid var(--color-primary, #165da0); outline-offset: 2px; }
+    .ui-lightness-v5__content { padding: 8px clamp(16px, 3vw, 24px) 24px; }
+    .ui-lightness-v5__heading { display: flex; justify-content: space-between; align-items: flex-start; gap: 16px; flex-wrap: wrap; }
+    .ui-lightness-v5__heading p { max-width: 640px; color: var(--color-text-muted); }
+    .ui-lightness-v5__toggle { min-height: 44px; }
+    .ui-lightness-v5__toggle:focus-visible { outline: 3px solid var(--color-primary, #165da0); outline-offset: 2px; }
+    .ui-lightness-v5__checks { margin: 16px 0; padding: 0; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; list-style: none; }
+    .ui-lightness-v5__checks li { min-width: 0; padding: 16px; border: 1px solid #dfe5ec; border-radius: 10px; overflow-wrap: anywhere; }
+    .ui-lightness-v5__checks strong { display: block; margin-bottom: 8px; }
+    .ui-lightness-v5__checks span, .ui-lightness-v5__boundary { color: var(--color-text-muted); }
+    .ui-lightness-v5__boundary { margin: 12px 0 0; }
+    @media (max-width: 760px) { .ui-lightness-v5__checks { grid-template-columns: 1fr; } }
     .directory-card { margin-top: 20px; }
     .directory-card mat-card-content { padding: 20px 24px; }
     .directory-scroll { max-width: 100%; overflow-x: auto; }
@@ -316,6 +356,7 @@ export class PlataformaComponent {
   readonly sesion = this.plataforma.sesion;
   // Preferencia visual local con dos estados permitidos; no recibe CSS del cliente ni altera otros tenants.
   readonly contrasteCobertura = signal(false);
+  readonly ligerezaCompacta = signal(false);
   readonly validando = signal(false);
   readonly error = signal<string | null>(null);
   readonly directorio = signal<DirectorioPlataforma | null>(null);
