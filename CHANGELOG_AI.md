@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 reparación causal P0-007.A para dos componentes nuevos [Javier :10]
+- El catalogador estricto detectó componente C07-04.M04.03 no inventariado en el SHA 022c5aa7; la nueva entrega C14-04.M04.03 exige otra entrada del mismo registro.
+- Registra ambas rutas reales, actualiza exclusivamente conteos 153=145 features+8 shared y conserva comparador exacto, negativos de drift/duplicados y Scope Lock; no desactiva ninguna CI.
+- Reparación de baseline compartido, no CLAIM adicional, LISTO ni A5. Esperar CI exact-SHA y evidencia de los dos scopes; no QA/main/PROD.
+
 ## 2026-11-16 — V17 C14-04.M04.03 presets visuales readiness [Javier :10]
 - Añade panel Angular Signals a ruta privada existente /plataforma/flujo-v5; marca, densidad y contraste por lista permitida, ocultos al revocar sesión, sin go-live ni acciones operativas.
 - Seis Vitest y tres Chromium de acceso anónimo, autorización sintética, 403, responsive 320px y cero solicitudes mutadoras; workflow independiente por SHA.

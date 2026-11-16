@@ -458,3 +458,21 @@ Nueva superficie privada de trazabilidad registrada en el catálogo exacto: **15
 - `frontend/src/app/features/plataforma/cobertura-trazabilidad-v5.component.ts`
 
 La ruta `plataforma/trazabilidad-cobertura-v5` se incorpora explícitamente al allowlist cerrado de rutas del control-plane y mantiene `canActivate: [plataformaGuard]` con sesión verificada por servidor. No se añaden rutas públicas, comodines ni bypass del validador de seguridad. Inventariar este componente no acredita comparación global del plan, JWT real, tenancy HTTP, QA/main/PROD ni permisos de despliegue. Cambio causal para reparar P0-007.A y calidad ERP del SHA 07169caa. Rollback normal, CI exact-SHA y A5 independiente.
+
+## Reparación causal V17 — branding privado de pedidos y preparación DEV (16 de noviembre de 2026)
+
+El check exact-SHA P0-007.A del commit `022c5aa7c2217d51c63945aa47bc7d6c0341f718`
+falló con `unlisted=frontend/src/app/features/pedidos-venta/c07-04-m04-03-branding.component.ts`.
+La siguiente entrega `f4b9a2bf30a1cc90ee19fc9a0677d98841dcf803` agregó
+una segunda ruta física que requiere la misma actualización del inventario.
+Ahora se documentan **153 archivos** (145 features y 8 shared), al agregar
+exactamente los dos archivos existentes de la rama DEV:
+
+- `frontend/src/app/features/pedidos-venta/c07-04-m04-03-branding.component.ts`
+- `frontend/src/app/features/plataforma/c14-04-m04-03-release-branding.component.ts`
+
+Se preserva el comparador por conjuntos sin filtros ni excepciones; los tests negativos
+para rutas ausentes y nuevas no registradas, duplicados y scope siguen obligatorios.
+Este parche de baseline no prueba Vitest, Chromium, JWT/RBAC, tenancy HTTP o
+release real, no altera autoridades ni aprobaciones, y exige CI exact-SHA y A5
+independiente de las microtareas correspondientes. Rollback `git revert` normal.
