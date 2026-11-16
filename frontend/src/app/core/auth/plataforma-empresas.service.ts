@@ -33,10 +33,17 @@ export class PlataformaEmpresasService {
             !Array.isArray(respuesta.data.items) ||
             !Number.isSafeInteger(respuesta.data.total) ||
             respuesta.data.total < 0 ||
+            !Number.isSafeInteger(respuesta.data.pagina) ||
+            respuesta.data.pagina < 1 ||
+            !Number.isSafeInteger(respuesta.data.tamano) ||
+            respuesta.data.tamano < 1 || respuesta.data.tamano > 50 ||
+            respuesta.data.items.length > respuesta.data.tamano ||
+            respuesta.data.total < respuesta.data.items.length ||
+            new Set(respuesta.data.items.map(e => e.id)).size !== respuesta.data.items.length ||
             typeof respuesta.data.puedeCrear !== 'boolean' ||
             respuesta.data.items.some(e =>
               !Number.isSafeInteger(e.id) || e.id <= 0 ||
-              typeof e.nombre !== 'string' ||
+              typeof e.nombre !== 'string' || !e.nombre.trim() ||
               typeof e.activa !== 'boolean' ||
               !Number.isSafeInteger(e.usuariosActivos) || e.usuariosActivos < 0)) {
           throw new Error('El servidor no entregó un directorio de plataforma válido.');

@@ -1,0 +1,41 @@
+name: V18 C05-04.M05.02 - DTO y errores seguros
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v18-c05-04-m05-02-dto-contract.yml'
+      - 'frontend/src/app/core/auth/plataforma-empresas.service.ts'
+      - 'frontend/src/app/core/auth/plataforma-empresas.service.spec.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v18-c0504-m0502-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  dto-contract:
+    name: C05-04.M05.02 - Angular DTO Vitest lint build
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm reproducible
+        run: npm install --global npm@11.19.0
+      - name: Dependencias de Angular
+        working-directory: frontend
+        run: npm ci
+      - name: Contratos reales Angular HttpTestingController positivo negativo frontera y error
+        working-directory: frontend
+        run: npx ng test --watch=false --no-progress --include=src/app/core/auth/plataforma-empresas.service.spec.ts
+      - name: Angular lint y build productivo
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run build:prod

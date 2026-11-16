@@ -55,4 +55,66 @@ describe('Microfase 4 — directorio global de empresas', () => {
     expect(autorizado).toBe(false);
     expect(rechazado).toBe(true);
   });
+
+  it('C05-04.M05.02: respeta paginacion valida en frontera 50 y no cambia permisos de crear', () => {
+    let result: unknown;
+    servicio.listar(2, 50).subscribe(data => { result = data; });
+    const req = http.expectOne(r => r.url === endpoint);
+    expect(req.request.method).toBe('GET');
+    expect(req.request.params.get('pagina')).toBe('2');
+    expect(req.request.params.get('tamano')).toBe('50');
+    const value = { items: [{ id: 71, nombre: 'Empresa B', activa: false, usuariosActivos: 0 }],
+      pagina: 2, tamano: 50, total: 51, puedeCrear: false };
+    req.flush({ success: true, data: value });
+    expect(result).toEqual(value);
+  });
+
+  it('C05-04.M05.02: vacio real 200 es valido pero no concede creacion', () => {
+    let result: unknown;
+    servicio.listar().subscribe(data => { result = data; });
+    http.expectOne(r => r.url === endpoint).flush({
+      success: true, data: { items: [], pagina: 1, tamano: 25, total: 0, puedeCrear: false }
+    });
+    expect(result).toEqual({ items: [], pagina: 1, tamano: 25, total: 0, puedeCrear: false });
+  });
+
+  it('C05-04.M05.02: rechaza DTOs malformados de pagina, total, duplicados y metadatos', () => {
+    const item = { id: 7, nombre: 'Empresa A', activa: true, usuariosActivos: 1 };
+    const valid = { items: [item], pagina: 1, tamano: 25, total: 1, puedeCrear: false };
+    const invalid = [
+      { ...valid, pagina: 0 },
+      { ...valid, pagina: 1.5 },
+      { ...valid, tamano: 0 },
+      { ...valid, tamano: 51 },
+      { ...valid, tamano: 1, items: [item, { ...item, id: 8 }] },
+      { ...valid, total: 0 },
+      { ...valid, items: [item, { ...item }] },
+      { ...valid, items: [{ ...item, nombre: '   ' }] },
+      { ...valid, items: [{ ...item, usuariosActivos: -1 }] },
+      { ...valid, items: [{ ...item, activa: 'true' }] }
+    ];
+    for (const data of invalid) {
+      let completed = false;
+      let rejected = false;
+      servicio.listar().subscribe({ next: () => { completed = true; }, error: () => { rejected = true; } });
+      http.expectOne(r => r.url === endpoint).flush({ success: true, data });
+      expect(completed).toBe(false);
+      expect(rejected).toBe(true);
+    }
+  });
+
+  it('C05-04.M05.02: HTTP 403 y 503 nunca producen directorio ni grant positivo', () => {
+    for (const status of [403, 503]) {
+      let leaked = false;
+      let rejected = false;
+      servicio.listar().subscribe({ next: () => { leaked = true; }, error: () => { rejected = true; } });
+      http.expectOne(r => r.url === endpoint).flush(
+        { success: false, message: 'PRIVATE_PROVIDER_ERROR' },
+        { status, statusText: status === 403 ? 'Forbidden' : 'Unavailable' }
+      );
+      expect(leaked).toBe(false);
+      expect(rejected).toBe(true);
+    }
+  });
+
 });

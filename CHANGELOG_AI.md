@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C05-04.M05.02 contrato DTO seguro directorio ligero [Javier :50]
+- Refuerza el servicio Angular de directorio existente: página/tamaño acotados, total coherente, IDs únicos y nombres no vacíos; rechazo fail-closed sin nuevos permisos, endpoints ni persistencia.
+- Incorpora pruebas Vitest Angular con HttpTestingController: GET válido, vacío 200, 10 DTO adversariales y errores 403/503; CI GitHub-hosted por SHA con lint/build, A0–A4 sujetos a resultados reales.
+- R2 API/DTO cliente: autoridad JWT, RBAC/tenants y MySQL reales NO_MEDIDO/NO_APLICA; A5 independiente, rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-16 — V18 C02-04.M05.04 aceptación positiva 13 rutas globales [Javier :20]
 - Prueba Playwright/Chromium real de catálogo GV01–GV13 y guard Angular con respuesta de sesión sintética 200; cada ruta presenta encabezado esperado y ningún método de mutación.
 - Cobertura negativa 403 opaca, revalidación positiva de GET y 320 px sin overflow; backend JWT/MFA/RBAC/tenant/DB no se certifica por mocks.
