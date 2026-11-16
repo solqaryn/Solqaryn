@@ -1,5 +1,6 @@
 using System.Collections.Concurrent;
 using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Logging.Abstractions;
 using Solqaryn.Infrastructure.AutomationV5;
 using Xunit;
 
@@ -11,8 +12,20 @@ public sealed class C1304VisualReviewAuditSinkTests
     {
         public ConcurrentBag<(LogLevel Level, EventId Event, string Message)> Messages { get; } = new();
         public bool ThrowProviderSecret;
+        public bool DisableInformation;
+        public bool DisableWarning;
+        public bool ThrowOnEnabled;
         public IDisposable BeginScope<TState>(TState state) where TState : notnull => Scope.Instance;
-        public bool IsEnabled(LogLevel level) => true;
+        public bool IsEnabled(LogLevel level)
+        {
+            if (ThrowOnEnabled) throw new InvalidOperationException("SECRET_LOGGER_PROVIDER_DSN");
+            return level switch
+            {
+                LogLevel.Information => !DisableInformation,
+                LogLevel.Warning => !DisableWarning,
+                _ => true
+            };
+        }
         public void Log<TState>(LogLevel level, EventId id, TState state,
             Exception? exception, Func<TState, Exception?, string> formatter)
         {
@@ -121,4 +134,49 @@ public sealed class C1304VisualReviewAuditSinkTests
         Assert.Equal(16, logger.Messages.Count(m => m.Message.Contains("TenantId=22")));
         Assert.All(logger.Messages, item => Assert.Equal(1, item.Message.Split("ItemsChecked=1").Length - 1));
     }
+    [Fact]
+    public void DisabledInformationCannotClaimStagingWasRecorded()
+    {
+        var logger = new SinkLogger { DisableInformation = true };
+        var receipt = new C1304VisualReviewAuditSink(logger).Record(11, Staged(2));
+        Assert.Equal("AUDIT_SINK_DISABLED", receipt.Code);
+        Assert.False(receipt.Recorded);
+        Assert.Empty(logger.Messages);
+        Assert.False(receipt.PersistsDurably);
+    }
+
+    [Fact]
+    public void DisabledWarningCannotClaimRejectionWasRecorded()
+    {
+        var logger = new SinkLogger { DisableWarning = true };
+        var receipt = new C1304VisualReviewAuditSink(logger)
+            .Record(22, new C1304VisualReviewBoundedWorker.Review(
+                "VISUAL_REVIEW_SOURCE_REJECTED", 0));
+        Assert.Equal("AUDIT_SINK_DISABLED", receipt.Code);
+        Assert.False(receipt.Recorded);
+        Assert.Empty(logger.Messages);
+    }
+
+    [Fact]
+    public void NullLoggerNeverReturnsRecordedTrue()
+    {
+        var sink = new C1304VisualReviewAuditSink(
+            NullLogger<C1304VisualReviewAuditSink>.Instance);
+        Assert.Equal("AUDIT_SINK_DISABLED", sink.Record(11, Staged()).Code);
+        Assert.False(sink.Record(11, Staged()).Recorded);
+        Assert.False(sink.Record(22, new C1304VisualReviewBoundedWorker.Review(
+            "VISUAL_REVIEW_SOURCE_UNAVAILABLE", 0)).Recorded);
+    }
+
+    [Fact]
+    public void IsEnabledProviderFailureIsOpaqueAndNotRecorded()
+    {
+        var logger = new SinkLogger { ThrowOnEnabled = true };
+        var receipt = new C1304VisualReviewAuditSink(logger).Record(11, Staged());
+        Assert.Equal("AUDIT_SINK_UNAVAILABLE", receipt.Code);
+        Assert.False(receipt.Recorded);
+        Assert.DoesNotContain("SECRET", receipt.Code);
+        Assert.Empty(logger.Messages);
+    }
+
 }

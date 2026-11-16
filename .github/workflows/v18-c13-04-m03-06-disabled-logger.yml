@@ -1,0 +1,26 @@
+name: V18 C13-04.M03.06 - Disabled Logger A5 P2 repair
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v18-c13-04-m03-06-disabled-logger.yml'
+      - 'backend/src/Infrastructure/AutomationV5/C1304VisualReviewAuditSink.cs'
+      - 'backend/tests/Solqaryn.Tests/Infrastructure/C1304VisualReviewAuditSinkTests.cs'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v18-c1304-m0306-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  logger-regression:
+    name: C13-04.M03.06 - xUnit disabled logger Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Real xUnit logger regression
+        run: dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter 'FullyQualifiedName~C1304VisualReviewAuditSinkTests' --logger 'console;verbosity=normal'

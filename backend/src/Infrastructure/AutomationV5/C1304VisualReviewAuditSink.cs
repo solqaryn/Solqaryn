@@ -49,6 +49,10 @@ public sealed class C1304VisualReviewAuditSink
         cancellationToken.ThrowIfCancellationRequested();
         try
         {
+            // LoggerMessage.Define skips emission if the selected level is disabled.
+            // Never claim a recorded event for disabled logging; this is not durable audit.
+            if (!_logger.IsEnabled(staged ? LogLevel.Information : LogLevel.Warning))
+                return new("AUDIT_SINK_DISABLED", false);
             if (staged)
                 Staged(_logger, tenantId, review.ItemsChecked, null);
             else

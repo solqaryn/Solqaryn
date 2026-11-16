@@ -1,3 +1,7 @@
+## 2026-11-16 — V18 reparación P2 C13-04.M03.06 recibo honesto ante logger deshabilitado [Javier :50]
+- Corrige `Recorded=true` falso: IsEnabled(Information/Warning)=false devuelve AUDIT_SINK_DISABLED y Recorded=false; errores del logger permanecen opacos.
+- Añade cuatro regresiones xUnit con niveles deshabilitados, NullLogger y fallos del proveedor; CI .NET 10 Release por SHA y nueva A5 independiente, conservando A5_FAIL histórico. No certifica auditoría durable, JWT ni MySQL.
+
 ## 2026-11-16 — V18 C08-04.M05.02 contrato seguro de DTO y errores [Javier :00]
 - Repara la propagación de excepciones privadas del lector Application; respuestas fallidas usan un código opaco, sin conceder autorizaciones ni mutaciones.
 - Añade cuatro regresiones xUnit adversariales y workflow GitHub-hosted de .NET 10 por SHA, con cancel-in-progress=false.
