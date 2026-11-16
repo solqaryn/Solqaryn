@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 reparación QA P2 C01-03.M03.04 snapshot inmutable [Javier :20]
+- Corrige el A5_FAIL P2 de DEV06: el adaptador sintético de Infrastructure ya no devuelve un HashSet mutable; usa FrozenSet con comparador ordinal estricto y mantiene el rechazo de tenant ajeno.
+- Agrega regresión xUnit adversarial que rechaza el cast del conjunto devuelto a HashSet y verifica que mutaciones de la fuente no contaminen lecturas futuras; el test fallaría en el SHA anterior 408d188c.
+- La reparación se limita a adaptador, test y documento C01-03.M03.04; requiere GitHub Actions .NET Release/xUnit, seguridad, autorización, Scope Lock y V5 del SHA publicado, con A5 independiente nueva y A5_FAIL histórico preservado. No activa JWT/EF/MySQL/HTTP, QA/main/PROD ni secretos.
+
 ## 2026-11-16 — V17 C11-04.M05.05 caso negativo 429 y confidencialidad [Javier :30]
 - Añade prueba Playwright Chromium negativa para sesión 200 seguida de 429: cuatro tarjetas y branding privado se ocultan, payload con secreto no aparece y no hay reintento ni exporter.
 - Conserva prueba positiva M05.04 y regresiones 403/503; el 429 es sintético, no acredita JWT/HTTP/tenant server-side, y no modifica runtime, MySQL ni proveedores.

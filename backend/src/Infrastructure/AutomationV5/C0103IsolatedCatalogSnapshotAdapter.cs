@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using Gate = Solqaryn.Application.AutomationV5.C0103DynamicConfigurationAuthorizationGate;
 using Solqaryn.Application.AutomationV5;
 
@@ -44,7 +45,7 @@ public sealed class C0103IsolatedCatalogSnapshotAdapter : IC0103TenantConfigurat
         {
             ApprovedKeys = captured.ApprovedKeys is null
                 ? null
-                : new HashSet<string>(captured.ApprovedKeys, StringComparer.Ordinal)
+                : captured.ApprovedKeys.ToFrozenSet(StringComparer.Ordinal)
         };
     }
 

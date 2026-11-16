@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using Gate = Solqaryn.Application.AutomationV5.C0103DynamicConfigurationAuthorizationGate;
 using Solqaryn.Application.AutomationV5;
 using Solqaryn.Infrastructure.AutomationV5;
@@ -55,6 +56,28 @@ public sealed class C0103IsolatedCatalogSnapshotAdapterTests
         var frozen = await adapter.ReadAsync(11, Key, default);
         Assert.NotNull(frozen);
         Assert.DoesNotContain("jwt.override", frozen.ApprovedKeys!);
+    }
+
+    [Fact]
+    public async Task ReturnedApprovedKeysAreImmutableAndCannotPoisonSubsequentReads()
+    {
+        var input = new HashSet<string>(StringComparer.Ordinal) { Key };
+        var adapter = Adapter(Snapshot(input));
+        var first = await adapter.ReadAsync(11, Key, default);
+        Assert.NotNull(first);
+        Assert.IsAssignableFrom<FrozenSet<string>>(first.ApprovedKeys);
+        Assert.Throws<InvalidCastException>(() =>
+        {
+            ((HashSet<string>)first.ApprovedKeys!).Add("jwt.override");
+        });
+
+        input.Clear();
+        input.Add("jwt.override");
+        var again = await adapter.ReadAsync(11, Key, default);
+        Assert.NotNull(again);
+        Assert.Contains(Key, again.ApprovedKeys!);
+        Assert.DoesNotContain("jwt.override", again.ApprovedKeys!);
+        Assert.Null(await adapter.ReadAsync(22, Key, default));
     }
 
     [Fact]
