@@ -105,9 +105,14 @@ test.describe('C02-04.M05.05 rechazo y revocación fail-closed (browser con API 
         status, body: { success: false, data: null, message: privateMessage }
       }));
       await page.goto('/plataforma/consola-global-v5');
-      await expect(page).toHaveURL(status === 403
-        ? /\/login\?plataforma=denegado(?:&|$)/
-        : /\/login\?plataforma=no-disponible(?:&|$)/);
+      // El interceptor global cierra la sesión ante 401 y redirige a /login
+      // sin query; 403 corresponde a denegación de plataforma y 503 a no disponibilidad.
+      // En los tres casos no deben mostrarse tarjetas ni diagnósticos.
+      await expect(page).toHaveURL(status === 401
+        ? /\/login$/
+        : status === 403
+          ? /\/login\?plataforma=denegado(?:&|$)/
+          : /\/login\?plataforma=no-disponible(?:&|$)/);
       await expect(page.locator('.control-cards li')).toHaveCount(0);
       await expect(page.getByText(privateMessage)).toHaveCount(0);
       expect(gets()).toBe(1);

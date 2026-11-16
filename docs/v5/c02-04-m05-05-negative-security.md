@@ -22,3 +22,6 @@ Mantener VALIDANDO (o EN_PROGRESO si falta entrega segura) hasta contar con CI e
 
 ## CI de integración real vinculada al alcance (V18)
 El workflow existente `.github/workflows/p4-ab-real-auth-ephemeral.yml` ahora se ejecuta también cuando cambia el test C02-04.M05.05, además de la propia actualización del YAML. Ese job utiliza MySQL 8.4 efímero y API localhost con JWT HTTP verdaderos, roles de empresas A/B, revocación y auditoría; verificar sus logs exact-SHA antes de asignar A3=PASS. No implica entornos externos ni reemplaza la inspección del test en navegador.
+
+## Reparación causal de la aserción 401 (2026-11-16)
+GitHub-hosted job 133609330680, run 43955638841, SHA ed2c0afb0: 9/10 Chromium PASS, 1 FAIL por expectativa incorrecta de URL con parámetro en 401. El interceptor real auth.interceptor.ts llama cerrarPor401() y navega a /login sin query; el frontend denegó y ocultó los controles (fail-closed). La prueba se ajusta para exigir /login sin query para 401; mantiene las exigencias 403, 503, ausencia de controles, ocultamiento de diagnóstico y un GET. No altera controles de producto ni reetiqueta CI fallida como PASS. Requiere nuevo SHA, 10/10 PASS verificadas y P4 real con MySQL 8.4.

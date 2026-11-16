@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C02-04.M05.05 reparación de aserción 401 por cierre de sesión [Javier :00]
+- GitHub Actions run 43955638841 obtuvo 9 PASS y 1 FAIL: ante 401 el interceptor elimina sesión y redirige a /login, pero el test suponía incorrectamente /login?plataforma=no-disponible. Es fallo de expectativa de prueba, no fuga de permisos observada.
+- Se corrige únicamente la aserción 401 conservando las negativas 403/503, ausencia de datos privados y conteo de GET, sin cambiar código de auth ni desactivar seguridad. Nueva CI por SHA obligatoria, A3 real P4 y A5 independiente pendientes.
+- Scope Lock STRICT, dev exclusivamente y rollback mediante revert normal.
+
 ## 2026-11-16 — V18 C02-04.M05.05 ampliacion causal CI HTTP JWT MySQL efimero [Javier :00]
 - Se extiende exclusivamente el disparador de la suite P4 de HTTP JWT RBAC A/B y MySQL 8.4 efimero al test negativo C02-04.M05.05, sin cambiar pruebas ni desactivar validadores.
 - A3 sigue pendiente de comprobar el job exact-SHA, fases active/revoked/inactive/role-revoked y 0 fallos; browser simulado por separado. No hay afirmacion de PASS hasta lectura de CI real.
