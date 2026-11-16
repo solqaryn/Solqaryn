@@ -3,6 +3,13 @@ import { RouterLink } from '@angular/router';
 
 export type EstadoPresentacionSectorial = 'cargando' | 'vacio' | 'error' | 'exito' | 'sin_permiso';
 
+export type MarcaVisualSectorial = 'institucional' | 'contraste';
+
+export function normalizarMarcaVisualSectorial(candidate: unknown): MarcaVisualSectorial {
+  // Only strict primitive values are trusted: never stringify or inspect object getters.
+  return candidate === 'contraste' ? 'contraste' : 'institucional';
+}
+
 interface SectorCapabilityPreview {
   readonly key: 'reservas' | 'membresias' | 'catalogo' | 'sitios';
   readonly title: string;
@@ -26,6 +33,13 @@ export class SectorModulesReadonlyComponent {
   // Future trusted integration must derive this from backend-verified results;
   // until then the only runtime entry state is the truthful empty preview.
   readonly estadoPresentacion = signal<EstadoPresentacionSectorial>('vacio');
+
+  // C08-04.M04.03 is a presentation-only allowlist, not a module flag or server grant.
+  readonly marcaVisual = signal<MarcaVisualSectorial>('institucional');
+
+  aplicarMarcaVisualPropuesta(candidate: unknown): void {
+    this.marcaVisual.set(normalizarMarcaVisualSectorial(candidate));
+  }
 
   readonly capabilities = signal<readonly SectorCapabilityPreview[]>([
     { key: 'reservas', title: 'Reservas', purpose: 'Requiere recursos y sucursales verificados por el servidor.' },

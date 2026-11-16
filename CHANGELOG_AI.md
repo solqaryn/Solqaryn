@@ -6027,3 +6027,9 @@
 
 ## 2026-11-16 — C08-04.M04.01: reparar gate P0-007.A de catálogo Angular (DEV03)
 - El check GitHub exact-SHA P0-007.A falló por componente sectorial no inventariado; se añade su ruta real a `docs/P0-007-A-INVENTARIO-COMPONENTES-DEV.md`, y se actualiza el conteo exacto del validador de 153 a 154 (146 features/8 shared) sin permitir ausencias, duplicados ni rutas nuevas sin registrar. Exigir CI nueva P0, Scope Lock, V5 y Angular/Chromium; no sustituye A5 independiente ni concede autoridad.
+
+## 2026-11-16 — V18 C08-04.M04.03 branding sectorial por allowlist local [Javier :30]
+- Añade dos presets visuales tipados (institucional y contraste alto) a la vista privada de extensiones: CSS y Signal locales, normalizador fail-closed ante entrada desconocida o getters hostiles, sin concesiones JWT/RBAC ni requests a proveedores.
+- Pruebas Vitest de valores permitidos, negativos, excepción getter y ocultación bajo sin_permiso/error, más workflow Angular build/lint y Playwright Chromium anónimo/403/responsive; SUCCESS exact-SHA exigido antes de LISTO, A5 de otra Task Javier.
+- R1 exclusivamente UI, ninguna autorización real o modificación MySQL/tenant/backend, rollback git revert; lock V17 2000001282 y Scope Lock STRICT.
+

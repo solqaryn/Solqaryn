@@ -15,3 +15,9 @@ nav a:focus-visible { outline: 3px solid #1d4ed8; outline-offset: 3px; }
 .sector-tag { display: inline-flex; font-size: .85rem; border-radius: 1rem; background: #e2e8f0; padding: .2rem .6rem; }
 .footnote { margin-top: 1.5rem; font-size: .9rem; line-height: 1.6; }
 @media (max-width: 360px) { .sector-readonly { padding: .75rem; } .sector-card { padding: .85rem; } }
+/* C08-04.M04.03: two safe local presentation presets. No dynamic CSS injection. */
+.sector-readonly--contraste { background: #0b1220; color: #f8fafc; border-radius: .75rem; }
+.sector-readonly--contraste .sector-card { background: #17243a; color: #f8fafc; border-color: #9fb6d1; }
+.sector-readonly--contraste .notice { background: #17243a; color: #f8fafc; border-color: #9fb6d1; }
+.sector-readonly--contraste nav a { color: #bfdbfe; }
+.brand-preview { font-size: .9rem; line-height: 1.5; }

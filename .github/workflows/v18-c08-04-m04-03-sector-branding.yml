@@ -1,0 +1,75 @@
+name: V18 C08-04.M04.03 - Branding sectorial permitido
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v18-c08-04-m04-03-sector-branding.yml'
+      - 'frontend/src/app/features/extensiones-sectoriales/**'
+      - 'frontend/e2e/c08-04-m04-01-sector-ui.spec.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v18-c0804-m0403-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  sector-branding:
+    name: V18 C08-04.M04.03 - Vitest y Chromium branding permitido
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - name: Checkout exact SHA
+        uses: actions/checkout@v4
+      - name: Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm pinned
+        run: npm install --global npm@11.19.0
+      - name: npm ci
+        working-directory: frontend
+        run: npm ci
+      - name: Trusted visual preset and malicious input unit tests
+        working-directory: frontend
+        run: npm test -- --watch=false --include=src/app/features/extensiones-sectoriales/sector-modules-branding.spec.ts
+      - name: Typecheck lint and Angular build
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Chromium install
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Start local Angular
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c0804-m0403.log 2>&1 &
+          for attempt in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then
+              exit 0
+            fi
+            sleep 2
+          done
+          cat c0804-m0403.log >&2
+          exit 1
+      - name: Existing anonymous, denial and responsive Chromium
+        working-directory: frontend
+        run: npx playwright test e2e/c08-04-m04-01-sector-ui.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Evidence upon failure
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c0804-m0403-branding-evidence
+          path: |
+            frontend/c0804-m0403.log
+            frontend/playwright-report/
+            frontend/test-results/
+          if-no-files-found: warn
+          retention-days: 14

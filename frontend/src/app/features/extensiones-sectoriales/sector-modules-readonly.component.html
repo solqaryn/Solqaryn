@@ -1,7 +1,12 @@
-<main class="sector-readonly" aria-labelledby="sector-title">
+<main class="sector-readonly" [class.sector-readonly--contraste]="marcaVisual() === 'contraste'"
+  aria-labelledby="sector-title">
   <header class="sector-header">
     <p class="eyebrow">SOLQARYN · Extensiones sectoriales</p>
     <h1 id="sector-title">Capacidades por rubro</h1>
+    <p class="brand-preview" data-testid="c0804-brand-preview">
+      Apariencia ilustrativa: {{ marcaVisual() === 'contraste' ? 'Contraste alto' : 'Institucional' }}.
+      No activa módulos ni modifica permisos.
+    </p>
     <p>Vista informativa protegida por sesión y empresa verificada. No muestra activaciones, permisos ni configuraciones reales.</p>
     <nav aria-label="Navegación de extensiones sectoriales">
       <a routerLink="/dashboard">Volver al panel</a>
