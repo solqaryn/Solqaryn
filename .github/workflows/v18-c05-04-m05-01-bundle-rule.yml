@@ -1,0 +1,44 @@
+name: V18 C05-04.M05.01 - presupuesto bundle reproducible
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v18-c05-04-m05-01-bundle-rule.yml'
+      - 'frontend/scripts/performance-bundle-baseline.mjs'
+      - 'frontend/scripts/performance-bundle-baseline.test.mjs'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v18-c0504-m0501-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  bundle-rule:
+    name: C05-04.M05.01 - Node reglas y Angular build real
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm reproducible
+        run: npm install --global npm@11.19.0
+      - name: Dependencias reproducibles
+        working-directory: frontend
+        run: npm ci
+      - name: Reglas de medicion positivas negativas fronteras y errores
+        working-directory: frontend
+        run: node --test scripts/performance-bundle-baseline.test.mjs
+      - name: Angular build productivo real
+        working-directory: frontend
+        run: npm run build:prod
+      - name: Medir bundle real sin declarar CWV
+        working-directory: frontend
+        run: |
+          node scripts/performance-bundle-baseline.mjs
+          node -e "const fs=require('node:fs');const p=JSON.parse(fs.readFileSync('dist/solqaryn-frontend/performance-bundle-baseline.json'));if(!Number.isInteger(p.initial.rawBytes)||p.initial.rawBytes<=0)process.exit(1);console.log('INITIAL_BYTES_MEASURED='+p.initial.rawBytes);console.log('FIELD_CWV=NO_MEDIDO')"

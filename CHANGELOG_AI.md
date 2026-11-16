@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C05-04.M05.01 regla unitaria reproducible de presupuesto inicial [Javier :30]
+- Añade siete tests Node ejecutando el analizador existente de bundle sobre builds aislados: exclusión de chunk lazy, gzip/brotli, límites 1/2 MiB, error sin index y cero inicial sin referencias; pruebas falsables, no auditoría vacía.
+- CI GitHub-hosted Node/npm y build Angular real con reporte JSON de bytes de assets; ejecuta pruebas únicamente en dev, con concurrency SHA y cancel-in-progress=false. Requiere A0-A4 y CI exact-SHA para cerrar LISTO; A5 independiente.
+- Core Web Vitals de campo NO_MEDIDO; sin alterar runtime JWT/RBAC/tenancy/EF/MySQL, sin QA/main/PROD. Rollback git revert normal, BITACORA intacta.
+
 ## 2026-11-16 — V18 C12-04.M03.05 worker lectura sintética aislada [Javier :20]
 - Implementación .NET 10 read-only de worker acotado a ocho tickets, snapshot de entrada previo a await y validación estricta de tenant, revisión, SHA y clave; integra adaptador M03.04 real en memoria sin ejecutar DB.
 - xUnit adversarial cubre fixture A/B, revocación MFA/JWT/RBAC, falsificación de SHA, duplicados, 0/9, revision stale, respuesta fuente adulterada, error opaco y cancelación.
