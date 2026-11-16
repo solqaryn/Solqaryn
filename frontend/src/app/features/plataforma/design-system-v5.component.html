@@ -1,0 +1,31 @@
+<section class="design-catalog" aria-labelledby="design-v5-title">
+  <header class="design-header">
+    <p class="eyebrow">SOLQARYN · Biblioteca visual</p>
+    <h2 id="design-v5-title">Tokens y componentes de referencia</h2>
+    <p>Superficie de consulta del sistema de diseño. No configura marcas, empresas ni permisos.</p>
+  </header>
+  @if (accesoVerificado()) {
+    <div class="design-content">
+      <section aria-labelledby="design-colors-title">
+        <h3 id="design-colors-title">Colores institucionales</h3>
+        <ul class="token-grid">
+          @for (token of tokens; track token.nombre) {
+            <li class="token-item">
+              <span class="swatch" [class]="token.clase" aria-hidden="true"></span>
+              <div><strong>{{ token.nombre }}</strong><code>{{ token.css }}</code></div>
+            </li>
+          }
+        </ul>
+      </section>
+      <section class="type-preview" aria-labelledby="design-type-title">
+        <h3 id="design-type-title">Tipografía y jerarquía</h3>
+        <p class="type-heading">Encabezado de sección</p>
+        <p class="type-body">Texto de apoyo claro, adaptable y legible en pantallas pequeñas.</p>
+        <p class="type-caption">Etiqueta secundaria · espaciado constante</p>
+      </section>
+      <p class="disclaimer" role="note">Muestras visuales estáticas. No hay formularios, acciones comerciales ni datos institucionales conectados.</p>
+    </div>
+  } @else {
+    <p class="denied" role="alert">Sesión de plataforma no confirmada. El catálogo visual privado permanece oculto.</p>
+  }
+</section>

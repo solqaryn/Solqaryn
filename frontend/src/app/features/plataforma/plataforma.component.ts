@@ -8,11 +8,12 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
 import { DirectorioPlataforma, PlataformaEmpresasService } from '../../core/auth/plataforma-empresas.service';
 import { PlataformaGestionMvpComponent } from './plataforma-gestion-mvp.component';
+import { DesignSystemV5Component } from './design-system-v5.component';
 
 @Component({
   selector: 'app-plataforma',
   standalone: true,
-  imports: [RouterLink, MatButtonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule, PlataformaGestionMvpComponent],
+  imports: [RouterLink, MatButtonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule, PlataformaGestionMvpComponent, DesignSystemV5Component],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="plataforma" aria-labelledby="plataforma-title">
@@ -168,6 +169,10 @@ import { PlataformaGestionMvpComponent } from './plataforma-gestion-mvp.componen
             </mat-card-content>
           </mat-card>
         </div>
+        <details class="design-system-preview">
+          <summary>Biblioteca visual · tokens y componentes</summary>
+          <app-design-system-v5 />
+        </details>
         <mat-card class="directory-card" aria-label="Directorio de empresas">
           <mat-card-header>
             <mat-card-title>Directorio global de empresas</mat-card-title>

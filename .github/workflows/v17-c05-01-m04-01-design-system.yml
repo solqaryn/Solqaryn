@@ -1,0 +1,76 @@
+name: V17 C05-01.M04.01 - biblioteca visual Angular y Chromium
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/src/app/features/plataforma/design-system-v5.component.*'
+      - 'frontend/src/app/features/plataforma/plataforma.component.ts'
+      - 'frontend/e2e/c05-01-m04-01-design-system.spec.ts'
+      - '.github/workflows/v17-c05-01-m04-01-design-system.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v17-c0501-m0401-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  design-v17:
+    name: C05-01.M04.01 - Vitest, Angular, Chromium y guards
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - name: Checkout exact SHA
+        uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm compatible
+        run: npm install --global npm@11.19.0
+      - name: Dependencias reproducibles
+        working-directory: frontend
+        run: npm ci
+      - name: Vitest acceso positivo negativo y revocacion
+        working-directory: frontend
+        run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/design-system-v5.component.spec.ts
+      - name: Tipado lint y build Angular
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Instalar Chromium oficial
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Iniciar Angular local con API sintetica de sesion
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > v17-c0501-m0401.log 2>&1 &
+          for attempt in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then
+              echo 'LOCAL_ANGULAR_READY=PASS'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat v17-c0501-m0401.log >&2
+          exit 1
+      - name: Playwright Chromium anonimo 403 y responsive
+        working-directory: frontend
+        run: npx playwright test e2e/c05-01-m04-01-design-system.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Guardar artefactos de fallo
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v17-c0501-m0401
+          path: |
+            frontend/v17-c0501-m0401.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 14

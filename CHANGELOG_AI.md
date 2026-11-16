@@ -1,3 +1,8 @@
+## 2026-11-16 — C05-01.M04.01 biblioteca visual privada V5 [Javier :40]
+- Añade un catálogo desplegable de tokens y tipografía a la administración de plataforma existente; sin ruta ni autorización nuevas, sin APIs de negocio y con negación explícita ante revocación de sesión.
+- Incluye prueba Angular de anónimo/empresa/administrador/revocación y Chromium dirigido para 403 sintético, teclado y responsive 320/768/1280. Requiere CI causal y A5 independiente, sin marcar PASS anticipadamente.
+- Solo `solqaryn/Solqaryn@dev`, candado V17 fila 740, rollback `git revert`; no QA/main/PROD.
+
 ## 2026-11-16 — V17 reparación QA P2 C01-03.M03.04 snapshot inmutable [Javier :20]
 - Corrige el A5_FAIL P2 de DEV06: el adaptador sintético de Infrastructure ya no devuelve un HashSet mutable; usa FrozenSet con comparador ordinal estricto y mantiene el rechazo de tenant ajeno.
 - Agrega regresión xUnit adversarial que rechaza el cast del conjunto devuelto a HashSet y verifica que mutaciones de la fuente no contaminen lecturas futuras; el test fallaría en el SHA anterior 408d188c.
