@@ -3,6 +3,8 @@
 - Incorpora 14 xUnit positivos/negativos/frontera/error; Scope Lock, backend Release y seguridad deben aprobar en GitHub Actions del SHA causal. Sin exporter, MySQL, JWT HTTP, almacenamiento durable, scheduler, datos productivos ni permisos de despliegue.
 - A5 corresponde a otra Task Javier; riesgo R2 y rollback git revert normal, sin tocar QA/main/PROD.
 
+- CI_REPAIR C11-04.M03.06: corrige CS0542 al renombrar el logger simulado de las pruebas xUnit; conserva los 14 casos y la seguridad. Revalidar GitHub Actions exact-SHA antes de LISTO, A5 independiente pendiente.
+
 ## 2026-11-15 — V17 C08-04.M03.04 adaptador aislado de módulos sectoriales [Javier :20]
 - Implementa en Infrastructure .NET 10 una fuente sintética por tenant y módulo exactos, revisión y SHA; fuerza los indicadores de lectura persistente y CAS/auditoría a false, sin conceder activaciones ni permisos reales.
 - Añade nueve xUnit adversariales: tenant A/B, comparador ordinal, versiones y SHA, flags falsificados, constructor inválido y cancelación. No agrega endpoints/EF/MySQL/proveedores.

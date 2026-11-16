@@ -27,7 +27,7 @@ public sealed class C1104ObservabilityStructuredAuditSinkTests
         }
     }
 
-    private sealed class Log : ILogger<Sink>
+    private sealed class CaptureLogger : ILogger<Sink>
     {
         public bool Enabled = true;
         public bool Throws;
@@ -64,7 +64,7 @@ public sealed class C1104ObservabilityStructuredAuditSinkTests
     [Fact]
     public async Task TrustedPreviewLogsOnlyAllowlistedStructuredCodeAndCount()
     {
-        var log = new Log();
+        var log = new CaptureLogger();
         var receipt = await new Sink(new Authority(), log).WriteAsync(Good());
         Assert.True(receipt.LoggerAcceptedEvent);
         NoAuthority(receipt);
@@ -81,7 +81,7 @@ public sealed class C1104ObservabilityStructuredAuditSinkTests
     [Fact]
     public async Task KnownDenialIsWarningWithNoGrants()
     {
-        var log = new Log();
+        var log = new CaptureLogger();
         var result = await new Sink(new Authority(), log).WriteAsync(
             new("OBSERVABILITY_DUPLICATE_TICKET", 0));
         Assert.True(result.LoggerAcceptedEvent);
@@ -92,7 +92,7 @@ public sealed class C1104ObservabilityStructuredAuditSinkTests
     [Fact]
     public async Task SourceFailureIsOpaqueFixedWarning()
     {
-        var log = new Log();
+        var log = new CaptureLogger();
         var result = await new Sink(new Authority(), log).WriteAsync(
             new("OBSERVABILITY_SOURCE_UNAVAILABLE", 0));
         Assert.True(result.LoggerAcceptedEvent);
@@ -104,7 +104,7 @@ public sealed class C1104ObservabilityStructuredAuditSinkTests
     public async Task UnknownResultCannotReachLoggerOrTrustedPort()
     {
         var a = new Authority();
-        var log = new Log();
+        var log = new CaptureLogger();
         var result = await new Sink(a, log).WriteAsync(new("SECRET_123", 0));
         Assert.Equal("UNTRUSTED_OR_INVALID_AUDIT_RESULT", result.Code);
         Assert.Equal(0, a.Calls);
@@ -116,7 +116,7 @@ public sealed class C1104ObservabilityStructuredAuditSinkTests
     public async Task PositiveResultRequiresBoundedNonzeroCount()
     {
         var a = new Authority();
-        var log = new Log();
+        var log = new CaptureLogger();
         var sink = new Sink(a, log);
         foreach (var n in new[] { -1, 0, 17, int.MaxValue })
             Assert.Equal("UNTRUSTED_OR_INVALID_AUDIT_RESULT",
@@ -129,7 +129,7 @@ public sealed class C1104ObservabilityStructuredAuditSinkTests
     public async Task DenialCannotClaimInspectedEntries()
     {
         var a = new Authority();
-        var log = new Log();
+        var log = new CaptureLogger();
         Assert.Equal("UNTRUSTED_OR_INVALID_AUDIT_RESULT",
             (await new Sink(a, log).WriteAsync(
                 new("OBSERVABILITY_SOURCE_REJECTED", 1))).Code);
@@ -140,7 +140,7 @@ public sealed class C1104ObservabilityStructuredAuditSinkTests
     public async Task TenantMismatchFailsClosedWithoutLogging()
     {
         var a = new Authority { Evidence = Trusted() with { TenantPartitionMatches = false } };
-        var log = new Log();
+        var log = new CaptureLogger();
         var result = await new Sink(a, log).WriteAsync(Good());
         Assert.Equal("CURRENT_AUTHORITY_AND_TENANT_FENCE_REQUIRED", result.Code);
         Assert.Empty(log.Entries);
@@ -157,7 +157,7 @@ public sealed class C1104ObservabilityStructuredAuditSinkTests
             Trusted() with { BackendAuthenticated = false }
         })
         {
-            var log = new Log();
+            var log = new CaptureLogger();
             Assert.Equal("CURRENT_AUTHORITY_AND_TENANT_FENCE_REQUIRED",
                 (await new Sink(new Authority { Evidence = context }, log)
                     .WriteAsync(Good())).Code);
@@ -174,7 +174,7 @@ public sealed class C1104ObservabilityStructuredAuditSinkTests
             Trusted() with { ExpectedSourceSha = "bad" }
         })
         {
-            var log = new Log();
+            var log = new CaptureLogger();
             Assert.Equal("CURRENT_AUTHORITY_AND_TENANT_FENCE_REQUIRED",
                 (await new Sink(new Authority { Evidence = context }, log)
                     .WriteAsync(Good())).Code);
@@ -185,7 +185,7 @@ public sealed class C1104ObservabilityStructuredAuditSinkTests
     [Fact]
     public async Task MissingAuthorityReturnsOpaqueDenial()
     {
-        var log = new Log();
+        var log = new CaptureLogger();
         Assert.Equal("CURRENT_AUTHORITY_AND_TENANT_FENCE_REQUIRED",
             (await new Sink(new Authority { Evidence = null }, log)
                 .WriteAsync(Good())).Code);
@@ -195,7 +195,7 @@ public sealed class C1104ObservabilityStructuredAuditSinkTests
     [Fact]
     public async Task AuthorityExceptionNeverLeaksPrivateData()
     {
-        var log = new Log();
+        var log = new CaptureLogger();
         var result = await new Sink(new Authority { Throws = true }, log).WriteAsync(Good());
         Assert.Equal("TRUSTED_AUDIT_EVIDENCE_UNAVAILABLE", result.Code);
         Assert.Empty(log.Entries);
@@ -206,11 +206,11 @@ public sealed class C1104ObservabilityStructuredAuditSinkTests
     public async Task LoggerDisabledAndThrowingAreFailClosed()
     {
         var authority = new Authority();
-        var disabled = new Log { Enabled = false };
+        var disabled = new CaptureLogger { Enabled = false };
         Assert.Equal("AUDIT_LOGGER_UNAVAILABLE",
             (await new Sink(authority, disabled).WriteAsync(Good())).Code);
         Assert.Equal(0, authority.Calls);
-        var broken = new Log { Throws = true };
+        var broken = new CaptureLogger { Throws = true };
         Assert.Equal("AUDIT_LOGGER_UNAVAILABLE",
             (await new Sink(authority, broken).WriteAsync(Good())).Code);
         Assert.Empty(broken.Entries);
@@ -220,7 +220,7 @@ public sealed class C1104ObservabilityStructuredAuditSinkTests
     public async Task CancellationPropagatesBeforeExternalRead()
     {
         var a = new Authority();
-        var log = new Log();
+        var log = new CaptureLogger();
         using var cts = new CancellationTokenSource();
         cts.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
@@ -232,7 +232,7 @@ public sealed class C1104ObservabilityStructuredAuditSinkTests
     [Fact]
     public void DependenciesMustNotBeNull()
     {
-        Assert.Throws<ArgumentNullException>(() => new Sink(null!, new Log()));
+        Assert.Throws<ArgumentNullException>(() => new Sink(null!, new CaptureLogger()));
         Assert.Throws<ArgumentNullException>(() => new Sink(new Authority(), null!));
     }
 }
