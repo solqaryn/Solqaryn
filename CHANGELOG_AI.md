@@ -8,6 +8,8 @@
 - Siete nuevas pruebas Vitest positivas, negativas, fronteras y redacción de errores, más regresión Chromium con 503 sintético; no ejecuta pentest, consulta MySQL, modifica datos ni otorga privilegios desde navegador.
 - Riesgo R2 UI/seguridad: exigir npm lint/build, Vitest y Chromium reales, Scope Lock y V5 del SHA exacto; A5 independiente. Ninguna certificación JWT/tenant backend real, QA/main/PROD. Rollback: git revert sin force push.
 
+- CI_REPAIR causal C15-03.M04.02: Chromium job 133043534404 falló por aserción heredada de cero botones pese al nuevo botón único GET de revalidación; se conserva ausencia de formularios/mutaciones, se exige exactamente un botón accesible y se vuelve a ejecutar regresión real sin relajar guard ni autorización.
+
 ## 2026-11-15 — V17 C14-04.M03.05 worker acotado read-only de readiness DEV [Javier :00]
 - Añade un processor .NET 10 de una invocación manual y lote máximo 16, con inbox backend confiable tipado, prevalidación íntegra de IDs, idempotencia intra-lote, SHA, ruta y entorno dev; sin programación, envío ni ack externo.
 - Integra el adaptador de snapshots previamente autorizado con revisión tenant/RBAC/autor-revisor/CI para exigir revisión externa; 14 xUnit adversariales en proceso, no certificación de backend live, MySQL, producción ni exactly-once durable.

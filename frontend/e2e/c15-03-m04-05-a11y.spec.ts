@@ -46,7 +46,9 @@ test('grant simulado: foco teclado, etiquetas, enlace y ausencia de acciones', a
   await expect(page.getByRole('heading', { name: 'Cuatro frentes de comprobación futura' })).toHaveAttribute('tabindex', '-1');
   await expect(page.locator('ol.fronteras')).toHaveAttribute('aria-labelledby', 'fronteras-title');
   await expect(page.locator('.fronteras li')).toHaveCount(4);
-  await expect(page.locator('.tenancy-audit button, .tenancy-audit form, .tenancy-audit input, .tenancy-audit textarea')).toHaveCount(0);
+  await expect(page.locator('.tenancy-audit form, .tenancy-audit input, .tenancy-audit textarea')).toHaveCount(0);
+  await expect(page.locator('.tenancy-audit button')).toHaveCount(1);
+  await expect(page.getByRole('button', { name: 'Revalidar sesión de auditoría de tenancy' })).toBeVisible();
   await skip.focus();
   await page.keyboard.press('Tab');
   await page.keyboard.press('Shift+Tab');
