@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, ElementRef, computed, inject, viewChild } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
 
@@ -10,10 +10,10 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="incident-guide" aria-labelledby="incident-title">
-      <a class="skip-link" href="#incident-title">Ir al contenido de incidentes</a>
+      <a class="skip-link" href="#incident-title" (click)="irAlContenido($event)">Ir al contenido de incidentes</a>
       <header>
         <p class="eyebrow">SOLQARYN · Respuesta a incidentes</p>
-        <h1 id="incident-title" tabindex="-1">Respuesta, revocación y recuperación segura</h1>
+        <h1 #incidentTitle id="incident-title" tabindex="-1">Respuesta, revocación y recuperación segura</h1>
         <p>Guía de comprobación futura, sin incidentes ni respaldos conectados.</p>
         <a routerLink="/plataforma" aria-label="Regresar a plataforma">Regresar a plataforma</a>
       </header>
@@ -64,6 +64,13 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
 })
 export class RespuestaIncidentesV5Component {
   private readonly plataforma = inject(PlataformaSesionService);
+  private readonly titulo = viewChild.required<ElementRef<HTMLHeadingElement>>('incidentTitle');
+
+  /** El <base href="/"> del SPA no debe enviar el salto a /#incident-title. */
+  irAlContenido(event: MouseEvent): void {
+    event.preventDefault();
+    this.titulo().nativeElement.focus();
+  }
   /** Solo la sesión backend vigente es fuente del grant. No confiar en JWT local ni EmpresaId. */
   readonly autorizado = computed(() => {
     const sesion = this.plataforma.sesion();
