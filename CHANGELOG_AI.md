@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C04-03.M02.01 modelo conceptual y ownership de metering [Javier :30]
+- Documenta entidades, claves compuestas por EmpresaId, relaciones e invariantes de consumo, ventanas UTC, idempotencia, ledger, compensación, conciliación y privacidad para M02.01 exclusivamente.
+- Distingue criterios positivos/negativos futuros NO_EJECUTADOS de las pruebas efectivas R0; D01–D08 siguen pendientes y no se crean API, EF/MySQL, cuotas, pagos, jobs ni permisos de producción.
+- Cumple secuencia V17 single active, candado 2000000656, Scope Lock y procedencia causal; requiere A5 independiente Javier, sin QA/main/PROD.
+
 ## 2026-11-15 — V17 CI_REPAIR C10-04.M04.01 auditor de rutas exactas [Javier :20]
 - Repara FAIL real del job Priority4 ERP del SHA previo: el guard existente es plataformaGuard pero faltaba la ruta nueva del conjunto cerrado permitido. Añade solo el path literal `plataforma/continuidad-operativa-v5` al verificador R2, preservando todas las comprobaciones de sesión backend, denegación y prohibiciones de prefijos o comodines.
 - Exige auditoría ERP, frontend Vitest 6+4, inventario P0-007.A, tipado/build, Scope Lock y procedencia por SHA/equivalencia auditada; ningún PASS ficticio sobre queued/in_progress/fail. Mantener VALIDANDO y A5 de otro autor hasta evidencia completa.
