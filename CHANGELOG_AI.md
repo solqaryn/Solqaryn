@@ -1,3 +1,8 @@
+## 2026-11-16 - V17 C02-02.M04.05 responsive, teclado y contraste privados [Javier :40]
+- Refuerza foco visible de 4 px, contraste elevado y colores forzados en revisión privada de placement, manteniendo guard, revalidación y ocultación de datos.
+- Añade tres pruebas Chromium: 320/768/1280 sin desbordamiento, navegación Tab real y denegación 403 sin payload expuesto; requieren CI dirigida real en SHA.
+- R2 visual-control-plane sin cambiar JWT backend, MySQL, DSN, API, infraestructura ni entornos; A5 independiente y bitácora institucional siguen obligatorias.
+
 ## 2026-11-16 - V17 C12-01.M02.05 eventos, idempotencia y limites conceptuales [Javier :30]
 - Define doce eventos EV01-EV12, doce campos ENV01-ENV12, doce invariantes I01-I12, ocho limites, ocho errores ER-EV01-08 y doce pares P/N FUTUROS_NO_EJECUTADOS (0/12 runtime).
 - Prohibe efectos por mera revision documental, cross-tenant, secretos o JWT en cargas, retry infinito y cutover sin G01-G16/R3; conserva configuracion actual Vercel/Render/Aiven/Cloudinary.
