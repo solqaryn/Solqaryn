@@ -171,3 +171,82 @@ test('M04.04: revalidación lenta deshabilita segunda acción sin duplicar GET',
   await expect(page.locator('.obs-points li')).toHaveCount(4);
   expect(calls).toBe(2);
 });
+
+
+test('M04.05: teclado Tab real alcanza enlace y boton con foco visible, sin focus programatico', async ({ page }) => {
+  await mockSession(page, true);
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto('/plataforma/observabilidad-v5');
+  await expect(page.getByRole('navigation', { name: 'Acciones de observabilidad' })).toBeVisible();
+  const targets = new Set<string>();
+  for (let step = 0; step < 90 && targets.size < 2; step++) {
+    await page.keyboard.press('Tab');
+    const focused = await page.evaluate(() => {
+      const element = document.activeElement as HTMLElement | null;
+      if (!element || !element.matches(':focus-visible')) return null;
+      const name = element.getAttribute('aria-label');
+      if (name !== 'Regresar a plataforma' && name !== 'Revalidar acceso de observabilidad') return null;
+      const style = getComputedStyle(element);
+      return { name, outlineStyle: style.outlineStyle, outlineWidth: parseFloat(style.outlineWidth) };
+    });
+    if (!focused) continue;
+    expect(focused.outlineStyle).not.toBe('none');
+    expect(focused.outlineWidth).toBeGreaterThanOrEqual(2);
+    targets.add(focused.name!);
+  }
+  expect([...targets].sort()).toEqual(['Regresar a plataforma', 'Revalidar acceso de observabilidad']);
+});
+
+test('M04.05: superficies 320/768/1280 no desbordan, conservan targets tactiles y rejilla adaptativa', async ({ page }) => {
+  await mockSession(page, true);
+  await page.goto('/plataforma/observabilidad-v5');
+  await expect(page.locator('.obs-points li')).toHaveCount(4);
+  for (const width of [320, 768, 1280]) {
+    await page.setViewportSize({ width, height: 812 });
+    await expect(page.getByRole('navigation', { name: 'Acciones de observabilidad' })).toBeVisible();
+    const dimensions = await page.evaluate(() => {
+      const nav = document.querySelector('.obs-navigation')!;
+      const targets = Array.from(nav.querySelectorAll('a,button')) as HTMLElement[];
+      const grid = document.querySelector('.obs-points')!;
+      const columns = getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length;
+      return {
+        overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+        columns,
+        controls: targets.map(t => ({ width: t.getBoundingClientRect().width, height: t.getBoundingClientRect().height, right: t.getBoundingClientRect().right }))
+      };
+    });
+    expect(dimensions.overflow, 'desbordamiento en ' + width).toBeLessThanOrEqual(2);
+    expect(dimensions.controls).toHaveLength(2);
+    for (const control of dimensions.controls) {
+      expect(control.height, 'alto tactil ' + width).toBeGreaterThanOrEqual(44);
+      expect(control.width).toBeGreaterThan(30);
+      expect(control.right).toBeLessThanOrEqual(width + 2);
+    }
+    expect(dimensions.columns).toBe(width <= 720 ? 1 : 2);
+  }
+});
+
+test('M04.05: contraste real del distintivo y denegacion responsiva no filtra datos privados', async ({ page }) => {
+  await mockSession(page, true);
+  await page.goto('/plataforma/observabilidad-v5');
+  const contrast = await page.locator('.obs-branding-mark').evaluate(element => {
+    function luminance(rgb: number[]) {
+      const c = rgb.map(v => {
+        const s = v / 255;
+        return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+      });
+      return 0.2126 * c[0] + 0.7152 * c[1] + 0.0722 * c[2];
+    }
+    const parse = (value: string) => [...value.matchAll(/[\d.]+/g)].slice(0, 3).map(x => Number(x[0]));
+    const style = getComputedStyle(element);
+    const foreground = luminance(parse(style.color));
+    const background = luminance(parse(style.backgroundColor));
+    return (Math.max(foreground, background) + 0.05) / (Math.min(foreground, background) + 0.05);
+  });
+  expect(contrast, 'contraste WCAG del distintivo').toBeGreaterThanOrEqual(4.5);
+  await page.setViewportSize({ width: 320, height: 720 });
+  await expect(page.locator('.obs-branding')).toBeVisible();
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(2);
+  await page.reload();
+  await expect(page.locator('.obs-points li')).toHaveCount(4);
+});

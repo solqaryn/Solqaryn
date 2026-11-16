@@ -1,3 +1,8 @@
+## 2026-11-16 - V17 C11-04.M04.05 accesibilidad real de observabilidad privada [Javier :50]
+- Amplía targets táctiles a 44 px sin desbordamiento y conserva foco visible en navegación privada Angular.
+- Añade tres pruebas Chromium dirigidas: teclado Tab real sin focus() sintético, responsive 320/768/1280 con rejilla adaptativa y contraste WCAG calculado en el navegador.
+- R1 Angular, sesión sintética no sustituye JWT HTTP; requiere CI causal Scope Lock/V5, Vitest/Chromium y A5 independiente, sin MySQL, proveedores, QA/main/PROD.
+
 ## 2026-11-16 - V17 C11-04.M04.04 navegacion y doble accion de observabilidad [Javier :20]
 - Estructura las acciones de observabilidad como navegación semántica y enlaza el botón de revalidación al mensaje accesible aria-live sin formulario ni escritura.
 - Agrega dos Vitest y dos Chromium dirigidos: enlace, foco accesible, carga bloqueada, 503 sin fuga de secretos y una sola llamada GET durante revalidación solapada.

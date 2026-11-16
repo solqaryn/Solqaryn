@@ -67,7 +67,7 @@ export type EstadoObservabilidadV5 = 'vacio' | 'cargando' | 'exito' | 'sin_permi
     p { line-height:1.55; overflow-wrap:anywhere; }
     .eyebrow { font-weight:700; color:var(--mat-sys-primary, #2157a3); }
     .obs-navigation { display:flex; flex-wrap:wrap; align-items:center; gap:.55rem; }
-    header :is(a,button) { display:inline-block; margin-right:.55rem; margin-bottom:.4rem; border:1px solid currentColor; border-radius:.55rem; padding:.7rem .9rem; color:inherit; font:inherit; background:transparent; text-decoration:underline; cursor:pointer; }
+    header :is(a,button) { display:inline-block; box-sizing:border-box; max-width:100%; min-height:44px; overflow-wrap:anywhere; margin-right:.55rem; margin-bottom:.4rem; border:1px solid currentColor; border-radius:.55rem; padding:.7rem .9rem; color:inherit; font:inherit; background:transparent; text-decoration:underline; cursor:pointer; }
     header button[disabled] { opacity:.55; cursor:progress; }
     header :is(a,button):focus-visible { outline:3px solid var(--mat-sys-primary, #2157a3); outline-offset:3px; }
     .notice { border:1px solid var(--mat-sys-outline-variant, #aeb8c1); border-radius:.7rem; padding:.9rem; margin:1rem 0; }
