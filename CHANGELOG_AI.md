@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C02-04.M04.06 consola global progresiva y densidad [Javier :10]
+- Agrega tres pruebas Chromium de densidad responsive 320/375/768/1280, revalidación con carga accesible y petición única, y recuperación segura ante HTTP 503 sin exposición de diagnóstico.
+- Incluye las regresiones en el workflow por SHA con cancel-in-progress=false y exige CI hospedada real, Scope Lock/V5, A0-A4 causales y A5 independiente; no confundir pruebas redactadas con PASS.
+- Sesión sintética, R2 conservador, no modifica código productivo, JWT/RBAC/tenant, MFA, MySQL, QA/main/PROD ni secretos; rollback git revert normal.
+
 ## 2026-11-16 — V17 C14-04.M04.06 densidad y carga progresiva de readiness [Javier :10]
 - Añade tres escenarios Chromium de densidad 320/375/768/1280, carga accesible durante revalidación retardada y salida segura ante HTTP 503; sesión simulada, sin métricas reales ni PASS inventado.
 - Amplía la selección del workflow existente con concurrencia por github.sha y cancel-in-progress=false, preservando pruebas previas; requiere CI causal GitHub-hosted exact-SHA, Scope Lock y V5, y A5 independiente.
