@@ -21,7 +21,8 @@ async function fakeToken(page: Page, role = 'Administrador') {
     localStorage.setItem('solqaryn_token', 'SYNTHETIC_NOT_JWT');
     localStorage.setItem('solqaryn_expira_en', '2099-01-01T00:00:00Z');
     localStorage.setItem('solqaryn_rol', rol);
-    localStorage.setItem('solqaryn_empresa_id', 'EMPRESA_B_FORGED');
+    // La clave real consumida por authInterceptor; no usar una fixture inerte.
+    localStorage.setItem('solqaryn_empresa_solicitada_id', '777777');
   }, role);
 }
 
@@ -67,6 +68,12 @@ test.describe('C02-04.M05.05 rechazo y revocación fail-closed (browser con API 
 
   test('rol administrador de empresa y EmpresaId falsificado no suplantan ámbito plataforma', async ({ page }) => {
     await fakeToken(page);
+    const empresaHeaders: string[] = [];
+    page.on('request', request => {
+      if (request.method() === 'GET' && endpoint.test(request.url())) {
+        empresaHeaders.push(request.headers()['x-empresa-id'] ?? '');
+      }
+    });
     const gets = await mockSession(page, () => ({ status: 200,
       body: { success: true, data: { nombreUsuario: 'Tenant Admin', rolNombre: 'Administrador',
         ambito: 'Empresa', esAdministrador: true, empresaId: 'EMPRESA_A' },
@@ -76,6 +83,8 @@ test.describe('C02-04.M05.05 rechazo y revocación fail-closed (browser con API 
     await expect(page.locator('.control-cards li')).toHaveCount(0);
     await expect(page.getByText(privateMessage)).toHaveCount(0);
     expect(gets()).toBe(1);
+    // Ni un tenant local forjado debe viajar al endpoint global de autorización.
+    expect(empresaHeaders).toEqual(['']);
   });
 
   test('200 sin esAdministrador=true se rechaza aunque ámbito sea Plataforma', async ({ page }) => {

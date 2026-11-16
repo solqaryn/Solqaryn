@@ -25,3 +25,6 @@ El workflow existente `.github/workflows/p4-ab-real-auth-ephemeral.yml` ahora se
 
 ## Reparación causal de la aserción 401 (2026-11-16)
 GitHub-hosted job 133609330680, run 43955638841, SHA ed2c0afb0: 9/10 Chromium PASS, 1 FAIL por expectativa incorrecta de URL con parámetro en 401. El interceptor real auth.interceptor.ts llama cerrarPor401() y navega a /login sin query; el frontend denegó y ocultó los controles (fail-closed). La prueba se ajusta para exigir /login sin query para 401; mantiene las exigencias 403, 503, ausencia de controles, ocultamiento de diagnóstico y un GET. No altera controles de producto ni reetiqueta CI fallida como PASS. Requiere nuevo SHA, 10/10 PASS verificadas y P4 real con MySQL 8.4.
+
+## Ampliación A2: header de tenant falsificado
+Revisión de cobertura: la fixture original escribía `solqaryn_empresa_id`, clave ignorada por el interceptor. Se corrige a `solqaryn_empresa_solicitada_id`, se observa la solicitud real del navegador y se exige que `X-Empresa-Id` NO se propague a `/plataforma/sesion`. La aserción detectaría una regresión del interceptor, sin sustituir la prueba P4 server-side JWT/MySQL. Requiere rerun Chromium exact-SHA y readback.

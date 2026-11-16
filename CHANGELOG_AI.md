@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C02-04.M05.05 cobertura tenant header negativa efectiva [Javier :00]
+- Se corrige la fixture del selector de empresa al key real solqaryn_empresa_solicitada_id y se añade asercion observable de ausencia X-Empresa-Id en GET global; antes la variable simulada no ejercitaba el interceptor real.
+- Ningun cambio de auth productivo; la prueba falla si un tenant forjado viaja al backend de plataforma. Requerir 10/10 Chromium y P4 JWT/MySQL real por SHA posterior, sin aceptar resultados antiguos de browser.
+- R2 A0-A5 y Scope Lock intactos; A5 por otro Task. Revert normal en dev.
+
 ## 2026-11-16 — V18 C02-04.M05.05 reparación de aserción 401 por cierre de sesión [Javier :00]
 - GitHub Actions run 43955638841 obtuvo 9 PASS y 1 FAIL: ante 401 el interceptor elimina sesión y redirige a /login, pero el test suponía incorrectamente /login?plataforma=no-disponible. Es fallo de expectativa de prueba, no fuga de permisos observada.
 - Se corrige únicamente la aserción 401 conservando las negativas 403/503, ausencia de datos privados y conteo de GET, sin cambiar código de auth ni desactivar seguridad. Nueva CI por SHA obligatoria, A3 real P4 y A5 independiente pendientes.
