@@ -1,3 +1,8 @@
+## 2026-11-15 - V17 C13-01.M01.06 bloqueo y liberacion documental privacidad/consentimiento [Javier :00]
+- Define dieciseis gates G01-G16, ocho pasos de rollback futuro y doce pares POS/NEG FUTUROS_NO_EJECUTADOS (0/12 runtime) para privacidad, cookies, terminos, consentimiento y derechos.
+- Separa textos versionados de cualquier certificacion legal o actividad de tracker, proveedor, JWT/tenant, retencion, supresion o base real; ninguna jurisdiccion ni plazo se infiere.
+- Exige Scope Lock/V5 exact-SHA y A5 independiente para releer DAG M01-M02; sin politica publicada, QA/main/PROD, nuevos servicios ni datos reales.
+
 ## 2026-11-15 - V17 C11-01.M02.05 eventos idempotentes y correlacion del modelo relacional [Javier :10]
 - Define doce eventos conceptuales EV01-EV12, doce invariantes de idempotencia/correlacion I01-I12 y doce pares P/N FUTUROS_NO_EJECUTADOS (0/12 runtime) para el futuro modelo relacional C11-01.
 - Exige tenant A/B, membresia/roles vigentes, revocacion, digest canonico por actor y operacion, commit atomico y compensacion segura; no crea mensajes, outbox fisico, workers, API, migraciones ni broker.
