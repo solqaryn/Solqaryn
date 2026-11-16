@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 continuidad CI por SHA en dev [recuperación de automatizaciones]
+- La aceptación funcional integral deja de cancelar la evidencia de un commit cuando otra microtarea publica en `dev`: `concurrency.group` ahora incluye `github.sha` y `cancel-in-progress=false`.
+- Conserva todos los jobs y gates del workflow; un `FAIL`, `SKIPPED`, `CANCELLED` o `IN_PROGRESS` requerido sigue sin acreditar PASS. No modifica fuentes, horarios ni prompts de las seis Tasks; GitHub Actions puede consumir más minutos al ejecutar SHAs distintos.
+- Cambio exclusivo de `.github/workflows/catalogos-aceptacion.yml`, rama `dev`; rollback `git revert` normal si hay regresiones o saturación. Validar Scope Lock/V5 y ejecución propia por nuevo SHA; no implica corrección del retraso nativo del programador.
+
 ## 2026-11-16 - V17 QA repair C11-04.M04.06 403 sintetico Chromium [Javier :40]
 - Repara la prueba dirigida que restauraba token al recargar por page.addInitScript; verifica respuesta 403 explicita en pagina nueva sin acceso a las tarjetas privadas.
 - Conserva los positivos de pintado progresivo, densidad y responsive; fallo anterior 13/14 Chromium no cuenta como PASS, requiere nuevo SHA y Scope Lock/V5.

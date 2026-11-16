@@ -38,8 +38,10 @@ permissions:
   contents: read
 
 concurrency:
-  group: dev-aceptacion-${{ github.workflow }}-${{ github.ref }}
-  cancel-in-progress: true
+  # V17: la evidencia CI de un SHA no debe cancelarse por commits posteriores en dev.
+  # Se conservan todos los jobs obligatorios y sus conclusiones reales.
+  group: dev-aceptacion-${{ github.workflow }}-${{ github.ref }}-${{ github.sha }}
+  cancel-in-progress: false
 
 jobs:
   acceptance:
