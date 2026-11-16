@@ -1,3 +1,8 @@
+## 2026-11-15 - V17 C11-01.M01.06 bloqueo, rollback y salida documental modelo relacional [Javier :10]
+- Define dieciseis puertas de bloqueo para claves PK/FK, índices, ownership empresa/sucursal, legado nullable, migraciones reversibles e idempotencia, sin cambiar esquema, datos, EF ni servicios.
+- Documenta doce pares positivos/negativos FUTUROS_NO_EJECUTADOS y ocho pasos de rollback, manteniendo R01-R16 como riesgos hipotéticos, S01-S10 sin verificar y D01-D10 pendientes.
+- R0 documental en dev con A0-A4 y Scope Lock/V5 exact SHA; A5 exclusivamente por otra Task Javier, sin QA/main/PROD, datos reales, migraciones ni autorización productiva.
+
 ## 2026-11-15 - V17 C09-03.M01.06 gates, rollback y salida documental Social Hub [Javier :10]
 - Define puertas de bloqueo para preparar Social Hub/campanas: consentimiento por canal/finalidad, opt-out y revocacion, tenant A/B, RBAC backend, idempotencia, auditoria, cuotas y privacidad sin activar publicaciones ni proveedores.
 - Documenta doce escenarios positivos/negativos FUTUROS_NO_EJECUTADOS, decisiones D01-D08 pendientes, rollback en ocho pasos y dependencia de A0-A5, DAG dinamico y candado V17.
