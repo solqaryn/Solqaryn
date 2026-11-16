@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C11-04.M06.05 solicitud A5 independiente del lote [Javier :30]
+- Registra petición documental auditable de A5 sobre cinco microtareas M06, con SHAs, riesgos y condiciones de revisión; autor DEV04 nunca se autoaprueba.
+- La solicitud institucional NO asegura aceptación de otra Task ni libera DAG o QA/PROD; conserva allowlist Javier6 y dependencias exactas, sin nuevas Tasks/schedules.
+- R0 documental: A0–A4 solo tras Scope Lock/V5 exact SHA, evento y readback; rollback git revert, sin cambio runtime/DB/secretos.
+
 ## 2026-11-16 — V18 C11-04.M06.04 ensayo Git reversible en runner aislado [Javier :30]
 - Agrega GitHub Actions y script que ejecutan un revert sin commit en worktree efímero y prueban igualdad del árbol íntegro con el padre causal de M05.06, sin modificar dev remoto.
 - Rechaza archivos fuera de cuatro rutas esperadas y no atribuye restauración MySQL/Aiven, JWT, datos productivos ni SLO al ensayo.
