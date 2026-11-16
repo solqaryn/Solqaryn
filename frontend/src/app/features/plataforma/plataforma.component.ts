@@ -87,7 +87,7 @@ import { DesignSystemV5Component } from './design-system-v5.component';
 
         @if (vistaFlujoV5) {
           <!-- C14-04.M04.01: superficie read-only en flujo privado ya autorizado. -->
-          <mat-card class="v5-card" aria-labelledby="release-readiness-title" data-testid="release-readiness-contract">
+          <mat-card class="release-readiness-card" aria-labelledby="release-readiness-title" data-testid="release-readiness-contract">
             <mat-card-content>
               <h2 id="release-readiness-title">Preparación de salida · evidencia pendiente</h2>
               <p>Contrato de comprobación para DEV. Esta pantalla no consulta CI, DNS, respaldo ni métricas de operación; no representa una aprobación de despliegue.</p>

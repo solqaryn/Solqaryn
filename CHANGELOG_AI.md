@@ -1,3 +1,8 @@
+## 2026-11-16 — Reparación causal CI C14-04.M04.01 selectores exclusivos [Javier :20]
+- GitHub Actions run 43909251783 detectó dos fallos en pruebas Chromium V5 por reutilizar la clase genérica .v5-card y provocar coincidencias dobles; se preservan los tests y sus expectativas.
+- El nuevo panel read-only usa la clase exclusiva .release-readiness-card sin cambiar guard, datos, autoridad, aria ni funcionalidad; requiere CI nuevamente y A5 independiente.
+- No se declara PASS del SHA anterior fallido ni autorización QA/main/PROD; rollback git revert, solo dev.
+
 ## 2026-11-16 — V17 C14-04.M04.01 superficie privada de preparación de salida [Javier :20]
 - En la ruta ya protegida /plataforma/flujo-v5 se añade un panel de cuatro puertas de readiness: todas SIN_VERIFICAR o NO_MEDIDO, sin datos ni grants nuevos.
 - Playwright dirigido cubre anónimo, 403/503 con diagnóstico opaco, sesión sintética, 320/1280 px y ausencia de formularios; CI exact-SHA, Scope Lock y A5 independiente siguen obligatorios.

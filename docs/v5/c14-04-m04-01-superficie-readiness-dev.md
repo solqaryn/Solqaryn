@@ -13,3 +13,6 @@ La presencia del panel exige sesión servidor en el guard y lectura de signal de
 
 ## A3/A4/A5 · evidencia y gates
 A3 pertinente: Playwright real Chromium, TypeScript/Angular build; MySQL 8.4/EF, proveedores o HTTP externos NO_APLICA por no modificarse ni invocarse en este diff. A4 exige Scope Lock, procedencia CHANGELOG V5, pruebas requeridas SUCCESS exact SHA o equivalencia por blobs, readback PLAN/COLA/BITACORA. No usar CANCELLED/SKIPPED/QUEUED como PASS. A5 requiere auditoría independiente de otra Task Javier, nunca autoaprobación. QA/main/PROD prohibidos.
+
+## Reparación causal tras CI Chromium
+El job `43909251783` (SHA original `0fa9ca35`) encontró dos pruebas preexistentes de `/plataforma/flujo-v5` que seleccionaban estrictamente `.v5-card` y `.v5-card h2`. El panel aditivo usaba por error esa clase y rompió los conteos/selectores sin afectar autorización. Se aísla la clase a `release-readiness-card` manteniendo `mat-card`, aria-labelledby, cuatro puertas, sesión/guard y estilos Material; no se debilitan los tests antiguos. Repetir Chromium, frontend y Scope Lock en SHA de reparación. No marcar SUCCESS sin nueva CI.
