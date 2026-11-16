@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C10-04.M04.02 regresión de excepción síncrona P2 [Javier :20]
+- A5_FAIL DEV05 detectó un posible bloqueo de carga cuando obtener() lanza antes de devolver Observable; el componente vigente ya protege ese límite con RxJS defer.
+- Añade dos Vitest adversariales para 403 síncrono y error inesperado: estado seguro, sin datos protegidos, aria-busy liberado, botón reintento y secretos no filtrados.
+- Reparación de evidencia R2 sin cambios backend/JWT/MySQL; A5_FAIL histórico se conserva y requiere nueva A5 independiente tras GitHub-hosted CI exact-SHA, Scope Lock y procedencia V5; sin QA/main/PROD.
+
 ## 2026-11-16 — V17 C03-04.M04.03 presentación segura Reactiva [Javier :10]
 - Integra Angular Signals con marca, densidad y contraste por allowlist estricta; excluye CSS, HTML, URL y tokens arbitrarios.
 - Añade un control accesible de densidad, pruebas Vitest negativas de inyección/revocación y Chromium 320 px sin solicitudes operativas.

@@ -147,4 +147,36 @@ describe('C10-04.M04.01 - continuidad privada V5', () => {
     expect(fixture.nativeElement.textContent).toContain('Solo consulta documental');
   });
 
+  it('C10-04.M04.02 - obtener lanza 403 sincrono y no congela carga ni revela token', async () => {
+    const { fixture, obtener } = await montar(true);
+    obtener.mockImplementationOnce(() => { throw new HttpErrorResponse({
+      status: 403, error: { message: 'TOKEN_SYNC_NO_FILTRAR' }
+    }); });
+    expect(() => fixture.componentInstance.revalidar()).not.toThrow();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.estadoVisible()).toBe('sin_permiso');
+    expect(fixture.nativeElement.querySelector('.estado')?.getAttribute('aria-busy')).toBe('false');
+    expect(fixture.nativeElement.querySelector('button')?.disabled).toBe(false);
+    expect(fixture.nativeElement.querySelectorAll('.controles li')).toHaveLength(0);
+    expect(fixture.nativeElement.textContent).not.toContain('TOKEN_SYNC_NO_FILTRAR');
+    fixture.componentInstance.revalidar();
+    expect(obtener).toHaveBeenCalledTimes(2);
+    expect(fixture.componentInstance.estado()).toBe('cargando');
+  });
+
+  it('C10-04.M04.02 - error sincrono inesperado se recupera y permite reintento', async () => {
+    const { fixture, obtener } = await montar(true);
+    obtener.mockImplementationOnce(() => { throw new Error('DSN_SYNC_NO_FILTRAR'); });
+    expect(() => fixture.componentInstance.revalidar()).not.toThrow();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.estadoVisible()).toBe('error');
+    expect(fixture.nativeElement.querySelector('.estado')?.getAttribute('aria-busy')).toBe('false');
+    expect(fixture.nativeElement.querySelector('button')?.disabled).toBe(false);
+    expect(fixture.nativeElement.querySelectorAll('.controles li')).toHaveLength(0);
+    expect(fixture.nativeElement.textContent).not.toContain('DSN_SYNC_NO_FILTRAR');
+    fixture.componentInstance.revalidar();
+    expect(obtener).toHaveBeenCalledTimes(2);
+    expect(fixture.componentInstance.estado()).toBe('cargando');
+  });
+
 });
