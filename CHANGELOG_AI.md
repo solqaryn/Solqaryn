@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C10-04.M04.03 branding privado y configuracion tipada [Javier :10]
+- Agrega presentacion Angular reactiva mediante Signal y allowlist estricta de marca/densidad; valores arbitrarios y propiedades extra vuelven al modo seguro, sin usar configuracion como autoridad.
+- Mantiene guard y revocacion de sesion privada, incluye Vitest negativo y regresion Chromium sobre API sintetica; exige CI GitHub-hosted exact-SHA.
+- Cambio R2 UI individual bajo V17, Scope Lock/V5, A5 por otra Task Javier, rollback git revert; sin HTTP/JWT/MySQL/proveedores live ni QA/main/PROD.
+
 ## 2026-11-15 — V17 C15-03.M04.01 auditoría de tenancy privada Angular [Javier :20]
 - Agrega ruta lazy protegida por plataformaGuard y guía estática de cuatro frentes de seguridad/aislamiento; la revocación de sesión oculta contenido, sin ejecutar pentest ni operaciones.
 - Incorpora pruebas unitarias de guard/denegación/revocación y CI GitHub-hosted de Chromium con token y API sintéticos, además de lint y build Angular; no certifica backend JWT/MySQL/tenant real.
