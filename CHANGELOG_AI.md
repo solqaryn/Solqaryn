@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C04-03.M02.05 contrato de eventos e idempotencia de metering [Javier :40]
+- Define doce eventos conceptuales, sobre tipado versionado, dieciseis controles de idempotencia, tenant, UTC, ledger/outbox y doce pares de aceptacion futuros, sin API, DB ni pagos reales.
+- Separa unicidad (EmpresaId, SourceSystem, IdempotencyKey) del PayloadDigest inmutable; el mismo key con digest diferente debe generar conflicto, nunca doble efecto.
+- R0 documental individual con V17 lock 2000000660, A0-A4 sujetos a Scope Lock/V5 exact-SHA, A5 independiente, D01-D08 pendientes y prohibido QA/main/PROD.
+
 ## 2026-11-15 — V17 C04-03.M02.02 contratos conceptuales de metering [Javier :30]
 - Define ocho operaciones y ocho DTO conceptuales, dieciséis validaciones, catorce errores, ocho reglas de compatibilidad y diez pares positivos/negativos futuros para C04-03.M02.02.
 - Mantiene tenant/RBAC/idempotencia/UTC/ledger/fail-closed como contratos sin declarar pruebas HTTP, .NET o MySQL ejecutadas; D01–D08 continúan pendientes y el alcance R0 no agrega runtime, API ni billing real.
