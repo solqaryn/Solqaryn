@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 reparación causal ERP: ruta privada de incidentes con guard exacto [Javier :10]
+- Repara falso positivo FRONTEND_ROUTE_SECURITY_CONTRACT agregando exclusivamente `plataforma/respuesta-incidentes-v5` al allowlist cerrado de control-plane, cuya ruta usa `canActivate: [plataformaGuard]`.
+- Conserva la comprobación obligatoria del guard real y sesión backend, sin comodines, bypass, desactivar validadores ni editar la ruta de su autor. Negativo: ruta sin guard continúa rechazándose.
+- Baseline de CI fallido durante C02-02.M04.03; requiere repetir ERP, Scope Lock, V5 y pruebas pertinentes del SHA reparado con equivalencia de blobs del scope. Sin despliegues, QA/main/PROD.
+
 ## 2026-11-15 — V17 C14-02.M04.01 revisión de amenazas privada [Javier :20]
 - Incorpora ruta Angular lazy protegida con plataformaGuard y guía de cuatro áreas críticas: BOLA/IDOR, suplantación, archivos/jobs/caché y host/backup, sin ejecutar operaciones ni consultar datos reales.
 - Añade cinco Vitest con denegaciones y revocación y tres escenarios Playwright/Chromium sintéticos; GitHub-hosted valida lint/build, Scope Lock y procedencia V5 antes de cualquier cierre.
