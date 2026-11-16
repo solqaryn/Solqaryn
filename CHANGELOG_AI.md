@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C11-04.M06.02 versiones, diffs y artefactos CI por SHA [Javier :30]
+- Registra seis M05 de observabilidad con SHA causal, IDs de workflow, resultados dirigidos y artefactos; especifica comandos reproducibles de lectura sin ejecutar ni certificar trabajo futuro.
+- Separa Vitest/Chromium y LoggerFactory reales de los mocks de sesión y advierte sobre JWT, tenant, exporter, MySQL y SLO/CWV/costes NO_MEDIDO.
+- R0 documental sin runtime: Scope Lock y V5 exact-SHA/PLAN-BITACORA readback antes de LISTO; A5 por otra Task Javier, reversión git revert, sin QA/main/PROD.
+
 ## 2026-11-16 — V18 C11-04.M06.01 auditoría falsable de evidencias reales vs mocks [Javier :30]
 - Confronta seis microtareas M05 de observabilidad con SHA, suite real en GitHub-hosted y alcance demostrable; identifica dónde el navegador es real pero la sesión/HTTP está simulada.
 - Declara NO_MEDIDO para SLO, Core Web Vitals, costes y exportadores reales; NO certifica JWT, RBAC, tenant A/B HTTP ni MySQL a partir de unit tests o fixtures.
