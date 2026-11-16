@@ -1,0 +1,71 @@
+name: V17 C05-04.M04.04 - navegacion y doble accion UI
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/e2e/c05-04-m04-04-interacciones.spec.ts'
+      - '.github/workflows/v17-c05-04-m04-04-interacciones.yml'
+      - 'frontend/src/app/features/plataforma/plataforma.component.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v17-c0504-m0404-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  interactions:
+    name: C05-04.M04.04 - Angular build y Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm compatible
+        run: npm install --global npm@11.19.0
+      - name: Instalar dependencias reproducibles
+        working-directory: frontend
+        run: npm ci
+      - name: Typecheck, lint y build Angular
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Preparar Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Servir Angular local
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > v17-c0504-m0404.log 2>&1 &
+          for attempt in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login > /dev/null; then
+              echo 'ANGULAR_LOCAL_READY=PASS'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat v17-c0504-m0404.log >&2
+          exit 1
+      - name: Chromium real - auth, teclado, mensajes, double action
+        working-directory: frontend
+        run: npx playwright test e2e/c05-04-m04-04-interacciones.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Evidencia de fallo
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v17-c0504-m0404
+          path: |
+            frontend/v17-c0504-m0404.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 14

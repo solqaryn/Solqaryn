@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C05-04.M04.04 interacción privada y doble acción [Javier :50]
+- Verifica la superficie Angular privada existente con seis casos Chromium reales: anónimo, 403 sintético sin mensajes privados, teclado Tab/Enter con aria-pressed reversible, bloqueo de actualización GET concurrente, reintento 503 único y permiso 403 sin fuga.
+- Publica suite Playwright, workflow GitHub-hosted SHA-aislado y contrato R1; no modifica rutas, JWT/RBAC, API, MySQL, permisos ni el componente compartido por otras Tasks; pruebas reales requieren SUCCESS exact-SHA antes de LISTO.
+- V17 lock 2000000851, A0–A4 causales, A5 independiente Javier; rollback git revert y no QA/main/PROD.
+
 ## 2026-11-16 — V17 diagnóstico causal de overflow C07-04.M04.01 [Javier :10]
 - Tras corregir el selector Playwright, el SHA 6399072d mantiene 2 Chromium PASS y 1 FAIL real por overflow global de 75 px a 320; se conserva el fallo como gate obligatorio.
 - Instrumenta solo geometría de elementos (sin textos ni datos privados) y mantiene intacto el assert global para localizar el elemento causal antes de corregir CSS; no permite saltar pruebas.
