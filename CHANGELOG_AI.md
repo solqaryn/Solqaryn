@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C08-04.M05.04 aceptación positiva sectorial Chromium [Javier :30]
+- Añade dos Playwright Chromium reales de aceptación: cuatro tarjetas ilustrativas en 320/1280, rotulación No conectado y cero solicitudes de mutación o activación; denegación 403 sintética oculta la vista y detalles privados.
+- Workflow GitHub-hosted concurrente por SHA con npm ci, lint/build Angular y Chromium; HTTP tenant-context es simulado, no JWT/RBAC/tenancy real ni MySQL.
+- Riesgo R2 por CI/browser, A0–A4 sujetos a comprobaciones SHA reales y A5 de Task Javier distinta; rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-16 — V18 C08-04.M05.01 contrato unitario de capabilities [Javier :30]
 - Añade cuatro Vitest Angular TestBed falsables sobre claves sectoriales unicas, estados visuales no autorizativos, revocacion de previews y texto HTML hostil escapado sin ejecutar.
 - CI GitHub-hosted aislada por SHA ejecuta npm ci, Vitest dirigido, lint y build Angular productivo; sin cambios de runtime, JWT/RBAC, tenant, API o MySQL.
