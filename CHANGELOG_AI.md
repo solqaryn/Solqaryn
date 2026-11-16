@@ -1,3 +1,8 @@
+## 2026-11-16 - V17 C13-01.M02.04 configuracion tipada y flags de privacidad [Javier :50]
+- Define dieciseis opciones CFG01-CFG16, doce flags F01-F12 false por defecto y ocho errores EC01-EC08 para privacidad, consentimiento, retencion, revocacion y politicas por tenant.
+- Agrega doce pares P/N FUTUROS_NO_EJECUTADOS (0/12 runtime) y restricciones contra autorizacion por UI, cross-tenant, JWT revocado, proveedores no aprobados y borrado destructivo por TTL inferido.
+- Documento R0: sin API, Angular, EF/MySQL, cookies, datos o politica legal activa; conserva G01-G16, Scope Lock/V5 exact-SHA, candado V17 y A5 independiente.
+
 ## 2026-11-16 - V17 C13-01.M02.02 operaciones y DTO conceptuales de privacidad [Javier :50]
 - Define ocho operaciones OP01-OP08, doce DTO, doce errores ER01-ER12 y dieciseis validaciones V01-V16 para privacidad, consentimiento, revocacion, retencion y derechos por tenant/sujeto.
 - Registra doce pares P/N FUTUROS_NO_EJECUTADOS (0/12 runtime), denegacion por defecto, IDOR/BOLA, revocacion, correlacion e integridad sin atribuir cumplimiento legal ni permisos.
