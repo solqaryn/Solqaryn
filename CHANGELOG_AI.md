@@ -1,3 +1,9 @@
+## 2026-11-16 - V17 C13-01.M02.03 persistencia conceptual e indices de privacidad [Javier :00]
+- Propone dieciseis claves/indices K01-K16, ocho etapas futuras MX01-MX08 y doce fixtures sinteticos F01-F12 para decisiones, revocacion, derechos, retencion y tenant A/B.
+- Define idempotencia con nonce estable por solicitud logica y digest completo de payload canonico; evita reintentos cruzados, colision por datos redactados, IDOR/BOLA y revocacion obsoleta.
+- Incluye doce pares T01-T12 FUTUROS_NO_EJECUTADOS (0/12 runtime); no modifica EF, MySQL, API, cookies, datos, proveedores ni politica legal.
+- Riesgo R0 documental; exige Scope Lock y V5 causal, candado V17, readback y A5 independiente; ningun paso a QA/main/PROD.
+
 ## 2026-11-16 - V17 C13-01.M02.04 configuracion tipada y flags de privacidad [Javier :50]
 - Define dieciseis opciones CFG01-CFG16, doce flags F01-F12 false por defecto y ocho errores EC01-EC08 para privacidad, consentimiento, retencion, revocacion y politicas por tenant.
 - Agrega doce pares P/N FUTUROS_NO_EJECUTADOS (0/12 runtime) y restricciones contra autorizacion por UI, cross-tenant, JWT revocado, proveedores no aprobados y borrado destructivo por TTL inferido.
