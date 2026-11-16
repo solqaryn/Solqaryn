@@ -476,3 +476,11 @@ para rutas ausentes y nuevas no registradas, duplicados y scope siguen obligator
 Este parche de baseline no prueba Vitest, Chromium, JWT/RBAC, tenancy HTTP o
 release real, no altera autoridades ni aprobaciones, y exige CI exact-SHA y A5
 independiente de las microtareas correspondientes. Rollback `git revert` normal.
+
+## Actualización causal V18 C08-04.M04.01 — 16 de noviembre de 2026
+
+El control de inventario P0-007.A detectó en el SHA `69c136cbe36af14466f0dec00604d038f4bd5336` un nuevo componente que no estaba documentado. Se incorpora **exactamente una ruta existente** al inventario, ahora **154 archivos `.component.ts` (146 features y 8 shared)**, sin alterar las entradas y recuentos de cortes históricos:
+
+- `frontend/src/app/features/extensiones-sectoriales/sector-modules-readonly.component.ts`
+
+Se conservan comparaciones estrictas de conjuntos, conteo exacto y negativos de ausencia, duplicados y rutas fuera del alcance; no hay exclusiones ni bypass. La nueva superficie es Angular privada, estática y no operativa. El inventario no certifica JWT, RBAC, tenant, API, MySQL ni aceptación de navegador. Exigir `node scripts/verify-p0-007-a-component-catalog.mjs --self-test` real en CI del nuevo SHA y A0–A4 aplicables; A5 requiere revisor Javier distinto del autor. Sin QA/main/PROD; rollback Git revert normal.

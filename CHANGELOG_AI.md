@@ -6025,3 +6025,5 @@
 - Añade Vitest de positivo/negativo/borde/revocación, workflow GitHub-hosted para Angular lint/build y Chromium sintético (anon/403/320/1280); pruebas escritas son PENDIENTE hasta SUCCESS exact-SHA y aceptación integral aplicable.
 - R1 visual, sin JWT/RBAC/backend/MySQL reales certificados, sin dependencias nuevas ni producción. A5 independiente de otra Task Javier, candado V17 2000001281, rollback por revert ordinario.
 
+## 2026-11-16 — C08-04.M04.01: reparar gate P0-007.A de catálogo Angular (DEV03)
+- El check GitHub exact-SHA P0-007.A falló por componente sectorial no inventariado; se añade su ruta real a `docs/P0-007-A-INVENTARIO-COMPONENTES-DEV.md`, y se actualiza el conteo exacto del validador de 153 a 154 (146 features/8 shared) sin permitir ausencias, duplicados ni rutas nuevas sin registrar. Exigir CI nueva P0, Scope Lock, V5 y Angular/Chromium; no sustituye A5 independiente ni concede autoridad.
