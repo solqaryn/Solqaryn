@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C02-04.M04.06 reparación de regresión Chromium omitida [Javier :10]
+- QA_DEFECT_FOUND P2: 10 pruebas Chromium y 12 Vitest anteriores fueron reales, pero la línea Playwright excluía los tres escenarios C02-04.M04.06 nuevos. Los PASS previos no los certifican.
+- Corrige filtro de rutas mal concatenadas y ejecuta C02-04.M04.06 en la CI GitHub-hosted por SHA, sin cancelar jobs existentes; nuevas pruebas positivas, negativas y 503 requieren PASS efectivo antes de A0-A4 y revisor A5 separado.
+- Sin cambios de runtime, backend, JWT/RBAC/tenant, MySQL, secretos o QA/main/PROD; rollback git revert en dev y Scope Lock STRICT.
+
 ## 2026-11-16 — V18 C14-04.M04.06 reparación de selección CI Chromium [Javier :10]
 - QA_DEFECT_FOUND P2: el workflow anterior declaraba el spec nuevo como path, pero el comando Playwright no lo ejecutaba; 52 PASS anteriores no acreditaban las tres regresiones C14-04.M04.06.
 - Corrige paths mal concatenados y añade el spec C14-04.M04.06 al comando GitHub-hosted real; exige nueva CI exact-SHA con 3 pruebas ejecutadas, Scope Lock, V5 y A0-A4 antes de LISTO, A5 independiente.
