@@ -1,0 +1,68 @@
+name: V18 C08-04.M05.05 - abuso y aislamiento UI
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v18-c08-04-m05-05-negative.yml'
+      - 'frontend/e2e/c08-04-m05-05-negative.spec.ts'
+      - 'frontend/src/app/features/extensiones-sectoriales/sector-modules-readonly.component.ts'
+      - 'frontend/src/app/features/extensiones-sectoriales/sector-modules-readonly.component.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v18-c0804-m0505-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  negative:
+    name: C08-04.M05.05 - Angular build y Chromium adversarial
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm install --global npm@11.19.0
+      - name: Instalar dependencias
+        working-directory: frontend
+        run: npm ci
+      - name: Lint y build productivo
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Instalar Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Arrancar Angular local
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c0804-m0505.log 2>&1 &
+          for i in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat c0804-m0505.log >&2
+          exit 1
+      - name: Cinco denegaciones y abuso simulados con Chromium real
+        working-directory: frontend
+        run: npx playwright test e2e/c08-04-m05-05-negative.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Evidencia de fallos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c0804-m0505-negative
+          path: |
+            frontend/c0804-m0505.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 14

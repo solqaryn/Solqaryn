@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C08-04.M05.05 denegacion, abuso y aislamiento UX [Javier :40]
+- Añade cinco escenarios Playwright adversariales para ruta privada sectorial: anonimo, 401, empresa B denegada 403, 503 opaco y bandera local maliciosa sin permisos efectivos; aserciones reales sobre DOM y peticiones.
+- CI GitHub-hosted compila Angular y ejecuta Chromium; grupo de concurrencia aislado por SHA, cancel-in-progress=false. A0–A4 exigen checks reales exact-SHA y A5 independiente.
+- Riesgo R2 por tests de seguridad UI y nuevo workflow; HTTP/tenant simulados NO certifican JWT/RBAC/aislamiento real A/B; no altera runtime, API, MySQL, migraciones, QA/main/PROD. Rollback git revert.
+
 ## 2026-11-16 — V18 C08-04.M05.04 aceptación positiva sectorial Chromium [Javier :30]
 - Añade dos Playwright Chromium reales de aceptación: cuatro tarjetas ilustrativas en 320/1280, rotulación No conectado y cero solicitudes de mutación o activación; denegación 403 sintética oculta la vista y detalles privados.
 - Workflow GitHub-hosted concurrente por SHA con npm ci, lint/build Angular y Chromium; HTTP tenant-context es simulado, no JWT/RBAC/tenancy real ni MySQL.
