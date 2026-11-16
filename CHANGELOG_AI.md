@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C14-04.M03.06 auditoría estructurada fail-closed de readiness [Javier :10]
+- Integra sink .NET 10 de ILogger sobre siete resultados permitidos de revisión DEV: verifica fuente backend, tenant A/B, membresía, rol, revisor independiente, SHA y audit fence, sin registrar PII/JWT ni credenciales.
+- Añade 16 xUnit positivos, negativos y error; exige CI GitHub-hosted exact-SHA Release, seguridad, autorización, Scope Lock y V5. No instala worker, proveedor, MySQL ni auditoría durable.
+- Riesgo R2 con A5 de otra Task Javier pendiente. Sin permisos de despliegue, QA/main/PROD; rollback normal git revert.
+
 ## 2026-11-15 — V17 C11-04.M04.01 observabilidad privada de solo lectura [Javier :20]
 - Agrega ruta lazy protegida con plataformaGuard y guía privada para logs, métricas/costos, trazas y alertas sin exporter, secretos, APIs ni mediciones conectadas.
 - Incluye cinco Vitest positivos/negativos/revocación y tres Playwright Chromium sintéticos; exige lint/build, Scope Lock y procedencia V5 exact-SHA GitHub-hosted antes de LISTO.
