@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C15-01.M04.04 navegación y mensajes cobertura privada [Javier :20]
+- Añade cuatro pruebas Chromium de denegación anónimo/403, mensajes NO_MEDIDO, navegación con Enter sin solicitudes mutadoras y ausencia de formularios/controles de doble envío en ruta privada read-only.
+- Extiende workflow SHA-aislado C15-01 de ocho a doce Chromium (3 M04.01, 5 M04.05, 4 M04.04), manteniendo cuatro Vitest, Angular lint/build y guards; sin cambiar runtime ni quitar checks.
+- R2 conservador por superficie privada; HTTP sintético NO certifica JWT real/tenant backend/MySQL. Requiere CI exact-SHA, Scope Lock/V5 y A5 distinta; rollback git revert; sin QA/main/PROD.
+
 ## 2026-11-16 — Reparación CI R1 C05-04.M04.04 detalles colapsados [Javier :50]
 - GitHub Actions SHA e62eab99 probó 5/6 Chromium; el caso de doble acción falló al exigir visible un estado dentro de `<details>` cerrado, no por una omisión de protección en el componente.
 - Corrige el test abriendo el panel mediante click real sobre summary antes de comprobar el resultado vacío y mantener comprobaciones de doble acción y ausencia de POST.
