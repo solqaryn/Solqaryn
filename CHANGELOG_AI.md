@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C02-04.M03.06 auditoría estructurada privada del control plane [Javier :00]
+- Añade sink .NET 10 de auditoría no durable con EventId y códigos allowlist, consultando evidencia backend fresca de plataforma, tenant A/B, MFA, permiso, revocación y SHA exacto antes de emitir logs.
+- Añade 13 pruebas xUnit con casos positivos, negativos, frontera, excepción y cancelación; CI GitHub-hosted, Scope Lock, V5, seguridad y Authorization son obligatorios antes de certificar LISTO.
+- No registra actor, tenant, tokens ni payload; no habilita acceso global, proveedor real, auditoría durable, MySQL/JWT HTTP ni despliegue. Riesgo R2; A5 independiente y rollback git revert normal.
+
 ## 2026-11-16 — V18 C05-01.M04.03 branding local permitido [Javier :50]
 - Añade dos presets visuales tipados a la biblioteca privada Angular con allowlist, selección en memoria, denegación por sesión y sin CSS/URL inyectables ni escrituras tenant.
 - Incorpora Vitest adversarial para cadenas arbitrarias, Empresa y revocación y Chromium para selección real y responsive 320/768/1280; requiere CI exact-SHA, Scope Lock, V5 y A5 independiente.
