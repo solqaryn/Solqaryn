@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C05-01.M03.05 worker acotado de design tokens [Javier :50]
+- Agrega worker Infrastructure .NET 10 de previsualización secuencial de hasta 12 intenciones de tema, con comprobación fail-closed de tenant A/B, actor, SHA, revisión, sesión y claves ordinales.
+- Incorpora 13 pruebas xUnit de casos positivos, negativos, fronteras, revocación, roles, valores CSS inseguros y cancelación; CI GitHub-hosted pertinente A0-A4.
+- Riesgo R2. No aplica CSS ni cambia temas, autoriza JWT, consulta MySQL o declara accesibilidad real; A5 de otra Task Javier, rollback git revert normal.
+
 ## 2026-11-15 — V17 C02-01.M03.06 auditoría segura de selección de tenant [Javier :50]
 - Añade fachada Infrastructure .NET 10 de auditoría de solo previsualización con logs estructurados sin PII, rechazo de doble selección y concurrencia, y denegación si falla el sink de auditoría.
 - Incluye 15 pruebas xUnit de elección 1/N, revocación, tenant ajeno, SHA/actor, role hints falsos, repetición, mezcla, cancelación, fallos y solapamiento; validación GitHub-hosted A0-A4 exigida.
