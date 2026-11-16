@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C11-04.M06.03 registro de limitaciones y riesgos abiertos [Javier :30]
+- Documenta siete riesgos causales del bloque M05 de observabilidad, con fronteras entre fixtures HTTP/JWT sintéticos y pruebas reales de Chromium/.NET en proceso.
+- Registra expresamente CWV, SLO, latencia, coste y telemetría externa como NO_MEDIDO/NO_CERTIFICADO; propone remedios medibles sin crear permisos ni DAG falsos.
+- R0 documental con A0–A4/Scope Lock/V5 exact-SHA y readback, A5 independiente pendiente; sin código runtime, QA/main/PROD ni datos modificados.
+
 ## 2026-11-16 — V18 C11-04.M06.02 versiones, diffs y artefactos CI por SHA [Javier :30]
 - Registra seis M05 de observabilidad con SHA causal, IDs de workflow, resultados dirigidos y artefactos; especifica comandos reproducibles de lectura sin ejecutar ni certificar trabajo futuro.
 - Separa Vitest/Chromium y LoggerFactory reales de los mocks de sesión y advierte sobre JWT, tenant, exporter, MySQL y SLO/CWV/costes NO_MEDIDO.
