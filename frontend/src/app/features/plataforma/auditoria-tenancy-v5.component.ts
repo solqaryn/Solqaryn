@@ -21,9 +21,10 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
           <strong>Solo lectura · ninguna prueba o autorización ejecutada</strong>
           <p>Los criterios siguientes son un contrato de revisión futura, no resultados certificados.</p>
         </section>
+        <a class="skip-frames" href="#fronteras-title">Saltar a los cuatro frentes de revisión</a>
         <section aria-labelledby="fronteras-title">
-          <h2 id="fronteras-title">Cuatro frentes de comprobación futura</h2>
-          <ol class="fronteras" aria-label="Matriz de aislamiento requerida">
+          <h2 id="fronteras-title" tabindex="-1">Cuatro frentes de comprobación futura</h2>
+          <ol class="fronteras" aria-labelledby="fronteras-title">
             <li><h3>Tenant A/B y sucursal</h3><p>Rechazar cruce de EmpresaId, SucursalId, consultas, índices y exportaciones, incluso con identificadores repetidos.</p></li>
             <li><h3>Propiedad y pertenencia</h3><p>Revalidar usuario, rol, membresía, revocación y denegación por defecto en backend.</p></li>
             <li><h3>Archivos, almacenamiento y jobs</h3><p>Verificar ownership, rutas, claves, idempotencia y doble ejecución; ningún restore o proveedor se invoca aquí.</p></li>
@@ -46,6 +47,9 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
     .eyebrow { font-weight: 700; color: var(--mat-sys-primary, #2157a3); }
     header a { display: inline-block; border: 1px solid currentColor; border-radius: .55rem; padding: .7rem .9rem; color: inherit; text-decoration: none; }
     header a:focus-visible { outline: 3px solid var(--mat-sys-primary, #2157a3); outline-offset: 3px; }
+    .skip-frames { display:inline-flex; margin-top:.75rem; padding:.65rem .85rem; border:2px solid currentColor; border-radius:.5rem; color:inherit; text-decoration:underline; }
+    .skip-frames:focus-visible { outline:3px solid var(--mat-sys-primary, #2157a3); outline-offset:3px; }
+    @media (prefers-contrast:more) { .skip-frames:focus-visible, header a:focus-visible { outline-width:4px; } }
     .notice,.denied { border: 1px solid var(--mat-sys-outline-variant, #aeb8c1); border-radius: .75rem; padding: 1rem; margin-top: 1rem; }
     .notice { background: var(--mat-sys-surface-container-low, #f5f7fa); }
     .fronteras { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .85rem; list-style: none; padding: 0; }
