@@ -37,7 +37,7 @@ Definir una propuesta verificable de persistencia, índices, migración futura r
 
 | Fase | Nombre | Puerta futura | Rollback/NO_GO |
 | --- | --- | --- | --- |
-| MX01 | Inventory/freeze | Catalogue existing EF entities, migrations, ownership, policy versions and incident holds in DEV; design-only now | Abort if schema/tenant uncertainty; no writes |
+| MX01 | Schema review/freeze | Catalogue existing EF entities, migrations, ownership, policy versions and incident holds in DEV; design-only now | Abort if schema/tenant uncertainty; no writes |
 | MX02 | Isolated harness | Provision an ephemeral MySQL 8.4 test service only when implementation work is separately authorized; Oracle EF 10 provider match | No Aiven/prod or customer data |
 | MX03 | Additive shadow model | Propose additive nullable entities and composite tenant FKs behind disabled flags in a future R2 change | Backout by disabling read paths; never destructive DROP |
 | MX04 | Synthetic seed and backfill | Use tenant A/B fabricated fixtures and deterministic versions; backfill only after approved data mapping | No historic consent inferred or invented |
