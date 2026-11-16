@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C02-04.M05.02 pruebas reales de contrato API/DTO global [Javier :00]
+- Añade xUnit para catálogo global y búsqueda DTO: parámetros inválidos, rechazo de JWT empresarial sin grant, revocación efectiva, DTO minimizado, auditoría global y no-store.
+- El controlador productivo no cambia; pruebas EF InMemory y claims sintéticos no acreditan HTTP/MySQL real, MFA o API futura de QA. Exigir GitHub-hosted por SHA y A5 independiente antes de LISTO.
+- Riesgo R2, Scope Lock STRICT y seguridad conservados; rollback git revert no destructivo.
+
 ## 2026-11-16 — V18 C08-04.M04.01 revalidación Chromium tras drift concurrente [Javier :20]
 - La superficie sectorial de lectura fue modificada posteriormente en sus archivos compartidos por entregas M04.02/M04.03; se rechaza equivalencia ficticia con el SHA original y se exige nueva CI causal sobre el código integrado.
 - La prueba Playwright propia amplía la frontera responsive a 320, 768 y 1280 px, y conserva rechazo 403, sesión anónima y cero consultas para activar módulos.

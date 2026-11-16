@@ -487,4 +487,91 @@ public sealed class PlataformaGestionMvpSecurityTests
         Assert.Equal(503, await Status("GET", "/clientes"));
         Assert.Equal(7, llamadas);
     }
+
+    // C02-04.M05.02: contract of the actual global API. These controller-level
+    // regressions DO NOT substitute for authenticated HTTP/MySQL 8.4 integration.
+    [Theory]
+    [InlineData(-1)]
+    [InlineData(int.MinValue)]
+    public async Task C0204M0502_InvalidGlobalCatalogCompanyIdFailsClosed(int empresaId)
+    {
+        var t = await PrepararAsync();
+        await using (t.Db)
+        {
+            var error = Assert.IsType<BadRequestObjectResult>(
+                await t.Controller.Roles(empresaId, CancellationToken.None));
+            var json = System.Text.Json.JsonSerializer.Serialize(error.Value);
+            Assert.DoesNotContain("PasswordHash", json);
+            Assert.DoesNotContain("Comercio B", json);
+            Assert.Empty(await t.Db.Set<RegistroAuditoria>().ToListAsync());
+            Assert.Contains("no-store", t.Controller.Response.Headers.CacheControl.ToString());
+        }
+    }
+
+    [Theory]
+    [InlineData("x")]
+    [InlineData("two words")]
+    [InlineData("<script>")]
+    public async Task C0204M0502_InvalidUsernameDtoDoesNotQueryOrAudit(string nombre)
+    {
+        var t = await PrepararAsync();
+        await using (t.Db)
+        {
+            var error = Assert.IsType<BadRequestObjectResult>(
+                await t.Controller.BuscarUsuario(nombre, CancellationToken.None));
+            var json = System.Text.Json.JsonSerializer.Serialize(error.Value);
+            Assert.DoesNotContain(nombre, json);
+            Assert.DoesNotContain("PasswordHash", json);
+            Assert.Empty(await t.Db.Set<RegistroAuditoria>().ToListAsync());
+        }
+    }
+
+    [Fact]
+    public async Task C0204M0502_EnterpriseJwtWithoutPersistedGlobalGrantIsDenied()
+    {
+        var t = await PrepararAsync(global: false);
+        await using (t.Db)
+        {
+            Assert.IsType<ForbidResult>(
+                await t.Controller.Roles(t.EmpresaB.Id, CancellationToken.None));
+            Assert.IsType<ForbidResult>(
+                await t.Controller.BuscarUsuario("adminempresa", CancellationToken.None));
+            Assert.Empty(await t.Db.Set<RegistroAuditoria>().ToListAsync());
+        }
+    }
+
+    [Fact]
+    public async Task C0204M0502_RevocationRejectsSubsequentDtoRequest()
+    {
+        var t = await PrepararAsync();
+        await using (t.Db)
+        {
+            Assert.NotNull(t.Grant);
+            t.Grant!.Desactivar();
+            await t.Db.SaveChangesAsync();
+            Assert.IsType<ForbidResult>(
+                await t.Controller.BuscarUsuario("adminempresa", CancellationToken.None));
+            Assert.Empty(await t.Db.Set<RegistroAuditoria>().ToListAsync());
+        }
+    }
+
+    [Fact]
+    public async Task C0204M0502_ValidGlobalLookupReturnsMinimizedDtoWithAudit()
+    {
+        var t = await PrepararAsync();
+        await using (t.Db)
+        {
+            var response = Assert.IsType<OkObjectResult>(
+                await t.Controller.BuscarUsuario("adminempresa", CancellationToken.None));
+            var json = System.Text.Json.JsonSerializer.Serialize(response.Value);
+            Assert.Contains("adminempresa", json);
+            Assert.DoesNotContain("PasswordHash", json);
+            Assert.DoesNotContain("no-password", json);
+            Assert.Contains("no-store", t.Controller.Response.Headers.CacheControl.ToString());
+            var audit = Assert.Single(await t.Db.Set<RegistroAuditoria>().ToListAsync());
+            Assert.Null(audit.EmpresaId);
+            Assert.Equal(AmbitoAutorizacion.Plataforma, audit.AmbitoAutoridad);
+        }
+    }
+
 }
