@@ -76,7 +76,7 @@ test.describe('C05-04.M05.05 - denegaciones y errores UI, HTTP simulado', () => 
           : { success: true, data: { items: [{ id: 45, nombre: 'TENANT_A_PRIVATE_SENTINEL', activa: true, usuariosActivos: 1 }], pagina: 1, tamano: 25, total: 1, puedeCrear: false } }) });
     });
     await page.goto('/plataforma');
-    await expect(page.getByText('TENANT_A_PRIVATE_SENTINEL')).toBeVisible();
+    await expect(page.getByRole('cell', { name: 'TENANT_A_PRIVATE_SENTINEL' })).toBeVisible();
     deny = true;
     await page.getByRole('button', { name: 'Actualizar directorio' }).click();
     await expect(page.getByText('TENANT_A_PRIVATE_SENTINEL')).toHaveCount(0);
@@ -96,7 +96,7 @@ test.describe('C05-04.M05.05 - denegaciones y errores UI, HTTP simulado', () => 
           : { success: true, data: { items: [{ id: 2, nombre: 'STALE_TENANT_SENTINEL', activa: true, usuariosActivos: 1 }], pagina: 1, tamano: 25, total: 1, puedeCrear: false } }) });
     });
     await page.goto('/plataforma');
-    await expect(page.getByText('STALE_TENANT_SENTINEL')).toBeVisible();
+    await expect(page.getByRole('cell', { name: 'STALE_TENANT_SENTINEL' })).toBeVisible();
     fail = true;
     await page.getByRole('button', { name: 'Actualizar directorio' }).click();
     await expect(page.getByTestId('c0504-error')).toBeVisible();
