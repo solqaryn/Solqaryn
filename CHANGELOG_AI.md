@@ -2,6 +2,7 @@
 - Incorpora prueba funcional real Playwright Chromium sobre la ruta privada existente: anónimo y 403 sintéticos denegados, mensajes solo lectura/NO_MEDIDO, enlace único de regreso, visita repetida sin mutaciones a endpoints sensibles.
 - No inventa formularios inexistentes ni afecta guard, API o servicios; exige npm lint/build, Chromium, Scope Lock y procedencia V5 exact-SHA antes de LISTO.
 - Riesgo R2 UI privada: sesiones simuladas no certifican JWT, tenant A/B, DB ni pentest; candado V17 exclusivo, A5 independiente, rollback git revert.
+- CI_REPAIR causal: job133035484583 evidenció 3/4 Playwright, aserción esperaba erróneamente 0 enlaces routerLink existentes mientras validaba regreso único. Ajustada a 1 enlace no operativo conservando guard/denegación; verificar nuevo SHA antes de LISTO.
 
 ## 2026-11-15 — V17 C11-04.M03.05 worker acotado de observabilidad [Javier :00]
 - Implementa worker Infrastructure .NET 10 secuencial de revisión sintética, con puerto aislado hacia M03.04 y prevalidación de tenant, SHA, lote, cardinalidad y códigos sin acceso a telemetría real.

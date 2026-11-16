@@ -45,7 +45,7 @@ test('grant simulado: mensajes de límites, link único y superficie no operativ
   await expect(page.locator('.tenancy-audit [aria-label="Alcance de solo lectura"]')).toBeVisible();
   await expect(page.getByText('Estado de pentest, resultados A/B y métricas: NO_MEDIDO. QA/PROD no autorizados.')).toBeVisible();
   await expect(page.locator('.tenancy-audit button, .tenancy-audit form, .tenancy-audit input, .tenancy-audit textarea')).toHaveCount(0);
-  await expect(page.locator('.tenancy-audit a[routerlink="/plataforma"]')).toHaveCount(0);
+  await expect(page.locator('.tenancy-audit a[routerlink="/plataforma"]')).toHaveCount(1);
   const back = page.getByRole('link', { name: 'Regresar a administración de plataforma' });
   await expect(back).toHaveCount(1);
   await expect(back).toHaveAttribute('href', '/plataforma');
