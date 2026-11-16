@@ -1,3 +1,8 @@
+## 2026-11-15 - V17 C05-01.M03.06 auditoria segura sintetica de temas [Javier :50]
+- Agrega servicio Infrastructure .NET 10 de auditoría estructurada, acotada e idempotente sobre el worker de previsualización M03.05; captura entradas, rechaza cruces de tenant, revisión, sesión, SHA, duplicados y concurrencia.
+- Incorpora 11 pruebas xUnit adversariales de resultado nominal, denegaciones, errores sin filtración, respuestas forjadas, sink fallido, capacidad y cancelación; CI real GitHub-hosted exact-SHA obligatoria, sin atribuir PASS anticipado.
+- Riesgo R2: logs con solo código y recuento, nunca identidades, CSS, claves ni secretos; no aplica tema, no integra JWT/MySQL/HTTP real ni autoriza QA/main/PROD, A5 de otra Task, rollback git revert.
+
 ## 2026-11-15 - V17 C14-02.M04.03 presentación local acotada de amenazas [Javier :20]
 - Introduce dos modos visuales locales predefinidos y un selector accesible en la guía privada, sin cambio de JWT/RBAC, tenant, sesión, rutas ni políticas; rechaza valores arbitrarios.
 - Añade tres casos Vitest y un Chromium sintético sobre alternancia, revocación, error, tokens y ausencia de inyección; requiere CI causal real, Scope Lock y V5 para LISTO.
