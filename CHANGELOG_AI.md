@@ -1,3 +1,8 @@
+## 2026-11-16 - V17 C12-01.M02.01 modelo conceptual de topologia futura [Javier :20]
+- Define dieciseis entidades E01-E16, veinte invariantes I01-I20 y doce pares P/N futuros, con ownership, relaciones y aislamiento de ambientes/tenant.
+- Solo preparacion documental R0: conserva Vercel, Render, Aiven y Cloudinary vigentes; ninguna provision Hostinger, DNS, MySQL, secreto, servicio ni cambio de permisos.
+- Mantiene G01-G16 y rollback de M01.06; las pruebas runtime son FUTUROS_NO_EJECUTADOS y A5 exige otra Task Javier.
+
 ## 2026-11-15 - V17 C13-01.M01.06 bloqueo y liberacion documental privacidad/consentimiento [Javier :00]
 - Define dieciseis gates G01-G16, ocho pasos de rollback futuro y doce pares POS/NEG FUTUROS_NO_EJECUTADOS (0/12 runtime) para privacidad, cookies, terminos, consentimiento y derechos.
 - Separa textos versionados de cualquier certificacion legal o actividad de tracker, proveedor, JWT/tenant, retencion, supresion o base real; ninguna jurisdiccion ni plazo se infiere.
