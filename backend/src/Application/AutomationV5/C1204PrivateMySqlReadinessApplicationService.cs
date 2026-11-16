@@ -14,7 +14,8 @@ public sealed record C1204VerifiedActor(
     bool JwtAuthenticatedByServer,
     bool MembershipCurrent,
     bool CanReviewCutover,
-    bool RecentMfaVerified);
+    bool RecentMfaVerified,
+    bool MembershipRevoked = false);
 
 /// <summary>
 /// A future Infrastructure adapter must independently verify the actual
@@ -67,46 +68,19 @@ public sealed class C1204PrivateMySqlReadinessApplicationService
     {
         cancellationToken.ThrowIfCancellationRequested();
 
-        if (trustedActor is null || request is null ||
-            !SafeOpaqueId(trustedActor.ActorId) ||
-            !SafeOpaqueId(trustedActor.TenantId) ||
-            !trustedActor.JwtAuthenticatedByServer ||
-            !trustedActor.MembershipCurrent ||
-            !trustedActor.CanReviewCutover ||
-            !trustedActor.RecentMfaVerified)
+        var preflight = C1204PrivateMySqlTenantAuthorizationPolicy
+            .DenyBeforeEvidenceRead(trustedActor, request);
+        if (preflight is not null)
+            return new(preflight);
+        // Separate flow assertion for nullable analysis; policy already denies both.
+        if (trustedActor is null || request is null)
             return new("VERIFIED_SERVER_ACTOR_REQUIRED");
-
-        if (!string.Equals(request.Environment, "dev", StringComparison.Ordinal))
-            return new("NON_DEV_ENVIRONMENT_DENIED");
-
-        if (string.IsNullOrWhiteSpace(request.RequestedTenantId) ||
-            !string.Equals(request.RequestedTenantId, trustedActor.TenantId,
-                StringComparison.Ordinal) ||
-            !request.SourceAndDestinationOwnedByTenant)
-            return new("TENANT_OWNERSHIP_UNVERIFIED");
-
-        if (request.ClientControlsConnectionOrTarget ||
-            request.RequestsRealCutoverOrDualWrite ||
-            request.RequestsDestructiveSchemaMutation ||
-            request.RequestsGrantElevation ||
-            request.RequestsSecretOrPersonalDataEmission ||
-            request.AllowsCrossTenantFallback)
-            return new("UNAUTHORIZED_RUNTIME_MUTATION_DENIED");
-
-        if (request.HasUnmitigatedP0OrP1)
-            return new("CRITICAL_FINDING_NO_GO");
-
-        if (request.ExpectedCommitSha is not { Length: 40 } ||
-            !request.ExpectedCommitSha.All(Uri.IsHexDigit) ||
-            !string.Equals(request.ExpectedCommitSha, request.ManifestCommitSha,
-                StringComparison.Ordinal))
-            return new("EXACT_MANIFEST_SHA_REQUIRED");
 
         // No trusted evidence reader: no review. Never infer a pass from
         // the request, the caller's booleans or an application-side fallback.
         var evidence = await _reader.ReadVerifiedAsync(
-            trustedActor.ActorId, trustedActor.TenantId,
-            request.ExpectedCommitSha, cancellationToken);
+            trustedActor.ActorId!, trustedActor.TenantId!,
+            request.ExpectedCommitSha!, cancellationToken);
         cancellationToken.ThrowIfCancellationRequested();
 
         if (evidence is null)
@@ -134,9 +108,4 @@ public sealed class C1204PrivateMySqlReadinessApplicationService
         return new(verdict.Code);
     }
 
-    private static bool SafeOpaqueId(string? value) =>
-        value is { Length: >= 1 and <= 128 } &&
-        value.All(c => (c >= 'a' && c <= 'z') ||
-                       (c >= 'A' && c <= 'Z') ||
-                       (c >= '0' && c <= '9') || c is '-' or '_' or '.');
 }

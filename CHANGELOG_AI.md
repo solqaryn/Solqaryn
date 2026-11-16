@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C12-04.M03.03 autorización preflight tenant A/B [Javier :10]
+- Integra política .NET 10 fail-closed al servicio de preparación MySQL privado: actor validado servidor, JWT, rol, membresía/revocación, MFA, tenant exacto, SHA, idempotencia y denegación previa al lector.
+- Agrega ocho pruebas xUnit (con múltiples casos) que verifican positivos/negativos, ausencia de llamadas externas ante rechazos y cero autorización SQL/deploy; sin DB, EF, JWT HTTP o restore real.
+- R2, CI GitHub-hosted y Scope Lock/V5 exact SHA requeridos antes de LISTO; A5 Task Javier distinta, sólo dev, rollback git revert y sin QA/main/PROD.
+
 ## 2026-11-16 — V17 C15-01.M04.02 estados locales de cobertura [Javier :50]
 - Amplía la superficie privada existente de cobertura con estados locales cargando, vacío, error recuperable, éxito declarativo y denegación de sesión, sin consultar Sheets ni inventar métricas o aprobaciones.
 - Protege la revocación y resultados asíncronos tardíos mediante versión de lectura; valida formas de datos, oculta excepciones y ofrece reintento accesible de mínimo 44 px.
