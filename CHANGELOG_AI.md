@@ -1,3 +1,8 @@
+## 2026-11-15 - V17 C11-01.M02.04 configuracion tipada y flags modelo relacional [Javier :00]
+- Define doce opciones conceptuales F01-F12, doce reglas de rechazo P01-P12 y doce pares POS/NEG FUTUROS_NO_EJECUTADOS (0/12 runtime) para seguridad, ownership y compatibilidad.
+- Preserva tenant A/B, UsuarioEmpresa revocado, ownership legacy NULL en cuarentena, soporte read-only, transacciones y auditoria sin PII; no agrega configuracion real, EF, tablas, migraciones, API, secretos ni proveedores.
+- Requiere Scope Lock/V5 exact-SHA y A5 independiente; QA/main/PROD y cambios productivos siguen NO_GO sin autorizacion adicional.
+
 ## 2026-11-15 - V17 C11-01.M02.03 contrato relacional de persistencia y migraciones [Javier :10]
 - Especifica doce claves e indices conceptuales K01-K12, ownership por tenant, cautela legacy NULL y criterios de verificacion con AppDbContext, EXPLAIN y provider Oracle EF Core MySQL 8.4.
 - Define ocho etapas futuras de migracion reversible M01-M08, seis fixtures sinteticos y doce pares positivos/negativos FUTUROS_NO_EJECUTADOS (0/12 runtime); no crea tablas, DDL, EF migrations ni datos.
