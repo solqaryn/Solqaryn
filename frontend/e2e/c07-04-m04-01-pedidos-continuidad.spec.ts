@@ -54,7 +54,7 @@ test('C07-04.M04.01 lector autorizado ve cuatro contratos read-only a 320 y 1280
     await expect(page.getByRole('heading', {name:'Pedidos de venta'})).toBeVisible();
     const panel = page.locator('.pedidos-readiness-v5');
     await expect(panel.locator('li')).toHaveCount(4);
-    await expect(panel.getByText('NO_MEDIDO')).toBeVisible();
+    await expect(panel.locator('p[role="note"]')).toContainText('NO_MEDIDO');
     await expect(panel.locator('form, input, textarea, button')).toHaveCount(0);
     const overflow=await page.evaluate(() =>
       document.documentElement.scrollWidth-document.documentElement.clientWidth);

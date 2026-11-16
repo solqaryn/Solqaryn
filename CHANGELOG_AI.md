@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 reparación selector Playwright C07-04.M04.01 [Javier :10]
+- El SHA 8820ca59 falló 1 de 3 Chromium por selector getByText('NO_MEDIDO') ambiguo ante dos textos legítimos; 6 Vitest y Angular lint/build sí aprobaron. Se conserva QA_DEFECT_FOUND P2.
+- La corrección mantiene la exigencia de NO_MEDIDO y la limita al párrafo role=note único, sin quitar asserts de permisos, tenant, rutas, 320/1280 o ausencia de escritura.
+- Requiere nueva CI causal y A5 independiente; no se atribuye PASS al SHA fallido. Sin cambios en API, finanzas, backend, JWT, MySQL, QA/main/PROD.
+
 ## 2026-11-16 — V17 C08-04.M03.05 contrato de sondeo read-only de módulos sectoriales [Javier :40]
 - Añade frontera Application de integración in-process que requiere fence backend con identidad, tenant A/B, RBAC, módulo, SHA y revisión antes de un sondeo de proveedor de solo lectura.
 - Ocho xUnit cubren positivos, negativos, revocación, error seguro, cancelación, idempotencia de lectura y denegación de cualquier dispatch o grant; el test real se certifica únicamente tras GitHub Actions exact-SHA.

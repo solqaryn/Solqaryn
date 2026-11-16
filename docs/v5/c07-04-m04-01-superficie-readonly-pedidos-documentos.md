@@ -30,3 +30,16 @@ permisos. Textos SIN_VERIFICAR/NO_MEDIDO no representan pruebas fiscales,
 SLO, auditoría durable ni producción. Revertir cambios mediante `git revert`
 ordinario después de verificar HEAD y efectos, sin force-push; solo dev,
 sin modificaciones a QA/main/PROD ni datos productivos.
+
+## Defecto QA P2 y reparación causal (16 noviembre 2026)
+
+GitHub Actions SHA original `8820ca5908f0d9de34e925a602adac84bdc49601`, job
+`133456946733` del run `43912242323`: Vitest 6/6 y lint/build aprobaron,
+pero Chromium 2/3 y 1 FAIL por selector Playwright ambiguo: el panel contiene
+dos párrafos válidos con `NO_MEDIDO`. La aserción `.getByText('NO_MEDIDO')`
+violó strict mode; no se observó fuga ni cambio de negocio. P2 es calidad
+de la prueba; no indica vulnerabilidad del runtime. La reparación restringe
+el assert al párrafo único `p[role="note"]`, mantiene verificación del texto,
+cuatro tarjetas, negativas de permiso, responsive y ausencia de controles
+transaccionales. Se exige CI nueva en SHA causal; nunca contar el fallo como
+PASS ni cerrar LISTO antes de que todos los checks requeridos finalicen.
