@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C13-04.M03.04 adaptador aislado de snapshots de revisión visual [Javier :50]
+- Añade en Infrastructure .NET 10 un adaptador EN MEMORIA con snapshots por tenant, revisión optimista CAS, máximo 64 claves por tenant y copias inmutables; NO habilita persistencia MySQL/EF, DI live ni HTTP/JWT.
+- Doce pruebas xUnit adversariales cubren tenants A/B, revocación, autorización actual, SHA ordinal, expiración, límites, snapshots mutables, cancelación, errores opacos y colisiones concurrentes; necesitan CI real exact-SHA, no son PASS por estar escritas.
+- Scope Lock STRICT, V17 candado 2000001997, A0–A4 causales y A5 independiente requeridos; rollback git revert y ninguna escritura QA/main/PROD.
+
 ## 2026-11-16 — V17 reparación selector Playwright C07-04.M04.01 [Javier :10]
 - El SHA 8820ca59 falló 1 de 3 Chromium por selector getByText('NO_MEDIDO') ambiguo ante dos textos legítimos; 6 Vitest y Angular lint/build sí aprobaron. Se conserva QA_DEFECT_FOUND P2.
 - La corrección mantiene la exigencia de NO_MEDIDO y la limita al párrafo role=note único, sin quitar asserts de permisos, tenant, rutas, 320/1280 o ausencia de escritura.
