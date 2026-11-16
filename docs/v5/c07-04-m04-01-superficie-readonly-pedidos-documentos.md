@@ -53,3 +53,19 @@ aprobaron. Se instrumenta únicamente geometría (etiquetas, clases y cajas)
 para identificar el elemento causante, **sin volcar datos**, manteniendo
 el assert global de overflow como prueba obligatoria; no declarar PASS
 ni culpar al nuevo panel hasta aislar causalmente el elemento. R2 UI.
+
+## Reparación responsive dirigida después de diagnóstico Chromium (16 noviembre 2026)
+
+GitHub-hosted run `43914301315` sobre `febfe19ce5052216f1855c845c82ae616c9a6b3e`
+confirmó seis Vitest y lint/build exitosos, pero 2/3 Chromium: a 320 px,
+`document.documentElement.scrollWidth` excedía 75 px. El diagnóstico estructural
+identificó la tabla de pedidos (no las cuatro tarjetas read-only), sin mostrar
+datos de la empresa. Se acotan `.page`, `mat-card`, `mat-card-content` y `.table`
+con min-width:0/max-width:100%, manteniendo scroll horizontal interno y todas
+las columnas visibles mediante desplazamiento dentro del contenedor.
+El assert GLOBAL de overflow permanece, junto con los rechazos de permiso,
+revocación y cuatro criterios read-only. Los resultados de CI anteriores siguen
+FAIL; exigir nueva suite GitHub-hosted exact-SHA, frontend, seguridad,
+Scope Lock y V5 antes de LISTO; A5 debe revisarla otra Task Javier.
+Rollback normal `git revert` sobre HEAD verificado; sólo dev, sin QA/main/PROD,
+API, transacciones, permisos ni migraciones.

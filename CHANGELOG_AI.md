@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C07-04.M04.01 reparación CSS tras diagnóstico Chromium 320 px [Javier :10]
+- Run 43914301315 confirmó overflow global de 75 px; geometría identificó la tabla de pedidos, no las tarjetas privadas (6 Vitest PASS, Chromium 2/3 FAIL).
+- Limita ancho de página/tarjeta/contenedor y mantiene desplazamiento horizontal interno, datos y columnas; no relaja asserts, seguridad, permisos ni cambia backend.
+- Exige nuevo CI GitHub-hosted exact-SHA, Scope Lock/V5 y A5 ajena; antes de eso NO_PASS/NO_LISTO; rollback git revert; sin QA/main/PROD.
+
 ## 2026-11-16 — V17 C15-01.M04.04 navegación y mensajes cobertura privada [Javier :20]
 - Añade cuatro pruebas Chromium de denegación anónimo/403, mensajes NO_MEDIDO, navegación con Enter sin solicitudes mutadoras y ausencia de formularios/controles de doble envío en ruta privada read-only.
 - Extiende workflow SHA-aislado C15-01 de ocho a doce Chromium (3 M04.01, 5 M04.05, 4 M04.04), manteniendo cuatro Vitest, Angular lint/build y guards; sin cambiar runtime ni quitar checks.
