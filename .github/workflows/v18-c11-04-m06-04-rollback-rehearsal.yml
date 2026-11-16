@@ -1,0 +1,26 @@
+name: V18 C11-04.M06.04 - rollback Git aislado sin datos
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v18-c11-04-m06-04-rollback-rehearsal.yml'
+      - 'scripts/quality/c11-04-m06-04-rollback-isolated.sh'
+      - 'docs/v5/c11-04-m06-04-ensayo-rollback-git-aislado.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v18-c1104-m0604-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  detached-git-reverse:
+    name: C11-04.M06.04 - Git tree reversibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Real isolated Git revert with no remote writes
+        shell: bash
+        run: bash scripts/quality/c11-04-m06-04-rollback-isolated.sh

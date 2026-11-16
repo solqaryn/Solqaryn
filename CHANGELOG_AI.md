@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C11-04.M06.04 ensayo Git reversible en runner aislado [Javier :30]
+- Agrega GitHub Actions y script que ejecutan un revert sin commit en worktree efímero y prueban igualdad del árbol íntegro con el padre causal de M05.06, sin modificar dev remoto.
+- Rechaza archivos fuera de cuatro rutas esperadas y no atribuye restauración MySQL/Aiven, JWT, datos productivos ni SLO al ensayo.
+- R2 por CI nueva, A0–A4 y A5 independiente pendientes de comprobaciones exact-SHA/readback; rollback git revert sin force-push.
+
 ## 2026-11-16 — V18 C11-04.M06.03 registro de limitaciones y riesgos abiertos [Javier :30]
 - Documenta siete riesgos causales del bloque M05 de observabilidad, con fronteras entre fixtures HTTP/JWT sintéticos y pruebas reales de Chromium/.NET en proceso.
 - Registra expresamente CWV, SLO, latencia, coste y telemetría externa como NO_MEDIDO/NO_CERTIFICADO; propone remedios medibles sin crear permisos ni DAG falsos.
