@@ -73,6 +73,16 @@ test('C07-04.M04.01 lector autorizado ve cuatro contratos read-only a 320 y 1280
     });
     // Diagnóstico estructural sin datos ni contenido del tenant; assert global intacto.
     console.log('C0704_LAYOUT_OVERFLOW_DIAG=' + JSON.stringify(measurement));
+    if (width === 320) {
+      // Exigir desplazamiento horizontal INTERNO de la tabla, no clipping de columnas.
+      const shell = await page.locator('.table').evaluate(el => {
+        const style = getComputedStyle(el);
+        return { client: el.clientWidth, scroll: el.scrollWidth, overflowX: style.overflowX };
+      });
+      expect(shell.client).toBeLessThanOrEqual(width);
+      expect(shell.overflowX).toBe('auto');
+      expect(shell.scroll).toBeGreaterThan(shell.client);
+    }
     expect(measurement.overflow).toBeLessThanOrEqual(2);
   }
 });

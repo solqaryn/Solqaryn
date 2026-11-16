@@ -69,3 +69,17 @@ FAIL; exigir nueva suite GitHub-hosted exact-SHA, frontend, seguridad,
 Scope Lock y V5 antes de LISTO; A5 debe revisarla otra Task Javier.
 Rollback normal `git revert` sobre HEAD verificado; sólo dev, sin QA/main/PROD,
 API, transacciones, permisos ni migraciones.
+
+## Segunda reparación responsive CSS e invariantes de scroll (16 noviembre 2026)
+
+La corrida `43916659277` del SHA `40b378fd8ee908a2e12f8771a368ad7964186649`
+confirmó overflow global de 75 px pese al shell interno; 6/6 Vitest y build
+aprobados, pero 2/3 Chromium. El ancho intrínseco de la tabla sigue elevando
+el scroll del documento. Se limita `overflow-x:clip` al contenedor `.page`
+del LISTADO, no al formulario, detalle ni layout global. `.table` conserva
+`overflow-x:auto` y todas sus columnas desplazables internamente.
+Playwright a 320px ahora exige **también** scrollWidth > clientWidth
+para la tabla, además del assert global de overflow y rechazos tenant/rol.
+Si falla, conservar VALIDANDO hasta corrección. Requiere CI real exact SHA:
+6 Vitest, 3 Chromium 320/1280, Scope Lock, V5, seguridad/frontend SUCCESS;
+A5 separada por otra Task Javier. Sin QA/main/PROD, MySQL ni pagos reales.

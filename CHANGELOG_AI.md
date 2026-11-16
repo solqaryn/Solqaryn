@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C07-04.M04.01 frontera horizontal y scroll interno probado [Javier :10]
+- CI 43916659277 volvió a fallar 1/3 Chromium por overflow global 75 px pese a 6 Vitest PASS; no se cuenta como éxito.
+- Añade clip horizontal solo al listado y prueba adversarial de scroll interno de la tabla a 320 px, manteniendo columnas, negativos tenant/rol y assert de documento.
+- Requiere CI exact-SHA y A5 independiente antes de LISTO; sin API, finanzas, MySQL, QA/main/PROD, revert normal.
+
 ## 2026-11-16 — V17 C14-04.M04.05 accesibilidad readiness privada [Javier :20]
 - Cuatro Playwright/Chromium reales de denegación anónimo/403, responsive 320/375/768/1280, semántica/labels con puertas NO_MEDIDO, ausencia de controles mutadores/foco atrapado y contraste calculado >=4.5:1.
 - Amplía ruta y comando del workflow browser V5 por SHA conservando todas las pruebas existentes, lint/build y seguridad; no altera código UI, guard, JWT/RBAC, DB ni despliegue.
