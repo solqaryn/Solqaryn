@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C11-04.M04.01 observabilidad privada de solo lectura [Javier :20]
+- Agrega ruta lazy protegida con plataformaGuard y guía privada para logs, métricas/costos, trazas y alertas sin exporter, secretos, APIs ni mediciones conectadas.
+- Incluye cinco Vitest positivos/negativos/revocación y tres Playwright Chromium sintéticos; exige lint/build, Scope Lock y procedencia V5 exact-SHA GitHub-hosted antes de LISTO.
+- Riesgo R2: observabilidad, SLO, costos, JWT y tenant reales NO_MEDIDO; MySQL/EF/proveedor NO_APLICA al diff frontend; A5 de otro Task Javier, rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-15 — V17 reparación causal ERP: ruta privada de incidentes con guard exacto [Javier :10]
 - Repara falso positivo FRONTEND_ROUTE_SECURITY_CONTRACT agregando exclusivamente `plataforma/respuesta-incidentes-v5` al allowlist cerrado de control-plane, cuya ruta usa `canActivate: [plataformaGuard]`.
 - Conserva la comprobación obligatoria del guard real y sesión backend, sin comodines, bypass, desactivar validadores ni editar la ruta de su autor. Negativo: ruta sin guard continúa rechazándose.
