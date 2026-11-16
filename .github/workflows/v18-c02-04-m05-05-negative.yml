@@ -1,0 +1,57 @@
+name: V18 C02-04.M05.05 - negative browser security fixtures
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v18-c02-04-m05-05-negative.yml'
+      - 'frontend/e2e/c02-04-m05-05-security.spec.ts'
+      - 'frontend/src/app/core/auth/plataforma-sesion.service.ts'
+      - 'frontend/src/app/core/guards/plataforma.guard.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v18-c0204-m0505
+  cancel-in-progress: false
+jobs:
+  security-negative:
+    name: C02-04.M05.05 - 10 negative and read-only Chromium scenarios
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm install --global npm@11.19.0
+      - name: Install locked frontend dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Lint and Angular production build
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Install Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Start isolated Angular UI (backend mocked, no live connections)
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > v18-c0204-m0505.log 2>&1 &
+          for attempt in $(seq 1 75); do
+            if curl --fail --silent http://127.0.0.1:4200/login > /dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat v18-c0204-m0505.log >&2
+          exit 1
+      - name: Real Chromium on mocked API, no server-side JWT certification
+        working-directory: frontend
+        run: npx playwright test e2e/c02-04-m05-05-security.spec.ts --config=playwright.config.ts --workers=1 --retries=0

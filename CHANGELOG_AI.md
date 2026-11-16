@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C02-04.M05.05 pruebas negativas de control global [Javier :00]
+- Se añaden 10 escenarios Chromium de denegacion anonima, rol empresa, token caducado, 401/403/503, respuesta malformada, revocacion y lectura sin mutacion.
+- QA R2: la API es simulada en el browser; JWT HTTP, tenant A/B real, RBAC backend e IDOR/BOLA servidor permanecen NO_MEDIDO hasta pruebas independientes. No certificar LISTO sin A0-A4 causales y A5 de otra Task.
+- GitHub Actions dirigido por SHA; Scope Lock/V5, sin tocar produccion, auth real, secrets ni datos. Rollback git revert normal.
+
 ## 2026-11-16 — V18 C02-04.M05.01 inventario global de rutas y pruebas Chromium [Javier :40]
 - Se incorpora inventario versionado de 13 rutas de plataforma con ID, import y guard reales del HEAD; cinco fixtures negativos detectan desalineación y prohíben afirmar autorización backend desde UI.
 - Se añaden 29 pruebas Playwright de navegador real sobre denegación anónima/403 sintético, lectura autorizada sintética y 503 opaco; su PASS depende del job GitHub-hosted exact-SHA, no del manifiesto.
