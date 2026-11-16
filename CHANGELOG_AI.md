@@ -1,3 +1,8 @@
+## 2026-11-15 - V17 C11-01.M02.02 contratos API DTO errores y compatibilidad relacional [Javier :30]
+- Define ocho operaciones conceptuales y doce DTO de lectura, mutacion, membresia, ownership, concurrencia y esquema relacional, sin crear rutas ni codigo .NET.
+- Especifica dieciseis errores futuros y doce pares P/N FUTUROS_NO_EJECUTADOS (0/12 runtime), con aislamiento A/B, RBAC, legacy NULL y transacciones all-or-nothing.
+- R0 documental, solo este Markdown y CHANGELOG: exige Scope Lock/V5 completed success del SHA, A5 independiente, sin MySQL, JWT, Angular, HTTP, QA/main/PROD o datos reales.
+
 ## 2026-11-15 - V17 C11-01.M02.01 entidades, ownership y contratos relacionales R0 [Javier :30]
 - Define contrato conceptual de 16 entidades existentes con ownership empresa/sucursal/usuario y relaciones candidatas sin declarar tablas, FK ni indices fisicos como certificados.
 - Registra 16 invariantes de aislamiento tenant A/B, legacy NULL, RBAC, integridad comercial, idempotencia, auditoria y rollback; especifica 12 pares positivos/negativos FUTUROS_NO_EJECUTADOS (0/12 runtime).
