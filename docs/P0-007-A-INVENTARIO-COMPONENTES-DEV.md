@@ -441,3 +441,12 @@ La nueva biblioteca visual privada de plataforma incorpora un componente Angular
 - `frontend/src/app/features/plataforma/design-system-v5.component.ts`
 
 El validador mantiene comparaciones estrictas de archivos presentes y documentados, duplicados, ausentes y altas no inventariadas, además de negativos del self-test. El check P0-007.A falló en el SHA `0509d36948f22ce8cee548554acd08fb4efbcda4` por esta única ruta nueva; corregir el baseline no concede JWT/RBAC, permisos, tenant, DB, QA, main ni PROD, ni constituye certificación de UI. Se requiere CI exact-SHA y A5 independiente. Rollback mediante `git revert` normal.
+
+
+## Actualización aditiva V17 C02-04.M04.01 — 16 de noviembre de 2026
+
+El registro reproducible incorpora la nueva consola global privada y conserva los 149 archivos históricos ya documentados. El árbol actual contiene **150 archivos `.component.ts` (142 features y 8 shared)**, todos con ruta exacta y sin duplicados:
+
+- `frontend/src/app/features/plataforma/consola-global-auditada-v5.component.ts`
+
+La detección negativa de rutas faltantes, nuevas sin inventariar y duplicadas permanece exigible; registrar esta pantalla no aprueba seguridad de backend, grants, JWT HTTP, MFA, tenant A/B ni producción. El único acceso permitido conserva el mismo `plataformaGuard` con validación servidor; revisar CI exact SHA, pruebas Angular y navegador sintético. Rollback mediante `git revert` normal.

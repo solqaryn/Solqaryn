@@ -1,3 +1,8 @@
+## 2026-11-16 — Reparación causal CI del catálogo y guard exacto C02-04.M04.01 [Javier :00]
+- El SHA 55af37d5 expuso dos fallos de validación: P0-007.A detectó componente nuevo sin registrar y la auditoría ERP rechazó la ruta nueva pese a canActivate: [plataformaGuard].
+- Agrega exclusivamente la ruta exacta al allowlist del auditor, que sigue exigiendo guard, autenticación y sesión servidor; actualiza el catálogo reproducible 150/150 sin desactivar verificadores ni pruebas negativas.
+- Las 10 pruebas Vitest y cuatro Chromium del SHA origen aprobaron en CI; A4 permanece condicionada a nuevas CI exact SHA, Scope Lock y procedencia V5. Sin QA/main/PROD, rollback git revert normal.
+
 ## 2026-11-16 — V17 C02-04.M04.01 consola global auditada de solo lectura [Javier :00]
 - Nueva ruta lazy privada con plataformaGuard; cuatro fronteras auditables de control plane sin otorgar privilegios, operaciones ni datos empresariales. Revalidación por GET de sesión global, denegación reactiva y errores opacos.
 - Diez pruebas Vitest con acceso, denegación, revocación, 401/403/503, concurrencia y errores síncronos; cuatro Chromium sintéticos, lint y build reales en GitHub-hosted bajo CI SHA aislado.
