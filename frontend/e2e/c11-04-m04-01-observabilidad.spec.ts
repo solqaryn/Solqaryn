@@ -250,3 +250,60 @@ test('M04.05: contraste real del distintivo y denegacion responsiva no filtra da
   await page.reload();
   await expect(page.locator('.obs-points li')).toHaveCount(4);
 });
+
+
+test('M04.06: Chromium conserva cuatro tarjetas semanticas con pintado diferido nativo y sin exporter', async ({ page }) => {
+  await mockSession(page, true);
+  const forbidden: string[] = [];
+  await page.route(/\/(?:telemetry|metrics\/export|traces|alerts\/dispatch)(?:\/|\?|$)/i, route => {
+    forbidden.push(route.request().url());
+    return route.abort();
+  });
+  await page.goto('/plataforma/observabilidad-v5');
+  const cards = page.locator('.obs-points li');
+  await expect(cards).toHaveCount(4);
+  const styles = await cards.evaluateAll(nodes => nodes.map(node => {
+    const style = getComputedStyle(node);
+    return {
+      visibility: style.contentVisibility,
+      intrinsic: style.containIntrinsicSize,
+      padding: parseFloat(style.paddingTop),
+      text: node.textContent?.trim() ?? ''
+    };
+  }));
+  expect(styles).toHaveLength(4);
+  for (const item of styles) {
+    expect(item.visibility).toBe('auto');
+    expect(item.intrinsic).toContain('auto');
+    expect(item.padding).toBeGreaterThanOrEqual(12);
+    expect(item.padding).toBeLessThanOrEqual(17);
+    expect(item.text.length).toBeGreaterThan(15);
+  }
+  await cards.last().scrollIntoViewIfNeeded();
+  await expect(cards.last().getByRole('heading', { name: 'Alertas y diagnóstico' })).toBeVisible();
+  expect(forbidden).toEqual([]);
+});
+
+test('M04.06: densidad responsive preserva columnas y confidencialidad ante 403', async ({ page }) => {
+  await mockSession(page, true);
+  await page.goto('/plataforma/observabilidad-v5');
+  for (const width of [320, 768, 1280]) {
+    await page.setViewportSize({ width, height: 812 });
+    const result = await page.evaluate(() => {
+      const grid = document.querySelector('.obs-points')!;
+      return {
+        cards: grid.querySelectorAll('li').length,
+        columns: getComputedStyle(grid).gridTemplateColumns.split(' ').filter(Boolean).length,
+        overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth
+      };
+    });
+    expect(result.cards).toBe(4);
+    expect(result.columns).toBe(width <= 720 ? 1 : 2);
+    expect(result.overflow).toBeLessThanOrEqual(2);
+  }
+  await page.context().clearCookies();
+  await page.evaluate(() => localStorage.removeItem('solqaryn_token'));
+  await page.reload();
+  await expect(page).toHaveURL(/\/login(?:\?|$)/);
+  await expect(page.locator('.obs-points li')).toHaveCount(0);
+});

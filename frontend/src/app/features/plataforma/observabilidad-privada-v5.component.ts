@@ -76,7 +76,7 @@ export type EstadoObservabilidadV5 = 'vacio' | 'cargando' | 'exito' | 'sin_permi
     .obs-branding--neutral .obs-branding-mark { background:var(--mat-sys-outline, #66727e); color:#fff; }
     .obs-branding p { margin:.1rem 0 0; }
     .obs-points { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); list-style:none; padding:0; gap:.85rem; }
-    .obs-points li { border:1px solid var(--mat-sys-outline-variant, #aeb8c1); border-radius:.7rem; min-width:0; padding:1rem; }
+    .obs-points li { border:1px solid var(--mat-sys-outline-variant, #aeb8c1); border-radius:.7rem; min-width:0; padding:clamp(.8rem,1.6vw,1rem); content-visibility:auto; contain-intrinsic-size:auto 10rem; }
     @media(max-width:45rem) { .obs-points { grid-template-columns:1fr; } }
   `]
 })

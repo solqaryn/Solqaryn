@@ -1,3 +1,8 @@
+## 2026-11-16 - V17 C11-04.M04.06 densidad y pintado progresivo observabilidad [Javier :40]
+- Añade content-visibility:auto y tamaño intrínseco de reserva a cuatro tarjetas descriptivas, con padding fluido; conserva árbol semántico y guard privado.
+- Amplía Playwright Chromium real con comprobación CSS, scroll, 320/768/1280, denegación de token y ausencia de exporter; exige lint, build, Scope Lock y procedencia V5.
+- R1 Angular: ningún dato real, JWT HTTP, EF/MySQL o métricas de mejora medidas; A5 independiente, rollback revert normal y sin QA/main/PROD.
+
 ## 2026-11-16 - V17 C00-04.M04.01 reparacion QA P2 de navegador privado [Javier :20]
 - Agrega tres pruebas Playwright Chromium reales dirigidas a gobierno-cambios-v5: rechazo anonimo, 403 sintetico sin contenido protegido y acceso sintetico de consulta.
 - Comprueba responsive 320 px, Tab/foco y ausencia de solicitudes operativas; no cambia el guard, endpoint, tenant, JWT ni backend, y no infiere autenticacion HTTP real.
