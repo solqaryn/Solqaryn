@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C14-04.M04.03 presets visuales readiness [Javier :10]
+- Añade panel Angular Signals a ruta privada existente /plataforma/flujo-v5; marca, densidad y contraste por lista permitida, ocultos al revocar sesión, sin go-live ni acciones operativas.
+- Seis Vitest y tres Chromium de acceso anónimo, autorización sintética, 403, responsive 320px y cero solicitudes mutadoras; workflow independiente por SHA.
+- R2, CI real exact SHA y A5 de otra Task Javier obligatorios antes de certificar; sin cambios backend/JWT/MySQL/QA/main/PROD y rollback git revert.
+
 ## 2026-11-16 — V17 C07-04.M04.03 branding reactivo privado [Javier :10]
 - Agrega Angular Signals, opciones cosméticas por allowlist estricta y doble control accesible con rechazo al revocar tenant, permiso o ruta; no altera finanzas ni backend.
 - Seis Vitest y tres Chromium 320 px ligados a workflow SHA aislado, con denegación y sin mutaciones; no simular JWT/HTTP/MySQL como integración real.

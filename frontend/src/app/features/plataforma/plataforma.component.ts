@@ -10,11 +10,12 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
 import { DirectorioPlataforma, PlataformaEmpresasService } from '../../core/auth/plataforma-empresas.service';
 import { PlataformaGestionMvpComponent } from './plataforma-gestion-mvp.component';
 import { DesignSystemV5Component } from './design-system-v5.component';
+import { C1404ReleaseBrandingV17Component } from './c14-04-m04-03-release-branding.component';
 
 @Component({
   selector: 'app-plataforma',
   standalone: true,
-  imports: [RouterLink, MatButtonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule, PlataformaGestionMvpComponent, DesignSystemV5Component],
+  imports: [RouterLink, MatButtonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule, PlataformaGestionMvpComponent, DesignSystemV5Component, C1404ReleaseBrandingV17Component],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <section class="plataforma" aria-labelledby="plataforma-title">
@@ -90,6 +91,8 @@ import { DesignSystemV5Component } from './design-system-v5.component';
         </mat-card>
 
         @if (vistaFlujoV5) {
+          <!-- C14-04.M04.03: presets cosméticos autorizados; sin go-live. -->
+          <app-c1404-release-branding-v17 />
           <!-- C14-04.M04.01: superficie read-only en flujo privado ya autorizado. -->
           <mat-card class="release-readiness-card" aria-labelledby="release-readiness-title" data-testid="release-readiness-contract">
             <mat-card-content>
