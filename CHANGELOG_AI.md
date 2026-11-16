@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C12-04.M03.04 adaptador aislado de manifiestos sintéticos [Javier :50]
+- Añade Infrastructure C1204IsolatedManifestAdapter con aislamiento tenant/actor, snapshots inmutables y CAS de revisión; nunca evidencia MySQL ni autoridad de cutover.
+- Añade nueve pruebas xUnit: A/B, revocación, SHA, doble escritura, frontera de capacidad, lista mutable y cancelación; requiere CI GitHub-hosted exact-SHA.
+- Documenta alcance R2, NO_APLICA MySQL/HTTP para este diff, rollback normal y A5 independiente; sin secretos, QA/main/PROD ni migraciones.
+
 ## 2026-11-16 — V17 C02-04.M04.05 reparación A5_FAIL P2 de teclado real [Javier :20]
 - Sustituye el atajo Playwright link.focus() por recorrido Tab acotado desde foco inicial, con aserción de alcance real; mantiene foco/blanco 44px y exige Shift+Tab + Enter de retorno.
 - Conserva denegaciones anónimo/403, responsive y contraste calculado >=4.5:1; exige Chromium GitHub-hosted exact-SHA, Scope Lock/V5 y revisor A5 distinto. A5_FAIL previo no se borra.
