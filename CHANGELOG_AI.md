@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C15-01.M04.05 accesibilidad Chromium cobertura privada [Javier :20]
+- Añade cinco escenarios Chromium de denegación anónima/403/ámbito, responsive 320/375/768/1280, semántica/labels, Tab/foco y blanco 44px, y contraste >=4.5:1 sin cambiar código de autenticación ni resultados institucionales.
+- Extiende el workflow SHA-aislado de C15-01.M04.01 para ejecutar ocho E2E (tres anteriores más cinco nuevos), cuatro Vitest y Angular lint/build, sin omitir pruebas existentes.
+- R2 conservador por ruta privada; sesiones sintéticas NO prueban JWT HTTP, tenant backend, MySQL o producción. Exigir CI real exact SHA, Scope Lock, V5, A5 independiente y rollback git revert.
+
 ## 2026-11-16 — V17 C05-04.M04.04 interacción privada y doble acción [Javier :50]
 - Verifica la superficie Angular privada existente con seis casos Chromium reales: anónimo, 403 sintético sin mensajes privados, teclado Tab/Enter con aria-pressed reversible, bloqueo de actualización GET concurrente, reintento 503 único y permiso 403 sin fuga.
 - Publica suite Playwright, workflow GitHub-hosted SHA-aislado y contrato R1; no modifica rutas, JWT/RBAC, API, MySQL, permisos ni el componente compartido por otras Tasks; pruebas reales requieren SUCCESS exact-SHA antes de LISTO.

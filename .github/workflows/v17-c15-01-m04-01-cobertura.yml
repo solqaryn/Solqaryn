@@ -8,6 +8,7 @@ on:
       - 'frontend/src/app/features/plataforma/cobertura-trazabilidad-v5.component.ts'
       - 'frontend/src/app/features/plataforma/cobertura-trazabilidad-v5.component.spec.ts'
       - 'frontend/e2e/c15-01-m04-01-cobertura.spec.ts'
+      - 'frontend/e2e/c15-01-m04-05-accessibility.spec.ts'
   workflow_dispatch:
 permissions:
   contents: read
@@ -57,9 +58,9 @@ jobs:
           done
           cat v17-c1501-m0401.log >&2
           exit 1
-      - name: Tres Chromium sintéticos
+      - name: Ocho Chromium sintéticos, incluyendo cinco de accesibilidad
         working-directory: frontend
-        run: npx playwright test e2e/c15-01-m04-01-cobertura.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+        run: npx playwright test e2e/c15-01-m04-01-cobertura.spec.ts e2e/c15-01-m04-05-accessibility.spec.ts --config=playwright.config.ts --workers=1 --retries=0
       - name: Evidencia
         if: always()
         uses: actions/upload-artifact@v4
