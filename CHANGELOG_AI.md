@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 reparación causal ERP: dos rutas privadas de plataforma guardadas [Javier :10]
+- Auditoría `priority4_quality_audit.py` reconoce exclusivamente `plataforma/revision-amenazas-v5` y `plataforma/observabilidad-v5` existentes con `canActivate: [plataformaGuard]`, guard autenticado y sesión de plataforma validada por servidor.
+- Se conserva el rechazo `UNGUARDED` de cualquier otra ruta no permitida, el contrato `permisoGuard` y todas las negativas; sin comodines, cambios de guards, permisos, endpoints o despliegue. La reparación del CI ERP solo se acredita tras check SUCCESS exact-SHA.
+- Reparación de baseline de validaciones propias V17; no implica A5, QA/main/PROD, MySQL ni autorización adicional.
+
 ## 2026-11-15 — V17 reparación causal P0-007.A del catálogo Angular exact-HEAD [Javier :10]
 - Reconciliados tres componentes privados ya publicados por otras Tasks Javier: observabilidad, respuesta a incidentes y revisión de amenazas, preservando autoría, guards y código originales.
 - Manifiesto y validador fail-closed ajustados de 145 a 148 rutas (140 features, 8 shared), con negativas de omisiones, entradas ficticias y exclusiones intactas. No se desactivan controles ni cambia el runtime.
