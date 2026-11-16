@@ -18,11 +18,14 @@ export type EstadoObservabilidadV5 = 'vacio' | 'cargando' | 'exito' | 'sin_permi
         <p class="eyebrow">SOLQARYN · Observabilidad privada</p>
         <h1 id="obs-title">Diagnóstico y señales seguras</h1>
         <p>Esta guía describe requisitos de evidencia; no lee métricas ni inicia un worker.</p>
-        <a routerLink="/plataforma" aria-label="Regresar a plataforma">Volver a plataforma</a>
-        <button type="button" aria-label="Revalidar acceso de observabilidad" (click)="revalidar()"
-          [disabled]="estado() === 'cargando'">Revalidar sesión</button>
+        <nav class="obs-navigation" aria-label="Acciones de observabilidad">
+          <a routerLink="/plataforma" aria-label="Regresar a plataforma">Volver a plataforma</a>
+          <button type="button" aria-label="Revalidar acceso de observabilidad"
+            aria-describedby="obs-status" (click)="revalidar()"
+            [disabled]="estado() === 'cargando'">Revalidar sesión</button>
+        </nav>
       </header>
-      <section class="notice" aria-label="Estado de consulta" aria-live="polite" aria-atomic="true"
+      <section id="obs-status" class="notice" aria-label="Estado de consulta" aria-live="polite" aria-atomic="true"
         [attr.aria-busy]="estado() === 'cargando'">
         @switch (estadoVisible()) {
           @case ('cargando') { <p role="status">Revalidando autorización con el servidor…</p> }
@@ -63,6 +66,7 @@ export type EstadoObservabilidadV5 = 'vacio' | 'cargando' | 'exito' | 'sin_permi
     h3 { font-size:1rem; margin:0 0 .35rem; }
     p { line-height:1.55; overflow-wrap:anywhere; }
     .eyebrow { font-weight:700; color:var(--mat-sys-primary, #2157a3); }
+    .obs-navigation { display:flex; flex-wrap:wrap; align-items:center; gap:.55rem; }
     header :is(a,button) { display:inline-block; margin-right:.55rem; margin-bottom:.4rem; border:1px solid currentColor; border-radius:.55rem; padding:.7rem .9rem; color:inherit; font:inherit; background:transparent; text-decoration:underline; cursor:pointer; }
     header button[disabled] { opacity:.55; cursor:progress; }
     header :is(a,button):focus-visible { outline:3px solid var(--mat-sys-primary, #2157a3); outline-offset:3px; }

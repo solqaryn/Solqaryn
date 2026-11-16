@@ -1,3 +1,8 @@
+## 2026-11-16 - V17 C11-04.M04.04 navegacion y doble accion de observabilidad [Javier :20]
+- Estructura las acciones de observabilidad como navegación semántica y enlaza el botón de revalidación al mensaje accesible aria-live sin formulario ni escritura.
+- Agrega dos Vitest y dos Chromium dirigidos: enlace, foco accesible, carga bloqueada, 503 sin fuga de secretos y una sola llamada GET durante revalidación solapada.
+- R1 Angular sin cambiar rutas, backend JWT/RBAC/tenant, MySQL, exporter ni métricas; CI exact-SHA, Scope Lock/V5 y A5 independiente obligatorios.
+
 ## 2026-11-16 - V17 C13-01.M02.06 contrato de salida de privacidad [Javier :10]
 - Establece dieciseis puertas G01-G16 de consentimiento, versionado, tenants, revocacion, idempotencia, legal hold y A5 sin habilitar runtime.
 - Documenta doce casos T01-T12 FUTUROS_NO_EJECUTADOS (0/12) y ocho salvaguardas RB01-RB08, incluyendo pruebas MySQL/Chromium futuras, sin afirmarlas aprobadas.

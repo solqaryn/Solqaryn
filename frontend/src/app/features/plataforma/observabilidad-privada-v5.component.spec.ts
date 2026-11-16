@@ -188,3 +188,48 @@ describe('C11-04.M04.03 - branding visual tipado de observabilidad', () => {
     expect(fixture.nativeElement.querySelector('.obs-branding')).toBeNull();
   });
 });
+
+
+describe('C11-04.M04.04 - navegación y acciones sin duplicados', () => {
+  const admin: PlataformaSesion = { nombreUsuario: 'Admin', rolNombre: 'Admin', ambito: 'Plataforma', esAdministrador: true };
+  async function montar(obtener: () => Observable<PlataformaSesion>) {
+    TestBed.resetTestingModule();
+    const sesion = signal<PlataformaSesion | null>(admin);
+    await TestBed.configureTestingModule({
+      imports: [ObservabilidadPrivadaV5Component],
+      providers: [provideRouter([]), { provide: PlataformaSesionService, useValue: { sesion, obtener } }]
+    }).compileComponents();
+    const fixture = TestBed.createComponent(ObservabilidadPrivadaV5Component);
+    fixture.detectChanges();
+    return { fixture, component: fixture.componentInstance };
+  }
+  it('navegación semántica, sin formulario operativo y estado accesible', async () => {
+    const { fixture } = await montar(() => of(admin));
+    const nav = fixture.nativeElement.querySelector('nav[aria-label="Acciones de observabilidad"]');
+    const link: HTMLAnchorElement = nav.querySelector('a[aria-label="Regresar a plataforma"]');
+    const button: HTMLButtonElement = nav.querySelector('button');
+    expect(link.getAttribute('href')).toBe('/plataforma');
+    expect(button.type).toBe('button');
+    expect(button.getAttribute('aria-describedby')).toBe('obs-status');
+    expect(fixture.nativeElement.querySelector('#obs-status[aria-live="polite"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('form, input, textarea')).toHaveLength(0);
+  });
+  it('dos revalidaciones solapadas ejecutan una sola solicitud y dan mensaje seguro', async () => {
+    let calls = 0;
+    const deferred = new Subject<PlataformaSesion>();
+    const { fixture, component } = await montar(() => { calls++; return deferred.asObservable(); });
+    component.revalidar();
+    component.revalidar();
+    fixture.detectChanges();
+    expect(calls).toBe(1);
+    expect(fixture.nativeElement.querySelector('button').disabled).toBe(true);
+    expect(fixture.nativeElement.querySelector('#obs-status').getAttribute('aria-busy')).toBe('true');
+    expect(fixture.nativeElement.querySelectorAll('.obs-points li')).toHaveLength(0);
+    deferred.error(new HttpErrorResponse({ status: 503, error: { sensitive: 'PRIVATE_TELEMETRY_SECRET' } }));
+    fixture.detectChanges();
+    expect(component.estadoVisible()).toBe('error');
+    expect(fixture.nativeElement.textContent).not.toContain('PRIVATE_TELEMETRY_SECRET');
+    expect(fixture.nativeElement.querySelector('button').disabled).toBe(false);
+    expect(fixture.nativeElement.querySelector('#obs-status').getAttribute('aria-busy')).toBe('false');
+  });
+});

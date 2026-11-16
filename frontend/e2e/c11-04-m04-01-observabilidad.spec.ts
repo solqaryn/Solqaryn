@@ -124,3 +124,50 @@ test('M04.03: respuesta 403 sintética nunca presenta branding privado', async (
   await expect(page.getByRole('region', { name: 'Identidad visual de observabilidad' })).toHaveCount(0);
   await expect(page.getByText('PRIVATE_TELEMETRY_SECRET')).toHaveCount(0);
 });
+
+
+test('M04.04: navegación accesible y salida privada sin formulario ni acción doble', async ({ page }) => {
+  await mockSession(page, true);
+  await page.goto('/plataforma/observabilidad-v5');
+  const navigation = page.getByRole('navigation', { name: 'Acciones de observabilidad' });
+  await expect(navigation).toBeVisible();
+  await expect(navigation.getByRole('link', { name: 'Regresar a plataforma' })).toHaveAttribute('href', '/plataforma');
+  const retry = navigation.getByRole('button', { name: 'Revalidar acceso de observabilidad' });
+  await expect(retry).toHaveAttribute('aria-describedby', 'obs-status');
+  await expect(page.locator('#obs-status[aria-live="polite"]')).toBeVisible();
+  await expect(page.locator('.observability-guide form, .observability-guide input')).toHaveCount(0);
+});
+test('M04.04: revalidación lenta deshabilita segunda acción sin duplicar GET', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('solqaryn_token', 'c11-04-m04-04-synthetic-not-jwt');
+    localStorage.setItem('solqaryn_expira_en', '2099-01-01T00:00:00Z');
+  });
+  let calls = 0;
+  let release: (() => void) | undefined;
+  await page.route(/\/plataforma\/sesion(?:\?|$)/, async route => {
+    const headers = {
+      'Access-Control-Allow-Origin': 'http://127.0.0.1:4200',
+      'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-Empresa-Id',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS'
+    };
+    if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers });
+    calls++;
+    if (calls === 2) await new Promise<void>(resolve => { release = resolve; });
+    await route.fulfill({ status: 200, headers, contentType: 'application/json',
+      body: JSON.stringify({ success: true, data: {
+        nombreUsuario: 'Admin', rolNombre: 'Admin', ambito: 'Plataforma', esAdministrador: true
+      } }) });
+  });
+  await page.goto('/plataforma/observabilidad-v5');
+  await expect(page.locator('.obs-points li')).toHaveCount(4);
+  const button = page.getByRole('button', { name: 'Revalidar acceso de observabilidad' });
+  await button.click();
+  await expect.poll(() => calls).toBe(2);
+  await expect(button).toBeDisabled();
+  await expect(page.locator('.obs-points li')).toHaveCount(0);
+  expect(release).toBeDefined();
+  release?.();
+  await expect(button).toBeEnabled();
+  await expect(page.locator('.obs-points li')).toHaveCount(4);
+  expect(calls).toBe(2);
+});
