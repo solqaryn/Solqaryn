@@ -1,3 +1,7 @@
+## 2026-11-16 — V18 C08-04.M05.03 contrato de integración aislada [Javier :50]
+- Seis pruebas xUnit reales de Application/Infrastructure: adaptador de snapshot y fence fallan cerrado ante tenant B, revocación, spoof de permisos, revisión obsoleta y cancelación, sin llamar al proveedor.
+- CI GitHub-hosted .NET 10 Release dirigida por SHA, documentación y A5 independiente pendiente; no certifica proveedor vivo, JWT HTTP ni MySQL/EF. Reversión por git revert.
+
 ## 2026-11-16 — V18 C08-04.M05.05 denegacion, abuso y aislamiento UX [Javier :40]
 - Añade cinco escenarios Playwright adversariales para ruta privada sectorial: anonimo, 401, empresa B denegada 403, 503 opaco y bandera local maliciosa sin permisos efectivos; aserciones reales sobre DOM y peticiones.
 - CI GitHub-hosted compila Angular y ejecuta Chromium; grupo de concurrencia aislado por SHA, cancel-in-progress=false. A0–A4 exigen checks reales exact-SHA y A5 independiente.
