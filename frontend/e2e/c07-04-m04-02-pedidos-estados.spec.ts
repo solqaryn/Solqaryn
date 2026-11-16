@@ -125,9 +125,18 @@ test('C07-04.M04.02 lector ve solo consulta autorizada sin crear ni modificar', 
     await expect(page.getByRole('link', { name: 'Nuevo pedido' })).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Editar pedido' })).toHaveCount(0);
     await expect(page.locator('.pedidos-readiness-cards li')).toHaveCount(4);
-    expect(await page.evaluate(() =>
-      document.documentElement.scrollWidth - document.documentElement.clientWidth),
-      'overflow horizontal a ' + width).toBeLessThanOrEqual(2);
+    const horizontal = await page.evaluate(() => {
+      const overflow = document.documentElement.scrollWidth - document.documentElement.clientWidth;
+      const culprits = [...document.querySelectorAll<HTMLElement>('body *')]
+        .map(element => ({ element, rect: element.getBoundingClientRect() }))
+        .filter(({ rect }) => rect.right > window.innerWidth + 2 && rect.left < window.innerWidth)
+        .slice(0, 6)
+        .map(({ element, rect }) => `${element.tagName.toLowerCase()}.${element.className?.toString().slice(0, 65)}: right=${Math.round(rect.right)}`);
+      return { overflow, culprits };
+    });
+    expect(horizontal.overflow,
+      'overflow horizontal a ' + width + '; responsables=' + horizontal.culprits.join(', '))
+      .toBeLessThanOrEqual(2);
   }
   expect(writes).toEqual([]);
 });

@@ -5865,3 +5865,7 @@
 ## 2026-11-16 — V17 C02-04.M04.04 reparación de control single-flight [Javier :00]
 - Corrige botón de revalidación global que desaparecía durante la solicitud HTTP pendiente: permanece visible y deshabilitado sin modificar grants, MFA, JWT, tenant ni API.
 - Mantiene cinco asserts Chromium; run original 43917701525 4 PASS/1 FAIL, la reparación exige nuevo resultado real y Scope Lock/V5 exact-SHA. A5 independiente; rollback git revert; solo dev.
+
+## 2026-11-16 — V17 C07-04.M04.02 reparacion responsive del listado de pedidos [Javier :00]
+- Repara contención del host y box sizing del listado móvil sin alterar lógica de pedido ni tabla desplazable; CI original 43916820506 4 PASS/1 FAIL por overflow horizontal 260 px a 320.
+- Mantiene el umbral estricto de <=2 px, añade localización de responsables para fallos futuros y exige nueva CI Chromium/Scope Lock/V5 exact-SHA antes de LISTO; A5 otro Javier; solo dev.
