@@ -301,9 +301,12 @@ test('M04.06: densidad responsive preserva columnas y confidencialidad ante 403'
     expect(result.columns).toBe(width <= 720 ? 1 : 2);
     expect(result.overflow).toBeLessThanOrEqual(2);
   }
-  await page.context().clearCookies();
-  await page.evaluate(() => localStorage.removeItem('solqaryn_token'));
-  await page.reload();
-  await expect(page).toHaveURL(/\/login(?:\?|$)/);
-  await expect(page.locator('.obs-points li')).toHaveCount(0);
+  // A fresh page receives an explicit synthetic 403; page.addInitScript on the
+  // authorized page would otherwise recreate the token on each reload.
+  const denied = await page.context().newPage();
+  await mockSession(denied, false);
+  await denied.goto('/plataforma/observabilidad-v5');
+  await expect(denied).toHaveURL(/\/login\?plataforma=denegado/);
+  await expect(denied.locator('.obs-points li')).toHaveCount(0);
+  await denied.close();
 });

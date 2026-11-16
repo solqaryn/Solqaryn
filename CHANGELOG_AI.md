@@ -1,3 +1,8 @@
+## 2026-11-16 - V17 QA repair C11-04.M04.06 403 sintetico Chromium [Javier :40]
+- Repara la prueba dirigida que restauraba token al recargar por page.addInitScript; verifica respuesta 403 explicita en pagina nueva sin acceso a las tarjetas privadas.
+- Conserva los positivos de pintado progresivo, densidad y responsive; fallo anterior 13/14 Chromium no cuenta como PASS, requiere nuevo SHA y Scope Lock/V5.
+- Solo fixture E2E y documentacion; sin cambios a JWT, guard, API, MySQL, QA/main/PROD; A5 independiente.
+
 ## 2026-11-16 — V17 C10-04.M04.02 regresión de excepción síncrona P2 [Javier :20]
 - A5_FAIL DEV05 detectó un posible bloqueo de carga cuando obtener() lanza antes de devolver Observable; el componente vigente ya protege ese límite con RxJS defer.
 - Añade dos Vitest adversariales para 403 síncrono y error inesperado: estado seguro, sin datos protegidos, aria-busy liberado, botón reintento y secretos no filtrados.

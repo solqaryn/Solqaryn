@@ -17,3 +17,7 @@ No se modifica la autoridad del backend; los estados no autorizados siguen ocult
 ## A4, A5 y rollback
 
 Exigir en SHA publicado los checks requeridos `completed/success`: Scope Lock, procedencia V5, Angular tipado/build, seguridad pertinente, y workflow dirigido que ejecute estas dos pruebas Chromium. Ante CI QUEUED/IN_PROGRESS, mantener VALIDANDO con SHA, run y owner; no afirmar PASS. Leer PLAN/COLA/DAG/BITACORA antes de LISTO. A5 únicamente por otra Task Javier con código, diff y pruebas comprobados. Rollback por `git revert` normal en dev y readback; nunca force-push, QA/main/PROD ni secretos. Métricas de performance visual: **NO_MEDIDO** sin perfil de rendimiento causal.
+
+## QA_DEFECT_FOUND P2 — fixture de navegador en M04.06
+
+El primer SHA publicado `5fcf88e5cf603aacb8213b35e0ed1256179f6310` ejecutó 18/18 Vitest y 13/14 Chromium. El caso negativo M04.06 intentó retirar el token y recargar la misma página, pero `mockSession` había instalado `page.addInitScript`, que restauró el token sintético en cada navegación; la expectativa de redirección era inválida. La corrección utiliza una **página nueva** con `mockSession(denied,false)`, respuesta 403 explícita y rechazo de las cuatro tarjetas privadas. No elimina la aserción de denegación ni altera el guard/código de producto. Reejecutar GitHub-hosted Chromium, Angular y Scope Lock/V5 antes de acreditar A0–A4; A5 sigue independiente. No confundir test en verde con JWT HTTP real.
