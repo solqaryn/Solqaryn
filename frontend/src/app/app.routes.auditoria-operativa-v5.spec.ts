@@ -45,7 +45,9 @@ describe('C15-05.M04.01 - ruta y pantalla de auditoría operativa privada', () =
     expect(root.querySelectorAll('ol.controls > li')).toHaveLength(4);
     expect(root.textContent).toContain('Guía estática');
     expect(root.textContent).toContain('Sin resultados operativos conectados');
-    expect(root.querySelectorAll('form, button, input')).toHaveLength(0);
+    expect(root.querySelectorAll('form, input')).toHaveLength(0);
+    expect(root.querySelectorAll('button')).toHaveLength(1);
+    expect(root.querySelector('button')?.getAttribute('aria-label')).toBe('Revalidar sesión de auditoría');
     expect(root.querySelector('a[aria-label="Regresar a administración de plataforma"]')?.getAttribute('href')).toBe('/plataforma');
     fixture.destroy();
   });
@@ -53,10 +55,12 @@ describe('C15-05.M04.01 - ruta y pantalla de auditoría operativa privada', () =
   it('deniega contenido protegido cuando falta sesión y no inventa datos', async () => {
     const fixture = await crear(false);
     const root: HTMLElement = fixture.nativeElement;
-    expect(root.querySelector('[role="alert"]')?.textContent).toContain('Acceso de plataforma no confirmado');
+    expect(root.querySelector('[role="alert"]')?.textContent).toContain('Sin permiso de plataforma confirmado');
     expect(root.querySelectorAll('ol.controls > li')).toHaveLength(0);
     expect(root.textContent).not.toContain('Propiedad exclusiva');
-    expect(root.querySelectorAll('form, button')).toHaveLength(0);
+    expect(root.querySelectorAll('form, input')).toHaveLength(0);
+    expect(root.querySelectorAll('button')).toHaveLength(1);
+    expect(root.querySelector('button')?.getAttribute('aria-label')).toBe('Revalidar sesión de auditoría');
     fixture.destroy();
   });
 });

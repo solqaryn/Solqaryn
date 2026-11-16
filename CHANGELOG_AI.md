@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 CI_REPAIR C10-04.M04.01 catálogo exacto y baseline Vitest [Javier :20]
+- Repara fallo P0-007.A real en SHA 125fe037: inventario aditivo 143 rutas (135 feature/8 shared) y detector fail-closed mantiene omisión, duplicación y archivo ajeno como errores. No reescribe recuentos históricos 137–142.
+- Repara dos pruebas desactualizadas de auditoría operativa de otro alcance sin modificar la UI, el guard ni la autorización: las pruebas permiten solo el botón real de revalidación y verifican el texto de denegación existente; preservan controles ocultos, ausencia de formularios y mensajes sin secretos.
+- Backend y seguridad permanecen intactos; revalidar Vitest dirigidos, prueba de catálogo, builds, Scope Lock y procedencia en SHA descendiente. Mantener C10-04.M04.01 VALIDANDO hasta CI completa, A5 por Task Javier distinta.
+
 ## 2026-11-15 — V17 C10-04.M04.01 pantalla privada de continuidad operativa [Javier :20]
 - Añade ruta lazy de plataforma con plataformaGuard y componente Angular 22.2.1 solo lectura; cuatro controles, denegacion fail-closed y revalidacion single-flight, sin acciones de restore, permisos o proveedores.
 - Agrega seis Vitest positivos/negativos con GitHub Actions Node 24/npm 11, lint y build; no certificar PASS antes de CI exacta ni afirmar MySQL/HTTP/Playwright no aplicables a la interfaz documental.

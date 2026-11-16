@@ -406,3 +406,11 @@ La pantalla privada de auditoría operativa añade un componente real a la carpe
 - `frontend/src/app/features/plataforma/auditoria-operativa-v5.component.ts`
 
 El verificador conserva comparaciones estrictas de paths reales, duplicados, faltantes y no catalogados. El alta NO certifica JWT, consultas institucionales, datos vivos, acciones de CLAIM/A5, backend ni UX/Playwright; esas pruebas se acreditan por jobs propios. Rollback: revert normal de este ajuste junto al cambio que introdujo el componente.
+
+## Actualización aditiva V17 C10-04.M04.01 — 15 de noviembre de 2026
+
+La nueva superficie privada e informativa de continuidad operativa agrega un componente Angular a features/plataforma. El inventario reproducible vigente es **143 archivos (135 features y 8 shared)**. Los recuentos originales 137 y cortes 138–142 se preservan como evidencia histórica de sus SHAs.
+
+- `frontend/src/app/features/plataforma/continuidad-operativa-v5.component.ts`
+
+El detector fail-closed mantiene la comparación exacta con rutas reales y escenarios negativos de archivos faltantes y no inventariados; ningún componente otorga restauración, OAuth/JWT, RBAC, tenant, datos vivos, QA, main ni PROD. CI dirigida y readback pertenecen a C10-04.M04.01. Rollback: revert normal.
