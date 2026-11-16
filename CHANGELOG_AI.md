@@ -7,6 +7,7 @@
 - Define doce eventos conceptuales EV01-EV12, doce invariantes de idempotencia/correlacion I01-I12 y doce pares P/N FUTUROS_NO_EJECUTADOS (0/12 runtime) para el futuro modelo relacional C11-01.
 - Exige tenant A/B, membresia/roles vigentes, revocacion, digest canonico por actor y operacion, commit atomico y compensacion segura; no crea mensajes, outbox fisico, workers, API, migraciones ni broker.
 - Conserva Scope Lock y procedencia V5 causal, revision A5 independiente y rollback documental; no implica autorizacion QA/main/PROD ni pruebas MySQL/HTTP ejecutadas.
+- Reparacion documental de etiqueta EV09 para respetar el Scope Lock: se utiliza MovimientoInventarioConfirmado en lugar de un token de identidad retirado; sin desactivar validadores, requiere nuevo CI exact-SHA exitoso.
 
 ## 2026-11-15 - V17 C11-01.M02.04 configuracion tipada y flags modelo relacional [Javier :00]
 - Define doce opciones conceptuales F01-F12, doce reglas de rechazo P01-P12 y doce pares POS/NEG FUTUROS_NO_EJECUTADOS (0/12 runtime) para seguridad, ownership y compatibilidad.
