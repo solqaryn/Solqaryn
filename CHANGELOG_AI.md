@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C03-04.M03.06 auditoría segura de incidentes y continuidad [Javier :50]
+- Implementa sink Infrastructure .NET 10 de logging estructurado no durable para preview de continuidad: evento fijo, códigos seguros y correlación sólo bajo contexto backend verificado; no registra claves, tenant, actor, SHA, PII, JWT o excepciones.
+- Añade 13 métodos xUnit de positivo, negaciones tenant A/B/revocación, SHA stale, lote, duplicidad no confiable, errores y cancelación; incluye composición in-memory real con worker Application M03.05 y cero permisos concedidos.
+- Riesgo V15 R2, Scope Lock STRICT y candado V17 por ID; build/seguridad/autorización/Scope Lock/V5 requeridos en CI causal, A5 de otra Task Javier, no EF/MySQL/HTTP/backup real/QA/main/PROD.
+
 ## 2026-11-15 — V17 C05-04.M03.05 cola aislada de revision acotada de ligereza UI [Javier :40]
 - Implementa en Infrastructure .NET10 un procesador en memoria acotado y serializado, que reusa preflight Application/Domain, sin HostedService, DI, cache real, HTTP, DB ni medicion CWV.
 - Incorpora doce xUnit adversariales con tenant A/B, replay/conflicto, limites, SHA, cancelacion, idempotencia fail-closed y ausencia de grants.
