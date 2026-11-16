@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C08-04.M03.05 contrato de sondeo read-only de módulos sectoriales [Javier :40]
+- Añade frontera Application de integración in-process que requiere fence backend con identidad, tenant A/B, RBAC, módulo, SHA y revisión antes de un sondeo de proveedor de solo lectura.
+- Ocho xUnit cubren positivos, negativos, revocación, error seguro, cancelación, idempotencia de lectura y denegación de cualquier dispatch o grant; el test real se certifica únicamente tras GitHub Actions exact-SHA.
+- Sin worker, proveedor live, colas, endpoints, EF/MySQL, mutaciones, secretos ni autorizaciones de QA/main/PROD; A5 independiente y rollback mediante git revert.
+
 ## 2026-11-16 — Reparación QA C05-04.M04.02 sincronización de sesión 403 [Javier :30]
 - GitHub Actions run 43912055324 terminó con 5/6 Chromium, fallo P2 causado por locator.count() antes de completar la carga GET de sesión.
 - El test ahora aguarda la superficie autorizada y verifica permiso denegado en directorio, ausencia de reintento y secreto de servidor; no se tocan guard, backend o reglas de autorización.
