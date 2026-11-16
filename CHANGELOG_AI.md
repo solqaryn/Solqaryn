@@ -1,3 +1,8 @@
+## 2026-11-15 - V17 C09-03.M02.05 eventos e idempotencia Social Hub [Javier :50]
+- Define doce eventos propuestos, doce invariantes de correlacion e idempotencia y doce casos P/N FUTUROS_NO_EJECUTADOS (0/12 runtime), con tenant A/B, consentimiento, opt-out y revocacion.
+- Diseña control de replay/CAS, limites UTC, fallos de proveedor y reconciliacion de efectos ambiguos sin crear jobs, tablas, APIs, brokers, envios ni credenciales.
+- Exige Scope Lock y V5 causal, A5 independiente y alcance dev exclusivamente; documentacion R0 sin certificacion MySQL/HTTP/browser/produccion.
+
 ## 2026-11-15 - V17 C12-01.M01.06 bloqueos, rollback y liberacion documental [Javier :00]
 - Define dieciseis gates futuros G01-G16, ocho pasos de reversion no ejecutados y doce pares POS/NEG FUTUROS_NO_EJECUTADOS (0/12 runtime) para la topologia objetivo de C12-01.
 - Conserva Vercel/Render/Aiven/Cloudinary como entorno vigente y trata Hostinger/Cloudflare solo como alternativas futuras; no crea VPS, red, DB, worker, DNS, secretos, gastos ni nuevos permisos.
