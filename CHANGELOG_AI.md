@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C04-03.M02.02 contratos conceptuales de metering [Javier :30]
+- Define ocho operaciones y ocho DTO conceptuales, dieciséis validaciones, catorce errores, ocho reglas de compatibilidad y diez pares positivos/negativos futuros para C04-03.M02.02.
+- Mantiene tenant/RBAC/idempotencia/UTC/ledger/fail-closed como contratos sin declarar pruebas HTTP, .NET o MySQL ejecutadas; D01–D08 continúan pendientes y el alcance R0 no agrega runtime, API ni billing real.
+- Entrega individual V17 con candado 2000000657, Scope Lock y procedencia exact-SHA; A5 independiente de otra Task Javier y ninguna promoción QA/main/PROD.
+
 ## 2026-11-15 — V17 C04-03.M02.01 modelo conceptual y ownership de metering [Javier :30]
 - Documenta entidades, claves compuestas por EmpresaId, relaciones e invariantes de consumo, ventanas UTC, idempotencia, ledger, compensación, conciliación y privacidad para M02.01 exclusivamente.
 - Distingue criterios positivos/negativos futuros NO_EJECUTADOS de las pruebas efectivas R0; D01–D08 siguen pendientes y no se crean API, EF/MySQL, cuotas, pagos, jobs ni permisos de producción.
