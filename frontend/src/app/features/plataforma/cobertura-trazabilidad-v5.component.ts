@@ -35,10 +35,10 @@ export const COBERTURA_FUENTE_V5 = new InjectionToken<() => Promise<readonly Cob
           <h2 id="coverage-dimensions">Dimensiones que deben contrastarse</h2>
           @switch (estadoVista()) {
             @case ('cargando') {
-              <p role="status" data-testid="c1501-loading">Preparando las dimensiones locales de referencia…</p>
+              <p aria-live="polite" data-testid="c1501-loading">Preparando las dimensiones locales de referencia…</p>
             }
             @case ('vacio') {
-              <p role="status" data-testid="c1501-empty">No hay dimensiones locales disponibles. No se ha certificado el plan.</p>
+              <p aria-live="polite" data-testid="c1501-empty">No hay dimensiones locales disponibles. No se ha certificado el plan.</p>
             }
             @case ('error') {
               <div class="notice" role="alert" data-testid="c1501-error">
@@ -47,7 +47,7 @@ export const COBERTURA_FUENTE_V5 = new InjectionToken<() => Promise<readonly Cob
               </div>
             }
             @case ('listo') {
-              <p role="status" data-testid="c1501-loaded">Dimensiones locales cargadas; cobertura institucional pendiente de comprobación.</p>
+              <p aria-live="polite" data-testid="c1501-loaded">Dimensiones locales cargadas; cobertura institucional pendiente de comprobación.</p>
               <ul class="coverage-list">
                 @for (dimension of dimensionesVisibles(); track dimension.clave) {
                   <li>

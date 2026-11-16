@@ -30,6 +30,7 @@ describe('C15-01.M04.01 cobertura privada de solo lectura', () => {
   it('autorizado ve cuatro dimensiones sin inventar resultados ni acciones', async () => {
     const { fixture } = await montar(auth);
     expect(fixture.nativeElement.querySelectorAll('.coverage-list li')).toHaveLength(4);
+    expect(fixture.nativeElement.querySelectorAll('.coverage-shell [role="status"]')).toHaveLength(1);
     expect(fixture.nativeElement.textContent).toContain('NO_MEDIDO');
     expect(fixture.nativeElement.querySelectorAll('.unverified')).toHaveLength(4);
     expect(fixture.nativeElement.querySelectorAll('button,form,input,textarea')).toHaveLength(0);

@@ -1,3 +1,8 @@
+## 2026-11-16 — Reparación CI C15-01.M04.02 semántica ARIA sin duplicar status [Javier :50]
+- SHA b963b248: Chromium 11/14 PASS, tres fallos por status duplicado en mensajes locales que invalidaba los selectores existentes de navegación y contraste; no son PASS.
+- Conserva el único status NO_MEDIDO, transforma los nuevos avisos cargando/vacío/listo en aria-live polite y añade aserción real de unicidad en Vitest; no afloja pruebas ni modifica guard o backend.
+- CI dirigida y aceptación exact-SHA pendientes, A5 independiente requerida; no JWT/MySQL real ni QA/main/PROD, rollback git revert.
+
 ## 2026-11-16 — V17 C12-04.M03.03 autorización preflight tenant A/B [Javier :10]
 - Integra política .NET 10 fail-closed al servicio de preparación MySQL privado: actor validado servidor, JWT, rol, membresía/revocación, MFA, tenant exacto, SHA, idempotencia y denegación previa al lector.
 - Agrega ocho pruebas xUnit (con múltiples casos) que verifican positivos/negativos, ausencia de llamadas externas ante rechazos y cero autorización SQL/deploy; sin DB, EF, JWT HTTP o restore real.

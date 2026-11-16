@@ -12,3 +12,7 @@ No cambian MySQL/EF, API, integraciones, tablas, Cloudinary ni información come
 
 ## A4 y A5
 No declarar LISTO mientras falten checks obligatorios exact-SHA o equivalencia auditada, Scope Lock y V5, ni antes de readback del PLAN/COLA/DAG/BITACORA. Tras ci externo real en ejecución, estado VALIDANDO y owner DEV06 con RUN/SHA, candado liberado; A5 sólo por otra Task Javier que inspeccione código, pruebas y fallos. Rollback seguro mediante git revert sobre dev después de verificar HEAD; no force-push ni QA/main/PROD.
+
+## Reparación causal de regresión de semántica ARIA — 16 noviembre 2026
+
+El SHA inicial b963b248fb85661d7255af19e55db7133157794b ejecutó Vitest y compilación correctamente, pero Chromium dirigido probó 11/14, con tres pruebas anteriores fallidas por selector estricto `.coverage-shell [role="status"]`: había cuatro mensajes status (un NO_MEDIDO institucional más tres estados alternativos), y en el estado éxito había dos visibles. La corrección mínima mantiene el `role="status"` original de NO_MEDIDO, usa `aria-live="polite"` en cargando, vacío y listo, y añade regresión unitaria que exige exactamente un status en éxito. No se alteran ni debilitan las pruebas Playwright anteriores. A0-A4 requieren nueva CI causal exact-SHA, sin reutilizar el FAIL; A5 distinta Task Javier.
