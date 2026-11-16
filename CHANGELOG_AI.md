@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 CI_REPAIR C10-04.M04.01 auditor de rutas exactas [Javier :20]
+- Repara FAIL real del job Priority4 ERP del SHA previo: el guard existente es plataformaGuard pero faltaba la ruta nueva del conjunto cerrado permitido. Añade solo el path literal `plataforma/continuidad-operativa-v5` al verificador R2, preservando todas las comprobaciones de sesión backend, denegación y prohibiciones de prefijos o comodines.
+- Exige auditoría ERP, frontend Vitest 6+4, inventario P0-007.A, tipado/build, Scope Lock y procedencia por SHA/equivalencia auditada; ningún PASS ficticio sobre queued/in_progress/fail. Mantener VALIDANDO y A5 de otro autor hasta evidencia completa.
+- Solo dev, rollback git revert normal, sin QA/main/PROD ni seguridad rebajada.
+
 ## 2026-11-15 — V17 CI_REPAIR C10-04.M04.01 catálogo exacto y baseline Vitest [Javier :20]
 - Repara fallo P0-007.A real en SHA 125fe037: inventario aditivo 143 rutas (135 feature/8 shared) y detector fail-closed mantiene omisión, duplicación y archivo ajeno como errores. No reescribe recuentos históricos 137–142.
 - Repara dos pruebas desactualizadas de auditoría operativa de otro alcance sin modificar la UI, el guard ni la autorización: las pruebas permiten solo el botón real de revalidación y verifican el texto de denegación existente; preservan controles ocultos, ausencia de formularios y mensajes sin secretos.

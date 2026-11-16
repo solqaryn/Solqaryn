@@ -13,3 +13,9 @@ GitHub-hosted Node 24/npm 11 ejecuta `npm ci`, Vitest dirigido, lint Angular y b
 
 ## A5, límites y rollback
 A5 pendiente de otra Task Javier autorizada, distinta del autor. Prohibido QA/main/PROD, RESTORE real y secretos. Revert normal en dev, sin force-push.
+
+## Reparación causal del auditor de rutas R2 (15 de noviembre de 2026)
+
+El job ERP `133017914864` detectó `FRONTEND_ROUTE_SECURITY_CONTRACT: UNGUARDED` sobre la nueva ruta a pesar de que utiliza exactamente `plataformaGuard`. Se añade únicamente la ruta exacta `plataforma/continuidad-operativa-v5` al conjunto cerrado del auditor `scripts/quality/priority4_quality_audit.py`. Permanecen exigibles el mismo guard, la autenticación backend, la sesión de plataforma, la denegación fail-closed y la ausencia de bypass wildcard/prefijo. No se agregan rutas ERP sin guard ni se degrada ningún gate.
+
+Se requiere CI real `ERP - Contratos, pruebas y build` sobre SHA de reparación con auditoría `FRONTEND_ROUTE_SECURITY_CONTRACT` PASS y pruebas existentes. Esta reparación de auditor compartido es R2 de seguridad aunque la pantalla de origen sea R1. No implica publicación QA/PROD.
