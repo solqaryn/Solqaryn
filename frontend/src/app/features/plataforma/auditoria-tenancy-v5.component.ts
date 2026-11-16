@@ -1,10 +1,39 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, InjectionToken, computed, inject, signal, type Signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
 
 export type EstadoAuditoriaTenancyV5 = 'vacio' | 'cargando' | 'exito' | 'sin_permiso' | 'error';
+export type MarcaAuditoriaTenancyV5 = 'solqaryn' | 'institucional';
+export type DensidadAuditoriaTenancyV5 = 'normal' | 'compacta';
+export interface PresentacionAuditoriaTenancyV5 {
+  readonly marca: MarcaAuditoriaTenancyV5;
+  readonly densidad: DensidadAuditoriaTenancyV5;
+}
+const PRESENTACION_SEGURA: PresentacionAuditoriaTenancyV5 = Object.freeze({
+  marca: 'solqaryn', densidad: 'normal'
+});
+
+/** C15-03.M04.03: solo presentación reactiva. No recibe ni concede autoridad de tenant/JWT/RBAC. */
+export const AUDITORIA_TENANCY_PRESENTACION_V5 = new InjectionToken<Signal<unknown>>(
+  'AUDITORIA_TENANCY_PRESENTACION_V5',
+  { providedIn: 'root', factory: () => signal<unknown>(PRESENTACION_SEGURA) }
+);
+
+/** No acepta CSS, HTML, URLs, datos empresariales ni propiedades no reconocidas. */
+export function normalizarPresentacionAuditoriaTenancyV5(valor: unknown): PresentacionAuditoriaTenancyV5 {
+  if (valor === null || typeof valor !== 'object' || Array.isArray(valor)) return PRESENTACION_SEGURA;
+  const datos = valor as Record<string, unknown>;
+  if (Object.keys(datos).length !== 2 ||
+      !Object.prototype.hasOwnProperty.call(datos, 'marca') ||
+      !Object.prototype.hasOwnProperty.call(datos, 'densidad')) return PRESENTACION_SEGURA;
+  const marca = datos['marca'];
+  const densidad = datos['densidad'];
+  if ((marca !== 'solqaryn' && marca !== 'institucional') ||
+      (densidad !== 'normal' && densidad !== 'compacta')) return PRESENTACION_SEGURA;
+  return Object.freeze({ marca, densidad });
+}
 
 /** C15-03.M04.01: superficie de guia privada; nunca ejecuta pentest ni otorga permisos. */
 @Component({
@@ -13,9 +42,9 @@ export type EstadoAuditoriaTenancyV5 = 'vacio' | 'cargando' | 'exito' | 'sin_per
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="tenancy-audit" aria-labelledby="tenancy-audit-title">
+    <main class="tenancy-audit" aria-labelledby="tenancy-audit-title" [attr.data-densidad]="presentacion().densidad">
       <header>
-        <p class="eyebrow">SOLQARYN · Auditoría de seguridad y tenancy</p>
+        <p class="eyebrow">{{ presentacion().marca === 'institucional' ? 'Plataforma SOLQARYN · Auditoría de seguridad y tenancy' : 'SOLQARYN · Auditoría de seguridad y tenancy' }}</p>
         <h1 id="tenancy-audit-title">Fronteras de aislamiento y evidencia</h1>
         <p>Guía privada, sin consultas de datos ni pruebas de seguridad en vivo.</p>
         <a routerLink="/plataforma" aria-label="Regresar a administración de plataforma">Volver a plataforma</a>
@@ -70,6 +99,7 @@ export type EstadoAuditoriaTenancyV5 = 'vacio' | 'cargando' | 'exito' | 'sin_per
     .fronteras { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .85rem; list-style: none; padding: 0; }
     .fronteras li { min-width: 0; border: 1px solid var(--mat-sys-outline-variant, #aeb8c1); border-radius: .75rem; padding: 1rem; }
     .fronteras p { margin: 0; }
+    .tenancy-audit[data-densidad='compacta'] :is(.estado,.notice,.denied,.fronteras li) { padding: .75rem; }
     .limites { font-weight: 600; }
     @media(max-width: 45rem) { .fronteras { grid-template-columns: 1fr; } }
   `]
@@ -77,6 +107,8 @@ export type EstadoAuditoriaTenancyV5 = 'vacio' | 'cargando' | 'exito' | 'sin_per
 export class AuditoriaTenancyV5Component {
   private readonly plataforma = inject(PlataformaSesionService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly configuracionPresentacion = inject(AUDITORIA_TENANCY_PRESENTACION_V5);
+  readonly presentacion = computed(() => normalizarPresentacionAuditoriaTenancyV5(this.configuracionPresentacion()));
   /** M04.02: no se infiere autoridad desde JWT, empresa, cache ni un estado visual. */
   readonly estado = signal<EstadoAuditoriaTenancyV5>(this.plataforma.sesion() ? 'vacio' : 'sin_permiso');
   readonly accesoVerificado = computed(() => {

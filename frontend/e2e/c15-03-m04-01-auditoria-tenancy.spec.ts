@@ -83,3 +83,13 @@ test('C15-03.M04.02: 503 en revalidación oculta fronteras y evita revelar paylo
   await expect(page.getByText('PRIVATE_TENANT_DSN')).toHaveCount(0);
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(2);
 });
+
+test('C15-03.M04.03: branding por defecto usa densidad segura sin abrir datos', async ({ page }) => {
+  await fakeToken(page);
+  await sessionMock(page, true);
+  await page.goto('/plataforma/auditoria-tenancy-v5');
+  await expect(page.locator('main.tenancy-audit')).toHaveAttribute('data-densidad', 'normal');
+  await expect(page.locator('.eyebrow')).toContainText('SOLQARYN · Auditoría');
+  await expect(page.locator('.fronteras li')).toHaveCount(4);
+  await expect(page.locator('form, input, textarea')).toHaveCount(0);
+});

@@ -7,15 +7,16 @@ import { provideRouter } from '@angular/router';
 import { PlataformaSesionService, type PlataformaSesion } from '../../core/auth/plataforma-sesion.service';
 import { plataformaGuard } from '../../core/guards/plataforma.guard';
 import { routes } from '../../app.routes';
-import { AuditoriaTenancyV5Component } from './auditoria-tenancy-v5.component';
+import { AUDITORIA_TENANCY_PRESENTACION_V5, AuditoriaTenancyV5Component, normalizarPresentacionAuditoriaTenancyV5 } from './auditoria-tenancy-v5.component';
 
 describe('C15-03.M04.01 - guía privada de seguridad y tenancy', () => {
   const autorizado: PlataformaSesion = {
     nombreUsuario: 'Plataforma', rolNombre: 'Admin', ambito: 'Plataforma', esAdministrador: true
   };
-  async function montar(valor: PlataformaSesion | null) {
+  async function montar(valor: PlataformaSesion | null, configuracionInicial: unknown = { marca: 'solqaryn', densidad: 'normal' }) {
     TestBed.resetTestingModule();
     const sesion = signal(valor);
+    const presentacion = signal<unknown>(configuracionInicial);
     const respuesta = new Subject<PlataformaSesion>();
     const obtener = vi.fn(() => {
       sesion.set(null); // el servidor invalida el grant anterior antes de GET.
@@ -23,11 +24,12 @@ describe('C15-03.M04.01 - guía privada de seguridad y tenancy', () => {
     });
     await TestBed.configureTestingModule({
       imports: [AuditoriaTenancyV5Component],
-      providers: [provideRouter([]), { provide: PlataformaSesionService, useValue: { sesion, obtener } }]
+      providers: [provideRouter([]), { provide: PlataformaSesionService, useValue: { sesion, obtener } },
+        { provide: AUDITORIA_TENANCY_PRESENTACION_V5, useValue: presentacion }]
     }).compileComponents();
     const fixture = TestBed.createComponent(AuditoriaTenancyV5Component);
     fixture.detectChanges();
-    return { fixture, sesion, respuesta, obtener };
+    return { fixture, sesion, respuesta, obtener, presentacion };
   }
   it('ruta singular diferida y protegida exclusivamente por plataformaGuard', async () => {
     const rutas = routes.filter(r => r.path === 'plataforma/auditoria-tenancy-v5');
@@ -139,6 +141,49 @@ describe('C15-03.M04.01 - guía privada de seguridad y tenancy', () => {
     fixture.detectChanges();
     expect(fixture.componentInstance.estadoVisible()).toBe('sin_permiso');
     expect(fixture.nativeElement.querySelectorAll('.fronteras li')).toHaveLength(0);
+  });
+
+  it('C15-03.M04.03 - branding y densidad tipados reaccionan a Signal sin mutar permisos', async () => {
+    const { fixture, presentacion } = await montar(autorizado, { marca: 'institucional', densidad: 'compacta' });
+    const main = fixture.nativeElement.querySelector('main');
+    expect(main.getAttribute('data-densidad')).toBe('compacta');
+    expect(main.querySelector('.eyebrow').textContent).toContain('Plataforma SOLQARYN');
+    expect(fixture.nativeElement.querySelectorAll('.fronteras li')).toHaveLength(4);
+    presentacion.set({ marca: 'solqaryn', densidad: 'normal' });
+    fixture.detectChanges();
+    expect(main.getAttribute('data-densidad')).toBe('normal');
+    expect(main.querySelector('.eyebrow').textContent).toContain('SOLQARYN · Auditoría');
+  });
+
+  it('C15-03.M04.03 - rechaza HTML, CSS arbitrario y propiedades que intenten elevar autoridad', async () => {
+    const ataque = '<img src=x onerror=alert(1)>';
+    const { fixture } = await montar(autorizado, { marca: ataque, densidad: 'compacta' });
+    const main = fixture.nativeElement.querySelector('main');
+    expect(main.getAttribute('data-densidad')).toBe('normal');
+    expect(main.querySelector('.eyebrow').textContent).toContain('SOLQARYN');
+    expect(fixture.nativeElement.innerHTML).not.toContain(ataque);
+    expect(normalizarPresentacionAuditoriaTenancyV5({ marca: 'institucional', densidad: 'compacta', rol: 'Admin' }))
+      .toEqual({ marca: 'solqaryn', densidad: 'normal' });
+  });
+
+  it('C15-03.M04.03 - límites nulo, array, prototipo, enumeraciones y cadena extraña fail-closed', () => {
+    for (const valor of [null, [], 'institucional', {}, { marca: 'institucional', densidad: 'gigante' },
+      { marca: 'tenant', densidad: 'normal' }, Object.create({ marca: 'institucional', densidad: 'compacta' })]) {
+      expect(normalizarPresentacionAuditoriaTenancyV5(valor)).toEqual({ marca: 'solqaryn', densidad: 'normal' });
+    }
+  });
+
+  it('C15-03.M04.03 - marca institucional nunca abre contenido denegado ni sobrevive a revocación', async () => {
+    const { fixture, sesion, presentacion } = await montar(null, { marca: 'institucional', densidad: 'compacta' });
+    expect(fixture.nativeElement.querySelectorAll('.fronteras li')).toHaveLength(0);
+    presentacion.set({ marca: 'solqaryn', densidad: 'normal' });
+    sesion.set(autorizado);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('.fronteras li')).toHaveLength(0);
+    sesion.set(null);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('.fronteras li')).toHaveLength(0);
+    expect(fixture.nativeElement.querySelectorAll('form, input, textarea')).toHaveLength(0);
   });
 
 });

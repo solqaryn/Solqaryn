@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C15-03.M04.03 branding reactivo y densidad segura de auditoría tenancy [Javier :40]
+- Presentación Angular tipada con marca solqaryn/institucional y densidad normal/compacta, Signal reactivo y normalización fail-closed; no concede permisos, no aplica tema empresarial ni CSS arbitrario.
+- Añade Vitest con casos positivos, adversariales, frontera y revocación, más Chromium para render DOM seguro; conserva el guard de plataforma y pruebas de M04.01/M04.02.
+- Riesgo R2: exigir CI GitHub-hosted real para Angular/Chromium, Scope Lock y V5 del SHA; A5 independiente. Sin JWT/MySQL/HTTP real, pentest, datos, QA/main/PROD. Rollback git revert.
+
 ## 2026-11-15 — V17 reparación causal ERP: dos rutas privadas de plataforma guardadas [Javier :10]
 - Auditoría `priority4_quality_audit.py` reconoce exclusivamente `plataforma/revision-amenazas-v5` y `plataforma/observabilidad-v5` existentes con `canActivate: [plataformaGuard]`, guard autenticado y sesión de plataforma validada por servidor.
 - Se conserva el rechazo `UNGUARDED` de cualquier otra ruta no permitida, el contrato `permisoGuard` y todas las negativas; sin comodines, cambios de guards, permisos, endpoints o despliegue. La reparación del CI ERP solo se acredita tras check SUCCESS exact-SHA.
