@@ -24,6 +24,7 @@ describe('C03-04.M04.05 accesibilidad incidentes', () => {
     const titulo=(fixture.nativeElement as HTMLElement).querySelector<HTMLHeadingElement>('#incident-title');
     expect(salto?.getAttribute('href')).toBe('#incident-title');
     expect(titulo?.tabIndex).toBe(-1);
+    expect((fixture.nativeElement as HTMLElement).querySelector('a[aria-label="Regresar a plataforma"]')).toBeTruthy();
     expect(fixture.nativeElement.querySelectorAll('.incident-review li')).toHaveLength(4);
     expect(fixture.nativeElement.querySelectorAll('button, form, input')).toHaveLength(0);
   });
