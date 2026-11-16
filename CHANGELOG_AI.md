@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C08-04.M04.05 contraste accesible en extensiones sectoriales [Javier :50]
+- Corrige contraste de etiquetas en preset oscuro con colores estáticos explícitos; preserva guardas y evita cambios de autorización o módulos.
+- Añade cinco pruebas Playwright adversariales: anónimo/403 sintético, Tab real y foco visible, respuesta a cuatro anchos y contraste WCAG 4.5:1 de ambos presets con aserción capaz de fallar ante la regresión.
+- R1. CI Angular/Chromium, Scope Lock, V5 y checks globales se evaluarán sobre SHA publicado, sin acreditar PASS anticipado; A5 independiente y rollback git revert. Sin JWT HTTP/MySQL/QA/main/PROD.
+
 ## 2026-11-16 — V18 C02-04.M05.05 pruebas negativas de control global [Javier :00]
 - Se añaden 10 escenarios Chromium de denegacion anonima, rol empresa, token caducado, 401/403/503, respuesta malformada, revocacion y lectura sin mutacion.
 - QA R2: la API es simulada en el browser; JWT HTTP, tenant A/B real, RBAC backend e IDOR/BOLA servidor permanecen NO_MEDIDO hasta pruebas independientes. No certificar LISTO sin A0-A4 causales y A5 de otra Task.

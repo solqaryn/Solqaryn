@@ -21,3 +21,6 @@ nav a:focus-visible { outline: 3px solid #1d4ed8; outline-offset: 3px; }
 .sector-readonly--contraste .notice { background: #17243a; color: #f8fafc; border-color: #9fb6d1; }
 .sector-readonly--contraste nav a { color: #bfdbfe; }
 .brand-preview { font-size: .9rem; line-height: 1.5; }
+
+/* C08-04.M04.05: accessible dark preset tags (text contrast >= 4.5:1). */
+.sector-readonly--contraste .sector-tag { background: #334155; color: #f8fafc; }
