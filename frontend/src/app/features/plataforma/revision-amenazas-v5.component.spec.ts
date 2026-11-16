@@ -1,4 +1,6 @@
 import { signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Subject } from 'rxjs';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { PlataformaSesionService, type PlataformaSesion } from '../../core/auth/plataforma-sesion.service';
@@ -13,13 +15,23 @@ describe('C14-02.M04.01 - pantalla privada de amenazas', () => {
   async function montar(valor: PlataformaSesion | null) {
     TestBed.resetTestingModule();
     const sesion = signal<PlataformaSesion | null>(valor);
+    const solicitudes: Subject<PlataformaSesion>[] = [];
+    const servicio = {
+      sesion,
+      obtener: () => {
+        sesion.set(null);
+        const result = new Subject<PlataformaSesion>();
+        solicitudes.push(result);
+        return result.asObservable();
+      }
+    };
     await TestBed.configureTestingModule({
       imports: [RevisionAmenazasV5Component],
-      providers: [provideRouter([]), { provide: PlataformaSesionService, useValue: { sesion } }]
+      providers: [provideRouter([]), { provide: PlataformaSesionService, useValue: servicio }]
     }).compileComponents();
     const fixture = TestBed.createComponent(RevisionAmenazasV5Component);
     fixture.detectChanges();
-    return { fixture, sesion };
+    return { fixture, sesion, solicitudes };
   }
   it('ruta única lazy con plataformaGuard', async () => {
     const matches = routes.filter(r => r.path === 'plataforma/revision-amenazas-v5');
@@ -37,7 +49,8 @@ describe('C14-02.M04.01 - pantalla privada de amenazas', () => {
     const { fixture } = await montar(autorizada);
     expect(fixture.componentInstance.accesoVerificado()).toBe(true);
     expect(fixture.nativeElement.querySelectorAll('.threat-list li')).toHaveLength(4);
-    expect(fixture.nativeElement.querySelectorAll('button, input, form, textarea')).toHaveLength(0);
+    expect(fixture.nativeElement.querySelectorAll('input, form, textarea')).toHaveLength(0);
+    expect(fixture.nativeElement.querySelectorAll('button')).toHaveLength(1);
     expect(fixture.nativeElement.textContent).toContain('NO_MEDIDO');
   });
   it('rol empresarial falso se rechaza', async () => {
@@ -53,4 +66,50 @@ describe('C14-02.M04.01 - pantalla privada de amenazas', () => {
     expect(fixture.componentInstance.accesoVerificado()).toBe(false);
     expect(fixture.nativeElement.querySelectorAll('.threat-list li')).toHaveLength(0);
   });
+  it('C14-02.M04.02 vacío no inventa hallazgos de seguridad', async () => {
+    const { fixture } = await montar(autorizada);
+    expect(fixture.componentInstance.estadoVista()).toBe('sin_datos');
+    expect(fixture.nativeElement.textContent).toContain('Sin hallazgos conectados');
+  });
+  it('C14-02.M04.02 single-flight bloquea contenido durante carga y confirma sesión', async () => {
+    const { fixture, sesion, solicitudes } = await montar(autorizada);
+    fixture.componentInstance.revalidarSesion();
+    fixture.componentInstance.revalidarSesion();
+    fixture.detectChanges();
+    expect(solicitudes).toHaveLength(1);
+    expect(fixture.componentInstance.estadoVista()).toBe('cargando');
+    expect(fixture.nativeElement.querySelectorAll('.threat-list li')).toHaveLength(0);
+    sesion.set(autorizada);
+    solicitudes[0].next(autorizada);
+    solicitudes[0].complete();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.estadoVista()).toBe('exito');
+    expect(fixture.nativeElement.querySelectorAll('.threat-list li')).toHaveLength(4);
+  });
+  it('C14-02.M04.02 error 503 oculta detalles y contenido', async () => {
+    const { fixture, solicitudes } = await montar(autorizada);
+    fixture.componentInstance.revalidarSesion();
+    solicitudes[0].error(new HttpErrorResponse({ status: 503, statusText: 'INTERNAL_SECRET_DIAGNOSTIC' }));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.estadoVista()).toBe('error');
+    expect(fixture.nativeElement.querySelectorAll('.threat-list li')).toHaveLength(0);
+    expect(fixture.nativeElement.textContent).not.toContain('INTERNAL_SECRET_DIAGNOSTIC');
+  });
+  it('C14-02.M04.02 403 y revocación mantienen denegación reactiva', async () => {
+    const { fixture, sesion, solicitudes } = await montar(autorizada);
+    fixture.componentInstance.revalidarSesion();
+    solicitudes[0].error(new HttpErrorResponse({ status: 403 }));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.estadoVista()).toBe('sin_permiso');
+    expect(fixture.nativeElement.querySelectorAll('.threat-list li')).toHaveLength(0);
+    sesion.set(autorizada);
+    fixture.componentInstance.verificacion.set('inicial');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('.threat-list li')).toHaveLength(4);
+    sesion.set(null);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.estadoVista()).toBe('sin_permiso');
+    expect(fixture.nativeElement.querySelectorAll('.threat-list li')).toHaveLength(0);
+  });
+
 });

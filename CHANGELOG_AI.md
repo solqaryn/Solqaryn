@@ -1,3 +1,8 @@
+## 2026-11-15 - V17 C14-02.M04.02 estados de revisión de amenazas [Javier :20]
+- Extiende guía Angular privada con estados de carga, vacío explícito de feed, error genérico, éxito de revalidación y denegación; solo GET /plataforma/sesion sin invocar mitigaciones ni pentest.
+- Añade nueve Vitest de autorización/revocación/403/503/single-flight y cinco Chromium sintéticos; CI GitHub-hosted es obligatoria y no se atribuye PASS hasta check completed/success exact-SHA.
+- Riesgo R2; guard backend como autoridad, sin MySQL o pentest real, A5 independiente y rollback git revert; no QA/main/PROD.
+
 ## 2026-11-15 - V17 C03-04.M04.02 corrección de regresión de prueba de accesibilidad [Javier :20]
 - La evolución segura de la guía incorporó un único botón de GET /plataforma/sesion, por lo que la prueba heredada M04.05 que exigía cero botones dejó de expresar el contrato vigente. No se desactiva el workflow ni se oculta el fallo original.
 - Corrige solo la aserción: prohíbe formularios e inputs, exige un único botón type=button con texto de revalidación; mantiene casos de foco, teclado, anónimo, empresa y revocación. Requiere 4/4 Vitest y 4/4 Chromium reales además de CI propia M04.02 sobre SHA reparado antes de LISTO.

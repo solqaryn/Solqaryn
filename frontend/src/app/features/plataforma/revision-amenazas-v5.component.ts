@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
 
@@ -16,7 +18,25 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
         <p>Guía privada sin peticiones a registros, proveedores ni datos productivos.</p>
         <a routerLink="/plataforma" aria-label="Volver a administración de plataforma">Volver a plataforma</a>
       </header>
-      @if (accesoVerificado()) {
+      @if (estadoVista() === 'cargando') {
+        <section role="status" aria-live="polite" class="notice">Comprobando nuevamente la sesión; la guía de amenazas permanece oculta.</section>
+      } @else if (estadoVista() === 'error') {
+        <p role="alert" class="notice">No se pudo comprobar la sesión. La guía sigue oculta para proteger la información.</p>
+      } @else if (accesoVerificado()) {
+        <section class="notice" aria-label="Estado de acceso">
+          <p role="status" aria-live="polite">
+            @if (estadoVista() === 'exito') {
+              Sesión de plataforma confirmada; ninguna revisión de amenazas fue ejecutada.
+            } @else {
+              Sesión autorizada para consultar la guía.
+            }
+          </p>
+          <button type="button" (click)="revalidarSesion()">Revalidar sesión de plataforma</button>
+        </section>
+        <section class="notice" aria-label="Estado vacío de amenazas">
+          <h2>Sin hallazgos conectados</h2>
+          <p>Esta guía no consulta un registro de amenazas ni ejecuta pruebas de penetración. No se presumen hallazgos inexistentes.</p>
+        </section>
         <section class="notice" aria-label="Límites de ejecución">
           <strong>Solo consulta · no realiza pentest ni modifica políticas</strong>
           <p>Las mitigaciones requieren revisión y pruebas reales del backend.</p>
@@ -46,6 +66,8 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
     .eyebrow { color:var(--mat-sys-primary, #2157a3); font-weight:700; }
     header a { display:inline-block; border:1px solid currentColor; border-radius:.55rem; padding:.7rem .85rem; color:inherit; text-decoration:underline; }
     header a:focus-visible { outline:3px solid var(--mat-sys-primary, #2157a3); outline-offset:3px; }
+    button { min-height:44px; padding:.7rem .85rem; border:1px solid currentColor; border-radius:.55rem; color:inherit; background:var(--mat-sys-surface, #fff); cursor:pointer; }
+    button:focus-visible { outline:3px solid var(--mat-sys-primary, #2157a3); outline-offset:3px; }
     .notice { border:1px solid var(--mat-sys-outline-variant, #aeb8c1); border-radius:.7rem; padding:1rem; margin:1rem 0; }
     .threat-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.85rem; padding:0; list-style:none; }
     .threat-list li { min-width:0; border:1px solid var(--mat-sys-outline-variant, #aeb8c1); border-radius:.7rem; padding:.9rem; }
@@ -54,8 +76,29 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
 })
 export class RevisionAmenazasV5Component {
   private readonly plataforma = inject(PlataformaSesionService);
+  private readonly destroyRef = inject(DestroyRef);
   readonly accesoVerificado = computed(() => {
     const s = this.plataforma.sesion();
     return s?.ambito === 'Plataforma' && s.esAdministrador === true;
   });
+  /** C14-02.M04.02: estado de autorización a la guía, nunca resultado de pentest. */
+  readonly verificacion = signal<'inicial' | 'cargando' | 'exito' | 'error' | 'sin_permiso'>('inicial');
+  readonly estadoVista = computed(() => {
+    const actual = this.verificacion();
+    if (actual === 'cargando' || actual === 'error' || actual === 'sin_permiso') return actual;
+    return this.accesoVerificado() ? (actual === 'exito' ? 'exito' : 'sin_datos') : 'sin_permiso';
+  });
+  /** GET revalidación existente, single-flight, sin alterar grants ni política de backend. */
+  revalidarSesion(): void {
+    if (!this.accesoVerificado() || this.verificacion() === 'cargando') return;
+    this.verificacion.set('cargando');
+    this.plataforma.obtener().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => this.verificacion.set(this.accesoVerificado() ? 'exito' : 'sin_permiso'),
+      error: (error: unknown) => {
+        const denied = error instanceof HttpErrorResponse && (error.status === 401 || error.status === 403);
+        this.verificacion.set(denied ? 'sin_permiso' : 'error');
+      }
+    });
+  }
+
 }
