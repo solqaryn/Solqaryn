@@ -6009,3 +6009,7 @@
 ## 2026-11-16 — V18 C15-04.M03.05 correccion de limite adversarial del worker UX [Javier :00]
 - Se rechaza una coleccion con Count falso y mas de 32 elementos mediante snapshot de enumeracion realmente acotado; excepciones y cancelacion devuelven denegacion sin resultados parciales.
 - Cuatro regresiones xUnit adversariales, documentacion de riesgo R2, controles de tenant/SHA intactos. CI exact-SHA y nuevo A5 independiente obligatorios; el A5_FAIL P2 historico permanece. Solo dev.
+
+## 2026-11-16 — C08-04.M04.01: superficie sectorial privada de solo lectura (DEV03)
+- Alcance: Angular 22.2.1, ruta privada /extensiones-sectoriales con authGuard, componente standalone/Signals; cuatro ámbitos informativos y estado sin módulos conectados. Ninguna acción, concesión RBAC ni API, DB o migración nueva.
+- Pruebas causales: Vitest route/surface y Playwright Chromium anónimo/tenant sintético 403/permitido a 320/1280; CI exact-SHA y A5 independiente requeridos, no presupuestos como PASS. Autor TASK_ID 6adc2e4bd8a48191ac7d8641ed95a1a3, scope dev STRICT; rollback git revert normal.

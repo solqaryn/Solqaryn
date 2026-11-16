@@ -22,6 +22,7 @@ export const routes: Routes = [
   { path: 'tienda/pedido/:id', loadComponent: () => import('./features/storefront/storefront-pedido.component').then(m => m.StorefrontPedidoComponent) },
   { path: 'tienda', loadComponent: () => import('./features/storefront/storefront.component').then(m => m.StorefrontComponent) },
   { path: 'login', loadComponent: () => import('./features/login/login.component').then(m => m.LoginComponent) },
+  { path: 'extensiones-sectoriales', canActivate: [authGuard], loadComponent: () => import('./features/extensiones-sectoriales/sector-modules-readonly.component').then(m => m.SectorModulesReadonlyComponent) },
   { path: 'plataforma/cobertura-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/plataforma.component').then(m => m.PlataformaComponent) },
   { path: 'plataforma/flujo-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/plataforma.component').then(m => m.PlataformaComponent) },
   { path: 'plataforma/auditoria-operativa-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/auditoria-operativa-v5.component').then(m => m.AuditoriaOperativaV5Component) },

@@ -1,0 +1,27 @@
+<main class="sector-readonly" aria-labelledby="sector-title">
+  <header class="sector-header">
+    <p class="eyebrow">SOLQARYN · Extensiones sectoriales</p>
+    <h1 id="sector-title">Capacidades por rubro</h1>
+    <p>Vista informativa protegida por sesión y empresa verificada. No muestra activaciones, permisos ni configuraciones reales.</p>
+    <nav aria-label="Navegación de extensiones sectoriales">
+      <a routerLink="/dashboard">Volver al panel</a>
+    </nav>
+  </header>
+  <section class="notice" aria-label="Estado de las capacidades" role="status" aria-live="polite">
+    <strong>Sin módulos conectados</strong>
+    <p>Esta pantalla no consulta servicios de módulos. No es posible afirmar que una capacidad esté habilitada o que un usuario tenga permiso.</p>
+  </section>
+  <section aria-labelledby="sector-catalog-title">
+    <h2 id="sector-catalog-title">Ámbitos previstos, no autorizaciones</h2>
+    <ul class="sector-grid">
+      @for (capability of capabilities(); track capability.key) {
+        <li class="sector-card">
+          <h3>{{ capability.title }}</h3>
+          <p>{{ capability.purpose }}</p>
+          <span class="sector-tag">No conectado</span>
+        </li>
+      }
+    </ul>
+  </section>
+  <p class="footnote" role="note">Una capacidad no otorga JWT, RBAC ni acceso a recursos entre empresas. Cualquier operación futura requiere autorización backend y pruebas independientes.</p>
+</main>

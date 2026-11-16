@@ -1,0 +1,17 @@
+:host { display: block; min-width: 0; }
+.sector-readonly { box-sizing: border-box; width: 100%; max-width: 72rem; margin: 0 auto; padding: clamp(1rem, 3vw, 2rem); color: var(--text-color, #1e293b); }
+.sector-header { max-width: 58rem; }
+.eyebrow { font-weight: 700; letter-spacing: .04em; }
+h1 { line-height: 1.2; margin: .3rem 0 .75rem; }
+h2 { margin: 2rem 0 1rem; }
+nav a { display: inline-flex; border-radius: .5rem; min-height: 2.75rem; align-items: center; padding: 0 .75rem; color: var(--primary-color, #164b8b); text-decoration: underline; }
+nav a:focus-visible { outline: 3px solid #1d4ed8; outline-offset: 3px; }
+.notice { background: #eff6ff; border: 1px solid #bfd6ff; color: #172b4d; border-radius: .75rem; padding: 1rem; margin-top: 1.25rem; }
+.notice p { margin-bottom: 0; }
+.sector-grid { list-style: none; margin: 0; padding: 0; display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 1rem; }
+.sector-card { min-width: 0; border: 1px solid #cbd5e1; background: #fff; color: #1e293b; border-radius: .75rem; padding: 1.1rem; }
+.sector-card h3 { margin: 0 0 .5rem; }
+.sector-card p { margin: 0 0 .75rem; }
+.sector-tag { display: inline-flex; font-size: .85rem; border-radius: 1rem; background: #e2e8f0; padding: .2rem .6rem; }
+.footnote { margin-top: 1.5rem; font-size: .9rem; line-height: 1.6; }
+@media (max-width: 360px) { .sector-readonly { padding: .75rem; } .sector-card { padding: .85rem; } }
