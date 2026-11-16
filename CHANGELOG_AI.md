@@ -5880,3 +5880,7 @@
 ## 2026-11-16 — V17 C07-04.M04.02 reparacion responsive del listado de pedidos [Javier :00]
 - Repara contención del host y box sizing del listado móvil sin alterar lógica de pedido ni tabla desplazable; CI original 43916820506 4 PASS/1 FAIL por overflow horizontal 260 px a 320.
 - Mantiene el umbral estricto de <=2 px, añade localización de responsables para fallos futuros y exige nueva CI Chromium/Scope Lock/V5 exact-SHA antes de LISTO; A5 otro Javier; solo dev.
+
+## 2026-11-16 — V17 C15-04.M03.05 worker acotado de auditoría UX [Javier :00]
+- Implementa procesador sincrónico read-only .NET 10 para hasta 32 observaciones UX aisladas, delegando en autoridad Application existente y rechazando mezclas tenant A/B/SHA, claves duplicadas y cancelación sin resultados parciales.
+- Nueve xUnit de aceptación estructural y rechazos; nunca escribe base de datos, proveedor, JWT, scheduler ni certifica Playwright, A5 o producción. CI real .NET/seguridad/Scope Lock/V5 y readback requeridos; solo dev.
