@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C01-03.M03.05 worker tenant de configuración [Javier :50]
+- Implementa worker .NET 10 de catálogo de configuración con lotes 1–16 y claves allowlisted: validates actor/backend, membresía/RBAC/entitlement/revocación, tenant A/B y SHA, sin exponer valores ni otorgar permisos o CAS.
+- Añade pruebas xUnit de positivos, negativos, frontera 16/17, duplicación, secretos, fallos de proveedor, cancelación e inmutabilidad; no relaja tests existentes.
+- Riesgo R2 en proyección in-process. MySQL/JWT HTTP/browser no intervenidos ni acreditados; require CI exact SHA, Scope Lock/V5 y A5 Task Javier distinta antes de LISTO; rollback git revert; no QA/main/PROD.
+
 ## 2026-11-16 — V17 corrección fixture de ruta detalle C07-04.M04.04 [Javier :40]
 - Chromium SHA 305f1300 acreditó 9/10 PASS y un FAIL: guard real denegó el detalle porque el fixture solo permitía la ruta listado, no pedidos-venta/:id. No se cuenta CI fallida como éxito.
 - Añade al allowlist SIMULADO del test la ruta de consulta explícita del detalle, sin cambiar permiso backend, producto, guard ni acciones mutadoras; conserva anónimo/403 y single-flight.
