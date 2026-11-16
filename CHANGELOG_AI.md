@@ -1,3 +1,8 @@
+## 2026-11-15 - V17 C09-03.M02.06 contrato de salida del Social Hub [Javier :10]
+- Define dieciseis gates contractuales G01-G16, doce escenarios P/N FUTUROS_NO_EJECUTADOS (0/12 runtime), ocho pasos de rollback y dependencias A5 para campañas, consentimiento y opt-out.
+- Exige aislamiento tenant A/B, JWT/RBAC y revocacion, CAS/idempotencia, cancelacion y verificacion de proveedor, sin crear envios, workers, tablas, credenciales ni migraciones.
+- Conserva Scope Lock, procedencia V5 exact-SHA, candado V17, A5 independiente y salida documental R0; M03 y QA/main/PROD siguen sus gates reales y autorizaciones separadas.
+
 ## 2026-11-16 - V17 C12-01.M02.01 modelo conceptual de topologia futura [Javier :20]
 - Define dieciseis entidades E01-E16, veinte invariantes I01-I20 y doce pares P/N futuros, con ownership, relaciones y aislamiento de ambientes/tenant.
 - Solo preparacion documental R0: conserva Vercel, Render, Aiven y Cloudinary vigentes; ninguna provision Hostinger, DNS, MySQL, secreto, servicio ni cambio de permisos.
