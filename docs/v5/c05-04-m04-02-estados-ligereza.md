@@ -15,3 +15,6 @@ A2 conserva guard y sesión de backend vigente; deniega visualización sin grant
 
 ## A4/A5
 A4 exige verify-solqaryn-project-scope, V5 CHANGELOG, frontend build y Chromium directed completed/success exact-SHA, readback PLAN_MAESTRO y BITACORA. Queued/failed/in_progress no son PASS. VALIDANDO es permitido con CI externa real pendiente, conservando owner/SHA/RUN. A5 pendiente hasta revisión independiente por otra Task Javier; no concede QA/main/PROD. Consultada la referencia Angular Developer registrada (angular/angular, pin 6808966993bf2b2d455d9b6245e960a59a01b9a9); no se añadió dependencia ni skill local.
+
+## Defecto QA P2 y regresión causal
+Run 43911108150: Chromium 5/6 PASS y el sexto FAIL por asumir redirección /login cuando la revocación del interceptor puede dejar la URL /plataforma. La reparación modifica sólo el assert negativo: verifica que no haya authority-card, que el contenido privado no exista y que se presente denegación, sin exponer mensaje backend. El SHA original no se certifica y se exige nueva CI exact-SHA.

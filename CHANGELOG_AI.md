@@ -1,3 +1,8 @@
+## 2026-11-16 — Reparación QA C05-04.M04.02 ante 403 sin redirección [Javier :30]
+- GitHub Actions run 43911108150 pasó 5/6 Chromium; un falso negativo P2 exigía /login aunque el interceptor revocaba la sesión sin navegación.
+- Test negativo ahora exige ausencia de autoridad, ausencia de superficie privada y pantalla de denegación, manteniendo oculto el mensaje sensible; ningún código de aplicación ni permiso cambia.
+- Source fallido 45734566 permanece FAIL; reparación requiere CI causal exact-SHA, Scope Lock y A5 de otra Task Javier; rollback git revert normal.
+
 ## 2026-11-16 — V17 C14-04.M04.01 reparación de cobertura CI Chromium [Javier :20]
 - Detectado que el workflow browser V5 no ejecutaba el nuevo archivo de Playwright sobre readiness. Se amplía filtro y comando para ejecutar los cuatro casos nuevos además de los tests existentes sin omitir ni deshabilitar seguridad.
 - La CI anterior del SHA 75a4448b con Chromium V5 en SUCCESS no prueba A3 del nuevo archivo; se exige nuevo SHA con ejecución causal y Scope Lock/V5 verdaderos.

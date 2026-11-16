@@ -119,7 +119,10 @@ test('C05-04.M04.02 permiso 403 en directorio deniega datos y no ofrece reintent
     await expect(page.getByTestId('c0504-permission')).toBeVisible();
     await expect(panel.getByRole('button', { name: 'Reintentar directorio' })).toHaveCount(0);
   } else {
-    await expect(page).toHaveURL(/\/login/);
+    // Un 403 puede retirar la sesion sin navegar: la autoridad debe desaparecer igualmente.
+    await expect(page.locator('.authority-card')).toHaveCount(0);
+    await expect(page.locator('.ui-lightness-v5')).toHaveCount(0);
+    await expect(page.getByRole('heading', { name: 'Sin autoridad global verificable' })).toBeVisible();
   }
   await expect(page.getByText('NO_EXPOSE_TENANT_DETAILS')).toHaveCount(0);
 });
