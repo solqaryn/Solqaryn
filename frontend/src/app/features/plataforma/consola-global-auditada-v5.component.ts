@@ -23,7 +23,7 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
         <p>Consulta privada de controles del plano global, separada de la administración ERP.</p>
         <nav aria-label="Navegación de consola global">
           <a routerLink="/plataforma" aria-label="Volver a administración de plataforma">Volver a plataforma</a>
-          @if (accesoVerificado() || verificacion() === 'error') {
+          @if (accesoVerificado() || verificacion() === 'error' || verificacion() === 'cargando') {
             <button type="button" (click)="revalidarSesion()"
               [disabled]="estadoVisible() === 'cargando'"
               aria-describedby="control-plane-estado">{{ verificacion() === 'error' ? 'Reintentar verificación' : 'Revalidar sesión global' }}</button>

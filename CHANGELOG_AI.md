@@ -5861,3 +5861,7 @@
 - Añade pruebas reales Playwright 320/768/1280, Tab y foco, contraste elevado y denegaciones de acceso del listado privado de pedidos.
 - El workflow dirigido ejecuta Vitest, lint/build Angular y Chromium por SHA sin cancelar SHA anteriores; no certifica backend, pagos, fiscalidad ni MySQL real.
 - Riesgo R2, A0–A4 pendientes de resultados CI externos, A5 exclusivamente independiente; sin QA/main/PROD.
+
+## 2026-11-16 — V17 C02-04.M04.04 reparación de control single-flight [Javier :00]
+- Corrige botón de revalidación global que desaparecía durante la solicitud HTTP pendiente: permanece visible y deshabilitado sin modificar grants, MFA, JWT, tenant ni API.
+- Mantiene cinco asserts Chromium; run original 43917701525 4 PASS/1 FAIL, la reparación exige nuevo resultado real y Scope Lock/V5 exact-SHA. A5 independiente; rollback git revert; solo dev.
