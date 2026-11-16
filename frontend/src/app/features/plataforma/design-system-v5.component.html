@@ -35,7 +35,26 @@
           }
         </ul>
       </section>
-      <p class="disclaimer" role="note">Muestras visuales estáticas. No hay formularios, acciones comerciales ni datos institucionales conectados.</p>
+      <section class="brand-catalog" aria-labelledby="design-brand-title">
+        <h3 id="design-brand-title">Branding permitido · vista previa local</h3>
+        <p>Dos configuraciones de muestra autorizadas. Cambiarlas no guarda estilos, modifica tenants ni concede permisos.</p>
+        <div class="brand-choices" role="group" aria-label="Seleccionar una vista previa permitida">
+          @for (preset of presets; track preset.id) {
+            <button class="brand-choice" type="button"
+              [attr.aria-pressed]="presetSeleccionado() === preset.id"
+              (click)="seleccionarPreset(preset.id)">{{ preset.nombre }}</button>
+          }
+        </div>
+        @if (presetVista(); as vista) {
+          <div class="brand-preview" [class.brand-preview-contrast]="vista.id === 'contraste'"
+            role="status" aria-live="polite">
+            <strong>{{ vista.nombre }}</strong>
+            <p>{{ vista.descripcion }}</p>
+            <span class="brand-chip">Componente de referencia</span>
+          </div>
+        }
+      </section>
+      <p class="disclaimer" role="note">Muestras locales: ninguna configuración persiste ni habilita operaciones comerciales, HTTP o cambios de permisos.</p>
     </div>
   } @else {
     <p class="denied" role="alert">Sesión de plataforma no confirmada. El catálogo visual privado permanece oculto.</p>

@@ -36,3 +36,18 @@ p { line-height: 1.55; overflow-wrap: anywhere; }
 .state-success { border-inline-start-color: var(--color-success, #059669); }
 @media (max-width: 640px) { .state-grid { grid-template-columns: 1fr; } }
 @media (prefers-contrast: more) { .state-example { border: 2px solid CanvasText; border-inline-start-width: 5px; } }
+
+/* C05-01.M04.03: branding local con clases constantes y sin CSS externo. */
+.brand-catalog { display: grid; gap: .7rem; min-width: 0; }
+.brand-catalog > p { margin: 0; }
+.brand-choices { display: flex; flex-wrap: wrap; gap: .65rem; }
+.brand-choice { min-height: 44px; padding: .55rem .85rem; border-radius: 8px; border: 2px solid var(--color-border, #94a3b8); color: var(--color-text, #111827); background: var(--color-surface, #fff); cursor: pointer; font: inherit; }
+.brand-choice[aria-pressed="true"] { border-color: var(--color-primary-dark, #075985); text-decoration: underline; text-underline-offset: .2em; font-weight: 700; }
+.brand-choice:focus-visible { outline: 3px solid var(--color-primary, #0369a1); outline-offset: 3px; }
+.brand-preview { min-width: 0; overflow-wrap: anywhere; padding: 1rem; border-radius: 10px; border: 2px solid #0284c7; background: #eff6ff; color: #0f172a; }
+.brand-preview p { margin: .35rem 0 .65rem; }
+.brand-chip { display: inline-block; padding: .4rem .7rem; background: #075985; color: #fff; border-radius: 8px; font-weight: 700; }
+.brand-preview-contrast { border-color: #facc15; background: #0b1020; color: #fff; }
+.brand-preview-contrast .brand-chip { background: #facc15; color: #0b1020; }
+@media (max-width: 400px) { .brand-choices { display: grid; grid-template-columns: 1fr; } .brand-choice { width: 100%; } }
+@media (prefers-contrast: more) { .brand-choice:focus-visible { outline-color: CanvasText; } }

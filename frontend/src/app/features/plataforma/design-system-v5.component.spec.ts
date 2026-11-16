@@ -26,13 +26,13 @@ describe('C05-01.M04.01 - biblioteca visual privada V5', () => {
   it('deniega explícitamente la sesión de ámbito Empresa', async () => {
     const { fixture } = await montar({ ...admin, ambito: 'Empresa' });
     expect(fixture.nativeElement.querySelectorAll('.token-item')).toHaveLength(0);
-    expect(fixture.nativeElement.querySelectorAll('form, input, button')).toHaveLength(0);
+    expect(fixture.nativeElement.querySelectorAll('form, input, button:not(.brand-choice)')).toHaveLength(0);
   });
 
   it('presenta cuatro tokens CSS permitidos sin acciones ni formularios', async () => {
     const { fixture } = await montar(admin);
     expect(fixture.nativeElement.querySelectorAll('.token-item')).toHaveLength(4);
-    expect(fixture.nativeElement.querySelectorAll('form, input, button')).toHaveLength(0);
+    expect(fixture.nativeElement.querySelectorAll('form, input, button:not(.brand-choice)')).toHaveLength(0);
     expect(fixture.nativeElement.querySelector('h2')?.textContent).toContain('Tokens y componentes');
     expect(fixture.nativeElement.textContent).toContain('--color-primary');
     expect(fixture.nativeElement.textContent).toContain('--color-danger');
@@ -69,4 +69,32 @@ describe('C05-01.M04.01 - biblioteca visual privada V5', () => {
     expect(fixture.nativeElement.querySelectorAll('.state-example')).toHaveLength(0);
     expect(fixture.nativeElement.querySelector('[role=alert]')?.textContent).toContain('permanece oculto');
   });
+  it('C05-01.M04.03 selecciona sólo presets permitidos sin CSS arbitrario', async () => {
+    const { fixture } = await montar(admin);
+    const c = fixture.componentInstance;
+    expect(fixture.nativeElement.querySelectorAll('.brand-choice')).toHaveLength(2);
+    expect(c.presetVista()?.id).toBe('institucional');
+    expect(c.seleccionarPreset('url(javascript:alert(1))')).toBe(false);
+    expect(c.seleccionarPreset('__proto__')).toBe(false);
+    expect(c.presetVista()?.id).toBe('institucional');
+    (fixture.nativeElement.querySelectorAll('.brand-choice')[1] as HTMLButtonElement).click();
+    fixture.detectChanges();
+    expect(c.presetVista()?.id).toBe('contraste');
+    expect(fixture.nativeElement.querySelector('.brand-preview-contrast')).not.toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('.brand-catalog form, .brand-catalog input')).toHaveLength(0);
+  });
+
+  it('C05-01.M04.03 deniega Empresa y retira branding al revocar sesión', async () => {
+    const empresa = await montar({ ...admin, ambito: 'Empresa' });
+    expect(empresa.fixture.componentInstance.seleccionarPreset('contraste')).toBe(false);
+    expect(empresa.fixture.nativeElement.querySelectorAll('.brand-preview, .brand-choice')).toHaveLength(0);
+    const { fixture, sesion } = await montar(admin);
+    expect(fixture.componentInstance.seleccionarPreset('contraste')).toBe(true);
+    sesion.set(null);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.presetVista()).toBeNull();
+    expect(fixture.componentInstance.seleccionarPreset('institucional')).toBe(false);
+    expect(fixture.nativeElement.querySelectorAll('.brand-preview, .brand-choice')).toHaveLength(0);
+  });
+
 });

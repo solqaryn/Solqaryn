@@ -44,7 +44,7 @@ test('biblioteca read-only abre por teclado y es responsive en 320/768/1280', as
   const catalog = page.locator('.design-catalog');
   await expect(catalog.getByRole('heading', { name: 'Tokens y componentes de referencia' })).toBeVisible();
   await expect(catalog.locator('.token-item')).toHaveCount(4);
-  await expect(catalog.locator('form, input, button')).toHaveCount(0);
+  await expect(catalog.locator('form, input, button:not(.brand-choice)')).toHaveCount(0);
   for (const width of [320, 768, 1280]) {
     await page.setViewportSize({ width, height: 800 });
     await expect(catalog.locator('.token-item')).toHaveCount(4);
@@ -79,5 +79,32 @@ test('C05-01.M04.02 deniega toda muestra de estados ante 403 de plataforma', asy
   await page.goto('/plataforma');
   await expect(page).toHaveURL(/plataforma=denegado$/);
   await expect(page.locator('.state-example')).toHaveCount(0);
+  await expect(page.getByText('PRIVATE_DESIGN_TOKEN_SECRET')).toHaveCount(0);
+});
+
+test('C05-01.M04.03 selector de branding local y responsive 320/768/1280', async ({ page }) => {
+  await mockSession(page, true);
+  await page.goto('/plataforma');
+  await page.locator('details.design-system-preview summary').click();
+  const catalog = page.locator('.design-catalog');
+  await expect(catalog.locator('.brand-choice')).toHaveCount(2);
+  await expect(catalog.locator('.brand-preview')).toContainText('Institucional');
+  await catalog.getByRole('button', { name: 'Contraste alto' }).click();
+  await expect(catalog.locator('.brand-preview-contrast')).toBeVisible();
+  await expect(catalog.locator('.brand-preview')).toContainText('Componente de referencia');
+  await expect(catalog.locator('.brand-catalog form, .brand-catalog input')).toHaveCount(0);
+  for (const width of [320, 768, 1280]) {
+    await page.setViewportSize({ width, height: 800 });
+    await expect(catalog.locator('.brand-preview-contrast')).toBeVisible();
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow, 'sin desbordamiento a ' + width).toBeLessThanOrEqual(2);
+  }
+});
+
+test('C05-01.M04.03 403 sintético no expone branding privado', async ({ page }) => {
+  await mockSession(page, false);
+  await page.goto('/plataforma');
+  await expect(page).toHaveURL(/plataforma=denegado$/);
+  await expect(page.locator('.brand-preview, .brand-choice')).toHaveCount(0);
   await expect(page.getByText('PRIVATE_DESIGN_TOKEN_SECRET')).toHaveCount(0);
 });

@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, signal } from '@angular/core';
 import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
 
 /**
@@ -30,6 +30,26 @@ export class DesignSystemV5Component {
     { id: 'exito', titulo: 'Operacion completada', detalle: 'Ejemplo de confirmacion visual; esta muestra no guarda ni modifica datos.', clase: 'state-success' },
     { id: 'permiso', titulo: 'Permiso insuficiente', detalle: 'Ejemplo de denegacion: solicitar acceso por los canales autorizados.', clase: 'state-denied' }
   ] as const;
+
+  /** C05-01.M04.03: branding de demostración local sin datos ni permisos de tenant. */
+  readonly presets = [
+    { id: 'institucional', nombre: 'Institucional', descripcion: 'Componentes con jerarquía y contraste institucional.' },
+    { id: 'contraste', nombre: 'Contraste alto', descripcion: 'Componentes con contraste reforzado sin alterar la marca guardada.' }
+  ] as const;
+  readonly presetSeleccionado = signal<(typeof this.presets)[number]['id']>('institucional');
+  readonly presetVista = computed(() =>
+    this.accesoVerificado()
+      ? this.presets.find(preset => preset.id === this.presetSeleccionado()) ?? this.presets[0]
+      : null
+  );
+
+  seleccionarPreset(id: string): boolean {
+    if (!this.accesoVerificado()) return false;
+    const permitido = this.presets.find(preset => preset.id === id);
+    if (!permitido) return false;
+    this.presetSeleccionado.set(permitido.id);
+    return true;
+  }
 
   readonly tokens = [
     { nombre: 'Primario', css: '--color-primary', clase: 'swatch-primary' },

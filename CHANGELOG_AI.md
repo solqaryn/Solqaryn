@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C05-01.M04.03 branding local permitido [Javier :50]
+- Añade dos presets visuales tipados a la biblioteca privada Angular con allowlist, selección en memoria, denegación por sesión y sin CSS/URL inyectables ni escrituras tenant.
+- Incorpora Vitest adversarial para cadenas arbitrarias, Empresa y revocación y Chromium para selección real y responsive 320/768/1280; requiere CI exact-SHA, Scope Lock, V5 y A5 independiente.
+- No acredita branding persistido, JWT HTTP ni MySQL. Solo dev, rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-16 — C05-01.M04.02 estados visuales privados V18 [Javier :30]
 - Amplía el catálogo Angular de plataforma con cinco muestras tipadas de carga, vacío, error, éxito y permiso, visibles solo con sesión de plataforma verificada; no introduce HTTP ni escrituras.
 - Añade regresiones unitarias positivas y negativas y Playwright Chromium para denegación 403, revocación, teclado, ausencia de acciones y responsive 320/768/1280; exige CI exact-SHA y A5 independiente.
