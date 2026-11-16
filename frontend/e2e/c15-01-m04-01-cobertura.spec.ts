@@ -52,3 +52,27 @@ test('C15-01.M04.01 teclado permite volver con foco visible', async ({ page }) =
   await back.click();
   await expect(page).toHaveURL(/\/plataforma(?:\/|$)/);
 });
+
+test('C15-01.M04.02 carga la referencia local a 320/768 sin HTTP mutador', async ({ page }) => {
+  await session(page, true);
+  const escrituras: string[] = [];
+  page.on('request', request => {
+    if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method())) escrituras.push(request.method());
+  });
+  for (const width of [320, 768]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto('/plataforma/trazabilidad-cobertura-v5');
+    await expect(page.getByTestId('c1501-loaded')).toBeVisible();
+    await expect(page.locator('.coverage-list li')).toHaveCount(4);
+    await expect(page.getByText('NO_MEDIDO')).toBeVisible();
+    expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(2);
+  }
+  expect(escrituras).toEqual([]);
+});
+
+test('C15-01.M04.02 anónimo nunca ve estados internos de carga o éxito', async ({ page }) => {
+  await page.goto('/plataforma/trazabilidad-cobertura-v5');
+  await expect(page).toHaveURL(/\/login(?:\?|$)/);
+  await expect(page.getByTestId('c1501-loaded')).toHaveCount(0);
+  await expect(page.getByTestId('c1501-loading')).toHaveCount(0);
+});

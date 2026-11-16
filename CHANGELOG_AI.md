@@ -1,3 +1,9 @@
+## 2026-11-16 — V17 C15-01.M04.02 estados locales de cobertura [Javier :50]
+- Amplía la superficie privada existente de cobertura con estados locales cargando, vacío, error recuperable, éxito declarativo y denegación de sesión, sin consultar Sheets ni inventar métricas o aprobaciones.
+- Protege la revocación y resultados asíncronos tardíos mediante versión de lectura; valida formas de datos, oculta excepciones y ofrece reintento accesible de mínimo 44 px.
+- Amplía Vitest con cinco regresiones adversariales y Chromium con dos pruebas de móvil/denegación sin HTTP mutador; mantiene pruebas anteriores y workflow SHA-aislado, Scope Lock y V5.
+- Riesgo R1; la publicación sólo entra VALIDANDO hasta evidencias GitHub Actions exact-SHA y A0-A4; A5 exige otra Task Javier. No certifica JWT/MySQL/tenant HTTP real, QA/main/PROD; rollback mediante git revert.
+
 ## 2026-11-16 — V17 C07-04.M04.01 frontera horizontal y scroll interno probado [Javier :10]
 - CI 43916659277 volvió a fallar 1/3 Chromium por overflow global 75 px pese a 6 Vitest PASS; no se cuenta como éxito.
 - Añade clip horizontal solo al listado y prueba adversarial de scroll interno de la tabla a 320 px, manteniendo columnas, negativos tenant/rol y assert de documento.
