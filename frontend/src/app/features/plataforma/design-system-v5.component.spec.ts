@@ -97,4 +97,31 @@ describe('C05-01.M04.01 - biblioteca visual privada V5', () => {
     expect(fixture.nativeElement.querySelectorAll('.brand-preview, .brand-choice')).toHaveLength(0);
   });
 
+
+  it('C05-01.M04.04 evita segunda activación y muestra mensajes accesibles sin formularios', async () => {
+    const { fixture } = await montar(admin);
+    const componente = fixture.componentInstance;
+    expect(componente.seleccionarPreset('contraste')).toBe(true);
+    expect(componente.seleccionarPreset('contraste')).toBe(false);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('.brand-choice[aria-pressed="true"]')).toHaveLength(1);
+    expect(fixture.nativeElement.querySelector('[role="status"]')?.textContent).toContain('Contraste alto');
+    expect(fixture.nativeElement.querySelector('.brand-choices[aria-describedby="design-brand-actions-help"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('.brand-catalog form, .brand-catalog input')).toHaveLength(0);
+    expect(componente.seleccionarPreset('url(javascript:1)')).toBe(false);
+    expect(componente.presetVista()?.id).toBe('contraste');
+  });
+
+  it('C05-01.M04.04 rechaza cambios al revocar sesión o usar Empresa', async () => {
+    const empresa = await montar({ ...admin, ambito: 'Empresa' });
+    expect(empresa.fixture.componentInstance.seleccionarPreset('contraste')).toBe(false);
+    expect(empresa.fixture.nativeElement.querySelectorAll('.brand-choice')).toHaveLength(0);
+    const { fixture, sesion } = await montar(admin);
+    expect(fixture.componentInstance.seleccionarPreset('contraste')).toBe(true);
+    sesion.set(null);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.seleccionarPreset('institucional')).toBe(false);
+    expect(fixture.nativeElement.querySelectorAll('.brand-choice, .brand-preview')).toHaveLength(0);
+    expect(fixture.nativeElement.querySelector('[role="alert"]')?.textContent).toContain('permanece oculto');
+  });
 });

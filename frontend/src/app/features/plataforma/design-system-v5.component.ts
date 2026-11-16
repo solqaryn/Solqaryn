@@ -47,6 +47,8 @@ export class DesignSystemV5Component {
     if (!this.accesoVerificado()) return false;
     const permitido = this.presets.find(preset => preset.id === id);
     if (!permitido) return false;
+    // C05-01.M04.04: una segunda activación no cambia el Signal de nuevo.
+    if (this.presetSeleccionado() === permitido.id) return false;
     this.presetSeleccionado.set(permitido.id);
     return true;
   }

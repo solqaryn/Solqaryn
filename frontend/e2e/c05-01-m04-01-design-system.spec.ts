@@ -108,3 +108,37 @@ test('C05-01.M04.03 403 sintético no expone branding privado', async ({ page })
   await expect(page.locator('.brand-preview, .brand-choice')).toHaveCount(0);
   await expect(page.getByText('PRIVATE_DESIGN_TOKEN_SECRET')).toHaveCount(0);
 });
+
+
+test('C05-01.M04.04 navega con Tab y Enter sin escrituras ni duplicación', async ({ page }) => {
+  await mockSession(page, true);
+  const writes: string[] = [];
+  page.on('request', request => {
+    if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method())) writes.push(request.method());
+  });
+  await page.goto('/plataforma');
+  await page.locator('details.design-system-preview summary').click();
+  const contraste = page.getByRole('button', { name: 'Contraste alto' });
+  for (let intento = 0; intento < 20; intento++) {
+    if (await contraste.evaluate(elemento => elemento === document.activeElement)) break;
+    await page.keyboard.press('Tab');
+  }
+  await expect(contraste).toBeFocused();
+  await page.keyboard.press('Enter');
+  const vista = page.locator('.design-catalog .brand-preview');
+  await expect(vista).toContainText('Contraste alto');
+  await expect(contraste).toHaveAttribute('aria-pressed', 'true');
+  const texto = await vista.textContent();
+  await page.keyboard.press('Enter');
+  await expect(vista).toHaveText(texto ?? '');
+  expect(writes, 'sin POST/PATCH/PUT/DELETE al seleccionar').toEqual([]);
+  await expect(page.locator('.brand-catalog form, .brand-catalog input')).toHaveCount(0);
+});
+
+test('C05-01.M04.04 denegación 403 impide acciones y no filtra error privado', async ({ page }) => {
+  await mockSession(page, false);
+  await page.goto('/plataforma');
+  await expect(page).toHaveURL(/plataforma=denegado$/);
+  await expect(page.locator('.brand-catalog button, .brand-preview')).toHaveCount(0);
+  await expect(page.getByText('PRIVATE_DESIGN_TOKEN_SECRET')).toHaveCount(0);
+});

@@ -1,3 +1,8 @@
+## 2026-11-16 — V19 C05-01.M04.04 verificación de interacción visual [Javier :50]
+- Verifica navegación real por Tab y Enter, mensajes accesibles, permisos de plataforma y 403 sintético en la biblioteca privada Angular.
+- Evita segunda transición en la selección local y prueba ausencia de formularios y de escrituras HTTP; añade dos Vitest y dos Playwright Chromium adversariales.
+- No acredita un formulario comercial real ni JWT HTTP, API de negocio o MySQL; CI causal exact-SHA, Scope Lock, V5 y A5 de revisor independiente. Rollback git revert normal.
+
 ## 2026-11-16 — V18 C02-04.M03.06 auditoría estructurada privada del control plane [Javier :00]
 - Añade sink .NET 10 de auditoría no durable con EventId y códigos allowlist, consultando evidencia backend fresca de plataforma, tenant A/B, MFA, permiso, revocación y SHA exacto antes de emitir logs.
 - Añade 13 pruebas xUnit con casos positivos, negativos, frontera, excepción y cancelación; CI GitHub-hosted, Scope Lock, V5, seguridad y Authorization son obligatorios antes de certificar LISTO.

@@ -38,7 +38,8 @@
       <section class="brand-catalog" aria-labelledby="design-brand-title">
         <h3 id="design-brand-title">Branding permitido · vista previa local</h3>
         <p>Dos configuraciones de muestra autorizadas. Cambiarlas no guarda estilos, modifica tenants ni concede permisos.</p>
-        <div class="brand-choices" role="group" aria-label="Seleccionar una vista previa permitida">
+        <p id="design-brand-actions-help">Selección local sin envío, guardado ni cambios comerciales. La opción activa no vuelve a ejecutarse.</p>
+        <div class="brand-choices" role="group" aria-label="Seleccionar una vista previa permitida" aria-describedby="design-brand-actions-help">
           @for (preset of presets; track preset.id) {
             <button class="brand-choice" type="button"
               [attr.aria-pressed]="presetSeleccionado() === preset.id"
