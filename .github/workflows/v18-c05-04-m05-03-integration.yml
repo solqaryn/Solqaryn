@@ -1,0 +1,53 @@
+name: V18 C05-04.M05.03 - integracion de build y bundle real
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v18-c05-04-m05-03-integration.yml'
+      - 'frontend/scripts/c05-04-m05-03-integration.test.mjs'
+      - 'frontend/scripts/performance-bundle-baseline.mjs'
+      - 'frontend/package.json'
+      - 'frontend/package-lock.json'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v18-c0504-m0503-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  integrate-real-build:
+    name: C05-04.M05.03 - Angular build y reporte de assets reales
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm reproducible
+        run: npm install --global npm@11.19.0
+      - name: Dependencias reproducibles
+        working-directory: frontend
+        run: npm ci
+      - name: Angular lint y build productivo real
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Analizador real y pruebas adversariales de integracion
+        working-directory: frontend
+        run: |
+          node scripts/performance-bundle-baseline.mjs
+          node --test scripts/c05-04-m05-03-integration.test.mjs
+      - name: Evidencia reproducible de bundle no productiva
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v18-c0504-m0503-real-bundle
+          path: frontend/dist/solqaryn-frontend/performance-bundle-baseline.json
+          if-no-files-found: warn
+          retention-days: 14

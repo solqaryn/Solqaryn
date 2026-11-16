@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C05-04.M05.03 integración de build y bundle real [Javier :10]
+- Incorpora pruebas Node sobre build Angular productivo real: index JS/CSS, bytes iniciales, gzip/brotli y fallos adversariales ante corrupción del informe, recurso inexistente o index sin referencias.
+- Integra GitHub-hosted npm ci, lint, build, analizador existente y cuatro asserts falsables, con concurrencia aislada por SHA; no modifica runtime, backend, DTO, secretos, JWT, RBAC, tenant ni MySQL.
+- Riesgo R2 por CI; CWV reales NO_MEDIDO, DB/HTTP vivo NO_APLICA; requerir A0–A4 causal y A5 por otra Task Javier; rollback git revert normal y nunca QA/main/PROD.
+
 ## 2026-11-16 — V18 C08-04.M04.06 densidad y carga progresiva sectorial [Javier :20]
 - Tres Vitest de carga aria-busy, estado vacío verdadero, ocultación de tarjetas bajo error y revocación, sin cambios de ejecución ni controles de permisos.
 - Tres pruebas Playwright con Chromium real de 320/375/768/1280, cuadrícula adaptativa y ausencia de mutaciones; sesión tenant simulada, JWT/DB vivos NO_MEDIDO.
