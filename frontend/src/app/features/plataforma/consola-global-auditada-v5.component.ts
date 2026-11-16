@@ -23,10 +23,10 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
         <p>Consulta privada de controles del plano global, separada de la administración ERP.</p>
         <nav aria-label="Navegación de consola global">
           <a routerLink="/plataforma" aria-label="Volver a administración de plataforma">Volver a plataforma</a>
-          @if (accesoVerificado()) {
+          @if (accesoVerificado() || verificacion() === 'error') {
             <button type="button" (click)="revalidarSesion()"
               [disabled]="estadoVisible() === 'cargando'"
-              aria-describedby="control-plane-estado">Revalidar sesión global</button>
+              aria-describedby="control-plane-estado">{{ verificacion() === 'error' ? 'Reintentar verificación' : 'Revalidar sesión global' }}</button>
           }
         </nav>
       </header>
@@ -98,7 +98,7 @@ export class ConsolaGlobalAuditadaV5Component {
   });
 
   revalidarSesion(): void {
-    if (!this.accesoVerificado() || this.verificacion() === 'cargando') return;
+    if ((!this.accesoVerificado() && this.verificacion() !== 'error') || this.verificacion() === 'cargando') return;
     this.verificacion.set('cargando');
     defer(() => this.plataforma.obtener()).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => this.verificacion.set(this.accesoVerificado() ? 'confirmada' : 'denegada'),

@@ -71,3 +71,36 @@ test('fallo 503 tras grant oculta los controles y sanitiza error', async ({ page
   await expect(page.locator('.control-cards li')).toHaveCount(0);
   await expect(page.getByText('SECRET_DSN')).toHaveCount(0);
 });
+
+test('C02-04.M04.02 error 503 permite recuperar solo tras nuevo GET autorizado', async ({ page }) => {
+  await preparar(page, true);
+  await page.goto('/plataforma/consola-global-v5');
+  await expect(page.locator('.control-cards li')).toHaveCount(4);
+
+  let falla = true;
+  let consultas = 0;
+  await page.route(endpoint, async route => {
+    const headers = {
+      'Access-Control-Allow-Origin': 'http://127.0.0.1:4200',
+      'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-Empresa-Id',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS'
+    };
+    if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers });
+    consultas++;
+    await route.fulfill({
+      status: falla ? 503 : 200, headers, contentType: 'application/json',
+      body: JSON.stringify(falla
+        ? { success: false, data: null, message: 'SENSITIVE_PROVIDER_DIAGNOSTIC' }
+        : { success: true, data: { nombreUsuario: 'Global', rolNombre: 'Admin',
+            ambito: 'Plataforma', esAdministrador: true } })
+    });
+  });
+  await page.getByRole('button', { name: 'Revalidar sesión global' }).click();
+  await expect(page.getByRole('alert')).toContainText('No se pudo verificar');
+  await expect(page.locator('.control-cards li')).toHaveCount(0);
+  await expect(page.getByText('SENSITIVE_PROVIDER_DIAGNOSTIC')).toHaveCount(0);
+  falla = false;
+  await page.getByRole('button', { name: 'Reintentar verificación' }).click();
+  await expect(page.locator('.control-cards li')).toHaveCount(4);
+  expect(consultas).toBe(2);
+});

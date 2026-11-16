@@ -2,7 +2,7 @@ import { HttpErrorResponse } from '@angular/common/http';
 import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
-import { Subject, type Observable, tap } from 'rxjs';
+import { Subject, of, throwError, type Observable, tap } from 'rxjs';
 import { routes } from '../../app.routes';
 import { PlataformaSesionService, type PlataformaSesion } from '../../core/auth/plataforma-sesion.service';
 import { plataformaGuard } from '../../core/guards/plataforma.guard';
@@ -12,7 +12,7 @@ describe('C02-04.M04.01 - consola global protegida sin privilegios nuevos', () =
   const admin: PlataformaSesion = {
     nombreUsuario: 'Admin global', rolNombre: 'Administrador', ambito: 'Plataforma', esAdministrador: true
   };
-  async function montar(inicial: PlataformaSesion | null, falloSincrono = false) {
+  async function montar(inicial: PlataformaSesion | null, falloSincrono = false, fallo503UnaVez = false) {
     TestBed.resetTestingModule();
     const sesion = signal<PlataformaSesion | null>(inicial);
     const pendiente = new Subject<PlataformaSesion>();
@@ -23,6 +23,10 @@ describe('C02-04.M04.01 - consola global protegida sin privilegios nuevos', () =
         llamadas++;
         sesion.set(null);
         if (falloSincrono) throw new Error('SECRET_INTERNAL_DSN');
+        if (fallo503UnaVez && llamadas === 1)
+          return throwError(() => new HttpErrorResponse({ status: 503, statusText: 'PRIVATE_DSN' }));
+        if (fallo503UnaVez && llamadas === 2)
+          return of(admin).pipe(tap(resultado => sesion.set(resultado)));
         return pendiente.asObservable().pipe(tap(resultado => sesion.set(resultado)));
       }
     };
@@ -125,5 +129,31 @@ describe('C02-04.M04.01 - consola global protegida sin privilegios nuevos', () =
     fixture.detectChanges();
     expect(fixture.componentInstance.estadoVisible()).toBe('error');
     expect(fixture.nativeElement.textContent).not.toContain('SECRET_INTERNAL_DSN');
+  });
+  it('C02-04.M04.02 reintenta 503 con GET validado por servidor, sin restaurar cache local', async () => {
+    const { fixture, llamadas } = await montar(admin, false, true);
+    fixture.componentInstance.revalidarSesion();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.estadoVisible()).toBe('error');
+    expect(fixture.nativeElement.querySelectorAll('.control-cards li')).toHaveLength(0);
+    expect(fixture.nativeElement.querySelector('button')?.textContent).toContain('Reintentar verificación');
+    expect(fixture.nativeElement.textContent).not.toContain('PRIVATE_DSN');
+    fixture.componentInstance.revalidarSesion();
+    fixture.detectChanges();
+    expect(llamadas()).toBe(2);
+    expect(fixture.componentInstance.estadoVisible()).toBe('exito');
+    expect(fixture.nativeElement.querySelectorAll('.control-cards li')).toHaveLength(4);
+  });
+
+  it('C02-04.M04.02 deniega reintento de 403 y no envia una nueva consulta', async () => {
+    const { fixture, pendiente, llamadas } = await montar(admin);
+    fixture.componentInstance.revalidarSesion();
+    pendiente.error(new HttpErrorResponse({ status: 403 }));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.estadoVisible()).toBe('sin_permiso');
+    expect(fixture.nativeElement.querySelectorAll('button')).toHaveLength(0);
+    fixture.componentInstance.revalidarSesion();
+    expect(llamadas()).toBe(1);
+    expect(fixture.nativeElement.querySelectorAll('.control-cards li')).toHaveLength(0);
   });
 });

@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C02-04.M04.02 recuperación segura tras error transitorio [Javier :40]
+- Los cinco estados privados de consola conservan ocultación fail-closed; ante 503 hay reintento GET explícito y los controles no reaparecen hasta validación del servidor.
+- Nuevos Vitest y Chromium exigen 503 opaco, revalidación 200, 403 sin reintento y ausencia de acceso por caché local; CI exact-SHA, Scope Lock, V5 y A5 independiente obligatorios.
+- Riesgo R2 solo de interfaz con backend simulado; no certifica JWT HTTP, MFA, RBAC backend, tenant A/B ni MySQL. Solo dev y rollback mediante git revert.
+
 ## 2026-11-16 — V19 C05-04.M04.01 superficie privada de ligereza visual [Javier :50]
 - Agrega en /plataforma ya protegida una superficie Angular de consulta de presupuestos y objetivos LCP/CLS explícitamente NO_MEDIDOS, con resumen compacto por Signal y semántica accesible.
 - Cuatro casos Chromium dirigidos de acceso, 403, teclado/Enter sin HTTP de escritura y responsive 320/375/768/1280; flujo CI exact-SHA SHA-aislado con lint/build; A0–A4 pendientes de resultados externos, A5 independiente.
