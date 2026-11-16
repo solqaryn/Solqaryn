@@ -24,6 +24,7 @@ on:
     branches: [dev]
     paths:
       - .github/workflows/p4-ab-real-auth-ephemeral.yml
+      - 'frontend/e2e/c02-04-m05-05-security.spec.ts'
       - scripts/ci/p4-ab-real-auth.mjs
       - backend/src/API/Middleware/UnscopedCommercialTenantGuardMiddleware.cs
   workflow_dispatch:

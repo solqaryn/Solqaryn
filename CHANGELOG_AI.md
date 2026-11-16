@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C02-04.M05.05 ampliacion causal CI HTTP JWT MySQL efimero [Javier :00]
+- Se extiende exclusivamente el disparador de la suite P4 de HTTP JWT RBAC A/B y MySQL 8.4 efimero al test negativo C02-04.M05.05, sin cambiar pruebas ni desactivar validadores.
+- A3 sigue pendiente de comprobar el job exact-SHA, fases active/revoked/inactive/role-revoked y 0 fallos; browser simulado por separado. No hay afirmacion de PASS hasta lectura de CI real.
+- Scope Lock STRICT, V5, cambios solo en dev y rollback git revert. A5 por otro Task Javier.
+
 ## 2026-11-16 — V18 C08-04.M04.05 contraste accesible en extensiones sectoriales [Javier :50]
 - Corrige contraste de etiquetas en preset oscuro con colores estáticos explícitos; preserva guardas y evita cambios de autorización o módulos.
 - Añade cinco pruebas Playwright adversariales: anónimo/403 sintético, Tab real y foco visible, respuesta a cuatro anchos y contraste WCAG 4.5:1 de ambos presets con aserción capaz de fallar ante la regresión.

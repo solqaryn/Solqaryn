@@ -19,3 +19,6 @@ OWNER: DEV01; A5 obligatorio por otra Task Javier distinta.
 
 ## Handoff
 Mantener VALIDANDO (o EN_PROGRESO si falta entrega segura) hasta contar con CI exact-SHA y pruebas de integración reales pertinentes. No certificar LISTO ni liberar sucesora técnica solamente por Chromium simulado.
+
+## CI de integración real vinculada al alcance (V18)
+El workflow existente `.github/workflows/p4-ab-real-auth-ephemeral.yml` ahora se ejecuta también cuando cambia el test C02-04.M05.05, además de la propia actualización del YAML. Ese job utiliza MySQL 8.4 efímero y API localhost con JWT HTTP verdaderos, roles de empresas A/B, revocación y auditoría; verificar sus logs exact-SHA antes de asignar A3=PASS. No implica entornos externos ni reemplaza la inspección del test en navegador.
