@@ -1,4 +1,4 @@
-name: V17 C03-04.M04.01 - respuesta privada a incidentes
+name: V17 C03-04.M04.01-M04.02 - estados privados de incidentes
 on:
   push:
     branches: [dev]
@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   incident-ui:
-    name: C03-04.M04.01 - Vitest y Chromium de incidentes
+    name: C03-04.M04.01-M04.02 - Vitest y Chromium de incidentes
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
@@ -34,7 +34,7 @@ jobs:
       - name: Dependencias
         working-directory: frontend
         run: npm ci
-      - name: Cinco Vitest de guard y revocacion
+      - name: Nueve Vitest de permisos y estados seguros
         working-directory: frontend
         run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/respuesta-incidentes-v5.component.spec.ts
       - name: Lint y build
@@ -57,7 +57,7 @@ jobs:
           done
           cat v17-c0304-m0401.log >&2
           exit 1
-      - name: Chromium positivo negativo responsive con API simulada
+      - name: Cinco Chromium privados con API simulada
         working-directory: frontend
         run: npx playwright test e2e/c03-04-m04-01-incidentes.spec.ts --config=playwright.config.ts --workers=1 --retries=0
       - name: Evidencia

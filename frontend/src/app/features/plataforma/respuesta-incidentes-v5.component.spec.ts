@@ -1,4 +1,6 @@
 import { signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Subject } from 'rxjs';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { PlataformaSesionService, type PlataformaSesion } from '../../core/auth/plataforma-sesion.service';
@@ -13,13 +15,23 @@ describe('C03-04.M04.01 - respuesta a incidentes privada', () => {
   async function montar(valor: PlataformaSesion | null) {
     TestBed.resetTestingModule();
     const sesion = signal<PlataformaSesion | null>(valor);
+    const solicitudes: Subject<PlataformaSesion>[] = [];
+    const servicio = {
+      sesion,
+      obtener: () => {
+        sesion.set(null);
+        const pendiente = new Subject<PlataformaSesion>();
+        solicitudes.push(pendiente);
+        return pendiente.asObservable();
+      }
+    };
     await TestBed.configureTestingModule({
       imports: [RespuestaIncidentesV5Component],
-      providers: [provideRouter([]), { provide: PlataformaSesionService, useValue: { sesion } }]
+      providers: [provideRouter([]), { provide: PlataformaSesionService, useValue: servicio }]
     }).compileComponents();
     const fixture = TestBed.createComponent(RespuestaIncidentesV5Component);
     fixture.detectChanges();
-    return { fixture, sesion };
+    return { fixture, sesion, solicitudes };
   }
   it('existe solo una ruta lazy protegida por plataformaGuard', async () => {
     const coincidencias = routes.filter(r => r.path === 'plataforma/respuesta-incidentes-v5');
@@ -37,7 +49,8 @@ describe('C03-04.M04.01 - respuesta a incidentes privada', () => {
     const { fixture } = await montar(autorizado);
     expect(fixture.componentInstance.autorizado()).toBe(true);
     expect(fixture.nativeElement.querySelectorAll('.incident-review li')).toHaveLength(4);
-    expect(fixture.nativeElement.querySelectorAll('button, form, input, textarea')).toHaveLength(0);
+    expect(fixture.nativeElement.querySelectorAll('form, input, textarea')).toHaveLength(0);
+    expect(fixture.nativeElement.querySelectorAll('button')).toHaveLength(1);
     expect(fixture.nativeElement.textContent).toContain('NO_MEDIDO');
   });
   it('sesión de empresa no puede elevarse a plataforma', async () => {
@@ -54,4 +67,51 @@ describe('C03-04.M04.01 - respuesta a incidentes privada', () => {
     expect(fixture.componentInstance.autorizado()).toBe(false);
     expect(fixture.nativeElement.querySelectorAll('.incident-review li')).toHaveLength(0);
   });
+  it('C03-04.M04.02 vacío de fuente sin inventar incidentes', async () => {
+    const { fixture } = await montar(autorizado);
+    expect(fixture.componentInstance.estadoVista()).toBe('sin_datos');
+    expect(fixture.nativeElement.textContent).toContain('Sin incidentes conectados');
+  });
+  it('C03-04.M04.02 carga oculta datos y bloquea consulta duplicada; luego confirma sesión', async () => {
+    const { fixture, sesion, solicitudes } = await montar(autorizado);
+    fixture.componentInstance.revalidarSesion();
+    fixture.componentInstance.revalidarSesion();
+    fixture.detectChanges();
+    expect(solicitudes).toHaveLength(1);
+    expect(fixture.componentInstance.estadoVista()).toBe('cargando');
+    expect(fixture.nativeElement.querySelectorAll('.incident-review li')).toHaveLength(0);
+    sesion.set(autorizado);
+    solicitudes[0].next(autorizado);
+    solicitudes[0].complete();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.estadoVista()).toBe('exito');
+    expect(fixture.nativeElement.querySelectorAll('.incident-review li')).toHaveLength(4);
+  });
+  it('C03-04.M04.02 error 503 falla cerrado y oculta diagnóstico', async () => {
+    const { fixture, solicitudes } = await montar(autorizado);
+    fixture.componentInstance.revalidarSesion();
+    solicitudes[0].error(new HttpErrorResponse({ status: 503, statusText: 'UPSTREAM_SECRET_DIAGNOSTIC' }));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.estadoVista()).toBe('error');
+    expect(fixture.nativeElement.querySelectorAll('.incident-review li')).toHaveLength(0);
+    expect(fixture.nativeElement.textContent).toContain('No se pudo comprobar la sesión');
+    expect(fixture.nativeElement.textContent).not.toContain('UPSTREAM_SECRET_DIAGNOSTIC');
+  });
+  it('C03-04.M04.02 403 y revocación niegan la guía', async () => {
+    const { fixture, sesion, solicitudes } = await montar(autorizado);
+    fixture.componentInstance.revalidarSesion();
+    solicitudes[0].error(new HttpErrorResponse({ status: 403 }));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.estadoVista()).toBe('sin_permiso');
+    expect(fixture.nativeElement.querySelectorAll('.incident-review li')).toHaveLength(0);
+    sesion.set(autorizado);
+    fixture.componentInstance.verificacion.set('inicial');
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('.incident-review li')).toHaveLength(4);
+    sesion.set(null);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.estadoVista()).toBe('sin_permiso');
+    expect(fixture.nativeElement.querySelectorAll('.incident-review li')).toHaveLength(0);
+  });
+
 });

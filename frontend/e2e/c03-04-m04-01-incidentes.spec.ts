@@ -50,7 +50,46 @@ test('grant sintético solo lectura y sin desbordamiento móvil ni API operativa
   await expect(page.getByRole('heading', { name: 'Respuesta, revocación y recuperación segura' })).toBeVisible();
   await expect(page.locator('.incident-review li')).toHaveCount(4);
   await expect(page.getByText(/RTO\/RPO: NO_MEDIDO/)).toBeVisible();
-  await expect(page.locator('.incident-guide button, .incident-guide form, .incident-guide input')).toHaveCount(0);
+  await expect(page.locator('.incident-guide form, .incident-guide input')).toHaveCount(0);
+  await expect(page.getByRole('button', { name: 'Revalidar sesión de plataforma' })).toBeVisible();
   expect(operativas).toEqual([]);
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(2);
+});
+
+test('C03-04.M04.02 vacío y éxito de revalidación sintética', async ({ page }) => {
+  await tokenSimulado(page);
+  await sesionSimulada(page, true);
+  await page.goto('/plataforma/respuesta-incidentes-v5');
+  await expect(page.getByRole('heading', { name: 'Sin incidentes conectados' })).toBeVisible();
+  await page.getByRole('button', { name: 'Revalidar sesión de plataforma' }).click();
+  await expect(page.getByText(/Sesión administradora confirmada por la API/)).toBeVisible();
+  await expect(page.locator('.incident-review li')).toHaveCount(4);
+});
+test('C03-04.M04.02 503 posterior no expone guía ni diagnóstico de servidor', async ({ page }) => {
+  await tokenSimulado(page);
+  let fallar = false;
+  await page.route(/\/plataforma\/sesion(?:\?|$)/, async route => {
+    const headers = {
+      'Access-Control-Allow-Origin': 'http://127.0.0.1:4200',
+      'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-Empresa-Id',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS'
+    };
+    if (route.request().method() === 'OPTIONS') {
+      await route.fulfill({ status: 204, headers });
+      return;
+    }
+    await route.fulfill({
+      status: fallar ? 503 : 200, headers, contentType: 'application/json',
+      body: JSON.stringify(fallar
+        ? { success: false, message: 'UPSTREAM_SECRET_DIAGNOSTIC' }
+        : { success: true, data: { nombreUsuario: 'Prueba', rolNombre: 'Admin', ambito: 'Plataforma', esAdministrador: true } })
+    });
+  });
+  await page.goto('/plataforma/respuesta-incidentes-v5');
+  await expect(page.locator('.incident-review li')).toHaveCount(4);
+  fallar = true;
+  await page.getByRole('button', { name: 'Revalidar sesión de plataforma' }).click();
+  await expect(page.getByRole('alert')).toContainText('No se pudo comprobar la sesión');
+  await expect(page.locator('.incident-review li')).toHaveCount(0);
+  await expect(page.getByText('UPSTREAM_SECRET_DIAGNOSTIC')).toHaveCount(0);
 });

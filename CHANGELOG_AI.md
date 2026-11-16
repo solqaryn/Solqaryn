@@ -1,3 +1,8 @@
+## 2026-11-15 - V17 C03-04.M04.02 estados seguros de incidentes [Javier :20]
+- Extiende superficie Angular privada con carga, vacío, error genérico, éxito de sesión y falta de permisos; solo GET /plataforma/sesion, sin feed ni restauraciones simuladas como reales.
+- Propone nueve Vitest y cinco Chromium sintéticos, lint y build en GitHub-hosted; exigir SUCCESS exact-SHA antes de LISTO.
+- Riesgo R2: conserva guard y sesión backend como autoridad, UI fail-closed y A5 independiente; no certifica MySQL, tenant real, JWT real ni restauración. Rollback git revert normal.
+
 ## 2026-11-15 — V17 C15-02.M03.06 auditoría segura de arquitectura [Javier :50]
 - Agrega fachada Infrastructure .NET 10 de auditoría acotada y monohilo, lectura sintética de C15-02.M03.05, rechazo de doble selección y scopes de tenant/SHA inconsistentes, y sink estructurado sin secretos.
 - Incorpora 13 pruebas xUnit positivas, negativas, revocación, tenant B, fallo de lector/sink, límite, concurrencia y cancelación; comprobación real GitHub-hosted A0-A4 pertinente al SHA.

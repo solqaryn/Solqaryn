@@ -1,4 +1,6 @@
-import { ChangeDetectionStrategy, Component, ElementRef, computed, inject, viewChild } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, computed, inject, signal, viewChild } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
 
@@ -17,7 +19,25 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
         <p>Guía de comprobación futura, sin incidentes ni respaldos conectados.</p>
         <a routerLink="/plataforma" aria-label="Regresar a plataforma">Regresar a plataforma</a>
       </header>
-      @if (autorizado()) {
+      @if (estadoVista() === 'cargando') {
+        <section class="notice" role="status" aria-live="polite">Comprobando la sesión de plataforma. La guía permanece oculta durante la verificación.</section>
+      } @else if (estadoVista() === 'error') {
+        <p class="notice" role="alert">No se pudo comprobar la sesión. La guía permanece oculta; vuelve a entrar para reintentar.</p>
+      } @else if (autorizado()) {
+        <section class="notice" aria-label="Estado de la verificación">
+          <p role="status" aria-live="polite">
+            @if (estadoVista() === 'exito') {
+              Sesión administradora confirmada por la API; ninguna operación de respuesta a incidentes fue ejecutada.
+            } @else {
+              Guía disponible con la sesión comprobada en la navegación protegida.
+            }
+          </p>
+          <button type="button" (click)="revalidarSesion()">Revalidar sesión de plataforma</button>
+        </section>
+        <section class="notice" aria-label="Estado vacío del registro">
+          <h2>Sin incidentes conectados</h2>
+          <p>Esta guía no consume un feed de incidentes ni consulta respaldos. Sin registros confirmados no se muestran eventos inventados.</p>
+        </section>
         <section aria-label="Límite de autoridad" class="notice">
           <strong>Solo lectura · ninguna restauración ni revocación ejecutada</strong>
           <p>Requiere evidencia de identidad, alcance, pruebas aisladas y aprobación antes de operar.</p>
@@ -50,6 +70,8 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
     .eyebrow { color:var(--mat-sys-primary, #2157a3); font-weight:700; }
     header a { display:inline-flex; box-sizing:border-box; min-height:44px; align-items:center; border:1px solid currentColor; border-radius:.55rem; padding:.65rem .85rem; color:inherit; }
     header a:focus-visible { outline:3px solid var(--mat-sys-primary, #2157a3); outline-offset:3px; }
+    button { min-height:44px; padding:.65rem .9rem; border:1px solid currentColor; border-radius:.55rem; color:inherit; background:var(--mat-sys-surface, #fff); cursor:pointer; }
+    button:focus-visible { outline:3px solid var(--mat-sys-primary, #2157a3); outline-offset:3px; }
     .notice { border:1px solid var(--mat-sys-outline-variant, #aeb8c1); border-radius:.7rem; padding:1rem; margin-top:1rem; }
     .incident-review { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); list-style:none; gap:.8rem; padding:0; }
     .incident-review li { min-width:0; overflow-wrap:anywhere; border:1px solid var(--mat-sys-outline-variant, #aeb8c1); border-radius:.7rem; padding:.9rem; }
@@ -64,6 +86,7 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
 })
 export class RespuestaIncidentesV5Component {
   private readonly plataforma = inject(PlataformaSesionService);
+  private readonly destroyRef = inject(DestroyRef);
   private readonly titulo = viewChild.required<ElementRef<HTMLHeadingElement>>('incidentTitle');
 
   /** El <base href="/"> del SPA no debe enviar el salto a /#incident-title. */
@@ -76,4 +99,25 @@ export class RespuestaIncidentesV5Component {
     const sesion = this.plataforma.sesion();
     return sesion?.ambito === 'Plataforma' && sesion.esAdministrador === true;
   });
+  /** C03-04.M04.02: estado de comprobación de sesión, nunca incidentes inventados. */
+  readonly verificacion = signal<'inicial' | 'cargando' | 'exito' | 'error' | 'sin_permiso'>('inicial');
+  readonly estadoVista = computed(() => {
+    const actual = this.verificacion();
+    if (actual === 'cargando' || actual === 'error' || actual === 'sin_permiso') return actual;
+    return this.autorizado() ? (actual === 'exito' ? 'exito' : 'sin_datos') : 'sin_permiso';
+  });
+
+  /** Solo GET de sesión existente, sin restore, revocación ni jobs. */
+  revalidarSesion(): void {
+    if (!this.autorizado() || this.verificacion() === 'cargando') return;
+    this.verificacion.set('cargando');
+    this.plataforma.obtener().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => this.verificacion.set(this.autorizado() ? 'exito' : 'sin_permiso'),
+      error: (error: unknown) => {
+        const denegado = error instanceof HttpErrorResponse && (error.status === 401 || error.status === 403);
+        this.verificacion.set(denegado ? 'sin_permiso' : 'error');
+      }
+    });
+  }
+
 }
