@@ -233,3 +233,63 @@ describe('C11-04.M04.04 - navegación y acciones sin duplicados', () => {
     expect(fixture.nativeElement.querySelector('#obs-status').getAttribute('aria-busy')).toBe('false');
   });
 });
+
+describe('C11-04.M05.01 - pruebas unitarias reproducibles de observabilidad privada', () => {
+  const admin: PlataformaSesion = { nombreUsuario: 'Control', rolNombre: 'Admin', ambito: 'Plataforma', esAdministrador: true };
+  async function montar(inicial: PlataformaSesion | null, obtener: () => Observable<PlataformaSesion>) {
+    TestBed.resetTestingModule();
+    const sesion = signal<PlataformaSesion | null>(inicial);
+    await TestBed.configureTestingModule({
+      imports: [ObservabilidadPrivadaV5Component],
+      providers: [provideRouter([]), { provide: PlataformaSesionService, useValue: { sesion, obtener } }]
+    }).compileComponents();
+    const fixture = TestBed.createComponent(ObservabilidadPrivadaV5Component);
+    fixture.detectChanges();
+    return { fixture, sesion, component: fixture.componentInstance };
+  }
+
+  it('caso positivo: la revalidacion confirma la guia sin crear metricas ni exporter', async () => {
+    let solicitudes = 0;
+    const { fixture, component } = await montar(admin, () => { solicitudes++; return of(admin); });
+    expect(solicitudes).toBe(0);
+    expect(component.estadoVisible()).toBe('vacio');
+    component.revalidar(); fixture.detectChanges();
+    expect(solicitudes).toBe(1);
+    expect(component.estadoVisible()).toBe('exito');
+    expect(fixture.nativeElement.querySelectorAll('.obs-points li')).toHaveLength(4);
+    expect(fixture.nativeElement.textContent).toContain('NO_MEDIDO');
+    expect(fixture.nativeElement.querySelectorAll('form, input, iframe')).toHaveLength(0);
+  });
+
+  it('frontera: una respuesta tardia no reautoriza una sesion revocada durante I/O', async () => {
+    const respuesta = new Subject<PlataformaSesion>();
+    const { fixture, sesion, component } = await montar(admin, () => respuesta.asObservable());
+    component.revalidar(); fixture.detectChanges();
+    expect(component.estadoVisible()).toBe('cargando');
+    sesion.set(null); fixture.detectChanges();
+    respuesta.next(admin); respuesta.complete(); fixture.detectChanges();
+    expect(component.verificado()).toBe(false);
+    expect(component.estadoVisible()).toBe('sin_permiso');
+    expect(fixture.nativeElement.querySelectorAll('.obs-points li')).toHaveLength(0);
+    expect(fixture.nativeElement.querySelector('.obs-branding')).toBeNull();
+  });
+
+  it('negativo: respuesta de administrador no supera la pertenencia empresarial local', async () => {
+    const empresa = { ...admin, ambito: 'Empresa' } as unknown as PlataformaSesion;
+    const { fixture, component } = await montar(empresa, () => of(admin));
+    component.revalidar(); fixture.detectChanges();
+    expect(component.verificado()).toBe(false);
+    expect(component.estadoVisible()).toBe('sin_permiso');
+    expect(fixture.nativeElement.querySelectorAll('.obs-points li')).toHaveLength(0);
+  });
+
+  it('error: HTTP 429 y detalle sensible nunca se convierten en mensaje ni acceso', async () => {
+    const { fixture, component } = await montar(admin, () => throwError(() =>
+      new HttpErrorResponse({ status: 429, error: { token: 'PRIVATE_TOKEN_DO_NOT_RENDER' } })));
+    component.revalidar(); fixture.detectChanges();
+    expect(component.estadoVisible()).toBe('error');
+    expect(fixture.nativeElement.querySelectorAll('.obs-points li')).toHaveLength(0);
+    expect(fixture.nativeElement.textContent).not.toContain('PRIVATE_TOKEN_DO_NOT_RENDER');
+    expect(fixture.nativeElement.querySelector('#obs-status[aria-busy="false"]')).not.toBeNull();
+  });
+});

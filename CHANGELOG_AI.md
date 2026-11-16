@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C11-04.M05.01 pruebas de regresión unitarias de observabilidad [Javier :10]
+- Agrega cuatro casos Vitest a la suite existente: aceptación sin exporter, revocación durante respuesta pendiente, empresa sin privilegio y error 429 sin fuga de secreto.
+- Pruebas reales pendientes de GitHub Actions en SHA nuevo; no se atribuye PASS anticipado. La suite dirigida incluye Chromium, frontend, Scope Lock y V5.
+- R2 prudente por fronteras de autorización probadas, sin cambiar runtime productivo, JWT, MySQL, proveedores ni QA/main/PROD; A5 independiente.
+
 ## 2026-11-16 — V17 reparación QA P2 C03-04.M04.03 botones de accesibilidad [Javier :10]
 - Repara aserción de C03-04.M04.05 que esperaba un botón, aunque C03-04.M04.03 introdujo un segundo botón cosmético de densidad: exige exactamente dos, type=button y textos explícitos.
 - SHA origen 1118cf68932fe0ef10d93ca0d5219421f4103192; CI fallida RUN 43856490141 con 3/4 Vitest. El fallo histórico no es PASS; exige CI causal exact-SHA, Scope Lock, V5, Chromium y readback.
