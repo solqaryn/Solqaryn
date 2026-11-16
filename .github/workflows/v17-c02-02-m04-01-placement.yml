@@ -1,0 +1,62 @@
+name: V17 C02-02.M04.01 - placement privado sin DB
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v17-c02-02-m04-01-placement.yml'
+      - 'frontend/src/app/app.routes.ts'
+      - 'frontend/src/app/features/plataforma/placement-review-v5.component.ts'
+      - 'frontend/src/app/features/plataforma/placement-review-v5.component.spec.ts'
+      - 'frontend/e2e/c02-02-m04-01-placement.spec.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v17-c0202-m0401-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  ui:
+    name: C02-02.M04.01 - Vitest Angular Chromium sin DSN
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm reproducible
+        run: npm install --global npm@11.19.0
+      - name: Instalar dependencias
+        working-directory: frontend
+        run: npm ci
+      - name: Tests guard y revocación
+        working-directory: frontend
+        run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/placement-review-v5.component.spec.ts
+      - name: Lint y build Angular
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Arrancar frontend
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > v17-c0202-m0401.log 2>&1 &
+          for attempt in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat v17-c0202-m0401.log >&2
+          exit 1
+      - name: Playwright permisos y ausencia de cutover
+        working-directory: frontend
+        run: npx playwright test e2e/c02-02-m04-01-placement.spec.ts --config=playwright.config.ts --workers=1 --reporter=list

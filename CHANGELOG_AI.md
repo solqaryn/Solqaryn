@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C02-02.M04.01 ruta privada shared/dedicated placement [Javier :20]
+- Implementa Angular 22.2.1 componente lazy con guard de plataforma, modelo de responsabilidades Shared/Dedicated y checklist de validación/rollback, solo lectura sin DSN ni router/migraciones reales.
+- Agrega 5 pruebas unitarias de grant/tenant empresarial/revocación y 3 Playwright Chromium sintéticos; exige lint, build, Scope Lock y V5 exact-SHA antes de LISTO.
+- Riesgo R2 UI de infraestructura: no certifica MySQL, JWT, tenant A/B backend ni cutover, V17 lock exclusivo, A5 independiente, rollback git revert.
+
 ## 2026-11-15 — V17 C15-03.M04.04 verificación de navegación sin doble acción [Javier :20]
 - Incorpora prueba funcional real Playwright Chromium sobre la ruta privada existente: anónimo y 403 sintéticos denegados, mensajes solo lectura/NO_MEDIDO, enlace único de regreso, visita repetida sin mutaciones a endpoints sensibles.
 - No inventa formularios inexistentes ni afecta guard, API o servicios; exige npm lint/build, Chromium, Scope Lock y procedencia V5 exact-SHA antes de LISTO.
