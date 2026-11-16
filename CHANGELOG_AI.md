@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C08-04.M03.06 auditoría estructurada segura de módulos sectoriales [Javier :40]
+- Implementa frontera Application in-process con eventos ATTEMPT/OUTCOME correlacionados, códigos estáticos sin PII/tenant/SHA y fail-closed cuando falla el audit sink, sin registros durables ni permisos nuevos.
+- Ocho xUnit dirigidos cubren sondeo seguro, tenant A/B, RBAC revocado, dispatch malicioso, fallos de audit sink, excepción de proveedor, cancelación y dependencias inválidas; CI real exact-SHA pendiente de resultado.
+- No DI, proveedor real, HTTP/JWT, MySQL, colas, worker alojado ni QA/main/PROD; A5 independiente y rollback mediante revert normal.
+
 ## 2026-11-16 — V18 C13-04.M03.05 worker acotado de revisión visual aislada [Javier :20]
 - Implementa orquestador .NET 10 read-only en proceso con puerto al adaptador C13-04.M03.04; hasta 8 tickets, copia de entrada única antes de await, rechazo tenant/SHA mezclados, duplicados, solicitudes de publicación y enumeradores adversariales.
 - Ocho regresiones xUnit verifican adaptador y autoridad sintética, revocación, errores opacos, revalidación de resultados, cancelación y ausencia de grants; ninguna sesión JWT HTTP ni MySQL real es certificada.
