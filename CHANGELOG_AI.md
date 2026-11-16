@@ -1,3 +1,8 @@
+## 2026-11-15 - V17 C09-03.M01.06 gates, rollback y salida documental Social Hub [Javier :10]
+- Define puertas de bloqueo para preparar Social Hub/campanas: consentimiento por canal/finalidad, opt-out y revocacion, tenant A/B, RBAC backend, idempotencia, auditoria, cuotas y privacidad sin activar publicaciones ni proveedores.
+- Documenta doce escenarios positivos/negativos FUTUROS_NO_EJECUTADOS, decisiones D01-D08 pendientes, rollback en ocho pasos y dependencia de A0-A5, DAG dinamico y candado V17.
+- R0 solo Markdown y CHANGELOG; sin .NET, Angular, MySQL, JWT real, integraciones ni QA/main/PROD. Scope Lock y procedencia V5 exact-SHA requeridos; A5 solo por otra Task Javier.
+
 ## 2026-11-15 - V17 C05-01.M03.06 auditoria segura sintetica de temas [Javier :50]
 - Agrega servicio Infrastructure .NET 10 de auditoría estructurada, acotada e idempotente sobre el worker de previsualización M03.05; captura entradas, rechaza cruces de tenant, revisión, sesión, SHA, duplicados y concurrencia.
 - Incorpora 11 pruebas xUnit adversariales de resultado nominal, denegaciones, errores sin filtración, respuestas forjadas, sink fallido, capacidad y cancelación; CI real GitHub-hosted exact-SHA obligatoria, sin atribuir PASS anticipado.
