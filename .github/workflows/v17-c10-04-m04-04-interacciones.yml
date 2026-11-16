@@ -6,7 +6,7 @@ on:
       - 'frontend/src/app/features/plataforma/continuidad-operativa-v5.component.ts'
       - 'frontend/src/app/features/plataforma/continuidad-operativa-v5.component.spec.ts'
       - 'frontend/src/app/features/plataforma/continuidad-interacciones-v5.spec.ts'
-      - '.github/workflows/v17-c10-04-m04-03-interacciones.yml'
+      - '.github/workflows/v17-c10-04-m04-04-interacciones.yml'
   workflow_dispatch:
 permissions:
   contents: read
@@ -35,7 +35,7 @@ jobs:
         run: npm ci
       - name: Pruebas reales de navegacion, errores y single-flight fail closed
         working-directory: frontend
-        run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/continuidad-presentacion-v5.spec.ts
+        run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/continuidad-interacciones-v5.spec.ts
       - name: Lint y build Angular
         working-directory: frontend
         run: |

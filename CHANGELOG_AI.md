@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C10-04.M04.04 reparación de evidencia CI P1 [Javier :10]
+- Corrige la selección Vitest del workflow de interacción Angular para ejecutar las siete pruebas `continuidad-interacciones-v5.spec.ts`, antes omitidas por seleccionar cuatro pruebas heredadas de `continuidad-presentacion-v5.spec.ts`.
+- Corrige el filtro de ruta del propio workflow M04.04; conserva lint, build, Chromium, Scope Lock, procedencia V5 y cancel-in-progress=false.
+- Preserva el hallazgo A5_FAIL P1 de DEV05 y requiere nueva evidencia causal GitHub Actions y revisión independiente posterior; sin reclamar integración JWT, MySQL ni producción.
+
 ## 2026-11-15 — V17 C02-02.M04.04 navegación y mensajes seguros de placement [Javier :00]
 - Robustecida revalidación Angular privada con defer ante excepción síncrona, estado fail-closed y botón single-flight; ruta de regreso y ausencia de formularios peligrosos preservadas.
 - Añadidos tres Vitest dirigidos y Chromium sintético de navegación y 403 posterior, sin filtrar DSN ni autorizar migraciones; CI causal Angular/Chromium mediante workflows ya existentes.
