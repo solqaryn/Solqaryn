@@ -1,3 +1,8 @@
+## 2026-11-16 - V17 C13-01.M02.06 contrato de salida de privacidad [Javier :10]
+- Establece dieciseis puertas G01-G16 de consentimiento, versionado, tenants, revocacion, idempotencia, legal hold y A5 sin habilitar runtime.
+- Documenta doce casos T01-T12 FUTUROS_NO_EJECUTADOS (0/12) y ocho salvaguardas RB01-RB08, incluyendo pruebas MySQL/Chromium futuras, sin afirmarlas aprobadas.
+- R0 documental: Scope Lock/V5 causal, candado V17, BITACORA y readback; sin API, EF/MySQL, Angular, cookies, textos legales ni QA/main/PROD.
+
 ## 2026-11-16 - V17 C11-04.M04.03 branding tipado de observabilidad privada [Javier :20]
 - Agrega identidad visual institucional o neutra fija y tipada a la ruta privada de observabilidad, visible solo si el backend confirma sesión de plataforma; valor desconocido revierte a neutro.
 - Amplía Vitest (cinco casos nuevos) y Chromium (dos escenarios dirigidos) para variantes, revocación, ámbito empresarial, valor inválido, 403 y ancho móvil sin desbordamiento; CI exigida por SHA.
