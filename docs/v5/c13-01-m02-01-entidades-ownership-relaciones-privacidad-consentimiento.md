@@ -15,7 +15,7 @@ Definir un **modelo conceptual** de privacidad, avisos, cookies, términos, elec
 | E01 | PrivacyPolicyDraft | policyDraftId, scope, locale, revision, approvalState | Propietario institucional designado | Versión E02; rechazo mientras G01/G04 abiertos |
 | E02 | PolicyVersionReference | policyRef, revisionDigest, effectiveFrom? | Responsable aprobado; no autor implícito | E01 1:N E02; versiones históricas no mutables |
 | E03 | ProcessingPurposeDraft | purposeKey, category, legalBasisReviewState | Responsable de finalidad por ámbito | E01 1:N E03; base jurídica no inventada |
-| E04 | DataCategoryInventory | categoryKey, sensitivityReviewState, retentionClassRef? | Custodio de datos identificado | E03 N:M E04; clasificación pendiente G02 |
+| E04 | DataCategoryCatalog | categoryKey, sensitivityReviewState, retentionClassRef? | Custodio de datos identificado | E03 N:M E04; clasificación pendiente G02 |
 | E05 | TenantBoundaryReference | tenantId, membershipRevision | Empresa A/B desde backend | Claves de ámbito E06/E08/E09, jamás cabecera |
 | E06 | SubjectReference | subjectRef, subjectType, identityProofState | Sujeto identificado; operador no lo suplanta | E05 1:N E06; ninguna PII en identificador compartido |
 | E07 | PermissionContextReference | actorRef, tenantRef, roleRevision, revokedAt? | Servicio de autorización server-side | Obligatorio para E08/E10/E12; no otorgar grants |
@@ -26,7 +26,7 @@ Definir un **modelo conceptual** de privacidad, avisos, cookies, términos, elec
 | E12 | PrivacyRightsCaseDraft | caseRef, caseType, verificationState | Solicitante E06 y revisor competente futuro | Sin plazos o derechos presuntos; ninguna exportación aquí |
 | E13 | RetentionRuleProposal | ruleRef, categoryRef, legalReviewState, effectiveVersion | Autoridad jurídica competente pendiente | E04 por clase; sin DELETE/TTL automático |
 | E14 | HoldAndExceptionReference | holdRef, reasonClass, approvedScope, validUntil? | Custodio autorizado futuro | E13 condicionado; protege registros y auditoría |
-| E15 | ProcessorDestinationInventory | processorRef, transferReviewState, purposeRef | Responsable de integración designado | E03 con destino verificado; sin llamar proveedor |
+| E15 | ProcessorDestinationCatalog | processorRef, transferReviewState, purposeRef | Responsable de integración designado | E03 con destino verificado; sin llamar proveedor |
 | E16 | AuditReadbackReference | eventRef, commitDigest, actorScope, timestampUtc | Operación/auditoría con mínimo privilegio | E08/E10/E12; no BITACORA comercial de clientes |
 
 **Cardinalidad propuesta:** cada E05 delimita sujetos E06 y decisiones E08; un E08 referencia una versión E02 y una finalidad E03, con 0..N comprobantes E09. Una E10 hace referencia a una decisión anterior sin sobrescribirla, y la proyección E11 se invalida por revisión o revocación. Una E12 sólo puede vincular sujeto/contexto verificados; E13/E14 afectan retención únicamente tras validación jurídica, nunca por su mera creación. E15 es catálogo de destinos por finalidad sin credenciales; E16 modela readback mínimo, no reemplaza BITACORA institucional ni almacena datos reales.
