@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C02-02.M03.06 auditoría segura de cola de placement [Javier :50]
+- Implementa sink Infrastructure .NET 10 de resultado estructurado y redactado para cola sintética M03.05; token, tenant, actor, SHA, DSN, idempotencia, PII y errores externos nunca salen en logs, ni se autoriza migración o acceso.
+- Añade 13 xUnit para nominal no autorizante, denegaciones tenant A/B, membresía/revocación, SHA y correlación, código desconocido, cantidad inválida, contexto/constructor, cancelación y logger fallido.
+- V15 R2 con Scope Lock STRICT, V17 lock 2000000343, CI Backend Release/seguridad/Authorization/Scope/V5 por SHA, A5 independiente; no MySQL/EF/HTTP/browser/worker duradero/QA/main/PROD.
+
 ## 2026-11-15 — V17 C04-03.M02.06 contrato terminal de metering [Javier :40]
 - Cierra el documento de dependencias M02 con dieciseis puertas verificables, doce pares de pruebas futuras y ocho rutas de reversion, sin implementar API, MySQL, eventos o cobros.
 - Confirma predecesoras M01 y M02.01-05 LISTO+A5; separa G/O dinamicos, idempotencia sin doble ledger y decisiones comerciales D01-D08 aun pendientes.
