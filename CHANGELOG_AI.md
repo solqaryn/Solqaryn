@@ -1,3 +1,8 @@
+## 2026-11-16 - V17 C13-01.M02.02 operaciones y DTO conceptuales de privacidad [Javier :50]
+- Define ocho operaciones OP01-OP08, doce DTO, doce errores ER01-ER12 y dieciseis validaciones V01-V16 para privacidad, consentimiento, revocacion, retencion y derechos por tenant/sujeto.
+- Registra doce pares P/N FUTUROS_NO_EJECUTADOS (0/12 runtime), denegacion por defecto, IDOR/BOLA, revocacion, correlacion e integridad sin atribuir cumplimiento legal ni permisos.
+- R0 documental: no crea API, EF/MySQL, cookies, Angular, proveedores, workers ni datos; exige Scope Lock/V5 causal, readback y A5 independiente bajo candado V17.
+
 ## 2026-11-16 - V17 C13-01.M02.01 entidades, ownership e invariantes de privacidad [Javier :50]
 - Define dieciseis entidades conceptuales E01-E16 y veinte invariantes I01-I20 para versiones, propositos, decisiones, revocacion, retencion, evidencia minima y derechos por tenant/sujeto.
 - Incluye doce pares positivos/negativos T01-T12 FUTUROS_NO_EJECUTADOS (0/12 runtime); bloquea silencio como consentimiento, IDOR/BOLA, replay tras revocacion, PII en auditoria y eliminacion por plazo inventado.
