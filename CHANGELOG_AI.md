@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C02-04.M05.04 aceptación positiva 13 rutas globales [Javier :20]
+- Prueba Playwright/Chromium real de catálogo GV01–GV13 y guard Angular con respuesta de sesión sintética 200; cada ruta presenta encabezado esperado y ningún método de mutación.
+- Cobertura negativa 403 opaca, revalidación positiva de GET y 320 px sin overflow; backend JWT/MFA/RBAC/tenant/DB no se certifica por mocks.
+- CI GitHub Actions SHA-aislado npm/lint/build y Chromium dirigido, A0–A4 causales antes de LISTO; A5 pendiente de otra Task Javier, rollback git revert sin tocar BITACORA.
+
 ## 2026-11-16 — V18 C05-04.M05.05 rechazos Chromium de ligereza [Javier :40]
 - Añade cinco casos Playwright adversariales: anonimo, sesion 403, directorio 403, revocacion 403 tras 200 y error 503 tras 200. Verifica ausencia de datos previos, errores internos y peticiones de escritura.
 - GitHub-hosted lint/build Angular y Chromium con concurrencia por SHA cancel-in-progress=false; A0–A4 requieren CI exact-SHA real y A5 independiente.
