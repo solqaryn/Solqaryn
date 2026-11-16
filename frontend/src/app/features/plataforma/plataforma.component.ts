@@ -222,6 +222,22 @@ import { DesignSystemV5Component } from './design-system-v5.component';
             <p role="status" data-testid="c0504-pending">Esperando resultado de consulta autorizada.</p>
           }
         </div>
+            <div class="ui-lightness-v5__branding" role="group"
+              aria-label="Marca visual autorizada" data-testid="c0504-branding"
+              [class.ui-lightness-v5__branding--contrast]="marcaLigereza() === 'contraste'">
+              <strong>Marca visual permitida</strong>
+              <div class="ui-lightness-v5__branding-actions">
+                @for (opcion of opcionesMarcaLigereza; track opcion.id) {
+                  <button mat-stroked-button type="button"
+                    [attr.data-testid]="'c0504-brand-' + opcion.id"
+                    [attr.aria-pressed]="marcaLigereza() === opcion.id"
+                    (click)="cambiarMarcaLigereza(opcion.id)">{{ opcion.nombre }}</button>
+                }
+              </div>
+              <p role="status" data-testid="c0504-branding-state">
+                {{ marcaLigereza() === 'contraste' ? 'Contraste reforzado seleccionado' : 'Institucional seleccionado' }}
+              </p>
+            </div>
             @if (ligerezaCompacta()) {
               <p class="ui-lightness-v5__status" role="status">Resumen compacto: tres criterios disponibles sin solicitudes adicionales.</p>
             } @else {
@@ -368,6 +384,14 @@ import { DesignSystemV5Component } from './design-system-v5.component';
     .ui-lightness-v5__feedback p { margin: 4px 0 10px; }
     .ui-lightness-v5__feedback button { min-height: 44px; }
     .ui-lightness-v5__feedback [role='alert'] { color: var(--color-danger, #b3261e); }
+    .ui-lightness-v5__branding { margin-top: 16px; padding: 16px; border: 1px solid #8da8bc; border-radius: 12px; background: #f4f7fb; color: #14293c; overflow-wrap: anywhere; }
+    .ui-lightness-v5__branding-actions { display: flex; flex-wrap: wrap; gap: 12px; margin: 12px 0; }
+    .ui-lightness-v5__branding-actions button { min-height: 44px; border-color: currentColor; color: inherit; }
+    .ui-lightness-v5__branding-actions button:focus-visible { outline: 3px solid currentColor; outline-offset: 3px; }
+    .ui-lightness-v5__branding p { margin: 8px 0 0; }
+    .ui-lightness-v5__branding--contrast { background: #091422; border-color: #b8e2ff; color: #fff; }
+    .ui-lightness-v5__branding--contrast .ui-lightness-v5__branding-actions button { border-color: #f8fafc; color: #fff; }
+    @media (max-width: 375px) { .ui-lightness-v5__branding-actions { flex-direction: column; align-items: stretch; } }
     @media (max-width: 760px) { .ui-lightness-v5__checks { grid-template-columns: 1fr; } }
     .directory-card { margin-top: 20px; }
     .directory-card mat-card-content { padding: 20px 24px; }
@@ -396,6 +420,21 @@ export class PlataformaComponent {
   // Preferencia visual local con dos estados permitidos; no recibe CSS del cliente ni altera otros tenants.
   readonly contrasteCobertura = signal(false);
   readonly ligerezaCompacta = signal(false);
+  // C05-04.M04.03: dos presets locales, no CSS remoto ni permisos procedentes del cliente.
+  readonly opcionesMarcaLigereza = [
+    { id: 'institucional', nombre: 'Institucional' },
+    { id: 'contraste', nombre: 'Contraste alto' }
+  ] as const;
+  readonly marcaLigereza = signal<'institucional' | 'contraste'>('institucional');
+
+  cambiarMarcaLigereza(id: string): boolean {
+    const sesion = this.sesion();
+    if (sesion?.ambito !== 'Plataforma' || sesion.esAdministrador !== true) return false;
+    const opcion = this.opcionesMarcaLigereza.find(p => p.id === id);
+    if (!opcion || this.marcaLigereza() === opcion.id) return false;
+    this.marcaLigereza.set(opcion.id);
+    return true;
+  }
   readonly validando = signal(false);
   readonly error = signal<string | null>(null);
   readonly directorio = signal<DirectorioPlataforma | null>(null);

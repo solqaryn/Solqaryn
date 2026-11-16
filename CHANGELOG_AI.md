@@ -1,3 +1,9 @@
+## 2026-11-16 — V17 C05-04.M04.03 branding local allowlisted de ligereza [Javier :30]
+- Añade dos configuraciones visuales Angular fijas (institucional/alto contraste) dentro de /plataforma con control Material, Signal, foco y aria-pressed, sin CSS externo ni configuración persistida.
+- Mantiene guard y sesión Plataforma sin modificar JWT/RBAC del backend, APIs, datos de tenants, MySQL ni integraciones.
+- Añade cuatro pruebas Chromium con HTTP sintético: anónimo/403, opciones permitidas, doble activación sin nuevos requests, teclado y responsive 320/375/768/1280.
+- Riesgo R1; exigir CI GitHub-hosted exact-SHA, Scope Lock/V5 y frontend SUCCESS antes de LISTO, A5 Task Javier distinta y rollback git revert; sin QA/main/PROD.
+
 ## 2026-11-16 — V17 C15-01.M04.03 presentación visual tipada de cobertura [Javier :20]
 - Incorpora configuración local opcional de marca institucional/neutra y densidad regular/compacta con allowlist estricta e inmutabilidad; rechaza valores arbitrarios sin alterar guard, sesión, tenant o evidencia NO_MEDIDO.
 - Añade cuatro aserciones Vitest para variantes, rechazo de inyección, límites de escritura y revocación. Las pruebas Playwright/Chromium existentes siguen siendo obligatorias junto con Angular lint/build, Scope Lock y V5 exact SHA; A5 independiente.
