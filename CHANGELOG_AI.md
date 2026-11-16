@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C14-04.M04.05 accesibilidad readiness privada [Javier :20]
+- Cuatro Playwright/Chromium reales de denegación anónimo/403, responsive 320/375/768/1280, semántica/labels con puertas NO_MEDIDO, ausencia de controles mutadores/foco atrapado y contraste calculado >=4.5:1.
+- Amplía ruta y comando del workflow browser V5 por SHA conservando todas las pruebas existentes, lint/build y seguridad; no altera código UI, guard, JWT/RBAC, DB ni despliegue.
+- R2 conservador; mocks NO prueban JWT HTTP/tenant real/MySQL. Requiere CI causal exact SHA, Scope Lock, V5 y revisor A5 diferente; rollback git revert; no QA/main/PROD.
+
 ## 2026-11-16 — V17 C07-04.M04.01 reparación CSS tras diagnóstico Chromium 320 px [Javier :10]
 - Run 43914301315 confirmó overflow global de 75 px; geometría identificó la tabla de pedidos, no las tarjetas privadas (6 Vitest PASS, Chromium 2/3 FAIL).
 - Limita ancho de página/tarjeta/contenedor y mantiene desplazamiento horizontal interno, datos y columnas; no relaja asserts, seguridad, permisos ni cambia backend.
