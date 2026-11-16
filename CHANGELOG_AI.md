@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C14-04.M04.06 reparación de aserción fail-closed ante 503 [Javier :10]
+- CI real 5ceaa490 ejecutó 55 escenarios (54 PASS, 1 FAIL): después de HTTP 503 el contrato privado desapareció correctamente, pero el test esperaba texto dentro de un elemento ausente; error de aserción, no evidencia de fuga.
+- Actualiza exclusivamente la prueba negativa para exigir eliminación total del contrato, manteniendo denegación, error opaco, ausencia de spinner y conteo GET; solicita nuevamente Chromium dirigido, Scope Lock, V5 y regresión exact-SHA.
+- Riesgo R2 conservador, sin cambios de runtime/tenant/JWT/RBAC/MySQL/PROD; rollback git revert, A5 por otra Task Javier.
+
 ## 2026-11-16 — V18 C02-04.M04.06 reparación de regresión Chromium omitida [Javier :10]
 - QA_DEFECT_FOUND P2: 10 pruebas Chromium y 12 Vitest anteriores fueron reales, pero la línea Playwright excluía los tres escenarios C02-04.M04.06 nuevos. Los PASS previos no los certifican.
 - Corrige filtro de rutas mal concatenadas y ejecuta C02-04.M04.06 en la CI GitHub-hosted por SHA, sin cancelar jobs existentes; nuevas pruebas positivas, negativas y 503 requieren PASS efectivo antes de A0-A4 y revisor A5 separado.

@@ -95,6 +95,7 @@ test('C14-04.M04.06 error externo no deja spinner perpetuo ni filtra detalles in
   await expect(page.getByTestId('release-error')).toBeVisible();
   await expect(page.getByTestId('release-loading')).toHaveCount(0);
   await expect(page.getByText('PRIVATE_M0406_DIAGNOSTIC_NEVER_EXPOSE')).toHaveCount(0);
-  await expect(page.getByTestId('release-readiness-contract')).not.toContainText('PASS');
+  // Fail-closed: the private readiness contract is removed after 503, not populated.
+  await expect(page.getByTestId('release-readiness-contract')).toHaveCount(0);
   expect(gets()).toBe(2);
 });
