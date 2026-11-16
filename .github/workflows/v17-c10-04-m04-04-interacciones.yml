@@ -1,0 +1,72 @@
+name: V17 C10-04.M04.04 - interacciones seguro y Chromium
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/src/app/features/plataforma/continuidad-operativa-v5.component.ts'
+      - 'frontend/src/app/features/plataforma/continuidad-operativa-v5.component.spec.ts'
+      - 'frontend/src/app/features/plataforma/continuidad-interacciones-v5.spec.ts'
+      - '.github/workflows/v17-c10-04-m04-03-interacciones.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v17-c1004-m0404-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  interacciones-v17:
+    name: C10-04.M04.04 - Vitest, Angular y Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm compatible
+        run: npm install --global npm@11.19.0
+      - name: npm ci
+        working-directory: frontend
+        run: npm ci
+      - name: Pruebas reales de navegacion, errores y single-flight fail closed
+        working-directory: frontend
+        run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/continuidad-presentacion-v5.spec.ts
+      - name: Lint y build Angular
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Chromium oficial
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Iniciar Angular localhost
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > v17-c1004-m0404.log 2>&1 &
+          for attempt in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat v17-c1004-m0404.log >&2
+          exit 1
+      - name: Regresion Chromium de ruta privada y revocacion
+        working-directory: frontend
+        run: npx playwright test e2e/c10-04-m04-02-continuidad-estados.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Artefactos de fallo
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v17-c1004-m0404
+          path: |
+            frontend/v17-c1004-m0404.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 14

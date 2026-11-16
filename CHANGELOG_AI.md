@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C10-04.M04.04 navegación y doble acción privada [Javier :10]
+- Corrige falla síncrona del proveedor de sesión mediante defer RxJS, manteniendo la UI fail-closed y el botón recuperable, sin alterar JWT, tenant, backend ni rutas de autoridad.
+- Agrega siete pruebas Vitest de navegación interna, ausencia de formularios, single-flight, revocación, errores 403/503 y excepción síncrona; workflow propio con npm, build/lint y Playwright Chromium sintético.
+- Riesgo R2, A0–A4 causales requeridos en GitHub Actions y Scope Lock/V5; A5 independiente Javier pendiente. No habilita restauración, workers, DB, QA/main/PROD. Rollback normal git revert.
+
 ## 2026-11-15 — V17 C05-04.M03.06 auditoria privada de ligereza UI [Javier :00]
 - Añade sink .NET 10 con ILogger y codigo permitido, verifica identidad backend, tenant A/B, membresia, RBAC, SHA y audit fence en fuente confiable; no registra PII, excepciones, tenant ni JWT.
 - Incluye 14 xUnit positivos/negativos/error; requiere comprobaciones GitHub Actions exact-SHA, Scope Lock y V5 antes de LISTO; A5 de otra Task Javier.

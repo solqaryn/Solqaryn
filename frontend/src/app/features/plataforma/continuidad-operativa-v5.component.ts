@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signa
 import { CONTINUIDAD_PRESENTACION_V5, normalizarPresentacionV5 } from './continuidad-presentacion-v5';
 import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { defer } from 'rxjs';
 import { RouterLink } from '@angular/router';
 import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
 
@@ -35,7 +36,8 @@ export class ContinuidadOperativaV5Component {
   revalidar(): void {
     if (this.estado() === 'cargando') return;
     this.estado.set('cargando');
-    this.plataforma.obtener().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    // Defer catches synchronous provider failures and restores the safe retry state.
+    defer(() => this.plataforma.obtener()).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (sesion) => {
         const vigente = this.plataforma.sesion();
         const confirmada = sesion?.ambito === 'Plataforma' &&
