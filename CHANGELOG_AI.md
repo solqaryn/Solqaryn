@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 reparación P0-007.A C05-01.M04.01 [Javier :40]
+- Repara el fallo de inventario exact-HEAD del SHA `0509d36948f2` agregando la ruta real `frontend/src/app/features/plataforma/design-system-v5.component.ts`, preservando la historia anterior.
+- Actualiza umbrales estrictos a 149 rutas (141 features y 8 shared), manteniendo pruebas negativas de archivos faltantes, ficticios y duplicados; requiere GitHub Actions exact-SHA.
+- Sin cambios de runtime, permisos, JWT/RBAC, tenants, datos, migraciones ni workflows; A0–A4 y A5 independiente permanecen obligatorios. Solo dev; rollback `git revert`.
+
 ## 2026-11-16 — C05-01.M04.01 biblioteca visual privada V5 [Javier :40]
 - Añade un catálogo desplegable de tokens y tipografía a la administración de plataforma existente; sin ruta ni autorización nuevas, sin APIs de negocio y con negación explícita ante revocación de sesión.
 - Incluye prueba Angular de anónimo/empresa/administrador/revocación y Chromium dirigido para 403 sintético, teclado y responsive 320/768/1280. Requiere CI causal y A5 independiente, sin marcar PASS anticipadamente.

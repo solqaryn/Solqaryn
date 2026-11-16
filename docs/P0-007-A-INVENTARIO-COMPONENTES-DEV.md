@@ -433,3 +433,11 @@ El catálogo reproducible en `dev` contiene **148 archivos `.component.ts`**: **
 - `frontend/src/app/features/plataforma/revision-amenazas-v5.component.ts`
 
 La validación mantiene rechazos estrictos de rutas omitidas, entradas inexistentes y duplicados. Registrar un archivo no certifica accesibilidad, integración HTTP/MySQL, JWT/RBAC/tenant, restauraciones ni autorización de QA/main/PROD. Es una reparación del baseline CI, no un nuevo CLAIM ni A5 del código de otra Task. Reversión mediante `git revert` normal.
+
+## Actualización aditiva V17 C05-01.M04.01 — 16 de noviembre de 2026
+
+La nueva biblioteca visual privada de plataforma incorpora un componente Angular standalone real al catálogo reproducible: **149 archivos `.component.ts` (141 features y 8 shared)**. Se preservan íntegramente los cortes históricos y SHAs anteriores.
+
+- `frontend/src/app/features/plataforma/design-system-v5.component.ts`
+
+El validador mantiene comparaciones estrictas de archivos presentes y documentados, duplicados, ausentes y altas no inventariadas, además de negativos del self-test. El check P0-007.A falló en el SHA `0509d36948f22ce8cee548554acd08fb4efbcda4` por esta única ruta nueva; corregir el baseline no concede JWT/RBAC, permisos, tenant, DB, QA, main ni PROD, ni constituye certificación de UI. Se requiere CI exact-SHA y A5 independiente. Rollback mediante `git revert` normal.
