@@ -1,0 +1,69 @@
+name: V17 C05-04.M04.05 - accesibilidad y ligereza UI
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/e2e/c05-04-m04-05-accessibility.spec.ts'
+      - 'frontend/src/app/features/plataforma/plataforma.component.ts'
+      - '.github/workflows/v17-c05-04-m04-05-accessibility.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v17-c0504-m0405-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  chromium:
+    name: C05-04.M04.05 Chromium responsive foco contraste
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm fijo
+        run: npm install --global npm@11.19.0
+      - name: Dependencias reproducibles
+        run: npm ci
+      - name: Tipos, lint y build real
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Instalar Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Servir Angular sintetico local
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c0504-m0405-angular.log 2>&1 &
+          for attempt in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then
+              echo 'ANGULAR_LOOPBACK_READY=PASS'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat c0504-m0405-angular.log >&2
+          exit 1
+      - name: Playwright - positivos negativos frontera y contraste
+        run: npx playwright test e2e/c05-04-m04-05-accessibility.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Guardar diagnostico
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v17-c0504-m0405-chromium
+          path: |
+            frontend/c0504-m0405-angular.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 14

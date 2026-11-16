@@ -5805,3 +5805,8 @@
 - Contratos de doce eventos futuros EV01-EV12 para tokens, presets, asignacion, intent, rollback y epoch de sesion, con envelope tipado sin secretos, JWT, PII ni datos tenant ajeno.
 - Define catorce reglas ID01-ID14 de version CAS, digest/idempotencia, dedupe y no-regresion; diez pares F01-F10 de pruebas FUTURAS_NO_EJECUTADAS sobre replay, revocacion, A/B, rollback, fallo de proveedor y sesion.
 - Solo documento Markdown y CHANGELOG; ningun evento, outbox, API, broker, worker, webhook, MySQL, CSS, infraestructura o permiso activado; Scope Lock/V5 exact SHA, A5 otro Javier, rollback git revert.
+
+## 2026-11-16 — V17 C05-04.M04.05 regresión accesible de ligereza [Javier :00]
+- Añade suite Playwright/Chromium de cinco casos causales para guard sin sesión, denegación 403, teclado Tab y Enter real sin foco programático, etiquetas, foco visible, 320/375/768/1280 y contraste WCAG AA 4,5:1 calculado.
+- Agrega workflow aislado por SHA, cancel-in-progress=false, Node/Angular build y Chromium loopback con fixtures sintéticos; no acredita JWT, MySQL, tenancy backend ni Web Vitals reales.
+- A0 R1 y rollback documentados; A1-A4 sujetos a validación GitHub Actions y Scope Lock exact-SHA; A5 otra Task Javier. V17 lock 2000000852 y solo dev.
