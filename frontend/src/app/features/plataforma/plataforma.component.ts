@@ -41,16 +41,19 @@ import { DesignSystemV5Component } from './design-system-v5.component';
       </header>
 
       @if (vistaFlujoV5) {
-        <div class="v5-feedback" aria-live="polite" aria-atomic="true">
+        <div class="v5-feedback" aria-live="polite" aria-atomic="true" data-testid="release-readiness-feedback"
+             [attr.data-state]="validando() ? 'cargando' : permisoReadinessDenegado() ? 'sin_permiso' : error() ? 'error' : !sesion() ? 'sin_permiso' : 'exito'">
           @if (validando()) {
-            <p role="status"><mat-spinner diameter="20" aria-label="Comprobando autoridad"></mat-spinner> Verificando permiso de plataforma…</p>
+            <p role="status" data-testid="release-loading"><mat-spinner diameter="20" aria-label="Comprobando autoridad"></mat-spinner> Verificando permiso de plataforma…</p>
+          } @else if (permisoReadinessDenegado()) {
+            <p role="alert" data-testid="release-denied">La sesión no tiene permisos de plataforma vigentes. No se muestran comprobaciones privadas.</p>
           } @else if (error()) {
-            <p role="alert" class="v5-feedback-error">No se pudo verificar la sesión. No hay acceso operativo y puede reintentarse la validación.</p>
+            <p role="alert" data-testid="release-error" class="v5-feedback-error">No se pudo verificar la sesión. No hay acceso operativo y puede reintentarse la validación.</p>
           } @else if (!sesion()) {
-            <p role="alert">Permisos de plataforma no confirmados. La consulta V5 está restringida.</p>
+            <p role="alert" data-testid="release-denied">Permisos de plataforma no confirmados. La consulta V5 está restringida.</p>
           } @else {
-            <p role="status">Sesión de plataforma verificada para consulta de solo lectura.</p>
-            <p>Sin resultados institucionales conectados: esta vista no lee microtareas ni certifica estados.</p>
+            <p role="status" data-testid="release-success">Sesión de plataforma verificada para consulta de solo lectura.</p>
+            <p data-testid="release-empty" data-evidence-state="vacio">Sin resultados institucionales conectados: esta vista no lee microtareas ni certifica estados.</p>
           }
         </div>
       }
@@ -437,6 +440,7 @@ export class PlataformaComponent {
   }
   readonly validando = signal(false);
   readonly error = signal<string | null>(null);
+  readonly permisoReadinessDenegado = signal(false);
   readonly directorio = signal<DirectorioPlataforma | null>(null);
   readonly cargandoEmpresas = signal(false);
   readonly errorEmpresas = signal<string | null>(null);
@@ -466,8 +470,21 @@ export class PlataformaComponent {
     if (this.validando()) return;
     this.validando.set(true);
     this.error.set(null);
-    this.plataforma.obtener().pipe(finalize(() => this.validando.set(false))).subscribe({
-      error: () => this.error.set('La sesión global dejó de estar autorizada o no pudo verificarse. No se permite ninguna operación.')
-    });
+    this.permisoReadinessDenegado.set(false);
+    try {
+      this.plataforma.obtener().pipe(finalize(() => this.validando.set(false))).subscribe({
+        error: (err: unknown) => {
+          if (err instanceof HttpErrorResponse && (err.status === 401 || err.status === 403)) {
+            this.permisoReadinessDenegado.set(true);
+          } else {
+            this.error.set('La sesión global dejó de estar autorizada o no pudo verificarse. No se permite ninguna operación.');
+          }
+        }
+      });
+    } catch {
+      this.plataforma.limpiar();
+      this.validando.set(false);
+      this.error.set('La sesión global dejó de estar autorizada o no pudo verificarse. No se permite ninguna operación.');
+    }
   }
 }

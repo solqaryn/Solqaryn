@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C14-04.M04.02 estados seguros de readiness privada [Javier :40]
+- Diferencia carga, exito de sesion, vacio de evidencias, error y permiso denegado en /plataforma/flujo-v5 con panel fail-closed y revalidacion GET sin dobles acciones.
+- Añade cinco pruebas Playwright/Chromium adversariales, incluido 403 con payload sensible, 503 recuperable y carga diferida, al workflow V5 SHA-aislado sin eliminar pruebas existentes.
+- R2 por frontera de sesion; sin endpoints, JWT real, MySQL, DNS, backup, QA/main/PROD ni certificacion de go-live. Exigir CI exact-SHA, Scope Lock/V5 y A5 independiente antes del cierre; rollback git revert.
+
 ## 2026-11-16 — V17 C05-04.M04.03 branding local allowlisted de ligereza [Javier :30]
 - Añade dos configuraciones visuales Angular fijas (institucional/alto contraste) dentro de /plataforma con control Material, Signal, foco y aria-pressed, sin CSS externo ni configuración persistida.
 - Mantiene guard y sesión Plataforma sin modificar JWT/RBAC del backend, APIs, datos de tenants, MySQL ni integraciones.
