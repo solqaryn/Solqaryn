@@ -1,3 +1,8 @@
+## 2026-11-16 - V17 C02-02.M04.05 reparacion P2 foco alto contraste [Javier :40]
+- Corrige la precedencia CSS del contorno de foco: el design system global fuerza 3px con !important y los controles privados de placement requieren 4px en teclado/alto contraste.
+- Mantiene las pruebas reales Chromium de Tab, 320/768/1280 y revocacion 403 sin atenuar aserciones. El CI original fallido no se contabiliza como PASS; exigir repeticion y Scope Lock/V5 en SHA de reparacion.
+- R2 acotado a estilos de pantalla privada y evidencia; sin cambios JWT/RBAC/tenant/backend/MySQL, QA, main ni PROD; A5 independiente pendiente.
+
 ## 2026-11-16 - V17 C11-04.M04.05 accesibilidad real de observabilidad privada [Javier :50]
 - Amplía targets táctiles a 44 px sin desbordamiento y conserva foco visible en navegación privada Angular.
 - Añade tres pruebas Chromium dirigidas: teclado Tab real sin focus() sintético, responsive 320/768/1280 con rejilla adaptativa y contraste WCAG calculado en el navegador.
