@@ -67,15 +67,41 @@ test('foco visible con teclado, contraste legible y modo de contraste alto sin a
   await page.emulateMedia({ contrast: 'more', reducedMotion: 'reduce' });
   await page.goto('/plataforma/continuidad-operativa-v5');
   const button = page.getByRole('button', { name: 'Revalidar sesión de continuidad' });
-  await page.keyboard.press('Tab');
-  await button.focus();
+  // Comprobar acceso real por teclado; focus() programatico ocultaria defectos.
+  let reachableWithTab = false;
+  for (let attempt = 0; attempt < 35; attempt++) {
+    await page.keyboard.press('Tab');
+    if (await button.evaluate(element => element === document.activeElement)) {
+      reachableWithTab = true;
+      break;
+    }
+  }
+  expect(reachableWithTab).toBe(true);
   await expect(button).toBeFocused();
   const style = await button.evaluate(node => {
     const computed = getComputedStyle(node);
-    return { width: parseFloat(computed.outlineWidth), style: computed.outlineStyle };
+    return {
+      width: parseFloat(computed.outlineWidth),
+      style: computed.outlineStyle,
+      outlineColor: computed.outlineColor,
+      backgroundColor: computed.backgroundColor
+    };
   });
   expect(style.style).toBe('solid');
-  expect(style.width).toBeGreaterThanOrEqual(3);
+  // Quitar prefers-contrast:more debe fallar, pues la regla base usa 3px.
+  expect(style.width).toBeGreaterThanOrEqual(4);
+  const luminance = (color: string): number => {
+    const channels = color.match(/\d+(?:\.\d+)?/g)?.slice(0, 3).map(Number);
+    if (!channels || channels.length !== 3) throw new Error('Color CSS no evaluable: ' + color);
+    const linear = channels.map(value => {
+      const channel = value / 255;
+      return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+    });
+    return linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
+  };
+  const foreground = luminance(style.outlineColor);
+  const background = luminance(style.backgroundColor);
+  expect((Math.max(foreground, background) + 0.05) / (Math.min(foreground, background) + 0.05)).toBeGreaterThanOrEqual(3);
   await expect(page.locator('.continuidad input, .continuidad textarea, .continuidad form')).toHaveCount(0);
 });
 

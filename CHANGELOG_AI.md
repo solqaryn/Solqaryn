@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C10-04.M04.05 reparacion P2 de evidencia teclado y contraste [Javier :40]
+- Corrige A5_FAIL P2: Playwright exige foco alcanzado por Tab sin focus() programatico, 4px en prefers-contrast:more y contraste del outline >=3:1 con CanvasText/Canvas; detecta defectos que cinco Chromium verdes anteriores no detectaban.
+- Cambio de foco exclusivamente en contraste alto, sin alterar auth, tenant, rutas, API o datos. R2 UI, fuente SKREF-10 angular/angular@6808966993bf2b2d455d9b6245e960a59a01b9a9; CI causal y posterior A5 independiente obligatorias, no se declara PASS anticipado.
+- Mantener QA_DEFECT_FOUND/A5_FAIL hasta prueba dirigida y nuevo A5 de otra Task Javier. Sin JWT/MySQL/productivo; rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C03-04.M04.05 teclado, responsive y contraste de incidentes [Javier :20]
 - Mejora acceso por teclado a la guía privada de incidentes mediante skip link al título enfocable, retorno de 44px y estilos explícitos para forced-colors, contraste alto y textos largos, sin acciones de restauración.
 - Agrega cuatro Vitest y cuatro Playwright Chromium sintéticos de anónimo, empresa/403, revocación, foco, 320–1440px y contraste forzado; workflow causal exact-SHA Angular lint/build, Scope Lock y procedencia V5.

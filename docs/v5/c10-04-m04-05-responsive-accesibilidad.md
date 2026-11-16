@@ -19,3 +19,9 @@ GitHub Actions instala Node 24/npm 11 y dependencias reproducibles; ejecuta Angu
 ## A4/A5: evidencia y rollback
 
 Commit aditivo fast-forward esperado, cinco archivos: componente, E2E, workflow, documento y CHANGELOG autocontenido. Confirmar `completed/success` de checks requeridos exact-SHA antes de LISTO_DEV; en queued/in_progress mantener VALIDANDO con owner y RUN. Registrar BITACORA única, readback PLAN/COLA/DAG y liberar lock V17 tras transición. La revisión A5 la realiza otra Task Javier diferente, con posibilidad A5_FAIL. Revertir por `git revert` ordinario sin force-push; QA/main/PROD no autorizados.
+
+## Reparación A5_FAIL P2 — foco y alto contraste (2026-11-15)
+
+El revisor DEV02 detectó dos huecos de evidencia causal en el SHA 36c0210d: el test llamaba a button.focus() después de Tab y podía aprobar un control no alcanzable con teclado; la aserción de 3px no detectaba la ausencia de la regla de contraste alto de 4px. No se observó una vulnerabilidad de autorización real. La corrección comprueba hasta 35 pulsaciones Tab, foco DOM verdadero sin método focus(), ancho de contorno mínimo 4px y contraste del contorno sobre fondo >=3:1 en Chromium con prefers-contrast:more. Se emplean Canvas y CanvasText únicamente al enfocar para contraste alto, sin cambiar rutas, guard, sesión, APIs ni permisos.
+
+Riesgo R2 UI; SKREF-10 angular/angular pin 6808966993bf2b2d455d9b6245e960a59a01b9a9 y referencia e2e-testing.md/component-styling.md en pin oficial. Pruebas sintéticas no certifican JWT, DB, HTTP productivo, tenant A/B real ni proveedores. La CI de GitHub-hosted deberá ejecutar Angular lint/build y Chromium causal, Scope Lock y V5 sobre el SHA publicado. Este documento NO acredita PASS antes del resultado de CI. Conservar QA_DEFECT_FOUND y A5_FAIL históricos hasta nueva revisión por otra Task Javier; revertir con git revert normal, nunca force-push, sin QA/main/PROD.
