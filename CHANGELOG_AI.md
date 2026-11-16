@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C15-01.M04.01 superficie privada de trazabilidad de cobertura [Javier :10]
+- Implementa nueva ruta lazy protegida por plataformaGuard y componente Angular reactivo de solo lectura para describir cuatro dimensiones de comparación del plan.
+- Declara NO_MEDIDO y SIN_VERIFICAR hasta obtener datos reales: no inventa cobertura, no expone datos a un usuario anónimo ni al ámbito Empresa y no añade llamadas HTTP.
+- Pruebas: cuatro Vitest y tres Playwright Chromium sintéticos con casos de revocación, 403, 320/1280px y foco; CI, A5 y Scope Lock obligatorios antes de cierre; rollback git revert, solo dev.
+
 ## 2026-11-16 — V17 C11-04.M05.02 xUnit de contrato y errores seguros de observabilidad [Javier :40]
 - Ocho métodos xUnit adicionales comprueban contrato tipado in-process, denegación tenant A/B, revocación, correlación CRLF, SHA incorrecto, etiqueta sensible, denominador cero y cancelación antes de leer evidencia.
 - No se crea endpoint HTTP, DTO compilado nuevo, exporter, proveedor, MySQL ni privilegio; la aplicación solo retorna código de prevalidación, sin otorgar acceso. CI backend Release y seguridad causal obligatorias en SHA exacto.

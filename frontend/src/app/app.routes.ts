@@ -32,6 +32,7 @@ export const routes: Routes = [
   { path: 'plataforma/gobierno-cambios-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/gobierno-cambios-v5.component').then(m => m.GobiernoCambiosV5Component) },
   { path: 'plataforma/respuesta-incidentes-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/respuesta-incidentes-v5.component').then(m => m.RespuestaIncidentesV5Component) },
   { path: 'plataforma/revision-amenazas-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/revision-amenazas-v5.component').then(m => m.RevisionAmenazasV5Component) },
+  { path: 'plataforma/trazabilidad-cobertura-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/cobertura-trazabilidad-v5.component').then(m => m.CoberturaTrazabilidadV5Component) },
   { path: 'plataforma/observabilidad-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/observabilidad-privada-v5.component').then(m => m.ObservabilidadPrivadaV5Component) },
   { path: 'plataforma', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/plataforma.component').then(m => m.PlataformaComponent) },
   { path: 'dashboard', canActivate: [authGuard, permisoGuard], data: { modulo: 'Dashboard', accion: 'Ver' }, loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) },
