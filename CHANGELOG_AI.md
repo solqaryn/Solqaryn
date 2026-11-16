@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C14-04.M04.06 densidad y carga progresiva de readiness [Javier :10]
+- Añade tres escenarios Chromium de densidad 320/375/768/1280, carga accesible durante revalidación retardada y salida segura ante HTTP 503; sesión simulada, sin métricas reales ni PASS inventado.
+- Amplía la selección del workflow existente con concurrencia por github.sha y cancel-in-progress=false, preservando pruebas previas; requiere CI causal GitHub-hosted exact-SHA, Scope Lock y V5, y A5 independiente.
+- R2 conservador, solo tests/documentación, sin cambiar JWT, tenant, backend, MySQL, permisos, QA/main/PROD o secretos; rollback git revert normal.
+
 ## 2026-11-16 — V17 C12-04.M03.04 adaptador aislado de manifiestos sintéticos [Javier :50]
 - Añade Infrastructure C1204IsolatedManifestAdapter con aislamiento tenant/actor, snapshots inmutables y CAS de revisión; nunca evidencia MySQL ni autoridad de cutover.
 - Añade nueve pruebas xUnit: A/B, revocación, SHA, doble escritura, frontera de capacidad, lista mutable y cancelación; requiere CI GitHub-hosted exact-SHA.
