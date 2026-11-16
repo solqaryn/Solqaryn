@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C04-03.M02.04 configuración tipada conceptual de metering [Javier :20]
+- Define seis ámbitos de autoridad y dieciséis opciones tipadas con defaults seguros, validaciones fail-closed, precedencia por tenant, revocación y rollback; documento R0, no runtime.
+- Registra doce invariantes y diez pares positivos/negativos FUTUROS, sin atribuir pruebas .NET/MySQL/HTTP/Angular/Chromium ejecutadas ni activar flags, cobros, cuotas o migraciones.
+- Preserva D01–D08 pendientes y exige V17 lock, Scope Lock/V5 exact SHA, A0–A4 documentales y revisión A5 independiente, exclusivamente en dev.
+
 ## 2026-11-15 — V17 C04-03.M02.03 persistencia conceptual de metering [Javier :30]
 - Define doce tablas lógicas, doce índices compuestos tenant-first, ocho etapas reversibles propuestas y doce escenarios de datos sintéticos FUTUROS, sin DDL ni integración real para C04-03.M02.03.
 - Mantiene EmpresaId, UTC, idempotencia, ledger aditivo, RBAC/PII y rollback como invariantes documentales; D01–D08 continúan pendientes sin activar pagos, EF/MySQL, APIs o jobs.
