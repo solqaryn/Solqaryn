@@ -10,3 +10,9 @@ Cuatro nuevas pruebas Vitest: positivos/valores frontera, objeto inválido e iny
 
 ## A4 / A5 y concurrencia
 Exigir CI requerida completed/success en SHA publicado o equivalente auditado de blobs, Scope Lock, V5/CHANGELOG, check dirigido y readback PLAN/COLA/BITACORA; un run QUEUED/IN_PROGRESS/CANCELLED/SKIPPED no prueba PASS. Conservar únicamente esta microtarea EN_PROGRESO hasta publicación; si CI externa sigue ejecutándose, pasarla a VALIDANDO con RUN/SHA, propietario y entrega completa para permitir siguiente CLAIM. Revisor A5 debe ser otra de las cinco Tasks Javier, nunca la Task autora. No publicar QA/main/PROD ni manipular métricas institucionales.
+
+## Reparación A5_FAIL P2: snapshot único y errores de getters (16 de noviembre de 2026)
+
+La revisión independiente encontró que una entrada de configuración no confiable con getters dinámicos podía cambiar entre la validación y el objeto congelado. Un getter que lanzara una excepción también podía impedir el montaje del componente. **No se ha demostrado una explotación o fuga real.** La corrección lee marca/densidad exactamente una vez dentro de try/catch, rechaza Proxy revocado y conserva el fallback neutra/regular; no cambia autorización, tenant, API, MySQL ni resultados institucionales.
+
+A1 incluye tres regresiones nuevas (getters cambiantes, getter que lanza/Proxy revocado y montaje Angular seguro), que deben fallar sobre el código anterior. A2 preserva las pruebas negativas de sesión/revocación y la lista blanca. A3 exige GitHub Actions Vitest/Playwright Chromium pertinente; A4 exige Scope Lock/V5 y CI causal SUCCESS exact-SHA antes del cierre reparado. El A5_FAIL histórico permanece hasta nueva revisión independiente por otra Task Javier. Rollback con git revert normal; no QA/main/PROD.

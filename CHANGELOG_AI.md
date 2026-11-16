@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C15-01.M04.03 reparación A5_FAIL P2 de getters [Javier :20]
+- Captura marca/densidad una sola vez y rechaza getters que lanzan o Proxy revocado antes de renderizar; mantiene lista blanca, fallback neutro y permisos intactos.
+- Añade tres pruebas adversariales Vitest: TOCTOU de getters cambiantes, error/Proxy revocado y montaje Angular sin filtrar diagnósticos; requiere CI exact-SHA, Scope Lock/V5 y nueva A5 independiente.
+- Sin JWT HTTP real, MySQL, QA/main/PROD ni despliegue; preservar A5_FAIL histórico hasta reparación acreditada; rollback con git revert normal.
+
 ## 2026-11-16 — V17 reparación causal P0-007.A para dos componentes nuevos [Javier :10]
 - El catalogador estricto detectó componente C07-04.M04.03 no inventariado en el SHA 022c5aa7; la nueva entrega C14-04.M04.03 exige otra entrada del mismo registro.
 - Registra ambas rutas reales, actualiza exclusivamente conteos 153=145 features+8 shared y conserva comparador exacto, negativos de drift/duplicados y Scope Lock; no desactiva ninguna CI.

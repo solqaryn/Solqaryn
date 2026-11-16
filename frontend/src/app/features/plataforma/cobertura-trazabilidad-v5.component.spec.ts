@@ -150,4 +150,45 @@ describe('C15-01.M04.01 cobertura privada de solo lectura', () => {
     expect(fixture.nativeElement.querySelector('[role="alert"]')).not.toBeNull();
     expect(fixture.nativeElement.querySelectorAll('form,input')).toHaveLength(0);
   });
+
+  it('C15-01.M04.03 captura getters variables una sola vez antes de aplicar la lista blanca', () => {
+    let lecturasMarca = 0;
+    let lecturasDensidad = 0;
+    const hostil = {
+      get marca() { return ++lecturasMarca === 1 ? 'institucional' : '<svg onload=alert(1)>'; },
+      get densidad() { return ++lecturasDensidad === 1 ? 'compacta' : 'cambiar-permisos'; }
+    };
+    const normalizada = normalizarCoberturaPresentacionV5(hostil);
+    expect(normalizada).toEqual({ marca: 'institucional', densidad: 'compacta' });
+    expect(lecturasMarca).toBe(1);
+    expect(lecturasDensidad).toBe(1);
+    expect(Object.isFrozen(normalizada)).toBe(true);
+  });
+
+  it('C15-01.M04.03 getter que lanza y Proxy revocado deniegan por defecto', () => {
+    const getterHostil = {
+      get marca(): string { throw new Error('DIAGNOSTICO_INTERNO_SENSIBLE'); },
+      densidad: 'compacta'
+    };
+    expect(normalizarCoberturaPresentacionV5(getterHostil))
+      .toEqual({ marca: 'neutra', densidad: 'regular' });
+    const revocable = Proxy.revocable({ marca: 'institucional', densidad: 'compacta' }, {});
+    revocable.revoke();
+    expect(normalizarCoberturaPresentacionV5(revocable.proxy))
+      .toEqual({ marca: 'neutra', densidad: 'regular' });
+  });
+
+  it('C15-01.M04.03 Angular monta con getter hostil sin filtrar datos ni romper autorizacion', async () => {
+    const { fixture } = await montar(auth, undefined, true, {
+      get marca(): string { throw new Error('NO_EXPOSER_DETALLE_INTERNO'); },
+      densidad: 'compacta'
+    });
+    const shell = fixture.nativeElement.querySelector('.coverage-shell') as HTMLElement;
+    expect(shell.getAttribute('data-presentacion-marca')).toBe('neutra');
+    expect(shell.getAttribute('data-presentacion-densidad')).toBe('regular');
+    expect(shell.textContent).toContain('NO_MEDIDO');
+    expect(shell.textContent).not.toContain('NO_EXPOSER_DETALLE_INTERNO');
+    expect(shell.querySelectorAll('svg,form,input')).toHaveLength(0);
+    expect(shell.querySelectorAll('.coverage-list li')).toHaveLength(4);
+  });
 });

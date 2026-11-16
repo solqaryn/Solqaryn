@@ -26,13 +26,23 @@ const PRESENTACION_NEUTRA_V5: CoberturaPresentacionV5 = Object.freeze({ marca: '
 /** Los objetos arbitrarios, estilos, clases y cadenas de entrada nunca pasan al template. */
 export function normalizarCoberturaPresentacionV5(valor: unknown): CoberturaPresentacionV5 {
   if (valor === null || valor === undefined) return PRESENTACION_INSTITUCIONAL_V5;
-  if (typeof valor !== 'object' || Array.isArray(valor)) return PRESENTACION_NEUTRA_V5;
-  const propuesta = valor as { marca?: unknown; densidad?: unknown };
+  if (typeof valor !== 'object') return PRESENTACION_NEUTRA_V5;
+  let marca: unknown;
+  let densidad: unknown;
+  try {
+    // Un getter/proxy no puede cambiar la marca validada antes de construir el DOM.
+    if (Array.isArray(valor)) return PRESENTACION_NEUTRA_V5;
+    marca = Reflect.get(valor, 'marca');
+    densidad = Reflect.get(valor, 'densidad');
+  } catch {
+    // Un getter que falla o un Proxy revocado se trata como entrada hostil.
+    return PRESENTACION_NEUTRA_V5;
+  }
   if (
-    (propuesta.marca !== 'institucional' && propuesta.marca !== 'neutra') ||
-    (propuesta.densidad !== 'regular' && propuesta.densidad !== 'compacta')
+    (marca !== 'institucional' && marca !== 'neutra') ||
+    (densidad !== 'regular' && densidad !== 'compacta')
   ) return PRESENTACION_NEUTRA_V5;
-  return Object.freeze({ marca: propuesta.marca, densidad: propuesta.densidad });
+  return Object.freeze({ marca, densidad });
 }
 
 /** C15-01.M04.01/M04.02: cobertura declarativa con estados locales, sin resultados de auditoría ficticios. */
