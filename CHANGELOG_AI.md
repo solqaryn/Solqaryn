@@ -1,3 +1,8 @@
+## 2026-11-15 - V17 C11-01.M02.01 entidades, ownership y contratos relacionales R0 [Javier :30]
+- Define contrato conceptual de 16 entidades existentes con ownership empresa/sucursal/usuario y relaciones candidatas sin declarar tablas, FK ni indices fisicos como certificados.
+- Registra 16 invariantes de aislamiento tenant A/B, legacy NULL, RBAC, integridad comercial, idempotencia, auditoria y rollback; especifica 12 pares positivos/negativos FUTUROS_NO_EJECUTADOS (0/12 runtime).
+- Entrega solo Markdown documental con Scope Lock y procedencia V5 exact-SHA, A5 pendiente de otra Task Javier, sin cambios EF/MySQL/API/Angular, sin QA/main/PROD ni datos reales.
+
 ## 2026-11-15 - V17 reparación P2 C14-02.M04.02 excepción síncrona de sesión [Javier :20]
 - Corrige estado cargando persistente ante excepción síncrona de obtener() mediante RxJS defer, sin conceder permisos ni exponer diagnósticos.
 - Añade dos negativos Vitest para error genérico y 403 síncronos; preserva la guía privada, 12 Vitest previos y seis Chromium; CI y A5 independiente requeridos.
