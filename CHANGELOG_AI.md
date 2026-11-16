@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C15-02.M03.06 auditoría segura de arquitectura [Javier :50]
+- Agrega fachada Infrastructure .NET 10 de auditoría acotada y monohilo, lectura sintética de C15-02.M03.05, rechazo de doble selección y scopes de tenant/SHA inconsistentes, y sink estructurado sin secretos.
+- Incorpora 13 pruebas xUnit positivas, negativas, revocación, tenant B, fallo de lector/sink, límite, concurrencia y cancelación; comprobación real GitHub-hosted A0-A4 pertinente al SHA.
+- Riesgo R2. No ejecuta MySQL, migración, backup/restore, DNS, JWT ni proveedores reales; A5 independiente por Task Javier distinta, rollback git revert normal.
+
 ## 2026-11-15 — V17 C05-01.M03.05 worker acotado de design tokens [Javier :50]
 - Agrega worker Infrastructure .NET 10 de previsualización secuencial de hasta 12 intenciones de tema, con comprobación fail-closed de tenant A/B, actor, SHA, revisión, sesión y claves ordinales.
 - Incorpora 13 pruebas xUnit de casos positivos, negativos, fronteras, revocación, roles, valores CSS inseguros y cancelación; CI GitHub-hosted pertinente A0-A4.
