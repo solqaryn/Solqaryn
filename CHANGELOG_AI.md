@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C05-04.M05.05 rechazos Chromium de ligereza [Javier :40]
+- Añade cinco casos Playwright adversariales: anonimo, sesion 403, directorio 403, revocacion 403 tras 200 y error 503 tras 200. Verifica ausencia de datos previos, errores internos y peticiones de escritura.
+- GitHub-hosted lint/build Angular y Chromium con concurrencia por SHA cancel-in-progress=false; A0–A4 requieren CI exact-SHA real y A5 independiente.
+- R2 por pruebas/CI; HTTP sintético, no certifica JWT/RBAC/tenants reales, MySQL ni Core Web Vitals; sin cambios runtime ni QA/main/PROD. Rollback git revert.
+
 ## 2026-11-16 — V18 C05-04.M05.04 aceptación positiva combinada en Chromium [Javier :30]
 - Añade cuatro E2E Playwright Chromium reales con sesión/HTTP sintéticos, directorio 25 filas y ambos controles de ligereza y marca alternados sin GET duplicado, cero operaciones de escritura y anchura 320/1280.
 - Comprueba además vacío seguro 200, rechazo 403 y error 503 opaco, de forma independiente y falsable; workflow GitHub-hosted Angular lint/build y Chromium con concurrencia aislada por SHA.
