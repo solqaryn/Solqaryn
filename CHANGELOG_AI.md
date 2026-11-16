@@ -1,3 +1,8 @@
+## 2026-11-15 - V17 C12-01.M01.06 bloqueos, rollback y liberacion documental [Javier :00]
+- Define dieciseis gates futuros G01-G16, ocho pasos de reversion no ejecutados y doce pares POS/NEG FUTUROS_NO_EJECUTADOS (0/12 runtime) para la topologia objetivo de C12-01.
+- Conserva Vercel/Render/Aiven/Cloudinary como entorno vigente y trata Hostinger/Cloudflare solo como alternativas futuras; no crea VPS, red, DB, worker, DNS, secretos, gastos ni nuevos permisos.
+- Exige LISTO_DEV con A0-A4, Scope Lock y V5 exact-SHA, A5 independiente y DAG/COLA recalculados antes de cualquier M02; QA/main/PROD y cutover siguen NO_GO sin autorizacion adicional.
+
 ## 2026-11-15 - V17 C09-03.M02.03 persistencia conceptual Social Hub [Javier :50]
 - Modela claves/ownership de E01-E16, doce indices y un plan de migracion reversible FUTURO para campañas, consentimiento, segmentos, calendario, opt-out e idempotencia.
 - Especifica doce fixtures y pares P/N FUTUROS_NO_EJECUTADOS (0/12 runtime); no crea tablas, migraciones EF, SQL, APIs, proveedores, schedulers ni secretos.
