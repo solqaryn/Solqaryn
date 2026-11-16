@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C14-02.M04.01 revisión de amenazas privada [Javier :20]
+- Incorpora ruta Angular lazy protegida con plataformaGuard y guía de cuatro áreas críticas: BOLA/IDOR, suplantación, archivos/jobs/caché y host/backup, sin ejecutar operaciones ni consultar datos reales.
+- Añade cinco Vitest con denegaciones y revocación y tres escenarios Playwright/Chromium sintéticos; GitHub-hosted valida lint/build, Scope Lock y procedencia V5 antes de cualquier cierre.
+- Riesgo R2 UI: JWT, tenant A/B, pentest, restore/MySQL y proveedores reales NO_MEDIDO/NO_APLICA al diff; A5 de Task Javier distinta, rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C02-02.M04.03 presentación reactiva y segura de placement [Javier :10]
 - Incorpora token Angular Signal con marca institucional/SOLQARYN y densidad normal/compacta estrictamente permitidas, sin alterar permisos, tenant, DSN ni routing del backend.
 - Añade cinco Vitest de variantes reactivas y negativos HTML/CSS, campos extra y revocación; workflow dirigido Angular/Chromium con API sintética y mantenimiento de guard privado.
