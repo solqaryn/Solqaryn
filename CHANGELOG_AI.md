@@ -1,3 +1,8 @@
+## 2026-11-16 — Corrección causal CI C05-01.M04.05 (foco de teclado) [Javier :50]
+- La CI del SHA 18343ec3 falló 2 nuevas pruebas por invocar focus() programático al comprobar :focus-visible; 9 pruebas preexistentes sí aprobaron.
+- La prueba de foco ahora navega físicamente con Tab en Chromium antes de comprobar el contorno; no se deshabilitan asserts ni se declara PASS sin nuevo run.
+- Alcance test-only; no modifica seguridad, permisos, backend ni estado VALIDANDO. Rollback git revert normal.
+
 ## 2026-11-16 — V17 C05-01.M04.05 responsive y accesibilidad visual [Javier :50]
 - Añade Chromium para etiquetas, foco, teclado, tamaño táctil, contraste y vistas 320/375/768/1280; refuerza selección y foco con colores forzados.
 - Cambios limitados a biblioteca Angular privada sin HTTP comercial, migraciones, PII ni permisos nuevos.

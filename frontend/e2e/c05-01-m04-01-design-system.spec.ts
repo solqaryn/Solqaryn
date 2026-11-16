@@ -152,7 +152,10 @@ test('C05-01.M04.05 contraste, etiquetas, foco y teclado', async ({ page }) => {
   await expect(choices).toHaveAttribute('aria-describedby', 'design-brand-actions-help');
   await expect(page.locator('#design-brand-actions-help')).toBeVisible();
   const button = catalog.getByRole('button', { name: 'Contraste alto' });
-  await button.focus();
+  for (let intento = 0; intento < 30; intento++) {
+    if (await button.evaluate(elemento => elemento === document.activeElement)) break;
+    await page.keyboard.press('Tab');
+  }
   await expect(button).toBeFocused();
   const visual = await button.evaluate(element => {
     const style = getComputedStyle(element);
@@ -200,7 +203,10 @@ test('C05-01.M04.05 responsive y colores forzados conservan control seguro', asy
     expect(overflow, 'sin overflow horizontal a ' + width).toBeLessThanOrEqual(2);
   }
   await page.emulateMedia({ forcedColors: 'active', contrast: 'more', reducedMotion: 'reduce' });
-  await button.focus();
+  for (let intento = 0; intento < 30; intento++) {
+    if (await button.evaluate(elemento => elemento === document.activeElement)) break;
+    await page.keyboard.press('Tab');
+  }
   await expect(button).toBeFocused();
   const forced = await button.evaluate(element => {
     const computed = getComputedStyle(element);
