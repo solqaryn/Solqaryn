@@ -414,3 +414,12 @@ La nueva superficie privada e informativa de continuidad operativa agrega un com
 - `frontend/src/app/features/plataforma/continuidad-operativa-v5.component.ts`
 
 El detector fail-closed mantiene la comparación exacta con rutas reales y escenarios negativos de archivos faltantes y no inventariados; ningún componente otorga restauración, OAuth/JWT, RBAC, tenant, datos vivos, QA, main ni PROD. CI dirigida y readback pertenecen a C10-04.M04.01. Rollback: revert normal.
+
+## Actualización aditiva V17: auditoría tenancy y placement privado — 15 de noviembre de 2026
+
+El inventario reproducible de componentes Angular en `dev` incorpora dos superficies `plataforma` autenticadas adicionales, con **145 archivos (137 features y 8 shared)**. Los cortes de 137–143 documentados arriba se preservan como evidencia histórica de los SHA correspondientes; no se reescriben ni se declaran operativos actuales.
+
+- `frontend/src/app/features/plataforma/auditoria-tenancy-v5.component.ts`
+- `frontend/src/app/features/plataforma/placement-review-v5.component.ts`
+
+La verificación P0-007.A compara estrictamente los archivos reales y la lista exacta; conserva pruebas negativas de archivos omitidos y ficticios. La auditoría ERP admite exclusivamente las rutas privadas exactas `plataforma/auditoria-tenancy-v5` y `plataforma/placement-v5` bajo `canActivate: [plataformaGuard]` y la comprobación de sesión administrativa respaldada por servidor. No se amplían comodines, prefijos genéricos ni acceso público. Esta reparación de baseline CI no certifica identidad JWT en producción, consultas reales a tenants, DB, pagos, pentest, QA/main/PROD ni pruebas pendientes.

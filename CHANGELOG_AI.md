@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 reparación de baseline P0-007.A y rutas privadas de control plane [Javier :00]
+- Sin cambiar autorización ni rutas, incorpora a inventario exacto dos componentes Angular privados ya publicados: auditoría de tenancy y revisión de placement; 145 archivos (137 features, 8 shared), preservando cortes históricos.
+- Corrige el falso negativo ERP admitiendo únicamente dos rutas `plataforma/...` literales que ya exigen `plataformaGuard` y sesión administrativa validada por servidor; ningún comodín, auth bypass, nueva API ni integración productiva.
+- Mantiene comparaciones fail-closed, pruebas negativas de inventario y checks CI requeridos; las pruebas sobre el nuevo SHA deben finalizar SUCCESS antes de atribuir A4. Rollback: revert normal con HEAD verificado.
+
 ## 2026-11-15 — V17 C02-02.M04.01 ruta privada shared/dedicated placement [Javier :20]
 - Implementa Angular 22.2.1 componente lazy con guard de plataforma, modelo de responsabilidades Shared/Dedicated y checklist de validación/rollback, solo lectura sin DSN ni router/migraciones reales.
 - Agrega 5 pruebas unitarias de grant/tenant empresarial/revocación y 3 Playwright Chromium sintéticos; exige lint, build, Scope Lock y V5 exact-SHA antes de LISTO.
