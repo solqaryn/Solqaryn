@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C13-04.M03.06 logger estructurado seguro en auditoría visual [Javier :50]
+- Agrega sink .NET 10 aislado con ILogger y EventId estable, allowlist de resultados y logs estructurados sin texto de proveedor, tokens, claves ni SHA del solicitante.
+- Pruebas xUnit de etapas/rechazos, límites 0/>8, cancelación, proveedor con excepción secreta y 32 eventos concurrentes multiempresa; A1-A4 sujetos a CI real exact-SHA, A5 por revisor Javier distinto.
+- Riesgo R2; no introduce hosted worker, JWT/RBAC, persistencia MySQL, API, PROD ni auditoría duradera; rollback git revert.
+
 ## 2026-11-16 — V18 C02-04.M05.05 cobertura tenant header negativa efectiva [Javier :00]
 - Se corrige la fixture del selector de empresa al key real solqaryn_empresa_solicitada_id y se añade asercion observable de ausencia X-Empresa-Id en GET global; antes la variable simulada no ejercitaba el interceptor real.
 - Ningun cambio de auth productivo; la prueba falla si un tenant forjado viaja al backend de plataforma. Requerir 10/10 Chromium y P4 JWT/MySQL real por SHA posterior, sin aceptar resultados antiguos de browser.
