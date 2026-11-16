@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C07-04.M04.01 controles privados de pedidos y documentos [Javier :10]
+- Agrega cuatro frentes de requisitos en la ruta ERP existente /pedidos-venta, con tenant verificado, Ventas:Ver y allowlist de ruta; no emite pagos ni documentos fiscales.
+- Seis Vitest y tres escenarios Chromium se ejecutarán por GitHub Actions en SHA exacto; la API del navegador es simulada, JWT/tenancy backend, fiscalidad y MySQL reales permanecen NO_MEDIDO.
+- A0–A4 causales y A5 independiente son obligatorios antes de certificación. Únicamente dev, sin QA/main/PROD, rollback mediante git revert.
+
 ## 2026-11-16 — Reparación QA C05-04.M04.02 ante 403 sin redirección [Javier :30]
 - GitHub Actions run 43911108150 pasó 5/6 Chromium; un falso negativo P2 exigía /login aunque el interceptor revocaba la sesión sin navegación.
 - Test negativo ahora exige ausencia de autoridad, ausencia de superficie privada y pantalla de denegación, manteniendo oculto el mensaje sensible; ningún código de aplicación ni permiso cambia.

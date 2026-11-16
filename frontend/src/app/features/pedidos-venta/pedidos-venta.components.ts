@@ -1,5 +1,5 @@
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -11,14 +11,69 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatSnackBar, MatSnackBarModule } from '@angular/material/snack-bar';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
+import { TenantContextService } from '../../core/auth/tenant-context.service';
 import { AsignacionReservaPedido, EstadoPedidoVenta, PedidoVenta } from './pedido-venta.model';
 import { PedidoVentaService } from './pedido-venta.service';
 import { AppAlertService } from '../../shared/alerts/app-alert.service';
 
+
+/**
+ * C07-04.M04.01: panel de criterios documentales en la ruta ERP existente.
+ * No realiza operaciones financieras; la API y los permisos del tenant son la
+ * autoridad. No representa conformidad fiscal ni certificación de pagos.
+ */
+@Component({
+  selector: 'app-pedidos-documentos-readiness-v5',
+  standalone: true,
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <section class="pedidos-readiness-v5" aria-labelledby="pedidos-readiness-title">
+      <h2 id="pedidos-readiness-title">Controles de pedidos y documentos · solo lectura</h2>
+      <p role="note">Criterios para futuras verificaciones. Integración financiera, evidencia fiscal
+        y aislamiento tenant A/B: NO_MEDIDO.</p>
+      @if (autorizado()) {
+        <ol class="pedidos-readiness-cards">
+          <li><h3>Pedidos y cotizaciones</h3><p>Confirmación y cambios de estado requieren permiso
+            de servidor e idempotencia verificable. SIN_VERIFICAR.</p></li>
+          <li><h3>Facturas y notas de crédito</h3><p>Documentos, correlación y reversión fiscal
+            requieren pruebas reales y trazas auditables. SIN_VERIFICAR.</p></li>
+          <li><h3>Caja y pagos</h3><p>Conciliación, importes y reintentos financieros no se
+            ejecutan desde esta pantalla. NO_MEDIDO.</p></li>
+          <li><h3>Anulaciones y exportaciones</h3><p>Rechazos de rol, aislamiento empresarial
+            y registros de auditoría deben comprobarse en backend. SIN_VERIFICAR.</p></li>
+        </ol>
+      } @else {
+        <p role="status">No se confirmó el acceso empresarial de lectura; criterios internos ocultos.</p>
+      }
+    </section>
+  `,
+  styles: [`
+    .pedidos-readiness-v5 { box-sizing:border-box; min-width:0; margin:1rem 0; padding:1rem;
+      border:1px solid var(--mat-sys-outline-variant,#aeb8c1); border-radius:.65rem; }
+    h2 { font-size:1.2rem; line-height:1.3; margin:0 0 .55rem; }
+    p { line-height:1.5; overflow-wrap:anywhere; }
+    .pedidos-readiness-cards { display:grid; grid-template-columns:repeat(2,minmax(0,1fr));
+      gap:.8rem; margin:1rem 0 0; padding:0; list-style:none; }
+    .pedidos-readiness-cards li { min-width:0; padding:.85rem; border:1px solid
+      var(--mat-sys-outline-variant,#aeb8c1); border-radius:.5rem; }
+    .pedidos-readiness-cards h3 { margin:0 0 .5rem; font-size:1rem; }
+    @media(max-width:44rem) { .pedidos-readiness-cards { grid-template-columns:1fr; } }
+  `]
+})
+export class PedidosDocumentosReadinessV5Panel {
+  private readonly tenant = inject(TenantContextService);
+  private readonly permisos = inject(PermisosRuntimeService);
+  readonly autorizado = computed(() =>
+    this.tenant.tieneContextoVerificado() &&
+    this.permisos.puede('Ventas', 'Ver') &&
+    this.permisos.rutaHabilitada('pedidos-venta')
+  );
+}
+
 const UI=[CommonModule,RouterLink,MatButtonModule,MatCardModule,MatFormFieldModule,MatIconModule,MatInputModule,MatSelectModule,MatSnackBarModule,MatProgressSpinnerModule];
 const estado=(e:EstadoPedidoVenta)=>EstadoPedidoVenta[e]??String(e);
 
-@Component({selector:'app-pedidos-venta-list',standalone:true,imports:UI,template:`<section class="page"><header><div><h1>Pedidos de venta</h1><p>Seguimiento de pedidos originados desde cotizaciones aceptadas.</p></div>@if(puede('Crear')){<a mat-flat-button color="primary" routerLink="/pedidos-venta/nuevo"><mat-icon>add</mat-icon>Nuevo pedido</a>}</header><mat-card><mat-card-content><mat-form-field appearance="outline"><mat-label>Estado</mat-label><mat-select [value]="filtroEstado" (selectionChange)="filtrar($event.value)"><mat-option [value]="null">Todos</mat-option>@for(e of estados;track e){<mat-option [value]="e">{{nombre(e)}}</mat-option>}</mat-select></mat-form-field>@if(loading()){<div class="center" role="status"><mat-spinner diameter="40"/></div>}@else if(error()){<div class="center" role="alert">No fue posible cargar los pedidos. <button mat-button (click)="cargar()">Reintentar</button></div>}@else{<div class="table"><table><thead><tr><th>ID</th><th>Cotización</th><th>Cliente</th><th>Estado</th><th>Total</th><th><span class="sr">Acciones</span></th></tr></thead><tbody>@for(p of items();track p.id){<tr><td>PED-{{p.id}}</td><td>{{p.cotizacionId?('COT-'+p.cotizacionId):'—'}}</td><td>{{p.clienteNombreSnapshot}}</td><td>{{nombre(p.estado)}}</td><td>{{p.total|number:'1.2-2'}}</td><td><a mat-icon-button [routerLink]="['/pedidos-venta',p.id]" aria-label="Ver pedido"><mat-icon>visibility</mat-icon></a>@if(p.estado===EstadoPedidoVenta.Borrador&&puede('Editar')){<a mat-icon-button [routerLink]="['/pedidos-venta',p.id,'editar']" aria-label="Editar pedido"><mat-icon>edit</mat-icon></a>}</td></tr>}@empty{<tr><td colspan="6">Sin resultados.</td></tr>}</tbody></table></div><footer><span>{{total()}} registro(s)</span><div><button mat-button [disabled]="page<=1" (click)="pagina(page-1)">Anterior</button><span>Página {{page}}</span><button mat-button [disabled]="page*pageSize>=total()" (click)="pagina(page+1)">Siguiente</button></div></footer>}</mat-card-content></mat-card></section>`,changeDetection: ChangeDetectionStrategy.Eager,
+@Component({selector:'app-pedidos-venta-list',standalone:true,imports:[...UI, PedidosDocumentosReadinessV5Panel],template:`<section class="page"><header><div><h1>Pedidos de venta</h1><p>Seguimiento de pedidos originados desde cotizaciones aceptadas.</p></div>@if(puede('Crear')){<a mat-flat-button color="primary" routerLink="/pedidos-venta/nuevo"><mat-icon>add</mat-icon>Nuevo pedido</a>}</header><app-pedidos-documentos-readiness-v5 /><mat-card><mat-card-content><mat-form-field appearance="outline"><mat-label>Estado</mat-label><mat-select [value]="filtroEstado" (selectionChange)="filtrar($event.value)"><mat-option [value]="null">Todos</mat-option>@for(e of estados;track e){<mat-option [value]="e">{{nombre(e)}}</mat-option>}</mat-select></mat-form-field>@if(loading()){<div class="center" role="status"><mat-spinner diameter="40"/></div>}@else if(error()){<div class="center" role="alert">No fue posible cargar los pedidos. <button mat-button (click)="cargar()">Reintentar</button></div>}@else{<div class="table"><table><thead><tr><th>ID</th><th>Cotización</th><th>Cliente</th><th>Estado</th><th>Total</th><th><span class="sr">Acciones</span></th></tr></thead><tbody>@for(p of items();track p.id){<tr><td>PED-{{p.id}}</td><td>{{p.cotizacionId?('COT-'+p.cotizacionId):'—'}}</td><td>{{p.clienteNombreSnapshot}}</td><td>{{nombre(p.estado)}}</td><td>{{p.total|number:'1.2-2'}}</td><td><a mat-icon-button [routerLink]="['/pedidos-venta',p.id]" aria-label="Ver pedido"><mat-icon>visibility</mat-icon></a>@if(p.estado===EstadoPedidoVenta.Borrador&&puede('Editar')){<a mat-icon-button [routerLink]="['/pedidos-venta',p.id,'editar']" aria-label="Editar pedido"><mat-icon>edit</mat-icon></a>}</td></tr>}@empty{<tr><td colspan="6">Sin resultados.</td></tr>}</tbody></table></div><footer><span>{{total()}} registro(s)</span><div><button mat-button [disabled]="page<=1" (click)="pagina(page-1)">Anterior</button><span>Página {{page}}</span><button mat-button [disabled]="page*pageSize>=total()" (click)="pagina(page+1)">Siguiente</button></div></footer>}</mat-card-content></mat-card></section>`,changeDetection: ChangeDetectionStrategy.Eager,
 styles:[`.page{max-width:1200px;margin:auto;padding:16px}header,footer{display:flex;justify-content:space-between;gap:16px;align-items:center}header{margin-bottom:16px}h1{margin:0}.center{text-align:center;padding:36px}.table{overflow:auto}table{width:100%;border-collapse:collapse}th,td{padding:12px;text-align:left;border-bottom:1px solid var(--color-border)}footer{padding-top:12px}footer div{display:flex;gap:8px;align-items:center}.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)}@media(max-width:700px){header,footer{align-items:flex-start;flex-direction:column}}`]})
 export class PedidosVentaListComponent implements OnInit{private svc=inject(PedidoVentaService);private permisos=inject(PermisosRuntimeService);readonly items=signal<PedidoVenta[]>([]);readonly total=signal(0);readonly loading=signal(false);readonly error=signal(false);readonly EstadoPedidoVenta=EstadoPedidoVenta;readonly estados=[1,2,3] as EstadoPedidoVenta[];page=1;pageSize=10;filtroEstado:EstadoPedidoVenta|null=null;ngOnInit(){this.cargar()}puede(a:string){return this.permisos.puede('Ventas',a)}nombre(e:EstadoPedidoVenta){return estado(e)}filtrar(e:EstadoPedidoVenta|null){this.filtroEstado=e;this.page=1;this.cargar()}pagina(p:number){this.page=Math.max(1,p);this.cargar()}cargar(){this.loading.set(true);this.error.set(false);this.svc.getPaged({page:this.page,pageSize:this.pageSize,estado:this.filtroEstado,sortBy:'Id',sortDirection:'desc'}).subscribe({next:r=>{this.items.set(r.data.items);this.total.set(r.data.totalCount);this.loading.set(false)},error:()=>{this.error.set(true);this.loading.set(false)}})}}
 
