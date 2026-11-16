@@ -1,3 +1,8 @@
+## 2026-11-16 - V17 C12-01.M02.06 dependencias y salida documental [Javier :50]
+- Consolida catorce gates D01-D14 y diez criterios O01-O10 con fuentes M01.06 y M02.01-05, owner, seguridad, evidencias y rollback; no libera G01-G16 de infraestructura.
+- Define doce pares positivos/negativos futuros, distingue identidad de solicitud y HMAC completo antes de redacción, y mantiene 0 pruebas runtime ejecutadas en este R0.
+- Entrega exclusivamente Markdown con Scope Lock/V5 exact-SHA y A5 independiente pendiente; sin VPS, DNS, MySQL, API, QA/main/PROD, pagos ni secretos.
+
 ## 2026-11-16 - V17 reparacion A5_FAIL P2 C12-01.M02.05 idempotencia documental [Javier :30]
 - Corrige ENV10 con logicalRequestId estable y scope actor/ambiente/tenant/operacion/version; no fusionar solicitudes distintas por payload identico.
 - Corrige ENV12 con HMAC versionado sobre contenido canonico completo antes de redaccion, y I01/I02/P02/P03 con concurrencia, PII diferente y conflictos negativos.
