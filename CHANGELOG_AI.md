@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C14-02.M04.05 accesibilidad de guía privada [Javier :10]
+- Agrega Playwright/Chromium real para 320 y 1280 px, teclado, foco visible, área táctil de 44 px, contraste del tema neutro y denegación 403 sintética.
+- No altera componente, router, permisos, JWT, DB ni endpoints; la sesión simulada no acredita pentest, tenancy HTTP real ni auditoría WCAG global.
+- Riesgo R2; CI causal del SHA, Scope Lock/V5 y revisión A5 por otra Task Javier; rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-16 — V17 C02-04.M04.02 recuperación segura tras error transitorio [Javier :40]
 - Los cinco estados privados de consola conservan ocultación fail-closed; ante 503 hay reintento GET explícito y los controles no reaparecen hasta validación del servidor.
 - Nuevos Vitest y Chromium exigen 503 opaco, revalidación 200, 403 sin reintento y ausencia de acceso por caché local; CI exact-SHA, Scope Lock, V5 y A5 independiente obligatorios.
