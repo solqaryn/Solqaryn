@@ -1,0 +1,34 @@
+name: V18 C11-04.M05.03 - ILoggerProvider in-process integration
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v18-c11-04-m05-03-logging-provider.yml'
+      - 'backend/tests/Solqaryn.Tests/Infrastructure/C1104ObservabilityLoggerProviderIntegrationTests.cs'
+      - 'backend/src/Infrastructure/AutomationV5/C1104ObservabilityStructuredAuditSink.cs'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v18-c1104-m0503-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  logger-provider:
+    name: V18 C11-04.M05.03 - xUnit real LoggerFactory provider A/B
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout exact SHA
+        uses: actions/checkout@v4
+      - name: .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Restore solution
+        run: dotnet restore backend/Solqaryn.sln
+      - name: xUnit provider integration targeted
+        run: |
+          dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj \
+            --configuration Release --no-restore \
+            --filter "FullyQualifiedName~C1104ObservabilityLoggerProviderIntegrationTests" \
+            --logger "console;verbosity=normal"

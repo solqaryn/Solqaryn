@@ -1,3 +1,9 @@
+## 2026-11-16 — V18 C11-04.M05.03 integración ILoggerProvider real en proceso [Javier :20]
+- Pruebas xUnit con LoggerFactory/ILoggerProvider de Microsoft.Extensions.Logging, EventId 110406, campos allowlisted y rechazo de etiquetas privadas; no es exporter externo ni auditoría durable.
+- Casos tenant A/B sintéticos, revocación de membresía/RBAC, SHA discrepante, conteos adversariales, filtros de nivel, errores opacos y cancelación; el provider en proceso es real, la autoridad es fixture.
+- CI dirigida en GitHub-hosted exact-SHA, backend Release, Scope Lock y procedencia V5 obligatorios; mantener VALIDANDO si los checks están pendientes y A5 siempre independiente.
+- No se modifican EF/MySQL, HTTP/JWT, secretos, producción ni recursos de pago; rollback git revert normal con BITACORA preservada.
+
 ## 2026-11-16 — V18 C02-04.M05.02 pruebas reales de contrato API/DTO global [Javier :00]
 - Añade xUnit para catálogo global y búsqueda DTO: parámetros inválidos, rechazo de JWT empresarial sin grant, revocación efectiva, DTO minimizado, auditoría global y no-store.
 - El controlador productivo no cambia; pruebas EF InMemory y claims sintéticos no acreditan HTTP/MySQL real, MFA o API futura de QA. Exigir GitHub-hosted por SHA y A5 independiente antes de LISTO.
