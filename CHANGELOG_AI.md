@@ -1,3 +1,8 @@
+## 2026-11-16 - V17 C12-01.M02.05 eventos, idempotencia y limites conceptuales [Javier :30]
+- Define doce eventos EV01-EV12, doce campos ENV01-ENV12, doce invariantes I01-I12, ocho limites, ocho errores ER-EV01-08 y doce pares P/N FUTUROS_NO_EJECUTADOS (0/12 runtime).
+- Prohibe efectos por mera revision documental, cross-tenant, secretos o JWT en cargas, retry infinito y cutover sin G01-G16/R3; conserva configuracion actual Vercel/Render/Aiven/Cloudinary.
+- Solo R0 documental: ningun broker, trabajador, endpoint, DB, DNS o proveedor activado; Scope Lock/V5 causal, readback y A5 independiente obligatorios.
+
 ## 2026-11-16 - V17 C12-01.M02.03 persistencia conceptual y migraciones reversibles [Javier :10]
 - Documenta 16 claves e indices propuestos K01-K16, ocho etapas futuras de migracion MX01-MX08, doce fixtures sintéticos F01-F12 y 12 pares positivos/negativos P/N de topologia objetivo.
 - Exige version y entorno compuestos, tenant A/B, JWT/RBAC, revocacion, secretos opacos, red privada, compatibilidad Oracle EF/MySQL 8.4 aislada y rollback real futuro; no se crean tablas, indices, migraciones, endpoints, proveedores ni datos.
