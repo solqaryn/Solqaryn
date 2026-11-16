@@ -31,7 +31,7 @@ describe('C14-02.M04.01 - pantalla privada de amenazas', () => {
     }).compileComponents();
     const fixture = TestBed.createComponent(RevisionAmenazasV5Component);
     fixture.detectChanges();
-    return { fixture, sesion, solicitudes };
+    return { fixture, sesion, solicitudes, servicio };
   }
   it('ruta única lazy con plataformaGuard', async () => {
     const matches = routes.filter(r => r.path === 'plataforma/revision-amenazas-v5');
@@ -143,6 +143,27 @@ describe('C14-02.M04.01 - pantalla privada de amenazas', () => {
     fixture.detectChanges();
     expect(fixture.componentInstance.temaPresentacion()).toBe('institucional');
     expect(fixture.nativeElement.querySelectorAll('.threat-list li')).toHaveLength(0);
+  });
+
+  it('C14-02.M04.02 excepción síncrona de sesión termina en error sin revelar diagnóstico', async () => {
+    const { fixture, servicio } = await montar(autorizada);
+    servicio.obtener = () => { throw new Error('INTERNAL_SECRET_DIAGNOSTIC'); };
+    expect(() => fixture.componentInstance.revalidarSesion()).not.toThrow();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.verificacion()).toBe('error');
+    expect(fixture.componentInstance.estadoVista()).toBe('error');
+    expect(fixture.nativeElement.querySelectorAll('.threat-list li')).toHaveLength(0);
+    expect(fixture.nativeElement.textContent).not.toContain('INTERNAL_SECRET_DIAGNOSTIC');
+  });
+  it('C14-02.M04.02 excepción síncrona 403 conserva denegación sin estado cargando', async () => {
+    const { fixture, servicio } = await montar(autorizada);
+    servicio.obtener = () => { throw new HttpErrorResponse({ status: 403, statusText: 'PRIVATE_SERVER_DETAIL' }); };
+    expect(() => fixture.componentInstance.revalidarSesion()).not.toThrow();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.verificacion()).toBe('sin_permiso');
+    expect(fixture.componentInstance.estadoVista()).toBe('sin_permiso');
+    expect(fixture.nativeElement.querySelectorAll('.threat-list li')).toHaveLength(0);
+    expect(fixture.nativeElement.textContent).not.toContain('PRIVATE_SERVER_DETAIL');
   });
 
 });

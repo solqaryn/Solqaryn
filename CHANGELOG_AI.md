@@ -1,3 +1,8 @@
+## 2026-11-15 - V17 reparación P2 C14-02.M04.02 excepción síncrona de sesión [Javier :20]
+- Corrige estado cargando persistente ante excepción síncrona de obtener() mediante RxJS defer, sin conceder permisos ni exponer diagnósticos.
+- Añade dos negativos Vitest para error genérico y 403 síncronos; preserva la guía privada, 12 Vitest previos y seis Chromium; CI y A5 independiente requeridos.
+- Riesgo R2, reparación de A5_FAIL histórico, sin JWT HTTP/MySQL reales ni QA/main/PROD; rollback por git revert.
+
 ## 2026-11-15 - V17 C11-01.M01.06 bloqueo, rollback y salida documental modelo relacional [Javier :10]
 - Define dieciseis puertas de bloqueo para claves PK/FK, índices, ownership empresa/sucursal, legado nullable, migraciones reversibles e idempotencia, sin cambiar esquema, datos, EF ni servicios.
 - Documenta doce pares positivos/negativos FUTUROS_NO_EJECUTADOS y ocho pasos de rollback, manteniendo R01-R16 como riesgos hipotéticos, S01-S10 sin verificar y D01-D10 pendientes.

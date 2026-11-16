@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signa
 import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+import { defer } from 'rxjs';
 import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
 
 /** C14-02.M04.01: guía privada de amenazas; nunca concede permisos ni ejecuta pentest. */
@@ -113,7 +114,7 @@ export class RevisionAmenazasV5Component {
   revalidarSesion(): void {
     if (!this.accesoVerificado() || this.verificacion() === 'cargando') return;
     this.verificacion.set('cargando');
-    this.plataforma.obtener().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    defer(() => this.plataforma.obtener()).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => this.verificacion.set(this.accesoVerificado() ? 'exito' : 'sin_permiso'),
       error: (error: unknown) => {
         const denied = error instanceof HttpErrorResponse && (error.status === 401 || error.status === 403);

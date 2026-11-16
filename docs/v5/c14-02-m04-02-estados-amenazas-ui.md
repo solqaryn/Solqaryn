@@ -13,3 +13,7 @@ CI Angular lint, build y Playwright Chromium en GitHub-hosted con datos de API s
 
 ## A4/A5
 Verificar SHA publicado, Scope Lock, V5 y workflow dirigido completed/success, readback PLAN/COLA/BITACORA, revisión posterior por distinto Task ID Javier. Ninguna autorización QA/main/PROD. Rollback por git revert normal, sin force-push.
+
+## Reparación P2 V15/V17 de excepciones síncronas (2026-11-15)
+
+Una revisión A5 independiente detectó que obtener() podía lanzar antes de devolver un Observable, dejando verificacion=cargando indefinida. El cambio mínimo encapsula la llamada en RxJS defer, encamina el rechazo al mismo manejador seguro, oculta detalles internos y evita fuga del mensaje de error. Se agregan dos Vitest negativos (error genérico y 403 síncronos), conservando los 12 anteriores y los seis Playwright sintéticos. Evidencia CI y nueva A5 independiente obligatorias sobre SHA publicado; no se infiere integración HTTP/JWT, MySQL ni datos productivos. El A5_FAIL histórico no se borra; rollback: git revert normal sobre dev.
