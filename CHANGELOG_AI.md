@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C05-04.M03.05 cola aislada de revision acotada de ligereza UI [Javier :40]
+- Implementa en Infrastructure .NET10 un procesador en memoria acotado y serializado, que reusa preflight Application/Domain, sin HostedService, DI, cache real, HTTP, DB ni medicion CWV.
+- Incorpora doce xUnit adversariales con tenant A/B, replay/conflicto, limites, SHA, cancelacion, idempotencia fail-closed y ausencia de grants.
+- R2: Scope Lock, CI backend/seguridad/autorizacion y procedencia V5 exact-SHA obligatorios antes de LISTO; A5 independiente y no QA/main/PROD.
+
 ## 2026-11-15 — V17 C04-03.M02.04 configuración tipada conceptual de metering [Javier :20]
 - Define seis ámbitos de autoridad y dieciséis opciones tipadas con defaults seguros, validaciones fail-closed, precedencia por tenant, revocación y rollback; documento R0, no runtime.
 - Registra doce invariantes y diez pares positivos/negativos FUTUROS, sin atribuir pruebas .NET/MySQL/HTTP/Angular/Chromium ejecutadas ni activar flags, cobros, cuotas o migraciones.
