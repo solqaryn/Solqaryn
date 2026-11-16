@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C05-04.M03.06 auditoria privada de ligereza UI [Javier :00]
+- Añade sink .NET 10 con ILogger y codigo permitido, verifica identidad backend, tenant A/B, membresia, RBAC, SHA y audit fence en fuente confiable; no registra PII, excepciones, tenant ni JWT.
+- Incluye 14 xUnit positivos/negativos/error; requiere comprobaciones GitHub Actions exact-SHA, Scope Lock y V5 antes de LISTO; A5 de otra Task Javier.
+- Alcance R2 in-process no durable: sin Core Web Vitals browser, Angular, MySQL, HTTP, telemetria externa, scheduler, servidor productivo ni permiso para QA/main/PROD.
+
 ## 2026-11-15 — V17 C11-04.M03.06 auditoria estructurada de observabilidad segura [Javier :00]
 - Implementa un sink .NET 10 de auditoria in-process con ILogger/EventId fijo, fuente de autoridad backend verificable, tenant/RBAC/SHA fail-closed y salida sin datos sensibles.
 - Incorpora 14 xUnit positivos/negativos/frontera/error; Scope Lock, backend Release y seguridad deben aprobar en GitHub Actions del SHA causal. Sin exporter, MySQL, JWT HTTP, almacenamiento durable, scheduler, datos productivos ni permisos de despliegue.
