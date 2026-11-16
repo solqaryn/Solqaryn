@@ -169,4 +169,41 @@ describe('C14-02.M04.01 - pantalla privada de amenazas', () => {
     expect(fixture.nativeElement.textContent).not.toContain('PRIVATE_SERVER_DETAIL');
   });
 
+
+  it('C14-02.M04.04 navegación usa solo la ruta interna existente, sin formulario de ejecución', async () => {
+    const { fixture, solicitudes } = await montar(autorizada);
+    const volver = fixture.nativeElement.querySelector('a[aria-label="Volver a administración de plataforma"]') as HTMLAnchorElement;
+    expect(volver).toBeTruthy();
+    expect(volver.getAttribute('href')).toBe('/plataforma');
+    expect(fixture.nativeElement.querySelectorAll('form, input, textarea, iframe')).toHaveLength(0);
+    expect(solicitudes).toHaveLength(0);
+  });
+  it('C14-02.M04.04 doble acción: una solicitud en vuelo, otra solo tras resolver la primera', async () => {
+    const { fixture, sesion, solicitudes } = await montar(autorizada);
+    fixture.componentInstance.revalidarSesion();
+    fixture.componentInstance.revalidarSesion();
+    fixture.detectChanges();
+    expect(solicitudes).toHaveLength(1);
+    expect(fixture.componentInstance.estadoVista()).toBe('cargando');
+    expect(fixture.nativeElement.querySelectorAll('.threat-list li')).toHaveLength(0);
+    sesion.set(autorizada);
+    solicitudes[0].next(autorizada);
+    solicitudes[0].complete();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.estadoVista()).toBe('exito');
+    expect(fixture.nativeElement.querySelectorAll('.threat-list li')).toHaveLength(4);
+    fixture.componentInstance.revalidarSesion();
+    expect(solicitudes).toHaveLength(2);
+  });
+  it('C14-02.M04.04 respuesta 429 nunca publica diagnóstico ni permite acción privilegiada', async () => {
+    const { fixture, solicitudes } = await montar(autorizada);
+    fixture.componentInstance.revalidarSesion();
+    solicitudes[0].error(new HttpErrorResponse({ status: 429, statusText: 'INTERNAL_SECRET_DIAGNOSTIC' }));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.estadoVista()).toBe('error');
+    expect(fixture.nativeElement.querySelectorAll('.threat-list li')).toHaveLength(0);
+    expect(fixture.nativeElement.querySelectorAll('form, input, textarea')).toHaveLength(0);
+    expect(fixture.nativeElement.textContent).not.toContain('INTERNAL_SECRET_DIAGNOSTIC');
+  });
+
 });

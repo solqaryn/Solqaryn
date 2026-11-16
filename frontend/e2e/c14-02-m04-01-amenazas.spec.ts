@@ -98,3 +98,41 @@ test('C14-02.M04.03 selección visual local no cambia sesión ni ejecuta accione
   await expect(page.locator('.threat-list li')).toHaveCount(4);
   await expect(page.locator('.threat-guide input, .threat-guide form')).toHaveCount(0);
 });
+
+
+test('C14-02.M04.04 navegación interna a plataforma conserva separación de la guía', async ({ page }) => {
+  await session(page, true);
+  await page.goto('/plataforma/revision-amenazas-v5');
+  const volver = page.getByRole('link', { name: 'Volver a administración de plataforma' });
+  await expect(volver).toHaveAttribute('href', '/plataforma');
+  await volver.click();
+  await expect(page).toHaveURL(/\/plataforma(?:\/|$)/);
+  await expect(page.locator('.threat-list li')).toHaveCount(0);
+});
+test('C14-02.M04.04 error 429 tras revalidación oculta amenazas y diagnóstico', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('solqaryn_token', 'c14-02-synthetic-not-a-jwt');
+    localStorage.setItem('solqaryn_expira_en', '2099-01-01T00:00:00Z');
+  });
+  let limitado = false;
+  await page.route(/\/plataforma\/sesion(?:\?|$)/, async route => {
+    const headers = {
+      'Access-Control-Allow-Origin': 'http://127.0.0.1:4200',
+      'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-Empresa-Id',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS'
+    };
+    if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers });
+    await route.fulfill({ status: limitado ? 429 : 200, headers, contentType: 'application/json',
+      body: JSON.stringify(limitado
+        ? { success: false, message: 'INTERNAL_SECRET_DIAGNOSTIC' }
+        : { success: true, data: { nombreUsuario: 'Admin', rolNombre: 'Admin', ambito: 'Plataforma', esAdministrador: true } }) });
+  });
+  await page.goto('/plataforma/revision-amenazas-v5');
+  await expect(page.locator('.threat-list li')).toHaveCount(4);
+  limitado = true;
+  await page.getByRole('button', { name: 'Revalidar sesión de plataforma' }).click();
+  await expect(page.getByRole('alert')).toContainText('No se pudo comprobar la sesión');
+  await expect(page.locator('.threat-list li')).toHaveCount(0);
+  await expect(page.getByText('INTERNAL_SECRET_DIAGNOSTIC')).toHaveCount(0);
+  await expect(page.locator('.threat-guide form, .threat-guide input')).toHaveCount(0);
+});

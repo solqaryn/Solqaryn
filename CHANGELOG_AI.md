@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C14-02.M04.04 navegación, errores y single-flight en seguridad [Javier :10]
+- Agrega tres Vitest de navegación interna, doble revalidación single-flight y error 429 sin diagnóstico sensible; dos Chromium sintéticos de retorno a plataforma y error 429.
+- Cambia únicamente pruebas, etiqueta de workflow y documentación; frontend productivo, API, DTO, MySQL, JWT y reglas tenant quedan intactos.
+- Riesgo R2 por frontera de acceso; CI exact-SHA requerida en GitHub-hosted, A5 independiente de otra Task Javier y rollback git revert normal; no QA/main/PROD.
+
 ## 2026-11-16 — V19 C05-01.M04.04 verificación de interacción visual [Javier :50]
 - Verifica navegación real por Tab y Enter, mensajes accesibles, permisos de plataforma y 403 sintético en la biblioteca privada Angular.
 - Evita segunda transición en la selección local y prueba ausencia de formularios y de escrituras HTTP; añade dos Vitest y dos Playwright Chromium adversariales.
