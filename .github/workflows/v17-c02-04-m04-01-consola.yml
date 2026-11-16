@@ -8,6 +8,7 @@ on:
       - 'frontend/src/app/features/plataforma/consola-global-auditada-v5.component.ts'
       - 'frontend/src/app/features/plataforma/consola-global-auditada-v5.component.spec.ts'
       - 'frontend/e2e/c02-04-m04-01-consola.spec.ts'
+      - 'frontend/e2e/c02-04-m04-05-accessibility.spec.ts'
   workflow_dispatch:
 permissions:
   contents: read
@@ -57,9 +58,9 @@ jobs:
           done
           cat v17-c0204-consola.log >&2
           exit 1
-      - name: Cuatro Chromium sintéticos con permisos y error
+      - name: Chromium consola y C02-04.M04.05 accesibilidad
         working-directory: frontend
-        run: npx playwright test e2e/c02-04-m04-01-consola.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+        run: npx playwright test e2e/c02-04-m04-01-consola.spec.ts e2e/c02-04-m04-05-accessibility.spec.ts --config=playwright.config.ts --workers=1 --retries=0
       - name: Artefactos
         if: always()
         uses: actions/upload-artifact@v4

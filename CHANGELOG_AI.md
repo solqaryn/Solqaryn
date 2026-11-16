@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C02-04.M04.05 accesibilidad y contraste de consola global [Javier :20]
+- Cinco pruebas Playwright Chromium comprueban anónimo/403, responsive 320/375/768/1280, labels, teclado Tab/foco y blanco 44px y contraste calculado >=4.5:1.
+- Se amplía workflow SHA-aislado de consola para ejecutar pruebas anteriores y nuevas con Angular lint/build sin bajar gates; no se cambia código de permisos, rutas ni backend.
+- R2 por control global; mocks no son JWT HTTP, MFA, RBAC backend, tenant A/B, MySQL o producción. CI real, Scope Lock V5, A5 independiente y revert normal obligatorios.
+
 ## 2026-11-16 — Reparación causal CI C14-04.M04.01 selectores exclusivos [Javier :20]
 - GitHub Actions run 43909251783 detectó dos fallos en pruebas Chromium V5 por reutilizar la clase genérica .v5-card y provocar coincidencias dobles; se preservan los tests y sus expectativas.
 - El nuevo panel read-only usa la clase exclusiva .release-readiness-card sin cambiar guard, datos, autoridad, aria ni funcionalidad; requiere CI nuevamente y A5 independiente.
