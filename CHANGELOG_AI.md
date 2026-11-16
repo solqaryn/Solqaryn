@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C10-04.M04.05 accesibilidad y pruebas Chromium de continuidad privada [Javier :40]
+- Reforzado aria-labelledby en lista de controles, wrap seguro para 320px y foco de alto contraste, manteniendo guard de plataforma, sesión y estados fail-closed sin nuevas operaciones.
+- Añade cinco Playwright reales sobre sesión sintética: anónimo, 403, 320/768/1280, foco/labels/contraste fuerte y error 503 sin filtración; workflow GitHub-hosted Node24/npm11 Angular lint/build/Chromium, exact SHA.
+- Riesgo R2: sin JWT/HTTP/MySQL/tenant A/B real ni restauración; exigir Scope Lock, V5 y CI dirigida antes de LISTO, A5 por otra Task Javier. Rollback git revert, QA/main/PROD intactos.
+
 ## 2026-11-15 — V17 C15-03.M04.03 branding reactivo y densidad segura de auditoría tenancy [Javier :40]
 - Presentación Angular tipada con marca solqaryn/institucional y densidad normal/compacta, Signal reactivo y normalización fail-closed; no concede permisos, no aplica tema empresarial ni CSS arbitrario.
 - Añade Vitest con casos positivos, adversariales, frontera y revocación, más Chromium para render DOM seguro; conserva el guard de plataforma y pruebas de M04.01/M04.02.
