@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C07-04.M04.03 branding reactivo privado [Javier :10]
+- Agrega Angular Signals, opciones cosméticas por allowlist estricta y doble control accesible con rechazo al revocar tenant, permiso o ruta; no altera finanzas ni backend.
+- Seis Vitest y tres Chromium 320 px ligados a workflow SHA aislado, con denegación y sin mutaciones; no simular JWT/HTTP/MySQL como integración real.
+- R2, A0-A4 y A5 independiente obligatorios; sólo dev, rollback git revert y sin QA/main/PROD.
+
 ## 2026-11-16 — A5_FAIL TOCTOU C13-04.M03.04 reparación quirúrgica [ChatGPT / Javier]
 - Se corrige el defecto P2 detectado por revisión independiente: entrada IReadOnlyList mutable se capturaba de nuevo tras un await y podía cambiar entre allowlist y almacenamiento.
 - WriteAsync ahora captura una única copia acotada antes del primer await, valida y almacena los mismos elementos; fallos de enumeración se deniegan sin exposición de datos. Dos pruebas xUnit adversariales cubren mutación concurrente de dos actores y enumeración maliciosa.
