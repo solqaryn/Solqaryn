@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C15-02.M03.05 worker acotado de revisión de arquitectura [Javier :50]
+- Agrega worker Infrastructure .NET 10 de previsualización en memoria de hasta 12 probes; valida SHA, tenant, claves ordinales, no mutación, conjunto coherente y readback aislado antes de devolver únicamente evidencia requerida.
+- Incorpora once pruebas xUnit de casos válidos y rechazo por tenant B, SHA stale, autoridad revocada, duplicados, batch mixto, comandos externos, error de proveedor de lectura, límites y cancelación; gates backend/security/Scope Lock/V5 requeridos.
+- No certifica ejecución real de backups, MySQL, DNS, secretos, R2, Render, Vercel, HTTP/JWT ni permisos de producción. A5 otro Javier; rollback git revert normal, QA/main/PROD intactos.
+
 ## 2026-11-15 — V17 C11-04.M04.02 estados y revocación de observabilidad privada [Javier :00]
 - Añade estados Angular tipados vacio/cargando/exito/sin_permiso/error y revalidación de autoridad server-side de solo lectura, ocultación inmediata y prevención de doble solicitud.
 - Amplía Vitest positivo/negativo/frontera y Playwright Chromium sintético 200→503/403; conserva tests M04.01 y workflow causal dirigido, sin exporter, datos privados ni métricas en vivo.
