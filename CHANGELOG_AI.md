@@ -6033,3 +6033,8 @@
 - Pruebas Vitest de valores permitidos, negativos, excepción getter y ocultación bajo sin_permiso/error, más workflow Angular build/lint y Playwright Chromium anónimo/403/responsive; SUCCESS exact-SHA exigido antes de LISTO, A5 de otra Task Javier.
 - R1 exclusivamente UI, ninguna autorización real o modificación MySQL/tenant/backend, rollback git revert; lock V17 2000001282 y Scope Lock STRICT.
 
+## 2026-11-16 — V18 C08-04.M04.04 navegación, mensajes y no doble acción [Javier :30]
+- Añade tres E2E Chromium causales: tenant sintético 403 sin exposición, Tab real desde el foco inicial y Enter al enlace de retorno, y pantalla de módulos sin formularios/controles de activación ni mutaciones HTTP. No hay doble-submit porque la superficie es de solo lectura; no se inventa una API.
+- Workflow específico con Vitest de los cinco estados, Angular typecheck/lint/build y navegador Playwright real; requiere CI completed/success exact-SHA para A0-A4, A5 de revisor Javier distinto. Pruebas sintéticas no certifican JWT/RBAC/tenant A/B reales.
+- R1 pruebas Angular, sin modificar runtime/backend/MySQL/seguridad/producción. Scope Lock STRICT, candado V17 2000001283 y rollback git revert.
+
