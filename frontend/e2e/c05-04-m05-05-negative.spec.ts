@@ -97,6 +97,8 @@ test.describe('C05-04.M05.05 - denegaciones y errores UI, HTTP simulado', () => 
     });
     await page.goto('/plataforma');
     await expect(page.getByRole('cell', { name: 'STALE_TENANT_SENTINEL' })).toBeVisible();
+    await page.locator('details.ui-lightness-v5 > summary').click();
+    await expect(page.getByTestId('c0504-feedback')).toBeVisible();
     fail = true;
     await page.getByRole('button', { name: 'Actualizar directorio' }).click();
     await expect(page.getByTestId('c0504-error')).toBeVisible();

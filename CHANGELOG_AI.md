@@ -13,6 +13,7 @@
 - GitHub-hosted lint/build Angular y Chromium con concurrencia por SHA cancel-in-progress=false; A0–A4 requieren CI exact-SHA real y A5 independiente.
 - R2 por pruebas/CI; HTTP sintético, no certifica JWT/RBAC/tenants reales, MySQL ni Core Web Vitals; sin cambios runtime ni QA/main/PROD. Rollback git revert.
 - CI_REPAIR P2: Playwright restringe la comprobación previa al elemento cell del directorio porque la misma etiqueta se muestra también en un selector; conserva todos los asserts de ausencia tras 403/503 y las cinco pruebas adversariales.
+- CI_REPAIR P2: escenario 503 expande el panel nativo details antes de exigir que el aviso sea visible, preservando denegación, limpieza de datos anteriores y ocultación de error interno; ningún cambio al producto.
 
 ## 2026-11-16 — V18 C05-04.M05.04 aceptación positiva combinada en Chromium [Javier :30]
 - Añade cuatro E2E Playwright Chromium reales con sesión/HTTP sintéticos, directorio 25 filas y ambos controles de ligereza y marca alternados sin GET duplicado, cero operaciones de escritura y anchura 320/1280.
