@@ -1,3 +1,8 @@
+## 2026-11-16 - V17 C12-01.M02.02 operaciones y DTO documentales de topologia [Javier :20]
+- Define ocho operaciones OP01-OP08, doce DTO D01-D12, doce errores ER01-ER12, dieciseis validaciones V01-V16 y doce pares P/N futuros sin crear endpoints.
+- Conserva E01-E16/I01-I20, seguridad tenant/JWT/RBAC, red privada, referencias de secretos y gates G01-G16; no confunde contrato con prueba real ni permiso Hostinger/DNS/PROD.
+- Riesgo R0 documental: runtime y proveedores NO_APLICA; requiere Scope Lock/V5 exact-SHA, readback institucional y A5 independiente de otra Task Javier.
+
 ## 2026-11-15 - V17 C09-03.M02.06 contrato de salida del Social Hub [Javier :10]
 - Define dieciseis gates contractuales G01-G16, doce escenarios P/N FUTUROS_NO_EJECUTADOS (0/12 runtime), ocho pasos de rollback y dependencias A5 para campañas, consentimiento y opt-out.
 - Exige aislamiento tenant A/B, JWT/RBAC y revocacion, CAS/idempotencia, cancelacion y verificacion de proveedor, sin crear envios, workers, tablas, credenciales ni migraciones.
