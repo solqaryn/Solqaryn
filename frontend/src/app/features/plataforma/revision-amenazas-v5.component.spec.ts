@@ -50,7 +50,7 @@ describe('C14-02.M04.01 - pantalla privada de amenazas', () => {
     expect(fixture.componentInstance.accesoVerificado()).toBe(true);
     expect(fixture.nativeElement.querySelectorAll('.threat-list li')).toHaveLength(4);
     expect(fixture.nativeElement.querySelectorAll('input, form, textarea')).toHaveLength(0);
-    expect(fixture.nativeElement.querySelectorAll('button')).toHaveLength(1);
+    expect(fixture.nativeElement.querySelectorAll('button')).toHaveLength(3);
     expect(fixture.nativeElement.textContent).toContain('NO_MEDIDO');
   });
   it('rol empresarial falso se rechaza', async () => {
@@ -109,6 +109,39 @@ describe('C14-02.M04.01 - pantalla privada de amenazas', () => {
     sesion.set(null);
     fixture.detectChanges();
     expect(fixture.componentInstance.estadoVista()).toBe('sin_permiso');
+    expect(fixture.nativeElement.querySelectorAll('.threat-list li')).toHaveLength(0);
+  });
+
+  it('C14-02.M04.03 cambia entre dos temas tipados sin consultas ni permisos nuevos', async () => {
+    const { fixture, solicitudes } = await montar(autorizada);
+    expect(fixture.componentInstance.temaPresentacion()).toBe('institucional');
+    fixture.componentInstance.cambiarTemaPresentacion('neutro');
+    fixture.detectChanges();
+    expect(fixture.componentInstance.temaPresentacion()).toBe('neutro');
+    expect(fixture.nativeElement.querySelector('.threat-guide.visual-neutral')).not.toBeNull();
+    expect(fixture.nativeElement.querySelector('[aria-label="Presentación visual local"] button[aria-pressed="true"]')?.textContent).toContain('neutra');
+    expect(solicitudes).toHaveLength(0);
+  });
+  it('C14-02.M04.03 valor arbitrario restaura presentación segura sin CSS inyectado', async () => {
+    const { fixture } = await montar(autorizada);
+    fixture.componentInstance.cambiarTemaPresentacion('neutro');
+    fixture.componentInstance.cambiarTemaPresentacion('url(javascript:alert(1))');
+    fixture.detectChanges();
+    expect(fixture.componentInstance.temaPresentacion()).toBe('institucional');
+    expect(fixture.nativeElement.querySelector('.threat-guide.visual-neutral')).toBeNull();
+    expect(fixture.nativeElement.outerHTML).not.toContain('javascript:alert');
+  });
+  it('C14-02.M04.03 revocación y ámbito empresa deniegan cambio y controles visuales', async () => {
+    const { fixture, sesion } = await montar(autorizada);
+    sesion.set(null);
+    fixture.componentInstance.cambiarTemaPresentacion('neutro');
+    fixture.detectChanges();
+    expect(fixture.componentInstance.temaPresentacion()).toBe('institucional');
+    expect(fixture.nativeElement.querySelectorAll('[aria-label="Presentación visual local"] button')).toHaveLength(0);
+    sesion.set({ ...autorizada, ambito: 'Empresa' } as unknown as PlataformaSesion);
+    fixture.componentInstance.cambiarTemaPresentacion('neutro');
+    fixture.detectChanges();
+    expect(fixture.componentInstance.temaPresentacion()).toBe('institucional');
     expect(fixture.nativeElement.querySelectorAll('.threat-list li')).toHaveLength(0);
   });
 

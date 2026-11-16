@@ -1,3 +1,8 @@
+## 2026-11-15 - V17 C14-02.M04.03 presentación local acotada de amenazas [Javier :20]
+- Introduce dos modos visuales locales predefinidos y un selector accesible en la guía privada, sin cambio de JWT/RBAC, tenant, sesión, rutas ni políticas; rechaza valores arbitrarios.
+- Añade tres casos Vitest y un Chromium sintético sobre alternancia, revocación, error, tokens y ausencia de inyección; requiere CI causal real, Scope Lock y V5 para LISTO.
+- Riesgo R2; no hay pentest, MySQL, proveedores o HTTP JWT reales certificados; A5 independiente y rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-15 - V17 C14-02.M04.02 estados de revisión de amenazas [Javier :20]
 - Extiende guía Angular privada con estados de carga, vacío explícito de feed, error genérico, éxito de revalidación y denegación; solo GET /plataforma/sesion sin invocar mitigaciones ni pentest.
 - Añade nueve Vitest de autorización/revocación/403/503/single-flight y cinco Chromium sintéticos; CI GitHub-hosted es obligatoria y no se atribuye PASS hasta check completed/success exact-SHA.

@@ -1,4 +1,4 @@
-name: V17 C14-02.M04.01-M04.02 - estados privados de amenazas
+name: V17 C14-02.M04.01-M04.03 - estados privados de amenazas
 on:
   push:
     branches: [dev]
@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   threats-ui:
-    name: C14-02.M04.01-M04.02 - Vitest y Chromium de amenazas
+    name: C14-02.M04.01-M04.03 - Vitest y Chromium de amenazas
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
@@ -34,7 +34,7 @@ jobs:
       - name: Instalar dependencias
         working-directory: frontend
         run: npm ci
-      - name: Nueve Vitest de guard y estados seguros
+      - name: Doce Vitest de guard, estados y presentación
         working-directory: frontend
         run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/revision-amenazas-v5.component.spec.ts
       - name: Lint y build
@@ -57,7 +57,7 @@ jobs:
           done
           cat v17-c1402-m0401.log >&2
           exit 1
-      - name: Cinco Chromium sintéticos de acceso y errores
+      - name: Seis Chromium sintéticos de acceso, errores y presentación
         working-directory: frontend
         run: npx playwright test e2e/c14-02-m04-01-amenazas.spec.ts --config=playwright.config.ts --workers=1 --retries=0
       - name: Artefactos de pruebas

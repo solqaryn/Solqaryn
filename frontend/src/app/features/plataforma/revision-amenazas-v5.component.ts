@@ -11,7 +11,7 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="threat-guide" aria-labelledby="threat-title">
+    <main class="threat-guide" [class.visual-neutral]="temaPresentacion() === 'neutro'" aria-labelledby="threat-title">
       <header>
         <p class="eyebrow">SOLQARYN · Evaluación de amenazas</p>
         <h1 id="threat-title">Verificaciones de acceso y abuso</h1>
@@ -32,6 +32,14 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
             }
           </p>
           <button type="button" (click)="revalidarSesion()">Revalidar sesión de plataforma</button>
+        </section>
+        <section class="notice" aria-label="Presentación visual local">
+          <h2 id="threat-presentation-title">Presentación de seguridad</h2>
+          <p>Preferencia local autorizada: institucional o neutra. No modifica sesión, permisos, marca del tenant ni políticas.</p>
+          <div class="visual-options" role="group" aria-labelledby="threat-presentation-title">
+            <button type="button" [attr.aria-pressed]="temaPresentacion() === 'institucional'" (click)="cambiarTemaPresentacion('institucional')">Presentación institucional</button>
+            <button type="button" [attr.aria-pressed]="temaPresentacion() === 'neutro'" (click)="cambiarTemaPresentacion('neutro')">Presentación neutra</button>
+          </div>
         </section>
         <section class="notice" aria-label="Estado vacío de amenazas">
           <h2>Sin hallazgos conectados</h2>
@@ -69,6 +77,10 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
     button { min-height:44px; padding:.7rem .85rem; border:1px solid currentColor; border-radius:.55rem; color:inherit; background:var(--mat-sys-surface, #fff); cursor:pointer; }
     button:focus-visible { outline:3px solid var(--mat-sys-primary, #2157a3); outline-offset:3px; }
     .notice { border:1px solid var(--mat-sys-outline-variant, #aeb8c1); border-radius:.7rem; padding:1rem; margin:1rem 0; }
+    .threat-guide.visual-neutral { background:#f3f6f8; color:#25313d; }
+    .threat-guide.visual-neutral .eyebrow { color:#2c4b69; }
+    .visual-options { display:flex; flex-wrap:wrap; gap:.6rem; }
+    .visual-options button[aria-pressed="true"] { font-weight:700; box-shadow:inset 0 0 0 1px currentColor; }
     .threat-list { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.85rem; padding:0; list-style:none; }
     .threat-list li { min-width:0; border:1px solid var(--mat-sys-outline-variant, #aeb8c1); border-radius:.7rem; padding:.9rem; }
     @media(max-width:45rem) { .threat-list { grid-template-columns:1fr; } }
@@ -88,6 +100,15 @@ export class RevisionAmenazasV5Component {
     if (actual === 'cargando' || actual === 'error' || actual === 'sin_permiso') return actual;
     return this.accesoVerificado() ? (actual === 'exito' ? 'exito' : 'sin_datos') : 'sin_permiso';
   });
+  /** C14-02.M04.03: dos apariencias locales permitidas, sin inyección CSS ni configuración remota. */
+  readonly temaPresentacion = signal<'institucional' | 'neutro'>('institucional');
+  cambiarTemaPresentacion(valor: string): void {
+    if (!this.accesoVerificado() || (valor !== 'institucional' && valor !== 'neutro')) {
+      this.temaPresentacion.set('institucional');
+      return;
+    }
+    this.temaPresentacion.set(valor);
+  }
   /** GET revalidación existente, single-flight, sin alterar grants ni política de backend. */
   revalidarSesion(): void {
     if (!this.accesoVerificado() || this.verificacion() === 'cargando') return;

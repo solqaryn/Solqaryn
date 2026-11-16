@@ -80,3 +80,21 @@ test('C14-02.M04.02 503 posterior niega la guía sin filtrar diagnóstico', asyn
   await expect(page.locator('.threat-list li')).toHaveCount(0);
   await expect(page.getByText('INTERNAL_SECRET_DIAGNOSTIC')).toHaveCount(0);
 });
+
+test('C14-02.M04.03 selección visual local no cambia sesión ni ejecuta acciones', async ({ page }) => {
+  await session(page, true);
+  await page.goto('/plataforma/revision-amenazas-v5');
+  const token = await page.evaluate(() => localStorage.getItem('solqaryn_token'));
+  const neutral = page.getByRole('button', { name: 'Presentación neutra' });
+  const institutional = page.getByRole('button', { name: 'Presentación institucional' });
+  await expect(institutional).toHaveAttribute('aria-pressed', 'true');
+  await neutral.click();
+  await expect(neutral).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('.threat-guide')).toHaveClass(/visual-neutral/);
+  await institutional.click();
+  await expect(institutional).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.locator('.threat-guide')).not.toHaveClass(/visual-neutral/);
+  expect(await page.evaluate(() => localStorage.getItem('solqaryn_token'))).toBe(token);
+  await expect(page.locator('.threat-list li')).toHaveCount(4);
+  await expect(page.locator('.threat-guide input, .threat-guide form')).toHaveCount(0);
+});
