@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C13-04.M03.05 worker acotado de revisión visual aislada [Javier :20]
+- Implementa orquestador .NET 10 read-only en proceso con puerto al adaptador C13-04.M03.04; hasta 8 tickets, copia de entrada única antes de await, rechazo tenant/SHA mezclados, duplicados, solicitudes de publicación y enumeradores adversariales.
+- Ocho regresiones xUnit verifican adaptador y autoridad sintética, revocación, errores opacos, revalidación de resultados, cancelación y ausencia de grants; ninguna sesión JWT HTTP ni MySQL real es certificada.
+- Riesgo R2, sin hosted worker, proveedor live, migraciones, DI, endpoints ni QA/main/PROD. CI .NET Release/seguridad/Scope Lock/V5 del SHA publicado es requisito A0–A4; A5 únicamente de Task Javier distinta. Rollback git revert normal.
+
 ## 2026-11-16 — V17 C02-04.M04.06 consola global progresiva y densidad [Javier :10]
 - Agrega tres pruebas Chromium de densidad responsive 320/375/768/1280, revalidación con carga accesible y petición única, y recuperación segura ante HTTP 503 sin exposición de diagnóstico.
 - Incluye las regresiones en el workflow por SHA con cancel-in-progress=false y exige CI hospedada real, Scope Lock/V5, A0-A4 causales y A5 independiente; no confundir pruebas redactadas con PASS.
