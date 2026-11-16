@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, input, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -33,6 +33,11 @@ export type EstadoObservabilidadV5 = 'vacio' | 'cargando' | 'exito' | 'sin_permi
         }
       </section>
       @if (verificado()) {
+        <section class="obs-branding" [class.obs-branding--neutral]="modoIdentidad() !== 'institucional'"
+          aria-label="Identidad visual de observabilidad">
+          <span class="obs-branding-mark" aria-hidden="true">{{ modoIdentidad() === 'institucional' ? 'S' : '·' }}</span>
+          <div><strong>{{ identidadVisual().nombre }}</strong><p>{{ identidadVisual().descripcion }}</p></div>
+        </section>
         <section class="notice" aria-label="Límites de medición">
           <strong>Solo lectura · sin SLO ni costos verificados</strong>
           <p>Probar las fuentes reales en un entorno aislado antes de publicar alertas o atribuir cumplimiento.</p>
@@ -62,12 +67,21 @@ export type EstadoObservabilidadV5 = 'vacio' | 'cargando' | 'exito' | 'sin_permi
     header button[disabled] { opacity:.55; cursor:progress; }
     header :is(a,button):focus-visible { outline:3px solid var(--mat-sys-primary, #2157a3); outline-offset:3px; }
     .notice { border:1px solid var(--mat-sys-outline-variant, #aeb8c1); border-radius:.7rem; padding:.9rem; margin:1rem 0; }
+    .obs-branding { display:flex; flex-wrap:wrap; align-items:center; gap:.85rem; padding:.85rem 1rem; border:1px solid var(--mat-sys-outline-variant, #aeb8c1); border-radius:.7rem; background:var(--mat-sys-surface-container-low, #f5f7fa); }
+    .obs-branding-mark { flex:none; display:grid; place-items:center; width:2.4rem; height:2.4rem; border-radius:.55rem; background:var(--mat-sys-primary, #2157a3); color:var(--mat-sys-on-primary, #fff); font-weight:800; }
+    .obs-branding--neutral .obs-branding-mark { background:var(--mat-sys-outline, #66727e); color:#fff; }
+    .obs-branding p { margin:.1rem 0 0; }
     .obs-points { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); list-style:none; padding:0; gap:.85rem; }
     .obs-points li { border:1px solid var(--mat-sys-outline-variant, #aeb8c1); border-radius:.7rem; min-width:0; padding:1rem; }
     @media(max-width:45rem) { .obs-points { grid-template-columns:1fr; } }
   `]
 })
 export class ObservabilidadPrivadaV5Component {
+  /** C11-04.M04.03: solo identidad visual local tipada; nunca fuente de autorización. */
+  readonly modoIdentidad = input<'institucional' | 'neutra'>('institucional');
+  readonly identidadVisual = computed(() => this.modoIdentidad() === 'institucional'
+    ? { nombre: 'SOLQARYN · Observabilidad', descripcion: 'Identidad institucional · guía de lectura sin métricas conectadas' }
+    : { nombre: 'Identidad visual neutra', descripcion: 'Sin marca empresarial ni autoridad sobre datos o exporter' });
   private readonly plataforma = inject(PlataformaSesionService);
   private readonly destroyRef = inject(DestroyRef);
   readonly estado = signal<EstadoObservabilidadV5>(this.plataforma.sesion() ? 'vacio' : 'sin_permiso');

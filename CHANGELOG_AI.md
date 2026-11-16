@@ -1,3 +1,8 @@
+## 2026-11-16 - V17 C11-04.M04.03 branding tipado de observabilidad privada [Javier :20]
+- Agrega identidad visual institucional o neutra fija y tipada a la ruta privada de observabilidad, visible solo si el backend confirma sesión de plataforma; valor desconocido revierte a neutro.
+- Amplía Vitest (cinco casos nuevos) y Chromium (dos escenarios dirigidos) para variantes, revocación, ámbito empresarial, valor inválido, 403 y ancho móvil sin desbordamiento; CI exigida por SHA.
+- R1 Angular sin nuevas operaciones, métricas, JWT, RBAC, EF/MySQL ni exportadores; A5 independiente y cierre solo con Scope Lock/V5/readback causales.
+
 ## 2026-11-16 - V17 C13-01.M02.05 eventos e idempotencia de privacidad [Javier :00]
 - Define doce eventos EV01-EV12 y doce campos ENV01-ENV12 futuros para decisiones, evidencia, revocacion, derechos, retencion y readback opaco por tenant/sujeto.
 - Disena doce invariantes, ocho limites, ocho errores y doce pares T01-T12 positivos/negativos FUTUROS_NO_EJECUTADOS (0/12 runtime); no crea broker, outbox, workers, API, tablas o datos.

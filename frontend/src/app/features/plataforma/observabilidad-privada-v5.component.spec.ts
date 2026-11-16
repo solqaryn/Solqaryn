@@ -128,3 +128,63 @@ describe('C11-04.M04.02 - estados seguros de observabilidad', () => {
     expect(fixture.nativeElement.querySelectorAll('.obs-points li')).toHaveLength(0);
   });
 });
+
+
+describe('C11-04.M04.03 - branding visual tipado de observabilidad', () => {
+  const admin: PlataformaSesion = { nombreUsuario: 'Admin', rolNombre: 'Admin', ambito: 'Plataforma', esAdministrador: true };
+  async function montar(inicial: PlataformaSesion | null) {
+    TestBed.resetTestingModule();
+    const sesion = signal<PlataformaSesion | null>(inicial);
+    let llamadas = 0;
+    await TestBed.configureTestingModule({
+      imports: [ObservabilidadPrivadaV5Component],
+      providers: [provideRouter([]), { provide: PlataformaSesionService, useValue: {
+        sesion, obtener: () => { llamadas++; return of(admin); }
+      }}]
+    }).compileComponents();
+    const fixture = TestBed.createComponent(ObservabilidadPrivadaV5Component);
+    fixture.detectChanges();
+    return { fixture, sesion, llamadas: () => llamadas };
+  }
+  it('muestra marca institucional sin métricas ni acciones conectadas', async () => {
+    const { fixture, llamadas } = await montar(admin);
+    const region: HTMLElement = fixture.nativeElement.querySelector('[aria-label="Identidad visual de observabilidad"]');
+    expect(region).not.toBeNull();
+    expect(region.textContent).toContain('SOLQARYN · Observabilidad');
+    expect(region.textContent).toContain('sin métricas conectadas');
+    expect(llamadas()).toBe(0);
+    expect(fixture.nativeElement.querySelectorAll('.obs-points li')).toHaveLength(4);
+  });
+  it('opción neutra no muestra identidad institucional ni ejecuta requests', async () => {
+    const { fixture, llamadas } = await montar(admin);
+    fixture.componentRef.setInput('modoIdentidad', 'neutra');
+    fixture.detectChanges();
+    const region: HTMLElement = fixture.nativeElement.querySelector('[aria-label="Identidad visual de observabilidad"]');
+    expect(region.classList.contains('obs-branding--neutral')).toBe(true);
+    expect(region.textContent).toContain('Identidad visual neutra');
+    expect(region.textContent).not.toContain('SOLQARYN · Observabilidad');
+    expect(llamadas()).toBe(0);
+  });
+  it('valor dinámico no permitido falla a neutro sin inyectar texto arbitrario', async () => {
+    const { fixture } = await montar(admin);
+    fixture.componentRef.setInput('modoIdentidad', '<script>no permitido</script>');
+    fixture.detectChanges();
+    const region: HTMLElement = fixture.nativeElement.querySelector('[aria-label="Identidad visual de observabilidad"]');
+    expect(region.classList.contains('obs-branding--neutral')).toBe(true);
+    expect(region.textContent).toContain('Identidad visual neutra');
+    expect(region.textContent).not.toContain('<script>');
+  });
+  it('anónimo y ámbito Empresa mantienen oculta la región tipada', async () => {
+    const anon = await montar(null);
+    expect(anon.fixture.nativeElement.querySelector('.obs-branding')).toBeNull();
+    const empresa = await montar({ ...admin, ambito: 'Empresa' } as unknown as PlataformaSesion);
+    expect(empresa.fixture.nativeElement.querySelector('.obs-branding')).toBeNull();
+  });
+  it('revocación de plataforma oculta inmediatamente la identidad', async () => {
+    const { fixture, sesion } = await montar(admin);
+    expect(fixture.nativeElement.querySelector('.obs-branding')).not.toBeNull();
+    sesion.set(null);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelector('.obs-branding')).toBeNull();
+  });
+});

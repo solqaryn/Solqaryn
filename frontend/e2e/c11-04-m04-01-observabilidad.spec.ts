@@ -105,3 +105,22 @@ test('M04.02: 403 posterior no reactiva controles privados', async ({ page }) =>
   await expect(page.locator('.obs-points li')).toHaveCount(0);
   await expect(page.getByText('Sesión de plataforma no confirmada. Observabilidad privada oculta.').first()).toBeVisible();
 });
+
+
+test('M04.03: branding institucional sólo aparece con sesión sintética autorizada', async ({ page }) => {
+  await mockSession(page, true);
+  await page.setViewportSize({ width: 375, height: 812 });
+  await page.goto('/plataforma/observabilidad-v5');
+  const brand = page.getByRole('region', { name: 'Identidad visual de observabilidad' });
+  await expect(brand).toBeVisible();
+  await expect(brand.getByText('SOLQARYN · Observabilidad')).toBeVisible();
+  await expect(page.locator('.obs-points li')).toHaveCount(4);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(2);
+});
+test('M04.03: respuesta 403 sintética nunca presenta branding privado', async ({ page }) => {
+  await mockSession(page, false);
+  await page.goto('/plataforma/observabilidad-v5');
+  await expect(page).toHaveURL(/\/login\?plataforma=denegado/);
+  await expect(page.getByRole('region', { name: 'Identidad visual de observabilidad' })).toHaveCount(0);
+  await expect(page.getByText('PRIVATE_TELEMETRY_SECRET')).toHaveCount(0);
+});
