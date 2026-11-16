@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 reparación causal P0-007.A del catálogo Angular exact-HEAD [Javier :10]
+- Reconciliados tres componentes privados ya publicados por otras Tasks Javier: observabilidad, respuesta a incidentes y revisión de amenazas, preservando autoría, guards y código originales.
+- Manifiesto y validador fail-closed ajustados de 145 a 148 rutas (140 features, 8 shared), con negativas de omisiones, entradas ficticias y exclusiones intactas. No se desactivan controles ni cambia el runtime.
+- Reparación de CI compartida para VALIDANDO C02-02.M04.03; sin certificar P0/ERP hasta SUCCESS en GitHub Actions. No implica A5, QA/main/PROD ni permisos nuevos.
+
 ## 2026-11-15 — V17 C14-04.M03.06 auditoría estructurada fail-closed de readiness [Javier :10]
 - Integra sink .NET 10 de ILogger sobre siete resultados permitidos de revisión DEV: verifica fuente backend, tenant A/B, membresía, rol, revisor independiente, SHA y audit fence, sin registrar PII/JWT ni credenciales.
 - Añade 16 xUnit positivos, negativos y error; exige CI GitHub-hosted exact-SHA Release, seguridad, autorización, Scope Lock y V5. No instala worker, proveedor, MySQL ni auditoría durable.

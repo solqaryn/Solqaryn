@@ -423,3 +423,13 @@ El inventario reproducible de componentes Angular en `dev` incorpora dos superfi
 - `frontend/src/app/features/plataforma/placement-review-v5.component.ts`
 
 La verificación P0-007.A compara estrictamente los archivos reales y la lista exacta; conserva pruebas negativas de archivos omitidos y ficticios. La auditoría ERP admite exclusivamente las rutas privadas exactas `plataforma/auditoria-tenancy-v5` y `plataforma/placement-v5` bajo `canActivate: [plataformaGuard]` y la comprobación de sesión administrativa respaldada por servidor. No se amplían comodines, prefijos genéricos ni acceso público. Esta reparación de baseline CI no certifica identidad JWT en producción, consultas reales a tenants, DB, pagos, pentest, QA/main/PROD ni pruebas pendientes.
+
+## Actualización aditiva V17 — tres superficies privadas verificadas el 15 de noviembre de 2026
+
+El catálogo reproducible en `dev` contiene **148 archivos `.component.ts`**: **140 en features y 8 en shared**. Se conservan íntegros los cortes históricos anteriores y sus SHAs. Estas tres superficies privadas ya existen en el árbol y solo se incorporan al manifiesto:
+
+- `frontend/src/app/features/plataforma/observabilidad-privada-v5.component.ts`
+- `frontend/src/app/features/plataforma/respuesta-incidentes-v5.component.ts`
+- `frontend/src/app/features/plataforma/revision-amenazas-v5.component.ts`
+
+La validación mantiene rechazos estrictos de rutas omitidas, entradas inexistentes y duplicados. Registrar un archivo no certifica accesibilidad, integración HTTP/MySQL, JWT/RBAC/tenant, restauraciones ni autorización de QA/main/PROD. Es una reparación del baseline CI, no un nuevo CLAIM ni A5 del código de otra Task. Reversión mediante `git revert` normal.
