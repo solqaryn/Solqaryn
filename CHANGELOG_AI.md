@@ -1,3 +1,8 @@
+## 2026-11-15 - V17 C11-01.M02.03 contrato relacional de persistencia y migraciones [Javier :10]
+- Especifica doce claves e indices conceptuales K01-K12, ownership por tenant, cautela legacy NULL y criterios de verificacion con AppDbContext, EXPLAIN y provider Oracle EF Core MySQL 8.4.
+- Define ocho etapas futuras de migracion reversible M01-M08, seis fixtures sinteticos y doce pares positivos/negativos FUTUROS_NO_EJECUTADOS (0/12 runtime); no crea tablas, DDL, EF migrations ni datos.
+- Delimita riesgos de FK cruzada, RBAC/revocacion, concurrencia e idempotencia, checks exact-SHA Scope Lock/V5, A5 independiente y rollback documental; no autoriza QA/main/PROD.
+
 ## 2026-11-15 - V17 C09-03.M02.05 eventos e idempotencia Social Hub [Javier :50]
 - Define doce eventos propuestos, doce invariantes de correlacion e idempotencia y doce casos P/N FUTUROS_NO_EJECUTADOS (0/12 runtime), con tenant A/B, consentimiento, opt-out y revocacion.
 - Diseña control de replay/CAS, limites UTC, fallos de proveedor y reconciliacion de efectos ambiguos sin crear jobs, tablas, APIs, brokers, envios ni credenciales.
