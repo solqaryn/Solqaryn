@@ -163,7 +163,7 @@ describe('C14-02.M04.01 - pantalla privada de amenazas', () => {
     expect(fixture.componentInstance.verificacion()).toBe('sin_permiso');
     expect(fixture.componentInstance.estadoVista()).toBe('sin_permiso');
     await fixture.whenStable();
-    fixture.detectChanges();
+    fixture.componentRef.changeDetectorRef.detectChanges();
     expect(fixture.nativeElement.querySelectorAll('.threat-list li')).toHaveLength(0);
     expect(fixture.nativeElement.textContent).not.toContain('PRIVATE_SERVER_DETAIL');
   });
