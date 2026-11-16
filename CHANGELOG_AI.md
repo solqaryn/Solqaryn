@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C14-04.M04.01 superficie privada de preparación de salida [Javier :20]
+- En la ruta ya protegida /plataforma/flujo-v5 se añade un panel de cuatro puertas de readiness: todas SIN_VERIFICAR o NO_MEDIDO, sin datos ni grants nuevos.
+- Playwright dirigido cubre anónimo, 403/503 con diagnóstico opaco, sesión sintética, 320/1280 px y ausencia de formularios; CI exact-SHA, Scope Lock y A5 independiente siguen obligatorios.
+- Riesgo R2 por contexto de release, pero solo cambia frontend de lectura. No certifica QA/main/PROD, DNS, R2, restore, JWT HTTP ni MySQL; rollback git revert normal.
+
 ## 2026-11-16 — V17 reparación CI C15-01.M04.01 alcance y catálogo [Javier :10]
 - Repara Playwright Chromium fallido por verificar controles de todo el shell compartido; el assert pasa a comprobar exclusivamente la superficie privada propia, sin ocultar botones ajenos.
 - Agrega ruta guardada exacta al allowlist cerrado de auditoría ERP; mantiene el requisito `canActivate: [plataformaGuard]` y validación de sesión servidor, sin abrir prefijos genéricos.

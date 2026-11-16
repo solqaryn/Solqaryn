@@ -86,6 +86,20 @@ import { DesignSystemV5Component } from './design-system-v5.component';
         </mat-card>
 
         @if (vistaFlujoV5) {
+          <!-- C14-04.M04.01: superficie read-only en flujo privado ya autorizado. -->
+          <mat-card class="v5-card" aria-labelledby="release-readiness-title" data-testid="release-readiness-contract">
+            <mat-card-content>
+              <h2 id="release-readiness-title">Preparación de salida · evidencia pendiente</h2>
+              <p>Contrato de comprobación para DEV. Esta pantalla no consulta CI, DNS, respaldo ni métricas de operación; no representa una aprobación de despliegue.</p>
+              <ol class="release-readiness-criteria" aria-label="Puertas de preparación no certificadas">
+                <li><strong>Smoke funcional y aislamiento:</strong> <span>SIN_VERIFICAR</span> · requieren pruebas de acceso y rechazo por ámbito.</li>
+                <li><strong>Soporte y responsables:</strong> <span>SIN_VERIFICAR</span> · responsables y respuesta a incidentes por acreditar.</li>
+                <li><strong>Alertas y ventana de observación:</strong> <span>NO_MEDIDO</span> · sin SLO ni telemetría real conectada.</li>
+                <li><strong>Backup, restauración y reversión:</strong> <span>SIN_VERIFICAR</span> · ensayo aislado y autorización independiente pendientes.</li>
+              </ol>
+              <p role="note">Ninguna puerta autoriza QA, main, PROD, DNS, R2, restore ni cambios de infraestructura. La autoridad permanece en backend y en evidencias verificadas.</p>
+            </mat-card-content>
+          </mat-card>
           <mat-card class="v5-card" aria-labelledby="v5-title">
             <mat-card-content>
               <div class="v5-overview">
