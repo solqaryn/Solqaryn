@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C02-02.M04.03 presentación reactiva y segura de placement [Javier :10]
+- Incorpora token Angular Signal con marca institucional/SOLQARYN y densidad normal/compacta estrictamente permitidas, sin alterar permisos, tenant, DSN ni routing del backend.
+- Añade cinco Vitest de variantes reactivas y negativos HTML/CSS, campos extra y revocación; workflow dirigido Angular/Chromium con API sintética y mantenimiento de guard privado.
+- Riesgo R2; CI exact-SHA, Scope Lock y procedencia V5 obligatorios antes de LISTO. A5 de otra Task Javier pendiente. Sin DB, migraciones, QA/main/PROD; rollback git revert normal.
+
 ## 2026-11-15 — V17 C03-04.M04.01 respuesta privada a incidentes [Javier :20]
 - Agrega una ruta lazy protegida con plataformaGuard y una vista solo lectura para contención, integridad, ensayo de respaldo y rollback sin operar restauración, revocación o proveedor.
 - Implementa cinco Vitest adversariales (anónimo, empresa, grant, revocación, guard) y tres Chromium sintéticos; CI GitHub-hosted valida lint, build, Scope Lock y procedencia V5 por SHA antes del cierre.

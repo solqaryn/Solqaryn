@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signa
 import { HttpErrorResponse } from '@angular/common/http';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
+import { PLACEMENT_PRESENTACION_V5, normalizarPresentacionPlacementV5 } from './placement-presentacion-v5';
 import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
 
 export type EstadoPlacementV5 = 'vacio' | 'cargando' | 'exito' | 'sin_permiso' | 'error';
@@ -16,9 +17,9 @@ export type EstadoPlacementV5 = 'vacio' | 'cargando' | 'exito' | 'sin_permiso' |
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="placement-review" aria-labelledby="placement-title">
+    <main class="placement-review" [attr.data-densidad]="presentacion().densidad" aria-labelledby="placement-title">
       <header>
-        <p class="eyebrow">SOLQARYN · Almacenamiento multitenant</p>
+        <p class="eyebrow">{{ marcaVisible() }} · Almacenamiento multitenant</p>
         <h1 id="placement-title">Placement compartido y dedicado</h1>
         <p>Contrato de revisión privada. Ningún destino, credencial o migración se determina desde el navegador.</p>
         <a routerLink="/plataforma" aria-label="Regresar a administración de plataforma">Volver a plataforma</a>
@@ -78,6 +79,8 @@ export type EstadoPlacementV5 = 'vacio' | 'cargando' | 'exito' | 'sin_permiso' |
     header :is(a, button):focus-visible { outline:3px solid var(--mat-sys-primary,#2157a3); outline-offset:3px; }
 .estado,.notice,.denied { margin-top:1rem; padding:1rem; border-radius:.65rem; border:1px solid var(--mat-sys-outline-variant,#aeb8c1); background:var(--mat-sys-surface-container-low,#f5f7fa); }
     .modalidades { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; }
+    .placement-review[data-densidad="compacta"] .modalidades { gap:.5rem; }
+    .placement-review[data-densidad="compacta"] .modalidades article { padding:.65rem; }
     .modalidades article { min-width:0; padding:1rem; border:1px solid var(--mat-sys-outline-variant,#aeb8c1); border-radius:.65rem; }
     .limitacion { font-weight:600; }
     @media(max-width:45rem) { .modalidades { grid-template-columns:1fr; } }
@@ -86,6 +89,9 @@ export type EstadoPlacementV5 = 'vacio' | 'cargando' | 'exito' | 'sin_permiso' |
 export class PlacementReviewV5Component {
   private readonly plataforma = inject(PlataformaSesionService);
   private readonly destroyRef = inject(DestroyRef);
+  private readonly presentacionFuente = inject(PLACEMENT_PRESENTACION_V5);
+  readonly presentacion = computed(() => normalizarPresentacionPlacementV5(this.presentacionFuente()));
+  readonly marcaVisible = computed(() => this.presentacion().marca === 'institucional' ? 'Plataforma SOLQARYN' : 'SOLQARYN');
 
   /** M04.02: a browser label never grants platform authority. */
   readonly estado = signal<EstadoPlacementV5>(this.plataforma.sesion() ? 'vacio' : 'sin_permiso');
