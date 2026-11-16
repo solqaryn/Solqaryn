@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C02-04.M05.03 laboratorio HTTP JWT y MySQL 8.4 real A/B [Javier :10]
+- Agrega un test Node de lectura HTTP JWT real en API localhost con empresas A/B MySQL efímero: token global, aislamiento empresarial, cabecera cruzada, paginación 0/51 y caché no-store.
+- Extiende el P4 GitHub-hosted con validación adicional del grant persistido UsuarioRolesPlataforma y membresías UsuarioEmpresas A/B, MySQL 8.4 y .NET 10 reales.
+- Riesgo R2 por CI; A0–A4 exigen logs SUCCESS de SHA exacto y A5 otra Task Javier; credenciales sintéticas efímeras, sin runtime/producción/Aiven/QA/main/PROD; rollback git revert.
+
 ## 2026-11-16 — V18 C05-04.M05.03 integración de build y bundle real [Javier :10]
 - Incorpora pruebas Node sobre build Angular productivo real: index JS/CSS, bytes iniciales, gzip/brotli y fallos adversariales ante corrupción del informe, recurso inexistente o index sin referencias.
 - Integra GitHub-hosted npm ci, lint, build, analizador existente y cuatro asserts falsables, con concurrencia aislada por SHA; no modifica runtime, backend, DTO, secretos, JWT, RBAC, tenant ni MySQL.

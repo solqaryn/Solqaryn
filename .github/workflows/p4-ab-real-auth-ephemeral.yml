@@ -6,6 +6,7 @@ on:
     paths:
       - .github/workflows/p4-ab-real-auth-ephemeral.yml
       - scripts/ci/p4-ab-real-auth.mjs
+      - scripts/ci/c02-04-m05-03-real-persistence-provider.mjs
       - backend/src/API/Middleware/UnscopedCommercialTenantGuardMiddleware.cs
       - backend/src/API/Controllers/ClientesController.cs
       - backend/src/API/Controllers/ProveedoresController.cs
@@ -225,6 +226,19 @@ jobs:
         run: |
           set -euo pipefail
           node scripts/ci/p4-plataforma-mvp-http-jwt.mjs
+
+      - name: C02-04.M05.03 - HTTP JWT y datos MySQL efimeros reales A/B
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/ci/c02-04-m05-03-real-persistence-provider.mjs
+          mysql_container="$(docker ps --filter 'ancestor=mysql:8.4' --format '{{.ID}}' | head -n 1)"
+          test -n "$mysql_container"
+          global_count="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci -Nse "SELECT COUNT(*) FROM UsuarioRolesPlataforma ur JOIN Usuarios u ON u.Id=ur.UsuarioId WHERE u.NombreUsuario='p4_platform_only_ci' AND ur.Activa=TRUE;")"
+          test "$global_count" = '1'
+          ab_count="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci -Nse "SELECT COUNT(DISTINCT m.EmpresaId) FROM UsuarioEmpresas m JOIN Usuarios u ON u.Id=m.UsuarioId WHERE m.Activa=TRUE AND ((u.NombreUsuario='p4_admin_a' AND m.EmpresaId=1) OR (u.NombreUsuario='p4_admin_b' AND m.EmpresaId=2));")"
+          test "$ab_count" = '2'
+          echo "C0204_M0503_REAL_MYSQL_84_AB_PASS"
 
       - name: Revocacion inmediata de membresia global JWT
         shell: bash
