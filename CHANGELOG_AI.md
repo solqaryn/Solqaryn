@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C02-01.M03.06 auditoría segura de selección de tenant [Javier :50]
+- Añade fachada Infrastructure .NET 10 de auditoría de solo previsualización con logs estructurados sin PII, rechazo de doble selección y concurrencia, y denegación si falla el sink de auditoría.
+- Incluye 15 pruebas xUnit de elección 1/N, revocación, tenant ajeno, SHA/actor, role hints falsos, repetición, mezcla, cancelación, fallos y solapamiento; validación GitHub-hosted A0-A4 exigida.
+- Riesgo R2. No emite JWT, cambia empresa, persiste auditoría, usa MySQL ni habilita producción. A5 independiente por otra Task Javier; rollback git revert normal.
+
 ## 2026-11-15 — V17 C10-04.M04.05 correccion CSS alta visibilidad tras Chromium FAIL [Javier :40]
 - En SHA 0d021aa8, CI dirigida verificó 4/5 Chromium aprobadas y 1 falla real: outline calculado 3px en prefers-contrast:more contra criterio >=4px. Conserva defecto/resultado, nunca PASS.
 - Refuerza solo el outline del elemento enfocado en modo alto contraste con 4px important y comprueba matchMedia verdadero en Playwright; no altera permiso, datos ni rutas. CI nuevo SHA y A5 independiente pendientes.
