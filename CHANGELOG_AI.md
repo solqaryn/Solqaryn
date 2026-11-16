@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C14-04.M04.06 reparación de selección CI Chromium [Javier :10]
+- QA_DEFECT_FOUND P2: el workflow anterior declaraba el spec nuevo como path, pero el comando Playwright no lo ejecutaba; 52 PASS anteriores no acreditaban las tres regresiones C14-04.M04.06.
+- Corrige paths mal concatenados y añade el spec C14-04.M04.06 al comando GitHub-hosted real; exige nueva CI exact-SHA con 3 pruebas ejecutadas, Scope Lock, V5 y A0-A4 antes de LISTO, A5 independiente.
+- Solo workflow y CHANGELOG, sin runtime/tenant/JWT/MySQL/PROD; rollback git revert, PROJECT_SCOPE_LOCK=STRICT.
+
 ## 2026-11-16 — V17 C05-04.M04.06 verificación real de densidad progresiva [Javier :50]
 - Añade cinco pruebas Playwright Chromium para guard y 403, carga con GET retenido, densidad 25 registros a 320/375/768/1280 px, controles 44 px, errores 503 y reintento explícito sin duplicados.
 - Integra workflow dirigido GitHub-hosted Angular lint/build y Chromium con concurrency por SHA y cancel-in-progress=false; sin cambio de runtime, JWT, tenant, EF, MySQL ni rutas.
