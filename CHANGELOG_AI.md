@@ -1,3 +1,8 @@
+## 2026-11-16 - V17 C13-01.M02.01 entidades, ownership e invariantes de privacidad [Javier :50]
+- Define dieciseis entidades conceptuales E01-E16 y veinte invariantes I01-I20 para versiones, propositos, decisiones, revocacion, retencion, evidencia minima y derechos por tenant/sujeto.
+- Incluye doce pares positivos/negativos T01-T12 FUTUROS_NO_EJECUTADOS (0/12 runtime); bloquea silencio como consentimiento, IDOR/BOLA, replay tras revocacion, PII en auditoria y eliminacion por plazo inventado.
+- Solo R0 documental: sin crear tablas EF/MySQL, endpoints, cookies, politicas juridicas, proveedores, servicios ni datos; preserva G01-G16, Scope Lock/V5 causal y A5 independiente de otra Task Javier.
+
 ## 2026-11-16 - V17 C02-02.M04.05 responsive, teclado y contraste privados [Javier :40]
 - Refuerza foco visible de 4 px, contraste elevado y colores forzados en revisión privada de placement, manteniendo guard, revalidación y ocultación de datos.
 - Añade tres pruebas Chromium: 320/768/1280 sin desbordamiento, navegación Tab real y denegación 403 sin payload expuesto; requieren CI dirigida real en SHA.
