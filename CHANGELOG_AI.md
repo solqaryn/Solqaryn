@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C10-04.M04.05 correccion CSS alta visibilidad tras Chromium FAIL [Javier :40]
+- En SHA 0d021aa8, CI dirigida verificó 4/5 Chromium aprobadas y 1 falla real: outline calculado 3px en prefers-contrast:more contra criterio >=4px. Conserva defecto/resultado, nunca PASS.
+- Refuerza solo el outline del elemento enfocado en modo alto contraste con 4px important y comprueba matchMedia verdadero en Playwright; no altera permiso, datos ni rutas. CI nuevo SHA y A5 independiente pendientes.
+- R2 UI, SKREF-10 Angular pin 6808966993bf2b2d455d9b6245e960a59a01b9a9; revert normal, sin QA/main/PROD ni certificación JWT/MySQL.
+
 ## 2026-11-15 — V17 C10-04.M04.05 reparacion P2 de evidencia teclado y contraste [Javier :40]
 - Corrige A5_FAIL P2: Playwright exige foco alcanzado por Tab sin focus() programatico, 4px en prefers-contrast:more y contraste del outline >=3:1 con CanvasText/Canvas; detecta defectos que cinco Chromium verdes anteriores no detectaban.
 - Cambio de foco exclusivamente en contraste alto, sin alterar auth, tenant, rutas, API o datos. R2 UI, fuente SKREF-10 angular/angular@6808966993bf2b2d455d9b6245e960a59a01b9a9; CI causal y posterior A5 independiente obligatorias, no se declara PASS anticipado.

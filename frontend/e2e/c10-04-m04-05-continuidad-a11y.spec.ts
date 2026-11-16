@@ -87,8 +87,9 @@ test('foco visible con teclado, contraste legible y modo de contraste alto sin a
       backgroundColor: computed.backgroundColor
     };
   });
+  expect(await page.evaluate(() => matchMedia('(prefers-contrast: more)').matches)).toBe(true);
   expect(style.style).toBe('solid');
-  // Quitar prefers-contrast:more debe fallar, pues la regla base usa 3px.
+  // La emulacion esta activada y el contorno contrastado debe tener 4px, no 3px.
   expect(style.width).toBeGreaterThanOrEqual(4);
   const luminance = (color: string): number => {
     const channels = color.match(/\d+(?:\.\d+)?/g)?.slice(0, 3).map(Number);
