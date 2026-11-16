@@ -11,6 +11,30 @@ export interface CoberturaDimensionV5 {
 /** Solo permite sustituir el cargador declarativo en pruebas: nunca consulta Sheets ni certifica resultados. */
 export const COBERTURA_FUENTE_V5 = new InjectionToken<() => Promise<readonly CoberturaDimensionV5[]>>('CoberturaFuenteV5');
 
+
+/** M04.03: apariencia local allowlisted. Ningún valor afecta la autorización o la evidencia. */
+export type CoberturaMarcaV5 = 'institucional' | 'neutra';
+export type CoberturaDensidadV5 = 'regular' | 'compacta';
+export interface CoberturaPresentacionV5 {
+  readonly marca: CoberturaMarcaV5;
+  readonly densidad: CoberturaDensidadV5;
+}
+export const COBERTURA_PRESENTACION_V5 = new InjectionToken<unknown>('CoberturaPresentacionV5');
+const PRESENTACION_INSTITUCIONAL_V5: CoberturaPresentacionV5 = Object.freeze({ marca: 'institucional', densidad: 'regular' });
+const PRESENTACION_NEUTRA_V5: CoberturaPresentacionV5 = Object.freeze({ marca: 'neutra', densidad: 'regular' });
+
+/** Los objetos arbitrarios, estilos, clases y cadenas de entrada nunca pasan al template. */
+export function normalizarCoberturaPresentacionV5(valor: unknown): CoberturaPresentacionV5 {
+  if (valor === null || valor === undefined) return PRESENTACION_INSTITUCIONAL_V5;
+  if (typeof valor !== 'object' || Array.isArray(valor)) return PRESENTACION_NEUTRA_V5;
+  const propuesta = valor as { marca?: unknown; densidad?: unknown };
+  if (
+    (propuesta.marca !== 'institucional' && propuesta.marca !== 'neutra') ||
+    (propuesta.densidad !== 'regular' && propuesta.densidad !== 'compacta')
+  ) return PRESENTACION_NEUTRA_V5;
+  return Object.freeze({ marca: propuesta.marca, densidad: propuesta.densidad });
+}
+
 /** C15-01.M04.01/M04.02: cobertura declarativa con estados locales, sin resultados de auditoría ficticios. */
 @Component({
   selector: 'app-cobertura-trazabilidad-v5',
@@ -18,9 +42,13 @@ export const COBERTURA_FUENTE_V5 = new InjectionToken<() => Promise<readonly Cob
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="coverage-shell" aria-labelledby="coverage-title">
+    <main class="coverage-shell" aria-labelledby="coverage-title"
+      [class.coverage-neutral]="presentacion.marca === 'neutra'"
+      [class.coverage-compacta]="presentacion.densidad === 'compacta'"
+      [attr.data-presentacion-marca]="presentacion.marca"
+      [attr.data-presentacion-densidad]="presentacion.densidad">
       <header>
-        <p class="eyebrow">SOLQARYN · Cobertura y trazabilidad</p>
+        <p class="eyebrow">{{ presentacion.marca === 'institucional' ? 'SOLQARYN' : 'Referencia' }} · Cobertura y trazabilidad</p>
         <h1 id="coverage-title">Revisión de cobertura del plan</h1>
         <p>Vista interna de referencia; no sustituye PLAN_MAESTRO, COLA, DAG_TECNICO ni BITACORA.</p>
         <a routerLink="/plataforma" aria-label="Regresar a administración de plataforma">Volver a plataforma</a>
@@ -78,6 +106,9 @@ export const COBERTURA_FUENTE_V5 = new InjectionToken<() => Promise<readonly Cob
     header a:focus-visible, .retry:focus-visible { outline:3px solid var(--mat-sys-primary,#2157a3); outline-offset:3px; }
     .retry { display:inline-block; min-height:44px; padding:.6rem .8rem; border:1px solid currentColor; border-radius:.5rem; background:transparent; color:inherit; cursor:pointer; }
     .notice { border:1px solid var(--mat-sys-outline-variant,#aeb8c1); border-radius:.7rem; padding:1rem; margin:1rem 0; }
+    .coverage-neutral .eyebrow { color:var(--mat-sys-on-surface,#25313e); }
+    .coverage-compacta .coverage-list li { padding:.75rem; }
+    .coverage-compacta .notice { margin:.75rem 0; }
     .coverage-list { list-style:none; padding:0; display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.8rem; }
     .coverage-list li { min-width:0; border:1px solid var(--mat-sys-outline-variant,#aeb8c1); border-radius:.7rem; padding:1rem; }
     .unverified { display:inline-block; font-size:.8rem; font-weight:700; letter-spacing:.02em; border:1px solid currentColor; border-radius:.4rem; padding:.25rem .45rem; }
@@ -87,6 +118,7 @@ export const COBERTURA_FUENTE_V5 = new InjectionToken<() => Promise<readonly Cob
 export class CoberturaTrazabilidadV5Component {
   private readonly plataforma = inject(PlataformaSesionService);
   private readonly fuente = inject(COBERTURA_FUENTE_V5, { optional: true });
+  readonly presentacion = normalizarCoberturaPresentacionV5(inject(COBERTURA_PRESENTACION_V5, { optional: true }));
   private versionLectura = 0;
   readonly estadoVista = signal<'cargando' | 'vacio' | 'error' | 'listo' | 'denegado'>('cargando');
   readonly dimensionesVisibles = signal<readonly CoberturaDimensionV5[]>([]);

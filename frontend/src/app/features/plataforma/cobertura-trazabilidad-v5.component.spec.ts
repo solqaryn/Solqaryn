@@ -4,16 +4,17 @@ import { provideRouter } from '@angular/router';
 import { PlataformaSesionService, type PlataformaSesion } from '../../core/auth/plataforma-sesion.service';
 import { plataformaGuard } from '../../core/guards/plataforma.guard';
 import { routes } from '../../app.routes';
-import { COBERTURA_FUENTE_V5, CoberturaTrazabilidadV5Component, type CoberturaDimensionV5 } from './cobertura-trazabilidad-v5.component';
+import { COBERTURA_FUENTE_V5, COBERTURA_PRESENTACION_V5, CoberturaTrazabilidadV5Component, normalizarCoberturaPresentacionV5, type CoberturaDimensionV5 } from './cobertura-trazabilidad-v5.component';
 
 describe('C15-01.M04.01 cobertura privada de solo lectura', () => {
   const auth: PlataformaSesion = { nombreUsuario: 'Admin', rolNombre: 'Admin', ambito: 'Plataforma', esAdministrador: true };
-  async function montar(value: PlataformaSesion | null, fuente?: () => Promise<readonly CoberturaDimensionV5[]>, esperar = true) {
+  async function montar(value: PlataformaSesion | null, fuente?: () => Promise<readonly CoberturaDimensionV5[]>, esperar = true, apariencia?: unknown) {
     TestBed.resetTestingModule();
     const sesion = signal<PlataformaSesion | null>(value);
     await TestBed.configureTestingModule({
       imports: [CoberturaTrazabilidadV5Component],
-      providers: [provideRouter([]), { provide: PlataformaSesionService, useValue: { sesion } }, ...(fuente ? [{ provide: COBERTURA_FUENTE_V5, useValue: fuente }] : [])]
+      providers: [provideRouter([]), { provide: PlataformaSesionService, useValue: { sesion } }, ...(fuente ? [{ provide: COBERTURA_FUENTE_V5, useValue: fuente }] : []),
+        ...(apariencia !== undefined ? [{ provide: COBERTURA_PRESENTACION_V5, useValue: apariencia }] : [])]
     }).compileComponents();
     const fixture = TestBed.createComponent(CoberturaTrazabilidadV5Component);
     fixture.detectChanges();
@@ -103,5 +104,50 @@ describe('C15-01.M04.01 cobertura privada de solo lectura', () => {
     expect(fixture.nativeElement.querySelectorAll('.coverage-list li')).toHaveLength(0);
     expect(fixture.nativeElement.textContent).not.toContain('Privada');
     expect(fixture.nativeElement.querySelector('[role="alert"]')).not.toBeNull();
+  });
+
+  it('C15-01.M04.03 permite solo marca/densidad de lista blanca y valores inmutables', () => {
+    expect(normalizarCoberturaPresentacionV5(null)).toEqual({ marca: 'institucional', densidad: 'regular' });
+    const válida = normalizarCoberturaPresentacionV5({ marca: 'neutra', densidad: 'compacta' });
+    expect(válida).toEqual({ marca: 'neutra', densidad: 'compacta' });
+    expect(Object.isFrozen(válida)).toBe(true);
+    expect(normalizarCoberturaPresentacionV5({ marca: 'javascript:alert(1)', densidad: 'compacta' }))
+      .toEqual({ marca: 'neutra', densidad: 'regular' });
+    expect(normalizarCoberturaPresentacionV5(['institucional', 'compacta']))
+      .toEqual({ marca: 'neutra', densidad: 'regular' });
+  });
+
+  it('C15-01.M04.03 representa variante neutra compacta sin resultados ni acciones de escritura', async () => {
+    const { fixture } = await montar(auth, undefined, true, { marca: 'neutra', densidad: 'compacta' });
+    const shell = fixture.nativeElement.querySelector('.coverage-shell') as HTMLElement;
+    expect(shell.classList.contains('coverage-neutral')).toBe(true);
+    expect(shell.classList.contains('coverage-compacta')).toBe(true);
+    expect(shell.getAttribute('data-presentacion-marca')).toBe('neutra');
+    expect(shell.textContent).toContain('Referencia · Cobertura');
+    expect(shell.textContent).toContain('NO_MEDIDO');
+    expect(fixture.nativeElement.querySelectorAll('.coverage-list li')).toHaveLength(4);
+    expect(fixture.nativeElement.querySelectorAll('form,input,button,textarea')).toHaveLength(0);
+  });
+
+  it('C15-01.M04.03 entrada hostil no crea clases, HTML ni marca arbitraria', async () => {
+    const payload = '<svg onload=alert(1)>';
+    const { fixture } = await montar(auth, undefined, true, { marca: payload, densidad: 'compacta', clase: 'admin' });
+    const shell = fixture.nativeElement.querySelector('.coverage-shell') as HTMLElement;
+    expect(shell.getAttribute('data-presentacion-marca')).toBe('neutra');
+    expect(shell.getAttribute('data-presentacion-densidad')).toBe('regular');
+    expect(shell.classList.contains('admin')).toBe(false);
+    expect(shell.textContent).not.toContain(payload);
+    expect(shell.querySelector('svg')).toBeNull();
+    expect(shell.textContent).toContain('NO_MEDIDO');
+  });
+
+  it('C15-01.M04.03 apariencia visual no sustituye revocación o ámbito', async () => {
+    const { fixture, sesion } = await montar(auth, undefined, true, { marca: 'institucional', densidad: 'compacta' });
+    expect(fixture.nativeElement.querySelectorAll('.coverage-list li')).toHaveLength(4);
+    sesion.set(null);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('.coverage-list li')).toHaveLength(0);
+    expect(fixture.nativeElement.querySelector('[role="alert"]')).not.toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('form,input')).toHaveLength(0);
   });
 });

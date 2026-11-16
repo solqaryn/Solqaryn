@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C15-01.M04.03 presentación visual tipada de cobertura [Javier :20]
+- Incorpora configuración local opcional de marca institucional/neutra y densidad regular/compacta con allowlist estricta e inmutabilidad; rechaza valores arbitrarios sin alterar guard, sesión, tenant o evidencia NO_MEDIDO.
+- Añade cuatro aserciones Vitest para variantes, rechazo de inyección, límites de escritura y revocación. Las pruebas Playwright/Chromium existentes siguen siendo obligatorias junto con Angular lint/build, Scope Lock y V5 exact SHA; A5 independiente.
+- UI R2 de solo lectura: ninguna autenticación JWT real, persistencia, métricas globales, permisos, QA/main/PROD ni datos reales modificados; rollback git revert.
+
 ## 2026-11-16 — Reparación CI C15-01.M04.02 semántica ARIA sin duplicar status [Javier :50]
 - SHA b963b248: Chromium 11/14 PASS, tres fallos por status duplicado en mensajes locales que invalidaba los selectores existentes de navegación y contraste; no son PASS.
 - Conserva el único status NO_MEDIDO, transforma los nuevos avisos cargando/vacío/listo en aria-live polite y añade aserción real de unicidad en Vitest; no afloja pruebas ni modifica guard o backend.
