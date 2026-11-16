@@ -1,3 +1,8 @@
+## 2026-11-15 - V17 C09-03.M02.03 persistencia conceptual Social Hub [Javier :50]
+- Modela claves/ownership de E01-E16, doce indices y un plan de migracion reversible FUTURO para campañas, consentimiento, segmentos, calendario, opt-out e idempotencia.
+- Especifica doce fixtures y pares P/N FUTUROS_NO_EJECUTADOS (0/12 runtime); no crea tablas, migraciones EF, SQL, APIs, proveedores, schedulers ni secretos.
+- Requiere Scope Lock, procedencia V5 y A5 independiente; preserva aislamiento A/B, RBAC y revocacion sin habilitar QA/main/PROD.
+
 ## 2026-11-15 - V17 C05-01.M03.06 reparacion QA P2 de correlacion ordinal [Javier :50]
 - Valida la correlacion ordinal exacta de cada elemento de respuesta del lector sintetico, rechazando ordinals forjados, negativos, duplicados, invertidos o fuera de rango.
 - Agrega pruebas xUnit adversariales y verifica ausencia de registros exitosos al detectar respuestas falsas, sin conceder autoridad de tema, tenant, CSS, JWT o MySQL.
