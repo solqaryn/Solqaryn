@@ -39,7 +39,7 @@ jobs:
         run: npm ci
       - name: Vitest positivo negativo y fail-closed
         run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/continuidad-operativa-v5.component.spec.ts
-      - name: Vitest de baseline previo: guia auditora protegida
+      - name: 'Vitest de baseline previo: guia auditora protegida'
         run: npm test -- --no-watch --no-progress --include=src/app/app.routes.auditoria-operativa-v5.spec.ts
       - name: Calidad, tipado y build Angular
         run: |
