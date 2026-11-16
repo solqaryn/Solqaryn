@@ -23,6 +23,18 @@
         <p class="type-body">Texto de apoyo claro, adaptable y legible en pantallas pequeñas.</p>
         <p class="type-caption">Etiqueta secundaria · espaciado constante</p>
       </section>
+      <section class="state-catalog" aria-labelledby="design-states-title">
+        <h3 id="design-states-title">Estados de interfaz</h3>
+        <p class="state-description">Cinco muestras visuales estaticas. No ejecutan solicitudes, cambios ni validaciones de permisos.</p>
+        <ul class="state-grid">
+          @for (estado of estadosMuestra; track estado.id) {
+            <li class="state-example" [class]="estado.clase">
+              <h4>{{ estado.titulo }}</h4>
+              <p>{{ estado.detalle }}</p>
+            </li>
+          }
+        </ul>
+      </section>
       <p class="disclaimer" role="note">Muestras visuales estáticas. No hay formularios, acciones comerciales ni datos institucionales conectados.</p>
     </div>
   } @else {

@@ -21,6 +21,16 @@ export class DesignSystemV5Component {
   });
 
   // Lista estática: nunca se obtienen colores ni clases desde parámetros del usuario.
+
+  /** C05-01.M04.02: ejemplos de estados de UI. Son datos estaticos, no respuestas de una API. */
+  readonly estadosMuestra = [
+    { id: 'carga', titulo: 'Cargando', detalle: 'Ejemplo de espera: los datos no se muestran antes de una respuesta confirmada.', clase: 'state-loading' },
+    { id: 'vacio', titulo: 'Sin resultados', detalle: 'Ejemplo de vista vacia cuando no existen resultados para presentar.', clase: 'state-empty' },
+    { id: 'error', titulo: 'Error recuperable', detalle: 'Ejemplo de error: no mostrar detalles privados del servidor.', clase: 'state-error' },
+    { id: 'exito', titulo: 'Operacion completada', detalle: 'Ejemplo de confirmacion visual; esta muestra no guarda ni modifica datos.', clase: 'state-success' },
+    { id: 'permiso', titulo: 'Permiso insuficiente', detalle: 'Ejemplo de denegacion: solicitar acceso por los canales autorizados.', clase: 'state-denied' }
+  ] as const;
+
   readonly tokens = [
     { nombre: 'Primario', css: '--color-primary', clase: 'swatch-primary' },
     { nombre: 'Acento', css: '--color-accent', clase: 'swatch-accent' },

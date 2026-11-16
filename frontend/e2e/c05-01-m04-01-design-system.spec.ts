@@ -56,3 +56,28 @@ test('biblioteca read-only abre por teclado y es responsive en 320/768/1280', as
     expect(result.overflow, 'sin overflow a ' + width).toBeLessThanOrEqual(2);
   }
 });
+
+test('C05-01.M04.02 cinco estados sin acciones y sin overflow 320/768/1280', async ({ page }) => {
+  await mockSession(page, true);
+  await page.goto('/plataforma');
+  await page.locator('details.design-system-preview summary').click();
+  const catalog = page.locator('.design-catalog');
+  await expect(catalog.getByRole('heading', { name: 'Estados de interfaz' })).toBeVisible();
+  await expect(catalog.locator('.state-example')).toHaveCount(5);
+  await expect(catalog.locator('.state-catalog form, .state-catalog input, .state-catalog button')).toHaveCount(0);
+  await expect(catalog.getByText('Permiso insuficiente')).toBeVisible();
+  for (const width of [320, 768, 1280]) {
+    await page.setViewportSize({ width, height: 800 });
+    await expect(catalog.locator('.state-example')).toHaveCount(5);
+    const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow, 'desbordamiento horizontal a ' + width).toBeLessThanOrEqual(2);
+  }
+});
+
+test('C05-01.M04.02 deniega toda muestra de estados ante 403 de plataforma', async ({ page }) => {
+  await mockSession(page, false);
+  await page.goto('/plataforma');
+  await expect(page).toHaveURL(/plataforma=denegado$/);
+  await expect(page.locator('.state-example')).toHaveCount(0);
+  await expect(page.getByText('PRIVATE_DESIGN_TOKEN_SECRET')).toHaveCount(0);
+});

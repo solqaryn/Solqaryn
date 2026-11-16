@@ -1,3 +1,8 @@
+## 2026-11-16 — C05-01.M04.02 estados visuales privados V18 [Javier :30]
+- Amplía el catálogo Angular de plataforma con cinco muestras tipadas de carga, vacío, error, éxito y permiso, visibles solo con sesión de plataforma verificada; no introduce HTTP ni escrituras.
+- Añade regresiones unitarias positivas y negativas y Playwright Chromium para denegación 403, revocación, teclado, ausencia de acciones y responsive 320/768/1280; exige CI exact-SHA y A5 independiente.
+- Preserva JWT/RBAC/tenant, cuatro tokens anteriores, Scope Lock STRICT y el candado V17. Sin QA/main/PROD; rollback con `git revert`.
+
 ## 2026-11-16 — V17 C03-04.M04.04 navegación, mensajes y doble acción [Javier :10]
 - Añade regresiones Vitest de doble click, retorno a plataforma, ausencia de formularios y revocación inmediata de la guía privada.
 - Amplía Chromium dirigido con navegación positiva y 429 sintético retardado: un solo GET, guía oculta y diagnóstico interno no visible. Exige CI GitHub-hosted exact-SHA, Scope Lock, V5 y A5 independiente.
