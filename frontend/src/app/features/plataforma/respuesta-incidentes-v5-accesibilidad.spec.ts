@@ -20,8 +20,8 @@ describe('C03-04.M04.05 accesibilidad incidentes', () => {
   }
   it('ancla de teclado apunta a título visible y enfocable sin operación', async () => {
     const {fixture}=await montar(admin);
-    const salto=fixture.nativeElement.querySelector<HTMLAnchorElement>('.skip-link');
-    const titulo=fixture.nativeElement.querySelector<HTMLHeadingElement>('#incident-title');
+    const salto=(fixture.nativeElement as HTMLElement).querySelector<HTMLAnchorElement>('.skip-link');
+    const titulo=(fixture.nativeElement as HTMLElement).querySelector<HTMLHeadingElement>('#incident-title');
     expect(salto?.getAttribute('href')).toBe('#incident-title');
     expect(titulo?.tabIndex).toBe(-1);
     expect(fixture.nativeElement.querySelectorAll('.incident-review li')).toHaveLength(4);
