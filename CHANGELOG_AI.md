@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C14-04.M04.04 navegación y single-flight readiness [Javier :00]
+- Añade cuatro pruebas Chromium de navegación privada, 403 de revocación, 503 con reintento y guard de petición duplicada; usa sesiones sintéticas, sin cambiar JWT/tenant/RBAC o backend.
+- Amplía únicamente la selección explícita del workflow SHA-aislado, manteniendo pruebas previas y cancel-in-progress=false; exige CI causal real y Scope Lock/V5 antes de LISTO.
+- Riesgo R2, A5 de Task distinta, rollback git revert normal; no QA/main/PROD ni servicios productivos.
+
 ## 2026-11-16 — V17 CI_REPAIR_C0504_M0403_SELECTOR_STATUS_20261116 [Javier :30]
 - Detecta regresión P2 de selector ambiguo en Chromium C05-04.M04.01 tras branding de M04.03: dos roles status dentro de ligereza; job 133489542420 FAILURE en SHA 144819e8.
 - Repara solo la aserción Playwright de la prueba predecesora con `.ui-lightness-v5__status`, preservando expectativa de «tres criterios», teclado y ausencia de POST/PUT/PATCH/DELETE; sin cambios de runtime, tenant, JWT/RBAC ni MySQL.
