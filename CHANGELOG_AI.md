@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C15-03.M03.06 auditoría estructurada segura [Javier :50]
+- Implementa sink Infrastructure .NET 10 de auditoría estructurada, sobre decisiones Application: códigos normalizados, SHA y correlación canónicos; nunca serializa JWT, PII, secreto, tenant/actor IDs, texto de excepción o idempotency key.
+- Incorpora 11 pruebas xUnit positivas, negativas y de borde para tenant A/B, fuente no verificada, bypass, superficie desconocida, SHA, denegación, logger inactivo/fallido y cancelación.
+- V15 R2, V17 single-active: requiere Backend Release, seguridad multiempresa, Authorization, Scope Lock y V5 completed/success exact-SHA; A5 independiente Javier. Sink aislado sin DI ni entrega durable, sin HTTP/EF/MySQL/proveedor/QA/main/PROD; rollback git revert normal.
+
 ## 2026-11-15 — V17 C11-04.M03.04 adapter snapshot privado de observabilidad [Javier :40]
 - Anade Infrastructure .NET10 aislado con snapshot sintetico inmutable y copia profunda de labels; compone gate Application con identidad tenant y SHA exactos, no expone telemetria, no consulta bases reales ni certifica SLO.
 - 11 xUnit adversariales cubren tenant A/B, JWT/RBAC/revocacion, SHA, etiquetas PII, NO_MEDIDO, cambio mutable de labels, correlacion y cancelacion; CI Release/seguridad/Authorization/Scope Lock/V5 causal requerida.
