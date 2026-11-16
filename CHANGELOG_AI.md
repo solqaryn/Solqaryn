@@ -1,3 +1,9 @@
+## 2026-11-16 - V17 C12-01.M02.03 persistencia conceptual y migraciones reversibles [Javier :10]
+- Documenta 16 claves e indices propuestos K01-K16, ocho etapas futuras de migracion MX01-MX08, doce fixtures sintéticos F01-F12 y 12 pares positivos/negativos P/N de topologia objetivo.
+- Exige version y entorno compuestos, tenant A/B, JWT/RBAC, revocacion, secretos opacos, red privada, compatibilidad Oracle EF/MySQL 8.4 aislada y rollback real futuro; no se crean tablas, indices, migraciones, endpoints, proveedores ni datos.
+- Evidencia R0: cero pruebas runtime, migraciones, fixtures y restore ejecutados; A3 NO_APLICA motivado, A0-A4 con Scope Lock y procedencia V5 exact-SHA y A5 independiente de otra Task Javier.
+- No autoriza Hostinger, DNS, secretos, QA/main/PROD ni desactiva los gates G01-G16 o la dependencia institucional del DAG.
+
 ## 2026-11-16 - V17 C12-01.M02.04 configuracion tipada y flags futuros [Javier :30]
 - Define dieciseis campos CFG01-CFG16, doce flags F01-F12, ocho errores ER-CFG01-08 y doce pares P/N futuros para evaluar topologia objetivo sin tocar entorno vivo.
 - Todos los flags son false por defecto, especialmente cutoverEnabled; preserva tenant A/B, JWT/RBAC, secretos opacos, segregacion DEV/QA/PROD y gates G01-G16, sin activar Hostinger, DNS, MySQL ni PROD.
