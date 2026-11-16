@@ -1,3 +1,9 @@
+## 2026-11-16 — V18 C12-04.M03.05 worker lectura sintética aislada [Javier :20]
+- Implementación .NET 10 read-only de worker acotado a ocho tickets, snapshot de entrada previo a await y validación estricta de tenant, revisión, SHA y clave; integra adaptador M03.04 real en memoria sin ejecutar DB.
+- xUnit adversarial cubre fixture A/B, revocación MFA/JWT/RBAC, falsificación de SHA, duplicados, 0/9, revision stale, respuesta fuente adulterada, error opaco y cancelación.
+- Nueva CI GitHub Actions exact-SHA con test dirigido y Scope Lock/V5; mantener VALIDANDO mientras checks no terminen. Solo una Task Javier distinta puede emitir A5.
+- Cero migraciones, DDL, MySQL live, backups/restores reales, API/HTTP, scheduler, QA/PROD o secretos; rollback git revert normal con bitácora preservada.
+
 ## 2026-11-16 — V18 C11-04.M05.03 integración ILoggerProvider real en proceso [Javier :20]
 - Pruebas xUnit con LoggerFactory/ILoggerProvider de Microsoft.Extensions.Logging, EventId 110406, campos allowlisted y rechazo de etiquetas privadas; no es exporter externo ni auditoría durable.
 - Casos tenant A/B sintéticos, revocación de membresía/RBAC, SHA discrepante, conteos adversariales, filtros de nivel, errores opacos y cancelación; el provider en proceso es real, la autoridad es fixture.

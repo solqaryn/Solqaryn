@@ -1,0 +1,34 @@
+name: V18 C12-04.M03.05 - Synthetic manifest in-process worker
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v18-c12-04-m03-05-manifest-worker.yml'
+      - 'backend/src/Infrastructure/AutomationV5/C1204SyntheticManifestReviewWorker.cs'
+      - 'backend/tests/Solqaryn.Tests/Infrastructure/C1204SyntheticManifestReviewWorkerTests.cs'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v18-c1204-m0305-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  manifest-worker:
+    name: V18 C12-04.M03.05 - xUnit worker A/B synthetic read
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout exact SHA
+        uses: actions/checkout@v4
+      - name: .NET 10 pinned
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Restore
+        run: dotnet restore backend/Solqaryn.sln
+      - name: Targeted xUnit
+        run: |
+          dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj \
+            --configuration Release --no-restore \
+            --filter "FullyQualifiedName~C1204SyntheticManifestReviewWorkerTests" \
+            --logger "console;verbosity=normal"
