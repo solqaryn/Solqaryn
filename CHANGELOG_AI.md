@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C01-03.M03.04 adaptador aislado de snapshot de configuración dinámica [Javier :20]
+- Implementa adaptador Infrastructure→Application de captura sintética read-only con tenant/clave ordinal, revisión y SHA exactos; no integra EF/MySQL ni concede escritura, CAS durable, JWT vivo o permisos de plataforma.
+- Añade 9 pruebas xUnit de escenarios nominales y adversariales: tenant A/B, allowlist case-sensitive, colección mutable, versión/SHA stale, ownership, cancelación y no-promoción a escritura al componer el gate M03.03.
+- Requiere CI .NET Release, seguridad, autorización, Scope Lock y procedencia V5 por SHA causal; A5 de otra Task Javier y rollback git revert convencional. No QA/main/PROD.
+
 ## 2026-11-15 — V17 C15-03.M04.02 estados de auditoría de tenancy con denegación segura [Javier :40]
 - Añade cinco estados accesibles (vacío, cargando, éxito, denegado y error) a la ruta privada de auditoría existente, revalidación GET de sesión administrativa por servidor, revocación reactiva y prevención single-flight de acciones duplicadas.
 - Siete nuevas pruebas Vitest positivas, negativas, fronteras y redacción de errores, más regresión Chromium con 503 sintético; no ejecuta pentest, consulta MySQL, modifica datos ni otorga privilegios desde navegador.
