@@ -1,3 +1,8 @@
+## 2026-11-15 - V17 C09-03.M02.02 contratos API DTO y errores Social Hub [Javier :40]
+- Define doce operaciones conceptuales, doce DTO, dieciseis errores tipados y doce pares positivos/negativos FUTUROS_NO_EJECUTADOS (0/12 runtime) para campanas, consentimiento y opt-out.
+- Especifica identidad de empresa del backend, RBAC/revocacion, aislamiento A/B, clave de idempotencia con digest separado, versionado, control de errores y rollback; R0 Markdown sin rutas, proveedores, envios ni tablas reales.
+- Mantiene controles Scope Lock y procedencia V5 exact-SHA, candado V17 y A5 independiente; .NET/MySQL/HTTP/Chromium NO_APLICA a este diff; sin QA/main/PROD ni secretos.
+
 ## 2026-11-15 - V17 C09-03.M02.01 entidades, ownership y contratos de Social Hub [Javier :20]
 - Documenta 16 entidades lógicas con relaciones/empresa, 18 invariantes fail-closed y diez pares P/N FUTUROS_NO_EJECUTADOS para campañas, consentimiento por canal, opt-out, calendario, idempotencia y métricas agregadas.
 - R0 Markdown sin código ni servicios nuevos; bloquea cross-tenant A/B, JWT/RBAC asumidos, envíos sin consentimiento y proveedor no autorizado como requisitos de futuras implementaciones.
