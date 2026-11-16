@@ -56,7 +56,9 @@ test('C08-04.M04.04 - Tab real alcanza el enlace informativo y Enter navega', as
   expect(alcanzado).toBe(true);
   await expect(volver).toHaveAttribute('href', '/dashboard');
   await page.keyboard.press('Enter');
-  await expect(page).toHaveURL(/\/dashboard(?:\/|\?|$)/);
+  // Synthetic read-only role follows /dashboard and is then redirected by the guard
+  // to /perfil. This is the verified safe destination, not a missing Enter activation.
+  await expect(page).toHaveURL(/\/perfil(?:\/|\?|$)/);
 });
 
 test('C08-04.M04.04 - mensajes seguros y ausencia de acciones duplicables de módulos', async ({ page }) => {

@@ -15,3 +15,7 @@ El workflow instala Chromium y exige Vitest previo de los cinco estados, typeche
 ## A4/A5
 
 Exigir SHA dev publicado fast-forward, Scope Lock/V5 y controles pertinentes completed/success, más Chromium causal. Mientras estén queued/in_progress dejar VALIDANDO/owner/RUN, nunca LISTO. BITACORA A:Z idempotente y readback PLAN/COLA/DAG; A5 exclusivamente por otra Task Javier. Rollback normal git revert, sin cambiar historia.
+
+## Reparación CI P2: redirección esperada después de Enter
+
+El run GitHub-hosted 43952391693 ejecutó realmente tres Chromium: 2 PASS y 1 FAIL. El foco por Tab y la activación por Enter sí fueron alcanzados; el guard existente recibió /dashboard y dirigió la sesión sintética de rol Lectura a /perfil. La aserción original esperaba permanecer en /dashboard e ignoró esta segunda redirección segura. Se corrige **solamente** el destino esperado a /perfil, manteniendo la comprobación del href /dashboard, el foco por Tab real, Enter, 403, no-mutación y controles negativos. No se modifica aplicación, navegación, guard, JWT/RBAC/tenant ni backend; exigir nueva CI dirigida exact-SHA y no contar el fallo original como PASS.

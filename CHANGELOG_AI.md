@@ -6038,3 +6038,7 @@
 - Workflow específico con Vitest de los cinco estados, Angular typecheck/lint/build y navegador Playwright real; requiere CI completed/success exact-SHA para A0-A4, A5 de revisor Javier distinto. Pruebas sintéticas no certifican JWT/RBAC/tenant A/B reales.
 - R1 pruebas Angular, sin modificar runtime/backend/MySQL/seguridad/producción. Scope Lock STRICT, candado V17 2000001283 y rollback git revert.
 
+## 2026-11-16 — V18 C08-04.M04.04 reparación de destino protegido post-Enter [Javier :30]
+- QA_DEFECT_FOUND P2 de prueba: Chromium GitHub-hosted 43952391693 obtuvo 2/3 PASS; la ruta /dashboard es seguida legítimamente de /perfil por el guard bajo sesión sintética Lectura, por lo que esperar /dashboard final fue una aserción incorrecta.
+- Se mantiene Tab desde foco inicial, Enter, href /dashboard, 403 y ausencia de mutaciones; solo se espera el destino final protegido /perfil. Requerir Chromium y Scope Lock/V5 del nuevo SHA, sin desactivar validadores, con A5 independiente.
+- Sin cambios de código de producto, JWT/RBAC/tenant/MySQL/QA/PROD; rollback git revert y bloqueo VALIDANDO hasta A0-A4 reales.
