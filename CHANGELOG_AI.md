@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C04-03.M02.03 persistencia conceptual de metering [Javier :30]
+- Define doce tablas lógicas, doce índices compuestos tenant-first, ocho etapas reversibles propuestas y doce escenarios de datos sintéticos FUTUROS, sin DDL ni integración real para C04-03.M02.03.
+- Mantiene EmpresaId, UTC, idempotencia, ledger aditivo, RBAC/PII y rollback como invariantes documentales; D01–D08 continúan pendientes sin activar pagos, EF/MySQL, APIs o jobs.
+- Entrega individual R0 con candado V17 2000000658, Scope Lock y procedencia causal, A5 independiente de otra Task Javier y sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C04-03.M02.05 contrato de eventos e idempotencia de metering [Javier :40]
 - Define doce eventos conceptuales, sobre tipado versionado, dieciseis controles de idempotencia, tenant, UTC, ledger/outbox y doce pares de aceptacion futuros, sin API, DB ni pagos reales.
 - Separa unicidad (EmpresaId, SourceSystem, IdempotencyKey) del PayloadDigest inmutable; el mismo key con digest diferente debe generar conflicto, nunca doble efecto.
