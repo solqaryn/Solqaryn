@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C11-04.M03.05 worker acotado de observabilidad [Javier :00]
+- Implementa worker Infrastructure .NET 10 secuencial de revisión sintética, con puerto aislado hacia M03.04 y prevalidación de tenant, SHA, lote, cardinalidad y códigos sin acceso a telemetría real.
+- Añade 13 xUnit R2 de positivo no autorizante, A/B, revocación implícita de origen, SHA, duplicados, 16/17, fallos y cancelación, más build Release, Seguridad multiempresa, Authorization, Scope Lock y V5 exact-SHA obligatorios.
+- Entrega única V17 bajo candado 2000001710; sin HostedService, MySQL/EF, JWT HTTP, exporters, mediciones SLO/costos, QA/main/PROD; A5 de revisor Javier diferente.
+
 ## 2026-11-15 — V17 C15-03.M04.05 accesibilidad teclado y contraste [Javier :20]
 - Añade enlace de salto protegido, foco visible de alto contraste, etiquetas para matriz de auditoría, mejoras responsive y navegación por teclado a la ruta privada existente sin otorgar permisos.
 - Pruebas reales Chromium con sesiones sintéticas positiva, 403, anónimo, keyboard/focus, 320/768 px; requiere lint, build, Scope Lock y procedencia V5 exact SHA.
