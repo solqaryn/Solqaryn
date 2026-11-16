@@ -148,7 +148,7 @@ describe('C14-02.M04.01 - pantalla privada de amenazas', () => {
   it('C14-02.M04.02 excepción síncrona de sesión termina en error sin revelar diagnóstico', async () => {
     const { fixture, servicio } = await montar(autorizada);
     servicio.obtener = () => { throw new Error('INTERNAL_SECRET_DIAGNOSTIC'); };
-    expect(() => fixture.componentInstance.revalidarSesion()).not.toThrow();
+    expect(() => (fixture.nativeElement.querySelector('button') as HTMLButtonElement).click()).not.toThrow();
     fixture.detectChanges();
     expect(fixture.componentInstance.verificacion()).toBe('error');
     expect(fixture.componentInstance.estadoVista()).toBe('error');
@@ -158,7 +158,7 @@ describe('C14-02.M04.01 - pantalla privada de amenazas', () => {
   it('C14-02.M04.02 excepción síncrona 403 conserva denegación sin estado cargando', async () => {
     const { fixture, servicio } = await montar(autorizada);
     servicio.obtener = () => { throw new HttpErrorResponse({ status: 403, statusText: 'PRIVATE_SERVER_DETAIL' }); };
-    expect(() => fixture.componentInstance.revalidarSesion()).not.toThrow();
+    expect(() => (fixture.nativeElement.querySelector('button') as HTMLButtonElement).click()).not.toThrow();
     fixture.detectChanges();
     expect(fixture.componentInstance.verificacion()).toBe('sin_permiso');
     expect(fixture.componentInstance.estadoVista()).toBe('sin_permiso');
