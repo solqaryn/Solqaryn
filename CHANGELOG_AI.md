@@ -5990,3 +5990,7 @@
 ## 2026-11-16 — V17 C15-04.M03.05 worker acotado de auditoría UX [Javier :00]
 - Implementa procesador sincrónico read-only .NET 10 para hasta 32 observaciones UX aisladas, delegando en autoridad Application existente y rechazando mezclas tenant A/B/SHA, claves duplicadas y cancelación sin resultados parciales.
 - Nueve xUnit de aceptación estructural y rechazos; nunca escribe base de datos, proveedor, JWT, scheduler ni certifica Playwright, A5 o producción. CI real .NET/seguridad/Scope Lock/V5 y readback requeridos; solo dev.
+
+## 2026-11-16 — V18 C15-04.M03.05 correccion de limite adversarial del worker UX [Javier :00]
+- Se rechaza una coleccion con Count falso y mas de 32 elementos mediante snapshot de enumeracion realmente acotado; excepciones y cancelacion devuelven denegacion sin resultados parciales.
+- Cuatro regresiones xUnit adversariales, documentacion de riesgo R2, controles de tenant/SHA intactos. CI exact-SHA y nuevo A5 independiente obligatorios; el A5_FAIL P2 historico permanece. Solo dev.

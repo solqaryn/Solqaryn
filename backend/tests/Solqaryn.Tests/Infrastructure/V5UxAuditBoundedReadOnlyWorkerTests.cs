@@ -2,6 +2,7 @@ using Solqaryn.Application.AutomationV5;
 using Solqaryn.Domain.AutomationV5;
 using Solqaryn.Infrastructure.AutomationV5;
 using Xunit;
+using System.Collections;
 
 namespace Solqaryn.Tests.Infrastructure;
 
@@ -150,5 +151,84 @@ public sealed class V5UxAuditBoundedReadOnlyWorkerTests
         var result = Worker().EvaluateReadOnly(new[] { malformed });
         Assert.Equal("INVALID_WORK_SNAPSHOT", result.Code);
         Assert.Empty(result.Items);
+    }
+
+    // Adversarial IReadOnlyCollection.Count is not a security boundary.
+    private sealed class MisreportedCollection : IReadOnlyCollection<V5UxAuditBoundedReadOnlyWorker.Candidate>
+    {
+        private readonly int _reportedCount;
+        private readonly IEnumerable<V5UxAuditBoundedReadOnlyWorker.Candidate> _items;
+
+        public MisreportedCollection(int reportedCount,
+            IEnumerable<V5UxAuditBoundedReadOnlyWorker.Candidate> items)
+        {
+            _reportedCount = reportedCount;
+            _items = items;
+        }
+
+        public int Count => _reportedCount;
+
+        public IEnumerator<V5UxAuditBoundedReadOnlyWorker.Candidate> GetEnumerator() =>
+            _items.GetEnumerator();
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    private static IEnumerable<V5UxAuditBoundedReadOnlyWorker.Candidate> ThrowingSource()
+    {
+        yield return Item();
+        throw new InvalidOperationException("synthetic-private-enumerator-message");
+    }
+
+    private static IEnumerable<V5UxAuditBoundedReadOnlyWorker.Candidate> CancellingSource(
+        CancellationTokenSource source)
+    {
+        yield return Item();
+        source.Cancel();
+        yield return Item("ux-002");
+    }
+
+    [Fact]
+    public void LyingCountCannotBypassThirtyTwoItemHardLimit()
+    {
+        var exceeds = new MisreportedCollection(1,
+            Enumerable.Range(0, 33).Select(i => Item("ux-" + i)));
+        var result = Worker().EvaluateReadOnly(exceeds);
+        Assert.Equal("BATCH_CAPACITY_DENIED", result.Code);
+        Assert.Equal(0, result.ItemsEvaluated);
+        Assert.Empty(result.Items);
+        Assert.False(result.AllowsInstitutionalWrite);
+    }
+
+    [Fact]
+    public void CountIsNotTrustedAndActualSafeSizeRemainsValid()
+    {
+        var one = new MisreportedCollection(999, new[] { Item() });
+        var result = Worker().EvaluateReadOnly(one);
+        Assert.Equal("STRUCTURAL_REVIEW_ONLY", result.Code);
+        Assert.Single(result.Items);
+        Assert.False(result.CertifiesExternalMeasurement);
+    }
+
+    [Fact]
+    public void EnumeratorExceptionDeniesWithoutPartialResultsOrLeakingMessage()
+    {
+        var source = new MisreportedCollection(2, ThrowingSource());
+        var result = Worker().EvaluateReadOnly(source);
+        Assert.Equal("INVALID_WORK_SNAPSHOT", result.Code);
+        Assert.Empty(result.Items);
+        Assert.Equal(0, result.ItemsEvaluated);
+        Assert.DoesNotContain("synthetic-private", result.Code);
+    }
+
+    [Fact]
+    public void CancellationDuringEnumerationDeniesWithoutPartialResults()
+    {
+        using var cts = new CancellationTokenSource();
+        var source = new MisreportedCollection(2, CancellingSource(cts));
+        var result = Worker().EvaluateReadOnly(source, cts.Token);
+        Assert.Equal("CANCELLED_NO_WRITE", result.Code);
+        Assert.Empty(result.Items);
+        Assert.Equal(0, result.ItemsEvaluated);
     }
 }

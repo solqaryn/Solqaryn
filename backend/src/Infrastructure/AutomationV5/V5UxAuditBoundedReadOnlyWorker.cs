@@ -38,15 +38,41 @@ public sealed class V5UxAuditBoundedReadOnlyWorker
         IReadOnlyCollection<Candidate>? candidates,
         CancellationToken cancellationToken = default)
     {
-        if (candidates is null || candidates.Count is < 1 or > 32)
+        if (candidates is null)
             return Deny("BATCH_CAPACITY_DENIED");
 
         if (cancellationToken.IsCancellationRequested)
             return Deny("CANCELLED_NO_WRITE");
 
-        // Snapshot before iteration: no item can be appended while reviewing.
-        var snapshot = candidates.ToArray();
-        if (snapshot.Length is < 1 or > 32)
+        // The caller's Count is untrusted. Materialize no more than 32 elements;
+        // detect the 33rd, and reject exceptions without returning partial data.
+        var snapshot = new List<Candidate>(32);
+        try
+        {
+            using var iterator = candidates.GetEnumerator();
+            while (true)
+            {
+                if (cancellationToken.IsCancellationRequested)
+                    return Deny("CANCELLED_NO_WRITE");
+
+                if (!iterator.MoveNext())
+                    break;
+
+                if (cancellationToken.IsCancellationRequested)
+                    return Deny("CANCELLED_NO_WRITE");
+
+                if (snapshot.Count == 32)
+                    return Deny("BATCH_CAPACITY_DENIED");
+
+                snapshot.Add(iterator.Current);
+            }
+        }
+        catch (Exception)
+        {
+            return Deny("INVALID_WORK_SNAPSHOT");
+        }
+
+        if (snapshot.Count == 0)
             return Deny("BATCH_CAPACITY_DENIED");
 
         var first = snapshot[0];
@@ -77,8 +103,8 @@ public sealed class V5UxAuditBoundedReadOnlyWorker
                 return Deny("INVALID_WORK_SNAPSHOT");
         }
 
-        var results = new List<ItemOutcome>(snapshot.Length);
-        for (var index = 0; index < snapshot.Length; index++)
+        var results = new List<ItemOutcome>(snapshot.Count);
+        for (var index = 0; index < snapshot.Count; index++)
         {
             if (cancellationToken.IsCancellationRequested)
                 return Deny("CANCELLED_NO_WRITE");
