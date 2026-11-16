@@ -1,3 +1,9 @@
+## 2026-11-16 - V17 C13-01.M02.05 eventos e idempotencia de privacidad [Javier :00]
+- Define doce eventos EV01-EV12 y doce campos ENV01-ENV12 futuros para decisiones, evidencia, revocacion, derechos, retencion y readback opaco por tenant/sujeto.
+- Disena doce invariantes, ocho limites, ocho errores y doce pares T01-T12 positivos/negativos FUTUROS_NO_EJECUTADOS (0/12 runtime); no crea broker, outbox, workers, API, tablas o datos.
+- El nonce por solicitud logica y el digest canonico completo evitan replay, colisiones por carga redactada y falsas aprobaciones; conserva JWT/RBAC/revocacion y denegacion ante fallos.
+- R0 documental: exige Scope Lock, V5, lock V17, readback y A5 independiente, sin autorizar QA/main/PROD ni proveedores.
+
 ## 2026-11-16 - V17 C13-01.M02.03 persistencia conceptual e indices de privacidad [Javier :00]
 - Propone dieciseis claves/indices K01-K16, ocho etapas futuras MX01-MX08 y doce fixtures sinteticos F01-F12 para decisiones, revocacion, derechos, retencion y tenant A/B.
 - Define idempotencia con nonce estable por solicitud logica y digest completo de payload canonico; evita reintentos cruzados, colision por datos redactados, IDOR/BOLA y revocacion obsoleta.
