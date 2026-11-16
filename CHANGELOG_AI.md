@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C04-03.M01.06 contrato terminal de bloqueo y reversión de metering [Javier :10]
+- Documenta B01–B16 de NO-GO, prerequisitos M01.01–05 con cinco A5 independientes y C01-03.M01.06+A5, riesgos y ocho decisiones comerciales D01–D08 aún PENDIENTE; DAG F/G VALIDADO/SI permite contrato M01.06, nunca aprobación de metering o cobro real.
+- Añade ocho positivos y doce negativos FUTUROS_NO_EJECUTADOS para tenant A/B, idempotencia de consumo, cuotas, unidades, límites, privacidad, UTC, rollback, CI y A5; sin introducir API, DB, workers, eventos, proveedores ni cuotas activas.
+- R0/V17 lock único 2000000655 y A0–A4 documental; requiere Scope Lock y V5 procedencia exact SHA, BITACORA/readback y A5 independiente. Sin QA/main/PROD, rollback git revert normal.
+
 ## 2026-11-15 — V17 C07-04.M03.06 auditoría comercial estructurada segura [Javier :00]
 - Implementa pipeline Infrastructure .NET 10 acotado de auditoría de previsualizaciones comerciales, integrando lector de autoridad backend y batch M03.05; no crea worker alojado, pago, factura, transacción ni auditoría durable.
 - Doce pruebas xUnit R2 de tenant A/B, membresía/RBAC/revocación, SHA, correlación maliciosa, replay, monto/fiscal, cancelación y fallas opacas de fuente/logger. Exige Backend Release, seguridad multiempresa, Authorization, Scope Lock y V5 por SHA exacto antes de LISTO.
