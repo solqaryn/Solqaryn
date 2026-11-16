@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C15-03.M04.01 auditoría de tenancy privada Angular [Javier :20]
+- Agrega ruta lazy protegida por plataformaGuard y guía estática de cuatro frentes de seguridad/aislamiento; la revocación de sesión oculta contenido, sin ejecutar pentest ni operaciones.
+- Incorpora pruebas unitarias de guard/denegación/revocación y CI GitHub-hosted de Chromium con token y API sintéticos, además de lint y build Angular; no certifica backend JWT/MySQL/tenant real.
+- Publicación individual V17 bajo Scope Lock y procedencia V5 exact SHA, A5 independiente requerida, rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C10-04.M04.02 estados privados y permisos Angular [Javier :20]
 - Refuerza estados carga/vacío/error/éxito/sin-permiso, oculta la guía ante revocación de sesión y evita declarar éxito con respuesta inválida o vacía; mantiene ruta guard y solo lectura.
 - Amplía Vitest adversarial y agrega CI dirigida GitHub-hosted con lint, build Angular 22.2.1 y Chromium Playwright con API sintética, sin atribuir autorización HTTP/JWT/DB real.
