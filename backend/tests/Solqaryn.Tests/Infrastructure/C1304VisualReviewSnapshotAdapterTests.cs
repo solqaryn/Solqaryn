@@ -19,6 +19,7 @@ public sealed class C1304VisualReviewSnapshotAdapterTests
     {
         public C1304VisualReviewAuthorityAdapter.Authority? Current = Good();
         public Exception? Failure;
+        public TaskCompletionSource<C1304VisualReviewAuthorityAdapter.Authority?>? Pending;
         public int Calls;
         public Task<C1304VisualReviewAuthorityAdapter.Authority?> ReadCurrentAsync(
             CancellationToken cancellationToken)
@@ -26,8 +27,27 @@ public sealed class C1304VisualReviewSnapshotAdapterTests
             cancellationToken.ThrowIfCancellationRequested();
             Interlocked.Increment(ref Calls);
             if (Failure is not null) throw Failure;
-            return Task.FromResult(Current);
+            return Pending?.Task ?? Task.FromResult(Current);
         }
+    }
+
+    // Adversarial IReadOnlyList changes its enumeration result after three reads.
+    // The original implementation validated the first three reads but stored the fourth.
+    private sealed class UntrustedChangingSurfaces : IReadOnlyList<string>
+    {
+        public int Count => 1;
+        public int Enumerations;
+        public string this[int index] => index == 0 ? "private-shell" :
+            throw new ArgumentOutOfRangeException(nameof(index));
+
+        public IEnumerator<string> GetEnumerator()
+        {
+            var pass = Interlocked.Increment(ref Enumerations);
+            yield return pass >= 4 ? "unapproved-surface" : "private-shell";
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator() =>
+            GetEnumerator();
     }
 
     private static C1304VisualReviewAuthorityAdapter.Authority Good() =>
@@ -254,4 +274,40 @@ public sealed class C1304VisualReviewSnapshotAdapterTests
         Assert.Equal(1, (await adapter.WriteAsync(22, "extra-key", Sha, 0,
             new[] { "private-shell" })).Revision);
     }
+    [Fact]
+    public async Task MutableCallerListIsCapturedBeforeAwaitingAuthority()
+    {
+        var (adapter, source) = Setup();
+        var gate = new TaskCompletionSource<C1304VisualReviewAuthorityAdapter.Authority?>(
+            TaskCreationOptions.RunContinuationsAsynchronously);
+        source.Pending = gate;
+        var callerOwned = new List<string> { "private-shell" };
+
+        // The second actor mutates the original list while authority verification is pending.
+        var writer = adapter.WriteAsync(11, "builder-review", Sha, 0, callerOwned);
+        await Task.Run(() => callerOwned[0] = "visual-audit");
+        gate.SetResult(Good());
+        var saved = await writer;
+
+        Assert.Equal("SNAPSHOT_STAGED_BROWSER_A5_REQUIRED", saved.Code);
+        Assert.Equal("private-shell", Assert.Single(saved.Data!.Surfaces));
+        Assert.Equal("private-shell",
+            Assert.Single((await adapter.ReadAsync(11, "builder-review", Sha)).Data!.Surfaces));
+    }
+
+    [Fact]
+    public async Task AdversarialReenumerationCannotStageAnUnapprovedSurface()
+    {
+        var (adapter, _) = Setup();
+        var input = new UntrustedChangingSurfaces();
+
+        var saved = await adapter.WriteAsync(11, "builder-review", Sha, 0, input);
+
+        Assert.Equal("SNAPSHOT_STAGED_BROWSER_A5_REQUIRED", saved.Code);
+        Assert.Equal(1, input.Enumerations);
+        Assert.Equal("private-shell", Assert.Single(saved.Data!.Surfaces));
+        Assert.Equal("private-shell",
+            Assert.Single((await adapter.ReadAsync(11, "builder-review", Sha)).Data!.Surfaces));
+    }
+
 }

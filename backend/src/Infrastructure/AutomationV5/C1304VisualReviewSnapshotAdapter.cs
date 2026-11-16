@@ -91,14 +91,42 @@ public sealed class C1304VisualReviewSnapshotAdapter
     {
         cancellationToken.ThrowIfCancellationRequested();
         if (tenantId <= 0 || !SafeKey(key) || !FullSha(expectedSha) ||
-            expectedRevision < 0 || surfaces is null ||
-            surfaces.Count is < 1 or > 64 || surfaces.Any(x => !SafeKey(x)) ||
-            surfaces.Distinct(StringComparer.Ordinal).Count() != surfaces.Count)
+            expectedRevision < 0 || surfaces is null)
+            return Deny("INVALID_SNAPSHOT_SCOPE");
+
+        // Capture untrusted caller-owned input exactly once, before any await.
+        // Bound enumeration even if an IReadOnlyList reports a dishonest Count.
+        string[] stableSurfaces;
+        try
+        {
+            var claimedCount = surfaces.Count;
+            if (claimedCount is < 1 or > 64)
+                return Deny("INVALID_SNAPSHOT_SCOPE");
+
+            var captured = new List<string>(claimedCount);
+            foreach (var surface in surfaces)
+            {
+                if (captured.Count >= claimedCount)
+                    return Deny("INVALID_SNAPSHOT_SCOPE");
+                captured.Add(surface);
+            }
+            if (captured.Count != claimedCount)
+                return Deny("INVALID_SNAPSHOT_SCOPE");
+            stableSurfaces = captured.ToArray();
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException and not OperationCanceledException)
+        {
+            // A concurrently modified or maliciously enumerated list must not stage data.
+            return Deny("INVALID_SNAPSHOT_SCOPE");
+        }
+
+        if (stableSurfaces.Any(x => !SafeKey(x)) ||
+            stableSurfaces.Distinct(StringComparer.Ordinal).Count() != stableSurfaces.Length)
             return Deny("INVALID_SNAPSHOT_SCOPE");
 
         var auth = await CheckAsync(tenantId, expectedSha!, cancellationToken);
         if (auth.Allowed is null) return Deny(auth.Code);
-        if (surfaces.Any(x => !auth.Allowed.Contains(x)))
+        if (stableSurfaces.Any(x => !auth.Allowed.Contains(x)))
             return Deny("SURFACE_NOT_APPROVED_BY_CURRENT_AUTHORITY");
 
         lock (_sync)
@@ -116,15 +144,16 @@ public sealed class C1304VisualReviewSnapshotAdapter
             if (previous is null && _items.Keys.Count(x => x.TenantId == tenantId) >= 64)
                 return Deny("TENANT_SNAPSHOT_CAPACITY_REACHED");
 
+            // Never touch surfaces again: validate and store the identical captured snapshot.
             var stored = new Stored(expectedSha!, expectedRevision + 1,
-                _clock.GetUtcNow(), surfaces.ToArray());
+                _clock.GetUtcNow(), stableSurfaces);
             _items[id] = stored;
             return new("SNAPSHOT_STAGED_BROWSER_A5_REQUIRED", stored.Revision,
                 Copy(tenantId, key!, stored));
         }
     }
 
-    public async Task<Outcome> ReadAsync(
+        public async Task<Outcome> ReadAsync(
         int tenantId, string? key, string? expectedSha,
         CancellationToken cancellationToken = default)
     {

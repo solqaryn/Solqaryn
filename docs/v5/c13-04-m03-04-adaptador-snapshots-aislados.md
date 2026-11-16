@@ -58,3 +58,23 @@ Tasks Javier y nunca autoaprobación.
 
 Rollback normal: git revert del commit publicado; no forzar ramas, borrar
 historial BITACORA ni modificar main, QA, PROD, secretos o datos productivos.
+
+## A5_FAIL P2 — recuperación de TOCTOU sobre entradas mutables (2026-11-16)
+
+Revisión independiente de DEV01 sobre el SHA ff5a0a3d detectó que WriteAsync
+validaba varias veces la IReadOnlyList del llamador, esperaba la autoridad y
+almacenaba otra lectura posterior. Un actor con una colección mutable podía
+cambiar las superficies entre la validación de allowlist y el almacenamiento.
+Se conserva la evidencia A5_FAIL hasta nueva revisión independiente; no hay
+prueba de explotación real ni de acceso a MySQL/JWT/producción.
+
+Corrección en dev: materializar UNA sola copia acotada (1–64) antes del primer
+await, rechazar conteos falsos/enumeración inconsistente, validar sintaxis,
+no duplicados y la lista autorizada de servidor sobre esa misma copia, y
+almacenar exactamente los mismos strings validados. La copia sigue siendo
+in-memory, aislada y sin permisos. La regresión xUnit usa una colección
+adversarial que cambia el contenido entre enumeraciones y dos actores con
+mutación de la lista durante la espera de autoridad. La revisión A5 requiere
+una Task Javier distinta del autor del cambio, tras pruebas backend Release,
+seguridad, autorización, Scope Lock y V5 del SHA publicado. Hasta completar
+CI y A5 no se levantan gates DAG ni se autoriza QA/main/PROD.

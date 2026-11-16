@@ -1,3 +1,8 @@
+## 2026-11-16 — A5_FAIL TOCTOU C13-04.M03.04 reparación quirúrgica [ChatGPT / Javier]
+- Se corrige el defecto P2 detectado por revisión independiente: entrada IReadOnlyList mutable se capturaba de nuevo tras un await y podía cambiar entre allowlist y almacenamiento.
+- WriteAsync ahora captura una única copia acotada antes del primer await, valida y almacena los mismos elementos; fallos de enumeración se deniegan sin exposición de datos. Dos pruebas xUnit adversariales cubren mutación concurrente de dos actores y enumeración maliciosa.
+- A5_FAIL permanece vigente hasta aprobación independiente; CI de SHA exacto, seguridad/Scope Lock/V5 y rollback git revert requeridos. Sin cambios en MySQL, JWT, QA/main/PROD ni configuraciones de Tasks.
+
 ## 2026-11-16 — V17 C14-04.M04.04 navegación y single-flight readiness [Javier :00]
 - Añade cuatro pruebas Chromium de navegación privada, 403 de revocación, 503 con reintento y guard de petición duplicada; usa sesiones sintéticas, sin cambiar JWT/tenant/RBAC o backend.
 - Amplía únicamente la selección explícita del workflow SHA-aislado, manteniendo pruebas previas y cancel-in-progress=false; exige CI causal real y Scope Lock/V5 antes de LISTO.
