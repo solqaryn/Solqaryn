@@ -1,6 +1,10 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
+
+export type EstadoAuditoriaTenancyV5 = 'vacio' | 'cargando' | 'exito' | 'sin_permiso' | 'error';
 
 /** C15-03.M04.01: superficie de guia privada; nunca ejecuta pentest ni otorga permisos. */
 @Component({
@@ -15,7 +19,17 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
         <h1 id="tenancy-audit-title">Fronteras de aislamiento y evidencia</h1>
         <p>Guía privada, sin consultas de datos ni pruebas de seguridad en vivo.</p>
         <a routerLink="/plataforma" aria-label="Regresar a administración de plataforma">Volver a plataforma</a>
+        <button type="button" (click)="revalidar()" [disabled]="estado() === 'cargando'" aria-label="Revalidar sesión de auditoría de tenancy">Revalidar sesión</button>
       </header>
+      <section class="estado" aria-live="polite" aria-atomic="true" aria-label="Estado de autorización de auditoría de tenancy" [attr.aria-busy]="estado() === 'cargando'">
+        @switch (estadoVisible()) {
+          @case ('cargando') { <p role="status">Revalidando autorización privada con el servidor…</p> }
+          @case ('sin_permiso') { <p role="alert">Sesión de plataforma no confirmada. Guía protegida oculta.</p> }
+          @case ('error') { <p role="alert">No fue posible revalidar la sesión. La guía permanece restringida.</p> }
+          @case ('vacio') { <p role="status">Sesión verificada. Sin mediciones institucionales conectadas.</p> }
+          @case ('exito') { <p role="status">Sesión revalidada. Solo guía de revisión, no pentest real.</p> }
+        }
+      </section>
       @if (accesoVerificado()) {
         <section class="notice" aria-label="Alcance de solo lectura">
           <strong>Solo lectura · ninguna prueba o autorización ejecutada</strong>
@@ -45,12 +59,13 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
     h3 { font-size: 1rem; margin: 0 0 .3rem; }
     p { line-height: 1.55; overflow-wrap: anywhere; }
     .eyebrow { font-weight: 700; color: var(--mat-sys-primary, #2157a3); }
-    header a { display: inline-block; border: 1px solid currentColor; border-radius: .55rem; padding: .7rem .9rem; color: inherit; text-decoration: none; }
-    header a:focus-visible { outline: 3px solid var(--mat-sys-primary, #2157a3); outline-offset: 3px; }
+    header :is(a,button) { display: inline-block; border: 1px solid currentColor; border-radius: .55rem; margin-right:.5rem; padding: .7rem .9rem; color: inherit; background:transparent; font:inherit; text-decoration: underline; cursor:pointer; }
+    header button[disabled] { opacity:.55; cursor:progress; }
+    header :is(a,button):focus-visible { outline: 3px solid var(--mat-sys-primary, #2157a3); outline-offset: 3px; }
     .skip-frames { display:inline-flex; margin-top:.75rem; padding:.65rem .85rem; border:2px solid currentColor; border-radius:.5rem; color:inherit; text-decoration:underline; }
     .skip-frames:focus-visible { outline:3px solid var(--mat-sys-primary, #2157a3); outline-offset:3px; }
     @media (prefers-contrast:more) { .skip-frames:focus-visible, header a:focus-visible { outline-width:4px; } }
-    .notice,.denied { border: 1px solid var(--mat-sys-outline-variant, #aeb8c1); border-radius: .75rem; padding: 1rem; margin-top: 1rem; }
+.estado,.notice,.denied { border: 1px solid var(--mat-sys-outline-variant, #aeb8c1); border-radius: .75rem; padding: 1rem; margin-top: 1rem; }
     .notice { background: var(--mat-sys-surface-container-low, #f5f7fa); }
     .fronteras { display: grid; grid-template-columns: repeat(2,minmax(0,1fr)); gap: .85rem; list-style: none; padding: 0; }
     .fronteras li { min-width: 0; border: 1px solid var(--mat-sys-outline-variant, #aeb8c1); border-radius: .75rem; padding: 1rem; }
@@ -61,9 +76,39 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
 })
 export class AuditoriaTenancyV5Component {
   private readonly plataforma = inject(PlataformaSesionService);
-  /** El navegador no crea autoridad: solo expone el grant actualmente confirmado por servidor. */
+  private readonly destroyRef = inject(DestroyRef);
+  /** M04.02: no se infiere autoridad desde JWT, empresa, cache ni un estado visual. */
+  readonly estado = signal<EstadoAuditoriaTenancyV5>(this.plataforma.sesion() ? 'vacio' : 'sin_permiso');
   readonly accesoVerificado = computed(() => {
     const sesion = this.plataforma.sesion();
-    return sesion?.ambito === 'Plataforma' && sesion.esAdministrador === true;
+    const actual = this.estado();
+    return (actual === 'vacio' || actual === 'exito') &&
+      sesion?.ambito === 'Plataforma' && sesion.esAdministrador === true;
   });
+  readonly estadoVisible = computed<EstadoAuditoriaTenancyV5>(() => {
+    if (this.estado() === 'cargando') return 'cargando';
+    if (this.estado() === 'error') return 'error';
+    if (!this.accesoVerificado()) return 'sin_permiso';
+    return this.estado();
+  });
+  revalidar(): void {
+    if (this.estado() === 'cargando') return; // single-flight, no doble llamada.
+    this.estado.set('cargando');
+    this.plataforma.obtener().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: (sesion) => {
+        const actual = this.plataforma.sesion();
+        const confirmado = sesion?.ambito === 'Plataforma' &&
+          sesion?.esAdministrador === true &&
+          actual?.ambito === 'Plataforma' && actual.esAdministrador === true;
+        this.estado.set(confirmado ? 'exito' : 'sin_permiso');
+      },
+      complete: () => {
+        if (this.estado() === 'cargando') this.estado.set('error'); // never treat empty response as grant.
+      },
+      error: (error: unknown) => {
+        const status = error instanceof HttpErrorResponse ? error.status : 0;
+        this.estado.set(status === 401 || status === 403 ? 'sin_permiso' : 'error');
+      }
+    });
+  }
 }

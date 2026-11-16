@@ -57,3 +57,29 @@ test('grant simulado muestra guía estática, responsive y sin endpoints operati
   const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
   expect(overflow).toBeLessThanOrEqual(2);
 });
+
+test('C15-03.M04.02: 503 en revalidación oculta fronteras y evita revelar payload', async ({ page }) => {
+  await fakeToken(page);
+  await sessionMock(page, true);
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto('/plataforma/auditoria-tenancy-v5');
+  await expect(page.locator('.fronteras li')).toHaveCount(4);
+  await page.route(sessionUrl, async route => {
+    const headers = {
+      'Access-Control-Allow-Origin': 'http://127.0.0.1:4200',
+      'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-Empresa-Id',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS'
+    };
+    if (route.request().method() === 'OPTIONS') {
+      await route.fulfill({ status: 204, headers });
+      return;
+    }
+    await route.fulfill({ status: 503, headers, contentType: 'application/json',
+      body: JSON.stringify({ success: false, data: null, message: 'PRIVATE_TENANT_DSN' }) });
+  });
+  await page.getByRole('button', { name: 'Revalidar sesión de auditoría de tenancy' }).click();
+  await expect(page.getByText('No fue posible revalidar la sesión. La guía permanece restringida.')).toBeVisible();
+  await expect(page.locator('.fronteras li')).toHaveCount(0);
+  await expect(page.getByText('PRIVATE_TENANT_DSN')).toHaveCount(0);
+  expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(2);
+});
