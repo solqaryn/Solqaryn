@@ -1,0 +1,114 @@
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { RouterLink } from '@angular/router';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { defer } from 'rxjs';
+import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
+
+/**
+ * C02-04.M04.01: superficie privada, informativa y fail-closed del control plane.
+ * No concede grants, no simula MFA y no invoca operaciones empresariales.
+ * La ruta y cada revalidación consultan la autoridad real en el servidor.
+ */
+@Component({
+  selector: 'app-consola-global-auditada-v5',
+  standalone: true,
+  imports: [RouterLink],
+  changeDetection: ChangeDetectionStrategy.OnPush,
+  template: `
+    <main class="control-plane" aria-labelledby="control-plane-title">
+      <header>
+        <p class="eyebrow">SOLQARYN · Plataforma</p>
+        <h1 id="control-plane-title">Consola global auditada</h1>
+        <p>Consulta privada de controles del plano global, separada de la administración ERP.</p>
+        <nav aria-label="Navegación de consola global">
+          <a routerLink="/plataforma" aria-label="Volver a administración de plataforma">Volver a plataforma</a>
+          @if (accesoVerificado()) {
+            <button type="button" (click)="revalidarSesion()"
+              [disabled]="estadoVisible() === 'cargando'"
+              aria-describedby="control-plane-estado">Revalidar sesión global</button>
+          }
+        </nav>
+      </header>
+
+      <section id="control-plane-estado" class="notice" aria-live="polite" aria-atomic="true"
+        [attr.aria-busy]="estadoVisible() === 'cargando'">
+        @switch (estadoVisible()) {
+          @case ('cargando') { <p role="status">Revalidando autorización global con el servidor…</p> }
+          @case ('sin_permiso') { <p role="alert">Permiso global no confirmado. La consola privada permanece oculta.</p> }
+          @case ('error') { <p role="alert">No se pudo verificar la sesión. La consola privada permanece oculta.</p> }
+          @case ('vacio') { <p role="status">Sesión global confirmada. No hay operaciones excepcionales conectadas.</p> }
+          @case ('exito') { <p role="status">Sesión global revalidada. Solo consulta de controles, sin ejecutar acciones.</p> }
+        }
+      </section>
+
+      @if (estadoVisible() === 'vacio' || estadoVisible() === 'exito') {
+        <section aria-labelledby="controles-title">
+          <h2 id="controles-title">Fronteras de control plane</h2>
+          <ol class="control-cards">
+            <li><h3>Separación plataforma / ERP</h3><p>La identidad global no hereda permisos de una empresa. El servidor debe autorizar cada operación.</p></li>
+            <li><h3>MFA y reautenticación</h3><p>Las acciones críticas exigirán desafío fresco verificado en backend. Esta pantalla no ejecuta MFA.</p></li>
+            <li><h3>Justificación y auditoría</h3><p>Los cambios excepcionales requieren motivo validado, alcance mínimo y evidencia durable antes de habilitarse.</p></li>
+            <li><h3>Excepción temporal</h3><p>Grants de plazo limitado, revocación y denegación entre tenants deberán probarse en infraestructura aislada.</p></li>
+          </ol>
+        </section>
+        <section class="notice" aria-label="Operaciones no habilitadas">
+          <strong>Solo lectura · ninguna concesión de acceso</strong>
+          <p>No se exponen usuarios, tenants, tokens, secretos, grants ni botones de escalamiento.</p>
+          <p role="note">MFA, tenant A/B, JWT HTTP y auditoría durable: NO_MEDIDO. Sin acceso a QA, main o producción.</p>
+        </section>
+      }
+    </main>
+  `,
+  styles: [`
+    :host { display:block; color:var(--mat-sys-on-surface, #17212d); }
+    .control-plane { box-sizing:border-box; max-width:72rem; padding:clamp(1rem,3vw,2.5rem); margin:0 auto; }
+    h1 { font-size:clamp(1.6rem,4vw,2.4rem); line-height:1.2; }
+    h2 { font-size:1.3rem; margin:1.5rem 0 .8rem; }
+    h3 { margin:0 0 .4rem; font-size:1rem; }
+    p { line-height:1.55; overflow-wrap:anywhere; }
+    .eyebrow { color:var(--mat-sys-primary,#2157a3); font-weight:700; }
+    nav { display:flex; gap:.7rem; flex-wrap:wrap; align-items:center; }
+    nav :is(a,button) { display:inline-block; box-sizing:border-box; min-height:44px; padding:.7rem .9rem;
+      border:1px solid currentColor; border-radius:.55rem; background:transparent; color:inherit;
+      font:inherit; text-decoration:underline; cursor:pointer; }
+    nav button:disabled { opacity:.6; cursor:progress; }
+    nav :is(a,button):focus-visible { outline:3px solid var(--mat-sys-primary,#2157a3); outline-offset:3px; }
+    .notice { border:1px solid var(--mat-sys-outline-variant,#aeb8c1); border-radius:.65rem; padding:1rem; margin:1.1rem 0; }
+    .control-cards { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.9rem;
+      list-style:none; padding:0; margin:0; }
+    .control-cards li { box-sizing:border-box; min-width:0; border:1px solid var(--mat-sys-outline-variant,#aeb8c1);
+      border-radius:.6rem; padding:1rem; background:var(--mat-sys-surface-container-low,#f5f7fa); }
+    @media (max-width:44rem) { .control-cards { grid-template-columns:1fr; } }
+  `]
+})
+export class ConsolaGlobalAuditadaV5Component {
+  private readonly plataforma = inject(PlataformaSesionService);
+  private readonly destroyRef = inject(DestroyRef);
+  readonly accesoVerificado = computed(() => {
+    const sesion = this.plataforma.sesion();
+    return sesion?.ambito === 'Plataforma' && sesion.esAdministrador === true;
+  });
+  readonly verificacion = signal<'inicial' | 'cargando' | 'confirmada' | 'denegada' | 'error'>('inicial');
+  readonly estadoVisible = computed(() => {
+    const estado = this.verificacion();
+    if (estado === 'cargando' || estado === 'error') return estado;
+    if (estado === 'denegada' || !this.accesoVerificado()) return 'sin_permiso';
+    return estado === 'confirmada' ? 'exito' : 'vacio';
+  });
+
+  revalidarSesion(): void {
+    if (!this.accesoVerificado() || this.verificacion() === 'cargando') return;
+    this.verificacion.set('cargando');
+    defer(() => this.plataforma.obtener()).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => this.verificacion.set(this.accesoVerificado() ? 'confirmada' : 'denegada'),
+      error: (error: unknown) => {
+        const denegada = error instanceof HttpErrorResponse && (error.status === 401 || error.status === 403);
+        this.verificacion.set(denegada ? 'denegada' : 'error');
+      },
+      complete: () => {
+        if (this.verificacion() === 'cargando') this.verificacion.set('error');
+      }
+    });
+  }
+}

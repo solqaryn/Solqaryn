@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C02-04.M04.01 consola global auditada de solo lectura [Javier :00]
+- Nueva ruta lazy privada con plataformaGuard; cuatro fronteras auditables de control plane sin otorgar privilegios, operaciones ni datos empresariales. Revalidación por GET de sesión global, denegación reactiva y errores opacos.
+- Diez pruebas Vitest con acceso, denegación, revocación, 401/403/503, concurrencia y errores síncronos; cuatro Chromium sintéticos, lint y build reales en GitHub-hosted bajo CI SHA aislado.
+- Riesgo R2 de superficie de autorización: no certifica MFA, grants, JWT HTTP, tenant A/B ni auditoría durable. Scope Lock, V5 y A5 independiente obligatorios; rollback git revert sin force; solo dev.
+
 ## 2026-11-16 — Corrección causal CI C05-01.M04.05 (foco de teclado) [Javier :50]
 - La CI del SHA 18343ec3 falló 2 nuevas pruebas por invocar focus() programático al comprobar :focus-visible; 9 pruebas preexistentes sí aprobaron.
 - La prueba de foco ahora navega físicamente con Tab en Chromium antes de comprobar el contorno; no se deshabilitan asserts ni se declara PASS sin nuevo run.
