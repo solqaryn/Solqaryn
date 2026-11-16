@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C07-04.M04.04 single-flight y navegación privada de pedidos [Javier :40]
+- Bloquea GET duplicados en listado ERP y deshabilita filtro/paginación en vuelo, sin modificar backend, finanzas ni autorización.
+- Cinco escenarios Chromium positivos/negativos de anónimo, 403, navegación lector, 503 con retry single-flight y paginación, sin quitar suite anterior ni controles SHA-aislados.
+- R2; HTTP/JWT/tenant sinteticos no prueban pagos ni MySQL. Requiere Scope Lock, V5, pruebas causales y A5 de Task diferente; solo dev, rollback git revert.
+
 ## 2026-11-16 — V17 C01-04.M03.05 proyección acotada de cronología privada [Javier :50]
 - Agrega un worker .NET 10 in-process, determinista y read-only para un máximo de 64 eventos de expediente; rechaza tenant A/B, expediente cruzado, versión futura, eventos duplicados, UTC inválido y evidencia insegura sin producir resultados parciales.
 - Incluye diez pruebas xUnit positivas/negativas/frontera, snapshot de salida inmutable, cancelación, documento de límites y rollback. El resultado NO autoriza lectura, persistencia ni medios; no hay adaptador real EF/MySQL/JWT HTTP ni DI/endpoint.

@@ -4,6 +4,7 @@ on:
     branches: [dev]
     paths:
       - 'frontend/e2e/c07-04-m04-02-pedidos-estados.spec.ts'
+      - 'frontend/e2e/c07-04-m04-04-pedidos-interacciones.spec.ts'
       - 'frontend/src/app/features/pedidos-venta/pedidos-venta.components.ts'
       - '.github/workflows/v17-c07-04-m04-02-estados.yml'
   workflow_dispatch:
@@ -55,7 +56,7 @@ jobs:
           cat c0704-m0402-angular.log >&2
           exit 1
       - name: Playwright casos positivos negativos error permisos frontera
-        run: npx playwright test e2e/c07-04-m04-02-pedidos-estados.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+        run: npx playwright test e2e/c07-04-m04-02-pedidos-estados.spec.ts e2e/c07-04-m04-04-pedidos-interacciones.spec.ts --config=playwright.config.ts --workers=1 --retries=0
       - name: Evidencia CI
         if: always()
         uses: actions/upload-artifact@v4
