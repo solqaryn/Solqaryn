@@ -1,3 +1,8 @@
+## 2026-11-16 - V17 C11-01.M02.06 contrato documental de salida modelo relacional [Javier :00]
+- Fija dieciseis gates G01-G16, ocho pasos futuros de rollback R01-R08 y doce pares T01-T12 positivos/negativos FUTUROS_NO_EJECUTADOS (0/12 runtime) para cerrar el diseño conceptual M02.
+- Reconciliacion documental E01-E16, OP01-OP08, D01-D12, K01-K12, F01-F12, EV01-EV12 e invariantes; proteccion tenant A/B, legacy NULL, RBAC/revocacion, transacciones e idempotencia sin cambiar EF/MySQL ni API.
+- Mantiene revision A5 independiente y relectura DAG antes de M03; ninguna migracion, DDL, servicio, QA/main/PROD, dato real o certificacion MySQL derivada de esta preparacion.
+
 ## 2026-11-16 - V17 C12-01.M02.02 operaciones y DTO documentales de topologia [Javier :20]
 - Define ocho operaciones OP01-OP08, doce DTO D01-D12, doce errores ER01-ER12, dieciseis validaciones V01-V16 y doce pares P/N futuros sin crear endpoints.
 - Conserva E01-E16/I01-I20, seguridad tenant/JWT/RBAC, red privada, referencias de secretos y gates G01-G16; no confunde contrato con prueba real ni permiso Hostinger/DNS/PROD.
