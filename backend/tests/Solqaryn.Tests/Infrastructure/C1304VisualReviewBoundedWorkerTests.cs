@@ -196,6 +196,33 @@ public sealed class C1304VisualReviewBoundedWorkerTests
     }
 
     [Fact]
+    public async Task OutcomeRevisionMustEqualSnapshotRevisionBeforeAnySuccessfulReview()
+    {
+        var port = new Port();
+        var worker = new C1304VisualReviewBoundedWorker(port);
+        // Adversarial read port claims staged success while its outer revision
+        // disagrees with the payload. Both mismatch directions fail closed.
+        port.Handler = (tenant, key, sha, _) =>
+        {
+            var staged = Staged(tenant, key, sha);
+            return Task.FromResult(staged with { Revision = staged.Revision + 1 });
+        };
+        var higherOutcome = await worker.InspectBatchAsync(new[] { T() });
+        Assert.Equal("VISUAL_REVIEW_SOURCE_REJECTED", higherOutcome.Code);
+        Assert.Equal(0, higherOutcome.ItemsChecked);
+
+        port.Handler = (tenant, key, sha, _) =>
+        {
+            var staged = Staged(tenant, key, sha);
+            return Task.FromResult(staged with { Data = staged.Data! with { Revision = staged.Revision + 1 } });
+        };
+        var higherPayload = await worker.InspectBatchAsync(new[] { T() });
+        Assert.Equal("VISUAL_REVIEW_SOURCE_REJECTED", higherPayload.Code);
+        Assert.Equal(0, higherPayload.ItemsChecked);
+        Assert.Equal(2, port.Calls);
+    }
+
+    [Fact]
     public async Task CancellationPropagatesWithoutAccessToPort()
     {
         var port = new Port();

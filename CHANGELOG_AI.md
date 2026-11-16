@@ -6016,3 +6016,6 @@
 
 ## 2026-11-16 — C08-04.M04.01: corrección selector Playwright de estado accesible (DEV03)
 - Regresión GitHub-hosted: run 43949578542, 2 Chromium PASS y tercero FAIL por selector ambiguo getByRole(status) ante un live-region global adicional. Corrección mínima: seleccionar el estado accesible por nombre exacto «Estado de las capacidades»; no se modifica la superficie ni se atenúa el assert. Exigir nuevo SHA y 3/3 Chromium, Vitest y Scope Lock antes de A0–A4; A5 de otra Task.
+
+## 2026-11-16 — C13-04.M03.05: reparación P2 de coherencia de revision de snapshots (DEV03)
+- A5 independiente DEV05 identificó discrepancia entre Outcome.Revision y Snapshot.Revision que podía contar como revisada una lectura incoherente. Se exige igualdad exacta, con prueba xUnit negativa en ambas direcciones, rechazo opaco y contador cero. No se altera API, JWT/RBAC, MySQL ni workers alojados. Nueva CI y A5 distinta requeridas; A5_FAIL histórico conservado.

@@ -124,6 +124,7 @@ public sealed class C1304VisualReviewBoundedWorker
             }
             if (result.Code != "SNAPSHOT_STAGED_BROWSER_A5_REQUIRED" ||
                 result.Revision <= 0 || result.Data is null ||
+                result.Data.Revision != result.Revision ||
                 result.Data.TenantId != tenant ||
                 !string.Equals(result.Data.Key, ticket.Key, StringComparison.Ordinal) ||
                 !string.Equals(result.Data.SourceSha, sha, StringComparison.Ordinal))
