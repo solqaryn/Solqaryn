@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 reparación regresión de cobertura por C14-04.M04.02 [Javier :40]
+- Chromium del SHA 05e875f4 pasó 46/48 pruebas; dos casos de cobertura fallaron al recibir mensaje sin_permiso en lugar de su error de revocación existente. Ninguna ejecución fallida es PASS.
+- Restringe la nueva clasificación HTTP 401/403 solamente a /plataforma/flujo-v5; preserva intacta la vista de cobertura y sus pruebas antiguas, además de los cinco escenarios nuevos de readiness.
+- Requiere repetir CI GitHub-hosted exact SHA, Scope Lock/V5 y A5 independiente antes de LISTO; R2 UI, no JWT real, QA/main/PROD; rollback git revert.
+
 ## 2026-11-16 — V17 C07-04.M04.04 single-flight y navegación privada de pedidos [Javier :40]
 - Bloquea GET duplicados en listado ERP y deshabilita filtro/paginación en vuelo, sin modificar backend, finanzas ni autorización.
 - Cinco escenarios Chromium positivos/negativos de anónimo, 403, navegación lector, 503 con retry single-flight y paginación, sin quitar suite anterior ni controles SHA-aislados.

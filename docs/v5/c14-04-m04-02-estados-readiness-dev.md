@@ -18,3 +18,7 @@ Integracion browser Playwright/Chromium real contra frontend local Angular con r
 
 ## A4/A5 — gates de cierre
 A4 requiere Scope Lock, procedencia V5, pruebas dirigidas y checks pertinentes completed/success por SHA exacto o equivalencia demostrada en todos los blobs de alcance, mas readback de PLAN/COLA/BITACORA. Cualquier FAIL/CANCELLED/SKIPPED/IN_PROGRESS requerido mantiene VALIDANDO. A5 solo revisor Javier de Task fisica distinta, con lectura propia del diff, pruebas y defectos. LISTO_DEV no da permisos QA/main/PROD.
+
+
+## Corrección regresión CI en vista cobertura compartida
+La ejecución GitHub Actions V5 Chromium del SHA 05e875f4 probó 46/48 casos y rechazó dos casos antiguos de /plataforma/cobertura-v5: tras HTTP 403 esperaban estado error seguro, pero el nuevo estado sin_permiso de readiness se aplicaba indebidamente a la pantalla de cobertura. Se aísla el estado sin_permiso explícito únicamente cuando vistaFlujoV5 es true; cobertura conserva error saneado preexistente. Las cinco nuevas pruebas de readiness ya habían pasado en el SHA fallido, pero éste NO es A4 PASS. Se exige nueva ejecución de 48 pruebas, builds y comprobaciones requeridas en SHA de reparación. Ningún test se elimina ni debilita.

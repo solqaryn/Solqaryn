@@ -474,7 +474,7 @@ export class PlataformaComponent {
     try {
       this.plataforma.obtener().pipe(finalize(() => this.validando.set(false))).subscribe({
         error: (err: unknown) => {
-          if (err instanceof HttpErrorResponse && (err.status === 401 || err.status === 403)) {
+          if (this.vistaFlujoV5 && err instanceof HttpErrorResponse && (err.status === 401 || err.status === 403)) {
             this.permisoReadinessDenegado.set(true);
           } else {
             this.error.set('La sesión global dejó de estar autorizada o no pudo verificarse. No se permite ninguna operación.');
