@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 reparación QA P2 C03-04.M04.03 botones de accesibilidad [Javier :10]
+- Repara aserción de C03-04.M04.05 que esperaba un botón, aunque C03-04.M04.03 introdujo un segundo botón cosmético de densidad: exige exactamente dos, type=button y textos explícitos.
+- SHA origen 1118cf68932fe0ef10d93ca0d5219421f4103192; CI fallida RUN 43856490141 con 3/4 Vitest. El fallo histórico no es PASS; exige CI causal exact-SHA, Scope Lock, V5, Chromium y readback.
+- Solo test y changelog, sin cambios backend, JWT, tenant, MySQL ni despliegue; A5 de otra Task Javier.
+
 ## 2026-11-16 — V17 continuidad CI por SHA en dev [recuperación de automatizaciones]
 - La aceptación funcional integral deja de cancelar la evidencia de un commit cuando otra microtarea publica en `dev`: `concurrency.group` ahora incluye `github.sha` y `cancel-in-progress=false`.
 - Conserva todos los jobs y gates del workflow; un `FAIL`, `SKIPPED`, `CANCELLED` o `IN_PROGRESS` requerido sigue sin acreditar PASS. No modifica fuentes, horarios ni prompts de las seis Tasks; GitHub Actions puede consumir más minutos al ejecutar SHAs distintos.

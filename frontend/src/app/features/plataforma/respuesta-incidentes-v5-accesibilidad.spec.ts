@@ -29,9 +29,12 @@ describe('C03-04.M04.05 accesibilidad incidentes', () => {
     // M04.02 añade exclusivamente GET de revalidación de sesión: no acciones operativas.
     expect(fixture.nativeElement.querySelectorAll('form, input')).toHaveLength(0);
     const botones = fixture.nativeElement.querySelectorAll('button');
-    expect(botones).toHaveLength(1);
+    // M04.03 incorpora control cosmético de densidad; ambos botones son no operativos.
+    expect(botones).toHaveLength(2);
     expect(botones[0].getAttribute('type')).toBe('button');
     expect(botones[0].textContent).toContain('Revalidar sesión de plataforma');
+    expect(botones[1].getAttribute('type')).toBe('button');
+    expect(botones[1].textContent).toContain('Usar vista compacta');
   });
   it('rechazo anónimo nunca presenta decisiones protegidas', async () => {
     const {fixture}=await montar(null);
