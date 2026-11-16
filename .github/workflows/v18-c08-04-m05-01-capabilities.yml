@@ -1,0 +1,41 @@
+name: V18 C08-04.M05.01 - contrato unitario de capabilities
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v18-c08-04-m05-01-capabilities.yml'
+      - 'frontend/src/app/features/extensiones-sectoriales/sector-capability-contract.spec.ts'
+      - 'frontend/src/app/features/extensiones-sectoriales/sector-modules-readonly.component.ts'
+      - 'frontend/src/app/features/extensiones-sectoriales/sector-modules-readonly.component.html'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v18-c0804-m0501-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  capability-unit:
+    name: C08-04.M05.01 - Vitest matriz y Angular build
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm install --global npm@11.19.0
+      - name: Dependencias
+        working-directory: frontend
+        run: npm ci
+      - name: Vitest positivo negativo frontera y error
+        working-directory: frontend
+        run: npm test -- --watch=false --include=src/app/features/extensiones-sectoriales/sector-capability-contract.spec.ts
+      - name: Lint y compilacion Angular real
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run build:prod

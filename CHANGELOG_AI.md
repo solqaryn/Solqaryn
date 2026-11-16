@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C08-04.M05.01 contrato unitario de capabilities [Javier :30]
+- Añade cuatro Vitest Angular TestBed falsables sobre claves sectoriales unicas, estados visuales no autorizativos, revocacion de previews y texto HTML hostil escapado sin ejecutar.
+- CI GitHub-hosted aislada por SHA ejecuta npm ci, Vitest dirigido, lint y build Angular productivo; sin cambios de runtime, JWT/RBAC, tenant, API o MySQL.
+- R1 test-only; A0–A4 solo con checks reales SUCCESS del SHA causal, A5 de otra Task Javier; rollback git revert normal, sin QA/main/PROD.
+
 ## 2026-11-16 — V18 C11-04.M05.06 regresión observabilidad y accesibilidad [Javier :20]
 - Cuatro pruebas Chromium nuevas sobre 320/375/768/1280, límites de DOM, foco Tab visible, revalidación GET retenida, 403/503 sin fuga y ausencia de exporter.
 - CI SHA-aislada ejecuta Angular lint/build, Playwright real y xUnit .NET 10 de ILoggerProvider in-process; sin reemplazar JWT/MFA/MySQL ni desactivar controles.
