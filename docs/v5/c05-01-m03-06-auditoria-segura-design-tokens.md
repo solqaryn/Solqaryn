@@ -15,3 +15,17 @@ El sink ILogger escribe únicamente códigos fijos y recuentos; no emite nombres
 - A3: .NET 10 Release/xUnit GitHub-hosted sobre el SHA publicado. MySQL 8.4 efímero, EF, HTTP firmado JWT, Angular/Playwright, CSS y proveedores reales son NO_APLICA al diff aislado sin llamadas a ellos, no se inventa PASS.
 - A4: Scope Lock exact-SHA, procedencia V5, Backend Release, seguridad multiempresa, autorización y readback PLAN/COLA/DAG/BITACORA. La CI QUEUED/IN_PROGRESS no es PASS; mantener VALIDANDO si única barrera externa.
 - A5: revisión independiente por otra Task Javier distinta; no hay autoaprobación ni autorización para QA/main/PROD. Rollback por git revert normal y registro aditivo, sin borrar BITACORA.
+
+## Corrección P2 — correlación ordinal de respuesta (2026-11-15)
+
+DEV03 detectó en A5 independiente que un lector sintético podía devolver ordinales forjados,
+negativos, duplicados, permutados o fuera del rango sin provocar denegación.
+La reparación exige correspondencia exacta Item.Ordinal == índice para cada intención,
+además de conteo y código esperados. Ante cualquier discrepancia responde
+THEME_AUDIT_AUTHORITY_DENIED con recuento 0 y sin registro de éxito.
+
+Se agregan casos xUnit que prueban ordinal 999 individual y, en lote, -1, 999,
+permutación, duplicado y ordinal fuera de rango; verifican que el sink reciba
+solo la denegación. El A5_FAIL P2 histórico se conserva y requiere nueva revisión
+independiente después de CI de .NET Release, seguridad, autorización, Scope Lock y V5.
+No se afirma integración MySQL, HTTP JWT, browser ni producción.

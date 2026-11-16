@@ -217,4 +217,44 @@ public sealed class C0501DesignTokenSafeAuditServiceTests
             (await Check(service, operation: "attempt-128")).Code);
         Assert.Equal(Service.MaximumOperations, reader.Calls);
     }
+
+    [Fact]
+    public async Task ForgedSingleOrdinalCannotProduceSuccessfulAuditRecord()
+    {
+        var reader = new Reader { Forced = new Worker.Result(
+            "THEME_PREVIEW_ONLY_REAUTH_REQUIRED",
+            new[] { new Worker.Item(999, "AUTHENTICATED_THEME_ADAPTER_REQUIRED") }) };
+        var sink = new Sink();
+        var result = await Check(new Service(reader, sink));
+        Assert.Equal("THEME_AUDIT_AUTHORITY_DENIED", result.Code);
+        Assert.Equal(0, result.ReviewedCount);
+        Assert.Single(sink.Records);
+        Assert.Equal("THEME_AUDIT_AUTHORITY_DENIED", sink.Records[0].Code);
+        Assert.DoesNotContain(sink.Records, x => x.Code == "THEME_AUDIT_EXTERNAL_AUTH_REQUIRED");
+    }
+
+    [Theory]
+    [InlineData(-1, 1)]
+    [InlineData(999, 1)]
+    [InlineData(1, 0)]
+    [InlineData(0, 0)]
+    [InlineData(0, 2)]
+    public async Task DuplicatedReversedNegativeOrOutOfRangeOrdinalsAreRejected(
+        int first, int second)
+    {
+        var reader = new Reader { Forced = new Worker.Result(
+            "THEME_PREVIEW_ONLY_REAUTH_REQUIRED", new[]
+            {
+                new Worker.Item(first, "AUTHENTICATED_THEME_ADAPTER_REQUIRED"),
+                new Worker.Item(second, "AUTHENTICATED_THEME_ADAPTER_REQUIRED")
+            }) };
+        var sink = new Sink();
+        var result = await Check(new Service(reader, sink),
+            new[] { Input("attempt-001"), Input("attempt-002") });
+        Assert.Equal("THEME_AUDIT_AUTHORITY_DENIED", result.Code);
+        Assert.Equal(0, result.ReviewedCount);
+        Assert.Single(sink.Records);
+        Assert.Equal("THEME_AUDIT_AUTHORITY_DENIED", sink.Records[0].Code);
+        Assert.DoesNotContain(sink.Records, x => x.Code == "THEME_AUDIT_EXTERNAL_AUTH_REQUIRED");
+    }
 }

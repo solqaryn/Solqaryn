@@ -128,8 +128,7 @@ public sealed class C0501DesignTokenSafeAuditService
             if (preview is null ||
                 preview.Code != "THEME_PREVIEW_ONLY_REAUTH_REQUIRED" ||
                 preview.Items is null || preview.Items.Count != captured.Length ||
-                preview.Items.Any(item => item is null ||
-                    item.DecisionCode != "AUTHENTICATED_THEME_ADAPTER_REQUIRED") ||
+                !ExactOrderedPreview(preview.Items, captured.Length) ||
                 preview.AuthorizesThemeChange || preview.AuthorizesTenantAccess ||
                 preview.PersistsAnything || preview.ReadsOrWritesMysql ||
                 preview.AppliesCss || preview.StartsHostedWorker ||
@@ -156,6 +155,22 @@ public sealed class C0501DesignTokenSafeAuditService
         try { return await _sink.WriteAsync(new C0501DesignTokenAuditRecord(code, count), ct); }
         catch (OperationCanceledException) { throw; }
         catch (Exception ex) when (ex is not OutOfMemoryException) { return false; }
+    }
+
+    // Every response must match the exact zero-based ordinal of its request.
+    // Matching only count and decision codes allows forged, duplicated or reordered items.
+    private static bool ExactOrderedPreview(IReadOnlyList<Worker.Item> items, int expectedCount)
+    {
+        if (items.Count != expectedCount) return false;
+        for (var index = 0; index < expectedCount; index++)
+        {
+            var item = items[index];
+            if (item is null || item.Ordinal != index ||
+                !string.Equals(item.DecisionCode,
+                    "AUTHENTICATED_THEME_ADAPTER_REQUIRED", StringComparison.Ordinal))
+                return false;
+        }
+        return true;
     }
 
     private static bool CanonicalSha(string? value) =>

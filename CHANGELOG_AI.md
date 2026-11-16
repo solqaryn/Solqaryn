@@ -1,3 +1,8 @@
+## 2026-11-15 - V17 C05-01.M03.06 reparacion QA P2 de correlacion ordinal [Javier :50]
+- Valida la correlacion ordinal exacta de cada elemento de respuesta del lector sintetico, rechazando ordinals forjados, negativos, duplicados, invertidos o fuera de rango.
+- Agrega pruebas xUnit adversariales y verifica ausencia de registros exitosos al detectar respuestas falsas, sin conceder autoridad de tema, tenant, CSS, JWT o MySQL.
+- Conserva A5_FAIL P2 original; requiere CI causal y nueva revision independiente antes de cerrar el defecto, sin promocion a QA/main/PROD.
+
 ## 2026-11-15 - V17 C09-03.M02.04 configuracion tipada y feature flags seguros Social Hub [Javier :40]
 - Define doce flags conceptuales por plataforma/empresa/canal, doce restricciones fail-closed y doce pares de pruebas FUTUROS_NO_EJECUTADOS (0/12 runtime); R0 Markdown, no valores configurados en produccion.
 - Mantiene denegacion por defecto, tenant A/B, consentimiento, opt-out, roles revocados, idempotencia y proveedor allowlist sin crear endpoints, schedulers, credenciales, workers o envios reales.
