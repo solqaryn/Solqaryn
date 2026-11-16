@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C11-04.M04.02 estados y revocación de observabilidad privada [Javier :00]
+- Añade estados Angular tipados vacio/cargando/exito/sin_permiso/error y revalidación de autoridad server-side de solo lectura, ocultación inmediata y prevención de doble solicitud.
+- Amplía Vitest positivo/negativo/frontera y Playwright Chromium sintético 200→503/403; conserva tests M04.01 y workflow causal dirigido, sin exporter, datos privados ni métricas en vivo.
+- Riesgo R2: Scope Lock y V5 exact-SHA, Angular lint/build, Vitest y Chromium requeridos; A5 independiente. Sin QA/main/PROD, MySQL, JWT HTTP real ni proveedores; rollback git revert.
+
 ## 2026-11-15 — V17 C02-01.M03.05 worker acotado de revalidación de preferencia tenant [Javier :50]
 - Añade worker Infrastructure .NET 10 real y secuencial para previsualizar hasta 12 solicitudes sintéticas, con validación atómica de keys, actor, revisión, SHA, selección coherente y hints no confiables.
 - Añade once pruebas xUnit positivas y negativas: 1/N empresas, tenant ajeno, preferencia revocada, identidad/SHA obsoletos, claves repetidas, mezcla de selección, cancelación y límites; CI GitHub-hosted obligatoria.

@@ -1,4 +1,6 @@
 import { signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { EMPTY, of, Subject, throwError, type Observable } from 'rxjs';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { PlataformaSesionService, type PlataformaSesion } from '../../core/auth/plataforma-sesion.service';
@@ -10,12 +12,13 @@ describe('C11-04.M04.01 - observabilidad privada', () => {
   const admin: PlataformaSesion = {
     nombreUsuario: 'Plataforma', rolNombre: 'Admin', ambito: 'Plataforma', esAdministrador: true
   };
-  async function montar(value: PlataformaSesion | null) {
+  async function montar(value: PlataformaSesion | null,
+    obtener: () => Observable<PlataformaSesion> = () => of(admin)) {
     TestBed.resetTestingModule();
     const sesion = signal<PlataformaSesion | null>(value);
     await TestBed.configureTestingModule({
       imports: [ObservabilidadPrivadaV5Component],
-      providers: [provideRouter([]), { provide: PlataformaSesionService, useValue: { sesion } }]
+      providers: [provideRouter([]), { provide: PlataformaSesionService, useValue: { sesion, obtener } }]
     }).compileComponents();
     const fixture = TestBed.createComponent(ObservabilidadPrivadaV5Component);
     fixture.detectChanges();
@@ -37,7 +40,8 @@ describe('C11-04.M04.01 - observabilidad privada', () => {
     const { fixture } = await montar(admin);
     expect(fixture.componentInstance.verificado()).toBe(true);
     expect(fixture.nativeElement.querySelectorAll('.obs-points li')).toHaveLength(4);
-    expect(fixture.nativeElement.querySelectorAll('button, form, input, textarea')).toHaveLength(0);
+    expect(fixture.nativeElement.querySelectorAll('form, input, textarea')).toHaveLength(0);
+    expect(fixture.nativeElement.querySelectorAll('button')).toHaveLength(1);
     expect(fixture.nativeElement.textContent).toContain('NO_MEDIDO');
   });
   it('sesión empresarial forjada no habilita observabilidad', async () => {
@@ -51,6 +55,76 @@ describe('C11-04.M04.01 - observabilidad privada', () => {
     sesion.set(null);
     fixture.detectChanges();
     expect(fixture.componentInstance.verificado()).toBe(false);
+    expect(fixture.nativeElement.querySelectorAll('.obs-points li')).toHaveLength(0);
+  });
+});
+
+
+describe('C11-04.M04.02 - estados seguros de observabilidad', () => {
+  const admin: PlataformaSesion = { nombreUsuario: 'Admin', rolNombre: 'Admin', ambito: 'Plataforma', esAdministrador: true };
+  async function montar(obtener: () => Observable<PlataformaSesion>) {
+    TestBed.resetTestingModule();
+    const sesion = signal<PlataformaSesion | null>(admin);
+    await TestBed.configureTestingModule({
+      imports: [ObservabilidadPrivadaV5Component],
+      providers: [provideRouter([]), { provide: PlataformaSesionService, useValue: { sesion, obtener } }]
+    }).compileComponents();
+    const fixture = TestBed.createComponent(ObservabilidadPrivadaV5Component);
+    fixture.detectChanges();
+    return { fixture, sesion, component: fixture.componentInstance };
+  }
+  it('muestra vacio sin simular metricas conectadas', async () => {
+    const { fixture, component } = await montar(() => of(admin));
+    expect(component.estadoVisible()).toBe('vacio');
+    expect(fixture.nativeElement.textContent).toContain('No hay métricas ni diagnósticos en vivo');
+  });
+  it('cargando oculta contenido y evita reintentos simultaneos', async () => {
+    const pending = new Subject<PlataformaSesion>();
+    let llamadas = 0;
+    const { fixture, component } = await montar(() => { llamadas++; return pending.asObservable(); });
+    component.revalidar();
+    component.revalidar();
+    fixture.detectChanges();
+    expect(llamadas).toBe(1);
+    expect(component.estadoVisible()).toBe('cargando');
+    expect(fixture.nativeElement.querySelectorAll('.obs-points li')).toHaveLength(0);
+    expect(fixture.nativeElement.querySelector('button')?.disabled).toBe(true);
+    pending.next(admin); pending.complete(); fixture.detectChanges();
+    expect(component.estadoVisible()).toBe('exito');
+    expect(fixture.nativeElement.querySelectorAll('.obs-points li')).toHaveLength(4);
+  });
+  it('respuesta 403 oculta frentes y mantiene permiso denegado', async () => {
+    const { fixture, component } = await montar(() => throwError(() => new HttpErrorResponse({ status: 403 })));
+    component.revalidar(); fixture.detectChanges();
+    expect(component.estadoVisible()).toBe('sin_permiso');
+    expect(fixture.nativeElement.querySelectorAll('.obs-points li')).toHaveLength(0);
+  });
+  it('fallo 503 es generico y no divulga detalle de proveedor', async () => {
+    const { fixture, component } = await montar(() => throwError(() =>
+      new HttpErrorResponse({ status: 503, error: { secret: 'DO_NOT_DISPLAY' } })));
+    component.revalidar(); fixture.detectChanges();
+    expect(component.estadoVisible()).toBe('error');
+    expect(fixture.nativeElement.textContent).not.toContain('DO_NOT_DISPLAY');
+    expect(fixture.nativeElement.querySelectorAll('.obs-points li')).toHaveLength(0);
+  });
+  it('respuesta vacia o throw sincrono no se interpreta como permiso', async () => {
+    const a = await montar(() => EMPTY);
+    a.component.revalidar(); a.fixture.detectChanges();
+    expect(a.component.estadoVisible()).toBe('error');
+    const b = await montar(() => { throw new Error('SENSITIVE'); });
+    b.component.revalidar(); b.fixture.detectChanges();
+    expect(b.component.estadoVisible()).toBe('error');
+    expect(b.fixture.nativeElement.textContent).not.toContain('SENSITIVE');
+  });
+  it('suplantacion de ambito empresarial y revocacion inmediata ocultan datos', async () => {
+    const { fixture, component, sesion } = await montar(() =>
+      of({ ...admin, ambito: 'Empresa' } as unknown as PlataformaSesion));
+    component.revalidar(); fixture.detectChanges();
+    expect(component.estadoVisible()).toBe('sin_permiso');
+    sesion.set(admin); component.estado.set('exito'); fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('.obs-points li')).toHaveLength(4);
+    sesion.set(null); fixture.detectChanges();
+    expect(component.verificado()).toBe(false);
     expect(fixture.nativeElement.querySelectorAll('.obs-points li')).toHaveLength(0);
   });
 });

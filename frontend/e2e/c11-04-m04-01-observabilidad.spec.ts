@@ -43,7 +43,65 @@ test('vista sintética read-only, móvil y sin exporter ni consultas operativas'
   await expect(page.getByRole('heading', { name: 'Diagnóstico y señales seguras' })).toBeVisible();
   await expect(page.locator('.obs-points li')).toHaveCount(4);
   await expect(page.getByText(/proveedor de telemetría: NO_MEDIDO/)).toBeVisible();
-  await expect(page.locator('.observability-guide button, .observability-guide form, .observability-guide input')).toHaveCount(0);
+  await expect(page.locator('.observability-guide button')).toHaveCount(1);
+  await expect(page.locator('.observability-guide form, .observability-guide input')).toHaveCount(0);
   expect(blocked).toEqual([]);
   expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(2);
+});
+
+
+test('M04.02: revalidacion 503 protege contenido y nunca muestra payload', async ({ page }) => {
+  let status = 200;
+  let llamadas = 0;
+  await page.addInitScript(() => {
+    localStorage.setItem('solqaryn_token', 'c11-04-m04-02-synthetic-not-jwt');
+    localStorage.setItem('solqaryn_expira_en', '2099-01-01T00:00:00Z');
+  });
+  await page.route(/\/plataforma\/sesion(?:\?|$)/, async route => {
+    const headers = {
+      'Access-Control-Allow-Origin': 'http://127.0.0.1:4200',
+      'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-Empresa-Id',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS'
+    };
+    if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers });
+    llamadas++;
+    await route.fulfill({ status, headers, contentType: 'application/json',
+      body: JSON.stringify(status === 200 ?
+        { success: true, data: { nombreUsuario: 'Admin', rolNombre: 'Admin', ambito: 'Plataforma', esAdministrador: true } } :
+        { success: false, data: null, message: 'TELEMETRY_SECRET' }) });
+  });
+  await page.goto('/plataforma/observabilidad-v5');
+  await expect(page.locator('.obs-points li')).toHaveCount(4);
+  status = 503;
+  await page.getByRole('button', { name: 'Revalidar acceso de observabilidad' }).click();
+  await expect(page.getByText('No se pudo revalidar la sesión. Observabilidad privada oculta.')).toBeVisible();
+  await expect(page.locator('.obs-points li')).toHaveCount(0);
+  await expect(page.getByText('TELEMETRY_SECRET')).toHaveCount(0);
+  expect(llamadas).toBe(2);
+});
+
+test('M04.02: 403 posterior no reactiva controles privados', async ({ page }) => {
+  let status = 200;
+  await page.addInitScript(() => {
+    localStorage.setItem('solqaryn_token', 'synthetic');
+    localStorage.setItem('solqaryn_expira_en', '2099-01-01T00:00:00Z');
+  });
+  await page.route(/\/plataforma\/sesion(?:\?|$)/, async route => {
+    const headers = {
+      'Access-Control-Allow-Origin': 'http://127.0.0.1:4200',
+      'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-Empresa-Id',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS'
+    };
+    if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers });
+    return route.fulfill({ status, headers, contentType: 'application/json',
+      body: JSON.stringify(status === 200 ?
+        { success: true, data: { nombreUsuario: 'Admin', rolNombre: 'Admin', ambito: 'Plataforma', esAdministrador: true } } :
+        { success: false, data: null, message: 'REDACTED' }) });
+  });
+  await page.goto('/plataforma/observabilidad-v5');
+  await expect(page.locator('.obs-points li')).toHaveCount(4);
+  status = 403;
+  await page.getByRole('button', { name: 'Revalidar acceso de observabilidad' }).click();
+  await expect(page.locator('.obs-points li')).toHaveCount(0);
+  await expect(page.getByText('Sesión de plataforma no confirmada. Observabilidad privada oculta.').first()).toBeVisible();
 });
