@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C14-04.M04.01 reparación de cobertura CI Chromium [Javier :20]
+- Detectado que el workflow browser V5 no ejecutaba el nuevo archivo de Playwright sobre readiness. Se amplía filtro y comando para ejecutar los cuatro casos nuevos además de los tests existentes sin omitir ni deshabilitar seguridad.
+- La CI anterior del SHA 75a4448b con Chromium V5 en SUCCESS no prueba A3 del nuevo archivo; se exige nuevo SHA con ejecución causal y Scope Lock/V5 verdaderos.
+- R2 controlado, no cambia código runtime ni autoriza QA/main/PROD; rollback git revert y A5 independiente.
+
 ## 2026-11-16 — V17 C05-04.M04.02 estados de lectura privada y denegación segura [Javier :30]
 - Conecta el feedback de ligereza a los cinco estados reales de GET directorio existente: carga, vacío, error recuperable, éxito y falta de permiso; no muestra nombres ni respuestas crudas en el nuevo panel.
 - Mantiene guard de plataforma, no añade endpoints ni llamadas de escritura y aplica reintento GET explícito protegido contra doble activación; incorpora seis pruebas Chromium causales y workflow SHA-aislado.

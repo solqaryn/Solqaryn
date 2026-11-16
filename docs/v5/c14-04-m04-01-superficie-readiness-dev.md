@@ -16,3 +16,6 @@ A3 pertinente: Playwright real Chromium, TypeScript/Angular build; MySQL 8.4/EF,
 
 ## Reparación causal tras CI Chromium
 El job `43909251783` (SHA original `0fa9ca35`) encontró dos pruebas preexistentes de `/plataforma/flujo-v5` que seleccionaban estrictamente `.v5-card` y `.v5-card h2`. El panel aditivo usaba por error esa clase y rompió los conteos/selectores sin afectar autorización. Se aísla la clase a `release-readiness-card` manteniendo `mat-card`, aria-labelledby, cuatro puertas, sesión/guard y estilos Material; no se debilitan los tests antiguos. Repetir Chromium, frontend y Scope Lock en SHA de reparación. No marcar SUCCESS sin nueva CI.
+
+## Corrección de cobertura A3 en GitHub Actions
+El workflow existente de Chromium V5 usaba una lista explícita y no incluía el nuevo archivo `frontend/e2e/c14-04-m04-01-readiness-surface.spec.ts`. Su green original no acreditaba los cuatro tests de esta microtarea. Se añade la ruta exacta al filtro `on.push.paths` y a `npx playwright test`, sin quitar pruebas anteriores ni alterar `cancel-in-progress=false` SHA-aislado. La ejecución real del nuevo SHA es requisito causal de A1/A3; no certificar sin log que mencione cuatro pruebas y SUCCESS.
