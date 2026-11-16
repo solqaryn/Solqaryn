@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C15-01.M03.06 auditoría segura de cobertura de requisitos [Javier :00]
+- Implementa sink Infrastructure .NET 10 no autorizante para la revisión acotada M03.05, con evento ILogger seguro y sin escritura institucional ni certificación global/A5.
+- Incorpora 14 pruebas xUnit adversariales de tenant A/B, membresía/revocación, SHA, duplicados, 16/17 elementos, códigos inyectados, logger fallido y cancelación; exige Backend Release, seguridad, Authorization, Scope Lock y V5 exact-SHA.
+- Una entrega R2 protegida por V17 lock 2000002179; no MySQL/EF, JWT HTTP, browser, proveedor, log durable ni QA/main/PROD; A5 independiente pendiente.
+
 ## 2026-11-15 — V17 C10-04.M04.03 branding privado y configuracion tipada [Javier :10]
 - Agrega presentacion Angular reactiva mediante Signal y allowlist estricta de marca/densidad; valores arbitrarios y propiedades extra vuelven al modo seguro, sin usar configuracion como autoridad.
 - Mantiene guard y revocacion de sesion privada, incluye Vitest negativo y regresion Chromium sobre API sintetica; exige CI GitHub-hosted exact-SHA.
