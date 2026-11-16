@@ -45,7 +45,7 @@ test('C08-04.M04.01 vista informativa a 320 y 1280, sin consultar módulos', asy
     await page.goto('/extensiones-sectoriales');
     await expect(page.getByRole('heading', { name: 'Capacidades por rubro' })).toBeVisible();
     await expect(page.locator('.sector-card')).toHaveCount(4);
-    await expect(page.getByRole('status')).toContainText('Sin módulos conectados');
+    await expect(page.getByRole('status', { name: 'Estado de las capacidades' })).toContainText('Sin módulos conectados');
     await expect(page.locator('.sector-readonly form, .sector-readonly button, .sector-readonly input')).toHaveCount(0);
     const bounds = await page.locator('.sector-readonly').evaluate(el => {
       const rect = el.getBoundingClientRect();

@@ -6013,3 +6013,6 @@
 ## 2026-11-16 — C08-04.M04.01: superficie sectorial privada de solo lectura (DEV03)
 - Alcance: Angular 22.2.1, ruta privada /extensiones-sectoriales con authGuard, componente standalone/Signals; cuatro ámbitos informativos y estado sin módulos conectados. Ninguna acción, concesión RBAC ni API, DB o migración nueva.
 - Pruebas causales: Vitest route/surface y Playwright Chromium anónimo/tenant sintético 403/permitido a 320/1280; CI exact-SHA y A5 independiente requeridos, no presupuestos como PASS. Autor TASK_ID 6adc2e4bd8a48191ac7d8641ed95a1a3, scope dev STRICT; rollback git revert normal.
+
+## 2026-11-16 — C08-04.M04.01: corrección selector Playwright de estado accesible (DEV03)
+- Regresión GitHub-hosted: run 43949578542, 2 Chromium PASS y tercero FAIL por selector ambiguo getByRole(status) ante un live-region global adicional. Corrección mínima: seleccionar el estado accesible por nombre exacto «Estado de las capacidades»; no se modifica la superficie ni se atenúa el assert. Exigir nuevo SHA y 3/3 Chromium, Vitest y Scope Lock antes de A0–A4; A5 de otra Task.
