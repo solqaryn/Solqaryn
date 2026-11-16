@@ -6019,3 +6019,9 @@
 
 ## 2026-11-16 — C13-04.M03.05: reparación P2 de coherencia de revision de snapshots (DEV03)
 - A5 independiente DEV05 identificó discrepancia entre Outcome.Revision y Snapshot.Revision que podía contar como revisada una lectura incoherente. Se exige igualdad exacta, con prueba xUnit negativa en ambas direcciones, rechazo opaco y contador cero. No se altera API, JWT/RBAC, MySQL ni workers alojados. Nueva CI y A5 distinta requeridas; A5_FAIL histórico conservado.
+
+## 2026-11-16 — V18 C08-04.M04.02 estados sectoriales seguros [Javier :30]
+- La superficie privada Angular de extensiones añade cinco estados de presentación (cargando, vacío, error, éxito informativo, permiso no confirmado); las ramas restrictivas ocultan los ejemplos y preservan la ruta con authGuard existente, sin nuevos grants, llamadas de módulos ni mutaciones.
+- Añade Vitest de positivo/negativo/borde/revocación, workflow GitHub-hosted para Angular lint/build y Chromium sintético (anon/403/320/1280); pruebas escritas son PENDIENTE hasta SUCCESS exact-SHA y aceptación integral aplicable.
+- R1 visual, sin JWT/RBAC/backend/MySQL reales certificados, sin dependencias nuevas ni producción. A5 independiente de otra Task Javier, candado V17 2000001281, rollback por revert ordinario.
+

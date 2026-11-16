@@ -7,21 +7,44 @@
       <a routerLink="/dashboard">Volver al panel</a>
     </nav>
   </header>
-  <section class="notice" aria-label="Estado de las capacidades" role="status" aria-live="polite">
-    <strong>Sin módulos conectados</strong>
-    <p>Esta pantalla no consulta servicios de módulos. No es posible afirmar que una capacidad esté habilitada o que un usuario tenga permiso.</p>
-  </section>
-  <section aria-labelledby="sector-catalog-title">
-    <h2 id="sector-catalog-title">Ámbitos previstos, no autorizaciones</h2>
-    <ul class="sector-grid">
-      @for (capability of capabilities(); track capability.key) {
-        <li class="sector-card">
-          <h3>{{ capability.title }}</h3>
-          <p>{{ capability.purpose }}</p>
-          <span class="sector-tag">No conectado</span>
-        </li>
+  <section class="notice" aria-label="Estado de las capacidades" role="status" aria-live="polite"
+    aria-atomic="true" [attr.aria-busy]="estadoPresentacion() === 'cargando'">
+    @switch (estadoPresentacion()) {
+      @case ('cargando') {
+        <strong>Preparando la vista informativa…</strong>
+        <p>Sin mostrar datos privados mientras se prepara el estado visual.</p>
       }
-    </ul>
+      @case ('vacio') {
+        <strong>Sin módulos conectados</strong>
+        <p>Esta pantalla no consulta servicios de módulos. No es posible afirmar que una capacidad esté habilitada o que un usuario tenga permiso.</p>
+      }
+      @case ('error') {
+        <strong>No se pudo presentar la información</strong>
+        <p>La vista permanece oculta. No se muestran detalles técnicos del error.</p>
+      }
+      @case ('exito') {
+        <strong>Vista informativa preparada</strong>
+        <p>Los ámbitos mostrados son ejemplos, no módulos habilitados ni permisos concedidos.</p>
+      }
+      @case ('sin_permiso') {
+        <strong>Permiso no confirmado</strong>
+        <p>Los ámbitos privados permanecen ocultos hasta una verificación de autorización del servidor.</p>
+      }
+    }
   </section>
+  @if (estadoPresentacion() === 'vacio' || estadoPresentacion() === 'exito') {
+    <section aria-labelledby="sector-catalog-title">
+      <h2 id="sector-catalog-title">Ámbitos previstos, no autorizaciones</h2>
+      <ul class="sector-grid">
+        @for (capability of capabilities(); track capability.key) {
+          <li class="sector-card">
+            <h3>{{ capability.title }}</h3>
+            <p>{{ capability.purpose }}</p>
+            <span class="sector-tag">No conectado</span>
+          </li>
+        }
+      </ul>
+    </section>
+  }
   <p class="footnote" role="note">Una capacidad no otorga JWT, RBAC ni acceso a recursos entre empresas. Cualquier operación futura requiere autorización backend y pruebas independientes.</p>
 </main>
