@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C05-04.M04.06 verificación real de densidad progresiva [Javier :50]
+- Añade cinco pruebas Playwright Chromium para guard y 403, carga con GET retenido, densidad 25 registros a 320/375/768/1280 px, controles 44 px, errores 503 y reintento explícito sin duplicados.
+- Integra workflow dirigido GitHub-hosted Angular lint/build y Chromium con concurrency por SHA y cancel-in-progress=false; sin cambio de runtime, JWT, tenant, EF, MySQL ni rutas.
+- LCP/CLS reales y bundle de campo permanecen NO_MEDIDO; A0–A4 requieren CI exact-SHA, A5 independiente Javier, rollback git revert y Scope Lock STRICT; no QA/main/PROD.
+
 ## 2026-11-16 — V18 C08-04.M03.06 auditoría estructurada segura de módulos sectoriales [Javier :40]
 - Implementa frontera Application in-process con eventos ATTEMPT/OUTCOME correlacionados, códigos estáticos sin PII/tenant/SHA y fail-closed cuando falla el audit sink, sin registros durables ni permisos nuevos.
 - Ocho xUnit dirigidos cubren sondeo seguro, tenant A/B, RBAC revocado, dispatch malicioso, fallos de audit sink, excepción de proveedor, cancelación y dependencias inválidas; CI real exact-SHA pendiente de resultado.
