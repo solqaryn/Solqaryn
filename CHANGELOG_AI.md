@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C08-04.M04.06 densidad y carga progresiva sectorial [Javier :20]
+- Tres Vitest de carga aria-busy, estado vacío verdadero, ocultación de tarjetas bajo error y revocación, sin cambios de ejecución ni controles de permisos.
+- Tres pruebas Playwright con Chromium real de 320/375/768/1280, cuadrícula adaptativa y ausencia de mutaciones; sesión tenant simulada, JWT/DB vivos NO_MEDIDO.
+- Workflow CI por SHA con npm/lint/build y Chromium; A0-A4 y A5 independiente requeridos, rollback git revert sin alterar BITACORA.
+
 ## 2026-11-16 — V18 C05-04.M05.02 contrato DTO seguro directorio ligero [Javier :50]
 - Refuerza el servicio Angular de directorio existente: página/tamaño acotados, total coherente, IDs únicos y nombres no vacíos; rechazo fail-closed sin nuevos permisos, endpoints ni persistencia.
 - Incorpora pruebas Vitest Angular con HttpTestingController: GET válido, vacío 200, 10 DTO adversariales y errores 403/503; CI GitHub-hosted por SHA con lint/build, A0–A4 sujetos a resultados reales.

@@ -1,0 +1,6 @@
+# C08-04.M04.06 - densidad y carga progresiva de extensiones
+Autor DEV03 TASK_ID 6adc2e4bd8a48191ac7d8641ed95a1a3. Scope Lock STRICT, dev only; PLAN fila 1285, V17 lock 2000001285. R1: pruebas Angular y Chromium solamente.
+A0: Verifica estado veraz vacio, cargando sin tarjetas, error y denegacion sin contenido anterior, grid CSS real en 320/375/768/1280. No modifica componentes runtime, API, JWT, RBAC, EF, MySQL, roles ni entornos; rollback git revert normal.
+A1: Unit tests Angular falsables de aria-busy y cuatro tarjetas, desaparicion de datos al cargar o denegar; navegador con CSS columnas responsivas y overflow <=2px. Negativo 403 simulado no muestra tarjetas ni mensaje tecnico. Browser positivo prohibe POST/PUT/PATCH/DELETE y requests de modulos.
+A2: Sesion tenant-context simulada en Chromium; JWT real y aislamiento A/B servidor NO_MEDIDO, no se atribuyen grants. A3: Vitest, npm ci, build productivo, Chromium real GitHub-hosted; MySQL/EF NO_APLICA porque no son parte del diff. Core Web Vitals LCP/CLS campo NO_MEDIDO; pruebas UI no son telemetria de usuarios.
+A4: Exigir SHA exacto GitHub Actions completed/SUCCESS de tests dirigidos, Scope Lock, V5 y checks pertinentes, mas readback Sheets/BITACORA. Mientras CI QUEUED/IN_PROGRESS conservar VALIDANDO con run/SHA. A5 por otra Task Javier, sin autoaprobacion.
