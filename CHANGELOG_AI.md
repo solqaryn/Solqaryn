@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C11-04.M05.02 xUnit de contrato y errores seguros de observabilidad [Javier :40]
+- Ocho métodos xUnit adicionales comprueban contrato tipado in-process, denegación tenant A/B, revocación, correlación CRLF, SHA incorrecto, etiqueta sensible, denominador cero y cancelación antes de leer evidencia.
+- No se crea endpoint HTTP, DTO compilado nuevo, exporter, proveedor, MySQL ni privilegio; la aplicación solo retorna código de prevalidación, sin otorgar acceso. CI backend Release y seguridad causal obligatorias en SHA exacto.
+- Riesgo R2 sintético, sin certificación JWT HTTP ni datos reales; Scope Lock/V5, A5 independiente y rollback normal git revert; QA/main/PROD excluidos.
+
 ## 2026-11-16 — V17 C14-02.M04.05 accesibilidad de guía privada [Javier :10]
 - Agrega Playwright/Chromium real para 320 y 1280 px, teclado, foco visible, área táctil de 44 px, contraste del tema neutro y denegación 403 sintética.
 - No altera componente, router, permisos, JWT, DB ni endpoints; la sesión simulada no acredita pentest, tenancy HTTP real ni auditoría WCAG global.
