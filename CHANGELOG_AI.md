@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C08-04.M04.01 revalidación Chromium tras drift concurrente [Javier :20]
+- La superficie sectorial de lectura fue modificada posteriormente en sus archivos compartidos por entregas M04.02/M04.03; se rechaza equivalencia ficticia con el SHA original y se exige nueva CI causal sobre el código integrado.
+- La prueba Playwright propia amplía la frontera responsive a 320, 768 y 1280 px, y conserva rechazo 403, sesión anónima y cero consultas para activar módulos.
+- El alcance sigue R1, sin nuevos grants, endpoints, proveedores, migraciones ni datos reales; VALIDANDO hasta tests Chromium, frontend, Scope Lock y V5 completed/success del SHA nuevo. A5 exige otra Task Javier. Rollback: git revert normal.
+
 ## 2026-11-16 — V18 C02-04.M05.05 aislamiento de header artificial Playwright [Javier :00]
 - Chromium SHA 2766afd obtuvo 9/10 PASS y 1 FAIL: el request llevaba X-Empresa-Id: 1 inyectado por playwright.config.ts extraHTTPHeaders global, no por Angular; la asercion detecto contaminacion de fixture.
 - Se desactiva extraHTTPHeaders solo dentro de suite C02-04.M05.05 con test.use({ extraHTTPHeaders: {} }), conservando selector empresa real y rechazo del header generado por interceptor. Sin cambiar auth, tenant ni CI compartida.

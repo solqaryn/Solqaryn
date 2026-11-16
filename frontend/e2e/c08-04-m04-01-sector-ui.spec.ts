@@ -32,7 +32,7 @@ test('C08-04.M04.01 tenant sintético 403 no expone superficie', async ({ page }
   await expect(page.locator('.sector-card')).toHaveCount(0);
 });
 
-test('C08-04.M04.01 vista informativa a 320 y 1280, sin consultar módulos', async ({ page }) => {
+test('C08-04.M04.01 vista informativa a 320, 768 y 1280, sin consultar módulos', async ({ page }) => {
   await sesionSintetica(page, true);
   const peticionesModulos: string[] = [];
   page.on('request', request => {
@@ -40,7 +40,7 @@ test('C08-04.M04.01 vista informativa a 320 y 1280, sin consultar módulos', asy
       peticionesModulos.push(request.url());
     }
   });
-  for (const width of [320, 1280]) {
+  for (const width of [320, 768, 1280]) {
     await page.setViewportSize({ width, height: 800 });
     await page.goto('/extensiones-sectoriales');
     await expect(page.getByRole('heading', { name: 'Capacidades por rubro' })).toBeVisible();
