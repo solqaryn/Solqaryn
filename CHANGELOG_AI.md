@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C02-02.M04.02 estados de placement con autorización fail-closed [Javier :40]
+- La pantalla privada ya existente incorpora cinco estados accesibles (vacío, carga, éxito, sin permiso y error), revalidación de la sesión exclusivamente con el servidor, ocultación de modalidades durante solicitudes y revocación, y protección single-flight de doble acción.
+- Añade siete pruebas Vitest positivas, negativas y de frontera, y regresión Chromium sintética de 503 con mensajes seguros; conserva los casos previos. Ninguna acción de placement, migración, conexión dedicada ni autorización backend se implementa en UI.
+- Riesgo R2 por superficie privada y aislamiento; exigir frontend tipado/build, pruebas dirigidas Chromium, seguridad, Scope Lock y procedencia V5 sobre SHA publicado; A5 independiente. Sin QA/main/PROD, rollback por git revert normal.
+
 ## 2026-11-15 — V17 C13-04.M03.03 autoridad actual y tenancy fail-closed de auditoría visual [Javier :00]
 - Introduce Infrastructure .NET 10 sobre Application/Domain con fuente confiable e independiente de la petición, validando identidad, tenant A/B, membresía/permiso/revocación, SHA ordinal, vigencia corta y allowlist de superficies server-side.
 - Añade doce pruebas xUnit R2 de positivos/negativos, fronteras, replay de SHA, datos sensibles, fallo opaco y cancelación; no crea endpoint, DI real, MySQL, JWT HTTP ni medición WCAG.
