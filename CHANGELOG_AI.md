@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C11-04.M05.06 regresión observabilidad y accesibilidad [Javier :20]
+- Cuatro pruebas Chromium nuevas sobre 320/375/768/1280, límites de DOM, foco Tab visible, revalidación GET retenida, 403/503 sin fuga y ausencia de exporter.
+- CI SHA-aislada ejecuta Angular lint/build, Playwright real y xUnit .NET 10 de ILoggerProvider in-process; sin reemplazar JWT/MFA/MySQL ni desactivar controles.
+- Core Web Vitals/SLO reales NO_MEDIDO; A0–A4 solo tras checks SUCCESS, A5 independiente, rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-16 — V18 C02-04.M05.03 laboratorio HTTP JWT y MySQL 8.4 real A/B [Javier :10]
 - Agrega un test Node de lectura HTTP JWT real en API localhost con empresas A/B MySQL efímero: token global, aislamiento empresarial, cabecera cruzada, paginación 0/51 y caché no-store.
 - Extiende el P4 GitHub-hosted con validación adicional del grant persistido UsuarioRolesPlataforma y membresías UsuarioEmpresas A/B, MySQL 8.4 y .NET 10 reales.

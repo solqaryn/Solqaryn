@@ -1,0 +1,84 @@
+name: V18 C11-04.M05.06 - regresion observabilidad real proporcional
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v18-c11-04-m05-06-regression.yml'
+      - 'frontend/e2e/c11-04-m05-06-regression.spec.ts'
+      - 'backend/tests/Solqaryn.Tests/Infrastructure/C1104ObservabilityLoggerProviderIntegrationTests.cs'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v18-c1104-m0506-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  backend-inprocess:
+    name: C11-04.M05.06 - regresion ILoggerProvider xUnit
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: xUnit real del LoggerFactory provider
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter "FullyQualifiedName~C1104ObservabilityLoggerProviderIntegrationTests" --logger "console;verbosity=normal"
+  frontend-browser:
+    name: C11-04.M05.06 - Angular y Chromium a11y
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm compatible
+        run: npm install --global npm@11.19.0
+      - name: Instalar dependencias
+        working-directory: frontend
+        run: npm ci
+      - name: Lint y build Angular real
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Instalar Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Angular local
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c11-04-m05-06.log 2>&1 &
+          for i in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then
+              echo 'ANGULAR_LOCAL_READY=PASS'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat c11-04-m05-06.log >&2
+          exit 1
+      - name: Playwright real dirigido
+        working-directory: frontend
+        run: npx playwright test e2e/c11-04-m05-06-regression.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Evidencia
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c11-04-m05-06-regression
+          path: |
+            frontend/c11-04-m05-06.log
+            frontend/test-results/
+          if-no-files-found: warn
+          retention-days: 14
