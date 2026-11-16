@@ -5840,3 +5840,8 @@
 - Añade cinco pruebas Playwright/Chromium con guard anónimo, 403 sin fuga, teclado real Tab/Enter, navegación, error 503 con recuperación y botón single-flight ante segunda pulsación, sin formularios ni escrituras.
 - Nuevo CI dirigido por SHA, cancel-in-progress=false, npm lint/build y Chromium loopback; fixtures sintéticos no certifican JWT, MFA, tenancy A/B, MySQL ni grants de plataforma backend.
 - Alcance R2 test-only con A0 y rollback git revert; A1-A4 sujetas a ejecución exact-SHA, A5 solo Task Javier distinta, V17 lock 2000000419. Sin QA/main/PROD.
+
+## 2026-11-16 — C07-04.M04.05 · pruebas accesibilidad pedidos (DEV05)
+- Añade pruebas reales Playwright 320/768/1280, Tab y foco, contraste elevado y denegaciones de acceso del listado privado de pedidos.
+- El workflow dirigido ejecuta Vitest, lint/build Angular y Chromium por SHA sin cancelar SHA anteriores; no certifica backend, pagos, fiscalidad ni MySQL real.
+- Riesgo R2, A0–A4 pendientes de resultados CI externos, A5 exclusivamente independiente; sin QA/main/PROD.
