@@ -1,6 +1,6 @@
 import {test,expect,type Page} from '@playwright/test';
 import {readFileSync} from 'node:fs';import {resolve} from 'node:path';
-const inventory=JSON.parse(readFileSync(resolve(process.cwd(),'../docs/v5/c02-04-m05-01-routes.json'),'utf8')) as {schemaVersion:string;routes:Array<{id:string;path:string}>};
+const catalog=JSON.parse(readFileSync(resolve(process.cwd(),'../docs/v5/c02-04-m05-01-routes.json'),'utf8')) as {schemaVersion:string;routes:Array<{id:string;path:string}>};
 const cors={'Access-Control-Allow-Origin':'http://127.0.0.1:4200','Access-Control-Allow-Headers':'Authorization, Content-Type, X-Empresa-Id','Access-Control-Allow-Methods':'GET, OPTIONS'};
 async function synthetic(page:Page,status:200|403|503){
  await page.addInitScript(()=>{localStorage.setItem('solqaryn_token','fixture-not-jwt');localStorage.setItem('solqaryn_expira_en','2099-01-01T00:00:00Z');});
@@ -14,14 +14,14 @@ async function synthetic(page:Page,status:200|403|503){
  });
  return ()=>gets;
 }
-test.describe('C02-04.M05.01 actual Chromium inventory, MOCK backend',()=>{
+test.describe('C02-04.M05.01 actual Chromium catalog, MOCK backend',()=>{
  test.describe.configure({retries:0});
  test('13 unique versioned IDs',()=>{
-  expect(inventory.schemaVersion).toBe('C02-04.M05.01/v18.1');
-  expect(inventory.routes).toHaveLength(13);
-  expect(new Set(inventory.routes.map(x=>x.id)).size).toBe(13);
+  expect(catalog.schemaVersion).toBe('C02-04.M05.01/v18.1');
+  expect(catalog.routes).toHaveLength(13);
+  expect(new Set(catalog.routes.map(x=>x.id)).size).toBe(13);
  });
- for(const item of inventory.routes){
+ for(const item of catalog.routes){
   test(item.id+' anonymous blocked',async({page})=>{
    await page.goto('/'+item.path);
    await expect(page).toHaveURL(/\/login(?:\?|$)/);
