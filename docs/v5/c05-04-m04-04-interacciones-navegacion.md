@@ -45,3 +45,7 @@ mantener VALIDANDO con owner real y SHA/RUN hasta REVIEW_FIRST.
 A5 exige revisor de otra Task Javier con ID distinto. No existe
 autorización para QA/main/PROD ni modificación de producción.
 Rollback: git revert normal del commit de pruebas, workflow y documento.
+
+## Registro de reparación de prueba
+
+El SHA original e62eab99 falló exactamente en 1 de 6 casos Chromium: el elemento vacío existía, pero estaba oculto bajo details cerrado. El test de doble acción abre ahora summary antes de su primera aserción; no se relajan expectativas sobre solicitudes duplicadas, datos o controles. Se necesita resultado causal del nuevo SHA, no se reutiliza el FAIL como PASS.

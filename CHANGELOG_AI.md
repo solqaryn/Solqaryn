@@ -1,3 +1,8 @@
+## 2026-11-16 — Reparación CI R1 C05-04.M04.04 detalles colapsados [Javier :50]
+- GitHub Actions SHA e62eab99 probó 5/6 Chromium; el caso de doble acción falló al exigir visible un estado dentro de `<details>` cerrado, no por una omisión de protección en el componente.
+- Corrige el test abriendo el panel mediante click real sobre summary antes de comprobar el resultado vacío y mantener comprobaciones de doble acción y ausencia de POST.
+- Conserva el fallo original como QA_DEFECT_FOUND y exige nuevo SHA con tests reales, Scope Lock/V5 y A5 independiente, sin cambiar Angular, autorización, QA/main/PROD.
+
 ## 2026-11-16 — V17 C15-01.M04.05 accesibilidad Chromium cobertura privada [Javier :20]
 - Añade cinco escenarios Chromium de denegación anónima/403/ámbito, responsive 320/375/768/1280, semántica/labels, Tab/foco y blanco 44px, y contraste >=4.5:1 sin cambiar código de autenticación ni resultados institucionales.
 - Extiende el workflow SHA-aislado de C15-01.M04.01 para ejecutar ocho E2E (tres anteriores más cinco nuevos), cuatro Vitest y Angular lint/build, sin omitir pruebas existentes.

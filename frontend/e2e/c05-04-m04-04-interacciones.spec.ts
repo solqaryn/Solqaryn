@@ -116,6 +116,8 @@ test('C05-04.M04.04 doble acción: actualizar deshabilitado durante GET pendient
     if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method())) writes.push(request.method());
   });
   await page.goto('/plataforma');
+  // The feedback is inside a closed <details> until the user opens it.
+  await page.locator('.ui-lightness-v5 summary').click();
   await expect(page.getByTestId('c0504-empty')).toBeVisible();
   const update = page.getByRole('button', { name: 'Actualizar directorio' });
   await update.click();
