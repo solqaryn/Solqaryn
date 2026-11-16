@@ -51,3 +51,13 @@ p { line-height: 1.55; overflow-wrap: anywhere; }
 .brand-preview-contrast .brand-chip { background: #facc15; color: #0b1020; }
 @media (max-width: 400px) { .brand-choices { display: grid; grid-template-columns: 1fr; } .brand-choice { width: 100%; } }
 @media (prefers-contrast: more) { .brand-choice:focus-visible { outline-color: CanvasText; } }
+
+/* C05-01.M04.05: foco y estados distinguibles con colores de sistema forzados.
+   No altera datos, permisos ni componentes externos. */
+@media (forced-colors: active) {
+  .brand-choice[aria-pressed="true"] { border-color: Highlight; }
+  .brand-choice:focus-visible { outline: 3px solid Highlight; outline-offset: 3px; }
+  .brand-preview, .brand-preview-contrast { border-color: CanvasText; }
+  .brand-chip { border: 1px solid CanvasText; }
+}
+

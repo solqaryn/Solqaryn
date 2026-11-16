@@ -142,3 +142,74 @@ test('C05-01.M04.04 denegación 403 impide acciones y no filtra error privado', 
   await expect(page.locator('.brand-catalog button, .brand-preview')).toHaveCount(0);
   await expect(page.getByText('PRIVATE_DESIGN_TOKEN_SECRET')).toHaveCount(0);
 });
+
+test('C05-01.M04.05 contraste, etiquetas, foco y teclado', async ({ page }) => {
+  await mockSession(page, true);
+  await page.goto('/plataforma');
+  await page.locator('details.design-system-preview summary').click();
+  const catalog = page.locator('.design-catalog');
+  const choices = catalog.getByRole('group', { name: 'Seleccionar una vista previa permitida' });
+  await expect(choices).toHaveAttribute('aria-describedby', 'design-brand-actions-help');
+  await expect(page.locator('#design-brand-actions-help')).toBeVisible();
+  const button = catalog.getByRole('button', { name: 'Contraste alto' });
+  await button.focus();
+  await expect(button).toBeFocused();
+  const visual = await button.evaluate(element => {
+    const style = getComputedStyle(element);
+    const luminance = (color: string) => {
+      const channels = (color.match(/[\d.]+/g) ?? []).slice(0, 3).map(Number);
+      if (channels.length !== 3) return 0;
+      const linear = channels.map(value => {
+        const c = value / 255;
+        return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4;
+      });
+      return linear[0] * 0.2126 + linear[1] * 0.7152 + linear[2] * 0.0722;
+    };
+    const a = luminance(style.color);
+    const b = luminance(style.backgroundColor);
+    return {
+      outline: style.outlineStyle,
+      outlineWidth: parseFloat(style.outlineWidth),
+      contrast: (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05),
+      targetHeight: element.getBoundingClientRect().height
+    };
+  });
+  expect(visual.outline).not.toBe('none');
+  expect(visual.outlineWidth).toBeGreaterThanOrEqual(3);
+  expect(visual.contrast).toBeGreaterThanOrEqual(4.5);
+  expect(visual.targetHeight).toBeGreaterThanOrEqual(44);
+  await button.press('Enter');
+  await expect(button).toHaveAttribute('aria-pressed', 'true');
+  await expect(catalog.locator('[role="status"]')).toContainText('Contraste alto');
+  await expect(catalog.locator('.brand-catalog form, .brand-catalog input')).toHaveCount(0);
+});
+
+test('C05-01.M04.05 responsive y colores forzados conservan control seguro', async ({ page }) => {
+  await mockSession(page, true);
+  await page.goto('/plataforma');
+  await page.locator('details.design-system-preview summary').click();
+  const catalog = page.locator('.design-catalog');
+  const button = catalog.getByRole('button', { name: 'Contraste alto' });
+  for (const width of [320, 375, 768, 1280]) {
+    await page.setViewportSize({ width, height: 800 });
+    await expect(button).toBeVisible();
+    await expect(catalog.locator('.token-item')).toHaveCount(4);
+    await expect(catalog.locator('.state-example')).toHaveCount(5);
+    const overflow = await page.evaluate(() =>
+      document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow, 'sin overflow horizontal a ' + width).toBeLessThanOrEqual(2);
+  }
+  await page.emulateMedia({ forcedColors: 'active', contrast: 'more', reducedMotion: 'reduce' });
+  await button.focus();
+  await expect(button).toBeFocused();
+  const forced = await button.evaluate(element => {
+    const computed = getComputedStyle(element);
+    return { border: computed.borderStyle, outline: computed.outlineStyle };
+  });
+  expect(forced.border).not.toBe('none');
+  expect(forced.outline).not.toBe('none');
+  await button.press('Enter');
+  await expect(button).toHaveAttribute('aria-pressed', 'true');
+  await expect(catalog.locator('.brand-preview')).toContainText('Contraste alto');
+});
+

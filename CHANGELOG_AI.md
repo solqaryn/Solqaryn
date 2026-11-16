@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C05-01.M04.05 responsive y accesibilidad visual [Javier :50]
+- Añade Chromium para etiquetas, foco, teclado, tamaño táctil, contraste y vistas 320/375/768/1280; refuerza selección y foco con colores forzados.
+- Cambios limitados a biblioteca Angular privada sin HTTP comercial, migraciones, PII ni permisos nuevos.
+- CI exact-SHA y A5 requieren verificación independiente; rollback mediante git revert.
+
 ## 2026-11-16 — V17 C14-02.M04.04 navegación, errores y single-flight en seguridad [Javier :10]
 - Agrega tres Vitest de navegación interna, doble revalidación single-flight y error 429 sin diagnóstico sensible; dos Chromium sintéticos de retorno a plataforma y error 429.
 - Cambia únicamente pruebas, etiqueta de workflow y documentación; frontend productivo, API, DTO, MySQL, JWT y reglas tenant quedan intactos.
