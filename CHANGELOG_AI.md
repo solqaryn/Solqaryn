@@ -1,3 +1,8 @@
+## 2026-11-16 - V17 C12-01.M02.04 configuracion tipada y flags futuros [Javier :30]
+- Define dieciseis campos CFG01-CFG16, doce flags F01-F12, ocho errores ER-CFG01-08 y doce pares P/N futuros para evaluar topologia objetivo sin tocar entorno vivo.
+- Todos los flags son false por defecto, especialmente cutoverEnabled; preserva tenant A/B, JWT/RBAC, secretos opacos, segregacion DEV/QA/PROD y gates G01-G16, sin activar Hostinger, DNS, MySQL ni PROD.
+- Solo R0 documental: cero pruebas de runtime ejecutadas; exige Scope Lock/V5 exact-SHA, readback institucional y A5 de otra Task Javier.
+
 ## 2026-11-16 - V17 C11-01.M02.06 contrato documental de salida modelo relacional [Javier :00]
 - Fija dieciseis gates G01-G16, ocho pasos futuros de rollback R01-R08 y doce pares T01-T12 positivos/negativos FUTUROS_NO_EJECUTADOS (0/12 runtime) para cerrar el diseño conceptual M02.
 - Reconciliacion documental E01-E16, OP01-OP08, D01-D12, K01-K12, F01-F12, EV01-EV12 e invariantes; proteccion tenant A/B, legacy NULL, RBAC/revocacion, transacciones e idempotencia sin cambiar EF/MySQL ni API.
