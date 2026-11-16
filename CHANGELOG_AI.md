@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C08-04.M03.04 adaptador aislado de módulos sectoriales [Javier :20]
+- Implementa en Infrastructure .NET 10 una fuente sintética por tenant y módulo exactos, revisión y SHA; fuerza los indicadores de lectura persistente y CAS/auditoría a false, sin conceder activaciones ni permisos reales.
+- Añade nueve xUnit adversariales: tenant A/B, comparador ordinal, versiones y SHA, flags falsificados, constructor inválido y cancelación. No agrega endpoints/EF/MySQL/proveedores.
+- Riesgo R2: CI backend Release, seguridad, autorización, Scope Lock y procedencia V5 por SHA exacto; A5 independiente de otra Task Javier. Rollback git revert normal; sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C05-01.M03.04 adaptador aislado de design tokens, tenant y revision [Javier :50]
 - Implementa Infrastructure .NET 10 de solo lectura sobre Application/Domain de design tokens, con captura inmutable del catálogo ordinal, actor/tenant, sesión/revisión y SHA; nunca crea provider MySQL, JWT, ruta, DI o cambio real de tema.
 - Incorpora 15 pruebas xUnit adversariales R2 de tenant A/B, RBAC/revocación, SHA, CSS seguro, alteración posterior del allowlist, catálogos obsoletos, errores y cancelación; resultado positivo siempre exige un adaptador autenticado separado.
