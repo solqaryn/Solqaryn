@@ -28,3 +28,6 @@ GitHub-hosted job 133609330680, run 43955638841, SHA ed2c0afb0: 9/10 Chromium PA
 
 ## Ampliación A2: header de tenant falsificado
 Revisión de cobertura: la fixture original escribía `solqaryn_empresa_id`, clave ignorada por el interceptor. Se corrige a `solqaryn_empresa_solicitada_id`, se observa la solicitud real del navegador y se exige que `X-Empresa-Id` NO se propague a `/plataforma/sesion`. La aserción detectaría una regresión del interceptor, sin sustituir la prueba P4 server-side JWT/MySQL. Requiere rerun Chromium exact-SHA y readback.
+
+## Corrección del entorno Playwright en prueba A2
+El job Chromium SHA 2766afd (`run 43957235196`) obtuvo 9/10 PASS y 1 FAIL por recibir `X-Empresa-Id: 1` del **global `playwright.config.ts`**, no del interceptor Angular; la opción `use.extraHTTPHeaders` agrega el header en todas las solicitudes. La suite dirigida debe usar `test.use({ extraHTTPHeaders: {} })` para anular solo ese header artificial del runner, manteniendo fixture real de `solqaryn_empresa_solicitada_id` y comprobación negativa de salida. No se modifican los guards productivos ni la configuración compartida de pruebas ERP; se requiere rerun exact-SHA.

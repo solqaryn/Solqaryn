@@ -44,6 +44,10 @@ async function mockSession(
 
 test.describe('C02-04.M05.05 rechazo y revocación fail-closed (browser con API simulada)', () => {
   test.describe.configure({ retries: 0 });
+  // Playwright global configura X-Empresa-Id: 1 para pruebas ERP.
+  // La prueba de plataforma NO debe heredar ese header del runner.
+  // Así se mide exclusivamente el header que emite el interceptor Angular.
+  test.use({ extraHTTPHeaders: {} });
 
   test('anónimo sin credenciales no ejecuta GET de sesión ni revela controles', async ({ page }) => {
     const gets = await mockSession(page, () => ({ status: 200, body: platform }));

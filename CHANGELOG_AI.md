@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C02-04.M05.05 aislamiento de header artificial Playwright [Javier :00]
+- Chromium SHA 2766afd obtuvo 9/10 PASS y 1 FAIL: el request llevaba X-Empresa-Id: 1 inyectado por playwright.config.ts extraHTTPHeaders global, no por Angular; la asercion detecto contaminacion de fixture.
+- Se desactiva extraHTTPHeaders solo dentro de suite C02-04.M05.05 con test.use({ extraHTTPHeaders: {} }), conservando selector empresa real y rechazo del header generado por interceptor. Sin cambiar auth, tenant ni CI compartida.
+- Validacion real repetida por SHA, A0-A5, V17, Scope Lock, rollback normal. No certificar PASS hasta GitHub Actions.
+
 ## 2026-11-16 — V18 C13-04.M03.06 logger estructurado seguro en auditoría visual [Javier :50]
 - Agrega sink .NET 10 aislado con ILogger y EventId estable, allowlist de resultados y logs estructurados sin texto de proveedor, tokens, claves ni SHA del solicitante.
 - Pruebas xUnit de etapas/rechazos, límites 0/>8, cancelación, proveedor con excepción secreta y 32 eventos concurrentes multiempresa; A1-A4 sujetos a CI real exact-SHA, A5 por revisor Javier distinto.
