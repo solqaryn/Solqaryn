@@ -310,3 +310,56 @@ test('M04.06: densidad responsive preserva columnas y confidencialidad ante 403'
   await expect(denied.locator('.obs-points li')).toHaveCount(0);
   await denied.close();
 });
+
+
+test('M05.04: aceptación positiva 200 conserva observabilidad privada read-only sin exporter en 320/1280', async ({ page }) => {
+  await page.addInitScript(() => {
+    localStorage.setItem('solqaryn_token', 'c11-04-m05-04-synthetic-not-jwt');
+    localStorage.setItem('solqaryn_expira_en', '2099-01-01T00:00:00Z');
+  });
+  let sessionGets = 0;
+  const forbidden: string[] = [];
+  await page.route(/\/plataforma\/sesion(?:\?|$)/, async route => {
+    const headers = {
+      'Access-Control-Allow-Origin': 'http://127.0.0.1:4200',
+      'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-Empresa-Id',
+      'Access-Control-Allow-Methods': 'GET, OPTIONS'
+    };
+    if (route.request().method() === 'OPTIONS') {
+      return route.fulfill({ status: 204, headers });
+    }
+    sessionGets++;
+    return route.fulfill({
+      status: 200, headers, contentType: 'application/json',
+      body: JSON.stringify({
+        success: true,
+        data: { nombreUsuario: 'Control', rolNombre: 'Admin', ambito: 'Plataforma', esAdministrador: true }
+      })
+    });
+  });
+  await page.route(/\/(?:telemetry|metrics\/export|traces|alerts\/dispatch)(?:\/|\?|$)/i, route => {
+    forbidden.push(route.request().url());
+    return route.abort();
+  });
+  await page.setViewportSize({ width: 320, height: 812 });
+  await page.goto('/plataforma/observabilidad-v5');
+  const cards = page.locator('.obs-points li');
+  await expect(cards).toHaveCount(4);
+  await expect(page.getByRole('heading', { name: 'Diagnóstico y señales seguras' })).toBeVisible();
+  const actions = page.getByRole('navigation', { name: 'Acciones de observabilidad' });
+  await expect(actions).toBeVisible();
+  const revalidate = actions.getByRole('button', { name: 'Revalidar acceso de observabilidad' });
+  await revalidate.click();
+  await expect(cards).toHaveCount(4);
+  await expect(revalidate).toBeEnabled();
+  expect(sessionGets, 'una sesión inicial y una revalidación, sin GET duplicado').toBe(2);
+  for (const width of [320, 1280]) {
+    await page.setViewportSize({ width, height: 812 });
+    await expect(cards).toHaveCount(4);
+    const overflow = await page.evaluate(() =>
+      document.documentElement.scrollWidth - document.documentElement.clientWidth
+    );
+    expect(overflow, 'desbordamiento ' + width).toBeLessThanOrEqual(2);
+  }
+  expect(forbidden, 'ninguna integración/exportador activado por una aceptación read-only').toEqual([]);
+});

@@ -1,3 +1,8 @@
+## 2026-11-16 — V17 C11-04.M05.04 aceptación positiva de observabilidad privada [Javier :30]
+- Añade un Playwright Chromium dirigido para HTTP 200 sintético, revalidación sin GET duplicado, cuatro tarjetas read-only, responsive 320/1280 y ausencia de exporter.
+- Preserva negativos existentes 403/503, revocación, foco, carga y seguridad; no modifica producto, backend, JWT/RBAC, MySQL o proveedores y no atribuye autenticación HTTP real al mock.
+- CI causal Scope Lock/V5/frontend/Vitest/Chromium pendiente de GitHub Actions sobre SHA publicado; A5 requiere otra Task Javier, rollback por git revert y sin QA/main/PROD.
+
 ## 2026-11-16 — V17 C11-04.M05.01 pruebas de regresión unitarias de observabilidad [Javier :10]
 - Agrega cuatro casos Vitest a la suite existente: aceptación sin exporter, revocación durante respuesta pendiente, empresa sin privilegio y error 429 sin fuga de secreto.
 - Pruebas reales pendientes de GitHub Actions en SHA nuevo; no se atribuye PASS anticipado. La suite dirigida incluye Chromium, frontend, Scope Lock y V5.
