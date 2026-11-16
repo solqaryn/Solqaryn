@@ -16,3 +16,6 @@ Verificar CI dirigida, Scope Lock y procedencia V5 SUCCESS exact-SHA y readback 
 
 ## Rollback
 Reversión mediante git revert normal de commit de esta unidad en dev, conservando commits concurrentes y BITACORA histórica. No force-push ni reset.
+
+## Reparación causal de CI de accesibilidad M04.05
+El primer SHA 09970551 produjo FAILURE del job 133090587789 (1/4 Vitest) al exigir cero botones, incompatible con el botón legítimo de revalidación ya implementado en M04.02. Se ajusta la prueba para exigir exactamente un botón type=button de sesión, ningún form/input y conservar foco, teclado, anonimato y revocación. Revalidar workflow M04.05 y M04.02 en nuevo SHA; el fallo previo sigue histórico. No es autorización para operaciones de incidentes.

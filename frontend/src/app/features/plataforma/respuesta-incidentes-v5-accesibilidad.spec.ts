@@ -26,7 +26,12 @@ describe('C03-04.M04.05 accesibilidad incidentes', () => {
     expect(titulo?.tabIndex).toBe(-1);
     expect((fixture.nativeElement as HTMLElement).querySelector('a[aria-label="Regresar a plataforma"]')).toBeTruthy();
     expect(fixture.nativeElement.querySelectorAll('.incident-review li')).toHaveLength(4);
-    expect(fixture.nativeElement.querySelectorAll('button, form, input')).toHaveLength(0);
+    // M04.02 añade exclusivamente GET de revalidación de sesión: no acciones operativas.
+    expect(fixture.nativeElement.querySelectorAll('form, input')).toHaveLength(0);
+    const botones = fixture.nativeElement.querySelectorAll('button');
+    expect(botones).toHaveLength(1);
+    expect(botones[0].getAttribute('type')).toBe('button');
+    expect(botones[0].textContent).toContain('Revalidar sesión de plataforma');
   });
   it('rechazo anónimo nunca presenta decisiones protegidas', async () => {
     const {fixture}=await montar(null);

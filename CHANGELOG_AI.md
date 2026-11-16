@@ -1,3 +1,8 @@
+## 2026-11-15 - V17 C03-04.M04.02 corrección de regresión de prueba de accesibilidad [Javier :20]
+- La evolución segura de la guía incorporó un único botón de GET /plataforma/sesion, por lo que la prueba heredada M04.05 que exigía cero botones dejó de expresar el contrato vigente. No se desactiva el workflow ni se oculta el fallo original.
+- Corrige solo la aserción: prohíbe formularios e inputs, exige un único botón type=button con texto de revalidación; mantiene casos de foco, teclado, anónimo, empresa y revocación. Requiere 4/4 Vitest y 4/4 Chromium reales además de CI propia M04.02 sobre SHA reparado antes de LISTO.
+- Riesgo R2, rollback git revert, A5 independiente; no verifica JWT HTTP real, MySQL ni restauración productiva.
+
 ## 2026-11-15 - V17 C03-04.M04.02 estados seguros de incidentes [Javier :20]
 - Extiende superficie Angular privada con carga, vacío, error genérico, éxito de sesión y falta de permisos; solo GET /plataforma/sesion, sin feed ni restauraciones simuladas como reales.
 - Propone nueve Vitest y cinco Chromium sintéticos, lint y build en GitHub-hosted; exigir SUCCESS exact-SHA antes de LISTO.
