@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C14-04.M03.05 worker acotado read-only de readiness DEV [Javier :00]
+- Añade un processor .NET 10 de una invocación manual y lote máximo 16, con inbox backend confiable tipado, prevalidación íntegra de IDs, idempotencia intra-lote, SHA, ruta y entorno dev; sin programación, envío ni ack externo.
+- Integra el adaptador de snapshots previamente autorizado con revisión tenant/RBAC/autor-revisor/CI para exigir revisión externa; 14 xUnit adversariales en proceso, no certificación de backend live, MySQL, producción ni exactly-once durable.
+- A0–A4 por GitHub Actions del SHA y A5 por otra Task Javier; cambios fail-closed, Scope Lock STRICT; rollback git revert normal, sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C02-02.M04.02 estados de placement con autorización fail-closed [Javier :40]
 - La pantalla privada ya existente incorpora cinco estados accesibles (vacío, carga, éxito, sin permiso y error), revalidación de la sesión exclusivamente con el servidor, ocultación de modalidades durante solicitudes y revocación, y protección single-flight de doble acción.
 - Añade siete pruebas Vitest positivas, negativas y de frontera, y regresión Chromium sintética de 503 con mensajes seguros; conserva los casos previos. Ninguna acción de placement, migración, conexión dedicada ni autorización backend se implementa en UI.
