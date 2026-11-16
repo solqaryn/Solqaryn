@@ -410,3 +410,52 @@ test.describe('C00-02.M05.06 - regresion responsive y accesibilidad del flujo V5
     expect(unexpectedRequests).toEqual([]);
   });
 });
+
+
+test.describe('C00-04.M04.01 - validacion browser real de gobierno de cambios', () => {
+  test.describe.configure({ retries: 0 });
+
+  test('anonimo no puede abrir la ruta privada ni invocar la sesion', async ({ page }) => {
+    const observed = await mockPlatformSession(page, true);
+    await page.goto('/plataforma/gobierno-cambios-v5');
+    await expect(page).toHaveURL(/\/login(?:\?|$)/);
+    await expect(page.getByRole('heading', { name: 'Decisiones y controles V5' })).toHaveCount(0);
+    expect(observed).toEqual([]);
+  });
+
+  test('token sintetico con respuesta 403 niega la pantalla y oculta sus cuatro pasos', async ({ page }) => {
+    await syntheticToken(page);
+    const observed = await mockPlatformSession(page, false);
+    await page.goto('/plataforma/gobierno-cambios-v5');
+    await expect(page).toHaveURL(/\/login\?plataforma=denegado(?:&|$)/);
+    await expect(page.getByRole('heading', { name: 'Decisiones y controles V5' })).toHaveCount(0);
+    await expect(page.locator('.steps li')).toHaveCount(0);
+    expect(observed).toContain(403);
+  });
+
+  test('sesion sintetica autorizada admite teclado y 320px sin llamadas operativas', async ({ page }) => {
+    await page.setViewportSize({ width: 320, height: 720 });
+    await syntheticToken(page);
+    const observed = await mockPlatformSession(page, true);
+    const prohibited: string[] = [];
+    await page.route(/\/(?:plan-maestro|bitacora|cola|claims|aprobaciones|migraciones|deploy)(?:\/|\?|$)/i, route => {
+      prohibited.push(route.request().url());
+      return route.abort();
+    });
+    await page.goto('/plataforma/gobierno-cambios-v5');
+    await expect(page.getByRole('heading', { name: 'Decisiones y controles V5' })).toBeVisible();
+    await expect(page.locator('.steps li')).toHaveCount(4);
+    await expect(page.getByText('Solo lectura · sin autoridad operativa')).toBeVisible();
+    const overflow = await page.evaluate(() =>
+      document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow).toBeLessThanOrEqual(2);
+    const refresh = page.getByRole('button', { name: 'Revalidar sesión de plataforma' });
+    const back = page.getByRole('link', { name: 'Volver a administración de plataforma' });
+    await refresh.focus();
+    await expect(refresh).toBeFocused();
+    await page.keyboard.press('Tab');
+    await expect(back).toBeFocused();
+    expect(observed).toContain(200);
+    expect(prohibited).toEqual([]);
+  });
+});

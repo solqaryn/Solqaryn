@@ -1,3 +1,8 @@
+## 2026-11-16 - V17 C00-04.M04.01 reparacion QA P2 de navegador privado [Javier :20]
+- Agrega tres pruebas Playwright Chromium reales dirigidas a gobierno-cambios-v5: rechazo anonimo, 403 sintetico sin contenido protegido y acceso sintetico de consulta.
+- Comprueba responsive 320 px, Tab/foco y ausencia de solicitudes operativas; no cambia el guard, endpoint, tenant, JWT ni backend, y no infiere autenticacion HTTP real.
+- A5_FAIL historico permanece; nueva A5 independiente solo tras CI causal del SHA y readback. Scope Lock/V5, sin QA/main/PROD.
+
 ## 2026-11-16 - V17 C12-01.M02.06 dependencias y salida documental [Javier :50]
 - Consolida catorce gates D01-D14 y diez criterios O01-O10 con fuentes M01.06 y M02.01-05, owner, seguridad, evidencias y rollback; no libera G01-G16 de infraestructura.
 - Define doce pares positivos/negativos futuros, distingue identidad de solicitud y HMAC completo antes de redacción, y mantiene 0 pruebas runtime ejecutadas en este R0.

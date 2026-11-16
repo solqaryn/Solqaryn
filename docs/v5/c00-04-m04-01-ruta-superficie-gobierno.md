@@ -19,3 +19,10 @@
 - Exigir publicación fast-forward/CAS, `verify-solqaryn-project-scope`, procedencia V5 y controles Angular apropiados `completed/success` sobre el SHA publicado. Los checks `queued`, `in_progress`, `cancelled`, `skipped` o `failure` no acreditan PASS.
 - Mantener VALIDANDO hasta reunir A0–A4, revisión del diff, readback PLAN/COLA/DAG/BITACORA; solo entonces LISTO_DEV. A5 independiente deberá ejecutarla otra Task Javier distinta del autor.
 - Reversión: `git revert` normal del changeset en `dev`, con readback institucional; sin force-push, QA, main, PROD ni datos reales.
+
+
+## Reparación QA del A5_FAIL P2 — prueba Chromium dirigida
+- El rechazo A5 detectó falta de evidencia Playwright sobre la **nueva ruta privada**; un Chromium verde de otra pantalla no la acredita.
+- La regresión añadida en \`frontend/e2e/v5-plataforma-browser-guards.spec.ts\` verifica tres escenarios con navegador real: anónimo redirigido sin consultar sesión, token sintético con 403 y sin contenido protegido, sesión sintética autorizada con cuatro pasos, viewport de 320 px, transición de foco con Tab y ausencia de endpoints operativos.
+- El workflow V5 existente ya ejecuta ese archivo en GitHub-hosted. **La ejecución y los checks de esta reparación permanecen pendientes hasta resultado exact-SHA**. No declarar PASS ni A5 por la mera publicación.
+- Riesgo R1 por tests UI; backend/JWT/MySQL/tenancy de producción NO_APLICA al diff de pruebas y documentación; el guard de servidor no se modifica. El A5_FAIL original permanece en BITACORA y exige nueva revisión independiente de otra Task Javier. Rollback: git revert normal.
