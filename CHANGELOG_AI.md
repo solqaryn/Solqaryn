@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C15-01.M03.05 revisión secuencial de cobertura en lotes [Javier :50]
+- Implementa runner Infrastructure .NET 10 de máximo 16 requisitos; prevalidación íntegra de ID, SHA y unicidad ordinal antes de leer fuente, composición con adaptador existente M03.04; no certifica cobertura global ni escribe PLAN/Sheets.
+- Añade 11 xUnit positivos/negativos de duplicidad, lote nulo/excesivo, SHA mezclado, fuente negada, excepción opaca y cancelación. CI Backend Release, seguridad multiempresa, autorización, Scope Lock y V5 requerida por SHA.
+- V15 R2 y V17 exclusivo, sin provider externo/HTTP/MySQL/Angular ni autorización real de tenant, A5 por otra Task Javier; rollback git revert normal; no QA/main/PROD.
+
 ## 2026-11-15 — V17 C15-03.M03.06 auditoría estructurada segura [Javier :50]
 - Implementa sink Infrastructure .NET 10 de auditoría estructurada, sobre decisiones Application: códigos normalizados, SHA y correlación canónicos; nunca serializa JWT, PII, secreto, tenant/actor IDs, texto de excepción o idempotency key.
 - Incorpora 11 pruebas xUnit positivas, negativas y de borde para tenant A/B, fuente no verificada, bypass, superficie desconocida, SHA, denegación, logger inactivo/fallido y cancelación.
