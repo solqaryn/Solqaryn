@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C03-04.M04.05 teclado, responsive y contraste de incidentes [Javier :20]
+- Mejora acceso por teclado a la guía privada de incidentes mediante skip link al título enfocable, retorno de 44px y estilos explícitos para forced-colors, contraste alto y textos largos, sin acciones de restauración.
+- Agrega cuatro Vitest y cuatro Playwright Chromium sintéticos de anónimo, empresa/403, revocación, foco, 320–1440px y contraste forzado; workflow causal exact-SHA Angular lint/build, Scope Lock y procedencia V5.
+- Riesgo R2, fuente SKREF-10 angular/angular pin 6808966993bf2b2d455d9b6245e960a59a01b9a9; no acredita JWT/API/MySQL/tenant backend ni métricas productivas. A5 otra Task Javier; rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-15 — V17 C10-04.M04.04 reparación de evidencia CI P1 [Javier :10]
 - Corrige la selección Vitest del workflow de interacción Angular para ejecutar las siete pruebas `continuidad-interacciones-v5.spec.ts`, antes omitidas por seleccionar cuatro pruebas heredadas de `continuidad-presentacion-v5.spec.ts`.
 - Corrige el filtro de ruta del propio workflow M04.04; conserva lint, build, Chromium, Scope Lock, procedencia V5 y cancel-in-progress=false.

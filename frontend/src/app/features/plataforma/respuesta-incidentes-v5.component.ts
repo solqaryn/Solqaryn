@@ -10,9 +10,10 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <main class="incident-guide" aria-labelledby="incident-title">
+      <a class="skip-link" href="#incident-title">Ir al contenido de incidentes</a>
       <header>
         <p class="eyebrow">SOLQARYN · Respuesta a incidentes</p>
-        <h1 id="incident-title">Respuesta, revocación y recuperación segura</h1>
+        <h1 id="incident-title" tabindex="-1">Respuesta, revocación y recuperación segura</h1>
         <p>Guía de comprobación futura, sin incidentes ni respaldos conectados.</p>
         <a routerLink="/plataforma" aria-label="Regresar a plataforma">Regresar a plataforma</a>
       </header>
@@ -38,18 +39,27 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
   `,
   styles: [`
     :host { display:block; color:var(--mat-sys-on-surface, #17212d); }
-    .incident-guide { box-sizing:border-box; max-width:70rem; margin-inline:auto; padding:clamp(1rem,3vw,2.5rem); }
+    .incident-guide { box-sizing:border-box; max-width:70rem; min-width:0; margin-inline:auto; padding:clamp(1rem,3vw,2.5rem); background:var(--mat-sys-surface, #fff); color:var(--mat-sys-on-surface, #17212d); }
+    .skip-link { position:fixed; left:1rem; top:.5rem; z-index:1000; padding:.75rem 1rem; border:2px solid currentColor; border-radius:.4rem; background:var(--mat-sys-surface, #fff); color:var(--mat-sys-on-surface, #17212d); transform:translateY(-200%); }
+    .skip-link:focus-visible { transform:none; outline:3px solid currentColor; outline-offset:3px; }
+    #incident-title:focus-visible { outline:3px solid currentColor; outline-offset:4px; }
     h1 { font-size:clamp(1.6rem,4vw,2.3rem); line-height:1.2; }
     h2 { font-size:1.3rem; margin-top:1.5rem; }
     h3 { font-size:1rem; margin:0 0 .4rem; }
     p { line-height:1.55; overflow-wrap:anywhere; }
     .eyebrow { color:var(--mat-sys-primary, #2157a3); font-weight:700; }
-    header a { display:inline-block; border:1px solid currentColor; border-radius:.55rem; padding:.65rem .85rem; color:inherit; }
+    header a { display:inline-flex; box-sizing:border-box; min-height:44px; align-items:center; border:1px solid currentColor; border-radius:.55rem; padding:.65rem .85rem; color:inherit; }
     header a:focus-visible { outline:3px solid var(--mat-sys-primary, #2157a3); outline-offset:3px; }
     .notice { border:1px solid var(--mat-sys-outline-variant, #aeb8c1); border-radius:.7rem; padding:1rem; margin-top:1rem; }
     .incident-review { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); list-style:none; gap:.8rem; padding:0; }
-    .incident-review li { min-width:0; border:1px solid var(--mat-sys-outline-variant, #aeb8c1); border-radius:.7rem; padding:.9rem; }
+    .incident-review li { min-width:0; overflow-wrap:anywhere; border:1px solid var(--mat-sys-outline-variant, #aeb8c1); border-radius:.7rem; padding:.9rem; }
     @media(max-width:45rem) { .incident-review { grid-template-columns:minmax(0,1fr); } }
+    @media(forced-colors: active) {
+      .incident-guide { background:Canvas; color:CanvasText; }
+      .skip-link { background:Canvas; color:CanvasText; border-color:CanvasText; }
+      .notice, .incident-review li, header a { border-color:CanvasText; }
+    }
+    @media(prefers-contrast: more) { .notice, .incident-review li, header a { border-width:2px; } }
   `]
 })
 export class RespuestaIncidentesV5Component {
