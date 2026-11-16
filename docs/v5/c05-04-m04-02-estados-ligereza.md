@@ -18,3 +18,6 @@ A4 exige verify-solqaryn-project-scope, V5 CHANGELOG, frontend build y Chromium 
 
 ## Defecto QA P2 y regresión causal
 Run 43911108150: Chromium 5/6 PASS y el sexto FAIL por asumir redirección /login cuando la revocación del interceptor puede dejar la URL /plataforma. La reparación modifica sólo el assert negativo: verifica que no haya authority-card, que el contenido privado no exista y que se presente denegación, sin exponer mensaje backend. El SHA original no se certifica y se exige nueva CI exact-SHA.
+
+## Segunda reparación de prueba (16 noviembre 2026)
+Run 43912055324: cinco PASS y un FAIL, no porque hubiera filtración sino por condición de carrera en el test al usar locator.count() sin esperar el GET de sesión. Se sustituye el conteo inmediato por auto-wait sobre el summary del panel, seguido de los asserts de permiso insuficiente, ausencia de reintento y mensaje de servidor no expuesto. El SHA 62f4da42 sigue FAILED y sólo nueva CI causal puede cerrar A0-A4.

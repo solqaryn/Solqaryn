@@ -113,16 +113,10 @@ test('C05-04.M04.02 permiso 403 en directorio deniega datos y no ofrece reintent
       body: JSON.stringify({ success: false, message: 'NO_EXPOSE_TENANT_DETAILS' }) });
   });
   await page.goto('/plataforma');
+  // Playwright auto-wait: evita evaluar count() antes de obtener la sesión.
+  await page.locator('.ui-lightness-v5 summary').click();
   const panel = page.getByTestId('c0504-feedback');
-  if (await panel.count() === 1) {
-    await page.locator('.ui-lightness-v5 summary').click();
-    await expect(page.getByTestId('c0504-permission')).toBeVisible();
-    await expect(panel.getByRole('button', { name: 'Reintentar directorio' })).toHaveCount(0);
-  } else {
-    // Un 403 puede retirar la sesion sin navegar: la autoridad debe desaparecer igualmente.
-    await expect(page.locator('.authority-card')).toHaveCount(0);
-    await expect(page.locator('.ui-lightness-v5')).toHaveCount(0);
-    await expect(page.getByRole('heading', { name: 'Sin autoridad global verificable' })).toBeVisible();
-  }
+  await expect(page.getByTestId('c0504-permission')).toBeVisible();
+  await expect(panel.getByRole('button', { name: 'Reintentar directorio' })).toHaveCount(0);
   await expect(page.getByText('NO_EXPOSE_TENANT_DETAILS')).toHaveCount(0);
 });

@@ -1,3 +1,8 @@
+## 2026-11-16 — Reparación QA C05-04.M04.02 sincronización de sesión 403 [Javier :30]
+- GitHub Actions run 43912055324 terminó con 5/6 Chromium, fallo P2 causado por locator.count() antes de completar la carga GET de sesión.
+- El test ahora aguarda la superficie autorizada y verifica permiso denegado en directorio, ausencia de reintento y secreto de servidor; no se tocan guard, backend o reglas de autorización.
+- Source fallido 62f4da42 no es PASS; nueva CI exact-SHA obligatoria, A5 independiente, sin QA/main/PROD y revert normal.
+
 ## 2026-11-16 — V17 C07-04.M04.01 controles privados de pedidos y documentos [Javier :10]
 - Agrega cuatro frentes de requisitos en la ruta ERP existente /pedidos-venta, con tenant verificado, Ventas:Ver y allowlist de ruta; no emite pagos ni documentos fiscales.
 - Seis Vitest y tres escenarios Chromium se ejecutarán por GitHub Actions en SHA exacto; la API del navegador es simulada, JWT/tenancy backend, fiscalidad y MySQL reales permanecen NO_MEDIDO.
