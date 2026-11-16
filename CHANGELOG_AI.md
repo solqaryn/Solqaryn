@@ -1,3 +1,8 @@
+## 2026-11-15 — V17 C07-04.M03.06 auditoría comercial estructurada segura [Javier :00]
+- Implementa pipeline Infrastructure .NET 10 acotado de auditoría de previsualizaciones comerciales, integrando lector de autoridad backend y batch M03.05; no crea worker alojado, pago, factura, transacción ni auditoría durable.
+- Doce pruebas xUnit R2 de tenant A/B, membresía/RBAC/revocación, SHA, correlación maliciosa, replay, monto/fiscal, cancelación y fallas opacas de fuente/logger. Exige Backend Release, seguridad multiempresa, Authorization, Scope Lock y V5 por SHA exacto antes de LISTO.
+- Solo registros ILogger con códigos fijos, correlación interna y conteos; nunca PII, JWT, SHA, identificador de pago, claves ni excepción. Integraciones HTTP/MySQL/PSP/Playwright no aplican en este scope aislado; A5 requiere otra Task Javier; no QA/main/PROD.
+
 ## 2026-11-15 — V17 C02-02.M03.05 previsualización de cola de placement aislada [Javier :10]
 - Añade Infrastructure .NET 10 C0202PlacementIsolatedDispatchQueue: admisión sintética única, mutex y fingerprint ordinal sobre journal M03.04; ningún hosted worker, provider, DB, migración, red ni cutover real.
 - Incorpora 11 xUnit positivos/negativos de tenant A/B, actor/SHA, JWT-RBAC/revocación, DSN, idempotencia/replay, concurrencia de 24, cancelación y constructor fail-closed; requeridos Backend Release, seguridad, Authorization, Scope Lock y V5 por SHA.
