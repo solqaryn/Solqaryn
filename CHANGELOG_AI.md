@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C12-04.M04.06 densidad y progreso privado [Javier :40]
+- Tres nuevos Playwright Chromium prueban cuatro tarjetas, cuatro anchuras sin overflow, boton de 44px, GET pendiente con aria-busy y contenidos privados ocultos, y 503 opaco sin escrituras. Sesion simulada, no JWT ni MySQL real.
+- CI SHA-scoped con cancel-in-progress=false exige 18 Vitest, 3 Chromium, Angular lint/build, Scope Lock y V5. A5 por revisor distinto, no Web Vitals productivos ni QA/main/PROD.
+
 ## 2026-11-17 — V19 C15-04.M05.01 contrato unitario reproducible UX [Javier :30]
 - Cinco pruebas Angular TestBed/Vitest de ruta con guard, cinco tarjetas estables, NO_MEDIDO/SIN_VERIFICAR, lectura sin mutaciones y cuatro anchos declarativos; sin cambios runtime de producto.
 - Workflow GitHub-hosted Node24/npm11, npm ci, Vitest dirigido, tipado/lint y build Angular; los checks requeridos del SHA, Scope Lock y V5 se certificarán sólo al finalizar SUCCESS.
