@@ -1,0 +1,36 @@
+name: V19 C05-01.M06.04 - rollback aislado Design tokens
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v19-c05-01-m06-04-rollback.yml'
+      - 'scripts/quality/c05-01-m06-04-rollback-isolated.sh'
+      - 'docs/evidencias/C05-01.M06.04-V19.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c0501-m0604-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  isolated-reversal:
+    name: C05-01.M06.04 - revert exacto en worktree efimero
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Sintaxis de ensayo
+        run: bash -n scripts/quality/c05-01-m06-04-rollback-isolated.sh
+      - name: Negativo - SHA no autorizado debe fallar
+        shell: bash
+        run: |
+          if bash scripts/quality/c05-01-m06-04-rollback-isolated.sh 0000000000000000000000000000000000000000; then
+            echo 'FAIL: unauthorized SHA accepted'
+            exit 1
+          fi
+          echo 'NEGATIVE_SHA_REJECTION=PASS'
+      - name: Positivo y frontera - Git revert aislado sin tocar datos
+        shell: bash
+        run: bash scripts/quality/c05-01-m06-04-rollback-isolated.sh 315dc209deb75d31eb2f56545d1a9d8fa7bdaf83

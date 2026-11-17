@@ -1,3 +1,8 @@
+## 2026-11-16 — V19 C05-01.M06.04 rollback aislado GitHub-hosted [Javier :30]
+- Ensayo real git revert --no-commit del commit de pruebas C05-01.M05.06 en worktree efimero; validar SHA/padre, cuatro archivos exactos, igualdad de tree al padre, checkout original inmutable y rechazo de SHA no autorizado.
+- Script Bash y workflow propio sin permisos de escritura remota, sin datos, migraciones, secretos, MySQL ni cambios de runtime; QA/main/PROD intactos y RTO/RPO sin certificar.
+- A0-A4 con GitHub Actions dirigido + Scope Lock + V5 exact SHA; A5 independiente, BITACORA y readback por transicion; rollback normal git revert.
+
 ## 2026-11-16 — V19 C05-01.M06.05 solicitud A5 independiente de Design System [Javier :40]
 - Solicitud documental por microtarea y SHA para seis fuentes M05 y cinco revisiones M06, sin confundir petición con A5_PASS ni cerrar fases por lotes. M05.01–06 LISTO+A5; M06.01–02 LISTO sin A5; M06.03 en progreso y M06.04 pendiente al corte.
 - Revisión A0–A5 propone pruebas adversariales de exclusividad por TASK_ID, SHA exacto, CI realmente SUCCESS y distinguir Chromium/Angular/HTTP interceptado de JWT/RBAC/MySQL/tenant vivos. Caso positivo y cinco rechazos en memoria, sin escribir gates.
