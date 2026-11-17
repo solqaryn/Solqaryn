@@ -1,3 +1,8 @@
+## 2026-11-16 — V19 C15-04.M03.06 reparación A5_FAIL P2 logger dinámico [Javier :40]
+- Evita la segunda consulta mutable IsEnabled de LoggerMessage.Define con SkipEnabledCheck=true después de un precheck explícito para Information y Warning.
+- Regresión xUnit de logger stateful que retorna FALSE en segunda consulta: verifica una consulta, un Log invocado y recibo no durable; mantiene rechazo si está deshabilitado al inicio.
+- Conserva A5_FAIL histórico P2, solicita nueva A5 independiente tras CI exact-SHA. No toca tenant/JWT/RBAC/DB/QA/main/PROD ni desactiva validaciones.
+
 ## 2026-11-16 — V19 C13-04.M04.02 estados verificables sin PASS ficticio [Javier :10]
 - Extiende la vista privada C13-04 con carga, vacío, éxito limitado a sesión global, error opaco y denegación; catálogo de rutas/módulos permanece SIN_VERIFICAR sin fuente versionada conectada.
 - Pruebas Angular TestBed positivas/adversariales y Chromium sintético de anónimo, 503, Tab/320 px; workflow GitHub-hosted por SHA, sin modificar JWT/RBAC/backend/EF/MySQL ni habilitar QA.

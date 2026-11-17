@@ -12,13 +12,17 @@ public sealed class V5UxAuditStructuredEventSink
     public const int AuditEventId = 150406;
     private static readonly EventId AuditEvent = new(AuditEventId, "C1504UxAuditPreflight");
 
+    // Record checks IsEnabled once. Delegates must not recheck it: stateful
+    // loggers can change their answer and produce a false-positive receipt.
     private static readonly Action<ILogger, int, Exception?> Staged =
         LoggerMessage.Define<int>(LogLevel.Information, AuditEvent,
-            "C1504 UX preflight awaiting independent evidence. ItemsEvaluated={ItemsEvaluated}");
+            "C1504 UX preflight awaiting independent evidence. ItemsEvaluated={ItemsEvaluated}",
+            new LogDefineOptions { SkipEnabledCheck = true });
 
     private static readonly Action<ILogger, int, Exception?> Denied =
         LoggerMessage.Define<int>(LogLevel.Warning, AuditEvent,
-            "C1504 UX preflight denied or unavailable. ItemsEvaluated={ItemsEvaluated}");
+            "C1504 UX preflight denied or unavailable. ItemsEvaluated={ItemsEvaluated}",
+            new LogDefineOptions { SkipEnabledCheck = true });
 
     private readonly ILogger<V5UxAuditStructuredEventSink> _logger;
 

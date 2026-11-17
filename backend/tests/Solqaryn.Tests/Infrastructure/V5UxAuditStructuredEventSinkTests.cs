@@ -15,11 +15,15 @@ public sealed class V5UxAuditStructuredEventSinkTests
         public bool ThrowInIsEnabled;
         public bool ThrowInLog;
         public bool ThrowOperationCanceled;
+        public bool DisableAfterFirstEnabledCheck;
+        public int EnabledCheckCalls;
 
         public IDisposable BeginScope<TState>(TState state) where TState : notnull => Noop.Instance;
         public bool IsEnabled(LogLevel level)
         {
+            EnabledCheckCalls++;
             if (ThrowInIsEnabled) throw new InvalidOperationException("SECRET_PROVIDER_DSN");
+            if (DisableAfterFirstEnabledCheck && EnabledCheckCalls > 1) return false;
             return level switch
             {
                 LogLevel.Information => InformationEnabled,
@@ -139,6 +143,40 @@ public sealed class V5UxAuditStructuredEventSinkTests
             NullLogger<V5UxAuditStructuredEventSink>.Instance);
         Assert.False(noLogger.Record(Staged()).Recorded);
         Assert.False(noLogger.Record(Denied()).Recorded);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public void StatefulLoggerCannotSuppressLogAfterSuccessfulSinglePrecheck(bool staged)
+    {
+        var logger = new CaptureLogger { DisableAfterFirstEnabledCheck = true };
+        var receipt = new V5UxAuditStructuredEventSink(logger)
+            .Record(staged ? Staged() : Denied());
+
+        Assert.True(receipt.Recorded);
+        Assert.Equal(staged ? "UX_AUDIT_STAGED_NOT_CERTIFIED" : "UX_AUDIT_DENIED", receipt.Code);
+        Assert.Equal(1, logger.EnabledCheckCalls);
+        var emitted = Assert.Single(logger.Entries);
+        Assert.Equal(staged ? LogLevel.Information : LogLevel.Warning, emitted.Level);
+        Assert.Equal(V5UxAuditStructuredEventSink.AuditEventId, emitted.EventId);
+        Assert.False(receipt.PersistsDurably);
+        Assert.False(receipt.CertifiesA5);
+    }
+
+    [Fact]
+    public void InitiallyDisabledStatefulLoggerDoesNotRecordOrInvokeLog()
+    {
+        var logger = new CaptureLogger
+        {
+            InformationEnabled = false,
+            DisableAfterFirstEnabledCheck = true
+        };
+        var receipt = new V5UxAuditStructuredEventSink(logger).Record(Staged());
+        Assert.Equal("UX_AUDIT_SINK_DISABLED", receipt.Code);
+        Assert.False(receipt.Recorded);
+        Assert.Equal(1, logger.EnabledCheckCalls);
+        Assert.Empty(logger.Entries);
     }
 
     [Fact]
