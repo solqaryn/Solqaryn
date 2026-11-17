@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C15-04.M05.04 teclado y dialog movil [Javier :10]
+- Incremento Playwright real: Tab/Enter de skip-link en tres rutas publicas y dialog movil con foco inicial, Escape y retorno, cero HTTP mutaciones.
+- Doce casos requeridos en CI exact-SHA; A0-A4 globales siguen incompletos, EN_PROGRESO bajo DEV02, A5 ajena; sin certificar JWT/MySQL/tenant/WCAG/Web Vitals.
+
 ## 2026-11-17 — V19 C09-04.M04.06 densidad de mensajeria privada [Javier :30]
 - Cuatro pruebas Chromium reales sobre Angular para reflow a 320/375/768/1280, contenido privado retenido hasta GET, 401/403/503 opacos y tema local reversible sin POST, persistencia ni proveedores.
 - Workflow GitHub-hosted y evidencia A0-A4; sesion HTTP sintetica, NO JWT firmado, MySQL, envios reales, WCAG global ni Core Web Vitals. CI exact-SHA requerida; A5 de otra Task Javier y sin QA/main/PROD.

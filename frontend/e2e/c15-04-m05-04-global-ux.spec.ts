@@ -181,4 +181,45 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
     expect(escrituras).toEqual([]);
   });
 
+  // A0.5: pruebas de teclado real para tienda publica y dialog movil.
+  // No son evidencia de JWT, RBAC, MySQL, WCAG global o autorizacion backend.
+  test('storefront: Tab y Enter sobre skip-link de tres rutas publicas',async({page})=>{
+    const routes:[string,string][]=[
+      ['/tienda','#contenido-principal'],
+      ['/tienda/productos','#catalogo-productos'],
+      ['/tienda/categorias','#contenido-categorias']
+    ];
+    for(const [url,target] of routes){
+      await page.goto(url,{waitUntil:'domcontentloaded'});
+      const skip=page.locator('a.skip-link').first();
+      await page.keyboard.press('Tab');
+      await expect(skip).toBeFocused();
+      await expect(skip).toHaveAttribute('href',target);
+      expect(await skip.evaluate(el=>el.getBoundingClientRect().top)).toBeGreaterThanOrEqual(0);
+      await page.keyboard.press('Enter');
+      await expect(page.locator(target)).toBeVisible();
+      await expect.poll(()=>page.evaluate(()=>location.hash)).toBe(target);
+    }
+  });
+
+  test('storefront: menu modal movil con Escape y retorno de foco',async({page})=>{
+    await page.setViewportSize({width:375,height:840});
+    const writes:string[]=[];
+    page.on('request',r=>{if(!['GET','HEAD','OPTIONS'].includes(r.method()))writes.push(r.method()+' '+r.url());});
+    await page.goto('/tienda',{waitUntil:'domcontentloaded'});
+    const opener=page.getByRole('button',{name:'Abrir navegación'});
+    await expect(opener).toBeVisible();
+    await opener.click();
+    const menu=page.locator('#storefront-menu-movil');
+    await expect(menu).toBeVisible();
+    await expect(opener).toHaveAttribute('aria-expanded','true');
+    await expect(menu.getByRole('link',{name:'Inicio'})).toBeFocused();
+    await page.keyboard.press('Escape');
+    await expect(menu).toBeHidden();
+    await expect(opener).toHaveAttribute('aria-expanded','false');
+    await expect(opener).toBeFocused();
+    await noOverflow(page);
+    expect(writes).toEqual([]);
+  });
+
 });
