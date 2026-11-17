@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C09-04.M03.06 auditoría estructurada Outbox [Javier :10]
+- OutboxTenantDeliveryWorker registra denegación tenant/mensaje, resumen del lote y error de procesamiento con ILogger opcional y campos allowlisted, sin payload, claves ni Exception.Message.
+- Cinco pruebas xUnit de éxito, A/B, revocación y error del proveedor con secretos; .NET 10 Release/seguridad/Scope Lock/V5 requeridos exact-SHA, A5 independiente.
+- Solo Application, pruebas, documento y CHANGELOG en dev; sin DI nuevo, MySQL, JWT HTTP, SMTP/WhatsApp reales ni QA/main/PROD; rollback git revert.
+
 ## 2026-11-17 — V19 C13-04.M05.04 aceptación pública sin mocks [Javier :00]
 - Cuatro Playwright/Chromium nuevos verifican login, navegación a productos/categorías/ofertas y carrito en Angular real: cero `page.route()`, sin autenticación simulada ni API/tenants inventados.
 - Workflow GitHub Actions Node24/npm11, lint/build, navegador real por SHA; A0–A4 causales y A5 de Task Javier distinta, candado V17 `2000002009`.
