@@ -67,3 +67,22 @@ test.describe('C13-04.M05.04 - navegador privado y API verdaderos en CI', () => 
     expect([401, 403]).toContain(anonima.status());
   });
 });
+
+test('JWT firmado autentico recorre cuatro rutas privadas protegidas distintas', async ({ page }) => {
+  await autenticarEnPantalla(page, 'c1304_platform_only');
+  const destinos = [
+    { ruta: '/plataforma/cobertura-v5', titulo: 'Cobertura V5 · trazabilidad' },
+    { ruta: '/plataforma/auditoria-operativa-v5', titulo: 'Controles de ejecución y evidencia' },
+    { ruta: '/plataforma/gobierno-cambios-v5', titulo: 'Decisiones y controles V5' },
+    { ruta: '/plataforma/revision-amenazas-v5', titulo: 'Verificaciones de acceso y abuso' },
+  ] as const;
+  for (const destino of destinos) {
+    await test.step(destino.ruta, async () => {
+      const documento = await page.goto(destino.ruta);
+      expect(documento?.status()).toBe(200);
+      await expect.poll(() => new URL(page.url()).pathname).toBe(destino.ruta);
+      await expect(page.getByRole('heading', { name: destino.titulo, exact: true })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Iniciar sesión' })).toHaveCount(0);
+    });
+  }
+});

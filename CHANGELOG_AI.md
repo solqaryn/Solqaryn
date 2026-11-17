@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C13-04.M05.04 matriz JWT positiva multirruta [Javier :00]
+- Nueva prueba Playwright en CI .NET10/MySQL8.4/Angular con JWT firmado sobre cuatro rutas privadas y headings reales; conserva tres casos previos de autenticación, RBAC y tenant A/B.
+- No certifica 100 % de rutas ni revocación: P1 de aceptación global sigue abierto, VALIDANDO y A5 pendiente de otra Task. Checks exact-SHA obligatorios, cero cambios a runtime, QA/main/PROD o secretos.
+
 ## 2026-11-17 — CI_REPAIR V19 C13-04.M05.04 puerto Angular aislado [Javier :00]
 - Fallo reproducido en RUN 44101230377 SHA 5b02394a: `PORT=5005` heredado de API hizo que Angular CLI ignorase su puerto de inicio y chocara con API; Chromium no corrió, no es PASS.
 - Reparación mínima `PORT=4200` solo para npm start del runner; API sigue 5005, MySQL 8.4 y JWT no se alteran. Revalidar SHA nuevo, P1 y VALIDANDO permanecen; sin QA/main/PROD.
