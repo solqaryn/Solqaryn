@@ -67,9 +67,9 @@ public sealed class C0904M0304MySqlOutboxPersistenceTests
             Assert.NotEqual(a.Id, b.Id);
             Assert.Single(await repo.ClaimDisponiblesAsync(empresaB.Id, fecha, 10));
 
-            Assert.Throws<ArgumentException>(() =>
+            await Assert.ThrowsAsync<ArgumentException>(() =>
                 repo.GetByClaveIdempotenciaAsync(empresaA.Id, "clave-replay\n"));
-            Assert.Throws<ArgumentException>(() =>
+            await Assert.ThrowsAsync<ArgumentException>(() =>
                 repo.ExisteClaveIdempotenciaAsync(empresaA.Id, "clave-replay\r"));
 
             db.ChangeTracker.Clear();
