@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C15-04.M03.06 registro UX estructurado y fallos opacos [Javier :40]
+- Nuevo sink ILogger .NET10 para el worker de observaciones UX existente, con evento estructurado fijo 150406, conteo limitado y sin tenant, SHA, token ni evidencia privada en el log.
+- Casos xUnit positivos y adversariales: outcome falsificado, indices y capacidad, NullLogger/niveles deshabilitados, excepciones de proveedor y cancelacion; workflow dirigido aislado por SHA.
+- "Recorded" solo describe llamada ILogger habilitada, NO durabilidad de auditoria, WCAG/Chromium, JWT/tenant/HTTP ni MySQL; A0-A4 por CI exact-SHA, A5 otra Task Javier, rollback git revert sin QA/main/PROD.
+
 ## 2026-11-16 — V18 C08-04.M05.06 regresion Chromium sectorial [Javier :10]
 - Agrega cuatro casos Playwright reales con responsive 320/375/768/1280, Tab/foco visible y denegaciones 403/503 simuladas; niega activaciones y peticiones mutadoras.
 - GitHub-hosted Node24/Angular 22 + Chromium con concurrency por SHA y cancel-in-progress=false; solo pruebas, workflow y documento, sin modificar componentes ni endpoints.

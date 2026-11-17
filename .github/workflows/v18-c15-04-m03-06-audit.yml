@@ -1,0 +1,29 @@
+name: V18 C15-04.M03.06 - UX Audit Structured Logger
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v18-c15-04-m03-06-audit.yml'
+      - 'backend/src/Infrastructure/AutomationV5/V5UxAuditStructuredEventSink.cs'
+      - 'backend/tests/Solqaryn.Tests/Infrastructure/V5UxAuditStructuredEventSinkTests.cs'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v18-c1504-m0306-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  ux-audit:
+    name: C15-04.M03.06 - Real .NET 10 xUnit structured logging
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Release compile and targeted xUnit
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter 'FullyQualifiedName~V5UxAuditStructuredEventSinkTests' --logger 'console;verbosity=normal'
