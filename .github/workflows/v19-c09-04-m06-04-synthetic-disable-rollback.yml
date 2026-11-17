@@ -4,6 +4,9 @@ on:
     branches: [dev]
     paths:
       - 'backend/tests/Solqaryn.Tests/C0904M0604DisableRollbackIntegrationTests.cs'
+      - 'backend/src/Infrastructure/Persistence/Configurations/ConfiguracionWhatsAppEmpresaConfiguration.cs'
+      - 'backend/src/Infrastructure/Migrations/20261117215700_V19WhatsAppE164LiteralPlus.cs'
+      - 'backend/src/Infrastructure/Migrations/AppDbContextModelSnapshot.N76C.cs'
       - '.github/workflows/v19-c09-04-m06-04-synthetic-disable-rollback.yml'
   workflow_dispatch:
 permissions:
@@ -55,6 +58,6 @@ jobs:
           assert len(fs)==1, f'Expected 1 TRX, got {len(fs)}'
           root=ET.parse(fs[0]).getroot()
           c=next((e.attrib for e in root.iter() if e.tag.endswith('Counters')), None)
-          assert c and (int(c['executed']),int(c['passed']),int(c['failed']),int(c['notExecuted']))==(3,3,0,0), c
-          print('REAL_MYSQL84_TENANT_AB_ROLLBACK_TRX=3/3')
+          assert c and (int(c['executed']),int(c['passed']),int(c['failed']),int(c['notExecuted']))==(4,4,0,0), c
+          print('REAL_MYSQL84_TENANT_AB_ROLLBACK_TRX=4/4')
           PY

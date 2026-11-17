@@ -82,7 +82,28 @@ namespace Solqaryn.Infrastructure.Migrations
                 b.ToTable("ConfiguracionesWhatsAppEmpresa", null, t =>
                 {
                     t.HasCheckConstraint("CK_ConfiguracionesWhatsAppEmpresa_EmpresaId_Positivo", "`EmpresaId` > 0");
-                    t.HasCheckConstraint("CK_ConfiguracionesWhatsAppEmpresa_Numero_E164", "`NumeroTelefonoE164` REGEXP '^\\+[0-9]{8,15}$'");
+                    t.HasCheckConstraint("CK_ConfiguracionesWhatsAppEmpresa_Numero_E164", "`NumeroTelefonoE164` REGEXP '^[+][0-9]{8,15}");
+                    t.HasCheckConstraint("CK_ConfiguracionesWhatsAppEmpresa_Token_Referencia", "INSTR(`TokenSecretoReferencia`, '://') > 1");
+                    t.HasCheckConstraint("CK_ConfiguracionesWhatsAppEmpresa_Version_Positiva", "`Version` > 0");
+                    t.HasCheckConstraint("CK_ConfiguracionesWhatsAppEmpresa_Webhook_Referencia", "INSTR(`WebhookSecretoReferencia`, '://') > 1");
+                });
+            });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ConfiguracionWhatsAppEmpresa", b =>
+            {
+                b.HasOne("Solqaryn.Domain.Entities.Empresa", "Empresa")
+                    .WithMany()
+                    .HasForeignKey("EmpresaId")
+                    .OnDelete(DeleteBehavior.Restrict)
+                    .IsRequired();
+
+                b.Navigation("Empresa");
+            });
+#pragma warning restore 612, 618
+        }
+    }
+}
+");
                     t.HasCheckConstraint("CK_ConfiguracionesWhatsAppEmpresa_Token_Referencia", "INSTR(`TokenSecretoReferencia`, '://') > 1");
                     t.HasCheckConstraint("CK_ConfiguracionesWhatsAppEmpresa_Version_Positiva", "`Version` > 0");
                     t.HasCheckConstraint("CK_ConfiguracionesWhatsAppEmpresa_Webhook_Referencia", "INSTR(`WebhookSecretoReferencia`, '://') > 1");

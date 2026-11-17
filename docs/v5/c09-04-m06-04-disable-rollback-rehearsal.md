@@ -18,3 +18,9 @@ Criterio institucional: «Ensayar rollback **o** desactivación sin borrar datos
 
 ## A4–A5
 Sólo prueba nueva, este documento, sección contigua CHANGELOG; workflow actual conserva filtro y oráculo TRX. A4 exige `verify-solqaryn-project-scope`, V5 y job MySQL dirigidos `completed/success` del SHA exacto, más readback PLAN/COLA/DAG/BITACORA y ninguna P0/P1 sin resolver. Si CI FAIL, SKIPPED, CANCELLED, QUEUED o IN_PROGRESS, mantener VALIDANDO. A5 por Task Javier distinta de DEV06, con lectura independiente de diff, criterios y logs. No QA/main/PROD.
+
+
+## Reparacion causal V19 - E164, migracion correctiva y ensayo original (2026-11-17)
+
+El error de MySQL 8.4 en run 44147985415 fue el CHECK CK_ConfiguracionesWhatsAppEmpresa_Numero_E164 que rechazo el E164 sintetico valido +50499990001. La correccion cambia solo el patron a ^[+][0-9]{8,15}$, sin escapes SQL, conservando la longitud aceptada en modelo y snapshot y agregando una migracion nueva forward-only. No se reescribe la migracion historica N76C.
+Se restaura el ensayo original de desactivar configuracion A, mantener B y sus outbox, comprobar versionado, y hacer ROLLBACK transaccional de una reconfiguracion A sin afectar los datos originales. Se conserva ensayo MySQL A/B de rollback outbox y dos negativos host/puerto, con total esperado 4/4. Solo MySQL efimero GitHub Actions, sin Aiven/PROD, envios reales ni credenciales. Down prohibe restaurar el CHECK defectuoso. CI exact-SHA, Scope Lock y V5 requieren SUCCESS antes de contar PASS; A5 distinto, historia de defectos se preserva.

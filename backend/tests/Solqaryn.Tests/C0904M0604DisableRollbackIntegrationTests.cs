@@ -113,4 +113,101 @@ public sealed class C0904M0604DisableRollbackIntegrationTests
             await cleanup.Database.EnsureDeletedAsync();
         }
     }
+
+    [Fact]
+    public async Task DisableTenantAAndRollbackEditKeepBothOutboxRows()
+    {
+        var cs = LocalOnly(Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+            ?? throw new InvalidOperationException("An ephemeral GitHub-hosted MySQL service is required."));
+        cs.Database = "v19_c0904m0604_" + Guid.NewGuid().ToString("N");
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseMySQL(cs.ConnectionString, o => o.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
+            .Options;
+        try
+        {
+            int tenantA, tenantB;
+            await using (var db = new AppDbContext(options))
+            {
+                await Phase7MySqlTestDatabase.InitializeFreshAsync(db);
+                var a = new Empresa("Synthetic M0604 A");
+                var b = new Empresa("Synthetic M0604 B");
+                db.Set<Empresa>().AddRange(a, b);
+                await db.SaveChangesAsync();
+                (tenantA, tenantB) = (a.Id, b.Id);
+                Assert.NotEqual(tenantA, tenantB);
+                db.Set<ConfiguracionWhatsAppEmpresa>().AddRange(
+                    new ConfiguracionWhatsAppEmpresa(tenantA, "+50499990001",
+                        "vault://synthetic-a", "vault://synthetic-webhook-a"),
+                    new ConfiguracionWhatsAppEmpresa(tenantB, "+50499990002",
+                        "vault://synthetic-b", "vault://synthetic-webhook-b"));
+                db.Set<MensajeOutbox>().AddRange(
+                    MensajeOutbox.Crear(tenantA, "crm.mensaje.preparado",
+                        "{\"test\":\"a\"}", "rollback-preserve-a"),
+                    MensajeOutbox.Crear(tenantB, "crm.mensaje.preparado",
+                        "{\"test\":\"b\"}", "rollback-preserve-b"));
+                await db.SaveChangesAsync();
+            }
+            await using (var db = new AppDbContext(options))
+            {
+                var a = await db.Set<ConfiguracionWhatsAppEmpresa>()
+                    .SingleAsync(x => x.EmpresaId == tenantA);
+                Assert.True(a.Activa);
+                Assert.Equal(1L, a.Version);
+                a.Desactivar();
+                await db.SaveChangesAsync();
+                a.Desactivar();
+                await db.SaveChangesAsync();
+                Assert.False(a.Activa);
+                Assert.Equal(2L, a.Version);
+            }
+            await using (var db = new AppDbContext(options))
+            {
+                Assert.False((await db.Set<ConfiguracionWhatsAppEmpresa>()
+                    .AsNoTracking().SingleAsync(x => x.EmpresaId == tenantA)).Activa);
+                var b = await db.Set<ConfiguracionWhatsAppEmpresa>()
+                    .AsNoTracking().SingleAsync(x => x.EmpresaId == tenantB);
+                Assert.True(b.Activa);
+                Assert.Equal(1L, b.Version);
+                Assert.Equal("vault://synthetic-b", b.TokenSecretoReferencia);
+                Assert.Equal(2, await db.Set<MensajeOutbox>().CountAsync());
+                Assert.Equal(1, await db.Set<MensajeOutbox>()
+                    .CountAsync(x => x.EmpresaId == tenantA && x.ClaveIdempotencia == "rollback-preserve-a"));
+                Assert.Equal(1, await db.Set<MensajeOutbox>()
+                    .CountAsync(x => x.EmpresaId == tenantB && x.ClaveIdempotencia == "rollback-preserve-b"));
+                Assert.Equal(0, await db.Set<MensajeOutbox>()
+                    .CountAsync(x => x.EmpresaId == tenantB && x.ClaveIdempotencia == "rollback-preserve-a"));
+            }
+            await using (var db = new AppDbContext(options))
+            {
+                await using var tx = await db.Database.BeginTransactionAsync();
+                var a = await db.Set<ConfiguracionWhatsAppEmpresa>()
+                    .SingleAsync(x => x.EmpresaId == tenantA);
+                a.Reconfigurar("+50499990003",
+                    "vault://synthetic-new", "vault://synthetic-webhook-new");
+                await db.SaveChangesAsync();
+                await tx.RollbackAsync();
+            }
+            await using (var db = new AppDbContext(options))
+            {
+                var a = await db.Set<ConfiguracionWhatsAppEmpresa>()
+                    .AsNoTracking().SingleAsync(x => x.EmpresaId == tenantA);
+                Assert.False(a.Activa);
+                Assert.Equal(2L, a.Version);
+                Assert.Equal("+50499990001", a.NumeroTelefonoE164);
+                Assert.Equal("vault://synthetic-a", a.TokenSecretoReferencia);
+                Assert.Equal("vault://synthetic-webhook-a", a.WebhookSecretoReferencia);
+                Assert.Equal(2, await db.Set<MensajeOutbox>().CountAsync());
+                Assert.Equal(1, await db.Set<MensajeOutbox>()
+                    .CountAsync(x => x.EmpresaId == tenantA && x.ClaveIdempotencia == "rollback-preserve-a"));
+                Assert.Equal(1, await db.Set<MensajeOutbox>()
+                    .CountAsync(x => x.EmpresaId == tenantB && x.ClaveIdempotencia == "rollback-preserve-b"));
+            }
+        }
+        finally
+        {
+            await using var cleanup = new AppDbContext(options);
+            await cleanup.Database.EnsureDeletedAsync();
+        }
+    }
+
 }
