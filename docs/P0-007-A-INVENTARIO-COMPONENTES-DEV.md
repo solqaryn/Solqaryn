@@ -524,3 +524,11 @@ Se incorpora exactamente una superficie privada real de mensajería multicanal d
 - `frontend/src/app/features/plataforma/c09-04-m04-01-mensajeria-privada.component.ts`
 
 Su acceso exige plataformaGuard exacto y comprobación de sesión administrativa global en servidor; la pantalla local no lee datos tenant ni envía correo o WhatsApp. Registrar un componente no acredita proveedores, JWT/RBAC de integración, HTTP, MySQL, accesibilidad global ni despliegue. Mantener comparación por conjunto y pruebas negativas de P0-007.A; revalidar CI exact-SHA, A0–A4 y A5 por otra Task Javier. Rollback git revert.
+
+## Actualización causal V19 C09-04.M04.02 — 17 de noviembre de 2026
+
+El P0-007.A del SHA `83e8323a584a08305fe3f08335fc1f1ded4833de` detectó la ruta nueva que no estaba en el catálogo. Se incorpora exactamente una entrada adicional, ahora **160 componentes**; el histórico queda intacto.
+
+- `frontend/src/app/features/plataforma/c09-04-m04-02-estados.component.ts`
+
+Este catálogo es solo de archivos, no certificación Angular E2E, permisos JWT/tenant, API, MySQL, SMTP/WhatsApp ni QA/PROD. Revalidar verificador inalterado salvo conteos exactos, Scope Lock y procedencia V5; A5 independiente.

@@ -6711,3 +6711,7 @@
 ## 2026-11-17 - V19 C09-04.M04.02 estados privados de mensajeria [Javier :20]
 - Componente standalone Angular OnPush reutilizable con estados cargando, vacio, error y exito declarativo; deniega acceso por falta de sesion Plataforma/Administrador y revocacion, sin acciones de proveedor ni datos tenant.
 - Ocho pruebas TestBed adversariales y workflow GitHub-hosted dirigidos, con tipado/lint/build, Scope Lock y procedencia V5 exact-SHA exigidos; no se atribuye PASS hasta CI real. La ruta privada sigue siendo responsabilidad separada de C09-04.M04.01; no certificar JWT HTTP, MySQL, envios ni QA/PROD.
+
+## 2026-11-17 - V19 reparacion CI P0-007.A C09-04.M04.02 [Javier :20]
+- La CI de catálogo exact-SHA 83e8323a detectó el componente real no inventariado; se añade sólo ese archivo y el conteo estricto actual, sin desactivar negativos ni controles.
+- Requiere revalidación exact-SHA de P0-007.A, TestBed Angular, V5 y Scope Lock. Sin certificación de proveedores, backend JWT, MySQL, QA/main/PROD.
