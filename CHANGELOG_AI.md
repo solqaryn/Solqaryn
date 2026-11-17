@@ -1,3 +1,7 @@
+## 2026-11-17 - V19 C15-04.M05.04 reparar selector login y censo [Javier :10]
+- GitHub run44147705676 detecto fallo del test Web Vitals: buscaba h1 visible en /login, pero el formulario usa h2#login-title; reparado manteniendo las cuatro navegaciones, sin falso PASS (CI nuevo pendiente).
+- Censo actual de rutas 161 declaraciones en 9 fuentes, 47 parametrizadas y 110 en app.routes.ts; es solo inventario estatico, no auditoria global completada. EN_PROGRESO DEV02; A5 distinta Task.
+
 ## 2026-11-17 — V19 C09-04.M06.04 rollback/desactivación sintética en MySQL 8.4 [Javier :50]
 - Prueba de integración xUnit + workflow GitHub-hosted MySQL 8.4: desactivación idempotente de configuración WhatsApp A, tenant B intacto, dos mensajes outbox preservados y transacción revertida.
 - R2 test-only, sin dispatch, JWT, HMAC ni proveedor real; A5_FAIL previo de M06.01 sigue abierto. CI exact-SHA y A5 distinta requeridas, sin QA/main/PROD.

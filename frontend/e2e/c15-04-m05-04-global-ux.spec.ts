@@ -409,7 +409,11 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
             } catch { /* CLS no certificado en navegador sin soporte */ }
           });
           await page.goto(ruta, {waitUntil: 'domcontentloaded'});
-          await expect(page.getByRole('heading', {level: 1}).first()).toBeVisible();
+          if (ruta === '/login') {
+            await expect(page.locator('#login-title')).toBeVisible();
+          } else {
+            await expect(page.getByRole('heading', {level: 1}).first()).toBeVisible();
+          }
           await page.waitForTimeout(250);
           const muestra = await page.evaluate(() => {
             const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
