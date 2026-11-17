@@ -129,6 +129,9 @@ public sealed class C0904M0604DisableRollbackIntegrationTests
             await using (var db = new AppDbContext(options))
             {
                 await Phase7MySqlTestDatabase.InitializeFreshAsync(db);
+                const string migrationId = "20261117215700_V19WhatsAppE164LiteralPlus";
+                Assert.Contains(migrationId, db.Database.GetMigrations());
+                Assert.Contains(migrationId, await db.Database.GetAppliedMigrationsAsync());
                 var a = new Empresa("Synthetic M0604 A");
                 var b = new Empresa("Synthetic M0604 B");
                 db.Set<Empresa>().AddRange(a, b);

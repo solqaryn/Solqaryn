@@ -28,3 +28,7 @@ Se restaura el ensayo original de desactivar configuracion A, mantener B y sus o
 
 ## Corrección de snapshot Oracle EF Core (2026-11-17)
 El CI del commit 9d131c4b aprobó el bootstrap MySQL fresh (139 tablas, pending=0), pero `dotnet-ef migrations has-pending-model-changes` falló porque el proyecto `Infrastructure.Migrations` utiliza el snapshot `OracleAppDbContextModelSnapshot.cs` (diferente de `AppDbContextModelSnapshot.N76C.cs`), que conservaba el CHECK anterior. Este cambio aplica el mismo patrón sin escapes `^[+][0-9]{8,15}$` al snapshot Oracle real. No atribuir PASS hasta que el job Oracle de CI del nuevo SHA complete SUCCESS. Sin despliegue ni cambio productivo.
+
+
+## Registro y aplicación en ensamblado Oracle (V19)
+La migración correctiva se ubica en `backend/src/Infrastructure.Migrations/Migrations/20261117215700_V19WhatsAppE164LiteralPlus.cs`, namespace `.Oracle`, que es el ensamblado real `Solqaryn.Infrastructure.Migrations` utilizado por el bootstrap, `dotnet-ef` y la API Oracle. Se retira la copia inerte del proyecto histórico; el modelo y el snapshot activo quedan alineados. La prueba dirigida exige ahora que EF registre y aplique el ID exacto en MySQL 8.4 efímero. No se ejecuta ninguna migración sobre Aiven/PROD por publicar el archivo.

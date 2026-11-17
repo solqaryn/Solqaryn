@@ -1,3 +1,6 @@
+## 2026-11-17 — Migración E164 registrada en ensamblado Oracle activo [ChatGPT directo]
+- Se mueve la migración V19 de la carpeta histórica a `Infrastructure.Migrations/Migrations` y se exige desde xUnit que su ID exista en `GetMigrations` y `GetAppliedMigrations` de MySQL 8.4 efímero. Se actualiza el workflow dirigido y la documentación; Scope Lock, V5 y Oracle CI se validan en el SHA nuevo, sin despliegue ni aprobación artificial.
+
 ## 2026-11-17 — Reconciliación snapshot Oracle C09-04.M06.04 [ChatGPT directo]
 - El CI Oracle baseline reveló has-pending-model-changes tras el E164: se sincroniza exactamente CK_ConfiguracionesWhatsAppEmpresa_Numero_E164 en el snapshot Oracle real de Infrastructure.Migrations con el modelo EF, sin cambiar tablas de producción ni debilitar los controles.
 - Fuente original 9d131c4b: 4/4 MySQL 8.4 A/B PASS y seguridad PASS; Oracle baseline CI tenía FAIL y exige nueva verificación en SHA descendiente antes de cerrar VALIDANDO. No falsificar A5 ni aprobación productiva.

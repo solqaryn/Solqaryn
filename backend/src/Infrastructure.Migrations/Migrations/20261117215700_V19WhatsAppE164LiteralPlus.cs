@@ -5,7 +5,7 @@ using Solqaryn.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace Solqaryn.Infrastructure.Migrations;
+namespace Solqaryn.Infrastructure.Migrations.Oracle;
 
 /// <summary>Correct MySQL 8.4 E.164 CHECK without rewriting historical migration N76C.</summary>
 [DbContext(typeof(AppDbContext))]

@@ -5,8 +5,9 @@ on:
     paths:
       - 'backend/tests/Solqaryn.Tests/C0904M0604DisableRollbackIntegrationTests.cs'
       - 'backend/src/Infrastructure/Persistence/Configurations/ConfiguracionWhatsAppEmpresaConfiguration.cs'
-      - 'backend/src/Infrastructure/Migrations/20261117215700_V19WhatsAppE164LiteralPlus.cs'
+      - 'backend/src/Infrastructure.Migrations/Migrations/20261117215700_V19WhatsAppE164LiteralPlus.cs'
       - 'backend/src/Infrastructure/Migrations/AppDbContextModelSnapshot.N76C.cs'
+      - 'backend/src/Infrastructure.Migrations/Migrations/OracleAppDbContextModelSnapshot.cs'
       - '.github/workflows/v19-c09-04-m06-04-synthetic-disable-rollback.yml'
   workflow_dispatch:
 permissions:
