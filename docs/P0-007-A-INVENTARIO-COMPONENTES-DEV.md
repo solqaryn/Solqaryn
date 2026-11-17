@@ -508,3 +508,11 @@ La implementación de la superficie privada de preparación MySQL añadió exact
 - `frontend/src/app/features/plataforma/c12-04-m04-01-cutover-readonly.component.ts`
 
 La puerta de seguridad ERP también detectó el nuevo path privado antes de su incorporación a la allowlist exacta de `plataformaGuard`; se añade solo esa ruta, preservando la comprobación de sesión backend y los negativos de rutas no autorizadas. Esta reparación no autoriza cutover, restore, DNS, MySQL ni PROD, ni elimina auditorías. Revalidar CI exact-SHA, A0–A4 y A5 de Task distinta. Rollback con `git revert` normal.
+
+## Actualización causal V19 C13-04.M04.01 — 17 de noviembre de 2026
+
+El inventario estricto detectó correctamente el nuevo componente autónomo del catálogo privado en `dev`. Se incorpora **una única** entrada verificable, pasando de 157 a **158 componentes** (150 en features y 8 en shared) sin borrar ni reinterpretar los cortes históricos ni relajar la comparación de rutas reales.
+
+- `frontend/src/app/features/plataforma/c13-04-m04-01-catalogo-rutas.component.ts`
+
+El control P0-007.A mantiene negativos de archivo omitido, ficticio, duplicado y exclusión por carpeta. Esta entrada no acredita 16 módulos implementados, JWT/RBAC real, datos, HTTP, MySQL, métricas ni QA/main/PROD. La ruta tiene `plataformaGuard` y se revisa con el auditor exacto de control plane. Exigir GitHub Actions SUCCESS SHA nuevo, rollback git revert y A5 independiente.

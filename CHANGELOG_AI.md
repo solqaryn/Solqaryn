@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C13-04.M04.01 recuperación P0-007.A y auditor ERP [Javier :30]
+- QA_DEFECT_FOUND en CI: el catálogo estricto rechazó una nueva ruta de componente no registrada y el auditor ERP rechazó una nueva ruta privada no incluida en su lista cerrada.
+- Alta exacta de un componente verificado en manifiesto (158 total, 150 features, 8 shared) y solo la ruta privada `plataforma/inventario-rutas-v19` al auditor sin relajar `plataformaGuard`, backend, controles negativos ni filtros de rutas.
+- Requiere check P0-007.A, ERP, V19 seis Vitest/cuatro Chromium y Scope Lock/V5 SUCCESS en SHA reparado; A5 por otra Task. Sin QA/main/PROD, cambios de tenant/JWT/MySQL ni force-push.
+
 ## 2026-11-17 — V19 CI repair C13-04.M04.01 ruta parametrizada duplicada [Javier :30]
 - QA_DEFECT_FOUND en prueba Chromium SHA 93edefa6: el path clientes/:id/editar aparece dos veces en configuraciones Router distintas; la aserción de unicidad fallaba aun con ambos sin enlace.
 - La reparación exige presencia de una o más coincidencias y cero anchors para TODAS las filas con :id; se conservan los otros controles de 16 programas, rutas, 403 sintético, 320/375/768/1280 y Tab real.
