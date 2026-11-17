@@ -46,10 +46,7 @@ public sealed class MensajeOutboxRepository : IMensajeOutboxRepository
         CancellationToken cancellationToken = default)
     {
         ExigirEmpresa(empresaId);
-        if (string.IsNullOrWhiteSpace(claveIdempotencia))
-            throw new ArgumentException("La clave de idempotencia es obligatoria.", nameof(claveIdempotencia));
-
-        var normalizada = claveIdempotencia.Trim();
+        var normalizada = ExigirClaveIdempotencia(claveIdempotencia);
         return Mensajes.AsNoTracking().SingleOrDefaultAsync(
             mensaje => mensaje.EmpresaId == empresaId && mensaje.ClaveIdempotencia == normalizada,
             cancellationToken);
@@ -61,10 +58,7 @@ public sealed class MensajeOutboxRepository : IMensajeOutboxRepository
         CancellationToken cancellationToken = default)
     {
         ExigirEmpresa(empresaId);
-        if (string.IsNullOrWhiteSpace(claveIdempotencia))
-            throw new ArgumentException("La clave de idempotencia es obligatoria.", nameof(claveIdempotencia));
-
-        var normalizada = claveIdempotencia.Trim();
+        var normalizada = ExigirClaveIdempotencia(claveIdempotencia);
         return Mensajes.AsNoTracking().AnyAsync(
             mensaje => mensaje.EmpresaId == empresaId && mensaje.ClaveIdempotencia == normalizada,
             cancellationToken);
@@ -246,6 +240,24 @@ public sealed class MensajeOutboxRepository : IMensajeOutboxRepository
                 cancellationToken);
 
         return afectados == 1;
+    }
+
+    private static string ExigirClaveIdempotencia(string claveIdempotencia)
+    {
+        if (string.IsNullOrWhiteSpace(claveIdempotencia))
+            throw new ArgumentException("La clave de idempotencia es obligatoria.", nameof(claveIdempotencia));
+
+        foreach (var caracter in claveIdempotencia)
+        {
+            if (char.IsControl(caracter))
+                throw new ArgumentException("La clave contiene caracteres de control.", nameof(claveIdempotencia));
+        }
+
+        var normalizada = claveIdempotencia.Trim();
+        if (normalizada.Length > MensajeOutbox.LongitudMaximaClaveIdempotencia)
+            throw new ArgumentException("La clave excede el maximo permitido.", nameof(claveIdempotencia));
+
+        return normalizada;
     }
 
     private static void ExigirEmpresa(int empresaId)

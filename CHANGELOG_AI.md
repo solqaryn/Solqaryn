@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C09-04.M03.04 MySQL 8.4 outbox tenant/idempotencia [Javier :20]
+- Infraestructura: validador de claves de idempotencia en lecturas EF rechaza controles CR/LF y valores fuera del limite, sin cambiar el contrato publico ni los datos.
+- Regresion xUnit Category=Integration en MySQL 8.4 efimero real: persistencia, aislamiento A/B, duplicados/indice unico y claim CAS; workflow SHA-especifico sin cancelacion.
+- R2 sin despliegue, API, JWT real ni proveedor de mensajeria. A0–A4 solo tras CI causal SUCCESS, A5 independiente; Scope Lock STRICT, rollback normal y ninguna autorizacion QA/main/PROD.
+
 ## 2026-11-17 — V19 C12-04.M05.02 contrato HTTP/DTO de cutover privado [Javier :40]
 - Siete pruebas reales Angular TestBed+Componente de cutover y servicio de sesión con HttpClientTesting: 200 global, 401, 403, 503, 200 Empresa, success=false, anónimo; estados privados fail-closed.
 - CI SHA-scoped GitHub-hosted Node24/npm11 ejecuta Vitest, lint/build con Scope Lock y V5; no certificar JWT/RBAC/tenant servidor, MySQL o restore mediante HTTP simulado. A5 independiente; solo dev.
