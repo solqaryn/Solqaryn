@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C13-04.M05.04 guardas privadas anónimas [Javier :00]
+- Tres casos Chromium adicionales comprueban rechazo de ingreso directo a dashboard, productos y plataforma sin token, sin mocks ni interceptación HTTP; se conservan cuatro escenarios públicos (7 casos dirigidos en nuevo SHA).
+- La prueba de guard Angular no acredita JWT real, API, MySQL ni cobertura global: P1 sigue abierto y estado VALIDANDO; GitHub Actions exact-SHA y Scope Lock/V5 obligatorios antes de cualquier certificación.
+- Entrega limitada a test/workflow/evidencia/CHANGELOG, sin cambiar servicios, tenants, secretos ni producto; rollback normal git revert.
+
 ## 2026-11-17 — V19 C12-04.M06.04 ensayo MySQL 8.4 sintetico real [Javier :50]
 - Nuevo workflow GitHub-hosted de restore de mysqldump efimero de tres filas A/B, SHA2, rollback SQL y rechazo de dump malformado, sujeto a check exact-SHA.
 - No usar Aiven ni datos reales; sin Oracle EF migrations o RPO/RTO acreditados; conservar VALIDANDO y A5 independiente pendiente.

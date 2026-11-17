@@ -50,4 +50,17 @@ test.describe('C13-04.M05.04 aceptación positiva pública sin mocks', () => {
     await expect(page).toHaveURL(/\/tienda\/carrito(?:\?|$)/);
     await expect(page.locator('main#carrito-principal h1')).toHaveText('Mi carrito');
   });
+
+  // Guardas reales de Angular con sesión anónima. No se intercepta la red ni se
+  // fabrican credenciales. Son NEGATIVOS de navegación, no JWT firmado/API real.
+  for (const rutaPrivada of ['/dashboard', '/productos', '/plataforma/inventario-rutas-v19']) {
+    test(`sin sesión se rechaza el ingreso directo a ${rutaPrivada}`, async ({ page }) => {
+      const response = await page.goto(rutaPrivada);
+      expect(response?.ok()).toBe(true);
+      await expect(page).toHaveURL(/\/login(?:\?|$)/);
+      await expect(page.getByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
+      expect(page.url()).not.toContain(rutaPrivada);
+    });
+  }
+
 });

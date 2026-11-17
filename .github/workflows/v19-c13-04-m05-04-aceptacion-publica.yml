@@ -18,7 +18,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   e2e:
-    name: C13-04.M05.04 - cuatro Chromium sin mocks de red
+    name: C13-04.M05.04 - siete Chromium sin mocks de red
     runs-on: ubuntu-latest
     timeout-minutes: 45
     env:
@@ -60,7 +60,7 @@ jobs:
           done
           cat c1304m0504.log >&2
           exit 1
-      - name: Cuatro recorridos positivos Chromium sin HTTP interceptado
+      - name: Cuatro recorridos públicos y tres rechazos privados sin HTTP interceptado
         run: npx playwright test e2e/c13-04-m05-04-aceptacion-publica.spec.ts --config=playwright.config.ts --workers=1 --retries=0
       - name: Evidencias
         if: always()
