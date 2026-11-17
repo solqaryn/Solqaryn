@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C09-04.M04.05 accesibilidad dirigida multicanal [Javier :30]
+- Cuatro escenarios Chromium nuevos sobre pantalla privada existente: rechazo 403, 320–1280 px, Tab/Enter desde inicio y cálculo numérico de contraste de h1, sin .focus artificial.
+- Solo prueba browser R2 con sesión de plataforma sintética, no JWT real ni certificación WCAG global; cero cambios de componente, servicios, permisos, proveedores, datos o entornos.
+- CI GitHub-hosted exact-SHA pendiente, A5 independiente; rollback git revert normal, Scope Lock STRICT.
+
 ## 2026-11-17 — V19 C09-04.M04.01 superficie multicanal privada [Javier :30]
 - Implementación real Angular standalone con plataformaGuard, Signals y estado declarativo NO_CONECTADO para email, WhatsApp y otros proveedores; cero credenciales, consultas tenant o operaciones de envío.
 - Seis pruebas Vitest de permisos y revocación; cuatro escenarios Chromium reales para denegación, teclado, 320–1280 px y ausencia de escrituras, sujetos a CI exact-SHA.
