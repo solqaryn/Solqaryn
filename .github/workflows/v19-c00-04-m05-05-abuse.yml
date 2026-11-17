@@ -1,0 +1,36 @@
+name: V19 C00-04.M05.05 - Seguridad negativa de gobierno
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/Application/C0004M0505GovernanceAbuseNegativeTests.cs'
+      - 'backend/src/Application/Governance/GobiernoCambiosAuthorizationService.cs'
+      - 'backend/src/Application/Security/IdentidadUniversalAuthorizationGuard.cs'
+      - '.github/workflows/v19-c00-04-m05-05-abuse.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c0004-m0505-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  security-abuse:
+    name: C00-04.M05.05 - xUnit seguridad negativa Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout exact SHA
+        uses: actions/checkout@v4
+      - name: .NET 10 pin
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Restore real
+        run: dotnet restore Solqaryn.sln
+      - name: Build Release
+        run: dotnet build Solqaryn.sln --configuration Release --no-restore
+      - name: Rechazos tenant A/B, permisos y abuso
+        run: dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter "FullyQualifiedName~C0004M0505GovernanceAbuseNegativeTests" --logger "console;verbosity=normal"

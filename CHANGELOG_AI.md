@@ -1,3 +1,7 @@
+## 2026-11-16 — V19 C00-04.M05.05 seguridad negativa de gobierno [Javier :30]
+- Añade siete pruebas xUnit adversariales sobre el servicio real Application: tenant A/B antes de I/O, administrador legacy sin permiso relacional, revocacion, ambito manipulado, NO_GO sensible e ID adulterado, mas control positivo inerte.
+- CI .NET 10 Release dirigida por SHA sin cancelar ejecuciones previas, Scope Lock y V5; R2 sin modificar runtime ni afirmar HTTP/JWT/MySQL real. A0-A4 condicionados a pruebas exactas y A5 por otra Task Javier; rollback mediante git revert normal.
+
 ## 2026-11-16 — V19 C00-04.M05.02 contrato DTO seguro de gobierno [Javier :20]
 - Incorpora xUnit sobre JSON real del DTO inerte: sin Motivo/IdempotencyKey privados, sin permisos, NO_GO para cambios sensibles, limites 600/601, SHA y entradas manipuladas.
 - Workflow .NET 10.0.401 Release dirigido por SHA con concurrency sin cancelacion; riesgo R2 por datos y CI. No crea endpoint HTTP ni cambia runtime, tenant/JWT/RBAC/EF/MySQL, QA/main/PROD. A0-A4 sujetos a CI real y A5 independiente; rollback git revert.
