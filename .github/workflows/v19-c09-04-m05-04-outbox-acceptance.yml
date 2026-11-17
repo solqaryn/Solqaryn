@@ -1,0 +1,26 @@
+name: V19 C09-04.M05.04 - aceptacion positiva outbox
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/C0904M0504OutboxPositiveAcceptanceTests.cs'
+      - '.github/workflows/v19-c09-04-m05-04-outbox-acceptance.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c09-04-m05-04-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  aceptacion:
+    name: C09-04.M05.04 - xUnit positivo API y aplicacion
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: xUnit Release - accepted y replay tenant
+        run: |
+          dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter 'FullyQualifiedName~C0904M0504OutboxPositiveAcceptanceTests' --logger 'console;verbosity=normal'

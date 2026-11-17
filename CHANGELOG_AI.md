@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C09-04.M05.04 aceptación positiva outbox [Javier :40]
+- Tres pruebas xUnit integran controlador/API y servicio Application reales con repositorio y autoridad simulados; comprueban estado Pendiente, una única alta ante replay y separación de eventos/empresa A-B con igual clave.
+- Workflow GitHub-hosted .NET 10 Release, sin afirmar autenticación JWT, MySQL, HTTP real ni proveedores; CI exact-SHA A0-A4 y revisor A5 independiente. Solo dev, rollback git revert normal.
+
 ## 2026-11-17 — V19 C15-04.M05.04 teclado accesible de pestañas cuenta [Javier :10]
 - ARIA tablist de /tienda/cuenta: roving tabindex, ArrowRight/Left, Home/End y panel etiquetado; sin cambios de backend, credenciales ni datos.
 - Nueva regresión Chromium real con dos viewports, foco, ausencia de overflow y cero mutaciones HTTP. Total esperado 14 tests; CI pendiente, auditoría R2 global EN_PROGRESO sin A5 propia.
