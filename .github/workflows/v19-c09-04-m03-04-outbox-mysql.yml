@@ -43,7 +43,7 @@ jobs:
       - name: Acreditar MySQL 8.4 efimero local
         run: |
           set -euo pipefail
-          docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -Nse 'SELECT VERSION();' | grep -E '^8\\.4\\.'
+          docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -Nse 'SELECT VERSION();' | grep -E '^8[.]4[.]'
       - name: Build y prueba real EF tenant A/B e idempotencia
         working-directory: backend
         run: |
