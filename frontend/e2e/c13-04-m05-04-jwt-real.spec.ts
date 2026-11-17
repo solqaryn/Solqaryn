@@ -203,3 +203,41 @@ test('Router recursivo importa rutas ERP y niega anonimato en Chrome real', asyn
     });
   }
 });
+
+
+test('JWT real verifica empresa A y niega empresa B falsificada al abrir detalle dinamico', async ({ page, request }) => {
+  // Toda la identidad procede del login real y el MySQL 8.4 efimero; la
+  // eleccion de empresa en localStorage es una solicitud, nunca autoridad.
+  await autenticarEnPantalla(page, 'c1304_admin_a');
+  const token = await page.evaluate(() => localStorage.getItem('solqaryn_token'));
+  expect(token).toMatch(/^[^.]+\.[^.]+\.[^.]+$/);
+  const headers = { Authorization: 'Bearer ' + token };
+  const correcta = await request.get(api + '/tenant-context/1', { headers });
+  expect(correcta.status()).toBe(200);
+  expect((await correcta.json())?.data?.empresaId).toBe(1);
+  const externa = await request.get(api + '/tenant-context/2', { headers });
+  expect([403, 404]).toContain(externa.status());
+
+  // La navegacion privada positiva debe recuperar un contexto real despues
+  // de recargar Angular y no depender de una señal inventada por el test.
+  await page.evaluate(() => localStorage.setItem('solqaryn_empresa_solicitada_id', '1'));
+  const verificada = page.waitForResponse(r =>
+    r.url().includes('/tenant-context/1') && r.request().method() === 'GET');
+  const perfil = await page.goto('/perfil');
+  expect(perfil?.status()).toBe(200);
+  expect((await verificada).status()).toBe(200);
+  await expect(page).toHaveURL(/\/perfil$/);
+  await expect(page.getByRole('heading', { name: 'Mi perfil' })).toBeVisible();
+  await expect(page.getByText('Contexto empresarial no verificado')).toHaveCount(0);
+
+  // Una empresa B inyectada por el navegador no puede habilitar una ruta
+  // dinamica con el JWT legitimo de la empresa A; backend decide acceso.
+  await page.evaluate(() => localStorage.setItem('solqaryn_empresa_solicitada_id', '2'));
+  const rechazada = page.waitForResponse(r =>
+    r.url().includes('/tenant-context/2') && r.request().method() === 'GET');
+  const detalle = await page.goto('/productos/999999/editar');
+  expect(detalle?.status()).toBe(200); // HTML SPA, no autorización backend
+  expect([403, 404]).toContain((await rechazada).status());
+  await expect(page).toHaveURL(/\/login(?:\?|$)/);
+  await expect(page.getByRole('heading', { name: 'Mi perfil' })).toHaveCount(0);
+});

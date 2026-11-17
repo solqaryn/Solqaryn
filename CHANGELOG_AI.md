@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C13-04.M05.04 empresa A positiva y ruta parametrizada B denegada [Javier :00]
+- Prueba Playwright R2 añadida: JWT firmado y contexto MySQL 8.4 efímero permiten abrir /perfil en empresa A; una solicitud local de empresa B no autoriza /productos/999999/editar y exige rechazo backend. CI exact-SHA y Chromium pendientes; no se atribuye PASS antes del run.
+- Cobertura parcial, sin afirmar aceptación ERP global ni permisos granulares de todos los módulos; P1 sigue abierto, VALIDANDO y A5 exclusivamente por otra Task Javier. Reversión: git revert normal.
+
 ## 2026-11-17 — V19 C09-04.M06.01 rectificación causal A5_FAIL P2 [Javier :50]
 - Corregida atribución V5: M05.01/02/03/04/06 tienen check V5 SUCCESS exact-SHA; M05.05 `76ddaee9` cuenta 29 check-runs y ninguno V5 (`NO_EJECUTADO/NO_ACREDITADO`), aunque Scope Lock y 11/11 xUnit sí PASS.
 - Conserva A5_FAIL previo y solicita revisión independiente sobre SHA corregido; R0 docs-only sin desbloquear M06.06, QA/main/PROD, proveedores o JWT real.
