@@ -296,3 +296,33 @@ test('revocacion de membresia empresa A invalida JWT aun firmado y bloquea panta
   const restaurada = await request.get(api + '/tenant-context/1', { headers });
   expect(restaurada.status()).toBe(200);
 });
+
+
+test('firma JWT alterada pierde acceso a API y pantalla privada en Chromium', async ({ page, request }) => {
+  // Token original firmado por .NET; el test altera solamente su firma.
+  await autenticarEnPantalla(page, 'c1304_platform_only');
+  const original = await page.evaluate(() => localStorage.getItem('solqaryn_token'));
+  if (!original) throw new Error('No se obtuvo JWT firmado de la API local.');
+  expect(original).toMatch(/^[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/);
+  const valido = await request.get(api + '/plataforma/sesion', {
+    headers: { Authorization: 'Bearer ' + original }
+  });
+  expect(valido.status()).toBe(200);
+
+  const partes = original.split('.');
+  const firma = partes[2];
+  const adulterada = (firma[0] === 'A' ? 'B' : 'A') + firma.slice(1);
+  const invalido = [partes[0], partes[1], adulterada].join('.');
+  expect(invalido).not.toBe(original);
+  const denegado = await request.get(api + '/plataforma/sesion', {
+    headers: { Authorization: 'Bearer ' + invalido }
+  });
+  expect(denegado.status()).toBe(401);
+
+  // Recarga real de Angular, nunca page.route ni respuestas simuladas.
+  await page.evaluate(token => localStorage.setItem('solqaryn_token', token), invalido);
+  const documento = await page.goto('/plataforma/inventario-rutas-v19');
+  expect(documento?.status()).toBe(200);
+  await expect(page).toHaveURL(/\/login(?:\?|$)/);
+  await expect(page.getByTestId('c1304-route-catalogo')).toHaveCount(0);
+});

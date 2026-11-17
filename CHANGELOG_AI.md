@@ -1,3 +1,6 @@
+## 2026-11-17 - V19 C13-04.M05.04 firma JWT adulterada [Javier :00]
+- Regresion Chromium: JWT original firmado 200, firma adulterada 401 y pantalla privada rechazada; CI externa exact-SHA y P1 global pendientes.
+
 ## 2026-11-17 — V19 reparacion E164 y rollback C09-04.M06.04 [ChatGPT directo]
 - El CHECK MySQL 8.4 rechazaba +50499990001 valido: se sustituye el escape fragil por [+] en modelo/snapshot y se crea migracion forward-only sin reescribir N76C ni tocar produccion.
 - Se restaura prueba MySQL de desactivacion A, preservacion B, transaccion rollback y test outbox A/B; dos negativos host/puerto. CI dirigida espera 4/4 con Scope Lock/V5 exact SHA. No declarar PASS o LISTO sin pruebas, autorizacion y A5 independiente.
