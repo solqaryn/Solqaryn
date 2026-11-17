@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C12-04.M04.04 pruebas reales de acción única y teclado [Javier :30]
+- Playwright Chromium GitHub-hosted comprueba GET de sesión con bloqueo single-flight y aria-busy, error 503 opaco, Tab/Enter de teclado real y ausencia total de comandos mutantes o formularios en la ruta privada de preparación MySQL.
+- Cuatro casos nuevos en archivo E2E y workflow SHA-scoped (sin cancelación de CI previa); 18 Vitest previos y 4 Chromium nuevos a acreditar antes de LISTO. A5 por otra Task Javier, sin JWT/MySQL/restore/PROD real.
+
 ## 2026-11-17 — V19 C09-04.M02.01 modelo de propiedad de mensajería [Javier :40]
 - Contrato documental E01–E16 e INV01–INV20 para tenant, consentimiento, idempotencia, secretos y webhook replay, separando cinco fuentes reales de propuestas no implementadas; sin runtime ni envío.
 - Ocho positivos y doce negativos FUTUROS_NO_EJECUTADOS, A0–A5 con A5 independiente y rollback git revert; CI solamente causal al diff documental.
