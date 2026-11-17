@@ -6702,3 +6702,7 @@
 ## 2026-11-16 - V19 C08-04.M06.06 cierre documental de dependencias verificables [Javier :50]
 - Agrega matriz de seis entregas M05 y cinco M06 con SHA reales, estados LISTO y A5 independientes leídos de PLAN; distingue pruebas Chromium/xUnit de datos, módulos y backend sintéticos.
 - Revalida el DAG C08-04.M06.06 como derivado de PLAN/COLA, sin forzar gates; no certifica activación sectorial, rollback MySQL ni QA/PROD. Requiere Scope Lock/V5 y A5 de otro Javier para este propio cierre.
+
+## 2026-11-17 - V19 C09-04.M04.02 estados privados de mensajeria [Javier :20]
+- Componente standalone Angular OnPush reutilizable con estados cargando, vacio, error y exito declarativo; deniega acceso por falta de sesion Plataforma/Administrador y revocacion, sin acciones de proveedor ni datos tenant.
+- Ocho pruebas TestBed adversariales y workflow GitHub-hosted dirigidos, con tipado/lint/build, Scope Lock y procedencia V5 exact-SHA exigidos; no se atribuye PASS hasta CI real. La ruta privada sigue siendo responsabilidad separada de C09-04.M04.01; no certificar JWT HTTP, MySQL, envios ni QA/PROD.

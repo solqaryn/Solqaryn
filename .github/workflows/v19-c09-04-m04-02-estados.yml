@@ -1,0 +1,41 @@
+name: V19 C09-04.M04.02 - estados UI multicanal
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v19-c09-04-m04-02-estados.yml'
+      - 'frontend/src/app/features/plataforma/c09-04-m04-02-estados.component.ts'
+      - 'frontend/src/app/features/plataforma/c09-04-m04-02-estados.spec.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c0904-m0402-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  estados-privados:
+    name: C09-04.M04.02 - Angular TestBed y build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CI: 'true'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm compatible
+        run: npm install --global npm@11.19.0
+      - name: Instalar dependencias bloqueadas
+        working-directory: frontend
+        run: npm ci
+      - name: Ejecutar ocho pruebas adversariales reales
+        working-directory: frontend
+        run: npm test -- --watch=false --include=src/app/features/plataforma/c09-04-m04-02-estados.spec.ts
+      - name: Tipado, lint y build Angular
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run build:prod
