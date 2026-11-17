@@ -1,3 +1,7 @@
+## 2026-11-16 — V19 C00-04.M05.03 integración local causal [Javier :20]
+- Añade ocho casos xUnit de integración real en proceso Domain/Application/Infrastructure: tenant A/B, membresía revocada, snapshot ausente/error, copia SHA/revisión no coincidente, cambio NO_GO y 24 escritores con una sola copia.
+- CI .NET10 Release por SHA sin cancelación, riesgo R2. No toca EF/MySQL, endpoint HTTP, proveedor remoto, JWT/RBAC runtime ni producción; A0-A4 requieren GH Actions y A5 independiente. Rollback git revert.
+
 ## 2026-11-16 — V19 C00-04.M05.05 seguridad negativa de gobierno [Javier :30]
 - Añade siete pruebas xUnit adversariales sobre el servicio real Application: tenant A/B antes de I/O, administrador legacy sin permiso relacional, revocacion, ambito manipulado, NO_GO sensible e ID adulterado, mas control positivo inerte.
 - CI .NET 10 Release dirigida por SHA sin cancelar ejecuciones previas, Scope Lock y V5; R2 sin modificar runtime ni afirmar HTTP/JWT/MySQL real. A0-A4 condicionados a pruebas exactas y A5 por otra Task Javier; rollback mediante git revert normal.

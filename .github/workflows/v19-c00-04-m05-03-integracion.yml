@@ -1,0 +1,32 @@
+name: V19 C00-04.M05.03 - Integracion local causal
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/GobiernoCambiosM0503IntegracionCausalTests.cs'
+      - '.github/workflows/v19-c00-04-m05-03-integracion.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c0004-m0503-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  integration:
+    name: C00-04.M05.03 - integracion in-process xUnit
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Restore
+        run: dotnet restore Solqaryn.sln
+      - name: Build Release
+        run: dotnet build Solqaryn.sln --configuration Release --no-restore
+      - name: Integracion real Application-Infrastructure y errores
+        run: dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter "FullyQualifiedName~GobiernoCambiosM0503IntegracionCausalTests" --logger "console;verbosity=normal"
