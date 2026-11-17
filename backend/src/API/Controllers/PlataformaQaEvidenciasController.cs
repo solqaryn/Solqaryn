@@ -119,10 +119,10 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
 
             var failed = checks.Any(c => c.Conclusion is
                 ("failure" or "cancelled" or "timed_out" or "action_required"));
-            var pending = checks.Any(c => c.Status != "completed");
+            var pending = checks.Any(c => c.Estado != "completed");
             var allRequired = ChecksMinimos.All(name =>
                 checks.Count(c => string.Equals(c.Nombre, name, StringComparison.Ordinal)) == 1 &&
-                checks.Any(c => c.Nombre == name && c.Status == "completed" &&
+                checks.Any(c => c.Nombre == name && c.Estado == "completed" &&
                                 c.Conclusion == "success"));
 
             var estado = failed ? "CI_FALLIDA" :
@@ -150,7 +150,7 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                 new PlataformaQaEvidenciasDto(
                     "solqaryn/Solqaryn", sha, estado,
                     "SIN_VERIFICAR", checks.Count,
-                    checks.Count(c => c.Status == "completed" && c.Conclusion == "success"),
+                    checks.Count(c => c.Estado == "completed" && c.Conclusion == "success"),
                     checks)));
         }
         catch (HttpRequestException)
