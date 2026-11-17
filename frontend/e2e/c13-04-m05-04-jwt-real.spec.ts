@@ -241,3 +241,58 @@ test('JWT real verifica empresa A y niega empresa B falsificada al abrir detalle
   await expect(page).toHaveURL(/\/login(?:\?|$)/);
   await expect(page.getByRole('heading', { name: 'Mi perfil' })).toHaveCount(0);
 });
+
+test('revocacion de membresia empresa A invalida JWT aun firmado y bloquea pantalla privada', async ({ page, request }) => {
+  // Solo CI MySQL 8.4 aislado. El JWT no pierde firma: la membresia se comprueba en backend.
+  const { execFileSync } = await import('node:child_process');
+  const ids = execFileSync('docker', [
+    'ps', '--filter', 'ancestor=mysql:8.4', '--format', '{{.ID}}'
+  ], { encoding: 'utf8' }).trim().split('\n').filter(Boolean);
+  expect(ids).toHaveLength(1);
+  const containerId = ids[0];
+  expect(containerId).toMatch(/^[0-9a-f]+$/);
+  const sql = (statement: string): string => execFileSync('docker', [
+    'exec', containerId, 'mysql', '-uroot', '-proot',
+    'solqaryn_c1304_real_ci', '-Nse', statement
+  ], { encoding: 'utf8' }).trim();
+  const where = "u.NombreUsuario='c1304_admin_a' AND ue.EmpresaId=1";
+  const from = ' FROM UsuarioEmpresas ue JOIN Usuarios u ON ue.UsuarioId=u.Id ';
+  expect(sql('SELECT COUNT(*)' + from + 'WHERE ' + where + ' AND ue.Activa=1;')).toBe('1');
+
+  await autenticarEnPantalla(page, 'c1304_admin_a');
+  const jwt = await page.evaluate(() => localStorage.getItem('solqaryn_token'));
+  expect(jwt).toMatch(/^[^.]+\.[^.]+\.[^.]+$/);
+  const headers = { Authorization: 'Bearer ' + jwt };
+  const antes = await request.get(api + '/tenant-context/1', { headers });
+  expect(antes.status()).toBe(200);
+  await page.evaluate(() => localStorage.setItem('solqaryn_empresa_solicitada_id', '1'));
+  const perfil = await page.goto('/perfil');
+  expect(perfil?.status()).toBe(200);
+  await expect(page).toHaveURL(/\/perfil$/);
+  await expect(page.getByRole('heading', { name: 'Mi perfil' })).toBeVisible();
+
+  let revocada = false;
+  try {
+    const filas = sql('UPDATE UsuarioEmpresas ue JOIN Usuarios u ON ue.UsuarioId=u.Id SET ue.Activa=0 WHERE ' +
+      where + ' AND ue.Activa=1; SELECT ROW_COUNT();');
+    expect(filas).toBe('1');
+    revocada = true;
+    const despues = await request.get(api + '/tenant-context/1', { headers });
+    expect([403, 404]).toContain(despues.status());
+
+    // La respuesta 200 del HTML SPA no concede autorización: lo decide el backend.
+    const documento = await page.goto('/perfil');
+    expect(documento?.status()).toBe(200);
+    await expect(page).toHaveURL(/\/login(?:\?|$)/);
+    await expect(page.getByRole('heading', { name: 'Mi perfil' })).toHaveCount(0);
+  } finally {
+    if (revocada) {
+      const filas = sql('UPDATE UsuarioEmpresas ue JOIN Usuarios u ON ue.UsuarioId=u.Id SET ue.Activa=1 WHERE ' +
+        where + ' AND ue.Activa=0; SELECT ROW_COUNT();');
+      expect(filas).toBe('1');
+      expect(sql('SELECT COUNT(*)' + from + 'WHERE ' + where + ' AND ue.Activa=1;')).toBe('1');
+    }
+  }
+  const restaurada = await request.get(api + '/tenant-context/1', { headers });
+  expect(restaurada.status()).toBe(200);
+});

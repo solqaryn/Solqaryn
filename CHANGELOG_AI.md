@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C13-04.M05.04 revocacion de membresia A con JWT real [Javier :00]
+- Se agrega un caso Chromium que verifica 200 para membresia y pantalla privada A, revoca la asignacion A en MySQL 8.4 efimero, exige rechazo 403/404 y regreso a login, y restaura 200 desde un bloque finally; no se simula HTTP ni JWT.
+- Cambio R2 de prueba y evidencia, sin alterar producto, backend ni base productiva. Exigir GitHub Actions, Scope Lock y V5 exact-SHA antes de contar PASS; el P1 de matriz global ERP sigue abierto. VALIDANDO, sin LISTO, auto-A5 ni QA/main/PROD.
+
 ## 2026-11-17 — V19 reparación CI C02-04.M05.06 Scope Lock antes de npm ci [Javier :30]
 - RUN 44172058206 falló antes de Chromium: el verificador de Scope Lock recorrió frontend/node_modules/playwright-core luego de npm ci y marcó contenido distribuido por Playwright. Se conserva íntegro el verificador, pero se ejecuta primero sobre checkout limpio; después corren npm ci, lint, build y los cuatro tests reales.
 - No se cuentan como PASS el run fallido ni los tests que aún no han corrido. CI nueva exact-SHA, seguridad/V5/Scope Lock y A5 independiente siguen siendo exigibles; sin QA/main/PROD.
