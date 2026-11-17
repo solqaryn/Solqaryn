@@ -1,0 +1,56 @@
+name: V19 C02-04.M05.06 - Chromium global catalogue regression
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/e2e/c02-04-m05-06-regression.spec.ts'
+      - '.github/workflows/v19-c02-04-m05-06-regression.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c0204-m0506-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  real-chromium:
+    name: C02-04.M05.06 - cuatro regresiones Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm install --global npm@11.19.0
+      - name: Install exact frontend lockfile
+        working-directory: frontend
+        run: npm ci
+      - name: Verify scope and Angular lint and production build
+        run: |
+          node scripts/verify-project-scope.mjs
+          cd frontend
+          npm run lint
+          npm run build:prod
+      - name: Install Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Start Angular on loopback; synthetic API only
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > v19-c0204-m0506.log 2>&1 &
+          for attempt in $(seq 1 75); do
+            if curl --fail --silent http://127.0.0.1:4200/login > /dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat v19-c0204-m0506.log >&2
+          exit 1
+      - name: Four genuine browser regressions, mocked platform session explicitly
+        working-directory: frontend
+        run: npx playwright test e2e/c02-04-m05-06-regression.spec.ts --config=playwright.config.ts --workers=1 --retries=0

@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C02-04.M05.06 regresión Chromium global [Javier :30]
+- Se agregan cuatro pruebas reales Chromium para catálogo privado, 320/375/768/1280, Tab/Enter desde inicio, foco, contraste computado y error 503 con recuperación, mediante sesión de servidor sintética declarada.
+- Riesgo R2 de superficie de autorización sin modificar JWT, MFA, MySQL, grants, API ni producción. CI GitHub-hosted, Scope Lock, V5 y A5 independiente pendientes de acreditación causal del SHA; sin atribuir PASS anticipado.
+
 ## 2026-11-17 — V19 C12-04.M06.05 solicitud de revisión independiente de MySQL privado [Javier :30]
 - Se entrega una solicitud R0 documental y matriz trazable de seis M05 y cuatro M06: SHAs, CI dirigida, riesgos y prueba adversarial; M06.04 permanece VALIDANDO y M06.06 no queda autorizada por esta solicitud.
 - No se acredita restore Aiven, checksum/conteos de datos reales, JWT/RBAC servidor, RPO/RTO, cutover ni QA/main/PROD. A0–A4 y Scope Lock/V5 del nuevo SHA se comprobarán causalmente; A5 se reserva a otra Task Javier.
