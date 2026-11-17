@@ -1,3 +1,7 @@
+## 2026-11-16 — V19 C00-04.M06.01 revisión evidencia real vs mocks [Javier :40]
+- Matriz documental R0 de seis M05.01–.06 con SHA y xUnit/Chromium reales; distingue fixtures A/B, HTTP interceptado, JWT/MySQL ausentes y WCAG/Web Vitals NO_MEDIDO sin atribuciones ficticias.
+- A0–A4 con Scope Lock y V5 por SHA; A5 revisor distinto, sin activar M06.06, QA/main/PROD. Solo dev; rollback git revert normal.
+
 ## 2026-11-16 — C02-04.M05.02 reparación P1 API QA por SHA [reparación directa autorizada]
 - Endpoint privado GET /plataforma/gestion/qa/evidencias/{sha} (.NET 10): token JWT firmado, grant global persistido por PlataformaScopeService y auditoría sin tenant. Solo consulta checks GitHub Actions del repositorio público original por SHA de 40 hex, sin URLs del cliente, secretos ni credenciales en Angular.
 - Estados CI explícitos SUCCESS/FAIL/PENDING/SKIPPED, faltantes y A5 SIN_VERIFICAR; ni CI verde ni fixture generan aprobación humana o prueba de aislamiento vivo. TestServer/JWT/revocación, errores seguros y MySQL 8.4 efímero en CI dirigida. Validar exact-SHA y A0–A4 antes de LISTO; A5 debe ser independiente. Solo dev, rollback git revert.
