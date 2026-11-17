@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C09-04.M01.06 gates y rollback documental [Javier :20]
+- Define nueve bloqueos fail-closed de mensajería multicanal: tenant A/B, JWT/RBAC, consentimiento, idempotencia, secretos, webhook replay, CI exact-SHA y A5 independiente; no crea servicios ni envíos.
+- Establece rollback documental no destructivo, pruebas futuras expresamente NO_EJECUTADAS y liberación solo por DAG/COLA derivados tras LISTO+A5; sin QA/main/PROD.
+
 ## 2026-11-17 — V19 C12-04.M04.02 reparación de aserción Vitest exact-SHA [Javier :30]
 - La CI del SHA `1f9df9e1` falló con 12/13 Vitest porque esperaba `no confirmado` pero la interfaz segura presenta `Sin permiso de plataforma confirmado.`; se corrige únicamente la expectativa del test, no se relaja la denegación ni se modifica JWT/RBAC/MySQL.
 - Conservar FAIL histórico, verificar de nuevo 13 Vitest, 6 Chromium, Scope Lock, V5 y controles pertinentes en GitHub-hosted; A5 por Task Javier distinta y rollback mediante `git revert` normal.
