@@ -26,13 +26,14 @@ jobs:
           node-version: '24.21.0'
           cache: npm
           cache-dependency-path: frontend/package-lock.json
+      - name: Verify Scope Lock before dependency installation
+        run: node scripts/verify-project-scope.mjs
       - run: npm install --global npm@11.19.0
       - name: Install exact frontend lockfile
         working-directory: frontend
         run: npm ci
-      - name: Verify scope and Angular lint and production build
+      - name: Angular lint and production build after locked install
         run: |
-          node scripts/verify-project-scope.mjs
           cd frontend
           npm run lint
           npm run build:prod

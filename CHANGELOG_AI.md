@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 reparación CI C02-04.M05.06 Scope Lock antes de npm ci [Javier :30]
+- RUN 44172058206 falló antes de Chromium: el verificador de Scope Lock recorrió frontend/node_modules/playwright-core luego de npm ci y marcó contenido distribuido por Playwright. Se conserva íntegro el verificador, pero se ejecuta primero sobre checkout limpio; después corren npm ci, lint, build y los cuatro tests reales.
+- No se cuentan como PASS el run fallido ni los tests que aún no han corrido. CI nueva exact-SHA, seguridad/V5/Scope Lock y A5 independiente siguen siendo exigibles; sin QA/main/PROD.
+
 ## 2026-11-17 — V19 C02-04.M05.06 regresión Chromium global [Javier :30]
 - Se agregan cuatro pruebas reales Chromium para catálogo privado, 320/375/768/1280, Tab/Enter desde inicio, foco, contraste computado y error 503 con recuperación, mediante sesión de servidor sintética declarada.
 - Riesgo R2 de superficie de autorización sin modificar JWT, MFA, MySQL, grants, API ni producción. CI GitHub-hosted, Scope Lock, V5 y A5 independiente pendientes de acreditación causal del SHA; sin atribuir PASS anticipado.
