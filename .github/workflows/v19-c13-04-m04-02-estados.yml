@@ -1,0 +1,69 @@
+name: V19 C13-04.M04.02 - estados honestos UI
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v19-c13-04-m04-02-estados.yml'
+      - 'frontend/src/app/features/plataforma/c13-04-presentacion-v5.component.*'
+      - 'frontend/e2e/c13-04-m04-02-estados.spec.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c1304-m0402-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  estados-ux:
+    name: C13-04.M04.02 - TestBed and Chromium states
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm install --global npm@11.19.0
+      - name: Reproducible dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Directed Angular TestBed states
+        working-directory: frontend
+        run: npm test -- --watch=false --include=src/app/features/plataforma/c13-04-presentacion-v5.component.spec.ts
+      - name: Lint and production build
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Install Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Start isolated Angular
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c1304-m0402.log 2>&1 &
+          for attempt in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat c1304-m0402.log >&2
+          exit 1
+      - name: Actual Chromium states and privacy
+        working-directory: frontend
+        run: npx playwright test e2e/c13-04-m04-02-estados.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Browser diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c1304-m0402-browser
+          path: |
+            frontend/c1304-m0402.log
+            frontend/test-results/
+          if-no-files-found: warn
+          retention-days: 14

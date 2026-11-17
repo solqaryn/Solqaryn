@@ -1,3 +1,8 @@
+## 2026-11-16 — V19 C13-04.M04.02 estados verificables sin PASS ficticio [Javier :10]
+- Extiende la vista privada C13-04 con carga, vacío, éxito limitado a sesión global, error opaco y denegación; catálogo de rutas/módulos permanece SIN_VERIFICAR sin fuente versionada conectada.
+- Pruebas Angular TestBed positivas/adversariales y Chromium sintético de anónimo, 503, Tab/320 px; workflow GitHub-hosted por SHA, sin modificar JWT/RBAC/backend/EF/MySQL ni habilitar QA.
+- A0–A4 solo tras CI exact-SHA, Scope Lock/V5 y readback; A5 por otra Task Javier. Rollback git revert normal, BITACORA aditiva, sin QA/main/PROD.
+
 ## 2026-11-16 — V19 C08-04.M06.05 solicitud A5 independiente [Javier :20]
 - Registra solicitud R0 de revisión independiente para el lote sectorial M05/M06, con fuente SHA y autores reales; distingue los LISTO previos de M06.04 aún PENDIENTE y de M06.06 no liberable.
 - La solicitud NO es A5_PASS ni prueba nueva, y nunca concede JWT/RBAC/tenant/MySQL o autorización sobre módulos; renderer e integraciones reales siguen sujetos a sus gates, rendimiento NO_MEDIDO.

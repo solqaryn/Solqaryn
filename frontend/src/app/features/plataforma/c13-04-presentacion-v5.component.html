@@ -7,7 +7,27 @@
     <p>Demostración privada. Las preferencias son locales; no modifican permisos ni empresas.</p>
     <a routerLink="/plataforma" aria-label="Volver a administración de plataforma">Volver a plataforma</a>
   </header>
-  @if (autorizado()) {
+  <section class="visual-panel review-panel" aria-labelledby="review-title"
+    data-testid="c1304-m0402-panel" [attr.aria-busy]="estadoInventario() === 'cargando'">
+    <h2 id="review-title">Estado verificable de interfaces</h2>
+    <p>Catálogo integral de rutas y módulos: <strong>SIN_VERIFICAR</strong>.
+      La verificación de sesión no prueba implementación, CI, A5, permisos ERP ni QA.</p>
+    @switch (estadoInventario()) {
+      @case ('cargando') { <p role="status" data-testid="c1304-m0402-state">Cargando verificación de autorización global…</p> }
+      @case ('vacio') { <p role="status" data-testid="c1304-m0402-state">Vacío: no hay catálogo de interfaces acreditado o conectado.</p> }
+      @case ('exito') { <p role="status" data-testid="c1304-m0402-state">Éxito: sesión global revalidada. Inventario de módulos SIN_VERIFICAR.</p> }
+      @case ('error') { <p role="alert" data-testid="c1304-m0402-state">Error al consultar la sesión global. No se revelan detalles internos.</p> }
+      @case ('sin_permiso') { <p role="alert" data-testid="c1304-m0402-state">No accesible: permiso de plataforma no confirmado.</p> }
+    }
+    @if (autorizado() && estadoInventario() !== 'cargando') {
+      <button type="button" data-testid="c1304-m0402-revalidate" (click)="revalidarEstadoGlobal()">
+        Revalidar autorización global
+      </button>
+    }
+    <p class="review-disclaimer">PLANIFICADO, EN_DESARROLLO, LISTO_TECNICO y NO_ACCESIBLE
+      son estados contractuales; no se asignan a ningún módulo sin evidencia versionada.</p>
+  </section>
+  @if (autorizado() && estadoInventario() !== 'cargando') {
     <section class="visual-panel" aria-labelledby="preset-title">
       <h2 id="preset-title">Presets permitidos</h2>
       <p>Solo marcas y densidades predefinidas. No se aceptan CSS, HTML ni recursos remotos.</p>

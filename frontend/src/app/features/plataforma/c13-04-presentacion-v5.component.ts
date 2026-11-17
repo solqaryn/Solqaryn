@@ -1,4 +1,7 @@
-import { Component, ChangeDetectionStrategy, computed, inject, signal } from '@angular/core';
+import { Component, ChangeDetectionStrategy, DestroyRef, computed, inject, signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { defer } from 'rxjs';
 import { RouterLink } from '@angular/router';
 import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
 
@@ -37,6 +40,34 @@ export function normalizarPresentacionC1304(value: unknown): PresentacionC1304 {
 })
 export class C1304PresentacionV5Component {
   private readonly plataforma = inject(PlataformaSesionService);
+  private readonly destroyRef = inject(DestroyRef);
+
+  // C13-04.M04.02: la verificación de sesión no es verificación del catálogo.
+  readonly comprobacion = signal<'vacio' | 'cargando' | 'verificada' | 'denegada' | 'error'>('vacio');
+  readonly estadoInventario = computed(() => {
+    const estado = this.comprobacion();
+    if (estado === 'cargando') return 'cargando';
+    if (estado === 'denegada' || !this.autorizado()) return 'sin_permiso';
+    if (estado === 'error') return 'error';
+    return estado === 'verificada' ? 'exito' : 'vacio';
+  });
+
+  revalidarEstadoGlobal(): void {
+    if (!this.autorizado() || this.comprobacion() === 'cargando') return;
+    this.comprobacion.set('cargando');
+    // El servicio borra la sesión local y reconsulta al backend; la UI no certifica
+    // módulos, planes, CI ni permisos empresariales por un resultado sintético.
+    defer(() => this.plataforma.obtener()).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => this.comprobacion.set(this.autorizado() ? 'verificada' : 'denegada'),
+      error: (error: unknown) => {
+        const status = error instanceof HttpErrorResponse ? error.status : 0;
+        this.comprobacion.set(status === 401 || status === 403 ? 'denegada' : 'error');
+      },
+      complete: () => {
+        if (this.comprobacion() === 'cargando') this.comprobacion.set('error');
+      }
+    });
+  }
   readonly autorizado = computed(() => {
     const sesion = this.plataforma.sesion();
     return sesion?.ambito === 'Plataforma' && sesion.esAdministrador === true;

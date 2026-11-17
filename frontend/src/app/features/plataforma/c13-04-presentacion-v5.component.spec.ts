@@ -1,4 +1,6 @@
 import { signal } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { Subject, tap } from 'rxjs';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { routes } from '../../app.routes';
@@ -11,12 +13,20 @@ describe('C13-04.M04.03 visual allowlist', () => {
   async function montar(autorizado=true) {
     TestBed.resetTestingModule();
     const sesion=signal<PlataformaSesion|null>(autorizado ? admin : null);
+    const pendiente = new Subject<PlataformaSesion>();
+    let consultas = 0;
     await TestBed.configureTestingModule({imports:[C1304PresentacionV5Component],providers:[
-      provideRouter([]), {provide:PlataformaSesionService,useValue:{sesion}}
+      provideRouter([]), {provide:PlataformaSesionService,useValue:{
+        sesion, obtener: () => {
+          consultas++;
+          sesion.set(null);
+          return pendiente.pipe(tap(value => sesion.set(value)));
+        }
+      }}
     ]}).compileComponents();
     const fixture=TestBed.createComponent(C1304PresentacionV5Component);
     fixture.detectChanges();
-    return {fixture,sesion,root:fixture.nativeElement as HTMLElement};
+    return {fixture,sesion,pendiente,consultas:()=>consultas,root:fixture.nativeElement as HTMLElement};
   }
   it('ruta privada única usa plataformaGuard',()=>{
     const m=routes.filter(x=>x.path==='plataforma/experiencia-visual-v5');
@@ -66,5 +76,63 @@ describe('C13-04.M04.03 visual allowlist', () => {
     sesion.set(null);
     fixture.detectChanges();
     expect(root.querySelector('[role=alert]')?.textContent).toContain('Sin permiso');
+  });
+
+  it('M04.02 inicializa vacío/SIN_VERIFICAR y revalida sesión sin confundirla con catálogo', async () => {
+    const {fixture,root,pendiente,consultas}=await montar();
+    const vm=fixture.componentInstance;
+    expect(vm.estadoInventario()).toBe('vacio');
+    expect(root.textContent).toContain('SIN_VERIFICAR');
+    expect(consultas()).toBe(0);
+    vm.revalidarEstadoGlobal();
+    vm.revalidarEstadoGlobal();
+    fixture.detectChanges();
+    expect(consultas()).toBe(1);
+    expect(vm.estadoInventario()).toBe('cargando');
+    expect(root.querySelectorAll('.visual-actions button')).toHaveLength(0);
+    pendiente.next(admin);
+    pendiente.complete();
+    fixture.detectChanges();
+    expect(vm.estadoInventario()).toBe('exito');
+    expect(root.querySelector('[data-testid=c1304-m0402-state]')?.textContent).toContain('sesión global');
+    expect(root.textContent).toContain('SIN_VERIFICAR');
+    expect(root.textContent).not.toContain('QA_AUTOMATICO_VERIFICADO');
+  });
+
+  it('M04.02 revocación de sesión y 403 ocultan todos los controles privados', async () => {
+    const {fixture,root,pendiente,consultas}=await montar();
+    fixture.componentInstance.revalidarEstadoGlobal();
+    pendiente.error(new HttpErrorResponse({status:403, statusText:'PRIVATE_TENANT'}));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.estadoInventario()).toBe('sin_permiso');
+    expect(root.querySelectorAll('.visual-actions button')).toHaveLength(0);
+    expect(root.querySelector('[data-testid=c1304-m0402-revalidate]')).toBeNull();
+    fixture.componentInstance.revalidarEstadoGlobal();
+    expect(consultas()).toBe(1);
+    expect(root.textContent).not.toContain('PRIVATE_TENANT');
+  });
+
+  it('M04.02 error 503 y fuente vacía no son PASS; mensajes siempre opacos', async () => {
+    const {fixture,root,pendiente}=await montar();
+    fixture.componentInstance.revalidarEstadoGlobal();
+    pendiente.error(new HttpErrorResponse({status:503, statusText:'PRIVATE_DSN'}));
+    fixture.detectChanges();
+    expect(fixture.componentInstance.estadoInventario()).toBe('error');
+    expect(root.textContent).not.toContain('PRIVATE_DSN');
+    expect(root.textContent).not.toContain('LISTO_TECNICO certificado');
+    const second=await montar();
+    second.fixture.componentInstance.revalidarEstadoGlobal();
+    second.pendiente.complete();
+    second.fixture.detectChanges();
+    expect(second.fixture.componentInstance.estadoInventario()).toBe('error');
+  });
+
+  it('M04.02 no permite intentar revisión sin plataforma', async () => {
+    const {fixture,root,consultas}=await montar(false);
+    fixture.componentInstance.revalidarEstadoGlobal();
+    fixture.detectChanges();
+    expect(consultas()).toBe(0);
+    expect(fixture.componentInstance.estadoInventario()).toBe('sin_permiso');
+    expect(root.querySelector('[data-testid=c1304-m0402-revalidate]')).toBeNull();
   });
 });
