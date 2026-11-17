@@ -326,3 +326,41 @@ test('firma JWT alterada pierde acceso a API y pantalla privada en Chromium', as
   await expect(page).toHaveURL(/\/login(?:\?|$)/);
   await expect(page.getByTestId('c1304-route-catalogo')).toHaveCount(0);
 });
+
+
+test('empresa A navega extension sectorial real; empresa B falsificada no entra', async ({ page, request }) => {
+  // Ruta autenticada real (authGuard), sin page.route ni fixture HTTP.
+  await page.goto('/extensiones-sectoriales');
+  await expect(page).toHaveURL(/\/login(?:\?|$)/);
+  await expect(page.getByRole('heading', { name: 'Capacidades por rubro' })).toHaveCount(0);
+
+  await autenticarEnPantalla(page, 'c1304_admin_a');
+  const jwt = await page.evaluate(() => localStorage.getItem('solqaryn_token'));
+  expect(jwt).toMatch(/^[^.]+\.[^.]+\.[^.]+$/);
+  const headers = { Authorization: 'Bearer ' + jwt };
+  const empresaA = await request.get(api + '/tenant-context/1', { headers });
+  expect(empresaA.status()).toBe(200);
+  expect((await empresaA.json())?.data?.empresaId).toBe(1);
+
+  await page.evaluate(() => localStorage.setItem('solqaryn_empresa_solicitada_id', '1'));
+  const validacionA = page.waitForResponse(r =>
+    r.url().includes('/tenant-context/1') && r.request().method() === 'GET');
+  const documento = await page.goto('/extensiones-sectoriales');
+  expect(documento?.status()).toBe(200);
+  expect((await validacionA).status()).toBe(200);
+  await expect(page).toHaveURL(/\/extensiones-sectoriales$/);
+  await expect(page.getByRole('heading', { name: 'Capacidades por rubro' })).toBeVisible();
+  await expect(page.getByRole('status', { name: 'Estado de las capacidades' }))
+    .toContainText('Sin módulos conectados');
+  await expect(page.getByText('No conectado', { exact: true })).toHaveCount(4);
+
+  // El estado del navegador es una solicitud no confiable: autoridad del backend.
+  await page.evaluate(() => localStorage.setItem('solqaryn_empresa_solicitada_id', '2'));
+  const denegacionB = page.waitForResponse(r =>
+    r.url().includes('/tenant-context/2') && r.request().method() === 'GET');
+  const html = await page.goto('/extensiones-sectoriales');
+  expect(html?.status()).toBe(200); // HTML SPA no concede acceso.
+  expect([403, 404]).toContain((await denegacionB).status());
+  await expect(page).toHaveURL(/\/login(?:\?|$)/);
+  await expect(page.getByRole('heading', { name: 'Capacidades por rubro' })).toHaveCount(0);
+});

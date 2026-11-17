@@ -1,3 +1,6 @@
+## 2026-11-17 - V19 C13-04.M05.04 extensiones sectoriales A/B [Javier :00]
+- Prueba Chromium privada con JWT firmado y tenant A confirmado: pantalla sectorial informativa visible, cuatro capacidades sin conectar, anonimato y falsificación B rechazados por backend; CI exact-SHA por verificar, P1 global permanece abierto.
+
 ## 2026-11-17 — V19 C09-04.M06.04 reparación P2 ASCII E164 y aislamiento MySQL [Javier :40]
 - Se corrige el desacuerdo dominio/SQL: sólo dígitos ASCII tras '+'; los decimales Unicode no deben pasar validación de dominio ni llegar a persistencia. Se mantienen los límites E.164, migraciones y referencias opacas.
 - Nueva regresión adversarial en MySQL 8.4 efímero de dos empresas A/B, con árabe-índico/fullwidth negativos y cero mutaciones; workflow dirigido exige TRX 5/5 y checks Scope Lock/V5 exact-SHA antes de nueva A5 independiente. El A5_FAIL P2 anterior permanece; DEV06 conserva autoría, DEV05 aporta reparación. Sin QA/main/PROD.
