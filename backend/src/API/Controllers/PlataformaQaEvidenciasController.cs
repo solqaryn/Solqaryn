@@ -77,13 +77,29 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
 
             if (response.StatusCode == HttpStatusCode.NotFound)
                 return NotFound(ApiResponse<object>.Fail("Revisión no encontrada."));
+            const int maxGithubResponseBytes = 512_000;
             if (!response.IsSuccessStatusCode ||
-                response.Content.Headers.ContentLength is > 512_000)
+                response.Content.Headers.ContentLength is > maxGithubResponseBytes)
                 return NoVerificable();
 
+            // Content-Length may be absent for Transfer-Encoding: chunked.
+            // Bound the actual bytes consumed before JSON parsing, including the
+            // one-byte overflow probe. Never buffer an unbounded upstream body.
             await using var content = await response.Content.ReadAsStreamAsync(cancellationToken);
+            using var bounded = new MemoryStream();
+            var chunk = new byte[16_384];
+            while (true)
+            {
+                var maxRead = Math.Min(chunk.Length, maxGithubResponseBytes + 1 - (int)bounded.Length);
+                var read = await content.ReadAsync(chunk.AsMemory(0, maxRead), cancellationToken);
+                if (read == 0) break;
+                if (bounded.Length + read > maxGithubResponseBytes)
+                    return NoVerificable();
+                await bounded.WriteAsync(chunk.AsMemory(0, read), cancellationToken);
+            }
+            bounded.Position = 0;
             using var document = await JsonDocument.ParseAsync(
-                content, new JsonDocumentOptions { MaxDepth = 20 }, cancellationToken);
+                bounded, new JsonDocumentOptions { MaxDepth = 20 }, cancellationToken);
             var root = document.RootElement;
             if (!root.TryGetProperty("total_count", out var countElement) ||
                 !countElement.TryGetInt32(out var count) || count < 1 || count > 100 ||

@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C02-04.M05.02 reparación P2 límite de respuesta QA [Javier :50]
+- Se detectó que `Content-Length` ausente en respuesta GitHub chunked permitía lectura JSON sin tope. Reparación R2 acota la lectura real a 512000 bytes y devuelve 503 sin exponer payload ni auditar éxito cuando se supera el límite.
+- Nueva regresión TestServer/JWT firmado con respuesta chunked válida positiva y JSON sobredimensionado negativo. CI .NET10/MySQL8.4, Scope Lock y V5 del SHA nuevo aún por ejecutar; A5_FAIL histórico preservado, A5 correctiva pendiente, sin QA/main/PROD.
+
 ## 2026-11-17 — V19 C09-04.M06.02 reparación P2 procedencia V5 [Javier :30]
 - Se rectifica la atribución de CI: check V5 exact-SHA SUCCESS en M05.01/02/03/04/06; M05.05 SHA 76ddaee9 conserva Scope Lock y 11/11 xUnit, pero cero check V5 entre 29 check-runs; NO_EJECUTADO/NO_ACREDITADO, nunca PASS.
 - R0 documental únicamente, authored DEV06/reparación DEV04, A5_FAIL histórico conservado y nueva revisión independiente necesaria. Candado V17; sin cambios de código, DAG/COLA, tenants, JWT, MySQL, QA/main/PROD.

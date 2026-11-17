@@ -1,5 +1,14 @@
 # C02-04.M05.02 — Contrato API/DTO real y errores seguros de consola global
 
+## Reparación P2 posterior — límite real de bytes en HTTP chunked (2026-11-17)
+
+La revisión A5 independiente de DEV03 rechazó la certificación por el uso histórico de `Content-Length` como único control de tamaño: GitHub podría enviar un cuerpo *chunked* sin dicho encabezado, y `JsonDocument.ParseAsync` consumiría JSON sin tope. No se borra ni convierte en PASS ese A5_FAIL.
+
+La corrección acota efectivamente la lectura del cuerpo remoto a **512 000 bytes** antes de deserializar, con lectura por fragmentos y comprobación de un byte de exceso. Si excede el límite, devuelve **503/NO_VERIFICABLE** sin crear auditoría de éxito ni revelar el cuerpo remoto. La prueba adversarial con `HttpContent` de longitud desconocida comprueba tanto la ruta positiva bajo el límite como el rechazo de JSON válido sobredimensionado, sin depender de cabeceras. Se preservan JWT firmado, revisión de grant global persistido, URL GitHub fija, aislamiento de empresa y errores seguros.
+
+Este incremento R2 es reparación de una entrega ajena sin traslado de propietario. **CI GitHub Actions .NET 10/MySQL 8.4 y checks exact-SHA quedan pendientes hasta ejecución real**; ningún resultado se da por aprobado de antemano. Historial A5_FAIL permanece y se requiere revisión A5 correctiva de otra Task Javier distinta del autor de la reparación. No se modifica QA/main/PROD, secreto ni dato comercial; rollback mediante git revert normal.
+
+
 **Task:** PRIMARY DEV 01 — JAVIER; **rama:** dev; **riesgo:** R2 (autoridad global, JWT/RBAC, multitenancy). **Estado:** la ejecución de GitHub Actions por el SHA de entrega es condición necesaria antes de certificar A0–A4 o LISTO_DEV. Sin cambios de producción.
 
 ## Reparación posterior del P1 — contrato HTTP QA real, sin aprobación humana

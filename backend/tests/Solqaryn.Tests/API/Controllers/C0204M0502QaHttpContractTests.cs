@@ -159,6 +159,42 @@ public sealed class C0204M0502QaHttpContractTests
     }
 
     [Fact]
+    public async Task GitHubChunkedSinContentLengthRechazaMasDe512000BytesSinExponerDatos()
+    {
+        var upstream = new GitHubFake(Payload()) { OmitContentLength = true };
+        await using var fixture = await CrearAsync(upstream);
+        using var client = fixture.Host.GetTestClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer", Token(fixture.GlobalId, "operadorglobal"));
+
+        using (var validChunked = await client.GetAsync(Path))
+        {
+            Assert.Equal(HttpStatusCode.OK, validChunked.StatusCode);
+            using var parsed = JsonDocument.Parse(await validChunked.Content.ReadAsStringAsync());
+            Assert.Equal("CI_MINIMA_ACREDITADA",
+                parsed.RootElement.GetProperty("data").GetProperty("estadoCi").GetString());
+        }
+
+        // Valid JSON, but exceeds the strict response byte ceiling. A missing
+        // Content-Length must not bypass the limit, regardless of MaxDepth.
+        upstream.Payload = Payload()[..^1] + ",\"padding\":\"" + new string('x', 512_000) + "\"}";
+        using (var oversizedChunked = await client.GetAsync(Path))
+        {
+            Assert.Equal(HttpStatusCode.ServiceUnavailable, oversizedChunked.StatusCode);
+            Assert.Contains("no-store",
+                oversizedChunked.Headers.CacheControl?.ToString() ?? "");
+            var safeBody = await oversizedChunked.Content.ReadAsStringAsync();
+            Assert.DoesNotContain("padding", safeBody);
+            Assert.DoesNotContain("private-secret", safeBody);
+        }
+
+        Assert.Equal(2, upstream.Calls);
+        using var scope = fixture.Host.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        Assert.Single(await db.Set<RegistroAuditoria>().ToListAsync());
+    }
+
+    [Fact]
     public async Task CatalogoGlobalRolesRechazaEmpresaYConservaAuditoria()
     {
         var upstream = new GitHubFake(Payload());
@@ -377,6 +413,7 @@ public sealed class C0204M0502QaHttpContractTests
         public string? LastHost { get; private set; }
         public HttpStatusCode StatusCode { get; set; } = HttpStatusCode.OK;
         public string Payload { get; set; } = payload;
+        public bool OmitContentLength { get; set; }
 
         protected override Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request, CancellationToken cancellationToken)
@@ -389,8 +426,27 @@ public sealed class C0204M0502QaHttpContractTests
                 throw new InvalidOperationException("Egreso fuera del repositorio canónico.");
             return Task.FromResult(new HttpResponseMessage(StatusCode)
             {
-                Content = new StringContent(Payload, Encoding.UTF8, "application/json")
+                Content = OmitContentLength
+                    ? new ChunkedQaContent(Payload)
+                    : new StringContent(Payload, Encoding.UTF8, "application/json")
             });
+        }
+    }
+
+    // Forces the upstream Content-Length to be absent, just like a genuine
+    // chunked GitHub API response. TestServer exercises the real HTTP client.
+    private sealed class ChunkedQaContent(string payload) : HttpContent
+    {
+        protected override bool TryComputeLength(out long length)
+        {
+            length = -1;
+            return false;
+        }
+
+        protected override Task SerializeToStreamAsync(Stream stream, TransportContext? context)
+        {
+            var bytes = Encoding.UTF8.GetBytes(payload);
+            return stream.WriteAsync(bytes, 0, bytes.Length);
         }
     }
 }
