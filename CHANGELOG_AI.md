@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C12-04.M05.03 integración EF Oracle MySQL 8.4 A/B [Javier :00]
+- Test xUnit Category=Integration con MySQL 8.4 efímero: productos de dos empresas, aislamiento A/B, rechazo IDOR, headers hostiles, huellas SHA256 estables de datos SQL y bloqueo previo de host remoto/puerto inseguro.
+- GitHub Actions SHA-scoped ejecuta .NET 10 Release + MySQL 8.4 real, TRX con >=3 tests y cero fallos; Scope Lock/V5 exact-SHA y A5 independiente obligatorios.
+- R2 test-only, sin cambios runtime, sin Aiven ni restauración/cutover real, JWT HTTP ni QA/main/PROD; una reclamación V17, rollback git revert sin force.
+
 ## 2026-11-17 — V19 C12-04.M05.04 aceptación positiva de cutover privado [Javier :30]
 - Cinco pruebas Playwright/Chromium sobre Angular real con sesión sintética: cuatro checkpoints no operativos, revalidación GET, Tab/Enter, branding responsive, 503 fail-closed sin DSN ni escrituras.
 - Workflow GitHub-hosted por SHA: Node24/npm11, Vitest, lint/build, cinco Chromium. A0–A4 sólo cuando CI requerida y Scope Lock/V5 concluyan SUCCESS; A5 de otro Javier.
