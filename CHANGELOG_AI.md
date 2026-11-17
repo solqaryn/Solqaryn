@@ -1,3 +1,7 @@
+## 2026-11-17 — CI_REPAIR V19 C13-04.M05.04 puerto Angular aislado [Javier :00]
+- Fallo reproducido en RUN 44101230377 SHA 5b02394a: `PORT=5005` heredado de API hizo que Angular CLI ignorase su puerto de inicio y chocara con API; Chromium no corrió, no es PASS.
+- Reparación mínima `PORT=4200` solo para npm start del runner; API sigue 5005, MySQL 8.4 y JWT no se alteran. Revalidar SHA nuevo, P1 y VALIDANDO permanecen; sin QA/main/PROD.
+
 ## 2026-11-17 — V19 C15-04.M05.04 navegación pública storefront real [Javier :10]
 - Test incremental Chromium sobre /tienda, /tienda/productos y /tienda/categorias a 375/1280 px, con main/h1, enlaces de salto, overflow y ausencia de escrituras HTTP; workflow pasa de 9 a 10 casos.
 - No se prueban compras, cobros, API/tenant, WCAG global ni rutas privadas autenticadas. Requiere SUCCESS real en CI exact-SHA; mantener EN_PROGRESO/lock V17 y A5 pendiente de otra Task.

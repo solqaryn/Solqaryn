@@ -143,7 +143,7 @@ jobs:
         working-directory: frontend
         run: |
           set -euo pipefail
-          nohup npm start -- --host 127.0.0.1 --port 4200 > c1304-angular.log 2>&1 &
+          PORT=4200 nohup npm start -- --host 127.0.0.1 --port 4200 > c1304-angular.log 2>&1 &
           for attempt in $(seq 1 70); do
             if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then
               echo 'C1304_ANGULAR_READY'
