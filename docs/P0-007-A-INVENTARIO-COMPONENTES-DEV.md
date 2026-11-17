@@ -500,3 +500,11 @@ El nuevo componente de auditoría UX real provoca un fallo de inventario P0-007.
 - `frontend/src/app/features/plataforma/c15-04-auditoria-ux-v19.component.ts`
 
 La comprobación exige igualdad estricta por conjunto de todos los archivos reales y del inventario, cinco escenarios negativos del contrato existente y no certifica UX real, WCAG, JWT/RBAC/tenant HTTP, métricas, ni QA/PROD. La ruta dispone de plataformaGuard y de la allowlist exacta. Revalidar CI de SHA reparado. A5 distinta Task. Reversión git revert normal.
+
+## Actualización causal V19 C12-04.M04.01 — 17 de noviembre de 2026
+
+La implementación de la superficie privada de preparación MySQL añadió exactamente un componente Angular real. La comprobación P0-007.A del SHA `24a4ecc4a108aa4f425d04c41cd06616eb806e43` detectó correctamente su ausencia del inventario. Se incorpora la entrada sin retirar ni excluir las 156 rutas anteriores: **157 archivos `.component.ts` (149 features y 8 shared)**.
+
+- `frontend/src/app/features/plataforma/c12-04-m04-01-cutover-readonly.component.ts`
+
+La puerta de seguridad ERP también detectó el nuevo path privado antes de su incorporación a la allowlist exacta de `plataformaGuard`; se añade solo esa ruta, preservando la comprobación de sesión backend y los negativos de rutas no autorizadas. Esta reparación no autoriza cutover, restore, DNS, MySQL ni PROD, ni elimina auditorías. Revalidar CI exact-SHA, A0–A4 y A5 de Task distinta. Rollback con `git revert` normal.

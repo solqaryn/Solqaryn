@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C12-04.M04.01 CI repair de inventario y ruta [Javier :30]
+- Reparados fallos causales exact-SHA: añadir el nuevo componente al inventario estricto P0-007.A y su total 157; conservar pruebas negativas y lista cerrada sin exclusiones.
+- Incorporada únicamente la ruta `plataforma/mysql-cutover-readonly-v5` en la allowlist exacta de `plataformaGuard` del auditor ERP, sin modificar guards ni desactivar controles; revalidar CI y A5 independiente.
+
 ## 2026-11-16 — V19 C12-04.M04.01 — superficie privada de cutover [Javier :30]
 - Ruta Angular privada de preparación MySQL con guard real, checklist estrictamente informativo y denegación segura; ninguna restauración, migración ni acción de proveedor.
 - Pruebas Vitest adversariales, revocación, roles y tenant; evidencia A0-A5 separa pruebas de UI de integración real y permite rollback por git revert sin reescritura.
