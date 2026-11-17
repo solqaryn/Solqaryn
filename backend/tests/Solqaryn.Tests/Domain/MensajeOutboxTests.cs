@@ -132,6 +132,76 @@ public class MensajeOutboxTests
         Assert.Throws<ArgumentException>(() => mensaje.MarcarProcesando(local));
     }
 
+
+    [Theory]
+    [InlineData("Factura\r\nFalsa")]
+    [InlineData("Factura\tFalsa")]
+    [InlineData("Factura\0Falsa")]
+    public void Crear_RechazaControlesEnTipoEvento(string entrada)
+    {
+        var ex = Assert.Throws<ArgumentException>(() =>
+            MensajeOutbox.Crear(7, entrada, "{}", "clave", creadoEnUtc: Creado));
+        Assert.Equal("tipoEvento", ex.ParamName);
+    }
+
+    [Theory]
+    [InlineData("id\r\nfalsa")]
+    [InlineData("id\tfalsa")]
+    [InlineData("id\0falsa")]
+    public void Crear_RechazaControlesEnClaveIdempotencia(string entrada)
+    {
+        var ex = Assert.Throws<ArgumentException>(() =>
+            MensajeOutbox.Crear(7, "Factura", "{}", entrada, creadoEnUtc: Creado));
+        Assert.Equal("claveIdempotencia", ex.ParamName);
+    }
+
+    [Fact]
+    public void Crear_RechazaControlesEnIdentificadoresOpcionales()
+    {
+        var tipo = Assert.Throws<ArgumentException>(() =>
+            MensajeOutbox.Crear(7, "Factura", "{}", "clave", tipoAgregado: "Factura\nFalsa", creadoEnUtc: Creado));
+        Assert.Equal("tipoAgregado", tipo.ParamName);
+        var agregado = Assert.Throws<ArgumentException>(() =>
+            MensajeOutbox.Crear(7, "Factura", "{}", "clave", idAgregado: "10\0Falso", creadoEnUtc: Creado));
+        Assert.Equal("idAgregado", agregado.ParamName);
+        var correlacion = Assert.Throws<ArgumentException>(() =>
+            MensajeOutbox.Crear(7, "Factura", "{}", "clave", correlationId: "abc\tFalso", creadoEnUtc: Creado));
+        Assert.Equal("correlationId", correlacion.ParamName);
+    }
+
+    [Fact]
+    public void Crear_ConservaIdentificadoresValidosYJsonMultilineaEntreEmpresas()
+    {
+        const string json = "{\n  \"facturaId\": 10\n}";
+        var a = MensajeOutbox.Crear(7, " Factura.Enviada/v2 ", json,
+            " mensaje:ñ/2026 ", " Factura ", " 10 ", " solicitud-✓ ", Creado);
+        var b = MensajeOutbox.Crear(8, "Factura.Enviada/v2", json,
+            "mensaje:ñ/2026", creadoEnUtc: Creado);
+        Assert.Equal("Factura.Enviada/v2", a.TipoEvento);
+        Assert.Equal("mensaje:ñ/2026", a.ClaveIdempotencia);
+        Assert.Equal("Factura", a.TipoAgregado);
+        Assert.Equal("10", a.IdAgregado);
+        Assert.Equal("solicitud-✓", a.CorrelationId);
+        Assert.Equal(json, a.PayloadJson);
+        Assert.Equal(7, a.EmpresaId);
+        Assert.Equal(8, b.EmpresaId);
+        Assert.Equal(a.ClaveIdempotencia, b.ClaveIdempotencia);
+    }
+
+    [Fact]
+    public void Crear_RespetaLimitesYRechazaControlInclusoAlFinal()
+    {
+        var limite = new string('x', MensajeOutbox.LongitudMaximaClaveIdempotencia);
+        var valido = MensajeOutbox.Crear(7, "Factura", "{}", limite, creadoEnUtc: Creado);
+        Assert.Equal(limite, valido.ClaveIdempotencia);
+        var exceso = Assert.Throws<ArgumentException>(() =>
+            MensajeOutbox.Crear(7, "Factura", "{}", limite + "x", creadoEnUtc: Creado));
+        Assert.Equal("claveIdempotencia", exceso.ParamName);
+        var control = Assert.Throws<ArgumentException>(() =>
+            MensajeOutbox.Crear(7, "Factura", "{}", "clave-valida\n", creadoEnUtc: Creado));
+        Assert.Equal("claveIdempotencia", control.ParamName);
+    }
+
     private static MensajeOutbox CrearValido() =>
         MensajeOutbox.Crear(
             7,

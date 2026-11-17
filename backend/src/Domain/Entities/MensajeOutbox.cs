@@ -38,15 +38,15 @@ public sealed class MensajeOutbox : BaseEntity
 
         EmpresaId = empresaId;
         EventoId = Guid.NewGuid();
-        TipoEvento = NormalizarRequerido(tipoEvento, LongitudMaximaTipoEvento, nameof(tipoEvento));
+        TipoEvento = NormalizarIdentificadorRequerido(tipoEvento, LongitudMaximaTipoEvento, nameof(tipoEvento));
         PayloadJson = NormalizarRequerido(payloadJson, LongitudMaximaPayload, nameof(payloadJson));
-        ClaveIdempotencia = NormalizarRequerido(
+        ClaveIdempotencia = NormalizarIdentificadorRequerido(
             claveIdempotencia,
             LongitudMaximaClaveIdempotencia,
             nameof(claveIdempotencia));
-        TipoAgregado = NormalizarOpcional(tipoAgregado, LongitudMaximaTipoAgregado, nameof(tipoAgregado));
-        IdAgregado = NormalizarOpcional(idAgregado, LongitudMaximaIdAgregado, nameof(idAgregado));
-        CorrelationId = NormalizarOpcional(correlationId, LongitudMaximaCorrelationId, nameof(correlationId));
+        TipoAgregado = NormalizarIdentificadorOpcional(tipoAgregado, LongitudMaximaTipoAgregado, nameof(tipoAgregado));
+        IdAgregado = NormalizarIdentificadorOpcional(idAgregado, LongitudMaximaIdAgregado, nameof(idAgregado));
+        CorrelationId = NormalizarIdentificadorOpcional(correlationId, LongitudMaximaCorrelationId, nameof(correlationId));
         CreadoEnUtc = ExigirUtc(creadoEnUtc, nameof(creadoEnUtc));
         DisponibleDesdeUtc = CreadoEnUtc;
         Estado = EstadoMensajeOutbox.Pendiente;
@@ -193,6 +193,30 @@ public sealed class MensajeOutbox : BaseEntity
             throw new ArgumentException($"El valor excede {longitudMaxima} caracteres.", parametro);
 
         return normalizado;
+    }
+
+    // Identificadores opacos sin controles: no alterar PayloadJson multilinea.
+    private static string NormalizarIdentificadorRequerido(string? value, int longitudMaxima, string parametro)
+    {
+        var normalizado = NormalizarRequerido(value, longitudMaxima, parametro);
+        ExigirSinControles(value!, parametro);
+        return normalizado;
+    }
+
+    private static string? NormalizarIdentificadorOpcional(string? value, int longitudMaxima, string parametro)
+    {
+        if (value is not null)
+            ExigirSinControles(value, parametro);
+        return NormalizarOpcional(value, longitudMaxima, parametro);
+    }
+
+    private static void ExigirSinControles(string value, string parametro)
+    {
+        foreach (var caracter in value)
+        {
+            if (char.IsControl(caracter))
+                throw new ArgumentException("El identificador contiene caracteres de control.", parametro);
+        }
     }
 
     private static DateTime ExigirUtc(DateTime value, string parametro)

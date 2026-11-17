@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C09-04.M03.01 identificadores seguros outbox [Javier :40]
+- Domain valida identificadores de evento, idempotencia, agregado y correlación contra CR/LF, TAB, NUL, preservando payload JSON, tenant y firmas previas.
+- Pruebas xUnit positivas, negativas, frontera y rechazo adversarial publicadas para CI .NET 10 real por SHA; no se certifican MySQL, JWT HTTP, HMAC, SMTP ni WhatsApp.
+- Claim V17 exclusivo, A0–A4 con readback y A5 independiente; PROJECT_SCOPE_LOCK STRICT, rollback normal git revert, sin QA/main/PROD.
+
 ## 2026-11-17 — V19 C09-04.M02.06 contrato de salida multicanal [Javier :20]
 - Matriz trazable de cinco M02.01–05 LISTO con A5 independiente, SHAs origen y dependencias M03 por Domain, Application, autorización, MySQL/EF, proveedores y auditoría, sin alterar DAG ni COLA.
 - Contrato fail-closed de tenant/consentimiento, idempotencia durable, HMAC/replay, concurrencia y rollback; positivos/negativos futuros explícitamente NO_EJECUTADOS. Cambio R0 documental sin worker, webhook, migración, SMTP ni WhatsApp reales.
