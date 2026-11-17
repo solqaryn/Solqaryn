@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C13-04.M05.04 revocacion JWT real con rol global efimero [Javier :00]
+- Nuevo Playwright Chromium comprueba que revocar el rol en MySQL 8.4 de CI invalida la autoridad de un JWT previamente firmado, deniega HTTP y ruta privada; restauracion de una fila en finally y readback.
+- P1 de cobertura recursiva permanece abierto: VALIDANDO, CI exact-SHA Scope Lock/V5 obligatoria y A5 independiente; sin datos de produccion, rollback git revert.
+
 ## 2026-11-17 — V19 C09-04.M05.05 abuso y aislamiento negativo outbox [Javier :20]
 - Once casos xUnit adversariales sobre servicio Application real y dependencias simuladas: identidad o tenant inválidos, membresía revocada, idempotencia CR/LF/TAB, replay de clave con payload diferente, repositorio que devuelve otro tenant y payload vacío; cero altas en rechazos.
 - Workflow GitHub-hosted .NET 10 Release exige TRX 11/11, Scope Lock y checks de seguridad; no acredita middleware JWT real, MySQL, SMTP, WhatsApp ni producción. Riesgo R2; A0-A4 por SHA y A5 de otra Task Javier; rollback git revert normal.

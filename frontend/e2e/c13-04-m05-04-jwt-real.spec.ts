@@ -107,3 +107,50 @@ test('JWT global recorre cada ruta estatica del catalogo plataforma en el HEAD',
     });
   }
 });
+
+
+test('revocacion de rol global invalida JWT aun vigente en API y navegador', async ({ page, request }) => {
+  // Solo CI MySQL 8.4 efimero: la autoridad se consulta de nuevo en cada solicitud.
+  const { execFileSync } = await import('node:child_process');
+  const ids = execFileSync('docker', [
+    'ps', '--filter', 'ancestor=mysql:8.4', '--format', '{{.ID}}'
+  ], { encoding: 'utf8' }).trim().split('\n').filter(Boolean);
+  expect(ids).toHaveLength(1);
+  const containerId = ids[0];
+  expect(containerId).toMatch(/^[0-9a-f]+$/);
+  const sql = (statement: string): string => execFileSync('docker', [
+    'exec', containerId, 'mysql', '-uroot', '-proot',
+    'solqaryn_c1304_real_ci', '-Nse', statement
+  ], { encoding: 'utf8' }).trim();
+  const where = "u.NombreUsuario='c1304_platform_only' AND r.NombreNormalizado='C1304_GLOBAL_CI'";
+  const from = ' FROM UsuarioRolesPlataforma ur JOIN Usuarios u ON ur.UsuarioId=u.Id JOIN Roles r ON ur.RolId=r.Id ';
+  expect(sql('SELECT COUNT(*)' + from + 'WHERE ' + where + ' AND ur.Activa=1;')).toBe('1');
+
+  await autenticarEnPantalla(page, 'c1304_platform_only');
+  const jwt = await page.evaluate(() => localStorage.getItem('solqaryn_token'));
+  expect(jwt).toMatch(/^[^.]+\.[^.]+\.[^.]+$/);
+  const headers = { Authorization: 'Bearer ' + jwt };
+  const antes = await request.get(api + '/plataforma/sesion', { headers });
+  expect(antes.status()).toBe(200);
+
+  let revocado = false;
+  try {
+    const cantidad = sql('UPDATE UsuarioRolesPlataforma ur JOIN Usuarios u ON ur.UsuarioId=u.Id JOIN Roles r ON ur.RolId=r.Id SET ur.Activa=0 WHERE ' + where + ' AND ur.Activa=1; SELECT ROW_COUNT();');
+    expect(cantidad).toBe('1');
+    revocado = true;
+    const despues = await request.get(api + '/plataforma/sesion', { headers });
+    expect(despues.status()).toBe(403);
+    expect((await despues.text()).includes('Global CI C1304')).toBe(false);
+    await page.goto('/plataforma/inventario-rutas-v19');
+    await expect(page).toHaveURL(/\/login\?plataforma=denegado/);
+    await expect(page.getByTestId('c1304-route-catalogo')).toHaveCount(0);
+  } finally {
+    if (revocado) {
+      const restauradas = sql('UPDATE UsuarioRolesPlataforma ur JOIN Usuarios u ON ur.UsuarioId=u.Id JOIN Roles r ON ur.RolId=r.Id SET ur.Activa=1 WHERE ' + where + ' AND ur.Activa=0; SELECT ROW_COUNT();');
+      expect(restauradas).toBe('1');
+      expect(sql('SELECT COUNT(*)' + from + 'WHERE ' + where + ' AND ur.Activa=1;')).toBe('1');
+    }
+  }
+  const restaurado = await request.get(api + '/plataforma/sesion', { headers });
+  expect(restaurado.status()).toBe(200);
+});
