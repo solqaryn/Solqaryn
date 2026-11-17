@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C15-04.M05.05 negativas de acceso en Chromium [Javier :30]
+- Cuatro pruebas E2E negativas en Angular real contra sesión sintética: anónimo, 401, 403 opaco y 200 de tenant Empresa; no render privado ni escrituras; no se adjudica autorización backend real.
+- GitHub-hosted Node24/npm11, lint/build y Playwright Chromium dirigido por SHA, Scope Lock y procedencia V5; estado CI se acredita sólo cuando termine SUCCESS.
+- Riesgo R2 test-only; A5 independiente de otra Task Javier, V17 una sola EN_PROGRESO, rollback git revert; no JWT real/MySQL/PROD, sólo dev.
+
 ## 2026-11-17 — V19 C12-04.M04.06 densidad y progreso privado [Javier :40]
 - Tres nuevos Playwright Chromium prueban cuatro tarjetas, cuatro anchuras sin overflow, boton de 44px, GET pendiente con aria-busy y contenidos privados ocultos, y 503 opaco sin escrituras. Sesion simulada, no JWT ni MySQL real.
 - CI SHA-scoped con cancel-in-progress=false exige 18 Vitest, 3 Chromium, Angular lint/build, Scope Lock y V5. A5 por revisor distinto, no Web Vitals productivos ni QA/main/PROD.

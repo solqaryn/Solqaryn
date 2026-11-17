@@ -1,0 +1,64 @@
+name: V19 C15-04.M05.05 - negativas UI plataforma
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/e2e/c15-04-m05-05-negative-access.spec.ts'
+      - '.github/workflows/v19-c15-04-m05-05-negative-access.yml'
+      - 'frontend/src/app/core/guards/plataforma.guard.ts'
+      - 'frontend/src/app/core/auth/plataforma-sesion.service.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c15-04-m05-05-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  chromium:
+    name: C15-04.M05.05 - cuatro negativas Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm install --global npm@11.19.0
+      - run: npm ci
+      - name: Tipado y build Angular
+        run: |
+          npm run lint
+          npm run build:prod
+      - run: npx playwright install --with-deps chromium
+      - name: Angular localhost efimero
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c1504m0505-angular.log 2>&1 &
+          for attempt in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat c1504m0505-angular.log >&2
+          exit 1
+      - name: Cuatro negativas Chromium
+        run: npx playwright test e2e/c15-04-m05-05-negative-access.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Evidencia de fallo
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v19-c15-04-m05-05-negative-access
+          path: |
+            frontend/c1504m0505-angular.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 7
