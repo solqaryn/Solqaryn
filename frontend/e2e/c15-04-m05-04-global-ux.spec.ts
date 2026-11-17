@@ -156,4 +156,29 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
     await expect(page.getByRole('button',{name:'Ocultar contraseña'})).toHaveAttribute('aria-pressed','true');
   });
 
+  // A0.4: tres rutas publicas reales; no confundir con autorizacion backend ni compras.
+  test('storefront publico: 3 rutas, seis navegaciones y enlaces skip',async({page})=>{
+    test.setTimeout(120_000);
+    const rutas:[string,string][]=[
+      ['/tienda','#contenido-principal'],
+      ['/tienda/productos','#catalogo-productos'],
+      ['/tienda/categorias','#contenido-categorias']
+    ];
+    const escrituras:string[]=[];
+    page.on('request',r=>{if(!['GET','HEAD','OPTIONS'].includes(r.method()))escrituras.push(r.method()+' '+r.url());});
+    for(const width of [375,1280]){
+      await page.setViewportSize({width,height:840});
+      for(const [ruta,principal] of rutas){
+        await test.step(width+'px '+ruta,async()=>{
+          await page.goto(ruta,{waitUntil:'domcontentloaded'});
+          await expect(page.locator(principal)).toBeVisible();
+          await expect(page.locator('a.skip-link').first()).toHaveAttribute('href',principal);
+          await expect(page.getByRole('heading',{level:1})).toHaveCount(1);
+          await noOverflow(page);
+        });
+      }
+    }
+    expect(escrituras).toEqual([]);
+  });
+
 });

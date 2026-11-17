@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C15-04.M05.04 navegación pública storefront real [Javier :10]
+- Test incremental Chromium sobre /tienda, /tienda/productos y /tienda/categorias a 375/1280 px, con main/h1, enlaces de salto, overflow y ausencia de escrituras HTTP; workflow pasa de 9 a 10 casos.
+- No se prueban compras, cobros, API/tenant, WCAG global ni rutas privadas autenticadas. Requiere SUCCESS real en CI exact-SHA; mantener EN_PROGRESO/lock V17 y A5 pendiente de otra Task.
+
 ## 2026-11-17 — V19 C13-04.M05.04 prueba privada JWT y MySQL efimero [Javier :00]
 - Nueva integración CI aislada .NET 10/MySQL 8.4/Angular/Chromium, tres casos browser/API positivos y adversariales con JWT firmado; sin mocks HTTP ni credenciales reales.
 - Mantener C13-04.M05.04 VALIDANDO/P1 de cobertura global; las comprobaciones externas del nuevo SHA no son PASS hasta ejecución verificada. A5 debe ser independiente.
