@@ -1,3 +1,7 @@
+## 2026-11-16 — V19 C00-04.M06.06 cierre documental y DAG [Javier :10]
+- Mapa de 11/11 prerequisitos C00-04.M05.01–06 y M06.01–05: PLAN LISTO+A5 institucional, SHA/alcance y limites de xUnit, Chromium, mocks y rollback aislado; cuatro mutaciones documentales adversariales rechazadas en memoria.
+- Solo docs/evidencias + CHANGELOG, sin tocar formulas COLA/DAG ni estado de otros IDs; Scope Lock y V5 exact-SHA pendientes de acreditar tras publicacion, A5 por otra Task Javier. Sin JWT/MySQL/WCAG/RTO/PROD certificadas.
+
 ## 2026-11-16 — V19 C00-04.M06.04 ensayo rollback aislado [Javier :00]
 - Github-hosted ensaya git revert --no-commit en worktree efimero M05.06: arbol identico al padre, cuatro rutas exactas, rechazo adversarial SHA ajeno y cero operaciones sobre datos o refs remotas.
 - Riesgo R2 por workflow, sin runtime nuevo; Scope Lock/V5 y A5 independiente exigidos. MySQL/JWT/prod sin certificar; rollback normal git revert.
