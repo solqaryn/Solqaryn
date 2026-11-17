@@ -1,3 +1,7 @@
+## 2026-11-16 — V19 C05-01.M05.03 integración real proveedor CSS y Signals [Javier :50]
+- Tres Playwright/Chromium causales contra Angular real en loopback: cuatro swatches emparejados con variables CSS globales, cambio computado de preset Signal con idempotencia y cero escrituras, y denegación 403 que oculta tokens privados.
+- Riesgo R2 conservador por nuevo workflow CI; proveedor local CSS/DOM, no persistencia, MySQL/JWT/RBAC/tenant HTTP real. GitHub-hosted Node24/npm11 lint/build/Chromium, Scope Lock y V5 exact-SHA, A5 de otra Task Javier; sólo dev, rollback mediante git revert normal.
+
 ## 2026-11-16 — V19 C05-01.M05.02 contrato DTO seguro de sesión Angular [Javier :40]
 - Añade cinco pruebas reales Angular HttpClientTesting/RxJS del GET de sesión: DTO positivo, Empresa 200 forjada, atributos vacíos/flag false/nulo, 403 opaco y revocación antes de revalidar.
 - Riesgo R2 por autorización, test-only: HTTP simulado no acredita JWT/RBAC/tenant/MySQL real. Workflow Node24/npm11 exact-SHA con Vitest lint/build, Scope Lock/V5 y A5 independiente; rollback git revert, sólo dev.
