@@ -1,0 +1,40 @@
+name: V19 C05-01.M05.02 - contrato DTO seguro
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/src/app/core/auth/c05-01-m05-02-sesion-contract.spec.ts'
+      - '.github/workflows/v19-c05-01-m05-02-dto-contract.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c0501-m0502-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  contract:
+    name: V19 C05-01.M05.02 - cinco Angular HttpClientTesting
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout SHA exacto
+        uses: actions/checkout@v4
+      - name: Node24 npm11
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Npm fijado
+        run: npm install --global npm@11.19.0
+      - name: Dependencias reproducibles
+        run: npm ci
+      - name: Cinco contratos DTO Angular positivos negativos y frontera
+        run: npm test -- --no-watch --no-progress --include=src/app/core/auth/c05-01-m05-02-sesion-contract.spec.ts
+      - name: Tipado lint y Angular build
+        run: |
+          npm run lint
+          npm run build:prod

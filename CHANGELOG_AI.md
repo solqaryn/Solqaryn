@@ -1,3 +1,7 @@
+## 2026-11-16 — V19 C05-01.M05.02 contrato DTO seguro de sesión Angular [Javier :40]
+- Añade cinco pruebas reales Angular HttpClientTesting/RxJS del GET de sesión: DTO positivo, Empresa 200 forjada, atributos vacíos/flag false/nulo, 403 opaco y revocación antes de revalidar.
+- Riesgo R2 por autorización, test-only: HTTP simulado no acredita JWT/RBAC/tenant/MySQL real. Workflow Node24/npm11 exact-SHA con Vitest lint/build, Scope Lock/V5 y A5 independiente; rollback git revert, sólo dev.
+
 ## 2026-11-16 — V19 C05-01.M05.05 denegación adversarial del catálogo privado [Javier :40]
 - Agrega tres pruebas reales Playwright/Chromium para sesión empresarial 200 forjada, administrador global falso 200 y 403 con mensaje privado; exige redirección a login, cero tokens expuestos y cero escrituras HTTP.
 - Casos R2 de interfaz con fixture sintético; sin cambios runtime ni certificación JWT/RBAC/tenant MySQL real. Workflow por SHA con Node24/npm11 lint/build; A0-A4 por CI y A5 independiente. Rollback git revert, sólo dev.
