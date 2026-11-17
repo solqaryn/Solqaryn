@@ -154,3 +154,52 @@ test('revocacion de rol global invalida JWT aun vigente en API y navegador', asy
   const restaurado = await request.get(api + '/plataforma/sesion', { headers });
   expect(restaurado.status()).toBe(200);
 });
+
+
+test('Router recursivo importa rutas ERP y niega anonimato en Chrome real', async ({ page }) => {
+  // Inventario del checkout exact-SHA; la expansion incluye imports anidados
+  // pero no presupone que un usuario global tenga permisos ERP.
+  const { dirname, resolve, sep } = await import('node:path');
+  const base = resolve('src/app');
+  const visitados = new Set<string>();
+  const rutas = new Set<string>();
+  const visitar = (archivo: string): void => {
+    if (!archivo.startsWith(base + sep)) {
+      throw new Error('Import de rutas fuera de src/app: ' + archivo);
+    }
+    if (visitados.has(archivo)) return;
+    visitados.add(archivo);
+    const fuente = readFileSync(archivo, 'utf8');
+    for (const encontrada of fuente.matchAll(/\bpath\s*:\s*'([^']+)'/g)) {
+      rutas.add(encontrada[1]);
+    }
+    for (const spread of fuente.matchAll(/\.\.\.([A-Z][A-Z0-9_]*_ROUTES)\b/g)) {
+      const simbolo = spread[1];
+      const linea = fuente.split('\n').find(fragmento =>
+        fragmento.includes('import { ' + simbolo + ' } from '));
+      expect(linea, 'Falta import concreto del spread ' + simbolo).toBeDefined();
+      const modulo = linea!.match(/from\s+['"]([^'"]+)['"]/);
+      expect(modulo, 'No se pudo resolver ' + simbolo).not.toBeNull();
+      visitar(resolve(dirname(archivo), modulo![1] + '.ts'));
+    }
+  };
+  visitar(resolve(base, 'app.routes.ts'));
+  expect(visitados.size).toBeGreaterThanOrEqual(9);
+  expect(rutas.size).toBeGreaterThan(120);
+  for (const declarada of ['inventario/ajustes', 'facturas-proveedor',
+                            'pedidos-venta', 'financieros']) {
+    expect(rutas.has(declarada), 'Ruta importada ausente: ' + declarada).toBe(true);
+  }
+
+  // E2E negativo con router y guardas reales, sin page.route ni fixtures HTTP.
+  // No afirma navegacion positiva ERP: requiere membresia y capacidad por modulo.
+  for (const destino of ['/inventario/ajustes', '/facturas-proveedor',
+                         '/pedidos-venta', '/centro-reportes/financieros']) {
+    await test.step('anonimo ' + destino, async () => {
+      const respuesta = await page.goto(destino);
+      expect(respuesta?.status()).toBe(200);
+      await expect(page).toHaveURL(/\/login(?:\?|$)/);
+      await expect(page.getByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
+    });
+  }
+});

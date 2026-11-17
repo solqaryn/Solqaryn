@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C13-04.M05.04 inventario recursivo de rutas importadas y rechazo anonimo [Javier :00]
+- Playwright agrega descubrimiento de imports anidados de rutas ERP del checkout y valida existencia de módulos; cuatro navegaciones negativas reales Chromium sin interceptar red a ajustes, facturas, pedidos y reporte hijo.
+- Alcance R2 de aceptación parcial: la matriz estática y denegación anónima NO prueban viajes positivos empresariales, JWT por capacidad, rutas dinámicas ni cobertura global. P1 permanece abierto, VALIDANDO con revisión A5 ajena pendiente; CI exact-SHA requerida y rollback git revert normal.
+
 ## 2026-11-17 — V19 C09-04.M06.03 riesgos abiertos y decisiones multicanal [Javier :50]
 - Registro R01–R10 y decisiones D01–D08: webhooks, replay, PII, JWT/RBAC/tenant, consentimiento, duplicados, accesibilidad y bloqueo R3, con evidencia M05.01–06 delimitada por SHA y run.
 - Alcance R0 documental; MySQL 8.4/Chromium de pruebas previas no certifican proveedor vivo, webhook firmado, Aiven o producción; A5 independiente pendiente y rollback git revert normal.
