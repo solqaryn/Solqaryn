@@ -23,12 +23,12 @@
     } @else if (!cuenta.autenticado()) {
       <section class="auth-shell" aria-label="Acceso de cliente">
         <div class="auth-tabs" role="tablist" aria-label="Acceso de cliente">
-          <button type="button" role="tab" [attr.aria-selected]="modo() === 'login'" (click)="cambiarModo('login')">Iniciar sesión</button>
-          <button type="button" role="tab" [attr.aria-selected]="modo() === 'registro'" (click)="cambiarModo('registro')">Crear cuenta</button>
+          <button id="cuenta-tab-login" type="button" role="tab" aria-controls="cuenta-panel-login" [attr.tabindex]="modo() === 'login' ? 0 : -1" [attr.aria-selected]="modo() === 'login'" (keydown)="manejarTecladoTabs($event)" (click)="cambiarModo('login')">Iniciar sesión</button>
+          <button id="cuenta-tab-registro" type="button" role="tab" aria-controls="cuenta-panel-registro" [attr.tabindex]="modo() === 'registro' ? 0 : -1" [attr.aria-selected]="modo() === 'registro'" (keydown)="manejarTecladoTabs($event)" (click)="cambiarModo('registro')">Crear cuenta</button>
         </div>
 
         @if (modo() === 'login') {
-          <form class="panel auth-form" [formGroup]="loginForm" (ngSubmit)="login()">
+          <form id="cuenta-panel-login" role="tabpanel" aria-labelledby="cuenta-tab-login" class="panel auth-form" [formGroup]="loginForm" (ngSubmit)="login()">
             <h2>Bienvenido de nuevo</h2>
             <label>Correo
               <input type="email" autocomplete="email" formControlName="correo" inputmode="email" maxlength="150">
@@ -41,7 +41,7 @@
             </button>
           </form>
         } @else {
-          <form class="panel auth-form" [formGroup]="registroForm" (ngSubmit)="registrar()">
+          <form id="cuenta-panel-registro" role="tabpanel" aria-labelledby="cuenta-tab-registro" class="panel auth-form" [formGroup]="registroForm" (ngSubmit)="registrar()">
             <h2>Crear cuenta de cliente</h2>
             <label>Nombre
               <input type="text" autocomplete="name" formControlName="nombre">

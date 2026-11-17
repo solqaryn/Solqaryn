@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C15-04.M05.04 teclado accesible de pestañas cuenta [Javier :10]
+- ARIA tablist de /tienda/cuenta: roving tabindex, ArrowRight/Left, Home/End y panel etiquetado; sin cambios de backend, credenciales ni datos.
+- Nueva regresión Chromium real con dos viewports, foco, ausencia de overflow y cero mutaciones HTTP. Total esperado 14 tests; CI pendiente, auditoría R2 global EN_PROGRESO sin A5 propia.
+
 ## 2026-11-17 — V19 C09-04.M05.02 contrato API/DTO seguro [Javier :40]
 - Se añaden tests xUnit del controlador real de outbox con servicio simulado para respuesta 202/DTO, cabecera idempotente ausente/vacia, tenant A/B, conflicto 409, membresia revocada 403 y DTO invalido 400, con ProblemDetails opaco.
 - Workflow dirigido .NET 10 Release por SHA; no afirma JWT firmado, middleware, MySQL, webhooks ni proveedores reales. Requiere CI exact-SHA, Scope Lock, V5, A0-A4 antes de LISTO y A5 por otra Task Javier. Solo dev; git revert normal.

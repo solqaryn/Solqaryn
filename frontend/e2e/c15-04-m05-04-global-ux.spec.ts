@@ -267,4 +267,47 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
     expect(mutaciones).toEqual([]);
   });
 
+  // A0.12: accesibilidad ARIA tablist en cuenta; keyboard real, no .focus() en test.
+  test('cuenta: ArrowRight/Left Home/End, foco, panel y cero escrituras',async({context})=>{
+    test.setTimeout(150_000);
+    for(const width of [375,1280]){
+      const page=await context.newPage();
+      const writes:string[]=[];
+      try{
+        await page.setViewportSize({width,height:840});
+        page.on('request',r=>{if(!['GET','HEAD','OPTIONS'].includes(r.method()))writes.push(r.method()+' '+r.url());});
+        await page.goto('/tienda/cuenta',{waitUntil:'domcontentloaded'});
+        const login=page.getByRole('tab',{name:'Iniciar sesión'});
+        const registro=page.getByRole('tab',{name:'Crear cuenta'});
+        await expect(login).toBeVisible();
+        await expect(login).toHaveAttribute('tabindex','0');
+        await expect(registro).toHaveAttribute('tabindex','-1');
+        let focused=false;
+        for(let i=0;i<48;i++){
+          await page.keyboard.press('Tab');
+          focused=await login.evaluate(el=>el===document.activeElement);
+          if(focused)break;
+        }
+        expect(focused).toBe(true);
+        await page.keyboard.press('ArrowRight');
+        await expect(registro).toBeFocused();
+        await expect(registro).toHaveAttribute('aria-selected','true');
+        await expect(registro).toHaveAttribute('tabindex','0');
+        await expect(login).toHaveAttribute('tabindex','-1');
+        await expect(page.getByRole('tabpanel',{name:'Crear cuenta'})).toBeVisible();
+        const outline=await registro.evaluate(el=>parseFloat(getComputedStyle(el).outlineWidth));
+        expect(outline).toBeGreaterThan(0);
+        await page.keyboard.press('ArrowLeft');
+        await expect(login).toBeFocused();
+        await expect(page.getByRole('tabpanel',{name:'Iniciar sesión'})).toBeVisible();
+        await page.keyboard.press('End');
+        await expect(registro).toBeFocused();
+        await page.keyboard.press('Home');
+        await expect(login).toBeFocused();
+        await noOverflow(page);
+      }finally{await page.close();}
+      expect(writes).toEqual([]);
+    }
+  });
+
 });

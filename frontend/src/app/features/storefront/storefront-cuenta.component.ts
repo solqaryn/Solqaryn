@@ -85,6 +85,25 @@ export class StorefrontCuentaComponent implements OnInit {
     });
   }
 
+  manejarTecladoTabs(event: KeyboardEvent): void {
+    // ARIA Tabs: pestaña activa en secuencia Tab; flechas/Home/End seleccionan
+    // el panel sin activar los formularios ni acceder a servicios externos.
+    let destino: 'login' | 'registro' | null = null;
+    if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
+      destino = this.modo() === 'login' ? 'registro' : 'login';
+    } else if (event.key === 'Home') {
+      destino = 'login';
+    } else if (event.key === 'End') {
+      destino = 'registro';
+    }
+    if (!destino) return;
+    event.preventDefault();
+    this.cambiarModo(destino);
+    const tab = event.currentTarget as HTMLButtonElement;
+    const selector = destino === 'login' ? '#cuenta-tab-login' : '#cuenta-tab-registro';
+    tab.parentElement?.querySelector<HTMLButtonElement>(selector)?.focus();
+  }
+
   cambiarModo(modo: 'login' | 'registro'): void {
     this.modo.set(modo);
     this.error.set('');
