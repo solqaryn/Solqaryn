@@ -1,3 +1,7 @@
+## 2026-11-17 — Reconciliación snapshot Oracle C09-04.M06.04 [ChatGPT directo]
+- El CI Oracle baseline reveló has-pending-model-changes tras el E164: se sincroniza exactamente CK_ConfiguracionesWhatsAppEmpresa_Numero_E164 en el snapshot Oracle real de Infrastructure.Migrations con el modelo EF, sin cambiar tablas de producción ni debilitar los controles.
+- Fuente original 9d131c4b: 4/4 MySQL 8.4 A/B PASS y seguridad PASS; Oracle baseline CI tenía FAIL y exige nueva verificación en SHA descendiente antes de cerrar VALIDANDO. No falsificar A5 ni aprobación productiva.
+
 ## 2026-11-17 - V19 C13-04.M05.04 firma JWT adulterada [Javier :00]
 - Regresion Chromium: JWT original firmado 200, firma adulterada 401 y pantalla privada rechazada; CI externa exact-SHA y P1 global pendientes.
 

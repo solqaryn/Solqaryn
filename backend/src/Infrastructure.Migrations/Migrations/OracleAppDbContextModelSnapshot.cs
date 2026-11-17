@@ -2084,7 +2084,7 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         {
                             t.HasCheckConstraint("CK_ConfiguracionesWhatsAppEmpresa_EmpresaId_Positivo", "`EmpresaId` > 0");
 
-                            t.HasCheckConstraint("CK_ConfiguracionesWhatsAppEmpresa_Numero_E164", "`NumeroTelefonoE164` REGEXP '^\\+[0-9]{8,15}$'");
+                            t.HasCheckConstraint("CK_ConfiguracionesWhatsAppEmpresa_Numero_E164", "`NumeroTelefonoE164` REGEXP '^[+][0-9]{8,15}$'");
 
                             t.HasCheckConstraint("CK_ConfiguracionesWhatsAppEmpresa_Token_Referencia", "INSTR(`TokenSecretoReferencia`, '://') > 1");
 
