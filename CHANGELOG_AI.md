@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C09-04.M03.05 worker outbox tenant-gated [Javier :50]
+- Implementa worker invocable por empresa con gate obligatorio antes de claim y antes de despacho; no registra scheduler, DI ni proveedor externo.
+- Agrega 5 xUnit positivos, adversariales y frontera sobre Application con dobles explícitos; CI real .NET10 y Scope Lock/V5 exact-SHA obligatorios.
+- R2 sin migraciones, JWT HTTP o proveedores productivos; A5 de otra Task Javier, QA/main/PROD no autorizados, rollback git revert.
+
 ## 2026-11-17 — V19 reparación CI C12-04.M05.03 nullable EmpresaId [Javier :00]
 - Corrige compilación CS1501: EmpresaId nullable debe serializarse mediante Convert.ToString con InvariantCulture; conserva todas las aserciones adversariales y la semántica SHA256 del snapshot A/B.
 - Defecto detectado en job de seguridad multiempresa del SHA 35697a0d; revalidar Release, Category=Integration MySQL 8.4 efímero y Scope Lock/V5 exact-SHA sin SKIPPED=PASS; A5 ajena, dev únicamente.
