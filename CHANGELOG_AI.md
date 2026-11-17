@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C15-04.M05.04 UX global incremental [Javier :10]
+- Primer incremento R2 Playwright real: login y panel privado responsive, Tab/foco, contraste puntual, 403 y guard ERP, con sesión HTTP simulada.
+- CI GitHub-hosted propia por SHA; checks y logs requeridos, NO declarar PASS antes de resultados reales.
+- EN_PROGRESO reanudable: inventario total de rutas, roles/tenants, WCAG global y Web Vitals siguen SIN_VERIFICAR; A5 de otra Task.
+
 ## 2026-11-17 — V19 C13-04.M05.05 negativos browser globales [Javier :50]
 - Nueve pruebas Playwright/Chromium para anonimo, expiracion, empresas A/B sinteticas, errores HTTP 401/403/503, success=false y catalogo sin enlaces enumerables.
 - Nuevo workflow GitHub-hosted Angular 22.2.1/Node 24/Chromium; SHA exacto y checks pertinentes pendientes hasta CI real.

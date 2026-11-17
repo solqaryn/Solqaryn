@@ -1,0 +1,62 @@
+name: V19 C15-04.M05.04 - aceptacion UX incremental
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/e2e/c15-04-m05-04-global-ux.spec.ts'
+      - '.github/workflows/v19-c15-04-m05-04-global-ux.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c15-04-m05-04-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  chromium:
+    name: C15-04.M05.04 - cuatro casos Chromium parciales
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm install --global npm@11.19.0
+      - run: npm ci
+      - name: Tipado y build
+        run: |
+          npm run lint
+          npm run build:prod
+      - run: npx playwright install --with-deps chromium
+      - name: Angular efimero localhost
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c1504m0504.log 2>&1 &
+          for i in $(seq 1 70); do
+            if curl -fsS http://127.0.0.1:4200/login >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat c1504m0504.log >&2
+          exit 1
+      - name: UX en browser real
+        run: npx playwright test e2e/c15-04-m05-04-global-ux.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Evidencia de falla
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c1504m0504-failure
+          path: |
+            frontend/c1504m0504.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 7
