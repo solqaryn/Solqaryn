@@ -1,3 +1,8 @@
+## 2026-11-16 — V19 C15-04.M04.03 branding dinámico y componentes permitidos [Javier :00]
+- Añade cuatro Vitest Angular TestBed para marca institucional/neutra, densidad compacta, configuración inmutable y ausencia de operaciones de escritura en dos componentes privados ya existentes.
+- Incluye payload SVG y getter hostil para verificar fallback neutro, además de rechazo sin sesión; no atribuye JWT/RBAC/tenant real ni certificación visual global.
+- Workflow SHA-específico Node24/Angular22 con lint/build y A0-A4 pendientes de CI exacta; A5 independiente, rollback git revert, solo dev.
+
 ## 2026-11-16 — V19 reparación UI C15-04.M04.05 objetivo de teclado 44px [Javier :00]
 - CI original Chromium obtuvo 3/4 PASS y 1 FAIL: enlace de retorno de gobierno V5 medía 42.78125px, por debajo del objetivo real de 44px.
 - Corrige min-height 44px en el componente existente y activa el workflow al cambiarlo; mantiene prueba adversarial, foco, teclado y contraste sin relajar aserciones.

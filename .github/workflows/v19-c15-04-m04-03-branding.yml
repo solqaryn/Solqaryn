@@ -1,0 +1,40 @@
+name: V19 C15-04.M04.03 - Branding dinamico y componentes permitidos
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/src/app/features/plataforma/c15-04-m04-03-branding-regression.spec.ts'
+      - '.github/workflows/v19-c15-04-m04-03-branding.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c15-04-m04-03-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  branding:
+    name: V19 C15-04.M04.03 - Vitest branding allowlist Angular
+    runs-on: ubuntu-latest
+    timeout-minutes: 22
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout SHA exacto
+        uses: actions/checkout@v4
+      - name: Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Npm fijado
+        run: npm install --global npm@11.19.0
+      - name: Dependencias fijas
+        run: npm ci
+      - name: Cuatro pruebas Angular TestBed reales
+        run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/c15-04-m04-03-branding-regression.spec.ts
+      - name: Lint y build
+        run: |
+          npm run lint
+          npm run build:prod
