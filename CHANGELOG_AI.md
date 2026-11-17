@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C09-04.M02.04 configuración tipada y flags [Javier :40]
+- Contrato documental CFG01–CFG12, CF01–CF16 y precedencia fail-closed por plataforma/tenant/actor, separando referencias de secretos existentes de opciones y flags NO_IMPLEMENTADOS.
+- Ocho positivos y doce negativos FUTUROS_NO_EJECUTADOS; no habilita SMTP, WhatsApp, webhooks, JWT, MySQL ni eventos; A0–A5 causal y A5 independiente posterior.
+
 ## 2026-11-17 — V19 C09-04.M02.02 API DTO y errores multicanal [Javier :40]
 - Se documentan rutas y contratos existentes de outbox, email y WhatsApp por blob, diferenciándolos de doce interfaces futuras sin endpoints nuevos; autorización tenant, ProblemDetails, idempotencia y webhook HMAC futura fail-closed.
 - Nueve positivos y catorce negativos FUTUROS_NO_EJECUTADOS, preservación de respuestas vigentes, A0–A5 causal y A5 independiente; sin runtime ni proveedores activados.
