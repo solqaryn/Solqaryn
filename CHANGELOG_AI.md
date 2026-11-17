@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C12-04.M06.02 matriz causal reproducible M05 [Javier :40]
+- Documento versionado con seis SHAs de M05.01–06, runs dirigidos, tipo de prueba, límites y diferencias entre mocks y MySQL efímero real; no afirma restore/cutover productivo.
+- Conserva FAILURE histórico de checks ajenos en SHA M05.04, sin elevarlo a PASS. Reproducibilidad por commit, check-runs exact-SHA, blobs y readback institucional.
+- R0 documental; Scope Lock/V5 y A5 independiente antes de cerrar etapa; sin QA/main/PROD, rollback git revert aditivo.
+
 ## 2026-11-17 — V19 C12-04.M06.01 evidencia real vs simulación [Javier :50]
 - Revisión causal documental de seis M05 con SHA y runs: 5/5 + 7/7 Vitest, 3/3 MySQL 8.4.13 efímero, 18/18+5/5, 7/7 y 18/18+4/4 Chromium; no inferir restauración real, JWT backend o cutover autorizado.
 - Matriz P1-P4 y N1-N6 diferencia fixtures, HTTP interceptado, MySQL efímero y límites NO_MEDIDO/NO_AUTORIZADO. A3 runtime NO_APLICA para este diff R0.
