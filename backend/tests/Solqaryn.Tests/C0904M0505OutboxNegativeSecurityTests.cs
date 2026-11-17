@@ -91,6 +91,8 @@ public sealed class C0904M0505OutboxNegativeSecurityTests
 
         await Assert.ThrowsAsync<ConflictException>(() =>
             service.RegistrarAsync(7, Peticion, "clave-ajena"));
+        repository.Verify(r => r.GetByClaveIdempotenciaAsync(7, "clave-ajena",
+            It.IsAny<CancellationToken>()), Times.Once);
         repository.VerifyNoOtherCalls();
     }
 
