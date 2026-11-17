@@ -1,3 +1,8 @@
+## 2026-11-16 — V19 C08-04.M06.03 limitaciones y riesgos sectoriales [Javier :20]
+- Documenta la matriz de Reservas/Membresías/Catálogo/Sitios por rubro, actualmente solo informativa y sin activación, frente al código Angular y pruebas reales GitHub-hosted 4/4 Chromium de M05.06.
+- Distingue denegaciones 403/503 y tenant-context sintéticos de JWT/RBAC/tenant HTTP real; WCAG global, CWV, p95/p99, costos y SLO se mantienen NO_MEDIDO/NO_CERTIFICADO, sin PASSES inventados.
+- Entrega R0 exclusivamente documental, con A0-A4/Scope Lock/V5 por SHA y readback V17, A5 independiente pendiente; rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-16 — V18 C15-04.M03.06 registro UX estructurado y fallos opacos [Javier :40]
 - Nuevo sink ILogger .NET10 para el worker de observaciones UX existente, con evento estructurado fijo 150406, conteo limitado y sin tenant, SHA, token ni evidencia privada en el log.
 - Casos xUnit positivos y adversariales: outcome falsificado, indices y capacidad, NullLogger/niveles deshabilitados, excepciones de proveedor y cancelacion; workflow dirigido aislado por SHA.
