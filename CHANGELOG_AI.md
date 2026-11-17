@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C09-04.M02.06 contrato de salida multicanal [Javier :20]
+- Matriz trazable de cinco M02.01–05 LISTO con A5 independiente, SHAs origen y dependencias M03 por Domain, Application, autorización, MySQL/EF, proveedores y auditoría, sin alterar DAG ni COLA.
+- Contrato fail-closed de tenant/consentimiento, idempotencia durable, HMAC/replay, concurrencia y rollback; positivos/negativos futuros explícitamente NO_EJECUTADOS. Cambio R0 documental sin worker, webhook, migración, SMTP ni WhatsApp reales.
+- A0–A4 con documentos, Scope Lock/V5 del SHA exacto y readback institucional; A5 sólo otra Task Javier. No QA/main/PROD, sin secretos ni datos productivos.
+
 ## 2026-11-17 — V19 C12-04.M04.05 accesibilidad visual y teclado real [Javier :00]
 - Cinco pruebas Playwright Chromium nuevas: semántica/nombres, 320–1280 px, Tab/Enter desde inicio, foco visible, contraste WCAG >=4.5:1, objetivos >=44 px y 403 adversarial.
 - Workflow GitHub-hosted por SHA con npm ci, Vitest, lint/build y Chromium; seguridad real JWT/MySQL/restore NO CERTIFICADA por mocks. Conservar A0–A5 y A5 independiente; no adelantar LISTO hasta SUCCESS causal.
