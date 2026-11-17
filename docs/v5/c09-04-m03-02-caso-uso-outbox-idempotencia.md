@@ -4,7 +4,7 @@ Autor DEV02: 6af16bb9492c8191b8e8c7d606f11507. Repositorio solqaryn/Solqaryn, de
 
 ## A0 — Necesidad real y alcance
 
-MensajesOutboxService.RegistrarAsync ya valida membresía y replay tenant-bound antes de AddAsync. Se detectó una brecha: aplicaba Trim a Idempotency-Key antes de invocar la nueva validación Domain, borrando CR/LF/TAB en bordes y permitiendo normalizar una clave adversarial hacia una clave existente. Se valida la entrada ORIGINAL con char.IsControl ANTES de Trim y ANTES de consultas externas. Se conservan claves imprimibles, normalización de espacios, idempotencia por empresa y contrato público. Solo cambian Application/Services/MensajeOutboxService.cs, pruebas xUnit existentes, esta nota y CHANGELOG. No cambian API/DTO, EF, migración, tenant real, DI, Angular, SMTP/WhatsApp, secretos o datos productivos. Rollback: git revert normal contra HEAD revalidado.
+MensajesOutboxService.RegistrarAsync ya valida membresía y replay tenant-bound antes de AddAsync. Se detectó una brecha: aplicaba Trim a Idempotency-Key antes de invocar la nueva validación Domain, borrando CR/LF/TAB en bordes y permitiendo normalizar una clave adversarial hacia una clave existente. Se valida la entrada ORIGINAL con char.IsControl ANTES de Trim y ANTES de consultas al repositorio, respetando el orden previo de autorización de membresía empresarial. Se conservan claves imprimibles, normalización de espacios, idempotencia por empresa y contrato público. Solo cambian Application/Services/MensajeOutboxService.cs, pruebas xUnit existentes, esta nota y CHANGELOG. No cambian API/DTO, EF, migración, tenant real, DI, Angular, SMTP/WhatsApp, secretos o datos productivos. Rollback: git revert normal contra HEAD revalidado.
 
 ## A1 — Regresiones que detectan el defecto
 
