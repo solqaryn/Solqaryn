@@ -1,0 +1,39 @@
+<main class="visual-shell" aria-labelledby="visual-title"
+  [class.visual-contrast]="presentacion().marca === 'contraste'"
+  [class.visual-compact]="presentacion().densidad === 'compacta'">
+  <header>
+    <p class="eyebrow">SOLQARYN · Referencia visual</p>
+    <h1 id="visual-title">Configuración visual permitida</h1>
+    <p>Demostración privada. Las preferencias son locales; no modifican permisos ni empresas.</p>
+    <a routerLink="/plataforma" aria-label="Volver a administración de plataforma">Volver a plataforma</a>
+  </header>
+  @if (autorizado()) {
+    <section class="visual-panel" aria-labelledby="preset-title">
+      <h2 id="preset-title">Presets permitidos</h2>
+      <p>Solo marcas y densidades predefinidas. No se aceptan CSS, HTML ni recursos remotos.</p>
+      <div class="visual-actions" role="group" aria-label="Marca visual">
+        <button type="button" data-testid="c1304-institutional"
+          [attr.aria-pressed]="presentacion().marca === 'institucional'"
+          (click)="seleccionar({ marca: 'institucional', densidad: presentacion().densidad })">Institucional</button>
+        <button type="button" data-testid="c1304-contrast"
+          [attr.aria-pressed]="presentacion().marca === 'contraste'"
+          (click)="seleccionar({ marca: 'contraste', densidad: presentacion().densidad })">Contraste alto</button>
+      </div>
+      <div class="visual-actions" role="group" aria-label="Densidad de interfaz">
+        <button type="button" data-testid="c1304-comfortable"
+          [attr.aria-pressed]="presentacion().densidad === 'comoda'"
+          (click)="seleccionar({ marca: presentacion().marca, densidad: 'comoda' })">Cómoda</button>
+        <button type="button" data-testid="c1304-compact"
+          [attr.aria-pressed]="presentacion().densidad === 'compacta'"
+          (click)="seleccionar({ marca: presentacion().marca, densidad: 'compacta' })">Compacta</button>
+      </div>
+      <p class="visual-state" role="status" aria-live="polite" data-testid="c1304-visual-state">
+        Marca: {{ presentacion().marca === 'contraste' ? 'Contraste alto' : 'Institucional' }}.
+        Densidad: {{ presentacion().densidad === 'compacta' ? 'Compacta' : 'Cómoda' }}.
+      </p>
+      <p role="note">PLAN, DAG, CI y cumplimiento visual de todos los módulos: NO_MEDIDO.</p>
+    </section>
+  } @else {
+    <p role="alert" class="visual-denied">Sin permiso de plataforma confirmado. Controles privados ocultos.</p>
+  }
+</main>

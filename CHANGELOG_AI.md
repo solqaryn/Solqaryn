@@ -6225,3 +6225,7 @@
 - QA_DEFECT_FOUND P2 de prueba: Chromium GitHub-hosted 43952391693 obtuvo 2/3 PASS; la ruta /dashboard es seguida legítimamente de /perfil por el guard bajo sesión sintética Lectura, por lo que esperar /dashboard final fue una aserción incorrecta.
 - Se mantiene Tab desde foco inicial, Enter, href /dashboard, 403 y ausencia de mutaciones; solo se espera el destino final protegido /perfil. Requerir Chromium y Scope Lock/V5 del nuevo SHA, sin desactivar validadores, con A5 independiente.
 - Sin cambios de código de producto, JWT/RBAC/tenant/MySQL/QA/PROD; rollback git revert y bloqueo VALIDANDO hasta A0-A4 reales.
+
+## 2026-11-16 - V18 C13-04.M04.03 configuracion visual permitida [Javier :30]
+- Ruta privada de plataforma con marca y densidad locales tipadas, fallback ante getters hostiles y sesion revocada; no hay concesiones ni CSS/HTML remoto.
+- Regression Angular TestBed y Playwright Chromium real en CI SHA-aislada, A0-A5 y Scope Lock exigidos, solo dev; ningun PASS atribuido antes de GitHub Actions.
