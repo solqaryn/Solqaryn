@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C09-04.M02.01 modelo de propiedad de mensajería [Javier :40]
+- Contrato documental E01–E16 e INV01–INV20 para tenant, consentimiento, idempotencia, secretos y webhook replay, separando cinco fuentes reales de propuestas no implementadas; sin runtime ni envío.
+- Ocho positivos y doce negativos FUTUROS_NO_EJECUTADOS, A0–A5 con A5 independiente y rollback git revert; CI solamente causal al diff documental.
+
 ## 2026-11-17 — V19 C12-04.M04.03 reparación Vitest por botones de tema permitidos [Javier :30]
 - La CI exact-SHA d220a8b2 ejecutó 17/18 Vitest y falló porque una aserción histórica prohibía también los dos botones de branding expresamente permitidos; se excluyen solo los selectores de tema allowlist, preservando la prohibición de acciones operativas y el control de HTML adversarial.
 - Corregir la evidencia por CI nueva 18/18 Vitest + 7 Chromium con Scope Lock/V5/seguridad. FAIL histórico conservado; ninguna inferencia de MySQL/JWT/QA/PROD y A5 siempre independiente.
