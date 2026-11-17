@@ -97,7 +97,7 @@ test.describe('Storefront Fase 2 — categorías públicas', () => {
 
     await expect(page.getByRole('heading', { level: 1, name: 'Categorías', exact: true })).toBeVisible();
     await expect(page.locator('.categories-grid .category-card')).toHaveCount(6);
-    await expect(page.locator('app-storefront-header .skip-link')).toHaveAttribute('href', '#contenido-categorias');
+    await expect(page.locator('app-storefront-header .skip-link')).toHaveAttribute('href', '/tienda/categorias#contenido-categorias');
     await expect(page.locator('app-storefront-header').getByRole('link', { name: 'Categorías', exact: true }).first())
       .toHaveAttribute('href', '/tienda/categorias');
     await expect(page.locator('.demo-note')).toContainText('fixtures de vista previa');
@@ -304,7 +304,7 @@ test.describe('Storefront Fase 2 — categorías públicas', () => {
     await expect(relacionados.getByRole('link', { name: 'Ver Audífonos de categoría' })).toHaveAttribute('href', '/tienda/producto/aud-fonos-de-categor-a-701');
     await expect(page.getByRole('link', { name: 'Ver productos de esta categoría', exact: true }))
       .toHaveAttribute('href', '/tienda/productos?categoria=audio-y-video-21');
-    await expect(page.locator('app-storefront-header .skip-link')).toHaveAttribute('href', '#contenido-categoria');
+    await expect(page.locator('app-storefront-header .skip-link')).toHaveAttribute('href', '/tienda/categoria/audio-y-video-21#contenido-categoria');
   });
 
   test('categoría inexistente representa not-found y no fabrica un fixture', async ({ page }) => {

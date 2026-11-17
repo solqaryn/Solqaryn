@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C15-04.M05.04 regresion fase2 URLs canonicas [Javier :10]
+- CI fase2 y suites acumuladas detectaron expectativas heredadas del href fragmento. Dos asserts Playwright se actualizan a ruta+fragmento exactos en categorias y categoria por slug, preservando las pruebas.
+- Se reactiva CI dedicada C15 con modificacion causal de spec; PASS pendientes hasta jobs exact-SHA, R2 global EN_PROGRESO, sin A5 propia.
+
 ## 2026-11-17 — V19 C15-04.M05.04 validador phase2 acorde al fix [Javier :10]
 - Lint fase2 falló en SHA 71a32b6f porque exigia el href solo fragmento defectuoso. Se refuerza assert para exigir RouterLink relativo y fragment Angular, sin suprimir verificacion.
 - Regresion Chromium y Scope Lock exact-SHA del nuevo commit requeridos, R2 global todavia EN_PROGRESO y A5 pendiente independiente.

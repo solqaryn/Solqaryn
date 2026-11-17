@@ -182,6 +182,7 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
   });
 
   // A0.5: pruebas de teclado real para tienda publica y dialog movil.
+  // Contrato regresivo fase2: skip-link conserva pathname real, no solo hash.
   // No son evidencia de JWT, RBAC, MySQL, WCAG global o autorizacion backend.
   test('storefront: Tab y Enter sobre skip-link de tres rutas publicas',async({page})=>{
     const routes:[string,string][]=[
