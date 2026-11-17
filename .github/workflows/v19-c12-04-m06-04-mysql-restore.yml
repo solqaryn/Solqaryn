@@ -1,0 +1,38 @@
+name: V19 C12-04.M06.04 - MySQL 8.4 isolated restore evidence
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'scripts/quality/verify-c12-04-m06-04-mysql-restore.sh'
+      - '.github/workflows/v19-c12-04-m06-04-mysql-restore.yml'
+      - 'docs/evidencias/C12-04.M06.04-V19.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c1204-m0604-mysql-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  isolated-mysql:
+    name: C12-04.M06.04 - MySQL 8.4 synthetic restore real
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scope Lock exact checkout
+        run: node scripts/verify-project-scope.mjs
+      - name: Execute real isolated SQL backup, restore, and negative rollback
+        shell: bash
+        run: bash scripts/quality/verify-c12-04-m06-04-mysql-restore.sh "${{ job.services.mysql.id }}"

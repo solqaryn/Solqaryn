@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C12-04.M06.04 ensayo MySQL 8.4 sintetico real [Javier :50]
+- Nuevo workflow GitHub-hosted de restore de mysqldump efimero de tres filas A/B, SHA2, rollback SQL y rechazo de dump malformado, sujeto a check exact-SHA.
+- No usar Aiven ni datos reales; sin Oracle EF migrations o RPO/RTO acreditados; conservar VALIDANDO y A5 independiente pendiente.
+
 ## 2026-11-17 — V19 C09-04.M04.05 reparación P2 de selectores Playwright [Javier :30]
 - CI GitHub-hosted run 44085577070 identificó 2/4 fallos de prueba por selectores globales ajenos al scope: el shell incluye dos main y cinco controles fuera de la pantalla.
 - Selección causal corregida a main[aria-labelledby=c0904-titulo] y controles dentro de .mensajeria; se mantienen intactas las denegaciones, contraste >=4.5, Tab real, dimensiones y presupuesto de escrituras.
