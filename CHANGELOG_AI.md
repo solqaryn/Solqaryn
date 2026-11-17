@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C09-04.M06.02 reparación P2 procedencia V5 [Javier :30]
+- Se rectifica la atribución de CI: check V5 exact-SHA SUCCESS en M05.01/02/03/04/06; M05.05 SHA 76ddaee9 conserva Scope Lock y 11/11 xUnit, pero cero check V5 entre 29 check-runs; NO_EJECUTADO/NO_ACREDITADO, nunca PASS.
+- R0 documental únicamente, authored DEV06/reparación DEV04, A5_FAIL histórico conservado y nueva revisión independiente necesaria. Candado V17; sin cambios de código, DAG/COLA, tenants, JWT, MySQL, QA/main/PROD.
+
 ## 2026-11-17 — V19 C15-04.M05.04 validación accesible de cuenta [Javier :10]
 - Se agregan errores asociados a campos invalidos de login/registro públicos mediante aria-describedby/aria-invalid y nueva regresión adversarial Playwright a 375/1280; cero operaciones mutantes. Requiere CI exact SHA y 19 tests, aún no PASS.
 - R2 global, JWT/roles/tenant A/B, WCAG y Web Vitals siguen SIN_VERIFICAR; EN_PROGRESO DEV02/lock V17, A5 independiente, rollback git revert.

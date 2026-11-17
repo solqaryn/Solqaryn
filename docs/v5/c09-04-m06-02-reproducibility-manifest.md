@@ -17,7 +17,18 @@ La fase M05.01–06 figura LISTO con A5 de revisor diferente. La auditoría ante
 | M05.05 | [76ddaee9990cb1dece9af8813c62612915255b8c](https://github.com/solqaryn/Solqaryn/commit/76ddaee9990cb1dece9af8813c62612915255b8c) | [44129286222](https://github.com/solqaryn/Solqaryn/actions/runs/44129286222) | `134201568394`: 11/11 xUnit negativos, SUCCESS | SHA corregido de Moq; no utilizar SHA previo `443707d9` como PASS. |
 | M05.06 | [3dd2b7be2787c87dcf021eecd628e7238503217d](https://github.com/solqaryn/Solqaryn/commit/3dd2b7be2787c87dcf021eecd628e7238503217d) | [44140941910](https://github.com/solqaryn/Solqaryn/actions/runs/44140941910) | `134243228056`: 4/4 Playwright/Chromium, SUCCESS | Navegador real, sesión HTTP simulada; no JWT firmado. |
 
-Fuente de cada conteo: log real del job, no solo el resumen verde del workflow. En los seis commits se comprobó además `verify-solqaryn-project-scope` y `V5 - Sin encabezados vacios ni atribucion cruzada` `completed/success` del SHA respectivo. `SKIPPED` en reintentos auxiliares no es PASS y ningún check de otro SHA se hereda automáticamente.
+Fuente de cada conteo: log real del job, no solo el resumen verde del workflow. En los seis commits se constató `verify-solqaryn-project-scope` completed/success exact-SHA. **No se puede afirmar lo mismo del check V5 en los seis.** La consulta REST `commits/<SHA>/check-runs?per_page=100` confirmó: 
+
+| M05 y SHA | Scope Lock | Check V5 de procedencia | Resultado |
+| --- | --- | --- | --- |
+| M05.01 `0263060c` | SUCCESS | SUCCESS | Acreditado |
+| M05.02 `9a0dab06` | SUCCESS | SUCCESS | Acreditado |
+| M05.03 `a44a227f` | SUCCESS | SUCCESS | Acreditado |
+| M05.04 `655a28e7` | SUCCESS | SUCCESS | Acreditado |
+| M05.05 `76ddaee9` | SUCCESS | **NO_EJECUTADO/NO_ACREDITADO** (0 check V5 de 29) | No interpretar como PASS |
+| M05.06 `3dd2b7be` | SUCCESS | SUCCESS | Acreditado |
+
+En M05.05 se preservan como evidencia válida los **11/11 xUnit** y Scope Lock SUCCESS exact-SHA, sin atribuir un check V5 inexistente ni inferir equivalencia con otro SHA. `SKIPPED` en reintentos auxiliares no equivale a PASS. Esta **reparación documental P2** la realiza DEV04 sobre el documento originalmente elaborado por DEV06, con candado V17 y revisión A5 correctiva pendiente por una Task Javier independiente de DEV04 y DEV06; conserva A5_FAIL histórico hasta esa revisión, sin liberar DAG, QA/main/PROD, webhook, SMTP o WhatsApp reales.
 
 ## A1 — procedimiento reproducible read-only
 Con GitHub CLI autenticado y un checkout **de sólo lectura** del repositorio autorizado (o utilizando exclusivamente la API GitHub), sustituir `SHA`/`RUN` por cada entrada de la matriz:
