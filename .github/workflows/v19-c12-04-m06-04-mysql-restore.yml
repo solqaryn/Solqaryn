@@ -36,3 +36,93 @@ jobs:
       - name: Execute real isolated SQL backup, restore, and negative rollback
         shell: bash
         run: bash scripts/quality/verify-c12-04-m06-04-mysql-restore.sh "${{ job.services.mysql.id }}"
+
+  oracle-ef-sandbox:
+    name: C12-04.M06.04 - Oracle EF migrations MySQL 8.4 sandbox
+    needs: isolated-mysql
+    runs-on: ubuntu-latest
+    timeout-minutes: 55
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=c1204_ef_sandbox;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      Database__ServerVersion: '8.4.0'
+      Database__ApplyMigrationsOnStartup: 'false'
+      Jwt__Secret: 'C1204-Local-CI-Only-OracleEF-Secret-Not-Production-2026'
+      Jwt__Issuer: 'Solqaryn.CI.C1204'
+      Jwt__Audience: 'Solqaryn.CI.C1204.Frontend'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.401
+      - name: Verificar Scope Lock y MySQL 8.4 solo loopback
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-project-scope.mjs
+          [[ "$ConnectionStrings__DefaultConnection" == 'Server=127.0.0.1;Port=3306;Database=c1204_ef_sandbox;'* ]] || { echo 'REMOTE_OR_UNEXPECTED_DB_REJECTED'; exit 1; }
+          docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -Nse 'SELECT VERSION()' | grep -E '^8[.]4[.]'
+          docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -e "CREATE DATABASE c1204_ef_sandbox CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
+      - name: Oracle EF 10 migraciones reales e idempotencia en base aislada
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+          dotnet tool restore
+          dotnet tool run dotnet-ef --version | grep -F '10.0.12'
+          dotnet tool run dotnet-ef database update \
+            --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
+            --context AppDbContext --configuration Release --no-build
+          first="$(docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -Nse 'SELECT COUNT(*) FROM c1204_ef_sandbox.__EFMigrationsHistory;')"
+          [[ "$first" =~ ^[0-9]+$ && "$first" -gt 0 ]] || { echo 'NO_APPLIED_EF_MIGRATIONS'; exit 1; }
+          dotnet tool run dotnet-ef database update \
+            --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
+            --context AppDbContext --configuration Release --no-build
+          second="$(docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -Nse 'SELECT COUNT(*) FROM c1204_ef_sandbox.__EFMigrationsHistory;')"
+          [[ "$first" == "$second" ]] || { echo 'NON_IDEMPOTENT_EF_MIGRATIONS'; exit 1; }
+          echo "C1204_EF_ORACLE_MYSQL84_SANDBOX_PASS=TRUE APPLIED_MIGRATIONS=$first REAPPLY_IDEMPOTENT=TRUE"
+      - name: Oracle EF / tenant A-B integracion real y TRX
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build \
+            --filter 'FullyQualifiedName~C1204M0503MySqlCutoverProviderIntegrationTests&Category=Integration' \
+            --logger 'trx;LogFileName=c1204-m0604-oracle-ab.trx' --logger 'console;verbosity=normal'
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+          found=list(Path('tests/Solqaryn.Tests/TestResults').rglob('c1204-m0604-oracle-ab.trx'))
+          assert found, 'TRX_MISSING'
+          root=ET.parse(found[-1]).getroot()
+          counters=next((e.attrib for e in root.iter() if e.tag.endswith('Counters')), None)
+          assert counters, 'COUNTERS_MISSING'
+          assert int(counters['executed'])>=3, counters
+          assert int(counters['passed'])>=3, counters
+          assert int(counters['failed'])==0, counters
+          assert int(counters['notExecuted'])==0, counters
+          print('C1204_M0604_ORACLE_EF_TENANT_AB_TRX_PASS=TRUE')
+          PY
+      - name: Descartar base de ensayo y verificar ausencia
+        if: always()
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -e 'DROP DATABASE IF EXISTS c1204_ef_sandbox;'
+          remaining="$(docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME='c1204_ef_sandbox';")"
+          [[ "$remaining" == "0" ]] || { echo 'SANDBOX_NOT_CLEANED'; exit 1; }

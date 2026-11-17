@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C12-04.M06.04 ensayo Oracle EF MySQL 8.4 efimero [Javier :50]
+- Se amplía la CI de restauración sintética con job dependiente para intentar aplicar migraciones Oracle EF 10.0.12 sobre MySQL 8.4 de GitHub-hosted, reejecución idempotente y suite Integration A/B con TRX verificable.
+- Hasta concluir CI exact-SHA, el resultado es PENDIENTE y C12-04.M06.04 permanece VALIDANDO. No valida Aiven, restauración real, RPO/RTO, cutover ni producción; A5 de otra Task Javier.
+
 ## 2026-11-17 — V19 C15-04.M05.04 rutas públicas ofertas/carrito/cuenta [Javier :10]
 - Se añaden seis navegaciones reales Chromium (tres rutas, dos anchos) con H1, no-overflow y cero mutaciones HTTP; cuenta invitada verifica tabs y submit vacío deshabilitado.
 - La CI incremental exige trece casos exact-SHA; la auditoría global R2 continúa EN_PROGRESO sin LISTO ni A5, pendientes roles, tenants y WCAG.
