@@ -492,3 +492,11 @@ La nueva referencia visual privada fue publicada en dev y requiere inventario. S
 - `frontend/src/app/features/plataforma/c13-04-presentacion-v5.component.ts`
 
 El self-test estricto de P0-007.A mantiene comparaciones exactas de rutas presentes, omitidas y duplicadas, y rechaza altas no inventariadas. Registrar el archivo NO certifica accesibilidad, JWT/RBAC/tenant real, HTTP, MySQL ni QA/main/PROD. Esta reparación no cambia el conjunto de rutas protegidas ni excluye ninguna verificación. Revalidar CI exact-SHA. Rollback normal git revert, sin force-push.
+
+## Actualización causal V19 C15-04.M04.01 — 16 de noviembre de 2026
+
+El nuevo componente de auditoría UX real provoca un fallo de inventario P0-007.A en SHA 0f2affce; se incorpora exactamente un archivo a la lista cerrada, pasando a **156 archivos .component.ts (148 features y 8 shared)** sin suprimir ningún origen anterior:
+
+- `frontend/src/app/features/plataforma/c15-04-auditoria-ux-v19.component.ts`
+
+La comprobación exige igualdad estricta por conjunto de todos los archivos reales y del inventario, cinco escenarios negativos del contrato existente y no certifica UX real, WCAG, JWT/RBAC/tenant HTTP, métricas, ni QA/PROD. La ruta dispone de plataformaGuard y de la allowlist exacta. Revalidar CI de SHA reparado. A5 distinta Task. Reversión git revert normal.
