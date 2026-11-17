@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C12-04.M04.01 CI dirigida Vitest y Chromium [Javier :30]
+- Nuevo workflow solo lectura GitHub-hosted con 7 Vitest y 4 Playwright Chromium contra Angular real y sesión HTTP sintética; pruebas de teclado, 403, responsive y ausencia de mutaciones.
+- No se confunde interfaz protegida con integración MySQL ni se certifica JWT/restore/PROD; A0–A4 y revisión A5 siguen condicionadas a evidencia del nuevo SHA.
+
 ## 2026-11-17 — V19 C12-04.M04.01 reparación TypeScript de plantilla [Javier :30]
 - Corregidos cuatro delimitadores de literales de plantilla en componente Angular que provocaron TS1127, TS1136 y TS1160 en CI exact-SHA; documentación Markdown normalizada sin cambiar rutas ni controles.
 - Se conservan todos los tests y validadores; exigir nuevamente compilación y A0–A4 sobre commit reparado, no interpretar checks fallidos como PASS.
