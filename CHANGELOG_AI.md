@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C09-04.M04.03 branding local cerrado y componentes permitidos [Javier :40]
+- Selección reactiva de tres presets de presentación exclusivamente local, con allowlist congelada y rechazo fail-closed de temas arbitrarios; conserva tres canales NO_CONECTADO y plataformaGuard.
+- Se añaden cinco pruebas Angular TestBed y tres escenarios Playwright Chromium para admin, denegación, CSS/URL/HTML inválidos, revocación, teclado Tab, responsive y ausencia de HTTP mutante; GitHub-hosted exact-SHA por verificar.
+- No configura proveedores, no envía mensajes ni certifica JWT/RBAC multitenant backend, MySQL, SMTP, WhatsApp o webhooks. A0–A4 pendientes de CI causal; A5 de otra Task Javier; rollback normal sin QA/main/PROD.
+
 ## 2026-11-17 — V19 C09-04.M04.04 interacciones privadas sin envios [Javier :30]
 - Cuatro pruebas Chromium sobre Angular real: anonimo/403, Empresa/no administrador, canales read-only sin formularios y Tab/Enter con segunda activacion sin POST, responsive 320–1280.
 - Solo se simula la sesion HTTP; no hay boton de envio real, por lo que no se certifica deduplicacion SMTP/WhatsApp, JWT real, MySQL, webhooks ni privacidad del backend.

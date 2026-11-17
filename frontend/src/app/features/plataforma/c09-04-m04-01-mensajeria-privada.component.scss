@@ -13,3 +13,13 @@ a:focus-visible { outline:3px solid var(--mat-sys-primary,#2157a3); outline-offs
 [role=alert] { border:2px solid currentColor; border-radius:.6rem; padding:1rem; }
 @media(max-width:42rem) { .canales { grid-template-columns:1fr; } }
 @media(prefers-reduced-motion:reduce) { *,*:before,*:after { scroll-behavior:auto !important; } }
+
+/* M04.03: temas cerrados, locales y sin estilos suministrados por el usuario. */
+.branding-local { box-sizing:border-box; margin-top:1.5rem; padding:1rem; border:2px solid var(--mat-sys-outline-variant,#76838f); border-radius:.75rem; background:var(--mat-sys-surface,#fff); color:var(--mat-sys-on-surface,#17212d); }
+.branding-local.tema-alto-contraste { background:#111; color:#fff; border-color:#fff; }
+.branding-local.tema-azul { background:#eaf2ff; color:#143568; border-color:#1d4f95; }
+.branding-local label { display:block; margin-block:.6rem; font-weight:700; }
+.branding-local select { display:block; box-sizing:border-box; width:min(100%,24rem); min-height:44px; padding:.5rem; border:2px solid currentColor; border-radius:.45rem; background:inherit; color:inherit; }
+.branding-local select:focus-visible { outline:3px solid currentColor; outline-offset:3px; }
+.branding-local ul { margin:.5rem 0; padding-inline-start:1.5rem; }
+.branding-local li { line-height:1.5; }

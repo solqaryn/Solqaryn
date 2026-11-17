@@ -10,6 +10,28 @@
       <strong>NO OPERATIVO · Proveedores SIN_VERIFICAR</strong>
       <p>NO se transmiten mensajes, se configuran credenciales ni se consultan datos de empresas. No hay webhooks conectados, reintentos ni replay real.</p>
     </section>
+    <section class="branding-local"
+      data-testid="c0904-branding-config"
+      [class.tema-alto-contraste]="presentacion().id === 'alto-contraste'"
+      [class.tema-azul]="presentacion().id === 'azul'"
+      aria-labelledby="c0904-branding-title">
+      <h2 id="c0904-branding-title">Presentación local permitida</h2>
+      <label for="c0904-selector-tema">Tema visual local</label>
+      <select id="c0904-selector-tema" data-testid="c0904-tema-selector"
+        #selectorTema (change)="seleccionarTema(selectorTema.value)">
+        @for (tema of temas; track tema.id) {
+          <option [value]="tema.id">{{ tema.nombre }}</option>
+        }
+      </select>
+      <p data-testid="c0904-tema-activo">Presentación: <strong>{{ presentacion().nombre }}</strong></p>
+      <p role="note">Preferencia temporal, sin persistencia ni configuración de proveedores.</p>
+      <h3>Componentes permitidos (solo lectura)</h3>
+      <ul data-testid="c0904-componentes-permitidos">
+        @for (elemento of elementosPermitidos; track elemento.id) {
+          <li>{{ elemento.nombre }}</li>
+        }
+      </ul>
+    </section>
     <section data-testid="c0904-canales-privados" aria-labelledby="c0904-canales-title">
       <h2 id="c0904-canales-title">Canales declarados (sin conexión)</h2>
       <ul class="canales">
