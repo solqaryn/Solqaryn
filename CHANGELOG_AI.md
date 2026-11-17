@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C15-05.M04.05 prueba P2 real de Tab y mutación adversarial [Javier :40]
+- Se reemplaza foco programático .focus() por recorrido de Tab real acotado y Enter, para verificar accesibilidad del enlace de retorno sin falso PASS.
+- Nueva regresión negativa DOM efímero tabindex=-1: el enlace fuera del orden de teclado no recibe foco. Se mantiene A5_FAIL previo, autor DEV01, no hay cambios runtime/API; nueva CI exact-SHA y A5 ajena obligatorias antes de certificar, sin QA/main/PROD.
+
 ## 2026-11-17 — V19 C09-04.M06.06 matriz terminal DEV dependencias reales [Javier :20]
 - Se entrega matriz R2 documental de las seis M05 y cinco M06 con SHA, A5 independientes, correcciones P2, pruebas xUnit/Chromium/MySQL 8.4 y sus limites; preserva checks V5 no ejecutados, fallos A5 historicos y la brecha P1 de formulas DAG, sin desbloqueo artificial.
 - El cierre dev exige CI exact-SHA, Scope Lock/V5, readback PLAN/COLA/DAG/BITACORA y A5 de otra Task Javier; no certifica proveedores vivos, JWT HTTP global, Aiven, QA, main ni PROD. No se hacen cambios de runtime ni secretos.

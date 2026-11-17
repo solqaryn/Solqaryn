@@ -49,13 +49,36 @@ test('C15-05.M04.05: retorno navegable por teclado y foco visible', async ({ pag
   await prepararSesion(page);
   await page.emulateMedia({ reducedMotion: 'reduce' });
   await page.goto('/plataforma/auditoria-operativa-v5');
-  await page.keyboard.press('Tab');
   const retorno = page.getByRole('link', { name: 'Regresar a administración de plataforma' });
-  await retorno.focus();
+  await expect(retorno).toBeVisible();
+  // Solamente Tab fisico alcanza el enlace: .focus() daria un falso PASS si tabindex=-1.
+  let alcanzadoConTab = false;
+  for (let paso = 0; paso < 48; paso++) {
+    await page.keyboard.press('Tab');
+    if (await retorno.evaluate(element => document.activeElement === element)) {
+      alcanzadoConTab = true;
+      break;
+    }
+  }
+  expect(alcanzadoConTab, 'enlace de retorno alcanzable con Tab real').toBe(true);
   await expect(retorno).toBeFocused();
   expect(await retorno.evaluate(element => getComputedStyle(element).outlineStyle)).not.toBe('none');
   await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/\/plataforma(?:$|[?#])/);
+});
+
+test('C15-05.M04.05: adversarial tabindex=-1 no es alcanzable por Tab', async ({ page }) => {
+  await prepararSesion(page);
+  await page.goto('/plataforma/auditoria-operativa-v5');
+  const retorno = page.getByRole('link', { name: 'Regresar a administración de plataforma' });
+  await expect(retorno).toBeVisible();
+  // Mutacion en DOM efimero de test; NO modifica la aplicacion ni autoriza acceso.
+  await retorno.evaluate(element => element.setAttribute('tabindex', '-1'));
+  for (let paso = 0; paso < 48; paso++) {
+    await page.keyboard.press('Tab');
+    expect(await retorno.evaluate(element => document.activeElement === element),
+      'tabindex=-1 no debe recibir foco por Tab en paso ' + (paso + 1)).toBe(false);
+  }
 });
 
 test('C15-05.M04.05: landmarks, jerarquía, etiquetas y contraste AA estático', async ({ page }) => {
