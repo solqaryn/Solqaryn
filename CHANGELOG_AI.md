@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C15-04.M05.04 ampliar landmarks y teclado responsive [Javier :10]
+- Incremento R2 parcial: 24 navegaciones reales de seis rutas storefront a 320/375/768/1280 px; main/skip-link/H1/overflow/HTTP sin mutaciones y Tab+Enter reales a 320/768. El workflow requiere 18 tests Chromium, Scope Lock y V5 exact-SHA; CI por ejecutar, nunca PASS anticipado.
+- Global UX, JWT firmado, tenant A/B, roles, WCAG global y Web Vitals global permanecen SIN_VERIFICAR; EN_PROGRESO de DEV02, candado V17 retenido y A5 de otra Task. Rollback git revert ordinario.
+
 ## 2026-11-17 — V19 C13-04.M05.04 empresa A positiva y ruta parametrizada B denegada [Javier :00]
 - Prueba Playwright R2 añadida: JWT firmado y contexto MySQL 8.4 efímero permiten abrir /perfil en empresa A; una solicitud local de empresa B no autoriza /productos/999999/editar y exige rechazo backend. CI exact-SHA y Chromium pendientes; no se atribuye PASS antes del run.
 - Cobertura parcial, sin afirmar aceptación ERP global ni permisos granulares de todos los módulos; P1 sigue abierto, VALIDANDO y A5 exclusivamente por otra Task Javier. Reversión: git revert normal.

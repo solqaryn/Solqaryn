@@ -438,4 +438,52 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
     }
   });
 
+
+  // A0.17: landmarks, skip-link y responsividad de seis superficies publicas
+  // en cuatro viewports reales (24 navegaciones). No sustituye WCAG global,
+  // JWT firmado, RBAC ni aislamiento A/B del backend.
+  test('24 navegaciones storefront: landmark y skip-link en 320/375/768/1280',async({context})=>{
+    test.setTimeout(240_000);
+    const rutas: [string,string][] = [
+      ['/tienda','#contenido-principal'],
+      ['/tienda/productos','#catalogo-productos'],
+      ['/tienda/categorias','#contenido-categorias'],
+      ['/tienda/ofertas','#catalogo-productos'],
+      ['/tienda/carrito','#carrito-principal'],
+      ['/tienda/cuenta','#cuenta-principal']
+    ];
+    const escrituras:string[]=[];
+    for(const width of [320,375,768,1280]){
+      for(const [ruta,destino] of rutas){
+        const page=await context.newPage();
+        try{
+          await page.setViewportSize({width,height:840});
+          page.on('request',request=>{
+            if(!['GET','HEAD','OPTIONS'].includes(request.method())){
+              escrituras.push(request.method()+' '+request.url());
+            }
+          });
+          await test.step(width+'px '+ruta,async()=>{
+            await page.goto(ruta,{waitUntil:'domcontentloaded'});
+            const principal=page.locator('main'+destino);
+            await expect(principal).toBeVisible();
+            await expect(page.getByRole('heading',{level:1})).toHaveCount(1);
+            const salto=page.locator('a.skip-link').first();
+            await expect(salto).toHaveAttribute('href',ruta+destino);
+            await noOverflow(page);
+            if(width===320||width===768){
+              await page.keyboard.press('Tab');
+              await expect(salto).toBeFocused();
+              await page.keyboard.press('Enter');
+              await expect.poll(()=>page.evaluate(()=>location.pathname)).toBe(ruta);
+              await expect.poll(()=>page.evaluate(()=>location.hash)).toBe(destino);
+              await expect(principal).toBeVisible();
+            }
+          });
+        }finally{await page.close();}
+      }
+    }
+    expect(escrituras).toEqual([]);
+  });
+
 });
