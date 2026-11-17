@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C09-04.M05.03 integración Oracle EF MySQL 8.4 [Javier :20]
+- Prueba de integración xUnit sobre MySQL 8.4 efímero en GitHub-hosted: claims CAS persistidos en contextos diferentes, empresas A/B, reintento tras fallo, rechazo de confirmaciones stale, rollback transaccional y denegación de conexiones remotas.
+- Workflow dirigido exige 3/3 TRX de integración reales, .NET 10 Release y Scope Lock exact-SHA. No ejecuta proveedores SMTP/WhatsApp/webhooks, JWT real, Aiven, QA ni producción. A0-A4 y A5 independiente pendientes hasta evidencia causal de CI; rollback normal por git revert.
+
 ## 2026-11-17 — V19 C09-04.M05.04 aceptación positiva outbox [Javier :40]
 - Tres pruebas xUnit integran controlador/API y servicio Application reales con repositorio y autoridad simulados; comprueban estado Pendiente, una única alta ante replay y separación de eventos/empresa A-B con igual clave.
 - Workflow GitHub-hosted .NET 10 Release, sin afirmar autenticación JWT, MySQL, HTTP real ni proveedores; CI exact-SHA A0-A4 y revisor A5 independiente. Solo dev, rollback git revert normal.
