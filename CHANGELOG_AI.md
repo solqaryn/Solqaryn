@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C15-04.M05.04 guardas anonimas del router completo [Javier :10]
+- A0.21: se agrega una prueba Chromium causal que deriva 88 rutas protegidas directas (20 parametros) y exige denegacion anonima a 375/1280 en 176 navegaciones, sin efectos HTTP mutantes; CI exact SHA pendiente antes de PASS.
+- No equivale a autorizacion backend, JWT real, roles/tenant A-B, rutas importadas, WCAG ni Web Vitals global; mantener EN_PROGRESO DEV02 y lock 2000002297, A5 independiente. Rollback git revert normal.
+
 ## 2026-11-17 — V19 C13-04.M05.04 revocacion de membresia A con JWT real [Javier :00]
 - Se agrega un caso Chromium que verifica 200 para membresia y pantalla privada A, revoca la asignacion A en MySQL 8.4 efimero, exige rechazo 403/404 y regreso a login, y restaura 200 desde un bloque finally; no se simula HTTP ni JWT.
 - Cambio R2 de prueba y evidencia, sin alterar producto, backend ni base productiva. Exigir GitHub Actions, Scope Lock y V5 exact-SHA antes de contar PASS; el P1 de matriz global ERP sigue abierto. VALIDANDO, sin LISTO, auto-A5 ni QA/main/PROD.

@@ -603,4 +603,50 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
     }
   });
 
+
+  // A0.21: auditoria NEGATIVA en rutas privadas directas del router real del SHA.
+  // No sustituye autorizacion backend/JWT/RBAC ni prueba rutas hijas importadas.
+  test('router: todas las rutas directas protegidas deniegan acceso anonimo en 375/1280',async({context})=>{
+    test.setTimeout(600_000);
+    const {readFileSync}=await import('node:fs');
+    const fuente=readFileSync('src/app/app.routes.ts','utf8');
+    const declaradas=[...fuente.matchAll(/\{\s*path:\s*'([^']+)',\s*canActivate:\s*\[(?:authGuard|plataformaGuard)/g)]
+      .map(match=>match[1]);
+    expect(declaradas.length,'Cantidad minima de rutas declaradas con guard directo').toBeGreaterThanOrEqual(88);
+    expect(new Set(declaradas).size,'No duplicar paths con guarda').toBe(declaradas.length);
+    for(const clave of ['plataforma/auditoria-ux-v5','dashboard','productos/:id/editar','perfil']){
+      expect(declaradas,'Falta ruta critica '+clave).toContain(clave);
+    }
+    const pagina=await context.newPage();
+    const mutaciones:string[]=[];
+    pagina.on('request',solicitud=>{
+      if(!['GET','HEAD','OPTIONS'].includes(solicitud.method())){
+        mutaciones.push(solicitud.method()+' '+solicitud.url());
+      }
+    });
+    try{
+      for(const width of [375,1280]){
+        await pagina.setViewportSize({width,height:840});
+        for(const declarada of declaradas){
+          const ruta='/'+declarada.split('/').map(segmento=>segmento.startsWith(':')?'999999':segmento).join('/');
+          await test.step(width+'px '+ruta,async()=>{
+            const respuesta=await pagina.goto(ruta,{waitUntil:'domcontentloaded'});
+            expect(respuesta?.status(),'HTML local SPA no autoriza el destino').toBe(200);
+            await expect.poll(()=>new URL(pagina.url()).pathname).toBe('/login');
+            await expect(pagina.locator('#login-title')).toBeVisible();
+            await noOverflow(pagina);
+          });
+        }
+      }
+    }finally{
+      await pagina.close();
+    }
+    expect(mutaciones,'Anonimato: cero peticiones HTTP mutantes').toEqual([]);
+    console.log('[C15-04.M05.04 RUTAS_DIRECTAS_NEGATIVAS]',JSON.stringify({
+      declaraciones:declaradas.length, dinamicas:declaradas.filter(r=>r.includes(':')).length,
+      anchos:[375,1280], navegaciones:declaradas.length*2,
+      alcance:'guarda Angular anonima; JWT/tenant A-B/backend NO_MEDIDO'
+    }));
+  });
+
 });
