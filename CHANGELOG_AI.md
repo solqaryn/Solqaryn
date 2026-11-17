@@ -1,3 +1,7 @@
+## 2026-11-16 — V19 C00-04.M06.02 evidencia reproducible de gobierno [Javier :50]
+- Documenta seis SHAs M05.01–M05.06, capas y pruebas xUnit/Chromium originales con límites explícitos; matriz reproducible de versiones, artefactos, diff y criterios positivos/negativos/fail-closed.
+- Auditoría R0 documental: no modifica JWT/RBAC/tenant, DB ni runtime. Gates V17, Scope Lock, V5 y A5 de otra Task Javier obligatorios; sin certificar WCAG/SLO/HTTP/MySQL/QA/main/PROD. Revalidación de CI_CANCEL_GUARD según triggers reales.
+
 ## 2026-11-16 — V19 C00-04.M06.03 riesgos, decisiones y límites [Javier :40]
 - Registro R0 de ocho riesgos específicos y cinco decisiones del lote Gobierno de cambios: fixtures frente a JWT/MySQL reales, A5/DAG, CI exact-SHA, concurrencia V17, WCAG/observabilidad NO_MEDIDO y rollback sin producción.
 - Documentación sin runtime; Scope Lock/V5 del SHA y readback antes de LISTO_DEV, A5 por Task Javier distinta. Sin QA/main/PROD, git revert normal.
