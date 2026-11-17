@@ -37,7 +37,7 @@ test.describe('C09-04.M04.05 accesibilidad real Chromium',()=>{
     for(const width of [320,375,768,1280]){
       await page.setViewportSize({width,height:812});
       await page.goto(path);
-      await expect(page.getByRole('main')).toBeVisible();
+      await expect(page.locator('main[aria-labelledby="c0904-titulo"]')).toBeVisible();
       await expect(page.getByRole('heading',{level:1,name:'Mensajería multicanal'})).toBeVisible();
       await expect(page.getByRole('heading',{level:2,name:/Canales declarados/})).toBeVisible();
       await expect(page.getByTestId('c0904-canales-privados').locator('li')).toHaveCount(3);
@@ -97,7 +97,7 @@ test.describe('C09-04.M04.05 accesibilidad real Chromium',()=>{
     expect(data.color).toHaveLength(3);
     expect(data.ratio).toBeGreaterThanOrEqual(4.5);
     await expect(page.locator('main[aria-labelledby="c0904-titulo"]')).toHaveCount(1);
-    await expect(page.locator('form, textarea, input, button')).toHaveCount(0);
+    await expect(page.locator('.mensajeria form, .mensajeria textarea, .mensajeria input, .mensajeria button')).toHaveCount(0);
     expect(methods).toEqual([]);
   });
 });

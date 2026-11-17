@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C09-04.M04.05 reparación P2 de selectores Playwright [Javier :30]
+- CI GitHub-hosted run 44085577070 identificó 2/4 fallos de prueba por selectores globales ajenos al scope: el shell incluye dos main y cinco controles fuera de la pantalla.
+- Selección causal corregida a main[aria-labelledby=c0904-titulo] y controles dentro de .mensajeria; se mantienen intactas las denegaciones, contraste >=4.5, Tab real, dimensiones y presupuesto de escrituras.
+- Revalidar los cuatro escenarios en Chromium real sobre SHA nuevo; fallos históricos NO son PASS ni LISTO; A5 de Task Javier independiente.
+
 ## 2026-11-17 — V19 C09-04.M04.05 accesibilidad dirigida multicanal [Javier :30]
 - Cuatro escenarios Chromium nuevos sobre pantalla privada existente: rechazo 403, 320–1280 px, Tab/Enter desde inicio y cálculo numérico de contraste de h1, sin .focus artificial.
 - Solo prueba browser R2 con sesión de plataforma sintética, no JWT real ni certificación WCAG global; cero cambios de componente, servicios, permisos, proveedores, datos o entornos.
