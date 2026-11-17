@@ -1,3 +1,7 @@
+## 2026-11-16 — V19 C00-04.M05.01 regresion unitaria de gobierno [Javier :10]
+- Agrega regresiones xUnit Domain de límites de claves y motivos, controles CR/LF/TAB, rollback, SHA y NoGo de cambios sensibles; una propuesta con ID bien formado no demuestra pertenencia al plan ni autoriza ejecutar.
+- Riesgo R1, pruebas sobre regla preexistente sin mutar Domain ni runtime; requiere .NET10 Release real, Scope Lock, V5 y A5 independiente. Solo dev; rollback git revert.
+
 ## 2026-11-16 — V19 C15-04.M04.02 estados privados Angular TestBed [Javier :00]
 - Añade cinco pruebas Angular para denegación anónima/403, vacío sin datos institucionales, espera single-flight, éxito informativo y error 503 opaco con reintento.
 - Workflow por SHA Node24/npm11 Vitest, lint/build, sin tocar código runtime; servicio sintético NO prueba JWT/RBAC/tenant HTTP ni MySQL real.
