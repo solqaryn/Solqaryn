@@ -213,4 +213,68 @@ public sealed class C0904M0604DisableRollbackIntegrationTests
         }
     }
 
+    [Fact]
+    public async Task RejectUnicodeDecimalDigitsBeforeWritingOrMutatingEitherTenant()
+    {
+        var cs = LocalOnly(Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+            ?? throw new InvalidOperationException("Ephemeral MySQL 8.4 CI required."));
+        cs.Database = "v19_c0904m0604_unicode_" + Guid.NewGuid().ToString("N");
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseMySQL(cs.ConnectionString, o => o.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
+            .Options;
+        try
+        {
+            int tenantA, tenantB;
+            await using (var db = new AppDbContext(options))
+            {
+                await Phase7MySqlTestDatabase.InitializeFreshAsync(db);
+                var a = new Empresa("M0604 E164 ASCII A");
+                var b = new Empresa("M0604 E164 ASCII B");
+                db.Set<Empresa>().AddRange(a, b);
+                await db.SaveChangesAsync();
+                (tenantA, tenantB) = (a.Id, b.Id);
+                db.Set<ConfiguracionWhatsAppEmpresa>().AddRange(
+                    new ConfiguracionWhatsAppEmpresa(tenantA, "+50499990001",
+                        "vault://synthetic-a", "vault://webhook-a"),
+                    new ConfiguracionWhatsAppEmpresa(tenantB, "+50499990002",
+                        "vault://synthetic-b", "vault://webhook-b"));
+                await db.SaveChangesAsync();
+
+                var configA = await db.Set<ConfiguracionWhatsAppEmpresa>()
+                    .SingleAsync(x => x.EmpresaId == tenantA);
+                foreach (var invalid in new[] { "+504\\u066199990001", "+504\\uFF1199990001" })
+                {
+                    Assert.Throws<ArgumentException>(() => new ConfiguracionWhatsAppEmpresa(
+                        tenantA, invalid, "vault://synthetic-new", "vault://webhook-new"));
+                    Assert.Throws<ArgumentException>(() => configA.Reconfigurar(
+                        invalid, "vault://synthetic-new", "vault://webhook-new"));
+                    Assert.Equal("+50499990001", configA.NumeroTelefonoE164);
+                    Assert.Equal("vault://synthetic-a", configA.TokenSecretoReferencia);
+                    Assert.Equal(1L, configA.Version);
+                }
+
+                await db.SaveChangesAsync();
+            }
+            await using (var db = new AppDbContext(options))
+            {
+                var both = await db.Set<ConfiguracionWhatsAppEmpresa>().AsNoTracking()
+                    .OrderBy(x => x.EmpresaId).ToListAsync();
+                Assert.Equal(2, both.Count);
+                Assert.Contains(both, x => x.EmpresaId == tenantA
+                    && x.NumeroTelefonoE164 == "+50499990001"
+                    && x.TokenSecretoReferencia == "vault://synthetic-a"
+                    && x.Version == 1L);
+                Assert.Contains(both, x => x.EmpresaId == tenantB
+                    && x.NumeroTelefonoE164 == "+50499990002"
+                    && x.TokenSecretoReferencia == "vault://synthetic-b"
+                    && x.Version == 1L);
+            }
+        }
+        finally
+        {
+            await using var cleanup = new AppDbContext(options);
+            await cleanup.Database.EnsureDeletedAsync();
+        }
+    }
+
 }

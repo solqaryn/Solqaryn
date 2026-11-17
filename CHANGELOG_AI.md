@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C09-04.M06.04 reparación P2 ASCII E164 y aislamiento MySQL [Javier :40]
+- Se corrige el desacuerdo dominio/SQL: sólo dígitos ASCII tras '+'; los decimales Unicode no deben pasar validación de dominio ni llegar a persistencia. Se mantienen los límites E.164, migraciones y referencias opacas.
+- Nueva regresión adversarial en MySQL 8.4 efímero de dos empresas A/B, con árabe-índico/fullwidth negativos y cero mutaciones; workflow dirigido exige TRX 5/5 y checks Scope Lock/V5 exact-SHA antes de nueva A5 independiente. El A5_FAIL P2 anterior permanece; DEV06 conserva autoría, DEV05 aporta reparación. Sin QA/main/PROD.
+
 ## 2026-11-17 — Reconciliación estricta de historia Oracle 18/18 [ChatGPT directo]
 - La migración E164 V19 es activa y válida; dos workflows verificaban 17 migraciones en vez de las 18 reales. Se actualiza la expectativa exacta y se comprueba el ID Oracle nuevo, sin deshabilitar checks. dev-ci también verifica el ID, preservando 107 fuentes históricas. Se requiere CI completa y A5 independiente para cierre C09-04.M06.04.
 

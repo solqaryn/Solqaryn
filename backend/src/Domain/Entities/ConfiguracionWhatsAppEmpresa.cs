@@ -87,7 +87,7 @@ public sealed class ConfiguracionWhatsAppEmpresa : AuditableEntity
         }
 
         var telefono = value.Trim();
-        if (telefono.Length is < 9 or > 16 || telefono[0] != '+' || telefono.Skip(1).Any(c => !char.IsDigit(c)))
+        if (telefono.Length is < 9 or > 16 || telefono[0] != '+' || telefono.Skip(1).Any(c => c is < '0' or > '9'))
         {
             throw new ArgumentException("El número de WhatsApp debe usar formato E.164.", nameof(value));
         }
