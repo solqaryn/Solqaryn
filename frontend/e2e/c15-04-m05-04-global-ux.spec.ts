@@ -110,4 +110,50 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
     expect(mutaciones).toEqual([]);
   });
 
+  // A0.3: regresion UX de frontera y teclado en login real, sin submit.
+  // No prueba servidor, JWT, RBAC ni tenant A/B.
+  test('login: limites 50/128 caracteres y bloqueo sin solicitudes POST',async({page})=>{
+    await page.goto('/login');
+    const usuario=page.locator('input[formcontrolname="nombreUsuario"]');
+    const clave=page.locator('input[formcontrolname="password"]');
+    const enviar=page.getByRole('button',{name:'Ingresar al sistema'});
+    const escrituras:string[]=[];
+    page.on('request',r=>{if(!['GET','HEAD','OPTIONS'].includes(r.method()))escrituras.push(r.method());});
+    await expect(enviar).toBeDisabled();
+    await usuario.fill('u'.repeat(51));
+    await clave.fill('p'.repeat(128));
+    await expect(enviar).toBeDisabled();
+    await usuario.fill('u'.repeat(50));
+    await expect(enviar).toBeEnabled();
+    await clave.fill('p'.repeat(129));
+    await expect(enviar).toBeDisabled();
+    await clave.fill('p'.repeat(128));
+    await expect(enviar).toBeEnabled();
+    await clave.fill('');
+    await expect(enviar).toBeDisabled();
+    expect(escrituras).toEqual([]);
+  });
+  test('login: Tab real desde inicio y mostrar contrasena con Espacio',async({page})=>{
+    await page.goto('/login');
+    const recorrido:string[]=[];
+    for(let i=0;i<16;i++){
+      await page.keyboard.press('Tab');
+      const actual=await page.evaluate(()=>{
+        const el=document.activeElement;
+        return el?.getAttribute('formcontrolname')??el?.getAttribute('aria-label')??el?.tagName??'SIN_FOCO';
+      });
+      recorrido.push(actual);
+      if(actual==='Mostrar contraseña')break;
+    }
+    expect(recorrido).toContain('nombreUsuario');
+    expect(recorrido).toContain('password');
+    expect(recorrido).toContain('Mostrar contraseña');
+    expect(recorrido.indexOf('nombreUsuario')).toBeLessThan(recorrido.indexOf('password'));
+    expect(recorrido.indexOf('password')).toBeLessThan(recorrido.indexOf('Mostrar contraseña'));
+    await expect(page.getByRole('button',{name:'Mostrar contraseña'})).toHaveAttribute('aria-pressed','false');
+    await page.keyboard.press('Space');
+    await expect(page.locator('input[formcontrolname="password"]')).toHaveAttribute('type','text');
+    await expect(page.getByRole('button',{name:'Ocultar contraseña'})).toHaveAttribute('aria-pressed','true');
+  });
+
 });

@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C15-04.M05.04 frontera login y teclado real [Javier :10]
+- Se amplian las pruebas Chromium incrementales de 7 a 9 con limites 50/128, estados invalido/valido, Tab desde inicio, Espacio y aria-pressed; sin submits ni cambios a producto.
+- CI exact-SHA pendiente de verificacion; no certificar cierre global, JWT/tenant A/B, MySQL, WCAG ni Web Vitals. Conservar EN_PROGRESO y candado V17; A5 independiente.
+
 ## 2026-11-17 — CI_REPAIR V19 C09-04.M04.03: auditoría ERP de ruta privada de estados [Javier :40]
 - Se actualiza una ruta exacta del control plane en scripts/quality/priority4_quality_audit.py; no se elimina la comprobación plataformaGuard, autoridad del servidor, ambito Plataforma, administrador ni manejo de errores.
 - Fallo causal reproducido en GitHub Actions ERP sobre 23b0af90: FRONTEND_ROUTE_SECURITY_CONTRACT UNGUARDED de /plataforma/mensajeria-multicanal-v19/estados, aunque el guard real estaba declarado. Reparación limitada al validador compartido sin sobrescribir la implementación de DEV03.
