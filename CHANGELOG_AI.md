@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C09-04.M05.02 contrato API/DTO seguro [Javier :40]
+- Se añaden tests xUnit del controlador real de outbox con servicio simulado para respuesta 202/DTO, cabecera idempotente ausente/vacia, tenant A/B, conflicto 409, membresia revocada 403 y DTO invalido 400, con ProblemDetails opaco.
+- Workflow dirigido .NET 10 Release por SHA; no afirma JWT firmado, middleware, MySQL, webhooks ni proveedores reales. Requiere CI exact-SHA, Scope Lock, V5, A0-A4 antes de LISTO y A5 por otra Task Javier. Solo dev; git revert normal.
+
 ## 2026-11-17 — V19 C13-04.M05.04 cobertura global estatica desde Router [Javier :00]
 - Prueba Playwright adicional con JWT real y MySQL efimero que descubre las rutas de plataformaGuard en app.routes.ts y recorre cada ruta estatica declarada (19 en base verificada). Assert HTTP 200, pathname y no login; sin interceptar HTTP.
 - La cobertura recursiva de rutas importadas, permisos finos y revocacion sigue P1: conservar VALIDANDO y A5 pendiente. Exigir CI exact-SHA y Scope Lock; no QA/main/PROD.

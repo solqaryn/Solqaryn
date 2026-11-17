@@ -1,0 +1,26 @@
+name: V19 C09-04.M05.02 - contratos API y errores outbox
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/C0904M0502OutboxApiContractTests.cs'
+      - '.github/workflows/v19-c09-04-m05-02-outbox-api.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c09-04-m05-02-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  contrato:
+    name: C09-04.M05.02 - xUnit controlador API DTO errores
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: xUnit Release - contrato DTO RFC7807
+        run: |
+          dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter 'FullyQualifiedName~C0904M0502OutboxApiContractTests' --logger 'console;verbosity=normal'
