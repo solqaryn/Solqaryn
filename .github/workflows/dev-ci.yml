@@ -177,6 +177,7 @@ jobs:
           history_sources="$(find backend/src/Infrastructure/Migrations backend/src/Infrastructure/Persistence/Migrations -type f -name '*.cs' ! -name '*.Designer.cs' ! -name '*ModelSnapshot*' | wc -l)"
           test "$history_sources" = "107"
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")" = "1"
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261117215700_V19WhatsAppE164LiteralPlus';")" = "1"
           test "$(q "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='solqaryn_ci' AND table_name IN ('CargasMasivas','CargaMasivaErrores');")" = "2"
           test "$(q "SELECT COUNT(DISTINCT index_name) FROM information_schema.statistics WHERE table_schema='solqaryn_ci' AND table_name='CargasMasivas' AND index_name='IX_CargasMasivas_Tipo_HashArchivo';")" = "1"
           test "$(q "SELECT COUNT(*) FROM information_schema.tables WHERE table_schema='solqaryn_ci' AND table_name='ExistenciasVariante';")" = "1"

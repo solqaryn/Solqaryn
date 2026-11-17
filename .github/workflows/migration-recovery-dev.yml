@@ -167,7 +167,9 @@ jobs:
           test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='PublicStoreBindings';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261018200000_TenantRoleOwnershipDeterministicBackfill';")" = 1
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261029150000_EnforceTenantRoleNameUniqueIndex';")" = 1
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 17
+          # Verificar la nueva migración Oracle por ID exacto además del total, sin aflojar historia.
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261117215700_V19WhatsAppE164LiteralPlus';")" = 1
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 18
           test "$(q "SELECT COUNT(*) FROM (
             SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS
              WHERE TABLE_SCHEMA=DATABASE()

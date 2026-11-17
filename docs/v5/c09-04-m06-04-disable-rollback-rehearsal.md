@@ -32,3 +32,7 @@ El CI del commit 9d131c4b aprobó el bootstrap MySQL fresh (139 tablas, pending=
 
 ## Registro y aplicación en ensamblado Oracle (V19)
 La migración correctiva se ubica en `backend/src/Infrastructure.Migrations/Migrations/20261117215700_V19WhatsAppE164LiteralPlus.cs`, namespace `.Oracle`, que es el ensamblado real `Solqaryn.Infrastructure.Migrations` utilizado por el bootstrap, `dotnet-ef` y la API Oracle. Se retira la copia inerte del proyecto histórico; el modelo y el snapshot activo quedan alineados. La prueba dirigida exige ahora que EF registre y aplique el ID exacto en MySQL 8.4 efímero. No se ejecuta ninguna migración sobre Aiven/PROD por publicar el archivo.
+
+
+## Reconciliación de CI de historial Oracle
+La migración correctiva Oracle `20261117215700_V19WhatsAppE164LiteralPlus` aumenta de 17 a 18 las entradas históricas del esquema efímero. Los workflows `tenant-commercial-root-expand-ephemeral.yml` y `migration-recovery-dev.yml` exigen ahora tanto el registro exacto de la migración como el conteo 18; `dev-ci.yml` verifica explícitamente el ID nuevo. Se conserva el conteo 107 de fuentes históricas y todos los controles de integridad. Los fallos anteriores por el conteo 17 quedan documentados y deben revalidarse en el SHA de esta corrección. No se ejecutan cambios en bases productivas.

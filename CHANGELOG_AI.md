@@ -1,3 +1,6 @@
+## 2026-11-17 — Reconciliación estricta de historia Oracle 18/18 [ChatGPT directo]
+- La migración E164 V19 es activa y válida; dos workflows verificaban 17 migraciones en vez de las 18 reales. Se actualiza la expectativa exacta y se comprueba el ID Oracle nuevo, sin deshabilitar checks. dev-ci también verifica el ID, preservando 107 fuentes históricas. Se requiere CI completa y A5 independiente para cierre C09-04.M06.04.
+
 ## 2026-11-17 — V19 C15-04.M05.04 cobertura negativa de rutas importadas [Javier :10]
 - A0.22: Playwright incorpora 8 fuentes de rutas importadas y 51 declaraciones protegidas; 102 navegaciones anónimas reales 375/1280 px exigen redirect al login, cero mutaciones HTTP y guardas authGuard, sin proclamar prueba JWT/tenant backend.
 - Workflow Chromium pasa a 22 escenarios; el CI del SHA publicado debe revisarse antes de contar PASS. R2 global sigue EN_PROGRESO DEV02, lock V17 2000002297; A5 requiere revisor distinto. Rollback mediante git revert normal.
