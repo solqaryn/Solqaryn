@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C09-04.M05.06 regresion, rendimiento y accesibilidad mensajeria [Javier :30]
+- Playwright Angular real prueba reflow 320/375/768/1280, cota DOM/DOMContentLoaded, foco nativo Tab/Enter, 403 tras tema y 503 sin fuga ni escrituras.
+- Workflow GitHub-hosted Chromium con build Angular, Scope Lock y V5 por SHA; sesion simulada, sin certificacion JWT firmado, MySQL, SMTP/WhatsApp ni QA/PROD. R2; A5 de otro Javier y git revert normal.
+
 ## 2026-11-17 — V19 C15-04.M05.04 skip-link válido en cuenta pública [Javier :10]
 - Se corrige P2 de accesibilidad: /tienda/cuenta tenía un enlace de salto a #catalogo sin destino; ahora apunta al main #cuenta-principal con tabindex=-1 y etiqueta específica.
 - Regresión Playwright con Tab/Enter real, 375/1280 px, ruta/hash sin escape, sin overflow ni escrituras. Se esperan 15 casos Chromium en CI; no declarar PASS antes de logs exact-SHA, ni auditar como global la UX R2 aún EN_PROGRESO.
