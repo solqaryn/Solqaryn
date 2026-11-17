@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C15-04.M05.03 ciclo de autorización y persistencia negativa [Javier :30]
+- Tres Playwright/Chromium sobre Router y Servicio de Sesión Angular real con HTTP sintético: 200→403, 200→503 y 200 success=false; revocación sin tarjetas ni información sensible persistida.
+- La vista UX es observacional y no tiene persistencia propia: MySQL/EF/proveedor de métricas NO_APLICA; no atribuir JWT/RBAC/tenant backend live, WCAG global ni producción.
+- CI GitHub-hosted Node24/npm11, lint/build y Chromium por SHA; Scope Lock/V5, A0–A4 sólo con SUCCESS real, A5 independiente de otra Task Javier, V17 lock y git revert.
+
 ## 2026-11-17 — V19 C15-04.M05.02 contrato HTTP/DTO y denegaciones [Javier :40]
 - Seis Vitest Angular reales con HttpClientTesting para GET /plataforma/sesion: contrato positivo, tenant Empresa 200, DTO incompleto, 401 revocado, 403 y 503 fail-closed sin cache. Backend HTTP simulado: NO certifica JWT/RBAC/tenant reales.
 - CI por SHA Node24/npm11, lint/build y pruebas dirigidas; exigir Scope Lock, V5 y seguridad pertinente antes de LISTO y A5 independiente. Solo dev, sin cambios de producción.
