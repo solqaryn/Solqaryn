@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C11-04.M06.06 cierre de evidencia y mapa DAG [Javier :00]
+- Consolida fuentes y A5 de once predecesoras M05/M06 con SHA y límites reales; documenta métricas, SLO, exporter y JWT/MySQL no medidos ni certificados.
+- Registra el gate derivado C11-04.M06.06 sin forzar fórmulas, inventar sucesoras o aprobar A5 propia; cambios exclusivamente documentales R0.
+- CI Scope Lock/V5 exact-SHA, BITACORA/readback y A5 de otra Task siguen siendo obligatorios; rollback por git revert, sin QA/main/PROD.
+
 ## 2026-11-16 — V18 C11-04.M06.05 solicitud A5 independiente del lote [Javier :30]
 - Registra petición documental auditable de A5 sobre cinco microtareas M06, con SHAs, riesgos y condiciones de revisión; autor DEV04 nunca se autoaprueba.
 - La solicitud institucional NO asegura aceptación de otra Task ni libera DAG o QA/PROD; conserva allowlist Javier6 y dependencias exactas, sin nuevas Tasks/schedules.
