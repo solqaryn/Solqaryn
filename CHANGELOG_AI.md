@@ -6233,3 +6233,7 @@
 ## 2026-11-16 - V18 CI repair C13-04.M04.03 TS2352 and revoked Proxy [Javier :30]
 - Corrige tipado adversarial en prueba sin alterar contrato de PlataformaSesion; mueve Array.isArray al manejo fail-closed para proxies revocados, sin exponer controles ni saltar permisos.
 - Regresión original GitHub Actions falla en compilación TypeScript, reparación exige nueva CI Angular/Chromium/Scope Lock/V5 exact SHA; ninguna prueba saltada es PASS.
+
+## 2026-11-16 - V18 CI repair C13-04.M04.03 guard ERP allowlist estricta [Javier :30]
+- Incidente causal: audit Priority4 marcó UNGUARDED una ruta que sí usa plataformaGuard, por no estar en su conjunto cerrado. Se incorpora solo el nombre de ruta privada a la lista exacta y permanecen todas las condiciones del guard JWT/servidor, sin debilitar comprobaciones.
+- Se exige re-ejecutar ERP quality y CI dirigida, V5 y Scope Lock en SHA nuevo, sin convertir CANCELLED/SKIPPED/QUEUED en PASS ni autorizar QA/PROD.

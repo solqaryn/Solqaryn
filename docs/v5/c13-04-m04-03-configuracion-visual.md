@@ -11,3 +11,6 @@ A2: no nuevas concesiones, el guard existente controla la ruta y componente ocul
 A3: npm ci + lint + build Angular y Playwright Chromium real en GitHub-hosted; MySQL/EF, proveedor y HTTP backend real no se modifican y NO_APLICA a este diff, nunca certificados.
 
 A4: exigir checks dirigidos y requeridos completed/success en SHA exacto, Scope Lock y procedencia V5, PLAN/BITACORA readback; QUEUED/IN_PROGRESS/CANCELLED/SKIPPED no PASS. A5: otra Task Javier autorizada revisa codigo/tests. Rollback git revert normal y bitacora aditiva.
+
+## Reparación del gate de calidad ERP
+El primer job de Priority4 rechazó la ruta con UNGUARDED por lista explícita obsoleta, aunque canActivate=[plataformaGuard] estaba presente. Se añade exclusivamente la ruta privada exacta a la lista cerrada de scripts/quality/priority4_quality_audit.py; el validador sigue exigiendo guard, JWT y sesión de plataforma verificada por backend. No se permiten prefijos, comodines, authGuard ERP ni eliminación de pruebas. Nuevo job ERP/Security/ScopeLock/V5 en SHA de reparación requerido SUCCESS antes de LISTO.
