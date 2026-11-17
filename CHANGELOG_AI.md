@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C13-04.M04.05 teclado y coherencia visual [Javier :00]
+- Agrega cuatro pruebas Chromium entre vistas privadas existentes: anonimo/403 sintético, responsive 320–1280, Tab inicial y contraste calculado.
+- Workflow GitHub-hosted Angular/Playwright aislado por SHA, sin cambios runtime; la sesión simulada NO certifica JWT/RBAC ni aislamiento real de tenants.
+- A0–A4 exigen CI completada, readback institucional V17 y A5 de Task distinta; rollback por git revert sin QA/main/PROD.
+
 ## 2026-11-16 — V18 C11-04.M06.06 cierre de evidencia y mapa DAG [Javier :00]
 - Consolida fuentes y A5 de once predecesoras M05/M06 con SHA y límites reales; documenta métricas, SLO, exporter y JWT/MySQL no medidos ni certificados.
 - Registra el gate derivado C11-04.M06.06 sin forzar fórmulas, inventar sucesoras o aprobar A5 propia; cambios exclusivamente documentales R0.

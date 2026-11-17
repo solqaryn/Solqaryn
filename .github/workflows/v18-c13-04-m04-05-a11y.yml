@@ -1,0 +1,66 @@
+name: V18 C13-04.M04.05 - Visual consistency Chromium
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v18-c13-04-m04-05-a11y.yml'
+      - 'frontend/e2e/c13-04-m04-05-consistency-a11y.spec.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v18-c1304-m0405-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  visual-consistency-a11y:
+    name: C13-04.M04.05 - Angular and real Chromium a11y
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm install --global npm@11.19.0
+      - name: Reproducible frontend
+        working-directory: frontend
+        run: npm ci
+      - name: Typecheck and production build
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Install Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Start isolated Angular
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c1304-m0405.log 2>&1 &
+          for attempt in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat c1304-m0405.log >&2
+          exit 1
+      - name: Actual keyboard, responsive, privacy and contrast
+        working-directory: frontend
+        run: npx playwright test e2e/c13-04-m04-05-consistency-a11y.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Browser diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c1304-m0405-browser
+          path: |
+            frontend/c1304-m0405.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 14
