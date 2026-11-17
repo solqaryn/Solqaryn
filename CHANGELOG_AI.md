@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C09-04.M06.06 matriz terminal DEV dependencias reales [Javier :20]
+- Se entrega matriz R2 documental de las seis M05 y cinco M06 con SHA, A5 independientes, correcciones P2, pruebas xUnit/Chromium/MySQL 8.4 y sus limites; preserva checks V5 no ejecutados, fallos A5 historicos y la brecha P1 de formulas DAG, sin desbloqueo artificial.
+- El cierre dev exige CI exact-SHA, Scope Lock/V5, readback PLAN/COLA/DAG/BITACORA y A5 de otra Task Javier; no certifica proveedores vivos, JWT HTTP global, Aiven, QA, main ni PROD. No se hacen cambios de runtime ni secretos.
+
 ## 2026-11-17 - V19 C13-04.M05.04 extensiones sectoriales A/B [Javier :00]
 - Prueba Chromium privada con JWT firmado y tenant A confirmado: pantalla sectorial informativa visible, cuatro capacidades sin conectar, anonimato y falsificación B rechazados por backend; CI exact-SHA por verificar, P1 global permanece abierto.
 
