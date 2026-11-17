@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C12-04.M06.04 saneamiento negativo de restore [Javier :50]
+- Prueba real en CI MySQL 8.4 efimero: SHA256 de dump, duracion sintetica, cleanup de destino corrupto tras SQL invalido y rechazo de duplicado (empresa_id,code), sin degradar controles.
+- No certifica migraciones Oracle EF, respaldos reales, RPO/RTO productivos ni cutover; A0–A4 requieren CI exact-SHA y A5 independiente; conservar VALIDANDO sin QA/main/PROD.
+
 ## 2026-11-17 — V19 C09-04.M04.03 branding local cerrado y componentes permitidos [Javier :40]
 - Selección reactiva de tres presets de presentación exclusivamente local, con allowlist congelada y rechazo fail-closed de temas arbitrarios; conserva tres canales NO_CONECTADO y plataformaGuard.
 - Se añaden cinco pruebas Angular TestBed y tres escenarios Playwright Chromium para admin, denegación, CSS/URL/HTML inválidos, revocación, teclado Tab, responsive y ausencia de HTTP mutante; GitHub-hosted exact-SHA por verificar.

@@ -18,7 +18,11 @@ tenants="$(sql "SELECT CONCAT(SUM(empresa_id=11),'|',SUM(empresa_id=22)) FROM c1
 [[ "$tenants" == "2|1" ]] || exit 1
 docker exec -e MYSQL_PWD=root "$cid" mysqldump -uroot --single-transaction --skip-lock-tables --no-tablespaces --skip-comments c1204_source > "$tmp/backup.sql"
 [[ -s "$tmp/backup.sql" ]] || { echo "EMPTY_BACKUP" >&2; exit 1; }
+backup_hash="$(sha256sum "$tmp/backup.sql" | awk '{print $1}')"
+restore_start_ns="$(date +%s%N)"
 docker exec -i -e MYSQL_PWD=root "$cid" mysql -uroot c1204_restored < "$tmp/backup.sql"
+restore_ms="$(( ($(date +%s%N) - restore_start_ns) / 1000000 ))"
+[[ "$(sha256sum "$tmp/backup.sql" | awk '{print $1}')" == "$backup_hash" ]] || { echo "BACKUP_CHANGED_DURING_RESTORE" >&2; exit 1; }
 [[ "$(fingerprint c1204_restored)" == "$before" ]] || { echo "RESTORE_CHECKSUM_FAIL" >&2; exit 1; }
 [[ "$(sql "SELECT CONCAT(SUM(empresa_id=11),'|',SUM(empresa_id=22)) FROM c1204_restored.evidencia;")" == "$tenants" ]] || exit 1
 tamper="$(sql "START TRANSACTION;
@@ -34,5 +38,13 @@ if docker exec -i -e MYSQL_PWD=root "$cid" mysql -uroot c1204_corrupt < "$tmp/in
  echo "INVALID_BACKUP_ACCEPTED" >&2; exit 1
 fi
 [[ "$(fingerprint c1204_source)" == "$before" && "$(fingerprint c1204_restored)" == "$before" ]] || exit 1
-echo "MYSQL84_SYNTHETIC_RESTORE_PASS=TRUE ROWS=3 TENANT_A=2 TENANT_B=1 CHECKSUM_EQUAL=TRUE ROLLBACK=PASS INVALID_SQL=REJECTED"
-echo "LIVE_AIVEN=NOT_USED ORACLE_EF_MIGRATIONS=NOT_TESTED RPO_RTO=NOT_MEASURED PROD=NOT_TOUCHED"
+# Malformed SQL imports are not atomic; discard their disposable target.
+sql "DROP DATABASE c1204_corrupt;"
+remaining="$(sql "SELECT COUNT(*) FROM information_schema.SCHEMATA WHERE SCHEMA_NAME='c1204_corrupt';")"
+[[ "$remaining" == "0" ]] || { echo "INVALID_RESTORE_TARGET_NOT_CLEANED" >&2; exit 1; }
+if sql "INSERT INTO c1204_restored.evidencia VALUES (4,11,'A01',999.00);" >/dev/null 2>&1; then
+ echo "TENANT_DUPLICATE_ACCEPTED" >&2; exit 1
+fi
+[[ "$(fingerprint c1204_restored)" == "$before" ]] || { echo "NEGATIVE_CASE_CHANGED_RESTORED_DATA" >&2; exit 1; }
+echo "MYSQL84_SYNTHETIC_RESTORE_PASS=TRUE ROWS=3 TENANT_A=2 TENANT_B=1 CHECKSUM_EQUAL=TRUE ROLLBACK=PASS INVALID_SQL=REJECTED CORRUPT_TARGET_CLEANUP=PASS DUPLICATE_TENANT_CODE=REJECTED RESTORE_SYNTHETIC_MS=$restore_ms"
+echo "LIVE_AIVEN=NOT_USED ORACLE_EF_MIGRATIONS=NOT_TESTED PROD_RPO_RTO=NOT_MEASURED PROD=NOT_TOUCHED"
