@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C12-04.M04.02 reparación de aserción Vitest exact-SHA [Javier :30]
+- La CI del SHA `1f9df9e1` falló con 12/13 Vitest porque esperaba `no confirmado` pero la interfaz segura presenta `Sin permiso de plataforma confirmado.`; se corrige únicamente la expectativa del test, no se relaja la denegación ni se modifica JWT/RBAC/MySQL.
+- Conservar FAIL histórico, verificar de nuevo 13 Vitest, 6 Chromium, Scope Lock, V5 y controles pertinentes en GitHub-hosted; A5 por Task Javier distinta y rollback mediante `git revert` normal.
+
 ## 2026-11-17 — V19 C12-04.M04.02 estados de sesión fail-closed [Javier :30]
 - Cinco estados UI de revalidación GET global: cargando, vacío, error, éxito de sesión y sin permiso; sin equiparar éxito de sesión con exportaciones, restore, migraciones o permiso de producción.
 - Seis Vitest nuevos y dos Chromium de revalidación/503, protección ante tenant/rol/revocación y sin operaciones mutantes; se mantiene A5 independiente.

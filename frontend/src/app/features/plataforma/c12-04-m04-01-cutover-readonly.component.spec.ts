@@ -43,7 +43,7 @@ describe('C12-04.M04.01 superficie privada de preparación MySQL', () => {
   it('sin grant de plataforma no expone controles privados', async () => {
     const { root } = await montar(null);
     expect(root.querySelector('[data-testid=c1204-cutover-private]')).toBeNull();
-    expect(root.querySelector('[role=alert]')?.textContent).toContain('no confirmado');
+    expect(root.querySelector('[role=alert]')?.textContent).toContain('Sin permiso de plataforma confirmado');
     expect(root.querySelectorAll('form,input,button:not([data-testid=c1204-m0402-revalidate])')).toHaveLength(0);
   });
 
