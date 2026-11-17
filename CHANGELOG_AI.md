@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C09-04.M04.06 densidad de mensajeria privada [Javier :30]
+- Cuatro pruebas Chromium reales sobre Angular para reflow a 320/375/768/1280, contenido privado retenido hasta GET, 401/403/503 opacos y tema local reversible sin POST, persistencia ni proveedores.
+- Workflow GitHub-hosted y evidencia A0-A4; sesion HTTP sintetica, NO JWT firmado, MySQL, envios reales, WCAG global ni Core Web Vitals. CI exact-SHA requerida; A5 de otra Task Javier y sin QA/main/PROD.
+
 ## 2026-11-17 — V19 C13-04.M05.04 matriz JWT positiva multirruta [Javier :00]
 - Nueva prueba Playwright en CI .NET10/MySQL8.4/Angular con JWT firmado sobre cuatro rutas privadas y headings reales; conserva tres casos previos de autenticación, RBAC y tenant A/B.
 - No certifica 100 % de rutas ni revocación: P1 de aceptación global sigue abierto, VALIDANDO y A5 pendiente de otra Task. Checks exact-SHA obligatorios, cero cambios a runtime, QA/main/PROD o secretos.
