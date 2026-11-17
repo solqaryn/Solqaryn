@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C12-04.M06.05 solicitud de revisión independiente de MySQL privado [Javier :30]
+- Se entrega una solicitud R0 documental y matriz trazable de seis M05 y cuatro M06: SHAs, CI dirigida, riesgos y prueba adversarial; M06.04 permanece VALIDANDO y M06.06 no queda autorizada por esta solicitud.
+- No se acredita restore Aiven, checksum/conteos de datos reales, JWT/RBAC servidor, RPO/RTO, cutover ni QA/main/PROD. A0–A4 y Scope Lock/V5 del nuevo SHA se comprobarán causalmente; A5 se reserva a otra Task Javier.
+
 ## 2026-11-17 — V19 C15-04.M05.04 contraste de errores de cuenta [Javier :10]
 - Incremento Chromium numero 20: contraste computado de error >=4.5:1, objetivos de pestañas >=44px, sin escrituras HTTP en 375/1280; Scope Lock, V5, tipado, build y CI exact-SHA pendientes de comprobar.
 - Auditoria UX global R2 sin terminar; no se acredita JWT firmado, RBAC, tenant A/B, WCAG completo, rutas privadas ni Web Vitals globales. Owner DEV02, WIP/lock V17 conservados; A5 independiente; rollback git revert.
