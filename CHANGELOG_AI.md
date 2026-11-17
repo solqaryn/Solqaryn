@@ -1,3 +1,8 @@
+## 2026-11-16 — V19 reparación de selectores C15-04.M04.04 tras CI fallida [Javier :00]
+- Corrige dos localizadores Playwright ambiguos: el estado de página del router y el estado de gobierno comparten role=status; se restringe a .state-banner sin eliminar aserciones.
+- Primer job exact-SHA 133786915409 obtuvo 3/5 PASS y 2 FAIL de strict mode; la reparación exige cinco Chromium y checks de nuevo SHA antes de LISTO.
+- No hay cambio runtime ni JWT/RBAC/tenant HTTP; V17 con owner DEV01, A5 independiente, rollback git revert y Scope Lock STRICT.
+
 ## 2026-11-16 — V19 C15-04.M04.05 responsive y accesibilidad Chromium [Javier :00]
 - Agrega cuatro pruebas Playwright de denegación, responsive 320–1280, Tab desde inicio, foco visible/44px y contraste >=4.5:1 en dos superficies privadas existentes.
 - CI SHA-específica Node24/Angular22/Chromium real de loopback; sesión sintética NO certifica JWT, tenant A/B, MySQL, WCAG global ni SLO.

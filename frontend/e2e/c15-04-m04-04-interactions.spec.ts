@@ -119,7 +119,7 @@ test.describe('C15-04.M04.04 UX formularios navegacion mensajes doble accion', (
     try {
       await button.click();
       await expect(button).toBeDisabled();
-      await expect(page.getByRole('status')).toContainText('Verificando permisos');
+      await expect(page.locator('.state-banner [role="status"]')).toContainText('Verificando permisos');
       await expect(page.locator('.steps li')).toHaveCount(0);
       await expect.poll(() => requests).toBe(1);
       await button.evaluate(el => el.dispatchEvent(new MouseEvent('click', { bubbles: true })));
@@ -154,7 +154,7 @@ test.describe('C15-04.M04.04 UX formularios navegacion mensajes doble accion', (
     fail = false;
     await button.click();
     await expect(page.locator('.steps li')).toHaveCount(4);
-    await expect(page.getByRole('status')).toContainText('revalidada correctamente');
+    await expect(page.locator('.state-banner [role="status"]')).toContainText('revalidada correctamente');
     expect(requests).toBe(2);
     expect(writes).toEqual([]);
   });
