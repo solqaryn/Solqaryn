@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C12-04.M05.02 contrato HTTP/DTO de cutover privado [Javier :40]
+- Siete pruebas reales Angular TestBed+Componente de cutover y servicio de sesión con HttpClientTesting: 200 global, 401, 403, 503, 200 Empresa, success=false, anónimo; estados privados fail-closed.
+- CI SHA-scoped GitHub-hosted Node24/npm11 ejecuta Vitest, lint/build con Scope Lock y V5; no certificar JWT/RBAC/tenant servidor, MySQL o restore mediante HTTP simulado. A5 independiente; solo dev.
+
 ## 2026-11-17 — V19 C12-04.M05.05 siete negativas de cutover privado [Javier :00]
 - Siete nuevas pruebas Playwright Chromium sobre Angular real para anonimo/401/403/tenant Empresa/no admin/identidad malformada/revocacion 503, sin escritura ni exposicion de controles y secretos privados.
 - GitHub-hosted Node24 npm11, regresiones Vitest, lint/build y Chromium por SHA con Scope Lock y V5; nunca SKIPPED o CI pendiente como PASS. Sesión HTTP es sintética: NO certifica JWT/tenant backend, restore ni MySQL real.
