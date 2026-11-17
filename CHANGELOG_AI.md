@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C12-04.M04.03 reparación Vitest por botones de tema permitidos [Javier :30]
+- La CI exact-SHA d220a8b2 ejecutó 17/18 Vitest y falló porque una aserción histórica prohibía también los dos botones de branding expresamente permitidos; se excluyen solo los selectores de tema allowlist, preservando la prohibición de acciones operativas y el control de HTML adversarial.
+- Corregir la evidencia por CI nueva 18/18 Vitest + 7 Chromium con Scope Lock/V5/seguridad. FAIL histórico conservado; ninguna inferencia de MySQL/JWT/QA/PROD y A5 siempre independiente.
+
 ## 2026-11-17 — V19 C12-04.M04.03 branding privado allowlist [Javier :30]
 - Dos presets Angular tipados Institucional/Alto contraste, aria-pressed y estilos locales cerrados, sin CSS arbitrario ni acciones de MySQL; ante revocación y carga pendiente se ocultan los controles.
 - Cinco Vitest adversariales y un Playwright Chromium nuevos; se requieren 18 Vitest y 7 Chromium causales más seguridad, frontend, Scope Lock y V5 exact-SHA. A5 siempre independiente; no certificar restore/JWT/tenant real.

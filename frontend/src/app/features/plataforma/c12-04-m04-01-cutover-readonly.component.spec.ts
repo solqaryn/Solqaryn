@@ -79,7 +79,7 @@ describe('C12-04.M04.01 superficie privada de preparación MySQL', () => {
     const { root } = await montar({ ...admin, nombreUsuario:'<img src=x onerror=alert(1)>' });
     expect(root.querySelector('img')).toBeNull();
     expect(root.innerHTML).not.toContain('onerror');
-    expect(root.querySelectorAll('button:not([data-testid=c1204-m0402-revalidate])')).toHaveLength(0);
+    expect(root.querySelectorAll('button:not([data-testid=c1204-m0402-revalidate]):not([data-testid^=c1204-m0403-theme-])')).toHaveLength(0);
   });
   it('M04.02 vacío significa ausencia de evidencias no certificación MySQL', async () => {
     const { fixture, root } = await montar();
