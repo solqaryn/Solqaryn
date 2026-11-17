@@ -1,3 +1,7 @@
+## 2026-11-16 — V19 C05-01.M05.04 aceptacion positiva real en Chromium [Javier :40]
+- Dos Playwright Chrome reales en catálogo Angular protegido con sesión sintética: apertura y cierre del contenido, 4 tokens, 5 estados, 2 presets, cuatro viewports y ninguna escritura HTTP.
+- Verifica cambios de preset institucional/alto contraste e idempotencia con ARIA; workflow por SHA con Node24/npm11, lint/build y Chromium. Riesgo R1, sin modificar runtime ni afirmar JWT/RBAC/tenant real; A0-A4 requieren CI real y A5 distinta Task. Rollback git revert, sólo dev.
+
 ## 2026-11-16 — V19 C05-01.M05.01 contrato unitario del catalogo privado [Javier :40]
 - Agrega cinco pruebas Angular TestBed con fallos causales para sesión global, lista cerrada de cuatro tokens, cinco estados, IDs adversariales y revocación de sesión; no modifica runtime.
 - GitHub Actions por SHA Node24/npm11 con Vitest, tipado, lint y build; R1. Las sesiones son sintéticas, no pruebas JWT/RBAC/tenant HTTP ni MySQL. A0-A4 exact-SHA, A5 independiente, rollback con git revert; sólo dev.
