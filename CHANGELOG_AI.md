@@ -6251,3 +6251,7 @@
 ## 2026-11-16 - V18 CI repair C13-04.M04.03 inventario exacto Angular [Javier :30]
 - P0-007.A falló en SHA dc26b1c0 porque el archivo real c13-04-presentacion-v5.component.ts faltaba en el catálogo; se añade solamente ese path, actualizando conteos estrictos a 155/147/8 sin borrar históricos.
 - Conservados comparadores positivos y negativos, Scope Lock/V5, ausencia de grants y CI pendiente; ninguna prueba fallida, cancelada u omitida se acredita PASS.
+
+## 2026-11-16 - V18 C08-04.M06.01 auditoria causal tests vs mocks [Javier :30]
+- Matriz de seis suites Vitest/xUnit/Chromium y sus hashes/SHAs causales distingue clases reales y navegador real de actores/proveedores y tenant-context simulados; no se certifican JWT/RBAC/MySQL ni módulos activos. Ver docs/v5/c08-04-m06-01-auditoria-cobertura-real-vs-simulada.md.
+- Cambio documental exclusivo, sin runtime ni QA/PROD. Scope Lock, V5, CI del SHA publicado y A5 independiente siguen siendo obligatorios; SKIPPED nunca PASS.
