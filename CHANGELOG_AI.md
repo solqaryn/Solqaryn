@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 reparación CI C12-04.M05.03 nullable EmpresaId [Javier :00]
+- Corrige compilación CS1501: EmpresaId nullable debe serializarse mediante Convert.ToString con InvariantCulture; conserva todas las aserciones adversariales y la semántica SHA256 del snapshot A/B.
+- Defecto detectado en job de seguridad multiempresa del SHA 35697a0d; revalidar Release, Category=Integration MySQL 8.4 efímero y Scope Lock/V5 exact-SHA sin SKIPPED=PASS; A5 ajena, dev únicamente.
+
 ## 2026-11-17 — V19 C12-04.M05.03 integración EF Oracle MySQL 8.4 A/B [Javier :00]
 - Test xUnit Category=Integration con MySQL 8.4 efímero: productos de dos empresas, aislamiento A/B, rechazo IDOR, headers hostiles, huellas SHA256 estables de datos SQL y bloqueo previo de host remoto/puerto inseguro.
 - GitHub Actions SHA-scoped ejecuta .NET 10 Release + MySQL 8.4 real, TRX con >=3 tests y cero fallos; Scope Lock/V5 exact-SHA y A5 independiente obligatorios.

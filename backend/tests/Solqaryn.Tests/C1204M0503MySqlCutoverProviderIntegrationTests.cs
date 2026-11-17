@@ -111,7 +111,7 @@ public sealed class C1204M0503MySqlCutoverProviderIntegrationTests
                 Assert.Equal(productoEsperado, unica.Id);
                 var serializado = string.Join("|",
                     unica.Id.ToString(CultureInfo.InvariantCulture),
-                    unica.EmpresaId.ToString(CultureInfo.InvariantCulture),
+                    Convert.ToString(unica.EmpresaId, CultureInfo.InvariantCulture),
                     unica.Nombre,
                     unica.Precio.ToString(CultureInfo.InvariantCulture));
                 return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(serializado)));
