@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C13-04.M05.04 aceptación pública sin mocks [Javier :00]
+- Cuatro Playwright/Chromium nuevos verifican login, navegación a productos/categorías/ofertas y carrito en Angular real: cero `page.route()`, sin autenticación simulada ni API/tenants inventados.
+- Workflow GitHub Actions Node24/npm11, lint/build, navegador real por SHA; A0–A4 causales y A5 de Task Javier distinta, candado V17 `2000002009`.
+- R2 test-only sobre una muestra de rutas públicas, sin afirmar cobertura total, JWT, MySQL, pagos, QA/main/PROD ni restauraciones; rollback git revert.
+
 ## 2026-11-17 — V19 C13-04.M05.02 contrato HTTP/DTO fail-closed [Javier :40]
 - Suite Angular TestBed dirigida del GET /plataforma/sesion: positivo, envelopes falsos/nulos, empresa no autorizada, nombres invalidos, revocacion y HTTP 401/403/500/503.
 - Workflow GitHub-hosted Node 24/npm 11 por SHA, pruebas ejecutables, lint y build; A0–A4 y A5 requieren evidencia externa sin adelantar PASS.
