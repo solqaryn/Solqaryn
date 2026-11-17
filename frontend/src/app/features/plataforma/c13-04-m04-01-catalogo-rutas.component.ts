@@ -1,7 +1,7 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
 import { Router, RouterLink } from '@angular/router';
 import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
-import { inventariarRutasV19, PROGRAMAS_PLAN_V19 } from './c13-04-m04-01-global-inventory';
+import { inventariarRutasV19, PROGRAMAS_PLAN_V19 } from './c13-04-m04-01-catalogo-rutas';
 
 /** Superficie del plano global solo lectura. El guard del router es adicional al filtro local;
  * cada ruta destino mantiene su propia autorización backend/guard.
@@ -38,7 +38,7 @@ import { inventariarRutasV19, PROGRAMAS_PLAN_V19 } from './c13-04-m04-01-global-
             <p role="status">Subárboles lazy sin resolver: {{ lazyPendiente() }}; cobertura profunda NO_VERIFICADA.</p>
           }
           <p role="note">El inventario describe rutas declaradas, no las pantallas ejecutadas, WCAG, permisos HTTP ni resultados de pruebas.</p>
-          <ol class="rutas" data-testid="c1304-route-inventory">
+          <ol class="rutas" data-testid="c1304-route-catalogo">
             @for (ruta of rutasVisibles(); track ruta.id) {
               <li>
                 <span class="ruta">{{ ruta.path }}</span>

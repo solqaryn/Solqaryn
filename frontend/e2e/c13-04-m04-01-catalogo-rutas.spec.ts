@@ -31,11 +31,11 @@ test.describe('C13-04.M04.01 catálogo Router real y 16 programas', () => {
   test('anonimo y 403 no acceden al inventario privado', async ({ page }) => {
     await page.goto(url);
     await expect(page).toHaveURL(/\/login/);
-    await expect(page.getByTestId('c1304-route-inventory')).toHaveCount(0);
+    await expect(page.getByTestId('c1304-route-catalogo')).toHaveCount(0);
     await sesion(page, 403);
     await page.goto(url);
     await expect(page).toHaveURL(/\/login/);
-    await expect(page.getByTestId('c1304-route-inventory')).toHaveCount(0);
+    await expect(page.getByTestId('c1304-route-catalogo')).toHaveCount(0);
     await expect(page.getByText('SECRET_TENANT_B_PRIVATE_DSN')).toHaveCount(0);
   });
 
@@ -61,7 +61,7 @@ test.describe('C13-04.M04.01 catálogo Router real y 16 programas', () => {
     for (const width of [320, 375, 768, 1280]) {
       await page.setViewportSize({ width, height: 812 });
       await page.goto(url);
-      await expect(page.getByTestId('c1304-route-inventory')).toBeVisible();
+      await expect(page.getByTestId('c1304-route-catalogo')).toBeVisible();
       const widthOverflow = await page.evaluate(() =>
         document.documentElement.scrollWidth - document.documentElement.clientWidth);
       expect(widthOverflow, 'overflow at ' + width).toBeLessThanOrEqual(2);

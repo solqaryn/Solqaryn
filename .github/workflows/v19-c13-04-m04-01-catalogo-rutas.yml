@@ -3,11 +3,11 @@ on:
   push:
     branches: [dev]
     paths:
-      - 'frontend/src/app/features/plataforma/c13-04-m04-01-global-inventory*'
-      - 'frontend/e2e/c13-04-m04-01-global-inventory.spec.ts'
+      - 'frontend/src/app/features/plataforma/c13-04-m04-01-catalogo-rutas*'
+      - 'frontend/e2e/c13-04-m04-01-catalogo-rutas.spec.ts'
       - 'frontend/src/app/app.routes.ts'
       - 'frontend/src/app/features/plataforma/consola-global-auditada-v5.component.ts'
-      - '.github/workflows/v19-c13-04-m04-01-global-inventory.yml'
+      - '.github/workflows/v19-c13-04-m04-01-catalogo-rutas.yml'
   workflow_dispatch:
 permissions:
   contents: read
@@ -15,7 +15,7 @@ concurrency:
   group: v19-c13-04-m04-01-${{ github.sha }}
   cancel-in-progress: false
 jobs:
-  inventory:
+  catalogo:
     name: V19 C13-04.M04.01 - Vitest y cuatro Chromium inventario
     runs-on: ubuntu-latest
     timeout-minutes: 42
@@ -39,7 +39,7 @@ jobs:
       - name: Dependencias fijas
         run: npm ci
       - name: Seis pruebas Angular Router real
-        run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/c13-04-m04-01-global-inventory.spec.ts
+        run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/c13-04-m04-01-catalogo-rutas.spec.ts
       - name: Lint y build
         run: |
           npm run lint
@@ -61,7 +61,7 @@ jobs:
           cat c1304m0401.log >&2
           exit 1
       - name: Cuatro escenarios Playwright Chromium reales
-        run: npx playwright test e2e/c13-04-m04-01-global-inventory.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+        run: npx playwright test e2e/c13-04-m04-01-catalogo-rutas.spec.ts --config=playwright.config.ts --workers=1 --retries=0
       - name: Evidencias
         if: always()
         uses: actions/upload-artifact@v4

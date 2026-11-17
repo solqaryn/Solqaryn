@@ -4,8 +4,8 @@ import { provideRouter } from '@angular/router';
 import { PlataformaSesionService, type PlataformaSesion } from '../../core/auth/plataforma-sesion.service';
 import { plataformaGuard } from '../../core/guards/plataforma.guard';
 import { routes } from '../../app.routes';
-import { C1304InventarioGlobalComponent } from './c13-04-m04-01-global-inventory.component';
-import { inventariarRutasV19, PROGRAMAS_PLAN_V19 } from './c13-04-m04-01-global-inventory';
+import { C1304InventarioGlobalComponent } from './c13-04-m04-01-catalogo-rutas.component';
+import { inventariarRutasV19, PROGRAMAS_PLAN_V19 } from './c13-04-m04-01-catalogo-rutas';
 
 describe('C13-04.M04.01 inventario global del plan y Router real', () => {
   const admin: PlataformaSesion = { nombreUsuario: 'Admin', rolNombre: 'Administrador', ambito: 'Plataforma', esAdministrador: true };
@@ -65,7 +65,7 @@ describe('C13-04.M04.01 inventario global del plan y Router real', () => {
   });
 
   it('anonimo, Empresa y revocacion ocultan programas, rutas y enlaces', async () => {
-    for (const initial of [null, { ...admin, ambito: 'Empresa' } as PlataformaSesion]) {
+    for (const initial of [null, { ...admin, ambito: 'Empresa' } as unknown as PlataformaSesion]) {
       const { fixture } = await montar(initial);
       expect(fixture.nativeElement.querySelectorAll('.programas li,.rutas li')).toHaveLength(0);
       expect(fixture.nativeElement.querySelector('[role="alert"]')).not.toBeNull();
