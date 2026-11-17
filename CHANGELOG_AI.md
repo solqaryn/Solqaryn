@@ -1,3 +1,7 @@
+## 2026-11-16 — V19 C00-04.M06.03 riesgos, decisiones y límites [Javier :40]
+- Registro R0 de ocho riesgos específicos y cinco decisiones del lote Gobierno de cambios: fixtures frente a JWT/MySQL reales, A5/DAG, CI exact-SHA, concurrencia V17, WCAG/observabilidad NO_MEDIDO y rollback sin producción.
+- Documentación sin runtime; Scope Lock/V5 del SHA y readback antes de LISTO_DEV, A5 por Task Javier distinta. Sin QA/main/PROD, git revert normal.
+
 ## 2026-11-16 — V19 C00-04.M06.01 revisión evidencia real vs mocks [Javier :40]
 - Matriz documental R0 de seis M05.01–.06 con SHA y xUnit/Chromium reales; distingue fixtures A/B, HTTP interceptado, JWT/MySQL ausentes y WCAG/Web Vitals NO_MEDIDO sin atribuciones ficticias.
 - A0–A4 con Scope Lock y V5 por SHA; A5 revisor distinto, sin activar M06.06, QA/main/PROD. Solo dev; rollback git revert normal.
