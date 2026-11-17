@@ -51,7 +51,7 @@ test('C12-04.M04.01 grant simulado: cuatro checkpoints no operativos y responsiv
   await expect(page.getByRole('heading', { name: 'Controles de preparación para cutover' })).toBeVisible();
   await expect(page.locator('.controles li')).toHaveCount(4);
   await expect(page.getByText(/Sin acceso a MySQL ni ejecución de migraciones/)).toBeVisible();
-  await expect(page.locator('form,input,button')).toHaveCount(0);
+  await expect(page.locator('.cutover form, .cutover input, .cutover button')).toHaveCount(0);
   for (const width of [320, 375, 768, 1280]) {
     await page.setViewportSize({ width, height: 800 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(2);

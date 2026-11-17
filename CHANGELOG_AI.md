@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C12-04.M04.01 reparación de prueba Chromium [Javier :30]
+- Corregida aserción de alcance del test E2E: selector limitado a `.cutover` frente al shell ERP global; el fallo inicial 3/4 continúa visible y no se considera PASS.
+- Nueva ejecución GitHub Actions requerida, conservando 7 Vitest, 4 Chromium y todos los controles de seguridad/inventario; no se modifica UI ni JWT/MySQL reales.
+
 ## 2026-11-17 — V19 C05-01.M06.02 corrección de enlace A5_FAIL P2 [Javier :30]
 - Reemplazado un RUN inexistente 44012694950 por 44012694986, verificado GitHub REST completed SUCCESS sobre SHA 908bcdf0; documento de evidencia actualizado sin alterar runtime ni validadores.
 - El A5_FAIL histórico permanece y exige revisión independiente nueva; no se autoaprueba ni se desbloquea DAG artificialmente.
