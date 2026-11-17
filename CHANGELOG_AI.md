@@ -1,3 +1,9 @@
+## 2026-11-17 — V19 C13-04.M04.01 inventario global de programas y rutas [Javier :30]
+- Añade vista privada guardada de 16 programas C00–C15 y enumeración real de todos los Route[] declarados en Angular, incluidos spreads, children, detalle y edición.
+- Registra enlaces solamente para paths estáticos permitidos; rutas parametrizadas, wildcard y lazy pendiente se muestran sin inventar IDs, permisos ni cobertura completa.
+- Seis pruebas Angular/Vitest y cuatro Playwright/Chromium adversariales, lint y build en GitHub-hosted exact-SHA; revisión A5 por otra Task.
+- R2 sin JWT/tenant/MySQL live ni certificación WCAG global; solo dev, PROJECT_SCOPE_LOCK=STRICT, rollback git revert; no QA/main/PROD.
+
 ## 2026-11-17 — V19 C09-04.M03.05 worker outbox tenant-gated [Javier :50]
 - Implementa worker invocable por empresa con gate obligatorio antes de claim y antes de despacho; no registra scheduler, DI ni proveedor externo.
 - Agrega 5 xUnit positivos, adversariales y frontera sobre Application con dobles explícitos; CI real .NET10 y Scope Lock/V5 exact-SHA obligatorios.
