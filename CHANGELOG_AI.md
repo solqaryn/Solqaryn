@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C15-04.M05.04 contratos storefront fases 3 y 7 [Javier :10]
+- Regresión phase3 CI detectó expectativa heredada de skip-link con hash aislado; se sustituye por href canonico /tienda/productos#catalogo-productos. Fase7 exige /tienda#contenido-principal.
+- Solo se actualizan dos aserciones específicas, conservando cobertura E2E y CI obligatoria exact-SHA. La auditoria UX global continúa EN_PROGRESO, A5 pendiente de otra Task.
+
 ## 2026-11-17 — V19 C15-04.M05.04 regresion fase2 URLs canonicas [Javier :10]
 - CI fase2 y suites acumuladas detectaron expectativas heredadas del href fragmento. Dos asserts Playwright se actualizan a ruta+fragmento exactos en categorias y categoria por slug, preservando las pruebas.
 - Se reactiva CI dedicada C15 con modificacion causal de spec; PASS pendientes hasta jobs exact-SHA, R2 global EN_PROGRESO, sin A5 propia.

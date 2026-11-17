@@ -89,7 +89,7 @@ test.describe('Storefront Fase 3 — catálogo público independiente', () => {
     const header = page.locator('app-storefront-header');
     await expect(header.getByRole('link', { name: 'Productos', exact: true }).first())
       .toHaveAttribute('href', '/tienda/productos');
-    await expect(header.locator('.skip-link')).toHaveAttribute('href', '#catalogo-productos');
+    await expect(header.locator('.skip-link')).toHaveAttribute('href', '/tienda/productos#catalogo-productos');
     await expect(page.getByRole('navigation', { name: 'Paginación del catálogo' })).toBeVisible();
 
     await page.getByRole('button', { name: 'Siguiente →' }).click();

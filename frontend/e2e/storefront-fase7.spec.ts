@@ -114,7 +114,7 @@ test.describe('Storefront Fase 7 — home comercial', () => {
     await page.setViewportSize({ width: 1366, height: 900 });
     await abrirHome(page);
 
-    await expect(page.locator('app-storefront-header .skip-link')).toHaveAttribute('href', '#contenido-principal');
+    await expect(page.locator('app-storefront-header .skip-link')).toHaveAttribute('href', '/tienda#contenido-principal');
     await expect(page.locator('.category-card')).toHaveCount(6);
     await expect(page.locator('.featured-card')).toHaveCount(3);
     await expect(page.locator('.filters')).toHaveCount(0);
