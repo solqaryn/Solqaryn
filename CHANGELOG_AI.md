@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C12-04.M06.01 evidencia real vs simulación [Javier :50]
+- Revisión causal documental de seis M05 con SHA y runs: 5/5 + 7/7 Vitest, 3/3 MySQL 8.4.13 efímero, 18/18+5/5, 7/7 y 18/18+4/4 Chromium; no inferir restauración real, JWT backend o cutover autorizado.
+- Matriz P1-P4 y N1-N6 diferencia fixtures, HTTP interceptado, MySQL efímero y límites NO_MEDIDO/NO_AUTORIZADO. A3 runtime NO_APLICA para este diff R0.
+- A4 requiere Scope Lock/V5 exact SHA y readback; A5 de otra Task Javier, dev exclusivamente, sin QA/main/PROD, rollback git revert normal.
+
 ## 2026-11-17 — V19 C13-04.M04.06 densidad y carga progresiva [Javier :40]
 - Cuatro Chromium sobre Angular: 16 programas/108+ rutas, reflow 320/375/768/1280, GET sesión demorado sin exposición, 401/403/503, Tab/foco/44px y cero escrituras.
 - CI Node24/npm11 SHA-specific con Vitest base, lint/build, cuatro Chromium; A0-A4/Scope Lock/V5 y A5 por otra Task Javier.
