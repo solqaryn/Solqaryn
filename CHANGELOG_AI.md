@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C13-04.M05.04 prueba privada JWT y MySQL efimero [Javier :00]
+- Nueva integración CI aislada .NET 10/MySQL 8.4/Angular/Chromium, tres casos browser/API positivos y adversariales con JWT firmado; sin mocks HTTP ni credenciales reales.
+- Mantener C13-04.M05.04 VALIDANDO/P1 de cobertura global; las comprobaciones externas del nuevo SHA no son PASS hasta ejecución verificada. A5 debe ser independiente.
+- Única rama dev; no se alteran IAM, backend runtime, QA/main/PROD ni secretos productivos. Rollback git revert.
+
 ## 2026-11-17 — V19 C15-04.M05.04 frontera login y teclado real [Javier :10]
 - Se amplian las pruebas Chromium incrementales de 7 a 9 con limites 50/128, estados invalido/valido, Tab desde inicio, Espacio y aria-pressed; sin submits ni cambios a producto.
 - CI exact-SHA pendiente de verificacion; no certificar cierre global, JWT/tenant A/B, MySQL, WCAG ni Web Vitals. Conservar EN_PROGRESO y candado V17; A5 independiente.
