@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C15-04.M05.04 ruta privada y login sin escritura [Javier :10]
+- Prueba incremental de 20 rutas privadas del inventario Angular con 40 navegaciones anónimas a 375/1280 px, redireccion fail-closed, sin overflow ni HTTP mutaciones, mas alternancia de contrasena.
+- Siete escenarios Chromium requieren GitHub-hosted PASS exact-SHA; no certifica roles autenticados, tenant A/B, MySQL, WCAG global, Web Vitals ni LISTO. Retener EN_PROGRESO/lock V17; A5 de otra Task.
+
 ## 2026-11-17 — V19 C13-04.M05.04 guardas privadas anónimas [Javier :00]
 - Tres casos Chromium adicionales comprueban rechazo de ingreso directo a dashboard, productos y plataforma sin token, sin mocks ni interceptación HTTP; se conservan cuatro escenarios públicos (7 casos dirigidos en nuevo SHA).
 - La prueba de guard Angular no acredita JWT real, API, MySQL ni cobertura global: P1 sigue abierto y estado VALIDANDO; GitHub Actions exact-SHA y Scope Lock/V5 obligatorios antes de cualquier certificación.

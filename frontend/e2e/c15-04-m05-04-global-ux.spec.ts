@@ -78,4 +78,36 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
     await expect(page).toHaveURL(/\/login/);
     await expect(page.locator('app-dashboard')).toHaveCount(0);
   });
+  // A0.2: 20 rutas declaradas; solo guardas anonimas Angular, no pruebas API/tenant.
+  test('40 navegaciones privadas anonimas en 20 rutas y dos viewports',async({page})=>{
+    test.setTimeout(240_000);
+    const rutas=["/plataforma/auditoria-ux-v5","/plataforma/inventario-rutas-v19","/plataforma/mensajeria-multicanal-v19","/plataforma/observabilidad-v5","/plataforma/consola-global-v5","/dashboard","/productos","/productos/1/editar","/clientes/nuevo","/usuarios/1","/roles/1/editar","/inventario/ajustes/1","/inventario/transferencias/1/editar","/inventario/conteos/1","/compras/1/three-way-match","/facturas-proveedor/1/editar","/pedidos-venta/1/editar","/cuentas-por-cobrar","/cuentas-por-pagar","/configuracion"];
+    const mutaciones:string[]=[];
+    page.on('request',r=>{if(!['GET','HEAD','OPTIONS'].includes(r.method()))mutaciones.push(r.method()+' '+r.url());});
+    for(const width of [375,1280]){
+      await page.setViewportSize({width,height:840});
+      for(const ruta of rutas){
+        await test.step(width+'px '+ruta,async()=>{
+          await page.goto(ruta,{waitUntil:'domcontentloaded'});
+          await expect(page).toHaveURL(/\/login(?:[?#]|$)/);
+          await expect(page.locator('#login-title')).toBeVisible();
+          await noOverflow(page);
+        });
+      }
+    }
+    expect(mutaciones).toEqual([]);
+  });
+  test('login: mostrar y ocultar contrasena no genera escrituras',async({page})=>{
+    const mutaciones:string[]=[];
+    page.on('request',r=>{if(!['GET','HEAD','OPTIONS'].includes(r.method()))mutaciones.push(r.method());});
+    await page.goto('/login');
+    const entrada=page.locator('input[formcontrolname="password"]');
+    await expect(entrada).toHaveAttribute('type','password');
+    await page.getByRole('button',{name:'Mostrar contraseña'}).click();
+    await expect(entrada).toHaveAttribute('type','text');
+    await page.getByRole('button',{name:'Ocultar contraseña'}).click();
+    await expect(entrada).toHaveAttribute('type','password');
+    expect(mutaciones).toEqual([]);
+  });
+
 });

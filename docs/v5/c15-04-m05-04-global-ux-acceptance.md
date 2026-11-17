@@ -67,3 +67,10 @@ Fuente: `app.routes.ts` y ocho arrays de rutas importados recursivamente desde l
 `cuentas-por-pagar`
 
 Acción posterior: ejecutar navegación por rol/caso, guard, viewport, teclado, foco, contraste, error y efectos secundarios para cada ruta realmente accesible; distinguir explícitamente accesibilidad no comprobable y fuentes que cambien después de los blobs listados. En este incremento ninguna ruta parametrizada se certifica por el solo hecho de aparecer aquí.
+
+## A0.2 Incremento de matriz de rutas privadas (pendiente de CI)
+Prueba nueva de 20 rutas exactas del router y arrays importados: **40 navegaciones negativas** sin credenciales a 375/1280 px, con redireccion a login, formulario visible, sin desbordamiento horizontal ni mutaciones HTTP. Adicionalmente, mostrar/ocultar contrasena sin envio. **7 casos Chromium** totales esperados en CI sobre SHA exacto; no acreditar PASS antes de consultar logs.
+
+Rutas de la muestra: /plataforma/auditoria-ux-v5 · /plataforma/inventario-rutas-v19 · /plataforma/mensajeria-multicanal-v19 · /plataforma/observabilidad-v5 · /plataforma/consola-global-v5 · /dashboard · /productos · /productos/1/editar · /clientes/nuevo · /usuarios/1 · /roles/1/editar · /inventario/ajustes/1 · /inventario/transferencias/1/editar · /inventario/conteos/1 · /compras/1/three-way-match · /facturas-proveedor/1/editar · /pedidos-venta/1/editar · /cuentas-por-cobrar · /cuentas-por-pagar · /configuracion.
+
+**Limites:** la redireccion anonima Angular no prueba JWT firmado, roles autorizados, revocacion, aislamiento tenant A/B, MySQL, acceso a contenido autenticado ni formularios privados. Esta muestra no verifica las 160 declaraciones de rutas, WCAG global ni Web Vitals. A0-A4 globales permanecen incompletas, estado EN_PROGRESO de DEV02, candado V17 y A5 independiente. Rollback por git revert ordinario.
