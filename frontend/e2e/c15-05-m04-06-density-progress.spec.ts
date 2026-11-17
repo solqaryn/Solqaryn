@@ -87,7 +87,7 @@ test('C15-05.M04.06: error 503 limpia carga, oculta privados y permite reintento
   await page.goto('/plataforma/auditoria-operativa-v5');
   const boton = page.getByRole('button', { name: 'Revalidar sesión de auditoría' });
   await boton.click();
-  await expect(page.getByRole('alert')).toContainText('No fue posible verificar la sesión');
+  await expect(page.getByText('No fue posible verificar la sesión. El acceso permanece restringido; vuelve a intentarlo.')).toBeVisible();
   await expect(page.locator('ol.controls > li')).toHaveCount(0);
   await expect(page.getByText('PRIVATE_C15_M0406_NEVER_EXPOSE')).toHaveCount(0);
   await expect(boton).toBeEnabled();
@@ -102,7 +102,7 @@ test('C15-05.M04.06: revocación 403 no recupera controles privados ni filtra di
   await page.goto('/plataforma/auditoria-operativa-v5');
   const boton = page.getByRole('button', { name: 'Revalidar sesión de auditoría' });
   await boton.click();
-  await expect(page.getByRole('alert')).toContainText('Sin permiso de plataforma confirmado');
+  await expect(page.getByText('Sin permiso de plataforma confirmado. La guía privada permanece oculta.')).toBeVisible();
   await expect(page.locator('ol.controls > li')).toHaveCount(0);
   await expect(page.getByText('PRIVATE_C15_M0406_NEVER_EXPOSE')).toHaveCount(0);
   expect(llamadas()).toBe(2);

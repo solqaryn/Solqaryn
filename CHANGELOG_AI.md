@@ -1,5 +1,6 @@
 ## 2026-11-17 — V19 C15-05.M04.06 densidad y carga progresiva verificables [Javier :50]
 - Suite Playwright/Chromium nueva para 320/390/768/1280 px, indicador de espera accesible, bloqueo de doble revalidación, 503 recuperable y 403 fail-closed; usa sesión sintética sin JWT real ni producción.
+- Selector exacto para estados 503/403: el componente expone dos alertas durante fallos; evitar expect estricto ambiguo y verificar el mensaje seguro concreto. No se alteró runtime.
 - Workflow existente ampliado sin cancelar SHA ajenos; A0–A4 condicionados a checks exact-SHA, PLAN/COLA/DAG/BITACORA y A5 de otra Task Javier. No se declaran latencias o Core Web Vitals medidos.
 
 ## 2026-11-17 — V19 C15-05.M04.05 prueba P2 real de Tab y mutación adversarial [Javier :40]
