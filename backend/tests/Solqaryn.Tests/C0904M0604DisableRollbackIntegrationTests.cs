@@ -242,7 +242,7 @@ public sealed class C0904M0604DisableRollbackIntegrationTests
 
                 var configA = await db.Set<ConfiguracionWhatsAppEmpresa>()
                     .SingleAsync(x => x.EmpresaId == tenantA);
-                foreach (var invalid in new[] { "+504\\u066199990001", "+504\\uFF1199990001" })
+                foreach (var invalid in new[] { "+504١99990001", "+504１99990001" })
                 {
                     Assert.Throws<ArgumentException>(() => new ConfiguracionWhatsAppEmpresa(
                         tenantA, invalid, "vault://synthetic-new", "vault://webhook-new"));
