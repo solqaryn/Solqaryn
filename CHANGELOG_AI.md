@@ -1,3 +1,8 @@
+## 2026-11-16 — V19 C08-04.M06.05 solicitud A5 independiente [Javier :20]
+- Registra solicitud R0 de revisión independiente para el lote sectorial M05/M06, con fuente SHA y autores reales; distingue los LISTO previos de M06.04 aún PENDIENTE y de M06.06 no liberable.
+- La solicitud NO es A5_PASS ni prueba nueva, y nunca concede JWT/RBAC/tenant/MySQL o autorización sobre módulos; renderer e integraciones reales siguen sujetos a sus gates, rendimiento NO_MEDIDO.
+- A0–A4 documental con GitHub Scope Lock/V5 exact-SHA, readback V17 y A5 por Task Javier distinta; rollback git revert sin QA/main/PROD.
+
 ## 2026-11-16 — V19 C08-04.M06.02 manifiesto SHA y evidencias M05 [Javier :20]
 - Registra los seis commits causales M05.01–M05.06 de extensiones sectoriales, sus rutas y workflows, con conteos de checks GitHub exact-SHA comprobados y reintentos SKIPPED excluidos de PASS.
 - Documenta procedimiento reproducible para git show, check-runs, readback institucional y límites de evidencia JWT/RBAC/tenant/MySQL HTTP y rendimiento NO_MEDIDO sin nuevos grants ni código runtime.
