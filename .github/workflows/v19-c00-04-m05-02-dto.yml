@@ -1,0 +1,35 @@
+name: V19 C00-04.M05.02 - Contrato DTO inerte
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/Application/GobiernoCambiosContratoDtoM0502Tests.cs'
+      - 'backend/src/Application/Governance/GobiernoCambiosPreparacionService.cs'
+      - '.github/workflows/v19-c00-04-m05-02-dto.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c0004-m0502-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  dto:
+    name: C00-04.M05.02 - xUnit contrato DTO Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout exact SHA
+        uses: actions/checkout@v4
+      - name: .NET 10 pin
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Restore real
+        run: dotnet restore Solqaryn.sln
+      - name: Build Release
+        run: dotnet build Solqaryn.sln --configuration Release --no-restore
+      - name: Contrato DTO positivo, negativo, frontera y errores
+        run: dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter "FullyQualifiedName~GobiernoCambiosContratoDtoM0502Tests" --logger "console;verbosity=normal"

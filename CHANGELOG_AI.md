@@ -1,3 +1,7 @@
+## 2026-11-16 — V19 C00-04.M05.02 contrato DTO seguro de gobierno [Javier :20]
+- Incorpora xUnit sobre JSON real del DTO inerte: sin Motivo/IdempotencyKey privados, sin permisos, NO_GO para cambios sensibles, limites 600/601, SHA y entradas manipuladas.
+- Workflow .NET 10.0.401 Release dirigido por SHA con concurrency sin cancelacion; riesgo R2 por datos y CI. No crea endpoint HTTP ni cambia runtime, tenant/JWT/RBAC/EF/MySQL, QA/main/PROD. A0-A4 sujetos a CI real y A5 independiente; rollback git revert.
+
 ## 2026-11-16 — V19 C00-04.M05.04 aceptacion real de gobierno V5 [Javier :10]
 - Añade cuatro casos Playwright/Chromium en ruta protegida real: contrato de cuatro controles, revalidacion positiva con dos GET, retorno a plataforma y rechazo de sesion de administrador empresarial 200; fixtures HTTP son sinteticos.
 - Workflow Node24/npm11/Angular22 con CI aislada por SHA, lint/build, Chromium real; riesgo R2 por CI. A0-A4 exact SHA y A5 independiente necesarios; sin cambiar runtime, JWT/RBAC, MySQL, QA/main/PROD. Rollback git revert.
