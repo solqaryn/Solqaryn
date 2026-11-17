@@ -1,0 +1,40 @@
+name: V19 C15-04.M05.02 - contrato HTTP DTO fail-closed
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/src/app/features/plataforma/c15-04-m05-02-http-contract.spec.ts'
+      - '.github/workflows/v19-c15-04-m05-02-http-contract.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c1504-m0502-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  http-contract:
+    name: C15-04.M05.02 - seis contratos HTTP Angular Vitest
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CI: 'true'
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm institucional
+        run: npm install --global npm@11.19.0
+      - name: Dependencias reproducibles
+        run: npm ci
+      - name: Seis pruebas reales de contrato DTO con HTTP simulado
+        run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/c15-04-m05-02-http-contract.spec.ts
+      - name: Lint y build Angular produccion
+        run: |
+          npm run lint
+          npm run build:prod

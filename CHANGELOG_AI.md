@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C15-04.M05.02 contrato HTTP/DTO y denegaciones [Javier :40]
+- Seis Vitest Angular reales con HttpClientTesting para GET /plataforma/sesion: contrato positivo, tenant Empresa 200, DTO incompleto, 401 revocado, 403 y 503 fail-closed sin cache. Backend HTTP simulado: NO certifica JWT/RBAC/tenant reales.
+- CI por SHA Node24/npm11, lint/build y pruebas dirigidas; exigir Scope Lock, V5 y seguridad pertinente antes de LISTO y A5 independiente. Solo dev, sin cambios de producción.
+
 ## 2026-11-17 — V19 C09-04.M03.03 autorización tenant fail-closed del outbox [Javier :50]
 - Application valida identidad de usuario, rol empresarial, nombre del rol y EmpresaId exacto del scope devuelto desde membresía server-side; no concede bypass por administrador global.
 - Regresiones xUnit positivas y adversariales con conteo de cero lecturas/escrituras tras denegación, incluido fallo del proveedor de scope; GitHub-hosted .NET 10 + seguridad y Scope Lock requeridos por SHA.
