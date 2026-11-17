@@ -1,0 +1,31 @@
+name: V18 C08-04.M06.04 - Ensayo rollback aislado por SHA
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v18-c08-04-m06-04-rollback.yml'
+      - 'scripts/quality/verify-c08-04-m06-04-rollback.sh'
+      - 'docs/v5/c08-04-m06-04-rollback-aislado.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v18-c0804-m0604-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  reversible-test-only:
+    name: C08-04.M06.04 - Git revert efimero y negativos
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Negativo - rechazar SHA ajeno
+        run: |
+          if bash scripts/quality/verify-c08-04-m06-04-rollback.sh 0000000000000000000000000000000000000000; then
+            echo "FAIL: unapproved SHA was accepted"
+            exit 1
+          fi
+      - name: Positivo y frontera - reversión efímera exacta sin tocar runtime
+        run: bash scripts/quality/verify-c08-04-m06-04-rollback.sh 3a5aa69c38b716336da150650fdf881ebb5320f8
