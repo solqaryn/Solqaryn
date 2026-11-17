@@ -1,0 +1,70 @@
+name: V19 C00-04.M04.06 - Densidad y progreso gobierno V5
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/e2e/c00-04-m04-06-density-progress.spec.ts'
+      - '.github/workflows/v19-c00-04-m04-06-density.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c0004-m0406-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  chromium:
+    name: C00-04.M04.06 - Angular Release y 5 Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout SHA exacto
+        uses: actions/checkout@v4
+      - name: Node24 reproducible
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm fijado
+        run: npm install --global npm@11.19.0
+      - name: Instalar npm bloqueado
+        run: npm ci
+      - name: Typecheck, lint y build Angular real
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Instalar Chromium GitHub-hosted
+        run: npx playwright install --with-deps chromium
+      - name: Servidor Angular efimero de loopback
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c0004m0406-angular.log 2>&1 &
+          for attempt in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then
+              echo 'LOCAL_ANGULAR_READY=PASS'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat c0004m0406-angular.log >&2
+          exit 1
+      - name: Cinco pruebas Chromium positivas adversariales de densidad
+        run: npx playwright test e2e/c00-04-m04-06-density-progress.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Evidencia navegadores
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v19-c0004-m0406-density
+          path: |
+            frontend/c0004m0406-angular.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 14

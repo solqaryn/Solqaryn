@@ -1,3 +1,8 @@
+## 2026-11-16 — V19 C00-04.M04.06 densidad y progreso real de gobierno [Javier :50]
+- Añade cinco pruebas Playwright/Chromium adversariales para ruta privada, 320/390/768/1280, CSS real sin desborde, carga diferida con un GET, error 503 opaco y ausencia de escrituras institucionales.
+- Workflow GitHub-hosted reproducible Node24/npm11, lint, build Angular y Chromium local; pruebas de sesión y token son sintéticas, no certifican JWT/RBAC/tenant HTTP/MySQL ni métricas SLO/WCAG globales.
+- Riesgo R1, predecesores LISTO+A5, V17 lock/CAS, Scope Lock V5 y A5 independiente; al publicar mantener VALIDANDO hasta CI real SUCCESS y readback, rollback con git revert; solo dev.
+
 ## 2026-11-16 — V19 C05-01.M04.06 densidad y revelado progresivo de catálogo privado [Javier :30]
 - Añade dos pruebas Playwright al catálogo Angular existente: apertura/cierre del details sin densidad prematura, límites 4 tokens/5 estados/2 presets y respuesta en 320/375/768/1280.
 - Niega la ruta ante 403 sintético y exige cero solicitudes de escritura; no afirma code splitting, JWT/tenant real ni métricas web inexistentes.
