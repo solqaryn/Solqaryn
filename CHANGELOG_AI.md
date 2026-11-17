@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C15-04.M05.04 P2 salto teclado tienda [Javier :10]
+- Chromium SHA 39b2e65d RUN 44112044539 encontro 11 PASS y 1 FAIL: Tab+Enter sobre enlace #contenido-principal salia de /tienda hacia / por el HTML base. QA_DEFECT_FOUND P2 genuino.
+- Corregido enlace con RouterLink relativo y fragment, regresiones de tres rutas verifican destino y pathname. CI del SHA correctivo aun requiere comprobacion; auditoria UX global conserva EN_PROGRESO, A5 pendiente ajena.
+
 ## 2026-11-17 — V19 C15-04.M05.04 teclado y dialog movil [Javier :10]
 - Incremento Playwright real: Tab/Enter de skip-link en tres rutas publicas y dialog movil con foco inicial, Escape y retorno, cero HTTP mutaciones.
 - Doce casos requeridos en CI exact-SHA; A0-A4 globales siguen incompletos, EN_PROGRESO bajo DEV02, A5 ajena; sin certificar JWT/MySQL/tenant/WCAG/Web Vitals.

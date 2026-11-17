@@ -172,7 +172,7 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
         await test.step(width+'px '+ruta,async()=>{
           await page.goto(ruta,{waitUntil:'domcontentloaded'});
           await expect(page.locator(principal)).toBeVisible();
-          await expect(page.locator('a.skip-link').first()).toHaveAttribute('href',principal);
+          await expect(page.locator('a.skip-link').first()).toHaveAttribute('href',ruta+principal);
           await expect(page.getByRole('heading',{level:1})).toHaveCount(1);
           await noOverflow(page);
         });
@@ -194,11 +194,12 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
       const skip=page.locator('a.skip-link').first();
       await page.keyboard.press('Tab');
       await expect(skip).toBeFocused();
-      await expect(skip).toHaveAttribute('href',target);
+      await expect(skip).toHaveAttribute('href',url+target);
       expect(await skip.evaluate(el=>el.getBoundingClientRect().top)).toBeGreaterThanOrEqual(0);
       await page.keyboard.press('Enter');
       await expect(page.locator(target)).toBeVisible();
       await expect.poll(()=>page.evaluate(()=>location.hash)).toBe(target);
+      expect(await page.evaluate(()=>location.pathname)).toBe(url);
     }
   });
 
