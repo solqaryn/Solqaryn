@@ -1,3 +1,8 @@
+## 2026-11-16 — V19 C00-04.M04.06 reparación real de selector Chromium [Javier :50]
+- En el SHA e81b2a61 hubo 3/5 PASS y 2 FAIL por selector Playwright global role=status ambiguo (shell sr-only y banner propio). No es PASS ni defecto de autenticación.
+- Precisa las tres aserciones a .state-banner [role=status], preservando estados, errores 503, singleflight y seguridad negativa sin tocar código runtime ni desactivar tests.
+- Requiere nueva CI GitHub-hosted exact-SHA SUCCESS, Scope Lock/V5 y revisión A5 independiente. Mantener VALIDANDO, rollback git revert y sin QA/main/PROD.
+
 ## 2026-11-16 — V19 C15-04.M04.04 formularios, navegación y single-flight Chromium [Javier :00]
 - Añade cinco pruebas Playwright de login y gobierno V5: límites de validación, errores 403/503 opacos, navegación Tab/Enter, espera y una sola solicitud de revalidación.
 - Workflow por SHA con Node24/Angular22 y Chromium loopback; mocks de sesión son sintéticos, NO prueban JWT/RBAC/tenant HTTP, MySQL ni rendimiento global.

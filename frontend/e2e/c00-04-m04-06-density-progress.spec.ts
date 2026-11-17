@@ -84,12 +84,12 @@ test.describe('C00-04.M04.06 - densidad y carga progresiva de gobierno V5', () =
     const refresh = page.getByRole('button', { name: 'Revalidar sesión de plataforma' });
     await refresh.click();
     await expect(refresh).toBeDisabled();
-    await expect(page.getByRole('status')).toContainText('Verificando permisos');
+    await expect(page.locator('.state-banner [role="status"]')).toContainText('Verificando permisos');
     await expect.poll(() => pendingGets).toBe(1);
     expect(pendingGets).toBe(1);
     release?.();
     await expect(refresh).toBeEnabled();
-    await expect(page.getByRole('status')).toContainText('revalidada correctamente');
+    await expect(page.locator('.state-banner [role="status"]')).toContainText('revalidada correctamente');
     await expect(page.locator('.steps li')).toHaveCount(4);
     expect(pendingGets).toBe(1);
   });
@@ -119,7 +119,7 @@ test.describe('C00-04.M04.06 - densidad y carga progresiva de gobierno V5', () =
       await route.fulfill({ status: 200, headers: cors, contentType: 'application/json', body: allowed });
     });
     await refresh.click();
-    await expect(page.getByRole('status')).toContainText('revalidada correctamente');
+    await expect(page.locator('.state-banner [role="status"]')).toContainText('revalidada correctamente');
     await expect(page.locator('.steps li')).toHaveCount(4);
     expect(failureGets, 'a failed request must not loop').toBe(1);
   });

@@ -23,3 +23,8 @@ PROJECT_SCOPE_LOCK=STRICT. Repositorio exclusivo solqaryn/Solqaryn, rama dev.
 - Publicar directo dev con fast-forward y SHA verificado; verificar GitHub Actions requerido completed/success para Chromium dirigido, build Angular, Scope Lock, V5 provenance y seguridad pertinente en SHA exacto o descendiente de blobs equivalentes demostrados.
 - QUEUED/IN_PROGRESS/CANCELLED/SKIPPED no son PASS. Mantener VALIDANDO con RUN/SHA propietario mientras CI está pendiente y releer PLAN/COLA/DAG/BITACORA; no liberar sucesoras técnicas por VALIDANDO.
 - A5 pendiente de otra Task Javier diferente de la autora de este commit; no constituye permiso para QA/main/PROD ni evidencia de auditoría productiva.
+
+## CI_REPAIR V19 — selector de región, no seguridad ni semántica de producto
+- SHA fuente e81b2a6162ff6ce8bde6c6f2841459f323d11b54: Chromium GitHub-hosted job 133786376283 ejecutó cinco tests; 3 PASS, 2 FAIL por Playwright strict mode al usar getByRole(status) global. El shell también expone un anuncio sr-only role=status, por lo que el locator global seleccionó dos elementos. No afirmar P0 ni defecto de backend.
+- Reparación mínima: seleccionar únicamente el estado propio de la región .state-banner [role=status] en las tres aserciones, conservando texto, fallos, prueba negativa y la interacción real. No modificar guard, código runtime, pruebas de seguridad ni CI para aceptar errores.
+- Re-ejecutar workflow GitHub-hosted exact SHA nuevo; hasta SUCCESS conservar VALIDANDO, A5 pendiente y candado V17 con readback. El fallo original queda preservado en CI/GitHub y BITACORA de reparación; revert normal si procede.
