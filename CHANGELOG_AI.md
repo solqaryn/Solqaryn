@@ -1,3 +1,8 @@
+## 2026-11-16 — V19 C05-01.M06.05 solicitud A5 independiente de Design System [Javier :40]
+- Solicitud documental por microtarea y SHA para seis fuentes M05 y cinco revisiones M06, sin confundir petición con A5_PASS ni cerrar fases por lotes. M05.01–06 LISTO+A5; M06.01–02 LISTO sin A5; M06.03 en progreso y M06.04 pendiente al corte.
+- Revisión A0–A5 propone pruebas adversariales de exclusividad por TASK_ID, SHA exacto, CI realmente SUCCESS y distinguir Chromium/Angular/HTTP interceptado de JWT/RBAC/MySQL/tenant vivos. Caso positivo y cinco rechazos en memoria, sin escribir gates.
+- R0 documental; ningún permiso nuevo, ninguna promoción QA/main/PROD ni aprobación propia. Scope Lock + procedencia V5 exact-SHA y readback institucional, A5 propia por otra Task Javier.
+
 ## 2026-11-16 — V19 C05-01.M06.03 riesgos y decisiones de design system [Javier :30]
 - Registro R0 documental de ocho riesgos verificables y cinco decisiones de C05-01: JWT/RBAC HTTP real, aislamiento tenant, WCAG, Web Vitals, proveedores, tokens, SHA/dependencias y A5 sin promocion a produccion.
 - Limites de pruebas M05.01–06 de TestBed, HttpClientTesting y Chromium diferenciados de seguridad y datos reales; puertas COLA/DAG derivadas sin edicion de formulas.
