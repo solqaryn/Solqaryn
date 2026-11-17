@@ -13,6 +13,12 @@ const CONTROLES = Object.freeze([
   { id: 'autorizacion', nombre: 'Ventana, rollback y aprobación explícita', evidencia: 'NO_AUTORIZADO' }
 ] as const);
 
+const TEMAS_PERMITIDOS = Object.freeze([
+  { id: 'institucional', etiqueta: 'Institucional' },
+  { id: 'alto-contraste', etiqueta: 'Alto contraste' }
+] as const);
+type TemaPermitido = typeof TEMAS_PERMITIDOS[number]['id'];
+
 /**
  * C12-04.M04.01 — Private read-only cutover reference.
  * The browser cannot choose a tenant, DSN, migration, backup or deployment.
@@ -23,7 +29,8 @@ const CONTROLES = Object.freeze([
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="cutover" aria-labelledby="cutover-title">
+    <main class="cutover" aria-labelledby="cutover-title"
+      [class.contraste-alto]="puedeVer() && tema() === 'alto-contraste'">
       <header>
         <p class="eyebrow">SOLQARYN · Preparación MySQL privado</p>
         <h1 id="cutover-title">Controles de preparación para cutover</h1>
@@ -58,6 +65,18 @@ const CONTROLES = Object.freeze([
         <p role="note">El estado de sesión no acredita exportación, restore, checksums ni autorización operativa.</p>
       </section>
       @if (puedeVer()) {
+        <section class="panel" data-testid="c1204-m0403-branding" aria-labelledby="c1204-branding-title">
+          <h2 id="c1204-branding-title">Presentación permitida</h2>
+          <p>Los temas cambian solo la lectura local. No alteran permisos ni estado de MySQL.</p>
+          <div class="tema-opciones" role="group" aria-label="Tema visual permitido">
+            @for (opcion of temasPermitidos; track opcion.id) {
+              <button type="button" [attr.data-testid]="'c1204-m0403-theme-' + opcion.id"
+                [attr.aria-pressed]="tema() === opcion.id" (click)="seleccionarTema(opcion.id)">
+                {{ opcion.etiqueta }}
+              </button>
+            }
+          </div>
+        </section>
         <section class="aviso" role="note" aria-label="Límite de operación">
           <strong>NO OPERATIVO · Sin acceso a MySQL ni ejecución de migraciones</strong>
           <p>Ninguna restauración, exportación, comparación ni aprobación se ejecuta desde esta vista.</p>
@@ -91,6 +110,13 @@ const CONTROLES = Object.freeze([
     button { min-height:44px; padding:.7rem 1rem; border:1px solid currentColor; border-radius:.55rem; cursor:pointer; background:transparent; color:inherit; }
     .aviso, .panel, .denegado { border:1px solid var(--mat-sys-outline-variant,#aeb8c1); border-radius:.75rem; padding:1rem; margin-top:1rem; }
     .aviso { background:var(--mat-sys-surface-container-low,#f5f7fa); }
+    .tema-opciones { display:flex; flex-wrap:wrap; gap:.75rem; }
+    .tema-opciones button[aria-pressed="true"] { font-weight:700; border-width:2px; }
+    .cutover.contraste-alto { color:#fff; background:#101927; }
+    .cutover.contraste-alto .panel, .cutover.contraste-alto .aviso,
+    .cutover.contraste-alto .controles li { color:#fff; background:#101927; border-color:#fff; }
+    .cutover.contraste-alto button, .cutover.contraste-alto a { color:#fff; border-color:#fff; }
+    .cutover.contraste-alto :is(a,button):focus-visible { outline-color:#ffdf5f; }
     .controles { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; padding:0; list-style:none; }
     .controles li { min-width:0; border:1px solid var(--mat-sys-outline-variant,#aeb8c1); border-radius:.65rem; padding:1rem; }
     @media (max-width:45rem) { .controles { grid-template-columns:1fr; } }
@@ -103,6 +129,15 @@ export class C1204CutoverReadonlyComponent {
   private readonly estadoSolicitud = signal<'vacio' | 'cargando' | 'exito' | 'error' | 'sin_permiso'>('vacio');
   private revalidando = false;
   readonly controles = CONTROLES;
+  readonly temasPermitidos = TEMAS_PERMITIDOS;
+  readonly tema = signal<TemaPermitido>('institucional');
+
+  /** Allowlist local estricta: no acepta URLs, CSS, objetos ni valores externos. */
+  seleccionarTema(value: unknown): boolean {
+    if (!this.puedeVer() || (value !== 'institucional' && value !== 'alto-contraste')) return false;
+    this.tema.set(value);
+    return true;
+  }
   readonly autorizado = computed(() => {
     const sesion = this.plataforma.sesion();
     return sesion?.ambito === 'Plataforma' && sesion.esAdministrador === true;

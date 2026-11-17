@@ -44,7 +44,7 @@ describe('C12-04.M04.01 superficie privada de preparación MySQL', () => {
     const { root } = await montar(null);
     expect(root.querySelector('[data-testid=c1204-cutover-private]')).toBeNull();
     expect(root.querySelector('[role=alert]')?.textContent).toContain('Sin permiso de plataforma confirmado');
-    expect(root.querySelectorAll('form,input,button:not([data-testid=c1204-m0402-revalidate])')).toHaveLength(0);
+    expect(root.querySelectorAll('form,input,button:not([data-testid=c1204-m0402-revalidate]):not([data-testid^=c1204-m0403-theme-])')).toHaveLength(0);
   });
 
   it('muestra solo cuatro precondiciones sin afirmar evidencia de restauración', async () => {
@@ -53,7 +53,7 @@ describe('C12-04.M04.01 superficie privada de preparación MySQL', () => {
     expect(root.textContent).toContain('NO OPERATIVO');
     expect(root.textContent).toContain('NO_MEDIDO');
     expect(root.textContent).toContain('NO_AUTORIZADO');
-    expect(root.querySelectorAll('form,input,button:not([data-testid=c1204-m0402-revalidate])')).toHaveLength(0);
+    expect(root.querySelectorAll('form,input,button:not([data-testid=c1204-m0402-revalidate]):not([data-testid^=c1204-m0403-theme-])')).toHaveLength(0);
     expect(obtener).not.toHaveBeenCalled();
   });
 
@@ -137,6 +137,49 @@ describe('C12-04.M04.01 superficie privada de preparación MySQL', () => {
     fixture.detectChanges();
     expect(fixture.componentInstance.estadoVisible()).toBe('error');
     expect(root.querySelectorAll('.controles li')).toHaveLength(0);
+  });
+
+
+  it('M04.03 ofrece exactamente dos temas allowlist con institucional por defecto', async () => {
+    const { fixture, root } = await montar();
+    expect(fixture.componentInstance.temasPermitidos.map(x => x.id)).toEqual(['institucional', 'alto-contraste']);
+    expect(root.querySelectorAll('[data-testid^=c1204-m0403-theme-]')).toHaveLength(2);
+    expect(root.querySelector('[data-testid=c1204-m0403-theme-institucional]')?.getAttribute('aria-pressed')).toBe('true');
+    expect(root.querySelector('.cutover')?.classList.contains('contraste-alto')).toBe(false);
+  });
+  it('M04.03 permite alto contraste local sin disparar HTTP ni alterar cutover', async () => {
+    const { fixture, root, obtener } = await montar();
+    expect(fixture.componentInstance.seleccionarTema('alto-contraste')).toBe(true);
+    fixture.detectChanges();
+    expect(root.querySelector('.cutover')?.classList.contains('contraste-alto')).toBe(true);
+    expect(root.querySelector('[data-testid=c1204-m0403-theme-alto-contraste]')?.getAttribute('aria-pressed')).toBe('true');
+    expect(root.textContent).toContain('NO OPERATIVO');
+    expect(obtener).not.toHaveBeenCalled();
+  });
+  it('M04.03 rechaza CSS hostil, objetos y entradas fuera de lista sin alterar el tema', async () => {
+    const { fixture, root } = await montar();
+    fixture.componentInstance.seleccionarTema('alto-contraste');
+    for (const invalid of ['url(javascript:alert(1))', '<img src=x onerror=alert(1)>', {}, null, 'ALTO-CONTRASTE']) {
+      expect(fixture.componentInstance.seleccionarTema(invalid)).toBe(false);
+    }
+    fixture.detectChanges();
+    expect(fixture.componentInstance.tema()).toBe('alto-contraste');
+    expect(root.querySelectorAll('img,script,style')).toHaveLength(0);
+  });
+  it('M04.03 revocación oculta temas y no admite cambios sin permiso', async () => {
+    const { fixture, sesion, root } = await montar();
+    sesion.set(null);
+    fixture.detectChanges();
+    expect(root.querySelector('[data-testid=c1204-m0403-branding]')).toBeNull();
+    expect(fixture.componentInstance.seleccionarTema('alto-contraste')).toBe(false);
+    expect(fixture.componentInstance.tema()).toBe('institucional');
+  });
+  it('M04.03 durante GET pendiente no admite interacción de tema', async () => {
+    const { fixture, root } = await montar();
+    fixture.componentInstance.revalidar();
+    fixture.detectChanges();
+    expect(root.querySelector('[data-testid=c1204-m0403-branding]')).toBeNull();
+    expect(fixture.componentInstance.seleccionarTema('alto-contraste')).toBe(false);
   });
 
 });

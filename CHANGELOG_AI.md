@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C12-04.M04.03 branding privado allowlist [Javier :30]
+- Dos presets Angular tipados Institucional/Alto contraste, aria-pressed y estilos locales cerrados, sin CSS arbitrario ni acciones de MySQL; ante revocación y carga pendiente se ocultan los controles.
+- Cinco Vitest adversariales y un Playwright Chromium nuevos; se requieren 18 Vitest y 7 Chromium causales más seguridad, frontend, Scope Lock y V5 exact-SHA. A5 siempre independiente; no certificar restore/JWT/tenant real.
+
 ## 2026-11-17 — V19 C09-04.M01.06 gates y rollback documental [Javier :20]
 - Define nueve bloqueos fail-closed de mensajería multicanal: tenant A/B, JWT/RBAC, consentimiento, idempotencia, secretos, webhook replay, CI exact-SHA y A5 independiente; no crea servicios ni envíos.
 - Establece rollback documental no destructivo, pruebas futuras expresamente NO_EJECUTADAS y liberación solo por DAG/COLA derivados tras LISTO+A5; sin QA/main/PROD.

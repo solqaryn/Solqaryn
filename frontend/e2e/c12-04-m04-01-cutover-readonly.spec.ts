@@ -51,7 +51,7 @@ test('C12-04.M04.01 grant simulado: cuatro checkpoints no operativos y responsiv
   await expect(page.getByRole('heading', { name: 'Controles de preparación para cutover' })).toBeVisible();
   await expect(page.locator('.controles li')).toHaveCount(4);
   await expect(page.getByText(/Sin acceso a MySQL ni ejecución de migraciones/)).toBeVisible();
-  await expect(page.locator('.cutover form, .cutover input, .cutover button:not([data-testid=c1204-m0402-revalidate])')).toHaveCount(0);
+  await expect(page.locator('.cutover form, .cutover input, .cutover button:not([data-testid=c1204-m0402-revalidate]):not([data-testid^=c1204-m0403-theme-])')).toHaveCount(0);
   for (const width of [320, 375, 768, 1280]) {
     await page.setViewportSize({ width, height: 800 });
     expect(await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(2);
@@ -117,4 +117,23 @@ test('M04.02 503 tras sesión válida oculta datos y no expone DSN', async ({ pa
   await expect(page.locator('[data-testid=c1204-m0402-state]')).toContainText('Error');
   await expect(page.locator('.controles li')).toHaveCount(0);
   await expect(page.getByText('PRIVATE_DSN')).toHaveCount(0);
+});
+
+test('M04.03 presets privados en Chromium, accesibles y sin escrituras de datos', async ({ page }) => {
+  await simularSesion(page, true);
+  const methods: string[] = [];
+  page.on('request', r => {
+    if (!['GET', 'HEAD', 'OPTIONS'].includes(r.method())) methods.push(r.method());
+  });
+  await page.goto('/plataforma/mysql-cutover-readonly-v5');
+  const group = page.getByRole('group', { name: 'Tema visual permitido' });
+  await expect(group.getByRole('button')).toHaveCount(2);
+  await expect(page.getByRole('button', { name: 'Institucional' })).toHaveAttribute('aria-pressed', 'true');
+  await page.getByRole('button', { name: 'Alto contraste' }).click();
+  await expect(page.locator('.cutover')).toHaveClass(/contraste-alto/);
+  await expect(page.getByRole('button', { name: 'Alto contraste' })).toHaveAttribute('aria-pressed', 'true');
+  await expect(page.getByText(/Sin acceso a MySQL ni ejecución de migraciones/)).toBeVisible();
+  await page.getByRole('button', { name: 'Institucional' }).click();
+  await expect(page.locator('.cutover')).not.toHaveClass(/contraste-alto/);
+  expect(methods).toEqual([]);
 });
