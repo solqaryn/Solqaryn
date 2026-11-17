@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C09-04.M02.03 persistencia e índices multicanal [Javier :50]
+- Matriz verificada de MensajesOutbox, repositorio y migración N71C (índices únicos tenant/idempotencia y claim), email tenant-scoped y referencia WhatsApp N76C; separa fuentes reales de esquemas D01–D06 FUTUROS_NO_IMPLEMENTADOS.
+- Contrato de migración aditiva efímera MySQL 8.4 y fixtures A/B con diez casos T01–T10 FUTUROS_NO_EJECUTADOS, seguridad fail-closed y rollback; sin SQL, HTTP, envíos, datos reales ni certificaciones inventadas.
+
 ## 2026-11-17 — V19 C09-04.M02.04 configuración tipada y flags [Javier :40]
 - Contrato documental CFG01–CFG12, CF01–CF16 y precedencia fail-closed por plataforma/tenant/actor, separando referencias de secretos existentes de opciones y flags NO_IMPLEMENTADOS.
 - Ocho positivos y doce negativos FUTUROS_NO_EJECUTADOS; no habilita SMTP, WhatsApp, webhooks, JWT, MySQL ni eventos; A0–A5 causal y A5 independiente posterior.
