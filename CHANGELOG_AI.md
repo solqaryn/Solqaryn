@@ -1,3 +1,8 @@
+## 2026-11-16 — V19 C15-04.M04.05 responsive y accesibilidad Chromium [Javier :00]
+- Agrega cuatro pruebas Playwright de denegación, responsive 320–1280, Tab desde inicio, foco visible/44px y contraste >=4.5:1 en dos superficies privadas existentes.
+- CI SHA-específica Node24/Angular22/Chromium real de loopback; sesión sintética NO certifica JWT, tenant A/B, MySQL, WCAG global ni SLO.
+- Riesgo R1 sin cambios runtime, A0-A4 sujetos a CI y readback exact-SHA, A5 por otra Task Javier; git revert seguro, sólo dev.
+
 ## 2026-11-16 — V19 C00-04.M04.06 reparación real de selector Chromium [Javier :50]
 - En el SHA e81b2a61 hubo 3/5 PASS y 2 FAIL por selector Playwright global role=status ambiguo (shell sr-only y banner propio). No es PASS ni defecto de autenticación.
 - Precisa las tres aserciones a .state-banner [role=status], preservando estados, errores 503, singleflight y seguridad negativa sin tocar código runtime ni desactivar tests.
