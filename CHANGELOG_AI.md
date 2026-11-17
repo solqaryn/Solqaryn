@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C09-04.M06.01 rectificación causal A5_FAIL P2 [Javier :50]
+- Corregida atribución V5: M05.01/02/03/04/06 tienen check V5 SUCCESS exact-SHA; M05.05 `76ddaee9` cuenta 29 check-runs y ninguno V5 (`NO_EJECUTADO/NO_ACREDITADO`), aunque Scope Lock y 11/11 xUnit sí PASS.
+- Conserva A5_FAIL previo y solicita revisión independiente sobre SHA corregido; R0 docs-only sin desbloquear M06.06, QA/main/PROD, proveedores o JWT real.
+
 ## 2026-11-17 — V19 C09-04.M06.05 solicitud condicionada de A5 ajena [Javier :30]
 - Solicitud R0 de revisión independiente de M05.01–06 y M06.01–04: reconoce A5_FAIL M06.01/M06.02 y M06.04 en VALIDANDO, sin fingir gate aprobado.
 - No libera M06.06, QA/PROD ni certifica proveedor/JWT/MySQL productivo. Scope Lock/V5 y readback exact-SHA pendientes.
