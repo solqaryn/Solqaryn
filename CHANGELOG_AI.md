@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C15-04.M05.01 contrato unitario reproducible UX [Javier :30]
+- Cinco pruebas Angular TestBed/Vitest de ruta con guard, cinco tarjetas estables, NO_MEDIDO/SIN_VERIFICAR, lectura sin mutaciones y cuatro anchos declarativos; sin cambios runtime de producto.
+- Workflow GitHub-hosted Node24/npm11, npm ci, Vitest dirigido, tipado/lint y build Angular; los checks requeridos del SHA, Scope Lock y V5 se certificarán sólo al finalizar SUCCESS.
+- R1 test-only: no certifica JWT/RBAC/tenant live, MySQL, WCAG global ni Web Vitals; A5 independiente de otra Task Javier, V17 claim exclusivo, rollback git revert y sólo dev.
+
 ## 2026-11-17 — V19 C15-04.M04.06 densidad y carga progresiva verificadas [Javier :40]
 - Implementa tres escenarios Playwright/Chromium sobre Angular real en loopback: denegación anónima/503 opaca, cinco tarjetas NO_MEDIDO con presupuestos verificables a 320/375/768/1280 px y carga diferida hasta sesión autorizada.
 - Contratos de seguridad de la vista sin writes y con sesión HTTP sintética: NO certifica JWT/RBAC/tenant reales, MySQL, WCAG integral ni Web Vitals/SLO de producción; métricas no probadas = NO_MEDIDO.
