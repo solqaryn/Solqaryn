@@ -1,16 +1,20 @@
-# SOLQARYN V19 — C09-04.M06.04: ensayo aislado de desactivación y rollback
+# SOLQARYN V19 — C09-04.M06.04 | Rehearsal de rollback transaccional real aislado
 
-**Autor DEV06** (`6af16bbad26881918c283abe06e1f32a`), PLAN_MAESTRO fila 1439; lock V17 `SQV17_C09_04_M06_04` ID `2000001439`; `solqaryn/Solqaryn@dev`; `PROJECT_SCOPE_LOCK=STRICT`. **R2 test-only**. No QA/main/PROD, Aiven, secretos ni datos legítimos.
+**Owner DEV06**, TASK_ID `6af16bbad26881918c283abe06e1f32a`; PLAN fila 1439, candado V17 `2000001439`; sólo `solqaryn/Solqaryn@dev` y `PROJECT_SCOPE_LOCK=STRICT`. Clasificación R2 por EF/MySQL, tenancy y rollback; ningún dato legítimo o secreto real, QA/main/PROD.
 
-## A0 — alcance y rollback
-Criterio: *ensayar rollback o desactivación sin borrar datos legítimos*. Changeset solamente test Category=Integration, workflow GitHub-hosted, este artefacto y sección contigua CHANGELOG. Reutiliza `ConfiguracionWhatsAppEmpresa.Desactivar`, versión/tenancy y `MensajeOutbox` del código real en `AppDbContext`. No cambia runtime ni servicios de proveedor. Revertir el changeset, si hiciera falta, mediante `git revert` normal con HEAD y escritor verificados, sin borrar historial BITACORA.
+## A0, criterio y causa de reparación
+Criterio institucional: «Ensayar rollback **o** desactivación sin borrar datos legítimos». El commit inicial `00cce68fa995092d2c0840563566f5be6eb84000` ejecutó MySQL 8.4.13 y xUnit real, pero falló **1/3** por `CK_ConfiguracionesWhatsAppEmpresa_Numero_E164` al persistir teléfono sintético válido `+50499990001` (GitHub Actions run `44147985415`, job `134268231673`). Los otros dos negativos de conexión pasaron 2/3. El CHECK de esquema existe en `ConfiguracionWhatsAppEmpresaConfiguration.cs` y migración N76C; requiere reparación independiente con revisión de DDL/migración sobre MySQL y no se declara solucionado aquí. Se registró `QA_DEFECT_FOUND` en BITACORA, con riesgo P1 potencial de alta WhatsApp y P2 del ensayo inicial.
 
-## A1–A3: asserts causales sobre MySQL 8.4 efímero
-Positivo: crear dos empresas sintéticas A/B con configuración WhatsApp de referencia opaca y dos intenciones outbox. Desactivar A solamente, confirmar que B continúa activa, que ambos mensajes siguen persistidos y los identificadores de tenant no se cruzan. Frontera: la desactivación repetida no aumenta `Version` más allá de 2. Negativos: rechazar conexión MySQL remota o puerto ajeno a 3306, y exigir cero filas de A bajo consulta de clave de B. Error/rollback: transacción de reconfiguración A + `SaveChanges` + `ROLLBACK`; nuevo contexto debe constatar versión, número, referencias y dos mensajes originales.
+**Cambio correctivo dirigido:** para no ocultar la falla ni alterar el modelo/migraciones de otra unidad, restringir el ensayo al *rollback* real del estado outbox en MySQL efímero. No se aprueba desactivación de configuración WhatsApp ni el gate de envío de proveedor. Revertir este changeset mediante `git revert` normal tras HEAD/exclusividad; no borrar datos ni BITACORA.
 
-El workflow dirigido `v19-c09-04-m06-04-synthetic-disable-rollback.yml` exige contenedor `mysql:8.4` real local, .NET 10 Release y TRX `Category=Integration` exactamente 3/3, 0 FAIL, 0 SKIPPED. No se usa proveedor externo, números reales ni secret almacenado.
+## A1–A3 — prueba causal de rollback y casos negativos
+- Dos negativos: rechazar host MySQL remoto y puerto 3307; nunca abrir conexión a Aiven/producción.
+- Crear dos empresas A/B sintéticas y dos intenciones outbox durables, idempotencia independiente. Asserts positivos de estado `Pendiente`, intentos cero, payload íntegro y aislamiento A/B.
+- Dentro de una transacción SQL real: marcar como `Procesando` sólo el outbox de A, `SaveChanges`, comprobar intento 1 y ejecutar `ROLLBACK`.
+- Desde **otro** `DbContext`: ambas intenciones deben conservar `Pendiente`, intentos 0, cero timestamps de procesamiento, payload íntegro, dos filas, ninguna fuga cross-tenant.
+- xUnit `Category=Integration` en GitHub-hosted con servicio `mysql:8.4` efímero, .NET 10 Release, TRX exactamente 3/3 PASS/0 FAIL/0 SKIPPED. Un test simulado no equivale a este resultado.
 
-**Límite R2 importante:** `Activa=false` del modelo no demuestra que un despachador real deje de enviar; no acredita firma HMAC de webhooks, replay, revocación, consentimiento, JWT, ni idempotencia externa. Registro de riesgos R01–R10 del M06.03 permanece abierto. **A5_FAIL P2 de M06.01** identificado en BITACORA sobre afirmación inexacta de CI V5 para M05.05; no ocultarlo ni liberar gates M06 con este ensayo. Toda validación de entrega viva requiere pruebas propias y A5 independiente.
+**No demostrados:** bloqueo del dispatcher, webhook HMAC, replay proveedor, consentimiento, revocación, JWT firmado, RPO/RTO, ni configuración WhatsApp en DB por CHECK defectuoso. Riesgos de M06.03 R01–R10 permanecen. **A5_FAIL P2 sobre M06.01** por CI atribuida incorrectamente a SHA M05.05 permanece abierto, no convertirlo en PASS ni liberar DAG/manual.
 
-## A4/A5
-Exigir `verify-solqaryn-project-scope`, V5, pruebas de integración en SUCCESS para SHA exacto, logs reales y readback PLAN/COLA/DAG/BITACORA. QUEUED/IN_PROGRESS/SKIPPED/CANCELLED/FAIL jamás PASS. Mantener VALIDANDO mientras CI externa o criterios R2/A5_FAIL no estén resueltos. A5 por otra Task Javier distinta de DEV06, con auditoría propia. Cero modificación a DAG, COLA, rama main, QA/PROD.
+## A4–A5
+Sólo prueba nueva, este documento, sección contigua CHANGELOG; workflow actual conserva filtro y oráculo TRX. A4 exige `verify-solqaryn-project-scope`, V5 y job MySQL dirigidos `completed/success` del SHA exacto, más readback PLAN/COLA/DAG/BITACORA y ninguna P0/P1 sin resolver. Si CI FAIL, SKIPPED, CANCELLED, QUEUED o IN_PROGRESS, mantener VALIDANDO. A5 por Task Javier distinta de DEV06, con lectura independiente de diff, criterios y logs. No QA/main/PROD.

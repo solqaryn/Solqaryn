@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C09-04.M06.04 reparación causal del ensayo de rollback [Javier :50]
+- La CI real MySQL 8.4 de SHA 00cce68f falló 1/3 por CK_ConfiguracionesWhatsAppEmpresa_Numero_E164 al insertar E.164 sintético; fallo registrado en BITACORA, esquema N76C no reparado ni aprobado.
+- Se acota a la alternativa institucional **rollback**: xUnit con dos tenants/outbox durables, transacción de estado seguida de ROLLBACK y relectura separada sin borrar datos; exige TRX 3/3 y SHA exacto. No certifica desactivación de proveedor, HMAC, JWT, A5_FAIL M06.01 ni QA/PROD.
+
 ## 2026-11-17 - V19 C15-04.M05.04 reparar selector login y censo [Javier :10]
 - GitHub run44147705676 detecto fallo del test Web Vitals: buscaba h1 visible en /login, pero el formulario usa h2#login-title; reparado manteniendo las cuatro navegaciones, sin falso PASS (CI nuevo pendiente).
 - Censo actual de rutas 161 declaraciones en 9 fuentes, 47 parametrizadas y 110 en app.routes.ts; es solo inventario estatico, no auditoria global completada. EN_PROGRESO DEV02; A5 distinta Task.
