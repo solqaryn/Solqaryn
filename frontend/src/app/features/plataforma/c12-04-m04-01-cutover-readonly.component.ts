@@ -7,10 +7,10 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
 
 /** Contractual checkpoints, not results from MySQL, Aiven or a cutover provider. */
 const CONTROLES = Object.freeze([
-  { id: 'exportacion', nombre: 'Exportación aislada', evidencia: 'SIN_VERIFICAR' },
-  { id: 'restauracion', nombre: 'Restauración de ensayo', evidencia: 'SIN_VERIFICAR' },
-  { id: 'comparacion', nombre: 'Checksums y conteos', evidencia: 'NO_MEDIDO' },
-  { id: 'autorizacion', nombre: 'Ventana, rollback y aprobación explícita', evidencia: 'NO_AUTORIZADO' }
+  Object.freeze({ id: 'exportacion', nombre: 'Exportación aislada', evidencia: 'SIN_VERIFICAR' }),
+  Object.freeze({ id: 'restauracion', nombre: 'Restauración de ensayo', evidencia: 'SIN_VERIFICAR' }),
+  Object.freeze({ id: 'comparacion', nombre: 'Checksums y conteos', evidencia: 'NO_MEDIDO' }),
+  Object.freeze({ id: 'autorizacion', nombre: 'Ventana, rollback y aprobación explícita', evidencia: 'NO_AUTORIZADO' })
 ] as const);
 
 const TEMAS_PERMITIDOS = Object.freeze([

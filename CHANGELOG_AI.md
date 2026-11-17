@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C12-04.M05.01 inmutabilidad de evidencias de cutover [Javier :30]
+- Corrige Object.freeze superficial de cuatro checkpoints informativos: ahora congela también cada objeto para impedir falsificar localmente SIN_VERIFICAR/NO_MEDIDO/NO_AUTORIZADO como LISTO.
+- Cinco Vitest Angular TestBed de mutación adversarial, estados, tema, revocación y fronteras; CI Node24/npm11 lint/build; no modifica MySQL/EF, restauraciones, tenant, JWT ni autorizaciones.
+- Riesgo R2 por superficie sensible; sólo dev, V17 claim único, Scope Lock/V5, A0–A4 al concluir checks y A5 independiente de otra Task Javier; rollback git revert.
+
 ## 2026-11-17 — V19 C15-04.M05.03 ciclo de autorización y persistencia negativa [Javier :30]
 - Tres Playwright/Chromium sobre Router y Servicio de Sesión Angular real con HTTP sintético: 200→403, 200→503 y 200 success=false; revocación sin tarjetas ni información sensible persistida.
 - La vista UX es observacional y no tiene persistencia propia: MySQL/EF/proveedor de métricas NO_APLICA; no atribuir JWT/RBAC/tenant backend live, WCAG global ni producción.

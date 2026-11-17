@@ -1,0 +1,39 @@
+name: V19 C12-04.M05.01 - evidencia MySQL inmutable en UI
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/src/app/features/plataforma/c12-04-m04-01-cutover-readonly.component.ts'
+      - 'frontend/src/app/features/plataforma/c12-04-m05-01-immutable-readiness.spec.ts'
+      - '.github/workflows/v19-c12-04-m05-01-immutable-readiness.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c12-04-m05-01-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  immutable-cutover-contract:
+    name: C12-04.M05.01 - cinco Vitest de evidencias inmutables
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CI: 'true'
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm install --global npm@11.19.0
+      - run: npm ci
+      - name: Cinco Vitest con mutación negativa
+        run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/c12-04-m05-01-immutable-readiness.spec.ts
+      - name: Tipado y build Angular
+        run: |
+          npm run lint
+          npm run build:prod
