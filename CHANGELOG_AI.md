@@ -1,3 +1,8 @@
+## 2026-11-16 — V19 C05-01.M06.03 riesgos y decisiones de design system [Javier :30]
+- Registro R0 documental de ocho riesgos verificables y cinco decisiones de C05-01: JWT/RBAC HTTP real, aislamiento tenant, WCAG, Web Vitals, proveedores, tokens, SHA/dependencias y A5 sin promocion a produccion.
+- Limites de pruebas M05.01–06 de TestBed, HttpClientTesting y Chromium diferenciados de seguridad y datos reales; puertas COLA/DAG derivadas sin edicion de formulas.
+- A0-A4 con Scope Lock y procedencia V5 SHA exacto, A5 independiente Javier, rollback git revert; sin QA/main/PROD.
+
 ## 2026-11-16 — V19 C05-01.M06.01 revisión causal de evidencias frente a mocks [Javier :40]
 - Matriz de seis microtareas M05.01–06 con SHA real, xUnit/Angular/Chromium/HttpClientTesting, controles GitHub exact-SHA y límites explícitos: transporte sintético, tokens sin JWT, sin MySQL/tenant HTTP certificado.
 - Readback de seis PLAN LISTO+A5 independientes y verificador documental en memoria con caso positivo y cinco negativas (fila ausente, duplicada, VALIDANDO, sin A5 y sin dueño); sin modificar DAG/COLA ni runtime.
