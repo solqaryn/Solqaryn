@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C09-04.M06.05 solicitud condicionada de A5 ajena [Javier :30]
+- Solicitud R0 de revisión independiente de M05.01–06 y M06.01–04: reconoce A5_FAIL M06.01/M06.02 y M06.04 en VALIDANDO, sin fingir gate aprobado.
+- No libera M06.06, QA/PROD ni certifica proveedor/JWT/MySQL productivo. Scope Lock/V5 y readback exact-SHA pendientes.
+
 ## 2026-11-17 — V19 C09-04.M06.04 reparación causal del ensayo de rollback [Javier :50]
 - La CI real MySQL 8.4 de SHA 00cce68f falló 1/3 por CK_ConfiguracionesWhatsAppEmpresa_Numero_E164 al insertar E.164 sintético; fallo registrado en BITACORA, esquema N76C no reparado ni aprobado.
 - Se acota a la alternativa institucional **rollback**: xUnit con dos tenants/outbox durables, transacción de estado seguida de ROLLBACK y relectura separada sin borrar datos; exige TRX 3/3 y SHA exacto. No certifica desactivación de proveedor, HMAC, JWT, A5_FAIL M06.01 ni QA/PROD.
