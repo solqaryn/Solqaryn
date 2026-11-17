@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C13-04.M04.06 densidad y carga progresiva [Javier :40]
+- Cuatro Chromium sobre Angular: 16 programas/108+ rutas, reflow 320/375/768/1280, GET sesión demorado sin exposición, 401/403/503, Tab/foco/44px y cero escrituras.
+- CI Node24/npm11 SHA-specific con Vitest base, lint/build, cuatro Chromium; A0-A4/Scope Lock/V5 y A5 por otra Task Javier.
+- R2 test-only, sesión sintética: no JWT/tenant/MySQL live, Web Vitals, WCAG global, QA/main/PROD. Rollback git revert.
+
 ## 2026-11-17 — V19 C13-04.M04.01 recuperación P0-007.A y auditor ERP [Javier :30]
 - QA_DEFECT_FOUND en CI: el catálogo estricto rechazó una nueva ruta de componente no registrada y el auditor ERP rechazó una nueva ruta privada no incluida en su lista cerrada.
 - Alta exacta de un componente verificado en manifiesto (158 total, 150 features, 8 shared) y solo la ruta privada `plataforma/inventario-rutas-v19` al auditor sin relajar `plataformaGuard`, backend, controles negativos ni filtros de rutas.
