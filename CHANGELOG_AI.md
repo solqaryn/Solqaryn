@@ -1,3 +1,8 @@
+## 2026-11-17 — CI_REPAIR V19 C09-04.M04.03: auditoría ERP de ruta privada de estados [Javier :40]
+- Se actualiza una ruta exacta del control plane en scripts/quality/priority4_quality_audit.py; no se elimina la comprobación plataformaGuard, autoridad del servidor, ambito Plataforma, administrador ni manejo de errores.
+- Fallo causal reproducido en GitHub Actions ERP sobre 23b0af90: FRONTEND_ROUTE_SECURITY_CONTRACT UNGUARDED de /plataforma/mensajeria-multicanal-v19/estados, aunque el guard real estaba declarado. Reparación limitada al validador compartido sin sobrescribir la implementación de DEV03.
+- El nuevo SHA requiere CI GitHub-hosted, readback y A0–A4 completos antes de LISTO; A5 independiente, sin certificar JWT/backend real, MySQL, SMTP, WhatsApp, QA, main o PROD.
+
 ## 2026-11-17 — V19 C12-04.M06.04 saneamiento negativo de restore [Javier :50]
 - Prueba real en CI MySQL 8.4 efimero: SHA256 de dump, duracion sintetica, cleanup de destino corrupto tras SQL invalido y rechazo de duplicado (empresa_id,code), sin degradar controles.
 - No certifica migraciones Oracle EF, respaldos reales, RPO/RTO productivos ni cutover; A0–A4 requieren CI exact-SHA y A5 independiente; conservar VALIDANDO sin QA/main/PROD.

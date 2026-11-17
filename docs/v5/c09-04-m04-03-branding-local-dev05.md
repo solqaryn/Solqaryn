@@ -19,3 +19,8 @@ A4: verificar HEAD exacto, Scope Lock, V5, catalogo P0 y frontend compile, workf
 A5: revisión independiente por Task Javier distinta de DEV05; jamás autoaprobación.
 
 El trabajo publicado puede permanecer VALIDANDO si CI externa se encuentra QUEUED/IN_PROGRESS. Ningún check omitido, cancelado o fallido es PASS. No usar QA, main, producción ni datos reales.
+
+## CI_REPAIR 2026-11-17: contrato ERP de ruta privada de estados
+- Causa verificada: priority4_quality_audit.py marcaba como UNGUARDED la ruta exacta plataforma/mensajeria-multicanal-v19/estados, aunque app.routes.ts contiene canActivate: [plataformaGuard]. La ruta fue añadida por DEV03 en C09-04.M04.02; no es defecto del branding M04.03.
+- Reparacion minima: incorporar solo esa ruta al conjunto cerrado del control plane. El auditor sigue exigiendo ruta exacta en app.routes.ts, plataformaGuard, sesion HTTP verificada, ambito Plataforma, esAdministrador=true y catchError. Quitar el guard, cambiar el path o usar una ruta arbitraria debe seguir siendo FAIL.
+- A0: sin endpoints, empresas, JWT, persistencia ni proveedores nuevos; sin cambios a la ruta ni a su autor. A1/A2: verificar en GitHub Actions ERP PASS exact-SHA y controles adversariales de guardia; A3: no aplica MySQL ni proveedor a la reparacion de whitelist, pero los checks globales requeridos se evaluan por separado. A4: solo LISTO con checks completos y readback. A5 por Task Javier distinta del autor. Revert normal del commit si aparece regresion.
