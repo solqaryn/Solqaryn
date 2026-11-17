@@ -1,0 +1,34 @@
+name: V19 C12-04.M03.06 - Synthetic structured audit .NET 10
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v19-c12-04-m03-06-audit.yml'
+      - 'backend/src/Infrastructure/AutomationV5/C1204SyntheticManifestAuditSink.cs'
+      - 'backend/tests/Solqaryn.Tests/Infrastructure/C1204SyntheticManifestAuditSinkTests.cs'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c1204-m0306-audit
+  cancel-in-progress: false
+jobs:
+  audit:
+    name: V19 C12-04.M03.06 - xUnit opaque audit and failure cases
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - name: Checkout exact SHA
+        uses: actions/checkout@v4
+      - name: .NET 10 pinned
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Restore
+        run: dotnet restore backend/Solqaryn.sln
+      - name: Targeted xUnit Release
+        run: |
+          dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj \
+            --configuration Release --no-restore \
+            --filter "FullyQualifiedName~C1204SyntheticManifestAuditSinkTests" \
+            --logger "console;verbosity=normal"

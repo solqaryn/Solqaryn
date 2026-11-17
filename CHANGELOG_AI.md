@@ -1,3 +1,9 @@
+## 2026-11-16 — V19 C12-04.M03.06 auditoria sintetica estructurada fail-closed [Javier :30]
+- Infrastructure .NET 10: nuevo sink tipado de auditoria del worker sintetico C12-04.M03.05; seis resultados allowlisted, conteos acotados, log estructurado sin actor/tenant/SHA/DSN ni excepciones privadas.
+- Un solo IsEnabled y LoggerMessage SkipEnabledCheck; rechazo ante proveedor deshabilitado o fallido, codigos forjados y cancelacion; recibo LogInvoked no implica persistencia o cutover.
+- Pruebas xUnit positivas/negativas con adaptador real in-process, logger cambiante, limites, fallos de proveedor y cancelacion; CI GitHub-hosted .NET 10 Release dirigida.
+- Sin MySQL/EF/backup real, HTTP/JWT, nuevos endpoints, secretos, QA/main/PROD. A0-A4 exact-SHA y A5 independiente; rollback git revert normal.
+
 ## 2026-11-16 — V19 C05-01.M05.06 regresion real visual [Javier :00]
 - Playwright Chromium GitHub-hosted: Tab y Enter sin focus programatico, outline, 44px, reduced-motion, responsive 320/375/768/1280, presupuesto de GET sin escrituras, revocacion sintetica 403.
 - Riesgo R2 de workflow/test-only; sesion sintetica NO prueba JWT/RBAC/MySQL real. A0-A5 por SHA y rollback git revert; sin QA/main/PROD.
