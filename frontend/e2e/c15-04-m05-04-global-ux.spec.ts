@@ -378,4 +378,60 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
     }
   });
 
+
+  // A0.15: linea base Web Vitals en Chromium REAL, muestra publica sin SLA.
+  // NO_MEDIDO explicito cuando el navegador no reporta LCP/FCP; no es WCAG global.
+  test('muestra Web Vitals real: tienda y login en 375/1280', async ({context}) => {
+    test.setTimeout(150_000);
+    for (const width of [375, 1280]) {
+      for (const ruta of ['/tienda', '/login']) {
+        const page = await context.newPage();
+        try {
+          await page.setViewportSize({width, height: 840});
+          await page.addInitScript(() => {
+            const muestra = {lcp: null as number | null, cls: 0};
+            (window as typeof window & {__sqUxMuestra?: typeof muestra}).__sqUxMuestra = muestra;
+            try {
+              new PerformanceObserver(items => {
+                const ultimo = items.getEntries().at(-1);
+                if (ultimo) muestra.lcp = ultimo.startTime;
+              }).observe({type: 'largest-contentful-paint', buffered: true});
+            } catch { /* NO_MEDIDO: no se inventa LCP */ }
+            try {
+              new PerformanceObserver(items => {
+                for (const item of items.getEntries()) {
+                  const movimiento = item as PerformanceEntry & {value?: number; hadRecentInput?: boolean};
+                  if (!movimiento.hadRecentInput && typeof movimiento.value === 'number') {
+                    muestra.cls += movimiento.value;
+                  }
+                }
+              }).observe({type: 'layout-shift', buffered: true});
+            } catch { /* CLS no certificado en navegador sin soporte */ }
+          });
+          await page.goto(ruta, {waitUntil: 'domcontentloaded'});
+          await expect(page.getByRole('heading', {level: 1}).first()).toBeVisible();
+          await page.waitForTimeout(250);
+          const muestra = await page.evaluate(() => {
+            const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+            const fcp = performance.getEntriesByType('paint').find(e => e.name === 'first-contentful-paint');
+            const vitals = (window as typeof window & {__sqUxMuestra?: {lcp:number|null;cls:number}}).__sqUxMuestra;
+            return {
+              ttfbMs: nav ? nav.responseStart - nav.requestStart : null,
+              fcpMs: fcp?.startTime ?? null,
+              lcpMs: vitals?.lcp ?? null,
+              cls: vitals?.cls ?? null
+            };
+          });
+          expect(muestra.ttfbMs, 'Navigation Timing real').not.toBeNull();
+          expect(Number.isFinite(muestra.ttfbMs)).toBe(true);
+          expect(muestra.ttfbMs!).toBeGreaterThanOrEqual(0);
+          console.log('[C15-04.M05.04 PERF_SAMPLE]', JSON.stringify({ruta, width, ...muestra}));
+          await noOverflow(page);
+        } finally {
+          await page.close();
+        }
+      }
+    }
+  });
+
 });

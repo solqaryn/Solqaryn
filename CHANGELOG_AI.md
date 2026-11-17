@@ -1,3 +1,7 @@
+## 2026-11-17 - V19 C15-04.M05.04 muestras reales Performance Timing [Javier :10]
+- Chromium registra TTFB, FCP, LCP y CLS disponibles en tienda/login a 375/1280; ausencia explicita NO_MEDIDO. El registro se obtiene en navegador real, sin umbrales Web Vitals globales inventados.
+- Se esperan 17 pruebas Playwright, Scope Lock y V5 exact-SHA; auditoria R2 global continua EN_PROGRESO sin LISTO o A5 propia.
+
 ## 2026-11-17 - V19 C15-04.M05.04 skip-link ofertas/carrito [Javier :10]
 - Se hace enfocable por fragmento el main de productos/ofertas con tabindex=-1; regresion Playwright usa Tab y Enter en ofertas/carrito a 375/1280 px y comprueba hash, ruta, overflow y ausencia de escrituras.
 - CI de 16 escenarios, Scope Lock y V5 necesitan SUCCESS exact-SHA antes de acreditar resultados; UX global R2 sigue EN_PROGRESO, sin LISTO ni A5 propia.
