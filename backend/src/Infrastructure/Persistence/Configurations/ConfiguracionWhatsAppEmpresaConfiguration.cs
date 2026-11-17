@@ -19,61 +19,7 @@ public sealed class ConfiguracionWhatsAppEmpresaConfiguration : IEntityTypeConfi
                 "`EmpresaId` > 0");
             table.HasCheckConstraint(
                 "CK_ConfiguracionesWhatsAppEmpresa_Numero_E164",
-                "`NumeroTelefonoE164` REGEXP '^[+][0-9]{8,15}");
-            table.HasCheckConstraint(
-                "CK_ConfiguracionesWhatsAppEmpresa_Token_Referencia",
-                "INSTR(`TokenSecretoReferencia`, '://') > 1");
-            table.HasCheckConstraint(
-                "CK_ConfiguracionesWhatsAppEmpresa_Webhook_Referencia",
-                "INSTR(`WebhookSecretoReferencia`, '://') > 1");
-            table.HasCheckConstraint(
-                "CK_ConfiguracionesWhatsAppEmpresa_Version_Positiva",
-                "`Version` > 0");
-        });
-
-        builder.HasKey(x => x.Id);
-
-        builder.Property(x => x.EmpresaId)
-            .IsRequired();
-
-        builder.Property(x => x.NumeroTelefonoE164)
-            .IsRequired()
-            .HasMaxLength(16);
-
-        builder.Property(x => x.TokenSecretoReferencia)
-            .IsRequired()
-            .HasMaxLength(512);
-
-        builder.Property(x => x.WebhookSecretoReferencia)
-            .IsRequired()
-            .HasMaxLength(512);
-
-        builder.Property(x => x.Activa)
-            .IsRequired()
-            .HasDefaultValue(true);
-
-        builder.Property(x => x.Version)
-            .IsRequired()
-            .HasDefaultValue(1L)
-            .IsConcurrencyToken();
-
-        builder.Property(x => x.CreadoPorNombreUsuario)
-            .HasMaxLength(150);
-
-        builder.Property(x => x.ActualizadoPorNombreUsuario)
-            .HasMaxLength(150);
-
-        builder.HasIndex(x => x.EmpresaId)
-            .IsUnique()
-            .HasDatabaseName("UX_ConfiguracionesWhatsAppEmpresa_EmpresaId");
-
-        builder.HasOne(x => x.Empresa)
-            .WithMany()
-            .HasForeignKey(x => x.EmpresaId)
-            .OnDelete(DeleteBehavior.Restrict);
-    }
-}
-");
+                "`NumeroTelefonoE164` REGEXP '^[+][0-9]{8,15}$'");
             table.HasCheckConstraint(
                 "CK_ConfiguracionesWhatsAppEmpresa_Token_Referencia",
                 "INSTR(`TokenSecretoReferencia`, '://') > 1");
