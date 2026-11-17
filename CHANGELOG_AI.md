@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C09-04.M05.05 abuso y aislamiento negativo outbox [Javier :20]
+- Once casos xUnit adversariales sobre servicio Application real y dependencias simuladas: identidad o tenant inválidos, membresía revocada, idempotencia CR/LF/TAB, replay de clave con payload diferente, repositorio que devuelve otro tenant y payload vacío; cero altas en rechazos.
+- Workflow GitHub-hosted .NET 10 Release exige TRX 11/11, Scope Lock y checks de seguridad; no acredita middleware JWT real, MySQL, SMTP, WhatsApp ni producción. Riesgo R2; A0-A4 por SHA y A5 de otra Task Javier; rollback git revert normal.
+
 ## 2026-11-17 — V19 C09-04.M05.03 integración Oracle EF MySQL 8.4 [Javier :20]
 - Prueba de integración xUnit sobre MySQL 8.4 efímero en GitHub-hosted: claims CAS persistidos en contextos diferentes, empresas A/B, reintento tras fallo, rechazo de confirmaciones stale, rollback transaccional y denegación de conexiones remotas.
 - Workflow dirigido exige 3/3 TRX de integración reales, .NET 10 Release y Scope Lock exact-SHA. No ejecuta proveedores SMTP/WhatsApp/webhooks, JWT real, Aiven, QA ni producción. A0-A4 y A5 independiente pendientes hasta evidencia causal de CI; rollback normal por git revert.

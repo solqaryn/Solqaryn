@@ -1,0 +1,46 @@
+name: V19 C09-04.M05.05 - seguridad negativa outbox
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/C0904M0505OutboxNegativeSecurityTests.cs'
+      - '.github/workflows/v19-c09-04-m05-05-negative-security.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: c0904-m0505-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  negative-security:
+    name: C09-04.M05.05 - xUnit abuso tenant y replay
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.401
+      - name: Scope Lock estricto
+        run: node scripts/verify-project-scope.mjs
+      - name: xUnit negativo Release con TRX causal
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter 'FullyQualifiedName~C0904M0505OutboxNegativeSecurityTests' --logger 'trx;LogFileName=c0904m0505.trx' --logger 'console;verbosity=normal'
+          python3 - <<'PY'
+          import xml.etree.ElementTree as ET
+          from pathlib import Path
+          files=list(Path('tests/Solqaryn.Tests/TestResults').glob('**/c0904m0505.trx'))
+          if len(files)!=1:
+              raise SystemExit('No hay TRX unico de seguridad negativa')
+          root=ET.parse(files[0]).getroot()
+          ns={'t':'http://microsoft.com/schemas/VisualStudio/TeamTest/2010'}
+          count=root.find('.//t:Counters',ns)
+          if count is None:
+              raise SystemExit('TRX sin contadores')
+          actual=tuple(int(count.attrib[k]) for k in ('total','passed','failed'))
+          if actual!=(11,11,0):
+              raise SystemExit(f'Regresion adversarial: {actual}')
+          print('NEGATIVE_SECURITY 11/11 PASS en .NET 10 Release')
+          PY
