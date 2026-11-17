@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C12-04.M06.04 reparación causal bootstrap Oracle EF [Javier :50]
+- CI run 44121100598 falló realmente por tabla Empresas ausente al intentar OracleBaseline sobre esquema vacío; se conserva la evidencia y se corrige el setup para usar bootstrap canónico fresh en MySQL 8.4 efímero, con verificaciones físicas y segunda migración idempotente.
+- Test causal pendiente de nuevo SHA, no atribuir PASS. No se modifica runtime o datos productivos; Aiven/RPO/RTO/cutover no probados; LISTO y A5 no autorizados por esta reparación.
+
 ## 2026-11-17 — V19 C09-04.M05.01 replay y revocacion outbox [Javier :40]
 - Dos aserciones xUnit nuevas sobre el worker real: clave idempotente duplicada impide toda entrega; revocacion en segundo mensaje solo permite primera entrega y registra fallo opaco sin envio adicional.
 - GitHub-hosted .NET 10 Release, sin activar SMTP/WhatsApp, webhooks, JWT real, MySQL, secretos o produccion; A0-A4 y revision A5 independiente por SHA.

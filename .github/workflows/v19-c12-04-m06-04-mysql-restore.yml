@@ -83,6 +83,11 @@ jobs:
           dotnet build Solqaryn.sln --configuration Release --no-restore
           dotnet tool restore
           dotnet tool run dotnet-ef --version | grep -F '10.0.12'
+          # OracleBaseline altera Empresas; la base vacia necesita el bootstrap
+          # canonico que verifica fisicamente el esquema antes de adoptar historia EF.
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE=fresh dotnet run \
+            --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj \
+            --configuration Release --no-build
           dotnet tool run dotnet-ef database update \
             --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj \
             --startup-project src/API/Solqaryn.API.csproj \
