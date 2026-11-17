@@ -59,7 +59,7 @@ describe('C13-04.M04.03 visual allowlist', () => {
   });
   it('revocación y rol ERP no revelan controles',async()=>{
     const {fixture,sesion,root}=await montar();
-    sesion.set({...admin,ambito:'Empresa'} as PlataformaSesion);
+    sesion.set({...admin,ambito:'Empresa'} as unknown as PlataformaSesion);
     fixture.detectChanges();
     expect(root.querySelectorAll('.visual-actions button')).toHaveLength(0);
     expect(fixture.componentInstance.seleccionar({marca:'contraste',densidad:'compacta'})).toBe(false);

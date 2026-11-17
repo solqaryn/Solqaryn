@@ -6229,3 +6229,7 @@
 ## 2026-11-16 - V18 C13-04.M04.03 configuracion visual permitida [Javier :30]
 - Ruta privada de plataforma con marca y densidad locales tipadas, fallback ante getters hostiles y sesion revocada; no hay concesiones ni CSS/HTML remoto.
 - Regression Angular TestBed y Playwright Chromium real en CI SHA-aislada, A0-A5 y Scope Lock exigidos, solo dev; ningun PASS atribuido antes de GitHub Actions.
+
+## 2026-11-16 - V18 CI repair C13-04.M04.03 TS2352 and revoked Proxy [Javier :30]
+- Corrige tipado adversarial en prueba sin alterar contrato de PlataformaSesion; mueve Array.isArray al manejo fail-closed para proxies revocados, sin exponer controles ni saltar permisos.
+- Regresión original GitHub Actions falla en compilación TypeScript, reparación exige nueva CI Angular/Chromium/Scope Lock/V5 exact SHA; ninguna prueba saltada es PASS.

@@ -12,8 +12,10 @@ const DEFAULT: PresentacionC1304 = Object.freeze({ marca: 'institucional', densi
 
 /** Fail-closed once-only snapshot of unknown appearance; no CSS/URL/HTML is trusted. */
 export function normalizarPresentacionC1304(value: unknown): PresentacionC1304 {
-  if (value === null || typeof value !== 'object' || Array.isArray(value)) return DEFAULT;
+  if (value === null || typeof value !== 'object') return DEFAULT;
   try {
+    // Array.isArray can throw on revoked proxies, so guard it as untrusted input.
+    if (Array.isArray(value)) return DEFAULT;
     const marca: unknown = Reflect.get(value, 'marca');
     const densidad: unknown = Reflect.get(value, 'densidad');
     if ((marca === 'institucional' || marca === 'contraste') &&
