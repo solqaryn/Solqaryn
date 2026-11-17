@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C12-04.M06.04 ensayo de rollback Git aislado [Javier :50]
+- Script shell real de `git revert --no-commit` de un commit de pruebas M05.06 en worktree efimero; valida árbol padre, tres rutas permitidas y conservación de SHA256 y conteos sintéticos, con rechazo de SHA no autorizada.
+- Workflow GitHub-hosted por SHA con pruebas positiva/negativa, Scope Lock y V5 exigibles; CI no se atribuye PASS antes de ejecutarse.
+- R2 test-only sin exportación/restore MySQL, EF, JWT/RBAC servidor, RPO/RTO ni cutover productivo. Estado institucional depende de CI causal y de brechas pendientes; A5 por otro Javier, únicamente dev.
+
 ## 2026-11-17 — V19 C09-04.M03.06 auditoría estructurada Outbox [Javier :10]
 - OutboxTenantDeliveryWorker registra denegación tenant/mensaje, resumen del lote y error de procesamiento con ILogger opcional y campos allowlisted, sin payload, claves ni Exception.Message.
 - Cinco pruebas xUnit de éxito, A/B, revocación y error del proveedor con secretos; .NET 10 Release/seguridad/Scope Lock/V5 requeridos exact-SHA, A5 independiente.

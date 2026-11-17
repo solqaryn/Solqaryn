@@ -1,0 +1,33 @@
+name: V19 C12-04.M06.04 - rollback Git aislado y datos sinteticos
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v19-c12-04-m06-04-rollback-isolated.yml'
+      - 'scripts/quality/verify-c12-04-m06-04-rollback.sh'
+      - 'docs/evidencias/C12-04.M06.04-V19.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c1204-m0604-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  reversible:
+    name: C12-04.M06.04 - ensayo Git reversible sin acceso MySQL
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Negativo - SHA no autorizado debe rechazarse
+        shell: bash
+        run: |
+          if bash scripts/quality/verify-c12-04-m06-04-rollback.sh 0000000000000000000000000000000000000000; then
+            echo 'ERROR: SHA no autorizado aceptado'
+            exit 1
+          fi
+      - name: Positivo - revert exacto en worktree efimero y sentinel
+        shell: bash
+        run: bash scripts/quality/verify-c12-04-m06-04-rollback.sh f8c27a0ef47f82bac61b9ec1ebdcb70080b70f04
