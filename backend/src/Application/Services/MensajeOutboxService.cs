@@ -37,8 +37,17 @@ public sealed class MensajeOutboxService : IMensajeOutboxService
             throw new ArgumentException("Idempotency-Key es obligatoria.", nameof(claveIdempotencia));
 
         var scope = await _usuarioScopeService.ObtenerActualAsync(empresaId, cancellationToken);
-        if (scope is null || scope.EmpresaId != empresaId)
+        // No otorgar autoridad a un contexto tenant malformado: identidad y rol
+        // deben provenir de una membresía empresarial válida del servidor.
+        // EsAdministrador NO es un bypass de la frontera del tenant.
+        if (scope is null ||
+            scope.EmpresaId != empresaId ||
+            scope.UsuarioId <= 0 ||
+            scope.RolId <= 0 ||
+            string.IsNullOrWhiteSpace(scope.RolNombre))
+        {
             throw new ForbiddenAccessException("No existe una membresía activa para la empresa solicitada.");
+        }
 
         // La clave original se valida antes de Trim. Una secuencia CR/LF
         // terminal no puede transformarse silenciosamente en otra clave válida.

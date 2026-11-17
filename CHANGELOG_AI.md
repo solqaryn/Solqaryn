@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C09-04.M03.03 autorización tenant fail-closed del outbox [Javier :50]
+- Application valida identidad de usuario, rol empresarial, nombre del rol y EmpresaId exacto del scope devuelto desde membresía server-side; no concede bypass por administrador global.
+- Regresiones xUnit positivas y adversariales con conteo de cero lecturas/escrituras tras denegación, incluido fallo del proveedor de scope; GitHub-hosted .NET 10 + seguridad y Scope Lock requeridos por SHA.
+- Cambio R2 limitado a Application/tests/docs/CHANGELOG, sin JWT HTTP/MySQL ni proveedor real; A5 independiente pendiente, lock V17 y rollback git revert en dev.
+
 ## 2026-11-17 — V19 C15-04.M05.05 negativas de acceso en Chromium [Javier :30]
 - Cuatro pruebas E2E negativas en Angular real contra sesión sintética: anónimo, 401, 403 opaco y 200 de tenant Empresa; no render privado ni escrituras; no se adjudica autorización backend real.
 - GitHub-hosted Node24/npm11, lint/build y Playwright Chromium dirigido por SHA, Scope Lock y procedencia V5; estado CI se acredita sólo cuando termine SUCCESS.
