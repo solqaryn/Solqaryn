@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C12-04.M04.05 accesibilidad visual y teclado real [Javier :00]
+- Cinco pruebas Playwright Chromium nuevas: semántica/nombres, 320–1280 px, Tab/Enter desde inicio, foco visible, contraste WCAG >=4.5:1, objetivos >=44 px y 403 adversarial.
+- Workflow GitHub-hosted por SHA con npm ci, Vitest, lint/build y Chromium; seguridad real JWT/MySQL/restore NO CERTIFICADA por mocks. Conservar A0–A5 y A5 independiente; no adelantar LISTO hasta SUCCESS causal.
+- Cambio acotado a pruebas, workflow, evidencia y changelog, sin producción, secretos, migraciones ni restauraciones; rollback git revert normal.
+
 ## 2026-11-17 — V19 C09-04.M02.05 eventos y límites [Javier :40]
 - Define contrato futuro EV01–EV16 y EI01–EI20 con tenant, idempotencia durable, correlación, retries finitos y webhook HMAC aún no implementado; separa outbox real de garantías futuras.
 - Diez positivos y catorce negativos NO_EJECUTADOS, A0–A5 documental y rollback seguro; no crea eventos, workers, colas ni envía comunicaciones.
