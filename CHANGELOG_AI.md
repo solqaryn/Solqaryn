@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C13-04.M05.01 regresión de reglas de rutas [Javier :00]
+- Cinco Vitest nuevos para invariantes del catálogo Angular: 16 programas, herencia de guards, rutas de edición/creación, rechazo de enlaces hostiles, lazy sin ejecución y fronteras de matcher/raíz.
+- Workflow Node 24/npm 11 por SHA, con prueba dirigida, tipado/lint y build; controles Scope Lock y V5 pertinentes. Pruebas de frontend puras, sin JWT/MySQL/backend live; A5 por otra Task Javier.
+- Exclusivamente `dev`, claim único V17 `2000002006`, A0–A4 causales pendientes de CI antes de LISTO, rollback por git revert sin tocar QA/main/PROD.
+
 ## 2026-11-17 — V19 C12-04.M06.03 riesgos y decisiones MySQL/cutover [Javier :50]
 - Registro R01–R10 de riesgos abiertos y D01–D08 de decisiones preventivas, contrastando M05.01–06 y las fuentes documentales M06.01/.02; checksums de origen, restore real, RPO/RTO y JWT servidor siguen NO_MEDIDO/NO_AUTORIZADO.
 - A0–A3 auditables sin cambios de runtime, NO_APLICA a nuevas pruebas MySQL/HTTP; A4 exact SHA Scope Lock/V5 y readback, A5 requiere Task Javier distinta.

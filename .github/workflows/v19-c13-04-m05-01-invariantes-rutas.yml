@@ -1,0 +1,41 @@
+name: V19 C13-04.M05.01 - Reglas reproducibles de rutas
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/src/app/features/plataforma/c13-04-m05-01-invariantes-rutas.spec.ts'
+      - 'frontend/src/app/features/plataforma/c13-04-m04-01-catalogo-rutas.ts'
+      - '.github/workflows/v19-c13-04-m05-01-invariantes-rutas.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c13-04-m05-01-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  invariantes:
+    name: C13-04.M05.01 - Vitest reglas y Angular Release
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout SHA exacto
+        uses: actions/checkout@v4
+      - name: Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Npm fijado
+        run: npm install --global npm@11.19.0
+      - name: Dependencias fijas
+        run: npm ci
+      - name: Vitest causal 5 reglas
+        run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/c13-04-m05-01-invariantes-rutas.spec.ts
+      - name: Tipado, lint y build
+        run: |
+          npm run lint
+          npm run build:prod
