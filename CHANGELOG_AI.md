@@ -7,6 +7,7 @@
 - Cuatro pruebas Chromium entre dos vistas privadas existentes: anónimo/403, recuperación 503, single-flight de GET y navegación Tab/Enter sin doble acción.
 - Workflow GitHub-hosted con Angular y Node24 aislado por SHA; las sesiones/HTTP son sintéticas, no certifican JWT/RBAC/tenant A/B real ni modifican runtime.
 - Exigir A0–A4 y CI exact-SHA, A5 de revisor Javier distinto y readback V17; rollback git revert, sin QA/main/PROD.
+- Reparación del criterio A0 formularios: quinta prueba Chromium real sobre login, requeridos, límites 50/128, mensajes y cero POST inválidos; mantiene fixtures sintéticos y exige nueva CI exact-SHA.
 
 ## 2026-11-16 — V18 C13-04.M04.05 teclado y coherencia visual [Javier :00]
 - Agrega cuatro pruebas Chromium entre vistas privadas existentes: anonimo/403 sintético, responsive 320–1280, Tab inicial y contraste calculado.

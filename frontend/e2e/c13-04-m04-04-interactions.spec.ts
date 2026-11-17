@@ -126,3 +126,35 @@ test('C13-04.M04.04 labeled keyboard return links navigate without forms or writ
   }
   expect(writes).toEqual([]);
 });
+
+test('C13-04.M04.04 login form enforces validation boundaries without leaking credentials', async ({ page }) => {
+  const writes: string[] = [];
+  page.on('request', request => {
+    if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method())) {
+      writes.push(request.method() + ' ' + new URL(request.url()).pathname);
+    }
+  });
+  await page.goto('/login');
+  await expect(page.getByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
+  const name = page.locator('input[formcontrolname="nombreUsuario"]');
+  const password = page.locator('input[formcontrolname="password"]');
+  const submit = page.getByRole('button', { name: 'Ingresar al sistema' });
+  await expect(submit).toBeDisabled();
+  await name.fill('x'.repeat(51));
+  await password.fill('synthetic-password-not-real');
+  await expect(submit).toBeDisabled();
+  await name.fill('synthetic-qa');
+  await expect(submit).toBeEnabled();
+  await password.fill('x'.repeat(129));
+  await expect(submit).toBeDisabled();
+  await password.fill('synthetic-password-not-real');
+  await expect(submit).toBeEnabled();
+  await name.fill('');
+  await name.blur();
+  await expect(submit).toBeDisabled();
+  await expect(page.getByText('Ingresa tu nombre de usuario.')).toBeVisible();
+  await password.fill('');
+  await password.blur();
+  await expect(page.getByText('Ingresa tu contraseña.')).toBeVisible();
+  expect(writes, 'invalid/overlong form inputs must not transmit credentials').toEqual([]);
+});
