@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C09-04.M04.01 checkpoint reanudable A0 [Javier :30]
+- Reclamación V17 exclusiva del alcance de superficie multicanal con owner DEV04, sin habilitar envíos, credenciales, proveedores ni accesos tenant.
+- Documento A0 y matriz precisa de implementación/pruebas/rollback para reanudar EN_PROGRESO; NO se entrega UI, no se declara CI PASS, VALIDANDO, LISTO ni A5 de la microtarea.
+- Scope Lock STRICT y avance documental seguro en dev, sin cambiar QA/main/PROD.
+
 ## 2026-11-17 — V19 C12-04.M06.04 ensayo de rollback Git aislado [Javier :50]
 - Script shell real de `git revert --no-commit` de un commit de pruebas M05.06 en worktree efimero; valida árbol padre, tres rutas permitidas y conservación de SHA256 y conteos sintéticos, con rechazo de SHA no autorizada.
 - Workflow GitHub-hosted por SHA con pruebas positiva/negativa, Scope Lock y V5 exigibles; CI no se atribuye PASS antes de ejecutarse.
