@@ -36,6 +36,7 @@ export const routes: Routes = [
   { path: 'plataforma/experiencia-visual-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/c13-04-presentacion-v5.component').then(m => m.C1304PresentacionV5Component) },
   { path: 'plataforma/trazabilidad-cobertura-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/cobertura-trazabilidad-v5.component').then(m => m.CoberturaTrazabilidadV5Component) },
   { path: 'plataforma/observabilidad-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/observabilidad-privada-v5.component').then(m => m.ObservabilidadPrivadaV5Component) },
+  { path: 'plataforma/auditoria-ux-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/c15-04-auditoria-ux-v19.component').then(m => m.C1504AuditoriaUxV19Component) },
   { path: 'plataforma', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/plataforma.component').then(m => m.PlataformaComponent) },
   { path: 'dashboard', canActivate: [authGuard, permisoGuard], data: { modulo: 'Dashboard', accion: 'Ver' }, loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) },
   { path: 'productos', canActivate: [authGuard, permisoGuard], data: { modulo: 'Productos', accion: 'Ver' }, loadComponent: () => import('./features/productos/productos-list.component').then(m => m.ProductosListComponent) },

@@ -1,3 +1,7 @@
+## 2026-11-16 — V19 C15-04.M04.01 ruta privada de auditoría UX [Javier :50]
+- Agrega pantalla Angular standalone y ruta exclusiva plataformaGuard enlazada desde consola autorizada; cinco superficies de auditoría de landing, portal, ERP, builder y consola global. Muestra NO_MEDIDO/SIN_VERIFICAR para WCAG, Web Vitals y defectos: no declara métricas inventadas.
+- Tres pruebas Chromium reales: usuario anónimo denegado, acceso positivo con cinco superficies responsive 320/375/768/1280 sin escrituras y sesión 403 opaca. Riesgo R2 por ruta privada, sin cambiar JWT/RBAC/tenant/MySQL; CI exact-SHA Node24/npm11, Scope Lock y V5, A5 independiente. Sólo dev, rollback git revert.
+
 ## 2026-11-16 — V19 C05-01.M05.03 integración real proveedor CSS y Signals [Javier :50]
 - Tres Playwright/Chromium causales contra Angular real en loopback: cuatro swatches emparejados con variables CSS globales, cambio computado de preset Signal con idempotencia y cero escrituras, y denegación 403 que oculta tokens privados.
 - Riesgo R2 conservador por nuevo workflow CI; proveedor local CSS/DOM, no persistencia, MySQL/JWT/RBAC/tenant HTTP real. GitHub-hosted Node24/npm11 lint/build/Chromium, Scope Lock y V5 exact-SHA, A5 de otra Task Javier; sólo dev, rollback mediante git revert normal.

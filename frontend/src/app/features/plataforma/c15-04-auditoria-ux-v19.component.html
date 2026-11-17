@@ -1,0 +1,36 @@
+<main class="ux-audit" aria-labelledby="ux-audit-title" data-testid="ux-audit-v19">
+  <header class="ux-head">
+    <p class="ux-eyebrow">SOLQARYN · Revisión UX en DEV</p>
+    <h1 id="ux-audit-title">Auditoría UX, accesibilidad y rendimiento</h1>
+    <p>Contrato de revisión de cinco superficies. Los objetivos no son mediciones ni certificaciones obtenidas.</p>
+    <a class="ux-back" routerLink="/plataforma" aria-label="Volver a administración global">Volver a plataforma</a>
+  </header>
+
+  <section aria-labelledby="ux-surfaces-heading">
+    <h2 id="ux-surfaces-heading">Superficies por auditar</h2>
+    <div class="ux-grid">
+      @for (superficie of superficies; track superficie.id) {
+        <article class="ux-surface" data-testid="ux-surface" [attr.data-state]="'NO_MEDIDO'">
+          <h3>{{ superficie.titulo }}</h3>
+          <p>{{ superficie.objetivo }}</p>
+          <p class="ux-status"><strong>NO_MEDIDO</strong> · pruebas y evidencias pendientes</p>
+        </article>
+      }
+    </div>
+  </section>
+
+  <section class="ux-objectives" aria-labelledby="ux-goals-heading">
+    <h2 id="ux-goals-heading">Objetivos, no resultados</h2>
+    <ul>
+      <li>Anchuras objetivo: @for (ancho of anchosObjetivo; track ancho) { <span class="ux-width">{{ ancho }} px</span> }</li>
+      <li>Revisión WCAG 2.2 AA: <strong>SIN_VERIFICAR</strong>; teclado, foco, labels y contraste requieren pruebas causales.</li>
+      <li>Web Vitals, carga y estabilidad visual: <strong>NO_MEDIDO</strong>; no se presentan SLO inventados.</li>
+      <li>Hallazgos P0/P1 y regresiones por superficie: <strong>SIN_VERIFICAR</strong> hasta lectura de fuentes y evidencia.</li>
+    </ul>
+  </section>
+
+  <aside class="ux-note" role="note">
+    Esta vista es informativa y de solo lectura. No lee métricas privadas, no modifica permisos, empresas o datos,
+    y no autoriza QA, main, producción, despliegues ni aprobaciones A5.
+  </aside>
+</main>

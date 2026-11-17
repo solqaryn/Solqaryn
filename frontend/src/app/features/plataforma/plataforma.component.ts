@@ -35,6 +35,7 @@ import { C1404ReleaseBrandingV17Component } from './c14-04-m04-03-release-brandi
             <a mat-stroked-button routerLink="/plataforma"><mat-icon aria-hidden="true">arrow_back</mat-icon> Administración</a>
           } @else {
             <a mat-stroked-button routerLink="/plataforma/flujo-v5"><mat-icon aria-hidden="true">account_tree</mat-icon> Consultar ciclo V5</a>
+            <a mat-stroked-button routerLink="/plataforma/auditoria-ux-v5"><mat-icon aria-hidden="true">accessibility_new</mat-icon> Auditoría UX</a>
             <a mat-stroked-button routerLink="/plataforma/cobertura-v5"><mat-icon aria-hidden="true">rule</mat-icon> Cobertura V5</a>
           }
           <a mat-button routerLink="/login"><mat-icon>apartment</mat-icon> Acceder a una empresa</a>

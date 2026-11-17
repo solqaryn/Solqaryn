@@ -1,0 +1,21 @@
+:host { display: block; min-width: 0; color: var(--color-text, #111827); }
+.ux-audit { width: min(100% - 2rem, 72rem); margin: 0 auto; padding: clamp(1rem, 3vw, 2.5rem) 0 3rem; min-width: 0; }
+.ux-head { max-width: 60rem; }
+.ux-eyebrow { font-weight: 700; letter-spacing: .04em; color: var(--color-primary-dark, #075985); }
+h1 { font-size: clamp(1.65rem, 4vw, 2.4rem); line-height: 1.22; margin: .25rem 0 1rem; }
+h2 { font-size: clamp(1.2rem, 3vw, 1.55rem); margin-top: 2rem; }
+h3 { font-size: 1.1rem; margin: 0 0 .6rem; }
+p, li { line-height: 1.55; overflow-wrap: anywhere; }
+.ux-back { display: inline-flex; align-items: center; min-height: 44px; padding: .55rem .8rem; border: 2px solid var(--color-primary, #0369a1); border-radius: .6rem; color: var(--color-primary-dark, #075985); font-weight: 700; }
+.ux-back:focus-visible { outline: 3px solid var(--color-primary, #0369a1); outline-offset: 3px; }
+.ux-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr)); gap: 1rem; }
+.ux-surface { min-width: 0; border: 1px solid var(--color-border, #d9e0e8); border-radius: 12px; padding: 1rem; background: var(--color-surface, #fff); }
+.ux-status { border-inline-start: 4px solid var(--color-warning, #d97706); padding: .4rem .65rem; background: var(--color-bg, #f3f7fb); margin-bottom: 0; }
+.ux-objectives { margin-top: 1.6rem; padding: 1rem; background: var(--color-bg, #f3f7fb); border-radius: 12px; }
+.ux-objectives ul { padding-inline-start: 1.3rem; }
+.ux-objectives li { margin: .5rem 0; }
+.ux-width { display: inline-block; padding: .15rem .35rem; margin-inline-end: .25rem; background: var(--color-surface, #fff); border-radius: .25rem; white-space: nowrap; }
+.ux-note { border-inline-start: 4px solid var(--color-primary, #0369a1); padding: .8rem 1rem; margin-top: 1.5rem; background: var(--color-surface, #fff); }
+@media (max-width: 480px) { .ux-audit { width: calc(100% - 1.5rem); } .ux-grid { grid-template-columns: minmax(0, 1fr); } }
+@media (prefers-contrast: more) { .ux-surface { border: 2px solid CanvasText; } .ux-back:focus-visible { outline-color: CanvasText; } }
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
