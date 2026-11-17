@@ -1,3 +1,7 @@
+## 2026-11-16 — V19 C00-04.M06.04 ensayo rollback aislado [Javier :00]
+- Github-hosted ensaya git revert --no-commit en worktree efimero M05.06: arbol identico al padre, cuatro rutas exactas, rechazo adversarial SHA ajeno y cero operaciones sobre datos o refs remotas.
+- Riesgo R2 por workflow, sin runtime nuevo; Scope Lock/V5 y A5 independiente exigidos. MySQL/JWT/prod sin certificar; rollback normal git revert.
+
 ## 2026-11-16 — V19 C00-04.M06.05 solicitud de revisión A5 independiente [Javier :40]
 - Documento R0 de solicitud y criterios A5 para M06.01–.05, revisión por Task distinta, pruebas negativas, locks V17, SHA y gate explícito M06.06; no equivale a aprobación ni crea Tasks.
 - A0–A4 documental por Scope Lock/V5 exact-SHA; A5 requiere otro Javier. Sin QA/main/PROD, rollback git revert.
