@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C09-04.M06.04 rollback/desactivación sintética en MySQL 8.4 [Javier :50]
+- Prueba de integración xUnit + workflow GitHub-hosted MySQL 8.4: desactivación idempotente de configuración WhatsApp A, tenant B intacto, dos mensajes outbox preservados y transacción revertida.
+- R2 test-only, sin dispatch, JWT, HMAC ni proveedor real; A5_FAIL previo de M06.01 sigue abierto. CI exact-SHA y A5 distinta requeridas, sin QA/main/PROD.
+
 ## 2026-11-17 - V19 C15-04.M05.04 muestras reales Performance Timing [Javier :10]
 - Chromium registra TTFB, FCP, LCP y CLS disponibles en tienda/login a 375/1280; ausencia explicita NO_MEDIDO. El registro se obtiene en navegador real, sin umbrales Web Vitals globales inventados.
 - Se esperan 17 pruebas Playwright, Scope Lock y V5 exact-SHA; auditoria R2 global continua EN_PROGRESO sin LISTO o A5 propia.
