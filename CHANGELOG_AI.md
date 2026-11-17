@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C13-04.M05.04 cobertura global estatica desde Router [Javier :00]
+- Prueba Playwright adicional con JWT real y MySQL efimero que descubre las rutas de plataformaGuard en app.routes.ts y recorre cada ruta estatica declarada (19 en base verificada). Assert HTTP 200, pathname y no login; sin interceptar HTTP.
+- La cobertura recursiva de rutas importadas, permisos finos y revocacion sigue P1: conservar VALIDANDO y A5 pendiente. Exigir CI exact-SHA y Scope Lock; no QA/main/PROD.
+
 ## 2026-11-17 — V19 C12-04.M06.04 reparación causal bootstrap Oracle EF [Javier :50]
 - CI run 44121100598 falló realmente por tabla Empresas ausente al intentar OracleBaseline sobre esquema vacío; se conserva la evidencia y se corrige el setup para usar bootstrap canónico fresh en MySQL 8.4 efímero, con verificaciones físicas y segunda migración idempotente.
 - Test causal pendiente de nuevo SHA, no atribuir PASS. No se modifica runtime o datos productivos; Aiven/RPO/RTO/cutover no probados; LISTO y A5 no autorizados por esta reparación.

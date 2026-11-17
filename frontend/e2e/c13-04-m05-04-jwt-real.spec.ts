@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { readFileSync } from 'node:fs';
 
 const api = process.env['C1304_API_URL'];
 const password = process.env['P4_TEST_PASSWORD'];
@@ -82,6 +83,26 @@ test('JWT firmado autentico recorre cuatro rutas privadas protegidas distintas',
       expect(documento?.status()).toBe(200);
       await expect.poll(() => new URL(page.url()).pathname).toBe(destino.ruta);
       await expect(page.getByRole('heading', { name: destino.titulo, exact: true })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Iniciar sesión' })).toHaveCount(0);
+    });
+  }
+});
+
+test('JWT global recorre cada ruta estatica del catalogo plataforma en el HEAD', async ({ page }) => {
+  // Matriz derivada del Router real del SHA que compila GitHub Actions.
+  // Solo rutas planas con plataformaGuard: no equivale a cobertura de rutas hijas ni revocacion.
+  const fuente = readFileSync('src/app/app.routes.ts', 'utf8');
+  const rutas = [...fuente.matchAll(/\{\s*path:\s*'([^']+)',\s*canActivate:\s*\[plataformaGuard\]/g)]
+    .map(coincidencia => coincidencia[1]);
+  expect(rutas.length).toBeGreaterThanOrEqual(19);
+  expect(new Set(rutas).size).toBe(rutas.length);
+  expect(rutas).toContain('plataforma/inventario-rutas-v19');
+  await autenticarEnPantalla(page, 'c1304_platform_only');
+  for (const ruta of rutas) {
+    await test.step(ruta, async () => {
+      const respuesta = await page.goto('/' + ruta, { waitUntil: 'domcontentloaded' });
+      expect(respuesta?.status()).toBe(200);
+      await expect.poll(() => new URL(page.url()).pathname).toBe('/' + ruta);
       await expect(page.getByRole('heading', { name: 'Iniciar sesión' })).toHaveCount(0);
     });
   }
