@@ -1,0 +1,58 @@
+name: V19 C13-04.M05.05 - Browser negatives synthetic A B
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/e2e/c13-04-m05-05-global-negative.spec.ts'
+      - '.github/workflows/v19-c13-04-m05-05-negative.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c13-04-m05-05
+  cancel-in-progress: false
+jobs:
+  browser:
+    name: V19 C13-04.M05.05 - Nine Chromium cases
+    runs-on: ubuntu-latest
+    timeout-minutes: 42
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm install --global npm@11.19.0
+      - run: npm ci
+      - run: npm run build:prod
+      - run: npx playwright install --with-deps chromium
+      - name: Angular localhost
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c1304m0505.log 2>&1 &
+          for n in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat c1304m0505.log >&2
+          exit 1
+      - name: Chromium negative tests, API session mocked
+        run: npx playwright test e2e/c13-04-m05-05-global-negative.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Test artifacts
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v19-c13-04-m05-05-browser
+          path: |
+            frontend/c1304m0505.log
+            frontend/test-results/
+          if-no-files-found: warn
+          retention-days: 14

@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C13-04.M05.05 negativos browser globales [Javier :50]
+- Nueve pruebas Playwright/Chromium para anonimo, expiracion, empresas A/B sinteticas, errores HTTP 401/403/503, success=false y catalogo sin enlaces enumerables.
+- Nuevo workflow GitHub-hosted Angular 22.2.1/Node 24/Chromium; SHA exacto y checks pertinentes pendientes hasta CI real.
+- R2 test-only: sesion API simulada; no certificar JWT firmado, RBAC/MySQL real ni tenant A/B servidor. A5 por otra Task y sin liberar QA/main/PROD.
+
 ## 2026-11-17 — V19 C13-04.M05.03 integración MySQL de sesión global [Javier :40]
 - Oracle EF/MySQL 8.4 efímero GitHub-hosted: prueba xUnit de sesión plataforma desde base real, denegaciones empresariales A/B, revocación persistida y auditoría sin EmpresaId.
 - Workflow Category=Integration, TRX estricto y Scope Lock exact-SHA; no es PASS hasta CI completed/success y readback A0–A4. A5 independiente.
