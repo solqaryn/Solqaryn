@@ -72,6 +72,81 @@ public sealed class N74DOutboxIdempotentReplayTests
         Assert.Equal("new-74d", creado.ClaveIdempotencia);
     }
 
+    [Theory]
+    [InlineData("  clave-valida\r\n")]
+    [InlineData("\tclave-valida")]
+    [InlineData("clave-valida\n")]
+    [InlineData("clave-valida\0sufijo")]
+    [InlineData("clave-valida\u001f")]
+    public async Task C09M0302_RechazaControlesOriginalesSinStagear(string clave)
+    {
+        var repository = new ReplayRepository(null);
+        var service = new MensajeOutboxService(repository, new FakeUsuarioScopeService(7));
+
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
+            service.RegistrarAsync(7, Request, clave, CancellationToken.None));
+
+        Assert.Equal("claveIdempotencia", ex.ParamName);
+        Assert.Equal(0, repository.AddCalls);
+    }
+
+    [Fact]
+    public async Task C09M0302_ClaveUnicodeYJsonMultilinea_ConservanReplaySinDuplicacion()
+    {
+        var repository = new ReplayRepository(null);
+        var service = new MensajeOutboxService(repository, new FakeUsuarioScopeService(7));
+        var input = Request with { PayloadJson = "{\n  \"sku\": \"ABC\"\n}" };
+
+        var creado = await service.RegistrarAsync(7, input, "  correo-ñ-2026  ");
+        Assert.Equal("correo-ñ-2026", creado.ClaveIdempotencia);
+        Assert.Equal(input.PayloadJson, creado.PayloadJson);
+        Assert.Equal(1, repository.AddCalls);
+
+        // La regresión de replay ya existente verifica la respuesta sin segundo efecto.
+    }
+
+    [Fact]
+    public async Task C09M0302_Clave200AceptadaY201Rechazada()
+    {
+        var repository = new ReplayRepository(null);
+        var service = new MensajeOutboxService(repository, new FakeUsuarioScopeService(7));
+        var limite = new string('x', MensajeOutbox.LongitudMaximaClaveIdempotencia);
+
+        var creado = await service.RegistrarAsync(7, Request, limite);
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
+            service.RegistrarAsync(7, Request, limite + "x"));
+
+        Assert.Equal(limite, creado.ClaveIdempotencia);
+        Assert.Equal("claveIdempotencia", ex.ParamName);
+        Assert.Equal(1, repository.AddCalls);
+    }
+
+    [Fact]
+    public async Task C09M0302_EmpresaAjenaFallaCerradoSinNuevoEfecto()
+    {
+        var repository = new ReplayRepository(null);
+        var service = new MensajeOutboxService(repository, new FakeUsuarioScopeService(7));
+
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() =>
+            service.RegistrarAsync(8, Request, "clave-empresa-b"));
+
+        Assert.Equal(0, repository.AddCalls);
+    }
+
+    [Fact]
+    public async Task C09M0302_CorrelacionConControlesNoSeStagea()
+    {
+        var repository = new ReplayRepository(null);
+        var service = new MensajeOutboxService(repository, new FakeUsuarioScopeService(7));
+        var invalida = Request with { CorrelationId = "correlacion\r\n" };
+
+        var ex = await Assert.ThrowsAsync<ArgumentException>(() =>
+            service.RegistrarAsync(7, invalida, "clave-ok"));
+
+        Assert.Equal("correlationId", ex.ParamName);
+        Assert.Equal(0, repository.AddCalls);
+    }
+
     private sealed class ReplayRepository : IMensajeOutboxRepository
     {
         private readonly MensajeOutbox? _existing;

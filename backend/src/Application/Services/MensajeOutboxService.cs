@@ -40,6 +40,16 @@ public sealed class MensajeOutboxService : IMensajeOutboxService
         if (scope is null || scope.EmpresaId != empresaId)
             throw new ForbiddenAccessException("No existe una membresía activa para la empresa solicitada.");
 
+        // La clave original se valida antes de Trim. Una secuencia CR/LF
+        // terminal no puede transformarse silenciosamente en otra clave válida.
+        foreach (var caracter in claveIdempotencia)
+        {
+            if (char.IsControl(caracter))
+                throw new ArgumentException(
+                    "Idempotency-Key contiene caracteres de control.",
+                    nameof(claveIdempotencia));
+        }
+
         var claveNormalizada = claveIdempotencia.Trim();
         var candidato = MensajeOutbox.Crear(
             empresaId,

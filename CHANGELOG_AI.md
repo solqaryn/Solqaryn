@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C09-04.M03.02 caso de uso idempotente outbox [Javier :10]
+- Application rechaza CR/LF/TAB/NUL en Idempotency-Key original antes de Trim, evitando normalizar claves adversariales hacia un replay válido.
+- Regresiones xUnit positivas, negativas, frontera 200/201 y empresa A/B; CI GitHub-hosted real por SHA, sin prometer JWT/MySQL/SMTP/WhatsApp.
+- Claim exclusivo V17, A0–A4 y A5 de otra Task Javier; Scope Lock STRICT, dev únicamente, rollback git revert.
+
 ## 2026-11-17 — V19 C05-01.M06.06 cierre documental causal Design System [Javier :50]
 - Matriz de seis M05 y cinco M06 LISTO con A5 independiente, SHAs y filas BITACORA; condicion transversal C00-03.M06.06 verificada; correccion P2 de M06.02 conservada y nueva A5 causal comprobada.
 - Cierre R0 de dependencias Design tokens y componentes sin cambios runtime; pruebas y brechas de autenticacion real, MySQL, WCAG global y produccion declaradas NO_APLICA o NO_MEDIDO segun corresponda.
