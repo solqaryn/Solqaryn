@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C09-04.M06.01 auditoria causal M05, pruebas reales frente a mocks [Javier :50]
+- Matriz de seis SHAs y seis runs GitHub-hosted: 7/7, 8/8, 3/3 MySQL 8.4, 3/3, 11/11 xUnit y 4/4 Chromium; separa persistencia real aislada y browser real de mocks de sesión/proveedor.
+- Riesgos abiertos de webhooks, replay remoto, privacidad, JWT firmado y entrega SMTP/WhatsApp se documentan como NO_MEDIDO. R0 documental; no modificar runtime, COLA/DAG, QA/main/PROD; A5 independiente requerida.
+
 ## 2026-11-17 — V19 C09-04.M05.06 regresion, rendimiento y accesibilidad mensajeria [Javier :30]
 - Playwright Angular real prueba reflow 320/375/768/1280, cota DOM/DOMContentLoaded, foco nativo Tab/Enter, 403 tras tema y 503 sin fuga ni escrituras.
 - Workflow GitHub-hosted Chromium con build Angular, Scope Lock y V5 por SHA; sesion simulada, sin certificacion JWT firmado, MySQL, SMTP/WhatsApp ni QA/PROD. R2; A5 de otro Javier y git revert normal.
