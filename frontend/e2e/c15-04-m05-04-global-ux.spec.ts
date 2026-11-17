@@ -227,4 +227,44 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
     expect(writes).toEqual([]);
   });
 
+  // A0.11: seis navegaciones en otras tres rutas publicas reales. Sin JWT,
+  // cliente autenticado, pedidos ni efectos externos; no equivale a WCAG global.
+  test('storefront publico: ofertas, carrito y cuenta sin escrituras en dos viewports', async ({context}) => {
+    test.setTimeout(150_000);
+    const rutas: [string, string][] = [
+      ['/tienda/ofertas', 'Ofertas'],
+      ['/tienda/carrito', 'Mi carrito'],
+      ['/tienda/cuenta', 'Compra como invitado o guarda tus preferencias']
+    ];
+    const mutaciones: string[] = [];
+    for (const width of [375, 1280]) {
+      for (const [ruta, titulo] of rutas) {
+        const page = await context.newPage();
+        try {
+          await page.setViewportSize({width, height: 840});
+          page.on('request', request => {
+            if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method())) {
+              mutaciones.push(request.method() + ' ' + request.url());
+            }
+          });
+          await test.step(width + 'px ' + ruta, async () => {
+            await page.goto(ruta, {waitUntil: 'domcontentloaded'});
+            await expect(page.getByRole('heading', {level: 1, name: titulo, exact: true})).toBeVisible();
+            await noOverflow(page);
+            if (ruta === '/tienda/cuenta') {
+              await expect(page.getByRole('tab', {name: 'Iniciar sesión'})).toHaveAttribute('aria-selected', 'true');
+              await expect(page.getByRole('button', {name: 'Iniciar sesión'})).toBeDisabled();
+              await page.getByRole('tab', {name: 'Crear cuenta'}).click();
+              await expect(page.getByRole('tab', {name: 'Crear cuenta'})).toHaveAttribute('aria-selected', 'true');
+              await expect(page.getByRole('button', {name: 'Crear cuenta'})).toBeDisabled();
+            }
+          });
+        } finally {
+          await page.close();
+        }
+      }
+    }
+    expect(mutaciones).toEqual([]);
+  });
+
 });

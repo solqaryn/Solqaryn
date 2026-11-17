@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C15-04.M05.04 rutas públicas ofertas/carrito/cuenta [Javier :10]
+- Se añaden seis navegaciones reales Chromium (tres rutas, dos anchos) con H1, no-overflow y cero mutaciones HTTP; cuenta invitada verifica tabs y submit vacío deshabilitado.
+- La CI incremental exige trece casos exact-SHA; la auditoría global R2 continúa EN_PROGRESO sin LISTO ni A5, pendientes roles, tenants y WCAG.
+
 ## 2026-11-17 — V19 C15-04.M05.04 aislamiento real de Tab por ruta [Javier :10]
 - Chromium run 44114180266 registró 11 PASS/1 FAIL: foco residual en la tercera navegación de misma pestaña. Nueva pestaña real por ruta en el contexto Playwright, sin focus() artificial, conserva Tab/Enter, target y pathname.
 - Reparación estricta del fixture, no bypass; CI de 12 casos exact-SHA aún requerida. Auditoría UX R2 global permanece EN_PROGRESO.
