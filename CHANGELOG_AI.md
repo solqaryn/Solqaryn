@@ -1,3 +1,8 @@
+## 2026-11-16 — V19 C05-01.M06.01 revisión causal de evidencias frente a mocks [Javier :40]
+- Matriz de seis microtareas M05.01–06 con SHA real, xUnit/Angular/Chromium/HttpClientTesting, controles GitHub exact-SHA y límites explícitos: transporte sintético, tokens sin JWT, sin MySQL/tenant HTTP certificado.
+- Readback de seis PLAN LISTO+A5 independientes y verificador documental en memoria con caso positivo y cinco negativas (fila ausente, duplicada, VALIDANDO, sin A5 y sin dueño); sin modificar DAG/COLA ni runtime.
+- Riesgo R0 documental; Scope Lock y V5 exact-SHA requeridos; cierre institucional solo con A0–A4 y A5 por otra Task Javier. Sin QA/main/PROD, secretos ni pruebas de servidor inventadas.
+
 ## 2026-11-16 — V19 C05-01.M06.02 indice reproducible de artefactos [Javier :30]
 - Matriz documental de C05-01.M05.01–06 con seis SHAs y seis runs GitHub Actions, pruebas atribuibles y limites JWT/HTTP/MySQL/WCAG sin certificaciones inventadas.
 - Readback seis LISTO+A5 con propietarios y C00-03.M06.06 LISTO+A5, COLA/DAG derivados. Cambios R0 de documentacion sin runtime, CI, seguridad o DB.
