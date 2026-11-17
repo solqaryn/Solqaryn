@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C15-04.M05.04 inventario UX estático trazable [Javier :10]
+- Censo de 160 declaraciones path en 9 archivos Angular de router importados, 47 parametrizadas; rutas/roles/detalles con evidencia aún SIN_VERIFICAR.
+- Matriz de hashes blob por fuente anexada al documento del scope; 5/5 Chromium previos exitosos NO acreditan cobertura global ni JWT/RBAC/MySQL/WCAG.
+- EN_PROGRESO original DEV02, lock V17 retenido; sin LISTO/A5 ni cambios de runtime.
+
 ## 2026-11-17 — V19 C13-04.M05.04 evidencia de brecha P1 global [Javier :00]
 - Diagnóstico A0 reproducible de 109 rutas literales en app.routes.ts, 95 con guard declarado y 14 sin guard declarado; rutas importadas fuera de ese denominador.
 - Los 4 Chromium previos solo recorren 6 destinos públicos, no JWT real ni rutas privadas: se detallaron pantallas pendientes y la matriz Angular/API/MySQL efímera necesaria.
