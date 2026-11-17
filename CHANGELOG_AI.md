@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C05-01.M06.02 corrección de enlace A5_FAIL P2 [Javier :30]
+- Reemplazado un RUN inexistente 44012694950 por 44012694986, verificado GitHub REST completed SUCCESS sobre SHA 908bcdf0; documento de evidencia actualizado sin alterar runtime ni validadores.
+- El A5_FAIL histórico permanece y exige revisión independiente nueva; no se autoaprueba ni se desbloquea DAG artificialmente.
+
 ## 2026-11-17 — V19 C12-04.M04.01 CI dirigida Vitest y Chromium [Javier :30]
 - Nuevo workflow solo lectura GitHub-hosted con 7 Vitest y 4 Playwright Chromium contra Angular real y sesión HTTP sintética; pruebas de teclado, 403, responsive y ausencia de mutaciones.
 - No se confunde interfaz protegida con integración MySQL ni se certifica JWT/restore/PROD; A0–A4 y revisión A5 siguen condicionadas a evidencia del nuevo SHA.
