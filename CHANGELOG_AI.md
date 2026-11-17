@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C09-04.M06.02 manifiesto reproducible de seis pruebas M05 [Javier :50]
+- Se documentan versiones, SHA exacto, job IDs y resultados 7/8/3/3/11/4 en seis runs GitHub-hosted, con comandos read-only para verificar checks, diff, logs y Category=Integration MySQL 8.4 sin confundir mocks con proveedores.
+- Evidencia R0 de documentos/CHANGELOG, límites JWT/webhook/PII/SMTP/WhatsApp no certificados, rollback git revert normal y A5 independiente; no tocar runtime, QA/main/PROD.
+
 ## 2026-11-17 — V19 C09-04.M06.01 auditoria causal M05, pruebas reales frente a mocks [Javier :50]
 - Matriz de seis SHAs y seis runs GitHub-hosted: 7/7, 8/8, 3/3 MySQL 8.4, 3/3, 11/11 xUnit y 4/4 Chromium; separa persistencia real aislada y browser real de mocks de sesión/proveedor.
 - Riesgos abiertos de webhooks, replay remoto, privacidad, JWT firmado y entrega SMTP/WhatsApp se documentan como NO_MEDIDO. R0 documental; no modificar runtime, COLA/DAG, QA/main/PROD; A5 independiente requerida.
