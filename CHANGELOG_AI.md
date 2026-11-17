@@ -1,3 +1,7 @@
+## 2026-11-16 — V19 C05-01.M05.01 contrato unitario del catalogo privado [Javier :40]
+- Agrega cinco pruebas Angular TestBed con fallos causales para sesión global, lista cerrada de cuatro tokens, cinco estados, IDs adversariales y revocación de sesión; no modifica runtime.
+- GitHub Actions por SHA Node24/npm11 con Vitest, tipado, lint y build; R1. Las sesiones son sintéticas, no pruebas JWT/RBAC/tenant HTTP ni MySQL. A0-A4 exact-SHA, A5 independiente, rollback con git revert; sólo dev.
+
 ## 2026-11-16 — V19 C00-04.M05.03 integración local causal [Javier :20]
 - Añade ocho casos xUnit de integración real en proceso Domain/Application/Infrastructure: tenant A/B, membresía revocada, snapshot ausente/error, copia SHA/revisión no coincidente, cambio NO_GO y 24 escritores con una sola copia.
 - CI .NET10 Release por SHA sin cancelación, riesgo R2. No toca EF/MySQL, endpoint HTTP, proveedor remoto, JWT/RBAC runtime ni producción; A0-A4 requieren GH Actions y A5 independiente. Rollback git revert.
