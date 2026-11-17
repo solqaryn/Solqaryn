@@ -1,3 +1,7 @@
+## 2026-11-16 — V19 C00-04.M05.06 regresión Chromium real de gobierno [Javier :30]
+- Cuatro pruebas Playwright: teclado Tab sin focus artificial, responsive y reduced-motion con hit-target 44px, presupuesto un GET sin escrituras y 403 fail-closed; sesión sintética, sin JWT/RBAC/MySQL/tenant real.
+- CI Angular22/Node24/npm11 por SHA sin cancelación, riesgo R2 por workflow; A0–A4 y A5 independiente obligatorios, métricas Web Vitals NO_MEDIDO; solo dev, rollback git revert.
+
 ## 2026-11-16 — V19 C15-04.M04.01 reparación P0 y contrato seguridad de ruta [Javier :50]
 - Reparación dirigida de checks del SHA 0f2affce: ERP FRONTEND_ROUTE_SECURITY_CONTRACT rechazó ruta nueva pese a conservar plataformaGuard; se añade exactamente el path /plataforma/auditoria-ux-v5 a la allowlist estricta existente, sin alterar la validación de guard, servidor ni controles de rechazo.
 - P0-007.A detectó nuevo componente Angular no inventariado; se agrega archivo real al documento y se actualiza conteo estricto 156 archivos (148 features, 8 shared), conservando negativos de ausencia y alta sin catálogo. Sin certificar JWT/RBAC/tenant, WCAG ni mediciones; checks exact-SHA, A5 independiente, rollback git revert, sólo dev.
