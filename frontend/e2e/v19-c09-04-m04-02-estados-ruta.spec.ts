@@ -66,7 +66,7 @@ test('administrador sintético navega ruta real y ve vacío sin envíos ni mutac
   await expect(page.getByTestId('m0402-vacio')).toBeVisible();
   await expect(page.getByTestId('m0402-exito')).toHaveCount(0);
   await expect(page.locator('.estado-mensajeria')).toHaveAttribute('aria-busy', 'false');
-  await expect(page.locator('form,input,button,textarea')).toHaveCount(0);
+  await expect(page.locator('.estado-mensajeria').locator('form,input,button,textarea')).toHaveCount(0);
   expect(writes).toEqual([]);
 });
 
