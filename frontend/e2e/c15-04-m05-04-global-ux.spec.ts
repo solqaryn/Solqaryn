@@ -72,6 +72,8 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
     await expect(page).toHaveURL(/\/login/);
     await expect(page.locator('[data-testid="ux-surface"]')).toHaveCount(0);
     await expect(page.getByText('PRIVATE_ERROR_DO_NOT_RENDER')).toHaveCount(0);
+  });
+  test('ERP dashboard sin autenticacion usa contexto limpio separado',async({page})=>{
     await page.goto('/dashboard');
     await expect(page).toHaveURL(/\/login/);
     await expect(page.locator('app-dashboard')).toHaveCount(0);

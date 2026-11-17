@@ -1,6 +1,6 @@
 ## 2026-11-17 — V19 C15-04.M05.04 UX global incremental [Javier :10]
 - Primer incremento R2 Playwright real: login y panel privado responsive, Tab/foco, contraste puntual, 403 y guard ERP, con sesión HTTP simulada.
-- CI GitHub-hosted propia por SHA; checks y logs requeridos, NO declarar PASS antes de resultados reales.
+- CI GitHub-hosted propia por SHA; primer run detectó un test P2 de fixture que reutilizaba token sintético entre 403 y ERP; corregido separando el caso ERP en contexto browser limpio, revalidación SHA descendiente obligatoria.
 - EN_PROGRESO reanudable: inventario total de rutas, roles/tenants, WCAG global y Web Vitals siguen SIN_VERIFICAR; A5 de otra Task.
 
 ## 2026-11-17 — V19 C13-04.M05.05 negativos browser globales [Javier :50]
