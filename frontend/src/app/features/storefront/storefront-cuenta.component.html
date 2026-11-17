@@ -31,10 +31,16 @@
           <form id="cuenta-panel-login" role="tabpanel" aria-labelledby="cuenta-tab-login" class="panel auth-form" [formGroup]="loginForm" (ngSubmit)="login()">
             <h2>Bienvenido de nuevo</h2>
             <label>Correo
-              <input type="email" autocomplete="email" formControlName="correo" inputmode="email" maxlength="150">
+              <input type="email" autocomplete="email" formControlName="correo" inputmode="email" maxlength="150" [attr.aria-invalid]="loginForm.controls.correo.dirty && loginForm.controls.correo.invalid ? 'true' : null" [attr.aria-describedby]="loginForm.controls.correo.dirty && loginForm.controls.correo.invalid ? 'cuenta-login-correo-error' : null">
+              @if (loginForm.controls.correo.dirty && loginForm.controls.correo.invalid) {
+                <small class="field-error" id="cuenta-login-correo-error">Escribe un correo electrónico válido.</small>
+              }
             </label>
             <label>Contraseña
-              <input type="password" autocomplete="current-password" formControlName="clave">
+              <input type="password" autocomplete="current-password" formControlName="clave" [attr.aria-invalid]="loginForm.controls.clave.dirty && loginForm.controls.clave.invalid ? 'true' : null" [attr.aria-describedby]="loginForm.controls.clave.dirty && loginForm.controls.clave.invalid ? 'cuenta-login-clave-error' : null">
+              @if (loginForm.controls.clave.dirty && loginForm.controls.clave.invalid) {
+                <small class="field-error" id="cuenta-login-clave-error">La contraseña debe contener de 10 a 128 caracteres.</small>
+              }
             </label>
             <button class="primary-button" type="submit" [disabled]="procesando() || loginForm.invalid">
               {{ procesando() ? 'Ingresando…' : 'Iniciar sesión' }}
@@ -44,13 +50,22 @@
           <form id="cuenta-panel-registro" role="tabpanel" aria-labelledby="cuenta-tab-registro" class="panel auth-form" [formGroup]="registroForm" (ngSubmit)="registrar()">
             <h2>Crear cuenta de cliente</h2>
             <label>Nombre
-              <input type="text" autocomplete="name" formControlName="nombre">
+              <input type="text" autocomplete="name" formControlName="nombre" [attr.aria-invalid]="(registroForm.controls.nombre.dirty || registroForm.controls.nombre.touched) && registroForm.controls.nombre.invalid ? 'true' : null" [attr.aria-describedby]="(registroForm.controls.nombre.dirty || registroForm.controls.nombre.touched) && registroForm.controls.nombre.invalid ? 'cuenta-registro-nombre-error' : null">
+              @if ((registroForm.controls.nombre.dirty || registroForm.controls.nombre.touched) && registroForm.controls.nombre.invalid) {
+                <small class="field-error" id="cuenta-registro-nombre-error">Indica tu nombre para crear la cuenta.</small>
+              }
             </label>
             <label>Correo
-              <input type="email" autocomplete="email" formControlName="correo" inputmode="email" maxlength="150">
+              <input type="email" autocomplete="email" formControlName="correo" inputmode="email" maxlength="150" [attr.aria-invalid]="registroForm.controls.correo.dirty && registroForm.controls.correo.invalid ? 'true' : null" [attr.aria-describedby]="registroForm.controls.correo.dirty && registroForm.controls.correo.invalid ? 'cuenta-registro-correo-error' : null">
+              @if (registroForm.controls.correo.dirty && registroForm.controls.correo.invalid) {
+                <small class="field-error" id="cuenta-registro-correo-error">Escribe un correo electrónico válido.</small>
+              }
             </label>
             <label>Contraseña
-              <input type="password" autocomplete="new-password" formControlName="clave" aria-describedby="clave-ayuda">
+              <input type="password" autocomplete="new-password" formControlName="clave" [attr.aria-invalid]="registroForm.controls.clave.dirty && registroForm.controls.clave.invalid ? 'true' : null" [attr.aria-describedby]="registroForm.controls.clave.dirty && registroForm.controls.clave.invalid ? 'clave-ayuda cuenta-registro-clave-error' : 'clave-ayuda'">
+              @if (registroForm.controls.clave.dirty && registroForm.controls.clave.invalid) {
+                <small class="field-error" id="cuenta-registro-clave-error">La contraseña debe contener de 10 a 128 caracteres.</small>
+              }
             </label>
             <small id="clave-ayuda">Usa al menos 10 caracteres.</small>
             <button class="primary-button" type="submit" [disabled]="procesando() || registroForm.invalid">

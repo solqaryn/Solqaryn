@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C15-04.M05.04 validación accesible de cuenta [Javier :10]
+- Se agregan errores asociados a campos invalidos de login/registro públicos mediante aria-describedby/aria-invalid y nueva regresión adversarial Playwright a 375/1280; cero operaciones mutantes. Requiere CI exact SHA y 19 tests, aún no PASS.
+- R2 global, JWT/roles/tenant A/B, WCAG y Web Vitals siguen SIN_VERIFICAR; EN_PROGRESO DEV02/lock V17, A5 independiente, rollback git revert.
+
 ## 2026-11-17 — V19 C15-04.M05.04 fronteras de cuenta sin mutaciones [Javier :10]
 - A1/A3 parcial: nuevo Playwright de login/registro publicos a 375/1280, correo invalido, nombre ausente, clave de 9/10 caracteres, bloqueo de submit, atributos autocomplete y aria-describedby, cero mutaciones HTTP; 19 tests Chromium CI pendiente del SHA propio, sin declarar PASS.
 - No se registran usuarios ni se invocan proveedores; A0-A4 global, JWT firmado/roles/tenant A-B, WCAG y Web Vitals globales siguen sin certificar; WIP DEV02/lock V17 retenido, A5 solo revisor Javier distinto.

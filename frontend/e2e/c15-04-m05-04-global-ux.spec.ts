@@ -509,12 +509,19 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
         await expect(clave).toHaveAttribute('autocomplete','current-password');
         await expect(enviar).toBeDisabled();
         await correo.fill('correo-invalido');
+        await expect(login.locator('#cuenta-login-correo-error')).toBeVisible();
+        await expect(correo).toHaveAttribute('aria-invalid','true');
+        await expect(correo).toHaveAttribute('aria-describedby','cuenta-login-correo-error');
         await clave.fill('p'.repeat(10));
         await expect(enviar).toBeDisabled();
         await correo.fill('cliente@example.test');
+        await expect(login.locator('#cuenta-login-correo-error')).toHaveCount(0);
         await clave.fill('p'.repeat(9));
+        await expect(login.locator('#cuenta-login-clave-error')).toBeVisible();
+        await expect(clave).toHaveAttribute('aria-invalid','true');
         await expect(enviar).toBeDisabled();
         await clave.fill('p'.repeat(10));
+        await expect(login.locator('#cuenta-login-clave-error')).toHaveCount(0);
         await expect(enviar).toBeEnabled();
 
         await page.getByRole('tab',{name:'Crear cuenta'}).click();
@@ -530,10 +537,17 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
         await correoNuevo.fill('cliente@example.test');
         await claveNueva.fill('p'.repeat(10));
         await expect(crear).toBeDisabled(); // nombre ausente
+        await nombre.click();
+        await page.keyboard.press('Tab');
+        await expect(registro.locator('#cuenta-registro-nombre-error')).toBeVisible();
         await nombre.fill('Cliente de prueba');
+        await expect(registro.locator('#cuenta-registro-nombre-error')).toHaveCount(0);
         await claveNueva.fill('p'.repeat(9));
+        await expect(registro.locator('#cuenta-registro-clave-error')).toBeVisible();
+        await expect(claveNueva).toHaveAttribute('aria-describedby','clave-ayuda cuenta-registro-clave-error');
         await expect(crear).toBeDisabled(); // contrasena bajo minimo
         await claveNueva.fill('p'.repeat(10));
+        await expect(registro.locator('#cuenta-registro-clave-error')).toHaveCount(0);
         await expect(crear).toBeEnabled();
         await noOverflow(page);
       }finally{await page.close();}
