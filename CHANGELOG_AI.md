@@ -6269,3 +6269,7 @@
 ## 2026-11-16 - V18 C08-04.M06.04 ensayo rollback aislado de entrega test-only [Javier :30]
 - Script y workflow GitHub-hosted ensayan git revert --no-commit de M05.05 en worktree efímero; prueban árbol idéntico al padre, whitelist de 4 paths y rechazo de SHA no autorizada. Evidencia docs/v5/c08-04-m06-04-rollback-aislado.md.
 - No realizan restore MySQL ni desactivan módulos reales; el resultado está sujeto a GitHub Actions exact-SHA y A5 independiente. Sin mutaciones en QA/main/PROD o tenants.
+
+## 2026-11-16 - V19 C08-04.M06.06 cierre documental de dependencias verificables [Javier :50]
+- Agrega matriz de seis entregas M05 y cinco M06 con SHA reales, estados LISTO y A5 independientes leídos de PLAN; distingue pruebas Chromium/xUnit de datos, módulos y backend sintéticos.
+- Revalida el DAG C08-04.M06.06 como derivado de PLAN/COLA, sin forzar gates; no certifica activación sectorial, rollback MySQL ni QA/PROD. Requiere Scope Lock/V5 y A5 de otro Javier para este propio cierre.
