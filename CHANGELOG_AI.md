@@ -1,3 +1,7 @@
+## 2026-11-17 — Reparación A5_FAIL P2 C02-04.M05.06 [Javier :30]
+- La revisión DEV06 rechazó cobertura global 2/15. Se amplía Playwright a 15/15 rutas reales, negativo anónimo/403 sintético, navegación del inventario de inspección y medición de retención HTTP sintética 225 ms; seis tests en Chromium real, sin afirmar laboratorio QA autónomo, JWT real ni latencia de producción.
+- Se conserva A5_FAIL histórico. Publicación y CI causal exact-SHA, Scope Lock/V5 y nueva A5 ajena requeridos; no se certifica PASS antes de concluir GitHub Actions ni se toca QA/main/PROD.
+
 ## 2026-11-17 — V19 C15-04.M05.04 guardas anonimas del router completo [Javier :10]
 - A0.21: se agrega una prueba Chromium causal que deriva 88 rutas protegidas directas (20 parametros) y exige denegacion anonima a 375/1280 en 176 navegaciones, sin efectos HTTP mutantes; CI exact SHA pendiente antes de PASS.
 - No equivale a autorizacion backend, JWT real, roles/tenant A-B, rutas importadas, WCAG ni Web Vitals global; mantener EN_PROGRESO DEV02 y lock 2000002297, A5 independiente. Rollback git revert normal.

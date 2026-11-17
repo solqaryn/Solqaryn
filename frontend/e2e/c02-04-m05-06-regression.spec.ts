@@ -62,18 +62,18 @@ test.describe('C02-04.M05.06 global catalogue regression & a11y (Chromium real)'
   test.describe.configure({ retries: 0 });
   test.use({ extraHTTPHeaders: {} });
 
-  test('catálogo versionado y dos rutas extremas navegan con guard, sin escrituras', async ({ page }) => {
+  test('15 rutas del catálogo navegan realmente con guard, sin escrituras', async ({ page }) => {
     expect(catalog.routes).toHaveLength(15);
     expect(new Set(catalog.routes.map(item => item.id)).size).toBe(15);
     expect(new Set(catalog.routes.map(item => item.path)).size).toBe(15);
     const gets = await syntheticSession(page, () => 200);
     const writes = collectWrites(page);
-    for (const item of [catalog.routes[0]!, catalog.routes[catalog.routes.length - 1]!]) {
+    for (const item of catalog.routes) {
       await page.goto('/' + item.path);
       await expect.poll(() => new URL(page.url()).pathname).toBe('/' + item.path);
       await expect(page.getByRole('heading', { level: 1 }).first()).toBeVisible();
     }
-    expect(gets()).toBeGreaterThanOrEqual(2);
+    expect(gets()).toBeGreaterThanOrEqual(catalog.routes.length);
     expect(writes).toEqual([]);
   });
 
@@ -158,6 +158,10 @@ test.describe('C02-04.M05.06 global catalogue regression & a11y (Chromium real)'
       await expect(page.locator('#control-plane-estado')).toHaveAttribute('aria-busy', 'true');
       await expect(button).toBeDisabled();
       await expect(page.locator('.control-cards li')).toHaveCount(0);
+      const holdStart = Date.now();
+      await page.waitForTimeout(225);
+      expect(Date.now() - holdStart, 'synthetic delayed HTTP response observed for >=200ms').toBeGreaterThanOrEqual(200);
+      expect(gets(), 'still one pending GET, never duplicate requests').toBe(2);
     } finally {
       release();
     }
@@ -167,6 +171,36 @@ test.describe('C02-04.M05.06 global catalogue regression & a11y (Chromium real)'
     await page.getByRole('button', { name: 'Reintentar verificación' }).click();
     await expect(page.locator('.control-cards li')).toHaveCount(4);
     await expect.poll(gets).toBe(3);
+    expect(writes).toEqual([]);
+  });
+
+  test('anónimo redirigido y respuesta HTTP 403 rechazada sin exponer consola', async ({ page }) => {
+    const writes = collectWrites(page);
+    await page.goto('/plataforma/consola-global-v5');
+    await expect.poll(() => new URL(page.url()).pathname).toBe('/login');
+    await expect(page.locator('.control-plane')).toHaveCount(0);
+    const gets = await syntheticSession(page, () => 403);
+    await page.goto('/plataforma/consola-global-v5');
+    await expect.poll(() => new URL(page.url()).pathname).toBe('/login');
+    await expect(page).toHaveURL(/plataforma=denegado/);
+    await expect(page.locator('.control-plane')).toHaveCount(0);
+    await expect(page.getByText(secretDiagnostic)).toHaveCount(0);
+    expect(gets()).toBeGreaterThanOrEqual(1);
+    expect(writes).toEqual([]);
+  });
+
+  test('inventario global como laboratorio de inspección browser: rutas y regreso seguros', async ({ page }) => {
+    // No existe una ruta de laboratorio independiente; se verifica el inventario real,
+    // sin presentarlo como aprobación de un laboratorio aislado de QA.
+    const gets = await syntheticSession(page, () => 200);
+    const writes = collectWrites(page);
+    await page.goto('/plataforma/inventario-rutas-v19');
+    await expect(page.getByRole('heading', { name: 'Inventario de programas y rutas declaradas' })).toBeVisible();
+    await expect(page.getByTestId('c1304-route-catalogo').locator('li').first()).toBeVisible();
+    await page.getByRole('link', { name: 'Volver a consola global' }).click();
+    await expect.poll(() => new URL(page.url()).pathname).toBe('/plataforma/consola-global-v5');
+    await expect(page.getByRole('heading', { name: 'Consola global auditada' })).toBeVisible();
+    expect(gets()).toBeGreaterThanOrEqual(2);
     expect(writes).toEqual([]);
   });
 });
