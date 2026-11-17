@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C13-04.M05.02 contrato HTTP/DTO fail-closed [Javier :40]
+- Suite Angular TestBed dirigida del GET /plataforma/sesion: positivo, envelopes falsos/nulos, empresa no autorizada, nombres invalidos, revocacion y HTTP 401/403/500/503.
+- Workflow GitHub-hosted Node 24/npm 11 por SHA, pruebas ejecutables, lint y build; A0–A4 y A5 requieren evidencia externa sin adelantar PASS.
+- Transporte HTTP sintetico cliente, no certificacion JWT/RBAC/MySQL/tenant servidor. Solo dev, candado V17, rollback normal git revert, sin QA/main/PROD.
+
 ## 2026-11-17 — V19 C13-04.M05.01 regresión de reglas de rutas [Javier :00]
 - Cinco Vitest nuevos para invariantes del catálogo Angular: 16 programas, herencia de guards, rutas de edición/creación, rechazo de enlaces hostiles, lazy sin ejecución y fronteras de matcher/raíz.
 - Workflow Node 24/npm 11 por SHA, con prueba dirigida, tipado/lint y build; controles Scope Lock y V5 pertinentes. Pruebas de frontend puras, sin JWT/MySQL/backend live; A5 por otra Task Javier.

@@ -1,0 +1,39 @@
+name: V19 C13-04.M05.02 - contrato HTTP DTO cliente
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v19-c13-04-m05-02-contrato-api.yml'
+      - 'frontend/src/app/features/plataforma/c13-04-m05-02-contrato-api.spec.ts'
+      - 'frontend/src/app/core/auth/plataforma-sesion.service.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c1304-m0502-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  contrato-cliente:
+    name: C13-04.M05.02 - TestBed HTTP/DTO fail-closed
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm pin
+        run: npm install --global npm@11.19.0
+      - name: Install lockfile dependencies
+        working-directory: frontend
+        run: npm ci
+      - name: Directed Angular HTTP DTO contract
+        working-directory: frontend
+        run: npm test -- --watch=false --include=src/app/features/plataforma/c13-04-m05-02-contrato-api.spec.ts
+      - name: Lint and Angular production build
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run build:prod
