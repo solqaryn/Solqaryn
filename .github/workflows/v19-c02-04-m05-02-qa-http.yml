@@ -1,0 +1,49 @@
+name: V19 C02-04.M05.02 - QA evidence API HTTP JWT MySQL
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/src/API/Controllers/PlataformaQaEvidenciasController.cs'
+      - 'backend/src/API/Program.cs'
+      - 'backend/tests/Solqaryn.Tests/API/Controllers/C0204M0502QaHttpContractTests.cs'
+      - '.github/workflows/v19-c02-04-m05-02-qa-http.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  qa-evidence:
+    name: C02-04.M05.02 - HTTP JWT MySQL 8.4 real
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: solqaryn-ci-qa-local-only
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -psolqaryn-ci-qa-local-only --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=18
+    env:
+      SOLQARYN_C0204_MYSQL_TEST_CONNECTION: 'Server=127.0.0.1;Port=3306;User=root;Password=solqaryn-ci-qa-local-only;SslMode=Disabled;AllowPublicKeyRetrieval=True'
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Verify isolated MySQL environment is configured
+        run: |
+          test -n "$SOLQARYN_C0204_MYSQL_TEST_CONNECTION"
+          echo "$SOLQARYN_C0204_MYSQL_TEST_CONNECTION" | grep -q '127.0.0.1'
+      - name: Restore .NET 10
+        run: dotnet restore Solqaryn.sln
+      - name: Build .NET 10 Release
+        run: dotnet build Solqaryn.sln --configuration Release --no-restore
+      - name: JWT transport, global grant, revocation, safe errors, real MySQL
+        run: dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter "FullyQualifiedName~C0204M0502QaHttpContractTests" --logger "console;verbosity=normal"

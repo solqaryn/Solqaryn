@@ -2,6 +2,16 @@
 
 **Task:** PRIMARY DEV 01 — JAVIER; **rama:** dev; **riesgo:** R2 (autoridad global, JWT/RBAC, multitenancy). **Estado:** la ejecución de GitHub Actions por el SHA de entrega es condición necesaria antes de certificar A0–A4 o LISTO_DEV. Sin cambios de producción.
 
+## Reparación posterior del P1 — contrato HTTP QA real, sin aprobación humana
+
+La entrega inicial de 74713a58 solo añadió pruebas EF InMemory de roles y usuarios: su alcance histórico no acreditó HTTP de evidencias QA. Esta reparación añade GET /plataforma/gestion/qa/evidencias/{sha} con DTO tipado sobre check-runs auténticos publicados por GitHub del repositorio canónico, exclusivamente para JWT autenticado y grant global persistido verificado en cada petición por PlataformaScopeService. El backend NO acepta URLs, hosts, repositorios ni evidencias enviadas por cliente. Filtra URLs de salida, exige SHA hexadecimal de 40 caracteres, audita las consultas sin EmpresaId y responde no-store; revocación y rol administrador empresarial niegan acceso. Sin cabeceras X-Empresa-Id como grants.
+
+- Origen real: REST público GitHub Actions (solqaryn/Solqaryn) desde el backend, sin llaves en Angular. Si falla GitHub, hay 0 checks, SHA ajeno, respuesta incompleta o más de 100 checks, la API responde 503/SIN_VERIFICAR y NO fabrica PASS.
+- DTO: repositorio, SHA, estadoCi, estadoA5, totalChecks, checksExitosos, checks con nombre/estado/conclusión/URL allowlist. CI_MINIMA_ACREDITADA exige Backend Release, seguridad multiempresa, Scope Lock y V5 SUCCESS completos sobre ese SHA; los checks pendientes/omisos/fallidos no son éxito. A5 siempre SIN_VERIFICAR en esta API hasta la revisión técnica externa por otra Task; no crea aceptación humana.
+- Seguridad y alcance: no CRUD comercial, no datos A/B, no payload/secretos de jobs, no migración o tabla nueva, no cambio de JWT/RBAC. El catálogo global futuro de módulos y rutas sigue separado bajo sus otras microtareas; no se declara cobertura 100% con este endpoint.
+- Pruebas: TestServer HTTP con JwtBearer firmado para ensayo, controlador real, PlataformaScopeService, denegación anónima/empresarial, revocación DB inmediata, salida minimizada, rechazo SHA erróneo y upstream 403; una suite usa MySQL 8.4 efímero local desde el job dirigido. Las respuestas GitHub inyectadas son fixtures y no equivalen a un PASS GitHub vivo: el workflow GitHub Actions real se acredita por SHA.
+- Estado: corrección técnica preparada; A0–A4 pendientes de CI real sobre el commit publicado, A5 pendiente de Task independiente. No pasar PLAN_MAESTRO H423 a LISTO antes de esos requisitos. Rollback git revert sin borrar BITACORA, no QA/main/PROD.
+
 ## A0 — Alcance comprobable y límites
 
 Este incremento agrega pruebas de regresión xUnit al controlador **existente** `PlataformaGestionMvpController`, sin instalar endpoints o DTOs futuros. Se comprueba el contrato real de `GET /plataforma/gestion/roles` y `GET /plataforma/gestion/usuarios/buscar`, protegidos por `[Authorize]` y revalidación del grant persistido mediante `PlataformaScopeService`. La consulta controlada es API privada global, nunca lectura empresarial por un cliente arbitrario.

@@ -1,3 +1,7 @@
+## 2026-11-16 — C02-04.M05.02 reparación P1 API QA por SHA [reparación directa autorizada]
+- Endpoint privado GET /plataforma/gestion/qa/evidencias/{sha} (.NET 10): token JWT firmado, grant global persistido por PlataformaScopeService y auditoría sin tenant. Solo consulta checks GitHub Actions del repositorio público original por SHA de 40 hex, sin URLs del cliente, secretos ni credenciales en Angular.
+- Estados CI explícitos SUCCESS/FAIL/PENDING/SKIPPED, faltantes y A5 SIN_VERIFICAR; ni CI verde ni fixture generan aprobación humana o prueba de aislamiento vivo. TestServer/JWT/revocación, errores seguros y MySQL 8.4 efímero en CI dirigida. Validar exact-SHA y A0–A4 antes de LISTO; A5 debe ser independiente. Solo dev, rollback git revert.
+
 ## 2026-11-16 — V19 C00-04.M05.06 regresión Chromium real de gobierno [Javier :30]
 - Cuatro pruebas Playwright: teclado Tab sin focus artificial, responsive y reduced-motion con hit-target 44px, presupuesto un GET sin escrituras y 403 fail-closed; sesión sintética, sin JWT/RBAC/MySQL/tenant real.
 - CI Angular22/Node24/npm11 por SHA sin cancelación, riesgo R2 por workflow; A0–A4 y A5 independiente obligatorios, métricas Web Vitals NO_MEDIDO; solo dev, rollback git revert.

@@ -1,3 +1,9 @@
+## 2026-11-16 — C02-04.M05.02: contrato de consulta QA del plano global (DEV)
+
+- API ASP.NET Core 10: GET /plataforma/gestion/qa/evidencias/{sha} solo para JWT y grant global vigente revalidado por PlataformaScopeService sobre MySQL; roles empresariales, cabeceras X-Empresa-Id y claims no elevan autoridad. Auditoría correlacionada sin empresa. Consumidores: futura consola global autorizada, nunca clientes ERP o el navegador de GitHub directamente.
+- Salida DTO minimizada: SHA exacto, metadatos de check-runs de GitHub Actions, estados reales, URL allowlist y A5 SIN_VERIFICAR. El backend consulta exclusivamente la API pública de solqaryn/Solqaryn, sin tokens de usuario ni URLs aportadas por el cliente; egress HTTPS con redirects deshabilitados y timeout. Sin acceso a contenido de tenants, escritura de evidencia ficticia, esquema/migración ni promoción QA/main/PROD.
+- Impacto: API/DI y pruebas xUnit HTTP/JWT/denegación/revocación, con MySQL 8.4 local descartable cuando el workflow dirigido provee conexión. Un check SKIPPED/PENDING/FAIL nunca es PASS y las referencias por SHA no acreditan A5 ni autoría. La salida de GitHub falla cerrada; rollback git revert sobre el único commit.
+
 ## 2026-11-05 — Selección directa de scopes por Task, sin bloqueos de Sheets
 
 El propietario retira el mecanismo de reserva condicional de Sheets. Reparto único por microtarea y autoría mediante scripts/automation-review-routing.mjs; cada Task calcula su ruta solo al ejecutarse y no crea reservas ni bloqueos persistentes. Conserva los 15/15/15, REVIEW_FIRST, los PR protegidos de GitHub, permisos y las comprobaciones necesarias para LISTO. Ante ocupación positiva de otro editor se respeta su trabajo. No restaura motores históricos ni crea Tasks.

@@ -84,6 +84,14 @@ builder.Services.AddSingleton<RequestObservability>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IUsuarioScopeService, UsuarioScopeService>();
 builder.Services.AddScoped<IPlataformaScopeService, PlataformaScopeService>();
+// C02-04.M05.02: lectura acotada de checks GitHub para QA global; sin credenciales en frontend.
+builder.Services.AddHttpClient("SolqarynPublicGitHubQa", client =>
+{
+    client.BaseAddress = new Uri("https://api.github.com/");
+    client.Timeout = TimeSpan.FromSeconds(12);
+    client.DefaultRequestHeaders.UserAgent.ParseAdd("Solqaryn-Global-QA/1.0");
+    client.DefaultRequestHeaders.Accept.ParseAdd("application/vnd.github+json");
+}).ConfigurePrimaryHttpMessageHandler(() => new HttpClientHandler { AllowAutoRedirect = false });
 builder.Services.AddScoped<IPlataformaDelegacionService, PlataformaDelegacionService>();
 builder.Services.AddScoped<IPlataformaSoporteSessionService, PlataformaSoporteSessionService>();
 builder.Services.AddScoped<IMensajeOutboxRepository, MensajeOutboxRepository>();

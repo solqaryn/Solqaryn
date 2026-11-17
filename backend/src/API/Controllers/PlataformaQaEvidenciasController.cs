@@ -1,0 +1,189 @@
+using System.Net;
+using System.Text.Json;
+using System.Text.RegularExpressions;
+using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using Solqaryn.Application.Common;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Enums;
+using Solqaryn.Infrastructure.Persistence;
+
+namespace Solqaryn.API.Controllers;
+
+/// <summary>
+/// Solo metadatos de checks reales de GitHub Actions sobre un SHA inmutable.
+/// No interpreta estos checks como A5, permisos de tenant ni pruebas de producción.
+/// </summary>
+[ApiController]
+[Authorize]
+[Route("plataforma/gestion/qa/evidencias")]
+public sealed class PlataformaQaEvidenciasController : ControllerBase
+{
+    private static readonly Regex ShaValido = new(
+        @"\A[0-9a-fA-F]{40}\z", RegexOptions.CultureInvariant | RegexOptions.Compiled);
+
+    // Gates mínimos para un cambio backend; los checks adicionales se muestran
+    // con su conclusión REAL y nunca se convierten de SKIPPED a PASS.
+    private static readonly string[] ChecksMinimos =
+    [
+        "verify-solqaryn-project-scope",
+        "V5 - Sin encabezados vacios ni atribucion cruzada",
+        "SOLQARYN - Seguridad multiempresa",
+        "Backend Release y pruebas"
+    ];
+
+    private readonly IPlataformaScopeService _scope;
+    private readonly ICurrentUserService _current;
+    private readonly IHttpClientFactory _clients;
+    private readonly AppDbContext _db;
+
+    public PlataformaQaEvidenciasController(
+        IPlataformaScopeService scope,
+        ICurrentUserService current,
+        IHttpClientFactory clients,
+        AppDbContext db)
+    {
+        _scope = scope;
+        _current = current;
+        _clients = clients;
+        _db = db;
+    }
+
+    [HttpGet("{sha}")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public async Task<IActionResult> Consultar(string sha, CancellationToken cancellationToken)
+    {
+        Response.Headers.CacheControl = "private, no-store, max-age=0";
+        if (User.Identity?.IsAuthenticated != true ||
+            !_current.EstaAutenticado || _current.UsuarioId is not > 0)
+            return Forbid();
+
+        // JWT identifica; la autorización efectiva se reconsulta en la DB en
+        // CADA petición. Admin empresarial, X-Empresa-Id y claims no elevan rol.
+        var actor = await _scope.ObtenerActualAsync(cancellationToken);
+        if (actor is null) return Forbid();
+
+        if (string.IsNullOrEmpty(sha) || !ShaValido.IsMatch(sha))
+            return BadRequest(ApiResponse<object>.Fail("SHA de evidencia inválido."));
+
+        sha = sha.ToLowerInvariant();
+        try
+        {
+            // Destino fijo: ni el cliente ni el SHA pueden introducir hosts o URLs.
+            using var response = await _clients.CreateClient("SolqarynPublicGitHubQa")
+                .GetAsync("repos/solqaryn/Solqaryn/commits/" + sha + "/check-runs?per_page=100",
+                    HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+
+            if (response.StatusCode == HttpStatusCode.NotFound)
+                return NotFound(ApiResponse<object>.Fail("Revisión no encontrada."));
+            if (!response.IsSuccessStatusCode ||
+                response.Content.Headers.ContentLength is > 512_000)
+                return NoVerificable();
+
+            await using var content = await response.Content.ReadAsStreamAsync(cancellationToken);
+            using var document = await JsonDocument.ParseAsync(
+                content, new JsonDocumentOptions { MaxDepth = 20 }, cancellationToken);
+            var root = document.RootElement;
+            if (!root.TryGetProperty("total_count", out var countElement) ||
+                !countElement.TryGetInt32(out var count) || count < 1 || count > 100 ||
+                !root.TryGetProperty("check_runs", out var checkRuns) ||
+                checkRuns.ValueKind != JsonValueKind.Array ||
+                checkRuns.GetArrayLength() != count)
+                return NoVerificable();
+
+            var checks = new List<PlataformaQaCheckDto>(count);
+            foreach (var item in checkRuns.EnumerateArray())
+            {
+                if (item.ValueKind != JsonValueKind.Object ||
+                    !string.Equals(Valor(item, "head_sha"), sha, StringComparison.OrdinalIgnoreCase))
+                    return NoVerificable();
+
+                var name = Valor(item, "name");
+                var status = Valor(item, "status");
+                if (string.IsNullOrWhiteSpace(name) || name.Length > 180 ||
+                    status is not ("queued" or "in_progress" or "completed" or "waiting" or "requested" or "pending"))
+                    return NoVerificable();
+
+                var conclusion = Valor(item, "conclusion");
+                var details = Valor(item, "details_url");
+                string? safeUrl = null;
+                if (Uri.TryCreate(details, UriKind.Absolute, out var parsed) &&
+                    parsed.Scheme == Uri.UriSchemeHttps &&
+                    string.Equals(parsed.Host, "github.com", StringComparison.OrdinalIgnoreCase) &&
+                    parsed.AbsolutePath.StartsWith("/solqaryn/Solqaryn/actions/", StringComparison.Ordinal))
+                    safeUrl = parsed.ToString();
+
+                checks.Add(new PlataformaQaCheckDto(name, status, conclusion, safeUrl));
+            }
+
+            var failed = checks.Any(c => c.Conclusion is
+                ("failure" or "cancelled" or "timed_out" or "action_required"));
+            var pending = checks.Any(c => c.Status != "completed");
+            var allRequired = ChecksMinimos.All(name =>
+                checks.Count(c => string.Equals(c.Nombre, name, StringComparison.Ordinal)) == 1 &&
+                checks.Any(c => c.Nombre == name && c.Status == "completed" &&
+                                c.Conclusion == "success"));
+
+            var estado = failed ? "CI_FALLIDA" :
+                pending ? "CI_EN_PROGRESO" :
+                allRequired ? "CI_MINIMA_ACREDITADA" : "SIN_VERIFICAR";
+
+            // Auditoría de la consulta global: sin ID tenant, JWT, PII ni logs crudos.
+            _db.Set<RegistroAuditoria>().Add(new RegistroAuditoria
+            {
+                UsuarioId = actor.UsuarioId,
+                NombreUsuario = actor.NombreUsuario,
+                EmpresaId = null,
+                AmbitoAutoridad = AmbitoAutorizacion.Plataforma,
+                OrigenAutorizacion = OrigenAutorizacion.RolPlataforma,
+                Modulo = ModuloSistema.Configuracion,
+                Accion = AccionPermiso.ConsultarHistorial,
+                Entidad = "ConsultaEvidenciasQaGlobal",
+                Descripcion = "Consulta privada de checks del commit " + sha[..12] + ".",
+                CorrelationId = HttpContext.TraceIdentifier,
+                Resultado = "Exito"
+            });
+            await _db.SaveChangesAsync(cancellationToken);
+
+            return Ok(ApiResponse<PlataformaQaEvidenciasDto>.Ok(
+                new PlataformaQaEvidenciasDto(
+                    "solqaryn/Solqaryn", sha, estado,
+                    "SIN_VERIFICAR", checks.Count,
+                    checks.Count(c => c.Status == "completed" && c.Conclusion == "success"),
+                    checks)));
+        }
+        catch (HttpRequestException)
+        {
+            return NoVerificable();
+        }
+        catch (JsonException)
+        {
+            return NoVerificable();
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        {
+            return NoVerificable();
+        }
+    }
+
+    private ObjectResult NoVerificable() =>
+        StatusCode(StatusCodes.Status503ServiceUnavailable,
+            ApiResponse<object>.Fail("Evidencia externa temporalmente no verificable."));
+
+    private static string? Valor(JsonElement item, string key) =>
+        item.TryGetProperty(key, out var value) && value.ValueKind == JsonValueKind.String
+            ? value.GetString() : null;
+}
+
+public sealed record PlataformaQaCheckDto(
+    string Nombre, string Estado, string? Conclusion, string? UrlEvidencia);
+
+public sealed record PlataformaQaEvidenciasDto(
+    string Repositorio,
+    string Sha,
+    string EstadoCi,
+    string EstadoA5,
+    int TotalChecks,
+    int ChecksExitosos,
+    IReadOnlyList<PlataformaQaCheckDto> Checks);

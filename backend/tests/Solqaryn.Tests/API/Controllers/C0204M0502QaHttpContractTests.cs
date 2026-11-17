@@ -1,0 +1,396 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Net;
+using System.Net.Http.Headers;
+using System.Security.Claims;
+using System.Text;
+using System.Text.Json;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
+using MySql.Data.MySqlClient;
+using MySql.EntityFrameworkCore.Extensions;
+using Solqaryn.API.Controllers;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Enums;
+using Solqaryn.Infrastructure.Persistence;
+using Solqaryn.Infrastructure.Services;
+using Xunit;
+
+namespace Solqaryn.Tests;
+
+/// <summary>
+/// C02-04.M05.02: HTTP TestServer + JwtBearer real, controlador real, grants
+/// persistidos y revocación en cada petición; MySQL 8.4 efímero en la CI dirigida.
+/// Las respuestas GitHub son fixtures: la CI pública real se acredita aparte por SHA.
+/// </summary>
+public sealed class C0204M0502QaHttpContractTests
+{
+    private const string Sha = "74713a5868585223272c07074b474d994b6d3c60";
+    private const string Path = "/plataforma/gestion/qa/evidencias/" + Sha;
+    private const string Issuer = "solqaryn-c0204-tests";
+    private const string Audience = "solqaryn-c0204-tests";
+    private static readonly SymmetricSecurityKey TestKey = new(
+        Encoding.UTF8.GetBytes("solqaryn-c0204-http-test-jwt-signed-only-for-ci-2026"));
+
+    [Fact]
+    public async Task AutoridadGlobalPorJwtYGrantPersistidoLeeSoloChecksRealesTipados()
+    {
+        var upstream = new GitHubFake(Payload());
+        await using var fixture = await CrearAsync(upstream);
+        using var client = fixture.Host.GetTestClient();
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer",
+                Token(fixture.GlobalId, "operadorglobal"));
+        client.DefaultRequestHeaders.Add("X-Empresa-Id", "999999");
+        using var response = await client.GetAsync(Path);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        Assert.Contains("no-store", response.Headers.CacheControl?.ToString() ?? "");
+        using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var dto = json.RootElement.GetProperty("data");
+        Assert.Equal(Sha, dto.GetProperty("sha").GetString());
+        Assert.Equal("CI_MINIMA_ACREDITADA", dto.GetProperty("estadoCi").GetString());
+        Assert.Equal("SIN_VERIFICAR", dto.GetProperty("estadoA5").GetString());
+        Assert.Equal(4, dto.GetProperty("totalChecks").GetInt32());
+        Assert.Equal(4, dto.GetProperty("checksExitosos").GetInt32());
+        Assert.Equal(4, dto.GetProperty("checks").GetArrayLength());
+        Assert.Equal(1, upstream.Calls);
+        Assert.Equal("api.github.com", upstream.LastHost);
+
+        using var scope = fixture.Host.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var audit = Assert.Single(await db.Set<RegistroAuditoria>().ToListAsync());
+        Assert.Equal(AmbitoAutorizacion.Plataforma, audit.AmbitoAutoridad);
+        Assert.Null(audit.EmpresaId);
+        Assert.DoesNotContain("999999", audit.Descripcion);
+    }
+
+    [Fact]
+    public async Task SinJwtYOtroAdminEmpresarialNoConsultaGitHubNiEvidenciaGlobal()
+    {
+        var upstream = new GitHubFake(Payload());
+        await using var fixture = await CrearAsync(upstream);
+        using var client = fixture.Host.GetTestClient();
+        using (var anon = await client.GetAsync(Path))
+            Assert.Equal(HttpStatusCode.Unauthorized, anon.StatusCode);
+
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer", Token(fixture.EmpresaAdminId, "adminempresa", "true"));
+        client.DefaultRequestHeaders.Add("X-Empresa-Id", "20");
+        using (var enterprise = await client.GetAsync(Path))
+            Assert.Equal(HttpStatusCode.Forbidden, enterprise.StatusCode);
+        Assert.Equal(0, upstream.Calls);
+    }
+
+    [Fact]
+    public async Task RevocacionGlobalTieneEfectoEnLaSiguientePeticionHttp()
+    {
+        var upstream = new GitHubFake(Payload());
+        await using var fixture = await CrearAsync(upstream);
+        using var client = fixture.Host.GetTestClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer", Token(fixture.GlobalId, "operadorglobal"));
+        using (var success = await client.GetAsync(Path))
+            Assert.Equal(HttpStatusCode.OK, success.StatusCode);
+        using (var scope = fixture.Host.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var grant = await db.Set<UsuarioRolPlataforma>().SingleAsync(
+                g => g.UsuarioId == fixture.GlobalId);
+            grant.Desactivar();
+            await db.SaveChangesAsync();
+        }
+        using (var revoked = await client.GetAsync(Path))
+            Assert.Equal(HttpStatusCode.Forbidden, revoked.StatusCode);
+        Assert.Equal(1, upstream.Calls);
+    }
+
+    [Fact]
+    public async Task ShaMalformadoYErrorDeProveedorFallanCerradosSinLeaks()
+    {
+        var upstream = new GitHubFake(Payload());
+        await using var fixture = await CrearAsync(upstream);
+        using var client = fixture.Host.GetTestClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer", Token(fixture.GlobalId, "operadorglobal"));
+        using (var invalid = await client.GetAsync(
+            "/plataforma/gestion/qa/evidencias/not-a-sha"))
+            Assert.Equal(HttpStatusCode.BadRequest, invalid.StatusCode);
+        Assert.Equal(0, upstream.Calls);
+
+        upstream.StatusCode = HttpStatusCode.Forbidden;
+        using var unavailable = await client.GetAsync(Path);
+        var body = await unavailable.Content.ReadAsStringAsync();
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, unavailable.StatusCode);
+        Assert.DoesNotContain("private-secret", body);
+        Assert.Contains("no-store", unavailable.Headers.CacheControl?.ToString() ?? "");
+    }
+
+    [Fact]
+    public async Task FalloOCheckRequiredOmitidoNoSeConvierteEnPassNiA5()
+    {
+        var upstream = new GitHubFake(Payload("failure"));
+        await using var fixture = await CrearAsync(upstream);
+        using var client = fixture.Host.GetTestClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer", Token(fixture.GlobalId, "operadorglobal"));
+        using (var failure = await client.GetAsync(Path))
+        {
+            Assert.Equal(HttpStatusCode.OK, failure.StatusCode);
+            using var j = JsonDocument.Parse(await failure.Content.ReadAsStringAsync());
+            Assert.Equal("CI_FALLIDA", j.RootElement.GetProperty("data")
+                .GetProperty("estadoCi").GetString());
+            Assert.Equal("SIN_VERIFICAR", j.RootElement.GetProperty("data")
+                .GetProperty("estadoA5").GetString());
+        }
+        upstream.Payload = Payload("skipped");
+        using (var skipped = await client.GetAsync(Path))
+        {
+            using var j = JsonDocument.Parse(await skipped.Content.ReadAsStringAsync());
+            Assert.Equal("SIN_VERIFICAR", j.RootElement.GetProperty("data")
+                .GetProperty("estadoCi").GetString());
+        }
+    }
+
+    [Fact]
+    public async Task CatalogoGlobalRolesRechazaEmpresaYConservaAuditoria()
+    {
+        var upstream = new GitHubFake(Payload());
+        await using var fixture = await CrearAsync(upstream);
+        using var client = fixture.Host.GetTestClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer", Token(fixture.GlobalId, "operadorglobal"));
+        using (var allowed = await client.GetAsync("/plataforma/gestion/roles"))
+        {
+            Assert.Equal(HttpStatusCode.OK, allowed.StatusCode);
+            var body = await allowed.Content.ReadAsStringAsync();
+            Assert.Contains("\"success\":true", body);
+        }
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer", Token(fixture.EmpresaAdminId, "adminempresa", "true"));
+        using (var denied = await client.GetAsync("/plataforma/gestion/roles"))
+            Assert.Equal(HttpStatusCode.Forbidden, denied.StatusCode);
+        Assert.Equal(0, upstream.Calls);
+    }
+
+    // En el workflow dirigido se establece SOLQARYN_C0204_MYSQL_TEST_CONNECTION.
+    // Sin esa variable las suites generales ejercitan TestServer/InMemory; su
+    // PASS no constituye certificación MySQL. Jamás usar un host remoto.
+    [Fact]
+    public async Task Mysql84LocalJwtHttpRevocacionSinDatosComerciales()
+    {
+        if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(
+                "SOLQARYN_C0204_MYSQL_TEST_CONNECTION")))
+            return;
+
+        var upstream = new GitHubFake(Payload());
+        await using var fixture = await CrearAsync(upstream, mysql: true);
+        using var client = fixture.Host.GetTestClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer", Token(fixture.GlobalId, "operadorglobal"));
+        using (var good = await client.GetAsync(Path))
+            Assert.Equal(HttpStatusCode.OK, good.StatusCode);
+
+        using (var scope = fixture.Host.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var grant = await db.Set<UsuarioRolPlataforma>().SingleAsync(
+                x => x.UsuarioId == fixture.GlobalId);
+            grant.Desactivar();
+            await db.SaveChangesAsync();
+        }
+        using (var denied = await client.GetAsync(Path))
+            Assert.Equal(HttpStatusCode.Forbidden, denied.StatusCode);
+        Assert.Equal(1, upstream.Calls);
+    }
+
+    private static string Token(int id, string username, string admin = "false")
+    {
+        var jwt = new JwtSecurityToken(
+            issuer: Issuer, audience: Audience,
+            claims:
+            [
+                new Claim("id", id.ToString()),
+                new Claim("nombreUsuario", username),
+                new Claim("esAdministrador", admin)
+            ],
+            notBefore: DateTime.UtcNow.AddMinutes(-1),
+            expires: DateTime.UtcNow.AddMinutes(10),
+            signingCredentials: new SigningCredentials(TestKey, SecurityAlgorithms.HmacSha256));
+        return new JwtSecurityTokenHandler().WriteToken(jwt);
+    }
+
+    private static string Payload(string conclusion = "success")
+    {
+        object Check(string name, string result) => new
+        {
+            head_sha = Sha,
+            name,
+            status = "completed",
+            conclusion = result,
+            details_url = "https://github.com/solqaryn/Solqaryn/actions/runs/123/job/456",
+            output = new { summary = "private-secret-not-for-the-response" }
+        };
+        return JsonSerializer.Serialize(new
+        {
+            total_count = 4,
+            check_runs = new[]
+            {
+                Check("verify-solqaryn-project-scope", "success"),
+                Check("V5 - Sin encabezados vacios ni atribucion cruzada", "success"),
+                Check("SOLQARYN - Seguridad multiempresa", "success"),
+                Check("Backend Release y pruebas", conclusion)
+            }
+        });
+    }
+
+    private static async Task<Fixture> CrearAsync(GitHubFake upstream, bool mysql = false)
+    {
+        string? connection = null;
+        if (mysql)
+        {
+            var raw = Environment.GetEnvironmentVariable("SOLQARYN_C0204_MYSQL_TEST_CONNECTION")
+                ?? throw new InvalidOperationException("MySQL local requerido.");
+            var conf = new MySqlConnectionStringBuilder(raw);
+            if (conf.Server is not ("127.0.0.1" or "localhost"))
+                throw new InvalidOperationException("MySQL de prueba debe ser local descartable.");
+            conf.Database = "solqaryn_c0204_qa_" + Guid.NewGuid().ToString("N");
+            connection = conf.ConnectionString;
+        }
+
+        var dbName = "c0204-qa-http-" + Guid.NewGuid().ToString("N");
+        var dbConnection = connection;
+        var host = await new HostBuilder()
+            .ConfigureWebHost(web => web.UseTestServer()
+                .ConfigureServices(services =>
+                {
+                    services.AddLogging();
+                    services.AddHttpContextAccessor();
+                    services.AddDbContext<AppDbContext>(opts =>
+                    {
+                        if (dbConnection is not null)
+                            opts.UseMySQL(dbConnection, mysqlOptions =>
+                                mysqlOptions.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"));
+                        else
+                            opts.UseInMemoryDatabase(dbName);
+                    });
+                    services.AddScoped<ICurrentUserService, CurrentUserService>();
+                    services.AddScoped<IPlataformaScopeService, PlataformaScopeService>();
+                    services.AddHttpClient("SolqarynPublicGitHubQa",
+                            c => c.BaseAddress = new Uri("https://api.github.com/"))
+                        .ConfigurePrimaryHttpMessageHandler(() => upstream);
+                    services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                        .AddJwtBearer(options => options.TokenValidationParameters =
+                            new TokenValidationParameters
+                            {
+                                ValidateIssuer = true,
+                                ValidateAudience = true,
+                                ValidateLifetime = true,
+                                ValidateIssuerSigningKey = true,
+                                ValidIssuer = Issuer,
+                                ValidAudience = Audience,
+                                IssuerSigningKey = TestKey,
+                                ClockSkew = TimeSpan.Zero
+                            });
+                    services.AddAuthorization();
+                    services.AddControllers().AddApplicationPart(
+                        typeof(PlataformaQaEvidenciasController).Assembly);
+                })
+                .Configure(app =>
+                {
+                    app.UseRouting();
+                    app.UseAuthentication();
+                    app.UseAuthorization();
+                    app.UseEndpoints(endpoints => endpoints.MapControllers());
+                })).StartAsync();
+
+        using (var scope = host.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            if (dbConnection is not null)
+                await Phase7MySqlTestDatabase.InitializeFreshAsync(db);
+            var company = new Rol
+            {
+                Nombre = "Admin empresa", NombreNormalizado = "ADMIN_EMP_QA",
+                EsSistema = true, EsAdministrador = true, Activo = true,
+                Ambito = AmbitoAutorizacion.Empresa
+            };
+            var global = new Rol
+            {
+                Nombre = "Admin SOLQARYN", NombreNormalizado = "GLOBAL_PLAT_QA",
+                EsSistema = true, EsAdministrador = true, Activo = true,
+                Ambito = AmbitoAutorizacion.Plataforma
+            };
+            db.Roles.AddRange(company, global);
+            await db.SaveChangesAsync();
+            var globalUser = new Usuario
+            {
+                NombreUsuario = "operadorglobal", NombreCompleto = "Operador global",
+                PasswordHash = "no-password", RolId = company.Id, Activo = true
+            };
+            var adminEmpresa = new Usuario
+            {
+                NombreUsuario = "adminempresa", NombreCompleto = "Admin empresa",
+                PasswordHash = "no-password", RolId = company.Id, Activo = true
+            };
+            db.Usuarios.AddRange(globalUser, adminEmpresa);
+            await db.SaveChangesAsync();
+            db.Set<UsuarioRolPlataforma>().Add(
+                new UsuarioRolPlataforma(globalUser.Id, global.Id));
+            await db.SaveChangesAsync();
+            return new Fixture(host, globalUser.Id, adminEmpresa.Id, dbConnection);
+        }
+    }
+
+    private sealed class Fixture(
+        IHost host, int globalId, int empresaAdminId, string? mysqlConnection)
+        : IAsyncDisposable
+    {
+        public IHost Host { get; } = host;
+        public int GlobalId { get; } = globalId;
+        public int EmpresaAdminId { get; } = empresaAdminId;
+
+        public async ValueTask DisposeAsync()
+        {
+            await Host.StopAsync();
+            Host.Dispose();
+            if (mysqlConnection is not null)
+            {
+                var options = new DbContextOptionsBuilder<AppDbContext>()
+                    .UseMySQL(mysqlConnection, m =>
+                        m.MigrationsAssembly("Solqaryn.Infrastructure.Migrations")).Options;
+                await using var db = new AppDbContext(options);
+                await db.Database.EnsureDeletedAsync();
+            }
+        }
+    }
+
+    private sealed class GitHubFake(string payload) : HttpMessageHandler
+    {
+        public int Calls { get; private set; }
+        public string? LastHost { get; private set; }
+        public HttpStatusCode StatusCode { get; set; } = HttpStatusCode.OK;
+        public string Payload { get; set; } = payload;
+
+        protected override Task<HttpResponseMessage> SendAsync(
+            HttpRequestMessage request, CancellationToken cancellationToken)
+        {
+            Calls++;
+            LastHost = request.RequestUri?.Host;
+            if (LastHost != "api.github.com" ||
+                request.RequestUri?.AbsolutePath !=
+                "/repos/solqaryn/Solqaryn/commits/" + Sha + "/check-runs")
+                throw new InvalidOperationException("Egreso fuera del repositorio canónico.");
+            return Task.FromResult(new HttpResponseMessage(StatusCode)
+            {
+                Content = new StringContent(Payload, Encoding.UTF8, "application/json")
+            });
+        }
+    }
+}
