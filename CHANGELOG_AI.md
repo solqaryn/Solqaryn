@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C15-04.M04.06 densidad y carga progresiva verificadas [Javier :40]
+- Implementa tres escenarios Playwright/Chromium sobre Angular real en loopback: denegación anónima/503 opaca, cinco tarjetas NO_MEDIDO con presupuestos verificables a 320/375/768/1280 px y carga diferida hasta sesión autorizada.
+- Contratos de seguridad de la vista sin writes y con sesión HTTP sintética: NO certifica JWT/RBAC/tenant reales, MySQL, WCAG integral ni Web Vitals/SLO de producción; métricas no probadas = NO_MEDIDO.
+- GitHub-hosted Node24/npm11 lint/build y 3/3 Chromium sobre SHA fuente; Scope Lock, procedencia V5 exact-SHA, readback institucional V17 y revisión A5 de otra Task Javier; sólo dev, rollback normal git revert.
+
 ## 2026-11-17 — V19 C09-04.M03.02 caso de uso idempotente outbox [Javier :10]
 - Application rechaza CR/LF/TAB/NUL en Idempotency-Key original antes de Trim, evitando normalizar claves adversariales hacia un replay válido.
 - Regresiones xUnit positivas, negativas, frontera 200/201 y empresa A/B; CI GitHub-hosted real por SHA, sin prometer JWT/MySQL/SMTP/WhatsApp.
