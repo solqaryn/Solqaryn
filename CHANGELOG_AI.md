@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C09-04.M04.01 superficie multicanal privada [Javier :30]
+- Implementación real Angular standalone con plataformaGuard, Signals y estado declarativo NO_CONECTADO para email, WhatsApp y otros proveedores; cero credenciales, consultas tenant o operaciones de envío.
+- Seis pruebas Vitest de permisos y revocación; cuatro escenarios Chromium reales para denegación, teclado, 320–1280 px y ausencia de escrituras, sujetos a CI exact-SHA.
+- Inventario P0-007.A de 159 fuentes y auditoría ERP de ruta exacta actualizados sin bypass; A0–A4 solo tras CI, A5 por revisor Javier distinto; sin JWT real/SMTP/WhatsApp/MySQL/QA/main/PROD.
+
 ## 2026-11-17 — V19 C15-04.M05.04 inventario UX estático trazable [Javier :10]
 - Censo de 160 declaraciones path en 9 archivos Angular de router importados, 47 parametrizadas; rutas/roles/detalles con evidencia aún SIN_VERIFICAR.
 - Matriz de hashes blob por fuente anexada al documento del scope; 5/5 Chromium previos exitosos NO acreditan cobertura global ni JWT/RBAC/MySQL/WCAG.

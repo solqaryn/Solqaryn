@@ -1,0 +1,65 @@
+name: V19 C09-04.M04.01 - Mensajeria privada Angular y Chromium
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/src/app/features/plataforma/c09-04-m04-01-mensajeria-privada*'
+      - 'frontend/e2e/v19-c09-04-m04-01-mensajeria.spec.ts'
+      - 'frontend/src/app/app.routes.ts'
+      - '.github/workflows/v19-c09-04-m04-01-mensajeria.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c09-04-m04-01-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  angular-chromium:
+    name: V19 C09-04.M04.01 - Vitest y Chromium privados
+    runs-on: ubuntu-latest
+    timeout-minutes: 42
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm install --global npm@11.19.0
+      - run: npm ci
+      - name: Vitest A1-A2 dirigido
+        run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/c09-04-m04-01-mensajeria-privada.spec.ts
+      - name: TypeScript y build productivo
+        run: |
+          npx tsc --noEmit -p tsconfig.app.json
+          npm run build:prod
+      - run: npx playwright install --with-deps chromium
+      - name: Servidor Angular loopback
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c0904m0401.log 2>&1 &
+          for attempt in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat c0904m0401.log >&2
+          exit 1
+      - name: Chromium A1-A3 dirigido
+        run: npx playwright test e2e/v19-c09-04-m04-01-mensajeria.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v19-c09-04-m04-01-angular-chromium
+          path: |
+            frontend/c0904m0401.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 14

@@ -516,3 +516,11 @@ El inventario estricto detectó correctamente el nuevo componente autónomo del 
 - `frontend/src/app/features/plataforma/c13-04-m04-01-catalogo-rutas.component.ts`
 
 El control P0-007.A mantiene negativos de archivo omitido, ficticio, duplicado y exclusión por carpeta. Esta entrada no acredita 16 módulos implementados, JWT/RBAC real, datos, HTTP, MySQL, métricas ni QA/main/PROD. La ruta tiene `plataformaGuard` y se revisa con el auditor exacto de control plane. Exigir GitHub Actions SUCCESS SHA nuevo, rollback git revert y A5 independiente.
+
+## Actualización aditiva V19 C09-04.M04.01 — 17 de noviembre de 2026
+
+Se incorpora exactamente una superficie privada real de mensajería multicanal declarativa. El manifiesto cerrado aumenta de 158 a **159 archivos .component.ts (151 features y 8 shared)**, preservando íntegros todos los cortes anteriores:
+
+- `frontend/src/app/features/plataforma/c09-04-m04-01-mensajeria-privada.component.ts`
+
+Su acceso exige plataformaGuard exacto y comprobación de sesión administrativa global en servidor; la pantalla local no lee datos tenant ni envía correo o WhatsApp. Registrar un componente no acredita proveedores, JWT/RBAC de integración, HTTP, MySQL, accesibilidad global ni despliegue. Mantener comparación por conjunto y pruebas negativas de P0-007.A; revalidar CI exact-SHA, A0–A4 y A5 por otra Task Javier. Rollback git revert.

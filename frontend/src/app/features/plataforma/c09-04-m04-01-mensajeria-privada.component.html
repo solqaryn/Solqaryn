@@ -1,0 +1,28 @@
+<main class="mensajeria" aria-labelledby="c0904-titulo">
+  <header>
+    <p class="eyebrow">SOLQARYN · C09-04 · DEV</p>
+    <h1 id="c0904-titulo">Mensajería multicanal</h1>
+    <p>Vista de referencia privada y exclusivamente informativa. Ningún proveedor está habilitado por esta pantalla.</p>
+    <a routerLink="/plataforma" aria-label="Regresar a plataforma">Regresar a plataforma</a>
+  </header>
+  @if (autorizado()) {
+    <section class="aviso" role="note" aria-label="Límite operativo">
+      <strong>NO OPERATIVO · Proveedores SIN_VERIFICAR</strong>
+      <p>NO se transmiten mensajes, se configuran credenciales ni se consultan datos de empresas. No hay webhooks conectados, reintentos ni replay real.</p>
+    </section>
+    <section data-testid="c0904-canales-privados" aria-labelledby="c0904-canales-title">
+      <h2 id="c0904-canales-title">Canales declarados (sin conexión)</h2>
+      <ul class="canales">
+        @for (canal of canales; track canal.id) {
+          <li>
+            <h3>{{ canal.nombre }}</h3>
+            <p>Estado: <strong>{{ canal.estado }}</strong></p>
+          </li>
+        }
+      </ul>
+      <p role="note">Las etiquetas no son telemetría ni certificación de envío, entrega, privacidad o deduplicación.</p>
+    </section>
+  } @else {
+    <p role="alert" data-testid="c0904-acceso-denegado">Acceso administrativo de plataforma no confirmado. Contenido privado oculto.</p>
+  }
+</main>
