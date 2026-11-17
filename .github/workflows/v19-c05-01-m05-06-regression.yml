@@ -1,0 +1,65 @@
+name: V19 C05-01.M05.06 - regresion teclado, responsive y rendimiento
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/e2e/c05-01-m05-06-regression-a11y.spec.ts'
+      - '.github/workflows/v19-c05-01-m05-06-regression.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c0501-m0506-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  regression:
+    name: C05-01.M05.06 - tres Chromium reales
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm install --global npm@11.19.0
+      - run: npm ci
+      - name: Lint y build prod
+        run: |
+          npm run lint
+          npm run build:prod
+      - run: npx playwright install --with-deps chromium
+      - name: Servidor Angular local
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c0501m0506.log 2>&1 &
+          for attempt in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then
+              echo 'LOCAL_ANGULAR_READY=PASS'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat c0501m0506.log >&2
+          exit 1
+      - name: Regresion real sin reintentos
+        run: npx playwright test e2e/c05-01-m05-06-regression-a11y.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Evidencia de fallos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c0501m0506-regression
+          path: |
+            frontend/c0501m0506.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 14

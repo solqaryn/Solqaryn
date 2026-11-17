@@ -1,3 +1,7 @@
+## 2026-11-16 — V19 C05-01.M05.06 regresion real visual [Javier :00]
+- Playwright Chromium GitHub-hosted: Tab y Enter sin focus programatico, outline, 44px, reduced-motion, responsive 320/375/768/1280, presupuesto de GET sin escrituras, revocacion sintetica 403.
+- Riesgo R2 de workflow/test-only; sesion sintetica NO prueba JWT/RBAC/MySQL real. A0-A5 por SHA y rollback git revert; sin QA/main/PROD.
+
 ## 2026-11-16 — V19 C00-04.M06.06 cierre documental y DAG [Javier :10]
 - Mapa de 11/11 prerequisitos C00-04.M05.01–06 y M06.01–05: PLAN LISTO+A5 institucional, SHA/alcance y limites de xUnit, Chromium, mocks y rollback aislado; cuatro mutaciones documentales adversariales rechazadas en memoria.
 - Solo docs/evidencias + CHANGELOG, sin tocar formulas COLA/DAG ni estado de otros IDs; Scope Lock y V5 exact-SHA pendientes de acreditar tras publicacion, A5 por otra Task Javier. Sin JWT/MySQL/WCAG/RTO/PROD certificadas.
