@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C15-04.M05.04 cobertura negativa de rutas importadas [Javier :10]
+- A0.22: Playwright incorpora 8 fuentes de rutas importadas y 51 declaraciones protegidas; 102 navegaciones anónimas reales 375/1280 px exigen redirect al login, cero mutaciones HTTP y guardas authGuard, sin proclamar prueba JWT/tenant backend.
+- Workflow Chromium pasa a 22 escenarios; el CI del SHA publicado debe revisarse antes de contar PASS. R2 global sigue EN_PROGRESO DEV02, lock V17 2000002297; A5 requiere revisor distinto. Rollback mediante git revert normal.
+
 ## 2026-11-17 — Migración E164 registrada en ensamblado Oracle activo [ChatGPT directo]
 - Se mueve la migración V19 de la carpeta histórica a `Infrastructure.Migrations/Migrations` y se exige desde xUnit que su ID exista en `GetMigrations` y `GetAppliedMigrations` de MySQL 8.4 efímero. Se actualiza el workflow dirigido y la documentación; Scope Lock, V5 y Oracle CI se validan en el SHA nuevo, sin despliegue ni aprobación artificial.
 

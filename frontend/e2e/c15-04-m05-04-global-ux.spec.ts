@@ -649,4 +649,58 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
     }));
   });
 
+
+  // A0.22: ocho archivos de rutas importadas; la prueba usa guardas reales de Angular.
+  // No representa JWT firmado ni aislamiento autenticado en APIs MySQL.
+  test('router: 51 rutas importadas exigen login anonimo en 375/1280',async({context})=>{
+    test.setTimeout(480_000);
+    const {readFileSync}=await import('node:fs');
+    const archivos=[
+      'src/app/features/inventario/ajustes.routes.ts',
+      'src/app/features/compras/facturas-proveedor/facturas-proveedor.routes.ts',
+      'src/app/features/pedidos-venta/pedidos-venta.routes.ts',
+      'src/app/features/inventario/transferencias.routes.ts',
+      'src/app/features/inventario/conteos.routes.ts',
+      'src/app/features/inventario/reservas.routes.ts',
+      'src/app/features/finanzas/cuentas-por-cobrar/cuentas-por-cobrar.routes.ts',
+      'src/app/features/finanzas/cuentas-por-pagar/cuentas-por-pagar.routes.ts'
+    ];
+    const declaradas:string[]=[];
+    for(const archivo of archivos){
+      const fuente=readFileSync(archivo,'utf8');
+      const rutas=[...fuente.matchAll(/\bpath\s*:\s*'([^']+)'/g)].map(m=>m[1]);
+      const protegidas=[...fuente.matchAll(/\bpath\s*:\s*'([^']+)'[,\s]*canActivate\s*:\s*\[\s*authGuard\b/g)].map(m=>m[1]);
+      expect(protegidas,'Todas las rutas importadas requieren authGuard: '+archivo).toEqual(rutas);
+      declaradas.push(...protegidas);
+    }
+    expect(declaradas.length,'Inventario de ocho archivos importados').toBeGreaterThanOrEqual(51);
+    expect(new Set(declaradas).size,'Rutas importadas duplicadas').toBe(declaradas.length);
+    const pagina=await context.newPage();
+    const mutaciones:string[]=[];
+    pagina.on('request',r=>{
+      if(!['GET','HEAD','OPTIONS'].includes(r.method()))mutaciones.push(r.method()+' '+r.url());
+    });
+    try{
+      for(const width of [375,1280]){
+        await pagina.setViewportSize({width,height:840});
+        for(const declarada of declaradas){
+          const ruta='/'+declarada.split('/').map(segmento=>segmento.startsWith(':')?'999999':segmento).join('/');
+          await test.step(width+'px '+ruta,async()=>{
+            const respuesta=await pagina.goto(ruta,{waitUntil:'domcontentloaded'});
+            expect(respuesta?.status(),'HTML SPA no acredita permiso').toBe(200);
+            await expect.poll(()=>new URL(pagina.url()).pathname).toBe('/login');
+            await expect(pagina.locator('#login-title')).toBeVisible();
+            await noOverflow(pagina);
+          });
+        }
+      }
+    }finally{await pagina.close();}
+    expect(mutaciones,'Anonimato: cero escrituras HTTP').toEqual([]);
+    console.log('[C15-04.M05.04 RUTAS_IMPORTADAS_NEGATIVAS]',JSON.stringify({
+      archivos:archivos.length,rutas:declaradas.length,viewports:[375,1280],
+      navegaciones:declaradas.length*2,
+      alcance:'guard Angular anonima; JWT firmado, RBAC backend y tenant A/B NO_MEDIDO'
+    }));
+  });
+
 });
