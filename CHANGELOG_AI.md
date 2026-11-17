@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C09-04.M04.02 integración de ruta protegida [Javier :20]
+- Ruta hija real de plataforma con guard y lazy standalone de estados, sin alterar la pantalla base M04.01 ni sus controles; cero envíos, secretos, datos empresariales o nuevas operaciones mutantes.
+- Cuatro escenarios Playwright Chromium con denegaciones, estado vacío, responsive 320/1280 y sesión HTTP sintética; CI GitHub-hosted exact-SHA pendiente. Ocho pruebas TestBed precedentes conservadas.
+- No equivale a JWT/backend, proveedores, MySQL ni navegación enlazada desde la pantalla base. Mantener VALIDANDO hasta SUCCESS causal A0-A4 y readback, A5 por otra Task Javier. Revert normal sin reescritura.
+
 ## 2026-11-17 — V19 C15-04.M05.04 ruta privada y login sin escritura [Javier :10]
 - Prueba incremental de 20 rutas privadas del inventario Angular con 40 navegaciones anónimas a 375/1280 px, redireccion fail-closed, sin overflow ni HTTP mutaciones, mas alternancia de contrasena.
 - Siete escenarios Chromium requieren GitHub-hosted PASS exact-SHA; no certifica roles autenticados, tenant A/B, MySQL, WCAG global, Web Vitals ni LISTO. Retener EN_PROGRESO/lock V17; A5 de otra Task.

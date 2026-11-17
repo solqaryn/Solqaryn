@@ -17,3 +17,9 @@ El dueño DEV04 de `C09-04.M04.01` tiene pendiente la ruta/pantalla protegida. E
 - A5: revisión independiente por otra de cinco Tasks Javier, jamás autor DEV03.
 
 **Rollback:** revert normal del commit publicado (sin force-push), con comprobación de HEAD, preservando cambios posteriores y la historia de BITACORA. No modificar QA, main, PROD, Aiven, secretos ni configuración de otras Tasks.
+
+## Integración incremental de ruta real (DEV03, 17 noviembre 2026)
+
+Se añade una ruta hija **directamente navegable** `/plataforma/mensajeria-multicanal-v19/estados` con `plataformaGuard` y carga lazy de este componente, sin tocar ni sustituir el componente original M04.01 y sin elevar su A5 histórica. La URL solo muestra el estado `vacio` predeterminado; los demás estados se acreditan por las ocho pruebas TestBed y **no** representan un proveedor real. Cuatro escenarios Chromium nuevos deben ejecutar ruta/guard real, denegaciones (anónimo, 403, Empresa, no admin), GET sintético, read-only y responsive en GitHub-hosted; falta SU resultado exact-SHA antes de A3/A4.
+
+La ruta actual no está enlazada desde la vista base M04.01 ni hace HTTP de envíos. Browser usa respuesta simulada a GET /plataforma/sesion, por lo que no certifica JWT firmado, autorización backend real, MySQL, SMTP, WhatsApp, delivery o tenant A/B físico. El límite R2 permanece y `VALIDANDO` no cambia hasta CI SUCCESS causal, verificación A0-A4 y readback institucional. No se modifican permisos, API, DB, secretos, QA/main/PROD. Rollback: revert fast-forward normal de este incremento.
