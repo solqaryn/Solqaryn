@@ -1,3 +1,8 @@
+## 2026-11-16 — V19 C05-01.M06.02 indice reproducible de artefactos [Javier :30]
+- Matriz documental de C05-01.M05.01–06 con seis SHAs y seis runs GitHub Actions, pruebas atribuibles y limites JWT/HTTP/MySQL/WCAG sin certificaciones inventadas.
+- Readback seis LISTO+A5 con propietarios y C00-03.M06.06 LISTO+A5, COLA/DAG derivados. Cambios R0 de documentacion sin runtime, CI, seguridad o DB.
+- A0-A4 sobre SHA publicado, Scope Lock y V5; A5 independiente de otra Task Javier, rollback git revert; no QA/main/PROD.
+
 ## 2026-11-16 — V19 C12-04.M03.06 auditoria sintetica estructurada fail-closed [Javier :30]
 - Infrastructure .NET 10: nuevo sink tipado de auditoria del worker sintetico C12-04.M03.05; seis resultados allowlisted, conteos acotados, log estructurado sin actor/tenant/SHA/DSN ni excepciones privadas.
 - Un solo IsEnabled y LoggerMessage SkipEnabledCheck; rechazo ante proveedor deshabilitado o fallido, codigos forjados y cancelacion; recibo LogInvoked no implica persistencia o cutover.
