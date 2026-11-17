@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C12-04.M05.04 aceptación positiva de cutover privado [Javier :30]
+- Cinco pruebas Playwright/Chromium sobre Angular real con sesión sintética: cuatro checkpoints no operativos, revalidación GET, Tab/Enter, branding responsive, 503 fail-closed sin DSN ni escrituras.
+- Workflow GitHub-hosted por SHA: Node24/npm11, Vitest, lint/build, cinco Chromium. A0–A4 sólo cuando CI requerida y Scope Lock/V5 concluyan SUCCESS; A5 de otro Javier.
+- R2 test-only, no MySQL/restore/exportación real, JWT/RBAC ni tenant servidor; V17 una reclamación; sólo dev; rollback git revert.
+
 ## 2026-11-17 — V19 C09-04.M03.04 MySQL 8.4 outbox tenant/idempotencia [Javier :20]
 - Infraestructura: validador de claves de idempotencia en lecturas EF rechaza controles CR/LF y valores fuera del limite, sin cambiar el contrato publico ni los datos.
 - Regresion xUnit Category=Integration en MySQL 8.4 efimero real: persistencia, aislamiento A/B, duplicados/indice unico y claim CAS; workflow SHA-especifico sin cancelacion.
