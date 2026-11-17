@@ -1,4 +1,7 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { HttpErrorResponse } from '@angular/common/http';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { take } from 'rxjs';
 import { RouterLink } from '@angular/router';
 import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
 
@@ -27,7 +30,34 @@ const CONTROLES = Object.freeze([
         <p>Referencia de lectura protegida; no muestra el estado de bases de datos reales.</p>
         <a routerLink="/plataforma" aria-label="Volver a plataforma">Volver a plataforma</a>
       </header>
-      @if (autorizado()) {
+      <section class="panel" data-testid="c1204-m0402-panel" aria-labelledby="c1204-session-title"
+        [attr.aria-busy]="estadoVisible() === 'cargando'">
+        <h2 id="c1204-session-title">Estado de comprobación de sesión</h2>
+        @switch (estadoVisible()) {
+          @case ('cargando') {
+            <p role="status" data-testid="c1204-m0402-state">Cargando revalidación de sesión de plataforma…</p>
+          }
+          @case ('vacio') {
+            <p role="status" data-testid="c1204-m0402-state">Vacío: sin evidencia de bases de datos conectadas ni restauraciones verificadas.</p>
+          }
+          @case ('exito') {
+            <p role="status" data-testid="c1204-m0402-state">Éxito: sesión global revalidada; cutover sigue SIN_VERIFICAR.</p>
+          }
+          @case ('error') {
+            <p role="alert" data-testid="c1204-m0402-state">Error al revalidar la sesión. No se muestran diagnósticos privados.</p>
+          }
+          @case ('sin_permiso') {
+            <p role="alert" data-testid="c1204-m0402-state">Sin permiso de plataforma confirmado.</p>
+          }
+        }
+        @if (puedeVer()) {
+          <button type="button" data-testid="c1204-m0402-revalidate" (click)="revalidar()">
+            Revalidar sesión de plataforma
+          </button>
+        }
+        <p role="note">El estado de sesión no acredita exportación, restore, checksums ni autorización operativa.</p>
+      </section>
+      @if (puedeVer()) {
         <section class="aviso" role="note" aria-label="Límite de operación">
           <strong>NO OPERATIVO · Sin acceso a MySQL ni ejecución de migraciones</strong>
           <p>Ninguna restauración, exportación, comparación ni aprobación se ejecuta desde esta vista.</p>
@@ -57,7 +87,8 @@ const CONTROLES = Object.freeze([
     p, li { line-height:1.55; overflow-wrap:anywhere; }
     .eyebrow { font-weight:700; color:var(--mat-sys-primary,#2157a3); }
     a { display:inline-block; padding:.7rem .9rem; border:1px solid currentColor; border-radius:.55rem; color:inherit; }
-    a:focus-visible { outline:3px solid var(--mat-sys-primary,#2157a3); outline-offset:3px; }
+    a:focus-visible, button:focus-visible { outline:3px solid var(--mat-sys-primary,#2157a3); outline-offset:3px; }
+    button { min-height:44px; padding:.7rem 1rem; border:1px solid currentColor; border-radius:.55rem; cursor:pointer; background:transparent; color:inherit; }
     .aviso, .panel, .denegado { border:1px solid var(--mat-sys-outline-variant,#aeb8c1); border-radius:.75rem; padding:1rem; margin-top:1rem; }
     .aviso { background:var(--mat-sys-surface-container-low,#f5f7fa); }
     .controles { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:1rem; padding:0; list-style:none; }
@@ -68,9 +99,45 @@ const CONTROLES = Object.freeze([
 })
 export class C1204CutoverReadonlyComponent {
   private readonly plataforma = inject(PlataformaSesionService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly estadoSolicitud = signal<'vacio' | 'cargando' | 'exito' | 'error' | 'sin_permiso'>('vacio');
+  private revalidando = false;
   readonly controles = CONTROLES;
   readonly autorizado = computed(() => {
     const sesion = this.plataforma.sesion();
     return sesion?.ambito === 'Plataforma' && sesion.esAdministrador === true;
   });
+  readonly estadoVisible = computed(() => {
+    const estado = this.estadoSolicitud();
+    if (estado === 'cargando' || estado === 'error') return estado;
+    return this.autorizado() ? estado : 'sin_permiso';
+  });
+  readonly puedeVer = computed(() => this.autorizado() &&
+    (this.estadoSolicitud() === 'vacio' || this.estadoSolicitud() === 'exito'));
+
+  /** GET de sesión global, nunca comando de MySQL, backup ni migración. */
+  revalidar(): void {
+    if (this.revalidando || !this.autorizado()) return;
+    this.revalidando = true;
+    this.estadoSolicitud.set('cargando');
+    this.plataforma.obtener().pipe(take(1), takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: sesion => {
+        if (sesion?.ambito !== 'Plataforma' || sesion?.esAdministrador !== true) {
+          this.plataforma.limpiar();
+          this.estadoSolicitud.set('sin_permiso');
+        } else {
+          this.estadoSolicitud.set('exito');
+        }
+      },
+      error: (error: unknown) => {
+        const status = error instanceof HttpErrorResponse ? error.status : 0;
+        this.estadoSolicitud.set(status === 401 || status === 403 ? 'sin_permiso' : 'error');
+        this.revalidando = false;
+      },
+      complete: () => {
+        if (this.estadoSolicitud() === 'cargando') this.estadoSolicitud.set('error');
+        this.revalidando = false;
+      }
+    });
+  }
 }

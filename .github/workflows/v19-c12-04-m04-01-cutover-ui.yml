@@ -1,4 +1,4 @@
-name: V19 C12-04.M04.01 - superficie MySQL privada solo lectura
+name: V19 C12-04.M04.01-M04.02 - superficie MySQL privada y estados seguros
 on:
   push:
     branches: [dev]
@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   private-cutover-ui:
-    name: C12-04.M04.01 - 7 Vitest y 4 Chromium privados
+    name: C12-04.M04.01-M04.02 - 13 Vitest y 6 Chromium privados
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:

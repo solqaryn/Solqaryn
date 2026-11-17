@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C12-04.M04.02 estados de sesión fail-closed [Javier :30]
+- Cinco estados UI de revalidación GET global: cargando, vacío, error, éxito de sesión y sin permiso; sin equiparar éxito de sesión con exportaciones, restore, migraciones o permiso de producción.
+- Seis Vitest nuevos y dos Chromium de revalidación/503, protección ante tenant/rol/revocación y sin operaciones mutantes; se mantiene A5 independiente.
+
 ## 2026-11-17 — V19 C12-04.M04.01 reparación de prueba Chromium [Javier :30]
 - Corregida aserción de alcance del test E2E: selector limitado a `.cutover` frente al shell ERP global; el fallo inicial 3/4 continúa visible y no se considera PASS.
 - Nueva ejecución GitHub Actions requerida, conservando 7 Vitest, 4 Chromium y todos los controles de seguridad/inventario; no se modifica UI ni JWT/MySQL reales.
