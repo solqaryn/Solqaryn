@@ -1,0 +1,72 @@
+name: V19 C15-04.M04.04 - Formularios navegacion y singleflight Chromium
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/e2e/c15-04-m04-04-interactions.spec.ts'
+      - 'frontend/src/app/features/plataforma/gobierno-cambios-v5.component.ts'
+      - 'frontend/src/app/features/login/login.component.ts'
+      - '.github/workflows/v19-c15-04-m04-04-interactions.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c15-04-m04-04-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  chromium:
+    name: V19 C15-04.M04.04 - Chromium cinco pruebas
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout SHA exacto
+        uses: actions/checkout@v4
+      - name: Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm fijado
+        run: npm install --global npm@11.19.0
+      - name: Dependencias reproducibles
+        run: npm ci
+      - name: Lint y build Angular
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Instalar Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Angular local loopback
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c15m0404.log 2>&1 &
+          for attempt in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then
+              echo 'ANGULAR_LOCAL_READY=PASS'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat c15m0404.log >&2
+          exit 1
+      - name: Cinco pruebas Chromium reales y sesion sintetica
+        run: npx playwright test e2e/c15-04-m04-04-interactions.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Evidencias
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v19-c15-04-m04-04-chromium
+          path: |
+            frontend/c15m0404.log
+            frontend/playwright-report/
+            frontend/test-results/
+          if-no-files-found: warn
+          retention-days: 14

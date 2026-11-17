@@ -1,3 +1,8 @@
+## 2026-11-16 — V19 C15-04.M04.04 formularios, navegación y single-flight Chromium [Javier :00]
+- Añade cinco pruebas Playwright de login y gobierno V5: límites de validación, errores 403/503 opacos, navegación Tab/Enter, espera y una sola solicitud de revalidación.
+- Workflow por SHA con Node24/Angular22 y Chromium loopback; mocks de sesión son sintéticos, NO prueban JWT/RBAC/tenant HTTP, MySQL ni rendimiento global.
+- Riesgo R1 sin cambios runtime; A0-A4 dependen de CI exact-SHA, Scope Lock/V5 y readback, A5 por otra Task Javier, rollback git revert, exclusivamente dev.
+
 ## 2026-11-16 — V19 C00-04.M04.06 densidad y progreso real de gobierno [Javier :50]
 - Añade cinco pruebas Playwright/Chromium adversariales para ruta privada, 320/390/768/1280, CSS real sin desborde, carga diferida con un GET, error 503 opaco y ausencia de escrituras institucionales.
 - Workflow GitHub-hosted reproducible Node24/npm11, lint, build Angular y Chromium local; pruebas de sesión y token son sintéticas, no certifican JWT/RBAC/tenant HTTP/MySQL ni métricas SLO/WCAG globales.
