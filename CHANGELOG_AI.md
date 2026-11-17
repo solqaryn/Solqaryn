@@ -1,3 +1,8 @@
+## 2026-11-16 — V18 C08-04.M05.06 regresion Chromium sectorial [Javier :10]
+- Agrega cuatro casos Playwright reales con responsive 320/375/768/1280, Tab/foco visible y denegaciones 403/503 simuladas; niega activaciones y peticiones mutadoras.
+- GitHub-hosted Node24/Angular 22 + Chromium con concurrency por SHA y cancel-in-progress=false; solo pruebas, workflow y documento, sin modificar componentes ni endpoints.
+- Tenant-context es sintetico: NO certifica JWT/RBAC/MySQL/backend real ni SLO; A0–A4 exact-SHA, A5 independiente y rollback git revert obligatorios; no QA/main/PROD.
+
 ## 2026-11-16 — V18 C13-04.M04.04 controles reales de interacción [Javier :00]
 - Cuatro pruebas Chromium entre dos vistas privadas existentes: anónimo/403, recuperación 503, single-flight de GET y navegación Tab/Enter sin doble acción.
 - Workflow GitHub-hosted con Angular y Node24 aislado por SHA; las sesiones/HTTP son sintéticas, no certifican JWT/RBAC/tenant A/B real ni modifican runtime.
