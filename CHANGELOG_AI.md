@@ -1,3 +1,8 @@
+## 2026-11-16 — V19 C08-04.M06.02 manifiesto SHA y evidencias M05 [Javier :20]
+- Registra los seis commits causales M05.01–M05.06 de extensiones sectoriales, sus rutas y workflows, con conteos de checks GitHub exact-SHA comprobados y reintentos SKIPPED excluidos de PASS.
+- Documenta procedimiento reproducible para git show, check-runs, readback institucional y límites de evidencia JWT/RBAC/tenant/MySQL HTTP y rendimiento NO_MEDIDO sin nuevos grants ni código runtime.
+- R0 documental con Scope Lock/V5 y BITACORA V17, A5 solo por otra Task Javier; rollback por git revert y ninguna operación sobre QA/main/PROD.
+
 ## 2026-11-16 — V19 C08-04.M06.03 limitaciones y riesgos sectoriales [Javier :20]
 - Documenta la matriz de Reservas/Membresías/Catálogo/Sitios por rubro, actualmente solo informativa y sin activación, frente al código Angular y pruebas reales GitHub-hosted 4/4 Chromium de M05.06.
 - Distingue denegaciones 403/503 y tenant-context sintéticos de JWT/RBAC/tenant HTTP real; WCAG global, CWV, p95/p99, costos y SLO se mantienen NO_MEDIDO/NO_CERTIFICADO, sin PASSES inventados.
