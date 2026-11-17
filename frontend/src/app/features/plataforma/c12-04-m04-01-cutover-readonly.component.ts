@@ -19,7 +19,7 @@ const CONTROLES = Object.freeze([
   standalone: true,
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
-  template: \`
+  template: `
     <main class="cutover" aria-labelledby="cutover-title">
       <header>
         <p class="eyebrow">SOLQARYN · Preparación MySQL privado</p>
@@ -48,8 +48,8 @@ const CONTROLES = Object.freeze([
         <p class="denegado" role="alert">Acceso de plataforma no confirmado. Detalles privados ocultos.</p>
       }
     </main>
-  \`,
-  styles: [\`
+  `,
+  styles: [`
     :host { display:block; color:var(--mat-sys-on-surface,#17212d); }
     .cutover { box-sizing:border-box; max-width:72rem; margin-inline:auto; padding:clamp(1rem,3vw,2.5rem); }
     h1 { font-size:clamp(1.5rem,4vw,2.2rem); line-height:1.2; }
@@ -64,7 +64,7 @@ const CONTROLES = Object.freeze([
     .controles li { min-width:0; border:1px solid var(--mat-sys-outline-variant,#aeb8c1); border-radius:.65rem; padding:1rem; }
     @media (max-width:45rem) { .controles { grid-template-columns:1fr; } }
     @media (prefers-contrast:more) { a:focus-visible { outline-color:CanvasText; outline-width:4px; } }
-  \`]
+  `]
 })
 export class C1204CutoverReadonlyComponent {
   private readonly plataforma = inject(PlataformaSesionService);

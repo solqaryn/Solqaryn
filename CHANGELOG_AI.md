@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C12-04.M04.01 reparación TypeScript de plantilla [Javier :30]
+- Corregidos cuatro delimitadores de literales de plantilla en componente Angular que provocaron TS1127, TS1136 y TS1160 en CI exact-SHA; documentación Markdown normalizada sin cambiar rutas ni controles.
+- Se conservan todos los tests y validadores; exigir nuevamente compilación y A0–A4 sobre commit reparado, no interpretar checks fallidos como PASS.
+
 ## 2026-11-17 — V19 C12-04.M04.01 CI repair de inventario y ruta [Javier :30]
 - Reparados fallos causales exact-SHA: añadir el nuevo componente al inventario estricto P0-007.A y su total 157; conservar pruebas negativas y lista cerrada sin exclusiones.
 - Incorporada únicamente la ruta `plataforma/mysql-cutover-readonly-v5` en la allowlist exacta de `plataformaGuard` del auditor ERP, sin modificar guards ni desactivar controles; revalidar CI y A5 independiente.
