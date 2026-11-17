@@ -71,13 +71,13 @@ test('C15-05.M04.06: espera progresiva accesible, UI privada oculta y rechazo de
     await boton.click();
     await expect.poll(() => llamadas()).toBe(2);
     await expect(boton).toBeDisabled();
-    await expect(page.getByRole('status')).toContainText('Verificando permisos con el servidor');
+    await expect(page.getByText('Verificando permisos con el servidor…')).toBeVisible();
     await expect(page.locator('ol.controls > li')).toHaveCount(0);
     expect(llamadas()).toBe(2);
   } finally {
     liberar();
   }
-  await expect(page.getByRole('status')).toContainText('Sesión de plataforma revalidada');
+  await expect(page.getByText('Sesión de plataforma revalidada correctamente. No se consultan registros operativos en vivo.')).toBeVisible();
   await expect(page.locator('ol.controls > li')).toHaveCount(4);
   await expect(boton).toBeEnabled();
 });
@@ -92,7 +92,7 @@ test('C15-05.M04.06: error 503 limpia carga, oculta privados y permite reintento
   await expect(page.getByText('PRIVATE_C15_M0406_NEVER_EXPOSE')).toHaveCount(0);
   await expect(boton).toBeEnabled();
   await boton.click();
-  await expect(page.getByRole('status')).toContainText('Sesión de plataforma revalidada');
+  await expect(page.getByText('Sesión de plataforma revalidada correctamente. No se consultan registros operativos en vivo.')).toBeVisible();
   await expect(page.locator('ol.controls > li')).toHaveCount(4);
   expect(llamadas()).toBe(3);
 });
