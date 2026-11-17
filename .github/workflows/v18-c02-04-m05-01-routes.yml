@@ -16,7 +16,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   routes:
-    name: C02-04.M05.01 - 13 source routes and Chromium
+    name: C02-04.M05.01 - 15 source routes and Chromium
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
@@ -55,6 +55,6 @@ jobs:
           done
           cat v18-c0204-m0501.log >&2
           exit 1
-      - name: 29 Chromium browser checks with mocked backend
+      - name: 33 Chromium browser checks with mocked backend
         working-directory: frontend
         run: npx playwright test e2e/c02-04-m05-01-routes.spec.ts --config=playwright.config.ts --workers=1 --retries=0

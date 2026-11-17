@@ -16,10 +16,10 @@ async function synthetic(page:Page,status:200|403|503){
 }
 test.describe('C02-04.M05.01 actual Chromium catalog, MOCK backend',()=>{
  test.describe.configure({retries:0});
- test('13 unique versioned IDs',()=>{
+ test('15 unique versioned IDs',()=>{
   expect(catalog.schemaVersion).toBe('C02-04.M05.01/v18.1');
-  expect(catalog.routes).toHaveLength(13);
-  expect(new Set(catalog.routes.map(x=>x.id)).size).toBe(13);
+  expect(catalog.routes).toHaveLength(15);
+  expect(new Set(catalog.routes.map(x=>x.id)).size).toBe(15);
  });
  for(const item of catalog.routes){
   test(item.id+' anonymous blocked',async({page})=>{

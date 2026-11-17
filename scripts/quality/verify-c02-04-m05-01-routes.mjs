@@ -8,12 +8,12 @@ const actual=[...source.matchAll(/\{\s*path:\s*'([^']+)'[^\n]*canActivate:\s*\[(
 .map(m=>({path:m[1],guard:m[2].trim(),component:m[3]}));
 function check(rows,src){
  assert.equal(inv.schemaVersion,'C02-04.M05.01/v18.1');
- assert.equal(rows.length,13);assert.equal(src.length,13);
- assert.equal(new Set(rows.map(r=>r.id)).size,13);
- assert.equal(new Set(rows.map(r=>r.path)).size,13);
+ assert.equal(rows.length,15);assert.equal(src.length,15);
+ assert.equal(new Set(rows.map(r=>r.id)).size,15);
+ assert.equal(new Set(rows.map(r=>r.path)).size,15);
  const map=new Map(src.map(r=>[r.path,r]));
  for(const x of rows){
-  assert.match(x.id,/^GV(?:0[1-9]|1[0-3])$/);
+  assert.match(x.id,/^GV(?:0[1-9]|1[0-5])$/);
   const ref=map.get(x.path);assert.ok(ref,'route absent: '+x.path);
   assert.equal(ref.component,x.component);
   assert.equal(ref.guard,'plataformaGuard');assert.equal(x.guard,'plataformaGuard');
@@ -30,4 +30,4 @@ if(process.argv.includes('--self-test')){
  neg(()=>check(inv.routes.map((x,i)=>i?x:{...x,serverAuth:'PASS'}),actual));
  console.log('5/5 negative fixtures detected');
 }
-console.log('13/13 route source checks PASS, live server auth NOT MEASURED');
+console.log('15/15 route source checks PASS, live server auth NOT MEASURED');

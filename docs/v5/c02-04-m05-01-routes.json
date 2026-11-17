@@ -105,6 +105,22 @@
       "guard": "plataformaGuard",
       "serverAuth": "NO_MEDIDO",
       "browserState": "CI_REQUIRED"
+    },
+    {
+      "id": "GV14",
+      "path": "plataforma/experiencia-visual-v5",
+      "component": "./features/plataforma/c13-04-presentacion-v5.component",
+      "guard": "plataformaGuard",
+      "serverAuth": "NO_MEDIDO",
+      "browserState": "CI_REQUIRED"
+    },
+    {
+      "id": "GV15",
+      "path": "plataforma/auditoria-ux-v5",
+      "component": "./features/plataforma/c15-04-auditoria-ux-v19.component",
+      "guard": "plataformaGuard",
+      "serverAuth": "NO_MEDIDO",
+      "browserState": "CI_REQUIRED"
     }
   ]
 }

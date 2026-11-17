@@ -1,3 +1,7 @@
+## 2026-11-16 — V19 C15-04.M04.01 reparación causal inventario de rutas V18 [Javier :50]
+- El nuevo enlace UX detectó que el validador C02-04.M05.01 esperaba trece rutas pero app.routes ya contenía catorce antes del cambio y quince después. Se agregan los IDs GV14 visual y GV15 UX al catálogo explícito de solo lectura, sin cambiar los trece ID históricos ni los guards plataformaGuard.
+- Corrige aserciones exactas a 15 rutas (script y dos Playwright); mantiene cinco fixtures adversariales y 33 controles Chromium (30 rechazos más tres contratos). NO_MEDIDO de serverAuth/CI_REQUIRED preservado; no certifica autorización JWT/tenant backend. Revalidar checks del SHA nuevo, A5 independiente, sólo dev; rollback git revert.
+
 ## 2026-11-16 — V19 C15-04.M04.01 ruta privada de auditoría UX [Javier :50]
 - Agrega pantalla Angular standalone y ruta exclusiva plataformaGuard enlazada desde consola autorizada; cinco superficies de auditoría de landing, portal, ERP, builder y consola global. Muestra NO_MEDIDO/SIN_VERIFICAR para WCAG, Web Vitals y defectos: no declara métricas inventadas.
 - Tres pruebas Chromium reales: usuario anónimo denegado, acceso positivo con cinco superficies responsive 320/375/768/1280 sin escrituras y sesión 403 opaca. Riesgo R2 por ruta privada, sin cambiar JWT/RBAC/tenant/MySQL; CI exact-SHA Node24/npm11, Scope Lock y V5, A5 independiente. Sólo dev, rollback git revert.

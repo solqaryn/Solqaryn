@@ -24,7 +24,9 @@ const titles: Record<string,string> = {
   GV10: 'Respuesta, revocación y recuperación segura',
   GV11: 'Verificaciones de acceso y abuso',
   GV12: 'Revisión de cobertura del plan',
-  GV13: 'Diagnóstico y señales seguras'
+  GV13: 'Diagnóstico y señales seguras',
+  GV14: 'Configuración visual permitida',
+  GV15: 'Auditoría UX, accesibilidad y rendimiento'
 };
 
 const endpoint = /\/plataforma\/sesion(?:\?|$)/;
@@ -62,11 +64,11 @@ test.describe('C02-04.M05.04 positive catalogue in real Chromium (synthetic serv
   test.describe.configure({ retries: 0 });
   test.use({ extraHTTPHeaders: {} });
 
-  test('catalog has exactly 13 unique, known, explicit routes', () => {
+  test('catalog has exactly 15 unique, known, explicit routes', () => {
     expect(catalog.schemaVersion).toBe('C02-04.M05.01/v18.1');
-    expect(catalog.routes).toHaveLength(13);
-    expect(new Set(catalog.routes.map(x => x.id)).size).toBe(13);
-    expect(new Set(catalog.routes.map(x => x.path)).size).toBe(13);
+    expect(catalog.routes).toHaveLength(15);
+    expect(new Set(catalog.routes.map(x => x.id)).size).toBe(15);
+    expect(new Set(catalog.routes.map(x => x.path)).size).toBe(15);
     expect(catalog.routes.map(x => x.id).sort()).toEqual(Object.keys(titles).sort());
   });
 
