@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C13-04.M05.04 evidencia de brecha P1 global [Javier :00]
+- Diagnóstico A0 reproducible de 109 rutas literales en app.routes.ts, 95 con guard declarado y 14 sin guard declarado; rutas importadas fuera de ese denominador.
+- Los 4 Chromium previos solo recorren 6 destinos públicos, no JWT real ni rutas privadas: se detallaron pantallas pendientes y la matriz Angular/API/MySQL efímera necesaria.
+- Se mantiene VALIDANDO y QA_DEFECT_FOUND P1; sin afirmar A0–A4 completo, LISTO, A5 ni QA/main/PROD. Actualización documental y rollback git revert.
+
 ## 2026-11-17 — V19 C15-04.M05.04 UX global incremental [Javier :10]
 - Primer incremento R2 Playwright real: login y panel privado responsive, Tab/foco, contraste puntual, 403 y guard ERP, con sesión HTTP simulada.
 - CI GitHub-hosted propia por SHA; primer run detectó un test P2 de fixture que reutilizaba token sintético entre 403 y ERP; corregido separando el caso ERP en contexto browser limpio, revalidación SHA descendiente obligatoria.
