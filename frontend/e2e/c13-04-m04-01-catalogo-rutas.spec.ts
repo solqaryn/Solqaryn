@@ -50,7 +50,9 @@ test.describe('C13-04.M04.01 catálogo Router real y 16 programas', () => {
     await expect(page.locator('.programas li')).toHaveCount(16);
     expect(await page.locator('.rutas li').count()).toBeGreaterThanOrEqual(108);
     const param = page.locator('.rutas li').filter({ hasText: 'clientes/:id/editar' });
-    await expect(param).toHaveCount(1);
+    // Varias ramas registradas pueden declarar el mismo path: validar todas,
+    // nunca reducir cobertura a una coincidencia ni permitir enlaces con :id.
+    expect(await param.count()).toBeGreaterThanOrEqual(1);
     await expect(param.locator('a')).toHaveCount(0);
     await expect(page.getByText('SIN_VERIFICAR').first()).toBeVisible();
     expect(writes).toEqual([]);

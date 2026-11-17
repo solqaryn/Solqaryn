@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 CI repair C13-04.M04.01 ruta parametrizada duplicada [Javier :30]
+- QA_DEFECT_FOUND en prueba Chromium SHA 93edefa6: el path clientes/:id/editar aparece dos veces en configuraciones Router distintas; la aserción de unicidad fallaba aun con ambos sin enlace.
+- La reparación exige presencia de una o más coincidencias y cero anchors para TODAS las filas con :id; se conservan los otros controles de 16 programas, rutas, 403 sintético, 320/375/768/1280 y Tab real.
+- Requiere 6 Vitest y 4 Chromium completos, Scope Lock/V5 exact-SHA y A5 independiente; no acredita JWT, MySQL, QA/main/PROD ni considera SKIPPED como PASS.
+
 ## 2026-11-17 — V19 C13-04.M04.01 inventario global de programas y rutas [Javier :30]
 - Añade vista privada guardada de 16 programas C00–C15 y enumeración real de todos los Route[] declarados en Angular, incluidos spreads, children, detalle y edición.
 - Registra enlaces solamente para paths estáticos permitidos; rutas parametrizadas, wildcard y lazy pendiente se muestran sin inventar IDs, permisos ni cobertura completa.
