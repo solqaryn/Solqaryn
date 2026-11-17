@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C12-04.M05.05 siete negativas de cutover privado [Javier :00]
+- Siete nuevas pruebas Playwright Chromium sobre Angular real para anonimo/401/403/tenant Empresa/no admin/identidad malformada/revocacion 503, sin escritura ni exposicion de controles y secretos privados.
+- GitHub-hosted Node24 npm11, regresiones Vitest, lint/build y Chromium por SHA con Scope Lock y V5; nunca SKIPPED o CI pendiente como PASS. Sesión HTTP es sintética: NO certifica JWT/tenant backend, restore ni MySQL real.
+- R2 test-only, una reclamacion V17 exclusiva, A5 por Task Javier distinta, solo dev, rollback git revert normal.
+
 ## 2026-11-17 — V19 C12-04.M05.01 inmutabilidad de evidencias de cutover [Javier :30]
 - Corrige Object.freeze superficial de cuatro checkpoints informativos: ahora congela también cada objeto para impedir falsificar localmente SIN_VERIFICAR/NO_MEDIDO/NO_AUTORIZADO como LISTO.
 - Cinco Vitest Angular TestBed de mutación adversarial, estados, tema, revocación y fronteras; CI Node24/npm11 lint/build; no modifica MySQL/EF, restauraciones, tenant, JWT ni autorizaciones.
