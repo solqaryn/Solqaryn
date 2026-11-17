@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C12-04.M06.03 riesgos y decisiones MySQL/cutover [Javier :50]
+- Registro R01–R10 de riesgos abiertos y D01–D08 de decisiones preventivas, contrastando M05.01–06 y las fuentes documentales M06.01/.02; checksums de origen, restore real, RPO/RTO y JWT servidor siguen NO_MEDIDO/NO_AUTORIZADO.
+- A0–A3 auditables sin cambios de runtime, NO_APLICA a nuevas pruebas MySQL/HTTP; A4 exact SHA Scope Lock/V5 y readback, A5 requiere Task Javier distinta.
+- Solo dev, no despliegues ni cambios en datos productivos; revert git normal, BITACORA histórica preservada.
+
 ## 2026-11-17 — V19 C12-04.M06.02 matriz causal reproducible M05 [Javier :40]
 - Documento versionado con seis SHAs de M05.01–06, runs dirigidos, tipo de prueba, límites y diferencias entre mocks y MySQL efímero real; no afirma restore/cutover productivo.
 - Conserva FAILURE histórico de checks ajenos en SHA M05.04, sin elevarlo a PASS. Reproducibilidad por commit, check-runs exact-SHA, blobs y readback institucional.
