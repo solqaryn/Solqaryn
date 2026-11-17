@@ -30,7 +30,7 @@
     <p class="container demo-note"><strong>Modo demostración:</strong> este catálogo usa fixtures de vista previa. No sustituye silenciosamente una falla de la fuente real.</p>
   }
 
-  <main id="catalogo-productos" class="container products-page" [attr.aria-busy]="estadoCatalogo() === 'loading'">
+  <main id="catalogo-productos" tabindex="-1" class="container products-page" [attr.aria-busy]="estadoCatalogo() === 'loading'">
     <header class="page-heading">
       <div>
         <p class="eyebrow">{{ soloOfertasPagina() ? 'PROMOCIONES VIGENTES' : 'CATÁLOGO PÚBLICO' }}</p>

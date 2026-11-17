@@ -338,4 +338,44 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
     }
   });
 
+
+  // A0.14: cobertura keyboard real de rutas compartidas, no WCAG total.
+  // Ninguna navegacion realiza un pedido ni solicita mutaciones.
+  test('storefront: skip-link ofertas/carrito con Tab Enter en dos viewports', async ({context}) => {
+    test.setTimeout(150_000);
+    const rutas: [string, string][] = [
+      ['/tienda/ofertas', '#catalogo-productos'],
+      ['/tienda/carrito', '#carrito-principal']
+    ];
+    for (const width of [375, 1280]) {
+      for (const [ruta, destino] of rutas) {
+        const page = await context.newPage();
+        const mutaciones: string[] = [];
+        try {
+          await page.setViewportSize({width, height: 840});
+          page.on('request', request => {
+            if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method())) {
+              mutaciones.push(request.method() + ' ' + request.url());
+            }
+          });
+          await page.goto(ruta, {waitUntil: 'domcontentloaded'});
+          const salto = page.locator('a.skip-link').first();
+          await expect(salto).toHaveAttribute('href', ruta + destino);
+          await page.keyboard.press('Tab');
+          await expect(salto).toBeFocused();
+          await page.keyboard.press('Enter');
+          await expect.poll(() => page.evaluate(() => location.pathname)).toBe(ruta);
+          await expect.poll(() => page.evaluate(() => location.hash)).toBe(destino);
+          const principal = page.locator('main' + destino);
+          await expect(principal).toBeVisible();
+          await expect(principal).toHaveAttribute('tabindex', '-1');
+          await noOverflow(page);
+        } finally {
+          await page.close();
+        }
+        expect(mutaciones).toEqual([]);
+      }
+    }
+  });
+
 });

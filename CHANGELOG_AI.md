@@ -1,3 +1,7 @@
+## 2026-11-17 - V19 C15-04.M05.04 skip-link ofertas/carrito [Javier :10]
+- Se hace enfocable por fragmento el main de productos/ofertas con tabindex=-1; regresion Playwright usa Tab y Enter en ofertas/carrito a 375/1280 px y comprueba hash, ruta, overflow y ausencia de escrituras.
+- CI de 16 escenarios, Scope Lock y V5 necesitan SUCCESS exact-SHA antes de acreditar resultados; UX global R2 sigue EN_PROGRESO, sin LISTO ni A5 propia.
+
 ## 2026-11-17 — V19 C13-04.M05.04 inventario recursivo de rutas importadas y rechazo anonimo [Javier :00]
 - Playwright agrega descubrimiento de imports anidados de rutas ERP del checkout y valida existencia de módulos; cuatro navegaciones negativas reales Chromium sin interceptar red a ajustes, facturas, pedidos y reporte hijo.
 - Alcance R2 de aceptación parcial: la matriz estática y denegación anónima NO prueban viajes positivos empresariales, JWT por capacidad, rutas dinámicas ni cobertura global. P1 permanece abierto, VALIDANDO con revisión A5 ajena pendiente; CI exact-SHA requerida y rollback git revert normal.

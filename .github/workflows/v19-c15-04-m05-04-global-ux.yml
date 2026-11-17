@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   chromium:
-    name: C15-04.M05.04 - quince casos Chromium parciales
+    name: C15-04.M05.04 - dieciseis casos Chromium parciales
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
