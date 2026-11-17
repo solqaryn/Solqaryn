@@ -484,3 +484,11 @@ El control de inventario P0-007.A detectó en el SHA `69c136cbe36af14466f0dec006
 - `frontend/src/app/features/extensiones-sectoriales/sector-modules-readonly.component.ts`
 
 Se conservan comparaciones estrictas de conjuntos, conteo exacto y negativos de ausencia, duplicados y rutas fuera del alcance; no hay exclusiones ni bypass. La nueva superficie es Angular privada, estática y no operativa. El inventario no certifica JWT, RBAC, tenant, API, MySQL ni aceptación de navegador. Exigir `node scripts/verify-p0-007-a-component-catalog.mjs --self-test` real en CI del nuevo SHA y A0–A4 aplicables; A5 requiere revisor Javier distinto del autor. Sin QA/main/PROD; rollback Git revert normal.
+
+## Actualización aditiva V18 C13-04.M04.03 — 16 de noviembre de 2026
+
+La nueva referencia visual privada fue publicada en dev y requiere inventario. Se incorpora exactamente un archivo fuente real, total actual **155 archivos .component.ts (147 features y 8 shared)**, preservando todos los inventarios y SHAs históricos anteriores:
+
+- `frontend/src/app/features/plataforma/c13-04-presentacion-v5.component.ts`
+
+El self-test estricto de P0-007.A mantiene comparaciones exactas de rutas presentes, omitidas y duplicadas, y rechaza altas no inventariadas. Registrar el archivo NO certifica accesibilidad, JWT/RBAC/tenant real, HTTP, MySQL ni QA/main/PROD. Esta reparación no cambia el conjunto de rutas protegidas ni excluye ninguna verificación. Revalidar CI exact-SHA. Rollback normal git revert, sin force-push.

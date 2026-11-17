@@ -6242,3 +6242,7 @@
 ## 2026-11-16 - V18 CI repair C13-04.M04.03 guard ERP allowlist estricta [Javier :30]
 - Incidente causal: audit Priority4 marcó UNGUARDED una ruta que sí usa plataformaGuard, por no estar en su conjunto cerrado. Se incorpora solo el nombre de ruta privada a la lista exacta y permanecen todas las condiciones del guard JWT/servidor, sin debilitar comprobaciones.
 - Se exige re-ejecutar ERP quality y CI dirigida, V5 y Scope Lock en SHA nuevo, sin convertir CANCELLED/SKIPPED/QUEUED en PASS ni autorizar QA/PROD.
+
+## 2026-11-16 - V18 CI repair C13-04.M04.03 inventario exacto Angular [Javier :30]
+- P0-007.A falló en SHA dc26b1c0 porque el archivo real c13-04-presentacion-v5.component.ts faltaba en el catálogo; se añade solamente ese path, actualizando conteos estrictos a 155/147/8 sin borrar históricos.
+- Conservados comparadores positivos y negativos, Scope Lock/V5, ausencia de grants y CI pendiente; ninguna prueba fallida, cancelada u omitida se acredita PASS.
