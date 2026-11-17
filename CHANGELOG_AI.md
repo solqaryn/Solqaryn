@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C09-04.M06.03 riesgos abiertos y decisiones multicanal [Javier :50]
+- Registro R01–R10 y decisiones D01–D08: webhooks, replay, PII, JWT/RBAC/tenant, consentimiento, duplicados, accesibilidad y bloqueo R3, con evidencia M05.01–06 delimitada por SHA y run.
+- Alcance R0 documental; MySQL 8.4/Chromium de pruebas previas no certifican proveedor vivo, webhook firmado, Aiven o producción; A5 independiente pendiente y rollback git revert normal.
+
 ## 2026-11-17 — V19 C09-04.M06.02 manifiesto reproducible de seis pruebas M05 [Javier :50]
 - Se documentan versiones, SHA exacto, job IDs y resultados 7/8/3/3/11/4 en seis runs GitHub-hosted, con comandos read-only para verificar checks, diff, logs y Category=Integration MySQL 8.4 sin confundir mocks con proveedores.
 - Evidencia R0 de documentos/CHANGELOG, límites JWT/webhook/PII/SMTP/WhatsApp no certificados, rollback git revert normal y A5 independiente; no tocar runtime, QA/main/PROD.
