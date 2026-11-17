@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C09-04.M04.04 interacciones privadas sin envios [Javier :30]
+- Cuatro pruebas Chromium sobre Angular real: anonimo/403, Empresa/no administrador, canales read-only sin formularios y Tab/Enter con segunda activacion sin POST, responsive 320–1280.
+- Solo se simula la sesion HTTP; no hay boton de envio real, por lo que no se certifica deduplicacion SMTP/WhatsApp, JWT real, MySQL, webhooks ni privacidad del backend.
+- CI GitHub-hosted exact-SHA y readback A0–A4 pendientes; A5 por otra Task Javier. Sin permisos nuevos ni QA/main/PROD; revert normal.
+
 ## 2026-11-17 — V19 C09-04.M04.02 integración de ruta protegida [Javier :20]
 - Ruta hija real de plataforma con guard y lazy standalone de estados, sin alterar la pantalla base M04.01 ni sus controles; cero envíos, secretos, datos empresariales o nuevas operaciones mutantes.
 - Cuatro escenarios Playwright Chromium con denegaciones, estado vacío, responsive 320/1280 y sesión HTTP sintética; CI GitHub-hosted exact-SHA pendiente. Ocho pruebas TestBed precedentes conservadas.
