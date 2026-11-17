@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C15-04.M05.04 contraste de errores de cuenta [Javier :10]
+- Incremento Chromium numero 20: contraste computado de error >=4.5:1, objetivos de pestañas >=44px, sin escrituras HTTP en 375/1280; Scope Lock, V5, tipado, build y CI exact-SHA pendientes de comprobar.
+- Auditoria UX global R2 sin terminar; no se acredita JWT firmado, RBAC, tenant A/B, WCAG completo, rutas privadas ni Web Vitals globales. Owner DEV02, WIP/lock V17 conservados; A5 independiente; rollback git revert.
+
 ## 2026-11-17 — V19 C02-04.M05.02 reparación P2 límite de respuesta QA [Javier :50]
 - Se detectó que `Content-Length` ausente en respuesta GitHub chunked permitía lectura JSON sin tope. Reparación R2 acota la lectura real a 512000 bytes y devuelve 503 sin exponer payload ni auditar éxito cuando se supera el límite.
 - Nueva regresión TestServer/JWT firmado con respuesta chunked válida positiva y JSON sobredimensionado negativo. CI .NET10/MySQL8.4, Scope Lock y V5 del SHA nuevo aún por ejecutar; A5_FAIL histórico preservado, A5 correctiva pendiente, sin QA/main/PROD.

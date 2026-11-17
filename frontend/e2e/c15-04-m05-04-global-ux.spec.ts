@@ -555,4 +555,52 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
     }
   });
 
+
+  // A0.20: contraste legible de error de cliente en Chromium, sin proveedor.
+  // Se mide contra el fondo realmente computado del panel. No certifica JWT ni WCAG global.
+  test('cuenta: error de correo y contraste real de texto a 375/1280',async({context})=>{
+    test.setTimeout(150_000);
+    for(const width of [375,1280]){
+      const page=await context.newPage();
+      const writes:string[]=[];
+      try{
+        await page.setViewportSize({width,height:840});
+        page.on('request',r=>{
+          if(!['GET','HEAD','OPTIONS'].includes(r.method()))writes.push(r.method()+' '+r.url());
+        });
+        await page.goto('/tienda/cuenta',{waitUntil:'domcontentloaded'});
+        const correo=page.locator('#cuenta-panel-login input[formcontrolname="correo"]');
+        await correo.fill('invalido');
+        const error=page.locator('#cuenta-login-correo-error');
+        await expect(error).toBeVisible();
+        await expect(correo).toHaveAttribute('aria-describedby','cuenta-login-correo-error');
+        const sample=await error.evaluate(el=>{
+          const panel=el.closest('.panel');
+          if(!panel)throw new Error('No existe panel de error');
+          const foreground=getComputedStyle(el).color;
+          const background=getComputedStyle(panel).backgroundColor;
+          const luminance=(css:string)=>{
+            const match=css.match(/^rgba?\(\s*(\d+(?:\.\d+)?)[,\s]+(\d+(?:\.\d+)?)[,\s]+(\d+(?:\.\d+)?)/);
+            if(!match)throw new Error('Color CSS no medible: '+css);
+            const channels=match.slice(1,4).map(Number).map(v=>{
+              const c=v/255;return c<=0.04045?c/12.92:((c+0.055)/1.055)**2.4;
+            });
+            return channels[0]*.2126+channels[1]*.7152+channels[2]*.0722;
+          };
+          const a=luminance(foreground),b=luminance(background);
+          return {ratio:(Math.max(a,b)+.05)/(Math.min(a,b)+.05),foreground,background};
+        });
+        console.log('[C15-04.M05.04 CONTRASTE_PUNTUAL]',JSON.stringify({width,...sample}));
+        expect(sample.ratio,'Texto de error WCAG AA 4.5:1 contra panel').toBeGreaterThanOrEqual(4.5);
+        for(const name of ['Iniciar sesión','Crear cuenta']){
+          const tab=page.getByRole('tab',{name});
+          const height=await tab.evaluate(el=>el.getBoundingClientRect().height);
+          expect(height,'Tab de al menos 44px').toBeGreaterThanOrEqual(44);
+        }
+        await noOverflow(page);
+      }finally{await page.close();}
+      expect(writes).toEqual([]);
+    }
+  });
+
 });
