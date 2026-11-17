@@ -47,8 +47,9 @@ export class C1304PresentacionV5Component {
   readonly estadoInventario = computed(() => {
     const estado = this.comprobacion();
     if (estado === 'cargando') return 'cargando';
-    if (estado === 'denegada' || !this.autorizado()) return 'sin_permiso';
+    // 503 de sesión revocada sigue siendo error técnico, nunca autorización exitosa.
     if (estado === 'error') return 'error';
+    if (estado === 'denegada' || !this.autorizado()) return 'sin_permiso';
     return estado === 'verificada' ? 'exito' : 'vacio';
   });
 

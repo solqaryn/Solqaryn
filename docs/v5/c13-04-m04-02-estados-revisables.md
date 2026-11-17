@@ -18,3 +18,6 @@ El inventario integral de rutas/módulos, sus fases PLANIFICADO / EN_DESARROLLO 
 - Rollback: git revert normal del único commit, preservar bitácora. No existe nueva API, migración, scheduler, secreto, producción, ni estado técnico inventado.
 
 Requisitos: `STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES` V5 FINAL, sección `SOLQARYN_OWNER_GLOBAL_QA_V1`; PLAN_MAESTRO ID `C13-04.M04.02`; artefactos `docs/v5/c13-04-m02-06-dependencias-contrato-salida-experiencia-visual.md` y `frontend/src/app/app.routes.ts`.
+
+## Reparación causal CI del estado de autorización
+El primer run dirigido `44001543304` (job `133766578481`) ejecutó 10 tests reales: 8 PASS / 2 FAIL. Una aserción anterior de M04.03 exigía literalmente «Sin permiso» en el primer role=alert; el nuevo panel ahora conserva ese texto sin suavizar denegación. La segunda falla halló que `estadoInventario` priorizaba `sin_permiso` sobre `error` al invalidarse la sesión durante 503; se invierte esa precedencia solo para error técnico, sin mostrar controles (la sección de presets sigue condicionada a `autorizado()`). Revalidar en GitHub-hosted el SHA de reparación, las 10 pruebas TestBed y Chromium, Scope Lock/V5/ERP y checks pertinentes; el primer FAIL no cuenta como PASS.

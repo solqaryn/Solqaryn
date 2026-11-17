@@ -17,7 +17,7 @@
       @case ('vacio') { <p role="status" data-testid="c1304-m0402-state">Vacío: no hay catálogo de interfaces acreditado o conectado.</p> }
       @case ('exito') { <p role="status" data-testid="c1304-m0402-state">Éxito: sesión global revalidada. Inventario de módulos SIN_VERIFICAR.</p> }
       @case ('error') { <p role="alert" data-testid="c1304-m0402-state">Error al consultar la sesión global. No se revelan detalles internos.</p> }
-      @case ('sin_permiso') { <p role="alert" data-testid="c1304-m0402-state">No accesible: permiso de plataforma no confirmado.</p> }
+      @case ('sin_permiso') { <p role="alert" data-testid="c1304-m0402-state">Sin permiso de plataforma confirmado. No accesible.</p> }
     }
     @if (autorizado() && estadoInventario() !== 'cargando') {
       <button type="button" data-testid="c1304-m0402-revalidate" (click)="revalidarEstadoGlobal()">
