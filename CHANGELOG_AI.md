@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C09-04.M02.02 API DTO y errores multicanal [Javier :40]
+- Se documentan rutas y contratos existentes de outbox, email y WhatsApp por blob, diferenciándolos de doce interfaces futuras sin endpoints nuevos; autorización tenant, ProblemDetails, idempotencia y webhook HMAC futura fail-closed.
+- Nueve positivos y catorce negativos FUTUROS_NO_EJECUTADOS, preservación de respuestas vigentes, A0–A5 causal y A5 independiente; sin runtime ni proveedores activados.
+
 ## 2026-11-17 — V19 C12-04.M04.04 pruebas reales de acción única y teclado [Javier :30]
 - Playwright Chromium GitHub-hosted comprueba GET de sesión con bloqueo single-flight y aria-busy, error 503 opaco, Tab/Enter de teclado real y ausencia total de comandos mutantes o formularios en la ruta privada de preparación MySQL.
 - Cuatro casos nuevos en archivo E2E y workflow SHA-scoped (sin cancelación de CI previa); 18 Vitest previos y 4 Chromium nuevos a acreditar antes de LISTO. A5 por otra Task Javier, sin JWT/MySQL/restore/PROD real.
