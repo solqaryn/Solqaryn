@@ -1,3 +1,7 @@
+## 2026-11-16 — V19 C12-04.M04.01 — superficie privada de cutover [Javier :30]
+- Ruta Angular privada de preparación MySQL con guard real, checklist estrictamente informativo y denegación segura; ninguna restauración, migración ni acción de proveedor.
+- Pruebas Vitest adversariales, revocación, roles y tenant; evidencia A0-A5 separa pruebas de UI de integración real y permite rollback por git revert sin reescritura.
+
 ## 2026-11-16 — V19 C05-01.M06.04 rollback aislado GitHub-hosted [Javier :30]
 - Ensayo real git revert --no-commit del commit de pruebas C05-01.M05.06 en worktree efimero; validar SHA/padre, cuatro archivos exactos, igualdad de tree al padre, checkout original inmutable y rechazo de SHA no autorizado.
 - Script Bash y workflow propio sin permisos de escritura remota, sin datos, migraciones, secretos, MySQL ni cambios de runtime; QA/main/PROD intactos y RTO/RPO sin certificar.

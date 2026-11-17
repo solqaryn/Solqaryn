@@ -27,6 +27,7 @@ export const routes: Routes = [
   { path: 'plataforma/flujo-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/plataforma.component').then(m => m.PlataformaComponent) },
   { path: 'plataforma/auditoria-operativa-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/auditoria-operativa-v5.component').then(m => m.AuditoriaOperativaV5Component) },
   { path: 'plataforma/continuidad-operativa-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/continuidad-operativa-v5.component').then(m => m.ContinuidadOperativaV5Component) },
+  { path: 'plataforma/mysql-cutover-readonly-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/c12-04-m04-01-cutover-readonly.component').then(m => m.C1204CutoverReadonlyComponent) },
   { path: 'plataforma/placement-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/placement-review-v5.component').then(m => m.PlacementReviewV5Component) },
   { path: 'plataforma/consola-global-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/consola-global-auditada-v5.component').then(m => m.ConsolaGlobalAuditadaV5Component) },
   { path: 'plataforma/auditoria-tenancy-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/auditoria-tenancy-v5.component').then(m => m.AuditoriaTenancyV5Component) },
