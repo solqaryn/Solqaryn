@@ -142,7 +142,7 @@ expect(!storefrontHtml.includes('categoria.producto'), 'La imagen de categoría 
 expect(!storefrontHtml.includes('categoria.cantidad'), 'El conteo visual debe provenir de CategoriaTienda, no de un cálculo local de productos.');
 
 expect(headerTs.includes('categorias: STOREFRONT_PATHS.categorias'), 'El enlace principal de Categorías debe apuntar a la ruta pública canónica de Fase 2.');
-expect(headerHtml.includes('[href]="destinoSaltar"'), 'El skip link del header debe ser reutilizable fuera del home.');
+expect(headerHtml.includes('[routerLink]="[]"') && headerHtml.includes('[fragment]="destinoSaltar.slice(1)"'), 'El skip link del header debe conservar la ruta Angular activa y aplicar el fragmento correcto.');
 expect(headerTs.includes('totalUnidades: number | null'), 'El resumen de carrito compartido debe poder expresar un valor desconocido sin inventar cero.');
 
 if (failures.length) {

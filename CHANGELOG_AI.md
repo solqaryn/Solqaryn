@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C15-04.M05.04 validador phase2 acorde al fix [Javier :10]
+- Lint fase2 falló en SHA 71a32b6f porque exigia el href solo fragmento defectuoso. Se refuerza assert para exigir RouterLink relativo y fragment Angular, sin suprimir verificacion.
+- Regresion Chromium y Scope Lock exact-SHA del nuevo commit requeridos, R2 global todavia EN_PROGRESO y A5 pendiente independiente.
+
 ## 2026-11-17 — V19 C15-04.M05.04 P2 salto teclado tienda [Javier :10]
 - Chromium SHA 39b2e65d RUN 44112044539 encontro 11 PASS y 1 FAIL: Tab+Enter sobre enlace #contenido-principal salia de /tienda hacia / por el HTML base. QA_DEFECT_FOUND P2 genuino.
 - Corregido enlace con RouterLink relativo y fragment, regresiones de tres rutas verifican destino y pathname. CI del SHA correctivo aun requiere comprobacion; auditoria UX global conserva EN_PROGRESO, A5 pendiente ajena.
