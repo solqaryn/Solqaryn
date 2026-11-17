@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C09-04.M02.05 eventos y límites [Javier :40]
+- Define contrato futuro EV01–EV16 y EI01–EI20 con tenant, idempotencia durable, correlación, retries finitos y webhook HMAC aún no implementado; separa outbox real de garantías futuras.
+- Diez positivos y catorce negativos NO_EJECUTADOS, A0–A5 documental y rollback seguro; no crea eventos, workers, colas ni envía comunicaciones.
+
 ## 2026-11-17 — V19 C09-04.M02.03 persistencia e índices multicanal [Javier :50]
 - Matriz verificada de MensajesOutbox, repositorio y migración N71C (índices únicos tenant/idempotencia y claim), email tenant-scoped y referencia WhatsApp N76C; separa fuentes reales de esquemas D01–D06 FUTUROS_NO_IMPLEMENTADOS.
 - Contrato de migración aditiva efímera MySQL 8.4 y fixtures A/B con diez casos T01–T10 FUTUROS_NO_EJECUTADOS, seguridad fail-closed y rollback; sin SQL, HTTP, envíos, datos reales ni certificaciones inventadas.
