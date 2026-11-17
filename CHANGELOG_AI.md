@@ -1,3 +1,7 @@
+## 2026-11-16 — V19 C00-04.M05.04 aceptacion real de gobierno V5 [Javier :10]
+- Añade cuatro casos Playwright/Chromium en ruta protegida real: contrato de cuatro controles, revalidacion positiva con dos GET, retorno a plataforma y rechazo de sesion de administrador empresarial 200; fixtures HTTP son sinteticos.
+- Workflow Node24/npm11/Angular22 con CI aislada por SHA, lint/build, Chromium real; riesgo R2 por CI. A0-A4 exact SHA y A5 independiente necesarios; sin cambiar runtime, JWT/RBAC, MySQL, QA/main/PROD. Rollback git revert.
+
 ## 2026-11-16 — V19 C00-04.M05.01 regresion unitaria de gobierno [Javier :10]
 - Agrega regresiones xUnit Domain de límites de claves y motivos, controles CR/LF/TAB, rollback, SHA y NoGo de cambios sensibles; una propuesta con ID bien formado no demuestra pertenencia al plan ni autoriza ejecutar.
 - Riesgo R1, pruebas sobre regla preexistente sin mutar Domain ni runtime; requiere .NET10 Release real, Scope Lock, V5 y A5 independiente. Solo dev; rollback git revert.
