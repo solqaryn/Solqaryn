@@ -486,4 +486,59 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
     expect(escrituras).toEqual([]);
   });
 
+
+  // A0.18: fronteras de formularios PUBLICOS de cliente con teclado y DOM real.
+  // Valida bloqueo de envio pero nunca ejecuta login/registro ni crea datos.
+  test('cuenta: validacion negativa y frontera de formularios sin POST',async({context})=>{
+    test.setTimeout(150_000);
+    for(const width of [375,1280]){
+      const page=await context.newPage();
+      const writes:string[]=[];
+      try{
+        await page.setViewportSize({width,height:840});
+        page.on('request',r=>{
+          if(!['GET','HEAD','OPTIONS'].includes(r.method()))writes.push(r.method()+' '+r.url());
+        });
+        await page.goto('/tienda/cuenta',{waitUntil:'domcontentloaded'});
+        const login=page.locator('#cuenta-panel-login');
+        await expect(login).toBeVisible();
+        const correo=login.locator('input[formcontrolname="correo"]');
+        const clave=login.locator('input[formcontrolname="clave"]');
+        const enviar=login.locator('button[type="submit"]');
+        await expect(correo).toHaveAttribute('autocomplete','email');
+        await expect(clave).toHaveAttribute('autocomplete','current-password');
+        await expect(enviar).toBeDisabled();
+        await correo.fill('correo-invalido');
+        await clave.fill('p'.repeat(10));
+        await expect(enviar).toBeDisabled();
+        await correo.fill('cliente@example.test');
+        await clave.fill('p'.repeat(9));
+        await expect(enviar).toBeDisabled();
+        await clave.fill('p'.repeat(10));
+        await expect(enviar).toBeEnabled();
+
+        await page.getByRole('tab',{name:'Crear cuenta'}).click();
+        const registro=page.locator('#cuenta-panel-registro');
+        await expect(registro).toBeVisible();
+        const nombre=registro.locator('input[formcontrolname="nombre"]');
+        const correoNuevo=registro.locator('input[formcontrolname="correo"]');
+        const claveNueva=registro.locator('input[formcontrolname="clave"]');
+        const crear=registro.locator('button[type="submit"]');
+        await expect(claveNueva).toHaveAttribute('autocomplete','new-password');
+        await expect(claveNueva).toHaveAttribute('aria-describedby','clave-ayuda');
+        await expect(registro.locator('#clave-ayuda')).toBeVisible();
+        await correoNuevo.fill('cliente@example.test');
+        await claveNueva.fill('p'.repeat(10));
+        await expect(crear).toBeDisabled(); // nombre ausente
+        await nombre.fill('Cliente de prueba');
+        await claveNueva.fill('p'.repeat(9));
+        await expect(crear).toBeDisabled(); // contrasena bajo minimo
+        await claveNueva.fill('p'.repeat(10));
+        await expect(crear).toBeEnabled();
+        await noOverflow(page);
+      }finally{await page.close();}
+      expect(writes).toEqual([]);
+    }
+  });
+
 });

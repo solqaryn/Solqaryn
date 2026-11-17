@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C15-04.M05.04 fronteras de cuenta sin mutaciones [Javier :10]
+- A1/A3 parcial: nuevo Playwright de login/registro publicos a 375/1280, correo invalido, nombre ausente, clave de 9/10 caracteres, bloqueo de submit, atributos autocomplete y aria-describedby, cero mutaciones HTTP; 19 tests Chromium CI pendiente del SHA propio, sin declarar PASS.
+- No se registran usuarios ni se invocan proveedores; A0-A4 global, JWT firmado/roles/tenant A-B, WCAG y Web Vitals globales siguen sin certificar; WIP DEV02/lock V17 retenido, A5 solo revisor Javier distinto.
+
 ## 2026-11-17 — V19 C15-04.M05.04 ampliar landmarks y teclado responsive [Javier :10]
 - Incremento R2 parcial: 24 navegaciones reales de seis rutas storefront a 320/375/768/1280 px; main/skip-link/H1/overflow/HTTP sin mutaciones y Tab+Enter reales a 320/768. El workflow requiere 18 tests Chromium, Scope Lock y V5 exact-SHA; CI por ejecutar, nunca PASS anticipado.
 - Global UX, JWT firmado, tenant A/B, roles, WCAG global y Web Vitals global permanecen SIN_VERIFICAR; EN_PROGRESO de DEV02, candado V17 retenido y A5 de otra Task. Rollback git revert ordinario.
