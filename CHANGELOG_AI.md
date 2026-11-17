@@ -1,3 +1,8 @@
+## 2026-11-16 — V19 C05-01.M04.06 densidad y revelado progresivo de catálogo privado [Javier :30]
+- Añade dos pruebas Playwright al catálogo Angular existente: apertura/cierre del details sin densidad prematura, límites 4 tokens/5 estados/2 presets y respuesta en 320/375/768/1280.
+- Niega la ruta ante 403 sintético y exige cero solicitudes de escritura; no afirma code splitting, JWT/tenant real ni métricas web inexistentes.
+- Riesgo R1; exige Scope Lock/V5, GitHub Actions dirigido del SHA y A5 independiente; rollback con git revert, exclusivamente dev.
+
 ## 2026-11-16 — V19 C15-04.M03.06 reparación A5_FAIL P2 logger dinámico [Javier :40]
 - Evita la segunda consulta mutable IsEnabled de LoggerMessage.Define con SkipEnabledCheck=true después de un precheck explícito para Information y Warning.
 - Regresión xUnit de logger stateful que retorna FALSE en segunda consulta: verifica una consulta, un Log invocado y recibo no durable; mantiene rechazo si está deshabilitado al inicio.

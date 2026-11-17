@@ -218,4 +218,43 @@ test('C05-01.M04.05 responsive y colores forzados conservan control seguro', asy
   await expect(button).toHaveAttribute('aria-pressed', 'true');
   await expect(catalog.locator('.brand-preview')).toContainText('Contraste alto');
 });
+test('C05-01.M04.06 - revelado progresivo limita la densidad y no realiza escrituras', async ({ page }) => {
+  await mockSession(page, true);
+  const unsafeWrites: string[] = [];
+  page.on('request', request => {
+    if (!['GET', 'HEAD', 'OPTIONS'].includes(request.method())) unsafeWrites.push(request.method());
+  });
+  await page.goto('/plataforma');
+  const details = page.locator('details.design-system-preview');
+  const summary = details.locator('summary');
+  const catalog = details.locator('.design-catalog');
+  await expect(summary).toBeVisible();
+  await expect(details).not.toHaveAttribute('open', '');
+  await expect(catalog).toBeHidden();
+  await summary.click();
+  await expect(details).toHaveAttribute('open', '');
+  await expect(catalog.getByRole('heading', { name: 'Tokens y componentes de referencia' })).toBeVisible();
+  await expect(catalog.locator('.token-item')).toHaveCount(4);
+  await expect(catalog.locator('.state-example')).toHaveCount(5);
+  await expect(catalog.locator('.brand-choice')).toHaveCount(2);
+  await expect(catalog.locator('form, input, select, textarea')).toHaveCount(0);
+  for (const width of [320, 375, 768, 1280]) {
+    await page.setViewportSize({ width, height: 800 });
+    const overflow = await page.evaluate(() =>
+      document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow, 'densidad sin scroll horizontal a ' + width).toBeLessThanOrEqual(2);
+  }
+  await summary.click();
+  await expect(details).not.toHaveAttribute('open', '');
+  await expect(catalog).toBeHidden();
+  expect(unsafeWrites, 'el catalogo solo lectura no escribe por red').toEqual([]);
+});
 
+test('C05-01.M04.06 - permiso 403 impide revelar el catalogo y filtrar diagnosticos', async ({ page }) => {
+  await mockSession(page, false);
+  await page.goto('/plataforma');
+  await expect(page).toHaveURL(/\/login\?plataforma=denegado/);
+  await expect(page.locator('details.design-system-preview')).toHaveCount(0);
+  await expect(page.locator('.design-catalog .token-item, .design-catalog .state-example')).toHaveCount(0);
+  await expect(page.getByText('PRIVATE_DESIGN_TOKEN_SECRET')).toHaveCount(0);
+});
