@@ -59,13 +59,53 @@ public sealed class C0904M0305OutboxTenantWorkerTests
         Assert.Equal(0,r.Claims); Assert.Equal(0,r.Stale); Assert.Equal(0,d.Envios);
     }
 
+
+    [Fact]
+    public async Task M0501_ClaveIdempotenciaRepetida_NoDespachaNiConfirma()
+    {
+        // Dos eventos distintos del mismo tenant con clave repetida:
+        // el lote completo se rechaza antes del primer efecto externo.
+        var r = new Repositorio(Crear(7, "clave-repetida"), Crear(7, "clave-repetida"));
+        var g = new Gate(); var d = new Despachador();
+
+        await Assert.ThrowsAsync<InvalidOperationException>(
+            () => CrearWorker(r, g, d).ProcesarAsync(7, AhoraUtc));
+
+        Assert.Equal(1, r.Claims);
+        Assert.Equal(0, d.Envios);
+        Assert.Equal(0, r.Confirmaciones);
+        Assert.Equal(0, r.Fallos);
+        Assert.Equal(0, g.Mensajes);
+    }
+
+    [Fact]
+    public async Task M0501_RevocacionEntreDosMensajes_ImpideSegundoEnvioYFallaOpaco()
+    {
+        // Autorizar solo el primer mensaje simula consentimiento revocado
+        // despues de la primera entrega, antes de ejecutar el segundo efecto.
+        var r = new Repositorio(Crear(7, "clave-primera"), Crear(7, "clave-segunda"));
+        var g = new Gate { PermitirHasta = 1 }; var d = new Despachador();
+
+        var resultado = await CrearWorker(r, g, d).ProcesarAsync(7, AhoraUtc);
+
+        Assert.Equal(2, resultado.Reclamados);
+        Assert.Equal(1, resultado.Entregados);
+        Assert.Equal(1, resultado.Reprogramados);
+        Assert.Equal(0, resultado.DeadLetter);
+        Assert.Equal(2, g.Mensajes);
+        Assert.Equal(1, d.Envios);
+        Assert.Equal(1, r.Confirmaciones);
+        Assert.Equal(1, r.Fallos);
+        Assert.Equal("DELIVERY_FAILED", r.ErrorSeguro);
+    }
+
     private static OutboxTenantDeliveryWorker CrearWorker(Repositorio r,Gate g,Despachador d) =>
         new(new OutboxRetryProcessor(r,new OutboxRetryProcessorOptions(JitterRatio:0),()=>0.5),g,d);
 
-    private static MensajeOutbox Crear(int empresaId)
+    private static MensajeOutbox Crear(int empresaId, string? clave = null)
     {
         var m=MensajeOutbox.Crear(empresaId,"correo.notificacion","{\"test\":true}",
-            $"idempotency-{empresaId}",creadoEnUtc:AhoraUtc.AddMinutes(-1));
+            (clave ?? $"idempotency-{empresaId}"),creadoEnUtc:AhoraUtc.AddMinutes(-1));
         m.MarcarProcesando(AhoraUtc);
         return m;
     }
@@ -74,13 +114,14 @@ public sealed class C0904M0305OutboxTenantWorkerTests
     {
         public bool TenantPermitido {get;init;}=true;
         public bool MensajePermitido {get;init;}=true;
+        public int PermitirHasta {get;init;}=int.MaxValue;
         public int Mensajes {get;private set;}
         public int UltimaEmpresa {get;private set;}
         public Task<bool> AutorizarTenantAsync(int empresaId,CancellationToken cancellationToken=default)
         {UltimaEmpresa=empresaId;return Task.FromResult(TenantPermitido);}
         public Task<bool> AutorizarMensajeAsync(int empresaId,Guid eventoId,string tipoEvento,
             CancellationToken cancellationToken=default)
-        {Mensajes++;UltimaEmpresa=empresaId;return Task.FromResult(MensajePermitido);}
+        {Mensajes++;UltimaEmpresa=empresaId;return Task.FromResult(MensajePermitido && Mensajes <= PermitirHasta);}
     }
     private sealed class Despachador : IOutboxEffectDispatcher
     {

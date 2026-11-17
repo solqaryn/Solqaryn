@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C09-04.M05.01 replay y revocacion outbox [Javier :40]
+- Dos aserciones xUnit nuevas sobre el worker real: clave idempotente duplicada impide toda entrega; revocacion en segundo mensaje solo permite primera entrega y registra fallo opaco sin envio adicional.
+- GitHub-hosted .NET 10 Release, sin activar SMTP/WhatsApp, webhooks, JWT real, MySQL, secretos o produccion; A0-A4 y revision A5 independiente por SHA.
+
 ## 2026-11-17 — V19 C12-04.M06.04 ensayo Oracle EF MySQL 8.4 efimero [Javier :50]
 - Se amplía la CI de restauración sintética con job dependiente para intentar aplicar migraciones Oracle EF 10.0.12 sobre MySQL 8.4 de GitHub-hosted, reejecución idempotente y suite Integration A/B con TRX verificable.
 - Hasta concluir CI exact-SHA, el resultado es PENDIENTE y C12-04.M06.04 permanece VALIDANDO. No valida Aiven, restauración real, RPO/RTO, cutover ni producción; A5 de otra Task Javier.
