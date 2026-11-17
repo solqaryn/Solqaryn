@@ -1,3 +1,8 @@
+## 2026-11-16 — V19 C15-04.M04.02 estados privados Angular TestBed [Javier :00]
+- Añade cinco pruebas Angular para denegación anónima/403, vacío sin datos institucionales, espera single-flight, éxito informativo y error 503 opaco con reintento.
+- Workflow por SHA Node24/npm11 Vitest, lint/build, sin tocar código runtime; servicio sintético NO prueba JWT/RBAC/tenant HTTP ni MySQL real.
+- Riesgo R1, A0-A4 sujetos a CI exacta, Scope Lock/V5 y readback; A5 independiente, rollback git revert, sólo dev.
+
 ## 2026-11-16 — V19 C15-04.M04.03 branding dinámico y componentes permitidos [Javier :00]
 - Añade cuatro Vitest Angular TestBed para marca institucional/neutra, densidad compacta, configuración inmutable y ausencia de operaciones de escritura en dos componentes privados ya existentes.
 - Incluye payload SVG y getter hostil para verificar fallback neutro, además de rechazo sin sesión; no atribuye JWT/RBAC/tenant real ni certificación visual global.
