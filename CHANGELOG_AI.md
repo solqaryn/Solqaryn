@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C15-04.M05.04 aislamiento real de Tab por ruta [Javier :10]
+- Chromium run 44114180266 registró 11 PASS/1 FAIL: foco residual en la tercera navegación de misma pestaña. Nueva pestaña real por ruta en el contexto Playwright, sin focus() artificial, conserva Tab/Enter, target y pathname.
+- Reparación estricta del fixture, no bypass; CI de 12 casos exact-SHA aún requerida. Auditoría UX R2 global permanece EN_PROGRESO.
+
 ## 2026-11-17 — V19 C15-04.M05.04 contratos storefront fases 3 y 7 [Javier :10]
 - Regresión phase3 CI detectó expectativa heredada de skip-link con hash aislado; se sustituye por href canonico /tienda/productos#catalogo-productos. Fase7 exige /tienda#contenido-principal.
 - Solo se actualizan dos aserciones específicas, conservando cobertura E2E y CI obligatoria exact-SHA. La auditoria UX global continúa EN_PROGRESO, A5 pendiente de otra Task.

@@ -184,13 +184,15 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
   // A0.5: pruebas de teclado real para tienda publica y dialog movil.
   // Contrato regresivo fase2: skip-link conserva pathname real, no solo hash.
   // No son evidencia de JWT, RBAC, MySQL, WCAG global o autorizacion backend.
-  test('storefront: Tab y Enter sobre skip-link de tres rutas publicas',async({page})=>{
+  test('storefront: Tab y Enter sobre skip-link de tres rutas publicas',async({context})=>{
     const routes:[string,string][]=[
       ['/tienda','#contenido-principal'],
       ['/tienda/productos','#catalogo-productos'],
       ['/tienda/categorias','#contenido-categorias']
     ];
     for(const [url,target] of routes){
+      const page=await context.newPage(); // Fresh tab guarantees real initial keyboard sequence.
+      try {
       await page.goto(url,{waitUntil:'domcontentloaded'});
       const skip=page.locator('a.skip-link').first();
       await page.keyboard.press('Tab');
@@ -201,6 +203,7 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
       await expect(page.locator(target)).toBeVisible();
       await expect.poll(()=>page.evaluate(()=>location.hash)).toBe(target);
       expect(await page.evaluate(()=>location.pathname)).toBe(url);
+      } finally { await page.close(); }
     }
   });
 

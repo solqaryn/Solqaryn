@@ -95,3 +95,6 @@ El SHA a93d3ab4e90c9cf463e052dd027c40f4a9f7737a provocó fallos reales de contra
 
 ## A0.9 Reparacion de regresiones storefront fases 3 y 7 (contratos estrictos)
 RUN 44114180606 fase3 fue FAIL de un assert de href previo (#catalogo-productos), cuando el href canonical correcto es /tienda/productos#catalogo-productos; otras siete pruebas del job aprobaron. Se corrige solo ese assert, preservando la navegacion, paginacion y tests reales. Fase7 conserva la prueba de skip-link en home y ahora espera URL completa /tienda#contenido-principal. No se ignoran tests ni se relajan permisos o seguridad. Exigir CI exact-SHA de las suites afectadas y doce Chromium C15 antes de declarar regresiones aprobadas; global UX sigue EN_PROGRESO sin A5.
+
+## A0.10 Reparacion de aislamiento de foco real entre rutas
+RUN 44114180266 JOB 134147579140 sobre SHA b7c50a35: 11/12 Chromium PASS, test Tab+Enter FAIL porque la tercera navegacion en la misma pestana tenia foco inicial residual y el primer Tab no llego al skip-link. Sin focus() sintetico: cada ruta usa una pestana Playwright nueva desde el mismo contexto y Tab real desde carga, se cierra la pestana en finally. La regresion sigue exigiendo foco skip-link, Enter, href ruta+fragmento, pathname y target visible. Pendiente CI exact-SHA, no certificar global UX.
