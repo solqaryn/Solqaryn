@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C15-04.M05.04 skip-link válido en cuenta pública [Javier :10]
+- Se corrige P2 de accesibilidad: /tienda/cuenta tenía un enlace de salto a #catalogo sin destino; ahora apunta al main #cuenta-principal con tabindex=-1 y etiqueta específica.
+- Regresión Playwright con Tab/Enter real, 375/1280 px, ruta/hash sin escape, sin overflow ni escrituras. Se esperan 15 casos Chromium en CI; no declarar PASS antes de logs exact-SHA, ni auditar como global la UX R2 aún EN_PROGRESO.
+
 ## 2026-11-17 — V19 C13-04.M05.04 revocacion JWT real con rol global efimero [Javier :00]
 - Nuevo Playwright Chromium comprueba que revocar el rol en MySQL 8.4 de CI invalida la autoridad de un JWT previamente firmado, deniega HTTP y ruta privada; restauracion de una fila en finally y readback.
 - P1 de cobertura recursiva permanece abierto: VALIDANDO, CI exact-SHA Scope Lock/V5 obligatoria y A5 independiente; sin datos de produccion, rollback git revert.

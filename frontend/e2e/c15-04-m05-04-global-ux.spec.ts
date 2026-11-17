@@ -310,4 +310,32 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
     }
   });
 
+  // A0.13: defecto real P2: la cuenta usaba el skip-link heredado #catalogo
+  // sin destino. El navegador real debe conservar pathname y llegar al main.
+  test('cuenta: skip-link real con Tab/Enter, hash valido y cero mutaciones',async({context})=>{
+    test.setTimeout(120_000);
+    for(const width of [375,1280]){
+      const page=await context.newPage();
+      const writes:string[]=[];
+      try{
+        await page.setViewportSize({width,height:840});
+        page.on('request',r=>{
+          if(!['GET','HEAD','OPTIONS'].includes(r.method()))writes.push(r.method()+' '+r.url());
+        });
+        await page.goto('/tienda/cuenta',{waitUntil:'domcontentloaded'});
+        const skip=page.locator('a.skip-link').first();
+        await expect(skip).toHaveAttribute('href','/tienda/cuenta#cuenta-principal');
+        await page.keyboard.press('Tab');
+        await expect(skip).toBeFocused();
+        await page.keyboard.press('Enter');
+        await expect.poll(()=>page.evaluate(()=>location.pathname)).toBe('/tienda/cuenta');
+        await expect.poll(()=>page.evaluate(()=>location.hash)).toBe('#cuenta-principal');
+        await expect(page.locator('main#cuenta-principal')).toBeVisible();
+        await expect(page.locator('main#cuenta-principal')).toHaveAttribute('tabindex','-1');
+        await noOverflow(page);
+      }finally{await page.close();}
+      expect(writes).toEqual([]);
+    }
+  });
+
 });

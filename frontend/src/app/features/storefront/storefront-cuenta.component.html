@@ -1,7 +1,7 @@
 <div class="storefront account-page">
-  <app-storefront-header></app-storefront-header>
+  <app-storefront-header destinoSaltar="#cuenta-principal" etiquetaSaltar="Saltar a la cuenta"></app-storefront-header>
 
-  <main class="container account-main" [attr.aria-busy]="estado() === 'loading'">
+  <main id="cuenta-principal" tabindex="-1" class="container account-main" [attr.aria-busy]="estado() === 'loading'">
     <header class="account-hero">
       <div>
         <p class="eyebrow">TU CUENTA, SI LA QUIERES</p>
