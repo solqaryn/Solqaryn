@@ -77,7 +77,7 @@ export type EstadoGobiernoV5 = 'cargando' | 'vacio' | 'error' | 'exito' | 'sin_p
     h3 { margin: 0 0 .3rem; font-size: 1.06rem; }
     p { line-height: 1.55; }
     .intro { max-width: 49rem; }
-    .return-link { flex-shrink: 0; padding: .65rem .85rem; border: 1px solid currentColor; border-radius: .6rem; color: inherit; text-decoration: none; font-weight: 600; }
+    .return-link { display: inline-flex; align-items: center; box-sizing: border-box; min-height: 44px; flex-shrink: 0; padding: .65rem .85rem; border: 1px solid currentColor; border-radius: .6rem; color: inherit; text-decoration: none; font-weight: 600; }
     .return-link:focus-visible { outline: 3px solid var(--mat-sys-primary, #2157a3); outline-offset: 4px; }
     .state-banner { margin: 1.25rem 0; padding: .8rem 1rem; border: 1px solid var(--mat-sys-outline-variant, #c0c7cf); border-radius: .75rem; }
     .state-banner p { margin: .25rem 0; }

@@ -1,3 +1,8 @@
+## 2026-11-16 — V19 reparación UI C15-04.M04.05 objetivo de teclado 44px [Javier :00]
+- CI original Chromium obtuvo 3/4 PASS y 1 FAIL: enlace de retorno de gobierno V5 medía 42.78125px, por debajo del objetivo real de 44px.
+- Corrige min-height 44px en el componente existente y activa el workflow al cambiarlo; mantiene prueba adversarial, foco, teclado y contraste sin relajar aserciones.
+- Cambio UI R1, revisión CI/SHA Scope Lock/V5 y A5 independiente exigidos; no altera JWT/RBAC/backend/tenant/DB/QA/main/PROD, rollback git revert.
+
 ## 2026-11-16 — V19 reparación de selectores C15-04.M04.04 tras CI fallida [Javier :00]
 - Corrige dos localizadores Playwright ambiguos: el estado de página del router y el estado de gobierno comparten role=status; se restringe a .state-banner sin eliminar aserciones.
 - Primer job exact-SHA 133786915409 obtuvo 3/5 PASS y 2 FAIL de strict mode; la reparación exige cinco Chromium y checks de nuevo SHA antes de LISTO.
