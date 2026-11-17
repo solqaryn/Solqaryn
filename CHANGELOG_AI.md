@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C13-04.M05.03 integración MySQL de sesión global [Javier :40]
+- Oracle EF/MySQL 8.4 efímero GitHub-hosted: prueba xUnit de sesión plataforma desde base real, denegaciones empresariales A/B, revocación persistida y auditoría sin EmpresaId.
+- Workflow Category=Integration, TRX estricto y Scope Lock exact-SHA; no es PASS hasta CI completed/success y readback A0–A4. A5 independiente.
+- Test-only de backend con identidad HTTP sintética: no certifica JWT firmado, HTTP alojado, MySQL productivo ni QA/main/PROD. Rollback git revert normal sin force-push.
+
 ## 2026-11-17 — V19 C09-04.M04.01 checkpoint reanudable A0 [Javier :30]
 - Reclamación V17 exclusiva del alcance de superficie multicanal con owner DEV04, sin habilitar envíos, credenciales, proveedores ni accesos tenant.
 - Documento A0 y matriz precisa de implementación/pruebas/rollback para reanudar EN_PROGRESO; NO se entrega UI, no se declara CI PASS, VALIDANDO, LISTO ni A5 de la microtarea.
