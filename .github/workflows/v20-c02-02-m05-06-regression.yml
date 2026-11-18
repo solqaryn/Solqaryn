@@ -1,0 +1,37 @@
+name: V20 C02-02.M05.06 - Domain tenant placement regression budget
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/Domain/C0202M0506PlacementRegressionBudgetTests.cs'
+      - '.github/workflows/v20-c02-02-m05-06-regression.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v20-c0202m0506-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  regression:
+    name: C02-02.M05.06 - .NET 10 tenant A/B regression and bounded budget
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Scope Lock STRICT
+        run: node scripts/verify-project-scope.mjs
+      - name: Build test project Release
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          dotnet build tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore
+      - name: Execute C02-02.M05.06 directed xUnit regression
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter "FullyQualifiedName~C0202M0506PlacementRegressionBudgetTests" --logger "console;verbosity=normal"
+          echo "C0202_M0506_DIRECTED_TESTS_COMPLETE"

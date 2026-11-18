@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C02-02.M05.06 regresion multitenant y presupuesto CI [Javier :50]
+- Regresion R2 de reglas Domain puras: 128 tenants en paralelo, 4096 decisiones A/B, 12288 decisiones adversariales de autorizacion y limite de humo CI amplio; nunca concede conexion o migracion.
+- Job GitHub-hosted .NET 10 Release y documento A0-A5; acceso HTTP/JWT/MySQL runtime y accesibilidad UI NO_APLICA al diff; resultados reales sujetos al SHA, sin QA/main/PROD ni certificacion productiva.
+
 ## 2026-11-18 — V20 C02-02.M05.03 corregir prueba A/B vacia P2 [Javier :40]
 - Se elimina el predicado imposible Id==idA && Id==idB que producia un falso negativo; dos filas MySQL reales se verifican sin atribuir aislamiento EF automatico.
 - Regresion Domain adversarial con IDs A/B procedentes de MySQL: gate confiable sintetico acepta solo revision adicional del propio tenant, rechaza tenant B como CROSS_TENANT_PLACEMENT_DENIED, sin permitir conexion ni migracion. CI MySQL 8.4 efimera exact-SHA y A5 de otra Task obligatorias; sin JWT HTTP autentico ni QA/PROD.
