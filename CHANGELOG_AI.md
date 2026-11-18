@@ -1,3 +1,7 @@
+## 2026-11-18 — DEV06 C01-02.M04.02 CI_REPAIR ERROR terminal B en tenant A/B
+- El job TestBed del SHA 2d4d6e71 evidencio 5/7 PASS y 2 FAIL: el estado ERROR era enmascarado como CARGANDO mientras la empresa nueva aun no estaba acreditada. La UI debe finalizar en ERROR ante denegacion real de B sin mostrar filas antiguas.
+- Se corrige solo la precedencia del estado ERROR; se conservan las 7 pruebas adversariales sin rebajar asserts y se exige nueva CI GitHub-hosted exact-SHA. El resultado previo FAILURE no es PASS; continua VALIDANDO, A5 independiente, sin QA/main/PROD.
+
 ## 2026-11-18 — DEV06 C01-02.M04.02 reparacion A/B y claves Angular R2
 - Se evita NG0955 con rutas protegidas repetidas; se elimina track por ruta no unica y se añade regresion adversarial TestBed.
 - La vista vuelve a cargar permisos al cambiar tenant A/B sin desmontarse, cancela respuestas antiguas, no muestra filas del tenant anterior y termina ERROR si falla B. CI GitHub-hosted, Scope Lock y V5 por SHA; no A5 propia ni LISTO prematuro, sin QA/main/PROD.

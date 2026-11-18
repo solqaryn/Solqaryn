@@ -70,7 +70,8 @@ export class C0102CapabilityStatesComponent {
   });
   readonly estado = computed(() => resolverEstadoCapacidad({
     autorizado: this.autorizado(), tenant: this.tenant.tieneContextoVerificado(),
-    carga: this.empresaAcreditada() === this.tenant.empresaIdVerificada() ? this.carga() : 'cargando',
+    carga: this.carga() === 'error' ? 'error' :
+      this.empresaAcreditada() === this.tenant.empresaIdVerificada() ? this.carga() : 'cargando',
     permisos: this.permisos.cargado(),
     total: this.catalogo().length, visibles: this.visibles().length
   }));
