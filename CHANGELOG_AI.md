@@ -1,3 +1,7 @@
+## 2026-11-17 — DEV06 C01-02.M03.05 proveedor dinámico aislado [Javier Task :50 inline]
+- Nuevo bridge de capabilities en Infrastructure sin caché de autorizaciones: consulta por llamada, fail-closed tenant A/B, actor/rol/sucursal, FrozenSet ordinal y flags de autoridad siempre falsos. Nueve xUnit adversariales, documento A0–A4 y rollback, sin DI live/MySQL/JWT/API/PROD.
+- El código se publica en dev sujeto a CI real exact-SHA, Scope Lock, V5 y seguridad. A5 por otra Task, no autoaprobación. Lock V17 2000000198.
+
 ## 2026-11-17 — Corrección de prueba A5 C01-02.M03.04 tras CI negativo [ChatGPT directo]
 - GitHub Actions f1321875 arrojó 2 FAIL de aserciones estructurales sobre FrozenSet; las nuevas pruebas intentan escrituras reales ISet/ICollection y verifican inmutabilidad efectiva. Se conserva ToFrozenSet y el A5_FAIL histórico. CI y A5 ajena pendientes; ningún gate forzado.
 
