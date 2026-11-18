@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C15-05.M05.02 contrato API/DTO de auditoría [Javier :30]
+- Nueve pruebas xUnit Release de ruta/permiso, Forbid sin lectura, DTO paginado, filtros, límites y fallos no contados como OK; solo invocación directa al controlador existente, sin alterar runtime, sin atribuir JWT/HTTP/MySQL real.
+- Workflow GitHub-hosted con TRX estricto 9/9 y Scope Lock, V5 exact SHA; A5 requiere otra Task Javier. CI QUEUED/IN_PROGRESS nunca PASS, dev exclusivo, rollback con git revert.
+
 ## 2026-11-17 — V19 C15-05.M05.04 aceptación positiva con Chromium real [Javier :20]
 - Tres pruebas Playwright en ruta Angular privada: 320/1280 sin desborde, controles de solo lectura, teclado Tab/Enter real y cero solicitudes HTTP mutantes; sesión de prueba sintetizada, no JWT real.
 - CI dirigida Node 24/Angular 22.2.1/Chromium, Scope Lock y V5 exact SHA. No afirmar PASS antes de RUN, ni seguridad/tenant/MySQL de backend o WCAG/performance global. A5 siempre independiente.

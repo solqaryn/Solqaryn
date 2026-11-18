@@ -1,0 +1,44 @@
+name: V19 C15-05.M05.02 - contrato API DTO auditoria
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/Application/C1505M0502AuditApiDtoContractTests.cs'
+      - 'backend/src/API/Controllers/AuditoriaController.cs'
+      - 'backend/src/Application/DTOs/AuditoriaDto.cs'
+      - '.github/workflows/v19-c15-05-m05-02-audit-api-dto.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c1505-m0502-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  xunit:
+    name: C15-05.M05.02 - nueve contratos xUnit auditoria
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.401
+      - name: Scope Lock exact SHA
+        run: node scripts/verify-project-scope.mjs
+      - name: xUnit Release dirigido y TRX obligatorio
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter 'FullyQualifiedName~C1505M0502AuditApiDtoContractTests' --logger 'trx;LogFileName=c1505m0502.trx' --logger 'console;verbosity=normal'
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          files=list(Path('tests/Solqaryn.Tests/TestResults').glob('**/c1505m0502.trx'))
+          assert len(files)==1, f'Expected one real TRX: {len(files)}'
+          root=ET.parse(files[0]).getroot()
+          counts=next((e.attrib for e in root.iter() if e.tag.endswith('Counters')),None)
+          assert counts is not None, 'No test counters'
+          actual=tuple(int(counts[k]) for k in ('executed','passed','failed','notExecuted'))
+          assert actual==(9,9,0,0), actual
+          print('C1505M0502_REAL_XUNIT_RELEASE_9_OF_9_PASS')
+          PY
