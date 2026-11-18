@@ -388,7 +388,7 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
         r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
       await page.goto(ruta.path);
       expect((await sesion).status(), 'Backend debe negar autoridad global').toBe(403);
-      await expect(page).toHaveURL(/\\/login\\?plataforma=denegado/);
+      await expect(page).toHaveURL(/\/login\?plataforma=denegado/);
       await expect(page.getByRole('heading', { level: 1, name: ruta.heading })).toHaveCount(0);
       await expect(page.locator(ruta.panel), 'No filtrar el contenido de la guia').toHaveCount(0);
     });

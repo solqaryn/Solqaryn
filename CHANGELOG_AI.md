@@ -7233,3 +7233,7 @@
 ## 2026-11-18 - V19 C15 regresión Vitest de regiones etiquetadas [Javier :10]
 - Repara dos pruebas C15-03 de branding/densidad que seguían buscando main dentro de guía tenancy ahora renderizada como section etiquetada por corrección semántica C15. Conserva aserciones de marca, densidad y payload hostil.
 - RUN 44283089029 exact-SHA abc0a49b: 14 PASS/2 FAIL antes de esta reparación. Exigir nueva CI Vitest/Chromium del SHA descendiente; sin PASS anticipado ni cierre A0–A4/A5 global. Solo dev, owner/lock C15 conservados.
+
+## 2026-11-18 - V19 C15 CI repair parser JWT y navegador tenancy [Javier :10]
+- Corrige la expresión regular de A0.34 que impidió descubrir tests JWT reales (RUN 44283088809) reutilizando patrón válido verificado en el mismo archivo, y el único selector de navegador heredado main.tenancy-audit por section.tenancy-audit (RUN 44283765432); conserva asserts 403, login y densidad.
+- Requiere ejecutar nuevamente 16 casos JWT/Chromium y suites C15-03 en GitHub-hosted exact SHA; nada se certifica mientras estén queued/in_progress/failure. Sin LISTO/A5, lock y owner intactos; solo dev.

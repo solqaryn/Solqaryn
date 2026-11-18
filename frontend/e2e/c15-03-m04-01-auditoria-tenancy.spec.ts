@@ -88,7 +88,7 @@ test('C15-03.M04.03: branding por defecto usa densidad segura sin abrir datos', 
   await fakeToken(page);
   await sessionMock(page, true);
   await page.goto('/plataforma/auditoria-tenancy-v5');
-  await expect(page.locator('main.tenancy-audit')).toHaveAttribute('data-densidad', 'normal');
+  await expect(page.locator('section.tenancy-audit')).toHaveAttribute('data-densidad', 'normal');
   await expect(page.locator('.eyebrow')).toContainText('SOLQARYN · Auditoría');
   await expect(page.locator('.fronteras li')).toHaveCount(4);
   await expect(page.locator('form, input, textarea')).toHaveCount(0);
