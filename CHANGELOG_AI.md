@@ -1,3 +1,7 @@
+## 2026-11-17 — DEV06 C01-02.M04.02 estados de capacidades seguros
+- Vista Angular real y read-only con carga, vacío, error, éxito, denegación y revocación. El servidor sigue siendo única autoridad JWT/RBAC/tenant; sin grants nuevos ni datos empresariales expuestos.
+- Tests positivos/negativos TestBed, CI GitHub-hosted por SHA, Scope Lock/V5 y A5 independiente. Sin QA/main/PROD.
+
 ## 2026-11-17 — DEV03 C01-02.M04.05 responsive y accesibilidad catálogo de capabilities
 - Tres pruebas Chromium nuevas: tamaños 320/1280 sin desbordamiento interno; Tab, foco visible y Enter reales; semántica accesible y contraste WCAG AA medido contra fondo. Una sesión de prueba sintética no certifica JWT/RBAC/tenant real ni cambia UI de otro autor.
 - CI dirigida por SHA con Angular lint/build y Scope Lock, A0–A5 y rollback documentados, lock V17 exclusivo fila 204 y A5 independiente pendiente. Solo dev; no QA/main/PROD.

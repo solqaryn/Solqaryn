@@ -548,3 +548,11 @@ El catálogo añade un único componente Angular, total cerrado de **162 compone
 - `frontend/src/app/features/plataforma/c01-02-m04-01-capability-catalog.component.ts`
 
 La ruta privada usa plataformaGuard exacto; su catálogo es informativo y no concede permisos JWT/RBAC/tenant ni valida servicios reales. Exigir CI exact-SHA, A0–A5, sin QA/main/PROD.
+
+## Adición V19 C01-02.M04.02 — 17 noviembre 2026
+
+El catálogo estricto añade una sola fuente Angular para estados de permisos, conservando todas las entradas históricas y los negativos de conjunto, con total de **163 componentes (155 features, 8 shared)**:
+
+- `frontend/src/app/features/plataforma/c01-02-m04-02-capability-states.component.ts`
+
+La ruta informativa permanece bajo `plataformaGuard`, sin conceder JWT/RBAC ni permisos empresariales. Mantener CI exact-SHA y revisión A5 independiente. No QA/main/PROD.
