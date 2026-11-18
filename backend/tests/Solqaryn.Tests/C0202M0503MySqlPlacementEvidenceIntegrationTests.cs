@@ -70,8 +70,11 @@ public sealed class C0202M0503MySqlPlacementEvidenceIntegrationTests
                     .SingleAsync(x => x.Id == idB);
                 Assert.Equal(idA, tenantA.Id);
                 Assert.Equal(idB, tenantB.Id);
-                Assert.Empty(await db.Set<Empresa>().AsNoTracking()
-                    .Where(x => x.Id == idA && x.Id == idB).ToListAsync());
+                // Both rows are intentionally queryable by a privileged EF context.
+                // A contradictory ID predicate can never prove tenant isolation.
+                // Authorization is tested independently against the actual persisted IDs.
+                Assert.Equal(2, await db.Set<Empresa>().AsNoTracking()
+                    .CountAsync(x => x.Id == idA || x.Id == idB));
 
                 // Real MySQL ownership facts are NOT JWT, membership, RBAC
                 // or approved storage binding. All runtime grants stay false.
@@ -101,6 +104,31 @@ public sealed class C0202M0503MySqlPlacementEvidenceIntegrationTests
                     evidence, targetA with { RequestedTenantId = "tenant_" + idB });
                 Assert.False(cross.AuthorizesConnection);
                 Assert.False(cross.AuthorizesMigration);
+
+                // Adversarial regression: satisfy all earlier trusted policy gates
+                // with a synthetic, test-only snapshot derived from the two real
+                // MySQL IDs. A policy regression that removes the A/B mismatch
+                // check MUST fail this assertion. This is not authenticated HTTP.
+                var trustedA = evidence with
+                {
+                    JwtValidatedByBackend = true,
+                    CurrentMembershipVerified = true,
+                    TrustedConfigurationAvailable = true,
+                    UniqueActiveAssignmentVerified = true,
+                    BindingFromTrustedCatalog = true,
+                    CurrentBindingAlias = "trusted-ci-shared-a",
+                    CurrentRoleCanReviewPlacement = true
+                };
+                var sameTenant = V5SharedDedicatedPlacementDomainRules.Evaluate(trustedA, targetA);
+                Assert.Equal("TRUSTED_PLACEMENT_RUNTIME_VERIFICATION_REQUIRED", sameTenant.Code);
+                Assert.False(sameTenant.AuthorizesConnection);
+                Assert.False(sameTenant.AuthorizesMigration);
+
+                var attemptedCrossTenantRead = V5SharedDedicatedPlacementDomainRules.Evaluate(
+                    trustedA, targetA with { RequestedTenantId = "tenant_" + idB });
+                Assert.Equal("CROSS_TENANT_PLACEMENT_DENIED", attemptedCrossTenantRead.Code);
+                Assert.False(attemptedCrossTenantRead.AuthorizesConnection);
+                Assert.False(attemptedCrossTenantRead.AuthorizesMigration);
             }
 
             int rolledBackId;

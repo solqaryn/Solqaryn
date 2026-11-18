@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C02-02.M05.03 corregir prueba A/B vacia P2 [Javier :40]
+- Se elimina el predicado imposible Id==idA && Id==idB que producia un falso negativo; dos filas MySQL reales se verifican sin atribuir aislamiento EF automatico.
+- Regresion Domain adversarial con IDs A/B procedentes de MySQL: gate confiable sintetico acepta solo revision adicional del propio tenant, rechaza tenant B como CROSS_TENANT_PLACEMENT_DENIED, sin permitir conexion ni migracion. CI MySQL 8.4 efimera exact-SHA y A5 de otra Task obligatorias; sin JWT HTTP autentico ni QA/PROD.
+
 ## 2026-11-18 - V19 C14-04.M05.03 integracion GitHub Checks real en DEV [Javier :20]
 - R2: lectura autenticada de check-runs exact-SHA mediante GITHUB_TOKEN solo lectura en GitHub-hosted; resultado nunca autoriza release/PROD, sin cambio de runtime ni secretos.
 - Pruebas adversariales Node cubren SHA ajeno, checks incompletos/fallidos, duplicados, paginacion, 403 y alcance DEV. CI exact-SHA PENDIENTE hasta su ejecucion real; A5 por otra Task Javier.
