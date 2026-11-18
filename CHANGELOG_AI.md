@@ -1,3 +1,7 @@
+## 2026-11-18 — V19 CI_REPAIR P0-007.A catálogo estricto C01-02.M04.03 [Javier :30]
+- Los SHA 113103ec y ff84eaa2 fallaron P0-007.A por un nuevo .component.ts sin entrada documental. Se incorpora exactamente una ruta al inventario 164=156 features+8 shared y se actualizan los dos umbrales exactos del validador; se conservan comparación, exclusiones, negativos y PASS Chromium 2/2 de ff84eaa2.
+- Requiere P0-007.A, Scope Lock y V5 SUCCESS exact SHA final más equivalencia de blobs de código, tests, workflow y config previa a LISTO; A5 independiente, no QA/main/PROD.
+
 ## 2026-11-18 — V19 CI_REPAIR C01-02.M04.03 servidor Chromium [Javier :30]
 - El primer SHA 113103ec pasó Vitest, tipado y build, pero ambas pruebas Chromium fallaron por ERR_CONNECTION_REFUSED: el job no iniciaba Angular en 127.0.0.1:4200. Reparación causal: ng serve loopback, healthcheck curl, log y trap; no reducir tests ni simular PASS.
 - Se conserva FAIL anterior y VALIDANDO/owner DEV04 hasta nueva CI exact-SHA, Scope Lock y V5. Sin JWT firmado, datos productivos ni QA/main/PROD.

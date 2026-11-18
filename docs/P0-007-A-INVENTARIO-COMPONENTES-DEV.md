@@ -556,3 +556,11 @@ El catálogo estricto añade una sola fuente Angular para estados de permisos, c
 - `frontend/src/app/features/plataforma/c01-02-m04-02-capability-states.component.ts`
 
 La ruta informativa permanece bajo `plataformaGuard`, sin conceder JWT/RBAC ni permisos empresariales. Mantener CI exact-SHA y revisión A5 independiente. No QA/main/PROD.
+
+## Adición causal V19 C01-02.M04.03 — 18 noviembre 2026
+
+El check P0-007.A exact-SHA del commit ff84eaa2 detectó **un componente nuevo no inventariado**, con fallo real `unlisted=frontend/src/app/features/plataforma/c01-02-m04-03-capability-branding.component.ts`. Se agrega únicamente esta ruta al inventario de código, manteniendo las 163 anteriores, las exclusiones y los negativos de eliminación/inserción del verificador. Total cerrado de **164 componentes (156 features, 8 shared)**:
+
+- `frontend/src/app/features/plataforma/c01-02-m04-03-capability-branding.component.ts`
+
+Inventariar una fuente Angular no demuestra JWT, RBAC, tenant A/B, UX ni autorización de producción. Se exige P0-007.A self-test, Scope Lock y V5 SUCCESS sobre el SHA de reparación; no se elimina el fallo anterior ni se debilita el comparador.
