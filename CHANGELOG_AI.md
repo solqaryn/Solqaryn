@@ -1,3 +1,7 @@
+## 2026-11-18 — C15-04.M05.04 A0.37 denegacion transversal tenant B JWT en CI [Javier :10]
+- Tres escenarios Playwright adicionales verifican Empresa B con JWT firmado y MySQL efimero real: B propio 200, A ajeno 403/404, tres guias globales 403 y no filtrado de paneles a 320 y 1280 px; 21 casos esperados, nunca PASS hasta CI exact-SHA.
+- Cambio solo a suite E2E y documento de aceptacion, sin runtime ni datos productivos. Auditoria R2 global continua EN_PROGRESO DEV02 con candado V17, A0-A4 aun no cerradas y A5 de Task distinta; sin QA/main/PROD.
+
 ## 2026-11-18 — C05-03.M02.06 reparación P2 de SQL inerte y oráculo adversarial [asistencia Javier :00]
 - Se corrige la especificación G04/G13/T02: SQL libre e inyección como instrucción se rechazan; valores de texto con sintaxis SQL se tratan exclusivamente como datos parametrizados, nunca concatenados ni ejecutables. El caso adversarial futuro cubre tenant A/B, no efectos, errores redactados y MySQL 8.4 efímero.
 - Reparación R0 solo de contrato Markdown: pruebas SQL runtime 0 ejecutadas, A5_FAIL histórico preservado y nueva A5 independiente requerida. DEV03 conserva autoría y propietario; sin cambios JWT/EF/MySQL, migraciones, QA/main/PROD o fórmulas de Sheets. Rollback git revert normal.

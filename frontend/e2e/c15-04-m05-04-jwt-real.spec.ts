@@ -466,4 +466,34 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     // No afirmar certificacion WCAG o revocacion global con esta muestra.
   });
 
+
+  // A0.37: tres superficies de plataforma y dos anchos, con una sesión JWT B nueva
+  // por visita. API/tenants reales, sin interceptores ni permisos falsificados.
+  for (const ruta of [
+    { path: '/plataforma/observabilidad-v5', panel: '.observability-guide' },
+    { path: '/plataforma/auditoria-tenancy-v5', panel: '.tenancy-audit' },
+    { path: '/plataforma/respuesta-incidentes-v5', panel: '.incident-guide' }
+  ]) {
+    test('A0.37 - empresa B denegada en ' + ruta.path + ' en movil y escritorio', async ({ page, request }) => {
+      for (const width of [320, 1280]) {
+        await page.setViewportSize({ width, height: 840 });
+        const jwt = await ingresar(page, 'c1504_admin_b');
+        const headers = { Authorization: 'Bearer ' + jwt };
+        const propia = await request.get(api + '/tenant-context/2', { headers });
+        expect(propia.status(), 'Empresa B puede consultar B').toBe(200);
+        expect((await propia.json())?.data?.empresaId).toBe(2);
+        const ajena = await request.get(api + '/tenant-context/1', { headers });
+        expect([403, 404], 'Empresa B no lee datos de A').toContain(ajena.status());
+        const sesion = page.waitForResponse(r =>
+          r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+        await page.goto(ruta.path);
+        expect((await sesion).status(), 'API niega privilegios globales').toBe(403);
+        await expect(page).toHaveURL(/\/login\?plataforma=denegado/);
+        await expect(page.locator(ruta.panel), 'No filtrar panel privado').toHaveCount(0);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth))
+          .toBeLessThanOrEqual(width + 1);
+      }
+    });
+  }
+
 });
