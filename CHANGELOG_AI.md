@@ -1,3 +1,7 @@
+## 2026-11-18 — V19 C14-01.M04.05 ampliacion E2E ruta publica y guardas [Javier Task :00]
+- Dos pruebas Chromium adicionales sin mocks ni credenciales: cuatro rutas privadas exigen redireccion a login, ausencia de panel y cero HTTP mutador; storefront inicio/productos/categorias exige montaje y 320/768/1280 sin overflow.
+- Conserva el job GitHub Actions existente, A0-A5 y Scope Lock; P1 global de rutas, JWT/RBAC/tenant y A5 independiente siguen pendientes. CI externa exact-SHA requerida, sin afirmar PASS previo.
+
 ## 2026-11-18 — CI_REPAIR_2 C10-04.M05.06 parser CSS de reduced-motion [Javier :20]
 - El retest 80c3337e continuó 6/7 Chromium: la expresión regular literal contenía barras sobreescapadas y trataba 1e-05s como inválido. Se corrige exclusivamente el parser s/ms sin modificar los siete escenarios, tolerancia de 0,1 ms ni UI productiva.
 - Exigir CI GitHub-hosted exact-SHA SUCCESS antes de A0–A4; mantener VALIDANDO y A5 pendiente; siguen sin certificar JWT HTTP, aislamiento MySQL del negocio, workers, backup/restore, Cloudflare R2, QA/main/PROD.

@@ -97,4 +97,36 @@ test.describe('C14-01.M04.05 - responsive, teclado, foco, labels y contraste', (
     await expect(page.getByLabel('Nombre de usuario')).toBeVisible();
     await expect(page.getByLabel('Contraseña', { exact: true })).toBeVisible();
   });
+
+  // R1_C1401_M0405_COVERAGE_20261118: navegacion real, sin mocks ni credenciales.
+  test('anonimo: rutas de negocio y plataforma no exponen contenido privado', async ({ page }) => {
+    const writes: string[] = [];
+    page.on('request', request => {
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method())) writes.push(request.method());
+    });
+    for (const ruta of ['/dashboard', '/productos', '/plataforma/capacidades-v19', '/plataforma/auditoria-ux-v5']) {
+      await page.goto(ruta);
+      await expect(page).toHaveURL(/\/login(?:\?|$)/);
+      await expect(page.getByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
+      await expect(page.locator('app-dashboard, app-productos-list, app-c0102-capability-catalog, app-c1504-auditoria-ux')).toHaveCount(0);
+    }
+    expect(writes, 'navegar anonimo no debe emitir mutaciones HTTP').toEqual([]);
+  });
+
+  test('tienda publica: inicio, productos y categorias sin overflow de 320 a 1280', async ({ page }) => {
+    for (const [ruta, selector] of [
+      ['/tienda', 'app-storefront'],
+      ['/tienda/productos', 'app-storefront-productos'],
+      ['/tienda/categorias', 'app-storefront-categorias']
+    ] as const) {
+      for (const width of [320, 768, 1280]) {
+        await page.setViewportSize({ width, height: 812 });
+        await page.goto(ruta);
+        await expect(page.locator(selector)).toBeVisible();
+        const overflow = await page.evaluate(() => document.documentElement.scrollWidth - document.documentElement.clientWidth);
+        expect(overflow, 'horizontal overflow ' + ruta + ' ' + width).toBeLessThanOrEqual(2);
+      }
+    }
+  });
+
 });

@@ -57,7 +57,7 @@ jobs:
           done
           cat c1401m0405.log >&2
           exit 1
-      - name: Cuatro Chromium reales
+      - name: Seis Chromium reales
         run: npx playwright test e2e/c14-01-m04-05-accessibility.spec.ts --config=playwright.config.ts --workers=1 --retries=0
       - name: Evidencias
         if: always()
