@@ -13,7 +13,7 @@ export type EstadoObservabilidadV5 = 'vacio' | 'cargando' | 'exito' | 'sin_permi
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="observability-guide" aria-labelledby="obs-title">
+    <section class="observability-guide" aria-labelledby="obs-title">
       <header>
         <p class="eyebrow">SOLQARYN · Observabilidad privada</p>
         <h1 id="obs-title">Diagnóstico y señales seguras</h1>
@@ -56,7 +56,7 @@ export type EstadoObservabilidadV5 = 'vacio' | 'cargando' | 'exito' | 'sin_permi
         </section>
         <p role="note">SLO, RTO/RPO, costos, latencia y proveedor de telemetría: NO_MEDIDO. Sin autorizaciones QA/main/PROD.</p>
       }
-    </main>
+    </section>
   `,
   styles: [`
     :host { display:block; color:var(--mat-sys-on-surface, #17212d); }

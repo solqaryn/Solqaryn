@@ -42,7 +42,7 @@ export function normalizarPresentacionAuditoriaTenancyV5(valor: unknown): Presen
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="tenancy-audit" aria-labelledby="tenancy-audit-title" [attr.data-densidad]="presentacion().densidad">
+    <section class="tenancy-audit" aria-labelledby="tenancy-audit-title" [attr.data-densidad]="presentacion().densidad">
       <header>
         <p class="eyebrow">{{ presentacion().marca === 'institucional' ? 'Plataforma SOLQARYN · Auditoría de seguridad y tenancy' : 'SOLQARYN · Auditoría de seguridad y tenancy' }}</p>
         <h1 id="tenancy-audit-title">Fronteras de aislamiento y evidencia</h1>
@@ -78,7 +78,7 @@ export function normalizarPresentacionAuditoriaTenancyV5(valor: unknown): Presen
       } @else {
         <p class="denied" role="alert">Sesión de plataforma no confirmada. Guía protegida oculta.</p>
       }
-    </main>
+    </section>
   `,
   styles: [`
     :host { display: block; color: var(--mat-sys-on-surface, #17212d); }

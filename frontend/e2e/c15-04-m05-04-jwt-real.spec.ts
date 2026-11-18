@@ -365,7 +365,8 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
         expect((await sesion).status(), 'Autorizacion real del backend').toBe(200);
         expect(new URL(page.url()).pathname).toBe(ruta.path);
         await expect(page.getByRole('heading', { level: 1, name: ruta.heading })).toBeVisible();
-        await expect(page.getByRole('main')).toBeVisible();
+        await expect(page.locator('main#main-content')).toBeVisible();
+        await expect(page.getByRole('main'), 'Un solo landmark principal por pagina').toHaveCount(1);
         expect(await page.evaluate(() => document.documentElement.scrollWidth))
           .toBeLessThanOrEqual(width + 1);
       }
@@ -374,24 +375,24 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     // Muestra de tres superficies, no cobertura WCAG ni produccion global.
   });
 
-  test('A0.34 - administrador de empresa A no accede a tres guias globales', async ({ page }) => {
-    const rutas = [
-      '/plataforma/observabilidad-v5',
-      '/plataforma/auditoria-tenancy-v5',
-      '/plataforma/respuesta-incidentes-v5'
-    ];
-    for (const ruta of rutas) {
+  // Cada ruta tiene contexto de navegador aislado y credencial JWT real nueva.
+  // Evita que el estado de redireccion de una ruta afecte el login de la siguiente.
+  for (const ruta of [
+    { path: '/plataforma/observabilidad-v5', heading: 'Diagnóstico y señales seguras', panel: '.observability-guide' },
+    { path: '/plataforma/auditoria-tenancy-v5', heading: 'Fronteras de aislamiento y evidencia', panel: '.tenancy-audit' },
+    { path: '/plataforma/respuesta-incidentes-v5', heading: 'Respuesta, revocación y recuperación segura', panel: '.incident-guide' }
+  ]) {
+    test(`A0.34 - empresa A denegada en ${ruta.path}`, async ({ page }) => {
       await ingresar(page, 'c1504_admin_a');
       const sesion = page.waitForResponse(r =>
         r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
-      await page.goto(ruta);
+      await page.goto(ruta.path);
       expect((await sesion).status(), 'Backend debe negar autoridad global').toBe(403);
-      await expect(page).toHaveURL(/\/login\?plataforma=denegado/);
-      await expect(page.getByRole('heading', {
-        level: 1, name: /Diagnóstico y señales seguras|Fronteras de aislamiento y evidencia|Respuesta, revocación y recuperación segura/
-      })).toHaveCount(0);
-    }
-    // Negativo real de rol y guard, no sustituye auditoria tenant B de cada modulo.
-  });
+      await expect(page).toHaveURL(/\\/login\\?plataforma=denegado/);
+      await expect(page.getByRole('heading', { level: 1, name: ruta.heading })).toHaveCount(0);
+      await expect(page.locator(ruta.panel), 'No filtrar el contenido de la guia').toHaveCount(0);
+    });
+  }
+  // A0.34 son tres pruebas aisladas de API real; no sustituye auditoria tenant B por modulo.
 
 });

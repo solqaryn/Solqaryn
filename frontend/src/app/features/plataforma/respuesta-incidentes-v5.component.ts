@@ -27,7 +27,7 @@ export function normalizarPresentacionIncidentesV5(valor: unknown): Presentacion
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="incident-guide" [attr.data-densidad]="presentacion().densidad" [attr.data-contraste]="presentacion().contraste" aria-labelledby="incident-title">
+    <section class="incident-guide" [attr.data-densidad]="presentacion().densidad" [attr.data-contraste]="presentacion().contraste" aria-labelledby="incident-title">
       <a class="skip-link" href="#incident-title" (click)="irAlContenido($event)">Ir al contenido de incidentes</a>
       <header>
         <p class="eyebrow">{{ presentacion().marca }} · Respuesta a incidentes</p>
@@ -72,7 +72,7 @@ export function normalizarPresentacionIncidentesV5(valor: unknown): Presentacion
       } @else {
         <p role="alert" class="notice">Sesión administradora de plataforma no confirmada. Guía protegida oculta.</p>
       }
-    </main>
+    </section>
   `,
   styles: [`
     :host { display:block; color:var(--mat-sys-on-surface, #17212d); }
