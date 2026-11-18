@@ -7163,3 +7163,7 @@
 - Estados de carga, vacio, error opaco, inventario local listo y acceso denegado con Angular Signals, import asincrono y cancelacion tras revocacion de grant; nunca interpreta inventario cargado como resultado CI PASS.
 - Regresiones Vitest de permiso, pendiente, cero registros, error, duplicado, revocacion y exito de catalogo; GitHub-hosted Playwright/Chromium con 403 y sin escrituras. A5 independiente, Scope Lock STRICT, sin QA/main/PROD ni datos productivos.
 - Reparacion dirigida CI: prueba previa M04.01 espera con vi.waitFor la importacion asincrona real y exige catalogo listo con cinco tarjetas; el fallo 0/5 de los SHA anteriores permanece registrado, sin falsear Chromium o A4 antes de la CI.
+
+## 2026-11-18 - V19 A0.30 JWT revalidacion UX C15-04.M05.04 [Javier :10]
+- Anade Playwright autenticado real con JWT, API y MySQL 8.4 efimero para revalidacion GET, mensaje accesible y responsive 320/1280; diez casos previstos sin PASS hasta CI exact-SHA.
+- Incremento parcial R2; sin cambios productivos o secretos, DEV02 retiene EN_PROGRESO y V17 lock; A0-A4 global y A5 independiente pendientes.

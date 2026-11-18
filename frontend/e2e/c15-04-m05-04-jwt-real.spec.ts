@@ -246,4 +246,30 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     // Backend y guard reales; ninguna respuesta interceptada.
   });
 
+
+  test('A0.30 - revalidacion de continuidad con JWT firmado y sin mutaciones', async ({ page }) => {
+    await ingresar(page, 'c1504_platform_only');
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      await page.goto('/plataforma/continuidad-operativa-v5');
+      const boton = page.getByRole('button', { name: 'Revalidar sesión de continuidad' });
+      const guia = page.getByRole('region', { name: 'Límites de autoridad' });
+      await expect(boton).toBeEnabled();
+      await expect(guia).toBeVisible();
+      const sesion = page.waitForResponse(r =>
+        r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+      await boton.click();
+      const respuesta = await sesion;
+      expect(respuesta.status(), 'Revalidacion debe consultar backend autentico').toBe(200);
+      await expect(page.locator('section[aria-label="Estado de acceso"]').getByRole('status'))
+        .toContainText('Sesión revalidada. Solo consulta documental.');
+      await expect(guia).toBeVisible();
+      await expect(page.locator('.controles li')).toHaveCount(4);
+      await expect(boton).toBeEnabled();
+      const ancho = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(ancho).toBeLessThanOrEqual(width + 1);
+    }
+    // Flujo GET autentico en CI; no acredita revocacion ni WCAG global.
+  });
+
 });

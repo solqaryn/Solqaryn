@@ -155,3 +155,7 @@ Prueba Chromium con API .NET 10 y MySQL 8.4 descartable: contraseña incorrecta 
 
 ## A0.28-A0.29 - segunda ruta privada autenticada (CI pendiente)
 Playwright en /plataforma/continuidad-operativa-v5 con JWT firmado: rol global accede en 320/1280 px sin overflow, con encabezado, enlace y limites de autoridad; usuario empresarial A recibe 403 real de /plataforma/sesion y no ve contenido protegido. API .NET 10, MySQL 8.4 efimero y Chromium de GitHub-hosted; sin interceptores, cambios runtime, secretos o datos productivos. Son dos casos nuevos (9 previstos en total), NO_PASS hasta checks y logs completed/success del SHA exacto. No prueba todas las rutas, WCAG global, recuperacion institucional ni rendimiento productivo. R2 A0-A4 global pendiente y A5 independiente. Rollback git revert normal.
+
+## A0.30 - revalidacion de continuidad JWT autenticada (CI pendiente)
+Playwright/Chromium navega con JWT firmado a /plataforma/continuidad-operativa-v5 a 320/1280 px, pulsa revalidacion y exige nuevo GET /plataforma/sesion HTTP 200 desde .NET 10/MySQL 8.4 efimero, mensaje accesible de exito, cuatro controles y ausencia de overflow. No prueba revocacion externa, otras rutas ni rendimiento productivo. Requiere diez pruebas completed/success, Scope Lock y V5 exact SHA; no declarar PASS antes. C15-04.M05.04 permanece EN_PROGRESO DEV02 y lock V17. A5 independiente; rollback por git revert normal.
+
