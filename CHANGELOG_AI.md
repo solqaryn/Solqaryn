@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C14-01.M04.03 branding dinamico y aislamiento A/B [Javier Task :00]
+- Cinco tests Angular de servicio real con fixtures: marca/logo, mensaje, descripcion, copyright, reset neutro, fallo proveedor y respuesta A tardia incapaz de reponer identidad tras cambio B.
+- Workflow GitHub-hosted dedicado con tests, tipado y build. No se modifica codigo productivo, permisos, HTTP, MySQL ni UI DEV05; A3 proveedor live NO_APLICA. CI exact-SHA pendiente y A5 independiente; no QA/main/PROD.
+
 ## 2026-11-17 — V19 C14-01.M04.05 regresion accesibilidad Chromium [Javier Task :00]
 - Cuatro pruebas reales sin mocks HTTP: login 320/375/768/1280, labels, Tab, foco, 44px, contraseña reversible sin POST, contraste WCAG AA conservador y rechazo anonimo de QA privado.
 - Workflow GitHub-hosted por SHA, documento A0-A5; no cambia JWT/RBAC/tenant/UI de otros autores ni datos. CI y A5 independientes aun requeridos; no validar SKIPPED ni QUEUED como PASS.
