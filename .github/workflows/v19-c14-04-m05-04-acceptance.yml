@@ -1,0 +1,68 @@
+name: V19 C14-04.M05.04 - aceptacion positiva readiness DEV
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v19-c14-04-m05-04-acceptance.yml'
+      - 'frontend/e2e/c14-04-m05-04-readiness-acceptance.spec.ts'
+      - 'docs/v5/c14-04-m05-04-positive-acceptance-readiness.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c1404-m0504-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  readiness-acceptance:
+    name: C14-04.M05.04 - Angular y Chromium positivo
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm fijo
+        run: npm install --global npm@11.19.0
+      - name: npm ci
+        working-directory: frontend
+        run: npm ci
+      - name: Lint y build Angular
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Instalar Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Servir Angular local
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c14-04-m05-04.log 2>&1 &
+          for attempt in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat c14-04-m05-04.log >&2
+          exit 1
+      - name: Tres pruebas de aceptacion positiva
+        working-directory: frontend
+        run: npx playwright test e2e/c14-04-m05-04-readiness-acceptance.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Artefactos de ejecucion
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v19-c1404-m0504
+          path: |
+            frontend/c14-04-m05-04.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 14
