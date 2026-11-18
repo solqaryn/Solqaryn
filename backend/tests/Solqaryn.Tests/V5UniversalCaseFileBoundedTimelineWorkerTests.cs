@@ -1,3 +1,4 @@
+using System.Collections;
 using Solqaryn.Application.AutomationV5;
 using Xunit;
 using Worker = Solqaryn.Application.AutomationV5.V5UniversalCaseFileBoundedTimelineWorker;
@@ -90,6 +91,54 @@ public sealed class V5UniversalCaseFileBoundedTimelineWorkerTests
         var denied = _worker.Project(new Worker.Request(7, 42, 65, sixtyFive));
         Assert.Equal("CASEFILE_TIMELINE_BOUND_INVALID", denied.Code);
         Assert.Empty(denied.Events);
+    }
+
+    private sealed class SpoofedTimelineCollection : IReadOnlyCollection<Worker.TimelineEvent>
+    {
+        private readonly IEnumerable<Worker.TimelineEvent> _events;
+        public SpoofedTimelineCollection(int reportedCount, IEnumerable<Worker.TimelineEvent> events)
+        {
+            Count = reportedCount;
+            _events = events;
+        }
+        public int Count { get; }
+        public IEnumerator<Worker.TimelineEvent> GetEnumerator() => _events.GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    [Fact]
+    public void False_small_count_cannot_bypass_sixty_four_event_limit()
+    {
+        var sixtyFive = Enumerable.Range(1, Worker.MaximumEvents + 1)
+            .Select(i => E("event-" + i, version: i)).ToArray();
+        var result = _worker.Project(new Worker.Request(7, 42, 70,
+            new SpoofedTimelineCollection(1, sixtyFive)));
+        Assert.Equal("CASEFILE_TIMELINE_BOUND_INVALID", result.Code);
+        Assert.Empty(result.Events);
+    }
+
+    [Fact]
+    public void Declared_count_that_disagrees_with_iteration_is_denied()
+    {
+        var result = _worker.Project(new Worker.Request(7, 42, 10,
+            new SpoofedTimelineCollection(2, new[] { E() })));
+        Assert.Equal("CASEFILE_TIMELINE_BOUND_INVALID", result.Code);
+        Assert.Empty(result.Events);
+    }
+
+    private static IEnumerable<Worker.TimelineEvent> EnumerateAndFail()
+    {
+        yield return E();
+        throw new InvalidOperationException("confidential provider data should never escape");
+    }
+
+    [Fact]
+    public void Throwing_enumerator_is_sanitized_without_partial_timeline()
+    {
+        var result = _worker.Project(new Worker.Request(7, 42, 10,
+            new SpoofedTimelineCollection(2, EnumerateAndFail())));
+        Assert.Equal("CASEFILE_TIMELINE_SOURCE_UNAVAILABLE", result.Code);
+        Assert.Empty(result.Events);
     }
 
     [Fact]

@@ -33,33 +33,58 @@ public sealed class V5UniversalCaseFileBoundedTimelineWorker
             request.ExpectedVersion < 0)
             return Reject("CASEFILE_TIMELINE_SCOPE_INVALID");
 
-        if (request.Events is null || request.Events.Count > MaximumEvents)
+        // A backend IReadOnlyCollection is an external evidence boundary:
+        // Count can be false and GetEnumerator/MoveNext can throw. Never trust
+        // Count as the sole cap or emit a partially assembled timeline.
+        if (request.Events is null)
+            return Reject("CASEFILE_TIMELINE_BOUND_INVALID");
+
+        int declaredCount;
+        try { declaredCount = request.Events.Count; }
+        catch (OperationCanceledException) { throw; }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        { return Reject("CASEFILE_TIMELINE_SOURCE_UNAVAILABLE"); }
+        if (declaredCount is < 0 or > MaximumEvents)
             return Reject("CASEFILE_TIMELINE_BOUND_INVALID");
 
         var seen = new HashSet<string>(StringComparer.Ordinal);
-        var projected = new List<TimelineEvent>(request.Events.Count);
-
-        foreach (var item in request.Events)
+        var projected = new List<TimelineEvent>(MaximumEvents);
+        try
         {
-            cancellationToken.ThrowIfCancellationRequested();
+            foreach (var item in request.Events)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
 
-            if (item is null || item.TenantId != request.TenantId ||
-                item.CaseFileId != request.CaseFileId)
-                return Reject("CASEFILE_TIMELINE_TENANT_OR_CASE_MISMATCH");
+                // Enforce the observed bound even when Count falsely reports 1.
+                if (projected.Count >= MaximumEvents)
+                    return Reject("CASEFILE_TIMELINE_BOUND_INVALID");
 
-            if (item.Version < 0 || item.Version > request.ExpectedVersion ||
-                item.OccurredAtUtc == default || item.OccurredAtUtc.Offset != TimeSpan.Zero)
-                return Reject("CASEFILE_TIMELINE_VERSION_OR_TIME_INVALID");
+                if (item is null || item.TenantId != request.TenantId ||
+                    item.CaseFileId != request.CaseFileId)
+                    return Reject("CASEFILE_TIMELINE_TENANT_OR_CASE_MISMATCH");
 
-            if (!SafeKey(item.EventId, 96) || !seen.Add(item.EventId) ||
-                item.Kind is not ("OBSERVATION" or "DECISION" or "ATTACHMENT" or "VERSION") ||
-                (item.OpaqueEvidenceKey is not null &&
-                 !SafeKey(item.OpaqueEvidenceKey, 128)) ||
-                (item.Kind == "ATTACHMENT" && item.OpaqueEvidenceKey is null))
-                return Reject("CASEFILE_TIMELINE_EVENT_INVALID");
+                if (item.Version < 0 || item.Version > request.ExpectedVersion ||
+                    item.OccurredAtUtc == default || item.OccurredAtUtc.Offset != TimeSpan.Zero)
+                    return Reject("CASEFILE_TIMELINE_VERSION_OR_TIME_INVALID");
 
-            projected.Add(item);
+                if (!SafeKey(item.EventId, 96) || !seen.Add(item.EventId) ||
+                    item.Kind is not ("OBSERVATION" or "DECISION" or "ATTACHMENT" or "VERSION") ||
+                    (item.OpaqueEvidenceKey is not null &&
+                     !SafeKey(item.OpaqueEvidenceKey, 128)) ||
+                    (item.Kind == "ATTACHMENT" && item.OpaqueEvidenceKey is null))
+                    return Reject("CASEFILE_TIMELINE_EVENT_INVALID");
+
+                projected.Add(item);
+            }
         }
+        catch (OperationCanceledException) { throw; }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            // No exception text, private evidence, or partial metadata escapes.
+            return Reject("CASEFILE_TIMELINE_SOURCE_UNAVAILABLE");
+        }
+        if (projected.Count != declaredCount)
+            return Reject("CASEFILE_TIMELINE_BOUND_INVALID");
 
         projected.Sort(static (a, b) =>
         {

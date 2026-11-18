@@ -1,3 +1,7 @@
+## 2026-11-18 — C01-04.M03.05 reparación P2 límites y enumeración de timeline [asistencia Javier :20]
+- Se evita confiar exclusivamente en IReadOnlyCollection.Count de una fuente backend: se comprueba el máximo real de 64 elementos al enumerar y el conteo final, negando secuencias que falseen Count o excedan el límite sin exponer datos parciales.
+- Las excepciones ordinarias de enumerador pasan a CASEFILE_TIMELINE_SOURCE_UNAVAILABLE sanitizado; se preserva propagación de cancelación. Tres xUnit adversariales nuevos; owner/autor DEV06 y LISTO históricos conservados, A5_FAIL P2 intacto hasta revisión independiente, CI exact-SHA necesaria. No hay cambio JWT/EF/MySQL/HTTP o producción.
+
 ## 2026-11-18 — C01-03.M03.05 reparación P2 de enumerador de catálogo aprobado [asistencia Javier :20]
 - Se contiene una excepción del enumerador IReadOnlySet<string> devuelto por el catálogo backend después de ReadAsync: antes escapaba fuera del try/catch; ahora retorna CONFIG_BATCH_CATALOG_SOURCE_UNAVAILABLE, sin metadatos parciales ni diagnóstico privado. Cancelación se propaga y la coincidencia de claves conserva StringComparison.Ordinal.
 - Se añaden dos xUnit adversariales (MoveNext defectuoso y clave no aprobada) preservando el dueño DEV06, LISTO histórico y A5_FAIL P2; reparación R2 sin nuevas facultades ni cambios de EF/MySQL/JWT/HTTP. Pruebas GitHub Actions exact-SHA pendientes de resultado y nueva A5 independiente obligatoria; sin QA/main/PROD.
