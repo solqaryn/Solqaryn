@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C15-05.M05.04 reparación causal CI Scope Lock [Javier :20]
+- Se conserva el verificador de Scope Lock sin cambios y se ejecuta sobre checkout limpio antes de npm ci; el job inicial falló al recorrer documentación de terceros dentro de node_modules instalada por el workflow.
+- Retener fallo histórico y revalidar nueva CI exact-SHA Angular/Chromium (tres casos); sin asumir PASS, sin JWT/tenant/MySQL live ni QA/main/PROD.
+
 ## 2026-11-17 — V19 C15-05.M05.02 contrato API/DTO de auditoría [Javier :30]
 - Nueve pruebas xUnit Release de ruta/permiso, Forbid sin lectura, DTO paginado, filtros, límites y fallos no contados como OK; solo invocación directa al controlador existente, sin alterar runtime, sin atribuir JWT/HTTP/MySQL real.
 - Workflow GitHub-hosted con TRX estricto 9/9 y Scope Lock, V5 exact SHA; A5 requiere otra Task Javier. CI QUEUED/IN_PROGRESS nunca PASS, dev exclusivo, rollback con git revert.

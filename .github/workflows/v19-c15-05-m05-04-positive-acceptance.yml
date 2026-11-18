@@ -30,11 +30,11 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - name: npm compatible
         run: npm install --global npm@11.19.0
+      - name: Scope Lock sobre checkout limpio ANTES de dependencias
+        run: node scripts/verify-project-scope.mjs
       - name: npm ci
         working-directory: frontend
         run: npm ci
-      - name: Scope Lock
-        run: node scripts/verify-project-scope.mjs
       - name: Typecheck lint y build Angular
         working-directory: frontend
         run: |
