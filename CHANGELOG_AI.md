@@ -1,3 +1,7 @@
+## 2026-11-17 — CI_REPAIR V19 C14-01.M04.01 / C02-04.M05.01 route inventory [Javier :40]
+- Log exact-SHA 8e55e16e, job 134561024919, demostró 20 rutas globales frente al catálogo versionado fijo de 15; el verificador anterior exigía igualdad de totalidad y fallaba por nuevas rutas válidas. Ahora exige las 15 rutas catalogadas exactamente una vez, permite rutas adicionales y agrega fixture negativo de duplicación (6/6), sin eliminar guards ni reducir validación.
+- Reparación mínima dirigida de CI en dev, con Suite Chromium 33 casos aún obligatoria y A5 independiente. Ningún PASS hasta GitHub-hosted exact-SHA. Sin permisos ni despliegues QA/main/PROD.
+
 ## 2026-11-17 — V19 C14-01.M04.01 superficie QA global privada [Javier Task :40]
 - Ruta Angular protegida, cinco areas de cobertura QA y enlace a GitHub Actions dev; NO_VERIFICADO hasta SHA/job. Sin formulario ni boton para aprobacion humana, API/token GitHub cliente ni cambios de permisos.
 - Unitarias Angular y tres escenarios Chromium dirigidos en GitHub-hosted, con 403, responsive y Tab real; CI aun no certificada. A5 independiente y Scope Lock STRICT, rollback git revert.
