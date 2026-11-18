@@ -652,4 +652,50 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     // Muestra funcional de teclado: no sustituye contraste WCAG ni auditoria global.
   });
 
+
+  // A0.40: un JWT de plataforma con firma adulterada nunca autoriza
+  // las rutas globales de cobertura/flujo, aunque el token tenga claims validos.
+  // Navegador + API reales en CI con MySQL efimero; sin page.route ni focus().
+  test('A0.40 - firma JWT adulterada deniega cobertura y flujo sin filtrar datos', async ({ browser, request }) => {
+    for (const ruta of ['/plataforma/cobertura-v5', '/plataforma/flujo-v5']) {
+      for (const width of [320, 1280]) {
+        const contexto = await browser.newContext({
+          baseURL: 'http://127.0.0.1:4200',
+          viewport: { width, height: 840 }
+        });
+        try {
+          const page = await contexto.newPage();
+          const jwt = await ingresar(page, 'c1504_platform_only');
+          const partes = jwt.split('.');
+          expect(partes).toHaveLength(3);
+          const firma = partes[2];
+          const firmaAlterada = (firma[0] === 'A' ? 'B' : 'A') + firma.slice(1);
+          const tokenAlterado = [partes[0], partes[1], firmaAlterada].join('.');
+          const apiDenegada = await request.get(api + '/plataforma/sesion', {
+            headers: { Authorization: 'Bearer ' + tokenAlterado }
+          });
+          expect([401, 403], 'La API real rechaza la firma alterada').toContain(apiDenegada.status());
+
+          await page.evaluate(token => localStorage.setItem('solqaryn_token', token), tokenAlterado);
+          const mutaciones: string[] = [];
+          page.on('request', req => {
+            if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method())) {
+              mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+            }
+          });
+          await page.goto(ruta);
+          await expect(page).toHaveURL(/\/login(?:\?|$)/);
+          await expect(page.locator('section.plataforma')).toHaveCount(0);
+          await expect(page.getByRole('heading', { name: /Cobertura V5|Ciclo V5/ })).toHaveCount(0);
+          expect(mutaciones, 'Una firma invalida no debe producir escrituras').toEqual([]);
+          expect(await page.evaluate(() => document.documentElement.scrollWidth))
+            .toBeLessThanOrEqual(width + 1);
+        } finally {
+          await contexto.close();
+        }
+      }
+    }
+    // Muestra negativa JWT puntual: no certifica la UX completa, WCAG ni RUM.
+  });
+
 });

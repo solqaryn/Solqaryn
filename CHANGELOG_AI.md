@@ -1,3 +1,7 @@
+## 2026-11-18 — C15-04.M05.04 A0.40 JWT adulterado cobertura/flujo [Javier Task :10]
+- Agrega caso adversarial Playwright JWT real en dos rutas y dos viewports con firma alterada; API 401/403, guard navegador, privacidad, solo lectura y sin overflow, MySQL CI efimero.
+- Total esperado 26 casos; CI exact-SHA PENDIENTE, no inventar PASS. R2 global A0-A4 incompleto, propietario DEV02/lock 2000002297, A5 independiente; solo dev, rollback git revert.
+
 ## 2026-11-18 — V19 C02-02.M04.06 reparación CI dependiente del contenedor section [Javier :00]
 - Run 44376045701 terminó FAILURE por dos tests de presentación que consultaban el antiguo `main` interno; Chromium quedó SKIPPED, nunca PASS.
 - Se conservan las aserciones adversariales y se actualizan los dos selectores a `section.placement-review`; el workflow V19 observará cambios del spec dependiente y requerirá Vitest+Chromium exact-SHA antes de una A5 correctiva independiente.
