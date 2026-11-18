@@ -10,7 +10,7 @@
 - ERP check exact-SHA 8e55e16e falla por ruta privada nueva no incorporada a la allowlist explicita de guardias de plataforma. Se autoriza exactamente plataforma/qa-global-v19 en el verificador; todas las demas rutas y el requisito canActivate:[plataformaGuard] y sesion backend siguen exigibles. No hay wildcard, bypass, JWT artificial ni concesion de tenant.
 - GitHub-hosted nueva CI requerida. Se conserva FAIL historico sin fingir SUCCESS ni activar QA/main/PROD; A5 independiente.
 
-## 2026-11-17 — CI_REPAIR V19 C14-01.M04.01 / C02-04.M05.01 route inventory [Javier :40]
+## 2026-11-17 — CI_REPAIR V19 C14-01.M04.01 / C02-04.M05.01 catalogo de rutas [Javier :40]
 - Log exact-SHA 8e55e16e, job 134561024919, demostró 20 rutas globales frente al catálogo versionado fijo de 15; el verificador anterior exigía igualdad de totalidad y fallaba por nuevas rutas válidas. Ahora exige las 15 rutas catalogadas exactamente una vez, permite rutas adicionales y agrega fixture negativo de duplicación (6/6), sin eliminar guards ni reducir validación.
 - Reparación mínima dirigida de CI en dev, con Suite Chromium 33 casos aún obligatoria y A5 independiente. Ningún PASS hasta GitHub-hosted exact-SHA. Sin permisos ni despliegues QA/main/PROD.
 
