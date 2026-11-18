@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C02-02.M06.04 ensayo rollback aislado EF MySQL 8.4 [Javier :20]
+- Nueva suite xUnit Category=Integration con Oracle EF/MySQL 8.4 efimero: dos Empresa legitimas, rollback explicito y abandono de transaccion sin commit, readback en nuevos DbContext sin borrar registros, y rechazo host remoto.
+- Workflow GitHub-hosted por SHA, Scope Lock/V5 y A5 independiente; no es SIGKILL del worker real ni certifica JWT HTTP, row-level isolation, RPO/RTO, migracion productiva o permiso R3.
+
 ## 2026-11-18 — V20 C02-02.M06.05 handoff de revision independiente placement [Javier :30]
 - Documenta la matriz de seis A5 M05 ya registradas, con autores, revisores distintos, SHAs y limites de pruebas EF/MySQL real frente a Domain/Application sinteticas; no duplica aprobaciones.
 - Criterios para M06.01–06 y para revisor Javier independiente, incluyendo R2 rollback, DAG, V17 y R3 NO_GO. Cambio solo documental y CHANGELOG, sin QA/main/PROD.
