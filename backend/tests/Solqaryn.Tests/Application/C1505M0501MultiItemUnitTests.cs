@@ -109,4 +109,18 @@ public sealed class C1505M0501MultiItemUnitTests
         Assert.Equal("PENDIENTE", adapter.Read(IdB, ActorA).Snapshot!.State);
         Assert.Null(adapter.Read(IdB, ActorA).Snapshot!.OwnerTaskId);
     }
+
+    [Fact]
+    public void InvalidCommitShaCannotCloseValidatingOrChangeAnIndependentRow()
+    {
+        var adapter = NewAdapter();
+        Assert.True(Claim(adapter, IdA, ActorA, "start").Applied);
+        Assert.True(adapter.MarkValidating(IdA, ActorA, "validating", "blob").Applied);
+        Assert.Equal("CHECK_SHA_MISMATCH",
+            adapter.CloseDev(IdA, ActorA, "bad-sha", "not-forty-hex",
+                true, true, true, true, true, true).Code);
+        Assert.Equal("VALIDANDO", adapter.Read(IdA, ActorA).Snapshot!.State);
+        Assert.Equal("PENDIENTE", adapter.Read(IdB, ActorB).Snapshot!.State);
+        Assert.Null(adapter.Read(IdB, ActorB).Snapshot!.OwnerTaskId);
+    }
 }
