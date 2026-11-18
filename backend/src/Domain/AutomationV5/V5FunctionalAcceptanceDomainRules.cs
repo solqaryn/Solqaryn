@@ -50,9 +50,9 @@ public static class V5FunctionalAcceptanceDomainRules
             return new Verdict("EXACT_SOURCE_COMMIT_REQUIRED");
 
         if (string.IsNullOrWhiteSpace(evidence.CaseKey) ||
-            !approvedCaseKeys.Contains(evidence.CaseKey) ||
+            !approvedCaseKeys.Any(key => string.Equals(key, evidence.CaseKey, StringComparison.Ordinal)) ||
             string.IsNullOrWhiteSpace(evidence.ActionKey) ||
-            !approvedActionKeys.Contains(evidence.ActionKey))
+            !approvedActionKeys.Any(key => string.Equals(key, evidence.ActionKey, StringComparison.Ordinal)))
             return new Verdict("UNAPPROVED_CASE_OR_ACTION");
 
         if (string.IsNullOrWhiteSpace(evidence.EvidenceReference) ||

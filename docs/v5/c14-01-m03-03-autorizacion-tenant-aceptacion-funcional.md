@@ -23,3 +23,9 @@ Application→Domain es la integración ejecutable real compilada/probada por xU
 ## A4/A5 — Handoff verificable
 
 Exigir Scope Lock y procedencia V5, Backend Release, backend build, seguridad multiempresa y autorización cuando resulte pertinente; status QUEUED/IN_PROGRESS/CANCELLED/SKIPPED nunca PASS. Registrar SHA de publicación, blobs, CI, EVENT_ID idempotente y readback PLAN/COLA/BITACORA. Mover a VALIDANDO antes de evaluar A1–A3 causalmente. LISTO_DEV solo cuando A0–A4 correspondan a checks SUCCESS reales. A5 debe realizarla otra Task Javier independiente, jamás DEV06. Sin cambiar QA/main/PROD, secretos, schedules ni fórmulas.
+
+## Reparación V19 del A5_FAIL P2 — igualdad ordinal de catálogos
+
+El revisor independiente detectó que `IReadOnlySet<string>.Contains` respetaba el comparador suministrado por el proveedor del catálogo. Un `HashSet<string>(StringComparer.OrdinalIgnoreCase)` podía aceptar variantes no canónicas de identificadores de caso/acción. Se sustituye únicamente la comprobación de pertenencia por comparación explícita `StringComparison.Ordinal` al enumerar los valores autorizados; no se conceden permisos nuevos ni se cambia el contrato HTTP o la base de datos.
+
+La regresión xUnit `CaseInsensitiveCatalogComparerCannotAuthorizeNoncanonicalKeys` exige que claves exactas con catálogo de comparación insensible a mayúsculas sigan el preflight restringido, y que `af01` y `read_own` sean rechazados con `UNAPPROVED_CASE_OR_ACTION`. **El A5_FAIL P2 histórico permanece abierto** hasta CI .NET Release, seguridad, V5 y Scope Lock completed/success sobre el SHA causal y nueva revisión A5 por Task Javier distinta tanto del autor DEV06 como del reparador DEV03. No se afirma integración JWT HTTP, MySQL, DI, producción ni habilitación de sucesores; rollback por `git revert` normal.

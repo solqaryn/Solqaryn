@@ -7037,3 +7037,7 @@
 ## 2026-11-17 - V19 C13-04.M05.04 lectura ERP A/B en CI efimera [Javier :00]
 - Nueva prueba Playwright JWT y MySQL aislado: grants reales, rutas positivas Productos/Clientes/Proveedores, parametro dinamico sin inventar registros y rechazo de empresa B.
 - PrivateReadPilotEnabled se habilita solo en GitHub-hosted CI; no se alteran permisos ni flags de producto. Requiere Scope Lock/V5 y Chromium SUCCESS exact SHA, P1 global pendiente y A5 de otro Javier.
+
+## 2026-11-17 - V19 reparacion A5_FAIL P2 C14-01.M03.03 catalogo ordinal [Javier :20]
+- Corrige exclusivamente la comprobacion Domain de catálogos confiables: compara claves por StringComparison.Ordinal aun cuando un IReadOnlySet utilice StringComparer.OrdinalIgnoreCase; evita aceptar variantes no canonicas de caso/accion.
+- Agrega regresion adversarial xUnit con caso valido y dos variantes rechazadas; conserva el A5_FAIL historico, requiere CI exact-SHA Scope Lock/V5/backend/seguridad y nueva A5 independiente. Sin endpoints, migraciones, JWT real ni QA/main/PROD.

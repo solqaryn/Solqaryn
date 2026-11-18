@@ -153,6 +153,35 @@ public sealed class C1401FunctionalAcceptanceAuthorizationGateTests
     }
 
     [Fact]
+    public async Task CaseInsensitiveCatalogComparerCannotAuthorizeNoncanonicalKeys()
+    {
+        // Regression for A5_FAIL P2: the catalog implementation controls Contains()
+        // semantics; fail-closed membership must use ordinal comparison regardless
+        // of the comparer chosen by the backend collection provider.
+        var reader = new Reader
+        {
+            Context = Verified() with
+            {
+                ApprovedCaseKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                    { "AF01", "AF02" },
+                ApprovedActionKeys = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+                    { "READ_OWN", "PREPARE_ONLY" }
+            }
+        };
+        var gate = Gate(reader);
+        var canonical = await gate.InspectAsync(Intent(Good()));
+        Assert.Equal("AUTHENTICATED_FUNCTIONAL_ACCEPTANCE_ADAPTER_REQUIRED", canonical.Code);
+        Assert.False(canonical.GrantsTenantOrResourceAccess);
+        var wrongCase = await gate.InspectAsync(Intent(Good() with { CaseKey = "af01" }));
+        Assert.Equal("UNAPPROVED_CASE_OR_ACTION", wrongCase.Code);
+        Assert.False(wrongCase.GrantsTenantOrResourceAccess);
+        var wrongAction = await gate.InspectAsync(Intent(Good() with { ActionKey = "read_own" }));
+        Assert.Equal("UNAPPROVED_CASE_OR_ACTION", wrongAction.Code);
+        Assert.False(wrongAction.GrantsTenantOrResourceAccess);
+        Assert.Equal(3, reader.Reads);
+    }
+
+    [Fact]
     public async Task OriginalCommitMismatchDeniedAtDomainBoundary()
     {
         Assert.Equal("EXACT_SOURCE_COMMIT_REQUIRED",
