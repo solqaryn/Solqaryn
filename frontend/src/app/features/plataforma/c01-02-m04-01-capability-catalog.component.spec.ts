@@ -1,4 +1,5 @@
 import { signal } from '@angular/core';
+import { vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { routes } from '../../app.routes';
@@ -52,4 +53,36 @@ describe('C01-02.M04.01 - catalogo read-only de capacidades', () => {
     expect(root.textContent).toContain('SENAL_CLIENTE_NO_AUTORITATIVA');
     expect(root.querySelectorAll('form,button,input,textarea,select')).toHaveLength(0);
   });
+  it('renderiza rutas protegidas duplicadas sin colision de claves Angular NG0955', async () => {
+    const rutaExistente = routes.find(x => x.path === 'dashboard');
+    expect(rutaExistente).toBeDefined();
+    const rutasConDuplicado = [...routes, { ...rutaExistente! }];
+    const sesion = signal<PlataformaSesion | null>({
+      nombreUsuario: 'QA', rolNombre: 'Plataforma', ambito: 'Plataforma', esAdministrador: true
+    });
+    TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({
+      imports: [C0102CapabilityCatalogComponent],
+      providers: [
+        provideRouter(rutasConDuplicado),
+        { provide: PlataformaSesionService, useValue: { sesion: sesion.asReadonly() } },
+        { provide: TenantContextService, useValue: { tieneContextoVerificado: () => false } },
+        { provide: PermisosRuntimeService, useValue: {
+          cargado: () => false, puede: () => false, rutaHabilitada: () => false
+        } }
+      ]
+    }).compileComponents();
+    const warning = vi.spyOn(console, 'warn').mockImplementation(() => {});
+    try {
+      const fixture = TestBed.createComponent(C0102CapabilityCatalogComponent);
+      fixture.detectChanges();
+      const listado = Array.from((fixture.nativeElement as HTMLElement).querySelectorAll('li'));
+      expect(listado).toHaveLength(c0102CatalogoDeRutas(rutasConDuplicado).length);
+      expect(listado.filter(li => li.textContent?.includes('Ruta: /dashboard'))).toHaveLength(2);
+      expect(warning.mock.calls.flat().join(' ')).not.toContain('NG0955');
+    } finally {
+      warning.mockRestore();
+    }
+  });
+
 });

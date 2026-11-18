@@ -37,7 +37,7 @@ export function c0102CatalogoDeRutas(configuracion: Routes) {
         <p role="alert" data-testid="c0102-oculto">No se verificó autoridad de plataforma. Catálogo oculto.</p>
       } @else {
         <ol data-testid="c0102-listado">
-          @for (fila of filas(); track fila.ruta) {
+          @for (fila of filas(); track $index) {
             <li>
               <h2>{{ fila.modulo }} · {{ fila.accion }}</h2>
               <p>Ruta: {{ fila.ruta }}</p>

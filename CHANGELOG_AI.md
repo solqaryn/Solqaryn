@@ -1,3 +1,7 @@
+## 2026-11-18 — Reparación P2 NG0955 catálogo C01-02.M04.01 [Javier :00]
+- El run 44242768581 acreditó 2/2 TestBed y 16 checks SUCCESS en 52950b87, pero produjo advertencia real NG0955 por rutas protegidas con path repetido. Se conserva el inventario completo, se usa tracking por índice y se agrega prueba adversarial de duplicado, sin alterar JWT/RBAC/tenant.
+- Requiere nuevo check GitHub-hosted exact-SHA y readback institucional. No certificar mientras CI esté pendiente ni mientras falle un gate global; A5 de otra Task Javier, sin QA/main/PROD.
+
 ## 2026-11-17 — DEV06 C01-02.M04.02 estados de capacidades seguros
 - Vista Angular real y read-only con carga, vacío, error, éxito, denegación y revocación. El servidor sigue siendo única autoridad JWT/RBAC/tenant; sin grants nuevos ni datos empresariales expuestos.
 - Tests positivos/negativos TestBed, CI GitHub-hosted por SHA, Scope Lock/V5 y A5 independiente. Sin QA/main/PROD.
