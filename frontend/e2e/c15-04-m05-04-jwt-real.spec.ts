@@ -309,4 +309,36 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     // Verifica interaccion puntual teclado/API, no acredita WCAG ni RUM global.
   });
 
+
+  test('A0.32 - recarga sin token revierte UX privada al login y API rechaza anonimato', async ({ page, request }) => {
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      await ingresar(page, 'c1504_platform_only');
+      await page.goto('/plataforma/continuidad-operativa-v5');
+      await expect(page.getByRole('heading', {
+        name: 'Controles de recuperación y aislamiento'
+      })).toBeVisible();
+
+      // Simular perdida de la credencial persistida sin simular HTTP ni falsificar JWT.
+      // La recarga reinicializa AuthService desde almacenamiento real del navegador.
+      await page.evaluate(() => {
+        localStorage.removeItem('solqaryn_token');
+        localStorage.removeItem('solqaryn_expira_en');
+      });
+      await page.reload();
+      await expect(page).toHaveURL(/\/login(?:[?#]|$)/);
+      await expect(page.getByRole('heading', {
+        name: 'Controles de recuperación y aislamiento'
+      })).toHaveCount(0);
+      await expect(page.getByRole('region', { name: 'Límites de autoridad' })).toHaveCount(0);
+      expect(await page.evaluate(() => localStorage.getItem('solqaryn_token'))).toBeNull();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(width + 1);
+    }
+
+    const sinBearer = await request.get(api + '/plataforma/sesion');
+    expect(sinBearer.status(), 'API real debe denegar peticion sin JWT').toBe(401);
+    // No demuestra revocacion de tokens ya emitidos ni cumplimiento WCAG global.
+  });
+
 });

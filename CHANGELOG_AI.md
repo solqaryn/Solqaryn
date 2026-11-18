@@ -7203,3 +7203,7 @@
 ## 2026-11-18 - V19 A0.31 revalidacion JWT por teclado C15-04.M05.04 [Javier :10]
 - Amplia Playwright autenticado con Tab y Enter reales sobre la revalidacion documental, GET 200 a API/MySQL efimeros, region de estado, responsive 320/1280 y prueba adversarial de ausencia de solicitudes HTTP mutantes.
 - Once escenarios previstos, no PASS hasta CI exact-SHA. Incremento R2 parcial sin cambios runtime; DEV02 conserva EN_PROGRESO y V17 lock, A0-A4 global y A5 independiente pendientes.
+
+## 2026-11-18 - V19 A0.32 recarga fail-closed UX JWT C15-04.M05.04 [Javier :10]
+- Agrega una regresion Chromium real para sesion sin token tras recarga, redireccion a login y HTTP 401 de API sin bearer, con 320/1280 px y MySQL 8.4 efimero en GitHub-hosted.
+- Doce casos previstos sin declarar PASS antes del SHA exacto. Incremento parcial R2; DEV02 retiene EN_PROGRESO y lock V17 2000002297, sin LISTO, A5 ni despliegue productivo.
