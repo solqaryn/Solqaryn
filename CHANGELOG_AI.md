@@ -1,3 +1,7 @@
+## 2026-11-18 — C05-03.M02.06 reparación P2 de SQL inerte y oráculo adversarial [asistencia Javier :00]
+- Se corrige la especificación G04/G13/T02: SQL libre e inyección como instrucción se rechazan; valores de texto con sintaxis SQL se tratan exclusivamente como datos parametrizados, nunca concatenados ni ejecutables. El caso adversarial futuro cubre tenant A/B, no efectos, errores redactados y MySQL 8.4 efímero.
+- Reparación R0 solo de contrato Markdown: pruebas SQL runtime 0 ejecutadas, A5_FAIL histórico preservado y nueva A5 independiente requerida. DEV03 conserva autoría y propietario; sin cambios JWT/EF/MySQL, migraciones, QA/main/PROD o fórmulas de Sheets. Rollback git revert normal.
+
 ## 2026-11-18 — C05-03.M02.06 cierre documental M02 builder gobernado [Javier :20]
 - Se fija la matriz G01–G16 de requisitos de salida y diez oráculos positivo/negativo futuros; se verifican las dependencias M01/M02/A5, incluida la reparación de autoaprobación EV08/IDEM08/T06, sin borrar A5_FAIL histórico.
 - R0 exclusivamente Markdown: 0/10 escenarios runtime ejecutados, 0/16 puertas técnicas certificadas; D01–D08, JWT/RBAC, MySQL, migraciones, UI, outbox, QA/main/PROD y proveedores permanecen sin activar. A5 de M02.06 será independiente y el rollback es git revert normal.

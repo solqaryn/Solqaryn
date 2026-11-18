@@ -27,7 +27,7 @@ Estas puertas son una lista **contractual de verificación futura**, no un resul
 | G01 | Tenant del recurso derivado de autoridad backend y membresía vigente; nunca de Host/header arbitrario. |
 | G02 | JWT firmado, expiración y revocación comprobados con negativas reales por rol y sesión. |
 | G03 | Ownership por tenant A/B y recurso validado en servidor; usuario B nunca lee ni muta A. |
-| G04 | Componentes, secciones y campos solo desde allowlist tipada; negar HTML/JS/CSS ejecutable. |
+| G04 | Componentes, secciones y campos desde allowlist tipada; rechazar HTML/JS/CSS ejecutable, consultas SQL libres y cualquier intento de inyección SQL como instrucción. Texto permitido con apariencia SQL es solo dato inerte, nunca código ejecutable; la persistencia usa exclusivamente consultas parametrizadas y no concatena entradas a SQL. |
 | G05 | Rechazar URL \`javascript:\`, \`file:\`, localhost, redes internas y destinos SSRF; host público verificado. |
 | G06 | DTO y errores opacos para denegación, ausencia, conflicto, cuota y validación: 403/404/409/422/429 sin filtraciones. |
 | G07 | Revisión monotónica y CAS persistente comprobado; no lost update ni confianza en una lectura seguida de escritura. |
@@ -36,7 +36,7 @@ Estas puertas son una lista **contractual de verificación futura**, no un resul
 | G10 | Publicación solo con aprobación, lease/rol y host vigentes, sin exponer drafts o PII de otros tenants. |
 | G11 | Preview read-only; ni eventos de publicación, correo, worker, outbox o proveedor por mera visualización. |
 | G12 | Límites medibles de tamaño, profundidad, intentos, TTL y concurrencia con rechazos seguros. |
-| G13 | Migraciones EF/MySQL 8.4 bajo revisión explícita, transacción/reversa y Category=Integration realmente ejecutada. |
+| G13 | Migraciones EF/MySQL 8.4 bajo revisión explícita, transacción/reversa y Category=Integration realmente ejecutada; exigir parámetros enlazados (sin SQL dinámico concatenado) y regresión de inyección SQL con datos hostiles sin efectos ni acceso entre tenants. |
 | G14 | Observabilidad correlacionada, redacción de JWT/PII/SQL y conservación de historia de auditoría. |
 | G15 | UI Angular accesible/responsive y tests Playwright reales solo al cambiar navegación o componentes; backend sigue siendo autoridad. |
 | G16 | Dependencias DAG, A0–A5, Scope Lock y SHA/checks exactos, rollback y autorización de ambiente acreditados antes de habilitar sucesores. |
@@ -57,7 +57,7 @@ Estas puertas son una lista **contractual de verificación futura**, no un resul
 | Caso | Resultado positivo futuro | Negativa/borde/error obligatorios |
 | --- | --- | --- |
 | T01 | Crear draft con permiso de tenant A | Usuario B intenta editar A: denegado sin filtración. |
-| T02 | Añadir sección allowlist tipada | HTML/JS/CSS arbitrario rechazado. |
+| T02 | Añadir sección allowlist tipada y persistir texto permitido como valor parametrizado | HTML/JS/CSS, SQL libre y payload de inyección SQL como instrucción rechazados; texto con comillas, comentarios o sintaxis SQL admitido solo como dato inerte, sin ejecutar consultas, mutar registros ajenos ni omitir tenant. |
 | T03 | Validar destino público permitido | SSRF, javascript/file/localhost rechazados. |
 | T04 | CAS con versión actual | Dos writers con versión stale: uno falla, sin pérdida. |
 | T05 | Misma clave/payload devuelve resultado único | Mismo key con cuerpo diferente: conflicto, sin duplicar. |
@@ -67,13 +67,15 @@ Estas puertas son una lista **contractual de verificación futura**, no un resul
 | T09 | Payload dentro de presupuesto procesa una vez | Tamaño, profundidad o reintentos excesivos => 422/429 seguro. |
 | T10 | Rollback autorizado registra historial aditivo | Replay/tenant B no borra historia ni divulga PII/JWT. |
 
+**Oráculo adversarial SQL de T02 (futuro, no ejecutado):** intentar configurar un campo de consulta libre con `'; DROP TABLE tenants; --` debe resultar en rechazo seguro; introducir exactamente esos caracteres como texto de contenido permitido debe persistir únicamente como parámetro, recuperarse como dato literal y no ejecutar sentencias adicionales. Repetir con comillas, comentarios `--`, `/* */`, `OR 1=1`, terminadores y payload excesivo; comprobar que no se alteran registros, no hay fuga de tenant A/B, no aparecen errores SQL internos y el log redacta datos sensibles. El test de integración futuro debe ejecutarse en MySQL 8.4 efímero con sentencias preparadas, transacción y rollback, y fallar si se interpola entrada en SQL. Esta documentación no implementa ni prueba aún ese comportamiento.
+
 **Resultado real:** diez pares especificados, **0/10 ejecutados**. No se presentan como pruebas funcionales, HTTP, navegador, JWT, MySQL ni proveedores aprobados. Las decisiones de negocio D01–D08 y los bloqueos BL/LG deberán resolverse mediante autorización/implementación separadas.
 
 ## 5. Auditorías A0–A5, evidencias y rollback
 
 - **A0:** verificar este alcance M02.06, fuentes, ocho predecesores compuestos, G01–G16, T01–T10 y diff de **este Markdown más una sección autocontenida de CHANGELOG**.
 - **A1 (R0):** revisar consistencia documental de positivos, negativos, límites, revocación, errores y oráculos; sin fingir ejecución de pruebas futuras.
-- **A2 (R0):** tenant A/B, JWT/RBAC, autoría independiente, XSS/SSRF, idempotencia/CAS y minimización de PII definidos de modo fail-closed; no certificar seguridad runtime.
+- **A2 (R0):** tenant A/B, JWT/RBAC, autoría independiente, XSS/SSRF/inyección SQL, parametrización obligatoria, idempotencia/CAS y minimización de PII definidos de modo fail-closed; no certificar seguridad runtime.
 - **A3 (R0):** cotejar los cinco contratos de M02 y M01.06 con PLAN/COLA/DAG. xUnit, MySQL, Angular, Playwright y proveedor vivo **NO_APLICA** a este diff exclusivo Markdown.
 - **A4:** crear commit fast-forward serializado en \`dev\` con CAS del HEAD; comprobar \`verify-solqaryn-project-scope\` y \`V5 - Sin encabezados vacios ni atribucion cruzada\` completed/success del SHA exacto, evidencia Git y readback de PLAN H/I, BITACORA A:Z, COLA y DAG. Si CI queda queued/in_progress, mantener VALIDANDO y no contar PASS.
 - **A5:** revisión humana/automatizada independiente de otra Task Javier con TASK_ID distinto de DEV03, examinando requisitos, contratos, SHA y pruebas; LISTO_DEV no implica A5_PASS.
