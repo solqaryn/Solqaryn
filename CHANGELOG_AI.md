@@ -1,3 +1,7 @@
+## 2026-11-18 — C02-02.M05.02 contrato DTO placement y errores sanitizados [Javier :40]
+- Nueva suite xUnit Application para Request/Result reales de placement: tenant A/B, formato hostil, SHA, DSN, dual-write, esquema destructivo, alias de otro tenant, excepciones con secretos y cancelación; resultados nunca autorizan conexión ni migración.
+- Documento de impacto A0–A5 y rollback normal; pruebas .NET10 GitHub-hosted, Scope Lock y V5 exact-SHA obligatorios antes de LISTO. Sin endpoint HTTP registrado, MySQL/EF/DSN vivo, JWT firmado, QA/main/PROD ni A5 propia.
+
 ## 2026-11-18 — C14-04.M05.05 regresiones adversariales readiness DEV [Javier :00]
 - Suite xUnit negativa de gobernanza release DEV: tenant A/B, grants, autor/revisor, SHA exacto, checks fail/skip/cancelled/queued, aceptación observada, firmas y stop condition sin permitir QA ni producción.
 - Regla Domain sin cambios funcionales: solo tests, documentación y CHANGELOG; CI .NET10 GitHub-hosted, Scope Lock y V5 requeridos por SHA, revisión A5 ajena pendiente; no JWT/MySQL/HTTP reales.
