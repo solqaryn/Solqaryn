@@ -1,3 +1,7 @@
+## 2026-11-18 — C10-04.M05.04 aceptación positiva aislada de worker [Javier :20]
+- Se añaden casos xUnit .NET 10 positivos de exportación e invalidación, orden, replay, último retry permitido y grant sintético; se incluyen negativos de tenant B, digest, allowlist mutable y cancelación, siempre sin enqueue, CAS, lease, restore ni efectos externos.
+- Workflow GitHub-hosted por SHA con regresiones existentes, Scope Lock/V5 y seguridad requeridos antes de LISTO; A5 por otra Task Javier. No autentica JWT HTTP, MySQL, Cloudflare R2 ni datos reales; rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-18 — C10-04.M05.02 errores seguros del preflight Application DTO [Javier :00]
 - Se corrige el escape de errores de proveedor: ReadVerifiedAsync traduce fallas recuperables a VERIFIED_SOURCE_UNAVAILABLE y preserva cancelacion, sin grants ni operaciones productivas.
 - xUnit de excepcion sync/async, no filtracion, DTO hostil, tenant B, ausencia/revocacion; workflow .NET10 exact-SHA y A5 ajena. Rollback git revert, sin QA/main/PROD.

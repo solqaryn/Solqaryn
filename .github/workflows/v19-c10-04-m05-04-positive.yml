@@ -1,0 +1,34 @@
+name: V19 - C10-04.M05.04 acceptance positive isolated
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/Infrastructure/C1004CacheJobsM0504PositiveAcceptanceTests.cs'
+      - 'backend/src/Infrastructure/AutomationV5/C1004CacheJobsIsolatedReviewWorker.cs'
+      - 'backend/src/Infrastructure/AutomationV5/C1004CacheJobsIsolatedSnapshotAdapter.cs'
+      - 'backend/src/Application/AutomationV5/C1004CacheJobsAuthorizationGate.cs'
+      - '.github/workflows/v19-c10-04-m05-04-positive.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c1004-m0504-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  positive-acceptance:
+    name: C10-04.M05.04 - .NET10 xUnit positive preflight acceptance
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Restore
+        run: dotnet restore backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj
+      - name: Real positive acceptance and pre-existing worker regression
+        run: >-
+          dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj
+          --configuration Release --no-restore
+          --filter 'FullyQualifiedName~C1004CacheJobsM0504PositiveAcceptanceTests|FullyQualifiedName~C1004CacheJobsIsolatedReviewWorkerTests|FullyQualifiedName~C1004CacheJobsM0501RuleTests'
+          --logger 'console;verbosity=normal'
