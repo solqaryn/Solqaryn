@@ -100,4 +100,53 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     await expect(page).toHaveURL(/\/login(?:\?|$)/);
     await expect(page.locator('[data-testid="ux-audit-v19"]')).toHaveCount(0);
   });
+  test('WCAG puntual: foco, contraste y rendimiento local UX autenticada 320-1280', async ({ page }) => {
+    await ingresar(page, 'c1504_platform_only');
+    for (const width of [320, 375, 768, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      await page.goto('/plataforma/auditoria-ux-v5', { waitUntil: 'load' });
+      const enlace = page.getByRole('link', { name: 'Volver a administración global' });
+      await expect(enlace).toBeVisible();
+      let focused = false;
+      for (let i = 0; i < 32; i++) {
+        await page.keyboard.press('Tab');
+        focused = await enlace.evaluate(el => el === document.activeElement);
+        if (focused) break;
+      }
+      expect(focused, 'Tab real alcanza enlace de regreso').toBe(true);
+      const outline = await enlace.evaluate(el => parseFloat(getComputedStyle(el).outlineWidth));
+      expect(outline).toBeGreaterThan(0);
+      const contraste = await page.locator('.ux-surface').first().evaluate(el => {
+        const fg = getComputedStyle(el.querySelector('h3')!).color;
+        const bg = getComputedStyle(el).backgroundColor;
+        const luminancia = (color: string) => {
+          const match = color.match(/^rgba?\(\s*(\d+),\s*(\d+),\s*(\d+)/);
+          if (!match) throw Error('Color no RGB: ' + color);
+          const [r, g, b] = match.slice(1, 4).map(Number).map(v => {
+            const n = v / 255;
+            return n <= .04045 ? n / 12.92 : ((n + .055) / 1.055) ** 2.4;
+          });
+          return .2126 * r + .7152 * g + .0722 * b;
+        };
+        const a = luminancia(fg), b = luminancia(bg);
+        return (Math.max(a, b) + .05) / (Math.min(a, b) + .05);
+      });
+      expect(contraste).toBeGreaterThanOrEqual(4.5);
+      const metrics = await page.evaluate(() => {
+        const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+        const paint = performance.getEntriesByType('paint').find(entry => entry.name === 'first-contentful-paint');
+        return {
+          ttfbMs: nav ? Math.round((nav.responseStart - nav.requestStart) * 100) / 100 : null,
+          fcpMs: paint ? Math.round(paint.startTime * 100) / 100 : null,
+          lcpMs: null,
+          cls: null
+        };
+      });
+      expect(metrics.ttfbMs === null || (Number.isFinite(metrics.ttfbMs) && metrics.ttfbMs >= 0)).toBe(true);
+      expect(metrics.fcpMs === null || (Number.isFinite(metrics.fcpMs) && metrics.fcpMs >= 0)).toBe(true);
+      console.log('C15_AUTH_UX_LOCAL_SAMPLE ' + JSON.stringify({ width, contraste, ...metrics }));
+      // Estas muestras localhost no equivalen a CWV RUM ni auditoria WCAG global.
+    }
+  });
+
 });

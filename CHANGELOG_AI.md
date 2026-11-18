@@ -7050,3 +7050,7 @@
 - Se incorpora un workflow de GitHub-hosted con API .NET 10, MySQL 8.4 efimero, JWT firmado y Playwright/Chromium, sin tocar runtime productivo ni datos reales.
 - Cobertura nueva: perfil de plataforma, denegacion 403 empresarial, tenant A/B en ruta dinamica y rechazo de firma JWT alterada, con secretos sinteticos generados dentro del runner.
 - Solo se reconocera PASS tras resultados exact-SHA y logs; auditoria UX R2 global, WCAG y WebVitals siguen incompletas, sin transicion LISTO ni A5 propio.
+
+## 2026-11-17 - V19 C15-04.M05.04 contraste y performance localhost en UX privada [Javier :10]
+- Se extiende suite real JWT/MySQL a quinto caso Chromium: Tab/outline/contraste >=4.5 en 320/375/768/1280 y muestras TTFB/FCP autenticadas, sin datos productivos.
+- LCP/CLS no medidos permanecen NO_MEDIDO; WCAG/WebVitals global no se certifican. Exigir logs y Scope Lock por nuevo SHA; owner DEV02 conserva EN_PROGRESO, A5 externa.
