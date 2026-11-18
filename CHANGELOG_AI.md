@@ -1,3 +1,7 @@
+## 2026-11-18 — C10-04.M05.06 regresión Chromium accesibilidad y densidad [Javier :20]
+- Se incorpora suite Playwright dirigida de 7 escenarios reales de navegador: tres tamaños, teclado Tab/Enter, denegaciones 403/500, CSS reduced motion, presupuestos DOM/overflow y ninguna mutación. Sesión/API sintética; no se certifican JWT firmado, MySQL, worker, backup/restore o Cloudflare R2.
+- Nuevo workflow GitHub-hosted por SHA sin cancelación de otros, con Angular lint/build y Chromium. La entrega de pruebas es R2 parcial, permanece VALIDANDO mientras CI y criterios auténticos A0–A4 continúen pendientes; A5 será independiente de DEV03. Scope Lock STRICT, sin QA/main/PROD ni secretos.
+
 ## 2026-11-18 — C15-04.M05.04 A0.37 denegacion transversal tenant B JWT en CI [Javier :10]
 - Tres escenarios Playwright adicionales verifican Empresa B con JWT firmado y MySQL efimero real: B propio 200, A ajeno 403/404, tres guias globales 403 y no filtrado de paneles a 320 y 1280 px; 21 casos esperados, nunca PASS hasta CI exact-SHA.
 - Cambio solo a suite E2E y documento de aceptacion, sin runtime ni datos productivos. Auditoria R2 global continua EN_PROGRESO DEV02 con candado V17, A0-A4 aun no cerradas y A5 de Task distinta; sin QA/main/PROD.

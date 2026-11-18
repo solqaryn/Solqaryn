@@ -1,0 +1,66 @@
+name: V19 C10-04.M05.06 - Chromium regression performance accessibility
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v19-c10-04-m05-06-regression.yml'
+      - 'frontend/e2e/c10-04-m05-06-regression-perf-a11y.spec.ts'
+      - 'frontend/src/app/features/plataforma/continuidad-operativa-v5.component.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c1004-m0506-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  browser-regression:
+    name: C10-04.M05.06 - Chromium read-only regression a11y budgets
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm pinned
+        run: npm install --global npm@11.19.0
+      - name: dependencies
+        run: npm ci
+      - name: Angular lint and production build
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Install real Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Start isolated Angular app on loopback
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c10-04-m05-06-browser.log 2>&1 &
+          for attempt in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat c10-04-m05-06-browser.log >&2
+          exit 1
+      - name: Seven real Chromium regression scenarios
+        run: npx playwright test e2e/c10-04-m05-06-regression-perf-a11y.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Collect browser diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c10-04-m05-06-regression
+          path: |
+            frontend/c10-04-m05-06-browser.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 14
