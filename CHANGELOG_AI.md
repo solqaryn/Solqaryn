@@ -7118,3 +7118,7 @@
 ## 2026-11-17 - V19 C14-01.M03.06 auditoria estructurada aislada y errores seguros [Javier :20]
 - Implementa envoltura Application .NET 10 de preflight funcional que registra solo OutcomeCode/ItemsChecked estructurados, sin identidad, tenant, recurso, token, SHA ni errores privados; no concede permisos ni autoriza QA/PROD.
 - Agrega seis regresiones xUnit negativas/positivas de tenant B, revocacion, cancelacion, fallo de auditoria y capacidad, con workflow GitHub-hosted exact SHA. Scope Lock/V5 y A5 independiente obligatorios; sin HTTP/MySQL/JWT real.
+
+## 2026-11-17 - V19 A0.27 rechazo de login real UX R2 C15-04.M05.04 [Javier :10]
+- Añade Playwright contra API JWT/MySQL CI efimera: credencial incorrecta 401, alert accesible, sin token y ruta privada inaccesible; siete casos previstos, no PASS hasta CI exact-SHA.
+- Incremento R2 parcial, sin cambios productivos; conserva owner DEV02, candado V17, A0-A4 global pendientes y A5 independiente.

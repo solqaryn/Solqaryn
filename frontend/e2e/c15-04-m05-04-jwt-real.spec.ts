@@ -198,4 +198,23 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     // localhost CI es una muestra diagnostica, no Core Web Vitals de produccion.
   });
 
+  test('A0.27 - credenciales erradas rechazan JWT y no revelan UX privada', async ({ page }) => {
+    // Integracion sin mocks: POST real a la API efimera respaldada por MySQL CI.
+    await page.goto('/login');
+    await page.getByRole('textbox', { name: 'Nombre de usuario' }).fill('c1504_admin_a');
+    await page.locator('input[formcontrolname="password"]').fill(clave! + '-incorrecta');
+    const respuestaPendiente = page.waitForResponse(r =>
+      r.url() === 'http://localhost:5005/auth/login' && r.request().method() === 'POST');
+    await page.getByRole('button', { name: /Ingresar al sistema/ }).click();
+    const respuesta = await respuestaPendiente;
+    expect(respuesta.status(), 'El backend debe rechazar contraseña incorrecta').toBe(401);
+    await expect(page.getByRole('alert')).toBeVisible();
+    await expect(page.locator('[data-testid="ux-audit-v19"]')).toHaveCount(0);
+    expect(await page.evaluate(() => localStorage.getItem('solqaryn_token'))).toBeNull();
+    await page.goto('/plataforma/auditoria-ux-v5');
+    await expect(page).toHaveURL(/\/login(?:[?#]|$)/);
+    await expect(page.locator('[data-testid="ux-surface"]')).toHaveCount(0);
+    // No confundir error visible y ausencia de token con revocacion global de sesiones.
+  });
+
 });
