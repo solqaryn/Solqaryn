@@ -1,3 +1,7 @@
+## 2026-11-18 — C10-04.M04.06 densidad y carga progresiva Angular [Javier :40]
+- Se incorporan cinco tests Chromium reales de densidad 320/768/1440, ausencia de scroll horizontal, aria-busy bajo respuesta demorada y ocultamiento tras HTTP 403. Las respuestas y el token son sinteticos.
+- Workflow propio de GitHub-hosted runner sin alterar frontend runtime, backend, MySQL, JWT, RBAC, worker, respaldos, entornos ni secretos. Evidencia exact-SHA A0-A4 pendiente de CI y A5 ajena; no QA/main/PROD. Rollback git revert.
+
 ## 2026-11-18 — CI_REPAIR C10-04.M04.03 Vitest selector despues de reparacion P2 [asistencia Javier :20]
 - El job GitHub-hosted 134799909539 del SHA 82d61d05 reporto 2/4 FAIL: TypeError al buscar main dentro del componente, luego de la reparacion accesible del envoltorio interior a section.continuidad; no fue fallo de branding ni control de acceso del producto.
 - Solo se actualizan los dos selectores de Vitest al contenedor real section.continuidad, se exige no encontrar un main interno y se mantienen asserts de densidad, marca, inyeccion HTML y seguridad sin rebajas. Owner DEV02/H1570 LISTO preservado; CI nueva, Scope Lock/V5 SUCCESS exact-SHA requeridos, A5 P2 de C10-04.M04.01 permanece pendiente de revisor ajeno. No QA/main/PROD.
