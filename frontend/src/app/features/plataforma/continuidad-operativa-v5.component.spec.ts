@@ -179,4 +179,13 @@ describe('C10-04.M04.01 - continuidad privada V5', () => {
     expect(fixture.componentInstance.estado()).toBe('cargando');
   });
 
+  it('C10-04.M04.01 A5 P2 - la vista no anida otro main en el shell', async () => {
+    const { fixture } = await montar(true);
+    expect(fixture.nativeElement.querySelectorAll('main')).toHaveLength(0);
+    const seccion = fixture.nativeElement.querySelector('section.continuidad');
+    expect(seccion).not.toBeNull();
+    expect(seccion?.getAttribute('aria-labelledby')).toBe('continuidad-title');
+    expect(fixture.nativeElement.querySelectorAll('h1#continuidad-title')).toHaveLength(1);
+  });
+
 });

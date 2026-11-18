@@ -1,3 +1,7 @@
+## 2026-11-18 — C10-04.M04.01 reparacion A5_FAIL P2 landmark anidado [Javier :20]
+- Rechazo independiente DEV05: shell autenticado main#main-content contenia otro main.continuidad. Se sustituye solo el envoltorio interior por section; se preservan titulo, estilos, plataformaGuard, revalidacion y autorizacion del servidor.
+- Se agregan regresiones Vitest y Chromium para main unico, anonimo/403, revocacion, Tab/Enter, foco y 320px. Backend/JWT sinteticos NO prueban MySQL ni seguridad real; falta CI exact-SHA y nueva A5 ajena. Se conserva A5_FAIL e historia BITACORA; sin QA/main/PROD.
+
 ## 2026-11-18 — C15-04.M05.04 CI_REPAIR A0.35 parser ruta privada [Javier :10]
 - Se detecto en SHA 1867804d, GitHub run 44292686042/job 134761628345, un SyntaxError de string sin cerrar en la prueba Playwright A0.35; Chromium no llego a ejecutar ninguno de los 17 casos esperados. Es defecto P2 del test, no prueba de fallo de autorizacion del producto.
 - Se repara solamente la asercion de URL por igualdad estricta de pathname; no se omiten casos ni se cambian auth, guard, API, tenant o fixtures. Nueva CI en SHA de reparacion requerida completed/success con logs. Global UX R2 A0-A4 aun incompleto, owner DEV02 y candado V17 conservados, A5 por otra Task Javier.

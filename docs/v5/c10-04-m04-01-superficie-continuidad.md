@@ -19,3 +19,20 @@ A5 pendiente de otra Task Javier autorizada, distinta del autor. Prohibido QA/ma
 El job ERP `133017914864` detectó `FRONTEND_ROUTE_SECURITY_CONTRACT: UNGUARDED` sobre la nueva ruta a pesar de que utiliza exactamente `plataformaGuard`. Se añade únicamente la ruta exacta `plataforma/continuidad-operativa-v5` al conjunto cerrado del auditor `scripts/quality/priority4_quality_audit.py`. Permanecen exigibles el mismo guard, la autenticación backend, la sesión de plataforma, la denegación fail-closed y la ausencia de bypass wildcard/prefijo. No se agregan rutas ERP sin guard ni se degrada ningún gate.
 
 Se requiere CI real `ERP - Contratos, pruebas y build` sobre SHA de reparación con auditoría `FRONTEND_ROUTE_SECURITY_CONTRACT` PASS y pruebas existentes. Esta reparación de auditor compartido es R2 de seguridad aunque la pantalla de origen sea R1. No implica publicación QA/PROD.
+
+## Reparacion del A5_FAIL independiente P2 (18 de noviembre de 2026)
+
+DEV05 identifico que el shell autenticado AppComponent ya expone main#main-content,
+mientras la vista C10-04.M04.01 montaba otro main.continuidad dentro del outlet.
+Se cambia el contenedor de la vista a section.continuidad con el mismo titulo,
+aria-labelledby, estilos y controles; sin cambiar guard o autorizacion backend.
+
+Se agrega regresion Vitest de semantica y Playwright Chromium en GitHub-hosted
+para anonimo, 403, exactamente un main con sesion sintetica, Tab/Enter real,
+foco, 320px y revocacion sin filtraciones. La sesion simulada no demuestra
+JWT firmado, RBAC/tenant A/B real, MySQL ni restauracion de respaldos.
+La nueva CI, Scope Lock y V5 deben terminar SUCCESS exact-SHA antes de acreditarse.
+
+El A5_FAIL P2 historico se conserva hasta revision A5 independiente por otra
+Task Javier. La ausencia de evento LISTO previo exige conciliacion append-only
+basada en evidencia, nunca cierre retroactivo inventado. Revert normal en dev.

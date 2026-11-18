@@ -9,6 +9,7 @@ on:
       - 'frontend/src/app/features/plataforma/continuidad-operativa-v5.component.ts'
       - 'frontend/src/app/features/plataforma/continuidad-operativa-v5.component.spec.ts'
       - 'frontend/src/app/app.routes.auditoria-operativa-v5.spec.ts'
+      - 'frontend/e2e/c10-04-m04-01-landmark-regression.spec.ts'
   workflow_dispatch:
 
 permissions:
@@ -22,7 +23,10 @@ jobs:
   frontend-v17-continuidad:
     name: C10-04.M04.01 - ruta privada y seis Vitest
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
     defaults:
       run:
         working-directory: frontend
@@ -45,3 +49,30 @@ jobs:
         run: |
           npm run lint
           npm run build:prod
+
+      - name: 'Instalar Chromium para regresion A5 de landmarks'
+        run: npx playwright install --with-deps chromium
+      - name: 'Levantar Angular local sin backend productivo'
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c10-04-m04-01-landmarks.log 2>&1 &
+          for attempt in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat c10-04-m04-01-landmarks.log >&2
+          exit 1
+      - name: 'Playwright Chromium A5 P2 single main teclado 320px y revocacion'
+        run: npx playwright test e2e/c10-04-m04-01-landmark-regression.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: 'Evidencia de fallos navegador'
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c10-04-m04-01-a5-p2
+          path: |
+            frontend/c10-04-m04-01-landmarks.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 14
