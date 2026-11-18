@@ -7229,3 +7229,7 @@
 ## 2026-11-18 - V19 C15 A0.33-A0.34 CI repair landmarks y aislamiento [Javier :10]
 - Corrige hallazgos de RUN 44275373479 (12 PASS, 2 FAIL): tres guias dejan main anidado y conservan section etiquetada dentro del main unico del shell; A0.33 exige exactamente un landmark main.
 - A0.34 se separa en tres pruebas Playwright independientes para evitar contaminacion de sesion entre rutas, conservando JWT firmado, 403 de API real y no exposicion de guias. Dieciseis casos previstos; sin PASS hasta CI exact-SHA. R2 global EN_PROGRESO, lock V17 y A5 ajena conservados.
+
+## 2026-11-18 - V19 C15 regresión Vitest de regiones etiquetadas [Javier :10]
+- Repara dos pruebas C15-03 de branding/densidad que seguían buscando main dentro de guía tenancy ahora renderizada como section etiquetada por corrección semántica C15. Conserva aserciones de marca, densidad y payload hostil.
+- RUN 44283089029 exact-SHA abc0a49b: 14 PASS/2 FAIL antes de esta reparación. Exigir nueva CI Vitest/Chromium del SHA descendiente; sin PASS anticipado ni cierre A0–A4/A5 global. Solo dev, owner/lock C15 conservados.

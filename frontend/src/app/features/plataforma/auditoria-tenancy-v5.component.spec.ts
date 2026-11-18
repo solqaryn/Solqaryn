@@ -145,22 +145,24 @@ describe('C15-03.M04.01 - guía privada de seguridad y tenancy', () => {
 
   it('C15-03.M04.03 - branding y densidad tipados reaccionan a Signal sin mutar permisos', async () => {
     const { fixture, presentacion } = await montar(autorizado, { marca: 'institucional', densidad: 'compacta' });
-    const main = fixture.nativeElement.querySelector('main');
-    expect(main.getAttribute('data-densidad')).toBe('compacta');
-    expect(main.querySelector('.eyebrow').textContent).toContain('Plataforma SOLQARYN');
+    const seccion = fixture.nativeElement.querySelector('section.tenancy-audit');
+    expect(seccion, 'La guia tenancy mantiene region etiquetada').not.toBeNull();
+    expect(seccion.getAttribute('data-densidad')).toBe('compacta');
+    expect(seccion.querySelector('.eyebrow').textContent).toContain('Plataforma SOLQARYN');
     expect(fixture.nativeElement.querySelectorAll('.fronteras li')).toHaveLength(4);
     presentacion.set({ marca: 'solqaryn', densidad: 'normal' });
     fixture.detectChanges();
-    expect(main.getAttribute('data-densidad')).toBe('normal');
-    expect(main.querySelector('.eyebrow').textContent).toContain('SOLQARYN · Auditoría');
+    expect(seccion.getAttribute('data-densidad')).toBe('normal');
+    expect(seccion.querySelector('.eyebrow').textContent).toContain('SOLQARYN · Auditoría');
   });
 
   it('C15-03.M04.03 - rechaza HTML, CSS arbitrario y propiedades que intenten elevar autoridad', async () => {
     const ataque = '<img src=x onerror=alert(1)>';
     const { fixture } = await montar(autorizado, { marca: ataque, densidad: 'compacta' });
-    const main = fixture.nativeElement.querySelector('main');
-    expect(main.getAttribute('data-densidad')).toBe('normal');
-    expect(main.querySelector('.eyebrow').textContent).toContain('SOLQARYN');
+    const seccion = fixture.nativeElement.querySelector('section.tenancy-audit');
+    expect(seccion, 'La guia tenancy mantiene region etiquetada').not.toBeNull();
+    expect(seccion.getAttribute('data-densidad')).toBe('normal');
+    expect(seccion.querySelector('.eyebrow').textContent).toContain('SOLQARYN');
     expect(fixture.nativeElement.innerHTML).not.toContain(ataque);
     expect(normalizarPresentacionAuditoriaTenancyV5({ marca: 'institucional', densidad: 'compacta', rol: 'Admin' }))
       .toEqual({ marca: 'solqaryn', densidad: 'normal' });
