@@ -1,0 +1,26 @@
+name: V19 C14-01.M03.06 - isolated safe acceptance audit
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/src/Application/AutomationV5/C1401FunctionalAcceptanceAuditService.cs'
+      - 'backend/tests/Solqaryn.Tests/Application/C1401FunctionalAcceptanceAuditServiceTests.cs'
+      - '.github/workflows/v19-c14-01-m03-06-safe-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c1401-m0306-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  audit:
+    name: C14-01.M03.06 - .NET 10 directed audit regression
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Run isolated audit tests on exact commit
+        run: dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter "FullyQualifiedName~C1401FunctionalAcceptanceAuditServiceTests" --logger "console;verbosity=normal"

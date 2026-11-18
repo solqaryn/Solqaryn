@@ -7078,3 +7078,7 @@
 ## 2026-11-17 - V19 A0.26 LCP/CLS reales C15-04.M05.04 [Javier :10]
 - Agrega sexto escenario JWT/MySQL/Chromium real con PerformanceObserver previo y LCP/CLS en cuatro anchos; falla si LCP ausente o CLS excede 0.1.
 - Requiere PASS exact-SHA; no interpreta muestras localhost como Web Vitals productivos ni cierra R2 global, A5 independiente.
+
+## 2026-11-17 - V19 C14-01.M03.06 auditoria estructurada aislada y errores seguros [Javier :20]
+- Implementa envoltura Application .NET 10 de preflight funcional que registra solo OutcomeCode/ItemsChecked estructurados, sin identidad, tenant, recurso, token, SHA ni errores privados; no concede permisos ni autoriza QA/PROD.
+- Agrega seis regresiones xUnit negativas/positivas de tenant B, revocacion, cancelacion, fallo de auditoria y capacidad, con workflow GitHub-hosted exact SHA. Scope Lock/V5 y A5 independiente obligatorios; sin HTTP/MySQL/JWT real.
