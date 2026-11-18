@@ -1,3 +1,7 @@
+## 2026-11-18 — V19 C02-02.M04.06 reparación P2 landmark anidado [Javier :00]
+- El contenedor placement pasa de `main` interno a `section`, conservando el único `main#main-content` del shell autenticado; no altera lógica, roles ni persistencia.
+- Vitest y Chromium comprueban ausencia de `main` interno, un landmark principal y la vista privada en 320/768/1280; A5_FAIL histórico sigue abierto hasta revisión independiente y CI exact-SHA, sin atribuir PASS anticipado.
+
 ## 2026-11-18 — C01-04.M03.05 reparación P2 límites y enumeración de timeline [asistencia Javier :20]
 - Se evita confiar exclusivamente en IReadOnlyCollection.Count de una fuente backend: se comprueba el máximo real de 64 elementos al enumerar y el conteo final, negando secuencias que falseen Count o excedan el límite sin exponer datos parciales.
 - Las excepciones ordinarias de enumerador pasan a CASEFILE_TIMELINE_SOURCE_UNAVAILABLE sanitizado; se preserva propagación de cancelación. Tres xUnit adversariales nuevos; owner/autor DEV06 y LISTO históricos conservados, A5_FAIL P2 intacto hasta revisión independiente, CI exact-SHA necesaria. No hay cambio JWT/EF/MySQL/HTTP o producción.

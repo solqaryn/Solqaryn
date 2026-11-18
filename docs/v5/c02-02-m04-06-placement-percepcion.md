@@ -28,3 +28,7 @@ Revisor debe ser otra de cinco Tasks Javier, distinto del autor. No concede auto
 ## Reparacion CI P2 de selector Chromium (DEV01, 2026-11-18)
 
 La primera ejecucion exact-SHA 055214b750c09d0fa846a3d53e660c91dca1cbb8 tuvo dos escenarios aprobados y uno fallido en run 44367662907, job 135025660370. No fue fallo de autorizacion ni runtime: getByRole('status') resolvio dos elementos y Playwright rechazo modo estricto. Se acota el selector al anuncio [role=status] del panel section.estado ya protegido, conservando el texto, assertion de ocultamiento, single-flight, estado aria-busy, retorno y negativos. La CI del SHA reparado debe ejecutar los tres casos y 15+5 Vitest antes de LISTO. El fallo historico no se borra y no se debilita el assertion.
+
+## Correccion A5_FAIL P2 de landmarks anidados (DEV01, 2026-11-18)
+
+El shell autenticado ya contiene `<main id="main-content">`, mientras placement emitia un segundo `<main class="placement-review">`. Corregir solo el contenedor interno a `<section class="placement-review">` conserva `aria-labelledby`, las clases, los bindings, la navegacion y las barreras de autorizacion, sin cambiar el shell. Unitario detecta cualquier `main` interno y verifica que los modos privados se conservan; Playwright exige un solo `main#main-content`, cero `main main` y `section.placement-review` en 320/768/1280. El A5_FAIL P2 historico permanece, pendiente A5 correctiva de otra Task Javier. No equivale a certificar JWT/MySQL HTTP reales, WCAG global ni QA/PROD. Rollback con `git revert` normal del commit.

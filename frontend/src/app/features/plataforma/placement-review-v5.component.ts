@@ -18,7 +18,7 @@ export type EstadoPlacementV5 = 'vacio' | 'cargando' | 'exito' | 'sin_permiso' |
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="placement-review" [attr.data-densidad]="presentacion().densidad" aria-labelledby="placement-title">
+    <section class="placement-review" [attr.data-densidad]="presentacion().densidad" aria-labelledby="placement-title">
       <header>
         <p class="eyebrow">{{ marcaVisible() }} · Almacenamiento multitenant</p>
         <h1 id="placement-title">Placement compartido y dedicado</h1>
@@ -65,7 +65,7 @@ export type EstadoPlacementV5 = 'vacio' | 'cargando' | 'exito' | 'sin_permiso' |
       } @else {
         <p role="alert" class="denied">Sesión de plataforma no confirmada. Placement privado oculto.</p>
       }
-    </main>
+    </section>
   `,
   styles: [`
     :host { display:block; color:var(--mat-sys-on-surface,#17212d); }

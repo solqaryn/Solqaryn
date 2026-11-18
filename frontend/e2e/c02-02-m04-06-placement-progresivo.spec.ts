@@ -31,7 +31,11 @@ test('M04.06 densidad predeterminada sin overflow en 320/768/1280', async ({ pag
   for (const width of [320, 768, 1280]) {
     await page.setViewportSize({ width, height: 820 });
     await page.goto('/plataforma/placement-v5');
-    await expect(page.locator('main.placement-review')).toHaveAttribute('data-densidad', 'normal');
+    await expect(page.locator('section.placement-review')).toHaveAttribute('data-densidad', 'normal');
+    // A5 P2: el shell expone exactamente un main, nunca un main anidado.
+    await expect(page.locator('main#main-content')).toHaveCount(1);
+    await expect(page.locator('main main')).toHaveCount(0);
+    await expect(page.locator('main#main-content section.placement-review')).toHaveCount(1);
     await expect(page.getByRole('heading', { name: 'Placement compartido y dedicado' })).toBeVisible();
     await expect(page.locator('.modalidades article')).toHaveCount(2);
     await expect(page.locator('section.estado')).toHaveAttribute('aria-live', 'polite');

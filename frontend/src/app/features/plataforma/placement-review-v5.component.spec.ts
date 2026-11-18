@@ -66,6 +66,14 @@ describe('C02-02.M04.01 - placement privado no operativo', () => {
     expect(fixture.nativeElement.querySelectorAll('.modalidades article')).toHaveLength(0);
   });
 
+  it('C02-02.M04.06 - contenedor privado no duplica main del shell', async () => {
+    const { fixture } = await render(verified);
+    // El unico landmark principal autentico vive en AppComponent.
+    expect(fixture.nativeElement.querySelector('section.placement-review')).not.toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('main')).toHaveLength(0);
+    expect(fixture.nativeElement.querySelectorAll('.modalidades article')).toHaveLength(2);
+  });
+
   it('C02-02.M04.02 - carga accesible oculta modalidades y bloquea doble click', async () => {
     const { fixture, obtener } = await render(verified);
     fixture.componentInstance.revalidar();
