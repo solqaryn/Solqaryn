@@ -7067,3 +7067,8 @@
 ## 2026-11-17 - V19 C13-04.M05.04 permisos ERP solo lectura y denegacion de escritura [Javier :00]
 - Añade regresion E2E JWT/MySQL 8.4 efimero: Productos/Clientes/Proveedores con capacidad Ver, rechazos Crear/Editar por URL directa y retorno a lectura autorizada, sin mocks HTTP.
 - A0-A4 requieren CI exact-SHA y readback; P1 ERP global permanece abierto, A5 independiente. Solo test/documentacion; sin cambios productivos, QA/main/PROD.
+
+
+## 2026-11-17 - V19 A0.26 LCP/CLS reales C15-04.M05.04 [Javier :10]
+- Agrega sexto escenario JWT/MySQL/Chromium real con PerformanceObserver previo y LCP/CLS en cuatro anchos; falla si LCP ausente o CLS excede 0.1.
+- Requiere PASS exact-SHA; no interpreta muestras localhost como Web Vitals productivos ni cierra R2 global, A5 independiente.

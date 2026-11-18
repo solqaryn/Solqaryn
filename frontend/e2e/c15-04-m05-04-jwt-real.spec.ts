@@ -149,4 +149,53 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     }
   });
 
+
+  test('A0.26 - LCP y CLS reales de UX privada JWT en cuatro anchos', async ({ page }) => {
+    // Observer antes de cada navegacion: nunca rellenar un metric ausente con cero.
+    await page.addInitScript(() => {
+      const state = {
+        lcpMs: null as number | null,
+        cls: 0,
+        lcpSupported: PerformanceObserver.supportedEntryTypes.includes('largest-contentful-paint'),
+        clsSupported: PerformanceObserver.supportedEntryTypes.includes('layout-shift')
+      };
+      (window as Window & { __c1504Vitals?: typeof state }).__c1504Vitals = state;
+      if (state.lcpSupported) {
+        new PerformanceObserver(list => {
+          for (const entry of list.getEntries()) {
+            state.lcpMs = Math.round(entry.startTime * 100) / 100;
+          }
+        }).observe({ type: 'largest-contentful-paint', buffered: true });
+      }
+      if (state.clsSupported) {
+        new PerformanceObserver(list => {
+          for (const entry of list.getEntries()) {
+            const shift = entry as PerformanceEntry & { value: number; hadRecentInput: boolean };
+            if (!shift.hadRecentInput) state.cls += shift.value;
+          }
+        }).observe({ type: 'layout-shift', buffered: true });
+      }
+    });
+    await ingresar(page, 'c1504_platform_only');
+    for (const width of [320, 375, 768, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      await page.goto('/plataforma/auditoria-ux-v5', { waitUntil: 'load' });
+      await expect(page.locator('[data-testid="ux-audit-v19"]')).toBeVisible();
+      await page.waitForTimeout(800);
+      const vitals = await page.evaluate(() =>
+        (window as Window & { __c1504Vitals?: {
+          lcpMs: number | null; cls: number; lcpSupported: boolean; clsSupported: boolean
+        } }).__c1504Vitals
+      );
+      expect(vitals?.lcpSupported, 'LCP soportado por Chromium').toBe(true);
+      expect(vitals?.clsSupported, 'CLS soportado por Chromium').toBe(true);
+      expect(vitals?.lcpMs, 'LCP ausente no equivale a PASS').not.toBeNull();
+      expect(vitals!.lcpMs).toBeGreaterThan(0);
+      expect(vitals!.lcpMs).toBeLessThan(10000);
+      expect(vitals!.cls, 'CLS de carga sin desplazamientos inesperados').toBeLessThanOrEqual(0.1);
+      console.log('C15_AUTH_UX_REAL_LCP_CLS ' + JSON.stringify({ width, ...vitals }));
+    }
+    // localhost CI es una muestra diagnostica, no Core Web Vitals de produccion.
+  });
+
 });

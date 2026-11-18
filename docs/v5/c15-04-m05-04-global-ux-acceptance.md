@@ -145,3 +145,7 @@ Nueva suite Playwright independiente de C15-04.M05.04 sin interceptores HTTP: co
 
 ## A0.25 - WCAG puntual y muestras de rendimiento en ruta privada autenticada (pendiente de CI)
 Se añade al flujo JWT real una quinta prueba Chromium para cuatro resoluciones (320/375/768/1280): foco Tab genuino, outline visible, contraste computed >=4.5 para el titulo h3 de una tarjeta UX y muestras TTFB/FCP solo cuando navegador entrega PerformanceTiming. LCP/CLS se etiquetan null=NO_MEDIDO, sin afirmar Core Web Vitals ni rendimiento productivo. Requiere CI por SHA exacto antes de contar PASS. Mantener scope R2 global EN_PROGRESO para cobertura restante, A5 otra Task.
+
+
+## A0.26 - LCP y CLS observados en Chromium autenticado (CI causal pendiente)
+Incremento R2 limitado a /plataforma/auditoria-ux-v5 con JWT real y API/MySQL 8.4 efimeros GitHub-hosted. PerformanceObserver se registra desde addInitScript antes de la carga, mide LCP y CLS sin entrada reciente en 320/375/768/1280 px. El escenario falla si no existe soporte o falta LCP; nunca transforma NO_MEDIDO en PASS. Presupuestos del caso local: LCP inferior a 10000 ms, CLS <=0.1. No son Core Web Vitals productivos ni prueban todo WCAG. Requiere CI exact-SHA y logs de seis casos antes de acreditar A1-A4. Pendientes UX global, rutas y roles diversos, A5 de otra Task; mantener EN_PROGRESO y candado. Rollback mediante git revert normal.
