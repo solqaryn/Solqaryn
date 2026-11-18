@@ -30,6 +30,8 @@ describe('C14-01.M04.01 - superficie privada de QA global', () => {
     expect(root.querySelector('a[href*="github.com"]')).toBeNull();
     sesion.set({ nombreUsuario: 'Prueba', rolNombre: 'Plataforma', ambito: 'Plataforma', esAdministrador: true });
     fixture.detectChanges();
+    await fixture.whenStable();
+    fixture.detectChanges();
     root = fixture.nativeElement;
     expect(root.querySelector('[data-testid="c1401-qa-global"]')).not.toBeNull();
     expect(root.querySelectorAll('.qa-controles li')).toHaveLength(5);

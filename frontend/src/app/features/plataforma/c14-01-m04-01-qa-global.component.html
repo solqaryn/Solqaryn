@@ -8,18 +8,32 @@
   @if (!autorizado()) {
     <p role="alert" data-testid="qa-global-denegado">Acceso de plataforma no confirmado. Evidencias privadas ocultas.</p>
   } @else {
-    <section aria-labelledby="qa-evidencias" data-testid="c1401-qa-global">
+    <section aria-labelledby="qa-evidencias" data-testid="c1401-qa-global" [attr.aria-busy]="estado() === 'cargando'">
       <h2 id="qa-evidencias">Controles de calidad a contrastar</h2>
       <p role="note">Cada check se acredita solo con SHA, job y conclusión SUCCESS reales. Un inventario no es un reporte CI en vivo.</p>
-      <ol class="qa-controles">
-        @for (control of controles; track control.id) {
-          <li>
-            <h3>{{ control.titulo }}</h3>
-            <p>{{ control.alcance }}</p>
-            <p class="pendiente" aria-label="Estado de evidencia no verificado">NO_VERIFICADO · Consultar CI exact-SHA</p>
-          </li>
+      @switch (estado()) {
+        @case ('cargando') {
+          <p class="qa-estado" role="status" data-testid="c1401-qa-loading">Cargando inventario local de controles. No se han consultado resultados CI.</p>
         }
-      </ol>
+        @case ('vacio') {
+          <p class="qa-estado" role="status" data-testid="c1401-qa-empty">No hay controles en el inventario local. Sin evidencia verificada.</p>
+        }
+        @case ('error') {
+          <p class="qa-estado" role="alert" data-testid="c1401-qa-error">No se pudo cargar el inventario. No se acredita ningun resultado CI.</p>
+        }
+        @case ('listo') {
+          <p class="qa-estado" role="status" data-testid="c1401-qa-ready">Inventario local cargado; los resultados de CI permanecen NO_VERIFICADO.</p>
+          <ol class="qa-controles">
+            @for (control of controles(); track control.id) {
+              <li>
+                <h3>{{ control.titulo }}</h3>
+                <p>{{ control.alcance }}</p>
+                <p class="pendiente" aria-label="Estado de evidencia no verificado">NO_VERIFICADO · Consultar CI exact-SHA</p>
+              </li>
+            }
+          </ol>
+        }
+      }
       <p>Consultar resultados, logs y ejecuciones directamente en la fuente autenticada. Sin copiar tokens ni datos de tenants.</p>
       <a href="https://github.com/solqaryn/Solqaryn/actions?query=branch%3Adev"
          target="_blank" rel="noopener noreferrer"

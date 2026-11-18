@@ -7150,3 +7150,7 @@
 ## 2026-11-17 - V19 A0.28-A0.29 continuidad privada UX R2 C15-04.M05.04 [Javier :10]
 - Añade dos regresiones Chromium con JWT real y MySQL efimero: acceso global a continuidad responsive 320/1280 y rechazo 403 al usuario empresarial, nueve casos previstos sin PASS hasta CI exact-SHA.
 - Incremento parcial R2 sin cambios productivos; propietario DEV02 y candado V17 conservados, A0-A4 global y A5 independiente pendientes.
+
+## 2026-11-17 - V19 C14-01.M04.02 estados de inventario QA privado [Javier :40]
+- Estados de carga, vacio, error opaco, inventario local listo y acceso denegado con Angular Signals, import asincrono y cancelacion tras revocacion de grant; nunca interpreta inventario cargado como resultado CI PASS.
+- Regresiones Vitest de permiso, pendiente, cero registros, error, duplicado, revocacion y exito de catalogo; GitHub-hosted Playwright/Chromium con 403 y sin escrituras. A5 independiente, Scope Lock STRICT, sin QA/main/PROD ni datos productivos.
