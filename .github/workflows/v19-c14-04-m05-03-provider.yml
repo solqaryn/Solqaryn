@@ -1,0 +1,33 @@
+name: V19 C14-04.M05.03 - real GitHub Checks provider read-only DEV
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'scripts/quality/v19-c14-04-m05-03-provider.mjs'
+      - 'scripts/quality/v19-c14-04-m05-03-provider.test.mjs'
+      - '.github/workflows/v19-c14-04-m05-03-provider.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  checks: read
+concurrency:
+  group: v19-c1404m0503-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  read-only-provider:
+    name: C14-04.M05.03 - authenticated read-only GitHub Checks API
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+      - name: Scope Lock STRICT
+        run: node scripts/verify-project-scope.mjs
+      - name: Adversarial response tests
+        run: node --test scripts/quality/v19-c14-04-m05-03-provider.test.mjs
+      - name: Read real provider for exact commit with no release authority
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/quality/v19-c14-04-m05-03-provider.mjs --live

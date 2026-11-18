@@ -1,3 +1,7 @@
+## 2026-11-18 - V19 C14-04.M05.03 integracion GitHub Checks real en DEV [Javier :20]
+- R2: lectura autenticada de check-runs exact-SHA mediante GITHUB_TOKEN solo lectura en GitHub-hosted; resultado nunca autoriza release/PROD, sin cambio de runtime ni secretos.
+- Pruebas adversariales Node cubren SHA ajeno, checks incompletos/fallidos, duplicados, paginacion, 403 y alcance DEV. CI exact-SHA PENDIENTE hasta su ejecucion real; A5 por otra Task Javier.
+
 ## 2026-11-18 — C01-04.M03.06 auditoría QA estructurada sin PII [Javier :40]
 - Contrato Application de observación y sink inyectado de evidencias QA de expediente, SHA y ruta abstracta allowlisted; devuelve sobres no certificantes y nunca concede CI, A5, JWT, permisos, escritura ni lectura.
 - Pruebas xUnit positivas, tenant A/B, errores sanitizados, estados cancelled/skipped no PASS, cancelación y fronteras; sin DI productiva, HTTP, MySQL, JWT firmado, browser o secretos. CI GitHub-hosted/Scope Lock/V5 exact-SHA y A5 independiente obligatorios.
