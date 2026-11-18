@@ -1,3 +1,7 @@
+## 2026-11-18 — C02-02.M05.01 regresiones unitarias de placement [Javier :00]
+- Nueva suite xUnit de reglas Domain con tenant A/B, alias de almacenamiento y revisión, límites 128/129 de IDs e idempotencia, revocación y propuestas no autorizantes; sin runtime MySQL/EF/JWT/DSN.
+- CI GitHub-hosted .NET10, Scope Lock y V5 exigidos por SHA exacto; A5 distinta de autor; no se alteran Domain, infraestructura, rutas, QA/main/PROD.
+
 ## 2026-11-18 — C01-03.M03.06 auditoría estructurada y errores seguros [Javier :00]
 - Nuevo logger Application .NET10 con allowlists de operación/error, tenant y actor válidos, clave nunca expuesta (digest truncado), SHA/correlación y versión, sin registrar valores, secretos ni payload.
 - xUnit adversarial: positivos, denegaciones de PII/credenciales/tenant, frontera 64/65, errores de proveedor y sin concesiones. Requiere CI exact-SHA y A5 independiente; no configura sink productivo, MySQL, HTTP ni QA/main/PROD.
