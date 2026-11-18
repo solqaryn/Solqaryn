@@ -1,3 +1,7 @@
+## 2026-11-18 — CI_REPAIR C10-04.M05.06 reduced-motion Chromium [Javier :20]
+- Se corrige un oráculo E2E demasiado estricto: Chromium reporta 0,01 ms de transición en modo reduced-motion, no el literal 0s. Se validan unidades s/ms y presupuesto máximo efectivo de 0,1 ms, con Number.isFinite y todos los casos originales intactos.
+- El SHA anterior f3c46fb7 falló 1/7 Chromium en run 44337755037/job 134918974609; el nuevo SHA exige CI exacta, Scope Lock y V5 antes de PASS. Solo pruebas Chromium UI con sesión sintética, sin JWT firmado, MySQL, backup/restore, workers ni autorización R3. M05.06 permanece VALIDANDO, A5 externa pendiente, sin QA/main/PROD.
+
 ## 2026-11-18 — C10-04.M05.06 regresión Chromium accesibilidad y densidad [Javier :20]
 - Se incorpora suite Playwright dirigida de 7 escenarios reales de navegador: tres tamaños, teclado Tab/Enter, denegaciones 403/500, CSS reduced motion, presupuestos DOM/overflow y ninguna mutación. Sesión/API sintética; no se certifican JWT firmado, MySQL, worker, backup/restore o Cloudflare R2.
 - Nuevo workflow GitHub-hosted por SHA sin cancelación de otros, con Angular lint/build y Chromium. La entrega de pruebas es R2 parcial, permanece VALIDANDO mientras CI y criterios auténticos A0–A4 continúen pendientes; A5 será independiente de DEV03. Scope Lock STRICT, sin QA/main/PROD ni secretos.

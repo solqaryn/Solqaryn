@@ -125,8 +125,16 @@ test.describe('C10-04.M05.06 browser-only regression, perf budgets and accessibi
     await page.goto(privatePath);
     const button = page.getByRole('button', { name: 'Revalidar sesión de continuidad' });
     await expect(button).toBeVisible();
-    const duration = await button.evaluate(element => getComputedStyle(element).transitionDuration);
-    expect(duration).toBe('0s');
+    const durations = await button.evaluate(element => getComputedStyle(element).transitionDuration
+      .split(',').map(value => {
+        const match = /^(\\d+(?:\\.\\d+)?(?:e[+-]?\\d+)?)(ms|s)$/i.exec(value.trim());
+        if (!match) return Number.NaN;
+        return Number(match[1]) * (match[2].toLowerCase() === 'ms' ? 0.001 : 1);
+      }));
+    expect(durations.length).toBeGreaterThan(0);
+    // Chromium/Material may clamp reduced motion to 0.01 ms instead of literal 0s.
+    // A strict <= 0.1 ms budget still rejects observable motion.
+    expect(durations.every(seconds => Number.isFinite(seconds) && seconds >= 0 && seconds <= 0.0001)).toBe(true);
     await expect(page.getByRole('link', { name: 'Regresar a plataforma' })).toBeVisible();
   });
 });
