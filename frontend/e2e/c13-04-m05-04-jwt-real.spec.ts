@@ -364,3 +364,52 @@ test('empresa A navega extension sectorial real; empresa B falsificada no entra'
   await expect(page).toHaveURL(/\/login(?:\?|$)/);
   await expect(page.getByRole('heading', { name: 'Capacidades por rubro' })).toHaveCount(0);
 });
+
+
+test('empresa A con grants reales recorre ERP lectura y ruta parametrizada sin mocks', async ({ page, request }) => {
+  // Read pilot habilitado solamente en CI MySQL 8.4 efimero.
+  await autenticarEnPantalla(page, 'c1304_admin_a');
+  const jwt = await page.evaluate(() => localStorage.getItem('solqaryn_token'));
+  expect(jwt).toMatch(/^[^.]+\.[^.]+\.[^.]+$/);
+  const headers = { Authorization: 'Bearer ' + jwt };
+  const permisosApi = await request.get(api + '/permisos/mis-permisos/empresa/1', { headers });
+  expect(permisosApi.status()).toBe(200);
+  const cuerpo = (await permisosApi.json())?.data;
+  expect(cuerpo?.operacionMultiEmpresaRestringida).toBe(true);
+  for (const [modulo, ruta] of [
+    ['Productos', 'productos'], ['Clientes', 'clientes'], ['Proveedores', 'proveedores'],
+  ] as const) {
+    expect(cuerpo?.permisos).toContain(modulo + ':Ver');
+    expect(cuerpo?.capacidadesHabilitadas).toContain(modulo + ':Ver');
+    expect(cuerpo?.rutasHabilitadas).toContain(ruta);
+  }
+
+  await page.evaluate(() => localStorage.setItem('solqaryn_empresa_solicitada_id', '1'));
+  for (const destino of [
+    { ruta: '/productos', titulo: 'Productos' },
+    { ruta: '/clientes', titulo: 'Clientes' },
+    { ruta: '/proveedores', titulo: 'Proveedores' },
+  ] as const) {
+    await test.step('ERP permitido ' + destino.ruta, async () => {
+      const permisosVerificados = page.waitForResponse(r =>
+        r.url().includes('/permisos/mis-permisos/empresa/1') &&
+        r.request().method() === 'GET');
+      const html = await page.goto(destino.ruta);
+      expect(html?.status()).toBe(200);
+      expect((await permisosVerificados).status()).toBe(200);
+      await expect(page).toHaveURL(new RegExp(destino.ruta + '$'));
+      await expect(page.getByRole('heading', { name: destino.titulo, exact: true })).toBeVisible();
+      await expect(page.getByRole('heading', { name: 'Iniciar sesión' })).toHaveCount(0);
+    });
+  }
+
+  // Ruta dinamica con grant valido, pero sin fabricar datos comerciales.
+  const detalle = await page.goto('/productos/999999');
+  expect(detalle?.status()).toBe(200);
+  await expect(page).toHaveURL(/\/productos\/999999$/);
+  await expect(page.getByRole('heading', { name: 'Detalle de producto' })).toBeVisible();
+  await expect(page.getByText('El producto no existe o fue eliminado.')).toBeVisible();
+
+  const empresaB = await request.get(api + '/permisos/mis-permisos/empresa/2', { headers });
+  expect([403, 404]).toContain(empresaB.status());
+});

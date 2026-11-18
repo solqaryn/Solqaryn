@@ -7033,3 +7033,7 @@
 ## 2026-11-17 - V19 reparacion CI P0-007.A C09-04.M04.02 [Javier :20]
 - La CI de catálogo exact-SHA 83e8323a detectó el componente real no inventariado; se añade sólo ese archivo y el conteo estricto actual, sin desactivar negativos ni controles.
 - Requiere revalidación exact-SHA de P0-007.A, TestBed Angular, V5 y Scope Lock. Sin certificación de proveedores, backend JWT, MySQL, QA/main/PROD.
+
+## 2026-11-17 - V19 C13-04.M05.04 lectura ERP A/B en CI efimera [Javier :00]
+- Nueva prueba Playwright JWT y MySQL aislado: grants reales, rutas positivas Productos/Clientes/Proveedores, parametro dinamico sin inventar registros y rechazo de empresa B.
+- PrivateReadPilotEnabled se habilita solo en GitHub-hosted CI; no se alteran permisos ni flags de producto. Requiere Scope Lock/V5 y Chromium SUCCESS exact SHA, P1 global pendiente y A5 de otro Javier.

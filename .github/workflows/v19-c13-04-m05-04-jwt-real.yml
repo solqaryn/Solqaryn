@@ -44,6 +44,8 @@ jobs:
       SeedAdmin__Username: 'c1304_admin_a'
       SeedAdmin__Password: 'C1304.Admin#2026!'
       P4_TEST_PASSWORD: 'C1304.Admin#2026!'
+      # Solo CI aislada, sin cambiar entornos productivos.
+      MultiEmpresa__PrivateReadPilotEnabled: 'true'
       Security__LoginRateLimitPerMinute: '300'
       Cors__AllowedOrigins__0: 'http://127.0.0.1:4200'
       Cors__AllowedOrigins__1: 'http://localhost:4200'
