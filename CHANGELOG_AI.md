@@ -1,3 +1,7 @@
+## 2026-11-18 — C14-04.M05.01 regresiones unitarias de readiness DEV [Javier :00]
+- Nueva suite xUnit de reglas Domain con paquete DEV positivo no autorizante, SHA y checks obligatorios por SHA exacto, tenant A/B, revisor independiente, evidencia ejecutada y limites 512/513, negaciones CI y rollback/stop.
+- Alcance de prueba .NET 10 sin deploy, permisos, JWT real, MySQL/EF/HTTP, DNS ni PROD; exigir CI GitHub-hosted exact SHA, Scope Lock, V5 y revision A5 de otra Task Javier.
+
 ## 2026-11-18 — C02-02.M05.04 aceptación positiva aislada placement [Javier :20]
 - Matriz xUnit sobre Application + Domain de placement con ocho casos shared/dedicated y tenant A/B, frontera tenant/idempotencia 128, revisión larga, repetición y rechazo A/B o revisión obsoleta; todo veredicto positivo exige adapter backend separado y nunca autoriza conexión, migración, cutover ni producción.
 - Suite sintética sin SQL/EF/JWT HTTP ni cambios runtime; GitHub Actions .NET10, Scope Lock/V5 exact-SHA y A5 independiente obligatorios antes de cierre. Solo dev; no QA/main/PROD.
