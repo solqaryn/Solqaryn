@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C14-01.M04.05 regresion accesibilidad Chromium [Javier Task :00]
+- Cuatro pruebas reales sin mocks HTTP: login 320/375/768/1280, labels, Tab, foco, 44px, contraseña reversible sin POST, contraste WCAG AA conservador y rechazo anonimo de QA privado.
+- Workflow GitHub-hosted por SHA, documento A0-A5; no cambia JWT/RBAC/tenant/UI de otros autores ni datos. CI y A5 independientes aun requeridos; no validar SKIPPED ni QUEUED como PASS.
+
 ## 2026-11-17 — CI_REPAIR C14-01.M04.01 Chromium QA sin falso alcance [Javier :40]
 - Log Playwright exact-SHA 8e55e16e: 2/3 pruebas aprobadas, una asercion de controles globales incluyo cinco elementos del shell ajeno. Se limita expresamente el selector al panel QA privado (data-testid c1401-qa-global), manteniendo rechazo de cualquier formulario/boton de aprobacion dentro de la superficie y los negativos 403/teclado.
 - CI nueva obligatoria 3/3 y Scope Lock/V5 exact-SHA antes de LISTO; fallo historico permanece, no autocertificar.
