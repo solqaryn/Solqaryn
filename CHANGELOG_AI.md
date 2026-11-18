@@ -7054,3 +7054,7 @@
 ## 2026-11-17 - V19 C15-04.M05.04 contraste y performance localhost en UX privada [Javier :10]
 - Se extiende suite real JWT/MySQL a quinto caso Chromium: Tab/outline/contraste >=4.5 en 320/375/768/1280 y muestras TTFB/FCP autenticadas, sin datos productivos.
 - LCP/CLS no medidos permanecen NO_MEDIDO; WCAG/WebVitals global no se certifican. Exigir logs y Scope Lock por nuevo SHA; owner DEV02 conserva EN_PROGRESO, A5 externa.
+
+## 2026-11-17 - V19 C14-01.M03.05 evidence provider [Javier :40]
+- Integra proveedor de prueba de aceptación mediante GET real GitHub Checks API, SHA/repositorio exactos, token efímero y estados incompletos fail-closed; no otorga permisos de API, tenant ni release.
+- Incorpora ocho casos Node (uno HTTPS real, siete contractuales/adversariales), CI por SHA con concurrency cancel-in-progress=false y contrato de rollback; conserva A5 independiente y limita el PASS a evidencias concretas.

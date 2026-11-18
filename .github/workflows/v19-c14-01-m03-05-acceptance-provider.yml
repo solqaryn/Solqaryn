@@ -1,0 +1,29 @@
+name: V19 C14-01.M03.05 - acceptance CI evidence provider
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'scripts/quality/v19-c14-01-m03-05-acceptance-provider.mjs'
+      - 'scripts/quality/v19-c14-01-m03-05-acceptance-provider.test.mjs'
+      - '.github/workflows/v19-c14-01-m03-05-acceptance-provider.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  checks: read
+concurrency:
+  group: v19-c1401-m0305-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  provider:
+    name: C14-01.M03.05 - real GitHub GET and adversarial tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Execute eight real and adversarial Node cases
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node --test scripts/quality/v19-c14-01-m03-05-acceptance-provider.test.mjs
