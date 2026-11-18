@@ -1,3 +1,7 @@
+## 2026-11-18 — CI_REPAIR C10-04.M05.03 compilación C# CS0136 [asistencia Javier :00]
+- Se corrige exclusivamente la variable local duplicada `v` en la función Scalar de la prueba de integración MySQL 8.4; la variable de retorno pasa a `scalarValue`, preservando consultas, casos adversariales y transacciones sin reducir ningún assert.
+- El job backend y seguridad del SHA previo falló con CS0136 en línea 101. Nueva CI exact-SHA necesaria para certificar Category=Integration y MySQL 8.4 efímero; no es PASS, propietario DEV06/VALIDANDO conservados, A5 por Task distinta. Sin MySQL Aiven, Cloudflare R2 real, QA/main/PROD; git revert para rollback.
+
 ## 2026-11-18 — C05-03.M02.05 corrección documental P2 de aprobación independiente [asistencia Javier :00]
 - Se corrige el contrato EV08/IDEM08/T06: una revisión solo puede aprobarla un revisor autenticado diferente de su autor, con tenant, rol, versión y revocación comprobados; se prohíbe autoaprobación aun con rol válido.
 - Casos negativos futuros de autor=revisor, tenant B, rol revocado y versión obsoleta quedan explícitos y sin efectos. Cambio R0 Markdown sin código, JWT HTTP, MySQL, eventos runtime ni despliegue; A5_FAIL histórico preservado, nueva A5 independiente requerida. Rollback mediante git revert, sin QA/main/PROD.

@@ -99,8 +99,8 @@ public sealed class C1004M0503MySqlProviderIntegrationTests
     {
         using var cmd=new MySqlCommand(sql,db);
         foreach(var (n,v) in args)cmd.Parameters.AddWithValue(n,v);
-        var v=await cmd.ExecuteScalarAsync();
-        return v is null or DBNull?default:(T)Convert.ChangeType(v,typeof(T),CultureInfo.InvariantCulture);
+        var scalarValue=await cmd.ExecuteScalarAsync();
+        return scalarValue is null or DBNull?default:(T)Convert.ChangeType(scalarValue,typeof(T),CultureInfo.InvariantCulture);
     }
 
     private static async Task<int> Exec(MySqlConnection db,string sql,MySqlTransaction? tx=null,
