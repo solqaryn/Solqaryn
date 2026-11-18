@@ -550,4 +550,106 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     // Prueba de continuidad global especifica; no acredita WCAG o RUM de todo el ERP.
   });
 
+
+  // A0.39: rutas globales adicionales no incluidas en las 22 pruebas previas.
+  // JWT firmado y API/MySQL efimeros, sin page.route ni mocks HTTP.
+  test('A0.39 - cobertura y flujo V5 solo para plataforma global en dos anchos', async ({ page }) => {
+    await ingresar(page, 'c1504_platform_only');
+    const rutas = [
+      { path: '/plataforma/cobertura-v5', heading: 'Cobertura V5 · trazabilidad' },
+      { path: '/plataforma/flujo-v5', heading: 'Ciclo V5 · estados y controles' }
+    ];
+    const mutaciones: string[] = [];
+    page.on('request', req => {
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method())) {
+        mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+      }
+    });
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      for (const ruta of rutas) {
+        const sesion = page.waitForResponse(r =>
+          r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+        const respuesta = await page.goto(ruta.path);
+        expect(respuesta?.status()).toBe(200);
+        expect((await sesion).status(), 'API global con JWT firmado').toBe(200);
+        await expect(page).toHaveURL(new RegExp(ruta.path.replaceAll('/', '\\/') + '$'));
+        await expect(page.getByRole('heading', { level: 1, name: ruta.heading })).toBeVisible();
+        await expect(page.getByRole('main'), 'Un unico landmark main').toHaveCount(1);
+        await expect(page.locator('section.plataforma')).toBeVisible();
+        if (ruta.path.endsWith('/flujo-v5')) {
+          await expect(page.getByTestId('release-success')).toBeVisible();
+          await expect(page.getByTestId('release-empty')).toHaveAttribute('data-evidence-state', 'vacio');
+        } else {
+          await expect(page.getByRole('button', { name: 'Alto contraste de cobertura' })).toBeVisible();
+        }
+        expect(await page.evaluate(() => document.documentElement.scrollWidth))
+          .toBeLessThanOrEqual(width + 1);
+      }
+    }
+    expect(mutaciones, 'La consulta V5 no puede crear efectos de escritura').toEqual([]);
+  });
+
+  test('A0.39 - empresa B no accede a cobertura ni flujo V5', async ({ browser, request }) => {
+    for (const ruta of ['/plataforma/cobertura-v5', '/plataforma/flujo-v5']) {
+      for (const width of [320, 1280]) {
+        const contexto = await browser.newContext({
+          baseURL: 'http://127.0.0.1:4200',
+          viewport: { width, height: 840 }
+        });
+        try {
+          const page = await contexto.newPage();
+          const jwt = await ingresar(page, 'c1504_admin_b');
+          const directa = await request.get(api + '/plataforma/sesion', {
+            headers: { Authorization: 'Bearer ' + jwt }
+          });
+          expect(directa.status(), 'La API debe negar el rol empresarial B').toBe(403);
+          const mutaciones: string[] = [];
+          page.on('request', req => {
+            if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method())) {
+              mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+            }
+          });
+          const sesion = page.waitForResponse(r =>
+            r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+          await page.goto(ruta);
+          expect((await sesion).status()).toBe(403);
+          await expect(page).toHaveURL(/\/login\?plataforma=denegado/);
+          await expect(page.locator('section.plataforma')).toHaveCount(0);
+          await expect(page.getByRole('heading', { name: /Cobertura V5|Ciclo V5/ })).toHaveCount(0);
+          expect(mutaciones, 'Denegar acceso no debe mutar datos').toEqual([]);
+          expect(await page.evaluate(() => document.documentElement.scrollWidth))
+            .toBeLessThanOrEqual(width + 1);
+        } finally {
+          await contexto.close();
+        }
+      }
+    }
+  });
+
+  test('A0.39 - alto contraste de cobertura alcanzable con Tab y activable con Space', async ({ page }) => {
+    await ingresar(page, 'c1504_platform_only');
+    const sesion = page.waitForResponse(r =>
+      r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+    await page.goto('/plataforma/cobertura-v5');
+    expect((await sesion).status()).toBe(200);
+    const boton = page.getByRole('button', { name: 'Alto contraste de cobertura' });
+    await expect(boton).toBeVisible();
+    await expect(boton).toHaveAttribute('aria-pressed', 'false');
+    let accesible = false;
+    for (let intento = 0; intento < 90; intento++) {
+      await page.keyboard.press('Tab');
+      accesible = await boton.evaluate(elemento => elemento === document.activeElement);
+      if (accesible) break;
+    }
+    expect(accesible, 'El control debe ser alcanzable con Tab real').toBe(true);
+    await page.keyboard.press('Space');
+    await expect(boton).toHaveAttribute('aria-pressed', 'true');
+    await expect(page.locator('.v5-coverage-contrast')).toBeVisible();
+    await page.keyboard.press('Space');
+    await expect(boton).toHaveAttribute('aria-pressed', 'false');
+    await expect(page.locator('.v5-coverage-contrast')).toHaveCount(0);
+    // Muestra funcional de teclado: no sustituye contraste WCAG ni auditoria global.
+  });
+
 });

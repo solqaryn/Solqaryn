@@ -1,3 +1,7 @@
+## 2026-11-18 — C15-04.M05.04 A0.39 cobertura, flujo y teclado JWT [Javier Task :10]
+- Se agregan tres casos Playwright JWT/MySQL efimero para cobertura/flujo V5: autoridad global 200, B empresarial 403, headings/main/solo lectura/320-1280, ausencia de mutaciones y Tab/Space real en contraste sin .focus().
+- Suite esperada 25 casos, CI exact-SHA pendiente hasta SUCCESS real. Auditoria UX global R2 A0-A4 INCOMPLETA, owner DEV02 y lock V17 2000002297 vigentes; A5 otra Task, solo dev y rollback git revert.
+
 ## 2026-11-18 — V19 C02-02.M04.06 densidad y carga progresiva Playwright [Javier :00]
 - Agrega regresión Chromium de densidad/320–1280, revalidación HTTP sintética demorada, single-flight y errores que no filtran DSN; conserva 15+5 Vitest.
 - Solo pruebas y documentación R2: no cambia autorización, API, router MySQL ni datos; CI exact-SHA, Scope Lock y V5 necesarios antes de LISTO. A5 de otra Task Javier, sin QA/main/PROD.
