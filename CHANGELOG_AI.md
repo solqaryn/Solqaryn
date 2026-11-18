@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C02-03.M03.02 Application tenant lifecycle no-autorizante [Javier :40]
+- Servicio Application con lector server-controlled y tenant-fenced, preflight Domain sin permisos ni escrituras; replay idempotente exige recibo durable o checkpoint, no CAS nuevo.
+- Suite xUnit adversarial y workflow GitHub-hosted .NET 10 por SHA; JWT HTTP, MySQL real, CAS persistente, produccion R3 y A5 no certificados.
+
 ## 2026-11-18 — V20 C14-04.M06.01 auditoria de evidencia real vs mocks [Javier :50]
 - Matriz de seis microtareas M05 LISTO+A5 con pruebas por SHA y limites falsables: xUnit/Chromium/GitHub reales en CI pero sesiones sinteticas y contratos in-process NO acreditan JWT HTTP, SQL tenant ni go-live.
 - Contrato documental de aceptacion negativa fail-closed, evidencias pendientes de backup, RPO/RTO, soporte, alertas y produccion; Scope Lock STRICT, rollback git revert y A5 independiente sin permiso R3/QA/main/PROD.

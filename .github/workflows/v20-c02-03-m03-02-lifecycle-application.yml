@@ -1,0 +1,38 @@
+name: V20 C02-03.M03.02 - Lifecycle Application security
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/src/Application/AutomationV5/C0203TenantLifecycleApplicationService.cs'
+      - 'backend/tests/Solqaryn.Tests/Application/C0203TenantLifecycleApplicationServiceTests.cs'
+      - '.github/workflows/v20-c02-03-m03-02-lifecycle-application.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v20-c0203-m0302-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  lifecycle-application:
+    name: C02-03.M03.02 - .NET 10 Application deny by default
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Verify project Scope Lock
+        run: node scripts/verify-project-scope.mjs
+      - name: Restore and build net10 Release
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+      - name: Run Application lifecycle adversarial xUnit tests
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter "FullyQualifiedName~C0203TenantLifecycleApplicationServiceTests" --logger "console;verbosity=normal"
+          echo "C0203_M0302_LIFECYCLE_APPLICATION_TESTS_COMPLETED"
