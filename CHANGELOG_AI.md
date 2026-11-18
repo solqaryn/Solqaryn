@@ -7058,3 +7058,8 @@
 ## 2026-11-17 - V19 C14-01.M03.05 evidence provider [Javier :40]
 - Integra proveedor de prueba de aceptación mediante GET real GitHub Checks API, SHA/repositorio exactos, token efímero y estados incompletos fail-closed; no otorga permisos de API, tenant ni release.
 - Incorpora ocho casos Node (uno HTTPS real, siete contractuales/adversariales), CI por SHA con concurrency cancel-in-progress=false y contrato de rollback; conserva A5 independiente y limita el PASS a evidencias concretas.
+
+
+## 2026-11-17 - V19 C13-04.M05.04 permisos ERP solo lectura y denegacion de escritura [Javier :00]
+- Añade regresion E2E JWT/MySQL 8.4 efimero: Productos/Clientes/Proveedores con capacidad Ver, rechazos Crear/Editar por URL directa y retorno a lectura autorizada, sin mocks HTTP.
+- A0-A4 requieren CI exact-SHA y readback; P1 ERP global permanece abierto, A5 independiente. Solo test/documentacion; sin cambios productivos, QA/main/PROD.

@@ -413,3 +413,36 @@ test('empresa A con grants reales recorre ERP lectura y ruta parametrizada sin m
   const empresaB = await request.get(api + '/permisos/mis-permisos/empresa/2', { headers });
   expect([403, 404]).toContain(empresaB.status());
 });
+
+
+test('tenant A read-only ERP niega operaciones de escritura aun con JWT real', async ({ page, request }) => {
+  // CI efimera: el piloto concede capacidades de lectura, no Create/Edit.
+  await autenticarEnPantalla(page, 'c1304_admin_a');
+  const jwt = await page.evaluate(() => localStorage.getItem('solqaryn_token'));
+  expect(jwt).toMatch(/^[^.]+\.[^.]+\.[^.]+$/);
+  const headers = { Authorization: 'Bearer ' + jwt };
+  const respuesta = await request.get(api + '/permisos/mis-permisos/empresa/1', { headers });
+  expect(respuesta.status()).toBe(200);
+  const data = (await respuesta.json())?.data;
+  expect(data?.operacionMultiEmpresaRestringida).toBe(true);
+  for (const modulo of ['Productos', 'Clientes', 'Proveedores']) {
+    expect(data?.capacidadesHabilitadas).toContain(modulo + ':Ver');
+    expect(data?.capacidadesHabilitadas).not.toContain(modulo + ':Crear');
+    expect(data?.capacidadesHabilitadas).not.toContain(modulo + ':Editar');
+  }
+
+  await page.evaluate(() => localStorage.setItem('solqaryn_empresa_solicitada_id', '1'));
+  for (const ruta of [
+    '/productos/nuevo', '/productos/1/editar',
+    '/clientes/nuevo', '/proveedores/nuevo'
+  ]) {
+    await test.step('no crear/editar ' + ruta, async () => {
+      const pagina = await page.goto(ruta);
+      expect(pagina?.status()).toBe(200); // HTML SPA no equivale a autorizacion.
+      // El permisoGuard consulta capacidades del backend y vuelve a la primera
+      // ruta explicita de lectura, sin mostrar formulario de escritura.
+      await expect(page).toHaveURL(/\/productos$/);
+      await expect(page.getByRole('heading', { name: 'Productos', exact: true })).toBeVisible();
+    });
+  }
+});
