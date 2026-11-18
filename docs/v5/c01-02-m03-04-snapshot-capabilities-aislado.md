@@ -16,3 +16,7 @@ A3 pertinente: .NET 10 Release y xUnit dirigido en GitHub Actions; seguridad mul
 ## V19 — Reparación causal del A5_FAIL P2 (2026-11-17)
 
 La auditoría independiente DEV06 del SHA cb79ef0c detectó que `Freeze` copiaba en `HashSet<string>` pero lo exponía como `IReadOnlySet<string>`, permitiendo a un lector hacer downcast a `ISet<string>` y mutar la referencia retenida por `ReadCurrentAsync`. El defecto se corrige con `System.Collections.Frozen` y `ToFrozenSet(StringComparer.Ordinal)`, preservando NULL y la comparación ordinal. Se agregan dos pruebas adversariales que prohíben exponer `ISet`/`ICollection` mutables, comprueban relectura estable y mutación externa de permisos/denegaciones. No se modifican API, JWT, MySQL/EF, datos reales ni permisos productivos. Rollback normal `git revert`; A5_FAIL histórico permanece, y sólo una revisión nueva de otra Task Javier con CI Release/seguridad/Scope Lock/V5 exact-SHA permite corregir A5 y reactivar el DAG sin forzar fórmulas ni estados.
+
+
+## Afinación de regresión A5: interfaz no equivale a mutabilidad
+GitHub Actions detectó que los dos nuevos tests exigían erróneamente que FrozenSet no fuera asignable a ISet/ICollection; en .NET 10 puede exponerlas con operaciones de mutación no soportadas. Se sustituyó la aserción estructural por intentos reales de Add/Clear y comprobación del contenido íntegro. HashSet mutable falla este ensayo. Se mantienen el defecto A5_FAIL histórico, la reparación ToFrozenSet y la revisión independiente posterior. No se cambian sistemas productivos.

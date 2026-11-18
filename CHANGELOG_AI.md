@@ -1,3 +1,6 @@
+## 2026-11-17 — Corrección de prueba A5 C01-02.M03.04 tras CI negativo [ChatGPT directo]
+- GitHub Actions f1321875 arrojó 2 FAIL de aserciones estructurales sobre FrozenSet; las nuevas pruebas intentan escrituras reales ISet/ICollection y verifican inmutabilidad efectiva. Se conserva ToFrozenSet y el A5_FAIL histórico. CI y A5 ajena pendientes; ningún gate forzado.
+
 ## 2026-11-17 — Corrección A5_FAIL P2 C14-01.M03.05, procedencia GitHub Checks [ChatGPT directo]
 - Se exige la App GitHub Actions real (ID 15368/slug github-actions) y origen de job del repositorio antes de contabilizar checks como PASS; se rechaza suplantación de App, nombre o URL con dos tests negativos. Auth y QA/main/PROD sin cambios. A5_FAIL original se conserva; nueva revisión independiente aún requerida.
 

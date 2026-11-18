@@ -163,10 +163,25 @@ public sealed class C0102IsolatedCapabilityPolicySnapshotAdapterTests
         Assert.All(sets, values =>
         {
             Assert.NotNull(values);
-            Assert.False(values is ISet<string>,
-                "A read-only interface must not expose a mutable ISet backing store.");
-            Assert.False(values is ICollection<string>,
-                "A read-only interface must not expose a mutable ICollection backing store.");
+            // FrozenSet can expose ISet or ICollection without accepting mutations.
+            // Verify that writable casts cannot change the captured capability bits.
+            Assert.False(values is HashSet<string>);
+            var initial = values.ToHashSet(StringComparer.Ordinal);
+            if (values is ISet<string> throughSet)
+            {
+                try { throughSet.Add("security.override"); }
+                catch (NotSupportedException) { }
+                Assert.True(initial.SetEquals(values));
+                try { throughSet.Clear(); }
+                catch (NotSupportedException) { }
+                Assert.True(initial.SetEquals(values));
+            }
+            if (values is ICollection<string> throughCollection)
+            {
+                try { throughCollection.Add("security.override"); }
+                catch (NotSupportedException) { }
+                Assert.True(initial.SetEquals(values));
+            }
         });
 
         var second = await a.ReadCurrentAsync(11, 101, default);
@@ -193,9 +208,17 @@ public sealed class C0102IsolatedCapabilityPolicySnapshotAdapterTests
         plan.Add("security.override");
         denied.Clear();
 
-        // The A5 adversarial cast must be impossible, not merely unexercised.
-        Assert.False(first.Policy.PlanCapabilities is ISet<string>);
-        Assert.False(first.Policy.DeniedCapabilities is ISet<string>);
+        // An ISet downcast may succeed; attempts to write must have no effect.
+        if (first.Policy.PlanCapabilities is ISet<string> planSet)
+        {
+            try { planSet.Add("security.override"); }
+            catch (NotSupportedException) { }
+        }
+        if (first.Policy.DeniedCapabilities is ISet<string> deniedSet)
+        {
+            try { deniedSet.Clear(); }
+            catch (NotSupportedException) { }
+        }
         var later = await reader.ReadCurrentAsync(11, 101, default);
         Assert.NotNull(later);
         Assert.Contains(Key, later.Policy!.PlanCapabilities!);
