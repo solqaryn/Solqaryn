@@ -1,3 +1,7 @@
+## 2026-11-18 — C15-04.M05.04 reparacion R2 P2 de contextos Chromium por viewport [Javier :10]
+- La CI A0.37 d690cc3e registro 18 PASS y 3 FAIL por timeout de login en el segundo viewport; se evita reutilizar page/JWT creando contexto Chromium aislado por ancho, cerrandolo en finally.
+- Se mantienen pruebas firmadas JWT, API/MySQL 8.4 efimeros, 403 tenant/rol y tres guias privadas; no PASS ficticio hasta nuevo run 21/21, sin cambios productivos ni A5 propia. EN_PROGRESO DEV02 con candado V17 legitimo; rollback git revert normal.
+
 ## 2026-11-18 — DEV06 C01-02.M04.02 navegador real de estados y denegacion
 - Se agrega Chromium dirigido contra Angular localhost: anonimo, 403 sintetico sin filtracion y sesion sin tenant verificado, cero filas/escrituras y reflow 320px; no se atribuye prueba JWT/HTTP real/DB.
 - Workflow V19 ahora ejecuta siete TestBed, lint, build y tres E2E con artefactos en GitHub Actions. Requiere CI completed/success exact SHA y Scope Lock/V5; mantener VALIDANDO, A5 ajena, sin QA/main/PROD.

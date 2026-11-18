@@ -474,24 +474,34 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     { path: '/plataforma/auditoria-tenancy-v5', panel: '.tenancy-audit' },
     { path: '/plataforma/respuesta-incidentes-v5', panel: '.incident-guide' }
   ]) {
-    test('A0.37 - empresa B denegada en ' + ruta.path + ' en movil y escritorio', async ({ page, request }) => {
+    test('A0.37 - empresa B denegada en ' + ruta.path + ' en movil y escritorio', async ({ browser, request }) => {
       for (const width of [320, 1280]) {
-        await page.setViewportSize({ width, height: 840 });
-        const jwt = await ingresar(page, 'c1504_admin_b');
-        const headers = { Authorization: 'Bearer ' + jwt };
-        const propia = await request.get(api + '/tenant-context/2', { headers });
-        expect(propia.status(), 'Empresa B puede consultar B').toBe(200);
-        expect((await propia.json())?.data?.empresaId).toBe(2);
-        const ajena = await request.get(api + '/tenant-context/1', { headers });
-        expect([403, 404], 'Empresa B no lee datos de A').toContain(ajena.status());
-        const sesion = page.waitForResponse(r =>
-          r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
-        await page.goto(ruta.path);
-        expect((await sesion).status(), 'API niega privilegios globales').toBe(403);
-        await expect(page).toHaveURL(/\/login\?plataforma=denegado/);
-        await expect(page.locator(ruta.panel), 'No filtrar panel privado').toHaveCount(0);
-        expect(await page.evaluate(() => document.documentElement.scrollWidth))
-          .toBeLessThanOrEqual(width + 1);
+        // Aislar cada ancho: el guard puede conservar JWT B tras el 403 y /login
+        // redirige sesiones ya autenticadas; reusar page invalida el segundo login.
+        const contexto = await browser.newContext({
+          baseURL: 'http://127.0.0.1:4200',
+          viewport: { width, height: 840 }
+        });
+        try {
+          const page = await contexto.newPage();
+          const jwt = await ingresar(page, 'c1504_admin_b');
+          const headers = { Authorization: 'Bearer ' + jwt };
+          const propia = await request.get(api + '/tenant-context/2', { headers });
+          expect(propia.status(), 'Empresa B puede consultar B').toBe(200);
+          expect((await propia.json())?.data?.empresaId).toBe(2);
+          const ajena = await request.get(api + '/tenant-context/1', { headers });
+          expect([403, 404], 'Empresa B no lee datos de A').toContain(ajena.status());
+          const sesion = page.waitForResponse(r =>
+            r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+          await page.goto(ruta.path);
+          expect((await sesion).status(), 'API niega privilegios globales').toBe(403);
+          await expect(page).toHaveURL(/\/login\?plataforma=denegado/);
+          await expect(page.locator(ruta.panel), 'No filtrar panel privado').toHaveCount(0);
+          expect(await page.evaluate(() => document.documentElement.scrollWidth))
+            .toBeLessThanOrEqual(width + 1);
+        } finally {
+          await contexto.close();
+        }
       }
     });
   }
