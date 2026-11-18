@@ -1,3 +1,7 @@
+## 2026-11-18 — C10-04.M05.06 ensayo de restauración MySQL efímero [Javier :20]
+- Se agrega segundo job CI independiente de MySQL 8.4 GitHub-hosted: dump sintético, sesiones sucesivas, restore real, checksum, dos tenants y rollback. Permanecen los siete escenarios Chromium y concurrencia CI sin cancelaciones.
+- Incremento R2 de pruebas: no demuestra restore cifrado, worker desplegado, JWT, MySQL Aiven, Cloudflare R2 ni RPO/RTO. CI exact-SHA y A5 independiente pendientes; C10-04.M05.06 conserva VALIDANDO y no libera M06/QA/main/PROD.
+
 ## 2026-11-18 — C15-04.M05.04 reparacion R2 P2 de contextos Chromium por viewport [Javier :10]
 - La CI A0.37 d690cc3e registro 18 PASS y 3 FAIL por timeout de login en el segundo viewport; se evita reutilizar page/JWT creando contexto Chromium aislado por ancho, cerrandolo en finally.
 - Se mantienen pruebas firmadas JWT, API/MySQL 8.4 efimeros, 403 tenant/rol y tres guias privadas; no PASS ficticio hasta nuevo run 21/21, sin cambios productivos ni A5 propia. EN_PROGRESO DEV02 con candado V17 legitimo; rollback git revert normal.

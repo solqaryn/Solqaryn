@@ -32,3 +32,11 @@ Exigir `verify-solqaryn-project-scope`, V5, Angular lint/build y job Chromium de
 ## Corrección adicional del parser de unidades (2026-11-18)
 - El primer SHA de reparación `80c3337e` continuó 6/7 por una expresión regular sobreescapada: `\\d` en literal RegExp TypeScript identifica una barra literal y no los dígitos de `1e-05s`. El fallo reproducible fue el assert booleano de duración en job 44339659378/134925819595.
 - El nuevo parche reemplaza únicamente el patrón por `\d` y `\.` correctos dentro del literal RegExp, sin modificar umbral 0,1 ms, CSS ni casos funcionales. Debe ejecutarse Chromium real y verificarse CI sobre el nuevo SHA antes de PASS; M05.06 permanece VALIDANDO y la integración real worker/restore sigue pendiente.
+
+## V19 — ensayo MySQL 8.4 efímero adicional (DEV03)
+
+El workflow dirigido agrega un segundo job independiente que ejecuta un script de comprobación real contra MySQL 8.4 efímero de GitHub Actions. Usa dos tenants totalmente sintéticos, sesiones MySQL consecutivas para simular pérdida de conexión tras persistir un claim, reanudación condicional con versión, mysqldump, eliminación de la base y restauración real de esquema y filas. Verifica integridad mediante digest ordenado, aislamiento de filas tenant A/B, rechazo preventivo de dump adulterado por checksum y rollback transaccional.
+
+Este incremento solo será PASS después de GitHub Actions completed/success del SHA propio; al publicarse las pruebas quedan pendientes. No demuestra caída de un worker desplegado, dos consumidores concurrentes, migraciones EF de negocio, autenticación JWT HTTP, MySQL Aiven, cifrado/custodia de backups, RPO/RTO, Cloudflare R2 ni recuperación de producción. Los datos son inventados y se destruyen al terminar.
+
+A0: workflow, script, documentación y CHANGELOG; ningún cambio de código productivo o de base real. A1/A2: asserts de filas A/B, integridad, persistencia y rollback. A3: proveedor MySQL 8.4 real pero efímero. A4: Scope Lock, V5 y ambos jobs dirigidos exact-SHA con readback institucional. A5: revisor Javier distinto de DEV03. Sigue VALIDANDO sin liberar M06, R3, QA/main/PROD. Rollback: git revert después de verificar HEAD.

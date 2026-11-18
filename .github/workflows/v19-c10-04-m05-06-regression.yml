@@ -6,6 +6,7 @@ on:
       - '.github/workflows/v19-c10-04-m05-06-regression.yml'
       - 'frontend/e2e/c10-04-m05-06-regression-perf-a11y.spec.ts'
       - 'frontend/src/app/features/plataforma/continuidad-operativa-v5.component.ts'
+      - 'scripts/quality/verify-c10-04-m05-06-ephemeral-restore.sh'
   workflow_dispatch:
 permissions:
   contents: read
@@ -64,3 +65,25 @@ jobs:
             frontend/playwright-report/
           if-no-files-found: warn
           retention-days: 14
+  mysql-restoration-rehearsal:
+    name: C10-04.M05.06 - MySQL 8.4 synthetic backup restore rehearsal
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: sqv19-only-disposable-test
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -psqv19-only-disposable-test"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scope Lock strict
+        run: node scripts/verify-project-scope.mjs
+      - name: Real disposable backup, restore and replay regression
+        run: bash scripts/quality/verify-c10-04-m05-06-ephemeral-restore.sh "${{ job.services.mysql.id }}"
