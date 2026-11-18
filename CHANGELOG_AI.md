@@ -1,3 +1,7 @@
+## 2026-11-18 — DEV01 V19 C07-02.M02.06 contrato documental de salida M02
+- Se integran M01.06 y M02.01–05 con A5 verificados, titularidad global de host A/B corregida, dependencias y doce casos P/N FUTUROS_NO_EJECUTADOS; la puerta R2 hacia implementación se mantiene condicionada.
+- Entrega sólo R0 documental: cero pruebas runtime MySQL/HTTP/PSP/Chromium ejecutadas por esta microtarea; NO_MEDIDO, A5 independiente pendiente, sin QA/main/PROD.
+
 ## 2026-11-18 — V19 reparación documental P2 C07-02.M02.03 host global [asistencia DEV05]
 - Se conserva A5_FAIL: el anterior UNIQUE(empresa,host,versión) no impedía colisión A/B. I01 exige un solo titular global de host canónico activo/verificado, con histórico separado y CAS futuro.
 - Se especifican negativos de doble titular, versión, carrera, IDNA, Host spoofing y proxy no confiable; 0 pruebas runtime ejecutadas, NO_MEDIDO. Propietario DEV02 intacto, nueva A5 independiente requerida; sólo documentación dev, sin QA/main/PROD.
