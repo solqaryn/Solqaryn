@@ -1,3 +1,7 @@
+## 2026-11-17 — DEV03 C01-02.M04.05 responsive y accesibilidad catálogo de capabilities
+- Tres pruebas Chromium nuevas: tamaños 320/1280 sin desbordamiento interno; Tab, foco visible y Enter reales; semántica accesible y contraste WCAG AA medido contra fondo. Una sesión de prueba sintética no certifica JWT/RBAC/tenant real ni cambia UI de otro autor.
+- CI dirigida por SHA con Angular lint/build y Scope Lock, A0–A5 y rollback documentados, lock V17 exclusivo fila 204 y A5 independiente pendiente. Solo dev; no QA/main/PROD.
+
 ## 2026-11-17 — DEV03 C01-02.M04.04 navegación segura de catálogo de capabilities
 - Prueba Playwright de anónimo/403, mensaje sin permisos, Tab/Enter y visitas repetidas sin POST o doble acción desde una superficie informativa, sin confundir fixture sintético con JWT, MySQL o deduplicación backend inexistente.
 - Workflow aislado GitHub-hosted por SHA con Angular lint/build, Scope Lock, documentación A0–A5 y revisión independiente pendiente; solo dev, sin QA/main/PROD.
