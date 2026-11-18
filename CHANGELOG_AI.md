@@ -1,3 +1,6 @@
+## 2026-11-17 — V19 C15-04.M05.04 regresion AST de rutas importadas [Javier :10]
+- A0.23: prueba dirigida verifica composicion real del router Angular (ocho modulos, spreads anidados) y evita el falso positivo donde una ruta no registrada igualmente redirige a login. CI Chromium esperada: 23 casos; JWT firmado/tenant A-B y auditoria UX global NO_MEDIDO hasta pruebas reales.
+
 ## 2026-11-17 — V19 C15-05.M04.06 densidad y carga progresiva verificables [Javier :50]
 - Suite Playwright/Chromium nueva para 320/390/768/1280 px, indicador de espera accesible, bloqueo de doble revalidación, 503 recuperable y 403 fail-closed; usa sesión sintética sin JWT real ni producción.
 - Selector exacto para estados 503/403: el componente expone dos alertas durante fallos; evitar expect estricto ambiguo y verificar el mensaje seguro concreto. No se alteró runtime.

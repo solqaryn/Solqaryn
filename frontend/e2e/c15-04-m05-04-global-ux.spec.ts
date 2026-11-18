@@ -703,4 +703,53 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
     }));
   });
 
+
+  // A0.23: una redireccion a /login tambien ocurre para una ruta NO registrada.
+  // Comprobar en AST de TypeScript que los ocho arrays importados son alcanzables
+  // por spreads reales desde el router raiz antes de atribuir la navegacion A0.22.
+  test('router: ocho modulos importados conectados por spreads AST al router raiz',async()=>{
+    const {readFileSync}=await import('node:fs');
+    const ts=await import('typescript');
+    const modules=[
+      ['AJUSTES_INVENTARIO_ROUTES','src/app/features/inventario/ajustes.routes.ts'],
+      ['FACTURAS_PROVEEDOR_ROUTES','src/app/features/compras/facturas-proveedor/facturas-proveedor.routes.ts'],
+      ['PEDIDOS_VENTA_ROUTES','src/app/features/pedidos-venta/pedidos-venta.routes.ts'],
+      ['TRANSFERENCIAS_INVENTARIO_ROUTES','src/app/features/inventario/transferencias.routes.ts'],
+      ['CONTEOS_INVENTARIO_ROUTES','src/app/features/inventario/conteos.routes.ts'],
+      ['RESERVAS_INVENTARIO_ROUTES','src/app/features/inventario/reservas.routes.ts'],
+      ['CUENTAS_POR_COBRAR_ROUTES','src/app/features/finanzas/cuentas-por-cobrar/cuentas-por-cobrar.routes.ts'],
+      ['CUENTAS_POR_PAGAR_ROUTES','src/app/features/finanzas/cuentas-por-pagar/cuentas-por-pagar.routes.ts']
+    ] as const;
+    function actualSpreads(path:string,variable:string):string[]{
+      const source=ts.createSourceFile(path,readFileSync(path,'utf8'),ts.ScriptTarget.Latest,true,ts.ScriptKind.TS);
+      const declaration=source.statements
+        .filter(ts.isVariableStatement)
+        .flatMap(stmt=>[...stmt.declarationList.declarations])
+        .find(decl=>ts.isIdentifier(decl.name)&&decl.name.text===variable);
+      expect(declaration,variable+' debe existir en '+path).toBeDefined();
+      const init=declaration?.initializer;
+      expect(init && ts.isArrayLiteralExpression(init),variable+' debe ser array literal').toBeTruthy();
+      if(!init || !ts.isArrayLiteralExpression(init))throw new Error('Router AST no verificable: '+variable);
+      return init.elements.filter(ts.isSpreadElement)
+        .map(element=>{
+          expect(ts.isIdentifier(element.expression),'Spread no identificable en '+variable).toBe(true);
+          return element.expression.getText(source);
+        });
+    }
+    const reachable=new Set(actualSpreads('src/app/app.routes.ts','routes'));
+    for(let step=0;step<modules.length;step++){
+      for(const [name,path] of modules){
+        if(!reachable.has(name))continue;
+        for(const nested of actualSpreads(path,name))reachable.add(nested);
+      }
+    }
+    const missing=modules.filter(([name])=>!reachable.has(name)).map(([name])=>name);
+    expect(missing,'Arrays importados muertos: login por wildcard no demuestra authGuard').toEqual([]);
+    expect(modules.length).toBe(8);
+    console.log('[C15-04.M05.04 ROUTER_REACHABILITY_AST]',JSON.stringify({
+      source:'app.routes.ts + 8 modulos',reachable:modules.length,
+      scope:'composicion estatica + negativas anonimas A0.22; JWT/RBAC tenant A/B NO_MEDIDO'
+    }));
+  });
+
 });
