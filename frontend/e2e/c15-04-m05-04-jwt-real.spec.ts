@@ -217,4 +217,33 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     // No confundir error visible y ausencia de token con revocacion global de sesiones.
   });
 
+  test('A0.28 - continuidad de plataforma con JWT real y responsive 320/1280', async ({ page }) => {
+    await ingresar(page, 'c1504_platform_only');
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      const sesion = page.waitForResponse(r =>
+        r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+      await page.goto('/plataforma/continuidad-operativa-v5');
+      expect((await sesion).status()).toBe(200);
+      await expect(page).toHaveURL(/\/plataforma\/continuidad-operativa-v5$/);
+      await expect(page.getByRole('heading', { level: 1, name: 'Controles de recuperación y aislamiento' })).toBeVisible();
+      await expect(page.getByRole('region', { name: 'Límites de autoridad' })).toBeVisible();
+      await expect(page.getByRole('link', { name: 'Regresar a plataforma' })).toBeVisible();
+      const ancho = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(ancho, 'No debe desbordar horizontalmente').toBeLessThanOrEqual(width + 1);
+    }
+  });
+
+  test('A0.29 - rol empresarial recibe 403 y no ve continuidad de plataforma', async ({ page }) => {
+    await ingresar(page, 'c1504_admin_a');
+    const sesion = page.waitForResponse(r =>
+      r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+    await page.goto('/plataforma/continuidad-operativa-v5');
+    expect((await sesion).status()).toBe(403);
+    await expect(page).toHaveURL(/\/login\?plataforma=denegado/);
+    await expect(page.getByRole('heading', { name: 'Controles de recuperación y aislamiento' })).toHaveCount(0);
+    await expect(page.getByRole('region', { name: 'Límites de autoridad' })).toHaveCount(0);
+    // Backend y guard reales; ninguna respuesta interceptada.
+  });
+
 });
