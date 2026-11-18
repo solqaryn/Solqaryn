@@ -65,7 +65,22 @@ public sealed class C0202PlacementApplicationGate
             request.RequestsDestructiveSchema || request.CrossTenantFallback)
             return new("UNTRUSTED_STORAGE_OR_DESTRUCTIVE_OPERATION");
 
-        var evidence = await _reader.ReadAsync(request.TenantId!, cancellationToken);
+        // An evidence provider is not an authorization oracle. A backend failure
+        // must deny without leaking provider details to the placement caller.
+        // Only cancellation actually requested by the caller is propagated.
+        Evidence? evidence;
+        try
+        {
+            evidence = await _reader.ReadAsync(request.TenantId!, cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception)
+        {
+            return new("TRUSTED_TENANT_PLACEMENT_EVIDENCE_REQUIRED");
+        }
         if (evidence is null ||
             !string.Equals(evidence.SourceSha, request.SourceSha, StringComparison.Ordinal) ||
             !string.Equals(evidence.VerifiedTenantId, request.TenantId, StringComparison.Ordinal) ||

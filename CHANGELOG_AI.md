@@ -1,3 +1,7 @@
+## 2026-11-18 — C02-02.M05.05 seguridad negativa y fallo de proveedor placement [Javier :20]
+- El preflight Application de placement sanitiza errores inesperados del lector de evidencia backend; sólo conserva propagación de cancelación solicitada. Nunca autoriza conexión, migración, cutover o producción por error de proveedor.
+- Matriz xUnit adversarial tenant A/B, ownership/SHA, JWT/RBAC revocado, DSN/fallback/DDL, alias forjado, excepción y cancelación. Pruebas externas .NET10 y Scope Lock/V5 por SHA exacto pendientes hasta CI; A5 independiente. Sin EF/MySQL/HTTP productivo, QA/main/PROD.
+
 ## 2026-11-18 — C02-02.M05.01 regresiones unitarias de placement [Javier :00]
 - Nueva suite xUnit de reglas Domain con tenant A/B, alias de almacenamiento y revisión, límites 128/129 de IDs e idempotencia, revocación y propuestas no autorizantes; sin runtime MySQL/EF/JWT/DSN.
 - CI GitHub-hosted .NET10, Scope Lock y V5 exigidos por SHA exacto; A5 distinta de autor; no se alteran Domain, infraestructura, rutas, QA/main/PROD.
