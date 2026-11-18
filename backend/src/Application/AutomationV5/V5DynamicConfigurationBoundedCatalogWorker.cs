@@ -93,8 +93,24 @@ public sealed class V5DynamicConfigurationBoundedCatalogWorker
                 !string.Equals(definition.CanonicalKey, key, StringComparison.Ordinal) ||
                 definition.AllowedScope != DomainRules.ConfigScope.Tenant ||
                 definition.ContainsSecret || !Enum.IsDefined(definition.Kind) ||
-                entry.ApprovedKeys is null ||
-                !entry.ApprovedKeys.Any(k => string.Equals(k, key, StringComparison.Ordinal)))
+                entry.ApprovedKeys is null)
+                return Deny("CONFIG_BATCH_TENANT_CATALOG_REJECTED");
+
+            // The trusted provider can supply an IReadOnlySet with an enumerator
+            // that fails after ReadAsync returns. Deny without leaking the provider
+            // exception or returning a partial cross-tenant projection.
+            bool approved;
+            try
+            {
+                approved = entry.ApprovedKeys.Any(
+                    approvedKey => string.Equals(approvedKey, key, StringComparison.Ordinal));
+            }
+            catch (OperationCanceledException) { throw; }
+            catch (Exception ex) when (ex is not OutOfMemoryException)
+            {
+                return Deny("CONFIG_BATCH_CATALOG_SOURCE_UNAVAILABLE");
+            }
+            if (!approved)
                 return Deny("CONFIG_BATCH_TENANT_CATALOG_REJECTED");
 
             // Metadata only; never expose values, grants or secrets.

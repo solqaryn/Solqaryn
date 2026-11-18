@@ -1,3 +1,7 @@
+## 2026-11-18 — C01-03.M03.05 reparación P2 de enumerador de catálogo aprobado [asistencia Javier :20]
+- Se contiene una excepción del enumerador IReadOnlySet<string> devuelto por el catálogo backend después de ReadAsync: antes escapaba fuera del try/catch; ahora retorna CONFIG_BATCH_CATALOG_SOURCE_UNAVAILABLE, sin metadatos parciales ni diagnóstico privado. Cancelación se propaga y la coincidencia de claves conserva StringComparison.Ordinal.
+- Se añaden dos xUnit adversariales (MoveNext defectuoso y clave no aprobada) preservando el dueño DEV06, LISTO histórico y A5_FAIL P2; reparación R2 sin nuevas facultades ni cambios de EF/MySQL/JWT/HTTP. Pruebas GitHub Actions exact-SHA pendientes de resultado y nueva A5 independiente obligatoria; sin QA/main/PROD.
+
 ## 2026-11-18 — V19 C02-02.M04.06 reparación causal del selector Chromium [Javier :00]
 - GitHub Actions 44367662907 reveló un selector Playwright ambiguo para el anuncio de carga, aunque 2/3 escenarios aprobaron; se delimita a section.estado sin retirar asserts de protección, single-flight ni error 503.
 - Requiere nuevas pruebas Chromium exact-SHA completas; mantiene R2 VALIDANDO, A5 independiente y no certifica JWT/MySQL ni QA/main/PROD.

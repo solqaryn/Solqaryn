@@ -1,3 +1,4 @@
+using System.Collections;
 using Solqaryn.Application.AutomationV5;
 using Xunit;
 using Rules = Solqaryn.Domain.AutomationV5.V5DynamicConfigurationDomainRules;
@@ -166,6 +167,57 @@ public sealed class V5DynamicConfigurationBoundedCatalogWorkerTests
         var result = await new Worker(new Actors(),
             new Catalog { ThrowOnRead = true }).ProjectAsync(Request("screen.alpha"));
         Assert.Equal("CONFIG_BATCH_CATALOG_SOURCE_UNAVAILABLE", result.Code);
+        Assert.Empty(result.Descriptors);
+    }
+
+    private sealed class ThrowingApprovedKeys : IReadOnlySet<string>
+    {
+        public int Count => 1;
+        public bool Contains(string item) => string.Equals(item, "screen.alpha", StringComparison.Ordinal);
+        public IEnumerator<string> GetEnumerator() => Enumerate().GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+
+        private static IEnumerable<string> Enumerate()
+        {
+            yield return "screen.not-approved";
+            throw new InvalidOperationException("private provider diagnostic must not escape");
+        }
+
+        public bool IsProperSubsetOf(IEnumerable<string> other) => throw new NotSupportedException();
+        public bool IsProperSupersetOf(IEnumerable<string> other) => throw new NotSupportedException();
+        public bool IsSubsetOf(IEnumerable<string> other) => throw new NotSupportedException();
+        public bool IsSupersetOf(IEnumerable<string> other) => throw new NotSupportedException();
+        public bool Overlaps(IEnumerable<string> other) => throw new NotSupportedException();
+        public bool SetEquals(IEnumerable<string> other) => throw new NotSupportedException();
+    }
+
+    [Fact]
+    public async Task Approved_keys_enumerator_failure_is_sanitized_without_partial_metadata()
+    {
+        var catalog = new Catalog();
+        catalog.Entries["screen.alpha"] = Entry("screen.alpha") with
+        {
+            ApprovedKeys = new ThrowingApprovedKeys()
+        };
+        var result = await new Worker(new Actors(), catalog).ProjectAsync(
+            Request("screen.alpha"));
+        Assert.Equal("CONFIG_BATCH_CATALOG_SOURCE_UNAVAILABLE", result.Code);
+        Assert.Empty(result.Descriptors);
+        Assert.Single(catalog.Calls);
+        Assert.Equal(7, catalog.Calls[0].Tenant);
+    }
+
+    [Fact]
+    public async Task Approved_keys_without_expected_key_are_denied()
+    {
+        var catalog = new Catalog();
+        catalog.Entries["screen.alpha"] = Entry("screen.alpha") with
+        {
+            ApprovedKeys = new HashSet<string>(new[] { "screen.beta" }, StringComparer.Ordinal)
+        };
+        var result = await new Worker(new Actors(), catalog).ProjectAsync(
+            Request("screen.alpha"));
+        Assert.Equal("CONFIG_BATCH_TENANT_CATALOG_REJECTED", result.Code);
         Assert.Empty(result.Descriptors);
     }
 
