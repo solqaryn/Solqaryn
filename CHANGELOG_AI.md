@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C02-02.M06.01 auditoria de pruebas reales vs mocks [Javier :30]
+- Inspecciona seis entregas M05: Oracle EF/MySQL 8.4 efimero real 3/3 en job 135157483625 frente a Domain/Application sinteticos; M05.06 xUnit 2/2 en job 135166621371, sin adjudicar JWT HTTP o aislamiento row-level.
+- Evidencia R2, riesgos para router futuro y NO_GO R3; cambio solo documental, Scope Lock/V5 exact-SHA, A5 independiente y rollback git revert. No se alteran QA/main/PROD, runtime, permisos ni datos.
+
 ## 2026-11-18 — V20 C02-02.M06.02 manifiesto versionado de evidencias placement [Javier :20]
 - Registro R0 con seis commits y artefactos M05, referencias de jobs MySQL 8.4/Domain y comandos de readback reproducible etiquetados NO_EJECUTADO; conserva el A5_FAIL historico reparado y no inventa PASS.
 - Sin cambios en runtime, DB, JWT/RBAC, tenant o permisos; A2/A3 NO_APLICA al diff documental, A4 Scope Lock/V5 exact-SHA y A5 de otra Task Javier, nunca QA/main/PROD.
