@@ -540,3 +540,11 @@ El check P0-007.A en el SHA `8e55e16ea3961aee84406a1bc1bcd790edf37e2d` detectó 
 - `frontend/src/app/features/plataforma/c14-01-m04-01-qa-global.component.ts`
 
 Esta actualización no acredita A0–A5, UX, JWT/RBAC real, MySQL, datos privados ni QA/PROD. Revalidar el verificador y su self-test en GitHub Actions sobre el SHA publicado; rollback mediante git revert normal. A5 por Task Javier distinta.
+
+## Adición V19 C01-02.M04.01 — 17 noviembre 2026
+
+El catálogo añade un único componente Angular, total cerrado de **162 componentes (154 features, 8 shared)**. Se conserva el inventario histórico y los negativos de igualdad estricta:
+
+- `frontend/src/app/features/plataforma/c01-02-m04-01-capability-catalog.component.ts`
+
+La ruta privada usa plataformaGuard exacto; su catálogo es informativo y no concede permisos JWT/RBAC/tenant ni valida servicios reales. Exigir CI exact-SHA, A0–A5, sin QA/main/PROD.

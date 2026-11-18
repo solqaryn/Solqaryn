@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C01-02.M04.01 catálogo global de capacidades [Javier Task :00]
+- Pantalla real de consulta protegida por plataformaGuard con matriz de 66 rutas ERP protegidas del HEAD, explicación conservadora de falta de tenant/permiso/ruta y señal UI nunca autorizadora; no asigna permisos ni expone datos empresariales.
+- P0-007.A inventario exacto 162 y allowlist de ruta P4 se preservan, test Angular positivo/negativo y CI GitHub-hosted requeridos. R2, A5 independiente, no QA/main/PROD.
+
 ## 2026-11-17 — V19 CI_REPAIR C14-01.M04.05 prueba Chromium causal [Javier Task :00]
 - Run 44234634696 job 134567687275 fallo 2/4: segundo Space no reactivaba tras cambio de tipo y la muestra de contraste inicio antes de esperar render. Reparacion mediante Tab real sin .focus(), aria-pressed reversible y espera visible de encabezado; conserva umbral >=4.5 WCAG AA.
 - CI nueva obligatoria exact-SHA 4/4, Scope Lock/V5 y A5 independiente; defectos historicos preservados, no afirmar PASS hasta completar.
