@@ -1,3 +1,7 @@
+## 2026-11-18 — C10-04.M05.01 xUnit de reglas de revision aislada [Javier :00]
+- Se agregan ocho tests reales de limites 32/33, idempotencia por lote, tenant cruzado, workId ajeno, solicitud nula y membresia revocada sobre worker de revision existente. No se crean colas productivas, leases, RESTORE ni acceso al proveedor.
+- Workflow GitHub-hosted .NET 10 con pruebas originales y nuevas, Scope Lock/V5/seguridad exact-SHA pendientes al publicar; documentación A0-A5 y reversión git revert, sin QA/main/PROD.
+
 ## 2026-11-18 — C10-04.M04.06 densidad y carga progresiva Angular [Javier :40]
 - Se incorporan cinco tests Chromium reales de densidad 320/768/1440, ausencia de scroll horizontal, aria-busy bajo respuesta demorada y ocultamiento tras HTTP 403. Las respuestas y el token son sinteticos.
 - Workflow propio de GitHub-hosted runner sin alterar frontend runtime, backend, MySQL, JWT, RBAC, worker, respaldos, entornos ni secretos. Evidencia exact-SHA A0-A4 pendiente de CI y A5 ajena; no QA/main/PROD. Rollback git revert.

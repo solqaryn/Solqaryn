@@ -1,0 +1,33 @@
+name: V19 - C10-04.M05.01 xUnit bounded review rules
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/Infrastructure/C1004CacheJobsM0501RuleTests.cs'
+      - 'backend/tests/Solqaryn.Tests/Infrastructure/C1004CacheJobsIsolatedReviewWorkerTests.cs'
+      - 'backend/src/Infrastructure/AutomationV5/C1004CacheJobsIsolatedReviewWorker.cs'
+      - '.github/workflows/v19-c10-04-m05-01-unit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c1004-m0501-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  isolated-review-rules:
+    name: C10-04.M05.01 - .NET 10 xUnit isolation and idempotency
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Restore
+        run: dotnet restore backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj
+      - name: Run xUnit new boundary and existing worker regression tests
+        run: >-
+          dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj
+          --configuration Release --no-restore
+          --filter 'FullyQualifiedName~C1004CacheJobsM0501RuleTests|FullyQualifiedName~C1004CacheJobsIsolatedReviewWorkerTests'
+          --logger 'console;verbosity=normal'
