@@ -1,3 +1,8 @@
+## 2026-11-17 — V19 C15-05.M05.03 integración proveedor GitHub Checks real [Javier :40]
+- Se agrega prueba Node de proveedor GitHub Checks API HTTPS real usando GITHUB_TOKEN efímero de permisos checks:read y contents:read; exige SHA exacto y rechaza contenido truncado o ambiguo.
+- Suite de siete casos positivos/adversariales con resultados SUCCESS, SKIPPED/CANCELLED/IN_PROGRESS, check ausente, SHA/repo inválido, respuesta HTTP 403 y página incompleta; GitHub-hosted requiere 7/7 y Scope Lock, sin atribuir PASS antes de CI.
+- R2 solo tests de integración externa y documentación, no cambios a JWT/RBAC/tenants/MySQL ni PROD. Mantener VALIDANDO/owner mientras CI externa y requerir A5 independiente.
+
 ## 2026-11-17 — V19 C15-05.M05.05 negativos de autoría y abuso [Javier :30]
 - Doce pruebas xUnit adversariales para el adaptador V5 **en memoria**: acceso no autorizado, ID fuera de catálogo, gate DAG, token/replay, owner ajeno, SHA falso, A5 propia y duplicación inicial; sin confundir estas pruebas con CAS distribuido, JWT o MySQL.
 - Workflow GitHub-hosted .NET 10 Release TRX 12/12 exigible, Scope Lock y V5 exact-SHA; mientras CI externa ejecuta conservar VALIDANDO, A5 únicamente otra Task Javier y rollback git revert.

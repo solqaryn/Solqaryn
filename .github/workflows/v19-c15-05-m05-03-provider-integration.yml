@@ -1,0 +1,37 @@
+name: V19 C15-05.M05.03 - proveedor GitHub Checks real
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'scripts/quality/v19-c15-05-m05-03-github-provider.test.mjs'
+      - '.github/workflows/v19-c15-05-m05-03-provider-integration.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+  checks: read
+concurrency:
+  group: v19-c1505-m0503-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  provider:
+    name: C15-05.M05.03 - provider live and seven negative and positive tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Scope Lock exact SHA
+        run: node scripts/verify-project-scope.mjs
+      - name: Real GitHub provider and negative tests
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          GITHUB_SHA: ${{ github.sha }}
+        run: |
+          set -euo pipefail
+          node --test --test-reporter=tap scripts/quality/v19-c15-05-m05-03-github-provider.test.mjs | tee c1505m0503-tests.log
+          grep -Eq '^# tests 7$' c1505m0503-tests.log
+          grep -Eq '^# pass 7$' c1505m0503-tests.log
+          grep -Eq '^# fail 0$' c1505m0503-tests.log
