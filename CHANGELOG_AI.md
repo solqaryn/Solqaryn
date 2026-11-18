@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C14-04.M05.06 regresion Chromium readiness DEV [Javier :20]
+- Suite Playwright real con regresion responsive 320/768/1280, teclado Tab y Enter sin focus programatico, movimiento reducido y budget de humo DOMContentLoaded sin inventar p95/p99 o PASS de release.
+- Workflow por SHA GitHub-hosted Angular/Chromium, Scope Lock/V5 y A5 independiente; sesion sintetica NO certifica JWT, tenant A/B, backups, R3 o QA/main/PROD.
+
 ## 2026-11-18 — V20 C02-03.M03.01 Domain lifecycle tenant fail-closed [Javier :20]
 - Regla net10 Domain de estados/operaciones verificadas como precondicion inerte; JWT, grant global, tenant A/B, version, idempotencia, retencion, recuperacion y restauracion fallan cerrado, sin mutar Empresa ni emitir eventos.
 - Suite adversarial xUnit dirigida GitHub Actions, Scope Lock/V5 exact-SHA, A5 independiente y sin autorizar HTTP, EF/MySQL, migraciones, secretos o QA/main/PROD.
