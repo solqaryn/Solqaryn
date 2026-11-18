@@ -1,0 +1,30 @@
+<main class="qa-global" aria-labelledby="qa-global-title">
+  <header>
+    <p class="eyebrow">SOLQARYN · Calidad · dev</p>
+    <h1 id="qa-global-title">Consulta de QA automático y cobertura global</h1>
+    <p>Inventario de evidencias requeridas para el desarrollo. Esta superficie no certifica resultados ni aprueba cambios.</p>
+    <a routerLink="/plataforma">Volver a plataforma</a>
+  </header>
+  @if (!autorizado()) {
+    <p role="alert" data-testid="qa-global-denegado">Acceso de plataforma no confirmado. Evidencias privadas ocultas.</p>
+  } @else {
+    <section aria-labelledby="qa-evidencias" data-testid="c1401-qa-global">
+      <h2 id="qa-evidencias">Controles de calidad a contrastar</h2>
+      <p role="note">Cada check se acredita solo con SHA, job y conclusión SUCCESS reales. Un inventario no es un reporte CI en vivo.</p>
+      <ol class="qa-controles">
+        @for (control of controles; track control.id) {
+          <li>
+            <h3>{{ control.titulo }}</h3>
+            <p>{{ control.alcance }}</p>
+            <p class="pendiente" aria-label="Estado de evidencia no verificado">NO_VERIFICADO · Consultar CI exact-SHA</p>
+          </li>
+        }
+      </ol>
+      <p>Consultar resultados, logs y ejecuciones directamente en la fuente autenticada. Sin copiar tokens ni datos de tenants.</p>
+      <a href="https://github.com/solqaryn/Solqaryn/actions?query=branch%3Adev"
+         target="_blank" rel="noopener noreferrer"
+         aria-label="Consultar GitHub Actions en la rama dev, abre pestaña externa">Consultar GitHub Actions · dev</a>
+      <p role="note">No se realizan GET de GitHub desde el navegador ni se ofrecen aprobaciones humanas. A5 exige otra Task Javier. QA/main/PROD no están habilitados.</p>
+    </section>
+  }
+</main>

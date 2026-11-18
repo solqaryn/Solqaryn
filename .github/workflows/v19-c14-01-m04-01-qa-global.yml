@@ -1,0 +1,74 @@
+name: V19 C14-01.M04.01 - QA global privado y Chromium
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/src/app/features/plataforma/c14-01-m04-01-qa-global.component*'
+      - 'frontend/src/app/app.routes.ts'
+      - 'frontend/e2e/c14-01-m04-01-qa-global.spec.ts'
+      - '.github/workflows/v19-c14-01-m04-01-qa-global.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c14-01-m04-01-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  qa-global:
+    name: V19 C14-01.M04.01 - Vitest y tres Chromium global QA
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout SHA exacto
+        uses: actions/checkout@v4
+      - name: Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Npm fijado
+        run: npm install --global npm@11.19.0
+      - name: Dependencias fijas
+        run: npm ci
+      - name: Unitarias Angular QA
+        run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/c14-01-m04-01-qa-global.component.spec.ts
+      - name: Lint y build Angular
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Chromium efimero
+        run: npx playwright install --with-deps chromium
+      - name: Angular loopback
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c1401m0401.log 2>&1 &
+          for attempt in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then
+              echo 'ANGULAR_LOCAL_READY=PASS'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat c1401m0401.log >&2
+          exit 1
+      - name: Tres escenarios Chromium
+        run: npx playwright test e2e/c14-01-m04-01-qa-global.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Evidencias
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v19-c14-01-m04-01-qa-global
+          path: |
+            frontend/c1401m0401.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 14

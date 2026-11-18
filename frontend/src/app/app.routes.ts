@@ -40,6 +40,7 @@ export const routes: Routes = [
   { path: 'plataforma/mensajeria-multicanal-v19/estados', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/c09-04-m04-02-estados.component').then(m => m.C0904M0402EstadosComponent) },
   { path: 'plataforma/mensajeria-multicanal-v19', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/c09-04-m04-01-mensajeria-privada.component').then(m => m.C0904MensajeriaPrivadaComponent) },
   { path: 'plataforma/inventario-rutas-v19', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/c13-04-m04-01-catalogo-rutas.component').then(m => m.C1304InventarioGlobalComponent) },
+  { path: 'plataforma/qa-global-v19', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/c14-01-m04-01-qa-global.component').then(m => m.C1401QaGlobalComponent) },
   { path: 'plataforma/auditoria-ux-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/c15-04-auditoria-ux-v19.component').then(m => m.C1504AuditoriaUxV19Component) },
   { path: 'plataforma', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/plataforma.component').then(m => m.PlataformaComponent) },
   { path: 'dashboard', canActivate: [authGuard, permisoGuard], data: { modulo: 'Dashboard', accion: 'Ver' }, loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) },

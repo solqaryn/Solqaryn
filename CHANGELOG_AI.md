@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C14-01.M04.01 superficie QA global privada [Javier Task :40]
+- Ruta Angular protegida, cinco areas de cobertura QA y enlace a GitHub Actions dev; NO_VERIFICADO hasta SHA/job. Sin formulario ni boton para aprobacion humana, API/token GitHub cliente ni cambios de permisos.
+- Unitarias Angular y tres escenarios Chromium dirigidos en GitHub-hosted, con 403, responsive y Tab real; CI aun no certificada. A5 independiente y Scope Lock STRICT, rollback git revert.
+
 ## 2026-11-17 — DEV06 C01-02.M03.05 proveedor dinámico aislado [Javier Task :50 inline]
 - Nuevo bridge de capabilities en Infrastructure sin caché de autorizaciones: consulta por llamada, fail-closed tenant A/B, actor/rol/sucursal, FrozenSet ordinal y flags de autoridad siempre falsos. Nueve xUnit adversariales, documento A0–A4 y rollback, sin DI live/MySQL/JWT/API/PROD.
 - El código se publica en dev sujeto a CI real exact-SHA, Scope Lock, V5 y seguridad. A5 por otra Task, no autoaprobación. Lock V17 2000000198.
