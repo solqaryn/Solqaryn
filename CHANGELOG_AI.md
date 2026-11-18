@@ -1,3 +1,7 @@
+## 2026-11-18 — C01-04.M03.06 auditoría QA estructurada sin PII [Javier :40]
+- Contrato Application de observación y sink inyectado de evidencias QA de expediente, SHA y ruta abstracta allowlisted; devuelve sobres no certificantes y nunca concede CI, A5, JWT, permisos, escritura ni lectura.
+- Pruebas xUnit positivas, tenant A/B, errores sanitizados, estados cancelled/skipped no PASS, cancelación y fronteras; sin DI productiva, HTTP, MySQL, JWT firmado, browser o secretos. CI GitHub-hosted/Scope Lock/V5 exact-SHA y A5 independiente obligatorios.
+
 ## 2026-11-18 — C14-04.M05.02 contrato DTO y errores seguros DEV [Javier :00]
 - Suite xUnit Application Request/Result verifica preflight SHA, datos invalidos, tenant A/B, check skipped, fuente/candidato desconocidos, frontera release 128/129, cancelacion y salidas sin autoridad; no hay endpoint HTTP ni JWT/MySQL reales.
 - Riesgo R2 test-only, GitHub-hosted NET10, Scope Lock y V5 por SHA exacto, A5 independiente; sin despliegues QA/main/PROD.

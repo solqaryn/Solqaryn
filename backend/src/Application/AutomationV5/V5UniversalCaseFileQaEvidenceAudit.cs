@@ -1,0 +1,157 @@
+using System.Text.RegularExpressions;
+
+namespace Solqaryn.Application.AutomationV5;
+
+/// <summary>
+/// C01-04.M03.06: in-process, non-authorizing QA evidence audit boundary.
+/// A future authenticated backend adapter must supply verifiable observations.
+/// Neither this writer nor an injected sink can certify CI, A5, tenancy or access.
+/// </summary>
+public interface IV5UniversalCaseFileQaEvidenceSource
+{
+    ValueTask<V5UniversalCaseFileQaEvidenceAudit.Observation?> ReadAsync(
+        string microtaskId, string routeKey, CancellationToken cancellationToken);
+}
+
+public interface IV5UniversalCaseFileQaAuditSink
+{
+    ValueTask WriteAsync(
+        V5UniversalCaseFileQaEvidenceAudit.SafeAuditEntry entry,
+        CancellationToken cancellationToken);
+}
+
+public sealed class V5UniversalCaseFileQaEvidenceAudit
+{
+    private readonly IV5UniversalCaseFileQaEvidenceSource _source;
+    private readonly IV5UniversalCaseFileQaAuditSink _sink;
+
+    private static readonly Regex MicrotaskPattern = new(
+        @"^C[0-9]{2}-[0-9]{2}\.M[0-9]{2}\.[0-9]{2}$",
+        RegexOptions.Compiled | RegexOptions.CultureInvariant);
+    private static readonly Regex ShaPattern = new(
+        "^[0-9a-f]{40}$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+
+    private static readonly HashSet<string> Routes = new(StringComparer.Ordinal)
+    {
+        "casefile.timeline", "casefile.authorization",
+        "casefile.attachment", "casefile.qa-evidence"
+    };
+    private static readonly HashSet<string> Checks = new(StringComparer.Ordinal)
+    {
+        "verify-solqaryn-project-scope",
+        "SOLQARYN - Seguridad multiempresa",
+        "Backend Release y pruebas",
+        "Authorization, files, secrets and tenant gate"
+    };
+    private static readonly HashSet<string> States = new(StringComparer.Ordinal)
+    {
+        "queued", "in_progress", "completed"
+    };
+    private static readonly HashSet<string> Conclusions = new(StringComparer.Ordinal)
+    {
+        "success", "failure", "cancelled", "skipped", "pending"
+    };
+
+    public sealed record Observation(
+        string? MicrotaskId, string? RouteKey, string? SourceSha,
+        string? VerifiedTenantScope, string? VerifiedCaseFileScope,
+        bool SourceAuthenticated, bool SourceOwnedByTenant,
+        string? CheckName, string? CheckStatus, string? CheckConclusion,
+        DateTimeOffset ObservedAtUtc, string? RawProviderDiagnostic = null);
+
+    // Intentionally excludes tenant, case ID, user, token, file name,
+    // provider exception and any raw evidence payload.
+    public sealed record SafeAuditEntry(
+        string MicrotaskId, string RouteKey, string SourceSha,
+        string CheckName, string CheckStatus, string CheckConclusion,
+        DateTimeOffset ObservedAtUtc, string VerificationClass);
+
+    public readonly record struct Verdict(string Code)
+    {
+        public bool CertifiesCI => false;
+        public bool CertifiesA5 => false;
+        public bool GrantsTenantAccess => false;
+        public bool AuthorizesCaseWrite => false;
+        public bool AuthorizesAttachmentRead => false;
+        public bool AllowsProduction => false;
+    }
+
+    public V5UniversalCaseFileQaEvidenceAudit(
+        IV5UniversalCaseFileQaEvidenceSource source,
+        IV5UniversalCaseFileQaAuditSink sink)
+    {
+        _source = source ?? throw new ArgumentNullException(nameof(source));
+        _sink = sink ?? throw new ArgumentNullException(nameof(sink));
+    }
+
+    public async ValueTask<Verdict> CaptureAsync(
+        string? microtaskId, string? routeKey, string? sourceSha,
+        string? trustedTenantScope, string? trustedCaseFileScope,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (microtaskId is null || !MicrotaskPattern.IsMatch(microtaskId) ||
+            routeKey is null || !Routes.Contains(routeKey) ||
+            sourceSha is null || !ShaPattern.IsMatch(sourceSha) ||
+            !SafeScope(trustedTenantScope) || !SafeScope(trustedCaseFileScope))
+            return new("CASEFILE_QA_SCOPE_INVALID");
+
+        Observation? observation;
+        try
+        {
+            observation = await _source.ReadAsync(microtaskId, routeKey, cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            return new("CASEFILE_QA_SOURCE_UNAVAILABLE");
+        }
+        if (observation is null || !observation.SourceAuthenticated ||
+            !observation.SourceOwnedByTenant ||
+            !string.Equals(observation.MicrotaskId, microtaskId, StringComparison.Ordinal) ||
+            !string.Equals(observation.RouteKey, routeKey, StringComparison.Ordinal) ||
+            !string.Equals(observation.SourceSha, sourceSha, StringComparison.Ordinal) ||
+            !string.Equals(observation.VerifiedTenantScope, trustedTenantScope, StringComparison.Ordinal) ||
+            !string.Equals(observation.VerifiedCaseFileScope, trustedCaseFileScope, StringComparison.Ordinal))
+            return new("CASEFILE_QA_TRUSTED_EVIDENCE_REQUIRED");
+
+        if (observation.CheckName is null || !Checks.Contains(observation.CheckName) ||
+            observation.CheckStatus is null || !States.Contains(observation.CheckStatus) ||
+            observation.CheckConclusion is null || !Conclusions.Contains(observation.CheckConclusion) ||
+            observation.ObservedAtUtc == default ||
+            observation.ObservedAtUtc.Offset != TimeSpan.Zero ||
+            (observation.CheckStatus == "completed" && observation.CheckConclusion == "pending") ||
+            (observation.CheckStatus != "completed" && observation.CheckConclusion != "pending"))
+            return new("CASEFILE_QA_CHECK_OR_TIME_INVALID");
+
+        var entry = new SafeAuditEntry(
+            microtaskId, routeKey, sourceSha, observation.CheckName,
+            observation.CheckStatus, observation.CheckConclusion,
+            observation.ObservedAtUtc, "UNVERIFIED_EXTERNAL_REVIEW_REQUIRED");
+        try
+        {
+            await _sink.WriteAsync(entry, cancellationToken);
+        }
+        catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
+        {
+            throw;
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            return new("CASEFILE_QA_AUDIT_SINK_UNAVAILABLE");
+        }
+
+        // The result is only a sanitized, structured, internal audit receipt.
+        // A source-supplied 'success' cannot prove external CI or grant A5.
+        return new("CASEFILE_QA_ENVELOPE_WRITTEN_REVIEW_PENDING");
+    }
+
+    private static bool SafeScope(string? scope) =>
+        scope is { Length: >= 2 and <= 128 } &&
+        scope.All(c => (c >= 'a' && c <= 'z') ||
+                       (c >= 'A' && c <= 'Z') ||
+                       (c >= '0' && c <= '9') || c is '-' or '_');
+}
