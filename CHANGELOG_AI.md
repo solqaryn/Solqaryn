@@ -1,3 +1,7 @@
+## 2026-11-17 — DEV03 C01-02.M04.04 navegación segura de catálogo de capabilities
+- Prueba Playwright de anónimo/403, mensaje sin permisos, Tab/Enter y visitas repetidas sin POST o doble acción desde una superficie informativa, sin confundir fixture sintético con JWT, MySQL o deduplicación backend inexistente.
+- Workflow aislado GitHub-hosted por SHA con Angular lint/build, Scope Lock, documentación A0–A5 y revisión independiente pendiente; solo dev, sin QA/main/PROD.
+
 ## 2026-11-17 — CI_REPAIR V19 C01-02.M04.01 catálogo dinámico 133 rutas [Javier :00]
 - El job 134593469503 del SHA c28b9568 falló correctamente por snapshot incompleto 66/133 rutas con spreads. La reparación deriva el catálogo del Router vivo protegido por authGuard+permisoGuard y mantiene el test adversarial de igualdad, sin ocultar rutas ni relajar autoridad.
 - Frontend, P0-007.A, Scope Lock, V5 y unitarias exact-SHA todavía requieren comprobación GitHub Actions; no LISTO ni A5 propio.
