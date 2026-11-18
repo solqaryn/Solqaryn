@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C02-03.M03.01 Domain lifecycle tenant fail-closed [Javier :20]
+- Regla net10 Domain de estados/operaciones verificadas como precondicion inerte; JWT, grant global, tenant A/B, version, idempotencia, retencion, recuperacion y restauracion fallan cerrado, sin mutar Empresa ni emitir eventos.
+- Suite adversarial xUnit dirigida GitHub Actions, Scope Lock/V5 exact-SHA, A5 independiente y sin autorizar HTTP, EF/MySQL, migraciones, secretos o QA/main/PROD.
+
 ## 2026-11-18 — V20 C02-02.M06.06 cierre DEV documental y dependencias [Javier :20]
 - Matriz de M05/M06 LISTO+A5 y evidencias causalmente delimitadas; contrasta rollback Oracle EF/MySQL 8.4 efimero 3/3 con JWT HTTP, router, filtrado tenant y RPO/RTO no acreditados.
 - Cierre R0 por candado V17/CAS y readback; sucesores sujetos a DAG/COLA dinamicos sin escribir formulas. A5 de M06.06 independiente, ningun permiso R3, QA/main/PROD o despliegue.
