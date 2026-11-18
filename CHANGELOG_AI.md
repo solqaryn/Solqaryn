@@ -7041,3 +7041,7 @@
 ## 2026-11-17 - V19 reparacion A5_FAIL P2 C14-01.M03.03 catalogo ordinal [Javier :20]
 - Corrige exclusivamente la comprobacion Domain de catálogos confiables: compara claves por StringComparison.Ordinal aun cuando un IReadOnlySet utilice StringComparer.OrdinalIgnoreCase; evita aceptar variantes no canonicas de caso/accion.
 - Agrega regresion adversarial xUnit con caso valido y dos variantes rechazadas; conserva el A5_FAIL historico, requiere CI exact-SHA Scope Lock/V5/backend/seguridad y nueva A5 independiente. Sin endpoints, migraciones, JWT real ni QA/main/PROD.
+
+## 2026-11-17 - V19 C14-01.M03.04 adaptador aislado de autoridad [Javier :30]
+- Crea un puente Application solo lectura desde una fuente de snapshot confiable hacia el preflight V5 existente, sin DI real, HTTP, EF/MySQL, migraciones ni permisos productivos; fail-closed ante revocacion, ausencia de autoridad y fallos.
+- Regresiones xUnit comprueban claves y acciones ordinales, tenant A/B, cancelacion, catalogo inmutable, errores y ausencia de concesion de acceso. Requiere CI Release y seguridad, Scope Lock y V5 exact-SHA y A5 independiente de otra Task Javier.
