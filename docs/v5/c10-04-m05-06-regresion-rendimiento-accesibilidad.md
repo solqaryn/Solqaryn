@@ -40,3 +40,9 @@ El workflow dirigido agrega un segundo job independiente que ejecuta un script d
 Este incremento solo será PASS después de GitHub Actions completed/success del SHA propio; al publicarse las pruebas quedan pendientes. No demuestra caída de un worker desplegado, dos consumidores concurrentes, migraciones EF de negocio, autenticación JWT HTTP, MySQL Aiven, cifrado/custodia de backups, RPO/RTO, Cloudflare R2 ni recuperación de producción. Los datos son inventados y se destruyen al terminar.
 
 A0: workflow, script, documentación y CHANGELOG; ningún cambio de código productivo o de base real. A1/A2: asserts de filas A/B, integridad, persistencia y rollback. A3: proveedor MySQL 8.4 real pero efímero. A4: Scope Lock, V5 y ambos jobs dirigidos exact-SHA con readback institucional. A5: revisor Javier distinto de DEV03. Sigue VALIDANDO sin liberar M06, R3, QA/main/PROD. Rollback: git revert después de verificar HEAD.
+
+## V19 — carrera CAS y fallo real de proceso sintético (DEV03)
+
+El job MySQL 8.4 efímero ejecuta ahora dos procesos cliente MySQL concurrentes que reclaman la misma fila con versión esperada. El oráculo exige un único ROW_COUNT()=1, el otro cero y conservación del tenant ajeno. Un proceso de prueba independiente persiste su claim, recibe SIGKILL real (exit 137) y otro proceso separado recupera exclusivamente con versión esperada. Se verifica que el claim sobrevive y que un replay obsoleto afecta cero filas; la restauración desde dump y digest sigue al final.
+
+Límites: el proceso matado es un fixture sintético de CI, NO un worker .NET de SOLQARYN, no ejecuta efectos comerciales ni recuperación cifrada. No acredita caída de workers reales, RPO/RTO, JWT firmado, EF de negocio, Aiven, R2 o producción. El job y los checks requeridos deben finalizar completed/success sobre SHA exacto. Permanece VALIDANDO, A5 de otra Task Javier pendiente, sin liberar DAG. Rollback por revert normal del commit fast-forward.

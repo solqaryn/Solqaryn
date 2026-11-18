@@ -1,3 +1,7 @@
+## 2026-11-18 — C10-04.M05.06 prueba de concurrencia y SIGKILL sintético [Javier :20]
+- Se amplía MySQL 8.4 GitHub-hosted con dos clientes reales compitiendo por CAS de una fila y un proceso sintético terminado por SIGKILL después de persistir su claim; la recuperación desde proceso nuevo y rechazo de replays obsoletos usan asserts adversariales.
+- No modifica runtime comercial ni certifica workers .NET reales, EF, JWT, Aiven, restauración cifrada ni RPO/RTO. Mantener VALIDANDO, A5 independiente y CI exact-SHA antes de PASS; sin QA/main/PROD.
+
 ## 2026-11-18 — C15-04.M05.04 A0.38 continuidad global B denegada [Javier Task :10]
 - Se agrega un caso Chromium real en 320/1280 con contexto por ancho, JWT de empresa B y MySQL 8.4 efimero: B propia 200, A ajena 403/404, sesion global 403 por API y guard, sin panel ni HTTP mutaciones despues del login.
 - Se esperan 22 casos, sin certificar CI antes de completed/success exact-SHA. Auditoria UX global R2 A0-A4 aun incompleta, owner DEV02 y candado V17 2000002297 conservados; A5 independiente, solo dev, rollback git revert normal.
