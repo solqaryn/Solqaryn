@@ -7122,3 +7122,7 @@
 ## 2026-11-17 - V19 A0.27 rechazo de login real UX R2 C15-04.M05.04 [Javier :10]
 - Añade Playwright contra API JWT/MySQL CI efimera: credencial incorrecta 401, alert accesible, sin token y ruta privada inaccesible; siete casos previstos, no PASS hasta CI exact-SHA.
 - Incremento R2 parcial, sin cambios productivos; conserva owner DEV02, candado V17, A0-A4 global pendientes y A5 independiente.
+
+## 2026-11-17 - V19 C14-01.M04.04 navegacion, mensajes y doble accion sin escritura [Javier :20]
+- Anade tres pruebas Playwright/Chromium reales para anonimato/403, mensajes NO_VERIFICADO con links seguros y Tab/Enter + navegacion repetida sin POST desde la superficie QA read-only; sesion sintetica no acredita JWT firmado ni tenant A/B.
+- CI GitHub-hosted Node24/Angular con Scope Lock previo a npm, lint/build y Chromium exact SHA; no modifica componente de otras Tasks. No existen formularios o acciones mutantes en ese panel, deduplicacion backend NO_APLICA; A5 independiente, no QA/main/PROD.
