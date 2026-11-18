@@ -147,14 +147,34 @@ public static class V5TenantLifecycleDomainRules
             !command.PreservesDataAndAuditHistory)
             return new("UNAUTHORIZED_CLIENT_OVERRIDE_OR_IRREVERSIBLE_ACTION");
 
+        if (!SafeOpaqueId(command.IdempotencyKey) ||
+            !SafeFingerprint(command.PayloadFingerprint))
+            return new("INVALID_IDEMPOTENCY_OR_PAYLOAD_FINGERPRINT");
+
+        // Idempotent retries must be evaluated BEFORE current-state/version
+        // checks: a legitimate first execution may have already advanced
+        // PersistedState and PersistedRevision. This never replays a write;
+        // Application must read the exact durable receipt and auth anew.
+        if (existingReceipt is not null)
+        {
+            if (!SafeOpaqueId(existingReceipt.ActorId) ||
+                !SafeOpaqueId(existingReceipt.TenantId) ||
+                !string.Equals(existingReceipt.ActorId, trusted.ActorId, StringComparison.Ordinal) ||
+                !string.Equals(existingReceipt.TenantId, trusted.VerifiedTargetTenantId, StringComparison.Ordinal) ||
+                existingReceipt.Operation != command.Operation ||
+                !string.Equals(existingReceipt.IdempotencyKey, command.IdempotencyKey, StringComparison.Ordinal) ||
+                !string.Equals(existingReceipt.PayloadFingerprint, command.PayloadFingerprint, StringComparison.Ordinal))
+                return new("IDEMPOTENCY_REUSE_CONFLICT");
+
+            return existingReceipt.CompletedAndCommitted
+                ? new("DURABLE_IDEMPOTENCY_READBACK_REQUIRED")
+                : new("INCOMPLETE_REPLAY_REQUIRES_CHECKPOINT_RECOVERY");
+        }
+
         if (trusted.PersistedRevision <= 0 ||
             command.ExpectedRevision != trusted.PersistedRevision ||
             command.ExpectedSourceState != trusted.PersistedState)
             return new("STALE_LIFECYCLE_STATE_OR_REVISION");
-
-        if (!SafeOpaqueId(command.IdempotencyKey) ||
-            !SafeFingerprint(command.PayloadFingerprint))
-            return new("INVALID_IDEMPOTENCY_OR_PAYLOAD_FINGERPRINT");
 
         if (!Allowed(trusted.PersistedState, command.Operation))
             return new("ILLEGAL_LIFECYCLE_TRANSITION");
@@ -175,21 +195,6 @@ public static class V5TenantLifecycleDomainRules
             !trusted.DurableRecoveryCheckpointVerified)
             return new("DURABLE_RECOVERY_CHECKPOINT_REQUIRED");
 
-        if (existingReceipt is not null)
-        {
-            if (!SafeOpaqueId(existingReceipt.ActorId) ||
-                !SafeOpaqueId(existingReceipt.TenantId) ||
-                !string.Equals(existingReceipt.ActorId, trusted.ActorId, StringComparison.Ordinal) ||
-                !string.Equals(existingReceipt.TenantId, trusted.VerifiedTargetTenantId, StringComparison.Ordinal) ||
-                existingReceipt.Operation != command.Operation ||
-                !string.Equals(existingReceipt.IdempotencyKey, command.IdempotencyKey, StringComparison.Ordinal) ||
-                !string.Equals(existingReceipt.PayloadFingerprint, command.PayloadFingerprint, StringComparison.Ordinal))
-                return new("IDEMPOTENCY_REUSE_CONFLICT");
-
-            return existingReceipt.CompletedAndCommitted
-                ? new("DURABLE_IDEMPOTENCY_READBACK_REQUIRED")
-                : new("INCOMPLETE_REPLAY_REQUIRES_CHECKPOINT_RECOVERY");
-        }
 
         // A positive domain verdict is NEVER authorization or CAS execution:
         // Application must re-check server-side JWT/RBAC, tenant, revision,

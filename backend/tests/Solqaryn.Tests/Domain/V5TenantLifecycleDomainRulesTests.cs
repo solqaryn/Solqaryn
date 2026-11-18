@@ -203,6 +203,38 @@ public sealed class V5TenantLifecycleDomainRulesTests
     }
 
     [Fact]
+    public void CommittedOrInterruptedReplayAfterStateAdvanceRequiresDurableReadbackNotFreshCas()
+    {
+        var previous = new Rules.ExistingDurableReceipt
+        {
+            ActorId = "platform-operator-A",
+            TenantId = "company-A",
+            Operation = Rules.Command.Suspend,
+            IdempotencyKey = "request-007",
+            PayloadFingerprint = Fingerprint,
+            CompletedAndCommitted = true
+        };
+        // Original request was Active@v7, after a committed suspension the
+        // authoritative snapshot is Suspended@v8. Re-running the same request
+        // must never become a new mutation or an incorrectly stale idempotent
+        // receipt: the server must read the existing durable outcome.
+        var now = Trusted(Rules.State.Suspended) with { PersistedRevision = 8 };
+        var first = Rules.Evaluate(now, Request(), previous);
+        Assert.Equal("DURABLE_IDEMPOTENCY_READBACK_REQUIRED", first.Code);
+        Assert.False(first.AuthorizesTenantMutation);
+        Assert.False(first.WritesToDatabase);
+
+        var incomplete = Rules.Evaluate(now, Request(),
+            previous with { CompletedAndCommitted = false });
+        Assert.Equal("INCOMPLETE_REPLAY_REQUIRES_CHECKPOINT_RECOVERY", incomplete.Code);
+        Assert.False(incomplete.AuthorizesTenantMutation);
+
+        Assert.Equal("IDEMPOTENCY_REUSE_CONFLICT",
+            Rules.Evaluate(now, Request(),
+                previous with { PayloadFingerprint = "BBBBBBBBBBBBBBBB" }).Code);
+    }
+
+    [Fact]
     public void SameKeyCannotBeReusedForDifferentPayloadActorOrTenant()
     {
         var receipt = new Rules.ExistingDurableReceipt
