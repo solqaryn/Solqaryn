@@ -14,3 +14,6 @@ Angular dinámico y Chromium sobre localhost efimero de GitHub Actions. Carga de
 
 ## A4/A5 y rollback
 Git commit de dev fast-forward y control de Scope Lock/V5/seguridad exact SHA; job dirigido npm test x2, lint/build y 5 Chromium reales. Si QUEUED/IN_PROGRESS o FAIL, permanece VALIDANDO, con SHA+RUN+owner y A5 pendiente. Revisar COLA, DAG, PLAN y BITACORA en cada transicion. Revisor A5 de otra Task Javier, nunca autor. Rollback mediante git revert normal de la unidad, sin reescribir historia, manteniendo seguridad y pruebas.
+
+## CI_REPAIR — regresion asincrona de M04.01
+La primera CI de M04.02 en el SHA b40cbc8d encontro un fallo causal: el test heredado M04.01 comprobaba las cinco tarjetas antes de que terminara el import dinamico tras el grant (0 de 5). Las 7 pruebas nuevas de estado fueron PASS; la regresion heredada 1/2 FAILED y el workflow se detuvo antes de Chromium. Reparacion minima: esperar acotadamente con vi.waitFor el estado real listo y cinco tarjetas, manteniendo todas las aserciones originales. Reejecutar GitHub-hosted exact-SHA; no declarar pruebas browser ni A4 aprobadas hasta confirmacion.

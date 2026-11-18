@@ -1,4 +1,5 @@
 import { signal } from '@angular/core';
+import { vi } from 'vitest';
 import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { routes } from '../../app.routes';
@@ -30,7 +31,14 @@ describe('C14-01.M04.01 - superficie privada de QA global', () => {
     expect(root.querySelector('a[href*="github.com"]')).toBeNull();
     sesion.set({ nombreUsuario: 'Prueba', rolNombre: 'Plataforma', ambito: 'Plataforma', esAdministrador: true });
     fixture.detectChanges();
-    await fixture.whenStable();
+    // C14-01.M04.02 carga el catalogo por import asincrono tras el effect;
+    // cuando Angular esta estable todavia puede faltar el import dinamico.
+    // Afirmar un estado real y cinco tarjetas, sin omitir ni debilitar la prueba.
+    await vi.waitFor(() => {
+      fixture.detectChanges();
+      expect(fixture.componentInstance.estado()).toBe('listo');
+      expect((fixture.nativeElement as HTMLElement).querySelectorAll('.qa-controles li')).toHaveLength(5);
+    }, { timeout: 8000, interval: 30 });
     fixture.detectChanges();
     root = fixture.nativeElement;
     expect(root.querySelector('[data-testid="c1401-qa-global"]')).not.toBeNull();

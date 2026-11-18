@@ -7154,3 +7154,4 @@
 ## 2026-11-17 - V19 C14-01.M04.02 estados de inventario QA privado [Javier :40]
 - Estados de carga, vacio, error opaco, inventario local listo y acceso denegado con Angular Signals, import asincrono y cancelacion tras revocacion de grant; nunca interpreta inventario cargado como resultado CI PASS.
 - Regresiones Vitest de permiso, pendiente, cero registros, error, duplicado, revocacion y exito de catalogo; GitHub-hosted Playwright/Chromium con 403 y sin escrituras. A5 independiente, Scope Lock STRICT, sin QA/main/PROD ni datos productivos.
+- Reparacion dirigida CI: prueba previa M04.01 espera con vi.waitFor la importacion asincrona real y exige catalogo listo con cinco tarjetas; el fallo 0/5 de los SHA anteriores permanece registrado, sin falsear Chromium o A4 antes de la CI.
