@@ -2,6 +2,14 @@
 const REPO = 'solqaryn/Solqaryn';
 const SHA40 = /^[0-9a-f]{40}$/;
 const NAME = /^[A-Za-z0-9 _.:-]{1,160}$/;
+const TRUSTED_ACTIONS_APP_ID = 15368;
+const TRUSTED_ACTIONS_APP_SLUG = 'github-actions';
+const TRUSTED_JOB_URL = /^https:\/\/github[.]com\/solqaryn\/Solqaryn\/actions\/runs\/[1-9][0-9]*\/job\/[1-9][0-9]*$/;
+const trustedCheckIssuer = (check) =>
+  check?.app?.id === TRUSTED_ACTIONS_APP_ID &&
+  check.app.slug === TRUSTED_ACTIONS_APP_SLUG &&
+  typeof check.details_url === 'string' &&
+  TRUSTED_JOB_URL.test(check.details_url);
 
 export function assessCheckRuns(payload, sha, required) {
   const denied = (reason) => ({ sourceValid: false, requiredPassed: false, reason, checked: 0,
@@ -17,6 +25,14 @@ export function assessCheckRuns(payload, sha, required) {
   if (payload.check_runs.some(c => !c || c.head_sha !== sha || typeof c.name !== 'string' ||
        typeof c.status !== 'string' || !('conclusion' in c)))
     return denied('FOREIGN_SHA_OR_INVALID_CHECK');
+  // A name and a successful SHA are insufficient: reject checks written by
+  // arbitrary GitHub Apps or linked to a foreign/untrusted job.
+  // The HTTPS response comes from the authenticated GitHub Checks API.
+  const foreignIssuer = required.some(name => {
+    const matches = payload.check_runs.filter(c => c.name === name);
+    return matches.length === 1 && !trustedCheckIssuer(matches[0]);
+  });
+  if (foreignIssuer) return denied('UNTRUSTED_REQUIRED_CHECK_ISSUER');
   const findings = required.map(name => {
     const matches = payload.check_runs.filter(c => c.name === name);
     return { name, count: matches.length,

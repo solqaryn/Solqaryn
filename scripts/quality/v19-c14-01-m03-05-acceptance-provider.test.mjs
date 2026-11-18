@@ -2,8 +2,10 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { assessCheckRuns, readGitHubAcceptanceChecks } from './v19-c14-01-m03-05-acceptance-provider.mjs';
 const sha = '0123456789abcdef0123456789abcdef01234567';
+const trustedApp = Object.freeze({ id: 15368, slug: 'github-actions' });
+const trustedJob = 'https://github.com/solqaryn/Solqaryn/actions/runs/123456/job/7890';
 const good = (name, status = 'completed', conclusion = 'success', head_sha = sha) =>
-  ({ name, head_sha, status, conclusion });
+  ({ name, head_sha, status, conclusion, app: trustedApp, details_url: trustedJob });
 const payload = (...checks) => ({ total_count: checks.length, check_runs: checks });
 const wrap = (data, status = 200) => ({
   status, headers: { get: () => 'application/json; charset=utf-8' }, json: async () => data
@@ -33,6 +35,34 @@ test('foreign SHA and untrusted/missing/multiple check names fail closed', () =>
   assert.equal(assessCheckRuns(payload(good('another')), sha, ['verify-solqaryn-project-scope']).requiredPassed, false);
   assert.equal(assessCheckRuns(payload(good('verify-solqaryn-project-scope'), good('verify-solqaryn-project-scope')), sha,
     ['verify-solqaryn-project-scope']).requiredPassed, false);
+});
+test('forged GitHub app identity is rejected even with same exact SHA, name and PASS', () => {
+  const base = good('verify-solqaryn-project-scope');
+  for (const app of [
+    undefined, { id: 777, slug: 'github-actions' },
+    { id: 15368, slug: 'other-app' },
+    { id: '15368', slug: 'github-actions' }
+  ]) {
+    const result = assessCheckRuns(payload({ ...base, app }), sha, ['verify-solqaryn-project-scope']);
+    assert.equal(result.sourceValid, false);
+    assert.equal(result.requiredPassed, false);
+    assert.equal(result.reason, 'UNTRUSTED_REQUIRED_CHECK_ISSUER');
+  }
+});
+test('required check job origin must be this repository GitHub Actions URL', () => {
+  const base = good('verify-solqaryn-project-scope');
+  for (const details_url of [
+    undefined, 'http://github.com/solqaryn/Solqaryn/actions/runs/1/job/2',
+    'https://github.com/other/Solqaryn/actions/runs/1/job/2',
+    'https://github.com/solqaryn/Solqaryn/actions/runs/1',
+    'https://evil.example/actions/runs/1/job/2'
+  ]) {
+    const result = assessCheckRuns(payload({ ...base, details_url }), sha, ['verify-solqaryn-project-scope']);
+    assert.equal(result.sourceValid, false);
+    assert.equal(result.requiredPassed, false);
+  }
+  const valid = assessCheckRuns(payload(base), sha, ['verify-solqaryn-project-scope']);
+  assert.equal(valid.requiredPassed, true);
 });
 test('partial pagination, malformed data and empty set never certify', () => {
   for (const p of [payload(), { total_count: 2, check_runs: [good('verify-solqaryn-project-scope')] },

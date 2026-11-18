@@ -13,3 +13,6 @@ El octavo caso consulta HTTPS real a la API GitHub Checks del SHA del runner usa
 
 ## A4 / A5 / rollback
 Exigir CI `C14-01.M03.05 - real GitHub GET and adversarial tests` completed/success, Scope Lock y V5 exact-SHA y readback PLAN/COLA/BITACORA antes de LISTO. A5 independiente obligatoria, sin autoaprobación. Revert seguro con commit `git revert` sobre dev tras verificar HEAD. Sin QA, main, PROD, secretos ni cuentas de pago.
+
+## V19 — Corrección A5_FAIL P2 de procedencia de GitHub Checks (2026-11-17)
+La auditoría independiente DEV06 detectó que el check `completed/success` con nombre y SHA exactos podía proceder de una App no autorizada. El proveedor ahora exige también `app.id=15368` y `app.slug=github-actions` (identidad real observada en la API GitHub de SOLQARYN) y una URL de job bajo `github.com/solqaryn/Solqaryn/actions/runs/{id}/job/{id}`. Ante ausencia de metadatos, emisor ajeno, identidad falsificada o URL externa, `sourceValid=false` y `requiredPassed=false`; jamás autoriza despliegue o acceso. Se agregan dos pruebas adversariales para suplantación del emisor y origen externo, más la lectura HTTPS real vigente. Mantener el histórico A5_FAIL. Exigir CI Node dirigido, Scope Lock, V5 exact-SHA y una nueva A5 por otra Task Javier distinta de DEV05. No tocar token en logs ni QA/main/PROD.

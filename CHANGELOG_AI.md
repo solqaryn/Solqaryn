@@ -1,3 +1,6 @@
+## 2026-11-17 — Corrección A5_FAIL P2 C14-01.M03.05, procedencia GitHub Checks [ChatGPT directo]
+- Se exige la App GitHub Actions real (ID 15368/slug github-actions) y origen de job del repositorio antes de contabilizar checks como PASS; se rechaza suplantación de App, nombre o URL con dos tests negativos. Auth y QA/main/PROD sin cambios. A5_FAIL original se conserva; nueva revisión independiente aún requerida.
+
 ## 2026-11-17 — Corrección A5_FAIL P2 C01-02.M03.04 y recuperación de cola [ChatGPT directo]
 - Se elimina mutabilidad de `C0102IsolatedCapabilityPolicySnapshotAdapter`: copias `FrozenSet` ordinales sustituyen `HashSet` mutable expuesto como `IReadOnlySet`; dos xUnit adversariales reproducen el fallo A5 y conservan denegación/aislamiento. Sin cambios productivos ni promoción.
 - El histórico A5_FAIL se conserva. Los candidatos C01-02.M03.05/06 no se habilitan sin CI exact-SHA y nueva revisión A5 por otra Task Javier; no se modifica DAG/COLA para simular capacidad. 
