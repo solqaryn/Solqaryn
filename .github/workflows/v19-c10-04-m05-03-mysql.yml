@@ -1,0 +1,60 @@
+name: V19 C10-04.M05.03 - Oracle MySQL 8.4 integration
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/Infrastructure/C1004M0503MySqlProviderIntegrationTests.cs'
+      - '.github/workflows/v19-c10-04-m05-03-mysql.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c1004-m0503-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  mysql-integration:
+    name: C10-04.M05.03 - MySQL 8.4 A/B CAS rollback
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=mysql;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.401
+      - name: Scope Lock strict
+        run: node scripts/verify-project-scope.mjs
+      - name: Verify real MySQL 8.4
+        run: |
+          set -euo pipefail
+          docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -Nse 'SELECT VERSION();' | grep -E '^8[.]4[.]'
+      - name: Run integration and assert TRX
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter 'FullyQualifiedName~C1004M0503MySqlProviderIntegrationTests&Category=Integration' --logger 'trx;LogFileName=c1004-m0503.trx' --logger 'console;verbosity=normal'
+          python3 - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree as ET
+          files=list(Path("tests/Solqaryn.Tests/TestResults").rglob("c1004-m0503.trx"))
+          assert files, "Missing TRX"
+          r=ET.parse(files[-1]).getroot()
+          c=next((e.attrib for e in r.iter() if e.tag.endswith("Counters")),None)
+          assert c is not None, "Missing test counters"
+          assert int(c["executed"])>=5 and int(c["passed"])>=5, c
+          assert int(c["failed"])==0 and int(c["notExecuted"])==0, c
+          print("C1004_M0503_REAL_MYSQL84_PROVIDER_PASS=TRUE")
+          PY

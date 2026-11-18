@@ -1,3 +1,7 @@
+## 2026-11-18 — C10-04.M05.03 integracion aislada Oracle MySQL 8.4 [Javier :50]
+- Se agregan pruebas xUnit de proveedor MySql.Data con MySQL 8.4 local real para aislamiento A/B, CAS persistente, idempotencia 1062, rollback y rechazo de hosts remotos; datos sinteticos y base efimera.
+- Workflow GitHub-hosted .NET 10 exige pruebas Category=Integration con TRX, Scope Lock y verificacion por SHA. NO integra workers ni R2/Cloudflare productivo, JWT HTTP, restores o Aiven. A5 independiente; rollback git revert y sin QA/main/PROD.
+
 ## 2026-11-18 — C10-04.M05.04 aceptación positiva aislada de worker [Javier :20]
 - Se añaden casos xUnit .NET 10 positivos de exportación e invalidación, orden, replay, último retry permitido y grant sintético; se incluyen negativos de tenant B, digest, allowlist mutable y cancelación, siempre sin enqueue, CAS, lease, restore ni efectos externos.
 - Workflow GitHub-hosted por SHA con regresiones existentes, Scope Lock/V5 y seguridad requeridos antes de LISTO; A5 por otra Task Javier. No autentica JWT HTTP, MySQL, Cloudflare R2 ni datos reales; rollback git revert, sin QA/main/PROD.
