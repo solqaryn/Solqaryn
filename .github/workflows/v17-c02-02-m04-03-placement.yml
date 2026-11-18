@@ -3,7 +3,7 @@ on:
   push:
     branches: [dev]
     paths:
-      - '.github/workflows/v17-c02-02-m04-01-placement.yml'
+      - '.github/workflows/v17-c02-02-m04-03-placement.yml'
       - 'frontend/src/app/app.routes.ts'
       - 'frontend/src/app/features/plataforma/placement-review-v5.component.ts'
       - 'frontend/src/app/features/plataforma/placement-presentacion-v5.ts'
@@ -37,7 +37,9 @@ jobs:
         run: npm ci
       - name: Tests de branding y densidad fail-closed
         working-directory: frontend
-        run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/placement-review-v5.component.spec.ts
+        run: |
+          npm test -- --no-watch --no-progress --include=src/app/features/plataforma/placement-review-v5.component.spec.ts
+          npm test -- --no-watch --no-progress --include=src/app/features/plataforma/placement-presentacion-v5.spec.ts
       - name: Lint y build Angular
         working-directory: frontend
         run: |

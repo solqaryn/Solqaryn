@@ -1,3 +1,7 @@
+## 2026-11-18 — V19 corrección P1 C02-02.M04.03 selección causal de Vitest [Javier :40]
+- La revisión A5 detectó que el workflow dirigido ejecutaba únicamente la suite heredada de 12 casos y omitía cinco casos nuevos de branding, densidad, HTML/CSS malicioso, tenancy y no operación de base de datos.
+- Se corrige la ruta trigger y se ejecutan ambas suites Vitest por separado, sin quitar lint, build ni Chromium. Requiere GitHub Actions exact-SHA para A0–A4, conserva A5_FAIL previo y owner DEV02; sin QA/main/PROD.
+
 ## 2026-11-18 — C10-04.M05.06 prueba de concurrencia y SIGKILL sintético [Javier :20]
 - Se amplía MySQL 8.4 GitHub-hosted con dos clientes reales compitiendo por CAS de una fila y un proceso sintético terminado por SIGKILL después de persistir su claim; la recuperación desde proceso nuevo y rechazo de replays obsoletos usan asserts adversariales.
 - No modifica runtime comercial ni certifica workers .NET reales, EF, JWT, Aiven, restauración cifrada ni RPO/RTO. Mantener VALIDANDO, A5 independiente y CI exact-SHA antes de PASS; sin QA/main/PROD.
