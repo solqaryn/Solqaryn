@@ -43,6 +43,7 @@ export const routes: Routes = [
   { path: 'plataforma/qa-global-v19', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/c14-01-m04-01-qa-global.component').then(m => m.C1401QaGlobalComponent) },
   { path: 'plataforma/capacidades-v19', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/c01-02-m04-01-capability-catalog.component').then(m => m.C0102CapabilityCatalogComponent) },
   { path: 'plataforma/capacidades-estados-v19', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/c01-02-m04-02-capability-states.component').then(m => m.C0102CapabilityStatesComponent) },
+  { path: 'plataforma/capacidades-branding-v19', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/c01-02-m04-03-capability-branding.component').then(m => m.C0102CapabilityBrandingComponent) },
   { path: 'plataforma/auditoria-ux-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/c15-04-auditoria-ux-v19.component').then(m => m.C1504AuditoriaUxV19Component) },
   { path: 'plataforma', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/plataforma.component').then(m => m.PlataformaComponent) },
   { path: 'dashboard', canActivate: [authGuard, permisoGuard], data: { modulo: 'Dashboard', accion: 'Ver' }, loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) },

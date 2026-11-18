@@ -1,0 +1,44 @@
+name: V19 C01-02.M04.03 - Branding seguro
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/src/app/features/plataforma/c01-02-m04-03-capability-branding.component*'
+      - 'frontend/e2e/c01-02-m04-03-branding.spec.ts'
+      - 'frontend/src/app/app.routes.ts'
+      - '.github/workflows/v19-c01-02-m04-03-branding.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c0102-m0403-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  branding:
+    name: V19 C01-02.M04.03 - TestBed, build, Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Npm fijado
+        run: npm install --global npm@11.19.0
+      - name: Instalar dependencias
+        run: npm ci
+      - name: TestBed positivo negativo frontera
+        run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/c01-02-m04-03-capability-branding.component.spec.ts
+      - name: Tipado y build Angular
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Chromium
+        run: |
+          npx playwright install --with-deps chromium
+          npx playwright test e2e/c01-02-m04-03-branding.spec.ts --config=playwright.config.ts

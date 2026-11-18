@@ -1,3 +1,7 @@
+## 2026-11-18 — V19 C01-02.M04.03 branding seguro y capacidades permitidas [Javier :30]
+- Superficie privada Angular solo lectura, sesión plataforma backend, tenant verificado y grant/ruta Configuracion:Ver; paleta HEX sanitizada, ninguna autorización derivada del tema o la UI.
+- Vitest adversarial y navegador Chromium sintético: denegación, cambio A/B, respuesta tardía, anónimo/403 y responsive. GitHub-hosted exact-SHA, Scope Lock, V5 y A5 independiente requeridos, sin JWT real, QA/main/PROD.
+
 ## 2026-11-18 — CI_REPAIR V19 C01-02.M04.02 allowlist exacta plataforma [Javier :20]
 - El ERP check del SHA 538ba5f2 falló por `UNGUARDED:plataforma/capacidades-estados-v19` aunque el router exige `plataformaGuard`. Se incorpora exclusivamente ese path a la allowlist explícita del auditor; se preservan JWT, sesión backend, guard exacto y rechazo de rutas arbitrarias.
 - R2, reparación asistida sin cambiar owner DEV06 ni estado VALIDANDO. Exigir ERP, Scope Lock y V5 SUCCESS causal del SHA nuevo antes de A0–A4/LISTO; A5 siempre por Task distinta. Sin QA/main/PROD.
