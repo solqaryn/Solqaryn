@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C02-02.M06.05 handoff de revision independiente placement [Javier :30]
+- Documenta la matriz de seis A5 M05 ya registradas, con autores, revisores distintos, SHAs y limites de pruebas EF/MySQL real frente a Domain/Application sinteticas; no duplica aprobaciones.
+- Criterios para M06.01–06 y para revisor Javier independiente, incluyendo R2 rollback, DAG, V17 y R3 NO_GO. Cambio solo documental y CHANGELOG, sin QA/main/PROD.
+
 ## 2026-11-18 — V20 C02-02.M06.01 auditoria de pruebas reales vs mocks [Javier :30]
 - Inspecciona seis entregas M05: Oracle EF/MySQL 8.4 efimero real 3/3 en job 135157483625 frente a Domain/Application sinteticos; M05.06 xUnit 2/2 en job 135166621371, sin adjudicar JWT HTTP o aislamiento row-level.
 - Evidencia R2, riesgos para router futuro y NO_GO R3; cambio solo documental, Scope Lock/V5 exact-SHA, A5 independiente y rollback git revert. No se alteran QA/main/PROD, runtime, permisos ni datos.
