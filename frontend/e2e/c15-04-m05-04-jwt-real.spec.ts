@@ -395,4 +395,53 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
   }
   // A0.34 son tres pruebas aisladas de API real; no sustituye auditoria tenant B por modulo.
 
+  test('A0.35 - teclado, foco visible y revalidacion JWT en tres guias privadas', async ({ page }) => {
+    const rutas = [
+      { path: '/plataforma/observabilidad-v5', accion: 'Revalidar acceso de observabilidad' },
+      { path: '/plataforma/auditoria-tenancy-v5', accion: 'Revalidar sesión de auditoría de tenancy' },
+      { path: '/plataforma/respuesta-incidentes-v5', accion: 'Revalidar sesión de plataforma' }
+    ];
+    await ingresar(page, 'c1504_platform_only');
+    const mutaciones: string[] = [];
+    page.on('request', req => {
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method())) {
+        mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+      }
+    });
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      for (const ruta of rutas) {
+        const documento = await page.goto(ruta.path);
+        expect(documento?.status()).toBe(200);
+        await expect(page).toHaveURL(new RegExp(ruta.path + '
+));
+        const boton = page.getByRole('button', { name: ruta.accion, exact: true });
+        await expect(boton).toBeVisible();
+        await expect(boton).toBeEnabled();
+        let foco = false;
+        for (let paso = 0; paso < 96; paso++) {
+          await page.keyboard.press('Tab');
+          foco = await boton.evaluate(el => el === document.activeElement);
+          if (foco) break;
+        }
+        expect(foco, 'Tab real debe alcanzar el control en ' + ruta.path).toBe(true);
+        const estilo = await boton.evaluate(el => {
+          const s = getComputedStyle(el);
+          return { ancho: parseFloat(s.outlineWidth), tipo: s.outlineStyle };
+        });
+        expect(estilo.ancho, 'Foco visible de al menos 2px').toBeGreaterThanOrEqual(2);
+        expect(estilo.tipo).not.toBe('none');
+        const respuesta = page.waitForResponse(r =>
+          r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+        await page.keyboard.press('Enter');
+        expect((await respuesta).status(), 'Revalidacion JWT backend real').toBe(200);
+        expect(new URL(page.url()).pathname).toBe(ruta.path);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth))
+          .toBeLessThanOrEqual(width + 1);
+      }
+    }
+    expect(mutaciones, 'La navegacion y revalidacion son solo lectura').toEqual([]);
+    // Muestra R2 en CI descartable; no certifica WCAG ni rendimiento global.
+  });
+
 });

@@ -1,3 +1,7 @@
+## 2026-11-18 — C15-04.M05.04 A0.35 teclado/JWT tres guias [Javier :10]
+- Incremento R2 en dev: Tab real y Enter sobre revalidacion de observabilidad, auditoria de tenancy y respuesta a incidentes a 320/1280, foco CSS visible, GET /plataforma/sesion real y ausencia de HTTP mutante. La CI JWT requiere 17 casos con MySQL efimero; no declarar PASS antes del SHA exacto.
+- Recuperada evidencia precedente del SHA c3711837: 16/16 Playwright completed/success, Scope Lock/V5 y C15-03 16 Vitest + 5 Chromium SUCCESS. A0-A4 global no concluye; DEV02 conserva EN_PROGRESO y lock V17, sin LISTO/A5.
+
 ## 2026-11-18 — Regresion de revocacion UI para C01-02.M04.01 [Javier :00]
 - Se extiende TestBed sobre la pantalla read-only: al revocar sesion desaparece el catalogo aun si los permisos de cliente estaban en verde; tras reautenticar con tenant invalidado la pantalla mantiene negacion conservadora. Es evidencia UI sintetica, no JWT HTTP/MySQL ni permiso productivo. Publicacion dev con CI exact-SHA pendiente, sin LISTO/A5.
 
