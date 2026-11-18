@@ -1,3 +1,7 @@
+## 2026-11-18 — C02-02.M05.04 aceptación positiva aislada placement [Javier :20]
+- Matriz xUnit sobre Application + Domain de placement con ocho casos shared/dedicated y tenant A/B, frontera tenant/idempotencia 128, revisión larga, repetición y rechazo A/B o revisión obsoleta; todo veredicto positivo exige adapter backend separado y nunca autoriza conexión, migración, cutover ni producción.
+- Suite sintética sin SQL/EF/JWT HTTP ni cambios runtime; GitHub Actions .NET10, Scope Lock/V5 exact-SHA y A5 independiente obligatorios antes de cierre. Solo dev; no QA/main/PROD.
+
 ## 2026-11-18 — C02-02.M05.05 seguridad negativa y fallo de proveedor placement [Javier :20]
 - El preflight Application de placement sanitiza errores inesperados del lector de evidencia backend; sólo conserva propagación de cancelación solicitada. Nunca autoriza conexión, migración, cutover o producción por error de proveedor.
 - Matriz xUnit adversarial tenant A/B, ownership/SHA, JWT/RBAC revocado, DSN/fallback/DDL, alias forjado, excepción y cancelación. Pruebas externas .NET10 y Scope Lock/V5 por SHA exacto pendientes hasta CI; A5 independiente. Sin EF/MySQL/HTTP productivo, QA/main/PROD.
