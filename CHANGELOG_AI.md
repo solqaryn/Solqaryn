@@ -1,3 +1,7 @@
+## 2026-11-18 — V19 C02-02.M04.06 reparación CI dependiente del contenedor section [Javier :00]
+- Run 44376045701 terminó FAILURE por dos tests de presentación que consultaban el antiguo `main` interno; Chromium quedó SKIPPED, nunca PASS.
+- Se conservan las aserciones adversariales y se actualizan los dos selectores a `section.placement-review`; el workflow V19 observará cambios del spec dependiente y requerirá Vitest+Chromium exact-SHA antes de una A5 correctiva independiente.
+
 ## 2026-11-18 — V19 C02-02.M04.06 reparación P2 landmark anidado [Javier :00]
 - El contenedor placement pasa de `main` interno a `section`, conservando el único `main#main-content` del shell autenticado; no altera lógica, roles ni persistencia.
 - Vitest y Chromium comprueban ausencia de `main` interno, un landmark principal y la vista privada en 320/768/1280; A5_FAIL histórico sigue abierto hasta revisión independiente y CI exact-SHA, sin atribuir PASS anticipado.

@@ -30,22 +30,22 @@ describe('C02-02.M04.03 - branding tipado y reactivo sin autoridad de placement'
 
   it('presenta variantes institucional y SOLQARYN, densidad reactiva sin recargar', async () => {
     const { fixture, config } = await montar({ marca: 'institucional', densidad: 'compacta' });
-    const main = fixture.nativeElement.querySelector('main');
-    expect(main.getAttribute('data-densidad')).toBe('compacta');
-    expect(main.querySelector('.eyebrow').textContent).toContain('Plataforma SOLQARYN');
+    const panel = fixture.nativeElement.querySelector('section.placement-review');
+    expect(panel.getAttribute('data-densidad')).toBe('compacta');
+    expect(panel.querySelector('.eyebrow').textContent).toContain('Plataforma SOLQARYN');
     config.set({ marca: 'solqaryn', densidad: 'normal' });
     fixture.detectChanges();
-    expect(main.getAttribute('data-densidad')).toBe('normal');
-    expect(main.querySelector('.eyebrow').textContent).toContain('SOLQARYN · Almacenamiento');
-    expect(main.querySelectorAll('.modalidades article')).toHaveLength(2);
+    expect(panel.getAttribute('data-densidad')).toBe('normal');
+    expect(panel.querySelector('.eyebrow').textContent).toContain('SOLQARYN · Almacenamiento');
+    expect(panel.querySelectorAll('.modalidades article')).toHaveLength(2);
   });
 
   it('rechaza HTML/CSS no confiables sin reflejar payload en el DOM', async () => {
     const malicious = '<img src=x onerror=alert(1)>';
     const { fixture } = await montar({ marca: malicious, densidad: 'compacta' });
-    const main = fixture.nativeElement.querySelector('main');
-    expect(main.getAttribute('data-densidad')).toBe('normal');
-    expect(main.querySelector('.eyebrow').textContent).toContain('SOLQARYN');
+    const panel = fixture.nativeElement.querySelector('section.placement-review');
+    expect(panel.getAttribute('data-densidad')).toBe('normal');
+    expect(panel.querySelector('.eyebrow').textContent).toContain('SOLQARYN');
     expect(fixture.nativeElement.innerHTML).not.toContain(malicious);
   });
 
