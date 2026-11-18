@@ -1,0 +1,7 @@
+# C14-04.M05.02 — Contrato Application DTO y errores seguros de readiness DEV
+
+**Riesgo R2, Scope Lock STRICT, rama dev.** Esta entrega prueba realmente el contrato Request/Result de `V5ReleaseReadinessApplicationService` mediante xUnit .NET10. No hay endpoint de readiness HTTP conectado a esta frontera; **no** se afirma haber ejecutado un API real, JWT real, MySQL ni despliegue.
+
+Se verifican respuestas tipadas y no autorizantes, preflight de identificador (válidos/URLs/correo/longitud 128/129), SHA esperado/observado, ausencia de fuente, candidate spoofing, tenant A/B, check SKIPPED, cancelación real antes de acceso a proveedor, y orden/contadores de consultas. La salida positiva sólo requiere revisión autenticada independiente; jamás autoriza release, ejecución de PROD o escritura institucional.
+
+A0: tests nuevos + este documento + CHANGELOG autocontenido; no se edita Application/Domain/API/Infra. A1: asserts positivos, negativos, frontera y error por CI real. A2: tenant/roles y check exact SHA sintéticos in-process, nunca autorización JWT productiva. A3: integración Application→Domain ejecutada en xUnit hosted; HTTP, MySQL, Playwright, DNS y proveedores externos NO_APLICA porque no se tocan. A4: GitHub .NET Release, seguridad pertinente, Scope Lock y V5 en SHA exacto; no PASS mientras estén pendientes. A5: Task Javier independiente de DEV01. Rollback normal `git revert` verificando HEAD; sin QA/main/PROD.

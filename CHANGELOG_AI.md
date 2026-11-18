@@ -1,3 +1,7 @@
+## 2026-11-18 — C14-04.M05.02 contrato DTO y errores seguros DEV [Javier :00]
+- Suite xUnit Application Request/Result verifica preflight SHA, datos invalidos, tenant A/B, check skipped, fuente/candidato desconocidos, frontera release 128/129, cancelacion y salidas sin autoridad; no hay endpoint HTTP ni JWT/MySQL reales.
+- Riesgo R2 test-only, GitHub-hosted NET10, Scope Lock y V5 por SHA exacto, A5 independiente; sin despliegues QA/main/PROD.
+
 ## 2026-11-18 — C02-02.M05.03 integración Oracle EF/MySQL 8.4 aislada [Javier :20]
 - Suite Category=Integration con EF Oracle, bootstrap real MySQL 8.4 efímero GitHub-hosted, dos empresas, aislamiento de filas, lectura en DbContexts nuevos y rollback durable. Deniega autorizar placement sin JWT/rol pese a datos SQL; rechazo de DSN remoto/puerto no aislado.
 - CI dirigida por SHA con Docker MySQL 8.4 y .NET10 Release, exige ejecución efectiva de integración, Scope Lock/V5 y A5 independiente. No router productivo, JWT HTTP firmado, Aiven, dual-write, QA/main/PROD.
