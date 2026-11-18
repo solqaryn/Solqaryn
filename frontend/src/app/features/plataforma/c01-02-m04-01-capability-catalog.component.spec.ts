@@ -3,10 +3,12 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { routes } from '../../app.routes';
 import { plataformaGuard } from '../../core/guards/plataforma.guard';
+import { authGuard } from '../../core/guards/auth.guard';
+import { permisoGuard } from '../../core/guards/permiso.guard';
 import { PlataformaSesionService, type PlataformaSesion } from '../../core/auth/plataforma-sesion.service';
 import { TenantContextService } from '../../core/auth/tenant-context.service';
 import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
-import { C0102CapabilityCatalogComponent, C0102_CATALOG } from './c01-02-m04-01-capability-catalog.component';
+import { C0102CapabilityCatalogComponent, c0102CatalogoDeRutas } from './c01-02-m04-01-capability-catalog.component';
 
 describe('C01-02.M04.01 - catalogo read-only de capacidades', () => {
   it('declara ruta privada unica y guarda exacta', async () => {
@@ -14,9 +16,9 @@ describe('C01-02.M04.01 - catalogo read-only de capacidades', () => {
     expect(routes.filter(x => x.path === 'plataforma/capacidades-v19')).toHaveLength(1);
     expect(ruta?.canActivate).toEqual([plataformaGuard]);
     expect(await (ruta?.loadComponent as () => Promise<unknown>)()).toBe(C0102CapabilityCatalogComponent);
-    const protegidas = routes.filter(x => x.canActivate?.length === 2 && x.data?.['modulo'] && x.data?.['accion'])
+    const protegidas = routes.filter(x => x.canActivate?.includes(authGuard) && x.canActivate?.includes(permisoGuard) && x.data?.['modulo'] && x.data?.['accion'])
       .map(x => ({ ruta: '/' + x.path, modulo: x.data?.['modulo'], accion: x.data?.['accion'] }));
-    expect(C0102_CATALOG).toEqual(protegidas);
+    expect(c0102CatalogoDeRutas(routes)).toEqual(protegidas);
   });
   it('oculta sin plataforma y falla cerrado sin tenant, permisos o ruta', async () => {
     const sesion = signal<PlataformaSesion | null>(null);
@@ -25,7 +27,7 @@ describe('C01-02.M04.01 - catalogo read-only de capacidades', () => {
     await TestBed.configureTestingModule({
       imports: [C0102CapabilityCatalogComponent],
       providers: [
-        provideRouter([]),
+        provideRouter(routes),
         { provide: PlataformaSesionService, useValue: { sesion: sesion.asReadonly() } },
         { provide: TenantContextService, useValue: { tieneContextoVerificado: tenant.asReadonly() } },
         { provide: PermisosRuntimeService, useValue: { cargado: cargado.asReadonly(), puede: () => permiso(), rutaHabilitada: () => ruta() } }
@@ -38,7 +40,7 @@ describe('C01-02.M04.01 - catalogo read-only de capacidades', () => {
     expect(root.querySelectorAll('li')).toHaveLength(0);
     sesion.set({ nombreUsuario: 'QA', rolNombre: 'Plataforma', ambito: 'Plataforma', esAdministrador: true });
     fixture.detectChanges();
-    expect(root.querySelectorAll('li')).toHaveLength(C0102_CATALOG.length);
+    expect(root.querySelectorAll('li')).toHaveLength(c0102CatalogoDeRutas(routes).length);
     expect(root.textContent).toContain('SIN_TENANT_VERIFICADO');
     tenant.set(true); fixture.detectChanges();
     expect(root.textContent).toContain('PERMISOS_NO_CONFIRMADOS');

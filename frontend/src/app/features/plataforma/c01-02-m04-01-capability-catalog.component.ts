@@ -1,342 +1,27 @@
 import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
-import { RouterLink } from '@angular/router';
+import { Router, RouterLink, type Routes } from '@angular/router';
+import { authGuard } from '../../core/guards/auth.guard';
+import { permisoGuard } from '../../core/guards/permiso.guard';
 import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
 import { TenantContextService } from '../../core/auth/tenant-context.service';
 import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
 
-/** Snapshot de rutas ERP protegidas verificadas en dev. No es un motor RBAC. */
-export const C0102_CATALOG = [
-  {
-    "ruta": "/dashboard",
-    "modulo": "Dashboard",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/productos",
-    "modulo": "Productos",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/productos/nuevo",
-    "modulo": "Productos",
-    "accion": "Crear"
-  },
-  {
-    "ruta": "/productos/:id/editar",
-    "modulo": "Productos",
-    "accion": "Editar"
-  },
-  {
-    "ruta": "/productos/:id/variantes",
-    "modulo": "Productos",
-    "accion": "Editar"
-  },
-  {
-    "ruta": "/productos/:id",
-    "modulo": "Productos",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/categorias",
-    "modulo": "Categorias",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/categorias/nueva",
-    "modulo": "Categorias",
-    "accion": "Crear"
-  },
-  {
-    "ruta": "/categorias/:id/editar",
-    "modulo": "Categorias",
-    "accion": "Editar"
-  },
-  {
-    "ruta": "/sucursales",
-    "modulo": "Sucursales",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/sucursales/nueva",
-    "modulo": "Sucursales",
-    "accion": "Crear"
-  },
-  {
-    "ruta": "/sucursales/:id/editar",
-    "modulo": "Sucursales",
-    "accion": "Editar"
-  },
-  {
-    "ruta": "/colores",
-    "modulo": "Colores",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/tallas",
-    "modulo": "Tallas",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/marcas",
-    "modulo": "Marcas",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/modelos",
-    "modulo": "Modelos",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/metodos-pago",
-    "modulo": "MetodosPago",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/proveedores",
-    "modulo": "Proveedores",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/proveedores/nuevo",
-    "modulo": "Proveedores",
-    "accion": "Crear"
-  },
-  {
-    "ruta": "/proveedores/:id/editar",
-    "modulo": "Proveedores",
-    "accion": "Editar"
-  },
-  {
-    "ruta": "/clientes",
-    "modulo": "Clientes",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/clientes/nuevo",
-    "modulo": "Clientes",
-    "accion": "Crear"
-  },
-  {
-    "ruta": "/clientes/:id/editar",
-    "modulo": "Clientes",
-    "accion": "Editar"
-  },
-  {
-    "ruta": "/tipo-clientes",
-    "modulo": "TiposClientes",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/tipo-clientes/nuevo",
-    "modulo": "TiposClientes",
-    "accion": "Crear"
-  },
-  {
-    "ruta": "/tipo-clientes/:id/editar",
-    "modulo": "TiposClientes",
-    "accion": "Editar"
-  },
-  {
-    "ruta": "/usuarios",
-    "modulo": "Usuarios",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/usuarios/:id/editar",
-    "modulo": "Usuarios",
-    "accion": "Editar"
-  },
-  {
-    "ruta": "/usuarios/:id",
-    "modulo": "Usuarios",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/roles",
-    "modulo": "Roles",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/roles/nuevo",
-    "modulo": "Roles",
-    "accion": "Crear"
-  },
-  {
-    "ruta": "/roles/:id/editar",
-    "modulo": "Roles",
-    "accion": "Editar"
-  },
-  {
-    "ruta": "/permisos",
-    "modulo": "Permisos",
-    "accion": "Administrar"
-  },
-  {
-    "ruta": "/descuentos",
-    "modulo": "Descuentos",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/descuentos/nuevo",
-    "modulo": "Descuentos",
-    "accion": "Crear"
-  },
-  {
-    "ruta": "/descuentos/:id/editar",
-    "modulo": "Descuentos",
-    "accion": "Editar"
-  },
-  {
-    "ruta": "/impuestos",
-    "modulo": "Impuestos",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/impuestos/nuevo",
-    "modulo": "Impuestos",
-    "accion": "Crear"
-  },
-  {
-    "ruta": "/impuestos/:id/editar",
-    "modulo": "Impuestos",
-    "accion": "Editar"
-  },
-  {
-    "ruta": "/costos-envio",
-    "modulo": "Facturacion",
-    "accion": "Administrar"
-  },
-  {
-    "ruta": "/cargas-masivas",
-    "modulo": "CargasMasivas",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/auditoria",
-    "modulo": "Auditoria",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/solicitudes-compra",
-    "modulo": "Compras",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/ordenes-compra",
-    "modulo": "Compras",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/ordenes-compra/nueva",
-    "modulo": "Compras",
-    "accion": "Crear"
-  },
-  {
-    "ruta": "/ordenes-compra/:id/editar",
-    "modulo": "Compras",
-    "accion": "Editar"
-  },
-  {
-    "ruta": "/compras",
-    "modulo": "Compras",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/compras/nueva",
-    "modulo": "Compras",
-    "accion": "Crear"
-  },
-  {
-    "ruta": "/compras/:id/editar",
-    "modulo": "Compras",
-    "accion": "Editar"
-  },
-  {
-    "ruta": "/compras/:id",
-    "modulo": "Compras",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/ventas",
-    "modulo": "Ventas",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/ventas/nueva",
-    "modulo": "Ventas",
-    "accion": "Crear"
-  },
-  {
-    "ruta": "/ventas/:id/editar",
-    "modulo": "Ventas",
-    "accion": "Editar"
-  },
-  {
-    "ruta": "/ventas/:id",
-    "modulo": "Ventas",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/facturas/:id/pagos",
-    "modulo": "Facturacion",
-    "accion": "Aplicar"
-  },
-  {
-    "ruta": "/facturas/:id",
-    "modulo": "Facturacion",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/cuentas-por-cobrar",
-    "modulo": "Facturacion",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/asientos-contables",
-    "modulo": "Finanzas",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/finanzas",
-    "modulo": "Finanzas",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/estados-financieros",
-    "modulo": "Finanzas",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/plan-cuentas",
-    "modulo": "Finanzas",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/cuentas-bancarias",
-    "modulo": "Finanzas",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/inventario/movimientos",
-    "modulo": "MovimientosInventario",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/inventario/costeo",
-    "modulo": "MovimientosInventario",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/configuracion",
-    "modulo": "Configuracion",
-    "accion": "Ver"
-  },
-  {
-    "ruta": "/periodos-contables",
-    "modulo": "Configuracion",
-    "accion": "Ver"
-  }
-] as const;
+/** Inventario derivado del router runtime, incluyendo rutas feature con ...spread.
+ * Solo metadatos estaticos de rutas protegidas, nunca grants backend. */
+export function c0102CatalogoDeRutas(configuracion: Routes) {
+  return configuracion
+    .filter(ruta =>
+      ruta.canActivate?.includes(authGuard) === true &&
+      ruta.canActivate?.includes(permisoGuard) === true &&
+      typeof ruta.path === 'string' &&
+      typeof ruta.data?.['modulo'] === 'string' &&
+      typeof ruta.data?.['accion'] === 'string')
+    .map(ruta => ({
+      ruta: '/' + ruta.path,
+      modulo: ruta.data!['modulo'] as string,
+      accion: ruta.data!['accion'] as string
+    }));
+}
 
 @Component({
   selector: 'app-c0102-capability-catalog',
@@ -371,6 +56,7 @@ export const C0102_CATALOG = [
   `]
 })
 export class C0102CapabilityCatalogComponent {
+  private readonly router = inject(Router);
   private readonly plataforma = inject(PlataformaSesionService);
   private readonly tenant = inject(TenantContextService);
   private readonly permisos = inject(PermisosRuntimeService);
@@ -380,7 +66,7 @@ export class C0102CapabilityCatalogComponent {
   });
   readonly filas = computed(() => {
     if (!this.autorizado()) return [];
-    return C0102_CATALOG.map(ruta => {
+    return c0102CatalogoDeRutas(this.router.config).map(ruta => {
       const base = { ...ruta };
       if (!this.tenant.tieneContextoVerificado())
         return { ...base, estado: 'SIN_TENANT_VERIFICADO', causa: 'No hay contexto y membresía empresarial verificados.' };
