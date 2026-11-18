@@ -1,0 +1,33 @@
+name: V19 - C10-04.M05.05 negative tenant and abuse xUnit
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/Application/C1004CacheJobsM0505AdversarialTests.cs'
+      - 'backend/tests/Solqaryn.Tests/Application/C1004CacheJobsAuthorizationGateTests.cs'
+      - 'backend/src/Application/AutomationV5/C1004CacheJobsAuthorizationGate.cs'
+      - '.github/workflows/v19-c10-04-m05-05-adversarial.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c1004-m0505-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  negative-tenant-abuse:
+    name: C10-04.M05.05 - xUnit negative tenant and policy gates
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Restore
+        run: dotnet restore backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj
+      - name: Run new adversarial matrix plus existing gate regressions
+        run: >-
+          dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj
+          --configuration Release --no-restore
+          --filter 'FullyQualifiedName~C1004CacheJobsM0505AdversarialTests|FullyQualifiedName~C1004CacheJobsAuthorizationGateTests'
+          --logger 'console;verbosity=normal'

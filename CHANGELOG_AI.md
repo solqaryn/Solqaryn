@@ -1,3 +1,7 @@
+## 2026-11-18 — C10-04.M05.05 matriz negativa xUnit de tenancy y abusos [Javier :00]
+- Se agrega matriz adversarial contra barrera de Application existente: revocación, tenant A/B, grants, versiones, input hostil, restore no permitido, error del proveedor redactado y cancelación; cada veredicto prohíbe efectos, sin integrar API/DB/R2 productivos.
+- Workflow .NET 10 ejecuta suite nueva y regresiones preexistentes en GitHub Actions, Scope Lock/V5 y seguridad exact-SHA; A5 por otra Task Javier. Rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-18 — C10-04.M05.01 xUnit de reglas de revision aislada [Javier :00]
 - Se agregan ocho tests reales de limites 32/33, idempotencia por lote, tenant cruzado, workId ajeno, solicitud nula y membresia revocada sobre worker de revision existente. No se crean colas productivas, leases, RESTORE ni acceso al proveedor.
 - Workflow GitHub-hosted .NET 10 con pruebas originales y nuevas, Scope Lock/V5/seguridad exact-SHA pendientes al publicar; documentación A0-A5 y reversión git revert, sin QA/main/PROD.
