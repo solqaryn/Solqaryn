@@ -41,4 +41,19 @@ jobs:
       - name: Chromium
         run: |
           npx playwright install --with-deps chromium
+          npm run start -- --host 127.0.0.1 --port 4200 > /tmp/c0102-m0403-ng-serve.log 2>&1 &
+          server_pid=$!
+          trap 'kill "$server_pid" 2>/dev/null || true' EXIT
+          ready=0
+          for attempt in $(seq 1 90); do
+            if curl -fsS http://127.0.0.1:4200/ >/dev/null 2>&1; then
+              ready=1
+              break
+            fi
+            sleep 2
+          done
+          if [ "$ready" -ne 1 ]; then
+            cat /tmp/c0102-m0403-ng-serve.log
+            exit 1
+          fi
           npx playwright test e2e/c01-02-m04-03-branding.spec.ts --config=playwright.config.ts

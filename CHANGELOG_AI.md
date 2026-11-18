@@ -1,3 +1,7 @@
+## 2026-11-18 — V19 CI_REPAIR C01-02.M04.03 servidor Chromium [Javier :30]
+- El primer SHA 113103ec pasó Vitest, tipado y build, pero ambas pruebas Chromium fallaron por ERR_CONNECTION_REFUSED: el job no iniciaba Angular en 127.0.0.1:4200. Reparación causal: ng serve loopback, healthcheck curl, log y trap; no reducir tests ni simular PASS.
+- Se conserva FAIL anterior y VALIDANDO/owner DEV04 hasta nueva CI exact-SHA, Scope Lock y V5. Sin JWT firmado, datos productivos ni QA/main/PROD.
+
 ## 2026-11-18 — V19 C01-02.M04.03 branding seguro y capacidades permitidas [Javier :30]
 - Superficie privada Angular solo lectura, sesión plataforma backend, tenant verificado y grant/ruta Configuracion:Ver; paleta HEX sanitizada, ninguna autorización derivada del tema o la UI.
 - Vitest adversarial y navegador Chromium sintético: denegación, cambio A/B, respuesta tardía, anónimo/403 y responsive. GitHub-hosted exact-SHA, Scope Lock, V5 y A5 independiente requeridos, sin JWT real, QA/main/PROD.
