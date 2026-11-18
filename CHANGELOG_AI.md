@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C14-04.M06.02 manifiesto reproducible de M05 [Javier :50]
+- Registro versionado de seis SHA M05, archivos exactos por diff, jobs de CI y revision A5; separa los resultados de xUnit/Node/Chromium reales de sesiones o contratos sinteticos.
+- Reproduccion en GitHub-hosted sin alterar proveedores productivos; matriz de controles negativos, checksum por commit, faltantes NO_VERIFICADO/NO_MEDIDO y rollback normal. No concede release R3 ni QA/main/PROD.
+
 ## 2026-11-18 — V20 C02-03.M03.02 Application tenant lifecycle no-autorizante [Javier :40]
 - Servicio Application con lector server-controlled y tenant-fenced, preflight Domain sin permisos ni escrituras; replay idempotente exige recibo durable o checkpoint, no CAS nuevo.
 - Suite xUnit adversarial y workflow GitHub-hosted .NET 10 por SHA; JWT HTTP, MySQL real, CAS persistente, produccion R3 y A5 no certificados.
