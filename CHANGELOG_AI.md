@@ -7215,3 +7215,8 @@
 ## 2026-11-18 - V19 A0.32 recarga fail-closed UX JWT C15-04.M05.04 [Javier :10]
 - Agrega una regresion Chromium real para sesion sin token tras recarga, redireccion a login y HTTP 401 de API sin bearer, con 320/1280 px y MySQL 8.4 efimero en GitHub-hosted.
 - Doce casos previstos sin declarar PASS antes del SHA exacto. Incremento parcial R2; DEV02 retiene EN_PROGRESO y lock V17 2000002297, sin LISTO, A5 ni despliegue productivo.
+
+
+## 2026-11-18 - V19 C15 UX A0.33-A0.34 tres rutas privadas autenticadas [Javier :10]
+- Extiende Playwright con controles reales JWT/MySQL efimero: tres guias globales en 320/1280, GET de sesion 200, lectura sin mutaciones, H1/main y overflow, y rol empresarial denegado por API 403 sin exponer guias.
+- Catorce pruebas Chromium esperadas en GitHub-hosted, CI exact-SHA PENDIENTE: NO declarar PASS ni A0-A4 global. Estado EN_PROGRESO propio, candado V17 conservado; A5 por Task distinta, solo dev.
