@@ -1,3 +1,7 @@
+## 2026-11-18 — CI_REPAIR C10-04.M04.03 Vitest selector despues de reparacion P2 [asistencia Javier :20]
+- El job GitHub-hosted 134799909539 del SHA 82d61d05 reporto 2/4 FAIL: TypeError al buscar main dentro del componente, luego de la reparacion accesible del envoltorio interior a section.continuidad; no fue fallo de branding ni control de acceso del producto.
+- Solo se actualizan los dos selectores de Vitest al contenedor real section.continuidad, se exige no encontrar un main interno y se mantienen asserts de densidad, marca, inyeccion HTML y seguridad sin rebajas. Owner DEV02/H1570 LISTO preservado; CI nueva, Scope Lock/V5 SUCCESS exact-SHA requeridos, A5 P2 de C10-04.M04.01 permanece pendiente de revisor ajeno. No QA/main/PROD.
+
 ## 2026-11-18 — C10-04.M04.01 reparacion A5_FAIL P2 landmark anidado [Javier :20]
 - Rechazo independiente DEV05: shell autenticado main#main-content contenia otro main.continuidad. Se sustituye solo el envoltorio interior por section; se preservan titulo, estilos, plataformaGuard, revalidacion y autorizacion del servidor.
 - Se agregan regresiones Vitest y Chromium para main unico, anonimo/403, revocacion, Tab/Enter, foco y 320px. Backend/JWT sinteticos NO prueban MySQL ni seguridad real; falta CI exact-SHA y nueva A5 ajena. Se conserva A5_FAIL e historia BITACORA; sin QA/main/PROD.

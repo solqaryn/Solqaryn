@@ -26,20 +26,24 @@ describe('C10-04.M04.03 - presentacion de continuidad permitida', () => {
   }
   it('acepta las dos variantes tipadas y actualiza branding/densidad al cambiar el Signal', async () => {
     const { fixture, config } = await montar({ marca: 'institucional', densidad: 'compacta' });
-    const main = fixture.nativeElement.querySelector('main');
-    expect(main.getAttribute('data-densidad')).toBe('compacta');
-    expect(main.querySelector('.eyebrow').textContent).toContain('Plataforma SOLQARYN');
+    const surface = fixture.nativeElement.querySelector('section.continuidad');
+    expect(surface).not.toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('main')).toHaveLength(0);
+    expect(surface.getAttribute('data-densidad')).toBe('compacta');
+    expect(surface.querySelector('.eyebrow').textContent).toContain('Plataforma SOLQARYN');
     config.set({ marca: 'solqaryn', densidad: 'normal' });
     fixture.detectChanges();
-    expect(main.getAttribute('data-densidad')).toBe('normal');
-    expect(main.querySelector('.eyebrow').textContent).toContain('SOLQARYN · Continuidad');
+    expect(surface.getAttribute('data-densidad')).toBe('normal');
+    expect(surface.querySelector('.eyebrow').textContent).toContain('SOLQARYN · Continuidad');
   });
   it('niega inyeccion de HTML/CSS desde configuracion externa y revierte a defaults', async () => {
     const payload = '<img src=x onerror=alert(1)>';
     const { fixture } = await montar({ marca: payload, densidad: 'compacta' });
-    const main = fixture.nativeElement.querySelector('main');
-    expect(main.getAttribute('data-densidad')).toBe('normal');
-    expect(main.querySelector('.eyebrow').textContent).toContain('SOLQARYN');
+    const surface = fixture.nativeElement.querySelector('section.continuidad');
+    expect(surface).not.toBeNull();
+    expect(fixture.nativeElement.querySelectorAll('main')).toHaveLength(0);
+    expect(surface.getAttribute('data-densidad')).toBe('normal');
+    expect(surface.querySelector('.eyebrow').textContent).toContain('SOLQARYN');
     expect(fixture.nativeElement.innerHTML).not.toContain(payload);
   });
   it('configuraciones extra, nulas, arrays y tipos desconocidos son fail-closed', () => {
