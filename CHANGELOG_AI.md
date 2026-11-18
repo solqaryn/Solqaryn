@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C02-02.M06.03 registro documental de riesgos placement [Javier :20]
+- Registro R0 de decisiones shared/dedicated y limites verificables de las seis evidencias M05; separa pruebas Domain/Application y EF/MySQL efimero de JWT HTTP, router, migracion y produccion no acreditados.
+- Matriz de siete riesgos, criterios M06.04–06, rollback documental y A0–A5; sin cambios runtime, permisos, formulas DAG, secretos ni QA/main/PROD. A5 de otra Task Javier y checks Scope Lock/V5 por SHA exacto.
+
 ## 2026-11-18 — V20 C15-03.M04.02 reparacion A5_FAIL P2 de error sincrono [Javier :00]
 - Corrige la revalidacion de la guia privada Angular: RxJS defer captura excepciones sincronas del proveedor como error observable y restablece estado seguro y boton de reintento sin mostrar fronteras protegidas.
 - Regression TestBed adversarial verifica error sincrono con texto sensible, denegacion durante fallo y reintento exitoso; no modifica backend, JWT, RBAC, tenant, DI, MySQL, permisos ni habilita QA/main/PROD. El A5_FAIL historico sigue vigente hasta nueva revision independiente tras CI exact-SHA.
