@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C01-02.M03.06 auditoria segura aislada [Javier Task :40]
+- Adaptador .NET de auditoria de capacidades con ILogger estructurado y eventos estaticos, sin fugas de tenant/recurso/actor/token, y sin considerar evidencia no confiable como autorizacion; no se registra DI live ni integra proveedor real.
+- Seis xUnit adversariales, build Release y workflow GitHub-hosted por SHA exacto; A5 independiente, Scope Lock/V5 y seguridad obligatorios antes de LISTO. No producción, MySQL, JWT live ni QA/main/PROD.
+
 ## 2026-11-17 — CI_REPAIR P0-007.A C14-01.M04.01 [Javier :40]
 - Catalogo Angular detectó de forma correcta el nuevo componente privado QA global, faltante del manifiesto de 160 fuentes. Se agrega exclusivamente esa entrada y ajustan conteos exactos a 161 (153 features/8 shared), preservando negativos y detección de nuevas omisiones.
 - Sin bajar la exigencia de verificador, Scope Lock ni V5; CI nuevo SHA y A5 independiente pendientes, sin autorización de QA/main/PROD.

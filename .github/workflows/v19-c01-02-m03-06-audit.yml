@@ -1,0 +1,36 @@
+name: V19 C01-02.M03.06 - safe capability audit directed .NET 10
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/src/Infrastructure/AutomationV5/C0102SafeCapabilityAuditReader.cs'
+      - 'backend/tests/Solqaryn.Tests/Infrastructure/C0102SafeCapabilityAuditReaderTests.cs'
+      - '.github/workflows/v19-c01-02-m03-06-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c01-02-m03-06-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  audit:
+    name: V19 C01-02.M03.06 - six .NET10 safe audit tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Build Release
+        run: dotnet build backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release
+      - name: Six directed xUnit with TRX
+        run: dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter "FullyQualifiedName~C0102SafeCapabilityAuditReaderTests" --logger "trx;LogFileName=C0102SafeCapabilityAuditReaderTests.trx" --logger "console;verbosity=normal"
+      - name: Preserve TRX
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v19-c0102-m0306-audit-trx
+          path: backend/**/TestResults/*.trx
+          if-no-files-found: warn
+          retention-days: 14
