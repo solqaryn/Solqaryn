@@ -1,3 +1,7 @@
+## 2026-11-18 — C02-02.M05.03 integración Oracle EF/MySQL 8.4 aislada [Javier :20]
+- Suite Category=Integration con EF Oracle, bootstrap real MySQL 8.4 efímero GitHub-hosted, dos empresas, aislamiento de filas, lectura en DbContexts nuevos y rollback durable. Deniega autorizar placement sin JWT/rol pese a datos SQL; rechazo de DSN remoto/puerto no aislado.
+- CI dirigida por SHA con Docker MySQL 8.4 y .NET10 Release, exige ejecución efectiva de integración, Scope Lock/V5 y A5 independiente. No router productivo, JWT HTTP firmado, Aiven, dual-write, QA/main/PROD.
+
 ## 2026-11-18 — C02-02.M05.02 contrato DTO placement y errores sanitizados [Javier :40]
 - Nueva suite xUnit Application para Request/Result reales de placement: tenant A/B, formato hostil, SHA, DSN, dual-write, esquema destructivo, alias de otro tenant, excepciones con secretos y cancelación; resultados nunca autorizan conexión ni migración.
 - Documento de impacto A0–A5 y rollback normal; pruebas .NET10 GitHub-hosted, Scope Lock y V5 exact-SHA obligatorios antes de LISTO. Sin endpoint HTTP registrado, MySQL/EF/DSN vivo, JWT firmado, QA/main/PROD ni A5 propia.

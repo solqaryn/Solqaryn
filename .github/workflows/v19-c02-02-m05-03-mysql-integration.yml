@@ -1,0 +1,54 @@
+name: V19 C02-02.M05.03 - Oracle EF MySQL 8.4 isolated integration
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/C0202M0503MySqlPlacementEvidenceIntegrationTests.cs'
+      - '.github/workflows/v19-c02-02-m05-03-mysql-integration.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c0202m0503-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  mysql-placement:
+    name: C02-02.M05.03 - Oracle EF Category Integration MySQL 8.4
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: v19_c0202_source
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      ASPNETCORE_ENVIRONMENT: Development
+      ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=v19_c0202_source;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;
+      Database__ServerVersion: 8.4.0
+      Database__ApplyMigrationsOnStartup: 'false'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Scope Lock STRICT
+        run: node scripts/verify-project-scope.mjs
+      - name: Restore and build Release
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+      - name: Execute real EF MySQL 8.4 Category Integration tests
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter "FullyQualifiedName~C0202M0503MySqlPlacementEvidenceIntegrationTests&Category=Integration" --logger "console;verbosity=normal"
+          echo "C0202_M0503_ORACLE_EF_MYSQL84_EPHEMERAL_TESTS_COMPLETE"
