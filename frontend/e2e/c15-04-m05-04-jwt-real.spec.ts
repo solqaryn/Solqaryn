@@ -363,7 +363,7 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
         const documento = await page.goto(ruta.path);
         expect(documento?.status()).toBe(200);
         expect((await sesion).status(), 'Autorizacion real del backend').toBe(200);
-        await expect(page).toHaveURL(new RegExp(ruta.path + '));
+        expect(new URL(page.url()).pathname).toBe(ruta.path);
         await expect(page.getByRole('heading', { level: 1, name: ruta.heading })).toBeVisible();
         await expect(page.getByRole('main')).toBeVisible();
         expect(await page.evaluate(() => document.documentElement.scrollWidth))

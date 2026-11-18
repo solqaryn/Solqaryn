@@ -7220,3 +7220,8 @@
 ## 2026-11-18 - V19 C15 UX A0.33-A0.34 tres rutas privadas autenticadas [Javier :10]
 - Extiende Playwright con controles reales JWT/MySQL efimero: tres guias globales en 320/1280, GET de sesion 200, lectura sin mutaciones, H1/main y overflow, y rol empresarial denegado por API 403 sin exponer guias.
 - Catorce pruebas Chromium esperadas en GitHub-hosted, CI exact-SHA PENDIENTE: NO declarar PASS ni A0-A4 global. Estado EN_PROGRESO propio, candado V17 conservado; A5 por Task distinta, solo dev.
+
+
+## 2026-11-18 - V19 C15 CI repair A0.33 parser literal de URL [Javier :10]
+- Corrige fallo de sintaxis Playwright en SHA 5f32c97c: URL assertion de A0.33 quedó con string sin cerrar. Sustituye por comparación estricta new URL(page.url()).pathname === ruta.path, sin saltar tests ni tocar el producto.
+- P2 de fixture confirmado por RUN 44274456099, 14 escenarios siguen pendientes de nueva CI exact-SHA; sin A0-A4 global, LISTO ni A5 propios.
