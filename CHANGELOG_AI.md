@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C02-02.M06.02 manifiesto versionado de evidencias placement [Javier :20]
+- Registro R0 con seis commits y artefactos M05, referencias de jobs MySQL 8.4/Domain y comandos de readback reproducible etiquetados NO_EJECUTADO; conserva el A5_FAIL historico reparado y no inventa PASS.
+- Sin cambios en runtime, DB, JWT/RBAC, tenant o permisos; A2/A3 NO_APLICA al diff documental, A4 Scope Lock/V5 exact-SHA y A5 de otra Task Javier, nunca QA/main/PROD.
+
 ## 2026-11-18 — V20 C02-02.M06.03 registro documental de riesgos placement [Javier :20]
 - Registro R0 de decisiones shared/dedicated y limites verificables de las seis evidencias M05; separa pruebas Domain/Application y EF/MySQL efimero de JWT HTTP, router, migracion y produccion no acreditados.
 - Matriz de siete riesgos, criterios M06.04–06, rollback documental y A0–A5; sin cambios runtime, permisos, formulas DAG, secretos ni QA/main/PROD. A5 de otra Task Javier y checks Scope Lock/V5 por SHA exacto.
