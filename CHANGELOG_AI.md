@@ -7187,3 +7187,7 @@
 ## 2026-11-18 - V19 A0.30 JWT revalidacion UX C15-04.M05.04 [Javier :10]
 - Anade Playwright autenticado real con JWT, API y MySQL 8.4 efimero para revalidacion GET, mensaje accesible y responsive 320/1280; diez casos previstos sin PASS hasta CI exact-SHA.
 - Incremento parcial R2; sin cambios productivos o secretos, DEV02 retiene EN_PROGRESO y V17 lock; A0-A4 global y A5 independiente pendientes.
+
+## 2026-11-18 - V19 A0.31 revalidacion JWT por teclado C15-04.M05.04 [Javier :10]
+- Amplia Playwright autenticado con Tab y Enter reales sobre la revalidacion documental, GET 200 a API/MySQL efimeros, region de estado, responsive 320/1280 y prueba adversarial de ausencia de solicitudes HTTP mutantes.
+- Once escenarios previstos, no PASS hasta CI exact-SHA. Incremento R2 parcial sin cambios runtime; DEV02 conserva EN_PROGRESO y V17 lock, A0-A4 global y A5 independiente pendientes.

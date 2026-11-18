@@ -272,4 +272,41 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     // Flujo GET autentico en CI; no acredita revocacion ni WCAG global.
   });
 
+  test('A0.31 - teclado real activa revalidacion JWT sin HTTP mutante', async ({ page }) => {
+    await ingresar(page, 'c1504_platform_only');
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      await page.goto('/plataforma/continuidad-operativa-v5');
+      const boton = page.getByRole('button', { name: 'Revalidar sesión de continuidad' });
+      await expect(boton).toBeVisible();
+      await expect(boton).toBeEnabled();
+
+      // La navegacion comienza con Tab real: no se llama .focus() ni .click().
+      let alcanzado = false;
+      for (let i = 0; i < 64; i++) {
+        await page.keyboard.press('Tab');
+        alcanzado = await boton.evaluate(el => el === document.activeElement);
+        if (alcanzado) break;
+      }
+      expect(alcanzado, 'El boton de revalidacion debe ser alcanzable con Tab').toBe(true);
+
+      const mutaciones: string[] = [];
+      page.on('request', req => {
+        if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method())) {
+          mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+        }
+      });
+      const sesion = page.waitForResponse(r =>
+        r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+      await page.keyboard.press('Enter');
+      expect((await sesion).status(), 'Revalidacion accesible consulta GET real').toBe(200);
+      await expect(page.locator('section[aria-label="Estado de acceso"]').getByRole('status'))
+        .toContainText('Sesión revalidada. Solo consulta documental.');
+      expect(mutaciones, 'La revalidacion no debe enviar solicitudes mutantes').toEqual([]);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(width + 1);
+    }
+    // Verifica interaccion puntual teclado/API, no acredita WCAG ni RUM global.
+  });
+
 });

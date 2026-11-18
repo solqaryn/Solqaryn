@@ -159,3 +159,6 @@ Playwright en /plataforma/continuidad-operativa-v5 con JWT firmado: rol global a
 ## A0.30 - revalidacion de continuidad JWT autenticada (CI pendiente)
 Playwright/Chromium navega con JWT firmado a /plataforma/continuidad-operativa-v5 a 320/1280 px, pulsa revalidacion y exige nuevo GET /plataforma/sesion HTTP 200 desde .NET 10/MySQL 8.4 efimero, mensaje accesible de exito, cuatro controles y ausencia de overflow. No prueba revocacion externa, otras rutas ni rendimiento productivo. Requiere diez pruebas completed/success, Scope Lock y V5 exact SHA; no declarar PASS antes. C15-04.M05.04 permanece EN_PROGRESO DEV02 y lock V17. A5 independiente; rollback por git revert normal.
 
+
+## A0.31 - teclado autentico y solo lectura de la revalidacion (CI pendiente)
+Playwright con JWT firmado y MySQL 8.4 efimero prueba la accion Revalidar sesion de continuidad con Tab real hasta el control, Enter real y GET HTTP 200 a la API. En 320 y 1280 px exige mensaje de estado accesible, ausencia de POST/PUT/PATCH/DELETE durante la accion y cero overflow horizontal. No usa .focus(), .click() ni HTTP interceptado. Se esperan once casos Chromium, no declarar PASS sin check y log exact-SHA. A0-A4 de UX global no estan completos, A5 es independiente, estado EN_PROGRESO propio y candado V17 conservados. Rollback mediante git revert ordinario, sin QA/main/PROD.
