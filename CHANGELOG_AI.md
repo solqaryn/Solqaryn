@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C15-05.M05.01 contrato xUnit de múltiples IDs y CAS en memoria [Javier :20]
+- Nueva regresión xUnit .NET 10 para dos IDs independientes: dos ganadores bajo 64 intentos, idempotencia, gates cerrados, propietario ajeno y capacidad; no se confunde adaptador in-memory con candado Google Sheets V17.
+- CI GitHub-hosted dirigida con TRX obligatorio y 10 casos esperados; no se atribuye PASS antes del resultado exact-SHA. A5 independiente de otra Task Javier, dev exclusivo, no QA/main/PROD.
+
 ## 2026-11-17 — V19 C15-04.M05.04 regresion AST de rutas importadas [Javier :10]
 - A0.23: prueba dirigida verifica composicion real del router Angular (ocho modulos, spreads anidados) y evita el falso positivo donde una ruta no registrada igualmente redirige a login. CI Chromium esperada: 23 casos; JWT firmado/tenant A-B y auditoria UX global NO_MEDIDO hasta pruebas reales.
 
