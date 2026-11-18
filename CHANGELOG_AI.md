@@ -1,3 +1,7 @@
+## 2026-11-18 — C06-04.M03.04 adaptador aislado de evidencia persistida [Javier :00]
+- Añade frontera Application read-only para evidencias de propiedad, tenant, SHA y versión: rechaza datos malformados, origen no verificado, revocación, errores de proveedor y discrepancias; conserva cancelación sin otorgar JWT ni acceso.
+- xUnit adversarial positivo/negativo, frontera, errores, tenant A/B y no concesión; pruebas .NET 10 en GitHub-hosted obligatorias. No hay SQL/EF, API, DI de producción, migraciones, permisos, QA/main/PROD; A5 por otra Task Javier.
+
 ## 2026-11-18 — C06-04.M03.03 reparación A5_FAIL P2 actor verificado [asistencia Javier :40]
 - SafeActorId rechaza whitespace, actores vacíos y formato Unicode invisible antes del preflight; conserva límites 128/129 y los gates tenant/JWT/RBAC sin conceder acceso.
 - xUnit: ocho variantes negativas más frontera positiva/negativa; CI exact-SHA y nueva A5 de revisor distinto son obligatorias, A5_FAIL histórico permanece, sin JWT HTTP/MySQL/QA/main/PROD.
