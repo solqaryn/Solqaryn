@@ -16,3 +16,7 @@ El cambio conserva todas las comprobaciones anteriores de identidad, membresía 
 - A4 exige CI GitHub-hosted de backend .NET, seguridad, Scope Lock y V5 `completed/success` sobre SHA correctivo exacto. Cualquier job `queued/in_progress/skipped/failed` requerido NO es PASS.
 - Conserva `PLAN H234=LISTO`, `I234=DEV06`, A5_FAIL anterior y BITACORA histórica. No implica A5_PASS; un revisor Javier distinto de DEV03 y del autor del código debe revisar independientemente con SHA válido.
 - **Rollback:** `git revert` del SHA de reparación, previa verificación de HEAD y escritores; nunca reset/force-push. No QA/main/PROD ni datos productivos.
+
+## V19 — segunda reparación correctiva del A5_FAIL ExactKeys
+
+DEV04 comprobó que el reparo del SHA `27a54b87` aún confiaba en `IReadOnlyCollection.Count/ToArray` de la solicitud. Un `Count=1` con 17 claves enumeradas eludía el límite 16; Count/GetEnumerator/MoveNext también podían lanzar errores no sanitizados. Ahora la validación toma snapshot observado limitado a 16, contrasta ambos conteos y deniega íntegramente antes de cualquier actor/catálogo. Captura errores ordinarios como `CONFIG_BATCH_REQUEST_INVALID`, propaga cancelación y no oculta OutOfMemory. Se agregan cinco casos xUnit (dos límites y tres errores) sin cambiar JWT, HTTP, MySQL, DTO ni APIs. Esta publicación R2 requiere CI exact-SHA y nueva A5 independiente (no por DEV03/DEV06). No borra A5_FAIL ni cambia LISTO histórico/owner; rollback git revert con HEAD revalidado.

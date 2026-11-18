@@ -191,6 +191,82 @@ public sealed class V5DynamicConfigurationBoundedCatalogWorkerTests
         public bool SetEquals(IEnumerable<string> other) => throw new NotSupportedException();
     }
 
+    private sealed class MalformedExactKeys : IReadOnlyCollection<string>
+    {
+        private readonly string[] _values;
+        private readonly int _reported;
+        private readonly string? _throwAt;
+
+        public MalformedExactKeys(string[] values, int reported, string? throwAt = null)
+        { _values = values; _reported = reported; _throwAt = throwAt; }
+
+        public int Count => _throwAt == "count"
+            ? throw new InvalidOperationException("private caller detail")
+            : _reported;
+
+        public IEnumerator<string> GetEnumerator()
+        {
+            if (_throwAt == "get")
+                throw new InvalidOperationException("private caller detail");
+            return _throwAt == "move"
+                ? BrokenEnumerator().GetEnumerator()
+                : ((IEnumerable<string>)_values).GetEnumerator();
+        }
+
+        private IEnumerable<string> BrokenEnumerator()
+        {
+            yield return _values[0];
+            throw new InvalidOperationException("private caller detail");
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+    }
+
+    [Fact]
+    public async Task Exact_keys_lying_count_over_sixteen_is_rejected_before_io()
+    {
+        var actors = new Actors();
+        var catalog = new Catalog();
+        var values = Enumerable.Range(1, 17).Select(i => "screen." + i).ToArray();
+        var result = await new Worker(actors, catalog).ProjectAsync(
+            new Worker.Request(7, Sha, new MalformedExactKeys(values, 1)));
+        Assert.Equal("CONFIG_BATCH_REQUEST_INVALID", result.Code);
+        Assert.Empty(result.Descriptors);
+        Assert.Equal(0, actors.Calls);
+        Assert.Empty(catalog.Calls);
+    }
+
+    [Fact]
+    public async Task Exact_keys_short_enumeration_disagrees_with_count_and_denies()
+    {
+        var actors = new Actors();
+        var catalog = new Catalog();
+        var result = await new Worker(actors, catalog).ProjectAsync(
+            new Worker.Request(7, Sha,
+                new MalformedExactKeys(new[] { "screen.alpha" }, 2)));
+        Assert.Equal("CONFIG_BATCH_REQUEST_INVALID", result.Code);
+        Assert.Empty(result.Descriptors);
+        Assert.Equal(0, actors.Calls);
+        Assert.Empty(catalog.Calls);
+    }
+
+    [Theory]
+    [InlineData("count")]
+    [InlineData("get")]
+    [InlineData("move")]
+    public async Task Exact_keys_throwing_source_is_denied_without_leakage(string throwAt)
+    {
+        var actors = new Actors();
+        var catalog = new Catalog();
+        var result = await new Worker(actors, catalog).ProjectAsync(
+            new Worker.Request(7, Sha,
+                new MalformedExactKeys(new[] { "screen.alpha" }, 1, throwAt)));
+        Assert.Equal("CONFIG_BATCH_REQUEST_INVALID", result.Code);
+        Assert.Empty(result.Descriptors);
+        Assert.Equal(0, actors.Calls);
+        Assert.Empty(catalog.Calls);
+    }
+
     [Fact]
     public async Task Approved_keys_enumerator_failure_is_sanitized_without_partial_metadata()
     {

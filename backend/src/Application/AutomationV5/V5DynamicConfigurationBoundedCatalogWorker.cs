@@ -44,12 +44,33 @@ public sealed class V5DynamicConfigurationBoundedCatalogWorker
     {
         cancellationToken.ThrowIfCancellationRequested();
         if (request is null || request.TenantAssertion <= 0 ||
-            !FullSha(request.ExpectedSourceSha) || request.ExactKeys is null ||
-            request.ExactKeys.Count is < 1 or > MaximumKeys)
+            !FullSha(request.ExpectedSourceSha) || request.ExactKeys is null)
             return Deny("CONFIG_BATCH_REQUEST_INVALID");
 
-        // Snapshot input before awaiting external code.
-        var keys = request.ExactKeys.ToArray();
+        // Caller-controlled Count may lie or throw; enumerate at most 16 before I/O.
+        string[] keys;
+        try
+        {
+            var declaredCount = request.ExactKeys.Count;
+            if (declaredCount is < 1 or > MaximumKeys)
+                return Deny("CONFIG_BATCH_REQUEST_INVALID");
+            var bounded = new List<string>(declaredCount);
+            foreach (var candidate in request.ExactKeys)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                if (bounded.Count >= MaximumKeys)
+                    return Deny("CONFIG_BATCH_REQUEST_INVALID");
+                bounded.Add(candidate);
+            }
+            if (bounded.Count != declaredCount)
+                return Deny("CONFIG_BATCH_REQUEST_INVALID");
+            keys = bounded.ToArray();
+        }
+        catch (OperationCanceledException) { throw; }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            return Deny("CONFIG_BATCH_REQUEST_INVALID");
+        }
         var unique = new HashSet<string>(StringComparer.Ordinal);
         foreach (var key in keys)
         {

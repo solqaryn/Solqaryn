@@ -1,3 +1,7 @@
+## 2026-11-18 — C01-03.M03.05 A5_FAIL P2 Snapshot ExactKeys acotado [asistencia Javier :20]
+- Repara el límite de 16 claves para un IReadOnlyCollection con Count falso y enumeración malformada; niega antes de I/O, propaga cancelación, sanitiza fallos y preserva tenant/roles.
+- Cinco casos xUnit adversariales nuevos; owner DEV06, estado LISTO histórico y A5_FAIL permanecen. CI GitHub-hosted exact-SHA y A5 de otra Task Javier aún pendientes; no QA/main/PROD.
+
 ## 2026-11-18 — C15-04.M05.04 A0.40 JWT adulterado cobertura/flujo [Javier Task :10]
 - Agrega caso adversarial Playwright JWT real en dos rutas y dos viewports con firma alterada; API 401/403, guard navegador, privacidad, solo lectura y sin overflow, MySQL CI efimero.
 - Total esperado 26 casos; CI exact-SHA PENDIENTE, no inventar PASS. R2 global A0-A4 incompleto, propietario DEV02/lock 2000002297, A5 independiente; solo dev, rollback git revert.
