@@ -1,3 +1,7 @@
+## 2026-11-18 — CI_REPAIR V19 C01-02.M04.02 allowlist exacta plataforma [Javier :20]
+- El ERP check del SHA 538ba5f2 falló por `UNGUARDED:plataforma/capacidades-estados-v19` aunque el router exige `plataformaGuard`. Se incorpora exclusivamente ese path a la allowlist explícita del auditor; se preservan JWT, sesión backend, guard exacto y rechazo de rutas arbitrarias.
+- R2, reparación asistida sin cambiar owner DEV06 ni estado VALIDANDO. Exigir ERP, Scope Lock y V5 SUCCESS causal del SHA nuevo antes de A0–A4/LISTO; A5 siempre por Task distinta. Sin QA/main/PROD.
+
 ## 2026-11-18 — Reparación P2 NG0955 catálogo C01-02.M04.01 [Javier :00]
 - El run 44242768581 acreditó 2/2 TestBed y 16 checks SUCCESS en 52950b87, pero produjo advertencia real NG0955 por rutas protegidas con path repetido. Se conserva el inventario completo, se usa tracking por índice y se agrega prueba adversarial de duplicado, sin alterar JWT/RBAC/tenant.
 - Requiere nuevo check GitHub-hosted exact-SHA y readback institucional. No certificar mientras CI esté pendiente ni mientras falle un gate global; A5 de otra Task Javier, sin QA/main/PROD.
