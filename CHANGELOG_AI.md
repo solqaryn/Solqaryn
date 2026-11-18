@@ -1,3 +1,7 @@
+## 2026-11-18 — V19 C02-02.M04.06 densidad y carga progresiva Playwright [Javier :00]
+- Agrega regresión Chromium de densidad/320–1280, revalidación HTTP sintética demorada, single-flight y errores que no filtran DSN; conserva 15+5 Vitest.
+- Solo pruebas y documentación R2: no cambia autorización, API, router MySQL ni datos; CI exact-SHA, Scope Lock y V5 necesarios antes de LISTO. A5 de otra Task Javier, sin QA/main/PROD.
+
 ## 2026-11-18 — V19 corrección P1 C02-02.M04.03 selección causal de Vitest [Javier :40]
 - La revisión A5 detectó que el workflow dirigido ejecutaba únicamente la suite heredada de 12 casos y omitía cinco casos nuevos de branding, densidad, HTML/CSS malicioso, tenancy y no operación de base de datos.
 - Se corrige la ruta trigger y se ejecutan ambas suites Vitest por separado, sin quitar lint, build ni Chromium. Requiere GitHub Actions exact-SHA para A0–A4, conserva A5_FAIL previo y owner DEV02; sin QA/main/PROD.
