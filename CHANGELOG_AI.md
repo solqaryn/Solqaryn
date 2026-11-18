@@ -1,3 +1,7 @@
+## 2026-11-18 — C09-02.M02.06 contrato de salida M02 fidelización y reputación [Javier Task :00]
+- Se fija el cierre documental M02 con trazabilidad de M01 y M02.01–05, dependencias DAG/A5 y matriz SAL01–SAL16 para ownership, puntos, promociones, reseñas, moderación, posventa, consentimiento, idempotencia y límites tipados.
+- Doce pares P/N son escenarios FUTUROS_NO_EJECUTADOS. Entrega R0 solo Markdown, sin .NET/EF/MySQL/Angular/HTTP runtime ni autorización de M03, pagos, QA/main/PROD. Exigir Scope Lock/V5 exact-SHA, readback PLAN/BITACORA y A5 independiente; rollback mediante git revert normal.
+
 ## 2026-11-18 — Reparación P2 contrato de límites C09-02.M02.04 [asistencia Javier :40]
 - Se corrige la contradicción entre el tipo `PositiveInteger` y el default 0 de O09/O10/O12: se usa `NonNegativeInteger` con 0 como inhabilitación fail-closed y sólo enteros positivos acotados tras autorizaciones efectivas.
 - Se precisan R03 y P11/N11 y los oráculos negativos futuros (fracciones, cadenas, nulos, desbordamientos) sin atribuir pruebas runtime ni concesiones a tenant. Autor/owner DEV01 conservado; A5_FAIL P2 histórico intacto, nueva A5 independiente requerida, sin QA/main/PROD.
