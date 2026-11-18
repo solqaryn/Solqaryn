@@ -1,3 +1,7 @@
+## 2026-11-18 — DEV06 C01-02.M04.02 reparacion A/B y claves Angular R2
+- Se evita NG0955 con rutas protegidas repetidas; se elimina track por ruta no unica y se añade regresion adversarial TestBed.
+- La vista vuelve a cargar permisos al cambiar tenant A/B sin desmontarse, cancela respuestas antiguas, no muestra filas del tenant anterior y termina ERROR si falla B. CI GitHub-hosted, Scope Lock y V5 por SHA; no A5 propia ni LISTO prematuro, sin QA/main/PROD.
+
 ## 2026-11-18 — V19 A5_FAIL P2 reparacion C01-02.M04.03 recarga tenant [Javier :30]
 - Se conserva el A5_FAIL independiente de DEV06: la vista cambiaba A a B sin desmontarse, ocultaba A pero permanecia CARGANDO sin pedir B. Se sustituye ngOnInit unico por flujo reactivo cancelable de tenant, sesion y permisos, sin conceder autoridad desde Angular.
 - Se incorporan regresiones TestBed para A tardio/B exitoso y B fallido; se exige CI dirigida real Angular/Chromium, P0-007.A, Scope Lock y V5 en SHA exacto. La reparacion no es A5_PASS automatico, ni prueba JWT/MySQL/QA/PROD.
