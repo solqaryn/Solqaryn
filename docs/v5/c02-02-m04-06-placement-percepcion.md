@@ -24,3 +24,7 @@ Commit fast-forward/CAS directo a dev, Scope Lock y V5 en SHA exacto, 15+5 Vites
 ## A5: independencia
 
 Revisor debe ser otra de cinco Tasks Javier, distinto del autor. No concede autorización QA, main, PROD, datos reales, JWT/RBAC/tenant o migración. Sin despliegue, secretos o nuevas Tasks.
+
+## Reparacion CI P2 de selector Chromium (DEV01, 2026-11-18)
+
+La primera ejecucion exact-SHA 055214b750c09d0fa846a3d53e660c91dca1cbb8 tuvo dos escenarios aprobados y uno fallido en run 44367662907, job 135025660370. No fue fallo de autorizacion ni runtime: getByRole('status') resolvio dos elementos y Playwright rechazo modo estricto. Se acota el selector al anuncio [role=status] del panel section.estado ya protegido, conservando el texto, assertion de ocultamiento, single-flight, estado aria-busy, retorno y negativos. La CI del SHA reparado debe ejecutar los tres casos y 15+5 Vitest antes de LISTO. El fallo historico no se borra y no se debilita el assertion.

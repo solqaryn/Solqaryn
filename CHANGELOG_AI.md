@@ -1,3 +1,7 @@
+## 2026-11-18 — V19 C02-02.M04.06 reparación causal del selector Chromium [Javier :00]
+- GitHub Actions 44367662907 reveló un selector Playwright ambiguo para el anuncio de carga, aunque 2/3 escenarios aprobaron; se delimita a section.estado sin retirar asserts de protección, single-flight ni error 503.
+- Requiere nuevas pruebas Chromium exact-SHA completas; mantiene R2 VALIDANDO, A5 independiente y no certifica JWT/MySQL ni QA/main/PROD.
+
 ## 2026-11-18 — C15-04.M05.04 A0.39 cobertura, flujo y teclado JWT [Javier Task :10]
 - Se agregan tres casos Playwright JWT/MySQL efimero para cobertura/flujo V5: autoridad global 200, B empresarial 403, headings/main/solo lectura/320-1280, ausencia de mutaciones y Tab/Space real en contraste sin .focus().
 - Suite esperada 25 casos, CI exact-SHA pendiente hasta SUCCESS real. Auditoria UX global R2 A0-A4 INCOMPLETA, owner DEV02 y lock V17 2000002297 vigentes; A5 otra Task, solo dev y rollback git revert.

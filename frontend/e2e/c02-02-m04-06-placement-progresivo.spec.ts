@@ -63,7 +63,7 @@ test('M04.06 revalidación progresiva oculta contenido hasta GET y evita doble s
   await boton.click();
   await expect.poll(() => consultas).toBe(1);
   await expect(page.locator('section.estado')).toHaveAttribute('aria-busy', 'true');
-  await expect(page.getByRole('status')).toContainText('Revalidando autorización');
+  await expect(page.locator('section.estado [role="status"]')).toContainText('Revalidando autorización');
   await expect(page.locator('.modalidades article')).toHaveCount(0);
   await expect(boton).toBeDisabled();
   liberar();
