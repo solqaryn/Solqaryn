@@ -1,3 +1,7 @@
+## 2026-11-18 — C01-03.M03.06 auditoría estructurada y errores seguros [Javier :00]
+- Nuevo logger Application .NET10 con allowlists de operación/error, tenant y actor válidos, clave nunca expuesta (digest truncado), SHA/correlación y versión, sin registrar valores, secretos ni payload.
+- xUnit adversarial: positivos, denegaciones de PII/credenciales/tenant, frontera 64/65, errores de proveedor y sin concesiones. Requiere CI exact-SHA y A5 independiente; no configura sink productivo, MySQL, HTTP ni QA/main/PROD.
+
 ## 2026-11-18 — C06-04.M03.04 adaptador aislado de evidencia persistida [Javier :00]
 - Añade frontera Application read-only para evidencias de propiedad, tenant, SHA y versión: rechaza datos malformados, origen no verificado, revocación, errores de proveedor y discrepancias; conserva cancelación sin otorgar JWT ni acceso.
 - xUnit adversarial positivo/negativo, frontera, errores, tenant A/B y no concesión; pruebas .NET 10 en GitHub-hosted obligatorias. No hay SQL/EF, API, DI de producción, migraciones, permisos, QA/main/PROD; A5 por otra Task Javier.
