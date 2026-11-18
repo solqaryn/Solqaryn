@@ -19,6 +19,8 @@ export interface PlataformaSesion {
 export class PlataformaSesionService {
   private readonly url = environment.apiUrl + '/plataforma/sesion';
   private readonly _sesion = signal<PlataformaSesion | null>(null);
+  // Invalida las respuestas HTTP anteriores a una revocacion o nueva comprobacion.
+  private versionSesion = 0;
 
   readonly sesion = this._sesion.asReadonly();
 
@@ -26,9 +28,13 @@ export class PlataformaSesionService {
 
   /** Cada navegación protegida revalida el grant contra MySQL; sin caché. */
   obtener(): Observable<PlataformaSesion> {
+    const version = ++this.versionSesion;
     this._sesion.set(null);
     return this.http.get<ApiResponse<PlataformaSesion>>(this.url).pipe(
       map((respuesta) => {
+        if (version !== this.versionSesion) {
+          throw new Error('La comprobacion de sesion fue invalidada.');
+        }
         const dato = respuesta?.data;
         if (respuesta?.success !== true ||
             dato?.ambito !== 'Plataforma' ||
@@ -39,15 +45,19 @@ export class PlataformaSesionService {
         }
         return dato;
       }),
-      tap((dato) => this._sesion.set(dato)),
+      tap((dato) => {
+        if (version === this.versionSesion) this._sesion.set(dato);
+      }),
       catchError((error) => {
-        this._sesion.set(null);
+        // Un rechazo antiguo tampoco puede borrar una sesion posterior valida.
+        if (version === this.versionSesion) this._sesion.set(null);
         return throwError(() => error);
       })
     );
   }
 
   limpiar(): void {
+    this.versionSesion++;
     this._sesion.set(null);
   }
 }

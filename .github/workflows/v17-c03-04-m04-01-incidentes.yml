@@ -7,6 +7,8 @@ on:
       - 'frontend/src/app/app.routes.ts'
       - 'frontend/src/app/features/plataforma/respuesta-incidentes-v5.component.ts'
       - 'frontend/src/app/features/plataforma/respuesta-incidentes-v5.component.spec.ts'
+      - 'frontend/src/app/core/auth/plataforma-sesion.service.ts'
+      - 'frontend/src/app/core/auth/plataforma-sesion.service.spec.ts'
       - 'frontend/e2e/c03-04-m04-01-incidentes.spec.ts'
   workflow_dispatch:
 permissions:
@@ -34,9 +36,11 @@ jobs:
       - name: Dependencias
         working-directory: frontend
         run: npm ci
-      - name: Nueve Vitest de permisos y estados seguros
+      - name: Regresiones reales de revocacion y estados privados
         working-directory: frontend
-        run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/respuesta-incidentes-v5.component.spec.ts
+        run: |
+          npm test -- --no-watch --no-progress --include=src/app/core/auth/plataforma-sesion.service.spec.ts
+          npm test -- --no-watch --no-progress --include=src/app/features/plataforma/respuesta-incidentes-v5.component.spec.ts
       - name: Lint y build
         working-directory: frontend
         run: |

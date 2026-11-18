@@ -62,4 +62,50 @@ describe('Microfase 3 - autoridad global frontend fail-closed', () => {
     expect(error).toBe(true);
     expect(plataforma.sesion()).toBeNull();
   });
+
+  it('una revocacion con GET pendiente descarta el 200 tardio y no restaura autoridad', () => {
+    let exitos = 0;
+    let rechazado = false;
+    plataforma.obtener().subscribe({ next: () => exitos++, error: () => { rechazado = true; } });
+    const pendiente = http.expectOne(endpoint);
+    plataforma.limpiar();
+    pendiente.flush({
+      success: true,
+      data: { nombreUsuario: 'admin-antiguo', rolNombre: 'Plataforma', ambito: 'Plataforma', esAdministrador: true }
+    });
+    expect(rechazado).toBe(true);
+    expect(exitos).toBe(0);
+    expect(plataforma.sesion()).toBeNull();
+  });
+
+  it('un 200 anterior no reemplaza la sesion confirmada por comprobacion posterior', () => {
+    let antiguoRechazado = false;
+    plataforma.obtener().subscribe({ error: () => { antiguoRechazado = true; } });
+    const anterior = http.expectOne(endpoint);
+    plataforma.obtener().subscribe();
+    const actual = http.expectOne(endpoint);
+    actual.flush({
+      success: true,
+      data: { nombreUsuario: 'admin-actual', rolNombre: 'Plataforma', ambito: 'Plataforma', esAdministrador: true }
+    });
+    anterior.flush({
+      success: true,
+      data: { nombreUsuario: 'admin-antiguo', rolNombre: 'Plataforma', ambito: 'Plataforma', esAdministrador: true }
+    });
+    expect(antiguoRechazado).toBe(true);
+    expect(plataforma.sesion()?.nombreUsuario).toBe('admin-actual');
+  });
+
+  it('el error tardio de una solicitud sustituida no revoca la sesion mas reciente', () => {
+    plataforma.obtener().subscribe({ error: () => {} });
+    const anterior = http.expectOne(endpoint);
+    plataforma.obtener().subscribe();
+    const actual = http.expectOne(endpoint);
+    actual.flush({
+      success: true,
+      data: { nombreUsuario: 'admin-vigente', rolNombre: 'Plataforma', ambito: 'Plataforma', esAdministrador: true }
+    });
+    anterior.flush({ message: 'credencial-antigua' }, { status: 403, statusText: 'Forbidden' });
+    expect(plataforma.sesion()?.nombreUsuario).toBe('admin-vigente');
+  });
 });

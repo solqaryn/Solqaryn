@@ -1,4 +1,6 @@
 import { signal } from '@angular/core';
+import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
+import { environment } from '../../../environments/environment';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Subject } from 'rxjs';
 import { TestBed } from '@angular/core/testing';
@@ -181,5 +183,34 @@ describe('C03-04.M04.01 - respuesta a incidentes privada', () => {
     fixture.detectChanges();
     expect(fixture.nativeElement.querySelectorAll('.incident-review li, .notice button')).toHaveLength(0);
     expect(fixture.nativeElement.textContent).toContain('Guía protegida oculta');
+  });
+
+  it('C03-04.M04.02 - GET 200 tardio tras limpiar no reabre guia ni restaura sesion', async () => {
+    TestBed.resetTestingModule();
+    await TestBed.configureTestingModule({
+      imports: [RespuestaIncidentesV5Component, HttpClientTestingModule],
+      providers: [provideRouter([])]
+    }).compileComponents();
+    const real = TestBed.inject(PlataformaSesionService);
+    const http = TestBed.inject(HttpTestingController);
+    const endpoint = environment.apiUrl + '/plataforma/sesion';
+    real.obtener().subscribe();
+    http.expectOne(endpoint).flush({ success: true, data: autorizado });
+    const fixture = TestBed.createComponent(RespuestaIncidentesV5Component);
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('.incident-review li')).toHaveLength(4);
+
+    fixture.componentInstance.revalidarSesion();
+    const pendiente = http.expectOne(endpoint);
+    real.limpiar();
+    fixture.detectChanges();
+    expect(fixture.nativeElement.querySelectorAll('.incident-review li')).toHaveLength(0);
+
+    pendiente.flush({ success: true, data: autorizado });
+    fixture.detectChanges();
+    expect(real.sesion()).toBeNull();
+    expect(fixture.componentInstance.autorizado()).toBe(false);
+    expect(fixture.nativeElement.querySelectorAll('.incident-review li, .notice button')).toHaveLength(0);
+    http.verify();
   });
 });

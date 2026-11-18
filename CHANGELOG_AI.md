@@ -1,3 +1,7 @@
+## 2026-11-18 — V19 CI_REPAIR A5_FAIL P2 C03-04.M04.02 revocación HTTP tardía [asistencia DEV01]
+- Una respuesta GET de plataforma anterior a limpiar/revalidar no puede restaurar la sesión ni borrar una sesión más nueva; se introduce versión monótona fail-closed en `PlataformaSesionService`, sin modificar backend, JWT o permisos reales.
+- Regresiones TestBed: revocación durante HTTP pendiente, solicitudes superpuestas, errores tardíos y guía de incidentes que permanece oculta tras 200 obsoleto; el workflow GitHub-hosted ejecuta las suites dirigidas, lint/build y Chromium, con Scope Lock/V5 exact-SHA antes de acreditar PASS. El A5_FAIL P2 histórico continúa hasta nueva revisión independiente; propietario DEV03 preservado, no QA/main/PROD.
+
 ## 2026-11-18 — V19 CI_REPAIR P0-007.A catálogo estricto C01-02.M04.03 [Javier :30]
 - Los SHA 113103ec y ff84eaa2 fallaron P0-007.A por un nuevo .component.ts sin entrada documental. Se incorpora exactamente una ruta al inventario 164=156 features+8 shared y se actualizan los dos umbrales exactos del validador; se conservan comparación, exclusiones, negativos y PASS Chromium 2/2 de ff84eaa2.
 - Requiere P0-007.A, Scope Lock y V5 SUCCESS exact SHA final más equivalencia de blobs de código, tests, workflow y config previa a LISTO; A5 independiente, no QA/main/PROD.
