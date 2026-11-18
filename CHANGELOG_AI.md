@@ -1,3 +1,7 @@
+## 2026-11-17 — CI_REPAIR P0-007.A C14-01.M04.01 [Javier :40]
+- Catalogo Angular detectó de forma correcta el nuevo componente privado QA global, faltante del manifiesto de 160 fuentes. Se agrega exclusivamente esa entrada y ajustan conteos exactos a 161 (153 features/8 shared), preservando negativos y detección de nuevas omisiones.
+- Sin bajar la exigencia de verificador, Scope Lock ni V5; CI nuevo SHA y A5 independiente pendientes, sin autorización de QA/main/PROD.
+
 ## 2026-11-17 — CI_REPAIR P4 route security for C14-01.M04.01 [Javier :40]
 - ERP check exact-SHA 8e55e16e falla por ruta privada nueva no incorporada a la allowlist explicita de guardias de plataforma. Se autoriza exactamente plataforma/qa-global-v19 en el verificador; todas las demas rutas y el requisito canActivate:[plataformaGuard] y sesion backend siguen exigibles. No hay wildcard, bypass, JWT artificial ni concesion de tenant.
 - GitHub-hosted nueva CI requerida. Se conserva FAIL historico sin fingir SUCCESS ni activar QA/main/PROD; A5 independiente.

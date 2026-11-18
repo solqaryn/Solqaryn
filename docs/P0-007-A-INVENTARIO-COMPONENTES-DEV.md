@@ -532,3 +532,11 @@ El P0-007.A del SHA `83e8323a584a08305fe3f08335fc1f1ded4833de` detectó la ruta 
 - `frontend/src/app/features/plataforma/c09-04-m04-02-estados.component.ts`
 
 Este catálogo es solo de archivos, no certificación Angular E2E, permisos JWT/tenant, API, MySQL, SMTP/WhatsApp ni QA/PROD. Revalidar verificador inalterado salvo conteos exactos, Scope Lock y procedencia V5; A5 independiente.
+
+## Actualización causal V19 C14-01.M04.01 — 17 de noviembre de 2026
+
+El check P0-007.A en el SHA `8e55e16ea3961aee84406a1bc1bcd790edf37e2d` detectó exactamente un componente nuevo sin inventariar. Se incorpora su ruta **sin eliminar ni reescribir el historial**, con un total de **161 componentes (153 features y 8 shared)** y comparación exacta de los archivos existentes:
+
+- `frontend/src/app/features/plataforma/c14-01-m04-01-qa-global.component.ts`
+
+Esta actualización no acredita A0–A5, UX, JWT/RBAC real, MySQL, datos privados ni QA/PROD. Revalidar el verificador y su self-test en GitHub Actions sobre el SHA publicado; rollback mediante git revert normal. A5 por Task Javier distinta.
