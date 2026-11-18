@@ -1,3 +1,7 @@
+## 2026-11-18 — C14-04.M05.05 regresiones adversariales readiness DEV [Javier :00]
+- Suite xUnit negativa de gobernanza release DEV: tenant A/B, grants, autor/revisor, SHA exacto, checks fail/skip/cancelled/queued, aceptación observada, firmas y stop condition sin permitir QA ni producción.
+- Regla Domain sin cambios funcionales: solo tests, documentación y CHANGELOG; CI .NET10 GitHub-hosted, Scope Lock y V5 requeridos por SHA, revisión A5 ajena pendiente; no JWT/MySQL/HTTP reales.
+
 ## 2026-11-18 — C14-04.M05.04 aceptación positiva de readiness [Javier :30]
 - Tres pruebas Playwright de cuatro puertas sin PASS falso, revalidación sin concesiones y responsive 320/768/1280 con sesión sintética; sin acciones productivas.
 - Workflow GitHub-hosted Angular/Chromium exact-SHA; A5 independiente y Scope Lock/V5 requeridos. JWT HTTP real, MySQL, backup, DNS, QA/main/PROD no certificados.
