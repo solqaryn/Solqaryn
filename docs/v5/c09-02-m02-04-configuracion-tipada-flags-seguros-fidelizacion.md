@@ -37,14 +37,16 @@
 | O06 ReviewModerationEnabled | Boolean | false | sin rol y motivo no moderar |
 | O07 AfterSalesEnabled | Boolean | false | sin ownership de caso/venta no consultar |
 | O08 MarketingSendEnabled | Boolean | false | sin consentimiento vigente y revocación no enviar |
-| O09 MaxEarnPerSale | PositiveInteger | 0 | techo global, antirreplay, nunca puntos monetarios |
-| O10 MaxRedeemPerTxn | PositiveInteger | 0 | transacción/versión y saldo suficiente |
+| O09 MaxEarnPerSale | NonNegativeInteger | 0 | techo global, antirreplay, nunca puntos monetarios |
+| O10 MaxRedeemPerTxn | NonNegativeInteger | 0 | transacción/versión y saldo suficiente |
 | O11 PromotionMaxUses | NonNegativeInteger | 0 | cupo por tenant y vigencia UTC |
-| O12 MaxReviewLength | PositiveInteger | 0 | longitud máxima sólo tras revisión y sanitización |
+| O12 MaxReviewLength | NonNegativeInteger | 0 | longitud máxima sólo tras revisión y sanitización |
 | O13 PromotionStartUtc | NullableUtcInstant | null | nulo=inhabilitado, no asumir tiempo local |
 | O14 PromotionEndUtc | NullableUtcInstant | null | end > start, sin caducidad aceptada por defecto |
 | O15 ConsentPurposeAllowlist | BoundedStringSet | empty | lista explícita por tenant/canal, deny default |
 | O16 RetryPolicy | BoundedRetrySpec | attempts=0 | revalidar permiso/opt-out/idempotencia al retry |
+
+**Invariante correctiva R0 (A5_FAIL P2):** O09, O10 y O12 usan `NonNegativeInteger` porque su valor inicial seguro es `0`. El cero es un centinela de **operación deshabilitada**, incluso si otro flag fuese `true`; sólo un entero positivo dentro de un límite superior validado y junto con autorizaciones, consentimiento, tenant y dependencias reales podrá habilitar el uso futuro. Rechazar negativos, fracciones, cadenas numéricas, nulos y desbordamientos antes de calcular cupos; no aceptar conversiones permisivas ni inferir permisos del tipo. Este contrato sólo documenta futuras validaciones, no activa lógica productiva.
 
 Todas O01–O16 son **nombres de contrato**, no claves de `appsettings`, flags existentes ni permisos para configurar los servicios. `false`, cero, null y listas vacías niegan acciones de negocio hasta implementación y validaciones reales independientes.
 
@@ -54,7 +56,7 @@ Todas O01–O16 son **nombres de contrato**, no claves de `appsettings`, flags e
 | --- | --- |
 | R01 | Política más restrictiva prevalece; tenant/sucursal no sobrescribe kill global |
 | R02 | Ausencia o error de lectura de opción no cambia false a true |
-| R03 | Validación estricta de bool/número/UTC; tipo erróneo no fuerza conversión permisiva |
+| R03 | Validación estricta de bool/número/UTC: 0 entero no negativo es denegación segura, valores operativos mayores que 0; negativos, fracciones, strings, NaN e infinitos se rechazan sin coerción |
 | R04 | Cambios requieren autor autenticado, rol, membresía vigente y auditoría |
 | R05 | Configuración no es fuente de autorización a recursos: backend valida cada petición |
 | R06 | Un tenant nunca lee o modifica el flag o cupo del tenant B |
@@ -81,8 +83,10 @@ Todas O01–O16 son **nombres de contrato**, no claves de `appsettings`, flags e
 | P08/N08 | Moderador A con permiso y motivo actúa | autor/rol lector de A se autoaprueba o B modera |
 | P09/N09 | Posventa A verifica Cliente y Venta A | legacy NULL y caso/venta B son visibles |
 | P10/N10 | Canal con opt-in vigente permite envío | opt-out y retry envían mensaje |
-| P11/N11 | Config inválida devuelve deny y error seguro | string "true", null y overflow habilitan |
+| P11/N11 | Un límite entero 0 deshabilita y uno positivo acotado sólo opera tras permisos reales | negativos, fracciones, strings (incluido "true"), null, NaN, overflow y 0 interpretado como permiso habilitan |
 | P12/N12 | Kill/rollback frena acciones y conserva log | caché vieja sigue acreditando o mandando |
+
+**Casos adicionales FUTUROS_NO_EJECUTADOS para R03/P11/N11:** O09/O10/O12 con 0 → denegación; valor positivo entero y acotado → continúa a verificación de permiso y tenant (no concede autorización por sí solo); -1, 0.5, "0", "1", null, NaN, infinito y overflow → error seguro/deny. No registrar estos escenarios como pruebas ejecutadas.
 
 **Ejecución real en esta unidad documental:** cero tests xUnit/MySQL/HTTP/Playwright ejecutados, cobertura runtime `NO_MEDIDO`. Las filas P/N son oráculos propuestos, no PASS ni funcionalidades certificadas.
 

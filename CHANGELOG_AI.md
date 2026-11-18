@@ -1,3 +1,7 @@
+## 2026-11-18 — Reparación P2 contrato de límites C09-02.M02.04 [asistencia Javier :40]
+- Se corrige la contradicción entre el tipo `PositiveInteger` y el default 0 de O09/O10/O12: se usa `NonNegativeInteger` con 0 como inhabilitación fail-closed y sólo enteros positivos acotados tras autorizaciones efectivas.
+- Se precisan R03 y P11/N11 y los oráculos negativos futuros (fracciones, cadenas, nulos, desbordamientos) sin atribuir pruebas runtime ni concesiones a tenant. Autor/owner DEV01 conservado; A5_FAIL P2 histórico intacto, nueva A5 independiente requerida, sin QA/main/PROD.
+
 ## 2026-11-18 — C10-04.M05.06 ensayo de restauración MySQL efímero [Javier :20]
 - Se agrega segundo job CI independiente de MySQL 8.4 GitHub-hosted: dump sintético, sesiones sucesivas, restore real, checksum, dos tenants y rollback. Permanecen los siete escenarios Chromium y concurrencia CI sin cancelaciones.
 - Incremento R2 de pruebas: no demuestra restore cifrado, worker desplegado, JWT, MySQL Aiven, Cloudflare R2 ni RPO/RTO. CI exact-SHA y A5 independiente pendientes; C10-04.M05.06 conserva VALIDANDO y no libera M06/QA/main/PROD.
