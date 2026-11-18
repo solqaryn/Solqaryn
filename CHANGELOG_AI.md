@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C02-02.M06.06 cierre DEV documental y dependencias [Javier :20]
+- Matriz de M05/M06 LISTO+A5 y evidencias causalmente delimitadas; contrasta rollback Oracle EF/MySQL 8.4 efimero 3/3 con JWT HTTP, router, filtrado tenant y RPO/RTO no acreditados.
+- Cierre R0 por candado V17/CAS y readback; sucesores sujetos a DAG/COLA dinamicos sin escribir formulas. A5 de M06.06 independiente, ningun permiso R3, QA/main/PROD o despliegue.
+
 ## 2026-11-18 — V20 C02-02.M06.04 ensayo rollback aislado EF MySQL 8.4 [Javier :20]
 - Nueva suite xUnit Category=Integration con Oracle EF/MySQL 8.4 efimero: dos Empresa legitimas, rollback explicito y abandono de transaccion sin commit, readback en nuevos DbContext sin borrar registros, y rechazo host remoto.
 - Workflow GitHub-hosted por SHA, Scope Lock/V5 y A5 independiente; no es SIGKILL del worker real ni certifica JWT HTTP, row-level isolation, RPO/RTO, migracion productiva o permiso R3.
