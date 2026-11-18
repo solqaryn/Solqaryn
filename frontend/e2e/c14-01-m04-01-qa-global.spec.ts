@@ -42,7 +42,7 @@ test.describe('C14-01.M04.01 QA global - Chromium real', () => {
     await expect(page.getByRole('heading', { name: 'Consulta de QA automático y cobertura global' })).toBeVisible();
     await expect(page.locator('.qa-controles li')).toHaveCount(5);
     await expect(page.locator('.pendiente')).toHaveCount(5);
-    await expect(page.locator('button, form, input, textarea, select')).toHaveCount(0);
+    await expect(page.getByTestId('c1401-qa-global').locator('button, form, input, textarea, select')).toHaveCount(0);
     expect(await page.getByRole('link', { name: /Consultar GitHub Actions/ }).getAttribute('href')).toContain('github.com/solqaryn/Solqaryn/actions');
     expect(writes).toEqual([]);
   });

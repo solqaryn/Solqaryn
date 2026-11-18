@@ -1,3 +1,7 @@
+## 2026-11-17 — CI_REPAIR C14-01.M04.01 Chromium QA sin falso alcance [Javier :40]
+- Log Playwright exact-SHA 8e55e16e: 2/3 pruebas aprobadas, una asercion de controles globales incluyo cinco elementos del shell ajeno. Se limita expresamente el selector al panel QA privado (data-testid c1401-qa-global), manteniendo rechazo de cualquier formulario/boton de aprobacion dentro de la superficie y los negativos 403/teclado.
+- CI nueva obligatoria 3/3 y Scope Lock/V5 exact-SHA antes de LISTO; fallo historico permanece, no autocertificar.
+
 ## 2026-11-17 — V19 C01-02.M03.06 auditoria segura aislada [Javier Task :40]
 - Adaptador .NET de auditoria de capacidades con ILogger estructurado y eventos estaticos, sin fugas de tenant/recurso/actor/token, y sin considerar evidencia no confiable como autorizacion; no se registra DI live ni integra proveedor real.
 - Seis xUnit adversariales, build Release y workflow GitHub-hosted por SHA exacto; A5 independiente, Scope Lock/V5 y seguridad obligatorios antes de LISTO. No producción, MySQL, JWT live ni QA/main/PROD.
