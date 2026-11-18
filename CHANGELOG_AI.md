@@ -7045,3 +7045,8 @@
 ## 2026-11-17 - V19 C14-01.M03.04 adaptador aislado de autoridad [Javier :30]
 - Crea un puente Application solo lectura desde una fuente de snapshot confiable hacia el preflight V5 existente, sin DI real, HTTP, EF/MySQL, migraciones ni permisos productivos; fail-closed ante revocacion, ausencia de autoridad y fallos.
 - Regresiones xUnit comprueban claves y acciones ordinales, tenant A/B, cancelacion, catalogo inmutable, errores y ausencia de concesion de acceso. Requiere CI Release y seguridad, Scope Lock y V5 exact-SHA y A5 independiente de otra Task Javier.
+
+## 2026-11-17 - V19 C15-04.M05.04 pruebas UX autenticadas aisladas [Javier :10]
+- Se incorpora un workflow de GitHub-hosted con API .NET 10, MySQL 8.4 efimero, JWT firmado y Playwright/Chromium, sin tocar runtime productivo ni datos reales.
+- Cobertura nueva: perfil de plataforma, denegacion 403 empresarial, tenant A/B en ruta dinamica y rechazo de firma JWT alterada, con secretos sinteticos generados dentro del runner.
+- Solo se reconocera PASS tras resultados exact-SHA y logs; auditoria UX R2 global, WCAG y WebVitals siguen incompletas, sin transicion LISTO ni A5 propio.
