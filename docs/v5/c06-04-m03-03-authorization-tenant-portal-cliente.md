@@ -18,3 +18,22 @@ El resultado positivo `AUTHENTICATED_CUSTOMER_RUNTIME_ADAPTER_REQUIRED` signific
 - A5: una Task Javier distinta revisa independientemente requerimientos, código, pruebas y regresiones; puede emitir A5_FAIL.
 
 **Rollback:** commit `git revert` en dev preservando HEAD concurrente, sin force-push ni tocar QA/main/PROD, secretos, datos productivos o migraciones.
+
+## Reparacion correctiva P2: identidad de actor sin whitespace ni formatos invisibles
+
+La revision A5 independiente de DEV02 encontro que SafeActorId rechazaba solo controles
+y longitud invalida, pero permitia blancos y separadores Unicode en VerifiedActorId.
+Se endurece el preflight: rechaza valor nulo, vacio, solo espacios, cualquier
+whitespace/control y caracteres Unicode de categoria Format (p. ej., zero-width).
+Conserva identificadores no vacios de hasta 128 caracteres, caso positivo y
+los gates de pertenencia tenant A/B, revocacion y JWT/permiso de backend.
+
+Pruebas dirigidas xUnit: ocho variantes adversariales (espacios, tab,
+EM SPACE, separador de linea, zero-width space/joiner y actor con espacio)
+mas fronteras de 128/129 caracteres; las nueve pruebas originales siguen
+sin relajacion. Esto protege un prerequisito de Application R2, **no certifica**
+autenticacion JWT HTTP real, MySQL ni autorizacion de lectura privada.
+A0--A4 requieren GitHub Actions por SHA causal y A5 nueva de otra Task Javier.
+Conservar A5_FAIL historico y propiedad de DEV06. Rollback por git revert
+normal tras comprobar HEAD; no QA/main/PROD, secretos ni migraciones.
+

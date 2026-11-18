@@ -132,7 +132,10 @@ public sealed class C0604PortalClienteAuthorizationGate
         id.All(c => (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
                     (c >= '0' && c <= '9') || c is '-' or '_');
     private static bool SafeActorId(string? id) =>
-        id is { Length: > 0 and <= 128 } && !id.Any(char.IsControl);
+        id is { Length: > 0 and <= 128 } &&
+        !string.IsNullOrWhiteSpace(id) &&
+        !id.Any(c => char.IsControl(c) || char.IsWhiteSpace(c) ||
+                     char.GetUnicodeCategory(c) == System.Globalization.UnicodeCategory.Format);
     private static bool ValidSha(string? sha) =>
         sha is { Length: 40 } &&
         sha.All(c => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f'));

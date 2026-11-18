@@ -1,3 +1,7 @@
+## 2026-11-18 — C06-04.M03.03 reparación A5_FAIL P2 actor verificado [asistencia Javier :40]
+- SafeActorId rechaza whitespace, actores vacíos y formato Unicode invisible antes del preflight; conserva límites 128/129 y los gates tenant/JWT/RBAC sin conceder acceso.
+- xUnit: ocho variantes negativas más frontera positiva/negativa; CI exact-SHA y nueva A5 de revisor distinto son obligatorias, A5_FAIL histórico permanece, sin JWT HTTP/MySQL/QA/main/PROD.
+
 ## 2026-11-18 — C01-03.M03.05 A5_FAIL P2 Snapshot ExactKeys acotado [asistencia Javier :20]
 - Repara el límite de 16 claves para un IReadOnlyCollection con Count falso y enumeración malformada; niega antes de I/O, propaga cancelación, sanitiza fallos y preserva tenant/roles.
 - Cinco casos xUnit adversariales nuevos; owner DEV06, estado LISTO histórico y A5_FAIL permanecen. CI GitHub-hosted exact-SHA y A5 de otra Task Javier aún pendientes; no QA/main/PROD.

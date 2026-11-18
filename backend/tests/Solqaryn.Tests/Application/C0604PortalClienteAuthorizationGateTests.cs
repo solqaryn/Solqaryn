@@ -109,6 +109,39 @@ public sealed class C0604PortalClienteAuthorizationGateTests
             (await gate.EvaluateAsync(Request())).Code);
     }
 
+    [Theory]
+    [InlineData("")]
+    [InlineData(" ")]
+    [InlineData(" \t ")]
+    [InlineData("\u2003")]
+    [InlineData("\u2028")]
+    [InlineData("actor\u200B7")]
+    [InlineData("actor\u200D7")]
+    [InlineData("user name")]
+    public async Task WhitespaceAndInvisibleActorIdentifiersFailClosed(string actorId)
+    {
+        var reader = new Reader { Current = Good() with { VerifiedActorId = actorId } };
+        var result = await new Gate(reader).EvaluateAsync(Request());
+        Assert.Equal("PORTAL_AUTH_ACTOR_OR_TENANT_UNVERIFIED", result.Code);
+        Assert.False(result.GrantsPrivateRead);
+        Assert.False(result.GrantsCrossTenantRead);
+        Assert.False(result.GrantsWrite);
+        Assert.False(result.IssuesJwt);
+        Assert.Equal(1, reader.Calls);
+    }
+
+    [Fact]
+    public async Task ActorIdentifierLengthBoundaryPreservesValidIdentity()
+    {
+        var reader = new Reader { Current = Good() with { VerifiedActorId = new string('x', 128) } };
+        var gate = new Gate(reader);
+        Assert.Equal("AUTHENTICATED_CUSTOMER_RUNTIME_ADAPTER_REQUIRED",
+            (await gate.EvaluateAsync(Request())).Code);
+        reader.Current = Good() with { VerifiedActorId = new string('x', 129) };
+        Assert.Equal("PORTAL_AUTH_ACTOR_OR_TENANT_UNVERIFIED",
+            (await gate.EvaluateAsync(Request())).Code);
+    }
+
     [Fact]
     public async Task RevocationJwtAndTokenProofRemainMandatory()
     {
