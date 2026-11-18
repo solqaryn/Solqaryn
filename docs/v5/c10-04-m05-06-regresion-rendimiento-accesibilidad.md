@@ -28,3 +28,7 @@ Exigir `verify-solqaryn-project-scope`, V5, Angular lint/build y job Chromium de
 - En SHA f3c46fb7de9326f926641f4b819179f106e3aa2c, el job 44337755037/134918974609 ejecutó 7 pruebas Chromium: 6 PASS y 1 FAIL por `transitionDuration` calculado `1e-05s` (0,01 ms) bajo prefers-reduced-motion, frente al assert textual `0s`.
 - Se ajusta únicamente el oráculo E2E: analiza unidades s/ms, exige resultados numéricos finitos y duración <= 0,0001 s (0,1 ms), preservando denegación, teclado, layout y no-mutaciones. No modifica CSS ni runtime y no elimina escenarios.
 - Requiere nuevo job dirigido Chromium y Scope Lock/V5 exact-SHA completados en SUCCESS antes de certificar siquiera este incremento de navegador. El alcance integral de workers/restauración y A5 independiente siguen sin acreditarse; conservar VALIDANDO hasta evidencia causal completa.
+
+## Corrección adicional del parser de unidades (2026-11-18)
+- El primer SHA de reparación `80c3337e` continuó 6/7 por una expresión regular sobreescapada: `\\d` en literal RegExp TypeScript identifica una barra literal y no los dígitos de `1e-05s`. El fallo reproducible fue el assert booleano de duración en job 44339659378/134925819595.
+- El nuevo parche reemplaza únicamente el patrón por `\d` y `\.` correctos dentro del literal RegExp, sin modificar umbral 0,1 ms, CSS ni casos funcionales. Debe ejecutarse Chromium real y verificarse CI sobre el nuevo SHA antes de PASS; M05.06 permanece VALIDANDO y la integración real worker/restore sigue pendiente.

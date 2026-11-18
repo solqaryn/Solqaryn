@@ -127,7 +127,7 @@ test.describe('C10-04.M05.06 browser-only regression, perf budgets and accessibi
     await expect(button).toBeVisible();
     const durations = await button.evaluate(element => getComputedStyle(element).transitionDuration
       .split(',').map(value => {
-        const match = /^(\\d+(?:\\.\\d+)?(?:e[+-]?\\d+)?)(ms|s)$/i.exec(value.trim());
+        const match = /^(\d+(?:\.\d+)?(?:e[+-]?\d+)?)(ms|s)$/i.exec(value.trim());
         if (!match) return Number.NaN;
         return Number(match[1]) * (match[2].toLowerCase() === 'ms' ? 0.001 : 1);
       }));
