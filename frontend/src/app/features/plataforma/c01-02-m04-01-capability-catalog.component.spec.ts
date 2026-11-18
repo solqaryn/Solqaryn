@@ -52,6 +52,18 @@ describe('C01-02.M04.01 - catalogo read-only de capacidades', () => {
     ruta.set(true); fixture.detectChanges();
     expect(root.textContent).toContain('SENAL_CLIENTE_NO_AUTORITATIVA');
     expect(root.querySelectorAll('form,button,input,textarea,select')).toHaveLength(0);
+    // Regresion adversarial: una sesion revocada debe ocultar toda la lista,
+    // incluso tras haber observado senales positivas del cliente.
+    sesion.set(null);
+    fixture.detectChanges();
+    expect(root.querySelector('[data-testid="c0102-oculto"]')).not.toBeNull();
+    expect(root.querySelectorAll('li')).toHaveLength(0);
+    // La restauracion de la sesion no restaura el tenant anterior.
+    sesion.set({ nombreUsuario: 'QA', rolNombre: 'Plataforma', ambito: 'Plataforma', esAdministrador: true });
+    tenant.set(false);
+    fixture.detectChanges();
+    expect(root.textContent).toContain('SIN_TENANT_VERIFICADO');
+    expect(root.textContent).not.toContain('SENAL_CLIENTE_NO_AUTORITATIVA');
   });
   it('renderiza rutas protegidas duplicadas sin colision de claves Angular NG0955', async () => {
     const rutaExistente = routes.find(x => x.path === 'dashboard');

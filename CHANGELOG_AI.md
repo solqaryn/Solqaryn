@@ -1,3 +1,6 @@
+## 2026-11-18 — Regresion de revocacion UI para C01-02.M04.01 [Javier :00]
+- Se extiende TestBed sobre la pantalla read-only: al revocar sesion desaparece el catalogo aun si los permisos de cliente estaban en verde; tras reautenticar con tenant invalidado la pantalla mantiene negacion conservadora. Es evidencia UI sintetica, no JWT HTTP/MySQL ni permiso productivo. Publicacion dev con CI exact-SHA pendiente, sin LISTO/A5.
+
 ## 2026-11-18 — DEV01 V19 C07-02.M02.06 contrato documental de salida M02
 - Se integran M01.06 y M02.01–05 con A5 verificados, titularidad global de host A/B corregida, dependencias y doce casos P/N FUTUROS_NO_EJECUTADOS; la puerta R2 hacia implementación se mantiene condicionada.
 - Entrega sólo R0 documental: cero pruebas runtime MySQL/HTTP/PSP/Chromium ejecutadas por esta microtarea; NO_MEDIDO, A5 independiente pendiente, sin QA/main/PROD.
