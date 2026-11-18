@@ -1,3 +1,7 @@
+## 2026-11-18 — C05-03.M02.06 cierre documental M02 builder gobernado [Javier :20]
+- Se fija la matriz G01–G16 de requisitos de salida y diez oráculos positivo/negativo futuros; se verifican las dependencias M01/M02/A5, incluida la reparación de autoaprobación EV08/IDEM08/T06, sin borrar A5_FAIL histórico.
+- R0 exclusivamente Markdown: 0/10 escenarios runtime ejecutados, 0/16 puertas técnicas certificadas; D01–D08, JWT/RBAC, MySQL, migraciones, UI, outbox, QA/main/PROD y proveedores permanecen sin activar. A5 de M02.06 será independiente y el rollback es git revert normal.
+
 ## 2026-11-18 — CI_REPAIR C10-04.M05.03 compilación C# CS0136 [asistencia Javier :00]
 - Se corrige exclusivamente la variable local duplicada `v` en la función Scalar de la prueba de integración MySQL 8.4; la variable de retorno pasa a `scalarValue`, preservando consultas, casos adversariales y transacciones sin reducir ningún assert.
 - El job backend y seguridad del SHA previo falló con CS0136 en línea 101. Nueva CI exact-SHA necesaria para certificar Category=Integration y MySQL 8.4 efímero; no es PASS, propietario DEV06/VALIDANDO conservados, A5 por Task distinta. Sin MySQL Aiven, Cloudflare R2 real, QA/main/PROD; git revert para rollback.
