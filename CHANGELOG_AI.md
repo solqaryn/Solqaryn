@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C15-05.M05.05 negativos de autoría y abuso [Javier :30]
+- Doce pruebas xUnit adversariales para el adaptador V5 **en memoria**: acceso no autorizado, ID fuera de catálogo, gate DAG, token/replay, owner ajeno, SHA falso, A5 propia y duplicación inicial; sin confundir estas pruebas con CAS distribuido, JWT o MySQL.
+- Workflow GitHub-hosted .NET 10 Release TRX 12/12 exigible, Scope Lock y V5 exact-SHA; mientras CI externa ejecuta conservar VALIDANDO, A5 únicamente otra Task Javier y rollback git revert.
+
 ## 2026-11-17 — V19 C15-05.M05.04 reparación causal CI Scope Lock [Javier :20]
 - Se conserva el verificador de Scope Lock sin cambios y se ejecuta sobre checkout limpio antes de npm ci; el job inicial falló al recorrer documentación de terceros dentro de node_modules instalada por el workflow.
 - Retener fallo histórico y revalidar nueva CI exact-SHA Angular/Chromium (tres casos); sin asumir PASS, sin JWT/tenant/MySQL live ni QA/main/PROD.

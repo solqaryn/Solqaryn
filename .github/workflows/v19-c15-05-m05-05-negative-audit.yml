@@ -1,0 +1,44 @@
+name: V19 C15-05.M05.05 - negatives authorization and abuse
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/Application/C1505M0505AuditAbuseNegativeTests.cs'
+      - 'backend/src/Application/AutomationV5/V5WorkItemMemoryAdapter.cs'
+      - 'backend/src/Domain/AutomationV5/V5WorkItemRules.cs'
+      - '.github/workflows/v19-c15-05-m05-05-negative-audit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c1505-m0505-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  xunit:
+    name: C15-05.M05.05 - doce negativas xUnit
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 10.0.401
+      - name: Scope Lock exact SHA
+        run: node scripts/verify-project-scope.mjs
+      - name: xUnit Release adversarial y TRX estricto
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter 'FullyQualifiedName~C1505M0505AuditAbuseNegativeTests' --logger 'trx;LogFileName=c1505m0505.trx' --logger 'console;verbosity=normal'
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          files=list(Path('tests/Solqaryn.Tests/TestResults').glob('**/c1505m0505.trx'))
+          assert len(files)==1, f'Expected one real TRX: {len(files)}'
+          root=ET.parse(files[0]).getroot()
+          counts=next((e.attrib for e in root.iter() if e.tag.endswith('Counters')),None)
+          assert counts is not None
+          actual=tuple(int(counts[x]) for x in ('executed','passed','failed','notExecuted'))
+          assert actual==(12,12,0,0), actual
+          print('C1505M0505_REAL_XUNIT_RELEASE_12_OF_12_PASS')
+          PY
