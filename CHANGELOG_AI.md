@@ -1,3 +1,7 @@
+## 2026-11-17 — Corrección A5_FAIL P2 C01-02.M03.04 y recuperación de cola [ChatGPT directo]
+- Se elimina mutabilidad de `C0102IsolatedCapabilityPolicySnapshotAdapter`: copias `FrozenSet` ordinales sustituyen `HashSet` mutable expuesto como `IReadOnlySet`; dos xUnit adversariales reproducen el fallo A5 y conservan denegación/aislamiento. Sin cambios productivos ni promoción.
+- El histórico A5_FAIL se conserva. Los candidatos C01-02.M03.05/06 no se habilitan sin CI exact-SHA y nueva revisión A5 por otra Task Javier; no se modifica DAG/COLA para simular capacidad. 
+
 ## 2026-11-17 — V19 C15-05.M05.03 integración proveedor GitHub Checks real [Javier :40]
 - Se agrega prueba Node de proveedor GitHub Checks API HTTPS real usando GITHUB_TOKEN efímero de permisos checks:read y contents:read; exige SHA exacto y rechaza contenido truncado o ambiguo.
 - Suite de siete casos positivos/adversariales con resultados SUCCESS, SKIPPED/CANCELLED/IN_PROGRESS, check ausente, SHA/repo inválido, respuesta HTTP 403 y página incompleta; GitHub-hosted requiere 7/7 y Scope Lock, sin atribuir PASS antes de CI.

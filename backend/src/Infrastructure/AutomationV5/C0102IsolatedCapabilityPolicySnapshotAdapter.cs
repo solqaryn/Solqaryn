@@ -1,3 +1,4 @@
+using System.Collections.Frozen;
 using Fence = Solqaryn.Application.AutomationV5.C0102CapabilityAuthorizationFence;
 using Solqaryn.Application.AutomationV5;
 using Rules = Solqaryn.Domain.AutomationV5.C0102CapabilityDomainRules;
@@ -82,8 +83,11 @@ public sealed class C0102IsolatedCapabilityPolicySnapshotAdapter :
         return ValueTask.FromResult<Fence.VerifiedResourcePolicy?>(_captured);
     }
 
+    // Never expose a HashSet through IReadOnlySet: callers can downcast it and
+    // mutate the captured policy after the original source was copied.
+    // FrozenSet owns an ordinal, genuinely immutable copy for every reader.
     private static IReadOnlySet<string>? Freeze(IReadOnlySet<string>? values) =>
-        values is null ? null : new HashSet<string>(values, StringComparer.Ordinal);
+        values is null ? null : values.ToFrozenSet(StringComparer.Ordinal);
 
     private static ValueTask<Fence.VerifiedResourcePolicy?> Denied() =>
         ValueTask.FromResult<Fence.VerifiedResourcePolicy?>(null);

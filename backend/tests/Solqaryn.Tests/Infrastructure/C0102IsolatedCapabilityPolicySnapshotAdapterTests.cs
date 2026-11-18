@@ -143,4 +143,66 @@ public sealed class C0102IsolatedCapabilityPolicySnapshotAdapterTests
         Assert.False(v.Policy!.ExplicitRelationalRbacGrant);
         Assert.False(v.Policy.PlanCurrent);
     }
+
+    [Fact]
+    public async Task ReturnedCollectionsAreImmutableNotDowncastableToMutableSets()
+    {
+        var a = Adapter();
+        var first = await a.ReadCurrentAsync(11, 101, default);
+        Assert.NotNull(first);
+        Assert.NotNull(first.Policy);
+        var policy = first.Policy;
+        IReadOnlySet<string>?[] sets =
+        {
+            policy.PlanCapabilities,
+            policy.RubroCapabilities,
+            policy.RoleCapabilities,
+            policy.TenantCapabilities,
+            policy.DeniedCapabilities
+        };
+        Assert.All(sets, values =>
+        {
+            Assert.NotNull(values);
+            Assert.False(values is ISet<string>,
+                "A read-only interface must not expose a mutable ISet backing store.");
+            Assert.False(values is ICollection<string>,
+                "A read-only interface must not expose a mutable ICollection backing store.");
+        });
+
+        var second = await a.ReadCurrentAsync(11, 101, default);
+        Assert.NotNull(second);
+        Assert.Same(first.Policy.PlanCapabilities, second.Policy!.PlanCapabilities);
+        Assert.Contains(Key, second.Policy.PlanCapabilities!);
+        Assert.DoesNotContain("security.override", second.Policy.PlanCapabilities!);
+        Assert.False(second.Policy.ExplicitRelationalRbacGrant);
+        Assert.False(second.Policy.PlanCurrent);
+    }
+
+    [Fact]
+    public async Task SourceChangesAndAttemptedReturnedMutationNeverGrantOrRemoveCapabilities()
+    {
+        var plan = new HashSet<string>(StringComparer.Ordinal) { Key };
+        var denied = new HashSet<string>(StringComparer.Ordinal) { "security.override" };
+        var policy = Policy(plan) with { DeniedCapabilities = denied };
+        var reader = Adapter(Evidence(policy));
+        var first = await reader.ReadCurrentAsync(11, 101, default);
+        Assert.NotNull(first);
+        Assert.NotNull(first.Policy);
+
+        plan.Clear();
+        plan.Add("security.override");
+        denied.Clear();
+
+        // The A5 adversarial cast must be impossible, not merely unexercised.
+        Assert.False(first.Policy.PlanCapabilities is ISet<string>);
+        Assert.False(first.Policy.DeniedCapabilities is ISet<string>);
+        var later = await reader.ReadCurrentAsync(11, 101, default);
+        Assert.NotNull(later);
+        Assert.Contains(Key, later.Policy!.PlanCapabilities!);
+        Assert.DoesNotContain("security.override", later.Policy.PlanCapabilities!);
+        Assert.Contains("security.override", later.Policy.DeniedCapabilities!);
+        Assert.False(later.OwnershipReadFromTrustedPersistence);
+        Assert.False(later.CurrentCapabilityCatalogReadFromBackend);
+    }
+
 }
