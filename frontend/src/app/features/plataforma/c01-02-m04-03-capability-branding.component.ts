@@ -1,5 +1,6 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
-import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { ChangeDetectionStrategy, Component, DestroyRef, computed, inject, signal } from '@angular/core';
+import { takeUntilDestroyed, toObservable } from '@angular/core/rxjs-interop';
+import { EMPTY, catchError, distinctUntilChanged, switchMap, tap } from 'rxjs';
 import { Router, RouterLink } from '@angular/router';
 import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
 import { TenantContextService } from '../../core/auth/tenant-context.service';
@@ -53,7 +54,7 @@ interface MarcaSegura { primario: string; secundario: string; acento: string; }
     li { margin: 8px 0; } a:focus-visible { outline: 3px solid #0868ad; outline-offset: 4px; }
   `]
 })
-export class C0102CapabilityBrandingComponent implements OnInit {
+export class C0102CapabilityBrandingComponent {
   private readonly router = inject(Router);
   private readonly sesion = inject(PlataformaSesionService);
   private readonly tenant = inject(TenantContextService);
@@ -85,38 +86,73 @@ export class C0102CapabilityBrandingComponent implements OnInit {
     return this.carga() === 'lista' && this.marca() ? 'LISTO' : 'CARGANDO';
   });
 
-  ngOnInit(): void {
-    if (!this.autorizado() || !this.tenant.tieneContextoVerificado()) return;
-    const empresa = this.tenant.empresaIdVerificada();
-    if (!empresa) return;
-    if (this.permisos.cargado()) { this.leerTema(empresa); return; }
-    this.permisos.cargar().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: ok => {
-        if (ok && this.contextoCoincide(empresa)) this.leerTema(empresa);
-        else this.carga.set('error');
-      },
-      error: () => this.carga.set('error')
-    });
+  // Cada cambio de tenant, autoridad o grant cancela la solicitud anterior.
+  // La API sigue siendo la unica autoridad; esta vista nunca crea permisos.
+  private readonly contextoReactivo = computed(() => ({
+    empresa: this.tenant.empresaIdVerificada(),
+    verificado: this.tenant.tieneContextoVerificado(),
+    autoridad: this.autorizado(),
+    permisosListos: this.permisos.cargado(),
+    permisoTema: this.permisoTema()
+  }));
+
+  constructor() {
+    toObservable(this.contextoReactivo).pipe(
+      distinctUntilChanged((a, b) =>
+        a.empresa === b.empresa && a.verificado === b.verificado &&
+        a.autoridad === b.autoridad && a.permisosListos === b.permisosListos &&
+        a.permisoTema === b.permisoTema),
+      switchMap(actual => {
+        // Nunca conservar colores de A al resolver la identidad de B.
+        this.recibido.set(null);
+        this.empresaOrigen.set(null);
+        this.carga.set('pendiente');
+        const empresa = actual.empresa;
+        if (!actual.autoridad || !actual.verificado || !empresa) return EMPTY;
+
+        if (!actual.permisosListos) {
+          return this.permisos.cargar().pipe(
+            tap(ok => {
+              if (!ok && this.contextoCoincide(empresa)) this.carga.set('error');
+            }),
+            catchError(() => {
+              if (this.contextoCoincide(empresa)) this.carga.set('error');
+              return EMPTY;
+            })
+          );
+        }
+        if (!actual.permisoTema) return EMPTY;
+
+        return this.temas.get().pipe(
+          tap(respuesta => {
+            if (!this.contextoCoincide(empresa) || !this.permisoTema()) return;
+            const data = respuesta?.success === true ? respuesta.data : null;
+            const primario = c0102ColorSeguro(data?.colorPrimario);
+            const secundario = c0102ColorSeguro(data?.colorSecundario);
+            const acento = c0102ColorSeguro(data?.colorAcento);
+            if (!primario || !secundario || !acento) {
+              this.recibido.set(null);
+              this.carga.set('error');
+              return;
+            }
+            this.empresaOrigen.set(empresa);
+            this.recibido.set({ primario, secundario, acento });
+            this.carga.set('lista');
+          }),
+          catchError(() => {
+            // Un fallo tardio de A no puede borrar el tema valido de B.
+            if (this.contextoCoincide(empresa) && this.permisoTema())
+              this.carga.set('error');
+            return EMPTY;
+          })
+        );
+      }),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe();
   }
+
   private contextoCoincide(empresa: number): boolean {
     return this.autorizado() && this.tenant.tieneContextoVerificado() &&
       this.tenant.empresaIdVerificada() === empresa;
-  }
-  private leerTema(empresa: number): void {
-    if (!this.contextoCoincide(empresa) || !this.permisoTema()) { this.carga.set('error'); return; }
-    this.temas.get().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: respuesta => {
-        if (!this.contextoCoincide(empresa) || !this.permisoTema()) return;
-        const data = respuesta?.success === true ? respuesta.data : null;
-        const primario = c0102ColorSeguro(data?.colorPrimario);
-        const secundario = c0102ColorSeguro(data?.colorSecundario);
-        const acento = c0102ColorSeguro(data?.colorAcento);
-        if (!primario || !secundario || !acento) { this.recibido.set(null); this.carga.set('error'); return; }
-        this.empresaOrigen.set(empresa);
-        this.recibido.set({ primario, secundario, acento });
-        this.carga.set('lista');
-      },
-      error: () => this.carga.set('error')
-    });
   }
 }

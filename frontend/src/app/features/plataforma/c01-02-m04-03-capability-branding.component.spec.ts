@@ -66,18 +66,50 @@ describe('C01-02.M04.03 - branding fail closed', () => {
     expect(root.querySelector('[data-testid="marca-sin-permisos"]')).not.toBeNull();
     expect(root.querySelectorAll('.muestra,li')).toHaveLength(0);
     grant.set(true); id.set(42); f.detectChanges();
-    expect(root.querySelector('[data-testid="marca-listo"]')).toBeNull();
-    expect(root.querySelectorAll('.muestra,li')).toHaveLength(0);
+    expect(llamadas).toBe(2);
+    expect(f.componentInstance.marca()?.primario).toBe(tema.colorPrimario);
+    expect(root.querySelector('[data-testid="marca-listo"]')).not.toBeNull();
     s.set(null); f.detectChanges();
     expect(root.querySelector('[data-testid="marca-denegado"]')).not.toBeNull();
   });
-  it('respuesta tardia de tenant A no aparece en B', async () => {
+  it('cambio A a B montado: solicita B, no muestra A tardio y finaliza LISTO', async () => {
     const id = signal<number | null>(41);
-    const subject = new Subject<{ success: boolean; data: typeof tema }>();
-    const f = await crear(() => global, id.asReadonly(), () => true, () => subject.asObservable());
-    expect((f.nativeElement as HTMLElement).querySelector('[data-testid="marca-cargando"]')).not.toBeNull();
-    id.set(42);
-    subject.next({ success: true, data: tema }); f.detectChanges();
+    const pendientes: Subject<{ success: boolean; data: typeof tema }>[] = [];
+    const f = await crear(() => global, id.asReadonly(), () => true, () => {
+      const subject = new Subject<{ success: boolean; data: typeof tema }>();
+      pendientes.push(subject);
+      return subject.asObservable();
+    });
+    expect(pendientes).toHaveLength(1);
+    id.set(42); f.detectChanges();
+    expect(pendientes).toHaveLength(2);
+    expect(f.componentInstance.estado()).toBe('CARGANDO');
+    pendientes[0].next({ success: true, data: { ...tema, colorPrimario: '#ff0000' } });
+    f.detectChanges();
+    expect(f.componentInstance.marca()).toBeNull();
+    expect((f.nativeElement as HTMLElement).querySelectorAll('.muestra,li')).toHaveLength(0);
+    pendientes[1].next({ success: true, data: { ...tema, colorPrimario: '#00ff00' } });
+    f.detectChanges();
+    expect(f.componentInstance.marca()?.primario).toBe('#00ff00');
+    expect(f.componentInstance.estado()).toBe('LISTO');
+    pendientes[0].error(new Error('Fallo tardio A')); f.detectChanges();
+    expect(f.componentInstance.marca()?.primario).toBe('#00ff00');
+  });
+  it('fallo del nuevo tenant termina en ERROR sin restaurar colores anteriores', async () => {
+    const id = signal<number | null>(41);
+    const pendientes: Subject<{ success: boolean; data: typeof tema }>[] = [];
+    const f = await crear(() => global, id.asReadonly(), () => true, () => {
+      const subject = new Subject<{ success: boolean; data: typeof tema }>();
+      pendientes.push(subject);
+      return subject.asObservable();
+    });
+    pendientes[0].next({ success: true, data: tema }); f.detectChanges();
+    expect(f.componentInstance.estado()).toBe('LISTO');
+    id.set(42); f.detectChanges();
+    expect(pendientes).toHaveLength(2);
+    expect(f.componentInstance.marca()).toBeNull();
+    pendientes[1].error(new Error('Sin tema B')); f.detectChanges();
+    expect(f.componentInstance.estado()).toBe('ERROR');
     expect((f.nativeElement as HTMLElement).querySelectorAll('.muestra,li')).toHaveLength(0);
   });
   it('respuesta maliciosa de color provoca ERROR y no CSS', async () => {

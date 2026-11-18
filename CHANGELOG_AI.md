@@ -1,3 +1,7 @@
+## 2026-11-18 — V19 A5_FAIL P2 reparacion C01-02.M04.03 recarga tenant [Javier :30]
+- Se conserva el A5_FAIL independiente de DEV06: la vista cambiaba A a B sin desmontarse, ocultaba A pero permanecia CARGANDO sin pedir B. Se sustituye ngOnInit unico por flujo reactivo cancelable de tenant, sesion y permisos, sin conceder autoridad desde Angular.
+- Se incorporan regresiones TestBed para A tardio/B exitoso y B fallido; se exige CI dirigida real Angular/Chromium, P0-007.A, Scope Lock y V5 en SHA exacto. La reparacion no es A5_PASS automatico, ni prueba JWT/MySQL/QA/PROD.
+
 ## 2026-11-18 — V19 CI_REPAIR A5_FAIL P2 C03-04.M04.02 revocación HTTP tardía [asistencia DEV01]
 - Una respuesta GET de plataforma anterior a limpiar/revalidar no puede restaurar la sesión ni borrar una sesión más nueva; se introduce versión monótona fail-closed en `PlataformaSesionService`, sin modificar backend, JWT o permisos reales.
 - Regresiones TestBed: revocación durante HTTP pendiente, solicitudes superpuestas, errores tardíos y guía de incidentes que permanece oculta tras 200 obsoleto; el workflow GitHub-hosted ejecuta las suites dirigidas, lint/build y Chromium, con Scope Lock/V5 exact-SHA antes de acreditar PASS. El A5_FAIL P2 histórico continúa hasta nueva revisión independiente; propietario DEV03 preservado, no QA/main/PROD.
