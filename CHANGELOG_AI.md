@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 C15-05.M05.04 aceptación positiva con Chromium real [Javier :20]
+- Tres pruebas Playwright en ruta Angular privada: 320/1280 sin desborde, controles de solo lectura, teclado Tab/Enter real y cero solicitudes HTTP mutantes; sesión de prueba sintetizada, no JWT real.
+- CI dirigida Node 24/Angular 22.2.1/Chromium, Scope Lock y V5 exact SHA. No afirmar PASS antes de RUN, ni seguridad/tenant/MySQL de backend o WCAG/performance global. A5 siempre independiente.
+
 ## 2026-11-17 — V19 C15-05.M05.01 contrato xUnit de múltiples IDs y CAS en memoria [Javier :20]
 - Nueva regresión xUnit .NET 10 para dos IDs independientes: dos ganadores bajo 64 intentos, idempotencia, gates cerrados, propietario ajeno y capacidad; no se confunde adaptador in-memory con candado Google Sheets V17.
 - CI GitHub-hosted dirigida con TRX obligatorio y 10 casos esperados; no se atribuye PASS antes del resultado exact-SHA. A5 independiente de otra Task Javier, dev exclusivo, no QA/main/PROD.

@@ -1,0 +1,67 @@
+name: V19 C15-05.M05.04 - aceptacion positiva Angular Chromium
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/e2e/c15-05-m05-04-positive-acceptance.spec.ts'
+      - '.github/workflows/v19-c15-05-m05-04-positive-acceptance.yml'
+      - 'frontend/src/app/features/plataforma/auditoria-operativa-v5.component.ts'
+      - 'frontend/src/app/app.routes.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v19-c1505-m0504-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  browser:
+    name: C15-05.M05.04 - 3 casos de aceptacion Chromium real
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm compatible
+        run: npm install --global npm@11.19.0
+      - name: npm ci
+        working-directory: frontend
+        run: npm ci
+      - name: Scope Lock
+        run: node scripts/verify-project-scope.mjs
+      - name: Typecheck lint y build Angular
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Instalar Chromium real
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Servidor Angular efimero, no produccion
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c1505m0504-angular.log 2>&1 &
+          for attempt in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then
+              echo 'LOCAL_ANGULAR_READY=PASS'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat c1505m0504-angular.log >&2
+          exit 1
+      - name: Tres Playwright positivos y de frontera con conteo real
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx playwright test e2e/c15-05-m05-04-positive-acceptance.spec.ts --config=playwright.config.ts --workers=1 --retries=0 --reporter=line | tee c1505m0504-playwright.log
+          grep -Eq '3 passed \(' c1505m0504-playwright.log
