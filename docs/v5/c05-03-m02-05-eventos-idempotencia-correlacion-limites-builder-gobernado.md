@@ -21,7 +21,7 @@
 | EV05 | RevisionCommitted | revisión monotónica, transacción y ETag aprobados |
 | EV06 | PreviewRequested | registro mínimo read-only, **sin ningún side effect** |
 | EV07 | ApprovalRequested | autor y revisor permitidos, revisión vinculada |
-| EV08 | ApprovalGranted | RBAC independiente, aprobación vigente y revocable |
+| EV08 | ApprovalGranted | RBAC y membresía vigentes del tenant correcto; aprobador autenticado distinto del autor de esa revisión, aprobación revocable; nunca autoaprobación |
 | EV09 | PublicationRequested | host propio acreditado, aprobación y revisión actuales |
 | EV10 | PublicationSucceeded | proyección mínima, sin drafts/PII privados |
 | EV11 | PublicationRevoked | revocación invalida caches/lecturas futuras |
@@ -40,7 +40,7 @@
 | IDEM05 | CAS antes de persistencia | stale write => conflicto sin lost update |
 | IDEM06 | Dedupe atómica transaction-scoped | duplicado exacto => resultado consistente, no dos writes |
 | IDEM07 | Host y projection tenant-scoped | no mezclar cache A/B ni usar Host header como dueño |
-| IDEM08 | Approval vinculada a revision/rol | revocación invalida publicación posterior |
+| IDEM08 | Approval vinculada a revisión, tenant, rol y par autor/aprobador distintos | mismo actor como autor y aprobador, rol revocado o versión distinta => denegar sin evento ni publicación |
 | IDEM09 | Outbox futuro solo bajo autorización R2 | no habilitar cola/bus por existir este contrato |
 | IDEM10 | Reintentos futuros acotados y con hipótesis | no retry infinito ni tormenta de workers |
 | IDEM11 | Auditoría redactada y acotada | sin JWT, PII, secretos, payload completo ni IDs B |
@@ -72,13 +72,15 @@ Valores concretos de límites, plazos, retries y capacidad quedan sujetos a D01�
 | T03 | Sección allowlist actualiza revisión | script HTML/JS o CSS libre rechazados |
 | T04 | CAS con versión correcta registra una revisión | CAS stale no sobrescribe |
 | T05 | Preview autorizado es read-only | preview no envía mail ni crea worker/evento |
-| T06 | Reviewer vigente aprueba revisión propia | rol revocado no puede aprobar |
+| T06 | Revisor autenticado distinto del autor, con rol vigente del tenant A, aprueba revisión A vigente | Autor que se autoaprueba, actor B, rol revocado o versión obsoleta => denegar ApprovalGranted sin efectos |
 | T07 | Host verificado proyecta contenido mínimo | host falsificado no revela draft/tenant B |
 | T08 | Publicación aprobada registra una sola vez | replay no publica dos versiones |
 | T09 | Revocación bloquea futuros accesos | token/lease expirado no reautoriza |
 | T10 | Rollback permitido crea historia aditiva | duplicado o acceso B no borra A |
 | T11 | Payload dentro de límites acepta solicitud | sobrecuota o reintento masivo da 422/429 |
 | T12 | Auditoría minimizada permite correlación | log no expone JWT/PII/SQL/secretos |
+
+**Invariante de independencia de aprobación (EV07/EV08, IDEM08, T06):** la identidad autenticada del revisor debe ser distinta de la identidad del autor de la misma revisión, aun si ambos poseen un rol válido o comparten empresa; el servidor debe comprobar tenant, autor, revisor, versión y revocación sobre evidencias actuales. Nunca aceptar un campo de cliente que se autodeclare revisor. Un intento de autoaprobación, usuario de tenant B, rol revocado o revisión obsoleta no emite `ApprovalGranted` ni habilita `PublicationRequested`. Estos son escenarios contractuales negativos **pendientes de implementación y pruebas**, no una certificación de JWT/RBAC/HTTP real.
 
 **12 pares documentados, 0/12 pruebas funcionales/HTTP/DB/browser ejecutadas.** La fase de implementación R2 requerirá asserts genuinos de replay, conflicto, ownership A/B, revocación, límites y errores, xUnit, MySQL 8.4 `Category=Integration` si se toca persistencia y Playwright si UI cambia. Un documento de eventos NO implementa un dispatcher.
 

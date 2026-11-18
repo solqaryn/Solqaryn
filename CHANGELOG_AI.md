@@ -1,3 +1,7 @@
+## 2026-11-18 — C05-03.M02.05 corrección documental P2 de aprobación independiente [asistencia Javier :00]
+- Se corrige el contrato EV08/IDEM08/T06: una revisión solo puede aprobarla un revisor autenticado diferente de su autor, con tenant, rol, versión y revocación comprobados; se prohíbe autoaprobación aun con rol válido.
+- Casos negativos futuros de autor=revisor, tenant B, rol revocado y versión obsoleta quedan explícitos y sin efectos. Cambio R0 Markdown sin código, JWT HTTP, MySQL, eventos runtime ni despliegue; A5_FAIL histórico preservado, nueva A5 independiente requerida. Rollback mediante git revert, sin QA/main/PROD.
+
 ## 2026-11-18 — C10-04.M05.03 integracion aislada Oracle MySQL 8.4 [Javier :50]
 - Se agregan pruebas xUnit de proveedor MySql.Data con MySQL 8.4 local real para aislamiento A/B, CAS persistente, idempotencia 1062, rollback y rechazo de hosts remotos; datos sinteticos y base efimera.
 - Workflow GitHub-hosted .NET 10 exige pruebas Category=Integration con TRX, Scope Lock y verificacion por SHA. NO integra workers ni R2/Cloudflare productivo, JWT HTTP, restores o Aiven. A5 independiente; rollback git revert y sin QA/main/PROD.
