@@ -118,6 +118,15 @@ jobs:
           SELECT u.Id, 1, u.RolId, TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)
           FROM Usuarios u WHERE u.NombreUsuario='c1504_admin_a'
             AND NOT EXISTS (SELECT 1 FROM UsuarioEmpresas ue WHERE ue.UsuarioId=u.Id AND ue.EmpresaId=1);
+          -- Persona B exclusivamente CI, contraseña efimera y solo Empresa 2.
+          INSERT INTO Usuarios (NombreUsuario, NombreCompleto, PasswordHash, RolId, Activo, Bloqueado, Eliminado, FechaCreacion)
+          SELECT 'c1504_admin_b', 'Empresa B efimera C15', a.PasswordHash, a.RolId, TRUE, FALSE, FALSE, UTC_TIMESTAMP(6)
+          FROM Usuarios a WHERE a.NombreUsuario='c1504_admin_a'
+            AND NOT EXISTS (SELECT 1 FROM Usuarios b WHERE b.NombreUsuario='c1504_admin_b');
+          INSERT INTO UsuarioEmpresas (UsuarioId, EmpresaId, RolId, Activa, FechaCreacion, FechaActualizacion)
+          SELECT u.Id, 2, u.RolId, TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)
+          FROM Usuarios u WHERE u.NombreUsuario='c1504_admin_b'
+            AND NOT EXISTS (SELECT 1 FROM UsuarioEmpresas ue WHERE ue.UsuarioId=u.Id AND ue.EmpresaId=2);
           INSERT INTO Roles
             (Nombre, NombreNormalizado, Descripcion, EsSistema, EsAdministrador, Ambito, EmpresaId, Activo, Eliminado, FechaCreacion)
           VALUES ('Global CI C1504', 'C1504_GLOBAL_CI', 'Rol efimero para aceptacion real', 1, 1, 2, NULL, 1, 0, UTC_TIMESTAMP(6));
@@ -133,8 +142,10 @@ jobs:
           SQL
           members="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_c1504_real_ci -Nse "SELECT COUNT(*) FROM UsuarioRolesPlataforma ur JOIN Usuarios u ON u.Id=ur.UsuarioId WHERE u.NombreUsuario='c1504_platform_only' AND ur.Activa=TRUE;")"
           company="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_c1504_real_ci -Nse "SELECT COUNT(*) FROM UsuarioEmpresas ue JOIN Usuarios u ON u.Id=ue.UsuarioId WHERE u.NombreUsuario='c1504_admin_a' AND ue.EmpresaId=1 AND ue.Activa=TRUE;")"
+          company_b="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_c1504_real_ci -Nse "SELECT COUNT(*) FROM UsuarioEmpresas ue JOIN Usuarios u ON u.Id=ue.UsuarioId WHERE u.NombreUsuario='c1504_admin_b' AND ue.EmpresaId=2 AND ue.Activa=TRUE;")"
           test "$members" = '1'
           test "$company" = '1'
+          test "$company_b" = '1'
       - name: Node 24
         uses: actions/setup-node@v4
         with:

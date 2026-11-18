@@ -443,4 +443,27 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     // Muestra R2 en CI descartable; no certifica WCAG ni rendimiento global.
   });
 
+  test('A0.36 - JWT empresa B solo permite tenant B y deniega UX global', async ({ page, request }) => {
+    // Identidad empresarial B persistida unicamente en MySQL 8.4 efimero de CI.
+    const jwt = await ingresar(page, 'c1504_admin_b');
+    const headers = { Authorization: 'Bearer ' + jwt };
+    const propia = await request.get(api + '/tenant-context/2', { headers });
+    expect(propia.status(), 'B consulta B con JWT real').toBe(200);
+    expect((await propia.json())?.data?.empresaId).toBe(2);
+    const ajena = await request.get(api + '/tenant-context/1', { headers });
+    expect([403, 404], 'B no puede leer datos de A').toContain(ajena.status());
+
+    await page.setViewportSize({ width: 320, height: 840 });
+    const sesion = page.waitForResponse(r =>
+      r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+    await page.goto('/plataforma/auditoria-ux-v5');
+    expect((await sesion).status(), 'B no tiene permiso global').toBe(403);
+    await expect(page).toHaveURL(/\/login\?plataforma=denegado/);
+    await expect(page.locator('[data-testid="ux-audit-v19"]')).toHaveCount(0);
+    await expect(page.locator('[data-testid="ux-surface"]')).toHaveCount(0);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth))
+      .toBeLessThanOrEqual(321);
+    // No afirmar certificacion WCAG o revocacion global con esta muestra.
+  });
+
 });
