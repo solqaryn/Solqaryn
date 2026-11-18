@@ -1,3 +1,7 @@
+## 2026-11-18 — C15-04.M05.04 CI_REPAIR A0.35 parser ruta privada [Javier :10]
+- Se detecto en SHA 1867804d, GitHub run 44292686042/job 134761628345, un SyntaxError de string sin cerrar en la prueba Playwright A0.35; Chromium no llego a ejecutar ninguno de los 17 casos esperados. Es defecto P2 del test, no prueba de fallo de autorizacion del producto.
+- Se repara solamente la asercion de URL por igualdad estricta de pathname; no se omiten casos ni se cambian auth, guard, API, tenant o fixtures. Nueva CI en SHA de reparacion requerida completed/success con logs. Global UX R2 A0-A4 aun incompleto, owner DEV02 y candado V17 conservados, A5 por otra Task Javier.
+
 ## 2026-11-18 — C15-04.M05.04 A0.35 teclado/JWT tres guias [Javier :10]
 - Incremento R2 en dev: Tab real y Enter sobre revalidacion de observabilidad, auditoria de tenancy y respuesta a incidentes a 320/1280, foco CSS visible, GET /plataforma/sesion real y ausencia de HTTP mutante. La CI JWT requiere 17 casos con MySQL efimero; no declarar PASS antes del SHA exacto.
 - Recuperada evidencia precedente del SHA c3711837: 16/16 Playwright completed/success, Scope Lock/V5 y C15-03 16 Vitest + 5 Chromium SUCCESS. A0-A4 global no concluye; DEV02 conserva EN_PROGRESO y lock V17, sin LISTO/A5.

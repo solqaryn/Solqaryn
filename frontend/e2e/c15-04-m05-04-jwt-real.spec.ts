@@ -413,8 +413,7 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
       for (const ruta of rutas) {
         const documento = await page.goto(ruta.path);
         expect(documento?.status()).toBe(200);
-        await expect(page).toHaveURL(new RegExp(ruta.path + '
-));
+        expect(new URL(page.url()).pathname, 'Ruta privada debe conservar URL autorizada').toBe(ruta.path);
         const boton = page.getByRole('button', { name: ruta.accion, exact: true });
         await expect(boton).toBeVisible();
         await expect(boton).toBeEnabled();
