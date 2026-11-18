@@ -4,6 +4,8 @@
 
 - Corrección causal antes de cierre: el primer conjunto declaraba 10 casos pero solo enumeraba 9; se agrega caso adversarial de SHA inválido con estado aislado inmutable, dejando 10 ejecuciones exigibles en TRX. No aceptar conteo falso ni SKIPPED.
 
+- Consistencia de observabilidad: el título del job dirigido se corrige a diez casos, alineado al conteo TRX ejecutado; ninguna prueba se considera PASS antes de finalizar la CI.
+
 ## 2026-11-17 — V19 C15-04.M05.04 regresion AST de rutas importadas [Javier :10]
 - A0.23: prueba dirigida verifica composicion real del router Angular (ocho modulos, spreads anidados) y evita el falso positivo donde una ruta no registrada igualmente redirige a login. CI Chromium esperada: 23 casos; JWT firmado/tenant A-B y auditoria UX global NO_MEDIDO hasta pruebas reales.
 

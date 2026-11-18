@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   xunit:
-    name: C15-05.M05.01 - nueve casos xUnit multi-ID CAS
+    name: C15-05.M05.01 - diez casos xUnit multi-ID CAS
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
