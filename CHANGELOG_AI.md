@@ -1,3 +1,7 @@
+## 2026-11-18 — V19 reparación documental P2 C07-02.M02.03 host global [asistencia DEV05]
+- Se conserva A5_FAIL: el anterior UNIQUE(empresa,host,versión) no impedía colisión A/B. I01 exige un solo titular global de host canónico activo/verificado, con histórico separado y CAS futuro.
+- Se especifican negativos de doble titular, versión, carrera, IDNA, Host spoofing y proxy no confiable; 0 pruebas runtime ejecutadas, NO_MEDIDO. Propietario DEV06 intacto, nueva A5 independiente requerida; sólo documentación dev, sin QA/main/PROD.
+
 ## 2026-11-18 — DEV06 C01-02.M04.02 CI_REPAIR ERROR terminal B en tenant A/B
 - El job TestBed del SHA 2d4d6e71 evidencio 5/7 PASS y 2 FAIL: el estado ERROR era enmascarado como CARGANDO mientras la empresa nueva aun no estaba acreditada. La UI debe finalizar en ERROR ante denegacion real de B sin mostrar filas antiguas.
 - Se corrige solo la precedencia del estado ERROR; se conservan las 7 pruebas adversariales sin rebajar asserts y se exige nueva CI GitHub-hosted exact-SHA. El resultado previo FAILURE no es PASS; continua VALIDANDO, A5 independiente, sin QA/main/PROD.

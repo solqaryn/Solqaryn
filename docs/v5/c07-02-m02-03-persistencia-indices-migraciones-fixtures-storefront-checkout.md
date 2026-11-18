@@ -17,7 +17,7 @@
 | Grupo | Datos futuros mínimos | Owner/límite y protección |
 | --- | --- | --- |
 | D01 TiendaPublicada | empresa, tienda, estado, versión, rango UTC | Empresa servidor; no se infiere de Host enviado |
-| D02 HostTiendaVerificado | empresa, tienda, host normalizado, versión, origen de confianza | Solo proxy/host validado; prohibido fallback a B |
+| D02 HostTiendaVerificado | empresa, tienda, host canónico verificado, titular, vigencia y versión histórica | Titularidad global exclusiva del host ACTIVO entre todas las empresas; no confiar en Host del cliente ni permitir fallback a B |
 | D03 ProductoPublicable | empresa, producto/variante ERP, estado, snapshot publicable | No duplicar inventario ni publicar costo |
 | D04 CarritoCliente | empresa, actor/sesión opaca, vencimiento, versión | Anónimo de A no lee carrito B |
 | D05 LineaCarrito | empresa, carrito, variante, cantidad, versión precio | Cantidad positiva limitada; sin reserva de stock |
@@ -35,7 +35,7 @@
 
 | Índice lógico candidato | Clave futura propuesta | Caso de integridad / frontera |
 | --- | --- | --- |
-| I01 | UNIQUE(empresa, host_normalizado, version_activa) | host duplicado o no confiable falla |
+| I01 | UNIQUE(clave_host_activo_global) sobre registro verificado, valor NULL para inactivos | Host canónico ACTIVO con un solo titular global; colisiones A/B y dos versiones activas fallan |
 | I02 | (empresa, tienda, estado_publicacion) | A no lista borradores ni elementos B |
 | I03 | (empresa, tienda, producto, variante) | referencia cruzada a variante B rechazada |
 | I04 | UNIQUE(empresa, carrito, linea_id) | una línea no se duplica en retry |
@@ -50,6 +50,17 @@
 
 Estos son **índices candidatos**, no SQL revisado ni benchmarks ejecutados. Su selectividad, tamaño, unicidad y viabilidad deben medirse en MySQL 8.4 efímero con `EXPLAIN`, índices actuales e integridad referencial real. Un UNIQUE de clave sin empresa o una FK que permita `EmpresaId=NULL` daría falsas garantías: exigir negativos específicos antes de DDL. No modificar `Venta`, inventario, IVA ni reglas contables ahora.
 
+### 3.1 Corrección P2 de A5: titularidad global de host (R0 documental)
+
+El antiguo I01 no impedía que A y B reclamen simultáneamente el mismo host ni dos versiones activas del mismo tenant. El A5_FAIL P2 histórico sigue vigente hasta revisión independiente posterior a esta reparación.
+
+- **Invariante:** host canónico verificado y activo tiene exactamente un titular global `EmpresaId` y una sola versión de publicación activa. Versiones retiradas son históricas; no autorizan fallback A/B.
+- **Fuente confiable:** canonicalización determinista (minúsculas, punto terminal, IDNA, puerto y wildcard). Resolver por ingress/proxy autorizado con prueba vigente de dominio. `Host`/`X-Forwarded-Host` enviados por cliente no son autoridad; ante ambigüedad, rechazar.
+- **Propuesta MySQL 8.4 sin DDL:** registro global de host verificado con clave derivada `clave_host_activo_global` = host canónico solo cuando activo/verificado, `NULL` en caso contrario; índice UNIQUE global sin `EmpresaId` en la clave única. MySQL admite múltiples NULL en UNIQUE: comprobar este detalle, FKs de titular y versiones históricas en integración efímera antes de implementar. Un índice sólo `UNIQUE(empresa,host,version)` no demuestra exclusividad global.
+- **Concurrencia:** activación por transacción/CAS serializable sobre host tras verificar titularidad y versión; revocación auditada antes de liberar. Nunca upsert que cambie titular por Host no confiable ni caché de tenant previo.
+- **Oráculos adversariales FUTUROS_NO_EJECUTADOS:** A activo + B mismo host => DENY; dos versiones activas A => DENY; A retira v1 y activa v2 => una activa; carrera A/B => un solo ganador; Unicode/IDNA ambiguo, wildcard solapado, host falsificado, proxy no confiable y caché obsoleta => DENY.
+- **Gates futuros R2:** MySQL 8.4 efímero con Oracle EF 10, Category=Integration real, colisiones/concurrencia, EXPLAIN, Down/restore, HTTP JWT/RBAC tenant A/B negativos y CI exact-SHA. Se ejecutaron 0/6 oráculos runtime de titularidad en esta revisión; métricas NO_MEDIDO. Sin cambios MySQL, PSP, DNS, QA/main/PROD.
+
 ## 4. Plan futuro M01–M08 de cambio reversible (ningún paso ejecutado)
 
 | Paso | Cambio futuro propuesto | Check de seguridad y rollback |
@@ -57,7 +68,7 @@ Estos son **índices candidatos**, no SQL revisado ni benchmarks ejecutados. Su 
 | M01 | Snapshot y respaldo de esquema/datos sintéticos | Restore íntegro en MySQL 8.4 aislado antes de avanzar |
 | M02 | Mapear entidades ERP/EF 10 existentes y ownership real | No duplicar tablas; `EmpresaId=NULL` en cuarentena |
 | M03 | Crear tablas aditivas y FKs tenant compuestas | Esquema inicial reversible sin tocar ventas |
-| M04 | Incorporar índices/uniques por tenant | Verificar explain/duplicados; rollback de índices |
+| M04 | Incorporar I01 de titularidad global y restantes índices tenant-bound | Probar colisión A/B, versiones activas, concurrencia y rollback en MySQL 8.4 aislado |
 | M05 | Migrar datos sintéticos de prueba, sin datos productivos | Reconciliar conteos/checksums A/B |
 | M06 | Implementar transacción orden/stock/idempotencia de ensayo | Carrera 2+ workers, fracaso parcial y reversión |
 | M07 | Integrar PSP/HMAC sólo tras permiso/sandbox contractual | Firma falsa, expiración, replay y rotación negativa |
@@ -69,7 +80,7 @@ Estos son **índices candidatos**, no SQL revisado ni benchmarks ejecutados. Su 
 
 | Fixture | Positivo futuro | Negativo / límite que debe fallar |
 | --- | --- | --- |
-| F01 | host A validado liga tienda A | spoof, host desconocido o B no liga A |
+| F01 | host canónico verificado con titular A activo liga sólo tienda A | B reclama ese host, doble versión activa, spoof o Host no confiable se rechazan |
 | F02 | variante publicada A visible | borrador o variante B no se muestra |
 | F03 | cantidad 1 y stock vigente cotizan | cero, negativo, exceso y overflow fallan |
 | F04 | precio/IVA/moneda tomados servidor | monto falsificado en cliente no modifica |
