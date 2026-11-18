@@ -64,7 +64,20 @@ public sealed class C1004CacheJobsApplicationService
             return Deny("REQUEST_INVALID");
 
         cancellationToken.ThrowIfCancellationRequested();
-        var verified = await _source.ReadVerifiedAsync(request.WorkId!, cancellationToken);
+        VerifiedSnapshot? verified;
+        try
+        {
+            verified = await _source.ReadVerifiedAsync(request.WorkId!, cancellationToken);
+        }
+        catch (OperationCanceledException)
+        {
+            throw;
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            // Never disclose provider details or secret-bearing error messages.
+            return Deny("VERIFIED_SOURCE_UNAVAILABLE");
+        }
         if (verified?.Context is null || verified.AllowedOperations is null ||
             verified.PersistedResourceEmpresaId <= 0 || verified.VerifiedActorId <= 0)
             return Deny("VERIFIED_BACKEND_CONTEXT_REQUIRED");

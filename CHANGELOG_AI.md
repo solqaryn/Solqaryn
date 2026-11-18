@@ -1,3 +1,7 @@
+## 2026-11-18 — C10-04.M05.02 errores seguros del preflight Application DTO [Javier :00]
+- Se corrige el escape de errores de proveedor: ReadVerifiedAsync traduce fallas recuperables a VERIFIED_SOURCE_UNAVAILABLE y preserva cancelacion, sin grants ni operaciones productivas.
+- xUnit de excepcion sync/async, no filtracion, DTO hostil, tenant B, ausencia/revocacion; workflow .NET10 exact-SHA y A5 ajena. Rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-18 — C15-04.M05.04 A0.36 tenant B real JWT en CI [Javier :10]
 - Se incorpora identidad empresarial B distinta de A solo en MySQL 8.4 efimero de GitHub Actions; Playwright verifica JWT real, acceso a tenant B, rechazo de tenant A y denegacion 403 de auditoria UX global. Ninguna modificacion de backend productivo, secretos o permisos de despliegue.
 - Son 18 escenarios previstos, no PASS hasta CI exact SHA; auditoria UX global R2 A0-A4 incompleta y A5 solo por Task Javier distinta. DEV02 conserva WIP y lock V17; sin QA/main/PROD.
