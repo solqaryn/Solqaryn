@@ -506,4 +506,48 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     });
   }
 
+
+  test('A0.38 - empresa B denegada en continuidad global con API real', async ({ browser, request }) => {
+    // R2: JWT B emitido por API/MySQL efimero. Contexto aislado por viewport
+    // para impedir la reutilizacion de sesiones tras una denegacion 403.
+    for (const width of [320, 1280]) {
+      const contexto = await browser.newContext({
+        baseURL: 'http://127.0.0.1:4200',
+        viewport: { width, height: 840 }
+      });
+      try {
+        const page = await contexto.newPage();
+        const jwt = await ingresar(page, 'c1504_admin_b');
+        const headers = { Authorization: 'Bearer ' + jwt };
+        const propia = await request.get(api + '/tenant-context/2', { headers });
+        expect(propia.status(), 'B solo accede a su empresa').toBe(200);
+        expect((await propia.json())?.data?.empresaId).toBe(2);
+        const ajena = await request.get(api + '/tenant-context/1', { headers });
+        expect([403, 404], 'B no puede consultar A').toContain(ajena.status());
+        const global = await request.get(api + '/plataforma/sesion', { headers });
+        expect(global.status(), 'B no dispone del rol global').toBe(403);
+
+        const mutantes: string[] = [];
+        page.on('request', r => {
+          if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(r.method())) {
+            mutantes.push(r.method() + ' ' + r.url());
+          }
+        });
+        const sesion = page.waitForResponse(r =>
+          r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+        await page.goto('/plataforma/continuidad-operativa-v5');
+        expect((await sesion).status(), 'Guard con GET real rechaza B').toBe(403);
+        await expect(page).toHaveURL(/\/login\?plataforma=denegado/);
+        await expect(page.getByRole('heading', { name: 'Controles de recuperación y aislamiento' })).toHaveCount(0);
+        await expect(page.getByRole('region', { name: 'Límites de autoridad' })).toHaveCount(0);
+        expect(mutantes, 'Una denegacion no modifica datos').toEqual([]);
+        const ancho = await page.evaluate(() => document.documentElement.scrollWidth);
+        expect(ancho, 'Pantalla denegada sin desbordamiento').toBeLessThanOrEqual(width + 1);
+      } finally {
+        await contexto.close();
+      }
+    }
+    // Prueba de continuidad global especifica; no acredita WCAG o RUM de todo el ERP.
+  });
+
 });

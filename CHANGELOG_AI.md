@@ -1,3 +1,7 @@
+## 2026-11-18 — C15-04.M05.04 A0.38 continuidad global B denegada [Javier Task :10]
+- Se agrega un caso Chromium real en 320/1280 con contexto por ancho, JWT de empresa B y MySQL 8.4 efimero: B propia 200, A ajena 403/404, sesion global 403 por API y guard, sin panel ni HTTP mutaciones despues del login.
+- Se esperan 22 casos, sin certificar CI antes de completed/success exact-SHA. Auditoria UX global R2 A0-A4 aun incompleta, owner DEV02 y candado V17 2000002297 conservados; A5 independiente, solo dev, rollback git revert normal.
+
 ## 2026-11-18 — C09-02.M02.06 contrato de salida M02 fidelización y reputación [Javier Task :00]
 - Se fija el cierre documental M02 con trazabilidad de M01 y M02.01–05, dependencias DAG/A5 y matriz SAL01–SAL16 para ownership, puntos, promociones, reseñas, moderación, posventa, consentimiento, idempotencia y límites tipados.
 - Doce pares P/N son escenarios FUTUROS_NO_EJECUTADOS. Entrega R0 solo Markdown, sin .NET/EF/MySQL/Angular/HTTP runtime ni autorización de M03, pagos, QA/main/PROD. Exigir Scope Lock/V5 exact-SHA, readback PLAN/BITACORA y A5 independiente; rollback mediante git revert normal.
