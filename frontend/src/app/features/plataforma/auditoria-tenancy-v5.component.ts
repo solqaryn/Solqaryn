@@ -1,5 +1,6 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, InjectionToken, computed, inject, signal, type Signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
+import { defer } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { RouterLink } from '@angular/router';
 import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
@@ -126,7 +127,7 @@ export class AuditoriaTenancyV5Component {
   revalidar(): void {
     if (this.estado() === 'cargando') return; // single-flight, no doble llamada.
     this.estado.set('cargando');
-    this.plataforma.obtener().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    defer(() => this.plataforma.obtener()).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (sesion) => {
         const actual = this.plataforma.sesion();
         const confirmado = sesion?.ambito === 'Plataforma' &&

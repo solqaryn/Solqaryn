@@ -67,6 +67,25 @@ describe('C15-03.M04.01 - guía privada de seguridad y tenancy', () => {
     expect(fixture.nativeElement.querySelectorAll('.fronteras li')).toHaveLength(0);
   });
 
+  it('C15-03.M04.02 - fallo sincrono del proveedor no bloquea reintento ni expone datos', async () => {
+    const { fixture, respuesta, obtener } = await montar(autorizado);
+    const secreto = 'PRIVATE_SYNCHRONOUS_PROVIDER_SECRET';
+    obtener.mockImplementationOnce(() => { throw new Error(secreto); });
+    expect(() => fixture.componentInstance.revalidar()).not.toThrow();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.estadoVisible()).toBe('error');
+    expect(fixture.nativeElement.querySelector('button')?.disabled).toBe(false);
+    expect(fixture.nativeElement.querySelectorAll('.fronteras li')).toHaveLength(0);
+    expect(fixture.nativeElement.textContent).not.toContain(secreto);
+    fixture.componentInstance.revalidar();
+    expect(obtener).toHaveBeenCalledTimes(2);
+    respuesta.next(autorizado);
+    respuesta.complete();
+    fixture.detectChanges();
+    expect(fixture.componentInstance.estadoVisible()).toBe('exito');
+    expect(fixture.nativeElement.querySelectorAll('.fronteras li')).toHaveLength(4);
+  });
+
   it('C15-03.M04.02 - carga impide doble llamada, oculta cuatro fronteras y expone aria-busy', async () => {
     const { fixture, obtener } = await montar(autorizado);
     fixture.componentInstance.revalidar();

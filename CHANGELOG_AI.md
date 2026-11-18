@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C15-03.M04.02 reparacion A5_FAIL P2 de error sincrono [Javier :00]
+- Corrige la revalidacion de la guia privada Angular: RxJS defer captura excepciones sincronas del proveedor como error observable y restablece estado seguro y boton de reintento sin mostrar fronteras protegidas.
+- Regression TestBed adversarial verifica error sincrono con texto sensible, denegacion durante fallo y reintento exitoso; no modifica backend, JWT, RBAC, tenant, DI, MySQL, permisos ni habilita QA/main/PROD. El A5_FAIL historico sigue vigente hasta nueva revision independiente tras CI exact-SHA.
+
 ## 2026-11-18 — V20 C02-02.M05.06 regresion multitenant y presupuesto CI [Javier :50]
 - Regresion R2 de reglas Domain puras: 128 tenants en paralelo, 4096 decisiones A/B, 12288 decisiones adversariales de autorizacion y limite de humo CI amplio; nunca concede conexion o migracion.
 - Job GitHub-hosted .NET 10 Release y documento A0-A5; acceso HTTP/JWT/MySQL runtime y accesibilidad UI NO_APLICA al diff; resultados reales sujetos al SHA, sin QA/main/PROD ni certificacion productiva.
