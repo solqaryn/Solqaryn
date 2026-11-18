@@ -1,3 +1,7 @@
+## 2026-11-17 — V19 CI_REPAIR C14-01.M04.05 prueba Chromium causal [Javier Task :00]
+- Run 44234634696 job 134567687275 fallo 2/4: segundo Space no reactivaba tras cambio de tipo y la muestra de contraste inicio antes de esperar render. Reparacion mediante Tab real sin .focus(), aria-pressed reversible y espera visible de encabezado; conserva umbral >=4.5 WCAG AA.
+- CI nueva obligatoria exact-SHA 4/4, Scope Lock/V5 y A5 independiente; defectos historicos preservados, no afirmar PASS hasta completar.
+
 ## 2026-11-17 — V19 C14-01.M04.03 branding dinamico y aislamiento A/B [Javier Task :00]
 - Cinco tests Angular de servicio real con fixtures: marca/logo, mensaje, descripcion, copyright, reset neutro, fallo proveedor y respuesta A tardia incapaz de reponer identidad tras cambio B.
 - Workflow GitHub-hosted dedicado con tests, tipado y build. No se modifica codigo productivo, permisos, HTTP, MySQL ni UI DEV05; A3 proveedor live NO_APLICA. CI exact-SHA pendiente y A5 independiente; no QA/main/PROD.

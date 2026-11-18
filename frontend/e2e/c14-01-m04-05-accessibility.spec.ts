@@ -42,14 +42,26 @@ test.describe('C14-01.M04.05 - responsive, teclado, foco, labels y contraste', (
     await page.keyboard.press('Space');
     await expect(pass).toHaveAttribute('type', 'text');
     await expect(page.getByRole('button', { name: 'Ocultar contraseña' })).toHaveAttribute('aria-pressed', 'true');
+    // Angular Material puede recolocar el foco tras cambiar el tipo del input.
+    // Recuperarlo solo con Tab real (nunca .focus()) antes de exigir reversibilidad.
+    const hide = page.getByRole('button', { name: 'Ocultar contraseña' });
+    let reachedHideByKeyboard = false;
+    for (let n = 0; n < 50; n++) {
+      if (await hide.evaluate(e => document.activeElement === e)) { reachedHideByKeyboard = true; break; }
+      await page.keyboard.press('Tab');
+    }
+    expect(reachedHideByKeyboard, 'ocultar alcanzable de nuevo con Tab').toBe(true);
+    await expect(hide).toBeFocused();
     await page.keyboard.press('Space');
     await expect(pass).toHaveAttribute('type', 'password');
+    await expect(page.getByRole('button', { name: 'Mostrar contraseña' })).toHaveAttribute('aria-pressed', 'false');
     await expect(page.getByRole('button', { name: 'Ingresar al sistema' })).toBeDisabled();
     expect(writes).toEqual([]);
   });
 
   test('titulo de login cumple AA contraste conservador incluso con alpha', async ({ page }) => {
     await page.goto('/login');
+    await expect(page.getByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
     const ratio = await page.evaluate(() => {
       type Color = {r:number;g:number;b:number;a:number};
       const parse = (v:string):Color => {

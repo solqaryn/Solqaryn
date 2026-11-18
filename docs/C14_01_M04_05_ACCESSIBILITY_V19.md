@@ -14,3 +14,6 @@ CI GitHub-hosted Angular 22.2.1 + Chromium real usando frontend en 127.0.0.1:420
 
 ## A4/A5 y rollback
 Exigir Scope Lock y V5 y job Chromium completed/success exact-SHA; QUEUED/IN_PROGRESS/SKIPPED/CANCELLED no PASS. H=VALIDANDO hasta pruebas y aceptación suficientes; A5 revisión independiente de otra Task Javier. Readback en PLAN/COLA/DAG y BITACORA, liberar V17 solo tras prueba causal. Git revert de dev sin force-push.
+
+## Reparacion causal CI V19 — 17 noviembre 2026 (DEV01)
+En SOURCE_SHA fd0f4002772f59bb9e21e8cb9a73dc324ea9daad, run 44234634696 job 134567687275, Chromium termino FAILURE con 2/4 aprobadas: la reversibilidad de contrasena no reobtuvo el control tras cambio de tipo y el contraste consulto el DOM antes de esperar el encabezado. Se preserva evidencia QA_DEFECT_FOUND de pruebas y no se afirma defecto de produccion ni PASS. La correccion mantiene teclado real desde inicio, Tab para volver a alcanzar el boton sin focus programatico, aserciones positivas de dos estados de aria-pressed, espera de encabezado visible y el calculo conservador AA >= 4.5. Exigir CI dirigida 4/4 y controles Scope Lock/V5 exact-SHA antes de A0-A4 o LISTO; A5 distinto del autor. Mantener riesgos de contraste real sin suprimir controles, y rollback git revert normal.
