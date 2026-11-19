@@ -1444,4 +1444,83 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     }
   });
 
+
+  // A0.54: cobertura global autenticada adicional; cutover permanece solo lectura.
+  test('A0.54 - cutover privado: JWT real, tema por teclado y cero mutaciones', async ({ page }) => {
+    await ingresar(page, 'c1504_platform_only');
+    const mutaciones: string[] = [];
+    page.on('request', req => {
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method())) {
+        mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+      }
+    });
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      const sesion = page.waitForResponse(r =>
+        r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+      const documento = await page.goto('/plataforma/mysql-cutover-readonly-v5');
+      expect(documento?.status()).toBe(200);
+      expect((await sesion).status()).toBe(200);
+      await expect(page.getByRole('main')).toHaveCount(1);
+      await expect(page.getByRole('heading', {
+        level: 1, name: 'Controles de preparación para cutover'
+      })).toHaveCount(1);
+      await expect(page.getByTestId('c1204-cutover-private').locator('li')).toHaveCount(4);
+      await expect(page.getByRole('note', { name: 'Límite de operación' }))
+        .toContainText('NO OPERATIVO');
+      await expect(page.getByText('NO_AUTORIZADO')).toBeVisible();
+      const revalidar = page.getByTestId('c1204-m0402-revalidate');
+      let focoRevalidar = false;
+      for (let n = 0; n < 100; n++) {
+        await page.keyboard.press('Tab');
+        focoRevalidar = await revalidar.evaluate(el => el === document.activeElement);
+        if (focoRevalidar) break;
+      }
+      expect(focoRevalidar, 'Tab llega a revalidar cutover').toBe(true);
+      const respuesta = page.waitForResponse(r =>
+        r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+      await page.keyboard.press('Enter');
+      expect((await respuesta).status()).toBe(200);
+      await expect(page.getByTestId('c1204-m0402-state')).toContainText('Éxito');
+      const contraste = page.getByTestId('c1204-m0403-theme-alto-contraste');
+      let focoContraste = false;
+      for (let n = 0; n < 12; n++) {
+        await page.keyboard.press('Tab');
+        focoContraste = await contraste.evaluate(el => el === document.activeElement);
+        if (focoContraste) break;
+      }
+      expect(focoContraste, 'Tema alcanzable con teclado real').toBe(true);
+      await page.keyboard.press('Space');
+      await expect(contraste).toHaveAttribute('aria-pressed', 'true');
+      await expect(page.locator('main.cutover')).toHaveClass(/contraste-alto/);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(width + 1);
+    }
+    expect(mutaciones, 'Cutover no ejecuta operaciones MySQL desde UI').toEqual([]);
+  });
+
+  test('A0.54 - empresa B no lee controles privados de cutover con JWT real', async ({ page, request }) => {
+    const token = await ingresar(page, 'c1504_admin_b');
+    const acceso = await request.get(api + '/plataforma/sesion', {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    expect(acceso.status()).toBe(403);
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      const sesion = page.waitForResponse(r =>
+        r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+      await page.goto('/plataforma/mysql-cutover-readonly-v5');
+      expect((await sesion).status()).toBe(403);
+      await expect(page).toHaveURL(url =>
+        url.pathname === '/login' && url.searchParams.get('plataforma') === 'denegado');
+      await expect(page.getByTestId('c1204-cutover-private')).toHaveCount(0);
+      await expect(page.getByTestId('c1204-m0403-branding')).toHaveCount(0);
+      await expect(page.getByRole('heading', {
+        name: 'Controles de preparación para cutover'
+      })).toHaveCount(0);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(width + 1);
+    }
+  });
+
 });

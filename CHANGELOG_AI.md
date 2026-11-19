@@ -1,3 +1,8 @@
+## 2026-11-19 — C15-04.M05.04 | V22 DEV02 A0.54 cutover UX JWT real
+- Dos pruebas Playwright/Chromium nuevas para cutover read-only: rol plataforma con JWT firmado, Tab/Enter/Space y tema alto contraste local; empresa B con HTTP 403 y DOM privado ausente, sobre MySQL 8.4 efimero de CI.
+- Solo test y evidencia documental; sin API/EF/rutas productivas/secretos. Estados de cutover permanecen SIN_VERIFICAR, NO_MEDIDO y NO_AUTORIZADO.
+- C15 UX global sigue EN_PROGRESO R2 bajo mismo candado V17; 49 Chromium esperados, CI exact-SHA por acreditar, A0–A4 globales incompletas y A5 independiente. No QA/main/PROD.
+
 ## 2026-11-19 — V22 C13-04.M06.06 cierre documental y matriz de gates [Javier DEV01]
 - Se reconciliaron once predecesoras M05.01–06 y M06.01–05 en LISTO con A5 independiente por ID y SHA, preservando sus autores, pruebas reales versus mocks y las limitaciones de fase.
 - Se agrego matriz pantalla/estado/accion/responsive y contraejemplos de falsos PASS, incluyendo tres fallos historicos de transferencias de inventario y ausencia de dispositivos fisicos/Core Web Vitals de campo.
