@@ -4,6 +4,8 @@ on:
     branches: [dev]
     paths:
       - 'backend/tests/Solqaryn.Tests/Application/C1402M0502SafeApiContractTests.cs'
+      - 'backend/tests/Solqaryn.Tests/P1010BMultiEmpresaHttpJwtCertificationTests.cs'
+      - 'backend/tests/Solqaryn.Tests/C1402M0503MySqlThreatScopeIntegrationTests.cs'
       - 'backend/src/Application/AutomationV5/C1402SecurityAcceptanceAuthorizationGate.cs'
       - '.github/workflows/v20-c14-02-m05-02-api-contract.yml'
   workflow_dispatch:
@@ -16,7 +18,20 @@ jobs:
   safe-contract:
     name: C14-02.M05.02 - .NET 10 safe DTO negative tests
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 50
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=mysql;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -30,8 +45,41 @@ jobs:
           set -euo pipefail
           dotnet restore Solqaryn.sln
           dotnet build Solqaryn.sln --configuration Release --no-restore
-      - name: Real xUnit API DTO negative preflight
+      - name: Verify ephemeral MySQL 8.4
+        run: |
+          set -euo pipefail
+          docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -Nse 'SELECT VERSION();' | grep -E '^8[.]4[.]'
+      - name: Signed JWT HTTP tests and adversarial DTO contract
         working-directory: backend
         run: |
           set -euo pipefail
-          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter "FullyQualifiedName~C1402M0502SafeApiContractTests" --logger "console;verbosity=normal"
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter "FullyQualifiedName~C1402M0502SafeApiContractTests|FullyQualifiedName~P1010BMultiEmpresaHttpJwtCertificationTests" --logger 'trx;LogFileName=c1402-m0502-http.trx' --logger 'console;verbosity=normal'
+          python3 - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree as ET
+          files = list(Path('tests/Solqaryn.Tests/TestResults').rglob('c1402-m0502-http.trx'))
+          assert files, 'No HTTP contract TRX produced'
+          root = ET.parse(files[-1]).getroot()
+          counts = next((x.attrib for x in root.iter() if x.tag.endswith('Counters')), None)
+          assert counts is not None and int(counts['executed']) >= 15, counts
+          assert int(counts['passed']) >= 15 and int(counts['failed']) == 0, counts
+          assert int(counts.get('notExecuted', 0)) == 0, counts
+          print('C1402_M0502_REAL_JWT_HTTP_NEGATIVE_CONTRACT=PASS')
+          PY
+      - name: Oracle EF MySQL 8.4 tenant and rollback integration
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter 'FullyQualifiedName~C1402M0503MySqlThreatScopeIntegrationTests&Category=Integration' --logger 'trx;LogFileName=c1402-m0502-mysql.trx' --logger 'console;verbosity=normal'
+          python3 - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree as ET
+          files = list(Path('tests/Solqaryn.Tests/TestResults').rglob('c1402-m0502-mysql.trx'))
+          assert files, 'No MySQL 8.4 TRX produced'
+          root = ET.parse(files[-1]).getroot()
+          counts = next((x.attrib for x in root.iter() if x.tag.endswith('Counters')), None)
+          assert counts is not None and int(counts['executed']) >= 3, counts
+          assert int(counts['passed']) >= 3 and int(counts['failed']) == 0, counts
+          assert int(counts.get('notExecuted', 0)) == 0, counts
+          print('C1402_M0502_MYSQL84_REAL_INTEGRATION=PASS')
+          PY

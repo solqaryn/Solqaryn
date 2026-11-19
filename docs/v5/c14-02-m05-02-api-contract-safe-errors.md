@@ -17,3 +17,11 @@ A2 prueba denegación en el preflight Application con snapshots sintéticos. **N
 ## A4-A5: gates institucionales
 
 Publicar en dev por fast-forward y revalidar SHA de commit, `verify-solqaryn-project-scope`, V5/procedencia, backend Release, seguridad multiempresa, autorización y job dirigido. `QUEUED`, `IN_PROGRESS`, `CANCELLED`, `SKIPPED` y `FAILURE` no constituyen PASS requerido. La microtarea permanece VALIDANDO hasta completar A0–A4 para el alcance exigido y contar con pruebas pertinentes de HTTP/JWT/RBAC/tenant y cero P0/P1 sin mitigación. A5 debe efectuarla otra Task Javier independiente del autor y del reparador, mediante lectura del código, requisitos y logs. Nunca habilitar QA/main/PROD ni abrir dependencias por una suite parcial.
+
+## V21 — Reparacion transversal de cobertura JWT HTTP y persistencia real (19 noviembre 2026)
+
+Se agrega una prueba adversarial **nueva** en `P1010BMultiEmpresaHttpJwtCertificationTests`: altera la firma del JWT HS256 legitimo y comprueba que `/tenant-context/empresas`, empresa A y B devuelven **401** incluso con `X-Empresa-Id` falso; el control positivo comprueba 200 para A con firma legitima y 403 para empresa ajena. Se ejecuta mediante TestServer/ASP.NET Core .NET 10, middleware JWT autentico y EF InMemory aislado, no por mocks del gate C14.
+
+El workflow dirigido existente ahora ejecuta las 8 pruebas originales de DTO, las 7 pruebas de JWT HTTP (incluida la nueva) y la suite ya implementada `C1402M0503MySqlThreatScopeIntegrationTests` sobre servicio **MySQL 8.4 efimero** mediante proveedor Oracle EF, con verificaciones TRX separadas de conteos, fallos y omitidas, ademas del Scope Lock y build Release. Todo resultado queda **PENDIENTE** hasta la corrida GitHub-hosted exact-SHA y lectura de logs.
+
+Alcance: incremento autentico de test para BOLA/tenant/JWT/host spoof y MySQL de laboratorio, **no** cobertura exhaustiva de archivos/jobs/backup/restore, autorizacion de cada endpoint real, ni prueba de cero P0/P1 global. No se creo endpoint, ruta, secreto, migracion ni adaptador productivo y no se habilita acceso real. `PLAN_MAESTRO!H` permanece VALIDANDO; A0-A4 completos y A5 de revisor distinto del DEV05 autor y DEV06 reparador siguen pendientes. Rollback: revert normal de este changeset en dev, tras verificar HEAD y candado.

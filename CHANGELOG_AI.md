@@ -7939,3 +7939,9 @@
 
 - Se añade un boundary Application y siete grupos de pruebas xUnit que bloquean despacho sin autorización backend, verificación de tenant y idempotencia durable; ningún worker ni proveedor se activa.
 - Estado VALIDANDO: la aceptación real de JWT/RBAC/tenant A/B, persistencia MySQL, reintentos y cola se mantiene pendiente de una integración completa y CI causal exact-SHA; A5 independiente pendiente.
+
+
+## 2026-11-19 - V21 C14-02.M05.02 JWT HTTP firmado y MySQL 8.4 [Javier :50]
+- Añade prueba adversarial real de firma JWT alterada (401 en lista y tenants A/B incluso con cabecera de empresa falsificada), control positivo 200 en A con token firmado original y rechazo 403 del tenant ajeno; no crea endpoint ni expone datos.
+- Amplia workflow dirigido GitHub-hosted .NET 10 con TRX obligatorio >=15 tests HTTP/DTO y >=3 integraciones Oracle EF/MySQL 8.4 efimero; resultados pendientes hasta CI exact-SHA, sin contar SKIPPED/IN_PROGRESS como PASS ni certificar cero P0/P1 global.
+- Reparacion parcial R2 de VALIDANDO historica DEV05 bajo candado V17; autor original y A5_FAIL previo preservados. No LISTO ni A5, no QA/main/PROD, rollback mediante git revert normal.

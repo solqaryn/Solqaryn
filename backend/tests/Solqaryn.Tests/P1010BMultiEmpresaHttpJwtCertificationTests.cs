@@ -259,6 +259,45 @@ public sealed class P1010BMultiEmpresaHttpJwtCertificationTests
         Assert.Equal(HttpStatusCode.Forbidden, ajena.StatusCode);
     }
 
+    /// <summary>
+    /// C14-02.M05.02: real JWT signature verification through TestServer, not a synthetic
+    /// Application snapshot. EF InMemory remains isolated; it does not certify MySQL.
+    /// </summary>
+    [Fact]
+    public async Task C1402M0502_ForgedJwtWithSpoofedTenantHeaderCannotReadMemberships()
+    {
+        using var escenario = await CrearEscenarioAsync();
+        using var cliente = escenario.Host.GetTestClient();
+        var validToken = CrearJwtPrueba(escenario.UsuarioId, escenario.RolAdminAId);
+        var pieces = validToken.Split('.');
+        Assert.Equal(3, pieces.Length);
+        Assert.NotEmpty(pieces[2]);
+        pieces[2] = (pieces[2][0] == 'A' ? "B" : "A") + pieces[2][1..];
+        var forgedToken = string.Join(".", pieces);
+        Assert.NotEqual(validToken, forgedToken);
+
+        cliente.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", forgedToken);
+        cliente.DefaultRequestHeaders.TryAddWithoutValidation(
+            "X-Empresa-Id", escenario.EmpresaBId.ToString());
+
+        using (var listado = await cliente.GetAsync("/tenant-context/empresas"))
+            Assert.Equal(HttpStatusCode.Unauthorized, listado.StatusCode);
+        using (var accesoB = await cliente.GetAsync($"/tenant-context/{escenario.EmpresaBId}"))
+            Assert.Equal(HttpStatusCode.Unauthorized, accesoB.StatusCode);
+        using (var accesoA = await cliente.GetAsync($"/tenant-context/{escenario.EmpresaAId}"))
+            Assert.Equal(HttpStatusCode.Unauthorized, accesoA.StatusCode);
+
+        // Positive control: only the unmodified signed JWT grants its pre-existing
+        // membership, and the spoofed B header cannot elevate role in A.
+        cliente.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", validToken);
+        using (var a = await cliente.GetAsync($"/tenant-context/{escenario.EmpresaAId}"))
+            Assert.Equal(HttpStatusCode.OK, a.StatusCode);
+        using (var ajena = await cliente.GetAsync($"/tenant-context/{escenario.EmpresaAjenaId}"))
+            Assert.Equal(HttpStatusCode.Forbidden, ajena.StatusCode);
+    }
+
     private static string CrearJwtPrueba(int usuarioId, int rolAdminAId)
     {
         var token = new JwtSecurityToken(
