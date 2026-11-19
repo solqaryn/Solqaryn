@@ -96,12 +96,21 @@ public sealed class V5ArchitectureMigrationSafeAuditService
             probes.Count is < 1 or > V5ArchitectureMigrationBoundedReadWorker.MaximumBatch)
             return await DeniedAsync("MIGRATION_AUDIT_CONTEXT_REQUIRED", ct);
 
-        // Reject mixed/faked scopes before any delegated read or output.
-        if (probes.Any(p => p is null || p.Context is null ||
-            p.RequestsExternalMutation ||
+        // Snapshot identities before awaits: a caller must not change the set
+        // of attempted operations while an asynchronous reader is working.
+        var snapshot = probes.ToArray();
+        var expectedAttempts = new HashSet<string>(StringComparer.Ordinal);
+        if (snapshot.Any(p => p is null || p.Context is null ||
+            p.RequestsExternalMutation || !SafeKey(p.AttemptKey) ||
             !string.Equals(p.ObservedSha, observedSha, StringComparison.Ordinal) ||
             !string.Equals(p.ObservedTenant, observedTenant, StringComparison.Ordinal)))
             return await DeniedAsync("MIGRATION_AUDIT_MIXED_SCOPE_DENIED", ct);
+
+        foreach (var probe in snapshot)
+        {
+            if (!expectedAttempts.Add(probe!.AttemptKey!))
+                return await DeniedAsync("MIGRATION_AUDIT_MIXED_SCOPE_DENIED", ct);
+        }
 
         if (!await _singleFlight.WaitAsync(0, ct))
             return await DeniedAsync("MIGRATION_AUDIT_CONCURRENT_DENIED", ct);
@@ -114,7 +123,7 @@ public sealed class V5ArchitectureMigrationSafeAuditService
                 return await DeniedAsync("MIGRATION_AUDIT_DUPLICATE_DENIED", ct);
 
             V5ArchitectureMigrationBoundedReadWorker.Review preview;
-            try { preview = await _reader.ReadAsync(probes, ct); }
+            try { preview = await _reader.ReadAsync(snapshot, ct); }
             catch (OperationCanceledException) { throw; }
             catch (Exception ex) when (ex is not OutOfMemoryException)
             {
@@ -123,15 +132,25 @@ public sealed class V5ArchitectureMigrationSafeAuditService
 
             if (preview is null ||
                 preview.Code != "MIGRATION_PREVIEW_EXTERNAL_EVIDENCE_REQUIRED" ||
-                preview.Items is null || preview.Items.Count != probes.Count ||
+                preview.Items is null || preview.Items.Count != snapshot.Length ||
                 preview.Items.Any(item => item is null ||
-                    item.ItemsReviewed is < 1 or > 64) ||
+                    !SafeKey(item.AttemptKey) || item.ItemsReviewed is < 1 or > 64) ||
                 preview.AuthorizesDeployment || preview.AuthorizesMySqlMigration ||
                 preview.AuthorizesDnsOrSecretMutation || preview.GrantsTenantAccess ||
                 preview.GrantsA5 || preview.StartsHostedWorker ||
                 preview.WritesAuditOrInstitutionalData ||
                 preview.CertifiesRealBackupRestore)
                 return await DeniedAsync("MIGRATION_AUDIT_AUTHORITY_DENIED", ct);
+
+            // Matching counts do not establish a matching batch: a malicious or
+            // stale reader can swap, duplicate or invent an AttemptKey.
+            var returnedAttempts = new HashSet<string>(StringComparer.Ordinal);
+            foreach (var item in preview.Items)
+            {
+                if (!expectedAttempts.Contains(item.AttemptKey) ||
+                    !returnedAttempts.Add(item.AttemptKey))
+                    return await DeniedAsync("MIGRATION_AUDIT_AUTHORITY_DENIED", ct);
+            }
 
             const string code = "MIGRATION_AUDIT_EXTERNAL_EVIDENCE_REQUIRED";
             if (!await WriteAsync(code, preview.Items.Count, ct))

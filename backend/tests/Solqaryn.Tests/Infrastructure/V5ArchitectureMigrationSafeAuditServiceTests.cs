@@ -32,6 +32,7 @@ public sealed class V5ArchitectureMigrationSafeAuditServiceTests
     {
         public int Calls { get; private set; }
         public bool Throws { get; set; }
+        public IReadOnlyList<Worker.Item>? Items { get; set; }
         public TaskCompletionSource<bool>? Wait { get; set; }
         public async ValueTask<Worker.Review> ReadAsync(
             IReadOnlyList<Worker.Probe?>? probes, CancellationToken ct)
@@ -40,7 +41,7 @@ public sealed class V5ArchitectureMigrationSafeAuditServiceTests
             if (Throws) throw new InvalidOperationException("PRIVATE_SECRET_DATA");
             if (Wait is not null) await Wait.Task.WaitAsync(ct);
             return new("MIGRATION_PREVIEW_EXTERNAL_EVIDENCE_REQUIRED",
-                new[] { new Worker.Item("attempt-001", 1) });
+                Items ?? new[] { new Worker.Item("attempt-001", 1) });
         }
     }
 
@@ -173,6 +174,60 @@ public sealed class V5ArchitectureMigrationSafeAuditServiceTests
             (await Check(svc, op: "bad/key")).Code);
         Assert.Equal("MIGRATION_AUDIT_CONTEXT_REQUIRED",
             (await Check(svc, sha: "short")).Code);
+    }
+
+    [Fact]
+    public async Task MismatchedReaderAttemptKeyNeverBecomesSuccessfulAudit()
+    {
+        var reader = new Reader { Items = new[] { new Worker.Item("attempt-999", 1) } };
+        var sink = new Sink();
+        var result = await Check(new Service(reader, sink));
+        Assert.Equal("MIGRATION_AUDIT_AUTHORITY_DENIED", result.Code);
+        Assert.Equal(0, result.ReviewedCount);
+        Assert.Equal(1, reader.Calls);
+        Assert.Equal("MIGRATION_AUDIT_AUTHORITY_DENIED", Assert.Single(sink.Records).Code);
+    }
+
+    [Fact]
+    public async Task DuplicateReaderKeysAreRejectedEvenWhenCountMatches()
+    {
+        var reader = new Reader { Items = new[] {
+            new Worker.Item("attempt-001", 1),
+            new Worker.Item("attempt-001", 1)
+        } };
+        var sink = new Sink();
+        var result = await Check(new Service(reader, sink),
+            new Worker.Probe?[] { Probe(), Probe("attempt-002") });
+        Assert.Equal("MIGRATION_AUDIT_AUTHORITY_DENIED", result.Code);
+        Assert.Equal(0, result.ReviewedCount);
+    }
+
+    [Fact]
+    public async Task DuplicateOrUnsafeInputAttemptKeyNeverReachesReader()
+    {
+        var reader = new Reader();
+        var svc = new Service(reader, new Sink());
+        var duplicate = await Check(svc,
+            new Worker.Probe?[] { Probe(), Probe() });
+        Assert.Equal("MIGRATION_AUDIT_MIXED_SCOPE_DENIED", duplicate.Code);
+        var unsafeKey = await Check(svc,
+            new Worker.Probe?[] { Probe("attempt/secret") }, op: "operation-002");
+        Assert.Equal("MIGRATION_AUDIT_MIXED_SCOPE_DENIED", unsafeKey.Code);
+        Assert.Equal(0, reader.Calls);
+    }
+
+    [Fact]
+    public async Task ReorderedReaderKeysAreAcceptedOnlyWhenSetMatchesExactly()
+    {
+        var reader = new Reader { Items = new[] {
+            new Worker.Item("attempt-002", 1),
+            new Worker.Item("attempt-001", 1)
+        } };
+        var result = await Check(new Service(reader, new Sink()),
+            new Worker.Probe?[] { Probe(), Probe("attempt-002") });
+        Assert.Equal("MIGRATION_AUDIT_EXTERNAL_EVIDENCE_REQUIRED", result.Code);
+        Assert.Equal(2, result.ReviewedCount);
+        Assert.False(result.CertifiesProduction);
     }
 
     [Fact]

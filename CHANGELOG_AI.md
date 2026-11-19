@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C15-02.M03.06 reparación P2 de correlación AttemptKey [Javier :40]
+- Endurece revisión Infrastructure de migración aislada: snapshot previo al await y correspondencia exacta de claves de intento, rechazando resultados sustituidos, duplicados o forjados sin conceder permisos.
+- Amplía cuatro pruebas xUnit adversariales; conservar A5_FAIL histórico y exigir CI GitHub-hosted exact-SHA y revisor independiente DEV01/02/03/04, nunca DEV06 autor ni DEV05 reparador. No JWT HTTP, MySQL live, QA/main/PROD ni R3.
+
 ## 2026-11-18 — V20 C14-04.M06.06 cierre documental DEV condicionado [Javier :20]
 - Matriz de 6 M05 y 5 M06 LISTO+A5 genuinas, con SHA y limites de pruebas; cierre documental solo DEV sin permiso de salida comercial, JWT HTTP, MySQL live ni metricas RPO/RTO no medidas.
 - Gates dinamicos DAG/COLA y candado V17 con CAS/readback; exigir Scope Lock y V5 exact-SHA para LISTO y A5 de otra Task. Sin cambios runtime, QA/main/PROD ni autorizacion R3.
