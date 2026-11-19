@@ -1,3 +1,7 @@
+## 2026-11-19 — V21 C12-04.M06.04 restauración de esquema Oracle EF/MySQL 8.4 efímero [Javier :50]
+- Nuevo ensayo GitHub-hosted de dump/restauración del esquema Oracle EF canónico después de bootstrap y migraciones; compara SHA-256, historia EF completa y columnas, con regresión negativa que inserta una tabla inesperada y exige detectar drift.
+- Mínimo privilegio y limpieza de dos bases sintéticas; no son datos reales ni RTO/RPO, cutover, Aiven o permiso R3. Mantener VALIDANDO, A0-A4 pendientes de verificación CI por SHA y A5 por revisor Javier diferente; sin QA/main/PROD.
+
 ## 2026-11-19 — V21 C15-01.M05.04 reparación del recenso de rutas [Javier :30]
 - Se corrige un falso negativo de cobertura estática: la ruta raíz `path: ''` se omitía; se descartan rutas ficticias en comentarios y cadenas y se reconocen comillas dobles. Snapshot histórico no autoritativo ajustado de 152 a 153 declaraciones, con cinco regresiones adicionales.
 - Cambio R2/P2 solo en auditor Node y evidencias, sin runtime/tenant/MySQL; permanece VALIDANDO, CI del SHA nuevo y A0–A4 integrales pendientes, A5 independiente, rollback con git revert, solo dev.

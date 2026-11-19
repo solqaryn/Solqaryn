@@ -123,11 +123,46 @@ jobs:
           assert int(counters['notExecuted'])==0, counters
           print('C1204_M0604_ORACLE_EF_TENANT_AB_TRX_PASS=TRUE')
           PY
+      - name: Comprobar dump-restauracion de esquema Oracle EF y detectar drift adversarial
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          cid="${{ job.services.mysql.id }}"
+          work="$(mktemp -d)"
+          trap 'rm -rf "$work"' EXIT
+          sql() { docker exec -e MYSQL_PWD=root "$cid" mysql -uroot -Nse "$1"; }
+          schema_fingerprint() {
+            sql "SELECT CONCAT_WS('|', TABLE_NAME, COLUMN_NAME, COLUMN_TYPE, IS_NULLABLE, IFNULL(COLUMN_DEFAULT,'<NULL>'), COLUMN_KEY, EXTRA) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA='$1' ORDER BY TABLE_NAME, ORDINAL_POSITION;" | sha256sum | awk '{print $1}'
+          }
+          history_fingerprint() {
+            sql "SELECT MigrationId, ProductVersion FROM $1.__EFMigrationsHistory ORDER BY MigrationId;" | sha256sum | awk '{print $1}'
+          }
+          source_count="$(sql 'SELECT COUNT(*) FROM c1204_ef_sandbox.__EFMigrationsHistory;')"
+          [[ "$source_count" =~ ^[0-9]+$ && "$source_count" -gt 0 ]] || { echo 'NO_CANONICAL_EF_HISTORY'; exit 1; }
+          source_schema="$(schema_fingerprint c1204_ef_sandbox)"
+          source_history="$(history_fingerprint c1204_ef_sandbox)"
+          docker exec -e MYSQL_PWD=root "$cid" mysqldump -uroot --single-transaction --skip-lock-tables --no-tablespaces --skip-comments c1204_ef_sandbox > "$work/c1204-ef.sql"
+          [[ -s "$work/c1204-ef.sql" ]] || { echo 'EMPTY_EF_BACKUP'; exit 1; }
+          original_dump_sha="$(sha256sum "$work/c1204-ef.sql" | awk '{print $1}')"
+          sql 'CREATE DATABASE c1204_ef_restored CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;'
+          docker exec -i -e MYSQL_PWD=root "$cid" mysql -uroot c1204_ef_restored < "$work/c1204-ef.sql"
+          [[ "$(sha256sum "$work/c1204-ef.sql" | awk '{print $1}')" == "$original_dump_sha" ]] || { echo 'EF_DUMP_MUTATED'; exit 1; }
+          restored_count="$(sql 'SELECT COUNT(*) FROM c1204_ef_restored.__EFMigrationsHistory;')"
+          [[ "$restored_count" == "$source_count" ]] || { echo 'EF_MIGRATION_COUNT_DRIFT'; exit 1; }
+          [[ "$(history_fingerprint c1204_ef_restored)" == "$source_history" ]] || { echo 'EF_MIGRATION_IDS_DRIFT'; exit 1; }
+          [[ "$(schema_fingerprint c1204_ef_restored)" == "$source_schema" ]] || { echo 'EF_SCHEMA_RESTORE_DRIFT'; exit 1; }
+          sql 'CREATE TABLE c1204_ef_restored.__C1204UnexpectedTable (id INT PRIMARY KEY);'
+          [[ "$(schema_fingerprint c1204_ef_restored)" != "$source_schema" ]] || { echo 'UNEXPECTED_TABLE_NOT_DETECTED'; exit 1; }
+          sql 'DROP TABLE c1204_ef_restored.__C1204UnexpectedTable;'
+          [[ "$(schema_fingerprint c1204_ef_restored)" == "$source_schema" ]] || { echo 'SCHEMA_NOT_RECOVERED_AFTER_NEGATIVE'; exit 1; }
+          echo "C1204_ORACLE_EF_FULL_SCHEMA_RESTORE_PASS=TRUE MIGRATIONS=$source_count STRUCTURE_SHA256=$source_schema HISTORY_SHA256=$source_history UNEXPECTED_TABLE_DETECTED=TRUE"
+          echo "SYNTHETIC_MYSQL_ONLY=TRUE AIVEN_PROD=NOT_USED OLD_SCHEMA_UPGRADE=NOT_PROVEN PROD_RTO_RPO=NOT_MEASURED"
       - name: Descartar base de ensayo y verificar ausencia
         if: always()
         shell: bash
         run: |
           set -euo pipefail
-          docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -e 'DROP DATABASE IF EXISTS c1204_ef_sandbox;'
-          remaining="$(docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME='c1204_ef_sandbox';")"
+          docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -e 'DROP DATABASE IF EXISTS c1204_ef_restored; DROP DATABASE IF EXISTS c1204_ef_sandbox;'
+          remaining="$(docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -Nse "SELECT COUNT(*) FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME IN ('c1204_ef_sandbox','c1204_ef_restored');")"
           [[ "$remaining" == "0" ]] || { echo 'SANDBOX_NOT_CLEANED'; exit 1; }
