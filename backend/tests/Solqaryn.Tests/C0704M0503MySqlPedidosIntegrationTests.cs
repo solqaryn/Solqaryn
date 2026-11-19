@@ -152,7 +152,7 @@ public sealed class C0704M0503MySqlPedidosIntegrationTests
             }
 
             // A committed quotation and a new order inside a transaction must
-            // disappear after rollback; no inventory or payment is mutated.
+            // disappear after rollback; no stock or payment is mutated.
             await using (var txDb = new AppDbContext(options, tenantHttpContextAccessor: ForTenant(tenantA)))
             {
                 await using var tx = await txDb.Database.BeginTransactionAsync();

@@ -1,3 +1,6 @@
+## 2026-11-18 — V20 C07-04.M05.03 reparación Scope Lock de comentario [Javier :50]
+- Se elimina únicamente una palabra inglesa heredada del comentario del ensayo, rechazada por el validador institucional de identidad. No modifica oráculos, lógica de prueba, runtime ni seguridad. Se exige nueva CI exact-SHA, MySQL real y trazabilidad de errores original.
+
 ## 2026-11-18 — V20 C07-04.M05.03 integración real MySQL 8.4 de pedidos [Javier :50]
 - Incorpora xUnit Oracle EF Core/MySQL 8.4 con persistencia real de cotización y pedido, aislamiento A/B, duplicado físico de Idempotency-Key y rollback transaccional; workflow dedicado con TRX de cuatro pruebas y Scope Lock.
 - No cambia runtime ni certifica JWT/RBAC firmado, HTTP, pagos, finanzas o fiscalidad; requiere CI exact-SHA, A0–A4 restantes y A5 independiente. Sin QA/main/PROD.
