@@ -21,3 +21,7 @@ A3: integración Angular TestBed + TenantContextService del producto real, ejecu
 A4: GitHub Actions en SHA causal (TestBed, lint/Angular production build) y checks de Scope Lock/V5, security/frontend requeridos; si quedan QUEUED/IN_PROGRESS, no son PASS. PLAN/COLA/BITACORA readback y candado V17.
 
 A5: revisión independiente de Task Javier distinta de DEV05, sin autopase. Rollback `git revert` no destructivo; QA/main/PROD no autorizados.
+
+## Reparación causal V21 (TestBed CI)
+
+El job 135567891157 del SHA c4422c80 detectó un defecto real: el `<select>` quedó habilitado en DOM tras devolver cero membresías, pese a que la autorización y el botón de envío estaban cerrados. `ngModel` pudo restablecer el estado nativo de `disabled`. Se vincula el atributo `disabled` directamente a los estados de carga/lista/ausencia de empresas y se comprueba tanto la propiedad como el atributo en TestBed. No se relajan validaciones de backend ni se concede contexto. El SHA reparado requiere una nueva CI dirigida y A5 independiente; no se convierte en LISTO sin A0–A4.

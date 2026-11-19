@@ -93,6 +93,7 @@ describe('TenantSelectorComponent - P1-006.A', () => {
     expect(fixture.nativeElement.textContent).toContain('No tienes membresías empresariales activas');
     expect(fixture.componentInstance.empresaValida()).toBe(false);
     expect((fixture.nativeElement.querySelector('select#empresa-id') as HTMLSelectElement).disabled).toBe(true);
+    expect((fixture.nativeElement.querySelector('select#empresa-id') as HTMLSelectElement).hasAttribute('disabled')).toBe(true);
     expect((fixture.nativeElement.querySelector('button[type="submit"]') as HTMLButtonElement).disabled).toBe(true);
     expect(TestBed.inject(TenantContextService).contextoVerificado()).toBeNull();
   });

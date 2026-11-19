@@ -24,7 +24,7 @@ import { TenantContextService } from './tenant-context.service';
           name="empresaId"
           required
           [(ngModel)]="empresaId"
-          [disabled]="cargando || cargandoEmpresas || empresas.length === 0"
+          [attr.disabled]="cargando || cargandoEmpresas || empresas.length === 0 ? '' : null"
           [attr.aria-invalid]="error ? 'true' : null"
           aria-describedby="tenant-help-inline">
           <option [ngValue]="null" disabled>Selecciona tu empresa</option>
