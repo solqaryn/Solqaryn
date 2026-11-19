@@ -1,3 +1,7 @@
+## 2026-11-19 — V21 C14-01.M04.03 JWT real y marca visual A/B [Javier Task :10 — reparador, DEV01 autor historico]
+- Playwright Chromium contra JWT firmado, tenant A/B y MySQL 8.4 efimero: 3 regresiones de marca, logo y neutralidad global con proveedor de branding interceptado explícitamente; no certificar proveedor real ni alcance completo de M04.03.
+- Nuevo workflow GitHub-hosted separado por SHA, .NET 10, Angular 22, pruebas y artefactos; cierre A0–A4 y A5 independiente todavía sujetos a CI y requisitos verdaderos. Owner historico DEV01 sin cambio; solo dev, sin QA/main/PROD.
+
 ## 2026-11-19 — C01-04.M03.06 reparación V21 de logging estructurado en DEV [Javier :00]
 - Añade sink de ILogger con EventId, campos allowlisted e inspección adversarial de mensajes/PII, integrado solo en DI Development; no añade fuente, endpoint, permisos ni flujo productivo.
 - Añade regresiones xUnit de logging real, aislamiento tenant A/B, revocación, entradas maliciosas y cancelación; CI exact-SHA y A5 independiente pendientes, sin declarar LISTO ni certificación externa.
