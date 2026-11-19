@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 C14-02.M05.02 contrato de errores seguros Application [Javier :40]
+- Añade ocho pruebas xUnit .NET 10 sobre el gate Application real de aceptación de seguridad: DTO inválido, SHA y recurso ajeno, spoof de tenant/rol, revocación, host/archivo/job, error de lector y cancelación. Verifica denegación sin grants; no simula HTTP/JWT/MySQL ni certifica producción.
+- Workflow dirigido GitHub-hosted por SHA, Scope Lock y build Release; A0–A4 completos y A5 independiente aún pendientes de CI y aceptación integral del requisito. Solo dev, rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-19 — V20 reparación A5_FAIL P2 C03-04.M04.06 oráculo de mutaciones [Javier :20]
 - Cambia observador Playwright de métodos mutantes restringido a sesión por uno global para rechazar POST/PUT/PATCH/DELETE fuera de la ruta de sesión; agrega quinto test adversarial interceptado localmente que prueba los cuatro métodos con el mismo oráculo.
 - A5_FAIL histórico preservado; CI del SHA nuevo obligatoria, Scope Lock/V5, revisión A5 distinta de autor DEV06 y reparador DEV03. Solo pruebas y documentación, sin API/JWT/tenant/MySQL ni QA/main/PROD.
