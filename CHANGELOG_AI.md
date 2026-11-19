@@ -1,3 +1,7 @@
+## 2026-11-19 — V22 C15-05.M06.03 riesgos y decisiones de auditoria [DEV06]
+- C15-05.M06.03 documenta en `docs/v5/c15-05-m06-03-limitaciones-riesgos-decisiones.md` limitaciones reales frente a mocks, pruebas HTTP/JWT, GET GitHub read-only, browser synthetic, concurrencia V17, A5 y gates de C15-05 M05/M06; no inventa PASS ni declara fase completa.
+- Incremento R0 solo documentación, sin tocar runtime, CI, DB o permisos. Se preservan riesgos R2, historial de FAIL, Scope Lock STRICT y A5 independiente; prohibidas QA/main/PROD y compras. El CHANGELOG previo se conserva completo como sufijo exacto y las viñetas de esta sección son contiguas.
+
 ## 2026-11-19 — V22 C15-05.M06.02 manifiesto reproducible de version y evidencias [DEV06]
 - C15-05.M06.02 registra por ID los SHA, GitHub Actions, blobs y alcances de M05.01–06 y M06.01 en `docs/v5/c15-05-m06-02-version-diff-artefactos.md`; distingue pruebas reales, sesiones simuladas, contratos en memoria y controles globales no acreditados.
 - La unidad es R0 documental, no modifica runtime/DB/CI y no certifica fase M06, JWT/RBAC/tenant global, MySQL empresarial, QA/main/PROD, proveedor de escritura ni métricas Web Vitals reales. V17 CAS/owner y BITACORA siguen siendo autoridad; A5 separada por otra Task Javier tras A0–A4 exact-SHA.
