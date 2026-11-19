@@ -1,3 +1,7 @@
+## 2026-11-19 — V21 C02-01.M04.01 regresión rol global sin membresía [Javier :20]
+- Agrega prueba adversarial Playwright para identidad de plataforma sin UsuarioEmpresas: el rol global no debe crear membresías ni habilitar el cambio empresarial N2. Reutiliza JWT, API .NET 10 y MySQL 8.4 efímero de la suite GitHub-hosted.
+- Preserva los siete casos previos y owner histórico DEV04; A0–A4 completos y A5 independiente siguen pendientes. Solamente dev, sin QA/main/PROD.
+
 ## 2026-11-19 — V21 C02-01.M04.01 reparación cruzada JWT adulterado y tenant inexistente [Javier :10]
 - Añade dos pruebas reales Playwright contra API .NET 10 y MySQL 8.4 efímero para firma JWT alterada (401) y tenant inexistente con cabecera falsificada (403/404), conservando cinco escenarios anteriores de membresías y revocación.
 - Scope Lock/V5 y GitHub Actions exact-SHA deben completarse; owner histórico DEV04 y A5 independiente sin cambios, mantener VALIDANDO hasta A0–A4 completos. Únicamente dev; sin QA/main/PROD ni secretos.

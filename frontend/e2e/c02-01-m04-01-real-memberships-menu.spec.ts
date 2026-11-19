@@ -110,6 +110,36 @@ test.describe('V21 C02-01.M04.01 - menu real de empresas JWT MySQL Chromium', ()
     expect([403, 404]).toContain(response.status());
   });
 
+
+  test('negative - rol global sin membresia empresarial no puede crear menu N2', async ({ page }) => {
+    test.setTimeout(150_000);
+    await page.goto('/login');
+    await page.getByRole('textbox', { name: 'Nombre de usuario' }).fill('c1504_platform_only');
+    await page.locator('input[formcontrolname="password"]').fill(password!);
+    const pending = page.waitForResponse(r =>
+      r.url().endsWith('/auth/login') && r.request().method() === 'POST');
+    await page.getByRole('button', { name: /Ingresar al sistema/ }).click();
+    const auth = await pending;
+    if (auth.status() !== 200) {
+      expect([400, 401, 403]).toContain(auth.status());
+      await expect(page.getByRole('button', { name: cambiar })).toHaveCount(0);
+      return;
+    }
+    const token: unknown = (await auth.json())?.data?.token;
+    expect(typeof token).toBe('string');
+    const membership = await page.request.get(api + '/tenant-context/empresas', {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    expect([200, 403, 404]).toContain(membership.status());
+    if (membership.status() === 200) {
+      const companies: unknown = (await membership.json())?.data;
+      expect(Array.isArray(companies)).toBe(true);
+      expect((companies as { empresaId: number }[]).map(e => e.empresaId)).toEqual([]);
+    }
+    await page.goto('/perfil');
+    await expect(page.getByRole('button', { name: cambiar })).toHaveCount(0);
+  });
+
   test('after revocation - usuario antes N2 ahora N1 oculta menu y B es prohibida', async ({ page }) => {
     test.setTimeout(150_000);
     const jwt = await login(page, 'c0201_admin_ab');
