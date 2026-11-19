@@ -20,7 +20,7 @@ El contrato M02.01 propone solicitud e intento de pago, evento externo y concili
 | `ResourceId` | Referencia interna al intento o documento en misma empresa; nunca expone token bancario |
 | `CorrelationId` | Identificador de rastro controlado sin PII, firma o importe sensible |
 | `CausationId` | Evento antecedente validado; ninguna arista cross-tenant o ciclo tolerado |
-| `IdempotencyKey` | Clave escopada a empresa, actor, tipo de operación y payload canónico |
+| `IdempotencyKey` | Clave opaca **estable** de deduplicación, identidad futura `UNIQUE(EmpresaId,ProveedorId,Operacion,IdempotencyKey)`; actor, factura e importe **no** son parte del índice. Almacenar `PayloadDigestCanonico` **aparte**; validar actor/JWT/RBAC/propiedad en cada acceso |
 | `ProviderEventId` | Referencia remota opaca; duplicados se normalizan y no generan segundo asiento |
 | `OccurredAtUtc` | Tiempo declarado del emisor, **no autoridad** sobre llegada/efecto |
 | `ReceivedAtUtc` | Tiempo del servidor confiable, usado para ventana anti-replay |
@@ -37,7 +37,7 @@ Los tipos son ideas para un futuro contrato, no nombres de miembros de clases ex
 2. **EV02 — Tenant:** resolver empresa contra intento interno autenticado; no confiar en subdominio, payload o propiedad de objeto del proveedor.
 3. **EV03 — Autorización separada:** API para emitir, consultar, cancelar, conciliar o reembolsar usa permisos RBAC específicos y membresía vigente.
 4. **EV04 — Durabilidad:** la futura deduplicación debe persistirse con índice único/transactional outbox o mecanismo equivalente; un `HashSet` in-memory no certifica seguridad de cobros.
-5. **EV05 — Canonicalidad:** misma clave y digest coincidente devuelve estado existente; digest distinto causa conflicto auditable.
+5. **EV05 — Canonicalidad e identidad estable:** para el mismo `(EmpresaId,ProveedorId,Operacion,IdempotencyKey)` el digest coincidente recupera estado existente **sin nuevo efecto**; digest diferente produce `409 IDEMPOTENCY_PAYLOAD_CONFLICT` antes de insertar, cobrar o registrar un segundo asiento. El contenido canónico no altera la clave de unicidad. JWT/RBAC, tenant, ownership y revocación se revalidan antes de devolver un intento existente.
 6. **EV06 — Concurrencia:** procesamiento simultáneo del mismo `ProviderEventId` no crea dos movimientos.
 7. **EV07 — Pago no por redirect:** respuesta de navegador `success` no marca `Pagado`; exigir verificación y conciliación de proveedor autorizado.
 8. **EV08 — Orden:** evento tardío o repetido no debe degradar `Aplicado` a `Pendiente` o repetir compensación.
@@ -76,3 +76,21 @@ Los diez pares son **oráculos de implementación futura**. Ninguna prueba posit
 **A0:** diff sólo este Markdown y sección CHANGELOG autocontenida; no secretos ni cambios técnicos. **A1:** verificar 16 campos, 20 invariantes y diez pares P/N como diseño futuro, sin atribuir comportamientos observados. **A2:** verificar barreras JWT/RBAC, tenant A/B, deduplicación duradera, HMAC, cuotas y antifuga como requisitos, no runtime acreditado. **A3:** validar compatibilidad conceptual con M01.01–06 LISTO+A5 y M02.01/M02.04 documentales sin depender de su aprobación A5 propia; `.NET/MySQL/Playwright/PSP` = NO_APLICA a este diff de documentación. **A4:** commit Git fast-forward CAS exact-HEAD, Scope Lock y procedencia V5 `completed/success` sobre SHA de publicación, readback PLAN/COLA/DAG/BITACORA. **A5:** otra Task Javier, independiente del autor, deberá revisar SHA/blob/diff y no inferir permiso de despliegue.
 
 **Rollback:** `git revert` normal del changeset Markdown. No crear webhooks, dispatcher de eventos, colas, cargos, migraciones, secretos, usuarios, cuentas, schedules ni cambios de QA/main/PROD.
+
+## Corrección P2 de identidad idempotente — 19 noviembre 2026
+
+Una revisión A5 de `C04-04.M02.06` detectó que el contrato anterior vinculaba `IdempotencyKey` a **actor y payload canónico**. Eso permite interpretaciones que convierten un payload alterado en una clave nueva y contradicen el 409 definido en `C04-04.M02.03` (reparada por DEV01, A5 independiente DEV03) y CFG08 de `C04-04.M02.04` (reparada por DEV06). Esta reparación afecta **únicamente la especificación documental**, no prueba una vulnerabilidad de pagos operativos.
+
+**Regla futura de persistencia:** la clave del índice UNIQUE es exactamente `(EmpresaId, ProveedorId, Operacion, IdempotencyKey)`, normalizada en el backend autenticado. El `PayloadDigestCanonico` se almacena en campo separado y resume factura, monto exacto, moneda y destino normalizados en servidor. `ActorId` puede auditarse, pero nunca segmentar la identidad de operación ni sustituir la autorización. Una empresa A no consulta recursos de B por conocer una cadena K; repetir una K de A exige permiso RBAC y propiedad vigentes. Aceptar el mismo digest sólo recupera el resultado original; el digest distinto devuelve 409, cero nuevos cargos/asientos/intentos. El índice duradero y la transacción de múltiples conexiones son obligatorios en implementación futura; un mutex local no basta.
+
+**Evento `ProviderCallbackObserved`:** `ProviderEventId`, firma HMAC, timestamp y tenant se verifican antes de deduplicar o aplicar. Reenvío repetido no crea un efecto adicional. Timeout PSP ambiguo se concilia por referencia verificada y NO se reintenta el cargo a ciegas. El cliente jamás elige `EmpresaId` confiable desde el payload, y el digest no contiene JWT/HMAC/PAN/CVV.
+
+| Aceptación FUTURA_NO_EJECUTADA | Positivo obligatorio | Negativo contra defecto P2 |
+| --- | --- | --- |
+| Reintento exacto de K | Mismo intento, mismo resultado | Se crea cargo duplicado |
+| K repetida con otro importe/factura | 409 antes de segundo efecto | Payload alterado genera clave de dedupe nueva |
+| Dos workers compiten K | Un índice UNIQUE, una fila | Dos intentos por SELECT+INSERT sin constraint |
+| A/B comparte texto K | Identidades aisladas y permiso verificado | A consulta/intenta afectar registro B |
+| Actor revocado y PSP timeout | 403/404 seguro o conciliación sin reintento | Reutiliza token revocado o cobra a ciegas |
+
+**A0/A1/A2:** reconciliación documental con M02.03, M02.04 y M02.06; cinco pares anteriores NO se ejecutaron como pruebas. **A3:** HTTP/JWT/MySQL/PSP/Chromium = NO_APLICA a este diff exclusivamente Markdown, no a la implementación futura. **A4:** Scope Lock y V5 `completed/success` sobre SHA corregido y readback PLAN/BITACORA. **A5:** el anterior A5_PASS sólo acreditó el blob original y deberá realizarse nueva revisión por otra Task Javier distinta del autor DEV03 y reparador DEV06. El hallazgo A5_FAIL histórico de M02.06 permanece hasta una revisión correctiva independiente de toda la cadena. No habilitar M03 mediante fórmulas, ni tocar cobros reales, secrets, QA/main/PROD; rollback documental con git revert normal.

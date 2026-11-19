@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 reparación EV05/IdempotencyKey C04-04.M02.05 [Javier :50]
+- Ajusta identidad idempotente estable por empresa/proveedor/operación/key y digest separado, 409 obligatorio para payload cambiado y controles A/B/RBAC/timeout, consistente con reparación CFG08 M02.04 y M02.03.
+- A5 anterior no aplica a este nuevo blob, requiere A5 independiente; M02.06 mantiene FAIL P2 hasta nueva revisión. Cinco pruebas conceptuales FUTURAS_NO_EJECUTADAS, sin pagos, base de datos, claves ni QA/main/PROD.
+
 ## 2026-11-19 — V20 reparación CFG08 idempotencia estable C04-04.M02.04 [Javier :50]
 - Corrige partición por payload: UNIQUE por empresa/proveedor/operación/clave estable y digest canónico separado; mismo key con contenido cambiado exige 409, sin otro efecto. Casos adversariales FUTUROS_NO_EJECUTADOS.
 - M02.05 sigue inconsistente y M02.06 conserva A5_FAIL P2; nuevo SHA requiere A5 independiente. No pagos, MySQL, webhooks, secretos ni QA/main/PROD.
