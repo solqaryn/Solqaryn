@@ -52,7 +52,7 @@ jobs:
           done
           cat v17-c1402-m0405.log >&2
           exit 1
-      - name: Cuatro Chromium reales con sesion sintetica
+      - name: Cinco Chromium reales con sesion sintetica
         working-directory: frontend
         run: npx playwright test e2e/c14-02-m04-05-a11y.spec.ts --config=playwright.config.ts --workers=1 --retries=0
       - name: Artefactos

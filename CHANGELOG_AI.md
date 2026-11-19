@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C14-02.M04.05 reparación correctiva P2 de Tab natural [Javier :00]
+- Repara falso positivo del test de teclado: sustituye foco programático por Tab natural y comprueba alcance del enlace, foco visible, Tab siguiente y activación por Enter; agrega control adversarial con tabindex=-1 para verificar que el test detecta el defecto.
+- Se actualiza workflow para cinco escenarios Chromium y evidencia documental; no cambia componentes runtime, backend, autorización ni MySQL. Conservar A5_FAIL histórico y esperar CI exact-SHA y A5 independiente de otra Task distinta de DEV02 y DEV01; sin QA/main/PROD.
+
 ## 2026-11-18 — V20 C07-04.M04.06 perf humo Chromium [Javier :50]
 - Agrega cuarta prueba de DOMContentLoaded y FCP real 320/1280 con limite conservador 15s para detectar lentitud extrema; no acredita Core Web Vitals de produccion ni SLA global.
 - Requiere CI exact-SHA, mantiene VALIDANDO mientras A0–A4 integrales y A5 de otro Javier estén pendientes; no cambia runtime ni QA/main/PROD.

@@ -46,8 +46,19 @@ test('C14-02.M04.05 tabulacion conserva foco visible y navegación de solo lectu
   await page.goto('/plataforma/revision-amenazas-v5');
   const back = page.getByRole('link', { name: 'Volver a administración de plataforma' });
   const reload = page.getByRole('button', { name: 'Revalidar sesión de plataforma' });
-  await back.focus();
+  // Tab REAL desde el inicio natural: .focus() daria un falso PASS si el enlace no es alcanzable.
+  let enlaceAlcanzado = false;
+  for (let intento = 0; intento < 60; intento++) {
+    await page.keyboard.press('Tab');
+    if (await back.evaluate(element => document.activeElement === element)) {
+      enlaceAlcanzado = true;
+      break;
+    }
+  }
+  expect(enlaceAlcanzado).toBe(true);
   await expect(back).toBeFocused();
+  const bordeEnlace = await back.evaluate(element => parseFloat(getComputedStyle(element).outlineWidth));
+  expect(bordeEnlace).toBeGreaterThanOrEqual(3);
   await page.keyboard.press('Tab');
   await expect(reload).toBeFocused();
   const outline = await reload.evaluate(element => parseFloat(getComputedStyle(element).outlineWidth));
@@ -55,6 +66,23 @@ test('C14-02.M04.05 tabulacion conserva foco visible y navegación de solo lectu
   await page.keyboard.press('Enter');
   await expect(page.getByText(/Sesión de plataforma confirmada/)).toBeVisible();
   await expect(page.locator('.threat-list li')).toHaveCount(4);
+});
+
+test('C14-02.M04.05 control negativo: tabindex -1 rompe acceso Tab natural', async ({ page }) => {
+  await session(page, true);
+  await page.goto('/plataforma/revision-amenazas-v5');
+  const back = page.getByRole('link', { name: 'Volver a administración de plataforma' });
+  await expect(back).toBeVisible();
+  await back.evaluate(element => element.setAttribute('tabindex', '-1'));
+  let enlaceAlcanzado = false;
+  for (let intento = 0; intento < 60; intento++) {
+    await page.keyboard.press('Tab');
+    if (await back.evaluate(element => document.activeElement === element)) {
+      enlaceAlcanzado = true;
+      break;
+    }
+  }
+  expect(enlaceAlcanzado).toBe(false);
 });
 
 test('C14-02.M04.05 apariencia neutra contraste de texto normal >= 4.5', async ({ page }) => {
