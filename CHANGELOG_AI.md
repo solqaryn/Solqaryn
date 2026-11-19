@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 C15-03.M05.03 persistencia real de tenancy A/B [Javier :20]
+- Añade xUnit Oracle EF MySQL 8.4 efímero: persistencia A/B, rechazo de membresía cruzada, rollback de grant, revocación y frontera separada de plataforma. Prohíbe hosts/puertos externos.
+- Workflow dedicado verifica TRX real y Scope Lock; no certifica JWT HTTP, sucursales, archivos, jobs, control plane ni A5 mientras CI no complete exact-SHA. Solo dev.
+
 ## 2026-11-19 — V20 C15-03.M05.05 denegaciones JWT y tenant A/B reales [Javier :20]
 - Añade cinco pruebas negativas Playwright contra JWT firmado, API .NET 10 y MySQL 8.4 efímero: anónimo, firma adulterada, spoofing A/B, cabecera de tenant arbitraria, sin acceso a consola global.
 - El workflow exact-SHA no cancela ejecuciones por otros commits. La integración de archivos, sucursales, propiedad y jobs sigue NO_MEDIDO hasta pruebas propias; no anticipar LISTO/A5 con CI pendiente. Solo dev.

@@ -1,0 +1,59 @@
+name: V20 C15-03.M05.03 - tenant A/B persistence rollback MySQL
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/C1503M0503MySqlTenantPersistenceIntegrationTests.cs'
+      - '.github/workflows/v20-c15-03-m05-03-mysql.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v20-c1503-m0503-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  mysql:
+    name: C15-03.M05.03 - tenant A/B Oracle EF MySQL 8.4 integration
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=mysql;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Strict project scope
+        run: node scripts/verify-project-scope.mjs
+      - name: Verify ephemeral MySQL 8.4
+        run: |
+          set -euo pipefail
+          docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -Nse 'SELECT VERSION();' | grep -E '^8[.]4[.]'
+      - name: Oracle EF real MySQL tests with mandatory TRX assertions
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj -c Release --filter 'FullyQualifiedName~C1503M0503MySqlTenantPersistenceIntegrationTests&Category=Integration' --logger 'trx;LogFileName=c1503-m0503.trx' --logger 'console;verbosity=normal'
+          python3 - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree as ET
+          files = list(Path('tests/Solqaryn.Tests/TestResults').rglob('c1402-m0503.trx'))
+          assert files, 'No TRX evidence'
+          root = ET.parse(files[-1]).getroot()
+          counts = next((x.attrib for x in root.iter() if x.tag.endswith('Counters')), None)
+          assert counts is not None and int(counts['executed']) >= 3, counts
+          assert int(counts['passed']) >= 3 and int(counts['failed']) == 0, counts
+          print('C1503_M0503_MYSQL84_TENANT_PERSISTENCE_PASS=TRUE')
+          PY
