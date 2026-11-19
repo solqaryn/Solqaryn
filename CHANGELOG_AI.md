@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 C15-03.M04.06 densidad y progresividad privada [Javier :20]
+- Agrega cinco pruebas reales GitHub-hosted Chromium para responsive 320/768/1280, mutación CSS adversarial, carga demorada, HTTP503 fail-closed, ausencia de métodos mutantes y DOMContentLoaded local.
+- Test-only R2, sin JWT firmado, tenant A/B, MySQL ni cambios de runtime; CI exact-SHA, Scope Lock, V5 y A5 de Task distinta de DEV03 antes de habilitar sucesoras. Rollback git revert normal, sin QA/main/PROD.
+
 ## 2026-11-19 — V20 C15-03.M04.05 corregir medición de contorno RGBA semitransparente [Javier :00]
 - El job 135375522341 de SHA f55ec20d acreditó 4/5 Chromium y diagnosticó outline rgba(5,0,73,0.8) sobre blanco; el anterior oráculo rechazaba injustificadamente alpha<1. Compone RGBA sobre fondo realmente opaco y exige contraste >=3:1, Tab real y foco visible, sin desactivar controles.
 - Corrección exclusivamente de prueba y documentación, CI GitHub-hosted exact SHA pendiente, A5 independiente de DEV03/DEV05/DEV01 y A5_FAIL histórico preservado; Scope Lock STRICT, sin QA/main/PROD.
