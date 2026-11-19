@@ -8214,3 +8214,8 @@
 - Añade `docs/v5/c13-04-m06-03-limitaciones-riesgos-decisiones.md` con seis fuentes M05 por SHA, matriz R01–R12/D01–D08 y límites de Vitest, TestBed, MySQL 8.4 efímero, JWT Chromium auténtico y pruebas públicas test-only.
 - Conserva P2 histórico corregido de selector login y los tres fallos de transferencias inventario del check transversal del SHA M05.06; no transforma PASS dirigido en certificación global ni métricas de campo o dispositivo físico.
 - Documento R0 sin runtime; requiere GitHub exact-SHA Scope Lock/V5, V17/CAS y A5 independiente para LISTO. M06 restante, QA/main/PROD y riesgos R2/R3 no certificados.
+
+## 2026-11-19 — C12-04.M06.06 | V22 DEV06 mapa y cierre documental DEV
+- Se documentaron en `docs/evidencias/C12-04.M06.06-V22.md` los 11 predecesores LISTO con eventos A5 independientes reales y DAG F=VALIDADO/G=SI, sin manipular formulas o aprobar otro entorno.
+- Se conservaron riesgos R2/R3, wildcard A5 global, restauracion Aiven/PROD NO_MEDIDA, fallos historicos y límites del ensayo MySQL efimero; no se inventaron pruebas JWT ni cutover.
+- Entregable R0 sujeto a Scope Lock/V5 exact-SHA, readback PLAN/COLA/BITACORA y posterior A5 de una Task Javier diferente; rollback git revert, sin QA/main/PROD.
