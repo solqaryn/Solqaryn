@@ -1,0 +1,38 @@
+name: V20 C14-02.M05.01 - unidad Angular reglas de amenazas
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/src/app/features/plataforma/revision-amenazas-v5.m05-01.spec.ts'
+      - '.github/workflows/v20-c14-02-m05-01-unit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v20-c1402-m0501-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  unit:
+    name: C14-02.M05.01 - Angular Vitest y build
+    runs-on: ubuntu-latest
+    timeout-minutes: 38
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm reproducible
+        run: npm install --global npm@11.19.0
+      - name: npm ci
+        run: npm ci
+      - name: Frontend tipado y build
+        run: |
+          npx tsc --noEmit -p tsconfig.app.json
+          npm run build:prod
+      - name: Vitest de reglas R2 aisladas
+        run: npx ng test --watch=false --no-progress --include=src/app/features/plataforma/revision-amenazas-v5.m05-01.spec.ts

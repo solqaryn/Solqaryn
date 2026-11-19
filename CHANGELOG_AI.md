@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 C14-02.M05.01 pruebas unitarias adversariales de guía privada [Javier :30]
+- Agrega cinco tests Angular TestBed para denegación anónimo/empresa/no administrador, respuesta 200 obsoleta sin sesión vigente, single-flight, errores 401/503 y guía de cuatro criterios; sin cambiar runtime ni hacer llamadas HTTP productivas.
+- CI dirigida GitHub-hosted Node24/Angular Vitest, Scope Lock y V5 exact-SHA; riesgo R2 test-only con JWT/tenant A/B reales NO_MEDIDO, A5 por Task Javier diferente, rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-19 — V20 C15-03.M04.06 densidad y progresividad privada [Javier :20]
 - Agrega cinco pruebas reales GitHub-hosted Chromium para responsive 320/768/1280, mutación CSS adversarial, carga demorada, HTTP503 fail-closed, ausencia de métodos mutantes y DOMContentLoaded local.
 - Test-only R2, sin JWT firmado, tenant A/B, MySQL ni cambios de runtime; CI exact-SHA, Scope Lock, V5 y A5 de Task distinta de DEV03 antes de habilitar sucesoras. Rollback git revert normal, sin QA/main/PROD.
