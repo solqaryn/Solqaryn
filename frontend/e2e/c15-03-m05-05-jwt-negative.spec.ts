@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page, type APIResponse } from '@playwright/test';
 
 /** C15-03.M05.05 R2: pruebas NEGATIVAS con JWT firmado, API real y MySQL 8.4 efimero.
  * Sin page.route ni tokens inventados. No acredita pentest completo, archivos, jobs ni PROD. */
@@ -28,6 +28,12 @@ function observarMutaciones(page: Page) {
       mutations.push(request.method() + ' ' + request.url());
   });
   return mutations;
+}
+
+async function exigirCuarentena(response: APIResponse): Promise<void> {
+  expect(response.status(), 'cuarentena P0 multiempresa, no autorización 403').toBe(503);
+  const body: unknown = await response.json();
+  expect(body).toMatchObject({ success: false, code: 'TENANT_DATA_ISOLATION_REQUIRED' });
 }
 test.describe('C15-03.M05.05 — negativa JWT y tenancy HTTP real', () => {
   test.describe.configure({ retries: 0 });
@@ -121,41 +127,52 @@ test.describe('C15-03.M05.05 — negativa JWT y tenancy HTTP real', () => {
     await expect(page).toHaveURL(/\/login\?plataforma=denegado/);
     expect(mutations).toEqual([]);
   });
-  test('sucursales: consulta positiva A/B y rechazo de filtro extranjero', async ({ page, request }) => {
+  // Estas rutas siguen en cuarentena P0 multiempresa: 503 TIPADO no es 403 ni PASS de ownership.
+  // El positivo real permitido se prueba con tenant-context. Nunca relajar la cuarentena.
+  test('sucursales: JWT A/B positivo en tenant-context y cuarentena comercial exacta', async ({ browser, request }) => {
     for (const [usuario, propia, ajena] of [
       ['c1504_admin_a', 1, 2], ['c1504_admin_b', 2, 1]
     ] as const) {
-      const jwt = await ingresar(page, usuario);
-      const headers = { Authorization: 'Bearer ' + jwt, 'X-Empresa-Id': String(propia) };
-      const own = await request.get(api + '/sucursales/activas?empresaId=' + propia, { headers });
-      expect(own.status(), 'consulta sucursal propia debe autorizarse').toBe(200);
-      const foreign = await request.get(api + '/sucursales/activas?empresaId=' + ajena, { headers });
-      expect([403, 404], 'no enumerar sucursal tenant ajeno').toContain(foreign.status());
+      const context = await browser.newContext();
+      try {
+        const page = await context.newPage();
+        const jwt = await ingresar(page, usuario);
+        const headers = { Authorization: 'Bearer ' + jwt, 'X-Empresa-Id': String(propia) };
+        const ownTenant = await request.get(api + '/tenant-context/' + propia, { headers });
+        expect(ownTenant.status()).toBe(200);
+        expect((await ownTenant.json())?.data?.empresaId).toBe(propia);
+        const crossTenant = await request.get(api + '/tenant-context/' + ajena, { headers });
+        expect([403, 404]).toContain(crossTenant.status());
+        await exigirCuarentena(await request.get(api + '/sucursales/activas?empresaId=' + propia, { headers }));
+        await exigirCuarentena(await request.get(api + '/sucursales/activas?empresaId=' + ajena, { headers }));
+      } finally {
+        await context.close();
+      }
     }
   });
 
-  test('recurso tenant y archivo: A no lee ni sube logo para B', async ({ page, request }) => {
+  test('configuracion y logo: tenant A/B denegado y cuarentena no abre archivos', async ({ page, request }) => {
     const jwt = await ingresar(page, 'c1504_admin_a');
     const headers = { Authorization: 'Bearer ' + jwt, 'X-Empresa-Id': '1' };
-    const own = await request.get(api + '/empresa-configuracion/tenant/1', { headers });
-    expect(own.status(), 'configuracion propia es accesible').toBe(200);
-    const foreign = await request.get(api + '/empresa-configuracion/tenant/2', { headers });
-    expect([403, 404], 'configuracion de B prohibida').toContain(foreign.status());
-    // Solo API y MySQL efimeros; no contactar storage ni modificar archivo externo.
+    expect((await request.get(api + '/tenant-context/1', { headers })).status()).toBe(200);
+    expect([403, 404]).toContain((await request.get(api + '/tenant-context/2', { headers })).status());
+    // GET configuracion y POST logo no forman parte de la allowlist P0 con 2+ empresas.
+    await exigirCuarentena(await request.get(api + '/empresa-configuracion/tenant/1', { headers }));
+    await exigirCuarentena(await request.get(api + '/empresa-configuracion/tenant/2', { headers }));
     const denied = await request.post(api + '/empresa-configuracion/tenant/2/logo', {
       headers, multipart: { logo: { name: 'test.png', mimeType: 'image/png',
         buffer: Buffer.from('CI-only-invalid-png') } }
     });
-    expect([403, 404], 'archivo de otro tenant denegado antes de storage').toContain(denied.status());
+    await exigirCuarentena(denied);
   });
 
-  test('job/control plane: admin empresa B no lee evidencias QA globales', async ({ page, request }) => {
+  test('control plane QA: admin empresa B no eleva rol y middleware conserva cuarentena', async ({ page, request }) => {
     const jwt = await ingresar(page, 'c1504_admin_b');
     const headers = { Authorization: 'Bearer ' + jwt, 'X-Empresa-Id': '2' };
-    const denied = await request.get(api +
-      '/plataforma/gestion/qa/evidencias/ab70b055b3c8bb10b11a5088b5e82d69e74bdbc4', { headers });
-    expect(denied.status(), 'sin autoridad global no hay acceso al job SHA').toBe(403);
     const global = await request.get(api + '/plataforma/sesion', { headers });
     expect(global.status(), 'empresa B no es plataforma').toBe(403);
+    const denied = await request.get(api +
+      '/plataforma/gestion/qa/evidencias/ab70b055b3c8bb10b11a5088b5e82d69e74bdbc4', { headers });
+    await exigirCuarentena(denied);
   });
 });

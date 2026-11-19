@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 DEV05 C15-03.M05.05 diagnóstico CI y cuarentena de rutas [Javier :40]
+- Reparación dirigida de pruebas: el SHA 6efcbc1f falló con 5/8 Chromium; tres respuestas 503 se explican por la cuarentena P0 de 2+ empresas. Se comprueba código TENANT_DATA_ISOLATION_REQUIRED, JWT A/B real en tenant-context y denegación de rutas de sucursales, configuración/logo y QA aún bloqueadas.
+- NO se abre whitelist, se altera seguridad ni se inventa 403; A5_FAIL P2 de cobertura directa conserva estado VALIDANDO hasta integración causal real y revisión independiente. GitHub-hosted MySQL efímero, Scope Lock, V5, sin QA/main/PROD.
+
 ## 2026-11-19 — V20 C03-04.M05.05 negativos de seguridad de incidentes [Javier :30]
 - Matriz real xUnit .NET 10 con 33 contrapruebas Domain y 2 controles fail-closed: tenant A/B, sucursal, JWT/RBAC fixture, revocación, versiones, restore, idempotencia y evidencia saneada; workflow dirigido exige TRX >=35 y 0 fallos/no ejecutados.
 - Solo alcance de pruebas Domain sin mutación productiva. JWT firmado, HTTP, MySQL y backup real no certificados; mantener VALIDANDO si la CI sigue en curso, A0–A4 parciales y A5 independiente. Scope Lock STRICT, dev, rollback revert normal.
