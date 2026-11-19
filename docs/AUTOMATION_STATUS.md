@@ -118,6 +118,15 @@ La orden posterior del propietario de **19 de noviembre de 2026** complementa V2
 
 No se añaden Tasks, horarios, ramas, CI falsas, permisos R3, accesos a producción ni cambios a los límites de escritura establecidos.
 
+## V22 — Equilibrio obligatorio entre rescate VALIDANDO y reclamaciones PENDIENTE (2026-11-19)
+
+**Causa comprobada:** seis Tasks Javier habilitadas y ocho `COLA!O=SI`, pero las seis corridas recientes registraron cero reclamaciones nuevas; V21 daba preferencia a `VALIDANDO` y permitía terminar después de una reparación, A5 o WAIT_CI aunque hubiera candidatos independientes. Este cambio es complementario y posterior a V21, **no revoca** su rescate cruzado ni disminuye A0–A5.
+
+- Tras censar las VALIDANDO y ejecutar una recuperación viable, una A5, una reparación con CI externa pendiente, o constatar WAIT_CI/NO_GO, una Task libre **debe intentar al menos una nueva reclamación** antes de terminar la corrida cuando existan candidatos elegibles, sin imponer cuotas de cierres ni reservas ficticias.
+- Antes de reclamar, confirmar ausencia de `EN_PROGRESO` propia o de lease escritor propio, PLAN H=PENDIENTE/I vacía, `COLA!G/O=SI`, `DAG_TECNICO!F=VALIDADO/G=SI`, pertenencia al plan vigente, preflight tecnológico y ausencia de conflicto por archivos, permisos o dependencias. Obtener V17 para ese ID, releer, transitar por CAS, registrar EVENT_ID/IDEMPOTENCY_KEY, leer PLAN/COLA/BITACORA y liberar sólo el lock propio.
+- Si un candidato concreto falla de manera segura por permiso, candado legítimo, dependencia o entorno R3, probar otro independiente. Detener reclamaciones sólo por ausencia de candidatas seguras, un WIP propio activo o un límite real del proveedor. Una Task no debe terminar alegando `SIN ELEGIBLES` mientras COLA tenga candidatos confirmados; tampoco declarar un claim falso si se agotó el tiempo.
+- `run_now` que devuelve `inline_run` autoriza trabajo integrado **en esa conversación**, pero no crea por sí mismo un RUN_ID nativo ni demuestra ejecución autónoma programada. Registrar ese origen con precisión. Preservar IDs, horarios, título, owner histórico, one-writer-per-scope, STRICT/dev, revisión A5 independiente y exclusiones QA/main/PROD.
+
 ## Política de calidad V15 vigente (2026-11-15)
 
 Una única EN_PROGRESO y escritura de desarrollo por Task Javier: ACTIVE_DEV_OWNED_LIMIT_PER_TASK=1. Los contadores V13/1000 restantes son capacidades teóricas y no autorizan reservas simultáneas. Conserva A0–A5, A5 independiente, pruebas negativas y de integración reales según riesgo R0–R3 (ver docs/QUALITY_RISK_AUDIT_V15.md). No declarar PASS de un CI incompleto, un mock como prueba MySQL, ni un histórico como autoridad. Respaldos privados anteriores etiquetados NO OPERATIVOS; BITACORA nunca se borra.
