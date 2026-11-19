@@ -1,3 +1,8 @@
+## 2026-11-19 — C14-02.M06.05 | V22 DEV06 solicitud de revisión independiente
+- Se publicó una solicitud atómica R0 de A5 por otra Task Javier, con evidencia M05.01–06/M06.01–04 y enlaces de SHA/CI, sin confundir solicitud con aprobación.
+- Se diferencian suites reales de JWT firmado, MySQL 8.4 y Chromium de dobles de prueba; P0/P1 BOLA, host, archivos, jobs, caché, restore y sesiones siguen sin certificación global.
+- Solo documento y CHANGELOG; Scope Lock/V5 y revisión de revisor distinto obligatorios, sin cambios de runtime, QA/main/PROD ni autorización R3.
+
 ## 2026-11-19 — V22 C14-02.M06.02 versiones, diff y prueba reproducible [Javier DEV01]
 - Se fijaron seis SHA causales M05.01–06 con jobs GitHub-hosted, resultados delimitados de Vitest, HTTP JWT firmado, MySQL 8.4, xUnit y Chromium de navegador real.
 - Se agregó protocolo verificable por SHA, diff, blobs, TRX, negativos y checks exactos; no confundir mocks de cliente con HTTP/JWT/SQL ni transformar SKIPPED o FAIL histórico en PASS.
