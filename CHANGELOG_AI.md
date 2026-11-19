@@ -1,3 +1,7 @@
+## 2026-11-19 — V22 C15-05.M05.06 regresion de auditoria operativa [DEV01]
+- Se agregan pruebas Chromium reales de responsive, teclado Tab, denegacion 403 y humo DCL; sesion HTTP sintetica claramente delimitada, sin alegar JWT/MySQL real ni certificar Web Vitals de campo.
+- Job GitHub-hosted dirigido por SHA, lint/build Angular y Playwright con evidencia; estado VALIDANDO hasta CI exacta y readback A0-A4. A5 independiente pendiente, sin QA/main/PROD.
+
 ## 2026-11-19 — V21 C14-01.M04.03 correccion QA P0 provider-publico [DEV05 reparador]
 - GitHub Actions SHA 79b56088 evidencio 3/4 Chromium, fallo causal cuarto caso: /empresa-configuracion/publica autentico devuelve 503 bajo dos tenants; backend hace fail-closed. La prueba corregida exige 503 y shell neutral tras JWT tenant A, sin relajar el guard.
 - A0-A4 del proveedor tenant-especifico siguen pendientes y A5 independiente; nueva CI exact-SHA sin PASS anticipado. Sin QA/main/PROD.
