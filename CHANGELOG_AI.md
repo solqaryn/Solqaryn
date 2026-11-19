@@ -1,3 +1,8 @@
+## 2026-11-19 — V21 Recuperación causal de VALIDANDO y rescate cruzado
+- Se refuerzan los prompts existentes de las seis Tasks Javier (IDs y RRULE intactos) para priorizar VALIDANDO con cierre acreditable o reparación causal real sobre nuevas reclamaciones cuando la cola está saturada.
+- Se distinguen READY_CLOSE, REPAIRABLE, WAIT_CI, ACTIVE_WRITER y R3_NO_GO por ID/SHAs y se exige trabajo real sobre A0-A4 faltantes, sin eludir CI pertinente ni atribuir PASS global a unit tests.
+- Documentado en docs/AUTOMATION_STATUS.md; V17/CAS, owner histórico, A5 independiente, Scope Lock STRICT, no QA/main/PROD, Bitácora y DAG quedan sin modificaciones de comportamiento inseguras.
+
 ## 2026-11-19 — V20 C02-01.M04.01 menú empresarial con N membresías verificadas [Javier :30]
 - La opción «Cambiar empresa» del shell Angular se muestra únicamente con al menos dos IDs únicos recibidos del backend autenticado que incluyen el tenant seleccionado.
 - Listas duplicadas, no coincidentes, errores HTTP y respuestas tardías después de revocación no habilitan el menú; el cambio sigue requiriendo nueva validación server-side, sin ampliar JWT, RBAC ni permisos.
