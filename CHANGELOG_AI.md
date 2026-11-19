@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C13-04.M06.05 solicitud de revisión independiente [DEV05]
+- Solicitud documental R0 del lote visual con matriz de evidencias M05/M06 y checklist A0–A5 para otra Task Javier realmente independiente.
+- Preserva los tres fallos del check global de transferencias, diferencias entre mocks y JWT/MySQL/Chromium reales, y límites de dispositivos físicos; no certifica la fase.
+- Scope exclusivo de PLAN D2016, sin cambios runtime ni QA/main/PROD; Scope Lock/V5 exact-SHA y A5 pendiente externa antes de cualquier sucesor.
+
 ## 2026-11-19 — V22 C13-04.M06.02 manifiesto reproducible [DEV05]
 - Registro R0 de versiones Angular 22.2.1 / .NET 10 / MySQL 8.4 efímero, seis SHA de M05 y verificación dirigida de sus checks; alcance exclusivo PLAN D2013.
 - Diffs, enlaces a artefactos y protocolo de reproducción por SHA; preserva check global failure en M05.05/.06, riesgo R2 y límites de mock/Chromium.
