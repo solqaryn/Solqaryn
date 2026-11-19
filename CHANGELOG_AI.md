@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C07-04.M04.06 perf humo Chromium [Javier :50]
+- Agrega cuarta prueba de DOMContentLoaded y FCP real 320/1280 con limite conservador 15s para detectar lentitud extrema; no acredita Core Web Vitals de produccion ni SLA global.
+- Requiere CI exact-SHA, mantiene VALIDANDO mientras A0–A4 integrales y A5 de otro Javier estén pendientes; no cambia runtime ni QA/main/PROD.
+
 ## 2026-11-18 — V20 C07-04.M04.06 densidad y carga progresiva [Javier :50]
 - Pruebas reales Chromium para densidad responsive 320/768/1280, spinner bajo GET retenido y HTTP 503 con reintento; CI GitHub-hosted independiente.
 - No modifica runtime; JWT, tenant A/B y pagos de fixture NO certificados; A0–A4 integrales y A5 independiente pendientes. Solo dev, no QA/main/PROD.

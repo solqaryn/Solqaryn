@@ -93,3 +93,25 @@ test('C07-04.M04.06 negativo 503 y reintento recobran estado sin POST', async ({
   await expect(page.getByText('Sin resultados.')).toBeVisible();
   expect(calls).toBe(2);
 });
+
+test('C07-04.M04.06 humo de primera pintura perceptible 320 y 1280', async ({page}) => {
+  await contexto(page,ok);
+  for (const width of [320,1280]) {
+    await page.setViewportSize({width,height:800});
+    await page.goto('/pedidos-venta');
+    await expect(page.locator('.pedidos-readiness-v5')).toBeVisible();
+    const metric=await page.evaluate(()=>{
+      const nav=performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+      const fcp=performance.getEntriesByType('paint')
+        .find(entry=>entry.name==='first-contentful-paint');
+      return {domContentLoadedMs:nav?.domContentLoadedEventEnd ?? null,
+        firstContentfulPaintMs:fcp?.startTime ?? null};
+    });
+    expect(metric.domContentLoadedMs,'DCL 320/1280').not.toBeNull();
+    expect(metric.domContentLoadedMs!).toBeGreaterThan(0);
+    expect(metric.domContentLoadedMs!).toBeLessThan(15000);
+    expect(metric.firstContentfulPaintMs,'FCP 320/1280').not.toBeNull();
+    expect(metric.firstContentfulPaintMs!).toBeGreaterThan(0);
+    expect(metric.firstContentfulPaintMs!).toBeLessThan(15000);
+  }
+});
