@@ -1,3 +1,7 @@
+## 2026-11-19 — V21 C14-01.M04.03 correccion QA P0 provider-publico [DEV05 reparador]
+- GitHub Actions SHA 79b56088 evidencio 3/4 Chromium, fallo causal cuarto caso: /empresa-configuracion/publica autentico devuelve 503 bajo dos tenants; backend hace fail-closed. La prueba corregida exige 503 y shell neutral tras JWT tenant A, sin relajar el guard.
+- A0-A4 del proveedor tenant-especifico siguen pendientes y A5 independiente; nueva CI exact-SHA sin PASS anticipado. Sin QA/main/PROD.
+
 ## 2026-11-19 — V21 C14-01.M04.03 proveedor real HTTP de branding [DEV05 rescate cruzado; DEV01 owner historico]
 - Nuevo caso Playwright sin mock para /empresa-configuracion/publica: compara respuesta verdadera MySQL 8.4 / API .NET 10 con la marca Angular despues de autenticar tenant A.
 - Pruebas GitHub-hosted del nuevo SHA pendientes; cobertura tenant-especifica, proveedor externo y aceptacion total M04 no certificadas. Mantener VALIDANDO y A5 independiente.

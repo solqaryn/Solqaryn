@@ -112,16 +112,15 @@ test.describe('C14-01.M04.03 - UI marca empresarial con JWT real y proveedor de 
     await expect(page.getByText('Marca Privada A')).toHaveCount(0);
   });
 
-  test('proveedor publico autentico: shell muestra branding servido sin interceptacion', async ({ page }) => {
+  test('proveedor publico real: 503 fail-closed P0 ante dos empresas', async ({ page }) => {
     test.setTimeout(150_000);
-    // Integracion REAL: no se intercepta /empresa-configuracion/publica.
+    // El laboratorio tiene dos empresas aisladas. La configuracion publica global
+    // carece de un tenant inequívoco y el guard P0 del backend rechaza su lectura.
+    // Nunca deshabilitar ese guard para conseguir HTTP 200 en el test.
     const live = await page.request.get(api + '/empresa-configuracion/publica');
-    expect(live.status(), 'Configuracion publica real MySQL efimero').toBe(200);
-    const payload: unknown = await live.json();
-    expect(payload).toMatchObject({ success: true, data: expect.any(Object) });
-    const data = (payload as { data: { nombreVisibleSistema?: string; nombreComercial?: string; logoUrl?: string | null } }).data;
-    const expectedName = data.nombreVisibleSistema || data.nombreComercial || 'SOLQARYN';
-    expect(expectedName.trim().length).toBeGreaterThan(0);
+    expect(live.status(), 'Sin tenant publico univoco, P0 bloquea branding global').toBe(503);
+    const body = await live.text();
+    expect(body).not.toMatch(/Empresa A efimera C15|Empresa B efimera C15/);
 
     await loginReal(page, 'c1504_admin_a');
     await page.evaluate(() => localStorage.setItem('solqaryn_empresa_solicitada_id', '1'));
@@ -130,12 +129,9 @@ test.describe('C14-01.M04.03 - UI marca empresarial con JWT real y proveedor de 
     await page.goto('/perfil');
     expect((await checked).status()).toBe(200);
     await expect(page.getByRole('heading', { name: 'Mi perfil' })).toBeVisible();
-    await expect(page.locator('#main-sidebar .brand > span').first()).toHaveText(expectedName);
-    if (data.logoUrl?.trim()) {
-      await expect(page.locator('#main-sidebar .brand img.brand-logo'))
-        .toHaveAttribute('src', data.logoUrl);
-    }
-    // Limite: /publica es config global, no certifica marca aislada por tenant.
+    await expect(page.locator('#main-sidebar .brand > span').first()).toHaveText('SOLQARYN');
+    // Requiere proveedor autorizado tenant-specific para branding real positivo;
+    // no considerar este rechazo como prueba de ese proveedor.
   });
 
 });

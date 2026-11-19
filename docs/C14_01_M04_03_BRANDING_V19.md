@@ -35,3 +35,9 @@ Conservar VALIDANDO mientras CI externa siga QUEUED/IN_PROGRESS. Requiere check 
 - Requiere ejecucion dirigida COMPLETED SUCCESS del SHA exacto, Scope Lock, V5 y controles relevantes. Mantener VALIDANDO hasta completar A0-A4 del alcance atomico; A5 independiente. Sin QA/main/PROD, secrets ni datos reales.
 - Rollback aditivo mediante git revert ordinario del commit.
 
+## V21 - A0.2 reparacion causal de asercion P0 (DEV05)
+- SHA previo 79b56088: run 44602189955, job 135836250513, 3/4 Chromium; el nuevo GET real /empresa-configuracion/publica devolvio **HTTP 503**, no 200. Los otros 3 escenarios A/B con proveedor simulado aprobaron.
+- Diagnostico: el P0 del backend niega la configuracion PUBLICA GLOBAL ambigua al coexistir dos empresas en MySQL efimero, antes de exponer datos. NO desactivar guard, ni cambiar runtime, tenant/JWT/RBAC o HTTP para fabricar 200.
+- Contrato corregido: el cuarto test ejecuta HTTP autentico y exige 503 fail-closed, ausencia de identidad A/B en la respuesta, login JWT real y tenant-context/1 200, pero UI neutral SOLQARYN; no afirma proveedor de branding tenant-especifico positivo.
+- Sigue faltando integracion real del proveedor por tenant, aceptacion atomica completa A0-A4 y nueva CI exact-SHA; no LISTO ni A5. Rollback mediante git revert normal.
+
