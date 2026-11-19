@@ -1,3 +1,7 @@
+## 2026-11-19 — V22 C13-04.M06.01 auditoria evidencia real vs mocks visual [DEV04]
+- Matriz R0 de las seis fuentes M05: Vitest/TestBed con HTTP simulado, MySQL 8.4 efimero verdadero, Chromium con JWT firmado/MySQL en suites dirigidas y Chromium UI local; no extrapolar a pentest, WCAG, Web Vitals ni produccion.
+- Preservado el fallo historico del check global de modulos en M05.06; PLAN D2012 auditado con SHA y limites falsables, no cierre M06 acumulativo. A5 de otra Task Javier y V17/Scope Lock/V5 exigibles.
+
 ## 2026-11-19 — V22 C03-04.M06.04 ensayo MySQL 8.4 rollback aislado [DEV04]
 - Nueva prueba real GitHub-hosted con Docker MySQL 8.4 efímero: rollback de transacción, denegación por predicado de tenant ajeno, savepoint y preservación de dos filas después de reiniciar; fallo adversarial si pierde datos.
 - Script `scripts/quality/v22-c03-04-m06-04-mysql-rollback.sh`, workflow dirigido y `docs/v5/c03-04-m06-04-mysql-rollback-aislado.md`. No certifica backup/restore, JWT/HTTP, RPO/RTO ni producción; A5 por otra Task Javier. V17/CAS y A0-A4 se verifican por SHA en GitHub, sin inventar PASS.
