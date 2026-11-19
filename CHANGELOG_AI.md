@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 C14-02.M05.03 MySQL 8.4 autoridad global persistida y fail-closed [Javier :50]
+- Incorpora suite xUnit Oracle EF y MySQL 8.4 efímero: empresa A/B, identidad, doble rol, revocación y rollback, sin cambios de runtime ni datos productivos.
+- GitHub-hosted exige categoría Integration/TRX real, Scope Lock y V5 exact-SHA; JWT firmado y HTTP BOLA/IDOR siguen no acreditados. A5 independiente obligatoria y rollback git revert; no QA/main/PROD.
+
 ## 2026-11-19 — V20 C14-02.M05.02 contrato de errores seguros Application [Javier :40]
 - Añade ocho pruebas xUnit .NET 10 sobre el gate Application real de aceptación de seguridad: DTO inválido, SHA y recurso ajeno, spoof de tenant/rol, revocación, host/archivo/job, error de lector y cancelación. Verifica denegación sin grants; no simula HTTP/JWT/MySQL ni certifica producción.
 - Workflow dirigido GitHub-hosted por SHA, Scope Lock y build Release; A0–A4 completos y A5 independiente aún pendientes de CI y aceptación integral del requisito. Solo dev, rollback git revert, sin QA/main/PROD.
