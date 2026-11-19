@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 reparación CFG08 idempotencia estable C04-04.M02.04 [Javier :50]
+- Corrige partición por payload: UNIQUE por empresa/proveedor/operación/clave estable y digest canónico separado; mismo key con contenido cambiado exige 409, sin otro efecto. Casos adversariales FUTUROS_NO_EJECUTADOS.
+- M02.05 sigue inconsistente y M02.06 conserva A5_FAIL P2; nuevo SHA requiere A5 independiente. No pagos, MySQL, webhooks, secretos ni QA/main/PROD.
+
 ## 2026-11-19 — V20 C15-05.M05.02 reparación CI Unicode JSON sin debilitar controles [Javier :30]
 - CI inicial 19/20, único FAIL por comparar acento con JSON Unicode escapado. Test corregido para inspeccionar `message` JSON decodificada; sigue verificando HTTP 500 y ausencia de sentinel, sin modificar autorización ni middleware.
 - Revalidación GitHub Actions exact-SHA pendiente; A5_FAIL P2 histórico y estado VALIDANDO conservados. No QA/main/PROD, Scope Lock STRICT.

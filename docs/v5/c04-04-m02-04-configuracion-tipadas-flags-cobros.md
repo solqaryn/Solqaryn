@@ -38,7 +38,7 @@ Nombres y defaults son **especificación**: no se declararon en configuración a
 5. **CFG05:** flag de UI afecta visibilidad, nunca sustituye backend de autenticación, webhook ni autorización contable.
 6. **CFG06:** credenciales PSP, firma HMAC, token y URL firmada permanecen fuera de logs, documentación y repositorio.
 7. **CFG07:** links y callbacks se asocian a empresa y operación, con expiración, anti-replay, límites de tamaño y rate limit.
-8. **CFG08:** una clave idempotente se particiona por empresa, documento, intento, operación, proveedor y payload; jamás deduplicación cross-tenant.
+8. **CFG08 — corrección P2:** la identidad idempotente estable es `UNIQUE(EmpresaId, ProveedorId, Operacion, IdempotencyKey)`; **documento, intento, actor, importe y payload no integran ese índice**. El `PayloadDigestCanonico` se persiste por separado. Misma clave/digest devuelve el intento anterior sin segundo efecto; misma clave con digest diferente causa `409 IDEMPOTENCY_PAYLOAD_CONFLICT` antes de un nuevo cargo. JWT/RBAC, tenant A/B, propiedad y revocación se verifican en cada reintento; jamás consultar un intento de otra empresa.
 9. **CFG09:** error de proveedor no permite fallback automático ni reintento de cargo incierto; requerir reconciliación fiable.
 10. **CFG10:** ningún callback puede marcar una factura pagada sin verificación de origen, entidad, monto, moneda y saldo.
 11. **CFG11:** permisos para emitir link, consultar conciliación, liquidar y devolver se separan; lectura no autoriza devolución.
@@ -70,3 +70,21 @@ Se describen expectativas **NO EJECUTADAS**, no respuestas reales de PSP, tests 
 **A0:** diff sólo este Markdown + sección CHANGELOG y revisión de secretos. **A1:** comprobar 16 opciones, 16 invariantes y 10 pares de oráculos futuros; no confundir especificación con implementación. **A2:** revisar tenant A/B, JWT/RBAC, firma, protección de replays, idempotencia, pagos/contabilidad fail-closed. **A3:** comparar con M01.01–06 LISTO+A5, identidad técnica y contrato V5; pruebas .NET/MySQL/Playwright/PSP NO_APLICA al diff exclusivamente Markdown. **A4:** Git fast-forward CAS en dev y Scope Lock/V5 `completed/success` del SHA exacto, PLAN/COLA/DAG/BITACORA readbacks. **A5:** revisión independiente por otra de las cinco Tasks Javier; el autor nunca puede autoaprobar.
 
 **Rollback documental:** revertir commit con `git revert` normal. No cambiar sistemas de pago, secretos, operaciones económicas, migraciones, webhooks, eventos, QA/main/PROD ni contratos vigentes.
+
+## Corrección P2 — identidad y digest separados (2026-11-19)
+
+**Hallazgo:** CFG08 incluía documento, intento y payload en la partición. Cambiar factura, importe o payload podía derivar una clave diferente y eludir un rechazo de colisión. Esto es un defecto **de especificación**, no evidencia de un cobro real. La propuesta corregida se alinea con `C04-04.M02.03` reparada en el SHA `414eb48e9b1d041e6f125f8353fa0f39d5c0b1b6`.
+
+En M03 futuro la clave opaca `IdempotencyKey` se vinculará al tenant autenticado, proveedor y operación normalizados por backend, con restricción UNIQUE persistente en MySQL y `PayloadDigestCanonico` separado calculado server-side sobre factura, importe exacto y moneda. El actor se revalida para RBAC/revocación **pero no forma parte del índice**. Dos workers no podrán crear dos efectos por compartir la clave; mismo digest recupera resultado, digest diferente devuelve 409 y ningún segundo cargo, incluso si se modificó la factura. Un timeout PSP ambiguo exige conciliación antes de reintento.
+
+| Oráculo FUTURO_NO_EJECUTADO | Positivo | Negativo que debe bloquearse |
+| --- | --- | --- |
+| Misma K y contenido idéntico | Un solo AttemptId | Dos cargos por replay |
+| Misma K y contenido diferente | 409, ninguna fila nueva | Nuevo índice basado en digest |
+| Tenant A/B comparten texto K | Unicidad separada y permisos por tenant | Acceso A a intento B |
+| Workers concurrentes con K | Un solo intento transaccional | Dos filas mediante locks sólo locales |
+| Actor revocado o cargo incierto | Denegación o conciliación | Reintento con permisos viejos o cobro a ciegas |
+
+**Discrepancia cruzada pendiente:** `C04-04.M02.05` todavía escopa `IdempotencyKey` a actor y payload canónico. Esta corrección NO modifica dicho scope ajeno; necesita su propio candado V17 y nueva revisión independiente. `C04-04.M02.06` conserva A5_FAIL P2 y su DAG M03 permanece NO_GO hasta reconciliar ambas fuentes. El anterior A5_PASS de M02.04 acreditó un blob diferente y no certifica este SHA. Las pruebas P/N son diseño, NO tests ejecutados.
+
+A0/A1/A2: diff documental, cinco pares conceptuales y barreras tenant/JWT/RBAC/HMAC/PII; A3: MySQL, HTTP, PSP y Chromium NO_APLICA a este cambio exclusivamente Markdown. A4: Scope Lock/V5 exact-SHA y readback obligatorios. A5: Task Javier distinta del autor DEV03 y reparador DEV06. Sin pagos, secrets, migraciones, QA/main/PROD; rollback mediante revert normal sin reescribir historia.
