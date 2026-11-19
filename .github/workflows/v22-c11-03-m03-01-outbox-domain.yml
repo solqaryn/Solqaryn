@@ -27,13 +27,27 @@ jobs:
         run: dotnet restore backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj
       - name: Build Release with warnings as errors in directed tests
         run: dotnet build backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore
-      - name: Execute exact C11-03.M03.01 adversarial xUnit
+      - name: Execute exact C11-03.M03.01 adversarial xUnit and verify TRX
         shell: bash
         run: |
           set -euo pipefail
           dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj \
             --configuration Release --no-build \
             --filter FullyQualifiedName~C1103M0301OutboxEventDomainRulesTests \
-            --logger 'console;verbosity=normal' | tee /tmp/c1103-test.log
-          grep -E 'Passed: +([1-9][0-9]*).*Failed: +0|Failed: +0.*Passed: +([1-9][0-9]*)' /tmp/c1103-test.log >/dev/null
-          if grep -Ei 'Skipped: +[1-9]' /tmp/c1103-test.log; then exit 1; fi
+            --logger 'console;verbosity=normal' \
+            --logger 'trx;LogFileName=c1103.trx'
+          python3 - <<'PY'
+          import pathlib
+          import xml.etree.ElementTree as ET
+          paths = list(pathlib.Path("backend/tests/Solqaryn.Tests").rglob("c1103.trx"))
+          if len(paths) != 1:
+              raise SystemExit(f"Expected one directed TRX file, found {len(paths)}")
+          counters = ET.parse(paths[0]).getroot().find(".//{*}Counters")
+          if counters is None:
+              raise SystemExit("Missing TRX Counters")
+          counts = {key: int(counters.attrib.get(key, -1))
+                    for key in ("total", "passed", "failed", "notExecuted")}
+          print("C11-03.M03.01 exact xUnit counters:", counts)
+          if counts["passed"] < 15 or counts["passed"] != counts["total"] or counts["failed"] != 0 or counts["notExecuted"] != 0:
+              raise SystemExit("Required directed tests did not all pass")
+          PY

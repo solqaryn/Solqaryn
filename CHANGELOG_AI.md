@@ -1,3 +1,7 @@
+## 2026-11-19 — V22 C11-03.M03.01 reparación causal de validador TRX [Javier :30]
+- GitHub-hosted job inicial compiló .NET Release y ejecutó xUnit 17/17 PASS, pero falló por un grep que exigía "Failed: 0" en una salida xUnit que solo decía "Passed: 17".
+- Se reemplaza ese falso negativo por lectura fail-closed del archivo TRX (total, passed, failed, notExecuted), sin alterar tests, dominio, permisos ni reducir el gate. Revalidar nuevo SHA dirigido, Scope Lock/V5 y checks aplicables antes de LISTO.
+
 ## 2026-11-19 — V22 C02-01.M04.03 branding visible saneado sin autoridad cliente [DEV01]
 - R2 de superficie tenant: nombre visible y mensaje de login acotados; logo HTTPS sin credenciales o ruta relativa local, rechazo de esquemas maliciosos y markup. No se altera el backend ni se confiere autorización a partir del branding público.
 - Pruebas adversariales Vitest: marca válida, esquemas hostiles, longitud/control, restauración a plataforma y respuesta asíncrona obsoleta de tenant A; CI GitHub-hosted Angular tipado/build y Scope Lock/V5 exact-SHA por acreditar.
