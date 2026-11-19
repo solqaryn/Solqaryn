@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 C04-04.M03.01 reglas puras de cobros y regresiones adversariales [Javier :00]
+- Implementa preflight Domain fail-closed para tenant/actor/RBAC/revocación, factura/saldo/moneda, proveedor e idempotencia estable con digest separado; jamás autoriza cargos ni integra PSP.
+- Añade xUnit .NET10 dirigido y workflow por SHA sin cancelación entre commits, documento de límites y rollback. A0-A4 finales y A5 independiente sujetos a evidencia real GitHub/Sheets; JWT HTTP/MySQL/PSP productivos NO certificados.
+
 ## 2026-11-19 — V20 reparación EV05/IdempotencyKey C04-04.M02.05 [Javier :50]
 - Ajusta identidad idempotente estable por empresa/proveedor/operación/key y digest separado, 409 obligatorio para payload cambiado y controles A/B/RBAC/timeout, consistente con reparación CFG08 M02.04 y M02.03.
 - A5 anterior no aplica a este nuevo blob, requiere A5 independiente; M02.06 mantiene FAIL P2 hasta nueva revisión. Cinco pruebas conceptuales FUTURAS_NO_EJECUTADAS, sin pagos, base de datos, claves ni QA/main/PROD.

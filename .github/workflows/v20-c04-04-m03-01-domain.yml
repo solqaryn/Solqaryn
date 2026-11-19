@@ -1,0 +1,48 @@
+name: V20 C04-04.M03.01 - dominio de cobros seguro
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/src/Domain/AutomationV5/C0404PaymentDomainRules.cs'
+      - 'backend/tests/Solqaryn.Tests/Domain/C0404M0301PaymentDomainRulesTests.cs'
+      - '.github/workflows/v20-c04-04-m03-01-domain.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v20-c0404-m0301-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  domain:
+    name: C04-04.M03.01 - xUnit dominio de cobros y negativos
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Restaurar y compilar Release
+        working-directory: backend
+        run: |
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+      - name: xUnit dirigido y TRX obligatorio
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/v20-c0404-m0301"
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter 'FullyQualifiedName~C0404M0301PaymentDomainRulesTests' --logger 'trx;LogFileName=scope.trx' --results-directory "$RUNNER_TEMP/v20-c0404-m0301"
+          python3 - <<'PY'
+          import os, sys, xml.etree.ElementTree as ET
+          path = os.path.join(os.environ['RUNNER_TEMP'], 'v20-c0404-m0301', 'scope.trx')
+          root = ET.parse(path).getroot()
+          c = root.find('.//{*}Counters')
+          if c is None: sys.exit('NO_TRX_COUNTERS')
+          total = int(c.get('total','0')); passed = int(c.get('passed','0'))
+          failed = int(c.get('failed','0')); skipped = int(c.get('notExecuted','0'))
+          if total < 10 or passed != total or failed or skipped:
+              sys.exit(f'R2_DIRECTED_NO_GO total={total} pass={passed} failed={failed} notExecuted={skipped}')
+          print(f'R2_DIRECTED_PASS {passed}/{total} SHA=' + os.environ['GITHUB_SHA'])
+          PY
