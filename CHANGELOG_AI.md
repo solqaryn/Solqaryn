@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C15-05.M06.04 ensayo rollback seguro aislado [DEV01]
+- Entrega R2 de PLAN D2339: Git revert REAL GitHub-hosted en repositorio efímero Node24, con pruebas de reactivación y preservación SHA-256 tenant A/B y BITACORA sintéticos.
+- Tres controles adversariales fail-closed: commit que toca datos, HEAD obsoleto y SHA inválido/worktree sucio; sin modificar Tasks físicas, Google Sheets de negocio, MySQL ni runtime.
+- Requiere CI exact-SHA, Scope Lock STRICT, V5 y A5 ajena; no certifica rollback productivo, M06 completo ni QA/main/PROD; CHANGELOG previo preservado íntegro.
+
 ## 2026-11-19 — V22 reparación CI C15-01.M05.06 selector de región semántica [DEV06]
 - GitHub Actions 44623854146: 2/3 Chromium PASS; el test A11y falló por selector `main` inexistente. El template usa `section.coverage-shell[aria-labelledby=coverage-title]`; corregir sólo el selector y exigir de nuevo Tab, ARIA, foco y 44px. No modificar UI ni ocultar FAIL; nueva CI exact-SHA es obligatoria.
 
