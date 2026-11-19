@@ -1,3 +1,7 @@
+## 2026-11-19 — V22 C07-04.M06.03 límites y riesgos comerciales [DEV05]
+- Documentada salida atómica R0 en `docs/v5/c07-04-m06-03-limitaciones-riesgos.md` (commit de origen `561077c9f94eb17c8f766f652f3bf1e6a5aeffce`): matriz de evidencias previas vs. JWT/tenant HTTP, MySQL, PSP/fiscal y recuperación NO certificados; PLAN D/E separados, sin cambios runtime ni autorización QA/PROD.
+- CLAIM V17 exclusivo en PLAN fila 1150, owner histórico DEV05 preservado, transición a VALIDANDO con evento idempotente y readback. CI del origen aún no completa al primer control; nueva revisión exact-SHA/descendiente con blobs idénticos antes de LISTO; A5 independiente pendiente.
+
 ## 2026-11-19 — V22 reparacion P2 Chromium C13-04.M05.06 [DEV04]
 - Run 44610211573/job 135864472707: 4/5 pruebas pasan, la matriz falla porque el selector `h1,h2` toma un titular publicitario oculto en login.
 - Corregir seleccion accesible por role+name `Iniciar sesión`, sin alterar casos de pantalla/tamanyo, Tab nativo, denegacion anonima y overflow adversarial. Revalidar GitHub Actions exact SHA; no contabilizar FAIL como PASS y conservar historia anterior.
