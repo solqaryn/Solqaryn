@@ -8115,3 +8115,9 @@
 - Registra en `docs/v5/c07-04-m06-01-auditoria-pruebas-vs-mocks.md` seis SHA M05 y evidencia dirigida (5 Vitest, 14 xUnit, 4 MySQL efimero, 4 Chromium, 9 xUnit, 15 Chromium), distinguiendo verificaciones reales de permisos, sesion y transacciones simuladas.
 - Mantiene explicito el fallo historico del check global de modulos y los gaps JWT firmado/HTTP/PSP/fiscal/concurrencia. PLAN E M06 es meta acumulativa, no certificada por este diff documental R0; sin QA/main/PROD.
 - Requiere `verify-solqaryn-project-scope` y V5 `completed/success` en SHA exacto y A5 independiente por otra Task JAVIER antes de liberar dependencias.
+
+
+## 2026-11-19 — V22 C07-04.M06.05 solicitud de revisión independiente del lote [DEV03]
+- Entrega R0 documental `docs/v5/c07-04-m06-05-solicitud-revision-independiente.md` para el requisito atómico PLAN D1152, con matriz de M05.01–06, fuentes SHA, A5 de M06.01–03 y puertas aún abiertas M06.04/M06.06.
+- Conserva el histórico global `completed/failure` de M05.06, separa MySQL/Chromium reales de mocks e identifica brechas JWT/RBAC/tenant, PSP, rollback y auditoría fiscal; no declara operación de negocio certificada ni A5 propia.
+- Requiere V17/CAS, GitHub Actions Scope Lock/V5 `completed/success` del SHA exacto, BITACORA y readback; solo otro Javier con revisión genuina puede firmar A5. Sin QA/main/PROD ni secretos.
