@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C15-01.M06.01 auditoría causal de mocks vs pruebas reales [DEV01]
+- Revisión R0 de seis SHA M05.01–06 en GitHub Actions: separa Node/xUnit y pruebas de fuente, MySQL 8.4 efímero y Chromium real con sesión sintética; rechaza extrapolar cobertura global 2340 y JWT/RBAC real.
+- Preserva y documenta dos SHA con check transversal completed/failure (M05.02 y M05.06), el error histórico Chromium 2/3 y límites de dispositivos físicos, Web Vitals y API viva; no inventa PASS ni altera runtime.
+- Entrega fuente específica PLAN D2192 con Scope Lock/V5 exact-SHA y A5 independiente pendiente; no certifica M06, QA/main/PROD ni cierre total de plan.
+
 ## 2026-11-19 — V22 C15-04.M05.04 A0.53 cobertura real frente a sesion sintetica [DEV02]
 - Dos casos nuevos Chromium con JWT firmado, API .NET 10 y MySQL 8.4 efimero contrastan cobertura privada: plataforma GET 200, cuatro dimensiones NO_MEDIDO, Tab, foco 3px, 44px, responsive 320/1280, sin HTTP mutador; empresa B GET 403 y cero filtracion.
 - El incremento previo A0.52 obtuvo 45/45 PASS en GitHub-hosted run 44617192422; A0.53 espera 47/47 y checks exact-SHA, no PASS anticipado. El check transversal modulos tuvo tres fallos historicos de transferencias no acreditados como verdes; A0-A4 global UX y A5 siguen pendientes, H EN_PROGRESO con V17. Sin QA/main/PROD.
