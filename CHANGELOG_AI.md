@@ -1,3 +1,8 @@
+## 2026-11-19 — V21 C02-01.M04.04 rescate cruzado Chromium/JWT/MySQL real [Javier DEV01]
+- Añade tres casos Playwright contra API .NET10, JWT firmado y MySQL 8.4 efimero: doble submit durante GET real, seleccion ausente sin peticion y empresa B falsificada rechazada por servidor.
+- Runner GitHub-hosted aislado con Scope Lock y V5 exact-SHA; si CI esta QUEUED/IN_PROGRESS no hay PASS ni LISTO anticipado. Owner historico DEV05 conservado; A5 independiente distinta de autor/reparador.
+- No modifica API, permisos, datos productivos, QA/main/PROD ni configuracion fisica de Tasks; rollback por revert normal.
+
 ## 2026-11-19 — V21 C02-01.M04.04 guard contra doble submit tenant [Javier DEV05]
 - Corrige error espurio de validación cuando se reenvía selector durante GET tenant en curso; mantiene una sola solicitud y navegación únicamente tras membresía confirmada.
 - Añade TestBed adversarial de doble acción, verificaciones de contexto y evidencia R2; CI Angular exact-SHA, Scope Lock y V5 pendientes de readback; A5 independiente, sin QA/main/PROD.
