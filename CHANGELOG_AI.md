@@ -1,3 +1,8 @@
+## 2026-11-19 — V20 C15-04.M05.04 A0.47 contraste teclado real [Javier :10]
+- Añade Playwright contra JWT firmado/MySQL 8.4 efímero: Tab/Space, aria-pressed, contraste visual, recarga y cero mutaciones en 320/1280.
+- GitHub Actions debe acreditar 36 Chromium y Scope Lock/V5 exact-SHA; UX global A0-A4 incompleta, H2297 EN_PROGRESO DEV02, A5 distinta pendiente.
+- Solo test, documento y changelog, sin secretos, QA/main/PROD, rollback normal.
+
 ## 2026-11-19 — V20 C05-04.M05.06 regresión de ligereza en Chromium [Javier :00]
 - Añade suite Playwright con cuatro regresiones de directorio: carga progresiva, 320/375/768/1280, área táctil, consultas sin duplicación, 403/503, redacción y reintento explícito.
 - Añade GitHub Actions por SHA para lint/build y Chromium real en runner aislado; Navigation Timing/FCP diagnóstico, Core Web Vitals de campo y dispositivos físicos NO_MEDIDO/SIN_VERIFICAR.

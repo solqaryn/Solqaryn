@@ -1029,4 +1029,51 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     }
   });
 
+
+  // A0.47: contraste local con JWT real; nunca grants ni persistencia.
+  test('A0.47 - contraste global con teclado es local, reversible y sin escrituras', async ({ page }) => {
+    await ingresar(page, 'c1504_platform_only');
+    const mutaciones: string[] = [];
+    page.on('request', req => {
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method())) {
+        mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+      }
+    });
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      const sesion = page.waitForResponse(r =>
+        r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+      const response = await page.goto('/plataforma/consola-global-v5');
+      expect(response?.status()).toBe(200);
+      expect((await sesion).status()).toBe(200);
+      const grupo = page.getByTestId('c0204-branding');
+      const normal = page.getByTestId('c0204-brand-institucional');
+      const alto = page.getByTestId('c0204-brand-contraste');
+      await expect(grupo).toBeVisible();
+      await expect(normal).toHaveAttribute('aria-pressed', 'true');
+      await expect(alto).toHaveAttribute('aria-pressed', 'false');
+      const fondo = await grupo.evaluate(e => getComputedStyle(e).backgroundColor);
+      await normal.click();
+      await page.keyboard.press('Tab');
+      await expect(alto, 'Tab real debe alcanzar contraste alto').toBeFocused();
+      await page.keyboard.press('Space');
+      await expect(alto).toHaveAttribute('aria-pressed', 'true');
+      await expect(normal).toHaveAttribute('aria-pressed', 'false');
+      await expect(grupo).toHaveClass(/control-brand--contrast/);
+      await expect(page.getByTestId('c0204-brand-state')).toHaveText('Contraste alto seleccionado');
+      const colores = await grupo.evaluate(e => ({
+        fondo: getComputedStyle(e).backgroundColor,
+        texto: getComputedStyle(e).color
+      }));
+      expect(colores.fondo).not.toBe(fondo);
+      expect(colores.texto).toBe('rgb(255, 255, 255)');
+      await page.reload();
+      await expect(normal).toHaveAttribute('aria-pressed', 'true');
+      await expect(alto).toHaveAttribute('aria-pressed', 'false');
+      expect(await page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(width + 1);
+    }
+    expect(mutaciones, 'Apariencia local sin HTTP mutante').toEqual([]);
+  });
+
 });
