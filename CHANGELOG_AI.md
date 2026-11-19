@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 C15-03.M05.02 contrato seguro de sesión plataforma [Javier :00]
+- Se agregan seis pruebas xUnit reales sobre PlataformaSesionController y DTO: ruta y NoStore, plataforma autorizada, rechazo de rol empresarial, encabezados hostiles, revocación, anonimato y JSON de cuatro campos sin empresa/secretos.
+- Fixtures EF InMemory y ClaimsIdentity de prueba no prueban JWT firmado ni MySQL/HTTP TestHost; mantener VALIDANDO hasta A0–A4 completos y CI exact-SHA SUCCESS. A5 independiente, rollback git revert normal; solo dev.
+
 ## 2026-11-19 — V20 C15-04.M05.04 A0.44 UX global arquitectura y QA autenticadas [Javier :10]
 - Amplia dos tests Chromium JWT real/empresa B 403 para QA global y revision de arquitectura; 320/1280 px, landmark unico, h1, Tab real, sin overflow ni mutaciones. Ejecutar GitHub Actions exact-SHA antes de contar PASS.
 - La auditoria global de todos los roles, rutas, WCAG y rendimiento aun NO esta cerrada: EN_PROGRESO DEV02, lock V17 preservado, A5 por otra Task Javier; solo dev y Scope Lock STRICT.
