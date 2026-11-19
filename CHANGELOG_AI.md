@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C07-04.M04.06 reparación P2 de oráculos QA [Javier :20]
+- Corrige prueba de contención responsive con `overflow-x` y `overscroll-behavior-x` reales, frontera 320 px y mutante adversarial `overflow-x:visible`; verifica intentos POST/PUT/PATCH/DELETE en respuesta 503 sin depender del mock.
+- Cinco pruebas Chromium dirigidas y CI exact-SHA requeridas; conserva A5_FAIL histórico y solicita revisión A5 independiente de DEV06 y DEV03. Ningún cambio runtime, JWT, tenant, MySQL, QA/main/PROD.
+
 ## 2026-11-18 — V20 C15-04.M05.04 CI causal para reparar landmarks [Javier :10]
 - Amplía `on.push.paths` de la suite JWT/MySQL/Chromium de C15-04 para cubrir los dos componentes que tenían `<main>` anidado; sigue ejecutando 29 aserciones reales de plataforma, A/B y semántica, sin alterar tests ni gates.
 - Solo `dev`, por SHA, sin cancelaciones cruzadas (`cancel-in-progress=false`); nueva CI requerida para 29 PASS, A0-A4 global abierto y A5 independiente. Preserva owner DEV02, candado V17 2000002297 y rollback git revert normal.

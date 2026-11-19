@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   density:
-    name: C07-04.M04.06 - Angular y Chromium tres pruebas
+    name: C07-04.M04.06 - Angular y Chromium cinco pruebas
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
@@ -52,7 +52,7 @@ jobs:
           done
           cat c07-04-m04-06.log >&2
           exit 1
-      - name: Browser real - densidad progreso error
+      - name: Browser real - densidad progreso error y control adversarial
         working-directory: frontend
         run: npx playwright test e2e/c07-04-m04-06-density.spec.ts --config=playwright.config.ts --workers=1 --retries=0
       - name: Evidencia

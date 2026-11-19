@@ -56,12 +56,16 @@ test('C07-04.M04.06 densidad: 320/768/1280 y scroll contenido', async ({page}) =
       return {
         overflow:document.documentElement.scrollWidth-document.documentElement.clientWidth,
         columns:getComputedStyle(grid).gridTemplateColumns.trim().split(/\s+/).length,
-        localScroll:table.scrollWidth>=table.clientWidth
+        scrollMode:getComputedStyle(table).overflowX,
+        scrollContainment:getComputedStyle(table).overscrollBehaviorX,
+        narrowOverflow:table.scrollWidth>table.clientWidth
       };
     });
     expect(layout.overflow,'overflow global '+width).toBeLessThanOrEqual(2);
     expect(layout.columns,'columnas '+width).toBe(width<=704?1:2);
-    expect(layout.localScroll).toBe(true);
+    expect(['auto','scroll'],'overflow-x local '+width).toContain(layout.scrollMode);
+    expect(layout.scrollContainment,'overscroll-x local '+width).toBe('contain');
+    if(width===320)expect(layout.narrowOverflow,'tabla realmente desborda a 320').toBe(true);
   }
 });
 
@@ -80,6 +84,11 @@ test('C07-04.M04.06 carga progresiva: spinner visible mientras GET retenido', as
 
 test('C07-04.M04.06 negativo 503 y reintento recobran estado sin POST', async ({page}) => {
   let calls=0;
+  const mutationAttempts:string[]=[];
+  page.on('request',request=>{
+    if(/\/pedidos-venta(?:\?|$)/.test(new URL(request.url()).pathname) &&
+       !['GET','OPTIONS'].includes(request.method()))mutationAttempts.push(request.method());
+  });
   await contexto(page,async route=>{
     calls++;
     if(calls===1) {
@@ -92,6 +101,7 @@ test('C07-04.M04.06 negativo 503 y reintento recobran estado sin POST', async ({
   await page.getByRole('button',{name:'Reintentar'}).click();
   await expect(page.getByText('Sin resultados.')).toBeVisible();
   expect(calls).toBe(2);
+  expect(mutationAttempts,'no debe intentarse POST/PUT/PATCH/DELETE').toEqual([]);
 });
 
 test('C07-04.M04.06 humo de primera pintura perceptible 320 y 1280', async ({page}) => {
@@ -114,4 +124,17 @@ test('C07-04.M04.06 humo de primera pintura perceptible 320 y 1280', async ({pag
     expect(metric.firstContentfulPaintMs!).toBeGreaterThan(0);
     expect(metric.firstContentfulPaintMs!).toBeLessThan(15000);
   }
+});
+
+test('C07-04.M04.06 control negativo detecta overflow-x visible sin contencion', async ({page})=>{
+  await contexto(page,ok);
+  await page.setViewportSize({width:320,height:800});
+  await page.goto('/pedidos-venta');
+  const panel=page.locator('.table');
+  await expect(panel).toBeVisible();
+  const before=await panel.evaluate(el=>getComputedStyle(el).overflowX);
+  expect(['auto','scroll']).toContain(before);
+  await panel.evaluate(el=>(el as HTMLElement).style.setProperty('overflow-x','visible','important'));
+  const after=await panel.evaluate(el=>getComputedStyle(el).overflowX);
+  expect(['auto','scroll'],'mutante sin scroll local DEBE fallar el oraculo').not.toContain(after);
 });
