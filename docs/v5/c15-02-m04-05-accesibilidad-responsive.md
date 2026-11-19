@@ -13,3 +13,8 @@ Regresión de la vista Angular documental privada C15-02.M04.01 existente, sin c
 - A5: revisión independiente por otra Task Javier, no por el autor ni el reparador.
 
 Rollback: git revert normal del commit con verificación del HEAD y sin force-push. No QA, main o PROD.
+
+## Reparación cruzada V21 — contraste medido y oráculo adversarial
+Actor de reparación: DEV03 (`6adc2e4bd8a48191ac7d8641ed95a1a3`), autor/owner histórico DEV01 inalterado. Se agrega una prueba Playwright real en Chromium del contraste WCAG AA (4.5:1) del encabezado, identificador institucional, enlace accesible y primer título de tarjeta, tanto a 320 como a 1280 px. El algoritmo compone opacidad alfa y fondos CSS de ancestros en vez de asumir un fondo local opaco; verifica también el control negativo de color sobre el mismo fondo, que debe fallar 4.5:1. Mantiene los cuatro escenarios anteriores de navegación, semántica, privacidad y responsive, sin modificar la aplicación, API, JWT, MySQL, infraestructura, secretos ni datos.
+
+A0: diff test-only + esta documentación + CHANGELOG_AI; sin nuevas rutas, DTO, persistencia ni autorizaciones. A1: contraste real, casos previos y adversarial; A2: preserva denegación 403 de sesión sintética (no certifica JWT firmado o tenant A/B); A3: ejecución Angular efímera/Chromium por GitHub Actions; A4: exigir job Chromium, frontend y Scope Lock/V5 exact SHA `completed/success`, no certificar en progreso/fallido. La validación WCAG integral, contraste de todas las rutas, consola global y ausencia de P0/P1 siguen pendientes; A5 sólo una tercera Task Javier distinta del autor DEV01 y reparador DEV03. No mover de VALIDANDO hasta A0–A4 completos. Rollback: git revert normal de este único changeset después de verificar HEAD, sin force-push.

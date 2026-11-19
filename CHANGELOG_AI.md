@@ -1,3 +1,7 @@
+## 2026-11-19 — V21 C15-02.M04.05 contraste Chromium real y control negativo [Javier :20]
+- Reparación cruzada de la prueba de accesibilidad: se mide contraste efectivo sRGB con fondos y opacidades de ancestros en título, identificador, navegación y tarjeta a 320/1280 px, con oráculo adversarial que rechaza colores idénticos; conservadas pruebas previas de teclado/responsive/403.
+- Test-only en dev, autor DEV01 preservado, reparador DEV03; workflow GitHub-hosted exact-SHA debe acreditar Chromium y Scope Lock/V5 antes de afirmar PASS. No certifica auditoría WCAG global, JWT/tenant/MySQL ni cierre A0–A4; A5 de tercera Task Javier, sin QA/main/PROD.
+
 ## 2026-11-19 — V21 C02-01.M04.01 host falso y tenant B [Javier :10]
 - Añade un caso negativo Playwright real con JWT de empresa A y host reenviado falsificado hacia B; exige que el catálogo autenticado no gane membresías ni GET /tenant-context/2 conceda acceso. Reutiliza .NET 10/Angular 22/MySQL 8.4 efímero GitHub-hosted y no cambia seguridad o servicios productivos.
 - Rescate parcial de VALIDANDO DEV04 con owner conservado; CI exact-SHA y A0–A4 completos pendientes, revisión A5 independiente y prohibición QA/main/PROD. Rollback: git revert normal sobre dev.
