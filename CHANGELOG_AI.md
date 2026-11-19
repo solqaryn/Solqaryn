@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C14-02.M06.04 ensayo rollback aislado con datos conservados [Javier DEV03]
+- Se incorpora ensayo Git revert real en repositorio efímero: restituye solo flag de seguridad y conserva SHA-256 de archivos tenant A/B, jobs, cache, sesiones, backups y bitácora sintéticos.
+- Cinco tests positivos/adversariales/fallo temprano se ejecutan en GitHub Actions Node 24 por SHA; HEAD obsoleto, cambio concurrente del flag, SHA inválido o rutas protegidas deniegan el rollback.
+- No cambia runtime real ni autoriza restore productivo, QA/main/PROD o certificación global BOLA; A5 independiente pendiente hasta revisión genuina.
+
 ## 2026-11-19 — C14-02.M06.05 | V22 DEV06 solicitud de revisión independiente
 - Se publicó una solicitud atómica R0 de A5 por otra Task Javier, con evidencia M05.01–06/M06.01–04 y enlaces de SHA/CI, sin confundir solicitud con aprobación.
 - Se diferencian suites reales de JWT firmado, MySQL 8.4 y Chromium de dobles de prueba; P0/P1 BOLA, host, archivos, jobs, caché, restore y sesiones siguen sin certificación global.

@@ -1,0 +1,27 @@
+name: V22 C14-02.M06.04 security rollback isolation
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'scripts/quality/v22-c14-02-m06-04-security-rollback.test.mjs'
+      - '.github/workflows/v22-c14-02-m06-04-security-rollback.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c14-02-m06-04-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  rollback-disposable-repository:
+    name: C14-02.M06.04 - real Git revert preserves tenant and audit data
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout exact SHA
+        uses: actions/checkout@v4
+      - name: Setup Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Five positive, adversarial and fault-path real Git revert tests
+        run: node --test scripts/quality/v22-c14-02-m06-04-security-rollback.test.mjs
