@@ -15,3 +15,7 @@ GitHub-hosted ejecuta Node 24, npm 11, Angular tipado/build y Playwright/Chromiu
 
 ## A4/A5 — Requisitos para transición
 Exigir GitHub Actions exact-SHA de workflow V22 C15-01.M05.06: 3/3 Chromium aprobadas más tipado/build, verify-solqaryn-project-scope y V5 provenance completed/success; checks obligatorios pertinentes SUCCESS. QUEUED, IN_PROGRESS, CANCELLED, SKIPPED y FAIL jamás PASS. Tras publicar conservar H=VALIDANDO mientras CI externa concluya, registrar SHA/run/check y readback PLAN/COLA/DAG/BITACORA bajo V17; al completar A0-A4 reales CAS a LISTO conservando owner. A5 revisión independiente de otra Task Javier diferente de DEV06, sin aprobarse a sí misma; no QA/main/PROD.
+
+## Reparación causal V22 CI P2 — selector de landmark, sin alterar runtime
+
+El SHA inicial `89a553089a882b8ae4aea7918b6b1c78c1cda368` tuvo 2/3 pruebas Chromium PASS y una FAIL de aserción de test: `main[aria-labelledby=coverage-title]` no existe porque la superficie real usa **`section.coverage-shell[aria-labelledby=coverage-title]`**, tal como confirma su template Angular. No se altera la UI ni se degrada la comprobación semántica: se exige la sección accesible etiquetada real, adicionalmente `section[aria-labelledby=coverage-dimensions]`, cuatro ARIA, Tab real, foco visible y 44px. GitHub Actions run 44623854146 job 135912346079 conserva FAILURE histórico. Revalidar 3/3 y checks en SHA de esta corrección, no reusar el PASS anterior ni acreditar A5 sin nueva revisión.

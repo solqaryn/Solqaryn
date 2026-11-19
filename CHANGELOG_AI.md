@@ -1,3 +1,6 @@
+## 2026-11-19 — V22 reparación CI C15-01.M05.06 selector de región semántica [DEV06]
+- GitHub Actions 44623854146: 2/3 Chromium PASS; el test A11y falló por selector `main` inexistente. El template usa `section.coverage-shell[aria-labelledby=coverage-title]`; corregir sólo el selector y exigir de nuevo Tab, ARIA, foco y 44px. No modificar UI ni ocultar FAIL; nueva CI exact-SHA es obligatoria.
+
 ## 2026-11-19 — V22 C15-01.M05.06 regresión, rendimiento y accesibilidad Chromium [DEV06]
 - Pruebas Playwright reales del shell de cobertura con medidas de navegación localhost, Tab real y 44px, rechazos 403/503. Sesión sintética declarada: no certificar JWT backend, tenant A/B, MySQL, WCAG global ni Core Web Vitals de campo.
 - Workflow GitHub-hosted Node24/Angular22/Chromium con concurrency exact-SHA sin cancelación; pendiente validar CI y Scope Lock/V5 antes de LISTO/A5 independiente. Sin QA/main/PROD.

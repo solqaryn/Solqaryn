@@ -62,7 +62,7 @@ test.describe('C15-01.M05.06 regresion rendimiento y accesibilidad proporcionale
     await page.setViewportSize({ width: 375, height: 812 });
     await page.goto(target);
     await expect(page.getByTestId('c1501-loaded')).toBeVisible();
-    await expect(page.locator('main[aria-labelledby="coverage-title"]')).toHaveCount(1);
+    await expect(page.locator('section.coverage-shell[aria-labelledby="coverage-title"]')).toHaveCount(1);
     await expect(page.locator('section[aria-labelledby="coverage-dimensions"]')).toHaveCount(1);
     await expect(page.locator('.unverified[aria-label="Evidencia no verificada"]')).toHaveCount(4);
     await expect(page.getByRole('note')).toContainText('No hay operaciones');
