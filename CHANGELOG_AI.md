@@ -1,3 +1,7 @@
+## 2026-11-19 — V22 C03-04.M06.05 solicitud de revisión técnica independiente [DEV01]
+- Paquete documental R0 `docs/v5/c03-04-m06-05-independent-review-request.md` para las seis entregas M05 de incidentes, con SHA y límites JWT/HTTP/MySQL/restore; sin nuevo runtime ni autorizaciones.
+- D576 solicita revisión ajena; esta entrega NO representa A5_PASS, restore real, aprobación humana ni cierre de M06.06. Scope Lock/V5 y readback se comprueban en el SHA publicado; rollback por revert ordinario.
+
 ## 2026-11-19 — V22 C15-05.M06.03 riesgos y decisiones de auditoria [DEV06]
 - C15-05.M06.03 documenta en `docs/v5/c15-05-m06-03-limitaciones-riesgos-decisiones.md` limitaciones reales frente a mocks, pruebas HTTP/JWT, GET GitHub read-only, browser synthetic, concurrencia V17, A5 y gates de C15-05 M05/M06; no inventa PASS ni declara fase completa.
 - Incremento R0 solo documentación, sin tocar runtime, CI, DB o permisos. Se preservan riesgos R2, historial de FAIL, Scope Lock STRICT y A5 independiente; prohibidas QA/main/PROD y compras. El CHANGELOG previo se conserva completo como sufijo exacto y las viñetas de esta sección son contiguas.
