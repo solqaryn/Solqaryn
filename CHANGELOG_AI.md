@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C14-02.M06.01 auditoría real vs mocks [Javier DEV01]
+- Se cotejaron seis microtareas M05.01–06 y sus A5 independientes con una matriz causal de Angular TestBed, API JWT firmado, Oracle EF MySQL 8.4, xUnit y Chromium real.
+- Se distinguen controles cliente sintéticos de integración autenticada/DB, con negativos falsables sobre 403/503, BOLA, host, archivos, jobs, caché y límites de evidencia; sin fingir P0/P1 global cero.
+- Diff R0 documental; se preservan límites R2/R3, errores históricos, Scope Lock/V5 exact-SHA y A5 ajena, sin alterar código runtime, DAG/COLA ni QA/main/PROD.
+
 ## 2026-11-19 — C15-04.M05.04 | V22 DEV02 A0.54 cutover UX JWT real
 - Dos pruebas Playwright/Chromium nuevas para cutover read-only: rol plataforma con JWT firmado, Tab/Enter/Space y tema alto contraste local; empresa B con HTTP 403 y DOM privado ausente, sobre MySQL 8.4 efimero de CI.
 - Solo test y evidencia documental; sin API/EF/rutas productivas/secretos. Estados de cutover permanecen SIN_VERIFICAR, NO_MEDIDO y NO_AUTORIZADO.
