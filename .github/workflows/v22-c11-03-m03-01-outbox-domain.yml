@@ -1,0 +1,39 @@
+name: V22 C11-03.M03.01 - Outbox domain adversarial rules
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/src/Domain/AutomationV5/C1103OutboxEventDomainRules.cs'
+      - 'backend/tests/Solqaryn.Tests/Domain/C1103M0301OutboxEventDomainRulesTests.cs'
+      - '.github/workflows/v22-c11-03-m03-01-outbox-domain.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c1103-m0301-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  outbox-domain:
+    name: C11-03.M03.01 - .NET 10 pure Domain positive and adversarial tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Verify Scope Lock
+        run: node scripts/verify-project-scope.mjs
+      - name: Restore real .NET 10 test project
+        run: dotnet restore backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj
+      - name: Build Release with warnings as errors in directed tests
+        run: dotnet build backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore
+      - name: Execute exact C11-03.M03.01 adversarial xUnit
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj \
+            --configuration Release --no-build \
+            --filter FullyQualifiedName~C1103M0301OutboxEventDomainRulesTests \
+            --logger 'console;verbosity=normal' | tee /tmp/c1103-test.log
+          grep -E 'Passed: +([1-9][0-9]*).*Failed: +0|Failed: +0.*Passed: +([1-9][0-9]*)' /tmp/c1103-test.log >/dev/null
+          if grep -Ei 'Skipped: +[1-9]' /tmp/c1103-test.log; then exit 1; fi

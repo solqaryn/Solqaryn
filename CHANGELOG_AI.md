@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C11-03.M03.01 reglas Domain outbox idempotencia y tenant [Javier :30]
+- Se implementa preflight Domain .NET 10 para eventos tenant-scoped, tipo allowlisted, idempotencia, payload hash, replay, attempt/ACK durable y DeadLetter terminal, con 15 casos xUnit adversariales.
+- Sin cambios runtime API/MySQL/JWT/worker; ningún verdict concede despacho/persistencia; A3 HTTP/MySQL es NO_APLICA al diff puro y permanece fase futura M03.03–06.
+- GitHub Actions dirigida exact-SHA y Scope Lock/V5 requeridos; entrega puede permanecer VALIDANDO esperando CI, con A5 de otra Task Javier y rollback Git revert normal.
+
 ## 2026-11-19 — V22 C15-01.M06.04 ensayo de rollback Git aislado [DEV03]
 - R2: git revert REAL en repo efímero Node24 preserva SHA-256 de plan 2340 IDs sintéticos, BITACORA y mapa de evidencias ante cambio concurrente legítimo.
 - Cuatro casos propuestos (positivo y negativos de ruta fuera de allowlist, stale HEAD, SHA inválido y worktree sucio); GitHub-hosted exact-SHA Scope Lock/V5 y prueba dirigida pendientes, no PASS anticipado.
