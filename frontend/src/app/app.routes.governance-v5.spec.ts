@@ -40,7 +40,9 @@ describe('C00-04.M04.01 - gobierno de cambios V5, ruta y superficie protegidas',
     const fixture = TestBed.createComponent(GobiernoCambiosV5Component);
     fixture.detectChanges();
     const root: HTMLElement = fixture.nativeElement;
-    expect(root.querySelector('main[aria-labelledby="governance-title"]')).not.toBeNull();
+    // AppComponent aporta el unico main; este componente aislado no debe anidarlo.
+    expect(root.querySelector('section[aria-labelledby="governance-title"]')).not.toBeNull();
+    expect(root.querySelectorAll('main')).toHaveLength(0);
     expect(root.querySelector('h1#governance-title')?.textContent).toContain('Decisiones y controles');
     expect(root.querySelectorAll('ol.steps > li')).toHaveLength(4);
     expect(root.querySelectorAll('form, input')).toHaveLength(0);

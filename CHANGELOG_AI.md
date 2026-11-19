@@ -1,3 +1,8 @@
+## 2026-11-19 — V21 C15-04.M05.04 A0.50.1 reparación regresión Vitest [Javier DEV02]
+- GitHub Actions reportó 8 PASS/1 FAIL en contrato gobierno V5: el test esperaba main interno obsoleto pese a la corrección de landmarks anidados.
+- Mantiene la prueba activa y la hace estricta: section con aria-labelledby presente, main interno ausente; Playwright integrada sigue exigiendo un main único y JWT real, 42 casos pendientes.
+- Revalidar Vitest, Angular, Scope Lock/V5, JWT/MySQL/Chromium exact-SHA. H2297 EN_PROGRESO y V17 lock 2000002297; auditoría global y A5 incompletas, sin QA/main/PROD.
+
 ## 2026-11-19 — V21 C15-04.M05.04 A0.50 gobierno de cambios JWT/Chromium [Javier DEV02]
 - Repara P2 de doble main en gobierno V5 con section semantica, preservando h1, guard y JWT/RBAC.
 - Suma dos pruebas reales GitHub-hosted MySQL 8.4, JWT firmado y Chromium 320/1280: teclado Tab/Enter GET, 403 empresa B y cero HTTP mutante. 42 esperados, no PASS anticipado.
