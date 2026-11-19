@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C02-03.M03.03 autorización tenant de solo preflight [Javier :40]
+- Puerta Application .NET 10 fail-closed con evidencia server-controlled, JWT/rol/grant/revocación/membresía/ownership/tenant fence y código de rechazo uniforme; no registra adaptador vivo ni autoriza mutación.
+- xUnit adversarial y CI GitHub-hosted por SHA; JWT HTTP, RBAC MySQL real, CAS persistente, A5 y QA/main/PROD siguen SIN_VERIFICAR, sin declarar LISTO anticipado.
+
 ## 2026-11-18 — V20 C14-04.M06.04 reparación conflictual Git revert aislado [Javier :20]
 - Reconciliar exclusivamente el bloque original M05.06 de CHANGELOG dentro del worktree descartable cuando git revert devuelve conflicto solo en ese archivo; verificar unicidad, dos viñetas originales, exactamente cuatro rutas y ausencia de archivos no resueltos.
 - CI GitHub-hosted exact-SHA requerida para confirmar revert real y rechazo adversarial de mutación protegida; no modificar dev en el sandbox ni acreditar MySQL, RPO/RTO, JWT, QA/main/PROD o A5 sin evidencia.

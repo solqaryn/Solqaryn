@@ -1,0 +1,38 @@
+name: V20 C02-03.M03.03 - Lifecycle authorization gate
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/src/Application/AutomationV5/C0203TenantLifecycleAuthorizationGate.cs'
+      - 'backend/tests/Solqaryn.Tests/Application/C0203TenantLifecycleAuthorizationGateTests.cs'
+      - '.github/workflows/v20-c02-03-m03-03-lifecycle-authorization.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v20-c0203-m0303-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  lifecycle-authorization:
+    name: C02-03.M03.03 - .NET 10 tenant security negatives
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Verify Scope Lock
+        run: node scripts/verify-project-scope.mjs
+      - name: Restore and build .NET 10 Release
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+      - name: Adversarial lifecycle authorization xUnit
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter "FullyQualifiedName~C0203TenantLifecycleAuthorizationGateTests" --logger "console;verbosity=normal"
+          echo "C0203_M0303_READONLY_AUTHORIZATION_TESTS_COMPLETED"
