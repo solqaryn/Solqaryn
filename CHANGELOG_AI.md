@@ -1,3 +1,7 @@
+## 2026-11-19 — V21 C02-01.M04.01 host falso y tenant B [Javier :10]
+- Añade un caso negativo Playwright real con JWT de empresa A y host reenviado falsificado hacia B; exige que el catálogo autenticado no gane membresías ni GET /tenant-context/2 conceda acceso. Reutiliza .NET 10/Angular 22/MySQL 8.4 efímero GitHub-hosted y no cambia seguridad o servicios productivos.
+- Rescate parcial de VALIDANDO DEV04 con owner conservado; CI exact-SHA y A0–A4 completos pendientes, revisión A5 independiente y prohibición QA/main/PROD. Rollback: git revert normal sobre dev.
+
 ## 2026-11-19 — V21 C15-01.M05.02 rechazo de alias de catálogo por comparador [Javier :00]
 - Corrige comparación Application de IDs de requisitos/microtareas: un IReadOnlySet con comparador case-insensitive no puede aparentar igualdad con catálogo distinto; comparación estricta Ordinal fail-closed.
 - Añade regresiones adversariales xUnit y DTO seguro con CATALOG_SNAPSHOT_MISMATCH; CI .NET10 GitHub-hosted exact-SHA pendiente. Reparación R2 parcial: no certifica fuente institucional ni A0–A4 completos; owner DEV05 y A5 independiente pendientes. Solo dev.

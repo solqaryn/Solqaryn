@@ -140,6 +140,29 @@ test.describe('V21 C02-01.M04.01 - menu real de empresas JWT MySQL Chromium', ()
     await expect(page.getByRole('button', { name: cambiar })).toHaveCount(0);
   });
 
+  test('negative - host falso X-Forwarded-Host no cambia membresia JWT ni abre tenant B', async ({ page }) => {
+    test.setTimeout(150_000);
+    const jwt = await login(page, 'c1504_admin_a');
+    const headers = {
+      Authorization: 'Bearer ' + jwt,
+      'X-Forwarded-Host': 'empresa-b.control-no-confiable.invalid',
+      'X-Forwarded-Proto': 'https'
+    };
+    const membership = await page.request.get(api + '/tenant-context/empresas', { headers });
+    if (membership.status() === 200) {
+      const values: unknown = (await membership.json())?.data;
+      expect(Array.isArray(values)).toBe(true);
+      const ids = (values as { empresaId: number }[]).map(e => e.empresaId);
+      expect(ids, 'Host declarado por cliente no agrega membresia B').toEqual([1]);
+    } else {
+      expect([400, 401, 403, 404], 'Un host rechazado debe fallar cerrado').toContain(membership.status());
+    }
+    const foreign = await page.request.get(api + '/tenant-context/2', {
+      headers: { ...headers, 'X-Empresa-Id': '2' }
+    });
+    expect([400, 403, 404], 'Host falso y cabecera B nunca autorizan tenant B').toContain(foreign.status());
+  });
+
   test('after revocation - usuario antes N2 ahora N1 oculta menu y B es prohibida', async ({ page }) => {
     test.setTimeout(150_000);
     const jwt = await login(page, 'c0201_admin_ab');
