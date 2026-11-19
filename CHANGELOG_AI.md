@@ -1,3 +1,7 @@
+## 2026-11-19 — V22 C07-04.M06.02 manifiesto de version y evidencias [DEV05]
+- Registrado manifiesto reproducible R0 en `docs/v5/c07-04-m06-02-version-diff-artefactos-reproducibilidad.md` (origen `61d3044acb7b5306e9c6818b3313724ef184fc45`): SHAs, cuatro blobs de M05.06, resultado Chromium 15/15 dirigido y fallo del check global histórico documentado sin convertirlo en PASS.
+- PLAN D define el resultado atómico documental, PLAN E conserva metas comerciales acumulativas sin certificar JWT firmado, tenant A/B HTTP, pagos, PSP, MySQL financiero, QA o PROD. Claim V17 fila 1149, fuente histórica y CHANGELOG preservados; A0-A4 y A5 independiente requeridos antes de avanzar sucesoras.
+
 ## 2026-11-19 — V22 C03-04.M06.01 auditoria pruebas reales vs sinteticas [DEV04]
 - Matriz de M05.01–M05.06 con seis SHAs causales, xUnit y MySQL efimero real diferenciados de fixtures, HTTP/JWT integrado no certificado y restores no ejecutados.
 - Salida atomica solo documental para PLAN D572. No altera runtime ni gates DAG; M06/fase acumulativa, R3, QA/main/PROD y A5 independiente no se liberan por un inventario.
