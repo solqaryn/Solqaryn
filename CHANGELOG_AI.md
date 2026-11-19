@@ -1,3 +1,7 @@
+## 2026-11-18 - V20 C15-01.M04.06 densidad y carga progresiva [Javier :30]
+- Tres pruebas Playwright Chromium para reflow, cero HTTP mutador, datos ocultos mientras la sesion esta pendiente y denegacion 403/503; JWT HTTP y MySQL no probados.
+- CI SHA-aislada, build Angular, evidencia causal y A5 independiente; sin QA/main/PROD.
+
 ## 2026-11-18 — V20 C15-02.M04.02 reparación del auditor ERP [Javier :20]
 - Se añade únicamente la ruta ya existente y protegida `plataforma/revision-arquitectura-v20` al allowlist exacto del auditor de rutas ERP; no cambia guard, backend, RBAC ni permisos.
 - El FAIL inicial de ERP requiere retest en GitHub Actions sobre nuevo SHA. Se conservan pruebas adversariales de la UI, auditoría de alcance y bloqueo R3; no contar SKIPPED/QUEUED como PASS.
