@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C02-01.M04.03 branding visible saneado sin autoridad cliente [DEV01]
+- R2 de superficie tenant: nombre visible y mensaje de login acotados; logo HTTPS sin credenciales o ruta relativa local, rechazo de esquemas maliciosos y markup. No se altera el backend ni se confiere autorización a partir del branding público.
+- Pruebas adversariales Vitest: marca válida, esquemas hostiles, longitud/control, restauración a plataforma y respuesta asíncrona obsoleta de tenant A; CI GitHub-hosted Angular tipado/build y Scope Lock/V5 exact-SHA por acreditar.
+- Salida atómica PLAN D310; pruebas HTTP/JWT/MySQL reales no pertenecen al diff de presentación y permanecen en el gate acumulativo de C02-01.M04; no declarar A5 propio, QA/main/PROD ni cierre sin readback.
+
 ## 2026-11-19 — V22 C11-03.M03.01 reglas Domain outbox idempotencia y tenant [Javier :30]
 - Se implementa preflight Domain .NET 10 para eventos tenant-scoped, tipo allowlisted, idempotencia, payload hash, replay, attempt/ACK durable y DeadLetter terminal, con 15 casos xUnit adversariales.
 - Sin cambios runtime API/MySQL/JWT/worker; ningún verdict concede despacho/persistencia; A3 HTTP/MySQL es NO_APLICA al diff puro y permanece fase futura M03.03–06.

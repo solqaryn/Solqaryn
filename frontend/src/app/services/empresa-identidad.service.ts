@@ -20,6 +20,30 @@ const DEFAULT_CONFIG: EmpresaConfiguracion = {
   formatoFecha: 'dd/MM/yyyy'
 };
 
+/**
+ * C02-01.M04.03: presentation-only branding. Never treats a public theme,
+ * URL or client preference as an authenticated tenant or permission grant.
+ */
+export function c0201NombreBrandingSeguro(value: unknown, maxLength = 120): string | null {
+  if (typeof value !== 'string') return null;
+  const normalized = value.trim();
+  return normalized.length > 0 && normalized.length <= maxLength &&
+    !/[\u0000-\u001f\u007f<>]/.test(normalized) ? normalized : null;
+}
+
+export function c0201LogoBrandingSeguro(value: unknown): string {
+  if (typeof value !== 'string' || value.length > 2048) return '';
+  const candidate = value.trim();
+  if (/^\/(?!\/)[^\s\\<>]*$/.test(candidate)) return candidate;
+  try {
+    const url = new URL(candidate);
+    return url.protocol === 'https:' && url.hostname.length > 0 &&
+      !url.username && !url.password ? url.href : '';
+  } catch {
+    return '';
+  }
+}
+
 @Injectable({ providedIn: 'root' })
 export class EmpresaIdentidadService {
   private readonly _config = signal<EmpresaConfiguracion>(DEFAULT_CONFIG);
@@ -27,10 +51,12 @@ export class EmpresaIdentidadService {
   private versionIdentidad = 0;
 
   readonly config = this._config.asReadonly();
-  readonly nombreSistema = computed(() => this._config().nombreVisibleSistema || this._config().nombreComercial || 'SOLQARYN');
+  readonly nombreSistema = computed(() => c0201NombreBrandingSeguro(this._config().nombreVisibleSistema) ||
+    c0201NombreBrandingSeguro(this._config().nombreComercial) || 'SOLQARYN');
   readonly descripcionSistema = computed(() => this.normalizarDescripcion(this._config().encabezadoTexto || this._config().descripcionSistema));
-  readonly logoUrl = computed(() => this._config().logoUrl || '');
-  readonly mensajeLogin = computed(() => this._config().mensajeLogin || `Inicia sesión para administrar ${this.nombreSistema()}`);
+  readonly logoUrl = computed(() => c0201LogoBrandingSeguro(this._config().logoUrl));
+  readonly mensajeLogin = computed(() => c0201NombreBrandingSeguro(this._config().mensajeLogin, 180) ||
+    `Inicia sesión para administrar ${this.nombreSistema()}`);
   readonly mostrarCopyright = computed(() => this._config().mostrarCopyright);
   readonly copyright = computed(() => {
     const actual = this._config();
@@ -87,7 +113,7 @@ export class EmpresaIdentidadService {
   }
 
   private normalizarDescripcion(value?: string | null): string {
-    const texto = value?.trim();
+    const texto = c0201NombreBrandingSeguro(value, 200);
     if (!texto || texto === 'Gestión de Inventario' || texto === 'Gestion de Inventario') {
       return 'Administrativo';
     }
