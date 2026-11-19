@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C07-04.M05.03 integración real MySQL 8.4 de pedidos [Javier :50]
+- Incorpora xUnit Oracle EF Core/MySQL 8.4 con persistencia real de cotización y pedido, aislamiento A/B, duplicado físico de Idempotency-Key y rollback transaccional; workflow dedicado con TRX de cuatro pruebas y Scope Lock.
+- No cambia runtime ni certifica JWT/RBAC firmado, HTTP, pagos, finanzas o fiscalidad; requiere CI exact-SHA, A0–A4 restantes y A5 independiente. Sin QA/main/PROD.
+
 ## 2026-11-18 — V20 C07-04.M05.04 reparación QA por ruta protegida [Javier :30]
 - CI Chromium reveló desalineación entre permisos sintéticos del test (solo ruta listado) y exigencia real del guard para `pedidos-venta/:id`; el mock positivo ahora declara ambas capacidades y un nuevo control negativo exige redirección a `/perfil` sin permiso de detalle.
 - Se conservan rutas/guardas/servidor sin cambios y el FAIL histórico. Exigir cuatro pruebas navegador, build, Scope Lock, V5 y revisión A5 independiente; no certifica JWT real ni backend/tenant/MySQL.

@@ -1,0 +1,59 @@
+name: V20 C07-04.M05.03 - MySQL 8.4 pedidos persistence
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/C0704M0503MySqlPedidosIntegrationTests.cs'
+      - '.github/workflows/v20-c07-04-m05-03-mysql.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v20-c0704-m0503-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  mysql:
+    name: C07-04.M05.03 - MySQL real tenant A/B idempotency rollback
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=mysql;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Strict project scope
+        run: node scripts/verify-project-scope.mjs
+      - name: Confirm actual ephemeral MySQL 8.4
+        run: |
+          set -euo pipefail
+          docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -Nse 'SELECT VERSION();' | grep -E '^8[.]4[.]'
+      - name: Run Oracle EF real integration with four xUnit cases
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj -c Release --filter 'FullyQualifiedName~C0704M0503MySqlPedidosIntegrationTests&Category=Integration' --logger 'trx;LogFileName=c0704-m0503.trx' --logger 'console;verbosity=normal'
+          python3 - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree as ET
+          files = list(Path('tests/Solqaryn.Tests/TestResults').rglob('c0704-m0503.trx'))
+          assert files, 'No TRX evidence'
+          root = ET.parse(files[-1]).getroot()
+          counts = next((n.attrib for n in root.iter() if n.tag.endswith('Counters')), None)
+          assert counts is not None and int(counts['executed']) >= 4, counts
+          assert int(counts['failed']) == 0 and int(counts['passed']) >= 4, counts
+          print('C0704_M0503_MYSQL84_TENANT_IDEMPOTENCY_ROLLBACK_PASS=TRUE')
+          PY
