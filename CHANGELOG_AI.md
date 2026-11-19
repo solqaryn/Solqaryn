@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 C15-03.M04.05 corregir medición de contorno RGBA semitransparente [Javier :00]
+- El job 135375522341 de SHA f55ec20d acreditó 4/5 Chromium y diagnosticó outline rgba(5,0,73,0.8) sobre blanco; el anterior oráculo rechazaba injustificadamente alpha<1. Compone RGBA sobre fondo realmente opaco y exige contraste >=3:1, Tab real y foco visible, sin desactivar controles.
+- Corrección exclusivamente de prueba y documentación, CI GitHub-hosted exact SHA pendiente, A5 independiente de DEV03/DEV05/DEV01 y A5_FAIL histórico preservado; Scope Lock STRICT, sin QA/main/PROD.
+
 ## 2026-11-19 — V20 C15-03.M04.05 oráculo forced-colors con diagnóstico fail-closed [Javier :00]
 - Dos jobs dirigidos previos 4/5 FAIL (contraste 0): se separan foco/outline/media/alpha/ratio, se resuelven CSS system colors mediante canvas RGBA 1x1 y se exige contraste WCAG >= 3:1 con diagnóstico contextual; no se relaja ningún gate.
 - Solo prueba Playwright, documentación y changelog; nuevo SHA requiere Chromium real, frontend, Scope Lock y V5 SUCCESS. A5_FAIL histórico intacto; A5 por otra Task distinta del autor DEV03 y reparadores DEV05/DEV01, sin QA/main/PROD.

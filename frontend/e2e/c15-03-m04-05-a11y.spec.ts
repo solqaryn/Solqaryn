@@ -100,7 +100,7 @@ test('forced-colors: contorno de foco alcanza al menos 3:1 frente al fondo', asy
   // Convertir los colores CSS computados a píxeles RGBA reales, sin aprobar valores no resueltos.
   const estilo = await skip.evaluate(elemento => {
     const css = getComputedStyle(elemento);
-    const colorRgba = (color: string): [number, number, number] | null => {
+    const colorRgba = (color: string): [number, number, number, number] | null => {
       const canvas = document.createElement('canvas');
       canvas.width = 1;
       canvas.height = 1;
@@ -111,7 +111,7 @@ test('forced-colors: contorno de foco alcanza al menos 3:1 frente al fondo', asy
       contexto.fillStyle = color;
       contexto.fillRect(0, 0, 1, 1);
       const rgba = contexto.getImageData(0, 0, 1, 1).data;
-      return rgba[3] === 255 ? [rgba[0], rgba[1], rgba[2]] : null;
+      return rgba[3] > 0 ? [rgba[0], rgba[1], rgba[2], rgba[3] / 255] : null;
     };
     const luminosidad = (canales: [number, number, number]): number => {
       const lineales = canales.map(canal => {
@@ -120,8 +120,19 @@ test('forced-colors: contorno de foco alcanza al menos 3:1 frente al fondo', asy
       });
       return lineales[0] * 0.2126 + lineales[1] * 0.7152 + lineales[2] * 0.0722;
     };
-    const contornoRGB = colorRgba(css.outlineColor);
-    const fondoRGB = colorRgba(css.backgroundColor);
+    const contornoRGBA = colorRgba(css.outlineColor);
+    const fondoRGBA = colorRgba(css.backgroundColor);
+    // El contorno computado puede tener alpha < 1; WCAG mide el color visible
+    // tras componerlo sobre un fondo opaco. Alpha 0 y fondo translúcido fallan.
+    const fondoRGB: [number, number, number] | null =
+      fondoRGBA?.[3] === 1 ? [fondoRGBA[0], fondoRGBA[1], fondoRGBA[2]] : null;
+    const contornoRGB: [number, number, number] | null = contornoRGBA && fondoRGB
+      ? [
+          contornoRGBA[0] * contornoRGBA[3] + fondoRGB[0] * (1 - contornoRGBA[3]),
+          contornoRGBA[1] * contornoRGBA[3] + fondoRGB[1] * (1 - contornoRGBA[3]),
+          contornoRGBA[2] * contornoRGBA[3] + fondoRGB[2] * (1 - contornoRGBA[3])
+        ]
+      : null;
     const contraste = contornoRGB && fondoRGB
       ? (Math.max(luminosidad(contornoRGB), luminosidad(fondoRGB)) + 0.05) /
         (Math.min(luminosidad(contornoRGB), luminosidad(fondoRGB)) + 0.05)
@@ -132,7 +143,7 @@ test('forced-colors: contorno de foco alcanza al menos 3:1 frente al fondo', asy
       outlineWidth: parseFloat(css.outlineWidth),
       outlineCss: css.outlineColor,
       backgroundCss: css.backgroundColor,
-      contornoRGB, fondoRGB, contraste
+      contornoRGBA, fondoRGBA, contornoRGB, fondoRGB, contraste
     };
   });
   const diagnostico = JSON.stringify(estilo);
