@@ -8224,3 +8224,8 @@
 - Se documentaron en `docs/evidencias/C12-04.M06.06-V22.md` los 11 predecesores LISTO con eventos A5 independientes reales y DAG F=VALIDADO/G=SI, sin manipular formulas o aprobar otro entorno.
 - Se conservaron riesgos R2/R3, wildcard A5 global, restauracion Aiven/PROD NO_MEDIDA, fallos historicos y límites del ensayo MySQL efimero; no se inventaron pruebas JWT ni cutover.
 - Entregable R0 sujeto a Scope Lock/V5 exact-SHA, readback PLAN/COLA/BITACORA y posterior A5 de una Task Javier diferente; rollback git revert, sin QA/main/PROD.
+
+## 2026-11-19 — C14-02.M05.06 | V22 DEV06 regresion Chromium frontend seguridad
+- Cinco pruebas Playwright reales de responsive 320/375/768/1280, Tab natural, denegación 403/503, mutation-oracle CSS y tiempo de carga local; sin falsas métricas Core Web Vitals.
+- Workflow dedicado GitHub-hosted npm ci + lint/build + Chromium sin retries, con interceptación sintética de sesión expresamente NO equivalente a JWT real, HTTP backend, MySQL o pentest BOLA/IDOR.
+- Scope R2 test-only en dev: A0–A4 exact-SHA, READBACK y A5 independiente requeridos; se conservan límites R3/QA/main/PROD, histórico FAIL y rollback git revert.

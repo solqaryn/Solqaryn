@@ -1,0 +1,69 @@
+name: V22 C14-02.M05.06 - security regression performance and accessibility
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v22-c14-02-m05-06-regression.yml'
+      - 'frontend/e2e/c14-02-m05-06-regression.spec.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c14-02-m05-06
+  cancel-in-progress: false
+jobs:
+  chromium:
+    name: C14-02.M05.06 - 5 casos reales Chromium en localhost
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - uses: actions/checkout@v4
+      - name: Scope Lock
+        run: node scripts/verify-project-scope.mjs
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm pin
+        run: npm install --global npm@11.19.0
+      - name: npm ci
+        working-directory: frontend
+        run: npm ci
+      - name: Lint and build production
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Install real Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Start local Angular
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > v22-c1402-m0506.log 2>&1 &
+          for attempt in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat v22-c1402-m0506.log >&2
+          exit 1
+      - name: Run exactly five Chromium regression cases without retries
+        working-directory: frontend
+        run: npx playwright test e2e/c14-02-m05-06-regression.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Keep evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v22-c14-02-m05-06-chromium
+          path: |
+            frontend/v22-c1402-m0506.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 14
