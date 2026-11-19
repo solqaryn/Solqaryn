@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 C14-02.M05.04 aceptación positiva Application preflight [Javier :40]
+- Agrega nueve casos xUnit (seis superficies positivas, job con grant/idempotencia, sucursal cruzada y restore denegado) y CI .NET 10 Release con TRX; el preflight no concede acceso y no sustituye JWT/HTTP/MySQL real.
+- Mantener VALIDANDO hasta A0–A4 R2 completos y A5 independiente; Scope Lock STRICT, rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-19 — V20 C15-03.M05.03 reparación de readback TRX [Javier :20]
 - GitHub CI del SHA 6b2cfe5f ejecutó 3/3 pruebas reales Oracle EF MySQL 8.4 satisfactoriamente, pero falló el gate al buscar nombre heredado `c1402-m0503.trx` en lugar del TRX generado `c1503-m0503.trx`.
 - Se corrige solo la ruta del archivo de evidencia, sin omitir el assert de >=3 casos ejecutados ni modificar el código/test. Nueva CI exact-SHA obligatoria; mantener VALIDANDO y A5 independiente.
