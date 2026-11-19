@@ -12,7 +12,7 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="threat-guide" [class.visual-neutral]="temaPresentacion() === 'neutro'" aria-labelledby="threat-title">
+    <section class="threat-guide" [class.visual-neutral]="temaPresentacion() === 'neutro'" aria-labelledby="threat-title">
       <header>
         <p class="eyebrow">SOLQARYN · Evaluación de amenazas</p>
         <h1 id="threat-title">Verificaciones de acceso y abuso</h1>
@@ -63,7 +63,7 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
       } @else {
         <p class="notice" role="alert">Acceso de plataforma no confirmado. Guía privada oculta.</p>
       }
-    </main>
+    </section>
   `,
   styles: [`
     :host { display:block; color:var(--mat-sys-on-surface, #17212d); }

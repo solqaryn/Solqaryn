@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C15-04.M05.04 A0.43 landmark unico en guia amenazas [Javier :10]
+- El shell autenticado ya define main#main-content; sustituye el main interno por section en la guía y agrega dos Playwright reales de JWT plataforma y empresa B sin permiso con 403, semántica responsive y cero mutaciones.
+- Workflow incluye la ruta de componente para disparar 31 pruebas JWT/MySQL 8.4/Chromium en SHA nuevo; A0–A4 UX global sin cerrar, A5 del componente anterior no traslada automáticamente validación al nuevo blob. Solo dev y Scope Lock STRICT, sin QA/main/PROD.
+
 ## 2026-11-18 — V20 C14-02.M04.02 reparación de estado denegado con caché residual [Javier :00]
 - Corrige render fail-closed de guía privada: solo estados sin_datos/exito muestran contenido; sin_permiso/cargando/error lo ocultan incluso con sesión local residual. Restaura oráculo 403 síncrono y añade un test adversarial que detecta la regresión con señal aún autorizada.
 - Riesgo R2, 18 Vitest y 8 Chromium dirigidos + Scope Lock/V5 por SHA requeridos; A5_FAIL anterior intacto y nueva A5 por Task distinta de DEV03 autor y DEV01 reparador. No se certifican JWT real, tenant A/B, MySQL ni QA/main/PROD.

@@ -826,4 +826,66 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     }
   });
 
+
+  // A0.43: la raiz autenticada ya expone main#main-content.
+  // La guia es una section interna y no puede duplicar ese landmark.
+  test('A0.43 - guia de amenazas con JWT plataforma y un solo landmark principal', async ({ page }) => {
+    await ingresar(page, 'c1504_platform_only');
+    const mutaciones: string[] = [];
+    page.on('request', req => {
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method())) {
+        mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+      }
+    });
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      const sesion = page.waitForResponse(r =>
+        r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+      const respuesta = await page.goto('/plataforma/revision-amenazas-v5');
+      expect(respuesta?.status()).toBe(200);
+      expect((await sesion).status()).toBe(200);
+      await expect(page.getByRole('heading', { level: 1, name: 'Verificaciones de acceso y abuso' })).toBeVisible();
+      await expect(page.locator('section.threat-guide')).toBeVisible();
+      await expect(page.getByRole('main'), 'El shell autenticado conserva un solo landmark main').toHaveCount(1);
+      await expect(page.locator('.threat-list li')).toHaveCount(4);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(width + 1);
+    }
+    expect(mutaciones, 'Consultar guia no ejecuta mutaciones').toEqual([]);
+  });
+
+  test('A0.43 - empresa B sin grant global no puede ver la guia ni sus superficies', async ({ browser, request }) => {
+    for (const width of [320, 1280]) {
+      const contexto = await browser.newContext({
+        baseURL: 'http://127.0.0.1:4200',
+        viewport: { width, height: 840 }
+      });
+      try {
+        const page = await contexto.newPage();
+        const jwt = await ingresar(page, 'c1504_admin_b');
+        const global = await request.get(api + '/plataforma/sesion', {
+          headers: { Authorization: 'Bearer ' + jwt }
+        });
+        expect(global.status()).toBe(403);
+        const mutaciones: string[] = [];
+        page.on('request', req => {
+          if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method())) {
+            mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+          }
+        });
+        const sesion = page.waitForResponse(r =>
+          r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+        await page.goto('/plataforma/revision-amenazas-v5');
+        expect((await sesion).status()).toBe(403);
+        await expect(page).toHaveURL(/\/login\?plataforma=denegado/);
+        await expect(page.locator('.threat-guide')).toHaveCount(0);
+        await expect(page.locator('.threat-list li')).toHaveCount(0);
+        await expect(page.getByRole('heading', { name: 'Verificaciones de acceso y abuso' })).toHaveCount(0);
+        expect(mutaciones, 'Una cuenta empresarial sin grant global no escribe').toEqual([]);
+      } finally {
+        await contexto.close();
+      }
+    }
+  });
+
 });
