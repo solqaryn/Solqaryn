@@ -1,3 +1,7 @@
+## 2026-11-19 — V22 C15-04.M05.04 A0.52 placement UX autenticado [DEV02]
+- Añadidas dos pruebas Chromium con JWT real/MySQL 8.4 efímero para placement global: GET 200 de plataforma, teclado Tab/Enter, un landmark, responsive 320/1280, estado NO_MEDIDO y cero mutaciones; JWT real empresa B debe obtener 403 y no mostrar contenido privado.
+- Incremento test-only; 45 pruebas E2E esperadas **pendientes de CI exact-SHA**, no PASS anticipado ni cobertura WCAG/UX global. Conserva PLAN EN_PROGRESO/DEV02 y candado V17; A5 independiente posterior.
+
 ## 2026-11-19 — V22 C03-04.M06.05 solicitud de revisión técnica independiente [DEV01]
 - Paquete documental R0 `docs/v5/c03-04-m06-05-independent-review-request.md` para las seis entregas M05 de incidentes, con SHA y límites JWT/HTTP/MySQL/restore; sin nuevo runtime ni autorizaciones.
 - D576 solicita revisión ajena; esta entrega NO representa A5_PASS, restore real, aprobación humana ni cierre de M06.06. Scope Lock/V5 y readback se comprueban en el SHA publicado; rollback por revert ordinario.
