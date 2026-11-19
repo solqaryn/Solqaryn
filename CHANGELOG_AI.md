@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C07-04.M05.04 aceptación positiva Chromium pedidos [Javier :30]
+- Tres escenarios Playwright reales en Angular verifican paginación PED-47/PED-48, detalle de cotización a 320 px, ausencia de mutaciones y denegación Ventas:Ver; CI dirigida GitHub-hosted por SHA sin cancelación cruzada.
+- Datos, JWT, tenant y API simulados de manera explícita; no certificar finanzas, RBAC backend, MySQL ni QA/PROD. Mantener VALIDANDO hasta A0–A4 completos y A5 independiente; código de negocio no cambia.
+
 ## 2026-11-18 — V20 C07-04.M05.01 prueba de regla HTTP de pedidos [Javier :30]
 - Incorpora cinco casos Vitest/HttpTestingController sobre el `PedidoVentaService.getPaged` real: límites de página/lote, filtros exactos, rechazo de filtros nulos y error 503 sin escritura; corre en GitHub Actions con lint/build y concurrency aislada por SHA.
 - Prueba sólo contrato Angular de lectura interceptada; JWT HTTP firmado, tenant A/B, backend/MySQL, caja e idempotencia financiera siguen NO_MEDIDO. Mantener A0–A4 reales, Scope Lock, V5 y revisión A5 por Task Javier distinta; sin QA/main/PROD.
