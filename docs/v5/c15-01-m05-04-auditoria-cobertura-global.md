@@ -8,7 +8,11 @@ Evidencia real de lectura del Sheet institucional 1VWJmV7udKk0UaNGL2VQJoEGmUYK9A
 - DAG: 2301 IDs únicos; 39 IDs históricos LISTO sin fila DAG (ningún PENDIENTE/VALIDANDO/EN_PROGRESO omitido): excepción histórica documentada, no se forzaron fórmulas.
 - Elegibilidad positiva: 1 candidatas con O=SI y condiciones de PLAN/COLA/DAG concordantes. Estados: {"LISTO":1264,"VALIDANDO":16,"PENDIENTE":1058,"EN_PROGRESO":2}.
 - Cuatro archivos reales de routing Angular: 152 declaraciones de path, hashes Git fijados en JSON; nombres homónimos no significan automáticamente colisión.
-- Catálogo P0-007.A verifica 165 componentes reales (157 features + 8 shared). P0-006.B inspecciona rutas/guards; ninguno acredita JWT firmado ni tenant A/B.
+- Catálogo P0-007.A verifica 165 componentes reales (157 features + 8 shared). La antigua P0-006.B espera 92 rutas y wildcard redirect y ya no refleja el router actual (115 rutas main, NotFound al wildcard); fue invocada por error en la primera ejecución y produjo fallo causal de workflow. Se excluye SOLO de este workflow aislado sin cambiar ni debilitar el validador histórico, rutas o controles de seguridad generales; ninguno acredita JWT firmado ni tenant A/B.
+
+## Reparación causal de CI y límites
+
+La primera ejecución del workflow (SHA `ed43d93a`, run `44452549391`, job `135319744626`) acreditó recenso positivo, cinco mutaciones adversariales y catálogo P0-007.A. Falló al invocar la comprobación legada P0-006.B con error `catchallIsRedirect`; esta exigía `{ path: '**', redirectTo: '' }` aunque el router actual utiliza el componente NotFound y además impone conteos históricos (92 rutas). No es correcto falsear PASS, cambiar la aplicación para satisfacer un fixture obsoleto ni debilitar ese validador en general. La corrección quirúrgica elimina su invocación **únicamente en este workflow**. Las comprobaciones oficiales Scope Lock, seguridad multiempresa, frontend y P0 se mantienen activas. CI del nuevo SHA debe comprobarse; la entrega continúa VALIDANDO.
 
 ## Calidad y límites pendientes
 

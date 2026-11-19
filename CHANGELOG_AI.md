@@ -1,6 +1,8 @@
 ## 2026-11-18 — V20 C15-01.M05.04 recenso positivo de trazabilidad [Javier :30]
 - Evidencia de 2340 IDs PLAN/COLA, 2301 DAG, 39 históricas LISTO fuera de DAG, cuatro fuentes de rutas y P0 catálogo; Node positivo y cinco mutaciones adversariales con CI aislada.
 - Sin correspondencia 100 % ID→módulo/ruta/endpoint aún certificada ni JWT/tenant real; A0–A4 pendientes, A5 independiente y sin QA/main/PROD.
+- Reparación CI causal: retirar exclusivamente del workflow de recenso la P0-006.B legada que exigía catchall redirect obsoleto; preservar validador, NotFound runtime y controles Scope Lock/seguridad externos. No declarar PASS del SHA anterior fallido.
+
 
 ## 2026-11-18 — V20 C07-04.M04.05 reparar contraste P2 [Javier :20]
 - Reemplaza verificación de borde/no transparencia por ratio WCAG calculado sobre texto y fondos CSS reales en Chromium 320/768/1280; incluye control adversarial de contraste insuficiente y control positivo.
