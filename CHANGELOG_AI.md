@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C03-04.M04.05 corrección adicional de expresión de luminancia [Javier :40]
+- Corrige el escape duplicado del patrón numérico incorporado en el primer commit de reparación; ahora extrae canales RGB decimales reales en Chromium. Preserva 3:1, Tab real y pruebas adversariales.
+- Requiere nuevo SHA con CI causal; el primer SHA no acredita contraste. A5_FAIL P2 histórico permanece y una Task Javier distinta de DEV03 autor y DEV05 reparador deberá revisar, sin QA/main/PROD.
+
 ## 2026-11-18 — V20 C03-04.M04.05 corrección de oráculos A5_FAIL P2 [Javier :40]
 - Repara dos falsos positivos de accesibilidad: Tab real desde el inicio en lugar de focus programático y relación de luminancia forzada >= 3:1 en lugar de comprobar cadenas no transparentes; mantiene 403 y responsive.
 - Solo cambia pruebas y documentación R2; A5_FAIL histórico permanece, 4 Vitest/4 Chromium y Scope Lock/V5 pendientes de CI exact-SHA, nueva A5 por Task diferente de autor DEV03 y reparador DEV05; sin QA/main/PROD.

@@ -63,7 +63,7 @@ test('contraste alto conserva controles legibles y 403 no filtra contenido', asy
   const relacion = await page.locator('.incident-guide').evaluate(elemento => {
     if (!matchMedia('(forced-colors: active)').matches) return 0;
     const luminosidad = (color: string): number | null => {
-      const canales = color.match(/\\d+(?:\\.\\d+)?/g)?.map(Number) ?? [];
+      const canales = color.match(/[0-9]+(?:[.][0-9]+)?/g)?.map(Number) ?? [];
       if (canales.length < 3 || canales.length > 4 || canales.some(v => !Number.isFinite(v))) return null;
       if (canales.length === 4 && canales[3] < 1) return null;
       const rgb = canales.slice(0, 3).map(v => {
