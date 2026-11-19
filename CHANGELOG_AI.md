@@ -1,3 +1,7 @@
+## 2026-11-19 — V21 C10-04.M06.03 registro de riesgos y limites R0 [Javier DEV01]
+- Nueva entrega documental atomica: evidencia trazable y ocho riesgos abiertos de cache, jobs, restauracion y exportaciones; no activar servicios, JWT, proveedores, DB ni permisos.
+- Separar PLAN D de PLAN E acumulativa, no afirmar M06 completa, Scope Lock/V5 CI exact-SHA y A5 independiente pendientes de acreditacion; sin QA/main/PROD.
+
 ## 2026-11-19 — V21 C14-01.M04.03 retry Chromium apt [Javier DEV01, autor historico]
 - Reparacion P2 del workflow de Chromium: job 135557880732 en SHA 90ae8a8b fallo en la instalacion de browser/dependencias; tres intentos maximos con pausa y fail-closed, sin omitir --with-deps ni relajar pruebas.
 - CI GitHub-hosted por nuevo SHA, A0–A4 y A5 independiente pendientes de nueva evidencia; no autoriza proveedor de marca real, QA/main/PROD ni cambios de secretos.
