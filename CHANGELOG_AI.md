@@ -1,3 +1,8 @@
+## 2026-11-19 — V20 C05-04.M05.06 regresión de ligereza en Chromium [Javier :00]
+- Añade suite Playwright con cuatro regresiones de directorio: carga progresiva, 320/375/768/1280, área táctil, consultas sin duplicación, 403/503, redacción y reintento explícito.
+- Añade GitHub Actions por SHA para lint/build y Chromium real en runner aislado; Navigation Timing/FCP diagnóstico, Core Web Vitals de campo y dispositivos físicos NO_MEDIDO/SIN_VERIFICAR.
+- Mantener VALIDANDO hasta pruebas causales y A0-A4 completas, A5 independiente distinta de DEV01; no se prueban JWT/MySQL productivos, sin QA/main/PROD.
+
 ## 2026-11-19 — V20 C05-04.M05.02 reparación A5 P2 paginación DTO [Javier :40]
 - Corrige validación fail-closed del directorio Angular: pagina/tamano coinciden con la petición y ninguna página con elementos excede el total.
 - Agrega cuatro rechazos adversariales y aceptación de página posterior vacía con HttpTestingController; sin cambios en endpoints, JWT/RBAC, backend o MySQL.

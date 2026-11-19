@@ -1,0 +1,80 @@
+name: V20 C05-04.M05.06 - regresion rendimiento accesibilidad
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v20-c05-04-m05-06-regression.yml'
+      - 'frontend/e2e/c05-04-m05-06-regression-perf-a11y.spec.ts'
+      - 'frontend/src/app/features/plataforma/plataforma.component.ts'
+      - 'frontend/src/app/core/auth/plataforma-empresas.service.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v20-c0504-m0506-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  chromium-regression:
+    name: C05-04.M05.06 - 4 regresiones Chromium, Angular lint y build
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm compatible
+        run: npm install --global npm@11.19.0
+      - name: Instalar dependencias
+        working-directory: frontend
+        run: npm ci
+      - name: Lint y build productivo
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Instalar Chromium GitHub hosted
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Angular local para pruebas sin backend productivo
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > v20-c0504-m0506.log 2>&1 &
+          for i in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then
+              echo 'ANGULAR_LOCAL_READY=PASS'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat v20-c0504-m0506.log >&2
+          exit 1
+      - name: Exigir cuatro regresiones reales Chromium con retries desactivados
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          npx playwright test e2e/c05-04-m05-06-regression-perf-a11y.spec.ts --config=playwright.config.ts --workers=1 --retries=0 --reporter=line 2>&1 | tee v20-c0504-m0506-tests.log
+          grep -Eq '4 passed' v20-c0504-m0506-tests.log
+          if grep -Eq '[1-9][0-9]* (failed|skipped|did not run)' v20-c0504-m0506-tests.log; then
+            exit 1
+          fi
+      - name: Artefactos de evidencia y fallos
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v20-c0504-m0506
+          path: |
+            frontend/v20-c0504-m0506.log
+            frontend/v20-c0504-m0506-tests.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 14
