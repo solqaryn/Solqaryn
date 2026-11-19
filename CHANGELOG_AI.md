@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C14-04.M06.03 riesgos y decisiones DEV no productivo [Javier :40]
+- Matriz R0 de limitaciones: Chromium/Node/xUnit en GitHub reales no acreditan JWT HTTP, tenant A/B MySQL, release R3, backup/restauracion o soporte en vivo.
+- Decisiones SIN_VERIFICAR/NO_MEDIDO para IDOR/BOLA, RPO/RTO, SLO p95/p99 y rollback; conservar gates, A5 independiente, Scope Lock y BITACORA sin habilitar QA/main/PROD.
+
 ## 2026-11-18 — V20 C14-04.M06.02 manifiesto reproducible de M05 [Javier :50]
 - Registro versionado de seis SHA M05, archivos exactos por diff, jobs de CI y revision A5; separa los resultados de xUnit/Node/Chromium reales de sesiones o contratos sinteticos.
 - Reproduccion en GitHub-hosted sin alterar proveedores productivos; matriz de controles negativos, checksum por commit, faltantes NO_VERIFICADO/NO_MEDIDO y rollback normal. No concede release R3 ni QA/main/PROD.
