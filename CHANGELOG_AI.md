@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C15-01.M06.02 manifiesto SHA y blobs reproducibles [DEV01]
+- R0: identifica siete commits, ocho blobs Git de test/código/documento y checks dirigidos de M05.01–06/M06.01; distingue Node/xUnit, MySQL 8.4 efímero y Chromium real con sesión mock.
+- Conserva como NO_PASS dos fallos globales de módulos de M05.02/M05.06 y límites JWT/tenancy y cobertura 2340; no declara M06 completa ni QA/main/PROD.
+- Fuente PLAN D2193, CHANGELOG aditivo, Scope Lock/V5 exact-SHA y revisión A5 de otra Task Javier necesarias; no se modifica runtime ni datos.
+
 ## 2026-11-19 — V22 C15-01.M06.03 limitaciones y decisiones con evidencia causal [DEV03]
 - Entrega R0 documental de PLAN D2194: ocho VALIDANDO censadas por ID/SHA/checks y limitaciones abiertas de integración, ownership, JWT/tenancy, hardware físico y proveedor.
 - Diferencia SUCCESS dirigido de FAILURE global y SKIPPED auxiliar; PLAN E/M06 y 2.340 IDs siguen sin certificación global. No toca runtime, JWT, DB, interfaces ni workflows.
