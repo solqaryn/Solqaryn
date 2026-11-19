@@ -17,3 +17,6 @@ Scope SOLQARYN/dev; PROJECT_SCOPE_LOCK=STRICT. Autor DEV03; ID 6adc2e4bd8a48191a
 - Exigir SUCCESS causal de GitHub Actions, Scope Lock y procedencia V5 en SHA exacto; verificar que CI obligatoria no fue cancelada ni saltada.
 - Releer PLAN/COLA/DAG/BITACORA después de cada transición; una VALIDANDO externa no es LISTO, A5 ni autorización R3.
 - A5 requiere revisor Javier de Task distinta a DEV03 con revisión verdadera de código, pruebas y límites. Rollback: git revert normal de un changeset aditivo, conservando historial, sin force-push.
+
+## Reparación causal del control transversal ERP — 18 noviembre 2026
+El job ERP - Contratos, pruebas y build falló en la primera etapa de auditoría estática al no reconocer el path privado preexistente `plataforma/revision-arquitectura-v20` dentro del conjunto de rutas autorizables. La ruta ya existe y exige `canActivate: [plataformaGuard]`, que a su vez exige autenticación y sesión global verificada mediante GET servidor. Se incorpora **únicamente este path exacto** a la lista declarativa permitida, sin añadir wildcard, quitar guard ni debilitar validadores. El resto de condiciones del auditor permanece intacto. Se exige repetir GitHub-hosted ERP, Scope Lock, V5 y los seis TestBed en el nuevo SHA. No equivale a JWT real, MySQL o QA/main/PROD certificados.

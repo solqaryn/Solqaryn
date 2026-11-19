@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C15-02.M04.02 reparación del auditor ERP [Javier :20]
+- Se añade únicamente la ruta ya existente y protegida `plataforma/revision-arquitectura-v20` al allowlist exacto del auditor de rutas ERP; no cambia guard, backend, RBAC ni permisos.
+- El FAIL inicial de ERP requiere retest en GitHub Actions sobre nuevo SHA. Se conservan pruebas adversariales de la UI, auditoría de alcance y bloqueo R3; no contar SKIPPED/QUEUED como PASS.
+
 ## 2026-11-18 — V20 C15-02.M04.02 estados seguros de superficies privadas [Javier :20]
 - Estados Angular de carga, vacío, error, éxito y denegación sobre referencias locales; lectura asincrónica inyectable, invalidación al revocar, rechazo de duplicados y reintento seguro, sin proveedor externo ni nuevos permisos.
 - Seis casos TestBed adversariales y workflow GitHub-hosted exact-SHA; A0-A5, Scope Lock y revisión independiente pendientes de comprobación causal. Sin JWT/MySQL real, QA/main/PROD ni R3.
