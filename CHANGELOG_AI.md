@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 C03-04.M05.04 aceptación positiva de incidentes [Javier :00]
+- Añade xUnit Application real para lectura tenant A/B, contención/resolución preflight, errores y restore siempre denegado, con workflow GitHub Actions .NET10 y TRX >=15.
+- Resultado positivo únicamente requiere adaptador autenticado; no prueba JWT firmado/HTTP/MySQL de incidentes, mantener VALIDANDO y A5 independiente. Scope Lock STRICT dev, revert normal.
+
 ## 2026-11-19 — V20 C03-04.M05.02 contrato DTO de incidentes [Javier :00]
 - Pruebas xUnit reales de JSON y resultados fail-closed sobre Application preflight de incidentes; SHA, evidencia segura, tenant A/B, revocación, errores y restauración rechazada, con CI .NET 10/TRX >=18.
 - No acredita HTTP/JWT firmado/MySQL ni concede acciones; conservar VALIDANDO y A5 independiente hasta A0–A4 pertinentes. Solo dev Scope Lock STRICT y revert normal.

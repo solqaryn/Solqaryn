@@ -1,0 +1,7 @@
+# C03-04.M05.04 — aceptación positiva del preflight de incidentes
+
+Riesgo **R2**. La aceptación positiva de esta microtarea prueba el código verdadero `V5ContinuityIncidentApplicationService.Prepare` y las reglas Domain existentes. Cobertura xUnit: lectura en tenants A/B y sucursales, intención de contención, resolución tras mitigación, verificación de commit, evidencia saneada, rechazo por autoridad no verificada, sucursal cruzada, versión obsoleta y restauración prohibida. El único resultado positivo permitido es `AUTHENTICATED_INCIDENT_ADAPTER_REQUIRED`, nunca mutaciones, revelación de evidencia ni restauración.
+
+GitHub-hosted ejecuta `.NET 10 Release` y pruebas xUnit dirigidas, TRX con 15+ ejecutadas y cero FAIL/error/no ejecutadas, `verify-project-scope`, y checks pertinentes por SHA exacto. Esta entrega no introduce endpoints HTTP, JWT firmados, MySQL real de incidentes, integraciones externas, proveedores de backups, restauración, datos o secretos. Un test de preflight con banderas fixture no certifica autoridad JWT/HTTP persistente ni aceptación completa de incident response.
+
+A0: diff/contrato positivo y límites de seguridad; A1: asserts positivos y negativos genuinos de Application; A2: tenant A/B y autoridad fixture (no JWT real); A3: xUnit y build real, MySQL/Chromium N/A a estos archivos; A4: solo CI real, Scope Lock/V5 y readback. Hasta evidencia R2 proporcional completa, conservar **VALIDANDO**, A5 pendiente de otra Task Javier. Rollback git revert normal, exclusivamente `dev`, no QA/main/PROD.
