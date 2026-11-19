@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C03-04.M04.06 pruebas de densidad y carga con Chromium [Javier :50]
+- Añade cuatro pruebas reales Chromium para responsive y compactación CSS, GET de sesión retenido con privacidad, HTTP 503 negativo y primera pintura local medible sin inventar RTO/RPO.
+- Test-only, CI externa por SHA, Scope Lock, V5 y A5 independiente obligatorios; JWT firmado, tenant A/B y MySQL NO_ACREDITADOS; sin QA/main/PROD.
+
 ## 2026-11-18 — V20 C15-03.M04.05 reparación CI forced-colors 4/5 [Javier :40]
 - El primer SHA obtuvo Chromium 4 PASS/1 FAIL (contraste 0): el test inspeccionaba un fondo del contenedor potencialmente transparente. Ahora fija Canvas/CanvasText en el propio skip-link y mide contorno frente a fondo de ese enlace, con grosor >= 3 px y contraste >= 3:1.
 - Preserva evidencia de fallo, validación real GitHub-hosted en SHA nuevo, Scope Lock, V5, autorización sintética no productiva y A5 pendiente por revisor distinto de DEV03/DEV05. Sin QA/main/PROD.
