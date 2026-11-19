@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C07-04.M05.05 negativos de tenant y permisos pedidos [Javier :00]
+- Añade casos adversariales xUnit del filtro real RequierePermisoAttribute con selectores de empresa inválidos/duplicados, ausencia de membresía, grant denegado y control positivo; impide ejecutar una acción comercial sin autorización de filtro.
+- CI dirigida .NET 10 GitHub-hosted por SHA; solo prueba in-process, no JWT firmado/HTTP real ni MySQL/finanzas o permiso de QA/PROD. Requiere A0–A4 reales, A5 independiente y Scope Lock STRICT.
+
 ## 2026-11-18 — V20 C07-04.M05.03 reparación Scope Lock de comentario [Javier :50]
 - Se elimina únicamente una palabra inglesa heredada del comentario del ensayo, rechazada por el validador institucional de identidad. No modifica oráculos, lógica de prueba, runtime ni seguridad. Se exige nueva CI exact-SHA, MySQL real y trazabilidad de errores original.
 
