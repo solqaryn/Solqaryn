@@ -272,3 +272,8 @@ GitHub Actions SHA `72c3c347ccd9fc1df09ab6246d386f542a1c3ea9`, run 44494999111, 
 
 ## A0.47 — Contraste teclado real y JWT en consola global (DEV02 V20)
 Incremento E2E contra API .NET 10, JWT firmado de plataforma y MySQL 8.4 efímero de GitHub Actions: anchos 320/1280, estado institucional inicial, Tab→Space sobre alto contraste, aria-pressed y estado accesible, cambio de color, reversión tras recarga y cero solicitudes HTTP mutantes. Sin mocks, page.route, grants ni persistencia. **36 Chromium esperados, nunca PASS anticipado**: exigir job completed/success, logs y Scope Lock/V5 exact-SHA. A0-A4 global de rutas/roles/WCAG/performance no se completa con esta muestra; PLAN H2297 EN_PROGRESO, DEV02, lock V17 SQV17_C15_04_M05_04 y A5 independiente pendiente. Rollback git revert normal en dev, no QA/main/PROD.
+
+
+## A0.48 — Observabilidad privada (DEV02 V21)
+
+Dos casos de Playwright Chromium con JWT firmado de plataforma y empresa B, API net10 y MySQL 8.4 efímero en GitHub-hosted: navegación autorizada a observabilidad-v5, un main, h1, Tab/Enter sobre revalidación GET, pantalla responsive 320/1280 y cero operaciones mutantes; para empresa B GET /plataforma/sesion 403 y guard de rechazo sin superficie privada. Sin mocks ni secretos. **38 casos esperados, no certificados hasta CI SUCCESS exact-SHA**. Solo esta superficie y test-only, NO evidencia global WCAG/roles/rutas/telemetría; H2297 EN_PROGRESO, owner DEV02, candado 2000002297, A5 independiente posterior. Rollback mediante revert normal. Solo dev.

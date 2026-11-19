@@ -1076,4 +1076,68 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     expect(mutaciones, 'Apariencia local sin HTTP mutante').toEqual([]);
   });
 
+
+  // A0.48: nueva superficie privada, JWT firmado y MySQL efimero en CI.
+  test('A0.48 - observabilidad privada: teclado, responsive y revalidacion sin mutaciones', async ({ page }) => {
+    await ingresar(page, 'c1504_platform_only');
+    const mutaciones: string[] = [];
+    page.on('request', req => {
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method())) {
+        mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+      }
+    });
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      const sesion = page.waitForResponse(r =>
+        r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+      const documento = await page.goto('/plataforma/observabilidad-v5');
+      expect(documento?.status()).toBe(200);
+      expect((await sesion).status()).toBe(200);
+      await expect(page).toHaveURL(/\/plataforma\/observabilidad-v5$/);
+      await expect(page.locator('.observability-guide')).toBeVisible();
+      await expect(page.getByRole('main')).toHaveCount(1);
+      await expect(page.getByRole('heading', {
+        level: 1, name: 'Diagnóstico y señales seguras'
+      })).toHaveCount(1);
+      const revalidar = page.getByRole('button', { name: 'Revalidar acceso de observabilidad' });
+      await expect(revalidar).toBeEnabled();
+      let foco = false;
+      for (let n = 0; n < 60; n++) {
+        await page.keyboard.press('Tab');
+        foco = await revalidar.evaluate(el => el === document.activeElement);
+        if (foco) break;
+      }
+      expect(foco, 'Tab real debe alcanzar revalidacion').toBe(true);
+      const respuesta = page.waitForResponse(r =>
+        r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+      await page.keyboard.press('Enter');
+      expect((await respuesta).status()).toBe(200);
+      await expect(page.getByText(
+        'Sesión revalidada. Información solo de lectura, sin datos operativos.'
+      )).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(width + 1);
+    }
+    expect(mutaciones, 'Guia no crea ni modifica datos').toEqual([]);
+  });
+
+  test('A0.48 - empresa B no lee observabilidad global con JWT real', async ({ page, request }) => {
+    const jwt = await ingresar(page, 'c1504_admin_b');
+    const backend = await request.get(api + '/plataforma/sesion', {
+      headers: { Authorization: 'Bearer ' + jwt }
+    });
+    expect(backend.status()).toBe(403);
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      const sesion = page.waitForResponse(r =>
+        r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+      await page.goto('/plataforma/observabilidad-v5');
+      expect((await sesion).status()).toBe(403);
+      await expect(page).toHaveURL(/\/login\?plataforma=denegado/);
+      await expect(page.locator('.observability-guide')).toHaveCount(0);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(width + 1);
+    }
+  });
+
 });
