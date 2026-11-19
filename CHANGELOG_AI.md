@@ -1,3 +1,7 @@
+## 2026-11-18 — C15-04.M05.04 A0.42 nuevas rutas globales JWT real [Javier :10]
+- Agrega dos tests Playwright para inventario de rutas y trazabilidad de cobertura en 320/1280 px: plataforma con JWT real, denegación de empresa B, aislamiento A/B, ausencia de datos globales, cero mutaciones y semántica de headings/main.
+- Total previsto 29 escenarios en GitHub-hosted .NET 10/MySQL 8.4/Chromium; CI y A0-A4 global todavía pendientes. No modifica runtime, secretos ni QA/main/PROD. Mantiene EN_PROGRESO DEV02 y lock V17 2000002297; A5 independiente.
+
 ## 2026-11-18 - V20 C15-01.M05.03 MySQL 8.4 efimero [Javier :00]
 - Prueba real de persistencia de 2340 IDs y 65 familias con lectura posterior de filas en InnoDB MySQL 8.4 efimero de GitHub Actions; tres negativos: duplicado, familia no autorizada y rollback.
 - No se usan Aiven, datos productivos, JWT o proveedores externos. Snapshot no acredita todas las rutas, requisitos ni servicios; CI y A0-A4/A5 siguen independientes.

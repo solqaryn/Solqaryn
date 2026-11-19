@@ -742,4 +742,88 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     // Muestra negativa JWT puntual: no certifica la UX completa, WCAG ni RUM.
   });
 
+
+  // A0.42: dos superficies adicionales del plan, JWT de plataforma real y tenant B.
+  // Test de navegador autentico/CI MySQL efimera; no constituye certificacion global.
+  test('A0.42 - inventario de rutas y trazabilidad solo plataforma con JWT real', async ({ page }) => {
+    const rutas = [
+      { path: '/plataforma/inventario-rutas-v19', heading: 'Inventario de programas y rutas declaradas' },
+      { path: '/plataforma/trazabilidad-cobertura-v5', heading: 'Revisión de cobertura del plan' }
+    ];
+    await ingresar(page, 'c1504_platform_only');
+    const mutaciones: string[] = [];
+    page.on('request', req => {
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method())) {
+        mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+      }
+    });
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      for (const ruta of rutas) {
+        const sesion = page.waitForResponse(r =>
+          r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+        const respuesta = await page.goto(ruta.path);
+        expect(respuesta?.status()).toBe(200);
+        expect((await sesion).status(), 'JWT de plataforma debe pasar API real').toBe(200);
+        expect(new URL(page.url()).pathname).toBe(ruta.path);
+        await expect(page.getByRole('heading', { level: 1, name: ruta.heading })).toBeVisible();
+        await expect(page.getByRole('main'), 'Un unico landmark main').toHaveCount(1);
+        if (ruta.path.endsWith('/inventario-rutas-v19')) {
+          await expect(page.getByTestId('c1304-route-catalogo')).toBeVisible();
+        } else {
+          await expect(page.getByRole('heading', { name: 'Sin certificación automática' })).toBeVisible();
+        }
+        expect(await page.evaluate(() => document.documentElement.scrollWidth))
+          .toBeLessThanOrEqual(width + 1);
+      }
+    }
+    expect(mutaciones, 'Navegacion de catalogos no debe escribir').toEqual([]);
+  });
+
+  test('A0.42 - empresa B no puede leer inventario ni trazabilidad global', async ({ browser, request }) => {
+    const rutas = [
+      { path: '/plataforma/inventario-rutas-v19', heading: 'Inventario de programas y rutas declaradas' },
+      { path: '/plataforma/trazabilidad-cobertura-v5', heading: 'Revisión de cobertura del plan' }
+    ];
+    for (const ruta of rutas) {
+      for (const width of [320, 1280]) {
+        const contexto = await browser.newContext({
+          baseURL: 'http://127.0.0.1:4200',
+          viewport: { width, height: 840 }
+        });
+        try {
+          const page = await contexto.newPage();
+          const jwt = await ingresar(page, 'c1504_admin_b');
+          const headers = { Authorization: 'Bearer ' + jwt };
+          const propia = await request.get(api + '/tenant-context/2', { headers });
+          expect(propia.status()).toBe(200);
+          expect((await propia.json())?.data?.empresaId).toBe(2);
+          const ajena = await request.get(api + '/tenant-context/1', { headers });
+          expect([403, 404]).toContain(ajena.status());
+          const apiGlobal = await request.get(api + '/plataforma/sesion', { headers });
+          expect(apiGlobal.status()).toBe(403);
+
+          const mutaciones: string[] = [];
+          page.on('request', req => {
+            if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method())) {
+              mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+            }
+          });
+          const sesion = page.waitForResponse(r =>
+            r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+          await page.goto(ruta.path);
+          expect((await sesion).status()).toBe(403);
+          await expect(page).toHaveURL(/\/login\?plataforma=denegado/);
+          await expect(page.getByRole('heading', { level: 1, name: ruta.heading })).toHaveCount(0);
+          await expect(page.getByTestId('c1304-route-catalogo')).toHaveCount(0);
+          expect(mutaciones, 'Empresa B denegada no debe escribir').toEqual([]);
+          expect(await page.evaluate(() => document.documentElement.scrollWidth))
+            .toBeLessThanOrEqual(width + 1);
+        } finally {
+          await contexto.close();
+        }
+      }
+    }
+  });
+
 });
