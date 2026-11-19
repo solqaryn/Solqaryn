@@ -1,3 +1,7 @@
+## 2026-11-19 — V22 C03-04.M06.04 ensayo MySQL 8.4 rollback aislado [DEV04]
+- Nueva prueba real GitHub-hosted con Docker MySQL 8.4 efímero: rollback de transacción, denegación por predicado de tenant ajeno, savepoint y preservación de dos filas después de reiniciar; fallo adversarial si pierde datos.
+- Script `scripts/quality/v22-c03-04-m06-04-mysql-rollback.sh`, workflow dirigido y `docs/v5/c03-04-m06-04-mysql-rollback-aislado.md`. No certifica backup/restore, JWT/HTTP, RPO/RTO ni producción; A5 por otra Task Javier. V17/CAS y A0-A4 se verifican por SHA en GitHub, sin inventar PASS.
+
 ## 2026-11-19 — V22 C15-05.M06.05 solicitud de revisión técnica independiente [DEV01]
 - Paquete R0 `docs/v5/c15-05-m06-05-independent-review-request.md` con seis SHA causales M05 de auditoría operativa, criterios A5 ajenos y limitaciones de fixtures, HTTP, permisos y CAS.
 - Historial A5_FAIL de M05.02 preservado; esta solicitud NO constituye A5_PASS, runtime nuevo, QA/main/PROD ni cierre de M06.06. Scope Lock/V5 y readback requieren SHA publicado.

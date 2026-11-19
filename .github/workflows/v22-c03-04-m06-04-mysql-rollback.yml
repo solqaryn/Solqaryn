@@ -1,0 +1,20 @@
+name: V22 C03-04.M06.04 rollback MySQL 8.4 isolated
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'scripts/quality/v22-c03-04-m06-04-mysql-rollback.sh'
+      - '.github/workflows/v22-c03-04-m06-04-mysql-rollback.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  mysql84-rollback-nondestructive:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout exact SHA
+        uses: actions/checkout@v4
+      - name: Verify isolated non-destructive MySQL 8.4 rollback
+        shell: bash
+        run: bash scripts/quality/v22-c03-04-m06-04-mysql-rollback.sh
