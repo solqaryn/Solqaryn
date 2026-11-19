@@ -1,0 +1,33 @@
+name: V20 C15-03.M05.01 - tenancy rule matrix
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/Application/C1503M0501TenancyRuleMatrixTests.cs'
+      - 'backend/src/Application/AutomationV5/V5TenancySecurityAuthorizationGate.cs'
+      - 'backend/src/Domain/AutomationV5/V5TenancySecurityDomainRules.cs'
+      - '.github/workflows/v20-c15-03-m05-01-tenancy-rule-matrix.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v20-c1503-m0501-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  security-matrix:
+    name: C15-03.M05.01 - xUnit tenancy and ownership matrix
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Verify Scope Lock STRICT
+        run: node scripts/verify-project-scope.mjs
+      - name: Real .NET 10 restore
+        run: dotnet restore backend/Solqaryn.sln
+      - name: Real .NET 10 Release build
+        run: dotnet build backend/Solqaryn.sln --configuration Release --no-restore
+      - name: Six xUnit regression tests, multi-surface negative matrix
+        run: dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter "FullyQualifiedName~C1503M0501TenancyRuleMatrixTests" --logger "console;verbosity=normal"

@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 C15-03.M05.01 matriz xUnit de seguridad tenancy [Javier :00]
+- Añade seis pruebas xUnit del gate real de Application y Domain: cinco superficies, 35 cruces tenant/actor/propiedad, 25 revocaciones, sucursal, archivos, jobs, control plane, bypass del cliente, SHA y cancelación; no otorgan acceso real.
+- Entrega R2 solo de pruebas/workflow/documentación: CI GitHub-hosted exact SHA, Scope Lock y V5 deben terminar SUCCESS; JWT firmado, HTTP y MySQL no acreditados. A5 independiente, rollback git revert, solo dev.
+
 ## 2026-11-19 — V20 C14-02.M05.03 MySQL 8.4 autoridad global persistida y fail-closed [Javier :50]
 - Incorpora suite xUnit Oracle EF y MySQL 8.4 efímero: empresa A/B, identidad, doble rol, revocación y rollback, sin cambios de runtime ni datos productivos.
 - GitHub-hosted exige categoría Integration/TRX real, Scope Lock y V5 exact-SHA; JWT firmado y HTTP BOLA/IDOR siguen no acreditados. A5 independiente obligatoria y rollback git revert; no QA/main/PROD.
