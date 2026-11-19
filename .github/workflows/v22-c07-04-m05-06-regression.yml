@@ -1,0 +1,71 @@
+name: V22 C07-04.M05.06 - pedidos regression accessibility performance
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v22-c07-04-m05-06-regression.yml'
+      - 'frontend/e2e/c07-04-m05-06-regression.spec.ts'
+      - 'frontend/e2e/c07-04-m04-05-a11y.spec.ts'
+      - 'frontend/e2e/c07-04-m04-06-density.spec.ts'
+      - 'frontend/e2e/c07-04-m05-04-acceptance.spec.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c0704-m0506-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  regression:
+    name: C07-04.M05.06 - regression real Chromium integrated UI suites
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm 11
+        run: npm install --global npm@11.19.0
+      - name: Instalar Angular y tests
+        working-directory: frontend
+        run: npm ci
+      - name: Lint y compilacion de produccion
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Instalar Chromium real
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Servir Angular sin backend productivo
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c07-04-m05-06.log 2>&1 &
+          for attempt in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat c07-04-m05-06.log >&2
+          exit 1
+      - name: Regresion combinada, 3 suites previas mas 2 casos nuevos
+        working-directory: frontend
+        run: |
+          npx playwright test e2e/c07-04-m04-05-a11y.spec.ts e2e/c07-04-m04-06-density.spec.ts e2e/c07-04-m05-04-acceptance.spec.ts e2e/c07-04-m05-06-regression.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Evidencia del run
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v22-c0704-m0506
+          path: |
+            frontend/c07-04-m05-06.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 14
