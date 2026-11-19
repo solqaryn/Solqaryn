@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 C03-04.M05.02 contrato DTO de incidentes [Javier :00]
+- Pruebas xUnit reales de JSON y resultados fail-closed sobre Application preflight de incidentes; SHA, evidencia segura, tenant A/B, revocación, errores y restauración rechazada, con CI .NET 10/TRX >=18.
+- No acredita HTTP/JWT firmado/MySQL ni concede acciones; conservar VALIDANDO y A5 independiente hasta A0–A4 pertinentes. Solo dev Scope Lock STRICT y revert normal.
+
 ## 2026-11-19 — V20 C15-03.M05.05 regresiones A5_FAIL P2 [Javier :20]
 - Tres negativos adicionales de JWT firmado/MySQL efímero/Chromium sobre sucursales A/B, configuración e intento de logo extranjero y evidencia CI global; ocho casos dirigidos esperados, sin cambiar servicios productivos.
 - Preservado A5_FAIL DEV05; CI exact-SHA y revisión A5 independiente posteriores. Sin falsear PASS ni habilitar QA/PROD.
