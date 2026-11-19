@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C15-02.M04.05 regresión de accesibilidad privada [Javier :00]
+- Incorpora Playwright Chromium: Tab/Enter reales, foco visible, semántica de cinco tarjetas, 403 sin filtración, cero mutaciones y responsive 320/375/768/1280 con target táctil de 44 px.
+- Workflow GitHub-hosted exact-SHA y trazabilidad A0–A5; CI externa por acreditar, sin certificación WCAG global, JWT/MySQL, A5 ni promoción a QA/main/PROD.
+
 ## 2026-11-18 — V20 C15-02.M04.01 ruta privada de revisión de arquitectura [Javier :00]
 - Nueva vista Angular de solo lectura con guard de plataforma, inventario de cinco frentes NO_VERIFICADO, revocación segura y sin acceso a proveedores, SQL, secretos, DNS o despliegues.
 - Vitest TestBed y Playwright Chromium con HTTP sintético y anchos 320/375/768/1280; CI exact-SHA requerida, A5 independiente y nunca JWT/MySQL/PROD certificados por mocks.
