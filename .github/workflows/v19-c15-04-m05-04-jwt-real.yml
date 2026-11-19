@@ -10,6 +10,7 @@ on:
       - 'frontend/src/app/features/plataforma/cobertura-trazabilidad-v5.component.ts'
       - 'frontend/src/app/features/plataforma/revision-amenazas-v5.component.ts'
       - 'frontend/src/app/features/plataforma/c14-01-m04-01-qa-global.component.html'
+      - 'frontend/src/app/features/plataforma/consola-global-auditada-v5.component.ts'
   workflow_dispatch:
 permissions:
   contents: read

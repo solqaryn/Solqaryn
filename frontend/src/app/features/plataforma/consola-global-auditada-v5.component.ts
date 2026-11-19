@@ -16,7 +16,7 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="control-plane" aria-labelledby="control-plane-title">
+    <section class="control-plane" aria-labelledby="control-plane-title">
       <header>
         <p class="eyebrow">SOLQARYN · Plataforma</p>
         <h1 id="control-plane-title">Consola global auditada</h1>
@@ -72,7 +72,7 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
           <p role="note">MFA, tenant A/B, JWT HTTP y auditoría durable: NO_MEDIDO. Sin acceso a QA, main o producción.</p>
         </section>
       }
-    </main>
+    </section>
   `,
   styles: [`
     :host { display:block; color:var(--mat-sys-on-surface, #17212d); }

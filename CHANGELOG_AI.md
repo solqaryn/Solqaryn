@@ -1,3 +1,8 @@
+## 2026-11-19 — V20 C15-04.M05.04 A0.46 consola global accesible [Javier :10]
+- A0.45 CI exact-SHA confirmado 33/33 Chromium, JWT firmado/MySQL 8.4 efimero y Scope Lock/V5 SUCCESS. Recenso P2: elimina main anidado de consola global (section semantica, misma UI y permisos).
+- Añade dos Playwright con JWT plataforma y empresa B real, 403/landmark/h1/Tab/responsive 320–1280/0 mutaciones y ruta de workflow para CI exact-SHA; no declarar PASS anticipado.
+- C15-04.M05.04 continua EN_PROGRESO con lock V17 2000002297: A0–A4 global y A5 independiente no certificados; solo dev, revert normal, no QA/main/PROD.
+
 ## 2026-11-19 — V20 C04-04.M02.03 reparación P2 diseño de idempotencia [Javier :00]
 - Distingue clave durable UNIQUE(EmpresaId,ProveedorId,Operacion,IdempotencyKey) de digest canónico y especifica 409 sin segundo cobro para la misma clave con payload distinto.
 - Añade cinco pares negativos futuros de tenant A/B, concurrencia, revocación, replay y timeout; preserva A5_FAIL y owner DEV06, sin ejecutar MySQL, pagos ni QA/PROD. Revisión A5 nueva por otra Task pendiente.

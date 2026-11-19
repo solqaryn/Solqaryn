@@ -962,4 +962,71 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     }
   });
 
+
+  // A0.46: prueba adversarial de landmark y lectura global. El shell ya
+  // contiene main#main-content; el componente interno debe ser section.
+  test('A0.46 - consola global JWT plataforma, landmark unico y Tab real', async ({ page }) => {
+    await ingresar(page, 'c1504_platform_only');
+    const mutaciones: string[] = [];
+    page.on('request', req => {
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method())) {
+        mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+      }
+    });
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      const sesion = page.waitForResponse(r =>
+        r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+      const documento = await page.goto('/plataforma/consola-global-v5');
+      expect(documento?.status()).toBe(200);
+      expect((await sesion).status()).toBe(200);
+      await expect(page).toHaveURL(/\/plataforma\/consola-global-v5$/);
+      await expect(page.locator('section.control-plane')).toBeVisible();
+      await expect(page.getByRole('main'), 'Un solo main provisto por el shell').toHaveCount(1);
+      await expect(page.getByRole('heading', { level: 1, name: 'Consola global auditada' })).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(width + 1);
+      await page.keyboard.press('Tab');
+      expect(await page.evaluate(() =>
+        document.activeElement !== document.body &&
+        document.activeElement !== document.documentElement),
+        'Tab real debe alcanzar un control enfocable').toBe(true);
+    }
+    expect(mutaciones, 'Consulta de consola no ejecuta HTTP mutante').toEqual([]);
+  });
+
+  test('A0.46 - empresa B no obtiene consola global con JWT firmado', async ({ browser, request }) => {
+    for (const width of [320, 1280]) {
+      const contexto = await browser.newContext({
+        baseURL: 'http://127.0.0.1:4200',
+        viewport: { width, height: 840 }
+      });
+      try {
+        const page = await contexto.newPage();
+        const jwt = await ingresar(page, 'c1504_admin_b');
+        const respuestaApi = await request.get(api + '/plataforma/sesion', {
+          headers: { Authorization: 'Bearer ' + jwt }
+        });
+        expect(respuestaApi.status()).toBe(403);
+        const mutaciones: string[] = [];
+        page.on('request', req => {
+          if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method())) {
+            mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+          }
+        });
+        const sesion = page.waitForResponse(r =>
+          r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+        await page.goto('/plataforma/consola-global-v5');
+        expect((await sesion).status()).toBe(403);
+        await expect(page).toHaveURL(/\/login\?plataforma=denegado/);
+        await expect(page.locator('.control-plane')).toHaveCount(0);
+        expect(mutaciones, 'Denegacion sin operaciones mutantes').toEqual([]);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth))
+          .toBeLessThanOrEqual(width + 1);
+      } finally {
+        await contexto.close();
+      }
+    }
+  });
+
 });
