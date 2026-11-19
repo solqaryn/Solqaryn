@@ -1270,4 +1270,41 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
   });
 
 
+  // A0.51: firma JWT falsificada: el guard y la API real no exponen gobierno privado.
+  test('A0.51 - JWT con firma alterada bloquea gobierno V5 en mobile y desktop', async ({ page, request }) => {
+    const jwt = await ingresar(page, 'c1504_platform_only');
+    const valido = await request.get(api + '/plataforma/sesion', {
+      headers: { Authorization: 'Bearer ' + jwt }
+    });
+    expect(valido.status()).toBe(200);
+    const partes = jwt.split('.');
+    expect(partes).toHaveLength(3);
+    const firma = partes[2];
+    expect(firma.length).toBeGreaterThan(12);
+    const alterada = (firma[0] === 'A' ? 'B' : 'A') + firma.slice(1);
+    const falsificado = [partes[0], partes[1], alterada].join('.');
+    const denegado = await request.get(api + '/plataforma/sesion', {
+      headers: { Authorization: 'Bearer ' + falsificado }
+    });
+    expect([401, 403], 'Firma manipulada se rechaza en API real').toContain(denegado.status());
+    const mutaciones: string[] = [];
+    page.on('request', req => {
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method())) {
+        mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+      }
+    });
+    await page.evaluate(token => localStorage.setItem('solqaryn_token', token), falsificado);
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      await page.goto('/plataforma/gobierno-cambios-v5');
+      await expect(page).toHaveURL(/\/login(?:[?#]|$)/);
+      await expect(page.getByRole('heading', { name: 'Decisiones y controles V5' })).toHaveCount(0);
+      await expect(page.locator('section.governance')).toHaveCount(0);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(width + 1);
+    }
+    expect(mutaciones, 'Rechazo de JWT no modifica informacion operativa').toEqual([]);
+  });
+
+
 });
