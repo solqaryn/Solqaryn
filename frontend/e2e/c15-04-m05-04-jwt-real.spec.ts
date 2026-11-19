@@ -1375,4 +1375,73 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     }
   });
 
+  // A0.53: sustituye la sesion sintetica de C15-01 por JWT firmado y API/MySQL reales.
+  test('A0.53 - cobertura real: plataforma JWT, teclado Tab y 4 dimensiones NO_MEDIDO', async ({ page }) => {
+    await ingresar(page, 'c1504_platform_only');
+    const mutaciones: string[] = [];
+    page.on('request', req => {
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method())) {
+        mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+      }
+    });
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      const sesion = page.waitForResponse(r =>
+        r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+      const documento = await page.goto('/plataforma/trazabilidad-cobertura-v5');
+      expect(documento?.status()).toBe(200);
+      expect((await sesion).status()).toBe(200);
+      await expect(page.getByTestId('c1501-loaded')).toBeVisible();
+      await expect(page.locator('section.coverage-shell[aria-labelledby="coverage-title"]'))
+        .toHaveCount(1);
+      await expect(page.locator('section[aria-labelledby="coverage-dimensions"]'))
+        .toHaveCount(1);
+      await expect(page.locator('.coverage-list li')).toHaveCount(4);
+      await expect(page.locator('.coverage-shell [role="status"]')).toContainText('NO_MEDIDO');
+      const volver = page.getByRole('link', { name: 'Regresar a administración de plataforma' });
+      await expect(volver).toBeVisible();
+      let foco = false;
+      for (let n = 0; n < 100; n++) {
+        await page.keyboard.press('Tab');
+        foco = await volver.evaluate(el => el === document.activeElement);
+        if (foco) break;
+      }
+      expect(foco, 'Tab autentico alcanza enlace de regreso').toBe(true);
+      const objetivo = await volver.evaluate(el => {
+        const rect = el.getBoundingClientRect();
+        return { width: rect.width, height: rect.height,
+          outline: parseFloat(getComputedStyle(el).outlineWidth) };
+      });
+      expect(objetivo.width).toBeGreaterThanOrEqual(44);
+      expect(objetivo.height).toBeGreaterThanOrEqual(44);
+      expect(objetivo.outline).toBeGreaterThanOrEqual(3);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(width + 1);
+    }
+    expect(mutaciones, 'Auditoria de cobertura solo lectura').toEqual([]);
+  });
+
+  test('A0.53 - cobertura global niega empresa B mediante JWT real y API 403', async ({ page, request }) => {
+    const token = await ingresar(page, 'c1504_admin_b');
+    const backend = await request.get(api + '/plataforma/sesion', {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    expect(backend.status()).toBe(403);
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      const sesion = page.waitForResponse(r =>
+        r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+      await page.goto('/plataforma/trazabilidad-cobertura-v5');
+      expect((await sesion).status()).toBe(403);
+      await expect(page).toHaveURL(url =>
+        url.pathname === '/login' && url.searchParams.get('plataforma') === 'denegado');
+      await expect(page.getByTestId('c1501-loaded')).toHaveCount(0);
+      await expect(page.locator('.coverage-list li')).toHaveCount(0);
+      await expect(page.getByRole('heading', { name: 'Revisión de cobertura del plan' }))
+        .toHaveCount(0);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(width + 1);
+    }
+  });
+
 });

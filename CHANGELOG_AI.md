@@ -1,3 +1,7 @@
+## 2026-11-19 — V22 C15-04.M05.04 A0.53 cobertura real frente a sesion sintetica [DEV02]
+- Dos casos nuevos Chromium con JWT firmado, API .NET 10 y MySQL 8.4 efimero contrastan cobertura privada: plataforma GET 200, cuatro dimensiones NO_MEDIDO, Tab, foco 3px, 44px, responsive 320/1280, sin HTTP mutador; empresa B GET 403 y cero filtracion.
+- El incremento previo A0.52 obtuvo 45/45 PASS en GitHub-hosted run 44617192422; A0.53 espera 47/47 y checks exact-SHA, no PASS anticipado. El check transversal modulos tuvo tres fallos historicos de transferencias no acreditados como verdes; A0-A4 global UX y A5 siguen pendientes, H EN_PROGRESO con V17. Sin QA/main/PROD.
+
 ## 2026-11-19 — V22 C13-04.M06.04 ensayo visual de rollback aislado [DEV01]
 - R2: revert Git REAL con Node24 GitHub-hosted en repositorio efímero y preservación SHA-256 de temas A/B, capturas y BITACORA sintéticos incluso con trabajo concurrente.
 - Negativos de ruta que toca datos, HEAD obsoleto, SHA inválido y worktree sucio; ningún cambio a Angular/API/MySQL, Tasks físicas o producción.
