@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C07-04.M05.02 contratos API/DTO pedidos [Javier :40]
+- Añade pruebas xUnit del controlador real para autorización/permisos declarados, Idempotency-Key 400, DTO de respuesta y prioridad del ID de ruta sobre body; CI .NET 10 dirigida y sin cancelación de otros SHA.
+- Solo tests, workflow y documentación: ninguna mutación runtime, tenant, JWT, finanzas o MySQL. A0-A4 completos y A5 independiente pendientes de evidencia real; Scope Lock STRICT dev y sin QA/main/PROD.
+
 ## 2026-11-18 — V20 C07-04.M05.04 aceptación positiva Chromium pedidos [Javier :30]
 - Tres escenarios Playwright reales en Angular verifican paginación PED-47/PED-48, detalle de cotización a 320 px, ausencia de mutaciones y denegación Ventas:Ver; CI dirigida GitHub-hosted por SHA sin cancelación cruzada.
 - Datos, JWT, tenant y API simulados de manera explícita; no certificar finanzas, RBAC backend, MySQL ni QA/PROD. Mantener VALIDANDO hasta A0–A4 completos y A5 independiente; código de negocio no cambia.
