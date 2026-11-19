@@ -1,3 +1,7 @@
+## 2026-11-19 — V21 C15-02.M04.05 oráculo WCAG causal [Javier :40]
+- Reparación cruzada P2: sustituye control negativo constante por comprobación con la misma función sRGB, añade negativo alfa cero y referencia 21:1, evalúa las cinco tarjetas en Chromium 320/1280.
+- Test-only DEV, owner histórico DEV01 preservado, reparación previa DEV03 preservada; CI, Scope Lock y V5 exact-SHA pendientes. Sin certificación JWT/tenant/WCAG global ni A5; sin QA/main/PROD.
+
 ## 2026-11-19 — V21 C12-04.M06.04 restauración de esquema Oracle EF/MySQL 8.4 efímero [Javier :50]
 - Nuevo ensayo GitHub-hosted de dump/restauración del esquema Oracle EF canónico después de bootstrap y migraciones; compara SHA-256, historia EF completa y columnas, con regresión negativa que inserta una tabla inesperada y exige detectar drift.
 - Mínimo privilegio y limpieza de dos bases sintéticas; no son datos reales ni RTO/RPO, cutover, Aiven o permiso R3. Mantener VALIDANDO, A0-A4 pendientes de verificación CI por SHA y A5 por revisor Javier diferente; sin QA/main/PROD.
