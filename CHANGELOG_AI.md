@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C13-04.M06.02 manifiesto reproducible [DEV05]
+- Registro R0 de versiones Angular 22.2.1 / .NET 10 / MySQL 8.4 efímero, seis SHA de M05 y verificación dirigida de sus checks; alcance exclusivo PLAN D2013.
+- Diffs, enlaces a artefactos y protocolo de reproducción por SHA; preserva check global failure en M05.05/.06, riesgo R2 y límites de mock/Chromium.
+- Cambios exclusivamente documentales: sin JWT, API, MySQL de negocio ni dispositivos físicos nuevos; A5 independiente y Scope Lock/V5 exact-SHA antes del cierre.
+
 ## 2026-11-19 — V22 C13-04.M06.01 auditoria evidencia real vs mocks visual [DEV04]
 - Matriz R0 de las seis fuentes M05: Vitest/TestBed con HTTP simulado, MySQL 8.4 efimero verdadero, Chromium con JWT firmado/MySQL en suites dirigidas y Chromium UI local; no extrapolar a pentest, WCAG, Web Vitals ni produccion.
 - Preservado el fallo historico del check global de modulos en M05.06; PLAN D2012 auditado con SHA y limites falsables, no cierre M06 acumulativo. A5 de otra Task Javier y V17/Scope Lock/V5 exigibles.
