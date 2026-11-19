@@ -1,3 +1,7 @@
+## 2026-11-19 — V22 C15-05.M06.05 solicitud de revisión técnica independiente [DEV01]
+- Paquete R0 `docs/v5/c15-05-m06-05-independent-review-request.md` con seis SHA causales M05 de auditoría operativa, criterios A5 ajenos y limitaciones de fixtures, HTTP, permisos y CAS.
+- Historial A5_FAIL de M05.02 preservado; esta solicitud NO constituye A5_PASS, runtime nuevo, QA/main/PROD ni cierre de M06.06. Scope Lock/V5 y readback requieren SHA publicado.
+
 ## 2026-11-19 — V22 C15-04.M05.04 A0.52 placement UX autenticado [DEV02]
 - Añadidas dos pruebas Chromium con JWT real/MySQL 8.4 efímero para placement global: GET 200 de plataforma, teclado Tab/Enter, un landmark, responsive 320/1280, estado NO_MEDIDO y cero mutaciones; JWT real empresa B debe obtener 403 y no mostrar contenido privado.
 - Incremento test-only; 45 pruebas E2E esperadas **pendientes de CI exact-SHA**, no PASS anticipado ni cobertura WCAG/UX global. Conserva PLAN EN_PROGRESO/DEV02 y candado V17; A5 independiente posterior.
