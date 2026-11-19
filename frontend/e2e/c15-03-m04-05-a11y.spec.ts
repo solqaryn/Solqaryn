@@ -96,26 +96,50 @@ test('forced-colors: contorno de foco alcanza al menos 3:1 frente al fondo', asy
     }
   }
   expect(alcanzado, 'Contorno evaluado con foco real de Tab').toBe(true);
-  const relacion = await skip.evaluate(elemento => {
-    if (!matchMedia('(forced-colors: active)').matches) return 0;
-    const luminosidad = (color: string): number | null => {
-      const canales = color.match(/[0-9]+(?:[.][0-9]+)?/g)?.map(Number) ?? [];
-      if (canales.length < 3 || canales.length > 4 || canales.some(v => !Number.isFinite(v))) return null;
-      if (canales.length === 4 && canales[3] < 1) return null;
-      const canalesLineales = canales.slice(0, 3).map(v => {
-        const srgb = v / 255;
+  // El oráculo anterior devolvía 0 sin distinguir CSS system colors de alpha o foco inválido.
+  // Convertir los colores CSS computados a píxeles RGBA reales, sin aprobar valores no resueltos.
+  const estilo = await skip.evaluate(elemento => {
+    const css = getComputedStyle(elemento);
+    const colorRgba = (color: string): [number, number, number] | null => {
+      const canvas = document.createElement('canvas');
+      canvas.width = 1;
+      canvas.height = 1;
+      const contexto = canvas.getContext('2d', { willReadFrequently: true });
+      if (!contexto) return null;
+      contexto.clearRect(0, 0, 1, 1);
+      contexto.fillStyle = 'rgba(0, 0, 0, 0)';
+      contexto.fillStyle = color;
+      contexto.fillRect(0, 0, 1, 1);
+      const rgba = contexto.getImageData(0, 0, 1, 1).data;
+      return rgba[3] === 255 ? [rgba[0], rgba[1], rgba[2]] : null;
+    };
+    const luminosidad = (canales: [number, number, number]): number => {
+      const lineales = canales.map(canal => {
+        const srgb = canal / 255;
         return srgb <= 0.04045 ? srgb / 12.92 : ((srgb + 0.055) / 1.055) ** 2.4;
       });
-      return canalesLineales[0] * 0.2126 + canalesLineales[1] * 0.7152 + canalesLineales[2] * 0.0722;
+      return lineales[0] * 0.2126 + lineales[1] * 0.7152 + lineales[2] * 0.0722;
     };
-    const contorno = getComputedStyle(elemento);
-    // Comparar colores de la misma superficie sólida: la sección padre puede
-    // heredar un fondo transparente bajo emulación forced-colors en Chromium.
-    if (contorno.outlineStyle === 'none' || parseFloat(contorno.outlineWidth) < 3) return 0;
-    const a = luminosidad(contorno.outlineColor);
-    const b = luminosidad(contorno.backgroundColor);
-    if (a === null || b === null) return 0;
-    return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+    const contornoRGB = colorRgba(css.outlineColor);
+    const fondoRGB = colorRgba(css.backgroundColor);
+    const contraste = contornoRGB && fondoRGB
+      ? (Math.max(luminosidad(contornoRGB), luminosidad(fondoRGB)) + 0.05) /
+        (Math.min(luminosidad(contornoRGB), luminosidad(fondoRGB)) + 0.05)
+      : 0;
+    return {
+      forcedColors: matchMedia('(forced-colors: active)').matches,
+      outlineStyle: css.outlineStyle,
+      outlineWidth: parseFloat(css.outlineWidth),
+      outlineCss: css.outlineColor,
+      backgroundCss: css.backgroundColor,
+      contornoRGB, fondoRGB, contraste
+    };
   });
-  expect(relacion, 'Contraste de foco forzado >= 3:1').toBeGreaterThanOrEqual(3);
+  const diagnostico = JSON.stringify(estilo);
+  expect(estilo.forcedColors, diagnostico).toBe(true);
+  expect(estilo.outlineStyle, diagnostico).toBe('solid');
+  expect(estilo.outlineWidth, diagnostico).toBeGreaterThanOrEqual(3);
+  expect(estilo.contornoRGB, diagnostico).not.toBeNull();
+  expect(estilo.fondoRGB, diagnostico).not.toBeNull();
+  expect(estilo.contraste, 'Contraste de foco forzado >= 3:1; ' + diagnostico).toBeGreaterThanOrEqual(3);
 });

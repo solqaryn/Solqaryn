@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 C15-03.M04.05 oráculo forced-colors con diagnóstico fail-closed [Javier :00]
+- Dos jobs dirigidos previos 4/5 FAIL (contraste 0): se separan foco/outline/media/alpha/ratio, se resuelven CSS system colors mediante canvas RGBA 1x1 y se exige contraste WCAG >= 3:1 con diagnóstico contextual; no se relaja ningún gate.
+- Solo prueba Playwright, documentación y changelog; nuevo SHA requiere Chromium real, frontend, Scope Lock y V5 SUCCESS. A5_FAIL histórico intacto; A5 por otra Task distinta del autor DEV03 y reparadores DEV05/DEV01, sin QA/main/PROD.
+
 ## 2026-11-18 — V20 C03-04.M04.06 pruebas de densidad y carga con Chromium [Javier :50]
 - Añade cuatro pruebas reales Chromium para responsive y compactación CSS, GET de sesión retenido con privacidad, HTTP 503 negativo y primera pintura local medible sin inventar RTO/RPO.
 - Test-only, CI externa por SHA, Scope Lock, V5 y A5 independiente obligatorios; JWT firmado, tenant A/B y MySQL NO_ACREDITADOS; sin QA/main/PROD.
