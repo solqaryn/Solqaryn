@@ -32,8 +32,19 @@ test('teclado llega al título y diseño resiste anchuras móvil y escritorio', 
   await page.setViewportSize({width:320,height:720});
   await page.goto('/plataforma/respuesta-incidentes-v5');
   const salto=page.getByRole('link',{name:'Ir al contenido de incidentes'});
-  await salto.focus();
+  // Navegación real: no llamar .focus() ni construir un PASS artificial.
+  let alcanzadoConTab = false;
+  for (let intento = 0; intento < 40; intento++) {
+    await page.keyboard.press('Tab');
+    if (await salto.evaluate(elemento => elemento === document.activeElement)) {
+      alcanzadoConTab = true;
+      break;
+    }
+  }
+  expect(alcanzadoConTab, 'El skip-link debe ser alcanzable con Tab desde el inicio').toBe(true);
   await expect(salto).toBeFocused();
+  const estiloFoco = await salto.evaluate(elemento => getComputedStyle(elemento).outlineStyle);
+  expect(estiloFoco, 'El foco de teclado debe tener contorno visible').not.toBe('none');
   await page.keyboard.press('Enter');
   await expect(page.getByRole('heading',{name:'Respuesta, revocación y recuperación segura'})).toBeFocused();
   await expect(page.locator('.incident-review li')).toHaveCount(4);
@@ -49,11 +60,25 @@ test('contraste alto conserva controles legibles y 403 no filtra contenido', asy
   await page.emulateMedia({forcedColors:'active',reducedMotion:'reduce'});
   await page.goto('/plataforma/respuesta-incidentes-v5');
   await expect(page.locator('.incident-review li')).toHaveCount(4);
-  const colors=await page.locator('.incident-guide').evaluate(el=>{
-    const style=getComputedStyle(el);return {color:style.color,background:style.backgroundColor};
+  const relacion = await page.locator('.incident-guide').evaluate(elemento => {
+    if (!matchMedia('(forced-colors: active)').matches) return 0;
+    const luminosidad = (color: string): number | null => {
+      const canales = color.match(/\\d+(?:\\.\\d+)?/g)?.map(Number) ?? [];
+      if (canales.length < 3 || canales.length > 4 || canales.some(v => !Number.isFinite(v))) return null;
+      if (canales.length === 4 && canales[3] < 1) return null;
+      const rgb = canales.slice(0, 3).map(v => {
+        const normalizado = v / 255;
+        return normalizado <= 0.04045 ? normalizado / 12.92 : ((normalizado + 0.055) / 1.055) ** 2.4;
+      });
+      return rgb[0] * 0.2126 + rgb[1] * 0.7152 + rgb[2] * 0.0722;
+    };
+    const estilo = getComputedStyle(elemento);
+    const texto = luminosidad(estilo.color);
+    const fondo = luminosidad(estilo.backgroundColor);
+    if (texto === null || fondo === null) return 0;
+    return (Math.max(texto, fondo) + 0.05) / (Math.min(texto, fondo) + 0.05);
   });
-  expect(colors.color).not.toBe('transparent');
-  expect(colors.background).not.toBe('transparent');
+  expect(relacion, 'El contraste real en forced-colors debe ser >= 3:1').toBeGreaterThanOrEqual(3);
   await expect(page.getByRole('note')).toContainText('NO_MEDIDO');
 });
 test('sesión 403 sintética oculta decisiones y mensaje interno', async ({page}) => {

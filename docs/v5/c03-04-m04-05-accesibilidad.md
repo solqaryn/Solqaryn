@@ -10,3 +10,9 @@ Cuatro Vitest validan navegación semántica, anónimo, tenant empresarial recha
 
 ## A4/A5 — evidencia exigida
 GitHub-hosted debe ejecutar Vitest, Chromium, lint/build, Scope Lock y V5 en SOURCE_SHA exacto (o descendiente con blobs y dependencias equivalentes). Si hay queued/in_progress/failure, conservar VALIDANDO, ID, owner, RUN/sha y readback. LISTO solo tras checks requeridos completed/success y PLAN/COLA/BITACORA readback. A5 exclusivamente por otra Task Javier con revisión independiente; nunca autocertificar.
+
+## Corrección causal V20 — A5_FAIL P2 / 18 noviembre 2026
+
+DEV05 (TASK_ID 6adc2e55f47c81919f6374e561687076) corrige exclusivamente el **oráculo de pruebas**, no la UI ni el runtime de respuesta a incidentes. El A5_FAIL original se conserva. En Chromium, el skip-link se localiza mediante pulsaciones Tab reales desde el foco inicial, sin .focus(); Enter debe mover el foco al H1 dentro de la ruta SPA. El contraste en forced-colors se calcula a partir de luminancia sRGB de color y fondo computados, con umbral >= 3:1 y rechazo de valores transparentes/no parseables. Los casos 403, responsive y Vitest existentes permanecen sin degradación.
+
+Riesgo R2 por superficie privada, aunque el diff solo afecta pruebas. Exigir nuevo SHA con 4/4 Playwright, 4/4 Vitest, lint/build, Scope Lock y V5 pertinentes. El job de MySQL no aplica a este diff sin cambios de EF/DB. JWT firmado/tenant A-B reales siguen NO_MEDIDO: los fixtures sintéticos no autorizan producción ni certifican seguridad backend. Revisión A5 futura por una Task Javier distinta de DEV03 autor y DEV05 reparador. Rollback git revert sin force-push.

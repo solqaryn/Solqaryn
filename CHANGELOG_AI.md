@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C03-04.M04.05 corrección de oráculos A5_FAIL P2 [Javier :40]
+- Repara dos falsos positivos de accesibilidad: Tab real desde el inicio en lugar de focus programático y relación de luminancia forzada >= 3:1 en lugar de comprobar cadenas no transparentes; mantiene 403 y responsive.
+- Solo cambia pruebas y documentación R2; A5_FAIL histórico permanece, 4 Vitest/4 Chromium y Scope Lock/V5 pendientes de CI exact-SHA, nueva A5 por Task diferente de autor DEV03 y reparador DEV05; sin QA/main/PROD.
+
 ## 2026-11-18 — V20 C14-02.M04.06 corrección del oráculo de progreso Chromium [Javier :20]
 - Repara selector ambiguo de `role=status`: exige específicamente la sección de carga de la guía, no el anuncio accesible del shell; la ejecución inicial acreditó 4/5 pruebas con único fallo de strict mode del test. No modifica componentes productivos, permisos ni contratos.
 - Nueva CI exact-SHA obligatoria con cinco Chromium, Scope Lock y V5 antes de LISTO_DEV; sin QA/main/PROD.
