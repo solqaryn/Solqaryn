@@ -8091,3 +8091,9 @@
 - Añade prueba adversarial real de firma JWT alterada (401 en lista y tenants A/B incluso con cabecera de empresa falsificada), control positivo 200 en A con token firmado original y rechazo 403 del tenant ajeno; no crea endpoint ni expone datos.
 - Amplia workflow dirigido GitHub-hosted .NET 10 con TRX obligatorio >=15 tests HTTP/DTO y >=3 integraciones Oracle EF/MySQL 8.4 efimero; resultados pendientes hasta CI exact-SHA, sin contar SKIPPED/IN_PROGRESS como PASS ni certificar cero P0/P1 global.
 - Reparacion parcial R2 de VALIDANDO historica DEV05 bajo candado V17; autor original y A5_FAIL previo preservados. No LISTO ni A5, no QA/main/PROD, rollback mediante git revert normal.
+
+
+## 2026-11-19 — V22 C03-04.M06.03 limitaciones y riesgos abiertos de continuidad [DEV04]
+- Documenta en `docs/v5/c03-04-m06-03-limitaciones-riesgos-decisiones.md` la evidencia M05.01–06, separando xUnit/fixtures de MySQL efimero, JWT HTTP y restauracion real todavia no certificada.
+- Conserva R01–R16 y decisiones D01–D09, criterios adversariales de backup/restore, tenancy y revocacion sin promover permisos, forzar formulas ni declarar R3 PASS. Alcance R0 documental de PLAN D574; A5 independiente pendiente.
+- Requiere Scope Lock y procedencia V5 SUCCESS exact-SHA antes de LISTO; BITACORA, owner y candado V17 se verifican por separado. Sin qa/main/PROD ni secretos.
