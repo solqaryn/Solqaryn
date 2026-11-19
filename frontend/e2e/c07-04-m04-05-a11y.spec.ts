@@ -76,26 +76,62 @@ test('C07-04.M04.05 Tab real accede al filtro sin bloqueo de foco', async ({ pag
   expect(focusVisible).toBe(true);
 });
 
-test('C07-04.M04.05 contraste alto conserva texto y tarjetas no transparentes', async ({ page }) => {
+test('C07-04.M04.05 WCAG 4.5:1 texto real 320/768/1280 y mutacion adversarial', async ({ page }) => {
   await contexto(page);
   await page.emulateMedia({ contrast: 'more' });
-  await page.setViewportSize({ width: 320, height: 800 });
-  await page.goto('/pedidos-venta');
-  const panel = page.locator('.pedidos-readiness-v5');
-  await expect(panel).toBeVisible();
-  const color = await panel.evaluate(el => {
-    const s = getComputedStyle(el);
-    const card = getComputedStyle(el.querySelector('li')!);
-    return { border: s.borderTopStyle, borderWidth: parseFloat(s.borderTopWidth),
-      cardBorder: card.borderTopStyle, cardWidth: parseFloat(card.borderTopWidth),
-      foreground: s.color, cardForeground: card.color };
-  });
-  expect(color.border).toBe('solid');
-  expect(color.cardBorder).toBe('solid');
-  expect(color.borderWidth).toBeGreaterThan(0);
-  expect(color.cardWidth).toBeGreaterThan(0);
-  expect(color.foreground).not.toBe('rgba(0, 0, 0, 0)');
-  expect(color.cardForeground).not.toBe('rgba(0, 0, 0, 0)');
+  for (const width of [320, 768, 1280]) {
+    await page.setViewportSize({ width, height: 800 });
+    await page.goto('/pedidos-venta');
+    const panel = page.locator('.pedidos-readiness-v5');
+    await expect(panel).toBeVisible();
+    await expect(panel.locator('ol > li')).toHaveCount(4);
+    const result = await panel.evaluate(root => {
+      const rgba = (value: string): number[] => {
+        if (!/^rgba?\(/.test(value)) throw new Error('CSS color no RGB: ' + value);
+        const values = value.match(/[0-9.]+/g)?.map(Number) ?? [];
+        if (values.length < 3) throw new Error('CSS color incompleto: ' + value);
+        return [values[0], values[1], values[2], values[3] ?? 1];
+      };
+      const blend = (top: number[], bottom: number[]): number[] =>
+        [0, 1, 2].map(i => top[i] * top[3] + bottom[i] * (1 - top[3]));
+      const luminance = (rgb: number[]): number => {
+        const linear = rgb.map(c => {
+          const s = c / 255;
+          return s <= 0.04045 ? s / 12.92 : Math.pow((s + 0.055) / 1.055, 2.4);
+        });
+        return 0.2126 * linear[0] + 0.7152 * linear[1] + 0.0722 * linear[2];
+      };
+      const ratioFor = (element: Element): number => {
+        const ancestors: Element[] = [];
+        for (let current: Element | null = element; current; current = current.parentElement) ancestors.unshift(current);
+        const scheme = getComputedStyle(document.documentElement).colorScheme;
+        let background: number[] = scheme.includes('dark') && !scheme.includes('light') ? [0, 0, 0] : [255, 255, 255];
+        for (const ancestor of ancestors) background = blend(rgba(getComputedStyle(ancestor).backgroundColor), background);
+        const foreground = blend(rgba(getComputedStyle(element).color), background);
+        const a = luminance(foreground), b = luminance(background);
+        return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+      };
+      const samples = [...root.querySelectorAll('h2, h3, p')]
+        .filter(el => el.getBoundingClientRect().width > 0)
+        .map(el => ({ label: el.tagName + ':' + (el.textContent ?? '').trim().slice(0, 24), ratio: ratioFor(el) }));
+      const control = (foreground: string): number => {
+        const node = document.createElement('span');
+        node.textContent = 'Control de contraste';
+        node.style.cssText = 'background:rgb(255,255,255);color:' + foreground;
+        root.appendChild(node);
+        const value = ratioFor(node);
+        node.remove();
+        return value;
+      };
+      return { samples, good: control('rgb(17,17,17)'), bad: control('rgb(187,187,187)') };
+    });
+    expect(result.samples.length).toBeGreaterThanOrEqual(10);
+    for (const sample of result.samples) {
+      expect(sample.ratio, 'WCAG real ' + sample.label + ' viewport=' + width).toBeGreaterThanOrEqual(4.5);
+    }
+    expect(result.good).toBeGreaterThanOrEqual(4.5);
+    expect(result.bad).toBeLessThan(4.5);
+  }
 });
 
 test('C07-04.M04.05 permiso denegado y acceso anónimo no revelan criterios ni controles transaccionales', async ({ page }) => {

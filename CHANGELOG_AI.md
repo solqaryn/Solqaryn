@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C07-04.M04.05 reparar contraste P2 [Javier :20]
+- Reemplaza verificación de borde/no transparencia por ratio WCAG calculado sobre texto y fondos CSS reales en Chromium 320/768/1280; incluye control adversarial de contraste insuficiente y control positivo.
+- Solo test y evidencia documental, sin cambio a runtime, JWT, MySQL o finanzas; revisión A5 independiente y CI exact-SHA pendientes, A5_FAIL histórico preservado; no QA/main/PROD.
+
 ## 2026-11-18 — C15-04.M05.04 A0.42 nuevas rutas globales JWT real [Javier :10]
 - Agrega dos tests Playwright para inventario de rutas y trazabilidad de cobertura en 320/1280 px: plataforma con JWT real, denegación de empresa B, aislamiento A/B, ausencia de datos globales, cero mutaciones y semántica de headings/main.
 - Total previsto 29 escenarios en GitHub-hosted .NET 10/MySQL 8.4/Chromium; CI y A0-A4 global todavía pendientes. No modifica runtime, secretos ni QA/main/PROD. Mantiene EN_PROGRESO DEV02 y lock V17 2000002297; A5 independiente.
