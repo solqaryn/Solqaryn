@@ -1,3 +1,7 @@
+## 2026-11-19 — V21 C02-01.M04.02 pruebas reales JWT y tenant A/B [Javier :00, rescate]
+- Suite Playwright sobre API .NET, JWT firmado, MySQL 8.4 efímero y Angular: A/B positivo y negativo, pertenencia ajena denegada, tenant falso, token alterado y acceso anónimo. No intercepta autorización.
+- Workflow CI SHA-scoped separado y sin cancelar N8.3 por cambios frontend/src. Owner histórico DEV05 conservado; VALIDANDO hasta A0–A4 completados y A5 por otra Task independiente. Sin cambios QA/main/PROD.
+
 ## 2026-11-19 — V21 C02-01.M04.02 reparación del selector deshabilitado con cero empresas [Javier :40]
 - El TestBed GitHub-hosted del SHA c4422c80 detectó que el elemento `<select>` no quedaba deshabilitado tras lista vacía por interacción con ngModel; se enlaza de forma explícita el atributo DOM disabled al estado real y se agrega aserción adversarial del atributo.
 - Se mantiene el gate de membresía server-side, rechazo 403 y confirmación HTTP previa; CI exact-SHA y A0–A4 pendientes para el commit reparado, A5 por otra Task Javier. No QA/main/PROD.
