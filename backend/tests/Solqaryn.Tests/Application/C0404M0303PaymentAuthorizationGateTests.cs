@@ -43,7 +43,7 @@ public sealed class C0404M0303PaymentAuthorizationGateTests
         Assert.True(d.MayInspectPureApplicationPlan); NoEffects(d); Assert.Equal(1, r.Calls);
     }
     [Theory]
-    [InlineData(0,92)][InlineData(-1,92)][InlineData(100,0)][InlineData(100,-1)]
+    [InlineData(0,92)][InlineData(-1,92)][InlineData(int.MinValue,92)][InlineData(100,0)][InlineData(100,-1)][InlineData(100,int.MinValue)]
     public async Task InvalidTenantOrInvoiceDeniedBeforeReader(int tenant,int invoice)
     {
         var r = new Reader { Snapshot = Trusted() };
