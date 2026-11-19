@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C13-04.M06.04 ensayo visual de rollback aislado [DEV01]
+- R2: revert Git REAL con Node24 GitHub-hosted en repositorio efímero y preservación SHA-256 de temas A/B, capturas y BITACORA sintéticos incluso con trabajo concurrente.
+- Negativos de ruta que toca datos, HEAD obsoleto, SHA inválido y worktree sucio; ningún cambio a Angular/API/MySQL, Tasks físicas o producción.
+- Scope Lock/V5 y CI dirigida 4/4 exact-SHA obligatorias; A5 independiente pendiente, errores globales históricos de transferencias no resueltos; no certifica fase M06.
+
 ## 2026-11-19 — V22 C15-05.M06.04 ensayo rollback seguro aislado [DEV01]
 - Entrega R2 de PLAN D2339: Git revert REAL GitHub-hosted en repositorio efímero Node24, con pruebas de reactivación y preservación SHA-256 tenant A/B y BITACORA sintéticos.
 - Tres controles adversariales fail-closed: commit que toca datos, HEAD obsoleto y SHA inválido/worktree sucio; sin modificar Tasks físicas, Google Sheets de negocio, MySQL ni runtime.

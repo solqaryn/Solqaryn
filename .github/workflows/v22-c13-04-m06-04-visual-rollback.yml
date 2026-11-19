@@ -1,0 +1,24 @@
+name: V22 C13-04.M06.04 visual revert isolated
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'scripts/quality/v22-c13-04-m06-04-visual-rollback.test.mjs'
+      - '.github/workflows/v22-c13-04-m06-04-visual-rollback.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c13-04-m06-04-visual
+  cancel-in-progress: false
+jobs:
+  visual-rollback-isolated:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Real Git visual-feature rollback with tenant/evidence safeguards
+        run: node --test scripts/quality/v22-c13-04-m06-04-visual-rollback.test.mjs
