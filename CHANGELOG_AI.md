@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C03-04.M06.01 auditoria pruebas reales vs sinteticas [DEV04]
+- Matriz de M05.01–M05.06 con seis SHAs causales, xUnit y MySQL efimero real diferenciados de fixtures, HTTP/JWT integrado no certificado y restores no ejecutados.
+- Salida atomica solo documental para PLAN D572. No altera runtime ni gates DAG; M06/fase acumulativa, R3, QA/main/PROD y A5 independiente no se liberan por un inventario.
+- Task DEV04 6aeacb7820ac8191b7d768a6f33dfa09, PROJECT_SCOPE_LOCK=STRICT, V17 namedRange 2000000572; readback y checks exact-SHA exigidos.
+
 ## 2026-11-19 — V22 C07-04.M06.03 límites y riesgos comerciales [DEV05]
 - Documentada salida atómica R0 en `docs/v5/c07-04-m06-03-limitaciones-riesgos.md` (commit de origen `561077c9f94eb17c8f766f652f3bf1e6a5aeffce`): matriz de evidencias previas vs. JWT/tenant HTTP, MySQL, PSP/fiscal y recuperación NO certificados; PLAN D/E separados, sin cambios runtime ni autorización QA/PROD.
 - CLAIM V17 exclusivo en PLAN fila 1150, owner histórico DEV05 preservado, transición a VALIDANDO con evento idempotente y readback. CI del origen aún no completa al primer control; nueva revisión exact-SHA/descendiente con blobs idénticos antes de LISTO; A5 independiente pendiente.
