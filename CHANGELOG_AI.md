@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C14-04.M06.05 solicitud independiente del lote DEV [Javier :50]
+- Solicitud auditable de A5 separada para las unidades M06.01–05 y revision terminal condicionada a estados, evidencia y DAG reales, sin aprobacion automatica ni cambiar las seis Tasks.
+- Checklists de rechazo P2, fuentes exact-SHA/CI, responsabilidades independientes y riesgos de JWT/MySQL/rollback/release pendientes; no concede R3, QA/main/PROD ni elimina A5_FAIL historicos.
+
 ## 2026-11-18 — V20 C14-04.M06.03 riesgos y decisiones DEV no productivo [Javier :40]
 - Matriz R0 de limitaciones: Chromium/Node/xUnit en GitHub reales no acreditan JWT HTTP, tenant A/B MySQL, release R3, backup/restauracion o soporte en vivo.
 - Decisiones SIN_VERIFICAR/NO_MEDIDO para IDOR/BOLA, RPO/RTO, SLO p95/p99 y rollback; conservar gates, A5 independiente, Scope Lock y BITACORA sin habilitar QA/main/PROD.
