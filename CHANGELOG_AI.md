@@ -7528,3 +7528,8 @@
 ## 2026-11-18 - V19 C15 CI repair parser JWT y navegador tenancy [Javier :10]
 - Corrige la expresión regular de A0.34 que impidió descubrir tests JWT reales (RUN 44283088809) reutilizando patrón válido verificado en el mismo archivo, y el único selector de navegador heredado main.tenancy-audit por section.tenancy-audit (RUN 44283765432); conserva asserts 403, login y densidad.
 - Requiere ejecutar nuevamente 16 casos JWT/Chromium y suites C15-03 en GitHub-hosted exact SHA; nada se certifica mientras estén queued/in_progress/failure. Sin LISTO/A5, lock y owner intactos; solo dev.
+
+## 2026-11-18 — C06-04.M03.05: frontera segura R2 para despacho del portal cliente (DEV01)
+
+- Se añade un boundary Application y siete grupos de pruebas xUnit que bloquean despacho sin autorización backend, verificación de tenant y idempotencia durable; ningún worker ni proveedor se activa.
+- Estado VALIDANDO: la aceptación real de JWT/RBAC/tenant A/B, persistencia MySQL, reintentos y cola se mantiene pendiente de una integración completa y CI causal exact-SHA; A5 independiente pendiente.
