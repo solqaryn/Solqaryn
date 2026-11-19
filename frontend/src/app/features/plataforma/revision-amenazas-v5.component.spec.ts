@@ -164,11 +164,23 @@ describe('C14-02.M04.01 - pantalla privada de amenazas', () => {
     expect(fixture.componentInstance.estadoVista()).toBe('sin_permiso');
     await fixture.whenStable();
     fixture.componentRef.changeDetectorRef.detectChanges();
-    // La denegación visual se cubre en el test 403 asíncrono; este mock
-    // síncrono conserva sesión local y verifica el estado derivado + no filtración.
+    // Un 403 síncrono también debe ocultar la guía aunque la señal local
+    // continúe autenticada: la denegación del estado prevalece sobre el cache.
+    expect(fixture.nativeElement.querySelectorAll('.threat-list li')).toHaveLength(0);
     expect(fixture.nativeElement.textContent).not.toContain('PRIVATE_SERVER_DETAIL');
   });
 
+
+  it('C14-02.M04.02 revocación del estado bloquea DOM aun con cache de sesión previa', async () => {
+    const { fixture, sesion } = await montar(autorizada);
+    expect(fixture.nativeElement.querySelectorAll('.threat-list li')).toHaveLength(4);
+    fixture.componentInstance.verificacion.set('sin_permiso');
+    fixture.componentRef.changeDetectorRef.detectChanges();
+    expect(sesion()).toEqual(autorizada);
+    expect(fixture.componentInstance.estadoVista()).toBe('sin_permiso');
+    expect(fixture.nativeElement.querySelectorAll('.threat-list li')).toHaveLength(0);
+    expect(fixture.nativeElement.textContent).toContain('Guía privada oculta');
+  });
 
   it('C14-02.M04.04 navegación usa solo la ruta interna existente, sin formulario de ejecución', async () => {
     const { fixture, solicitudes } = await montar(autorizada);

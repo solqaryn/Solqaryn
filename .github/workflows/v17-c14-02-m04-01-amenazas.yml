@@ -34,7 +34,7 @@ jobs:
       - name: Instalar dependencias
         working-directory: frontend
         run: npm ci
-      - name: Diecisiete Vitest de guard, estados, navegación y seguridad
+      - name: Dieciocho Vitest de guard, estados, navegación y seguridad
         working-directory: frontend
         run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/revision-amenazas-v5.component.spec.ts
       - name: Lint y build

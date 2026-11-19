@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C14-02.M04.02 reparación de estado denegado con caché residual [Javier :00]
+- Corrige render fail-closed de guía privada: solo estados sin_datos/exito muestran contenido; sin_permiso/cargando/error lo ocultan incluso con sesión local residual. Restaura oráculo 403 síncrono y añade un test adversarial que detecta la regresión con señal aún autorizada.
+- Riesgo R2, 18 Vitest y 8 Chromium dirigidos + Scope Lock/V5 por SHA requeridos; A5_FAIL anterior intacto y nueva A5 por Task distinta de DEV03 autor y DEV01 reparador. No se certifican JWT real, tenant A/B, MySQL ni QA/main/PROD.
+
 ## 2026-11-18 — V20 C07-04.M05.05 negativos de tenant y permisos pedidos [Javier :00]
 - Añade casos adversariales xUnit del filtro real RequierePermisoAttribute con selectores de empresa inválidos/duplicados, ausencia de membresía, grant denegado y control positivo; impide ejecutar una acción comercial sin autorización de filtro.
 - CI dirigida .NET 10 GitHub-hosted por SHA; solo prueba in-process, no JWT firmado/HTTP real ni MySQL/finanzas o permiso de QA/PROD. Requiere A0–A4 reales, A5 independiente y Scope Lock STRICT.

@@ -23,7 +23,7 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
         <section role="status" aria-live="polite" class="notice">Comprobando nuevamente la sesión; la guía de amenazas permanece oculta.</section>
       } @else if (estadoVista() === 'error') {
         <p role="alert" class="notice">No se pudo comprobar la sesión. La guía sigue oculta para proteger la información.</p>
-      } @else if (accesoVerificado()) {
+      } @else if (estadoVista() === 'sin_datos' || estadoVista() === 'exito') {
         <section class="notice" aria-label="Estado de acceso">
           <p role="status" aria-live="polite">
             @if (estadoVista() === 'exito') {
