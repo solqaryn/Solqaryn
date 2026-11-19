@@ -1,6 +1,17 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, effect, inject, InjectionToken, signal, DestroyRef } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
+
+export interface C1502Superficie {
+  readonly id: string;
+  readonly nombre: string;
+  readonly objetivo: string;
+}
+
+/** Fuente inyectable SOLO para probar fronteras de lectura y errores.
+ * La UI normal conserva cinco referencias locales; no consulta proveedores reales.
+ */
+export const C1502_SUPERFICIES_FUENTE = new InjectionToken<() => Promise<readonly C1502Superficie[]>>('C1502SuperficiesFuente');
 
 /**
  * C15-02.M04.01 — solo presenta contratos de revisión documental DEV.
@@ -23,15 +34,32 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
       @if (autorizado()) {
         <section aria-labelledby="scope-title">
           <h2 id="scope-title">Superficies por contrastar</h2>
-          <ul class="cards">
-            @for (item of superficies; track item.id) {
-              <li data-testid="architecture-item">
-                <h3>{{ item.nombre }}</h3>
-                <p>{{ item.objetivo }}</p>
-                <p class="pending"><strong>NO_VERIFICADO</strong> · sin acceso a proveedores reales</p>
-              </li>
+          @switch (estadoVista()) {
+            @case ('cargando') {
+              <p role="status" aria-live="polite" data-testid="architecture-loading">Preparando referencias locales sin consultar proveedores…</p>
             }
-          </ul>
+            @case ('vacio') {
+              <p role="status" data-testid="architecture-empty">No hay referencias locales disponibles. Nada certificado.</p>
+            }
+            @case ('error') {
+              <div role="alert" data-testid="architecture-error">
+                <p>La lectura local falló; no se muestran datos parciales ni detalles internos.</p>
+                <button class="retry" type="button" (click)="reintentarLectura()">Reintentar lectura local</button>
+              </div>
+            }
+            @case ('listo') {
+              <p role="status" data-testid="architecture-loaded">Referencias locales cargadas; evidencias sin verificar.</p>
+              <ul class="cards">
+                @for (item of visibles(); track item.id) {
+                  <li data-testid="architecture-item">
+                    <h3>{{ item.nombre }}</h3>
+                    <p>{{ item.objetivo }}</p>
+                    <p class="pending"><strong>NO_VERIFICADO</strong> · sin acceso a proveedores reales</p>
+                  </li>
+                }
+              </ul>
+            }
+          }
         </section>
         <aside role="note">
           Diagrama, contratos, rollback y control de secretos requieren evidencia independiente.
@@ -51,7 +79,8 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
     h3 { margin:.1rem 0 .5rem; font-size:1.08rem; }
     p,li,aside { line-height:1.55; overflow-wrap:anywhere; }
     a { display:inline-flex; min-height:44px; align-items:center; padding:.5rem .8rem; border:2px solid currentColor; border-radius:.5rem; }
-    a:focus-visible { outline:3px solid var(--mat-sys-primary,#125b8a); outline-offset:3px; }
+    a:focus-visible, .retry:focus-visible { outline:3px solid var(--mat-sys-primary,#125b8a); outline-offset:3px; }
+    .retry { display:inline-flex; min-height:44px; align-items:center; border:2px solid currentColor; border-radius:.5rem; background:transparent; color:inherit; padding:.6rem .8rem; cursor:pointer; }
     .cards { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,16rem),1fr)); gap:.85rem; padding:0; list-style:none; }
     .cards li { min-width:0; padding:1rem; border:1px solid var(--mat-sys-outline,#76818a); border-radius:.7rem; }
     .pending { border-inline-start:3px solid var(--mat-sys-outline,#76818a); padding-inline-start:.65rem; }
@@ -61,15 +90,89 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
 })
 export class C1502RevisionArquitecturaComponent {
   private readonly plataforma = inject(PlataformaSesionService);
-  readonly autorizado = computed(() => {
-    const sesion = this.plataforma.sesion();
-    return sesion?.ambito === 'Plataforma' && sesion.esAdministrador === true;
-  });
-  readonly superficies = [
+  private readonly fuente = inject(C1502_SUPERFICIES_FUENTE, { optional: true });
+  private readonly destroyRef = inject(DestroyRef);
+  private versionLectura = 0;
+
+  readonly superficies: readonly C1502Superficie[] = [
     { id: 'hosting', nombre: 'Hosting y ejecución', objetivo: 'Contrastar topología, versionado y rollback sin activar despliegues.' },
     { id: 'cdn', nombre: 'Cloudflare y DNS', objetivo: 'Revisar rutas, registros y límites sin modificar dominios.' },
     { id: 'objects', nombre: 'R2 y archivos', objetivo: 'Examinar contratos de acceso sin credenciales ni copias reales.' },
     { id: 'database', nombre: 'MySQL y datos', objetivo: 'Identificar migraciones, integridad y restauración pendientes de pruebas.' },
     { id: 'providers', nombre: 'Proveedores e integración', objetivo: 'Validar dependencias, fallos seguros y evidencias antes de conectar servicios.' }
-  ] as const;
+  ];
+  readonly visibles = signal<readonly C1502Superficie[]>([]);
+  readonly estadoVista = signal<'cargando' | 'vacio' | 'error' | 'listo' | 'denegado'>('denegado');
+  readonly autorizado = computed(() => {
+    const sesion = this.plataforma.sesion();
+    return sesion?.ambito === 'Plataforma' && sesion.esAdministrador === true;
+  });
+
+  constructor() {
+    effect(() => {
+      if (!this.autorizado()) {
+        this.versionLectura++;
+        this.visibles.set([]);
+        this.estadoVista.set('denegado');
+        return;
+      }
+      if (this.fuente === null) {
+        this.versionLectura++;
+        this.visibles.set(this.superficies);
+        this.estadoVista.set('listo');
+        return;
+      }
+      this.cargar();
+    });
+    this.destroyRef.onDestroy(() => { this.versionLectura++; });
+  }
+
+  reintentarLectura(): void {
+    if (this.autorizado() && this.fuente !== null) this.cargar();
+  }
+
+  private cargar(): void {
+    if (!this.autorizado() || !this.fuente) return;
+    const version = ++this.versionLectura;
+    this.visibles.set([]);
+    this.estadoVista.set('cargando');
+    Promise.resolve().then(() => this.fuente!()).then(
+      (datos) => {
+        if (version !== this.versionLectura || !this.autorizado()) return;
+        const validos = this.normalizar(datos);
+        this.visibles.set(validos);
+        this.estadoVista.set(validos.length ? 'listo' : 'vacio');
+      },
+      () => {
+        if (version !== this.versionLectura || !this.autorizado()) return;
+        this.visibles.set([]);
+        this.estadoVista.set('error');
+      }
+    ).catch(() => {
+      if (version !== this.versionLectura || !this.autorizado()) return;
+      this.visibles.set([]);
+      this.estadoVista.set('error');
+    });
+  }
+
+  /** Nunca interpolar excepciones, objetos externos ni respuestas incompletas. */
+  private normalizar(entrada: unknown): readonly C1502Superficie[] {
+    if (!Array.isArray(entrada) || entrada.length > 16) throw new Error('Fuente local no válida.');
+    const ids = new Set<string>();
+    const resultado: C1502Superficie[] = [];
+    for (const item of entrada) {
+      if (resultado.length >= 16 || !item || typeof item !== 'object') throw new Error('Registro inválido.');
+      const id = (item as C1502Superficie).id;
+      const nombre = (item as C1502Superficie).nombre;
+      const objetivo = (item as C1502Superficie).objetivo;
+      if (typeof id !== 'string' || !/^[a-z][a-z0-9-]{0,63}$/.test(id) || ids.has(id) ||
+          typeof nombre !== 'string' || !nombre.trim() || nombre.length > 120 ||
+          typeof objetivo !== 'string' || !objetivo.trim() || objetivo.length > 300) {
+        throw new Error('Registro mal formado.');
+      }
+      ids.add(id);
+      resultado.push(Object.freeze({ id, nombre: nombre.trim(), objetivo: objetivo.trim() }));
+    }
+    return Object.freeze(resultado);
+  }
 }

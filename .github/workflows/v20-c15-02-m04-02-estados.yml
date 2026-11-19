@@ -1,0 +1,41 @@
+name: V20 C15-02.M04.02 - estados privados
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/src/app/features/plataforma/c15-02-m04-01-revision-arquitectura.component.ts'
+      - 'frontend/src/app/features/plataforma/c15-02-m04-02-estados.spec.ts'
+      - '.github/workflows/v20-c15-02-m04-02-estados.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v20-c1502-m0402-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  estados:
+    name: C15-02.M04.02 - seis casos TestBed y baseline
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout SHA exacto
+        uses: actions/checkout@v4
+      - name: Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm 11
+        run: npm install --global npm@11.19.0
+      - name: npm ci
+        run: npm ci
+      - name: Lint y build de producción
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Estados adversariales y regresión M04.01
+        run: npx ng test --watch=false --no-progress --include='src/app/features/plataforma/c15-02-m04-02-estados.spec.ts' --include='src/app/features/plataforma/c15-02-m04-01-revision-arquitectura.component.spec.ts'

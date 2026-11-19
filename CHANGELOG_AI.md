@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C15-02.M04.02 estados seguros de superficies privadas [Javier :20]
+- Estados Angular de carga, vacío, error, éxito y denegación sobre referencias locales; lectura asincrónica inyectable, invalidación al revocar, rechazo de duplicados y reintento seguro, sin proveedor externo ni nuevos permisos.
+- Seis casos TestBed adversariales y workflow GitHub-hosted exact-SHA; A0-A5, Scope Lock y revisión independiente pendientes de comprobación causal. Sin JWT/MySQL real, QA/main/PROD ni R3.
+
 ## 2026-11-18 — V20 reparación causal P0-007.A de catálogo Angular C15-02.M04.01 [Javier :00]
 - Corrige el drift de catálogo detectado en SHA 7a8767eb: inventaría exactamente el nuevo componente de revisión privada y actualiza conteos de 164 a 165 (157 features, 8 shared) sin excluir rutas ni debilitar negativos.
 - No altera UI, JWT/RBAC, tenancy, secretos ni proveedores; P0-007.A/Scope Lock/V5 exact-SHA pendientes de revalidación y A5 por Task distinta. Solo dev, sin QA/main/PROD.
