@@ -1,3 +1,7 @@
+## 2026-11-19 — V21 C15-01.M05.04 reparación del recenso de rutas [Javier :30]
+- Se corrige un falso negativo de cobertura estática: la ruta raíz `path: ''` se omitía; se descartan rutas ficticias en comentarios y cadenas y se reconocen comillas dobles. Snapshot histórico no autoritativo ajustado de 152 a 153 declaraciones, con cinco regresiones adicionales.
+- Cambio R2/P2 solo en auditor Node y evidencias, sin runtime/tenant/MySQL; permanece VALIDANDO, CI del SHA nuevo y A0–A4 integrales pendientes, A5 independiente, rollback con git revert, solo dev.
+
 ## 2026-11-19 — V21 C15-02.M04.05 contraste Chromium real y control negativo [Javier :20]
 - Reparación cruzada de la prueba de accesibilidad: se mide contraste efectivo sRGB con fondos y opacidades de ancestros en título, identificador, navegación y tarjeta a 320/1280 px, con oráculo adversarial que rechaza colores idénticos; conservadas pruebas previas de teclado/responsive/403.
 - Test-only en dev, autor DEV01 preservado, reparador DEV03; workflow GitHub-hosted exact-SHA debe acreditar Chromium y Scope Lock/V5 antes de afirmar PASS. No certifica auditoría WCAG global, JWT/tenant/MySQL ni cierre A0–A4; A5 de tercera Task Javier, sin QA/main/PROD.

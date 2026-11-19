@@ -23,3 +23,9 @@ El script Node ejecuta recenso positivo y 5 mutaciones adversariales que DEBEN f
 ## Impacto / rollback
 
 Cambios confinados a script estático, snapshot, workflow, documento y CHANGELOG; sin runtime, JWT/RBAC, MySQL, secretos, despliegues ni cuentas. R2 por auditoría y guardas. Git revert normal después de HEAD CAS si hiciera falta; BITACORA histórica inmutable y DAG/COLA solo por fórmulas.
+
+## V21 — corrección P2 del recuento de rutas reales [DEV04]
+
+Hallazgo reproducible: el auditor anterior usaba una expresión regular que omitía `path: ''` (ruta raíz legítima) y podía contar apariciones de `path` dentro de comentarios o cadenas como rutas. Se implementa un contador léxico que descarta comentarios de línea/bloque y literales, reconoce atributos de ruta con comillas simples/dobles e incluye la raíz vacía. Cinco pruebas de regresión y cinco mutaciones previas de matriz evitan falsos positivos. Los cuatro archivos conservan sus blobs, y el snapshot no autoritativo corrige el total de **152 a 153 declaraciones** (app.routes.ts: 115→116; los otros: 11, 14 y 12).
+
+**Límites:** contar 153 declaraciones no certifica 2340 ID→módulo/ruta/endpoint/prueba/run, cobertura semántica, JWT/RBAC/tenant ni negocio. La unidad permanece VALIDANDO hasta A0–A4 completos, CI exact-SHA y A5 de revisor diferente; no QA/main/PROD. Reversión por git revert normal después de comprobar HEAD y dependencias.

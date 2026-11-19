@@ -35,6 +35,40 @@ export function auditMatrix(d,full=false) {
   return {nPlan:p.size,nCola:c.size,nDag:g.size,historicalListoNoDag:historical,eligible,states};
 }
 function blobSha(s) {return createHash('sha1').update('blob '+Buffer.byteLength(s)+'\0').update(s).digest('hex');}
+export function countRouteDeclarations(source) {
+  must(typeof source === 'string', 'route source must be text');
+  let count = 0, i = 0, prev = '';
+  while (i < source.length) {
+    const ch = source[i], nx = source[i + 1];
+    if (/\s/.test(ch)) { i++; continue; }
+    if (ch === '/' && nx === '/') { const end = source.indexOf('\n', i + 2); i = end < 0 ? source.length : end; continue; }
+    if (ch === '/' && nx === '*') { const end = source.indexOf('*/', i + 2); must(end >= 0, 'unterminated route comment'); i = end + 2; continue; }
+    if (ch === "'" || ch === '"' || ch === '`') {
+      const quote = ch; i++; let closed = false;
+      while (i < source.length) {
+        if (source[i] === '\\') { i += 2; continue; }
+        if (source[i] === quote) { i++; closed = true; break; }
+        i++;
+      }
+      must(closed, 'unterminated route literal'); prev = 'literal'; continue;
+    }
+    if (/[A-Za-z_$]/.test(ch)) {
+      const from = i++;
+      while (i < source.length && /[\w$]/.test(source[i])) i++;
+      if (source.slice(from, i) === 'path' && (prev === '{' || prev === ',')) {
+        let j = i;
+        while (j < source.length && /\s/.test(source[j])) j++;
+        if (source[j] === ':') {
+          j++; while (j < source.length && /\s/.test(source[j])) j++;
+          if (source[j] === "'" || source[j] === '"') count++;
+        }
+      }
+      prev = 'identifier'; continue;
+    }
+    prev = ch; i++;
+  }
+  return count;
+}
 function auditRoutes(d) {
   must(d.authority==='NON_AUTHORITATIVE_SNAPSHOT','snapshot impersonates authority');
   must(Array.isArray(d.routes)&&d.routes.length===4,'route source list incomplete');
@@ -44,7 +78,7 @@ function auditRoutes(d) {
     used.add(r.path);
     const body=readFileSync(resolve(r.path),'utf8');
     must(blobSha(body)===r.blobSha,'route hash drift '+r.path);
-    const count=[...body.matchAll(/\bpath:\s*'[^']+'/g)].length;
+    const count=countRouteDeclarations(body);
     must(count===r.declarations&&count>0,'route declarations drift '+r.path);
     total+=count;
   }
@@ -62,7 +96,12 @@ function selfTest() {
   fail(x=>x.dag.pop());
   fail(x=>x.plan[1][2]='writer');
   fail(x=>x.cola[1][1]='LISTO');
-  console.log('C15-01.M05.04 SELFTEST PASS: one positive, five adversarial failures');
+  must(countRouteDeclarations("const routes=[{path:''},{path:'real'}];")===2, 'empty root route omitted');
+  must(countRouteDeclarations("const routes=[/*{path:'fake'}*/];")===0, 'commented path falsely counted');
+  must(countRouteDeclarations("const routes=[{path:'ok'}]; // {path:'fake'}")===1, 'line comment falsely counted');
+  must(countRouteDeclarations('const routes=[{path:"second"}];')===1, 'double quote route omitted');
+  must(countRouteDeclarations('const msg="{path:\'fake\'}";')===0, 'string literal falsely counted');
+  console.log('C15-01.M05.04 SELFTEST PASS: one matrix positive, five matrix negatives, five lexical route cases');
 }
 const a=process.argv.slice(2);
 if(a.includes('--self-test'))selfTest();
