@@ -1,0 +1,29 @@
+name: V20 C15-01.M05.01 - reglas de cobertura institucional (snapshot)
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'scripts/quality/c15-01-m05-01-plan-rule.mjs'
+      - 'docs/v5/c15-01-m05-01-ids.snapshot.json'
+      - 'docs/v5/c15-01-m05-01-rule.md'
+      - '.github/workflows/v20-c15-01-m05-01-coverage.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: c1501-m0501-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  rule:
+    name: C15-01.M05.01 - cobertura 2340 y cinco negativos
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Scope Lock exact-SHA
+        run: node scripts/verify-project-scope.mjs
+      - name: Regla estatica y cinco mutaciones adversariales
+        run: node scripts/quality/c15-01-m05-01-plan-rule.mjs --self-test

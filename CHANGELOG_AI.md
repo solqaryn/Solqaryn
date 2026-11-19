@@ -1,3 +1,8 @@
+## 2026-11-18 - V20 C15-01.M05.01 regla auditable de 2340 IDs [Javier :50]
+- Snapshot de lectura autorizada PLAN_MAESTRO!A2:A2341 (2340 IDs unicos, 65 grupos x 36), regla Node 24 para comparar exportaciones y cinco negativos adversariales: duplicado, ausencia, extra, formato y orden.
+- CI dirigida GitHub-hosted verifica regla y Scope Lock exact-SHA. Snapshot estatico NO significa Sheets vivo, cobertura implementada de requisitos/rutas ni JWT/MySQL. Mantener VALIDANDO mientras A0-A4/CI incompletos; A5 solo otra Task Javier.
+- Solo dev, sin secretos ni PROD; rollback mediante git revert, BITACORA historica preservada.
+
 ## 2026-11-18 - V20 C15-02.M04.03 branding local seguro [Javier :30]
 - Configuracion visual de marca institucional/neutra y densidad regular/compacta mediante allowlist inmutable; getter adversarial, Proxy revocado, arrays y CSS arbitrario nunca elevan permisos.
 - Vitest, Chromium responsive y 403, CI GitHub-hosted y revision A5 separada; ninguna conexion real de JWT, MySQL, Cloudflare o R2 ni despliegue.
