@@ -52,7 +52,7 @@ export function normalizarCoberturaPresentacionV5(valor: unknown): CoberturaPres
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="coverage-shell" aria-labelledby="coverage-title"
+    <section class="coverage-shell" aria-labelledby="coverage-title"
       [class.coverage-neutral]="presentacion.marca === 'neutra'"
       [class.coverage-compacta]="presentacion.densidad === 'compacta'"
       [attr.data-presentacion-marca]="presentacion.marca"
@@ -102,7 +102,7 @@ export function normalizarCoberturaPresentacionV5(valor: unknown): CoberturaPres
       } @else {
         <p role="alert" class="notice">Acceso no autorizado. Los controles de cobertura permanecen ocultos.</p>
       }
-    </main>
+    </section>
   `,
   styles: [`
     :host { display:block; color:var(--mat-sys-on-surface,#17212d); }

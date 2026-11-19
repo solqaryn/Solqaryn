@@ -12,7 +12,7 @@ import { inventariarRutasV19, PROGRAMAS_PLAN_V19 } from './c13-04-m04-01-catalog
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="inventario" aria-labelledby="titulo-inventario">
+    <section class="inventario" aria-labelledby="titulo-inventario">
       <header>
         <p class="etiqueta">SOLQARYN · Plano global · DEV</p>
         <h1 id="titulo-inventario">Inventario de programas y rutas declaradas</h1>
@@ -53,7 +53,7 @@ import { inventariarRutasV19, PROGRAMAS_PLAN_V19 } from './c13-04-m04-01-catalog
           </ol>
         </section>
       }
-    </main>
+    </section>
   `,
   styles: [`
     :host { display:block; color:var(--mat-sys-on-surface,#17212d); }

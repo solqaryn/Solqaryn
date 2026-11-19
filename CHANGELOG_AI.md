@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C15-04.M05.04 reparación P2 de landmark principal anidado [Javier :10]
+- CI A0.42 28/29 PASS mostró dos landmarks `main` en inventario global; app shell ya contenía el principal. Se corrigen dos superficies `/plataforma/inventario-rutas-v19` y `/plataforma/trazabilidad-cobertura-v5` cambiando solo envolturas internas a `section` con `aria-labelledby` intacto; conserva el assert Playwright estricto de un único `main`, guards/JWT y tenant.
+- Se mantienen pruebas Chromium reales con MySQL 8.4 efímero y negativos de denegación; 29 PASS requieren nuevo run exact-SHA, Scope Lock y V5. Auditoría UX/WCAG global A0-A4 aún incompleta, A5 ajeno; C15-04.M05.04 EN_PROGRESO DEV02, lock 2000002297 legítimo. Revert normal, sin QA/main/PROD.
+
 ## 2026-11-18 — V20 C14-02.M04.05 reparación correctiva P2 de Tab natural [Javier :00]
 - Repara falso positivo del test de teclado: sustituye foco programático por Tab natural y comprueba alcance del enlace, foco visible, Tab siguiente y activación por Enter; agrega control adversarial con tabindex=-1 para verificar que el test detecta el defecto.
 - Se actualiza workflow para cinco escenarios Chromium y evidencia documental; no cambia componentes runtime, backend, autorización ni MySQL. Conservar A5_FAIL histórico y esperar CI exact-SHA y A5 independiente de otra Task distinta de DEV02 y DEV01; sin QA/main/PROD.
