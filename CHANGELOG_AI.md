@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 C03-04.M05.03 MySQL 8.4 efímero de incidentes [Javier :50]
+- Suite xUnit Category=Integration + GitHub Actions MySQL 8.4 real aislado: persistencia A/B, ramas, rechazo tenant y SHA, revocación, rollback y rechazo de hosts remotos. TRX obligatorio >=3 ejecutados, 0 fallos/omisiones.
+- La tabla es fixture, no repositorio operativo ni JWT/HTTP/backup real. Mantener VALIDANDO hasta cerrar A0-A4 R2 con evidencia causal y revisión A5 independiente; sin tocar producción.
+
 ## 2026-11-19 — V20 DEV05 C15-03.M05.05 diagnóstico CI y cuarentena de rutas [Javier :40]
 - Reparación dirigida de pruebas: el SHA 6efcbc1f falló con 5/8 Chromium; tres respuestas 503 se explican por la cuarentena P0 de 2+ empresas. Se comprueba código TENANT_DATA_ISOLATION_REQUIRED, JWT A/B real en tenant-context y denegación de rutas de sucursales, configuración/logo y QA aún bloqueadas.
 - NO se abre whitelist, se altera seguridad ni se inventa 403; A5_FAIL P2 de cobertura directa conserva estado VALIDANDO hasta integración causal real y revisión independiente. GitHub-hosted MySQL efímero, Scope Lock, V5, sin QA/main/PROD.
