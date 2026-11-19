@@ -41,6 +41,6 @@ jobs:
           counts=next((e.attrib for e in root.iter() if e.tag.endswith('Counters')),None)
           assert counts is not None, 'No test counters'
           actual=tuple(int(counts[k]) for k in ('executed','passed','failed','notExecuted'))
-          assert actual==(20,20,0,0), actual
-          print('C1505M0502_REAL_XUNIT_RELEASE_20_OF_20_PASS')
+          assert actual==(30,30,0,0), actual
+          print('C1505M0502_REAL_XUNIT_RELEASE_30_OF_30_PASS')
           PY

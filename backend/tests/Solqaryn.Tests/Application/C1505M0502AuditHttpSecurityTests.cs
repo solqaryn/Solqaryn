@@ -10,6 +10,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging.Abstractions;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
 using Solqaryn.API.Controllers;
@@ -18,6 +19,8 @@ using Solqaryn.Application.Common;
 using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Exceptions;
 using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.Services;
+using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
 using Xunit;
 
@@ -218,5 +221,57 @@ public sealed class C1505M0502AuditHttpSecurityTests
         Assert.Equal(HttpStatusCode.OK, response.StatusCode);
         reader.Verify(x => x.GetFilteredAsync(
             It.Is<AuditoriaFiltroDto>(p => p.Page == 100000 && p.PageSize == 100)), Times.Once);
+    }
+
+    // V20 A1: ejecuta la defensa en profundidad real del servicio, sin invocar
+    // el repositorio cuando la paginacion es insegura (no solo MVC/DataAnnotations).
+    private static (AuditoriaService Service, Mock<IAuditoriaRepository> Repository) GuardService()
+    {
+        var repository = new Mock<IAuditoriaRepository>(MockBehavior.Strict);
+        var service = new AuditoriaService(
+            repository.Object,
+            Mock.Of<ICurrentUserService>(),
+            new HttpContextAccessor(),
+            NullLogger<AuditoriaService>.Instance);
+        return (service, repository);
+    }
+
+    [Theory]
+    [InlineData(0, 50)]
+    [InlineData(-1, 50)]
+    [InlineData(100001, 50)]
+    [InlineData(int.MaxValue, 50)]
+    [InlineData(1, 0)]
+    [InlineData(1, -1)]
+    [InlineData(1, 101)]
+    [InlineData(1, int.MaxValue)]
+    public async Task ServicioRechazaPaginacionInvalidaAntesDelRepositorio(int page, int pageSize)
+    {
+        var (service, repository) = GuardService();
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            service.GetFilteredAsync(new AuditoriaFiltroDto { Page = page, PageSize = pageSize }));
+        repository.Verify(x => x.GetFilteredAsync(It.IsAny<AuditoriaFiltroDto>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ServicioRechazaFiltroNuloAntesDelRepositorio()
+    {
+        var (service, repository) = GuardService();
+        await Assert.ThrowsAsync<ArgumentNullException>(() => service.GetFilteredAsync(null!));
+        repository.Verify(x => x.GetFilteredAsync(It.IsAny<AuditoriaFiltroDto>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task ServicioAceptaBordesValidosYConsultaUnaSolaVez()
+    {
+        var (service, repository) = GuardService();
+        var filtro = new AuditoriaFiltroDto { Page = 100000, PageSize = 100 };
+        repository.Setup(x => x.GetFilteredAsync(filtro))
+            .ReturnsAsync((new List<RegistroAuditoria>(), 0));
+        var result = await service.GetFilteredAsync(filtro);
+        Assert.Equal(100000, result.Page);
+        Assert.Equal(100, result.PageSize);
+        Assert.Equal(0, result.TotalCount);
+        repository.Verify(x => x.GetFilteredAsync(filtro), Times.Once);
     }
 }
