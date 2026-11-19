@@ -32,8 +32,42 @@ git worktree add --detach "$sandbox" "$source_head" >/dev/null
 printf 'SYNTHETIC_NO_CUSTOMER_DATA_PRESERVE_20261118\n' > "$sandbox/.sq-synthetic-preservation"
 sentinel_before="$(sha256sum "$sandbox/.sq-synthetic-preservation" | cut -d ' ' -f 1)"
 
-# Execute actual git revert on a detached ephemeral worktree, never push.
-git -C "$sandbox" revert --no-commit --no-edit "$target"
+# Execute a real revert from the current SHA in a disposable worktree.
+# Resolve ONLY the known CHANGELOG section conflict; all other conflicts fail closed.
+if git -C "$sandbox" revert --no-commit --no-edit "$target"; then
+  echo "GIT_REVERT_CLEAN=PASS"
+else
+  mapfile -t unmerged < <(git -C "$sandbox" diff --name-only --diff-filter=U | sort -u)
+  if [[ "${#unmerged[@]}" -ne 1 || "${unmerged[0]}" != "CHANGELOG_AI.md" ]]; then
+    echo "FAIL: unexpected revert conflict, refusing resolution" >&2
+    exit 1
+  fi
+  git -C "$sandbox" show "$source_head:CHANGELOG_AI.md" > "$sandbox/CHANGELOG_AI.md"
+  python3 - "$sandbox/CHANGELOG_AI.md" "$target" <<'PY'
+import pathlib
+import subprocess
+import sys
+p = pathlib.Path(sys.argv[1])
+target_sha = sys.argv[2]
+original = subprocess.check_output(
+    ["git", "show", f"{target_sha}:CHANGELOG_AI.md"], text=True
+)
+stanza = original.split("\n## ", 1)[0] + "\n"
+required_header = "## 2026-11-18 — V20 C14-04.M05.06 regresion Chromium readiness DEV [Javier :20]"
+if not stanza.startswith(required_header + "\n") or stanza.count("\n- ") != 2:
+    raise SystemExit("FAIL: source stanza shape changed")
+current = p.read_text(encoding="utf-8")
+if current.count(stanza) != 1:
+    raise SystemExit("FAIL: target stanza missing, modified or duplicated")
+p.write_text(current.replace(stanza, "", 1), encoding="utf-8")
+PY
+  git -C "$sandbox" add -- CHANGELOG_AI.md
+  if [[ -n "$(git -C "$sandbox" diff --name-only --diff-filter=U)" ]]; then
+    echo "FAIL: unresolved files remain" >&2
+    exit 1
+  fi
+  echo "BOUNDED_CHANGELOG_CONFLICT_RESOLVED=PASS"
+fi
 test ! -e "$sandbox/frontend/e2e/c14-04-m05-06-regression-a11y.spec.ts"
 test ! -e "$sandbox/.github/workflows/v20-c14-04-m05-06-regression-a11y.yml"
 test ! -e "$sandbox/docs/v5/c14-04-m05-06-readiness-regression-a11y.md"

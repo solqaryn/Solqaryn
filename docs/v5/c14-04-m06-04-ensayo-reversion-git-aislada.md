@@ -11,11 +11,13 @@ Esta microtarea exige "ensayar rollback o desactivación sin borrar datos legít
 ## A1. Controles positivos, negativos y frontera realmente falsables
 
 - Validar que el SHA objetivo es ancestro del HEAD verificado por GitHub y que el diff objetivo contiene **exactamente** cuatro rutas permitidas. Si cambia la lista, detener antes de revertir.
-- Crear un `git worktree add --detach` temporal sobre el SHA de la ejecución. Ejecutar `git revert --no-commit --no-edit` del SHA M05.06; exigir ausencia del spec, workflow y documento añadidos por aquel commit. Si hay conflictos reales de CHANGELOG, el job FALLA y exige reparación; nunca ocultarlos.
+- Crear un `git worktree add --detach` temporal sobre el SHA de la ejecución. Ejecutar `git revert --no-commit --no-edit` del SHA M05.06; exigir ausencia del spec, workflow y documento añadidos por aquel commit. Si la reversión encuentra un conflicto **únicamente en CHANGELOG_AI.md**, restaurar la versión exacta del SHA probado y quitar sólo el bloque literal original de M05.06, validando encabezado, dos viñetas y unicidad; cualquier otro conflicto, duplicación o deriva de ese bloque debe fallar cerrado. Conservar todas las entradas posteriores sin intercalado.
 - Verificar con `git diff --name-only HEAD` que sólo se alteraron esos cuatro archivos, y con `git diff --check HEAD` que no aparecen defectos de formato. El script no efectúa `git push`.
 - **Control adversarial:** modificar un archivo real rastreado de `backend/src` o `frontend/src` dentro del sandbox; la función fail-closed de protección debe devolver error. Luego restaurar solamente ese archivo de prueba dentro del sandbox y volver a exigir protección. El test debe FALLAR si la mutación indebida pasa inadvertida.
 - Guardar un marcador sintético local fuera de Git, verificar SHA-256 antes y después; es sólo una frontera de preservación de un archivo temporal, no un DB rollback. No falsificar datos clientes ni acceder a proveedores pagos.
 - El worktree se elimina con `git worktree remove --force` al salir; es limpieza local del sandbox, NO borrado histórico ni reescritura de ramas.
+
+La reparación V20 detectó un conflicto Git real entre la sección M05.06 y entradas posteriores de CHANGELOG. El script recupera únicamente esa sección dentro del worktree efímero y exige `git diff` de las cuatro rutas exactas, sin suavizar la protección sobre archivos de aplicación. La prueba dirigida y los controles por SHA deben acreditarse en GitHub Actions: este documento no anticipa PASS.
 
 ## A2. Protección por diseño
 
