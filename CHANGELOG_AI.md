@@ -1,3 +1,8 @@
+## 2026-11-18 - V20 C15-01.M05.01 reparacion P2 baseline de grupos [Javier :00]
+- Se corrige falso PASS de un snapshot falsificado: los grupos validos se contrastan con el conjunto fijo C00-C14/01-04 y C15/01-05, no con las claves del propio snapshot mutable.
+- Regresion adversarial substituye C00-01 por C99-99 conservando 2340 IDs y 65x36; debe rechazarse con BASELINE_GROUP_SET. Sin cambios a los 2340 IDs, Sheets, auth, DB o runtime productivo; A5 independiente y verificacion externa exact-SHA pendientes.
+- Trabajo exclusivamente dev y reversible mediante git revert; evidencia historica BITACORA intacta.
+
 ## 2026-11-18 - V20 C15-01.M05.01 regla auditable de 2340 IDs [Javier :50]
 - Snapshot de lectura autorizada PLAN_MAESTRO!A2:A2341 (2340 IDs unicos, 65 grupos x 36), regla Node 24 para comparar exportaciones y cinco negativos adversariales: duplicado, ausencia, extra, formato y orden.
 - CI dirigida GitHub-hosted verifica regla y Scope Lock exact-SHA. Snapshot estatico NO significa Sheets vivo, cobertura implementada de requisitos/rutas ni JWT/MySQL. Mantener VALIDANDO mientras A0-A4/CI incompletos; A5 solo otra Task Javier.

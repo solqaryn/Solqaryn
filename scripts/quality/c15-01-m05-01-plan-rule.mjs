@@ -7,6 +7,11 @@ import { pathToFileURL } from 'node:url';
 
 const SNAPSHOT = new URL('../../docs/v5/c15-01-m05-01-ids.snapshot.json', import.meta.url);
 const ID = /^C\d{2}-\d{2}\.M0[1-6]\.0[1-6]$/;
+// Independent institutional shape: C00-C14 have 4 groups; C15 has 5.
+// Do not derive the authorized group names from the mutable snapshot itself.
+const EXPECTED_GROUPS = new Set(Array.from({ length: 16 }, (_, major) =>
+  Array.from({ length: major === 15 ? 5 : 4 }, (_, minor) =>
+    `C${String(major).padStart(2, '0')}-${String(minor + 1).padStart(2, '0')}`)).flat());
 
 export function verifyPlanCoverage(candidateIds, canonicalIds) {
   const errors = [];
@@ -34,6 +39,9 @@ export function verifyPlanCoverage(candidateIds, canonicalIds) {
   }
   if (reference.length !== 2340 || expected.size !== 2340) errors.push('BASELINE_CARDINALITY');
   if (groups.size !== 65 || [...groups.values()].some(n => n !== 36)) errors.push('BASELINE_GROUPS');
+  if (groups.size !== EXPECTED_GROUPS.size || [...groups.keys()].some(group => !EXPECTED_GROUPS.has(group))) {
+    errors.push('BASELINE_GROUP_SET');
+  }
   if (reference.some(value => !ID.test(value))) errors.push('BASELINE_FORMAT');
   if (actual.length !== reference.length) errors.push('COUNT_DRIFT');
   if (duplicated.size) errors.push('DUPLICATE');
@@ -71,6 +79,12 @@ function main() {
     const swapped = reference.slice();
     [swapped[0], swapped[1]] = [swapped[1], swapped[0]];
     expectFailure('order', swapped, 'ORDER_DRIFT');
+    // Forged baseline: same cardinality, format and 65x36, but a substituted chapter.
+    const forgedBaseline = reference.map(id => id.startsWith('C00-01.') ? id.replace('C00-01.', 'C99-99.') : id);
+    const forgery = verifyPlanCoverage(forgedBaseline, forgedBaseline);
+    assert.equal(forgery.verified, false, 'forged baseline incorrectly self-certified');
+    assert.ok(forgery.errors.includes('BASELINE_GROUP_SET'));
+    console.log('NEGATIVE PASS: forged baseline with foreign group => BASELINE_GROUP_SET');
   }
   const idx = process.argv.indexOf('--input');
   if (idx >= 0) {
