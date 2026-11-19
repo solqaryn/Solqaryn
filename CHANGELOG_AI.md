@@ -1,3 +1,7 @@
+## 2026-11-19 — V21 C02-01.M04.01 menu JWT real N1/N2 [Javier :30]
+- Pruebas Chromium con API .NET 10, JWT firmado y MySQL 8.4 efimero para usuarios A, B y A+B: menu condicional N1/N2, tenant falso 403 y revocacion real B en SQL.
+- Nuevo workflow exact-SHA con dos fases de CI y prueba negativa de revocacion; propietario historico y A5 independiente intactos. No QA/main/PROD; no atribuir PASS hasta completar checks.
+
 ## 2026-11-19 — V21 C13-04.M05.05 rescate JWT real de denegaciones globales [Javier :20]
 - Suite nueva CI aislada JWT firmado ASP.NET 10/MySQL 8.4/Angular Chromium: roles A/B 403, IDOR/BOLA, anónimo y token adulterado, revocación de membresía con restauración y catálogo seguro sin escrituras. Conserva suite V19 de mocks para regresión UI.
 - Autor histórico DEV06; reparador DEV03. VALIDANDO hasta CI exact-SHA, A0–A4 completas y A5 independiente; sin QA/main/PROD, revert normal.

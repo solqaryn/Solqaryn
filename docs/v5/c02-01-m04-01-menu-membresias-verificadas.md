@@ -11,3 +11,7 @@ Rollback seguro: revert normal de un solo commit; sin ramas, migraciones, cambio
 ## Reparacion cruzada V21 DEV03 — membresias obsoletas A/B
 
 La seleccion de un nuevo tenant limpia inmediatamente los IDs autenticados del contexto anterior antes del GET /tenant-context/{id}. Tras confirmar B no se reutiliza la lista verificada para A: el menu permanece oculto hasta un nuevo GET autenticado de membresias para la empresa seleccionada. Regresion adversarial A→B con lista antigua, N=1/N=2 y revocacion. No se modifica backend, JWT, RBAC, MySQL, sesiones ni permisos de usuario. La integracion real exigida por A0-A4 y la revision A5 de otra Task distinta del autor DEV04 y reparador DEV03 siguen pendientes. Rollback: git revert normal del commit V21.
+
+## V21 - Aceptacion real CI JWT A/B del menu (DEV04)
+
+Se anade Playwright real para menu N=1 y N=2: API ASP.NET Core 10, JWT firmado efimero, MySQL 8.4 y Chromium de GitHub-hosted. El usuario A tiene solo A, usuario B solo B, usuario A+B posee ambas y debe ver el boton unicamente tras listarlas desde GET autenticado. Prueba negativa de tenant B falsificado por A. El workflow revoca B en MySQL y una ejecucion posterior comprueba que el boton desaparece y el backend deniega B. No se intercepta HTTP ni se concede autoridad desde localStorage. Los checks CI nuevos pueden permanecer in_progress: entonces A0-A4 y LISTO quedan pendientes; A5 por Task Javier diferente del autor DEV04 y reparador DEV03. Rollback git revert normal, solo dev.
