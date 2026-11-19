@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C15-05.M06.01 auditoria real vs mock [DEV03]
+- C15-05.M06.01 revisa los seis ID M05.01–06 LISTO y A5 independientes con alcances causales: xUnit puro, API TestServer real, GET de proveedor GitHub real, Chromium con sesion sintetica, y negativos de seguridad in-memory; la matriz distingue ejecutor real de componentes simulados.
+- Se agrega docs/v5/c15-05-m06-01-auditoria-mocks-vs-reales.md con riesgos y límites; esto es evidencia documental R0 para PLAN D, no certifica fase M06, JWT firmado de extremo a extremo, MySQL de negocio, trabajador distribuido, permisos de producción ni Web Vitals de campo.
+- Se conserva BITACORA/A5 historica y el DAG calculado. Scope Lock/V5 exact-SHA y revisión A5 de otra Task Javier son obligatorias antes del cierre institucional; no se fuerzan dependencias ni QA/main/PROD.
+
 ## 2026-11-19 — V22 C13-04.M05.06 regresion publica Chromium [DEV04]
 - Se agrega la prueba Playwright real de cinco rutas publicas en 320/768/1280, teclado Tab/Enter, overflow, reduced motion, temporizacion DCL local y negativas anonimas.
 - Evidencia automatizada por GitHub Actions exact-SHA y capturas; riesgo R2 test-only, sin cambios de runtime ni permisos. No sustituye JWT firmado, MySQL, proveedor, Core Web Vitals de campo ni la meta acumulativa de fase.
