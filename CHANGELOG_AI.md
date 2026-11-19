@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 C15-03.M05.04 aceptación positiva JWT real y tenancy A/B [Javier :20]
+- Añade cuatro casos Playwright contra API .NET 10, JWT firmado y MySQL 8.4 efímero: guía privada 320/1280, revalidación sin mutaciones y aislamiento real de Empresa A/B frente a consola global.
+- El workflow dedicado conserva Scope Lock y `cancel-in-progress: false`. Las comprobaciones de sucursales, archivos, jobs, propiedad y control plane siguen NO_MEDIDO; no marcar LISTO/A5 hasta CI y aceptación completa en SHA causal. Solo dev.
+
 ## 2026-11-19 — V20 C15-03.M05.02 contrato seguro de sesión plataforma [Javier :00]
 - Se agregan seis pruebas xUnit reales sobre PlataformaSesionController y DTO: ruta y NoStore, plataforma autorizada, rechazo de rol empresarial, encabezados hostiles, revocación, anonimato y JSON de cuatro campos sin empresa/secretos.
 - Fixtures EF InMemory y ClaimsIdentity de prueba no prueban JWT firmado ni MySQL/HTTP TestHost; mantener VALIDANDO hasta A0–A4 completos y CI exact-SHA SUCCESS. A5 independiente, rollback git revert normal; solo dev.

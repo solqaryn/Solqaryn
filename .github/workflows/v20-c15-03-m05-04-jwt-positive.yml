@@ -1,0 +1,195 @@
+name: V20 C15-03.M05.04 - aceptacion positiva JWT real MySQL Chromium
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v20-c15-03-m05-04-jwt-positive.yml'
+      - 'frontend/e2e/c15-03-m05-04-jwt-positive.spec.ts'
+      - 'frontend/src/app/features/plataforma/auditoria-tenancy-v5.component.ts'
+      - 'frontend/playwright.c15-04-m05-04-real.config.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v20-c15-03-m05-04-jwt-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  jwt-private-browser:
+    name: C15-03.M05.04 - 4 pruebas JWT real y tenancy A/B MySQL 8.4
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: solqaryn_c1504_real_ci
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      CI: 'true'
+      ASPNETCORE_ENVIRONMENT: Development
+      PORT: '5005'
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_c1504_real_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      Database__ServerVersion: '8.4.0'
+      Database__ApplyMigrationsOnStartup: 'true'
+
+      Jwt__Issuer: 'Solqaryn.API'
+      Jwt__Audience: 'Solqaryn.Frontend'
+      Jwt__ExpiraMinutos: '120'
+      SeedAdmin__Username: 'c1504_admin_a'
+      # Solo CI aislada, sin cambiar entornos productivos.
+      MultiEmpresa__PrivateReadPilotEnabled: 'true'
+      Security__LoginRateLimitPerMinute: '300'
+      Cors__AllowedOrigins__0: 'http://127.0.0.1:4200'
+      Cors__AllowedOrigins__1: 'http://localhost:4200'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+      C1504_API_URL: 'http://127.0.0.1:5005'
+      Cloudinary__CloudName: 'c1504-ci-unused'
+      Cloudinary__ApiKey: 'c1504-ci-unused'
+      Cloudinary__ApiSecret: 'c1504-ci-unused'
+    steps:
+      - name: Checkout SHA
+        uses: actions/checkout@v4
+      - name: Crear claves aleatorias solo en CI
+        shell: bash
+        run: |
+          set -euo pipefail
+          pass="$(openssl rand -hex 24)"
+          jwt="$(openssl rand -hex 40)"
+          echo "::add-mask::$pass"
+          echo "::add-mask::$jwt"
+          {
+            echo "SeedAdmin__Password=$pass"
+            echo "C1504_TEST_PASSWORD=$pass"
+            echo "Jwt__Secret=$jwt"
+          } >> "$GITHUB_ENV"
+      - name: SDK .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+          cache: true
+          cache-dependency-path: backend/**/*.csproj
+      - name: Compilar API Release
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+      - name: Crear baseline MySQL 8.4 aislado
+        working-directory: backend
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+        run: |
+          set -euo pipefail
+          dotnet run --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj --configuration Release --no-build --no-launch-profile
+      - name: Levantar API real local
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          nohup dotnet run --project src/API/Solqaryn.API.csproj --configuration Release --no-build --no-launch-profile > c1504-api.log 2>&1 &
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:5005/health >/dev/null && curl --fail --silent http://127.0.0.1:5005/health/ready >/dev/null; then
+              echo 'C1504_API_READY'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat c1504-api.log >&2
+          exit 1
+      - name: Sembrar identidades CI con autoridad real en MySQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          mysql_container="$(docker ps --filter 'ancestor=mysql:8.4' --format '{{.ID}}' | head -n 1)"
+          test -n "$mysql_container"
+          docker exec -i "$mysql_container" mysql -uroot -proot solqaryn_c1504_real_ci <<'SQL'
+          INSERT INTO Empresas (Id, Nombre, Activa, FechaCreacion, FechaActualizacion)
+          VALUES (1, 'Empresa A efimera C15', TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6))
+          ON DUPLICATE KEY UPDATE Activa=TRUE, FechaActualizacion=UTC_TIMESTAMP(6);
+          INSERT INTO Empresas (Id, Nombre, Activa, FechaCreacion, FechaActualizacion)
+          VALUES (2, 'Empresa B efimera C15', TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6))
+          ON DUPLICATE KEY UPDATE Activa=TRUE, FechaActualizacion=UTC_TIMESTAMP(6);
+          INSERT INTO UsuarioEmpresas (UsuarioId, EmpresaId, RolId, Activa, FechaCreacion, FechaActualizacion)
+          SELECT u.Id, 1, u.RolId, TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)
+          FROM Usuarios u WHERE u.NombreUsuario='c1504_admin_a'
+            AND NOT EXISTS (SELECT 1 FROM UsuarioEmpresas ue WHERE ue.UsuarioId=u.Id AND ue.EmpresaId=1);
+          -- Persona B exclusivamente CI, contraseña efimera y solo Empresa 2.
+          INSERT INTO Usuarios (NombreUsuario, NombreCompleto, PasswordHash, RolId, Activo, Bloqueado, Eliminado, FechaCreacion)
+          SELECT 'c1504_admin_b', 'Empresa B efimera C15', a.PasswordHash, a.RolId, TRUE, FALSE, FALSE, UTC_TIMESTAMP(6)
+          FROM Usuarios a WHERE a.NombreUsuario='c1504_admin_a'
+            AND NOT EXISTS (SELECT 1 FROM Usuarios b WHERE b.NombreUsuario='c1504_admin_b');
+          INSERT INTO UsuarioEmpresas (UsuarioId, EmpresaId, RolId, Activa, FechaCreacion, FechaActualizacion)
+          SELECT u.Id, 2, u.RolId, TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)
+          FROM Usuarios u WHERE u.NombreUsuario='c1504_admin_b'
+            AND NOT EXISTS (SELECT 1 FROM UsuarioEmpresas ue WHERE ue.UsuarioId=u.Id AND ue.EmpresaId=2);
+          INSERT INTO Roles
+            (Nombre, NombreNormalizado, Descripcion, EsSistema, EsAdministrador, Ambito, EmpresaId, Activo, Eliminado, FechaCreacion)
+          VALUES ('Global CI C1504', 'C1504_GLOBAL_CI', 'Rol efimero para aceptacion real', 1, 1, 2, NULL, 1, 0, UTC_TIMESTAMP(6));
+          INSERT INTO Usuarios
+            (NombreUsuario, NombreCompleto, PasswordHash, RolId, Activo, Bloqueado, Eliminado, FechaCreacion)
+          SELECT 'c1504_platform_only', 'Plataforma CI', u.PasswordHash, u.RolId,
+                 TRUE, FALSE, FALSE, UTC_TIMESTAMP(6)
+          FROM Usuarios u WHERE u.NombreUsuario='c1504_admin_a';
+          INSERT INTO UsuarioRolesPlataforma (UsuarioId, RolId, Activa, FechaCreacion, FechaActualizacion)
+          SELECT u.Id, r.Id, TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)
+          FROM Usuarios u CROSS JOIN Roles r
+          WHERE u.NombreUsuario='c1504_platform_only' AND r.NombreNormalizado='C1504_GLOBAL_CI';
+          SQL
+          members="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_c1504_real_ci -Nse "SELECT COUNT(*) FROM UsuarioRolesPlataforma ur JOIN Usuarios u ON u.Id=ur.UsuarioId WHERE u.NombreUsuario='c1504_platform_only' AND ur.Activa=TRUE;")"
+          company="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_c1504_real_ci -Nse "SELECT COUNT(*) FROM UsuarioEmpresas ue JOIN Usuarios u ON u.Id=ue.UsuarioId WHERE u.NombreUsuario='c1504_admin_a' AND ue.EmpresaId=1 AND ue.Activa=TRUE;")"
+          company_b="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_c1504_real_ci -Nse "SELECT COUNT(*) FROM UsuarioEmpresas ue JOIN Usuarios u ON u.Id=ue.UsuarioId WHERE u.NombreUsuario='c1504_admin_b' AND ue.EmpresaId=2 AND ue.Activa=TRUE;")"
+          test "$members" = '1'
+          test "$company" = '1'
+          test "$company_b" = '1'
+      - name: Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm y build Angular
+        working-directory: frontend
+        run: |
+          set -euo pipefail
+          npm install --global npm@11.19.0
+          npm ci
+          npm run lint
+          npm run build:prod
+      - name: Instalar Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Levantar Angular local
+        working-directory: frontend
+        run: |
+          set -euo pipefail
+          PORT=4200 nohup npm start -- --host 127.0.0.1 --port 4200 > c1504-angular.log 2>&1 &
+          for attempt in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then
+              echo 'C1504_ANGULAR_READY'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat c1504-angular.log >&2
+          exit 1
+      - name: C15-03.M05.04 - cuatro casos de aceptacion JWT A/B reales
+        working-directory: frontend
+        run: npx playwright test e2e/c15-03-m05-04-jwt-positive.spec.ts --config=playwright.c15-04-m05-04-real.config.ts --workers=1 --retries=0
+      - name: Evidencia de fallos y capturas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c15-03-m05-04-real-jwt-positive-evidence
+          path: |
+            frontend/c1504-angular.log
+            backend/c1504-api.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 14
