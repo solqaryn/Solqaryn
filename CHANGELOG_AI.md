@@ -1,3 +1,8 @@
+## 2026-11-19 — C14-02.M06.03 | V22 DEV06 limitaciones y decisiones de seguridad
+- Se documentaron evidencias comprobables por microtarea M05.01–06, sus SHA y las limitaciones no cubiertas: BOLA/IDOR, host, archivos, jobs, cache, backup y sesiones; no se infiere certificacion de la fase completa.
+- Las pruebas con interceptores o sesiones sinteticas no acreditan JWT firmado ni HTTP/MySQL real; los checks SKIPPED, CANCELLED, FAIL o IN_PROGRESS requeridos no se consideran PASS.
+- Entrega R0 documental sin cambio de API, EF, JWT, UI, base de datos ni autorizaciones; P0/P1 globales permanecen sujetos a verificacion causal, A5 independiente y QA/main/PROD prohibidos.
+
 ## 2026-11-19 — V22 C14-02.M06.01 auditoría real vs mocks [Javier DEV01]
 - Se cotejaron seis microtareas M05.01–06 y sus A5 independientes con una matriz causal de Angular TestBed, API JWT firmado, Oracle EF MySQL 8.4, xUnit y Chromium real.
 - Se distinguen controles cliente sintéticos de integración autenticada/DB, con negativos falsables sobre 403/503, BOLA, host, archivos, jobs, caché y límites de evidencia; sin fingir P0/P1 global cero.
