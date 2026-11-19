@@ -1,3 +1,7 @@
+## 2026-11-19 — V21 C13-04.M05.05 rescate JWT real de denegaciones globales [Javier :20]
+- Suite nueva CI aislada JWT firmado ASP.NET 10/MySQL 8.4/Angular Chromium: roles A/B 403, IDOR/BOLA, anónimo y token adulterado, revocación de membresía con restauración y catálogo seguro sin escrituras. Conserva suite V19 de mocks para regresión UI.
+- Autor histórico DEV06; reparador DEV03. VALIDANDO hasta CI exact-SHA, A0–A4 completas y A5 independiente; sin QA/main/PROD, revert normal.
+
 ## 2026-11-19 — V21 C01-02.M04.02 reparación de aceptación JWT de capacidades [Javier :00, rescate DEV06]
 - Nueva suite GitHub-hosted sin mocks HTTP: plataforma JWT real sin tenant, roles de empresa A/B con 403, cabecera de tenant falsa, token adulterado, MySQL 8.4 efímero y Chromium Angular. Complementa el TestBed sintético previo.
 - Owner histórico DEV06 preservado; Scope Lock y V5 por SHA, sin atribuir PASS antes de CI ni LISTO/A5 antes de aceptación completa. No QA/main/PROD.
