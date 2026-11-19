@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C13-04.M06.06 cierre documental y matriz de gates [Javier DEV01]
+- Se reconciliaron once predecesoras M05.01–06 y M06.01–05 en LISTO con A5 independiente por ID y SHA, preservando sus autores, pruebas reales versus mocks y las limitaciones de fase.
+- Se agrego matriz pantalla/estado/accion/responsive y contraejemplos de falsos PASS, incluyendo tres fallos historicos de transferencias de inventario y ausencia de dispositivos fisicos/Core Web Vitals de campo.
+- No se cambiaron Angular, .NET, JWT, MySQL, DAG/COLA ni infraestructura: R0 documental; V17, Scope Lock y V5 exact-SHA se requieren antes de LISTO; A5 distinta posterior; no QA/main/PROD.
+
 ## 2026-11-19 — C04-04.M03.02 | V22 DEV05 cobros provider-neutral
 - Se añadió código C# real de decisión de solicitud de enlace, replay idempotente, conciliación y compensación sin ejecutar pagos ni llamadas PSP.
 - Se añadieron pruebas adversariales xUnit y job GitHub-hosted exact-SHA con TRX. La integración comercial JWT/MySQL/HTTP de la fase sigue pendiente; A5 independiente.
