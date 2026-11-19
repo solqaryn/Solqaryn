@@ -277,3 +277,8 @@ Incremento E2E contra API .NET 10, JWT firmado de plataforma y MySQL 8.4 efímer
 ## A0.48 — Observabilidad privada (DEV02 V21)
 
 Dos casos de Playwright Chromium con JWT firmado de plataforma y empresa B, API net10 y MySQL 8.4 efímero en GitHub-hosted: navegación autorizada a observabilidad-v5, un main, h1, Tab/Enter sobre revalidación GET, pantalla responsive 320/1280 y cero operaciones mutantes; para empresa B GET /plataforma/sesion 403 y guard de rechazo sin superficie privada. Sin mocks ni secretos. **38 casos esperados, no certificados hasta CI SUCCESS exact-SHA**. Solo esta superficie y test-only, NO evidencia global WCAG/roles/rutas/telemetría; H2297 EN_PROGRESO, owner DEV02, candado 2000002297, A5 independiente posterior. Rollback mediante revert normal. Solo dev.
+
+
+## A0.49 — Incidentes privados autenticados (DEV02 V21)
+
+Dos escenarios Playwright reales de respuesta a incidentes: plataforma con JWT firmado y GET 200, Tab/Enter contra revalidación, un landmark main, h1 único, aviso de ausencia de incidentes conectados, cero HTTP mutantes y anchos 320/1280. Empresa B mediante JWT real obtiene 403 de API y guard deniega vista. MySQL 8.4 efímero en GitHub-hosted, no se leen respaldos ni se ejecutan restauraciones, revocaciones o proveedores. **40 Chromium esperados**, nunca PASS anticipado. A0-A4 globales de UX, roles, WCAG/perf siguen sin certificar; C15-04.M05.04 conserva EN_PROGRESO/DEV02, candado V17 2000002297; A5 independiente cuando alcance completo. Rollback revert normal, solo dev.

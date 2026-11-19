@@ -1,3 +1,8 @@
+## 2026-11-19 — V21 C15-04.M05.04 A0.49 incidentes JWT/Chromium [Javier :10]
+- Dos casos adversariales adicionales en ruta privada de incidentes: JWT real, MySQL 8.4 efímero, Tab/Enter, cero mutaciones, ancho 320/1280 y HTTP 403 a empresa B.
+- GitHub-hosted requiere 40 Chromium, Scope Lock y V5 exact-SHA; A0–A4 globales incompletos, H2297 EN_PROGRESO DEV02, lock V17, A5 distinta pendiente.
+- Preservar changelog completo y todas las evidencias anteriores; no QA/main/PROD.
+
 ## 2026-11-19 — V21 C10-04.M06.02 version y artefactos auditables [Javier DEV01]
 - Registro documental R0 con blobs Git observados, comandos de reproduccion y alcance de evidencias, sin ejecutar ni certificar worker, JWT/HTTP o restore nuevo.
 - Preservar completo CHANGELOG_AI.md incluido rescate historico y nueva entrada DEV02 A0.48; CI exact-SHA/V5/A5 pendientes, sin QA/main/PROD.
