@@ -61,7 +61,7 @@ test('C14-02.M04.06 carga progresiva lenta oculta guía hasta revalidacion exito
   await expect(page.locator('.threat-list li')).toHaveCount(4);
   lenta = true;
   await page.getByRole('button', { name: 'Revalidar sesión de plataforma' }).click();
-  await expect(page.getByRole('status')).toContainText('Comprobando nuevamente la sesión');
+  await expect(page.locator('.threat-guide section.notice[role="status"]')).toContainText('Comprobando nuevamente la sesión');
   await expect(page.locator('.threat-list li')).toHaveCount(0);
   await expect(page.getByText(/Sesión de plataforma confirmada/)).toBeVisible();
   await expect(page.locator('.threat-list li')).toHaveCount(4);

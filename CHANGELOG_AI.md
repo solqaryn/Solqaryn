@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C14-02.M04.06 corrección del oráculo de progreso Chromium [Javier :20]
+- Repara selector ambiguo de `role=status`: exige específicamente la sección de carga de la guía, no el anuncio accesible del shell; la ejecución inicial acreditó 4/5 pruebas con único fallo de strict mode del test. No modifica componentes productivos, permisos ni contratos.
+- Nueva CI exact-SHA obligatoria con cinco Chromium, Scope Lock y V5 antes de LISTO_DEV; sin QA/main/PROD.
+
 ## 2026-11-18 — V20 C14-02.M04.06 densidad y carga progresiva de amenazas [Javier :20]
 - Agrega cinco pruebas Playwright reales en GitHub-hosted para grilla 320/768/1280, control adversarial de desborde, revalidación lenta, error 503 fail-closed y humo DOMContentLoaded 15s; no modifica runtime ni concede permisos.
 - Riesgo R2: HTTP/JWT/tenant reales NO_MEDIDO; el workflow nuevo usa cancel-in-progress=false por SHA. A0-A4 solo tras CI exacta y A5 por Task distinta de DEV03; dev estricto, sin QA/main/PROD.
