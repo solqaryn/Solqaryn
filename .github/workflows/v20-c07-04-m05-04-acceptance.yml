@@ -14,7 +14,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   aceptacion:
-    name: C07-04.M05.04 - tres casos Chromium de pedidos
+    name: C07-04.M05.04 - cuatro casos Chromium de pedidos
     runs-on: ubuntu-latest
     timeout-minutes: 40
     env:
@@ -52,7 +52,7 @@ jobs:
           done
           cat c07-04-m05-04.log >&2
           exit 1
-      - name: Tres aceptaciones E2E con respuestas simuladas explicitas
+      - name: Cuatro aceptaciones E2E y rechazo de ruta sin grant
         working-directory: frontend
         run: npx playwright test e2e/c07-04-m05-04-acceptance.spec.ts --config=playwright.config.ts --workers=1 --retries=0
       - name: Evidencia

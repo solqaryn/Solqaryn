@@ -11,3 +11,7 @@ Tres escenarios Chromium sobre la aplicación Angular real levantada en GitHub-h
 ## A4–A5
 
 Exigir GitHub Actions exact-SHA con tres Playwright Chromium reales, lint, build Angular, Scope Lock y V5; en `QUEUED/IN_PROGRESS` conservar VALIDANDO sin PASS. A5 requiere Task Javier distinta de DEV04 que inspeccione fuentes, aserciones, requisitos y pruebas, con rechazo posible. SKREF-10 Angular Developer original Google/Angular pin `6808966993bf2b2d455d9b6245e960a59a01b9a9` y testing-fundamentals consultados. Solo dev; rollback Git revert normal condicionado a no colisión; prohibido QA/main/PROD, datos reales y secretos.
+
+## Reparación CI P2 de permisos por ruta (V20)
+
+Primera ejecución Chromium: 2/3 PASS, detalle redirigió a `/perfil` porque el mock solo concedía `pedidos-venta`, mientras `permisoGuard` comprueba la ruta completa `pedidos-venta/:id`. Se corrige **únicamente el contrato del mock** para conceder ambos paths en el caso positivo y se añade un cuarto caso adversarial que mantiene exclusivamente `pedidos-venta` y exige denegación del detalle. No se modifica ni debilita el guard, ruta privada o backend; no afirmar que el backend real otorgue esa ruta sin inspeccionar su propia respuesta. CI anterior FAIL se conserva, nuevo SHA debe demostrar 4/4 reales, V5, Scope Lock y frontend.

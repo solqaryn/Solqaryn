@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C07-04.M05.04 reparación QA por ruta protegida [Javier :30]
+- CI Chromium reveló desalineación entre permisos sintéticos del test (solo ruta listado) y exigencia real del guard para `pedidos-venta/:id`; el mock positivo ahora declara ambas capacidades y un nuevo control negativo exige redirección a `/perfil` sin permiso de detalle.
+- Se conservan rutas/guardas/servidor sin cambios y el FAIL histórico. Exigir cuatro pruebas navegador, build, Scope Lock, V5 y revisión A5 independiente; no certifica JWT real ni backend/tenant/MySQL.
+
 ## 2026-11-18 — V20 C07-04.M05.02 contratos API/DTO pedidos [Javier :40]
 - Añade pruebas xUnit del controlador real para autorización/permisos declarados, Idempotency-Key 400, DTO de respuesta y prioridad del ID de ruta sobre body; CI .NET 10 dirigida y sin cancelación de otros SHA.
 - Solo tests, workflow y documentación: ninguna mutación runtime, tenant, JWT, finanzas o MySQL. A0-A4 completos y A5 independiente pendientes de evidencia real; Scope Lock STRICT dev y sin QA/main/PROD.

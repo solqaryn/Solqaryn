@@ -12,7 +12,7 @@ const item = (id:number) => ({
   detalles:[{id:70,productoId:11,productoVarianteId:21,
     productoNombreSnapshot:'Articulo de prueba',cantidad:2,precioUnitario:50.25,total:100.5}]
 });
-async function escenario(page:Page, autorizar=true) {
+async function escenario(page:Page, autorizar=true, concederDetalle=true) {
   const mutaciones:string[] = [];
   page.on('request',req=>{
     const path=new URL(req.url()).pathname;
@@ -37,7 +37,7 @@ async function escenario(page:Page, autorizar=true) {
     await route.fulfill({status:200,headers:cors,contentType:'application/json',
       body:JSON.stringify({success:true,data:{
         permisos,capacidadesHabilitadas:permisos,
-        rutasHabilitadas:autorizar?['pedidos-venta']:[],
+        rutasHabilitadas:autorizar?(concederDetalle?['pedidos-venta','pedidos-venta/:id']:['pedidos-venta']):[],
         operacionMultiEmpresaRestringida:true,esAdministrador:false
       }})});
   });
@@ -89,5 +89,15 @@ test('C07-04.M05.04 frontera: falta Ventas:Ver no habilita listado privado',asyn
   await page.goto('/pedidos-venta');
   await expect(page).not.toHaveURL(/\/pedidos-venta(?:\?|$)/);
   await expect(page.getByText('PED-47')).toHaveCount(0);
+  expect(writes).toEqual([]);
+});
+
+test('C07-04.M05.04 negativo: permiso solo listado no autoriza detalle',async({page})=>{
+  const writes=await escenario(page,true,false);
+  await page.goto('/pedidos-venta');
+  await expect(page.getByText('PED-47')).toBeVisible();
+  await page.getByRole('link',{name:'Ver pedido'}).click();
+  await expect(page).toHaveURL(/\/perfil(?:\?|$)/);
+  await expect(page.getByRole('heading',{name:'Pedido PED-47'})).toHaveCount(0);
   expect(writes).toEqual([]);
 });
