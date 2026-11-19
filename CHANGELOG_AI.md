@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C13-04.M05.06 regresion publica Chromium [DEV04]
+- Se agrega la prueba Playwright real de cinco rutas publicas en 320/768/1280, teclado Tab/Enter, overflow, reduced motion, temporizacion DCL local y negativas anonimas.
+- Evidencia automatizada por GitHub Actions exact-SHA y capturas; riesgo R2 test-only, sin cambios de runtime ni permisos. No sustituye JWT firmado, MySQL, proveedor, Core Web Vitals de campo ni la meta acumulativa de fase.
+- Task autora 6aeacb7820ac8191b7d768a6f33dfa09; revision A5 independiente pendiente. PROJECT_SCOPE_LOCK=STRICT; dev exclusivamente.
+
 ## 2026-11-19 — V22 C10-04.M06.06 cierre de dependencias auditado [DEV03]
 - Microtarea C10-04.M06.06, PLAN fila 1585: registrar cierre de alcance DEV y mapa de sucesoras sin alterar los gates calculados ni conceder permisos de QA/main/PROD; CLAIM exclusivo V17, lock SQV17_C10_04_M06_06 (2000001585), owner historico DEV03.
 - Se comprobaron las once unidades C10-04.M05.01–06 y M06.01–05 en LISTO con evidencia A5 independiente de alcance limitado; ensayos reales MySQL 8.4 efimero/rollback y Chromium no prueban un worker transaccional productivo, JWT HTTP autentico, Aiven/Cloudflare, backup cifrado ni RPO/RTO.
