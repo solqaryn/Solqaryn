@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 C03-04.M05.05 negativos de seguridad de incidentes [Javier :30]
+- Matriz real xUnit .NET 10 con 33 contrapruebas Domain y 2 controles fail-closed: tenant A/B, sucursal, JWT/RBAC fixture, revocación, versiones, restore, idempotencia y evidencia saneada; workflow dirigido exige TRX >=35 y 0 fallos/no ejecutados.
+- Solo alcance de pruebas Domain sin mutación productiva. JWT firmado, HTTP, MySQL y backup real no certificados; mantener VALIDANDO si la CI sigue en curso, A0–A4 parciales y A5 independiente. Scope Lock STRICT, dev, rollback revert normal.
+
 ## 2026-11-19 — V20 C03-04.M05.04 aceptación positiva de incidentes [Javier :00]
 - Añade xUnit Application real para lectura tenant A/B, contención/resolución preflight, errores y restore siempre denegado, con workflow GitHub Actions .NET10 y TRX >=15.
 - Resultado positivo únicamente requiere adaptador autenticado; no prueba JWT firmado/HTTP/MySQL de incidentes, mantener VALIDANDO y A5 independiente. Scope Lock STRICT dev, revert normal.

@@ -1,0 +1,44 @@
+name: V20 C03-04.M05.05 - incident security adversarial xUnit
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/Domain/C0304M0505IncidentAdversarialTests.cs'
+      - '.github/workflows/v20-c03-04-m05-05-adversarial.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v20-c0304-m0505-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  adversarial-domain:
+    name: C03-04.M05.05 - negative incident domain xUnit
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - name: Strict SOLQARYN project scope
+        run: node scripts/verify-project-scope.mjs
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Dotnet 10 Release adversarial negatives and mandatory TRX readback
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj -c Release --filter 'FullyQualifiedName~C0304M0505IncidentAdversarialTests' --logger 'trx;LogFileName=c0304-m0505.trx' --logger 'console;verbosity=normal'
+          python3 - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree as ET
+          matches = list(Path('tests/Solqaryn.Tests/TestResults').rglob('c0304-m0505.trx'))
+          assert matches, 'No real C03-04.M05.05 TRX file'
+          root = ET.parse(matches[-1]).getroot()
+          counters = next((e.attrib for e in root.iter() if e.tag.endswith('Counters')), None)
+          assert counters is not None, 'Missing TRX counters'
+          assert int(counters['executed']) >= 35, counters
+          assert int(counters['passed']) >= 35, counters
+          assert int(counters['failed']) == 0, counters
+          assert int(counters['notExecuted']) == 0, counters
+          print('C0304_M0505_ADVERSARIAL_DOMAIN_PASS=TRUE')
+          PY
