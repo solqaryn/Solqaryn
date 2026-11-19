@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 C14-02.M05.05 pruebas negativas de seguridad [Javier :00]
+- Añade xUnit adversarial Application/Domain (BOLA/IDOR siete superficies, spoofing tenant, sucursal, host, archivo, job, caché/revocación, backup, sesión y SHA) y workflow .NET 10/TRX >=18 sin omisiones.
+- R2 incompleto: fixtures no equivalen a HTTP/JWT firmado/MySQL real; conservar VALIDANDO, A0–A4 y A5 de otra Task. Scope Lock STRICT, dev solamente, rollback git revert.
+
 ## 2026-11-19 — V20 C14-02.M05.04 aceptación positiva Application preflight [Javier :40]
 - Agrega nueve casos xUnit (seis superficies positivas, job con grant/idempotencia, sucursal cruzada y restore denegado) y CI .NET 10 Release con TRX; el preflight no concede acceso y no sustituye JWT/HTTP/MySQL real.
 - Mantener VALIDANDO hasta A0–A4 R2 completos y A5 independiente; Scope Lock STRICT, rollback git revert, sin QA/main/PROD.
