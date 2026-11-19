@@ -121,4 +121,41 @@ test.describe('C15-03.M05.05 — negativa JWT y tenancy HTTP real', () => {
     await expect(page).toHaveURL(/\/login\?plataforma=denegado/);
     expect(mutations).toEqual([]);
   });
+  test('sucursales: consulta positiva A/B y rechazo de filtro extranjero', async ({ page, request }) => {
+    for (const [usuario, propia, ajena] of [
+      ['c1504_admin_a', 1, 2], ['c1504_admin_b', 2, 1]
+    ] as const) {
+      const jwt = await ingresar(page, usuario);
+      const headers = { Authorization: 'Bearer ' + jwt, 'X-Empresa-Id': String(propia) };
+      const own = await request.get(api + '/sucursales/activas?empresaId=' + propia, { headers });
+      expect(own.status(), 'consulta sucursal propia debe autorizarse').toBe(200);
+      const foreign = await request.get(api + '/sucursales/activas?empresaId=' + ajena, { headers });
+      expect([403, 404], 'no enumerar sucursal tenant ajeno').toContain(foreign.status());
+    }
+  });
+
+  test('recurso tenant y archivo: A no lee ni sube logo para B', async ({ page, request }) => {
+    const jwt = await ingresar(page, 'c1504_admin_a');
+    const headers = { Authorization: 'Bearer ' + jwt, 'X-Empresa-Id': '1' };
+    const own = await request.get(api + '/empresa-configuracion/tenant/1', { headers });
+    expect(own.status(), 'configuracion propia es accesible').toBe(200);
+    const foreign = await request.get(api + '/empresa-configuracion/tenant/2', { headers });
+    expect([403, 404], 'configuracion de B prohibida').toContain(foreign.status());
+    // Solo API y MySQL efimeros; no contactar storage ni modificar archivo externo.
+    const denied = await request.post(api + '/empresa-configuracion/tenant/2/logo', {
+      headers, multipart: { logo: { name: 'test.png', mimeType: 'image/png',
+        buffer: Buffer.from('CI-only-invalid-png') } }
+    });
+    expect([403, 404], 'archivo de otro tenant denegado antes de storage').toContain(denied.status());
+  });
+
+  test('job/control plane: admin empresa B no lee evidencias QA globales', async ({ page, request }) => {
+    const jwt = await ingresar(page, 'c1504_admin_b');
+    const headers = { Authorization: 'Bearer ' + jwt, 'X-Empresa-Id': '2' };
+    const denied = await request.get(api +
+      '/plataforma/gestion/qa/evidencias/ab70b055b3c8bb10b11a5088b5e82d69e74bdbc4', { headers });
+    expect(denied.status(), 'sin autoridad global no hay acceso al job SHA').toBe(403);
+    const global = await request.get(api + '/plataforma/sesion', { headers });
+    expect(global.status(), 'empresa B no es plataforma').toBe(403);
+  });
 });

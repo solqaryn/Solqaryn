@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 C15-03.M05.05 regresiones A5_FAIL P2 [Javier :20]
+- Tres negativos adicionales de JWT firmado/MySQL efímero/Chromium sobre sucursales A/B, configuración e intento de logo extranjero y evidencia CI global; ocho casos dirigidos esperados, sin cambiar servicios productivos.
+- Preservado A5_FAIL DEV05; CI exact-SHA y revisión A5 independiente posteriores. Sin falsear PASS ni habilitar QA/PROD.
+
 ## 2026-11-19 — V20 C03-04.M05.01 matriz de reglas Domain de incidentes [Javier :00]
 - Agrega xUnit real de Domain para lectura, contención, resolución, denegación tenant/sucursal, autoridad JWT/RBAC, revocación, idempotencia, versión, restore y errores, con CI .NET 10 y TRX >=20.
 - Fixtures no prueban JWT firmado, HTTP ni MySQL/recovery real; mantener VALIDANDO y A5 ajena hasta A0–A4 completos. Scope Lock STRICT, solo dev, rollback normal.

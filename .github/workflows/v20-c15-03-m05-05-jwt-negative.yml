@@ -1,4 +1,4 @@
-name: V20 C15-03.M05.05 - denegacion JWT real MySQL tenancy AB
+name: V20 C15-03.M05.05 - negativos JWT propiedad recursos y QA
 on:
   push:
     branches: [dev]
@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   jwt-private-browser:
-    name: C15-03.M05.05 - 5 negativos JWT real MySQL tenancy A/B
+    name: C15-03.M05.05 - 8 negativos JWT MySQL y ownership
     runs-on: ubuntu-latest
     timeout-minutes: 60
     services:
@@ -178,7 +178,7 @@ jobs:
           done
           cat c1504-angular.log >&2
           exit 1
-      - name: C15-03.M05.05 - cinco casos negativos JWT MySQL A/B
+      - name: C15-03.M05.05 - ocho casos negativos JWT MySQL A/B
         working-directory: frontend
         run: npx playwright test e2e/c15-03-m05-05-jwt-negative.spec.ts --config=playwright.c15-04-m05-04-real.config.ts --workers=1 --retries=0
       - name: Evidencia de fallos y capturas
