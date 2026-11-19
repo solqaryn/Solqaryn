@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C14-04.M06.06 cierre documental DEV condicionado [Javier :20]
+- Matriz de 6 M05 y 5 M06 LISTO+A5 genuinas, con SHA y limites de pruebas; cierre documental solo DEV sin permiso de salida comercial, JWT HTTP, MySQL live ni metricas RPO/RTO no medidas.
+- Gates dinamicos DAG/COLA y candado V17 con CAS/readback; exigir Scope Lock y V5 exact-SHA para LISTO y A5 de otra Task. Sin cambios runtime, QA/main/PROD ni autorizacion R3.
+
 ## 2026-11-18 — C15-04.M05.04 A0.41.1 correccion P2 de regex Chromium [Javier Task :10]
 - Reparacion minima de un escape duplicado en la regex de redireccion a login dentro de A0.41, comprobado por GitHub Actions job 135236273146 con SyntaxError antes de ejecutar tests; conserva 27 escenarios y negativos JWT de tenant A/B.
 - CI exact-SHA requerida sin presumir PASS; no modifica runtime, producto ni datos; R2 UX/WCAG/rendimiento global y A5 ajena pendientes, candado legitimo V17 conservado.
