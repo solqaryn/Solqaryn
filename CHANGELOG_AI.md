@@ -1,3 +1,7 @@
+## 2026-11-18 - V20 C15-02.M04.03 branding local seguro [Javier :30]
+- Configuracion visual de marca institucional/neutra y densidad regular/compacta mediante allowlist inmutable; getter adversarial, Proxy revocado, arrays y CSS arbitrario nunca elevan permisos.
+- Vitest, Chromium responsive y 403, CI GitHub-hosted y revision A5 separada; ninguna conexion real de JWT, MySQL, Cloudflare o R2 ni despliegue.
+
 ## 2026-11-18 — V20 C15-02.M04.04 navegación y doble acción privada [Javier :20]
 - Cuatro E2E Playwright Chromium: acceso anónimo/403/Empresa, Tab+Enter reales, responsive 320–1280, cero operaciones mutantes o duplicadas; sin cambios de autorización ni API.
 - CI dirigida GitHub-hosted exact-SHA y contrato A0–A5; sesiones sintéticas no certifican JWT/MySQL real, A5, QA/main ni PROD.

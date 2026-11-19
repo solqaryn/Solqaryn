@@ -13,6 +13,41 @@ export interface C1502Superficie {
  */
 export const C1502_SUPERFICIES_FUENTE = new InjectionToken<() => Promise<readonly C1502Superficie[]>>('C1502SuperficiesFuente');
 
+/** V20 M04.03: entrada de branding puramente visual, sin CSS arbitrario ni elevacion de permisos. */
+export type C1502Marca = 'institucional' | 'neutra';
+export type C1502Densidad = 'regular' | 'compacta';
+export interface C1502Presentacion {
+  readonly marca: C1502Marca;
+  readonly densidad: C1502Densidad;
+}
+export const C1502_PRESENTACION = new InjectionToken<unknown>('C1502PresentacionLocal');
+const C1502_PRESENTACION_DEFAULT: C1502Presentacion = Object.freeze({
+  marca: 'institucional', densidad: 'regular'
+});
+const C1502_PRESENTACION_NEUTRA: C1502Presentacion = Object.freeze({
+  marca: 'neutra', densidad: 'regular'
+});
+export function normalizarC1502Presentacion(input: unknown): C1502Presentacion {
+  if (input === null || input === undefined) return C1502_PRESENTACION_DEFAULT;
+  if (typeof input !== 'object') return C1502_PRESENTACION_NEUTRA;
+  let marca: unknown;
+  let densidad: unknown;
+  try {
+    if (Array.isArray(input)) return C1502_PRESENTACION_NEUTRA;
+    // Capturar valores una sola vez para evitar getter que cambie entre validacion y uso.
+    marca = Reflect.get(input, 'marca');
+    densidad = Reflect.get(input, 'densidad');
+  } catch {
+    return C1502_PRESENTACION_NEUTRA;
+  }
+  if ((marca !== 'institucional' && marca !== 'neutra') ||
+      (densidad !== 'regular' && densidad !== 'compacta')) {
+    return C1502_PRESENTACION_NEUTRA;
+  }
+  return Object.freeze({ marca, densidad });
+}
+
+
 /**
  * C15-02.M04.01 — solo presenta contratos de revisión documental DEV.
  * Esta pantalla NO conecta infra, no lee secretos y no concede permisos.
@@ -24,9 +59,13 @@ export const C1502_SUPERFICIES_FUENTE = new InjectionToken<() => Promise<readonl
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <section class="review" aria-labelledby="review-title" data-testid="c1502-review">
+    <section class="review" aria-labelledby="review-title" data-testid="c1502-review"
+      [class.review-neutral]="presentacion.marca === 'neutra'"
+      [class.review-compacta]="presentacion.densidad === 'compacta'"
+      [attr.data-marca]="presentacion.marca"
+      [attr.data-densidad]="presentacion.densidad">
       <header>
-        <p class="eyebrow">SOLQARYN · DEV · arquitectura</p>
+        <p class="eyebrow">{{ presentacion.marca === 'institucional' ? 'SOLQARYN' : 'Referencia' }} · DEV · arquitectura</p>
         <h1 id="review-title">Revisión de arquitectura e integraciones</h1>
         <p>Inventario de evidencias requeridas, no comprobaciones productivas ejecutadas.</p>
         <a routerLink="/plataforma" aria-label="Volver a plataforma">Volver a plataforma</a>
@@ -74,6 +113,9 @@ export const C1502_SUPERFICIES_FUENTE = new InjectionToken<() => Promise<readonl
     :host { display:block; min-width:0; }
     .review { box-sizing:border-box; width:min(calc(100% - 2rem),72rem); margin:0 auto; padding:clamp(1rem,3vw,2.25rem) 0 3rem; }
     .eyebrow { font-weight:700; color:var(--mat-sys-primary,#125b8a); }
+    .review-neutral .eyebrow { color:var(--mat-sys-on-surface,#263442); }
+    .review-compacta .cards li { padding:.75rem; }
+    .review-compacta .cards { gap:.65rem; }
     h1 { font-size:clamp(1.5rem,3.5vw,2.25rem); line-height:1.2; }
     h2 { margin-top:1.5rem; }
     h3 { margin:.1rem 0 .5rem; font-size:1.08rem; }
@@ -92,6 +134,7 @@ export class C1502RevisionArquitecturaComponent {
   private readonly plataforma = inject(PlataformaSesionService);
   private readonly fuente = inject(C1502_SUPERFICIES_FUENTE, { optional: true });
   private readonly destroyRef = inject(DestroyRef);
+  readonly presentacion = normalizarC1502Presentacion(inject(C1502_PRESENTACION, { optional: true }));
   private versionLectura = 0;
 
   readonly superficies: readonly C1502Superficie[] = [
