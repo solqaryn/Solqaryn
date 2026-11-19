@@ -1,3 +1,7 @@
+## 2026-11-19 — V21 C10-04.M06.02 version y artefactos auditables [Javier DEV01]
+- Registro documental R0 con blobs Git observados, comandos de reproduccion y alcance de evidencias, sin ejecutar ni certificar worker, JWT/HTTP o restore nuevo.
+- Preservar completo CHANGELOG_AI.md incluido rescate historico y nueva entrada DEV02 A0.48; CI exact-SHA/V5/A5 pendientes, sin QA/main/PROD.
+
 ## 2026-11-19 — V21 C15-04.M05.04 A0.48 observabilidad JWT real [Javier :10]
 - Dos casos nuevos Playwright/Chromium en observabilidad protegida: JWT real, MySQL 8.4 efímero, Tab/Enter, responsive 320/1280 y denegación HTTP 403 a empresa B.
 - GitHub Actions debe demostrar 38 Chromium y Scope Lock/V5 exact-SHA, sin tratar CI pendiente como PASS.
