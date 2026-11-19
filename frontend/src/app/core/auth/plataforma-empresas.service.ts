@@ -38,6 +38,11 @@ export class PlataformaEmpresasService {
             !Number.isSafeInteger(respuesta.data.tamano) ||
             respuesta.data.tamano < 1 || respuesta.data.tamano > 50 ||
             respuesta.data.items.length > respuesta.data.tamano ||
+            respuesta.data.pagina !== pagina ||
+            respuesta.data.tamano !== tamano ||
+            (respuesta.data.items.length > 0 &&
+              respuesta.data.pagina - 1 >
+                Math.floor((respuesta.data.total - respuesta.data.items.length) / respuesta.data.tamano)) ||
             respuesta.data.total < respuesta.data.items.length ||
             new Set(respuesta.data.items.map(e => e.id)).size !== respuesta.data.items.length ||
             typeof respuesta.data.puedeCrear !== 'boolean' ||

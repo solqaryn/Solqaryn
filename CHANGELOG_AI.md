@@ -1,3 +1,8 @@
+## 2026-11-19 — V20 C05-04.M05.02 reparación A5 P2 paginación DTO [Javier :40]
+- Corrige validación fail-closed del directorio Angular: pagina/tamano coinciden con la petición y ninguna página con elementos excede el total.
+- Agrega cuatro rechazos adversariales y aceptación de página posterior vacía con HttpTestingController; sin cambios en endpoints, JWT/RBAC, backend o MySQL.
+- Conserva el A5_FAIL histórico y exige GitHub Actions exact-SHA y A5 independiente nueva; sin QA/main/PROD.
+
 ## 2026-11-19 — V20 C15-05.M05.02 pruebas directas servicio de auditoria (A1) [Javier :30]
 - Completa regresion no-HTTP de AuditoriaService: ocho paginas/tamanos invalidos, filtro nulo y borde permitido, verificando cero consultas al repositorio cuando procede. Los 20 casos previos no ejercitaban esta defensa.
 - Workflow CI dirigido actualizado a 30 tests xUnit TRX obligatorios, sin omitir controles ni relajar JWT/RBAC. A0-A4 final y A5 independiente pendientes de evidencia; no MySQL real ni QA/main/PROD.

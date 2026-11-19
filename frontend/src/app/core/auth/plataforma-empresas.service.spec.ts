@@ -103,6 +103,39 @@ describe('Microfase 4 — directorio global de empresas', () => {
     }
   });
 
+  it('C05-04.M05.02 A5 P2: rechaza pagina, tamano u offset ajenos a la peticion', () => {
+    const item = { id: 71, nombre: 'Empresa B', activa: false, usuariosActivos: 0 };
+    const valid = { items: [item], pagina: 2, tamano: 50, total: 51, puedeCrear: false };
+    const invalid = [
+      { ...valid, pagina: 1 },
+      { ...valid, tamano: 25 },
+      { ...valid, total: 50 },
+      { ...valid, total: 1 }
+    ];
+    for (const data of invalid) {
+      let accepted = false;
+      let rejected = false;
+      servicio.listar(2, 50).subscribe({
+        next: () => { accepted = true; },
+        error: () => { rejected = true; }
+      });
+      const req = http.expectOne(r => r.url === endpoint);
+      expect(req.request.params.get('pagina')).toBe('2');
+      expect(req.request.params.get('tamano')).toBe('50');
+      req.flush({ success: true, data });
+      expect(accepted).toBe(false);
+      expect(rejected).toBe(true);
+    }
+  });
+
+  it('C05-04.M05.02 A5 P2: permite pagina vacia posterior sin inventar registros', () => {
+    let received: unknown;
+    servicio.listar(2, 50).subscribe(value => { received = value; });
+    const empty = { items: [], pagina: 2, tamano: 50, total: 50, puedeCrear: false };
+    http.expectOne(r => r.url === endpoint).flush({ success: true, data: empty });
+    expect(received).toEqual(empty);
+  });
+
   it('C05-04.M05.02: HTTP 403 y 503 nunca producen directorio ni grant positivo', () => {
     for (const status of [403, 503]) {
       let leaked = false;
