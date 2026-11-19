@@ -1,0 +1,39 @@
+name: V20 C02-01.M04.02 - estados seguros de contexto empresarial
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/src/app/core/auth/tenant-selector.component.ts'
+      - 'frontend/src/app/core/auth/tenant-selector.component.spec.ts'
+      - '.github/workflows/v20-c02-01-m04-02-tenant-states.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v20-c0201-m0402-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  tenant-states:
+    name: C02-01.M04.02 - TestBed tenant A/B, lint, build
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Npm institucional
+        run: npm install --global npm@11.19.0
+      - name: Dependencias reproducibles
+        run: npm ci
+      - name: Estado de empresas reales y denegacion
+        run: npm test -- --no-watch --no-progress --include=src/app/core/auth/tenant-selector.component.spec.ts --include=src/app/core/auth/tenant-context.service.spec.ts
+      - name: Tipado y build Angular
+        run: |
+          npm run lint
+          npm run build:prod

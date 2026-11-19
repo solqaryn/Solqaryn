@@ -1,3 +1,8 @@
+## 2026-11-19 — V20 C02-01.M04.02 estados de acceso empresarial fail-closed [Javier :40]
+- Corrige el selector Angular para contexto de 0 empresas (denegación), 1 empresa (verificación server-side silenciosa) y 2+ empresas (elección explícita), descartando preferencias obsoletas sin conceder tenant desde localStorage.
+- TestBed adversarial incluye 403, listado duplicado, ausencia de membresías y validación de que no hay confirmación antes de HTTP; workflow exact-SHA Node 24 + lint + build.
+- R2: JWT firmado, tenant A/B con MySQL y aceptación global no se certifican por mocks. VALIDANDO hasta CI causal y A0–A4 completos; A5 externa. Sin cambiar QA/main/PROD.
+
 ## 2026-11-19 — V21 C02-01.M04.01 invalida lista empresarial A/B obsoleta [Javier :20]
 - Rescate cruzado de VALIDANDO DEV04: al solicitar otra empresa se revocan los IDs de membresias anteriores, evitando que la UI muestre Cambiar empresa tras confirmar B sin nueva lectura autenticada.
 - Regresion Angular de contexto A→B, N=1/N=2, respuesta anterior y limpieza; comprobacion GitHub-hosted por SHA requerida antes de certificar. Conservar owner DEV04; A5 independiente distinto de DEV04/DEV03, Scope Lock STRICT; no QA/main/PROD.

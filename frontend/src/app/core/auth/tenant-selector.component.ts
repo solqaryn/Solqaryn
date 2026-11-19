@@ -111,6 +111,12 @@ export class TenantSelectorComponent implements OnInit {
           // El ID recordado no tiene autoridad ni puede seleccionar una empresa
           // que ya no está en la lista vigente del actor JWT.
           if (!this.empresaValida()) this.empresaId = null;
+          // Unica membresia server-side: no forzar selector manual,
+          // pero exigir la confirmacion HTTP antes de emitir confirmado.
+          if (this.empresaId === null && empresas.length === 1) {
+            this.empresaId = empresas[0].empresaId;
+          }
+          // Dos o mas membresias sin preferencia vigente requieren eleccion.
           if (this.empresaValida()) this.activarEmpresa();
         },
         error: () => {
