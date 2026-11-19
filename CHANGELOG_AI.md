@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 C04-04.M02.06 contrato de salida documental del lote de cobros [Javier :20]
+- Se ordenan fuentes M01/M02 con A5 independiente, requisitos E01–E05, seis interfaces futuras M03 y ocho pares positivos/negativos FUTUROS_NO_EJECUTADOS, preservando la corrección P2 de unicidad durable y digest separado.
+- Diseño exclusivamente documental; no MySQL, pasarela de pago, webhooks reales ni QA/main/PROD. M02.06 requiere CI exact-SHA y A5 por otra Task Javier; el DAG no se fuerza. Revert normal.
+
 ## 2026-11-19 — V20 C15-04.M05.04 A0.46.1 foco real Tab en consola [Javier :10]
 - GitHub Actions SHA 72c3c347: C02 consola Chromium 12/13 PASS, un FAIL de Tab porque Inventario precedía a Revalidar; conserva test adversarial real y corrige el orden de foco de navegación sin tocar autenticación ni controles.
 - Nuevo SHA reproduce C02 Vitest+Chromium y 35 escenarios A0.46 JWT/MySQL/Chromium; hasta resultados completados no certificar PASS. Global A0-A4 y A5 independiente pendientes; owner DEV02 EN_PROGRESO, V17 lock 2000002297, solo dev.
