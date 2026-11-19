@@ -22,3 +22,9 @@ Conservar VALIDANDO mientras CI externa siga QUEUED/IN_PROGRESS. Requiere check 
 - A3: el runner reutiliza el laboratorio aislado MySQL/ASP.NET/Angular previamente validado por C15; test dirigido, logs TRX/JUnit, compilación Release, lint, build y Chromium. No toca MySQL productivo, Aiven, Cloudinary real ni QA/main/PROD.
 - A4: exigir SHA publicado y check-runs GHA completed/success de este workflow, Scope Lock, V5, frontend, backend y seguridad pertinentes. Si en cola, fallido o cancelado, conservar VALIDANDO sin atribuir PASS; readback GitHub/PLAN/BITACORA antes de considerar cierre.
 - A5: una tercera Task Javier (no DEV01 autor ni DEV02 reparador) debe revisar cambios y evidencia cuando A0–A4 de la **unidad completa** estén satisfechos. El proveedor real y la cobertura global de superficies M04 permanecen NO_CERTIFICADOS por este incremento; conservar historial P1/P2 y VALIDANDO hasta completar la aceptación. Rollback por git revert ordinario sin fuerza.
+
+## V21 — Reparacion dirigida de CI por instalacion Chromium (19 noviembre 2026)
+
+- Diagnostico causal: el workflow `v21-c14-01-m04-03-real-branding.yml`, SHA fuente `90ae8a8b80b88b3dd6888a4d6ef2525c6301a687`, run `44523489248`, job `135557880732`, concluyo FAILURE en el paso **Instalar Chromium**, antes de ejecutar los tres casos de aceptacion reales. No fue un PASS ni evidencia de que los tests hayan fallado.
+- Hipotesis verificable P2: fallo temporal de resolucion/descarga de dependencias Ubuntu APT. Reintentos maximos tres, espaciados 15/30 segundos, sin omitir `--with-deps`, sin desactivar controles; agotados los intentos el job falla. El nuevo SHA exige readback de CI exacta para saber si se corrigio. Esta reparacion **NO** certifica proveedor real de branding, alcance global M04, A0–A4 ni A5.
+- Sin modificaciones a runtime productivo, endpoints, JWT, RBAC, EF, MySQL, secretos o QA/main/PROD. Rollback: revert Git normal del commit de reparacion tras verificar HEAD.

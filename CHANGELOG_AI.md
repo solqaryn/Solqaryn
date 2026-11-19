@@ -1,3 +1,7 @@
+## 2026-11-19 — V21 C14-01.M04.03 retry Chromium apt [Javier DEV01, autor historico]
+- Reparacion P2 del workflow de Chromium: job 135557880732 en SHA 90ae8a8b fallo en la instalacion de browser/dependencias; tres intentos maximos con pausa y fail-closed, sin omitir --with-deps ni relajar pruebas.
+- CI GitHub-hosted por nuevo SHA, A0–A4 y A5 independiente pendientes de nueva evidencia; no autoriza proveedor de marca real, QA/main/PROD ni cambios de secretos.
+
 ## 2026-11-19 — V21 C15-02.M04.05 oráculo WCAG causal [Javier :40]
 - Reparación cruzada P2: sustituye control negativo constante por comprobación con la misma función sRGB, añade negativo alfa cero y referencia 21:1, evalúa las cinco tarjetas en Chromium 320/1280.
 - Test-only DEV, owner histórico DEV01 preservado, reparación previa DEV03 preservada; CI, Scope Lock y V5 exact-SHA pendientes. Sin certificación JWT/tenant/WCAG global ni A5; sin QA/main/PROD.

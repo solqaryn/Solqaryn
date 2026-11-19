@@ -162,9 +162,26 @@ jobs:
           npm ci
           npm run lint
           npm run build:prod
-      - name: Instalar Chromium
+      # V21: un mirror APT de ubuntu-latest puede devolver fallo transitorio
+      # al resolver fuentes/paquetes Chromium. Reintentos ACOTADOS,
+      # manteniendo dependencias reales obligatorias y sin falsear PASS.
+      - name: Instalar Chromium con diagnostico y reintento acotado
         working-directory: frontend
-        run: npx playwright install --with-deps chromium
+        shell: bash
+        run: |
+          set -euo pipefail
+          for attempt in 1 2 3; do
+            echo "C14_CHROMIUM_DEPENDENCIES_ATTEMPT=${attempt}"
+            if npx playwright install --with-deps chromium; then
+              echo "C14_CHROMIUM_DEPENDENCIES_READY"
+              exit 0
+            fi
+            if [ "$attempt" -eq 3 ]; then
+              echo "::error::Chromium y dependencias reales fallaron en tres intentos; mantener VALIDANDO."
+              exit 1
+            fi
+            sleep "$((attempt * 15))"
+          done
       - name: Levantar Angular local
         working-directory: frontend
         run: |
