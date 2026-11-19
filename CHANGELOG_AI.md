@@ -1,3 +1,7 @@
+## 2026-11-19 — V21 C14-02.M05.03 regresión MySQL tenant B y bloqueo persistente [Javier :50]
+- Amplía suite xUnit Category=Integration sobre MySQL 8.4 real efímero: usuario y rol empresarial B con denegación de autoridad global, nombre suplantado, bloqueo y eliminación lógica persistidos entre conexiones, restauración solo del fixture y revocación de rol. Sin modificar runtime, migraciones ni permisos.
+- GitHub-hosted exact-SHA, Scope Lock/V5 y 0 FAIL obligatorios antes de acreditar el incremento. Mantener VALIDANDO y A5 pendiente: no se certifican JWT firmado, HTTP BOLA/IDOR, archivos/jobs/host ni P0/P1 globales. Rollback git revert; dev exclusivamente.
+
 ## 2026-11-19 — V21 C02-01.M04.01 menu JWT real N1/N2 [Javier :30]
 - Pruebas Chromium con API .NET 10, JWT firmado y MySQL 8.4 efimero para usuarios A, B y A+B: menu condicional N1/N2, tenant falso 403 y revocacion real B en SQL.
 - Nuevo workflow exact-SHA con dos fases de CI y prueba negativa de revocacion; propietario historico y A5 independiente intactos. No QA/main/PROD; no atribuir PASS hasta completar checks.

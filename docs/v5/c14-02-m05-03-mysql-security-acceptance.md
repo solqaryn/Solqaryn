@@ -20,3 +20,9 @@ El filtro Category=Integration es real: TRX debe contener al menos 3 casos ejecu
 ## A4-A5
 
 Revisar SHA exacto, GitHub Actions job .NET 10/MySQL efímero, Scope Lock, V5/procedencia, backend/security pertinente, readback PLAN/COLA/DAG y BITACORA. QUEUED/IN_PROGRESS/CANCELLED/SKIPPED/FAILED nunca son PASS de prueba requerida. A5 por una Task Javier distinta del autor DEV06 y cualquier reparador; no autoprobar. Sin QA/main/PROD, Aiven real, cuentas externas, cambios de RRULE, secretos ni deploy.
+
+## V21 — ampliación real de integración MySQL A/B y revocación de cuenta (19-11-2026)
+
+Se añaden al MISMO ensayo `[Trait(Category,Integration)]` con Oracle EF Core y servicio MySQL 8.4 efímero, sin tocar runtime ni permisos: un rol y usuario empresarial B persistidos y aislados de A; las identidades A/B deben ser rechazadas como autoridad global incluso al suplantar el nombre de plataforma. El usuario de plataforma se bloquea, se consulta desde otra conexión (denegado), se marca eliminado lógicamente (denegado) y se restaura únicamente en la base de laboratorio para verificar que cada transición proviene de MySQL actual. Al final sigue exigiéndose revocación de rol global desde otra conexión. El job GitHub-hosted del nuevo SHA ejecuta los mismos tests Category=Integration y TRX con 0 fallos; los nuevos asserts no son simulación ni PASS hasta CI.
+
+**Pendiente explícito:** este incremento NO implementa JWT firmado, autorización HTTP de archivos/jobs/host, BOLA/IDOR extremo a extremo, restauración comercial o cierre global P0/P1. H=VALIDANDO y owner histórico DEV06 permanecen intactos hasta completar A0–A4 del requisito institucional. A5 por otra Task Javier independiente. Rollback normal de Git; no QA/main/PROD ni datos productivos.

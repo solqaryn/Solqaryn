@@ -54,9 +54,10 @@ public sealed class C1402M0503MySqlThreatScopeIntegrationTests
             .Options;
         const string platformName = "v20-c1402-global";
         const string companyName = "v20-c1402-company";
+        const string companyBName = "v21-c1402-company-B";
         try
         {
-            int platformId, companyId, secondRoleId;
+            int platformId, companyId, companyBId, secondRoleId;
             await using (var db = new AppDbContext(options))
             {
                 await Phase7MySqlTestDatabase.InitializeFreshAsync(db);
@@ -80,7 +81,12 @@ public sealed class C1402M0503MySqlThreatScopeIntegrationTests
                     Ambito = AmbitoAutorizacion.Empresa, EmpresaId = tenantA.Id,
                     EsSistema = false, EsAdministrador = true, Activo = true
                 };
-                db.Roles.AddRange(platformRole, secondRole, companyRole);
+                var companyBRole = new Rol {
+                    Nombre = "C1402 Company B", NombreNormalizado = "C1402_COMPANY_B",
+                    Ambito = AmbitoAutorizacion.Empresa, EmpresaId = tenantB.Id,
+                    EsSistema = false, EsAdministrador = true, Activo = true
+                };
+                db.Roles.AddRange(platformRole, secondRole, companyRole, companyBRole);
                 await db.SaveChangesAsync();
                 secondRoleId = secondRole.Id;
                 var platform = new Usuario {
@@ -91,12 +97,19 @@ public sealed class C1402M0503MySqlThreatScopeIntegrationTests
                     NombreUsuario = companyName, NombreCompleto = "Company fixture",
                     PasswordHash = "non-authenticatable-fixture", RolId = companyRole.Id, Activo = true
                 };
-                db.Usuarios.AddRange(platform, company);
+                var companyB = new Usuario {
+                    NombreUsuario = companyBName, NombreCompleto = "Company B fixture",
+                    PasswordHash = "non-authenticatable-fixture",
+                    RolId = companyBRole.Id, Activo = true
+                };
+                db.Usuarios.AddRange(platform, company, companyB);
                 await db.SaveChangesAsync();
                 platformId = platform.Id;
                 companyId = company.Id;
+                companyBId = companyB.Id;
                 db.Set<UsuarioRolPlataforma>().Add(new UsuarioRolPlataforma(platformId, platformRole.Id));
                 db.Set<UsuarioEmpresa>().Add(new UsuarioEmpresa(companyId, tenantA.Id, companyRole.Id));
+                db.Set<UsuarioEmpresa>().Add(new UsuarioEmpresa(companyBId, tenantB.Id, companyBRole.Id));
                 await db.SaveChangesAsync();
                 Assert.Empty(await db.UsuarioEmpresas.IgnoreQueryFilters()
                     .Where(x => x.UsuarioId == platformId).ToListAsync());
@@ -108,6 +121,8 @@ public sealed class C1402M0503MySqlThreatScopeIntegrationTests
                 Assert.NotNull(allowed);
                 Assert.Equal(platformId, allowed!.UsuarioId);
                 Assert.Null(await ScopeAsync(db, companyId, companyName));
+                Assert.Null(await ScopeAsync(db, companyBId, companyBName));
+                Assert.Null(await ScopeAsync(db, companyBId, platformName));
                 Assert.Null(await ScopeAsync(db, platformId, companyName));
                 Assert.Null(await ScopeAsync(db, platformId, platformName, false));
             }
@@ -129,6 +144,36 @@ public sealed class C1402M0503MySqlThreatScopeIntegrationTests
                 Assert.Equal(1, await db.Set<UsuarioRolPlataforma>().IgnoreQueryFilters()
                     .CountAsync(x => x.UsuarioId == platformId && x.Activa));
             }
+            // Persisted account lock and soft deletion must deny global authority
+            // across separate DbContext instances; no JWT claim can override SQL.
+            await using (var db = new AppDbContext(options))
+            {
+                var user = await db.Usuarios.IgnoreQueryFilters()
+                    .SingleAsync(x => x.Id == platformId);
+                user.Bloqueado = true;
+                await db.SaveChangesAsync();
+            }
+            await using (var db = new AppDbContext(options))
+                Assert.Null(await ScopeAsync(db, platformId, platformName));
+            await using (var db = new AppDbContext(options))
+            {
+                var user = await db.Usuarios.IgnoreQueryFilters()
+                    .SingleAsync(x => x.Id == platformId);
+                user.Bloqueado = false;
+                user.Eliminado = true;
+                await db.SaveChangesAsync();
+            }
+            await using (var db = new AppDbContext(options))
+                Assert.Null(await ScopeAsync(db, platformId, platformName));
+            await using (var db = new AppDbContext(options))
+            {
+                var user = await db.Usuarios.IgnoreQueryFilters()
+                    .SingleAsync(x => x.Id == platformId);
+                user.Eliminado = false;
+                await db.SaveChangesAsync();
+            }
+            await using (var db = new AppDbContext(options))
+                Assert.NotNull(await ScopeAsync(db, platformId, platformName));
             await using (var db = new AppDbContext(options))
             {
                 var assignment = await db.Set<UsuarioRolPlataforma>().IgnoreQueryFilters()
