@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C15-01.M05.05 regresiones negativas de guardas [Javier :30]
+- Añade auditoría real de fuentes Angular y ocho mutaciones adversariales de rutas privadas, autorización de módulo, contexto tenant, rechazo 403 y fallos; CI independiente GitHub-hosted Node24.
+- Solo control estático: no firma JWT, A/B backend, MySQL o R3; A0–A4 requeridos, A5 independiente y estados institucionales no se falsean.
+
 ## 2026-11-18 — V20 C15-01.M05.04 recenso positivo de trazabilidad [Javier :30]
 - Evidencia de 2340 IDs PLAN/COLA, 2301 DAG, 39 históricas LISTO fuera de DAG, cuatro fuentes de rutas y P0 catálogo; Node positivo y cinco mutaciones adversariales con CI aislada.
 - Sin correspondencia 100 % ID→módulo/ruta/endpoint aún certificada ni JWT/tenant real; A0–A4 pendientes, A5 independiente y sin QA/main/PROD.

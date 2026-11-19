@@ -1,0 +1,27 @@
+name: V20 C15-01.M05.05 - negativos seguridad rutas
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'scripts/security/verify-c15-01-m05-05-guards.mjs'
+      - '.github/workflows/v20-c15-01-m05-05-security.yml'
+      - 'frontend/src/app/app.routes.ts'
+      - 'frontend/src/app/core/guards/*.guard.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v20-c15-01-m05-05-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  security:
+    name: C15-01.M05.05 - 8 regresiones adversariales rutas y guardas
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+      - name: Leer fuentes reales y ejecutar positivos y ocho negativos
+        run: node scripts/security/verify-c15-01-m05-05-guards.mjs --self-test
