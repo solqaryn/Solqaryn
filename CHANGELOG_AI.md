@@ -1,3 +1,8 @@
+## 2026-11-19 — V21 C15-04.M05.04 A0.48 observabilidad JWT real [Javier :10]
+- Dos casos nuevos Playwright/Chromium en observabilidad protegida: JWT real, MySQL 8.4 efímero, Tab/Enter, responsive 320/1280 y denegación HTTP 403 a empresa B.
+- GitHub Actions debe demostrar 38 Chromium y Scope Lock/V5 exact-SHA, sin tratar CI pendiente como PASS.
+- Auditoría UX global A0–A4 incompleta: H2297 EN_PROGRESO DEV02, lock V17, A5 independiente pendiente; sin QA/main/PROD.
+
 ## 2026-11-19 — V21 C10-04.M06.03 registro de riesgos y limites R0 [Javier DEV01]
 - Nueva entrega documental atomica: evidencia trazable y ocho riesgos abiertos de cache, jobs, restauracion y exportaciones; no activar servicios, JWT, proveedores, DB ni permisos.
 - Separar PLAN D de PLAN E acumulativa, no afirmar M06 completa, Scope Lock/V5 CI exact-SHA y A5 independiente pendientes de acreditacion; sin QA/main/PROD.
