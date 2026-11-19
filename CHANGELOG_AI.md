@@ -8125,3 +8125,9 @@
 - Entrega R0 documental `docs/v5/c07-04-m06-05-solicitud-revision-independiente.md` para el requisito atómico PLAN D1152, con matriz de M05.01–06, fuentes SHA, A5 de M06.01–03 y puertas aún abiertas M06.04/M06.06.
 - Conserva el histórico global `completed/failure` de M05.06, separa MySQL/Chromium reales de mocks e identifica brechas JWT/RBAC/tenant, PSP, rollback y auditoría fiscal; no declara operación de negocio certificada ni A5 propia.
 - Requiere V17/CAS, GitHub Actions Scope Lock/V5 `completed/success` del SHA exacto, BITACORA y readback; solo otro Javier con revisión genuina puede firmar A5. Sin QA/main/PROD ni secretos.
+
+
+## 2026-11-19 — V22 C13-04.M06.03 límites, riesgos y decisiones de catálogo global [DEV03]
+- Añade `docs/v5/c13-04-m06-03-limitaciones-riesgos-decisiones.md` con seis fuentes M05 por SHA, matriz R01–R12/D01–D08 y límites de Vitest, TestBed, MySQL 8.4 efímero, JWT Chromium auténtico y pruebas públicas test-only.
+- Conserva P2 histórico corregido de selector login y los tres fallos de transferencias inventario del check transversal del SHA M05.06; no transforma PASS dirigido en certificación global ni métricas de campo o dispositivo físico.
+- Documento R0 sin runtime; requiere GitHub exact-SHA Scope Lock/V5, V17/CAS y A5 independiente para LISTO. M06 restante, QA/main/PROD y riesgos R2/R3 no certificados.
