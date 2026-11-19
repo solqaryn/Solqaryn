@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C15-01.M06.04 ensayo de rollback Git aislado [DEV03]
+- R2: git revert REAL en repo efímero Node24 preserva SHA-256 de plan 2340 IDs sintéticos, BITACORA y mapa de evidencias ante cambio concurrente legítimo.
+- Cuatro casos propuestos (positivo y negativos de ruta fuera de allowlist, stale HEAD, SHA inválido y worktree sucio); GitHub-hosted exact-SHA Scope Lock/V5 y prueba dirigida pendientes, no PASS anticipado.
+- Salida atómica D2195, no certificación global M06 ni reversión SaaS/SQL real; A5 independiente pendiente, sin QA/main/PROD.
+
 ## 2026-11-19 — V22 C15-01.M06.05 solicitud de A5 independiente por alcance [DEV01]
 - R0: solicitud explícita y verificable para revisar M05.01–06 y M06.01–04 por ID/SHA y riesgos; M06.01/M06.02 autor DEV01 y M06.03 autor DEV03 requieren reviewers separados.
 - Conserva fallos globales de M05.02/M05.06, distinción Playwright sintético vs JWT real y MySQL efímero vs Aiven; no autoaprueba ni certifica M06 o 2340 requisitos.
