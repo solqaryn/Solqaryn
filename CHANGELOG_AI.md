@@ -1,3 +1,7 @@
+## 2026-11-19 — V21 C02-01.M04.01 invalida lista empresarial A/B obsoleta [Javier :20]
+- Rescate cruzado de VALIDANDO DEV04: al solicitar otra empresa se revocan los IDs de membresias anteriores, evitando que la UI muestre Cambiar empresa tras confirmar B sin nueva lectura autenticada.
+- Regresion Angular de contexto A→B, N=1/N=2, respuesta anterior y limpieza; comprobacion GitHub-hosted por SHA requerida antes de certificar. Conservar owner DEV04; A5 independiente distinto de DEV04/DEV03, Scope Lock STRICT; no QA/main/PROD.
+
 ## 2026-11-19 — V21 C14-01.M04.03 JWT real y marca visual A/B [Javier Task :10 — reparador, DEV01 autor historico]
 - Playwright Chromium contra JWT firmado, tenant A/B y MySQL 8.4 efimero: 3 regresiones de marca, logo y neutralidad global con proveedor de branding interceptado explícitamente; no certificar proveedor real ni alcance completo de M04.03.
 - Nuevo workflow GitHub-hosted separado por SHA, .NET 10, Angular 22, pruebas y artefactos; cierre A0–A4 y A5 independiente todavía sujetos a CI y requisitos verdaderos. Owner historico DEV01 sin cambio; solo dev, sin QA/main/PROD.

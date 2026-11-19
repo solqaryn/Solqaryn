@@ -7,3 +7,7 @@ La pantalla de credenciales nunca solicita empresa. Después de validar el JWT y
 A0: cambios acotados a servicio de contexto, shell, pruebas y documentación. A1: pruebas positivas N=2, N=1 y negativas duplicados, HTTP 403, ID ajeno y respuesta obsoleta. A2: tenant A/B, roles y revocación únicamente como control visual fail-closed; autorización real de backend intacta. A3: tipado, tests Angular y build real en GitHub-hosted CI; MySQL/Playwright no certificados por esta entrega, no simularlos. A4: Scope Lock y V5 exact-SHA con readback institucional. A5: revisión por Task Javier distinta de la autora DEV04.
 
 Rollback seguro: revert normal de un solo commit; sin ramas, migraciones, cambios de backend, QA, main o producción.
+
+## Reparacion cruzada V21 DEV03 — membresias obsoletas A/B
+
+La seleccion de un nuevo tenant limpia inmediatamente los IDs autenticados del contexto anterior antes del GET /tenant-context/{id}. Tras confirmar B no se reutiliza la lista verificada para A: el menu permanece oculto hasta un nuevo GET autenticado de membresias para la empresa seleccionada. Regresion adversarial A→B con lista antigua, N=1/N=2 y revocacion. No se modifica backend, JWT, RBAC, MySQL, sesiones ni permisos de usuario. La integracion real exigida por A0-A4 y la revision A5 de otra Task distinta del autor DEV04 y reparador DEV03 siguen pendientes. Rollback: git revert normal del commit V21.

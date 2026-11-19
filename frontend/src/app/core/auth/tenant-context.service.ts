@@ -101,6 +101,8 @@ export class TenantContextService {
     }
 
     const version = ++this.versionSeleccion;
+    // La lista autenticada del contexto anterior no puede habilitar el switch de B.
+    this._idsMembresiasListadas.set([]);
     this._empresaSolicitadaId.set(empresaId);
     this._contextoVerificado.set(null);
     localStorage.setItem(EMPRESA_SOLICITADA_KEY, String(empresaId));

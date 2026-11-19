@@ -320,4 +320,44 @@ describe('TenantContextService', () => {
     expect(service.puedeCambiarEmpresa()).toBe(false);
   });
 
+
+  it('descarta membresias del tenant A al confirmar B hasta un nuevo listado autenticado', () => {
+    const service = TestBed.inject(TenantContextService);
+    service.seleccionarEmpresa(7).subscribe();
+    httpMock.expectOne(`${environment.apiUrl}/tenant-context/7`).flush({
+      success: true, data: { usuarioId: 3, empresaId: 7,
+        rolId: 4, rolNombre: 'Operador', esAdministrador: false }
+    });
+    service.listarEmpresasSeleccionables().subscribe();
+    httpMock.expectOne(`${environment.apiUrl}/tenant-context/empresas`).flush({
+      success: true,
+      data: [{ empresaId: 7, nombre: 'A' }, { empresaId: 8, nombre: 'B' }]
+    });
+    expect(service.puedeCambiarEmpresa()).toBe(true);
+
+    service.seleccionarEmpresa(8).subscribe();
+    expect(service.puedeCambiarEmpresa()).toBe(false);
+    httpMock.expectOne(`${environment.apiUrl}/tenant-context/8`).flush({
+      success: true, data: { usuarioId: 3, empresaId: 8,
+        rolId: 4, rolNombre: 'Operador', esAdministrador: false }
+    });
+    // La lista previa [7,8] no debe reactivar el menu al confirmar el contexto B.
+    expect(service.empresaIdVerificada()).toBe(8);
+    expect(service.puedeCambiarEmpresa()).toBe(false);
+
+    service.listarEmpresasSeleccionables().subscribe();
+    httpMock.expectOne(`${environment.apiUrl}/tenant-context/empresas`).flush({
+      success: true, data: [{ empresaId: 8, nombre: 'B' }]
+    });
+    expect(service.puedeCambiarEmpresa()).toBe(false);
+    service.listarEmpresasSeleccionables().subscribe();
+    httpMock.expectOne(`${environment.apiUrl}/tenant-context/empresas`).flush({
+      success: true, data: [{ empresaId: 7, nombre: 'A' },
+        { empresaId: 8, nombre: 'B' }]
+    });
+    expect(service.puedeCambiarEmpresa()).toBe(true);
+    service.limpiar();
+    expect(service.puedeCambiarEmpresa()).toBe(false);
+  });
+
 });
