@@ -49,7 +49,7 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           from xml.etree import ElementTree as ET
-          files = list(Path('tests/Solqaryn.Tests/TestResults').rglob('c1402-m0503.trx'))
+          files = list(Path('tests/Solqaryn.Tests/TestResults').rglob('c1503-m0503.trx'))
           assert files, 'No TRX evidence'
           root = ET.parse(files[-1]).getroot()
           counts = next((x.attrib for x in root.iter() if x.tag.endswith('Counters')), None)

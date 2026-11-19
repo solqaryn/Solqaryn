@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 C15-03.M05.03 reparación de readback TRX [Javier :20]
+- GitHub CI del SHA 6b2cfe5f ejecutó 3/3 pruebas reales Oracle EF MySQL 8.4 satisfactoriamente, pero falló el gate al buscar nombre heredado `c1402-m0503.trx` en lugar del TRX generado `c1503-m0503.trx`.
+- Se corrige solo la ruta del archivo de evidencia, sin omitir el assert de >=3 casos ejecutados ni modificar el código/test. Nueva CI exact-SHA obligatoria; mantener VALIDANDO y A5 independiente.
+
 ## 2026-11-19 — V20 C15-03.M05.03 persistencia real de tenancy A/B [Javier :20]
 - Añade xUnit Oracle EF MySQL 8.4 efímero: persistencia A/B, rechazo de membresía cruzada, rollback de grant, revocación y frontera separada de plataforma. Prohíbe hosts/puertos externos.
 - Workflow dedicado verifica TRX real y Scope Lock; no certifica JWT HTTP, sucursales, archivos, jobs, control plane ni A5 mientras CI no complete exact-SHA. Solo dev.
