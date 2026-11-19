@@ -653,6 +653,50 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
   });
 
 
+  // A0.41: control adversarial simetrico del tenant A con JWT real.
+  // No equivale a certificar todas las rutas ni permisos de produccion.
+  test('A0.41 - empresa A con JWT real no accede a cobertura ni flujo global', async ({ browser, request }) => {
+    for (const ruta of ['/plataforma/cobertura-v5', '/plataforma/flujo-v5']) {
+      for (const width of [320, 1280]) {
+        const contexto = await browser.newContext({
+          baseURL: 'http://127.0.0.1:4200',
+          viewport: { width, height: 840 }
+        });
+        try {
+          const page = await contexto.newPage();
+          const jwt = await ingresar(page, 'c1504_admin_a');
+          const headers = { Authorization: 'Bearer ' + jwt };
+          const propia = await request.get(api + '/tenant-context/1', { headers });
+          expect(propia.status(), 'A puede consultar su tenant').toBe(200);
+          expect((await propia.json())?.data?.empresaId).toBe(1);
+          const ajena = await request.get(api + '/tenant-context/2', { headers });
+          expect([403, 404], 'A no puede consultar tenant B').toContain(ajena.status());
+          const global = await request.get(api + '/plataforma/sesion', { headers });
+          expect(global.status(), 'A no tiene permiso global').toBe(403);
+
+          const mutaciones: string[] = [];
+          page.on('request', req => {
+            if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method())) {
+              mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+            }
+          });
+          const sesion = page.waitForResponse(r =>
+            r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+          await page.goto(ruta);
+          expect((await sesion).status()).toBe(403);
+          await expect(page).toHaveURL(/\\/login\\?plataforma=denegado/);
+          await expect(page.locator('section.plataforma')).toHaveCount(0);
+          await expect(page.getByRole('heading', { name: /Cobertura V5|Ciclo V5/ })).toHaveCount(0);
+          expect(mutaciones, 'Rol empresarial no debe provocar mutaciones globales').toEqual([]);
+          expect(await page.evaluate(() => document.documentElement.scrollWidth))
+            .toBeLessThanOrEqual(width + 1);
+        } finally {
+          await contexto.close();
+        }
+      }
+    }
+  });
+
   // A0.40: un JWT de plataforma con firma adulterada nunca autoriza
   // las rutas globales de cobertura/flujo, aunque el token tenga claims validos.
   // Navegador + API reales en CI con MySQL efimero; sin page.route ni focus().

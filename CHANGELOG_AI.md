@@ -1,3 +1,7 @@
+## 2026-11-18 — C15-04.M05.04 A0.41 empresa A JWT real sin acceso global [Javier Task :10]
+- Anade prueba Playwright adversarial empresa A contra cobertura y flujo globales con JWT firmado, MySQL efimero, aislamiento tenant A/B, controles 403, cuatro viewports/rutas y cero mutaciones.
+- Total esperado 27 escenarios; CI exact-SHA pendiente, no inventar PASS; auditoria global UX/WCAG/rendimiento R2 aun inconclusa, lock propio V17, A5 ajena, no QA/main/PROD.
+
 ## 2026-11-18 — V20 C14-04.M06.04 ensayo Git revert aislado [Javier :50]
 - Worktree GitHub-hosted descartable para revert real del commit de pruebas readiness M05.06: diff exacto cuatro rutas, negativa que detecta mutacion protegida y marcador sintetico preservado, sin tocar dev ni datos clientes.
 - CI causal por SHA, Scope Lock/V5 y A5 independiente requeridos; NUNCA atribuir rollback MySQL, restore prod, RPO/RTO, JWT, migracion o permiso R3/QA/main/PROD a este test Git.
