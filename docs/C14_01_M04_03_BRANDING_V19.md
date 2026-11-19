@@ -28,3 +28,10 @@ Conservar VALIDANDO mientras CI externa siga QUEUED/IN_PROGRESS. Requiere check 
 - Diagnostico causal: el workflow `v21-c14-01-m04-03-real-branding.yml`, SHA fuente `90ae8a8b80b88b3dd6888a4d6ef2525c6301a687`, run `44523489248`, job `135557880732`, concluyo FAILURE en el paso **Instalar Chromium**, antes de ejecutar los tres casos de aceptacion reales. No fue un PASS ni evidencia de que los tests hayan fallado.
 - Hipotesis verificable P2: fallo temporal de resolucion/descarga de dependencias Ubuntu APT. Reintentos maximos tres, espaciados 15/30 segundos, sin omitir `--with-deps`, sin desactivar controles; agotados los intentos el job falla. El nuevo SHA exige readback de CI exacta para saber si se corrigio. Esta reparacion **NO** certifica proveedor real de branding, alcance global M04, A0–A4 ni A5.
 - Sin modificaciones a runtime productivo, endpoints, JWT, RBAC, EF, MySQL, secretos o QA/main/PROD. Rollback: revert Git normal del commit de reparacion tras verificar HEAD.
+
+## V21 - A0.1 proveedor publico sin interceptacion (DEV05 rescate)
+- Playwright Chromium consulta el endpoint autentico /empresa-configuracion/publica de ASP.NET Core 10 con MySQL 8.4 efimero; compara respuesta con identidad Angular tras validar tenant A. No se inyecta ni intercepta el proveedor en este nuevo caso.
+- La configuracion publica es global: esta evidencia no certifica un proveedor de marca tenant-especifico ni marca propia para empresas A/B. Los tres casos previos siguen simulando exclusivamente el proveedor visual; no contarlos como integracion real de marca.
+- Requiere ejecucion dirigida COMPLETED SUCCESS del SHA exacto, Scope Lock, V5 y controles relevantes. Mantener VALIDANDO hasta completar A0-A4 del alcance atomico; A5 independiente. Sin QA/main/PROD, secrets ni datos reales.
+- Rollback aditivo mediante git revert ordinario del commit.
+

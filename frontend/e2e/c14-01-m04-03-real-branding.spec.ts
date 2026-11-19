@@ -111,4 +111,31 @@ test.describe('C14-01.M04.03 - UI marca empresarial con JWT real y proveedor de 
       .not.toHaveAttribute('src', /private-a/);
     await expect(page.getByText('Marca Privada A')).toHaveCount(0);
   });
+
+  test('proveedor publico autentico: shell muestra branding servido sin interceptacion', async ({ page }) => {
+    test.setTimeout(150_000);
+    // Integracion REAL: no se intercepta /empresa-configuracion/publica.
+    const live = await page.request.get(api + '/empresa-configuracion/publica');
+    expect(live.status(), 'Configuracion publica real MySQL efimero').toBe(200);
+    const payload: unknown = await live.json();
+    expect(payload).toMatchObject({ success: true, data: expect.any(Object) });
+    const data = (payload as { data: { nombreVisibleSistema?: string; nombreComercial?: string; logoUrl?: string | null } }).data;
+    const expectedName = data.nombreVisibleSistema || data.nombreComercial || 'SOLQARYN';
+    expect(expectedName.trim().length).toBeGreaterThan(0);
+
+    await loginReal(page, 'c1504_admin_a');
+    await page.evaluate(() => localStorage.setItem('solqaryn_empresa_solicitada_id', '1'));
+    const checked = page.waitForResponse(r =>
+      r.url().includes('/tenant-context/1') && r.request().method() === 'GET');
+    await page.goto('/perfil');
+    expect((await checked).status()).toBe(200);
+    await expect(page.getByRole('heading', { name: 'Mi perfil' })).toBeVisible();
+    await expect(page.locator('#main-sidebar .brand > span').first()).toHaveText(expectedName);
+    if (data.logoUrl?.trim()) {
+      await expect(page.locator('#main-sidebar .brand img.brand-logo'))
+        .toHaveAttribute('src', data.logoUrl);
+    }
+    // Limite: /publica es config global, no certifica marca aislada por tenant.
+  });
+
 });

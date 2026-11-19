@@ -1,3 +1,7 @@
+## 2026-11-19 — V21 C14-01.M04.03 proveedor real HTTP de branding [DEV05 rescate cruzado; DEV01 owner historico]
+- Nuevo caso Playwright sin mock para /empresa-configuracion/publica: compara respuesta verdadera MySQL 8.4 / API .NET 10 con la marca Angular despues de autenticar tenant A.
+- Pruebas GitHub-hosted del nuevo SHA pendientes; cobertura tenant-especifica, proveedor externo y aceptacion total M04 no certificadas. Mantener VALIDANDO y A5 independiente.
+
 ## 2026-11-19 — V21 C15-04.M05.04 A0.50.1 reparación regresión Vitest [Javier DEV02]
 - GitHub Actions reportó 8 PASS/1 FAIL en contrato gobierno V5: el test esperaba main interno obsoleto pese a la corrección de landmarks anidados.
 - Mantiene la prueba activa y la hace estricta: section con aria-labelledby presente, main interno ausente; Playwright integrada sigue exigiendo un main único y JWT real, 42 casos pendientes.
