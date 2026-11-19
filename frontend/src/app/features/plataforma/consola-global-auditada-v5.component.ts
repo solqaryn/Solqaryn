@@ -23,12 +23,12 @@ import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.servi
         <p>Consulta privada de controles del plano global, separada de la administración ERP.</p>
         <nav aria-label="Navegación de consola global">
           <a routerLink="/plataforma" aria-label="Volver a administración de plataforma">Volver a plataforma</a>
-          <a routerLink="/plataforma/inventario-rutas-v19" aria-label="Consultar inventario global de programas y rutas">Inventario de módulos y rutas</a>
           @if (accesoVerificado() || verificacion() === 'error' || verificacion() === 'cargando') {
             <button type="button" (click)="revalidarSesion()"
               [disabled]="estadoVisible() === 'cargando'"
               aria-describedby="control-plane-estado">{{ verificacion() === 'error' ? 'Reintentar verificación' : 'Revalidar sesión global' }}</button>
           }
+          <a routerLink="/plataforma/inventario-rutas-v19" aria-label="Consultar inventario global de programas y rutas">Inventario de módulos y rutas</a>
         </nav>
       </header>
 

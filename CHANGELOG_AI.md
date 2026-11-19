@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 C15-04.M05.04 A0.46.1 foco real Tab en consola [Javier :10]
+- GitHub Actions SHA 72c3c347: C02 consola Chromium 12/13 PASS, un FAIL de Tab porque Inventario precedía a Revalidar; conserva test adversarial real y corrige el orden de foco de navegación sin tocar autenticación ni controles.
+- Nuevo SHA reproduce C02 Vitest+Chromium y 35 escenarios A0.46 JWT/MySQL/Chromium; hasta resultados completados no certificar PASS. Global A0-A4 y A5 independiente pendientes; owner DEV02 EN_PROGRESO, V17 lock 2000002297, solo dev.
+
 ## 2026-11-19 — V20 C15-04.M05.04 A0.46 consola global accesible [Javier :10]
 - A0.45 CI exact-SHA confirmado 33/33 Chromium, JWT firmado/MySQL 8.4 efimero y Scope Lock/V5 SUCCESS. Recenso P2: elimina main anidado de consola global (section semantica, misma UI y permisos).
 - Añade dos Playwright con JWT plataforma y empresa B real, 403/landmark/h1/Tab/responsive 320–1280/0 mutaciones y ruta de workflow para CI exact-SHA; no declarar PASS anticipado.
