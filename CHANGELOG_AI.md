@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 C15-04.M05.04 A0.44 UX global arquitectura y QA autenticadas [Javier :10]
+- Amplia dos tests Chromium JWT real/empresa B 403 para QA global y revision de arquitectura; 320/1280 px, landmark unico, h1, Tab real, sin overflow ni mutaciones. Ejecutar GitHub Actions exact-SHA antes de contar PASS.
+- La auditoria global de todos los roles, rutas, WCAG y rendimiento aun NO esta cerrada: EN_PROGRESO DEV02, lock V17 preservado, A5 por otra Task Javier; solo dev y Scope Lock STRICT.
+
 ## 2026-11-19 — V20 C15-03.M05.01 matriz xUnit de seguridad tenancy [Javier :00]
 - Añade seis pruebas xUnit del gate real de Application y Domain: cinco superficies, 35 cruces tenant/actor/propiedad, 25 revocaciones, sucursal, archivos, jobs, control plane, bypass del cliente, SHA y cancelación; no otorgan acceso real.
 - Entrega R2 solo de pruebas/workflow/documentación: CI GitHub-hosted exact SHA, Scope Lock y V5 deben terminar SUCCESS; JWT firmado, HTTP y MySQL no acreditados. A5 independiente, rollback git revert, solo dev.

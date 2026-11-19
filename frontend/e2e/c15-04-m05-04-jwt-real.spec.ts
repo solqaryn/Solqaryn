@@ -888,4 +888,78 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     }
   });
 
+
+  // A0.44: ampliar muestra de rutas globales con rol autentico y empresa B
+  // denegada. API JWT firmada y MySQL efimero: cero page.route y cero mocks.
+  test('A0.44 - pantallas globales de arquitectura y QA con JWT real y teclado', async ({ page }) => {
+    await ingresar(page, 'c1504_platform_only');
+    const rutas = ['/plataforma/qa-global-v19', '/plataforma/revision-arquitectura-v20'];
+    const mutaciones: string[] = [];
+    page.on('request', req => {
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method())) {
+        mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+      }
+    });
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      for (const ruta of rutas) {
+        const sesion = page.waitForResponse(r =>
+          r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+        const documento = await page.goto(ruta);
+        expect(documento?.status()).toBe(200);
+        expect((await sesion).status()).toBe(200);
+        expect(new URL(page.url()).pathname).toBe(ruta);
+        await expect(page.getByRole('main'), 'Solo un main visible por ruta').toHaveCount(1);
+        await expect(page.getByRole('heading', { level: 1 }), 'Un h1 por ruta').toHaveCount(1);
+        await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
+        expect((await page.getByRole('heading', { level: 1 }).textContent())?.trim().length)
+          .toBeGreaterThan(0);
+        expect(await page.evaluate(() => document.documentElement.scrollWidth))
+          .toBeLessThanOrEqual(width + 1);
+        await page.keyboard.press('Tab');
+        expect(await page.evaluate(() =>
+          document.activeElement !== document.body &&
+          document.activeElement !== document.documentElement),
+          'Tab de teclado debe alcanzar control navegable').toBe(true);
+      }
+    }
+    expect(mutaciones, 'Auditoria global de solo lectura sin HTTP mutante').toEqual([]);
+  });
+
+  test('A0.44 - empresa B sin permiso global no accede a arquitectura ni QA', async ({ browser, request }) => {
+    for (const ruta of ['/plataforma/qa-global-v19', '/plataforma/revision-arquitectura-v20']) {
+      for (const width of [320, 1280]) {
+        const contexto = await browser.newContext({
+          baseURL: 'http://127.0.0.1:4200',
+          viewport: { width, height: 840 }
+        });
+        try {
+          const page = await contexto.newPage();
+          const jwt = await ingresar(page, 'c1504_admin_b');
+          const respuestaApi = await request.get(api + '/plataforma/sesion', {
+            headers: { Authorization: 'Bearer ' + jwt }
+          });
+          expect(respuestaApi.status(), 'JWT de empresa B denegado por API real').toBe(403);
+          const mutaciones: string[] = [];
+          page.on('request', req => {
+            if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method())) {
+              mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+            }
+          });
+          const sesion = page.waitForResponse(r =>
+            r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+          await page.goto(ruta);
+          expect((await sesion).status()).toBe(403);
+          await expect(page).toHaveURL(/\/login\?plataforma=denegado/);
+          expect(new URL(page.url()).pathname).not.toBe(ruta);
+          expect(mutaciones, 'Sin peticiones HTTP mutantes tras denegacion').toEqual([]);
+          expect(await page.evaluate(() => document.documentElement.scrollWidth))
+            .toBeLessThanOrEqual(width + 1);
+        } finally {
+          await contexto.close();
+        }
+      }
+    }
+  });
+
 });

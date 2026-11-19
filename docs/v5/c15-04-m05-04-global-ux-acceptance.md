@@ -237,3 +237,21 @@ El workflow `.github/workflows/v19-c15-04-m05-04-jwt-real.yml` añade las dos ru
 
 ## A0.43 — landmark global unico en guia de amenazas autenticada (DEV02, V20)
 El recenso estático después de A0.42 halló un tercer `<main>` anidado en `RevisionAmenazasV5Component`: `AppComponent` ya abre `<main id="main-content">` para la ruta autenticada. Es defecto semántico de accesibilidad dentro de C15-04.M05.04 y no autorización para cambiar guards o seguridad. Cambio mínimo: contenedor de guía de `<main>` a `<section>`, manteniendo clases, estilos, `aria-labelledby`, contenido, estados fail-closed y el shell raíz intactos. Se añaden dos escenarios Playwright causales: JWT de plataforma firmado en API real con un único landmark, responsive 320/1280 y cero mutaciones; empresa B con JWT firmado recibe 403 y cero superficie privada. El oráculo `main = 1` falla sobre el template anterior y permanece estricto; objetivo de nueva ejecución: **31/31**, sin atribuir PASS antes del cierre de GitHub Actions. `on.push.paths` del workflow incluye el archivo runtime afectado; `concurrency` exact SHA y `cancel-in-progress: false` se conservan. A0–A4 **globales** (todas rutas, roles, WCAG y rendimiento real) permanecen incompletos, `C15-04.M05.04` sigue EN_PROGRESO con lock V17 2000002297; A5 global por Javier distinto. La A5 previa de C14-02.M04.02 era para SHA anterior y no certifica automáticamente este nuevo blob; conservar evidencia histórica y exigir regresión dirigida nueva. Rollback: revert no destructivo del commit, solo dev, nunca QA/main/PROD.
+
+
+## A0.44 - navegacion autenticada de arquitectura y QA global (CI pendiente)
+Se suman dos pruebas Playwright reales a C15-04.M05.04 para las rutas
+`/plataforma/qa-global-v19` y `/plataforma/revision-arquitectura-v20`.
+El caso positivo usa login JWT firmado de plataforma, API /plataforma/sesion real,
+MySQL 8.4 efimero, anchos 320/1280, unico main, un h1 con texto,
+Tab de teclado real, sin desbordamiento horizontal ni HTTP mutante.
+El caso negativo usa JWT firmado de empresa B: API 403 y redireccion de
+cada ruta privada sin peticiones mutantes. La prueba falla si se retira el guard
+o reaparece un main anidado. Sin mock, page.route ni secretos productivos.
+Riesgo R2, solo test/QA en dev, sin alterar runtime ni autorizaciones.
+Antes de concluir: comprobar tests acumulados exact-SHA en GitHub Actions
+(completed/success), Scope Lock y V5, regresiones backend y seguridad,
+readback en PLAN/BITACORA y A5 independiente. La auditoria GLOBAL
+(resto de rutas y roles, WCAG completo, contraste y rendimiento representativo)
+sigue INCOMPLETA; estado EN_PROGRESO DEV02 y candado V17 2000002297.
+Rollback: revert normal del commit en dev tras verificar HEAD.
