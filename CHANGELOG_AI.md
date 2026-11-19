@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C15-03.M04.05 reparación CI forced-colors 4/5 [Javier :40]
+- El primer SHA obtuvo Chromium 4 PASS/1 FAIL (contraste 0): el test inspeccionaba un fondo del contenedor potencialmente transparente. Ahora fija Canvas/CanvasText en el propio skip-link y mide contorno frente a fondo de ese enlace, con grosor >= 3 px y contraste >= 3:1.
+- Preserva evidencia de fallo, validación real GitHub-hosted en SHA nuevo, Scope Lock, V5, autorización sintética no productiva y A5 pendiente por revisor distinto de DEV03/DEV05. Sin QA/main/PROD.
+
 ## 2026-11-18 — V20 C15-03.M04.05 reparación de foco y contraste P2 [Javier :40]
 - Corrige salto de ancla del SPA con viewChild y preventDefault: Tab real alcanza el enlace y Enter enfoca el H2 sin cambiar ruta; añade forced-colors Canvas/CanvasText y quinta prueba Chromium de relación de contraste >= 3:1, manteniendo 403 sintético y responsive.
 - R2 UI privada, sin cambios de backend/JWT/MySQL ni concesión de permisos. Conserva A5_FAIL histórico, exige 5 Chromium, lint/build, Scope Lock/V5 exact-SHA y nueva A5 de Task distinta de DEV03 autor y DEV05 reparador; sin QA/main/PROD.

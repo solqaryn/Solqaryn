@@ -105,6 +105,7 @@ export function normalizarPresentacionAuditoriaTenancyV5(valor: unknown): Presen
     @media(max-width: 45rem) { .fronteras { grid-template-columns: 1fr; } }
     @media(forced-colors: active) {
       .tenancy-audit { background: Canvas; color: CanvasText; }
+      .skip-frames { background: Canvas; color: CanvasText; }
       .skip-frames:focus-visible { outline-color: CanvasText; background: Canvas; color: CanvasText; }
     }
   `]

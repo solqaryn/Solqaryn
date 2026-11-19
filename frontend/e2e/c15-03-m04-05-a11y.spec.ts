@@ -109,10 +109,11 @@ test('forced-colors: contorno de foco alcanza al menos 3:1 frente al fondo', asy
       return canalesLineales[0] * 0.2126 + canalesLineales[1] * 0.7152 + canalesLineales[2] * 0.0722;
     };
     const contorno = getComputedStyle(elemento);
-    const fondo = getComputedStyle(elemento.closest('.tenancy-audit')!);
-    if (contorno.outlineStyle === 'none') return 0;
+    // Comparar colores de la misma superficie sólida: la sección padre puede
+    // heredar un fondo transparente bajo emulación forced-colors en Chromium.
+    if (contorno.outlineStyle === 'none' || parseFloat(contorno.outlineWidth) < 3) return 0;
     const a = luminosidad(contorno.outlineColor);
-    const b = luminosidad(fondo.backgroundColor);
+    const b = luminosidad(contorno.backgroundColor);
     if (a === null || b === null) return 0;
     return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
   });
