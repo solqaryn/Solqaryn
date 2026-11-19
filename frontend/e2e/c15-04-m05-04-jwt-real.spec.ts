@@ -684,7 +684,7 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
             r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
           await page.goto(ruta);
           expect((await sesion).status()).toBe(403);
-          await expect(page).toHaveURL(/\\/login\\?plataforma=denegado/);
+          await expect(page).toHaveURL(/\/login\?plataforma=denegado/);
           await expect(page.locator('section.plataforma')).toHaveCount(0);
           await expect(page.getByRole('heading', { name: /Cobertura V5|Ciclo V5/ })).toHaveCount(0);
           expect(mutaciones, 'Rol empresarial no debe provocar mutaciones globales').toEqual([]);

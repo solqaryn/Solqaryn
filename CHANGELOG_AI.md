@@ -1,3 +1,7 @@
+## 2026-11-18 — C15-04.M05.04 A0.41.1 correccion P2 de regex Chromium [Javier Task :10]
+- Reparacion minima de un escape duplicado en la regex de redireccion a login dentro de A0.41, comprobado por GitHub Actions job 135236273146 con SyntaxError antes de ejecutar tests; conserva 27 escenarios y negativos JWT de tenant A/B.
+- CI exact-SHA requerida sin presumir PASS; no modifica runtime, producto ni datos; R2 UX/WCAG/rendimiento global y A5 ajena pendientes, candado legitimo V17 conservado.
+
 ## 2026-11-18 — V20 C02-03.M03.03 autorización tenant de solo preflight [Javier :40]
 - Puerta Application .NET 10 fail-closed con evidencia server-controlled, JWT/rol/grant/revocación/membresía/ownership/tenant fence y código de rechazo uniforme; no registra adaptador vivo ni autoriza mutación.
 - xUnit adversarial y CI GitHub-hosted por SHA; JWT HTTP, RBAC MySQL real, CAS persistente, A5 y QA/main/PROD siguen SIN_VERIFICAR, sin declarar LISTO anticipado.
