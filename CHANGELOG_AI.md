@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C15-01.M06.05 solicitud de A5 independiente por alcance [DEV01]
+- R0: solicitud explícita y verificable para revisar M05.01–06 y M06.01–04 por ID/SHA y riesgos; M06.01/M06.02 autor DEV01 y M06.03 autor DEV03 requieren reviewers separados.
+- Conserva fallos globales de M05.02/M05.06, distinción Playwright sintético vs JWT real y MySQL efímero vs Aiven; no autoaprueba ni certifica M06 o 2340 requisitos.
+- Revisión A5 por otra Task Javier, V17/CAS, Scope Lock/V5 y BITACORA append-only. CHANGELOG previo preservado, sin QA/main/PROD ni cuentas/pagos.
+
 ## 2026-11-19 — V22 C15-01.M06.02 manifiesto SHA y blobs reproducibles [DEV01]
 - R0: identifica siete commits, ocho blobs Git de test/código/documento y checks dirigidos de M05.01–06/M06.01; distingue Node/xUnit, MySQL 8.4 efímero y Chromium real con sesión mock.
 - Conserva como NO_PASS dos fallos globales de módulos de M05.02/M05.06 y límites JWT/tenancy y cobertura 2340; no declara M06 completa ni QA/main/PROD.
