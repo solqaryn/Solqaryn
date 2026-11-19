@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 C15-05.M05.02 reparación P2 HTTP JWT y paginación [Javier :30]
+- Repara evidencia faltante A5_FAIL: TestServer ASP.NET Core 10 con JWT firmado de laboratorio, filtro RequierePermiso real, controles 401/403/200, error 500 saneado y paginación negativa/limites; workflow xUnit 20 casos con TRX obligatorio.
+- Añade validacion [Range] a Page/PageSize y defensa en AuditoriaService para evitar Skip overflow y lecturas excesivas. Solo dev, fixture de grants/no MySQL real; A5_FAIL historico conservado hasta nueva revisión independiente. No QA/main/PROD; revert normal.
+
 ## 2026-11-19 — V20 C04-04.M02.06 contrato de salida documental del lote de cobros [Javier :20]
 - Se ordenan fuentes M01/M02 con A5 independiente, requisitos E01–E05, seis interfaces futuras M03 y ocho pares positivos/negativos FUTUROS_NO_EJECUTADOS, preservando la corrección P2 de unicidad durable y digest separado.
 - Diseño exclusivamente documental; no MySQL, pasarela de pago, webhooks reales ni QA/main/PROD. M02.06 requiere CI exact-SHA y A5 por otra Task Javier; el DAG no se fuerza. Revert normal.

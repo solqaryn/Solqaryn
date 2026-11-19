@@ -82,6 +82,11 @@ public class AuditoriaService : IAuditoriaService
 
     public async Task<PagedResult<RegistroAuditoriaDto>> GetFilteredAsync(AuditoriaFiltroDto filtro)
     {
+        ArgumentNullException.ThrowIfNull(filtro);
+        // Defensa en profundidad para consumidores no HTTP que eluden DataAnnotations.
+        // Page <= 100000 y PageSize <= 100 mantienen (Page-1)*PageSize en int seguro.
+        if (filtro.Page is < 1 or > 100000 || filtro.PageSize is < 1 or > 100)
+            throw new ArgumentOutOfRangeException(nameof(filtro), "Paginacion de auditoria fuera de rango.");
         var (items, total) = await _repository.GetFilteredAsync(filtro);
         return new PagedResult<RegistroAuditoriaDto>
         {

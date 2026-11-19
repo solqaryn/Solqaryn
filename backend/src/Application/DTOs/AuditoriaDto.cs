@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace Solqaryn.Application.DTOs;
 
 public class RegistroAuditoriaDto
@@ -33,6 +35,10 @@ public class AuditoriaFiltroDto
     public string? Texto { get; set; }
     public DateTime? Desde { get; set; }
     public DateTime? Hasta { get; set; }
+    // HTTP [ApiController] valida el limite antes del servicio. Evita Skip overflow
+    // y lecturas sin tope sobre auditorias sensibles.
+    [Range(1, 100000)]
     public int Page { get; set; } = 1;
+    [Range(1, 100)]
     public int PageSize { get; set; } = 50;
 }

@@ -4,6 +4,8 @@ on:
     branches: [dev]
     paths:
       - 'backend/tests/Solqaryn.Tests/Application/C1505M0502AuditApiDtoContractTests.cs'
+      - 'backend/tests/Solqaryn.Tests/Application/C1505M0502AuditHttpSecurityTests.cs'
+      - 'backend/src/Application/Services/AuditoriaService.cs'
       - 'backend/src/API/Controllers/AuditoriaController.cs'
       - 'backend/src/Application/DTOs/AuditoriaDto.cs'
       - '.github/workflows/v19-c15-05-m05-02-audit-api-dto.yml'
@@ -15,7 +17,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   xunit:
-    name: C15-05.M05.02 - nueve contratos xUnit auditoria
+    name: C15-05.M05.02 - contratos DTO y HTTP JWT reales
     runs-on: ubuntu-latest
     timeout-minutes: 25
     steps:
@@ -29,7 +31,7 @@ jobs:
         working-directory: backend
         run: |
           set -euo pipefail
-          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter 'FullyQualifiedName~C1505M0502AuditApiDtoContractTests' --logger 'trx;LogFileName=c1505m0502.trx' --logger 'console;verbosity=normal'
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter 'FullyQualifiedName~C1505M0502Audit' --logger 'trx;LogFileName=c1505m0502.trx' --logger 'console;verbosity=normal'
           python3 - <<'PY'
           from pathlib import Path
           import xml.etree.ElementTree as ET
@@ -39,6 +41,6 @@ jobs:
           counts=next((e.attrib for e in root.iter() if e.tag.endswith('Counters')),None)
           assert counts is not None, 'No test counters'
           actual=tuple(int(counts[k]) for k in ('executed','passed','failed','notExecuted'))
-          assert actual==(9,9,0,0), actual
-          print('C1505M0502_REAL_XUNIT_RELEASE_9_OF_9_PASS')
+          assert actual==(20,20,0,0), actual
+          print('C1505M0502_REAL_XUNIT_RELEASE_20_OF_20_PASS')
           PY
