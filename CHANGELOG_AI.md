@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C15-03.M04.05 reparación de foco y contraste P2 [Javier :40]
+- Corrige salto de ancla del SPA con viewChild y preventDefault: Tab real alcanza el enlace y Enter enfoca el H2 sin cambiar ruta; añade forced-colors Canvas/CanvasText y quinta prueba Chromium de relación de contraste >= 3:1, manteniendo 403 sintético y responsive.
+- R2 UI privada, sin cambios de backend/JWT/MySQL ni concesión de permisos. Conserva A5_FAIL histórico, exige 5 Chromium, lint/build, Scope Lock/V5 exact-SHA y nueva A5 de Task distinta de DEV03 autor y DEV05 reparador; sin QA/main/PROD.
+
 ## 2026-11-18 — V20 C03-04.M04.05 corrección adicional de expresión de luminancia [Javier :40]
 - Corrige el escape duplicado del patrón numérico incorporado en el primer commit de reparación; ahora extrae canales RGB decimales reales en Chromium. Preserva 3:1, Tab real y pruebas adversariales.
 - Requiere nuevo SHA con CI causal; el primer SHA no acredita contraste. A5_FAIL P2 histórico permanece y una Task Javier distinta de DEV03 autor y DEV05 reparador deberá revisar, sin QA/main/PROD.

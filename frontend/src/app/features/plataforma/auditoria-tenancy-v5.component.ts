@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, DestroyRef, InjectionToken, computed, inject, signal, type Signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, ElementRef, InjectionToken, computed, inject, signal, viewChild, type Signal } from '@angular/core';
 import { HttpErrorResponse } from '@angular/common/http';
 import { defer } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -65,9 +65,9 @@ export function normalizarPresentacionAuditoriaTenancyV5(valor: unknown): Presen
           <strong>Solo lectura · ninguna prueba o autorización ejecutada</strong>
           <p>Los criterios siguientes son un contrato de revisión futura, no resultados certificados.</p>
         </section>
-        <a class="skip-frames" href="#fronteras-title">Saltar a los cuatro frentes de revisión</a>
+        <a class="skip-frames" href="#fronteras-title" (click)="irAFronteras($event)">Saltar a los cuatro frentes de revisión</a>
         <section aria-labelledby="fronteras-title">
-          <h2 id="fronteras-title" tabindex="-1">Cuatro frentes de comprobación futura</h2>
+          <h2 #fronterasTitle id="fronteras-title" tabindex="-1">Cuatro frentes de comprobación futura</h2>
           <ol class="fronteras" aria-labelledby="fronteras-title">
             <li><h3>Tenant A/B y sucursal</h3><p>Rechazar cruce de EmpresaId, SucursalId, consultas, índices y exportaciones, incluso con identificadores repetidos.</p></li>
             <li><h3>Propiedad y pertenencia</h3><p>Revalidar usuario, rol, membresía, revocación y denegación por defecto en backend.</p></li>
@@ -103,9 +103,19 @@ export function normalizarPresentacionAuditoriaTenancyV5(valor: unknown): Presen
     .tenancy-audit[data-densidad='compacta'] :is(.estado,.notice,.denied,.fronteras li) { padding: .75rem; }
     .limites { font-weight: 600; }
     @media(max-width: 45rem) { .fronteras { grid-template-columns: 1fr; } }
+    @media(forced-colors: active) {
+      .tenancy-audit { background: Canvas; color: CanvasText; }
+      .skip-frames:focus-visible { outline-color: CanvasText; background: Canvas; color: CanvasText; }
+    }
   `]
 })
 export class AuditoriaTenancyV5Component {
+  private readonly tituloFrentes = viewChild<ElementRef<HTMLHeadingElement>>('fronterasTitle');
+  /** Evita que base href del SPA convierta el fragmento en navegación a /. */
+  irAFronteras(evento: MouseEvent): void {
+    evento.preventDefault();
+    this.tituloFrentes()?.nativeElement.focus();
+  }
   private readonly plataforma = inject(PlataformaSesionService);
   private readonly destroyRef = inject(DestroyRef);
   private readonly configuracionPresentacion = inject(AUDITORIA_TENANCY_PRESENTACION_V5);

@@ -49,9 +49,16 @@ test('grant simulado: foco teclado, etiquetas, enlace y ausencia de acciones', a
   await expect(page.locator('.tenancy-audit form, .tenancy-audit input, .tenancy-audit textarea')).toHaveCount(0);
   await expect(page.locator('.tenancy-audit button')).toHaveCount(1);
   await expect(page.getByRole('button', { name: 'Revalidar sesión de auditoría de tenancy' })).toBeVisible();
-  await skip.focus();
-  await page.keyboard.press('Tab');
-  await page.keyboard.press('Shift+Tab');
+  // El enlace debe ser alcanzable por teclado desde el foco inicial sin .focus().
+  let alcanzadoPorTab = false;
+  for (let intento = 0; intento < 45; intento++) {
+    await page.keyboard.press('Tab');
+    if (await skip.evaluate(elemento => elemento === document.activeElement)) {
+      alcanzadoPorTab = true;
+      break;
+    }
+  }
+  expect(alcanzadoPorTab, 'Skip-link alcanzable con Tab real').toBe(true);
   await expect(skip).toBeFocused();
   const outline = await skip.evaluate(el => {
     const css = getComputedStyle(el);
@@ -60,7 +67,8 @@ test('grant simulado: foco teclado, etiquetas, enlace y ausencia de acciones', a
   expect(outline.style).toBe('solid');
   expect(outline.width).toBeGreaterThanOrEqual(3);
   await page.keyboard.press('Enter');
-  await expect(page).toHaveURL(/#fronteras-title$/);
+  await expect(page.getByRole('heading', { name: 'Cuatro frentes de comprobación futura' })).toBeFocused();
+  await expect(page).toHaveURL(/\/plataforma\/auditoria-tenancy-v5(?:#fronteras-title)?$/);
 });
 test('320/768 px: sin overflow y con etiquetas visibles', async ({ page }) => {
   await grant(page, true);
@@ -72,4 +80,41 @@ test('320/768 px: sin overflow y con etiquetas visibles', async ({ page }) => {
     expect(await page.evaluate(() =>
       document.documentElement.scrollWidth - document.documentElement.clientWidth)).toBeLessThanOrEqual(2);
   }
+});
+
+test('forced-colors: contorno de foco alcanza al menos 3:1 frente al fondo', async ({ page }) => {
+  await grant(page, true);
+  await page.emulateMedia({ forcedColors: 'active', reducedMotion: 'reduce' });
+  await page.goto('/plataforma/auditoria-tenancy-v5');
+  const skip = page.getByRole('link', { name: 'Saltar a los cuatro frentes de revisión' });
+  let alcanzado = false;
+  for (let intento = 0; intento < 45; intento++) {
+    await page.keyboard.press('Tab');
+    if (await skip.evaluate(elemento => elemento === document.activeElement)) {
+      alcanzado = true;
+      break;
+    }
+  }
+  expect(alcanzado, 'Contorno evaluado con foco real de Tab').toBe(true);
+  const relacion = await skip.evaluate(elemento => {
+    if (!matchMedia('(forced-colors: active)').matches) return 0;
+    const luminosidad = (color: string): number | null => {
+      const canales = color.match(/[0-9]+(?:[.][0-9]+)?/g)?.map(Number) ?? [];
+      if (canales.length < 3 || canales.length > 4 || canales.some(v => !Number.isFinite(v))) return null;
+      if (canales.length === 4 && canales[3] < 1) return null;
+      const canalesLineales = canales.slice(0, 3).map(v => {
+        const srgb = v / 255;
+        return srgb <= 0.04045 ? srgb / 12.92 : ((srgb + 0.055) / 1.055) ** 2.4;
+      });
+      return canalesLineales[0] * 0.2126 + canalesLineales[1] * 0.7152 + canalesLineales[2] * 0.0722;
+    };
+    const contorno = getComputedStyle(elemento);
+    const fondo = getComputedStyle(elemento.closest('.tenancy-audit')!);
+    if (contorno.outlineStyle === 'none') return 0;
+    const a = luminosidad(contorno.outlineColor);
+    const b = luminosidad(fondo.backgroundColor);
+    if (a === null || b === null) return 0;
+    return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+  });
+  expect(relacion, 'Contraste de foco forzado >= 3:1').toBeGreaterThanOrEqual(3);
 });
