@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 reparación causal P0-007.A de catálogo Angular C15-02.M04.01 [Javier :00]
+- Corrige el drift de catálogo detectado en SHA 7a8767eb: inventaría exactamente el nuevo componente de revisión privada y actualiza conteos de 164 a 165 (157 features, 8 shared) sin excluir rutas ni debilitar negativos.
+- No altera UI, JWT/RBAC, tenancy, secretos ni proveedores; P0-007.A/Scope Lock/V5 exact-SHA pendientes de revalidación y A5 por Task distinta. Solo dev, sin QA/main/PROD.
+
 ## 2026-11-18 — V20 C15-02.M04.05 regresión de accesibilidad privada [Javier :00]
 - Incorpora Playwright Chromium: Tab/Enter reales, foco visible, semántica de cinco tarjetas, 403 sin filtración, cero mutaciones y responsive 320/375/768/1280 con target táctil de 44 px.
 - Workflow GitHub-hosted exact-SHA y trazabilidad A0–A5; CI externa por acreditar, sin certificación WCAG global, JWT/MySQL, A5 ni promoción a QA/main/PROD.

@@ -564,3 +564,11 @@ El check P0-007.A exact-SHA del commit ff84eaa2 detectó **un componente nuevo n
 - `frontend/src/app/features/plataforma/c01-02-m04-03-capability-branding.component.ts`
 
 Inventariar una fuente Angular no demuestra JWT, RBAC, tenant A/B, UX ni autorización de producción. Se exige P0-007.A self-test, Scope Lock y V5 SUCCESS sobre el SHA de reparación; no se elimina el fallo anterior ni se debilita el comparador.
+
+## Adición causal V20 C15-02.M04.01 — 18 noviembre 2026
+
+La verificación P0-007.A de GitHub Actions en el SHA `7a8767ebaa7318666836263c267dcab5d2299740` detectó correctamente una única fuente Angular no inventariada: `unlisted=frontend/src/app/features/plataforma/c15-02-m04-01-revision-arquitectura.component.ts`. Se incorpora **exactamente una entrada** al catálogo reproducible actual, que pasa de 164 a **165 componentes (157 features, 8 shared)**. Los recuentos y rutas correspondientes a cortes históricos se conservan sin alteración.
+
+- `frontend/src/app/features/plataforma/c15-02-m04-01-revision-arquitectura.component.ts`
+
+El validador mantiene la comparación exacta con el árbol real y las regresiones negativas ante omisión, duplicados o altas ficticias; únicamente se actualizan los conteos exigidos. El componente continúa bajo `plataformaGuard` y su lista documental `NO_VERIFICADO` no acredita JWT firmado, RBAC servidor, tenant A/B, WCAG global, proveedores, MySQL ni despliegues. Requerir check P0-007.A, Scope Lock y V5 SUCCESS del SHA de reparación, además de revisión A5 independiente. Rollback mediante git revert normal en dev.
