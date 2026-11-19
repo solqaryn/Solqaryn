@@ -1,3 +1,8 @@
+## 2026-11-19 — V20 C15-04.M05.04 A0.45 landmark QA global y regresion JWT real [Javier :10]
+- GitHub Actions A0.44 SHA 0a1f05ac: 32/33 Chromium reales; 1 FAIL por main duplicado en QA global. Reparacion minima del template QA main anidado a section; sin alterar guard, JWT, RBAC ni datos.
+- CI exact-SHA vuelve a ejecutarse al cambiar el template; el test mantiene negativos tenant B 403, teclado y landmarks 320/1280. No contar PASS sin logs.
+- C15-04.M05.04 sigue EN_PROGRESO DEV02, lock 2000002297, A0-A4 global y A5 independiente pendientes. Solo dev Scope Lock STRICT, revert sin reescritura.
+
 ## 2026-11-19 — V20 C14-02.M05.05 pruebas negativas de seguridad [Javier :00]
 - Añade xUnit adversarial Application/Domain (BOLA/IDOR siete superficies, spoofing tenant, sucursal, host, archivo, job, caché/revocación, backup, sesión y SHA) y workflow .NET 10/TRX >=18 sin omisiones.
 - R2 incompleto: fixtures no equivalen a HTTP/JWT firmado/MySQL real; conservar VALIDANDO, A0–A4 y A5 de otra Task. Scope Lock STRICT, dev solamente, rollback git revert.

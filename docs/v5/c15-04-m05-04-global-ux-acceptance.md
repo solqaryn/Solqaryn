@@ -255,3 +255,7 @@ readback en PLAN/BITACORA y A5 independiente. La auditoria GLOBAL
 (resto de rutas y roles, WCAG completo, contraste y rendimiento representativo)
 sigue INCOMPLETA; estado EN_PROGRESO DEV02 y candado V17 2000002297.
 Rollback: revert normal del commit en dev tras verificar HEAD.
+
+## A0.45 - reparacion landmark QA global tras fallo real A0.44 (DEV02 V20)
+GHA SHA `0a1f05ac856a7a58bbde939cb6d03d8ea9d27c34`, run `44478294254`, job `135404055064`: Chromium con JWT firmado y MySQL 8.4 efimero produjo 32 PASS y 1 FAIL (no suite PASS). En `/plataforma/qa-global-v19`, el shell Angular expone `main#main-content` y `C1401QaGlobalComponent` anidaba otro `<main class="qa-global">`, por lo que A0.44 encontro dos landmarks principales. Reparacion minima: `<section class="qa-global">`, conservando `aria-labelledby`, h1, clases, contenido, controles de acceso y estados seguros. Sin cambiar JWT, RBAC, datos, API ni permisos.
+El test A0.44 ya existente exige exactamente un landmark main en 320/1280, h1, Tab real y cero mutaciones; el caso negativo usa JWT firmado de empresa B y comprueba HTTP 403. Se incluye el template reparado en los paths del workflow para obtener regresion exact-SHA. No afirmar PASS hasta comprobar el nuevo job completed/success, Scope Lock y V5. `C15-04.M05.04` permanece EN_PROGRESO DEV02 con V17 lock `2000002297`, A0-A4 global pendientes (rutas, roles, WCAG, rendimiento), A5 de otra Task. La certificacion A5 historica del componente compartido no se proyecta a este nuevo blob. Rollback normal con git revert en dev, sin QA/main/PROD.
