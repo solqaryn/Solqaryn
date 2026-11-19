@@ -135,6 +135,12 @@ jobs:
           SELECT 'c1504_platform_only', 'Plataforma CI', u.PasswordHash, u.RolId,
                  TRUE, FALSE, FALSE, UTC_TIMESTAMP(6)
           FROM Usuarios u WHERE u.NombreUsuario='c1504_admin_a';
+          -- Usuario efimero SIN membresia y SIN grant plataforma para testar estado 0.
+          INSERT INTO Usuarios (NombreUsuario, NombreCompleto, PasswordHash, RolId, Activo, Bloqueado, Eliminado, FechaCreacion)
+          SELECT 'c0201_zero_membership', 'Sin empresas CI C0201', a.PasswordHash, a.RolId,
+                 TRUE, FALSE, FALSE, UTC_TIMESTAMP(6)
+          FROM Usuarios a WHERE a.NombreUsuario='c1504_admin_a'
+            AND NOT EXISTS (SELECT 1 FROM Usuarios u WHERE u.NombreUsuario='c0201_zero_membership');
           INSERT INTO UsuarioRolesPlataforma (UsuarioId, RolId, Activa, FechaCreacion, FechaActualizacion)
           SELECT u.Id, r.Id, TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)
           FROM Usuarios u CROSS JOIN Roles r
@@ -146,6 +152,10 @@ jobs:
           test "$members" = '1'
           test "$company" = '1'
           test "$company_b" = '1'
+          zero_count="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_c1504_real_ci -Nse "SELECT COUNT(*) FROM UsuarioEmpresas ue JOIN Usuarios u ON u.Id=ue.UsuarioId WHERE u.NombreUsuario='c0201_zero_membership' AND ue.Activa=TRUE;")"
+          zero_platform="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_c1504_real_ci -Nse "SELECT COUNT(*) FROM UsuarioRolesPlataforma ur JOIN Usuarios u ON u.Id=ur.UsuarioId WHERE u.NombreUsuario='c0201_zero_membership' AND ur.Activa=TRUE;")"
+          test "$zero_count" = '0'
+          test "$zero_platform" = '0'
       - name: Node 24
         uses: actions/setup-node@v4
         with:

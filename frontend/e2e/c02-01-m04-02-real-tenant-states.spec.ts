@@ -96,4 +96,23 @@ test.describe('V21 C02-01.M04.02 - membresías y selector con JWT auténtico', (
     const anonymous = await page.request.get(api + '/tenant-context/1');
     expect([401, 403]).toContain(anonymous.status());
   });
+
+  test('R2: cuenta real con 0 empresas niega tenant y muestra rechazo legible', async ({ page }) => {
+    test.setTimeout(150_000);
+    const jwt = await loginReal(page, 'c0201_zero_membership');
+    const headers = { Authorization: 'Bearer ' + jwt };
+    const memberships = await page.request.get(api + '/tenant-context/empresas', { headers });
+    expect(memberships.status(), 'JWT valido consulta lista acotada').toBe(200);
+    const payload = await memberships.json();
+    expect(payload.success).toBe(true);
+    expect(payload.data, 'Cuenta sin UsuarioEmpresas activos no recibe empresas').toEqual([]);
+    const forged = await page.request.get(api + '/tenant-context/1', {
+      headers: { ...headers, 'X-Empresa-Id': '1' }
+    });
+    expect([403, 404], 'Tenant arbitrario nunca debe autorizarse').toContain(forged.status());
+    await expect(page.getByText('No tienes membresías empresariales activas disponibles.')).toBeVisible();
+    await expect(page.getByRole('button', { name: 'Entrar a la empresa' })).toBeDisabled();
+    await expect(page.getByRole('heading', { name: 'Mi perfil' })).toHaveCount(0);
+  });
+
 });
