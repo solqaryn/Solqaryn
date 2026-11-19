@@ -1,3 +1,9 @@
+## 2026-11-19 — V22 C10-04.M06.06 cierre de dependencias auditado [DEV03]
+- Microtarea C10-04.M06.06, PLAN fila 1585: registrar cierre de alcance DEV y mapa de sucesoras sin alterar los gates calculados ni conceder permisos de QA/main/PROD; CLAIM exclusivo V17, lock SQV17_C10_04_M06_06 (2000001585), owner historico DEV03.
+- Se comprobaron las once unidades C10-04.M05.01–06 y M06.01–05 en LISTO con evidencia A5 independiente de alcance limitado; ensayos reales MySQL 8.4 efimero/rollback y Chromium no prueban un worker transaccional productivo, JWT HTTP autentico, Aiven/Cloudflare, backup cifrado ni RPO/RTO.
+- Las dependencias tecnicas de C11-03.M03.01 y C12-01.M03.01 permanecen calculadas por DAG_TECNICO y exigen C10-04.M06.06 LISTO + A5 genuina; no se escribe manualmente SI en COLA/DAG ni se suplantan las precondiciones especificas de los sucesores.
+- Entrega documental en docs/v5/c10-04-m06-06-cierre-dependencias.md: A0/A1 de matriz y limitaciones; A2/A3 runtime NO_APLICA a este changeset exclusivamente documental, sin certificar integracion global. A4 exact-SHA Scope Lock, skill y V5 CI requerido antes de LISTO; A5 revisada por otra Task Javier distinta de DEV03.
+
 ## 2026-11-19 — V22 C07-04.M05.06 regresion y rendimiento proporcionales [DEV01]
 - Tras A5 independiente real de C07-04.M05.02 se habilita por DAG C07-04.M05.06; se agregan dos casos Chromium y un job por SHA que ejecuta tres suites existentes de accesibilidad, densidad y aceptacion en Angular real.
 - Se distinguen sesiones simuladas de JWT/MySQL/PSP reales; Scope Lock/V5 y GitHub Actions requieren SUCCESS exacto para LISTO, A5 posterior por Task Javier distinta. Ningun permiso QA/main/PROD ni A5 inventado.
