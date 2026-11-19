@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 C15-05.M05.02 reparación CI Unicode JSON sin debilitar controles [Javier :30]
+- CI inicial 19/20, único FAIL por comparar acento con JSON Unicode escapado. Test corregido para inspeccionar `message` JSON decodificada; sigue verificando HTTP 500 y ausencia de sentinel, sin modificar autorización ni middleware.
+- Revalidación GitHub Actions exact-SHA pendiente; A5_FAIL P2 histórico y estado VALIDANDO conservados. No QA/main/PROD, Scope Lock STRICT.
+
 ## 2026-11-19 — V20 C15-05.M05.02 reparación P2 HTTP JWT y paginación [Javier :30]
 - Repara evidencia faltante A5_FAIL: TestServer ASP.NET Core 10 con JWT firmado de laboratorio, filtro RequierePermiso real, controles 401/403/200, error 500 saneado y paginación negativa/limites; workflow xUnit 20 casos con TRX obligatorio.
 - Añade validacion [Range] a Page/PageSize y defensa en AuditoriaService para evitar Skip overflow y lecturas excesivas. Solo dev, fixture de grants/no MySQL real; A5_FAIL historico conservado hasta nueva revisión independiente. No QA/main/PROD; revert normal.

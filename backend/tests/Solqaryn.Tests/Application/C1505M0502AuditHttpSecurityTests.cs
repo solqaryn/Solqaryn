@@ -187,7 +187,9 @@ public sealed class C1505M0502AuditHttpSecurityTests
         Assert.Equal(HttpStatusCode.InternalServerError, response.StatusCode);
         var body = await response.Content.ReadAsStringAsync();
         Assert.DoesNotContain(sentinel, body, StringComparison.Ordinal);
-        Assert.Contains("Ocurrió un error interno", body, StringComparison.Ordinal);
+        using var parsed = System.Text.Json.JsonDocument.Parse(body);
+        Assert.Contains("Ocurrió un error interno",
+            parsed.RootElement.GetProperty("message").GetString(), StringComparison.Ordinal);
     }
 
     [Theory]
