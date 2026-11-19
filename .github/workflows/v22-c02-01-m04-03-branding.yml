@@ -1,0 +1,45 @@
+name: V22 C02-01.M04.03 - branding dinamico seguro
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/src/app/services/empresa-identidad.service.ts'
+      - 'frontend/src/app/services/empresa-identidad.c02-01-m04-03.spec.ts'
+      - '.github/workflows/v22-c02-01-m04-03-branding.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: v22-c0201-m0403-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  branding:
+    name: C02-01.M04.03 - branding adversarial Angular 22
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout exact SHA
+        uses: actions/checkout@v4
+      - name: Node.js institucional
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm institucional
+        run: npm install --global npm@11.19.0
+      - name: Instalar dependencias reproducibles
+        run: npm ci
+      - name: Cuatro casos adversariales de branding
+        run: npm test -- --no-watch --no-progress --include=src/app/services/empresa-identidad.c02-01-m04-03.spec.ts
+      - name: Tipado, politicas y build de produccion
+        run: |
+          npm run lint
+          npm run build:prod
