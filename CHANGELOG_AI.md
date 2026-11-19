@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C14-02.M04.06 densidad y carga progresiva de amenazas [Javier :20]
+- Agrega cinco pruebas Playwright reales en GitHub-hosted para grilla 320/768/1280, control adversarial de desborde, revalidación lenta, error 503 fail-closed y humo DOMContentLoaded 15s; no modifica runtime ni concede permisos.
+- Riesgo R2: HTTP/JWT/tenant reales NO_MEDIDO; el workflow nuevo usa cancel-in-progress=false por SHA. A0-A4 solo tras CI exacta y A5 por Task distinta de DEV03; dev estricto, sin QA/main/PROD.
+
 ## 2026-11-18 — V20 C15-04.M05.04 A0.43 landmark unico en guia amenazas [Javier :10]
 - El shell autenticado ya define main#main-content; sustituye el main interno por section en la guía y agrega dos Playwright reales de JWT plataforma y empresa B sin permiso con 403, semántica responsive y cero mutaciones.
 - Workflow incluye la ruta de componente para disparar 31 pruebas JWT/MySQL 8.4/Chromium en SHA nuevo; A0–A4 UX global sin cerrar, A5 del componente anterior no traslada automáticamente validación al nuevo blob. Solo dev y Scope Lock STRICT, sin QA/main/PROD.
