@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C07-04.M04.06 densidad y carga progresiva [Javier :50]
+- Pruebas reales Chromium para densidad responsive 320/768/1280, spinner bajo GET retenido y HTTP 503 con reintento; CI GitHub-hosted independiente.
+- No modifica runtime; JWT, tenant A/B y pagos de fixture NO certificados; A0–A4 integrales y A5 independiente pendientes. Solo dev, no QA/main/PROD.
+
 ## 2026-11-18 — V20 C15-01.M05.05 regresiones negativas de guardas [Javier :30]
 - Añade auditoría real de fuentes Angular y ocho mutaciones adversariales de rutas privadas, autorización de módulo, contexto tenant, rechazo 403 y fallos; CI independiente GitHub-hosted Node24.
 - Solo control estático: no firma JWT, A/B backend, MySQL o R3; A0–A4 requeridos, A5 independiente y estados institucionales no se falsean.
