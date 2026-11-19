@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 C03-04.M05.01 matriz de reglas Domain de incidentes [Javier :00]
+- Agrega xUnit real de Domain para lectura, contención, resolución, denegación tenant/sucursal, autoridad JWT/RBAC, revocación, idempotencia, versión, restore y errores, con CI .NET 10 y TRX >=20.
+- Fixtures no prueban JWT firmado, HTTP ni MySQL/recovery real; mantener VALIDANDO y A5 ajena hasta A0–A4 completos. Scope Lock STRICT, solo dev, rollback normal.
+
 ## 2026-11-19 — V20 C15-04.M05.04 A0.45 landmark QA global y regresion JWT real [Javier :10]
 - GitHub Actions A0.44 SHA 0a1f05ac: 32/33 Chromium reales; 1 FAIL por main duplicado en QA global. Reparacion minima del template QA main anidado a section; sin alterar guard, JWT, RBAC ni datos.
 - CI exact-SHA vuelve a ejecutarse al cambiar el template; el test mantiene negativos tenant B 403, teclado y landmarks 320/1280. No contar PASS sin logs.
