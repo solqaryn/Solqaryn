@@ -1,3 +1,7 @@
+## 2026-11-19 — V21 C02-01.M04.05 contraste real y regresión WCAG [Javier :30]
+- Repara medición de contraste que podía aprobar falsamente fondos transparentes: composición alfa ancestral, luminancia sRGB, etiquetas usuario/clave y encabezado a 320/1280 en Chromium real.
+- Alcance test-only R2, sin modificar API ni autoridad; mantener VALIDANDO hasta CI GitHub-hosted exact-SHA, Scope Lock/V5 y resto de A0–A4; A5 de otra Task Javier. No QA/main/PROD.
+
 ## 2026-11-19 — V21 C15-03.M05.05 JWT alg none y payload manipulado [Javier :40]
 - Amplia suite real Playwright JWT/MySQL 8.4: control positivo firmado tenant A 200, `alg=none` sin firma y claim `exp` adulterado denegados para A/B/plataforma; guard de navegador y cero mutaciones. Un nuevo caso; GitHub Actions exact-SHA pendiente, no PASS anticipado.
 - CI anterior d2ef2fd4 tuvo 8/8 en Chromium real. Permanece VALIDANDO y A5_FAIL P2 historico por ownership granular de recursos, archivos/jobs en cuarentena; no cambiar permisos, allowlist P0 ni QA/main/PROD.

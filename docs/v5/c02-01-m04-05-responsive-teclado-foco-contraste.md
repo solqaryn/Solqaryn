@@ -8,3 +8,7 @@
 - A4: revisar check-runs del SHA causal, Scope Lock exact-SHA, V5 y workflow dirigido; queued/in_progress/skipped/cancelled/failure no son PASS. VALIDANDO hasta pruebas pertinentes completas.
 - A5: otra Task Javier distinta de DEV06 debe revisar realmente el código, el alcance y las pruebas; sin autoaprobación.
 - Rollback: revert normal del commit; no se borran registros ni se usa force-push.
+
+## Reparación cruzada V21 — contraste efectivo, sin PASS sintético
+
+El test original muestreaba únicamente el fondo CSS inmediato del encabezado, que puede ser transparente. La regresión ahora compone opacidad de todos los ancestros hasta el fondo del documento, calcula luminancia sRGB efectiva y exige contraste WCAG AA 4.5:1 tanto en el encabezado como en las etiquetas reales de usuario/contraseña, en 320 y 1280 px. La ejecución debe hacerse en Chromium real de GitHub Actions, sin mocks del DOM ni .focus() artificial. No altera runtime, API, seguridad ni permisos; por tanto no certifica host falso/JWT firmado/revocación/tenant A/B. Mantener VALIDANDO y exigir A0–A4 completos y revisión A5 independiente tras PASS causal. Rollback: revert normal del changeset.

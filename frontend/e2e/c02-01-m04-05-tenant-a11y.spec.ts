@@ -54,33 +54,64 @@ test.describe('V20 C02-01.M04.05 - responsive, teclado, foco, labels y contraste
     await expect(page).toHaveURL(/\/login(?:$|[?#])/);
   });
 
-  test('contraste WCAG AA del encabezado en la superficie real del acceso', async ({ page }) => {
-    await page.setViewportSize({ width: 1280, height: 800 });
-    await page.goto('/login');
-    const heading = page.getByRole('heading', { name: 'Iniciar sesión' });
-    const ratio = await heading.evaluate(element => {
-      const form = element.closest('form');
-      if (!form) throw new Error('Falta formulario para medir contraste');
-      const context = document.createElement('canvas').getContext('2d');
-      if (!context) throw new Error('Canvas no disponible');
-      context.canvas.width = context.canvas.height = 1;
-      const parse = (value: string): number[] => {
-        context.fillStyle = '#fff';
-        context.fillRect(0, 0, 1, 1);
-        context.fillStyle = value;
-        context.fillRect(0, 0, 1, 1);
-        return Array.from(context.getImageData(0, 0, 1, 1).data).slice(0, 3);
-      };
-      const lum = (values: number[]) => values.reduce((sum, value, index) => {
-        const s = value / 255;
-        const lin = s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
-        return sum + lin * [0.2126, 0.7152, 0.0722][index];
-      }, 0);
-      const fore = lum(parse(getComputedStyle(element).color));
-      const back = lum(parse(getComputedStyle(form).backgroundColor));
-      return (Math.max(fore, back) + 0.05) / (Math.min(fore, back) + 0.05);
-    });
-    expect(ratio).toBeGreaterThanOrEqual(4.5);
+  test('WCAG AA: contraste efectivo de encabezado y labels con fondos transparentes', async ({ page }) => {
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 850 });
+      await page.goto('/login');
+      const targets = [
+        page.getByRole('heading', { name: 'Iniciar sesión' }),
+        page.locator('mat-label').filter({ hasText: 'Nombre de usuario' }),
+        page.locator('mat-label').filter({ hasText: 'Contraseña' })
+      ];
+      for (const target of targets) {
+        await expect(target).toBeVisible();
+        const ratio = await target.evaluate(element => {
+          // Los paneles/material labels pueden tener backgroundColor transparente.
+          // Medir solo el fondo inmediato daria un PASS falso. Componer ancestros.
+          const canvas = document.createElement('canvas');
+          canvas.width = canvas.height = 1;
+          const context = canvas.getContext('2d');
+          if (!context) throw new Error('Canvas no disponible para verificar WCAG');
+          const pixel = (color: string): number[] => {
+            context.clearRect(0, 0, 1, 1);
+            context.fillStyle = color;
+            context.fillRect(0, 0, 1, 1);
+            return Array.from(context.getImageData(0, 0, 1, 1).data);
+          };
+          const layers: number[][] = [];
+          for (let current: Element | null = element; current; current = current.parentElement) {
+            layers.unshift(pixel(getComputedStyle(current).backgroundColor));
+          }
+          let background = [255, 255, 255];
+          for (const layer of layers) {
+            const [r = 0, g = 0, b = 0, alpha = 0] = layer;
+            const a = alpha / 255;
+            background = [
+              Math.round(r * a + (background[0] ?? 255) * (1 - a)),
+              Math.round(g * a + (background[1] ?? 255) * (1 - a)),
+              Math.round(b * a + (background[2] ?? 255) * (1 - a))
+            ];
+          }
+          const [r = 0, g = 0, b = 0, alpha = 0] = pixel(getComputedStyle(element).color);
+          const a = alpha / 255;
+          const foreground = [
+            Math.round(r * a + (background[0] ?? 255) * (1 - a)),
+            Math.round(g * a + (background[1] ?? 255) * (1 - a)),
+            Math.round(b * a + (background[2] ?? 255) * (1 - a))
+          ];
+          const luminance = (channels: number[]) =>
+            channels.reduce((sum, channel, index) => {
+              const s = channel / 255;
+              const linear = s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+              return sum + linear * ([0.2126, 0.7152, 0.0722][index] ?? 0);
+            }, 0);
+          const fore = luminance(foreground);
+          const back = luminance(background);
+          return (Math.max(fore, back) + 0.05) / (Math.min(fore, back) + 0.05);
+        });
+        expect(ratio, 'Contraste WCAG AA del texto sobre el fondo real compuesto').toBeGreaterThanOrEqual(4.5);
+      }
+    }
   });
 
   test('hint tenant manipulado no concede acceso anónimo ni menú de cambio empresarial', async ({ page }) => {
