@@ -282,3 +282,11 @@ Dos casos de Playwright Chromium con JWT firmado de plataforma y empresa B, API 
 ## A0.49 — Incidentes privados autenticados (DEV02 V21)
 
 Dos escenarios Playwright reales de respuesta a incidentes: plataforma con JWT firmado y GET 200, Tab/Enter contra revalidación, un landmark main, h1 único, aviso de ausencia de incidentes conectados, cero HTTP mutantes y anchos 320/1280. Empresa B mediante JWT real obtiene 403 de API y guard deniega vista. MySQL 8.4 efímero en GitHub-hosted, no se leen respaldos ni se ejecutan restauraciones, revocaciones o proveedores. **40 Chromium esperados**, nunca PASS anticipado. A0-A4 globales de UX, roles, WCAG/perf siguen sin certificar; C15-04.M05.04 conserva EN_PROGRESO/DEV02, candado V17 2000002297; A5 independiente cuando alcance completo. Rollback revert normal, solo dev.
+
+## A0.50 — Gobierno de cambios V5: reparacion P2 de landmark y pruebas R2 (DEV02 V21)
+
+La shell Angular ya contiene `main#main-content` y el componente de gobierno tenia otro `main.governance` anidado. Reparacion localizada: sustituir el elemento interior por `section.governance`, sin tocar h1, aria-labelledby, boton, estados, guard, identidad visual, JWT, RBAC, API ni datos.
+
+Dos pruebas Playwright con JWT firmado (.NET 10), MySQL 8.4 efimero y Chromium GitHub-hosted: plataforma autenticada en 320/1280, exactamente un landmark main, h1, Tab real sin .focus(), Enter/GET 200 de revalidacion, cero HTTP mutante y sin overflow; empresa B obtiene 403 real y guard sin vista protegida. **42 escenarios esperados**; pendientes de check completed/success y logs exact-SHA. No extrapolar a auditoria global WCAG/roles/rutas/rendimiento.
+
+A4: Scope Lock, V5, seguridad, backend, frontend y E2E pertinents deben terminar SUCCESS; un check requerido SKIPPED/CANCELLED/IN_PROGRESS no es PASS. El blob runtime modificado requiere revision independiente de cualquier aprobacion A5 anterior sobre ese componente. H2297 EN_PROGRESO, owner DEV02, lock V17 2000002297 preservado; A0-A4 globales de C15 incompletos, A5 pendiente. Rollback mediante git revert FF en dev, sin QA/main/PROD ni secretos.

@@ -1205,4 +1205,69 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     }
   });
 
+
+  // A0.50: gobierno de cambios real; detecta main anidado y denegacion por JWT.
+  test('A0.50 - gobierno V5: JWT real, main unico, teclado y GET sin mutaciones', async ({ page }) => {
+    await ingresar(page, 'c1504_platform_only');
+    const cambios: string[] = [];
+    page.on('request', request => {
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(request.method())) {
+        cambios.push(request.method() + ' ' + new URL(request.url()).pathname);
+      }
+    });
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      const sesion = page.waitForResponse(r =>
+        r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+      const documento = await page.goto('/plataforma/gobierno-cambios-v5');
+      expect(documento?.status()).toBe(200);
+      expect((await sesion).status()).toBe(200);
+      await expect(page.getByRole('main')).toHaveCount(1);
+      await expect(page.getByRole('heading', {
+        level: 1, name: 'Decisiones y controles V5'
+      })).toHaveCount(1);
+      const revalidar = page.getByRole('button', { name: 'Revalidar sesión de plataforma' });
+      await expect(revalidar).toBeEnabled();
+      let foco = false;
+      for (let n = 0; n < 65; n++) {
+        await page.keyboard.press('Tab');
+        foco = await revalidar.evaluate(el => el === document.activeElement);
+        if (foco) break;
+      }
+      expect(foco, 'Tab llega a revalidar').toBe(true);
+      const siguiente = page.waitForResponse(r =>
+        r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+      await page.keyboard.press('Enter');
+      expect((await siguiente).status()).toBe(200);
+      await expect(page.getByText(
+        'Sesión de plataforma revalidada correctamente. La vista sigue siendo solo lectura.'
+      )).toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(width + 1);
+    }
+    expect(cambios, 'Gobierno no muta backend').toEqual([]);
+  });
+
+  test('A0.50 - empresa B denegada por API real y guard en gobierno privado', async ({ page, request }) => {
+    const token = await ingresar(page, 'c1504_admin_b');
+    const backend = await request.get(api + '/plataforma/sesion', {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    expect(backend.status()).toBe(403);
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      const sesion = page.waitForResponse(r =>
+        r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+      await page.goto('/plataforma/gobierno-cambios-v5');
+      expect((await sesion).status()).toBe(403);
+      await expect(page).toHaveURL(url =>
+        url.pathname === '/login' && url.searchParams.get('plataforma') === 'denegado');
+      await expect(page.getByRole('heading', { name: 'Decisiones y controles V5' }))
+        .toHaveCount(0);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(width + 1);
+    }
+  });
+
+
 });

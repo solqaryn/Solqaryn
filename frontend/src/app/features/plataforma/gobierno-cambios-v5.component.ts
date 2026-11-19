@@ -17,7 +17,7 @@ export type EstadoGobiernoV5 = 'cargando' | 'vacio' | 'error' | 'exito' | 'sin_p
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="governance" aria-labelledby="governance-title">
+    <section class="governance" aria-labelledby="governance-title">
       <header class="governance-header">
         <div>
           <p class="eyebrow">SOLQARYN · Gobierno de cambios</p>
@@ -65,7 +65,7 @@ export type EstadoGobiernoV5 = 'cargando' | 'vacio' | 'error' | 'exito' | 'sin_p
 
       <p class="footnote" role="note">Contenido estático: no se consultan microtareas, JWT, permisos, bases de datos o auditorías en vivo. No existen acciones para aprobar, ejecutar o desplegar desde esta vista.</p>
       }
-    </main>
+    </section>
   `,
   styles: [`
     :host { display: block; min-height: 100%; color: var(--mat-sys-on-surface, #17212d); }

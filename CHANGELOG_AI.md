@@ -1,3 +1,8 @@
+## 2026-11-19 — V21 C15-04.M05.04 A0.50 gobierno de cambios JWT/Chromium [Javier DEV02]
+- Repara P2 de doble main en gobierno V5 con section semantica, preservando h1, guard y JWT/RBAC.
+- Suma dos pruebas reales GitHub-hosted MySQL 8.4, JWT firmado y Chromium 320/1280: teclado Tab/Enter GET, 403 empresa B y cero HTTP mutante. 42 esperados, no PASS anticipado.
+- Scope Lock/V5 exact-SHA y A5 distinta obligatorios; H2297 EN_PROGRESO, owner DEV02, candado V17, auditoria global incompleta. Sin QA/main/PROD.
+
 ## 2026-11-19 — V21 C02-01.M04.04 rescate cruzado Chromium/JWT/MySQL real [Javier DEV01]
 - Añade tres casos Playwright contra API .NET10, JWT firmado y MySQL 8.4 efimero: doble submit durante GET real, seleccion ausente sin peticion y empresa B falsificada rechazada por servidor.
 - Runner GitHub-hosted aislado con Scope Lock y V5 exact-SHA; si CI esta QUEUED/IN_PROGRESS no hay PASS ni LISTO anticipado. Owner historico DEV05 conservado; A5 independiente distinta de autor/reparador.
