@@ -1,3 +1,7 @@
+## 2026-11-19 — V21 C02-01.M04.04 guard contra doble submit tenant [Javier DEV05]
+- Corrige error espurio de validación cuando se reenvía selector durante GET tenant en curso; mantiene una sola solicitud y navegación únicamente tras membresía confirmada.
+- Añade TestBed adversarial de doble acción, verificaciones de contexto y evidencia R2; CI Angular exact-SHA, Scope Lock y V5 pendientes de readback; A5 independiente, sin QA/main/PROD.
+
 ## 2026-11-19 — V21 C10-04.M06.04 rollback reversible MySQL 8.4 efimero [Javier DEV01]
 - Añade ensayo real InnoDB de ROLLBACK transaccional y desactivacion/reversion sin perder cuatro filas legitimate, aislamiento A/B, replay CAS obsoleto 0 y digest íntegro.
 - CI GitHub-hosted por SHA; no infiere JWT/EF/worker/productivo; Scope Lock/V5 y A5 independiente; conserva VALIDANDO mientras CI requerida no termine.

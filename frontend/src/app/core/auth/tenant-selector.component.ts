@@ -134,7 +134,10 @@ export class TenantSelectorComponent implements OnInit {
   }
 
   activarEmpresa(): void {
-    if (!this.empresaValida() || this.cargando) {
+    // Un segundo submit durante la verificación HTTP no es un error de selección.
+    // No crear una segunda petición ni reabrir el flujo de navegación.
+    if (this.cargando) return;
+    if (!this.empresaValida()) {
       this.error = 'Selecciona una empresa de tus membresías activas.';
       return;
     }

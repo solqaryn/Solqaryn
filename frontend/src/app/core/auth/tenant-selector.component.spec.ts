@@ -169,4 +169,35 @@ describe('TenantSelectorComponent - P1-006.A', () => {
     expect(TestBed.inject(TenantContextService).contextoVerificado()).toBeNull();
   });
 
+  it('C02-01.M04.04: doble submit mantiene un solo GET, sin error ni confirmacion duplicada', () => {
+    const fixture = TestBed.createComponent(TenantSelectorComponent);
+    let confirmaciones = 0;
+    fixture.componentInstance.confirmado.subscribe(() => { confirmaciones++; });
+    fixture.detectChanges();
+    http.expectOne(`${environment.apiUrl}/tenant-context/empresas`).flush({
+      success: true,
+      data: [{ empresaId: 7, nombre: 'Empresa A' }, { empresaId: 8, nombre: 'Empresa B' }]
+    });
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+    component.empresaId = 7;
+    component.activarEmpresa();
+    component.activarEmpresa(); // invocación adversarial mientras GET sigue pendiente
+    expect(component.cargando).toBe(true);
+    expect(component.error).toBe('');
+    expect(confirmaciones).toBe(0);
+    expect(TestBed.inject(TenantContextService).contextoVerificado()).toBeNull();
+    const requests = http.match(`${environment.apiUrl}/tenant-context/7`);
+    expect(requests).toHaveLength(1);
+    requests[0].flush({
+      success: true,
+      data: { usuarioId: 3, empresaId: 7, rolId: 4, rolNombre: 'Operador', esAdministrador: false }
+    });
+    fixture.detectChanges();
+    expect(confirmaciones).toBe(1);
+    expect(component.cargando).toBe(false);
+    expect(component.error).toBe('');
+    expect(TestBed.inject(TenantContextService).empresaIdVerificada()).toBe(7);
+  });
+
 });
