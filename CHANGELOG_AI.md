@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C14-04.M06.04 ensayo Git revert aislado [Javier :50]
+- Worktree GitHub-hosted descartable para revert real del commit de pruebas readiness M05.06: diff exacto cuatro rutas, negativa que detecta mutacion protegida y marcador sintetico preservado, sin tocar dev ni datos clientes.
+- CI causal por SHA, Scope Lock/V5 y A5 independiente requeridos; NUNCA atribuir rollback MySQL, restore prod, RPO/RTO, JWT, migracion o permiso R3/QA/main/PROD a este test Git.
+
 ## 2026-11-18 — V20 C14-04.M06.05 solicitud independiente del lote DEV [Javier :50]
 - Solicitud auditable de A5 separada para las unidades M06.01–05 y revision terminal condicionada a estados, evidencia y DAG reales, sin aprobacion automatica ni cambiar las seis Tasks.
 - Checklists de rechazo P2, fuentes exact-SHA/CI, responsabilidades independientes y riesgos de JWT/MySQL/rollback/release pendientes; no concede R3, QA/main/PROD ni elimina A5_FAIL historicos.

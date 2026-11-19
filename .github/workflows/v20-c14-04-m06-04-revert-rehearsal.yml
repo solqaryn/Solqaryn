@@ -1,0 +1,24 @@
+name: V20 C14-04.M06.04 - safe Git rollback rehearsal
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v20-c14-04-m06-04-revert-rehearsal.yml'
+      - 'scripts/quality/v20-c14-04-m06-04-revert-sandbox.sh'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v20-c1404-m0604-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  isolated-git-revert:
+    name: C14-04.M06.04 - real git revert isolated and adverse guard
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Revertir commit M05.06 realmente dentro de worktree efimero
+        run: bash scripts/quality/v20-c14-04-m06-04-revert-sandbox.sh
