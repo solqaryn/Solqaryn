@@ -7,3 +7,12 @@ Se prueban CSS real de densidad compacta, ausencia de desbordamiento a 320/768/1
 
 ## A4 y A5
 GitHub-hosted ejecuta npm ci, lint, Angular build, Chromium, Scope Lock y V5 por SHA; QUEUED/IN_PROGRESS/FAILED no significa PASS. Conservar VALIDANDO hasta A0–A4 pertinentes, pruebas causales SUCCESS y readback. A5 independiente por Task Javier distinta de DEV06. Rollback mediante git revert normal; ninguna rama extra, sin QA/main/PROD.
+
+
+## V20 — reparación tras A5_FAIL P2 independiente (19 noviembre 2026)
+
+El revisor DEV03 detectó que la prueba 503 del SHA 44733378 solo escuchaba métodos no-G​​ET en /plataforma/sesion. Un POST/PUT/PATCH/DELETE a otro endpoint no incrementaría el contador y permitiría un falso PASS de la afirmación "sin escrituras". Se conserva el A5_FAIL P2 original y su bitácora.
+
+La corrección usa un observador compartido de métodos POST/PUT/PATCH/DELETE sobre CUALQUIER URL del navegador. El test HTTP503 lo usa para rechazar toda solicitud mutante. Un quinto test adversarial ejecuta cuatro mutaciones simuladas en la ruta local /__v20_mutation_oracle_probe__ interceptada con route.fulfill, y exige que el MISMO observador registre todas; ninguna sale al backend. El código Angular, permisos, JWT, MySQL y API siguen intactos.
+
+Se requiere nuevo commit fast-forward dev, CI GitHub-hosted exact-SHA con cinco Chromium SUCCESS, lint/build, Scope Lock y V5. No reutilizar A5_PASS previo ni autoaprobar: nueva A5 por una Task Javier distinta del autor DEV06 y reparador DEV03. No certificar pentest, tenant A/B, RTO/RPO ni producción.

@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 reparación A5_FAIL P2 C03-04.M04.06 oráculo de mutaciones [Javier :20]
+- Cambia observador Playwright de métodos mutantes restringido a sesión por uno global para rechazar POST/PUT/PATCH/DELETE fuera de la ruta de sesión; agrega quinto test adversarial interceptado localmente que prueba los cuatro métodos con el mismo oráculo.
+- A5_FAIL histórico preservado; CI del SHA nuevo obligatoria, Scope Lock/V5, revisión A5 distinta de autor DEV06 y reparador DEV03. Solo pruebas y documentación, sin API/JWT/tenant/MySQL ni QA/main/PROD.
+
 ## 2026-11-19 — V20 C14-02.M05.01 reparación tipada del escenario adversarial [Javier :30]
 - GitHub Actions job 135388680834 acreditó Angular build SUCCESS pero Vitest rechazó TS2345 en el fixture negativo esAdministrador=false: el contrato PlataformaSesion exige literal true. Se tipa explícitamente solo el valor malicioso del test, sin tocar producción, guards ni relajar aserciones.
 - Nuevo SHA exige cinco Vitest reales completados y Scope Lock/V5 exacto, A5 por otra Task Javier, preservando evidencia del FAIL previo; sin QA/main/PROD.

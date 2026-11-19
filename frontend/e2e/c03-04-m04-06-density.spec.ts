@@ -1,3 +1,10 @@
+function observarMutaciones(page:Page, mutaciones:string[]):void {
+ page.on('request',req=>{
+   const metodo=req.method();
+   if(['POST','PUT','PATCH','DELETE'].includes(metodo))
+     mutaciones.push(metodo+' '+new URL(req.url()).pathname);
+ });
+}
 import {expect,test,type Page,type Route} from '@playwright/test';
 const headers={'Access-Control-Allow-Origin':'http://127.0.0.1:4200','Access-Control-Allow-Headers':'Authorization, Content-Type, X-Empresa-Id','Access-Control-Allow-Methods':'GET, OPTIONS'};
 const autorizado={success:true,data:{nombreUsuario:'Auditor',rolNombre:'Admin',ambito:'Plataforma',esAdministrador:true}};
@@ -39,7 +46,7 @@ test('GET de sesion pendiente oculta guia hasta respuesta',async({page})=>{
 });
 test('503 fail closed sin filtracion y sin escrituras',async({page})=>{
  let fallar=false;const mutaciones:string[]=[];
- page.on('request',req=>{if(/\/plataforma\/sesion(?:\?|$)/.test(req.url())&&!['GET','OPTIONS'].includes(req.method()))mutaciones.push(req.method());});
+ observarMutaciones(page,mutaciones);
  await sesion(page,async route=>{if(!fallar)return responder(route);await route.fulfill({status:503,headers,contentType:'application/json',body:JSON.stringify({success:false,message:'INTERNAL_SECRET_DIAGNOSTIC'})});});
  await page.goto('/plataforma/respuesta-incidentes-v5');
  await expect(page.locator('.incident-review li')).toHaveCount(4);
@@ -60,4 +67,24 @@ test('DOMContentLoaded y primera pintura locales medidos, RTO/RPO no medidos',as
   expect(m.fcp).not.toBeNull();expect(m.fcp!).toBeGreaterThan(0);expect(m.fcp!).toBeLessThan(15000);
   await expect(page.getByRole('note')).toContainText('NO_MEDIDO');
  }
+});
+
+test('oráculo adversarial detecta POST PUT PATCH DELETE en ruta ajena a sesión',async({page})=>{
+ const mutaciones:string[]=[];
+ observarMutaciones(page,mutaciones);
+ await page.route('**/__v20_mutation_oracle_probe__',route=>route.fulfill({status:204}));
+ await page.goto('/login');
+ for(const metodo of ['POST','PUT','PATCH','DELETE']){
+  await page.evaluate(async method=>{
+    const respuesta=await fetch('/__v20_mutation_oracle_probe__',{method});
+    if(!respuesta.ok)throw Error('Fallo en probe local '+method);
+  },metodo);
+ }
+ const observadas=mutaciones.filter(x=>x.includes('/__v20_mutation_oracle_probe__'));
+ expect(observadas).toEqual([
+  'POST /__v20_mutation_oracle_probe__',
+  'PUT /__v20_mutation_oracle_probe__',
+  'PATCH /__v20_mutation_oracle_probe__',
+  'DELETE /__v20_mutation_oracle_probe__'
+ ]);
 });
