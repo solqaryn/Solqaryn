@@ -47,7 +47,7 @@ describe('C14-02.M05.01 - unidad fail-closed de guía privada de amenazas', () =
     for (const identidad of [
       null,
       { ...admin, ambito: 'Empresa' } as unknown as PlataformaSesion,
-      { ...admin, esAdministrador: false }
+      { ...admin, esAdministrador: false } as unknown as PlataformaSesion
     ]) {
       const { fixture } = await montar(identidad);
       expect(fixture.componentInstance.estadoVista()).toBe('sin_permiso');

@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 C14-02.M05.01 reparación tipada del escenario adversarial [Javier :30]
+- GitHub Actions job 135388680834 acreditó Angular build SUCCESS pero Vitest rechazó TS2345 en el fixture negativo esAdministrador=false: el contrato PlataformaSesion exige literal true. Se tipa explícitamente solo el valor malicioso del test, sin tocar producción, guards ni relajar aserciones.
+- Nuevo SHA exige cinco Vitest reales completados y Scope Lock/V5 exacto, A5 por otra Task Javier, preservando evidencia del FAIL previo; sin QA/main/PROD.
+
 ## 2026-11-19 — V20 C14-02.M05.01 pruebas unitarias adversariales de guía privada [Javier :30]
 - Agrega cinco tests Angular TestBed para denegación anónimo/empresa/no administrador, respuesta 200 obsoleta sin sesión vigente, single-flight, errores 401/503 y guía de cuatro criterios; sin cambiar runtime ni hacer llamadas HTTP productivas.
 - CI dirigida GitHub-hosted Node24/Angular Vitest, Scope Lock y V5 exact-SHA; riesgo R2 test-only con JWT/tenant A/B reales NO_MEDIDO, A5 por Task Javier diferente, rollback git revert, sin QA/main/PROD.
