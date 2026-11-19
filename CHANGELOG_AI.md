@@ -1,3 +1,8 @@
+## 2026-11-18 - V20 C15-01.M05.03 MySQL 8.4 efimero [Javier :00]
+- Prueba real de persistencia de 2340 IDs y 65 familias con lectura posterior de filas en InnoDB MySQL 8.4 efimero de GitHub Actions; tres negativos: duplicado, familia no autorizada y rollback.
+- No se usan Aiven, datos productivos, JWT o proveedores externos. Snapshot no acredita todas las rutas, requisitos ni servicios; CI y A0-A4/A5 siguen independientes.
+- Exclusivamente dev, reversible mediante git revert, sin reescribir BITACORA.
+
 ## 2026-11-18 - V20 C15-01.M05.01 reparacion P2 baseline de grupos [Javier :00]
 - Se corrige falso PASS de un snapshot falsificado: los grupos validos se contrastan con el conjunto fijo C00-C14/01-04 y C15/01-05, no con las claves del propio snapshot mutable.
 - Regresion adversarial substituye C00-01 por C99-99 conservando 2340 IDs y 65x36; debe rechazarse con BASELINE_GROUP_SET. Sin cambios a los 2340 IDs, Sheets, auth, DB o runtime productivo; A5 independiente y verificacion externa exact-SHA pendientes.

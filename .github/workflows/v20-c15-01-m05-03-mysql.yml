@@ -1,0 +1,49 @@
+name: V20 C15-01.M05.03 - MySQL 8.4 ephemeral plan persistence
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'scripts/quality/c15-01-m05-03-mysql.py'
+      - 'docs/v5/c15-01-m05-01-ids.snapshot.json'
+      - 'docs/v5/c15-01-m05-03-real-mysql.md'
+      - '.github/workflows/v20-c15-01-m05-03-mysql.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: c1501-m0503-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  mysql:
+    name: C15-01.M05.03 - real MySQL 8.4 2340 IDs and rollback
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Verify exact SHA project Scope Lock
+        run: node scripts/verify-project-scope.mjs
+      - name: Actual MySQL 8.4 integration, duplicate/foreign-key/rollback negatives
+        env:
+          MYSQL_CONTAINER: ${{ job.services.mysql.id }}
+        run: |
+          set -euo pipefail
+          python3 scripts/quality/c15-01-m05-03-mysql.py | tee c1501-m0503-mysql.log
+          grep -F 'C1501_M0503_MYSQL84_REAL_POSITIVE_2340_IDS_65x36=PASS' c1501-m0503-mysql.log
+          grep -F 'C1501_M0503_DUPLICATE_PRIMARY_KEY_NEGATIVE=PASS' c1501-m0503-mysql.log
+          grep -F 'C1501_M0503_FOREIGN_GROUP_NEGATIVE=PASS' c1501-m0503-mysql.log
+          grep -F 'C1501_M0503_MISSING_ROW_ROLLBACK_NEGATIVE=PASS' c1501-m0503-mysql.log
+          grep -F 'C1501_M0503_REAL_MYSQL84_EPHEMERAL_INTEGRATION_PASS=TRUE' c1501-m0503-mysql.log
