@@ -254,4 +254,70 @@ describe('TenantContextService', () => {
     expect(service.tieneContextoVerificado()).toBe(false);
   });
 
+  it('solo habilita el cambio con dos empresas reales e incluye la verificada', () => {
+    const service = TestBed.inject(TenantContextService);
+    service.seleccionarEmpresa(7).subscribe();
+    httpMock.expectOne(`${environment.apiUrl}/tenant-context/7`).flush({
+      success: true, data: { usuarioId: 3, empresaId: 7, rolId: 4,
+        rolNombre: 'Operador', esAdministrador: false }
+    });
+    expect(service.puedeCambiarEmpresa()).toBe(false);
+    service.listarEmpresasSeleccionables().subscribe();
+    httpMock.expectOne(`${environment.apiUrl}/tenant-context/empresas`).flush({
+      success: true, data: [{ empresaId: 7, nombre: 'A' }]
+    });
+    expect(service.puedeCambiarEmpresa()).toBe(false);
+    service.listarEmpresasSeleccionables().subscribe();
+    httpMock.expectOne(`${environment.apiUrl}/tenant-context/empresas`).flush({
+      success: true, data: [{ empresaId: 7, nombre: 'A' },
+        { empresaId: 8, nombre: 'B' }]
+    });
+    expect(service.puedeCambiarEmpresa()).toBe(true);
+    service.limpiar();
+    expect(service.puedeCambiarEmpresa()).toBe(false);
+  });
+
+  it('rechaza listas duplicadas, ajenas y errores del backend para el switch', () => {
+    const service = TestBed.inject(TenantContextService);
+    service.seleccionarEmpresa(7).subscribe();
+    httpMock.expectOne(`${environment.apiUrl}/tenant-context/7`).flush({
+      success: true, data: { usuarioId: 3, empresaId: 7, rolId: 4,
+        rolNombre: 'Operador', esAdministrador: false }
+    });
+    service.listarEmpresasSeleccionables().subscribe();
+    httpMock.expectOne(`${environment.apiUrl}/tenant-context/empresas`).flush({
+      success: true, data: [{ empresaId: 8, nombre: 'B' },
+        { empresaId: 9, nombre: 'C' }]
+    });
+    expect(service.puedeCambiarEmpresa()).toBe(false);
+    let rechazo = false;
+    service.listarEmpresasSeleccionables().subscribe({ error: () => { rechazo = true; } });
+    httpMock.expectOne(`${environment.apiUrl}/tenant-context/empresas`).flush({
+      success: true, data: [{ empresaId: 7, nombre: 'A' },
+        { empresaId: 7, nombre: 'A duplicada' }]
+    });
+    expect(rechazo).toBe(true);
+    expect(service.puedeCambiarEmpresa()).toBe(false);
+    service.listarEmpresasSeleccionables().subscribe({ error: () => undefined });
+    httpMock.expectOne(`${environment.apiUrl}/tenant-context/empresas`)
+      .flush({}, { status: 403, statusText: 'Forbidden' });
+    expect(service.puedeCambiarEmpresa()).toBe(false);
+  });
+
+  it('descarta la lista HTTP tardía después de revocar el contexto', () => {
+    const service = TestBed.inject(TenantContextService);
+    service.seleccionarEmpresa(7).subscribe();
+    httpMock.expectOne(`${environment.apiUrl}/tenant-context/7`).flush({
+      success: true, data: { usuarioId: 3, empresaId: 7, rolId: 4,
+        rolNombre: 'Operador', esAdministrador: false }
+    });
+    service.listarEmpresasSeleccionables().subscribe();
+    const request = httpMock.expectOne(`${environment.apiUrl}/tenant-context/empresas`);
+    service.limpiar();
+    request.flush({ success: true, data: [
+      { empresaId: 7, nombre: 'A' }, { empresaId: 8, nombre: 'B' }
+    ] });
+    expect(service.puedeCambiarEmpresa()).toBe(false);
+  });
+
 });

@@ -21,7 +21,13 @@ function crearEscenario(respuestas: Array<Subject<RespuestaTienda>>, opciones: {
     { limpiar: () => undefined, cargar: () => of(null) } as unknown as ConstructorArgs[1],
     { usarPlataforma: () => { identidadesPlataforma += 1; }, cargar: () => of(null) } as unknown as ConstructorArgs[2],
     { detener: () => undefined, iniciar: () => undefined } as unknown as ConstructorArgs[3],
-    { tieneContextoVerificado: () => opciones.tenantVerificado === true } as unknown as ConstructorArgs[4],
+    {
+      tieneContextoVerificado: () => opciones.tenantVerificado === true,
+      contextoVerificado: () => opciones.tenantVerificado ? { usuarioId: 11, empresaId: 7 } : null,
+      puedeCambiarEmpresa: () => false,
+      listarEmpresasSeleccionables: () => of([{ empresaId: 7, nombre: 'Empresa A' }]),
+      limpiar: () => undefined
+    } as unknown as ConstructorArgs[4],
     { url: opciones.urlInicial ?? '/tienda', events: navegacion.asObservable() } as unknown as ConstructorArgs[5],
     {
       aplicar: (tema: { colorPrimario: string }) => temas.push(tema.colorPrimario),

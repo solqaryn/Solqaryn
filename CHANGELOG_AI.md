@@ -1,3 +1,8 @@
+## 2026-11-19 — V20 C02-01.M04.01 menú empresarial con N membresías verificadas [Javier :30]
+- La opción «Cambiar empresa» del shell Angular se muestra únicamente con al menos dos IDs únicos recibidos del backend autenticado que incluyen el tenant seleccionado.
+- Listas duplicadas, no coincidentes, errores HTTP y respuestas tardías después de revocación no habilitan el menú; el cambio sigue requiriendo nueva validación server-side, sin ampliar JWT, RBAC ni permisos.
+- Incorpora pruebas Angular adversariales, CI dirigida y documentación de alcance. PENDIENTE: completar A0–A4 exact-SHA y revisión A5 independiente; sin QA/main/PROD.
+
 ## 2026-11-19 — V20 C02-01.M03.06 reparación P2 correlación y switch A5 [Javier :20]
 - Refuerza la fachada de auditoría .NET 10: la vista previa debe conservar conteo, claves AttemptKey únicas y orden exacto, y switch/preview deben coincidir con la solicitud; falla cerrado ante resultados inyectados falsos.
 - Añade xUnit de lectores falsificados con conteo incompleto, reordenamiento, clave ajena, duplicación y decisión de switch no verificada. No modifica JWT, MySQL, HTTP ni concede permisos.

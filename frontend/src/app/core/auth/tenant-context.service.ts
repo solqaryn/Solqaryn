@@ -34,6 +34,8 @@ export class TenantContextService {
 
   private readonly _empresaSolicitadaId = signal<number | null>(this.leerEmpresaSolicitada());
   private readonly _contextoVerificado = signal<TenantContextoVerificado | null>(null);
+  // Se deriva exclusivamente de GET autenticado; no se guarda en localStorage.
+  private readonly _idsMembresiasListadas = signal<readonly number[]>([]);
   // La UI/login y los guards pueden verificar el mismo tenant simultáneamente.
   // Compartir esa petición evita que una segunda selección borre un contexto
   // que el servidor acaba de confirmar y provoque un bucle hacia /login.
@@ -49,10 +51,16 @@ export class TenantContextService {
   readonly empresaIdVerificada = computed(() => this._contextoVerificado()?.empresaId ?? null);
   readonly rolVerificado = computed(() => this._contextoVerificado()?.rolNombre ?? null);
   readonly tieneContextoVerificado = computed(() => this._contextoVerificado() !== null);
+  readonly puedeCambiarEmpresa = computed(() => {
+    const actual = this._contextoVerificado()?.empresaId;
+    const ids = this._idsMembresiasListadas();
+    return actual != null && ids.length > 1 && ids.includes(actual);
+  });
 
   constructor(private readonly http: HttpClient) {}
 
   listarEmpresasSeleccionables(): Observable<EmpresaSeleccionable[]> {
+    const version = this.versionSeleccion;
     // La lista se resuelve en MySQL por membresías activas del JWT actual.
     // Este método nunca considera localStorage ni cabeceras tenant una autoridad.
     return this.http.get<ApiResponse<EmpresaSeleccionable[]>>(`${this.apiUrl}/empresas`).pipe(
@@ -65,7 +73,17 @@ export class TenantContextService {
         )) {
           throw new Error('El servidor no devolvió una lista empresarial válida.');
         }
+        // IDs duplicados o respuestas obsoletas no crean una opción de cambio.
+        const ids = empresas.map(empresa => empresa.empresaId);
+        if (new Set(ids).size !== ids.length) {
+          throw new Error('El servidor devolvió empresas duplicadas.');
+        }
+        if (version === this.versionSeleccion) this._idsMembresiasListadas.set(ids);
         return empresas;
+      }),
+      catchError(error => {
+        if (version === this.versionSeleccion) this._idsMembresiasListadas.set([]);
+        return throwError(() => error);
       })
     );
   }
@@ -127,6 +145,7 @@ export class TenantContextService {
     this.seleccionEnCurso = null;
     this._empresaSolicitadaId.set(null);
     this._contextoVerificado.set(null);
+    this._idsMembresiasListadas.set([]);
     localStorage.removeItem(EMPRESA_SOLICITADA_KEY);
   }
 

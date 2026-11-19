@@ -1,0 +1,41 @@
+name: V20 C02-01.M04.01 - menu tenant autenticado
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/src/app/core/auth/tenant-context.service.ts'
+      - 'frontend/src/app/core/auth/tenant-context.service.spec.ts'
+      - 'frontend/src/app/app.component.ts'
+      - 'frontend/src/app/app.component.spec.ts'
+      - '.github/workflows/v20-c02-01-m04-01-menu.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v20-c0201-m0401-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  tenant-menu:
+    name: C02-01.M04.01 - unitarias Angular, lint y build
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm institucional
+        run: npm install --global npm@11.19.0
+      - name: Dependencias reproducibles
+        run: npm ci
+      - name: Pruebas tenant A B y shell
+        run: npm test -- --no-watch --no-progress --include=src/app/core/auth/tenant-context.service.spec.ts --include=src/app/app.component.spec.ts
+      - name: Tipado y build Angular
+        run: |
+          npm run lint
+          npm run build:prod

@@ -59,11 +59,13 @@ import { PerformanceBaselineService } from './core/performance/performance-basel
                 <span class="material-icons" aria-hidden="true">admin_panel_settings</span>
                 <span class="context-shortcut-text">Consola global</span>
               </a>
-              <button class="context-shortcut" type="button" (click)="cambiarEmpresa()"
-                aria-label="Cambiar de empresa sin cerrar sesión" title="Cambiar empresa">
-                <span class="material-icons" aria-hidden="true">domain</span>
-                <span class="context-shortcut-text">Cambiar empresa</span>
-              </button>
+              @if (tenantContext.puedeCambiarEmpresa()) {
+                <button class="context-shortcut" type="button" (click)="cambiarEmpresa()"
+                  aria-label="Cambiar de empresa sin cerrar sesión" title="Cambiar empresa">
+                  <span class="material-icons" aria-hidden="true">domain</span>
+                  <span class="context-shortcut-text">Cambiar empresa</span>
+                </button>
+              }
               <div class="user-copy">
                 <span class="user-name">{{ auth.nombreCompleto() }}</span>
                 <span class="user-role">{{ tenantContext.rolVerificado() || 'Contexto empresarial no verificado' }}</span>
@@ -107,6 +109,7 @@ export class AppComponent implements OnDestroy {
   routeAnnouncement = '';
   // La respuesta HTTP del storefront sólo puede alterar el tema/SEO de la ruta que la solicitó.
   private versionContextoRuta = 0;
+  private ultimaConsultaMenu: string | null = null;
 
   constructor(
     public auth: AuthService,
@@ -123,6 +126,7 @@ export class AppComponent implements OnDestroy {
   ) {
     this.performanceBaseline.start();
     this.aplicarContextoRuta(this.router.url);
+    this.revisarMembresiasDelMenu();
     if (this.auth.isAuthenticated()) {
       this.permisosRuntime.cargar().subscribe();
       this.sessionActivity.iniciar();
@@ -130,6 +134,7 @@ export class AppComponent implements OnDestroy {
     this.router.events.subscribe((event) => {
       if (event instanceof NavigationEnd) {
         this.aplicarContextoRuta(event.urlAfterRedirects);
+        this.revisarMembresiasDelMenu();
         this.cerrarSidebar();
         this.gestionarFocoTrasNavegacion();
       }
@@ -186,6 +191,7 @@ export class AppComponent implements OnDestroy {
   }
 
   cambiarEmpresa(): void {
+    if (!this.auth.isAuthenticated() || !this.tenantContext.puedeCambiarEmpresa()) return;
     // La solicitud local no concede autoridad. Para cambiar de contexto debe
     // volver a validarse la nueva membresía en el servidor, sin cerrar JWT.
     this.cerrarSidebar();
@@ -202,6 +208,21 @@ export class AppComponent implements OnDestroy {
     this.tenantContext.limpiar();
     this.permisosRuntime.limpiar();
     this.sessionActivity.cerrarManual();
+  }
+
+  private revisarMembresiasDelMenu(): void {
+    // Una sola consulta por identidad y empresa verificadas, nunca por hint local.
+    const contexto = this.tenantContext.contextoVerificado();
+    if (!this.auth.isAuthenticated() || !contexto) {
+      this.ultimaConsultaMenu = null;
+      return;
+    }
+    const key = `${contexto.usuarioId}:${contexto.empresaId}`;
+    if (this.ultimaConsultaMenu === key) return;
+    this.ultimaConsultaMenu = key;
+    this.tenantContext.listarEmpresasSeleccionables().subscribe({
+      error: () => { /* El servicio falla cerrado y oculta la acción. */ }
+    });
   }
 
   private aplicarContextoRuta(url: string): void {
