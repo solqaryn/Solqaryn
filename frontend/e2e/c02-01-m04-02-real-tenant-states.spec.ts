@@ -1,4 +1,5 @@
 import { expect, test, type Page } from '@playwright/test';
+import { writeFileSync } from 'node:fs';
 
 // C02-01.M04.02: API .NET, JWT firmado, MySQL 8.4 y Angular reales en runner CI.
 // No interceptar HTTP, fabricar JWT ni reutilizar fixtures sintéticas.
@@ -59,6 +60,10 @@ test.describe('V21 C02-01.M04.02 - membresías y selector con JWT auténtico', (
     test.setTimeout(150_000);
     const jwt = await loginReal(page, 'c1504_admin_b');
     await assertMembership(page, jwt, 2, 1);
+    // Solo en RUNNER_TEMP efimero, nunca en artifacts ni logs: JWT firmado antes de revocar.
+    const temp = process.env['RUNNER_TEMP'];
+    if (!temp) throw new Error('C0201_CI_RUNNER_TEMP_REQUIRED');
+    writeFileSync(temp + '/c0201-m0402-jwt-b.txt', jwt + '\n', { mode: 0o600 });
     await page.evaluate(() => localStorage.setItem('solqaryn_empresa_solicitada_id', '2'));
     const pending = page.waitForResponse(r =>
       r.url().includes('/tenant-context/2') && r.request().method() === 'GET');

@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/v21-c02-01-m04-02-real-tenant-states.yml'
       - 'frontend/e2e/c02-01-m04-02-real-tenant-states.spec.ts'
+      - 'frontend/e2e/c02-01-m04-02-revocation-after-sql.spec.ts'
   workflow_dispatch:
 permissions:
   contents: read
@@ -179,6 +180,23 @@ jobs:
       - name: Chromium privado con JWT firmado y denegaciones A/B
         working-directory: frontend
         run: npx playwright test e2e/c02-01-m04-02-real-tenant-states.spec.ts --config=playwright.c15-04-m05-04-real.config.ts --workers=1 --retries=0
+      - name: Revocar membresia B en MySQL 8.4 efimero tras obtener JWT real
+        shell: bash
+        run: |
+          set -euo pipefail
+          mysql_container="$(docker ps --filter 'ancestor=mysql:8.4' --format '{{.ID}}' | head -n 1)"
+          test -n "$mysql_container"
+          docker exec -i "$mysql_container" mysql -uroot -proot solqaryn_c1504_real_ci <<'SQL'
+          UPDATE UsuarioEmpresas ue JOIN Usuarios u ON u.Id=ue.UsuarioId
+          SET ue.Activa=FALSE, ue.FechaActualizacion=UTC_TIMESTAMP(6)
+          WHERE u.NombreUsuario='c1504_admin_b' AND ue.EmpresaId=2;
+          SQL
+          active="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_c1504_real_ci -Nse "SELECT COUNT(*) FROM UsuarioEmpresas ue JOIN Usuarios u ON u.Id=ue.UsuarioId WHERE u.NombreUsuario='c1504_admin_b' AND ue.EmpresaId=2 AND ue.Activa=TRUE;")"
+          test "$active" = '0'
+          echo 'C0201_POST_REVOKE_SQL_MEMBERSHIP_B_ACTIVE=0'
+      - name: Chromium real con JWT B PRE-revocacion y MySQL POST-revocacion
+        working-directory: frontend
+        run: npx playwright test e2e/c02-01-m04-02-revocation-after-sql.spec.ts --config=playwright.c15-04-m05-04-real.config.ts --workers=1 --retries=0
       - name: Evidencia de fallos y capturas
         if: always()
         uses: actions/upload-artifact@v4

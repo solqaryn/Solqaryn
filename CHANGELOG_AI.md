@@ -1,3 +1,7 @@
+## 2026-11-19 — V21 C02-01.M04.02 rescate de revocacion JWT B post-SQL [Javier :50]
+- Añade ensayo real en GitHub-hosted: captura efimera JWT B pre-revocacion, UPDATE membresia B inactiva en MySQL 8.4 CI y nueva prueba negativa HTTP con ese mismo JWT contra API real; el token nunca entra al repositorio ni a artifacts.
+- Sin cambios de backend/productivo; CI exact-SHA y A0-A4 aun pendientes, no LISTO ni A5, owner historico DEV05 conservado y QA/main/PROD prohibidos.
+
 ## 2026-11-19 — V21 C02-01.M04.01 regresión rol global sin membresía [Javier :20]
 - Agrega prueba adversarial Playwright para identidad de plataforma sin UsuarioEmpresas: el rol global no debe crear membresías ni habilitar el cambio empresarial N2. Reutiliza JWT, API .NET 10 y MySQL 8.4 efímero de la suite GitHub-hosted.
 - Preserva los siete casos previos y owner histórico DEV04; A0–A4 completos y A5 independiente siguen pendientes. Solamente dev, sin QA/main/PROD.
