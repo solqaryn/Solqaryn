@@ -1,3 +1,7 @@
+## 2026-11-19 — V21 C01-02.M04.02 reparación de aceptación JWT de capacidades [Javier :00, rescate DEV06]
+- Nueva suite GitHub-hosted sin mocks HTTP: plataforma JWT real sin tenant, roles de empresa A/B con 403, cabecera de tenant falsa, token adulterado, MySQL 8.4 efímero y Chromium Angular. Complementa el TestBed sintético previo.
+- Owner histórico DEV06 preservado; Scope Lock y V5 por SHA, sin atribuir PASS antes de CI ni LISTO/A5 antes de aceptación completa. No QA/main/PROD.
+
 ## 2026-11-19 — V21 C02-01.M04.02 pruebas reales JWT y tenant A/B [Javier :00, rescate]
 - Suite Playwright sobre API .NET, JWT firmado, MySQL 8.4 efímero y Angular: A/B positivo y negativo, pertenencia ajena denegada, tenant falso, token alterado y acceso anónimo. No intercepta autorización.
 - Workflow CI SHA-scoped separado y sin cancelar N8.3 por cambios frontend/src. Owner histórico DEV05 conservado; VALIDANDO hasta A0–A4 completados y A5 por otra Task independiente. Sin cambios QA/main/PROD.
