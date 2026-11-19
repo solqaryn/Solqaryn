@@ -1,0 +1,31 @@
+name: V20 C15-01.M05.04 - recenso positivo
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'scripts/quality/verify-c15-01-m05-04-coverage.mjs'
+      - 'docs/v5/evidence/c15-01-m05-04-snapshot.json'
+      - '.github/workflows/v20-c15-01-m05-04-coverage.yml'
+      - 'frontend/src/app/**/*.routes.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v20-c15-01-m05-04-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  audit:
+    name: C15-01.M05.04 - source audit and adversarial cases
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+      - name: A1 positivo y cinco negativos
+        run: node scripts/quality/verify-c15-01-m05-04-coverage.mjs --self-test --snapshot docs/v5/evidence/c15-01-m05-04-snapshot.json
+      - name: A3 componentes actuales P0-007.A
+        run: node scripts/verify-p0-007-a-component-catalog.mjs --self-test
+      - name: A2 guardas estaticas P0-006.B
+        run: node scripts/verify-p0-006-b-route-guards.mjs
