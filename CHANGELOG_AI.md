@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C15-01.M06.03 limitaciones y decisiones con evidencia causal [DEV03]
+- Entrega R0 documental de PLAN D2194: ocho VALIDANDO censadas por ID/SHA/checks y limitaciones abiertas de integración, ownership, JWT/tenancy, hardware físico y proveedor.
+- Diferencia SUCCESS dirigido de FAILURE global y SKIPPED auxiliar; PLAN E/M06 y 2.340 IDs siguen sin certificación global. No toca runtime, JWT, DB, interfaces ni workflows.
+- Exige Scope Lock/V5 exact-SHA, V17/CAS y readback de Sheets para LISTO, con A5 por Task Javier distinta; sin QA/main/PROD.
+
 ## 2026-11-19 — V22 C15-01.M06.01 auditoría causal de mocks vs pruebas reales [DEV01]
 - Revisión R0 de seis SHA M05.01–06 en GitHub Actions: separa Node/xUnit y pruebas de fuente, MySQL 8.4 efímero y Chromium real con sesión sintética; rechaza extrapolar cobertura global 2340 y JWT/RBAC real.
 - Preserva y documenta dos SHA con check transversal completed/failure (M05.02 y M05.06), el error histórico Chromium 2/3 y límites de dispositivos físicos, Web Vitals y API viva; no inventa PASS ni altera runtime.
