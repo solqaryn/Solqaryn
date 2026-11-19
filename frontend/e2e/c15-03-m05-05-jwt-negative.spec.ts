@@ -175,4 +175,37 @@ test.describe('C15-03.M05.05 — negativa JWT y tenancy HTTP real', () => {
       '/plataforma/gestion/qa/evidencias/ab70b055b3c8bb10b11a5088b5e82d69e74bdbc4', { headers });
     await exigirCuarentena(denied);
   });
+  test('JWT alg none y payload reescrito no autorizan recursos ni consola', async ({ page, request }) => {
+    const signed = await ingresar(page, 'c1504_admin_a');
+    const parts = signed.split('.');
+    expect(parts).toHaveLength(3);
+    const ownHeaders = { Authorization: 'Bearer ' + signed, 'X-Empresa-Id': '1' };
+    const positive = await request.get(api + '/tenant-context/1', { headers: ownHeaders });
+    expect(positive.status(), 'JWT original debe ser aceptado antes de las mutaciones').toBe(200);
+    const unsignedHeader = Buffer.from(JSON.stringify({ alg: 'none', typ: 'JWT' })).toString('base64url');
+    const withoutSignature = [unsignedHeader, parts[1], ''].join('.');
+    const claims = JSON.parse(Buffer.from(parts[1]!, 'base64url').toString('utf8')) as Record<string, unknown>;
+    const changedClaims = { ...claims, exp: Number(claims['exp'] ?? 0) + 86401 };
+    const forgedPayload = Buffer.from(JSON.stringify(changedClaims)).toString('base64url');
+    const editedPayload = [parts[0], forgedPayload, parts[2]].join('.');
+    for (const forged of [withoutSignature, editedPayload]) {
+      for (const tenant of [1, 2]) {
+        const response = await request.get(api + '/tenant-context/' + tenant, {
+          headers: { Authorization: 'Bearer ' + forged, 'X-Empresa-Id': String(tenant) }
+        });
+        expect([401, 403], 'JWT sin firma valida nunca abre tenant ' + tenant).toContain(response.status());
+      }
+      const platform = await request.get(api + '/plataforma/sesion', {
+        headers: { Authorization: 'Bearer ' + forged, 'X-Empresa-Id': '2' }
+      });
+      expect([401, 403], 'JWT manipulado nunca concede rol plataforma').toContain(platform.status());
+    }
+    await page.evaluate(token => localStorage.setItem('solqaryn_token', token), withoutSignature);
+    const mutations = observarMutaciones(page);
+    await page.goto('/plataforma/auditoria-tenancy-v5');
+    await expect(page).toHaveURL(/\/login(?:\?|$)/);
+    await expect(page.locator('section.tenancy-audit')).toHaveCount(0);
+    expect(mutations).toEqual([]);
+  });
+
 });

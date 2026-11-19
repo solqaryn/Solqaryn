@@ -1,3 +1,7 @@
+## 2026-11-19 — V21 C15-03.M05.05 JWT alg none y payload manipulado [Javier :40]
+- Amplia suite real Playwright JWT/MySQL 8.4: control positivo firmado tenant A 200, `alg=none` sin firma y claim `exp` adulterado denegados para A/B/plataforma; guard de navegador y cero mutaciones. Un nuevo caso; GitHub Actions exact-SHA pendiente, no PASS anticipado.
+- CI anterior d2ef2fd4 tuvo 8/8 en Chromium real. Permanece VALIDANDO y A5_FAIL P2 historico por ownership granular de recursos, archivos/jobs en cuarentena; no cambiar permisos, allowlist P0 ni QA/main/PROD.
+
 ## 2026-11-19 — V21 C02-01.M04.02 rescate de revocacion JWT B post-SQL [Javier :50]
 - Añade ensayo real en GitHub-hosted: captura efimera JWT B pre-revocacion, UPDATE membresia B inactiva en MySQL 8.4 CI y nueva prueba negativa HTTP con ese mismo JWT contra API real; el token nunca entra al repositorio ni a artifacts.
 - Sin cambios de backend/productivo; CI exact-SHA y A0-A4 aun pendientes, no LISTO ni A5, owner historico DEV05 conservado y QA/main/PROD prohibidos.
