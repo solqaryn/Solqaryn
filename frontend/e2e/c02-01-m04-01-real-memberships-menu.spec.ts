@@ -87,6 +87,29 @@ test.describe('V21 C02-01.M04.01 - menu real de empresas JWT MySQL Chromium', ()
     await expect(page.getByRole('button', { name: cambiar })).toHaveCount(0);
   });
 
+  test('negative - firma JWT adulterada denegada por API real', async ({ page }) => {
+    test.setTimeout(150_000);
+    const jwt = await login(page, 'c1504_admin_a');
+    const parts = jwt.split('.');
+    expect(parts).toHaveLength(3);
+    const signature = parts[2]!;
+    const changed = (signature[0] === 'A' ? 'B' : 'A') + signature.slice(1);
+    const forged = parts[0] + '.' + parts[1] + '.' + changed;
+    const response = await page.request.get(api + '/tenant-context/empresas', {
+      headers: { Authorization: 'Bearer ' + forged }
+    });
+    expect(response.status()).toBe(401);
+  });
+
+  test('negative - empresa inexistente denegada aun con JWT A valido', async ({ page }) => {
+    test.setTimeout(150_000);
+    const jwt = await login(page, 'c1504_admin_a');
+    const response = await page.request.get(api + '/tenant-context/999999', {
+      headers: { Authorization: 'Bearer ' + jwt, 'X-Empresa-Id': '999999' }
+    });
+    expect([403, 404]).toContain(response.status());
+  });
+
   test('after revocation - usuario antes N2 ahora N1 oculta menu y B es prohibida', async ({ page }) => {
     test.setTimeout(150_000);
     const jwt = await login(page, 'c0201_admin_ab');

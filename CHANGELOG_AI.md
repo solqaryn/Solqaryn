@@ -1,3 +1,7 @@
+## 2026-11-19 — V21 C02-01.M04.01 reparación cruzada JWT adulterado y tenant inexistente [Javier :10]
+- Añade dos pruebas reales Playwright contra API .NET 10 y MySQL 8.4 efímero para firma JWT alterada (401) y tenant inexistente con cabecera falsificada (403/404), conservando cinco escenarios anteriores de membresías y revocación.
+- Scope Lock/V5 y GitHub Actions exact-SHA deben completarse; owner histórico DEV04 y A5 independiente sin cambios, mantener VALIDANDO hasta A0–A4 completos. Únicamente dev; sin QA/main/PROD ni secretos.
+
 ## 2026-11-19 — V21 C14-02.M05.03 regresión MySQL tenant B y bloqueo persistente [Javier :50]
 - Amplía suite xUnit Category=Integration sobre MySQL 8.4 real efímero: usuario y rol empresarial B con denegación de autoridad global, nombre suplantado, bloqueo y eliminación lógica persistidos entre conexiones, restauración solo del fixture y revocación de rol. Sin modificar runtime, migraciones ni permisos.
 - GitHub-hosted exact-SHA, Scope Lock/V5 y 0 FAIL obligatorios antes de acreditar el incremento. Mantener VALIDANDO y A5 pendiente: no se certifican JWT firmado, HTTP BOLA/IDOR, archivos/jobs/host ni P0/P1 globales. Rollback git revert; dev exclusivamente.
