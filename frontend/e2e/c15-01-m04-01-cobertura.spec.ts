@@ -45,12 +45,42 @@ test('C15-01.M04.01 teclado permite volver con foco visible', async ({ page }) =
   await session(page, true);
   await page.goto('/plataforma/trazabilidad-cobertura-v5');
   const back = page.getByRole('link', { name: 'Regresar a administración de plataforma' });
-  await back.focus();
+  // Navegación Tab genuina: no usar .focus(), .click() ni mover el foco artificialmente.
+  let alcanzadoPorTab = false;
+  for (let intento = 0; intento < 40; intento++) {
+    await page.keyboard.press('Tab');
+    if (await back.evaluate(el => el.ownerDocument.activeElement === el)) {
+      alcanzadoPorTab = true;
+      break;
+    }
+  }
+  expect(alcanzadoPorTab, 'Enlace de regreso alcanzable mediante Tab real').toBe(true);
   await expect(back).toBeFocused();
   const outline = await back.evaluate(el => parseFloat(getComputedStyle(el).outlineWidth));
   expect(outline).toBeGreaterThanOrEqual(3);
-  await back.click();
+  await page.keyboard.press('Enter');
   await expect(page).toHaveURL(/\/plataforma(?:\/|$)/);
+});
+
+
+test('C15-01.M04.01 control adversarial: Tab no alcanza enlace excluido de la secuencia', async ({ page }) => {
+  await session(page, true);
+  await page.goto('/plataforma/trazabilidad-cobertura-v5');
+  const back = page.getByRole('link', { name: 'Regresar a administración de plataforma' });
+  await expect(back).toBeVisible();
+  // Mutación solo en el DOM aislado de la prueba; demuestra que un enlace no tabulable
+  // NO satisface la regresión. No cambia la aplicación ni su routing protegido.
+  await back.evaluate(el => el.setAttribute('tabindex', '-1'));
+  let indebidamenteAlcanzado = false;
+  for (let intento = 0; intento < 40; intento++) {
+    await page.keyboard.press('Tab');
+    if (await back.evaluate(el => el.ownerDocument.activeElement === el)) {
+      indebidamenteAlcanzado = true;
+      break;
+    }
+  }
+  expect(indebidamenteAlcanzado, 'Tab no debe alcanzar un enlace con tabindex=-1').toBe(false);
+  await expect(page).toHaveURL(/\/plataforma\/trazabilidad-cobertura-v5(?:\/|$)/);
 });
 
 test('C15-01.M04.02 carga la referencia local a 320/768 sin HTTP mutador', async ({ page }) => {

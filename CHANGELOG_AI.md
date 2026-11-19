@@ -1,4 +1,4 @@
-## 2026-11-18 — V20 C15-02.M03.06 reparación P2 de correlación AttemptKey [Javier :40]
+## 2026-11-18 — V20 reparación P2 de navegación Tab real C15-01.M04.01 [Javier :50]\n- Sustituye `focus()` y `click()` por Tab/Enter de teclado real en Chromium; prueba adversarial de enlace con `tabindex=-1` sin tocar guards, rutas ni producción.\n- Conserva A5_FAIL histórico hasta nuevo check exact-SHA y revisión independiente distinta de autor DEV02 y reparador DEV06; no acredita JWT HTTP, tenant MySQL, QA/main/PROD.\n\n## 2026-11-18 — V20 C15-02.M03.06 reparación P2 de correlación AttemptKey [Javier :40]
 - Endurece revisión Infrastructure de migración aislada: snapshot previo al await y correspondencia exacta de claves de intento, rechazando resultados sustituidos, duplicados o forjados sin conceder permisos.
 - Amplía cuatro pruebas xUnit adversariales; conservar A5_FAIL histórico y exigir CI GitHub-hosted exact-SHA y revisor independiente DEV01/02/03/04, nunca DEV06 autor ni DEV05 reparador. No JWT HTTP, MySQL live, QA/main/PROD ni R3.
 
