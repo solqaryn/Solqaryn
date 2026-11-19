@@ -1,0 +1,36 @@
+name: V21 C10-04.M06.04 - MySQL84 reversible rollback
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v21-c10-04-m06-04-rollback.yml'
+      - 'scripts/quality/verify-c10-04-m06-04-rollback.sh'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v21-c1004-m0604-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  mysql84-reversible-rollback:
+    name: C10-04.M06.04 - MySQL 8.4 disposable rollback no data loss
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: sqv21-only-disposable-rollback
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -psqv21-only-disposable-rollback"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    steps:
+      - uses: actions/checkout@v4
+      - name: Verify Scope Lock STRICT
+        run: node scripts/verify-project-scope.mjs
+      - name: MySQL84 transactional rollback and reversible feature disable
+        run: bash scripts/quality/verify-c10-04-m06-04-rollback.sh "${{ job.services.mysql.id }}"

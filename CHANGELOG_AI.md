@@ -1,3 +1,7 @@
+## 2026-11-19 — V21 C10-04.M06.04 rollback reversible MySQL 8.4 efimero [Javier DEV01]
+- Añade ensayo real InnoDB de ROLLBACK transaccional y desactivacion/reversion sin perder cuatro filas legitimate, aislamiento A/B, replay CAS obsoleto 0 y digest íntegro.
+- CI GitHub-hosted por SHA; no infiere JWT/EF/worker/productivo; Scope Lock/V5 y A5 independiente; conserva VALIDANDO mientras CI requerida no termine.
+
 ## 2026-11-19 — V21 C13-04.M05.05 aislamiento B→A y anti-enumeración reales [Javier :20]
 - Incorpora dos adversariales GitHub-hosted sobre JWT firmado ASP.NET 10, MySQL 8.4 aislado y Chromium: rol B no ve A ni catálogo global, y rol A recibe 403 indistinguible para empresa ajena e ID inexistente, sin filtrar datos internos.
 - Reparación DEV03 de microtarea cuyo autor histórico es DEV06; conserva VALIDANDO hasta CI exact-SHA y A5 independiente. Ningún cambio de permisos, endpoints, QA/main/PROD; rollback normal.
