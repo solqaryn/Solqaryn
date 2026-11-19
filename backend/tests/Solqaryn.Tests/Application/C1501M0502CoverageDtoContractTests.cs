@@ -70,6 +70,36 @@ public sealed class C1501M0502CoverageDtoContractTests
     }
 
     [Fact]
+    public void CaseInsensitiveSourceCollectionsCannotAliasRequirementOrWorkItemIds()
+    {
+        var good = Good();
+        var foldedRequirements = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "req-001", "REQ-002"
+        };
+        var sourceRequirementAlias = good with
+        {
+            Source = good.Source with { ApprovedRequirementKeys = foldedRequirements },
+            Mappings = new[]
+            {
+                Item("req-001", "C15-01.M03.01"),
+                Item("REQ-002", "C15-01.M03.02")
+            }
+        };
+        AssertSafeDto(Service.Prepare(sourceRequirementAlias), "CATALOG_SNAPSHOT_MISMATCH");
+
+        var foldedWorkItems = new HashSet<string>(StringComparer.OrdinalIgnoreCase)
+        {
+            "c15-01.m03.01", "C15-01.M03.02"
+        };
+        var sourceWorkItemAlias = good with
+        {
+            Source = good.Source with { ExistingPlanItemIds = foldedWorkItems }
+        };
+        AssertSafeDto(Service.Prepare(sourceWorkItemAlias), "CATALOG_SNAPSHOT_MISMATCH");
+    }
+
+    [Fact]
     public void CapacityAndUnmappedRequirementCannotGrantWriteOrA5()
     {
         var good = Good();

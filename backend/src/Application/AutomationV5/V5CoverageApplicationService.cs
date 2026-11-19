@@ -58,14 +58,10 @@ public sealed class V5CoverageApplicationService
 
         if (request.Source.ApprovedRequirementKeys is null ||
             request.ExpectedApprovedRequirementKeys.Count == 0 ||
-            request.Source.ApprovedRequirementKeys.Count !=
-                request.ExpectedApprovedRequirementKeys.Count ||
-            !request.ExpectedApprovedRequirementKeys.All(
-                request.Source.ApprovedRequirementKeys.Contains) ||
-            request.Source.ExistingPlanItemIds.Count !=
-                request.ExpectedPlanItemIds.Count ||
-            !request.ExpectedPlanItemIds.All(
-                request.Source.ExistingPlanItemIds.Contains))
+            !ExactOrdinalSetMatch(request.ExpectedApprovedRequirementKeys,
+                request.Source.ApprovedRequirementKeys) ||
+            !ExactOrdinalSetMatch(request.ExpectedPlanItemIds,
+                request.Source.ExistingPlanItemIds))
             return Deny("CATALOG_SNAPSHOT_MISMATCH");
 
         var assessed = V5CoverageDomainValidator.Assess(
@@ -80,6 +76,13 @@ public sealed class V5CoverageApplicationService
         return new Result("AUTHENTICATED_EVIDENCE_REQUIRED",
             assessed.MappingsExamined, assessed.RequirementsWithoutMapping);
     }
+
+    // A caller may supply an IReadOnlySet with a case-insensitive comparer.
+    // Never let its custom Contains semantics alias distinct catalog IDs.
+    private static bool ExactOrdinalSetMatch(
+        IReadOnlySet<string> expected, IReadOnlySet<string> observed) =>
+        expected.Count == observed.Count &&
+        new HashSet<string>(expected, StringComparer.Ordinal).SetEquals(observed);
 
     private static bool FullSha(string? sha) =>
         sha is { Length: 40 } && sha.All(Uri.IsHexDigit);

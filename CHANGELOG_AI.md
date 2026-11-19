@@ -1,3 +1,7 @@
+## 2026-11-19 — V21 C15-01.M05.02 rechazo de alias de catálogo por comparador [Javier :00]
+- Corrige comparación Application de IDs de requisitos/microtareas: un IReadOnlySet con comparador case-insensitive no puede aparentar igualdad con catálogo distinto; comparación estricta Ordinal fail-closed.
+- Añade regresiones adversariales xUnit y DTO seguro con CATALOG_SNAPSHOT_MISMATCH; CI .NET10 GitHub-hosted exact-SHA pendiente. Reparación R2 parcial: no certifica fuente institucional ni A0–A4 completos; owner DEV05 y A5 independiente pendientes. Solo dev.
+
 ## 2026-11-19 — V21 C02-01.M04.05 contraste real y regresión WCAG [Javier :30]
 - Repara medición de contraste que podía aprobar falsamente fondos transparentes: composición alfa ancestral, luminancia sRGB, etiquetas usuario/clave y encabezado a 320/1280 en Chromium real.
 - Alcance test-only R2, sin modificar API ni autoridad; mantener VALIDANDO hasta CI GitHub-hosted exact-SHA, Scope Lock/V5 y resto de A0–A4; A5 de otra Task Javier. No QA/main/PROD.
