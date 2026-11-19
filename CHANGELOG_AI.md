@@ -1,3 +1,7 @@
+## 2026-11-19 — V21 C10-04.M06.01 auditoria causal de tests vs mocks [Javier DEV01]
+- Revision R0 de nueve casos de Chromium real con sesion HTTP interceptada y MySQL 8.4 efimero con CAS, SIGKILL y restore sintetico; dos jobs historicos SUCCESS, sin extrapolar JWT/EF/worker/productivo.
+- Registrar matriz de alcance, mocks y limitaciones con fuente/sha; requerir CI Scope Lock/V5 exact-SHA y A5 independiente, sin QA/main/PROD.
+
 ## 2026-11-19 — V21 C15-04.M05.04 A0.49 incidentes JWT/Chromium [Javier :10]
 - Dos casos adversariales adicionales en ruta privada de incidentes: JWT real, MySQL 8.4 efímero, Tab/Enter, cero mutaciones, ancho 320/1280 y HTTP 403 a empresa B.
 - GitHub-hosted requiere 40 Chromium, Scope Lock y V5 exact-SHA; A0–A4 globales incompletos, H2297 EN_PROGRESO DEV02, lock V17, A5 distinta pendiente.

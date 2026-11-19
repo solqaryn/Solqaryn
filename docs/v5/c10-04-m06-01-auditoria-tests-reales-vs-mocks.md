@@ -1,0 +1,42 @@
+# C10-04.M06.01 — Auditoría de pruebas reales frente a mocks
+
+**PLAN D:** «Revisar que las pruebas correspondan al alcance real y no a mocks insuficientes»; `C10-04.M06.01`, fila 1580. `PLAN E: Completa M06` es meta acumulativa, no autorización de certificar restauraciones productivas con esta revisión. Repositorio `solqaryn/Solqaryn@dev`, `PROJECT_SCOPE_LOCK=STRICT`, autor DEV01 `6adbb9fff1548191a1bd5b30d9e9984a`. **R0** análisis documental exclusivamente; no cambia código ejecutable, tests, CI, base de datos, JWT/RBAC, proveedores, secretos, entornos ni tareas físicas. CLAIM con namedRange V17 `SQV17_C10_04_M06_01` / `2000001580`, PLAN H=PENDIENTE/I vacío, COLA G/O=SI, DAG F=VALIDADO/G=SI, CAS H `occurrencesChanged=1`.
+
+## A0 — Evidencia inspeccionada y nivel de confianza
+
+- Fuente institucional: STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES Drive `1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA`, Sheet `1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU`, PLAN/COLA/DAG/BITACORA.
+- Código de test revisado: `frontend/e2e/c10-04-m05-06-regression-perf-a11y.spec.ts` blob `cc47a9d8ab9cde0ebde79c776d4def6027d80487`; el helper `mockPlatformSession` en línea 13 intercepta la sesión vía `page.route` en línea 25. Los asserts son verdaderos en Chromium, **el backend de sesión no es real**.
+- Workflow real: `.github/workflows/v19-c10-04-m05-06-regression.yml` blob `09e963968c9e1887a8a2f0ee6819a008f36205ee` con dos jobs separados. GitHub Actions run `44358182365`, SHA fuente **`0ca18d9c42564d645df43443bc609152f36b7a8c`**: job Chromium `134991897836` `completed/success`; job MySQL 8.4 sintético `134991897126` `completed/success`. Son pruebas auténticamente ejecutadas en runner, pero de alcance **limitado**.
+- Script MySQL revisado: `scripts/quality/verify-c10-04-m05-06-ephemeral-restore.sh` blob `82a72952fbab871d458bdd3049e3bd11ab7f275d`: en un contenedor de MySQL 8.4 aislado crea tabla ficticia `review_jobs`, dos tenants 101/202, hace UPDATE con versión condicional, carreras entre clientes MySQL reales, SIGKILL de proceso sintético, checksum SHA-256, mysqldump, DROP+restore y ROLLBACK. **No toca EF del negocio, Aiven, almacenamiento R2 ni el servicio de worker real.**
+- Complementos: `docs/v5/c10-04-m05-06-regresion-rendimiento-accesibilidad.md` (blob `a29ac0a7b2cd3a0ce52d1279b5e13470f0e0e1fd`), `docs/v5/c10-04-m06-03-limitaciones-riesgos-decisiones.md` (blob `5733e6e58c09d44e969eadd46154bfae25eeaf13`) y `docs/v5/c10-04-m06-02-version-diff-artefactos-reproducibilidad.md` (blob `5da611e2dab4425a7d9530de427fc289706def6a`). Su estado A5 pertenece a **cada** microtarea; esta revisión no lo suplanta.
+
+## Matriz de evidencia: tests que pueden fallar, mocks y gaps
+
+| Aserción/ensayo | Realidad acreditada por fuente/run | Componente simulado o fuera de alcance | Resultado de auditoría |
+| --- | --- | --- | --- |
+| UI a 320, 768, 1440 px: DOM pequeño, 4 controles, sin desbordamiento ni escritura | Navegador real Chromium ejecuta las 3 pruebas, sin retries; selector y CSS auténticos | La sesión que muestra la superficie es inyectada con `page.route`; dispositivo físico, Web Vitals de campo y throughput real no medidos | **PASS proporcional de layout UI**, NO_APLICA a auth real |
+| Teclado Tab/Enter, foco visible y lectura read-only | Eventos de teclado y CSS reales; asserts de foco/lecturas y cero mutaciones | El endpoint de revalidación de sesión es simulado con respuesta 200 | **PASS UI, NO_CERTIFICA JWT/RBAC ni permiso persistido** |
+| Rechazo 403 de sesión; ocultar guía y texto sensible | DOM/estado Angular reales responden al 403; aserciones de ausencia de texto privado | El servidor de autorización se intercepta y fabrica respuesta 403, no verifica firma JWT real o tenant A/B | **PASS del manejo UI de un 403**, no del gate backend |
+| Error 500; rechazo y redacción | UI elimina guía y muestra error seguro al retornar estado 500 controlado | Error HTTP sintético; no prueba caída real de provider, timeout ni errores de API interna | **PASS UI de fallo seguro**, no de integración provider |
+| Prefers-reduced-motion | CSS real medido en Chromium; duración numérica finita y <=0,0001s; regresión corrigió parser de notación exponencial | No es dispositivo real, lector de pantalla ni evaluación WCAG integral | **PASS de CSS reducido** limitado |
+| Tenants 101/202 en MySQL 8.4, CASE de filas y clave idempotente | Consultas SQL reales contra tabla ficticia; UNIQUE por tenant, no cruce en SELECT de fixture | Sin API/JWT ni esquema EF de clientes, sin protección global con actor/rol | **PASS sintético en SQL real**, NO_CERTIFICA tenancy de negocio |
+| Dos clientes CAS sobre un trabajo y reintento | Dos clientes MySQL independientes compiten por UPDATE con versión; se comprueba un solo ganador y versionado durable | Workers son comandos de ensayo, no servicios de ejecución registrados | **PASS de CAS SQL sintético**, NO prueba dos workers live |
+| Caída de proceso con SIGKILL y recuperación | Proceso sintético matado, claim permanece, reintento controlado rechaza versión obsoleta | No se observa crash real de worker/dead-letter provider ni nueva instancia de backend | **PASS del experimento aislado**, NO de continuidad operativa desplegada |
+| mysqldump, corrupción y restore de fixture | Calcula checksum, detecta fichero alterado antes del restore, restaura dos filas y revisa digest + rollback | No hay copia cifrada, esquema migrado EF ni RPO/RTO, no Cloudflare R2/Aiven ni datos productivos | **PASS del restore efímero**, NO de backup comercial/productivo |
+
+## Decisiones resultantes / defectos no ocultados
+
+La suite **no es un mock inútil**: el navegador, Angular, SQL MySQL 8.4 y subprocessos de ensayo son reales y verificables; los límites se localizan en la **capa de confianza**. No etiquetar pruebas de sesión con `page.route` como JWT firmado; no llamar a un UPDATE de tabla ficticia una integración EF/tenant productiva; no atribuir RPO/RTO, rollback comercial ni cifrado. Esta unidad **no descubre un fallo P0/P1 concreto de producción**, porque esos sistemas no se probaron; conservar el gate de NO_CERTIFICADO y documentar tests futuros que sí puedan fallar ante cruzar tenants o perder filas.
+
+La decisión para futuras tareas con scope real R2 es exigir: JWT firmado y middleware RBAC/tenant A/B con revocación y 401/403; dos workers reales y claim CAS persistido; integración con tablas EF/MySQL 8.4 efímero, rollback y restore incluyendo migraciones; almacenamiento privado/proveedor bajo autorización explícita; límites de memoria, rate limit y error no filtrante con métricas medibles. R3/QA/main/PROD, servicios de pago y secretos siguen NO_GO sin autorización separada. Los contadores de la fase completa permanecen `NO_MEDIDO` mientras no haya denominador.
+
+## Calidad A0–A5, reproducibilidad y rollback
+
+- **A0:** review de código y GitHub Actions con ruta/hash exactos y contraste de requisito PLAN D.
+- **A1:** revisión de aserciones adversariales positivas/negativas; el test ya ejecutó 2 jobs reales `completed/success` en SHA `0ca18d9c...`, sin atribuir su run al diff documental actual. No se añaden pruebas ejecutables nuevas: `NO_APLICA_R0`.
+- **A2:** no cambia JWT/tenant/API/grants ni concede bypass; integración de auth real `NO_APLICA_R0` al diff, documentada como limitación bloqueante de fases runtime.
+- **A3:** integración MySQL/Chromium nueva `NO_APLICA_R0` al artefacto; se revisó críticamente evidencia existente, sin simular un proveedor productivo.
+- **A4:** publicar solo este documento y CHANGELOG aditivo por FF/CAS dev, exigir Scope Lock/V5 y checks pertinentes `completed/success` del SHA nuevo, readback PLAN/COLA/BITACORA; no aceptar SKIPPED/QUEUED como éxito requerido.
+- **A5:** otra Task Javier distinta de DEV01 audita genuinamente las fuentes y resultados, puede rechazar. No certificar M06 por este documento.
+
+Reproducción: inspeccionar blobs con `git ls-tree <SHA> <ruta>`, diff exacto `git diff --check <padre> <SHA>`, y GitHub check-runs del SHA con conclusion y logs; **esta unidad no afirma haber ejecutado esos comandos en checkout**. Rollback: `git revert` no destructivo tras releer HEAD, sin sobrescribir BITACORA ni fórmulas de DAG.
