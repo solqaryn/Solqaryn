@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C11-03.M03.02 caso de uso Application Outbox limitado [Javier :40]
+- Se añade servicio .NET 10 de aplicación sin consumidor runtime, con lector inyectable de evidencias de backend, fail-closed ante tenant A/B, JWT/grant reportado sin vigencia, revocación, replay, DeadLetter, errores y cancelación; sus planes no autorizan escribir ni despachar.
+- Suite xUnit adversarial real y workflow GitHub-hosted con TRX estricto, Scope Lock/V5 exact-SHA y A5 independiente; no se simula una certificación JWT firmado, HTTP, MySQL 8.4 ni worker real de M03.03-06.
+- Solo dev, V17 CAS, sin despliegue, pagos, secretos, QA/main/PROD; mantener histórico FAIL y demás gates.
+
 ## 2026-11-19 — V22 C04-04.M03.03 autorización de pagos deny-by-default [Javier :30]
 - Añade gate Application R2 real y xUnit adversarial sobre tenant A/B, grants, revocación, propiedad de factura, refund, excepción y cancelación; sin adaptador DI/API ni operación monetaria.
 - La CI por SHA de .NET 10, seguridad, Scope Lock y V5 es obligatoria; JWT firmado/HTTP/MySQL 8.4 reales aún pendientes, mantener VALIDANDO y A5 independiente. Sin QA/main/PROD ni pagos.

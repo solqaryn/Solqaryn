@@ -1,0 +1,53 @@
+name: V22 C11-03.M03.02 - Outbox Application use case
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/src/Application/AutomationV5/C1103OutboxApplicationService.cs'
+      - 'backend/tests/Solqaryn.Tests/Application/C1103M0302OutboxApplicationServiceTests.cs'
+      - '.github/workflows/v22-c11-03-m03-02-outbox-application.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c1103-m0302-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  outbox-application:
+    name: C11-03.M03.02 - .NET 10 Application positive and adversarial xUnit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Verify Scope Lock exact checkout
+        run: node scripts/verify-project-scope.mjs
+      - name: Restore actual .NET 10 test project
+        run: dotnet restore backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj
+      - name: Build Release with real project references
+        run: dotnet build backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore
+      - name: Run adversarial xUnit and validate TRX rather than text grep
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj \
+            --configuration Release --no-build \
+            --filter FullyQualifiedName~C1103M0302OutboxApplicationServiceTests \
+            --logger 'trx;LogFileName=c1103-m0302.trx'
+          python3 - <<'PY'
+          import pathlib
+          import xml.etree.ElementTree as ET
+          files = list(pathlib.Path("backend/tests/Solqaryn.Tests").rglob("c1103-m0302.trx"))
+          if len(files) != 1:
+              raise SystemExit(f"Expected exactly one directed TRX, got {len(files)}")
+          counters = ET.parse(files[0]).getroot().find(".//{*}Counters")
+          if counters is None:
+              raise SystemExit("Missing xUnit TRX counters")
+          counts = {key: int(counters.attrib.get(key, -1))
+                    for key in ("total", "passed", "failed", "notExecuted")}
+          print("C11-03.M03.02 Application test counts:", counts)
+          if counts["passed"] < 17 or counts["passed"] != counts["total"] or counts["failed"] != 0 or counts["notExecuted"] != 0:
+              raise SystemExit("Directed Application tests missing, failed or skipped")
+          PY
