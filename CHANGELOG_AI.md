@@ -1,3 +1,7 @@
+## 2026-11-19 — V21 C13-04.M05.05 aislamiento B→A y anti-enumeración reales [Javier :20]
+- Incorpora dos adversariales GitHub-hosted sobre JWT firmado ASP.NET 10, MySQL 8.4 aislado y Chromium: rol B no ve A ni catálogo global, y rol A recibe 403 indistinguible para empresa ajena e ID inexistente, sin filtrar datos internos.
+- Reparación DEV03 de microtarea cuyo autor histórico es DEV06; conserva VALIDANDO hasta CI exact-SHA y A5 independiente. Ningún cambio de permisos, endpoints, QA/main/PROD; rollback normal.
+
 ## 2026-11-19 — V21 C10-04.M06.01 auditoria causal de tests vs mocks [Javier DEV01]
 - Revision R0 de nueve casos de Chromium real con sesion HTTP interceptada y MySQL 8.4 efimero con CAS, SIGKILL y restore sintetico; dos jobs historicos SUCCESS, sin extrapolar JWT/EF/worker/productivo.
 - Registrar matriz de alcance, mocks y limitaciones con fuente/sha; requerir CI Scope Lock/V5 exact-SHA y A5 independiente, sin QA/main/PROD.

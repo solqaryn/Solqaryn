@@ -128,4 +128,33 @@ test.describe('V21 C13-04.M05.05 - seguridad negativa de rutas con JWT real', ()
     }
     expect(Number(sql(membership))).toBe(1);
   });
+
+  test('tenant B no cruza hacia A ni obtiene catálogo global por encabezado falso', async ({ page }) => {
+    test.setTimeout(150_000);
+    const jwt = await loginReal(page, 'c1504_admin_b');
+    const headers = { Authorization: 'Bearer ' + jwt, 'X-Empresa-Id': '1' };
+    const foreign = await page.request.get(api + '/tenant-context/1', { headers });
+    expect(foreign.status(), 'Empresa B no tiene membresía en A').toBe(403);
+    const global = await page.request.get(api + '/plataforma/sesion', { headers });
+    expect(global.status()).toBe(403);
+    await page.evaluate(() => localStorage.setItem('solqaryn_empresa_solicitada_id', '1'));
+    await page.goto(ruta);
+    await expect(page).toHaveURL(/\/login\?plataforma=denegado/);
+    await expect(page.getByTestId('c1304-route-catalogo')).toHaveCount(0);
+  });
+
+  test('anti-enumeración 403: empresa ajena e ID ausente no revelan existencia', async ({ page }) => {
+    test.setTimeout(150_000);
+    const jwt = await loginReal(page, 'c1504_admin_a');
+    const headers = { Authorization: 'Bearer ' + jwt, 'X-Empresa-Id': '1' };
+    const ajena = await page.request.get(api + '/tenant-context/2', { headers });
+    const ausente = await page.request.get(api + '/tenant-context/999999', { headers });
+    expect(ajena.status(), 'Empresa B debe ser inaccesible a A').toBe(403);
+    expect(ausente.status(), 'El ID ausente debe ser indistinguible de empresa ajena').toBe(403);
+    for (const respuesta of [ajena, ausente]) {
+      const body = await respuesta.text();
+      expect(body).not.toMatch(/Empresa [AB] efimera|ConnectionStrings|StackTrace|PasswordHash/i);
+    }
+  });
+
 });
