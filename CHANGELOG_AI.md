@@ -1,3 +1,7 @@
+## 2026-11-19 — C01-04.M03.06 reparación V21 de logging estructurado en DEV [Javier :00]
+- Añade sink de ILogger con EventId, campos allowlisted e inspección adversarial de mensajes/PII, integrado solo en DI Development; no añade fuente, endpoint, permisos ni flujo productivo.
+- Añade regresiones xUnit de logging real, aislamiento tenant A/B, revocación, entradas maliciosas y cancelación; CI exact-SHA y A5 independiente pendientes, sin declarar LISTO ni certificación externa.
+
 ## 2026-11-19 — V20 C02-01.M04.05 regresión Chromium responsive y teclado [Javier :50]
 - Se añaden cuatro escenarios de navegador real Angular local: 320/375/768/1280, Tab/Enter natural, foco, etiquetas, contraste WCAG AA y denegación sin sesión ante hint tenant falsificado.
 - Se incorpora CI GitHub-hosted dirigida por SHA, sin JWT real, MySQL ni proveedores; A0-A4 completos y revisión A5 independiente siguen PENDIENTES de prueba causal. No QA/main/PROD.

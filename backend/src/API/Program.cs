@@ -44,6 +44,14 @@ var connectionString = builder.Configuration.GetConnectionString("DefaultConnect
 if (isRender) EnvironmentDatabaseGuard.ValidateRenderBinding(builder.Environment.EnvironmentName, connectionString);
 builder.Services.AddHttpContextAccessor();
 builder.Services.AddMemoryCache();
+// C01-04.M03.06: solo DEV, sink de auditoria tipado; no registrar fuente sin autenticacion real.
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddSingleton<
+        Solqaryn.Application.AutomationV5.IV5UniversalCaseFileQaAuditSink,
+        Solqaryn.Application.AutomationV5.V5UniversalCaseFileQaStructuredLoggerSink>();
+}
+
 // Operación única DEV: OFF por defecto; nunca se registra en QA/PROD o sin Render.
 if (isRender && builder.Environment.IsDevelopment() &&
     builder.Configuration.GetValue<bool>("Cloudinary:NormalizeDevLegacyImagesOnStartup"))

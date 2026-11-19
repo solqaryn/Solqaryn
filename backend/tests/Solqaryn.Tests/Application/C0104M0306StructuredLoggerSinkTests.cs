@@ -1,0 +1,133 @@
+using Microsoft.Extensions.Logging;
+using Solqaryn.Application.AutomationV5;
+using Xunit;
+using Audit = Solqaryn.Application.AutomationV5.V5UniversalCaseFileQaEvidenceAudit;
+
+namespace Solqaryn.Tests.Application;
+
+public sealed class C0104M0306StructuredLoggerSinkTests
+{
+    private const string Id = "C01-04.M03.06";
+    private const string Sha = "0123456789abcdef0123456789abcdef01234567";
+    private static readonly DateTimeOffset Utc = new(2026, 11, 19, 12, 0, 0, TimeSpan.Zero);
+
+    private static Audit.SafeAuditEntry GoodEntry() => new(
+        Id, "casefile.timeline", Sha, "verify-solqaryn-project-scope",
+        "completed", "success", Utc, "UNVERIFIED_EXTERNAL_REVIEW_REQUIRED");
+
+    private static Audit.Observation GoodObservation() => new(
+        Id, "casefile.timeline", Sha, "tenant-A", "case-42", true, true,
+        "verify-solqaryn-project-scope", "completed", "success", Utc,
+        "private bearer token=secret; patient and client PII");
+
+    private sealed class Source(Audit.Observation observation) : IV5UniversalCaseFileQaEvidenceSource
+    {
+        public ValueTask<Audit.Observation?> ReadAsync(
+            string microtaskId, string routeKey, CancellationToken cancellationToken) =>
+            ValueTask.FromResult<Audit.Observation?>(observation);
+    }
+
+    private sealed class ProbeLogger : ILogger<V5UniversalCaseFileQaStructuredLoggerSink>
+    {
+        public List<(LogLevel Level, int EventId, string Text, KeyValuePair<string, object?>[] Fields)> Calls { get; } = [];
+
+        public IDisposable BeginScope<TState>(TState state) where TState : notnull => NoopScope.Instance;
+        public bool IsEnabled(LogLevel logLevel) => true;
+
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state,
+            Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            var fields = state is IEnumerable<KeyValuePair<string, object?>> pairs
+                ? pairs.ToArray()
+                : Array.Empty<KeyValuePair<string, object?>>();
+            Calls.Add((logLevel, eventId.Id, formatter(state, exception), fields));
+        }
+
+        private sealed class NoopScope : IDisposable
+        {
+            public static readonly NoopScope Instance = new();
+            public void Dispose() { }
+        }
+    }
+
+    [Fact]
+    public async Task TrustedObservationEmitsActualStructuredLogWithNoPIIOrPermission()
+    {
+        var logger = new ProbeLogger();
+        var sink = new V5UniversalCaseFileQaStructuredLoggerSink(logger);
+        var result = await new Audit(new Source(GoodObservation()), sink).CaptureAsync(
+            Id, "casefile.timeline", Sha, "tenant-A", "case-42");
+
+        Assert.Equal("CASEFILE_QA_ENVELOPE_WRITTEN_REVIEW_PENDING", result.Code);
+        var call = Assert.Single(logger.Calls);
+        Assert.Equal(LogLevel.Information, call.Level);
+        Assert.Equal(1040306, call.EventId);
+        Assert.Contains(call.Fields, p => p.Key == "MicrotaskId" && Equals(p.Value, Id));
+        Assert.Contains(call.Fields, p => p.Key == "SourceSha" && Equals(p.Value, Sha));
+        Assert.Contains(call.Fields, p => p.Key == "VerificationClass" &&
+            Equals(p.Value, "UNVERIFIED_EXTERNAL_REVIEW_REQUIRED"));
+        var emitted = call.Text + string.Join(" ", call.Fields.Select(p => $"{p.Key}={p.Value}"));
+        Assert.DoesNotContain("tenant-A", emitted);
+        Assert.DoesNotContain("case-42", emitted);
+        Assert.DoesNotContain("secret", emitted, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("patient", emitted, StringComparison.OrdinalIgnoreCase);
+        Assert.False(result.CertifiesCI);
+        Assert.False(result.CertifiesA5);
+        Assert.False(result.GrantsTenantAccess);
+        Assert.False(result.AuthorizesCaseWrite);
+    }
+
+    [Fact]
+    public async Task DirectSinkRejectsForgedSensitiveAndUnverifiedFieldsWithoutLogging()
+    {
+        var logger = new ProbeLogger();
+        var sink = new V5UniversalCaseFileQaStructuredLoggerSink(logger);
+        foreach (var invalid in new[]
+        {
+            GoodEntry() with { MicrotaskId = "C01-04.M03.06\nPII" },
+            GoodEntry() with { RouteKey = "casefile.timeline?token=secret" },
+            GoodEntry() with { SourceSha = new string('f', 39) },
+            GoodEntry() with { CheckName = "provider bearer secret" },
+            GoodEntry() with { CheckStatus = "queued", CheckConclusion = "success" },
+            GoodEntry() with { CheckConclusion = "skipped", VerificationClass = "A5_PASS" },
+            GoodEntry() with { ObservedAtUtc = Utc.ToOffset(TimeSpan.FromHours(-6)) }
+        })
+        {
+            await Assert.ThrowsAsync<ArgumentException>(
+                async () => await sink.WriteAsync(invalid, CancellationToken.None));
+        }
+        Assert.Empty(logger.Calls);
+    }
+
+    [Fact]
+    public async Task CrossTenantOrRevokedEvidenceNeverReachesLogSink()
+    {
+        var logger = new ProbeLogger();
+        var sink = new V5UniversalCaseFileQaStructuredLoggerSink(logger);
+        foreach (var observation in new[]
+        {
+            GoodObservation() with { VerifiedTenantScope = "tenant-B" },
+            GoodObservation() with { SourceAuthenticated = false },
+            GoodObservation() with { SourceOwnedByTenant = false },
+            GoodObservation() with { VerifiedCaseFileScope = "case-43" }
+        })
+        {
+            var result = await new Audit(new Source(observation), sink).CaptureAsync(
+                Id, "casefile.timeline", Sha, "tenant-A", "case-42");
+            Assert.Equal("CASEFILE_QA_TRUSTED_EVIDENCE_REQUIRED", result.Code);
+        }
+        Assert.Empty(logger.Calls);
+    }
+
+    [Fact]
+    public async Task CancellationDoesNotEmitLog()
+    {
+        var logger = new ProbeLogger();
+        var sink = new V5UniversalCaseFileQaStructuredLoggerSink(logger);
+        using var cts = new CancellationTokenSource();
+        cts.Cancel();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            async () => await sink.WriteAsync(GoodEntry(), cts.Token));
+        Assert.Empty(logger.Calls);
+    }
+}
