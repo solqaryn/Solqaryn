@@ -2,7 +2,7 @@
 
 **PLAN D:** «Revisar que las pruebas correspondan al alcance real y no a mocks insuficientes»; `C10-04.M06.01`, fila 1580. `PLAN E: Completa M06` es meta acumulativa, no autorización de certificar restauraciones productivas con esta revisión. Repositorio `solqaryn/Solqaryn@dev`, `PROJECT_SCOPE_LOCK=STRICT`, autor DEV01 `6adbb9fff1548191a1bd5b30d9e9984a`. **R0** análisis documental exclusivamente; no cambia código ejecutable, tests, CI, base de datos, JWT/RBAC, proveedores, secretos, entornos ni tareas físicas. CLAIM con namedRange V17 `SQV17_C10_04_M06_01` / `2000001580`, PLAN H=PENDIENTE/I vacío, COLA G/O=SI, DAG F=VALIDADO/G=SI, CAS H `occurrencesChanged=1`.
 
-## A0 — Evidencia inspeccionada y nivel de confianza
+**Precisión de conteo verificada en logs GitHub-hosted:** el job `134991897836` ejecutó exactamente **7/7 pruebas Playwright Chromium** (`7 passed`, cero reintentos), y `134991897126` fue otro job de MySQL 8.4; no hubo nueve pruebas Chromium. La mención inicial de nueve en `CHANGELOG_AI.md` se corrige explícitamente a siete. Ninguno acredita auth JWT real ni recuperación productiva.\n\n## A0 — Evidencia inspeccionada y nivel de confianza
 
 - Fuente institucional: STANDARD DE IMPLEMENTACIÓN DE AUTOMATIZACIONES Drive `1KdunQg6g6ge9Q6rdgWlYex8f6OvlRodb9xxgW51JDtA`, Sheet `1VWJmV7udKk0UaNGL2VQJoEGmUYK9AMAmkqOrnrlmydU`, PLAN/COLA/DAG/BITACORA.
 - Código de test revisado: `frontend/e2e/c10-04-m05-06-regression-perf-a11y.spec.ts` blob `cc47a9d8ab9cde0ebde79c776d4def6027d80487`; el helper `mockPlatformSession` en línea 13 intercepta la sesión vía `page.route` en línea 25. Los asserts son verdaderos en Chromium, **el backend de sesión no es real**.
