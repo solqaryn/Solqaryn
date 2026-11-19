@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C03-04.M06.02 version y trazabilidad de pruebas [DEV04]
+- Manifiesto `docs/v5/c03-04-m06-02-version-diff-evidencia.md` con seis SHA de M05.01–06, artefactos TRX/CI MySQL efimero, cuatro blob hashes verificados y receta reproducible sin ejecucion nueva.
+- Documental R0 para PLAN D573: distinguidas pruebas reales de autoridad sintetica y limites JWT/HTTP/restore. No se certifica meta acumulativa M06/PROD, ni se altera DAG/COLA o runtime.
+- Autoria DEV04 6aeacb7820ac8191b7d768a6f33dfa09; V17 lock 2000000573, Scope Lock STRICT; A5 independiente pendiente.
+
 ## 2026-11-19 — V22 C07-04.M06.02 manifiesto de version y evidencias [DEV05]
 - Registrado manifiesto reproducible R0 en `docs/v5/c07-04-m06-02-version-diff-artefactos-reproducibilidad.md` (origen `61d3044acb7b5306e9c6818b3313724ef184fc45`): SHAs, cuatro blobs de M05.06, resultado Chromium 15/15 dirigido y fallo del check global histórico documentado sin convertirlo en PASS.
 - PLAN D define el resultado atómico documental, PLAN E conserva metas comerciales acumulativas sin certificar JWT firmado, tenant A/B HTTP, pagos, PSP, MySQL financiero, QA o PROD. Claim V17 fila 1149, fuente histórica y CHANGELOG preservados; A0-A4 y A5 independiente requeridos antes de avanzar sucesoras.
