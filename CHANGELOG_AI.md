@@ -1,3 +1,7 @@
+## 2026-11-19 — V22 C15-01.M05.06 regresión, rendimiento y accesibilidad Chromium [DEV06]
+- Pruebas Playwright reales del shell de cobertura con medidas de navegación localhost, Tab real y 44px, rechazos 403/503. Sesión sintética declarada: no certificar JWT backend, tenant A/B, MySQL, WCAG global ni Core Web Vitals de campo.
+- Workflow GitHub-hosted Node24/Angular22/Chromium con concurrency exact-SHA sin cancelación; pendiente validar CI y Scope Lock/V5 antes de LISTO/A5 independiente. Sin QA/main/PROD.
+
 ## 2026-11-19 — V22 C13-04.M06.05 solicitud de revisión independiente [DEV05]
 - Solicitud documental R0 del lote visual con matriz de evidencias M05/M06 y checklist A0–A5 para otra Task Javier realmente independiente.
 - Preserva los tres fallos del check global de transferencias, diferencias entre mocks y JWT/MySQL/Chromium reales, y límites de dispositivos físicos; no certifica la fase.

@@ -1,0 +1,61 @@
+name: V22 C15-01.M05.06 - regresion rendimiento accesibilidad
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/e2e/c15-01-m05-06-regression.spec.ts'
+      - '.github/workflows/v22-c15-01-m05-06-regression.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c15-01-m05-06-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  chromium:
+    name: C15-01.M05.06 - Chromium tres regresiones y presupuesto local
+    runs-on: ubuntu-latest
+    timeout-minutes: 42
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm install --global npm@11.19.0
+      - run: npm ci
+      - name: Angular tipado y build produccion
+        run: |
+          npx tsc --noEmit -p tsconfig.app.json
+          npm run build:prod
+      - run: npx playwright install --with-deps chromium
+      - name: Angular loopback efimero
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c1501m0506.log 2>&1 &
+          for attempt in $(seq 1 75); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat c1501m0506.log >&2
+          exit 1
+      - name: Chromium regresion real R2, rendimiento y accesibilidad
+        run: npx playwright test e2e/c15-01-m05-06-regression.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v22-c15-01-m05-06-evidencia
+          path: |
+            frontend/c1501m0506.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 14
