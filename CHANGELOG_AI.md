@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C15-02.M04.04 navegación y doble acción privada [Javier :20]
+- Cuatro E2E Playwright Chromium: acceso anónimo/403/Empresa, Tab+Enter reales, responsive 320–1280, cero operaciones mutantes o duplicadas; sin cambios de autorización ni API.
+- CI dirigida GitHub-hosted exact-SHA y contrato A0–A5; sesiones sintéticas no certifican JWT/MySQL real, A5, QA/main ni PROD.
+
 ## 2026-11-18 - V20 C15-01.M04.06 densidad y carga progresiva [Javier :30]
 - Tres pruebas Playwright Chromium para reflow, cero HTTP mutador, datos ocultos mientras la sesion esta pendiente y denegacion 403/503; JWT HTTP y MySQL no probados.
 - CI SHA-aislada, build Angular, evidencia causal y A5 independiente; sin QA/main/PROD.

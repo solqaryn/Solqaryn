@@ -1,0 +1,66 @@
+name: V20 C15-02.M04.04 - navegacion privada
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/e2e/c15-02-m04-04-navigation.spec.ts'
+      - '.github/workflows/v20-c15-02-m04-04-navigation.yml'
+      - 'frontend/src/app/features/plataforma/c15-02-m04-01-revision-arquitectura.component.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v20-c1502-m0404-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  navegacion:
+    name: C15-02.M04.04 - Chromium navegacion y denegacion
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm 11
+        run: npm install --global npm@11.19.0
+      - name: npm ci
+        run: npm ci
+      - name: Lint y build
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Instalar Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Angular efímero
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c1502m0404-angular.log 2>&1 &
+          for attempt in $(seq 1 70); do
+            if curl --silent --fail http://127.0.0.1:4200/login >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat c1502m0404-angular.log >&2
+          exit 1
+      - name: Chromium con sesiones sintéticas
+        run: npx playwright test e2e/c15-02-m04-04-navigation.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Evidencia
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v20-c1502-m0404-navigation
+          path: |
+            frontend/c1502m0404-angular.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 14
