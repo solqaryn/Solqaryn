@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 C15-03.M05.05 denegaciones JWT y tenant A/B reales [Javier :20]
+- Añade cinco pruebas negativas Playwright contra JWT firmado, API .NET 10 y MySQL 8.4 efímero: anónimo, firma adulterada, spoofing A/B, cabecera de tenant arbitraria, sin acceso a consola global.
+- El workflow exact-SHA no cancela ejecuciones por otros commits. La integración de archivos, sucursales, propiedad y jobs sigue NO_MEDIDO hasta pruebas propias; no anticipar LISTO/A5 con CI pendiente. Solo dev.
+
 ## 2026-11-19 — V20 C15-03.M05.04 aceptación positiva JWT real y tenancy A/B [Javier :20]
 - Añade cuatro casos Playwright contra API .NET 10, JWT firmado y MySQL 8.4 efímero: guía privada 320/1280, revalidación sin mutaciones y aislamiento real de Empresa A/B frente a consola global.
 - El workflow dedicado conserva Scope Lock y `cancel-in-progress: false`. Las comprobaciones de sucursales, archivos, jobs, propiedad y control plane siguen NO_MEDIDO; no marcar LISTO/A5 hasta CI y aceptación completa en SHA causal. Solo dev.
