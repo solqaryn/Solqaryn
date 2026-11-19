@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C15-04.M05.04 CI causal para reparar landmarks [Javier :10]
+- Amplía `on.push.paths` de la suite JWT/MySQL/Chromium de C15-04 para cubrir los dos componentes que tenían `<main>` anidado; sigue ejecutando 29 aserciones reales de plataforma, A/B y semántica, sin alterar tests ni gates.
+- Solo `dev`, por SHA, sin cancelaciones cruzadas (`cancel-in-progress=false`); nueva CI requerida para 29 PASS, A0-A4 global abierto y A5 independiente. Preserva owner DEV02, candado V17 2000002297 y rollback git revert normal.
+
 ## 2026-11-18 — V20 C15-04.M05.04 reparación P2 de landmark principal anidado [Javier :10]
 - CI A0.42 28/29 PASS mostró dos landmarks `main` en inventario global; app shell ya contenía el principal. Se corrigen dos superficies `/plataforma/inventario-rutas-v19` y `/plataforma/trazabilidad-cobertura-v5` cambiando solo envolturas internas a `section` con `aria-labelledby` intacto; conserva el assert Playwright estricto de un único `main`, guards/JWT y tenant.
 - Se mantienen pruebas Chromium reales con MySQL 8.4 efímero y negativos de denegación; 29 PASS requieren nuevo run exact-SHA, Scope Lock y V5. Auditoría UX/WCAG global A0-A4 aún incompleta, A5 ajeno; C15-04.M05.04 EN_PROGRESO DEV02, lock 2000002297 legítimo. Revert normal, sin QA/main/PROD.

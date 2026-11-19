@@ -6,6 +6,8 @@ on:
       - '.github/workflows/v19-c15-04-m05-04-jwt-real.yml'
       - 'frontend/e2e/c15-04-m05-04-jwt-real.spec.ts'
       - 'frontend/playwright.c15-04-m05-04-real.config.ts'
+      - 'frontend/src/app/features/plataforma/c13-04-m04-01-catalogo-rutas.component.ts'
+      - 'frontend/src/app/features/plataforma/cobertura-trazabilidad-v5.component.ts'
   workflow_dispatch:
 permissions:
   contents: read
