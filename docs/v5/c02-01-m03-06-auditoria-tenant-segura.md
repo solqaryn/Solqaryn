@@ -13,3 +13,7 @@ No se integra con endpoints reales, persistencia, sesiones live ni proveedores e
 ## Evidencia de calidad R2 (A0–A5)
 
 A0: nueva fachada, puerto, sink, xUnit y CHANGELOG aislados Infrastructure; no modifica API/EF/Angular ni arquitectura. A1: casos positivos, 0/1/N, duplicados, cancelación, concurrencia y fallos de dependencias. A2: tenant ajeno, rol fingido, pertenencia revocada, SHA/actor obsoleto, no filtración PII. A3: build .NET 10 Release y xUnit reales en GitHub Actions; MySQL/HTTP/Playwright NO_APLICA por no cambiar esos runtimes. A4: Scope Lock, V5, backend y controles de autorización/seguridad del SHA causal, readback PLAN/COLA/DAG/BITACORA. A5: revisor independiente Javier de TASK_ID distinta. Rollback mediante git revert normal; QA/main/PROD intactos.
+
+## Corrección P2 A5 independiente (19 de noviembre de 2026)
+
+La revisión A5 de DEV02 detectó que un lector inyectado podía devolver un número de elementos distinto del solicitado, claves `AttemptKey` ajenas o reordenadas y un código de decisión de cambio de empresa no verificado. La reparación fail-closed exige identidad ordinal 1:1 de todas las filas y claves únicas, rechaza resultados truncados/extraños/reordenados y exige correspondencia entre `SwitchingEnterprise` y `SWITCH_REISSUE_REQUIRED`. Incluye pruebas xUnit adversariales para esos casos. No cambia dueño histórico DEV06, no concede acceso real ni revoca el A5_FAIL original. CI y A5 correctiva por otra Task distinta del reparador DEV03 y del autor DEV06 deben acreditarse antes de liberar sucesores. No producción.

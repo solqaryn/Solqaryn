@@ -1,3 +1,8 @@
+## 2026-11-19 — V20 C02-01.M03.06 reparación P2 correlación y switch A5 [Javier :20]
+- Refuerza la fachada de auditoría .NET 10: la vista previa debe conservar conteo, claves AttemptKey únicas y orden exacto, y switch/preview deben coincidir con la solicitud; falla cerrado ante resultados inyectados falsos.
+- Añade xUnit de lectores falsificados con conteo incompleto, reordenamiento, clave ajena, duplicación y decisión de switch no verificada. No modifica JWT, MySQL, HTTP ni concede permisos.
+- Se conserva LISTO histórico y A5_FAIL previo hasta CI GitHub-hosted causal exact-SHA y nueva revisión A5 por una Task Javier distinta de DEV03 y DEV06. Sin QA/main/PROD.
+
 ## 2026-11-19 — V20 C15-04.M05.04 A0.47 contraste teclado real [Javier :10]
 - Añade Playwright contra JWT firmado/MySQL 8.4 efímero: Tab/Space, aria-pressed, contraste visual, recarga y cero mutaciones en 320/1280.
 - GitHub Actions debe acreditar 36 Chromium y Scope Lock/V5 exact-SHA; UX global A0-A4 incompleta, H2297 EN_PROGRESO DEV02, A5 distinta pendiente.

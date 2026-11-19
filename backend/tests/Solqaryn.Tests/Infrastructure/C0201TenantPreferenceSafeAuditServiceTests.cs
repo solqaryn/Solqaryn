@@ -30,6 +30,8 @@ public sealed class C0201TenantPreferenceSafeAuditServiceTests
         public int Calls { get; private set; }
         public bool Throw { get; set; }
         public TaskCompletionSource<bool>? Wait { get; set; }
+        public Func<IReadOnlyList<C0201TenantPreferenceBoundedRevalidationWorker.Input>?,
+            C0201TenantPreferenceBoundedRevalidationWorker.Review>? Override { get; set; }
         public async ValueTask<C0201TenantPreferenceBoundedRevalidationWorker.Review>
             ReadAsync(
             IReadOnlyList<C0201TenantPreferenceBoundedRevalidationWorker.Input>? inputs,
@@ -38,6 +40,7 @@ public sealed class C0201TenantPreferenceSafeAuditServiceTests
             Calls++;
             if (Throw) throw new InvalidOperationException("private-request-value");
             if (Wait is not null) await Wait.Task.WaitAsync(ct);
+            if (Override is not null) return Override(inputs);
             return new("PREVIEW_ONLY_AUTHENTICATED_BACKEND_REISSUE_REQUIRED",
                 new[] { new C0201TenantPreferenceBoundedRevalidationWorker.Item(
                     "attempt-001", "ONE_TENANT_REISSUE_REQUIRED", 11, 0, false) });
@@ -161,6 +164,73 @@ public sealed class C0201TenantPreferenceSafeAuditServiceTests
             new[] { Input(request: new Gate.Request(ClientClaimsMembership: true)) },
             Actor, 7, Sha);
         Assert.Equal("AUDIT_AUTHORITY_DENIED", result.Code);
+    }
+
+    [Fact]
+    public async Task ForgedReaderCountAndAttemptOrderAreDenied()
+    {
+        var reader = new Reader();
+        var sink = new Sink();
+        var service = new C0201TenantPreferenceSafeAuditService(reader, sink);
+        static C0201TenantPreferenceBoundedRevalidationWorker.Item Item(string key) =>
+            new(key, "ONE_TENANT_REISSUE_REQUIRED", 11, 0, false);
+
+        reader.Override = _ => new(
+            "PREVIEW_ONLY_AUTHENTICATED_BACKEND_REISSUE_REQUIRED",
+            new[] { Item("attempt-001") });
+        var shortResult = await service.ReviewAsync("operation-001",
+            new[] { Input("attempt-001"), Input("attempt-002") }, Actor, 7, Sha);
+        Assert.Equal("AUDIT_AUTHORITY_DENIED", shortResult.Code);
+
+        reader.Override = _ => new(
+            "PREVIEW_ONLY_AUTHENTICATED_BACKEND_REISSUE_REQUIRED",
+            new[] { Item("attempt-002"), Item("attempt-001") });
+        var reordered = await service.ReviewAsync("operation-002",
+            new[] { Input("attempt-001"), Input("attempt-002") }, Actor, 7, Sha);
+        Assert.Equal("AUDIT_AUTHORITY_DENIED", reordered.Code);
+
+        reader.Override = _ => new(
+            "PREVIEW_ONLY_AUTHENTICATED_BACKEND_REISSUE_REQUIRED",
+            new[] { Item("foreign-attempt") });
+        var foreign = await service.ReviewAsync("operation-003",
+            new[] { Input("attempt-001") }, Actor, 7, Sha);
+        Assert.Equal("AUDIT_AUTHORITY_DENIED", foreign.Code);
+        Assert.All(sink.Records, record =>
+            Assert.Equal("AUDIT_AUTHORITY_DENIED", record.Code));
+        Assert.All(sink.Records, record => Assert.Equal(0, record.ReviewedCount));
+    }
+
+    [Fact]
+    public async Task ForgedDuplicateAttemptsAndSwitchDecisionsAreDenied()
+    {
+        var reader = new Reader();
+        var service = new C0201TenantPreferenceSafeAuditService(reader, new Sink());
+        static C0201TenantPreferenceBoundedRevalidationWorker.Item Item(
+            string key, string decision) => new(key, decision, 11, 0, false);
+
+        reader.Override = _ => new(
+            "PREVIEW_ONLY_AUTHENTICATED_BACKEND_REISSUE_REQUIRED",
+            new[] { Item("attempt-001", "ONE_TENANT_REISSUE_REQUIRED"),
+                    Item("attempt-001", "ONE_TENANT_REISSUE_REQUIRED") });
+        var duplicate = await service.ReviewAsync("operation-001",
+            new[] { Input(), Input() }, Actor, 7, Sha);
+        Assert.Equal("AUDIT_AUTHORITY_DENIED", duplicate.Code);
+
+        reader.Override = _ => new(
+            "PREVIEW_ONLY_AUTHENTICATED_BACKEND_REISSUE_REQUIRED",
+            new[] { Item("attempt-001", "ONE_TENANT_REISSUE_REQUIRED") });
+        var unverifiedSwitch = await service.ReviewAsync("operation-002",
+            new[] { Input(request: new Gate.Request(
+                SelectedTenantId: 22, SwitchingEnterprise: true)) },
+            Actor, 7, Sha);
+        Assert.Equal("AUDIT_AUTHORITY_DENIED", unverifiedSwitch.Code);
+
+        reader.Override = _ => new(
+            "PREVIEW_ONLY_AUTHENTICATED_BACKEND_REISSUE_REQUIRED",
+            new[] { Item("attempt-001", "SWITCH_REISSUE_REQUIRED") });
+        var forgedSwitch = await service.ReviewAsync("operation-003",
+            new[] { Input() }, Actor, 7, Sha);
+        Assert.Equal("AUDIT_AUTHORITY_DENIED", forgedSwitch.Code);
     }
 
     [Fact]

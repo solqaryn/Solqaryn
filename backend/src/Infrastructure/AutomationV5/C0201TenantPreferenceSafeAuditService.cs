@@ -120,13 +120,40 @@ public sealed class C0201TenantPreferenceSafeAuditService
 
             if (preview is null || preview.Code !=
                 "PREVIEW_ONLY_AUTHENTICATED_BACKEND_REISSUE_REQUIRED" ||
-                preview.Items is null || preview.Items.Count is < 1 or >
+                inputs is null || preview.Items is null ||
+                preview.Items.Count != inputs.Count ||
+                preview.Items.Count is < 1 or >
                     C0201TenantPreferenceBoundedRevalidationWorker.MaximumBatch ||
                 preview.Items.Any(x => x is null || !Allowed(x.DecisionCode)))
                 return await DenyAsync("AUDIT_AUTHORITY_DENIED", cancellationToken);
 
-            bool isSwitch = inputs is { Count: > 0 } &&
-                inputs.All(x => x?.Request?.SwitchingEnterprise == true);
+            // A5 P2: never trust a preview reader's count or row identity.
+            // A forged, truncated, reordered or duplicate attempt must not
+            // produce a success audit even when the decision code looks safe.
+            var seenAttempts = new HashSet<string>(StringComparer.Ordinal);
+            for (int i = 0; i < inputs.Count; i++)
+            {
+                var entry = inputs[i];
+                var item = preview.Items[i];
+                if (entry is null || entry.Request is null ||
+                    !SafeKey(entry.AttemptKey) ||
+                    !seenAttempts.Add(entry.AttemptKey) ||
+                    item is null ||
+                    !string.Equals(item.AttemptKey, entry.AttemptKey,
+                        StringComparison.Ordinal))
+                    return await DenyAsync("AUDIT_AUTHORITY_DENIED",
+                        cancellationToken);
+            }
+
+            bool isSwitch = inputs.All(x => x.Request!.SwitchingEnterprise);
+            // An unverified switch decision must never be reported as a
+            // verified switch, nor may a switch decision appear for a
+            // non-switch input. This remains preview-only, never access.
+            if (inputs.Any(x => x.Request!.SwitchingEnterprise) != isSwitch ||
+                preview.Items.Any(x =>
+                    (x.DecisionCode == "SWITCH_REISSUE_REQUIRED") != isSwitch))
+                return await DenyAsync("AUDIT_AUTHORITY_DENIED",
+                    cancellationToken);
             string code = isSwitch ? "AUDIT_SWITCH_REISSUE_PREVIEW" :
                 preview.Items.Any(x => x.DecisionCode == "SELECT_VERIFIED_TENANT")
                     ? "AUDIT_SELECTION_CHOICE_PREVIEW"
