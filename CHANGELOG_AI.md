@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C14-02.M06.02 versiones, diff y prueba reproducible [Javier DEV01]
+- Se fijaron seis SHA causales M05.01–06 con jobs GitHub-hosted, resultados delimitados de Vitest, HTTP JWT firmado, MySQL 8.4, xUnit y Chromium de navegador real.
+- Se agregó protocolo verificable por SHA, diff, blobs, TRX, negativos y checks exactos; no confundir mocks de cliente con HTTP/JWT/SQL ni transformar SKIPPED o FAIL histórico en PASS.
+- Cambio R0 documental sin runtime ni fórmulas, pendiente A5 ajena; fase E global P0/P1 y R3/QA/main/PROD no certificados.
+
 ## 2026-11-19 — C14-02.M06.03 | V22 DEV06 limitaciones y decisiones de seguridad
 - Se documentaron evidencias comprobables por microtarea M05.01–06, sus SHA y las limitaciones no cubiertas: BOLA/IDOR, host, archivos, jobs, cache, backup y sesiones; no se infiere certificacion de la fase completa.
 - Las pruebas con interceptores o sesiones sinteticas no acreditan JWT firmado ni HTTP/MySQL real; los checks SKIPPED, CANCELLED, FAIL o IN_PROGRESS requeridos no se consideran PASS.
