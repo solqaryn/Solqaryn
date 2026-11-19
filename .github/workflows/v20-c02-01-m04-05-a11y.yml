@@ -1,0 +1,68 @@
+name: V20 C02-01.M04.05 - responsive teclado foco contraste
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/e2e/c02-01-m04-05-tenant-a11y.spec.ts'
+      - '.github/workflows/v20-c02-01-m04-05-a11y.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v20-c0201-m0405-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  browser:
+    name: C02-01.M04.05 - Chromium a11y responsive
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm fijado
+        run: npm install --global npm@11.19.0
+      - name: dependencias institucionales
+        run: npm ci
+      - name: Angular lint y build
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Chromium en runner efímero
+        run: npx playwright install --with-deps chromium
+      - name: Angular local loopback sin proveedor productivo
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > v20-c0201-m0405.log 2>&1 &
+          for attempt in $(seq 1 75); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then
+              echo 'ANGULAR_LOCAL_READY=PASS'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat v20-c0201-m0405.log >&2
+          exit 1
+      - name: Cuatro casos reales Playwright
+        run: npx playwright test e2e/c02-01-m04-05-tenant-a11y.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Evidencia Chromium
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v20-c0201-m0405-chromium
+          path: |
+            frontend/v20-c0201-m0405.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 14

@@ -1,3 +1,8 @@
+## 2026-11-19 — V20 C02-01.M04.05 regresión Chromium responsive y teclado [Javier :50]
+- Se añaden cuatro escenarios de navegador real Angular local: 320/375/768/1280, Tab/Enter natural, foco, etiquetas, contraste WCAG AA y denegación sin sesión ante hint tenant falsificado.
+- Se incorpora CI GitHub-hosted dirigida por SHA, sin JWT real, MySQL ni proveedores; A0-A4 completos y revisión A5 independiente siguen PENDIENTES de prueba causal. No QA/main/PROD.
+- No se modifica runtime ni autoridad empresarial; rollback mediante revert normal, se preservan Scope Lock/V17 y los estados históricos.
+
 ## 2026-11-19 — V21 Recuperación causal de VALIDANDO y rescate cruzado
 - Se refuerzan los prompts existentes de las seis Tasks Javier (IDs y RRULE intactos) para priorizar VALIDANDO con cierre acreditable o reparación causal real sobre nuevas reclamaciones cuando la cola está saturada.
 - Se distinguen READY_CLOSE, REPAIRABLE, WAIT_CI, ACTIVE_WRITER y R3_NO_GO por ID/SHAs y se exige trabajo real sobre A0-A4 faltantes, sin eludir CI pertinente ni atribuir PASS global a unit tests.
