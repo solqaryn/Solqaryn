@@ -165,6 +165,49 @@ public sealed class C0704M0503MySqlPedidosIntegrationTests
                     .CountAsync(p => p.IdempotencyKey == "rolled-back-key"));
                 Assert.Equal(2, await verify.PedidosVenta.IgnoreQueryFilters()
                     .CountAsync(p => p.IdempotencyKey == "shared-request-key"));
+                // Revert the synthetic client/quote rows as well; B survives.
+                Assert.False(await verify.TipoClientes.IgnoreQueryFilters()
+                    .AnyAsync(t => t.Codigo == "PED_A3"));
+                Assert.True(await verify.TipoClientes.IgnoreQueryFilters()
+                    .AnyAsync(t => t.Codigo == "PED_B1"));
+            }
+
+            // C07-04.M06.04: allow a legitimate retry after rollback, but
+            // never lose committed A/B orders or permit replay after commit.
+            int retriedOrderA;
+            await using (var retry = new AppDbContext(options,
+                tenantHttpContextAccessor: ForTenant(tenantA)))
+            {
+                retriedOrderA = await AddOrderAsync(retry, "A4", "rolled-back-key");
+                Assert.NotEqual(orderA, retriedOrderA);
+            }
+            await using (var verifyA = new AppDbContext(options,
+                tenantHttpContextAccessor: ForTenant(tenantA)))
+            {
+                Assert.Equal(new[] { orderA, retriedOrderA }.OrderBy(id => id),
+                    await verifyA.PedidosVenta.AsNoTracking()
+                        .Select(p => p.Id).OrderBy(id => id).ToArrayAsync());
+            }
+            await using (var verifyB = new AppDbContext(options,
+                tenantHttpContextAccessor: ForTenant(tenantB)))
+            {
+                Assert.Equal(new[] { orderB }, await verifyB.PedidosVenta.AsNoTracking()
+                    .Select(p => p.Id).ToArrayAsync());
+                Assert.Null(await verifyB.PedidosVenta.AsNoTracking()
+                    .SingleOrDefaultAsync(p => p.Id == retriedOrderA));
+            }
+            await using (var replay = new AppDbContext(options,
+                tenantHttpContextAccessor: ForTenant(tenantA)))
+            {
+                await Assert.ThrowsAsync<DbUpdateException>(async () =>
+                    await AddOrderAsync(replay, "A5", "rolled-back-key"));
+            }
+            await using (var verify = new AppDbContext(options))
+            {
+                Assert.Equal(1, await verify.PedidosVenta.IgnoreQueryFilters()
+                    .CountAsync(p => p.IdempotencyKey == "rolled-back-key"));
+                Assert.Equal(2, await verify.PedidosVenta.IgnoreQueryFilters()
+                    .CountAsync(p => p.IdempotencyKey == "shared-request-key"));
             }
         }
         finally

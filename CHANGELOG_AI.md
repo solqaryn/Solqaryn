@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C07-04.M06.04 rollback MySQL 8.4 A/B y replay [DEV01]
+- Incremento R2 de pruebas de rollback aislado: filas transaccionales abortadas desaparecen; pedidos legitimos A/B sobreviven; reintento idempotente A permitido y duplicado posterior rechazado.
+- Nueva CI GitHub-hosted de MySQL 8.4 efimero con filtro xUnit y 4 casos, 0 FAIL y 0 SKIP, Scope Lock y readback exact SHA. Sin datos productivos.
+- PLAN D1151 atomico test-only; HTTP/JWT, factura fiscal, pago real o proveedor externo quedan fuera de este diff y no se finge A5, QA/main/PROD.
+
 ## 2026-11-19 — V22 C11-03.M03.01 reparación causal de validador TRX [Javier :30]
 - GitHub-hosted job inicial compiló .NET Release y ejecutó xUnit 17/17 PASS, pero falló por un grep que exigía "Failed: 0" en una salida xUnit que solo decía "Passed: 17".
 - Se reemplaza ese falso negativo por lectura fail-closed del archivo TRX (total, passed, failed, notExecuted), sin alterar tests, dominio, permisos ni reducir el gate. Revalidar nuevo SHA dirigido, Scope Lock/V5 y checks aplicables antes de LISTO.
