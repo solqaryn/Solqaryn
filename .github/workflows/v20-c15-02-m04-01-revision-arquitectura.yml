@@ -1,0 +1,74 @@
+name: V20 C15-02.M04.01 - revision arquitectura privada
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/src/app/features/plataforma/c15-02-m04-01-revision-arquitectura.component.*'
+      - 'frontend/src/app/app.routes.ts'
+      - 'frontend/e2e/c15-02-m04-01-revision-arquitectura.spec.ts'
+      - '.github/workflows/v20-c15-02-m04-01-revision-arquitectura.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v20-c1502-m0401-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  private-review:
+    name: C15-02.M04.01 - Chromium auth y responsive
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout SHA exacto
+        uses: actions/checkout@v4
+      - name: Node24 npm11
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Npm fijado
+        run: npm install --global npm@11.19.0
+      - name: Dependencias fijas
+        run: npm ci
+      - name: Lint y build Angular
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Vitest dirigido de ruta y revocación
+        run: npx ng test --watch=false --no-progress --include='src/app/features/plataforma/c15-02-m04-01-revision-arquitectura.component.spec.ts'
+      - name: Chromium efimero
+        run: npx playwright install --with-deps chromium
+      - name: Angular efimero loopback
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c1502m0401-angular.log 2>&1 &
+          for attempt in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then
+              echo 'LOCAL_ANGULAR_READY=PASS'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat c1502m0401-angular.log >&2
+          exit 1
+      - name: Chromium autorizacion sintética, estados y ancho
+        run: npx playwright test e2e/c15-02-m04-01-revision-arquitectura.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Artefactos ante error
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v20-c1502-m0401-revision
+          path: |
+            frontend/c1502m0401-angular.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 14

@@ -1,3 +1,7 @@
+## 2026-11-18 — V20 C15-02.M04.01 ruta privada de revisión de arquitectura [Javier :00]
+- Nueva vista Angular de solo lectura con guard de plataforma, inventario de cinco frentes NO_VERIFICADO, revocación segura y sin acceso a proveedores, SQL, secretos, DNS o despliegues.
+- Vitest TestBed y Playwright Chromium con HTTP sintético y anchos 320/375/768/1280; CI exact-SHA requerida, A5 independiente y nunca JWT/MySQL/PROD certificados por mocks.
+
 ## 2026-11-18 — V20 reparación P2 de navegación Tab real C15-01.M04.01 [Javier :50]
 - Sustituye `focus()` y `click()` por Tab/Enter de teclado real en Chromium; prueba adversarial de enlace con `tabindex=-1` sin tocar guards, rutas ni producción.
 - Conserva A5_FAIL histórico hasta nuevo check exact-SHA y revisión independiente distinta de autor DEV02 y reparador DEV06; no acredita JWT HTTP, tenant MySQL, QA/main/PROD.
