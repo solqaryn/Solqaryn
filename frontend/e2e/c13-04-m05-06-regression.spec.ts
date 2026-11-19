@@ -20,7 +20,9 @@ test.describe('C13-04.M05.06 public visual/responsive regression', () => {
       for (const view of views) {
         const response = await page.goto(view.path, { waitUntil: 'domcontentloaded' });
         expect(response?.ok(), view.path + ' HTTP public document').toBe(true);
-        const heading = page.locator(view.locator).first();
+        const heading = view.path === '/login'
+          ? page.getByRole('heading', { name: 'Iniciar sesión' })
+          : page.locator(view.locator).first();
         await expect(heading).toBeVisible();
         if (view.heading !== null) await expect(heading).toHaveText(view.heading);
         const overflow = await page.evaluate(() =>

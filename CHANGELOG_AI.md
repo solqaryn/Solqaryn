@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 reparacion P2 Chromium C13-04.M05.06 [DEV04]
+- Run 44610211573/job 135864472707: 4/5 pruebas pasan, la matriz falla porque el selector `h1,h2` toma un titular publicitario oculto en login.
+- Corregir seleccion accesible por role+name `Iniciar sesión`, sin alterar casos de pantalla/tamanyo, Tab nativo, denegacion anonima y overflow adversarial. Revalidar GitHub Actions exact SHA; no contabilizar FAIL como PASS y conservar historia anterior.
+- V17 lock 2000002011, DEV04, PROJECT_SCOPE_LOCK=STRICT, dev exclusivamente; A5 independiente pendiente.
+
 ## 2026-11-19 — V22 C15-05.M06.01 auditoria real vs mock [DEV03]
 - C15-05.M06.01 revisa los seis ID M05.01–06 LISTO y A5 independientes con alcances causales: xUnit puro, API TestServer real, GET de proveedor GitHub real, Chromium con sesion sintetica, y negativos de seguridad in-memory; la matriz distingue ejecutor real de componentes simulados.
 - Se agrega docs/v5/c15-05-m06-01-auditoria-mocks-vs-reales.md con riesgos y límites; esto es evidencia documental R0 para PLAN D, no certifica fase M06, JWT firmado de extremo a extremo, MySQL de negocio, trabajador distribuido, permisos de producción ni Web Vitals de campo.
