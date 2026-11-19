@@ -1,3 +1,7 @@
+## 2026-11-19 — V20 C04-04.M02.03 reparación P2 diseño de idempotencia [Javier :00]
+- Distingue clave durable UNIQUE(EmpresaId,ProveedorId,Operacion,IdempotencyKey) de digest canónico y especifica 409 sin segundo cobro para la misma clave con payload distinto.
+- Añade cinco pares negativos futuros de tenant A/B, concurrencia, revocación, replay y timeout; preserva A5_FAIL y owner DEV06, sin ejecutar MySQL, pagos ni QA/PROD. Revisión A5 nueva por otra Task pendiente.
+
 ## 2026-11-19 — V20 C03-04.M05.03 MySQL 8.4 efímero de incidentes [Javier :50]
 - Suite xUnit Category=Integration + GitHub Actions MySQL 8.4 real aislado: persistencia A/B, ramas, rechazo tenant y SHA, revocación, rollback y rechazo de hosts remotos. TRX obligatorio >=3 ejecutados, 0 fallos/omisiones.
 - La tabla es fixture, no repositorio operativo ni JWT/HTTP/backup real. Mantener VALIDANDO hasta cerrar A0-A4 R2 con evidencia causal y revisión A5 independiente; sin tocar producción.

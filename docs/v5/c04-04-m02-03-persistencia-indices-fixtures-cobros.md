@@ -30,7 +30,7 @@ No duplicar `PagoOnline`, `WebhookEntrante`, `Factura` ni su modelo de índice s
 | Consulta/efecto futuro | Índice/cota lógica candidata | Regla de rechazo |
 | --- | --- | --- |
 | Intento por empresa/factura | (EmpresaId,FacturaId,Estado) | A no consulta facturas B |
-| Idempotencia de solicitud | (EmpresaId,ProviderKey,RequestHash) unique | Mismo key/payload distinto -> 409 |
+| Idempotencia de solicitud | `UNIQUE(EmpresaId,ProveedorId,Operacion,IdempotencyKey)`; `PayloadDigestCanonico` almacenado APARTE del índice único | Misma clave y digest: mismo resultado sin segundo efecto; misma clave con digest distinto: 409 antes de un segundo cobro |
 | Webhook externo | (EmpresaId,Proveedor,EventoExternoId) unique | Replay no produce doble efecto |
 | Transacción de proveedor | (EmpresaId,ProviderKey,ProviderTransactionRef) unique | Dos callbacks no concilian dos veces |
 | Ledger por factura | (EmpresaId,InvoiceRef,EffectRef) unique | No duplicar asiento por reintento |
@@ -56,7 +56,7 @@ Estos estados son **propuestos**. No se activan rutas ni eventos. No existe gara
 | Caso | Positivo futuro | Negativo obligatorio |
 | --- | --- | --- |
 | F01 | Factura A válida inicia intento idempotente | Actor A inicia factura B |
-| F02 | Reintento igual no duplica intento | Mismo key con otro monto crea cobro |
+| F02 | Reintento autorizado con misma clave y payload canónico recupera un único intento | Misma clave con otro importe, moneda o factura devuelve 409, sin segunda fila ni cobro |
 | F03 | Webhook HMAC/timestamp válido persiste evento | Firma inválida produce estado pagado |
 | F04 | Evento duplicado recupera resultado original | Replay crea segundo asiento |
 | F05 | Moneda y monto concuerdan tras fuente autorizada | Retorno navegador acredita sin conciliación |
@@ -77,3 +77,23 @@ MIG01 inventariar versión real y filas de PagoOnline/WebhookEntrante en un ento
 A0: solo Markdown y CHANGELOG, sin código, secretos ni datos financieros. A1: ocho contratos, siete consultas/índices candidatos, diez P/N y seis pasos MIG, todos futuros. A2: tenant A/B, HMAC, JWT/RBAC, idempotencia durable y no exposición de PAN/CVV explicados como límites de diseño. A3: compatibilidad de `PagoOnline`, `WebhookEntrante`, configuraciones EF, migración histórica y tests fuente, sin ejecutar API/MySQL (NO_APLICA a este diff). A4: Git fast-forward/CAS, controles `verify-solqaryn-project-scope` y V5 `completed/success` exact-SHA y readback institucional. A5: revisor independiente de otra Task Javier.
 
 Revert de esta tarea: `git revert` normal del Markdown/CHANGELOG. **Sin** mover QA/main/PROD, migraciones, efectos financieros, proveedores, secretos ni webhooks.
+
+## 8. Corrección P2 de A5_FAIL: idempotencia durable y anticolisiones (2026-11-19)
+
+**Hallazgo preservado.** La revisión A5 independiente observó que `UNIQUE(EmpresaId, ProviderKey, RequestHash)` permite dos filas cuando el mismo cliente reintenta la misma clave con un importe distinto, porque cambia `RequestHash`. Esto contradice el rechazo 409. Esta entrega corrige SOLO el diseño documental; no implementa tabla, constraint, MySQL, webhook, endpoint, pago, JWT ni proveedor. Autor histórico: DEV06; reparador: DEV01, que no puede aprobar su propia reparación A5.
+
+**Identidad de operación.** `IdempotencyKey` es una clave opaca, obligatoria, estable para la operación lógica, distinta de la huella del contenido. La clave de unicidad futura será `(EmpresaId, ProveedorId, Operacion, IdempotencyKey)`. `Operacion` y `ProveedorId` se normalizan en servidor y se vinculan al tenant autenticado; ninguna dimensión de este índice incorpora `RequestHash`, importe, factura o digest. Claves ausentes/vacías, identificación de proveedor ambigua, operación no autorizada, tenant inválido o factura ajena se rechazan antes de cualquier mutación. Las mismas cadenas para empresas A/B no comparten acceso ni resultado: comprobar JWT/RBAC/propiedad en cada solicitud.
+
+**Contenido canónico y conflicto.** Persistir junto al intento un `PayloadDigestCanonico` determinista calculado desde representación de factura, importe exacto en unidades menores, moneda, operación y destino en servidor; no registrar texto crudo, PAN/CVV, JWT, secreto HMAC ni datos de otra empresa. Un reintento de la misma clave, tenant y operación con huella idéntica devuelve estado/resultado del intento existente SIN otra llamada ni asiento. Con huella distinta: `409 IDEMPOTENCY_PAYLOAD_CONFLICT` antes de insertar o cobrar. El digest no autoriza: validar primero tenant/actor, RBAC, propiedad y revocación.
+
+**Concurrencia y estados ambiguos.** Antes de implementar, diseñar operación MySQL transaccional con restricción UNIQUE realmente instalada; ante conflicto único, recuperar el intento del mismo tenant, comparar digest y devolver resultado/409. Dos workers paralelos deben competir sobre la misma unicidad persistente; `SemaphoreSlim` local y `SELECT` seguido de `INSERT` sin UNIQUE no bastan. Si el PSP hace timeout tras posible efecto, conservar `AMBIGUOUS` y exigir conciliación por referencia verificada antes de reintentar; no afirmar exactly-once distribuido.
+
+| Caso P/N futuro (NO EJECUTADO) | Positivo requerido | Negativo/abuso que debe fallar cerrado |
+| --- | --- | --- |
+| P2-01 | Misma clave K, misma factura/importe/moneda: mismo AttemptId sin segundo efecto | Misma K con importe/factura distintos: 409, una fila, cero cargos adicionales |
+| P2-02 | Tenant B puede usar su propia K tras verificación de permisos | Tenant A no lee ni modifica intento B aunque use K idéntica |
+| P2-03 | Dos conexiones MySQL simultáneas con K+digest producen un intento | Dos procesos con K y digest distinto: un ganador, un 409, nunca dos cargos |
+| P2-04 | Intento autorizado en operación distinta conserva identidad separada | Key vacía, proveedor ambiguo, actor revocado o firma inválida no crean intento |
+| P2-05 | Webhook repetido con referencia auténtica sólo reconcilia un evento | Replay, timeout y retorno navegador no generan nuevo cargo ni SETTLED ficticio |
+
+**Pruebas y gates.** A0: diff Markdown y CHANGELOG, sin runtime. A1/A2: los cinco pares anteriores son casos exigibles en trabajo futuro, NO pruebas ni PASS ejecutados. A3: MySQL/API/PSP = NO_APLICA a este cambio estrictamente documental; antes de migración se requieren EF/MySQL 8.4 efímero, múltiples conexiones, JWT/RBAC y aislamiento A/B con fallos adversariales. A4: Scope Lock y V5 exact-SHA más readback. El A5_FAIL previo permanece en PLAN/BITACORA hasta revisión independiente nueva por otra Task Javier distinta del autor DEV06 y reparador DEV01. NO modificar fórmulas DAG/COLA ni pasar QA/main/PROD.
