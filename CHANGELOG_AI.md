@@ -8097,3 +8097,9 @@
 - Documenta en `docs/v5/c03-04-m06-03-limitaciones-riesgos-decisiones.md` la evidencia M05.01–06, separando xUnit/fixtures de MySQL efimero, JWT HTTP y restauracion real todavia no certificada.
 - Conserva R01–R16 y decisiones D01–D09, criterios adversariales de backup/restore, tenancy y revocacion sin promover permisos, forzar formulas ni declarar R3 PASS. Alcance R0 documental de PLAN D574; A5 independiente pendiente.
 - Requiere Scope Lock y procedencia V5 SUCCESS exact-SHA antes de LISTO; BITACORA, owner y candado V17 se verifican por separado. Sin qa/main/PROD ni secretos.
+
+
+## 2026-11-19 — V22 C07-04.M06.01 pruebas reales versus mocks de comercio [DEV04]
+- Registra en `docs/v5/c07-04-m06-01-auditoria-pruebas-vs-mocks.md` seis SHA M05 y evidencia dirigida (5 Vitest, 14 xUnit, 4 MySQL efimero, 4 Chromium, 9 xUnit, 15 Chromium), distinguiendo verificaciones reales de permisos, sesion y transacciones simuladas.
+- Mantiene explicito el fallo historico del check global de modulos y los gaps JWT firmado/HTTP/PSP/fiscal/concurrencia. PLAN E M06 es meta acumulativa, no certificada por este diff documental R0; sin QA/main/PROD.
+- Requiere `verify-solqaryn-project-scope` y V5 `completed/success` en SHA exacto y A5 independiente por otra Task JAVIER antes de liberar dependencias.
