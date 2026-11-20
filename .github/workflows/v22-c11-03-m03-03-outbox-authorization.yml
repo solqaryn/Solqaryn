@@ -5,6 +5,8 @@ on:
     paths:
       - 'backend/src/Application/AutomationV5/C1103OutboxAuthorizationGate.cs'
       - 'backend/tests/Solqaryn.Tests/Application/C1103M0303OutboxAuthorizationGateTests.cs'
+      - 'backend/src/API/Security/C1103OutboxVerifiedMembershipReader.cs'
+      - 'backend/tests/Solqaryn.Tests/API/C1103M0303VerifiedMembershipReaderJwtRegressionTests.cs'
       - '.github/workflows/v22-c11-03-m03-03-outbox-authorization.yml'
   workflow_dispatch:
 permissions:
@@ -43,4 +45,20 @@ jobs:
           print('C11-03.M03.03 directed counts',nums)
           if nums['passed']<17 or nums['passed']!=nums['total'] or nums['failed']!=0 or nums['notExecuted']!=0:
               raise SystemExit('Required authorization tests missing/failed/skipped')
+          PY
+      - name: Signed JWT subject-name versus numeric-id regression (real middleware)
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter 'FullyQualifiedName~C1103M0303VerifiedMembershipReaderJwtRegressionTests' --logger 'trx;LogFileName=c1103-reader-jwt.trx'
+          python3 - <<'PY'
+          import pathlib, xml.etree.ElementTree as ET
+          files=list(pathlib.Path('backend/tests/Solqaryn.Tests').rglob('c1103-reader-jwt.trx'))
+          if len(files)!=1: raise SystemExit('Missing exact reader JWT regression TRX')
+          counters=ET.parse(files[0]).getroot().find('.//{*}Counters')
+          if counters is None: raise SystemExit('Missing JWT reader counters')
+          n={k:int(counters.attrib.get(k,-1)) for k in ('total','passed','failed','notExecuted')}
+          print('C1103_READER_JWT_SUBJECT_FIX_COUNTS',n)
+          if n['total']!=4 or n['passed']!=4 or n['failed'] or n['notExecuted']:
+              raise SystemExit('Reader JWT subject regression failed')
           PY

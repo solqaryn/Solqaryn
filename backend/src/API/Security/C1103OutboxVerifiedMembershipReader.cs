@@ -61,10 +61,22 @@ public sealed class C1103OutboxVerifiedMembershipReader(
                     CultureInfo.InvariantCulture, out var signedActor) ||
                 signedActor != authenticatedUserId)
                 return null;
-            // Reject conflicting identities even if one signed claim matches.
-            if (bearer.Principal.FindAll("sub")
-                    .Concat(bearer.Principal.FindAll(ClaimTypes.NameIdentifier))
-                    .Any(c => c.Value != signedIds[0].Value))
+            // JwtService emits the numeric identity as "id", but "sub"
+            // contains the signed user name. ASP.NET may map sub to
+            // NameIdentifier; comparing that name to the numeric id would
+            // reject every legitimate token. Never infer a user from sub:
+            // require all three signed identity claims to agree with the
+            // authenticated request while the numeric id remains authoritative.
+            var signedNames = bearer.Principal.FindAll("nombreUsuario").ToArray();
+            var signedSubjects = bearer.Principal.FindAll("sub")
+                .Concat(bearer.Principal.FindAll(ClaimTypes.NameIdentifier))
+                .ToArray();
+            if (signedNames.Length != 1 || signedSubjects.Length != 1 ||
+                string.IsNullOrWhiteSpace(signedNames[0].Value) ||
+                !string.Equals(signedNames[0].Value, current.NombreUsuario,
+                    StringComparison.Ordinal) ||
+                !string.Equals(signedSubjects[0].Value, signedNames[0].Value,
+                    StringComparison.Ordinal))
                 return null;
 
             // These services use the live relational UsuarioEmpresa/RolPermiso

@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV06 C11-03.M03.03 P1 JWT subject con ID numérico
+- Reparación causal: JwtService firma sub=nombreUsuario e id=numérico; el lector API comparaba el sujeto al ID e impedía toda autorización legítima en el endpoint DEV-only. Mantener id firmado y sujeto/nombre firmados coherentes, con fail-closed para firma, tenant B, revocación y mismatch.
+- Test regresión HTTP con JwtBearer real, lector API y cuatro casos positivos/negativos, workflow dirigido TRX. ScopeLock/V5, backend, seguridad y GitHub-hosted exact-SHA siguen pendientes de comprobar; no declarar LISTO/A5, la integración real de grants UsuarioEmpresa/RolPermiso mediante AppDbContext/MySQL84 sigue sin certificación. Owner DEV06 histórico conservado, rollback git revert normal.
+
 ## 2026-11-20 — DEV05 C02-03.M03.03 JWT HTTP MySQL 8.4 efímero
 - Seguridad R2: prueba integración xUnit del gate de ciclo de vida con JWT Bearer firmado, HTTP TestServer y MySQL 8.4 SQL efímero; casos A/B, replay de comando, revocación, JWT falsificado y rollback.
 - CI dirigido GitHub-hosted exact-SHA con MySQL aislado y Scope Lock; sin endpoints productivos, pagos, secretos ni mutaciones de tenant.
