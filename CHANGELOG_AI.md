@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV01 V22 C01-02.M04.01 prueba real JWT y catalogo read-only
+- Se agrega Playwright con navegador Chromium y backend ASP.NET Core 10/MySQL 8.4 efimero: JWT firmado de plataforma, empresas A/B denegadas, firma adulterada y acceso anonimo; no se falsifican respuestas ni grants. Reutiliza fixture CI aislado y valida rutas reales.
+- Workflow GitHub-hosted exact-SHA con build .NET/Angular, Scope Lock y controles de seguridad vigentes. Publicacion del codigo NO equivale a PASS de CI; mantener VALIDANDO y A5 distinta hasta A0-A4 causales. Sin QA/main/PROD; rollback git revert normal.
+
 ## 2026-11-20 — DEV05 C02-03.M03.03 binding de comando para preflight tenant
 - Seguridad R2: IC0203VerifiedOperatorEvidenceReader recibe el comando de ciclo de vida y devuelve VerifiedCommand; una prueba de permiso para Suspend no autoriza Reactivate, Archive o LogicalDelete.
 - Se agregan regresiones xUnit adversariales para comandos cruzados y desconocidos, manteniendo el preflight sin escritura. GitHub-hosted CI exact-SHA obligatoria antes de acreditar PASS.
