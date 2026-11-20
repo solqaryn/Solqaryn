@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C15-02.M05.05 JWT real, empresa A/B y Chromium [Javier :20]
+- Se agregan cinco casos reales de frontera de autoridad para pantalla privada C15-02: plataforma positiva, empresa A/B denegadas, JWT adulterado y anónimo; sin mocks HTTP, CI .NET 10+MySQL 8.4 efímero y navegador real.
+- Nuevo workflow GitHub-hosted independiente y aislado, basado en fixture de CI ya autorizado, con tokens efímeros y cero cambios de runtime/proveedores. Requiere PASS exact-SHA para LISTO, A5 por otra Task Javier.
+- PLAN D2226 se verifica atómicamente; no se certifican M05 global, Cloudflare, Hostinger, R2, DNS, producción, BOLA de archivos/jobs o QA/main/PROD.
+
 ## 2026-11-19 — V22 C15-02.M05.04 aceptación positiva navegador real [Javier :20]
 - Se añaden dos recorridos positivos en Playwright/Chromium para cinco referencias locales, navegación real mediante teclado, recarga y ruta privada con sesión de UI simulada; no hay cambio de runtime.
 - GitHub-hosted Angular/Chromium exact-SHA con no-mutations HTTP y viewport 375 px. La prueba de JWT firmado/tenant y proveedores reales NO_APLICA al diff test-only; se documenta la limitación.
