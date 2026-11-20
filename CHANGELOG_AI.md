@@ -1,3 +1,6 @@
+## 2026-11-20 — DEV01 V22 C01-02.M04.01 workflow trigger CI exacto
+- Reparacion de ruta propia de trigger: la workflow V22 ahora incluye su archivo real en paths; artifact etiquetado V22. Se conservan servicio MySQL 8.4 efimero, JWT firmado, .NET 10, Angular/Chromium y concurrencia por SHA sin cancelacion. La CI obligatoria del SHA de reparacion requiere completed/success; no LISTO ni A5 con jobs activos.
+
 ## 2026-11-20 — DEV01 V22 C01-02.M04.01 prueba real JWT y catalogo read-only
 - Se agrega Playwright con navegador Chromium y backend ASP.NET Core 10/MySQL 8.4 efimero: JWT firmado de plataforma, empresas A/B denegadas, firma adulterada y acceso anonimo; no se falsifican respuestas ni grants. Reutiliza fixture CI aislado y valida rutas reales.
 - Workflow GitHub-hosted exact-SHA con build .NET/Angular, Scope Lock y controles de seguridad vigentes. Publicacion del codigo NO equivale a PASS de CI; mantener VALIDANDO y A5 distinta hasta A0-A4 causales. Sin QA/main/PROD; rollback git revert normal.
