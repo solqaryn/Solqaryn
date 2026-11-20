@@ -82,6 +82,22 @@ public sealed class C0404PaymentVerifiedEvidenceReader(
                 cancellationToken.ThrowIfCancellationRequested();
                 if (!owned)
                     return null;
+
+                // The invoice lookup is asynchronous: a real permission or
+                // membership revocation may commit while it is running.
+                // Never reuse the pre-lookup authorization snapshot afterwards.
+                var scopeAfterInvoice = await scopes.ObtenerActualAsync(
+                    tenantId, cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
+                if (scopeAfterInvoice is null ||
+                    scopeAfterInvoice.UsuarioId != signedActor ||
+                    scopeAfterInvoice.EmpresaId != tenantId ||
+                    scopeAfterInvoice.RolId != scope.RolId)
+                    return null;
+                if (!await permissions.TienePermisoAsync(
+                        tenantId, ModuloSistema.Facturacion, AccionPermiso.Compartir))
+                    return null;
+                cancellationToken.ThrowIfCancellationRequested();
             }
             finally
             {

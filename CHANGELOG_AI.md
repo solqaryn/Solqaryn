@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV04 C04-04.M03.03 revocación de grant entre dos lecturas
+- Reparación R2 del lector DEV-only read-only: después del SELECT de propiedad de Factura, releer UsuarioEmpresa/rol y RolPermiso para no aceptar autorización obsoleta durante una operación asíncrona; no introduce PSP ni escrituras financieras.
+- Test adversarial con JWT firmado/HTTP TestServer/Factura Oracle EF+MySQL 8.4 real y doble de grant revocado entre lecturas; exige HTTP 403 con exactamente dos consultas. La suite separada mantiene pruebas SQL reales de membresía/roles.
+- GitHub-hosted exact-SHA, Scope Lock, V5, seguridad/backend y A0–A4 requeridos antes de LISTO; A5 por otra Task. No certificar host comercial ni cerrar por CI parcial. Rollback con revert fast-forward.
+
 ## 2026-11-20 — DEV03 reparación MySQL EF shadow C04-04.M03.03
 - Causa verificada: GitHub Actions 44721985242 falló 1/4 pruebas por `Unknown column r.EmpresaId`; `RolPermiso` declara `EmpresaId` shadow pero el fixture MySQL 8.4 no lo creaba.
 - Ajuste sólo de test: columna nullable, grants empresa A explícitos y assert EF del tenant; cobertura JWT/HTTP/revocación adversarial intacta. CI exact-SHA pendiente y FULL A0–A4/A5 NO certificado; H VALIDANDO, owner DEV04 preservado. Sin QA/main/PROD.

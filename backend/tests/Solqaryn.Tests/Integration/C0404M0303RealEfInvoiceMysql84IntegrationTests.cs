@@ -212,6 +212,21 @@ public sealed class C0404M0303RealEfInvoiceMysql84IntegrationTests
                 Assert.Equal("READONLY_PAYMENT_PLAN_PREFLIGHT_ONLY",
                     await allowed.Content.ReadAsStringAsync());
             }
+            // Adversarial grant revocation between the first authority read
+            // and the completed real Oracle EF/MySQL invoice ownership query.
+            // This grant double is explicit; the separate real grant test
+            // below checks UsuarioEmpresa/RolPermiso against MySQL itself.
+            var grantReads = 0;
+            using (var racingHost = await StartAsync(
+                       () => Interlocked.Increment(ref grantReads) == 1))
+            using (var racingClient = racingHost.GetTestClient())
+            using (var revokedDuringInvoice = await GetAsync(
+                       racingClient, 401, invoiceA, jwtA))
+            {
+                Assert.Equal(HttpStatusCode.Forbidden, revokedDuringInvoice.StatusCode);
+                Assert.Equal(2, grantReads);
+            }
+
             using (var foreignInvoice = await GetAsync(client, 401, invoiceB, jwtA))
                 Assert.Equal(HttpStatusCode.Forbidden, foreignInvoice.StatusCode);
             using (var wrongTenant = await GetAsync(client, 402, invoiceA, jwtA))
