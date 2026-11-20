@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV04 C04-04.M03.03 integración adversarial JWT HTTP MySQL 8.4
+- Pruebas nuevas xUnit Category=Integration en GitHub-hosted con TestServer JWT firmado, negativas 401/403, aislamiento A/B y MySQL 8.4 real (tabla temporal), revocación de membresía/grant, usuario inactivo, factura ajena y rollback; workflow dirigido exact SHA.
+- R2 test-only, SIN adaptador de autoridad API/EF real de producción: las afirmaciones favorables son exclusivamente en fixture efímero. H700 continúa VALIDANDO, A5 y A0-A4 completos pendientes; sin PSP/cobros/QA/main/PROD. V17 lock exclusivo, preservar autor DEV04.
+
 ## 2026-11-20 — DEV02 C15-04.M05.04 A0.59 estados multicanal JWT real
 - Se agregan dos regresiones Playwright GitHub-hosted para panel privado de mensajería: plataforma JWT/MySQL efímero 200 y vista vacía sin escritura; empresa B JWT válido 403 y ausencia total de panel, en 320/1280 px.
 - Incremento R2 test-only: HTTP del proveedor y entregas NO_PROBADOS, auditoría UX global/WCAG/RUM aún incompleta, CI exact-SHA pendiente, H=EN_PROGRESO y lock V17 propios retenidos; sin LISTO/A5/QA/main/PROD.
