@@ -24,6 +24,7 @@ public sealed class V5UniversalCaseFileQaEvidenceAudit
 {
     private readonly IV5UniversalCaseFileQaEvidenceSource _source;
     private readonly IV5UniversalCaseFileQaAuditSink _sink;
+    private readonly TimeProvider _timeProvider;
 
     private static readonly Regex MicrotaskPattern = new(
         @"^C[0-9]{2}-[0-9]{2}\.M[0-9]{2}\.[0-9]{2}$",
@@ -78,10 +79,12 @@ public sealed class V5UniversalCaseFileQaEvidenceAudit
 
     public V5UniversalCaseFileQaEvidenceAudit(
         IV5UniversalCaseFileQaEvidenceSource source,
-        IV5UniversalCaseFileQaAuditSink sink)
+        IV5UniversalCaseFileQaAuditSink sink,
+        TimeProvider? timeProvider = null)
     {
         _source = source ?? throw new ArgumentNullException(nameof(source));
         _sink = sink ?? throw new ArgumentNullException(nameof(sink));
+        _timeProvider = timeProvider ?? TimeProvider.System;
     }
 
     public async ValueTask<Verdict> CaptureAsync(
@@ -118,11 +121,16 @@ public sealed class V5UniversalCaseFileQaEvidenceAudit
             !string.Equals(observation.VerifiedCaseFileScope, trustedCaseFileScope, StringComparison.Ordinal))
             return new("CASEFILE_QA_TRUSTED_EVIDENCE_REQUIRED");
 
+        // Do not recycle an old or future-dated provider observation as a fresh QA receipt.
+        // An authenticated source and exact-SHA CI proof remain separate requirements.
+        var nowUtc = _timeProvider.GetUtcNow();
         if (observation.CheckName is null || !Checks.Contains(observation.CheckName) ||
             observation.CheckStatus is null || !States.Contains(observation.CheckStatus) ||
             observation.CheckConclusion is null || !Conclusions.Contains(observation.CheckConclusion) ||
             observation.ObservedAtUtc == default ||
             observation.ObservedAtUtc.Offset != TimeSpan.Zero ||
+            observation.ObservedAtUtc < nowUtc.AddMinutes(-10) ||
+            observation.ObservedAtUtc > nowUtc.AddSeconds(5) ||
             (observation.CheckStatus == "completed" && observation.CheckConclusion == "pending") ||
             (observation.CheckStatus != "completed" && observation.CheckConclusion != "pending"))
             return new("CASEFILE_QA_CHECK_OR_TIME_INVALID");

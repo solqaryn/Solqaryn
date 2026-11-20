@@ -20,6 +20,11 @@ public sealed class C0104M0306StructuredLoggerSinkTests
         "verify-solqaryn-project-scope", "completed", "success", Utc,
         "private bearer token=secret; patient and client PII");
 
+    private sealed class FrozenClock : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => Utc;
+    }
+
     private sealed class Source(Audit.Observation observation) : IV5UniversalCaseFileQaEvidenceSource
     {
         public ValueTask<Audit.Observation?> ReadAsync(
@@ -55,7 +60,7 @@ public sealed class C0104M0306StructuredLoggerSinkTests
     {
         var logger = new ProbeLogger();
         var sink = new V5UniversalCaseFileQaStructuredLoggerSink(logger);
-        var result = await new Audit(new Source(GoodObservation()), sink).CaptureAsync(
+        var result = await new Audit(new Source(GoodObservation()), sink, new FrozenClock()).CaptureAsync(
             Id, "casefile.timeline", Sha, "tenant-A", "case-42");
 
         Assert.Equal("CASEFILE_QA_ENVELOPE_WRITTEN_REVIEW_PENDING", result.Code);
@@ -104,7 +109,7 @@ public sealed class C0104M0306StructuredLoggerSinkTests
     {
         var logger = new ProbeLogger(enabled: false);
         var sink = new V5UniversalCaseFileQaStructuredLoggerSink(logger);
-        var result = await new Audit(new Source(GoodObservation()), sink).CaptureAsync(
+        var result = await new Audit(new Source(GoodObservation()), sink, new FrozenClock()).CaptureAsync(
             Id, "casefile.timeline", Sha, "tenant-A", "case-42");
 
         Assert.Equal("CASEFILE_QA_AUDIT_SINK_UNAVAILABLE", result.Code);
@@ -130,11 +135,40 @@ public sealed class C0104M0306StructuredLoggerSinkTests
             GoodObservation() with { VerifiedCaseFileScope = "case-43" }
         })
         {
-            var result = await new Audit(new Source(observation), sink).CaptureAsync(
+            var result = await new Audit(new Source(observation), sink, new FrozenClock()).CaptureAsync(
                 Id, "casefile.timeline", Sha, "tenant-A", "case-42");
             Assert.Equal("CASEFILE_QA_TRUSTED_EVIDENCE_REQUIRED", result.Code);
         }
         Assert.Empty(logger.Calls);
+    }
+
+
+    [Theory]
+    [InlineData(-600, true)]
+    [InlineData(-601, false)]
+    [InlineData(5, true)]
+    [InlineData(6, false)]
+    public async Task StaleOrFutureProviderObservationCannotCreateQaAuditReceipt(
+        int secondsFromFrozenUtc, bool shouldWrite)
+    {
+        var observation = GoodObservation() with
+        {
+            ObservedAtUtc = Utc.AddSeconds(secondsFromFrozenUtc)
+        };
+        var logger = new ProbeLogger();
+        var sink = new V5UniversalCaseFileQaStructuredLoggerSink(logger);
+        var audit = new Audit(new Source(observation), sink, new FrozenClock());
+        var result = await audit.CaptureAsync(
+            Id, "casefile.timeline", Sha, "tenant-A", "case-42");
+
+        Assert.Equal(
+            shouldWrite ? "CASEFILE_QA_ENVELOPE_WRITTEN_REVIEW_PENDING" :
+                "CASEFILE_QA_CHECK_OR_TIME_INVALID",
+            result.Code);
+        Assert.False(result.CertifiesCI);
+        Assert.False(result.CertifiesA5);
+        if (shouldWrite) Assert.Single(logger.Calls);
+        else Assert.Empty(logger.Calls);
     }
 
     [Fact]
