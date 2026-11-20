@@ -2243,4 +2243,49 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     expect(mutaciones, 'La auditoria de lectura no muta recursos de API').toEqual([]);
   });
 
+
+  // A0.71: regresion negativa genuina de acceso a cuatro rutas globales privadas.
+  // JWT de tenant A/B emitido por la API real, permiso comercial no implica permiso plataforma.
+  // MySQL 8.4 efimero, HTTP sin interceptores, navegacion Chromium y vista denegada.
+  for (const destino of [
+    { ruta: '/plataforma/continuidad-operativa-v5', titulo: 'Controles de recuperación y aislamiento' },
+    { ruta: '/plataforma/revision-amenazas-v5', titulo: 'Verificaciones de acceso y abuso' },
+    { ruta: '/plataforma/respuesta-incidentes-v5', titulo: 'Respuesta, revocación y recuperación segura' },
+    { ruta: '/plataforma/gobierno-cambios-v5', titulo: 'Decisiones y controles V5' }
+  ]) {
+    for (const identidad of [
+      { usuario: 'c1504_admin_a', empresaId: 1 },
+      { usuario: 'c1504_admin_b', empresaId: 2 }
+    ]) {
+      for (const ancho of [375, 1280]) {
+        test(`A0.71 - empresa ${identidad.empresaId} sin rol plataforma no abre ${destino.ruta} a ${ancho}px`,
+          async ({ page, request }) => {
+          await page.setViewportSize({ width: ancho, height: 840 });
+          const jwt = await ingresar(page, identidad.usuario);
+          const headers = { Authorization: 'Bearer ' + jwt };
+          const propio = await request.get(api + '/tenant-context/' + identidad.empresaId, { headers });
+          expect(propio.status(), 'Empresa valida con JWT firmado/MySQL reales').toBe(200);
+          const plataforma = await request.get(api + '/plataforma/sesion', { headers });
+          expect(plataforma.status(), 'Un tenant admin no posee permiso de plataforma').toBe(403);
+          const mutaciones: string[] = [];
+          page.on('request', req => {
+            if (req.url().includes('localhost:5005') &&
+              /^(POST|PUT|PATCH|DELETE)$/.test(req.method())) {
+              mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+            }
+          });
+          const rechazo = page.waitForResponse(res =>
+            res.url().includes('/plataforma/sesion') && res.request().method() === 'GET');
+          await page.goto(destino.ruta);
+          expect((await rechazo).status(), 'La ruta privada consulta backend real').toBe(403);
+          await expect(page).toHaveURL(/\/login\?plataforma=denegado/);
+          await expect(page.getByRole('heading', { name: destino.titulo })).toHaveCount(0);
+          const contenido = await page.evaluate(() => document.documentElement.scrollWidth);
+          expect(contenido, 'Sin desborde en pantalla de denegacion').toBeLessThanOrEqual(ancho + 2);
+          expect(mutaciones, 'Una lectura denegada no modifica recursos protegidos').toEqual([]);
+        });
+      }
+    }
+  }
+
 });

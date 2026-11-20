@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV02 C15-04.M05.04 A0.71 negativos JWT/tenant en cuatro guias globales
+- R2 TEST-ONLY: 16 regresiones Playwright con JWT firmado, roles empresariales A/B, MySQL 8.4 efimero y HTTP 403 real en cuatro rutas globales 375/1280; rechazo sin filtrado de vistas ni mutaciones. Sin mocks ni datos productivos.
+- CI exact-SHA, Scope Lock y V5 pendientes de acreditacion; C15-04.M05.04 sigue EN_PROGRESO DEV02 con lock V17, A0-A4 globales y A5 independiente sin certificar. Evidencia: frontend/e2e/c15-04-m05-04-jwt-real.spec.ts y docs/v5/c15-04-m05-04-global-ux-acceptance.md.
+
 ## 2026-11-20 — DEV06 V22 C02-03.M03.03 grant global ambiguo en JWT real
 - Prueba adversarial nueva con MySQL 8.4 efímero, Oracle EF, JWT firmado y HTTP TestServer: dos asignaciones globales activas del mismo usuario obligan 403 en tenants A/B; tras retirar duplicado la autoridad legítima recupera 200. No cambia runtime productivo.
 - Evidencia en `backend/tests/Solqaryn.Tests/Integration/C0203M0303RealPlatformReaderMysql84IntegrationTests.cs` y `docs/v5/c02-03-m03-03-duplicate-global-grant-jwt-mysql-v22.md`. Scope R2 sigue VALIDANDO: falta CAS duradero y mutaciones transaccionales de ciclo de vida; CI exact-SHA y A5 independiente pendientes. Owner histórico DEV05 conservado, sin QA/main/PROD.
