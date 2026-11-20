@@ -1,0 +1,78 @@
+name: V22 C11-03.M04.06 - scoped density and progressive loading
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v22-c11-03-m04-06-density.yml'
+      - 'frontend/src/app/features/plataforma/c11-03-m04-01-outbox-readonly.component.ts'
+      - 'frontend/src/app/features/plataforma/c11-03-m04-06-density.spec.ts'
+      - 'frontend/e2e/c11-03-m04-06-density.spec.ts'
+      - 'docs/v5/c11-03-m04-06-density-progress-v22.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c1103-m0406-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  density:
+    name: C11-03.M04.06 - Angular density Vitest Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm 11
+        run: npm install --global npm@11.19.0
+      - name: Verify exact SHA and Scope Lock before npm
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          cd ..
+          node scripts/verify-project-scope.mjs
+      - name: Install packages
+        run: npm ci
+      - name: Three density/state and ten guard/state Vitest cases
+        run: |
+          npm test -- --no-watch --no-progress --include=src/app/features/plataforma/c11-03-m04-06-density.spec.ts
+          npm test -- --no-watch --no-progress --include=src/app/features/plataforma/c11-03-m04-01-outbox-readonly.component.spec.ts
+          npm test -- --no-watch --no-progress --include=src/app/features/plataforma/c11-03-m04-02-states.spec.ts
+      - name: Angular lint and production build
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Install real Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Local Angular loopback only
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c1103-m0406-angular.log 2>&1 &
+          for attempt in $(seq 1 80); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat c1103-m0406-angular.log >&2
+          exit 1
+      - name: Chromium density and progressive auth tests
+        run: npx playwright test e2e/c11-03-m04-06-density.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c1103-m0406-density
+          path: |
+            frontend/c1103-m0406-angular.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 7
