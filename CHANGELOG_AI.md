@@ -1,3 +1,7 @@
+## 2026-11-19 — DEV03 C11-03.M03.03 integracion MySQL 8.4 en GitHub Actions
+- Reparacion de dev-ci: creacion de esquema MySQL 8.4 efimero independiente y variable C1502_M0503_MYSQL_TEST para que las seis pruebas Oracle EF fallen o pasen por evidencia causal, sin mocks ni skip.
+- El job anterior fallo 6/90 por ausencia de la variable, no fue PASS. C11-03.M03.03 conserva VALIDANDO y DEV06 como autor; quedan HTTP/JWT/tenancy runtime y A5 pendientes hasta pruebas reales del SHA nuevo.
+
 ## 2026-11-19 — DEV01 C01-04.M03.06 cancelacion tardia de proveedor QA
 - Correccion R2/P2: comprobacion de CancellationToken despues de ReadAsync para impedir registrar evidencia QA cuando un proveedor no cooperativo termina tras cancelacion, incluso si el sink omite su propia comprobacion.
 - Prueba adversarial xUnit con fuente que cancela tras comenzar la lectura y sink que ignora el token; el resultado esperado es OperationCanceledException sin ningun evento emitido. La CI externa exact-SHA debe verificarse antes de acreditar PASS; no se atribuyen JWT/HTTP/MySQL reales ni cierre A5. Se preservan propietario historico, Scope Lock STRICT, historial de BITACORA y prohibiciones de QA/main/PROD.

@@ -17,3 +17,11 @@ A0: código Application, adversariales xUnit, workflow GitHub-hosted, CHANGELOG 
 ## Reparación de seguridad V22 — frescura de evidencia (2026-11-19)
 
 La barrera Application ahora impide aceptar snapshots de membresía o grants con sello UTC de verificación anterior a 30 segundos o futuro por más de 5 segundos respecto del reloj del servidor (TimeProvider inyectable). Un resultado antiguo de caché que antes conservaba permiso después de una revocación deja de producir OUTBOX_AUTH_PREFLIGHT_ONLY. Nuevos casos adversariales verifican límites y denegaciones; la autorización sigue siendo exclusivamente de preflight y no autoriza persistencia/dispatch. El reloj de servidor se usa para esta comprobación, no una fecha provista por el cliente. Un adaptador real debe leer estado de autorización actual en MySQL por solicitud: este control no certifica integración HTTP/JWT middleware/MySQL 8.4 ni ACK, y A5 independiente sigue pendiente.
+
+## Reparacion de CI MySQL 8.4 compartida V22 — DEV03 (2026-11-19)
+
+- La microtarea C11-03.M03.03 sigue VALIDANDO y conserva su autor historico DEV06. El job de migraciones del SHA 7309e540 presento seis fallos C1502M0503Mysql84ProviderTests con MYSQL84_EPHEMERAL_TEST_CONNECTION_REQUIRED: conexion separada ausente en dev-ci, aunque MySQL 8.4.13 estaba operativo.
+- dev-ci crea ahora solqaryn_c1502_m0503 en el contenedor MySQL 8.4 efimero GitHub-hosted y declara la conexion C1502_M0503_MYSQL_TEST limitada a loopback, usuario root efimero y esquema dedicado. Se preserva la verificacion estricta DisposableConnection() y se siguen ejecutando todas las pruebas Category=Integration, sin saltarlas ni deshabilitar controles.
+- A0-A4 requieren resultado real completed/success del SHA nuevo en el job de MySQL, Scope Lock y V5. Hasta entonces NO_PASS y no cerrar. Esto no implementa adaptador HTTP/JWT de outbox, lector duradero de membresias/roles ni revocacion tenant A/B; A5 independiente continua pendiente.
+- Cambio R2 solo CI/documentacion: ningun runtime, tablas productivas, QA/main/PROD, cuenta de pago ni secretos. Rollback con git revert normal sobre dev despues de verificar HEAD.
+

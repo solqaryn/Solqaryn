@@ -141,6 +141,8 @@ jobs:
       ConnectionStrings__DefaultConnection: Server=127.0.0.1;Port=3306;Database=solqaryn_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;
       Database__ServerVersion: 8.4.0
       Database__ApplyMigrationsOnStartup: 'false'
+      # El test Oracle EF exige su propio esquema efimero separado y conexion loopback.
+      C1502_M0503_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_c1502_m0503;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
       Jwt__Secret: Migration-CI-Only-Secret-With-More-Than-32-Characters-2026
       Jwt__Issuer: Solqaryn.CI
       Jwt__Audience: Solqaryn.CI.Frontend
@@ -213,6 +215,17 @@ jobs:
           docker exec "$mysql_container" mysql -uroot -proot solqaryn_ci -e "DELETE FROM TipoClientes WHERE Codigo='TEST_DUP';"
           docker exec "$mysql_container" mysql -uroot -proot solqaryn_ci -e "CREATE UNIQUE INDEX IX_TipoClientes_EsPredeterminadoUnico ON TipoClientes (EsPredeterminadoUnico);"
           ejecutar_preflight
+      - name: Preparar MySQL 8.4 efimero separado para tests Oracle EF
+        working-directory: .
+        shell: bash
+        run: |
+          set -euo pipefail
+          mysql_container="${{ job.services.mysql.id }}"
+          # Solo el contenedor descartable del job; nunca Aiven ni produccion.
+          docker exec "$mysql_container" mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS solqaryn_c1502_m0503 CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
+          actual="$(docker exec "$mysql_container" mysql -uroot -proot -Nse "SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name='solqaryn_c1502_m0503';")"
+          test "$actual" = "1"
+          echo "C1502_M0503_MYSQL84_EPHEMERAL_DB_READY=1"
       - name: Ejecutar pruebas de integración MySQL Oracle
         run: |
           set -euo pipefail
