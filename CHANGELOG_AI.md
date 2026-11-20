@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C03-04.M06.06 cierre del contrato de continuidad [Javier :40]
+- Censo de 35/35 predecesoras LISTO y A5_PASS registrado; reconciliada la aprobacion independiente ya existente de M06.05 sin generar una nueva revision.
+- Acta `docs/v5/c03-04-m06-06-cierre-contractual-v22-javier40.md` documenta DAG, dependencias, limite del contrato base de incidentes/backup/restauracion, rollback y fail-closed R3; no ejecutar ni certificar restore de produccion.
+- Alcance R0 de dos archivos documentales, Scope Lock/V5 exact-SHA, CAS V17, BITACORA/readback y A5 independiente posterior obligatorios; sin QA/main/PROD.
+
 ## 2026-11-19 — V22 A0.56.1 reparación P2 de selector de estado E2E [Javier :10]
 - GitHub-hosted SHA 6202e5aa, run 44652747386/job 136011413383: Chromium 50 PASS/1 FAIL por selector role=status ambiguo (shell navegación y estado privado), pese a HTTP GET 200 real. No falsear PASS.
 - Se acota selector a section.audit-state etiquetada, exige cardinalidad 1 y texto de éxito; mantiene JWT firmado, MySQL 8.4 efímero, Tab/Enter, tenant B 403 y pruebas adversariales, sin cambiar runtime.
