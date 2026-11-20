@@ -92,6 +92,17 @@ public sealed class C0604DurableMySqlQueueIntegrationTests
             Assert.False(await queue.SettleAsync(14, leased.Id, "worker_D", now.AddMinutes(2), true, 2));
             Assert.True(await queue.SettleAsync(14, reclaimed.Id, "worker_E", now.AddMinutes(2), true, 2));
 
+            // Regression: a worker that crashes after its final lease leaves no ACK.
+            // A later worker must mark the expired attempt DEAD, never deliver twice.
+            Assert.Equal(Queue.Reservation.Stored,
+                await queue.ReserveAsync(15, "customer_D", "customer-preference-sync", "request_0003", 1));
+            var abandoned = await queue.TryLeaseAsync(15, "worker_crashed", now, 1, 1);
+            Assert.NotNull(abandoned);
+            Assert.Equal(1, abandoned!.Attempt);
+            Assert.Null(await queue.TryLeaseAsync(16, "foreign_worker", now.AddMinutes(2), 1, 1));
+            Assert.Null(await queue.TryLeaseAsync(15, "worker_after_crash", now.AddMinutes(2), 1, 1));
+            Assert.False(await queue.SettleAsync(15, abandoned.Id, "worker_crashed", now.AddMinutes(2), true, 1));
+
             var snapshot = new List<(int Tenant, string State, int Attempts)>();
             await using (var inspect = admin.CreateCommand())
             {
@@ -103,7 +114,8 @@ public sealed class C0604DurableMySqlQueueIntegrationTests
             Assert.Contains(snapshot, x => x == (11, "DEAD", 2));
             Assert.Contains(snapshot, x => x == (12, "DONE", 1));
             Assert.Contains(snapshot, x => x == (14, "DONE", 2));
-            Assert.Equal(3, snapshot.Count);
+            Assert.Contains(snapshot, x => x == (15, "DEAD", 1));
+            Assert.Equal(4, snapshot.Count);
         }
         finally
         {

@@ -1,3 +1,8 @@
+## 2026-11-20 - DEV01 V22 C06-04.M03.05: recuperar lease terminal sin ACK
+- Reparacion P2 de la cola aislada InnoDB: un worker caido durante el ultimo intento dejaba estado LEASED para siempre; el barrido transaccional tenant-scoped convierte el lease vencido a DEAD sin repetir entregas ni tocar proveedor.
+- Test adversarial Category=Integration real MySQL 8.4 anade crash sin ACK, aislamiento tenant 15/16, ACK tardio rechazado y estado durable DEAD; debe ejecutarse GitHub-hosted exact-SHA, Scope Lock, V5, Backend y Seguridad pertinentes antes de cualquier PASS.
+- Cambio aislado en Infrastructure y xUnit: sin registro DI, HTTP, credenciales, JWT productivo, proveedor ni datos externos. C06-04.M03.05 permanece VALIDANDO por falta de autenticacion CUSTOMER/ownership y worker; A5 independiente posterior, NO QA/main/PROD. Evidencia: docs/v5/c06-04-m03-05-worker-dispatch-gate.md.
+
 ## 2026-11-20 — DEV06 V22 C14-01.M04.03: reparacion causal de orden de fixtures Playwright
 - El job integral de GitHub Actions 135839157984 en SHA 8d914060 fallo tres escenarios de transferencias: formulario con mat-select desmontado y lista/detalle sin datos visibles; se mantiene FAIL historico y no se certifica A0-A4 por esos fallos.
 - Se reordenan las rutas interceptadas de autorizacion de UI y datos de negocio en dos suites para instalarlas antes del login JWT autentico; el backend ASP.NET Core y MySQL 8.4 efimero siguen firmando la sesion. No se simula JWT, ni se rebajan asserts o los controles de servidor.
