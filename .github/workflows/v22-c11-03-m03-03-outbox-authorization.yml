@@ -7,6 +7,8 @@ on:
       - 'backend/tests/Solqaryn.Tests/Application/C1103M0303OutboxAuthorizationGateTests.cs'
       - 'backend/src/API/Security/C1103OutboxVerifiedMembershipReader.cs'
       - 'backend/tests/Solqaryn.Tests/API/C1103M0303VerifiedMembershipReaderJwtRegressionTests.cs'
+      - 'backend/tests/Solqaryn.Tests/Integration/C1103M0303SignedJwtMysql84HttpIntegrationTests.cs'
+      - 'backend/src/API/Program.cs'
       - '.github/workflows/v22-c11-03-m03-03-outbox-authorization.yml'
   workflow_dispatch:
 permissions:
@@ -19,6 +21,21 @@ jobs:
     name: C11-03.M03.03 - real signed JWT and tenant grant tests
     runs-on: ubuntu-latest
     timeout-minutes: 20
+    # Strictly isolated GitHub-hosted MySQL service; never a configured production DB.
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: solqaryn_c1502_m0503
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      C1502_M0503_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_c1502_m0503;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
@@ -61,4 +78,22 @@ jobs:
           print('C1103_READER_JWT_SUBJECT_FIX_COUNTS',n)
           if n['total']!=4 or n['passed']!=4 or n['failed'] or n['notExecuted']:
               raise SystemExit('Reader JWT subject regression failed')
+          PY
+      - name: Signed JWT HTTP and MySQL 8.4 tests with real SQL, revocation and rollback
+        shell: bash
+        run: |
+          set -euo pipefail
+          # These are TestServer + disposable MySQL fixture tests, NOT the
+          # production UsuarioEmpresa/RolPermiso adapter acceptance.
+          dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter FullyQualifiedName~C1103M0303SignedJwtMysql84HttpIntegrationTests --logger 'trx;LogFileName=c1103-mysql84-http.trx'
+          python3 - <<'PY'
+          import pathlib, xml.etree.ElementTree as ET
+          files=list(pathlib.Path('backend/tests/Solqaryn.Tests').rglob('c1103-mysql84-http.trx'))
+          if len(files)!=1: raise SystemExit('Missing unique real MySQL/JWT HTTP TRX')
+          counters=ET.parse(files[0]).getroot().find('.//{*}Counters')
+          if counters is None: raise SystemExit('Missing MySQL/JWT HTTP counters')
+          n={k:int(counters.attrib.get(k,-1)) for k in ('total','passed','failed','notExecuted')}
+          print('C1103_MYSQL84_SIGNED_JWT_HTTP',n)
+          if n['total']!=2 or n['passed']!=2 or n['failed']!=0 or n['notExecuted']!=0:
+              raise SystemExit('Real MySQL 8.4, JWT, HTTP and rollback test gate failed')
           PY
