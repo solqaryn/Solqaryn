@@ -1,3 +1,7 @@
+## 2026-11-20 - DEV01 C11-03.M04.05 QA Chromium accesibilidad
+- Incremento R2 test-only: Playwright/Chromium de tres casos (denegación anónima/403, responsive 320-1280 y Tab real desde inicio, contraste calculado 4.5:1), workflow GitHub-hosted exact-SHA y limitaciones explícitas. Ningún runtime, JWT real, EF/MySQL ni proveedor modificado.
+- Scope Lock y V5 exigen checks COMPLETED SUCCESS. Entrega inicialmente VALIDANDO a la espera de GitHub Actions; A5 pendiente de Task Javier independiente, owner histórico preservado. Rollback mediante revert normal de dev.
+
 ## 2026-11-20 — DEV04 C11-03.M04.01 Scope Lock antes de dependencias npm
 - Nuevo diagnóstico causal del job 44775524973: npm ci añadió archivo de terceros no versionado con identidad retirada, incluido por el verificador de alcance. Reordenado el mismo Scope Lock a antes de npm ci, conservando validación completa del checkout versionado sin excepciones ni rebajas.
 - Restantes pasos Vitest, lint, build y Chromium intactos; CI exact-SHA nueva y A5 independiente obligatorias, ningún SKIPPED anterior equivale a éxito.

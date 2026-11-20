@@ -1,0 +1,77 @@
+name: V22 C11-03.M04.05 - Chromium responsive foco contraste
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v22-c11-03-m04-05-accessibility.yml'
+      - 'frontend/e2e/c11-03-m04-05-accessibility.spec.ts'
+      - 'frontend/src/app/features/plataforma/c11-03-m04-01-outbox-readonly.component.ts'
+      - 'frontend/src/app/app.routes.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c1103-m0405-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  accessibility:
+    name: C11-03.M04.05 - Chromium real a11y sin proveedor
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - name: Checkout exact SHA
+        uses: actions/checkout@v4
+      - name: Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm 11 fijado
+        run: npm install --global npm@11.19.0
+      - name: Scope Lock exact SHA antes de dependencias
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          cd ..
+          node scripts/verify-project-scope.mjs
+      - name: Dependencias npm bloqueadas
+        run: npm ci
+      - name: Tipado lint y produccion Angular
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Instalar Chromium en GitHub hosted
+        run: npx playwright install --with-deps chromium
+      - name: Angular loopback sin backend real
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c1103-m0405-angular.log 2>&1 &
+          for attempt in $(seq 1 80); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then
+              echo 'ANGULAR_LOOPBACK_READY'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat c1103-m0405-angular.log >&2
+          exit 1
+      - name: Tres pruebas reales Chromium con negativos y contraste
+        run: npx playwright test e2e/c11-03-m04-05-accessibility.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Evidencia en fallo
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v22-c1103-m0405-a11y
+          path: |
+            frontend/c1103-m0405-angular.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 7
