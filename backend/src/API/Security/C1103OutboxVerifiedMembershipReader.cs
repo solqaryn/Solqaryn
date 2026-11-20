@@ -5,6 +5,7 @@ using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
 using Microsoft.Extensions.Configuration;
 using Solqaryn.Application.AutomationV5;
+using Solqaryn.Application.Security;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Enums;
 

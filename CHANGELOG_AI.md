@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV06 C11-03.M03.03 V22 reparación CS0103 GitHub-hosted
+- El primer incremento `fa91d6f5` tuvo FAIL real de compilación `CS0103` por no importar `Solqaryn.Application.Security` al usar `VerifiedCommercialTenant`; no se oculta ni reclasifica ese fallo.
+- Reparación mínima: agregar namespace exacto al lector read-only ya publicado; preservar el test negativo, la frontera JWT/RBAC tenant, flag OFF por defecto y el histórico completo de CHANGELOG sin truncación.
+- A0–A4: nuevos checks .NET 10 GitHub-hosted Scope Lock/V5/seguridad/backend exigidos exact-SHA; mantener VALIDANDO si están pendientes y no certificar integración UsuarioEmpresa/RolPermiso/MySQL8.4 E2E ni A5. Sin QA/main/PROD, rollback git revert.
+
 ## 2026-11-20 — DEV06 C11-03.M03.03 V22 puente JWT/RBAC tenant real DEV-only
 - Microtarea: C11-03.M03.03; riesgo R2. Reparación causal de integración: `C1103OutboxVerifiedMembershipReader` usa Bearer autenticado por el handler real, membresía `IUsuarioScopeService` respaldada por `UsuarioEmpresa` y permisos `IPermisoService` con `RolPermiso`, sin aceptar rol o tenant del cliente.
 - `/__dev/outbox-preflight/{tenantId}` es lectura/inspección exclusivamente en Development y OFF por defecto salvo `OutboxPlanning:EnableReadOnlyAuthorizationProbe`. La ruta nunca escribe outbox, despacha eventos, usa proveedor, ni activa QA/PROD.
