@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV02 C15-04.M05.04 A0.70 cuatro guias globales JWT en Chromium
+- R2 test-only: nueva prueba Playwright positiva, ocho visitas de cuatro vistas privadas a 375/1280, JWT real .NET/MySQL 8.4 efimero, H1, Tab fisico, overflow y cero escrituras HTTP.
+- Evidencia: frontend/e2e/c15-04-m05-04-jwt-real.spec.ts y docs/v5/c15-04-m05-04-global-ux-acceptance.md. CI exact-SHA requerida; WIP EN_PROGRESO con candado propio, auditoria global A0-A4 y A5 aun pendientes; sin QA/main/PROD.
+
 ## 2026-11-20 — DEV01 C04-04.M05.05 negativos de aislamiento y abuso MySQL 8.4 (V22)
 - R2 TEST-ONLY: xUnit adversarial sobre MySQL 8.4 efímero/Oracle EF para tenant A/B, hash replay conflictivo por factura/monto/digest, inputs e inyección provider denegados, CHECK SQL física ante EmpresaId=0 y cancelación previa sin mutación.
 - GitHub-hosted nuevo workflow por SHA exacto exige 1/1 TRX PASS sin fallos/omisiones, Scope Lock, Skill, V5 y controles backend/security causales; no declarar LISTO mientras CI requerida siga queued/in_progress/failed; A5 independiente por otra Task Javier.

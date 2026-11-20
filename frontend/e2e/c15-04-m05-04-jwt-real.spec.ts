@@ -2176,4 +2176,71 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     expect(mutaciones, 'navegacion y reflujo no modifican datos').toEqual([]);
   });
 
+
+  // A0.70: cuatro guias privadas nuevas, roles reales y control de teclado sin .focus().
+  // Incremento positivo R2 en CI: JWT firmado, backend HTTP y MySQL 8.4 efimero.
+  test('A0.70 - cuatro guias privadas JWT reales, semantica y teclado responsive', async ({ page, request }) => {
+    const jwt = await ingresar(page, 'c1504_platform_only');
+    const autorizado = await request.get(api + '/plataforma/sesion', {
+      headers: { Authorization: 'Bearer ' + jwt }
+    });
+    expect(autorizado.status(), 'La autoridad procede del backend real').toBe(200);
+    const mutaciones: string[] = [];
+    page.on('request', req => {
+      if (req.url().includes('localhost:5005') &&
+          /^(POST|PUT|PATCH|DELETE)$/.test(req.method())) {
+        mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+      }
+    });
+    for (const destino of [
+          {
+                "path": "/plataforma/continuidad-operativa-v5",
+                "heading": "Controles de recuperación y aislamiento",
+                "link": "Regresar a plataforma"
+          },
+          {
+                "path": "/plataforma/revision-amenazas-v5",
+                "heading": "Verificaciones de acceso y abuso",
+                "link": "Volver a administración de plataforma"
+          },
+          {
+                "path": "/plataforma/respuesta-incidentes-v5",
+                "heading": "Respuesta, revocación y recuperación segura",
+                "link": "Regresar a plataforma"
+          },
+          {
+                "path": "/plataforma/gobierno-cambios-v5",
+                "heading": "Decisiones y controles V5",
+                "link": "Volver a administración de plataforma"
+          }
+    ]) {
+      for (const ancho of [375, 1280]) {
+        await page.setViewportSize({ width: ancho, height: 840 });
+        const sesion = page.waitForResponse(res =>
+          res.url().includes('/plataforma/sesion') && res.request().method() === 'GET');
+        const navegacion = await page.goto(destino.path);
+        expect(navegacion?.status(), destino.path + ' Angular localhost').toBe(200);
+        expect((await sesion).status(), destino.path + ' JWT autorizado').toBe(200);
+        await expect(page).toHaveURL(url => url.pathname === destino.path);
+        await expect(page.getByRole('heading', { name: destino.heading, level: 1 })).toBeVisible();
+        const regreso = page.getByRole('link', { name: destino.link });
+        await expect(regreso).toBeVisible();
+        const dimensiones = await page.evaluate(() => ({
+          documento: document.documentElement.scrollWidth,
+          viewport: document.documentElement.clientWidth
+        }));
+        expect(dimensiones.documento, 'no overflow horizontal: ' + destino.path + ' ' + ancho)
+          .toBeLessThanOrEqual(dimensiones.viewport + 2);
+        let alcanzable = false;
+        for (let i = 0; i < 120; i++) {
+          await page.keyboard.press('Tab');
+          alcanzable = await regreso.evaluate(el => el === document.activeElement);
+          if (alcanzable) break;
+        }
+        expect(alcanzable, 'Tab fisico debe alcanzar regreso: ' + destino.path).toBe(true);
+      }
+    }
+    expect(mutaciones, 'La auditoria de lectura no muta recursos de API').toEqual([]);
+  });
+
 });
