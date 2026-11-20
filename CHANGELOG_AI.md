@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C15-02.M06.05 solicitud de revision independiente por SHA [Javier :20]
+- Se preparó un handoff trazable para una Task Javier distinta con fuentes M05.01–06, M06.01–04, logs GitHub-hosted y limites negativos de pruebas reales/mocks.
+- A5 previa de M06.01/.02/.03 fue revisada por DEV03 distinto de DEV05; la M06.05 conserva A5_PENDIENTE de otra Task y no suplanta a un revisor.
+- Ninguna prueba global fallida, CWV de campo NO_MEDIDO o proveedor R3 externo se eleva a PASS; sin QA/main/PROD.
+
 ## 2026-11-19 — V22 C15-02.M06.03 registro de riesgos y decisiones [Javier :40]
 - Registro `docs/v5/c15-02-m06-03-riesgos-limitaciones-decisiones-v22.md`: seis M05 auditadas por SHA y jobs, con PASS dirigidos delimitados y FAIL globales de release/modulos/migraciones, V5 original reparado y CWV campo NO_MEDIDO preservados.
 - Proveedores Hostinger/Cloudflare/R2/DNS, restauraciones reales y secretos no certificadas; riesgo exacto por clasificar sin inventar P0/P1. M06.04 rollback, M06.05 A5, M06.06 cierre conservan dependencias.
