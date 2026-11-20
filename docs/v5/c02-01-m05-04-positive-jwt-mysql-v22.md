@@ -26,3 +26,9 @@ El workflow `v22-c02-01-m05-04-positive-mysql.yml` tenía un filtro `on.push.pat
 Se reemplaza **exclusivamente** el arreglo sintético de membresía única en la prueba positiva por una consulta relacional real en la base MySQL 8.4 efímera (UsuarioEmpresa + Empresa + Rol empresarial activo). Después de revocar B mediante EF, la misma ejecución consulta la persistencia y exige **exactamente A**, ausencia de B y decisión `ONE_TENANT_REISSUE_REQUIRED`; HTTP con JWT firmado ya comprobó el 403 de B. Se conserva la comprobación de inyección de rol/host y no se modifica un endpoint productivo.
 
 **Límite expreso:** el `TrustedSnapshot` sigue construido en el harness, con la sesión JWT validada previamente por HTTP; no existe aquí adapter registrado de runtime, preferencia por usuario guardada en SQL, reemisión de JWT ni navegación Angular/Chromium al panel permitido. `PREFERENCE_REISSUE_REQUIRED` todavía parte de fixture. A0–A4 globales permanecen incompletos y la microtarea sigue VALIDANDO, A5 pendiente de otra Task Javier. Rollback: revert normal del commit en dev, sin tocar datos reales, QA/main/PROD ni secretos.
+
+## V22 — reparación real de cancelación adversarial (DEV03)
+
+Se revalida el CancellationToken de la solicitud inmediatamente después del await del lector de membresías/preferencia, aunque el lector ignore cancelaciones. La prueba xUnit adversarial entrega una preferencia aparentemente válida para tenant B después de cancelar la solicitud y exige OperationCanceledException, sin resolver ni autorizar tenant. R2, capa Application y test unitario, rollback por revert normal. No se modifica JWT real, persistencia, API, UI ni otras ramas.
+
+La preferencia durable SQL, la reemisión de JWT y la navegación autenticada Angular/Chromium todavía faltan para la aceptación global de D317. La corrección NO autoriza LISTO ni A5: mantener VALIDANDO hasta CI causal exact-SHA y A0–A4 pertinentes.

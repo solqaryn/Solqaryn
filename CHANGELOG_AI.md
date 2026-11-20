@@ -1,3 +1,8 @@
+## 2026-11-20 - DEV03 V22 C02-01.M05.04: cancelacion fail-closed tras lectura de autoridad
+- Reparacion real en Application: revalidar CancellationToken tras await para impedir propuesta de tenant con un snapshot retornado por un lector no cooperativo despues de cancelar solicitud.
+- Test xUnit adversarial obliga OperationCanceledException cuando el lector cancela pero devuelve preferencia aparentemente valida, preservando A/B y la denegacion de acceso tras cancelacion. Sin cambios en MySQL, JWT, HTTP, UI o migraciones.
+- H=VALIDANDO; faltan preferencia durable SQL, reemision de JWT y navegacion Angular real. No considerar checks in_progress/skipped PASS ni autoaprobar A5. Rollback revert normal.
+
 ## 2026-11-20 — DEV02 V22 C15-04.M05.04 A0.72 JWT falsificado en cuatro guias privadas
 - Ocho casos Playwright/Chromium GitHub-hosted con JWT real firmado, rechazo 401/403 tras manipular firma, guard de Angular que vuelve a login, formularios visibles, responsive 375/1280 y cero mutaciones HTTP; MySQL 8.4 efimero. TEST-ONLY R2.
 - Plan EN_PROGRESO/owner DEV02/lock V17 retenidos; A0-A4 globales NO certificados, CI del nuevo SHA requerida y A5 por otra Task. Evidencia: frontend/e2e/c15-04-m05-04-jwt-real.spec.ts y docs/v5/c15-04-m05-04-global-ux-acceptance.md.

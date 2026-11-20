@@ -76,6 +76,9 @@ public sealed class V17IntelligentTenantLoginAuthorization
         {
             return Deny("CURRENT_AUTHORITY_STORE_UNAVAILABLE");
         }
+        // An uncooperative reader can return an apparently valid snapshot
+        // after cancellation; never propose tenant resolution from it.
+        cancellationToken.ThrowIfCancellationRequested();
         if (s is null || s.ActorId <= 0 || !s.JwtValidatedByBackend ||
             !s.UserActive || !s.AuthorityStoreAvailable || s.Memberships is null)
             return Deny("AUTHENTICATED_CURRENT_MEMBERSHIPS_REQUIRED");

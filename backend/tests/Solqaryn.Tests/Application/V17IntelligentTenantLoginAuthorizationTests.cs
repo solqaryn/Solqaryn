@@ -217,6 +217,37 @@ public sealed class V17IntelligentTenantLoginAuthorizationTests
             (await Gate(new Reader { Current = Snapshot(tooMany) }).ResolveAsync(new())).Code);
     }
 
+    private sealed class LateCancellationReader(
+        CancellationTokenSource source) : ITrustedTenantLoginAuthorityReader
+    {
+        public ValueTask<V17IntelligentTenantLoginAuthorization.TrustedSnapshot?>
+            ReadCurrentAsync(CancellationToken ignored)
+        {
+            source.Cancel(); // Deliberately ignore cancellation.
+            var snapshot = Snapshot(Member(11), Member(22)) with
+            {
+                PreferredTenantId = 22,
+                PreferenceOwnerActorId = 7,
+                PreferenceFromPersistence = true
+            };
+            return ValueTask.FromResult<
+                V17IntelligentTenantLoginAuthorization.TrustedSnapshot?>(snapshot);
+        }
+    }
+
+    [Fact]
+    public async Task CancelledRequestWithNonCooperativeReaderNeverSelectsTenant()
+    {
+        using var cts = new CancellationTokenSource();
+        var gate = new V17IntelligentTenantLoginAuthorization(
+            new LateCancellationReader(cts));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
+        {
+            await gate.ResolveAsync(new(), cts.Token);
+        });
+        Assert.True(cts.IsCancellationRequested);
+    }
+
     [Fact]
     public async Task ReaderFailureIsOpaqueAndCancellationPropagates()
     {
