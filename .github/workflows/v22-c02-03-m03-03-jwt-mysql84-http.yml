@@ -1,0 +1,55 @@
+name: V22 - C02-03.M03.03 signed JWT HTTP MySQL 8.4
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/Integration/C0203M0303SignedJwtMysql84HttpIntegrationTests.cs'
+      - 'backend/src/Application/AutomationV5/C0203TenantLifecycleAuthorizationGate.cs'
+      - '.github/workflows/v22-c02-03-m03-03-jwt-mysql84-http.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c0203-m0303-isolated
+  cancel-in-progress: false
+jobs:
+  signed-jwt-http-mysql:
+    name: C02-03.M03.03 - real signed JWT HTTP MySQL 8.4
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: ephemeral-v22-only
+          MYSQL_DATABASE: solqaryn_c1502_m0503
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -pephemeral-v22-only"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=15
+    env:
+      C1502_M0503_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_c1502_m0503;User=root;Password=ephemeral-v22-only;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Verify SHA and Scope Lock
+        working-directory: .
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+      - name: JWT HTTP SQL real
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          dotnet restore tests/Solqaryn.Tests/Solqaryn.Tests.csproj
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore --filter 'FullyQualifiedName~C0203M0303SignedJwtMysql84HttpIntegrationTests' --logger 'trx;LogFileName=C0203JwtHttpMySql84.trx' --verbosity normal

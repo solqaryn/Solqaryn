@@ -25,3 +25,10 @@ Hallazgo: el lector de evidencia recibía solo `TargetTenantId` y el booleano `C
 ## Rollback
 
 `git revert` normal del commit exclusivo de este scope tras validar HEAD, con readback y sin borrar BITACORA o modificar DAG/cola. Nunca QA/main/PROD.
+
+
+## V22 DEV05 — integración incremental con JWT firmado, HTTP y MySQL 8.4
+
+Prueba Integration del gate Application real detrás de ASP.NET Core TestServer/JwtBearer (firma, issuer, audience, lifetime), con SQL de MySQL 8.4 EFÍMERO en loopback por solicitud. Casos adversariales: ausencia/falsificación JWT (401), tenant B, comando Reactivate en vez de Suspend, revocación SQL de grant, cabecera X-Empresa-Id no autoritativa, aislamiento positivo de B y rollback de transacción (403). La respuesta positiva sigue siendo exclusivamente READONLY. Workflow dirigido exact-SHA con MySQL 8.4, .NET 10, Scope Lock y 0 fallos obligatorios.
+
+LIMITACION R2: V22C0203AuthFixture NO representa las tablas reales UsuarioEmpresa/RolPermiso. El endpoint existe solo en TestServer, sin servicio de aplicación registrado ni mutaciones. Esto NO certifica la integración comercial completa ni A2/A3 global; falta implementar lector real desde DB persistente y JWT/RBAC vigente, completar CI y recibir A5 independiente. Mantener VALIDANDO y owner histórico; sin QA/main/PROD.

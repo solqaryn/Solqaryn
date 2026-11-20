@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV05 C02-03.M03.03 JWT HTTP MySQL 8.4 efímero
+- Seguridad R2: prueba integración xUnit del gate de ciclo de vida con JWT Bearer firmado, HTTP TestServer y MySQL 8.4 SQL efímero; casos A/B, replay de comando, revocación, JWT falsificado y rollback.
+- CI dirigido GitHub-hosted exact-SHA con MySQL aislado y Scope Lock; sin endpoints productivos, pagos, secretos ni mutaciones de tenant.
+- Límite: fixture SQL no equivale a UsuarioEmpresa/RolPermiso real; queda VALIDANDO pendiente de adaptador runtime y A5 independiente.
+
 ## 2026-11-20 — DEV04 C04-04.M03.03 V22 prueba EF Factura real con JWT/MySQL84
 - Incremento R2 de integración: prueba nueva del adaptador C0404PaymentVerifiedEvidenceReader con JWT firmado, HTTP TestServer, Oracle EF Core AppDbContext y Facturas en MySQL 8.4 efímero; verifica tenant A/B, factura ajena, firma adulterada, grant revocado simulado, cambio de propiedad SQL y rollback real.
 - La membresía UsuarioEmpresa y los grants RolPermiso siguen siendo dobles de prueba y el endpoint comercial no se ejercita: no acreditar A0-A4 global, dejar VALIDANDO con owner DEV04 y A5 por revisor distinto. Sin cobros, PSP, migraciones, secretos ni despliegue a QA/main/PROD.
