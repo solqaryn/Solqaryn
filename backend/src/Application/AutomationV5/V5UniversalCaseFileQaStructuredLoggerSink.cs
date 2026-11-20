@@ -53,6 +53,11 @@ public sealed class V5UniversalCaseFileQaStructuredLoggerSink
         if (!IsSafe(entry))
             throw new ArgumentException("CASEFILE_QA_SAFE_ENTRY_REQUIRED", nameof(entry));
 
+        // IsEnabled can suppress all events at the configured log level.
+        // Do not return a successful audit receipt when no event was emitted.
+        if (!_logger.IsEnabled(LogLevel.Information))
+            throw new InvalidOperationException("CASEFILE_QA_AUDIT_LOGGING_DISABLED");
+
         // Only fields from the second allowlist validation reach the logger.
         // No tenant, case, user, credential, payload or provider diagnostic.
         _logger.LogInformation(

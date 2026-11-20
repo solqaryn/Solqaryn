@@ -27,12 +27,12 @@ public sealed class C0104M0306StructuredLoggerSinkTests
             ValueTask.FromResult<Audit.Observation?>(observation);
     }
 
-    private sealed class ProbeLogger : ILogger<V5UniversalCaseFileQaStructuredLoggerSink>
+    private sealed class ProbeLogger(bool enabled = true) : ILogger<V5UniversalCaseFileQaStructuredLoggerSink>
     {
         public List<(LogLevel Level, int EventId, string Text, KeyValuePair<string, object?>[] Fields)> Calls { get; } = [];
 
         public IDisposable BeginScope<TState>(TState state) where TState : notnull => NoopScope.Instance;
-        public bool IsEnabled(LogLevel logLevel) => true;
+        public bool IsEnabled(LogLevel logLevel) => enabled;
 
         public void Log<TState>(LogLevel logLevel, EventId eventId, TState state,
             Exception? exception, Func<TState, Exception?, string> formatter)
@@ -97,6 +97,24 @@ public sealed class C0104M0306StructuredLoggerSinkTests
                 async () => await sink.WriteAsync(invalid, CancellationToken.None));
         }
         Assert.Empty(logger.Calls);
+    }
+
+    [Fact]
+    public async Task DisabledInformationLoggingFailsClosedWithoutFakeAuditReceipt()
+    {
+        var logger = new ProbeLogger(enabled: false);
+        var sink = new V5UniversalCaseFileQaStructuredLoggerSink(logger);
+        var result = await new Audit(new Source(GoodObservation()), sink).CaptureAsync(
+            Id, "casefile.timeline", Sha, "tenant-A", "case-42");
+
+        Assert.Equal("CASEFILE_QA_AUDIT_SINK_UNAVAILABLE", result.Code);
+        Assert.False(result.CertifiesCI);
+        Assert.False(result.CertifiesA5);
+        Assert.False(result.GrantsTenantAccess);
+        Assert.Empty(logger.Calls);
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(
+            async () => await sink.WriteAsync(GoodEntry(), CancellationToken.None));
+        Assert.Equal("CASEFILE_QA_AUDIT_LOGGING_DISABLED", error.Message);
     }
 
     [Fact]

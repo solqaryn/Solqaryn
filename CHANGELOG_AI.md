@@ -1,3 +1,7 @@
+## 2026-11-19 — C01-04.M03.06 V22 audit logging fail-closed ante nivel deshabilitado [Javier :00]
+- Repara P2: ILogger deshabilitado en Information ya no produce un recibo de auditoria que no se escribio; falla cerrado sin exponer PII.
+- Prueba xUnit positiva y negativa en contrato ILogger; lector autenticado, CI SHA, A0-A4 generales y A5 siguen pendientes; sin LISTO ni QA/main/PROD.
+
 ## 2026-11-19 — V22 C11-03.M03.03 reparación anti-replay de autorización [Javier :50]
 - La barrera Application rechaza membresía/roles cacheados fuera de ventana UTC de 30 segundos o fechas futuras mayores de 5 segundos; reloj inyectable para pruebas reproducibles y denegación tras revocación.
 - xUnit añade casos adversariales de antigüedad/futuro y bordes, con JWT firmado real en suite previa; GitHub-hosted exact-SHA debe confirmar PASS. Sigue VALIDANDO sin HTTP/JWT middleware/MySQL 8.4 real ni A5 independiente.
