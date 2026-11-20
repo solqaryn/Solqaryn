@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV04 C11-03.M04.01 Scope Lock antes de dependencias npm
+- Nuevo diagnóstico causal del job 44775524973: npm ci añadió archivo de terceros no versionado con identidad retirada, incluido por el verificador de alcance. Reordenado el mismo Scope Lock a antes de npm ci, conservando validación completa del checkout versionado sin excepciones ni rebajas.
+- Restantes pasos Vitest, lint, build y Chromium intactos; CI exact-SHA nueva y A5 independiente obligatorias, ningún SKIPPED anterior equivale a éxito.
+
 ## 2026-11-20 — DEV03 C04-04.M04.01 reparación de tipado adversarial Angular
 - Corrige dos fixtures deliberadamente inválidos del test Vitest con doble conversión explicita por unknown, manteniendo la denegación para ambito Empresa y esAdministrador=false; no cambia runtime ni reduce asserts.
 - Causa demostrada: GitHub Actions job 136423813786 TypeScript TS2352/TS2322 en el test de DEV03; otro archivo de DEV04 presenta el mismo error, NO se toca por escritor nativo activo en C11-03.M04.01. CI exact-SHA nueva requerida; no certificar global.

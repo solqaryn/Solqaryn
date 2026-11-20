@@ -18,3 +18,7 @@ El job de GitHub-hosted 44774075889 falló exclusivamente en el paso de Scope Lo
 ## Segunda corrección causal de indentación YAML en workflow
 
 Al inspeccionar el diff del primer fix se detectó un defecto de serialización de indentación: `node scripts/verify-project-scope.mjs` quedó a seis espacios, fuera del bloque `run: |`, y la nueva ejecución de GitHub Actions no registró el workflow dirigido. Se restaura indentación de diez espacios al mismo nivel de `cd ..`. La revisión de YAML se hace sobre el contenido publicado, y la verificación dirigida exige check nuevo exact-SHA antes de LISTO, no se aceptan checks antiguos, omitidos ni mock JWT como integración real.
+
+## Tercer ajuste: ejecutar Scope Lock antes de npm ci
+
+El job 44775524973/job/136424173171 demostró un P2 nuevo y concreto: después de `npm ci`, el verificador encontró una identidad retirada dentro de `frontend/node_modules/playwright-core/lib/tools/skills/playwright-cli/references/test-generation.md` (dependencia de terceros instalada en el runner); no era archivo versionado ni cambio autorizado. Para preservar el PROJECT_SCOPE_LOCK sin rebajarlo ni excluir rutas, el paso de Scope Lock del workflow se mueve **antes** de `npm ci` (después de setup-node y npm global), desde la raíz del checkout. Las dependencias después se instalan y se ejecutan todas las comprobaciones originales. No se declara PASS hasta GitHub-hosted exact SHA.

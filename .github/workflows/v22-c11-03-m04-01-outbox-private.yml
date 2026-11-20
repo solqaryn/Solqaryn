@@ -36,13 +36,13 @@ jobs:
           cache-dependency-path: frontend/package-lock.json
       - name: npm11
         run: npm install --global npm@11.19.0
-      - name: npm locked
-        run: npm ci
       - name: Scope Lock exact SHA
         run: |
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           cd ..
           node scripts/verify-project-scope.mjs
+      - name: npm locked
+        run: npm ci
       - name: Four Angular Vitest positive and adversarial checks
         run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/c11-03-m04-01-outbox-readonly.component.spec.ts
       - name: Angular type lint and production build
