@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV04 C11-03.M04.01 ruta privada del outbox de solo lectura
+- Añadida superficie Angular standalone con lazy route protegida por plataformaGuard y denegación local sin sesión global; tres etapas informativas siempre SIN_FUENTE_CONECTADA, sin datos reales, operaciones, PII ni permisos inventados.
+- Regresiones Vitest y Chromium para sesión sintética/403, revocación, responsive, teclado y ausencia de escrituras; GitHub-hosted exact-SHA y Scope Lock/V5 requeridos antes de LISTO, A5 pendiente por otra Task. Sin API/JWT real, MySQL, pagos ni QA/main/PROD.
+
 ## 2026-11-20 — DEV04 C04-04.M03.06 auditoria redactada DRY-RUN MySQL 8.4
 - Implementacion R2 Plan D703: auditoria estructurada independiente que registra solo codigos fijos, estado y tenant numerico. No registra provider, clave, digest, factura, importe, PII o excepciones; fallo de logger no altera la cola.
 - .NET 10 / Oracle EF / MySQL 8.4 efimero GitHub-hosted con regresion A/B, replay, conflicto, invalidos, cancelacion y no despacho; workflow exact-SHA TRX 1/1 obligatorio antes de A0-A4/LISTO. A5 pendiente por Task distinta.

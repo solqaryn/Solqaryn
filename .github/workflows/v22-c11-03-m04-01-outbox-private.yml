@@ -1,0 +1,79 @@
+name: V22 C11-03.M04.01 - protected private outbox view
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v22-c11-03-m04-01-outbox-private.yml'
+      - 'frontend/src/app/app.routes.ts'
+      - 'frontend/src/app/features/plataforma/c11-03-m04-01-outbox-readonly.component.ts'
+      - 'frontend/src/app/features/plataforma/c11-03-m04-01-outbox-readonly.component.spec.ts'
+      - 'frontend/e2e/c11-03-m04-01-outbox-private.spec.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c1103-m0401-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  outbox-private:
+    name: C11-03.M04.01 - Angular guard Vitest Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - name: Checkout exact SHA
+        uses: actions/checkout@v4
+      - name: Node24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm11
+        run: npm install --global npm@11.19.0
+      - name: npm locked
+        run: npm ci
+      - name: Scope Lock exact SHA
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node ../scripts/verify-project-scope.mjs
+      - name: Four Angular Vitest positive and adversarial checks
+        run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/c11-03-m04-01-outbox-readonly.component.spec.ts
+      - name: Angular type lint and production build
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Angular loopback
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c1103-m0401-angular.log 2>&1 &
+          for attempt in $(seq 1 80); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then
+              echo 'ANGULAR_LOOPBACK_READY'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat c1103-m0401-angular.log >&2
+          exit 1
+      - name: Chromium anonymous forbidden and synthetic UI 2 cases
+        run: npx playwright test e2e/c11-03-m04-01-outbox-private.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Diagnostic artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v22-c1103-m0401-chromium
+          path: |
+            frontend/c1103-m0401-angular.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 7

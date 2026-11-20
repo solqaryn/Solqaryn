@@ -37,6 +37,7 @@ export const routes: Routes = [
   { path: 'plataforma/experiencia-visual-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/c13-04-presentacion-v5.component').then(m => m.C1304PresentacionV5Component) },
   { path: 'plataforma/trazabilidad-cobertura-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/cobertura-trazabilidad-v5.component').then(m => m.CoberturaTrazabilidadV5Component) },
   { path: 'plataforma/revision-arquitectura-v20', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/c15-02-m04-01-revision-arquitectura.component').then(m => m.C1502RevisionArquitecturaComponent) },
+  { path: 'plataforma/eventos-outbox-v22', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/c11-03-m04-01-outbox-readonly.component').then(m => m.C1103OutboxReadonlyComponent) },
   { path: 'plataforma/observabilidad-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/observabilidad-privada-v5.component').then(m => m.ObservabilidadPrivadaV5Component) },
   { path: 'plataforma/mensajeria-multicanal-v19/estados', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/c09-04-m04-02-estados.component').then(m => m.C0904M0402EstadosComponent) },
   { path: 'plataforma/mensajeria-multicanal-v19', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/c09-04-m04-01-mensajeria-privada.component').then(m => m.C0904MensajeriaPrivadaComponent) },
