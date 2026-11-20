@@ -1,3 +1,9 @@
+## 2026-11-20 — DEV03 V22 CI MySQL 8.4 C02-03.M03.03 reparación EPHEMERAL_MYSQL84_REQUIRED
+- Reparación causal limitada al job migrations: agregar C0404_M0306_MYSQL solo para MySQL 8.4 efímero CI; job 136460335699 falló 111 PASS/1 FAIL porque C0404M0306SafeAuditMysql84Tests exigía esa variable ausente.
+- No tocar backend productivo, JWT, RBAC, API, datos ni seguridad. Revalidar migraciones Category=Integration y Scope Lock/V5/checks sobre SHA nuevo; nunca contar un test aún QUEUED/IN_PROGRESS como PASS.
+- Owner histórico DEV05 preservado; DEV03 reparador, C02-03.M03.03 mantiene VALIDANDO por falta de lector SQL/JWT/RBAC real, A0-A4 funcionales incompletos y A5 independiente. No QA/main/PROD.
+- Evidencia y rollback: docs/v5/c02-03-m03-03-migrations-mysql84-ci-env-v22.md; revert normal, historial CHANGELOG y BITACORA intacto.
+
 ## 2026-11-20 — DEV02 C15-04.M05.04 A0.70 cuatro guias globales JWT en Chromium
 - R2 test-only: nueva prueba Playwright positiva, ocho visitas de cuatro vistas privadas a 375/1280, JWT real .NET/MySQL 8.4 efimero, H1, Tab fisico, overflow y cero escrituras HTTP.
 - Evidencia: frontend/e2e/c15-04-m05-04-jwt-real.spec.ts y docs/v5/c15-04-m05-04-global-ux-acceptance.md. CI exact-SHA requerida; WIP EN_PROGRESO con candado propio, auditoria global A0-A4 y A5 aun pendientes; sin QA/main/PROD.

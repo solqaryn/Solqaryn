@@ -1,0 +1,13 @@
+# C02-03.M03.03 — V22: reparación causal de variable MySQL 8.4 en CI
+Fecha: 2026-11-20. Repositorio: solqaryn/Solqaryn, rama dev. Actor del rescate: DEV03 (TASK_ID 6adc2e4bd8a48191ac7d8641ed95a1a3). Owner histórico: DEV05 (6adc2e55f47c81919f6374e561687076), conservado.
+
+## Defecto demostrado
+En el SHA 9343a84657ca793ba78cf2c285f58929b90204fc, la tarea `Migraciones EF Oracle, variantes y cargas masivas en MySQL 8.4` terminó FAILURE: 111 pruebas aprobadas y 1 fallida (job 136460335699, run 44785789697). La prueba de integración `C0404M0306SafeAuditMysql84Tests.RealMysql84TenantAbRedactedAuditAndNoPaymentEffects` lanzó `InvalidOperationException: EPHEMERAL_MYSQL84_REQUIRED` porque lee `C0404_M0306_MYSQL` y el job `migrations` solo suministraba las variables de M03.04 y M03.05. La instancia GitHub-hosted MySQL 8.4.13 existía: faltaba el contrato de conexión de ESTA prueba, no se demostró defecto de seguridad del producto.
+
+## Reparación mínima / impacto
+Añadir SOLO `C0404_M0306_MYSQL` al bloque `env` del job de MySQL en `.github/workflows/dev-ci.yml`, con los mismos límites de loopback, root CI temporal, base bootstrap efímera y flags usados por las pruebas M03.04/M03.05. El propio test exige IP local, puerto 3306, usuario temporal y crea esquema UUID aislado. No modificar código productivo, JWT, membresía, API/DTO, datos, QA, main ni PROD; no deshabilitar checks, exclusión de `Category=Integration` ni condiciones de fallo. `concurrency` mantiene `cancel-in-progress` solo en pull_request, por lo que un push a dev no anula otros SHA de push. Riesgo R2: CI/integración/autenticación; rollback normal con revert del commit por HEAD validado.
+
+## A0–A5 y seguimiento obligatorio
+A0: diff mínimo de YAML + documentación + CHANGELOG completo conservado. A1/A2/A3: repetir en GitHub Actions el job de MySQL 8.4 sobre SHA NUEVO y exigir xUnit real 0 FAIL/0 SKIP y prueba `C0404M0306SafeAuditMysql84Tests` ejecutada; no inferir PASS por el arreglo textual. A4: comprobar Scope Lock, V5, backend, seguridad, resultados exact-SHA y readback PLAN/BITACORA. Persisten en `C02-03.M03.03` las obligaciones separadas de lector real HTTP con JWT firmado, RBAC de plataforma, persistencia Oracle EF y revocación tenant A/B; corregir CI de un test **no** completa esas funciones ni autoriza LISTO/A5. A5 solo otra Task Javier distinta del autor y reparador tras revisión autónoma. Conservar VALIDANDO, owner histórico, FAIL previos y dependencia DAG. No operaciones financieras ni servicios de pago reales.
+
+Evidencias previas: https://github.com/solqaryn/Solqaryn/actions/runs/44785789697/job/136460335699 y https://github.com/solqaryn/Solqaryn/blob/9343a84657ca793ba78cf2c285f58929b90204fc/backend/tests/Solqaryn.Tests/C0404M0306SafeAuditMysql84Tests.cs
