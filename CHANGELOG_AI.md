@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV02 C15-04.M05.04 A0.61 auditoría tenancy JWT real
+- Nueva cobertura Playwright R2 para /plataforma/auditoria-tenancy-v5: rol global con JWT firmado, GET 200, cuatro frentes, Tab/Enter, revalidación, 320/1280 y cero HTTP mutante; empresa B JWT real 403 y sin vista privada.
+- CI GitHub-hosted .NET 10 + MySQL 8.4 efímero + Chromium: 59 escenarios esperados, NO PASS antes de exact-SHA. Scope Lock/V5/seguridad y aceptación causal obligatorios. Sin cambios runtime o grants.
+- Se conserva C15-04.M05.04 EN_PROGRESO por DEV02 con candado 2000002297; revisión UX/WCAG global pendiente, no LISTO/A5 propia, no QA/main/PROD. Evidencia en docs/v5/c15-04-m05-04-global-ux-acceptance.md.
+
 ## 2026-11-20 — DEV01 C15-03.M05.05 V22 reparación E2E login tenant Sucursales
 - Reparación R2 exclusivamente de la prueba Playwright: `ERP-N1.1 - Certificación Sucursales` (SHA `b5824596`, job `136156658402`) falló porque exigía siempre el selector `ID de empresa`; la membresía única puede pasar directo al dashboard.
 - La prueba conserva la selección explícita cuando existe y admite solo el dashboard de una sesión verificada. Ambas rutas exigen JWT real de tres segmentos y respuesta autorizada `200` de `GET /tenant-context/{empresaId}` usando ese JWT; no se simulan tokens ni permisos. Se conservan negativos de 401 y validaciones de sucursales.

@@ -1773,4 +1773,69 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
   });
 
 
+
+  // A0.61: ruta anteriormente no cubierta. JWT firmado, API .NET10 y MySQL8.4 efimero.
+  test('A0.61 - auditoria de tenancy privada: JWT, cuatro frentes y teclado real', async ({ page }) => {
+    await ingresar(page, 'c1504_platform_only');
+    const escrituras: string[] = [];
+    page.on('request', req => {
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method()) &&
+          req.url().includes('localhost:5005')) {
+        escrituras.push(req.method() + ' ' + new URL(req.url()).pathname);
+      }
+    });
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      const sesion = page.waitForResponse(res =>
+        res.url().includes('/plataforma/sesion') && res.request().method() === 'GET');
+      const documento = await page.goto('/plataforma/auditoria-tenancy-v5');
+      expect(documento?.status()).toBe(200);
+      expect((await sesion).status()).toBe(200);
+      await expect(page.getByRole('main')).toHaveCount(1);
+      const panel = page.locator('section.tenancy-audit');
+      await expect(panel).toBeVisible();
+      await expect(panel.getByRole('heading', { level: 1, name: 'Fronteras de aislamiento y evidencia' })).toBeVisible();
+      await expect(panel.locator('ol.fronteras > li')).toHaveCount(4);
+      await expect(panel.getByText('NO_MEDIDO', { exact: false })).toBeVisible();
+      const saltar = panel.getByRole('link', { name: 'Saltar a los cuatro frentes de revisión' });
+      let alcanzado = false;
+      for (let i = 0; i < 120; i++) {
+        await page.keyboard.press('Tab');
+        alcanzado = await saltar.evaluate(el => el === document.activeElement);
+        if (alcanzado) break;
+      }
+      expect(alcanzado, 'Tab real debe alcanzar enlace de salto').toBe(true);
+      await page.keyboard.press('Enter');
+      await expect(panel.locator('#fronteras-title')).toBeFocused();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(width + 1);
+    }
+    const revalidacion = page.waitForResponse(res =>
+      res.url().includes('/plataforma/sesion') && res.request().method() === 'GET');
+    await page.getByRole('button', { name: 'Revalidar sesión de auditoría de tenancy' }).click();
+    expect((await revalidacion).status()).toBe(200);
+    await expect(page.getByText('Sesión revalidada. Solo guía de revisión, no pentest real.')).toBeVisible();
+    expect(escrituras, 'Guía privada no altera API ni ejecuta pentest').toEqual([]);
+  });
+
+  test('A0.61 - empresa B con JWT firmado no obtiene auditoria de tenancy global', async ({ page, request }) => {
+    const jwt = await ingresar(page, 'c1504_admin_b');
+    const directo = await request.get(api + '/plataforma/sesion', {
+      headers: { Authorization: 'Bearer ' + jwt }
+    });
+    expect(directo.status(), 'Backend rechaza empresa sin rol global').toBe(403);
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      const sesion = page.waitForResponse(res =>
+        res.url().includes('/plataforma/sesion') && res.request().method() === 'GET');
+      await page.goto('/plataforma/auditoria-tenancy-v5');
+      expect((await sesion).status()).toBe(403);
+      await expect(page).toHaveURL(url =>
+        url.pathname === '/login' && url.searchParams.get('plataforma') === 'denegado');
+      await expect(page.locator('section.tenancy-audit')).toHaveCount(0);
+      await expect(page.getByRole('heading', { name: 'Fronteras de aislamiento y evidencia' })).toHaveCount(0);
+      await expect(page.locator('ol.fronteras > li')).toHaveCount(0);
+    }
+  });
+
 });
