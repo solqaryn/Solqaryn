@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV06 C11-03.M03.06 cierre P2 de excepciones sensibles en auditoría
+- Corrige fuga de mensajes `ArgumentException` de repositorio/SQL mediante validación explícita de argumentos del llamador antes del límite del proveedor y conversión fail-closed de errores internos; preserva cancelación y telemetría sin PII.
+- Añade pruebas xUnit adversariales de secreto en ArgumentException y cinco entradas inválidas sin consultas a MySQL; revalidación GitHub-hosted .NET10/MySQL8.4, Scope Lock, V5 y A5 independiente aún requerida, sin DI ni proveedor real.
+
 ## 2026-11-20 — DEV02 C15-04.M05.04 A0.66 inventario AST de rutas globales
 - Test de regresion R2: >=24 rutas globales directas, `plataformaGuard` obligatorio, sin duplicados y presencia de auditorias UX/tenancy; nuevo guard ausente provoca FAIL.
 - Control estatico sin acreditar JWT/RBAC runtime ni WCAG global, dispositivos o RUM; CI GitHub-hosted del SHA nuevo pendiente. Mantener EN_PROGRESO y lock V17, no LISTO/A5/QA/main/PROD.

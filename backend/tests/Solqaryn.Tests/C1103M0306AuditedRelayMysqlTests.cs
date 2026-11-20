@@ -153,4 +153,48 @@ public sealed class C1103M0306AuditedRelayMysqlTests
         repo.Verify(x => x.ClaimDisponiblesAsync(11, It.IsAny<DateTime>(), 1,
             It.IsAny<CancellationToken>()), Times.Once);
     }
+
+    [Fact]
+    public async Task RepositoryArgumentExceptionCannotLeakProviderSecrets()
+    {
+        var repo = new Mock<IMensajeOutboxRepository>();
+        repo.Setup(x => x.ClaimDisponiblesAsync(11, It.IsAny<DateTime>(), 1,
+            It.IsAny<CancellationToken>()))
+            .ThrowsAsync(new ArgumentException("SECRET_PII_CONNECTION_STRING"));
+        var logger = new SafeLogger();
+        var worker = new C1103OutboxIsolatedRelayWorker(
+            repo.Object, new Transport((_, _, _, _, _, _) => Task.CompletedTask));
+        var audited = new C1103OutboxAuditedRelay(worker, logger);
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            audited.RunTenantAsync(11, DateTime.UtcNow, 1, 2, TimeSpan.FromMinutes(1)));
+        Assert.Equal("OUTBOX_RELAY_INTERNAL_FAILURE", error.Message);
+        Assert.Null(error.InnerException);
+        Assert.Single(logger.Messages);
+        Assert.Contains("OUTBOX_BATCH_FAILED", logger.Messages[0]);
+        Assert.DoesNotContain("SECRET", logger.Messages[0]);
+        repo.Verify(x => x.ClaimDisponiblesAsync(11, It.IsAny<DateTime>(), 1,
+            It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task CallerArgumentErrorsAreValidatedBeforeUntrustedRepository()
+    {
+        var repo = new Mock<IMensajeOutboxRepository>(MockBehavior.Strict);
+        var worker = new C1103OutboxIsolatedRelayWorker(
+            repo.Object, new Transport((_, _, _, _, _, _) => Task.CompletedTask));
+        var logger = new SafeLogger();
+        var audited = new C1103OutboxAuditedRelay(worker, logger);
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            audited.RunTenantAsync(0, DateTime.UtcNow, 1, 2, TimeSpan.FromMinutes(1)));
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            audited.RunTenantAsync(11, DateTime.Now, 1, 2, TimeSpan.FromMinutes(1)));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            audited.RunTenantAsync(11, DateTime.UtcNow, 0, 2, TimeSpan.FromMinutes(1)));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            audited.RunTenantAsync(11, DateTime.UtcNow, 1, 0, TimeSpan.FromMinutes(1)));
+        await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+            audited.RunTenantAsync(11, DateTime.UtcNow, 1, 2, TimeSpan.Zero));
+        repo.VerifyNoOtherCalls();
+        Assert.Empty(logger.Messages);
+    }
 }

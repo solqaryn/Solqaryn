@@ -17,6 +17,20 @@ public sealed class C1103OutboxAuditedRelay(
     {
         ArgumentNullException.ThrowIfNull(worker);
         ArgumentNullException.ThrowIfNull(logger);
+        // Reject caller mistakes before entering the provider-error boundary.
+        // An ArgumentException thrown by SQL/repository code can contain PII
+        // or connection details and must never be passed through unchanged.
+        if (authorizedTenantId <= 0)
+            throw new ArgumentOutOfRangeException(nameof(authorizedTenantId));
+        if (nowUtc.Kind != DateTimeKind.Utc)
+            throw new ArgumentException("UTC required.", nameof(nowUtc));
+        if (maximumBatch is < 1 or > 200)
+            throw new ArgumentOutOfRangeException(nameof(maximumBatch));
+        if (maximumAttempts is < 1 or > 20)
+            throw new ArgumentOutOfRangeException(nameof(maximumAttempts));
+        if (retryDelay <= TimeSpan.Zero || retryDelay > TimeSpan.FromDays(1))
+            throw new ArgumentOutOfRangeException(nameof(retryDelay));
+        cancellationToken.ThrowIfCancellationRequested();
         try
         {
             var result = await worker.RunTenantAsync(
@@ -32,7 +46,6 @@ public sealed class C1103OutboxAuditedRelay(
                 authorizedTenantId, default);
             throw;
         }
-        catch (ArgumentException) { throw; }
         catch (Exception)
         {
             AuditSafe(LogLevel.Error, "OUTBOX_BATCH_FAILED",
