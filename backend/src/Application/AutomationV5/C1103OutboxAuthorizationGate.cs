@@ -32,9 +32,14 @@ public sealed class C1103OutboxAuthorizationGate
     }
 
     private readonly IC1103OutboxCurrentMembershipReader _reader;
+    private readonly TimeProvider _timeProvider;
 
-    public C1103OutboxAuthorizationGate(IC1103OutboxCurrentMembershipReader reader)
-        => _reader = reader ?? throw new ArgumentNullException(nameof(reader));
+    public C1103OutboxAuthorizationGate(
+        IC1103OutboxCurrentMembershipReader reader, TimeProvider? timeProvider = null)
+    {
+        _reader = reader ?? throw new ArgumentNullException(nameof(reader));
+        _timeProvider = timeProvider ?? TimeProvider.System;
+    }
 
     public async ValueTask<Verdict> InspectAsync(
         ClaimsPrincipal? serverValidatedPrincipal,
@@ -77,6 +82,13 @@ public sealed class C1103OutboxAuthorizationGate
             current.TenantId != draft.EmpresaId ||
             current.AllowedEventTypes is null ||
             current.VerifiedNowUtc.Kind != DateTimeKind.Utc)
+            return new("OUTBOX_AUTH_DENIED");
+
+        // Cached or future-dated membership is not a live authorization.
+        // Compare to the server clock, never to a client-supplied timestamp.
+        var serverNow = _timeProvider.GetUtcNow().UtcDateTime;
+        if (current.VerifiedNowUtc < serverNow.AddSeconds(-30) ||
+            current.VerifiedNowUtc > serverNow.AddSeconds(5))
             return new("OUTBOX_AUTH_DENIED");
 
         var domainContext = new Rules.VerifiedServerContext(

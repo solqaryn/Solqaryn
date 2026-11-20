@@ -17,6 +17,14 @@ public sealed class C1103M0303OutboxAuthorizationGateTests
         Encoding.UTF8.GetBytes("c1103m0303-only-ephemeral-test-signing-key-2026"));
     private static readonly DateTime Now = new(2026, 11, 20, 0, 0, 0, DateTimeKind.Utc);
 
+    private sealed class FixedUtcTimeProvider : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => new(Now);
+    }
+
+    private static Gate CreateGate(IC1103OutboxCurrentMembershipReader reader) =>
+        new(reader, new FixedUtcTimeProvider());
+
     private static Rules.EventDraft Draft(int tenant = 101) =>
         new(tenant, Guid.Parse("22222222-2222-4222-8222-222222222222"),
             "opaque-unique-key-123456789", "ventas.factura.emitida",
@@ -82,7 +90,7 @@ public sealed class C1103M0303OutboxAuthorizationGateTests
     public async Task SignedJwtAndLiveMembershipOnlyGrantNonWritingPreflight()
     {
         var reader = new Reader();
-        var result = await new Gate(reader).InspectAsync(Validate(Token()), Draft());
+        var result = await CreateGate(reader).InspectAsync(Validate(Token()), Draft());
         Assert.Equal("OUTBOX_AUTH_PREFLIGHT_ONLY", result.Code);
         Assert.True(result.PermitsDomainPreflightOnly);
         Assert.False(result.AuthorizesPersistence);
@@ -111,7 +119,7 @@ public sealed class C1103M0303OutboxAuthorizationGateTests
     public async Task AnonymousOrMissingPrincipalDeniedBeforeReader()
     {
         var reader = new Reader();
-        var gate = new Gate(reader);
+        var gate = CreateGate(reader);
         Assert.Equal("OUTBOX_AUTH_DENIED", (await gate.InspectAsync(null, Draft())).Code);
         Assert.Equal("OUTBOX_AUTH_DENIED", (await gate.InspectAsync(
             new ClaimsPrincipal(new ClaimsIdentity()), Draft())).Code);
@@ -127,7 +135,7 @@ public sealed class C1103M0303OutboxAuthorizationGateTests
     {
         var reader = new Reader();
         Assert.Equal("OUTBOX_AUTH_DENIED",
-            (await new Gate(reader).InspectAsync(Validate(Token(user)), Draft())).Code);
+            (await CreateGate(reader).InspectAsync(Validate(Token(user)), Draft())).Code);
         Assert.Equal(0, reader.Calls);
     }
 
@@ -136,7 +144,7 @@ public sealed class C1103M0303OutboxAuthorizationGateTests
     {
         var reader = new Reader();
         Assert.Equal("OUTBOX_AUTH_DENIED",
-            (await new Gate(reader).InspectAsync(Validate(Token(duplicate: true)), Draft())).Code);
+            (await CreateGate(reader).InspectAsync(Validate(Token(duplicate: true)), Draft())).Code);
         Assert.Equal(0, reader.Calls);
     }
 
@@ -144,7 +152,7 @@ public sealed class C1103M0303OutboxAuthorizationGateTests
     public async Task ForeignTenantAtoBRejectedWithFreshMembership()
     {
         var reader = new Reader();
-        var verdict = await new Gate(reader).InspectAsync(Validate(Token()), Draft(202));
+        var verdict = await CreateGate(reader).InspectAsync(Validate(Token()), Draft(202));
         Assert.Equal("OUTBOX_AUTH_DENIED", verdict.Code);
         Assert.Equal(202, reader.RequestedTenant);
         Assert.False(verdict.AuthorizesDispatch);
@@ -171,7 +179,7 @@ public sealed class C1103M0303OutboxAuthorizationGateTests
             "user" => Valid() with { UserId = 999 },
             _ => Valid() with { VerifiedNowUtc = DateTime.SpecifyKind(Now, DateTimeKind.Unspecified) }
         };
-        var verdict = await new Gate(reader).InspectAsync(Validate(Token()), Draft());
+        var verdict = await CreateGate(reader).InspectAsync(Validate(Token()), Draft());
         Assert.Equal("OUTBOX_AUTH_DENIED", verdict.Code);
         Assert.False(verdict.AuthorizesPersistence);
     }
@@ -179,7 +187,7 @@ public sealed class C1103M0303OutboxAuthorizationGateTests
     [Fact]
     public async Task EventTypeCannotBeElevatedByClient()
     {
-        var verdict = await new Gate(new Reader()).InspectAsync(
+        var verdict = await CreateGate(new Reader()).InspectAsync(
             Validate(Token()), Draft() with { EventType = "admin.secrets.export" });
         Assert.Equal("EVENT_ID_OR_TYPE_DENIED", verdict.Code);
     }
@@ -190,7 +198,7 @@ public sealed class C1103M0303OutboxAuthorizationGateTests
         var draft = Draft();
         var existing = new Rules.ExistingIntent(101, draft.EventoId, draft.IdempotencyKey!,
             draft.EventType!, draft.PayloadSha256!, 1, false, false);
-        var verdict = await new Gate(new Reader { Authority = Valid() with { Existing = existing } })
+        var verdict = await CreateGate(new Reader { Authority = Valid() with { Existing = existing } })
             .InspectAsync(Validate(Token()), draft);
         Assert.Equal("EXACT_REPLAY_NO_NEW_DISPATCH", verdict.Code);
         Assert.False(verdict.AuthorizesDispatch);
@@ -200,7 +208,7 @@ public sealed class C1103M0303OutboxAuthorizationGateTests
     public async Task ReaderExceptionIsOpaque()
     {
         var reader = new Reader { Error = new InvalidOperationException("mysql://secret-test") };
-        var verdict = await new Gate(reader).InspectAsync(Validate(Token()), Draft());
+        var verdict = await CreateGate(reader).InspectAsync(Validate(Token()), Draft());
         Assert.Equal("OUTBOX_AUTH_BACKEND_UNAVAILABLE", verdict.Code);
         Assert.DoesNotContain("secret", verdict.Code);
         Assert.False(verdict.AuthorizesPersistence);
@@ -213,7 +221,38 @@ public sealed class C1103M0303OutboxAuthorizationGateTests
         using var cts = new CancellationTokenSource();
         cts.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(
-            async () => await new Gate(reader).InspectAsync(Validate(Token()), Draft(), cts.Token));
+            async () => await CreateGate(reader).InspectAsync(Validate(Token()), Draft(), cts.Token));
         Assert.Equal(0, reader.Calls);
     }
+    [Theory]
+    [InlineData(-31)]
+    [InlineData(6)]
+    public async Task StaleOrFutureMembershipEvidenceFailsClosed(int offsetSeconds)
+    {
+        var reader = new Reader
+        {
+            Authority = Valid() with { VerifiedNowUtc = Now.AddSeconds(offsetSeconds) }
+        };
+        var verdict = await CreateGate(reader).InspectAsync(Validate(Token()), Draft());
+        Assert.Equal("OUTBOX_AUTH_DENIED", verdict.Code);
+        Assert.False(verdict.AuthorizesPersistence);
+        Assert.False(verdict.AuthorizesDispatch);
+        Assert.Equal(1, reader.Calls);
+    }
+
+    [Theory]
+    [InlineData(-30)]
+    [InlineData(5)]
+    public async Task FreshMembershipBoundaryStillAllowsOnlyNonWritingPreflight(int offsetSeconds)
+    {
+        var reader = new Reader
+        {
+            Authority = Valid() with { VerifiedNowUtc = Now.AddSeconds(offsetSeconds) }
+        };
+        var verdict = await CreateGate(reader).InspectAsync(Validate(Token()), Draft());
+        Assert.Equal("OUTBOX_AUTH_PREFLIGHT_ONLY", verdict.Code);
+        Assert.False(verdict.AuthorizesPersistence);
+        Assert.False(verdict.AuthorizesDispatch);
+    }
+
 }

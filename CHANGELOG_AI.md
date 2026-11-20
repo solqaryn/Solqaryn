@@ -1,3 +1,7 @@
+## 2026-11-19 — V22 C11-03.M03.03 reparación anti-replay de autorización [Javier :50]
+- La barrera Application rechaza membresía/roles cacheados fuera de ventana UTC de 30 segundos o fechas futuras mayores de 5 segundos; reloj inyectable para pruebas reproducibles y denegación tras revocación.
+- xUnit añade casos adversariales de antigüedad/futuro y bordes, con JWT firmado real en suite previa; GitHub-hosted exact-SHA debe confirmar PASS. Sigue VALIDANDO sin HTTP/JWT middleware/MySQL 8.4 real ni A5 independiente.
+
 ## 2026-11-19 — V22 C15-02.M06.06 cierre documental y mapa de dependencias [Javier :20]
 - Se consolida la matriz de 11/11 predecesoras C15-02.M05.01–06 y M06.01–05 en LISTO con A5 documentada, sin modificar fórmulas DAG, COLA o asignaciones.
 - Se fija salida contractual por PLAN D2233 con negativos fail-closed, rollback git revert y límites de proveedores: no certifica Hostinger, Cloudflare, R2, MySQL productivo, DNS ni QA/main/PROD.
