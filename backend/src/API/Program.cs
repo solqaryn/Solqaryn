@@ -94,6 +94,14 @@ builder.Services.Configure<ObservabilityOptions>(builder.Configuration.GetSectio
 builder.Services.AddSingleton<RequestObservability>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IUsuarioScopeService, UsuarioScopeService>();
+// C02-03.M03.03: genuine JWT + platform RolPermiso/Empresa read-only bridge,
+// DEV-only and OFF by default. No controller, lifecycle mutation or deployment.
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddScoped<IC0203VerifiedOperatorEvidenceReader,
+        C0203VerifiedPlatformOperatorEvidenceReader>();
+    builder.Services.AddScoped<C0203TenantLifecycleAuthorizationGate>();
+}
 // C11-03.M03.03: real tenant/JWT/RolPermiso preflight is DEV-only and OFF by default.
 // No outbox write, producer, relay, provider or production registration.
 if (builder.Environment.IsDevelopment())
