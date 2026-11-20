@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV02 C15-04.M05.04 V22 precisión causal de contadores CI
+- Corrección aditiva de evidencia: A0.59 acreditó dos jobs distintos (55/55 JWT real en MySQL efímero y 100/100 aceptación global); no una suite única 102/102. Logs GH exact-SHA anexos al documento.
+- A0.60 suma dos casos JWT/Chromium (57 dirigidos esperados), mientras aceptación global conserva 100 casos esperados. CI pendiente hasta readback exact-SHA; WIP EN_PROGRESO/DEV02 y lock V17, sin LISTO/A5 ni QA/main/PROD.
+
 ## 2026-11-20 — DEV02 C15-04.M05.04 A0.60 reparación real de main anidado
 - P2 accesibilidad: la ruta privada capacidades-estados anidaba un segundo main dentro de la shell. Se sustituye solo el landmark interno por section etiquetada, con aserción adversarial Vitest; sin alterar permisos, runtime backend ni datos.
 - Dos regresiones Playwright JWT firmado ASP.NET 10 + MySQL 8.4 efímero verifican único main, teclado/foco y 403 de empresa B en 320/1280. Incremento R2 incompleto hasta CI exact-SHA; conserva EN_PROGRESO, DEV02, V17 lock 2000002297, sin LISTO/A5/QA/main/PROD.
