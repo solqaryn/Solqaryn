@@ -1,0 +1,75 @@
+name: V22 C04-04.M04.04 - private UI navigation no duplicate payment action
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v22-c04-04-m04-04-interactions.yml'
+      - 'frontend/e2e/c04-04-m04-04-interactions.spec.ts'
+      - 'docs/v5/c04-04-m04-04-navigation-v22.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c0404-m0404-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  browser:
+    name: C04-04.M04.04 - Angular navigation and no duplicate action Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm11
+        run: npm install --global npm@11.19.0
+      - name: Verify exact SHA and Scope Lock
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          cd ..
+          node scripts/verify-project-scope.mjs
+      - name: Install locked packages
+        run: npm ci
+      - name: Angular guard and messages Vitest
+        run: |
+          npm test -- --no-watch --no-progress --include=src/app/features/plataforma/c04-04-m04-01-payment-link-preview.component.spec.ts
+          npm test -- --no-watch --no-progress --include=src/app/features/plataforma/c04-04-m04-02-payment-view-states.spec.ts
+      - name: Lint and Angular production build
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Serve loopback only
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c0404-m0404-angular.log 2>&1 &
+          for attempt in $(seq 1 80); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat c0404-m0404-angular.log >&2
+          exit 1
+      - name: Real Chromium read-only navigation and denial
+        run: npx playwright test e2e/c04-04-m04-04-interactions.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c0404-m0404-e2e
+          path: |
+            frontend/c0404-m0404-angular.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 7
