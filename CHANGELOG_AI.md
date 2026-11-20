@@ -1,3 +1,7 @@
+## 2026-11-19 — V22 C03-01.M02.06 contrato de salida documental UX_LOGIN_INTELIGENTE_V1 [Javier :00]
+- Cierre de dependencias existentes M01/M02 y referencias C01-01/C02-01/C03-02 sin cambiar DAG, owners ni gates; contrato 0/1/N con 12 oráculos de revocación, JWT/RBAC, TOCTOU, replay, MFA y rollback definidos, no ejecutados en runtime.
+- Documento `docs/v5/c03-01-m02-06-dependencias-contrato-salida-ux-login-v1.md`; A0–A4 por diff documental, CI Scope Lock/V5 exact-SHA y readback, A5 independiente posterior. No se certifica login vivo, MySQL/HTTP/Chromium, QA/main/PROD, ni se altera seguridad.
+
 ## 2026-11-19 — V22 C03-01.M02.04 configuración tipada UX/MFA [Javier :50]
 - Modelo TypeScript de flags sólo visuales, versionado y fail-closed; revocación/0/1/N y desafíos MFA no anulables por feature flags.
 - 13 pruebas adversariales Vitest con workflow dirigido GitHub-hosted Node 24; documento `docs/v5/c03-01-m02-04-login-config-flags.md` de A0–A5 y rollback.
