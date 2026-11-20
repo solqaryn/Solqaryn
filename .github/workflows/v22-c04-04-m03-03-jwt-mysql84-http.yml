@@ -5,6 +5,7 @@ on:
     branches: [dev]
     paths:
       - 'backend/tests/Solqaryn.Tests/Integration/C0404M0303SignedJwtMysql84HttpIntegrationTests.cs'
+      - 'backend/tests/Solqaryn.Tests/Integration/C0404M0303RealEfInvoiceMysql84IntegrationTests.cs'
       - 'backend/src/Application/AutomationV5/C0404PaymentAuthorizationGate.cs'
       - 'backend/src/API/Security/C0404PaymentVerifiedEvidenceReader.cs'
       - 'backend/src/API/Program.cs'
@@ -52,4 +53,4 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           dotnet restore tests/Solqaryn.Tests/Solqaryn.Tests.csproj
-          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore --filter 'FullyQualifiedName~C0404M0303SignedJwtMysql84HttpIntegrationTests' --logger 'trx;LogFileName=C0404JwtHttpMySql84.trx' --verbosity normal
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore --filter 'FullyQualifiedName~C0404M0303SignedJwtMysql84HttpIntegrationTests|FullyQualifiedName~C0404M0303RealEfInvoiceMysql84IntegrationTests' --logger 'trx;LogFileName=C0404JwtHttpMySql84.trx' --verbosity normal

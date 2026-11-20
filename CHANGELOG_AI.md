@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV04 C04-04.M03.03 V22 prueba EF Factura real con JWT/MySQL84
+- Incremento R2 de integración: prueba nueva del adaptador C0404PaymentVerifiedEvidenceReader con JWT firmado, HTTP TestServer, Oracle EF Core AppDbContext y Facturas en MySQL 8.4 efímero; verifica tenant A/B, factura ajena, firma adulterada, grant revocado simulado, cambio de propiedad SQL y rollback real.
+- La membresía UsuarioEmpresa y los grants RolPermiso siguen siendo dobles de prueba y el endpoint comercial no se ejercita: no acreditar A0-A4 global, dejar VALIDANDO con owner DEV04 y A5 por revisor distinto. Sin cobros, PSP, migraciones, secretos ni despliegue a QA/main/PROD.
+
 ## 2026-11-20 — DEV02 C15-04.M05.04 A0.62 JWT adulterado en ruta privada
 - Regresion R2 Playwright contra API .NET 10, MySQL 8.4 efimero y Chromium: JWT de plataforma valido 200, firma mutada denegada 401/403, sin contenido tenancy al navegar 320/1280.
 - Esperar CI exact-SHA con 60 casos, Scope Lock/V5/backend/frontend/security requeridos; no confundir evidencia de 59 PASS anteriores con la nueva prueba.
