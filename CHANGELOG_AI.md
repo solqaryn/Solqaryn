@@ -8739,3 +8739,7 @@
 - Cinco pruebas Playwright reales de responsive 320/375/768/1280, Tab natural, denegación 403/503, mutation-oracle CSS y tiempo de carga local; sin falsas métricas Core Web Vitals.
 - Workflow dedicado GitHub-hosted npm ci + lint/build + Chromium sin retries, con interceptación sintética de sesión expresamente NO equivalente a JWT real, HTTP backend, MySQL o pentest BOLA/IDOR.
 - Scope R2 test-only en dev: A0–A4 exact-SHA, READBACK y A5 independiente requeridos; se conservan límites R3/QA/main/PROD, histórico FAIL y rollback git revert.
+## 2026-11-20 — DEV05 C04-04.M06.04 rollback MySQL 8.4 (V22)
+- Test xUnit real MySQL 8.4 en store aislado: reservas previas A/B sobreviven a RollbackAsync de dos reservas temporales; comprobar desde DbContext nuevo, denegar acceso cruzado y cancelación sin pérdida.
+- Workflow GitHub-hosted .NET 10 Release + Scope Lock + Skill exact-SHA y TRX 1/1 cero fallos/omitidos; esperar éxito causal antes de LISTO y A5 independiente.
+- Test-only sin cobro, PSP, JWT, AppDbContext comercial, secretos, migraciones ni datos de producción; limitaciones R2 y R3 NO_GO, rollback normal git revert y BITACORA intacta.
