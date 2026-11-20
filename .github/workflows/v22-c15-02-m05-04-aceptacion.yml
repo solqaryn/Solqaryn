@@ -1,0 +1,71 @@
+name: V22 C15-02.M05.04 - aceptacion positiva navegador real
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/e2e/c15-02-m05-04-aceptacion.spec.ts'
+      - 'frontend/src/app/features/plataforma/c15-02-m04-01-revision-arquitectura.component.ts'
+      - '.github/workflows/v22-c15-02-m05-04-aceptacion.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c1502-m0504-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  aceptacion:
+    name: C15-02.M05.04 - aceptacion positiva 2 Chromium reales
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - name: Checkout SHA exacto
+        uses: actions/checkout@v4
+      - name: Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm 11 fijado
+        run: npm install --global npm@11.19.0
+      - name: Instalar lockfile
+        run: npm ci
+      - name: Tipado lint build
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Instalar Chromium GitHub-hosted
+        run: npx playwright install --with-deps chromium
+      - name: Angular local efimero
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c1502m0504-angular.log 2>&1 &
+          for attempt in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then
+              echo 'ANGULAR_LOOPBACK_READY=PASS'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat c1502m0504-angular.log >&2
+          exit 1
+      - name: Dos pruebas positivas Chromium real
+        run: npx playwright test e2e/c15-02-m05-04-aceptacion.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Artefactos e informes
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v22-c1502-m0504-aceptacion
+          path: |
+            frontend/c1502m0504-angular.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 14

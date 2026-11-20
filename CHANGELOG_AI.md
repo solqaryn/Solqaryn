@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C15-02.M05.04 aceptación positiva navegador real [Javier :20]
+- Se añaden dos recorridos positivos en Playwright/Chromium para cinco referencias locales, navegación real mediante teclado, recarga y ruta privada con sesión de UI simulada; no hay cambio de runtime.
+- GitHub-hosted Angular/Chromium exact-SHA con no-mutations HTTP y viewport 375 px. La prueba de JWT firmado/tenant y proveedores reales NO_APLICA al diff test-only; se documenta la limitación.
+- PLAN D2225 es una aceptación atómica, no certificación de M05 completa, Hostinger, Cloudflare, R2, MySQL, DNS, QA/main/PROD. A5 distinta de la Task autora.
+
 ## 2026-11-19 — V22 C15-02.M05.01 reglas unitarias de fuente local [Javier :20]
 - Se añaden cuatro reglas adversariales y de frontera para la fuente inyectable de la pantalla privada de arquitectura (16/17 entradas, IDs duplicados, errores saneados y reintento), sin alterar runtime.
 - Workflow dirigido Angular 22.2.1 en GitHub-hosted, CI exact-SHA pendiente hasta verificación; R1 test-only y A5 por otra Task Javier.
