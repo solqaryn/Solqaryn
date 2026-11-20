@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C15-02.M06.01 auditoria prueba real vs mock insuficiente [Javier :40]
+- Se auditaron seis M05 (6/6 LISTO+A5_PASS) contra sus commits, CI y logs: Vitest 4/4 y 6/6 (DTO simulado), MySQL 8.4 Oracle EF efimero 6/6, Chromium 2/2, JWT HTTP tenant A/B real aislado 5/5 y Chromium accesibilidad 3/3.
+- Evidencia `docs/v5/c15-02-m06-01-real-vs-mock-scope-audit.md` distingue mocks de integraciones verdaderas y mantiene FAIL globales de release/modulos/migraciones, V5 original reparado en SHA descendiente y LCP/CLS/INP NO_MEDIDO, sin atribuir PASS no existente.
+- Diff R0 documental, V17/CAS, Scope Lock/V5 exact-SHA y A5 independiente obligatorios; no certificacion de Hostinger/Cloudflare/R2/DNS/proveedores ni QA/main/PROD.
+
 ## 2026-11-19 — V22 C03-04.M06.06 cierre del contrato de continuidad [Javier :40]
 - Censo de 35/35 predecesoras LISTO y A5_PASS registrado; reconciliada la aprobacion independiente ya existente de M06.05 sin generar una nueva revision.
 - Acta `docs/v5/c03-04-m06-06-cierre-contractual-v22-javier40.md` documenta DAG, dependencias, limite del contrato base de incidentes/backup/restauracion, rollback y fail-closed R3; no ejecutar ni certificar restore de produccion.
