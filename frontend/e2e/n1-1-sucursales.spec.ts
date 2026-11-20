@@ -47,9 +47,19 @@ async function prepararTenantAdmin(request: APIRequestContext): Promise<number> 
 
 async function completarSeleccionTenant(page: Page): Promise<void> {
   const selector = page.getByLabel('ID de empresa');
-  await selector.waitFor({ state: 'visible', timeout: 5_000 });
-  await selector.fill(String(empresaId));
-  await page.getByRole('button', { name: 'Entrar a la empresa', exact: true }).click();
+
+  // Con una sola membresía verificada la UI puede entrar al dashboard sin
+  // selector. Una sesión multiempresa todavía requiere selección explícita.
+  await expect.poll(async () => {
+    if (await selector.isVisible()) return 'seleccion';
+    if (new URL(page.url()).pathname === '/dashboard') return 'dashboard';
+    return 'pendiente';
+  }, { timeout: 20_000, intervals: [100, 250, 500] }).not.toBe('pendiente');
+
+  if (await selector.isVisible()) {
+    await selector.fill(String(empresaId));
+    await page.getByRole('button', { name: 'Entrar a la empresa', exact: true }).click();
+  }
 }
 
 async function loginUi(page: Page): Promise<void> {
@@ -58,7 +68,17 @@ async function loginUi(page: Page): Promise<void> {
   await page.locator('input[formcontrolname="password"]').fill(ADMIN_PASSWORD);
   await page.locator('button[type="submit"]').click();
   await completarSeleccionTenant(page);
-  await page.waitForURL(url => url.pathname !== '/login', { timeout: 20_000 });
+  await page.waitForURL(url => url.pathname === '/dashboard', { timeout: 20_000 });
+
+  // Llegar al dashboard no sustituye la autenticación backend por tenant.
+  const jwt = await page.evaluate(() => localStorage.getItem('solqaryn_token'));
+  expect(jwt, 'JWT de navegador faltante tras login').toBeTruthy();
+  expect(jwt!.split('.'), 'El JWT de la UI requiere tres segmentos').toHaveLength(3);
+  const tenant = await page.request.get(`${API_URL}/tenant-context/${empresaId}`, {
+    headers: authHeaders(jwt!)
+  });
+  expect(tenant.status(), await tenant.text()).toBe(200);
+  expect((await dataOf(tenant))?.empresaId).toBe(empresaId);
 }
 
 async function auditoriaDe(

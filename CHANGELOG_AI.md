@@ -1,3 +1,9 @@
+## 2026-11-20 — DEV01 C15-03.M05.05 V22 reparación E2E login tenant Sucursales
+- Reparación R2 exclusivamente de la prueba Playwright: `ERP-N1.1 - Certificación Sucursales` (SHA `b5824596`, job `136156658402`) falló porque exigía siempre el selector `ID de empresa`; la membresía única puede pasar directo al dashboard.
+- La prueba conserva la selección explícita cuando existe y admite solo el dashboard de una sesión verificada. Ambas rutas exigen JWT real de tres segmentos y respuesta autorizada `200` de `GET /tenant-context/{empresaId}` usando ese JWT; no se simulan tokens ni permisos. Se conservan negativos de 401 y validaciones de sucursales.
+- A0 análisis de diff; A1/A2/A3 pruebas reales MySQL 8.4/.NET/Angular/Chromium CI exact-SHA pendientes; A4 Scope Lock/V5 y checks pertinentes pendientes; A5 independiente pendiente. Esta reparación NO certifica propiedad granular tenant A/B, archivos, trabajos o sucursales de todo el scope.
+- Evidencia: `docs/v5/c15-03-m05-05-sucursales-login-tenant-ci-repair-20261120.md`. Conservar `C15-03.M05.05` VALIDANDO, owner DEV03 y A5_FAIL histórico; rollback con git revert del SHA publicado tras CAS. Sin QA/main/PROD.
+
 ## 2026-11-20 — DEV06 C11-03.M03.03 V22 reparación CS0103 GitHub-hosted
 - El primer incremento `fa91d6f5` tuvo FAIL real de compilación `CS0103` por no importar `Solqaryn.Application.Security` al usar `VerifiedCommercialTenant`; no se oculta ni reclasifica ese fallo.
 - Reparación mínima: agregar namespace exacto al lector read-only ya publicado; preservar el test negativo, la frontera JWT/RBAC tenant, flag OFF por defecto y el histórico completo de CHANGELOG sin truncación.
