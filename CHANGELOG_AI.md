@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C15-02.M06.03 registro de riesgos y decisiones [Javier :40]
+- Registro `docs/v5/c15-02-m06-03-riesgos-limitaciones-decisiones-v22.md`: seis M05 auditadas por SHA y jobs, con PASS dirigidos delimitados y FAIL globales de release/modulos/migraciones, V5 original reparado y CWV campo NO_MEDIDO preservados.
+- Proveedores Hostinger/Cloudflare/R2/DNS, restauraciones reales y secretos no certificadas; riesgo exacto por clasificar sin inventar P0/P1. M06.04 rollback, M06.05 A5, M06.06 cierre conservan dependencias.
+- Solo R0 documental, Scope Lock/V5 exact-SHA, V17 y A5 independiente; sin QA/main/PROD.
+
 ## 2026-11-19 — V22 C03-01.M01.06 contrato UX_LOGIN_V1, bloqueo y rollback [Javier :20]
 - Se documentan L01-L10, denegacion server-side para 0/1/N empresas, preferencia por usuario, cambio A/B sin fuga, autoridad global separada y accesibilidad, **sin implementar runtime**.
 - Gate B01-B06, rollback seguro, A0-A4 documentales y A5 por otra Task: no se confunden contratos con JWT/HTTP/MySQL/Chromium probados.
