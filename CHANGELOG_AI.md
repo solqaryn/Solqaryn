@@ -1,3 +1,7 @@
+## 2026-11-19 — V22 C03-01.M02.01 entidades y ownership login 0/1/N [Javier :40]
+- Definidas entidades reales de usuario, empresa, membresia, rol y doce invariantes positivas/negativas; preferencia futura por usuario no concede autoridad; contrato documental sin runtime.
+- Archivo `docs/v5/c03-01-m02-01-entities-ownership-invariants-ux-login-v1.md` con fuentes, seguridad A/B, A0-A4 proporcionales, A5 independiente y rollback normal. Solo dev y Scope Lock STRICT, sin QA/main/PROD.
+
 ## 2026-11-19 — V22 C15-02.M06.04 Git rollback seguro y preservacion de datos [Javier :30]
 - Se agrego ensayo real Git revert en repositorio aislado GitHub-hosted con 2340 IDs sinteticos, registros tenant A/B, bitacora y SHA256 preservados ante evento legitimo posterior.
 - Cuatro pruebas de positivo, rollback de datos protegido, HEAD desactualizado y worktree/SHA invalido; CI Node24, concurrency por SHA, sin acceso a servicios ni secretos.
