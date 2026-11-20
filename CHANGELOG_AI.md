@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C15-02.M06.06 cierre documental y mapa de dependencias [Javier :20]
+- Se consolida la matriz de 11/11 predecesoras C15-02.M05.01–06 y M06.01–05 en LISTO con A5 documentada, sin modificar fórmulas DAG, COLA o asignaciones.
+- Se fija salida contractual por PLAN D2233 con negativos fail-closed, rollback git revert y límites de proveedores: no certifica Hostinger, Cloudflare, R2, MySQL productivo, DNS ni QA/main/PROD.
+- Evidencia R0 de documento y CHANGELOG en `docs/v5/c15-02-m06-06-cierre-mapa-dependencias-v22.md`; A0–A4/Scope Lock/V5 exact-SHA requeridos, A5 ajena posterior.
+
 ## 2026-11-19 — V22 A0.57 accesibilidad y JWT real en experiencia visual [Javier :10]
 - Reparación concreta de `/plataforma/experiencia-visual-v5`: se sustituye el segundo landmark `main` de la vista por una `section` rotulada; se conserva la shell Angular, señales, presets, autorización y datos sin escrituras. Vitest adversarial exige no reintroducir `main` anidado.
 - Dos regresiones Playwright nuevas, con API .NET 10, JWT firmado, tenant B 403, MySQL 8.4 efímero y Chromium GitHub-hosted: 320/1280, Tab/Space/Enter, único main, tema, densidad, cero mutaciones. 53 casos **esperados**, CI nuevo SHA pendiente; 51/51 anteriores PASS real, tres fallos globales de transferencias siguen FAIL. `C15-04.M05.04` continúa EN_PROGRESO/DEV02/lock V17; sin LISTO/A5 ni QA/main/PROD, alcance global WCAG NO_MEDIDO.
