@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV02 C15-04.M05.04 A0.64 teclado real de tenancy
+- Nueva prueba de aceptación R2 GitHub-hosted con JWT firmado, API .NET 10, MySQL 8.4 efímero y Chromium: Tab+Enter reales para revalidar GET 200 en 320/1280 y cero mutaciones HTTP. No cambia runtime ni permisos.
+- CI 62/62 y checks exact-SHA siguen pendientes hasta readback; A0-A4 global de UX, WCAG y RUM sin certificar, WIP DEV02/lock V17 2000002297 conservado; A5 independiente y sin QA/main/PROD.
+
 ## 2026-11-20 — DEV01 C06-04.M03.05 InnoDB real, cola aislada
 - Se incorpora reserva atomica tenant/key, rechazo de colisiones, leases de escritor y reintentos con dead-letter persistente, sin activacion de DI/HTTP ni proveedores externos.
 - Regresion dirigida en GitHub-hosted con MySQL 8.4 efimero, tenant A/B, duplicados, lease obsoleto, ACK y DEAD. Sigue faltando autenticacion CUSTOMER JWT/RBAC y worker externo para A0-A4 y A5; VALIDANDO no equivale a LISTO.

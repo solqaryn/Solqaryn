@@ -1894,4 +1894,47 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     }
   });
 
+
+  // A0.64: alcance R2 test-only; un usuario global autenticado debe acceder sin mouse.
+  test('A0.64 - revalidación privada de tenancy por Tab y Enter reales', async ({ page }) => {
+    await ingresar(page, 'c1504_platform_only');
+    const mutaciones: string[] = [];
+    page.on('request', req => {
+      if (/^(POST|PUT|PATCH|DELETE)$/.test(req.method()) &&
+          req.url().includes('localhost:5005')) {
+        mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+      }
+    });
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      const sesion = page.waitForResponse(res =>
+        res.url().includes('/plataforma/sesion') && res.request().method() === 'GET');
+      const documento = await page.goto('/plataforma/auditoria-tenancy-v5');
+      expect(documento?.status()).toBe(200);
+      expect((await sesion).status()).toBe(200);
+      const region = page.locator('section.tenancy-audit');
+      await expect(region).toBeVisible();
+      await expect(page.getByRole('main')).toHaveCount(1);
+      const boton = page.getByRole('button', { name: 'Revalidar sesión de auditoría de tenancy' });
+      await expect(boton).toBeVisible();
+      let foco = false;
+      for (let intento = 0; intento < 120; intento++) {
+        await page.keyboard.press('Tab');
+        foco = await boton.evaluate(el => el === document.activeElement);
+        if (foco) break;
+      }
+      expect(foco, 'Tab llega al control sin .focus() artificial').toBe(true);
+      const revalidacion = page.waitForResponse(res =>
+        res.url().includes('/plataforma/sesion') && res.request().method() === 'GET');
+      await page.keyboard.press('Enter');
+      expect((await revalidacion).status()).toBe(200);
+      await expect(page.getByText('Sesión revalidada. Solo guía de revisión, no pentest real.'))
+        .toBeVisible();
+      expect(await page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(width + 1);
+    }
+    expect(mutaciones, 'Tab y Enter solo provocan GET y no mutan recursos empresariales').toEqual([]);
+  });
+
+
 });
