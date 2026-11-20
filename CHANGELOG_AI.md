@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C11-03.M03.03 autorización tenant Outbox fail-closed [Javier :50]
+- Guard Application .NET 10 con tenant, rol/membresía, revocación y lista de eventos solo desde backend; no concede persistencia, despacho, ACK o privilegios de cliente.
+- xUnit JWT efímero realmente firmado/verificado, negativos A/B, token alterado/expirado, replay, excepciones y cancelación; CI GitHub-hosted TRX dirigida y Scope Lock exact SHA.
+- La integración runtime HTTP/JWT middleware/MySQL 8.4/worker sigue no certificada: mantener VALIDANDO/A5_PENDIENTE hasta prueba causal. Solo dev y PROJECT_SCOPE_LOCK=STRICT; sin QA/main/PROD.
+
 ## 2026-11-19 — V22 C11-03.M03.02 caso de uso Application Outbox limitado [Javier :40]
 - Se añade servicio .NET 10 de aplicación sin consumidor runtime, con lector inyectable de evidencias de backend, fail-closed ante tenant A/B, JWT/grant reportado sin vigencia, revocación, replay, DeadLetter, errores y cancelación; sus planes no autorizan escribir ni despachar.
 - Suite xUnit adversarial real y workflow GitHub-hosted con TRX estricto, Scope Lock/V5 exact-SHA y A5 independiente; no se simula una certificación JWT firmado, HTTP, MySQL 8.4 ni worker real de M03.03-06.
