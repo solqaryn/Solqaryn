@@ -85,6 +85,8 @@ public sealed class C0203TenantLifecycleAuthorizationGate
         try
         {
             trusted = await _reader.ReadAsync(intent.TargetTenantId!, intent.Operation, cancellationToken);
+            // A provider may ignore cancellation after I/O; never grant a stale preflight.
+            cancellationToken.ThrowIfCancellationRequested();
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {

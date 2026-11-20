@@ -1,3 +1,7 @@
+## 2026-11-20 — V22 DEV05 C02-03.M03.03 cancelación fail-closed tras I/O
+- Corregida carrera: un IC0203VerifiedOperatorEvidenceReader no cooperativo no puede conceder preflight positivo si CancellationToken fue cancelado durante await; nueva regresión xUnit adversarial positiva/negativa.
+- Solo Application y prueba, sin JWT/HTTP/DB en producción; A2/A3 del adaptador persistente pendientes, mantener VALIDANDO y A5 externa. CI GitHub-hosted y Scope Lock/V5 exact-SHA requeridos.
+
 ## 2026-11-20 — DEV04 C04-04.M03.03 V22 CI Oracle SSL fail-closed
 - Reparación causal del fallo 1/4 en GitHub Actions SHA c193265c: MySqlConnector normalizaba SslMode=Disabled a None y Oracle MySql.Data lanzaba ArgumentException; preservar connection string original y cambiar únicamente Database al esquema GUID aislado, sin credenciales nuevas ni acceso remoto.
 - Revalidar xUnit JWT/HTTP/UsuarioEmpresa/RolPermiso/Oracle EF MySQL84 y checks exact-SHA; no declarar LISTO/A5 hasta CI final y A0-A4 completos. Sin PSP, pagos reales ni QA/main/PROD.

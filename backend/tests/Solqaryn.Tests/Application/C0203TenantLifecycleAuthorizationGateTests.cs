@@ -175,6 +175,30 @@ public sealed class C0203TenantLifecycleAuthorizationGateTests
         Assert.False(outcome.WritesToDatabase);
     }
 
+    private sealed class NonCooperativeCancellingReader(CancellationTokenSource cancellation)
+        : IC0203VerifiedOperatorEvidenceReader
+    {
+        public async ValueTask<Gate.TrustedOperatorSnapshot?> ReadAsync(
+            string tenant, Rules.Command command, CancellationToken ignored)
+        {
+            // Simulates an async database/provider that disregards cancellation and
+            // hands back a previously trusted positive snapshot after the request dies.
+            await Task.Yield();
+            cancellation.Cancel();
+            return Trusted();
+        }
+    }
+
+    [Fact]
+    public async Task CancellationWhileNonCooperativeProviderIsReadingNeverAuthorizes()
+    {
+        using var cts = new CancellationTokenSource();
+        var gate = new Gate(new NonCooperativeCancellingReader(cts));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
+            await gate.InspectAsync(Request(), cts.Token));
+        Assert.True(cts.IsCancellationRequested);
+    }
+
     [Fact]
     public async Task CancellationIsPropagatedWithoutTouchingProvider()
     {
