@@ -1,0 +1,68 @@
+name: V22 C02-01.M04.06 - densidad y progreso de acceso
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/e2e/c02-01-m04-06-density-progress.spec.ts'
+      - '.github/workflows/v22-c02-01-m04-06-density-progress.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c0201-m0406-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  chromium:
+    name: C02-01.M04.06 - Chromium real UI densidad
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm fijado
+        run: npm install --global npm@11.19.0
+      - name: Dependencias y Angular
+        run: |
+          set -euo pipefail
+          npm ci
+          npm run lint
+          npm run build:prod
+      - name: Instalar Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Levantar Angular efimero loopback
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > v22-c0201-m0406.log 2>&1 &
+          for attempt in $(seq 1 75); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then
+              echo 'ANGULAR_LOCAL_READY=PASS'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat v22-c0201-m0406.log >&2
+          exit 1
+      - name: Tres regresiones causales Playwright
+        run: npx playwright test e2e/c02-01-m04-06-density-progress.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Evidencia aislada
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v22-c0201-m0406-chromium
+          path: |
+            frontend/v22-c0201-m0406.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 14

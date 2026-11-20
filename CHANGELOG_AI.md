@@ -1,3 +1,8 @@
+## 2026-11-20 - DEV03 C02-01.M04.06 densidad y espera segura de login
+- Entrega test-only en dev: Chromium real Angular 320/375/768/1280, progreso accesible durante GET retenido, proteccion ante doble submit, 503 opaco, hint tenant anonimo denegado.
+- Test de error simula HTTP exclusivamente para estados UI; no certifica JWT/RBAC/HTTP backend/MySQL, accesos reales ni Web Vitals de produccion; exact-SHA CI y A5 independiente aun obligatorios.
+- V17 claim unico ID C02-01.M04.06, PROJECT_SCOPE_LOCK=STRICT, sin QA/main/PROD, y rollback git revert no destructivo.
+
 ## 2026-11-20 — DEV02 C15-04.M05.04 A0.65 salto accesible y región viva
 - Test de integración R2 real en CI efímera: JWT firmado, .NET 10, MySQL 8.4, Chromium, Tab/Enter hasta h2, estado aria-live y cero escrituras API en 320/1280; sin modificar runtime, autorización ni producción.
 - A0-A4 del nuevo SHA y auditoría UX global pendientes; 62/62 PASS pertenecen al SHA previo 569e18b8. Mantener DEV02 EN_PROGRESO y lock V17 2000002297, no LISTO/A5, QA/main/PROD prohibidos.
