@@ -1,0 +1,7 @@
+# C04-04.M05.03 - integración real de persistencia MySQL 8.4 (V22)
+
+Accion PLAN D712: ejecutar integración de persistencia o proveedor cuando corresponda; R2 financiero/concurrencia. Nuevo test xUnit extiende la matriz existente con una **carrera real de dos DbContexts** sobre la misma identidad tenant/proveedor/clave bajo MySQL 8.4 efimero (Docker GitHub-hosted). No hay proveedor externo ni pagos reales.
+
+A0: incremento TEST-ONLY sin modificaciones a AppDbContext productivo, API, JWT o PSP; adaptador aislado C0404PaymentReservationStore. A1: validación de replay con idéntico ID, rechazo de replay conflictivo de monto/factura/digest, tenant A/B sin fuga, rollback y cancelación; nueva concurrencia debe producir exactamente un INSERT Reservado y un Replay, 1 nueva fila y ningún efecto financiero. A2: índice físico UNIQUE tenant/provider/key y separación tenant A/B verificados en MySQL efimero; la autorización JWT/RBAC real es NO_CERTIFICADA. A3: ejecutado con Oracle EF Core y servicio MySQL 8.4 real, no mock/InMemory; provider comercial NO_APLICA por prohibición y diff test-only. A4: GitHub Actions exact-SHA, TRX 1/1 0 fail/skip, Scope Lock, V5 y checks causales SUCCESS antes de LISTO. A5 independiente por otra Task Javier distinta de autor/reparador.
+
+Limitación: infraestructura de prueba aislada, NO registrada en DI/AppDbContext de producción; ninguna transacción comercial, PSP, webhook ni refund. No convierte M05 completo en certificado ni autoriza QA/main/PROD. Rollback con git revert; schema efímero destruido.

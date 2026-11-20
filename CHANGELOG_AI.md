@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV04 C04-04.M05.03 integración MySQL 8.4 de reserva concurrente
+- Ampliada prueba física Oracle EF/MySQL 8.4 efímero con dos DbContexts concurrentes para un único tenant/proveedor/clave: exactamente un escritor reservado, el segundo replay del mismo ID, índice UNIQUE efectivo; se mantienen negativos cross-tenant, cambios de payload, rollback y cancelación.
+- Solo persistencia aislada TEST-ONLY, sin AppDbContext DI/HTTP/productivo, JWT firmado, PSP ni pagos; no certifica M05.01–.06 ni proveedor real. CI dirigida TRX 1/1 y Scope Lock/V5/exact-SHA requeridos antes de LISTO; A5 independiente Javier.
+- CHANGELOG histórico preservado, rollback git revert normal y no QA/main/PROD.
+
 ## 2026-11-20 — DEV04 C04-04.M05.02 prueba HTTP/DTO con JWT firmado y errores seguros
 - Scope V22 R2 test-only: contrato del controlador PagosOnline en TestServer real de ASP.NET Core 10, JWT firmado/falso, denegación cross-tenant y validación negativa de Idempotency-Key; dobles de membresía y EF InMemory, sin efectuar cobros o conectar PSP.
 - CI dedicada GitHub-hosted xUnit con TRX sin FAIL/SKIPPED y Scope Lock exact-SHA; A0-A4 únicamente tras checks requeridos SUCCESS, A5 independiente Javier; MySQL 8.4 real y pagos comerciales NO_CERTIFICADOS para M05.02.
