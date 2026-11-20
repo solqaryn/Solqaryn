@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV04 C04-04.M03.03 V22 CI Oracle SSL fail-closed
+- Reparación causal del fallo 1/4 en GitHub Actions SHA c193265c: MySqlConnector normalizaba SslMode=Disabled a None y Oracle MySql.Data lanzaba ArgumentException; preservar connection string original y cambiar únicamente Database al esquema GUID aislado, sin credenciales nuevas ni acceso remoto.
+- Revalidar xUnit JWT/HTTP/UsuarioEmpresa/RolPermiso/Oracle EF MySQL84 y checks exact-SHA; no declarar LISTO/A5 hasta CI final y A0-A4 completos. Sin PSP, pagos reales ni QA/main/PROD.
+
 ## 2026-11-20 — DEV04 C04-04.M03.03 V22 rol y membresia MySQL reales
 - Agregada regresion de autorizacion real read-only con JWT firmado, HTTP TestServer, CurrentUserService/UsuarioScopeService, PermisoService/RolPermisoRepository y Oracle EF Core en MySQL 8.4 efimero por esquema aislado; negativos de rol B, membresia y grant revocados, usuario bloqueado, firma falsa y factura ajena.
 - No certifica PSP ni todo el host API productivo; requiere CI exact-SHA, A0–A4 causales y A5 de otra Task Javier. Sin QA/main/PROD ni secretos, sin alterar BITACORA o cierre institucional.

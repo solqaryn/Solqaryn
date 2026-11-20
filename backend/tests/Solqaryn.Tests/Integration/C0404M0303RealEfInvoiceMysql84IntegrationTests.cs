@@ -322,10 +322,13 @@ public sealed class C0404M0303RealEfInvoiceMysql84IntegrationTests
         // MySQL container. A separate GUID schema prevents parallel-test collisions.
         var original = EphemeralConnection();
         var schema = "c0404_v22_auth_" + Guid.NewGuid().ToString("N");
-        var scoped = new MySqlConnectionStringBuilder(original)
-        {
-            Database = schema
-        }.ConnectionString;
+        // Preserve the Oracle provider's required SslMode=Disabled spelling.
+        // MySqlConnector normalizes it to None when it rebuilds the string;
+        // Oracle's MySql.Data parser rejects that value (CI 44720913552).
+        var scoped = original.Replace("Database=" + ExpectedDatabase + ";",
+            "Database=" + schema + ";", StringComparison.Ordinal);
+        if (scoped == original)
+            throw new InvalidOperationException("MYSQL84_EPHEMERAL_DATABASE_REWRITE_REQUIRED");
         await using var admin = new MySqlConnection(original);
         await admin.OpenAsync();
         try
