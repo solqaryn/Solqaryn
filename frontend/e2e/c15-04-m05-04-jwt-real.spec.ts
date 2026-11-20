@@ -1710,4 +1710,67 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
   });
 
 
+
+  // A0.60: P2 a11y, ruta existente con shell main. JWT y base reales, sin HTTP mock.
+  test('A0.60 - capacidades privadas: un main, region etiquetada y Tab con JWT real', async ({ page }) => {
+    await ingresar(page, 'c1504_platform_only');
+    const mutaciones: string[] = [];
+    page.on('request', req => {
+      if (['POST', 'PUT', 'PATCH', 'DELETE'].includes(req.method()) &&
+          req.url().includes('localhost:5005')) {
+        mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+      }
+    });
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      const sesion = page.waitForResponse(res =>
+        res.url().includes('/plataforma/sesion') && res.request().method() === 'GET');
+      const documento = await page.goto('/plataforma/capacidades-estados-v19');
+      expect(documento?.status()).toBe(200);
+      expect((await sesion).status()).toBe(200);
+      await expect(page.getByRole('main'), 'Solo el main de la shell').toHaveCount(1);
+      const region = page.locator('section.estados[aria-labelledby="estados-title"]');
+      await expect(region).toBeVisible();
+      await expect(page.getByRole('heading', {
+        level: 1, name: 'Estado de capacidades y permisos'
+      })).toHaveCount(1);
+      await expect(region.locator('[data-testid^="estado-"]')).toHaveCount(1);
+      await expect(region.getByTestId('estado-denegado')).toHaveCount(0);
+      const volver = region.getByRole('link', { name: 'Volver a plataforma' });
+      let foco = false;
+      for (let intento = 0; intento < 120; intento++) {
+        await page.keyboard.press('Tab');
+        foco = await volver.evaluate(el => el === document.activeElement);
+        if (foco) break;
+      }
+      expect(foco, 'Tab real llega al enlace de retorno').toBe(true);
+      expect(await volver.evaluate(el => parseFloat(getComputedStyle(el).outlineWidth)))
+        .toBeGreaterThan(0);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(width + 1);
+    }
+    expect(mutaciones, 'Consulta de capacidades no muta backend').toEqual([]);
+  });
+
+  test('A0.60 - empresa B con JWT firmado no ve estados globales protegidos', async ({ page, request }) => {
+    const jwt = await ingresar(page, 'c1504_admin_b');
+    const directo = await request.get(api + '/plataforma/sesion', {
+      headers: { Authorization: 'Bearer ' + jwt }
+    });
+    expect(directo.status()).toBe(403);
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      const sesion = page.waitForResponse(res =>
+        res.url().includes('/plataforma/sesion') && res.request().method() === 'GET');
+      await page.goto('/plataforma/capacidades-estados-v19');
+      expect((await sesion).status()).toBe(403);
+      await expect(page).toHaveURL(url =>
+        url.pathname === '/login' && url.searchParams.get('plataforma') === 'denegado');
+      await expect(page.locator('section.estados')).toHaveCount(0);
+      await expect(page.getByRole('heading', { name: 'Estado de capacidades y permisos' })).toHaveCount(0);
+      await expect(page.locator('[data-testid^="estado-"]')).toHaveCount(0);
+    }
+  });
+
+
 });

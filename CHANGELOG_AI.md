@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV02 C15-04.M05.04 A0.60 reparación real de main anidado
+- P2 accesibilidad: la ruta privada capacidades-estados anidaba un segundo main dentro de la shell. Se sustituye solo el landmark interno por section etiquetada, con aserción adversarial Vitest; sin alterar permisos, runtime backend ni datos.
+- Dos regresiones Playwright JWT firmado ASP.NET 10 + MySQL 8.4 efímero verifican único main, teclado/foco y 403 de empresa B en 320/1280. Incremento R2 incompleto hasta CI exact-SHA; conserva EN_PROGRESO, DEV02, V17 lock 2000002297, sin LISTO/A5/QA/main/PROD.
+
 ## 2026-11-20 — DEV06 C11-03.M03.03 test JWT HTTP MySQL 8.4
 - Suite GitHub-hosted TestServer JwtBearer y MySQL 8.4 efimero: firma, aislamiento A/B, grant revocado, evento denegado y rollback; exige TRX exact-SHA sin SKIPPED.
 - Prueba de fixture, NO adaptador runtime API/EF ni autoridad de persistir/despachar. VALIDANDO sigue abierto y A5 independiente pendiente. V17, Scope Lock STRICT, no QA/main/PROD.

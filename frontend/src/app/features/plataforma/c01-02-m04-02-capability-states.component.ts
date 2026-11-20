@@ -23,7 +23,7 @@ export function resolverEstadoCapacidad(x: {
   selector: 'app-c0102-capability-states', standalone: true,
   imports: [RouterLink], changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="estados" aria-labelledby="estados-title">
+    <section class="estados" aria-labelledby="estados-title">
       <a routerLink="/plataforma">Volver a plataforma</a>
       <h1 id="estados-title">Estado de capacidades y permisos</h1>
       <p role="note">Información de cliente. Cada solicitud exige autorización del servidor.</p>
@@ -41,7 +41,7 @@ export function resolverEstadoCapacidad(x: {
           </ul>
         }
       }
-    </main>`,
+    </section>`,
   styles: [`
     .estados { margin: auto; max-width: 1080px; padding: clamp(16px, 3vw, 32px); }
     ul { display: grid; gap: 8px; overflow-wrap: anywhere; }

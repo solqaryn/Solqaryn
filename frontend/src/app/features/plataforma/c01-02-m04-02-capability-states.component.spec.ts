@@ -41,6 +41,8 @@ describe('C01-02.M04.02 - estados Angular de capacidades', () => {
     const f = TestBed.createComponent(C0102CapabilityStatesComponent);
     f.detectChanges();
     const node: HTMLElement = f.nativeElement;
+    expect(node.querySelector('section.estados[aria-labelledby="estados-title"]')).not.toBeNull();
+    expect(node.querySelector('main.estados')).toBeNull();
     expect(node.querySelector('[data-testid="estado-denegado"]')).not.toBeNull();
     sesion.set(autorizado); f.detectChanges();
     expect(node.querySelector('[data-testid="estado-sin-tenant"]')).not.toBeNull();
