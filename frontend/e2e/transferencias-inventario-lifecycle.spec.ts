@@ -72,8 +72,7 @@ async function confirmarAlerta(page: import('@playwright/test').Page, titulo: st
 
 test.describe('Transferencias de inventario - lifecycle UI', () => {
   test.beforeEach(async ({ page }) => {
-    await iniciarSesionReal(page);
-
+    // Guard-visible permissions must be available before the real login redirect.
     await page.route('**/permisos/mis-permisos/empresa/*', route => route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -97,6 +96,8 @@ test.describe('Transferencias de inventario - lifecycle UI', () => {
         }
       })
     }));
+    // Real backend authentication is still mandatory; no synthetic JWT or local bypass.
+    await iniciarSesionReal(page);
   });
 
   test('lista, abre detalle y solicita un borrador', async ({ page }) => {

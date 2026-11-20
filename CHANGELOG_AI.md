@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV06 V22 C14-01.M04.03: reparacion causal de orden de fixtures Playwright
+- El job integral de GitHub Actions 135839157984 en SHA 8d914060 fallo tres escenarios de transferencias: formulario con mat-select desmontado y lista/detalle sin datos visibles; se mantiene FAIL historico y no se certifica A0-A4 por esos fallos.
+- Se reordenan las rutas interceptadas de autorizacion de UI y datos de negocio en dos suites para instalarlas antes del login JWT autentico; el backend ASP.NET Core y MySQL 8.4 efimero siguen firmando la sesion. No se simula JWT, ni se rebajan asserts o los controles de servidor.
+- Hipotesis de regresion: la inicializacion de guards/permiso ocurria antes del registro del mock y desmontaba la navegacion. Se requiere repetir GitHub-hosted Playwright/Chromium y controles Scope Lock, V5 y seguridad exact-SHA. El contrato global de branding C14 sigue VALIDANDO, A5 independiente pendiente, sin QA/main/PROD.
+
 ## 2026-11-20 — DEV05 V22 C11-03.M06.06 replay ambiguo, orden y fallo parcial MySQL 8.4
 - Nueva regresión R2 de integración Oracle EF/MySQL 8.4 efímero: timeout tras aceptación en destinatario simulado, replay con clave idéntica, orden de los eventos A, aislamiento de tenant B, ACK CAS stale y mensaje de error seguro. No cambia runtime; no acredita proveedor ni JWT/HTTP y no libera el lote.
 - Test `backend/tests/Solqaryn.Tests/C1103M0606ReplayOrderMysql84Tests.cs`, CI dirigida `v22-c11-03-m06-06-outbox-replay-mysql.yml` y evidencia `docs/v5/c11-03-m06-06-closure-replay-mysql-v22.md`. GitHub-hosted exact-SHA pendiente; VALIDANDO, A5 independiente y Scope Lock STRICT sin QA/main/PROD.

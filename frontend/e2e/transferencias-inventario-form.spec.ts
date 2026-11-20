@@ -21,8 +21,8 @@ async function iniciarSesionReal(page: Page): Promise<void> {
 
 test.describe('Transferencias de inventario - formulario', () => {
   test.beforeEach(async ({ page }) => {
-    await iniciarSesionReal(page);
-
+    // Install business/permission fixtures before real JWT login: Angular guards can
+    // load permissions during the redirect and tear down a form initialized too early.
     await page.route('**/permisos/mis-permisos/empresa/*', route => route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -119,6 +119,8 @@ test.describe('Transferencias de inventario - formulario', () => {
         }
       })
     }));
+    // Identity remains real: signed JWT from ASP.NET Core + ephemeral MySQL.
+    await iniciarSesionReal(page);
   });
 
   test('crea una transferencia seleccionando almacenes, variante y ubicaciones', async ({ page }) => {
