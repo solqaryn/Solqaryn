@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C03-01.M01.06 contrato UX_LOGIN_V1, bloqueo y rollback [Javier :20]
+- Se documentan L01-L10, denegacion server-side para 0/1/N empresas, preferencia por usuario, cambio A/B sin fuga, autoridad global separada y accesibilidad, **sin implementar runtime**.
+- Gate B01-B06, rollback seguro, A0-A4 documentales y A5 por otra Task: no se confunden contratos con JWT/HTTP/MySQL/Chromium probados.
+- Archivo `docs/v5/c03-01-m01-06-bloqueo-rollback-ux-login-v1.md`; solo dev y Scope Lock STRICT; sin QA/main/PROD.
+
 ## 2026-11-19 — V22 C15-02.M06.02 manifiesto reproducible de SHA/diff/tests [Javier :40]
 - Se registraron seis commits M05, artefactos y RUN/JOB exactos (4,6,6,2,5,3 pruebas dirigidas PASS), distinguiendo tests reales MySQL/JWT/Chromium de fixtures UI/DTO.
 - `docs/v5/c15-02-m06-02-reproducibility-manifest-v22.md` mantiene V5 FAIL original reparado, migraciones globales FAIL, release/modulos FAIL y CWV campo NO_MEDIDO; ningun check global equivale a PASS sin evidencia nueva.
