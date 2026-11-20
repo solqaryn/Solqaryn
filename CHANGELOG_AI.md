@@ -1,3 +1,8 @@
+## 2026-11-20 - DEV05 V22 C02-03.M03.03: denegar alias numerico de tenant en JWT/MySQL real
+- Reparacion P2 API: el tenant de ruta y el solicitado deben tener representacion decimal SQL canonica (sin ceros iniciales); 1..9 siguen siendo validos. Se evita ambiguedad entre la identidad de Empresa y futuros recibos de idempotencia y auditoria.
+- Integracion ampliada: TestServer JWT Bearer firmado, RBAC PlataformaScopeService y Oracle EF/MySQL 8.4 efimero; positivos 811/812/1 y cuatro variantes alias negadas. Los casos previos de JWT falso, revocacion, rol, tenant A/B y rollback se conservan.
+- Exigir GitHub-hosted exact-SHA SUCCESS en pruebas pertinentes; aun falta CAS/idempotencia durable y revocacion real. Mantener VALIDANDO, owner DEV05 y A5 independiente. Sin QA/main/PROD.
+
 ## 2026-11-20 - DEV04 V22 C02-03.M03.03: vincular evidencia lifecycle a operacion
 - Reparacion P2: el lector Application recibe el comando y devuelve VerifiedOperation; snapshot positivo de Suspend ya no sirve para Reactivate, Archive ni LogicalDelete.
 - xUnit adversarial para cruce de operacion, enum desconocido y positivo Reactivate no mutante; conserva JWT/RBAC, tenant A/B, fail-closed y owner historico.

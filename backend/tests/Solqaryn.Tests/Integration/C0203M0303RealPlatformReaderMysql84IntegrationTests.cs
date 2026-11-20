@@ -126,8 +126,12 @@ public sealed class C0203M0303RealPlatformReaderMysql84IntegrationTests
                     }).RequireAuthorization());
             })).StartAsync();
 
+    private static Task<HttpResponseMessage> ReadAsync(
+        HttpClient client, int tenant, string? jwt) =>
+        ReadAsync(client, tenant.ToString(System.Globalization.CultureInfo.InvariantCulture), jwt);
+
     private static async Task<HttpResponseMessage> ReadAsync(
-        HttpClient client, int tenant, string? jwt)
+        HttpClient client, string tenant, string? jwt)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get,
             "/__c0203_real/" + tenant);
@@ -188,7 +192,7 @@ public sealed class C0203M0303RealPlatformReaderMysql84IntegrationTests
             await ExecuteAsync("INSERT INTO Usuarios(Id,NombreUsuario,Activo,Bloqueado,Eliminado) VALUES(911,'platform.operator',1,0,0)");
             await ExecuteAsync("INSERT INTO Roles(Id,Nombre,Activo,Eliminado,EsAdministrador,EsSistema,Ambito,EmpresaId) VALUES(17,'PlatformAdmin',1,0,1,1,2,NULL)");
             await ExecuteAsync("INSERT INTO UsuarioRolesPlataforma(Id,UsuarioId,RolId,Activa) VALUES(31,911,17,1)");
-            await ExecuteAsync("INSERT INTO Empresas(Id,Activa) VALUES(811,1),(812,1)");
+            await ExecuteAsync("INSERT INTO Empresas(Id,Activa) VALUES(1,1),(811,1),(812,1)");
             await using (var permission = sql.CreateCommand())
             {
                 permission.CommandText = "INSERT INTO Permisos(Id,Modulo,Accion,Ambito,Activo,Eliminado) VALUES(51,@module,@action,2,1,0)";
@@ -217,6 +221,21 @@ public sealed class C0203M0303RealPlatformReaderMysql84IntegrationTests
             // A live platform grant is global, but the target tenant must exist.
             using (var positiveB = await ReadAsync(client, 812, jwt))
                 Assert.Equal(HttpStatusCode.OK, positiveB.StatusCode);
+            using (var positiveSingleDigit = await ReadAsync(client, 1, jwt))
+                Assert.Equal(HttpStatusCode.OK, positiveSingleDigit.StatusCode);
+
+            // SQL numeric aliases must not bypass tenant-scoped receipts/audit.
+            // ASP.NET int route constraints can accept leading-zero segments;
+            // the same tenant must have exactly one canonical decimal spelling.
+            foreach (var alias in new[] { "0811", "000811", "0812", "01" })
+            {
+                using var deniedAlias = await ReadAsync(client, alias, jwt);
+                Assert.True(deniedAlias.StatusCode is HttpStatusCode.Forbidden or HttpStatusCode.NotFound,
+                    $"Noncanonical tenant {alias} unexpectedly returned {deniedAlias.StatusCode}");
+                if (deniedAlias.StatusCode == HttpStatusCode.Forbidden)
+                    Assert.Equal("LIFECYCLE_ACCESS_DENIED",
+                        await deniedAlias.Content.ReadAsStringAsync());
+            }
 
             // New V22 adversarial boundary: a second active platform grant for
             // the same signed-JWT actor is ambiguous, even when both point to

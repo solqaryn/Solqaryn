@@ -42,7 +42,9 @@ public sealed class C0203VerifiedPlatformOperatorEvidenceReader(
             configuration.GetValue<int>("TenantLifecycle:ReadOnlyPolicyRevision") <= 0 ||
             requestedCommand != Rules.Command.Suspend ||
             !int.TryParse(requestedTenantId, NumberStyles.None,
-                CultureInfo.InvariantCulture, out var tenantId) || tenantId <= 0)
+                CultureInfo.InvariantCulture, out var tenantId) || tenantId <= 0 ||
+            !string.Equals(requestedTenantId,
+                tenantId.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal))
             return null;
 
         var http = contexts.HttpContext;
@@ -53,7 +55,9 @@ public sealed class C0203VerifiedPlatformOperatorEvidenceReader(
             !int.TryParse(Convert.ToString(http.Request.RouteValues["tenantId"],
                     CultureInfo.InvariantCulture), NumberStyles.None,
                 CultureInfo.InvariantCulture, out var routeTenant) ||
-            routeTenant != tenantId)
+            routeTenant != tenantId ||
+            !string.Equals(Convert.ToString(http.Request.RouteValues["tenantId"],
+                CultureInfo.InvariantCulture), requestedTenantId, StringComparison.Ordinal))
             return null;
 
         try
