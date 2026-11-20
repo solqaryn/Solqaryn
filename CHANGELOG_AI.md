@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV06 C11-03.M05.04 aceptación positiva MySQL 8.4
+- Se agrega un caso de aceptación xUnit sobre MensajeOutboxService y repositorio Oracle EF con MySQL 8.4 físico efímero en GitHub-hosted: primer registro, replay idempotente, separación A/B, conflicto y rechazo tenant.
+- Workflow dirigido SHA exacto + Scope Lock + .NET10 Release + TRX fail-closed. No HTTP/JWT/PSP/worker real en este alcance test-only, ni certificación completa M05; LIMITACION_FASE, CI y A5 independientes.
+- Impacto R2 en pruebas/CI/documento, sin cambio runtime, esquema productivo, secretos ni QA/main/PROD; rollback por revert fast-forward de commit aditivo.
+
 ## 2026-11-20 — DEV05 C11-03.M05.02 contrato real HTTP MVC JWT outbox
 - Nueve pruebas dirigidas ASP.NET10 MVC TestServer contra ruta existente: JWT firmado/falsificado, 202 DTO, 403 tenant/permiso y 400/409 RFC7807 con redaccion de secretos.
 - Workflow xUnit Release TRX fail-closed por SHA, Scope Lock y V5; CI inicial pendiente, nunca PASS inventado. LIMITACION: permisos y servicios dobles, EF InMemory; no certifica MySQL 8.4, PSP, RBAC SQL ni transacciones comerciales.
