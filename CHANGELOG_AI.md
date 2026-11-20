@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C15-02.M05.06 regresion, rendimiento y accesibilidad en Chromium [Javier :50]
+- Nueva suite Playwright de tres pruebas y cuatro tamaños (320, 375, 768, 1280), accesibilidad de landmarks/Tab/Enter, carga DCL/FCP de laboratorio, integridad de cinco referencias NO_VERIFICADO y denegacion UI 403 sin fuga de detalles.
+- Nuevo workflow aislado dev con Angular tipado/build y Chromium GitHub-hosted exact-SHA, sin reintentos, con evidencias de fallo; concurrency por SHA y cancel-in-progress=false.
+- Solo pruebas UI sin cambios runtime, JWT real, HTTP backend, MySQL ni proveedores; mediciones Web Vitals de campo y WCAG integral NO_MEDIDO/NO_CERTIFICADO. A0-A4/A5 y Scope Lock/V5 sujetos a resultados CI; no QA/main/PROD.
+
 ## 2026-11-19 — V22 C15-02.M05.03 integración real Oracle EF y MySQL 8.4 aislado [Javier :40]
 - Se agregan seis pruebas xUnit Category=Integration: Oracle EF Core contra MySQL 8.4 efímero, persistencia y aislamiento tenant A/B, IDOR negativo, tenant hostil parametrizado, rollback, cancelación y tenant ausente.
 - Workflow GitHub-hosted con MySQL 8.4 y TRX fail-closed: seis PASS exigidos, cero fallos y cero omitidos; conexión restringida a loopback y base descartable; CI exact-SHA antes de LISTO.
