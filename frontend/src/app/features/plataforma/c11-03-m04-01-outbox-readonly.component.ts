@@ -1,4 +1,4 @@
-import { ChangeDetectionStrategy, Component, computed, inject } from '@angular/core';
+import { ChangeDetectionStrategy, Component, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
 
@@ -23,9 +23,25 @@ const ETAPAS = Object.freeze([
         <a routerLink="/plataforma" aria-label="Volver a plataforma">Volver a plataforma</a>
       </header>
       @if (autorizado()) {
-        <section class="panel" data-testid="c1103-outbox-private" aria-labelledby="c1103-checkpoints">
+        <section class="panel" data-testid="c1103-outbox-private" aria-labelledby="c1103-checkpoints" [attr.aria-busy]="estadoVista() === 'cargando' ? 'true' : 'false'">
           <h2 id="c1103-checkpoints">Etapas del procesamiento</h2>
-          <p role="status">SIN_FUENTE_CONECTADA: los estados siguientes son referencias, no eventos observados.</p>
+          @switch (estadoVista()) {
+            @case ('cargando') {
+              <p role="status" aria-live="polite" aria-atomic="true" data-testid="c1103-state-loading">Preparando vista local; no se consulta un relay real.</p>
+            }
+            @case ('vacio') {
+              <p role="status" aria-live="polite" aria-atomic="true" data-testid="c1103-state-empty">SIN_FUENTE_CONECTADA: los estados siguientes son referencias, no eventos observados.</p>
+            }
+            @case ('error') {
+              <p role="alert" aria-atomic="true" data-testid="c1103-state-error">No fue posible preparar la vista informativa. Ningún evento fue transmitido.</p>
+            }
+            @case ('listo') {
+              <p role="status" aria-live="polite" aria-atomic="true" data-testid="c1103-state-ready">Vista informativa preparada; SIN_FUENTE_CONECTADA, no confirma entregas de eventos.</p>
+            }
+            @default {
+              <p role="alert" data-testid="c1103-state-invalid">Estado de vista no reconocido. No se muestran datos privados.</p>
+            }
+          }
           <ol>
             @for (paso of etapas; track paso.id) {
               <li [attr.data-testid]="'c1103-outbox-step-' + paso.id">
@@ -62,6 +78,7 @@ const ETAPAS = Object.freeze([
 })
 export class C1103OutboxReadonlyComponent {
   private readonly plataforma = inject(PlataformaSesionService);
+  readonly estadoVista = input<string>('vacio');
   readonly etapas = ETAPAS;
   readonly autorizado = computed(() => {
     const sesion = this.plataforma.sesion();

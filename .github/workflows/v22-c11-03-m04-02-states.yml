@@ -1,0 +1,83 @@
+name: V22 C11-03.M04.02 - states with Vitest and Chromium
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v22-c11-03-m04-02-states.yml'
+      - 'frontend/src/app/features/plataforma/c11-03-m04-01-outbox-readonly.component.ts'
+      - 'frontend/src/app/features/plataforma/c11-03-m04-02-states.spec.ts'
+      - 'frontend/e2e/c11-03-m04-01-outbox-private.spec.ts'
+      - 'frontend/e2e/c11-03-m04-04-navigation.spec.ts'
+      - 'frontend/e2e/c11-03-m04-05-accessibility.spec.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c1103-m0402-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  states:
+    name: C11-03.M04.02 - Angular state Vitest Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - name: Checkout exact SHA
+        uses: actions/checkout@v4
+      - name: Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm 11
+        run: npm install --global npm@11.19.0
+      - name: Verify Scope Lock before npm ci
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          cd ..
+          node scripts/verify-project-scope.mjs
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Six state and four guard Vitest tests
+        run: |
+          npm test -- --no-watch --no-progress --include=src/app/features/plataforma/c11-03-m04-02-states.spec.ts
+          npm test -- --no-watch --no-progress --include=src/app/features/plataforma/c11-03-m04-01-outbox-readonly.component.spec.ts
+      - name: Angular lint and production build
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Install Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Angular local loopback
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c1103-m0402-angular.log 2>&1 &
+          for attempt in $(seq 1 80); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then
+              echo 'ANGULAR_LOCAL_READY'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat c1103-m0402-angular.log >&2
+          exit 1
+      - name: Real Chromium cross-scope regressions
+        run: npx playwright test e2e/c11-03-m04-01-outbox-private.spec.ts e2e/c11-03-m04-04-navigation.spec.ts e2e/c11-03-m04-05-accessibility.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Error artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v22-c1103-m0402-states
+          path: |
+            frontend/c1103-m0402-angular.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 7

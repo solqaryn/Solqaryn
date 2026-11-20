@@ -1,3 +1,7 @@
+## 2026-11-20 - DEV01 C11-03.M04.02 estados seguros outbox
+- Estados locales carga/vacío/error/listo y denegación privados bajo Angular 22.2.1; seis pruebas Vitest adversariales nuevas más cuatro de guard y ocho Chromium regresivos desde Github-hosted, sin datos reales.
+- NO se certifica JWT HTTP, MySQL ni relay productivo. CI Scope Lock/V5 exact SHA y A5 independiente exigibles antes de LIBERACION; rollback normal sin QA/main/PROD.
+
 ## 2026-11-20 - DEV01 C11-03.M04.04 navegacion y doble accion test-only
 - Incremento R2: tres pruebas Playwright/Chromium negativas y positivas con guard de ruta, navegacion repetida, ausencia de formulario/boton y cero llamadas mutadoras. Cuatro Vitest de guard y permisos existentes se ejecutan ademas en CI GitHub-hosted exact-SHA.
 - JWT, HTTP, MySQL, idempotencia de backend y proveedores reales no aplican a este cambio solo de pruebas y siguen NO CERTIFICADOS para la fase M04; antes de LISTO exigir A0-A4/Scope Lock/V5 causales y A5 independiente Javier. Sin QA/main/PROD.
