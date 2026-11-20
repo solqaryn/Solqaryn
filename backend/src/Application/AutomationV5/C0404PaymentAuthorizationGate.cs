@@ -61,7 +61,13 @@ public sealed class C0404PaymentAuthorizationGate
             request.RequestsBypassOfLedger)
             return Deny();
         TrustedSnapshot? trusted;
-        try { trusted = await _reader.ReadCurrentAsync(cancellationToken); }
+        try
+        {
+            trusted = await _reader.ReadCurrentAsync(cancellationToken);
+            // A reader may ignore cancellation and return an old trusted snapshot.
+            // Never release even a read-only decision after the caller cancels.
+            cancellationToken.ThrowIfCancellationRequested();
+        }
         catch (OperationCanceledException) { throw; }
         catch (Exception ex) when (ex is not OutOfMemoryException) { return Deny(); }
         if (trusted is null || trusted.ActorId <= 0 || trusted.TenantId != request.TenantId ||

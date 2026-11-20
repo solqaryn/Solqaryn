@@ -9,11 +9,14 @@ public sealed class C0404M0303PaymentAuthorizationGateTests
         public Gate.TrustedSnapshot? Snapshot { get; set; }
         public Exception? Error { get; set; }
         public int Calls { get; private set; }
+        public Action? AfterRead { get; set; }
         public ValueTask<Gate.TrustedSnapshot?> ReadCurrentAsync(CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested(); Calls++;
             if (Error is not null) throw Error;
-            return ValueTask.FromResult(Snapshot);
+            var snapshot = Snapshot;
+            AfterRead?.Invoke();
+            return ValueTask.FromResult(snapshot);
         }
     }
     private static Gate.Request Create() => new(100, 92, Gate.Operation.CreateLink);
@@ -128,4 +131,15 @@ public sealed class C0404M0303PaymentAuthorizationGateTests
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () => await new Gate(r).InspectAsync(Create(),cts.Token));
         Assert.Equal(0,r.Calls);
     }
+    [Fact] public async Task ReaderIgnoringMidflightCancellationCannotReturnTrustedPlan()
+    {
+        using var cts = new CancellationTokenSource();
+        var reader = new Reader { Snapshot = Trusted(), AfterRead = () => cts.Cancel() };
+        // Reader ignores the token and returns a formerly positive snapshot.
+        // The gate itself MUST reject after the awaited read.
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            async () => await new Gate(reader).InspectAsync(Create(), cts.Token));
+        Assert.Equal(1, reader.Calls);
+    }
+
 }

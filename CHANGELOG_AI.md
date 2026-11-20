@@ -1,3 +1,7 @@
+## 2026-11-19 — DEV04 C04-04.M03.03 cancelacion asíncrona fail-closed
+- Se corrige la ventana tras ReadCurrentAsync: incluso si un reader ignora cancelación y devuelve snapshot positivo, el gate impide expedir un plan favorable tras cancelarse la petición.
+- xUnit adversarial fuerza cancelación entre lectura y decisión; tests JWT/HTTP/MySQL 8.4 de integración y adapter de autoridad runtime continúan pendientes, VALIDANDO no es LISTO ni A5.
+
 ## 2026-11-19 — C15-01.M06.06 V22 cierre y mapa DAG [Javier :20]
 - Se verificaron en PLAN 2340 IDs sin duplicados, las 11 predecesoras C15-01 con LISTO+A5 y C00-03.M06.06 con A5. Documento R0 de acción atómica D2197 y límites acumulativos de E; no declara 2340 requisitos implementados, P0/P1 global=0, QA/main/PROD ni R3.
 - Recuperación V19 de lock huérfano 2000002197 con readback y CAS, luego CLAIM V17 exclusivo de DEV03; no se alteraron fórmulas DAG/COLA ni código runtime. CI del SHA causal y A5 independiente requeridos antes de LISTO.
