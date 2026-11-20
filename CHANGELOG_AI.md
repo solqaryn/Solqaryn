@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV01 C06-04.M03.05 InnoDB real, cola aislada
+- Se incorpora reserva atomica tenant/key, rechazo de colisiones, leases de escritor y reintentos con dead-letter persistente, sin activacion de DI/HTTP ni proveedores externos.
+- Regresion dirigida en GitHub-hosted con MySQL 8.4 efimero, tenant A/B, duplicados, lease obsoleto, ACK y DEAD. Sigue faltando autenticacion CUSTOMER JWT/RBAC y worker externo para A0-A4 y A5; VALIDANDO no equivale a LISTO.
+
 ## 2026-11-20 — DEV06 C11-03.M03.03 CI dirigida JWT HTTP y MySQL efimero
 - Se incorpora MySQL 8.4 aislado al workflow C11-03.M03.03 con filtro TRX exacto 2/2 de JWT firmado, HTTP, SQL, denegacion tenant A/B, revocacion y rollback; los tests ya existentes se ejecutan realmente en GitHub-hosted, sin convertir fixture en evidencia de UsuarioEmpresa/RolPermiso runtime.
 - A0-A4 de API relacional real y A5 independiente siguen pendientes; mantener VALIDANDO, owner historico DEV06, Scope Lock STRICT y no tocar QA/main/PROD.
