@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C15-02.M05.01 reglas unitarias de fuente local [Javier :20]
+- Se añaden cuatro reglas adversariales y de frontera para la fuente inyectable de la pantalla privada de arquitectura (16/17 entradas, IDs duplicados, errores saneados y reintento), sin alterar runtime.
+- Workflow dirigido Angular 22.2.1 en GitHub-hosted, CI exact-SHA pendiente hasta verificación; R1 test-only y A5 por otra Task Javier.
+- PLAN D2222 es salida atómica; E2222 es meta M05 acumulativa. No se certifica JWT/MySQL/proveedores/infraestructura real, QA/main/PROD ni Core Web Vitals.
+
 ## 2026-11-19 — V22 A0.56 reparación P2 de landmark en auditoría operativa privada [Javier :10]
 - R2 Angular: raíz `main.audit-view` anidada bajo la shell se reemplaza por `section` accesible y rotulada, sin cambiar JWT/RBAC, datos, rutas ni autoridad de backend.
 - Se agregan dos pruebas adversariales GitHub-hosted Playwright/Chromium para JWT firmado .NET 10/MySQL 8.4 efímero, empresa B 403, Tab/Enter GET 200, único landmark y responsive 320/1280; 51 casos previstos, CI exact-SHA todavía NO PASS.
