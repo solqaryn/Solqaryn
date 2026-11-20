@@ -1,3 +1,7 @@
+## 2026-11-20 — C02-01.M05.04: integración positiva tenant/JWT MySQL 8.4 (DEV03)
+- Añadida prueba dirigida de JWT firmado, contrato HTTP real con ASP.NET TestServer y Oracle EF/MySQL 8.4 efímero para membresías A/B, revocación B, contexto único A y rechazo de claims falsos.
+- La preferencia de última empresa es una fixture de contrato: no acredita preferencia SQL durable ni reemisión de JWT y navegación Angular; A0-A4 final y A5 independiente siguen pendientes según CI, sin QA/main/PROD.
+
 ## 2026-11-20 - DEV06 C02-01.M05.03 Oracle EF MySQL 8.4 tenant A/B real
 - Integracion test-only del UsuarioScopeService real sobre AppDbContext Oracle EF, servicio efimero MySQL 8.4 y TRX obligatorio: pertenencias A/B, revocacion persistida, rol cruzado, usuario bloqueado, id invalido y anonimo.
 - No cambia runtime, JWT ni endpoints; identidad simulada solo como boundary y SQL real en CI, sin certificar HTTP/JWT firmado/host ni toda M05. CI dirigida y Scope Lock exact-SHA requeridos antes de LISTO; A5 Task Javier distinta. V17 unico claim, rollback git revert; QA/main/PROD no autorizados.
