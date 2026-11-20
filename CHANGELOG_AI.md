@@ -1,3 +1,7 @@
+## 2026-11-20 - DEV01 C11-03.M04.04 navegacion y doble accion test-only
+- Incremento R2: tres pruebas Playwright/Chromium negativas y positivas con guard de ruta, navegacion repetida, ausencia de formulario/boton y cero llamadas mutadoras. Cuatro Vitest de guard y permisos existentes se ejecutan ademas en CI GitHub-hosted exact-SHA.
+- JWT, HTTP, MySQL, idempotencia de backend y proveedores reales no aplican a este cambio solo de pruebas y siguen NO CERTIFICADOS para la fase M04; antes de LISTO exigir A0-A4/Scope Lock/V5 causales y A5 independiente Javier. Sin QA/main/PROD.
+
 ## 2026-11-20 — DEV02 C15-04.M05.04 A0.68 runtime JWT tenant A/B ERP
 - Diez nuevos casos reales Chromium: cinco rutas ERP importadas a 320/1280, JWT firmado, backend .NET 10 y MySQL 8.4; tenant B HTTP 200, intento de tenant A 403/404 y redireccion segura tras suplantacion local.
 - Evidencia parcial R2 sin afirmar WCAG integral, permisos por modulo en las 160 pantallas ni RUM; conservar EN_PROGRESO, candado V17, CI exact-SHA, A5 independiente y veto QA/main/PROD.
