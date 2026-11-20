@@ -1,4 +1,4 @@
-import { Component, ChangeDetectionStrategy, computed, inject } from '@angular/core';
+import { Component, ChangeDetectionStrategy, computed, inject, input } from '@angular/core';
 import { RouterLink } from '@angular/router';
 import { PlataformaSesionService } from '../../core/auth/plataforma-sesion.service';
 
@@ -23,9 +23,25 @@ const PASOS = Object.freeze([
         <a routerLink="/plataforma" aria-label="Volver a plataforma">Volver a plataforma</a>
       </header>
       @if (autorizado()) {
-        <section class="panel" data-testid="c0404-payment-private" aria-labelledby="c0404-steps">
+        <section class="panel" data-testid="c0404-payment-private" aria-labelledby="c0404-steps" [attr.aria-busy]="estadoVista() === 'cargando' ? 'true' : 'false'">
           <h2 id="c0404-steps">Etapas previstas</h2>
-          <p role="status">SIN_CONEXION: no hay cobros ni webhooks reales.</p>
+          @switch (estadoVista()) {
+            @case ('cargando') {
+              <p role="status" aria-live="polite" aria-atomic="true" data-testid="c0404-state-loading">Preparando vista informativa local. No se consulta ningún proveedor de pagos.</p>
+            }
+            @case ('vacio') {
+              <p role="status" aria-live="polite" aria-atomic="true" data-testid="c0404-state-empty">SIN_CONEXION: no hay cobros ni webhooks reales.</p>
+            }
+            @case ('error') {
+              <p role="alert" aria-atomic="true" data-testid="c0404-state-error">No se pudo preparar la vista informativa. Ningún pago se ha procesado.</p>
+            }
+            @case ('listo') {
+              <p role="status" aria-live="polite" aria-atomic="true" data-testid="c0404-state-ready">Vista informativa preparada correctamente; SIN_CONEXION al proveedor. Esto no confirma pagos ni cobros.</p>
+            }
+            @default {
+              <p role="alert" data-testid="c0404-state-invalid">Vista no disponible. Estado no reconocido, sin operaciones financieras.</p>
+            }
+          }
           <ol>
             @for (paso of pasos; track paso.id) {
               <li [attr.data-testid]="'c0404-step-' + paso.id">
@@ -59,6 +75,8 @@ const PASOS = Object.freeze([
 export class C0404PaymentLinkPreviewComponent {
   private readonly plataforma = inject(PlataformaSesionService);
   readonly pasos = PASOS;
+  /** C04-04.M04.02: estados visuales informativos; no es estado de un pago real. */
+  readonly estadoVista = input<'cargando' | 'vacio' | 'error' | 'listo'>('vacio');
   readonly autorizado = computed(() => {
     const sesion = this.plataforma.sesion();
     return sesion?.ambito === 'Plataforma' && sesion.esAdministrador === true;
