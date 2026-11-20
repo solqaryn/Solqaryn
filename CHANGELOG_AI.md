@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV03 C04-04.M04.01 referencia privada de enlaces de cobro
+- Superficie Angular standalone con lazy route plataformaGuard, fases SIN_CONEXION, sin datos, enlaces activos, API, PSP, secretos ni efectos monetarios.
+- Cuatro pruebas Vitest y dos Playwright Chromium de guard, 403, revocación, ausencia de escrituras, teclado y responsive; CI exact-SHA Scope Lock/V5, lint/build y navegador requerida. La sesión UI sintética no acredita JWT real, A5 independiente.
+- R2 DEV-only, rollback FF/CAS git revert; sin QA/main/PROD.
+
 ## 2026-11-20 — DEV04 C11-03.M04.01 reparación de cwd en Scope Lock dirigido
 - Corrección causal de GitHub-hosted 44774075889: el job corría dentro de frontend, causando falsos archivos ausentes al invocar el verificador de scope. Se usa cd .. antes de verificar, sin cambiar script, candado ni requisitos; nueva CI exact-SHA obligatoria antes de LISTO.
 - Se conservan intactos los tests Angular/Chromium, el código de ruta y la bitácora; PASS anterior de Scope Lock canónico no sustituye el job dirigido fallido. Sin QA/main/PROD.
