@@ -16,3 +16,7 @@ Fuente: PLAN_MAESTRO!D706. Entrega atómica de **aplicar branding, configuració
 - A5: revisión independiente por otra Task Javier distinta de DEV06 autora, después de LISTO A0–A4; sin autoprobación.
 
 Rollback con git revert normal del commit del cambio en dev, sin force-push ni manipular registros históricos. No se tocan QA, main, PROD ni credenciales. CHANGELOG_AI.md intacto para evitar corrupción de su historia extensa por truncamiento; el alcance y limitaciones se registran en este documento y BITACORA.
+
+## Reparación CI dirigida del test Signal/Input (V22)
+
+En SHA `a8bc9085c219a76b46a33dea68bf342fcc18e023`, GitHub Actions job `136449793417` terminó FAILURE con 3/6 Vitest nuevos (los 4 Vitest de ruta y 6 de estados previos sí pasaron). Hipótesis causal: el fixture de TestBed bajo Zone.js no propagó los inputs `setInput` ni la señal revocada al DOM antes de los asserts usando únicamente `whenStable`; se mantiene la implementación Angular y se solicita una detección de cambios explícita del fixture después de cada input/sesión mutados, seguida de `await fixture.whenStable()`. Esto no fuerza foco, guard, permisos ni estado de cobro, y deja los tres FAIL históricos intactos. La nueva CI exact SHA debe comprobar 6/6 nuevos más 4+6 previos, lint, build y Chromium sin SKIPPED/cancelled/FAIL. No se proclama LISTO ni A5 hasta evidencia causal y CAS.

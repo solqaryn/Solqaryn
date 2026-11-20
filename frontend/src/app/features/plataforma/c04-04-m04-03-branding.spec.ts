@@ -32,6 +32,7 @@ describe('C04-04.M04.03 - branding local permitido sin proveedor de pagos', () =
   it('permite el unico preset alternativo de contraste por Signal Input', async () => {
     const { fixture, root } = await montar();
     fixture.componentRef.setInput('temaSolicitado', 'contraste');
+    fixture.detectChanges();
     await fixture.whenStable();
     expect(root.querySelector('main')?.getAttribute('data-tema')).toBe('contraste');
     expect(root.querySelector('[data-testid="c0404-branding-preset"]')?.textContent).toContain('alto contraste');
@@ -41,8 +42,10 @@ describe('C04-04.M04.03 - branding local permitido sin proveedor de pagos', () =
   it('rechaza opciones desconocidas y vuelve al preset base de forma determinista', async () => {
     const { fixture, root } = await montar();
     fixture.componentRef.setInput('temaSolicitado', 'contraste');
+    fixture.detectChanges();
     await fixture.whenStable();
     fixture.componentRef.setInput('temaSolicitado', 'empresa-administrador');
+    fixture.detectChanges();
     await fixture.whenStable();
     expect(root.querySelector('main')?.getAttribute('data-tema')).toBe('base');
     expect(root.textContent).not.toContain('empresa-administrador');
@@ -52,6 +55,7 @@ describe('C04-04.M04.03 - branding local permitido sin proveedor de pagos', () =
     const { fixture, root } = await montar();
     const payload = '<img src=x onerror=alert(1)>';
     fixture.componentRef.setInput('temaSolicitado', payload);
+    fixture.detectChanges();
     await fixture.whenStable();
     expect(root.querySelector('main')?.getAttribute('data-tema')).toBe('base');
     expect(root.querySelector('img')).toBeNull();
@@ -62,9 +66,11 @@ describe('C04-04.M04.03 - branding local permitido sin proveedor de pagos', () =
   it('no muestra branding privado cuando se revoca la sesion', async () => {
     const { fixture, sesion, root } = await montar();
     fixture.componentRef.setInput('temaSolicitado', 'contraste');
+    fixture.detectChanges();
     await fixture.whenStable();
     expect(root.querySelector('[data-testid="c0404-branding-preset"]')).not.toBeNull();
     sesion.set(null);
+    fixture.detectChanges();
     await fixture.whenStable();
     expect(root.querySelector('[data-testid="c0404-branding-preset"]')).toBeNull();
     expect(root.querySelector('[data-testid="c0404-payment-private"]')).toBeNull();
@@ -76,6 +82,7 @@ describe('C04-04.M04.03 - branding local permitido sin proveedor de pagos', () =
     const oversized = 'x'.repeat(4096);
     fixture.componentRef.setInput('temaSolicitado', oversized);
     fixture.componentRef.setInput('estadoVista', 'error');
+    fixture.detectChanges();
     await fixture.whenStable();
     expect(root.querySelector('main')?.getAttribute('data-tema')).toBe('base');
     expect(root.textContent).not.toContain(oversized);
