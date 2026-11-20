@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV04 C11-03.M03.04 adaptador aislado MySQL 8.4, tenant y rollback
+- Se agrega adaptador EF de evidencia outbox con lectura tenant-bound y proyección sin payload ni PII, sin DI/API/dispatch, y regresión xUnit real sobre MySQL 8.4 efímero: A/B, índice UNIQUE físico, cancelación y rollback.
+- GitHub-hosted exige TRX 1/1 real y Scope Lock/V5/seguridad exact SHA. A0–A4 solo tras CI, A5 por Task distinta; no hay migraciones productivas, ACK, proveedor, QA/main/PROD.
+
 ## 2026-11-20 - DEV03 C02-01.M04.06 densidad y espera segura de login
 - Entrega test-only en dev: Chromium real Angular 320/375/768/1280, progreso accesible durante GET retenido, proteccion ante doble submit, 503 opaco, hint tenant anonimo denegado.
 - Test de error simula HTTP exclusivamente para estados UI; no certifica JWT/RBAC/HTTP backend/MySQL, accesos reales ni Web Vitals de produccion; exact-SHA CI y A5 independiente aun obligatorios.
