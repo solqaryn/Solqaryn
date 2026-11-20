@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV05 V22 C11-03.M06.06 replay ambiguo, orden y fallo parcial MySQL 8.4
+- Nueva regresión R2 de integración Oracle EF/MySQL 8.4 efímero: timeout tras aceptación en destinatario simulado, replay con clave idéntica, orden de los eventos A, aislamiento de tenant B, ACK CAS stale y mensaje de error seguro. No cambia runtime; no acredita proveedor ni JWT/HTTP y no libera el lote.
+- Test `backend/tests/Solqaryn.Tests/C1103M0606ReplayOrderMysql84Tests.cs`, CI dirigida `v22-c11-03-m06-06-outbox-replay-mysql.yml` y evidencia `docs/v5/c11-03-m06-06-closure-replay-mysql-v22.md`. GitHub-hosted exact-SHA pendiente; VALIDANDO, A5 independiente y Scope Lock STRICT sin QA/main/PROD.
+
 ## 2026-11-20 — DEV04 V22 C02-01.M05.04 membresía positiva SQL tras revocación
 - Reparación incremental R2 bajo V17 y PROJECT_SCOPE_LOCK STRICT: el test firmado JWT/HTTP/Oracle EF/MySQL 8.4 ahora alimenta la decisión positiva de empresa única con membresía relacional reconsultada tras revocar B, no con una lista fija.
 - Positivos/negativos: exactamente empresa A persistida, empresa B revocada ausente, política `ONE_TENANT_REISSUE_REQUIRED`, rechazo HTTP 403 previo; CI GitHub-hosted exact-SHA pendiente de verificar. No hay edición de runtime, migraciones, preferencia SQL personal ni navegación Angular certificada; VALIDANDO/A5 independiente siguen pendientes.
