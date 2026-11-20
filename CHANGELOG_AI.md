@@ -1,3 +1,7 @@
+## 2026-11-19 — V22 A0.57 accesibilidad y JWT real en experiencia visual [Javier :10]
+- Reparación concreta de `/plataforma/experiencia-visual-v5`: se sustituye el segundo landmark `main` de la vista por una `section` rotulada; se conserva la shell Angular, señales, presets, autorización y datos sin escrituras. Vitest adversarial exige no reintroducir `main` anidado.
+- Dos regresiones Playwright nuevas, con API .NET 10, JWT firmado, tenant B 403, MySQL 8.4 efímero y Chromium GitHub-hosted: 320/1280, Tab/Space/Enter, único main, tema, densidad, cero mutaciones. 53 casos **esperados**, CI nuevo SHA pendiente; 51/51 anteriores PASS real, tres fallos globales de transferencias siguen FAIL. `C15-04.M05.04` continúa EN_PROGRESO/DEV02/lock V17; sin LISTO/A5 ni QA/main/PROD, alcance global WCAG NO_MEDIDO.
+
 ## 2026-11-19 — V22 C03-01.M02.06 contrato de salida documental UX_LOGIN_INTELIGENTE_V1 [Javier :00]
 - Cierre de dependencias existentes M01/M02 y referencias C01-01/C02-01/C03-02 sin cambiar DAG, owners ni gates; contrato 0/1/N con 12 oráculos de revocación, JWT/RBAC, TOCTOU, replay, MFA y rollback definidos, no ejecutados en runtime.
 - Documento `docs/v5/c03-01-m02-06-dependencias-contrato-salida-ux-login-v1.md`; A0–A4 por diff documental, CI Scope Lock/V5 exact-SHA y readback, A5 independiente posterior. No se certifica login vivo, MySQL/HTTP/Chromium, QA/main/PROD, ni se altera seguridad.

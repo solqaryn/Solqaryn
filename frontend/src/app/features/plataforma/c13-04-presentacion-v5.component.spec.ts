@@ -33,6 +33,13 @@ describe('C13-04.M04.03 visual allowlist', () => {
     expect(m).toHaveLength(1);
     expect(m[0].canActivate).toEqual([plataformaGuard]);
   });
+  it('A0.57: referencia visual como región rotulada no anida main en shell', async () => {
+    const { root } = await montar();
+    expect(root.querySelector('main.visual-shell')).toBeNull();
+    expect(root.querySelector('section.visual-shell[aria-labelledby="visual-title"]')).not.toBeNull();
+    expect(root.querySelector('h1#visual-title')?.textContent).toContain('Configuración visual permitida');
+    expect(root.textContent).toContain('SIN_VERIFICAR');
+  });
   it('presets permitidos cambian estado local sin formularios',async()=>{
     const {fixture,root}=await montar();
     expect(root.querySelectorAll('.visual-actions button')).toHaveLength(4);

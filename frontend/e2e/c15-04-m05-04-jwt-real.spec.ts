@@ -1584,4 +1584,77 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     }
   });
 
+
+  // A0.57: another private route with the same nested-main accessibility regression.
+  test('A0.57 - experiencia visual JWT real: región única, Tab/Space y responsive', async ({ page }) => {
+    await ingresar(page, 'c1504_platform_only');
+    const mutaciones: string[] = [];
+    page.on('request', solicitud => {
+      if (/^(POST|PUT|PATCH|DELETE)$/.test(solicitud.method()) &&
+          solicitud.url().includes('localhost:5005')) {
+        mutaciones.push(solicitud.method() + ' ' + solicitud.url());
+      }
+    });
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      const sesion = page.waitForResponse(r =>
+        r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+      const documento = await page.goto('/plataforma/experiencia-visual-v5');
+      expect(documento?.status()).toBe(200);
+      expect((await sesion).status()).toBe(200);
+      await expect(page.getByRole('main')).toHaveCount(1);
+      const region = page.locator('section.visual-shell[aria-labelledby="visual-title"]');
+      await expect(region).toHaveCount(1);
+      await expect(page.getByRole('heading', { level: 1, name: 'Configuración visual permitida' })).toHaveCount(1);
+      await expect(page.getByTestId('c1304-m0402-panel')).toContainText('SIN_VERIFICAR');
+      const contraste = page.getByTestId('c1304-contrast');
+      let foco = false;
+      for (let intento = 0; intento < 120; intento++) {
+        await page.keyboard.press('Tab');
+        foco = await contraste.evaluate(elemento => elemento === document.activeElement);
+        if (foco) break;
+      }
+      expect(foco, 'Tab real llega a contraste sin focus() programático').toBe(true);
+      await page.keyboard.press('Space');
+      await expect(contraste).toHaveAttribute('aria-pressed', 'true');
+      await expect(region).toHaveClass(/visual-contrast/);
+      const compacta = page.getByTestId('c1304-compact');
+      let focoCompacta = false;
+      for (let intento = 0; intento < 24; intento++) {
+        await page.keyboard.press('Tab');
+        focoCompacta = await compacta.evaluate(elemento => elemento === document.activeElement);
+        if (focoCompacta) break;
+      }
+      expect(focoCompacta, 'Tab alcanza selector de densidad').toBe(true);
+      await page.keyboard.press('Enter');
+      await expect(compacta).toHaveAttribute('aria-pressed', 'true');
+      await expect(region).toHaveClass(/visual-compact/);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(width + 1);
+    }
+    expect(mutaciones, 'La UI visual solo cambia estado local, sin operaciones backend').toEqual([]);
+  });
+
+  test('A0.57 - empresa B con JWT real recibe 403 y no ve referencia visual privada', async ({ page, request }) => {
+    const token = await ingresar(page, 'c1504_admin_b');
+    const backend = await request.get(api + '/plataforma/sesion', {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    expect(backend.status()).toBe(403);
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      const sesion = page.waitForResponse(r =>
+        r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+      await page.goto('/plataforma/experiencia-visual-v5');
+      expect((await sesion).status()).toBe(403);
+      await expect(page).toHaveURL(url =>
+        url.pathname === '/login' && url.searchParams.get('plataforma') === 'denegado');
+      await expect(page.locator('section.visual-shell')).toHaveCount(0);
+      await expect(page.getByTestId('c1304-contrast')).toHaveCount(0);
+      await expect(page.getByRole('heading', { name: 'Configuración visual permitida' })).toHaveCount(0);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(width + 1);
+    }
+  });
+
 });
