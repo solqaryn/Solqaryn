@@ -1,3 +1,9 @@
+## 2026-11-20 — DEV06 C11-03.M03.03 V22 puente JWT/RBAC tenant real DEV-only
+- Microtarea: C11-03.M03.03; riesgo R2. Reparación causal de integración: `C1103OutboxVerifiedMembershipReader` usa Bearer autenticado por el handler real, membresía `IUsuarioScopeService` respaldada por `UsuarioEmpresa` y permisos `IPermisoService` con `RolPermiso`, sin aceptar rol o tenant del cliente.
+- `/__dev/outbox-preflight/{tenantId}` es lectura/inspección exclusivamente en Development y OFF por defecto salvo `OutboxPlanning:EnableReadOnlyAuthorizationProbe`. La ruta nunca escribe outbox, despacha eventos, usa proveedor, ni activa QA/PROD.
+- Se agregan regresiones xUnit adversariales para flag OFF, actor/ruta/tenant cruzado, identidad sintética sin autenticación Bearer real y cancelación. El fixture previo HTTP/JWT/MySQL8.4 sí es efímero, pero no prueba de manera combinada este adaptador real.
+- A0: diff de API, Application/Interfaces existentes, pruebas y documentación; A1–A4: CI GitHub-hosted exact-SHA pendiente al publicar, sin contar queued/in_progress/skipped como PASS. El cierre permanece VALIDANDO hasta pruebas reales end-to-end `UsuarioEmpresa`/`RolPermiso`/MySQL8.4, aislamiento tenant A/B, revocación y checks obligatorios; A5 independiente distinta de DEV06; rollback git revert normal, sin force-push.
+
 ## 2026-11-20 — DEV04 C04-04.M03.03 V22 lector real JWT/RBAC/Factura en DEV
 - Incremento R2 exclusivamente en dev: adaptador backend de sólo lectura usa la autenticación Bearer registrada, ICurrentUserService, membresía UsuarioEmpresa vigente, IPermisoService/RolPermiso y Factura real con EmpresaId; rechaza cabeceras de autoridad y rutas ambiguas, revocación, factura ajena y fallo de DB.
 - Registro y endpoint de preflight limitados a Development y opt-in PaymentPlanning:EnableReadOnlyAuthorizationProbe (OFF por defecto); sin PSP, webhooks activos, cobros, devolución, movimiento de dinero, ledger ni QA/main/PROD.

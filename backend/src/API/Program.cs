@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication;
 using MySql.EntityFrameworkCore.Extensions;
 using System.IO.Compression;
 using System.Net;
@@ -93,6 +94,14 @@ builder.Services.Configure<ObservabilityOptions>(builder.Configuration.GetSectio
 builder.Services.AddSingleton<RequestObservability>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IUsuarioScopeService, UsuarioScopeService>();
+// C11-03.M03.03: real tenant/JWT/RolPermiso preflight is DEV-only and OFF by default.
+// No outbox write, producer, relay, provider or production registration.
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddScoped<IC1103OutboxCurrentMembershipReader,
+        C1103OutboxVerifiedMembershipReader>();
+    builder.Services.AddScoped<C1103OutboxAuthorizationGate>();
+}
 // C04-04.M03.03: only a read-only DEV preflight, OFF unless opt-in.
 // Never register a PSP, charge, refund, financial mutation or PROD endpoint.
 if (builder.Environment.IsDevelopment())
@@ -388,6 +397,46 @@ if (app.Environment.IsDevelopment() &&
         .RequireAuthorization()
         .ExcludeFromDescription();
 }
+// C11-03.M03.03: opt-in DEV-only read-only authority probe, never outbox persistence.
+if (app.Environment.IsDevelopment() &&
+    app.Configuration.GetValue<bool>("OutboxPlanning:EnableReadOnlyAuthorizationProbe"))
+{
+    app.MapGet("/__dev/outbox-preflight/{tenantId:int}",
+        async (HttpContext http, int tenantId,
+            C1103OutboxAuthorizationGate gate, CancellationToken cancellationToken) =>
+        {
+            var bearer = await http.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
+            if (!bearer.Succeeded || bearer.Principal?.Identity?.IsAuthenticated != true)
+                return Results.Unauthorized();
+            var signedIds = bearer.Principal.FindAll("id").ToArray();
+            if (signedIds.Length != 1 ||
+                !int.TryParse(signedIds[0].Value, out var actor) || actor <= 0)
+                return Results.StatusCode(StatusCodes.Status403Forbidden);
+
+            // The Application gate consumes only the identity normalized AFTER
+            // signature and lifetime verification by the actual Bearer handler.
+            var principal = new System.Security.Claims.ClaimsPrincipal(
+                new System.Security.Claims.ClaimsIdentity(
+                    new[] { new System.Security.Claims.Claim(
+                        System.Security.Claims.ClaimTypes.NameIdentifier,
+                        signedIds[0].Value) }, JwtBearerDefaults.AuthenticationScheme));
+            var draft = new Solqaryn.Domain.AutomationV5.C1103OutboxEventDomainRules.EventDraft(
+                tenantId,
+                Guid.Parse("11111111-2222-4333-8444-555555555555"),
+                "c1103-dev-readonly-preflight-123456789",
+                "ventas.factura.emitida",
+                new string('a', 64),
+                DateTime.UtcNow.AddMinutes(-1),
+                "c1103-v22", 1, 0, 3);
+            var verdict = await gate.InspectAsync(principal, draft, cancellationToken);
+            return verdict.PermitsDomainPreflightOnly
+                ? Results.Ok(new { code = verdict.Code, mayPersist = false, mayDispatch = false })
+                : Results.StatusCode(StatusCodes.Status403Forbidden);
+        })
+        .RequireAuthorization()
+        .ExcludeFromDescription();
+}
+
 if (app.Configuration.GetValue<bool>("Database:ApplyMigrationsOnStartup"))
 {
     await using var scope = app.Services.CreateAsyncScope();
