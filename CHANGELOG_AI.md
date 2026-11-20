@@ -1,3 +1,7 @@
+## 2026-11-19 — C15-01.M06.06 V22 cierre y mapa DAG [Javier :20]
+- Se verificaron en PLAN 2340 IDs sin duplicados, las 11 predecesoras C15-01 con LISTO+A5 y C00-03.M06.06 con A5. Documento R0 de acción atómica D2197 y límites acumulativos de E; no declara 2340 requisitos implementados, P0/P1 global=0, QA/main/PROD ni R3.
+- Recuperación V19 de lock huérfano 2000002197 con readback y CAS, luego CLAIM V17 exclusivo de DEV03; no se alteraron fórmulas DAG/COLA ni código runtime. CI del SHA causal y A5 independiente requeridos antes de LISTO.
+
 ## 2026-11-19 — V22 A0.58 - autentificacion real E2E en transferencias de inventario [Javier :10]
 - Se sustituyen tokens falsos en dos suites Playwright de transferencias por login autentico JWT con credenciales efimeras del CI; los endpoints de datos de transferencia siguen mockeados y NO se certifican como HTTP/MySQL reales.
 - Reparacion causal tras 3 FAIL en job global SHA ea92e717 (97/100 PASS). Nueva CI exact-SHA debe demostrar el resultado; C15-04.M05.04 sigue EN_PROGRESO con lock V17, sin LISTO/A5/QA/main/PROD.
