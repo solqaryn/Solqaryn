@@ -15,7 +15,7 @@ const ETAPAS = Object.freeze([
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <section class="c1103" aria-labelledby="c1103-title" data-testid="c1103-outbox-view">
+    <section class="c1103" [attr.data-tema]="temaSeguro()" aria-labelledby="c1103-title" data-testid="c1103-outbox-view">
       <header>
         <p class="eyebrow">SOLQARYN · Eventos internos · Referencia de desarrollo</p>
         <h1 id="c1103-title">Observabilidad del outbox</h1>
@@ -25,6 +25,7 @@ const ETAPAS = Object.freeze([
       @if (autorizado()) {
         <section class="panel" data-testid="c1103-outbox-private" aria-labelledby="c1103-checkpoints" [attr.aria-busy]="estadoVista() === 'cargando' ? 'true' : 'false'">
           <h2 id="c1103-checkpoints">Etapas del procesamiento</h2>
+          <p role="note" data-testid="c1103-branding-preset">Identidad local SOLQARYN · {{ temaSeguro() === 'contraste' ? 'alto contraste' : 'estandar' }}. Sin logos remotos ni datos de proveedor.</p>
           @switch (estadoVista()) {
             @case ('cargando') {
               <p role="status" aria-live="polite" aria-atomic="true" data-testid="c1103-state-loading">Preparando vista local; no se consulta un relay real.</p>
@@ -68,6 +69,8 @@ const ETAPAS = Object.freeze([
     a { display:inline-block; box-sizing:border-box; min-height:44px; padding:.7rem .9rem;
         border:1px solid currentColor; border-radius:.5rem; color:inherit; }
     a:focus-visible { outline:3px solid var(--mat-sys-primary,#2157a3); outline-offset:3px; }
+    .c1103[data-tema='contraste'] { color:CanvasText; background:Canvas; }
+    .c1103[data-tema='contraste'] .panel, .c1103[data-tema='contraste'] li, .c1103[data-tema='contraste'] a { border-color:CanvasText; border-width:2px; }
     .panel { margin-top:1rem; border:1px solid var(--mat-sys-outline-variant,#aeb8c1);
         border-radius:.75rem; padding:1rem; }
     ol { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr));
@@ -78,6 +81,9 @@ const ETAPAS = Object.freeze([
 })
 export class C1103OutboxReadonlyComponent {
   private readonly plataforma = inject(PlataformaSesionService);
+  /** C11-03.M04.03 local allowlist; never reflect arbitrary branding CSS or HTML. */
+  readonly temaSolicitado = input<string>('base');
+  readonly temaSeguro = computed<'base' | 'contraste'>(() => this.temaSolicitado() === 'contraste' ? 'contraste' : 'base');
   readonly estadoVista = input<string>('vacio');
   readonly etapas = ETAPAS;
   readonly autorizado = computed(() => {
