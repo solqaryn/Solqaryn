@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV04 C04-04.M03.03 V22 lector real JWT/RBAC/Factura en DEV
+- Incremento R2 exclusivamente en dev: adaptador backend de sólo lectura usa la autenticación Bearer registrada, ICurrentUserService, membresía UsuarioEmpresa vigente, IPermisoService/RolPermiso y Factura real con EmpresaId; rechaza cabeceras de autoridad y rutas ambiguas, revocación, factura ajena y fallo de DB.
+- Registro y endpoint de preflight limitados a Development y opt-in PaymentPlanning:EnableReadOnlyAuthorizationProbe (OFF por defecto); sin PSP, webhooks activos, cobros, devolución, movimiento de dinero, ledger ni QA/main/PROD.
+- Se agregaron negativas de impersonación, flag apagado, rutas inválidas y cancelación, junto con workflows de CI exact-SHA dirigidos. Sigue VALIDANDO hasta demostrar aceptación completa JWT+RBAC+UsuarioEmpresa+Factura con MySQL 8.4 EF real, HTTP en ruta y A0-A4; A5 por otra Task Javier independiente.
+
 ## 2026-11-20 — DEV02 C15-04.M05.04 V22 precisión causal de contadores CI
 - Corrección aditiva de evidencia: A0.59 acreditó dos jobs distintos (55/55 JWT real en MySQL efímero y 100/100 aceptación global); no una suite única 102/102. Logs GH exact-SHA anexos al documento.
 - A0.60 suma dos casos JWT/Chromium (57 dirigidos esperados), mientras aceptación global conserva 100 casos esperados. CI pendiente hasta readback exact-SHA; WIP EN_PROGRESO/DEV02 y lock V17, sin LISTO/A5 ni QA/main/PROD.

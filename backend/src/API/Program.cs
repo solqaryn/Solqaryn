@@ -5,6 +5,8 @@ using System.Text;
 using System.Threading.RateLimiting;
 using FluentValidation;
 using Solqaryn.API.Configuration;
+using Solqaryn.API.Security;
+using Solqaryn.Application.AutomationV5;
 using Solqaryn.API.Middleware;
 using Solqaryn.API.Observability;
 using Solqaryn.Application.Common;
@@ -91,6 +93,14 @@ builder.Services.Configure<ObservabilityOptions>(builder.Configuration.GetSectio
 builder.Services.AddSingleton<RequestObservability>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IUsuarioScopeService, UsuarioScopeService>();
+// C04-04.M03.03: only a read-only DEV preflight, OFF unless opt-in.
+// Never register a PSP, charge, refund, financial mutation or PROD endpoint.
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddScoped<IC0404PaymentAuthorizationEvidenceReader,
+        C0404PaymentVerifiedEvidenceReader>();
+    builder.Services.AddScoped<C0404PaymentAuthorizationGate>();
+}
 builder.Services.AddScoped<IPlataformaScopeService, PlataformaScopeService>();
 // C02-04.M05.02: lectura acotada de checks GitHub para QA global; sin credenciales en frontend.
 builder.Services.AddHttpClient("SolqarynPublicGitHubQa", client =>
@@ -357,6 +367,27 @@ app.UseMiddleware<UnscopedCommercialTenantGuardMiddleware>();
 app.MapGet("/health", () => Results.Ok(new { status = "ok", service = "Solqaryn API" })).ExcludeFromDescription();
 app.MapGet("/health/ready", async (AppDbContext db, CancellationToken cancellationToken) => { var databaseReady = false; try { databaseReady = await db.Database.CanConnectAsync(cancellationToken); } catch { databaseReady = false; } return databaseReady ? Results.Ok(new { status = "ready", database = "connected" }) : Results.Json(new { status = "not_ready", database = "unavailable" }, statusCode: StatusCodes.Status503ServiceUnavailable); }).ExcludeFromDescription();
 app.MapControllers();
+// DEV-only, opt-in and read-only; no business mutation and no payment provider.
+// This probe does not bypass the existing multiempresa quarantine middleware.
+if (app.Environment.IsDevelopment() &&
+    app.Configuration.GetValue<bool>("PaymentPlanning:EnableReadOnlyAuthorizationProbe"))
+{
+    app.MapGet("/__dev/payment-planning/{tenantId:int}/{invoiceId:int}",
+        async (int tenantId, int invoiceId,
+            C0404PaymentAuthorizationGate gate, CancellationToken cancellationToken) =>
+        {
+            var decision = await gate.InspectAsync(
+                new C0404PaymentAuthorizationGate.Request(
+                    tenantId, invoiceId,
+                    C0404PaymentAuthorizationGate.Operation.CreateLink),
+                cancellationToken);
+            return decision.MayInspectPureApplicationPlan
+                ? Results.Ok(new { code = decision.Code, execute = false })
+                : Results.StatusCode(StatusCodes.Status403Forbidden);
+        })
+        .RequireAuthorization()
+        .ExcludeFromDescription();
+}
 if (app.Configuration.GetValue<bool>("Database:ApplyMigrationsOnStartup"))
 {
     await using var scope = app.Services.CreateAsyncScope();

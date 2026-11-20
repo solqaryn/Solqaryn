@@ -5,6 +5,9 @@ on:
     paths:
       - 'backend/src/Application/AutomationV5/C0404PaymentAuthorizationGate.cs'
       - 'backend/tests/Solqaryn.Tests/Application/C0404M0303PaymentAuthorizationGateTests.cs'
+      - 'backend/tests/Solqaryn.Tests/API/C0404M0303VerifiedReaderTests.cs'
+      - 'backend/src/API/Security/C0404PaymentVerifiedEvidenceReader.cs'
+      - 'backend/src/API/Program.cs'
       - '.github/workflows/v22-c04-04-m03-03-authorization.yml'
   workflow_dispatch:
 permissions:
@@ -33,13 +36,13 @@ jobs:
         run: |
           set -euo pipefail
           mkdir -p "$RUNNER_TEMP/c0404-m0303"
-          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter 'FullyQualifiedName~C0404M0303PaymentAuthorizationGateTests' --logger 'trx;LogFileName=scope.trx' --results-directory "$RUNNER_TEMP/c0404-m0303"
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter 'FullyQualifiedName~C0404M0303PaymentAuthorizationGateTests|FullyQualifiedName~C0404M0303VerifiedReaderTests' --logger 'trx;LogFileName=scope.trx' --results-directory "$RUNNER_TEMP/c0404-m0303"
           python3 - <<'PY'
           import os,sys,xml.etree.ElementTree as ET
           p=os.path.join(os.environ['RUNNER_TEMP'],'c0404-m0303','scope.trx')
           c=ET.parse(p).getroot().find('.//{*}Counters')
           if c is None:sys.exit('NO_TRX')
           total=int(c.get('total','0'));passed=int(c.get('passed','0'));failed=int(c.get('failed','0'));skipped=int(c.get('notExecuted','0'))
-          if total<13 or total!=passed or failed or skipped:sys.exit(f'NO_GO total={total} pass={passed} fail={failed} skip={skipped}')
+          if total<18 or total!=passed or failed or skipped:sys.exit(f'NO_GO total={total} pass={passed} fail={failed} skip={skipped}')
           print(f'GITHUB_HOSTED_REAL_PASS {passed}/{total} SHA={os.environ["GITHUB_SHA"]}')
           PY
