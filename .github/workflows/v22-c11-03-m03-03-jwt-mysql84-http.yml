@@ -1,0 +1,60 @@
+name: V22 C11-03.M03.03 signed JWT HTTP MySQL 8.4
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/Integration/C1103M0303SignedJwtMysql84HttpIntegrationTests.cs'
+      - 'backend/src/Application/AutomationV5/C1103OutboxAuthorizationGate.cs'
+      - '.github/workflows/v22-c11-03-m03-03-jwt-mysql84-http.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c1103-mysql-isolated
+  cancel-in-progress: false
+jobs:
+  signed-jwt-http-mysql:
+    name: C11-03.M03.03 - real signed JWT HTTP MySQL 8.4
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: ephemeral-v22-only
+          MYSQL_DATABASE: solqaryn_c1502_m0503
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -pephemeral-v22-only"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=15
+    env:
+      C1502_M0503_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_c1502_m0503;User=root;Password=ephemeral-v22-only;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Exact SHA signed JWT HTTP MySQL integration
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          dotnet restore tests/Solqaryn.Tests/Solqaryn.Tests.csproj
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore --filter 'FullyQualifiedName~C1103M0303SignedJwtMysql84HttpIntegrationTests' --logger 'trx;LogFileName=C1103JwtHttpMysql84.trx' --verbosity normal
+          python3 - <<'PY'
+          import pathlib, xml.etree.ElementTree as ET
+          results=list(pathlib.Path('tests/Solqaryn.Tests').rglob('C1103JwtHttpMysql84.trx'))
+          if len(results)!=1: raise SystemExit('Missing unique xUnit TRX')
+          counters=ET.parse(results[0]).getroot().find('.//{*}Counters')
+          if counters is None: raise SystemExit('Missing TRX counters')
+          n={k:int(counters.attrib.get(k,-1)) for k in ('total','passed','failed','notExecuted')}
+          print('C1103_MYSQL84_JWT_HTTP_COUNTS',n)
+          if n['total']<2 or n['passed']!=n['total'] or n['failed'] or n['notExecuted']:
+              raise SystemExit('FAIL_C1103_MYSQL84_JWT_HTTP')
+          PY
