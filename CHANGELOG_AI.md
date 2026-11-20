@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV04 C11-03.M04.01 reparación de cwd en Scope Lock dirigido
+- Corrección causal de GitHub-hosted 44774075889: el job corría dentro de frontend, causando falsos archivos ausentes al invocar el verificador de scope. Se usa cd .. antes de verificar, sin cambiar script, candado ni requisitos; nueva CI exact-SHA obligatoria antes de LISTO.
+- Se conservan intactos los tests Angular/Chromium, el código de ruta y la bitácora; PASS anterior de Scope Lock canónico no sustituye el job dirigido fallido. Sin QA/main/PROD.
+
 ## 2026-11-20 — DEV04 C11-03.M04.01 ruta privada del outbox de solo lectura
 - Añadida superficie Angular standalone con lazy route protegida por plataformaGuard y denegación local sin sesión global; tres etapas informativas siempre SIN_FUENTE_CONECTADA, sin datos reales, operaciones, PII ni permisos inventados.
 - Regresiones Vitest y Chromium para sesión sintética/403, revocación, responsive, teclado y ausencia de escrituras; GitHub-hosted exact-SHA y Scope Lock/V5 requeridos antes de LISTO, A5 pendiente por otra Task. Sin API/JWT real, MySQL, pagos ni QA/main/PROD.
