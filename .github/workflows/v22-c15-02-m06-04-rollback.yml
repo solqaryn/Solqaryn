@@ -1,0 +1,26 @@
+name: V22 C15-02.M06.04 isolated real rollback
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'scripts/quality/v22-c15-02-m06-04-rollback.test.mjs'
+      - '.github/workflows/v22-c15-02-m06-04-rollback.yml'
+      - 'docs/v5/c15-02-m06-04-rollback-isolated-v22.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c15-02-m06-04-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  rollback-test:
+    name: c15-02-rollback-git-preserves-data
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Git revert and negative safety tests in ephemeral repository
+        run: node --test scripts/quality/v22-c15-02-m06-04-rollback.test.mjs

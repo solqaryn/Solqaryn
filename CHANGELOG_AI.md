@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C15-02.M06.04 Git rollback seguro y preservacion de datos [Javier :30]
+- Se agrego ensayo real Git revert en repositorio aislado GitHub-hosted con 2340 IDs sinteticos, registros tenant A/B, bitacora y SHA256 preservados ante evento legitimo posterior.
+- Cuatro pruebas de positivo, rollback de datos protegido, HEAD desactualizado y worktree/SHA invalido; CI Node24, concurrency por SHA, sin acceso a servicios ni secretos.
+- A0-A4 y Scope Lock/V5 exact-SHA requeridos; A5 independiente posterior; falla global historica sin reclasificar y QA/main/PROD/R3 no autorizados.
+
 ## 2026-11-19 — V22 C15-02.M06.05 solicitud de revision independiente por SHA [Javier :20]
 - Se preparó un handoff trazable para una Task Javier distinta con fuentes M05.01–06, M06.01–04, logs GitHub-hosted y limites negativos de pruebas reales/mocks.
 - A5 previa de M06.01/.02/.03 fue revisada por DEV03 distinto de DEV05; la M06.05 conserva A5_PENDIENTE de otra Task y no suplanta a un revisor.
