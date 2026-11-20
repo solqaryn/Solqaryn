@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV02 C15-04.M05.04 A0.59 estados multicanal JWT real
+- Se agregan dos regresiones Playwright GitHub-hosted para panel privado de mensajería: plataforma JWT/MySQL efímero 200 y vista vacía sin escritura; empresa B JWT válido 403 y ausencia total de panel, en 320/1280 px.
+- Incremento R2 test-only: HTTP del proveedor y entregas NO_PROBADOS, auditoría UX global/WCAG/RUM aún incompleta, CI exact-SHA pendiente, H=EN_PROGRESO y lock V17 propios retenidos; sin LISTO/A5/QA/main/PROD.
+
 ## 2026-11-19 — DEV05 C01-04.M03.06 cancelacion durante escritura QA
 - Reparacion R2/P2: revalidar CancellationToken despues de WriteAsync para evitar recibos QA exitosos cuando un sink no cooperativo cancela y devuelve sin persistir.
 - Regresion xUnit adversarial: sink que cancela y no escribe debe causar OperationCanceledException, sin certificar CI, A5, tenant, HTTP o MySQL reales. Se preserva todo el CHANGELOG anterior y el owner historico; el alcance permanece VALIDANDO hasta A0-A4 y source/sink autenticos.

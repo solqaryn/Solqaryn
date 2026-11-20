@@ -1657,4 +1657,57 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     }
   });
 
+
+  // A0.59: dos pruebas R2 de alcance limitado, sin mocks ni concesiones empresariales.
+  test('A0.59 - estados multicanal JWT real: vacio, lectura y responsive', async ({ page }) => {
+    await ingresar(page, 'c1504_platform_only');
+    const escrituras: string[] = [];
+    page.on('request', solicitud => {
+      if (/^(POST|PUT|PATCH|DELETE)$/.test(solicitud.method()) &&
+          solicitud.url().includes('localhost:5005')) {
+        escrituras.push(solicitud.method() + ' ' + new URL(solicitud.url()).pathname);
+      }
+    });
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      const sesion = page.waitForResponse(r =>
+        r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+      const documento = await page.goto('/plataforma/mensajeria-multicanal-v19/estados');
+      expect(documento?.status()).toBe(200);
+      expect((await sesion).status(), 'Autorizacion de plataforma viene del backend').toBe(200);
+      await expect(page.getByRole('main')).toHaveCount(1);
+      const panel = page.getByRole('region', { name: 'Estado del panel de mensajeria multicanal' });
+      await expect(panel).toBeVisible();
+      await expect(panel).toHaveAttribute('aria-busy', 'false');
+      await expect(page.getByTestId('m0402-vacio')).toContainText('Sin mensajes verificados');
+      await expect(page.getByTestId('m0402-exito')).toHaveCount(0);
+      await expect(page.getByTestId('m0402-error')).toHaveCount(0);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(width + 1);
+    }
+    expect(escrituras, 'Inspeccionar estado no envia mensajes ni escribe datos').toEqual([]);
+  });
+
+  test('A0.59 - empresa B JWT real no renderiza estados privados multicanal', async ({ page, request }) => {
+    const jwt = await ingresar(page, 'c1504_admin_b');
+    const directo = await request.get(api + '/plataforma/sesion', {
+      headers: { Authorization: 'Bearer ' + jwt }
+    });
+    expect(directo.status(), 'API no admite rol empresarial como plataforma').toBe(403);
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      const sesion = page.waitForResponse(r =>
+        r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+      await page.goto('/plataforma/mensajeria-multicanal-v19/estados');
+      expect((await sesion).status()).toBe(403);
+      await expect(page).toHaveURL(url =>
+        url.pathname === '/login' && url.searchParams.get('plataforma') === 'denegado');
+      await expect(page.locator('section.estado-mensajeria')).toHaveCount(0);
+      await expect(page.getByTestId('m0402-vacio')).toHaveCount(0);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(width + 1);
+    }
+  });
+
+
 });
