@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C03-01.M02.04 configuración tipada UX/MFA [Javier :50]
+- Modelo TypeScript de flags sólo visuales, versionado y fail-closed; revocación/0/1/N y desafíos MFA no anulables por feature flags.
+- 13 pruebas adversariales Vitest con workflow dirigido GitHub-hosted Node 24; documento `docs/v5/c03-01-m02-04-login-config-flags.md` de A0–A5 y rollback.
+- Trabajo exclusivo `dev`/Scope Lock STRICT, sin grant, guard, API, DB, MFA real ni QA/PROD; no afirmar CI antes de completarse.
+
 ## 2026-11-19 — V22 C03-01.M02.05 eventos y singleflight login/tenant [Javier :40]
 - Definido contrato de eventos fijos no sensibles, idempotencia, correlacion opaca, limites GET/POST y 12 oraculos de concurrencia, revocacion, tenant A/B y PII. Ninguna ruta, worker o tabla fue modificada.
 - Archivo `docs/v5/c03-01-m02-05-eventos-idempotencia-correlacion-limites-ux-login-v1.md` con A0-A4 documentales, A5 independiente y rollback normal; solo dev, Scope Lock STRICT, sin QA/main/PROD.
