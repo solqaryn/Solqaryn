@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV01 C04-04.M05.05 negativos de aislamiento y abuso MySQL 8.4 (V22)
+- R2 TEST-ONLY: xUnit adversarial sobre MySQL 8.4 efímero/Oracle EF para tenant A/B, hash replay conflictivo por factura/monto/digest, inputs e inyección provider denegados, CHECK SQL física ante EmpresaId=0 y cancelación previa sin mutación.
+- GitHub-hosted nuevo workflow por SHA exacto exige 1/1 TRX PASS sin fallos/omisiones, Scope Lock, Skill, V5 y controles backend/security causales; no declarar LISTO mientras CI requerida siga queued/in_progress/failed; A5 independiente por otra Task Javier.
+- Limitación de seguridad: store aislado recibe EmpresaId de entrada, NO valida JWT/roles ni incorpora AppDbContext productivo, PSP, HTTP, pagos, reembolsos o webhook. PLAN D714 prueba negativos del contrato técnico, no declara toda M05 certificada. Rollback con git revert.
+
 ## 2026-11-20 — DEV06 C11-03.M05.05 negativos MySQL 8.4 tenant y abuso
 - Nuevo test adversarial xUnit Oracle EF en MySQL 8.4 físico efímero: denegar tenant cruzado, conflicto de replay alterado, clave CR/LF, índice UNIQUE real y aislamiento A/B con clave compartida.
 - GitHub Actions dirigido SHA exacto + Scope Lock + .NET10 Release + TRX 1/1 requerido; no se simula MySQL, no se declara PASS antes de CI real. Sin cambios runtime ni PSP, JWT/RBAC real NO_APLICA a este test-only; LIMITACION_FASE pendiente de otros scopes.
