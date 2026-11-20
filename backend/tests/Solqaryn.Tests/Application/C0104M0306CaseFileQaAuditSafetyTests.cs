@@ -16,6 +16,11 @@ public sealed class C0104M0306CaseFileQaAuditSafetyTests
         "verify-solqaryn-project-scope", "completed", "success", Utc,
         "private token=secret; case details and client PII");
 
+    private sealed class FrozenClock : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => Utc;
+    }
+
     private sealed class Source(Audit.Observation? observation, Exception? error = null)
         : IV5UniversalCaseFileQaEvidenceSource
     {
@@ -47,7 +52,7 @@ public sealed class C0104M0306CaseFileQaAuditSafetyTests
         string? id = Id, string? route = "casefile.timeline",
         string? sha = Sha, string? tenant = "tenant-A", string? caseId = "case-42",
         CancellationToken ct = default) =>
-        new Audit(source, sink).CaptureAsync(id, route, sha, tenant, caseId, ct);
+        new Audit(source, sink, new FrozenClock()).CaptureAsync(id, route, sha, tenant, caseId, ct);
 
     [Fact]
     public async Task TrustedAuditProducesOnlyRedactedStructuredEnvelope()
@@ -148,6 +153,26 @@ public sealed class C0104M0306CaseFileQaAuditSafetyTests
             Assert.False(verdict.CertifiesCI);
             Assert.False(verdict.CertifiesA5);
         }
+    }
+
+    [Theory]
+    [InlineData(-600, true)]
+    [InlineData(-601, false)]
+    [InlineData(5, true)]
+    [InlineData(6, false)]
+    public async Task FrozenClockPreservesBoundaryAndRejectsStaleOrFutureEvidence(int offsetSeconds, bool allowed)
+    {
+        var sink = new Sink();
+        var result = await Capture(new Source(Good() with
+        {
+            ObservedAtUtc = Utc.AddSeconds(offsetSeconds)
+        }), sink);
+        Assert.Equal(allowed ? "CASEFILE_QA_ENVELOPE_WRITTEN_REVIEW_PENDING" :
+            "CASEFILE_QA_CHECK_OR_TIME_INVALID", result.Code);
+        if (allowed) Assert.Single(sink.Entries);
+        else Assert.Empty(sink.Entries);
+        Assert.False(result.CertifiesCI);
+        Assert.False(result.CertifiesA5);
     }
 
     [Fact]

@@ -1,3 +1,8 @@
+## 2026-11-19 — DEV06 C01-04.M03.06 recuperación causal CI .NET
+- Se corrigen tres fallos xUnit reales del job backend `136089934967` del SHA `d10ebaf5`: las pruebas preexistentes usaban hora fija de 18-nov tras exigir frescura de observaciones con `TimeProvider`; se inyecta reloj de prueba congelado, sin cambiar el runtime.
+- Se añaden cuatro aserciones adversariales a -600/-601/+5/+6 segundos para impedir certificación de evidencias obsoletas/futuras, sin marcar CI ni A5 como aprobadas; toda la suite .NET Release y Scope Lock/V5 se revalidan en SHA exacto.
+- R2 test-only: no es adaptador autenticado ni MySQL/HTTP real. `C01-04.M03.06` permanece VALIDANDO, autor histórico DEV05, A5 independiente pendiente, QA/main/PROD prohibidos; rollback por `git revert` normal.
+
 ## 2026-11-19 — DEV04 C04-04.M03.03 cancelacion asíncrona fail-closed
 - Se corrige la ventana tras ReadCurrentAsync: incluso si un reader ignora cancelación y devuelve snapshot positivo, el gate impide expedir un plan favorable tras cancelarse la petición.
 - xUnit adversarial fuerza cancelación entre lectura y decisión; tests JWT/HTTP/MySQL 8.4 de integración y adapter de autoridad runtime continúan pendientes, VALIDANDO no es LISTO ni A5.
