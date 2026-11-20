@@ -107,7 +107,7 @@ public sealed class C0203VerifiedPlatformOperatorEvidenceReader(
             // Do not trust route/header claims as proof of target ownership.
             // The platform-admin scope is the only global authority and the
             // target must be an actual active Empresa row in the current DB.
-            var targetExists = await database.Empresas.IgnoreQueryFilters()
+            var targetExists = await database.Set<Solqaryn.Domain.Entities.Empresa>().IgnoreQueryFilters()
                 .AsNoTracking().AnyAsync(e => e.Id == tenantId && e.Activa,
                     cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
