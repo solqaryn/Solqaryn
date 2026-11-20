@@ -1,0 +1,62 @@
+name: V22 C04-04.M05.04 - positive reservation acceptance MySQL 8.4
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/C0404M0504PositiveReservationAcceptanceTests.cs'
+      - 'backend/src/Infrastructure/AutomationV5/C0404PaymentReservationStore.cs'
+      - '.github/workflows/v22-c04-04-m05-04-positive-acceptance.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c0404-m0504-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  acceptance-mysql:
+    name: C04-04.M05.04 - positive MySQL 8.4 reservation acceptance
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: ephemeral-c0404-only
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -pephemeral-c0404-only"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      C0404_M0504_MYSQL: 'Server=127.0.0.1;Port=3306;Database=c0404_bootstrap;User=root;Password=ephemeral-c0404-only;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Scope Lock, Skill and exact SHA
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+          node scripts/verify-solqaryn-skills.mjs --self-test
+      - name: Physical MySQL 8.4 and positive acceptance TRX
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker exec "${{ job.services.mysql.id }}" mysql -uroot -pephemeral-c0404-only -Nse 'SELECT VERSION();' | grep -E '^8[.]4[.]'
+          dotnet restore backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj
+          dotnet build backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore
+          mkdir -p "$RUNNER_TEMP/c0404-m0504"
+          dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter 'FullyQualifiedName~C0404M0504PositiveReservationAcceptanceTests&Category=Integration' --logger 'trx;LogFileName=acceptance.trx' --results-directory "$RUNNER_TEMP/c0404-m0504"
+          python3 - <<'PY'
+          import os,xml.etree.ElementTree as ET
+          f=os.path.join(os.environ['RUNNER_TEMP'],'c0404-m0504','acceptance.trx')
+          c=ET.parse(f).getroot().find('.//{*}Counters')
+          if c is None: raise SystemExit('NO_TRX')
+          values={k:int(c.get(k,'-1')) for k in ('total','passed','failed','notExecuted')}
+          print('C0404_M0504_POSITIVE_MYSQL84',values,'SHA',os.environ['GITHUB_SHA'])
+          if values != {'total':1,'passed':1,'failed':0,'notExecuted':0}:
+              raise SystemExit('POSITIVE_ACCEPTANCE_NOT_GREEN')
+          PY

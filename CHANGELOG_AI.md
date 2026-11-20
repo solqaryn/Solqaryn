@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV01 C04-04.M05.04 aceptación positiva de reserva MySQL 8.4 (V22)
+- R2 TEST-ONLY: xUnit nuevo contra Oracle EF y MySQL 8.4 efímero comprueba reserva positiva tenant A, replay idempotente, aislamiento tenant B, persistencia tras nuevo DbContext, rechazo de conflicto y rollback real; jamás invoca PSP ni autoriza cobros, reembolsos o webhooks.
+- GitHub Actions dirigido en dev, Scope Lock, Skill, procedencia V5 y TRX exact-SHA son obligatorios antes de LISTO; publicación inicial queda VALIDANDO hasta readback CI y auditoría A0–A4. A5 independiente por otra Task Javier.
+- Límite explícito: no integra proveedor comercial, enlace de pago, JWT/RBAC HTTP productivo ni AppDbContext principal. PLAN D713 se mide como aceptación positiva del contrato aislado, sin declarar cumplida la meta acumulativa M05; rollback por git revert y limpieza de schema temporal.
+
 ## 2026-11-20 — DEV06 C11-03.M05.04 aceptación positiva MySQL 8.4
 - Se agrega un caso de aceptación xUnit sobre MensajeOutboxService y repositorio Oracle EF con MySQL 8.4 físico efímero en GitHub-hosted: primer registro, replay idempotente, separación A/B, conflicto y rechazo tenant.
 - Workflow dirigido SHA exacto + Scope Lock + .NET10 Release + TRX fail-closed. No HTTP/JWT/PSP/worker real en este alcance test-only, ni certificación completa M05; LIMITACION_FASE, CI y A5 independientes.
