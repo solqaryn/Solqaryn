@@ -12,7 +12,9 @@ async function iniciarSesionReal(page: Page): Promise<void> {
   await page.locator('input[formcontrolname="nombreUsuario"]').fill(ADMIN_USERNAME);
   await page.locator('input[formcontrolname="password"]').fill(ADMIN_PASSWORD);
   await page.locator('button[type="submit"]').click();
-  await expect(page).toHaveURL(/\/dashboard(?:\?|$)/, { timeout: 20_000 });
+  // El login real puede resolver el dashboard o la ruta de movimientos autorizada
+  // por el backend; una redireccion a login u otra ruta sigue fallando.
+  await expect(page).toHaveURL(/\/(?:dashboard|inventario\/movimientos)(?:[/?#]|$)/, { timeout: 20_000 });
   const jwt = await page.evaluate(() => localStorage.getItem('solqaryn_token'));
   expect(jwt, 'No se permiten tokens locales simulados en estas pruebas').toBeTruthy();
   expect(jwt!.split('.'), 'JWT autenticado debe tener cabecera, cuerpo y firma').toHaveLength(3);

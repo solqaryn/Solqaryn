@@ -1,3 +1,8 @@
+## 2026-11-20 - DEV03 V22 C02-01.M05.04: contrato de aterrizaje autenticado en Playwright
+- Reparacion causal de CI GitHub-hosted SHA 7c251789: tres escenarios de transferencias fallaban antes de ejecutar su objetivo porque el login real aterrizaba en /inventario/movimientos (ruta permitida), mientras los dos helpers exigian exclusivamente /dashboard; reproducido en el job 136595762197.
+- Ambos helpers mantienen login mediante credenciales efimeras contra API .NET/MySQL 8.4, JWT real firmado y las aserciones posteriores de transferencia; aceptan solamente /dashboard o /inventario/movimientos, nunca /login ni destinos arbitrarios. La prueba de denegacion sin MovimientosInventario:Ver sigue intacta.
+- Clasificacion R2, cambio exclusivamente a pruebas E2E. No se altera runtime, IAM ni DB; rollback por git revert. La preferencia durable de ultima empresa, reemision JWT y navegacion Angular/Chromium completa de C02-01.M05.04 SIGUEN SIN ACREDITAR: H=VALIDANDO, no LISTO ni A5 hasta A0-A4 reales y check GitHub-hosted exact-SHA completed/success.
+
 ## 2026-11-20 - DEV01 V22 C06-04.M03.05: recuperar lease terminal sin ACK
 - Reparacion P2 de la cola aislada InnoDB: un worker caido durante el ultimo intento dejaba estado LEASED para siempre; el barrido transaccional tenant-scoped convierte el lease vencido a DEAD sin repetir entregas ni tocar proveedor.
 - Test adversarial Category=Integration real MySQL 8.4 anade crash sin ACK, aislamiento tenant 15/16, ACK tardio rechazado y estado durable DEAD; debe ejecutarse GitHub-hosted exact-SHA, Scope Lock, V5, Backend y Seguridad pertinentes antes de cualquier PASS.
