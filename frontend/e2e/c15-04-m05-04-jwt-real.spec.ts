@@ -1838,4 +1838,37 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     }
   });
 
+
+  // A0.62: una firma JWT alterada debe perder autoridad global en HTTP y navegador.
+  test('A0.62 - JWT adulterado pierde ruta privada de auditoria tenancy', async ({ page, request }) => {
+    const jwt = await ingresar(page, 'c1504_platform_only');
+    const autorizada = await request.get(api + '/plataforma/sesion', {
+      headers: { Authorization: 'Bearer ' + jwt }
+    });
+    expect(autorizada.status()).toBe(200);
+    const partes = jwt.split('.');
+    const firma = partes[2];
+    expect(firma.length).toBeGreaterThan(20);
+    const alterada = (firma[0] === 'A' ? 'B' : 'A') + firma.slice(1);
+    const jwtFalso = [partes[0], partes[1], alterada].join('.');
+    const denegada = await request.get(api + '/plataforma/sesion', {
+      headers: { Authorization: 'Bearer ' + jwtFalso }
+    });
+    expect([401, 403], 'Servidor debe rechazar firma JWT no autentica').toContain(denegada.status());
+
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      await page.evaluate(token => localStorage.setItem('solqaryn_token', token), jwtFalso);
+      await page.goto('/plataforma/auditoria-tenancy-v5');
+      await expect(page).toHaveURL(/\/login(?:\?|$)/);
+      await expect(page.locator('section.tenancy-audit')).toHaveCount(0);
+      await expect(page.getByRole('heading', {
+        name: 'Fronteras de aislamiento y evidencia'
+      })).toHaveCount(0);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(width + 1);
+      if (width === 320) await ingresar(page, 'c1504_platform_only');
+    }
+  });
+
 });

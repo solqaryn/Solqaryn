@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV02 C15-04.M05.04 A0.62 JWT adulterado en ruta privada
+- Regresion R2 Playwright contra API .NET 10, MySQL 8.4 efimero y Chromium: JWT de plataforma valido 200, firma mutada denegada 401/403, sin contenido tenancy al navegar 320/1280.
+- Esperar CI exact-SHA con 60 casos, Scope Lock/V5/backend/frontend/security requeridos; no confundir evidencia de 59 PASS anteriores con la nueva prueba.
+- Mantener EN_PROGRESO DEV02, lock V17 2000002297, A0-A4 global incompletas, sin A5 propia ni QA/main/PROD.
+
 ## 2026-11-20 — DEV01 V22 C01-02.M04.01 workflow trigger CI exacto
 - Reparacion de ruta propia de trigger: la workflow V22 ahora incluye su archivo real en paths; artifact etiquetado V22. Se conservan servicio MySQL 8.4 efimero, JWT firmado, .NET 10, Angular/Chromium y concurrencia por SHA sin cancelacion. La CI obligatoria del SHA de reparacion requiere completed/success; no LISTO ni A5 con jobs activos.
 
