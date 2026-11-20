@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV02 C15-04.M05.04 A0.68 runtime JWT tenant A/B ERP
+- Diez nuevos casos reales Chromium: cinco rutas ERP importadas a 320/1280, JWT firmado, backend .NET 10 y MySQL 8.4; tenant B HTTP 200, intento de tenant A 403/404 y redireccion segura tras suplantacion local.
+- Evidencia parcial R2 sin afirmar WCAG integral, permisos por modulo en las 160 pantallas ni RUM; conservar EN_PROGRESO, candado V17, CI exact-SHA, A5 independiente y veto QA/main/PROD.
+
 ## 2026-11-20 - DEV01 C11-03.M04.05 QA Chromium accesibilidad
 - Incremento R2 test-only: Playwright/Chromium de tres casos (denegación anónima/403, responsive 320-1280 y Tab real desde inicio, contraste calculado 4.5:1), workflow GitHub-hosted exact-SHA y limitaciones explícitas. Ningún runtime, JWT real, EF/MySQL ni proveedor modificado.
 - Scope Lock y V5 exigen checks COMPLETED SUCCESS. Entrega inicialmente VALIDANDO a la espera de GitHub Actions; A5 pendiente de Task Javier independiente, owner histórico preservado. Rollback mediante revert normal de dev.

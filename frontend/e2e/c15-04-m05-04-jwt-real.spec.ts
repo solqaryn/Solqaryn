@@ -2086,4 +2086,38 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     // No demuestra llamadas HTTP, JWT valido, permisos efectivos, accesibilidad o UX de 160 pantallas.
   });
 
+
+  // A0.68: rutas ERP importadas, JWT firmado y aislamiento real del tenant.
+  // No hay page.route, respuestas HTTP fabricadas ni cambios de permisos en datos productivos.
+  for (const destino of [
+    { nombre: 'ajustes-inventario', ruta: '/inventario/ajustes' },
+    { nombre: 'transferencias', ruta: '/inventario/transferencias' },
+    { nombre: 'pedidos-venta', ruta: '/pedidos-venta' },
+    { nombre: 'facturas-proveedor', ruta: '/facturas-proveedor' },
+    { nombre: 'cuentas-por-pagar', ruta: '/cuentas-por-pagar' }
+  ]) {
+    for (const ancho of [320, 1280]) {
+      test(`A0.68 - tenant B no suplanta A en ${destino.nombre} a ${ancho}px`, async ({ page, request }) => {
+        await page.setViewportSize({ width: ancho, height: 840 });
+        const jwt = await ingresar(page, 'c1504_admin_b');
+        const headers = { Authorization: 'Bearer ' + jwt };
+        const propia = await request.get(api + '/tenant-context/2', { headers });
+        expect(propia.status(), 'Empresa B valida con JWT y MySQL reales').toBe(200);
+        const ajena = await request.get(api + '/tenant-context/1', { headers });
+        expect([403, 404], 'Backend deniega empresa A ajena').toContain(ajena.status());
+
+        // localStorage es una solicitud, nunca fuente de autoridad de tenancy.
+        // La recarga de la ruta exige materializar de nuevo contexto en el backend.
+        await page.evaluate(() => localStorage.setItem('solqaryn_empresa_solicitada_id', '1'));
+        const bloqueo = page.waitForResponse(res =>
+          res.url().includes('/tenant-context/1') && res.request().method() === 'GET');
+        await page.goto(destino.ruta);
+        expect([403, 404], 'Revalidacion HTTP no concede tenant A').toContain((await bloqueo).status());
+        await expect(page).toHaveURL(url => url.pathname === '/login');
+        const scroll = await page.evaluate(() => document.documentElement.scrollWidth);
+        expect(scroll, 'Login de acceso denegado no desborda').toBeLessThanOrEqual(ancho + 1);
+      });
+    }
+  }
+
 });
