@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV02 C15-04.M05.04 A0.67 guardias y RBAC en rutas ERP importadas
+- Test R2 de 51 rutas ERP en ocho archivos reales: AST exige authGuard, permisoGuard, metadata modulo/accion y ausencia de duplicados; agregar una ruta privada incompleta provoca fallo.
+- Cobertura estructural parcial, NO certifica JWT/HTTP por ruta, WCAG de 160 pantallas, dispositivos ni RUM; EN_PROGRESO y lock V17 propios persisten, A5 y QA/main/PROD pendientes.
+
 ## 2026-11-20 — DEV05 C04-04.M03.04 reserva durable aislada MySQL 8.4
 - Incremento R2: contexto EF independiente no integrado, UNIQUE por tenant/proveedor/clave, replay vs conflicto, rollback y aislamiento sin efectos financieros ni PSP.
 - GitHub-hosted MySQL 8.4 efímero, xUnit TRX exact-SHA; JWT/HTTP/PSP comercial no certificados, A5 independiente cuando A0-A4 completen.

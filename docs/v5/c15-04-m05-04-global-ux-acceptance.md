@@ -1,3 +1,7 @@
+## A0.67 - Inventario estructural de rutas ERP importadas (DEV02, 2026-11-20)
+
+Prueba adicional falsable en GitHub-hosted: analiza ocho arrays `Routes` del ERP incluidos por el enrutador principal, verifica al menos 51 declaraciones con `authGuard` y `permisoGuard`, metadatos `data.modulo` y `data.accion`, y rutas sin duplicados. Incluye rutas parametrizadas sin suplantar pruebas de recursos reales. En caso de nueva ruta sin control o metadata, el test debe fallar. Esta es **verificacion estructural AST**, no autorizacion HTTP firmada ni ensayo de navegacion/teclado/contraste en las 160 declaraciones; las suites existentes con JWT real, MySQL 8.4 efimero y Chromium siguen siendo necesarias. Estado de la microtarea: EN_PROGRESO, lock V17 de DEV02 conservado, A0-A4 globales incompletos y A5 independiente pendiente. Rollback: revert normal del commit, sin QA/main/PROD.
+
 ## A0.66 - Registro AST de rutas globales con control de acceso (DEV02, 2026-11-20)
 
 Nueva prueba de regresion sobre el codigo TypeScript real de `frontend/src/app/app.routes.ts`: inventaria al menos 24 rutas directas `plataforma` y `plataforma/*`, exige identificadores unicos y `plataformaGuard` en cada ruta, ademas de las rutas de auditoria UX y tenancy. La prueba corre en el workflow GitHub-hosted del mismo archivo E2E. Es un control estatico falsable: agregar una ruta global sin guard, duplicarla o eliminar una ruta de referencia provoca FAIL.

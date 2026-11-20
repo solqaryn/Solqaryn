@@ -2025,4 +2025,65 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     // No hay certificacion de UX/routing de lazy modules, JWT HTTP ni backend RBAC en esta prueba.
   });
 
+
+  // A0.67: ocho arrays ERP importados; solo contrato estatico, no autorizacion runtime.
+  test('A0.67 - 51 rutas ERP importadas preservan autenticacion, RBAC y contrato de permisos', async () => {
+    const { existsSync, readFileSync } = await import('node:fs');
+    const { resolve } = await import('node:path');
+    const ts = await import('typescript');
+    const archivos = [
+      'features/inventario/ajustes.routes.ts',
+      'features/compras/facturas-proveedor/facturas-proveedor.routes.ts',
+      'features/pedidos-venta/pedidos-venta.routes.ts',
+      'features/inventario/transferencias.routes.ts',
+      'features/inventario/conteos.routes.ts',
+      'features/inventario/reservas.routes.ts',
+      'features/finanzas/cuentas-por-cobrar/cuentas-por-cobrar.routes.ts',
+      'features/finanzas/cuentas-por-pagar/cuentas-por-pagar.routes.ts'
+    ];
+    const registros: { archivo: string; ruta: string; auth: boolean; rbac: boolean; metadata: boolean }[] = [];
+    for (const archivo of archivos) {
+      const fuente = [
+        resolve(process.cwd(), 'src/app', archivo),
+        resolve(process.cwd(), 'frontend/src/app', archivo)
+      ].find(existsSync);
+      expect(fuente, 'No ocultar fuente de ruta privada: ' + archivo).toBeDefined();
+      const ast = ts.createSourceFile(fuente!, readFileSync(fuente!, 'utf8'), ts.ScriptTarget.Latest, true);
+      const propiedad = (obj: import('typescript').ObjectLiteralExpression, nombre: string) =>
+        obj.properties.find(p => ts.isPropertyAssignment(p) &&
+          (ts.isIdentifier(p.name) || ts.isStringLiteral(p.name)) && p.name.text === nombre);
+      const visita = (nodo: import('typescript').Node): void => {
+        if (ts.isObjectLiteralExpression(nodo)) {
+          const path = propiedad(nodo, 'path');
+          if (path && ts.isPropertyAssignment(path) && ts.isStringLiteral(path.initializer)) {
+            const can = propiedad(nodo, 'canActivate');
+            const guards = can && ts.isPropertyAssignment(can) &&
+              ts.isArrayLiteralExpression(can.initializer)
+                ? can.initializer.elements.filter(ts.isIdentifier).map(x => x.text) : [];
+            const data = propiedad(nodo, 'data');
+            const metadata = Boolean(data && ts.isPropertyAssignment(data) &&
+              ts.isObjectLiteralExpression(data.initializer) &&
+              ['modulo', 'accion'].every(campo => {
+                const v = propiedad(data.initializer as import('typescript').ObjectLiteralExpression, campo);
+                return Boolean(v && ts.isPropertyAssignment(v) &&
+                  ts.isStringLiteral(v.initializer) && v.initializer.text.trim().length);
+              }));
+            registros.push({ archivo, ruta: path.initializer.text,
+              auth: guards.includes('authGuard'),
+              rbac: guards.includes('permisoGuard'), metadata });
+          }
+        }
+        ts.forEachChild(nodo, visita);
+      };
+      visita(ast);
+    }
+    expect(registros.length, 'baseline de 51 declaraciones ERP importadas').toBeGreaterThanOrEqual(51);
+    expect(registros.filter(x => !x.auth || !x.rbac || !x.metadata),
+      'sin ruta ERP sin guard o metadatos de permiso').toEqual([]);
+    expect(new Set(registros.map(x => x.ruta)).size,
+      'sin ambiguedad de rutas ERP importadas').toBe(registros.length);
+    expect(registros.some(x => x.ruta.includes(':id'))).toBe(true);
+    // No demuestra llamadas HTTP, JWT valido, permisos efectivos, accesibilidad o UX de 160 pantallas.
+  });
+
 });
