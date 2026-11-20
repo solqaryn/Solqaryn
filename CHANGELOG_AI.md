@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV04 C04-04.M03.03 V22 diagnostico HTTP 403 en autoridad SQL real
+- CI SHA 0b4688ad: 3/4 tests, positivo HTTP 403 no esperado; nuevas aserciones preflight reales sobre UsuarioEmpresa/Rol, RolPermiso y Factura con MySQL84 para identificar en GitHub Actions cuál autoridad falla sin suprimir la denegación.
+- No declarar LISTO, A5 ni certificación de host comercial; mantener historial de FAIL y permitir corrección posterior solo con causa identificada.
+
 ## 2026-11-20 — V22 DEV05 C02-03.M03.03 cancelación fail-closed tras I/O
 - Corregida carrera: un IC0203VerifiedOperatorEvidenceReader no cooperativo no puede conceder preflight positivo si CancellationToken fue cancelado durante await; nueva regresión xUnit adversarial positiva/negativa.
 - Solo Application y prueba, sin JWT/HTTP/DB en producción; A2/A3 del adaptador persistente pendientes, mantener VALIDANDO y A5 externa. CI GitHub-hosted y Scope Lock/V5 exact-SHA requeridos.

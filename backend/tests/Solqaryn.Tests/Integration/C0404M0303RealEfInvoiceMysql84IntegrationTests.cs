@@ -390,6 +390,28 @@ public sealed class C0404M0303RealEfInvoiceMysql84IntegrationTests
             }
             await ChangeAsync("INSERT INTO RolPermisos(Id,RolId,PermisoId) VALUES(991,801,951)");
 
+            // CI diagnostic A2/A3: isolate real database authority predicates before
+            // the API reader's deliberate fail-closed exception boundary.
+            await using (var preflight = new AppDbContext(
+                new DbContextOptionsBuilder<AppDbContext>().UseMySQL(scoped).Options))
+            {
+                var actorA = new Mock<ICurrentUserService>();
+                actorA.SetupGet(x => x.EstaAutenticado).Returns(true);
+                actorA.SetupGet(x => x.UsuarioId).Returns((int?)701);
+                var realScope = new UsuarioScopeService(preflight, actorA.Object);
+                var membership = await realScope.ObtenerActualAsync(401);
+                Assert.NotNull(membership); // SQL membership + role + active tenant
+                Assert.Equal(801, membership.RolId);
+                var realPermission = new PermisoService(
+                    new RolPermisoRepository(preflight), Mock.Of<IRolRepository>(),
+                    Mock.Of<IPermisoRepository>(), Mock.Of<IAuditoriaService>(),
+                    actorA.Object, realScope);
+                Assert.True(await realPermission.TienePermisoAsync(
+                    401, ModuloSistema.Facturacion, AccionPermiso.Compartir));
+                Assert.True(await preflight.Facturas.AsNoTracking()
+                    .AnyAsync(f => f.Id == 5001 && f.EmpresaId == 401));
+            }
+
             using var host = await StartRealAuthorityAsync(scoped);
             using var client = host.GetTestClient();
             var validA = Jwt(701);
