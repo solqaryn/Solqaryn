@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV06 C11-03.M03.03 autorización tenant real Oracle EF/MySQL 8.4
+- Se agrega regresión adversarial con JWT firmado y TestServer sobre el lector real C1103 y UsuarioEmpresa/RolPermiso mediante AppDbContext Oracle EF en MySQL 8.4 efímero, con aislamiento A/B, revocación, usuario bloqueado y rollback real.
+- GitHub-hosted exige TRX 1/1 real de Oracle EF más JWT/HTTP previos, Scope Lock y checks causales exact-SHA; pendiente de CI antes de A0–A4/LISTO, A5 independiente; solo dev, lector OFF por defecto, sin outbox/PROD.
+
 ## 2026-11-20 — V22 DEV05 C02-03.M03.03 lector plataforma JWT/RBAC real, DEV y OFF
 - Adaptador API de preflight de solo lectura: JWT Bearer firmado, rol global actual, permiso Plataforma Configuracion.CambiarEstado desde EF y Empresa fenced; no privilegios por claims de UI ni X-Empresa-Id.
 - DI únicamente Development y opt-in triple (feature + comando Suspend + revisión de config), sin endpoint nuevo ni mutaciones. Casos xUnit de flag OFF, comandos irreversibles, ruta tenant cruzada, principal sintético y cancelación.

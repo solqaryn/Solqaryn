@@ -8,6 +8,7 @@ on:
       - 'backend/src/API/Security/C1103OutboxVerifiedMembershipReader.cs'
       - 'backend/tests/Solqaryn.Tests/API/C1103M0303VerifiedMembershipReaderJwtRegressionTests.cs'
       - 'backend/tests/Solqaryn.Tests/Integration/C1103M0303SignedJwtMysql84HttpIntegrationTests.cs'
+      - 'backend/tests/Solqaryn.Tests/Integration/C1103M0303RealMysqlEfJwtHttpIntegrationTests.cs'
       - 'backend/src/API/Program.cs'
       - '.github/workflows/v22-c11-03-m03-03-outbox-authorization.yml'
   workflow_dispatch:
@@ -96,4 +97,20 @@ jobs:
           print('C1103_MYSQL84_SIGNED_JWT_HTTP',n)
           if n['total']!=2 or n['passed']!=2 or n['failed']!=0 or n['notExecuted']!=0:
               raise SystemExit('Real MySQL 8.4, JWT, HTTP and rollback test gate failed')
+          PY
+      - name: Actual Oracle EF UsuarioEmpresa RolPermiso JWT HTTP MySQL 8.4
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter FullyQualifiedName~C1103M0303RealMysqlEfJwtHttpIntegrationTests --logger 'trx;LogFileName=c1103-real-ef-jwt-mysql84.trx'
+          python3 - <<'PY'
+          import pathlib,xml.etree.ElementTree as ET
+          paths=list(pathlib.Path('backend/tests/Solqaryn.Tests').rglob('c1103-real-ef-jwt-mysql84.trx'))
+          if len(paths)!=1: raise SystemExit('Missing real Oracle EF JWT MySQL84 TRX')
+          counters=ET.parse(paths[0]).getroot().find('.//{*}Counters')
+          if counters is None: raise SystemExit('No real EF integration counters')
+          n={key:int(counters.attrib.get(key,-1)) for key in ('total','passed','failed','notExecuted')}
+          print('C1103_REAL_ORACLE_EF_MYSQL84_JWT_HTTP',n)
+          if n!={'total':1,'passed':1,'failed':0,'notExecuted':0}:
+              raise SystemExit('Actual app authorization services integration failed')
           PY
