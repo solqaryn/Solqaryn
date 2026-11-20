@@ -55,6 +55,9 @@ public sealed class C0604PortalWorkDispatchBoundary
         try
         {
             gate = await _authorization.EvaluateAsync(auth, cancellationToken);
+            // A trusted reader may finish after cancellation without throwing.
+            // Never report ordinary authorization denial for an aborted dispatch.
+            cancellationToken.ThrowIfCancellationRequested();
         }
         catch (OperationCanceledException) { throw; }
         catch (Exception ex) when (ex is not OutOfMemoryException)

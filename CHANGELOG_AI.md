@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV01 C06-04.M03.05 cancelación después de preflight asíncrono
+- Corrección R2 acotada: el despachador del portal detecta cancelación surgida durante lectura de evidencia confiable y propaga OperationCanceledException antes de cualquier efecto sobre la cola.
+- Regresión xUnit adversarial: el lector cancela el token sin lanzar; verificar cancelación, una lectura y cero enqueue. No hay worker/DI, HTTP/JWT/MySQL ni idempotencia durable implementados por este diff; VALIDANDO sigue bloqueada para cierre global A0-A4 y A5 independiente.
+
 ## 2026-11-20 — DEV06 C11-03.M03.03 P1 JWT subject con ID numérico
 - Reparación causal: JwtService firma sub=nombreUsuario e id=numérico; el lector API comparaba el sujeto al ID e impedía toda autorización legítima en el endpoint DEV-only. Mantener id firmado y sujeto/nombre firmados coherentes, con fail-closed para firma, tenant B, revocación y mismatch.
 - Test regresión HTTP con JwtBearer real, lector API y cuatro casos positivos/negativos, workflow dirigido TRX. ScopeLock/V5, backend, seguridad y GitHub-hosted exact-SHA siguen pendientes de comprobar; no declarar LISTO/A5, la integración real de grants UsuarioEmpresa/RolPermiso mediante AppDbContext/MySQL84 sigue sin certificación. Owner DEV06 histórico conservado, rollback git revert normal.

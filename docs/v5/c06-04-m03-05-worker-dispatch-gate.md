@@ -13,3 +13,7 @@ Se agregan xUnit con denegaciones sobre operaciones no permitidas, claves idempo
 ## A4, A5 y reversión
 
 Verificar Scope Lock, V5, .NET Release/xUnit y seguridad en el SHA exacto con logs, además de readback de PLAN/COLA/BITACORA. Mantener VALIDANDO mientras la integración productiva autorizada y los criterios P1 permanezcan sin acreditar. A5 por otra Task Javier distinta. Revertir con commit Git normal conservando trabajos concurrentes e historial, nunca force-push ni borrar registros.
+
+## V22 — Corrección adversarial de cancelación posterior al await (2026-11-20)
+
+Una fuente confiable puede completar una lectura después de que el llamante cancele, sin lanzar excepción. El límite Application comprueba ahora el CancellationToken inmediatamente después del preflight asíncrono y antes de decidir si una operación puede despacharse; un test xUnit reproduce la carrera (cancelación al leer evidencia), exige OperationCanceledException y verifica cero llamadas a la cola. El test falla con la versión anterior al cambio. No se activa cola, adaptador ni escritura y no se afirma integración JWT/HTTP/MySQL real por este diff aislado. El cierre global R2 sigue pendiente de autenticación CUSTOMER real, control de tenant A/B, idempotencia durable y worker probado. Scope Lock, V5, backend Release/xUnit y seguridad requieren GitHub Actions SUCCESS en el SHA publicado; A5 por otra Task Javier; no QA/main/PROD.

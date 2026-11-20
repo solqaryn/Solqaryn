@@ -14,10 +14,12 @@ public sealed class C0604PortalWorkDispatchBoundaryTests
     {
         public int Reads { get; private set; }
         public bool Throws { get; set; }
+        public CancellationTokenSource? CancelDuringRead { get; set; }
         public ValueTask<Gate.Evidence?> ReadCurrentAsync(
             string resourceId, CancellationToken cancellationToken)
         {
             Reads++;
+            CancelDuringRead?.Cancel();
             if (Throws) throw new InvalidOperationException("private token or account data");
             return ValueTask.FromResult<Gate.Evidence?>(null);
         }
@@ -126,6 +128,22 @@ public sealed class C0604PortalWorkDispatchBoundaryTests
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
             await new Boundary(new Gate(reader), queue).TryEnqueueAsync(Valid(), cts.Token));
         Assert.Equal(0, reader.Reads);
+        Assert.Equal(0, queue.Calls);
+    }
+
+    [Fact]
+    public async Task CancellationDuringTrustedReadPropagatesWithoutQueueSideEffects()
+    {
+        using var cts = new CancellationTokenSource();
+        var reader = new Reader { CancelDuringRead = cts };
+        var queue = new Queue();
+        var boundary = new Boundary(new Gate(reader), queue);
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
+            await boundary.TryEnqueueAsync(Valid(), cts.Token));
+
+        Assert.True(cts.IsCancellationRequested);
+        Assert.Equal(1, reader.Reads);
         Assert.Equal(0, queue.Calls);
     }
 
