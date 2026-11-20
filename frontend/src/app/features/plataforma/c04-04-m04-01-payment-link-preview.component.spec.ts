@@ -35,7 +35,7 @@ describe('C04-04.M04.01 - ruta desconectada de enlaces de cobro', () => {
   it('falla cerrado para nulo, ambito Empresa y revocacion', async () => {
     const {root,fixture,sesion}=await montar(null);
     expect(root.querySelector('[data-testid="c0404-payment-private"]')).toBeNull();
-    sesion.set({...admin,ambito:'Empresa'} as PlataformaSesion);fixture.detectChanges();
+    sesion.set({...admin,ambito:'Empresa'} as unknown as PlataformaSesion);fixture.detectChanges();
     expect(root.querySelector('[data-testid="c0404-payment-private"]')).toBeNull();
     sesion.set(admin);fixture.detectChanges();
     expect(root.querySelectorAll('[data-testid^="c0404-step-"]')).toHaveLength(3);
@@ -43,7 +43,7 @@ describe('C04-04.M04.01 - ruta desconectada de enlaces de cobro', () => {
     expect(root.querySelector('[data-testid="c0404-payment-private"]')).toBeNull();
   });
   it('no confia en flag administrador falso ni HTML hostil', async () => {
-    const {root}=await montar({...admin,esAdministrador:false,nombreUsuario:'<img src=x onerror=alert(1)>'});
+    const {root}=await montar({...admin,esAdministrador:false,nombreUsuario:'<img src=x onerror=alert(1)>'} as unknown as PlataformaSesion);
     expect(root.querySelector('[data-testid="c0404-payment-private"]')).toBeNull();
     expect(root.querySelector('img')).toBeNull();
     expect(root.innerHTML).not.toContain('onerror');

@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV03 C04-04.M04.01 reparación de tipado adversarial Angular
+- Corrige dos fixtures deliberadamente inválidos del test Vitest con doble conversión explicita por unknown, manteniendo la denegación para ambito Empresa y esAdministrador=false; no cambia runtime ni reduce asserts.
+- Causa demostrada: GitHub Actions job 136423813786 TypeScript TS2352/TS2322 en el test de DEV03; otro archivo de DEV04 presenta el mismo error, NO se toca por escritor nativo activo en C11-03.M04.01. CI exact-SHA nueva requerida; no certificar global.
+
 ## 2026-11-20 — DEV04 C11-03.M04.01 CI YAML indentación válida
 - El primer ajuste de cwd dejó mal indentada la línea node fuera del bloque run YAML: se corrige tras inspeccionar diff y ausencia de job dirigido, sin modificar ni debilitar Scope Lock.
 - Vitest, Angular build y Chromium deberán completar en GitHub-hosted exact-SHA; no se cuentan checks fallidos, omitidos ni pendientes de los SHA anteriores. Sin QA/main/PROD.
