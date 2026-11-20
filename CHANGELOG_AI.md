@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV05 C04-04.M03.04 reserva durable aislada MySQL 8.4
+- Incremento R2: contexto EF independiente no integrado, UNIQUE por tenant/proveedor/clave, replay vs conflicto, rollback y aislamiento sin efectos financieros ni PSP.
+- GitHub-hosted MySQL 8.4 efímero, xUnit TRX exact-SHA; JWT/HTTP/PSP comercial no certificados, A5 independiente cuando A0-A4 completen.
+
 ## 2026-11-20 — DEV06 C11-03.M03.06 gate TRX estricto actualizado a cinco pruebas
 - Corrección causal P2: tras añadir dos regresiones adversariales, GitHub-hosted ejecutó 5 PASS y 0 FAIL sobre MySQL 8.4.13 pero el gate XML conservaba el umbral obsoleto 3/3; se ajusta a 5/5 manteniendo exigencia de cero fallos/omitidos.
 - No se eliminan ni relajan pruebas, Scope Lock o V5; nuevo SHA y revisión independiente siguen pendientes antes de LISTO; sin proveedores/QA/main/PROD.
