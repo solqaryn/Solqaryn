@@ -1462,6 +1462,7 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
       expect(documento?.status()).toBe(200);
       expect((await sesion).status()).toBe(200);
       await expect(page.getByRole('main')).toHaveCount(1);
+      await expect(page.locator('section.cutover[aria-labelledby="cutover-title"]')).toHaveCount(1);
       await expect(page.getByRole('heading', {
         level: 1, name: 'Controles de preparación para cutover'
       })).toHaveCount(1);
@@ -1492,7 +1493,7 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
       expect(focoContraste, 'Tema alcanzable con teclado real').toBe(true);
       await page.keyboard.press('Space');
       await expect(contraste).toHaveAttribute('aria-pressed', 'true');
-      await expect(page.locator('main.cutover')).toHaveClass(/contraste-alto/);
+      await expect(page.locator('section.cutover')).toHaveClass(/contraste-alto/);
       expect(await page.evaluate(() => document.documentElement.scrollWidth))
         .toBeLessThanOrEqual(width + 1);
     }

@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 reparación causal de doble landmark cutover en C15-04.M05.04 [Javier :10]
+- Error real identificado: GitHub Actions job 135952117240 sobre SHA 2e2d0e27 registró 48/49 Chromium PASS, 1 FAIL; `getByRole('main')` encontraba dos landmarks anidados en la pantalla privada de cutover.
+- Cambio mínimo en `dev`: raíz del componente Angular cambia de `main` a `section` accesible `aria-labelledby`, conserva `main` de shell, JWT/RBAC/tenant, UI solo lectura, e incorpora regresión Vitest y aserción Playwright en navegador real MySQL 8.4 efímero.
+- CI exact-SHA nueva PENDIENTE; no declarar PASS, LISTO, A5 ni cierre global. C15-04.M05.04 permanece EN_PROGRESO, owner DEV02, lock V17 2000002297, pruebas globales y QA de transferencias siguen pendientes de evaluación; rollback git revert normal, Scope Lock STRICT, sin QA/main/PROD.
+
 ## 2026-11-19 — V22 C11-03.M03.03 autorización tenant Outbox fail-closed [Javier :50]
 - Guard Application .NET 10 con tenant, rol/membresía, revocación y lista de eventos solo desde backend; no concede persistencia, despacho, ACK o privilegios de cliente.
 - xUnit JWT efímero realmente firmado/verificado, negativos A/B, token alterado/expirado, replay, excepciones y cancelación; CI GitHub-hosted TRX dirigida y Scope Lock exact SHA.

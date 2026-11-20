@@ -29,7 +29,7 @@ type TemaPermitido = typeof TEMAS_PERMITIDOS[number]['id'];
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="cutover" aria-labelledby="cutover-title"
+    <section class="cutover" aria-labelledby="cutover-title"
       [class.contraste-alto]="puedeVer() && tema() === 'alto-contraste'">
       <header>
         <p class="eyebrow">SOLQARYN · Preparación MySQL privado</p>
@@ -96,7 +96,7 @@ type TemaPermitido = typeof TEMAS_PERMITIDOS[number]['id'];
       } @else {
         <p class="denegado" role="alert">Acceso de plataforma no confirmado. Detalles privados ocultos.</p>
       }
-    </main>
+    </section>
   `,
   styles: [`
     :host { display:block; color:var(--mat-sys-on-surface,#17212d); }

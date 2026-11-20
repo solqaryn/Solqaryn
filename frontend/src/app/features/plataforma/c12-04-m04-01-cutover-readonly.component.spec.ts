@@ -40,6 +40,15 @@ describe('C12-04.M04.01 superficie privada de preparación MySQL', () => {
     expect(await matching[0].loadComponent?.()).toBe(C1204CutoverReadonlyComponent);
   });
 
+  it('no anida el landmark main dentro del shell y conserva región accesible rotulada', async () => {
+    const { root } = await montar();
+    const region = root.querySelector('section.cutover[aria-labelledby="cutover-title"]');
+    expect(region).not.toBeNull();
+    expect(root.querySelectorAll('main.cutover')).toHaveLength(0);
+    expect(region?.querySelector('h1#cutover-title')?.textContent)
+      .toContain('Controles de preparación para cutover');
+  });
+
   it('sin grant de plataforma no expone controles privados', async () => {
     const { root } = await montar(null);
     expect(root.querySelector('[data-testid=c1204-cutover-private]')).toBeNull();
