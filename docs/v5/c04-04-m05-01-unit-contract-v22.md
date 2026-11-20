@@ -1,0 +1,5 @@
+# C04-04.M05.01 — reglas unitarias reproducibles (V22)
+
+PLAN D710 obliga ejecutar una prueba unitaria o de regla con resultado reproducible; PLAN E710 es meta acumulativa M05, no habilita pagos ni PSP. R2 conservador por entorno financiero. En dev, bajo V17/CAS y ScopeLock STRICT.
+
+A0: solo tres archivos nuevos (xUnit .NET10, workflow, documento) y entrada autocontenida CHANGELOG; usa el código de dominio inmutable C0404PaymentDomainRules sin tocar runtime, API, DI, base de datos, claims JWT, UI o secretos. A1: casos positivos/negativos y fronteras de montos, facturas, versión, idempotencia/replay/conflicto, moneda, provider, grant/revocación y tenant A/B. A2: aislamiento sintético a nivel de registros, **NO** prueba JWT firmado ni permisos HTTP reales. A3: MySQL, HTTP y PSP NO_APLICA a diff test-only de reglas puras; fases de integración próximas sí requerirán MySQL 8.4 efímero. A4: GitHub Actions job dirigido xUnit TRX >=14, Release, Scope Lock, V5 y seguridad relevantes en SHA exacto, sin aceptar FAIL, SKIPPED o IN_PROGRESS requeridos. A5: otra Task Javier distinta del autor. Rollback git revert normal, no QA/main/PROD, sin dinero real.

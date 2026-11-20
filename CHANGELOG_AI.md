@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV03 C04-04.M05.01 pruebas xUnit de reglas puras
+- Nueva suite reproducible sobre decisiones de dominio en .NET 10: tenant A/B, RBAC/revocación, facturas, montos y precisión, replay y conflicto idempotente; cero efectos financieros, sin cambio de runtime.
+- CI GitHub-hosted dirigida con TRX fail-closed, Scope Lock exact-SHA y build Release; A0–A4 pendientes de run y A5 por Task distinta. No certifica JWT firmado/HTTP/MySQL/PSP ni toda la fase M05. Dev únicamente, sin QA/main/PROD.
+
 ## 2026-11-20 — DEV02 C15-04.M05.04 A0.69 reflujo 200% JWT y foco real
 - Prueba incremental Playwright/Chromium para tres vistas globales con JWT firmado, backend .NET 10 y MySQL 8.4 descartable, seis combinaciones de viewport, reflujo 200%, Tab real y cero mutaciones empresariales.
 - No certifica el resto de modulos, WCAG integral ni RUM; la microtarea sigue EN_PROGRESO con el candado propio V17, CI SHA pendiente de verificar y A5 independiente. Sin QA/main/PROD.
