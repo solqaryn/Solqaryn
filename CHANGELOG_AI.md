@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV02 C15-04.M05.04 A0.63 JWT empresarial A y auditoría global
+- Nuevo test R2 con JWT firmado real de empresa A, .NET10, MySQL8.4 y Chromium 320/1280: HTTP/guard 403 y UI privada ausente, sin mocks ni cambios runtime.
+- El nuevo SHA requiere 61/61 en GitHub-hosted, Scope Lock/V5/backend/frontend/security completed/success; 60/60 PASS correspondía solo al SHA 0fee248d.
+- Mantener WIP DEV02, lock V17 2000002297 y A0-A4 global sin certificar; A5 independiente, sin QA/main/PROD.
+
 ## 2026-11-20 — DEV01 C06-04.M03.05 cancelación después de preflight asíncrono
 - Corrección R2 acotada: el despachador del portal detecta cancelación surgida durante lectura de evidencia confiable y propaga OperationCanceledException antes de cualquier efecto sobre la cola.
 - Regresión xUnit adversarial: el lector cancela el token sin lanzar; verificar cancelación, una lectura y cero enqueue. No hay worker/DI, HTTP/JWT/MySQL ni idempotencia durable implementados por este diff; VALIDANDO sigue bloqueada para cierre global A0-A4 y A5 independiente.

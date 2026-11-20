@@ -1871,4 +1871,27 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     }
   });
 
+  // A0.63: JWT firmado tenant A no equivale a permiso de plataforma.
+  test('A0.63 - empresa A JWT real no obtiene auditoria de tenancy global', async ({ page, request }) => {
+    const jwt = await ingresar(page, 'c1504_admin_a');
+    const directo = await request.get(api + '/plataforma/sesion', {
+      headers: { Authorization: 'Bearer ' + jwt }
+    });
+    expect(directo.status(), 'Rol empresarial A no es permiso global').toBe(403);
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      const sesion = page.waitForResponse(res =>
+        res.url().includes('/plataforma/sesion') && res.request().method() === 'GET');
+      await page.goto('/plataforma/auditoria-tenancy-v5');
+      expect((await sesion).status()).toBe(403);
+      await expect(page).toHaveURL(url =>
+        url.pathname === '/login' && url.searchParams.get('plataforma') === 'denegado');
+      await expect(page.locator('section.tenancy-audit')).toHaveCount(0);
+      await expect(page.getByRole('heading', { name: 'Fronteras de aislamiento y evidencia' })).toHaveCount(0);
+      await expect(page.locator('ol.fronteras > li')).toHaveCount(0);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(width + 1);
+    }
+  });
+
 });
