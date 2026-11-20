@@ -1,3 +1,7 @@
+## 2026-11-19 — V22 C03-01.M02.03 persistencia preferencia por usuario y rollback [Javier :40]
+- Diseñado sin ejecutar un contrato de preferencia scoped por usuario, indice unico, version CAS, FK y 12 fixtures adversariales; MySQL 8.4 efimero y migracion reversible exigidos solo al implementar.
+- Archivo `docs/v5/c03-01-m02-03-preferencia-usuario-persistencia-indices-migracion.md`; fuentes EF verificadas, A0-A4 documentales, A5 independiente y no alteracion de runtime/DB. Scope Lock STRICT y solo dev.
+
 ## 2026-11-19 — V22 C03-01.M02.02 contrato API/DTO login inteligente 0/1/N [Javier :40]
 - Definido contrato compatible de login y tenant-context existentes, errores 400/401/403, elección por membresía vigente, preferencias futuras por usuario y 12 casos positivos/negativos; ninguna ruta o migración nueva.
 - Archivo `docs/v5/c03-01-m02-02-api-dto-errors-compat-ux-login-v1.md` con fuentes reales de .NET y Angular, riesgos legacy documentados, A0-A4 de diff documental, A5 por otra Task Javier y rollback normal. Solo dev, Scope Lock STRICT.
