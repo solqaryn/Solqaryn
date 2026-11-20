@@ -1,0 +1,43 @@
+name: V22 C02-01.M05.01 - unit tenant membership rule
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/C0201M0501UniqueTenantMembershipRuleTests.cs'
+      - '.github/workflows/v22-c02-01-m05-01-tenant-rule.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c0201-m0501-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  unit-rule:
+    name: C02-01.M05.01 - current membership unique tenant rule xUnit
+    runs-on: ubuntu-latest
+    timeout-minutes: 18
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.x'
+      - name: Verify Scope Lock
+        run: node scripts/verify-project-scope.mjs
+      - name: Build and execute reproducible positive/negative rule
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet restore backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj
+          dotnet build backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore
+          dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter 'FullyQualifiedName~C0201M0501UniqueTenantMembershipRuleTests' --logger 'trx;LogFileName=c0201-tenant-unit-rule.trx'
+          python3 - <<'PY'
+          import pathlib, xml.etree.ElementTree as ET
+          files=list(pathlib.Path('backend/tests/Solqaryn.Tests').rglob('c0201-tenant-unit-rule.trx'))
+          if len(files)!=1: raise SystemExit('TENANT_UNIT_MISSING_UNIQUE_TRX')
+          counters=ET.parse(files[0]).getroot().find('.//{*}Counters')
+          if counters is None: raise SystemExit('TENANT_UNIT_NO_COUNTERS')
+          n={k:int(counters.attrib.get(k,-1)) for k in ('total','passed','failed','notExecuted')}
+          print('C0201_M0501_TENANT_RULE',n)
+          if n!={'total':1,'passed':1,'failed':0,'notExecuted':0}:
+              raise SystemExit('TENANT_UNIT_RULE_FAIL_CLOSED')
+          PY

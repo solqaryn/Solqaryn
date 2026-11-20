@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV04 C02-01.M05.01 regla unitaria de contexto tenant
+- Se incorpora regresión .NET 10 de UsuarioScopeService real: doble membresía, revocación B, selección única A, rol B no prestado a A, usuario bloqueado y anónimo con salida fail-closed.
+- Test-only, EF InMemory y principal mock limitados a regla; no certifican JWT firmado, HTTP real, MySQL 8.4 o login productivo. CI dirigida TRX 1/1, Scope Lock/V5 exact SHA, A5 externa; sin QA/main/PROD.
+
 ## 2026-11-20 — DEV04 C11-03.M03.04 adaptador aislado MySQL 8.4, tenant y rollback
 - Se agrega adaptador EF de evidencia outbox con lectura tenant-bound y proyección sin payload ni PII, sin DI/API/dispatch, y regresión xUnit real sobre MySQL 8.4 efímero: A/B, índice UNIQUE físico, cancelación y rollback.
 - GitHub-hosted exige TRX 1/1 real y Scope Lock/V5/seguridad exact SHA. A0–A4 solo tras CI, A5 por Task distinta; no hay migraciones productivas, ACK, proveedor, QA/main/PROD.
