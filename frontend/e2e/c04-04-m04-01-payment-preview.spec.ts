@@ -40,3 +40,53 @@ test('C04-04.M04.01 synthetic UI: no writes, responsive, keyboard',async({page})
   await page.keyboard.press('Tab');
   await expect(page.getByRole('link',{name:'Volver a plataforma'})).toBeFocused();
 });
+
+
+test('C04-04.M04.05 responsive zoom 200 percent, headings and no pay action',async({page})=>{
+  await fixtureSesion(page,200);
+  await page.goto(url);
+  const panel=page.getByTestId('c0404-payment-private');
+  await expect(panel).toBeVisible();
+  await expect(page.getByRole('heading',{name:'Enlaces de cobro',level:1})).toHaveCount(1);
+  await expect(panel.getByRole('heading',{name:'Etapas previstas',level:2})).toHaveCount(1);
+  await expect(panel.locator('li h3')).toHaveCount(3);
+  await page.evaluate(()=>{document.documentElement.style.fontSize='200%';});
+  for(const width of [320,375,768,1280]){
+    await page.setViewportSize({width,height:800});
+    const size=await page.evaluate(()=>({scroll:document.documentElement.scrollWidth,client:document.documentElement.clientWidth}));
+    expect(size.scroll-size.client,'overflow at 200% width='+width).toBeLessThanOrEqual(2);
+    await expect(page.getByRole('link',{name:'Volver a plataforma'})).toBeVisible();
+  }
+  await expect(panel.locator('form,input,button,select,textarea,iframe')).toHaveCount(0);
+});
+
+test('C04-04.M04.05 keyboard and focus target visible without payment writes',async({page})=>{
+  await fixtureSesion(page,200);
+  const writes:string[]=[];
+  page.on('request',request=>{if(!['GET','HEAD','OPTIONS'].includes(request.method()))writes.push(request.method());});
+  await page.goto(url);
+  await page.keyboard.press('Tab');
+  const link=page.getByRole('link',{name:'Volver a plataforma'});
+  await expect(link).toBeFocused();
+  const focus=await link.evaluate(element=>{
+    const style=getComputedStyle(element);
+    const box=element.getBoundingClientRect();
+    return {outline:parseFloat(style.outlineWidth),style:style.outlineStyle,width:box.width,height:box.height};
+  });
+  expect(focus.outline,'visible keyboard focus').toBeGreaterThanOrEqual(3);
+  expect(focus.style).not.toBe('none');
+  expect(focus.height,'minimum target height').toBeGreaterThanOrEqual(44);
+  expect(focus.width,'minimum target width').toBeGreaterThanOrEqual(44);
+  expect(writes).toEqual([]);
+});
+
+test('C04-04.M04.05 403 denied on narrow and desktop screens without error leak',async({page})=>{
+  await fixtureSesion(page,403);
+  for(const width of [320,1280]){
+    await page.setViewportSize({width,height:800});
+    await page.goto(url);
+    await expect(page).toHaveURL(/\/login/);
+    await expect(page.getByTestId('c0404-payment-private')).toHaveCount(0);
+    await expect(page.getByText('PRIVATE_PSP_SECRET')).toHaveCount(0);
+  }
+});

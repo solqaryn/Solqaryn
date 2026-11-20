@@ -1,0 +1,7 @@
+# C04-04.M04.05 — pruebas Chromium responsive y teclado V22
+
+SOLQARYN dev, PROJECT_SCOPE_LOCK STRICT, PLAN D708. Entrega test-only; no modifica runtime de Angular, API, autenticación, EF/MySQL ni PSP. Riesgo R2 conservador por contexto financiero, pero HTTP, JWT firmados y MySQL son NO_APLICA al cambio de pruebas, no equivale a su certificación.
+
+A0: extender el archivo Playwright existente, con dos tests previos sin borrar. A1/A3: tres casos adicionales GitHub-hosted Chromium real y Angular loopback: (1) responsive 320/375/768/1280 a 200% tamaño de texto, sin overflow, headings semánticos y sin formularios de pago; (2) Tab de teclado auténtico sin forzar focus, outline visible 3 px, enlace con ancho/alto >=44 px y sin métodos mutantes HTTP; (3) simulación 403 contra 320 y 1280, rechazos sin revelar cadena hostil. A2: no sustituye backend JWT real, ni el fixture synthetic sirve para certificar roles o tenant A/B. A4: check exact-SHA de Chromium 5 tests, type/lint/build Angular, Scope Lock, V5, ERP audit y catálogo P0 pertinentes completados SUCCESS. SKIPPED/CANCELLED/FAIL/IN_PROGRESS no PASS; A5 independiente por otra Task Javier distinta del autor DEV06.
+
+La prueba no constituye auditoría WCAG completa ni demuestra contraste calculado en dispositivos físicos; el criterio verificable es teclado, foco visible, semántica, responsive y denegación. Rollback mediante git revert normal y readback. Sin QA/main/PROD, pagos reales, secretos ni proveedores. Conservamos CHANGELOG_AI.md íntegro por riesgo documentado de truncamiento.
