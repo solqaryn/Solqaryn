@@ -57,6 +57,7 @@ public sealed class C0203TenantLifecycleAuthorizationGateTests
     [InlineData(null)]
     [InlineData("")]
     [InlineData("a")]
+    [InlineData("0")]
     [InlineData(" company-A")]
     [InlineData("company/A")]
     [InlineData("company-\u200B")]
@@ -66,6 +67,30 @@ public sealed class C0203TenantLifecycleAuthorizationGateTests
         var decision = await new Gate(reader).InspectAsync(Request() with { TargetTenantId = tenantId });
         Assert.Equal("LIFECYCLE_ACCESS_DENIED", decision.Code);
         Assert.Equal(0, reader.Calls);
+    }
+
+    [Theory]
+    [InlineData("1", "1")]
+    [InlineData("7", "9")]
+    [InlineData("9", "3")]
+    public async Task ValidSingleDigitSqlTenantAndActorIdsPermitReadOnlyPreflight(
+        string tenantId, string actorId)
+    {
+        // Real Empresa/Usuario INT primary keys can be 1..9.
+        var reader = new Reader
+        {
+            Value = Trusted() with
+            {
+                VerifiedTenantId = tenantId,
+                VerifiedActorId = actorId
+            }
+        };
+        var decision = await new Gate(reader).InspectAsync(
+            new Gate.Intent(tenantId, Rules.Command.Suspend));
+        Assert.Equal("VERIFIED_READONLY_PREFLIGHT_ONLY", decision.Code);
+        Assert.True(decision.MayProceedToReadOnlyApplicationPreflight);
+        Assert.False(decision.AuthorizesTenantMutation);
+        Assert.Equal(1, reader.Calls);
     }
 
     [Fact]

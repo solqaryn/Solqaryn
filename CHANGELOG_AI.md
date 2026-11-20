@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV05 C02-03.M03.03 P2: IDs SQL positivos de un dígito en autorización read-only
+- Corregido el guard Application que negaba EmpresaId y UsuarioId 1..9 por longitud mínima 2; un único carácter solo admite dígitos 1..9 y mantiene rechazo de 0/letras y denegación por defecto.
+- Añadidas regresiones xUnit positivas para tenant/actor (1,1), (7,9), (9,3) y negativas para identificadores inválidos; CI .NET10 y Scope Lock/V5 requerida por SHA antes de acreditar PASS.
+- Solo DEV y preflight de lectura; falta prueba JWT+HTTP+Oracle EF/MySQL8.4 del lector real y persistencia/revocación durable. H=VALIDANDO, A5 por otra Task; no QA/main/PROD.
+
 ## 2026-11-20 — DEV03 C04-04.M03.05 cola DRY-RUN durable aislada V22
 - PLAN D702 R2: cola durable de preflight provider-neutral aislada en Infrastructure/AutomationV5, sin API, DI, hosted worker, PSP, webhook, ledger, cobro ni refund. No se certifica toda M03 ni runtime comercial.
 - Tabla MySQL efimera independiente con UNIQUE (EmpresaId, Provider, KeyHash), payload SHA256, replay/conflicto, tenant A/B, cancellation y rollback; nuevos tests dirigidos GitHub-hosted reales MySQL 8.4 y workflow exact-SHA. A0-A4 pendientes de CI causal y readback; A5 siempre por otra Task Javier, no por la autora.

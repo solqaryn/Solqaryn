@@ -66,7 +66,11 @@ public sealed class C0203TenantLifecycleAuthorizationGate
     }
 
     private static bool SafeId(string? value) =>
-        value is { Length: >= 2 and <= 128 } &&
+        // Business tenants and users may have valid positive one-digit SQL IDs.
+        // A lone letter or zero remains invalid; longer opaque trusted IDs
+        // retain the existing strict ASCII whitelist.
+        value is { Length: >= 1 and <= 128 } &&
+        (value.Length > 1 || value[0] is >= '1' and <= '9') &&
         value.All(c => c is >= 'a' and <= 'z' or >= 'A' and <= 'Z' or
                                >= '0' and <= '9' or '-' or '_');
 

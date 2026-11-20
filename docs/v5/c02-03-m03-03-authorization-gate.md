@@ -44,3 +44,13 @@ Incremento R2: se incorpora C0203VerifiedPlatformOperatorEvidenceReader en API/S
 **Fail closed por defecto:** requiere TenantLifecycle:EnableReadOnlyAuthorizationProbe=true, TenantLifecycle:AllowSuspendReadOnly=true, ReadOnlyPolicyRevision positivo y ruta tenantId que coincida. Solo permite preflight informativo de Suspend, no reactivación, archive, delete, grant, CAS, escritura ni cutover. La lógica no expone ruta HTTP ni actualiza migraciones o datos. Las pruebas xUnit adversariales validan config apagada, comando no permitido, ruta forjada, actor anónimo, principal sintético y cancelación; ejecutar CI exact-SHA antes de usar estos resultados.
 
 **LIMITACIÓN R2/A2-A3:** el nuevo lector todavía no tiene prueba HTTP JWT+EF de sus propias consultas contra tablas UsuarioEmpresa/RolPermiso y MySQL efímero, y no está conectado a un endpoint de ciclo de vida real. Una revisión de policy version desde configuración NO equivale a revisión transaccional durable ni certifica CAS y revocación. El flujo de autorización para mutaciones sigue bloqueado y la microtarea permanece VALIDANDO hasta pruebas de integración completas y revisor A5 independiente. Rollback: git revert normal del commit exclusivo tras verificar HEAD y CAS; conservar BITACORA histórica.
+
+## V22 DEV05 — reparación P2 de identificadores positivos SQL de un dígito (2026-11-20)
+
+A0: hallazgo reproducible en `C0203TenantLifecycleAuthorizationGate.SafeId`: la validación de longitud mínima 2 rechazaba `Empresa.Id` y `Usuario.Id` positivos válidos de un dígito (1..9), incluso con evidencia de servidor, JWT firmado, grant de plataforma y tenant correctos. La corrección admite un único carácter únicamente cuando es un dígito ASCII 1..9, conserva rechazo de `0`, letras solitarias y caracteres de control, y no modifica las prohibiciones de mutación.
+
+A1: xUnit positivo para (tenant, actor) (1,1), (7,9) y (9,3), denegación de `0` y `a`, regresiones de 129 caracteres, falsificación de actor/JWT/tenant, revocación, comandos cruzados, excepciones y cancelación. La aprobación real depende de GitHub Actions exact-SHA; pruebas requeridas en curso no son PASS.
+
+A2/A3: este incremento corrige una validación de Application que afecta al lector real DEV-only; **no acredita** el JWT+HTTP+Oracle EF/MySQL 8.4 con el lector de producción completo, revisión transaccional duradera, ni permisos de mutación. Mantener VALIDANDO y `A5_PENDIENTE` hasta prueba integrada causal y revisión independiente. La configuración sigue desactivada por defecto; sin QA, main o PROD.
+
+A4/rollback: verificar SHA, Scope Lock, .NET Release/xUnit, seguridad y V5 CHANGELOG en GitHub-hosted. Rollback mediante `git revert` normal del commit tras revalidar HEAD, preservando BITACORA.
