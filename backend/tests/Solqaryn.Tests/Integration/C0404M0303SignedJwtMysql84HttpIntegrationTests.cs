@@ -126,6 +126,7 @@ public sealed class C0404M0303SignedJwtMysql84HttpIntegrationTests
         new HostBuilder().ConfigureWebHost(web =>
             web.UseTestServer().ConfigureServices(services =>
                 {
+                    services.AddRouting();
                     services.AddHttpContextAccessor();
                     services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                         .AddJwtBearer(options => options.TokenValidationParameters =

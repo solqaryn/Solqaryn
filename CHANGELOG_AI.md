@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV04 C04-04.M03.03 corrección causal AddRouting TestServer
+- El job real GitHub-hosted del SHA 7cc73388 compiló, pero dos casos JWT/MySQL 8.4 fallaron al construir TestServer por servicios EndpointRouting ausentes. Se agrega services.AddRouting al arnés; no cambia runtime productivo ni permisos.
+- Reparación R2 test-only bajo candado V17; revalidación exact-SHA obligatoria y falla original preservada. H700 VALIDANDO, A5 independiente pendiente, sin certificación AppDbContext/JWT runtime ni PSP/cobros/QA/main/PROD.
+
 ## 2026-11-20 — DEV04 C04-04.M03.03 integración adversarial JWT HTTP MySQL 8.4
 - Pruebas nuevas xUnit Category=Integration en GitHub-hosted con TestServer JWT firmado, negativas 401/403, aislamiento A/B y MySQL 8.4 real (tabla temporal), revocación de membresía/grant, usuario inactivo, factura ajena y rollback; workflow dirigido exact SHA.
 - R2 test-only, SIN adaptador de autoridad API/EF real de producción: las afirmaciones favorables son exclusivamente en fixture efímero. H700 continúa VALIDANDO, A5 y A0-A4 completos pendientes; sin PSP/cobros/QA/main/PROD. V17 lock exclusivo, preservar autor DEV04.
