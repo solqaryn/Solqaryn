@@ -572,3 +572,12 @@ La verificación P0-007.A de GitHub Actions en el SHA `7a8767ebaa7318666836263c2
 - `frontend/src/app/features/plataforma/c15-02-m04-01-revision-arquitectura.component.ts`
 
 El validador mantiene la comparación exacta con el árbol real y las regresiones negativas ante omisión, duplicados o altas ficticias; únicamente se actualizan los conteos exigidos. El componente continúa bajo `plataformaGuard` y su lista documental `NO_VERIFICADO` no acredita JWT firmado, RBAC servidor, tenant A/B, WCAG global, proveedores, MySQL ni despliegues. Requerir check P0-007.A, Scope Lock y V5 SUCCESS del SHA de reparación, además de revisión A5 independiente. Rollback mediante git revert normal en dev.
+
+## Adición causal V22 DEV06 — C04-04.M04.01 y C11-03.M04.01, 20 noviembre 2026
+
+La CI del SHA `3963ddd8` detectó correctamente dos fuentes Angular privadas nuevas que faltaban en el inventario P0-007.A. Se añaden ambas entradas reales, sin borrar el historial ni relajar negativos: **167 componentes (159 features, 8 shared)**.
+
+- `frontend/src/app/features/plataforma/c04-04-m04-01-payment-link-preview.component.ts`
+- `frontend/src/app/features/plataforma/c11-03-m04-01-outbox-readonly.component.ts`
+
+Son vistas informativas bajo `plataformaGuard`, no prueban pagos, eventos, JWT, tenant A/B, proveedor, MySQL ni autorización productiva. Se requiere P0-007.A, Scope Lock y V5 SUCCESS exact-SHA nuevo. Rollback normal en dev.

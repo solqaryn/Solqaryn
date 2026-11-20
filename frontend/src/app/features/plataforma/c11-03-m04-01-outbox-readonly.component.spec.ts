@@ -44,7 +44,8 @@ describe('C11-03.M04.01 - ruta protegida y superficie outbox no autoritativa', (
     const {root,fixture,sesion} = await montar(null);
     expect(root.querySelector('[data-testid="c1103-outbox-private"]')).toBeNull();
     expect(root.querySelector('[role="alert"]')).not.toBeNull();
-    sesion.set({ ...admin, ambito: 'Empresa' } as PlataformaSesion);
+    // Datos hostiles de sesión externa: validar denegación incluso si violan el tipo estático.
+    sesion.set({ ...admin, ambito: 'Empresa' } as unknown as PlataformaSesion);
     fixture.detectChanges();
     expect(root.querySelector('[data-testid="c1103-outbox-private"]')).toBeNull();
     sesion.set(admin);
@@ -56,7 +57,7 @@ describe('C11-03.M04.01 - ruta protegida y superficie outbox no autoritativa', (
   });
 
   it('no otorga privilegios si esAdministrador es falso y no refleja cadenas hostiles', async () => {
-    const {root} = await montar({ ...admin, esAdministrador: false, nombreUsuario: '<img src=x onerror=alert(1)>' });
+    const {root} = await montar({ ...admin, esAdministrador: false, nombreUsuario: '<img src=x onerror=alert(1)>' } as unknown as PlataformaSesion);
     expect(root.querySelector('[data-testid="c1103-outbox-private"]')).toBeNull();
     expect(root.querySelector('img')).toBeNull();
     expect(root.innerHTML).not.toContain('onerror');

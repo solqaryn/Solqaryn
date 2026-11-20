@@ -22,3 +22,9 @@ Al inspeccionar el diff del primer fix se detectó un defecto de serialización 
 ## Tercer ajuste: ejecutar Scope Lock antes de npm ci
 
 El job 44775524973/job/136424173171 demostró un P2 nuevo y concreto: después de `npm ci`, el verificador encontró una identidad retirada dentro de `frontend/node_modules/playwright-core/lib/tools/skills/playwright-cli/references/test-generation.md` (dependencia de terceros instalada en el runner); no era archivo versionado ni cambio autorizado. Para preservar el PROJECT_SCOPE_LOCK sin rebajarlo ni excluir rutas, el paso de Scope Lock del workflow se mueve **antes** de `npm ci` (después de setup-node y npm global), desde la raíz del checkout. Las dependencias después se instalan y se ejecutan todas las comprobaciones originales. No se declara PASS hasta GitHub-hosted exact SHA.
+
+## Reparación causal V22 DEV06 — Vitest y catálogo P0-007.A
+
+El workflow dirigido `44776031486` falló con TS2352 al simular sesión `ambito='Empresa'` y TS2322 con `esAdministrador=false`. Se conservan las pruebas adversariales, expresando explícitamente que los datos hostiles de sesión no obedecen el contrato estático (`as unknown as PlataformaSesion`) sin modificar tipos de producción. Además, P0-007.A detectó dos componentes reales creados por C04/C11 no inventariados; el manifiesto y comparador estricto se actualizan de 165 a 167, manteniendo self-test negativo.
+
+El alcance no toca API, JWT, permisos, proveedores, DB ni datos productivos. No afirmar PASS hasta comprobar GitHub-hosted exact-SHA completo Vitest/Chromium, Angular lint/build, catalog, ScopeLock y V5; A5 por otro Javier distinto de DEV04 autor y DEV06 reparador. Se conserva CHANGELOG_AI.md íntegro por ser gran historial no apto para reemplazo parcial seguro; este registro y BITACORA documentan el cambio sin truncarlo. No QA/main/PROD.
