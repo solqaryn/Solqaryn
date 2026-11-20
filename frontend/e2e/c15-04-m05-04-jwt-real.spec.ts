@@ -1937,4 +1937,46 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
   });
 
 
+  // A0.65: region viva y salto accesible con JWT firmado, sin autorizacion simulada.
+  test('A0.65 - acceso a frentes por teclado y anuncio de sesión', async ({ page }) => {
+    await ingresar(page, 'c1504_platform_only');
+    const mutaciones: string[] = [];
+    page.on('request', req => {
+      if (/^(POST|PUT|PATCH|DELETE)$/.test(req.method()) &&
+          req.url().includes('localhost:5005')) {
+        mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+      }
+    });
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      const sesion = page.waitForResponse(res =>
+        res.url().includes('/plataforma/sesion') && res.request().method() === 'GET');
+      const documento = await page.goto('/plataforma/auditoria-tenancy-v5');
+      expect(documento?.status()).toBe(200);
+      expect((await sesion).status()).toBe(200);
+      const estado = page.locator('section.tenancy-audit section.estado');
+      await expect(estado).toHaveAttribute('aria-live', 'polite');
+      await expect(estado).toHaveAttribute('aria-atomic', 'true');
+      await expect(estado).toHaveAttribute('aria-busy', 'false');
+      await expect(estado.getByRole('status')).toContainText('Sesión verificada');
+      const salto = page.getByRole('link', { name: 'Saltar a los cuatro frentes de revisión' });
+      await expect(salto).toBeVisible();
+      let alcanzado = false;
+      for (let intento = 0; intento < 160; intento++) {
+        await page.keyboard.press('Tab');
+        alcanzado = await salto.evaluate(el => el === document.activeElement);
+        if (alcanzado) break;
+      }
+      expect(alcanzado, 'Tab llega al enlace sin .focus() artificial').toBe(true);
+      await page.keyboard.press('Enter');
+      await expect(page.locator('#fronteras-title')).toBeFocused();
+      await expect(page.locator('ol.fronteras')).toHaveAttribute('aria-labelledby', 'fronteras-title');
+      await expect(page.locator('ol.fronteras li')).toHaveCount(4);
+      await expect(page).toHaveURL(/\/plataforma\/auditoria-tenancy-v5$/);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(width + 1);
+    }
+    expect(mutaciones, 'Navegacion accesible solo lectura no muta API').toEqual([]);
+  });
+
 });

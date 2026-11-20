@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV02 C15-04.M05.04 A0.65 salto accesible y región viva
+- Test de integración R2 real en CI efímera: JWT firmado, .NET 10, MySQL 8.4, Chromium, Tab/Enter hasta h2, estado aria-live y cero escrituras API en 320/1280; sin modificar runtime, autorización ni producción.
+- A0-A4 del nuevo SHA y auditoría UX global pendientes; 62/62 PASS pertenecen al SHA previo 569e18b8. Mantener DEV02 EN_PROGRESO y lock V17 2000002297, no LISTO/A5, QA/main/PROD prohibidos.
+
 ## 2026-11-20 — DEV01 C04-04.M03.03 rechazo de claims JWT firmados duplicados
 - Reparación R2 de identidad ambigua: el lector de autorización de pagos DEV-only exige exactamente un claim `id` firmado, además de Bearer válido y coincidencia con CurrentUserService; niega tokens con identidades duplicadas sin aceptar el primer claim.
 - Dos negativos falsables con JWT firmado + HTTP TestServer: lectura de Factura EF/MySQL 8.4 y autorización UsuarioEmpresa/RolPermiso reales, ambos denegados con HTTP 403; caso positivo anterior debe conservarse. No habilita PSP, pagos ni endpoint productivo.
