@@ -2288,4 +2288,51 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     }
   }
 
+  // A0.72: firma JWT manipulada no permite exfiltrar cuatro guias globales.
+  // Casos adversariales en Chromium/API .NET/MySQL 8.4 efimeros; no se falsifica HTTP.
+  for (const destino of [
+    { ruta: '/plataforma/continuidad-operativa-v5', titulo: 'Controles de recuperación y aislamiento' },
+    { ruta: '/plataforma/revision-amenazas-v5', titulo: 'Verificaciones de acceso y abuso' },
+    { ruta: '/plataforma/respuesta-incidentes-v5', titulo: 'Respuesta, revocación y recuperación segura' },
+    { ruta: '/plataforma/gobierno-cambios-v5', titulo: 'Decisiones y controles V5' }
+  ]) {
+    for (const ancho of [375, 1280]) {
+      test(`A0.72 - JWT con firma alterada denegado en ${destino.ruta} a ${ancho}px`,
+        async ({ page, request }) => {
+          await page.setViewportSize({ width: ancho, height: 840 });
+          const jwt = await ingresar(page, 'c1504_platform_only');
+          const autentica = await request.get(api + '/plataforma/sesion', {
+            headers: { Authorization: 'Bearer ' + jwt }
+          });
+          expect(autentica.status(), 'JWT original autorizado por backend real').toBe(200);
+          const partes = jwt.split('.');
+          expect(partes).toHaveLength(3);
+          const firma = partes[2];
+          expect(firma.length).toBeGreaterThan(20);
+          const rota = (firma[0] === 'A' ? 'B' : 'A') + firma.slice(1);
+          const falsificado = [partes[0], partes[1], rota].join('.');
+          const denegada = await request.get(api + '/plataforma/sesion', {
+            headers: { Authorization: 'Bearer ' + falsificado }
+          });
+          expect([401, 403], 'Servidor no debe aceptar firma falsa').toContain(denegada.status());
+          const mutaciones: string[] = [];
+          page.on('request', req => {
+            if (req.url().includes('localhost:5005') &&
+                /^(POST|PUT|PATCH|DELETE)$/.test(req.method())) {
+              mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+            }
+          });
+          await page.evaluate(token => localStorage.setItem('solqaryn_token', token), falsificado);
+          await page.goto(destino.ruta);
+          await expect(page).toHaveURL(/\/login(?:[?#]|$)/);
+          await expect(page.getByRole('heading', { name: destino.titulo })).toHaveCount(0);
+          await expect(page.getByRole('textbox', { name: 'Nombre de usuario' })).toBeVisible();
+          await expect(page.locator('input[formcontrolname="password"]')).toBeVisible();
+          expect(await page.evaluate(() => document.documentElement.scrollWidth),
+            'Login de rechazo sin desbordes').toBeLessThanOrEqual(ancho + 2);
+          expect(mutaciones, 'La firma inválida no habilita escritura en API').toEqual([]);
+        });
+    }
+  }
+
 });

@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV02 V22 C15-04.M05.04 A0.72 JWT falsificado en cuatro guias privadas
+- Ocho casos Playwright/Chromium GitHub-hosted con JWT real firmado, rechazo 401/403 tras manipular firma, guard de Angular que vuelve a login, formularios visibles, responsive 375/1280 y cero mutaciones HTTP; MySQL 8.4 efimero. TEST-ONLY R2.
+- Plan EN_PROGRESO/owner DEV02/lock V17 retenidos; A0-A4 globales NO certificados, CI del nuevo SHA requerida y A5 por otra Task. Evidencia: frontend/e2e/c15-04-m05-04-jwt-real.spec.ts y docs/v5/c15-04-m05-04-global-ux-acceptance.md.
+
 ## 2026-11-20 — DEV05 V22 C02-03.M03.03 IDs SQL validos y cancelacion fail-closed
 - Reparacion P2 real en Domain/Application: Empresa.Id y Usuario.Id 1..9 no pueden ser rechazados solo por longitud; idempotency key opaca mantiene su minimo de dos caracteres, tenant A/B y autorizacion por defecto intactos.
 - Preflight Application revalida cancelacion despues de I/O asincrona; xUnit negativos 0/a y cancelacion con lector no cooperativo, positivos (1,1), (7,9), (9,3). Nunca autoriza mutacion ni cambio de QA/main/PROD.
