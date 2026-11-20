@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV03 C11-03.M05.01 xUnit de autorización y replay outbox
+- Agregada batería xUnit de contrato Application con fixture explícitamente no integrada: evidencia confiable, cancelación, falla de lector, tenant A/B, autorización, revocación, idempotencia y dead-letter sin efectos de entrega.
+- GitHub-hosted .NET10 build Release y TRX dirigido fail-closed exact SHA. A0–A4 sujetos a resultados CI; A5 independiente. Sin cambios de runtime, sin JWT real, HTTP, MySQL o worker productivo; solo dev, sin QA/main/PROD.
+
 ## 2026-11-20 — DEV03 C04-04.M05.01 pruebas xUnit de reglas puras
 - Nueva suite reproducible sobre decisiones de dominio en .NET 10: tenant A/B, RBAC/revocación, facturas, montos y precisión, replay y conflicto idempotente; cero efectos financieros, sin cambio de runtime.
 - CI GitHub-hosted dirigida con TRX fail-closed, Scope Lock exact-SHA y build Release; A0–A4 pendientes de run y A5 por Task distinta. No certifica JWT firmado/HTTP/MySQL/PSP ni toda la fase M05. Dev únicamente, sin QA/main/PROD.

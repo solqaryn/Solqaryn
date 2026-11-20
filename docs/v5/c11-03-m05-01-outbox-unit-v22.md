@@ -1,0 +1,7 @@
+# C11-03.M05.01 — aceptación unitaria de reglas de outbox (V22)
+
+PLAN D1682: ejecutar prueba unitaria o de regla con resultado reproducible. E1682 es objetivo acumulativo de la fase, no aprobación de outbox global. R2 conservador por tenant y mensajería. Scope Lock STRICT solo dev.
+
+A0: pruebas aisladas del caso de uso C1103OutboxApplicationService, nuevo workflow GitHub-hosted .NET10, documentación y CHANGELOG autocontenido. No cambia runtime, API, DI, EF, MySQL, JWT, transportes ni datos. A1: assertions positivo sólo de precondición, cancelación, lector averiado con error seguro, claims de evidencia no confiable, revocación, tenant A/B, payload, schema, replay exacto, conflicto 409 y deadletter. CI exige >=15 xUnit y TRX sin SKIP/FAIL. A2: EvidenceReader es una fixture, ni firma JWT ni consulta membresías reales; no se atribuye autenticación real. A3: MySQL, HTTP, servicios externos y worker no aplican al diff test-only; otros IDs sí deben probar integración real. A4: check dirigido, build Release, V5/Scope Lock/seguridad pertinentes exact-SHA COMPLETED SUCCESS; no asumir éxito de trabajos PENDING/SKIPPED. A5: revisión independiente Javier de Task distinta del autor DEV03.
+
+No certifica ACK físico, efectos de outbox, envío, colas productivas, portabilidad MySQL o seguridad global; el resultado «ATOMIC_RESERVATION_AND_RUNTIME_AUTH_REQUIRED» nunca concede persistencia ni dispatch. Rollback git revert ordinario. No QA/main/PROD.
