@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 A0.56.1 reparación P2 de selector de estado E2E [Javier :10]
+- GitHub-hosted SHA 6202e5aa, run 44652747386/job 136011413383: Chromium 50 PASS/1 FAIL por selector role=status ambiguo (shell navegación y estado privado), pese a HTTP GET 200 real. No falsear PASS.
+- Se acota selector a section.audit-state etiquetada, exige cardinalidad 1 y texto de éxito; mantiene JWT firmado, MySQL 8.4 efímero, Tab/Enter, tenant B 403 y pruebas adversariales, sin cambiar runtime.
+- Nueva CI 51 casos esperados aún pendiente; C15-04.M05.04 EN_PROGRESO/DEV02/lock 2000002297, A0-A4 global incompleta y A5 ajena pendiente; no QA/main/PROD, rollback git revert normal.
+
 ## 2026-11-19 — V22 C07-04.M06.06 cierre documental del bloque [Javier :40]
 - Conciliadas 35/35 predecesoras LISTO con A5_PASS registrado, manteniendo A5_FAIL historicos y la autoría original; documento `docs/v5/c07-04-m06-06-cierre-bloque-v22-javier40.md`.
 - Salida atomica de PLAN D: acta de cierre y mapa DAG/COLA comprobados sin editar formulas; alcance R0 y sin declarar certificaciones globales de JWT/MySQL/finanzas ni QA/main/PROD.

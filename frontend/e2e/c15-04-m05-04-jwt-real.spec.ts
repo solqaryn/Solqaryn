@@ -1556,7 +1556,9 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
         r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
       await page.keyboard.press('Enter');
       expect((await revalidar).status()).toBe(200);
-      await expect(page.getByRole('status')).toContainText('Sesión de plataforma revalidada correctamente');
+      const estadoAcceso = page.locator('section.audit-state[aria-label="Estado de acceso y consulta"]').getByRole('status');
+      await expect(estadoAcceso).toHaveCount(1);
+      await expect(estadoAcceso).toContainText('Sesión de plataforma revalidada correctamente');
       expect(await page.evaluate(() => document.documentElement.scrollWidth))
         .toBeLessThanOrEqual(width + 1);
     }
