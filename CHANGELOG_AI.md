@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV04 C04-04.M03.06 auditoria redactada DRY-RUN MySQL 8.4
+- Implementacion R2 Plan D703: auditoria estructurada independiente que registra solo codigos fijos, estado y tenant numerico. No registra provider, clave, digest, factura, importe, PII o excepciones; fallo de logger no altera la cola.
+- .NET 10 / Oracle EF / MySQL 8.4 efimero GitHub-hosted con regresion A/B, replay, conflicto, invalidos, cancelacion y no despacho; workflow exact-SHA TRX 1/1 obligatorio antes de A0-A4/LISTO. A5 pendiente por Task distinta.
+- LIMITACION_FASE: no DI, JWT/RBAC comercial, API, PSP, dinero, worker, webhook o despliegue; no QA/main/PROD. PROJECT_SCOPE_LOCK STRICT.
+
 ## 2026-11-20 — DEV05 C02-03.M03.03 P2: IDs SQL positivos de un dígito en autorización read-only
 - Corregido el guard Application que negaba EmpresaId y UsuarioId 1..9 por longitud mínima 2; un único carácter solo admite dígitos 1..9 y mantiene rechazo de 0/letras y denegación por defecto.
 - Añadidas regresiones xUnit positivas para tenant/actor (1,1), (7,9), (9,3) y negativas para identificadores inválidos; CI .NET10 y Scope Lock/V5 requerida por SHA antes de acreditar PASS.
