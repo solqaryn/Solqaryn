@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV05 V22 C02-03.M03.03 IDs SQL validos y cancelacion fail-closed
+- Reparacion P2 real en Domain/Application: Empresa.Id y Usuario.Id 1..9 no pueden ser rechazados solo por longitud; idempotency key opaca mantiene su minimo de dos caracteres, tenant A/B y autorizacion por defecto intactos.
+- Preflight Application revalida cancelacion despues de I/O asincrona; xUnit negativos 0/a y cancelacion con lector no cooperativo, positivos (1,1), (7,9), (9,3). Nunca autoriza mutacion ni cambio de QA/main/PROD.
+- C02-03.M03.03 sigue VALIDANDO hasta CAS/politica durable y CI exact-SHA required SUCCESS; A5 independiente. Evidencia/rollback: docs/v5/c02-03-m03-03-authorization-gate.md, git revert normal; sin alterar 1.14M de historia existente.
+
 ## 2026-11-20 - DEV04 V22: restaurar cuatro conexiones MySQL efimeras en CI compartida
 - Diagnostico causal confirmado en GitHub Actions `136595913146`: 4 FAIL/118 PASS por `EPHEMERAL_MYSQL84_REQUIRED` en C04-04.M05.03/.04/.05 y M06.04.
 - `.github/workflows/dev-ci.yml`: exponer `C0404_M0503_MYSQL`, `C0404_M0504_MYSQL`, `C0404_M0505_MYSQL` y `C0404_M0604_MYSQL` solo al MySQL 8.4 GitHub-hosted de loopback, sin datos ni servicios reales.

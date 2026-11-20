@@ -90,6 +90,14 @@ public static class V5TenantLifecycleDomainRules
         value is { Length: >= 2 and <= 128 } &&
         value.All(c => c is >= 'a' and <= 'z' or >= 'A' and <= 'Z' or >= '0' and <= '9' or '-' or '_');
 
+    // SQL-backed Empresa.Id and Usuario.Id may be a single positive digit.
+    // Keep opaque idempotency keys subject to the stricter length >= 2 rule.
+    private static bool SafeBusinessId(string? value) =>
+        value is { Length: >= 1 and <= 128 } &&
+        (value.Length > 1 || value[0] is >= '1' and <= '9') &&
+        value.All(c => c is >= 'a' and <= 'z' or >= 'A' and <= 'Z' or
+                               >= '0' and <= '9' or '-' or '_');
+
     private static bool SafeFingerprint(string? value) =>
         value is { Length: >= 16 and <= 128 } &&
         value.All(c => c is >= 'a' and <= 'z' or >= 'A' and <= 'Z' or >= '0' and <= '9');
@@ -114,7 +122,7 @@ public static class V5TenantLifecycleDomainRules
         ExistingDurableReceipt? existingReceipt = null)
     {
         if (trusted is null || command is null ||
-            !SafeOpaqueId(trusted.ActorId) ||
+            !SafeBusinessId(trusted.ActorId) ||
             !trusted.BackendVerifiedSignedJwt ||
             !trusted.CurrentExplicitPlatformGrantVerified ||
             !trusted.CurrentOperatorRoleVerified ||
@@ -126,8 +134,8 @@ public static class V5TenantLifecycleDomainRules
             !Enum.IsDefined(command.Operation))
             return new("UNKNOWN_LIFECYCLE_STATE_OR_COMMAND");
 
-        if (!SafeOpaqueId(trusted.VerifiedTargetTenantId) ||
-            !SafeOpaqueId(command.RequestedTenantId) ||
+        if (!SafeBusinessId(trusted.VerifiedTargetTenantId) ||
+            !SafeBusinessId(command.RequestedTenantId) ||
             !trusted.TargetOwnershipVerifiedServerSide ||
             !string.Equals(trusted.VerifiedTargetTenantId,
                 command.RequestedTenantId, StringComparison.Ordinal))
@@ -157,8 +165,8 @@ public static class V5TenantLifecycleDomainRules
         // Application must read the exact durable receipt and auth anew.
         if (existingReceipt is not null)
         {
-            if (!SafeOpaqueId(existingReceipt.ActorId) ||
-                !SafeOpaqueId(existingReceipt.TenantId) ||
+            if (!SafeBusinessId(existingReceipt.ActorId) ||
+                !SafeBusinessId(existingReceipt.TenantId) ||
                 !string.Equals(existingReceipt.ActorId, trusted.ActorId, StringComparison.Ordinal) ||
                 !string.Equals(existingReceipt.TenantId, trusted.VerifiedTargetTenantId, StringComparison.Ordinal) ||
                 existingReceipt.Operation != command.Operation ||

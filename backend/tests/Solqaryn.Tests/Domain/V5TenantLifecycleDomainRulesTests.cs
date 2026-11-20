@@ -70,6 +70,41 @@ public sealed class V5TenantLifecycleDomainRulesTests
         Assert.False(outcome.WritesToDatabase);
     }
 
+    [Theory]
+    [InlineData("1", "1")]
+    [InlineData("7", "9")]
+    [InlineData("9", "3")]
+    public void PositiveSingleDigitSqlBusinessIdsReachReadOnlyCasPreflight(
+        string tenantId, string actorId)
+    {
+        var trusted = Trusted() with { ActorId = actorId, VerifiedTargetTenantId = tenantId };
+        var command = Request() with { RequestedTenantId = tenantId };
+        var verdict = Rules.Evaluate(trusted, command);
+        Assert.Equal("VERIFIED_PRECONDITIONS_REQUIRE_APPLICATION_CAS", verdict.Code);
+        Assert.False(verdict.AuthorizesTenantMutation);
+        Assert.False(verdict.WritesToDatabase);
+    }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("a")]
+    [InlineData("company A")]
+    public void InvalidSingleCharacterOrMalformedBusinessIdsStayDenied(string id)
+    {
+        Assert.Equal("TRUSTED_PLATFORM_OPERATOR_REQUIRED",
+            Code(Trusted() with { ActorId = id }));
+        Assert.Equal("CROSS_TENANT_LIFECYCLE_DENIED",
+            Code(Trusted() with { VerifiedTargetTenantId = id },
+                Request() with { RequestedTenantId = id }));
+    }
+
+    [Fact]
+    public void ShortNumericIdempotencyKeyCannotReuseTrustedBusinessIdRule()
+    {
+        Assert.Equal("INVALID_IDEMPOTENCY_OR_PAYLOAD_FINGERPRINT",
+            Code(request: Request() with { IdempotencyKey = "1" }));
+    }
+
     [Fact]
     public void MissingRevokedOrTenantOnlyActorNeverBecomesPlatformOperator()
     {

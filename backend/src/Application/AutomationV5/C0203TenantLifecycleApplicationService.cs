@@ -43,7 +43,8 @@ public sealed class C0203TenantLifecycleApplicationService
     }
 
     private static bool ValidId(string? id) =>
-        id is { Length: >= 2 and <= 128 } &&
+        id is { Length: >= 1 and <= 128 } &&
+        (id.Length > 1 || id[0] is >= '1' and <= '9') &&
         id.All(c => c is >= 'a' and <= 'z' or >= 'A' and <= 'Z' or >= '0' and <= '9' or '-' or '_');
 
     public async ValueTask<Outcome> InspectAsync(
@@ -62,6 +63,9 @@ public sealed class C0203TenantLifecycleApplicationService
         try
         {
             evidence = await _reader.ReadAsync(intent.TenantId!, cancellationToken);
+            // A provider may ignore cancellation and return a stale positive snapshot.
+            // It must not enable a preflight after its request has been cancelled.
+            cancellationToken.ThrowIfCancellationRequested();
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {

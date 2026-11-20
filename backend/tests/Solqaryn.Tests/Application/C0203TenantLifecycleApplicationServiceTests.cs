@@ -56,6 +56,55 @@ public sealed class C0203TenantLifecycleApplicationServiceTests
         Assert.Equal(1, reader.Calls);
     }
 
+    [Theory]
+    [InlineData("1", "1")]
+    [InlineData("7", "9")]
+    [InlineData("9", "3")]
+    public async Task SqlBusinessIdsWithSinglePositiveDigitReachOnlyReadOnlyPreflight(
+        string tenantId, string actorId)
+    {
+        var trusted = Trusted() with { ActorId = actorId, VerifiedTargetTenantId = tenantId };
+        var reader = new Reader { Value = Evidence(trusted) };
+        var outcome = await new Service(reader).InspectAsync(Request() with { TenantId = tenantId });
+        Assert.Equal("DURABLE_LIFECYCLE_CAS_ADAPTER_REQUIRED", outcome.Code);
+        Assert.False(outcome.AuthorizesTenantMutation);
+        Assert.False(outcome.WritesToDatabase);
+        Assert.Equal(1, reader.Calls);
+    }
+
+    [Theory]
+    [InlineData("0")]
+    [InlineData("a")]
+    public async Task InvalidSingleCharacterTenantDoesNotReachEvidenceReader(string tenantId)
+    {
+        var reader = new Reader { Value = Evidence() };
+        var outcome = await new Service(reader).InspectAsync(Request() with { TenantId = tenantId });
+        Assert.Equal("INVALID_LIFECYCLE_INTENT", outcome.Code);
+        Assert.Equal(0, reader.Calls);
+    }
+
+    private sealed class LatePositiveReader(CancellationTokenSource source)
+        : IC0203LifecycleEvidenceReader
+    {
+        public async ValueTask<Service.TrustedReadback?> ReadAsync(
+            string tenant, CancellationToken ignored)
+        {
+            await Task.Yield();
+            source.Cancel();
+            return Evidence();
+        }
+    }
+
+    [Fact]
+    public async Task CancelledWhileNonCooperativeEvidenceReaderIsAwaitedNeverReturnsPositive()
+    {
+        using var source = new CancellationTokenSource();
+        var service = new Service(new LatePositiveReader(source));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
+            await service.InspectAsync(Request(), source.Token));
+        Assert.True(source.IsCancellationRequested);
+    }
+
     [Fact]
     public async Task InvalidAndClientForgedIntentNeverCallsEvidenceReader()
     {
