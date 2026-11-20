@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV03 V22 C02-01.M05.04 filtro CI de workflow corregido
+- Reparación R2 únicamente de `.github/workflows/v22-c02-01-m05-04-positive-mysql.yml`: `on.push.paths` ahora incluye el propio workflow en lugar de una ruta adversarial inexistente, evitando que un cambio del gate quede sin validación MySQL 8.4/JWT/HTTP por SHA.
+- Alcance test/CI y documentación `docs/v5/c02-01-m05-04-positive-jwt-mysql-v22.md`; sin runtime ni secretos, A0-A4 pendientes de preferencia persistida y navegación real. VALIDANDO conserva owner DEV03, A5 independiente; sin QA/main/PROD.
+
 ## 2026-11-20 — DEV02 C15-04.M05.04 A0.71 negativos JWT/tenant en cuatro guias globales
 - R2 TEST-ONLY: 16 regresiones Playwright con JWT firmado, roles empresariales A/B, MySQL 8.4 efimero y HTTP 403 real en cuatro rutas globales 375/1280; rechazo sin filtrado de vistas ni mutaciones. Sin mocks ni datos productivos.
 - CI exact-SHA, Scope Lock y V5 pendientes de acreditacion; C15-04.M05.04 sigue EN_PROGRESO DEV02 con lock V17, A0-A4 globales y A5 independiente sin certificar. Evidencia: frontend/e2e/c15-04-m05-04-jwt-real.spec.ts y docs/v5/c15-04-m05-04-global-ux-acceptance.md.

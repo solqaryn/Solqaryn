@@ -4,7 +4,7 @@ on:
     branches: [dev]
     paths:
       - 'backend/tests/Solqaryn.Tests/C0201M0504SignedJwtMysqlPositiveTests.cs'
-      - '.github/workflows/v22-c02-01-m05-04-adversarial-mysql.yml'
+      - '.github/workflows/v22-c02-01-m05-04-positive-mysql.yml'
   workflow_dispatch:
 permissions:
   contents: read
