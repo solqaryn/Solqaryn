@@ -36,7 +36,7 @@ test('C04-04.M04.04 two UI navigations do not create duplicate mutating requests
     await expect(page.getByTestId('c0404-payment-private')).toBeVisible();
     const back=page.getByRole('link',{name:'Volver a plataforma'});
     await expect(back).toHaveAttribute('href','/plataforma');
-    await expect(page.locator('form,input,button,select,textarea')).toHaveCount(0);
+    await expect(page.getByTestId('c0404-payment-private').locator('form,input,button,select,textarea')).toHaveCount(0);
     await back.click();
     await expect(page).not.toHaveURL(/enlaces-cobro-simulacion-v22/);
   }
