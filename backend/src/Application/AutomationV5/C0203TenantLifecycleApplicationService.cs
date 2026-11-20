@@ -2,12 +2,12 @@ using Rules = Solqaryn.Domain.AutomationV5.V5TenantLifecycleDomainRules;
 
 namespace Solqaryn.Application.AutomationV5;
 
-/// <summary>Server-controlled, tenant-fenced evidence reader. No live adapter
+/// <summary>Server-controlled, tenant-and-operation-fenced evidence reader. No live adapter
 /// is registered by C02-03.M03.02.</summary>
 public interface IC0203LifecycleEvidenceReader
 {
     ValueTask<C0203TenantLifecycleApplicationService.TrustedReadback?> ReadAsync(
-        string tenantId, CancellationToken cancellationToken);
+        string tenantId, Rules.Command operation, CancellationToken cancellationToken);
 }
 
 /// <summary>Non-authorizing Application preflight. Never grants or writes.</summary>
@@ -28,7 +28,7 @@ public sealed class C0203TenantLifecycleApplicationService
     public sealed record TrustedReadback(
         Rules.TrustedPlatformEvidence? Platform, Rules.ExistingDurableReceipt? Receipt,
         bool ServerControlledReader, bool FreshSessionAndMembership,
-        bool TenantFencedReceiptLookup);
+        bool TenantFencedReceiptLookup, Rules.Command VerifiedOperation);
 
     public readonly record struct Outcome(string Code)
     {
@@ -62,7 +62,7 @@ public sealed class C0203TenantLifecycleApplicationService
         TrustedReadback? evidence;
         try
         {
-            evidence = await _reader.ReadAsync(intent.TenantId!, cancellationToken);
+            evidence = await _reader.ReadAsync(intent.TenantId!, intent.Operation, cancellationToken);
             // A provider may ignore cancellation and return a stale positive snapshot.
             // It must not enable a preflight after its request has been cancelled.
             cancellationToken.ThrowIfCancellationRequested();
@@ -79,6 +79,8 @@ public sealed class C0203TenantLifecycleApplicationService
 
         if (evidence?.Platform is null || !evidence.ServerControlledReader ||
             !evidence.FreshSessionAndMembership || !evidence.TenantFencedReceiptLookup ||
+            !Enum.IsDefined(evidence.VerifiedOperation) ||
+            evidence.VerifiedOperation != intent.Operation ||
             !string.Equals(evidence.Platform.VerifiedTargetTenantId,
                 intent.TenantId, StringComparison.Ordinal))
             return new("TRUSTED_LIFECYCLE_EVIDENCE_REQUIRED");

@@ -12,10 +12,12 @@ public sealed class C0203TenantLifecycleApplicationServiceTests
         public Service.TrustedReadback? Value { get; set; }
         public Exception? Failure { get; set; }
         public int Calls { get; private set; }
-        public ValueTask<Service.TrustedReadback?> ReadAsync(string tenant, CancellationToken ct)
+        public Rules.Command? LastRequestedOperation { get; private set; }
+        public ValueTask<Service.TrustedReadback?> ReadAsync(string tenant, Rules.Command operation, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
             Calls++;
+            LastRequestedOperation = operation;
             if (Failure is not null) throw Failure;
             return ValueTask.FromResult(Value);
         }
@@ -39,8 +41,9 @@ public sealed class C0203TenantLifecycleApplicationServiceTests
     };
     private static Service.TrustedReadback Evidence(
         Rules.TrustedPlatformEvidence? trusted = null,
-        Rules.ExistingDurableReceipt? receipt = null) =>
-        new(trusted ?? Trusted(), receipt, true, true, true);
+        Rules.ExistingDurableReceipt? receipt = null,
+        Rules.Command verifiedOperation = Rules.Command.Suspend) =>
+        new(trusted ?? Trusted(), receipt, true, true, true, verifiedOperation);
 
     [Fact]
     public async Task PositivePreflightAlwaysRequiresSeparateDurableAdapter()
@@ -87,7 +90,7 @@ public sealed class C0203TenantLifecycleApplicationServiceTests
         : IC0203LifecycleEvidenceReader
     {
         public async ValueTask<Service.TrustedReadback?> ReadAsync(
-            string tenant, CancellationToken ignored)
+            string tenant, Rules.Command operation, CancellationToken ignored)
         {
             await Task.Yield();
             source.Cancel();
@@ -103,6 +106,56 @@ public sealed class C0203TenantLifecycleApplicationServiceTests
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
             await service.InspectAsync(Request(), source.Token));
         Assert.True(source.IsCancellationRequested);
+    }
+
+
+    [Theory]
+    [InlineData(Rules.Command.Reactivate, Rules.State.Suspended)]
+    [InlineData(Rules.Command.Archive, Rules.State.Suspended)]
+    [InlineData(Rules.Command.LogicalDelete, Rules.State.Archived)]
+    public async Task SuspendEvidenceCannotBeReusedForAnotherLifecycleOperation(
+        Rules.Command requested, Rules.State persisted)
+    {
+        var reader = new Reader { Value = Evidence(Trusted(persisted)) };
+        var intent = Request() with { Operation = requested, ExpectedSourceState = persisted };
+        var outcome = await new Service(reader).InspectAsync(intent);
+        Assert.Equal("TRUSTED_LIFECYCLE_EVIDENCE_REQUIRED", outcome.Code);
+        Assert.Equal(requested, reader.LastRequestedOperation);
+        Assert.False(outcome.AuthorizesTenantMutation);
+        Assert.False(outcome.WritesToDatabase);
+    }
+
+    [Fact]
+    public async Task MatchingServerBoundOperationRemainsReadOnlyAndRequiresDurableCas()
+    {
+        var reader = new Reader
+        {
+            Value = Evidence(Trusted(Rules.State.Suspended),
+                verifiedOperation: Rules.Command.Reactivate)
+        };
+        var intent = Request() with
+        {
+            Operation = Rules.Command.Reactivate,
+            ExpectedSourceState = Rules.State.Suspended
+        };
+        var outcome = await new Service(reader).InspectAsync(intent);
+        Assert.Equal("DURABLE_LIFECYCLE_CAS_ADAPTER_REQUIRED", outcome.Code);
+        Assert.Equal(Rules.Command.Reactivate, reader.LastRequestedOperation);
+        Assert.False(outcome.AuthorizesTenantMutation);
+        Assert.False(outcome.WritesToDatabase);
+    }
+
+    [Fact]
+    public async Task UnknownOperationReturnedByTrustedReaderIsRejectedBeforeDomain()
+    {
+        var reader = new Reader
+        {
+            Value = Evidence(verifiedOperation: (Rules.Command)999)
+        };
+        var outcome = await new Service(reader).InspectAsync(Request());
+        Assert.Equal("TRUSTED_LIFECYCLE_EVIDENCE_REQUIRED", outcome.Code);
+        Assert.Equal(Rules.Command.Suspend, reader.LastRequestedOperation);
+        Assert.False(outcome.WritesToDatabase);
     }
 
     [Fact]

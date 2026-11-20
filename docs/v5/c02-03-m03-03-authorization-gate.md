@@ -88,3 +88,14 @@ A1/A2: xUnit adversarial positivo de ID (1,1), (7,9), (9,3), negativos "0"/"a"/e
 A3/A4: los nuevos tests .NET 10 deben pasar realmente en GitHub-hosted contra SHA exacto junto con Backend Release, seguridad multiempresa, Scope Lock y provenance V5. Sin verificacion COMPLETED SUCCESS no declarar PASS. Sigue pendiente para C02-03.M03.03 un adaptador transaccional duradero de revision de politica, mutacion CAS, revocacion e idempotencia en MySQL con JWT/RBAC reales; mantener VALIDANDO e historico A5_FAIL intactos. A5 solo por Task Javier ajena a autor DEV05 y reparadores previos; no QA/main/PROD.
 
 Rollback: git revert normal del commit de seis archivos con readback, sin tocar historial BITACORA ni formulas de DAG/COLA.
+
+    
+## V22 DEV04 - P2: evidencia confiable vinculada a la operacion (2026-11-20)
+
+Hallazgo causal: el preflight Application de C02-03.M03.03 solo entregaba tenant al lector confiable. Un snapshot positivo emitido para Suspend podia reutilizarse para Reactivate, Archive o LogicalDelete: el booleano RequestedCommandEnabledByTrustedConfiguration no indicaba que comando verifico el servidor. Ninguna evidencia de otra operacion puede habilitar preflight.
+
+Reparacion: IC0203LifecycleEvidenceReader.ReadAsync recibe tenant y comando; TrustedReadback.VerifiedOperation debe ser enum definido e identico a la solicitud. La comprobacion ocurre antes del evaluador Domain, tras await y control de cancelacion. Denegacion saneada sin revelar sesion, SQL ni JWT.
+
+A0/A1/A2: xUnit adversarial cubre tres cruces Suspend hacia Reactivate, Archive, LogicalDelete; comando indefinido; propagacion al lector; positivo Reactivate que aun exige CAS durable sin escribir. Riesgo R2, tenancy A/B y politica de autorizacion sin relajar. A3 LIMITACION: sin adaptador runtime de mutacion ni CAS transaccional durable, sin nueva migracion ni endpoint comercial; el preflight no valida por si solo HTTP JWT/MySQL. Exigir integracion real para cierre de D376. A4: GitHub-hosted Backend Release xUnit, seguridad, Scope Lock y V5 del SHA publicado requieren SUCCESS; queued/in_progress no es PASS. Conservar H VALIDANDO, owner historico DEV05, A5 independiente, BITACORA intacta.
+
+Rollback: git revert normal, previa comprobacion del HEAD, sin reescribir historial ni tocar QA/main/PROD.

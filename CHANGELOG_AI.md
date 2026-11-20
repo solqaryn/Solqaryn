@@ -1,3 +1,8 @@
+## 2026-11-20 - DEV04 V22 C02-03.M03.03: vincular evidencia lifecycle a operacion
+- Reparacion P2: el lector Application recibe el comando y devuelve VerifiedOperation; snapshot positivo de Suspend ya no sirve para Reactivate, Archive ni LogicalDelete.
+- xUnit adversarial para cruce de operacion, enum desconocido y positivo Reactivate no mutante; conserva JWT/RBAC, tenant A/B, fail-closed y owner historico.
+- Requiere GitHub-hosted exact-SHA SUCCESS y aun falta adaptador durable de ciclo de vida con CAS transaccional; H VALIDANDO, A5 independiente. No QA/main/PROD.
+
 ## 2026-11-20 - DEV03 V22 C02-01.M05.04: cancelacion fail-closed tras lectura de autoridad
 - Reparacion real en Application: revalidar CancellationToken tras await para impedir propuesta de tenant con un snapshot retornado por un lector no cooperativo despues de cancelar solicitud.
 - Test xUnit adversarial obliga OperationCanceledException cuando el lector cancela pero devuelve preferencia aparentemente valida, preservando A/B y la denegacion de acceso tras cancelacion. Sin cambios en MySQL, JWT, HTTP, UI o migraciones.
