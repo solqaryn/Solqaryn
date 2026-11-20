@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV04 C04-04.M05.02 prueba HTTP/DTO con JWT firmado y errores seguros
+- Scope V22 R2 test-only: contrato del controlador PagosOnline en TestServer real de ASP.NET Core 10, JWT firmado/falso, denegación cross-tenant y validación negativa de Idempotency-Key; dobles de membresía y EF InMemory, sin efectuar cobros o conectar PSP.
+- CI dedicada GitHub-hosted xUnit con TRX sin FAIL/SKIPPED y Scope Lock exact-SHA; A0-A4 únicamente tras checks requeridos SUCCESS, A5 independiente Javier; MySQL 8.4 real y pagos comerciales NO_CERTIFICADOS para M05.02.
+- CHANGELOG histórico preservado íntegramente, sin encabezados vacíos ni intercalado. Rollback git revert normal; no QA/main/PROD.
+
 ## 2026-11-20 — DEV03 C11-03.M05.01 xUnit de autorización y replay outbox
 - Agregada batería xUnit de contrato Application con fixture explícitamente no integrada: evidencia confiable, cancelación, falla de lector, tenant A/B, autorización, revocación, idempotencia y dead-letter sin efectos de entrega.
 - GitHub-hosted .NET10 build Release y TRX dirigido fail-closed exact SHA. A0–A4 sujetos a resultados CI; A5 independiente. Sin cambios de runtime, sin JWT real, HTTP, MySQL o worker productivo; solo dev, sin QA/main/PROD.
