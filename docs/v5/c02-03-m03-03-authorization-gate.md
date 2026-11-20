@@ -16,6 +16,12 @@ xUnit en GitHub-hosted comprueba el preflight positivo no autorizante, cliente q
 
 La integración HTTP JWT firmado con RBAC persistente, revocación real y consultas EF/MySQL multi-tenant A/B no está implementada en este diff y por tanto **NO_APLICA a las pruebas del módulo inerte**; sigue **PENDIENTE para la aceptación integral** de la microtarea. El workflow dirigido compila `.NET 10` Release y ejecuta suite xUnit exacta; Scope Lock, V5, backend y seguridad deben constar SUCCESS en el SHA causal. QUEUED/IN_PROGRESS/FAILED/SKIPPED/CANCELLED nunca PASS. Mantener VALIDANDO mientras falten pruebas reales de integración y A5 independiente de Task Javier distinta.
 
+## V22 DEV05 — reparación causal R2: vinculación obligatoria del comando
+
+Hallazgo: el lector de evidencia recibía solo `TargetTenantId` y el booleano `CommandEnabledByTrustedConfig` no demostraba a qué operación se vinculó la autorización. Una lectura positiva para `Suspend` podía reutilizarse para `Reactivate`, `Archive` o `LogicalDelete` en el preflight sintético. El contrato ahora exige que el lector reciba el comando y devuelva `VerifiedCommand`, con comparación estricta y validación de enumeración dentro del guard. Las pruebas adversariales comprueban el cruce de operaciones y comandos desconocidos; la CI GitHub-hosted del SHA nuevo deberá certificarlas.
+
+**Limitación explícita:** el cambio protege una frontera Application sin endpoint ni escritura. No se registra todavía adaptador runtime verificado contra JWT firmado + UsuarioEmpresa/RolPermiso + MySQL 8.4 ni revocación por HTTP; no equivale a aceptación A2/A3 integral ni habilita `LISTO`/A5. Se conserva denegación por defecto, cero autorizaciones de mutación y rollback con `git revert` normal.
+
 ## Rollback
 
 `git revert` normal del commit exclusivo de este scope tras validar HEAD, con readback y sin borrar BITACORA o modificar DAG/cola. Nunca QA/main/PROD.

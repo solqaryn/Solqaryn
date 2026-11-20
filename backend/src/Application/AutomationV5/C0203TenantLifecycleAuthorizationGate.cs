@@ -12,7 +12,8 @@ namespace Solqaryn.Application.AutomationV5;
 public interface IC0203VerifiedOperatorEvidenceReader
 {
     ValueTask<C0203TenantLifecycleAuthorizationGate.TrustedOperatorSnapshot?> ReadAsync(
-        string requestedTenantId, CancellationToken cancellationToken);
+        string requestedTenantId, Rules.Command requestedCommand,
+        CancellationToken cancellationToken);
 }
 
 /// <summary>
@@ -39,6 +40,8 @@ public sealed class C0203TenantLifecycleAuthorizationGate
     {
         public string? VerifiedActorId { get; init; }
         public string? VerifiedTenantId { get; init; }
+        // Positive policy evidence must be bound to the EXACT requested operation.
+        public Rules.Command VerifiedCommand { get; init; }
         public bool ServerControlledEvidence { get; init; }
         public bool BackendJwtSignatureVerified { get; init; }
         public bool CurrentPlatformGrantVerified { get; init; }
@@ -81,7 +84,7 @@ public sealed class C0203TenantLifecycleAuthorizationGate
         TrustedOperatorSnapshot? trusted;
         try
         {
-            trusted = await _reader.ReadAsync(intent.TargetTenantId!, cancellationToken);
+            trusted = await _reader.ReadAsync(intent.TargetTenantId!, intent.Operation, cancellationToken);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -96,6 +99,8 @@ public sealed class C0203TenantLifecycleAuthorizationGate
         if (trusted is null || !SafeId(trusted.VerifiedActorId) ||
             !SafeId(trusted.VerifiedTenantId) ||
             !string.Equals(trusted.VerifiedTenantId, intent.TargetTenantId, StringComparison.Ordinal) ||
+            !Enum.IsDefined(trusted.VerifiedCommand) ||
+            trusted.VerifiedCommand != intent.Operation ||
             !trusted.ServerControlledEvidence ||
             !trusted.BackendJwtSignatureVerified ||
             !trusted.CurrentPlatformGrantVerified ||

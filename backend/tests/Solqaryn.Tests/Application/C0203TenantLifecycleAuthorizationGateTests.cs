@@ -12,10 +12,13 @@ public sealed class C0203TenantLifecycleAuthorizationGateTests
         public Gate.TrustedOperatorSnapshot? Value { get; set; }
         public Exception? Error { get; set; }
         public int Calls { get; private set; }
-        public ValueTask<Gate.TrustedOperatorSnapshot?> ReadAsync(string tenant, CancellationToken ct)
+        public Rules.Command? LastRequestedCommand { get; private set; }
+        public ValueTask<Gate.TrustedOperatorSnapshot?> ReadAsync(
+            string tenant, Rules.Command command, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
             Calls++;
+            LastRequestedCommand = command;
             if (Error is not null) throw Error;
             return ValueTask.FromResult(Value);
         }
@@ -27,6 +30,7 @@ public sealed class C0203TenantLifecycleAuthorizationGateTests
     private static Gate.TrustedOperatorSnapshot Trusted() => new()
     {
         VerifiedActorId = "platform-admin-01", VerifiedTenantId = "company-A",
+        VerifiedCommand = Rules.Command.Suspend,
         ServerControlledEvidence = true, BackendJwtSignatureVerified = true,
         CurrentPlatformGrantVerified = true, CurrentOperatorRoleVerified = true,
         MembershipAndSessionFresh = true, TargetOwnershipVerifiedServerSide = true,
@@ -46,6 +50,7 @@ public sealed class C0203TenantLifecycleAuthorizationGateTests
         Assert.False(decision.WritesToDatabase);
         Assert.False(decision.AuthorizesProductionCutover);
         Assert.Equal(1, reader.Calls);
+        Assert.Equal(Rules.Command.Suspend, reader.LastRequestedCommand);
     }
 
     [Theory]
@@ -125,6 +130,36 @@ public sealed class C0203TenantLifecycleAuthorizationGateTests
             Assert.False(decision.AuthorizesTenantMutation);
         }
         Assert.Equal(cases.Length, reader.Calls);
+    }
+
+    [Theory]
+    [InlineData(Rules.Command.Reactivate)]
+    [InlineData(Rules.Command.Archive)]
+    [InlineData(Rules.Command.LogicalDelete)]
+    public async Task PreviouslyVerifiedDifferentCommandCannotReauthorizeCurrentOperation(
+        Rules.Command requestedCommand)
+    {
+        // A stale reader decision for Suspend must never authorize Reactivate,
+        // Archive, or LogicalDelete even when every other trusted flag is true.
+        var reader = new Reader { Value = Trusted() };
+        var decision = await new Gate(reader).InspectAsync(
+            Request() with { Operation = requestedCommand });
+        Assert.Equal(requestedCommand, reader.LastRequestedCommand);
+        Assert.Equal("LIFECYCLE_ACCESS_DENIED", decision.Code);
+        Assert.False(decision.MayProceedToReadOnlyApplicationPreflight);
+        Assert.False(decision.AuthorizesTenantMutation);
+    }
+
+    [Fact]
+    public async Task UnknownOperationInTrustedSnapshotAlwaysDenies()
+    {
+        var reader = new Reader
+        {
+            Value = Trusted() with { VerifiedCommand = (Rules.Command)999 }
+        };
+        var decision = await new Gate(reader).InspectAsync(Request());
+        Assert.Equal("LIFECYCLE_ACCESS_DENIED", decision.Code);
+        Assert.False(decision.AuthorizesTenantMutation);
     }
 
     [Fact]

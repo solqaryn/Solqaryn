@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV05 C02-03.M03.03 binding de comando para preflight tenant
+- Seguridad R2: IC0203VerifiedOperatorEvidenceReader recibe el comando de ciclo de vida y devuelve VerifiedCommand; una prueba de permiso para Suspend no autoriza Reactivate, Archive o LogicalDelete.
+- Se agregan regresiones xUnit adversariales para comandos cruzados y desconocidos, manteniendo el preflight sin escritura. GitHub-hosted CI exact-SHA obligatoria antes de acreditar PASS.
+- Limitación: el adaptador efectivo JWT/RBAC/UsuarioEmpresa/MySQL 8.4 y la revocación HTTP siguen pendientes; conservar VALIDANDO y A5 independiente, sin QA/main/PROD.
+
 ## 2026-11-20 — DEV02 C15-04.M05.04 A0.61 auditoría tenancy JWT real
 - Nueva cobertura Playwright R2 para /plataforma/auditoria-tenancy-v5: rol global con JWT firmado, GET 200, cuatro frentes, Tab/Enter, revalidación, 320/1280 y cero HTTP mutante; empresa B JWT real 403 y sin vista privada.
 - CI GitHub-hosted .NET 10 + MySQL 8.4 efímero + Chromium: 59 escenarios esperados, NO PASS antes de exact-SHA. Scope Lock/V5/seguridad y aceptación causal obligatorios. Sin cambios runtime o grants.
