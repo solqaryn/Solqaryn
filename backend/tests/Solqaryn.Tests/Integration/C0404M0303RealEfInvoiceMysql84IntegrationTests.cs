@@ -86,11 +86,13 @@ public sealed class C0404M0303RealEfInvoiceMysql84IntegrationTests
         await command.ExecuteNonQueryAsync();
     }
 
-    private static string Jwt(int actor, bool forged = false)
+    private static string Jwt(int actor, bool forged = false, bool duplicateId = false)
     {
         var token = new JwtSecurityToken(
             issuer: Issuer, audience: Audience,
-            claims: new[] { new Claim("id", actor.ToString()) },
+            claims: duplicateId
+                ? new[] { new Claim("id", actor.ToString()), new Claim("id", (actor + 1).ToString()) }
+                : new[] { new Claim("id", actor.ToString()) },
             notBefore: DateTime.UtcNow.AddMinutes(-1),
             expires: DateTime.UtcNow.AddMinutes(10),
             signingCredentials: new SigningCredentials(
@@ -206,6 +208,8 @@ public sealed class C0404M0303RealEfInvoiceMysql84IntegrationTests
                 Assert.Equal(HttpStatusCode.Unauthorized, missingJwt.StatusCode);
             using (var forged = await GetAsync(client, 401, invoiceA, Jwt(701, forged: true)))
                 Assert.Equal(HttpStatusCode.Unauthorized, forged.StatusCode);
+            using (var signedButAmbiguous = await GetAsync(client, 401, invoiceA, Jwt(701, duplicateId: true)))
+                Assert.Equal(HttpStatusCode.Forbidden, signedButAmbiguous.StatusCode);
             using (var allowed = await GetAsync(client, 401, invoiceA, jwtA))
             {
                 Assert.Equal(HttpStatusCode.OK, allowed.StatusCode);
@@ -443,6 +447,8 @@ public sealed class C0404M0303RealEfInvoiceMysql84IntegrationTests
             }
             using (var forged = await GetAsync(client, 401, 5001, Jwt(701, true)))
                 Assert.Equal(HttpStatusCode.Unauthorized, forged.StatusCode);
+            using (var signedButAmbiguous = await GetAsync(client, 401, 5001, Jwt(701, duplicateId: true)))
+                Assert.Equal(HttpStatusCode.Forbidden, signedButAmbiguous.StatusCode);
             using (var missing = await GetAsync(client, 401, 5001, null))
                 Assert.Equal(HttpStatusCode.Unauthorized, missing.StatusCode);
             using (var acrossTenant = await GetAsync(client, 402, 5002, validA))

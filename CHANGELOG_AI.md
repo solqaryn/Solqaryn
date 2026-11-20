@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV01 C04-04.M03.03 rechazo de claims JWT firmados duplicados
+- Reparación R2 de identidad ambigua: el lector de autorización de pagos DEV-only exige exactamente un claim `id` firmado, además de Bearer válido y coincidencia con CurrentUserService; niega tokens con identidades duplicadas sin aceptar el primer claim.
+- Dos negativos falsables con JWT firmado + HTTP TestServer: lectura de Factura EF/MySQL 8.4 y autorización UsuarioEmpresa/RolPermiso reales, ambos denegados con HTTP 403; caso positivo anterior debe conservarse. No habilita PSP, pagos ni endpoint productivo.
+- CI GitHub-hosted exact-SHA, Scope Lock, V5, backend, seguridad y MySQL dirigido pendientes hasta completarse; H700 VALIDANDO, I700 autor DEV04 conservado, A5 independiente; rollback por git revert fast-forward.
+
 ## 2026-11-20 — DEV06 C11-03.M03.03 autorización tenant real Oracle EF/MySQL 8.4
 - Se agrega regresión adversarial con JWT firmado y TestServer sobre el lector real C1103 y UsuarioEmpresa/RolPermiso mediante AppDbContext Oracle EF en MySQL 8.4 efímero, con aislamiento A/B, revocación, usuario bloqueado y rollback real.
 - GitHub-hosted exige TRX 1/1 real de Oracle EF más JWT/HTTP previos, Scope Lock y checks causales exact-SHA; pendiente de CI antes de A0–A4/LISTO, A5 independiente; solo dev, lector OFF por defecto, sin outbox/PROD.

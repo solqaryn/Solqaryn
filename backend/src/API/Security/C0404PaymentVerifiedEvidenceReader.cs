@@ -50,8 +50,14 @@ public sealed class C0404PaymentVerifiedEvidenceReader(
             // handler must validate the signature, issuer, audience and lifetime.
             var bearer = await http.AuthenticateAsync("Bearer");
             cancellationToken.ThrowIfCancellationRequested();
-            if (!bearer.Succeeded || bearer.Principal?.Identity?.IsAuthenticated != true ||
-                !int.TryParse(bearer.Principal.FindFirstValue("id"), out var signedActor) ||
+            if (!bearer.Succeeded || bearer.Principal?.Identity?.IsAuthenticated != true)
+                return null;
+            // A validly signed token with two actor IDs is still ambiguous.
+            // Refuse it rather than trusting the first claim and risking
+            // divergent authorization semantics across middleware/services.
+            var signedIds = bearer.Principal.FindAll("id").ToArray();
+            if (signedIds.Length != 1 ||
+                !int.TryParse(signedIds[0].Value, out var signedActor) ||
                 signedActor != current.UsuarioId.Value)
                 return null;
 
