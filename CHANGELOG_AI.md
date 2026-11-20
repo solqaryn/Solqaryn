@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C15-02.M06.02 manifiesto reproducible de SHA/diff/tests [Javier :40]
+- Se registraron seis commits M05, artefactos y RUN/JOB exactos (4,6,6,2,5,3 pruebas dirigidas PASS), distinguiendo tests reales MySQL/JWT/Chromium de fixtures UI/DTO.
+- `docs/v5/c15-02-m06-02-reproducibility-manifest-v22.md` mantiene V5 FAIL original reparado, migraciones globales FAIL, release/modulos FAIL y CWV campo NO_MEDIDO; ningun check global equivale a PASS sin evidencia nueva.
+- Solo R0 manifiesto documental, Scope Lock/V5/CAS V17/A5 independiente; no certificar proveedores externos, pagos ni QA/main/PROD.
+
 ## 2026-11-19 — V22 C15-02.M06.01 auditoria prueba real vs mock insuficiente [Javier :40]
 - Se auditaron seis M05 (6/6 LISTO+A5_PASS) contra sus commits, CI y logs: Vitest 4/4 y 6/6 (DTO simulado), MySQL 8.4 Oracle EF efimero 6/6, Chromium 2/2, JWT HTTP tenant A/B real aislado 5/5 y Chromium accesibilidad 3/3.
 - Evidencia `docs/v5/c15-02-m06-01-real-vs-mock-scope-audit.md` distingue mocks de integraciones verdaderas y mantiene FAIL globales de release/modulos/migraciones, V5 original reparado en SHA descendiente y LCP/CLS/INP NO_MEDIDO, sin atribuir PASS no existente.
