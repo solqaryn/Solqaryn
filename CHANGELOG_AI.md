@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C15-02.M05.03 integración real Oracle EF y MySQL 8.4 aislado [Javier :40]
+- Se agregan seis pruebas xUnit Category=Integration: Oracle EF Core contra MySQL 8.4 efímero, persistencia y aislamiento tenant A/B, IDOR negativo, tenant hostil parametrizado, rollback, cancelación y tenant ausente.
+- Workflow GitHub-hosted con MySQL 8.4 y TRX fail-closed: seis PASS exigidos, cero fallos y cero omitidos; conexión restringida a loopback y base descartable; CI exact-SHA antes de LISTO.
+- R2 test-only sin cambios runtime, migraciones, IAM, JWT, proveedores externos, QA/main/PROD ni secretos. Esta prueba NO acredita el RBAC/JWT real ni Hostinger/Cloudflare/R2/DNS ni la fase M05 acumulativa. A5 por otra Task Javier después de A0–A4.
+
 ## 2026-11-19 — V22 C15-02.M05.02 contrato API DTO Angular y errores seguros [Javier :30]
 - Se incorporan seis pruebas unitarias del contrato real de PlataformaSesionService: GET/DTO positivo, 403, suplantacion Empresa, DTO invalido, revocacion y carreras HTTP sin privilegios obsoletos.
 - Workflow dirigido GitHub-hosted Angular 22.2.1, Node 24, npm 11, lint/build y Vitest; CI exact-SHA requerida. R1 test-only sin modificar servicios productivos.

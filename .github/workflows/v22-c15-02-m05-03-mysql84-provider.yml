@@ -1,0 +1,76 @@
+name: V22 C15-02.M05.03 - Oracle EF MySQL 8.4 efimero
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/Integration/C1502M0503Mysql84ProviderTests.cs'
+      - '.github/workflows/v22-c15-02-m05-03-mysql84-provider.yml'
+      - 'docs/v5/c15-02-m05-03-mysql84-provider-integration.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c1502-m0503-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  mysql84-provider-integration:
+    name: C15-02.M05.03 - 6 integraciones Oracle EF MySQL84
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: ephemeral-v22-only
+          MYSQL_DATABASE: solqaryn_c1502_m0503
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -pephemeral-v22-only"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=15
+    env:
+      C1502_M0503_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_c1502_m0503;User=root;Password=ephemeral-v22-only;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout SHA exacto
+        uses: actions/checkout@v4
+      - name: .NET SDK 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Restaurar y compilar Release
+        run: |
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+      - name: Ejecutar seis pruebas Integration sin omisiones
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build \
+            --filter 'FullyQualifiedName~C1502M0503Mysql84ProviderTests&Category=Integration' \
+            --logger 'console;verbosity=normal' \
+            --logger 'trx;LogFileName=c1502-m0503-mysql84.trx'
+          python3 - <<'PY'
+          import glob, xml.etree.ElementTree as ET
+          files = glob.glob('tests/Solqaryn.Tests/TestResults/**/c1502-m0503-mysql84.trx', recursive=True)
+          assert len(files) == 1, f'Missing or duplicated TRX: {files}'
+          root = ET.parse(files[0]).getroot()
+          counter = next((x for x in root.iter() if x.tag.endswith('Counters')), None)
+          assert counter is not None, 'Missing TRX counters'
+          counts = {k: int(v) for k,v in counter.attrib.items() if v.isdigit()}
+          print('C1502_M0503_MYSQL84_REAL_TRX', counts)
+          assert counts.get('total') == 6 and counts.get('passed') == 6
+          assert counts.get('failed', 0) == 0 and counts.get('notExecuted', 0) == 0
+          PY
+      - name: Conservar TRX causal
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v22-c1502-m0503-mysql84
+          path: backend/tests/Solqaryn.Tests/TestResults/
+          if-no-files-found: warn
+          retention-days: 14
