@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 A0.56 reparación P2 de landmark en auditoría operativa privada [Javier :10]
+- R2 Angular: raíz `main.audit-view` anidada bajo la shell se reemplaza por `section` accesible y rotulada, sin cambiar JWT/RBAC, datos, rutas ni autoridad de backend.
+- Se agregan dos pruebas adversariales GitHub-hosted Playwright/Chromium para JWT firmado .NET 10/MySQL 8.4 efímero, empresa B 403, Tab/Enter GET 200, único landmark y responsive 320/1280; 51 casos previstos, CI exact-SHA todavía NO PASS.
+- C15-04.M05.04 sigue EN_PROGRESO bajo DEV02 y lock V17 2000002297; faltan auditoría global y A0–A4 completos, A5 de otra Task. Fallos globales de transferencias y C12 permanecen históricos; git revert normal como rollback. Solo dev.
+
 ## 2026-11-19 — V22 reparación causal de doble landmark cutover en C15-04.M05.04 [Javier :10]
 - Error real identificado: GitHub Actions job 135952117240 sobre SHA 2e2d0e27 registró 48/49 Chromium PASS, 1 FAIL; `getByRole('main')` encontraba dos landmarks anidados en la pantalla privada de cutover.
 - Cambio mínimo en `dev`: raíz del componente Angular cambia de `main` a `section` accesible `aria-labelledby`, conserva `main` de shell, JWT/RBAC/tenant, UI solo lectura, e incorpora regresión Vitest y aserción Playwright en navegador real MySQL 8.4 efímero.

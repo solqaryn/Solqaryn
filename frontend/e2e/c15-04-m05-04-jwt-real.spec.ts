@@ -1524,4 +1524,62 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     }
   });
 
+
+  test('A0.56 - auditoría operativa privada conserva un main, teclado y HTTP GET auténticos', async ({ page }) => {
+    await ingresar(page, 'c1504_platform_only');
+    const mutaciones: string[] = [];
+    page.on('request', solicitud => {
+      if (/^(POST|PUT|PATCH|DELETE)$/.test(solicitud.method()) &&
+          solicitud.url().includes('localhost:5005')) {
+        mutaciones.push(solicitud.method() + ' ' + solicitud.url());
+      }
+    });
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      const sesion = page.waitForResponse(r =>
+        r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+      const documento = await page.goto('/plataforma/auditoria-operativa-v5');
+      expect(documento?.status()).toBe(200);
+      expect((await sesion).status()).toBe(200);
+      await expect(page.getByRole('main')).toHaveCount(1);
+      await expect(page.locator('section.audit-view[aria-labelledby="audit-view-title"]')).toHaveCount(1);
+      await expect(page.getByRole('heading', { level: 1, name: 'Controles de ejecución y evidencia' })).toBeVisible();
+      const boton = page.getByRole('button', { name: 'Revalidar sesión de auditoría' });
+      let focusReal = false;
+      for (let n = 0; n < 100; n++) {
+        await page.keyboard.press('Tab');
+        focusReal = await boton.evaluate(elemento => elemento === document.activeElement);
+        if (focusReal) break;
+      }
+      expect(focusReal, 'Teclado Tab llega a revalidación privada').toBe(true);
+      const revalidar = page.waitForResponse(r =>
+        r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+      await page.keyboard.press('Enter');
+      expect((await revalidar).status()).toBe(200);
+      await expect(page.getByRole('status')).toContainText('Sesión de plataforma revalidada correctamente');
+      expect(await page.evaluate(() => document.documentElement.scrollWidth))
+        .toBeLessThanOrEqual(width + 1);
+    }
+    expect(mutaciones, 'La vista es de solo lectura después del login').toEqual([]);
+  });
+
+  test('A0.56 - tenant B rechaza auditoría operativa y no renderiza contenido protegido', async ({ page, request }) => {
+    const jwt = await ingresar(page, 'c1504_admin_b');
+    const directo = await request.get(api + '/plataforma/sesion', {
+      headers: { Authorization: 'Bearer ' + jwt }
+    });
+    expect(directo.status()).toBe(403);
+    for (const width of [320, 1280]) {
+      await page.setViewportSize({ width, height: 840 });
+      const sesion = page.waitForResponse(r =>
+        r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+      await page.goto('/plataforma/auditoria-operativa-v5');
+      expect((await sesion).status()).toBe(403);
+      await expect(page).toHaveURL(url =>
+        url.pathname === '/login' && url.searchParams.get('plataforma') === 'denegado');
+      await expect(page.locator('section.audit-view')).toHaveCount(0);
+      await expect(page.getByRole('heading', { name: 'Controles de ejecución y evidencia' })).toHaveCount(0);
+    }
+  });
+
 });
