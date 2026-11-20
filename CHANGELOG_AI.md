@@ -1,3 +1,7 @@
+## 2026-11-20 - DEV06 C02-01.M05.03 Oracle EF MySQL 8.4 tenant A/B real
+- Integracion test-only del UsuarioScopeService real sobre AppDbContext Oracle EF, servicio efimero MySQL 8.4 y TRX obligatorio: pertenencias A/B, revocacion persistida, rol cruzado, usuario bloqueado, id invalido y anonimo.
+- No cambia runtime, JWT ni endpoints; identidad simulada solo como boundary y SQL real en CI, sin certificar HTTP/JWT firmado/host ni toda M05. CI dirigida y Scope Lock exact-SHA requeridos antes de LISTO; A5 Task Javier distinta. V17 unico claim, rollback git revert; QA/main/PROD no autorizados.
+
 ## 2026-11-20 — DEV05 C02-01.M05.02 contrato API/DTO real HTTP JWT
 - Nueva suite xUnit TestServer ASP.NET Core 10 JWT firmado: 401 sin firma válida; 400 empresas ID 0/-1/min sin invocar autoridad; 200 tenant A con DTO server-side pese a host/header/claim adulterados; 403 opaco empresa B sin membresia.
 - Contrato test-only PLAN D315: IUsuarioScopeService inyectado es mock estricto, NO certifica MySQL/EF ni M05 completa. Documentado en docs/v5/c02-01-m05-02-http-api-dto-contract.md. CI SHA causal A0-A4 y A5 independiente pendientes.
