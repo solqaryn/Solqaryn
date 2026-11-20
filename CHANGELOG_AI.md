@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV06 V22 C02-03.M03.03 grant global ambiguo en JWT real
+- Prueba adversarial nueva con MySQL 8.4 efímero, Oracle EF, JWT firmado y HTTP TestServer: dos asignaciones globales activas del mismo usuario obligan 403 en tenants A/B; tras retirar duplicado la autoridad legítima recupera 200. No cambia runtime productivo.
+- Evidencia en `backend/tests/Solqaryn.Tests/Integration/C0203M0303RealPlatformReaderMysql84IntegrationTests.cs` y `docs/v5/c02-03-m03-03-duplicate-global-grant-jwt-mysql-v22.md`. Scope R2 sigue VALIDANDO: falta CAS duradero y mutaciones transaccionales de ciclo de vida; CI exact-SHA y A5 independiente pendientes. Owner histórico DEV05 conservado, sin QA/main/PROD.
+
 ## 2026-11-20 — DEV05 V22 C02-03.M03.03 integracion real lector global JWT/EF/MySQL 8.4
 - Nuevo test de Integration del lector real C0203VerifiedPlatformOperatorEvidenceReader y PlataformaScopeService: JWT firmado, servidor HTTP, Oracle EF con MySQL 8.4 efimero, RolPermiso/UsuarioRolPlataforma/Empresa, casos A/B, firmas y sub falsificados, revocacion, rollback y usuario bloqueado.
 - Workflow dirigido ampliado para ejecutar test de tablas reales junto a fixture existente; se requiere CI exact-SHA completed SUCCESS antes de A3/A4, sin SKIPPED ni FAIL. Sigue VALIDANDO: no hay mutacion comercial, CAS durable ni A5 independiente, sin QA/main/PROD.

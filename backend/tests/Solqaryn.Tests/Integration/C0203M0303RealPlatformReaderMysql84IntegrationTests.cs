@@ -217,6 +217,25 @@ public sealed class C0203M0303RealPlatformReaderMysql84IntegrationTests
             // A live platform grant is global, but the target tenant must exist.
             using (var positiveB = await ReadAsync(client, 812, jwt))
                 Assert.Equal(HttpStatusCode.OK, positiveB.StatusCode);
+
+            // New V22 adversarial boundary: a second active platform grant for
+            // the same signed-JWT actor is ambiguous, even when both point to
+            // an otherwise valid role. Never silently select either grant.
+            // Use committed MySQL writes so the HTTP reader's own DbContext
+            // can observe the real database state across requests.
+            await ExecuteAsync("INSERT INTO UsuarioRolesPlataforma(Id,UsuarioId,RolId,Activa) VALUES(32,911,17,1)");
+            using (var ambiguousA = await ReadAsync(client, 811, jwt))
+            {
+                Assert.Equal(HttpStatusCode.Forbidden, ambiguousA.StatusCode);
+                Assert.Equal("LIFECYCLE_ACCESS_DENIED",
+                    await ambiguousA.Content.ReadAsStringAsync());
+            }
+            using (var ambiguousB = await ReadAsync(client, 812, jwt))
+                Assert.Equal(HttpStatusCode.Forbidden, ambiguousB.StatusCode);
+            await ExecuteAsync("DELETE FROM UsuarioRolesPlataforma WHERE Id=32");
+            using (var recoveredAfterRemovingDuplicate = await ReadAsync(client, 811, jwt))
+                Assert.Equal(HttpStatusCode.OK, recoveredAfterRemovingDuplicate.StatusCode);
+
             using (var missingTenant = await ReadAsync(client, 813, jwt))
                 Assert.Equal(HttpStatusCode.Forbidden, missingTenant.StatusCode);
             await ExecuteAsync("UPDATE Empresas SET Activa=0 WHERE Id=812");
