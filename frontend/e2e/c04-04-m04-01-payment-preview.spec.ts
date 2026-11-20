@@ -65,6 +65,8 @@ test('C04-04.M04.05 keyboard and focus target visible without payment writes',as
   const writes:string[]=[];
   page.on('request',request=>{if(!['GET','HEAD','OPTIONS'].includes(request.method()))writes.push(request.method());});
   await page.goto(url);
+  // Route guard asynchronously verifies the platform session; wait for the private view before actual keyboard navigation.
+  await expect(page.getByTestId('c0404-payment-private')).toBeVisible();
   await page.keyboard.press('Tab');
   const link=page.getByRole('link',{name:'Volver a plataforma'});
   await expect(link).toBeFocused();
