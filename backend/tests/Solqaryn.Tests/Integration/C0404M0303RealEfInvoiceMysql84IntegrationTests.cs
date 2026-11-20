@@ -348,7 +348,7 @@ public sealed class C0404M0303RealEfInvoiceMysql84IntegrationTests
                 "CREATE TABLE Usuarios (Id INT PRIMARY KEY, RolId INT NOT NULL, Activo TINYINT NOT NULL, Bloqueado TINYINT NOT NULL, Eliminado TINYINT NOT NULL) ENGINE=InnoDB",
                 "CREATE TABLE UsuarioEmpresas (Id INT PRIMARY KEY, UsuarioId INT NOT NULL, EmpresaId INT NOT NULL, RolId INT NOT NULL, Activa TINYINT NOT NULL) ENGINE=InnoDB",
                 "CREATE TABLE Permisos (Id INT PRIMARY KEY, Modulo INT NOT NULL, Accion INT NOT NULL, Activo TINYINT NOT NULL, Eliminado TINYINT NOT NULL) ENGINE=InnoDB",
-                "CREATE TABLE RolPermisos (Id INT PRIMARY KEY, RolId INT NOT NULL, PermisoId INT NOT NULL) ENGINE=InnoDB",
+                "CREATE TABLE RolPermisos (Id INT PRIMARY KEY, RolId INT NOT NULL, PermisoId INT NOT NULL, EmpresaId INT NULL) ENGINE=InnoDB",
                 "CREATE TABLE Facturas (Id INT PRIMARY KEY, EmpresaId INT NULL) ENGINE=InnoDB"
             };
             foreach (var ddlSql in ddl)
@@ -388,7 +388,7 @@ public sealed class C0404M0303RealEfInvoiceMysql84IntegrationTests
                 cmd.CommandText = statement;
                 await cmd.ExecuteNonQueryAsync();
             }
-            await ChangeAsync("INSERT INTO RolPermisos(Id,RolId,PermisoId) VALUES(991,801,951)");
+            await ChangeAsync("INSERT INTO RolPermisos(Id,RolId,PermisoId,EmpresaId) VALUES(991,801,951,401)");
 
             // CI diagnostic A2/A3: isolate real database authority predicates before
             // the API reader's deliberate fail-closed exception boundary.
@@ -408,6 +408,11 @@ public sealed class C0404M0303RealEfInvoiceMysql84IntegrationTests
                     actorA.Object, realScope);
                 Assert.True(await realPermission.TienePermisoAsync(
                     401, ModuloSistema.Facturacion, AccionPermiso.Compartir));
+                // El grant debe pertenecer al tenant A incluso al consultar la columna shadow EF.
+                Assert.Equal(401, await preflight.RolPermisos
+                    .Where(grant => grant.RolId == 801)
+                    .Select(grant => EF.Property<int?>(grant, "EmpresaId"))
+                    .SingleAsync());
                 Assert.True(await preflight.Facturas.AsNoTracking()
                     .AnyAsync(f => f.Id == 5001 && f.EmpresaId == 401));
             }
@@ -433,7 +438,7 @@ public sealed class C0404M0303RealEfInvoiceMysql84IntegrationTests
             await ChangeAsync("DELETE FROM RolPermisos WHERE Id=991");
             using (var revokedGrant = await GetAsync(client, 401, 5001, validA))
                 Assert.Equal(HttpStatusCode.Forbidden, revokedGrant.StatusCode);
-            await ChangeAsync("INSERT INTO RolPermisos(Id,RolId,PermisoId) VALUES(991,801,951)");
+            await ChangeAsync("INSERT INTO RolPermisos(Id,RolId,PermisoId,EmpresaId) VALUES(991,801,951,401)");
             await ChangeAsync("UPDATE UsuarioEmpresas SET RolId=802 WHERE Id=901");
             using (var roleBInA = await GetAsync(client, 401, 5001, validA))
                 Assert.Equal(HttpStatusCode.Forbidden, roleBInA.StatusCode);

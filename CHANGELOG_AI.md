@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV03 reparación MySQL EF shadow C04-04.M03.03
+- Causa verificada: GitHub Actions 44721985242 falló 1/4 pruebas por `Unknown column r.EmpresaId`; `RolPermiso` declara `EmpresaId` shadow pero el fixture MySQL 8.4 no lo creaba.
+- Ajuste sólo de test: columna nullable, grants empresa A explícitos y assert EF del tenant; cobertura JWT/HTTP/revocación adversarial intacta. CI exact-SHA pendiente y FULL A0–A4/A5 NO certificado; H VALIDANDO, owner DEV04 preservado. Sin QA/main/PROD.
+
 ## 2026-11-20 — DEV02 C15-04.M05.04 A0.64 teclado real de tenancy
 - Nueva prueba de aceptación R2 GitHub-hosted con JWT firmado, API .NET 10, MySQL 8.4 efímero y Chromium: Tab+Enter reales para revalidar GET 200 en 320/1280 y cero mutaciones HTTP. No cambia runtime ni permisos.
 - CI 62/62 y checks exact-SHA siguen pendientes hasta readback; A0-A4 global de UX, WCAG y RUM sin certificar, WIP DEV02/lock V17 2000002297 conservado; A5 independiente y sin QA/main/PROD.
