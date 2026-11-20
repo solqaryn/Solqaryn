@@ -1,0 +1,81 @@
+name: V22 C04-04.M04.03 - allowlisted local branding
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v22-c04-04-m04-03-branding.yml'
+      - 'frontend/src/app/app.routes.ts'
+      - 'frontend/src/app/features/plataforma/c04-04-m04-01-payment-link-preview.component.ts'
+      - 'frontend/src/app/features/plataforma/c04-04-m04-01-payment-link-preview.component.spec.ts'
+      - 'frontend/src/app/features/plataforma/c04-04-m04-02-payment-view-states.spec.ts'
+      - 'frontend/src/app/features/plataforma/c04-04-m04-03-branding.spec.ts'
+      - 'docs/v5/c04-04-m04-03-branding-local-v22.md'
+      - 'frontend/e2e/c04-04-m04-01-payment-preview.spec.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c0404-m0403-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  preview:
+    name: C04-04.M04.03 - Angular branding Vitest Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm11
+        run: npm install --global npm@11.19.0
+      - name: Verify exact SHA and Scope Lock
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          cd ..
+          node scripts/verify-project-scope.mjs
+      - name: Install locked packages
+        run: npm ci
+      - name: Vitest private-route assertions
+        run: |
+          npm test -- --no-watch --no-progress --include=src/app/features/plataforma/c04-04-m04-01-payment-link-preview.component.spec.ts
+          npm test -- --no-watch --no-progress --include=src/app/features/plataforma/c04-04-m04-02-payment-view-states.spec.ts
+          npm test -- --no-watch --no-progress --include=src/app/features/plataforma/c04-04-m04-03-branding.spec.ts
+      - name: Type lint and Angular production build
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Chromium setup
+        run: npx playwright install --with-deps chromium
+      - name: Serve loopback only
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c0404-m0401-angular.log 2>&1 &
+          for attempt in $(seq 1 80); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat c0404-m0401-angular.log >&2
+          exit 1
+      - name: Real Chromium UI with mocked session only
+        run: npx playwright test e2e/c04-04-m04-01-payment-preview.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Failure diagnostics
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c0404-m0401-playwright
+          path: |
+            frontend/c0404-m0401-angular.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 7

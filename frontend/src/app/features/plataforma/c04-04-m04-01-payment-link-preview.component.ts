@@ -15,7 +15,7 @@ const PASOS = Object.freeze([
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="c0404" aria-labelledby="c0404-title" data-testid="c0404-payment-preview">
+    <main class="c0404" [attr.data-tema]="temaSeguro()" aria-labelledby="c0404-title" data-testid="c0404-payment-preview">
       <header>
         <p class="eyebrow">SOLQARYN · Referencia de desarrollo</p>
         <h1 id="c0404-title">Enlaces de cobro</h1>
@@ -25,6 +25,7 @@ const PASOS = Object.freeze([
       @if (autorizado()) {
         <section class="panel" data-testid="c0404-payment-private" aria-labelledby="c0404-steps" [attr.aria-busy]="estadoVista() === 'cargando' ? 'true' : 'false'">
           <h2 id="c0404-steps">Etapas previstas</h2>
+          <p class="tema-resumen" role="note" data-testid="c0404-branding-preset">Identidad visual autorizada: SOLQARYN · {{ temaSeguro() === 'contraste' ? 'alto contraste' : 'estandar' }}. No usa logotipos externos ni configura un proveedor de cobro.</p>
           @switch (estadoVista()) {
             @case ('cargando') {
               <p role="status" aria-live="polite" aria-atomic="true" data-testid="c0404-state-loading">Preparando vista informativa local. No se consulta ningún proveedor de pagos.</p>
@@ -68,6 +69,9 @@ const PASOS = Object.freeze([
     .panel { margin-top:1.5rem; border:1px solid var(--mat-sys-outline-variant,#aeb8c1); border-radius:.75rem; padding:1rem; }
     ol { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,260px),1fr)); gap:1rem; list-style:none; padding:0; margin:1rem 0; }
     li { min-width:0; padding:1rem; border:1px solid var(--mat-sys-outline-variant,#aeb8c1); border-radius:.65rem; }
+    .c0404[data-tema='contraste'] { color:CanvasText; background:Canvas; }
+    .c0404[data-tema='contraste'] .panel, .c0404[data-tema='contraste'] li, .c0404[data-tema='contraste'] a { border-color:CanvasText; border-width:2px; }
+    .c0404[data-tema='contraste'] a:focus-visible { outline-color:Highlight; }
     a { display:inline-block; min-height:44px; box-sizing:border-box; padding:.75rem 1rem; border:1px solid currentColor; border-radius:.5rem; color:inherit; }
     a:focus-visible { outline:3px solid var(--mat-sys-primary,#2157a3); outline-offset:3px; }
   `]
@@ -77,6 +81,9 @@ export class C0404PaymentLinkPreviewComponent {
   readonly pasos = PASOS;
   /** C04-04.M04.02: estados visuales informativos; no es estado de un pago real. */
   readonly estadoVista = input<'cargando' | 'vacio' | 'error' | 'listo'>('vacio');
+  /** C04-04.M04.03: typed visual preset, strict allowlist; never reflect untrusted branding/HTML or provider details. */
+  readonly temaSolicitado = input<string>('base');
+  readonly temaSeguro = computed<'base' | 'contraste'>(() => this.temaSolicitado() === 'contraste' ? 'contraste' : 'base');
   readonly autorizado = computed(() => {
     const sesion = this.plataforma.sesion();
     return sesion?.ambito === 'Plataforma' && sesion.esAdministrador === true;
