@@ -1,0 +1,61 @@
+name: V22 C04-04.M03.05 - isolated dry-run queue MySQL 8.4
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/src/Infrastructure/AutomationV5/C0404DryRunDispatchQueue.cs'
+      - 'backend/tests/Solqaryn.Tests/C0404M0305DryRunQueueMysql84Tests.cs'
+      - '.github/workflows/v22-c04-04-m03-05-dryrun-mysql.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c0404-m0305-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  isolated-mysql:
+    name: C04-04.M03.05 - physical MySQL 8.4 dry-run queue
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: ephemeral-c0404-only
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -pephemeral-c0404-only"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      C0404_M0305_MYSQL: 'Server=127.0.0.1;Port=3306;Database=c0404_bootstrap;User=root;Password=ephemeral-c0404-only;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Exact SHA and Scope Lock
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+      - name: Physical MySQL 8.4 and directed xUnit TRX
+        shell: bash
+        run: |
+          set -euo pipefail
+          docker exec "${{ job.services.mysql.id }}" mysql -uroot -pephemeral-c0404-only -Nse 'SELECT VERSION();' | grep -E '^8[.]4[.]'
+          dotnet restore backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj
+          dotnet build backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore
+          mkdir -p "$RUNNER_TEMP/c0404-m0305"
+          dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter 'FullyQualifiedName~C0404M0305DryRunQueueMysql84Tests&Category=Integration' --logger 'trx;LogFileName=scope.trx' --results-directory "$RUNNER_TEMP/c0404-m0305"
+          python3 - <<'PY'
+          import os,xml.etree.ElementTree as ET
+          p=os.path.join(os.environ['RUNNER_TEMP'],'c0404-m0305','scope.trx')
+          c=ET.parse(p).getroot().find('.//{*}Counters')
+          if c is None: raise SystemExit('NO_TRX')
+          got={k:int(c.get(k,'-1')) for k in ('total','passed','failed','notExecuted')}
+          print('C0404_M0305_MYSQL84',got,'SHA',os.environ['GITHUB_SHA'])
+          if got!={'total':1,'passed':1,'failed':0,'notExecuted':0}:
+              raise SystemExit('REAL_MYSQL84_REQUIRED_TEST_NOT_GREEN')
+          PY

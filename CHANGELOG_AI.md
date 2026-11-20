@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV03 C04-04.M03.05 cola DRY-RUN durable aislada V22
+- PLAN D702 R2: cola durable de preflight provider-neutral aislada en Infrastructure/AutomationV5, sin API, DI, hosted worker, PSP, webhook, ledger, cobro ni refund. No se certifica toda M03 ni runtime comercial.
+- Tabla MySQL efimera independiente con UNIQUE (EmpresaId, Provider, KeyHash), payload SHA256, replay/conflicto, tenant A/B, cancellation y rollback; nuevos tests dirigidos GitHub-hosted reales MySQL 8.4 y workflow exact-SHA. A0-A4 pendientes de CI causal y readback; A5 siempre por otra Task Javier, no por la autora.
+- LIMITACION_FASE: JWT/RBAC, pertenencia revocada, propiedad factura desde API real, integracion PSP, reconciliacion y despliegue permanecen NO_CERTIFICADOS. Rollback mediante git revert fast-forward; no QA/main/PROD. PROJECT_SCOPE_LOCK=STRICT.
+
 ## 2026-11-20 — DEV02 C15-04.M05.04 A0.67 guardias y RBAC en rutas ERP importadas
 - Test R2 de 51 rutas ERP en ocho archivos reales: AST exige authGuard, permisoGuard, metadata modulo/accion y ausencia de duplicados; agregar una ruta privada incompleta provoca fallo.
 - Cobertura estructural parcial, NO certifica JWT/HTTP por ruta, WCAG de 160 pantallas, dispositivos ni RUM; EN_PROGRESO y lock V17 propios persisten, A5 y QA/main/PROD pendientes.
