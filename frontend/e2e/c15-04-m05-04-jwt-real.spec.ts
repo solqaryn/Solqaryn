@@ -1979,4 +1979,50 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     expect(mutaciones, 'Navegacion accesible solo lectura no muta API').toEqual([]);
   });
 
+
+  // A0.66: inventario AST de rutas de plataforma (contrato estatico, no prueba HTTP).
+  test('A0.66 - todas las rutas privadas directas de plataforma conservan guard y nombre unico', async () => {
+    const { existsSync, readFileSync } = await import('node:fs');
+    const { resolve } = await import('node:path');
+    const ts = await import('typescript');
+    const sourcePath = [
+      resolve(process.cwd(), 'src/app/app.routes.ts'),
+      resolve(process.cwd(), 'frontend/src/app/app.routes.ts')
+    ].find(p => existsSync(p));
+    expect(sourcePath, 'app.routes.ts debe estar presente en el checkout exact-SHA').toBeDefined();
+    const sourceText = readFileSync(sourcePath!, 'utf8');
+    const ast = ts.createSourceFile(sourcePath!, sourceText, ts.ScriptTarget.Latest, true);
+    const catalogo: { ruta: string; guard: boolean }[] = [];
+    const visit = (node: import('typescript').Node): void => {
+      if (ts.isObjectLiteralExpression(node)) {
+        const property = (name: string) => node.properties.find(p =>
+          ts.isPropertyAssignment(p) && p.name.getText(ast) === name);
+        const path = property('path');
+        if (path && ts.isPropertyAssignment(path) &&
+            ts.isStringLiteral(path.initializer) &&
+            (path.initializer.text === 'plataforma' ||
+             path.initializer.text.startsWith('plataforma/'))) {
+          const route = path.initializer.text;
+          const guardProp = property('canActivate');
+          const guard = Boolean(guardProp && ts.isPropertyAssignment(guardProp) &&
+            ts.isArrayLiteralExpression(guardProp.initializer) &&
+            guardProp.initializer.elements.some(e => ts.isIdentifier(e) &&
+              e.text === 'plataformaGuard'));
+          catalogo.push({ ruta: route, guard });
+        }
+      }
+      ts.forEachChild(node, visit);
+    };
+    visit(ast);
+    expect(catalogo.length, 'baseline de 24 rutas privadas de plataforma').toBeGreaterThanOrEqual(24);
+    const noGuard = catalogo.filter(x => !x.guard).map(x => x.ruta);
+    expect(noGuard, 'toda ruta de plataforma debe conservar plataformaGuard').toEqual([]);
+    const nombres = catalogo.map(x => x.ruta);
+    expect(new Set(nombres).size, 'sin rutas de plataforma duplicadas').toBe(nombres.length);
+    expect(nombres).toContain('plataforma/auditoria-ux-v5');
+    expect(nombres).toContain('plataforma/auditoria-tenancy-v5');
+    expect(nombres).toContain('plataforma');
+    // No hay certificacion de UX/routing de lazy modules, JWT HTTP ni backend RBAC en esta prueba.
+  });
+
 });

@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV02 C15-04.M05.04 A0.66 inventario AST de rutas globales
+- Test de regresion R2: >=24 rutas globales directas, `plataformaGuard` obligatorio, sin duplicados y presencia de auditorias UX/tenancy; nuevo guard ausente provoca FAIL.
+- Control estatico sin acreditar JWT/RBAC runtime ni WCAG global, dispositivos o RUM; CI GitHub-hosted del SHA nuevo pendiente. Mantener EN_PROGRESO y lock V17, no LISTO/A5/QA/main/PROD.
+
 ## 2026-11-20 — DEV01 C11-03.M03.06 auditoría segura del outbox
 - Adaptador opt-in de auditoría con códigos fijos y contadores tenant; oculta excepciones inseguras y no filtra payload, claves ni secretos; logger best-effort sin alterar SQL durable.
 - Tests adversariales .NET10 Oracle EF/MySQL 8.4 efímero tenant A/B con retry SQL y dos casos aislados de seguridad; CI TRX 3/3 requerida, A5 independiente pendiente, sin DI/proveedor real/QA/main/PROD.

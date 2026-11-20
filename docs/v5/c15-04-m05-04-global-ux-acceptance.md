@@ -1,3 +1,9 @@
+## A0.66 - Registro AST de rutas globales con control de acceso (DEV02, 2026-11-20)
+
+Nueva prueba de regresion sobre el codigo TypeScript real de `frontend/src/app/app.routes.ts`: inventaria al menos 24 rutas directas `plataforma` y `plataforma/*`, exige identificadores unicos y `plataformaGuard` en cada ruta, ademas de las rutas de auditoria UX y tenancy. La prueba corre en el workflow GitHub-hosted del mismo archivo E2E. Es un control estatico falsable: agregar una ruta global sin guard, duplicarla o eliminar una ruta de referencia provoca FAIL.
+
+Riesgo R2 por permisos, pero **NO es prueba de ejecucion del guard**, ni de backend JWT/RBAC, ni de accesibilidad de las pantallas lazy/ERP, contraste real, dispositivo fisico o RUM. Se preservan todas las suites firmadas JWT + API .NET 10 + MySQL 8.4 + Chromium existentes. A0: cambio en test y evidencia sin runtime; A1: asserts positivos/negativos sobre rutas; A2: guard estructural sin atribuir seguridad runtime; A3: AST de TypeScript real, NO_APLICA nueva migracion; A4: pendientes checks exact-SHA en GitHub y readback. No concluir LISTO ni A5; H2297 EN_PROGRESO/I DEV02/lock V17 2000002297, sin QA/main/PROD. Rollback por revert normal bajo CAS.
+
 # C15-04.M05.04 - Auditoria UX global R2, incremento 1 (NO COMPLETO)
 
 ## A0: alcance y cambios
