@@ -2120,4 +2120,60 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     }
   }
 
+  // A0.69: evidencia incremental de reflujo a 200% sobre superficies globales
+  // autenticas: JWT firmado, HTTP .NET y MySQL descartable, sin page.route.
+  test('A0.69 - reflujo 200% y foco visible por teclado en 3 superficies JWT reales', async ({ page, request }) => {
+    const jwt = await ingresar(page, 'c1504_platform_only');
+    const probe = await request.get(api + '/plataforma/sesion', {
+      headers: { Authorization: 'Bearer ' + jwt }
+    });
+    expect(probe.status(), 'JWT firmado y rol plataforma verificados en API real').toBe(200);
+    const mutaciones: string[] = [];
+    page.on('request', req => {
+      if (req.url().includes('localhost:5005') &&
+          /^(POST|PUT|PATCH|DELETE)$/.test(req.method())) {
+        mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+      }
+    });
+    for (const ruta of [
+      '/plataforma/auditoria-tenancy-v5',
+      '/plataforma/observabilidad-v5',
+      '/plataforma/capacidades-estados-v19'
+    ]) {
+      for (const width of [320, 1280]) {
+        await page.setViewportSize({ width, height: 840 });
+        const sesion = page.waitForResponse(r =>
+          r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+        const respuesta = await page.goto(ruta);
+        expect(respuesta?.status(), 'Angular dev local accesible').toBe(200);
+        expect((await sesion).status(), 'Backend JWT firmado autoriza plataforma').toBe(200);
+        await expect(page).toHaveURL(url => url.pathname === ruta);
+        await expect(page.getByRole('main')).toHaveCount(1);
+        await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+        const dimensiones = await page.evaluate(() => ({
+          contenido: document.documentElement.scrollWidth,
+          viewport: document.documentElement.clientWidth
+        }));
+        expect(dimensiones.contenido, 'reflujo sin scroll lateral a 200%: ' + ruta + ' ' + width)
+          .toBeLessThanOrEqual(dimensiones.viewport + 2);
+        let focoVisible = false;
+        for (let intento = 0; intento < 120; intento++) {
+          await page.keyboard.press('Tab');
+          focoVisible = await page.evaluate(() => {
+            const el = document.activeElement as HTMLElement | null;
+            if (!el || el === document.body) return false;
+            const rect = el.getBoundingClientRect();
+            const css = getComputedStyle(el);
+            return rect.width > 0 && rect.height > 0 &&
+              css.visibility !== 'hidden' && css.display !== 'none' &&
+              (parseFloat(css.outlineWidth) > 0 || css.boxShadow !== 'none');
+          });
+          if (focoVisible) break;
+        }
+        expect(focoVisible, 'foco perceptible por Tab real a 200%: ' + ruta).toBe(true);
+      }
+    }
+    expect(mutaciones, 'navegacion y reflujo no modifican datos').toEqual([]);
+  });
+
 });
