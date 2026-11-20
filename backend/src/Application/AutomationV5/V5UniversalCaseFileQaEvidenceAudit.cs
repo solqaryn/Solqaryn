@@ -145,6 +145,9 @@ public sealed class V5UniversalCaseFileQaEvidenceAudit
         try
         {
             await _sink.WriteAsync(entry, cancellationToken);
+            // An async sink may swallow cancellation and return without a durable write.
+            // Never produce a successful receipt once the caller cancelled during sink I/O.
+            cancellationToken.ThrowIfCancellationRequested();
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {

@@ -214,6 +214,31 @@ public sealed class C0104M0306CaseFileQaAuditSafetyTests
         Assert.False(sink.WasCalled);
     }
 
+    private sealed class CancellingWithoutWritingSink(CancellationTokenSource cancellation)
+        : IV5UniversalCaseFileQaAuditSink
+    {
+        public bool WasCalled { get; private set; }
+        public ValueTask WriteAsync(Audit.SafeAuditEntry entry, CancellationToken cancellationToken)
+        {
+            WasCalled = true;
+            cancellation.Cancel();
+            // A non-cooperative sink reports success without persisting the event.
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    [Fact]
+    public async Task CancellationDuringSinkWriteCannotProduceFalseSuccessfulReceipt()
+    {
+        using var cancellation = new CancellationTokenSource();
+        var sink = new CancellingWithoutWritingSink(cancellation);
+        var audit = new Audit(new Source(Good()), sink, new FrozenClock());
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            async () => await audit.CaptureAsync(
+                Id, "casefile.timeline", Sha, "tenant-A", "case-42", cancellation.Token));
+        Assert.True(sink.WasCalled);
+    }
+
     [Fact]
     public async Task NonUtcTimestampIsRejected()
     {

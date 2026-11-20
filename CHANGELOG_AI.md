@@ -1,3 +1,7 @@
+## 2026-11-19 — DEV05 C01-04.M03.06 cancelacion durante escritura QA
+- Reparacion R2/P2: revalidar CancellationToken despues de WriteAsync para evitar recibos QA exitosos cuando un sink no cooperativo cancela y devuelve sin persistir.
+- Regresion xUnit adversarial: sink que cancela y no escribe debe causar OperationCanceledException, sin certificar CI, A5, tenant, HTTP o MySQL reales. Se preserva todo el CHANGELOG anterior y el owner historico; el alcance permanece VALIDANDO hasta A0-A4 y source/sink autenticos.
+
 ## 2026-11-19 — DEV03 C11-03.M03.03 integracion MySQL 8.4 en GitHub Actions
 - Reparacion de dev-ci: creacion de esquema MySQL 8.4 efimero independiente y variable C1502_M0503_MYSQL_TEST para que las seis pruebas Oracle EF fallen o pasen por evidencia causal, sin mocks ni skip.
 - El job anterior fallo 6/90 por ausencia de la variable, no fue PASS. C11-03.M03.03 conserva VALIDANDO y DEV06 como autor; quedan HTTP/JWT/tenancy runtime y A5 pendientes hasta pruebas reales del SHA nuevo.
