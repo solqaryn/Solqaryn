@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV05 C11-03.M03.05 relay outbox tenant aislado y recuperable
+- Worker opt-in sin registro DI ni proveedor real; empresa autorizada, claim CAS, intento esperado, retry seguro, dead-letter e idempotencia externa obligatoria, sin despacho productivo ni API pública.
+- Regresión GitHub-hosted Oracle EF/MySQL 8.4 efímero: tenant A/B, fallo parcial, reintento ordenado, ACK stale, cancelación y dead-letter; TRX real 1/1 exigido, A0–A4 hasta CI exact-SHA, A5 distinta Task; Scope Lock STRICT, sin QA/main/PROD.
+
 ## 2026-11-20 — C02-01.M05.04: integración positiva tenant/JWT MySQL 8.4 (DEV03)
 - Añadida prueba dirigida de JWT firmado, contrato HTTP real con ASP.NET TestServer y Oracle EF/MySQL 8.4 efímero para membresías A/B, revocación B, contexto único A y rechazo de claims falsos.
 - La preferencia de última empresa es una fixture de contrato: no acredita preferencia SQL durable ni reemisión de JWT y navegación Angular; A0-A4 final y A5 independiente siguen pendientes según CI, sin QA/main/PROD.
