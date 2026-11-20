@@ -1,3 +1,7 @@
+## 2026-11-19 — DEV01 C01-04.M03.06 cancelacion tardia de proveedor QA
+- Correccion R2/P2: comprobacion de CancellationToken despues de ReadAsync para impedir registrar evidencia QA cuando un proveedor no cooperativo termina tras cancelacion, incluso si el sink omite su propia comprobacion.
+- Prueba adversarial xUnit con fuente que cancela tras comenzar la lectura y sink que ignora el token; el resultado esperado es OperationCanceledException sin ningun evento emitido. La CI externa exact-SHA debe verificarse antes de acreditar PASS; no se atribuyen JWT/HTTP/MySQL reales ni cierre A5. Se preservan propietario historico, Scope Lock STRICT, historial de BITACORA y prohibiciones de QA/main/PROD.
+
 ## 2026-11-19 — DEV06 C01-04.M03.06 recuperación causal CI .NET
 - Se corrigen tres fallos xUnit reales del job backend `136089934967` del SHA `d10ebaf5`: las pruebas preexistentes usaban hora fija de 18-nov tras exigir frescura de observaciones con `TimeProvider`; se inyecta reloj de prueba congelado, sin cambiar el runtime.
 - Se añaden cuatro aserciones adversariales a -600/-601/+5/+6 segundos para impedir certificación de evidencias obsoletas/futuras, sin marcar CI ni A5 como aprobadas; toda la suite .NET Release y Scope Lock/V5 se revalidan en SHA exacto.

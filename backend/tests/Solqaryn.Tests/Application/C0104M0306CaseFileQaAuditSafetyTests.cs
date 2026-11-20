@@ -175,6 +175,45 @@ public sealed class C0104M0306CaseFileQaAuditSafetyTests
         Assert.False(result.CertifiesA5);
     }
 
+    private sealed class CancellingButReturningSource(
+        Audit.Observation observation, CancellationTokenSource cancellation)
+        : IV5UniversalCaseFileQaEvidenceSource
+    {
+        public ValueTask<Audit.Observation?> ReadAsync(
+            string id, string route, CancellationToken cancellationToken)
+        {
+            // Simulates a non-cooperative provider that finishes after caller cancellation.
+            cancellation.Cancel();
+            return ValueTask.FromResult<Audit.Observation?>(observation);
+        }
+    }
+
+    private sealed class CancellationIgnoringSink : IV5UniversalCaseFileQaAuditSink
+    {
+        public bool WasCalled { get; private set; }
+        public ValueTask WriteAsync(Audit.SafeAuditEntry entry, CancellationToken cancellationToken)
+        {
+            WasCalled = true;
+            return ValueTask.CompletedTask;
+        }
+    }
+
+    [Fact]
+    public async Task CancellationDuringProviderReadCannotWriteEvenWhenSinkIgnoresCancellation()
+    {
+        using var cancellation = new CancellationTokenSource();
+        var sink = new CancellationIgnoringSink();
+        var audit = new Audit(
+            new CancellingButReturningSource(Good(), cancellation),
+            sink, new FrozenClock());
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            async () => await audit.CaptureAsync(
+                Id, "casefile.timeline", Sha, "tenant-A", "case-42", cancellation.Token));
+
+        Assert.False(sink.WasCalled);
+    }
+
     [Fact]
     public async Task NonUtcTimestampIsRejected()
     {

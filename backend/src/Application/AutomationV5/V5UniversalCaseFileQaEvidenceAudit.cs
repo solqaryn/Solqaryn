@@ -112,6 +112,9 @@ public sealed class V5UniversalCaseFileQaEvidenceAudit
         {
             return new("CASEFILE_QA_SOURCE_UNAVAILABLE");
         }
+        // A source can ignore a cancellation and still return a valid envelope.
+        // Enforce cancellation again before evaluating or writing any audit record.
+        cancellationToken.ThrowIfCancellationRequested();
         if (observation is null || !observation.SourceAuthenticated ||
             !observation.SourceOwnedByTenant ||
             !string.Equals(observation.MicrotaskId, microtaskId, StringComparison.Ordinal) ||
