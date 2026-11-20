@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV04 V22 C02-01.M05.04 membresía positiva SQL tras revocación
+- Reparación incremental R2 bajo V17 y PROJECT_SCOPE_LOCK STRICT: el test firmado JWT/HTTP/Oracle EF/MySQL 8.4 ahora alimenta la decisión positiva de empresa única con membresía relacional reconsultada tras revocar B, no con una lista fija.
+- Positivos/negativos: exactamente empresa A persistida, empresa B revocada ausente, política `ONE_TENANT_REISSUE_REQUIRED`, rechazo HTTP 403 previo; CI GitHub-hosted exact-SHA pendiente de verificar. No hay edición de runtime, migraciones, preferencia SQL personal ni navegación Angular certificada; VALIDANDO/A5 independiente siguen pendientes.
+- Riesgo R2, rollback por git revert sin force, sin secretos, cambios únicamente en solqaryn/Solqaryn dev, conservar evidencia histórica, no QA/main/PROD.
+
 ## 2026-11-20 — DEV03 V22 C02-01.M05.04 filtro CI de workflow corregido
 - Reparación R2 únicamente de `.github/workflows/v22-c02-01-m05-04-positive-mysql.yml`: `on.push.paths` ahora incluye el propio workflow en lugar de una ruta adversarial inexistente, evitando que un cambio del gate quede sin validación MySQL 8.4/JWT/HTTP por SHA.
 - Alcance test/CI y documentación `docs/v5/c02-01-m05-04-positive-jwt-mysql-v22.md`; sin runtime ni secretos, A0-A4 pendientes de preferencia persistida y navegación real. VALIDANDO conserva owner DEV03, A5 independiente; sin QA/main/PROD.

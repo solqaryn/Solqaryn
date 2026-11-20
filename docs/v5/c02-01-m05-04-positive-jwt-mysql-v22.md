@@ -20,3 +20,9 @@ No se acredita aquí la preferencia **persistida real**, el flujo completo de lo
 ## V22 — reparación causal de disparador CI en `dev` (2026-11-20)
 
 El workflow `v22-c02-01-m05-04-positive-mysql.yml` tenía un filtro `on.push.paths` que apuntaba a `v22-c02-01-m05-04-adversarial-mysql.yml` (ruta inexistente para este check). Cambios sólo en el propio workflow no reejecutaban la prueba causal JWT/HTTP/MySQL 8.4. Se corrige a la ruta del workflow real para que la próxima edición del gate vuelva a validarse automáticamente en GitHub-hosted por SHA exacto. Sin cambio runtime/DB/productivo. La decisión `PREFERENCE_REISSUE_REQUIRED` continúa basada en fixture: faltan preferencia durable real y navegación autenticada, por tanto permanece VALIDANDO, no LISTO/A5. Rollback: revert normal, preservando historia y estado.
+
+## V22 — evidencia SQL derivada de membresía real tras revocación (DEV04, 2026-11-20)
+
+Se reemplaza **exclusivamente** el arreglo sintético de membresía única en la prueba positiva por una consulta relacional real en la base MySQL 8.4 efímera (UsuarioEmpresa + Empresa + Rol empresarial activo). Después de revocar B mediante EF, la misma ejecución consulta la persistencia y exige **exactamente A**, ausencia de B y decisión `ONE_TENANT_REISSUE_REQUIRED`; HTTP con JWT firmado ya comprobó el 403 de B. Se conserva la comprobación de inyección de rol/host y no se modifica un endpoint productivo.
+
+**Límite expreso:** el `TrustedSnapshot` sigue construido en el harness, con la sesión JWT validada previamente por HTTP; no existe aquí adapter registrado de runtime, preferencia por usuario guardada en SQL, reemisión de JWT ni navegación Angular/Chromium al panel permitido. `PREFERENCE_REISSUE_REQUIRED` todavía parte de fixture. A0–A4 globales permanecen incompletos y la microtarea sigue VALIDANDO, A5 pendiente de otra Task Javier. Rollback: revert normal del commit en dev, sin tocar datos reales, QA/main/PROD ni secretos.

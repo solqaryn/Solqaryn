@@ -244,10 +244,38 @@ public sealed class C0201M0504SignedJwtMysqlPositiveTests
             // After B is revoked in real MySQL, only A remains eligible.
             // A fresh tenant snapshot must require backend reissue, not install
             // a client-side context or bypass navigation guards.
+            // A3: derive the positive single-tenant policy input from the
+            // actual Oracle EF/MySQL memberships AFTER the B revocation.
+            // Do not fabricate an active tenant from a fixed in-memory list.
+            // This remains a test harness, not a registered production reader,
+            // durable user preference or JWT reissue endpoint.
+            var persistedSingleTenantMemberships = await (
+                from membership in db.UsuarioEmpresas.AsNoTracking()
+                join company in db.Set<Empresa>().AsNoTracking()
+                    on membership.EmpresaId equals company.Id
+                join effectiveRole in db.Roles.AsNoTracking()
+                    on membership.RolId equals effectiveRole.Id
+                where membership.UsuarioId == user.Id &&
+                      membership.Activa && company.Activa &&
+                      effectiveRole.Activo && !effectiveRole.Eliminado &&
+                      effectiveRole.Ambito == AmbitoAutorizacion.Empresa &&
+                      (effectiveRole.EmpresaId == company.Id ||
+                       (effectiveRole.EmpresaId == null && effectiveRole.EsSistema))
+                select new { membership.EmpresaId, company.Nombre }
+            ).ToListAsync();
+            Assert.Single(persistedSingleTenantMemberships);
+            Assert.Equal(a.Id, persistedSingleTenantMemberships[0].EmpresaId);
+            Assert.DoesNotContain(persistedSingleTenantMemberships,
+                membership => membership.EmpresaId == b.Id);
             var single = new V17IntelligentTenantLoginAuthorization.TrustedSnapshot(
                 user.Id, true, true, true, false, false, null,
                 null, null, false, false,
-                [new(user.Id, a.Id, "Tenant A", true, true, true, true, false)]);
+                persistedSingleTenantMemberships
+                    .Select(membership =>
+                        new V17IntelligentTenantLoginAuthorization.Membership(
+                            user.Id, membership.EmpresaId, membership.Nombre,
+                            true, true, true, true, false))
+                    .ToArray());
             var singleDecision = await new V17IntelligentTenantLoginAuthorization(
                 new FixedAuthorityReader(single)).ResolveAsync(new());
             Assert.Equal("ONE_TENANT_REISSUE_REQUIRED", singleDecision.Code);
