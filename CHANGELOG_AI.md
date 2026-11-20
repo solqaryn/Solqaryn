@@ -1,3 +1,7 @@
+## 2026-11-19 — V22 C03-01.M02.05 eventos y singleflight login/tenant [Javier :40]
+- Definido contrato de eventos fijos no sensibles, idempotencia, correlacion opaca, limites GET/POST y 12 oraculos de concurrencia, revocacion, tenant A/B y PII. Ninguna ruta, worker o tabla fue modificada.
+- Archivo `docs/v5/c03-01-m02-05-eventos-idempotencia-correlacion-limites-ux-login-v1.md` con A0-A4 documentales, A5 independiente y rollback normal; solo dev, Scope Lock STRICT, sin QA/main/PROD.
+
 ## 2026-11-19 — V22 C03-01.M02.03 persistencia preferencia por usuario y rollback [Javier :40]
 - Diseñado sin ejecutar un contrato de preferencia scoped por usuario, indice unico, version CAS, FK y 12 fixtures adversariales; MySQL 8.4 efimero y migracion reversible exigidos solo al implementar.
 - Archivo `docs/v5/c03-01-m02-03-preferencia-usuario-persistencia-indices-migracion.md`; fuentes EF verificadas, A0-A4 documentales, A5 independiente y no alteracion de runtime/DB. Scope Lock STRICT y solo dev.
