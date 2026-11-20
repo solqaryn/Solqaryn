@@ -1,3 +1,8 @@
+## 2026-11-20 - DEV04 V22: restaurar cuatro conexiones MySQL efimeras en CI compartida
+- Diagnostico causal confirmado en GitHub Actions `136595913146`: 4 FAIL/118 PASS por `EPHEMERAL_MYSQL84_REQUIRED` en C04-04.M05.03/.04/.05 y M06.04.
+- `.github/workflows/dev-ci.yml`: exponer `C0404_M0503_MYSQL`, `C0404_M0504_MYSQL`, `C0404_M0505_MYSQL` y `C0404_M0604_MYSQL` solo al MySQL 8.4 GitHub-hosted de loopback, sin datos ni servicios reales.
+- Documentar alcance R2 en C02-03.M03.03; no declarar CI PASS hasta ejecución `Category=Integration` exact-SHA con cero FAIL, Scope Lock y V5 SUCCESS; no cerrar VALIDANDO ni A5 sin integración funcional completa.
+
 ## 2026-11-20 - DEV03 V22 C02-01.M05.04: contrato de aterrizaje autenticado en Playwright
 - Reparacion causal de CI GitHub-hosted SHA 7c251789: tres escenarios de transferencias fallaban antes de ejecutar su objetivo porque el login real aterrizaba en /inventario/movimientos (ruta permitida), mientras los dos helpers exigian exclusivamente /dashboard; reproducido en el job 136595762197.
 - Ambos helpers mantienen login mediante credenciales efimeras contra API .NET/MySQL 8.4, JWT real firmado y las aserciones posteriores de transferencia; aceptan solamente /dashboard o /inventario/movimientos, nunca /login ni destinos arbitrarios. La prueba de denegacion sin MovimientosInventario:Ver sigue intacta.

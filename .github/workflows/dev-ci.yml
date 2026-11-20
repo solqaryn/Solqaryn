@@ -148,6 +148,11 @@ jobs:
       C0404_M0304_MYSQL: "Server=127.0.0.1;Port=3306;Database=c0404_bootstrap;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
       C0404_M0305_MYSQL: "Server=127.0.0.1;Port=3306;Database=c0404_bootstrap;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
       C0404_M0306_MYSQL: "Server=127.0.0.1;Port=3306;Database=c0404_bootstrap;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+      # V22: cuatro pruebas existentes de Integration exigen sus propias variables de MySQL 8.4 efimero.
+      C0404_M0503_MYSQL: "Server=127.0.0.1;Port=3306;Database=c0404_bootstrap;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+      C0404_M0504_MYSQL: "Server=127.0.0.1;Port=3306;Database=c0404_bootstrap;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+      C0404_M0505_MYSQL: "Server=127.0.0.1;Port=3306;Database=c0404_bootstrap;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+      C0404_M0604_MYSQL: "Server=127.0.0.1;Port=3306;Database=c0404_bootstrap;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
       Jwt__Secret: Migration-CI-Only-Secret-With-More-Than-32-Characters-2026
       Jwt__Issuer: Solqaryn.CI
       Jwt__Audience: Solqaryn.CI.Frontend
