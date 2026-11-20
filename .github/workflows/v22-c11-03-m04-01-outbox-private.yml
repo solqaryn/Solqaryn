@@ -42,7 +42,7 @@ jobs:
         run: |
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           cd ..
-      node scripts/verify-project-scope.mjs
+          node scripts/verify-project-scope.mjs
       - name: Four Angular Vitest positive and adversarial checks
         run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/c11-03-m04-01-outbox-readonly.component.spec.ts
       - name: Angular type lint and production build

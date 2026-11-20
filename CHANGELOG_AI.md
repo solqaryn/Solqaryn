@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV04 C11-03.M04.01 CI YAML indentación válida
+- El primer ajuste de cwd dejó mal indentada la línea node fuera del bloque run YAML: se corrige tras inspeccionar diff y ausencia de job dirigido, sin modificar ni debilitar Scope Lock.
+- Vitest, Angular build y Chromium deberán completar en GitHub-hosted exact-SHA; no se cuentan checks fallidos, omitidos ni pendientes de los SHA anteriores. Sin QA/main/PROD.
+
 ## 2026-11-20 — DEV03 C04-04.M04.01 referencia privada de enlaces de cobro
 - Superficie Angular standalone con lazy route plataformaGuard, fases SIN_CONEXION, sin datos, enlaces activos, API, PSP, secretos ni efectos monetarios.
 - Cuatro pruebas Vitest y dos Playwright Chromium de guard, 403, revocación, ausencia de escrituras, teclado y responsive; CI exact-SHA Scope Lock/V5, lint/build y navegador requerida. La sesión UI sintética no acredita JWT real, A5 independiente.

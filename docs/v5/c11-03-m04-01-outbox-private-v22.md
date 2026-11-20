@@ -14,3 +14,7 @@ El estado visible `SIN_FUENTE_CONECTADA` es explícitamente una ausencia de evid
 ## Reparación causal V22 DEV04 de CI en el SHA anterior
 
 El job de GitHub-hosted 44774075889 falló exclusivamente en el paso de Scope Lock: el workflow tenía `defaults.run.working-directory: frontend` y ejecutaba `node ../scripts/verify-project-scope.mjs` desde ese cwd. El validador resolvía el árbol relativo a `frontend`, reportando falsamente ausencia de AGENTS.md, PROJECT_CONTEXT.md y los documentos de gobernanza. El check canónico `verify-solqaryn-project-scope` del SHA anterior había pasado, de modo que no se modifica ningún candado ni se relaja seguridad. La corrección entra en raíz con `cd ..` antes de invocar el verificador. Se exige nueva CI exact-SHA, Vitest, lint/build y Chromium; ningún FAIL/SKIPPED previo cuenta como PASS.
+
+## Segunda corrección causal de indentación YAML en workflow
+
+Al inspeccionar el diff del primer fix se detectó un defecto de serialización de indentación: `node scripts/verify-project-scope.mjs` quedó a seis espacios, fuera del bloque `run: |`, y la nueva ejecución de GitHub Actions no registró el workflow dirigido. Se restaura indentación de diez espacios al mismo nivel de `cd ..`. La revisión de YAML se hace sobre el contenido publicado, y la verificación dirigida exige check nuevo exact-SHA antes de LISTO, no se aceptan checks antiguos, omitidos ni mock JWT como integración real.
