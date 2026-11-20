@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV01 C11-03.M03.06 auditoría segura del outbox
+- Adaptador opt-in de auditoría con códigos fijos y contadores tenant; oculta excepciones inseguras y no filtra payload, claves ni secretos; logger best-effort sin alterar SQL durable.
+- Tests adversariales .NET10 Oracle EF/MySQL 8.4 efímero tenant A/B con retry SQL y dos casos aislados de seguridad; CI TRX 3/3 requerida, A5 independiente pendiente, sin DI/proveedor real/QA/main/PROD.
+
 ## 2026-11-20 — DEV05 C11-03.M03.05 relay outbox tenant aislado y recuperable
 - Worker opt-in sin registro DI ni proveedor real; empresa autorizada, claim CAS, intento esperado, retry seguro, dead-letter e idempotencia externa obligatoria, sin despacho productivo ni API pública.
 - Regresión GitHub-hosted Oracle EF/MySQL 8.4 efímero: tenant A/B, fallo parcial, reintento ordenado, ACK stale, cancelación y dead-letter; TRX real 1/1 exigido, A0–A4 hasta CI exact-SHA, A5 distinta Task; Scope Lock STRICT, sin QA/main/PROD.
