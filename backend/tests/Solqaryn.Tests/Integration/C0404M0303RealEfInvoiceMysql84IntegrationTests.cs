@@ -21,6 +21,9 @@ using Solqaryn.API.Security;
 using Solqaryn.Application.AutomationV5;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Enums;
+using Solqaryn.Application.Services;
+using Solqaryn.Infrastructure.Services;
+using Solqaryn.Infrastructure.Repositories;
 using Solqaryn.Infrastructure.Persistence;
 using Xunit;
 
@@ -244,6 +247,186 @@ public sealed class C0404M0303RealEfInvoiceMysql84IntegrationTests
             await ExecuteAsync(delete, invoiceA, 0);
             await ExecuteAsync(delete, invoiceB, 0);
             await ExecuteAsync(delete, rolledBack, 0);
+        }
+    }
+
+    // V22: the real membership/RolPermiso services run their SQL against a disposable
+    // loopback-only MySQL schema. This is more than a synthetic role/permission mock,
+    // but the HTTP route remains an isolated TestServer probe, not a live PSP.
+    private static Task<IHost> StartRealAuthorityAsync(string connectionString) =>
+        new HostBuilder().ConfigureWebHost(web => web.UseTestServer()
+            .ConfigureServices(services =>
+            {
+                services.AddRouting();
+                services.AddHttpContextAccessor();
+                services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                    .AddJwtBearer(options =>
+                    {
+                        options.MapInboundClaims = false;
+                        options.TokenValidationParameters = new TokenValidationParameters
+                        {
+                            ValidateIssuer = true, ValidIssuer = Issuer,
+                            ValidateAudience = true, ValidAudience = Audience,
+                            ValidateLifetime = true, ClockSkew = TimeSpan.Zero,
+                            ValidateIssuerSigningKey = true, IssuerSigningKey = SigningKey,
+                            RequireSignedTokens = true, RequireExpirationTime = true
+                        };
+                    });
+                services.AddAuthorization();
+            })
+            .Configure(app =>
+            {
+                app.UseRouting();
+                app.UseAuthentication();
+                app.UseAuthorization();
+                app.UseEndpoints(endpoints =>
+                    endpoints.MapGet("/__v22_test/realef-payment/{tenantId:int}/{invoiceId:int}",
+                        async http =>
+                        {
+                            var tenant = int.Parse(Convert.ToString(http.Request.RouteValues["tenantId"])!);
+                            var invoice = int.Parse(Convert.ToString(http.Request.RouteValues["invoiceId"])!);
+                            var accessor = http.RequestServices.GetRequiredService<IHttpContextAccessor>();
+                            var options = new DbContextOptionsBuilder<AppDbContext>()
+                                .UseMySQL(connectionString).Options;
+                            await using var db = new AppDbContext(options,
+                                tenantHttpContextAccessor: accessor);
+                            var current = new CurrentUserService(accessor);
+                            var scope = new UsuarioScopeService(db, current);
+                            var permission = new PermisoService(
+                                new RolPermisoRepository(db),
+                                Mock.Of<IRolRepository>(),
+                                Mock.Of<IPermisoRepository>(),
+                                Mock.Of<IAuditoriaService>(),
+                                current, scope);
+                            var config = new ConfigurationBuilder().AddInMemoryCollection(
+                                new Dictionary<string, string?>
+                                {
+                                    ["PaymentPlanning:EnableReadOnlyAuthorizationProbe"] = "true"
+                                }).Build();
+                            var reader = new C0404PaymentVerifiedEvidenceReader(
+                                accessor, current, scope, permission, db, config);
+                            var decision = await new C0404PaymentAuthorizationGate(reader).InspectAsync(
+                                new C0404PaymentAuthorizationGate.Request(
+                                    tenant, invoice, C0404PaymentAuthorizationGate.Operation.CreateLink),
+                                http.RequestAborted);
+                            http.Response.StatusCode = decision.MayInspectPureApplicationPlan
+                                ? StatusCodes.Status200OK : StatusCodes.Status403Forbidden;
+                            await http.Response.WriteAsync(decision.Code);
+                        }).RequireAuthorization());
+            })).StartAsync();
+
+    [Fact]
+    public async Task RealUsuarioEmpresaRolPermisoRevocationJwtHttpMysql84()
+    {
+        // Fail closed if the environment points outside the isolated GitHub-hosted
+        // MySQL container. A separate GUID schema prevents parallel-test collisions.
+        var original = EphemeralConnection();
+        var schema = "c0404_v22_auth_" + Guid.NewGuid().ToString("N");
+        var scoped = new MySqlConnectionStringBuilder(original)
+        {
+            Database = schema
+        }.ConnectionString;
+        await using var admin = new MySqlConnection(original);
+        await admin.OpenAsync();
+        try
+        {
+            await using (var create = admin.CreateCommand())
+            {
+                create.CommandText = "CREATE DATABASE " + schema;
+                await create.ExecuteNonQueryAsync();
+            }
+
+            await using var sql = new MySqlConnection(scoped);
+            await sql.OpenAsync();
+            string[] ddl =
+            {
+                "CREATE TABLE Empresas (Id INT PRIMARY KEY, Nombre VARCHAR(200) NOT NULL, Activa TINYINT NOT NULL) ENGINE=InnoDB",
+                "CREATE TABLE Roles (Id INT PRIMARY KEY, Nombre VARCHAR(80) NOT NULL, Activo TINYINT NOT NULL, Eliminado TINYINT NOT NULL, Ambito INT NOT NULL, EmpresaId INT NULL, EsSistema TINYINT NOT NULL, EsAdministrador TINYINT NOT NULL) ENGINE=InnoDB",
+                "CREATE TABLE Usuarios (Id INT PRIMARY KEY, RolId INT NOT NULL, Activo TINYINT NOT NULL, Bloqueado TINYINT NOT NULL, Eliminado TINYINT NOT NULL) ENGINE=InnoDB",
+                "CREATE TABLE UsuarioEmpresas (Id INT PRIMARY KEY, UsuarioId INT NOT NULL, EmpresaId INT NOT NULL, RolId INT NOT NULL, Activa TINYINT NOT NULL) ENGINE=InnoDB",
+                "CREATE TABLE Permisos (Id INT PRIMARY KEY, Modulo INT NOT NULL, Accion INT NOT NULL, Activo TINYINT NOT NULL, Eliminado TINYINT NOT NULL) ENGINE=InnoDB",
+                "CREATE TABLE RolPermisos (Id INT PRIMARY KEY, RolId INT NOT NULL, PermisoId INT NOT NULL) ENGINE=InnoDB",
+                "CREATE TABLE Facturas (Id INT PRIMARY KEY, EmpresaId INT NULL) ENGINE=InnoDB"
+            };
+            foreach (var ddlSql in ddl)
+            {
+                await using var cmd = sql.CreateCommand();
+                cmd.CommandText = ddlSql;
+                await cmd.ExecuteNonQueryAsync();
+            }
+
+            string[] seed =
+            {
+                "INSERT INTO Empresas(Id,Nombre,Activa) VALUES(401,'Empresa A',1),(402,'Empresa B',1)",
+                "INSERT INTO Roles(Id,Nombre,Activo,Eliminado,Ambito,EmpresaId,EsSistema,EsAdministrador) VALUES(801,'Operador A',1,0,1,401,0,0),(802,'Operador B',1,0,1,402,0,0)",
+                "INSERT INTO Usuarios(Id,RolId,Activo,Bloqueado,Eliminado) VALUES(701,802,1,0,0)",
+                "INSERT INTO UsuarioEmpresas(Id,UsuarioId,EmpresaId,RolId,Activa) VALUES(901,701,401,801,1),(902,701,402,802,1)",
+                "INSERT INTO Facturas(Id,EmpresaId) VALUES(5001,401),(5002,402)"
+            };
+            foreach (var seedSql in seed)
+            {
+                await using var cmd = sql.CreateCommand();
+                cmd.CommandText = seedSql;
+                await cmd.ExecuteNonQueryAsync();
+            }
+            await using (var insertPermission = sql.CreateCommand())
+            {
+                insertPermission.CommandText =
+                    "INSERT INTO Permisos(Id,Modulo,Accion,Activo,Eliminado) VALUES(951,@module,@action,1,0)";
+                insertPermission.Parameters.AddWithValue("@module",
+                    (int)ModuloSistema.Facturacion);
+                insertPermission.Parameters.AddWithValue("@action",
+                    (int)AccionPermiso.Compartir);
+                await insertPermission.ExecuteNonQueryAsync();
+            }
+            async Task ChangeAsync(string statement)
+            {
+                await using var cmd = sql.CreateCommand();
+                cmd.CommandText = statement;
+                await cmd.ExecuteNonQueryAsync();
+            }
+            await ChangeAsync("INSERT INTO RolPermisos(Id,RolId,PermisoId) VALUES(991,801,951)");
+
+            using var host = await StartRealAuthorityAsync(scoped);
+            using var client = host.GetTestClient();
+            var validA = Jwt(701);
+            using (var success = await GetAsync(client, 401, 5001, validA))
+            {
+                Assert.Equal(HttpStatusCode.OK, success.StatusCode);
+                Assert.Equal("READONLY_PAYMENT_PLAN_PREFLIGHT_ONLY",
+                    await success.Content.ReadAsStringAsync());
+            }
+            using (var forged = await GetAsync(client, 401, 5001, Jwt(701, true)))
+                Assert.Equal(HttpStatusCode.Unauthorized, forged.StatusCode);
+            using (var missing = await GetAsync(client, 401, 5001, null))
+                Assert.Equal(HttpStatusCode.Unauthorized, missing.StatusCode);
+            using (var acrossTenant = await GetAsync(client, 402, 5002, validA))
+                Assert.Equal(HttpStatusCode.Forbidden, acrossTenant.StatusCode);
+            using (var foreignInvoice = await GetAsync(client, 401, 5002, validA))
+                Assert.Equal(HttpStatusCode.Forbidden, foreignInvoice.StatusCode);
+
+            await ChangeAsync("DELETE FROM RolPermisos WHERE Id=991");
+            using (var revokedGrant = await GetAsync(client, 401, 5001, validA))
+                Assert.Equal(HttpStatusCode.Forbidden, revokedGrant.StatusCode);
+            await ChangeAsync("INSERT INTO RolPermisos(Id,RolId,PermisoId) VALUES(991,801,951)");
+            await ChangeAsync("UPDATE UsuarioEmpresas SET RolId=802 WHERE Id=901");
+            using (var roleBInA = await GetAsync(client, 401, 5001, validA))
+                Assert.Equal(HttpStatusCode.Forbidden, roleBInA.StatusCode);
+            await ChangeAsync("UPDATE UsuarioEmpresas SET RolId=801,Activa=0 WHERE Id=901");
+            using (var revokedMembership = await GetAsync(client, 401, 5001, validA))
+                Assert.Equal(HttpStatusCode.Forbidden, revokedMembership.StatusCode);
+            await ChangeAsync("UPDATE UsuarioEmpresas SET Activa=1 WHERE Id=901");
+            await ChangeAsync("UPDATE Usuarios SET Bloqueado=1 WHERE Id=701");
+            using (var blockedUser = await GetAsync(client, 401, 5001, validA))
+                Assert.Equal(HttpStatusCode.Forbidden, blockedUser.StatusCode);
+        }
+        finally
+        {
+            // Only the newly created GUID-scoped schema is removed; never touch
+            // Aiven, any shared database, credentials, or financial records.
+            await using var drop = admin.CreateCommand();
+            drop.CommandText = "DROP DATABASE IF EXISTS " + schema;
+            await drop.ExecuteNonQueryAsync();
         }
     }
 }

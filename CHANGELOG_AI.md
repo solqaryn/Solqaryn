@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV04 C04-04.M03.03 V22 rol y membresia MySQL reales
+- Agregada regresion de autorizacion real read-only con JWT firmado, HTTP TestServer, CurrentUserService/UsuarioScopeService, PermisoService/RolPermisoRepository y Oracle EF Core en MySQL 8.4 efimero por esquema aislado; negativos de rol B, membresia y grant revocados, usuario bloqueado, firma falsa y factura ajena.
+- No certifica PSP ni todo el host API productivo; requiere CI exact-SHA, A0–A4 causales y A5 de otra Task Javier. Sin QA/main/PROD ni secretos, sin alterar BITACORA o cierre institucional.
+
 ## 2026-11-20 — DEV02 C15-04.M05.04 A0.63 JWT empresarial A y auditoría global
 - Nuevo test R2 con JWT firmado real de empresa A, .NET10, MySQL8.4 y Chromium 320/1280: HTTP/guard 403 y UI privada ausente, sin mocks ni cambios runtime.
 - El nuevo SHA requiere 61/61 en GitHub-hosted, Scope Lock/V5/backend/frontend/security completed/success; 60/60 PASS correspondía solo al SHA 0fee248d.
