@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV05 V22 C02-03.M03.03 integracion real lector global JWT/EF/MySQL 8.4
+- Nuevo test de Integration del lector real C0203VerifiedPlatformOperatorEvidenceReader y PlataformaScopeService: JWT firmado, servidor HTTP, Oracle EF con MySQL 8.4 efimero, RolPermiso/UsuarioRolPlataforma/Empresa, casos A/B, firmas y sub falsificados, revocacion, rollback y usuario bloqueado.
+- Workflow dirigido ampliado para ejecutar test de tablas reales junto a fixture existente; se requiere CI exact-SHA completed SUCCESS antes de A3/A4, sin SKIPPED ni FAIL. Sigue VALIDANDO: no hay mutacion comercial, CAS durable ni A5 independiente, sin QA/main/PROD.
+- Solo cuatro rutas del alcance C02-03.M03.03: test nuevo, workflow dirigido, documentacion V5 y CHANGELOG aditivo; sin migraciones productivas, secretos, cambios de flags, estados de Sheets ni DAG. Rollback git revert sin borrar historia.
+
 ## 2026-11-20 — DEV03 V22 CI MySQL 8.4 C02-03.M03.03 reparación EPHEMERAL_MYSQL84_REQUIRED
 - Reparación causal limitada al job migrations: agregar C0404_M0306_MYSQL solo para MySQL 8.4 efímero CI; job 136460335699 falló 111 PASS/1 FAIL porque C0404M0306SafeAuditMysql84Tests exigía esa variable ausente.
 - No tocar backend productivo, JWT, RBAC, API, datos ni seguridad. Revalidar migraciones Category=Integration y Scope Lock/V5/checks sobre SHA nuevo; nunca contar un test aún QUEUED/IN_PROGRESS como PASS.

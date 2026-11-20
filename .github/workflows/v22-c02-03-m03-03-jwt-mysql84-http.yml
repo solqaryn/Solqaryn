@@ -4,6 +4,7 @@ on:
     branches: [dev]
     paths:
       - 'backend/tests/Solqaryn.Tests/Integration/C0203M0303SignedJwtMysql84HttpIntegrationTests.cs'
+      - 'backend/tests/Solqaryn.Tests/Integration/C0203M0303RealPlatformReaderMysql84IntegrationTests.cs'
       - 'backend/src/Application/AutomationV5/C0203TenantLifecycleAuthorizationGate.cs'
       - '.github/workflows/v22-c02-03-m03-03-jwt-mysql84-http.yml'
   workflow_dispatch:
@@ -46,10 +47,10 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           node scripts/verify-project-scope.mjs
-      - name: JWT HTTP SQL real
+      - name: JWT HTTP SQL fixture + actual platform reader
         shell: bash
         run: |
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           dotnet restore tests/Solqaryn.Tests/Solqaryn.Tests.csproj
-          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore --filter 'FullyQualifiedName~C0203M0303SignedJwtMysql84HttpIntegrationTests' --logger 'trx;LogFileName=C0203JwtHttpMySql84.trx' --verbosity normal
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore --filter 'FullyQualifiedName~C0203M0303SignedJwtMysql84HttpIntegrationTests|FullyQualifiedName~C0203M0303RealPlatformReaderMysql84IntegrationTests' --logger 'trx;LogFileName=C0203JwtHttpMySql84.trx' --verbosity normal
