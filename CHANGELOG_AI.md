@@ -1,3 +1,8 @@
+## 2026-11-19 — V22 C07-04.M06.06 cierre documental del bloque [Javier :40]
+- Conciliadas 35/35 predecesoras LISTO con A5_PASS registrado, manteniendo A5_FAIL historicos y la autoría original; documento `docs/v5/c07-04-m06-06-cierre-bloque-v22-javier40.md`.
+- Salida atomica de PLAN D: acta de cierre y mapa DAG/COLA comprobados sin editar formulas; alcance R0 y sin declarar certificaciones globales de JWT/MySQL/finanzas ni QA/main/PROD.
+- Solo se considera LISTO tras CI Scope Lock + V5 exact-SHA, CAS V17, BITACORA idempotente y readback; A5 queda para otra Task Javier y el rollback es git revert normal.
+
 ## 2026-11-19 — V22 C15-02.M05.06 regresion, rendimiento y accesibilidad en Chromium [Javier :50]
 - Nueva suite Playwright de tres pruebas y cuatro tamaños (320, 375, 768, 1280), accesibilidad de landmarks/Tab/Enter, carga DCL/FCP de laboratorio, integridad de cinco referencias NO_VERIFICADO y denegacion UI 403 sin fuga de detalles.
 - Nuevo workflow aislado dev con Angular tipado/build y Chromium GitHub-hosted exact-SHA, sin reintentos, con evidencias de fallo; concurrency por SHA y cancel-in-progress=false.
