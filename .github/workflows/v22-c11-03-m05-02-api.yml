@@ -1,0 +1,50 @@
+name: V22 C11-03.M05.02 - real MVC JWT HTTP outbox contract
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/C1103M0502OutboxHttpApiDtoContractTests.cs'
+      - '.github/workflows/v22-c11-03-m05-02-api.yml'
+      - 'backend/src/API/Controllers/MensajesOutboxController.cs'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c1103-m0502-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  http-contract:
+    name: C11-03.M05.02 - ASP.NET10 MVC JWT HTTP DTO safe errors
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Exact SHA and Scope Lock
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+      - name: Restore and build Release
+        working-directory: backend
+        run: |
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+      - name: Scoped HTTP xUnit TRX fail closed
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/c1103-m0502"
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter 'FullyQualifiedName~C1103M0502OutboxHttpApiDtoContractTests' --logger 'trx;LogFileName=http-contract.trx' --results-directory "$RUNNER_TEMP/c1103-m0502"
+          python3 - <<'PY'
+          import os,sys,xml.etree.ElementTree as ET
+          p=os.path.join(os.environ['RUNNER_TEMP'],'c1103-m0502','http-contract.trx')
+          c=ET.parse(p).getroot().find('.//{*}Counters')
+          if c is None:sys.exit('NO_TRX')
+          n=int(c.get('total','0'));p=int(c.get('passed','0'))
+          f=int(c.get('failed','0'));s=int(c.get('notExecuted','0'))
+          if n<9 or p!=n or f or s:sys.exit(f'NO_GO total={n} passed={p} failed={f} skipped={s}')
+          print(f'EXACT_SHA={os.environ["GITHUB_SHA"]} HTTP_MVC_JWT_PASSED={p}/{n}')
+          PY
