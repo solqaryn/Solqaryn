@@ -143,6 +143,10 @@ jobs:
       Database__ApplyMigrationsOnStartup: 'false'
       # El test Oracle EF exige su propio esquema efimero separado y conexion loopback.
       C1502_M0503_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_c1502_m0503;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+      # CI-only loopback MySQL 8.4 for the existing integration traits.
+      # Each xUnit suite creates a uniquely named isolated database, no Aiven/prod.
+      C0404_M0304_MYSQL: "Server=127.0.0.1;Port=3306;Database=c0404_bootstrap;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+      C0404_M0305_MYSQL: "Server=127.0.0.1;Port=3306;Database=c0404_bootstrap;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
       Jwt__Secret: Migration-CI-Only-Secret-With-More-Than-32-Characters-2026
       Jwt__Issuer: Solqaryn.CI
       Jwt__Audience: Solqaryn.CI.Frontend

@@ -1,3 +1,7 @@
+## 2026-11-20 - DEV05 C02-03.M03.03 CI MySQL 8.4 real: faltaban env en 2 integraciones
+- Reparado en dev-ci.yml el job de migraciones: las pruebas C04-04.M03.04 y M03.05 recibiran C0404_M0304_MYSQL y C0404_M0305_MYSQL con MySQL 8.4 GitHub-hosted efimero loopback, corrigiendo fallo causal EPHEMERAL_MYSQL84_REQUIRED sin mocks ni proveedor de pagos.
+- A1/A3 exigen nueva ejecucion Category=Integration real 111/111 o segun test count vigente, 0 FAIL y checks required SUCCESS exact SHA. C02-03 permanece VALIDANDO por falta de prueba integrada de lector JWT/EF/RBAC vigente; A5 distinta, sin QA/main/PROD.
+
 ## 2026-11-20 - DEV01 C11-03.M04.02 estados seguros outbox
 - Estados locales carga/vacío/error/listo y denegación privados bajo Angular 22.2.1; seis pruebas Vitest adversariales nuevas más cuatro de guard y ocho Chromium regresivos desde Github-hosted, sin datos reales.
 - NO se certifica JWT HTTP, MySQL ni relay productivo. CI Scope Lock/V5 exact SHA y A5 independiente exigibles antes de LIBERACION; rollback normal sin QA/main/PROD.
