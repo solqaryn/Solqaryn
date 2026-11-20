@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV06 C11-03.M05.05 negativos MySQL 8.4 tenant y abuso
+- Nuevo test adversarial xUnit Oracle EF en MySQL 8.4 físico efímero: denegar tenant cruzado, conflicto de replay alterado, clave CR/LF, índice UNIQUE real y aislamiento A/B con clave compartida.
+- GitHub Actions dirigido SHA exacto + Scope Lock + .NET10 Release + TRX 1/1 requerido; no se simula MySQL, no se declara PASS antes de CI real. Sin cambios runtime ni PSP, JWT/RBAC real NO_APLICA a este test-only; LIMITACION_FASE pendiente de otros scopes.
+- A0–A4 sobre el diff y CI pertinentes, A5 por otra Task Javier; documentación y rollback mediante git revert fast-forward, sin QA/main/PROD, datos ni secretos.
+
 ## 2026-11-20 — DEV01 C04-04.M05.04 aceptación positiva de reserva MySQL 8.4 (V22)
 - R2 TEST-ONLY: xUnit nuevo contra Oracle EF y MySQL 8.4 efímero comprueba reserva positiva tenant A, replay idempotente, aislamiento tenant B, persistencia tras nuevo DbContext, rechazo de conflicto y rollback real; jamás invoca PSP ni autoriza cobros, reembolsos o webhooks.
 - GitHub Actions dirigido en dev, Scope Lock, Skill, procedencia V5 y TRX exact-SHA son obligatorios antes de LISTO; publicación inicial queda VALIDANDO hasta readback CI y auditoría A0–A4. A5 independiente por otra Task Javier.
