@@ -59,6 +59,6 @@ jobs:
           if count is None: raise SystemExit('C1103_M0306_TRX_NO_COUNTERS')
           values={k:int(count.get(k,-1)) for k in ('total','passed','failed','notExecuted')}
           print('C1103_M0306_ORACLE_EF_MYSQL84_AUDIT',values)
-          if values!={'total':3,'passed':3,'failed':0,'notExecuted':0}:
+          if values!={'total':5,'passed':5,'failed':0,'notExecuted':0}:
               raise SystemExit('C1103_M0306_TRX_FAILURE')
           PY

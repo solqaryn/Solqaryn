@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV06 C11-03.M03.06 gate TRX estricto actualizado a cinco pruebas
+- Corrección causal P2: tras añadir dos regresiones adversariales, GitHub-hosted ejecutó 5 PASS y 0 FAIL sobre MySQL 8.4.13 pero el gate XML conservaba el umbral obsoleto 3/3; se ajusta a 5/5 manteniendo exigencia de cero fallos/omitidos.
+- No se eliminan ni relajan pruebas, Scope Lock o V5; nuevo SHA y revisión independiente siguen pendientes antes de LISTO; sin proveedores/QA/main/PROD.
+
 ## 2026-11-20 — DEV06 C11-03.M03.06 cierre P2 de excepciones sensibles en auditoría
 - Corrige fuga de mensajes `ArgumentException` de repositorio/SQL mediante validación explícita de argumentos del llamador antes del límite del proveedor y conversión fail-closed de errores internos; preserva cancelación y telemetría sin PII.
 - Añade pruebas xUnit adversariales de secreto en ArgumentException y cinco entradas inválidas sin consultas a MySQL; revalidación GitHub-hosted .NET10/MySQL8.4, Scope Lock, V5 y A5 independiente aún requerida, sin DI ni proveedor real.
