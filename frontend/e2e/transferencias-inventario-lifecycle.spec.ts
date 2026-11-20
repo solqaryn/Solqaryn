@@ -1,4 +1,23 @@
-import { test, expect } from '@playwright/test';
+import { test, expect, type Page } from '@playwright/test';
+const ADMIN_USERNAME = process.env['PHASE7_ADMIN_USERNAME'];
+const ADMIN_PASSWORD = process.env['PHASE7_ADMIN_PASSWORD'];
+
+// Los escenarios de UI de transferencias mockean los datos de negocio, NO la identidad.
+// El navegador inicia sesion con JWT firmado por la API .NET y MySQL 8.4 efimero de CI.
+async function iniciarSesionReal(page: Page): Promise<void> {
+  if (!ADMIN_USERNAME || !ADMIN_PASSWORD) {
+    throw new Error('La suite de transferencias requiere identidad E2E efimera autentica.');
+  }
+  await page.goto('/login');
+  await page.locator('input[formcontrolname="nombreUsuario"]').fill(ADMIN_USERNAME);
+  await page.locator('input[formcontrolname="password"]').fill(ADMIN_PASSWORD);
+  await page.locator('button[type="submit"]').click();
+  await expect(page).toHaveURL(/\/dashboard(?:\?|$)/, { timeout: 20_000 });
+  const jwt = await page.evaluate(() => localStorage.getItem('solqaryn_token'));
+  expect(jwt, 'No se permiten tokens locales simulados en estas pruebas').toBeTruthy();
+  expect(jwt!.split('.'), 'JWT autenticado debe tener cabecera, cuerpo y firma').toHaveLength(3);
+}
+
 
 const transferencia = (estado = 'Borrador') => ({
   id: 41,
@@ -53,13 +72,7 @@ async function confirmarAlerta(page: import('@playwright/test').Page, titulo: st
 
 test.describe('Transferencias de inventario - lifecycle UI', () => {
   test.beforeEach(async ({ page }) => {
-    await page.addInitScript(() => {
-      localStorage.setItem('solqaryn_token', 'e2e-token-transferencias-lifecycle');
-      localStorage.setItem('solqaryn_user', 'admin-e2e');
-      localStorage.setItem('solqaryn_nombre_completo', 'Admin E2E');
-      localStorage.setItem('solqaryn_rol', 'Administrador');
-      localStorage.setItem('solqaryn_expira_en', '2099-12-31T23:59:59Z');
-    });
+    await iniciarSesionReal(page);
 
     await page.route('**/permisos/mis-permisos/empresa/*', route => route.fulfill({
       status: 200,

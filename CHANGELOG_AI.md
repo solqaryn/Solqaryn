@@ -1,3 +1,7 @@
+## 2026-11-19 — V22 A0.58 - autentificacion real E2E en transferencias de inventario [Javier :10]
+- Se sustituyen tokens falsos en dos suites Playwright de transferencias por login autentico JWT con credenciales efimeras del CI; los endpoints de datos de transferencia siguen mockeados y NO se certifican como HTTP/MySQL reales.
+- Reparacion causal tras 3 FAIL en job global SHA ea92e717 (97/100 PASS). Nueva CI exact-SHA debe demostrar el resultado; C15-04.M05.04 sigue EN_PROGRESO con lock V17, sin LISTO/A5/QA/main/PROD.
+
 ## 2026-11-19 — C01-04.M03.06 V22 audit logging fail-closed ante nivel deshabilitado [Javier :00]
 - Repara P2: ILogger deshabilitado en Information ya no produce un recibo de auditoria que no se escribio; falla cerrado sin exponer PII.
 - Prueba xUnit positiva y negativa en contrato ILogger; lector autenticado, CI SHA, A0-A4 generales y A5 siguen pendientes; sin LISTO ni QA/main/PROD.
