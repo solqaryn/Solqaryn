@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV05 V22 C01-02.M05.02 contrato HTTP/DTO y errores seguros
+- Pruebas xUnit GitHub-hosted con TestServer MVC real, JWT firmado efimero y contratos JSON del controller existente de permisos: 401 sin firma valida, 400 de ID invalido, 403 sin membresia/tenant suspendido y 200 tenant permitido con no-store; endpoint comercial futuro sigue sin registrar (404).
+- Alcance TEST ONLY R2: servicio de permisos Moq y EF InMemory NO representan la base MySQL, RBAC relacional ni JWT de produccion. Sin nuevos endpoints, cambios runtime, grants, migraciones, secretos ni pagos; A0-A4 exact-SHA y A5 independiente pendientes antes de LISTO. V17 exclusivo fila 207, rollback normal y BITACORA aditiva.
+
 ## 2026-11-20 — DEV04 V22 C14-01.M04.06: densidad y carga progresiva navegador real
 - Nuevo escenario Chromium con JWT/MySQL8.4 reales, retraso controlado antes de continuar la respuesta privada del servidor, dimensiones 320/375/768/1280 y aserciones de shell, marca y aislamiento A/B.
 - Solo prueba E2E/documento sobre workflow existente SHA aislado, sin cambios de runtime; no mide Web Vitals ni certificar fase M04/QA/PROD; CI exact-SHA y A5 independiente obligatorias.
