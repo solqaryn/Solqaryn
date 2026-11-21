@@ -1,0 +1,57 @@
+name: V22 C07-01.M05.06 real Angular regression performance and accessibility
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/e2e/c07-01-m05-06-regression-perf-a11y.spec.ts'
+      - '.github/workflows/v22-c07-01-m05-06-regression-perf-a11y.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c0701-m0506-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  chromium:
+    name: C07-01.M05.06 - real Angular Chromium regression perf accessibility
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Exact SHA Scope Lock and skill self-test
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+          node scripts/verify-solqaryn-skills.mjs --self-test
+      - name: Angular 22 strict typecheck and build
+        working-directory: frontend
+        run: |
+          npm install -g npm@11.19.0
+          npm ci
+          npx tsc --noEmit -p tsconfig.app.json
+          npm run build
+      - name: Install real Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Five real browser regression tests without retries
+        working-directory: frontend
+        env:
+          CI: 'true'
+          PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+        run: |
+          set -euo pipefail
+          npx ng serve --host 127.0.0.1 --port 4200 >/tmp/c0701m0506-angular.log 2>&1 &
+          ready=0
+          for i in $(seq 1 120); do
+            if curl --silent --fail http://127.0.0.1:4200/login >/dev/null; then ready=1; break; fi
+            sleep 2
+          done
+          if [ "$ready" -ne 1 ]; then tail -n 80 /tmp/c0701m0506-angular.log; exit 1; fi
+          npx playwright test e2e/c07-01-m05-06-regression-perf-a11y.spec.ts --config=playwright.config.ts --workers=1 --retries=0 | tee /tmp/c0701m0506-results.txt
+          grep -Eq '5 passed \(' /tmp/c0701m0506-results.txt

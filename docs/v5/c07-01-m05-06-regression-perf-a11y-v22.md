@@ -1,0 +1,9 @@
+# C07-01.M05.06 — regresión, carga y accesibilidad proporcional (V22)
+
+PLAN D1039: «Ejecutar regresión, rendimiento y accesibilidad proporcionales». PLAN E es una meta acumulativa M05, no certificación integral de la fase. Riesgo R1: solo pruebas en frontend, sin modificaciones a runtime, API, JWT, MySQL, migraciones, permisos ni PROD. Rama dev y PROJECT_SCOPE_LOCK STRICT.
+
+A0: cinco casos nuevos y workflow GitHub-hosted en SHA exacto. A1: regresión 320/375/768/1280 sin overflow; una sola consulta inicial de catálogo paginado (presupuesto de GET, no latencia artificial); Tab real sin .focus() hasta filtro con etiqueta y foco visible, búsqueda sin escrituras; carga asíncrona muestra status y no éxito falso; payload HTTP 200 malformado falla cerrado y se recupera por GET; contraste computado >=4.5 con mutante <4.5. Fronteras, adversariales y error explícitos.
+
+A2: la fixture del navegador usa JWT/tenant/roles SINTÉTICOS. No se atribuye certificación de firmado, RBAC, revocación ni HTTP/MySQL productivos. A3: Angular 22 y Chromium físico GitHub-hosted, sin cambios de DB/EF, por lo que MySQL no aplica a este diff; las pruebas son independientes de M03.03/M05.05 (JWT/MySQL). El presupuesto de GET representa solo regresión de carga, NO_MEDIDO para RUM/Core Web Vitals de campo, dispositivo móvil real ni velocidad de la red productiva.
+
+A4: exigir las 5 pruebas ejecutadas 0 FAIL/0 SKIP, typecheck, build, Scope Lock y skill self-test exact SHA; comprobar procedencia V5 y checks relevantes antes de LISTO. QUEUED/IN_PROGRESS/FAILED no son PASS. A5 siempre por Task Javier diferente del autor y reparador, con revisión genuina. Rollback git revert normal del commit aditivo, sin force push. CHANGELOG_AI.md masivo se conserva (riesgo de truncamiento), validar check V5 sin simular modificación. No QA/main/PROD, pagos, secretos o nuevos endpoints.
