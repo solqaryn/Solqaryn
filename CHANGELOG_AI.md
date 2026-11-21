@@ -1,3 +1,9 @@
+## 2026-11-21 - V22 C04-02.M03.06 structured audit fail-closed [Javier :30]
+- Added Application audit decorator, sanitized structured ILogger and sink acknowledgment for read-only contract preflight; no user cause, PII or token logging.
+- Added adversarial xUnit for tenant mismatch, revoked role, client payment flags, sink/logger failure, provider exception and cancellation after audit await; GitHub-hosted CI required.
+- R2 test fixture is not live JWT HTTP MySQL or durable production audit; no DI, contract/payment writes, secrets, QA/main/PROD. Normal git revert rollback.
+- Atomic PLAN D631 only; phase E/M03 not certified, A0-A4 and independent A5 remain gates.
+
 ## 2026-11-21 — V22 C04-02.M03.05 preflight worker y cola acotada [Javier :50]
 - Implementado código Application de cola en memoria acotada, drenaje exclusivo y revalidación del gate contractual por cada intención; no autoriza pagos, cambios, lectura privada ni aprobación legal.
 - Pruebas xUnit nuevas para sobrecupo, intención maliciosa, tenant A/B, revocación, cancelación y límites; fixtures sintéticos NO son JWT/HTTP/MySQL reales.
