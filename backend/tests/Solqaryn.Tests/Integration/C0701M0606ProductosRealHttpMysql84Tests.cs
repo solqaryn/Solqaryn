@@ -19,6 +19,7 @@ using MySql.Data.MySqlClient;
 using MySql.EntityFrameworkCore.Extensions;
 using Solqaryn.API.Controllers;
 using Solqaryn.API.Middleware;
+using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Application.Services;
 using Solqaryn.Domain.Entities;
@@ -146,6 +147,64 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             }
             var productAId = await SeedOwnedProductAsync(a.Id, "C0701RealProductoA");
             var productBId = await SeedOwnedProductAsync(b.Id, "C0701RealProductoB");
+
+            // P1: una escritura de producto no puede sobrevivir si la bitacora
+            // critica no se persiste. Unidad de trabajo REAL + Oracle EF/MySQL.
+            // Esto prueba rollback de ProductService.CreateAsync, no habilita
+            // escrituras HTTP comerciales ni certifica UI/variantes.
+            var auditRollbackName = "C0701AuditRollback" + Guid.NewGuid().ToString("N");
+            var auditContext = new DefaultHttpContext();
+            auditContext.Items[
+                Solqaryn.Application.Security.VerifiedCommercialTenant
+                    .AuthorizedEmpresaIdItemKey] = a.Id;
+            var auditAccessor = new HttpContextAccessor { HttpContext = auditContext };
+            await using (var auditDb = new AppDbContext(options,
+                tenantHttpContextAccessor: auditAccessor))
+            {
+                var categoryId = await auditDb.Categorias
+                    .Where(c => c.Nombre == "Category C0701RealProductoA")
+                    .Select(c => c.Id).SingleAsync();
+                var actor = new Mock<ICurrentUserService>();
+                actor.SetupGet(x => x.UsuarioId).Returns(userA.Id);
+                actor.SetupGet(x => x.NombreUsuario).Returns(userA.NombreUsuario);
+                var unavailableAudit = new Mock<IAuditoriaService>();
+                unavailableAudit.Setup(x => x.RegistrarEstrictoAsync(
+                        It.IsAny<ModuloSistema>(), It.IsAny<AccionPermiso>(),
+                        It.IsAny<string>(), It.IsAny<int?>(),
+                        It.IsAny<string?>(), It.IsAny<object?>(),
+                        It.IsAny<object?>(), It.IsAny<string?>(),
+                        It.IsAny<string>(), It.IsAny<string?>()))
+                    .ThrowsAsync(new InvalidOperationException("AUDIT_PERSISTENCE_UNAVAILABLE"));
+                var service = new ProductoService(
+                    new ProductoRepository(auditDb),
+                    new CategoriaRepository(auditDb),
+                    Mock.Of<IImageStorageService>(), actor.Object,
+                    unavailableAudit.Object, httpContextAccessor: auditAccessor);
+                var uow = new UnitOfWork(auditDb);
+                var thrown = await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => uow.ExecuteInTransactionAsync(async () =>
+                    {
+                        await service.CreateAsync(new CreateProductoDto
+                        {
+                            Nombre = auditRollbackName,
+                            CategoriaId = categoryId
+                        });
+                    }));
+                Assert.Equal("AUDIT_PERSISTENCE_UNAVAILABLE", thrown.Message);
+                unavailableAudit.Verify(x => x.RegistrarEstrictoAsync(
+                    ModuloSistema.Productos, AccionPermiso.Crear,
+                    It.IsAny<string>(), It.IsAny<int?>(),
+                    It.IsAny<string?>(), It.IsAny<object?>(),
+                    It.IsAny<object?>(), It.IsAny<string?>(),
+                    It.IsAny<string>(), It.IsAny<string?>()), Times.Once);
+            }
+            await using (var auditReadback = new AppDbContext(options))
+            {
+                Assert.Equal(0, await auditReadback.Productos
+                    .IgnoreQueryFilters().AsNoTracking()
+                    .CountAsync(p => p.Nombre == auditRollbackName));
+            }
+
 
             // Real Oracle EF/MySQL transaction rollback at the tenant-bound
             // persistence layer. This is NOT HTTP CRUD acceptance: writes

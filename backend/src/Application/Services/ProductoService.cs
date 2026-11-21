@@ -111,7 +111,7 @@ public class ProductoService : IProductoService
         await _repository.AddAsync(producto);
         await _repository.SaveChangesAsync();
 
-        await _auditoria.RegistrarAsync(
+        await _auditoria.RegistrarEstrictoAsync(
             ModuloSistema.Productos,
             AccionPermiso.Crear,
             $"Producto creado: {producto.Nombre}.",

@@ -1,3 +1,8 @@
+## 2026-11-21 — V23 C07-01.M06.06 auditabilidad transaccional real [Javier :00]
+- Corrige en ProductoService.CreateAsync el alta comercial que antes toleraba fallos de auditoria: ahora RegistroEstrictoAsync propaga error y obliga rollback de UnidadDeTrabajo, sin abrir piloto de escritura.
+- Prueba adversarial integrada Oracle EF/MySQL 8.4 en GitHub-hosted: auditoria inyectada falla; UnitOfWork real debe revertir Producto persistido; segunda conexion confirma cero filas. El error de auditoria se simula, no se declara audit log real positivo.
+- Incremento R2 incompleto hasta checks exact-SHA SUCCESS; C07-01.M06.06 conserva EN_PROGRESO, owner DEV01 y lock V17 2000001045. Aun faltan POST/PUT reales con Producto+Variante, auditoria durable y Angular/Chromium autenticado. A5 independiente futura. QA/main/PROD sin tocar.
+
 ## 2026-11-21 — V23 C06-01.M05.02 correccion real CI P0 tenant quarantine [Javier :40]
 - CI original d58030f8 compilo .NET 10 y materializo MySQL 8.4 EF Oracle; el test esperaba 404 para ruta publica propuesta sin endpoint y recibio 503 de cuarentena P0. Es un fallo de expectativa, no permiso para abrir la ruta.
 - Test reparado verifica 503 mas codigo TENANT_DATA_ISOLATION_REQUIRED tanto en URI futura como en POST /health no permitido; preserva guard multitenant e historial FAIL. Reejecutar GitHub-hosted exact-SHA, incluido fallo real MySQL readiness, antes de LISTO y A5 independiente.
