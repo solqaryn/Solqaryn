@@ -1,3 +1,8 @@
+## 2026-11-21 — V23 C06-01.M06.06 reparación causal de manifiesto CI de rutas [Javier :20]
+- El check compartido C15-01.M05.04 falló en eb02b1ba por deriva del hash de app.routes.ts; conserva la foto histórica de 2340 PLAN/COLA y 2301 DAG, pero actualiza exclusivamente la huella Git blob y el contador real de 120 rutas del archivo modificado.
+- Registra procedencia, valores anteriores y SHA base en el manifiesto; las otras tres rutas permanecen con los mismos fingerprints y el validador sigue rechazando nueva deriva. Sin reabrir C15-01.M05.04 LISTO ni simular prueba de autorización.
+- C06-01.M06.06 sigue VALIDANDO, owner DEV03, CI nueva pendiente y A5 independiente. No se certifican pricing/registro/SEO ni QA/main/PROD. Rollback por git revert normal.
+
 ## 2026-11-21 — V23 C06-01.M06.06 entrada pública y guard privado (Javier :20)
 - Corrige el P1 parcial UI-03 en el punto de entrada: / redirige ahora a /conoce-solqaryn y /login sigue disponible. No altera guardias privadas, autenticación, API, tenants ni datos.
 - Incorpora Playwright/Chromium GitHub-hosted para root anónimo, rechazo de dashboard privado, cinco anchos, ausencia de overflow, foco/teclado y capturas reales de la ruta corregida.
