@@ -34,7 +34,7 @@ public sealed class C0604DurableMySqlQueueIntegrationTests
                   leased_by VARCHAR(64) NULL,
                   lease_until_utc DATETIME(6) NULL,
                   UNIQUE KEY uq_tenant_idempotency (tenant_id,idempotency_key)
-                ) ENGINE=InnoDB;
+                ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_0900_ai_ci;
                 """;
             await create.ExecuteNonQueryAsync();
         }
@@ -55,6 +55,10 @@ public sealed class C0604DurableMySqlQueueIntegrationTests
                 await queue.ReserveAsync(11, "customer_A", "customer-preference-sync", "request_0001", 3));
             Assert.Equal(Queue.Reservation.Duplicate,
                 await queue.ReserveAsync(11, "customer_A", "customer-preference-sync", "request_0001", 3));
+            // R2 regression: ai_ci UNIQUE makes a case-variant alias collide.
+            // It is NOT the same exact idempotency key and must fail closed.
+            Assert.Equal(Queue.Reservation.Conflict,
+                await queue.ReserveAsync(11, "customer_A", "customer-preference-sync", "REQUEST_0001", 3));
             Assert.Equal(Queue.Reservation.Conflict,
                 await queue.ReserveAsync(11, "customer_B", "customer-preference-sync", "request_0001", 3));
             Assert.Equal(Queue.Reservation.Stored,

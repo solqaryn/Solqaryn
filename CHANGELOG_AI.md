@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV01 V22 C06-04.M03.05 alias de idempotencia InnoDB R2
+- Corrige el falso DUPLICATE con colacion `utf8mb4_0900_ai_ci`: `ReserveAsync` incluye clave persistida en `FOR UPDATE` y coteja ordinal, rechazando alias por mayusculas como CONFLICT.
+- Agrega prueba negativa adversarial en MySQL 8.4 efimero con colacion explicita; CI del SHA nuevo y controles A0-A4 requeridos aun por verificar.
+- No registra HTTP, JWT CUSTOMER, proveedor ni worker; conserva VALIDANDO, sin A5 propia ni QA/main/PROD.
+
 ## 2026-11-20 - DEV03 V22 C01-02.M05.06 regression JWT / render / accessibility
 - PLAN D211: Five Playwright tests with real signed JWT, ASP.NET Core 10 and ephemeral MySQL 8.4, companies A/B, 320/768/1280 screen, CI render budget, natural Tab/Enter, without mocked HTTP.
 - Dedicated SHA-isolated workflow, no cancellation; Scope Lock, V5 and security required. Until CI completed, A0-A4 and independent A5 remain pending.

@@ -43,7 +43,7 @@ public sealed class C0604IsolatedMySqlDurableQueue
             ("@version", resourceVersion));
         var inserted = await insert.ExecuteNonQueryAsync(cancellationToken);
         await using var read = Command(connection, transaction,
-            $"SELECT resource_id, operation, resource_version FROM {Table} WHERE tenant_id=@tenant AND idempotency_key=@key FOR UPDATE",
+            $"SELECT idempotency_key, resource_id, operation, resource_version FROM {Table} WHERE tenant_id=@tenant AND idempotency_key=@key FOR UPDATE",
             ("@tenant", trustedTenantId), ("@key", idempotencyKey!));
 
         Reservation result;
@@ -51,9 +51,12 @@ public sealed class C0604IsolatedMySqlDurableQueue
         {
             if (!await reader.ReadAsync(cancellationToken))
                 throw new InvalidOperationException("Durable queue readback unavailable.");
-            var identical = string.Equals(reader.GetString(0), resourceId, StringComparison.Ordinal) &&
-                            string.Equals(reader.GetString(1), operation, StringComparison.Ordinal) &&
-                            reader.GetInt64(2) == resourceVersion;
+            // A case-insensitive MySQL UNIQUE index may collide on letter case.
+            // Only an ordinal match of the ORIGINAL key is an idempotent replay.
+            var identical = string.Equals(reader.GetString(0), idempotencyKey, StringComparison.Ordinal) &&
+                            string.Equals(reader.GetString(1), resourceId, StringComparison.Ordinal) &&
+                            string.Equals(reader.GetString(2), operation, StringComparison.Ordinal) &&
+                            reader.GetInt64(3) == resourceVersion;
             result = !identical ? Reservation.Conflict :
                 inserted == 1 ? Reservation.Stored : Reservation.Duplicate;
         }
