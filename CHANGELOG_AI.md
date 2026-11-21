@@ -1,3 +1,7 @@
+## 2026-11-21 - V23 C15-04.M05.04 A0.91 capturas reales storefront [Javier :10]
+- WIP R2 existente con candado V17 2000002297, sin nuevo CLAIM: mejora Playwright test-only 15 navegaciones publicas en 320/390/768/1280/1440 con capturas PNG fullPage y bytes comprobados, corrige timeout duplicado; el workflow guarda evidencia siempre en artifact, sin cambiar runtime.
+- Archivo test frontend/e2e/c15-04-m05-04-global-ux.spec.ts, workflow .github/workflows/v19-c15-04-m05-04-global-ux.yml, doc docs/v5/c15-04-m05-04-a091-v23-screenshots.md. CI exact-SHA y artefactos pendientes tras commit; NO_LISTO global, sin JWT/MySQL/WCAG/160 rutas certificadas, A5 independiente, rollback por revert normal.
+
 ## 2026-11-21 — V23 C06-01.M04.02 reparacion adversarial A5_FAIL P2 encabezado [Javier :50]
 - Revision A5 independiente de DEV04 sobre cinco pruebas Chromium reales y diez capturas del artefacto 14723434965 detecto colision visible de las dos lineas del titulo final a 1280/1440; A5_FAIL_P2 registrado en BITACORA, sin reabrir H=LISTO ni sobrescribir I.
 - Ajusta exclusivamente line-height 1.18 del encabezado de cierre en la landing Angular publica y agrega regression Playwright real en 320/390/768/1280/1440, dos paletas, separacion tipografica y ausencia de overflow.

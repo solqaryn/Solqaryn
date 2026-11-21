@@ -157,9 +157,8 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
   });
 
   // A0.4: tres rutas publicas reales; no confundir con autorizacion backend ni compras.
-  test('storefront publico V23: 15 navegaciones y foco real en cinco anchos',async({page})=>{
+  test('storefront publico V23: 15 capturas y foco real en cinco anchos',async({page},testInfo)=>{
     test.setTimeout(180_000);
-    test.setTimeout(120_000);
     const rutas:[string,string][]=[
       ['/tienda','#contenido-principal'],
       ['/tienda/productos','#catalogo-productos'],
@@ -178,6 +177,15 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
           await page.keyboard.press('Tab');
           await expect(page.locator('a.skip-link').first()).toBeFocused();
           await noOverflow(page);
+          // Captura real de ruta publica sin credenciales: evidencia A0.91,
+          // nunca reemplazo de pruebas JWT, role matrix o WCAG global.
+          const slug = ruta.replaceAll('/', '_').replace(/^_/, '');
+          const screenshot = await page.screenshot({
+            path: testInfo.outputPath(`v23-a091-${slug}-${width}.png`),
+            fullPage: true,
+            animations: 'disabled'
+          });
+          expect(screenshot.length).toBeGreaterThan(1_200);
         });
       }
     }

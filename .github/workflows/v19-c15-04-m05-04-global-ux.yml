@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   chromium:
-    name: C15-04.M05.04 - veintitres casos Chromium parciales
+    name: C15-04.M05.04 - Chromium UX incremental y capturas V23
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
@@ -49,6 +49,14 @@ jobs:
           exit 1
       - name: UX en browser real
         run: npx playwright test e2e/c15-04-m05-04-global-ux.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Evidencia V23 de 15 capturas Chromium publicas
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c1504-m0504-v23-a091-screenshots
+          path: frontend/test-results/**/v23-a091-*.png
+          if-no-files-found: warn
+          retention-days: 14
       - name: Evidencia de falla
         if: failure()
         uses: actions/upload-artifact@v4
