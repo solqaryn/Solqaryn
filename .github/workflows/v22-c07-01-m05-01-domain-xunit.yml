@@ -1,0 +1,50 @@
+name: V22 C07-01.M05.01 reproducible catalog domain xUnit
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/Domain/C0701M0501CatalogRuleAcceptanceTests.cs'
+      - 'backend/src/Domain/AutomationV5/C0701CatalogDomainRules.cs'
+      - '.github/workflows/v22-c07-01-m05-01-domain-xunit.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c0701-m0501-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  domain-xunit:
+    name: C07-01.M05.01 - real xUnit positive negative boundary
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Exact-SHA Scope Lock and skill freshness
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+          node scripts/verify-solqaryn-skills.mjs --self-test
+      - name: Release xUnit domain acceptance with TRX proof
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet restore tests/Solqaryn.Tests/Solqaryn.Tests.csproj
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore --filter 'FullyQualifiedName~C0701M0501CatalogRuleAcceptanceTests' --logger 'trx;LogFileName=C0701M0501CatalogRuleAcceptance.trx' --verbosity normal
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          found=list(Path('tests/Solqaryn.Tests').rglob('C0701M0501CatalogRuleAcceptance.trx'))
+          if len(found)!=1:raise SystemExit("missing unique C0701M0501 TRX")
+          counters=ET.parse(found[0]).getroot().find('.//{*}Counters')
+          if counters is None:raise SystemExit("missing test counters")
+          c={k:int(counters.attrib.get(k,-1)) for k in ('total','passed','failed','notExecuted','executed')}
+          print('C0701_M0501_REAL_XUNIT_TRX',c)
+          if c['total']<16 or c['passed']!=c['total'] or c['failed'] or c['notExecuted'] or c['executed']!=c['total']:
+              raise SystemExit("C0701_M0501_TEST_FAILURE")
+          PY
