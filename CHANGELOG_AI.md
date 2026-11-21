@@ -1,3 +1,7 @@
+## 2026-11-21 — V23 C06-01.M06.06 reparación de aserción semántica CI [Javier :20]
+- Identifica falla real de C15-01.M04.01 (14/15 Chromium): un selector heredado buscaba main mientras la superficie de cobertura monta section.coverage-shell correctamente etiquetada; test actualizado sin relajar count=1 ni las negativas de permisos.
+- Cambio test-only, sin API/JWT/MySQL, ruta privada, grants o entorno productivo. Validación exact-SHA y regresiones nuevas siguen pendientes; C06-01.M06.06 permanece VALIDANDO y A5 distinta, sin forzar DAG.
+
 ## 2026-11-21 — V23 C06-01.M06.06 reparación causal de manifiesto CI de rutas [Javier :20]
 - El check compartido C15-01.M05.04 falló en eb02b1ba por deriva del hash de app.routes.ts; conserva la foto histórica de 2340 PLAN/COLA y 2301 DAG, pero actualiza exclusivamente la huella Git blob y el contador real de 120 rutas del archivo modificado.
 - Registra procedencia, valores anteriores y SHA base en el manifiesto; las otras tres rutas permanecen con los mismos fingerprints y el validador sigue rechazando nueva deriva. Sin reabrir C15-01.M05.04 LISTO ni simular prueba de autorización.

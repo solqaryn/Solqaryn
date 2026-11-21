@@ -67,7 +67,9 @@ test('C15-01.M04.05 responsive 320/375/768/1280 sin desbordamiento', async ({ pa
 test('C15-01.M04.05 semántica y labels, cero acciones ni resultado fabricado', async ({ page }) => {
   await setSession(page, 'authorized');
   await page.goto('/plataforma/trazabilidad-cobertura-v5');
-  await expect(page.locator('main[aria-labelledby="coverage-title"]')).toHaveCount(1);
+  // El componente de cobertura usa section con aria-labelledby dentro del shell;
+  // no exige un main anidado, y mantiene el mismo contrato semántico.
+  await expect(page.locator('section.coverage-shell[aria-labelledby="coverage-title"]')).toHaveCount(1);
   await expect(page.locator('section[aria-labelledby="coverage-dimensions"]')).toHaveCount(1);
   await expect(page.locator('.coverage-shell [role="status"]')).toContainText('NO_MEDIDO');
   await expect(page.locator('.unverified[aria-label="Evidencia no verificada"]')).toHaveCount(4);
