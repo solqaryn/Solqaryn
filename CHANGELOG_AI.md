@@ -1,3 +1,8 @@
+## 2026-11-20 - DEV02 V22 C15-04.M05.04 A0.75 activacion de enlaces por teclado real
+
+- Cuatro casos Playwright/Chromium con JWT firmado ASP.NET Core 10 y MySQL 8.4 efimero validan ocho navegaciones 375/1280: Tab real, Enter, retorno a Administracion global, autorizacion HTTP, responsive y cero mutaciones; sin focus/click sintetico.
+- Test-only R2, sin runtime, migraciones, secretos ni pagos; CI exact-SHA pendiente de comprobar, scope sigue EN_PROGRESO con V17 y A5 independiente no ejecutada. Ver docs/v5/c15-04-m05-04-global-ux-acceptance.md.
+
 ## 2026-11-20 — DEV01 V22 C14-01.M06.04 ensayo rollback Git detached reversible
 - PLAN D2051 R2: GitHub-hosted Node24 efectúa revert real de `fc611e676aa1faa93101419f951baf701262956d` sobre worktree efímero aislado, verifica allowlist exacta 3/3 blobs iguales al padre, conserva branch dev y no toca datos MySQL productivos.
 - Cuatro tests adversariales positivos, migraciones/tenant rechazados, límites de rutas, inválidos y falla cerrada; nuevo workflow por SHA con cancel-in-progress false y checkout sin credenciales persistentes.

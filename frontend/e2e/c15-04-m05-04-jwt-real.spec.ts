@@ -2407,4 +2407,50 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
       });
   }
 
+  // A0.75: activar enlaces de regreso con Tab + Enter reales, sin click/focus artificial.
+  // Valida cuatro superficies globales con JWT firmado y autorizacion HTTP/MySQL real.
+  for (const destino of [
+    { ruta: '/plataforma/continuidad-operativa-v5', titulo: 'Controles de recuperación y aislamiento', volver: 'Regresar a plataforma' },
+    { ruta: '/plataforma/revision-amenazas-v5', titulo: 'Verificaciones de acceso y abuso', volver: 'Volver a administración de plataforma' },
+    { ruta: '/plataforma/respuesta-incidentes-v5', titulo: 'Respuesta, revocación y recuperación segura', volver: 'Regresar a plataforma' },
+    { ruta: '/plataforma/gobierno-cambios-v5', titulo: 'Decisiones y controles V5', volver: 'Volver a administración de plataforma' }
+  ]) {
+    test('A0.75 - Enter real vuelve desde ' + destino.ruta, async ({ page, request }) => {
+      const jwt = await ingresar(page, 'c1504_platform_only');
+      const control = await request.get(api + '/plataforma/sesion', {
+        headers: { Authorization: 'Bearer ' + jwt }
+      });
+      expect(control.status(), 'JWT firmado con privilegio global en API real').toBe(200);
+      const escrituras: string[] = [];
+      page.on('request', req => {
+        if (req.url().includes('localhost:5005') && /^(POST|PUT|PATCH|DELETE)$/.test(req.method())) {
+          escrituras.push(req.method() + ' ' + new URL(req.url()).pathname);
+        }
+      });
+      for (const ancho of [375, 1280]) {
+        await page.setViewportSize({ width: ancho, height: 840 });
+        const sesion = page.waitForResponse(res =>
+          res.url().includes('/plataforma/sesion') && res.request().method() === 'GET');
+        await page.goto(destino.ruta);
+        expect((await sesion).status(), 'Backend verifica la ruta privada').toBe(200);
+        await expect(page.getByRole('heading', { level: 1, name: destino.titulo })).toBeVisible();
+        const enlace = page.getByRole('link', { name: destino.volver });
+        await expect(enlace).toBeVisible();
+        let enfocado = false;
+        for (let i = 0; i < 120; i++) {
+          await page.keyboard.press('Tab');
+          enfocado = await enlace.evaluate(el => el === document.activeElement);
+          if (enfocado) break;
+        }
+        expect(enfocado, 'El enlace debe alcanzarse mediante Tab real').toBe(true);
+        await page.keyboard.press('Enter');
+        await expect(page).toHaveURL(url => url.pathname === '/plataforma');
+        await expect(page.getByRole('heading', { level: 1, name: 'Administración global' })).toBeVisible();
+        expect(await page.evaluate(() => document.documentElement.scrollWidth),
+          'Navegacion por teclado sin overflow horizontal').toBeLessThanOrEqual(ancho + 2);
+      }
+      expect(escrituras, 'Los enlaces de solo lectura no mutan API').toEqual([]);
+    });
+  }
+
 });
