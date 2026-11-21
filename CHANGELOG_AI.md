@@ -1,3 +1,8 @@
+## 2026-11-21 — DEV04 V22 reparacion causal landmark audit y CI C07-01.M04.01
+- Se corrige un defecto semantico real en la pantalla privada de auditoria operativa: el contenedor exterior era section y las pruebas reales Vitest/Chromium de regresion exigian main con titulo accesible. Se cambia solo la etiqueta exterior, sin alterar auth, permisos, rutas, APIs ni estados.
+- Se conserva la regresion adversarial original C15-05; la CI GitHub-hosted del nuevo SHA debe confirmar el resultado. El test dirigido C07-01.M04.01 ya probaba 4/4 con HTTP/JWT sintetico, sin certificar MySQL/JWT firmado.
+- C07-01.M04.01 sigue VALIDANDO hasta A0-A4 causal y checks obligatorios SUCCESS; A5 corresponde a otra Task Javier. Sin QA/main/PROD; rollback git revert, sin reescritura del historial.
+
 ## 2026-11-21 — V22 DEV01 C04-02.M03.04: adaptador aislado real MySQL 8.4 para contratos
 
 - Implementa lector ADO.NET versionado, filtro SQL tenant/contrato, aislamiento de lectura, validacion de estado, rollback y denegacion por defecto; no registra DI ni crea tablas en SaaS real.
