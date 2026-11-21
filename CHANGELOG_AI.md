@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV05 V22 C01-02.M06.03 scoped capabilities risk and decision register
+- Authorized PLAN D214 is documentation of limitations and decisions, not a runtime permission grant or full M06 certification. Source M05.06 Chromium/JWT/HTTP/MySQL job 136732965290 showed real 5/5, and DEV06 independently reviewed it; earlier failure remains historical.
+- New R0 risk register tracks incomplete resource-level sector/plan/role/tenant/branch checks, signed-token revocation, physical field performance, stale CI and rollback/review gates. No API/JWT/database/Angular mutation; Scope Lock/V5 exact SHA, V17 readback and another Javier A5 are required. No QA/main/PROD.
+
 ## 2026-11-20 - DEV06 V22 C01-02.M06.01 actual evidence vs test doubles audit
 - PLAN D212 review is an R0 documentary verification of M05.01-.06 tests; new docs/v5/c01-02-m06-01-evidence-scope-audit-v22.md contrasts real cryptographic TestServer JWT, physical MySQL8.4 CI, Chromium 5/5, mock/in-memory/fixture boundaries and future integration gaps.
 - Protect historical failures, deny claiming unregistered capability endpoints/DI as runtime authorization, preserve Plan E as cumulative and physical device/CWV as NO_MEDIDO. No runtime or DB modification and no QA/main/PROD.
