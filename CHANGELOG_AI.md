@@ -1,3 +1,8 @@
+## 2026-11-20 - DEV02 V22 C14-01.M06.02 correccion de procedencia A5_FAIL P2
+
+- Reparadas dos referencias erroneas a GitHub Actions run 44867961201 para el job 136735799511: run real 44867961229 (C14-01.M05.06, Chromium real 4/4). El run anterior solo contiene Scope Lock.
+- A5_FAIL historico e incidencia P2 conservados; documentacion sin runtime, JWT, MySQL o produccion; microtarea permanece VALIDANDO hasta CI exact SHA, A0-A4 y A5 posterior de otra Task Javier, distinta de DEV06 autor y DEV02 reparador.
+
 ## 2026-11-20 — DEV01 V22 C14-01.M06.03 reparación P2 de procedencia CI
 - QA independiente identificó A5_FAIL histórico: el documento atribuía dos veces el job de Chromium JWT/MySQL 136735799511 al run 44867961201 (Scope Lock), en lugar del run real 44867961229; comprobados ambos jobs autenticados de GitHub Actions.
 - Se corrigen únicamente dos referencias documentales de run, preservando invariantes JWT/tenancy, fuentes, historia CHANGELOG, owner DEV06 y A5_FAIL; no se altera runtime, pruebas, ramas QA/main/PROD ni se afirma A5_PASS por el reparador.
