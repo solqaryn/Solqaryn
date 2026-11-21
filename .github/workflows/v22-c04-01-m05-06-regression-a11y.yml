@@ -1,0 +1,83 @@
+name: V22 C04-01.M05.06 real Chromium regression accessibility performance
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v22-c04-01-m05-06-regression-a11y.yml'
+      - 'frontend/e2e/c04-01-m05-06-regression-a11y-performance.spec.ts'
+      - 'frontend/src/app/features/plataforma/c04-01-m04-01-planes-readonly.component.ts'
+      - 'frontend/src/app/app.routes.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c0401-m0506-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  real-browser-regression:
+    name: C04-01.M05.06 - Angular Chromium regression a11y perf
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Exact SHA and strict Scope Lock
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+      - name: Install Angular dependencies
+        working-directory: frontend
+        run: |
+          npm install -g npm@11.19.0
+          npm ci
+      - name: Angular typecheck and production bundle
+        working-directory: frontend
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Install real Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Five causal Chromium tests and JUnit no-skips guard
+        working-directory: frontend
+        env:
+          CI: 'true'
+          PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c0401-m0506-ng.log 2>&1 &
+          ready=0
+          for i in $(seq 1 90); do
+            if curl --silent --fail http://127.0.0.1:4200/login >/dev/null; then ready=1; break; fi
+            sleep 2
+          done
+          if [ "$ready" -ne 1 ]; then tail -n 100 c0401-m0506-ng.log; exit 1; fi
+          npx playwright test e2e/c04-01-m05-06-regression-a11y-performance.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          source=Path('test-results/phase7-e2e.xml')
+          assert source.is_file(), 'actual Playwright JUnit XML required'
+          root=ET.parse(source).getroot()
+          suites=[root] if root.tag=='testsuite' else list(root.findall('testsuite'))
+          assert suites, root.tag
+          vals=tuple(sum(int(s.attrib.get(key,0)) for s in suites) for key in ('tests','failures','errors','skipped'))
+          assert vals==(5,0,0,0), vals
+          print('C0401_M0506_CHROMIUM_5_OF_5_PASS_NO_SKIP', vals)
+          PY
+      - name: Failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c0401-m0506-a11y-failure
+          path: |
+            frontend/c0401-m0506-ng.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 7
