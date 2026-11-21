@@ -239,6 +239,46 @@ public sealed class C0401M0303SignedJwtMysql84HttpIntegrationTests
             using (var revoked = await client.GetAsync(
                 $"/c0401-m0303-test/{a.Id}"))
                 Assert.Equal(HttpStatusCode.Forbidden, revoked.StatusCode);
+
+            // El rol empresarial de sistema es una plantilla valida sin EmpresaId;
+            // una plantilla eliminada logicamente nunca autoriza, aunque siga Activo.
+            db.RolPermisos.Add(new RolPermiso
+            {
+                RolId = roleA.Id, PermisoId = permission.Id
+            });
+            var template = new Rol
+            {
+                Nombre = "C0401 valid system template",
+                NombreNormalizado = "C0401_TEMPLATE",
+                EmpresaId = null,
+                Ambito = AmbitoAutorizacion.Empresa,
+                EsSistema = true,
+                Activo = true
+            };
+            db.Roles.Add(template);
+            await db.SaveChangesAsync();
+            var membership = await db.UsuarioEmpresas
+                .SingleAsync(m => m.UsuarioId == user.Id && m.EmpresaId == a.Id);
+            membership.CambiarRol(template.Id);
+            db.RolPermisos.Add(new RolPermiso
+            {
+                RolId = template.Id, PermisoId = permission.Id
+            });
+            await db.SaveChangesAsync();
+            db.ChangeTracker.Clear();
+            using (var systemTemplate = await client.GetAsync(
+                $"/c0401-m0303-test/{a.Id}"))
+                Assert.Equal(HttpStatusCode.OK, systemTemplate.StatusCode);
+
+            var softDeletedTemplate = await db.Roles.IgnoreQueryFilters()
+                .SingleAsync(r => r.Id == template.Id);
+            softDeletedTemplate.Eliminado = true;
+            softDeletedTemplate.Activo = true; // adversarial inconsistent soft-delete
+            await db.SaveChangesAsync();
+            db.ChangeTracker.Clear();
+            using (var deletedRole = await client.GetAsync(
+                $"/c0401-m0303-test/{a.Id}"))
+                Assert.Equal(HttpStatusCode.Forbidden, deletedRole.StatusCode);
         }
         finally
         {

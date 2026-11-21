@@ -78,8 +78,11 @@ public sealed class C0401PlanVerifiedActorSource(
 
             // El rol debe seguir activo y pertenecer al tenant del JWT validado.
             if (!await database.Roles.IgnoreQueryFilters().AsNoTracking()
-                .AnyAsync(r => r.Id == scope.RolId && r.EmpresaId == tenantId &&
-                               r.Activo, cancellationToken))
+                .AnyAsync(r => r.Id == scope.RolId &&
+                               r.Ambito == AmbitoAutorizacion.Empresa &&
+                               (r.EmpresaId == tenantId ||
+                                (r.EmpresaId == null && r.EsSistema)) &&
+                               r.Activo && !r.Eliminado, cancellationToken))
                 return null;
 
             if (!await HasCurrentGrantAsync(scope.RolId))
@@ -92,8 +95,11 @@ public sealed class C0401PlanVerifiedActorSource(
                 fresh.EmpresaId != tenantId || fresh.RolId != scope.RolId ||
                 !await HasCurrentGrantAsync(fresh.RolId) ||
                 !await database.Roles.IgnoreQueryFilters().AsNoTracking()
-                    .AnyAsync(r => r.Id == fresh.RolId && r.EmpresaId == tenantId &&
-                                   r.Activo, cancellationToken))
+                    .AnyAsync(r => r.Id == fresh.RolId &&
+                               r.Ambito == AmbitoAutorizacion.Empresa &&
+                               (r.EmpresaId == tenantId ||
+                                (r.EmpresaId == null && r.EsSistema)) &&
+                               r.Activo && !r.Eliminado, cancellationToken))
                 return null;
             cancellationToken.ThrowIfCancellationRequested();
 

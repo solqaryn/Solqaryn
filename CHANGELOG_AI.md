@@ -1,3 +1,8 @@
+## 2026-11-21 - DEV03 V22 C04-01.M03.03 RBAC plantillas de sistema y baja logica
+- Hallazgo causal en clases Rol y UsuarioScopeService: una plantilla empresarial EsSistema con EmpresaId nulo es asignable a cualquier tenant validado, pero el adaptador C0401 introducido exigia equivocadamente EmpresaId igual al tenant. Se alinea con predicado vigente: rol activo, no eliminado, Ambito Empresa y (owner tenant o plantilla EsSistema).
+- Amplia prueba adversarial REAL TestServer JWT/MySQL 8.4: rol empresarial de sistema legitimamente asignado autoriza solo preflight read-only, su baja logica con Activo aun true deniega 403; preserva negativos de tenant A/B, token, grants y feature OFF. CI exact-SHA requerida, sin inventar PASS.
+- Solo scope C04-01.M03.03, V17 exclusivo, sin cambios a cobros/efectos, QA/main/PROD, rollback git revert y A5 independiente.
+
 ## 2026-11-21 - DEV03 V22 C04-01.M03.03 fix ruta de prueba JWT tenant
 - Diagnostico P1 causal antes de CI final: adaptador resuelve RouteValues[empresaId], pero el controller de TestServer tenia parametro tenantId, lo que convertia un caso positivo de JWT firmado en denegacion 403 sin probar RBAC real.
 - Corregido el controller SOLO de prueba a empresaId, coincidente con ruta SaaS; se mantienen negativos anonimo/firma/tenant ajeno/revocacion/flag OFF, MySQL 8.4 efimero y gate A0-A4 exact SHA sin marcar CI pendiente como PASS.
