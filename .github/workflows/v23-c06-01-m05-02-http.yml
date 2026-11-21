@@ -1,0 +1,114 @@
+name: V23 C06-01.M05.02 real ASP.NET HTTP DTO MySQL84 contract
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'scripts/quality/verify-v23-c0601-m0502-http.mjs'
+      - '.github/workflows/v23-c06-01-m05-02-http.yml'
+      - 'docs/v5/c06-01-m05-02-real-http-contract-v23.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v23-c0601-m0502
+  cancel-in-progress: false
+jobs:
+  real-http:
+    name: C06-01.M05.02 real HTTP ASP.NET 10 and MySQL84
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: solqaryn_c0601_m0502
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      ASPNETCORE_ENVIRONMENT: Development
+      PORT: '5005'
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_c0601_m0502;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      Database__ServerVersion: '8.4.0'
+      Database__ApplyMigrationsOnStartup: 'true'
+      Jwt__Secret: 'C0601-M0502-Only-Disposable-Test-Secret-2026'
+      Jwt__Issuer: 'Solqaryn.API'
+      Jwt__Audience: 'Solqaryn.Frontend'
+      Jwt__ExpiraMinutos: '120'
+      Security__LoginRateLimitPerMinute: '300'
+      SeedAdmin__Username: 'e2e_admin'
+      SeedAdmin__Password: 'E2E.Admin#2026!'
+      Cors__AllowedOrigins__0: 'http://127.0.0.1:4200'
+      AppSettings__BackendPublicUrl: 'https://preview.solqaryn.invalid'
+      AppSettings__LogoPublicUrl: 'https://preview.solqaryn.invalid/assets/logo.png'
+      Cloudinary__CloudName: 'e2e-not-used'
+      Cloudinary__ApiKey: 'e2e-not-used'
+      Cloudinary__ApiSecret: 'e2e-not-used'
+      C0601_API_URL: 'http://127.0.0.1:5005'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+          cache: true
+          cache-dependency-path: backend/**/*.csproj
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+      - name: Exact SHA Scope Lock and V5 provenance
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+          node scripts/verify-solqaryn-skills.mjs --self-test
+          node scripts/quality/verify-v5-changelog-provenance.mjs
+      - name: Compile real ASP.NET 10 Release
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+      - name: Bootstrap real Oracle EF10 schema in disposable MySQL
+        working-directory: backend
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+          MYSQL_PWD: root
+        run: |
+          set -euo pipefail
+          dotnet run --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj --configuration Release --no-build | tee c0601-m0502-bootstrap.log
+          grep -Fx 'SOLQARYN_ORACLE_BOOTSTRAP=PASS mode=fresh tables=139 pending=0' c0601-m0502-bootstrap.log
+      - name: Start actual API and verify ephemeral MySQL readiness
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          nohup dotnet run --project src/API/Solqaryn.API.csproj --configuration Release --no-build --no-launch-profile > c0601-m0502-api.log 2>&1 &
+          ready=0
+          for i in $(seq 1 70); do
+            if curl --silent --fail http://127.0.0.1:5005/health >/dev/null && curl --silent --fail http://127.0.0.1:5005/health/ready >/dev/null; then ready=1; break; fi
+            sleep 2
+          done
+          if [ "$ready" -ne 1 ]; then tail -n 90 c0601-m0502-api.log; exit 1; fi
+      - name: Assert real HTTP and anonymous errors
+        run: node scripts/quality/verify-v23-c0601-m0502-http.mjs healthy
+      - name: Disconnect ONLY disposable MySQL and assert fail-closed 503
+        env:
+          MYSQL_PWD: root
+        run: |
+          set -euo pipefail
+          mysqladmin --protocol=TCP -h 127.0.0.1 -P 3306 -uroot shutdown
+          node scripts/quality/verify-v23-c0601-m0502-http.mjs db-down
+      - name: Preserve test logs
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v23-c0601-m0502-real-http-ephemeral
+          path: |
+            backend/c0601-m0502-bootstrap.log
+            backend/c0601-m0502-api.log
+          retention-days: 7
+          if-no-files-found: ignore

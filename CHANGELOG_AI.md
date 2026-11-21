@@ -1,3 +1,8 @@
+## 2026-11-21 — V23 C06-01.M05.02 HTTP/DTO y MySQL 8.4 real [Javier :40]
+- Prueba nueva R2 de contrato en ASP.NET Core 10 y base efímera MySQL Oracle EF10: salud 200/ready 200, error de readiness 503 tras apagar la base descartable, 401 anonimo, 404 URI M02 futura y 405 POST health.
+- Workflow GitHub-hosted aislado y Node HTTP real, sin tocar runtime Angular/API, Aiven, QA, main ni PROD. 403/429 privados, JWT/RBAC y tenant A/B de la fase acumulativa no estan certificados.
+- Requiere checks pertinentes exact-SHA y Scope Lock/V5 SUCCESS, readback Sheets y A5 por otra Task. Sin declarar PASS por CI pendiente. Rollback git revert normal.
+
 ## 2026-11-21 - V23 C15-04.M05.04 A0.91 capturas reales storefront [Javier :10]
 - WIP R2 existente con candado V17 2000002297, sin nuevo CLAIM: mejora Playwright test-only 15 navegaciones publicas en 320/390/768/1280/1440 con capturas PNG fullPage y bytes comprobados, corrige timeout duplicado; el workflow guarda evidencia siempre en artifact, sin cambiar runtime.
 - Archivo test frontend/e2e/c15-04-m05-04-global-ux.spec.ts, workflow .github/workflows/v19-c15-04-m05-04-global-ux.yml, doc docs/v5/c15-04-m05-04-a091-v23-screenshots.md. CI exact-SHA y artefactos pendientes tras commit; NO_LISTO global, sin JWT/MySQL/WCAG/160 rutas certificadas, A5 independiente, rollback por revert normal.
