@@ -97,8 +97,20 @@
   </div>
 
   @if (loading()) {
-    <div class="loading" aria-live="polite"><mat-spinner></mat-spinner></div>
+    <div class="loading" role="status" aria-live="polite"><mat-spinner aria-label="Cargando productos"></mat-spinner><span>Cargando productos...</span></div>
+  } @else if (errorCarga(); as mensajeError) {
+    <div class="catalog-feedback catalog-error" role="alert">
+      <mat-icon aria-hidden="true">error_outline</mat-icon>
+      <span>{{ mensajeError }}</span>
+      <button mat-stroked-button type="button" (click)="cargar()">Reintentar carga</button>
+    </div>
   } @else {
+    @if (cargaExitosa()) {
+      <p class="catalog-feedback catalog-success" role="status" aria-live="polite">Catálogo cargado: {{ totalCount() }} productos.</p>
+    }
+    @if (modoConsulta()) {
+      <p class="catalog-feedback catalog-readonly"><mat-icon aria-hidden="true">visibility</mat-icon>Modo consulta: no tienes permisos para modificar productos.</p>
+    }
     <div class="table-scroll">
       <table class="table table-desktop">
         <thead>

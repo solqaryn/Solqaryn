@@ -108,7 +108,44 @@
   border-color: var(--color-border);
 }
 
+.catalog-feedback {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 8px;
+  min-width: 0;
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border: 1px solid var(--color-border);
+  border-radius: 10px;
+  color: var(--color-text);
+  background: var(--color-surface);
+  font-size: 13px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+}
+.catalog-feedback mat-icon {
+  flex: 0 0 auto;
+  width: 20px;
+  height: 20px;
+  font-size: 20px;
+}
+.catalog-error {
+  border-color: var(--color-danger);
+  color: var(--color-danger);
+}
+.catalog-error button {
+  flex: 0 0 auto;
+  min-height: 40px;
+}
+.catalog-success,
+.catalog-readonly {
+  color: var(--color-text-muted);
+}
 .loading {
+  gap: 12px;
+  align-items: center;
+  flex-wrap: wrap;
   display: flex;
   justify-content: center;
   padding: 48px 0;

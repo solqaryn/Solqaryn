@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, signal, ChangeDetectionStrategy, inject } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal, ChangeDetectionStrategy, inject, computed } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -49,6 +49,8 @@ export class ProductosListComponent implements OnInit, OnDestroy {
   readonly marcas = signal<CatalogoProducto[]>([]);
   readonly modelos = signal<CatalogoProducto[]>([]);
   readonly loading = signal(true);
+  readonly errorCarga = signal<string | null>(null);
+  readonly cargaExitosa = signal(false);
   readonly loadingFilters = signal(true);
   readonly totalCount = signal(0);
   readonly puedeCrear = signal(false);
@@ -56,6 +58,9 @@ export class ProductosListComponent implements OnInit, OnDestroy {
   readonly puedeActivar = signal(false);
   readonly puedeDesactivar = signal(false);
   readonly puedeEliminar = signal(false);
+  // Solo presenta el modo consulta; el backend sigue siendo quien autoriza.
+  readonly modoConsulta = computed(() => !this.puedeCrear() && !this.puedeEditar() &&
+    !this.puedeActivar() && !this.puedeDesactivar() && !this.puedeEliminar());
 
   page = 1;
   pageSize = 10;
@@ -168,6 +173,8 @@ export class ProductosListComponent implements OnInit, OnDestroy {
 
   cargar(): void {
     this.persistirEstado();
+    this.errorCarga.set(null);
+    this.cargaExitosa.set(false);
     this.loading.set(true);
 
     const cargaId = ++this.secuenciaCarga;
@@ -188,14 +195,29 @@ export class ProductosListComponent implements OnInit, OnDestroy {
     }).subscribe({
       next: (res) => {
         if (cargaId !== this.secuenciaCarga) return;
+        // Un HTTP 200 sin contrato de paginacion no se presenta como catalogo vacio.
+        if (!res?.data || !Array.isArray(res.data.items) ||
+            !Number.isSafeInteger(res.data.totalCount) || res.data.totalCount < 0) {
+          this.fallarCarga(cargaId);
+          return;
+        }
         this.productos.set(res.data.items);
         this.totalCount.set(res.data.totalCount);
+        this.cargaExitosa.set(true);
         this.loading.set(false);
       },
-      error: () => {
-        if (cargaId === this.secuenciaCarga) this.loading.set(false);
-      }
+      error: () => this.fallarCarga(cargaId)
     });
+  }
+
+  private fallarCarga(cargaId: number): void {
+    if (cargaId !== this.secuenciaCarga) return;
+    // Fail-closed: ningun dato de la consulta anterior ni cuerpo HTTP privado permanece.
+    this.productos.set([]);
+    this.totalCount.set(0);
+    this.cargaExitosa.set(false);
+    this.errorCarga.set('No se pudo cargar el catálogo. Reintenta cuando haya conexión.');
+    this.loading.set(false);
   }
 
   puedeCambiarEstado(producto: Producto): boolean {
