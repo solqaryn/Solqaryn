@@ -94,7 +94,7 @@ test.describe('C01-02.M05.06 - real regression, render budget and accessibility'
       await expect(page.getByTestId('c0102-listado')).toHaveCount(0);
     });
   }
-  test('anonymous, cross-tenant header and tampered signed JWT stay denied', async ({ page }) => {
+  test('anonymous, cross-tenant header and tampered signed JWT stay denied', async ({ page, browser }) => {
     test.setTimeout(150_000);
     const anonymous = await page.request.get(api + '/plataforma/sesion');
     expect([401, 403]).toContain(anonymous.status());
@@ -107,12 +107,20 @@ test.describe('C01-02.M05.06 - real regression, render budget and accessibility'
       headers: { Authorization: 'Bearer ' + jwtA, 'X-Empresa-Id': '2' }
     });
     expect(globalB.status()).toBe(403);
-    const valid = await login(page, 'c1504_platform_only');
-    const [head, payload, signature] = valid.split('.');
-    const tampered = [head, payload, (signature[0] === 'A' ? 'B' : 'A') + signature.slice(1)].join('.');
-    const denied = await page.request.get(api + '/plataforma/sesion', {
-      headers: { Authorization: 'Bearer ' + tampered }
-    });
-    expect([401, 403]).toContain(denied.status());
+    // A second login in the same Angular page races with the already-authorized
+    // tenant A redirect. Isolate platform login in a fresh browser context.
+    const platformContext = await browser.newContext();
+    try {
+      const platformPage = await platformContext.newPage();
+      const valid = await login(platformPage, 'c1504_platform_only');
+      const [head, payload, signature] = valid.split('.');
+      const tampered = [head, payload, (signature[0] === 'A' ? 'B' : 'A') + signature.slice(1)].join('.');
+      const denied = await platformPage.request.get(api + '/plataforma/sesion', {
+        headers: { Authorization: 'Bearer ' + tampered }
+      });
+      expect([401, 403]).toContain(denied.status());
+    } finally {
+      await platformContext.close();
+    }
   });
 });

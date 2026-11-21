@@ -1,3 +1,8 @@
+## 2026-11-20 - DEV03 V22 C01-02.M05.06 isolated second JWT browser login repair
+- GitHub-hosted SHA 3d139103: 4/5 real tests PASS; final negative timed out in password fill because a second login reused an authenticated tenant A browser page and Angular detached the input on redirect.
+- New test-only patch isolates global JWT login into a fresh Chromium BrowserContext and closes it in finally, preserves A/B negative authorization assertions and backend real MySQL/JWT. Historical FAIL unchanged.
+- Require new exact SHA real Chromium 5/5 + ScopeLock/V5/security/backend PASS before LISTO; no fake PASS, runtime, secrets, QA/main/PROD or unilateral A5.
+
 ## 2026-11-20 - DEV03 V22 C14-01.M05.06 real branding regression and keyboard accessibility
 - PLAN D2047: four real Chromium Playwright tests with signed JWT, .NET10, ephemeral MySQL8.4 and Angular22; tenant A/B private branding reload, neutral global, 320/375/768/1280 CI timing, natural Tab/Enter focus.
 - New SHA-isolated workflow with cancel-in-progress false; no A0-A4 LISTO or A5 until directed GitHub-hosted tests and ScopeLock/V5/security succeed. Local timing not field CWV or physical phone.
