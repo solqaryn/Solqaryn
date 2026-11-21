@@ -72,7 +72,11 @@ public sealed class C0203TenantLifecycleAuthorizationGate
         value is { Length: >= 1 and <= 128 } &&
         (value.Length > 1 || value[0] is >= '1' and <= '9') &&
         value.All(c => c is >= 'a' and <= 'z' or >= 'A' and <= 'Z' or
-                               >= '0' and <= '9' or '-' or '_');
+                               >= '0' and <= '9' or '-' or '_') &&
+        // MySQL INT tenant 1 must never also be addressed by decimal alias 01/001.
+        // Reject noncanonical all-digit IDs before invoking a trusted reader;
+        // opaque alphanumeric identifiers retain the existing strict whitelist.
+        (!value.All(char.IsAsciiDigit) || value[0] is >= '1' and <= '9');
 
     public async ValueTask<Decision> InspectAsync(
         Intent? intent, CancellationToken cancellationToken = default)

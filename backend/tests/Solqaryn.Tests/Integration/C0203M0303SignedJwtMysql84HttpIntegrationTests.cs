@@ -200,6 +200,16 @@ public sealed class C0203M0303SignedJwtMysql84HttpIntegrationTests
                 Assert.Equal(HttpStatusCode.OK, good.StatusCode);
                 Assert.Equal("VERIFIED_READONLY_PREFLIGHT_ONLY", await good.Content.ReadAsStringAsync());
             }
+            // Real signed-JWT HTTP TestServer + physical MySQL fixture: leading-zero
+            // decimal aliases parsed by SQL must not pass the exact tenant fence.
+            using (var aliasRequest = new HttpRequestMessage(
+                HttpMethod.Get, $"/__v22_test/lifecycle/0{a}/{(int)Rules.Command.Suspend}"))
+            {
+                aliasRequest.Headers.Authorization =
+                    new AuthenticationHeaderValue("Bearer", token);
+                using var aliasResponse = await client.SendAsync(aliasRequest);
+                Assert.Equal(HttpStatusCode.Forbidden, aliasResponse.StatusCode);
+            }
             using (var foreign = await GetAsync(client, b, Rules.Command.Suspend, token))
                 Assert.Equal(HttpStatusCode.Forbidden, foreign.StatusCode);
             using (var replay = await GetAsync(client, a, Rules.Command.Reactivate, token))

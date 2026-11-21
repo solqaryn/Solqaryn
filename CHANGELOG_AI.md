@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV05 V22 C02-03.M03.03 alias numerico de tenant, denegacion por defecto
+- Seguridad R2: el gate Application de ciclo de vida rechaza alias decimales no canonicos (01/001/000123) antes del lector MySQL, preservando ID 1-9 y opacos. Un alias de SQL INT no debe producir un segundo nombre de tenant autorizado.
+- Pruebas adversariales xUnit y caso nuevo JWT firmado + HTTP TestServer + MySQL 8.4 efimero que exige 403 con alias del tenant A y mantiene negativos de tenant B/revocacion, sin certificar un adaptador de produccion.
+- CI requerida por SHA, A0-A4 del alcance completo y A5 independiente pendientes; no LISTO, no CAS duradero ni PSP/QA/main/PROD. V17 exclusivo fila 376 y rollback normal documentado.
+
 ## 2026-11-20 — DEV04 V22 C02-01.M05.04 falla parcial de autoridad fail-closed
 
 - La capa Application deniega de modo opaco un Count/iterador de membresías fallido después de una lectura parcial de tenant. Dos casos xUnit adversariales prueban ausencia de propuesta, emisión JWT o acceso; cancelación no se degrada y no hay cambios productivos.

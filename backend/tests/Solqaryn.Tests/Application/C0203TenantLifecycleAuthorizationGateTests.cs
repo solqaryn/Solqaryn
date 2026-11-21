@@ -93,6 +93,27 @@ public sealed class C0203TenantLifecycleAuthorizationGateTests
         Assert.Equal(1, reader.Calls);
     }
 
+    [Theory]
+    [InlineData("01")]
+    [InlineData("001")]
+    [InlineData("00")]
+    [InlineData("000123")]
+    public async Task NonCanonicalNumericTenantAliasesAreDeniedBeforeTrustedSqlReader(string alias)
+    {
+        // A MySQL INT tenant key 1 must not accept alternate client spelling 01.
+        // Earlier read-only preflight allowed this alias to reach the SQL reader.
+        var reader = new Reader
+        {
+            Value = Trusted() with { VerifiedTenantId = alias }
+        };
+        var decision = await new Gate(reader).InspectAsync(
+            Request() with { TargetTenantId = alias });
+        Assert.Equal("LIFECYCLE_ACCESS_DENIED", decision.Code);
+        Assert.False(decision.MayProceedToReadOnlyApplicationPreflight);
+        Assert.False(decision.AuthorizesTenantMutation);
+        Assert.Equal(0, reader.Calls);
+    }
+
     [Fact]
     public async Task Boundary129AndUnknownCommandAreDeniedWithoutReading()
     {
