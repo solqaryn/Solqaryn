@@ -1,0 +1,81 @@
+name: V23 C06-01.M05.06 public regression performance accessibility
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/e2e/c06-01-m05-06-regression-perf-a11y.spec.ts'
+      - 'frontend/playwright.c0601-regression.config.ts'
+      - '.github/workflows/v23-c06-01-m05-06-regression.yml'
+      - 'frontend/src/app/features/landing/c0601-public-saas-landing.component.ts'
+      - 'frontend/src/app/features/landing/c0601-public-status.component.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v23-c0601-m0506-regression
+  cancel-in-progress: false
+jobs:
+  chromium:
+    name: C06-01.M05.06 - real Angular public regression Chromium 5 cases
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Verify exact HEAD governance, skill and scope
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+          node scripts/verify-solqaryn-skills.mjs --self-test
+          node scripts/quality/verify-v5-changelog-provenance.mjs
+      - name: Actual Angular 22 typecheck and build
+        working-directory: frontend
+        run: |
+          set -euo pipefail
+          npm install -g npm@11.19.0
+          npm ci
+          npx tsc --noEmit -p tsconfig.app.json
+          npm run build
+      - name: Install real Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Loopback public HTTP fixture and actual Angular browser regression
+        working-directory: frontend
+        env:
+          CI: 'true'
+        run: |
+          set -euo pipefail
+          node scripts/c0601-health-fixture.mjs >/tmp/c0601-m0506-fixture.log 2>&1 &
+          npx ng serve --host 127.0.0.1 --port 4200 >/tmp/c0601-m0506-angular.log 2>&1 &
+          ready=0
+          for i in $(seq 1 120); do
+            if curl --silent --fail http://localhost:5005/health >/dev/null && curl --silent --fail http://127.0.0.1:4200/conoce-solqaryn >/dev/null; then ready=1; break; fi
+            sleep 2
+          done
+          if [ "$ready" -ne 1 ]; then tail -n 100 /tmp/c0601-m0506-angular.log; tail -n 60 /tmp/c0601-m0506-fixture.log; exit 1; fi
+          npx playwright test e2e/c06-01-m05-06-regression-perf-a11y.spec.ts --config=playwright.c0601-regression.config.ts --workers=1 --retries=0
+      - name: Assert ten genuine five-width before/after Chromium PNG
+        if: success()
+        working-directory: frontend
+        run: |
+          set -euo pipefail
+          for width in 320 390 768 1280 1440; do
+            test -s "v23-artifacts/c0601-m0506/antes-$width.png"
+            test -s "v23-artifacts/c0601-m0506/despues-$width.png"
+          done
+          test "$(find v23-artifacts/c0601-m0506 -type f -name '*.png' | wc -l)" -eq 10
+      - name: Publish actual lab measurements, JUnit and screenshots
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v23-c0601-m0506-public-regression-chromium
+          path: |
+            frontend/v23-artifacts/c0601-m0506/
+            frontend/test-results/
+          if-no-files-found: warn
+          retention-days: 7
