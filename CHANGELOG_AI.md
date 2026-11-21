@@ -1,3 +1,7 @@
+## 2026-11-21 — DEV05 V22 C04-01.M04.03 branding dinámico y módulos permitidos
+- Cuatro pruebas Chromium real de marca/plan tenant A/B con HTTP sintético, entitlement habilitado/denegado, fallo de proveedor fail-closed y denegación de tenant sin exposición. Ejercitan componentes Angular existentes, no alteran runtime.
+- GitHub-hosted Node 24.21.0 Angular 22.2.1 CI exact-SHA pendiente; no implica JWT/MySQL real, pagos ni autorización productiva; Scope Lock STRICT y A5 independiente.
+
 ## 2026-11-21 — DEV05 V22 C04-01.M04.04 reparación causal de dos fallos Chromium
 - El job 136778107811 mostró 2/4 PASS: alerta 503 desaparecía por recarga automática del fixture, y guard RBAC navegaba a /perfil (no /login) de forma legítima. Fixture mantiene 503 hasta reintento explícito; prueba exige salida segura a /login o /perfil sin mostrar plan.
 - No se altera frontend runtime, auth, permisos ni validadores. Requiere nuevo Chromium 4/4 y Scope Lock/V5 SUCCESS exact-SHA. Historial de 2 FAIL preservado; A5 independiente.
