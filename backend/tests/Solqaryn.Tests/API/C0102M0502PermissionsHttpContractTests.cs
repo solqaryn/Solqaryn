@@ -177,7 +177,13 @@ public sealed class C0102M0502PermissionsHttpContractTests
         using var ownRequest = Request($"/permisos/mis-permisos/empresa/{tenantA.Id}", Token());
         using var own = await client.SendAsync(ownRequest);
         Assert.Equal(HttpStatusCode.OK, own.StatusCode);
-        Assert.Equal("private, no-store, max-age=0", own.Headers.CacheControl?.ToString());
+        // HTTP header directive ordering is normalized by HttpClient and not an
+        // authorization/security contract. Require all directives as parsed values.
+        var cache = own.Headers.CacheControl;
+        Assert.NotNull(cache);
+        Assert.True(cache.Private);
+        Assert.True(cache.NoStore);
+        Assert.Equal(TimeSpan.Zero, cache.MaxAge);
         using var ownJson = JsonDocument.Parse(await own.Content.ReadAsStringAsync());
         Assert.True(ownJson.RootElement.GetProperty("success").GetBoolean());
 

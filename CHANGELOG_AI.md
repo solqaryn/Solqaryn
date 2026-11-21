@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV05 V22 C01-02.M05.02 reparacion de asercion Cache-Control HTTP
+- GitHub-hosted SHA 70773727: Backend Release 6179/6180 y Seguridad multiempresa 2100/2101, un FAIL propio de comparacion textual de Cache-Control; orden HTTP real "no-store, max-age=0, private" equivalia a "private, no-store, max-age=0". FAIL historico preservado.
+- Solo se sustituye asercion textual por cabecera parseada Private/NoStore/MaxAge=0 sin quitar controles, JWT adversarial ni aislamiento; nuevo SHA necesita CI real completa SUCCESS, A0-A4 y A5 independiente. Test-only no certifica MySQL/RBAC prod, no QA/main/PROD.
+
 ## 2026-11-20 — DEV05 V22 C01-02.M05.03 integracion MySQL8.4 de fuente real de prueba
 - Test Category=Integration ejecuta SQL real en MySQL8.4 efimero GitHub-hosted, schema UUID aislado, proveedor read-through de Infrastructure, tenant A/B, cambios de revocacion, owner cruzado, borrado y cleanup; no simula persistencia con mocks.
 - El proveedor deliberadamente elimina marcas de autoridad productiva: no registra DI/live JWT/RBAC/catálogo comercial, no concede recurso ni modifica producto. CI exact-SHA requerido, no aceptar SKIPPED/FAIL como PASS, mantener A5 independiente; no QA/main/PROD. V17 fila208 y rollback git revert.

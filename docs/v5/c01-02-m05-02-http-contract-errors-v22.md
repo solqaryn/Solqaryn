@@ -17,3 +17,9 @@ Limitación exacta: la microtarea verifica contrato/errores de **API existente**
 ## A4/A5 — publicación, validación y rollback
 
 Exigir check-runs `completed/success` exact SHA de backend Release/xUnit, seguridad pertinente, `verify-solqaryn-project-scope` y V5/CHANGELOG. `SKIPPED/CANCELLED/FAIL/IN_PROGRESS` requeridos no son PASS. Verificar diff y ejecución de casos por GitHub-hosted, readback institucional CAS/PLAN/COLA/BITACORA. Solo con A0–A4 proporcionales cerrar `VALIDANDO->LISTO`; A5 por otra Task Javier distinta de autor y reparador. Rollback: revert normal del commit en `dev` (sin force-push ni borrar eventos BITACORA).
+
+## Reparación causal de CI — 20 de noviembre de 2026
+
+La primera entrega SHA `70773727479bcd689aa05aa84582c1ec63ba2360` ejecutó en GitHub Actions **6179/6180** xUnit en Backend Release (job 136720479368) y **2100/2101** en el job de seguridad (136720479712). Una prueba propia falló porque comparaba literalmente la serialización de `Cache-Control` en orden de directivas: esperaba `private, no-store, max-age=0`; el cliente HTTP real normalizó `no-store, max-age=0, private`, semánticamente igual. Fallo P2 de aserción textual, no degradación de autorizaciones ni ausencia de cabeceras.
+
+Se cambia **sólo** la prueba para analizar `Headers.CacheControl` y exigir las tres propiedades `Private=true`, `NoStore=true` y `MaxAge=TimeSpan.Zero`, preservando negativos JWT, 403/400, JSON y 404 intactos. CI nuevo SHA debe demostrar ambos jobs COMPLETED SUCCESS, 0 FAIL y Scope Lock/V5; un estado QUEUED no permite LISTO. Se conserva el fallo histórico de SHA 70773727, owner DEV05 y límites explícitos de proveedor Moq/EF InMemory vs MySQL real. Sin cambios runtime ni QA/PROD.
