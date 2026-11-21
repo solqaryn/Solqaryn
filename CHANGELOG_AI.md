@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV01 V22 C14-01.M06.04 ensayo rollback Git detached reversible
+- PLAN D2051 R2: GitHub-hosted Node24 efectúa revert real de `fc611e676aa1faa93101419f951baf701262956d` sobre worktree efímero aislado, verifica allowlist exacta 3/3 blobs iguales al padre, conserva branch dev y no toca datos MySQL productivos.
+- Cuatro tests adversariales positivos, migraciones/tenant rechazados, límites de rutas, inválidos y falla cerrada; nuevo workflow por SHA con cancel-in-progress false y checkout sin credenciales persistentes.
+- CI exact-SHA aún pendiente de comprobar; Scope Lock/V5 y Git revert real son gates A4, HTTP/JWT/MySQL nuevos NO_APLICA al diff; A5 por otra Task JAVIER, sin QA/main/PROD ni falsa certificación de rollback de negocio.
+
 ## 2026-11-20 - DEV06 V22 C14-01.M06.05 independent A5 task review request
 - PLAN D2052 requests real technical A5 by a distinct Javier Task via auditable BITACORA, not a human approval nor a PASS; each M05/M06 ID needs own source SHA, tests, failure history and reviewer distinct from its author and repairer.
 - Preserve mocked Angular contract 6of6 versus real signed-JWT MySQL8.4 Chromium 6of6 8of8 7of7 4of4, original 8f809ead 2of4 FAIL, field CWV NO_MEDIDO and future independent M06.04 rollback.

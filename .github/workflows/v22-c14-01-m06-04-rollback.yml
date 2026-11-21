@@ -1,0 +1,38 @@
+name: V22 C14-01.M06.04 - isolated reversible Git rollback
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v22-c14-01-m06-04-rollback.yml'
+      - 'scripts/quality/verify-c1401-m0604-rollback.mjs'
+      - 'scripts/quality/verify-c1401-m0604-rollback.test.mjs'
+      - 'docs/v5/c14-01-m06-04-isolated-git-rollback-v22.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c14-01-m06-04-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  isolated-revert:
+    name: C14-01.M06.04 - real detached revert and safety negatives
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Fetch full history at exact immutable push SHA
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Use Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Negative and boundary assertions
+        run: node --test scripts/quality/verify-c1401-m0604-rollback.test.mjs
+      - name: Git revert in a temporary detached worktree
+        run: node scripts/quality/verify-c1401-m0604-rollback.mjs
+      - name: Main checkout remains exactly immutable
+        run: |
+          test -z "$(git status --porcelain)"
+          test "$GITHUB_SHA" = "$(git rev-parse HEAD)"
