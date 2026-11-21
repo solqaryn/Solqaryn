@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV01 V22 C14-01.M06.01 auditoría causal real frente a mocks
+- PLAN D2048: matriz M05.01–M05.06 basada en seis diffs/SHAs de GitHub-hosted; diferencia suites unitarias con proveedores simulados, HttpTestingController simulado y pruebas reales JWT HTTP MySQL 8.4 Angular/Chromium.
+- Evidencia y límites: 16/16, 6/6, 6/6, 8/8, 7/7 y 4/4 por jobs individuales, con fallo histórico 2/4 preservado; sin afirmar hardware físico, CWV de campo, RBAC sectorial completo ni QA/main/PROD.
+- R0 documental, A0/A1 causal, A2/A3 nuevos tests NO_APLICA motivado; A4 Scope Lock/V5 exact-SHA pendiente de CI, V17/CAS y BITACORA; A5 por otra Task Javier. Rollback git revert FF.
+
 ## 2026-11-20 - DEV06 V22 C14-01.M06.02 real source versions and reproducible branding evidence
 - PLAN D2049 provenance manifest records M05.01-.06 16/16 Angular rules, 6/6 mocked HTTP DTO, physical MySQL/JWT/Chromium 6/6+8/8+7/7 and repaired M05.06 4/4 pass, preserving earlier FAIL 2/4, and distinguishing CI timings from field CWV.
 - R0 docs-only diff, no runtime access grant, database mutation, physical-device claim or global M06 certificate; A5 independent must be by another Javier Task, with reproducibility and real-source SHA checks.
