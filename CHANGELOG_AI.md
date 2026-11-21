@@ -1,3 +1,8 @@
+## 2026-11-21 — V23 C06-01.M04.02 reparacion adversarial A5_FAIL P2 encabezado [Javier :50]
+- Revision A5 independiente de DEV04 sobre cinco pruebas Chromium reales y diez capturas del artefacto 14723434965 detecto colision visible de las dos lineas del titulo final a 1280/1440; A5_FAIL_P2 registrado en BITACORA, sin reabrir H=LISTO ni sobrescribir I.
+- Ajusta exclusivamente line-height 1.18 del encabezado de cierre en la landing Angular publica y agrega regression Playwright real en 320/390/768/1280/1440, dos paletas, separacion tipografica y ausencia de overflow.
+- CI GitHub-hosted exact-SHA requerida y A5 posterior por otra Task Javier distinta de autor DEV04 y reparador DEV06; NO afirmar PASS antes de ejecutar, no certificar JWT/RBAC/MySQL, ni QA/main/PROD. Rollback git revert normal.
+
 ## 2026-11-21 — V23 C06-01.M04.02 reparacion catalogo P0-007.A [Javier :30]
 - El nuevo componente Angular público hizo fallar correctamente P0-007.A por ruta no inventariada; incorpora su ruta al manifiesto vigente y actualiza contador 170 (162 features, 8 shared), conservando la historia de 137–169.
 - Preserva el validador y su prueba adversarial de detección de rutas nuevas o ausentes. Chromium 5/5 y diez capturas del SHA anterior no sustituyen la nueva verificación exact-SHA.

@@ -121,7 +121,7 @@ import { C0601PublicStatusComponent } from './c0601-public-status.component';
     h3 { font-size: 1.06rem; margin: 1rem 0 .6rem; }
     .benefit-grid p, .closing p { line-height: 1.65; color: var(--sq-muted); }
     .closing { max-width: 1260px; margin: auto; padding: clamp(3.5rem, 7vw, 6.5rem) clamp(1.1rem, 5vw, 4rem); }
-    .closing h2 { max-width: 750px; font-size: clamp(2rem, 4.2vw, 3.6rem); margin: .8rem 0; }
+    .closing h2 { max-width: 750px; font-size: clamp(2rem, 4.2vw, 3.6rem); line-height: 1.18; margin: .8rem 0; }
     .closing p { max-width: 700px; }
     .closing-link { display: inline-block; padding: .85rem 0; font-weight: 700; color: var(--sq-nav); }
     footer { border-top: 1px solid var(--sq-border); padding: 1.6rem clamp(1.1rem, 5vw, 4rem); display: flex; flex-wrap: wrap; justify-content: space-between; gap: 1rem; color: var(--sq-muted); font-size: .82rem; }

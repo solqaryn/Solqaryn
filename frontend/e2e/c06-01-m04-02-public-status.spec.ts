@@ -109,3 +109,29 @@ test('C06-01.M04.02 keyboard-only 200 percent real Chromium visual scale', async
     try { await cdp.detach(); } catch {}
   }
 });
+
+test('C06-01.M04.02 closing heading baseline line-height A5 P2 regression at five widths and both palettes', async ({ page }) => {
+  for (const width of [320, 390, 768, 1280, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/conoce-solqaryn');
+    for (const highContrast of [false, true]) {
+      if (highContrast) await page.getByTestId('c0601-brand-toggle').click();
+      const metrics = await page.locator('#scope-heading').evaluate(element => {
+        const style = getComputedStyle(element);
+        const paragraph = element.nextElementSibling as HTMLElement | null;
+        return {
+          fontSize: Number.parseFloat(style.fontSize),
+          lineHeight: Number.parseFloat(style.lineHeight),
+          headingBottom: element.getBoundingClientRect().bottom,
+          paragraphTop: paragraph?.getBoundingClientRect().top ?? 0,
+          documentWidth: document.documentElement.scrollWidth,
+          viewportWidth: window.innerWidth
+        };
+      });
+      expect(Number.isFinite(metrics.lineHeight), 'explicit line-height for closing h2').toBeTruthy();
+      expect(metrics.lineHeight, 'no line collision at ' + width).toBeGreaterThanOrEqual(metrics.fontSize * 1.15);
+      expect(metrics.paragraphTop, 'paragraph below heading at ' + width).toBeGreaterThanOrEqual(metrics.headingBottom - 1);
+      expect(metrics.documentWidth, 'no horizontal overflow at ' + width).toBeLessThanOrEqual(metrics.viewportWidth + 1);
+    }
+  }
+});
