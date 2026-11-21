@@ -3,10 +3,10 @@ import { expect, test, type Page } from '@playwright/test';
 // Angular/Chromium real. API, tenant, RBAC and JWT fixtures synthetic, never backend certification.
 const cors = { 'Access-Control-Allow-Origin': 'http://127.0.0.1:4200',
   'Access-Control-Allow-Headers': 'Authorization, Content-Type, X-Empresa-Id',
-  'Access-Control-Allow-Methods': 'GET, OPTIONS' };
-interface Options { tenant?: boolean; role?: boolean; create?: boolean; failFirst?: boolean; }
+  'Access-Control-Allow-Methods': 'GET, OPTIONS, POST' };
+interface Options { tenant?: boolean; role?: boolean; create?: boolean; failFirst?: boolean; withColor?: boolean; }
 async function fixture(page: Page, options: Options = {}) {
-  const p = { tenant:true, role:true, create:false, failFirst:false, ...options };
+  const p = { tenant:true, role:true, create:false, failFirst:false, withColor:false, ...options };
   let reads=0;
   const writes:string[]=[];
   await page.addInitScript(() => {
@@ -40,6 +40,8 @@ async function fixture(page: Page, options: Options = {}) {
       if (r.method()!=='GET') status=405;
       else if (p.failFirst && reads===1) status=503;
       else data={items:[],totalCount:0,page:1,pageSize:10,totalPages:0};
+    } else if (/\/colores(?:\/|$)/.test(path) && p.withColor) {
+      data=[{id:77,nombre:'Azul',activo:true,tipo:'Color'}];
     } else if (/\/(categorias|colores|tallas|marcas|modelos)(?:\/|$)/.test(path)) data=[];
     else if (path.includes('/api/') || ['5000','5001','5005'].includes(u.port)) status=404;
     else return route.continue();
@@ -97,4 +99,39 @@ test('C07-01.M04.04 anónimo, tenant y rol denegados bloquean formulario',async(
     expect(io.writes).toEqual([]);
     await page.close();
   }
+});
+
+test('C07-01.M04.04 submit reentrante durante POST pendiente solo envía una creación',async({page})=>{
+  await fixture(page,{create:true,withColor:true});
+  let posts=0;
+  let release: (()=>void)|undefined;
+  await page.route('**/productos',async route=>{
+    if(route.request().method()!=='POST') return route.fallback();
+    posts++;
+    await new Promise<void>(resolve=>{release=resolve;});
+    await route.fulfill({status:200,headers:cors,contentType:'application/json',
+      body:JSON.stringify({success:true,data:{id:99,nombre:'Producto controlado'}})});
+  });
+  await page.goto('/productos/nuevo');
+  await expect(page.getByRole('heading',{name:'Nuevo producto'})).toBeVisible();
+  await page.locator('input[formcontrolname="nombre"]').fill('Producto controlado');
+  await page.locator('article.variant-card mat-select[formcontrolname="colorId"]').click();
+  await page.getByRole('option',{name:'Azul'}).click();
+  await page.locator('article.variant-card input[formcontrolname="precio"]').fill('20');
+  await page.locator('article.variant-card input[formcontrolname="costo"]').fill('10');
+  await page.locator('article.variant-card input[formcontrolname="cantidad"]').fill('2');
+  const submitButton=page.getByRole('button',{name:'Guardar producto'});
+  await expect(submitButton).toBeEnabled();
+  await page.locator('form[formgroup]').evaluate(form=>{
+    // ngSubmit is invoked directly twice, bypassing the UI button's disabled state.
+    form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
+    form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
+  });
+  await expect.poll(()=>posts).toBe(1);
+  await expect(page.getByText('Guardando producto y variantes...')).toBeVisible();
+  expect(posts).toBe(1);
+  if(!release) throw new Error('No se interceptó el primer POST');
+  release();
+  await expect(page).toHaveURL(/\/productos(?:\?|$)/);
+  expect(posts).toBe(1);
 });

@@ -4,6 +4,7 @@ on:
     branches: [dev]
     paths:
       - 'frontend/e2e/c07-01-m04-04-productos-interactions.spec.ts'
+      - 'frontend/src/app/features/productos/producto-form.component.ts'
       - '.github/workflows/v22-c07-01-m04-04-productos-interactions.yml'
   workflow_dispatch:
 permissions:
@@ -37,7 +38,7 @@ jobs:
       - name: Install Chromium
         working-directory: frontend
         run: npx playwright install --with-deps chromium
-      - name: Run four real Chromium tests
+      - name: Run five real Chromium tests
         working-directory: frontend
         env:
           CI: 'true'

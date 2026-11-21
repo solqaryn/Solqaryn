@@ -366,6 +366,9 @@ export class ProductoFormComponent implements OnInit {
   }
 
   submit(): void {
+    // A disabled submit button is not an authorization or reentrancy barrier:
+    // ngSubmit and programmatic events can arrive while the first POST is pending.
+    if (this.saving()) return;
     if (this.form.invalid || this.variantes.length === 0) {
       this.form.markAllAsTouched();
       this.errorMessage.set('Completa los datos obligatorios y agrega al menos una variante física.');
