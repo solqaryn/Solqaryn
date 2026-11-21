@@ -24,9 +24,13 @@ if (mode === 'healthy') {
   for (const url of ['/tenant-context/empresas','/tenant-context/1']) {
     assert.equal((await probe(url)).status, 401, 'Anonymous tenant resource must deny');
   }
-  assert.equal((await probe('/api/publico/v1/presentacion')).status, 404, 'Proposed M02 public endpoint does not yet exist');
-  assert.equal((await probe('/health', 'POST')).status, 405, 'Public health is read-only');
-  console.log('C0601_M0502_REAL_HTTP=PASS 200 JSON, MySQL ready 200, anonymous 401x2, proposed 404, POST 405');
+  const blockedProposal = await probe('/api/publico/v1/presentacion');
+  assert.equal(blockedProposal.status, 503, 'P0 tenant isolation must reject unregistered public API, not expose it');
+  assert.equal(JSON.parse(blockedProposal.raw).code, 'TENANT_DATA_ISOLATION_REQUIRED');
+  const blockedMutation = await probe('/health', 'POST');
+  assert.equal(blockedMutation.status, 503, 'P0 tenant isolation must deny unallowlisted POST /health');
+  assert.equal(JSON.parse(blockedMutation.raw).code, 'TENANT_DATA_ISOLATION_REQUIRED');
+  console.log('C0601_M0502_REAL_HTTP=PASS 200 JSON, MySQL ready 200, anonymous 401x2, P0 quarantine 503x2');
 } else if (mode === 'db-down') {
   const ready = await probe('/health/ready');
   assert.equal(ready.status, 503, 'Disconnected disposable MySQL must fail readiness');

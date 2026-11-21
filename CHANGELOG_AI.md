@@ -1,3 +1,7 @@
+## 2026-11-21 — V23 C06-01.M05.02 correccion real CI P0 tenant quarantine [Javier :40]
+- CI original d58030f8 compilo .NET 10 y materializo MySQL 8.4 EF Oracle; el test esperaba 404 para ruta publica propuesta sin endpoint y recibio 503 de cuarentena P0. Es un fallo de expectativa, no permiso para abrir la ruta.
+- Test reparado verifica 503 mas codigo TENANT_DATA_ISOLATION_REQUIRED tanto en URI futura como en POST /health no permitido; preserva guard multitenant e historial FAIL. Reejecutar GitHub-hosted exact-SHA, incluido fallo real MySQL readiness, antes de LISTO y A5 independiente.
+
 ## 2026-11-21 — V23 C06-01.M05.02 HTTP/DTO y MySQL 8.4 real [Javier :40]
 - Prueba nueva R2 de contrato en ASP.NET Core 10 y base efímera MySQL Oracle EF10: salud 200/ready 200, error de readiness 503 tras apagar la base descartable, 401 anonimo, 404 URI M02 futura y 405 POST health.
 - Workflow GitHub-hosted aislado y Node HTTP real, sin tocar runtime Angular/API, Aiven, QA, main ni PROD. 403/429 privados, JWT/RBAC y tenant A/B de la fase acumulativa no estan certificados.
