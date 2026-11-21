@@ -1,3 +1,8 @@
+## 2026-11-21 — V23 C06-01.M04.02 reparacion catalogo P0-007.A [Javier :30]
+- El nuevo componente Angular público hizo fallar correctamente P0-007.A por ruta no inventariada; incorpora su ruta al manifiesto vigente y actualiza contador 170 (162 features, 8 shared), conservando la historia de 137–169.
+- Preserva el validador y su prueba adversarial de detección de rutas nuevas o ausentes. Chromium 5/5 y diez capturas del SHA anterior no sustituyen la nueva verificación exact-SHA.
+- Requiere nuevo Scope Lock, V5 y GitHub-hosted A0–A4 antes de LISTO y A5 independiente; ninguna acción sobre QA/main/PROD.
+
 ## 2026-11-21 — V23 C06-01.M04.02 estados públicos HTTP/Chromium [Javier :30]
 - Implementa panel Angular público de salud iniciado por el visitante con estados carga, vacío, 401/403, 404, 429, error y éxito; sin sesión, tokens, tenant ni acceso privado.
 - Agrega pruebas adversariales de HTTP loopback efímero real y Chromium con teclado, escala 200%, cinco anchos y diez capturas antes/después; GitHub-hosted exact SHA requerido antes de LISTO/A5 independiente.

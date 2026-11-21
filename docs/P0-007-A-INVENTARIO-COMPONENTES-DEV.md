@@ -598,3 +598,11 @@ No se altera el comparador de directorios ni los casos negativos de componentes 
 ## Corte dinámico 2026-11-21 — C06-01.M04.01
 
 El archivo público real `frontend/src/app/features/landing/c0601-public-saas-landing.component.ts` aparece en el árbol `solqaryn/Solqaryn@dev` desde el commit `9b90aa0d`. P0-007.A detectó apropiadamente `unlisted` al 2026-11-21T19:31Z: se añade únicamente ese archivo al inventario fuente, sin eliminar entradas y sin romper tests negativos. El corte vivo asciende de **168 a 169 archivos** (161 features, 8 shared), sin modificar los conteos históricos anteriores. El componente declara explícitamente cero API tenant/privada y se somete a Playwright Chromium y al gate de rutas exactas. El manifiesto no certifica UX/JWT/RBAC/MySQL ni M04 completa; debe pasar exact SHA por CI GitHub-hosted. Prohibido forzar fórmulas, shortcuts o saltar QA.
+
+## Corte aditivo C06-01.M04.02 — V23 (21 noviembre 2026)
+
+La nueva comprobación pública de estado añade un único componente standalone Angular, sin suponer certificación de servicios privados. El manifiesto reproducible vigente de archivos `.component.ts` contiene **170 rutas (162 en features, 8 en shared)**; los conteos de 137–169 son cortes históricos y permanecen íntegros. Se añade solamente la ruta real del commit V23 y se conserva el test negativo de ausencia de rutas:
+
+- `frontend/src/app/features/landing/c0601-public-status.component.ts`
+
+Este inventario es fuente de archivos, no inventario de API, accesibilidad, permisos JWT/RBAC o backend. Verificar con `node scripts/verify-p0-007-a-component-catalog.mjs --self-test` bajo GitHub Actions del SHA exacto. Corrección causal del fallo del job 136976782578 en 4ccbac2: `catalog drift: unlisted=frontend/src/app/features/landing/c0601-public-status.component.ts`. Sin desactivar los validadores, sin nuevas microtareas ni QA/main/PROD.
