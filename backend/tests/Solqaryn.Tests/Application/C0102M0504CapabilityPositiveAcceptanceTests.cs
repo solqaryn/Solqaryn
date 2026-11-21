@@ -29,7 +29,7 @@ public sealed class C0102M0504CapabilityPositiveAcceptanceTests
 
     [Theory]
     [InlineData(301, 101, 7, 5, "orders.read")]
-    [InlineData(302, 202, 8, 9, "inventory.read")]
+    [InlineData(302, 202, 8, 9, "catalog.read")]
     public void ValidIndependentTenantContractRequiresLiveAuthorization(
         int userId, int tenantId, int roleId, int branchId, string capability)
     {
