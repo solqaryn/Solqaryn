@@ -81,7 +81,7 @@ async function ingresarEmpresa(page: Page, user: string, id: number, nombre: str
   await expect(page.locator('#main-sidebar .brand > span').first()).toHaveText(nombre);
 }
 
-test.describe('C14-01.M04.03 - UI marca empresarial con JWT real y proveedor de branding simulado', () => {
+test.describe('C14-01.M04.03 - UI marca empresarial con JWT real y branding tenant privado', () => {
   test.describe.configure({ retries: 0 });
 
   test('A: tenant real, marca dinamica en shell responsive y aislamiento negativo B', async ({ page }) => {
@@ -140,9 +140,12 @@ test.describe('C14-01.M04.03 - UI marca empresarial con JWT real y proveedor de 
     await page.goto('/perfil');
     expect((await checked).status()).toBe(200);
     await expect(page.getByRole('heading', { name: 'Mi perfil' })).toBeVisible();
-    await expect(page.locator('#main-sidebar .brand > span').first()).toHaveText('SOLQARYN');
-    // Requiere proveedor autorizado tenant-specific para branding real positivo;
-    // no considerar este rechazo como prueba de ese proveedor.
+    // P0 sigue negando /publica, pero una sesion tenant verificada debe usar
+    // la fuente PRIVADA con JWT/RBAC real y MySQL, no volver a marca neutra.
+    await expect(page.locator('#main-sidebar .brand > span').first()).toHaveText('Empresa A efimera C15');
+    await expect(page.locator('#main-sidebar .brand img.brand-logo'))
+      .toHaveAttribute('src', 'https://assets.example.invalid/c14-a.svg');
+    await expect(page.getByText('Empresa B efimera C15')).toHaveCount(0);
   });
 
 });

@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV01 V22 C14-01.M04.03: aserción coherente P0 público y branding tenant privado
+- GitHub-hosted V21 real Chromium/MySQL job 136710123697 SHA 6560d2e8 pasó A/B JWT y plataforma, pero falló 1/4: la expectativa heredada pedía SOLQARYN incluso después de autenticación A y lectura autorizada de nombre/logo privados, comportamiento que ya fue corregido por el código.
+- El test mantiene 503 público P0, exige marca A y logo SQL tras JWT válido, ausencia de B; no simula seguridad ni debilita negativos. R2 test-only. Nueva CI exact-SHA y A5 independiente antes de LISTO, sin QA/main/PROD.
+
 ## 2026-11-20 — DEV01 V22 C14-01.M04.03: autorizar lectura privada tenant con cuarentena P0 intacta
 - E2E real SHA 0fbd436c job 136708151531 probó backend JWT/MySQL y Chromium: A/B recibían 503 al leer /empresa-configuracion/tenant/{id}; el guard P0 bloqueaba también la ruta privada antes de MVC. FAIL histórico intacto.
 - Se habilita SOLO GET exacto de marca tenant con JWT, membresía SQL viva, permiso Configuracion.Ver, selector no cruzado, doble chequeo MVC/service y cache privada no-store. No se abre GET /publica, CRUD, pagos ni otras rutas. Pruebas negativas E2E de header falsificado y sin JWT. CI R2 exact-SHA pendiente, A5 independiente posterior.
