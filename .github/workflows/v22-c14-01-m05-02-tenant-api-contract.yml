@@ -1,0 +1,36 @@
+name: V22 C14-01.M05.02 - Angular private tenant API DTO contract
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/src/app/services/empresa-configuracion.c14-01-m05-02.spec.ts'
+      - '.github/workflows/v22-c14-01-m05-02-tenant-api-contract.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c14-01-m05-02-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  tenant-contract:
+    name: C14-01.M05.02 - Angular HTTP tenant contract adversarial
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - run: npm install --global npm@11.19.0
+      - run: npm ci
+      - name: Contrato privado Angular HTTP DTO y errores
+        run: npm test -- --no-watch --no-progress --include=src/app/services/empresa-configuracion.c14-01-m05-02.spec.ts
+      - name: Tipado, lint y compilacion Angular
+        run: |
+          npm run lint
+          npm run build:prod

@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV01 V22 C14-01.M05.02 contrato privado Angular HTTP/DTO
+- PLAN D2043: seis pruebas HttpClient/HttpTestingController de GET tenant, DTO, respuesta A/B, datos privados, 401/403/404/503, EmpresaId cruzado/XSS y carrera asincrona.
+- Nuevo workflow dirigido Node 24 Angular por SHA, lint/build y concurrencia aislada cancel-in-progress=false; Scope Lock y V5 siguen obligatorios.
+- Test-only: API real/JWT/MySQL/Chromium no probados por mocks; no certificar fase M05 ni A5 propio. Rollback aditivo; sin QA/main/PROD.
+
 ## 2026-11-20 — DEV01 reparación CI V22 C14-01.M05.01 sintaxis TypeScript
 - GitHub-hosted V19 job 136725493019 detectó TS1434/TS2304/TS2693 en línea 175: `as unknown` aislado por salto después del objeto proveedor.
 - Corrección test-only: aserción de tipo colocada en la declaración sin cambiar casos/adversariales ni código de producción; se exige nueva CI exact-SHA de Angular, Scope Lock y V5.
