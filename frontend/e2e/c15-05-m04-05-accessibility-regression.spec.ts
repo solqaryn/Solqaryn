@@ -84,7 +84,10 @@ test('C15-05.M04.05: adversarial tabindex=-1 no es alcanzable por Tab', async ({
 test('C15-05.M04.05: landmarks, jerarquía, etiquetas y contraste AA estático', async ({ page }) => {
   await prepararSesion(page);
   await page.goto('/plataforma/auditoria-operativa-v5');
-  const main = page.locator('main[aria-labelledby="audit-view-title"]');
+  // Unico landmark main en AppComponent; la auditoria es una region interna.
+  await expect(page.getByRole('main')).toHaveCount(1);
+  await expect(page.locator('#main-content main')).toHaveCount(0);
+  const main = page.locator('section.audit-view[aria-labelledby="audit-view-title"]');
   await expect(main).toHaveCount(1);
   await expect(main.locator('h1')).toHaveCount(1);
   await expect(main.locator('ol.controls > li > h3')).toHaveCount(4);

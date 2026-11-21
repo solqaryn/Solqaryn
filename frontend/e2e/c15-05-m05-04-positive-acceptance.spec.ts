@@ -40,7 +40,9 @@ test('C15-05.M05.04: aceptación positiva de controles estáticos en pantalla es
   for (const width of [320, 1280]) {
     await page.setViewportSize({ width, height: 840 });
     await page.goto('/plataforma/auditoria-operativa-v5');
-    const view = page.locator('main.audit-view');
+    await expect(page.getByRole('main')).toHaveCount(1);
+    await expect(page.locator('#main-content main')).toHaveCount(0);
+    const view = page.locator('section.audit-view[aria-labelledby="audit-view-title"]');
     await expect(view.getByRole('heading', { name: 'Controles de ejecución y evidencia' })).toBeVisible();
     await expect(view.locator('ol.controls > li')).toHaveCount(4);
     await expect(view).toContainText('0 métricas verificadas');
@@ -68,7 +70,7 @@ test('C15-05.M05.04: teclado Tab y Enter activa revalidación real de UI sin apr
   expect(reached, 'Botón alcanzable desde Tab real sin .focus()').toBe(true);
   await page.keyboard.press('Enter');
   await expect(page.getByText('Sesión de plataforma revalidada correctamente. No se consultan registros operativos en vivo.')).toBeVisible();
-  await expect(page.locator('main.audit-view ol.controls > li')).toHaveCount(4);
+  await expect(page.locator('section.audit-view[aria-labelledby="audit-view-title"] ol.controls > li')).toHaveCount(4);
   expect(session.count()).toBe(2);
 });
 
@@ -82,7 +84,7 @@ test('C15-05.M05.04: aceptación de solo lectura nunca ejecuta HTTP mutante', as
   await page.goto('/plataforma/auditoria-operativa-v5');
   await page.getByRole('button', { name: 'Revalidar sesión de auditoría' }).click();
   await expect(page.getByText('Sesión de plataforma revalidada correctamente. No se consultan registros operativos en vivo.')).toBeVisible();
-  await expect(page.locator('main.audit-view ol.controls > li')).toHaveCount(4);
+  await expect(page.locator('section.audit-view[aria-labelledby="audit-view-title"] ol.controls > li')).toHaveCount(4);
   expect(mutations).toEqual([]);
   expect(session.count()).toBe(2);
 });

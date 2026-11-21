@@ -44,7 +44,9 @@ test('C15-05.M04.06: densidad acotada 320/390/768/1280, sin falso PASS ni accion
   for (const width of [320, 390, 768, 1280]) {
     await page.setViewportSize({ width, height: 840 });
     await page.goto('/plataforma/auditoria-operativa-v5');
-    const principal = page.locator('main.audit-view');
+    await expect(page.getByRole('main')).toHaveCount(1);
+    await expect(page.locator('#main-content main')).toHaveCount(0);
+    const principal = page.locator('section.audit-view[aria-labelledby="audit-view-title"]');
     await expect(principal.getByRole('heading', { name: 'Controles de ejecución y evidencia' })).toBeVisible();
     await expect(principal.locator('ol.controls > li')).toHaveCount(4);
     await expect(principal.locator('form, input, textarea')).toHaveCount(0);
