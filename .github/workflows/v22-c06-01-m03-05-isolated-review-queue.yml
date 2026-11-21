@@ -1,0 +1,69 @@
+name: V22 C06-01.M03.05 isolated MySQL 8.4 review queue
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/src/Infrastructure/AutomationV5/C0601IsolatedLandingReviewQueueWorker.cs'
+      - 'backend/tests/Solqaryn.Tests/Integration/C0601M0305LandingReviewQueueMysqlTests.cs'
+      - '.github/workflows/v22-c06-01-m03-05-isolated-review-queue.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c0601-m0305-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  isolated-review-queue:
+    name: C06-01.M03.05 - real MySQL 8.4 isolated review queue
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: ephemeral-v22-only
+          MYSQL_DATABASE: c0601_m0305_bootstrap
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -pephemeral-v22-only"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=15
+    env:
+      C0601_M0305_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=c0601_m0305_bootstrap;User=root;Password=ephemeral-v22-only;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Exact SHA Scope Lock and skill governance
+        working-directory: .
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+          node scripts/verify-solqaryn-skills.mjs --self-test
+      - name: Physical MySQL 8.4 queue TRX with negative cases
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          dotnet restore tests/Solqaryn.Tests/Solqaryn.Tests.csproj
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore --filter 'FullyQualifiedName~C0601M0305LandingReviewQueueMysqlTests' --logger 'trx;LogFileName=C0601M0305Mysql84.trx' --verbosity normal
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          files=list(Path('tests/Solqaryn.Tests').rglob('C0601M0305Mysql84.trx'))
+          if len(files)!=1: raise SystemExit('missing unique MySQL TRX')
+          node=ET.parse(files[0]).getroot().find('.//{*}Counters')
+          if node is None: raise SystemExit('missing counters')
+          c={k:int(node.attrib.get(k,-1)) for k in ('total','passed','failed','notExecuted','executed')}
+          print('C0601_M0305_REAL_MYSQL84_TRX',c)
+          if c['total']<2 or c['passed']!=c['total'] or c['failed'] or c['notExecuted'] or c['executed']!=c['total']:
+              raise SystemExit('review queue tests incomplete')
+          PY
