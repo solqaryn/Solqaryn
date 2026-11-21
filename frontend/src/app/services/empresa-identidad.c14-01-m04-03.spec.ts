@@ -98,4 +98,67 @@ describe('C14-01.M04.03 - identidad y branding dinamico seguro', () => {
     expect(identidad.mostrarCopyright()).toBe(false);
     expect(identidad.copyright()).toBe('© 2024 Empresa B');
   });
+  it('V22 carga nombre y logo tenant solo mediante API privada con ID verificado', () => {
+    let reads = 0;
+    const provider = {
+      getTenant: (id: number) => {
+        reads++;
+        expect(id).toBe(1);
+        return of({ success: true, data: {
+          empresaId: 1, nombre: 'Empresa A', logoUrl: 'https://assets.example.invalid/a.svg'
+        } });
+      }
+    } as unknown as EmpresaConfiguracionService;
+    const identidad = new EmpresaIdentidadService(provider);
+    identidad.cargarTenant(1).subscribe();
+    identidad.cargarTenant(1).subscribe();
+    expect(reads).toBe(1);
+    expect(identidad.nombreSistema()).toBe('Empresa A');
+    expect(identidad.logoUrl()).toBe('https://assets.example.invalid/a.svg');
+    expect(identidad.mensajeLogin()).toBe('Inicia sesión para administrar Empresa A');
+  });
+
+  it('V22 rechaza respuesta de tenant B para solicitud A y logos inseguros', () => {
+    const provider = {
+      getTenant: () => of({ success: true, data: {
+        empresaId: 2, nombre: 'Empresa B', logoUrl: 'javascript:alert(1)'
+      } })
+    } as unknown as EmpresaConfiguracionService;
+    const identidad = new EmpresaIdentidadService(provider);
+    identidad.cargarTenant(1).subscribe();
+    expect(identidad.nombreSistema()).toBe('SOLQARYN');
+    expect(identidad.logoUrl()).toBe('');
+    identidad.cargarTenant(0).subscribe();
+    expect(identidad.nombreSistema()).toBe('SOLQARYN');
+  });
+
+  it('V22 una respuesta A atrasada nunca restaura marca A despues de B', () => {
+    const a = new Subject<unknown>();
+    const b = new Subject<unknown>();
+    const provider = {
+      getTenant: (id: number) => (id === 1 ? a : b).asObservable()
+    } as unknown as EmpresaConfiguracionService;
+    const identidad = new EmpresaIdentidadService(provider);
+    identidad.cargarTenant(1).subscribe();
+    identidad.cargarTenant(2).subscribe();
+    b.next({ success: true, data: { empresaId: 2, nombre: 'Empresa B', logoUrl: '/b.svg' } });
+    b.complete();
+    a.next({ success: true, data: { empresaId: 1, nombre: 'Empresa A', logoUrl: '/a.svg' } });
+    a.complete();
+    expect(identidad.nombreSistema()).toBe('Empresa B');
+    expect(identidad.logoUrl()).toBe('/b.svg');
+    identidad.usarPlataforma();
+    expect(identidad.nombreSistema()).toBe('SOLQARYN');
+  });
+
+  it('V22 falla cerrado ante denegacion HTTP y no conserva datos del tenant', () => {
+    const provider = {
+      getTenant: () => throwError(() => new Error('403 forbidden'))
+    } as unknown as EmpresaConfiguracionService;
+    const identidad = new EmpresaIdentidadService(provider);
+    identidad.cargarTenant(1).subscribe();
+    expect(identidad.nombreSistema()).toBe('SOLQARYN');
+    expect(identidad.logoUrl()).toBe('');
+  });
+
 });

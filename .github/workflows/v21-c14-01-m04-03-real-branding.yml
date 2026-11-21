@@ -141,6 +141,8 @@ jobs:
           SELECT u.Id, r.Id, TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)
           FROM Usuarios u CROSS JOIN Roles r
           WHERE u.NombreUsuario='c1504_platform_only' AND r.NombreNormalizado='C1504_GLOBAL_CI';
+          UPDATE Empresas SET LogoUrl='https://assets.example.invalid/c14-a.svg' WHERE Id=1;
+          UPDATE Empresas SET LogoUrl='https://assets.example.invalid/c14-b.svg' WHERE Id=2;
           SQL
           members="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_c1504_real_ci -Nse "SELECT COUNT(*) FROM UsuarioRolesPlataforma ur JOIN Usuarios u ON u.Id=ur.UsuarioId WHERE u.NombreUsuario='c1504_platform_only' AND ur.Activa=TRUE;")"
           company="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_c1504_real_ci -Nse "SELECT COUNT(*) FROM UsuarioEmpresas ue JOIN Usuarios u ON u.Id=ue.UsuarioId WHERE u.NombreUsuario='c1504_admin_a' AND ue.EmpresaId=1 AND ue.Activa=TRUE;")"

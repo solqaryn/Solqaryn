@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV01 V22 C14-01.M04.03: proveedor tenant real para branding privado
+- El shell privado deja de solicitar marca global sin tenant (P0 503) y usa GET tenant/{id} con membresia JWT verificada en servidor; no confia en host, localStorage ni un mock como autorización.
+- Se rechazan IDs cruzados, respuestas obsoletas, logos inseguros y fallos HTTP a marca neutral; pruebas Angular adversariales y E2E Chromium/MySQL 8.4 con logos privados persistidos en empresas A/B efimeras.
+- Riesgo R2, source diff y rollback documentados; exige CI exact-SHA Scope Lock/V5/frontend/backend/seguridad y E2E branding real antes de A0-A4/LISTO; A5 independiente despues. No QA/main/PROD.
+
 ## 2026-11-20 — DEV06 V22 C01-02.M04.06 reparacion P2 de auto-trigger CI
 - A5 independiente hallo P2: on.push.paths apuntaba a safe-navigation.yml inexistente y no al propio workflow density-progress.yml, por lo que editar solo YAML podia evitar la CI causal.
 - Corregido path y anadida asercion fail-closed de presencia de dos triggers en GitHub-hosted. Sin cambios Angular runtime/JWT/RBAC/tenant/MySQL. A5_FAIL historico en BITACORA; nueva A5 por Task Javier distinta de DEV01 y DEV06. Validacion exact-SHA obligatoria; sin QA/main/PROD. Rollback git revert.

@@ -58,6 +58,13 @@ async function ingresarEmpresa(page: Page, user: string, id: number, nombre: str
   expect(permitted.status(), 'Tenant propio comprobado por servidor real').toBe(200);
   const foreign = await page.request.get(api + '/tenant-context/' + (id === 1 ? 2 : 1), { headers });
   expect([403, 404], 'El servidor deniega tenant ajeno').toContain(foreign.status());
+  const tenantBrand = await page.request.get(api + '/empresa-configuracion/tenant/' + id, { headers });
+  expect(tenantBrand.status(), 'Marca privada leida con JWT y MySQL reales').toBe(200);
+  const brand = await tenantBrand.json();
+  expect(brand?.data?.empresaId).toBe(id);
+  expect(brand?.data?.nombre).toBe(nombre);
+  const foreignBrand = await page.request.get(api + '/empresa-configuracion/tenant/' + (id === 1 ? 2 : 1), { headers });
+  expect([403, 404], 'Marca tenant ajena denegada en API real').toContain(foreignBrand.status());
   await page.evaluate(tenantId =>
     localStorage.setItem('solqaryn_empresa_solicitada_id', String(tenantId)), id);
   const checked = page.waitForResponse(r =>
@@ -74,25 +81,23 @@ test.describe('C14-01.M04.03 - UI marca empresarial con JWT real y proveedor de 
   test('A: tenant real, marca dinamica en shell responsive y aislamiento negativo B', async ({ page }) => {
     test.setTimeout(150_000);
     const logo = 'https://assets.example.invalid/c14-a.svg';
-    await mockSoloMarcaPublica(page, 'Marca CI Empresa A', logo);
-    await ingresarEmpresa(page, 'c1504_admin_a', 1, 'Marca CI Empresa A');
+    await ingresarEmpresa(page, 'c1504_admin_a', 1, 'Empresa A efimera C15');
     for (const width of [375, 1280]) {
       await page.setViewportSize({ width, height: 840 });
-      await expect(page.locator('#main-sidebar .brand > span').first()).toHaveText('Marca CI Empresa A');
+      await expect(page.locator('#main-sidebar .brand > span').first()).toHaveText('Empresa A efimera C15');
       await expect(page.locator('#main-sidebar .brand img.brand-logo')).toHaveAttribute('src', logo);
       expect(await page.evaluate(() => document.documentElement.scrollWidth))
         .toBeLessThanOrEqual(width + 1);
-      await expect(page.getByText('Marca CI Empresa B')).toHaveCount(0);
+      await expect(page.getByText('Empresa B efimera C15')).toHaveCount(0);
     }
   });
 
   test('B: JWT de otra membresia no hereda marca A ni acceso a empresa 1', async ({ page }) => {
     test.setTimeout(150_000);
     const logo = 'https://assets.example.invalid/c14-b.svg';
-    await mockSoloMarcaPublica(page, 'Marca CI Empresa B', logo);
-    await ingresarEmpresa(page, 'c1504_admin_b', 2, 'Marca CI Empresa B');
+    await ingresarEmpresa(page, 'c1504_admin_b', 2, 'Empresa B efimera C15');
     await expect(page.locator('#main-sidebar .brand img.brand-logo')).toHaveAttribute('src', logo);
-    await expect(page.getByText('Marca CI Empresa A')).toHaveCount(0);
+    await expect(page.getByText('Empresa A efimera C15')).toHaveCount(0);
     await expect(page.getByRole('link', { name: 'Abrir consola global de SOLQARYN' })).toBeVisible();
   });
 

@@ -245,7 +245,10 @@ export class AppComponent implements OnDestroy {
       this.identidad.usarPlataforma();
     } else if (this.auth.isAuthenticated() && this.tenantContext.tieneContextoVerificado()) {
       this.themeApplier.aplicarTemaGuardado();
-      this.identidad.cargar().subscribe();
+      const contextoVerificado = this.tenantContext.contextoVerificado();
+      // La marca no se resuelve mediante el endpoint publico ambiguo (503 P0).
+      // La fuente tenant-first exige membresia verificada y JWT en el backend.
+      if (contextoVerificado) this.identidad.cargarTenant(contextoVerificado.empresaId).subscribe();
     } else {
       this.themeApplier.aplicarTemaPlataforma();
       this.identidad.usarPlataforma();

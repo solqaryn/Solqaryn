@@ -49,6 +49,8 @@ export class EmpresaIdentidadService {
   private readonly _config = signal<EmpresaConfiguracion>(DEFAULT_CONFIG);
   private cargada = false;
   private versionIdentidad = 0;
+  // Solo el tenant validado por la API puede alimentar el branding privado.
+  private tenantCargado: number | null = null;
 
   readonly config = this._config.asReadonly();
   readonly nombreSistema = computed(() => c0201NombreBrandingSeguro(this._config().nombreVisibleSistema) ||
@@ -67,8 +69,10 @@ export class EmpresaIdentidadService {
   constructor(private empresaService: EmpresaConfiguracionService) {}
 
   cargar(force = false) {
-    if (this.cargada && !force) return of(this._config());
+    if (this.cargada && !force && this.tenantCargado === null) return of(this._config());
     const version = ++this.versionIdentidad;
+    this.tenantCargado = null;
+    this._config.set({ ...DEFAULT_CONFIG });
     return this.empresaService.getPublica().pipe(
       switchMap((res) => {
         const config = { ...DEFAULT_CONFIG, ...res.data };
@@ -100,14 +104,65 @@ export class EmpresaIdentidadService {
     );
   }
 
+  /**
+   * C14-01.M04.03: branding privado de origen tenant verificado. Esta llamada
+   * solo la invoca el shell tras la validacion de membresia por TenantContextService;
+   * el backend vuelve a aplicar JWT/RBAC y membresia actual sobre GET /tenant/{id}.
+   * Fallos, id ambiguo o respuesta tardia fallan cerrado a la marca neutra.
+   */
+  cargarTenant(empresaId: number) {
+    if (!Number.isSafeInteger(empresaId) || empresaId <= 0) {
+      this.usarPlataforma();
+      return of(this._config());
+    }
+    if (this.cargada && this.tenantCargado === empresaId) return of(this._config());
+
+    const version = ++this.versionIdentidad;
+    this.tenantCargado = empresaId;
+    this.cargada = false;
+    // No mostrar la marca anterior mientras el servidor valida el contexto nuevo.
+    this._config.set({ ...DEFAULT_CONFIG });
+    return this.empresaService.getTenant(empresaId).pipe(
+      map(respuesta => {
+        if (version !== this.versionIdentidad || this.tenantCargado !== empresaId) {
+          return this._config();
+        }
+        const dto = respuesta?.success === true && respuesta.data?.empresaId === empresaId
+          ? respuesta.data : null;
+        const nombre = c0201NombreBrandingSeguro(dto?.nombre);
+        if (!dto || !nombre) throw new Error('Branding tenant no autorizado o malformado.');
+        // No copiar fiscalidad, destinatarios, preferencias ni otros datos privados
+        // de ConfigEmpresaTenant al modelo publico compartido.
+        this._config.set({
+          ...DEFAULT_CONFIG,
+          nombreComercial: nombre,
+          nombreVisibleSistema: nombre,
+          mensajeLogin: `Inicia sesión para administrar ${nombre}`,
+          logoUrl: c0201LogoBrandingSeguro(dto.logoUrl)
+        });
+        this.cargada = true;
+        return this._config();
+      }),
+      catchError(() => {
+        if (version === this.versionIdentidad && this.tenantCargado === empresaId) {
+          this._config.set({ ...DEFAULT_CONFIG });
+          this.cargada = false;
+        }
+        return of(this._config());
+      })
+    );
+  }
+
   usarPlataforma(): void {
     this.versionIdentidad++;
+    this.tenantCargado = null;
     this._config.set({ ...DEFAULT_CONFIG });
     this.cargada = false;
   }
 
   refrescarDespuesDeGuardar(config: EmpresaConfiguracion): void {
     this.versionIdentidad++;
+    this.tenantCargado = null;
     this._config.set({ ...DEFAULT_CONFIG, ...config });
     this.cargada = true;
   }
