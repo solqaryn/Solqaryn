@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV05 V22 C01-02.M06.05 independent review request (not an A5 PASS)
+- PLAN D216 request is now a concrete, owner-preserving handoff for an independent Javier Task that must verify per-scope source SHA, exact CI, risk, negative tenant tests, rollout and rollback. The source M05.06 real signed-JWT/Chromium/MySQL job passed 5/5; the request does not approve untested capabilities, M06.01/02/04 or full M06.
+- No runtime/role/data/grant change, no new scheduled task and no self-A5. Scope Lock/V5 exact published SHA, V17 CAS, BITACORA and subsequent independent A5 remain mandatory; no QA/main/PROD.
+
 ## 2026-11-20 - DEV06 V22 C01-02.M06.02 reproducible versions diff and artifact index
 - PLAN D213 registry: actual Angular22/net10/Oracle EF/MySQL8.4.13 CI versions, M05.01-.06 source/test/doc SHAs, real 5/5 Chromium and limits of mocks, TestServer and ephemeral SQL, plus M06.01 commit and correct independent A5 state.
 - Documentation-only R0; GitHub CI check-runs exact SHA and negative statuses procedure. Do not claim public CWV, production provider DI or phase-wide M06. No runtime, account, QA/main/PROD changes.
