@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV05 V22 C04-01.M03.02 preflight Application SaaS fail-closed
+- Una microtarea R2: contratos Application de actor autenticado y plan tenant-scoped, validación de intención sin autoridad del cliente, cancelaciones tras await, DENY ante proveedor/rbac/tenant inválido; ningún grant, reserva, cobro, DI, HTTP, JWT runtime, EF/MySQL ni UI modificados.
+- Pruebas adversariales xUnit C0401M0302PlanApplicationServiceTests con dobles explícitos (NO acreditan integraciones vivas), documento A0–A4 y LIMITACION de fase; GitHub-hosted .NET10/Scope Lock/V5 exact-SHA obligatorios antes de LISTO; A5 por Task Javier independiente distinta de DEV05.
+- V17 un solo CLAIM PLAN_MAESTRO fila591, fast-forward/CAS dev, no QA/main/PROD, no secretos ni pagos; preservar todo el historial previo y usar git revert normal si se requiere rollback.
+
 ## 2026-11-20 — DEV04 V22 C07-01.M03.02 reparación P1 compilación CS0234
 - GitHub Actions exact SHA cb9bd3d51e8334e1be4770857f66305d47b2d77c detectó CS0234 en el archivo de test de Application: alias `Domain` resolvía el namespace hermano `Solqaryn.Tests.Domain`, no la clase de reglas del catálogo.
 - Reparación mínima: alias explícito `CatalogRules` solo en xUnit, sin cambios a backend runtime, endpoints, EF/MySQL, JWT, precios, roles ni permisos. Se exige nueva CI .NET10/ScopeLock/V5 de SHA causal; fallo histórico queda en GitHub y BITACORA, no se afirma PASS antes de tests reales.
