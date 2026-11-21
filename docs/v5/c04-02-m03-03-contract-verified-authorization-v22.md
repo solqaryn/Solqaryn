@@ -15,3 +15,9 @@ El nuevo código consulta el modelo EF real de `Rol`, `RolPermiso`, `Permiso` y 
 
 ## A4/A5 y reversión
 Inspeccionar `verify-solqaryn-project-scope`, build Release, xUnit, seguridad multiempresa y V5 exact-SHA de GitHub Actions. Mientras alguna prueba causal requerida siga QUEUED/IN_PROGRESS/FAIL, dejar PLAN en VALIDANDO. A5 únicamente por otra Task Javier distinta de DEV05. Reversión mediante `git revert` normal + CI, nunca force-push. BITACORA append-only, COLA/DAG formulas, sin secreto/productivo/pago.
+
+## A3 — incremento nuevo de integración real GitHub-hosted
+
+Se añade `C0402M0303SignedJwtMysql84HttpIntegrationTests` (Category=Integration) con `TestServer` real de ASP.NET Core/JwtBearer, firma HMAC de prueba, `UsuarioScopeService` real, Oracle EF Core y MySQL 8.4 efímero con esquema aislado y cleanup. La ruta del controlador existe **solo en el ensamblado de pruebas**, nunca se registra en el backend DEV/QA/PROD. Prueba de forma causal: anónimo 401, JWT manipulado 401, empresa A 200 solo preflight, empresa B 403 y revocación de permiso `Configuracion.Ver` 403. El permiso de facturación y configuración es requisito de *lectura* y nunca concede mutación o acceso contractual privado.
+
+Workflow dedicado `.github/workflows/v22-c04-02-m03-03-jwt-mysql84-http.yml`: GitHub-hosted .NET10, imagen `mysql:8.4`, comprobación de `SELECT VERSION()`, scope lock exact SHA y TRX con 1 o más casos, cero fallos/omitidos. El resultado se acredita solamente tras revisar job completed/success, TRX y fuente/blob del mismo SHA; mientras esté queued/in_progress es **WAIT_CI** no PASS. Se mantiene sin secretos productivos, cobro, despliegue ni aprobación A5 propia.

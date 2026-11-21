@@ -1,3 +1,8 @@
+## 2026-11-21 — DEV05 V22 C04-02.M03.03: prueba integrada JWT HTTP Oracle EF MySQL 8.4 aislado
+
+- Segundo incremento del mismo scope R2: se agrega un controlador exclusivamente de TestServer y una regresión xUnit Category=Integration con JWT firmado y firma manipulada, empresa A/B, RBAC vigente y revocación real de grant sobre MySQL 8.4 efímero local; servicio auténtico `C0402ContractVerifiedActorSource` sin endpoint productivo ni cambios de modelo.
+- Workflow dirigido GitHub Actions `v22-c04-02-m03-03-jwt-mysql84-http.yml` en dev con `mysql:8.4`, ScopeLock exact SHA, `dotnet test` de integración y aserciones TRX de cero FAIL/omitidos. Queued/in_progress/cancelled nunca PASS; conservar VALIDANDO hasta resultados y A0–A4 verificables, A5 por Task Javier distinta de DEV05; no QA/main/PROD, pagos, secretos ni force-push.
+
 ## 2026-11-21 — DEV05 V22 C04-02.M03.03: JWT firmado, tenancy y grants relacionales solo lectura
 
 - Se implementa `C0402ContractVerifiedActorSource` para preflight de autorización de contratos en SOLQARYN `dev`: usa el autenticador JWT Bearer registrado, identidad actual del usuario, membresía `UsuarioEmpresa`, rol empresarial válido, y grants actuales `Facturacion.Ver` + `Configuracion.Ver` con doble lectura tras I/O; tenant de ruta es selector, jamás autoridad. El resultado es únicamente un contexto de *lectura/preflight*, sin derecho a mutar contratos, facturar, cobrar ni reembolsar.
