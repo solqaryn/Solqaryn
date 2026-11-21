@@ -51,6 +51,9 @@ export const routes: Routes = [
   { path: 'plataforma/auditoria-ux-v5', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/c15-04-auditoria-ux-v19.component').then(m => m.C1504AuditoriaUxV19Component) },
   { path: 'plataforma', canActivate: [plataformaGuard], loadComponent: () => import('./features/plataforma/plataforma.component').then(m => m.PlataformaComponent) },
   { path: 'dashboard', canActivate: [authGuard, permisoGuard], data: { modulo: 'Dashboard', accion: 'Ver' }, loadComponent: () => import('./features/dashboard/dashboard.component').then(m => m.DashboardComponent) },
+  // Canonical universal-catalog entry reuses the existing tenant and RBAC-protected Productos route.
+  // No alias is allowed to bypass authGuard / permisoGuard or introduce a second data authority.
+  { path: 'catalogo-universal-v22', redirectTo: 'productos', pathMatch: 'full' },
   { path: 'productos', canActivate: [authGuard, permisoGuard], data: { modulo: 'Productos', accion: 'Ver' }, loadComponent: () => import('./features/productos/productos-list.component').then(m => m.ProductosListComponent) },
   { path: 'productos/nuevo', canActivate: [authGuard, permisoGuard], data: { modulo: 'Productos', accion: 'Crear' }, loadComponent: () => import('./features/productos/producto-form.component').then(m => m.ProductoFormComponent) },
   { path: 'productos/:id/editar', canActivate: [authGuard, permisoGuard], data: { modulo: 'Productos', accion: 'Editar' }, loadComponent: () => import('./features/productos/producto-form.component').then(m => m.ProductoFormComponent) },

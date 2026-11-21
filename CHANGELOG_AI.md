@@ -1,3 +1,8 @@
+## 2026-11-21 - DEV04 V22 C07-01.M04.01 ruta canonica privada catalogo universal
+- Nueva entrada /catalogo-universal-v22 redirige a /productos; reutiliza guardias authGuard y permisoGuard, no duplica autoridad backend y mantiene rutas ERP actuales.
+- Cuatro casos Angular/Chromium reales por GitHub-hosted, con HTTP/JWT sinteticos; negativos anonimo, tenant A/B y rol denegado. No se afirma MySQL, JWT firmado ni seguridad productiva.
+- A0-A4 pendientes de CI exact-SHA COMPLETED SUCCESS; mantener VALIDANDO hasta pruebas causales; A5 distinta de DEV04; sin QA/main/PROD.
+
 ## 2026-11-21 - DEV03 V22 C04-01.M04.01 reparación causal inventario P0-007.A
 - GitHub-hosted en SHA 17ea37c7 detectó un componente real de catálogo de planes no registrado: frontend/src/app/features/plataforma/c04-01-m04-01-planes-readonly.component.ts, mediante el self-test exacto P0-007.A que sigue activo.
 - Se agrega exactamente un path al manifiesto preservando las 167 entradas anteriores; nuevos totales cerrados 168 (160 features, 8 shared) en scripts/verify-p0-007-a-component-catalog.mjs sin debilitar comparación, negativos ante omisiones ni prohibición de duplicados. El workflow de la microtarea ejecuta el validador real, además del gate de rutas privadas, Vitest y Chromium.
