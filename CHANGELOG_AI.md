@@ -1,3 +1,8 @@
+## 2026-11-21 — DEV01 V22 C07-01.M03.03 autorización catalogal real JWT/RBAC tenant
+- Fuente API de seguridad read-only DEV y OFF por defecto: firma Bearer verificada, membresía UsuarioEmpresa y rol empresarial MySQL vigentes, RolPermiso Productos.Editar relacional y revalidación después de I/O; roles, headers y tenant B no son autoridad.
+- Prueba adversarial de HTTP TestServer con JWT firmado y MySQL 8.4 efímero, tenant A/B, falsificación de firma y revocación de grant real; CI GitHub-hosted exact-SHA dedicada con TRX PASS requerida ANTES de LISTO.
+- Entrega atómica R2 M03.03 sin autorización de escritura, endpoint productivo nuevo, JWT/tenant cross-producto, mutación, migración, QA/main/PROD ni secretos; M03.04 completará ownership del recurso y CAS, A5 independiente por otro Javier.
+
 ## 2026-11-20 — DEV05 V22 C04-01.M03.02 preflight Application SaaS fail-closed
 - Una microtarea R2: contratos Application de actor autenticado y plan tenant-scoped, validación de intención sin autoridad del cliente, cancelaciones tras await, DENY ante proveedor/rbac/tenant inválido; ningún grant, reserva, cobro, DI, HTTP, JWT runtime, EF/MySQL ni UI modificados.
 - Pruebas adversariales xUnit C0401M0302PlanApplicationServiceTests con dobles explícitos (NO acreditan integraciones vivas), documento A0–A4 y LIMITACION de fase; GitHub-hosted .NET10/Scope Lock/V5 exact-SHA obligatorios antes de LISTO; A5 por Task Javier independiente distinta de DEV05.

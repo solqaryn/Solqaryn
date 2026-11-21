@@ -94,6 +94,13 @@ builder.Services.Configure<ObservabilityOptions>(builder.Configuration.GetSectio
 builder.Services.AddSingleton<RequestObservability>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IUsuarioScopeService, UsuarioScopeService>();
+// C07-01.M03.03: JWT y UsuarioEmpresa/RolPermiso actuales, DEV y OFF por defecto.
+// Fuente solo lectura sin endpoint, concesion o mutacion.
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddScoped<IC0701VerifiedCatalogActorReader,
+        C0701CatalogVerifiedActorSource>();
+}
 // C02-03.M03.03: genuine JWT + platform RolPermiso/Empresa read-only bridge,
 // DEV-only and OFF by default. No controller, lifecycle mutation or deployment.
 if (builder.Environment.IsDevelopment())
