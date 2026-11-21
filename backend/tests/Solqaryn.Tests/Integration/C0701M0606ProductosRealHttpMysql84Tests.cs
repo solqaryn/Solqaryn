@@ -147,6 +147,42 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             var productAId = await SeedOwnedProductAsync(a.Id, "C0701RealProductoA");
             var productBId = await SeedOwnedProductAsync(b.Id, "C0701RealProductoB");
 
+            // Real Oracle EF/MySQL transaction rollback at the tenant-bound
+            // persistence layer. This is NOT HTTP CRUD acceptance: writes
+            // through ProductosController still require separate coverage.
+            var rollbackName = "C0701RollbackProducto" + Guid.NewGuid().ToString("N");
+            var rollbackHttp = new DefaultHttpContext();
+            rollbackHttp.Items[
+                Solqaryn.Application.Security.VerifiedCommercialTenant
+                    .AuthorizedEmpresaIdItemKey] = a.Id;
+            var rollbackAccessor = new HttpContextAccessor { HttpContext = rollbackHttp };
+            await using (var rollbackDb = new AppDbContext(options,
+                tenantHttpContextAccessor: rollbackAccessor))
+            {
+                var categoryId = await rollbackDb.Categorias
+                    .Where(c => c.Nombre == "Category C0701RealProductoA")
+                    .Select(c => c.Id).SingleAsync();
+                await using var transaction = await rollbackDb.Database.BeginTransactionAsync();
+                var temporary = new Producto
+                {
+                    Nombre = rollbackName, Marca = "", Modelo = "",
+                    Precio = 321m, Costo = 123m, CategoriaId = categoryId
+                };
+                rollbackDb.Productos.Add(temporary);
+                await rollbackDb.SaveChangesAsync();
+                Assert.Equal(a.Id, temporary.EmpresaId);
+                Assert.Equal(1, await rollbackDb.Productos
+                    .CountAsync(p => p.Nombre == rollbackName));
+                await transaction.RollbackAsync();
+            }
+            await using (var verified = new AppDbContext(options,
+                tenantHttpContextAccessor: rollbackAccessor))
+            {
+                Assert.Equal(0, await verified.Productos
+                    .CountAsync(p => p.Nombre == rollbackName));
+            }
+
+
 
             // Product and RBAC services/repositories are real. Mocked dependencies
             // belong only to other (uninvoked) CRUD methods of the controller.

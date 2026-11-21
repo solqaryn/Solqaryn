@@ -1,3 +1,8 @@
+## 2026-11-21 — V22 DEV01 C07-01.M06.06: prueba real adicional de rollback Oracle EF / MySQL 8.4
+- Se amplía la suite existente del controlador real /productos con una transacción tenant A de EF sobre MySQL 8.4 efímero: inserción verificable, RollbackAsync y lectura nueva que exige ausencia física del registro temporal.
+- El alcance sigue siendo parcial R2: no se acredita rollback por controlador HTTP, mutación de variantes, auditoría persistente ni flujo Angular/Chromium firmado. C07-01.M06.06 continúa EN_PROGRESO, sin LISTO ni A5; CI y Scope Lock/V5 requieren comprobación del SHA nuevo.
+- Cambio exclusivo dev, bajo candado V17 propio; conservar FAIL histórico y CHANGELOG íntegro, sin secretos ni PROD.
+
 ## 2026-11-21 — V22 DEV03 C06-01.M03.05: reparar gate de integración MySQL 8.4 en dev
 - Causa GitHub Actions `44915390027/136879854541`: 141 PASS, 3 FAIL, 0 SKIP por ausencia de `C0601_M0305_MYSQL_TEST` (dos tests) y `C0701_M0503_MYSQL_TEST` (un test), con servicio físico efímero mysql:8.4.
 - `.github/workflows/dev-ci.yml` aporta sólo dos env CI loopback y crea la base desechable `c0701_m0503_bootstrap`; conserva filtro real `Category=Integration`, Scope Lock, V5 y seguridad, sin Aiven/QA/PROD.
