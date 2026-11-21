@@ -2453,4 +2453,44 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     });
   }
 
+
+  // A0.76: una sola region main y H1 semantico en cuatro guias privadas.
+  // JWT y MySQL reales solo en entorno GitHub-hosted; cero mutaciones de negocio.
+  for (const destino of [
+    { ruta: '/plataforma/continuidad-operativa-v5', titulo: 'Controles de recuperación y aislamiento' },
+    { ruta: '/plataforma/revision-amenazas-v5', titulo: 'Verificaciones de acceso y abuso' },
+    { ruta: '/plataforma/respuesta-incidentes-v5', titulo: 'Respuesta, revocación y recuperación segura' },
+    { ruta: '/plataforma/gobierno-cambios-v5', titulo: 'Decisiones y controles V5' }
+  ]) {
+    test('A0.76 - landmark unico real en ' + destino.ruta, async ({ page, request }) => {
+      const jwt = await ingresar(page, 'c1504_platform_only');
+      const autorizado = await request.get(api + '/plataforma/sesion', {
+        headers: { Authorization: 'Bearer ' + jwt }
+      });
+      expect(autorizado.status(), 'Control positivo JWT firmado y backend real').toBe(200);
+      const mutaciones: string[] = [];
+      page.on('request', req => {
+        if (req.url().includes('localhost:5005') && /^(POST|PUT|PATCH|DELETE)$/.test(req.method())) {
+          mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+        }
+      });
+      for (const ancho of [375, 1280]) {
+        await page.setViewportSize({ width: ancho, height: 840 });
+        const sesion = page.waitForResponse(res =>
+          res.url().includes('/plataforma/sesion') && res.request().method() === 'GET');
+        await page.goto(destino.ruta);
+        expect((await sesion).status(), 'Backend autoriza la ruta privada').toBe(200);
+        await expect(page.locator('main'), 'Landmark principal unico').toHaveCount(1);
+        await expect(page.locator('main main'), 'Ningun landmark main anidado').toHaveCount(0);
+        await expect(page.locator('main h1'), 'Un H1 dentro del landmark principal').toHaveCount(1);
+        await expect(page.getByRole('main').getByRole('heading', {
+          level: 1, name: destino.titulo
+        })).toBeVisible();
+        expect(await page.evaluate(() => document.documentElement.scrollWidth),
+          'Vista sin desborde horizontal').toBeLessThanOrEqual(ancho + 2);
+      }
+      expect(mutaciones, 'Las vistas auditadas solo deben leer').toEqual([]);
+    });
+  }
+
 });

@@ -1,3 +1,7 @@
+## 2026-11-21 - DEV02 V22 C15-04.M05.04 A0.76 regresion semantica accesible
+- Cuatro casos de Chromium JWT firmado/MySQL 8.4 efimero sobre cuatro rutas privadas (375/1280) exigen un main, H1 unico dentro del landmark, ausencia de main anidado, HTTP 200 y cero escrituras API.
+- TEST-ONLY R2: 115 esperados, sin PASS anticipado; global WCAG/rutas/roles/RUM incompleto y C15-04.M05.04 EN_PROGRESO con owner DEV02/lock V17. CI exact-SHA y A5 independiente pendientes; sin QA/main/PROD. Ver docs/v5/c15-04-m05-04-global-ux-acceptance.md.
+
 ## 2026-11-21 — DEV01 V22 reparación CI compartida C04-04.M03.03 ASP0016
 - Backend Release exact-SHA ae0949b1 detectó ASP0016 por conversiones de HTTP test-only MapGet a RequestDelegate en líneas 133 y 303 del test C0404M0303RealEfInvoiceMysql84IntegrationTests.cs.
 - Corrección quirúrgica de dos casts a Delegate según el analizador de ASP.NET, sin tocar runtime financiero/JWT/RBAC, pagos o secretos; conservar A5/FAIL históricos y exigir nuevo CI exact-SHA antes de acreditar reparación.

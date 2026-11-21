@@ -1,3 +1,11 @@
+## A0.76 - Landmark principal unico en cuatro guias JWT (DEV02, 2026-11-21)
+
+Incremento R2 TEST-ONLY C15-04.M05.04: cuatro casos Playwright nuevos (115 esperados totales) en cuatro guias y 375/1280, JWT firmado con rol global, HTTP GET /plataforma/sesion 200, ASP.NET Core 10 y MySQL 8.4 efimero de GitHub-hosted. Exigen un solo main, ningun main anidado, un H1 dentro del main con titulo correcto, ausencia de overflow y cero HTTP mutante. Pruebas adversariales capaces de detectar duplicacion de landmark o H1 fuera de la region. No hay mocks de HTTP ni cambios de runtime.
+
+A0 diff Playwright/evidencia/CHANGELOG; A1 controles positivos y negativos, cuatro rutas y ocho navegaciones; A2 JWT global real sin afirmar tenancy completa; A3 integracion MySQL/API/Angular/Chromium solo si la CI termina SUCCESS; A4 requiere 115/115 Chromium, Scope Lock, V5, backend/frontend/seguridad pertinentes completados en SHA exacto y readback. QUEUED, IN_PROGRESS, SKIPPED y FAILED no son PASS.
+
+Limitacion: la auditoria de 160 rutas, todos los roles, WCAG completo, Web Vitals de campo y dispositivos fisicos sigue NO_MEDIDO; PLAN H2297=EN_PROGRESO, owner DEV02, lock V17 2000002297, sin LISTO ni A5 hasta calidad global. Revert normal con CAS de HEAD; sin QA/main/PROD, pagos ni datos productivos.
+
 ## A0.75 - Activacion real por teclado de cuatro rutas privadas (DEV02, 2026-11-20)
 
 Incremento R2 TEST-ONLY de C15-04.M05.04: cuatro casos Playwright sobre cuatro guias globales con anchos 375 y 1280 (ocho navegaciones). Tras autenticacion real ASP.NET Core 10 + MySQL 8.4 efimero y JWT firmado, se exige respuesta HTTP 200 de /plataforma/sesion, titulo privado visible, enlace alcanzable con Tab REAL y activacion por Enter (sin .focus()/.click() programaticos); retorno a /plataforma con titulo global, responsive sin desborde y cero POST/PUT/PATCH/DELETE. Detecta enlaces inaccesibles o activacion falsa que A0.70 (solo foco Tab) no comprueba. Sin mocks de servidor, sin escrituras en datos de negocio.
