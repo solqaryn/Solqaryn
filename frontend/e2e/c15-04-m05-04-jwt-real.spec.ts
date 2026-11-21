@@ -1580,6 +1580,7 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
       expect(documento?.status()).toBe(200);
       expect((await sesion).status()).toBe(200);
       await expect(page.getByRole('main')).toHaveCount(1);
+      await expect(page.locator('#main-content main'), 'No duplicar el landmark main del shell').toHaveCount(0);
       await expect(page.locator('section.audit-view[aria-labelledby="audit-view-title"]')).toHaveCount(1);
       await expect(page.getByRole('heading', { level: 1, name: 'Controles de ejecución y evidencia' })).toBeVisible();
       const boton = page.getByRole('button', { name: 'Revalidar sesión de auditoría' });

@@ -17,7 +17,7 @@ export type EstadoAuditoriaOperativaV5 = 'cargando' | 'vacio' | 'error' | 'exito
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <main class="audit-view" aria-labelledby="audit-view-title">
+    <section class="audit-view" aria-labelledby="audit-view-title">
       <header>
         <p class="eyebrow">SOLQARYN · Auditoría operativa</p>
         <h1 id="audit-view-title">Controles de ejecución y evidencia</h1>
@@ -61,7 +61,7 @@ export type EstadoAuditoriaOperativaV5 = 'cargando' | 'vacio' | 'error' | 'exito
       }
 
       <a class="return-link" routerLink="/plataforma" aria-label="Regresar a administración de plataforma">Regresar a plataforma</a>
-    </main>
+    </section>
   `,
   styles: [`
     :host { display: block; color: var(--mat-sys-on-surface, #17212d); }
