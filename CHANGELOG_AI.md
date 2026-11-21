@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV04 V22 C04-01.M03.01 validaciones reales de dominio de catálogo SaaS
+- Una única microtarea R2: nueva política pura Domain C0401PlanDomainRules que exige tenant A/B, RBAC relacional, membresía vigente, revocación, sucursal, versión de plan/suscripción, UTC, capacidades explícitas y cuota segura contra overflow; todas las decisiones prohíben grants, escritura o cobros.
+- xUnit adversarial específico C0401M0301PlanDomainRulesTests, documento de límites y rollback; .NET10 GitHub-hosted y gates ScopeLock/V5 exact-SHA deben concluir SUCCESS antes de A0-A4/LISTO; HTTP/JWT/MySQL/Chromium no modificados se declaran NO_APLICA solo a este diff, no fase global.
+- V17 CAS exclusivo PLAN row590 por DEV04, BITACORA idempotente, sin QA/main/PROD ni pagos, A5 para revisor independiente; preservar íntegro historial de CHANGELOG.
+
 ## 2026-11-20 - DEV03 V22 C07-01.M03.01 reglas dominio catalogo universal
 - Capa Domain: precondiciones verificadas server side para producto/servicio, SKU, ownership tenant/sucursal/categoria/variante, version CAS, precios/impuestos, RBAC revocado y fail-closed; nunca autoriza API ni persistencia.
 - Suite xUnit nueva con 10 pruebas positivas, negativas y fronteras, sin mocks de JWT/MySQL presentados como integracion real; habilitacion en Application/API y MySQL efimero queda para scopes de integracion.
