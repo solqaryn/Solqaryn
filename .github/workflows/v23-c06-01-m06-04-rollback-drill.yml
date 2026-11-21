@@ -1,0 +1,41 @@
+name: C06-01.M06.04 - isolated real Git rollback drill
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - scripts/quality/c06-01-m06-04-rollback-drill.mjs
+      - .github/workflows/v23-c06-01-m06-04-rollback-drill.yml
+      - docs/v5/c06-01-m06-04-real-rollback-drill-v23.md
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: c0601-m0604-dev
+  cancel-in-progress: false
+
+jobs:
+  rollback-drill:
+    name: C06-01.M06.04 - exact SHA rollback and data preservation
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+      - name: Adversarial ref guards
+        run: node scripts/quality/c06-01-m06-04-rollback-drill.mjs --self-test
+      - name: Real isolated Git worktree rollback
+        run: node scripts/quality/c06-01-m06-04-rollback-drill.mjs
+      - name: Project scope gate
+        run: node scripts/verify-project-scope.mjs
+      - name: Canonical skill and pins
+        run: node scripts/verify-solqaryn-skills.mjs --self-test
+      - name: V5 changelog provenance
+        run: node scripts/quality/verify-v5-changelog-provenance.mjs
