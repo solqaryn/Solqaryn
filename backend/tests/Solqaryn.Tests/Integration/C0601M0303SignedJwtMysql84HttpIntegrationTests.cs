@@ -226,6 +226,14 @@ public sealed class C0601M0303SignedJwtMysql84HttpIntegrationTests
                     await allowed.Content.ReadAsStringAsync(),
                     StringComparison.Ordinal);
             }
+            // Signed JWT cannot authorize a non-canonical numeric tenant alias.
+            // The route selector must equal the one decimal representation of the tenant.
+            foreach (var aliasedTenant in new[] { $"0{a.Id}", $"00{a.Id}" })
+            {
+                using var alias = await client.GetAsync(
+                    $"/c0601-m0303-test/{aliasedTenant}");
+                Assert.Equal(HttpStatusCode.Forbidden, alias.StatusCode);
+            }
             using (var foreign = await client.GetAsync(
                 $"/c0601-m0303-test/{b.Id}"))
                 Assert.Equal(HttpStatusCode.Forbidden, foreign.StatusCode);

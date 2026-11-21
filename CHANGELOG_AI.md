@@ -1,3 +1,7 @@
+## 2026-11-21 — V22 DEV05 reparacion cruzada C06-01.M03.03: alias de tenant firmado
+- Corrige la admision ambigua de rutas empresariales con ceros iniciales en el adaptador DEV-only signed JWT/RBAC y exige representacion decimal canonica de empresa.
+- Agrega dos rechazos HTTP 403 adversariales a la prueba real TestServer/JWT Oracle EF MySQL 8.4, manteniendo el 200 canonico y el aislamiento A/B; pendiente validacion GitHub-hosted exact-SHA, A5 independiente tercera Task Javier; sin publicar, cobrar ni activar producción.
+
 ## 2026-11-21 — DEV06 V22 C06-01.M03.03 JWT/tenancy deny-by-default en DEV
 
 - Implementado preflight read-only real con JWT Bearer firmado, membresía empresarial y rol/grant actuales revalidados tras I/O; opt-in OFF por defecto y DI solo Development. No concede publicación, lectura privada, pagos ni emisiones JWT.

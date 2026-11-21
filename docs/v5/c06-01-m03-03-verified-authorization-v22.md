@@ -13,3 +13,7 @@ Workflow `v22-c06-01-m03-03-jwt-mysql84-http.yml` levanta MySQL 8.4 loopback ef�
 
 ## A4/A5 y limitaciones
 Verificar Scope Lock, V5 procedencia, .NET 10 Release/xUnit, multiempresa y nueva prueba dirigida MySQL JWT HTTP exact-SHA; SKIPPED/CANCELLED/QUEUED/IN_PROGRESS requeridos NO PASS. A5 sólo por otra Task Javier con revisión genuina. M03.04 persistencia, M03.05 proveedores, M03.06 cierre, contenido legal, publicación, SEO, formularios y cualquier producción siguen sin certificar. Rollback por git revert normal, sin force push/QA/main/PROD.
+
+## V22 DEV05 — reparacion causal de alias numerico de tenant (2026-11-21)
+
+La revision cruzada detecto que `int.TryParse` permitia los alias numericos `empresaId=0N` y `empresaId=00N` del mismo tenant. La fuente autenticada exige ahora igualdad ordinal con su unica representacion decimal canonica. La regresion adversarial signed-JWT/HTTP/Oracle EF/MySQL 8.4 agrega dos 403 obligatorios sin perder el 200 positivo y el rechazo cruzado A/B. R2: solo preflight read-only DEV opt-in OFF, sin endpoint o datos nuevos de producto, cambios DB, grant ni publicacion. Requiere nueva CI exact-SHA, con H=VALIDANDO hasta SUCCESS causal; A5 por una tercera Task Javier distinta de DEV06 autor y DEV05 reparador. Rollback por git revert normal, sin QA/main/PROD.
