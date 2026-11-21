@@ -1,3 +1,7 @@
+## 2026-11-21 - V23 C15-04.M05.04 A0.90 responsive storefront test-only [Javier :10]
+- Incremento secuencial de WIP R2 existente, sin nuevo CLAIM: ampliar Playwright Chromium en tres rutas publicas a 320/390/768/1280/1440, Tab real sobre skip-link, h1 unico, sin body overflow ni mutaciones HTTP.
+- Fuente: frontend/e2e/c15-04-m05-04-global-ux.spec.ts y docs/v5/c15-04-m05-04-a090-v23-responsive.md. SKREF-03/05/10 originales fijados consultados; NO_APLICA otros por alcance test-only. La CI exact-SHA queda sin acreditar hasta checks completed/success; H2297 sigue EN_PROGRESO, I=DEV02, A5 ajena pendiente.
+
 ## 2026-11-21 - V22 C07-01.M06.06 global MySQL84 integration CI causal repair [Javier :00]
 - Diagnostico exacto: GHA dev-ci migrations SHA e3b2d3d6 / job 136951951963 ejecuto 148 Category=Integration; 146 PASS, 2 FAIL `EPHEMERAL_MYSQL84_REQUIRED` en C0601M0306LandingReviewAuditMysqlTests, NO fallos de codigo comercial.
 - Reparacion minima en `.github/workflows/dev-ci.yml`: declarar `C0601_M0306_MYSQL_TEST` en el servicio efimero mysql:8.4 local `127.0.0.1:3306`, base bootstrap `solqaryn_ci`; las pruebas crean/eliminan esquemas aleatorios y comprueban rollback/durable audit. No Aiven, no QA, no PROD y no reduccion de tests/Scope Lock.

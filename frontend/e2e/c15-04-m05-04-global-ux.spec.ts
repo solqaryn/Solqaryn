@@ -157,7 +157,8 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
   });
 
   // A0.4: tres rutas publicas reales; no confundir con autorizacion backend ni compras.
-  test('storefront publico: 3 rutas, seis navegaciones y enlaces skip',async({page})=>{
+  test('storefront publico V23: 15 navegaciones y foco real en cinco anchos',async({page})=>{
+    test.setTimeout(180_000);
     test.setTimeout(120_000);
     const rutas:[string,string][]=[
       ['/tienda','#contenido-principal'],
@@ -166,7 +167,7 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
     ];
     const escrituras:string[]=[];
     page.on('request',r=>{if(!['GET','HEAD','OPTIONS'].includes(r.method()))escrituras.push(r.method()+' '+r.url());});
-    for(const width of [375,1280]){
+    for(const width of [320,390,768,1280,1440]){
       await page.setViewportSize({width,height:840});
       for(const [ruta,principal] of rutas){
         await test.step(width+'px '+ruta,async()=>{
@@ -174,6 +175,8 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
           await expect(page.locator(principal)).toBeVisible();
           await expect(page.locator('a.skip-link').first()).toHaveAttribute('href',ruta+principal);
           await expect(page.getByRole('heading',{level:1})).toHaveCount(1);
+          await page.keyboard.press('Tab');
+          await expect(page.locator('a.skip-link').first()).toBeFocused();
           await noOverflow(page);
         });
       }
