@@ -1,0 +1,58 @@
+name: V22 C06-01.M04.01 public SaaS landing Angular Chromium
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/src/app/app.routes.ts'
+      - 'frontend/src/app/features/landing/c0601-public-saas-landing.component.ts'
+      - 'frontend/e2e/c06-01-m04-01-public-saas-landing.spec.ts'
+      - '.github/workflows/v22-c06-01-m04-01-public-landing.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c0601-m0401-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  chromium:
+    name: C06-01.M04.01 - public Angular 22 route Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Verify exact SHA Scope Lock and Skill
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+          node scripts/verify-solqaryn-skills.mjs --self-test
+      - name: Angular 22 pinned dependencies and typed production build
+        working-directory: frontend
+        run: |
+          npm install -g npm@11.19.0
+          npm ci
+          npx tsc --noEmit -p tsconfig.app.json
+          npm run build
+      - name: Install real Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Real anonymous browser navigation keyboard mobile and no private API requests
+        working-directory: frontend
+        env:
+          CI: 'true'
+          PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+        run: |
+          set -euo pipefail
+          npx ng serve --host 127.0.0.1 --port 4200 >/tmp/v22-c0601-m0401.log 2>&1 &
+          ready=0
+          for i in $(seq 1 120); do
+            if curl --silent --fail http://127.0.0.1:4200/conoce-solqaryn >/dev/null; then ready=1; break; fi
+            sleep 2
+          done
+          if [ "$ready" -ne 1 ]; then tail -n 100 /tmp/v22-c0601-m0401.log; exit 1; fi
+          npx playwright test e2e/c06-01-m04-01-public-saas-landing.spec.ts --config=playwright.config.ts --workers=1 --retries=0

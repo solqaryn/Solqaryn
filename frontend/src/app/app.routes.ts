@@ -7,6 +7,8 @@ import { FACTURAS_PROVEEDOR_ROUTES } from './features/compras/facturas-proveedor
 import { PEDIDOS_VENTA_ROUTES } from './features/pedidos-venta/pedidos-venta.routes';
 
 export const routes: Routes = [
+  // C06-01.M04.01: public informational SaaS entry, no private data, auth bypass or paid action.
+  { path: 'conoce-solqaryn', loadComponent: () => import('./features/landing/c0601-public-saas-landing.component').then(m => m.C0601PublicSaasLandingComponent) },
   { path: '', redirectTo: 'login', pathMatch: 'full' },
   // Entrada segura multiempresa. El storefront completo queda cerrado hasta
   // certificar identidad, carrito, cuenta y checkout por tienda (microfases 2/3).
