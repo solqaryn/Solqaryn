@@ -2754,8 +2754,20 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
             await expect(page.getByTestId(destino.testid)).toHaveCount(0);
             await expect(page.getByRole('heading', { level: 1, name: destino.titulo }))
               .toHaveCount(0);
-            await expect(page.getByRole('textbox', { name: 'Nombre de usuario' }))
-              .toBeVisible();
+            // JWT empresarial valido + HTTP 403 no implica sesion anonima:
+            // /login conserva el contexto y ofrece seleccionar empresa si falta tenant.
+            // Aceptar solo una superficie de recuperacion, nunca contenido privado.
+            const selectorEmpresa = page.locator(
+              '.login-card[aria-label="Selección de empresa"]'
+            );
+            const campoUsuario = page.getByRole('textbox', {
+              name: 'Nombre de usuario'
+            });
+            await expect(selectorEmpresa.or(campoUsuario).first()).toBeVisible();
+            if (await selectorEmpresa.isVisible()) {
+              await expect(selectorEmpresa.getByRole('alert'))
+                .toContainText('no posee autoridad global');
+            }
             expect(await page.evaluate(() => document.documentElement.scrollWidth))
               .toBeLessThanOrEqual(ancho + 2);
           }
