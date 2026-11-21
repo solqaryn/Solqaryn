@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV04 V22 C07-01.M03.02 servicio Application acotado
+- Servicio real asincrono de preflight C0701CatalogApplicationService con fuentes de autoridad autenticada y lectura de recursos filtrada por tenant verificable, sin grant, escritura, API live, DB o PSP; integra Domain M03.01 y valida JWT/RBAC frescos como evidencia de adapter futuro.
+- Pruebas adversariales xUnit del caso de uso: permisos/tenants cliente, recurso B, firma ausente, revocacion, stale CAS, error adaptadores, cancelacion y fallos de dominio; una prueba con adapter falso NO se presenta como JWT/MySQL real.
+- Entrega unica V17 PLAN row1023, A0–A4 condicionada a GitHub-hosted .NET10/ScopeLock/V5 exact-SHA, A5 por otra Task Javier; rollback git revert y ScopeLock STRICT sin QA/main/PROD.
+
 ## 2026-11-20 — DEV04 V22 C04-01.M03.01 validaciones reales de dominio de catálogo SaaS
 - Una única microtarea R2: nueva política pura Domain C0401PlanDomainRules que exige tenant A/B, RBAC relacional, membresía vigente, revocación, sucursal, versión de plan/suscripción, UTC, capacidades explícitas y cuota segura contra overflow; todas las decisiones prohíben grants, escritura o cobros.
 - xUnit adversarial específico C0401M0301PlanDomainRulesTests, documento de límites y rollback; .NET10 GitHub-hosted y gates ScopeLock/V5 exact-SHA deben concluir SUCCESS antes de A0-A4/LISTO; HTTP/JWT/MySQL/Chromium no modificados se declaran NO_APLICA solo a este diff, no fase global.
