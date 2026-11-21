@@ -1,3 +1,8 @@
+## 2026-11-21 - DEV01 V22 C07-01.M03.04 lector aislado MySQL 8.4
+- Codigo real de Infrastructure para catalogo versionado tenant A/B, filtro SQL parametrizado, legacy NULL/duplicados/categoria-variante ajena/soft-delete fail-closed; no DI productiva ni autorizacion de escritura.
+- CI dedicada GitHub-hosted .NET 10, MySQL 8.4 efimero, test xUnit positivo/negativo, rollback y cancelacion, TRX verificable, Scope Lock exact-SHA; verificar resultados reales antes de LISTO.
+- M03 acumulativa, A0-A4 por accion PLAN D1025, A5 independiente; dev STRICT, no QA/main/PROD.
+
 ## 2026-11-21 - DEV06 V22 C04-01.M03.05 cola aislada MySQL 8.4 con CAS
 - Entrega R2: codigo Infrastructure lease/ACK por tenant y version, aislado sin DI productiva ni PSP, cuota o pagos.
 - Nueva CI GitHub-hosted con MySQL8.4 efimero para tenant A/B, replay, revision obsoleta, ACK duplicado, expiracion y cancelacion; no atribuir PASS antes de logs exact SHA.
