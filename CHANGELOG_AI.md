@@ -1,3 +1,7 @@
+## 2026-11-21 — V22 DEV01 C07-01.M06.06: denegación HTTP de mutadores con MySQL 8.4 real
+- Nueva regresión integrada al TestServer firmado: con piloto comercial estrictamente de lectura, POST /productos, PUT /productos/{idB} y DELETE /productos/{idA} deben recibir 503, sin activar ningún piloto de escritura.
+- Un AppDbContext Oracle EF distinto acredita en MySQL 8.4 efímero que las filas A/B sobreviven sin alteración ni se insertó el POST rechazado. La suite no afirma CRUD positivo ni integración Angular; continúa EN_PROGRESO con candado V17 y A5 pendiente. GitHub-hosted CI del nuevo SHA decide PASS/FAIL, sin QA/main/PROD.
+
 ## 2026-11-21 — V22 DEV01 C07-01.M06.06: prueba real adicional de rollback Oracle EF / MySQL 8.4
 - Se amplía la suite existente del controlador real /productos con una transacción tenant A de EF sobre MySQL 8.4 efímero: inserción verificable, RollbackAsync y lectura nueva que exige ausencia física del registro temporal.
 - El alcance sigue siendo parcial R2: no se acredita rollback por controlador HTTP, mutación de variantes, auditoría persistente ni flujo Angular/Chromium firmado. C07-01.M06.06 continúa EN_PROGRESO, sin LISTO ni A5; CI y Scope Lock/V5 requieren comprobación del SHA nuevo.

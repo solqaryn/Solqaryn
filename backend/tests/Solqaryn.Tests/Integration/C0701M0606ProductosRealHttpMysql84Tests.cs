@@ -284,6 +284,53 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 Assert.Contains("C0701RealProductoA", json, StringComparison.Ordinal);
                 Assert.DoesNotContain("C0701RealProductoB", json, StringComparison.Ordinal);
             }
+            // A read-only tenant pilot must never activate commercial writes.
+            // These are real signed-JWT HTTP requests through production routing
+            // and tenant guard, followed by independent physical MySQL readback.
+            var deniedName = "C0701ReadPilotDeniedWrite" + Guid.NewGuid().ToString("N");
+            using (var createForm = new FormUrlEncodedContent(
+                new Dictionary<string, string>
+                {
+                    ["Nombre"] = deniedName,
+                    ["Precio"] = "120",
+                    ["Costo"] = "50"
+                }))
+            using (var deniedCreate = await client.PostAsync("/productos", createForm))
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, deniedCreate.StatusCode);
+
+            using (var updateForm = new FormUrlEncodedContent(
+                new Dictionary<string, string>
+                {
+                    ["Nombre"] = deniedName,
+                    ["Precio"] = "120"
+                }))
+            using (var deniedForeignUpdate = await client.PutAsync(
+                $"/productos/{productBId}", updateForm))
+                Assert.Equal(HttpStatusCode.ServiceUnavailable,
+                    deniedForeignUpdate.StatusCode);
+
+            using (var deniedDelete = await client.DeleteAsync(
+                $"/productos/{productAId}"))
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, deniedDelete.StatusCode);
+
+            await using (var negativeReadback = new AppDbContext(options))
+            {
+                var persisted = await negativeReadback.Productos
+                    .IgnoreQueryFilters()
+                    .AsNoTracking()
+                    .Where(p => p.Id == productAId || p.Id == productBId)
+                    .Select(p => new { p.Id, p.Nombre, p.Eliminado })
+                    .ToArrayAsync();
+                Assert.Equal(2, persisted.Length);
+                Assert.Contains(persisted, p => p.Id == productAId &&
+                    p.Nombre == "C0701RealProductoA" && !p.Eliminado);
+                Assert.Contains(persisted, p => p.Id == productBId &&
+                    p.Nombre == "C0701RealProductoB" && !p.Eliminado);
+                Assert.Equal(0, await negativeReadback.Productos
+                    .IgnoreQueryFilters()
+                    .CountAsync(p => p.Nombre == deniedName));
+            }
+
             using (var foreignA = await client.GetAsync($"/productos/{productBId}"))
                 Assert.Equal(HttpStatusCode.NotFound, foreignA.StatusCode);
 
