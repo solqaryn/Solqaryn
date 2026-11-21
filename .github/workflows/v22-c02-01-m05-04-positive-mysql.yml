@@ -4,6 +4,8 @@ on:
     branches: [dev]
     paths:
       - 'backend/tests/Solqaryn.Tests/C0201M0504SignedJwtMysqlPositiveTests.cs'
+      - 'backend/src/Application/AutomationV5/V17IntelligentTenantLoginAuthorization.cs'
+      - 'backend/tests/Solqaryn.Tests/Application/V17IntelligentTenantLoginAuthorizationTests.cs'
       - '.github/workflows/v22-c02-01-m05-04-positive-mysql.yml'
   workflow_dispatch:
 permissions:
@@ -41,6 +43,23 @@ jobs:
         run: |
           set -euo pipefail
           docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -Nse 'SELECT VERSION();' | grep -E '^8[.]4[.]'
+      - name: Unit policy regression for C02-01 M05.04 including cancelled reader
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj -c Release --no-restore --filter 'FullyQualifiedName~V17IntelligentTenantLoginAuthorizationTests' --logger 'trx;LogFileName=c0201-policy.trx' --logger 'console;verbosity=normal'
+          python3 - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree as ET
+          files=list(Path('tests/Solqaryn.Tests/TestResults').rglob('c0201-policy.trx'))
+          if len(files)!=1: raise SystemExit('M0504_POLICY_TRX_MISSING_OR_MULTIPLE')
+          counters=next((e.attrib for e in ET.parse(files[0]).getroot().iter() if e.tag.endswith('Counters')),None)
+          if counters is None: raise SystemExit('M0504_POLICY_TRX_COUNTERS_ABSENT')
+          result={k:int(counters.get(k,-1)) for k in ('total','passed','failed','notExecuted')}
+          print('C0201_M0504_POLICY_ADVERSARIAL',result)
+          if not (result['total']>=16 and result['passed']==result['total'] and result['failed']==0 and result['notExecuted']==0): raise SystemExit('M0504_POLICY_ADVERSARIAL_TESTS_FAILED_OR_SKIPPED')
+          PY
       - name: Real JWT HTTP EF MySQL 8.4 positive TRX proof
         working-directory: backend
         shell: bash

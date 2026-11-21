@@ -1,3 +1,8 @@
+## 2026-11-20 - DEV03 V22 C02-01.M05.04: workflow causal de autorizacion tenant y 16 negativos xUnit
+- Corregir on.push.paths: cada cambio en politica Application o sus tests activa el mismo workflow real signed JWT/HTTP/MySQL 8.4; ya no depender solo del archivo Integration y YAML.
+- Agregar TRX xUnit independiente con >=16 casos, 0 FAIL/0 NOT_EXECUTED, incluyendo cancelacion no cooperativa, preference actor ajeno, A/B, JWT y tenants revocados; preservar TRX existente 1/1 MySQL real. Sin runtime, migraciones o datos productivos.
+- Riesgo R2: CI exact-SHA debe finalizar SUCCESS; mantener C02-01.M05.04 VALIDANDO porque faltan preferencia SQL durable, JWT reissue y navegacion Angular real. A5 independiente, Scope Lock STRICT, rollback revert normal, BITACORA historica intacta.
+
 ## 2026-11-20 - DEV01 V22 C06-04.M03.05: fencing de ACK al mismo worker en MySQL real
 - Reparacion P2 de cola aislada: si el mismo workerId reobtiene un lease vencido, un ACK atrasado no puede cerrar el intento nuevo; SettleAsync exige attempt del lease, lo compara con attempts bajo CAS atomico y deniega replays.
 - Prueba adversarial Category=Integration MySQL 8.4 tenant 17: primer lease vencido, segundo lease al mismo worker, ACK antiguo DENIED y ACK vigente SUCCESS; conservar negativos tenant A/B, dead-letter, rollback y deduplicacion.
