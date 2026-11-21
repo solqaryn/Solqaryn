@@ -1,3 +1,8 @@
+## 2026-11-21 - DEV01 V22 C04-01.M03.06 auditoria estructurada MySQL 8.4 aislada
+- Implementado sink SQL con evento tenant-bound, validacion cerrada de identidad/codigo/actor, unicidad de idempotencia, transaccion y error saneado; cero JWT/PII/payload/secretos y sin DI productiva.
+- Implementada prueba adversarial real MySQL 8.4 ephemera para A/B, rechazo replay, rollback, cancelacion, eventos malformados, sanitizacion de errores, workflow GitHub-hosted exact-SHA TRX.
+- Limites R2: no atomicidad conjunta con worker ni certificado de pagos/produccion; A0-A4 por PLAN D595 y A5 distinto DEV01, sujeto a CI finalizada.
+
 ## 2026-11-21 - DEV01 V22 C07-01.M03.04 lector aislado MySQL 8.4
 - Codigo real de Infrastructure para catalogo versionado tenant A/B, filtro SQL parametrizado, legacy NULL/duplicados/categoria-variante ajena/soft-delete fail-closed; no DI productiva ni autorizacion de escritura.
 - CI dedicada GitHub-hosted .NET 10, MySQL 8.4 efimero, test xUnit positivo/negativo, rollback y cancelacion, TRX verificable, Scope Lock exact-SHA; verificar resultados reales antes de LISTO.
