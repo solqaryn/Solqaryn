@@ -779,4 +779,31 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
     }
   });
 
+
+  // A0.88 — sesion 401/429 simulada; las aserciones corren en Chromium real.
+  // No es prueba de JWT firmado, roles del backend ni persistencia MySQL.
+  test('sesion 401/429: sin render privado ni mutaciones 375/1280',async({context})=>{
+    test.setTimeout(120_000);
+    for(const status of [401,429]){
+      for(const width of [375,1280]){
+        const page=await context.newPage();
+        const writes:string[]=[];
+        try{
+          await page.setViewportSize({width,height:800});
+          await auth(page,status);
+          page.on('request',req=>{
+            if(!['GET','HEAD','OPTIONS'].includes(req.method()))writes.push(req.method()+' '+req.url());
+          });
+          await page.goto('/plataforma/auditoria-ux-v5');
+          await expect(page.locator('[data-testid="ux-surface"]')).toHaveCount(0);
+          await expect(page.getByText('PRIVATE_ERROR_DO_NOT_RENDER')).toHaveCount(0);
+          await noOverflow(page);
+          expect(writes,'HTTP '+status+' no autoriza mutaciones').toEqual([]);
+        }finally{
+          await page.close();
+        }
+      }
+    }
+  });
+
 });
