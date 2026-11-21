@@ -91,7 +91,7 @@ test('C04-01.M04.05 Chromium genuine Tab, labels, CSS contrast', async ({ page }
     return (Math.max(a,b) + .05) / (Math.min(a,b) + .05);
   });
   expect(ratio, 'real computed contrast').toBeGreaterThanOrEqual(4.5);
-  await page.getByRole('button', { name: 'Actualizar' }).click();
+  await page.locator('.saas-card').getByRole('button', { name: 'Actualizar', exact: true }).click();
   await expect(page.getByRole('heading', { name: 'Plan Base' })).toBeVisible();
   let focused = false;
   for (let i = 0; i < 12; i++) {

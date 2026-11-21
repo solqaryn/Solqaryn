@@ -1,3 +1,7 @@
+## 2026-11-21 — DEV04 V22 C04-01.M04.05 reparación Chromium selector de botón
+- El SHA 797246e1 completó Angular/TypeScript y ejecutó Chromium REAL: 3/4 PASS, una prueba FAIL por locator Actualizar ambiguo (3 botones presentes), no por contraste ni permisos. Se acota el click a .saas-card y nombre exacto, sin .focus() ni bypass de aserciones.
+- Requiere nueva CI de 4/4, ScopeLock y V5 SUCCESS exact-SHA; FAIL históricos conservados. A5 independiente; sin cambios al runtime ni al backend/DB/pagos.
+
 ## 2026-11-21 — DEV04 V22 C04-01.M04.05 reparacion CI causal toolchain
 - El job Chromium 136775945398 del SHA 320207de falló ANTES de las pruebas: verify-toolchain esperaba Node 24.21.0, runner recibió Node 24.11.1. Corrige exclusivamente node-version a 24.21.0 en workflow dirigido, sin alterar pruebas, seguridad ni validadores.
 - Se requiere nueva CI exact-SHA Angular/Chromium, ScopeLock y V5 SUCCESS antes de LISTO; FAIL anterior intacto, A5 independiente posterior. Rollback git revert normal.
