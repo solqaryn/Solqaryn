@@ -15,9 +15,13 @@ public sealed class C0103DynamicConfigurationAuditLoggerTests
         public LogLevel? LastLevel;
         public EventId? LastEventId;
         public bool Throws;
+        public bool DisableInformation;
+        public bool DisableWarning;
         public IDisposable BeginScope<TState>(TState state) where TState : notnull =>
             new Scope();
-        public bool IsEnabled(LogLevel logLevel) => true;
+        public bool IsEnabled(LogLevel logLevel) =>
+            (logLevel != LogLevel.Information || !DisableInformation) &&
+            (logLevel != LogLevel.Warning || !DisableWarning);
         public void Log<TState>(
             LogLevel logLevel, EventId eventId, TState state,
             Exception? exception, Func<TState, Exception?, string> formatter)
@@ -117,6 +121,38 @@ public sealed class C0103DynamicConfigurationAuditLoggerTests
         Assert.False(logger.TryWrite(Good() with { Outcome = "ERROR", ErrorCode = null }));
         Assert.False(logger.TryWrite(Good() with { Outcome = "DENIED", ErrorCode = "SQL_RAW" }));
         Assert.Empty(provider.Messages);
+    }
+
+    [Fact]
+    public void DisabledInformationNeverClaimsAuditEmission_AndWarningRemainsIndependent()
+    {
+        var provider = new CaptureLogger { DisableInformation = true };
+        var audit = new AuditLogger(provider);
+        Assert.False(audit.TryWrite(Good()));
+        Assert.Empty(provider.Messages);
+        Assert.True(audit.TryWrite(Good() with
+        {
+            Operation = "CONFIG_REJECTED", Outcome = "DENIED",
+            ErrorCode = "RBAC_REVOKED"
+        }));
+        Assert.Single(provider.Messages);
+        Assert.Equal(LogLevel.Warning, provider.LastLevel);
+    }
+
+    [Fact]
+    public void DisabledWarningNeverClaimsDeniedAuditEmission_AndInformationRemainsIndependent()
+    {
+        var provider = new CaptureLogger { DisableWarning = true };
+        var audit = new AuditLogger(provider);
+        Assert.False(audit.TryWrite(Good() with
+        {
+            Operation = "CONFIG_REJECTED", Outcome = "ERROR",
+            ErrorCode = "PROVIDER_UNAVAILABLE"
+        }));
+        Assert.Empty(provider.Messages);
+        Assert.True(audit.TryWrite(Good()));
+        Assert.Single(provider.Messages);
+        Assert.Equal(LogLevel.Information, provider.LastLevel);
     }
 
     [Fact]

@@ -1,3 +1,9 @@
+## 2026-11-20 — DEV05 V22 C01-03.M03.06 nivel de log deshabilitado
+
+- Reparacion P2 causal R2: el logger estructurado de configuracion dinamica ahora devuelve false si ILogger.IsEnabled descarta Information o Warning, en lugar de afirmar que emitio un evento inexistente.
+- Dos nuevas pruebas xUnit adversariales prueban supresion de cada nivel y aislamiento entre niveles; no altera auth, datos, tenant, DI, API ni configuracion productiva.
+- LIMITACION: A5_FAIL historico sigue vigente por ausencia de call-site autenticado y sink durable; GitHub-hosted exact-SHA pendiente; no LISTO/A5 nuevo ni QA/main/PROD. Rollback git revert normal.
+
 ## 2026-11-20 — DEV03 V22 C02-01.M05.04 cancelacion en enumeracion lazy de membresias
 
 - Se corrige una brecha P2 real del contrato Application: si el enumerador lazy cancela el token despues de ReadCurrentAsync, no se selecciona ni propone un tenant a partir de un snapshot invalidado.

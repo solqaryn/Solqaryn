@@ -67,6 +67,12 @@ public sealed class C0103DynamicConfigurationAuditLogger
             SHA256.HashData(Encoding.UTF8.GetBytes(record.CanonicalKey!)))[..16];
         try
         {
+            // ILogger can silently suppress disabled levels. A discarded audit
+            // event must never be reported as emitted to the caller.
+            var level = record.Outcome == "CHECKED" ? LogLevel.Information : LogLevel.Warning;
+            if (!_logger.IsEnabled(level))
+                return false;
+
             if (record.Outcome == "CHECKED")
                 _logger.LogInformation(AuditEventId,
                     "C0103 config audit {Operation} {Outcome} {TenantId} {ActorId} {KeyDigest} {SourceSha} {Version} {CorrelationId}",
