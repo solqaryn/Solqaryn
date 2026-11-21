@@ -148,4 +148,30 @@ test.describe('C14-01.M04.03 - UI marca empresarial con JWT real y branding tena
     await expect(page.getByText('Empresa B efimera C15')).toHaveCount(0);
   });
 
+  test('C14-01.M04.06: densidad responsive y progresion privada real sin bloqueo del shell', async ({ page }) => {
+    test.setTimeout(150_000);
+    let lecturasTenant = 0;
+    // Demorar la peticion REAL, sin fabricar payload ni sustituir MySQL/JWT.
+    await page.route(/\/empresa-configuracion\/tenant\/1(?:\?|$)/, async route => {
+      lecturasTenant++;
+      await new Promise(resolve => setTimeout(resolve, 350));
+      await route.continue();
+    });
+    await ingresarEmpresa(page, 'c1504_admin_a', 1, 'Empresa A efimera C15');
+    expect(lecturasTenant, 'Una carga real de marca tenant en navegador').toBeGreaterThan(0);
+
+    // Distintas densidades, sin scroll lateral, desbordamientos ni resultado
+    // ficticio antes de terminar la carga. El contenido privado ya fue autorizado.
+    for (const ancho of [320, 375, 768, 1280]) {
+      await page.setViewportSize({ width: ancho, height: 800 });
+      await expect(page.getByRole('heading', { name: 'Mi perfil' })).toBeVisible();
+      await expect(page.locator('#main-sidebar .brand > span').first())
+        .toHaveText('Empresa A efimera C15');
+      const desbordamiento = await page.evaluate(() => document.documentElement.scrollWidth);
+      expect(desbordamiento, 'Sin desbordamiento a ' + ancho + ' px')
+        .toBeLessThanOrEqual(ancho + 1);
+      await expect(page.getByText('Empresa B efimera C15')).toHaveCount(0);
+    }
+  });
+
 });

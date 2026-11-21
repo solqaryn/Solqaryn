@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV04 V22 C14-01.M04.06: densidad y carga progresiva navegador real
+- Nuevo escenario Chromium con JWT/MySQL8.4 reales, retraso controlado antes de continuar la respuesta privada del servidor, dimensiones 320/375/768/1280 y aserciones de shell, marca y aislamiento A/B.
+- Solo prueba E2E/documento sobre workflow existente SHA aislado, sin cambios de runtime; no mide Web Vitals ni certificar fase M04/QA/PROD; CI exact-SHA y A5 independiente obligatorias.
+- Scope Lock STRICT, dev, V17 single-WIP, BITACORA aditiva, CHANGELOG completo preservado y rollback git revert.
+
 ## 2026-11-20 — DEV04 V22 C01-02.M05.04: aceptación positiva contractual multitenant
 - xUnit test-only para capability de tenant A/B, rol, sucursal y plan: éxito contractual no autoriza acceso a runtime; negativas de mezcla A/B, membresía revocada y plan vencido.
 - PLAN D209 salida individual, no cierre M05/M06; sin cambios de API, JWT/RBAC, EF/MySQL, Angular, secretos ni datos. CI GitHub-hosted exact-SHA pendiente; A5 independiente tras A0–A4 reales.
