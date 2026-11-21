@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV01 V22 C14-01.M06.03 reparación P2 de procedencia CI
+- QA independiente identificó A5_FAIL histórico: el documento atribuía dos veces el job de Chromium JWT/MySQL 136735799511 al run 44867961201 (Scope Lock), en lugar del run real 44867961229; comprobados ambos jobs autenticados de GitHub Actions.
+- Se corrigen únicamente dos referencias documentales de run, preservando invariantes JWT/tenancy, fuentes, historia CHANGELOG, owner DEV06 y A5_FAIL; no se altera runtime, pruebas, ramas QA/main/PROD ni se afirma A5_PASS por el reparador.
+- Revalidar nuevo SHA Scope Lock/V5 y realizar A5 posterior por una Task Javier distinta de autor DEV06 y reparador DEV01; rollback git revert FF.
+
 ## 2026-11-20 - DEV02 V22 C15-04.M05.04 A0.75 activacion de enlaces por teclado real
 
 - Cuatro casos Playwright/Chromium con JWT firmado ASP.NET Core 10 y MySQL 8.4 efimero validan ocho navegaciones 375/1280: Tab real, Enter, retorno a Administracion global, autorizacion HTTP, responsive y cero mutaciones; sin focus/click sintetico.
