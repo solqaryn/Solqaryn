@@ -1,3 +1,8 @@
+## 2026-11-21 - V22 C07-01.M06.06 global MySQL84 integration CI causal repair [Javier :00]
+- Diagnostico exacto: GHA dev-ci migrations SHA e3b2d3d6 / job 136951951963 ejecuto 148 Category=Integration; 146 PASS, 2 FAIL `EPHEMERAL_MYSQL84_REQUIRED` en C0601M0306LandingReviewAuditMysqlTests, NO fallos de codigo comercial.
+- Reparacion minima en `.github/workflows/dev-ci.yml`: declarar `C0601_M0306_MYSQL_TEST` en el servicio efimero mysql:8.4 local `127.0.0.1:3306`, base bootstrap `solqaryn_ci`; las pruebas crean/eliminan esquemas aleatorios y comprueban rollback/durable audit. No Aiven, no QA, no PROD y no reduccion de tests/Scope Lock.
+- C07-01.M06.06 sigue EN_PROGRESO con su lock V17 y propietario historico sin cambios; no acredita POST/PUT positivos, variantes de extremo a extremo, Angular/Chromium contra JWT real ni auditoria durable integral. Exigir GHA exact SHA y A0-A4 antes de LISTO; A5 independiente.
+
 ## 2026-11-21 - V22 C06-01.M04.04 Angular internal navigation repair [Javier :40]
 - Fix a real Angular base-href public landing bug: internal #beneficios/#alcance anchors would navigate to / instead of retaining /conoce-solqaryn. Add allowlisted section focus handlers with semantic links and keyboard-compatible tabindex -1.
 - Add GitHub-hosted real Chromium regression for menu/hero anchor focus, route continuity, message visibility, no forms or duplicate state-changing network requests after rapid login action. Preserve JWT/RBAC/tenant backend guards, Scope Lock and V5 checks.

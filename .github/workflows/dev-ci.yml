@@ -167,6 +167,8 @@ jobs:
       C0601_M0304_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
       # V22 DEV03: integration suite runs unfiltered; a missing variable must fail-closed, never skip tests.
       C0601_M0305_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+      # V22 R2: C06-01.M03.06 durable-audit tests create isolated schemas; fail closed without this loopback credential.
+      C0601_M0306_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
       C0401_M0304_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_c1502_m0503;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
       C0701_M0303_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
       C0701_M0306_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_c0701_audit;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
