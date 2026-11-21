@@ -98,6 +98,8 @@ import { C0601PublicStatusComponent } from './c0601-public-status.component';
     .hero { max-width: 1260px; margin: auto; min-height: 34rem; padding: clamp(3.3rem, 7vw, 7rem) clamp(1.1rem, 5vw, 4rem); display: grid; grid-template-columns: minmax(0, 1.7fr) minmax(250px, .7fr); gap: clamp(2rem, 8vw, 7rem); align-items: center; }
     .eyebrow, .section-caption { color: var(--sq-emphasis); letter-spacing: .15em; font-size: .75rem; font-weight: 800; }
     h1, h2, h3, p { overflow-wrap: anywhere; }
+    /* LANDING_CONTRAST_HEADINGS_V23: global h1/h2/h3 color tokens must not override local brand palette. */
+    .landing-shell h1, .landing-shell h2, .landing-shell h3 { color: var(--sq-ink); }
     h1, h2 { font-family: Georgia, 'Times New Roman', serif; font-weight: 400; }
     h1 { max-width: 820px; font-size: clamp(2.8rem, 6.2vw, 5.7rem); letter-spacing: -.055em; line-height: 1.05; margin: 1.25rem 0; }
     h1 em { color: var(--sq-emphasis); font-weight: 400; font-style: normal; }

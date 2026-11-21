@@ -133,3 +133,46 @@ test('C06-01.M04.03 high contrast palette computed WCAG AA across public surface
     }
   }
 });
+
+
+// V23 DEV05 P1 A5 regression: the global color-heading token must never mask
+// headings in either local public brand palette. This failed in ten real PNGs
+// despite the preceding 5/5 Chrome tests passing because they omitted headings.
+test('C06-01.M04.03 heading contrast adversarial WCAG AA across both palettes', async ({ page }) => {
+  const pairs = [
+    ['.hero h1', '.landing-shell'],
+    ['#benefits-heading', '.section'],
+    ['.benefit-grid article:nth-child(1) h3', '.section'],
+    ['.benefit-grid article:nth-child(2) h3', '.section'],
+    ['.benefit-grid article:nth-child(3) h3', '.section'],
+    ['#c0601-status-heading', '.landing-shell'],
+    ['#scope-heading', '.landing-shell']
+  ] as const;
+  const luminosity = (value: string): number => {
+    const channels = value.match(/\\d+(?:\\.\\d+)?/g)?.slice(0, 3).map(Number);
+    if (!channels || channels.length !== 3) throw new Error('RGB not computed: ' + value);
+    const v = channels.map(c => {
+      const s = c / 255;
+      return s <= 0.04045 ? s / 12.92 : ((s + 0.055) / 1.055) ** 2.4;
+    });
+    return 0.2126 * v[0]! + 0.7152 * v[1]! + 0.0722 * v[2]!;
+  };
+  for (const width of [390, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    for (const theme of ['institucional', 'contraste'] as const) {
+      await page.goto('/conoce-solqaryn');
+      if (theme === 'contraste') await page.getByTestId('c0601-brand-toggle').click();
+      await expect(page.getByTestId('c0601-public-saas-landing')).toHaveAttribute('data-brand-theme', theme);
+      for (const [foreground, background] of pairs) {
+        const colors = await page.evaluate(([fg, bg]) => {
+          const f = document.querySelector(fg), b = document.querySelector(bg);
+          if (!f || !b) throw new Error('Missing contrast landmark ' + fg + '/' + bg);
+          return { fg: getComputedStyle(f).color, bg: getComputedStyle(b).backgroundColor };
+        }, [foreground, background]);
+        const contrast = (Math.max(luminosity(colors.fg), luminosity(colors.bg)) + 0.05) /
+          (Math.min(luminosity(colors.fg), luminosity(colors.bg)) + 0.05);
+        expect(contrast, `WCAG 4.5 ${theme} ${width} ${foreground}`).toBeGreaterThanOrEqual(4.5);
+      }
+    }
+  }
+});

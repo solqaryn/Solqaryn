@@ -68,7 +68,7 @@ type PublicHealthState = 'idle' | 'loading' | 'ready' | 'empty' | 'denied'
       border-block: 1px solid var(--sq-border); color: var(--sq-ink);
     }
     .eyebrow { color: var(--sq-emphasis); letter-spacing: .12em; font-size: .75rem; font-weight: 800; }
-    h2 { font: 400 clamp(2rem, 3.7vw, 3rem)/1.15 Georgia, 'Times New Roman', serif; margin: .4rem 0 .9rem; }
+    h2 { color: var(--sq-ink); font: 400 clamp(2rem, 3.7vw, 3rem)/1.15 Georgia, 'Times New Roman', serif; margin: .4rem 0 .9rem; }
     p { margin: .5rem 0; line-height: 1.7; overflow-wrap: anywhere; }
     .status-copy > p:last-child { color: var(--sq-muted); max-width: 48ch; }
     .status-control { min-width: 0; background: var(--sq-panel); padding: clamp(1.2rem, 2vw, 1.8rem); border-top: 3px solid var(--sq-accent); }
