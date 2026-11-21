@@ -224,4 +224,42 @@ test.describe('C14-01.M04.03 - UI marca empresarial con JWT real y branding tena
       await Promise.all([contextA.close(), contextB.close(), contextAagain.close()]);
     }
   });
+
+  test('C14-01.M05.05: signed JWT abuse, cross-tenant selectors and unauthenticated reads fail closed', async ({ page }) => {
+    test.setTimeout(180_000);
+    const tokenA = await loginReal(page, 'c1504_admin_a');
+    const parts = tokenA.split('.');
+    expect(parts).toHaveLength(3);
+    const altered = parts[2].startsWith('A') ? 'B' + parts[2].slice(1) : 'A' + parts[2].slice(1);
+    const forgedJwt = `${parts[0]}.${parts[1]}.${altered}`;
+    const own = await page.request.get(api + '/empresa-configuracion/tenant/1', {
+      headers: { Authorization: 'Bearer ' + tokenA }
+    });
+    expect(own.status(), 'Control positivo: JWT firmado A y proveedor real MySQL').toBe(200);
+    const ownRecord = (await own.json())?.data;
+    expect(ownRecord?.empresaId).toBe(1);
+    expect(ownRecord?.nombre).toBe('Empresa A efimera C15');
+    // Do not mock HTTP responses: these reach ASP.NET Core auth and ephemeral MySQL.
+    const attempts = [
+      { reason: 'no JWT', id: 1, headers: {} },
+      { reason: 'modified JWT signature', id: 1, headers: { Authorization: 'Bearer ' + forgedJwt } },
+      { reason: 'valid JWT A requests tenant B', id: 2, headers: { Authorization: 'Bearer ' + tokenA } },
+      { reason: 'forged tenant header B against URL A', id: 1, headers: { Authorization: 'Bearer ' + tokenA, 'X-Empresa-Id': '2' } },
+      { reason: 'guess non-member enterprise ID', id: 2147483647, headers: { Authorization: 'Bearer ' + tokenA } }
+    ];
+    for (const attempt of attempts) {
+      const response = await page.request.get(api + '/empresa-configuracion/tenant/' + attempt.id, {
+        headers: attempt.headers
+      });
+      expect([401, 403, 404, 503], 'Rechazo real ante ' + attempt.reason).toContain(response.status());
+      const body = await response.text();
+      expect(body, 'Error seguro sin identidad de A/B: ' + attempt.reason)
+        .not.toMatch(/Empresa A efimera C15|Empresa B efimera C15|c14-[ab]\.svg/);
+    }
+    const quarantine = await page.request.get(api + '/empresa-configuracion/publica', {
+      headers: { Authorization: 'Bearer ' + tokenA }
+    });
+    expect(quarantine.status(), 'La API publica sin tenant sigue en cuarentena P0').toBe(503);
+    expect(await quarantine.text()).not.toMatch(/Empresa A efimera C15|Empresa B efimera C15/);
+  });
 });

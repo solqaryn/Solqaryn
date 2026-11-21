@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV01 V22 C14-01.M05.05 negaciones JWT tenant A/B reales
+- PLAN D2046: nueva prueba de abuso sobre API ASP.NET Core JWT/MySQL8.4 efímero/Chromium real: ausencia de JWT, firma alterada, tenant ajeno, header B sobre ruta A e ID enumerado, sin fuga de marca/logos.
+- Confirma lectura positiva de A y cuarentena 503 del proveedor público; no cambia middleware, grants, producción, credenciales, migraciones ni runtime.
+- Requiere CI GitHub-hosted 7/7 Chromium con Scope Lock/V5/seguridad por exact SHA; no contar QUEUED/SKIPPED/CANCELLED como PASS. A5 independiente.
+
 ## 2026-11-20 — DEV01 V22 C14-01.M05.03 proveedor persistente MySQL JWT A/B
 - PLAN D2044: un caso Playwright adicional comprueba lectura real del proveedor privado ASP.NET Core/JWT/MySQL 8.4 efímero por tres sesiones independientes; marcas/logo A/B persistentes, caché no-store, rechazo cruzado y anónimo.
 - Reutiliza CI de navegador V21 con MySQL y Chromium reales; workflow por SHA cancel-in-progress=false, sin cambios runtime, SQL productivo, secretos ni grants.
