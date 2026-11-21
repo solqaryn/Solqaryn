@@ -219,9 +219,22 @@ public sealed class C0701M0303SignedJwtMysql84HttpIntegrationTests
                     await allowed.Content.ReadAsStringAsync(),
                     StringComparison.Ordinal);
             }
+            // Signed JWT still cannot use noncanonical numeric route aliases.
+            using (var tenantAlias = await client.GetAsync(
+                $"/c0701-m0303-test/0{a.Id}"))
+                Assert.Equal(HttpStatusCode.Forbidden, tenantAlias.StatusCode);
             using (var foreign = await client.GetAsync(
                 $"/c0701-m0303-test/{b.Id}"))
                 Assert.Equal(HttpStatusCode.Forbidden, foreign.StatusCode);
+
+            // Two signed "id" claims are ambiguous authority even when first ID is real.
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", Sign(user.Id, duplicateId: true));
+            using (var duplicateClaims = await client.GetAsync(
+                $"/c0701-m0303-test/{a.Id}"))
+                Assert.Equal(HttpStatusCode.Forbidden, duplicateClaims.StatusCode);
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", signed);
 
             var grant = await db.RolPermisos.IgnoreQueryFilters()
                 .SingleAsync(p => p.RolId == roleA.Id &&
@@ -240,16 +253,19 @@ public sealed class C0701M0303SignedJwtMysql84HttpIntegrationTests
         }
     }
 
-    private static string Sign(int id)
+    private static string Sign(int id, bool duplicateId = false)
     {
+        var claims = new List<Claim>
+        {
+            new("id", id.ToString()),
+            new("rolId", "999999"),
+            new("esAdministrador", "true")
+        };
+        if (duplicateId)
+            claims.Add(new Claim("id", (id + 1).ToString()));
         var token = new JwtSecurityToken(
             issuer: Issuer, audience: Audience,
-            claims:
-            [
-                new Claim("id", id.ToString()),
-                new Claim("rolId", "999999"),
-                new Claim("esAdministrador", "true")
-            ],
+            claims: claims,
             notBefore: DateTime.UtcNow.AddMinutes(-1),
             expires: DateTime.UtcNow.AddMinutes(15),
             signingCredentials: new SigningCredentials(

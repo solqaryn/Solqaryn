@@ -1,0 +1,67 @@
+name: V22 C07-01.M05.05 negative signed JWT tenant MySQL 8.4
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/src/API/Security/C0701CatalogVerifiedActorSource.cs'
+      - 'backend/tests/Solqaryn.Tests/Integration/C0701M0303SignedJwtMysql84HttpIntegrationTests.cs'
+      - '.github/workflows/v22-c07-01-m05-05-negative-jwt-mysql84.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c0701-m0505-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  real-negative-jwt-mysql:
+    name: C07-01.M05.05 - signed JWT HTTP MySQL84 negative security
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: ephemeral-v22-only
+          MYSQL_DATABASE: c0701_m0303_bootstrap
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -pephemeral-v22-only"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=15
+    env:
+      C0701_M0303_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=c0701_m0303_bootstrap;User=root;Password=ephemeral-v22-only;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Exact-SHA Scope Lock and skill self-test
+        working-directory: .
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+          node scripts/verify-solqaryn-skills.mjs --self-test
+      - name: Test signed JWT negative alias and claims in ephemeral MySQL84
+        run: |
+          set -euo pipefail
+          dotnet restore tests/Solqaryn.Tests/Solqaryn.Tests.csproj
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore --filter 'FullyQualifiedName~C0701M0303SignedJwtMysql84HttpIntegrationTests' --logger 'trx;LogFileName=C0701M0505SignedJwtNegative.trx' --verbosity normal
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          p=list(Path('tests/Solqaryn.Tests').rglob('C0701M0505SignedJwtNegative.trx'))
+          if len(p)!=1: raise SystemExit('missing unique MySQL84 negative TRX')
+          n=ET.parse(p[0]).getroot().find('.//{*}Counters')
+          if n is None: raise SystemExit('missing xUnit counters')
+          c={k:int(n.attrib.get(k,-1)) for k in ('total','passed','failed','notExecuted','executed')}
+          print('C0701_M0505_SIGNED_JWT_REAL_MYSQL84_TRX',c)
+          if c['total']<1 or c['passed']!=c['total'] or c['failed'] or c['notExecuted'] or c['executed']!=c['total']:
+              raise SystemExit('negative security evidence incomplete')
+          PY

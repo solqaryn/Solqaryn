@@ -34,11 +34,13 @@ public sealed class C0701CatalogVerifiedActorSource(
             return null;
 
         var http = contexts.HttpContext;
+        var rawTenant = Convert.ToString(http?.Request.RouteValues["tenantId"], CultureInfo.InvariantCulture);
         if (http?.User.Identity?.IsAuthenticated != true ||
             !current.EstaAutenticado || current.UsuarioId is not > 0 ||
-            !int.TryParse(Convert.ToString(http.Request.RouteValues["tenantId"],
-                CultureInfo.InvariantCulture), NumberStyles.None,
-                CultureInfo.InvariantCulture, out var tenantId) || tenantId <= 0)
+            !int.TryParse(rawTenant, NumberStyles.None,
+                CultureInfo.InvariantCulture, out var tenantId) || tenantId <= 0 ||
+            !string.Equals(rawTenant, tenantId.ToString(CultureInfo.InvariantCulture),
+                StringComparison.Ordinal))
             return null;
 
         var marker = VerifiedCommercialTenant.Resolve(http);
