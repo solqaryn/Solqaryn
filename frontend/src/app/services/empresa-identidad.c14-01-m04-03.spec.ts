@@ -171,8 +171,7 @@ describe('C14-01.M05.01 - boundaries and authorization-neutral tenant branding r
 
   it('rejects nonpositive, unsafe, fractional and nonfinite IDs without invoking private API', () => {
     let calls = 0;
-    const provider = { getTenant: () => { calls++; return of(response(1, 'Empresa A')); } }
-      as unknown as EmpresaConfiguracionService;
+    const provider = { getTenant: () => { calls++; return of(response(1, 'Empresa A')); } } as unknown as EmpresaConfiguracionService;
     const identity = new EmpresaIdentidadService(provider);
     for (const invalid of [0, -1, NaN, Infinity, -Infinity, 1.5, Number.MAX_SAFE_INTEGER + 1]) {
       identity.cargarTenant(invalid).subscribe();

@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV01 reparación CI V22 C14-01.M05.01 sintaxis TypeScript
+- GitHub-hosted V19 job 136725493019 detectó TS1434/TS2304/TS2693 en línea 175: `as unknown` aislado por salto después del objeto proveedor.
+- Corrección test-only: aserción de tipo colocada en la declaración sin cambiar casos/adversariales ni código de producción; se exige nueva CI exact-SHA de Angular, Scope Lock y V5.
+- Histórico FAIL preservado, A0–A4 sin certificar hasta SUCCESS y A5 independiente pendiente. Rollback aditivo normal.
+
 ## 2026-11-20 — DEV01 V22 C14-01.M05.01 reglas de branding tenant A/B test-only
 - PLAN D2042: siete regresiones unitarias Angular en el servicio de identidad existente; IDs inseguros, respuesta cruzada, cambio A/B, carrera pública, campos privados, 403 y respuesta tardía tras denegación.
 - Sin cambios runtime, JWT/RBAC, permisos, HTTP, EF/MySQL, Chromium o UI; mocks NO certifican proveedores reales ni toda la fase M05.

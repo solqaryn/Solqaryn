@@ -16,3 +16,6 @@ Se añaden siete casos al spec Angular existente `frontend/src/app/services/empr
 
 ## Rollback y seguridad
 Revertir solo este changeset mediante commit nuevo fast-forward; no reset/force-push ni cambios en BITACORA histórica. No permisos R3 ni QA/main/PROD. Sin datos productivos, secretos ni pagos.
+
+## Reparación CI P1 — sintaxis TypeScript de los dobles
+El job GitHub-hosted V19 `136725493019` en SHA `30583ae730f7f6f359171f0118ac4fd53b4d1893` concluyó FAILURE: TS1434/TS2304/TS2693 en la declaración `const provider` de la primera prueba nueva, porque la aserción de tipo quedó en una nueva línea después del literal. Se une el `as unknown as EmpresaConfiguracionService` a la misma expresión; no se cambian asserts, casos, runtime ni autorización. Reejecutar los siete tests y regresiones Angular por el nuevo SHA; el fallo histórico se conserva, ningún PASS se anticipa.
