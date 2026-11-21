@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV01 V22 C14-01.M05.03 proveedor persistente MySQL JWT A/B
+- PLAN D2044: un caso Playwright adicional comprueba lectura real del proveedor privado ASP.NET Core/JWT/MySQL 8.4 efímero por tres sesiones independientes; marcas/logo A/B persistentes, caché no-store, rechazo cruzado y anónimo.
+- Reutiliza CI de navegador V21 con MySQL y Chromium reales; workflow por SHA cancel-in-progress=false, sin cambios runtime, SQL productivo, secretos ni grants.
+- A0–A4 requieren resultado exact-SHA 6/6 Chromium y controles pertinentes; no inferir PASS antes de CI ni certificar M05 completa. A5 independiente, git revert aditivo.
+
 ## 2026-11-20 — DEV01 V22 C14-01.M05.02 contrato privado Angular HTTP/DTO
 - PLAN D2043: seis pruebas HttpClient/HttpTestingController de GET tenant, DTO, respuesta A/B, datos privados, 401/403/404/503, EmpresaId cruzado/XSS y carrera asincrona.
 - Nuevo workflow dirigido Node 24 Angular por SHA, lint/build y concurrencia aislada cancel-in-progress=false; Scope Lock y V5 siguen obligatorios.

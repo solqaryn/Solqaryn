@@ -174,4 +174,54 @@ test.describe('C14-01.M04.03 - UI marca empresarial con JWT real y branding tena
     }
   });
 
+
+  test('C14-01.M05.03: persisted provider survives independent JWT A/B sessions and reloads', async ({ browser }) => {
+    test.setTimeout(180_000);
+    const contextA = await browser.newContext();
+    const contextB = await browser.newContext();
+    const contextAagain = await browser.newContext();
+    try {
+      const pageA = await contextA.newPage();
+      const pageB = await contextB.newPage();
+      const pageAagain = await contextAagain.newPage();
+      // Three distinct authentication flows hit the actual ASP.NET API and ephemeral MySQL.
+      const tokenA = await loginReal(pageA, 'c1504_admin_a');
+      const tokenB = await loginReal(pageB, 'c1504_admin_b');
+      const tokenAagain = await loginReal(pageAagain, 'c1504_admin_a');
+      const getPrivate = (page: Page, token: string, tenantId: number) =>
+        page.request.get(api + '/empresa-configuracion/tenant/' + tenantId, {
+          headers: { Authorization: 'Bearer ' + token }
+        });
+      const firstA = await getPrivate(pageA, tokenA, 1);
+      const firstB = await getPrivate(pageB, tokenB, 2);
+      expect(firstA.status(), 'A lee datos reales de Empresa 1 persistidos en MySQL').toBe(200);
+      expect(firstB.status(), 'B lee datos reales de Empresa 2 persistidos en MySQL').toBe(200);
+      const recordA = (await firstA.json())?.data;
+      const recordB = (await firstB.json())?.data;
+      expect(recordA?.empresaId).toBe(1);
+      expect(recordB?.empresaId).toBe(2);
+      expect(recordA?.nombre).toBe('Empresa A efimera C15');
+      expect(recordB?.nombre).toBe('Empresa B efimera C15');
+      expect(recordA?.logoUrl).toBe('https://assets.example.invalid/c14-a.svg');
+      expect(recordB?.logoUrl).toBe('https://assets.example.invalid/c14-b.svg');
+      expect((firstA.headers()['cache-control'] ?? '').toLowerCase()).toContain('no-store');
+      expect((firstB.headers()['cache-control'] ?? '').toLowerCase()).toContain('no-store');
+      // Cross-tenant reads cannot use either JWT, even after the other session is opened.
+      const crossedA = await getPrivate(pageA, tokenA, 2);
+      const crossedB = await getPrivate(pageB, tokenB, 1);
+      expect([403, 404]).toContain(crossedA.status());
+      expect([403, 404]).toContain(crossedB.status());
+      const persistedAgain = await getPrivate(pageAagain, tokenAagain, 1);
+      expect(persistedAgain.status(), 'Nuevo login conserva la marca persistida, sin cache de navegador').toBe(200);
+      const recordAagain = (await persistedAgain.json())?.data;
+      expect(recordAagain?.nombre).toBe(recordA?.nombre);
+      expect(recordAagain?.logoUrl).toBe(recordA?.logoUrl);
+      expect(recordAagain?.empresaId).toBe(1);
+      expect(recordAagain?.nombre).not.toBe(recordB?.nombre);
+      const anonymous = await pageAagain.request.get(api + '/empresa-configuracion/tenant/1');
+      expect(anonymous.status()).not.toBe(200);
+    } finally {
+      await Promise.all([contextA.close(), contextB.close(), contextAagain.close()]);
+    }
+  });
 });
