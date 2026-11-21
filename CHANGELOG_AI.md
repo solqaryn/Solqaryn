@@ -1,3 +1,8 @@
+## 2026-11-21 — V22 DEV03 reparación CI real C04-02.M03.04 (MySQL 8.4 efímero)
+- Fallo causal `dev-ci` run `44907720517` job `136856824875`: 139/140 integración ejecutada PASS; caso C06-01.M03.04 FAIL por `C0601_M0304_MYSQL_TEST` ausente (`EPHEMERAL_MYSQL84_REQUIRED`). No se marca PASS ni se deshabilita la suite.
+- Se incorpora la variable únicamente en `.github/workflows/dev-ci.yml` hacia MySQL 8.4 loopback del runner, conservando schema aislado por prueba, 13 variables previas, seguridad y no producción. Documento causal: `docs/v5/c04-02-m03-04-mysql-integration-env-repair-v22.md`.
+- La unidad sigue `VALIDANDO`, autor DEV01 intacto, DEV03 reparador y A5 independiente posterior; GitHub Actions del SHA nuevo y readback institucional requeridos antes de LISTO. Rollback `git revert` normal, sin force-push.
+
 ## 2026-11-21 — V22 DEV03 C06-01.M03.04: snapshot de borradores aislados en MySQL 8.4
 - Implementa adaptador ADO.NET read-only `C0601IsolatedLandingMySqlSnapshotAdapter` con filtro tenant de servidor y slug canonico, `REPEATABLE READ`, metadatos de borrador, rollback y denegacion por defecto; nunca habilita publicacion, contenido privado, SEO/legal ni mutaciones.
 - Incorpora prueba adversarial `Category=Integration` de MySQL fisico 8.4 efimero con A/B, version/estado corruptos, inyeccion de slug, cancelacion, tabla ausente y cero escrituras; workflow GitHub-hosted exact-SHA con TRX obligatorio y Scope Lock STRICT.

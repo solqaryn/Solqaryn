@@ -162,6 +162,9 @@ jobs:
       C0402_M0304_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
       C0401_M0305_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_c0401_dispatch;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
       C0601_M0303_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+      # V22 DEV03: regression real 139/140: C06-01.M03.04 requires explicit ephemeral MySQL 8.4 connection.
+      # Test creates and rolls back a random isolated schema; never Aiven/QA/PROD.
+      C0601_M0304_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
       C0401_M0304_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_c1502_m0503;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
       C0701_M0303_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
       C0701_M0306_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_c0701_audit;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
