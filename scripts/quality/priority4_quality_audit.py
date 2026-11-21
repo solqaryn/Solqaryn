@@ -71,7 +71,8 @@ ok("responses arrive out of order" in empresa_spec and "Respuesta Obsoleta" in e
 # La puerta /tiendas/:storeKey es pública por diseño; nunca renderiza datos
 # privados, y exige prueba servidor HMAC + allowlist + estado vigente de MySQL.
 # El backend sigue siendo la autoridad, no un authGuard ERP.
-public_paths = {"", "login", "tiendas/:storeKey", "tienda", "tienda/productos", "tienda/ofertas", "tienda/producto/:slug", "tienda/categorias", "tienda/categoria/:slug", "tienda/carrito", "tienda/checkout", "tienda/cuenta", "tienda/pedido/:id"}
+# C06-01.M04.01 is exactly one anonymous DEV marketing view. No prefix/wildcard exemptions.
+public_paths = {"", "login", "conoce-solqaryn", "tiendas/:storeKey", "tienda", "tienda/productos", "tienda/ofertas", "tienda/producto/:slug", "tienda/categorias", "tienda/categoria/:slug", "tienda/carrito", "tienda/checkout", "tienda/cuenta", "tienda/pedido/:id"}
 route_files = [ROOT / "frontend/src/app/app.routes.ts"] + sorted((ROOT / "frontend/src/app").rglob("*.routes.ts"))
 route_findings: list[str] = []
 
@@ -114,6 +115,21 @@ for path in route_files:
         if not path_match:
             continue
         route_path = path_match.group(1)
+        if route_path == "conoce-solqaryn":
+            # Exact public page exemption only when code remains an informational
+            # standalone component with zero client-side tenant/API authority.
+            # Any sensitive client dependency fails the gate (not silently public).
+            landing = read("frontend/src/app/features/landing/c0601-public-saas-landing.component.ts")
+            exact_route = (
+                path == ROOT / "frontend/src/app/app.routes.ts"
+                and "features/landing/c0601-public-saas-landing.component" in block
+                and "canActivate" not in block
+            )
+            sensitive_tokens = ("HttpClient", "httpResource", "fetch(", "XMLHttpRequest",
+                                "localStorage", "sessionStorage", "Authorization",
+                                "empresaId", "tenantId", "precio", "checkout")
+            if not exact_route or any(token in landing for token in sensitive_tokens):
+                route_findings.append(f"UNSAFE_PUBLIC_LANDING:{path.relative_to(ROOT)}:{route_path}")
         if route_path in public_paths or route_path == "**" or route_path == "":
             continue
         # El control plane no requiere EmpresaId y por ello NO puede utilizar
