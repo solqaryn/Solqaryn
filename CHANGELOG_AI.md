@@ -1,3 +1,8 @@
+## 2026-11-20 - DEV03 V22 C14-01.M05.06 real branding regression and keyboard accessibility
+- PLAN D2047: four real Chromium Playwright tests with signed JWT, .NET10, ephemeral MySQL8.4 and Angular22; tenant A/B private branding reload, neutral global, 320/375/768/1280 CI timing, natural Tab/Enter focus.
+- New SHA-isolated workflow with cancel-in-progress false; no A0-A4 LISTO or A5 until directed GitHub-hosted tests and ScopeLock/V5/security succeed. Local timing not field CWV or physical phone.
+- Test-only; no runtime, production DB/roles/secrets/payments changes, no QA/main/PROD, normal git revert preserving history.
+
 ## 2026-11-20 — DEV01 V22 C06-04.M03.05 alias de idempotencia InnoDB R2
 - Corrige el falso DUPLICATE con colacion `utf8mb4_0900_ai_ci`: `ReserveAsync` incluye clave persistida en `FOR UPDATE` y coteja ordinal, rechazando alias por mayusculas como CONFLICT.
 - Agrega prueba negativa adversarial en MySQL 8.4 efimero con colacion explicita; CI del SHA nuevo y controles A0-A4 requeridos aun por verificar.
