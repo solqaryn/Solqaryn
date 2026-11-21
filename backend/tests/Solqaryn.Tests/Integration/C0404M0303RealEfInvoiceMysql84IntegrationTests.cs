@@ -130,7 +130,7 @@ public sealed class C0404M0303RealEfInvoiceMysql84IntegrationTests
                 app.UseAuthorization();
                 app.UseEndpoints(endpoints =>
                     endpoints.MapGet("/__v22_test/realef-payment/{tenantId:int}/{invoiceId:int}",
-                        async http =>
+                        (RequestDelegate)(async (HttpContext http) =>
                         {
                             var tenant = int.Parse(Convert.ToString(http.Request.RouteValues["tenantId"])!);
                             var invoice = int.Parse(Convert.ToString(http.Request.RouteValues["invoiceId"])!);
@@ -171,7 +171,7 @@ public sealed class C0404M0303RealEfInvoiceMysql84IntegrationTests
                             http.Response.StatusCode = decision.MayInspectPureApplicationPlan
                                 ? StatusCodes.Status200OK : StatusCodes.Status403Forbidden;
                             await http.Response.WriteAsync(decision.Code);
-                        }).RequireAuthorization());
+                        })).RequireAuthorization());
             })).StartAsync();
 
     private static async Task<HttpResponseMessage> GetAsync(
@@ -300,7 +300,7 @@ public sealed class C0404M0303RealEfInvoiceMysql84IntegrationTests
                 app.UseAuthorization();
                 app.UseEndpoints(endpoints =>
                     endpoints.MapGet("/__v22_test/realef-payment/{tenantId:int}/{invoiceId:int}",
-                        async http =>
+                        (RequestDelegate)(async (HttpContext http) =>
                         {
                             var tenant = int.Parse(Convert.ToString(http.Request.RouteValues["tenantId"])!);
                             var invoice = int.Parse(Convert.ToString(http.Request.RouteValues["invoiceId"])!);
@@ -331,7 +331,7 @@ public sealed class C0404M0303RealEfInvoiceMysql84IntegrationTests
                             http.Response.StatusCode = decision.MayInspectPureApplicationPlan
                                 ? StatusCodes.Status200OK : StatusCodes.Status403Forbidden;
                             await http.Response.WriteAsync(decision.Code);
-                        }).RequireAuthorization());
+                        })).RequireAuthorization());
             })).StartAsync();
 
     [Fact]

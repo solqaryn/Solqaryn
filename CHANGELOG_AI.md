@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV01 V22 C04-04.M03.03: reparar los dos RequestDelegate de TestServer ASP0016
+- CI Release job 136708153079 en SHA 0fbd436c mostró ASP0016; ambos endpoints de TestServer para Oracle EF/MySQL JWT requieren RequestDelegate(HttpContext) explícito, sin tocar assertions de tenant A/B, permisos, forged token ni lógica productiva.
+- R2 test-only; FAIL y A5 históricos conservados, nuevas CI Release/ScopeLock/V5 y A5 independiente requeridas antes de certificar el cambio; no QA/main/PROD ni PSP real.
+
 ## 2026-11-20 — DEV01 V22 C14-01.M04.03: reparacion P2 de doble de prueba tras fuente tenant real
 - GitHub Actions SHA 0fbd436c encontro 1 FAIL en app.component.spec.ts: la fixture no simulaba cargarTenant, por lo que los checks M04.03 y C02-01.M04.01 fallaron; el FAIL se conserva como evidencia historica.
 - El doble ahora acepta cargarTenant(empresaId) y afirma la seleccion autorizada 7 y el aislamiento al volver a plataforma; no se rebajan asserts, seguridad ni codigo productivo. Repetir CI exact-SHA antes de LISTO/A5.
