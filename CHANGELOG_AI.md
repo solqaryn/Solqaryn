@@ -1,3 +1,7 @@
+## 2026-11-21 - DEV02 V22 C15-04.M05.04 A0.81 RBAC tenant B en Chromium real
+- Agrega dos pruebas negativas JWT empresarial B sobre auditoria operativa y cutover a 375/1280, API ASP.NET Core 10/MySQL 8.4 efimero, HTTP 403, retorno al login, privacidad de H1, responsive y ausencia de escrituras.
+- Test-only R2 sin cambios a runtime, esquema o secretos; CI exact-SHA aun no acreditada. Auditoria de 160 rutas/WCAG/RUM global incompleta: EN_PROGRESO DEV02, no LISTO/A5 ni QA/main/PROD.
+
 ## 2026-11-21 - DEV04 V22 C04-01.M05.02 contrato HTTP/DTO y errores seguros
 - Añade prueba TestServer ASP.NET Core con servicio C04 de aplicacion, ApiResponse<T> y middleware productivo para HTTP 200, 400, 403, 503 y 500 sin secretos.
 - Workflow .NET10 GitHub-hosted con TRX de al menos seis casos y checks exact-SHA; fuentes actor/plan de prueba, sin certificar JWT/MySQL ni cobros reales.

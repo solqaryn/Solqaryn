@@ -1,3 +1,11 @@
+## A0.81 - Negativos JWT de tenant B para auditoria operativa y cutover (DEV02, 2026-11-21)
+
+Incremento R2 TEST-ONLY para C15-04.M05.04: dos nuevas pruebas Playwright/Chromium en /plataforma/auditoria-operativa-v5 y /plataforma/mysql-cutover-readonly-v5, ambas a 375/1280 px. Identidad empresarial B obtiene JWT firmado de API ASP.NET Core 10 y MySQL 8.4 efimero real en GitHub-hosted, luego GET /plataforma/sesion debe dar 403. El guard Angular devuelve /login?plataforma=denegado, oculta H1 privado, conserva login accesible, reflujo y cero mutaciones HTTP. Amplia A0.78 de empresa A y A0.79 de B sobre placement/observabilidad.
+
+A0: diff E2E, documentacion y CHANGELOG; no cambios de runtime. A1: positivos de JWT firmado y asserts negativos de HTTP 403, ruta, H1 privado, escritura y frontera responsive. A2: aislamiento y RBAC de usuario empresarial B sin interceptores. A3: integracion real API/MySQL/Chromium solo tras GitHub Actions 131/131 PASS, 0 FAIL/0 SKIP; NO_APLICA DDL productivo. A4: exigir ScopeLock/V5/backend/frontend/seguridad exact-SHA completed/success y readback; SKIPPED/IN_PROGRESS no cuentan como PASS. A5 independiente de otra Task Javier.
+
+LIMITACION: las 160 rutas, matriz de roles integral, WCAG completo, dispositivos fisicos y Web Vitals de campo NO_CERTIFICADOS; mantener PLAN H2297=EN_PROGRESO I=DEV02, sin LISTO/A5 ni QA/main/PROD. Rollback mediante git revert normal con CAS, no force-push.
+
 ## A0.78 - Negativa RBAC empresarial en cuatro pantallas globales (DEV02, 2026-11-21)
 
 Incremento R2 TEST-ONLY de C15-04.M05.04: cuatro pruebas Chromium sobre /plataforma/auditoria-operativa-v5, /plataforma/placement-v5, /plataforma/observabilidad-v5 y /plataforma/mysql-cutover-readonly-v5; JWT empresarial A emitido por ASP.NET Core 10 + MySQL 8.4 efimero. Afirmar API GET /plataforma/sesion 403 y navegación denegada hacia login, sin exposición del H1 privado ni desborde 375/1280. Sin cambios a runtime, migraciones, secretos, permisos o producción.
