@@ -74,7 +74,7 @@ test.describe('C14-01.M05.06 real flow regression, CI timing and accessibility',
     const submit = page.getByRole('button', { name: /Ingresar al sistema/ });
     await expect(username).toBeVisible();
     await expect(pwd).toBeVisible();
-    await expect(submit).toBeEnabled();
+    // Angular disables submit until required fields are valid; do not assert early.
     let reached = false;
     for (let i = 0; i < 80; i++) {
       await page.keyboard.press('Tab');
@@ -83,6 +83,7 @@ test.describe('C14-01.M05.06 real flow regression, CI timing and accessibility',
     expect(reached, 'username must be in real Tab order').toBe(true);
     await page.keyboard.type('c1504_admin_a');
     await pwd.fill(password!);
+    await expect(submit).toBeEnabled();
     let buttonReached = false;
     for (let i = 0; i < 25; i++) {
       await page.keyboard.press('Tab');
@@ -101,7 +102,7 @@ test.describe('C14-01.M05.06 real flow regression, CI timing and accessibility',
     await page.keyboard.press('Enter');
     expect((await request).status()).toBe(200);
   });
-  test('global platform JWT stays neutral and anonymous/foreign A to B reads denied', async ({ page }) => {
+  test('global platform JWT stays neutral and anonymous/foreign A to B reads denied', async ({ page, browser }) => {
     test.setTimeout(180_000);
     const platform = await login(page, 'c1504_platform_only');
     const verified = await page.request.get(api + '/plataforma/sesion', {
@@ -114,11 +115,19 @@ test.describe('C14-01.M05.06 real flow regression, CI timing and accessibility',
     await expect(page.getByText('Empresa B efimera C15')).toHaveCount(0);
     const anonymous = await page.request.get(api + '/empresa-configuracion/tenant/1');
     expect([401, 403]).toContain(anonymous.status());
-    const tokenA = await login(page, 'c1504_admin_a');
-    const foreign = await page.request.get(api + '/empresa-configuracion/tenant/2', {
-      headers: { Authorization: 'Bearer ' + tokenA }
-    });
-    expect([403, 404]).toContain(foreign.status());
-    expect(await foreign.text()).not.toMatch(/Empresa B efimera C15|c14-b\.svg/);
+    // Keep the global platform JWT and company A JWT in distinct browser contexts.
+    // Angular redirects an authenticated platform page away from /login.
+    const tenantContext = await browser.newContext();
+    try {
+      const tenantPage = await tenantContext.newPage();
+      const tokenA = await login(tenantPage, 'c1504_admin_a');
+      const foreign = await tenantPage.request.get(api + '/empresa-configuracion/tenant/2', {
+        headers: { Authorization: 'Bearer ' + tokenA }
+      });
+      expect([403, 404]).toContain(foreign.status());
+      expect(await foreign.text()).not.toMatch(/Empresa B efimera C15|c14-b\.svg/);
+    } finally {
+      await tenantContext.close();
+    }
   });
 });

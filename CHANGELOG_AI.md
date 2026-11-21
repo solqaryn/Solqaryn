@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV05 V22 C14-01.M05.06 real Chromium keyboard and isolated JWT login repair
+- GitHub-hosted SHA 8f809ead job 136732486905 FAILED 2/4: the test expected enabled submit before the required fields, and reused an authenticated global Angular browser for a tenant A login, detaching password input.
+- Test-only repair moves enabled assertion after actual Tab/username/password and separates platform and company A signed JWT sessions into different BrowserContexts with finally cleanup. Four real Chromium/MySQL8.4 tests, CI ScopeLock/V5/backend/frontend/security required exact new SHA; no false PASS, no A5 self-review or payments/QA/main/PROD.
+
 ## 2026-11-20 — DEV05 V22 C04-04.M06.06 preparatory phase release review, no real payments
 - A0 causal reconciliation of eleven C04-04.M05.01–06 and M06.01–05 LISTO + genuinely independent A5, versus live DAG VALIDADO/SI and COLA G/O SI; the scope is PLAN D721 phase-preparation handoff, not production payment readiness.
 - New fail-closed release-readiness document separates prior physical MySQL/JWT/HTTP/Chromium scoped results from still-untested PSP, settlement, signed webhook and live funds. A4 exact-SHA Scope Lock/V5 and V17 CAS/readback are mandatory; A5 by different Javier Task. No secrets, payment charges, force-push, QA/main/PROD or artificial DAG release.
