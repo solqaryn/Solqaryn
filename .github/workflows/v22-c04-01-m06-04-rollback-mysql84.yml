@@ -1,0 +1,63 @@
+name: V22 C04-01.M06.04 real MySQL 8.4 rollback and disable
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/Integration/C0401M0604RollbackPreservationMySql84Tests.cs'
+      - '.github/workflows/v22-c04-01-m06-04-rollback-mysql84.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c0401-m0604-mysql84-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  rollback-preserves-legitimate-tenants:
+    name: C04-01.M06.04 - real MySQL 8.4 rollback and tenant preservation
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: ephemeral-v22-only
+          MYSQL_DATABASE: solqaryn_c0401_m0604
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -pephemeral-v22-only"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=15
+    env:
+      C0401_M0604_MYSQL: "Server=127.0.0.1;Port=3306;Database=solqaryn_c0401_m0604;User=root;Password=ephemeral-v22-only;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Verify exact SHA and strict project scope
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+          test -f backend/tests/Solqaryn.Tests/Integration/C0401M0604RollbackPreservationMySql84Tests.cs
+      - name: Execute adversarial negatives and real Oracle EF MySQL 8.4 rollback
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet restore tests/Solqaryn.Tests/Solqaryn.Tests.csproj
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore --filter 'FullyQualifiedName~C0401M0604RollbackPreservationMySql84Tests' --logger 'trx;LogFileName=C0401M0604Rollback84.trx' --verbosity normal
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          reports=list(Path("tests/Solqaryn.Tests/TestResults").rglob("C0401M0604Rollback84.trx"))
+          assert len(reports)==1, reports
+          root=ET.parse(reports[0]).getroot()
+          counters=root.find(".//{http://microsoft.com/schemas/VisualStudio/TeamTest/2010}Counters")
+          assert counters is not None
+          c=counters.attrib
+          assert int(c["total"])==4 and int(c["executed"])==4, c
+          assert int(c["passed"])==4 and int(c["failed"])==0 and int(c["notExecuted"])==0, c
+          print("C0401_M0604_REAL_MYSQL84_ROLLBACK_AND_DISABLE_4_4_PASS",c)
+          PY

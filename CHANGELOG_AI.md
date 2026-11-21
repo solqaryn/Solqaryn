@@ -1,3 +1,7 @@
+## 2026-11-21 - DEV03 V22 C04-01.M06.04 rollback fisico MySQL 8.4 sin perdida
+- Incorpora xUnit fisico con Oracle EF/MySQL 8.4 efimero: rollback explicito e implicito, desactivacion B sin borrar empresas A/B, usuario ni membresias; rechazos de host, puerto y usuario.
+- Publica workflow GitHub-hosted exact-SHA TRX 4/4, prueba de version, controles V5/Scope Lock y documento de limites; no activa cobros ni datos productivos.
+
 ## 2026-11-21 - DEV02 V22 C15-04.M05.04 A0.81 RBAC tenant B en Chromium real
 - Agrega dos pruebas negativas JWT empresarial B sobre auditoria operativa y cutover a 375/1280, API ASP.NET Core 10/MySQL 8.4 efimero, HTTP 403, retorno al login, privacidad de H1, responsive y ausencia de escrituras.
 - Test-only R2 sin cambios a runtime, esquema o secretos; CI exact-SHA aun no acreditada. Auditoria de 160 rutas/WCAG/RUM global incompleta: EN_PROGRESO DEV02, no LISTO/A5 ni QA/main/PROD.
