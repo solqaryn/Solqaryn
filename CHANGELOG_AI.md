@@ -1,3 +1,8 @@
+## 2026-11-20 - DEV05 V22 C02-01.M05.04: race CI release DEV de GitHub Actions
+- Job 136656870945 falló con CI_NOT_SUCCESS:Seguridad multiempresa mientras el check del mismo SHA seguía sin concluir; la seguridad terminó luego SUCCESS. No reinterpretar el fallo anterior como PASS.
+- Se añade espera acotada de 36 consultas/5 segundos sólo al gate DEV: terminal FAIL/SKIPPED/CANCELLED, SHA distinto o timeout rechazan antes de Vercel; seis negativos/positivos Node locales aprobados.
+- Alcance R2 script de CI y documentación; C02-01.M05.04 continúa VALIDANDO bajo owner DEV03, A0-A4 total y A5 independiente pendientes. Sin QA/main/PROD, secretos ni pagos; rollback por revert normal.
+
 ## 2026-11-20 - DEV03 V22 C02-01.M05.04: corregir restore antes de TRX de politica
 - El CI del SHA 0d9f1559 falló por M0504_POLICY_TRX_MISSING_OR_MULTIPLE: dotnet test --no-restore se ejecutó antes de dotnet restore, no produjo TRX, y el job evitó acreditar MySQL como PASS.
 - Ajustar el orden GitHub-hosted con restore explícito antes de los >=16 xUnit adversariales; mantener prueba separada JWT firmado HTTP EF MySQL 8.4 1/1, checks required exact-SHA, Scope Lock y V5, sin degradar gates.

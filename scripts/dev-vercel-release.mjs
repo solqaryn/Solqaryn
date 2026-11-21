@@ -27,6 +27,22 @@ function validateChecks(runs, sha) {
     }
   }
 }
+// Bounded fail-closed wait: the hourly DEV release can precede exact-SHA CI.
+// Pending, skipped and failed required checks never become successful.
+function pendingRequiredChecks(runs, sha) {
+  if (!shaOk(sha)) throw Error('INVALID_SHA');
+  const pending = [];
+  for (const name of CHECKS) {
+    const run = runs.filter(x => x.name === name && x.head_sha === sha)
+      .sort((a,b) => Date.parse(b.completed_at || b.started_at || 0) -
+                     Date.parse(a.completed_at || a.started_at || 0))[0];
+    if (run?.status === 'completed' && run.conclusion !== 'success')
+      throw Error('CI_NOT_SUCCESS:' + name);
+    if (!run || run.status !== 'completed') pending.push(name);
+  }
+  return pending;
+}
+
 function actualSha(d) { return d.gitSource?.sha || d.meta?.githubCommitSha || null; }
 function matchesReady(d, sha) {
   return (d.state === 'READY' || d.readyState === 'READY') &&
@@ -150,6 +166,12 @@ async function main() {
     const sha = 'a'.repeat(40);
     const okay = CHECKS.map(name=>({name,head_sha:sha,status:'completed',conclusion:'success',completed_at:'2026-10-25T16:00:00Z'}));
     validateChecks(okay,sha);
+    assert.deepEqual(pendingRequiredChecks(okay, sha), []);
+    assert.deepEqual(pendingRequiredChecks(okay.slice(1), sha), [CHECKS[0]]);
+    assert.deepEqual(pendingRequiredChecks(okay.map(x=>({...x,status:'in_progress',conclusion:null})), sha), CHECKS);
+    assert.throws(()=>pendingRequiredChecks(okay.map(x=>({...x,conclusion:'skipped'})), sha), /CI_NOT_SUCCESS/);
+    assert.throws(()=>pendingRequiredChecks(okay.map(x=>({...x,conclusion:'failure'})), sha), /CI_NOT_SUCCESS/);
+    assert.throws(()=>pendingRequiredChecks(okay, 'bad-sha'), /INVALID_SHA/);
     assert.throws(()=>validateChecks(okay.slice(1),sha),/CI_NOT_SUCCESS/);
     assert.throws(()=>validateChecks(okay,'wrong'),/INVALID_SHA/);
     assert.throws(()=>validateChecks(okay.map(x=>({...x,head_sha:'b'.repeat(40)})),sha),/CI_NOT_SUCCESS/);
@@ -203,8 +225,23 @@ async function main() {
   if (!shaOk(sha)) throw Error('INVALID_DEV_HEAD_SHA');
   const chosen = (process.env.REQUESTED_SHA || '').trim();
   if (chosen && chosen !== sha) throw Error('REQUESTED_SHA_NOT_CURRENT_DEV_HEAD');
-  const checkRuns = await requestJson('https://api.github.com/repos/' + REPO + '/commits/' + sha + '/check-runs?per_page=100',gh,{headers});
-  validateChecks(checkRuns.check_runs || [], sha);
+  // No release while CI is pending: 36 bounded attempts, five seconds apart.
+  // A changed branch HEAD, failed check or timeout remains NO_GO.
+  let ready = false;
+  for (let attempt = 0; attempt < 36; attempt++) {
+    const current = await requestJson('https://api.github.com/repos/' + REPO + '/git/ref/heads/dev', gh, {headers});
+    if (current.object?.sha !== sha) throw Error('DEV_HEAD_CHANGED_DURING_CI_WAIT');
+    const checkRuns = await requestJson('https://api.github.com/repos/' + REPO + '/commits/' + sha + '/check-runs?per_page=100', gh, {headers});
+    const pending = pendingRequiredChecks(checkRuns.check_runs || [], sha);
+    if (pending.length === 0) {
+      validateChecks(checkRuns.check_runs || [], sha);
+      ready = true;
+      break;
+    }
+    if (attempt === 35) throw Error('CI_PENDING_TIMEOUT:' + pending.join(','));
+    await sleep(5000);
+  }
+  if (!ready) throw Error('CI_PENDING_TIMEOUT');
   console.log('DEV_SHA_VALIDATED=' + sha + ' CI=3/3_SUCCESS');
   const url = 'https://api.vercel.com';
   const recent = await requestJson(url + '/v6/deployments?teamId=' + TEAM + '&projectId=' + PROJECT + '&limit=100',vt);
