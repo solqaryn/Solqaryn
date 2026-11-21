@@ -55,7 +55,8 @@ public sealed class C0203M0303RealPlatformReaderMysql84IntegrationTests
         return raw;
     }
 
-    private static string Token(bool forged = false, bool wrongSubject = false) =>
+    private static string Token(bool forged = false, bool wrongSubject = false,
+        string? actorId = null) =>
         new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(
             issuer: Issuer, audience: Audience,
             claims:
@@ -63,7 +64,7 @@ public sealed class C0203M0303RealPlatformReaderMysql84IntegrationTests
                 new Claim(JwtRegisteredClaimNames.Sub,
                     wrongSubject ? "other.user" : "platform.operator"),
                 new Claim("nombreUsuario", "platform.operator"),
-                new Claim("id", "911")
+                new Claim("id", actorId ?? "911")
             ],
             notBefore: DateTime.UtcNow.AddMinutes(-1),
             expires: DateTime.UtcNow.AddMinutes(10),
@@ -212,6 +213,17 @@ public sealed class C0203M0303RealPlatformReaderMysql84IntegrationTests
             using (var forgedSubject = await ReadAsync(
                        client, 811, Token(wrongSubject: true)))
                 Assert.Equal(HttpStatusCode.Forbidden, forgedSubject.StatusCode);
+            // A signed bearer may contain a legacy/noncanonical user identifier.
+            // SQL must not silently coerce 0911/000911 to user 911, even with a
+            // genuine platform role and permission on the database.
+            foreach (var nonCanonicalActor in new[] { "0911", "000911", "+911" })
+            {
+                using var deniedAlias = await ReadAsync(
+                    client, 811, Token(actorId: nonCanonicalActor));
+                Assert.Equal(HttpStatusCode.Forbidden, deniedAlias.StatusCode);
+                Assert.Equal("LIFECYCLE_ACCESS_DENIED",
+                    await deniedAlias.Content.ReadAsStringAsync());
+            }
             using (var positiveA = await ReadAsync(client, 811, jwt))
             {
                 Assert.Equal(HttpStatusCode.OK, positiveA.StatusCode);

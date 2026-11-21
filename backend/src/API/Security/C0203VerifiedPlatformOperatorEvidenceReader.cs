@@ -76,6 +76,12 @@ public sealed class C0203VerifiedPlatformOperatorEvidenceReader(
             if (ids.Length != 1 || names.Length != 1 || subjects.Length != 1 ||
                 !int.TryParse(ids[0].Value, NumberStyles.None,
                     CultureInfo.InvariantCulture, out var signedActor) ||
+                signedActor <= 0 ||
+                // A signed actor 0911/000911 must not alias canonical SQL Usuario.Id 911.
+                // Bind all receipts and authorization decisions to one decimal identity.
+                !string.Equals(ids[0].Value,
+                    signedActor.ToString(CultureInfo.InvariantCulture),
+                    StringComparison.Ordinal) ||
                 signedActor != current.UsuarioId ||
                 !string.Equals(names[0].Value, current.NombreUsuario, StringComparison.Ordinal) ||
                 !string.Equals(subjects[0].Value, names[0].Value, StringComparison.Ordinal))

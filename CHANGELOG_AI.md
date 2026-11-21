@@ -1,3 +1,7 @@
+## 2026-11-21 — V22 C02-03.M03.03 identidad canónica de actor JWT firmado [Javier :40]
+- Corregido preflight global DEV: id JWT 0911/000911 no puede representar Usuario.Id 911 aunque esté firmado; identidad canónica positiva y lectura de RolPermiso/Empresa siguen fail-closed sin mutaciones.
+- xUnit adversarial con JwtBearer HTTP real, Oracle EF y MySQL 8.4 efímero para denegar alias y conservar 911; CI exact-SHA pendiente, política durable/CAS de ciclo de vida y A5 independientes aún NO certificados.
+
 ## 2026-11-21 — V22 DEV01 C07-01.M06.06: denegación HTTP de mutadores con MySQL 8.4 real
 - Nueva regresión integrada al TestServer firmado: con piloto comercial estrictamente de lectura, POST /productos, PUT /productos/{idB} y DELETE /productos/{idA} deben recibir 503, sin activar ningún piloto de escritura.
 - Un AppDbContext Oracle EF distinto acredita en MySQL 8.4 efímero que las filas A/B sobreviven sin alteración ni se insertó el POST rechazado. La suite no afirma CRUD positivo ni integración Angular; continúa EN_PROGRESO con candado V17 y A5 pendiente. GitHub-hosted CI del nuevo SHA decide PASS/FAIL, sin QA/main/PROD.
