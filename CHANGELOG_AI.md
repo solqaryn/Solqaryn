@@ -1,3 +1,7 @@
+## 2026-11-21 — DEV04 V22 C04-01.M04.05 reparacion CI causal toolchain
+- El job Chromium 136775945398 del SHA 320207de falló ANTES de las pruebas: verify-toolchain esperaba Node 24.21.0, runner recibió Node 24.11.1. Corrige exclusivamente node-version a 24.21.0 en workflow dirigido, sin alterar pruebas, seguridad ni validadores.
+- Se requiere nueva CI exact-SHA Angular/Chromium, ScopeLock y V5 SUCCESS antes de LISTO; FAIL anterior intacto, A5 independiente posterior. Rollback git revert normal.
+
 ## 2026-11-21 — DEV04 V22 C04-01.M04.05 Angular Chromium a11y
 - Pruebas E2E reales de la pantalla de suscripción existente: responsive y zoom 200%, Tab sin focus artificial, labels, contraste CSS, rechazos tenant/RBAC sintéticos y filtro GET sin writes.
 - CI dirigida Angular 22.2.1 GitHub-hosted Chromium exact-SHA, A0-A4 pendientes hasta resultado, A5 independiente. Test-only no acredita JWT/EF/MySQL ni billing productivo. Scope Lock STRICT, rollback normal, sin QA/main/PROD.
