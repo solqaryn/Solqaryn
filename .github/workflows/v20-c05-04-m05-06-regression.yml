@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   chromium-regression:
-    name: C05-04.M05.06 - 4 regresiones Chromium, Angular lint y build
+    name: C05-04.M05.06 - 5 regresiones Chromium, Angular lint y build
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
@@ -56,13 +56,13 @@ jobs:
           done
           cat v20-c0504-m0506.log >&2
           exit 1
-      - name: Exigir cuatro regresiones reales Chromium con retries desactivados
+      - name: Exigir cinco regresiones reales Chromium con retries desactivados
         working-directory: frontend
         shell: bash
         run: |
           set -euo pipefail
           npx playwright test e2e/c05-04-m05-06-regression-perf-a11y.spec.ts --config=playwright.config.ts --workers=1 --retries=0 --reporter=line 2>&1 | tee v20-c0504-m0506-tests.log
-          grep -Eq '4 passed' v20-c0504-m0506-tests.log
+          grep -Eq '5 passed' v20-c0504-m0506-tests.log
           if grep -Eq '[1-9][0-9]* (failed|skipped|did not run)' v20-c0504-m0506-tests.log; then
             exit 1
           fi

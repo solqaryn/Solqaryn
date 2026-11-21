@@ -168,4 +168,41 @@ test.describe('C05-04.M05.06 regresión transversal de ligereza', () => {
     await expect(page.getByText('PRIVATE_C0504_SESSION_SENTINEL')).toHaveCount(0);
     expect(reads, 'denied route cannot fetch company directory').toBe(0);
   });
+
+  test('teclado real Tab y Enter sin foco programatico, sin duplicar GET', async ({ page }) => {
+    await session(page);
+    let reads = 0;
+    await directory(page, async route => {
+      reads++;
+      await route.fulfill({ status: 200, headers: cors,
+        contentType: 'application/json', body: JSON.stringify(payload(2)) });
+    });
+    await page.goto('/plataforma');
+    const summary = page.locator('details.ui-lightness-v5 > summary');
+    await expect(summary).toBeVisible();
+    let summaryKeyboardReachable = false;
+    for (let tab = 0; tab < 80; tab++) {
+      await page.keyboard.press('Tab');
+      if (await summary.evaluate(element => document.activeElement === element)) {
+        summaryKeyboardReachable = true;
+        break;
+      }
+    }
+    expect(summaryKeyboardReachable, 'summary accesible con Tab real desde inicio').toBe(true);
+    await page.keyboard.press('Enter');
+    await expect(page.getByRole('table', { name: 'Empresas registradas' })).toBeVisible();
+    const button = page.locator('.ui-lightness-v5').getByRole('button', { name: 'Reducir detalles' });
+    let buttonKeyboardReachable = false;
+    for (let tab = 0; tab < 35; tab++) {
+      await page.keyboard.press('Tab');
+      if (await button.evaluate(element => document.activeElement === element)) {
+        buttonKeyboardReachable = true;
+        break;
+      }
+    }
+    expect(buttonKeyboardReachable, 'alternar densidad con Tab real, sin focus()').toBe(true);
+    await page.keyboard.press('Enter');
+    await expect(page.locator('.ui-lightness-v5__checks li')).toHaveCount(0);
+    expect(reads, 'navegacion teclado nunca vuelve a cargar empresas').toBe(1);
+  });
 });

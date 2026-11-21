@@ -14,3 +14,7 @@ PLAN_MAESTRO ID C05-04.M05.06. Consumidor Angular `/plataforma` con `PlataformaE
 
 ## A4 y A5
 Ejecutar cuatro casos Playwright reales (Chromium GitHub-hosted), lint, build y checks pertinentes de Scope Lock/V5/frontend/seguridad sobre SHA causal. Un workflow QUEUED/IN_PROGRESS/SKIPPED/FAIL nunca es PASS. Validación de dispositivos físicos Android/iPhone/tabletas, desempeño bajo red real, Core Web Vitals de campo y accesibilidad integral quedan SIN_VERIFICAR; viewport emulado NO es dispositivo físico. Por ello este incremento puede permanecer VALIDANDO, nunca declarar LISTO global sólo por cuatro tests. A5 requiere distinta Task Javier y revisión propia. No QA/main/PROD/secretos. No modificar COLA/DAG ni BITACORA histórica.
+
+## Incremento V22 DEV06 — teclado accesible REAL en Chromium
+- Quinto caso Playwright de teclado: Tab desde el inicio, Enter sobre summary, Tab hasta alternar densidad, Enter para reducir criterios. Sin `.focus()` y verificando una unica lectura GET.
+- Incremento test-only R2: no modifica runtime, JWT/RBAC, API ni MySQL; no atribuye datos de emulacion a dispositivos fisicos. Sigue `VALIDANDO` hasta CI exact-SHA y evidencia global requerida por PLAN D; A5 debe ser de otra Task distinta de DEV01 y DEV06.
