@@ -230,6 +230,32 @@ public sealed class C0401M0303SignedJwtMysql84HttpIntegrationTests
                 $"/c0401-m0303-test/{b.Id}"))
                 Assert.Equal(HttpStatusCode.Forbidden, foreign.StatusCode);
 
+            // C04-01.M05.05: real JWT + TestServer + MySQL 8.4 negative contract.
+            // Query-supplied tenant A cannot grant route-bound tenant B.
+            client.DefaultRequestHeaders.Remove("X-Empresa-Id");
+            client.DefaultRequestHeaders.TryAddWithoutValidation(
+                "X-Empresa-Id", a.Id.ToString());
+            using (var queryAndHeaderTenantSpoof = await client.GetAsync(
+                $"/c0401-m0303-test/{b.Id}?empresaId={a.Id}&tenantId={a.Id}"))
+                Assert.Equal(HttpStatusCode.Forbidden,
+                    queryAndHeaderTenantSpoof.StatusCode);
+
+            // A real signed bearer never grants the invalid tenant 0.
+            using (var zeroTenant = await client.GetAsync(
+                "/c0401-m0303-test/0"))
+                Assert.Equal(HttpStatusCode.Forbidden, zeroTenant.StatusCode);
+
+            // Valid signature but no tenant membership in physical MySQL fails closed.
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", Sign(999999999));
+            using (var signedNonMember = await client.GetAsync(
+                $"/c0401-m0303-test/{a.Id}"))
+                Assert.Equal(HttpStatusCode.Forbidden, signedNonMember.StatusCode);
+
+            // Restore the genuine actor for the existing revocation negatives.
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", signed);
+
             var grant = await db.RolPermisos.IgnoreQueryFilters()
                 .SingleAsync(p => p.RolId == roleA.Id &&
                                   p.PermisoId == permission.Id);
