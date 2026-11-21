@@ -51,7 +51,7 @@ describe('C04-01.M04.01 - catálogo de planes privado no comercial', () => {
     sesion.set(null);
     fixture.detectChanges();
     expect(root.querySelector('[data-testid="c0401-private"]')).toBeNull();
-    sesion.set({ ...admin, esAdministrador: false } as PlataformaSesion);
+    sesion.set({ ...admin, esAdministrador: false } as unknown as PlataformaSesion);
     fixture.detectChanges();
     expect(root.querySelectorAll('[data-testid^="c0401-section-"]')).toHaveLength(0);
   });

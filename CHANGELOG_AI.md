@@ -1,3 +1,8 @@
+## 2026-11-21 - DEV03 V22 C04-01.M04.01 reparacion dirigida de Vitest TS2352
+- GitHub-hosted job 136787387127 de SHA ca6afbe976a9c18c960658c84f75fd6497481e9c terminó FAILURE en Angular compiler TS2352, en la prueba negativa de sesión revocada: el fixture esAdministrador:false contradice deliberadamente el tipo restrictivo esAdministrador:true del contrato de plataforma.
+- Corrección mínima en el test: as unknown as PlataformaSesion únicamente al crear el estado adversarial; no se relaja la interfaz productiva, el guard ni la autorización. Reejecutar Vitest, Angular build y Chromium real en nuevo SHA; no tomar FAILURE como PASS ni cerrar LISTO sin A0-A4.
+- C04-01.M04.01 sigue VALIDANDO bajo V17; test de UI con sesión sintética, no integra JWT firmado/MySQL real ni concede permisos. A5 independiente pendiente, QA/main/PROD intactos.
+
 ## 2026-11-21 - DEV03 V22 C04-01.M04.01 ruta privada de catálogo de planes no comercial
 - Implementación Angular 22 standalone de referencia privada lazy `/plataforma/catalogo-planes-v22`, protegida por `plataformaGuard` con comprobación backend existente; el componente fail-closed oculta contenido al revocar la sesión, al recibir ámbito Empresa o admin falso.
 - Se añaden Vitest negativos/positivos para guard, sesión, HTML hostil y ausencia de escritura, junto con Chromium en GitHub-hosted para 403, anonimato, responsive y foco Tab real; el check dirigido sólo es PASS si termina completed/success en SHA causal.

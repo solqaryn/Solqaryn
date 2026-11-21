@@ -15,3 +15,6 @@ Los resultados de interfaz y una sesión sintética **NO** acreditan JWT firmado
 
 ## A3/A4 — evidencia y cierre
 Para esta modificación frontend-only, API HTTP real, MySQL efímero y transacción comercial son NO_APLICA motivado como pruebas de **este diff**; se conserva explícita la limitación de cobertura integral de fase. Chromium sí es pertinente y se exige. Evidencia final: SHA de commit, check-runs GitHub-hosted de frontend y Scope Lock, procedencia CHANGELOG, PLAN H/I, COLA/DAG y BITACORA con readback. Si CI está en cola/progreso/falla, conservar VALIDANDO sin LISTO ni A5 aprobada. A5 requiere otra Task Javier revisora independiente del autor/reparador. QA/main/PROD quedan fuera.
+
+## Reparación causal CI (mismo ID, sin ampliar runtime)
+El primer workflow dirigido de SHA `ca6afbe976a9c18c960658c84f75fd6497481e9c` falló antes de ejecutar Vitest por error de compilación TypeScript TS2352 en el caso adversarial `esAdministrador: false`: el contrato `PlataformaSesion` exige el literal `true` y el fixture negativo pretendía falsarlo. La solución usa una conversión explícita `as unknown as PlataformaSesion` sólo en el test para inyectar una entrada inválida y demostrar rechazo. No se altera la interfaz productiva, la seguridad, ni el scope. Toda CI pendiente o fallida sigue sin constituir A1-A4 aprobado.
