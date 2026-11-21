@@ -1,3 +1,8 @@
+## 2026-11-20 - DEV03 V22 C07-01.M03.01 reglas dominio catalogo universal
+- Capa Domain: precondiciones verificadas server side para producto/servicio, SKU, ownership tenant/sucursal/categoria/variante, version CAS, precios/impuestos, RBAC revocado y fail-closed; nunca autoriza API ni persistencia.
+- Suite xUnit nueva con 10 pruebas positivas, negativas y fronteras, sin mocks de JWT/MySQL presentados como integracion real; habilitacion en Application/API y MySQL efimero queda para scopes de integracion.
+- Unica microtarea C07-01.M03.01 en dev, V17 y evidencia A0-A4 por SHA, A5 independiente; preservar CHANGELOG completo, Scope Lock STRICT y sin QA/main/PROD.
+
 ## 2026-11-20 - DEV02 V22 C14-01.M06.02 correccion de procedencia A5_FAIL P2
 
 - Reparadas dos referencias erroneas a GitHub Actions run 44867961201 para el job 136735799511: run real 44867961229 (C14-01.M05.06, Chromium real 4/4). El run anterior solo contiene Scope Lock.
