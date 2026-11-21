@@ -15,11 +15,16 @@ function crearEscenario(respuestas: Array<Subject<RespuestaTienda>>, opciones: {
   let plataformas = 0;
   let temasTenant = 0;
   let identidadesPlataforma = 0;
+  const identidadesTenant: number[] = [];
 
   const app = new AppComponent(
     { isAuthenticated: () => opciones.autenticado === true } as unknown as ConstructorArgs[0],
     { limpiar: () => undefined, cargar: () => of(null) } as unknown as ConstructorArgs[1],
-    { usarPlataforma: () => { identidadesPlataforma += 1; }, cargar: () => of(null) } as unknown as ConstructorArgs[2],
+    {
+      usarPlataforma: () => { identidadesPlataforma += 1; },
+      cargar: () => of(null),
+      cargarTenant: (empresaId: number) => { identidadesTenant.push(empresaId); return of(null); }
+    } as unknown as ConstructorArgs[2],
     { detener: () => undefined, iniciar: () => undefined } as unknown as ConstructorArgs[3],
     {
       tieneContextoVerificado: () => opciones.tenantVerificado === true,
@@ -57,6 +62,7 @@ function crearEscenario(respuestas: Array<Subject<RespuestaTienda>>, opciones: {
     contarPlataformas: () => plataformas,
     contarTemasTenant: () => temasTenant,
     contarIdentidadesPlataforma: () => identidadesPlataforma,
+    identidadesTenant: () => [...identidadesTenant],
     navegar: (url: string) => navegacion.next(new NavigationEnd(consulta, url, url))
   };
 }
@@ -115,6 +121,7 @@ describe('C00-02.M04.03 — branding aislado del control plane V5', () => {
     const caso = crearEscenario([], { autenticado: true, tenantVerificado: true, urlInicial: '/plataforma' });
     caso.navegar('/dashboard');
     expect(caso.contarTemasTenant()).toBe(1);
+    expect(caso.identidadesTenant()).toEqual([7]);
     caso.navegar('/plataforma/cobertura-v5?from=erp');
     expect(caso.contarPlataformas()).toBe(2);
     expect(caso.contarTemasTenant()).toBe(1);
@@ -126,6 +133,7 @@ describe('C00-02.M04.03 — branding aislado del control plane V5', () => {
     const caso = crearEscenario([], { autenticado: true, tenantVerificado: true, urlInicial: '/plataforma-externa' });
     expect(caso.contarPlataformas()).toBe(0);
     expect(caso.contarTemasTenant()).toBe(1);
+    expect(caso.identidadesTenant()).toEqual([7]);
     caso.navegar('/plataforma/');
     expect(caso.contarPlataformas()).toBe(1);
     caso.app.ngOnDestroy();

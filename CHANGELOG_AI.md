@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV01 V22 C14-01.M04.03: reparacion P2 de doble de prueba tras fuente tenant real
+- GitHub Actions SHA 0fbd436c encontro 1 FAIL en app.component.spec.ts: la fixture no simulaba cargarTenant, por lo que los checks M04.03 y C02-01.M04.01 fallaron; el FAIL se conserva como evidencia historica.
+- El doble ahora acepta cargarTenant(empresaId) y afirma la seleccion autorizada 7 y el aislamiento al volver a plataforma; no se rebajan asserts, seguridad ni codigo productivo. Repetir CI exact-SHA antes de LISTO/A5.
+
 ## 2026-11-20 — DEV01 V22 C14-01.M04.03: proveedor tenant real para branding privado
 - El shell privado deja de solicitar marca global sin tenant (P0 503) y usa GET tenant/{id} con membresia JWT verificada en servidor; no confia en host, localStorage ni un mock como autorización.
 - Se rechazan IDs cruzados, respuestas obsoletas, logos inseguros y fallos HTTP a marca neutral; pruebas Angular adversariales y E2E Chromium/MySQL 8.4 con logos privados persistidos en empresas A/B efimeras.
