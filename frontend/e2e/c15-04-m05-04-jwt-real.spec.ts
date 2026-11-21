@@ -2688,4 +2688,80 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
       });
   }
 
+  // A0.82: dos vistas comerciales globales nuevas, solo lectura.
+  // Control positivo plataforma y negativos empresas A/B con JWT firmado,
+  // ASP.NET Core, MySQL 8.4 efimero y Chromium reales; nunca pago real.
+  for (const destino of [
+    { ruta: '/plataforma/catalogo-planes-v22', titulo: 'Catálogo de planes',
+      testid: 'c0401-planes-reference' },
+    { ruta: '/plataforma/enlaces-cobro-simulacion-v22', titulo: 'Enlaces de cobro',
+      testid: 'c0404-payment-preview' }
+  ]) {
+    test('A0.82 - plataforma JWT real accede a ' + destino.ruta,
+      async ({ page, request }) => {
+        const jwt = await ingresarConJwtRealParaGuard(page, request, 'c1504_platform_only');
+        const control = await request.get(api + '/plataforma/sesion', {
+          headers: { Authorization: 'Bearer ' + jwt }
+        });
+        expect(control.status(), 'Plataforma autenticada en backend real').toBe(200);
+        const mutaciones: string[] = [];
+        page.on('request', req => {
+          if (req.url().includes('localhost:5005') &&
+              /^(POST|PUT|PATCH|DELETE)$/.test(req.method())) {
+            mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+          }
+        });
+        for (const ancho of [375, 1280]) {
+          await page.setViewportSize({ width: ancho, height: 840 });
+          const sesion = page.waitForResponse(res =>
+            res.url().includes('/plataforma/sesion') && res.request().method() === 'GET');
+          await page.goto(destino.ruta);
+          expect((await sesion).status(), 'Guard revalida JWT real').toBe(200);
+          await expect(page.getByTestId(destino.testid)).toBeVisible();
+          await expect(page.getByRole('heading', { level: 1, name: destino.titulo }))
+            .toBeVisible();
+          expect(await page.evaluate(() => document.documentElement.scrollWidth))
+            .toBeLessThanOrEqual(ancho + 2);
+        }
+        expect(mutaciones, 'Vista informativa no cobra ni muta API').toEqual([]);
+      });
+    for (const identidad of [
+      { usuario: 'c1504_admin_a', empresa: 'A' },
+      { usuario: 'c1504_admin_b', empresa: 'B' }
+    ]) {
+      test('A0.82 - empresa ' + identidad.empresa + ' denegada en ' + destino.ruta,
+        async ({ page, request }) => {
+          const jwt = await ingresarConJwtRealParaGuard(page, request, identidad.usuario);
+          const control = await request.get(api + '/plataforma/sesion', {
+            headers: { Authorization: 'Bearer ' + jwt }
+          });
+          expect(control.status(), 'Empresa no tiene RBAC global').toBe(403);
+          const mutaciones: string[] = [];
+          page.on('request', req => {
+            if (req.url().includes('localhost:5005') &&
+                /^(POST|PUT|PATCH|DELETE)$/.test(req.method())) {
+              mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+            }
+          });
+          for (const ancho of [375, 1280]) {
+            await page.setViewportSize({ width: ancho, height: 840 });
+            const sesion = page.waitForResponse(res =>
+              res.url().includes('/plataforma/sesion') && res.request().method() === 'GET');
+            await page.goto(destino.ruta);
+            expect((await sesion).status(), 'Backend rechaza acceso global').toBe(403);
+            await expect(page).toHaveURL(url =>
+              url.pathname === '/login' && url.searchParams.get('plataforma') === 'denegado');
+            await expect(page.getByTestId(destino.testid)).toHaveCount(0);
+            await expect(page.getByRole('heading', { level: 1, name: destino.titulo }))
+              .toHaveCount(0);
+            await expect(page.getByRole('textbox', { name: 'Nombre de usuario' }))
+              .toBeVisible();
+            expect(await page.evaluate(() => document.documentElement.scrollWidth))
+              .toBeLessThanOrEqual(ancho + 2);
+          }
+          expect(mutaciones, 'Denegacion no hace operaciones comerciales').toEqual([]);
+        });
+    }
+  }
+
 });

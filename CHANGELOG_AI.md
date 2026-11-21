@@ -1,3 +1,7 @@
+## 2026-11-21 — DEV02 V22 C15-04.M05.04 A0.82 catalogo y cobro simulado con JWT/tenants reales
+- Seis pruebas Playwright nuevas en dos rutas globales de lectura: rol plataforma JWT firmado 200 y empresas A/B firmadas 403, a 375/1280 px, con MySQL 8.4 efimero y API .NET 10 real en GitHub Actions. Exigen H1 privado autorizado, redireccion de negocio no autorizado y cero mutaciones HTTP.
+- R2 test-only; 131/131 pasaron antes de esta ampliacion. Requiere nueva CI 137/137, Scope Lock/V5/seguridad/backend/frontend exact-SHA; no certificar mientras esten pendientes. WIP C15-04.M05.04 permanece EN_PROGRESO DEV02, limitaciones WCAG/CWV/160 rutas, A5 independiente. Sin cobros, PSP, secretos ni produccion.
+
 ## 2026-11-21 — DEV01 V22 C04-02.M03.01 reglas de estados contractuales sin efectos economicos
 - Introduce Domain puro `C0402ContractDomainRules`: Borrador/PendienteAceptacion/Activa/Suspendida/Cancelada/Expirada, versiones esperadas, UTC, periodo, causa segura y reglas de transicion.
 - Nuevo xUnit C0402M0301ContractDomainRulesTests: positivos solo como precondiciones y negativos adversariales para tenant A/B, JWT/RBAC/revocacion, ownership, estados terminales, D01/D02/D04/D05/D07/D08, expiracion, retroactividad, colisiones de version y causas invalidas.

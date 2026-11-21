@@ -1,3 +1,11 @@
+## A0.82 - Acceso real y denegacion por tenant en catalogo y simulacion de cobro (DEV02, 2026-11-21)
+
+Incremento R2 TEST-ONLY para C15-04.M05.04. Se amplian seis casos de Chromium en dos rutas globales existentes: /plataforma/catalogo-planes-v22 y /plataforma/enlaces-cobro-simulacion-v22. Para cada ruta el rol plataforma con JWT firmado accede con HTTP GET /plataforma/sesion 200; empresas A y B con JWT firmado reciben 403 y solo pueden ver login, no el contenido privado. Se comprueba navegacion real a 375/1280 px, H1 correcto, region testid, ausencia de overflow y cero mutaciones HTTP tras autenticacion. API ASP.NET Core 10 + MySQL 8.4 efimero y navegador real en GitHub-hosted; sin interceptores de respuestas ni tokens falsos.
+
+A0: diff Playwright, documento de evidencia y CHANGELOG; sin cambios al runtime, DDL, proveedores de cobro ni secretos. A1: positivos y negativos capaces de fallar por ruta/rol/frontera. A2: RBAC y aislamiento de identidades empresariales A/B con JWT backend real. A3: exige 137/137 Chromium en job real (131/131 del SHA d91f28c32c86ca7fd097b7044d7ad04121073bbe verificados previamente), 0 FAIL/0 SKIP y MySQL 8.4 efimero. A4: NO PASS hasta que CI exact-SHA del nuevo commit y Scope Lock, V5, frontend, backend, seguridad relevantes terminen SUCCESS y readback institucional. A5 sigue pendiente para otra Task Javier.
+
+LIMITACION: no acredita pagos reales (R3 NO_GO), auditoria de las 160 rutas, matriz completa de roles, WCAG integral, dispositivos fisicos, Web Vitals de campo ni P0/P1 globales. Mantener PLAN H2297=EN_PROGRESO I=DEV02; sin LISTO ni A5, tampoco QA/main/PROD. Rollback por git revert normal tras CAS de HEAD.
+
 ## A0.81 - Negativos JWT de tenant B para auditoria operativa y cutover (DEV02, 2026-11-21)
 
 Incremento R2 TEST-ONLY para C15-04.M05.04: dos nuevas pruebas Playwright/Chromium en /plataforma/auditoria-operativa-v5 y /plataforma/mysql-cutover-readonly-v5, ambas a 375/1280 px. Identidad empresarial B obtiene JWT firmado de API ASP.NET Core 10 y MySQL 8.4 efimero real en GitHub-hosted, luego GET /plataforma/sesion debe dar 403. El guard Angular devuelve /login?plataforma=denegado, oculta H1 privado, conserva login accesible, reflujo y cero mutaciones HTTP. Amplia A0.78 de empresa A y A0.79 de B sobre placement/observabilidad.
