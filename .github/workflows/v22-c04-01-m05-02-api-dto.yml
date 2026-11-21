@@ -1,0 +1,50 @@
+name: V22 C04-01.M05.02 real HTTP API DTO safe errors
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/API/C0401M0502ApiDtoSafeErrorsTests.cs'
+      - '.github/workflows/v22-c04-01-m05-02-api-dto.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c0401-m0502-dto-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  real-http-dto:
+    name: C04-01.M05.02 - HTTP API DTO positive and safe errors
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Verify strict scope and exact SHA
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+      - name: Real ASP.NET Core TestServer DTO HTTP and safe errors
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet restore tests/Solqaryn.Tests/Solqaryn.Tests.csproj
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore --filter 'FullyQualifiedName~C0401M0502ApiDtoSafeErrorsTests' --logger 'trx;LogFileName=C0401M0502HttpDto.trx' --verbosity normal
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          items=list(Path("tests/Solqaryn.Tests/TestResults").rglob("C0401M0502HttpDto.trx"))
+          assert len(items)==1, items
+          root=ET.parse(items[0]).getroot()
+          ns={"t":"http://microsoft.com/schemas/VisualStudio/TeamTest/2010"}
+          c=root.find(".//t:Counters",ns)
+          assert c is not None
+          a=c.attrib
+          assert int(a["total"])>=6, a
+          assert int(a["passed"])==int(a["total"]), a
+          assert int(a["executed"])==int(a["total"]), a
+          assert int(a["failed"])==0 and int(a["notExecuted"])==0, a
+          print("C0401_M0502_HTTP_DTO_SAFE_ERRORS_ALL_PASS",a)
+          PY

@@ -1,3 +1,8 @@
+## 2026-11-21 - DEV04 V22 C04-01.M05.02 contrato HTTP/DTO y errores seguros
+- Añade prueba TestServer ASP.NET Core con servicio C04 de aplicacion, ApiResponse<T> y middleware productivo para HTTP 200, 400, 403, 503 y 500 sin secretos.
+- Workflow .NET10 GitHub-hosted con TRX de al menos seis casos y checks exact-SHA; fuentes actor/plan de prueba, sin certificar JWT/MySQL ni cobros reales.
+- Registro PLAN D603, V17/CAS, limites fase y rollback normal; preservar historia completa de CHANGELOG y A5 por otra Task.
+
 ## 2026-11-21 - DEV04 V22 C04-01.M05.03 prueba MySQL fisica de aislamiento y rollback
 - Agrega xUnit real con Oracle EF/MySQL 8.4 efimero: membresias A/B, rollback SQL y revocacion persistida con DbContext nuevo.
 - Agrega workflow GitHub Actions exact-SHA y TRX 1/1, Scope Lock estricto y limites de fase. Sin rutas, cobros ni datos productivos.
