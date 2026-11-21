@@ -1,3 +1,8 @@
+## 2026-11-21 - DEV02 V22 C15-04.M05.04 reparacion CI real de seis casos JWT/RBAC
+- El job 136785633424 en SHA 4a6cdf735e590130b6fedbab1b9edd23541c66da termino 123 PASS, 6 FAIL por login Angular desmontado y timeout; el defecto se investigo en logs completos GitHub-hosted.
+- A0.78/A0.79 usan autenticacion real POST /auth/login ASP.NET Core 10 + MySQL 8.4 efimero y un JWT firmado por backend persistido como AuthService antes de navegar: HTTP 403, guard, aislamiento, 375/1280 px y cero escrituras; resto de tests UI sin cambiar. No JWT ficticio ni mocks.
+- R2 y A0-A4 exact-SHA pendientes de nuevo CI; H2297 EN_PROGRESO DEV02, auditoria global WCAG/RUM 160 rutas incompleta, A5 independiente y QA/main/PROD prohibidos.
+
 ## 2026-11-21 - DEV04 V22 C07-01.M04.01 ruta canonica privada catalogo universal
 - Nueva entrada /catalogo-universal-v22 redirige a /productos; reutiliza guardias authGuard y permisoGuard, no duplica autoridad backend y mantiene rutas ERP actuales.
 - Cuatro casos Angular/Chromium reales por GitHub-hosted, con HTTP/JWT sinteticos; negativos anonimo, tenant A/B y rol denegado. No se afirma MySQL, JWT firmado ni seguridad productiva.

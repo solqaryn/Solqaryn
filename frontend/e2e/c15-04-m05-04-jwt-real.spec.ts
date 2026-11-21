@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
 
 // C15-04.M05.04 R2: navegador, JWT, API y MySQL reales SOLO en CI efimera.
 // No usa page.route, interceptores ni localStorage con tokens fabricados.
@@ -22,6 +22,44 @@ async function ingresar(page: Page, usuario: string): Promise<string> {
   expect(typeof jwt).toBe('string');
   expect((jwt as string).split('.')).toHaveLength(3);
   return jwt as string;
+}
+
+// Los casos A0.78/A0.79 prueban el guard con JWT real, NO el formulario de login.
+ // Login HTTP contra API ASP.NET Core + MySQL 8.4 efimero: ninguna credencial o token simulado.
+async function ingresarConJwtRealParaGuard(
+  page: Page, request: APIRequestContext, usuario: string
+): Promise<string> {
+  const respuesta = await request.post(api + '/auth/login', {
+    data: { nombreUsuario: usuario, password: clave! }
+  });
+  expect(respuesta.status(), 'POST /auth/login real para ' + usuario).toBe(200);
+  const cuerpo = await respuesta.json();
+  expect(cuerpo?.success, 'Autenticacion backend real debe aprobar').toBe(true);
+  const sesion = cuerpo?.data;
+  expect(typeof sesion?.token, 'JWT real firmado por backend').toBe('string');
+  expect(sesion.token.split('.'), 'JWT en tres segmentos').toHaveLength(3);
+  expect(sesion.nombreUsuario).toBe(usuario);
+  expect(typeof sesion.rol).toBe('string');
+  expect(typeof sesion.expiraEn).toBe('string');
+
+  // Equivale al estado persistido por AuthService.aplicarSesion. El JWT proviene
+  // del endpoint real (no esta inventado): guard y HTTP lo revalidan al navegar.
+  await page.addInitScript(({ token, nombreUsuario, nombreCompleto, rol, expiraEn, empresaId }) => {
+    localStorage.setItem('solqaryn_token', token);
+    localStorage.setItem('solqaryn_user', nombreUsuario);
+    localStorage.setItem('solqaryn_nombre_completo', nombreCompleto);
+    localStorage.setItem('solqaryn_rol', rol);
+    localStorage.setItem('solqaryn_expira_en', expiraEn);
+    localStorage.setItem('solqaryn_empresa_solicitada_id', empresaId);
+  }, {
+    token: sesion.token as string,
+    nombreUsuario: sesion.nombreUsuario as string,
+    nombreCompleto: String(sesion.nombreCompleto ?? ''),
+    rol: sesion.rol as string,
+    expiraEn: sesion.expiraEn as string,
+    empresaId: usuario === 'c1504_admin_b' ? '2' : '1'
+  });
+  return sesion.token as string;
 }
 
 test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
@@ -2546,7 +2584,7 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
       async ({ page, request }) => {
         for (const ancho of [375, 1280]) {
           await page.setViewportSize({ width: ancho, height: 840 });
-          const jwt = await ingresar(page, 'c1504_admin_a');
+          const jwt = await ingresarConJwtRealParaGuard(page, request, 'c1504_admin_a');
           const apiDenegada = await request.get(api + '/plataforma/sesion', {
             headers: { Authorization: 'Bearer ' + jwt }
           });
@@ -2583,7 +2621,7 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
         });
         for (const ancho of [375, 1280]) {
           await page.setViewportSize({ width: ancho, height: 840 });
-          const jwt = await ingresar(page, 'c1504_admin_b');
+          const jwt = await ingresarConJwtRealParaGuard(page, request, 'c1504_admin_b');
           const backend = await request.get(api + '/plataforma/sesion', {
             headers: { Authorization: 'Bearer ' + jwt }
           });
