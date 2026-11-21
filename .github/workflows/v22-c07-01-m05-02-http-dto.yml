@@ -1,0 +1,49 @@
+name: V22 C07-01.M05.02 HTTP DTO contract in TestServer
+
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/Integration/C0701M0502HttpDtoContractTests.cs'
+      - 'backend/src/Application/AutomationV5/C0701CatalogApplicationService.cs'
+      - '.github/workflows/v22-c07-01-m05-02-http-dto.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c0701-m0502-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  http-dto-contract:
+    name: C07-01.M05.02 - real TestServer HTTP DTO safe errors
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Project Scope Lock and skill self-test exact SHA
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+          node scripts/verify-solqaryn-skills.mjs --self-test
+      - name: .NET10 Release TestServer HTTP contract and TRX
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet restore tests/Solqaryn.Tests/Solqaryn.Tests.csproj
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore --filter 'FullyQualifiedName~C0701M0502HttpDtoContractTests' --logger 'trx;LogFileName=C0701M0502HttpDto.trx' --verbosity normal
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          files=list(Path('tests/Solqaryn.Tests').rglob('C0701M0502HttpDto.trx'))
+          if len(files)!=1: raise SystemExit('missing unique contract TRX')
+          node=ET.parse(files[0]).getroot().find('.//{*}Counters')
+          if node is None: raise SystemExit('missing test counters')
+          c={k:int(node.attrib.get(k,-1)) for k in ('total','passed','failed','notExecuted','executed')}
+          print('V22_C0701_M0502_REAL_HTTP_DTO_TRX', c)
+          if c['total']<4 or c['passed']!=c['total'] or c['failed'] or c['notExecuted'] or c['executed']!=c['total']:
+              raise SystemExit('contract tests incomplete')
+          PY
