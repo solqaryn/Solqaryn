@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV04 V22 C01-02.M05.04: aceptación positiva contractual multitenant
+- xUnit test-only para capability de tenant A/B, rol, sucursal y plan: éxito contractual no autoriza acceso a runtime; negativas de mezcla A/B, membresía revocada y plan vencido.
+- PLAN D209 salida individual, no cierre M05/M06; sin cambios de API, JWT/RBAC, EF/MySQL, Angular, secretos ni datos. CI GitHub-hosted exact-SHA pendiente; A5 independiente tras A0–A4 reales.
+- PROJECT_SCOPE_LOCK=STRICT, dev, V17 CAS/owner y BITACORA aditiva; conservar CHANGELOG histórico completo; rollback git revert, sin qa/main/PROD.
+
 ## 2026-11-20 — DEV03 V22 C01-02.M05.01: matriz unitaria reproducible de capabilities
 - Test-only xUnit: precondiciones positivas sin autorización de runtime, catorce casos adversariales tenant B/actor/rol/sucursal/revocación/RBAC/plan/rubro/denylist y fronteras canónicas 96/97.
 - PLAN D206 es una prueba de regla individual, no cierre M05/M06; sin tocar API, JWT, EF/MySQL, UI, migraciones ni secretos. CI GitHub-hosted exact-SHA y A0–A4 a verificar; A5 independiente.
