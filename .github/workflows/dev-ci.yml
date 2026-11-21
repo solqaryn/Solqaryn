@@ -123,7 +123,7 @@ jobs:
     needs: impact
     if: needs.impact.outputs.run_mysql_integration == 'true'
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 65
     services:
       mysql:
         image: mysql:8.4
@@ -269,7 +269,26 @@ jobs:
       - name: Ejecutar pruebas de integración MySQL Oracle
         run: |
           set -euo pipefail
-          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter "Category=Integration"
+          # V22 C06-01.M03.05: the 2026-11-21 real MySQL 8.4.13 integration job
+          # was cancelled by its 35-minute limit while xUnit was still executing.
+          # Keep every Category=Integration test; identify a stalled individual test.
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-build --filter "Category=Integration" --blame-hang --blame-hang-timeout 12m --blame-hang-dump-type none --logger "trx;LogFileName=dev-ci-mysql84.trx"
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          paths = list(Path('tests/Solqaryn.Tests').rglob('dev-ci-mysql84.trx'))
+          if len(paths) != 1:
+              raise SystemExit('FAIL_MYSQL84_MISSING_UNIQUE_TRX')
+          counters = ET.parse(paths[0]).getroot().find('.//{*}Counters')
+          if counters is None:
+              raise SystemExit('FAIL_MYSQL84_MISSING_TRX_COUNTERS')
+          stats = {k: int(counters.attrib.get(k, -1))
+                   for k in ('total', 'passed', 'failed', 'notExecuted')}
+          print('DEV_CI_MYSQL84_INTEGRATION_TRX', stats)
+          if (stats['total'] < 144 or stats['passed'] != stats['total']
+                  or stats['failed'] != 0 or stats['notExecuted'] != 0):
+              raise SystemExit('FAIL_MYSQL84_INTEGRATION_INCOMPLETE')
+          PY
 
   deployment-config:
     name: Docker y aislamiento de entornos
