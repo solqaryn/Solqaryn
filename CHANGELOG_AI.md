@@ -1,3 +1,8 @@
+## 2026-11-21 - V22 C07-01.M06.06 JWT selector ambiguity and SQL price isolation [Javier :00]
+- Extend the real ProductosController/TestServer signed-JWT Oracle EF MySQL 8.4 regression with ambiguous A+B, zero and nonnumeric tenant-selector denials; responses cannot leak product names.
+- Recheck physical SQL products A/B remain unmodified with original price after read-only-pilot POST/PUT/DELETE denials and prior transaction rollback; directed GitHub-hosted CI must prove TRX and Scope Lock/V5 on the exact new SHA.
+- R2 incremental test-only; no positive production CRUD, connected Angular browser, durable audit, deployment, QA/main/PROD or A5 certification. Preserve single DEV01 WIP and V17 lock; normal git revert if regression fails.
+
 ## 2026-11-21 - V22 C04-02.M03.06 structured audit fail-closed [Javier :30]
 - Added Application audit decorator, sanitized structured ILogger and sink acknowledgment for read-only contract preflight; no user cause, PII or token logging.
 - Added adversarial xUnit for tenant mismatch, revoked role, client payment flags, sink/logger failure, provider exception and cancellation after audit await; GitHub-hosted CI required.

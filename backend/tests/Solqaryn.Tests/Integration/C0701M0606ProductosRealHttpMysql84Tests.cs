@@ -313,6 +313,27 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 Assert.Contains("C0701RealProductoA", json, StringComparison.Ordinal);
                 Assert.DoesNotContain("C0701RealProductoB", json, StringComparison.Ordinal);
             }
+            // Reales y adversariales: la seleccion de empresa nunca se infiere
+            // de un JWT valido cuando el selector HTTP es ambiguo o invalido.
+            // Mantener el request aislado evita contaminar cabeceras del cliente.
+            async Task AssertRejectedTenantSelectorAsync(params string[] selectors)
+            {
+                using var request = new HttpRequestMessage(
+                    HttpMethod.Get, "/productos?page=1&pageSize=10");
+                request.Headers.Authorization =
+                    new AuthenticationHeaderValue("Bearer", jwtA);
+                request.Headers.TryAddWithoutValidation(
+                    "X-Empresa-Id", selectors);
+                using var response = await client.SendAsync(request);
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+                var rejectedBody = await response.Content.ReadAsStringAsync();
+                Assert.DoesNotContain("C0701RealProductoA", rejectedBody, StringComparison.Ordinal);
+                Assert.DoesNotContain("C0701RealProductoB", rejectedBody, StringComparison.Ordinal);
+            }
+            await AssertRejectedTenantSelectorAsync(a.Id.ToString(), b.Id.ToString());
+            await AssertRejectedTenantSelectorAsync("0");
+            await AssertRejectedTenantSelectorAsync("invalid-tenant-id");
+
             // A read-only tenant pilot must never activate commercial writes.
             // These are real signed-JWT HTTP requests through production routing
             // and tenant guard, followed by independent physical MySQL readback.
@@ -348,13 +369,13 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                     .IgnoreQueryFilters()
                     .AsNoTracking()
                     .Where(p => p.Id == productAId || p.Id == productBId)
-                    .Select(p => new { p.Id, p.Nombre, p.Eliminado })
+                    .Select(p => new { p.Id, p.Nombre, p.Eliminado, p.Precio })
                     .ToArrayAsync();
                 Assert.Equal(2, persisted.Length);
                 Assert.Contains(persisted, p => p.Id == productAId &&
-                    p.Nombre == "C0701RealProductoA" && !p.Eliminado);
+                    p.Nombre == "C0701RealProductoA" && !p.Eliminado && p.Precio == 100m);
                 Assert.Contains(persisted, p => p.Id == productBId &&
-                    p.Nombre == "C0701RealProductoB" && !p.Eliminado);
+                    p.Nombre == "C0701RealProductoB" && !p.Eliminado && p.Precio == 100m);
                 Assert.Equal(0, await negativeReadback.Productos
                     .IgnoreQueryFilters()
                     .CountAsync(p => p.Nombre == deniedName));
