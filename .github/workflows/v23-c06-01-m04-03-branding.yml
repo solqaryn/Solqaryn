@@ -1,0 +1,66 @@
+name: V23 C06-01.M04.03 premium public brand mode Chromium
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/src/app/features/landing/c0601-public-saas-landing.component.ts'
+      - 'frontend/e2e/c06-01-m04-03-branding.spec.ts'
+      - '.github/workflows/v23-c06-01-m04-03-branding.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v23-c0601-m0403-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  chromium:
+    name: C06-01.M04.03 - real Angular premium brand Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Verify exact SHA, Scope Lock and canonical Skill
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+          node scripts/verify-solqaryn-skills.mjs --self-test
+      - name: Pinned Angular22 production typecheck and build
+        working-directory: frontend
+        run: |
+          set -euo pipefail
+          npm install -g npm@11.19.0
+          npm ci
+          npx tsc --noEmit -p tsconfig.app.json
+          npm run build
+      - name: Install real Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Playwright screenshot modes, responsive, keyboard and negative security
+        working-directory: frontend
+        env:
+          CI: 'true'
+          PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+        run: |
+          set -euo pipefail
+          npx ng serve --host 127.0.0.1 --port 4200 >/tmp/c0601-m0403-ng.log 2>&1 &
+          ready=0
+          for i in $(seq 1 120); do
+            if curl --silent --fail http://127.0.0.1:4200/conoce-solqaryn >/dev/null; then ready=1; break; fi
+            sleep 2
+          done
+          if [ "$ready" -ne 1 ]; then tail -n 100 /tmp/c0601-m0403-ng.log; exit 1; fi
+          npx playwright test e2e/c06-01-m04-03-branding.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Save real before and after browser captures
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v23-c0601-m0403-real-chromium-captures
+          path: frontend/test-results/
+          if-no-files-found: warn
+          retention-days: 7
