@@ -1,3 +1,9 @@
+## 2026-11-20 — DEV01 V22 C14-01.M05.01 reglas de branding tenant A/B test-only
+- PLAN D2042: siete regresiones unitarias Angular en el servicio de identidad existente; IDs inseguros, respuesta cruzada, cambio A/B, carrera pública, campos privados, 403 y respuesta tardía tras denegación.
+- Sin cambios runtime, JWT/RBAC, permisos, HTTP, EF/MySQL, Chromium o UI; mocks NO certifican proveedores reales ni toda la fase M05.
+- GitHub-hosted V19 suite Angular, lint/build, Scope Lock y V5 deben completar SUCCESS exact SHA para A0–A4; si CI permanece en progreso, estado VALIDANDO y A5 independiente posterior.
+- Autor DEV01 `6adbb9fff1548191a1bd5b30d9e9984a`; rollback por revert aditivo, propietario histórico e historial BITACORA intactos.
+
 ## 2026-11-20 — DEV06 V22 C01-02.M05.05 negativos JWT/RBAC global bajo TestServer
 - PLAN D210: suite test-only de seguridad con JWT firmado real, HTTP TestServer y servicio de autoridad global revalidado por consulta; administrador empresarial y anónimo no reciben catálogo privado, firma falsa/expiración se rechazan.
 - A/B y revocación: catálogo consultado por plataforma sobre tenant A no filtra roles exclusivos de B; desactivar grant de plataforma niega el mismo JWT válido. EF InMemory es solo fixture, NO MySQL 8.4 productivo ni certificación de fase M05.

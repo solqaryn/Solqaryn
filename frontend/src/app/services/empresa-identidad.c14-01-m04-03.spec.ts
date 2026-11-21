@@ -162,3 +162,114 @@ describe('C14-01.M04.03 - identidad y branding dinamico seguro', () => {
   });
 
 });
+
+describe('C14-01.M05.01 - boundaries and authorization-neutral tenant branding rules', () => {
+  const response = (empresaId: number, nombre: string, logoUrl: string | null = '/marca.svg') => ({
+    success: true,
+    data: { empresaId, nombre, logoUrl, rtn: 'RTN-PRIVATE', correoRemitente: 'private@example.invalid', impuestosJson: '{"private":true}' }
+  });
+
+  it('rejects nonpositive, unsafe, fractional and nonfinite IDs without invoking private API', () => {
+    let calls = 0;
+    const provider = { getTenant: () => { calls++; return of(response(1, 'Empresa A')); } }
+      as unknown as EmpresaConfiguracionService;
+    const identity = new EmpresaIdentidadService(provider);
+    for (const invalid of [0, -1, NaN, Infinity, -Infinity, 1.5, Number.MAX_SAFE_INTEGER + 1]) {
+      identity.cargarTenant(invalid).subscribe();
+      expect(identity.nombreSistema()).toBe('SOLQARYN');
+    }
+    expect(calls).toBe(0);
+    expect(identity.logoUrl()).toBe('');
+  });
+
+  it('clears prior A branding synchronously while authorized B is still pending', () => {
+    const pendingB = new Subject<unknown>();
+    const provider = {
+      getTenant: (id: number) => id === 1 ? of(response(1, 'Empresa A', '/a.svg')) : pendingB.asObservable()
+    } as unknown as EmpresaConfiguracionService;
+    const identity = new EmpresaIdentidadService(provider);
+    identity.cargarTenant(1).subscribe();
+    expect(identity.nombreSistema()).toBe('Empresa A');
+    identity.cargarTenant(2).subscribe();
+    expect(identity.nombreSistema()).toBe('SOLQARYN');
+    expect(identity.logoUrl()).toBe('');
+    pendingB.next(response(2, 'Empresa B', '/b.svg'));
+    pendingB.complete();
+    expect(identity.nombreSistema()).toBe('Empresa B');
+    expect(identity.logoUrl()).toBe('/b.svg');
+  });
+
+  it('does not permit an older public HTTP response to overwrite a verified private tenant', () => {
+    const pendingPublic = new Subject<unknown>();
+    const provider = {
+      getPublica: () => pendingPublic.asObservable(),
+      getWhatsAppPublico: () => of({ disponible: false, numeroTelefonoE164: null }),
+      getTenant: () => of(response(2, 'Empresa B', '/b.svg'))
+    } as unknown as EmpresaConfiguracionService;
+    const identity = new EmpresaIdentidadService(provider);
+    identity.cargar().subscribe();
+    identity.cargarTenant(2).subscribe();
+    pendingPublic.next({ success: true, data: { nombreVisibleSistema: 'Empresa A', logoUrl: '/a.svg' } });
+    pendingPublic.complete();
+    expect(identity.nombreSistema()).toBe('Empresa B');
+    expect(identity.logoUrl()).toBe('/b.svg');
+  });
+
+  it('rejects crossed-tenant provider replies and malicious markup in the name', () => {
+    let crossed = true;
+    const provider = {
+      getTenant: () => of(crossed ? response(2, 'Empresa B') : response(1, '<img src=x onerror=alert(1)>'))
+    } as unknown as EmpresaConfiguracionService;
+    const identity = new EmpresaIdentidadService(provider);
+    identity.cargarTenant(1).subscribe();
+    expect(identity.nombreSistema()).toBe('SOLQARYN');
+    crossed = false;
+    identity.cargarTenant(1).subscribe();
+    expect(identity.nombreSistema()).toBe('SOLQARYN');
+    expect(identity.logoUrl()).toBe('');
+  });
+
+  it('copies only safe presentation fields, never fiscal or mail data, and blocks credentialed logo URLs', () => {
+    const provider = {
+      getTenant: () => of(response(1, 'Empresa A', 'https://user:password@example.invalid/logo.svg'))
+    } as unknown as EmpresaConfiguracionService;
+    const identity = new EmpresaIdentidadService(provider);
+    identity.cargarTenant(1).subscribe();
+    expect(identity.nombreSistema()).toBe('Empresa A');
+    expect(identity.logoUrl()).toBe('');
+    const config = identity.config();
+    expect('rtn' in config).toBe(false);
+    expect('correoRemitente' in config).toBe(false);
+    expect('impuestosJson' in config).toBe(false);
+  });
+
+  it('a rejected private read remains neutral and permits fresh server-side revalidation', () => {
+    let calls = 0;
+    const provider = {
+      getTenant: () => {
+        calls++;
+        return calls === 1 ? throwError(() => new Error('403 forbidden')) : of(response(1, 'Empresa A'));
+      }
+    } as unknown as EmpresaConfiguracionService;
+    const identity = new EmpresaIdentidadService(provider);
+    identity.cargarTenant(1).subscribe();
+    expect(identity.nombreSistema()).toBe('SOLQARYN');
+    identity.cargarTenant(1).subscribe();
+    expect(calls).toBe(2);
+    expect(identity.nombreSistema()).toBe('Empresa A');
+  });
+
+  it('a denied B request cannot resurrect a stale A response after switching tenants', () => {
+    const pendingA = new Subject<unknown>();
+    const provider = {
+      getTenant: (id: number) => id === 1 ? pendingA.asObservable() : throwError(() => new Error('403 B denied'))
+    } as unknown as EmpresaConfiguracionService;
+    const identity = new EmpresaIdentidadService(provider);
+    identity.cargarTenant(1).subscribe();
+    identity.cargarTenant(2).subscribe();
+    pendingA.next(response(1, 'Empresa A', '/a.svg'));
+    pendingA.complete();
+    expect(identity.nombreSistema()).toBe('SOLQARYN');
+    expect(identity.logoUrl()).toBe('');
+  });
+});
