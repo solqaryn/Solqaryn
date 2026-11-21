@@ -1,0 +1,46 @@
+name: V22 C04-01.M05.01 - unit readonly plan policy boundaries
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/src/app/features/plataforma/c04-01-m05-01-plan-policy-invariants.spec.ts'
+      - '.github/workflows/v22-c04-01-m05-01-unit-policy.yml'
+      - 'frontend/src/app/features/plataforma/c04-01-m04-01-planes-readonly.component.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c0401-m0501-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  unit-policy:
+    name: C04-01.M05.01 - Angular unit frozen plans and denial rules
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Exact SHA and strict scope
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          cd ..
+          node scripts/verify-project-scope.mjs
+      - name: Reproducible frontend toolchain
+        run: |
+          npm install -g npm@11.19.0
+          npm ci
+      - name: Six directed Angular TestBed unit rules with real runner
+        env:
+          CI: 'true'
+        run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/c04-01-m05-01-plan-policy-invariants.spec.ts
+      - name: Angular typecheck lint and production build
+        run: |
+          npm run lint
+          npm run build:prod
