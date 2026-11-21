@@ -1,3 +1,7 @@
+## 2026-11-21 - DEV02 V22 C15-04.M05.04 A0.79 tenant B en placement y observabilidad
+- Dos pruebas Chromium adicionales con JWT empresarial B firmado, MySQL 8.4 efimero, HTTP 403, guard real, pantalla privada ausente y cero operaciones mutantes tras login; 375/1280 px.
+- Incremento R2 de suite/evidencia exclusivamente dev: CI requerida exact-SHA aun NO ACREDITADA al publicar; auditoria global WCAG, 160 rutas/roles y metricas RUM siguen incompletas. PLAN H2297 EN_PROGRESO, owner DEV02 y V17 intactos; no LISTO/A5/QA/PROD.
+
 ## 2026-11-21 - DEV02 V22 C15-04.M05.04 A0.78 negativas de empresa en cuatro rutas globales
 - Se agregan cuatro pruebas Chromium de JWT empresarial A real/MySQL 8.4 efimero: API 403, redireccion al login y cero exposicion de encabezados privados a 375/1280 px. Es test-only sin cambios de runtime, QA/main/PROD ni pagos.
 - A0.77: 123/123 Chromium completados SUCCESS en run 44879508143, job 136771472696. A0.78: 127 esperados, esperar CI nuevo SHA y Scope Lock/V5. La auditoria global de 160 rutas/roles/WCAG/CWV sigue EN_PROGRESO con lock V17 y A5 pendiente.

@@ -498,3 +498,10 @@ Incremento R2 TEST-ONLY: JWT firmado real del rol global, API ASP.NET Core 10 y 
 
 Limitación: cobertura UX global de rutas/roles/tenants, WCAG completo, performance/RUM institucional aún NO_CERTIFICADA. Conservar PLAN H2297 EN_PROGRESO, I DEV02 y lock V17 2000002297. No LISTO/A5 sin A0-A4 y revisor independiente. Rollback git revert FF CAS sobre dev; QA/main/PROD fuera de alcance.
 
+
+
+## A0.79 — Tenant B denegado en placement y observabilidad global (DEV02, 2026-11-21)
+
+Incremento R2 de prueba automatizada, sin alterar runtime: dos casos Playwright nuevos en 375 y 1280 px. El usuario empresarial B inicia sesion real y recibe JWT firmado de ASP.NET Core 10 respaldado por MySQL 8.4 efimero. La API /plataforma/sesion debe denegar el rol B mediante HTTP 403; la navegacion a /plataforma/placement-v5 y /plataforma/observabilidad-v5 debe realizar comprobacion HTTP 403, redirigir a login?plataforma=denegado, ocultar encabezados privados y evitar escrituras API tras autenticarse. Asserts positivos (login real) y negativos (RBAC, informacion privada, mutaciones y desborde). No hay interceptores, page.route ni credenciales productivas.
+
+A0: tres archivos del cambio (suite, evidencia, CHANGELOG) sin comportamiento productivo. A1/A2: 2 pruebas nuevas con 4 navegaciones negativas y control positivo HTTP del login. A3: .NET 10, MySQL 8.4 y Chromium REAL exclusivamente en GitHub-hosted cuando el job dirigido pase; no equivale a integracion nueva de proveedor. A4: CI exact-SHA, Scope Lock, V5 y checks causales requeridos COMPLETED/SUCCESS; al publicar no atribuir PASS por adelantado. Limite: la auditoria integral de todos los modulos, matriz 160 rutas/roles, WCAG completo y RUM de campo continua incompleta. Conservar PLAN H2297 EN_PROGRESO, I DEV02 y candado V17; NO LISTO ni A5 hasta A0-A4 del alcance completo y revision independiente. Rollback mediante git revert normal tras releer HEAD; sin QA/main/PROD.

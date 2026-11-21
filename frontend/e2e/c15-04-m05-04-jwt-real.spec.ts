@@ -2566,4 +2566,46 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
       });
   }
 
+  // A0.79: rutas de placement y observabilidad con tenant B real.
+  // Este control R2 exige JWT firmado, backend HTTP y MySQL 8.4 efimero.
+  for (const destino of [
+    { ruta: '/plataforma/placement-v5', titulo: 'Placement compartido y dedicado' },
+    { ruta: '/plataforma/observabilidad-v5', titulo: 'Diagnóstico y señales seguras' }
+  ]) {
+    test('A0.79 - tenant B real denegado en ' + destino.ruta,
+      async ({ page, request }) => {
+        const escrituras: string[] = [];
+        page.on('request', req => {
+          if (req.url().includes('localhost:5005') &&
+              /^(POST|PUT|PATCH|DELETE)$/.test(req.method())) {
+            escrituras.push(req.method() + ' ' + new URL(req.url()).pathname);
+          }
+        });
+        for (const ancho of [375, 1280]) {
+          await page.setViewportSize({ width: ancho, height: 840 });
+          const jwt = await ingresar(page, 'c1504_admin_b');
+          const backend = await request.get(api + '/plataforma/sesion', {
+            headers: { Authorization: 'Bearer ' + jwt }
+          });
+          expect(backend.status(), 'Empresa B carece de RBAC global').toBe(403);
+          const escriturasTrasLogin = escrituras.length;
+          const verificacion = page.waitForResponse(res =>
+            res.url().includes('/plataforma/sesion') &&
+            res.request().method() === 'GET');
+          await page.goto(destino.ruta);
+          expect((await verificacion).status(), 'Guard usa backend real').toBe(403);
+          await expect(page).toHaveURL(url =>
+            url.pathname === '/login' &&
+            url.searchParams.get('plataforma') === 'denegado');
+          await expect(page.getByRole('heading', {
+            level: 1, name: destino.titulo
+          })).toHaveCount(0);
+          expect(await page.evaluate(() => document.documentElement.scrollWidth),
+            'Denegacion sin desborde horizontal').toBeLessThanOrEqual(ancho + 2);
+          expect(escrituras.slice(escriturasTrasLogin),
+            'Navegacion denegada no escribe datos empresariales').toEqual([]);
+        }
+      });
+  }
+
 });
