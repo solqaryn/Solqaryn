@@ -114,24 +114,26 @@ public sealed class C0604IsolatedMySqlDurableQueue
     }
 
     public async Task<bool> SettleAsync(
-        int trustedTenantId, long workId, string? workerId, DateTime nowUtc,
+        int trustedTenantId, long workId, string? workerId, int expectedAttempt, DateTime nowUtc,
         bool providerAcknowledged, int maxAttempts,
         CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
         if (trustedTenantId <= 0 || workId <= 0 || !SafeId(workerId, 64) ||
-            nowUtc.Kind != DateTimeKind.Utc || maxAttempts is < 1 or > 10)
+            nowUtc.Kind != DateTimeKind.Utc || maxAttempts is < 1 or > 10 ||
+            expectedAttempt is < 1 or > 10 || expectedAttempt > maxAttempts)
             return false;
 
         await using var connection = _factory();
         await connection.OpenAsync(cancellationToken);
         await using var update = connection.CreateCommand();
-        update.CommandText = $"UPDATE {Table} SET state=CASE WHEN @ack=1 THEN 'DONE' WHEN attempts>=@max THEN 'DEAD' ELSE 'PENDING' END, leased_by=NULL, lease_until_utc=NULL WHERE tenant_id=@tenant AND id=@id AND state='LEASED' AND leased_by=@worker AND lease_until_utc>@now";
+        update.CommandText = $"UPDATE {Table} SET state=CASE WHEN @ack=1 THEN 'DONE' WHEN attempts>=@max THEN 'DEAD' ELSE 'PENDING' END, leased_by=NULL, lease_until_utc=NULL WHERE tenant_id=@tenant AND id=@id AND state='LEASED' AND leased_by=@worker AND attempts=@attempt AND lease_until_utc>@now";
         Add(update, "@ack", providerAcknowledged ? 1 : 0);
         Add(update, "@max", maxAttempts);
         Add(update, "@tenant", trustedTenantId);
         Add(update, "@id", workId);
         Add(update, "@worker", workerId!);
+        Add(update, "@attempt", expectedAttempt);
         Add(update, "@now", nowUtc);
         return await update.ExecuteNonQueryAsync(cancellationToken) == 1;
     }

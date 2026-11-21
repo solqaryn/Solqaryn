@@ -1,3 +1,8 @@
+## 2026-11-20 - DEV01 V22 C06-04.M03.05: fencing de ACK al mismo worker en MySQL real
+- Reparacion P2 de cola aislada: si el mismo workerId reobtiene un lease vencido, un ACK atrasado no puede cerrar el intento nuevo; SettleAsync exige attempt del lease, lo compara con attempts bajo CAS atomico y deniega replays.
+- Prueba adversarial Category=Integration MySQL 8.4 tenant 17: primer lease vencido, segundo lease al mismo worker, ACK antiguo DENIED y ACK vigente SUCCESS; conservar negativos tenant A/B, dead-letter, rollback y deduplicacion.
+- Este incremento no registra runtime CUSTOMER, JWT/RBAC/HTTP, proveedor ni migracion productiva. Exigir CI exact-SHA GitHub-hosted, A0-A4 completos antes de LISTO, A5 independiente. Mantener VALIDANDO, dev y Scope Lock STRICT; no QA/main/PROD.
+
 ## 2026-11-20 - DEV05 V22 C02-03.M03.03: denegar alias numerico de tenant en JWT/MySQL real
 - Reparacion P2 API: el tenant de ruta y el solicitado deben tener representacion decimal SQL canonica (sin ceros iniciales); 1..9 siguen siendo validos. Se evita ambiguedad entre la identidad de Empresa y futuros recibos de idempotencia y auditoria.
 - Integracion ampliada: TestServer JWT Bearer firmado, RBAC PlataformaScopeService y Oracle EF/MySQL 8.4 efimero; positivos 811/812/1 y cuatro variantes alias negadas. Los casos previos de JWT falso, revocacion, rol, tenant A/B y rollback se conservan.

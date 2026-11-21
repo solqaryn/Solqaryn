@@ -66,20 +66,20 @@ public sealed class C0604DurableMySqlQueueIntegrationTests
             Assert.Equal("customer_A", first!.ResourceId);
             Assert.Equal(1, first.Attempt);
             Assert.Null(await queue.TryLeaseAsync(11, "worker_B", now, 1, 2));
-            Assert.False(await queue.SettleAsync(12, first.Id, "worker_A", now, true, 2));
-            Assert.False(await queue.SettleAsync(11, first.Id, "worker_B", now, true, 2));
+            Assert.False(await queue.SettleAsync(12, first.Id, "worker_A", first.Attempt, now, true, 2));
+            Assert.False(await queue.SettleAsync(11, first.Id, "worker_B", first.Attempt, now, true, 2));
 
-            Assert.True(await queue.SettleAsync(11, first.Id, "worker_A", now, false, 2));
+            Assert.True(await queue.SettleAsync(11, first.Id, "worker_A", first.Attempt, now, false, 2));
             var retry = await queue.TryLeaseAsync(11, "worker_B", now.AddSeconds(1), 1, 2);
             Assert.NotNull(retry);
             Assert.Equal(first.Id, retry!.Id);
             Assert.Equal(2, retry.Attempt);
-            Assert.True(await queue.SettleAsync(11, retry.Id, "worker_B", now.AddSeconds(2), false, 2));
+            Assert.True(await queue.SettleAsync(11, retry.Id, "worker_B", retry.Attempt, now.AddSeconds(2), false, 2));
             Assert.Null(await queue.TryLeaseAsync(11, "worker_C", now.AddMinutes(2), 1, 2));
 
             var otherTenant = await queue.TryLeaseAsync(12, "worker_C", now, 1, 2);
             Assert.NotNull(otherTenant);
-            Assert.True(await queue.SettleAsync(12, otherTenant!.Id, "worker_C", now, true, 2));
+            Assert.True(await queue.SettleAsync(12, otherTenant!.Id, "worker_C", otherTenant!.Attempt, now, true, 2));
             Assert.Null(await queue.TryLeaseAsync(12, "worker_D", now.AddMinutes(5), 1, 2));
 
             Assert.Equal(Queue.Reservation.Stored,
@@ -89,8 +89,8 @@ public sealed class C0604DurableMySqlQueueIntegrationTests
             var reclaimed = await queue.TryLeaseAsync(14, "worker_E", now.AddMinutes(2), 1, 2);
             Assert.NotNull(reclaimed);
             Assert.Equal(leased!.Id, reclaimed!.Id);
-            Assert.False(await queue.SettleAsync(14, leased.Id, "worker_D", now.AddMinutes(2), true, 2));
-            Assert.True(await queue.SettleAsync(14, reclaimed.Id, "worker_E", now.AddMinutes(2), true, 2));
+            Assert.False(await queue.SettleAsync(14, leased.Id, "worker_D", leased.Attempt, now.AddMinutes(2), true, 2));
+            Assert.True(await queue.SettleAsync(14, reclaimed.Id, "worker_E", reclaimed.Attempt, now.AddMinutes(2), true, 2));
 
             // Regression: a worker that crashes after its final lease leaves no ACK.
             // A later worker must mark the expired attempt DEAD, never deliver twice.
@@ -101,7 +101,23 @@ public sealed class C0604DurableMySqlQueueIntegrationTests
             Assert.Equal(1, abandoned!.Attempt);
             Assert.Null(await queue.TryLeaseAsync(16, "foreign_worker", now.AddMinutes(2), 1, 1));
             Assert.Null(await queue.TryLeaseAsync(15, "worker_after_crash", now.AddMinutes(2), 1, 1));
-            Assert.False(await queue.SettleAsync(15, abandoned.Id, "worker_crashed", now.AddMinutes(2), true, 1));
+            Assert.False(await queue.SettleAsync(15, abandoned.Id, "worker_crashed", abandoned.Attempt, now.AddMinutes(2), true, 1));
+
+            // Regression P2: a process may reuse the same workerId after a crash.
+            // A stale ACK from its first lease must never settle its later lease.
+            Assert.Equal(Queue.Reservation.Stored,
+                await queue.ReserveAsync(17, "customer_E", "customer-preference-sync", "request_0004", 5));
+            var firstLease = await queue.TryLeaseAsync(17, "worker_shared", now, 1, 2);
+            Assert.NotNull(firstLease);
+            Assert.Equal(1, firstLease!.Attempt);
+            var secondLease = await queue.TryLeaseAsync(17, "worker_shared", now.AddMinutes(2), 1, 2);
+            Assert.NotNull(secondLease);
+            Assert.Equal(firstLease!.Id, secondLease!.Id);
+            Assert.Equal(2, secondLease!.Attempt);
+            Assert.False(await queue.SettleAsync(17, firstLease!.Id, "worker_shared",
+                firstLease.Attempt, now.AddMinutes(2), true, 2));
+            Assert.True(await queue.SettleAsync(17, secondLease!.Id, "worker_shared",
+                secondLease.Attempt, now.AddMinutes(2), true, 2));
 
             var snapshot = new List<(int Tenant, string State, int Attempts)>();
             await using (var inspect = admin.CreateCommand())
@@ -115,7 +131,8 @@ public sealed class C0604DurableMySqlQueueIntegrationTests
             Assert.Contains(snapshot, x => x == (12, "DONE", 1));
             Assert.Contains(snapshot, x => x == (14, "DONE", 2));
             Assert.Contains(snapshot, x => x == (15, "DEAD", 1));
-            Assert.Equal(4, snapshot.Count);
+            Assert.Contains(snapshot, x => x == (17, "DONE", 2));
+            Assert.Equal(5, snapshot.Count);
         }
         finally
         {
