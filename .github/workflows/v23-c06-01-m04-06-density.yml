@@ -1,0 +1,80 @@
+name: V23 C06-01.M04.06 progressive density real Angular Chromium
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/e2e/c06-01-m04-06-density.spec.ts'
+      - 'frontend/playwright.c0601-density.config.ts'
+      - '.github/workflows/v23-c06-01-m04-06-density.yml'
+      - 'frontend/src/app/features/landing/c0601-public-saas-landing.component.ts'
+      - 'frontend/src/app/features/landing/c0601-public-status.component.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v23-c0601-m0406
+  cancel-in-progress: false
+jobs:
+  chromium:
+    name: C06-01.M04.06 - real Angular public density progressive Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Exact SHA scope and governance
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+          node scripts/verify-solqaryn-skills.mjs --self-test
+      - name: Angular22 typed build
+        working-directory: frontend
+        run: |
+          set -euo pipefail
+          npm install -g npm@11.19.0
+          npm ci
+          npx tsc --noEmit -p tsconfig.app.json
+          npm run build
+      - name: Install actual Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Loopback HTTP fixture and actual Angular app, four adversarial browser cases
+        working-directory: frontend
+        env:
+          CI: 'true'
+        run: |
+          set -euo pipefail
+          node scripts/c0601-health-fixture.mjs >/tmp/c0601-m0406-health.log 2>&1 &
+          npx ng serve --host 127.0.0.1 --port 4200 >/tmp/c0601-m0406-angular.log 2>&1 &
+          ready=0
+          for i in $(seq 1 120); do
+            if curl --silent --fail http://localhost:5005/health >/dev/null && curl --silent --fail http://127.0.0.1:4200/conoce-solqaryn >/dev/null; then ready=1; break; fi
+            sleep 2
+          done
+          if [ "$ready" -ne 1 ]; then tail -n 100 /tmp/c0601-m0406-angular.log; tail -n 60 /tmp/c0601-m0406-health.log; exit 1; fi
+          npx playwright test e2e/c06-01-m04-06-density.spec.ts --config=playwright.c0601-density.config.ts --workers=1 --retries=0
+      - name: Ten real before after screenshots
+        if: success()
+        working-directory: frontend
+        run: |
+          set -euo pipefail
+          for width in 320 390 768 1280 1440; do
+            test -s "v23-artifacts/c0601-m0406/antes-idle-$width.png"
+            test -s "v23-artifacts/c0601-m0406/despues-ok-$width.png"
+          done
+          test "$(find v23-artifacts/c0601-m0406 -type f -name '*.png' | wc -l)" -eq 10
+      - name: Preserve JUnit and real Chromium PNG
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v23-c0601-m0406-real-progressive-ux
+          path: |
+            frontend/v23-artifacts/c0601-m0406/
+            frontend/test-results/
+          if-no-files-found: warn
+          retention-days: 7
