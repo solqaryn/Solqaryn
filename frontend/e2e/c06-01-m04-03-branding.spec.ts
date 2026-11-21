@@ -149,7 +149,7 @@ test('C06-01.M04.03 heading contrast adversarial WCAG AA across both palettes', 
     ['#scope-heading', '.landing-shell']
   ] as const;
   const luminosity = (value: string): number => {
-    const channels = value.match(/\\d+(?:\\.\\d+)?/g)?.slice(0, 3).map(Number);
+    const channels = value.match(/\d+(?:\.\d+)?/g)?.slice(0, 3).map(Number);
     if (!channels || channels.length !== 3) throw new Error('RGB not computed: ' + value);
     const v = channels.map(c => {
       const s = c / 255;
