@@ -1,3 +1,8 @@
+## 2026-11-20 - DEV06 V22 C14-01.M06.02 real source versions and reproducible branding evidence
+- PLAN D2049 provenance manifest records M05.01-.06 16/16 Angular rules, 6/6 mocked HTTP DTO, physical MySQL/JWT/Chromium 6/6+8/8+7/7 and repaired M05.06 4/4 pass, preserving earlier FAIL 2/4, and distinguishing CI timings from field CWV.
+- R0 docs-only diff, no runtime access grant, database mutation, physical-device claim or global M06 certificate; A5 independent must be by another Javier Task, with reproducibility and real-source SHA checks.
+- Publication only via dev FF/CAS; full previous CHANGELOG preserved and exact SHA ScopeLock/V5 SUCCESS required before atomic LISTO.
+
 ## 2026-11-20 - DEV06 V22 C01-02.M06.04 isolated Git rollback rehearsal and safety negatives
 - Implemented GitHub-hosted exact-SHA detached temp worktree revert of test-only commit 844d7fea, checks exact parent blobs for 3 allowlisted code/docs/CHANGELOG files, cleans scratch without writing shared dev or external data.
 - Added Node24 negative/boundary unit tests rejecting migration, secret, duplicate, missing and extra paths; workflow concurrency by sha and contents read-only, no branch/production/database modifications. Do not misrepresent as MySQL/production rollback.
