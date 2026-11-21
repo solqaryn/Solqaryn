@@ -1,3 +1,7 @@
+## 2026-11-21 — DEV01 V22 reparación CI compartida C04-04.M03.03 ASP0016
+- Backend Release exact-SHA ae0949b1 detectó ASP0016 por conversiones de HTTP test-only MapGet a RequestDelegate en líneas 133 y 303 del test C0404M0303RealEfInvoiceMysql84IntegrationTests.cs.
+- Corrección quirúrgica de dos casts a Delegate según el analizador de ASP.NET, sin tocar runtime financiero/JWT/RBAC, pagos o secretos; conservar A5/FAIL históricos y exigir nuevo CI exact-SHA antes de acreditar reparación.
+
 ## 2026-11-21 — DEV01 V22 C07-01.M03.03 autorización catalogal real JWT/RBAC tenant
 - Fuente API de seguridad read-only DEV y OFF por defecto: firma Bearer verificada, membresía UsuarioEmpresa y rol empresarial MySQL vigentes, RolPermiso Productos.Editar relacional y revalidación después de I/O; roles, headers y tenant B no son autoridad.
 - Prueba adversarial de HTTP TestServer con JWT firmado y MySQL 8.4 efímero, tenant A/B, falsificación de firma y revocación de grant real; CI GitHub-hosted exact-SHA dedicada con TRX PASS requerida ANTES de LISTO.

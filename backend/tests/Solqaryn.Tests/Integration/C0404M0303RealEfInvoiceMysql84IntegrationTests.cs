@@ -130,7 +130,7 @@ public sealed class C0404M0303RealEfInvoiceMysql84IntegrationTests
                 app.UseAuthorization();
                 app.UseEndpoints(endpoints =>
                     endpoints.MapGet("/__v22_test/realef-payment/{tenantId:int}/{invoiceId:int}",
-                        (RequestDelegate)(async (HttpContext http) =>
+                        (Delegate)(async (HttpContext http) =>
                         {
                             var tenant = int.Parse(Convert.ToString(http.Request.RouteValues["tenantId"])!);
                             var invoice = int.Parse(Convert.ToString(http.Request.RouteValues["invoiceId"])!);
@@ -300,7 +300,7 @@ public sealed class C0404M0303RealEfInvoiceMysql84IntegrationTests
                 app.UseAuthorization();
                 app.UseEndpoints(endpoints =>
                     endpoints.MapGet("/__v22_test/realef-payment/{tenantId:int}/{invoiceId:int}",
-                        (RequestDelegate)(async (HttpContext http) =>
+                        (Delegate)(async (HttpContext http) =>
                         {
                             var tenant = int.Parse(Convert.ToString(http.Request.RouteValues["tenantId"])!);
                             var invoice = int.Parse(Convert.ToString(http.Request.RouteValues["invoiceId"])!);
