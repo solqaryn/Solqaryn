@@ -153,6 +153,21 @@ jobs:
       C0404_M0504_MYSQL: "Server=127.0.0.1;Port=3306;Database=c0404_bootstrap;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
       C0404_M0505_MYSQL: "Server=127.0.0.1;Port=3306;Database=c0404_bootstrap;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
       C0404_M0604_MYSQL: "Server=127.0.0.1;Port=3306;Database=c0404_bootstrap;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+      # V22 R2 causal repair: 13 legacy integration suites require explicit local ephemeral MySQL flags.
+      # Same disposable mysql:8.4 service; each name is read only by its test, never Aiven or PROD.
+      C0401_M0604_MYSQL: "Server=127.0.0.1;Port=3306;Database=solqaryn_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+      C0701_M0304_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=c0701_m0304_bootstrap;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+      C0402_M0303_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+      C0701_M0305_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_c0701_catalog;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+      C0402_M0304_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+      C0401_M0305_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_c0401_dispatch;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+      C0601_M0303_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+      C0401_M0304_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_c1502_m0503;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+      C0701_M0303_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+      C0701_M0306_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_c0701_audit;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+      C0401_M0503_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+      C0401_M0306_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=c0401_m0306_bootstrap;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+      C0401_M0303_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
       Jwt__Secret: Migration-CI-Only-Secret-With-More-Than-32-Characters-2026
       Jwt__Issuer: Solqaryn.CI
       Jwt__Audience: Solqaryn.CI.Frontend
@@ -236,6 +251,13 @@ jobs:
           actual="$(docker exec "$mysql_container" mysql -uroot -proot -Nse "SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name='solqaryn_c1502_m0503';")"
           test "$actual" = "1"
           echo "C1502_M0503_MYSQL84_EPHEMERAL_DB_READY=1"
+          # Isolated schemas needed by fail-closed integration tests; ephemeral GitHub-hosted service only.
+          docker exec "$mysql_container" mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS c0701_m0304_bootstrap CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
+          docker exec "$mysql_container" mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS solqaryn_c0701_catalog CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
+          docker exec "$mysql_container" mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS solqaryn_c0401_dispatch CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
+          docker exec "$mysql_container" mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS solqaryn_c0701_audit CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
+          docker exec "$mysql_container" mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS c0401_m0306_bootstrap CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
+          echo "V22_EPHEMERAL_MYSQL13_TEST_SCHEMAS_READY=1"
       - name: Ejecutar pruebas de integración MySQL Oracle
         run: |
           set -euo pipefail
