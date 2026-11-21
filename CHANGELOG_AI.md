@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV05 V22 C04-04.M06.06 preparatory phase release review, no real payments
+- A0 causal inventory of eleven C04-04.M05.01–06 and M06.01–05 LISTO + genuinely independent A5, versus live DAG VALIDADO/SI and COLA G/O SI; the scope is PLAN D721 phase-preparation handoff, not production payment readiness.
+- New fail-closed release-readiness document separates prior physical MySQL/JWT/HTTP/Chromium scoped results from still-untested PSP, settlement, signed webhook and live funds. A4 exact-SHA Scope Lock/V5 and V17 CAS/readback are mandatory; A5 by different Javier Task. No secrets, payment charges, force-push, QA/main/PROD or artificial DAG release.
+
 ## 2026-11-20 - DEV03 V22 C01-02.M05.06 isolated second JWT browser login repair
 - GitHub-hosted SHA 3d139103: 4/5 real tests PASS; final negative timed out in password fill because a second login reused an authenticated tenant A browser page and Angular detached the input on redirect.
 - New test-only patch isolates global JWT login into a fresh Chromium BrowserContext and closes it in finally, preserves A/B negative authorization assertions and backend real MySQL/JWT. Historical FAIL unchanged.
