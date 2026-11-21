@@ -56,11 +56,24 @@ jobs:
           done
           if [ "$ready" -ne 1 ]; then tail -n 100 /tmp/c0601-m0403-ng.log; exit 1; fi
           npx playwright test e2e/c06-01-m04-03-branding.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Assert ten persisted before-after screenshots after real browser tests
+        if: success()
+        working-directory: frontend
+        run: |
+          set -euo pipefail
+          for width in 320 390 768 1280 1440; do
+            test -s "v23-artifacts/c0601-m0403/antes-institucional-${width}.png"
+            test -s "v23-artifacts/c0601-m0403/despues-contraste-${width}.png"
+          done
+          test "$(find v23-artifacts/c0601-m0403 -type f -name '*.png' | wc -l)" -eq 10
       - name: Save real before and after browser captures
         if: always()
         uses: actions/upload-artifact@v4
         with:
           name: v23-c0601-m0403-real-chromium-captures
-          path: frontend/test-results/
+          path: |
+            frontend/v23-artifacts/c0601-m0403/
+            frontend/test-results/
+            frontend/playwright-report/
           if-no-files-found: warn
           retention-days: 7

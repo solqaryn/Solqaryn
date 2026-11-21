@@ -1,4 +1,6 @@
 import { expect, test } from '@playwright/test';
+import { mkdir } from 'node:fs/promises';
+import { join } from 'node:path';
 
 // Real Angular 22 public route in Chromium. No mock auth, API or tenant state.
 test('C06-01.M04.03 allowed palette modes and keyboard-only activation', async ({ page }) => {
@@ -31,15 +33,21 @@ test('C06-01.M04.03 allowed palette modes and keyboard-only activation', async (
 test('C06-01.M04.03 real screenshots before/after at 320/390/768/1280/1440', async ({ page }) => {
   const shell = page.getByTestId('c0601-public-saas-landing');
   const toggle = page.getByTestId('c0601-brand-toggle');
+  const evidenceDir = join(process.cwd(), 'v23-artifacts', 'c0601-m0403');
+  await mkdir(evidenceDir, { recursive: true });
   for (const width of [320, 390, 768, 1280, 1440]) {
     await page.setViewportSize({ width, height: 900 });
     await page.goto('/conoce-solqaryn');
     await expect(shell).toHaveAttribute('data-brand-theme', 'institucional');
     await expect(page.getByRole('heading', { level: 1 })).toBeVisible();
-    await test.info().attach('antes-institucional-' + width, { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
+    const beforePath = join(evidenceDir, 'antes-institucional-' + width + '.png');
+    await page.screenshot({ path: beforePath, fullPage: true });
+    await test.info().attach('antes-institucional-' + width, { path: beforePath, contentType: 'image/png' });
     await toggle.click();
     await expect(shell).toHaveAttribute('data-brand-theme', 'contraste');
-    await test.info().attach('despues-contraste-' + width, { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
+    const afterPath = join(evidenceDir, 'despues-contraste-' + width + '.png');
+    await page.screenshot({ path: afterPath, fullPage: true });
+    await test.info().attach('despues-contraste-' + width, { path: afterPath, contentType: 'image/png' });
     const dims = await page.evaluate(() => ({ total: document.documentElement.scrollWidth, viewport: window.innerWidth }));
     expect(dims.viewport).toBe(width);
     expect(dims.total, 'body overflow ' + width).toBeLessThanOrEqual(width + 1);
