@@ -1,3 +1,9 @@
+## 2026-11-21 — DEV01 V22 C04-02.M03.01 reglas de estados contractuales sin efectos economicos
+- Introduce Domain puro `C0402ContractDomainRules`: Borrador/PendienteAceptacion/Activa/Suspendida/Cancelada/Expirada, versiones esperadas, UTC, periodo, causa segura y reglas de transicion.
+- Nuevo xUnit C0402M0301ContractDomainRulesTests: positivos solo como precondiciones y negativos adversariales para tenant A/B, JWT/RBAC/revocacion, ownership, estados terminales, D01/D02/D04/D05/D07/D08, expiracion, retroactividad, colisiones de version y causas invalidas.
+- Cambios R2 acotados a Domain/tests/docs; `AuthorizesMutation` y `AuthorizesPaymentOrRefund` siempre false. D01-D08 sin aprobacion, no se crea API, EF, MySQL, cobro, firma, renovacion real, UI ni datos; integracion y A5 separadas.
+- Entrega C04-02.M03.01 bajo V17 CAS exclusivo, PLAN fila 626; no convertir M03 completa ni declarar PASS de checks requeridos mientras CI no finalice. Alcance dev, Scope Lock STRICT y rollback git revert, BITACORA historica preservada.
+
 ## 2026-11-21 - DEV03 V22 C04-01.M06.04 rollback fisico MySQL 8.4 sin perdida
 - Incorpora xUnit fisico con Oracle EF/MySQL 8.4 efimero: rollback explicito e implicito, desactivacion B sin borrar empresas A/B, usuario ni membresias; rechazos de host, puerto y usuario.
 - Publica workflow GitHub-hosted exact-SHA TRX 4/4, prueba de version, controles V5/Scope Lock y documento de limites; no activa cobros ni datos productivos.
