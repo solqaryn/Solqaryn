@@ -66,7 +66,8 @@ async function fixture(page: Page, o: Options = {}) {
 test('C07-01.M04.02 loading visible until real Angular receives HTTP success', async ({page}) => {
   const io=await fixture(page,{slow:true});
   await page.goto('/productos');
-  await expect(page.getByRole('status',{name:'Cargando productos'})).toBeVisible();
+  // The spinner owns the accessible label; the parent status is intentionally unnamed.
+  await expect(page.locator('.loading[role="status"]')).toBeVisible();
   await expect(page.getByText('Cargando productos...')).toBeVisible();
   io.resume();
   await expect(page.getByText('Catálogo cargado: 0 productos.')).toBeVisible();
