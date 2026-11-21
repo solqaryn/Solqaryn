@@ -91,3 +91,37 @@ test('C06-01.M04.03 real Chromium page-scale 200 percent keyboard use', async ({
     try { await cdp.detach(); } catch {}
   }
 });
+
+test('C06-01.M04.03 high contrast palette computed WCAG AA across public surfaces', async ({ page }) => {
+  const surfacePairs = [
+    ['.site-header nav a', '.landing-shell'],
+    ['.hero .lede', '.landing-shell'],
+    ['.hero-aside .aside-note', '.hero-aside'],
+    ['.benefit-grid p', '.section'],
+    ['.closing p', '.landing-shell']
+  ] as const;
+  const luminance = (value: string): number => {
+    const channels = value.match(/\d+(?:\.\d+)?/g)?.slice(0, 3).map(Number);
+    if (!channels || channels.length !== 3) throw new Error('Not a computed RGB color: ' + value);
+    const rgb = channels.map(c => {
+      const normalized = c / 255;
+      return normalized <= 0.04045 ? normalized / 12.92 : ((normalized + 0.055) / 1.055) ** 2.4;
+    });
+    return rgb[0]! * 0.2126 + rgb[1]! * 0.7152 + rgb[2]! * 0.0722;
+  };
+  for (const width of [390, 1440]) {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto('/conoce-solqaryn');
+    await page.getByTestId('c0601-brand-toggle').click();
+    await expect(page.getByTestId('c0601-public-saas-landing')).toHaveAttribute('data-brand-theme', 'contraste');
+    for (const [foreground, background] of surfacePairs) {
+      const colors = await page.evaluate(([fg, bg]) => ({
+        fg: getComputedStyle(document.querySelector(fg)!).color,
+        bg: getComputedStyle(document.querySelector(bg)!).backgroundColor
+      }), [foreground, background]);
+      const front = luminance(colors.fg), back = luminance(colors.bg);
+      const contrast = (Math.max(front, back) + 0.05) / (Math.min(front, back) + 0.05);
+      expect(contrast, 'computed WCAG AA contrast for ' + foreground + ' at ' + width).toBeGreaterThanOrEqual(4.5);
+    }
+  }
+});
