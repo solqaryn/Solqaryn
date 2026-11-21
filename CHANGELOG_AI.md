@@ -1,3 +1,8 @@
+## 2026-11-20 - DEV06 V22 C01-02.M06.01 actual evidence vs test doubles audit
+- PLAN D212 review is an R0 documentary verification of M05.01-.06 tests; new docs/v5/c01-02-m06-01-evidence-scope-audit-v22.md contrasts real cryptographic TestServer JWT, physical MySQL8.4 CI, Chromium 5/5, mock/in-memory/fixture boundaries and future integration gaps.
+- Protect historical failures, deny claiming unregistered capability endpoints/DI as runtime authorization, preserve Plan E as cumulative and physical device/CWV as NO_MEDIDO. No runtime or DB modification and no QA/main/PROD.
+- Publish only fast-forward/CAS on dev; require exact-SHA ScopeLock and V5 provenance successful for document-only A4 and independent A5 by another Javier Task. Historical CHANGELOG content retained byte-for-byte below this section.
+
 ## 2026-11-20 — DEV05 V22 C14-01.M05.06 real Chromium keyboard and isolated JWT login repair
 - GitHub-hosted SHA 8f809ead job 136732486905 FAILED 2/4: the test expected enabled submit before the required fields, and reused an authenticated global Angular browser for a tenant A login, detaching password input.
 - Test-only repair moves enabled assertion after actual Tab/username/password and separates platform and company A signed JWT sessions into different BrowserContexts with finally cleanup. Four real Chromium/MySQL8.4 tests, CI ScopeLock/V5/backend/frontend/security required exact new SHA; no false PASS, no A5 self-review or payments/QA/main/PROD.
