@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV01 V22 C14-01.M05.04 aceptación positiva pública/privada/global
+- PLAN D2045: Playwright Chromium real comprueba login público, JWT tenant A + perfil y branding MySQL 8.4, recarga persistente, y sesión global independiente sin heredar marcas A/B.
+- Reutiliza GitHub-hosted ASP.NET Core/Angular/MySQL V21 por exact SHA, sin mocks, runtime nuevo ni entornos productivos; solo cobertura atómica, no aprobación integral M05/QA.
+- A0–A4 exigen 8/8 E2E y checks pertinentes completed SUCCESS, A5 por otra Task Javier. Cambio y rollback aditivos sin modificar BITACORA.
+
 ## 2026-11-20 — DEV01 V22 C14-01.M05.05 negaciones JWT tenant A/B reales
 - PLAN D2046: nueva prueba de abuso sobre API ASP.NET Core JWT/MySQL8.4 efímero/Chromium real: ausencia de JWT, firma alterada, tenant ajeno, header B sobre ruta A e ID enumerado, sin fuga de marca/logos.
 - Confirma lectura positiva de A y cuarentena 503 del proveedor público; no cambia middleware, grants, producción, credenciales, migraciones ni runtime.

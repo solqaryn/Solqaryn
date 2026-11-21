@@ -262,4 +262,38 @@ test.describe('C14-01.M04.03 - UI marca empresarial con JWT real y branding tena
     expect(quarantine.status(), 'La API publica sin tenant sigue en cuarentena P0').toBe(503);
     expect(await quarantine.text()).not.toMatch(/Empresa A efimera C15|Empresa B efimera C15/);
   });
+
+  test('C14-01.M05.04: positive acceptance public login to private tenant and global console', async ({ page, browser }) => {
+    test.setTimeout(180_000);
+    // Public login must remain usable even when ambiguous global branding is quarantined.
+    await page.goto('/login');
+    await expect(page.getByRole('textbox', { name: 'Nombre de usuario' })).toBeVisible();
+    await expect(page.getByRole('button', { name: /Ingresar al sistema/ })).toBeVisible();
+    // Signed JWT, verified membership and branding backed by physical ephemeral MySQL.
+    await ingresarEmpresa(page, 'c1504_admin_a', 1, 'Empresa A efimera C15');
+    await expect(page.locator('#main-sidebar .brand img.brand-logo'))
+      .toHaveAttribute('src', 'https://assets.example.invalid/c14-a.svg');
+    await page.reload();
+    await expect(page.getByRole('heading', { name: 'Mi perfil' })).toBeVisible();
+    await expect(page.locator('#main-sidebar .brand > span').first())
+      .toHaveText('Empresa A efimera C15');
+    await expect(page.getByText('Empresa B efimera C15')).toHaveCount(0);
+    // Independent global session sees platform identity, never the business tenant brand.
+    const globalContext = await browser.newContext();
+    try {
+      const globalPage = await globalContext.newPage();
+      const platformJwt = await loginReal(globalPage, 'c1504_platform_only');
+      const status = await globalPage.request.get(api + '/plataforma/sesion', {
+        headers: { Authorization: 'Bearer ' + platformJwt }
+      });
+      expect(status.status(), 'Autoridad global validada en API real').toBe(200);
+      await globalPage.goto('/plataforma/auditoria-ux-v5');
+      await expect(globalPage).toHaveURL(/\/plataforma\/auditoria-ux-v5$/);
+      await expect(globalPage.locator('#main-sidebar .brand > span').first()).toHaveText('SOLQARYN');
+      await expect(globalPage.getByText('Empresa A efimera C15')).toHaveCount(0);
+      await expect(globalPage.getByText('Empresa B efimera C15')).toHaveCount(0);
+    } finally {
+      await globalContext.close();
+    }
+  });
 });
