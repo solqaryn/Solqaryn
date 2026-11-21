@@ -1,3 +1,9 @@
+## A0.78 - Negativa RBAC empresarial en cuatro pantallas globales (DEV02, 2026-11-21)
+
+Incremento R2 TEST-ONLY de C15-04.M05.04: cuatro pruebas Chromium sobre /plataforma/auditoria-operativa-v5, /plataforma/placement-v5, /plataforma/observabilidad-v5 y /plataforma/mysql-cutover-readonly-v5; JWT empresarial A emitido por ASP.NET Core 10 + MySQL 8.4 efimero. Afirmar API GET /plataforma/sesion 403 y navegación denegada hacia login, sin exposición del H1 privado ni desborde 375/1280. Sin cambios a runtime, migraciones, secretos, permisos o producción.
+
+A0 diff de prueba/documento/CHANGELOG, R2; A1 positivos previos A0.77 123/123 SUCCESS y nuevos negativos 4 esperados; A2 403 firmado para empresa A; A3 GitHub-hosted .NET/MySQL/Chromium sin mocks; A4 exigir 127/127, ScopeLock/V5/frontend/backend/seguridad SUCCESS exact-SHA antes de certificar esta evidencia. LIMITACION: no cubre totalidad de 160 rutas, combinaciones de roles, auditoría WCAG completa, dispositivos físicos ni CWV de campo; no afirmar LISTO/A5. Mantener EN_PROGRESO owner DEV02 y V17 lock 2000002297. Rollback solo revert normal FF/CAS.
+
 ## A0.77 - Auditoria real de cuatro superficies de plataforma adicionales (DEV02, 2026-11-21)
 
 Incremento R2 de C15-04.M05.04 limitado a pruebas E2E, sin modificar runtime. Cuatro rutas privadas: /plataforma/auditoria-operativa-v5, /plataforma/placement-v5, /plataforma/observabilidad-v5, /plataforma/mysql-cutover-readonly-v5. Playwright comprueba JWT firmado y GET /plataforma/sesion 200 con ASP.NET Core 10/MySQL 8.4 efimero, main unico no anidado, H1 correcto, cero mutaciones y ausencia de overflow en 375/1280. La CI del incremento A0.76 anterior aprobo 119/119; la entrega A0.77 espera 123 casos (no PASS hasta verificar el nuevo SHA).

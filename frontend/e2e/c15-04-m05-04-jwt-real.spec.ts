@@ -2533,4 +2533,37 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     });
   }
 
+
+  // A0.78: matriz negativa independiente en cuatro rutas globales reales.
+  // JWT empresarial firmado con ASP.NET Core y MySQL 8.4 efimero; sin mocks.
+  for (const destino of [
+    { ruta: '/plataforma/auditoria-operativa-v5', titulo: 'Controles de ejecución y evidencia' },
+    { ruta: '/plataforma/placement-v5', titulo: 'Placement compartido y dedicado' },
+    { ruta: '/plataforma/observabilidad-v5', titulo: 'Diagnóstico y señales seguras' },
+    { ruta: '/plataforma/mysql-cutover-readonly-v5', titulo: 'Controles de preparación para cutover' }
+  ]) {
+    test('A0.78 - empresa sin RBAC global no ve ' + destino.ruta,
+      async ({ page, request }) => {
+        for (const ancho of [375, 1280]) {
+          await page.setViewportSize({ width: ancho, height: 840 });
+          const jwt = await ingresar(page, 'c1504_admin_a');
+          const apiDenegada = await request.get(api + '/plataforma/sesion', {
+            headers: { Authorization: 'Bearer ' + jwt }
+          });
+          expect(apiDenegada.status(), 'Empresa A no tiene permisos globales').toBe(403);
+          const denegada = page.waitForResponse(res =>
+            res.url().includes('/plataforma/sesion') && res.request().method() === 'GET');
+          await page.goto(destino.ruta);
+          expect((await denegada).status(), 'Guard debe consultar API real').toBe(403);
+          await expect(page).toHaveURL(/\/login\?plataforma=denegado/);
+          await expect(page.getByRole('heading', {
+            level: 1, name: destino.titulo
+          })).toHaveCount(0);
+          expect(await page.evaluate(() => document.documentElement.scrollWidth),
+            'Denegacion responsive sin desborde a ' + ancho + 'px')
+            .toBeLessThanOrEqual(ancho + 2);
+        }
+      });
+  }
+
 });

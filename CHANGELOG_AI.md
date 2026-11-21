@@ -1,3 +1,7 @@
+## 2026-11-21 - DEV02 V22 C15-04.M05.04 A0.78 negativas de empresa en cuatro rutas globales
+- Se agregan cuatro pruebas Chromium de JWT empresarial A real/MySQL 8.4 efimero: API 403, redireccion al login y cero exposicion de encabezados privados a 375/1280 px. Es test-only sin cambios de runtime, QA/main/PROD ni pagos.
+- A0.77: 123/123 Chromium completados SUCCESS en run 44879508143, job 136771472696. A0.78: 127 esperados, esperar CI nuevo SHA y Scope Lock/V5. La auditoria global de 160 rutas/roles/WCAG/CWV sigue EN_PROGRESO con lock V17 y A5 pendiente.
+
 ## 2026-11-21 — DEV05 V22 C04-01.M04.03 corrección Scope Lock exact-SHA
 - La CI 8e396310 falló por un identificador local de fixture que coincidía con una identidad retirada prohibida por Scope Lock; se renombra a entitlementTile sin modificar ninguna aserción ni regla de seguridad.
 - Requiere nuevo Scope Lock, Angular/Chromium y V5 SUCCESS exact-SHA, sin certificar antes; histórico FAIL intacto y A5 independiente.
