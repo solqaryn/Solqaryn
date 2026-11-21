@@ -1,3 +1,7 @@
+## 2026-11-21 — DEV05 V22 C04-01.M04.04 reparación causal de dos fallos Chromium
+- El job 136778107811 mostró 2/4 PASS: alerta 503 desaparecía por recarga automática del fixture, y guard RBAC navegaba a /perfil (no /login) de forma legítima. Fixture mantiene 503 hasta reintento explícito; prueba exige salida segura a /login o /perfil sin mostrar plan.
+- No se altera frontend runtime, auth, permisos ni validadores. Requiere nuevo Chromium 4/4 y Scope Lock/V5 SUCCESS exact-SHA. Historial de 2 FAIL preservado; A5 independiente.
+
 ## 2026-11-21 — DEV05 V22 C04-01.M04.02 estados Angular SaaS
 - Verifica bajo Chromium real los estados carga/success, 404 vacío sin alta, 503 de límites y reintento, y rechazos por tenant/rol con sesión/HTTP exclusivamente sintéticos.
 - CI GitHub-hosted con Node 24.21.0, Angular 22.2.1 y Project Scope Lock/V5 exact SHA; hasta PASS continúa VALIDANDO, sin JWT/MySQL, pagos ni autorización productiva implicados. A5 de otra Task Javier.

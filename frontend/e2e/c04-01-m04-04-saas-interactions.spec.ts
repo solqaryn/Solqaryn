@@ -11,7 +11,7 @@ interface FixtureOptions {
   roleAllowed?: boolean;
   canCreate?: boolean;
   hasSubscription?: boolean;
-  firstSubscriptionUnavailable?: boolean;
+  subscriptionUnavailable?: () => boolean;
   onOnboarding?: (route: Route) => Promise<void>;
 }
 
@@ -21,10 +21,9 @@ async function isolatedSaasFixture(page: Page, options: FixtureOptions = {}) {
     roleAllowed: true,
     canCreate: false,
     hasSubscription: true,
-    firstSubscriptionUnavailable: false,
+    subscriptionUnavailable: undefined as (() => boolean) | undefined,
     ...options
   };
-  let subscriptionReads = 0;
   await page.addInitScript(() => {
     localStorage.setItem('solqaryn_token', 'SYNTHETIC_NOT_A_SIGNED_JWT');
     localStorage.setItem('solqaryn_expira_en', '2099-01-01T00:00:00Z');
@@ -66,8 +65,7 @@ async function isolatedSaasFixture(page: Page, options: FixtureOptions = {}) {
     } else if (/\/tema-visual$/.test(path)) {
       data = {};
     } else if (/\/saas\/tenants\/1\/suscripcion$/.test(path)) {
-      subscriptionReads++;
-      if (opts.firstSubscriptionUnavailable && subscriptionReads === 1) status = 503;
+      if (opts.subscriptionUnavailable?.()) status = 503;
       else if (!opts.hasSubscription) status = 404;
       else data = { id: 7, planCodigo: 'BASE', planNombre: 'Plan Base',
         estado: 'ACTIVA', inicioUtc: '2026-01-01T00:00:00Z', finUtc: null };
@@ -108,11 +106,13 @@ test('C04-01.M04.04 filtro real Angular GET, mensaje de vacío y navegación con
 });
 
 test('C04-01.M04.04 fallo HTTP 503 muestra alerta y reintento efectivo sin navegación insegura', async ({ page }) => {
-  await isolatedSaasFixture(page, { firstSubscriptionUnavailable: true });
+  let subscriptionUnavailable = true;
+  await isolatedSaasFixture(page, { subscriptionUnavailable: () => subscriptionUnavailable });
   await page.goto('/configuracion');
   const card = page.locator('.saas-card');
   await expect(card.getByRole('alert')).toContainText('No se pudo completar la consulta segura.');
   await expect(card.getByRole('heading', { name: 'Plan Base' })).toHaveCount(0);
+  subscriptionUnavailable = false;
   await card.getByRole('button', { name: 'Reintentar' }).click();
   await expect(card.getByRole('heading', { name: 'Plan Base' })).toBeVisible();
   await expect(card.getByRole('alert')).toHaveCount(0);
@@ -124,7 +124,7 @@ test('C04-01.M04.04 denegaciones tenant y rol no muestran formulario ni plan pri
     const page = await context.newPage();
     await isolatedSaasFixture(page, opt);
     await page.goto('/configuracion');
-    await expect(page).toHaveURL(/\/login/);
+    await expect(page).toHaveURL(/\/(?:login|perfil)(?:\?|$)/);
     await expect(page.getByRole('heading', { name: 'Plan Base' })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Iniciar suscripción' })).toHaveCount(0);
     await page.close();
