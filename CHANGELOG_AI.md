@@ -1,3 +1,10 @@
+## 2026-11-21 — DEV04 V22 rescate de C06-01.M03.02 con regresión adversarial y procedencia
+
+- Recuperación cruzada de la microtarea Application M03.02 original DEV03: `C0601LandingApplicationService` conserva exclusivamente preflight inerte, con ruta canónica de servidor y snapshot confiable; no da publicación, acceso privado ni pagos. PLAN D exige el servicio acotado, no toda la fase M03 ni publicación.
+- Nuevo test xUnit adversarial `CancelledDuringContentReadNeverReturnsCandidate`: si el lector de contenido cancela durante el segundo await y entrega un snapshot válido, se propaga cancelación y nunca se propone ni autoriza nada. No se alteran runtime, JWT, RBAC, MySQL, HTTP, Angular ni secretos.
+- Fuente previa DEV03 SHA `9d93a4083e8f28c80dae54002a1c2cf22407b77c`: GitHub-hosted Release y 6290/6290 xUnit PASS, Scope Lock y seguridad exact-SHA SUCCESS; nueva revisión A0–A4 y V5 sobre el SHA de esta prueba siguen pendientes de CI real, no se inventa PASS. A2/A3 HTTP/JWT/MySQL/Chromium NO_APLICA a M03.02 por no tener adaptadores; limitación explícita para futuras microtareas.
+- Conservar VALIDANDO, autor histórico DEV03 y A5_PENDIENTE para Task Javier distinta del autor y del reparador DEV04; registrar BITACORA idempotente y readback. Sin QA/main/PROD; reversión por commit git revert normal.
+
 ## 2026-11-21 — DEV02 V22 C15-04.M05.04 A0.82 catalogo y cobro simulado con JWT/tenants reales
 - Seis pruebas Playwright nuevas en dos rutas globales de lectura: rol plataforma JWT firmado 200 y empresas A/B firmadas 403, a 375/1280 px, con MySQL 8.4 efimero y API .NET 10 real en GitHub Actions. Exigen H1 privado autorizado, redireccion de negocio no autorizado y cero mutaciones HTTP.
 - R2 test-only; 131/131 pasaron antes de esta ampliacion. Requiere nueva CI 137/137, Scope Lock/V5/seguridad/backend/frontend exact-SHA; no certificar mientras esten pendientes. WIP C15-04.M05.04 permanece EN_PROGRESO DEV02, limitaciones WCAG/CWV/160 rutas, A5 independiente. Sin cobros, PSP, secretos ni produccion.

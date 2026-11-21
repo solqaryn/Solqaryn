@@ -192,6 +192,23 @@ public sealed class C0601M0302LandingApplicationServiceTests
     }
 
     [Fact]
+    public async Task CancelledDuringContentReadNeverReturnsCandidate()
+    {
+        using var cts = new CancellationTokenSource();
+        var service = new C0601LandingApplicationService(
+            new RouteStub(_ => ValueTask.FromResult<C0601PublicReadContext?>(ValidRoute())),
+            new ContentStub((_, _) =>
+            {
+                // A server-side content reader may finish after the request was cancelled.
+                // A valid snapshot must never become even an inert candidate in that case.
+                cts.Cancel();
+                return ValueTask.FromResult<C0601PublicContentSnapshot?>(ValidSnapshot());
+            }));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
+            await service.PrepareAsync(cts.Token));
+    }
+
+    [Fact]
     public void NullSourcesAreRejectedBeforeRequest()
     {
         Assert.Throws<ArgumentNullException>(() => new C0601LandingApplicationService(
