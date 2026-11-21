@@ -1,3 +1,8 @@
+## 2026-11-21 — V23 C06-01.M06.06 entrada pública y guard privado (Javier :20)
+- Corrige el P1 parcial UI-03 en el punto de entrada: / redirige ahora a /conoce-solqaryn y /login sigue disponible. No altera guardias privadas, autenticación, API, tenants ni datos.
+- Incorpora Playwright/Chromium GitHub-hosted para root anónimo, rechazo de dashboard privado, cinco anchos, ausencia de overflow, foco/teclado y capturas reales de la ruta corregida.
+- Mantener C06-01.M06.06 en VALIDANDO hasta A0-A4 causales y exact-SHA CI; A5 independiente posterior. La meta acumulativa M06, pricing/onboarding/SEO y UI-03 global siguen con brechas, sin QA/main/PROD. Rollback mediante git revert.
+
 ## 2026-11-21 — V23 C07-01.M06.06 rollback ante auditoría fallida en actualización/estado/borrado [Javier :00]
 - Endurece ProductoService.UpdateAsync, CambiarEstadoAsync y DeleteAsync: auditoría estricta dentro de UnitOfWork, con propagación del fallo para rollback, sin desactivar autorizaciones ni habilitar escrituras privadas.
 - Amplía prueba de integración adversarial Oracle EF/MySQL 8.4 efímero para edición, desactivación y eliminación lógica; exige que al fallar auditoría no cambien nombre/estado/eliminación, con readback físico desde DbContext nuevo.

@@ -1,0 +1,75 @@
+name: V23 C06-01.M06.06 root public Angular closure real Chromium
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/src/app/app.routes.ts'
+      - 'frontend/e2e/c06-01-m06-06-public-entry.spec.ts'
+      - 'frontend/playwright.c0601-final-entry.config.ts'
+      - '.github/workflows/v23-c06-01-m06-06-public-entry.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v23-c0601-m0606
+  cancel-in-progress: false
+jobs:
+  chromium:
+    name: C06-01.M06.06 root public and private guard real Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Exact-SHA project governance
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+          node scripts/verify-solqaryn-skills.mjs --self-test
+      - name: Angular 22.2.1 typecheck and build
+        working-directory: frontend
+        run: |
+          set -euo pipefail
+          npm ci
+          npx tsc --noEmit -p tsconfig.app.json
+          npm run build
+      - name: Install Chromium from locked Playwright
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Run real Angular browser and negative auth guard tests
+        working-directory: frontend
+        env:
+          CI: 'true'
+        run: |
+          set -euo pipefail
+          npx ng serve --host 127.0.0.1 --port 4200 >/tmp/c0601-m0606-angular.log 2>&1 &
+          ready=0
+          for i in $(seq 1 120); do
+            if curl --silent --fail http://127.0.0.1:4200/conoce-solqaryn >/dev/null; then ready=1; break; fi
+            sleep 2
+          done
+          if [ "$ready" -ne 1 ]; then tail -n 100 /tmp/c0601-m0606-angular.log; exit 1; fi
+          npx playwright test e2e/c06-01-m06-06-public-entry.spec.ts --config=playwright.c0601-final-entry.config.ts --workers=1 --retries=0
+      - name: Require real captured five-width screenshots
+        if: success()
+        working-directory: frontend
+        run: |
+          set -euo pipefail
+          for width in 320 390 768 1280 1440; do
+            test -s "v23-artifacts/c0601-m0606/root-public-$width.png"
+          done
+      - name: Preserve browser logs and PNG evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v23-c0601-m0606-root-public-real-chromium
+          path: |
+            frontend/v23-artifacts/c0601-m0606/
+            frontend/test-results/
+          if-no-files-found: warn
+          retention-days: 7
