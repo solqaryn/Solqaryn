@@ -1,3 +1,8 @@
+## 2026-11-21 — V23 C06-01.M04.02 estados públicos HTTP/Chromium [Javier :30]
+- Implementa panel Angular público de salud iniciado por el visitante con estados carga, vacío, 401/403, 404, 429, error y éxito; sin sesión, tokens, tenant ni acceso privado.
+- Agrega pruebas adversariales de HTTP loopback efímero real y Chromium con teclado, escala 200%, cinco anchos y diez capturas antes/después; GitHub-hosted exact SHA requerido antes de LISTO/A5 independiente.
+- Riesgo R1; seguridad de servidor, JWT/RBAC tenant A/B, MySQL y uptime real NO_CERTIFICADOS por este componente. Solo dev, rollback mediante revert normal, sin QA/main/PROD.
+
 ## 2026-11-21 - V23 C15-04.M05.04 A0.90 responsive storefront test-only [Javier :10]
 - Incremento secuencial de WIP R2 existente, sin nuevo CLAIM: ampliar Playwright Chromium en tres rutas publicas a 320/390/768/1280/1440, Tab real sobre skip-link, h1 unico, sin body overflow ni mutaciones HTTP.
 - Fuente: frontend/e2e/c15-04-m05-04-global-ux.spec.ts y docs/v5/c15-04-m05-04-a090-v23-responsive.md. SKREF-03/05/10 originales fijados consultados; NO_APLICA otros por alcance test-only. La CI exact-SHA queda sin acreditar hasta checks completed/success; H2297 sigue EN_PROGRESO, I=DEV02, A5 ajena pendiente.

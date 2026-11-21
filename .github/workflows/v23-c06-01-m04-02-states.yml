@@ -1,0 +1,81 @@
+name: V23 C06-01.M04.02 public real HTTP and Chromium states
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/src/app/features/landing/c0601-public-saas-landing.component.ts'
+      - 'frontend/src/app/features/landing/c0601-public-status.component.ts'
+      - 'frontend/scripts/c0601-health-fixture.mjs'
+      - 'frontend/playwright.c0601-public.config.ts'
+      - 'frontend/e2e/c06-01-m04-02-public-status.spec.ts'
+      - '.github/workflows/v23-c06-01-m04-02-states.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v23-c0601-m0402-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  chromium:
+    name: C06-01.M04.02 - Angular real HTTP public states and Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Exact SHA Scope Lock and pinned skill
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+          node scripts/verify-solqaryn-skills.mjs --self-test
+      - name: Angular22 typecheck and production build
+        working-directory: frontend
+        run: |
+          set -euo pipefail
+          npm install -g npm@11.19.0
+          npm ci
+          npx tsc --noEmit -p tsconfig.app.json
+          npm run build
+      - name: Install real Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Real localhost HTTP and Angular dev browser acceptance
+        working-directory: frontend
+        env:
+          CI: 'true'
+        run: |
+          set -euo pipefail
+          node scripts/c0601-health-fixture.mjs >/tmp/c0601-health.log 2>&1 &
+          npx ng serve --host 127.0.0.1 --port 4200 >/tmp/c0601-angular.log 2>&1 &
+          ready=0
+          for i in $(seq 1 120); do
+            if curl --silent --fail http://localhost:5005/health >/dev/null && curl --silent --fail http://127.0.0.1:4200/conoce-solqaryn >/dev/null; then ready=1; break; fi
+            sleep 2
+          done
+          if [ "$ready" -ne 1 ]; then tail -n 100 /tmp/c0601-angular.log; tail -n 60 /tmp/c0601-health.log; exit 1; fi
+          npx playwright test e2e/c06-01-m04-02-public-status.spec.ts --config=playwright.c0601-public.config.ts --workers=1 --retries=0
+      - name: Ten persisted real before after screenshots
+        if: success()
+        working-directory: frontend
+        run: |
+          set -euo pipefail
+          for width in 320 390 768 1280 1440; do
+            test -s "v23-artifacts/c0601-m0402/antes-sin-consulta-${width}.png"
+            test -s "v23-artifacts/c0601-m0402/despues-salud-ok-${width}.png"
+          done
+          test "$(find v23-artifacts/c0601-m0402 -type f -name '*.png' | wc -l)" -eq 10
+      - name: Upload real browser evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v23-c0601-m0402-public-health-browser
+          path: |
+            frontend/v23-artifacts/c0601-m0402/
+            frontend/test-results/
+          if-no-files-found: warn
+          retention-days: 7

@@ -1,6 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { ChangeDetectionStrategy, Component, inject, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
+import { C0601PublicStatusComponent } from './c0601-public-status.component';
 
 /**
  * C06-01.M04.01. Public, read-only DEV SaaS landing entry.
@@ -9,7 +10,7 @@ import { RouterLink } from '@angular/router';
 @Component({
   selector: 'app-c0601-public-saas-landing',
   standalone: true,
-  imports: [RouterLink],
+  imports: [RouterLink, C0601PublicStatusComponent],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
     <a class="skip-link" href="#c0601-content" (click)="enfocarContenido($event)">Ir al contenido</a>
@@ -52,6 +53,7 @@ import { RouterLink } from '@angular/router';
             </div>
           </div>
         </section>
+        <app-c0601-public-status />
         <section id="alcance" class="closing" tabindex="-1" aria-labelledby="scope-heading">
           <p class="eyebrow">ACCESO SEGURO</p>
           <h2 id="scope-heading">La presentación es pública. Tus datos, no.</h2>
