@@ -1,3 +1,8 @@
+## 2026-11-21 — V22 DEV01 C07-01.M06.06: cuarentena comercial real fail-closed
+- Tercer incremento R2: TestServer utiliza el UnscopedCommercialTenantGuardMiddleware real, configuración piloto solo en memoria OFF al inicio (503), ON para GET real; JWT/RBAC MySQL 8.4 tenant A/B y revocación de membresía/permiso (503) más rows id ajeno 404.
+- Ningún flag de Render/QA/PROD se activó; CI de este nuevo SHA debe terminar SUCCESS y no certifica CRUD de variantes, transacciones/rollback, Angular/Chromium ni A5.
+- Solo dev, V17 propio, autor histórico intacto, CHANGELOG anterior preservado.
+
 ## 2026-11-21 — V22 DEV01 C07-01.M06.06: evidencia física productos A/B Oracle EF
 - La ruta real /productos ahora verifica productos de dos tenants materializados por AppDbContext con marca autorizada de servidor en MySQL 8.4: A nunca ve B, B nunca ve A, GET de ID ajeno devuelve 404.
 - Continúan exigibles CI exact-SHA y pruebas de cuarentena middleware completa, CRUD variantes/rollback, Angular-HTTP y auditoría; no declarar LISTO ni A5 sin ellas.

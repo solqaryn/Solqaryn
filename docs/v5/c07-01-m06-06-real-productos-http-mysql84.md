@@ -13,7 +13,7 @@ A3 dirigida: esquema único aleatorio en mysql:8.4 loopback, base bootstrap exac
 
 ## Limitación explícita, sin certificación de fase
 
-Este incremento todavía **NO** certifica escrituras reales de Producto y Variante, conflictos de versión, rollback transaccional de catálogo, navegador Angular conectado a API firmada, auditoría persistente, API productiva hospedada ni migraciones globales Oracle EF. Por ello mantener C07-01.M06.06 EN_PROGRESO y el namedRange V17 legítimo de DEV01. El objetivo E1045 de fase acumulada sigue abierto; agregar pruebas A0-A4 para estos faltantes y obtener SUCCESS exact-SHA antes de VALIDANDO/LISTO. A5 únicamente por una Task Javier distinta. No tocar QA/main/PROD/Aiven ni secretos.
+Este incremento, incluso con middleware de cuarentena real en la suite, todavía **NO** certifica escrituras reales de Producto y Variante, conflictos de versión, rollback transaccional de catálogo, navegador Angular conectado a API firmada, auditoría persistente, API productiva hospedada ni migraciones globales Oracle EF. Por ello mantener C07-01.M06.06 EN_PROGRESO y el namedRange V17 legítimo de DEV01. El objetivo E1045 de fase acumulada sigue abierto; agregar pruebas A0-A4 para estos faltantes y obtener SUCCESS exact-SHA antes de VALIDANDO/LISTO. A5 únicamente por una Task Javier distinta. No tocar QA/main/PROD/Aiven ni secretos.
 
 ## Impacto y rollback
 
@@ -21,4 +21,8 @@ Solo test de backend, workflow de CI dirigido, este documento y CHANGELOG_AI ín
 
 ## Segundo incremento: pertenencia real de filas en MySQL 8.4
 
-Inserción de dos productos de catálogo A/B en el esquema MySQL efímero bajo marca server-side. La respuesta de /productos obliga a contener solo el nombre propio y a no exponer el ajeno; GET /productos/{id} cruzado exige 404. **No se ejecuta el middleware de cuarentena UnscopedCommercialTenantGuardMiddleware completo dentro de este TestServer reducido**, ni se acredita POST/PUT, variantes, transacción/rollback, Angular/Chromium o servicios externos. No certificar el objetivo E1045 completo por un test HTTP aislado.
+Inserción de dos productos de catálogo A/B en el esquema MySQL efímero bajo marca server-side. La respuesta de /productos obliga a contener solo el nombre propio y a no exponer el ajeno; GET /productos/{id} cruzado exige 404. Ahora se inserta en el pipeline TestServer el **UnscopedCommercialTenantGuardMiddleware real** tras UseAuthentication/UseAuthorization. Con el flag in-memory PrivateReadPilotEnabled=false rechaza incluso JWT válido con 503; al habilitarlo solo durante la prueba permite GET propio (200), bloquea selector ajeno, membresía o grant revocados (503), y el controller sigue ocultando filas ajenas (404). No se acredita POST/PUT, variantes, transacción/rollback, Angular/Chromium o servicios externos. No certificar el objetivo E1045 completo por un test HTTP aislado.
+
+## Tercer incremento: cuarentena HTTP real fail-closed
+
+El host de pruebas reproduce la ruta de seguridad del Program: UseRouting, middleware de excepciones, UseAuthentication, UseAuthorization, **UnscopedCommercialTenantGuardMiddleware**, y controllers reales. El flag de piloto es una configuración en memoria del TEST, inicialmente OFF. OFF exige 503, ON se habilita solo en el test y exige RBAC tenant real. Los denegados por el guard responden 503 TENANT_DATA_ISOLATION_REQUIRED (a diferencia del 403 del action-filter interno). El control A/B y los datos comerciales son efímeros. Ningún despliegue/flag real fue modificado.

@@ -9,6 +9,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
@@ -148,6 +149,14 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
 
             // Product and RBAC services/repositories are real. Mocked dependencies
             // belong only to other (uninvoked) CRUD methods of the controller.
+            // The multiempresa quarantine is OFF by default. This in-memory
+            // test-only pilot flag is deliberately never deployed to environments.
+            var pilotConfig = new ConfigurationBuilder()
+                .AddInMemoryCollection(new Dictionary<string, string?>
+                {
+                    ["MultiEmpresa:PrivateReadPilotEnabled"] = "false"
+                })
+                .Build();
             using var host = await new HostBuilder()
                 .ConfigureWebHost(web => web.UseTestServer()
                     .ConfigureServices(services =>
@@ -156,6 +165,7 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                             o.UseMySQL(isolated, mysql => mysql.MigrationsAssembly(
                                 "Solqaryn.Infrastructure.Migrations")));
                         services.AddHttpContextAccessor();
+                        services.AddSingleton<IConfiguration>(pilotConfig);
                         services.AddScoped<ICurrentUserService, CurrentUserService>();
                         services.AddScoped<IUsuarioScopeService, UsuarioScopeService>();
                         services.AddScoped<IRolPermisoRepository, RolPermisoRepository>();
@@ -192,6 +202,7 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                         app.UseMiddleware<ExceptionHandlingMiddleware>();
                         app.UseAuthentication();
                         app.UseAuthorization();
+                        app.UseMiddleware<UnscopedCommercialTenantGuardMiddleware>();
                         app.UseEndpoints(routes => routes.MapControllers());
                     }))
                 .StartAsync();
@@ -208,6 +219,11 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             using (var forged = await client.GetAsync("/productos"))
                 Assert.Equal(HttpStatusCode.Unauthorized, forged.StatusCode);
 
+            // Production quarantine must reject even an authorized JWT until
+            // the explicit server-side pilot flag is enabled.
+            Assert.Equal(HttpStatusCode.ServiceUnavailable,
+                await ReadStatusAsync(client, a.Id, jwtA));
+            pilotConfig["MultiEmpresa:PrivateReadPilotEnabled"] = "true";
             Assert.Equal(HttpStatusCode.OK, await ReadStatusAsync(client, a.Id, jwtA));
 
             // Physical product rows in the same MySQL schema must remain isolated
@@ -227,7 +243,7 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             using (var foreignA = await client.GetAsync($"/productos/{productBId}"))
                 Assert.Equal(HttpStatusCode.NotFound, foreignA.StatusCode);
 
-            Assert.Equal(HttpStatusCode.Forbidden, await ReadStatusAsync(client, b.Id, jwtA));
+            Assert.Equal(HttpStatusCode.ServiceUnavailable, await ReadStatusAsync(client, b.Id, jwtA));
             var jwtB = Sign(userB.Id, roleB.Id);
             Assert.Equal(HttpStatusCode.OK, await ReadStatusAsync(client, b.Id, jwtB));
             client.DefaultRequestHeaders.Authorization =
@@ -245,13 +261,13 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             using (var foreignB = await client.GetAsync($"/productos/{productAId}"))
                 Assert.Equal(HttpStatusCode.NotFound, foreignB.StatusCode);
 
-            Assert.Equal(HttpStatusCode.Forbidden, await ReadStatusAsync(client, a.Id, jwtB));
+            Assert.Equal(HttpStatusCode.ServiceUnavailable, await ReadStatusAsync(client, a.Id, jwtB));
 
             var membershipA = await db.UsuarioEmpresas
                 .SingleAsync(x => x.UsuarioId == userA.Id && x.EmpresaId == a.Id);
             membershipA.Desactivar();
             await db.SaveChangesAsync();
-            Assert.Equal(HttpStatusCode.Forbidden, await ReadStatusAsync(client, a.Id, jwtA));
+            Assert.Equal(HttpStatusCode.ServiceUnavailable, await ReadStatusAsync(client, a.Id, jwtA));
             membershipA.Activar();
             await db.SaveChangesAsync();
             Assert.Equal(HttpStatusCode.OK, await ReadStatusAsync(client, a.Id, jwtA));
@@ -260,7 +276,7 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 .SingleAsync(x => x.RolId == roleA.Id && x.PermisoId == permission.Id);
             db.RolPermisos.Remove(grantA);
             await db.SaveChangesAsync();
-            Assert.Equal(HttpStatusCode.Forbidden, await ReadStatusAsync(client, a.Id, jwtA));
+            Assert.Equal(HttpStatusCode.ServiceUnavailable, await ReadStatusAsync(client, a.Id, jwtA));
             Assert.Equal(HttpStatusCode.OK, await ReadStatusAsync(client, b.Id, jwtB));
         }
         finally
