@@ -48,6 +48,7 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
+          dotnet restore Solqaryn.sln
           dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj -c Release --no-restore --filter 'FullyQualifiedName~V17IntelligentTenantLoginAuthorizationTests' --logger 'trx;LogFileName=c0201-policy.trx' --logger 'console;verbosity=normal'
           python3 - <<'PY'
           from pathlib import Path

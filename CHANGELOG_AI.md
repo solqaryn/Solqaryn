@@ -1,3 +1,8 @@
+## 2026-11-20 - DEV03 V22 C02-01.M05.04: corregir restore antes de TRX de politica
+- El CI del SHA 0d9f1559 falló por M0504_POLICY_TRX_MISSING_OR_MULTIPLE: dotnet test --no-restore se ejecutó antes de dotnet restore, no produjo TRX, y el job evitó acreditar MySQL como PASS.
+- Ajustar el orden GitHub-hosted con restore explícito antes de los >=16 xUnit adversariales; mantener prueba separada JWT firmado HTTP EF MySQL 8.4 1/1, checks required exact-SHA, Scope Lock y V5, sin degradar gates.
+- Sin cambios runtime, produccion o migraciones; conservar FAIL historico, C02-01.M05.04 VALIDANDO, limitaciones SQL preferencia JWT reissue navegacion Angular, A5 independiente y revert normal.
+
 ## 2026-11-20 - DEV03 V22 C02-01.M05.04: workflow causal de autorizacion tenant y 16 negativos xUnit
 - Corregir on.push.paths: cada cambio en politica Application o sus tests activa el mismo workflow real signed JWT/HTTP/MySQL 8.4; ya no depender solo del archivo Integration y YAML.
 - Agregar TRX xUnit independiente con >=16 casos, 0 FAIL/0 NOT_EXECUTED, incluyendo cancelacion no cooperativa, preference actor ajeno, A/B, JWT y tenants revocados; preservar TRX existente 1/1 MySQL real. Sin runtime, migraciones o datos productivos.
