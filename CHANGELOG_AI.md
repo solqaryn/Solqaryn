@@ -1,3 +1,8 @@
+## 2026-11-21 — V22 DEV03 C06-01.M03.04: snapshot de borradores aislados en MySQL 8.4
+- Implementa adaptador ADO.NET read-only `C0601IsolatedLandingMySqlSnapshotAdapter` con filtro tenant de servidor y slug canonico, `REPEATABLE READ`, metadatos de borrador, rollback y denegacion por defecto; nunca habilita publicacion, contenido privado, SEO/legal ni mutaciones.
+- Incorpora prueba adversarial `Category=Integration` de MySQL fisico 8.4 efimero con A/B, version/estado corruptos, inyeccion de slug, cancelacion, tabla ausente y cero escrituras; workflow GitHub-hosted exact-SHA con TRX obligatorio y Scope Lock STRICT.
+- Alcance PLAN D881 R2: **adaptador aislado**, no migraciones Aiven, no DI/API runtime, no JWT/HTTP comercial ni finalizacion de M03. A0-A4 se certifican solo tras CI real; A5 corresponde a otra Task Javier, sin QA/main/PROD. Rollback mediante git revert normal.
+
 ## 2026-11-21 — DEV04 V22 reparacion causal landmark audit y CI C07-01.M04.01
 - Se corrige un defecto semantico real en la pantalla privada de auditoria operativa: el contenedor exterior era section y las pruebas reales Vitest/Chromium de regresion exigian main con titulo accesible. Se cambia solo la etiqueta exterior, sin alterar auth, permisos, rutas, APIs ni estados.
 - Se conserva la regresion adversarial original C15-05; la CI GitHub-hosted del nuevo SHA debe confirmar el resultado. El test dirigido C07-01.M04.01 ya probaba 4/4 con HTTP/JWT sintetico, sin certificar MySQL/JWT firmado.
