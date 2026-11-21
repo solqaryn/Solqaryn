@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV01 V22 C01-02.M04.06 densidad y carga progresiva
+- Nueva suite Playwright/Chromium dirigida con tres casos: 320/375/768/1280 sin desbordamiento de tarjetas, sesión retenida sin contenido previo a la verificación y 503 opaco sin mutaciones; medición DOMContentLoaded local sin prometer SLA.
+- Riesgo R1 de test-only y docs, sin cambio de componentes, endpoints, JWT, MySQL, tenant A/B ni PROD. SKREF-10 angular/angular@6808966993bf2b2d455d9b6245e960a59a01b9a9 consultada. V17/CAS fila 205, A0–A4 dependientes de CI exact-SHA, A5 genuina otra Task Javier; rollback normal git revert.
+
 ## 2026-11-20 — DEV05 V22 C02-03.M03.03 alias numerico de tenant, denegacion por defecto
 - Seguridad R2: el gate Application de ciclo de vida rechaza alias decimales no canonicos (01/001/000123) antes del lector MySQL, preservando ID 1-9 y opacos. Un alias de SQL INT no debe producir un segundo nombre de tenant autorizado.
 - Pruebas adversariales xUnit y caso nuevo JWT firmado + HTTP TestServer + MySQL 8.4 efimero que exige 403 con alias del tenant A y mantiene negativos de tenant B/revocacion, sin certificar un adaptador de produccion.
