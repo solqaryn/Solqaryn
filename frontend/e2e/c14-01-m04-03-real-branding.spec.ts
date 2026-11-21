@@ -1,8 +1,8 @@
 import { expect, test, type Page } from '@playwright/test';
 
-// V21 C14-01.M04.03: JWT, membresias y API reales en MySQL efimero.
-// Solo el proveedor de branding publico se intercepta para fijar la marca
-// y probar la UI deterministamente; NO se acredita el proveedor real.
+// V22 C14-01.M04.03: JWT, membresias y proveedor tenant privado reales en MySQL efimero.
+// Unicamente la prueba negativa de consola global intercepta branding publico;
+// A/B validan la API privada real con JWT, MySQL y Chromium.
 const api = process.env['C1504_API_URL'];
 const password = process.env['C1504_TEST_PASSWORD'];
 if (process.env['CI'] !== 'true' || api !== 'http://127.0.0.1:5005' || !password) {
@@ -65,6 +65,12 @@ async function ingresarEmpresa(page: Page, user: string, id: number, nombre: str
   expect(brand?.data?.nombre).toBe(nombre);
   const foreignBrand = await page.request.get(api + '/empresa-configuracion/tenant/' + (id === 1 ? 2 : 1), { headers });
   expect([403, 404], 'Marca tenant ajena denegada en API real').toContain(foreignBrand.status());
+  const guessedSelector = await page.request.get(api + '/empresa-configuracion/tenant/' + id, {
+    headers: { ...headers, 'X-Empresa-Id': String(id === 1 ? 2 : 1) }
+  });
+  expect([403, 404, 503], 'Un selector de tenant cruzado no autoriza marca').toContain(guessedSelector.status());
+  const unauthenticatedBrand = await page.request.get(api + '/empresa-configuracion/tenant/' + id);
+  expect(unauthenticatedBrand.status(), 'La marca privada exige JWT').not.toBe(200);
   await page.evaluate(tenantId =>
     localStorage.setItem('solqaryn_empresa_solicitada_id', String(tenantId)), id);
   const checked = page.waitForResponse(r =>

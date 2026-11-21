@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV01 V22 C14-01.M04.03: autorizar lectura privada tenant con cuarentena P0 intacta
+- E2E real SHA 0fbd436c job 136708151531 probó backend JWT/MySQL y Chromium: A/B recibían 503 al leer /empresa-configuracion/tenant/{id}; el guard P0 bloqueaba también la ruta privada antes de MVC. FAIL histórico intacto.
+- Se habilita SOLO GET exacto de marca tenant con JWT, membresía SQL viva, permiso Configuracion.Ver, selector no cruzado, doble chequeo MVC/service y cache privada no-store. No se abre GET /publica, CRUD, pagos ni otras rutas. Pruebas negativas E2E de header falsificado y sin JWT. CI R2 exact-SHA pendiente, A5 independiente posterior.
+
 ## 2026-11-20 — DEV01 V22 C04-04.M03.03: reparar los dos RequestDelegate de TestServer ASP0016
 - CI Release job 136708153079 en SHA 0fbd436c mostró ASP0016; ambos endpoints de TestServer para Oracle EF/MySQL JWT requieren RequestDelegate(HttpContext) explícito, sin tocar assertions de tenant A/B, permisos, forged token ni lógica productiva.
 - R2 test-only; FAIL y A5 históricos conservados, nuevas CI Release/ScopeLock/V5 y A5 independiente requeridas antes de certificar el cambio; no QA/main/PROD ni PSP real.

@@ -141,6 +141,42 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             return;
         }
 
+        // V22 C14-01.M04.03: unica lectura privada de branding tenant-first,
+        // con JWT vigente, membresia actual y RBAC de Configuracion.Ver.
+        // Nunca habilita /empresa-configuracion/publica, rutas vecinas ni mutadores.
+        if (TryParseExactPrivateTenantBrandingRead(httpContext.Request, out var brandingEmpresaId))
+        {
+            if (httpContext.User.Identity?.IsAuthenticated != true)
+            {
+                await RechazarAsync(httpContext);
+                return;
+            }
+
+            // El header es solo un selector, nunca autoridad. Si existe debe
+            // coincidir con el ID exacto de ruta; rechazar selectors cruzados.
+            var selector = httpContext.Request.Headers[TenantPermissionContext.EmpresaHeader];
+            if (selector.Count > 0 &&
+                (selector.Count != 1 || !int.TryParse(selector[0], out var selectedId) ||
+                 selectedId != brandingEmpresaId))
+                throw new ForbiddenAccessException("Selector de tenant ambiguo o ajeno.");
+
+            var scope = await httpContext.RequestServices
+                .GetRequiredService<IUsuarioScopeService>()
+                .ObtenerActualAsync(brandingEmpresaId, httpContext.RequestAborted);
+            if (scope is null || scope.EmpresaId != brandingEmpresaId)
+                throw new ForbiddenAccessException("Membresia tenant no autorizada.");
+
+            await httpContext.RequestServices.GetRequiredService<IPermisoService>()
+                .VerificarPermisoAsync(
+                    brandingEmpresaId, ModuloSistema.Configuracion, AccionPermiso.Ver);
+            // MVC vuelve a comprobar el permiso y el service vuelve a consultar
+            // la membresia. No dejar caches compartidos ni etags privados.
+            httpContext.Response.Headers.CacheControl = "private, no-store, max-age=0";
+            httpContext.Response.Headers.Remove("ETag");
+            await _next(httpContext);
+            return;
+        }
+
         // P1-005.A: solo administración empresarial con rol y permisos VIVOS.
         // El selector X-Empresa-Id nunca autoriza; se releen membresía y RBAC.
         // No abre rutas ERP, catálogo global de permisos ni mutadores de plataforma.
@@ -878,6 +914,22 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         await context.Response.WriteAsJsonAsync(
             new { success = false, code },
             context.RequestAborted);
+    }
+
+    private static bool TryParseExactPrivateTenantBrandingRead(
+        HttpRequest request, out int empresaId)
+    {
+        empresaId = 0;
+        if (!HttpMethods.IsGet(request.Method)) return false;
+        var parts = request.Path.Value?.Split('/', StringSplitOptions.None);
+        if (parts is not { Length: 4 } || parts[0] != "" ||
+            !parts[1].Equals("empresa-configuracion", StringComparison.OrdinalIgnoreCase) ||
+            !parts[2].Equals("tenant", StringComparison.OrdinalIgnoreCase))
+            return false;
+        var rawId = parts[3];
+        return rawId.Length is > 0 and <= 10 &&
+            rawId.All(c => c is >= '0' and <= '9') &&
+            int.TryParse(rawId, out empresaId) && empresaId > 0;
     }
 
     private static bool EsRutaAdministracionEmpresa(

@@ -7,6 +7,8 @@ on:
       - 'frontend/e2e/c14-01-m04-03-real-branding.spec.ts'
       - 'frontend/src/app/services/empresa-identidad.service.ts'
       - 'frontend/src/app/app.component.ts'
+      - 'frontend/src/app/app.component.spec.ts'
+      - 'backend/src/API/Middleware/UnscopedCommercialTenantGuardMiddleware.cs'
       - 'frontend/src/app/features/login/login.component.html'
   workflow_dispatch:
 permissions:
