@@ -8,6 +8,7 @@ on:
       - 'frontend/src/app/features/plataforma/c04-01-m04-01-planes-readonly.component.ts'
       - 'frontend/src/app/features/plataforma/c04-01-m04-01-planes-readonly.component.spec.ts'
       - 'frontend/e2e/c04-01-m04-01-planes-readonly.spec.ts'
+      - 'scripts/quality/priority4_quality_audit.py'
   workflow_dispatch:
 permissions:
   contents: read
@@ -39,6 +40,10 @@ jobs:
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           cd ..
           node scripts/verify-project-scope.mjs
+      - name: V5 priority4 guard audit (unknown routes still denied)
+        run: |
+          cd ..
+          python3 scripts/quality/priority4_quality_audit.py
       - name: Install dependencies locked
         run: npm ci
       - name: Vitest private route and fail-closed revocation

@@ -1,3 +1,8 @@
+## 2026-11-21 - DEV03 V22 C04-01.M04.01 reparacion gate ERP para ruta privada exacta
+- GitHub-hosted ERP - Contratos, pruebas y build falló para SHA c739d58a con FRONTEND_ROUTE_SECURITY_CONTRACT UNGUARDED aunque el nuevo path plataforma/catalogo-planes-v22 ya declaraba canActivate [plataformaGuard]; la auditoría mantiene una allowlist explícita de rutas de plataforma exactas.
+- Reparación mínima fail-closed: incorporar exclusivamente el path exacto nuevo a la allowlist existente, sin cambiar comprobaciones de JWT local, HTTP de sesión, ámbito Plataforma, esAdministrador, negative access ni aceptar prefijos/comodines arbitrarios. El workflow dirigido ejecuta ahora el mismo audit Python, además de Angular Vitest y Playwright Chromium.
+- H VALIDANDO e I del autor preservados para C04-01.M04.01, V17 exclusivo y nueva CI exact-SHA pendiente; ni error histórico ni tests cancelados se convierten en PASS, A5 por otra Task Javier; no QA/main/PROD.
+
 ## 2026-11-21 - DEV03 V22 C04-01.M04.01 reparacion dirigida de Vitest TS2352
 - GitHub-hosted job 136787387127 de SHA ca6afbe976a9c18c960658c84f75fd6497481e9c terminó FAILURE en Angular compiler TS2352, en la prueba negativa de sesión revocada: el fixture esAdministrador:false contradice deliberadamente el tipo restrictivo esAdministrador:true del contrato de plataforma.
 - Corrección mínima en el test: as unknown as PlataformaSesion únicamente al crear el estado adversarial; no se relaja la interfaz productiva, el guard ni la autorización. Reejecutar Vitest, Angular build y Chromium real en nuevo SHA; no tomar FAILURE como PASS ni cerrar LISTO sin A0-A4.
