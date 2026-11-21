@@ -65,18 +65,29 @@ test('C06-01.M04.03 never leaks private business API or double-submits brand sel
   expect(mutations).toEqual([]);
 });
 
-test('C06-01.M04.03 real Chromium page-scale 200 percent works without mutating auth', async ({ page }) => {
+test('C06-01.M04.03 real Chromium page-scale 200 percent keyboard use', async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 800 });
   await page.goto('/conoce-solqaryn');
   const cdp = await page.context().newCDPSession(page);
   try {
     await cdp.send('Emulation.setPageScaleFactor', { pageScaleFactor: 2 });
-    expect(await page.evaluate(() => window.visualViewport?.scale ?? 1)).toBeGreaterThanOrEqual(1.8);
-    await page.getByTestId('c0601-brand-toggle').click();
+    const scale = await page.evaluate(() => window.visualViewport?.scale ?? 1);
+    expect(scale, 'real visual viewport scale, not a CSS zoom mock').toBeGreaterThanOrEqual(1.8);
+    const toggle = page.getByTestId('c0601-brand-toggle');
+    for (let n = 0; n < 7; n++) {
+      if (await toggle.evaluate(element => element === document.activeElement)) break;
+      await page.keyboard.press('Tab');
+    }
+    await expect(toggle).toBeFocused();
+    await page.keyboard.press('Enter');
     await expect(page.getByTestId('c0601-public-saas-landing')).toHaveAttribute('data-brand-theme', 'contraste');
-    await test.info().attach('escala-visual-200-chromium', { body: await page.screenshot({ fullPage: true }), contentType: 'image/png' });
+    // Before/after captures at five viewport widths are in the preceding browser test.
+    // Do not use Playwright's pointer auto-scroll or a full-page screenshot while
+    // CDP pinch scale 2 clips the visual viewport: both can hang on Chromium CI.
   } finally {
-    await cdp.send('Emulation.setPageScaleFactor', { pageScaleFactor: 1 });
-    await cdp.detach();
+    if (!page.isClosed()) {
+      try { await cdp.send('Emulation.setPageScaleFactor', { pageScaleFactor: 1 }); } catch {}
+    }
+    try { await cdp.detach(); } catch {}
   }
 });
