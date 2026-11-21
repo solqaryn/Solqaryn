@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV03 V22 C01-02.M05.01: matriz unitaria reproducible de capabilities
+- Test-only xUnit: precondiciones positivas sin autorización de runtime, catorce casos adversariales tenant B/actor/rol/sucursal/revocación/RBAC/plan/rubro/denylist y fronteras canónicas 96/97.
+- PLAN D206 es una prueba de regla individual, no cierre M05/M06; sin tocar API, JWT, EF/MySQL, UI, migraciones ni secretos. CI GitHub-hosted exact-SHA y A0–A4 a verificar; A5 independiente.
+- Scope Lock STRICT, dev solo, BITACORA inmutable; rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-20 — DEV01 V22 C14-01.M04.03: aserción coherente P0 público y branding tenant privado
 - GitHub-hosted V21 real Chromium/MySQL job 136710123697 SHA 6560d2e8 pasó A/B JWT y plataforma, pero falló 1/4: la expectativa heredada pedía SOLQARYN incluso después de autenticación A y lectura autorizada de nombre/logo privados, comportamiento que ya fue corregido por el código.
 - El test mantiene 503 público P0, exige marca A y logo SQL tras JWT válido, ausencia de B; no simula seguridad ni debilita negativos. R2 test-only. Nueva CI exact-SHA y A5 independiente antes de LISTO, sin QA/main/PROD.
