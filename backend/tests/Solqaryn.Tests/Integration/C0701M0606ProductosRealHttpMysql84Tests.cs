@@ -206,6 +206,68 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             }
 
 
+            // Strict audit is required for every material product write,
+            // not only Create. A failed injected audit must roll back the
+            // actual Oracle EF/MySQL transaction in the same isolated schema.
+            // This is a NEGATIVE real-DB proof, not a positive durable audit
+            // or permission to bypass private HTTP write quarantine.
+            async Task AssertStrictAuditRollbackAsync(
+                AccionPermiso action, Func<ProductoService, Task> mutation)
+            {
+                await using (var changeDb = new AppDbContext(options,
+                    tenantHttpContextAccessor: auditAccessor))
+                {
+                    var actor = new Mock<ICurrentUserService>();
+                    actor.SetupGet(x => x.UsuarioId).Returns(userA.Id);
+                    actor.SetupGet(x => x.NombreUsuario).Returns(userA.NombreUsuario);
+                    var unavailableAudit = new Mock<IAuditoriaService>();
+                    unavailableAudit.Setup(x => x.RegistrarEstrictoAsync(
+                        ModuloSistema.Productos, action,
+                            It.IsAny<string>(), It.IsAny<int?>(),
+                            It.IsAny<string?>(), It.IsAny<object?>(),
+                            It.IsAny<object?>(), It.IsAny<string?>(),
+                            It.IsAny<string>(), It.IsAny<string?>()))
+                        .ThrowsAsync(new InvalidOperationException(
+                            "AUDIT_PERSISTENCE_UNAVAILABLE"));
+                    var service = new ProductoService(
+                        new ProductoRepository(changeDb),
+                        new CategoriaRepository(changeDb),
+                        Mock.Of<IImageStorageService>(), actor.Object,
+                        unavailableAudit.Object, httpContextAccessor: auditAccessor);
+                    var failure = await Assert.ThrowsAsync<InvalidOperationException>(
+                        () => new UnitOfWork(changeDb).ExecuteInTransactionAsync(
+                            async () => await mutation(service)));
+                    Assert.Equal("AUDIT_PERSISTENCE_UNAVAILABLE", failure.Message);
+                    unavailableAudit.Verify(x => x.RegistrarEstrictoAsync(
+                        ModuloSistema.Productos, action,
+                        It.IsAny<string>(), It.IsAny<int?>(),
+                        It.IsAny<string?>(), It.IsAny<object?>(),
+                        It.IsAny<object?>(), It.IsAny<string?>(),
+                        It.IsAny<string>(), It.IsAny<string?>()), Times.Once);
+                }
+                await using (var readback = new AppDbContext(options))
+                {
+                    var untouched = await readback.Productos
+                        .IgnoreQueryFilters().AsNoTracking()
+                        .SingleAsync(p => p.Id == productAId);
+                    Assert.Equal("C0701RealProductoA", untouched.Nombre);
+                    Assert.True(untouched.Activo);
+                    Assert.False(untouched.Eliminado);
+                    Assert.Equal(100m, untouched.Precio);
+                }
+            }
+
+            await AssertStrictAuditRollbackAsync(AccionPermiso.Editar,
+                service => service.UpdateAsync(productAId,
+                    new UpdateProductoDto
+                    {
+                        Nombre = "C0701AuditRejectedEdit" + Guid.NewGuid().ToString("N")
+                    }));
+            await AssertStrictAuditRollbackAsync(AccionPermiso.Desactivar,
+                service => service.CambiarEstadoAsync(productAId, false));
+            await AssertStrictAuditRollbackAsync(AccionPermiso.EliminarLogico,
+                service => service.DeleteAsync(productAId));
+
             // Real Oracle EF/MySQL transaction rollback at the tenant-bound
             // persistence layer. This is NOT HTTP CRUD acceptance: writes
             // through ProductosController still require separate coverage.

@@ -1,3 +1,7 @@
+## 2026-11-21 — V23 C07-01.M06.06 rollback ante auditoría fallida en actualización/estado/borrado [Javier :00]
+- Endurece ProductoService.UpdateAsync, CambiarEstadoAsync y DeleteAsync: auditoría estricta dentro de UnitOfWork, con propagación del fallo para rollback, sin desactivar autorizaciones ni habilitar escrituras privadas.
+- Amplía prueba de integración adversarial Oracle EF/MySQL 8.4 efímero para edición, desactivación y eliminación lógica; exige que al fallar auditoría no cambien nombre/estado/eliminación, con readback físico desde DbContext nuevo.
+- Incremento R2 en C07-01.M06.06 EN_PROGRESO con V17 propio: falta CI GitHub-hosted exact-SHA, auditoría durable positiva, HTTP POST/PUT real autorizado, variantes y navegador Angular conectado. No es LISTO ni A5, rollback mediante git revert normal, sin QA/main/PROD.
 ## 2026-11-21 — V23 C07-01.M06.06 auditabilidad transaccional real [Javier :00]
 - Corrige en ProductoService.CreateAsync el alta comercial que antes toleraba fallos de auditoria: ahora RegistroEstrictoAsync propaga error y obliga rollback de UnidadDeTrabajo, sin abrir piloto de escritura.
 - Prueba adversarial integrada Oracle EF/MySQL 8.4 en GitHub-hosted: auditoria inyectada falla; UnitOfWork real debe revertir Producto persistido; segunda conexion confirma cero filas. El error de auditoria se simula, no se declara audit log real positivo.

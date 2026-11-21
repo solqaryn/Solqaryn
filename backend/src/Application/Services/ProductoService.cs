@@ -235,7 +235,7 @@ public class ProductoService : IProductoService
 
         await _repository.SaveChangesAsync();
 
-        await _auditoria.RegistrarAsync(
+        await _auditoria.RegistrarEstrictoAsync(
             ModuloSistema.Productos,
             AccionPermiso.Editar,
             $"Producto actualizado: {producto.Nombre}.",
@@ -270,7 +270,7 @@ public class ProductoService : IProductoService
 
         await _repository.SaveChangesAsync();
 
-        await _auditoria.RegistrarAsync(
+        await _auditoria.RegistrarEstrictoAsync(
             ModuloSistema.Productos,
             activo ? AccionPermiso.Activar : AccionPermiso.Desactivar,
             $"Producto {(activo ? "activado" : "desactivado")}: {producto.Nombre}.",
@@ -309,7 +309,7 @@ public class ProductoService : IProductoService
         var guardado = await _repository.SaveChangesAsync();
         if (guardado)
         {
-            await _auditoria.RegistrarAsync(
+            await _auditoria.RegistrarEstrictoAsync(
                 ModuloSistema.Productos,
                 AccionPermiso.EliminarLogico,
                 $"Producto eliminado lógicamente: {producto.Nombre}.",
