@@ -5,7 +5,7 @@ BRANCH=dev
 
 ## A0. Objetivo y cambio
 
-Una suite de Integration ejecuta el **ProductosController real** y el **GET /productos** bajo ASP.NET Core TestServer, validación de JWT firmado, CurrentUserService y servicios verdaderos de membresía y autorización IPermisoService sobre Oracle EF y MySQL 8.4 efímero. ProductoService y ProductoRepository son reales, ejecutan lectura relacional. Los doubles de IUnitOfWork, IAuditoriaService, IImageStorageService y IProductoVarianteService satisfacen dependencias constructoras de otras acciones de escritura nunca invocadas; no acreditan CRUD/archivos/auditoría. No se inserta catálogo comercial: el resultado positivo solo demuestra acceso y consulta vacía por la API real.
+Una suite de Integration ejecuta el **ProductosController real** y el **GET /productos** bajo ASP.NET Core TestServer, validación de JWT firmado, CurrentUserService y servicios verdaderos de membresía y autorización IPermisoService sobre Oracle EF y MySQL 8.4 efímero. ProductoService y ProductoRepository son reales, ejecutan lectura relacional. Los doubles de IUnitOfWork, IAuditoriaService, IImageStorageService y IProductoVarianteService satisfacen dependencias constructoras de otras acciones de escritura nunca invocadas; no acreditan CRUD/archivos/auditoría. Se insertan físicamente productos A/B en MySQL 8.4 mediante un AppDbContext con marca comercial server-side VerifiedCommercialTenant; el GET real devuelve solo el producto propio de cada usuario firmado y oculta ID ajeno con 404.
 
 A1/A2 dirigidas: token anónimo o manipulado => 401; JWT verdadero de A al seleccionar B y de B al seleccionar A => 403; A y B con membresía propia y grants vigentes => 200; membresía A revocada con JWT no expirado => 403; al reactivar membresía => 200; grant Productos.Ver revocado en base => 403, sin revocar el grant de B. Una cabecera X-Empresa-Id actúa exclusivamente como selector y no como autoridad.
 
@@ -13,8 +13,12 @@ A3 dirigida: esquema único aleatorio en mysql:8.4 loopback, base bootstrap exac
 
 ## Limitación explícita, sin certificación de fase
 
-Este incremento todavía **NO** certifica escrituras reales de Producto y Variante, aislamiento de filas de producto materializadas, conflictos de versión, rollback transaccional de catálogo, navegador Angular conectado a API firmada, auditoría persistente, API productiva hospedada ni migraciones globales Oracle EF. Por ello mantener C07-01.M06.06 EN_PROGRESO y el namedRange V17 legítimo de DEV01. El objetivo E1045 de fase acumulada sigue abierto; agregar pruebas A0-A4 para estos faltantes y obtener SUCCESS exact-SHA antes de VALIDANDO/LISTO. A5 únicamente por una Task Javier distinta. No tocar QA/main/PROD/Aiven ni secretos.
+Este incremento todavía **NO** certifica escrituras reales de Producto y Variante, conflictos de versión, rollback transaccional de catálogo, navegador Angular conectado a API firmada, auditoría persistente, API productiva hospedada ni migraciones globales Oracle EF. Por ello mantener C07-01.M06.06 EN_PROGRESO y el namedRange V17 legítimo de DEV01. El objetivo E1045 de fase acumulada sigue abierto; agregar pruebas A0-A4 para estos faltantes y obtener SUCCESS exact-SHA antes de VALIDANDO/LISTO. A5 únicamente por una Task Javier distinta. No tocar QA/main/PROD/Aiven ni secretos.
 
 ## Impacto y rollback
 
 Solo test de backend, workflow de CI dirigido, este documento y CHANGELOG_AI íntegro. No API/runtime/config productiva, BD, contrato DTO, feature flag o migración. Ante falla de CI, examinar TRX/log y corregir el defecto específico en un siguiente commit FF/CAS; nunca reclasificar FAIL/SKIPPED como PASS. Deshacer un incremento incorrecto mediante git revert seguro con HEAD actualizado y readback; sin force-push o limpieza histórica.
+
+## Segundo incremento: pertenencia real de filas en MySQL 8.4
+
+Inserción de dos productos de catálogo A/B en el esquema MySQL efímero bajo marca server-side. La respuesta de /productos obliga a contener solo el nombre propio y a no exponer el ajeno; GET /productos/{id} cruzado exige 404. **No se ejecuta el middleware de cuarentena UnscopedCommercialTenantGuardMiddleware completo dentro de este TestServer reducido**, ni se acredita POST/PUT, variantes, transacción/rollback, Angular/Chromium o servicios externos. No certificar el objetivo E1045 completo por un test HTTP aislado.

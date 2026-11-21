@@ -1,3 +1,8 @@
+## 2026-11-21 — V22 DEV01 C07-01.M06.06: evidencia física productos A/B Oracle EF
+- La ruta real /productos ahora verifica productos de dos tenants materializados por AppDbContext con marca autorizada de servidor en MySQL 8.4: A nunca ve B, B nunca ve A, GET de ID ajeno devuelve 404.
+- Continúan exigibles CI exact-SHA y pruebas de cuarentena middleware completa, CRUD variantes/rollback, Angular-HTTP y auditoría; no declarar LISTO ni A5 sin ellas.
+- Desarrollo FF/CAS en dev con lock V17 propio, sin secretos/PROD y sin borrar el CHANGELOG previo.
+
 ## 2026-11-21 — V22 DEV01 C07-01.M06.06: prueba productiva HTTP JWT RBAC MySQL 8.4
 - Implementación incremental de pruebas en /productos (controller real), JWT HMAC verificado y permisos/membresías reales Oracle EF MySQL 8.4; negativos A/B, JWT falsificado, revocación de rol/membresía.
 - Workflow GitHub-hosted dedicado con mysql:8.4 efímero, Scope Lock exact-SHA y TRX 0 FAIL/0 SKIP requerido; NO se presume PASS hasta finalización real.

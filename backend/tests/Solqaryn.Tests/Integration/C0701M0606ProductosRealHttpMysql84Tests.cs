@@ -6,6 +6,7 @@ using System.Text;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
@@ -117,6 +118,34 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             await db.SaveChangesAsync();
             db.ChangeTracker.Clear();
 
+            // Real tenant-owned products, seeded only using a server-side verified
+            // commercial authority, never by trusting the request header.
+            async Task<int> SeedOwnedProductAsync(int tenantId, string name)
+            {
+                var request = new DefaultHttpContext();
+                request.Items[
+                    Solqaryn.Application.Security.VerifiedCommercialTenant
+                        .AuthorizedEmpresaIdItemKey] = tenantId;
+                var accessor = new HttpContextAccessor { HttpContext = request };
+                await using var owned = new AppDbContext(options,
+                    tenantHttpContextAccessor: accessor);
+                var category = new Categoria { Nombre = "Category " + name };
+                owned.Categorias.Add(category);
+                await owned.SaveChangesAsync();
+                var product = new Producto
+                {
+                    Nombre = name, Marca = "", Modelo = "",
+                    Precio = 100m, Costo = 50m, CategoriaId = category.Id
+                };
+                owned.Productos.Add(product);
+                await owned.SaveChangesAsync();
+                Assert.Equal(tenantId, product.EmpresaId);
+                return product.Id;
+            }
+            var productAId = await SeedOwnedProductAsync(a.Id, "C0701RealProductoA");
+            var productBId = await SeedOwnedProductAsync(b.Id, "C0701RealProductoB");
+
+
             // Product and RBAC services/repositories are real. Mocked dependencies
             // belong only to other (uninvoked) CRUD methods of the controller.
             using var host = await new HostBuilder()
@@ -180,9 +209,42 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 Assert.Equal(HttpStatusCode.Unauthorized, forged.StatusCode);
 
             Assert.Equal(HttpStatusCode.OK, await ReadStatusAsync(client, a.Id, jwtA));
+
+            // Physical product rows in the same MySQL schema must remain isolated
+            // by the real controller, RBAC filter, service and EF query filter.
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", jwtA);
+            client.DefaultRequestHeaders.Remove("X-Empresa-Id");
+            client.DefaultRequestHeaders.TryAddWithoutValidation(
+                "X-Empresa-Id", a.Id.ToString());
+            using (var ownA = await client.GetAsync("/productos?page=1&pageSize=10"))
+            {
+                Assert.Equal(HttpStatusCode.OK, ownA.StatusCode);
+                var json = await ownA.Content.ReadAsStringAsync();
+                Assert.Contains("C0701RealProductoA", json, StringComparison.Ordinal);
+                Assert.DoesNotContain("C0701RealProductoB", json, StringComparison.Ordinal);
+            }
+            using (var foreignA = await client.GetAsync($"/productos/{productBId}"))
+                Assert.Equal(HttpStatusCode.NotFound, foreignA.StatusCode);
+
             Assert.Equal(HttpStatusCode.Forbidden, await ReadStatusAsync(client, b.Id, jwtA));
             var jwtB = Sign(userB.Id, roleB.Id);
             Assert.Equal(HttpStatusCode.OK, await ReadStatusAsync(client, b.Id, jwtB));
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", jwtB);
+            client.DefaultRequestHeaders.Remove("X-Empresa-Id");
+            client.DefaultRequestHeaders.TryAddWithoutValidation(
+                "X-Empresa-Id", b.Id.ToString());
+            using (var ownB = await client.GetAsync("/productos?page=1&pageSize=10"))
+            {
+                Assert.Equal(HttpStatusCode.OK, ownB.StatusCode);
+                var json = await ownB.Content.ReadAsStringAsync();
+                Assert.Contains("C0701RealProductoB", json, StringComparison.Ordinal);
+                Assert.DoesNotContain("C0701RealProductoA", json, StringComparison.Ordinal);
+            }
+            using (var foreignB = await client.GetAsync($"/productos/{productAId}"))
+                Assert.Equal(HttpStatusCode.NotFound, foreignB.StatusCode);
+
             Assert.Equal(HttpStatusCode.Forbidden, await ReadStatusAsync(client, a.Id, jwtB));
 
             var membershipA = await db.UsuarioEmpresas
