@@ -1,3 +1,9 @@
+## 2026-11-21 — V22 DEV01 C04-02.M03.04: adaptador aislado real MySQL 8.4 para contratos
+
+- Implementa lector ADO.NET versionado, filtro SQL tenant/contrato, aislamiento de lectura, validacion de estado, rollback y denegacion por defecto; no registra DI ni crea tablas en SaaS real.
+- Agrega xUnit Category=Integration contra MySQL 8.4 efimero GitHub-hosted para tenant A/B, versiones, estados, cancelacion, base ausente y error; workflow exact-SHA TRX y Scope Lock.
+- Sin acreditacion de D01-D08, las siete banderas de politica permanecen false y PolicyProvenanceVerified=false; no concede contratos, pagos, refunds, migraciones, QA/main/PROD; A5 por Task distinta de DEV01 y CI exact-SHA antes de LISTO.
+
 ## 2026-11-21 — V22 DEV05 reparacion cruzada C06-01.M03.03: alias de tenant firmado
 - Corrige la admision ambigua de rutas empresariales con ceros iniciales en el adaptador DEV-only signed JWT/RBAC y exige representacion decimal canonica de empresa.
 - Agrega dos rechazos HTTP 403 adversariales a la prueba real TestServer/JWT Oracle EF MySQL 8.4, manteniendo el 200 canonico y el aislamiento A/B; pendiente validacion GitHub-hosted exact-SHA, A5 independiente tercera Task Javier; sin publicar, cobrar ni activar producción.
