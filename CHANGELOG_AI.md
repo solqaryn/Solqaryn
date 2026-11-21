@@ -1,3 +1,7 @@
+## 2026-11-21 — DEV04 V22 C04-01.M04.05 Angular Chromium a11y
+- Pruebas E2E reales de la pantalla de suscripción existente: responsive y zoom 200%, Tab sin focus artificial, labels, contraste CSS, rechazos tenant/RBAC sintéticos y filtro GET sin writes.
+- CI dirigida Angular 22.2.1 GitHub-hosted Chromium exact-SHA, A0-A4 pendientes hasta resultado, A5 independiente. Test-only no acredita JWT/EF/MySQL ni billing productivo. Scope Lock STRICT, rollback normal, sin QA/main/PROD.
+
 ## 2026-11-21 - DEV03 V22 C07-01.M03.05 cola aislada catalogo MySQL 8.4
 - Infrastructure: adaptador lease/ACK con CAS tenant/producto/version/revision, sin DI ni migracion productiva.
 - Prueba real MySQL 8.4 efimero de tenant A/B, version/replay/leases, expiracion y cancelacion en GitHub-hosted; no atribuir PASS antes de GHA.
