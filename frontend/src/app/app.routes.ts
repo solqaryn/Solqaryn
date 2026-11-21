@@ -9,7 +9,9 @@ import { PEDIDOS_VENTA_ROUTES } from './features/pedidos-venta/pedidos-venta.rou
 export const routes: Routes = [
   // C06-01.M04.01: public informational SaaS entry, no private data, auth bypass or paid action.
   { path: 'conoce-solqaryn', loadComponent: () => import('./features/landing/c0601-public-saas-landing.component').then(m => m.C0601PublicSaasLandingComponent) },
-  // V23 C06-01.M06.06: public SaaS entry at /; explicit /login remains available.\n  // Private ERP routes keep authGuard + permisoGuard and are never exposed here.\n  { path: '', redirectTo: 'conoce-solqaryn', pathMatch: 'full' },
+  // V23 C06-01.M06.06: public SaaS entry at /; explicit /login remains available.
+  // Private ERP routes keep authGuard + permisoGuard and are never exposed here.
+  { path: '', redirectTo: 'conoce-solqaryn', pathMatch: 'full' },
   // Entrada segura multiempresa. El storefront completo queda cerrado hasta
   // certificar identidad, carrito, cuenta y checkout por tienda (microfases 2/3).
   { path: 'tiendas/:storeKey', loadComponent: () => import('./features/storefront/tienda-vinculacion.component').then(m => m.TiendaVinculacionComponent) },

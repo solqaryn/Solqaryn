@@ -1,3 +1,10 @@
+## 2026-11-21 - V23 C06-01.M06.06 real Chromium root redirect repair [Javier :30]
+- Repaired a causal Angular routing defect: literal escaped `\n` sequences inside a `//` comment swallowed the root `{ path: '', redirectTo: 'conoce-solqaryn' }` route; the public root remained `/` on a real Chromium page.
+- Restored actual line breaks while preserving the existing public presentation, explicit `/login` and private dashboard `authGuard`/`permisoGuard` and routing precedence; no new UI components or auth rules.
+- Evidence: original GitHub-hosted Playwright run 44961917277 job 137022389640 failed root redirect 2/3 with received URL `/`, private denial 1/1 passed. New exact-SHA GitHub-hosted Chromium, build, Scope Lock and V5 are required; no PASS until completed.
+- V23 conditional references: SKREF-03 impeccable pin 2149fcce, SKREF-10 Angular pin 68089669, SKREF-05 Taste pin ccbc1563 consulted at original sources; motion/copy/threat-model/.NET performance NO_APLICA (no corresponding change).
+- Scope C06-01.M06.06 remains VALIDANDO, original owner DEV03 unchanged, repaired by DEV04; A0-A4 still subject to browser/CI and genuine Phase/M06 limitations; independent A5 by Task other than DEV03 and DEV04. Rollback: normal git revert, not force-push. No QA/main/PROD, secrets, payments or BITACORA edits.
+
 ## 2026-11-21 — V23 C06-01.M06.06 reparación de aserción semántica CI [Javier :20]
 - Identifica falla real de C15-01.M04.01 (14/15 Chromium): un selector heredado buscaba main mientras la superficie de cobertura monta section.coverage-shell correctamente etiquetada; test actualizado sin relajar count=1 ni las negativas de permisos.
 - Cambio test-only, sin API/JWT/MySQL, ruta privada, grants o entorno productivo. Validación exact-SHA y regresiones nuevas siguen pendientes; C06-01.M06.06 permanece VALIDANDO y A5 distinta, sin forzar DAG.
