@@ -1,3 +1,8 @@
+## 2026-11-20 - DEV03 V22 C01-02.M05.06 regression JWT / render / accessibility
+- PLAN D211: Five Playwright tests with real signed JWT, ASP.NET Core 10 and ephemeral MySQL 8.4, companies A/B, 320/768/1280 screen, CI render budget, natural Tab/Enter, without mocked HTTP.
+- Dedicated SHA-isolated workflow, no cancellation; Scope Lock, V5 and security required. Until CI completed, A0-A4 and independent A5 remain pending.
+- DEV only; no runtime/production DB/role/secrets/payment changes, no QA/main/PROD. Revert via normal git revert and independent A5.
+
 ## 2026-11-20 — DEV01 V22 C14-01.M05.04 aceptación positiva pública/privada/global
 - PLAN D2045: Playwright Chromium real comprueba login público, JWT tenant A + perfil y branding MySQL 8.4, recarga persistente, y sesión global independiente sin heredar marcas A/B.
 - Reutiliza GitHub-hosted ASP.NET Core/Angular/MySQL V21 por exact SHA, sin mocks, runtime nuevo ni entornos productivos; solo cobertura atómica, no aprobación integral M05/QA.
