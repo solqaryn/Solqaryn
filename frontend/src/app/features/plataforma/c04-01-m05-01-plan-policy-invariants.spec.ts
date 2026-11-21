@@ -71,10 +71,10 @@ describe('C04-01.M05.01 | reglas inmutables de referencia de planes', () => {
   it('revocación después de render impide usar el panel aun si antes fue visible', async () => {
     const { root, sesion, fixture } = await montar();
     expect(root.querySelectorAll('[data-testid^="c0401-section-"]')).toHaveLength(3);
-    sesion.set({ ...global, ambito: 'Empresa' });
+    sesion.set({ ...global, ambito: 'Empresa' } as unknown as PlataformaSesion);
     fixture.detectChanges();
     expect(root.querySelector('[data-testid="c0401-private"]')).toBeNull();
-    sesion.set({ ...global, esAdministrador: false });
+    sesion.set({ ...global, esAdministrador: false } as unknown as PlataformaSesion);
     fixture.detectChanges();
     expect(root.querySelector('[data-testid="c0401-private"]')).toBeNull();
     sesion.set(null);
