@@ -1,3 +1,7 @@
+## 2026-11-21 — V22 C07-01.M06.06 rollback conjunto Producto+Variante Oracle EF/MySQL 8.4 [Javier :00]
+- Integracion adversarial real extendida en GitHub-hosted: dentro de una transaccion del contexto verificado A se crea Producto con Variante ligada, se cambia el precio de un Producto A y se comprueban los tres efectos; tras rollback otro DbContext exige ausencia de nuevas filas y restauracion del precio A, sin certificar HTTP de escritura.
+- Alcance test-only R2, sin cambios runtime/QA/main/PROD, JWT ni secretos. CI exact-SHA dirigida, Scope Lock/V5 y tests de seguridad son gates reales; la entrega M06.06 sigue EN_PROGRESO bajo lock propio V17 hasta CRUD positivo y auditoria/Angular pertinentes, seguida A5 independiente.
+
 ## 2026-11-21 — V22 C02-03.M03.03 identidad canónica de actor JWT firmado [Javier :40]
 - Corregido preflight global DEV: id JWT 0911/000911 no puede representar Usuario.Id 911 aunque esté firmado; identidad canónica positiva y lectura de RolPermiso/Empresa siguen fail-closed sin mutaciones.
 - xUnit adversarial con JwtBearer HTTP real, Oracle EF y MySQL 8.4 efímero para denegar alias y conservar 911; CI exact-SHA pendiente, política durable/CAS de ciclo de vida y A5 independientes aún NO certificados.

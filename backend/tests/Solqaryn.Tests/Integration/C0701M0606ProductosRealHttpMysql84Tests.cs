@@ -151,6 +151,7 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             // persistence layer. This is NOT HTTP CRUD acceptance: writes
             // through ProductosController still require separate coverage.
             var rollbackName = "C0701RollbackProducto" + Guid.NewGuid().ToString("N");
+            var rollbackSku = "C0701RollbackVariante" + Guid.NewGuid().ToString("N");
             var rollbackHttp = new DefaultHttpContext();
             rollbackHttp.Items[
                 Solqaryn.Application.Security.VerifiedCommercialTenant
@@ -173,6 +174,29 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 Assert.Equal(a.Id, temporary.EmpresaId);
                 Assert.Equal(1, await rollbackDb.Productos
                     .CountAsync(p => p.Nombre == rollbackName));
+
+                // El rollback debe cubrir también modificaciones de catálogo
+                // y una variante del mismo tenant, no solo el INSERT de Producto.
+                var persistedA = await rollbackDb.Productos
+                    .SingleAsync(p => p.Id == productAId);
+                persistedA.Precio = 654m;
+                var temporaryVariant = new ProductoVariante
+                {
+                    ProductoId = temporary.Id,
+                    EmpresaId = a.Id,
+                    Sku = rollbackSku,
+                    Cantidad = 1,
+                    Precio = 87m,
+                    Costo = 53m
+                };
+                rollbackDb.ProductoVariantes.Add(temporaryVariant);
+                await rollbackDb.SaveChangesAsync();
+                Assert.Equal(a.Id, temporaryVariant.EmpresaId);
+                Assert.Equal(1, await rollbackDb.ProductoVariantes
+                    .CountAsync(v => v.Sku == rollbackSku));
+                Assert.Equal(654m, await rollbackDb.Productos
+                    .Where(p => p.Id == productAId)
+                    .Select(p => p.Precio).SingleAsync());
                 await transaction.RollbackAsync();
             }
             await using (var verified = new AppDbContext(options,
@@ -180,6 +204,11 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             {
                 Assert.Equal(0, await verified.Productos
                     .CountAsync(p => p.Nombre == rollbackName));
+                Assert.Equal(0, await verified.ProductoVariantes
+                    .CountAsync(v => v.Sku == rollbackSku));
+                Assert.Equal(100m, await verified.Productos
+                    .Where(p => p.Id == productAId)
+                    .Select(p => p.Precio).SingleAsync());
             }
 
 
