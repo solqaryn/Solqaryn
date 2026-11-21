@@ -77,11 +77,13 @@ test('C07-01.M04.04 503 no filtra detalle privado y reintenta',async({page})=>{
   const io=await fixture(page,{failFirst:true});
   await page.goto('/productos');
   await expect(page.getByRole('heading',{name:'Productos',level:1})).toBeVisible();
-  await expect(page.getByText('No se encontraron productos con los filtros seleccionados.').first()).toBeVisible();
+  await expect(page.getByRole('alert')).toContainText('No se pudo cargar el catálogo. Reintenta cuando haya conexión.');
   await expect(page.getByText('PRIVATE_INTERNAL_TENANT_DETAIL')).toHaveCount(0);
   const before=io.reads();
   await page.getByRole('button',{name:'Limpiar filtros'}).click();
   await expect.poll(io.reads).toBeGreaterThan(before);
+  await expect(page.getByText('No se encontraron productos con los filtros seleccionados.').first()).toBeVisible();
+  await expect(page.getByText('PRIVATE_INTERNAL_TENANT_DETAIL')).toHaveCount(0);
   expect(io.writes).toEqual([]);
 });
 test('C07-01.M04.04 anónimo, tenant y rol denegados bloquean formulario',async({context})=>{
@@ -122,7 +124,7 @@ test('C07-01.M04.04 submit reentrante durante POST pendiente solo envía una cre
   await page.locator('article.variant-card input[formcontrolname="cantidad"]').fill('2');
   const submitButton=page.getByRole('button',{name:'Guardar producto'});
   await expect(submitButton).toBeEnabled();
-  await page.locator('form[formgroup]').evaluate(form=>{
+  await page.locator('form[aria-labelledby="producto-form-title"]').evaluate(form=>{
     // ngSubmit is invoked directly twice, bypassing the UI button's disabled state.
     form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
     form.dispatchEvent(new Event('submit',{bubbles:true,cancelable:true}));
