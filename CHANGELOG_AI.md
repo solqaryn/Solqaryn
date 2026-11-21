@@ -1,3 +1,9 @@
+## 2026-11-21 — DEV06 V22 C06-01.M03.03 JWT/tenancy deny-by-default en DEV
+
+- Implementado preflight read-only real con JWT Bearer firmado, membresía empresarial y rol/grant actuales revalidados tras I/O; opt-in OFF por defecto y DI solo Development. No concede publicación, lectura privada, pagos ni emisiones JWT.
+- Nuevos xUnit y workflow GitHub-hosted MySQL 8.4 efímero con TestServer JWT HTTP y revocación SQL; el resultado exact-SHA queda **PENDIENTE hasta CI real**. No presentar mocks, skipped o in-progress como PASS.
+- Autor DEV06, riesgo R2, A5 revisión independiente; M03.04–.06, R3 y PROD no autorizados, rollback normal, historial CHANGELOG preservado.
+
 ## 2026-11-21 — DEV05 V22 C04-02.M03.03: prueba integrada JWT HTTP Oracle EF MySQL 8.4 aislado
 
 - Segundo incremento del mismo scope R2: se agrega un controlador exclusivamente de TestServer y una regresión xUnit Category=Integration con JWT firmado y firma manipulada, empresa A/B, RBAC vigente y revocación real de grant sobre MySQL 8.4 efímero local; servicio auténtico `C0402ContractVerifiedActorSource` sin endpoint productivo ni cambios de modelo.

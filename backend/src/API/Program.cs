@@ -119,6 +119,14 @@ if (builder.Environment.IsDevelopment())
     builder.Services.AddScoped<IC0402VerifiedContractActorSource,
         C0402ContractVerifiedActorSource>();
 }
+// C06-01.M03.03: Development-only signed JWT + real tenant/role grant preflight,
+// opt-in OFF; no public endpoint, publication, payments or production access.
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddScoped<IC0601LandingVerifiedActorReader,
+        C0601LandingVerifiedActorSource>();
+    builder.Services.AddScoped<C0601LandingAuthorizationGate>();
+}
 // C11-03.M03.03: real tenant/JWT/RolPermiso preflight is DEV-only and OFF by default.
 // No outbox write, producer, relay, provider or production registration.
 if (builder.Environment.IsDevelopment())
