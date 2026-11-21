@@ -1,3 +1,8 @@
+## 2026-11-20 - DEV06 V22 C01-02.M06.04 isolated Git rollback rehearsal and safety negatives
+- Implemented GitHub-hosted exact-SHA detached temp worktree revert of test-only commit 844d7fea, checks exact parent blobs for 3 allowlisted code/docs/CHANGELOG files, cleans scratch without writing shared dev or external data.
+- Added Node24 negative/boundary unit tests rejecting migration, secret, duplicate, missing and extra paths; workflow concurrency by sha and contents read-only, no branch/production/database modifications. Do not misrepresent as MySQL/production rollback.
+- Requires directed job SUCCESS plus ScopeLock and V5 exact SHA, A5 independent by a different Javier Task. Full previous CHANGELOG preserved below.
+
 ## 2026-11-20 — DEV05 V22 C01-02.M06.05 independent review request (not an A5 PASS)
 - PLAN D216 request is now a concrete, owner-preserving handoff for an independent Javier Task that must verify per-scope source SHA, exact CI, risk, negative tenant tests, rollout and rollback. The source M05.06 real signed-JWT/Chromium/MySQL job passed 5/5; the request does not approve untested capabilities, M06.01/02/04 or full M06.
 - No runtime/role/data/grant change, no new scheduled task and no self-A5. Scope Lock/V5 exact published SHA, V17 CAS, BITACORA and subsequent independent A5 remain mandatory; no QA/main/PROD.

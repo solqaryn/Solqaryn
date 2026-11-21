@@ -1,0 +1,38 @@
+name: V22 C01-02.M06.04 - isolated reversible Git rollback
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v22-c01-02-m06-04-rollback.yml'
+      - 'scripts/quality/verify-c0102-m0604-rollback.mjs'
+      - 'scripts/quality/verify-c0102-m0604-rollback.test.mjs'
+      - 'docs/v5/c01-02-m06-04-rollback-audit-v22.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c01-02-m06-04-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  isolated-revert:
+    name: C01-02.M06.04 - ephemeral git revert and safety negatives
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Fetch full source history at immutable trigger SHA
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Node 24 CI toolchain
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+      - name: Negative and boundary controls
+        run: node --test scripts/quality/verify-c0102-m0604-rollback.test.mjs
+      - name: Real git revert on detached temporary worktree only
+        run: node scripts/quality/verify-c0102-m0604-rollback.mjs
+      - name: Assert immutable main checkout and no accidental writes
+        run: |
+          test -z "$(git status --porcelain)"
+          test "$GITHUB_SHA" = "$(git rev-parse HEAD)"
