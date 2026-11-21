@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV05 V22 C01-02.M05.03 integracion MySQL8.4 de fuente real de prueba
+- Test Category=Integration ejecuta SQL real en MySQL8.4 efimero GitHub-hosted, schema UUID aislado, proveedor read-through de Infrastructure, tenant A/B, cambios de revocacion, owner cruzado, borrado y cleanup; no simula persistencia con mocks.
+- El proveedor deliberadamente elimina marcas de autoridad productiva: no registra DI/live JWT/RBAC/catálogo comercial, no concede recurso ni modifica producto. CI exact-SHA requerido, no aceptar SKIPPED/FAIL como PASS, mantener A5 independiente; no QA/main/PROD. V17 fila208 y rollback git revert.
+
 ## 2026-11-20 — DEV05 V22 C01-02.M05.02 contrato HTTP/DTO y errores seguros
 - Pruebas xUnit GitHub-hosted con TestServer MVC real, JWT firmado efimero y contratos JSON del controller existente de permisos: 401 sin firma valida, 400 de ID invalido, 403 sin membresia/tenant suspendido y 200 tenant permitido con no-store; endpoint comercial futuro sigue sin registrar (404).
 - Alcance TEST ONLY R2: servicio de permisos Moq y EF InMemory NO representan la base MySQL, RBAC relacional ni JWT de produccion. Sin nuevos endpoints, cambios runtime, grants, migraciones, secretos ni pagos; A0-A4 exact-SHA y A5 independiente pendientes antes de LISTO. V17 exclusivo fila 207, rollback normal y BITACORA aditiva.
