@@ -4,7 +4,7 @@ on:
     branches: [dev]
     paths:
       - 'frontend/e2e/c01-02-m04-06-density-progress.spec.ts'
-      - '.github/workflows/v22-c01-02-m04-06-safe-navigation.yml'
+      - '.github/workflows/v22-c01-02-m04-06-density-progress.yml'
   workflow_dispatch:
 permissions:
   contents: read
@@ -25,6 +25,11 @@ jobs:
     steps:
       - name: Checkout SHA exacto
         uses: actions/checkout@v4
+      - name: Assert workflow self-trigger and test trigger
+        working-directory: .
+        run: |
+          grep -Fq "'frontend/e2e/c01-02-m04-06-density-progress.spec.ts'" .github/workflows/v22-c01-02-m04-06-density-progress.yml
+          grep -Fq "'.github/workflows/v22-c01-02-m04-06-density-progress.yml'" .github/workflows/v22-c01-02-m04-06-density-progress.yml
       - name: Node 24
         uses: actions/setup-node@v4
         with:

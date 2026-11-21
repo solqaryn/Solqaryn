@@ -1,3 +1,7 @@
+## 2026-11-20 — DEV06 V22 C01-02.M04.06 reparacion P2 de auto-trigger CI
+- A5 independiente hallo P2: on.push.paths apuntaba a safe-navigation.yml inexistente y no al propio workflow density-progress.yml, por lo que editar solo YAML podia evitar la CI causal.
+- Corregido path y anadida asercion fail-closed de presencia de dos triggers en GitHub-hosted. Sin cambios Angular runtime/JWT/RBAC/tenant/MySQL. A5_FAIL historico en BITACORA; nueva A5 por Task Javier distinta de DEV01 y DEV06. Validacion exact-SHA obligatoria; sin QA/main/PROD. Rollback git revert.
+
 ## 2026-11-20 — DEV01 V22 C01-02.M04.06 densidad y carga progresiva
 - Nueva suite Playwright/Chromium dirigida con tres casos: 320/375/768/1280 sin desbordamiento de tarjetas, sesión retenida sin contenido previo a la verificación y 503 opaco sin mutaciones; medición DOMContentLoaded local sin prometer SLA.
 - Riesgo R1 de test-only y docs, sin cambio de componentes, endpoints, JWT, MySQL, tenant A/B ni PROD. SKREF-10 angular/angular@6808966993bf2b2d455d9b6245e960a59a01b9a9 consultada. V17/CAS fila 205, A0–A4 dependientes de CI exact-SHA, A5 genuina otra Task Javier; rollback normal git revert.
