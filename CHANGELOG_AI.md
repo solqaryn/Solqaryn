@@ -1,3 +1,7 @@
+## 2026-11-21 — DEV05 V22 C04-01.M04.02 estados Angular SaaS
+- Verifica bajo Chromium real los estados carga/success, 404 vacío sin alta, 503 de límites y reintento, y rechazos por tenant/rol con sesión/HTTP exclusivamente sintéticos.
+- CI GitHub-hosted con Node 24.21.0, Angular 22.2.1 y Project Scope Lock/V5 exact SHA; hasta PASS continúa VALIDANDO, sin JWT/MySQL, pagos ni autorización productiva implicados. A5 de otra Task Javier.
+
 ## 2026-11-21 — DEV04 V22 C07-01.M03.06 auditoria estructurada MySQL 8.4 aislada
 - R2 salida D1027: nuevo journal append-only SQL parametrizado con CAS idempotente por PK, codes seguros, rechazo fail-closed, redacción de errores y consultas limitadas tenant/producto; sin registro de DI ni mutación del outbox anterior.
 - Pruebas xUnit reales MySQL 8.4 efímero contra tenant A/B, replay, input malicioso, aislamiento, cancelación, rollback y ausencia de secretos; GitHub-hosted .NET 10 y TRX, ScopeLock/V5 exact SHA hasta SUCCESS. No HTTP/JWT producto ni R3. A5 independiente, rollback git revert.
