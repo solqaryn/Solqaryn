@@ -2335,4 +2335,49 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     }
   }
 
+  // A0.73: ataque distinto al cambio de firma (A0.72): cabecera "alg":"none"
+  // y firma ausente. API real debe fallar cerrada sin fuga UX ni mutaciones.
+  for (const destino of [
+    { ruta: '/plataforma/continuidad-operativa-v5', titulo: 'Controles de recuperación y aislamiento' },
+    { ruta: '/plataforma/revision-amenazas-v5', titulo: 'Verificaciones de acceso y abuso' },
+    { ruta: '/plataforma/respuesta-incidentes-v5', titulo: 'Respuesta, revocación y recuperación segura' },
+    { ruta: '/plataforma/gobierno-cambios-v5', titulo: 'Decisiones y controles V5' }
+  ]) {
+    for (const ancho of [375, 1280]) {
+      test(`A0.73 - JWT sin firma alg none denegado en ${destino.ruta} a ${ancho}px`,
+        async ({ page, request }) => {
+          await page.setViewportSize({ width: ancho, height: 840 });
+          const jwt = await ingresar(page, 'c1504_platform_only');
+          const autorizada = await request.get(api + '/plataforma/sesion', {
+            headers: { Authorization: 'Bearer ' + jwt }
+          });
+          expect(autorizada.status(), 'Control: JWT real firmado funciona').toBe(200);
+          const partes = jwt.split('.');
+          expect(partes).toHaveLength(3);
+          const cabeceraSinAlgoritmo = 'eyJhbGciOiJub25lIiwidHlwIjoiSldUIn0';
+          const sinFirma = cabeceraSinAlgoritmo + '.' + partes[1] + '.';
+          const denegada = await request.get(api + '/plataforma/sesion', {
+            headers: { Authorization: 'Bearer ' + sinFirma }
+          });
+          expect([401, 403], 'ASP.NET Core nunca acepta alg none').toContain(denegada.status());
+          const escrituras: string[] = [];
+          page.on('request', req => {
+            if (req.url().includes('localhost:5005') &&
+                /^(POST|PUT|PATCH|DELETE)$/.test(req.method())) {
+              escrituras.push(req.method() + ' ' + new URL(req.url()).pathname);
+            }
+          });
+          await page.evaluate(token => localStorage.setItem('solqaryn_token', token), sinFirma);
+          await page.goto(destino.ruta);
+          await expect(page).toHaveURL(/\/login(?:[?#]|$)/);
+          await expect(page.getByRole('heading', { name: destino.titulo })).toHaveCount(0);
+          await expect(page.getByRole('textbox', { name: 'Nombre de usuario' })).toBeVisible();
+          await expect(page.locator('input[formcontrolname="password"]')).toBeVisible();
+          expect(await page.evaluate(() => document.documentElement.scrollWidth),
+            'Reflujo 375/1280 sin datos privados').toBeLessThanOrEqual(ancho + 2);
+          expect(escrituras, 'Un JWT no firmado no habilita mutaciones').toEqual([]);
+        });
+    }
+  }
+
 });

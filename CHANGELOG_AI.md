@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV02 V22 C15-04.M05.04 A0.73 JWT sin firma alg none
+
+- Ocho pruebas adversariales nuevas en cuatro guias privadas y 375/1280 con JWT real de ASP.NET Core, MySQL 8.4 efimero y Chromium: control 200, alg none sin firma rechazado 401/403, guard Angular a login, sin contenido privado, sin mutaciones.
+- Solo TEST-ONLY R2. Mantener H=EN_PROGRESO/I=DEV02 y candado SQV17_C15_04_M05_04; no certificar A0–A4 globales ni A5 hasta verificaciones completas exact-SHA. Evidencia docs/v5/c15-04-m05-04-global-ux-acceptance.md y frontend/e2e/c15-04-m05-04-jwt-real.spec.ts.
+
 ## 2026-11-20 — DEV06 V22 rescate C05-04.M05.06 accesibilidad teclado Chromium
 - Añade quinto escenario Playwright con Tab/Enter real desde el inicio, sin `.focus()`, que comprueba enfoque del summary, alternador de densidad y ausencia de GET duplicado.
 - Aumenta exigencia de CI dirigida de cuatro a cinco pruebas; NO certifica dispositivos físicos, métricas Web Vitals de campo ni cierre A0-A4/A5. Conserva VALIDANDO y autor DEV01; reparación por DEV06, con rollback por git revert.
