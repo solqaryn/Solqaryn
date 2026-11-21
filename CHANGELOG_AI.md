@@ -1,3 +1,8 @@
+## 2026-11-21 — V22 DEV01 C07-01.M06.06: reparación causal DI del TestServer de cuarentena
+- GitHub-hosted SHA dab80beb HTTP/JWT/MySQL84 TRX falló 1 test (esperado 503 para piloto OFF; recibido 500). Se conserva FAIL histórico, sin LISTO/A5; el build .NET y Scope Lock/V5 fueron correctos.
+- Nueva hipótesis: reflection InvokeAsync de UnscopedCommercialTenantGuardMiddleware requiere los colaboradores DI de host público incluso en /productos; se agregan mocks inertes SOLO al TestServer, y logging de diagnóstico para atribuir excepción si persiste, sin tocar la implementación ni desactivar cuarentena.
+- R2 WIP DEV01, V17 propio, revalidación exact-SHA obligatoria; nada en QA/main/PROD.
+
 ## 2026-11-21 — V22 DEV01 C07-01.M06.06: cuarentena comercial real fail-closed
 - Tercer incremento R2: TestServer utiliza el UnscopedCommercialTenantGuardMiddleware real, configuración piloto solo en memoria OFF al inicio (503), ON para GET real; JWT/RBAC MySQL 8.4 tenant A/B y revocación de membresía/permiso (503) más rows id ajeno 404.
 - Ningún flag de Render/QA/PROD se activó; CI de este nuevo SHA debe terminar SUCCESS y no certifica CRUD de variantes, transacciones/rollback, Angular/Chromium ni A5.

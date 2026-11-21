@@ -12,6 +12,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
 using MySql.Data.MySqlClient;
@@ -158,6 +159,7 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 })
                 .Build();
             using var host = await new HostBuilder()
+                .ConfigureLogging(log => log.AddConsole())
                 .ConfigureWebHost(web => web.UseTestServer()
                     .ConfigureServices(services =>
                     {
@@ -165,6 +167,12 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                             o.UseMySQL(isolated, mysql => mysql.MigrationsAssembly(
                                 "Solqaryn.Infrastructure.Migrations")));
                         services.AddHttpContextAccessor();
+                        // Reflection-based UseMiddleware resolves InvokeAsync
+                        // parameters from DI even for a path not using public store.
+                        // These inert public-host collaborators are not catalog
+                        // authorization bypasses and are never called by GET /productos.
+                        services.AddSingleton(Mock.Of<IPublicStoreHostTenantResolver>());
+                        services.AddSingleton(Mock.Of<IPublicStoreProofReplayStore>());
                         services.AddSingleton<IConfiguration>(pilotConfig);
                         services.AddScoped<ICurrentUserService, CurrentUserService>();
                         services.AddScoped<IUsuarioScopeService, UsuarioScopeService>();

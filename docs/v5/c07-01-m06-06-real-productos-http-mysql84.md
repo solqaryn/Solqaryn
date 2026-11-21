@@ -26,3 +26,7 @@ Inserción de dos productos de catálogo A/B en el esquema MySQL efímero bajo m
 ## Tercer incremento: cuarentena HTTP real fail-closed
 
 El host de pruebas reproduce la ruta de seguridad del Program: UseRouting, middleware de excepciones, UseAuthentication, UseAuthorization, **UnscopedCommercialTenantGuardMiddleware**, y controllers reales. El flag de piloto es una configuración en memoria del TEST, inicialmente OFF. OFF exige 503, ON se habilita solo en el test y exige RBAC tenant real. Los denegados por el guard responden 503 TENANT_DATA_ISOLATION_REQUIRED (a diferencia del 403 del action-filter interno). El control A/B y los datos comerciales son efímeros. Ningún despliegue/flag real fue modificado.
+
+## Reparación adversarial causal posterior a FAIL
+
+El primer intento de instalar el middleware real en TestServer (SHA dab80beb) arrojó HTTP 500 en vez del 503 esperado para el flag de lectura OFF, aun después de compilar Release. Se trata como FAIL comprobado, no PASS. Hipótesis de infraestructura del host de prueba: InvokeAsync del middleware requiere `IPublicStoreHostTenantResolver` e `IPublicStoreProofReplayStore` disponibles mediante DI aunque el endpoint no consuma host público. Se registran dobles inertes **solamente** para esas dependencias ajenas a /productos y habilita consola de excepciones del host de pruebas. Es una prueba falsable: si 500 persiste, examinar la excepción concreta y corregir nueva causa, nunca cambiar 503 esperado por 500 ni desactivar filtros.
