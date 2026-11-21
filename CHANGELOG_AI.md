@@ -1,3 +1,8 @@
+## 2026-11-21 — V22 C04-02.M03.05 preflight worker y cola acotada [Javier :50]
+- Implementado código Application de cola en memoria acotada, drenaje exclusivo y revalidación del gate contractual por cada intención; no autoriza pagos, cambios, lectura privada ni aprobación legal.
+- Pruebas xUnit nuevas para sobrecupo, intención maliciosa, tenant A/B, revocación, cancelación y límites; fixtures sintéticos NO son JWT/HTTP/MySQL reales.
+- Riesgo R2, no existe DI/HostedService, cola persistente ni producción. GitHub-hosted .NET 10, Scope Lock, V5 y seguridad exact-SHA requeridos antes del cierre; A5 independiente después. Rollback git revert normal; BITACORA conservada.
+
 ## 2026-11-21 — V22 C07-01.M06.06 rollback conjunto Producto+Variante Oracle EF/MySQL 8.4 [Javier :00]
 - Integracion adversarial real extendida en GitHub-hosted: dentro de una transaccion del contexto verificado A se crea Producto con Variante ligada, se cambia el precio de un Producto A y se comprueban los tres efectos; tras rollback otro DbContext exige ausencia de nuevas filas y restauracion del precio A, sin certificar HTTP de escritura.
 - Alcance test-only R2, sin cambios runtime/QA/main/PROD, JWT ni secretos. CI exact-SHA dirigida, Scope Lock/V5 y tests de seguridad son gates reales; la entrega M06.06 sigue EN_PROGRESO bajo lock propio V17 hasta CRUD positivo y auditoria/Angular pertinentes, seguida A5 independiente.
