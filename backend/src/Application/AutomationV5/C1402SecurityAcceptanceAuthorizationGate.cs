@@ -74,6 +74,10 @@ public sealed class C1402SecurityAcceptanceAuthorizationGate
             return new("TRUSTED_EVIDENCE_SOURCE_UNAVAILABLE");
         }
 
+        // An evidence reader may return after the caller has cancelled without
+        // throwing itself. Never signal adapter eligibility from that stale read.
+        cancellationToken.ThrowIfCancellationRequested();
+
         if (evidence is null || !evidence.ServerBackendEvidenceVerified ||
             !string.Equals(evidence.PersistedResourceKey, request.ResourceKey,
                 StringComparison.Ordinal) ||

@@ -197,6 +197,33 @@ public sealed class C1402M0505NegativeSecurityAcceptanceTests
         Assert.Equal(0, reader.Calls);
     }
 
+    private sealed class LateCancellingReader(CancellationTokenSource cancellation)
+        : IC1402SecurityAcceptanceEvidenceReader
+    {
+        public int Calls { get; private set; }
+
+        public async ValueTask<C1402SecurityAcceptanceAuthorizationGate.VerifiedEvidence?> ReadAsync(
+            string resourceKey, CancellationToken cancellationToken)
+        {
+            Calls++;
+            await Task.Yield(); // Simulate an asynchronous provider that ignores cancellation.
+            cancellation.Cancel();
+            return Evidence(); // A valid result must not revive a cancelled request.
+        }
+    }
+
+    [Fact]
+    public async Task CancellationAfterAsynchronousEvidenceReadNeverOffersAuthenticatedAdapter()
+    {
+        using var cts = new CancellationTokenSource();
+        var reader = new LateCancellingReader(cts);
+        var gate = new C1402SecurityAcceptanceAuthorizationGate(reader);
+
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
+            await gate.CheckAsync(Request(), cts.Token));
+        Assert.Equal(1, reader.Calls);
+    }
+
     [Fact]
     public async Task EvenNominalEvidenceRequiresIndependentAuthenticatedAdapter()
     {

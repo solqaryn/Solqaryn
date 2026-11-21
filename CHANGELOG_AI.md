@@ -1,3 +1,9 @@
+## 2026-11-20 — DEV06 V22 C14-02.M06.06 cancelacion posterior a lectura asincrona
+
+- Reparacion real R2 en C1402SecurityAcceptanceAuthorizationGate: comprobar CancellationToken despues de ReadAsync aunque el proveedor devuelva evidencia nominal sin respetar una cancelacion concurrente; antes devolvia AUTHENTICATED_SECURITY_ACCEPTANCE_ADAPTER_REQUIRED de una solicitud cancelada.
+- Prueba adversarial xUnit nueva con lector asincrono que cancela el token tras el await y devuelve evidencia nominal: la decision debe abortar con OperationCanceledException; no se certifica JWT real ni se concede acceso.
+- Alcance solo Application + xUnit + evidencia V22; no cambia API, MySQL, sesion, permisos, migraciones ni entornos. C14-02.M06.06 sigue VALIDANDO: falta matriz transversal real BOLA/IDOR/host/files/jobs/cache/backup/sesiones y P0/P1=0 acreditado. CI GitHub-hosted del SHA nuevo pendiente de verificar, sin A5 ni liberacion DAG.
+
 ## 2026-11-20 — DEV05 V22 C01-03.M03.06 nivel de log deshabilitado
 
 - Reparacion P2 causal R2: el logger estructurado de configuracion dinamica ahora devuelve false si ILogger.IsEnabled descarta Information o Warning, en lugar de afirmar que emitio un evento inexistente.
