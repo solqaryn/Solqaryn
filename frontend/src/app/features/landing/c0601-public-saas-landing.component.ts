@@ -1,4 +1,5 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { DOCUMENT } from '@angular/common';
+import { ChangeDetectionStrategy, Component, inject } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
 /**
@@ -11,7 +12,7 @@ import { RouterLink } from '@angular/router';
   imports: [RouterLink],
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <a class="skip-link" href="#c0601-content">Ir al contenido</a>
+    <a class="skip-link" href="#c0601-content" (click)="enfocarContenido($event)">Ir al contenido</a>
     <div class="landing-shell" data-testid="c0601-public-saas-landing">
       <header class="site-header">
         <a class="wordmark" href="/conoce-solqaryn" aria-label="SOLQARYN, inicio de presentación">SOLQARYN<span class="wordmark-mark" aria-hidden="true">.</span></a>
@@ -111,4 +112,11 @@ import { RouterLink } from '@angular/router';
     @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto !important; } }
   `]
 })
-export class C0601PublicSaasLandingComponent {}
+export class C0601PublicSaasLandingComponent {
+  private readonly document = inject(DOCUMENT);
+
+  enfocarContenido(event: Event): void {
+    event.preventDefault();
+    this.document.getElementById('c0601-content')?.focus({ preventScroll: false });
+  }
+}

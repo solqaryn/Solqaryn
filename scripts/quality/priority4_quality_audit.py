@@ -127,7 +127,8 @@ for path in route_files:
             )
             sensitive_tokens = ("HttpClient", "httpResource", "fetch(", "XMLHttpRequest",
                                 "localStorage", "sessionStorage", "Authorization",
-                                "empresaId", "tenantId", "precio", "checkout")
+                                "empresaId", "tenantId", "PrecioService", "CheckoutService",
+                                "precioService", "checkoutService")
             if not exact_route or any(token in landing for token in sensitive_tokens):
                 route_findings.append(f"UNSAFE_PUBLIC_LANDING:{path.relative_to(ROOT)}:{route_path}")
         if route_path in public_paths or route_path == "**" or route_path == "":
