@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV04 V22 C02-01.M05.04 falla parcial de autoridad fail-closed
+
+- La capa Application deniega de modo opaco un Count/iterador de membresías fallido después de una lectura parcial de tenant. Dos casos xUnit adversariales prueban ausencia de propuesta, emisión JWT o acceso; cancelación no se degrada y no hay cambios productivos.
+- Reparación P2 con CI GitHub-hosted exact-SHA pendiente; no resuelve preferencia SQL durable, reemisión JWT ni navegación real. Mantener VALIDANDO, autor DEV03, A5 independiente por otra Task, sin QA/main/PROD. Revert normal.
+
 ## 2026-11-20 — DEV03 V22 C02-01.M05.04 límite real del snapshot tenant
 
 - Reparación P2 Application: `IReadOnlyCollection.Count` de membresías no se confía como límite de iteración; 129 miembros enumerados se rechazan aunque el adaptador anuncie 1.

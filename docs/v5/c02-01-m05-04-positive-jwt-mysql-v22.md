@@ -62,3 +62,9 @@ Hipótesis adversarial nueva: `IReadOnlyCollection.Count` del lector confiable p
 Corrección real en Application: límite de 128 sobre elementos efectivamente enumerados; rechazo explícito si difieren el tamaño anunciado y el observado, además de negar un `Count` negativo. Prueba xUnit [Theory] con tres variantes adversariales (Count -1/0, 1/2 y 1/129): debe denegar sin proponer tenant/JWT/recurso. El workflow dirigido GitHub-hosted exige política Application, JWT HTTP firmado y MySQL 8.4 efímero, Scope Lock y V5; los resultados quedan pendientes hasta readback exact-SHA.
 
 R2, sin migraciones, sin cambios de API/DTO productivos, sin desactivar gates, sin acceso a bases reales. LIMITACIÓN: esta reparación de límites no implementa preferencia durable SQL por usuario, reemisión JWT backend ni navegación Angular autenticada. Conservar VALIDANDO e I del autor; A0-A4 completos y revisión A5 por Task Javier distinta antes de LISTO. Rollback: revert normal del commit CAS, preservando BITACORA.
+
+## V22 DEV04 — nueva hipótesis P2: enumeración parcial del repositorio de autoridad
+
+El `IReadOnlyCollection` de membresías puede fallar en `Count` o en un enumerador lazy después de haber producido un tenant válido. Se aplica captura limitada a la enumeración del snapshot, con denegación opaca `CURRENT_AUTHORITY_STORE_UNAVAILABLE`, sin tenant propuesto, JWT, grant ni exposición de detalles; `OperationCanceledException` sigue propagándose y `OutOfMemoryException` no se absorbe. Dos variantes adversariales xUnit cubren fallo en Count y fallo después de tenant A antes de B. Modifica sólo Application/tests/documentación en dev, sin alterar API, MySQL real, JWT o UI. Rollback normal git revert.
+
+**No acreditar LISTO/A5**: faltan preferencia SQL durable, reemisión JWT del backend y navegación Angular/Chromium auténtica. GitHub-hosted exact-SHA deberá certificar el nuevo caso más los checks pertinentes; cualquier check en progreso no equivale a PASS.

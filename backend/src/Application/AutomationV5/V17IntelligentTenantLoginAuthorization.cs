@@ -84,34 +84,44 @@ public sealed class V17IntelligentTenantLoginAuthorization
             return Deny("AUTHENTICATED_CURRENT_MEMBERSHIPS_REQUIRED");
         // IReadOnlyCollection.Count is advisory: a lazy/custom authority reader
         // may report fewer elements than it actually enumerates. Bound BOTH.
-        var declaredMembershipCount = s.Memberships.Count;
-        if (declaredMembershipCount is < 0 or > 128)
-            return Deny("MEMBERSHIP_SNAPSHOT_CAPACITY_INVALID");
-
-        var enumeratedMembershipCount = 0;
         var eligible = new List<Membership>();
-        var seen = new HashSet<int>();
-        foreach (Membership? m in s.Memberships)
+        try
         {
-            // A lazy authority enumeration can cancel AFTER the initial await.
-            // Never resolve a tenant from a cancelled membership snapshot.
-            cancellationToken.ThrowIfCancellationRequested();
-            if (++enumeratedMembershipCount > 128)
+            var declaredMembershipCount = s.Memberships.Count;
+            if (declaredMembershipCount is < 0 or > 128)
                 return Deny("MEMBERSHIP_SNAPSHOT_CAPACITY_INVALID");
-            if (m is null || m.ActorId != s.ActorId || m.TenantId <= 0)
-                return Deny("CROSS_ACTOR_MEMBERSHIP_SNAPSHOT_DENIED");
-            if (!m.FromPersistence || !m.Active || !m.TenantActive ||
-                !m.CurrentRelationalRoleVerified || m.Revoked)
-                continue;
-            if (string.IsNullOrWhiteSpace(m.DisplayName) ||
-                m.DisplayName.Length > 120 || m.DisplayName.Any(char.IsControl) ||
-                !seen.Add(m.TenantId))
-                return Deny("AMBIGUOUS_OR_INVALID_ACTIVE_MEMBERSHIP");
-            eligible.Add(m);
+
+            var enumeratedMembershipCount = 0;
+            var seen = new HashSet<int>();
+            foreach (Membership? m in s.Memberships)
+            {
+                // A lazy authority enumeration can cancel AFTER the initial await.
+                // Never resolve a tenant from a cancelled membership snapshot.
+                cancellationToken.ThrowIfCancellationRequested();
+                if (++enumeratedMembershipCount > 128)
+                    return Deny("MEMBERSHIP_SNAPSHOT_CAPACITY_INVALID");
+                if (m is null || m.ActorId != s.ActorId || m.TenantId <= 0)
+                    return Deny("CROSS_ACTOR_MEMBERSHIP_SNAPSHOT_DENIED");
+                if (!m.FromPersistence || !m.Active || !m.TenantActive ||
+                    !m.CurrentRelationalRoleVerified || m.Revoked)
+                    continue;
+                if (string.IsNullOrWhiteSpace(m.DisplayName) ||
+                    m.DisplayName.Length > 120 || m.DisplayName.Any(char.IsControl) ||
+                    !seen.Add(m.TenantId))
+                    return Deny("AMBIGUOUS_OR_INVALID_ACTIVE_MEMBERSHIP");
+                eligible.Add(m);
+            }
+            cancellationToken.ThrowIfCancellationRequested();
+            if (enumeratedMembershipCount != declaredMembershipCount)
+                return Deny("MEMBERSHIP_SNAPSHOT_COUNT_MISMATCH");
         }
-        cancellationToken.ThrowIfCancellationRequested();
-        if (enumeratedMembershipCount != declaredMembershipCount)
-            return Deny("MEMBERSHIP_SNAPSHOT_COUNT_MISMATCH");
+        catch (OperationCanceledException) { throw; }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            // A partially enumerated authority snapshot cannot propose a tenant.
+            // Return an opaque store error rather than leaking its exception.
+            return Deny("CURRENT_AUTHORITY_STORE_UNAVAILABLE");
+        }
 
         if (s.SessionTenantId.HasValue &&
             (!s.SessionValid ||

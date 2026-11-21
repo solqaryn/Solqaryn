@@ -336,4 +336,45 @@ public sealed class V17IntelligentTenantLoginAuthorizationTests
         Assert.False(decision.IssuesJwt);
         Assert.False(decision.AuthorizesResourceAccess);
     }
+
+    private sealed class FailingAuthorityMemberships(bool failCount, bool failIteration)
+        : IReadOnlyCollection<V17IntelligentTenantLoginAuthorization.Membership>
+    {
+        public int Count => failCount
+            ? throw new InvalidOperationException("sensitive authority store detail")
+            : 2;
+
+        public IEnumerator<V17IntelligentTenantLoginAuthorization.Membership> GetEnumerator()
+        {
+            yield return Member(11);
+            if (failIteration)
+                throw new InvalidOperationException("sensitive partial authority read");
+            yield return Member(22);
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+            => GetEnumerator();
+    }
+
+    [Theory]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    public async Task FaultyLazyMembershipCollectionMustFailClosedWithoutTenant(
+        bool failCount, bool failIteration)
+    {
+        var snapshot = Snapshot() with
+        {
+            Memberships = new FailingAuthorityMemberships(failCount, failIteration),
+            PreferredTenantId = 11,
+            PreferenceOwnerActorId = 7,
+            PreferenceFromPersistence = true
+        };
+        var decision = await Gate(new Reader { Current = snapshot }).ResolveAsync(new());
+        Assert.Equal("CURRENT_AUTHORITY_STORE_UNAVAILABLE", decision.Code);
+        Assert.Null(decision.ProposedTenantId);
+        Assert.Empty(decision.Choices);
+        Assert.False(decision.IssuesJwt);
+        Assert.False(decision.AuthorizesResourceAccess);
+        Assert.False(decision.RequiresAuthenticatedBackendReissue);
+    }
 }
