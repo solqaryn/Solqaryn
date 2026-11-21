@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV06 V22 C01-02.M05.05 negativos JWT/RBAC global bajo TestServer
+- PLAN D210: suite test-only de seguridad con JWT firmado real, HTTP TestServer y servicio de autoridad global revalidado por consulta; administrador empresarial y anónimo no reciben catálogo privado, firma falsa/expiración se rechazan.
+- A/B y revocación: catálogo consultado por plataforma sobre tenant A no filtra roles exclusivos de B; desactivar grant de plataforma niega el mismo JWT válido. EF InMemory es solo fixture, NO MySQL 8.4 productivo ni certificación de fase M05.
+- Fuente: backend/tests/Solqaryn.Tests/API/C0102M0505GlobalJwtRbacNegativeTests.cs y docs/v5/c01-02-m05-05-global-jwt-rbac-negative-v22.md; A0 preliminar, GitHub-hosted CI exact-SHA pendiente, no LISTO ni A5, no QA/main/PROD.
+
 ## 2026-11-20 — DEV05 V22 C01-02.M05.02 reparacion de asercion Cache-Control HTTP
 - GitHub-hosted SHA 70773727: Backend Release 6179/6180 y Seguridad multiempresa 2100/2101, un FAIL propio de comparacion textual de Cache-Control; orden HTTP real "no-store, max-age=0, private" equivalia a "private, no-store, max-age=0". FAIL historico preservado.
 - Solo se sustituye asercion textual por cabecera parseada Private/NoStore/MaxAge=0 sin quitar controles, JWT adversarial ni aislamiento; nuevo SHA necesita CI real completa SUCCESS, A0-A4 y A5 independiente. Test-only no certifica MySQL/RBAC prod, no QA/main/PROD.
