@@ -1,3 +1,9 @@
+## 2026-11-21 - V23 C06-01.M06.06 causal C15-01 source audit snapshot repair [Javier :30]
+- GitHub-hosted C15-01.M05.04 audit job 137025198961 failed on exact SHA 31a24c91282ae9a975412dd82fbc0c9941654ab2 because the restored root route changed frontend/src/app/app.routes.ts Git blob from 3181fab58be23bd22eab741a0edb73baa01e6a92 to 94c093bec9ab6765b4a7696a4e99aaaf03f10673 and real lexical route count from 120 to 121.
+- Updated ONLY route[0].blobSha/declarations in NON_AUTHORITATIVE docs/v5/evidence/c15-01-m05-04-snapshot.json (2340 PLAN, 2340 COLA and 2301 DAG entries untouched); audit source hash and route count remain strict and are not disabled or weakened.
+- Kept Angular live route, Playwright spec, V17 PLAN owner and all CI workflow files unchanged, so earlier GitHub-hosted root Chromium test can establish blob-equivalent evidence if it succeeds. New exact-SHA C15 route snapshot audit plus Scope Lock/V5/backend/frontend checks required, no skipped or queued PASS.
+- R1 isolated source-audit baseline repair only; C06-01.M06.06 remains VALIDANDO with original owner DEV03, independent A5 after real A0-A4. SKREF-03/05/10 previously consulted; no new UX/component/motion/copy changes. No QA/main/PROD. Normal git revert rollback.
+
 ## 2026-11-21 - V23 C06-01.M06.06 real Chromium root redirect repair [Javier :30]
 - Repaired a causal Angular routing defect: literal escaped `\n` sequences inside a `//` comment swallowed the root `{ path: '', redirectTo: 'conoce-solqaryn' }` route; the public root remained `/` on a real Chromium page.
 - Restored actual line breaks while preserving the existing public presentation, explicit `/login` and private dashboard `authGuard`/`permisoGuard` and routing precedence; no new UI components or auth rules.

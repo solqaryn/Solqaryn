@@ -16,3 +16,10 @@
 - PLAN D901 is a specific technical action in M06; PLAN E901 is the cumulative landing release goal. Pricing, onboarding, domains, host, metadata and any Phase-wide P0/P1 remain bounded separately and must not be silently certified.
 - Only V17 exclusive writer may touch PLAN; maintain historical owner DEV03. Follow-up independent A5 must be by a distinct Javier Task other than DEV03 author and DEV04 repairer.
 - Safe rollback by regular git revert after rechecking HEAD and concurrent writers. Never change QA/main/PROD or live payments.
+
+## Follow-up: causal C15-01 source-audit CI repair
+- Original route repair SHA 31a24c91282ae9a975412dd82fbc0c9941654ab2 triggered GitHub Actions C15-01.M05.04 job 137025198961, which failed with `route hash drift frontend/src/app/app.routes.ts`.
+- The audit is correct to fail: after restoring the root redirect, actual Angular declarations grew 120->121. The canonical non-authoritative route snapshot held the prior blob.
+- Update only the recorded app.routes.ts blob hash to `94c093bec9ab6765b4a7696a4e99aaaf03f10673` and lexical declarations to 121; preserve 2340/2340/2301 PLAN/COLA/DAG historical snapshot rows and other three route hashes/counts.
+- Re-run source-audit and V5/ScopeLock on new exact-SHA. No weakening of source audit and no fake pass. Source Angular and Playwright blobs unchanged; see SHA `31a24c91` for directed Chromium completion independently.
+- UI work conditional references: SKREF-03 Impeccable, SKREF-05 Taste, SKREF-10 Angular original pinned sources were consulted on the previous fix; this snapshot repair changes no UI, so additional skills NO_APLICA.
