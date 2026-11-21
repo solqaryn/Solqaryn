@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV02 V22 C15-04.M05.04 A0.74 Back seguro sin JWT
+
+- Dos escenarios reales de Chromium a 375/1280 sobre historial Back tras pérdida de JWT: login y API firmados positivos, backend anónimo 401, retorno protegido impedido, formulario visible y ausencia de contenido privado.
+- Cambio R2 exclusivamente de test/documentación, sin runtime, esquema, secretos ni producción; 111 casos esperados solo si CI exact-SHA aprueba. Continuar EN_PROGRESO con candado V17; A0–A4 globales y A5 todavía pendientes.
+
 ## 2026-11-20 — DEV06 V22 C14-02.M06.06 cancelacion posterior a lectura asincrona
 
 - Reparacion real R2 en C1402SecurityAcceptanceAuthorizationGate: comprobar CancellationToken despues de ReadAsync aunque el proveedor devuelva evidencia nominal sin respetar una cancelacion concurrente; antes devolvia AUTHENTICATED_SECURITY_ACCEPTANCE_ADAPTER_REQUIRED de una solicitud cancelada.

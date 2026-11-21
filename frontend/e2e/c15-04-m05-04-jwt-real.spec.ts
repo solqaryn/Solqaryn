@@ -2380,4 +2380,31 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     }
   }
 
+  // A0.74: regresar mediante historial del navegador tras perder JWT legitimo.
+  // El contenido privado no debe resucitar de historial/cache sin reautenticacion.
+  for (const ancho of [375, 1280]) {
+    test('A0.74 - Back sin JWT no restaura gobierno global a ' + ancho + 'px',
+      async ({ page, request }) => {
+        await page.setViewportSize({ width: ancho, height: 840 });
+        const jwt = await ingresar(page, 'c1504_platform_only');
+        const vigente = await request.get(api + '/plataforma/sesion', {
+          headers: { Authorization: 'Bearer ' + jwt }
+        });
+        expect(vigente.status(), 'Control firmado y autorizado con API real').toBe(200);
+        await page.goto('/plataforma/gobierno-cambios-v5');
+        await expect(page.getByRole('heading', { name: 'Decisiones y controles V5' })).toBeVisible();
+
+        await page.evaluate(() => localStorage.removeItem('solqaryn_token'));
+        const anonima = await request.get(api + '/plataforma/sesion');
+        expect(anonima.status(), 'El backend deniega una sesion sin Bearer').toBe(401);
+        await page.goto('/login');
+        await page.goBack();
+        await expect(page).toHaveURL(/\/login(?:[?#]|$)/);
+        await expect(page.getByRole('heading', { name: 'Decisiones y controles V5' })).toHaveCount(0);
+        await expect(page.getByRole('textbox', { name: 'Nombre de usuario' })).toBeVisible();
+        expect(await page.evaluate(() => document.documentElement.scrollWidth),
+          'Reflujo de login luego de historial').toBeLessThanOrEqual(ancho + 2);
+      });
+  }
+
 });
