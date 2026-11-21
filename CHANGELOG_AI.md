@@ -1,3 +1,7 @@
+## 2026-11-21 — V22 DEV05 seguridad C04-02.M03.04: esquema MySQL aislado fail-closed
+- Corrección R2 del adaptador de snapshot contractual: rechazo anticipado de conexión no Oracle MySQL loopback / esquema efímero UUID `c0402_m0304_`, aunque contenga fila válida con tenant/contrato correctos; cancelación revalidada tras rollback.
+- Prueba adversarial real MySQL 8.4: esquema alterno alcanzable con fila válida debe devolver null, base desechada en finally. No Aiven, no API DI, no pagos, no migraciones ni entorno QA/main/PROD. CI GitHub-hosted exact-SHA pendiente, A0-A4/LISTO NO certificado y A5 tercera Task independiente. Scope Lock STRICT; rollback mediante git revert.
+
 ## 2026-11-21 — V22 DEV03 reparación CI real C04-02.M03.04 (MySQL 8.4 efímero)
 - Fallo causal `dev-ci` run `44907720517` job `136856824875`: 139/140 integración ejecutada PASS; caso C06-01.M03.04 FAIL por `C0601_M0304_MYSQL_TEST` ausente (`EPHEMERAL_MYSQL84_REQUIRED`). No se marca PASS ni se deshabilita la suite.
 - Se incorpora la variable únicamente en `.github/workflows/dev-ci.yml` hacia MySQL 8.4 loopback del runner, conservando schema aislado por prueba, 13 variables previas, seguridad y no producción. Documento causal: `docs/v5/c04-02-m03-04-mysql-integration-env-repair-v22.md`.

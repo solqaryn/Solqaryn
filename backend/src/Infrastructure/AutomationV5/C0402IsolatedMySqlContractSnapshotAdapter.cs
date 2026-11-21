@@ -2,6 +2,7 @@ using System.Data;
 using System.Data.Common;
 using System.Globalization;
 using Solqaryn.Application.AutomationV5;
+using MySql.Data.MySqlClient;
 using Rules = Solqaryn.Domain.AutomationV5.C0402ContractDomainRules;
 using Service = Solqaryn.Application.AutomationV5.C0402ContractApplicationService;
 
@@ -33,7 +34,7 @@ public sealed class C0402IsolatedMySqlContractSnapshotAdapter(Func<DbConnection>
         try
         {
             await using var connection = _factory();
-            if (connection is null) return null;
+            if (connection is null || !IsEphemeralContractSchemaConnection(connection)) return null;
             await connection.OpenAsync(cancellationToken);
             await using var transaction = await connection.BeginTransactionAsync(
                 IsolationLevel.RepeatableRead, cancellationToken);
@@ -67,6 +68,7 @@ public sealed class C0402IsolatedMySqlContractSnapshotAdapter(Func<DbConnection>
 
             await reader.DisposeAsync();
             await transaction.RollbackAsync(cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
 
             // No verified D01-D08 policy exists in this isolated physical source.
             // Physical rows never authorize commercial effects or grant private read.
@@ -86,6 +88,33 @@ public sealed class C0402IsolatedMySqlContractSnapshotAdapter(Func<DbConnection>
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
             return null;
+        }
+    }
+
+    // This adapter MUST NOT be allowed to read Aiven, the live schema or an
+    // arbitrary caller-selected database, even if a future DI registration
+    // accidentally supplies a production connection factory.
+    private static bool IsEphemeralContractSchemaConnection(DbConnection connection)
+    {
+        if (connection is not MySqlConnection ||
+            connection.State != ConnectionState.Closed)
+            return false;
+        try
+        {
+            var settings = new MySqlConnectionStringBuilder(connection.ConnectionString);
+            const string prefix = "c0402_m0304_";
+            var schema = settings.Database;
+            return (settings.Server is "127.0.0.1" or "localhost") &&
+                   settings.Port == 3306 &&
+                   settings.UserID == "root" &&
+                   schema is not null &&
+                   schema.Length == prefix.Length + 32 &&
+                   schema.StartsWith(prefix, StringComparison.Ordinal) &&
+                   schema.Substring(prefix.Length).All(Uri.IsHexDigit);
+        }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            return false;
         }
     }
 }

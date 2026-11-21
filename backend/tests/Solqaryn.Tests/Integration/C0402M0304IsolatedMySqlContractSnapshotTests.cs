@@ -100,6 +100,52 @@ public sealed class C0402M0304IsolatedMySqlContractSnapshotTests
         }
     }
 
+
+    [Fact]
+    public async Task ReachableMysql84OutsideUuidIsolatedSchemaCannotBeRead()
+    {
+        var raw = Environment.GetEnvironmentVariable("C0402_M0304_MYSQL_TEST")
+            ?? throw new InvalidOperationException("EPHEMERAL_MYSQL84_REQUIRED");
+        var bootstrap = new MySqlConnectionStringBuilder(raw);
+        if (bootstrap.Server != "127.0.0.1" || bootstrap.Port != 3306 ||
+            bootstrap.UserID != "root")
+            throw new InvalidOperationException("EPHEMERAL_LOOPBACK_ONLY");
+        var otherSchema = "c0402_wrong_" + Guid.NewGuid().ToString("N");
+        await using var admin = new MySqlConnection(raw);
+        await admin.OpenAsync();
+        await using (var create = admin.CreateCommand())
+        {
+            create.CommandText = "CREATE DATABASE `" + otherSchema + "`";
+            await create.ExecuteNonQueryAsync();
+        }
+        var other = new MySqlConnectionStringBuilder(raw) { Database = otherSchema }.ConnectionString;
+        try
+        {
+            // This is a PHYSICALLY REACHABLE MySQL 8.4 table with a valid row.
+            // Before the fix, the isolated adapter returned positive evidence.
+            await ExecuteAsync(other, """
+                CREATE TABLE V22C0402ContractSnapshotIsolated(
+                    TenantId INT NOT NULL, ContractId BIGINT NOT NULL,
+                    StateId INT NOT NULL, Version BIGINT NOT NULL,
+                    StartUtc DATETIME(6) NOT NULL, EndUtc DATETIME(6) NULL,
+                    PRIMARY KEY(TenantId, ContractId)) ENGINE=InnoDB
+                """);
+            await ExecuteAsync(other, """
+                INSERT INTO V22C0402ContractSnapshotIsolated
+                VALUES(101,7001,3,2,'2026-01-01 00:00:00',NULL)
+                """);
+            var source = new C0402IsolatedMySqlContractSnapshotAdapter(
+                () => new MySqlConnection(other));
+            Assert.Null(await source.ReadOwnedAsync(101, 7001, CancellationToken.None));
+        }
+        finally
+        {
+            await using var cleanup = admin.CreateCommand();
+            cleanup.CommandText = "DROP DATABASE `" + otherSchema + "`";
+            await cleanup.ExecuteNonQueryAsync();
+        }
+    }
+
     private static async Task ExecuteAsync(string connectionString, string sql)
     {
         await using var connection = new MySqlConnection(connectionString);
