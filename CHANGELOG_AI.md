@@ -1,3 +1,7 @@
+## 2026-11-21 — DEV05 V22 C04-01.M04.03 corrección Scope Lock exact-SHA
+- La CI 8e396310 falló por un identificador local de fixture que coincidía con una identidad retirada prohibida por Scope Lock; se renombra a entitlementTile sin modificar ninguna aserción ni regla de seguridad.
+- Requiere nuevo Scope Lock, Angular/Chromium y V5 SUCCESS exact-SHA, sin certificar antes; histórico FAIL intacto y A5 independiente.
+
 ## 2026-11-21 — DEV05 V22 C04-01.M04.03 branding dinámico y módulos permitidos
 - Cuatro pruebas Chromium real de marca/plan tenant A/B con HTTP sintético, entitlement habilitado/denegado, fallo de proveedor fail-closed y denegación de tenant sin exposición. Ejercitan componentes Angular existentes, no alteran runtime.
 - GitHub-hosted Node 24.21.0 Angular 22.2.1 CI exact-SHA pendiente; no implica JWT/MySQL real, pagos ni autorización productiva; Scope Lock STRICT y A5 independiente.

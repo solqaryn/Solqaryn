@@ -91,9 +91,9 @@ test('C04-01.M04.03 entitlement deshabilitado no ofrece componente habilitado', 
   await page.goto('/configuracion');
   const card = page.locator('.saas-card');
   await expect(card.getByRole('heading', { name: 'Plan Norte' })).toBeVisible();
-  const inventory = card.locator('.module-tile').filter({ hasText: 'Inventario' });
-  await expect(inventory.getByRole('button')).toBeDisabled();
-  await expect(inventory.getByText('Inventario no está incluido en el plan actual.')).toBeVisible();
+  const entitlementTile = card.locator('.module-tile').filter({ hasText: 'Inventario' });
+  await expect(entitlementTile.getByRole('button')).toBeDisabled();
+  await expect(entitlementTile.getByText('Inventario no está incluido en el plan actual.')).toBeVisible();
   const sales = card.locator('.module-tile').filter({ hasText: 'Ventas' });
   await expect(sales.getByRole('button')).toBeEnabled();
 });
@@ -101,9 +101,9 @@ test('C04-01.M04.03 entitlement deshabilitado no ofrece componente habilitado', 
 test('C04-01.M04.03 proveedor de entitlement indisponible falla cerrado', async ({ page }) => {
   await fixture(page, { inventario: 'NO_DISPONIBLE' });
   await page.goto('/configuracion');
-  const inventory = page.locator('.saas-card .module-tile').filter({ hasText: 'Inventario' });
-  await expect(inventory.getByRole('button')).toBeDisabled();
-  await expect(inventory.getByText('Inventario no pudo validarse y permanece deshabilitado de forma segura.')).toBeVisible();
+  const entitlementTile = page.locator('.saas-card .module-tile').filter({ hasText: 'Inventario' });
+  await expect(entitlementTile.getByRole('button')).toBeDisabled();
+  await expect(entitlementTile.getByText('Inventario no pudo validarse y permanece deshabilitado de forma segura.')).toBeVisible();
   await expect(page.getByText('DENIAL_DETAILS_NEVER_EXPOSE')).toHaveCount(0);
 });
 
