@@ -1,3 +1,8 @@
+## 2026-11-21 - DEV03 V22 C04-01.M03.03 autenticacion JWT/RBAC tenant A/B de catalogo SaaS
+- Adaptador API read-only que verifica JWT Bearer firmado, usuario, rol empresarial activo y permisos relacionales frescos de MySQL para Configuracion/Ver; fail-closed, feature OFF y ninguna concesion de cobros ni escrituras.
+- TestServer con JWT real y MySQL 8.4 efimero, negativos anonimo/firma/tenant A-B/revocacion/flag OFF; GitHub-hosted exact SHA con TRX real requerido, Scope Lock/V5/seguridad pendientes hasta comprobacion observada.
+- V17 CAS exclusivo fila 592 C04-01.M03.03, Domain M03.01 y Application M03.02 no sustituyen integracion de cuota/persistencia M03.04; A5 de otra Task Javier y no QA/main/PROD.
+
 ## 2026-11-21 - DEV02 V22 C15-04.M05.04 A0.76 regresion semantica accesible
 - Cuatro casos de Chromium JWT firmado/MySQL 8.4 efimero sobre cuatro rutas privadas (375/1280) exigen un main, H1 unico dentro del landmark, ausencia de main anidado, HTTP 200 y cero escrituras API.
 - TEST-ONLY R2: 115 esperados, sin PASS anticipado; global WCAG/rutas/roles/RUM incompleto y C15-04.M05.04 EN_PROGRESO con owner DEV02/lock V17. CI exact-SHA y A5 independiente pendientes; sin QA/main/PROD. Ver docs/v5/c15-04-m05-04-global-ux-acceptance.md.

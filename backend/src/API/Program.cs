@@ -100,6 +100,9 @@ if (builder.Environment.IsDevelopment())
 {
     builder.Services.AddScoped<IC0701VerifiedCatalogActorReader,
         C0701CatalogVerifiedActorSource>();
+// C04-01.M03.03: JWT + tenant + RolPermiso vigentes; read-only y OFF sin opt-in.
+builder.Services.AddScoped<IC0401VerifiedPlanActorSource,
+    C0401PlanVerifiedActorSource>();
 }
 // C02-03.M03.03: genuine JWT + platform RolPermiso/Empresa read-only bridge,
 // DEV-only and OFF by default. No controller, lifecycle mutation or deployment.
