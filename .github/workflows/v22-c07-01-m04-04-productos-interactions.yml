@@ -1,0 +1,54 @@
+name: V22 C07-01.M04.04 real Chromium catalog interactions
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/e2e/c07-01-m04-04-productos-interactions.spec.ts'
+      - '.github/workflows/v22-c07-01-m04-04-productos-interactions.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c0701-m0404-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  chromium:
+    name: C07-01.M04.04 - Chromium catalog interactions
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Scope Lock exact SHA
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+      - name: Angular tsc and build
+        working-directory: frontend
+        run: |
+          npm install -g npm@11.19.0
+          npm ci
+          npx tsc --noEmit -p tsconfig.app.json
+          npm run build
+      - name: Install Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Run four real Chromium tests
+        working-directory: frontend
+        env:
+          CI: 'true'
+          PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+        run: |
+          set -euo pipefail
+          npx ng serve --host 127.0.0.1 --port 4200 >/tmp/c0701-m0404.log 2>&1 &
+          ready=0
+          for i in $(seq 1 120); do
+            if curl --silent --fail http://127.0.0.1:4200/login >/dev/null; then ready=1; break; fi
+            sleep 2
+          done
+          if [ "$ready" -ne 1 ]; then tail -n 120 /tmp/c0701-m0404.log; exit 1; fi
+          npx playwright test e2e/c07-01-m04-04-productos-interactions.spec.ts --config=playwright.config.ts --workers=1 --retries=0

@@ -1,0 +1,7 @@
+# C07-01.M04.04 — Interacciones catálogo Angular V22
+
+PLAN D1031: verificar formularios, navegación, mensajes y prevención de doble acción. Riesgo R2 por superficie privada; este changeset SOLO añade pruebas/CI, no modifica el runtime. Preflight HEAD base 93983e14dc2c7e4477707bc9039ee55dec4c64ea; publicación en HEAD actualizado bajo CAS.
+
+A0: ruta Angular real /productos y guard; diff con Playwright, GitHub-hosted workflow y documentación; sin SQL, JWT, pagos ni mutadores. A1: cuatro pruebas reales de búsqueda con debounce, doble limpieza sin POST, navegación con permiso de crear, error 503 saneado y retry, negativas anónimo/tenant/rol. A2: JWT/HTTP/tenant/rol de test explícitamente sintéticos; NO es prueba de JWT firmado ni RBAC o aislamiento backend y se documenta LIMITACION. A3: Angular 22 y Chromium reales en GitHub Actions con loopback; MySQL/HTTP live NO_APLICA a este diff test-only sin runtime. A4: CHECKS REQUERIDOS COMPLETED SUCCESS exact SHA en CI, V5, Scope Lock y readback antes de LISTO. A5: revisión independiente distinta de DEV01. PLAN E es resultado acumulativo, NO una certificación de toda M04.
+
+Prevención de doble acción: este alcance prueba que acciones repetidas de filtros read-only nunca generan escrituras. NO demuestra idempotencia del API mutador ni cobros; esas rutas requieren pruebas separadas. Rollback: revert del commit exacto. No QA/main/PROD. CHANGELOG_AI.md se preserva íntegro cuando el conector no devuelve contenido completo; registrar limitación V5 y no forzar su reemplazo parcial.
