@@ -1,0 +1,58 @@
+name: V22 C06-01.M04.04 public Angular nav messages double action Chromium
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/src/app/features/landing/c0601-public-saas-landing.component.ts'
+      - 'frontend/e2e/c06-01-m04-04-navigation.spec.ts'
+      - '.github/workflows/v22-c06-01-m04-04-navigation.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c0601-m0404-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  chromium:
+    name: C06-01.M04.04 - real Angular navigation and no double action
+    runs-on: ubuntu-latest
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Exact SHA Scope Lock and skill
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+          node scripts/verify-solqaryn-skills.mjs --self-test
+      - name: Angular 22 pinned typecheck and production build
+        working-directory: frontend
+        run: |
+          set -euo pipefail
+          npm install -g npm@11.19.0
+          npm ci
+          npx tsc --noEmit -p tsconfig.app.json
+          npm run build
+      - name: Install real Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Browser route and idempotence negative tests
+        working-directory: frontend
+        env:
+          CI: 'true'
+          PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+        run: |
+          set -euo pipefail
+          npx ng serve --host 127.0.0.1 --port 4200 >/tmp/c0601-m0404-ng.log 2>&1 &
+          ready=0
+          for i in $(seq 1 120); do
+            if curl --silent --fail http://127.0.0.1:4200/conoce-solqaryn >/dev/null; then ready=1; break; fi
+            sleep 2
+          done
+          if [ "$ready" -ne 1 ]; then tail -n 100 /tmp/c0601-m0404-ng.log; exit 1; fi
+          npx playwright test e2e/c06-01-m04-04-navigation.spec.ts --config=playwright.config.ts --workers=1 --retries=0

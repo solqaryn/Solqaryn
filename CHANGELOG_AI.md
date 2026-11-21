@@ -1,3 +1,8 @@
+## 2026-11-21 - V22 C06-01.M04.04 Angular internal navigation repair [Javier :40]
+- Fix a real Angular base-href public landing bug: internal #beneficios/#alcance anchors would navigate to / instead of retaining /conoce-solqaryn. Add allowlisted section focus handlers with semantic links and keyboard-compatible tabindex -1.
+- Add GitHub-hosted real Chromium regression for menu/hero anchor focus, route continuity, message visibility, no forms or duplicate state-changing network requests after rapid login action. Preserve JWT/RBAC/tenant backend guards, Scope Lock and V5 checks.
+- R1 public route only, PLAN D887 atomic; no commercial form, backend, MySQL, whole M04 or PROD attestation; require exact-SHA CI, A5 independent and safe FF revert.
+
 ## 2026-11-21 - V22 C06-01.M04.05 Angular Chromium accessibility proof [Javier :40]
 - Implement independent real Chromium Playwright assertions for 320/375/768/1440 responsive overflow, keyboard Tab/Enter skip-link and focus ring, semantic names and labels, and computed WCAG AA 4.5:1 text contrast.
 - Add SHA-isolated GitHub-hosted Angular 22 build, scope lock, skill self-test and 4 positive/negative accessibility tests; do not disable security, change private runtime or skip CI failures.

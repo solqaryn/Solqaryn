@@ -17,8 +17,8 @@ import { RouterLink } from '@angular/router';
       <header class="site-header">
         <a class="wordmark" href="/conoce-solqaryn" aria-label="SOLQARYN, inicio de presentación">SOLQARYN<span class="wordmark-mark" aria-hidden="true">.</span></a>
         <nav aria-label="Navegación de presentación">
-          <a href="#beneficios">Qué resuelve</a>
-          <a href="#alcance">Alcance</a>
+          <a href="#beneficios" (click)="enfocarSeccion($event, 'beneficios')">Qué resuelve</a>
+          <a href="#alcance" (click)="enfocarSeccion($event, 'alcance')">Alcance</a>
           <a routerLink="/login" class="header-action">Acceder</a>
         </nav>
       </header>
@@ -30,7 +30,7 @@ import { RouterLink } from '@angular/router';
             <p class="lede">SOLQARYN reúne herramientas para organizar procesos de negocio. El acceso a cada empresa y a sus datos exige una sesión y permisos verificados por el servidor.</p>
             <div class="hero-actions">
               <a routerLink="/login" class="button-primary">Ir a mi cuenta <span aria-hidden="true">→</span></a>
-              <a href="#beneficios" class="button-secondary">Conocer la propuesta</a>
+              <a href="#beneficios" class="button-secondary" (click)="enfocarSeccion($event, 'beneficios')">Conocer la propuesta</a>
             </div>
           </div>
           <aside class="hero-aside" aria-label="Principios del producto">
@@ -40,7 +40,7 @@ import { RouterLink } from '@angular/router';
             <p class="aside-note">Los permisos y el acceso a los datos no dependen de esta página pública.</p>
           </aside>
         </section>
-        <section id="beneficios" class="section" aria-labelledby="benefits-heading">
+        <section id="beneficios" class="section" tabindex="-1" aria-labelledby="benefits-heading">
           <div class="section-caption">UNA PLATAFORMA, DIFERENTES OPERACIONES</div>
           <div class="section-content">
             <h2 id="benefits-heading">Más contexto, menos saltos.</h2>
@@ -51,7 +51,7 @@ import { RouterLink } from '@angular/router';
             </div>
           </div>
         </section>
-        <section id="alcance" class="closing" aria-labelledby="scope-heading">
+        <section id="alcance" class="closing" tabindex="-1" aria-labelledby="scope-heading">
           <p class="eyebrow">ACCESO SEGURO</p>
           <h2 id="scope-heading">La presentación es pública. Tus datos, no.</h2>
           <p>Esta página no consulta datos de clientes, empresas, inventario ni cuentas; tampoco publica precios, planes aprobados o enlaces de pago.</p>
@@ -118,5 +118,11 @@ export class C0601PublicSaasLandingComponent {
   enfocarContenido(event: Event): void {
     event.preventDefault();
     this.document.getElementById('c0601-content')?.focus({ preventScroll: false });
+  }
+
+  /** Preserve the Angular public route when navigating within its sections. */
+  enfocarSeccion(event: Event, id: 'beneficios' | 'alcance'): void {
+    event.preventDefault();
+    this.document.getElementById(id)?.focus({ preventScroll: false });
   }
 }
