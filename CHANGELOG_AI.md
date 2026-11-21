@@ -1,3 +1,8 @@
+## 2026-11-20 - DEV06 V22 C14-01.M06.03 scoped branding risks and decisions
+- PLAN D2050 documentary R0 risk register: true signed-JWT ASPNET10 MySQL8.4 Chromium brand A/B, 4/4 passed repaired fc611e and third-party A5, historical source 8f809ead failed 2/4 preserved, limits of simulated HTTP 6/6 and global capability assumptions.
+- Open obligations explicitly distinguish browser CI timings from physical devices/field CWV, unproven BOLA/IDOR routes and role/JWT revocation behavior, future M06.04/05/06 gates. No fabricated P0/P1 or full-phase certificate, no runtime/production changes.
+- Publication to dev FF/CAS with exact-SHA ScopeLock and V5, independent future A5 by another Javier. Full prior CHANGELOG preserved below.
+
 ## 2026-11-20 — DEV01 V22 C14-01.M06.01 auditoría causal real frente a mocks
 - PLAN D2048: matriz M05.01–M05.06 basada en seis diffs/SHAs de GitHub-hosted; diferencia suites unitarias con proveedores simulados, HttpTestingController simulado y pruebas reales JWT HTTP MySQL 8.4 Angular/Chromium.
 - Evidencia y límites: 16/16, 6/6, 6/6, 8/8, 7/7 y 4/4 por jobs individuales, con fallo histórico 2/4 preservado; sin afirmar hardware físico, CWV de campo, RBAC sectorial completo ni QA/main/PROD.
