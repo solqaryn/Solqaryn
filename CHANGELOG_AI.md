@@ -1,3 +1,8 @@
+## 2026-11-21 — V22 DEV03 C06-01.M03.05: reparar gate de integración MySQL 8.4 en dev
+- Causa GitHub Actions `44915390027/136879854541`: 141 PASS, 3 FAIL, 0 SKIP por ausencia de `C0601_M0305_MYSQL_TEST` (dos tests) y `C0701_M0503_MYSQL_TEST` (un test), con servicio físico efímero mysql:8.4.
+- `.github/workflows/dev-ci.yml` aporta sólo dos env CI loopback y crea la base desechable `c0701_m0503_bootstrap`; conserva filtro real `Category=Integration`, Scope Lock, V5 y seguridad, sin Aiven/QA/PROD.
+- Evidencia causal y rollback en `docs/v5/c06-01-m03-05-dev-ci-ephemeral-env-repair-v22.md`; nuevo SHA debe pasar CI exacta antes de LISTO, A5 independiente posterior; owner histórico DEV01 conservado.
+
 ## 2026-11-21 — V22 DEV01 C07-01.M06.06: reparación causal DI del TestServer de cuarentena
 - GitHub-hosted SHA dab80beb HTTP/JWT/MySQL84 TRX falló 1 test (esperado 503 para piloto OFF; recibido 500). Se conserva FAIL histórico, sin LISTO/A5; el build .NET y Scope Lock/V5 fueron correctos.
 - Nueva hipótesis: reflection InvokeAsync de UnscopedCommercialTenantGuardMiddleware requiere los colaboradores DI de host público incluso en /productos; se agregan mocks inertes SOLO al TestServer, y logging de diagnóstico para atribuir excepción si persiste, sin tocar la implementación ni desactivar cuarentena.
