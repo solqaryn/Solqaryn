@@ -1,3 +1,8 @@
+## 2026-11-20 - DEV06 V22 C14-01.M06.05 independent A5 task review request
+- PLAN D2052 requests real technical A5 by a distinct Javier Task via auditable BITACORA, not a human approval nor a PASS; each M05/M06 ID needs own source SHA, tests, failure history and reviewer distinct from its author and repairer.
+- Preserve mocked Angular contract 6of6 versus real signed-JWT MySQL8.4 Chromium 6of6 8of8 7of7 4of4, original 8f809ead 2of4 FAIL, field CWV NO_MEDIDO and future independent M06.04 rollback.
+- R0 documentation only with full CHANGELOG preserved, exact-SHA ScopeLock/V5 and V17 atomic LISTO, A5 of this request by Task !=DEV06. No QA/main/PROD.
+
 ## 2026-11-20 - DEV06 V22 C14-01.M06.03 scoped branding risks and decisions
 - PLAN D2050 documentary R0 risk register: true signed-JWT ASPNET10 MySQL8.4 Chromium brand A/B, 4/4 passed repaired fc611e and third-party A5, historical source 8f809ead failed 2/4 preserved, limits of simulated HTTP 6/6 and global capability assumptions.
 - Open obligations explicitly distinguish browser CI timings from physical devices/field CWV, unproven BOLA/IDOR routes and role/JWT revocation behavior, future M06.04/05/06 gates. No fabricated P0/P1 or full-phase certificate, no runtime/production changes.
