@@ -1,3 +1,8 @@
+## 2026-11-21 - DEV06 V22 C04-01.M03.05 cola aislada MySQL 8.4 con CAS
+- Entrega R2: codigo Infrastructure lease/ACK por tenant y version, aislado sin DI productiva ni PSP, cuota o pagos.
+- Nueva CI GitHub-hosted con MySQL8.4 efimero para tenant A/B, replay, revision obsoleta, ACK duplicado, expiracion y cancelacion; no atribuir PASS antes de logs exact SHA.
+- CLAIM exclusivo V17, cambios dev FF/CAS, sin alterar historico de CHANGELOG; A5 por Task Javier distinta de DEV06; rollback git revert.
+
 ## 2026-11-21 - DEV05 V22 C04-01.M03.04 adaptador aislado MySQL 8.4 versionado
 - R2: adaptador Infrastructure read-only con transaccion REPEATABLE READ, parametros tenant/plan y un solo snapshot canonico; sin DI productiva, cobros, grant, cuota consumida, migraciones o secretos.
 - GitHub-hosted CI nueva con MySQL 8.4 efimero: tenant A/B, plan/version, suscripcion revocada, capacidad duplicada y rollback; PASS obligatorio antes de cierre A0-A4 y A5 independiente. Limite: no certifica JWT HTTP de este adaptador ni esquema SaaS productivo.
