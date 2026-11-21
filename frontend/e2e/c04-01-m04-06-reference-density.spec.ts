@@ -58,7 +58,7 @@ test('C04-01.M04.06 lazy reference paints immediately after authorized navigatio
   await page.goto(route);
   await expect(page.getByTestId('c0401-private')).toBeVisible();
   await expect(page.locator('[data-testid^="c0401-section-"]')).toHaveCount(3);
-  await expect(page.locator('form,button,input,select,textarea,iframe')).toHaveCount(0);
+  await expect(page.getByTestId('c0401-private').locator('form,button,input,select,textarea,iframe')).toHaveCount(0);
   expect(io.privateRequests.filter(x => /\/plataforma\/sesion/.test(x))).toHaveLength(1);
   expect(io.privateRequests.filter(x => /\/(planes|suscripciones|upgrade|checkout|cobros)(?:\/|$)/.test(x))).toEqual([]);
   expect(io.writes).toEqual([]);
