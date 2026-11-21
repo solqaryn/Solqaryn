@@ -112,6 +112,13 @@ if (builder.Environment.IsDevelopment())
         C0203VerifiedPlatformOperatorEvidenceReader>();
     builder.Services.AddScoped<C0203TenantLifecycleAuthorizationGate>();
 }
+// C04-02.M03.03: signed-JWT + current tenant role/grant read-only preflight,
+// DEV-only, OFF by default, never a contract or payment mutation capability.
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddScoped<IC0402VerifiedContractActorSource,
+        C0402ContractVerifiedActorSource>();
+}
 // C11-03.M03.03: real tenant/JWT/RolPermiso preflight is DEV-only and OFF by default.
 // No outbox write, producer, relay, provider or production registration.
 if (builder.Environment.IsDevelopment())

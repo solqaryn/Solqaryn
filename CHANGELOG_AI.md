@@ -1,3 +1,9 @@
+## 2026-11-21 — DEV05 V22 C04-02.M03.03: JWT firmado, tenancy y grants relacionales solo lectura
+
+- Se implementa `C0402ContractVerifiedActorSource` para preflight de autorización de contratos en SOLQARYN `dev`: usa el autenticador JWT Bearer registrado, identidad actual del usuario, membresía `UsuarioEmpresa`, rol empresarial válido, y grants actuales `Facturacion.Ver` + `Configuracion.Ver` con doble lectura tras I/O; tenant de ruta es selector, jamás autoridad. El resultado es únicamente un contexto de *lectura/preflight*, sin derecho a mutar contratos, facturar, cobrar ni reembolsar.
+- Integración DI limitada a `Development` y desactivada si `ContractAuthorization:EnableReadOnlyActorProbe` no es true; sin endpoint, escritura EF, cambios de schema, secretos, QA/main/PROD ni servicios de pago. Nuevas pruebas xUnit adversariales cubren token firmado y firma inválida, actor no coincidente, ruta tenant B y aliases, ausencia de grants, rol/membresía ajenos, revocación, opt-in apagado y cancelación; el fixture usa EF InMemory y **no equivale a MySQL 8.4 real**.
+- PLAN D628 determina el incremento atómico `C04-02.M03.03`; E es evidencia acumulada de M03, no certificación de las restantes M03.04–06. Mantener `VALIDANDO` hasta CI GitHub-hosted exact-SHA y prueba de integración MySQL 8.4/HTTP firmado causal pertinente, conservando A5 para una Task distinta del autor DEV05 y BITACORA histórica. Reversión por commit `git revert` en dev, sin force-push.
+
 ## 2026-11-21 — DEV04 V22 rescate de C06-01.M03.02 con regresión adversarial y procedencia
 
 - Recuperación cruzada de la microtarea Application M03.02 original DEV03: `C0601LandingApplicationService` conserva exclusivamente preflight inerte, con ruta canónica de servidor y snapshot confiable; no da publicación, acceso privado ni pagos. PLAN D exige el servicio acotado, no toda la fase M03 ni publicación.
