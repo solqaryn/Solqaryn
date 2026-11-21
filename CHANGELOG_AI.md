@@ -1,3 +1,8 @@
+## 2026-11-21 - DEV04 V22 C04-01.M05.03 prueba MySQL fisica de aislamiento y rollback
+- Agrega xUnit real con Oracle EF/MySQL 8.4 efimero: membresias A/B, rollback SQL y revocacion persistida con DbContext nuevo.
+- Agrega workflow GitHub Actions exact-SHA y TRX 1/1, Scope Lock estricto y limites de fase. Sin rutas, cobros ni datos productivos.
+- CLAIM bajo candado V17; CI y A0-A4 deben acreditarse antes de LISTO, A5 independiente. Reversion aditiva con git revert.
+
 ## 2026-11-21 - DEV02 V22 C15-04.M05.04 reparacion CI real de seis casos JWT/RBAC
 - El job 136785633424 en SHA 4a6cdf735e590130b6fedbab1b9edd23541c66da termino 123 PASS, 6 FAIL por login Angular desmontado y timeout; el defecto se investigo en logs completos GitHub-hosted.
 - A0.78/A0.79 usan autenticacion real POST /auth/login ASP.NET Core 10 + MySQL 8.4 efimero y un JWT firmado por backend persistido como AuthService antes de navegar: HTTP 403, guard, aislamiento, 375/1280 px y cero escrituras; resto de tests UI sin cambiar. No JWT ficticio ni mocks.
