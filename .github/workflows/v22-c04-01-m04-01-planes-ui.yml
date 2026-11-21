@@ -1,0 +1,75 @@
+name: V22 C04-01.M04.01 - catalogo privado de planes Angular Chromium
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v22-c04-01-m04-01-planes-ui.yml'
+      - 'frontend/src/app/app.routes.ts'
+      - 'frontend/src/app/features/plataforma/c04-01-m04-01-planes-readonly.component.ts'
+      - 'frontend/src/app/features/plataforma/c04-01-m04-01-planes-readonly.component.spec.ts'
+      - 'frontend/e2e/c04-01-m04-01-planes-readonly.spec.ts'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c0401-m0401-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  guarded-planes-ui:
+    name: C04-01.M04.01 - Angular guard Vitest Chromium
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    defaults:
+      run:
+        working-directory: frontend
+    env:
+      CI: 'true'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm 11 pinned
+        run: npm install --global npm@11.19.0
+      - name: Exact SHA and Scope Lock
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          cd ..
+          node scripts/verify-project-scope.mjs
+      - name: Install dependencies locked
+        run: npm ci
+      - name: Vitest private route and fail-closed revocation
+        run: npm test -- --no-watch --no-progress --include=src/app/features/plataforma/c04-01-m04-01-planes-readonly.component.spec.ts
+      - name: Angular type check, lint and production build
+        run: |
+          npm run lint
+          npm run build:prod
+      - name: Install real Chromium
+        run: npx playwright install --with-deps chromium
+      - name: Angular serve only localhost
+        shell: bash
+        run: |
+          set -euo pipefail
+          nohup npm start -- --host 127.0.0.1 --port 4200 > c0401-m0401-ng.log 2>&1 &
+          for attempt in $(seq 1 80); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then exit 0; fi
+            sleep 2
+          done
+          cat c0401-m0401-ng.log >&2
+          exit 1
+      - name: Real Chromium with synthetic session only
+        run: npx playwright test e2e/c04-01-m04-01-planes-readonly.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Failure artifacts
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c0401-m0401-frontend
+          path: |
+            frontend/c0401-m0401-ng.log
+            frontend/test-results/
+            frontend/playwright-report/
+          if-no-files-found: warn
+          retention-days: 7

@@ -1,3 +1,8 @@
+## 2026-11-21 - DEV03 V22 C04-01.M04.01 ruta privada de catálogo de planes no comercial
+- Implementación Angular 22 standalone de referencia privada lazy `/plataforma/catalogo-planes-v22`, protegida por `plataformaGuard` con comprobación backend existente; el componente fail-closed oculta contenido al revocar la sesión, al recibir ámbito Empresa o admin falso.
+- Se añaden Vitest negativos/positivos para guard, sesión, HTML hostil y ausencia de escritura, junto con Chromium en GitHub-hosted para 403, anonimato, responsive y foco Tab real; el check dirigido sólo es PASS si termina completed/success en SHA causal.
+- Riesgo R2: no se crean precios, impuestos, cobros, planes productivos, roles, migraciones ni nuevas dependencias; los tests Chromium utilizan sesión sintética, no demuestran JWT/MySQL real. A5 independiente pendiente y bitácora/readback V17 por ID C04-01.M04.01; rollback por revert FF en dev.
+
 ## 2026-11-21 - DEV02 V22 C15-04.M05.04 A0.79 tenant B en placement y observabilidad
 - Dos pruebas Chromium adicionales con JWT empresarial B firmado, MySQL 8.4 efimero, HTTP 403, guard real, pantalla privada ausente y cero operaciones mutantes tras login; 375/1280 px.
 - Incremento R2 de suite/evidencia exclusivamente dev: CI requerida exact-SHA aun NO ACREDITADA al publicar; auditoria global WCAG, 160 rutas/roles y metricas RUM siguen incompletas. PLAN H2297 EN_PROGRESO, owner DEV02 y V17 intactos; no LISTO/A5/QA/PROD.
