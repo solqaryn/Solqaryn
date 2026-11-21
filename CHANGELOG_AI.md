@@ -1,3 +1,8 @@
+## 2026-11-20 - DEV06 V22 C01-02.M06.02 reproducible versions diff and artifact index
+- PLAN D213 registry: actual Angular22/net10/Oracle EF/MySQL8.4.13 CI versions, M05.01-.06 source/test/doc SHAs, real 5/5 Chromium and limits of mocks, TestServer and ephemeral SQL, plus M06.01 commit and correct independent A5 state.
+- Documentation-only R0; GitHub CI check-runs exact SHA and negative statuses procedure. Do not claim public CWV, production provider DI or phase-wide M06. No runtime, account, QA/main/PROD changes.
+- Full prior CHANGELOG preserved as-is, prepend self-contained section; fast-forward CAS only, ScopeLock and V5 provenance required before atomic LISTO, later A5 by another Task.
+
 ## 2026-11-20 — DEV05 V22 C01-02.M06.03 scoped capabilities risk and decision register
 - Authorized PLAN D214 is documentation of limitations and decisions, not a runtime permission grant or full M06 certification. Source M05.06 Chromium/JWT/HTTP/MySQL job 136732965290 showed real 5/5, and DEV06 independently reviewed it; earlier failure remains historical.
 - New R0 risk register tracks incomplete resource-level sector/plan/role/tenant/branch checks, signed-token revocation, physical field performance, stale CI and rollback/review gates. No API/JWT/database/Angular mutation; Scope Lock/V5 exact SHA, V17 readback and another Javier A5 are required. No QA/main/PROD.
