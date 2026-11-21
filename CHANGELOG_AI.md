@@ -1,3 +1,8 @@
+## 2026-11-21 - V22 C06-01.M04.05 Angular Chromium accessibility proof [Javier :40]
+- Implement independent real Chromium Playwright assertions for 320/375/768/1440 responsive overflow, keyboard Tab/Enter skip-link and focus ring, semantic names and labels, and computed WCAG AA 4.5:1 text contrast.
+- Add SHA-isolated GitHub-hosted Angular 22 build, scope lock, skill self-test and 4 positive/negative accessibility tests; do not disable security, change private runtime or skip CI failures.
+- Risk R1 test-only for PLAN D888, not cumulative M04, MySQL/JWT/production certification. A5 independent after A0-A4, normal FF git revert rollback.
+
 ## 2026-11-21 - V22 C07-01.M06.06 JWT selector ambiguity and SQL price isolation [Javier :00]
 - Extend the real ProductosController/TestServer signed-JWT Oracle EF MySQL 8.4 regression with ambiguous A+B, zero and nonnumeric tenant-selector denials; responses cannot leak product names.
 - Recheck physical SQL products A/B remain unmodified with original price after read-only-pilot POST/PUT/DELETE denials and prior transaction rollback; directed GitHub-hosted CI must prove TRX and Scope Lock/V5 on the exact new SHA.
