@@ -1,3 +1,8 @@
+## 2026-11-20 — DEV04 V22 C07-01.M03.02 reparación P1 compilación CS0234
+- GitHub Actions exact SHA cb9bd3d51e8334e1be4770857f66305d47b2d77c detectó CS0234 en el archivo de test de Application: alias `Domain` resolvía el namespace hermano `Solqaryn.Tests.Domain`, no la clase de reglas del catálogo.
+- Reparación mínima: alias explícito `CatalogRules` solo en xUnit, sin cambios a backend runtime, endpoints, EF/MySQL, JWT, precios, roles ni permisos. Se exige nueva CI .NET10/ScopeLock/V5 de SHA causal; fallo histórico queda en GitHub y BITACORA, no se afirma PASS antes de tests reales.
+- V17 single-writer para C07-01.M03.02; mantener VALIDANDO hasta CI real SUCCESS, A5 independiente tras A0–A4 y no tocar QA/main/PROD.
+
 ## 2026-11-20 — DEV04 V22 C07-01.M03.02 servicio Application acotado
 - Servicio real asincrono de preflight C0701CatalogApplicationService con fuentes de autoridad autenticada y lectura de recursos filtrada por tenant verificable, sin grant, escritura, API live, DB o PSP; integra Domain M03.01 y valida JWT/RBAC frescos como evidencia de adapter futuro.
 - Pruebas adversariales xUnit del caso de uso: permisos/tenants cliente, recurso B, firma ausente, revocacion, stale CAS, error adaptadores, cancelacion y fallos de dominio; una prueba con adapter falso NO se presenta como JWT/MySQL real.

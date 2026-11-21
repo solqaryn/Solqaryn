@@ -1,7 +1,7 @@
 using System.Threading;
 using Solqaryn.Application.AutomationV5;
 using Xunit;
-using Domain = Solqaryn.Domain.AutomationV5.C0701CatalogDomainRules;
+using CatalogRules = Solqaryn.Domain.AutomationV5.C0701CatalogDomainRules;
 using Service = Solqaryn.Application.AutomationV5.C0701CatalogApplicationService;
 
 namespace Solqaryn.Tests.Application;
@@ -42,12 +42,12 @@ public sealed class C0701M0302CatalogApplicationServiceTests
     }
 
     private static Service.VerifiedActor Actor() =>
-        new(new Domain.VerifiedServerScope(100, 17, 9, 11, true, true, true, true, false),
+        new(new CatalogRules.VerifiedServerScope(100, 17, 9, 11, true, true, true, true, false),
             true, true, true, true);
     private static Service.VerifiedResource Resource() =>
-        new(new Domain.ProductSnapshot(100, 42, 10, 11, 100, 100, true, false),
+        new(new CatalogRules.ProductSnapshot(100, 42, 10, 11, 100, 100, true, false),
             true, true);
-    private static Domain.Mutation Mutation() =>
+    private static CatalogRules.Mutation Mutation() =>
         new(42, 10, "PRODUCTO", "SKU-42", "Producto A",
             120m, 50m, 1500, true, true, true, true);
     private static Service.ClientIntent Intent() =>
