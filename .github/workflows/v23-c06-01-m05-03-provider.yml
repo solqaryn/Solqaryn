@@ -1,0 +1,105 @@
+name: V23 C06-01.M05.03 real Oracle EF MySQL84 provider integration
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'scripts/quality/verify-v23-c0601-m0503-provider.mjs'
+      - '.github/workflows/v23-c06-01-m05-03-provider.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v23-c0601-m0503-provider
+  cancel-in-progress: false
+jobs:
+  mysql-provider:
+    name: C06-01.M05.03 - real EF10 MySQL84 transaction rollback and ASP.NET
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: solqaryn_c0601_m0503
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      ASPNETCORE_ENVIRONMENT: Development
+      PORT: '5005'
+      MYSQL_PWD: 'root'
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_c0601_m0503;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      Database__ServerVersion: '8.4.0'
+      Database__ApplyMigrationsOnStartup: 'true'
+      Jwt__Secret: 'C0601-M0503-Only-Disposable-Runner-Key-2026'
+      Jwt__Issuer: 'Solqaryn.API'
+      Jwt__Audience: 'Solqaryn.Frontend'
+      Jwt__ExpiraMinutos: '120'
+      Security__LoginRateLimitPerMinute: '300'
+      SeedAdmin__Username: 'e2e_admin'
+      SeedAdmin__Password: 'E2E.Admin#2026!'
+      Cors__AllowedOrigins__0: 'http://127.0.0.1:4200'
+      AppSettings__BackendPublicUrl: 'https://preview.solqaryn.invalid'
+      AppSettings__LogoPublicUrl: 'https://preview.solqaryn.invalid/assets/logo.png'
+      Cloudinary__CloudName: 'e2e-not-used'
+      Cloudinary__ApiKey: 'e2e-not-used'
+      Cloudinary__ApiSecret: 'e2e-not-used'
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+          cache: true
+          cache-dependency-path: backend/**/*.csproj
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+      - name: Exact SHA governance, Scope Lock, V5 and changelog provenance
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+          node scripts/verify-solqaryn-skills.mjs --self-test
+          node scripts/quality/verify-v5-changelog-provenance.mjs
+      - name: Build actual ASP.NET 10 backend Release
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+      - name: Bootstrap Oracle EF10 schema on isolated MySQL8.4
+        working-directory: backend
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+        run: |
+          set -euo pipefail
+          dotnet run --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj --configuration Release --no-build | tee c0601-m0503-bootstrap.log
+          grep -Fx 'SOLQARYN_ORACLE_BOOTSTRAP=PASS mode=fresh tables=139 pending=0' c0601-m0503-bootstrap.log
+      - name: Run actual API against disposable MySQL84
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          nohup dotnet run --project src/API/Solqaryn.API.csproj --configuration Release --no-build --no-launch-profile > c0601-m0503-api.log 2>&1 &
+          ready=0
+          for i in $(seq 1 70); do
+            if curl --silent --fail http://127.0.0.1:5005/health >/dev/null && curl --silent --fail http://127.0.0.1:5005/health/ready >/dev/null; then ready=1; break; fi
+            sleep 2
+          done
+          if [ "$ready" -ne 1 ]; then tail -n 100 c0601-m0503-api.log; exit 1; fi
+      - name: Assert REAL MySQL 8.4 commit-visibility ROLLBACK and HTTP readiness
+        run: node scripts/quality/verify-v23-c0601-m0503-provider.mjs
+      - name: Publish bootstrap + API log as causal evidence (no production data)
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: v23-c0601-m0503-real-oracle-ef-mysql-provider
+          path: |
+            backend/c0601-m0503-bootstrap.log
+            backend/c0601-m0503-api.log
+          retention-days: 7
+          if-no-files-found: warn
