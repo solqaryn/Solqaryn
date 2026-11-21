@@ -1,3 +1,7 @@
+## 2026-11-21 — DEV04 V22 C07-01.M03.06 auditoria estructurada MySQL 8.4 aislada
+- R2 salida D1027: nuevo journal append-only SQL parametrizado con CAS idempotente por PK, codes seguros, rechazo fail-closed, redacción de errores y consultas limitadas tenant/producto; sin registro de DI ni mutación del outbox anterior.
+- Pruebas xUnit reales MySQL 8.4 efímero contra tenant A/B, replay, input malicioso, aislamiento, cancelación, rollback y ausencia de secretos; GitHub-hosted .NET 10 y TRX, ScopeLock/V5 exact SHA hasta SUCCESS. No HTTP/JWT producto ni R3. A5 independiente, rollback git revert.
+
 ## 2026-11-21 — DEV05 V22 C04-01.M04.04 formularios y prevención de doble acción
 - Añade cuatro casos Playwright Chromium reales sobre Angular SaaS en DEV: filtro GET y estado vacío, 503/reintento, denegación tenant/rol sintética, y onboarding simulado con retardo, idempotencia y bloqueo de doble acción.
 - GitHub-hosted Node 24.21.0, Angular 22.2.1 y Scope Lock exact-SHA; pruebas pendientes hasta CI. Solo test/CI/docs; sin JWT firmado, MySQL, cobros ni cambios comerciales reales. A5 independiente posterior.

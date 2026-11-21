@@ -1,0 +1,11 @@
+# C07-01.M03.06 — catálogo auditado estructurado MySQL 8.4 V22
+
+PLAN D1027: «Implementar auditoría, logs estructurados y manejo de errores seguro». R2. Entrega auténtica limitada a componente Infrastructure aislado, sin registro DI de producto; PLAN E «Completa M03» es meta acumulativa, NO una certificación de toda M03 por esta unidad.
+
+A0: nuevo C0701IsolatedCatalogAuditSink, bitácora append-only con esquema SQL exclusivo de CI V22C0701CatalogAuditIsolated. Validación de TenantId, ProductId, CatalogVersion, ActorId, EventId de caracteres acotados y EventCode allowlist ENQUEUE/LEASE/ACK/DENY/FAIL, INSERT parametrizado en transacción y PK(TenantId,ProductId,EventId) contra replay. Respuesta genérica AUDIT_REJECTED ante fallo, sin mensajes de MySQL ni JWT, payload o PII. ReadTenantAsync limita 100 y siempre filtra tenant/producto. El caller DEBE confirmar JWT/RBAC y membresía de tenant por servidor antes de enviar IDs; esta biblioteca sin DI no los autentica ni habilita endpoint.
+
+A1/A2/A3: xUnit Integration MySQL 8.4 físico EFÍMERO en GitHub-hosted, casos positivos tenant A y B, versión, código evento, rechazo de IDs/eventos peligrosos, evento duplicado, consulta aislada por tenant/producto, excepción de conexión con mensaje secreto nunca devuelto, cancelación antes de escritura y ausencia de registro extra. Assert VERSION() 8.4. SQL sólo de tabla y filas sandbox. Sin mocks que sustituyan motor MySQL.
+
+A4: .NET 10 Release + TRX ejecutado real 1+ PASS y 0 FAIL/SKIP, verify-solqaryn-project-scope exact SHA, V5 y required backend/security/auth SUCCESS del SHA causal. In-progress, skipped, cancelled, failed NO PASS. Readback PLAN H/I, COLA/DAG formulados y BITACORA; A5 por Task JAVIER independiente de DEV04 autor/reparador. NO_APLICA a JWT HTTP firmado y migraciones/servicios comerciales porque este diff NO altera runtime y PLAN D de esta unidad sólo pide auditoría estructurada; LIMITACION de etapa explícita, no certificación de producto.
+
+Rollback: git revert normal y dejar trazabilidad histórica en BITACORA; sin R3, qa/main/PROD, secretos, proveedor de cobros, cambios de Aiven, UserEmpresa ni esquema productivo. No modifica clase C0701IsolatedCatalogOutbox de M03.05.
