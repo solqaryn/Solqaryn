@@ -1,3 +1,8 @@
+## 2026-11-21 - DEV03 V22 C04-01.M04.01 reparación causal inventario P0-007.A
+- GitHub-hosted en SHA 17ea37c7 detectó un componente real de catálogo de planes no registrado: frontend/src/app/features/plataforma/c04-01-m04-01-planes-readonly.component.ts, mediante el self-test exacto P0-007.A que sigue activo.
+- Se agrega exactamente un path al manifiesto preservando las 167 entradas anteriores; nuevos totales cerrados 168 (160 features, 8 shared) en scripts/verify-p0-007-a-component-catalog.mjs sin debilitar comparación, negativos ante omisiones ni prohibición de duplicados. El workflow de la microtarea ejecuta el validador real, además del gate de rutas privadas, Vitest y Chromium.
+- No se certifica producto, pagos, tenant JWT real, integración MySQL ni accesibilidad global por inventariar un componente. El scope C04-01.M04.01 permanece VALIDANDO hasta CI exact SHA SUCCESS, A5 por otra Task, rollback seguro y QA/main/PROD fuera de alcance.
+
 ## 2026-11-21 - DEV03 V22 C04-01.M04.01 reparacion gate ERP para ruta privada exacta
 - GitHub-hosted ERP - Contratos, pruebas y build falló para SHA c739d58a con FRONTEND_ROUTE_SECURITY_CONTRACT UNGUARDED aunque el nuevo path plataforma/catalogo-planes-v22 ya declaraba canActivate [plataformaGuard]; la auditoría mantiene una allowlist explícita de rutas de plataforma exactas.
 - Reparación mínima fail-closed: incorporar exclusivamente el path exacto nuevo a la allowlist existente, sin cambiar comprobaciones de JWT local, HTTP de sesión, ámbito Plataforma, esAdministrador, negative access ni aceptar prefijos/comodines arbitrarios. El workflow dirigido ejecuta ahora el mismo audit Python, además de Angular Vitest y Playwright Chromium.

@@ -9,6 +9,8 @@ on:
       - 'frontend/src/app/features/plataforma/c04-01-m04-01-planes-readonly.component.spec.ts'
       - 'frontend/e2e/c04-01-m04-01-planes-readonly.spec.ts'
       - 'scripts/quality/priority4_quality_audit.py'
+      - 'scripts/verify-p0-007-a-component-catalog.mjs'
+      - 'docs/P0-007-A-INVENTARIO-COMPONENTES-DEV.md'
   workflow_dispatch:
 permissions:
   contents: read
@@ -44,6 +46,10 @@ jobs:
         run: |
           cd ..
           python3 scripts/quality/priority4_quality_audit.py
+      - name: P0-007 exact catalog with negative self-tests
+        run: |
+          cd ..
+          node scripts/verify-p0-007-a-component-catalog.mjs --self-test
       - name: Install dependencies locked
         run: npm ci
       - name: Vitest private route and fail-closed revocation

@@ -581,3 +581,11 @@ La CI del SHA `3963ddd8` detectó correctamente dos fuentes Angular privadas nue
 - `frontend/src/app/features/plataforma/c11-03-m04-01-outbox-readonly.component.ts`
 
 Son vistas informativas bajo `plataformaGuard`, no prueban pagos, eventos, JWT, tenant A/B, proveedor, MySQL ni autorización productiva. Se requiere P0-007.A, Scope Lock y V5 SUCCESS exact-SHA nuevo. Rollback normal en dev.
+
+## Adición causal V22 DEV03 — C04-01.M04.01, 21 de noviembre de 2026
+
+La CI GitHub-hosted del SHA `17ea37c75fdbae6f642ef2710f39fb77532a332a` detectó correctamente que un componente Angular privado recién creado no figuraba en el catálogo reproducible P0-007.A. Se incorpora **únicamente una ruta real**, conservando intactos los 167 registros y los cortes históricos: total actual **168 componentes (160 features, 8 shared)**.
+
+- `frontend/src/app/features/plataforma/c04-01-m04-01-planes-readonly.component.ts`
+
+No se altera el comparador de directorios ni los casos negativos de componentes omitidos, inventados o duplicados: se actualiza sólo el recuento cerrado exacto y el mensaje de auditoría. Este manifiesto es **inventario de archivos**, no evidencia de JWT/RBAC/MySQL, plan comercial, UX certificada ni aceptación A0-A5. GitHub-hosted debe demostrar `node scripts/verify-p0-007-a-component-catalog.mjs --self-test` con 168 y 160/8 en el SHA reparado. Scope Lock y V5 siguen siendo obligatorios, sin QA/main/PROD. Rollback: revert normal FF en dev.
