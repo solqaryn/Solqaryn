@@ -1,3 +1,8 @@
+## 2026-11-21 - DEV05 V22 C04-01.M03.04 adaptador aislado MySQL 8.4 versionado
+- R2: adaptador Infrastructure read-only con transaccion REPEATABLE READ, parametros tenant/plan y un solo snapshot canonico; sin DI productiva, cobros, grant, cuota consumida, migraciones o secretos.
+- GitHub-hosted CI nueva con MySQL 8.4 efimero: tenant A/B, plan/version, suscripcion revocada, capacidad duplicada y rollback; PASS obligatorio antes de cierre A0-A4 y A5 independiente. Limite: no certifica JWT HTTP de este adaptador ni esquema SaaS productivo.
+- DEV05 V17 CLAIM exclusivo C04-01.M03.04; dev solo, PROJECT_SCOPE_LOCK STRICT; historial CHANGELOG previo preservado; rollback mediante revert normal.
+
 ## 2026-11-21 - DEV03 V22 C04-01.M03.03 RBAC plantillas de sistema y baja logica
 - Hallazgo causal en clases Rol y UsuarioScopeService: una plantilla empresarial EsSistema con EmpresaId nulo es asignable a cualquier tenant validado, pero el adaptador C0401 introducido exigia equivocadamente EmpresaId igual al tenant. Se alinea con predicado vigente: rol activo, no eliminado, Ambito Empresa y (owner tenant o plantilla EsSistema).
 - Amplia prueba adversarial REAL TestServer JWT/MySQL 8.4: rol empresarial de sistema legitimamente asignado autoriza solo preflight read-only, su baja logica con Activo aun true deniega 403; preserva negativos de tenant A/B, token, grants y feature OFF. CI exact-SHA requerida, sin inventar PASS.

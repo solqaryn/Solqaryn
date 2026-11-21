@@ -1,0 +1,65 @@
+name: V22 - C04-01.M03.04 isolated MySQL 8.4 snapshot
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/src/Infrastructure/AutomationV5/C0401IsolatedMySqlSnapshotSource.cs'
+      - 'backend/tests/Solqaryn.Tests/Integration/C0401M0304IsolatedMySqlSnapshotTests.cs'
+      - '.github/workflows/v22-c04-01-m03-04-isolated-mysql84.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c0401-m0304-isolated-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  isolated-mysql-read:
+    name: C04-01.M03.04 - MySQL 8.4 isolated versioned read and rollback
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: ephemeral-v22-only
+          MYSQL_DATABASE: solqaryn_c1502_m0503
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -pephemeral-v22-only"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=15
+    env:
+      C0401_M0304_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_c1502_m0503;User=root;Password=ephemeral-v22-only;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Scope Lock exact SHA
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+      - name: Real MySQL 8.4 tenant, version, revocation and rollback
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet restore tests/Solqaryn.Tests/Solqaryn.Tests.csproj
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore --filter 'FullyQualifiedName~C0401M0304IsolatedMySqlSnapshotTests' --logger 'trx;LogFileName=C0401IsolatedMySql84.trx' --verbosity normal
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          paths=list(Path("tests/Solqaryn.Tests/TestResults").rglob("C0401IsolatedMySql84.trx"))
+          assert len(paths)==1, paths
+          root=ET.parse(paths[0]).getroot()
+          ns={"t":"http://microsoft.com/schemas/VisualStudio/TeamTest/2010"}
+          counters=root.find(".//t:Counters", ns)
+          assert counters is not None
+          c=counters.attrib
+          assert int(c["total"])>=1 and int(c["passed"])>=1, c
+          assert int(c["failed"])==0 and int(c["notExecuted"])==0, c
+          assert int(c["executed"])==int(c["total"]), c
+          print("V22_ISOLATED_MYSQL84_REAL_TRX_PASS",c)
+          PY
