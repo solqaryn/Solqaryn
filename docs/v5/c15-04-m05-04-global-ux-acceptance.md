@@ -1,3 +1,11 @@
+## A0.77 - Auditoria real de cuatro superficies de plataforma adicionales (DEV02, 2026-11-21)
+
+Incremento R2 de C15-04.M05.04 limitado a pruebas E2E, sin modificar runtime. Cuatro rutas privadas: /plataforma/auditoria-operativa-v5, /plataforma/placement-v5, /plataforma/observabilidad-v5, /plataforma/mysql-cutover-readonly-v5. Playwright comprueba JWT firmado y GET /plataforma/sesion 200 con ASP.NET Core 10/MySQL 8.4 efimero, main unico no anidado, H1 correcto, cero mutaciones y ausencia de overflow en 375/1280. La CI del incremento A0.76 anterior aprobo 119/119; la entrega A0.77 espera 123 casos (no PASS hasta verificar el nuevo SHA).
+
+A0: diff E2E, documento, CHANGELOG aditivo. A1: asserts de contenido, semantica, fronteras de ancho y ausencia de mutaciones. A2: identidad JWT de plataforma genuina sin afirmar cobertura para todos los roles. A3: prueba dirigida GitHub-hosted API/MySQL 8.4/Angular 22.2.1/Chromium. A4: exigir job exact-SHA 123/123 ejecutadas 0 fail/skip y Backend, Frontend, ScopeLock, V5, seguridad pertinentes COMPLETED SUCCESS. Si la CI no ha finalizado, marcar LIMITACION y conservar estado. A5 independiente solo tras microtarea terminada.
+
+Limitacion R2: auditoria de 160 rutas, todos los roles, WCAG completa, metricas Web Vitals de campo y dispositivos fisicos NO_MEDIDO/NO_CERTIFICADO. Mantener EN_PROGRESO owner DEV02 y V17 lock 2000002297; prohibido segundo CLAIM, LISTO/A5, QA/main/PROD. Rollback aditivo por git revert normal tras HEAD revalidado.
+
 ## A0.76 - Landmark principal unico en cuatro guias JWT (DEV02, 2026-11-21)
 
 Incremento R2 TEST-ONLY C15-04.M05.04: cuatro casos Playwright nuevos (115 esperados totales) en cuatro guias y 375/1280, JWT firmado con rol global, HTTP GET /plataforma/sesion 200, ASP.NET Core 10 y MySQL 8.4 efimero de GitHub-hosted. Exigen un solo main, ningun main anidado, un H1 dentro del main con titulo correcto, ausencia de overflow y cero HTTP mutante. Pruebas adversariales capaces de detectar duplicacion de landmark o H1 fuera de la region. No hay mocks de HTTP ni cambios de runtime.

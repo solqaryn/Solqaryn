@@ -1,3 +1,7 @@
+## 2026-11-21 - DEV02 V22 C15-04.M05.04 A0.77 cuatro pantallas privadas
+- Playwright JWT firmado, HTTP real, MySQL 8.4 efimero y Chromium: 4 rutas globales adicionales con main/H1, 375/1280, cero POST/PUT/PATCH/DELETE.
+- A0.76: 119/119 PASS verificados; A0.77: 123 esperados, CI nuevo SHA pendiente. C15 global continua EN_PROGRESO con owner DEV02 y V17; no certifica todas las rutas/roles, WCAG, RUM, LISTO, A5 ni QA/main/PROD.
+
 ## 2026-11-21 - DEV01 V22 C04-01.M03.06 auditoria estructurada MySQL 8.4 aislada
 - Implementado sink SQL con evento tenant-bound, validacion cerrada de identidad/codigo/actor, unicidad de idempotencia, transaccion y error saneado; cero JWT/PII/payload/secretos y sin DI productiva.
 - Implementada prueba adversarial real MySQL 8.4 ephemera para A/B, rechazo replay, rollback, cancelacion, eventos malformados, sanitizacion de errores, workflow GitHub-hosted exact-SHA TRX.

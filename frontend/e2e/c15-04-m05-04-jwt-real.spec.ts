@@ -2493,4 +2493,44 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     });
   }
 
+  // A0.77: cuatro superficies privadas adicionales, JWT HTTP MySQL reales.
+  // Afirmaciones de auditoria limitadas a las rutas observadas.
+  for (const destino of [
+    { ruta: '/plataforma/auditoria-operativa-v5', titulo: 'Controles de ejecución y evidencia' },
+    { ruta: '/plataforma/placement-v5', titulo: 'Placement compartido y dedicado' },
+    { ruta: '/plataforma/observabilidad-v5', titulo: 'Diagnóstico y señales seguras' },
+    { ruta: '/plataforma/mysql-cutover-readonly-v5', titulo: 'Controles de preparación para cutover' }
+  ]) {
+    test('A0.77 - main y H1 con JWT real en ' + destino.ruta, async ({ page, request }) => {
+      const jwt = await ingresar(page, 'c1504_platform_only');
+      const autorizada = await request.get(api + '/plataforma/sesion', {
+        headers: { Authorization: 'Bearer ' + jwt }
+      });
+      expect(autorizada.status(), 'JWT de plataforma firmado y autorizado').toBe(200);
+      const mutaciones: string[] = [];
+      page.on('request', req => {
+        if (req.url().includes('localhost:5005') &&
+            /^(POST|PUT|PATCH|DELETE)$/.test(req.method())) {
+          mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+        }
+      });
+      for (const ancho of [375, 1280]) {
+        await page.setViewportSize({ width: ancho, height: 840 });
+        const verificacion = page.waitForResponse(res =>
+          res.url().includes('/plataforma/sesion') && res.request().method() === 'GET');
+        await page.goto(destino.ruta);
+        expect((await verificacion).status(), 'API autoriza la ruta privada').toBe(200);
+        await expect(page.locator('main'), 'Landmark principal unico').toHaveCount(1);
+        await expect(page.locator('main main'), 'Sin main anidados').toHaveCount(0);
+        await expect(page.locator('main h1'), 'Un H1 dentro del main').toHaveCount(1);
+        await expect(page.getByRole('main').getByRole('heading', {
+          level: 1, name: destino.titulo
+        })).toBeVisible();
+        expect(await page.evaluate(() => document.documentElement.scrollWidth),
+          'Reflujo sin overflow a ' + ancho + 'px').toBeLessThanOrEqual(ancho + 2);
+      }
+      expect(mutaciones, 'La pantalla privada no debe escribir en API').toEqual([]);
+    });
+  }
+
 });
