@@ -1,0 +1,247 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Net;
+using System.Net.Http.Headers;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Builder;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
+using Microsoft.IdentityModel.Tokens;
+using Moq;
+using MySql.Data.MySqlClient;
+using MySql.EntityFrameworkCore.Extensions;
+using Solqaryn.API.Controllers;
+using Solqaryn.API.Middleware;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.Services;
+using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Enums;
+using Solqaryn.Infrastructure.Persistence;
+using Solqaryn.Infrastructure.Repositories;
+using Solqaryn.Infrastructure.Services;
+using Xunit;
+
+namespace Solqaryn.Tests.Integration;
+
+/// <summary>
+/// C07-01.M06.06: endpoint de produccion /productos, JWT firmado y
+/// RBAC/membresias reales en Oracle EF/MySQL 8.4 efimero.
+/// Esta lectura no certifica Angular, CRUD, variantes ni rollback.
+/// </summary>
+[Trait("Category", "Integration")]
+public sealed class C0701M0606ProductosRealHttpMysql84Tests
+{
+    private const string Issuer = "c0701-m0606-ephemeral-issuer";
+    private const string Audience = "c0701-m0606-ephemeral-audience";
+    private static readonly SymmetricSecurityKey Key = new(
+        Encoding.UTF8.GetBytes("c0701-m0606-local-test-signing-key-isolated-2026"));
+
+    [Fact]
+    public async Task RealProductosGetUsesSignedJwtMysqlTenantABAndRevocation()
+    {
+        var raw = Environment.GetEnvironmentVariable("C0701_M0606_MYSQL_TEST")
+            ?? throw new InvalidOperationException("EPHEMERAL_MYSQL84_REQUIRED");
+        var origin = new MySqlConnectionStringBuilder(raw);
+        if (origin.Server is not ("127.0.0.1" or "localhost") ||
+            origin.Port != 3306 || origin.UserID != "root" ||
+            origin.Database != "c0701_m0606_bootstrap")
+            throw new InvalidOperationException("EPHEMERAL_LOOPBACK_ONLY");
+
+        var isolated = new MySqlConnectionStringBuilder(raw)
+        {
+            Database = "c0701_m0606_" + Guid.NewGuid().ToString("N")
+        }.ConnectionString;
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseMySQL(isolated, mysql => mysql.MigrationsAssembly(
+                "Solqaryn.Infrastructure.Migrations")).Options;
+        try
+        {
+            await using var db = new AppDbContext(options);
+            await Phase7MySqlTestDatabase.InitializeFreshAsync(db);
+            await db.Database.OpenConnectionAsync();
+            await using (var command = db.Database.GetDbConnection().CreateCommand())
+            {
+                command.CommandText = "SELECT VERSION()";
+                Assert.StartsWith("8.4.", Convert.ToString(await command.ExecuteScalarAsync()));
+            }
+            await db.Database.CloseConnectionAsync();
+
+            var a = new Empresa("C0701M0606 Tenant A");
+            var b = new Empresa("C0701M0606 Tenant B");
+            db.Set<Empresa>().AddRange(a, b);
+            await db.SaveChangesAsync();
+            var roleA = new Rol
+            {
+                Nombre = "C0701M0606 role A", NombreNormalizado = "C0701M0606_A",
+                EmpresaId = a.Id, Ambito = AmbitoAutorizacion.Empresa, Activo = true
+            };
+            var roleB = new Rol
+            {
+                Nombre = "C0701M0606 role B", NombreNormalizado = "C0701M0606_B",
+                EmpresaId = b.Id, Ambito = AmbitoAutorizacion.Empresa, Activo = true
+            };
+            db.Roles.AddRange(roleA, roleB);
+            await db.SaveChangesAsync();
+            var userA = NewUser("a", roleA.Id);
+            var userB = NewUser("b", roleB.Id);
+            db.Usuarios.AddRange(userA, userB);
+            await db.SaveChangesAsync();
+            db.UsuarioEmpresas.AddRange(
+                new UsuarioEmpresa(userA.Id, a.Id, roleA.Id),
+                new UsuarioEmpresa(userB.Id, b.Id, roleB.Id));
+            await db.SaveChangesAsync();
+
+            var permission = await db.Permisos.IgnoreQueryFilters()
+                .FirstOrDefaultAsync(p => p.Modulo == ModuloSistema.Productos &&
+                    p.Accion == AccionPermiso.Ver &&
+                    p.Ambito == AmbitoAutorizacion.Empresa && p.Activo && !p.Eliminado);
+            if (permission is null)
+            {
+                permission = new Permiso
+                {
+                    Codigo = "C0701M0606.PRODUCTOS.VER",
+                    Nombre = "C0701 M0606 isolated permission",
+                    Modulo = ModuloSistema.Productos, Accion = AccionPermiso.Ver,
+                    Ambito = AmbitoAutorizacion.Empresa, Activo = true
+                };
+                db.Permisos.Add(permission);
+                await db.SaveChangesAsync();
+            }
+            db.RolPermisos.AddRange(
+                new RolPermiso { RolId = roleA.Id, PermisoId = permission.Id },
+                new RolPermiso { RolId = roleB.Id, PermisoId = permission.Id });
+            await db.SaveChangesAsync();
+            db.ChangeTracker.Clear();
+
+            // Product and RBAC services/repositories are real. Mocked dependencies
+            // belong only to other (uninvoked) CRUD methods of the controller.
+            using var host = await new HostBuilder()
+                .ConfigureWebHost(web => web.UseTestServer()
+                    .ConfigureServices(services =>
+                    {
+                        services.AddDbContext<AppDbContext>(o =>
+                            o.UseMySQL(isolated, mysql => mysql.MigrationsAssembly(
+                                "Solqaryn.Infrastructure.Migrations")));
+                        services.AddHttpContextAccessor();
+                        services.AddScoped<ICurrentUserService, CurrentUserService>();
+                        services.AddScoped<IUsuarioScopeService, UsuarioScopeService>();
+                        services.AddScoped<IRolPermisoRepository, RolPermisoRepository>();
+                        services.AddScoped<IRolRepository, RolRepository>();
+                        services.AddScoped<IPermisoRepository, PermisoRepository>();
+                        services.AddScoped<IPermisoService, PermisoService>();
+                        services.AddScoped<IProductoRepository, ProductoRepository>();
+                        services.AddScoped<ICategoriaRepository, CategoriaRepository>();
+                        services.AddScoped<IProductoService, ProductoService>();
+                        services.AddSingleton(Mock.Of<IProductoVarianteService>());
+                        services.AddSingleton(Mock.Of<IUnitOfWork>());
+                        services.AddSingleton(Mock.Of<IImageStorageService>());
+                        services.AddSingleton(Mock.Of<IAuditoriaService>());
+                        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                            .AddJwtBearer(o => o.TokenValidationParameters =
+                                new TokenValidationParameters
+                                {
+                                    ValidateIssuer = true,
+                                    ValidateAudience = true,
+                                    ValidateLifetime = true,
+                                    ValidateIssuerSigningKey = true,
+                                    ValidIssuer = Issuer,
+                                    ValidAudience = Audience,
+                                    IssuerSigningKey = Key,
+                                    ClockSkew = TimeSpan.Zero
+                                });
+                        services.AddAuthorization();
+                        services.AddControllers().AddApplicationPart(
+                            typeof(ProductosController).Assembly);
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseRouting();
+                        app.UseMiddleware<ExceptionHandlingMiddleware>();
+                        app.UseAuthentication();
+                        app.UseAuthorization();
+                        app.UseEndpoints(routes => routes.MapControllers());
+                    }))
+                .StartAsync();
+            using var client = host.GetTestClient();
+
+            using (var anonymous = await client.GetAsync("/productos"))
+                Assert.Equal(HttpStatusCode.Unauthorized, anonymous.StatusCode);
+
+            var jwtA = Sign(userA.Id, roleA.Id);
+            var segments = jwtA.Split('.');
+            segments[2] = (segments[2][0] == 'A' ? 'B' : 'A') + segments[2][1..];
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", string.Join('.', segments));
+            using (var forged = await client.GetAsync("/productos"))
+                Assert.Equal(HttpStatusCode.Unauthorized, forged.StatusCode);
+
+            Assert.Equal(HttpStatusCode.OK, await ReadStatusAsync(client, a.Id, jwtA));
+            Assert.Equal(HttpStatusCode.Forbidden, await ReadStatusAsync(client, b.Id, jwtA));
+            var jwtB = Sign(userB.Id, roleB.Id);
+            Assert.Equal(HttpStatusCode.OK, await ReadStatusAsync(client, b.Id, jwtB));
+            Assert.Equal(HttpStatusCode.Forbidden, await ReadStatusAsync(client, a.Id, jwtB));
+
+            var membershipA = await db.UsuarioEmpresas
+                .SingleAsync(x => x.UsuarioId == userA.Id && x.EmpresaId == a.Id);
+            membershipA.Desactivar();
+            await db.SaveChangesAsync();
+            Assert.Equal(HttpStatusCode.Forbidden, await ReadStatusAsync(client, a.Id, jwtA));
+            membershipA.Activar();
+            await db.SaveChangesAsync();
+            Assert.Equal(HttpStatusCode.OK, await ReadStatusAsync(client, a.Id, jwtA));
+
+            var grantA = await db.RolPermisos
+                .SingleAsync(x => x.RolId == roleA.Id && x.PermisoId == permission.Id);
+            db.RolPermisos.Remove(grantA);
+            await db.SaveChangesAsync();
+            Assert.Equal(HttpStatusCode.Forbidden, await ReadStatusAsync(client, a.Id, jwtA));
+            Assert.Equal(HttpStatusCode.OK, await ReadStatusAsync(client, b.Id, jwtB));
+        }
+        finally
+        {
+            await using var cleanup = new AppDbContext(options);
+            await cleanup.Database.EnsureDeletedAsync();
+        }
+    }
+
+    private static Usuario NewUser(string suffix, int roleId) => new()
+    {
+        NombreUsuario = "c0701_m0606_" + suffix + "_" + Guid.NewGuid().ToString("N")[..9],
+        NombreCompleto = "C0701 isolated actor " + suffix,
+        PasswordHash = "not-a-real-password",
+        RolId = roleId, Activo = true
+    };
+
+    private static async Task<HttpStatusCode> ReadStatusAsync(
+        HttpClient client, int empresaId, string jwt)
+    {
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", jwt);
+        client.DefaultRequestHeaders.Remove("X-Empresa-Id");
+        client.DefaultRequestHeaders.TryAddWithoutValidation(
+            "X-Empresa-Id", empresaId.ToString());
+        using var response = await client.GetAsync("/productos?page=1&pageSize=10");
+        return response.StatusCode;
+    }
+
+    private static string Sign(int userId, int roleId)
+    {
+        var claims = new[]
+        {
+            new Claim("id", userId.ToString()),
+            new Claim("rolId", roleId.ToString()),
+            new Claim("esAdministrador", "false")
+        };
+        var token = new JwtSecurityToken(
+            issuer: Issuer, audience: Audience, claims: claims,
+            notBefore: DateTime.UtcNow.AddMinutes(-1),
+            expires: DateTime.UtcNow.AddMinutes(15),
+            signingCredentials: new SigningCredentials(
+                Key, SecurityAlgorithms.HmacSha256));
+        return new JwtSecurityTokenHandler().WriteToken(token);
+    }
+}

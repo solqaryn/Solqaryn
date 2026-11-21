@@ -1,3 +1,8 @@
+## 2026-11-21 — V22 DEV01 C07-01.M06.06: prueba productiva HTTP JWT RBAC MySQL 8.4
+- Implementación incremental de pruebas en /productos (controller real), JWT HMAC verificado y permisos/membresías reales Oracle EF MySQL 8.4; negativos A/B, JWT falsificado, revocación de rol/membresía.
+- Workflow GitHub-hosted dedicado con mysql:8.4 efímero, Scope Lock exact-SHA y TRX 0 FAIL/0 SKIP requerido; NO se presume PASS hasta finalización real.
+- WIP R2 EN_PROGRESO: pendientes CRUD producto/variantes, rollback, lectura de datos materializados y Angular conectado; A5 por otra Task tras A0-A4. Sin cambios QA/main/PROD ni secretos y se preserva la historia CHANGELOG.
+
 ## 2026-11-21 — V22 DEV05 seguridad C04-02.M03.04: esquema MySQL aislado fail-closed
 - Corrección R2 del adaptador de snapshot contractual: rechazo anticipado de conexión no Oracle MySQL loopback / esquema efímero UUID `c0402_m0304_`, aunque contenga fila válida con tenant/contrato correctos; cancelación revalidada tras rollback.
 - Prueba adversarial real MySQL 8.4: esquema alterno alcanzable con fila válida debe devolver null, base desechada en finally. No Aiven, no API DI, no pagos, no migraciones ni entorno QA/main/PROD. CI GitHub-hosted exact-SHA pendiente, A0-A4/LISTO NO certificado y A5 tercera Task independiente. Scope Lock STRICT; rollback mediante git revert.
