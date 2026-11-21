@@ -42,7 +42,7 @@ jobs:
         run: |
           set -euo pipefail
           docker exec "${{ job.services.mysql.id }}" mysql -uroot -proot -Nse 'SELECT VERSION();' | grep -E '^8[.]4[.]'
-      - name: Build Release and run exactly one real replay integration test
+      - name: Build Release and run both real replay and overflow MySQL integration tests
         shell: bash
         run: |
           set -euo pipefail
@@ -59,6 +59,6 @@ jobs:
           if counters is None: raise SystemExit('C1103_M0606_NO_COUNTERS')
           counts={k:int(counters.get(k,-1)) for k in ('total','passed','failed','notExecuted')}
           print('C1103_M0606_REAL_ORACLE_EF_MYSQL84',counts)
-          if counts!={'total':1,'passed':1,'failed':0,'notExecuted':0}:
+          if counts!={'total':2,'passed':2,'failed':0,'notExecuted':0}:
               raise SystemExit('C1103_M0606_NOT_VERIFIED')
           PY

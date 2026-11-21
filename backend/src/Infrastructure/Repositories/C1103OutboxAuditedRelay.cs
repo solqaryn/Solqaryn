@@ -30,6 +30,9 @@ public sealed class C1103OutboxAuditedRelay(
             throw new ArgumentOutOfRangeException(nameof(maximumAttempts));
         if (retryDelay <= TimeSpan.Zero || retryDelay > TimeSpan.FromDays(1))
             throw new ArgumentOutOfRangeException(nameof(retryDelay));
+        if (nowUtc > DateTime.MaxValue - retryDelay)
+            throw new ArgumentOutOfRangeException(nameof(nowUtc),
+                "UTC retry window exceeds supported timestamp range.");
         cancellationToken.ThrowIfCancellationRequested();
         try
         {

@@ -135,4 +135,80 @@ public sealed class C1103M0606ReplayOrderMysql84Tests
             await cleanup.Database.EnsureDeletedAsync();
         }
     }
+    [Fact]
+    public async Task RetryDateOverflowIsRejectedBeforeClaimAndLeavesRealMysqlRowUnchanged()
+    {
+        var raw = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
+            ?? throw new InvalidOperationException("EPHEMERAL_MYSQL84_REQUIRED");
+        var bootstrap = new MySqlConnectionStringBuilder(raw);
+        if (bootstrap.Server is not ("127.0.0.1" or "localhost") ||
+            bootstrap.Port != 3306 || bootstrap.UserID != "root")
+            throw new InvalidOperationException("EPHEMERAL_LOOPBACK_ONLY");
+        bootstrap.Database = "c1103_m0606_" + Guid.NewGuid().ToString("N");
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseMySQL(bootstrap.ConnectionString,
+                opt => opt.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
+            .Options;
+
+        try
+        {
+            await using var db = new AppDbContext(options);
+            await Phase7MySqlTestDatabase.InitializeFreshAsync(db);
+            var tenant = new Empresa("C11 M0606 UTC overflow");
+            db.Set<Empresa>().Add(tenant);
+            await db.SaveChangesAsync();
+            var now = DateTime.UtcNow;
+            var message = MensajeOutbox.Crear(tenant.Id, "outbox.event",
+                "{\"tenant\":\"overflow\"}", "c11-m0606-overflow",
+                creadoEnUtc: now.AddMinutes(-2));
+            db.MensajesOutbox.Add(message);
+            await db.SaveChangesAsync();
+            db.ChangeTracker.Clear();
+
+            var sent = 0;
+            var worker = new C1103OutboxIsolatedRelayWorker(
+                new MensajeOutboxRepository(db),
+                new Recipient((_, _, _, _, _, ct) =>
+                {
+                    ct.ThrowIfCancellationRequested();
+                    sent++;
+                    return Task.CompletedTask;
+                }));
+            var audited = new C1103OutboxAuditedRelay(
+                worker, Microsoft.Extensions.Logging.Abstractions
+                    .NullLogger<C1103OutboxAuditedRelay>.Instance);
+            var overflow = DateTime.SpecifyKind(DateTime.MaxValue.AddTicks(-1),
+                DateTimeKind.Utc);
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+                worker.RunTenantAsync(tenant.Id, overflow, 1, 2,
+                    TimeSpan.FromSeconds(1)));
+            await Assert.ThrowsAsync<ArgumentOutOfRangeException>(() =>
+                audited.RunTenantAsync(tenant.Id, overflow, 1, 2,
+                    TimeSpan.FromSeconds(1)));
+
+            db.ChangeTracker.Clear();
+            var persisted = await db.MensajesOutbox.AsNoTracking()
+                .SingleAsync(x => x.Id == message.Id);
+            Assert.Equal(EstadoMensajeOutbox.Pendiente, persisted.Estado);
+            Assert.Equal(0, persisted.Intentos);
+            Assert.Null(persisted.ProcesandoDesdeUtc);
+            Assert.Equal(0, sent);
+
+            var healthy = await worker.RunTenantAsync(tenant.Id, now, 1, 2,
+                TimeSpan.FromSeconds(1));
+            Assert.Equal(new C1103OutboxIsolatedRelayWorker.BatchResult(
+                1, 1, 0, 0, 0), healthy);
+            Assert.Equal(1, sent);
+            db.ChangeTracker.Clear();
+            Assert.Equal(EstadoMensajeOutbox.Entregado,
+                (await db.MensajesOutbox.AsNoTracking()
+                    .SingleAsync(x => x.Id == message.Id)).Estado);
+        }
+        finally
+        {
+            await using var cleanup = new AppDbContext(options);
+            await cleanup.Database.EnsureDeletedAsync();
+        }
+    }
+
 }
