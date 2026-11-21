@@ -1,3 +1,9 @@
+## 2026-11-20 — DEV03 V22 C02-01.M05.04 límite real del snapshot tenant
+
+- Reparación P2 Application: `IReadOnlyCollection.Count` de membresías no se confía como límite de iteración; 129 miembros enumerados se rechazan aunque el adaptador anuncie 1.
+- Tres escenarios adversariales xUnit nuevos: Count negativo, cantidad inconsistente y enumerador con 129; se niega selección/JWT/recurso y se conserva la prueba real JWT HTTP MySQL 8.4 en GitHub-hosted por SHA exacto.
+- C02-01.M05.04 sigue VALIDANDO: faltan preferencia SQL durable, reemisión de JWT backend y navegación Angular/Chromium auténtica; A5 independiente pendiente. Sin QA/main/PROD; rollback con git revert normal.
+
 ## 2026-11-20 — DEV02 V22 C15-04.M05.04 A0.74 Back seguro sin JWT
 
 - Dos escenarios reales de Chromium a 375/1280 sobre historial Back tras pérdida de JWT: login y API firmados positivos, backend anónimo 401, retorno protegido impedido, formulario visible y ausencia de contenido privado.

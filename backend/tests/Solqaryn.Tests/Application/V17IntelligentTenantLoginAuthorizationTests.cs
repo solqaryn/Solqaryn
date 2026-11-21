@@ -297,4 +297,43 @@ public sealed class V17IntelligentTenantLoginAuthorizationTests
         await Assert.ThrowsAsync<OperationCanceledException>(async () =>
             await Gate(new Reader()).ResolveAsync(new(), new CancellationToken(true)));
     }
+
+    // Adversarial authority reader: Count may lie while the iterator continues.
+    // The policy must bound work by observed elements and reject torn snapshots.
+    private sealed class MisreportedMembershipCount(int claimed, int actual)
+        : IReadOnlyCollection<V17IntelligentTenantLoginAuthorization.Membership>
+    {
+        public int Count => claimed;
+
+        public IEnumerator<V17IntelligentTenantLoginAuthorization.Membership>
+            GetEnumerator()
+        {
+            for (var i = 1; i <= actual; i++)
+                yield return Member(i);
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+            => GetEnumerator();
+    }
+
+    [Theory]
+    [InlineData(-1, 0, "MEMBERSHIP_SNAPSHOT_CAPACITY_INVALID")]
+    [InlineData(1, 2, "MEMBERSHIP_SNAPSHOT_COUNT_MISMATCH")]
+    [InlineData(1, 129, "MEMBERSHIP_SNAPSHOT_CAPACITY_INVALID")]
+    public async Task DishonestOrTornMembershipCountCannotBypassCapacityOrProposeTenant(
+        int declaredCount, int actualCount, string denial)
+    {
+        var snapshot = Snapshot() with
+        {
+            Memberships = new MisreportedMembershipCount(declaredCount, actualCount),
+            PreferredTenantId = 2,
+            PreferenceOwnerActorId = 7,
+            PreferenceFromPersistence = true
+        };
+        var decision = await Gate(new Reader { Current = snapshot }).ResolveAsync(new());
+        Assert.Equal(denial, decision.Code);
+        Assert.Null(decision.ProposedTenantId);
+        Assert.False(decision.IssuesJwt);
+        Assert.False(decision.AuthorizesResourceAccess);
+    }
 }

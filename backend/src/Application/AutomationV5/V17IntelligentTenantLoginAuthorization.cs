@@ -82,9 +82,13 @@ public sealed class V17IntelligentTenantLoginAuthorization
         if (s is null || s.ActorId <= 0 || !s.JwtValidatedByBackend ||
             !s.UserActive || !s.AuthorityStoreAvailable || s.Memberships is null)
             return Deny("AUTHENTICATED_CURRENT_MEMBERSHIPS_REQUIRED");
-        if (s.Memberships.Count > 128)
+        // IReadOnlyCollection.Count is advisory: a lazy/custom authority reader
+        // may report fewer elements than it actually enumerates. Bound BOTH.
+        var declaredMembershipCount = s.Memberships.Count;
+        if (declaredMembershipCount is < 0 or > 128)
             return Deny("MEMBERSHIP_SNAPSHOT_CAPACITY_INVALID");
 
+        var enumeratedMembershipCount = 0;
         var eligible = new List<Membership>();
         var seen = new HashSet<int>();
         foreach (Membership? m in s.Memberships)
@@ -92,6 +96,8 @@ public sealed class V17IntelligentTenantLoginAuthorization
             // A lazy authority enumeration can cancel AFTER the initial await.
             // Never resolve a tenant from a cancelled membership snapshot.
             cancellationToken.ThrowIfCancellationRequested();
+            if (++enumeratedMembershipCount > 128)
+                return Deny("MEMBERSHIP_SNAPSHOT_CAPACITY_INVALID");
             if (m is null || m.ActorId != s.ActorId || m.TenantId <= 0)
                 return Deny("CROSS_ACTOR_MEMBERSHIP_SNAPSHOT_DENIED");
             if (!m.FromPersistence || !m.Active || !m.TenantActive ||
@@ -104,6 +110,8 @@ public sealed class V17IntelligentTenantLoginAuthorization
             eligible.Add(m);
         }
         cancellationToken.ThrowIfCancellationRequested();
+        if (enumeratedMembershipCount != declaredMembershipCount)
+            return Deny("MEMBERSHIP_SNAPSHOT_COUNT_MISMATCH");
 
         if (s.SessionTenantId.HasValue &&
             (!s.SessionValid ||
