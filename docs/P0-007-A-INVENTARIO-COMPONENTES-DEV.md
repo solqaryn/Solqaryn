@@ -201,6 +201,10 @@ Cada entrada es una ruta exacta del árbol GitHub; el validador usa estas línea
 - `frontend/src/app/features/inventario/transferencias-list.component.ts`
 - `frontend/src/app/features/inventario/trazabilidad-variante-page.component.ts`
 
+### `app/features/landing` (1)
+
+- `frontend/src/app/features/landing/c0601-public-saas-landing.component.ts`
+
 ### `app/features/login` (1)
 
 - `frontend/src/app/features/login/login.component.ts`
@@ -589,3 +593,8 @@ La CI GitHub-hosted del SHA `17ea37c75fdbae6f642ef2710f39fb77532a332a` detectó 
 - `frontend/src/app/features/plataforma/c04-01-m04-01-planes-readonly.component.ts`
 
 No se altera el comparador de directorios ni los casos negativos de componentes omitidos, inventados o duplicados: se actualiza sólo el recuento cerrado exacto y el mensaje de auditoría. Este manifiesto es **inventario de archivos**, no evidencia de JWT/RBAC/MySQL, plan comercial, UX certificada ni aceptación A0-A5. GitHub-hosted debe demostrar `node scripts/verify-p0-007-a-component-catalog.mjs --self-test` con 168 y 160/8 en el SHA reparado. Scope Lock y V5 siguen siendo obligatorios, sin QA/main/PROD. Rollback: revert normal FF en dev.
+
+
+## Corte dinámico 2026-11-21 — C06-01.M04.01
+
+El archivo público real `frontend/src/app/features/landing/c0601-public-saas-landing.component.ts` aparece en el árbol `solqaryn/Solqaryn@dev` desde el commit `9b90aa0d`. P0-007.A detectó apropiadamente `unlisted` al 2026-11-21T19:31Z: se añade únicamente ese archivo al inventario fuente, sin eliminar entradas y sin romper tests negativos. El corte vivo asciende de **168 a 169 archivos** (161 features, 8 shared), sin modificar los conteos históricos anteriores. El componente declara explícitamente cero API tenant/privada y se somete a Playwright Chromium y al gate de rutas exactas. El manifiesto no certifica UX/JWT/RBAC/MySQL ni M04 completa; debe pasar exact SHA por CI GitHub-hosted. Prohibido forzar fórmulas, shortcuts o saltar QA.
