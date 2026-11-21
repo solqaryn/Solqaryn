@@ -1,3 +1,7 @@
+## 2026-11-21 — DEV05 V22 C04-01.M04.04 formularios y prevención de doble acción
+- Añade cuatro casos Playwright Chromium reales sobre Angular SaaS en DEV: filtro GET y estado vacío, 503/reintento, denegación tenant/rol sintética, y onboarding simulado con retardo, idempotencia y bloqueo de doble acción.
+- GitHub-hosted Node 24.21.0, Angular 22.2.1 y Scope Lock exact-SHA; pruebas pendientes hasta CI. Solo test/CI/docs; sin JWT firmado, MySQL, cobros ni cambios comerciales reales. A5 independiente posterior.
+
 ## 2026-11-21 — DEV04 V22 C04-01.M04.05 reparación Chromium selector de botón
 - El SHA 797246e1 completó Angular/TypeScript y ejecutó Chromium REAL: 3/4 PASS, una prueba FAIL por locator Actualizar ambiguo (3 botones presentes), no por contraste ni permisos. Se acota el click a .saas-card y nombre exacto, sin .focus() ni bypass de aserciones.
 - Requiere nueva CI de 4/4, ScopeLock y V5 SUCCESS exact-SHA; FAIL históricos conservados. A5 independiente; sin cambios al runtime ni al backend/DB/pagos.

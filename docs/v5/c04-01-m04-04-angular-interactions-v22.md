@@ -1,0 +1,7 @@
+# C04-01.M04.04 — formularios, navegación, errores y doble acción (V22)
+
+PLAN_MAESTRO D599 exige verificar formularios, navegación, mensajes y prevención de doble acción. Este incremento R2 es exclusivamente una suite E2E de Angular 22.2.1 bajo Chromium real y una CI GitHub-hosted dirigida; no cambia implementación comercial, autorización backend, API, esquema de MySQL ni procesadores de pago.
+
+La suite contiene cuatro comprobaciones adversariales: (1) filtro GET, resultado vacío y permanencia de ruta; (2) 503 de consulta y reintento sin exposición de plan antes de la respuesta; (3) rechazo por tenant/rol y ausencia de datos privados; (4) onboarding con backend sintético retardado, botón deshabilitado durante espera, única escritura simulada y encabezado Idempotency-Key. Se usa sesión sintética *no firmada* y respuestas de API interceptadas; no afirmar JWT real, SQL ni dinero real. El navegador sí es Chromium auténtico operando Angular servido por localhost en GitHub-hosted.
+
+A0 diff test-only y ausencia de cambios de runtime. A1–A3 esperar PASS causal de Chromium 4/4 y TypeScript/build, registrar negativas y condiciones frontera. A4 exigir Scope Lock, V5/procedencia y controles pertinentes completos SUCCESS del SHA publicado; nunca contar SKIPPED/CANCELLED/IN_PROGRESS. A5 corresponde a otra Task Javier. Mantener alcance dev exclusivamente, rollback normal mediante revert y no liberar QA/main/PROD por esta prueba.
