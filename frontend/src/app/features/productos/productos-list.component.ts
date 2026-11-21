@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal, ChangeDetectionStrategy, inject } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { FormsModule } from '@angular/forms';
@@ -22,6 +22,7 @@ import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
 import { ListNavigationStateService } from '../../core/navigation/list-navigation-state.service';
 import { ProductoImagenComponent } from '../../shared/producto-imagen/producto-imagen.component';
+import { EmpresaIdentidadService } from '../../services/empresa-identidad.service';
 
 type EstadoProductoFiltro = 'todos' | 'activos' | 'inactivos' | 'agotados' | 'disponibles';
 
@@ -38,6 +39,9 @@ type EstadoProductoFiltro = 'todos' | 'activos' | 'inactivos' | 'agotados' | 'di
   styleUrl: './productos-list.component.scss'
 })
 export class ProductosListComponent implements OnInit, OnDestroy {
+  // Presentation only: the shell loads this name from the tenant verified by backend.
+  // This signal is never used to determine permissions or query tenancy.
+  readonly identidad = inject(EmpresaIdentidadService);
   readonly productos = signal<Producto[]>([]);
   readonly categorias = signal<Categoria[]>([]);
   readonly colores = signal<CatalogoProducto[]>([]);

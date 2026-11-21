@@ -1,0 +1,57 @@
+name: V22 C07-01.M04.03 real Angular Chromium tenant branding
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'frontend/src/app/features/productos/productos-list.component.ts'
+      - 'frontend/src/app/features/productos/productos-list.component.html'
+      - 'frontend/src/app/features/productos/productos-list.component.scss'
+      - 'frontend/e2e/c07-01-m04-03-productos-branding.spec.ts'
+      - '.github/workflows/v22-c07-01-m04-03-productos-branding.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c0701-m0403-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  chromium:
+    name: C07-01.M04.03 - Angular and Chromium tenant branding
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Exact SHA Scope Lock
+        run: |
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+      - name: Angular typing and build
+        working-directory: frontend
+        run: |
+          npm install -g npm@11.19.0
+          npm ci
+          npx tsc --noEmit -p tsconfig.app.json
+          npm run build
+      - name: Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Four real Chromium cases with synthetic API fixtures
+        working-directory: frontend
+        env:
+          CI: 'true'
+          PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+        run: |
+          set -euo pipefail
+          npx ng serve --host 127.0.0.1 --port 4200 >/tmp/v22-c0701-m0403.log 2>&1 &
+          ready=0
+          for i in $(seq 1 120); do
+            if curl --silent --fail http://127.0.0.1:4200/login >/dev/null; then ready=1; break; fi
+            sleep 2
+          done
+          if [ "$ready" -ne 1 ]; then tail -n 100 /tmp/v22-c0701-m0403.log; exit 1; fi
+          npx playwright test e2e/c07-01-m04-03-productos-branding.spec.ts --config=playwright.config.ts --workers=1 --retries=0

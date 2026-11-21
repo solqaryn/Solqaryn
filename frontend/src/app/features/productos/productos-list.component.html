@@ -2,6 +2,10 @@
   <div class="header-copy">
     <h1 class="page-title">Productos</h1>
     <p class="page-subtitle">Consulta existencias, clasificación, precios y estado del inventario.</p>
+    <p class="catalog-tenant" aria-label="Marca del catálogo de productos">
+      <mat-icon aria-hidden="true">storefront</mat-icon>
+      <span>Catálogo de {{ identidad.nombreSistema() }}</span>
+    </p>
   </div>
   @if (puedeCrear()) {
     <a routerLink="/productos/nuevo" mat-flat-button color="primary">
