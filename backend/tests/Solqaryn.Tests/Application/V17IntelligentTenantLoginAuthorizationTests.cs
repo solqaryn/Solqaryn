@@ -248,6 +248,44 @@ public sealed class V17IntelligentTenantLoginAuthorizationTests
         Assert.True(cts.IsCancellationRequested);
     }
 
+    private sealed class CancellingLazyMemberships(CancellationTokenSource source)
+        : IReadOnlyCollection<V17IntelligentTenantLoginAuthorization.Membership>
+    {
+        public int Count => 2;
+
+        public IEnumerator<V17IntelligentTenantLoginAuthorization.Membership>
+            GetEnumerator()
+        {
+            yield return Member(11);
+            // Simulates a lazy trusted reader cancelling DURING enumeration,
+            // after ReadCurrentAsync already returned a seemingly valid snapshot.
+            source.Cancel();
+            yield return Member(22);
+        }
+
+        System.Collections.IEnumerator System.Collections.IEnumerable.GetEnumerator()
+            => GetEnumerator();
+    }
+
+    [Fact]
+    public async Task CancellationDuringLazyMembershipEnumerationNeverProposesPreferredTenant()
+    {
+        using var cts = new CancellationTokenSource();
+        var snapshot = Snapshot() with
+        {
+            Memberships = new CancellingLazyMemberships(cts),
+            PreferredTenantId = 22,
+            PreferenceOwnerActorId = 7,
+            PreferenceFromPersistence = true
+        };
+        var gate = Gate(new Reader { Current = snapshot });
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
+        {
+            await gate.ResolveAsync(new(), cts.Token);
+        });
+        Assert.True(cts.IsCancellationRequested);
+    }
+
     [Fact]
     public async Task ReaderFailureIsOpaqueAndCancellationPropagates()
     {

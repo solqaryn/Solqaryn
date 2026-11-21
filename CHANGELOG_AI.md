@@ -1,3 +1,9 @@
+## 2026-11-20 — DEV03 V22 C02-01.M05.04 cancelacion en enumeracion lazy de membresias
+
+- Se corrige una brecha P2 real del contrato Application: si el enumerador lazy cancela el token despues de ReadCurrentAsync, no se selecciona ni propone un tenant a partir de un snapshot invalidado.
+- Se agrega la prueba adversarial xUnit CancellationDuringLazyMembershipEnumerationNeverProposesPreferredTenant a la CI GitHub-hosted que ya cubre JWT HTTP Oracle EF MySQL 8.4; no inventar PASS antes de completarse exact-SHA.
+- LIMITACION: esta correccion puntual no implementa preferencia SQL persistente, JWT backend reemitido ni navegacion Angular autenticada; C02-01.M05.04 sigue VALIDANDO, A5 independiente pendiente, Scope Lock STRICT, rollback por revert normal.
+
 ## 2026-11-20 — DEV02 V22 C15-04.M05.04 A0.73 JWT sin firma alg none
 
 - Ocho pruebas adversariales nuevas en cuatro guias privadas y 375/1280 con JWT real de ASP.NET Core, MySQL 8.4 efimero y Chromium: control 200, alg none sin firma rechazado 401/403, guard Angular a login, sin contenido privado, sin mutaciones.

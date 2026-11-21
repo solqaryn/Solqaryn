@@ -89,6 +89,9 @@ public sealed class V17IntelligentTenantLoginAuthorization
         var seen = new HashSet<int>();
         foreach (Membership? m in s.Memberships)
         {
+            // A lazy authority enumeration can cancel AFTER the initial await.
+            // Never resolve a tenant from a cancelled membership snapshot.
+            cancellationToken.ThrowIfCancellationRequested();
             if (m is null || m.ActorId != s.ActorId || m.TenantId <= 0)
                 return Deny("CROSS_ACTOR_MEMBERSHIP_SNAPSHOT_DENIED");
             if (!m.FromPersistence || !m.Active || !m.TenantActive ||
@@ -100,6 +103,7 @@ public sealed class V17IntelligentTenantLoginAuthorization
                 return Deny("AMBIGUOUS_OR_INVALID_ACTIVE_MEMBERSHIP");
             eligible.Add(m);
         }
+        cancellationToken.ThrowIfCancellationRequested();
 
         if (s.SessionTenantId.HasValue &&
             (!s.SessionValid ||
