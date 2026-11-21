@@ -172,6 +172,9 @@ jobs:
       C0701_M0306_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_c0701_audit;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
       # V22 DEV03: physical catalog acceptance requires a named disposable bootstrap schema.
       C0701_M0503_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=c0701_m0503_bootstrap;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+      # V22 C06-01.M03.05 CI repair: Category=Integration includes the real /productos JWT+Oracle EF test.
+      # Fail closed in tests unless pointed at the disposable mysql:8.4 service; never Aiven/QA/PROD.
+      C0701_M0606_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=c0701_m0606_bootstrap;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
       C0401_M0503_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
       C0401_M0306_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=c0401_m0306_bootstrap;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
       C0401_M0303_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
