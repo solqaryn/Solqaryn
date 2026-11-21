@@ -31,15 +31,15 @@ namespace Solqaryn.Tests.Integration;
 /// <summary>Ruta solo dentro del assembly de pruebas, no API de produccion.</summary>
 [ApiController]
 [Authorize]
-[Route("c0401-m0303-test/{tenantId:int}")]
+[Route("c0401-m0303-test/{empresaId:int}")]
 public sealed class C0401M0303TestOnlyController(
     IC0401VerifiedPlanActorSource source) : ControllerBase
 {
     [HttpGet]
-    public async Task<IActionResult> Get(int tenantId, CancellationToken ct)
+    public async Task<IActionResult> Get(int empresaId, CancellationToken ct)
     {
         var actor = await source.ReadCurrentAsync(ct);
-        return actor is not null && actor.Scope.TenantEmpresaId == tenantId
+        return actor is not null && actor.Scope.TenantEmpresaId == empresaId
             ? Ok(new { empresaId = actor.Scope.TenantEmpresaId, checkedOnly = true })
             : Forbid();
     }

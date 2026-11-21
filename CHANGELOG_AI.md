@@ -1,3 +1,8 @@
+## 2026-11-21 - DEV03 V22 C04-01.M03.03 fix ruta de prueba JWT tenant
+- Diagnostico P1 causal antes de CI final: adaptador resuelve RouteValues[empresaId], pero el controller de TestServer tenia parametro tenantId, lo que convertia un caso positivo de JWT firmado en denegacion 403 sin probar RBAC real.
+- Corregido el controller SOLO de prueba a empresaId, coincidente con ruta SaaS; se mantienen negativos anonimo/firma/tenant ajeno/revocacion/flag OFF, MySQL 8.4 efimero y gate A0-A4 exact SHA sin marcar CI pendiente como PASS.
+- V17 lock reacquirido sobre fila 592, autor DEV03, sin modificar permisos productivos ni QA/main/PROD. A5 independiente cuando corresponda.
+
 ## 2026-11-21 - DEV03 V22 C04-01.M03.03 autenticacion JWT/RBAC tenant A/B de catalogo SaaS
 - Adaptador API read-only que verifica JWT Bearer firmado, usuario, rol empresarial activo y permisos relacionales frescos de MySQL para Configuracion/Ver; fail-closed, feature OFF y ninguna concesion de cobros ni escrituras.
 - TestServer con JWT real y MySQL 8.4 efimero, negativos anonimo/firma/tenant A-B/revocacion/flag OFF; GitHub-hosted exact SHA con TRX real requerido, Scope Lock/V5/seguridad pendientes hasta comprobacion observada.
