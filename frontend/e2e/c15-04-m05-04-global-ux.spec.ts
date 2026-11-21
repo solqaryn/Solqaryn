@@ -806,4 +806,49 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
     }
   });
 
+
+  // A0.89: regresion adversarial de contratos de sesion HTTP 200.
+  // Browser real + respuestas simuladas; NO acredita JWT firmado ni MySQL.
+  test('sesion 200 malformada y data nula: sin UI privada ni mutaciones',async({context})=>{
+    test.setTimeout(120_000);
+    const escenarios=[
+      {nombre:'json-roto',body:'{"success":true,"data":'},
+      {nombre:'exito-sin-identidad',body:JSON.stringify({success:true,data:null,message:'PRIVATE_ERROR_DO_NOT_RENDER'})}
+    ];
+    for(const escenario of escenarios){
+      for(const width of [375,1280]){
+        const page=await context.newPage();
+        const writes:string[]=[];
+        let intercepted=0;
+        try{
+          await page.setViewportSize({width,height:800});
+          await page.addInitScript(()=>{
+            localStorage.setItem('solqaryn_token','c1504m0504-no-jwt');
+            localStorage.setItem('solqaryn_expira_en','2099-01-01T00:00:00Z');
+          });
+          await page.route(/\/plataforma\/sesion(?:\?|$)/,async route=>{
+            if(route.request().method()==='OPTIONS'){
+              await route.fulfill({status:204,headers});return;
+            }
+            intercepted++;
+            await route.fulfill({status:200,headers,contentType:'application/json',body:escenario.body});
+          });
+          page.on('request',request=>{
+            if(!['GET','HEAD','OPTIONS'].includes(request.method())){
+              writes.push(request.method()+' '+request.url());
+            }
+          });
+          await page.goto('/plataforma/auditoria-ux-v5',{waitUntil:'domcontentloaded'});
+          await expect.poll(()=>intercepted,{timeout:10000}).toBeGreaterThan(0);
+          await expect(page.locator('[data-testid="ux-surface"]')).toHaveCount(0);
+          await expect(page.getByText('PRIVATE_ERROR_DO_NOT_RENDER')).toHaveCount(0);
+          await noOverflow(page);
+          expect(writes,'HTTP 200 sin identidad valida no permite mutaciones').toEqual([]);
+        }finally{
+          await page.close();
+        }
+      }
+    }
+  });
+
 });
