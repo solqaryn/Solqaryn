@@ -1,0 +1,65 @@
+name: V22 C07-01.M03.05 isolated MySQL 8.4 queue
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/src/Infrastructure/AutomationV5/C0701IsolatedCatalogOutbox.cs'
+      - 'backend/tests/Solqaryn.Tests/Integration/C0701M0305CatalogOutboxTests.cs'
+      - '.github/workflows/v22-c07-01-m03-05-catalog-outbox.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v22-c0701-m0305-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  isolated-queue:
+    name: C07-01.M03.05 - isolated MySQL 8.4 lease CAS
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: ephemeral-v22-only
+          MYSQL_DATABASE: solqaryn_c0701_catalog
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -pephemeral-v22-only"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=15
+    env:
+      C0701_M0305_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_c0701_catalog;User=root;Password=ephemeral-v22-only;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Scope Lock
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+      - name: Physical MySQL 8.4 lease and replay tests
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet restore tests/Solqaryn.Tests/Solqaryn.Tests.csproj
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore --filter 'FullyQualifiedName~C0701M0305CatalogOutboxTests' --logger 'trx;LogFileName=C0701M0305Catalog.trx' --verbosity normal
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          paths=list(Path("tests/Solqaryn.Tests/TestResults").rglob("C0701M0305Catalog.trx"))
+          assert len(paths)==1, paths
+          root=ET.parse(paths[0]).getroot()
+          ns={"t":"http://microsoft.com/schemas/VisualStudio/TeamTest/2010"}
+          c=root.find(".//t:Counters",ns)
+          assert c is not None
+          d=c.attrib
+          assert int(d["total"])>=1 and int(d["passed"])>=1, d
+          assert int(d["failed"])==0 and int(d["notExecuted"])==0, d
+          assert int(d["executed"])==int(d["total"]), d
+          print("V22_C0701_MYSQL84_QUEUE_TRX_PASS",d)
+          PY

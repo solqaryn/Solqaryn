@@ -1,3 +1,8 @@
+## 2026-11-21 - DEV03 V22 C07-01.M03.05 cola aislada catalogo MySQL 8.4
+- Infrastructure: adaptador lease/ACK con CAS tenant/producto/version/revision, sin DI ni migracion productiva.
+- Prueba real MySQL 8.4 efimero de tenant A/B, version/replay/leases, expiracion y cancelacion en GitHub-hosted; no atribuir PASS antes de GHA.
+- Salida puntual D1026; M03 meta acumulativa, A5 independiente, Scope Lock STRICT, solo dev.
+
 ## 2026-11-21 - DEV02 V22 C15-04.M05.04 A0.77 cuatro pantallas privadas
 - Playwright JWT firmado, HTTP real, MySQL 8.4 efimero y Chromium: 4 rutas globales adicionales con main/H1, 375/1280, cero POST/PUT/PATCH/DELETE.
 - A0.76: 119/119 PASS verificados; A0.77: 123 esperados, CI nuevo SHA pendiente. C15 global continua EN_PROGRESO con owner DEV02 y V17; no certifica todas las rutas/roles, WCAG, RUM, LISTO, A5 ni QA/main/PROD.
