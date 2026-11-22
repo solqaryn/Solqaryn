@@ -71,6 +71,27 @@ public sealed class C0201M0504CurrentMembershipSqlReader(
         if (!currentUser.EstaAutenticado || currentUser.UsuarioId != actorId)
             return null;
 
+        // An initial list may become stale while relational membership, role or
+        // tenant activity changes during an await. Re-read the canonical SQL
+        // scope and reject any changed set/name, never propose a revoked tenant.
+        // This is a bounded read-only check, not atomic JWT reissuance.
+        var freshCompanies = await scope.ListarEmpresasSeleccionablesAsync(
+            cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
+        if (freshCompanies is null || freshCompanies.Count != memberships.Count)
+            return null;
+        var expectedNames = memberships.ToDictionary(
+            member => member.TenantId, member => member.DisplayName);
+        var freshIds = new HashSet<int>();
+        foreach (var company in freshCompanies)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!freshIds.Add(company.EmpresaId) ||
+                !expectedNames.TryGetValue(company.EmpresaId, out var name) ||
+                !string.Equals(company.Nombre, name, StringComparison.Ordinal))
+                return null;
+        }
+
         // A current user can lose authority while membership SQL is awaited.
         // Revalidate the actor in the same database before returning a proposal.
         // This does not pretend that JWT reissue is atomic.

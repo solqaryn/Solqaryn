@@ -91,6 +91,37 @@ public sealed class C0201M0504SignedJwtMysqlPositiveTests
         }
     }
 
+    // The trusted scope returns its first real SQL list, revokes B in the
+    // disposable database, and returns the now-stale snapshot on purpose.
+    // A second genuine SQL list must no longer include B.
+    private sealed class RevokingMembershipSqlScope(
+        AppDbContext database, IUsuarioScopeService verifiedScope,
+        int actorId, int tenantId) : IUsuarioScopeService
+    {
+        private bool _revoked;
+        public Task<UsuarioScopeActual?> ObtenerActualAsync() =>
+            verifiedScope.ObtenerActualAsync();
+
+        public async Task<IReadOnlyList<EmpresaSeleccionable>>
+            ListarEmpresasSeleccionablesAsync(
+                CancellationToken cancellationToken = default)
+        {
+            var listed = await verifiedScope.ListarEmpresasSeleccionablesAsync(
+                cancellationToken);
+            if (!_revoked)
+            {
+                _revoked = true;
+                var membership = await database.UsuarioEmpresas.SingleAsync(
+                    m => m.UsuarioId == actorId && m.EmpresaId == tenantId,
+                    cancellationToken);
+                membership.Desactivar();
+                await database.SaveChangesAsync(cancellationToken);
+                database.ChangeTracker.Clear();
+            }
+            return listed;
+        }
+    }
+
     // Real disposable MySQL revocation after the initial active-user check.
     private sealed class RevokingSqlScope(
         AppDbContext database, int actorId, EmpresaSeleccionable candidate)
@@ -205,6 +236,23 @@ public sealed class C0201M0504SignedJwtMysqlPositiveTests
                 u => u.Id == user.Id);
             Assert.False(reactivated.Activo);
             reactivated.Activo = true;
+            await db.SaveChangesAsync();
+            db.ChangeTracker.Clear();
+
+            // The initial selector legitimately sees A+B. B is revoked in
+            // real MySQL before the reader returns: the stale B must not
+            // survive a second SQL membership/role/tenant authority read.
+            var membershipActor = new MutableProbeCurrentUser(user.Id);
+            var liveScope = new UsuarioScopeService(db, membershipActor);
+            var staleMembershipReader = new C0201M0504CurrentMembershipSqlReader(
+                db, membershipActor,
+                new RevokingMembershipSqlScope(db, liveScope, user.Id, b.Id));
+            Assert.Null(await staleMembershipReader.ReadCurrentAsync(
+                CancellationToken.None));
+            var revokedMembership = await db.UsuarioEmpresas.SingleAsync(
+                m => m.UsuarioId == user.Id && m.EmpresaId == b.Id);
+            Assert.False(revokedMembership.Activa);
+            revokedMembership.Activar();
             await db.SaveChangesAsync();
             db.ChangeTracker.Clear();
 

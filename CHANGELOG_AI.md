@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV03 V23 C02-01.M05.04 revocación de membresía B durante SQL
+- Reparación R2: una membresía tenant B puede desactivarse después del primer listado SQL, aunque el actor permanezca activo; ahora el lector relee el servicio relacional efectivo y niega toda propuesta ante cambio de conjunto o nombre, duplicados o cancelación.
+- Prueba adversarial MySQL 8.4 efímero: enumeración real A+B, desactivación de UsuarioEmpresa B entre awaits, snapshot null y restauración exclusiva de la fila temporal; el lector previo fallaba esta prueba. JWT firmado/HTTP existentes deben seguir aprobando en GitHub-hosted exact-SHA.
+- VALIDANDO/owner DEV03 preservados, no A0–A4 completos ni A5: faltan preferencia SQL durable, reemisión JWT backend, DI productivo y navegación Angular real. Sin QA/main/PROD ni secretos, rollback normal por revert.
+
 ## 2026-11-22 — DEV02 V23 C15-04.M05.04 A0.99: destino con foco real tras Enter
 - Refuerzo adversarial test-only de los 15 escenarios Chromium públicos con raíz CSS al 200%: después de Tab+Enter en skip-link, el `<main>` real debe recibir foco, no solo hash y `tabindex=-1`. Un enlace que cambia URL sin trasladar el foco ahora falla; cero `.focus()` simulado, sin cambios de runtime ni servicios.
 - Solicitar SUCCESS causal del workflow Chromium GitHub-hosted, Scope Lock y V5 exact-SHA; conservar capturas, no inventar pruebas JWT/MySQL/tenants o WCAG global. C15-04.M05.04 permanece EN_PROGRESO, I DEV02, lock 2000002297, A5 independiente posterior y ningún acceso QA/main/PROD.
