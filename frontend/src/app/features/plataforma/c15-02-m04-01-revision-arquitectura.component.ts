@@ -116,7 +116,8 @@ export function normalizarC1502Presentacion(input: unknown): C1502Presentacion {
     .review-neutral .eyebrow { color:var(--mat-sys-on-surface,#263442); }
     .review-compacta .cards li { padding:.75rem; }
     .review-compacta .cards { gap:.65rem; }
-    h1 { font-size:clamp(1.5rem, calc(1.5rem + 1vw), 2.25rem); line-height:1.2; overflow-wrap:anywhere; }
+    h1 { font-size:1.5rem; line-height:1.2; overflow-wrap:anywhere; }
+    @media (min-width:768px) { h1 { font-size:2.25rem; } }
     h2 { margin-top:1.5rem; }
     h3 { margin:.1rem 0 .5rem; font-size:1.08rem; }
     p,li,aside { line-height:1.55; overflow-wrap:anywhere; }
