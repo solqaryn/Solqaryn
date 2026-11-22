@@ -1,3 +1,7 @@
+## 2026-11-22 — DEV02 V23 C15-04.M05.04 A1.01: prueba de reflujo privado JWT real
+- Se endurece A0.69: tres rutas globales con JWT firmado, ASP.NET Core/Oracle MySQL 8.4 efímero y Chromium en cinco anchos 320/390/768/1280/1440; 200% CSS se verifica midiendo fuente antes/después, main único, foco por Tab, cero overflow y cero mutaciones.
+- A1.00 quedó verificado en SHA 93e1d3d9 con 29/29 Chromium y artefactos reales; A1.01 espera CI exact-SHA. Solo test/docs, no cambio de runtime ni secretos; global UX (160 rutas/roles, WCAG, CWV de campo) y A5 no certificados; mantener WIP DEV02 V17 y prohibición QA/main/PROD.
+
 ## 2026-11-22 - DEV01 V23 C07-01.M06.06 corregir CS1061 de Categoria.EmpresaId en CI
 - Diagnóstico exact-SHA `c5651b18`: 12 required jobs fallaron al compilar prueba Oracle EF/MySQL 8.4; `Categoria` no tiene `EmpresaId` (líneas 742/748 de C0701M0606ProductosRealHttpMysql84Tests).
 - Reparación mínima en test: localizar `CategoriaId` desde `Producto` filtrado por `Id` y `EmpresaId` auténticos; conservar categoría de empresa B, aserción IDOR 404, JWT/RBAC y readback de cero mutaciones, sin cambiar runtime ni gates.

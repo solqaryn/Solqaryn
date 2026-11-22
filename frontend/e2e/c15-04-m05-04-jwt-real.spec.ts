@@ -2179,7 +2179,7 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
       '/plataforma/observabilidad-v5',
       '/plataforma/capacidades-estados-v19'
     ]) {
-      for (const width of [320, 1280]) {
+      for (const width of [320, 390, 768, 1280, 1440]) {
         await page.setViewportSize({ width, height: 840 });
         const sesion = page.waitForResponse(r =>
           r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
@@ -2188,7 +2188,14 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
         expect((await sesion).status(), 'Backend JWT firmado autoriza plataforma').toBe(200);
         await expect(page).toHaveURL(url => url.pathname === ruta);
         await expect(page.getByRole('main')).toHaveCount(1);
+        const raizAntes = await page.locator('html').evaluate(el =>
+          parseFloat(getComputedStyle(el).fontSize));
+        expect(raizAntes, 'font-size inicial cuantificable').toBeGreaterThan(0);
         await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+        const raizDespues = await page.locator('html').evaluate(el =>
+          parseFloat(getComputedStyle(el).fontSize));
+        expect(raizDespues, 'texto raiz realmente ampliado, no solo estilo declarado')
+          .toBeGreaterThanOrEqual(raizAntes * 1.9);
         const dimensiones = await page.evaluate(() => ({
           contenido: document.documentElement.scrollWidth,
           viewport: document.documentElement.clientWidth
