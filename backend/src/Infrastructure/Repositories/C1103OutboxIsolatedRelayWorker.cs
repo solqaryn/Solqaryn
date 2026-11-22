@@ -43,6 +43,20 @@ public sealed class C1103OutboxIsolatedRelayWorker(
         cancellationToken.ThrowIfCancellationRequested();
         var claimed = await repository.ClaimDisponiblesAsync(
             authorizedTenantId, nowUtc, maximumBatch, cancellationToken);
+        // The repository owns durable claims. A broken or compromised adapter
+        // could return A followed by B: validating inside the delivery loop
+        // would already transmit A before discovering the forbidden B row.
+        // Reject the *entire* claimed batch before any external side effect.
+        if (claimed is null || claimed.Count > maximumBatch)
+            throw new InvalidOperationException("OUTBOX_CLAIM_INVALID_BATCH");
+        foreach (var candidate in claimed)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            if (candidate is null || candidate.EmpresaId != authorizedTenantId
+                || candidate.Intentos <= 0)
+                throw new InvalidOperationException("OUTBOX_CROSS_TENANT_OR_INVALID_CLAIM");
+        }
+
         var delivered = 0;
         var retries = 0;
         var deadLetters = 0;

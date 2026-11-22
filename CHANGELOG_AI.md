@@ -1,3 +1,8 @@
+## 2026-11-22 - DEV05 V23 C11-03.M06.06 validacion fail-closed de lote de outbox
+- Corregida la validacion tardia de registros tenant A/B: verificar el lote completo y limite de tamaño antes del primer envio externo (R2, incremento sin DI ni proveedor real).
+- Añadidas dos pruebas adversariales xUnit para repositorio que devuelve [A,B] y lote excesivo: no transporte, ACK ni fallo espurio; conservar la suite MySQL 8.4 fisica previa.
+- LIMITACION_FASE: M06.06 sigue VALIDANDO hasta CI exact-SHA GitHub-hosted, integracion autenticada real, provider/relay completo y A5 por Task distinta; rollback aditivo normal, sin QA/main/PROD.
+
 ## 2026-11-22 - DEV04 V23 C04-02.M03.06 revalidacion de rol despues de lectura de contrato
 - Reparacion R2: releer actor, tenant y RBAC real luego de esperar el contrato; revocacion o cambio de identidad antes de evaluar no puede producir candidato auditado positivo.
 - xUnit adversarial de revocacion/cambio de actor y regresion GitHub-hosted con JWT firmado, HTTP y RolPermiso eliminado durante await usando EF Oracle/MySQL 8.4 efimero; dos tests de integracion se exigen 2/2, aun sin certificar CI del SHA nuevo.
