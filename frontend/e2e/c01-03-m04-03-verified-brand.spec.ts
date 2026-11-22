@@ -133,7 +133,7 @@ test.describe('C01-03.M04.03 verified tenant branding actual server',()=>{
     await expect(select).toBeVisible();
     await select.selectOption({label:'Empresa A efimera C15'});
     await page.getByRole('button',{name:'Entrar a la empresa'}).click();
-    await expect(page).not.toHaveURL(/\\/login(?:[?#]|$)/);
+    await expect(page).not.toHaveURL(/\/login(?:[?#]|$)/);
     const switcher=page.getByRole('button',{name:'Cambiar de empresa sin cerrar sesión'});
     await expect(switcher).toBeVisible();
 
@@ -144,7 +144,7 @@ test.describe('C01-03.M04.03 verified tenant branding actual server',()=>{
     let settledA!:()=>void;
     const settled=new Promise<void>(resolve=>{settledA=resolve;});
     let responseCount=0;
-    await page.route(/\\/empresa-configuracion\\/tenant\\/1(?:\\?|$)/,async route=>{
+    await page.route(/\/empresa-configuracion\/tenant\/1(?:\?|$)/,async route=>{
       try{
         const real=await route.fetch();
         expect(real.status(),'real signed JWT A read').toBe(200);
@@ -160,12 +160,12 @@ test.describe('C01-03.M04.03 verified tenant branding actual server',()=>{
     await capturedA;
     await expect(switcher).toBeVisible();
     await switcher.click();
-    await expect(page).toHaveURL(/\\/login(?:[?#]|$)/);
+    await expect(page).toHaveURL(/\/login(?:[?#]|$)/);
     const selectB=page.getByRole('combobox',{name:'Empresa autorizada'});
     await expect(selectB).toBeVisible();
     await selectB.selectOption({label:'Empresa B efimera C15'});
     await page.getByRole('button',{name:'Entrar a la empresa'}).click();
-    await expect(page).not.toHaveURL(/\\/login(?:[?#]|$)/);
+    await expect(page).not.toHaveURL(/\/login(?:[?#]|$)/);
     const currentJwt=await page.evaluate(()=>localStorage.getItem('solqaryn_token'));
     expect(currentJwt,'same principal and JWT, no logout or new login').toBe(jwt);
     await page.goto('/configuracion/dinamica-v5');
