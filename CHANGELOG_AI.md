@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV01 V23 C07-01.M06.06: negativo IDOR HTTP con formulario válido (R2)
+- Diagnóstico causal GitHub-hosted: run 45000783540 / job 137141628888, SHA 939e4dbec2f3c6f4c3b12e76483083a8e9af2317 FAILED por 400 BadRequest vs 404 NotFound en PUT cruzado B→A; el formulario de ataque omitía CategoriaId, Cantidad y Costo y no demostraba autorización.
+- Reparación exclusiva de test: completar solicitud adversarial con campos válidos como el PUT positivo, conservar JWT firmado B, X-Empresa-Id B, id Producto A, 404 obligatorio y readback de MySQL 8.4 sin mutaciones. No modificar guards, roles, código runtime ni entorno comercial.
+- Seguimiento R2: CI del SHA nuevo requerida (TRX real, Global MySQL, backend, seguridad, Scope Lock y procedencia V5); C07-01.M06.06 conserva EN_PROGRESO/owner DEV01/candado V17 hasta integración Angular/Chromium y A0–A4; A5 por otra Task. No se reclaman PENDIENTE ni se certifica LISTO/QA/main/PROD.
+
 ## 2026-11-22 — DEV05 V23 C14-02.M06.06: bootstrap real MySQL para CI global
 - Reparación R2 del fallo físico de GitHub-hosted job137137536745: 150/152 xUnit Integration PASS; el caso C14 JWT/HTTP/MySQL falló por schema `c1402_m0606_bootstrap` inexistente. La variable ya estaba configurada, faltaba crear la base efímera.
 - Se añade `CREATE DATABASE` y aserción real `information_schema` antes de los 152 tests, sin mocks ni excepciones, con Scope Lock/V5 y CI nuevo exact-SHA obligatorios. El fallo separado C07 HTTP 503 pertenece al WIP DEV01 y NO se oculta ni se modifica.

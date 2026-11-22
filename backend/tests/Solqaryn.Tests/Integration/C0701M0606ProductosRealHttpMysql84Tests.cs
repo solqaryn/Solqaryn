@@ -856,10 +856,16 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 crossTenant.Headers.Authorization = new AuthenticationHeaderValue(
                     "Bearer", Sign(userB.Id, roleB.Id));
                 crossTenant.Headers.TryAddWithoutValidation("X-Empresa-Id", b.Id.ToString());
+                // The request must be model-valid. Incomplete forms yielded HTTP 400
+                // before ownership was evaluated and could mask a missing IDOR guard.
+                // Exercise actual tenant-B authorization against tenant-A's existing ID.
                 crossTenant.Content = new FormUrlEncodedContent(new Dictionary<string, string>
                 {
                     ["Nombre"] = "CrossTenantMutationDenied",
-                    ["Precio"] = "1"
+                    ["CategoriaId"] = categoryAId.ToString(),
+                    ["Cantidad"] = "0",
+                    ["Costo"] = "64",
+                    ["Precio"] = "139"
                 });
                 using var rejected = await client.SendAsync(crossTenant);
                 Assert.Equal(HttpStatusCode.NotFound, rejected.StatusCode);
