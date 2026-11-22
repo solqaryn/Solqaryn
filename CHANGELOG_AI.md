@@ -1,3 +1,8 @@
+## 2026-11-21 — DEV05 V23 C01-04.M03.06 CI MySQL 8.4 dirigida y verificable
+- Reparacion R2 de prueba causal: el job Integration general 149/149 PASS del SHA 98a56a53 no enumeraba el caso C01-04; nuevo workflow GitHub-hosted con filtro exacto de clase, TRX 1/1 estricto, nombre de prueba verificado y servicio MySQL 8.4 efimero.
+- Alcance solo CI y documentacion; no altera runtime, JWT/RBAC, SQL comercial ni infraestructura productiva. A0-A4 siguen incompletas por ausencia de lector de expediente autentico y binding persistente; H=VALIDANDO, owner DEV05 y A5 independiente pendiente.
+- Publicacion FF/CAS sobre dev, Scope Lock exact SHA, check V5 y CI dirigida obligatorios antes de atribuir PASS. Rollback normal git revert y BITACORA preservada; sin QA/main/PROD.
+
 ## 2026-11-21 — C04-02.M03.06 exact-SHA CI filter repair (DEV04 V23)
 
 - Scope C04-02.M03.06 / PLAN D631: correct the directed MySQL 8.4 GitHub-hosted job filter, without changing application runtime, tenant policy, or protected branches.
