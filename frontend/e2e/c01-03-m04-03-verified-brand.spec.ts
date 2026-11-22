@@ -65,4 +65,51 @@ test.describe('C01-03.M04.03 verified tenant branding actual server',()=>{
     });
     expect(x.status()).toBe(401);
   });
+
+  test('A authenticated HTTP response delayed across logout cannot replace B brand',async({page})=>{
+    test.setTimeout(240_000);
+    const jwtA=await login(page,'c1504_admin_a');
+    const membershipA=await page.request.get(api+'/tenant-context/1',{headers:{Authorization:'Bearer '+jwtA}});
+    expect(membershipA.status()).toBe(200);
+    await page.evaluate(()=>localStorage.setItem('solqaryn_empresa_solicitada_id','1'));
+
+    // The response bytes come from the real ASP.NET/MySQL endpoint, not a mocked API.
+    // Only delivery to the browser is adversarially delayed during an identity switch.
+    let announceA!:()=>void;
+    const sawA=new Promise<void>(resolve=>{announceA=resolve;});
+    let releaseA!:()=>void;
+    const pendingA=new Promise<void>(resolve=>{releaseA=resolve;});
+    let capturedA=0;
+    await page.route(/\/empresa-configuracion\/tenant\/1(?:\?|$)/,async route=>{
+      const response=await route.fetch();
+      if(response.status()!==200)throw new Error('Real A read must succeed before race');
+      capturedA++;
+      announceA();
+      await pendingA;
+      try{
+        await route.fulfill({response});
+      }catch{
+        // Angular may cancel the obsolete A HTTP request on navigation/logout.
+        // Cancellation is safer than delivery and must not resurrect A identity.
+      }
+    });
+
+    await page.goto('/configuracion/dinamica-v5',{waitUntil:'domcontentloaded'});
+    await sawA;
+    await page.getByRole('button',{name:'Cerrar sesión'}).click();
+    await expect(page).toHaveURL(/\/login(?:\?|$)/);
+    const jwtB=await login(page,'c1504_admin_b');
+    const membershipB=await page.request.get(api+'/tenant-context/2',{headers:{Authorization:'Bearer '+jwtB}});
+    expect(membershipB.status()).toBe(200);
+    await page.evaluate(()=>localStorage.setItem('solqaryn_empresa_solicitada_id','2'));
+    await page.goto('/configuracion/dinamica-v5');
+    const brand=page.getByTestId('c0103-verified-brand');
+    await expect(brand).toHaveText('Empresa B efimera C15');
+    releaseA();
+    await expect(brand).toHaveText('Empresa B efimera C15');
+    await expect(page.getByText('Empresa A efimera C15',{exact:true})).toHaveCount(0);
+    expect(capturedA).toBeGreaterThan(0);
+    await page.screenshot({path:'test-results/c0103-m0403-B-after-delayed-A.png',fullPage:true});
+  });
+
 });
