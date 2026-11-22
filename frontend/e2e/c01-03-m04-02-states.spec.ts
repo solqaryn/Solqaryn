@@ -69,17 +69,32 @@ test.describe('V24 M04.02 UI states after real JWT login with isolated response 
   });
   test('transient failure recovers on retry against the REAL API', async ({ page }) => {
     await loginA(page);
-    let first = true;
+    // The page and its tenant card both GET the same authenticated endpoint.
+    // Fail ALL initial GETs, not merely the first (which could be the brand GET).
+    // Re-enable the REAL API only after the user explicitly requests a retry.
+    let simulateOutage = true;
+    let injectedFailures = 0;
+    let genuineRecoveryGets = 0;
     await page.route(endpoint, async route => {
-      if (first) {
-        first = false;
+      if (route.request().method() !== 'GET') {
+        await route.continue();
+        return;
+      }
+      if (simulateOutage) {
+        injectedFailures++;
         await route.fulfill({ status: 503, contentType: 'application/json', body: '{}' });
-      } else await route.continue();
+      } else {
+        genuineRecoveryGets++;
+        await route.continue();
+      }
     });
     await page.goto(target);
     await expect(page.locator('[data-config-state="unavailable"]')).toBeVisible();
+    expect(injectedFailures, 'must exercise at least one true simulated outage on initial GET').toBeGreaterThan(0);
+    simulateOutage = false;
     await page.getByRole('button', { name: 'Reintentar consulta' }).click();
     await expect(page.getByRole('form', { name: 'Configuración del tenant activo' })).toBeVisible();
     await expect(page.getByText('Empresa #1', { exact: false })).toBeVisible();
+    expect(genuineRecoveryGets, 'retry must reach the real authenticated MySQL-backed API').toBeGreaterThan(0);
   });
 });
