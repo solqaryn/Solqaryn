@@ -1,3 +1,7 @@
+## 2026-11-22 — V23 C15-03.M05.05 JWT revocado por pertenencia MySQL CI [Javier :20]
+- Añade prueba adversarial SQL/HTTP real de revocacion de membresia con JWT previamente valido, verificaciones antes/despues y restauracion efimera en finally; no debilita cuarentena P0.
+- Ajusta CI y documenta que ownership de archivos/jobs/sucursales, A0-A4 y A5 independiente NO estan certificados hasta evidencia posterior. Solo dev.
+
 ## 2026-11-22 — DEV02 V23 C15-04.M05.04 A1.02 cinco superficies privadas a 200% real
 - A1.01 GitHub-hosted exact-SHA 89bba451 superó 137/137 pruebas Chromium con JWT firmado, HTTP .NET, MySQL 8.4 efímero, Scope Lock y checks pertinentes. A1.02 extiende A0.69 de tres a cinco rutas protegidas agregando cobertura-v5 y auditoria-operativa-v5 en 320/390/768/1280/1440, zoom CSS medido, sin body overflow, foco visible por teclado y cero mutaciones; CI del nuevo SHA aún por acreditar.
 - Sólo test Playwright/docs/CHANGELOG: se consultaron SKREF-03 Impeccable y SKREF-10 Angular en origen y pin. No nuevos frameworks, permisos, datos ni despliegue. C15-04.M05.04 mantiene H=EN_PROGRESO e I DEV02 bajo candado V17; cobertura total de 160 rutas/roles, WCAG integral y CWV de campo NO CERTIFICADOS; A5 ajena y QA/main/PROD pendientes/prohibidos.

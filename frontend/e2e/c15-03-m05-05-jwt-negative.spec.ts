@@ -208,4 +208,43 @@ test.describe('C15-03.M05.05 — negativa JWT y tenancy HTTP real', () => {
     expect(mutations).toEqual([]);
   });
 
+
+  test('revocacion de pertenencia en MySQL sin renovar JWT deniega tenant B', async ({ page, request }) => {
+    // Frontera R2 en GitHub-hosted: JWT previamente emitido y MySQL 8.4 efimero; sin mocks.
+    const jwt = await ingresar(page, 'c1504_admin_b');
+    const headers = { Authorization: 'Bearer ' + jwt, 'X-Empresa-Id': '2' };
+    const before = await request.get(api + '/tenant-context/2', { headers });
+    expect(before.status(), 'control positivo de membresia B').toBe(200);
+    expect((await before.json())?.data?.empresaId).toBe(2);
+    const { execFileSync } = await import('node:child_process');
+    const container = execFileSync('docker',
+      ['ps', '--filter', 'ancestor=mysql:8.4', '--format', '{{.ID}}'], { encoding: 'utf8' })
+      .trim().split(/\r?\n/)[0];
+    expect(container, 'contenedor MySQL 8.4 aislado').toMatch(/^[0-9a-f]{12,64}$/);
+    const setMembership = (active: 0 | 1): void => {
+      const sql = 'UPDATE UsuarioEmpresas ue JOIN Usuarios u ON u.Id=ue.UsuarioId ' +
+        'SET ue.Activa=' + active + ', ue.FechaActualizacion=UTC_TIMESTAMP(6) ' +
+        "WHERE u.NombreUsuario='c1504_admin_b' AND ue.EmpresaId=2;" +
+        'SELECT ue.Activa FROM UsuarioEmpresas ue JOIN Usuarios u ON u.Id=ue.UsuarioId ' +
+        "WHERE u.NombreUsuario='c1504_admin_b' AND ue.EmpresaId=2;";
+      const state = execFileSync('docker',
+        ['exec', '-i', container!, 'mysql', '-uroot', '-proot',
+          'solqaryn_c1504_real_ci', '-Nse', sql], { encoding: 'utf8' }).trim();
+      expect(state, 'readback SQL Activa=' + active).toBe(String(active));
+    };
+    try {
+      setMembership(0);
+      const revoked = await request.get(api + '/tenant-context/2', { headers });
+      expect([401, 403, 404], 'JWT anterior a revocacion nunca concede B').toContain(revoked.status());
+      const cross = await request.get(api + '/tenant-context/1', {
+        headers: { ...headers, 'X-Empresa-Id': '1' }
+      });
+      expect([403, 404], 'revocacion tampoco concede A').toContain(cross.status());
+    } finally {
+      setMembership(1); // Rollback de datos CI aun cuando la asercion falle.
+    }
+    const restored = await request.get(api + '/tenant-context/2', { headers });
+    expect(restored.status(), 'control positivo de restauracion CI').toBe(200);
+  });
+
 });
