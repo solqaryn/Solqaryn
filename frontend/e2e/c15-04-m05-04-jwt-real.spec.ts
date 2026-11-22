@@ -2916,4 +2916,75 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
       });
   }
 
+  // A0.84: prueba real de navegación por teclado y foco visible. La sesión
+  // y la autorización global proceden de API JWT + MySQL 8.4 efímero.
+  // Prueba solo estas tres superficies, NO acredita WCAG global/zoom 200.
+  for (const destino of [
+    { ruta: '/plataforma/capacidades-v19', titulo: 'Catálogo global de módulos y capacidades' },
+    { ruta: '/plataforma/revision-arquitectura-v20', titulo: 'Revisión de arquitectura e integraciones' },
+    { ruta: '/plataforma/eventos-outbox-v22', titulo: 'Observabilidad del outbox' }
+  ]) {
+    test('A0.84 - teclado Tab y foco visible en ' + destino.ruta,
+      async ({ page, request }) => {
+        const jwt = await ingresarConJwtRealParaGuard(
+          page, request, 'c1504_platform_only'
+        );
+        const autorizada = await request.get(api + '/plataforma/sesion', {
+          headers: { Authorization: 'Bearer ' + jwt }
+        });
+        expect(autorizada.status(), 'JWT firmado y permiso global de backend').toBe(200);
+        const escrituras: string[] = [];
+        page.on('request', req => {
+          if (req.url().includes('localhost:5005') &&
+              /^(POST|PUT|PATCH|DELETE)$/.test(req.method())) {
+            escrituras.push(req.method() + ' ' + new URL(req.url()).pathname);
+          }
+        });
+        for (const ancho of [320, 390, 768, 1280, 1440]) {
+          await page.setViewportSize({ width: ancho, height: 840 });
+          const sesion = page.waitForResponse(res =>
+            res.url().includes('/plataforma/sesion') &&
+            res.request().method() === 'GET');
+          await page.goto(destino.ruta);
+          expect((await sesion).status(), 'Guard JWT HTTP real').toBe(200);
+          await expect(page.getByRole('heading', {
+            level: 1, name: destino.titulo
+          })).toBeVisible();
+          const focos = new Set<string>();
+          for (let paso = 0; paso < 16; paso++) {
+            await page.keyboard.press('Tab');
+            const foco = await page.evaluate(() => {
+              const el = document.activeElement;
+              if (!(el instanceof HTMLElement) || el === document.body) {
+                return null;
+              }
+              const rect = el.getBoundingClientRect();
+              const css = getComputedStyle(el);
+              const etiqueta = el.getAttribute('aria-label') ||
+                el.getAttribute('title') || el.textContent?.trim().slice(0, 64) || '';
+              return {
+                tag: el.tagName, etiqueta,
+                visible: rect.width > 0 && rect.height > 0 &&
+                  css.visibility !== 'hidden' && css.display !== 'none',
+                focoTeclado: el.matches(':focus-visible')
+              };
+            });
+            if (foco?.visible && foco.focoTeclado && foco.etiqueta &&
+                /^(A|BUTTON|INPUT|SELECT|TEXTAREA)$/.test(foco.tag)) {
+              focos.add(foco.tag + ':' + foco.etiqueta);
+            }
+          }
+          expect(focos.size, 'Dos controles etiquetados alcanzables con Tab en ' +
+            destino.ruta + ' a ' + ancho).toBeGreaterThanOrEqual(2);
+          const scroll = await page.evaluate(() => ({
+            html: document.documentElement.scrollWidth,
+            body: document.body.scrollWidth
+          }));
+          expect(Math.max(scroll.html, scroll.body),
+            'Sin desborde horizontal del body').toBeLessThanOrEqual(ancho + 2);
+        }
+        expect(escrituras, 'Prueba de foco sin modificar datos de API').toEqual([]);
+      });
+  }
+
 });

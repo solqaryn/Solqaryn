@@ -1,3 +1,7 @@
+## 2026-11-22 — DEV02 C15-04.M05.04 A109: teclado Tab y foco visible en tres superficies privadas
+- Incremento R2 TEST-ONLY de la EN_PROGRESO propia bajo V17 2000002297: tres casos Playwright A0.84 en /plataforma/capacidades-v19, /plataforma/revision-arquitectura-v20 y /plataforma/eventos-outbox-v22. Requieren JWT real firmado, RBAC HTTP y MySQL 8.4 efímero, cinco anchos (320/390/768/1280/1440), foco :focus-visible por Tab real en dos controles etiquetados y cero overflow del documento o mutaciones API.
+- A0 alcance y rollback acotados al test + registro; A1-A4 condicionados a GitHub-hosted exact-SHA, 146 casos esperados frente a 143/143 PASS del incremento A108 anterior. No se atribuye PASS adelantado, ni zoom 200, WCAG de las 160 rutas, CWV campo, QA/main/PROD, ni A5 independiente. SKREF-03 y SKREF-10 consultadas en origen y pin; no se importaron dependencias. Si CI falla, diagnosticar evidencia adversarial y reparar en la misma WIP antes de LISTO.
+
 ## 2026-11-22 — DEV01 V24 C07-01.M06.06: API real deniega POST/PUT/DELETE y conserva catálogo A/B
 - Incremento R2 test-only: sexto Playwright en GitHub-hosted usa JWT firmados A/B, /productos real, ASP.NET Core 10 y MySQL 8.4 efímero; exige 403/503 a POST/PUT/DELETE, rechazo cruzado y snapshots SQL inalterados.
 - No altera runtime, permisos, datos productivos ni piloto de lectura. CI exact-SHA pendiente antes de acreditar A0-A4 del incremento; fase ERP (servicios, variantes, impuestos, categorías, atributos y rollback HTTP positivo) continúa EN_PROGRESO, A5 independiente pendiente, sin QA/main/PROD.
