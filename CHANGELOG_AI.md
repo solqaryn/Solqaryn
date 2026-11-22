@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV02 V23 C15-04.M05.04 A0.98: skip-link con Enter real a 200% CSS
+- Ampliación test-only: quince verificaciones de activación real mediante Tab y Enter en ofertas, carrito y cuenta a anchos 320/390/768/1280/1440 con raíz CSS 200%; validar pathname/hash, main destinatario y tabindex, geometría y cero HTTP mutante. Detecta anclas rotas que la anterior comprobación de foco no detectaba.
+- CI GitHub-hosted, Scope Lock, V5 y capturas A097 del SHA causal deben completarse SUCCESS; no inventar PASS, JWT/RBAC, WCAG general ni mediciones RUM de campo. Persisten EN_PROGRESO/DEV02/V17 lock 2000002297, A0-A4 global parcial, A5 ajena pendiente y límites dev/STRICT.
+- Sólo spec Playwright + documento propio + CHANGELOG aditivo; sin tocar runtime Angular, API, MySQL, secrets, QA/main/PROD. Rollback git revert verificando HEAD.
+
 ## 2026-11-22 — DEV01 V23: reparación R2 del piloto PUT /productos en MySQL 8.4
 - CI causal: SHA 263c997b reportó 503 frente a 200 en PUT firmado, porque el opt-in PrivateDraftPilotEnabled cubre POST, mientras que el middleware real limita PUT a PrivateCommercialFilesPilotEnabled; no se deshabilita ni relaja el control de producción.
 - Test-only en TestServer con MySQL 8.4 efímero: PUT sin opt-in -> 503 y cero mutación, después flag independiente in-memory ON para PUT positivo, denegación IDOR tenant B, revocación Editar, auditoría persistente y flag OFF de nuevo. No se tocan secretos, despliegues ni configuraciones reales.

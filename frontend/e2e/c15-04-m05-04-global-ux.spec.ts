@@ -1019,6 +1019,12 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
           await expect(salto).toHaveAttribute('href',ruta+selector);
           await current.keyboard.press('Tab');
           await expect(salto,'skip-link accesible por teclado sin .focus()').toBeFocused();
+          // A0.98: no basta el foco; activar con Enter y comprobar destino real bajo CSS 200%.
+          await current.keyboard.press('Enter');
+          await expect.poll(()=>current.evaluate(()=>location.pathname)).toBe(ruta);
+          await expect.poll(()=>current.evaluate(()=>location.hash)).toBe(selector);
+          await expect(current.locator('main'+selector)).toHaveAttribute('tabindex','-1');
+          await expect(current.locator('main'+selector)).toBeVisible();
           const mainBox=await current.locator('main'+selector).boundingBox();
           expect(mainBox,'main principal tangible').not.toBeNull();
           expect(mainBox!.x,'main empieza en viewport').toBeGreaterThanOrEqual(-1);
