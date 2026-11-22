@@ -1,0 +1,72 @@
+name: V24 C01-03.M03.06 real JWT durable audit MySQL 8.4
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/src/Infrastructure/AutomationV5/C0103DurableTenantConfigurationAudit.cs'
+      - 'backend/src/API/Controllers/EmpresaConfiguracionController.cs'
+      - 'backend/src/API/Program.cs'
+      - 'backend/tests/Solqaryn.Tests/Integration/C0103M0306DurableTenantAuditMysql84Tests.cs'
+      - '.github/workflows/v24-c01-03-m03-06-durable-audit-mysql84.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v24-c0103-m0306-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  real-mysql84-audit:
+    name: C01-03.M03.06 real JWT RBAC tenant A/B durable MySQL 8.4
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: ephemeral-v24-only
+          MYSQL_DATABASE: solqaryn_ci
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -pephemeral-v24-only"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=15
+    env:
+      ConnectionStrings__DefaultConnection: "Server=127.0.0.1;Port=3306;Database=solqaryn_ci;User=root;Password=ephemeral-v24-only;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Verify exact SHA and project scope
+        working-directory: .
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+      - name: Run real MySQL 8.4 signed JWT tenant A/B audit
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          dotnet restore tests/Solqaryn.Tests/Solqaryn.Tests.csproj
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore --filter 'Category=Integration&FullyQualifiedName~C0103M0306DurableTenantAuditMysql84Tests' --logger 'trx;LogFileName=C0103M0306Mysql84.trx' --verbosity normal
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          found=list(Path('tests/Solqaryn.Tests').rglob('C0103M0306Mysql84.trx'))
+          if len(found)!=1: raise SystemExit('NO_TRX')
+          counters=ET.parse(found[0]).getroot().find('.//{*}Counters')
+          if counters is None: raise SystemExit('NO_COUNTS')
+          result={k:int(counters.attrib.get(k,-1)) for k in ('total','passed','failed','notExecuted')}
+          print('DIRECTED_REAL_MYSQL84_JWT',result)
+          if result!=dict(total=1,passed=1,failed=0,notExecuted=0): raise SystemExit('NO_PASS')
+          PY

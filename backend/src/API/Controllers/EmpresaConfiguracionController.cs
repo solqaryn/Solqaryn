@@ -5,6 +5,8 @@ using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Hosting;
+using Solqaryn.Infrastructure.AutomationV5;
 
 namespace Solqaryn.API.Controllers;
 
@@ -13,10 +15,25 @@ namespace Solqaryn.API.Controllers;
 public class EmpresaConfiguracionController : ControllerBase
 {
     private readonly IEmpresaConfiguracionService _service;
+    private readonly C0103DurableTenantConfigurationAudit? _durable;
+    private readonly IWebHostEnvironment? _host;
+    private readonly IConfiguration? _config;
 
     public EmpresaConfiguracionController(IEmpresaConfiguracionService service)
     {
         _service = service;
+    }
+
+    // The original one-argument constructor stays valid for legacy callers.
+    public EmpresaConfiguracionController(
+        IEmpresaConfiguracionService service,
+        C0103DurableTenantConfigurationAudit durable,
+        IWebHostEnvironment host,
+        IConfiguration config) : this(service)
+    {
+        _durable = durable;
+        _host = host;
+        _config = config;
     }
 
     [HttpGet("publica")]
@@ -71,6 +88,16 @@ public class EmpresaConfiguracionController : ControllerBase
     public async Task<IActionResult> GetTenant(int empresaId, CancellationToken cancellationToken)
     {
         var config = await _service.GetTenantAsync(empresaId, cancellationToken);
+        // Existing [Authorize]+Configuracion.Ver route; only explicit DEV opt-in
+        // writes a real scoped SQL audit before responding successfully.
+        if (_host?.IsDevelopment() == true &&
+            _config?.GetValue<bool>("AutomationV5:C0103:EnableDurableReadAudit") == true)
+        {
+            if (_durable is null ||
+                !await _durable.TryRecordReadAsync(empresaId, config.Version,
+                    _config["AutomationV5:C0103:SourceSha"], cancellationToken))
+                return StatusCode(503, new { code = "CONFIG_AUDIT_NOT_DURABLE" });
+        }
         return Ok(ApiResponse<ConfigEmpresaTenantDto>.Ok(config));
     }
 

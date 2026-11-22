@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV06 V24 C01-03.M03.06: auditoría JWT y SQL durable [Javier :50]
+- Nueva integración DEV opt-in sobre GET tenant real: rol/RBAC y miembro actuales en MySQL, recibo sin secretos en RegistrosAuditoria con readback post-commit, DI de desarrollo y respuesta fail-closed.
+- Nueva prueba adversarial firmada JWT + HTTP + MySQL 8.4 efímero en GitHub-hosted exact-SHA, tenant A/B, revocación, versión obsoleta, caída de SQL y TRX 1/1 obligatorio.
+- Historial A5_FAIL conservado; H235=LISTO e I235=DEV01 intactos; revisión A5 correctiva por Task independiente tras CI; no DAG/COLA manual, QA/main/PROD ni claims falsos. Reversión por git revert normal.
+
 ## 2026-11-22 — DEV05 V23 C01-04.M03.06: bloqueo cruzado del sink QA por tenant/case [Javier :40]
 - Reparación R2/P1: la fuente QA B podía dirigirse por error a un sink MySQL A porque SafeAuditEntry no lleva identificadores sensibles; nuevo contrato opcional de binding exige ID canónico de tenant/expediente igual al ámbito del sink antes de leer la fuente, sin suponer autorización JWT.
 - Prueba xUnit real Category=Integration en MySQL 8.4 efímero: B con sink A y scope opaco rechazados sin nuevas filas InnoDB; casos positivos A/B, duplicado concurrente, anti-replay y fallo seguro conservados. CI GitHub-hosted del SHA nuevo pendiente, no PASS inferido.

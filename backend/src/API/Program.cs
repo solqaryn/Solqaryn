@@ -20,6 +20,7 @@ using Solqaryn.Domain.Enums;
 using Solqaryn.Infrastructure.Persistence;
 using Solqaryn.Infrastructure.Repositories;
 using Solqaryn.Infrastructure.Services;
+using Solqaryn.Infrastructure.AutomationV5;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http.Features;
 using Microsoft.AspNetCore.HttpOverrides;
@@ -93,6 +94,12 @@ builder.Services.AddIdentidadUniversalIntegration();
 builder.Services.Configure<ObservabilityOptions>(builder.Configuration.GetSection("Observability"));
 builder.Services.AddSingleton<RequestObservability>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
+if (builder.Environment.IsDevelopment())
+{
+    // V24 C01-03.M03.06: opt-in DEV route auditing only. No QA/PROD binding.
+    builder.Services.AddScoped<C0103DynamicConfigurationAuditLogger>();
+    builder.Services.AddScoped<C0103DurableTenantConfigurationAudit>();
+}
 builder.Services.AddScoped<IUsuarioScopeService, UsuarioScopeService>();
 // C02-01.M05.04: verified JWT actor + current Oracle EF/MySQL membership.
 // DEV-only diagnostic DI, no JWT issuance, session switch or resource grants.
