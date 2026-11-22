@@ -314,7 +314,7 @@ import { C1404ReleaseBrandingV17Component } from './c14-04-m04-03-release-brandi
   `,
   styles: [`
     :host { display: block; }
-    .plataforma { max-width: 1120px; margin: 0 auto; padding: clamp(16px, 3vw, 36px); }
+    .plataforma { box-sizing: border-box; width: 100%; min-width: 0; max-width: 1120px; margin: 0 auto; padding: clamp(16px, 3vw, 36px); }
     .heading { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 20px; margin-bottom: 24px; }
     .heading__text { max-width: 680px; min-width: 0; }
     .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: .8rem; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; color: var(--color-primary); }
@@ -338,8 +338,8 @@ import { C1404ReleaseBrandingV17Component } from './c14-04-m04-03-release-brandi
     .pending, .available { display: inline-block; border: 1px solid currentColor; border-radius: 999px; padding: 5px 11px; font-weight: 650; font-size: .8rem; }
     .pending { color: #955500; }
     .available { color: #22693d; }
-    .v5-card { min-width: 0; max-width: 100%; }
-    .v5-card mat-card-content { padding: clamp(18px, 3vw, 32px); min-width: 0; }
+    .v5-card { box-sizing: border-box; width: 100%; min-width: 0; max-width: 100%; }
+    .v5-card mat-card-content { box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0; padding: clamp(18px, 3vw, 32px); }
     .v5-feedback { margin: 0 0 18px; padding: 14px 18px; border: 1px solid #dfe5ec; border-radius: 12px; }
     .v5-feedback p { margin: 4px 0; }
     .v5-feedback p:has(mat-spinner) { display: flex; align-items: center; gap: 10px; }
@@ -371,7 +371,7 @@ import { C1404ReleaseBrandingV17Component } from './c14-04-m04-03-release-brandi
     .v5-coverage-contrast .v5-coverage .v5-empty { color: #e2e8f0; }
     .v5-coverage-contrast .v5-boundary { background-color: #1e293b; color: #f8fafc; }
     .v5-coverage-contrast .v5-coverage-branding button { color: #f8fafc; border-color: #94a3b8; }
-    .v5-coverage-scroll { max-width: 100%; overflow: auto; margin-top: 24px; border: 1px solid #dfe5ec; border-radius: 12px; }
+    .v5-coverage-scroll { box-sizing: border-box; display: block; width: 100%; max-width: 100%; min-width: 0; overflow-x: auto; overflow-y: hidden; contain: inline-size; margin-top: 24px; border: 1px solid #dfe5ec; border-radius: 12px; }
     .v5-coverage { min-width: 650px; width: 100%; border-collapse: collapse; }
     .v5-coverage th, .v5-coverage td { padding: 16px; text-align: left; border-bottom: 1px solid #dfe5ec; }
     .v5-coverage th { font-weight: 750; font-size: .85rem; background: var(--color-background, #f5f7fa); }

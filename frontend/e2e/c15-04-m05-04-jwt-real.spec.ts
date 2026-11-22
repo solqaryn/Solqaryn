@@ -2219,6 +2219,27 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
           'reflujo sin scroll lateral a 200%: ' + ruta + ' ' + width +
           ' elementos_desbordados=' + JSON.stringify(dimensiones.excedentes))
           .toBeLessThanOrEqual(dimensiones.viewport + 2);
+        if (ruta === '/plataforma/cobertura-v5' && width <= 390) {
+          const zona = page.locator('.v5-coverage-scroll');
+          const caja = await zona.evaluate(el => {
+            const b = el.getBoundingClientRect();
+            return {
+              izquierda: b.left,
+              derecha: b.right,
+              viewport: document.documentElement.clientWidth,
+              disponible: el.clientWidth,
+              total: el.scrollWidth,
+              desbordeDocumento: document.documentElement.scrollWidth
+            };
+          });
+          expect(caja.izquierda, 'matriz local no sale del borde izquierdo').toBeGreaterThanOrEqual(-2);
+          expect(caja.derecha, 'matriz local no sobresale del viewport').toBeLessThanOrEqual(caja.viewport + 2);
+          expect(caja.total, 'tabla conserva columnas completas desplazables').toBeGreaterThan(caja.disponible);
+          await zona.evaluate(el => { el.scrollLeft = el.scrollWidth; });
+          expect(await zona.evaluate(el => el.scrollLeft), 'desplazamiento horizontal queda dentro de la tabla')
+            .toBeGreaterThan(0);
+          expect(caja.desbordeDocumento, 'tabla local no desplaza body').toBeLessThanOrEqual(caja.viewport + 2);
+        }
         let focoVisible = false;
         for (let intento = 0; intento < 120; intento++) {
           await page.keyboard.press('Tab');

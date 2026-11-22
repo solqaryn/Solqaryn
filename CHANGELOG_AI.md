@@ -1,3 +1,9 @@
+## 2026-11-22 — DEV02 V24 C15-04.M05.04: contención horizontal local de matriz cobertura [Javier :10]
+- GitHub-hosted run 45042548407/job 137269989362 del SHA 70a95ac6: A0.69 falló por tabla de cobertura fuera del viewport con texto CSS raíz 200% a 320 px; no se certificó como PASS.
+- Se corrige la caja de plataforma/tarjeta y la región local de matriz con min-width:0, border-box y contain:inline-size sin ocultar overflow del body; la tabla mantiene columnas semánticas y scroll horizontal propio.
+- Playwright A0.69 ahora mide geometría, scroll local ejecutable y ausencia de overflow documental en 320/390, conservando JWT firmado, HTTP real, MySQL 8.4 efímero, foco Tab y denegaciones. CI nueva pendiente hasta comprobar SHA exacto; A0-A4 global, A5, WCAG 160 rutas y CWV NO_MEDIDO; H2297 EN_PROGRESO, I DEV02, V17 lock propio.
+- SKREF-03/10 leídas en pins originales, 04/05/06/11/12 NO_APLICA. No QA/main/PROD ni secretos; rollback por revert normal bajo CAS.
+
 ## 2026-11-22 — DEV01 V24 C07-01.M06.06: filas físicas A/B en navegador JWT real [Javier :00]
 - GitHub-hosted mysql:8.4 efímero ahora siembra Productos distintos A/B con readback SQL; Playwright Angular/ASP.NET JWT firmados exige propias visibles y ajenas ausentes en JSON y tarjetas móviles.
 - Control adversarial R2 antes pasaba con catálogos vacíos; la prueba nueva falla si se filtra un registro de otro tenant. Sin `page.route`, tokens fabricados, runtime/producción ni credenciales reales.
