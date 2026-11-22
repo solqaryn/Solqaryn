@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV02 V23 C14-02.M06.06 corregir gate CI TRX de 1/1 a 2/2
+- Causa confirmada: el job GitHub-hosted 137215657913 del SHA baf3ed31 corrió dos tests reales JWT firmado/TestServer/MySQL 8.4.13 con 2 PASS, 0 FAIL y 0 omitidos, pero terminó FAIL porque su workflow exigía contador TRX 1/1; no considerar ese FAIL como PASS.
+- Reparación mínima fail-closed en workflow: exigir 2/2 executed/passed, 0 failed/notExecuted y TRX único; conservar Scope Lock, Skill, Category=Integration, credenciales efímeras y artefactos. Cerrar el gate sólo si GitHub Actions exact-SHA nuevo completa SUCCESS.
+- Reparación cruzada sobre VALIDANDO C14, sin reatribuir DEV06 ni asumir A0–A4/A5: BOLA/IDOR, archivos, jobs, caché, respaldo, sesión y P0/P1 global siguen sin certificar. Sin cambios de runtime, secretos, producción o tareas físicas.
+
 ## 2026-11-22 — DEV06 V23 C14-02.M06.06 caída MySQL post-JWT: rechazo fail-closed
 - En el HEAD previo `ad8249dba546849c7cdcdd2985138ec3d4879e16`, la CI GitHub-hosted completó 152/152 tests reales Category=Integration MySQL 8.4 sin fallos ni omitidos, incluido el fixture C14, con Scope Lock y gates pertinentes SUCCESS. No se certifica la seguridad global por esa prueba.
 - Nuevo caso adversarial TestServer/JWT firmado/MySQL 8.4: después de una lectura positiva, se elimina la tabla efímera; el mismo bearer debe recibir 403 y `TRUSTED_EVIDENCE_SOURCE_UNAVAILABLE`, además de rechazos por actor cruzado y cabecera de tenant falsificada. Exigir CI exact-SHA del nuevo caso, nunca suponer PASS antes de ejecutarlo.

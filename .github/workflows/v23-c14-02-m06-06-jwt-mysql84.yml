@@ -59,7 +59,8 @@ jobs:
           if node is None: raise SystemExit('MISSING_TRX_COUNTERS')
           c={k:int(node.attrib.get(k,-1)) for k in ('total','passed','failed','notExecuted','executed')}
           print('C1402_M0606_REAL_SIGNED_JWT_HTTP_MYSQL84_TRX',c)
-          if c['total']!=1 or c['passed']!=1 or c['failed']!=0 or c['notExecuted']!=0 or c['executed']!=1:
+          # Both integration Facts must execute: signed JWT tenant A/B and SQL reader outage after authorization.
+          if c['total']!=2 or c['passed']!=2 or c['failed']!=0 or c['notExecuted']!=0 or c['executed']!=2:
               raise SystemExit('INTEGRATION_NOT_PASS')
           PY
       - name: Preserve TRX evidence
