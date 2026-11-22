@@ -57,6 +57,14 @@ jobs:
           path: frontend/test-results/**/v23-a091-*.png
           if-no-files-found: warn
           retention-days: 14
+      - name: Evidencia V23 A092 de 15 capturas Chromium publicas adicionales
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c1504-m0504-v23-a092-screenshots
+          path: frontend/test-results/**/v23-a092-*.png
+          if-no-files-found: error
+          retention-days: 14
       - name: Evidencia de falla
         if: failure()
         uses: actions/upload-artifact@v4

@@ -862,4 +862,43 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
     }
   });
 
+
+  // V23 A0.92: complementar evidencia A091 con tres rutas publicas distintas.
+  // Test-only: Chromium autentico, sin JWT simulado, sin HTTP mutante y sin certificacion WCAG global.
+  test('storefront V23 A092: 15 capturas ofertas carrito cuenta en cinco anchos',async({page},testInfo)=>{
+    test.setTimeout(240_000);
+    const rutas:[string,string][]=[
+      ['/tienda/ofertas','#catalogo-productos'],
+      ['/tienda/carrito','#carrito-principal'],
+      ['/tienda/cuenta','#cuenta-principal']
+    ];
+    const escrituras:string[]=[];
+    page.on('request',req=>{
+      if(!['GET','HEAD','OPTIONS'].includes(req.method()))escrituras.push(req.method()+' '+req.url());
+    });
+    for(const width of [320,390,768,1280,1440]){
+      await page.setViewportSize({width,height:840});
+      for(const [ruta,destino] of rutas){
+        await test.step('A092 '+width+'px '+ruta,async()=>{
+          await page.goto(ruta,{waitUntil:'domcontentloaded'});
+          await expect(page.locator('main'+destino)).toBeVisible();
+          await expect(page.getByRole('heading',{level:1})).toHaveCount(1);
+          const salto=page.locator('a.skip-link').first();
+          await expect(salto).toHaveAttribute('href',ruta+destino);
+          await page.keyboard.press('Tab');
+          await expect(salto).toBeFocused();
+          await noOverflow(page);
+          const slug=ruta.replaceAll('/','_').replace(/^_/,'');
+          const captura=await page.screenshot({
+            path:testInfo.outputPath('v23-a092-'+slug+'-'+width+'.png'),
+            fullPage:true
+          });
+          expect(captura.byteLength,'PNG real no trivial').toBeGreaterThan(2000);
+        });
+      }
+    }
+    expect(escrituras,'storefront de lectura sin POST/PUT/PATCH/DELETE').toEqual([]);
+  });
+
+
 });
