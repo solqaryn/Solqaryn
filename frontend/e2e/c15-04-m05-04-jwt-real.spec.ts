@@ -2161,7 +2161,7 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
 
   // A0.69: evidencia incremental de reflujo a 200% sobre superficies globales
   // autenticas: JWT firmado, HTTP .NET y MySQL descartable, sin page.route.
-  test('A0.69 - reflujo 200% y foco visible por teclado en 3 superficies JWT reales', async ({ page, request }) => {
+  test('A0.69 - reflujo 200% y foco visible por teclado en 5 superficies JWT reales', async ({ page, request }) => {
     const jwt = await ingresar(page, 'c1504_platform_only');
     const probe = await request.get(api + '/plataforma/sesion', {
       headers: { Authorization: 'Bearer ' + jwt }
@@ -2177,7 +2177,9 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     for (const ruta of [
       '/plataforma/auditoria-tenancy-v5',
       '/plataforma/observabilidad-v5',
-      '/plataforma/capacidades-estados-v19'
+      '/plataforma/capacidades-estados-v19',
+      '/plataforma/cobertura-v5',
+      '/plataforma/auditoria-operativa-v5'
     ]) {
       for (const width of [320, 390, 768, 1280, 1440]) {
         await page.setViewportSize({ width, height: 840 });

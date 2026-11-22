@@ -1,3 +1,7 @@
+## 2026-11-22 — DEV02 V23 C15-04.M05.04 A1.02 cinco superficies privadas a 200% real
+- A1.01 GitHub-hosted exact-SHA 89bba451 superó 137/137 pruebas Chromium con JWT firmado, HTTP .NET, MySQL 8.4 efímero, Scope Lock y checks pertinentes. A1.02 extiende A0.69 de tres a cinco rutas protegidas agregando cobertura-v5 y auditoria-operativa-v5 en 320/390/768/1280/1440, zoom CSS medido, sin body overflow, foco visible por teclado y cero mutaciones; CI del nuevo SHA aún por acreditar.
+- Sólo test Playwright/docs/CHANGELOG: se consultaron SKREF-03 Impeccable y SKREF-10 Angular en origen y pin. No nuevos frameworks, permisos, datos ni despliegue. C15-04.M05.04 mantiene H=EN_PROGRESO e I DEV02 bajo candado V17; cobertura total de 160 rutas/roles, WCAG integral y CWV de campo NO CERTIFICADOS; A5 ajena y QA/main/PROD pendientes/prohibidos.
+
 ## 2026-11-22 — DEV02 V23 C14-02.M06.06 corregir gate CI TRX de 1/1 a 2/2
 - Causa confirmada: el job GitHub-hosted 137215657913 del SHA baf3ed31 corrió dos tests reales JWT firmado/TestServer/MySQL 8.4.13 con 2 PASS, 0 FAIL y 0 omitidos, pero terminó FAIL porque su workflow exigía contador TRX 1/1; no considerar ese FAIL como PASS.
 - Reparación mínima fail-closed en workflow: exigir 2/2 executed/passed, 0 failed/notExecuted y TRX único; conservar Scope Lock, Skill, Category=Integration, credenciales efímeras y artefactos. Cerrar el gate sólo si GitHub Actions exact-SHA nuevo completa SUCCESS.
