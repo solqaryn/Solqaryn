@@ -606,3 +606,11 @@ La nueva comprobación pública de estado añade un único componente standalone
 - `frontend/src/app/features/landing/c0601-public-status.component.ts`
 
 Este inventario es fuente de archivos, no inventario de API, accesibilidad, permisos JWT/RBAC o backend. Verificar con `node scripts/verify-p0-007-a-component-catalog.mjs --self-test` bajo GitHub Actions del SHA exacto. Corrección causal del fallo del job 136976782578 en 4ccbac2: `catalog drift: unlisted=frontend/src/app/features/landing/c0601-public-status.component.ts`. Sin desactivar los validadores, sin nuevas microtareas ni QA/main/PROD.
+
+## Corte aditivo V24 C01-03.M04.01 — 22 noviembre 2026
+
+El nuevo componente Angular privado, realmente introducido en el commit `3878383b21d203c894608ee46808fbe4939f3768`, añade una única ruta fuente reproducible al inventario de archivos. Conteo actual **171 .component.ts (163 features, 8 shared)**; los cortes históricos anteriores se conservan sin editar. Se mantiene el comparador fail-closed y su self-test de archivos borrados/inventados, sin excluir el componente.
+
+- `frontend/src/app/features/configuracion/c0103-configuracion-dinamica-page.component.ts`
+
+Este inventario no certifica JWT, RBAC, API, Chromium ni LISTO; sólo prueba la exactitud del catálogo de paths contra HEAD. R2/auth y pruebas UX tienen CI causal separada, y A5 independiente permanece pendiente.

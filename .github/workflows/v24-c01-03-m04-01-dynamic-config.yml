@@ -15,7 +15,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   jwt-private-browser:
-    name: C01-03.M04.01 - capacidades JWT reales y Chromium
+    name: C01-03.M04.01 - configuracion tenant JWT MySQL y Chromium
     runs-on: ubuntu-latest
     timeout-minutes: 60
     services:

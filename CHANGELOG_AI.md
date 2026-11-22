@@ -1,3 +1,7 @@
+## 2026-11-22 — DEV03 V24 C01-03.M04.01: reparación causal de inventario y rutas [Javier :20]
+- El SHA 3878383b produjo dos FAIL reproducibles: P0-007.A detectó el componente UI omitido y C15-01.M05.04 rechazó el hash y el conteo de rutas tras la nueva entrada privada; ambos logs exact-SHA inspeccionados.
+- Inventario actualizado a 171 archivos (163 feature, 8 shared) con entry real y pruebas negativas intactas; snapshot C15-01 preserva matrices históricas y actualiza exclusivamente el blob de rutas y 122 declaraciones observadas, sin hacerse pasar por Sheet vivo.
+- Workflow de Chromium JWT MySQL renombrado para su alcance real; nueva CI exact-SHA deberá ser SUCCESS, sin convertir FAIL/SKIPPED/QUEUED en PASS ni forzar A5/LISTO. Rollback git revert, owner y V17 preservados.
 ## 2026-11-22 — DEV03 V24 C01-03.M04.01: ruta real de configuración dinámica [Javier :20]
 - Nueva ruta privada Angular `configuracion/dinamica-v5` con `authGuard` + `permisoGuard(Configuracion:Ver)`, UI standalone responsive, navegación de retorno y reutilización del formulario tenant conectado a HTTP real, RBAC, versiones y errores 409.
 - Cinco tests dirigidos de Chromium JWT real A/B con MySQL efímero: ruta anónima, identidad A/B, BOLA, firma alterada, teclado y 320/390/768/1280/1440; workflow dedicado GitHub-hosted exact SHA. Pruebas/CI y capturas son PENDIENTES hasta ejecución, no PASS adelantado.
