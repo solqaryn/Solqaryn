@@ -1,0 +1,72 @@
+name: V23 C14-02.M06.06 signed JWT HTTP MySQL 8.4 negative acceptance
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/tests/Solqaryn.Tests/Integration/C1402M0606SignedJwtMysql84HttpTests.cs'
+      - '.github/workflows/v23-c14-02-m06-06-jwt-mysql84.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v23-c1402-m0606-jwt-mysql-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  signed-jwt-mysql:
+    name: C14-02.M06.06 signed JWT TestServer and MySQL 8.4 adversarial
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: ephemeral-c14-only
+          MYSQL_DATABASE: c1402_m0606_bootstrap
+        ports: ['3306:3306']
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -pephemeral-c14-only"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=15
+    env:
+      C1402_M0606_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=c1402_m0606_bootstrap;User=root;Password=ephemeral-c14-only;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Exact SHA Scope Lock and local Skill
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+          node scripts/verify-solqaryn-skills.mjs --self-test
+      - name: .NET 10 Release signed JWT HTTP MySQL 8.4 integration and TRX
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet restore tests/Solqaryn.Tests/Solqaryn.Tests.csproj
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj -c Release --no-restore \
+            --filter 'FullyQualifiedName~C1402M0606SignedJwtMysql84HttpTests&Category=Integration' \
+            --logger 'trx;LogFileName=C1402M0606JwtMysql84.trx' --logger 'console;verbosity=normal'
+          python3 - <<'PY'
+          from pathlib import Path
+          from xml.etree import ElementTree as ET
+          files=list(Path('tests/Solqaryn.Tests').rglob('C1402M0606JwtMysql84.trx'))
+          if len(files)!=1: raise SystemExit('MISSING_UNIQUE_TRX')
+          node=ET.parse(files[0]).getroot().find('.//{*}Counters')
+          if node is None: raise SystemExit('MISSING_TRX_COUNTERS')
+          c={k:int(node.attrib.get(k,-1)) for k in ('total','passed','failed','notExecuted','executed')}
+          print('C1402_M0606_REAL_SIGNED_JWT_HTTP_MYSQL84_TRX',c)
+          if c['total']!=1 or c['passed']!=1 or c['failed']!=0 or c['notExecuted']!=0 or c['executed']!=1:
+              raise SystemExit('INTEGRATION_NOT_PASS')
+          PY
+      - name: Preserve TRX evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c1402-m0606-jwt-mysql84
+          path: backend/tests/Solqaryn.Tests/TestResults/**/C1402M0606JwtMysql84.trx
+          if-no-files-found: error
+          retention-days: 14

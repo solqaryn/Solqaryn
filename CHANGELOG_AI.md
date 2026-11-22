@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV06 V23 C14-02.M06.06: JWT firmado, TestServer y MySQL 8.4 adversarial
+- Incremento R2 test-only: JWT Bearer con firma/expiración verificadas, ASP.NET Core HTTP TestServer y MySQL 8.4 efímero; positivos y negativos tenant A/B, spoofed header, revocación real de sesión/grant/membresía/auditoría, host, archivos, jobs, cache, backup y rollback SQL.
+- Workflow GitHub-hosted filtrado Category=Integration exact-SHA con TRX 1/1 PASS requerido, proyecto Scope Lock y Skill self-test; no se acepta CI queued, skipped o failed como certificación.
+- Límite: endpoint/SQL reader son EXCLUSIVOS del test; no representan integración real de API/UsuarioEmpresa/RolPermiso/EF ni evidencia global P0/P1. C14-02.M06.06 mantiene VALIDANDO, A5 independiente pendiente, sin QA/main/PROD.
+
 ## 2026-11-22 — DEV05 V23 C01-04.M03.06: replay denegado en sink MySQL aislado
 - Corrección P2/R2: el sink InnoDB aceptaba invocaciones directas con `ObservedAtUtc` caducado o futuro; ahora valida reloj UTC (-10m/+5s) antes de SQL I/O, sin confiar en que el caller use `CaptureAsync`.
 - xUnit `Category=Integration` MySQL 8.4 con reloj congelado agrega negativos replay/futuro/offset, mantiene los dos tenants, rechazo de duplicado, sin incremento de filas. Exigir job dirigido, .NET Release, Scope Lock/V5 y seguridad `SUCCESS` exact-SHA.
