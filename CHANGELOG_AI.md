@@ -1,3 +1,11 @@
+## 2026-11-21 — C04-02.M03.06 exact-SHA CI filter repair (DEV04 V23)
+
+- Scope C04-02.M03.06 / PLAN D631: correct the directed MySQL 8.4 GitHub-hosted job filter, without changing application runtime, tenant policy, or protected branches.
+- Evidence: source 5efd671d2d4384bccf547d6f4d7a6a0a7acc0b9e, GitHub Actions run 44975598073 / job 137064674369. .NET Release actually executed 12/12 passing xUnit cases (including BOTH Category=Integration tests) but the explicit TRX gate expected total=2; failure FAIL_MYSQL84_REAL_AUDIT was a selector/gate mismatch, not an assertion or MySQL runtime failure.
+- Repair: change only the workflow filter to Category=Integration&FullyQualifiedName~C0402M0306, selecting precisely the two [Trait("Category", "Integration")] tests; retain the strict TRX total=2/pass=2/fail=0/notExecuted=0 invariant, real MySQL 8.4 service, scope lock, and security.
+- A0 diff and isolation audited; A1/A2 signed-JWT HTTP tenant A/B and revoked-member negatives, A3 MySQL physical persistence already ran in red gate but do not count it as CI PASS. A4 must be rechecked on the new exact SHA; no LISTO/A5 until all pertinent checks and authoritative production contract-source/DI requirements are satisfied.
+- V17 owner DEV04 preserved, sequential lock by row 631. V23 external skill references not applicable to this workflow-only CI filter repair; rollback by ordinary git revert. No QA/main/PROD, no secrets, no manual gate bypass.
+
 ## 2026-11-21 — C04-02.M03.06 tenant-denial audit assertion (V23 DEV03 cross-rescue)
 
 - Real signed-JWT HTTP / MySQL 8.4 regression repair: accept only server-controlled fail-closed tenant/revocation denial codes when the relational authorization source rejects a foreign tenant before application-level hint comparison. Preserve three audit entries, one positive and two denied, HTTP 401/403 and no private cause.
