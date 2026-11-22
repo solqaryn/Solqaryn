@@ -923,7 +923,10 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
           const resized=await current.locator('html').evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
           expect(resized,'200% CSS text resize efectivamente aplicado').toBeGreaterThanOrEqual(original*1.9);
           await expect(current.locator(selector)).toBeVisible();
-          await expect(current.getByRole('heading',{level:1})).toHaveCount(1);
+          // /login expone h2#login-title por contrato; la tienda publica expone h1.
+          // Conservar la verificacion de heading real por ruta, sin fabricar un h1 para login.
+          const heading = ruta==='/login' ? current.locator('h2#login-title') : current.locator('h1');
+          await expect(heading,'jerarquia de heading correspondiente a ruta').toHaveCount(1);
           if(ruta==='/tienda'){
             await current.keyboard.press('Tab');
             await expect(current.locator('a.skip-link').first()).toBeFocused();
