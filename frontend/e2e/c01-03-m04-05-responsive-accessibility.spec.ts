@@ -45,21 +45,40 @@ async function verifyLayout(page: Page, width: number, phase: string): Promise<v
 }
 
 async function verifyTab(page: Page): Promise<void> {
-  // Real keyboard navigation. Do not call element.focus().
-  let found = false;
-  for (let n=0;n<18;n++) {
+  // V24 R2: actual Tab must reach route controls, not a random visible app-shell link.
+  // Never call .focus() or bypass browser keyboard navigation.
+  let linkReached = false;
+  let reloadReached = false;
+  for (let n = 0; n < 120 && !(linkReached && reloadReached); n++) {
     await page.keyboard.press('Tab');
-    const focused = await page.evaluate(() => {
-      const el = document.activeElement;
-      if (!(el instanceof HTMLElement)) return false;
-      const rect = el.getBoundingClientRect();
-      const style = getComputedStyle(el);
-      return el !== document.body && rect.height>0 && rect.width>0 &&
-        style.visibility!=='hidden' && style.display!=='none';
+    const current = await page.evaluate(() => {
+      const element = document.activeElement;
+      if (!(element instanceof HTMLElement)) {
+        return { link: false, reload: false, keyboard: false, outline: false };
+      }
+      const rect = element.getBoundingClientRect();
+      const style = getComputedStyle(element);
+      const visible = rect.width > 0 && rect.height > 0 &&
+        style.visibility !== 'hidden' && style.display !== 'none';
+      const within = visible && element.closest('.settings-surface') !== null;
+      return {
+        link: within && element.matches('a.secondary-link'),
+        reload: within && element.matches('button') && /Recargar/i.test(element.textContent ?? ''),
+        keyboard: element.matches(':focus-visible'),
+        outline: style.outlineStyle !== 'none' && Number.parseFloat(style.outlineWidth) > 0
+      };
     });
-    if (focused) {found=true;break;}
+    if (current.link || current.reload) {
+      expect(current.keyboard, 'route control has keyboard-visible focus').toBe(true);
+    }
+    if (current.link) {
+      expect(current.outline, 'secondary link exposes a visible focus outline').toBe(true);
+      linkReached = true;
+    }
+    if (current.reload) reloadReached = true;
   }
-  expect(found, 'Tab must focus a visible control').toBe(true);
+  expect(linkReached, 'Tab must reach settings secondary link, not just shell controls').toBe(true);
+  expect(reloadReached, 'Tab must reach real tenant reload button').toBe(true);
 }
 
 

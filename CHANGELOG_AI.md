@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV04 V24 C01-03.M04.05: Tab auténtico en controles de configuración
+- Reparación R2 test-only del falso positivo: foco visible del shell ya no basta; se exige Tab real hasta enlace secundario y botón Recargar dentro de la ruta, :focus-visible y outline del enlace.
+- Sin alteración de runtime/JWT/RBAC/tenant/MySQL/API ni de otros scopes. CI exact-SHA pendiente, H=VALIDANDO e I=DEV04 conservados; A5 debe ser independiente.
+- No se certifica zoom nativo 200%, captura ANTES ni accesibilidad integral. Scope Lock STRICT, procedencia íntegra y no QA/main/PROD.
+
 ## 2026-11-22 - DEV03 C01-03.M04.03: prueba real de carrera de marca con GET concurrentes
 - Reparación R2 test-only del falso contrato `responseCount===1`: un mismo JWT empresarial puede producir varios GET legítimos al inicializar la ruta; se exige al menos una respuesta A real y que TODAS las entregas/cancelaciones capturadas terminen antes de acreditar marca B y ausencia de A.
 - Se conserva el escenario adversarial auténtico Angular/Chromium, API .NET 10, JWT A/B, MySQL 8.4 efímero, las denegaciones y el test de mismo usuario multiempresa; CI 7/7 y checks exact-SHA aún pendientes, sin PASS ficticio.
