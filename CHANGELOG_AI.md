@@ -1,3 +1,8 @@
+## 2026-11-22 - DEV03 V23 C02-01.M05.04 protege actor durante lectura SQL
+- Reparacion R2 de continuidad de identidad: al volver del lector de membresias y tras enumerar, niega si ICurrentUserService cambia actor/autenticacion; evita vincular empresas de otro actor al JWT original.
+- Regresion negativa en MySQL 8.4 efimero con scope adversarial que cambia el actor despues de await; pruebas GitHub-hosted .NET 10/seguridad/Scope Lock/V5 pendientes del SHA publicado, no PASS anticipado.
+- Microtarea sigue VALIDANDO con owner DEV03; sin preferencia durable SQL, reemision JWT backend ni navegacion Angular real, no LISTO/A5 ni QA/main/PROD. Rollback normal por revert.
+
 ## 2026-11-21 — DEV01 V23 rescate CI C01-04.M03.06: signos negativos SQL
 - Corrige rechazo fail-closed de scopes con `-` inicial; conserva números SQL canónicos de un dígito y guion interior `tenant-A`. Regresiones nuevas para `-9`, `-01` y expediente `-7`, más el fallo original `-1`, antes de leer la fuente.
 - SHA original `4e700613`, jobs 137111466771/137111466572/137111466404: 6376 PASS y 1 FAIL; no certificar hasta GitHub-hosted xUnit Release, seguridad, Scope Lock y V5 exact-SHA SUCCESS. Conserva C01-04.M03.06 VALIDANDO y DEV05 como owner histórico, A5 independiente, sin QA/main/PROD.

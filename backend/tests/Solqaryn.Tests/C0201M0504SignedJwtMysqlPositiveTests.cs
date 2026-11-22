@@ -63,6 +63,34 @@ public sealed class C0201M0504SignedJwtMysqlPositiveTests
         }
     }
 
+    private sealed class MutableProbeCurrentUser(int actorId) : ICurrentUserService
+    {
+        public int? UsuarioId { get; set; } = actorId;
+        public bool EstaAutenticado { get; set; } = true;
+        public string? NombreUsuario => null;
+        public string? NombreCompleto => null;
+        public int? RolId => null;
+        public bool EsAdministrador => false;
+    }
+
+    private sealed class ActorSwitchingScope(
+        MutableProbeCurrentUser actor,
+        int replacementActorId,
+        EmpresaSeleccionable leakedCompany) : IUsuarioScopeService
+    {
+        public Task<UsuarioScopeActual?> ObtenerActualAsync() =>
+            Task.FromResult<UsuarioScopeActual?>(null);
+
+        public Task<IReadOnlyList<EmpresaSeleccionable>> ListarEmpresasSeleccionablesAsync(
+            CancellationToken cancellationToken = default)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            // Adversarial provider changes identity after SQL verified original actor.
+            actor.UsuarioId = replacementActorId;
+            return Task.FromResult<IReadOnlyList<EmpresaSeleccionable>>([leakedCompany]);
+        }
+    }
+
     private static async Task<(string Code, int? TenantId)> ReadSqlPolicyOverJwtAsync(
         HttpClient client)
     {
@@ -131,6 +159,18 @@ public sealed class C0201M0504SignedJwtMysqlPositiveTests
                 new UsuarioEmpresa(user.Id, b.Id, roleB.Id));
             await db.SaveChangesAsync();
             db.ChangeTracker.Clear();
+
+            // Real disposable MySQL actor lookup plus adversarial scope change.
+            // Old reader would attach the replacement actor's tenant to A.
+            var mutableActor = new MutableProbeCurrentUser(user.Id);
+            var switchedReader = new C0201M0504CurrentMembershipSqlReader(
+                db, mutableActor,
+                new ActorSwitchingScope(mutableActor, user.Id + 100000,
+                    new EmpresaSeleccionable(b.Id, b.Nombre)));
+            var crossActorSnapshot = await switchedReader.ReadCurrentAsync(
+                CancellationToken.None);
+            Assert.Null(crossActorSnapshot);
+            Assert.Equal(user.Id + 100000, mutableActor.UsuarioId);
 
             using var host = await new HostBuilder()
                 .ConfigureWebHost(web => web.UseTestServer()

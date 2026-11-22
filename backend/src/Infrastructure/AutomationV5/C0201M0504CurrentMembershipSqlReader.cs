@@ -44,6 +44,11 @@ public sealed class C0201M0504CurrentMembershipSqlReader(
         cancellationToken.ThrowIfCancellationRequested();
         if (available is null || available.Count > 128) return null;
 
+        // Membership resolution re-reads the principal after an await. Never
+        // bind its companies to the original actor if identity has changed.
+        if (!currentUser.EstaAutenticado || currentUser.UsuarioId != actorId)
+            return null;
+
         var seen = new HashSet<int>();
         var memberships = new List<Gate.Membership>(available.Count);
         foreach (var company in available)
@@ -62,6 +67,9 @@ public sealed class C0201M0504CurrentMembershipSqlReader(
                 CurrentRelationalRoleVerified: true, Revoked: false));
         }
         cancellationToken.ThrowIfCancellationRequested();
+        // Guard again after enumerating a potentially custom/lazy scope list.
+        if (!currentUser.EstaAutenticado || currentUser.UsuarioId != actorId)
+            return null;
 
         // No persisted last-tenant preference or active session reissue is
         // available from this read-only reader. Never fabricate either.
