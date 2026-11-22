@@ -98,3 +98,12 @@ La regresion dirigida modifica de verdad Usuario.Activo=false en MySQL 8.4 efime
 **Regresión adversarial real:** `C0201M0504SignedJwtMysqlPositiveTests` primero obtiene A+B de MySQL 8.4 efímero, luego desactiva `UsuarioEmpresa` B en ese mismo MySQL *después* de obtener la primera lista y exige snapshot null. Comprueba `Activa=false` en SQL y reactiva exclusivamente la fila disposable para que los casos JWT HTTP positivos y negativos restantes sigan verificables. El lector anterior habría devuelto A+B y fallado el assert. CI GitHub-hosted exige TRX 1/1, política >=16 y controles pertinentes exact-SHA; hasta observarlos no se atribuye PASS A1–A4.
 
 **Limitación vigente:** aún faltan preferencia duradera real por actor, reemisión JWT segura desde backend, registro DI productivo y navegación autenticada Angular/Chromium. El alcance D317 sigue VALIDANDO, autor histórico DEV03, A5 exclusivamente por revisor independiente. Rollback `git revert` normal, sin cambios de migraciones, datos reales, QA/main/PROD ni secretos.
+
+## V23 DEV03 — HTTP real autenticado y DI Development para evidencia C02-01.M05.04 (R2)
+
+El lector C0201M0504CurrentMembershipSqlReader se registró en el DI solo en Development y se agregó el GET autenticado /tenant-context/resolver-login. El endpoint obtiene identidad del JWT validado por el middleware y pertenencias y roles vigentes de Oracle EF/MySQL mediante IUsuarioScopeService. Fuera de Development responde 404. La respuesta es una decisión orientativa sin concesión de recursos, sin emisión de JWT, sin instalar ámbito tenant y sin persistir preferencias. Deshabilita caché de respuesta.
+
+Prueba GitHub-hosted requerida: TestServer real con JWT firmado y MySQL 8.4 efímero. Debe afirmar 401 anónimo y JWT falsificado, dos empresas A+B sin autoselección, actor ajeno sin privilegios y, tras revocar B en SQL, solo propuesta A. El test verifica también que ninguna respuesta de diagnóstico emite JWT, concede recursos ni instala tenant.
+
+**LIMITACIÓN:** falta preferencia durable por usuario, reemisión JWT real desde backend, sesión tenant efectivamente actualizada y navegación Angular/Chromium autenticada al panel. Esta mejora es integración real de lectura/HTTP, NO cierre total D317. Conservar H=VALIDANDO/I=DEV03, A0–A4 globales pendientes y A5 por Task distinta. Rollback git revert normal, sin QA/main/PROD, secretos o datos reales.
+

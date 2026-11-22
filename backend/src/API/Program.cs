@@ -94,6 +94,13 @@ builder.Services.Configure<ObservabilityOptions>(builder.Configuration.GetSectio
 builder.Services.AddSingleton<RequestObservability>();
 builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 builder.Services.AddScoped<IUsuarioScopeService, UsuarioScopeService>();
+// C02-01.M05.04: verified JWT actor + current Oracle EF/MySQL membership.
+// DEV-only diagnostic DI, no JWT issuance, session switch or resource grants.
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddScoped<ITrustedTenantLoginAuthorityReader,
+        Solqaryn.Infrastructure.AutomationV5.C0201M0504CurrentMembershipSqlReader>();
+}
 // C07-01.M03.03: JWT y UsuarioEmpresa/RolPermiso actuales, DEV y OFF por defecto.
 // Fuente solo lectura sin endpoint, concesion o mutacion.
 if (builder.Environment.IsDevelopment())

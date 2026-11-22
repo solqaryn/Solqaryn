@@ -1,4 +1,5 @@
 using Solqaryn.Application.Common;
+using Solqaryn.Application.AutomationV5;
 using Solqaryn.Application.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -32,6 +33,41 @@ public sealed class TenantContextController : ControllerBase
         var empresas = await _usuarioScopeService.ListarEmpresasSeleccionablesAsync(cancellationToken);
         return Ok(ApiResponse<IReadOnlyList<EmpresaSeleccionable>>.Ok(
             empresas, "Empresas activas autorizadas."));
+    }
+
+    /// <summary>
+    /// DEV-only authenticated tenant-resolution evidence from current MySQL
+    /// membership and role. Never persists preference, switches session, issues
+    /// tokens or authorizes resources. Outside Development always returns 404.
+    /// </summary>
+    [HttpGet("resolver-login")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
+    public async Task<IActionResult> ResolverLoginSoloDev(
+        [FromServices] IServiceProvider services,
+        [FromServices] Microsoft.AspNetCore.Hosting.IWebHostEnvironment environment,
+        CancellationToken cancellationToken)
+    {
+        if (!string.Equals(environment.EnvironmentName, "Development",
+                StringComparison.OrdinalIgnoreCase))
+            return NotFound();
+
+        var reader = services.GetService<ITrustedTenantLoginAuthorityReader>();
+        if (reader is null)
+            return StatusCode(503);
+
+        var decision = await new V17IntelligentTenantLoginAuthorization(reader)
+            .ResolveAsync(new(), cancellationToken);
+
+        return Ok(new
+        {
+            decision.Code,
+            decision.ProposedTenantId,
+            decision.Choices,
+            decision.RequiresAuthenticatedBackendReissue,
+            decision.IssuesJwt,
+            decision.AuthorizesResourceAccess,
+            decision.InstallsTenantContext
+        });
     }
 
     [HttpGet("{empresaId:int}")]

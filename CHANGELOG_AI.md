@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV03 V23 C02-01.M05.04 resolución JWT/SQL por HTTP solo Development
+- Incremento R2 real: lector Oracle EF/MySQL de membresías y roles actuales conectado al DI Development y endpoint autenticado /tenant-context/resolver-login; fuera de Development devuelve 404, sin cambio de permisos de producción, JWT ni sesión.
+- Regresión MySQL 8.4/TestServer con JWT firmado: 401 anónimo o firma alterada, tenant A+B no se autoselecciona, actor ajeno denegado y B revocado deja A; ninguna respuesta emite JWT, concede recursos ni instala contexto tenant. CI exact-SHA pendiente al publicar.
+- Conservar VALIDANDO e I DEV03; preferencia por usuario SQL durable, reemisión backend y navegación Angular real no implementadas; sin LISTO/A5, rollback git revert normal.
+
 ## 2026-11-22 — DEV02 V23 C15-04.M05.04 A1.00: foco real en skip-link Angular
 - CI del SHA 2c6cab61 falló: Chromium job137159260172 detectó enlace Tab+Enter con hash correcto pero sin foco real en main#catalogo-productos; no se rebajó la prueba.
 - Corregido StorefrontHeaderComponent para enfocar main tabindex=-1 tras activación primaria de RouterLink, sin alterar JWT/RBAC/tenants ni API; workflow V23 incluye rutas HTML/TS para ejecutar regresión Chromium del cambio runtime.

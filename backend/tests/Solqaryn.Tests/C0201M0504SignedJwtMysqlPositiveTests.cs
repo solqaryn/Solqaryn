@@ -143,6 +143,21 @@ public sealed class C0201M0504SignedJwtMysqlPositiveTests
         }
     }
 
+    private static async Task<(string Code, int? TenantId)> ReadDevResolutionAsync(
+        HttpClient client)
+    {
+        using var response = await client.GetAsync("/tenant-context/resolver-login");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var root = json.RootElement;
+        Assert.False(root.GetProperty("issuesJwt").GetBoolean());
+        Assert.False(root.GetProperty("authorizesResourceAccess").GetBoolean());
+        Assert.False(root.GetProperty("installsTenantContext").GetBoolean());
+        var tenant = root.GetProperty("proposedTenantId");
+        return (root.GetProperty("code").GetString()!,
+            tenant.ValueKind == JsonValueKind.Null ? null : tenant.GetInt32());
+    }
+
     private static async Task<(string Code, int? TenantId)> ReadSqlPolicyOverJwtAsync(
         HttpClient client)
     {
@@ -257,7 +272,7 @@ public sealed class C0201M0504SignedJwtMysqlPositiveTests
             db.ChangeTracker.Clear();
 
             using var host = await new HostBuilder()
-                .ConfigureWebHost(web => web.UseTestServer()
+                .ConfigureWebHost(web => web.UseEnvironment("Development").UseTestServer()
                     .ConfigureServices(services =>
                     {
                         services.AddDbContext<AppDbContext>(o =>
@@ -312,6 +327,8 @@ public sealed class C0201M0504SignedJwtMysqlPositiveTests
             using (var unsignedProbe = await client.GetAsync(
                 "/test-only/c0201-m0504/sql-decision"))
                 Assert.Equal(HttpStatusCode.Unauthorized, unsignedProbe.StatusCode);
+            using (var unsignedDev = await client.GetAsync("/tenant-context/resolver-login"))
+                Assert.Equal(HttpStatusCode.Unauthorized, unsignedDev.StatusCode);
 
             // Anonymous and a tampered signature never reach tenant membership.
             using (var anonymous = await client.GetAsync("/tenant-context/empresas"))
@@ -323,6 +340,8 @@ public sealed class C0201M0504SignedJwtMysqlPositiveTests
                 new AuthenticationHeaderValue("Bearer", string.Join(".", parts));
             using (var forgedJwt = await client.GetAsync("/tenant-context/" + a.Id))
                 Assert.Equal(HttpStatusCode.Unauthorized, forgedJwt.StatusCode);
+            using (var forgedDev = await client.GetAsync("/tenant-context/resolver-login"))
+                Assert.Equal(HttpStatusCode.Unauthorized, forgedDev.StatusCode);
 
             client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", signed);
@@ -354,6 +373,9 @@ public sealed class C0201M0504SignedJwtMysqlPositiveTests
             var twoSql = await ReadSqlPolicyOverJwtAsync(client);
             Assert.Equal("SELECT_VERIFIED_TENANT", twoSql.Code);
             Assert.Null(twoSql.TenantId); // Two SQL memberships => no silent switch.
+            var twoDev = await ReadDevResolutionAsync(client);
+            Assert.Equal("SELECT_VERIFIED_TENANT", twoDev.Code);
+            Assert.Null(twoDev.TenantId);
 
             using (var validB = await client.GetAsync("/tenant-context/" + b.Id))
             {
@@ -389,6 +411,9 @@ public sealed class C0201M0504SignedJwtMysqlPositiveTests
             Assert.Equal("AUTHENTICATED_CURRENT_MEMBERSHIPS_REQUIRED",
                 foreignSql.Code);
             Assert.Null(foreignSql.TenantId);
+            var foreignDev = await ReadDevResolutionAsync(client);
+            Assert.Equal("AUTHENTICATED_CURRENT_MEMBERSHIPS_REQUIRED", foreignDev.Code);
+            Assert.Null(foreignDev.TenantId);
 
             client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", signed);
@@ -415,6 +440,9 @@ public sealed class C0201M0504SignedJwtMysqlPositiveTests
             var oneSql = await ReadSqlPolicyOverJwtAsync(client);
             Assert.Equal("ONE_TENANT_REISSUE_REQUIRED", oneSql.Code);
             Assert.Equal(a.Id, oneSql.TenantId);
+            var oneDev = await ReadDevResolutionAsync(client);
+            Assert.Equal("ONE_TENANT_REISSUE_REQUIRED", oneDev.Code);
+            Assert.Equal(a.Id, oneDev.TenantId);
 
             // After B is revoked in real MySQL, only A remains eligible.
             // A fresh tenant snapshot must require backend reissue, not install
