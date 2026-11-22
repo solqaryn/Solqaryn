@@ -1,3 +1,8 @@
+## 2026-11-21 — DEV01 V23 C07-01.M06.06 prueba MySQL 8.4 de estados y auditoria positiva
+- Se amplía el xUnit Integration real con transacciones persistidas de desactivación y reactivación de producto en tenant A: auditoria estricta por accion, actor, empresa y recibo releídos desde otro contexto EF Oracle/MySQL.
+- Negativo adicional tenant B: intento de alterar producto A devuelve null y no cambia su estado ni registra recibo cruzado; no se activan HTTP write pilot, Angular ni autorizaciones productivas.
+- CI dirigida y global del SHA nuevo aún sin acreditar; EN_PROGRESO propio con V17 lock 2000001045, sin LISTO/A5. Riesgo R2, revert Git normal, PROJECT_SCOPE_LOCK STRICT, no QA/main/PROD.
+
 ## 2026-11-21 — DEV01 V23 C07-01.M06.06 corrige bootstrap MySQL 8.4 en CI global
 - Evidencia: GitHub-hosted run 44974571372/job 137061542203, Category=Integration TRX 151: 149 PASS, 2 FAIL; el test C0402M0306DurableAuditMysql84Tests fallo porque `c0402_m0306_bootstrap` no existia al abrir la conexion administrativa.
 - Reparacion R2 minimal de `.github/workflows/dev-ci.yml`: conexion C0402_M0306_MYSQL_TEST al esquema existente `solqaryn_ci` del mysql:8.4 efimero; el propio test sigue creando, usando y borrando una base unica por GUID. No se salta ni desactiva ningun test, no se cambia runtime, JWT, RBAC, DI, secretos ni produccion.

@@ -321,6 +321,106 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 Assert.Equal("Exito", receipt.Resultado);
             }
 
+            // V23 R2: positive commercial state transitions persist BOTH the
+            // product state and strict audit receipts in isolated Oracle EF /
+            // MySQL 8.4. This remains a service-level proof, not an HTTP-write
+            // permission or a replacement for browser-to-API acceptance.
+            int auditedProductId;
+            await using (var productLookup = new AppDbContext(options))
+            {
+                auditedProductId = await productLookup.Productos
+                    .IgnoreQueryFilters().AsNoTracking()
+                    .Where(p => p.Nombre == auditedProductName)
+                    .Select(p => p.Id).SingleAsync();
+            }
+            foreach (var (active, action) in new[]
+            {
+                (active: false, action: AccionPermiso.Desactivar),
+                (active: true, action: AccionPermiso.Activar)
+            })
+            {
+                await using (var transitionDb = new AppDbContext(options,
+                    tenantHttpContextAccessor: auditAccessor))
+                {
+                    var actor = new Mock<ICurrentUserService>();
+                    actor.SetupGet(x => x.UsuarioId).Returns(userA.Id);
+                    actor.SetupGet(x => x.NombreUsuario).Returns(userA.NombreUsuario);
+                    var audit = new AuditoriaService(
+                        new AuditoriaRepository(transitionDb), actor.Object,
+                        auditAccessor,
+                        Microsoft.Extensions.Logging.Abstractions.NullLogger<AuditoriaService>.Instance);
+                    var service = new ProductoService(
+                        new ProductoRepository(transitionDb),
+                        new CategoriaRepository(transitionDb),
+                        Mock.Of<IImageStorageService>(), actor.Object,
+                        audit, httpContextAccessor: auditAccessor);
+                    await new UnitOfWork(transitionDb).ExecuteInTransactionAsync(async () =>
+                    {
+                        var changed = await service.CambiarEstadoAsync(auditedProductId, active);
+                        Assert.NotNull(changed);
+                        Assert.Equal(active, changed!.Activo);
+                    });
+                }
+                await using (var committedReadback = new AppDbContext(options))
+                {
+                    var product = await committedReadback.Productos
+                        .IgnoreQueryFilters().AsNoTracking()
+                        .SingleAsync(p => p.Id == auditedProductId);
+                    Assert.Equal(a.Id, product.EmpresaId);
+                    Assert.Equal(active, product.Activo);
+                    Assert.False(product.Eliminado);
+                    var receipt = await committedReadback.RegistrosAuditoria
+                        .IgnoreQueryFilters().AsNoTracking()
+                        .SingleAsync(log => log.Entidad == "Producto"
+                            && log.ReferenciaId == auditedProductId
+                            && log.Modulo == ModuloSistema.Productos
+                            && log.Accion == action);
+                    Assert.Equal(a.Id, receipt.EmpresaId);
+                    Assert.Equal(userA.Id, receipt.UsuarioId);
+                    Assert.Equal("Exito", receipt.Resultado);
+                }
+            }
+
+            // Negative A/B: a tenant B service context cannot change the same
+            // product or create a tenant B audit receipt for an A-owned record.
+            var foreignHttp = new DefaultHttpContext();
+            foreignHttp.Items[
+                Solqaryn.Application.Security.VerifiedCommercialTenant
+                    .AuthorizedEmpresaIdItemKey] = b.Id;
+            var foreignAccessor = new HttpContextAccessor { HttpContext = foreignHttp };
+            await using (var foreignDb = new AppDbContext(options,
+                tenantHttpContextAccessor: foreignAccessor))
+            {
+                var foreignActor = new Mock<ICurrentUserService>();
+                foreignActor.SetupGet(x => x.UsuarioId).Returns(userB.Id);
+                foreignActor.SetupGet(x => x.NombreUsuario).Returns(userB.NombreUsuario);
+                var foreignAudit = new AuditoriaService(
+                    new AuditoriaRepository(foreignDb), foreignActor.Object,
+                    foreignAccessor,
+                    Microsoft.Extensions.Logging.Abstractions.NullLogger<AuditoriaService>.Instance);
+                var foreignService = new ProductoService(
+                    new ProductoRepository(foreignDb),
+                    new CategoriaRepository(foreignDb),
+                    Mock.Of<IImageStorageService>(), foreignActor.Object,
+                    foreignAudit, httpContextAccessor: foreignAccessor);
+                Assert.Null(await foreignService.CambiarEstadoAsync(
+                    auditedProductId, false));
+            }
+            await using (var foreignReadback = new AppDbContext(options))
+            {
+                var untouched = await foreignReadback.Productos
+                    .IgnoreQueryFilters().AsNoTracking()
+                    .SingleAsync(p => p.Id == auditedProductId);
+                Assert.Equal(a.Id, untouched.EmpresaId);
+                Assert.True(untouched.Activo);
+                Assert.Equal(0, await foreignReadback.RegistrosAuditoria
+                    .IgnoreQueryFilters().AsNoTracking()
+                    .CountAsync(log => log.ReferenciaId == auditedProductId
+                        && log.Modulo == ModuloSistema.Productos
+                        && log.EmpresaId == b.Id));
+            }
+
+
             // Real Oracle EF/MySQL transaction rollback at the tenant-bound
             // persistence layer. This is NOT HTTP CRUD acceptance: writes
             // through ProductosController still require separate coverage.
