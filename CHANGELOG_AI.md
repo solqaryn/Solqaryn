@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV01 V24 C07-01.M06.06: revocación real JWT/MySQL con navegador Angular [Javier :00]
+- Se agrega regresión Chromium a una API real ASP.NET Core 10, JWT firmado y dos empresas físicas MySQL 8.4: cliente A muestra un producto real antes de revocar su membresía SQL y debe negar el mismo JWT tras revocación, limpiar datos de catálogo y redirigir sin filtrar registros.
+- La membresía efímera se restituye con `finally` y readback SQL, exigiendo que la API vuelva a permitir catálogo A; sin mocks de autorización, secretos persistidos, QA, main ni producción.
+- Riesgo R2; pruebas y check-runs obligatorios se acreditan solamente al terminar GitHub Actions del SHA publicado. C07-01.M06.06 conserva EN_PROGRESO y V17 propio; los gates de cierre M06/ERP/A0-A5 aún no se declaran satisfechos.
+
 ## 2026-11-22 — DEV04 V24 C01-03.M03.06: probar ruta MVC real JWT/RBAC/MySQL [Javier :30]
 - El test previo comprobaba un endpoint auxiliar TestServer y una fábrica MVC sin ejecutar el controlador; ahora mapea `EmpresaConfiguracionController` real y su filtro `RequierePermisoAttribute` con servicio de lectura real, permiso SQL y JWT firmado en MySQL 8.4 efímero.
 - Casos positivos tenant A/B y negativos anónimo, intertenant, cabecera inconsistente, revocación de rol y caída del sink; readback durable requiere cuatro recibos sin PII. Sólo test de desarrollo, no cambia runtime ni contratos, CI exact-SHA inicialmente pendiente y ninguna A5 inferida.

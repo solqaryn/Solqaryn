@@ -146,4 +146,59 @@ test.describe('C07-01.M06.06 navegador real y aislamiento A/B', () => {
     expect([401, 403]).toContain(rejected.status());
     expect(await rejected.text()).not.toContain('C0701RealProductoA');
   });
+  test('Revocación MySQL real invalida catálogo Angular cargado sin renovar JWT', async ({ page, request }) => {
+    test.setTimeout(120_000);
+    const jwt = await sessionReal(page, request, 'c1504_admin_a', '1');
+    await page.setViewportSize({ width: 390, height: 840 });
+    const firstCatalog = page.waitForResponse((r) =>
+      isBackendResponse(r.url(), '/productos') && r.request().method() === 'GET');
+    await page.goto('/productos');
+    expect((await firstCatalog).status(), 'Catálogo A antes de revocación').toBe(200);
+    await expect(page.locator('.cards-mobile .producto-card').filter({
+      hasText: 'C0701BrowserTenantA'
+    })).toBeVisible();
+    const headers = { Authorization: 'Bearer ' + jwt, 'X-Empresa-Id': '1' };
+
+    // GitHub-hosted exclusivamente: cambios de membresía en MySQL 8.4 efímero.
+    // Nunca cambia usuarios, permisos ni datos fuera del contenedor de CI.
+    const { execFileSync } = await import('node:child_process');
+    const mysqlContainer = execFileSync('docker',
+      ['ps', '--filter', 'ancestor=mysql:8.4', '--format', '{{.ID}}'],
+      { encoding: 'utf8' }).trim().split(/\r?\n/)[0];
+    expect(mysqlContainer, 'Contenedor efímero MySQL 8.4').toMatch(/^[0-9a-f]{12,64}$/);
+    const setMembership = (active: 0 | 1) => {
+      const sql = 'UPDATE UsuarioEmpresas ue JOIN Usuarios u ON u.Id=ue.UsuarioId ' +
+        'SET ue.Activa=' + active + ',ue.FechaActualizacion=UTC_TIMESTAMP(6) ' +
+        "WHERE u.NombreUsuario='c1504_admin_a' AND ue.EmpresaId=1;" +
+        'SELECT ue.Activa FROM UsuarioEmpresas ue JOIN Usuarios u ON u.Id=ue.UsuarioId ' +
+        "WHERE u.NombreUsuario='c1504_admin_a' AND ue.EmpresaId=1;";
+      const actual = execFileSync('docker', [
+        'exec', '-i', mysqlContainer!, 'mysql', '-uroot', '-proot',
+        'solqaryn_c1504_real_ci', '-Nse', sql
+      ], { encoding: 'utf8' }).trim();
+      expect(actual, 'Readback membresía SQL Activa=' + active).toBe(String(active));
+    };
+
+    try {
+      setMembership(0);
+      const denied = await request.get(api + '/productos?page=1&pageSize=10', { headers });
+      expect([401, 403, 404, 503], 'El JWT emitido antes no autoriza el catálogo').toContain(denied.status());
+      expect(await denied.text(), 'Denegación sin producto A').not.toContain('C0701BrowserTenantA');
+      const deniedTenant = page.waitForResponse((r) =>
+        isBackendResponse(r.url(), '/tenant-context/1') && r.request().method() === 'GET');
+      await page.reload();
+      expect([401, 403, 404], 'Tenant revocado en API real').toContain((await deniedTenant).status());
+      await expect(page).toHaveURL(/\/login(?:\?|$)/);
+      await expect(page.getByText('C0701BrowserTenantA', { exact: true })).toHaveCount(0);
+      await expect(page.locator('.catalog-success')).toHaveCount(0);
+    } finally {
+      setMembership(1); // Restaurar incluso si la prueba adversarial falla.
+    }
+    const restored = await request.get(api + '/productos?page=1&pageSize=10', { headers });
+    expect(restored.status(), 'Membresía CI restaurada con el mismo JWT').toBe(200);
+    const restoredJson = await restored.json();
+    expect(restoredJson?.data?.items?.map((p: { nombre?: string }) => p.nombre))
+      .toContain('C0701BrowserTenantA');
+  });
+
 });
