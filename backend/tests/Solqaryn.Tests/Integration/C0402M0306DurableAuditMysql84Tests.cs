@@ -86,6 +86,15 @@ public sealed class C0402M0306DurableAuditMysql84Tests
             Assert.Equal("CONTRACT_STRUCTURED_LOG_UNAVAILABLE", logUnavailable.Code);
             Assert.False(logUnavailable.IsDomainCandidateOnly);
             Assert.Empty(disabledLogger.Lines);
+            // An enabled but throwing ILogger must never leave a positive
+            // durable candidate behind a negative preflight response.
+            var throwingLogger = new TestLogger { Throw = true };
+            var throwingPreflight = new C0402ContractAuditedPreflight(
+                new Service(new Actor(), new Contract()), sink, throwingLogger);
+            var loggerFailure = await throwingPreflight.PrepareAuditedAsync(intent);
+            Assert.Equal("CONTRACT_AUDIT_OR_LOG_UNAVAILABLE", loggerFailure.Code);
+            Assert.False(loggerFailure.IsDomainCandidateOnly);
+            Assert.Empty(throwingLogger.Lines);
             Assert.False(await sink.AppendAsync(
                 new C0402ContractAuditEntry("UNAUTHORIZED_EVENT", "OK", true),
                 CancellationToken.None));
@@ -121,7 +130,7 @@ public sealed class C0402M0306DurableAuditMysql84Tests
             var failClosed = await preflight.PrepareAuditedAsync(intent);
             Assert.Equal("CONTRACT_AUDIT_SINK_UNAVAILABLE", failClosed.Code);
             Assert.False(failClosed.IsDomainCandidateOnly);
-            Assert.Equal(2, logger.Lines.Count);
+            Assert.Equal(3, logger.Lines.Count);
         }
         finally
         {
@@ -173,9 +182,13 @@ public sealed class C0402M0306DurableAuditMysql84Tests
         public List<string> Lines { get; } = [];
         public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
         public bool Enabled { get; init; } = true;
+        public bool Throw { get; init; }
         public bool IsEnabled(LogLevel level) => Enabled;
         public void Log<TState>(LogLevel level, EventId eventId, TState state,
-            Exception? exception, Func<TState, Exception?, string> formatter) =>
+            Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            if (Throw) throw new InvalidOperationException("private-logger-secret");
             Lines.Add(formatter(state, exception));
+        }
     }
 }

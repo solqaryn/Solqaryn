@@ -65,21 +65,18 @@ public sealed class C0402ContractAuditedPreflight
             "C0402_CONTRACT_PREFLIGHT", preview.Code, preview.IsDomainCandidateOnly);
         try
         {
-            // Reject before a durable positive audit if structured logging is disabled.
+            // A throwing logger must fail BEFORE durable MySQL COMMIT, not
+            // leave a positive audit row followed by a negative response.
+            // An attempted event is NOT a durable commit or authorization.
             if (!_logger.IsEnabled(LogLevel.Information))
                 return Deny("CONTRACT_STRUCTURED_LOG_UNAVAILABLE");
+            cancellationToken.ThrowIfCancellationRequested();
+            _logger.LogInformation(
+                "Contract preflight audit attempt {EventCode} {OutcomeCode} {DomainCandidateOnly}",
+                entry.EventCode, entry.OutcomeCode, entry.IsDomainCandidateOnly);
             cancellationToken.ThrowIfCancellationRequested();
             if (!await _audit.AppendAsync(entry, cancellationToken))
                 return Deny("CONTRACT_AUDIT_SINK_UNAVAILABLE");
-            cancellationToken.ThrowIfCancellationRequested();
-            if (!_logger.IsEnabled(LogLevel.Information))
-                return Deny("CONTRACT_STRUCTURED_LOG_UNAVAILABLE");
-
-            // Constant template and server-controlled codes only: no cause,
-            // resource ID, user ID, tenant ID, token or exception text.
-            _logger.LogInformation(
-                "Contract preflight {EventCode} {OutcomeCode} {DomainCandidateOnly}",
-                entry.EventCode, entry.OutcomeCode, entry.IsDomainCandidateOnly);
             cancellationToken.ThrowIfCancellationRequested();
             return preview;
         }

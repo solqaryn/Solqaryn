@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV04 V23 C04-02.M03.06: logger antes de COMMIT evita falso positivo
+- Correccion R2: logging estructurado registra INTENTO sanitizado antes del sink MySQL; si ILogger lanza excepcion, no queda un audit positivo duradero detras de respuesta denegada.
+- Pruebas xUnit y MySQL 8.4 real adversarial agregan caso logger throw con cero filas, redaccion y distincion ATTEMPT/COMMIT; CI GitHub-hosted exact-SHA aun requiere PASS.
+- No hay fuente contractual productiva ni API DI, transacciones comerciales o secretos. Mantener VALIDANDO, A5 independiente, Scope Lock STRICT y solo dev.
+
 ## 2026-11-22 - DEV03 V23 C02-01.M05.04 SQL rechaza actor revocado entre awaits
 - Reparacion R2 del lector de membresias: tras I/O del servicio de scope se consulta nuevamente Usuario activo, no bloqueado ni eliminado, y se revalida principal/cancelacion antes de proponer tenant.
 - Regresion de MySQL 8.4 efimero modifica de verdad Usuario.Activo=false entre consultas; requiere TrustedSnapshot null, restaurando solo la fila disposable para continuar JWT firmado/HTTP. GitHub-hosted exact-SHA inicialmente pendiente.

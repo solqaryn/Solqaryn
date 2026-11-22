@@ -84,7 +84,9 @@ public sealed class C0402M0306StructuredAuditTests
             "CONTRACT_AUDIT_SINK_UNAVAILABLE", result.Code);
         Assert.False(result.IsDomainCandidateOnly);
         Assert.False(result.AuthorizesContractMutation);
-        Assert.Empty(logger.Lines);
+        Assert.Single(logger.Lines);
+        Assert.Contains("audit attempt", logger.Lines[0]);
+        Assert.DoesNotContain("private-", logger.Lines[0]);
     }
 
     [Theory]
@@ -100,8 +102,8 @@ public sealed class C0402M0306StructuredAuditTests
         Assert.False(result.IsDomainCandidateOnly);
         // Disabled logging must not leave a false-positive durable candidate.
         // Logging exceptions after persistence remain non-atomic by design.
-        Assert.Equal(throws ? 1 : 0, sink.Attempts);
-        if (!throws) Assert.Null(sink.Last);
+        Assert.Equal(0, sink.Attempts);
+        Assert.Null(sink.Last);
     }
 
     [Fact]
@@ -118,7 +120,7 @@ public sealed class C0402M0306StructuredAuditTests
     }
 
     [Fact]
-    public async Task CancellationAfterAuditAwaitDoesNotEmitSuccessfulLog()
+    public async Task CancellationAfterAuditAwaitOnlyLogsPrecommitAttempt()
     {
         using var cts = new CancellationTokenSource();
         var sink = new TestSink { CancelAfterAppend = cts };
@@ -126,7 +128,9 @@ public sealed class C0402M0306StructuredAuditTests
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
             await MakeAuditor(sink, logger).PrepareAuditedAsync(Intent(), cts.Token));
         Assert.Equal(1, sink.Attempts);
-        Assert.Empty(logger.Lines);
+        Assert.Single(logger.Lines);
+        Assert.Contains("audit attempt", logger.Lines[0]);
+        Assert.DoesNotContain("private-", logger.Lines[0]);
     }
 
     private sealed class ActorSource(bool revoked, bool sourceThrows) :
