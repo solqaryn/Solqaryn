@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV04 V24 C01-03.M03.06: probar ruta MVC real JWT/RBAC/MySQL [Javier :30]
+- El test previo comprobaba un endpoint auxiliar TestServer y una fábrica MVC sin ejecutar el controlador; ahora mapea `EmpresaConfiguracionController` real y su filtro `RequierePermisoAttribute` con servicio de lectura real, permiso SQL y JWT firmado en MySQL 8.4 efímero.
+- Casos positivos tenant A/B y negativos anónimo, intertenant, cabecera inconsistente, revocación de rol y caída del sink; readback durable requiere cuatro recibos sin PII. Sólo test de desarrollo, no cambia runtime ni contratos, CI exact-SHA inicialmente pendiente y ninguna A5 inferida.
+- C01-03.M03.06 permanece LISTO con autor DEV01, A5_FAIL histórico y DAG/COLA intactos; A5 correctiva por revisor realmente independiente de DEV04 y otros autores/reparadores. Reversión normal git revert; cero QA/main/PROD.
+
 ## 2026-11-22 — DEV02 V24 C15-04.M05.04: contención horizontal local de matriz cobertura [Javier :10]
 - GitHub-hosted run 45042548407/job 137269989362 del SHA 70a95ac6: A0.69 falló por tabla de cobertura fuera del viewport con texto CSS raíz 200% a 320 px; no se certificó como PASS.
 - Se corrige la caja de plataforma/tarjeta y la región local de matriz con min-width:0, border-box y contain:inline-size sin ocultar overflow del body; la tabla mantiene columnas semánticas y scroll horizontal propio.

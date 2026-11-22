@@ -10,6 +10,11 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
+using Solqaryn.API.Controllers;
+using Solqaryn.Application.Services;
+using Solqaryn.Application.Exceptions;
+using Solqaryn.Infrastructure.Repositories;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
@@ -136,6 +141,31 @@ public sealed class C0103M0306DurableTenantAuditMysql84Tests
                         services.AddDbContext<AppDbContext>(o=>o.UseMySQL(isolated,
                             m=>m.MigrationsAssembly("Solqaryn.Infrastructure.Migrations")));
                         services.AddRouting();
+                        // Exercise the genuine MVC action, permission filter and SQL-backed
+                        // application service; isolated MySQL and JWT are real in this test.
+                        services.AddControllers().AddApplicationPart(
+                            typeof(EmpresaConfiguracionController).Assembly);
+                        services.AddSingleton<IConfiguration>(new ConfigurationBuilder()
+                            .AddInMemoryCollection(new Dictionary<string, string?> {
+                                ["AutomationV5:C0103:EnableDurableReadAudit"]="true",
+                                ["AutomationV5:C0103:SourceSha"]=FixtureSha
+                            }).Build());
+                        services.AddScoped<IEmpresaConfiguracionService>(provider => {
+                            var db=provider.GetRequiredService<AppDbContext>();
+                            // Read-only GET cannot invoke storage/write-audit dependencies.
+                            return new EmpresaConfiguracionService(
+                                new EmpresaConfiguracionRepository(db),null!,null!,
+                                new EmpresaRepository(db),
+                                provider.GetRequiredService<IUsuarioScopeService>());
+                        });
+                        services.AddScoped<IPermisoService>(provider => {
+                            var db=provider.GetRequiredService<AppDbContext>();
+                            return new PermisoService(
+                                new RolPermisoRepository(db),new RolRepository(db),
+                                new PermisoRepository(db),null!,
+                                provider.GetRequiredService<ICurrentUserService>(),
+                                provider.GetRequiredService<IUsuarioScopeService>());
+                        });
                         services.AddHttpContextAccessor();
                         services.AddScoped<ICurrentUserService,HttpActor>();
                         services.AddScoped<IUsuarioScopeService,UsuarioScopeService>();
@@ -152,8 +182,18 @@ public sealed class C0103M0306DurableTenantAuditMysql84Tests
                         services.AddAuthorization();
                     })
                     .Configure(app=>{
+                        // The actual production MVC filter throws a typed forbidden error;
+                        // emulate only the HTTP error translation in this disposable host.
+                        app.Use(async (ctx,next)=>{
+                            try { await next(); }
+                            catch (ForbiddenAccessException) {
+                                ctx.Response.StatusCode=StatusCodes.Status403Forbidden;
+                            }
+                        });
                         app.UseRouting();app.UseAuthentication();app.UseAuthorization();
-                        app.UseEndpoints(routes=>routes.MapGet("/test-c0103/{tenant:int}",
+                        app.UseEndpoints(routes=>{
+                            routes.MapControllers();
+                            routes.MapGet("/test-c0103/{tenant:int}",
                             async context=>{
                                 var id=int.Parse(Convert.ToString(context.Request.RouteValues["tenant"])!,
                                     System.Globalization.CultureInfo.InvariantCulture);
@@ -161,7 +201,8 @@ public sealed class C0103M0306DurableTenantAuditMysql84Tests
                                     .GetRequiredService<C0103DurableTenantConfigurationAudit>()
                                     .TryRecordReadAsync(id,1,FixtureSha,context.RequestAborted);
                                 context.Response.StatusCode=ok?200:503;
-                            }).RequireAuthorization());
+                            }).RequireAuthorization();
+                        });
                     })).StartAsync();
             using var http=host.GetTestClient();
             async Task<HttpStatusCode> Probe(int tenant,string? token)
@@ -178,12 +219,41 @@ public sealed class C0103M0306DurableTenantAuditMysql84Tests
             Assert.Equal(HttpStatusCode.OK,await Probe(tenantB,SignedToken(actorB)));
             Assert.Equal(HttpStatusCode.ServiceUnavailable,await Probe(tenantB,SignedToken(actorA)));
             Assert.Equal(2,logger.Emitted);
+            async Task<HttpStatusCode> ProbeActualMvc(
+                int tenant,string? token,int selector)
+            {
+                using var req=new HttpRequestMessage(HttpMethod.Get,
+                    "/empresa-configuracion/tenant/"+tenant);
+                req.Headers.TryAddWithoutValidation(
+                    "X-Empresa-Id",selector.ToString(
+                        System.Globalization.CultureInfo.InvariantCulture));
+                if(token is not null)
+                    req.Headers.Authorization=new AuthenticationHeaderValue(
+                        "Bearer",token);
+                using var response=await http.SendAsync(req);
+                return response.StatusCode;
+            }
+
+            // The previously green auxiliary /test-c0103 route never activated
+            // EmpresaConfiguracionController, its RequierePermisoAttribute or
+            // EmpresaConfiguracionService. These assertions test that real path.
+            Assert.Equal(HttpStatusCode.Unauthorized,
+                await ProbeActualMvc(tenantA,null,tenantA));
+            Assert.Equal(HttpStatusCode.OK,
+                await ProbeActualMvc(tenantA,SignedToken(actorA),tenantA));
+            Assert.Equal(HttpStatusCode.OK,
+                await ProbeActualMvc(tenantB,SignedToken(actorB),tenantB));
+            Assert.Equal(HttpStatusCode.Forbidden,
+                await ProbeActualMvc(tenantB,SignedToken(actorA),tenantB));
+            Assert.Equal(HttpStatusCode.Forbidden,
+                await ProbeActualMvc(tenantA,SignedToken(actorA),tenantB));
+            Assert.Equal(4,logger.Emitted);
             await using (var db=new AppDbContext(options))
             {
                 var receipts=await db.Set<RegistroAuditoria>().IgnoreQueryFilters()
                     .AsNoTracking().Where(x=>x.Entidad=="ConfigEmpresa" &&
                         x.Descripcion.StartsWith("C0103 authenticated")).ToArrayAsync();
-                Assert.Equal(2,receipts.Length);
+                Assert.Equal(4,receipts.Length);
                 Assert.Contains(receipts,x=>x.EmpresaId==tenantA && x.UsuarioId==actorA);
                 Assert.Contains(receipts,x=>x.EmpresaId==tenantB && x.UsuarioId==actorB);
                 Assert.DoesNotContain(receipts,x=>x.EmpresaId==tenantB && x.UsuarioId==actorA);
@@ -195,6 +265,8 @@ public sealed class C0103M0306DurableTenantAuditMysql84Tests
                 role.Activo=false;await db.SaveChangesAsync();
             }
             Assert.Equal(HttpStatusCode.ServiceUnavailable,await Probe(tenantB,SignedToken(actorB)));
+            Assert.Equal(HttpStatusCode.Forbidden,
+                await ProbeActualMvc(tenantB,SignedToken(actorB),tenantB));
             await using (var db=new AppDbContext(options))
             {
                 var config=await db.Set<ConfigEmpresa>().SingleAsync(x=>x.EmpresaId==tenantA);
@@ -208,7 +280,9 @@ public sealed class C0103M0306DurableTenantAuditMysql84Tests
                 await db.Database.ExecuteSqlRawAsync("DROP TABLE RegistrosAuditoria");
             }
             Assert.Equal(HttpStatusCode.ServiceUnavailable,await Probe(tenantA,SignedToken(actorA)));
-            Assert.Equal(2,logger.Emitted);
+            Assert.Equal(HttpStatusCode.ServiceUnavailable,
+                await ProbeActualMvc(tenantA,SignedToken(actorA),tenantA));
+            Assert.Equal(4,logger.Emitted);
         }
         finally
         {
