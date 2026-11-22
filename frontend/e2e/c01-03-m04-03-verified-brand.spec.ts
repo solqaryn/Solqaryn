@@ -141,9 +141,10 @@ test.describe('C01-03.M04.03 verified tenant branding actual server',()=>{
     const capturedA=new Promise<void>(resolve=>{sawA=resolve;});
     let releaseA!:()=>void;
     const heldA=new Promise<void>(resolve=>{releaseA=resolve;});
-    let settledA!:()=>void;
-    const settled=new Promise<void>(resolve=>{settledA=resolve;});
+    // Angular may issue multiple genuine A reads as the route initializes.
+    // Each captured stale response must settle before absence of A is asserted.
     let responseCount=0;
+    let settledCount=0;
     await page.route(/\/empresa-configuracion\/tenant\/1(?:\?|$)/,async route=>{
       try{
         const real=await route.fetch();
@@ -153,7 +154,7 @@ test.describe('C01-03.M04.03 verified tenant branding actual server',()=>{
         await heldA;
         try{await route.fulfill({response:real});}
         catch{ /* canceled stale request is safe after a real server response */ }
-      }finally{settledA();}
+      }finally{settledCount++;}
     });
 
     await page.goto('/configuracion/dinamica-v5',{waitUntil:'domcontentloaded'});
@@ -172,10 +173,13 @@ test.describe('C01-03.M04.03 verified tenant branding actual server',()=>{
     const brand=page.getByTestId('c0103-verified-brand');
     await expect(brand).toHaveText('Empresa B efimera C15');
     releaseA();
-    await settled;
+    // Validate all observed A response deliveries/cancellations, not an invented
+    // exactly-one-GET contract. Retried A reads remain subject to the same guard.
+    await page.waitForLoadState('networkidle',{timeout:15_000});
+    await expect.poll(()=>settledCount,{timeout:10_000}).toBe(responseCount);
+    expect(responseCount,'at least one real A GET was withheld').toBeGreaterThan(0);
     await expect(brand).toHaveText('Empresa B efimera C15');
     await expect(page.getByText('Empresa A efimera C15',{exact:true})).toHaveCount(0);
-    expect(responseCount).toBe(1);
     await page.screenshot({path:'test-results/c0103-m0403-same-jwt-A-to-B-stale-rejection.png',fullPage:true});
   });
 

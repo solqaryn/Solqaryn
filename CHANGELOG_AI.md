@@ -1,3 +1,8 @@
+## 2026-11-22 - DEV03 C01-03.M04.03: prueba real de carrera de marca con GET concurrentes
+- Reparación R2 test-only del falso contrato `responseCount===1`: un mismo JWT empresarial puede producir varios GET legítimos al inicializar la ruta; se exige al menos una respuesta A real y que TODAS las entregas/cancelaciones capturadas terminen antes de acreditar marca B y ausencia de A.
+- Se conserva el escenario adversarial auténtico Angular/Chromium, API .NET 10, JWT A/B, MySQL 8.4 efímero, las denegaciones y el test de mismo usuario multiempresa; CI 7/7 y checks exact-SHA aún pendientes, sin PASS ficticio.
+- Sin cambios de runtime, auth, DB, QA/main/PROD ni autoría histórica; H238 permanece LISTO, A5_FAIL histórico intacto, A5 correctiva por otra Task distinta de autores/reparadores; zoom nativo 200% e imagen ANTES siguen NO_ACREDITADOS.
+
 ## 2026-11-22 - DEV02 C15-04.M05.04 A110: reflow de texto al 200% con JWT Chromium
 - Incremento TEST-ONLY R2 bajo candado V17 2000002297: tres casos A0.85 de reflow al 200% con JWT firmado/HTTP/MySQL 8.4/Chromium, cinco anchos y capturas texto 100%/200% de la misma corrida. No equivale a zoom nativo, WCAG global ni CWV de campo.
 - Suite previa A109 146/146 GREEN; A110 CI exact-SHA 149/149 requerida junto con Scope Lock/V5/frontend/backend/security pertinentes. H=EN_PROGRESO, owner DEV02 y lock preservados; sin LISTO/A5, QA/main/PROD.
