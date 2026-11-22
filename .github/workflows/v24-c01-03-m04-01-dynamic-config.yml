@@ -202,6 +202,11 @@ jobs:
           # B was seeded solely for the preceding negative A/B browser phase.
           # Stop on foreign-key/authority inconsistency, never disable FK checks.
           docker exec -i "$mysql_container" mysql -uroot -proot solqaryn_c1504_real_ci <<'SQL'
+          -- FK RESTRICT is part of the real tenancy contract. GET /tenant/2
+          -- creates ConfigEmpresas(2), and optional templates also reference B.
+          -- Delete ONLY B's ephemeral dependent rows in child-to-parent order.
+          DELETE FROM PlantillasCorreoEmpresa WHERE EmpresaId = 2;
+          DELETE FROM ConfigEmpresas WHERE EmpresaId = 2;
           DELETE FROM UsuarioEmpresas WHERE EmpresaId = 2;
           DELETE FROM Empresas WHERE Id = 2;
           SQL
