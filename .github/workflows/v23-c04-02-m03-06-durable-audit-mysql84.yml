@@ -54,7 +54,7 @@ jobs:
           set -euo pipefail
           test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           dotnet restore tests/Solqaryn.Tests/Solqaryn.Tests.csproj
-          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore --filter 'FullyQualifiedName~C0402M0306DurableAuditMysql84Tests' --logger 'trx;LogFileName=C0402M0306Mysql84.trx' --verbosity normal
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore --filter 'FullyQualifiedName~C0402M0306' --logger 'trx;LogFileName=C0402M0306Mysql84.trx' --verbosity normal
           python3 - <<'PY'
           from pathlib import Path
           import xml.etree.ElementTree as ET

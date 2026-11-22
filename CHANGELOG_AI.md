@@ -1,3 +1,7 @@
+## 2026-11-21 — V23 C04-02.M03.06 directed CI filter correction [Javier :30]
+- Diagnosed failed GitHub job 137054115972 causally: previous filter executed only one passing MySQL 8.4 test while TRX correctly demanded two; no .NET compilation or durable audit test failure.
+- Changed directed filter to include both C0402M0306 integration test classes. New SHA CI must prove 2/2 PASS with zero skips, backend/security, Scope Lock and V5; retain VALIDANDO/A5 pending until full real ownership and DI. No QA/main/PROD.
+
 ## 2026-11-21 — V23 C04-02.M03.06 signed JWT HTTP audit test with real isolated MySQL [Javier :30]
 - Added a second test-only signed JWT HTTP integration path using relational tenant A/B membership and revocation, with durable sanitized InnoDB audit receipts; contract snapshot still synthetic and runtime API DI absent.
 - Tightened GitHub-hosted MySQL 8.4 directed gate to require 2/2 executed tests with zero failures and zero skipped, exact-SHA Scope Lock and V5. A0–A4 not yet certified; VALIDANDO remains and independent A5 waits. No QA/main/PROD.
