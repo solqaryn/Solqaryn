@@ -15,6 +15,12 @@ on:
       - 'frontend/src/app/features/plataforma/revision-amenazas-v5.component.ts'
       - 'frontend/src/app/features/plataforma/c14-01-m04-01-qa-global.component.html'
       - 'frontend/src/app/features/plataforma/consola-global-auditada-v5.component.ts'
+      # A113: observar cambios reales de las superficies privadas adicionales.
+      - 'frontend/src/app/features/plataforma/observabilidad-privada-v5.component.ts'
+      - 'frontend/src/app/features/plataforma/c13-04-m04-01-catalogo-rutas.component.ts'
+      - 'frontend/src/app/features/plataforma/c09-04-m04-01-mensajeria-privada.component.ts'
+      - 'frontend/src/app/features/plataforma/c09-04-m04-01-mensajeria-privada.component.html'
+      - 'frontend/src/app/features/plataforma/c09-04-m04-01-mensajeria-privada.component.scss'
       # Revalidar JWT/guard cuando cambian autoridades compartidas, no solo el spec.
       - 'backend/src/API/Program.cs'
       - 'backend/src/API/Security/**'
