@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV05 V23 C14-02.M06.06: bootstrap real MySQL para CI global
+- Reparación R2 del fallo físico de GitHub-hosted job137137536745: 150/152 xUnit Integration PASS; el caso C14 JWT/HTTP/MySQL falló por schema `c1402_m0606_bootstrap` inexistente. La variable ya estaba configurada, faltaba crear la base efímera.
+- Se añade `CREATE DATABASE` y aserción real `information_schema` antes de los 152 tests, sin mocks ni excepciones, con Scope Lock/V5 y CI nuevo exact-SHA obligatorios. El fallo separado C07 HTTP 503 pertenece al WIP DEV01 y NO se oculta ni se modifica.
+- Conserva `C14-02.M06.06` VALIDANDO, owner histórico DEV06, A5 tercera Task, R3 NO_GO para certificación global de seguridad y QA/main/PROD. Reversión con `git revert` normal.
+
 ## 2026-11-22 — DEV04 V23 C04-02.M03.06: logger antes de COMMIT evita falso positivo
 - Correccion R2: logging estructurado registra INTENTO sanitizado antes del sink MySQL; si ILogger lanza excepcion, no queda un audit positivo duradero detras de respuesta denegada.
 - Pruebas xUnit y MySQL 8.4 real adversarial agregan caso logger throw con cero filas, redaccion y distincion ATTEMPT/COMMIT; CI GitHub-hosted exact-SHA aun requiere PASS.

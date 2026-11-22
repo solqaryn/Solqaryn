@@ -278,6 +278,12 @@ jobs:
           docker exec "$mysql_container" mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS solqaryn_c0401_dispatch CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
           docker exec "$mysql_container" mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS solqaryn_c0701_audit CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
           docker exec "$mysql_container" mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS c0401_m0306_bootstrap CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
+          # V23 DEV05: C14 signed JWT MySQL test opens its bootstrap DB before first query.
+          # Create and assert only the ephemeral MySQL 8.4 schema; no external database.
+          docker exec "$mysql_container" mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS c1402_m0606_bootstrap CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;"
+          c1402_ready="$(docker exec "$mysql_container" mysql -uroot -proot -Nse "SELECT COUNT(*) FROM information_schema.schemata WHERE schema_name='c1402_m0606_bootstrap';")"
+          test "$c1402_ready" = "1"
+          echo "C1402_M0606_MYSQL84_BOOTSTRAP_READY=1"
           echo "V22_EPHEMERAL_MYSQL13_TEST_SCHEMAS_READY=1"
       - name: Ejecutar pruebas de integración MySQL Oracle
         run: |
