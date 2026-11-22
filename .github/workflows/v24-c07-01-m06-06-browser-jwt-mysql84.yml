@@ -149,6 +149,22 @@ jobs:
           test "$members" = '1'
           test "$company" = '1'
           test "$company_b" = '1'
+      - name: Sembrar productos reales segregados A/B en MySQL 8.4 efimero
+        shell: bash
+        run: |
+          set -euo pipefail
+          mysql_container="$(docker ps --filter 'ancestor=mysql:8.4' --format '{{.ID}}' | head -n 1)"
+          test -n "$mysql_container"
+          docker exec -i "$mysql_container" mysql -uroot -proot solqaryn_c1504_real_ci <<'SQL'
+          INSERT INTO Productos
+            (EmpresaId, Nombre, Marca, Modelo, TipoInventario, Cantidad, Costo, Precio,
+             UmbralStockBajo, Activo, EsDestacado, Eliminado, FechaCreacion, FechaActualizacion)
+          VALUES
+            (1, 'C0701BrowserTenantA', 'Marca QA A', 'Modelo A', 1, 3, 10, 25, 2, 1, 0, 0, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)),
+            (2, 'C0701BrowserTenantB', 'Marca QA B', 'Modelo B', 1, 7, 20, 45, 2, 1, 0, 0, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6));
+          SQL
+          scoped_count="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_c1504_real_ci -Nse "SELECT COUNT(*) FROM Productos WHERE (EmpresaId=1 AND Nombre='C0701BrowserTenantA') OR (EmpresaId=2 AND Nombre='C0701BrowserTenantB');")"
+          test "$scoped_count" = '2'
       - name: Node 24
         uses: actions/setup-node@v4
         with:

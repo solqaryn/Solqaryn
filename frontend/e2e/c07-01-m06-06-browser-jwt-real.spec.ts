@@ -66,9 +66,14 @@ test.describe('C07-01.M06.06 navegador real y aislamiento A/B', () => {
     expect(json?.success).toBe(true);
     expect(Array.isArray(json?.data?.items), 'Oracle EF produce un contrato real').toBe(true);
     expect(Number.isSafeInteger(json?.data?.totalCount)).toBe(true);
+    const ownNames = json.data.items.map((p: { nombre?: string }) => p.nombre);
+    expect(ownNames, 'Producto A sembrado fisicamente en MySQL').toContain('C0701BrowserTenantA');
+    expect(ownNames, 'Filas del tenant B no salen en payload JWT A').not.toContain('C0701BrowserTenantB');
     await expect(page.getByRole('heading', { name: 'Productos', level: 1 })).toBeVisible();
     await expect(page.locator('.catalog-success')).toContainText('Catálogo cargado:');
     await expect(page.locator('.catalog-error')).toHaveCount(0);
+    await expect(page.locator('.cards-mobile .producto-card').filter({ hasText: 'C0701BrowserTenantA' })).toBeVisible();
+    await expect(page.getByText('C0701BrowserTenantB', { exact: true })).toHaveCount(0);
     for (const width of [320, 390, 768, 1280, 1440]) {
       await page.setViewportSize({ width, height: 840 });
       await expect(page.getByRole('heading', { name: 'Productos', level: 1 })).toBeVisible();
@@ -108,8 +113,13 @@ test.describe('C07-01.M06.06 navegador real y aislamiento A/B', () => {
     const ownJson = await ownResponse.json();
     expect(ownJson?.success).toBe(true);
     expect(Array.isArray(ownJson?.data?.items)).toBe(true);
+    const bNames = ownJson.data.items.map((p: { nombre?: string }) => p.nombre);
+    expect(bNames, 'Producto B de base MySQL real').toContain('C0701BrowserTenantB');
+    expect(bNames, 'Tenant A nunca se filtra al JWT B').not.toContain('C0701BrowserTenantA');
     await expect(page.getByRole('heading', { name: 'Productos', level: 1 })).toBeVisible();
     await expect(page.locator('.catalog-error')).toHaveCount(0);
+    await expect(page.locator('.cards-mobile .producto-card').filter({ hasText: 'C0701BrowserTenantB' })).toBeVisible();
+    await expect(page.getByText('C0701BrowserTenantA', { exact: true })).toHaveCount(0);
     const overflow = await page.evaluate(() =>
       document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow, 'Empresa B no debe desbordar el body a 390px').toBeLessThanOrEqual(2);

@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV01 V24 C07-01.M06.06: filas físicas A/B en navegador JWT real [Javier :00]
+- GitHub-hosted mysql:8.4 efímero ahora siembra Productos distintos A/B con readback SQL; Playwright Angular/ASP.NET JWT firmados exige propias visibles y ajenas ausentes en JSON y tarjetas móviles.
+- Control adversarial R2 antes pasaba con catálogos vacíos; la prueba nueva falla si se filtra un registro de otro tenant. Sin `page.route`, tokens fabricados, runtime/producción ni credenciales reales.
+- CI exact-SHA aún no acreditada en el momento de publicación: conservar C07-01.M06.06 EN_PROGRESO bajo lock V17, completar matriz ERP/rollback y A5 independiente antes de LISTO.
+
 ## 2026-11-22 — DEV04 V24 C01-03.M03.06: reparar activación MVC de auditoría durable [Javier :30]
 - Defecto P1 detectado: dos constructores públicos en EmpresaConfiguracionController; los tests JWT/MySQL previos usan ruta auxiliar TestServer y no comprobaban fábrica MVC real.
 - Reparación: constructor original único, resolución del adaptador desde request scope bajo Development opt-in, guard de ActivatorUtilities.CreateFactory en la misma prueba dirigida, sin cambiar filtros JWT/RBAC o sink SQL.
