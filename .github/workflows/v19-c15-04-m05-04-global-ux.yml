@@ -65,6 +65,14 @@ jobs:
           path: frontend/test-results/**/v23-a092-*.png
           if-no-files-found: error
           retention-days: 14
+      - name: Evidencia V23 A093 texto 200 por ciento - 10 capturas Chromium
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c1504-m0504-v23-a093-text200-screenshots
+          path: frontend/test-results/**/v23-a093-*.png
+          if-no-files-found: error
+          retention-days: 14
       - name: Evidencia de falla
         if: failure()
         uses: actions/upload-artifact@v4

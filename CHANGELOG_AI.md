@@ -1,3 +1,7 @@
+## 2026-11-21 — V23 C15-04.M05.04 A0.93 reflujo con texto raiz 200% [Javier :10]
+- WIP R2 propio con V17 lock 2000002297; se amplia Playwright Chromium test-only para /login y /tienda en cinco anchos con font-size raiz 200%, evidencia numerica de incremento, Tab/skip-link, h1, cero overflow y cero HTTP mutante; 10 capturas esperadas. No es zoom nativo ni certificacion WCAG global.
+- CI exact-SHA GitHub-hosted, Angular build, Scope Lock y V5 pendientes al publicar; mantener EN_PROGRESO, sin nuevo CLAIM, LISTO ni A5 hasta A0-A4 global real. Referencias V23 SKREF-03/05/10 aplicadas; backend/JWT/MySQL NO_APLICA al diff test-only. Documento docs/v5/c15-04-m05-04-a093-v23-text-resize.md; rollback git revert normal.
+
 ## 2026-11-21 — V23 C07-01.M06.06 reparacion CI global MySQL 8.4 [Javier :00]
 - La suite global GitHub-hosted SHA 1685df26 ejecuto 149/150 Category=Integration PASS: fallo causal EPHEMERAL_MYSQL84_REQUIRED en C0402M0306DurableAuditMysql84Tests por variable C0402_M0306_MYSQL_TEST ausente. Reparacion aditiva del workflow dev-ci con conexion exclusivamente al contenedor mysql:8.4 loopback y esquema aislado, sin saltear pruebas ni desactivar validadores.
 - CI exact-SHA nueva pendiente, no PASS; C07-01.M06.06 permanece EN_PROGRESO con DEV01 y lock V17 mientras faltan HTTP positivo Producto/Variante y UX Angular/Chromium. A5 independiente futura; no QA/main/PROD. NO_APLICA referencias externas UI/motion/copy/performance (cambio de CI backend); rollback git revert fast-forward seguro.

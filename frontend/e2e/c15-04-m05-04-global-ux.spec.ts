@@ -901,4 +901,46 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
   });
 
 
+
+  // V23 A0.93: real Chromium text-resize probe, not a claim of native browser zoom or WCAG audit.
+  // The test enlarges root text to 200% without mutating Angular runtime or backend.
+  test('V23 A093: texto raiz 200% login tienda 5 anchos y sin overflow',async({context},testInfo)=>{
+    test.setTimeout(300_000);
+    const rutas:[string,string][]=[['/login','#login-title'],['/tienda','#contenido-principal']];
+    for(const width of [320,390,768,1280,1440]){
+      for(const [ruta,selector] of rutas){
+        const current=await context.newPage();
+        const writes:string[]=[];
+        try{
+          await current.setViewportSize({width,height:840});
+          current.on('request',r=>{
+            if(!['GET','HEAD','OPTIONS'].includes(r.method()))writes.push(r.method()+' '+r.url());
+          });
+          await current.goto(ruta,{waitUntil:'domcontentloaded'});
+          const original=await current.locator('html').evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
+          expect(original,'tamano de raiz CSS real').toBeGreaterThan(0);
+          await current.addStyleTag({content:'html { font-size: 200% !important; }'});
+          const resized=await current.locator('html').evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
+          expect(resized,'200% CSS text resize efectivamente aplicado').toBeGreaterThanOrEqual(original*1.9);
+          await expect(current.locator(selector)).toBeVisible();
+          await expect(current.getByRole('heading',{level:1})).toHaveCount(1);
+          if(ruta==='/tienda'){
+            await current.keyboard.press('Tab');
+            await expect(current.locator('a.skip-link').first()).toBeFocused();
+          }
+          await noOverflow(current);
+          const slug=ruta.replaceAll('/','_').replace(/^_/,'');
+          const capture=await current.screenshot({
+            path:testInfo.outputPath('v23-a093-'+slug+'-text200-'+width+'.png'),
+            fullPage:true,animations:'disabled'
+          });
+          expect(capture.byteLength,'PNG real de texto ampliado').toBeGreaterThan(2000);
+          expect(writes,'lectura sin requests mutantes').toEqual([]);
+        }finally{
+          await current.close();
+        }
+      }
+    }
+  });
+
 });
