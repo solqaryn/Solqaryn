@@ -6,6 +6,7 @@ on:
       - '.github/workflows/v24-c01-03-m04-01-dynamic-config.yml'
       - 'frontend/e2e/c01-03-m04-01-dynamic-config.spec.ts'
       - 'frontend/e2e/c01-03-m04-02-states.spec.ts'
+      - 'frontend/e2e/c01-03-m04-04-forms.spec.ts'
       - 'frontend/src/app/features/configuracion/empresa-configuracion-tenant-card.component.ts'
       - 'frontend/src/app/app.routes.ts'
       - 'frontend/src/app/features/configuracion/c0103-configuracion-dinamica-page.component.ts'
@@ -182,7 +183,7 @@ jobs:
           exit 1
       - name: Chromium privado con JWT firmado y denegaciones A/B
         working-directory: frontend
-        run: npx playwright test e2e/c01-03-m04-01-dynamic-config.spec.ts e2e/c01-03-m04-02-states.spec.ts --config=playwright.c15-04-m05-04-real.config.ts --workers=1 --retries=0
+        run: npx playwright test e2e/c01-03-m04-01-dynamic-config.spec.ts e2e/c01-03-m04-02-states.spec.ts e2e/c01-03-m04-04-forms.spec.ts --config=playwright.c15-04-m05-04-real.config.ts --workers=1 --retries=0
       - name: Evidencia de fallos y capturas
         if: always()
         uses: actions/upload-artifact@v4

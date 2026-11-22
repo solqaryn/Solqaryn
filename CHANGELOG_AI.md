@@ -1,3 +1,7 @@
+## 2026-11-22 — DEV05 V24 C01-03.M04.04: prevenir doble guardado de configuracion [Javier :40]
+- El formulario de configuracion ahora bloquea submit reentrante durante saving y expone aria-busy, preservando contrato tenant y version; no depende solo de disabled visual.
+- Se agregan pruebas Chromium con login JWT real, bloqueo de PUT duplicado ante 409 retardado, recarga de version contra API real y rechazo de JSON invalido antes del PUT; controles de MySQL, A/B, V5 y A5 independientes siguen exigibles.
+
 ## 2026-11-22 — DEV05 V24 C01-03.M04.02: estados de carga, vacio, errores y permisos [Javier :40]
 - El card Angular de configuracion separa vacio 200, 403, 404, 429, fallo 5xx/red y respuesta cross-tenant invalida; no muestra formulario obsoleto ni cuerpo sensible del backend, y confirma exito despues de PUT valido.
 - Pruebas Chromium de presentacion con login JWT real, reintento al API real, cinco anchos y capturas; la suite A/B en MySQL 8.4 real es causal y no se sustituye por mocks UI. V17/CAS, A0-A5 y A5 independiente conservados.

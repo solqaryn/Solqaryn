@@ -56,7 +56,7 @@ import { ConfigEmpresaTenant, EmpresaConfiguracionService } from '../../services
           <button mat-button type="button" (click)="cargar()">Reintentar</button>
         </div>
       } @else {
-        <form [formGroup]="form" (ngSubmit)="guardar()" class="tenant-form" aria-label="Configuración del tenant activo">
+        <form [formGroup]="form" (ngSubmit)="guardar()" class="tenant-form" aria-label="Configuración del tenant activo" [attr.aria-busy]="saving()">
           @if (lastSaved()) {
             <p class="state saved-state" role="status" aria-live="polite" data-config-state="saved">
               <mat-icon>check_circle</mat-icon> Se guardó la configuración de la empresa activa.
@@ -245,7 +245,7 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
 
   guardar(): void {
     const empresaId = this.empresaId();
-    if (!empresaId || !this.puedeEditar() || this.form.invalid || this.conflict()) return;
+    if (!empresaId || !this.puedeEditar() || this.saving() || this.form.invalid || this.conflict()) return;
     if (!this.jsonValido('impuestosJson') || !this.jsonValido('emisionJson')) return;
 
     const value = this.form.getRawValue();
