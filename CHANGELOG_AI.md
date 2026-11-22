@@ -1,3 +1,8 @@
+## 2026-11-22 - DEV04 V23 C04-02.M03.06 revalidacion de rol despues de lectura de contrato
+- Reparacion R2: releer actor, tenant y RBAC real luego de esperar el contrato; revocacion o cambio de identidad antes de evaluar no puede producir candidato auditado positivo.
+- xUnit adversarial de revocacion/cambio de actor y regresion GitHub-hosted con JWT firmado, HTTP y RolPermiso eliminado durante await usando EF Oracle/MySQL 8.4 efimero; dos tests de integracion se exigen 2/2, aun sin certificar CI del SHA nuevo.
+- Permanece VALIDANDO sin fuente contractual productiva, politica comercial verificada, DI real ni transacciones de negocio; A5 de Task distinta, STRICT, solo dev, rollback normal.
+
 ## 2026-11-22 — DEV03 V23 C02-01.M05.04 revocación de membresía B durante SQL
 - Reparación R2: una membresía tenant B puede desactivarse después del primer listado SQL, aunque el actor permanezca activo; ahora el lector relee el servicio relacional efectivo y niega toda propuesta ante cambio de conjunto o nombre, duplicados o cancelación.
 - Prueba adversarial MySQL 8.4 efímero: enumeración real A+B, desactivación de UsuarioEmpresa B entre awaits, snapshot null y restauración exclusiva de la fila temporal; el lector previo fallaba esta prueba. JWT firmado/HTTP existentes deben seguir aprobando en GitHub-hosted exact-SHA.

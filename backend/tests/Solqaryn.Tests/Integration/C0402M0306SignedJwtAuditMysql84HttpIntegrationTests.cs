@@ -100,6 +100,23 @@ public sealed class C0402M0306SignedJwtAuditMysql84HttpIntegrationTests
         }
     }
 
+    // The middleware actor is read twice. The test can revoke a relational
+    // RBAC grant AFTER the first read but BEFORE returning the contract snapshot.
+    // This is still an isolated test source; no production contract DI is added.
+    private sealed class RevokingContractSource(
+        IC0402VerifiedContractSnapshotSource inner,
+        Func<CancellationToken, Task> onRead) : IC0402VerifiedContractSnapshotSource
+    {
+        public async ValueTask<C0402ContractApplicationService.VerifiedContractContext?>
+            ReadOwnedAsync(int tenant, long id, CancellationToken ct)
+        {
+            var snapshot = await inner.ReadOwnedAsync(tenant, id, ct);
+            await onRead(ct);
+            ct.ThrowIfCancellationRequested();
+            return snapshot;
+        }
+    }
+
     [Fact]
     public async Task SignedJwtMysqlTenantABAndRoleRevocationFailClosed()
     {
@@ -203,6 +220,7 @@ public sealed class C0402M0306SignedJwtAuditMysql84HttpIntegrationTests
                 ) ENGINE=InnoDB
                 """);
 
+            var revokeDuringContractAwait = false;
             var config = new ConfigurationBuilder()
                 .AddInMemoryCollection(new Dictionary<string, string?>
                 {
@@ -222,7 +240,20 @@ public sealed class C0402M0306SignedJwtAuditMysql84HttpIntegrationTests
                         services.AddScoped<IC0402VerifiedContractActorSource,
                             C0402ContractVerifiedActorSource>();
                         services.AddScoped<IC0402VerifiedContractSnapshotSource>(
-                            _ => new TestOnlyOwnedContract(a.Id));
+                            _ => new RevokingContractSource(
+                                new TestOnlyOwnedContract(a.Id),
+                                async ct =>
+                                {
+                                    if (!revokeDuringContractAwait) return;
+                                    revokeDuringContractAwait = false;
+                                    await using var updater = new AppDbContext(options);
+                                    var revokedGrant = await updater.RolPermisos
+                                        .IgnoreQueryFilters()
+                                        .SingleAsync(p => p.RolId == roleA.Id &&
+                                            p.PermisoId == configPermission.Id, ct);
+                                    updater.RolPermisos.Remove(revokedGrant);
+                                    await updater.SaveChangesAsync(ct);
+                                }));
                         services.AddScoped<C0402ContractApplicationService>();
                         services.AddScoped<C0402ContractAuditedPreflight>();
                         services.AddScoped<IC0402ContractAuditSink>(_ =>
@@ -297,17 +328,23 @@ public sealed class C0402M0306SignedJwtAuditMysql84HttpIntegrationTests
                 $"/c0402-m0306-test/{b.Id}"))
                 Assert.Equal(HttpStatusCode.Forbidden, foreign.StatusCode);
 
-            var grant = await db.RolPermisos.IgnoreQueryFilters()
-                .SingleAsync(p => p.RolId == roleA.Id &&
-                                  p.PermisoId == configPermission.Id);
-            db.RolPermisos.Remove(grant);
-            await db.SaveChangesAsync();
-            db.ChangeTracker.Clear();
+            // Real signed JWT + EF/Oracle MySQL 8.4 revocation happens while
+            // the trusted contract source yields. This must be denied despite
+            // the earlier successful actor lookup, without a positive audit row.
+            revokeDuringContractAwait = true;
+            using (var midAwaitRevoked = await client.GetAsync(
+                $"/c0402-m0306-test/{a.Id}"))
+            {
+                Assert.Equal(HttpStatusCode.Forbidden, midAwaitRevoked.StatusCode);
+                var body = await midAwaitRevoked.Content.ReadAsStringAsync();
+                Assert.Contains("LIVE_SERVER_JWT_RBAC_MEMBERSHIP_REQUIRED", body);
+                Assert.DoesNotContain("private-contract-cause", body);
+            }
             using (var revoked = await client.GetAsync(
                 $"/c0402-m0306-test/{a.Id}"))
                 Assert.Equal(HttpStatusCode.Forbidden, revoked.StatusCode);
-            // Only the three authenticated calls reached the audit boundary:
-            // positive tenant A, foreign tenant B and post-revocation denial.
+            // Four authenticated calls reached the audit boundary: candidate A,
+            // foreign B, mid-await RBAC revocation A and subsequent revoked A.
             await using (var auditConnection = new MySqlConnection(isolated))
             {
                 await auditConnection.OpenAsync();
@@ -319,7 +356,7 @@ public sealed class C0402M0306SignedJwtAuditMysql84HttpIntegrationTests
                     """;
                 await using var auditRows = await auditQuery.ExecuteReaderAsync();
                 Assert.True(await auditRows.ReadAsync());
-                Assert.Equal(3L, Convert.ToInt64(auditRows.GetValue(0)));
+                Assert.Equal(4L, Convert.ToInt64(auditRows.GetValue(0)));
                 Assert.Equal(1L, Convert.ToInt64(auditRows.GetValue(1)));
                 // A foreign tenant can be rejected earlier by the verified JWT/RBAC
                 // actor source, before application-level client-hint comparison.
@@ -327,11 +364,11 @@ public sealed class C0402M0306SignedJwtAuditMysql84HttpIntegrationTests
                 // audit record must never become a candidate or leak a cause.
                 var outcomes = auditRows.GetString(2)
                     .Split(',', StringSplitOptions.RemoveEmptyEntries);
-                Assert.Equal(3, outcomes.Length);
+                Assert.Equal(4, outcomes.Length);
                 Assert.Equal(
                     "REAL_AUTHORIZED_ATOMIC_TRANSACTION_AND_POLICY_STILL_REQUIRED",
                     outcomes[0]);
-                Assert.Equal(2, outcomes.Count(code =>
+                Assert.Equal(3, outcomes.Count(code =>
                     code is "CLIENT_TENANT_HINT_MISMATCH" or
                         "LIVE_SERVER_JWT_RBAC_MEMBERSHIP_REQUIRED"));
                 Assert.DoesNotContain(

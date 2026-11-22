@@ -123,6 +123,36 @@ public sealed class C0402ContractApplicationService
             context.Contract.Version != intent.ExpectedVersion)
             return Deny("VERIFIED_OWNED_CONTRACT_VERSION_AND_POLICY_REQUIRED");
 
+        // An actor may be revoked or moved to another tenant while the trusted
+        // contract snapshot source awaits MySQL/IO. A successful first read
+        // does not certify authority at the time of the eventual preview.
+        // This second check is a fail-closed preflight, NOT atomic authorization
+        // for money, contract mutation, or an external production operation.
+        VerifiedServerActor? refreshedActor;
+        try
+        {
+            refreshedActor = await _actors.ReadCurrentAsync(cancellationToken);
+        }
+        catch (OperationCanceledException) { throw; }
+        catch (Exception ex) when (ex is not OutOfMemoryException)
+        {
+            return Deny("SERVER_ACTOR_SOURCE_UNAVAILABLE");
+        }
+        cancellationToken.ThrowIfCancellationRequested();
+        var refreshedScope = refreshedActor?.Scope;
+        if (refreshedScope is null ||
+            refreshedScope.EmpresaId != scope.EmpresaId ||
+            refreshedScope.ActorId != scope.ActorId ||
+            !refreshedActor!.TrustedServerSource ||
+            !refreshedActor.SignedJwtEstablished ||
+            !refreshedActor.RelationalRbacFresh ||
+            !refreshedActor.MembershipFresh ||
+            !refreshedScope.JwtVerified ||
+            !refreshedScope.MembershipActive ||
+            !refreshedScope.ExplicitContractRbac ||
+            refreshedScope.PermissionRevoked)
+            return Deny("LIVE_SERVER_JWT_RBAC_MEMBERSHIP_REQUIRED");
+
         var request = new Rules.TransitionRequest(
             intent.ContractIdHint, scope.EmpresaId, intent.ExpectedVersion,
             intent.Operation, intent.EffectiveUtc, intent.Cause);

@@ -214,6 +214,53 @@ public sealed class C0402M0302ContractApplicationServiceTests
     }
 
     [Fact]
+    public async Task MembershipRevokedDuringContractReadNeverBecomesCandidate()
+    {
+        var reads = 0;
+        var revoked = false;
+        var service = new C0402ContractApplicationService(
+            new ActorStub(_ =>
+            {
+                reads++;
+                var current = revoked
+                    ? Actor() with { Scope = Actor().Scope with { PermissionRevoked = true } }
+                    : Actor();
+                return ValueTask.FromResult<C0402ContractApplicationService.VerifiedServerActor?>(current);
+            }),
+            new ContractStub((_, _, _) =>
+            {
+                // Non-cooperative source changes authority while contract IO awaits.
+                revoked = true;
+                return ValueTask.FromResult<C0402ContractApplicationService.VerifiedContractContext?>(Context());
+            }));
+        var decision = await service.PrepareAsync(Intent());
+        Assert.Equal("LIVE_SERVER_JWT_RBAC_MEMBERSHIP_REQUIRED", decision.Code);
+        Assert.False(decision.IsDomainCandidateOnly);
+        Assert.False(decision.AuthorizesContractMutation);
+        Assert.Equal(2, reads);
+    }
+
+    [Fact]
+    public async Task SwitchingServerActorBetweenSourceReadsCannotReuseOldContract()
+    {
+        var reads = 0;
+        var service = new C0402ContractApplicationService(
+            new ActorStub(_ =>
+            {
+                reads++;
+                var current = reads == 1 ? Actor() :
+                    Actor() with { Scope = Actor().Scope with { ActorId = 18 } };
+                return ValueTask.FromResult<C0402ContractApplicationService.VerifiedServerActor?>(current);
+            }),
+            new ContractStub((_, _, _) =>
+                ValueTask.FromResult<C0402ContractApplicationService.VerifiedContractContext?>(Context())));
+        var result = await service.PrepareAsync(Intent());
+        Assert.Equal("LIVE_SERVER_JWT_RBAC_MEMBERSHIP_REQUIRED", result.Code);
+        Assert.False(result.IsDomainCandidateOnly);
+        Assert.Equal(2, reads);
+    }
+
+    [Fact]
     public void NullSourceDependenciesFailImmediately()
     {
         Assert.Throws<ArgumentNullException>(() => new C0402ContractApplicationService(
