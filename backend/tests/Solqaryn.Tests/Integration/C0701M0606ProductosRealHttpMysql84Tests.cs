@@ -739,8 +739,15 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             pilotConfig["MultiEmpresa:PrivateDraftPilotEnabled"] = "true";
             var writtenName = "C0701HttpSignedWrite" + Guid.NewGuid().ToString("N");
             var categoryAId = await db.Categorias.IgnoreQueryFilters().AsNoTracking()
-                .Where(c => c.Nombre == "Category C0701RealProductoA")
+                .Where(c => c.Nombre == "Category C0701RealProductoA" && c.EmpresaId == a.Id)
                 .Select(c => c.Id).SingleAsync();
+            // Tenant B's IDOR request must contain a B-owned category.
+            // An A-owned category may be rejected as malformed before the
+            // controller verifies ownership of the target product in A.
+            var categoryBId = await db.Categorias.IgnoreQueryFilters().AsNoTracking()
+                .Where(c => c.Nombre == "Category C0701RealProductoB" && c.EmpresaId == b.Id)
+                .Select(c => c.Id).SingleAsync();
+            Assert.NotEqual(categoryAId, categoryBId);
             using (var postA = new HttpRequestMessage(HttpMethod.Post, "/productos"))
             {
                 postA.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwtA);
@@ -862,7 +869,7 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 crossTenant.Content = new FormUrlEncodedContent(new Dictionary<string, string>
                 {
                     ["Nombre"] = "CrossTenantMutationDenied",
-                    ["CategoriaId"] = categoryAId.ToString(),
+                    ["CategoriaId"] = categoryBId.ToString(),
                     ["Cantidad"] = "0",
                     ["Costo"] = "64",
                     ["Precio"] = "139"

@@ -1,3 +1,8 @@
+## 2026-11-22 - DEV01 V23 C07-01.M06.06: categoria de B valida en negativo IDOR
+- GitHub-hosted CI del SHA 4e8f045a confirmo HTTP 400 no 404 en PUT B->producto A: job137156086590 y MySQL global job137156158607 (151 PASS/1 FAIL).
+- Nueva hipotesis R2: un JWT B enviaba CategoriaId de A; usar categoria B consultada de MySQL 8.4, mantener 404 obligatorio, roles y aislamiento y readback de ausencia de escrituras.
+- Cierre A0-A4, CI exact-SHA y A5 independiente pendientes; conservar EN_PROGRESO DEV01/candado V17. No QA/main/PROD.
+
 ## 2026-11-22 - DEV05 V23 C11-03.M06.06 validacion fail-closed de lote de outbox
 - Corregida la validacion tardia de registros tenant A/B: verificar el lote completo y limite de tamaño antes del primer envio externo (R2, incremento sin DI ni proveedor real).
 - Añadidas dos pruebas adversariales xUnit para repositorio que devuelve [A,B] y lote excesivo: no transporte, ACK ni fallo espurio; conservar la suite MySQL 8.4 fisica previa.
