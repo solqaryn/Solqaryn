@@ -71,6 +71,9 @@ public sealed class C1402SecurityAcceptanceAuthorizationGate
         catch (OperationCanceledException) { throw; }
         catch (Exception ex) when (ex is not OutOfMemoryException)
         {
+            // A reader may cancel the caller and throw a different exception.
+            // Cancellation remains authoritative, never a stale source failure.
+            cancellationToken.ThrowIfCancellationRequested();
             return new("TRUSTED_EVIDENCE_SOURCE_UNAVAILABLE");
         }
 

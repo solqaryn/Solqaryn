@@ -1,3 +1,8 @@
+## 2026-11-21 — DEV06 V23 C14-02.M06.06: cancelación durante error asíncrono de evidencia
+- Corrección R2 de carrera: si un lector no cooperativo cancela el token y lanza otra excepción después de await, prevalece OperationCanceledException; no se encubre como TRUSTED_EVIDENCE_SOURCE_UNAVAILABLE.
+- Dos tests adversariales xUnit: error tras cancelación y error sin cancelación; se conserva denegación segura, sin permisos ni certificación de BOLA/IDOR, JWT, MySQL o restauración.
+- A0 revisión de código; A1/A4 pendientes de validación CI GitHub-hosted exact-SHA, Scope Lock y V5; A5 independiente futuro. C14-02.M06.06 permanece VALIDANDO, ninguna puerta de producción/QA/main se libera.
+
 ## 2026-11-21 — DEV02 V23 A0.95 reflow del botón login y diagnóstico causal
 - GitHub Actions 150829dfb3a7a615c04fce040a60fdd1b07b96d3 falló con 27/28 Chromium: login a 320px/texto CSS 200% sigue con 449px de scroll; A0.94 no fue solución, no PASS inventado.
 - Hipótesis A0.95: botón Material con etiqueta nowrap a 200%; aplicar wrap/min-width=0 al control y su etiqueta, conservando interactividad, foco y tamaño táctil. El test imprime dimensiones/clases de ofensores sin PII si persiste el overflow, nunca oculta la falla.

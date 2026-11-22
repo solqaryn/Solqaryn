@@ -163,4 +163,37 @@ public sealed class C1402SecurityAcceptanceAuthorizationGateTests
             async () => await gate.CheckAsync(Request(), cts.Token));
         Assert.Equal(0, reader.Calls);
     }
+
+    private sealed class FaultAfterAsyncReader(CancellationTokenSource? cancelBeforeFault)
+        : IC1402SecurityAcceptanceEvidenceReader
+    {
+        public async ValueTask<C1402SecurityAcceptanceAuthorizationGate.VerifiedEvidence?> ReadAsync(
+            string resourceKey, CancellationToken cancellationToken)
+        {
+            await Task.Yield();
+            cancelBeforeFault?.Cancel();
+            // This source does not cooperate with CancellationToken.
+            throw new InvalidOperationException("Synthetic non-sensitive source fault");
+        }
+    }
+
+    [Fact]
+    public async Task CancelledFaultCannotBeMisclassifiedAsSourceUnavailable()
+    {
+        using var source = new CancellationTokenSource();
+        var gate = new C1402SecurityAcceptanceAuthorizationGate(new FaultAfterAsyncReader(source));
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(
+            async () => await gate.CheckAsync(Request(), source.Token));
+    }
+
+    [Fact]
+    public async Task UncancelledReaderFaultStillFailsClosedWithoutExceptionDetail()
+    {
+        var gate = new C1402SecurityAcceptanceAuthorizationGate(new FaultAfterAsyncReader(null));
+        var result = await gate.CheckAsync(Request());
+        Assert.Equal("TRUSTED_EVIDENCE_SOURCE_UNAVAILABLE", result.Code);
+        Assert.False(result.GrantsTenantOrResourceAccess);
+        Assert.False(result.AllowsInstitutionalWrite);
+        Assert.False(result.CertifiesSecurityAcceptance);
+    }
 }
