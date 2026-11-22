@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV01 V23: reparación R2 del piloto PUT /productos en MySQL 8.4
+- CI causal: SHA 263c997b reportó 503 frente a 200 en PUT firmado, porque el opt-in PrivateDraftPilotEnabled cubre POST, mientras que el middleware real limita PUT a PrivateCommercialFilesPilotEnabled; no se deshabilita ni relaja el control de producción.
+- Test-only en TestServer con MySQL 8.4 efímero: PUT sin opt-in -> 503 y cero mutación, después flag independiente in-memory ON para PUT positivo, denegación IDOR tenant B, revocación Editar, auditoría persistente y flag OFF de nuevo. No se tocan secretos, despliegues ni configuraciones reales.
+- Mantener C07-01.M06.06 EN_PROGRESO DEV01 con candado V17 y A0–A4/A5 pendientes; GitHub-hosted exact-SHA nuevo deberá confirmar PASS. Frontend Angular/Chromium conectado a backend real sigue sin certificar; no QA/main/PROD.
+
 ## 2026-11-22 — DEV05 V23: reparación de CI global MySQL para C14-02.M06.06
 - Diagnóstico causal: el job general MySQL 8.4 del SHA 5801b482 falló 1/152 tests por ausencia de C1402_M0606_MYSQL_TEST; la prueba dirigida JWT+HTTP+MySQL 1/1 ya estaba aprobada.
 - Agregado solo el entorno MySQL 8.4 efímero y aislado del test existente al workflow dev-ci; sin suprimir pruebas ni modificar runtime o controles de seguridad. CI del nuevo SHA pendiente de verificación y FAIL previo preservado.

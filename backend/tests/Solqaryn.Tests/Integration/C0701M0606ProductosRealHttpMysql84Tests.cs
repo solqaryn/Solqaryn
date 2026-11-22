@@ -780,6 +780,37 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
 
             // Signed JWT HTTP PUT through the *real* ProductosController,
             // Oracle EF/MySQL 8.4, technical variant and durable audit.
+            // A valid signed JWT and the draft POST opt-in cannot bypass the
+            // independent files/edit PUT gate. Verify fail-closed first.
+            using (var deniedPutWithoutFilesPilot = new HttpRequestMessage(
+                HttpMethod.Put, $"/productos/{httpProductId}"))
+            {
+                deniedPutWithoutFilesPilot.Headers.Authorization =
+                    new AuthenticationHeaderValue("Bearer", jwtA);
+                deniedPutWithoutFilesPilot.Headers.TryAddWithoutValidation(
+                    "X-Empresa-Id", a.Id.ToString());
+                deniedPutWithoutFilesPilot.Content = new FormUrlEncodedContent(
+                    new Dictionary<string, string>
+                    {
+                        ["Nombre"] = "C0701DeniedPutWithoutSeparateOptIn",
+                        ["Precio"] = "1"
+                    });
+                using var denied = await client.SendAsync(deniedPutWithoutFilesPilot);
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, denied.StatusCode);
+            }
+            await using (var offReadback = new AppDbContext(options))
+            {
+                Assert.Equal(writtenName, await offReadback.Productos
+                    .IgnoreQueryFilters().AsNoTracking()
+                    .Where(p => p.Id == httpProductId)
+                    .Select(p => p.Nombre).SingleAsync());
+            }
+
+            // Existing production guard authorizes PUT /productos/{id} ONLY via
+            // PrivateCommercialFilesPilotEnabled, NOT PrivateDraftPilotEnabled.
+            // Switch this independent flag on in isolated TestServer memory ONLY;
+            // no environment, runtime guard, or real commercial setting changes.
+            pilotConfig["MultiEmpresa:PrivateCommercialFilesPilotEnabled"] = "true";
             var updatedName = "C0701HttpUpdated" + Guid.NewGuid().ToString("N");
             using (var putA = new HttpRequestMessage(
                 HttpMethod.Put, $"/productos/{httpProductId}"))
@@ -895,6 +926,7 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 Assert.Equal(0, await rejectedReadback.Productos.IgnoreQueryFilters()
                     .CountAsync(x => x.Nombre == bDeniedName));
             }
+            pilotConfig["MultiEmpresa:PrivateCommercialFilesPilotEnabled"] = "false";
             pilotConfig["MultiEmpresa:PrivateDraftPilotEnabled"] = "false";
             using (var postDefaultOff = new HttpRequestMessage(HttpMethod.Post, "/productos"))
             {
