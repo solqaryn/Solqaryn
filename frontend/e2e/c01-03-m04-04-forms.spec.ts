@@ -21,6 +21,15 @@ async function loginA(page: Page): Promise<void> {
   const token: unknown = (await res.json())?.data?.token;
   expect(typeof token).toBe('string');
   expect((token as string).split('.')).toHaveLength(3);
+  // Real authenticated policy, not a forced UI flag or fake permission.
+  const policy = await page.request.get(api + '/permisos/mis-permisos/empresa/1', {
+    headers: { Authorization: 'Bearer ' + token }
+  });
+  expect(policy.status()).toBe(200);
+  const granted = (await policy.json())?.data;
+  expect(granted?.operacionMultiEmpresaRestringida).toBe(false);
+  expect(granted?.esAdministrador).toBe(true);
+  expect(granted?.permisos).toContain('Configuracion:Editar');
   const membership = await page.request.get(api + '/tenant-context/1', {
     headers: { Authorization: 'Bearer ' + token }
   });
