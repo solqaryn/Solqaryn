@@ -1,0 +1,16 @@
+# C01-03.M04.02 — estados reales de configuración dinámica (solo dev)
+
+## Alcance R1
+PLAN_MAESTRO!D237 requiere carga, vacío, error, éxito y permisos en la superficie existente /configuracion/dinamica-v5. Se reutiliza EmpresaConfiguracionTenantCardComponent y su EmpresaConfiguracionService: no se introducen API, DTO, roles, datos, migraciones, claves globales ni autorizaciones nuevas. La fuente de identidad/tenant sigue en el backend; la UI nunca es el gate RBAC. Rollback: revert normal del changeset después de CAS/HEAD y nueva validación en GitHub-hosted. No QA/main/PROD.
+
+## Implementación y límites causales
+- Carga: spinner con role=status. Vacío: HTTP 200 sin data, sin formulario. Ausencia 404, permiso 403, sesión 401, límite 429 y servidor/red 5xx/0 tienen mensajes distintos y no muestran formulario obsoleto.
+- Respuesta de otra empresa: estado invalid, sin mostrar datos de otro tenant. Ningún cuerpo de error HTTP ni datos potencialmente privados se propagan a un mensaje visible. Reintentar no cambia la empresa solicitada ni inventa credenciales. Éxito después de PUT permitido: confirmación inline role=status.
+- Test Playwright M04.02 usa login JWT real y MySQL efímero ANTES de simular SOLO respuestas del GET para probar presentación determinista 200/403/404/429/503, SIN afirmar que errores simulados prueban RBAC real. La suite M04.01 prueba JWT firmado A/B contra el servidor real dentro del mismo workflow. Reintento 503 permite que siguiente consulta llegue a API real.
+- Capturas: DESPUÉS con 320/390/768/1280/1440 en CI; no hay captura ANTES de ruta creada en M04.01. Zoom real 200% y revisión visual manual no acreditados; si falla CI reparar causa bajo V17 antes de LISTO.
+
+## Gobierno UX
+Referencias oficiales consultadas lectura: SKREF-03 Impeccable pbakaus/impeccable@2149fcce39a90bb409df5f16515f316a76dc6199 .agents/skills/impeccable/SKILL.md (modo Operate); SKREF-10 Angular angular/angular@6808966993bf2b2d455d9b6245e960a59a01b9a9 skills/dev-skills/angular-developer/SKILL.md (templates @switch, signals, reactive forms y pruebas). SKREF-04/05/06/11/12 NO_APLICA: sin motion nuevo, landing, redacción editorial, threat model formal o profiling .NET. Ninguna skill externa instalada o ejecutada.
+
+## A0-A5
+A0: diff componente+e2e+workflow+evidencia. A1: seis casos funcionales dirigidos; positivos API vs negativos controlados diferenciados. A2: regresión real JWT firmado A/B en M04.01, no tratar mocks como PASS de seguridad. A3: job MySQL 8.4 efímero + Angular/Chromium, logs y screenshots. A4: Scope Lock, V5, Angular build y pruebas requeridas SUCCESS en SHA exacto más PLAN/COLA/BITACORA readback. A5: Task Javier distinta del autor/reparador tras auditoría independiente. CI QUEUED/IN_PROGRESS/FAIL/SKIPPED requerida => VALIDANDO, nunca LISTO.

@@ -35,6 +35,21 @@ import { ConfigEmpresaTenant, EmpresaConfiguracionService } from '../../services
         </div>
       } @else if (loading()) {
         <div class="state" role="status" aria-live="polite"><mat-spinner diameter="32"></mat-spinner><span>Cargando configuración tenant…</span></div>
+      } @else if (loadState() !== 'ready') {
+        <div class="state state-diagnostic" [class.error]="loadState() !== 'empty'"
+          [attr.data-config-state]="loadState()"
+          [attr.role]="loadState() === 'empty' ? 'status' : 'alert'">
+          @switch (loadState()) {
+            @case ('empty') { <mat-icon>inbox</mat-icon><span>Esta empresa todavía no tiene configuración para mostrar. No se realizaron cambios.</span> }
+            @case ('forbidden') { <mat-icon>lock</mat-icon><span>No tienes permiso para consultar la configuración de esta empresa.</span> }
+            @case ('session') { <mat-icon>lock_clock</mat-icon><span>La sesión no permite continuar. Inicia sesión de nuevo para consultar los ajustes.</span> }
+            @case ('not-found') { <mat-icon>search_off</mat-icon><span>No se encontró la configuración solicitada para la empresa activa.</span> }
+            @case ('throttled') { <mat-icon>schedule</mat-icon><span>Hay demasiadas solicitudes. Inténtalo de nuevo más tarde.</span> }
+            @case ('unavailable') { <mat-icon>cloud_off</mat-icon><span>El servicio no está disponible en este momento. La configuración no se modificó.</span> }
+            @case ('invalid') { <mat-icon>gpp_bad</mat-icon><span>La respuesta no corresponde a la empresa verificada. No se muestran datos de otra empresa.</span> }
+          }
+          <button mat-stroked-button type="button" (click)="cargar()" [disabled]="loading()">Reintentar consulta</button>
+        </div>
       } @else if (error()) {
         <div class="state error" role="alert">
           <mat-icon>error_outline</mat-icon><span>{{ error() }}</span>
@@ -42,6 +57,11 @@ import { ConfigEmpresaTenant, EmpresaConfiguracionService } from '../../services
         </div>
       } @else {
         <form [formGroup]="form" (ngSubmit)="guardar()" class="tenant-form" aria-label="Configuración del tenant activo">
+          @if (lastSaved()) {
+            <p class="state saved-state" role="status" aria-live="polite" data-config-state="saved">
+              <mat-icon>check_circle</mat-icon> Se guardó la configuración de la empresa activa.
+            </p>
+          }
           <div class="section-title"><h3>Datos de empresa</h3><span>Empresa #{{ empresaId() }}</span></div>
           <div class="grid">
             <mat-form-field appearance="outline"><mat-label>Nombre</mat-label><input matInput formControlName="nombre" maxlength="200" autocomplete="organization"><mat-error>El nombre es obligatorio.</mat-error></mat-form-field>
@@ -127,7 +147,7 @@ import { ConfigEmpresaTenant, EmpresaConfiguracionService } from '../../services
   `,
   changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
-    .tenant-card{margin-top:1.25rem;padding:1.25rem}.header-row,.section-title,.actions,.mail-status,.conflict,.readonly,.logo-row,.logo-actions{display:flex;align-items:center;gap:.75rem}.header-row,.section-title{justify-content:space-between;flex-wrap:wrap}h2,h3{margin:0}.tenant-form{display:grid;gap:1rem}.hint{margin:.25rem 0;opacity:.78}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}.wide{grid-column:1/-1}.state{min-height:120px;display:flex;align-items:center;justify-content:center;gap:.75rem;text-align:center}.error,.conflict{color:var(--color-error,#b3261e)}.state.error{flex-wrap:wrap}.mail-status,.conflict,.readonly{padding:.75rem 1rem;border:1px solid rgba(0,0,0,.12);border-radius:8px}.mail-status.configured{color:#1b5e20}.logo-row{align-items:flex-start;flex-wrap:wrap}.tenant-logo,.logo-placeholder{width:120px;height:72px;border:1px solid rgba(0,0,0,.12);border-radius:8px;object-fit:contain;background:rgba(0,0,0,.02)}.logo-placeholder{display:grid;place-items:center}.logo-actions{flex-wrap:wrap}.templates{display:grid;gap:.5rem}.templates article{display:grid;grid-template-columns:minmax(140px,1fr) auto;gap:.25rem 1rem;padding:.75rem 1rem;border:1px solid rgba(0,0,0,.12);border-radius:8px}.templates small{grid-column:1/-1;opacity:.75}.actions{justify-content:flex-end}.readonly{width:fit-content}@media(max-width:760px){.grid{grid-template-columns:1fr}.wide{grid-column:auto}.header-row>button,.actions button,.conflict button{width:100%}.conflict{align-items:flex-start;flex-wrap:wrap}.logo-actions{width:100%}.logo-actions button{flex:1}}
+    .tenant-card{margin-top:1.25rem;padding:1.25rem;min-width:0;max-width:100%;box-sizing:border-box}.state-diagnostic{flex-wrap:wrap;padding:1rem;border-radius:.75rem;border:1px solid rgba(0,0,0,.12);overflow-wrap:anywhere}.state-diagnostic span{flex:1 1 15rem}.state-diagnostic button{flex:0 1 auto}.saved-state{min-height:auto;justify-content:flex-start;flex-wrap:wrap;color:var(--color-success,#1b5e20);text-align:left;padding:.75rem 1rem;border:1px solid currentColor;border-radius:.75rem;margin:0}.header-row,.section-title,.actions,.mail-status,.conflict,.readonly,.logo-row,.logo-actions{display:flex;align-items:center;gap:.75rem}.header-row,.section-title{justify-content:space-between;flex-wrap:wrap}h2,h3{margin:0}.tenant-form{display:grid;gap:1rem}.hint{margin:.25rem 0;opacity:.78}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}.wide{grid-column:1/-1}.state{min-height:120px;display:flex;align-items:center;justify-content:center;gap:.75rem;text-align:center}.error,.conflict{color:var(--color-error,#b3261e)}.state.error{flex-wrap:wrap}.mail-status,.conflict,.readonly{padding:.75rem 1rem;border:1px solid rgba(0,0,0,.12);border-radius:8px}.mail-status.configured{color:#1b5e20}.logo-row{align-items:flex-start;flex-wrap:wrap}.tenant-logo,.logo-placeholder{width:120px;height:72px;border:1px solid rgba(0,0,0,.12);border-radius:8px;object-fit:contain;background:rgba(0,0,0,.02)}.logo-placeholder{display:grid;place-items:center}.logo-actions{flex-wrap:wrap}.templates{display:grid;gap:.5rem}.templates article{display:grid;grid-template-columns:minmax(140px,1fr) auto;gap:.25rem 1rem;padding:.75rem 1rem;border:1px solid rgba(0,0,0,.12);border-radius:8px}.templates small{grid-column:1/-1;opacity:.75}.actions{justify-content:flex-end}.readonly{width:fit-content}@media(max-width:760px){.grid{grid-template-columns:1fr}.wide{grid-column:auto}.header-row>button,.actions button,.conflict button{width:100%}.conflict{align-items:flex-start;flex-wrap:wrap}.logo-actions{width:100%}.logo-actions button{flex:1}}
   `]
 })
 export class EmpresaConfiguracionTenantCardComponent implements OnInit {
@@ -139,6 +159,9 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
 
   readonly empresaId = this.tenant.empresaIdVerificada;
   readonly loading = signal(false);
+  // M04.02: presentation states follow real HTTP outcomes; they never authorize access.
+  readonly loadState = signal<'ready' | 'empty' | 'forbidden' | 'session' | 'not-found' | 'throttled' | 'unavailable' | 'invalid'>('ready');
+  readonly lastSaved = signal(false);
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
   readonly conflict = signal(false);
@@ -179,6 +202,8 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
     const empresaId = this.empresaId();
     const generation = ++this.loadGeneration;
     this.loadedEmpresaId = empresaId ?? null;
+    this.loadState.set('ready');
+    this.lastSaved.set(false);
     if (!empresaId) {
       this.loading.set(false);
       this.error.set(null);
@@ -195,11 +220,25 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
     })).subscribe({
       next: res => {
         if (generation !== this.loadGeneration || empresaId !== this.empresaId()) return;
+        if (!res?.data) {
+          this.loadState.set('empty');
+          return;
+        }
+        if (res.data.empresaId !== empresaId) {
+          this.loadState.set('invalid');
+          return;
+        }
         this.aplicar(res.data, empresaId);
       },
       error: err => {
         if (generation !== this.loadGeneration || empresaId !== this.empresaId()) return;
-        this.error.set(err.error?.message ?? 'No se pudo cargar la configuración del tenant activo.');
+        // Never display backend error bodies or another tenant's data.
+        const status = Number(err?.status ?? 0);
+        this.loadState.set(status === 401 ? 'session'
+          : status === 403 ? 'forbidden'
+          : status === 404 ? 'not-found'
+          : status === 429 ? 'throttled'
+          : 'unavailable');
       }
     });
   }
@@ -211,6 +250,7 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
 
     const value = this.form.getRawValue();
     this.saving.set(true);
+    this.lastSaved.set(false);
     this.error.set(null);
     this.empresaService.updateTenant(empresaId, {
       nombre: value.nombre!.trim(),
@@ -226,7 +266,12 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
     }).pipe(finalize(() => this.saving.set(false))).subscribe({
       next: res => {
         if (empresaId !== this.empresaId()) return;
+        if (!res?.data || res.data.empresaId !== empresaId) {
+          this.loadState.set('invalid');
+          return;
+        }
         this.aplicar(res.data, empresaId);
+        this.lastSaved.set(true);
         this.snackBar.open('Configuración del tenant actualizada.', 'Cerrar', { duration: 4000 });
       },
       error: err => {
@@ -285,6 +330,7 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
       return;
     }
     this.loadedEmpresaId = expectedEmpresaId;
+    this.loadState.set('ready');
     this.version = config.version;
     this.correoConfigurado.set(config.correoConfigurado);
     this.logoUrl.set(config.logoUrl ?? null);

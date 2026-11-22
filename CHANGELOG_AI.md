@@ -1,3 +1,7 @@
+## 2026-11-22 — DEV05 V24 C01-03.M04.02: estados de carga, vacio, errores y permisos [Javier :40]
+- El card Angular de configuracion separa vacio 200, 403, 404, 429, fallo 5xx/red y respuesta cross-tenant invalida; no muestra formulario obsoleto ni cuerpo sensible del backend, y confirma exito despues de PUT valido.
+- Pruebas Chromium de presentacion con login JWT real, reintento al API real, cinco anchos y capturas; la suite A/B en MySQL 8.4 real es causal y no se sustituye por mocks UI. V17/CAS, A0-A5 y A5 independiente conservados.
+
 ## 2026-11-22 — DEV04 V24 C01-03.M04.05: Chromium responsive y foco real [Javier :30]
 - Incremento test-only en configuración dinámica privada: cinco anchos, Tab real, labels, capturas, control de overflow y CSS zoom de estrés con limitación expresa: NO certifica zoom nativo ni contraste WCAG.
 - Workflow GitHub-hosted .NET 10, Angular 22.2.1, JWT firmado A/B y MySQL 8.4 efímero, pruebas negativas y sin mocks de autorización; CI exact-SHA/A5 independiente pendientes, no declarar LISTO anticipado.
