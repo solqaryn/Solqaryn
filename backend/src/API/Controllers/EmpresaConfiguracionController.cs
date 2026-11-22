@@ -7,6 +7,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Hosting;
 using Solqaryn.Infrastructure.AutomationV5;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Solqaryn.API.Controllers;
 
@@ -15,25 +16,10 @@ namespace Solqaryn.API.Controllers;
 public class EmpresaConfiguracionController : ControllerBase
 {
     private readonly IEmpresaConfiguracionService _service;
-    private readonly C0103DurableTenantConfigurationAudit? _durable;
-    private readonly IWebHostEnvironment? _host;
-    private readonly IConfiguration? _config;
 
     public EmpresaConfiguracionController(IEmpresaConfiguracionService service)
     {
         _service = service;
-    }
-
-    // The original one-argument constructor stays valid for legacy callers.
-    public EmpresaConfiguracionController(
-        IEmpresaConfiguracionService service,
-        C0103DurableTenantConfigurationAudit durable,
-        IWebHostEnvironment host,
-        IConfiguration config) : this(service)
-    {
-        _durable = durable;
-        _host = host;
-        _config = config;
     }
 
     [HttpGet("publica")]
@@ -90,12 +76,18 @@ public class EmpresaConfiguracionController : ControllerBase
         var config = await _service.GetTenantAsync(empresaId, cancellationToken);
         // Existing [Authorize]+Configuracion.Ver route; only explicit DEV opt-in
         // writes a real scoped SQL audit before responding successfully.
-        if (_host?.IsDevelopment() == true &&
-            _config?.GetValue<bool>("AutomationV5:C0103:EnableDurableReadAudit") == true)
+        // Keep MVC constructor activation unique. Resolve this DEV-only
+        // opt-in service from the authenticated HTTP request scope instead.
+        var requestServices = HttpContext?.RequestServices;
+        var environment = requestServices?.GetService<IWebHostEnvironment>();
+        var settings = requestServices?.GetService<IConfiguration>();
+        if (environment?.IsDevelopment() == true &&
+            settings?.GetValue<bool>("AutomationV5:C0103:EnableDurableReadAudit") == true)
         {
-            if (_durable is null ||
-                !await _durable.TryRecordReadAsync(empresaId, config.Version,
-                    _config["AutomationV5:C0103:SourceSha"], cancellationToken))
+            var durable = requestServices!.GetService<C0103DurableTenantConfigurationAudit>();
+            if (durable is null ||
+                !await durable.TryRecordReadAsync(empresaId, config.Version,
+                    settings["AutomationV5:C0103:SourceSha"], cancellationToken))
                 return StatusCode(503, new { code = "CONFIG_AUDIT_NOT_DURABLE" });
         }
         return Ok(ApiResponse<ConfigEmpresaTenantDto>.Ok(config));

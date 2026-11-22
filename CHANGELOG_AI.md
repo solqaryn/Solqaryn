@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV04 V24 C01-03.M03.06: reparar activación MVC de auditoría durable [Javier :30]
+- Defecto P1 detectado: dos constructores públicos en EmpresaConfiguracionController; los tests JWT/MySQL previos usan ruta auxiliar TestServer y no comprobaban fábrica MVC real.
+- Reparación: constructor original único, resolución del adaptador desde request scope bajo Development opt-in, guard de ActivatorUtilities.CreateFactory en la misma prueba dirigida, sin cambiar filtros JWT/RBAC o sink SQL.
+- Publicación FF/CAS a dev; CI exact-SHA inicialmente pendiente, A5 correctiva sólo por Task distinta DEV04; H235 LISTO, I235 DEV01 y FAIL histórico intactos. No QA/main/PROD; rollback git revert.
+
 ## 2026-11-22 — DEV02 V24 C15-04.M05.04: reflujo Material y rechazo global autenticado [Javier :10]
 - Run 45038219152/job137256587067 confirmó 134/137 Playwright reales PASS; A0.69 339px/320px a texto 200% y dos A0.81 fallan por esperar formulario anónimo cuando JWT B sigue válido. Reparación CSS de acciones Material con reflujo sin ocultar overflow y prueba R2 de denegación global con alerta+selector JWT, URL estable y no navegación automática a ERP. Diagnóstico DOM agregado al gate responsive para nueva evidencia si persistiera un desborde.
 - Nuevo GitHub-hosted exact-SHA pendiente, no PASS inferido; siguen EN_PROGRESO el ID y lock V17 propio 2000002297; cobertura 160 rutas, WCAG y CWV de campo aún incompletas, A5 independiente pendiente, ninguna promoción a QA/main/PROD.

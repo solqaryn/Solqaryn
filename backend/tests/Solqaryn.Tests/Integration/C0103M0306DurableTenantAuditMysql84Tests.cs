@@ -69,6 +69,15 @@ public sealed class C0103M0306DurableTenantAuditMysql84Tests
     [Fact]
     public async Task SignedJwtTenantABMembershipRevocationAndDurableMysqlReadback()
     {
+        // Regression against ambiguous MVC controller constructors: the
+        // real controller must be factory-activatable in every environment.
+        var mvcFactory = ActivatorUtilities.CreateFactory(
+            typeof(Solqaryn.API.Controllers.EmpresaConfiguracionController),
+            Type.EmptyTypes);
+        Assert.NotNull(mvcFactory);
+        Assert.Single(typeof(Solqaryn.API.Controllers.EmpresaConfiguracionController)
+            .GetConstructors());
+
         var raw = Environment.GetEnvironmentVariable("ConnectionStrings__DefaultConnection")
             ?? throw new InvalidOperationException("EPHEMERAL_MYSQL84_REQUIRED");
         var root = new MySqlConnectionStringBuilder(raw);
