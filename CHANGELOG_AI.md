@@ -1,3 +1,8 @@
+## 2026-11-21 — DEV01 V23 C07-01.M06.06 corrige bootstrap MySQL 8.4 en CI global
+- Evidencia: GitHub-hosted run 44974571372/job 137061542203, Category=Integration TRX 151: 149 PASS, 2 FAIL; el test C0402M0306DurableAuditMysql84Tests fallo porque `c0402_m0306_bootstrap` no existia al abrir la conexion administrativa.
+- Reparacion R2 minimal de `.github/workflows/dev-ci.yml`: conexion C0402_M0306_MYSQL_TEST al esquema existente `solqaryn_ci` del mysql:8.4 efimero; el propio test sigue creando, usando y borrando una base unica por GUID. No se salta ni desactiva ningun test, no se cambia runtime, JWT, RBAC, DI, secretos ni produccion.
+- CI del nuevo SHA pendiente (NO PASS): verificar global Integration TRX con 0 FAIL/0 SKIP, Scope Lock, V5, backend y seguridad. Otro fallo de asercion signed-JWT C0402 recibio reparacion posterior por DEV03/DEV04 y requiere prueba global nueva. C07-01.M06.06 sigue EN_PROGRESO con lock DEV01 V17; faltan positivos HTTP/Angular de catalogo, auditoria integral y A5 de Task distinta. No QA/main/PROD; rollback normal git revert.
+
 ## 2026-11-21 — DEV05 V23 C01-04.M03.06 CI MySQL 8.4 dirigida y verificable
 - Reparacion R2 de prueba causal: el job Integration general 149/149 PASS del SHA 98a56a53 no enumeraba el caso C01-04; nuevo workflow GitHub-hosted con filtro exacto de clase, TRX 1/1 estricto, nombre de prueba verificado y servicio MySQL 8.4 efimero.
 - Alcance solo CI y documentacion; no altera runtime, JWT/RBAC, SQL comercial ni infraestructura productiva. A0-A4 siguen incompletas por ausencia de lector de expediente autentico y binding persistente; H=VALIDANDO, owner DEV05 y A5 independiente pendiente.

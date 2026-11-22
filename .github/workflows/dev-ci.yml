@@ -173,7 +173,7 @@ jobs:
       C0104_M0306_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
       # V23 DEV01 R2: required global Category=Integration includes C04-02.M03.06 durable audit.
       # Use only the disposable mysql:8.4 container; fail-closed tests remain enabled.
-      C0402_M0306_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=c0402_m0306_bootstrap;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+      C0402_M0306_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
       C0401_M0304_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_c1502_m0503;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
       C0701_M0303_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
       C0701_M0306_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_c0701_audit;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
