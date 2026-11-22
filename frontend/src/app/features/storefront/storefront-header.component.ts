@@ -1,4 +1,5 @@
 
+import { DOCUMENT } from '@angular/common';
 import {
   ChangeDetectionStrategy,
   Component,
@@ -27,6 +28,7 @@ import { IconoTiendaComponent } from './storefront.visual';
 })
 export class StorefrontHeaderComponent {
   readonly identidad = inject(StorefrontIdentidadService);
+  private readonly document = inject(DOCUMENT);
 
   @Input() busqueda = '';
   @Input() categorias: readonly string[] = [];
@@ -63,6 +65,20 @@ export class StorefrontHeaderComponent {
     categorias: STOREFRONT_PATHS.categorias,
     contacto: `${STOREFRONT_PATHS.inicio}#contacto`
   } as const;
+
+  // V23 A1.00: RouterLink actualiza el fragmento; dar tambien foco real a <main>.
+  activarSalto(evento: MouseEvent): void {
+    if (evento.button !== 0 || evento.altKey || evento.ctrlKey || evento.metaKey || evento.shiftKey) return;
+    if (!/^#[A-Za-z][\w:-]*$/.test(this.destinoSaltar)) return;
+    const id = this.destinoSaltar.slice(1);
+    this.document.defaultView?.requestAnimationFrame(() => {
+      const destino = this.document.getElementById(id);
+      if (!destino || destino.tagName !== 'MAIN' || destino.getAttribute('tabindex') !== '-1') return;
+      const principal = destino as HTMLElement;
+      principal.focus({ preventScroll: true });
+      principal.scrollIntoView({ block: 'start', behavior: 'auto' });
+    });
+  }
 
   actualizarBusqueda(texto: string): void {
     this.busquedaActualizada.emit(texto);

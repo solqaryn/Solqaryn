@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV02 V23 C15-04.M05.04 A1.00: foco real en skip-link Angular
+- CI del SHA 2c6cab61 falló: Chromium job137159260172 detectó enlace Tab+Enter con hash correcto pero sin foco real en main#catalogo-productos; no se rebajó la prueba.
+- Corregido StorefrontHeaderComponent para enfocar main tabindex=-1 tras activación primaria de RouterLink, sin alterar JWT/RBAC/tenants ni API; workflow V23 incluye rutas HTML/TS para ejecutar regresión Chromium del cambio runtime.
+- Esperar CI Angular, Scope Lock, V5 y Chromium exact-SHA completos antes de acreditar el incremento; conservar EN_PROGRESO DEV02, lock V17 2000002297, global A0-A4 y A5 pendiente. No QA/main/PROD; rollback revert normal.
+
 ## 2026-11-22 - DEV01 V23 C07-01.M06.06: categoria de B valida en negativo IDOR
 - GitHub-hosted CI del SHA 4e8f045a confirmo HTTP 400 no 404 en PUT B->producto A: job137156086590 y MySQL global job137156158607 (151 PASS/1 FAIL).
 - Nueva hipotesis R2: un JWT B enviaba CategoriaId de A; usar categoria B consultada de MySQL 8.4, mantener 404 obligatorio, roles y aislamiento y readback de ausencia de escrituras.

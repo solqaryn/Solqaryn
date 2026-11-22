@@ -4,6 +4,8 @@ on:
     branches: [dev]
     paths:
       - 'frontend/e2e/c15-04-m05-04-global-ux.spec.ts'
+      - 'frontend/src/app/features/storefront/storefront-header.component.ts'
+      - 'frontend/src/app/features/storefront/storefront-header.component.html'
       - '.github/workflows/v19-c15-04-m05-04-global-ux.yml'
   workflow_dispatch:
 permissions:
