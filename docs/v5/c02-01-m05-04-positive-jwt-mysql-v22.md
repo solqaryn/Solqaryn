@@ -82,3 +82,9 @@ La prueba xUnit de integración ya existente añade un endpoint **solo de TestSe
 La fuente C0201M0504CurrentMembershipSqlReader relee ICurrentUserService.EstaAutenticado y UsuarioId despues de consultar membresias y tras enumerarlas: ante un cambio de identidad durante await devuelve null sin proponer empresa. El caso adversarial usa MySQL 8.4 efimero para comprobar existencia real del actor A y un proveedor scope de prueba que cambia el actor y entrega empresa B; Assert.Null detecta el defecto previo.
 
 LIMITACION NO CERTIFICADA: no implementa preferencia durable por usuario, reemision JWT backend ni navegacion Angular/Chromium. C02-01.M05.04 conserva VALIDANDO y owner DEV03; A0-A4 restantes y A5 independiente siguen pendientes. Rollback con git revert, sin migraciones, cambio de API, QA/main/PROD ni datos productivos.
+ 
+## V23 DEV03 - revocacion de actor durante espera de membresias (R2)
+
+Hipotesis P2 distinta: el primer lookup Oracle EF confirma un usuario activo, pero ListarEmpresasSeleccionablesAsync puede revocar su cuenta antes de devolver una membresia valida. El lector relee Usuario.Activo/Bloqueado/Eliminado y revalida identidad y cancelacion antes de devolver TrustedSnapshot. Si el usuario perdio autoridad, deniega con null.
+
+La regresion dirigida modifica de verdad Usuario.Activo=false en MySQL 8.4 efimero dentro del await, exige snapshot nulo y reactiva solamente ese actor en la base temporal para que las pruebas JWT/HTTP positivas sigan. No convierte esta comprobacion en JWT reemitido, preferencia durable, DI de produccion ni flujo Angular/Chromium: H VALIDANDO, I DEV03, A5 independiente pendiente. CI requerida exact-SHA debe terminar SUCCESS; pendiente al publicar. Rollback mediante git revert normal, sin QA/main/PROD.

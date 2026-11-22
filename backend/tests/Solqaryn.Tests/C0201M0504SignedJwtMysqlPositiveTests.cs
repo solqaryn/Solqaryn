@@ -91,6 +91,27 @@ public sealed class C0201M0504SignedJwtMysqlPositiveTests
         }
     }
 
+    // Real disposable MySQL revocation after the initial active-user check.
+    private sealed class RevokingSqlScope(
+        AppDbContext database, int actorId, EmpresaSeleccionable candidate)
+        : IUsuarioScopeService
+    {
+        public Task<UsuarioScopeActual?> ObtenerActualAsync() =>
+            Task.FromResult<UsuarioScopeActual?>(null);
+
+        public async Task<IReadOnlyList<EmpresaSeleccionable>>
+            ListarEmpresasSeleccionablesAsync(
+                CancellationToken cancellationToken = default)
+        {
+            var actor = await database.Usuarios.SingleAsync(
+                u => u.Id == actorId, cancellationToken);
+            actor.Activo = false;
+            await database.SaveChangesAsync(cancellationToken);
+            database.ChangeTracker.Clear();
+            return [candidate];
+        }
+    }
+
     private static async Task<(string Code, int? TenantId)> ReadSqlPolicyOverJwtAsync(
         HttpClient client)
     {
@@ -171,6 +192,21 @@ public sealed class C0201M0504SignedJwtMysqlPositiveTests
                 CancellationToken.None);
             Assert.Null(crossActorSnapshot);
             Assert.Equal(user.Id + 100000, mutableActor.UsuarioId);
+
+            // A scope may return a valid tenant after the actor was revoked.
+            // The second real EF/MySQL read must now deny the entire snapshot.
+            var revokedReader = new C0201M0504CurrentMembershipSqlReader(
+                db, new MutableProbeCurrentUser(user.Id),
+                new RevokingSqlScope(db, user.Id,
+                    new EmpresaSeleccionable(a.Id, a.Nombre)));
+            Assert.Null(await revokedReader.ReadCurrentAsync(
+                CancellationToken.None));
+            var reactivated = await db.Usuarios.SingleAsync(
+                u => u.Id == user.Id);
+            Assert.False(reactivated.Activo);
+            reactivated.Activo = true;
+            await db.SaveChangesAsync();
+            db.ChangeTracker.Clear();
 
             using var host = await new HostBuilder()
                 .ConfigureWebHost(web => web.UseTestServer()

@@ -1,3 +1,8 @@
+## 2026-11-22 - DEV03 V23 C02-01.M05.04 SQL rechaza actor revocado entre awaits
+- Reparacion R2 del lector de membresias: tras I/O del servicio de scope se consulta nuevamente Usuario activo, no bloqueado ni eliminado, y se revalida principal/cancelacion antes de proponer tenant.
+- Regresion de MySQL 8.4 efimero modifica de verdad Usuario.Activo=false entre consultas; requiere TrustedSnapshot null, restaurando solo la fila disposable para continuar JWT firmado/HTTP. GitHub-hosted exact-SHA inicialmente pendiente.
+- C02-01.M05.04 sigue VALIDANDO con owner DEV03; faltan preferencia durable, reemision JWT y navegacion Angular real, A5 por otra Task. No QA/main/PROD; revert normal para rollback.
+
 ## 2026-11-22 — DEV02 V23 C15-04.M05.04 A0.98: skip-link con Enter real a 200% CSS
 - Ampliación test-only: quince verificaciones de activación real mediante Tab y Enter en ofertas, carrito y cuenta a anchos 320/390/768/1280/1440 con raíz CSS 200%; validar pathname/hash, main destinatario y tabindex, geometría y cero HTTP mutante. Detecta anclas rotas que la anterior comprobación de foco no detectaba.
 - CI GitHub-hosted, Scope Lock, V5 y capturas A097 del SHA causal deben completarse SUCCESS; no inventar PASS, JWT/RBAC, WCAG general ni mediciones RUM de campo. Persisten EN_PROGRESO/DEV02/V17 lock 2000002297, A0-A4 global parcial, A5 ajena pendiente y límites dev/STRICT.

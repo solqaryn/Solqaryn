@@ -71,6 +71,18 @@ public sealed class C0201M0504CurrentMembershipSqlReader(
         if (!currentUser.EstaAutenticado || currentUser.UsuarioId != actorId)
             return null;
 
+        // A current user can lose authority while membership SQL is awaited.
+        // Revalidate the actor in the same database before returning a proposal.
+        // This does not pretend that JWT reissue is atomic.
+        var stillActive = await database.Usuarios.AsNoTracking().AnyAsync(
+            user => user.Id == actorId && user.Activo &&
+                    !user.Bloqueado && !user.Eliminado,
+            cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
+        if (!stillActive || !currentUser.EstaAutenticado ||
+            currentUser.UsuarioId != actorId)
+            return null;
+
         // No persisted last-tenant preference or active session reissue is
         // available from this read-only reader. Never fabricate either.
         return new Gate.TrustedSnapshot(
