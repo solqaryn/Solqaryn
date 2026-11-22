@@ -20,6 +20,7 @@ using Solqaryn.Application.AutomationV5;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
+using Solqaryn.Infrastructure.AutomationV5;
 using Solqaryn.Infrastructure.Persistence;
 using Solqaryn.Infrastructure.Services;
 using Xunit;
@@ -60,6 +61,20 @@ public sealed class C0201M0504SignedJwtMysqlPositiveTests
             return ValueTask.FromResult<
                 V17IntelligentTenantLoginAuthorization.TrustedSnapshot?>(snapshot);
         }
+    }
+
+    private static async Task<(string Code, int? TenantId)> ReadSqlPolicyOverJwtAsync(
+        HttpClient client)
+    {
+        using var response = await client.GetAsync("/test-only/c0201-m0504/sql-decision");
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        var root = json.RootElement;
+        Assert.False(root.GetProperty("issuesJwt").GetBoolean());
+        Assert.False(root.GetProperty("authorizesResourceAccess").GetBoolean());
+        var tenant = root.GetProperty("proposedTenantId");
+        return (root.GetProperty("code").GetString()!,
+            tenant.ValueKind == JsonValueKind.Null ? null : tenant.GetInt32());
     }
 
     [Fact]
@@ -127,6 +142,8 @@ public sealed class C0201M0504SignedJwtMysqlPositiveTests
                         services.AddHttpContextAccessor();
                         services.AddScoped<ICurrentUserService, VerifiedHttpCurrentUser>();
                         services.AddScoped<IUsuarioScopeService, UsuarioScopeService>();
+                        services.AddScoped<ITrustedTenantLoginAuthorityReader,
+                            C0201M0504CurrentMembershipSqlReader>();
                         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                             .AddJwtBearer(o => o.TokenValidationParameters =
                                 new TokenValidationParameters
@@ -146,10 +163,31 @@ public sealed class C0201M0504SignedJwtMysqlPositiveTests
                         app.UseRouting();
                         app.UseAuthentication();
                         app.UseAuthorization();
-                        app.UseEndpoints(routes => routes.MapControllers());
+                        app.UseEndpoints(routes =>
+                        {
+                            routes.MapControllers();
+                            routes.MapGet("/test-only/c0201-m0504/sql-decision", async context =>
+                            {
+                                var reader = context.RequestServices
+                                    .GetRequiredService<ITrustedTenantLoginAuthorityReader>();
+                                var result = await new V17IntelligentTenantLoginAuthorization(reader)
+                                    .ResolveAsync(new(), context.RequestAborted);
+                                await context.Response.WriteAsJsonAsync(new
+                                {
+                                    result.Code, result.ProposedTenantId,
+                                    result.IssuesJwt, result.AuthorizesResourceAccess
+                                });
+                            }).RequireAuthorization();
+                        });
                     }))
                 .StartAsync();
             using var client = host.GetTestClient();
+
+            // The isolated probe exists only in this TestServer, not production.
+            // It is JWT-authorized and calls a REAL SQL-backed current-reader.
+            using (var unsignedProbe = await client.GetAsync(
+                "/test-only/c0201-m0504/sql-decision"))
+                Assert.Equal(HttpStatusCode.Unauthorized, unsignedProbe.StatusCode);
 
             // Anonymous and a tampered signature never reach tenant membership.
             using (var anonymous = await client.GetAsync("/tenant-context/empresas"))
@@ -189,6 +227,10 @@ public sealed class C0201M0504SignedJwtMysqlPositiveTests
                 Assert.Contains(valid, tenant => tenant.GetProperty("empresaId").GetInt32() == a.Id);
                 Assert.Contains(valid, tenant => tenant.GetProperty("empresaId").GetInt32() == b.Id);
             }
+            var twoSql = await ReadSqlPolicyOverJwtAsync(client);
+            Assert.Equal("SELECT_VERIFIED_TENANT", twoSql.Code);
+            Assert.Null(twoSql.TenantId); // Two SQL memberships => no silent switch.
+
             using (var validB = await client.GetAsync("/tenant-context/" + b.Id))
             {
                 Assert.Equal(HttpStatusCode.OK, validB.StatusCode);
@@ -219,6 +261,11 @@ public sealed class C0201M0504SignedJwtMysqlPositiveTests
             using (var foreignActor = await client.GetAsync("/tenant-context/" + a.Id))
                 Assert.Equal(HttpStatusCode.Forbidden, foreignActor.StatusCode);
 
+            var foreignSql = await ReadSqlPolicyOverJwtAsync(client);
+            Assert.Equal("AUTHENTICATED_CURRENT_MEMBERSHIPS_REQUIRED",
+                foreignSql.Code);
+            Assert.Null(foreignSql.TenantId);
+
             client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", signed);
             var memberB = await db.UsuarioEmpresas.SingleAsync(m =>
@@ -241,6 +288,10 @@ public sealed class C0201M0504SignedJwtMysqlPositiveTests
                 Assert.Single(data);
                 Assert.Equal(a.Id, data[0].GetProperty("empresaId").GetInt32());
             }
+            var oneSql = await ReadSqlPolicyOverJwtAsync(client);
+            Assert.Equal("ONE_TENANT_REISSUE_REQUIRED", oneSql.Code);
+            Assert.Equal(a.Id, oneSql.TenantId);
+
             // After B is revoked in real MySQL, only A remains eligible.
             // A fresh tenant snapshot must require backend reissue, not install
             // a client-side context or bypass navigation guards.
@@ -292,6 +343,10 @@ public sealed class C0201M0504SignedJwtMysqlPositiveTests
             db.ChangeTracker.Clear();
             using (var stolenRole = await client.GetAsync("/tenant-context/" + a.Id))
                 Assert.Equal(HttpStatusCode.Forbidden, stolenRole.StatusCode);
+
+            var revokedRoleSql = await ReadSqlPolicyOverJwtAsync(client);
+            Assert.Equal("NO_AUTHORIZED_ENTERPRISE", revokedRoleSql.Code);
+            Assert.Null(revokedRoleSql.TenantId);
 
             // The real Application preference policy rejects a different user's
             // preference. This is synthetic evidence, NOT live preference SQL.

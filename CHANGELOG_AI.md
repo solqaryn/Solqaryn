@@ -1,3 +1,8 @@
+## 2026-11-21 — DEV03 V23 C02-01.M05.04 lector SQL JWT para auto-resolucion real
+- Incremento R2: lector Infrastructure de membresia real mediante ICurrentUserService validado, UsuarioScopeService y EF/MySQL; sin JWT reemitido, grants ni DI productivo.
+- TestServer JWT firmado + MySQL 8.4 efimero: 401 sin token, dos empresas sin auto-switch, revocacion B -> A, actor ajeno y rol cruzado denegados; workflow dirigido y TRX causal por SHA.
+- H=VALIDANDO, owner DEV03 conservado; faltan preferencia durable SQL, reemision de JWT y navegacion Angular real. A0-A4 completo/A5/LISTO NO certificados. V17 exclusivo, rollback normal y sin QA/main/PROD.
+
 ## 2026-11-21 — DEV02 V23 A0.96 reflow de enlaces de seccion en storefront
 - CI previa d64ec953 run 44984638913/job 137092415875 FAILURE (27/28): 320px + raiz CSS 200%, enlace de seccion /tienda x=169..449; A0.95 de login no resolvio la causa.
 - Reparacion real: layout de secciones movil en columna, enlace con reflow sin ocultar scroll; regresion Playwright nueva de dos enlaces a 320/390 y noOverflow 320/390/768/1280/1440.
