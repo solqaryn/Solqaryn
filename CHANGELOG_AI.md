@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV01 V24 C07-01.M06.06: rollback SQL A/B con JWT Chromium
+- Prueba R2 real de GitHub-hosted sobre Angular, JWT firmado, ASP.NET 10 y Oracle EF/MySQL 8.4 efímero: revocar A no impide autenticación ni catálogo B, sin exposición de producto A.
+- Snapshot físico SQL exige cero cambios en nombre, cantidad y precio de ambos productos antes/durante/después; membresía A restituida en finally, sin mocks ni modificación de runtime.
+- Antes: CI dirigida d539a23a 5/5 PASS; aceptación global 1/100 FAIL por auditoría de contraste oscuro (3 elementos frente a mínimo 4), no PASS. Nuevo SHA pendiente de checks exactos; EN_PROGRESO DEV01, candado V17 conservado, ERP/variantes pendiente y A5 independiente después. Sin QA/main/PROD.
+
 ## 2026-11-22 — DEV06 V24 reparación causal de contraste C01-03.M04.05 [Javier :50]
 - Se detectó límite A1 previo CONTRASTE_WCAG_NUMÉRICO_NO_MEDIDO en prueba real Playwright; se añadió cálculo WCAG desde colores y fondos reales de Chromium (A/B) con 4.5:1 en encabezado, ayuda y enlace; pares iguales versus negro/blanco ejercitan controles adversariales.
 - Riesgo R2 test-only: sin cambios de runtime, grants, API ni MySQL productivo; Scope Lock STRICT, UI SKREF-03/10 leídas en pins originales, CI exact-SHA todavía por verificar y sin LISTO/A5 ni desbloqueo DAG ficticio.

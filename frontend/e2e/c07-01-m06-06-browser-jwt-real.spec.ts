@@ -166,6 +166,22 @@ test.describe('C07-01.M06.06 navegador real y aislamiento A/B', () => {
       ['ps', '--filter', 'ancestor=mysql:8.4', '--format', '{{.ID}}'],
       { encoding: 'utf8' }).trim().split(/\r?\n/)[0];
     expect(mysqlContainer, 'Contenedor efímero MySQL 8.4').toMatch(/^[0-9a-f]{12,64}$/);
+    const snapshotProducts = () => {
+      // Readback fisico del contenedor exclusivo de CI: sin mocks ni datos externos.
+      const sql = "SELECT CONCAT(EmpresaId,'|',Nombre,'|'," +
+        "COALESCE(CAST(Cantidad AS CHAR),'NULL'),'|',COALESCE(CAST(Precio AS CHAR),'NULL')) " +
+        "FROM Productos WHERE (EmpresaId=1 AND Nombre='C0701BrowserTenantA') " +
+        "OR (EmpresaId=2 AND Nombre='C0701BrowserTenantB') ORDER BY EmpresaId;";
+      const rows = execFileSync('docker', [
+        'exec', '-i', mysqlContainer!, 'mysql', '-uroot', '-proot',
+        'solqaryn_c1504_real_ci', '-Nse', sql
+      ], { encoding: 'utf8' }).trim().split(/\r?\n/);
+      expect(rows, 'Dos productos SQL reales A/B').toHaveLength(2);
+      expect(rows[0]).toMatch(/^1\|C0701BrowserTenantA\|/);
+      expect(rows[1]).toMatch(/^2\|C0701BrowserTenantB\|/);
+      return rows;
+    };
+    const beforeRevocation = snapshotProducts();
     const setMembership = (active: 0 | 1) => {
       const sql = 'UPDATE UsuarioEmpresas ue JOIN Usuarios u ON u.Id=ue.UsuarioId ' +
         'SET ue.Activa=' + active + ',ue.FechaActualizacion=UTC_TIMESTAMP(6) ' +
@@ -184,6 +200,23 @@ test.describe('C07-01.M06.06 navegador real y aislamiento A/B', () => {
       const denied = await request.get(api + '/productos?page=1&pageSize=10', { headers });
       expect([401, 403, 404, 503], 'El JWT emitido antes no autoriza el catálogo').toContain(denied.status());
       expect(await denied.text(), 'Denegación sin producto A').not.toContain('C0701BrowserTenantA');
+      // La revocacion A no afecta el login, catalogo ni filas de B.
+      const loginB = await request.post(api + '/auth/login', {
+        data: { nombreUsuario: 'c1504_admin_b', password }
+      });
+      expect(loginB.status()).toBe(200);
+      const tokenB = (await loginB.json())?.data?.token;
+      expect(typeof tokenB).toBe('string');
+      const catalogB = await request.get(api + '/productos?page=1&pageSize=10', {
+        headers: { Authorization: 'Bearer ' + tokenB, 'X-Empresa-Id': '2' }
+      });
+      expect(catalogB.status(), 'Tenant B permanece independiente').toBe(200);
+      const bData = await catalogB.json();
+      const bNames = bData?.data?.items?.map((p: { nombre?: string }) => p.nombre);
+      expect(bNames).toContain('C0701BrowserTenantB');
+      expect(bNames).not.toContain('C0701BrowserTenantA');
+      expect(snapshotProducts(), 'Revocacion A no cambia filas, precios ni cantidad A/B')
+        .toEqual(beforeRevocation);
       const deniedTenant = page.waitForResponse((r) =>
         isBackendResponse(r.url(), '/tenant-context/1') && r.request().method() === 'GET');
       await page.reload();
@@ -193,6 +226,7 @@ test.describe('C07-01.M06.06 navegador real y aislamiento A/B', () => {
       await expect(page.locator('.catalog-success')).toHaveCount(0);
     } finally {
       setMembership(1); // Restaurar incluso si la prueba adversarial falla.
+      expect(snapshotProducts(), 'Rollback de membresia conserva productos A/B').toEqual(beforeRevocation);
     }
     const restored = await request.get(api + '/productos?page=1&pageSize=10', { headers });
     expect(restored.status(), 'Membresía CI restaurada con el mismo JWT').toBe(200);
