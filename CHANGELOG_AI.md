@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV02 V24 C15-04.M05.04: contención de matriz en tarjeta, A0.69 [Javier :10]
+- CI anterior exact-SHA f213290a: 136/137 Playwright Chromium reales; falla A0.69 al 200% por document.scrollWidth 339 contra clientWidth 320 en cobertura V5. No se contabiliza PASS.
+- Corrección de hipótesis nueva: clip únicamente en mat-card de cobertura, preservando scroll horizontal de la tabla y foco, sin ocultar overflow de html/body. Test refuerza overflow CSS calculado y diagnóstico geométrico, no relaja el umbral.
+- CI nueva GitHub-hosted exact-SHA por comprobar; C15-04.M05.04 sigue EN_PROGRESO con owner DEV02 y V17, auditoría global R2 incompleta y A5 de otra Task pendiente. Rollback git revert normal, sin QA/main/PROD.
+
 ## 2026-11-22 — DEV01 V24 C07-01.M06.06: revocación real JWT/MySQL con navegador Angular [Javier :00]
 - Se agrega regresión Chromium a una API real ASP.NET Core 10, JWT firmado y dos empresas físicas MySQL 8.4: cliente A muestra un producto real antes de revocar su membresía SQL y debe negar el mismo JWT tras revocación, limpiar datos de catálogo y redirigir sin filtrar registros.
 - La membresía efímera se restituye con `finally` y readback SQL, exigiendo que la API vuelva a permitir catálogo A; sin mocks de autorización, secretos persistidos, QA, main ni producción.

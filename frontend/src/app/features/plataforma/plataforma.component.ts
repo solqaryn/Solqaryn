@@ -131,7 +131,7 @@ import { C1404ReleaseBrandingV17Component } from './c14-04-m04-03-release-brandi
           </mat-card>
 
         } @else if (vistaCoberturaV5) {
-          <mat-card class="v5-card" [class.v5-coverage-contrast]="contrasteCobertura()" aria-labelledby="cobertura-v5-title">
+          <mat-card class="v5-card v5-card--coverage" [class.v5-coverage-contrast]="contrasteCobertura()" aria-labelledby="cobertura-v5-title">
             <mat-card-content>
               <div class="v5-overview">
                 <div>
@@ -339,6 +339,9 @@ import { C1404ReleaseBrandingV17Component } from './c14-04-m04-03-release-brandi
     .pending { color: #955500; }
     .available { color: #22693d; }
     .v5-card { box-sizing: border-box; width: 100%; min-width: 0; max-width: 100%; }
+    /* Matriz ancha: la tarjeta recorta solo el exceso de su propio borde;
+       la region .v5-coverage-scroll mantiene scroll horizontal navegable. */
+    .v5-card--coverage { overflow-x: clip; }
     .v5-card mat-card-content { box-sizing: border-box; width: 100%; max-width: 100%; min-width: 0; padding: clamp(18px, 3vw, 32px); }
     .v5-feedback { margin: 0 0 18px; padding: 14px 18px; border: 1px solid #dfe5ec; border-radius: 12px; }
     .v5-feedback p { margin: 4px 0; }

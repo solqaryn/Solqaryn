@@ -2215,12 +2215,26 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
             excedentes
           };
         });
+        const diagnostico = dimensiones.contenido > dimensiones.viewport + 2
+          ? await page.evaluate(() => ({
+              html: document.documentElement.scrollWidth,
+              body: document.body.scrollWidth,
+              main: document.querySelector('main')?.scrollWidth,
+              tarjeta: document.querySelector('.v5-card--coverage')?.getBoundingClientRect().right,
+              region: document.querySelector('.v5-coverage-scroll')?.getBoundingClientRect().right
+            })) : null;
         expect(dimensiones.contenido,
           'reflujo sin scroll lateral a 200%: ' + ruta + ' ' + width +
-          ' elementos_desbordados=' + JSON.stringify(dimensiones.excedentes))
+          ' elementos_desbordados=' + JSON.stringify(dimensiones.excedentes) +
+          ' limites=' + JSON.stringify(diagnostico))
           .toBeLessThanOrEqual(dimensiones.viewport + 2);
         if (ruta === '/plataforma/cobertura-v5' && width <= 390) {
           const zona = page.locator('.v5-coverage-scroll');
+          const recorte = await page.locator('.v5-card--coverage')
+            .evaluate(el => getComputedStyle(el).overflowX);
+          expect(recorte, 'recorte solo en tarjeta, no sobre el body').toBe('clip');
+          expect(await zona.evaluate(el => getComputedStyle(el).overflowX),
+            'tabla ancha sigue con desplazamiento horizontal propio').toBe('auto');
           const caja = await zona.evaluate(el => {
             const b = el.getBoundingClientRect();
             return {
