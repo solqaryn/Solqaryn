@@ -1,4 +1,7 @@
-import { ChangeDetectionStrategy, Component } from '@angular/core';
+import { ChangeDetectionStrategy, Component, effect, inject, signal } from '@angular/core';
+import { TenantContextService } from '../../core/auth/tenant-context.service';
+import { EmpresaConfiguracionService } from '../../services/empresa-configuracion.service';
+import { c0201NombreBrandingSeguro } from '../../services/empresa-identidad.service';
 import { RouterLink } from '@angular/router';
 import { EmpresaConfiguracionTenantCardComponent } from './empresa-configuracion-tenant-card.component';
 
@@ -19,6 +22,9 @@ import { EmpresaConfiguracionTenantCardComponent } from './empresa-configuracion
         <div class="intro">
           <div>
             <p class="eyebrow">Empresa activa</p>
+            @if (marcaTenant()) {
+              <span class="verified-brand" data-testid="c0103-verified-brand" aria-label="Marca verificada de la empresa">{{ marcaTenant() }}</span>
+            }
             <h1>Configuración dinámica</h1>
             <p class="lead" id="c0103-configuracion-descripcion">
               Consulta y edita los parámetros disponibles de la empresa verificada.
@@ -42,6 +48,7 @@ import { EmpresaConfiguracionTenantCardComponent } from './empresa-configuracion
     :host { display:block; min-width:0; width:100%; }
     .settings-surface { box-sizing:border-box; width:100%; min-width:0; max-width:1040px; margin-inline:auto; padding:clamp(12px,2.4vw,32px); overflow-wrap:anywhere; }
     .surface-header { margin-bottom:24px; }
+    .verified-brand { display:inline-flex; max-width:100%; min-width:0; padding:5px 12px; margin:4px 0 8px; border:1px solid var(--color-border,#d8e2ec); border-radius:999px; color:var(--color-text,#243040); background:var(--color-surface,#fff); font-size:.875rem; line-height:1.5; font-weight:700; overflow-wrap:anywhere; }
     nav { display:flex; flex-wrap:wrap; align-items:center; gap:8px; font-size:.875rem; color:var(--text-secondary,#52606d); }
     a { color:var(--color-primary,#185abc); text-underline-offset:3px; }
     a:focus-visible { outline:3px solid currentColor; outline-offset:3px; border-radius:4px; }
@@ -55,4 +62,36 @@ import { EmpresaConfiguracionTenantCardComponent } from './empresa-configuracion
     @media (max-width:390px) { .settings-surface { padding:12px; } .intro { align-items:flex-start; } }
   `]
 })
-export class C0103ConfiguracionDinamicaPageComponent {}
+export class C0103ConfiguracionDinamicaPageComponent {
+  private readonly tenant = inject(TenantContextService);
+  private readonly empresa = inject(EmpresaConfiguracionService);
+  readonly marcaTenant = signal<string | null>(null);
+  private generation = 0;
+
+  // Never trust URL/localStorage for branding, only current backend JWT/RBAC.
+  // On tenant switch, invalidate A before any delayed A response can paint B.
+  private readonly tenantWatcher = effect(onCleanup => {
+    const empresaId = this.tenant.empresaIdVerificada();
+    const generation = ++this.generation;
+    this.marcaTenant.set(null);
+    if (!empresaId) return;
+    const request = this.empresa.getTenant(empresaId).subscribe({
+      next: response => {
+        if (generation !== this.generation ||
+            empresaId !== this.tenant.empresaIdVerificada()) return;
+        const validName = response?.success === true &&
+          response?.data?.empresaId === empresaId
+            ? c0201NombreBrandingSeguro(response.data.nombre) : null;
+        this.marcaTenant.set(validName);
+      },
+      error: () => {
+        if (generation === this.generation &&
+            empresaId === this.tenant.empresaIdVerificada()) this.marcaTenant.set(null);
+      }
+    });
+    onCleanup(() => {
+      request.unsubscribe();
+      if (generation === this.generation) ++this.generation;
+    });
+  });
+}

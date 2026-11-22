@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV04 V24 C01-03.M04.03: identidad visual real por tenant [Javier :30]
+- Angular muestra marca de empresa desde GET autenticado para tenant verificado y la valida/sanea; limpia y cancela respuestas tardías de A antes de B, sin confiar en localStorage, cabeceras o HTML/CSS externo.
+- GitHub-hosted con JWT firmado, MySQL 8.4 efímero y Chromium A/B, cinco viewport y denegaciones; WCAG numérico, zoom nativo 200 y carrera retardada todavía NO_ACREDITADO. A5 independiente y CI exact SHA pendientes.
+- Governance, SKREF03/10 verificados en pin, sin cambios QA/main/PROD, pagos, secretos ni migraciones; rollback normal FF/CAS.
+
 ## 2026-11-22 — DEV05 V24 C01-03.M04.04: prevenir doble guardado de configuracion [Javier :40]
 - El formulario de configuracion ahora bloquea submit reentrante durante saving y expone aria-busy, preservando contrato tenant y version; no depende solo de disabled visual.
 - Se agregan pruebas Chromium con login JWT real, bloqueo de PUT duplicado ante 409 retardado, recarga de version contra API real y rechazo de JSON invalido antes del PUT; controles de MySQL, A/B, V5 y A5 independientes siguen exigibles.
