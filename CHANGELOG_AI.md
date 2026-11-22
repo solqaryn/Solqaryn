@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV05 V23 C01-04.M03.06: replay denegado en sink MySQL aislado
+- Corrección P2/R2: el sink InnoDB aceptaba invocaciones directas con `ObservedAtUtc` caducado o futuro; ahora valida reloj UTC (-10m/+5s) antes de SQL I/O, sin confiar en que el caller use `CaptureAsync`.
+- xUnit `Category=Integration` MySQL 8.4 con reloj congelado agrega negativos replay/futuro/offset, mantiene los dos tenants, rechazo de duplicado, sin incremento de filas. Exigir job dirigido, .NET Release, Scope Lock/V5 y seguridad `SUCCESS` exact-SHA.
+- No existe lector autenticado real de expediente ni JWT/RBAC/HTTP/DI de producción; C01-04.M03.06 sigue `VALIDANDO` con owner DEV05, A5 distinto autor/reparador, sin secretos ni QA/main/PROD; reversión ordinaria.
+
 ## 2026-11-22 - DEV03 V23 C02-01.M05.04 protege actor durante lectura SQL
 - Reparacion R2 de continuidad de identidad: al volver del lector de membresias y tras enumerar, niega si ICurrentUserService cambia actor/autenticacion; evita vincular empresas de otro actor al JWT original.
 - Regresion negativa en MySQL 8.4 efimero con scope adversarial que cambia el actor despues de await; pruebas GitHub-hosted .NET 10/seguridad/Scope Lock/V5 pendientes del SHA publicado, no PASS anticipado.

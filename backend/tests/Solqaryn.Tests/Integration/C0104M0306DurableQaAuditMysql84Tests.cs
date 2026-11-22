@@ -27,6 +27,11 @@ public sealed class C0104M0306DurableQaAuditMysql84Tests
         }
     }
 
+    private sealed class FrozenClock(DateTimeOffset utc) : TimeProvider
+    {
+        public override DateTimeOffset GetUtcNow() => utc;
+    }
+
     private static Audit.Observation Observation(
         DateTimeOffset utc, string tenant, string caseFile) => new(
         Microtask, "casefile.timeline", Sha, tenant, caseFile,
@@ -69,11 +74,13 @@ public sealed class C0104M0306DurableQaAuditMysql84Tests
             var a = new Audit(
                 new Source(Observation(utc, "tenant-A", "case-42")),
                 new V5UniversalCaseFileQaDurableMySqlAuditSink(
-                    () => new MySqlConnection(isolated), 101, 42));
+                    () => new MySqlConnection(isolated), 101, 42,
+                    new FrozenClock(utc)));
             var b = new Audit(
                 new Source(Observation(utc, "tenant-B", "case-42")),
                 new V5UniversalCaseFileQaDurableMySqlAuditSink(
-                    () => new MySqlConnection(isolated), 202, 42));
+                    () => new MySqlConnection(isolated), 202, 42,
+                    new FrozenClock(utc)));
 
             var first = await a.CaptureAsync(
                 Microtask, "casefile.timeline", Sha, "tenant-A", "case-42");
@@ -105,7 +112,8 @@ public sealed class C0104M0306DurableQaAuditMysql84Tests
             Assert.Equal(2L, await CountAll(isolated));
 
             var direct = new V5UniversalCaseFileQaDurableMySqlAuditSink(
-                () => new MySqlConnection(isolated), 101, 42);
+                () => new MySqlConnection(isolated), 101, 42,
+                new FrozenClock(utc));
             var safe = new Audit.SafeAuditEntry(
                 Microtask, "casefile.timeline", Sha,
                 "verify-solqaryn-project-scope", "completed", "success",
@@ -116,6 +124,22 @@ public sealed class C0104M0306DurableQaAuditMysql84Tests
                 await direct.WriteAsync(safe with { CheckStatus = "skipped" }, default));
             await Assert.ThrowsAsync<InvalidOperationException>(async () =>
                 await direct.WriteAsync(safe with { VerificationClass = "PASS" }, default));
+            // A direct sink call must not bypass the Application freshness boundary.
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await direct.WriteAsync(safe with
+                {
+                    ObservedAtUtc = utc.AddMinutes(-11)
+                }, default));
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await direct.WriteAsync(safe with
+                {
+                    ObservedAtUtc = utc.AddSeconds(6)
+                }, default));
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await direct.WriteAsync(safe with
+                {
+                    ObservedAtUtc = utc.ToOffset(TimeSpan.FromHours(-6))
+                }, default));
             Assert.Equal(2L, await CountAll(isolated));
 
             using var cancelled = new CancellationTokenSource();

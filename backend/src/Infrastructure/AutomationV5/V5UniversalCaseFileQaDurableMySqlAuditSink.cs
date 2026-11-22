@@ -18,6 +18,7 @@ public sealed class V5UniversalCaseFileQaDurableMySqlAuditSink
     private readonly Func<DbConnection> _connectionFactory;
     private readonly int _scopeTenantId;
     private readonly int _scopeCaseFileId;
+    private readonly TimeProvider _clock;
 
     private static readonly Regex Microtask = new(
         @"^C[0-9]{2}-[0-9]{2}\.M[0-9]{2}\.[0-9]{2}$",
@@ -44,12 +45,14 @@ public sealed class V5UniversalCaseFileQaDurableMySqlAuditSink
     };
 
     public V5UniversalCaseFileQaDurableMySqlAuditSink(
-        Func<DbConnection> connectionFactory, int scopeTenantId, int scopeCaseFileId)
+        Func<DbConnection> connectionFactory, int scopeTenantId, int scopeCaseFileId,
+        TimeProvider? clock = null)
     {
         _connectionFactory = connectionFactory
             ?? throw new ArgumentNullException(nameof(connectionFactory));
         _scopeTenantId = scopeTenantId;
         _scopeCaseFileId = scopeCaseFileId;
+        _clock = clock ?? TimeProvider.System;
     }
 
     public async ValueTask WriteAsync(
@@ -57,7 +60,9 @@ public sealed class V5UniversalCaseFileQaDurableMySqlAuditSink
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (_scopeTenantId <= 0 || _scopeCaseFileId <= 0 || !Valid(entry))
+        // Defend this separately callable sink against stale/future replay before SQL I/O.
+        if (_scopeTenantId <= 0 || _scopeCaseFileId <= 0 || !Valid(entry) ||
+            !FreshUtc(entry.ObservedAtUtc, _clock.GetUtcNow()))
             throw new InvalidOperationException("CASEFILE_QA_DURABLE_SCOPE_INVALID");
 
         try
@@ -112,6 +117,9 @@ public sealed class V5UniversalCaseFileQaDurableMySqlAuditSink
          (e.CheckStatus != "completed" && e.CheckConclusion == "pending")) &&
         e.ObservedAtUtc != default && e.ObservedAtUtc.Offset == TimeSpan.Zero &&
         e.VerificationClass == "UNVERIFIED_EXTERNAL_REVIEW_REQUIRED";
+
+    private static bool FreshUtc(DateTimeOffset observed, DateTimeOffset nowUtc) =>
+        observed >= nowUtc.AddMinutes(-10) && observed <= nowUtc.AddSeconds(5);
 
     private static void Add(DbCommand command, string name, object value)
     {
