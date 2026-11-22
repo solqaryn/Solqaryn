@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV06 V24 reparación causal de contraste C01-03.M04.05 [Javier :50]
+- Se detectó límite A1 previo CONTRASTE_WCAG_NUMÉRICO_NO_MEDIDO en prueba real Playwright; se añadió cálculo WCAG desde colores y fondos reales de Chromium (A/B) con 4.5:1 en encabezado, ayuda y enlace; pares iguales versus negro/blanco ejercitan controles adversariales.
+- Riesgo R2 test-only: sin cambios de runtime, grants, API ni MySQL productivo; Scope Lock STRICT, UI SKREF-03/10 leídas en pins originales, CI exact-SHA todavía por verificar y sin LISTO/A5 ni desbloqueo DAG ficticio.
+- Zoom CSS 2x sigue sin acreditar zoom nativo 200%, capturas ANTES ni accesibilidad exhaustiva; preservar limitaciones y revisión independiente DEV04 autor / DEV06 reparador.
+
 ## 2026-11-22 — DEV04 V24 reparación de gate UI C01-03.M04.01 [Javier :30, rescate DEV03]
 - Dos CI reales .M04.01 y .M04.05 fallaron para JWT A/B al navegar: el guard correctamente exigía una ruta NO anunciada por CommercialTenantUiCapabilities. No se desactivó el guard ni se falsearon los errores.
 - Pilot UI privado sólo para administrador con Configuracion:Ver existente y PrivateReadPilotEnabled, rutas exactas configuracion y configuracion/dinamica-v5, SIN ampliar Editar; cuatro regresiones xUnit adversariales y reejecución CI GitHub-hosted MySQL8.4/Chromium.

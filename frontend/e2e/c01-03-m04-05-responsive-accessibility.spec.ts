@@ -62,6 +62,76 @@ async function verifyTab(page: Page): Promise<void> {
   expect(found, 'Tab must focus a visible control').toBe(true);
 }
 
+
+/**
+ * V24 R2: computa WCAG 2.x contrast desde estilos REALES del DOM.
+ * Resuelve fondos rgba a través de ancestros; no acepta texto inventado ni mocks.
+ * La prueba negativa comprueba que un par idéntico falla el umbral 4.5:1.
+ */
+async function verifyWcagContrast(page: Page): Promise<void> {
+  const measured = await page.evaluate(() => {
+    type Color = { rgb: number[]; alpha: number };
+    const parse = (value: string): Color | null => {
+      const m = /^rgba?\(\s*(.*?)\s*\)$/i.exec(value);
+      if (!m) return null;
+      const parts = m[1]!.replaceAll(',', ' ').replace('/', ' ').trim().split(/\s+/);
+      if (parts.length < 3) return null;
+      const rgb = parts.slice(0, 3).map(part =>
+        part.endsWith('%') ? Number.parseFloat(part) * 2.55 : Number(part));
+      const alpha = parts.length >= 4 ? Number(parts[3]) : 1;
+      if (!rgb.every(v => Number.isFinite(v) && v >= 0 && v <= 255) ||
+          !Number.isFinite(alpha) || alpha < 0 || alpha > 1) return null;
+      return { rgb, alpha };
+    };
+    const relativeLuminance = (rgb: number[]): number => {
+      const linear = rgb.map(v => {
+        const channel = v / 255;
+        return channel <= 0.04045 ? channel / 12.92 : ((channel + 0.055) / 1.055) ** 2.4;
+      });
+      return linear[0]! * 0.2126 + linear[1]! * 0.7152 + linear[2]! * 0.0722;
+    };
+    const ratio = (foreground: number[], background: number[]): number => {
+      const a = relativeLuminance(foreground), b = relativeLuminance(background);
+      return (Math.max(a,b) + 0.05) / (Math.min(a,b) + 0.05);
+    };
+    const targetSelectors = [
+      '.settings-surface h1',
+      '.settings-surface .lead',
+      '.settings-surface .secondary-link'
+    ];
+    const ratios = targetSelectors.map(selector => {
+      const element = document.querySelector(selector);
+      if (!(element instanceof HTMLElement)) return { selector, ratio: Number.NaN };
+      const foreground = parse(getComputedStyle(element).color);
+      if (!foreground) return { selector, ratio: Number.NaN };
+      const layers: Color[] = [];
+      for (let ancestor: Element | null = element; ancestor; ancestor = ancestor.parentElement) {
+        const layer = parse(getComputedStyle(ancestor).backgroundColor);
+        if (layer) layers.unshift(layer);
+      }
+      let backdrop = [255,255,255];
+      for (const layer of layers) {
+        backdrop = layer.rgb.map((v,i) => v * layer.alpha +
+          backdrop[i]! * (1 - layer.alpha));
+      }
+      const effectiveForeground = foreground.rgb.map((v,i) =>
+        v * foreground.alpha + backdrop[i]! * (1 - foreground.alpha));
+      return { selector, ratio: ratio(effectiveForeground, backdrop) };
+    });
+    return {
+      ratios,
+      negativeEqualColors: ratio([119,119,119],[119,119,119]),
+      positiveBlackOnWhite: ratio([0,0,0],[255,255,255])
+    };
+  });
+  expect(measured.negativeEqualColors, 'adversarial low-contrast control').toBeLessThan(4.5);
+  expect(measured.positiveBlackOnWhite, 'high-contrast control').toBeGreaterThanOrEqual(21);
+  for (const item of measured.ratios) {
+    expect(Number.isFinite(item.ratio), 'actual computed color for '+item.selector).toBe(true);
+    expect(item.ratio, 'WCAG AA 4.5:1 on '+item.selector).toBeGreaterThanOrEqual(4.5);
+  }
+}
+
 test.describe('V24 C01-03.M04.05 actual tenant UI responsive and keyboard', () => {
   test.describe.configure({ retries: 0 });
 
@@ -89,6 +159,7 @@ test.describe('V24 C01-03.M04.05 actual tenant UI responsive and keyboard', () =
       await expect(page.getByRole('button',{name:/Recargar/})).toBeVisible();
       await expect(page.getByRole('link',{name:'Ver todos los ajustes'})).toBeVisible();
       await verifyTab(page);
+      await verifyWcagContrast(page);
       for (const width of widths) {
         await page.setViewportSize({width,height:900});
         await verifyLayout(page,width,'100pct');
