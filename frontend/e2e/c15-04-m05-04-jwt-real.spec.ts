@@ -2854,4 +2854,66 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     }
   }
 
+
+  // A0.83: cobertura incremental de tres superficies privadas REALES;
+  // la UI puede informar sobre contratos locales, pero la identidad y la
+  // denegacion proceden del backend JWT/RBAC con MySQL 8.4 efimero.
+  // No certifica el inventario global de rutas ni mediciones CWV de campo.
+  for (const destino of [
+    { ruta: '/plataforma/capacidades-v19', titulo: 'Catálogo global de módulos y capacidades' },
+    { ruta: '/plataforma/revision-arquitectura-v20', titulo: 'Revisión de arquitectura e integraciones' },
+    { ruta: '/plataforma/eventos-outbox-v22', titulo: 'Observabilidad del outbox' }
+  ]) {
+    test('A0.83 - JWT real y reflow privado en ' + destino.ruta,
+      async ({ page, request }) => {
+        const jwt = await ingresarConJwtRealParaGuard(page, request, 'c1504_platform_only');
+        const control = await request.get(api + '/plataforma/sesion', {
+          headers: { Authorization: 'Bearer ' + jwt }
+        });
+        expect(control.status(), 'Autoridad global validada en API y MySQL reales').toBe(200);
+        for (const ancho of [320, 390, 768, 1280, 1440]) {
+          await page.setViewportSize({ width: ancho, height: 840 });
+          const sesion = page.waitForResponse(res =>
+            res.url().includes('/plataforma/sesion') && res.request().method() === 'GET');
+          await page.goto(destino.ruta);
+          expect((await sesion).status(), 'Guard de plataforma en API real').toBe(200);
+          await expect(page).toHaveURL(url => url.pathname === destino.ruta);
+          await expect(page.getByRole('heading', { level: 1, name: destino.titulo })).toBeVisible();
+          const medidas = await page.evaluate(() => ({
+            html: document.documentElement.scrollWidth,
+            body: document.body.scrollWidth
+          }));
+          expect(Math.max(medidas.html, medidas.body),
+            'No hay desborde horizontal del documento a ' + ancho).toBeLessThanOrEqual(ancho + 2);
+        }
+      });
+    test('A0.83 - tenant B denegado sin fugas en ' + destino.ruta,
+      async ({ page, request }) => {
+        const jwt = await ingresarConJwtRealParaGuard(page, request, 'c1504_admin_b', true);
+        const control = await request.get(api + '/plataforma/sesion', {
+          headers: { Authorization: 'Bearer ' + jwt }
+        });
+        expect(control.status(), 'Rol de empresa B no es administrador global').toBe(403);
+        const mutaciones: string[] = [];
+        page.on('request', req => {
+          if (req.url().includes('localhost:5005') &&
+              /^(POST|PUT|PATCH|DELETE)$/.test(req.method())) {
+            mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+          }
+        });
+        await page.setViewportSize({ width: 390, height: 840 });
+        const sesion = page.waitForResponse(res =>
+          res.url().includes('/plataforma/sesion') && res.request().method() === 'GET');
+        await page.goto(destino.ruta);
+        expect((await sesion).status()).toBe(403);
+        await expect(page).toHaveURL(url =>
+          url.pathname === '/login' && url.searchParams.get('plataforma') === 'denegado');
+        await expect(page.getByRole('heading', { level: 1, name: destino.titulo })).toHaveCount(0);
+        await page.waitForTimeout(300);
+        await expect(page).toHaveURL(url =>
+          url.pathname === '/login' && url.searchParams.get('plataforma') === 'denegado');
+        expect(mutaciones, 'Navegacion denegada no muta recursos del API').toEqual([]);
+      });
+  }
+
 });

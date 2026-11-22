@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV02 C15-04.M05.04 A108: tres rutas privadas con JWT/RBAC real
+- Preflight V24: C15-04.M05.04 conserva EN_PROGRESO/owner DEV02 y lock V17 2000002297; sin nuevo CLAIM ni cambio de estados. CI anterior d7b460e8: 137/137 Playwright PASS (0 fallos, 0 omitidos) en Angular/ASP.NET Core 10, JWT firmado y MySQL 8.4 efimero, job 137303855251; Scope Lock/V5/seguridad completados SUCCESS en aquel SHA.
+- Nuevo A0.83 en la misma microtarea: casos positivos de administrador plataforma en rutas capacidades, revision de arquitectura y outbox a 320/390/768/1280/1440, con HTTP real y prueba de no overflow horizontal; negativos de empresa B comprueban HTTP 403/ausencia de contenido privado y cero escrituras. No se usan mocks de JWT ni permisos.
+- La nueva CI GitHub-hosted del SHA publicado debe comprobar todos los seis tests nuevos, A0-A4 pertinentes, Skill/ScopeLock y checks completos antes de atribuir PASS; M05 global 160 rutas, WCAG y CWV de campo aun NO_MEDIDO, NO_LISTO, A5 independiente pendiente, sin QA/main/PROD ni cambios de arquitectura.
+
 ## 2026-11-22 — DEV01 V24 C07-01.M06.06: rollback SQL A/B con JWT Chromium
 - Prueba R2 real de GitHub-hosted sobre Angular, JWT firmado, ASP.NET 10 y Oracle EF/MySQL 8.4 efímero: revocar A no impide autenticación ni catálogo B, sin exposición de producto A.
 - Snapshot físico SQL exige cero cambios en nombre, cantidad y precio de ambos productos antes/durante/después; membresía A restituida en finally, sin mocks ni modificación de runtime.
