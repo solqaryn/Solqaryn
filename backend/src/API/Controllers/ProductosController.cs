@@ -81,6 +81,12 @@ public class ProductosController : ControllerBase
 
         await _unitOfWork.ExecuteInTransactionAsync(async () =>
         {
+            // Validate ownership of the target product before querying its variants.
+            // A foreign tenant's missing product must return 404, not leak a
+            // business-rule 400 from the variants service before this guard.
+            if (await _productoService.GetByIdAsync(id) is null)
+                return;
+
             var (variantes, forzarTecnica) = ResolverVariantesSolicitud(dto);
             var existentes = await _varianteService.GetByProductoIdAsync(id, incluirInactivas: true);
             actualizado = await _productoService.UpdateAsync(id, dto);
