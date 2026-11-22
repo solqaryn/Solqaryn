@@ -941,6 +941,53 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 Assert.Equal(0, await rejectedReadback.Productos.IgnoreQueryFilters()
                     .CountAsync(x => x.Nombre == bDeniedName));
             }
+            // A formerly authorized actor keeps an unexpired signed JWT,
+            // but revoking Crear in real Oracle EF must invalidate POST now.
+            // TestServer pilots remain test-only and the MySQL readback must
+            // prove no product or durable audit receipt was committed.
+            var createGrantToRevoke = await db.RolPermisos.SingleAsync(x =>
+                x.RolId == roleA.Id && x.PermisoId == createPermission.Id);
+            db.RolPermisos.Remove(createGrantToRevoke);
+            await db.SaveChangesAsync();
+            var rejectedCreateName = "C0701RevokedCrear" + Guid.NewGuid().ToString("N");
+            var auditCountBeforeRevokedPost = await db.RegistrosAuditoria
+                .IgnoreQueryFilters().CountAsync(x =>
+                    x.EmpresaId == a.Id && x.UsuarioId == userA.Id
+                    && x.Modulo == ModuloSistema.Productos
+                    && x.Accion == AccionPermiso.Crear);
+            using (var revokedCreate = new HttpRequestMessage(HttpMethod.Post, "/productos"))
+            {
+                revokedCreate.Headers.Authorization =
+                    new AuthenticationHeaderValue("Bearer", jwtA);
+                revokedCreate.Headers.TryAddWithoutValidation(
+                    "X-Empresa-Id", a.Id.ToString());
+                revokedCreate.Content = new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    ["Nombre"] = rejectedCreateName,
+                    ["CategoriaId"] = categoryAId.ToString(),
+                    ["Cantidad"] = "0",
+                    ["Costo"] = "60",
+                    ["Precio"] = "128"
+                });
+                using var rejected = await client.SendAsync(revokedCreate);
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, rejected.StatusCode);
+            }
+            await using (var revokedCreateDb = new AppDbContext(options))
+            {
+                Assert.Equal(0, await revokedCreateDb.Productos.IgnoreQueryFilters()
+                    .CountAsync(p => p.Nombre == rejectedCreateName));
+                Assert.Equal(auditCountBeforeRevokedPost,
+                    await revokedCreateDb.RegistrosAuditoria.IgnoreQueryFilters()
+                        .CountAsync(x => x.EmpresaId == a.Id
+                            && x.UsuarioId == userA.Id
+                            && x.Modulo == ModuloSistema.Productos
+                            && x.Accion == AccionPermiso.Crear));
+                Assert.Equal(updatedName,
+                    await revokedCreateDb.Productos.IgnoreQueryFilters()
+                        .Where(p => p.Id == httpProductId)
+                        .Select(p => p.Nombre).SingleAsync());
+            }
+
             pilotConfig["MultiEmpresa:PrivateCommercialFilesPilotEnabled"] = "false";
             pilotConfig["MultiEmpresa:PrivateDraftPilotEnabled"] = "false";
             using (var postDefaultOff = new HttpRequestMessage(HttpMethod.Post, "/productos"))
