@@ -61,7 +61,12 @@ export class LoginComponent {
     this.identidad.usarPlataforma();
 
     if (this.authService.isAuthenticated()) {
-      if (this.tenantContext.tieneContextoVerificado()) {
+      if (this.errorPlataforma()) {
+        // Un 403 global debe permanecer visible. Tener membresía ERP no autoriza
+        // redirigir automáticamente fuera del rechazo, incluso si el selector
+        // confirma la misma empresa de forma asíncrona.
+        this.permisosRuntime.limpiar();
+      } else if (this.tenantContext.tieneContextoVerificado()) {
         this.redirigirSegunPermisos();
       } else {
         // Sesión válida sin tenant verificado: permanecer en el gate de empresa.
@@ -130,6 +135,15 @@ export class LoginComponent {
 
   tenantConfirmado(): void {
     if (!this.tenantContext.tieneContextoVerificado()) return;
+    // La confirmación automática del selector no debe ocultar un 403 global.
+    if (this.errorPlataforma()) return;
+    this.redirigirSegunPermisos();
+  }
+
+  continuarEmpresaAutorizada(): void {
+    if (!this.tenantContext.tieneContextoVerificado()) return;
+    // Salida EXPLÍCITA del error global, nunca concesión de rol de plataforma.
+    this.errorPlataforma.set(null);
     this.redirigirSegunPermisos();
   }
 

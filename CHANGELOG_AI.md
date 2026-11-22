@@ -1,3 +1,7 @@
+## 2026-11-22 — DEV02 V24 C15-04.M05.04: reflujo 200% y rechazo global estable [Javier :10]
+- Falló 3/137 Chromium real en SHA 50fd3c07, job 137237773329: cobertura-v5 339px/320px a texto 200% y desvío automático /login?plataforma=denegado hacia ERP en dos negativos 403 tenant A.
+- Corregido flex de marca/overview sin esconder overflow; login mantiene la denegación de plataforma frente a revalidación automática de membresía empresarial. Continuar al ERP exige acción explícita y autoridad tenant backend; A0.82 verifica que el 403 no desaparezca tras 300ms, sin cambiar JWT/RBAC. CI exact-SHA del incremento nuevo aún no acredita PASS, permanece EN_PROGRESO bajo lock 2000002297 y A5 pendiente; sin QA/main/PROD.
+
 ## 2026-11-22 — DEV03 V24 C01-03.M03.06: corregir DI de routing en prueba MySQL/JWT [Javier :20]
 - Diagnóstico causal: run 45035416542/job 137247958766, el test dirigido 1/1 FAIL al construir AuthorizationPolicyCache sin EndpointDataSource; MySQL 8.4 y compilación sí arrancaron, pero todavía NO se acredita integración autenticada ni A5.
 - Reparación mínima R2 sólo en el TestServer GitHub-hosted: registrar AddRouting antes de AddAuthorization para permitir verificar JWT/RBAC, membresía A/B, revocación y recibo durable, sin degradar controles ni introducir endpoints productivos.

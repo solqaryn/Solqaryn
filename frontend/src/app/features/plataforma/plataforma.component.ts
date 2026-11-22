@@ -344,7 +344,7 @@ import { C1404ReleaseBrandingV17Component } from './c14-04-m04-03-release-brandi
     .v5-feedback p:has(mat-spinner) { display: flex; align-items: center; gap: 10px; }
     .v5-feedback-error { color: var(--color-danger, #b3261e); }
     .v5-overview { display: flex; align-items: flex-start; justify-content: space-between; gap: 20px; flex-wrap: wrap; }
-    .v5-overview > div { max-width: 650px; }
+    .v5-overview > div { max-width: 650px; min-width: 0; overflow-wrap: anywhere; }
     .v5-kicker { font-size: .78rem; letter-spacing: .08em; text-transform: uppercase; font-weight: 750; color: var(--color-primary); }
     .v5-readonly { display: inline-flex; align-items: center; gap: 5px; font-weight: 700; font-size: .83rem; padding: 8px 12px; border-radius: 99px; background: var(--color-background, #f5f7fa); }
     .v5-readonly mat-icon { font-size: 18px; width: 18px; height: 18px; }
@@ -358,8 +358,9 @@ import { C1404ReleaseBrandingV17Component } from './c14-04-m04-03-release-brandi
     @media (max-width: 760px) { .v5-steps { grid-template-columns: 1fr; } }
     .v5-coverage-branding { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px; margin-top: 20px; }
     .v5-brand-mark { display: inline-flex; align-items: center; gap: 8px; font-weight: 700; color: var(--color-primary, #165da0); }
-    .v5-brand-mark mat-icon { width: 20px; height: 20px; font-size: 20px; }
-    .v5-coverage-branding button { min-height: 44px; }
+    .v5-brand-mark { display: inline-flex; align-items: center; flex-wrap: wrap; min-width: 0; max-width: 100%; overflow-wrap: anywhere; }
+    .v5-brand-mark mat-icon { flex: 0 0 20px; width: 20px; height: 20px; font-size: 20px; }
+    .v5-coverage-branding button { min-height: 44px; height: auto; min-width: 0; max-width: 100%; white-space: normal; overflow-wrap: anywhere; }
     .v5-coverage-contrast { background-color: #0b1220; color: #f8fafc; }
     .v5-coverage-contrast .v5-kicker, .v5-coverage-contrast .v5-brand-mark { color: #b7e2ff; }
     .v5-coverage-contrast .v5-readonly { background-color: #334155; color: #f8fafc; }

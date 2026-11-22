@@ -13,7 +13,7 @@
       </div>
     </aside>
 
-    @if (authService.isAuthenticated() && !tenantContext.tieneContextoVerificado()) {
+    @if (authService.isAuthenticated() && (!tenantContext.tieneContextoVerificado() || errorPlataforma())) {
       <div class="card login-card" aria-label="Selección de empresa">
         <app-tenant-selector (confirmado)="tenantConfirmado()"></app-tenant-selector>
         <div class="plataforma-entry">
@@ -23,6 +23,12 @@
           </button>
           @if (errorPlataforma()) {
             <p class="plataforma-error" role="alert">{{ errorPlataforma() }}</p>
+            @if (tenantContext.tieneContextoVerificado()) {
+              <button mat-stroked-button type="button"
+                (click)="continuarEmpresaAutorizada()">
+                Continuar a mi empresa autorizada
+              </button>
+            }
           }
         </div>
       </div>

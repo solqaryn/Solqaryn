@@ -2781,6 +2781,11 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
               name: 'Nombre de usuario'
             });
             await expect(selectorEmpresa.or(campoUsuario).first()).toBeVisible();
+            // Evita un falso PASS transitorio: una membresía ERP válida no puede
+            // desviar el rechazo global a /productos tras renderizar /login.
+            await page.waitForTimeout(300);
+            await expect(page).toHaveURL(url =>
+              url.pathname === '/login' && url.searchParams.get('plataforma') === 'denegado');
             if (await selectorEmpresa.isVisible()) {
               await expect(selectorEmpresa.getByRole('alert'))
                 .toContainText('no posee autoridad global');
