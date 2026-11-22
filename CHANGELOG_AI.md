@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV01 V24 C07-01.M06.06: segundo actor JWT tenant B en Chromium [Javier :00]
+- Playwright real: login firmado de miembro B con contexto y catálogo MySQL 8.4 de B HTTP 200, Angular a 390px sin body overflow.
+- Negativo con el mismo token B y selector A: exigir rechazo 403/404/503 sin filtrar artículos A; sin red simulada, credenciales productivas ni JWT fabricado.
+- Requiere CI GitHub-hosted nuevo SHA con Chromium y ScopeLock/V5. Mantener C07-01.M06.06 EN_PROGRESO y candado V17; no certificar fase, A5 ni QA/main/PROD.
+
 ## 2026-11-22 — DEV02 V24 C15-04.M05.04: reflujo 200% y rechazo global estable [Javier :10]
 - Falló 3/137 Chromium real en SHA 50fd3c07, job 137237773329: cobertura-v5 339px/320px a texto 200% y desvío automático /login?plataforma=denegado hacia ERP en dos negativos 403 tenant A.
 - Corregido flex de marca/overview sin esconder overflow; login mantiene la denegación de plataforma frente a revalidación automática de membresía empresarial. Continuar al ERP exige acción explícita y autoridad tenant backend; A0.82 verifica que el 403 no desaparezca tras 300ms, sin cambiar JWT/RBAC. CI exact-SHA del incremento nuevo aún no acredita PASS, permanece EN_PROGRESO bajo lock 2000002297 y A5 pendiente; sin QA/main/PROD.

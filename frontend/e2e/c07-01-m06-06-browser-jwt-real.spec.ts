@@ -93,6 +93,37 @@ test.describe('C07-01.M06.06 navegador real y aislamiento A/B', () => {
     await expect(page.locator('.table-desktop tbody tr')).toHaveCount(0);
   });
 
+  test('Miembro B con JWT real consulta su catálogo; no puede seleccionar A', async ({ page, request }) => {
+    // Prueba positiva de un segundo actor fisico: un 503 no es conexion valida.
+    const tokenB = await sessionReal(page, request, 'c1504_admin_b', '2');
+    await page.setViewportSize({ width: 390, height: 840 });
+    const tenantResponse = page.waitForResponse((r) =>
+      isBackendResponse(r.url(), '/tenant-context/2') && r.request().method() === 'GET');
+    const ownCatalog = page.waitForResponse((r) =>
+      isBackendResponse(r.url(), '/productos') && r.request().method() === 'GET');
+    await page.goto('/productos');
+    expect((await tenantResponse).status(), 'Contexto SQL real de empresa B').toBe(200);
+    const ownResponse = await ownCatalog;
+    expect(ownResponse.status(), 'GET catalogo real autorizado para B').toBe(200);
+    const ownJson = await ownResponse.json();
+    expect(ownJson?.success).toBe(true);
+    expect(Array.isArray(ownJson?.data?.items)).toBe(true);
+    await expect(page.getByRole('heading', { name: 'Productos', level: 1 })).toBeVisible();
+    await expect(page.locator('.catalog-error')).toHaveCount(0);
+    const overflow = await page.evaluate(() =>
+      document.documentElement.scrollWidth - document.documentElement.clientWidth);
+    expect(overflow, 'Empresa B no debe desbordar el body a 390px').toBeLessThanOrEqual(2);
+
+    // El mismo JWT B nunca concede acceso al seleccionar tenant A.
+    const cross = await request.get(api + '/productos?page=1&pageSize=10', {
+      headers: { Authorization: 'Bearer ' + tokenB, 'X-Empresa-Id': '1' }
+    });
+    expect([403, 404, 503], 'Selector A no confiere membresia a B').toContain(cross.status());
+    const deniedBody = await cross.text();
+    expect(deniedBody).not.toContain('C0701RealProductoA');
+    expect(deniedBody).not.toContain('"items":');
+  });
+
   test('Firma JWT adulterada es rechazada por API real', async ({ page, request }) => {
     const jwt = await sessionReal(page, request, 'c1504_admin_a', '1');
     const parts = jwt.split('.');
