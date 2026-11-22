@@ -1,3 +1,8 @@
+## 2026-11-21 — DEV01 V23 C07-01.M06.06: POST JWT positivo y transacción Oracle MySQL84
+- Test R2 en dev: signed JWT POST /productos con piloto solo in-memory, rol A con Crear, B sin permiso y piloto OFF denegados.
+- Cadena real ProductosController, ProductoService, ProductoVarianteService, UnitOfWork y AuditoriaService; MySQL8.4 físico con readback de producto, variante técnica y auditoría duradera de tenant A.
+- Requiere SUCCESS causal CI exact-SHA; aún faltan HTTP PUT/variantes comerciales y Angular/Chromium conectados. H EN_PROGRESO, lock V17 DEV01, no LISTO/A5 ni QA/main/PROD.
+
 ## 2026-11-21 — DEV06 V23 C14-02.M06.06: cancelación durante error asíncrono de evidencia
 - Corrección R2 de carrera: si un lector no cooperativo cancela el token y lanza otra excepción después de await, prevalece OperationCanceledException; no se encubre como TRUSTED_EVIDENCE_SOURCE_UNAVAILABLE.
 - Dos tests adversariales xUnit: error tras cancelación y error sin cancelación; se conserva denegación segura, sin permisos ni certificación de BOLA/IDOR, JWT, MySQL o restauración.

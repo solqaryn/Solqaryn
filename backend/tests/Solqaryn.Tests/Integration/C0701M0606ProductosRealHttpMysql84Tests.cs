@@ -120,6 +120,30 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 new RolPermiso { RolId = roleB.Id, PermisoId = permission.Id });
             await db.SaveChangesAsync();
             db.ChangeTracker.Clear();
+            // Test-only RBAC: the valid A role has Crear, while B does not.
+            var createPermission = await db.Permisos.IgnoreQueryFilters()
+                .FirstOrDefaultAsync(x => x.Modulo == ModuloSistema.Productos
+                    && x.Accion == AccionPermiso.Crear
+                    && x.Ambito == AmbitoAutorizacion.Empresa && x.Activo && !x.Eliminado);
+            if (createPermission is null)
+            {
+                createPermission = new Permiso
+                {
+                    Codigo = "C0701M0606.PRODUCTOS.CREAR",
+                    Nombre = "C0701 isolated permission for product creation",
+                    Modulo = ModuloSistema.Productos, Accion = AccionPermiso.Crear,
+                    Ambito = AmbitoAutorizacion.Empresa, Activo = true
+                };
+                db.Permisos.Add(createPermission);
+                await db.SaveChangesAsync();
+            }
+            db.RolPermisos.Add(new RolPermiso
+            {
+                RolId = roleA.Id, PermisoId = createPermission.Id
+            });
+            await db.SaveChangesAsync();
+            db.ChangeTracker.Clear();
+
 
             // Real tenant-owned products, seeded only using a server-side verified
             // commercial authority, never by trusting the request header.
@@ -522,10 +546,15 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                         services.AddScoped<IProductoRepository, ProductoRepository>();
                         services.AddScoped<ICategoriaRepository, CategoriaRepository>();
                         services.AddScoped<IProductoService, ProductoService>();
-                        services.AddSingleton(Mock.Of<IProductoVarianteService>());
-                        services.AddSingleton(Mock.Of<IUnitOfWork>());
+                        // Real technical variant and durable audit share the EF transaction.
+                        services.AddScoped<IProductoVarianteRepository, ProductoVarianteRepository>();
+                        services.AddScoped<ICatalogoProductoRepository, CatalogoProductoRepository>();
+                        services.AddScoped<ICatalogoProductoService, CatalogoProductoService>();
+                        services.AddScoped<IProductoVarianteService, ProductoVarianteService>();
+                        services.AddScoped<IUnitOfWork, UnitOfWork>();
+                        services.AddScoped<IAuditoriaRepository, AuditoriaRepository>();
+                        services.AddScoped<IAuditoriaService, AuditoriaService>();
                         services.AddSingleton(Mock.Of<IImageStorageService>());
-                        services.AddSingleton(Mock.Of<IAuditoriaService>());
                         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                             .AddJwtBearer(o => o.TokenValidationParameters =
                                 new TokenValidationParameters
@@ -679,6 +708,96 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 Assert.Equal(0, await negativeReadback.Productos
                     .IgnoreQueryFilters()
                     .CountAsync(p => p.Nombre == deniedName));
+            }
+
+
+            // Positive HTTP path: pilot is enabled only in this isolated TestServer.
+            // The production PrivateDraftPilotEnabled remains false and unchanged.
+            pilotConfig["MultiEmpresa:PrivateDraftPilotEnabled"] = "true";
+            var writtenName = "C0701HttpSignedWrite" + Guid.NewGuid().ToString("N");
+            var categoryAId = await db.Categorias.IgnoreQueryFilters().AsNoTracking()
+                .Where(c => c.Nombre == "Category C0701RealProductoA")
+                .Select(c => c.Id).SingleAsync();
+            using (var postA = new HttpRequestMessage(HttpMethod.Post, "/productos"))
+            {
+                postA.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwtA);
+                postA.Headers.TryAddWithoutValidation("X-Empresa-Id", a.Id.ToString());
+                postA.Content = new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    ["Nombre"] = writtenName,
+                    ["CategoriaId"] = categoryAId.ToString(),
+                    ["Cantidad"] = "0",
+                    ["Costo"] = "60",
+                    ["Precio"] = "127"
+                });
+                using var reply = await client.SendAsync(postA);
+                Assert.Equal(HttpStatusCode.Created, reply.StatusCode);
+            }
+            int httpProductId;
+            await using (var verification = new AppDbContext(options))
+            {
+                var product = await verification.Productos.IgnoreQueryFilters().AsNoTracking()
+                    .SingleAsync(x => x.Nombre == writtenName);
+                httpProductId = product.Id;
+                Assert.Equal(a.Id, product.EmpresaId);
+                Assert.True(product.Activo);
+                var variant = await verification.ProductoVariantes.IgnoreQueryFilters().AsNoTracking()
+                    .SingleAsync(v => v.ProductoId == httpProductId && !v.Eliminado);
+                Assert.Equal(a.Id, variant.EmpresaId);
+                Assert.True(variant.EsTecnica);
+                Assert.Equal(127m, variant.Precio);
+                var audit = await verification.RegistrosAuditoria.IgnoreQueryFilters().AsNoTracking()
+                    .SingleAsync(l => l.Modulo == ModuloSistema.Productos
+                        && l.Accion == AccionPermiso.Crear
+                        && l.ReferenciaId == httpProductId && l.Entidad == "Producto");
+                Assert.Equal(a.Id, audit.EmpresaId);
+                Assert.Equal(userA.Id, audit.UsuarioId);
+                Assert.Equal("Exito", audit.Resultado);
+            }
+            client.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", jwtA);
+            client.DefaultRequestHeaders.Remove("X-Empresa-Id");
+            client.DefaultRequestHeaders.TryAddWithoutValidation("X-Empresa-Id", a.Id.ToString());
+            using (var ownRead = await client.GetAsync($"/productos/{httpProductId}"))
+            {
+                Assert.Equal(HttpStatusCode.OK, ownRead.StatusCode);
+                Assert.Contains(writtenName, await ownRead.Content.ReadAsStringAsync(),
+                    StringComparison.Ordinal);
+            }
+            // B is an authenticated tenant with a current membership but no Crear grant.
+            var bDeniedName = "C0701DeniedBWrite" + Guid.NewGuid().ToString("N");
+            using (var postB = new HttpRequestMessage(HttpMethod.Post, "/productos"))
+            {
+                postB.Headers.Authorization =
+                    new AuthenticationHeaderValue("Bearer", Sign(userB.Id, roleB.Id));
+                postB.Headers.TryAddWithoutValidation("X-Empresa-Id", b.Id.ToString());
+                postB.Content = new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    ["Nombre"] = bDeniedName,
+                    ["CategoriaId"] = categoryAId.ToString(),
+                    ["Precio"] = "127"
+                });
+                using var reply = await client.SendAsync(postB);
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, reply.StatusCode);
+            }
+            await using (var rejectedReadback = new AppDbContext(options))
+            {
+                Assert.Equal(0, await rejectedReadback.Productos.IgnoreQueryFilters()
+                    .CountAsync(x => x.Nombre == bDeniedName));
+            }
+            pilotConfig["MultiEmpresa:PrivateDraftPilotEnabled"] = "false";
+            using (var postDefaultOff = new HttpRequestMessage(HttpMethod.Post, "/productos"))
+            {
+                postDefaultOff.Headers.Authorization =
+                    new AuthenticationHeaderValue("Bearer", jwtA);
+                postDefaultOff.Headers.TryAddWithoutValidation("X-Empresa-Id", a.Id.ToString());
+                postDefaultOff.Content = new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    ["Nombre"] = "C0701DefaultOff" + Guid.NewGuid().ToString("N"),
+                    ["Precio"] = "127"
+                });
+                using var reply = await client.SendAsync(postDefaultOff);
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, reply.StatusCode);
             }
 
             using (var foreignA = await client.GetAsync($"/productos/{productBId}"))
