@@ -143,6 +143,35 @@ public sealed class C0201M0504SignedJwtMysqlPositiveTests
         }
     }
 
+    // Adversarial caching adapter: returns the exact same stale A+B list
+    // twice while B's relational ROLE is revoked in genuine disposable MySQL.
+    // The SQL-backed reader must reject it even though its scope snapshots match.
+    private sealed class RevokingRoleCachedScope(
+        AppDbContext database, IUsuarioScopeService trustedScope, int roleId)
+        : IUsuarioScopeService
+    {
+        private IReadOnlyList<EmpresaSeleccionable>? _cached;
+        public Task<UsuarioScopeActual?> ObtenerActualAsync() =>
+            trustedScope.ObtenerActualAsync();
+
+        public async Task<IReadOnlyList<EmpresaSeleccionable>>
+            ListarEmpresasSeleccionablesAsync(
+                CancellationToken cancellationToken = default)
+        {
+            if (_cached is not null) return _cached;
+            _cached = await trustedScope.ListarEmpresasSeleccionablesAsync(
+                cancellationToken);
+            if (_cached.Count != 2)
+                throw new InvalidOperationException("REAL_SQL_AB_REQUIRED");
+            var role = await database.Roles.SingleAsync(
+                r => r.Id == roleId, cancellationToken);
+            role.Activo = false;
+            await database.SaveChangesAsync(cancellationToken);
+            database.ChangeTracker.Clear();
+            return _cached;
+        }
+    }
+
     private static async Task<(string Code, int? TenantId)> ReadDevResolutionAsync(
         HttpClient client)
     {
@@ -268,6 +297,23 @@ public sealed class C0201M0504SignedJwtMysqlPositiveTests
                 m => m.UsuarioId == user.Id && m.EmpresaId == b.Id);
             Assert.False(revokedMembership.Activa);
             revokedMembership.Activar();
+            await db.SaveChangesAsync();
+            db.ChangeTracker.Clear();
+
+            // Role B is revoked AFTER real A+B SQL enumeration, but a
+            // deliberately cached scope returns A+B again. This test failed
+            // against the previous two-scope-list-only implementation.
+            var cachedActor = new MutableProbeCurrentUser(user.Id);
+            var cachedRoleReader = new C0201M0504CurrentMembershipSqlReader(
+                db, cachedActor,
+                new RevokingRoleCachedScope(
+                    db, new UsuarioScopeService(db, cachedActor), roleB.Id));
+            Assert.Null(await cachedRoleReader.ReadCurrentAsync(
+                CancellationToken.None));
+            var revokedRoleB = await db.Roles.SingleAsync(
+                r => r.Id == roleB.Id);
+            Assert.False(revokedRoleB.Activo);
+            revokedRoleB.Activo = true;
             await db.SaveChangesAsync();
             db.ChangeTracker.Clear();
 

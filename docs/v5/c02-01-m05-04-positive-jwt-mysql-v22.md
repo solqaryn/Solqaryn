@@ -107,3 +107,12 @@ Prueba GitHub-hosted requerida: TestServer real con JWT firmado y MySQL 8.4 efí
 
 **LIMITACIÓN:** falta preferencia durable por usuario, reemisión JWT real desde backend, sesión tenant efectivamente actualizada y navegación Angular/Chromium autenticada al panel. Esta mejora es integración real de lectura/HTTP, NO cierre total D317. Conservar H=VALIDANDO/I=DEV03, A0–A4 globales pendientes y A5 por Task distinta. Rollback git revert normal, sin QA/main/PROD, secretos o datos reales.
 
+
+
+## V23 — regresión R2 SQL contra caché de membresías revocadas (DEV03, 22 noviembre 2026)
+
+**Hipótesis causal nueva:** dos lecturas idénticas de una capa scope con caché no acreditan que el rol/membresía siga activo en MySQL. Un rol B puede revocarse después de la primera lectura real, pero el adaptador devolver A+B de su caché por segunda vez y la propuesta JWT podría usar autorización obsoleta.
+
+**Reparación ejecutable en dev:** el lector `C0201M0504CurrentMembershipSqlReader` realiza una consulta EF Oracle directa, final, sobre `UsuarioEmpresa`, `Empresa` y `Rol` con membresía activa, tenant activo, rol empresarial no eliminado/activo, pertenencia y propietario del rol. Exige conjunto exacto de IDs/nombres y actor autenticado sin cambios. Una divergencia niega el snapshot antes de proponer empresa, sin autorización positiva ni fuga A/B. La nueva regresión en `C0201M0504SignedJwtMysqlPositiveTests` revoca de verdad el rol B en MySQL 8.4 efímero y fuerza dos respuestas cacheadas A+B; exige snapshot nulo, comprueba `Rol.Activo=false` y restaura B sólo en DB aislada.
+
+**A0–A4:** cambio R2 de validación de seguridad sin migraciones ni endpoints adicionales; pruebas obligatorias reales en GitHub-hosted .NET 10 xUnit/TRX + JWT firmado HTTP, Oracle EF/MySQL 8.4 y `verify-solqaryn-project-scope`/V5 por SHA exacto, sin atribuir PASS mientras estén pendientes. Esta relectura sigue sin ser transacción atómica con la reemisión JWT. Continúan faltando preferencia durable SQL por usuario, reemisión backend auténtica y navegación Angular/Chromium al panel autorizado; mantener `VALIDANDO`, autor DEV03 y A5 pendiente independiente. Rollback: `git revert` ordinario, sin force-push ni QA/main/PROD.

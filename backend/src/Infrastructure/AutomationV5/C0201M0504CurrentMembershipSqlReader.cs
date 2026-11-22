@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Enums;
 using Solqaryn.Application.AutomationV5;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Infrastructure.Persistence;
@@ -102,6 +104,33 @@ public sealed class C0201M0504CurrentMembershipSqlReader(
         cancellationToken.ThrowIfCancellationRequested();
         if (!stillActive || !currentUser.EstaAutenticado ||
             currentUser.UsuarioId != actorId)
+            return null;
+
+        // A repeated, cached scope response is not a second authoritative SQL
+        // read. Verify the COMPLETE current membership/role/tenant set directly
+        // against Oracle EF/MySQL immediately before proposing a tenant.
+        // A revoked role with a stale scope list MUST fail closed.
+        var verifiedRows = await (
+            from membership in database.UsuarioEmpresas.AsNoTracking()
+            join tenant in database.Set<Empresa>().AsNoTracking()
+                on membership.EmpresaId equals tenant.Id
+            join role in database.Roles.AsNoTracking()
+                on membership.RolId equals role.Id
+            where membership.UsuarioId == actorId && membership.Activa &&
+                  tenant.Activa && role.Activo && !role.Eliminado &&
+                  role.Ambito == AmbitoAutorizacion.Empresa &&
+                  (role.EmpresaId == tenant.Id ||
+                   (role.EmpresaId == null && role.EsSistema))
+            select new { membership.EmpresaId, tenant.Nombre }
+        ).ToListAsync(cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
+        if (verifiedRows.Count != memberships.Count ||
+            verifiedRows.Select(row => row.EmpresaId).Distinct().Count() !=
+                verifiedRows.Count ||
+            verifiedRows.Any(row =>
+                !expectedNames.TryGetValue(row.EmpresaId, out var name) ||
+                !string.Equals(row.Nombre, name, StringComparison.Ordinal)) ||
+            !currentUser.EstaAutenticado || currentUser.UsuarioId != actorId)
             return null;
 
         // No persisted last-tenant preference or active session reissue is
