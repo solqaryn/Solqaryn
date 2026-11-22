@@ -1,0 +1,108 @@
+import { expect, test, type APIRequestContext, type Page } from '@playwright/test';
+
+// C07-01.M06.06: Angular real -> API ASP.NET 10 -> JWT firmado -> MySQL 8.4.
+// CI efimera. Sin page.route, token fabricado, secretos o datos de produccion.
+// La mutacion positiva con variantes, rollback ERP y A5 siguen pendientes.
+const api = process.env['C1504_API_URL'];
+const password = process.env['C1504_TEST_PASSWORD'];
+if (process.env['CI'] !== 'true' || api !== 'http://127.0.0.1:5005' || !password) {
+  throw new Error('C0701_REQUIRES_GITHUB_HOSTED_REAL_JWT_MYSQL84');
+}
+
+async function sessionReal(page: Page, request: APIRequestContext, username: string, tenant: string) {
+  const response = await request.post(api + '/auth/login', {
+    data: { nombreUsuario: username, password }
+  });
+  expect(response.status(), 'Login de backend real').toBe(200);
+  const payload = await response.json();
+  expect(payload?.success).toBe(true);
+  const session = payload?.data;
+  expect(typeof session?.token).toBe('string');
+  expect(session.token.split('.')).toHaveLength(3);
+  expect(typeof session?.expiraEn).toBe('string');
+  expect(session.nombreUsuario).toBe(username);
+  await page.addInitScript((s: {
+    token: string; user: string; role: string; expiry: string; requestedTenant: string;
+  }) => {
+    localStorage.setItem('solqaryn_token', s.token);
+    localStorage.setItem('solqaryn_user', s.user);
+    localStorage.setItem('solqaryn_rol', s.role);
+    localStorage.setItem('solqaryn_expira_en', s.expiry);
+    localStorage.setItem('solqaryn_empresa_solicitada_id', s.requestedTenant);
+  }, {
+    token: session.token as string,
+    user: session.nombreUsuario as string,
+    role: String(session.rol),
+    expiry: session.expiraEn as string,
+    requestedTenant: tenant
+  });
+  return session.token as string;
+}
+
+function isBackendResponse(url: string, route: string) {
+  const parsed = new URL(url);
+  return parsed.port === '5005' && parsed.pathname === route;
+}
+
+test.describe('C07-01.M06.06 navegador real y aislamiento A/B', () => {
+  test.describe.configure({ retries: 0 });
+
+  test('Angular Productos consulta API/MySQL real con JWT y refluye 320-1440', async ({ page, request }) => {
+    await sessionReal(page, request, 'c1504_admin_a', '1');
+    await page.setViewportSize({ width: 320, height: 840 });
+    const writes: string[] = [];
+    page.on('request', (r) => {
+      const u = new URL(r.url());
+      if (u.port === '5005' && !['GET', 'HEAD', 'OPTIONS'].includes(r.method())) {
+        writes.push(r.method() + ' ' + u.pathname);
+      }
+    });
+    const catalog = page.waitForResponse((r) =>
+      isBackendResponse(r.url(), '/productos') && r.request().method() === 'GET');
+    await page.goto('/productos');
+    const response = await catalog;
+    expect(response.status(), 'GET /productos real').toBe(200);
+    const json = await response.json();
+    expect(json?.success).toBe(true);
+    expect(Array.isArray(json?.data?.items), 'Oracle EF produce un contrato real').toBe(true);
+    expect(Number.isSafeInteger(json?.data?.totalCount)).toBe(true);
+    await expect(page.getByRole('heading', { name: 'Productos', level: 1 })).toBeVisible();
+    await expect(page.locator('.catalog-success')).toContainText('Catálogo cargado:');
+    await expect(page.locator('.catalog-error')).toHaveCount(0);
+    for (const width of [320, 390, 768, 1280, 1440]) {
+      await page.setViewportSize({ width, height: 840 });
+      await expect(page.getByRole('heading', { name: 'Productos', level: 1 })).toBeVisible();
+      const overflow = await page.evaluate(() =>
+        document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      expect(overflow, 'Overflow de body a ' + width).toBeLessThanOrEqual(2);
+    }
+    await page.screenshot({ path: 'test-results/c0701-real-1440.png', fullPage: true });
+    await page.setViewportSize({ width: 320, height: 840 });
+    await page.screenshot({ path: 'test-results/c0701-real-320.png', fullPage: true });
+    expect(writes).toEqual([]);
+  });
+
+  test('JWT del tenant A no accede al contexto B ni a productos ajenos', async ({ page, request }) => {
+    await sessionReal(page, request, 'c1504_admin_a', '2');
+    const denied = page.waitForResponse((r) =>
+      isBackendResponse(r.url(), '/tenant-context/2') && r.request().method() === 'GET');
+    await page.goto('/productos');
+    expect([403, 404], 'Empresa solicitada no concede membresia').toContain((await denied).status());
+    await expect(page).toHaveURL(/\/login(?:\?|$)/);
+    await expect(page.locator('.catalog-success')).toHaveCount(0);
+    await expect(page.locator('.table-desktop tbody tr')).toHaveCount(0);
+  });
+
+  test('Firma JWT adulterada es rechazada por API real', async ({ page, request }) => {
+    const jwt = await sessionReal(page, request, 'c1504_admin_a', '1');
+    const parts = jwt.split('.');
+    const sig = parts[2];
+    expect(sig.length).toBeGreaterThan(8);
+    parts[2] = (sig[0] === 'A' ? 'B' : 'A') + sig.slice(1);
+    const rejected = await request.get(api + '/productos?page=1&pageSize=10', {
+      headers: { Authorization: 'Bearer ' + parts.join('.'), 'X-Empresa-Id': '1' }
+    });
+    expect([401, 403]).toContain(rejected.status());
+    expect(await rejected.text()).not.toContain('C0701RealProductoA');
+  });
+});

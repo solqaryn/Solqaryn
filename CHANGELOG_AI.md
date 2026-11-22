@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV01 V24 C07-01.M06.06: Chromium real contra JWT y MySQL 8.4 [Javier :00]
+- Nuevo Playwright de Angular /productos contra API ASP.NET Core y MySQL 8.4 efímero con JWT firmado, sin page.route ni tokens simulados: contrato GET real, navegación privada, reflow 320/390/768/1280/1440 y capturas CI.
+- Negativos: JWT de A solicita B y token con firma alterada; no revelar filas privadas. Bootstrap de identidades en CI reutilizado sin credenciales ni datos productivos.
+- R2: incremento de tests, requiere GitHub-hosted exact-SHA; no certifica aún matriz ERP completa, mutaciones positivas por navegador, rollback fase M06.06 ni A5. Mantener EN_PROGRESO y V17 2000001045 sin LISTO ni liberación artificial.
+
 ## 2026-11-22 — DEV06 V24 C01-03.M03.06: auditoría JWT y SQL durable [Javier :50]
 - Nueva integración DEV opt-in sobre GET tenant real: rol/RBAC y miembro actuales en MySQL, recibo sin secretos en RegistrosAuditoria con readback post-commit, DI de desarrollo y respuesta fail-closed.
 - Nueva prueba adversarial firmada JWT + HTTP + MySQL 8.4 efímero en GitHub-hosted exact-SHA, tenant A/B, revocación, versión obsoleta, caída de SQL y TRX 1/1 obligatorio.
