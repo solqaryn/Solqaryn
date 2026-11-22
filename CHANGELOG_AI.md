@@ -1,3 +1,7 @@
+## 2026-11-21 — DEV01 V23 rescate CI C01-04.M03.06: signos negativos SQL
+- Corrige rechazo fail-closed de scopes con `-` inicial; conserva números SQL canónicos de un dígito y guion interior `tenant-A`. Regresiones nuevas para `-9`, `-01` y expediente `-7`, más el fallo original `-1`, antes de leer la fuente.
+- SHA original `4e700613`, jobs 137111466771/137111466572/137111466404: 6376 PASS y 1 FAIL; no certificar hasta GitHub-hosted xUnit Release, seguridad, Scope Lock y V5 exact-SHA SUCCESS. Conserva C01-04.M03.06 VALIDANDO y DEV05 como owner histórico, A5 independiente, sin QA/main/PROD.
+
 ## 2026-11-21 — DEV05 V23 C01-04.M03.06 scope SQL canónico y alias R2
 - Reparación causal en Application: admitir tenant/case ID SQL positivo de un dígito (1..9) sin aceptar cero, alias decimal 01/001, signos ni letra solitaria; contrato de auditoría sigue sin autorizar acceso, mutación, CI ni A5.
 - xUnit adversarial nuevo: 3 positivos, 10 entradas inválidas antes de fuente y fuente alias 01 frente a scope 1; el trabajo requiere GitHub-hosted .NET 10 Release, seguridad, Scope Lock y V5 SUCCESS exact-SHA.
