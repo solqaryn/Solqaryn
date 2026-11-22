@@ -1,3 +1,8 @@
+## 2026-11-21 — DEV02 V23 A0.96 reflow de enlaces de seccion en storefront
+- CI previa d64ec953 run 44984638913/job 137092415875 FAILURE (27/28): 320px + raiz CSS 200%, enlace de seccion /tienda x=169..449; A0.95 de login no resolvio la causa.
+- Reparacion real: layout de secciones movil en columna, enlace con reflow sin ocultar scroll; regresion Playwright nueva de dos enlaces a 320/390 y noOverflow 320/390/768/1280/1440.
+- C15-04.M05.04 conserva owner DEV02, H EN_PROGRESO, V17 LOCK 2000002297; CI nueva pendiente, A0-A4 UX global incompletos, no LISTO/A5 ni QA/main/PROD.
+
 ## 2026-11-21 — DEV01 V23 C07-01.M06.06: POST JWT positivo y transacción Oracle MySQL84
 - Test R2 en dev: signed JWT POST /productos con piloto solo in-memory, rol A con Crear, B sin permiso y piloto OFF denegados.
 - Cadena real ProductosController, ProductoService, ProductoVarianteService, UnitOfWork y AuditoriaService; MySQL8.4 físico con readback de producto, variante técnica y auditoría duradera de tenant A.

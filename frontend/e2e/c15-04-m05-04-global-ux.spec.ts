@@ -945,6 +945,23 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
             await current.keyboard.press('Tab');
             await expect(current.locator('a.skip-link').first()).toBeFocused();
           }
+          // A0.96: comprobacion causal del reflow de enlaces /tienda
+          // a raiz CSS 200% (no equivale a zoom nativo).
+          if (ruta === '/tienda' && width <= 390) {
+            const sections = current.locator('.section-head');
+            await expect(sections).toHaveCount(2);
+            for (const section of await sections.all()) {
+              const link = section.locator(':scope > a.text-link');
+              await expect(link).toBeVisible();
+              const linkBox = await link.boundingBox();
+              const titleBox = await section.locator('h2').boundingBox();
+              expect(linkBox, 'enlace con caja real').not.toBeNull();
+              expect(titleBox, 'titulo con caja real').not.toBeNull();
+              expect(linkBox!.x, 'enlace empieza en viewport').toBeGreaterThanOrEqual(-1);
+              expect(linkBox!.x + linkBox!.width, 'enlace termina en viewport').toBeLessThanOrEqual(width + 1);
+              expect(linkBox!.y, 'enlace debajo del titulo, sin superposicion').toBeGreaterThanOrEqual(titleBox!.y + titleBox!.height - 1);
+            }
+          }
           await noOverflow(current);
           if (ruta === '/login') {
             // El scrollWidth por sí solo no garantiza que el formulario quede usable.

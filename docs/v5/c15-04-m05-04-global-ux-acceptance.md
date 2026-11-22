@@ -1,3 +1,11 @@
+## A0.96 — Reflow causal de enlaces de sección en storefront a 200% (DEV02, 2026-11-21)
+
+La CI SHA d64ec95330a169eac72b1bdcf9041dc054664312 (run 44984638913, job 137092415875) finalizó FAILURE con 27/28 Chromium: a 320px y raíz CSS 200%, el diagnóstico Playwright identificó `a.text-link` desde x=169 hasta x=449 (280px), con `app-store-icon` en x=420. El elemento es el enlace lateral de sección de `/tienda`, **no** el botón del formulario de `/login`. A0.95 fue hipótesis refutada, se conserva evidencia del fallo sin silenciar el test.
+
+Corrección acotada: el encabezado de categorías/destacados `.section-head` en storefront apila título y enlace en <=600px, permite reflow natural del enlace y recupera layout horizontal >=601px. En el spec Chromium, el caso A0.93 ahora acredita además ambos enlaces de `/tienda` dentro de viewport a 320/390, debajo del h2 sin superposición, con texto CSS 200%; se mantiene noOverflow global a 320/390/768/1280/1440 y la suite anterior. HTML, rutas, JWT, backend, DB y autorizaciones no se modifican.
+
+Riesgo R2 UX/a11y global. SKREF-03 Impeccable, SKREF-05 Taste, SKREF-10 Angular consultadas en orígenes pinneados; motion, redacción, threat model y .NET performance no aplican al cambio de reflow. CI dirigida GitHub-hosted debe terminar COMPLETED/SUCCESS en SHA causal para acreditar este incremento; estado full GLOBAL UX A0-A4, WCAG y CWV continuos permanecen PARCIAL/NO_MEDIDO, PLAN H2297 EN_PROGRESO owner DEV02 y candado V17. A5 independiente sólo al completar la microtarea. Rollback: revert normal en dev después de CAS, no QA/main/PROD.
+
 ## A0.95 — Reparación incremental y diagnóstico preciso de overflow en login (DEV02, 2026-11-21)
 
 GitHub-hosted SHA 150829dfb3a7a615c04fce040a60fdd1b07b96d3, run 44984195759/job 137091077518, terminó FAILURE con 27 PASS y 1 FAIL: /login, texto raíz CSS 200%, viewport 320px, document.scrollWidth=449px. La hipótesis A0.94 de min-content del grid NO corrigió el defecto y no se registra como PASS.

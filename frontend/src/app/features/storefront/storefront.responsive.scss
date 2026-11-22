@@ -25,9 +25,19 @@
 .benefits small { max-width: none; }
 
 .categories-section, .featured-section { padding-top: 36px; }
-.section-head { align-items: center; }
+/* V23 A0.96: a texto 200% el enlace de seccion no comparte fila con
+   un titulo largo en pantallas estrechas; no ocultar overflow. */
+.section-head { flex-direction: column; align-items: stretch; gap: 12px; }
+.section-head > div { min-width: 0; }
 .section-head h2 { font-size: 1.25rem; }
-.section-head > .text-link { flex-shrink: 0; }
+.section-head > .text-link {
+  flex: 0 1 auto;
+  align-self: flex-start;
+  min-width: 0;
+  max-width: 100%;
+  white-space: normal;
+  overflow-wrap: anywhere;
+}
 
 .category-grid { grid-template-columns: 1fr; gap: 9px; }
 .category-card, .category-skeleton { min-height: 150px; }
@@ -102,7 +112,8 @@
   .benefits small { max-width: 240px; }
 
   .categories-section, .featured-section { padding-top: 48px; }
-  .section-head { align-items: end; }
+  .section-head { flex-direction: row; align-items: end; gap: 20px; }
+  .section-head > .text-link { flex-shrink: 0; }
   .section-head h2 { font-size: 1.55rem; }
   .category-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 14px; }
   .category-card, .category-skeleton { min-height: 190px; }
