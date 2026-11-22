@@ -182,6 +182,9 @@ jobs:
       # V22 C06-01.M03.05 CI repair: Category=Integration includes the real /productos JWT+Oracle EF test.
       # Fail closed in tests unless pointed at the disposable mysql:8.4 service; never Aiven/QA/PROD.
       C0701_M0606_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=c0701_m0606_bootstrap;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+      # V23 DEV05 R2: required global Category=Integration includes signed JWT/HTTP/tenant A-B C14-02.M06.06.
+      # Fail closed on missing loopback MySQL 8.4; the xUnit creates its own disposable schema.
+      C1402_M0606_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=c1402_m0606_bootstrap;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
       C0401_M0503_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
       C0401_M0306_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=c0401_m0306_bootstrap;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
       C0401_M0303_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;"

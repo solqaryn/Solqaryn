@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV05 V23: reparación de CI global MySQL para C14-02.M06.06
+- Diagnóstico causal: el job general MySQL 8.4 del SHA 5801b482 falló 1/152 tests por ausencia de C1402_M0606_MYSQL_TEST; la prueba dirigida JWT+HTTP+MySQL 1/1 ya estaba aprobada.
+- Agregado solo el entorno MySQL 8.4 efímero y aislado del test existente al workflow dev-ci; sin suprimir pruebas ni modificar runtime o controles de seguridad. CI del nuevo SHA pendiente de verificación y FAIL previo preservado.
+- C14-02.M06.06 permanece VALIDANDO, owner DEV06, A5 por tercero; aceptación global BOLA/IDOR, hosts, archivos, jobs, caché, backup, sesiones y cero P0/P1 no certificada. Sin QA/main/PROD.
+
 ## 2026-11-22 — DEV04 V23 C04-02.M03.06: auditoría segura si falla el logger
 - Reparación R2: el preflight de auditoría exige logging estructurado disponible antes del sink; un logger deshabilitado deja cero registros positivos engañosos en MySQL 8.4. Conserva verificación posterior, cancelación y redacción.
 - Prueba adversarial .NET y MySQL 8.4 real: logger deshabilitado cero intentos de sink y cero filas añadidas; limitación documentada de fallo de logger después de commit. CI exact-SHA dirigida 2/2, backend, seguridad, Scope Lock y V5 por verificar.
