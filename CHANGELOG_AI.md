@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV02 V23 C15-04.M05.04 A0.97.1: asegurar capturas PNG en artefactos GitHub Actions
+- Corrección P2 de trazabilidad: la suite Chromium ya escribía quince capturas A097, pero YAML no las publicaba como artefactos; agregar upload-artifact con glob preciso, retention 14 días y error cuando no existan archivos.
+- Concurrency por SHA sin cancelación de runs anteriores, Scope Lock y V5 intactos. CI exact-SHA debe aprobar para acreditar; no se modifica runtime, seguridad, bases de datos ni se da por concluida la auditoría global.
+- Se conserva EN_PROGRESO de DEV02, namedRange V17 2000002297 y limitación A0-A4 global/A5; sin QA/main/PROD.
+
 ## 2026-11-22 — DEV02 V23 C15-04.M05.04 A0.97: reflow de rutas públicas a texto CSS 200%
 - Nuevo test Playwright/Chromium de quince combinaciones para ofertas, carrito y cuenta (320/390/768/1280/1440), h1, foco Tab real, skip-link, contenedor en viewport y cero HTTP mutante; guarda capturas reales en CI. No cambia runtime Angular, JWT, RBAC ni MySQL.
 - Se prueba ampliación de texto por CSS y **no** zoom nativo; CI exact-SHA, Scope Lock/V5 y frontend deben terminar SUCCESS antes de acreditar el incremento. A0–A4 globales siguen incompletos y A5 requerirá Task Javier independiente.
