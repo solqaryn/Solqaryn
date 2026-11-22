@@ -151,14 +151,20 @@ test.describe('C15-03.M05.05 — negativa JWT y tenancy HTTP real', () => {
     }
   });
 
-  test('configuracion y logo: tenant A/B denegado y cuarentena no abre archivos', async ({ page, request }) => {
+  test('configuracion tenant-first: lectura propia autorizada, B denegada y logo ajeno en cuarentena', async ({ page, request }) => {
     const jwt = await ingresar(page, 'c1504_admin_a');
     const headers = { Authorization: 'Bearer ' + jwt, 'X-Empresa-Id': '1' };
     expect((await request.get(api + '/tenant-context/1', { headers })).status()).toBe(200);
     expect([403, 404]).toContain((await request.get(api + '/tenant-context/2', { headers })).status());
-    // GET configuracion y POST logo no forman parte de la allowlist P0 con 2+ empresas.
-    await exigirCuarentena(await request.get(api + '/empresa-configuracion/tenant/1', { headers }));
-    await exigirCuarentena(await request.get(api + '/empresa-configuracion/tenant/2', { headers }));
+    // V22 permite exclusivamente GET privado del tenant verificado con JWT, membresia y Configuracion.Ver.
+    // Un 200 propio es esperado; no afirmar que ese acceso es un bypass P0.
+    const ownBrand = await request.get(api + '/empresa-configuracion/tenant/1', { headers });
+    expect(ownBrand.status(), 'branding propio autenticado por servidor y MySQL').toBe(200);
+    expect((await ownBrand.json())?.data?.empresaId, 'respuesta atada a Empresa 1').toBe(1);
+    expect(ownBrand.headers()['cache-control'] ?? '', 'no guardar marca privada en caches').toContain('no-store');
+    const foreignBrand = await request.get(api + '/empresa-configuracion/tenant/2', { headers });
+    expect([403, 404], 'nunca entregar marca de Empresa 2 a Empresa 1').toContain(foreignBrand.status());
+    // Mutador multipart extranjero permanece bloqueado por P0, no simular grant con 503.
     const denied = await request.post(api + '/empresa-configuracion/tenant/2/logo', {
       headers, multipart: { logo: { name: 'test.png', mimeType: 'image/png',
         buffer: Buffer.from('CI-only-invalid-png') } }

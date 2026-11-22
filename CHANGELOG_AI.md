@@ -1,3 +1,7 @@
+## 2026-11-22 — V23 C15-03.M05.05 reparacion CI tenant-first [Javier :30]
+- Reparada prueba negativa de branding: GET privado propio 200 con JWT, EmpresaId y no-store; lectura ajena 403/404; mutación de logo ajeno continúa en cuarentena P0 503 tipada. Sin cambios al backend ni a permisos.
+- GitHub-hosted 618951a4 tuvo 9/10 Chromium/MySQL8.4 PASS y falla por expectativa 503 caducada; CI del SHA nuevo pendiente. VALIDANDO, owner DEV03 y A5_FAIL histórico intactos, P2 de ownership granular no acreditado; solo dev y rollback por revert normal.
+
 ## 2026-11-22 — V23 C15-03.M05.05 JWT revocado por pertenencia MySQL CI [Javier :20]
 - Añade prueba adversarial SQL/HTTP real de revocacion de membresia con JWT previamente valido, verificaciones antes/despues y restauracion efimera en finally; no debilita cuarentena P0.
 - Ajusta CI y documenta que ownership de archivos/jobs/sucursales, A0-A4 y A5 independiente NO estan certificados hasta evidencia posterior. Solo dev.
