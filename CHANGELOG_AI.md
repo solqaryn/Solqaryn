@@ -1,3 +1,7 @@
+## 2026-11-22 — DEV02 V24 C15-04.M05.04: reflujo Material y rechazo global autenticado [Javier :10]
+- Run 45038219152/job137256587067 confirmó 134/137 Playwright reales PASS; A0.69 339px/320px a texto 200% y dos A0.81 fallan por esperar formulario anónimo cuando JWT B sigue válido. Reparación CSS de acciones Material con reflujo sin ocultar overflow y prueba R2 de denegación global con alerta+selector JWT, URL estable y no navegación automática a ERP. Diagnóstico DOM agregado al gate responsive para nueva evidencia si persistiera un desborde.
+- Nuevo GitHub-hosted exact-SHA pendiente, no PASS inferido; siguen EN_PROGRESO el ID y lock V17 propio 2000002297; cobertura 160 rutas, WCAG y CWV de campo aún incompletas, A5 independiente pendiente, ninguna promoción a QA/main/PROD.
+
 ## 2026-11-22 — DEV01 V24 C07-01.M06.06: segundo actor JWT tenant B en Chromium [Javier :00]
 - Playwright real: login firmado de miembro B con contexto y catálogo MySQL 8.4 de B HTTP 200, Angular a 390px sin body overflow.
 - Negativo con el mismo token B y selector A: exigir rechazo 403/404/503 sin filtrar artículos A; sin red simulada, credenciales productivas ni JWT fabricado.

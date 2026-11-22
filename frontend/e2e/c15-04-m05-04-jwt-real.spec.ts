@@ -2203,11 +2203,21 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
           parseFloat(getComputedStyle(el).fontSize));
         expect(raizDespues, 'texto raiz realmente ampliado, no solo estilo declarado')
           .toBeGreaterThanOrEqual(raizAntes * 1.9);
-        const dimensiones = await page.evaluate(() => ({
-          contenido: document.documentElement.scrollWidth,
-          viewport: document.documentElement.clientWidth
-        }));
-        expect(dimensiones.contenido, 'reflujo sin scroll lateral a 200%: ' + ruta + ' ' + width)
+        const dimensiones = await page.evaluate(() => {
+          const viewport = document.documentElement.clientWidth;
+          const excedentes = Array.from(document.querySelectorAll('.plataforma *'))
+            .filter(el => el.getBoundingClientRect().right > viewport + 2)
+            .slice(0, 8).map(el => el.tagName.toLowerCase() + '.' +
+              String(el.getAttribute('class') || '').replace(/\\s+/g, '.').slice(0, 90));
+          return {
+            contenido: document.documentElement.scrollWidth,
+            viewport,
+            excedentes
+          };
+        });
+        expect(dimensiones.contenido,
+          'reflujo sin scroll lateral a 200%: ' + ruta + ' ' + width +
+          ' elementos_desbordados=' + JSON.stringify(dimensiones.excedentes))
           .toBeLessThanOrEqual(dimensiones.viewport + 2);
         let focoVisible = false;
         for (let intento = 0; intento < 120; intento++) {
@@ -2695,7 +2705,18 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
           await expect(page.getByRole('heading', {
             level: 1, name: destino.titulo
           })).toHaveCount(0);
-          await expect(page.getByRole('textbox', { name: 'Nombre de usuario' })).toBeVisible();
+          // En una sesion JWT autentica ya vigente, el 403 mantiene visible el
+          // selector empresarial y el rechazo global; no exige formulario de
+          // login ni puede navegar automaticamente al ERP.
+          const rechazoGlobal = page.getByRole('alert').filter({
+            hasText: 'Tu sesión no posee autoridad global de SOLQARYN'
+          });
+          await expect(rechazoGlobal).toBeVisible();
+          await expect(page.locator('[aria-label="Selección de empresa"]')).toBeVisible();
+          await page.waitForTimeout(300);
+          await expect(page).toHaveURL(url =>
+            url.pathname === '/login' && url.searchParams.get('plataforma') === 'denegado');
+          await expect(rechazoGlobal).toBeVisible();
           expect(await page.evaluate(() => document.documentElement.scrollWidth),
             'No hay desborde ni datos privados').toBeLessThanOrEqual(ancho + 2);
           expect(escrituras.slice(inicio), 'Denegacion nunca muta recursos').toEqual([]);

@@ -322,8 +322,8 @@ import { C1404ReleaseBrandingV17Component } from './c14-04-m04-03-release-brandi
     h1 { margin: 10px 0; font-size: clamp(1.8rem, 3.5vw, 2.8rem); line-height: 1.15; overflow-wrap: anywhere; }
     p { line-height: 1.6; }
     .heading p { margin: 0; color: var(--color-text-muted); }
-    .heading__actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }
-    .heading__actions button, .heading__actions a { min-height: 44px; }
+    .heading__actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; max-width: 100%; min-width: 0; }
+    .heading__actions button, .heading__actions a { min-height: 44px; min-width: 0; max-width: 100%; height: auto; white-space: normal; overflow-wrap: anywhere; }
     .authority-card { margin-bottom: 20px; }
     .claims { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; margin: 24px 0 4px; }
     .claims div { border-radius: 12px; padding: 16px; background: var(--color-background, #f8fafc); min-width: 0; }
@@ -338,7 +338,8 @@ import { C1404ReleaseBrandingV17Component } from './c14-04-m04-03-release-brandi
     .pending, .available { display: inline-block; border: 1px solid currentColor; border-radius: 999px; padding: 5px 11px; font-weight: 650; font-size: .8rem; }
     .pending { color: #955500; }
     .available { color: #22693d; }
-    .v5-card mat-card-content { padding: clamp(18px, 3vw, 32px); }
+    .v5-card { min-width: 0; max-width: 100%; }
+    .v5-card mat-card-content { padding: clamp(18px, 3vw, 32px); min-width: 0; }
     .v5-feedback { margin: 0 0 18px; padding: 14px 18px; border: 1px solid #dfe5ec; border-radius: 12px; }
     .v5-feedback p { margin: 4px 0; }
     .v5-feedback p:has(mat-spinner) { display: flex; align-items: center; gap: 10px; }
