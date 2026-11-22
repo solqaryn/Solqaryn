@@ -316,10 +316,10 @@ import { C1404ReleaseBrandingV17Component } from './c14-04-m04-03-release-brandi
     :host { display: block; }
     .plataforma { max-width: 1120px; margin: 0 auto; padding: clamp(16px, 3vw, 36px); }
     .heading { display: flex; align-items: flex-end; justify-content: space-between; flex-wrap: wrap; gap: 20px; margin-bottom: 24px; }
-    .heading__text { max-width: 680px; }
+    .heading__text { max-width: 680px; min-width: 0; }
     .eyebrow { display: inline-flex; align-items: center; gap: 8px; font-size: .8rem; font-weight: 750; letter-spacing: .08em; text-transform: uppercase; color: var(--color-primary); }
     .eyebrow mat-icon { font-size: 20px; width: 20px; height: 20px; }
-    h1 { margin: 10px 0; font-size: clamp(1.8rem, 3.5vw, 2.8rem); line-height: 1.15; }
+    h1 { margin: 10px 0; font-size: clamp(1.8rem, 3.5vw, 2.8rem); line-height: 1.15; overflow-wrap: anywhere; }
     p { line-height: 1.6; }
     .heading p { margin: 0; color: var(--color-text-muted); }
     .heading__actions { display: flex; align-items: center; flex-wrap: wrap; gap: 10px; }

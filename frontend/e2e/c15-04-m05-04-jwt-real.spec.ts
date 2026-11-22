@@ -27,7 +27,7 @@ async function ingresar(page: Page, usuario: string): Promise<string> {
 // Los casos A0.78/A0.79 prueban el guard con JWT real, NO el formulario de login.
  // Login HTTP contra API ASP.NET Core + MySQL 8.4 efimero: ninguna credencial o token simulado.
 async function ingresarConJwtRealParaGuard(
-  page: Page, request: APIRequestContext, usuario: string
+  page: Page, request: APIRequestContext, usuario: string, sinPreferenciaEmpresa = false
 ): Promise<string> {
   const respuesta = await request.post(api + '/auth/login', {
     data: { nombreUsuario: usuario, password: clave! }
@@ -44,20 +44,25 @@ async function ingresarConJwtRealParaGuard(
 
   // Equivale al estado persistido por AuthService.aplicarSesion. El JWT proviene
   // del endpoint real (no esta inventado): guard y HTTP lo revalidan al navegar.
-  await page.addInitScript(({ token, nombreUsuario, nombreCompleto, rol, expiraEn, empresaId }) => {
+  await page.addInitScript(({ token, nombreUsuario, nombreCompleto, rol, expiraEn, empresaId, sinPreferenciaEmpresa }) => {
     localStorage.setItem('solqaryn_token', token);
     localStorage.setItem('solqaryn_user', nombreUsuario);
     localStorage.setItem('solqaryn_nombre_completo', nombreCompleto);
     localStorage.setItem('solqaryn_rol', rol);
     localStorage.setItem('solqaryn_expira_en', expiraEn);
-    localStorage.setItem('solqaryn_empresa_solicitada_id', empresaId);
+    if (sinPreferenciaEmpresa) {
+      localStorage.removeItem('solqaryn_empresa_solicitada_id');
+    } else {
+      localStorage.setItem('solqaryn_empresa_solicitada_id', empresaId);
+    }
   }, {
     token: sesion.token as string,
     nombreUsuario: sesion.nombreUsuario as string,
     nombreCompleto: String(sesion.nombreCompleto ?? ''),
     rol: sesion.rol as string,
     expiraEn: sesion.expiraEn as string,
-    empresaId: usuario === 'c1504_admin_b' ? '2' : '1'
+    empresaId: usuario === 'c1504_admin_b' ? '2' : '1',
+    sinPreferenciaEmpresa
   });
   return sesion.token as string;
 }
@@ -2741,7 +2746,9 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     ]) {
       test('A0.82 - empresa ' + identidad.empresa + ' denegada en ' + destino.ruta,
         async ({ page, request }) => {
-          const jwt = await ingresarConJwtRealParaGuard(page, request, identidad.usuario);
+          // Esta prueba aísla el rechazo GLOBAL: conserva JWT firmado y RBAC real,
+          // sin forzar una preferencia de empresa que active navegacion ERP asincrona.
+          const jwt = await ingresarConJwtRealParaGuard(page, request, identidad.usuario, true);
           const control = await request.get(api + '/plataforma/sesion', {
             headers: { Authorization: 'Bearer ' + jwt }
           });

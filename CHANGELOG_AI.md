@@ -1,3 +1,6 @@
+## 2026-11-22 — DEV02 V23 C15-04.M05.04: corregir reflujo 200% y aislar preferencia tenant en test 403
+- SHA previo `019b1407` falló 2/137 pruebas Chromium reales en job `137219954078` (135 PASS): overflow 339px en `/plataforma/cobertura-v5` a 320px/200% y estado de recuperación tras 403 en prueba de empresa B. Se corrige el H1 y el mínimo flexible reales de PlataformaComponent, sin esconder scroll horizontal; el test A0.82 deja de persistir preferencia de empresa sólo en negativos globales, conserva JWT firmado, HTTP 403, no contenido privado ni mutaciones. CI del SHA nuevo requerida antes de PASS; propio C15 sigue EN_PROGRESO con lock 2000002297, sin LISTO/A5, sin QA/main/PROD. Registro técnico detallado en `docs/v5/c15-04-m05-04-global-ux-acceptance.md`.
+
 ## 2026-11-22 — DEV01 V23 C07-01.M06.06: JWT firmado y revocación SQL de Crear [Javier :00]
 - Nuevo negativo causal R2 en el TestServer real: revocar grant Productos.Crear de tenant A después de emitir JWT, POST con formulario válido debe rechazar HTTP 503.
 - Readback Oracle EF/MySQL 8.4 efímero: ningún nuevo producto ni recibo de auditoría Crear; producto previo intacto. Pilotos solo in-memory, sin cambio runtime/QA/PROD.
