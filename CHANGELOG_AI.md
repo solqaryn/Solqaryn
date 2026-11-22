@@ -1,3 +1,9 @@
+## 2026-11-22 — DEV01 V23 C07-01.M06.06: PUT HTTP firmado, IDOR y revocación real
+- Incremento R2 test-only: ProductosController.Update real mediante ASP.NET TestServer, JWT A/B firmado, filtro Editar, Oracle EF/MySQL 8.4 efímero; Nombre, variante técnica, precio y auditoría persistida con nueva lectura física.
+- Negativos adversariales: tenant B con Editar propio no puede modificar el producto A (404 y cero mutación); revocación del permiso Editar de A bloquea PUT posterior con JWT aún válido (503 y cero mutación).
+- CI GitHub-hosted exact-SHA, Scope Lock, V5, backend y seguridad obligatorios SUCCESS; antes de concluir es WAIT_CI. La prueba no certifica Angular/Chromium API conectada, variantes comerciales completas ni LISTO/A5.
+- Estado C07-01.M06.06 EN_PROGRESO owner DEV01; candado V17 propio 2000001045, sin QA/main/PROD. Cuarentena productiva inalterada y rollback por revert normal.
+
 ## 2026-11-22 — DEV06 V23 C14-02.M06.06: JWT firmado, TestServer y MySQL 8.4 adversarial
 - Incremento R2 test-only: JWT Bearer con firma/expiración verificadas, ASP.NET Core HTTP TestServer y MySQL 8.4 efímero; positivos y negativos tenant A/B, spoofed header, revocación real de sesión/grant/membresía/auditoría, host, archivos, jobs, cache, backup y rollback SQL.
 - Workflow GitHub-hosted filtrado Category=Integration exact-SHA con TRX 1/1 PASS requerido, proyecto Scope Lock y Skill self-test; no se acepta CI queued, skipped o failed como certificación.

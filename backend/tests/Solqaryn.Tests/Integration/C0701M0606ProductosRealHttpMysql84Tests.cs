@@ -144,6 +144,29 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             await db.SaveChangesAsync();
             db.ChangeTracker.Clear();
 
+            // Both tenants may Editar within their verified enterprise; B still
+            // has no Crear grant. This distinguishes IDOR from missing permission.
+            var editPermission = await db.Permisos.IgnoreQueryFilters()
+                .FirstOrDefaultAsync(x => x.Modulo == ModuloSistema.Productos
+                    && x.Accion == AccionPermiso.Editar
+                    && x.Ambito == AmbitoAutorizacion.Empresa && x.Activo && !x.Eliminado);
+            if (editPermission is null)
+            {
+                editPermission = new Permiso
+                {
+                    Codigo = "C0701M0606.PRODUCTOS.EDITAR",
+                    Nombre = "C0701 isolated edit permission",
+                    Modulo = ModuloSistema.Productos, Accion = AccionPermiso.Editar,
+                    Ambito = AmbitoAutorizacion.Empresa, Activo = true
+                };
+                db.Permisos.Add(editPermission);
+                await db.SaveChangesAsync();
+            }
+            db.RolPermisos.AddRange(
+                new RolPermiso { RolId = roleA.Id, PermisoId = editPermission.Id },
+                new RolPermiso { RolId = roleB.Id, PermisoId = editPermission.Id });
+            await db.SaveChangesAsync();
+            db.ChangeTracker.Clear();
 
             // Real tenant-owned products, seeded only using a server-side verified
             // commercial authority, never by trusting the request header.
@@ -754,6 +777,93 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 Assert.Equal(userA.Id, audit.UsuarioId);
                 Assert.Equal("Exito", audit.Resultado);
             }
+
+            // Signed JWT HTTP PUT through the *real* ProductosController,
+            // Oracle EF/MySQL 8.4, technical variant and durable audit.
+            var updatedName = "C0701HttpUpdated" + Guid.NewGuid().ToString("N");
+            using (var putA = new HttpRequestMessage(
+                HttpMethod.Put, $"/productos/{httpProductId}"))
+            {
+                putA.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwtA);
+                putA.Headers.TryAddWithoutValidation("X-Empresa-Id", a.Id.ToString());
+                putA.Content = new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    ["Nombre"] = updatedName,
+                    ["CategoriaId"] = categoryAId.ToString(),
+                    ["Cantidad"] = "0",
+                    ["Costo"] = "64",
+                    ["Precio"] = "139"
+                });
+                using var reply = await client.SendAsync(putA);
+                Assert.Equal(HttpStatusCode.OK, reply.StatusCode);
+            }
+            await using (var updatedDb = new AppDbContext(options))
+            {
+                var updated = await updatedDb.Productos.IgnoreQueryFilters().AsNoTracking()
+                    .SingleAsync(p => p.Id == httpProductId);
+                Assert.Equal(a.Id, updated.EmpresaId);
+                Assert.Equal(updatedName, updated.Nombre);
+                var variant = await updatedDb.ProductoVariantes.IgnoreQueryFilters()
+                    .AsNoTracking().SingleAsync(v => v.ProductoId == httpProductId && !v.Eliminado);
+                Assert.Equal(a.Id, variant.EmpresaId);
+                Assert.True(variant.EsTecnica);
+                Assert.Equal(139m, variant.Precio);
+                var receipt = await updatedDb.RegistrosAuditoria.IgnoreQueryFilters()
+                    .AsNoTracking().SingleAsync(x => x.Modulo == ModuloSistema.Productos
+                        && x.Accion == AccionPermiso.Editar
+                        && x.ReferenciaId == httpProductId && x.Entidad == "Producto");
+                Assert.Equal(a.Id, receipt.EmpresaId);
+                Assert.Equal(userA.Id, receipt.UsuarioId);
+                Assert.Equal("Exito", receipt.Resultado);
+            }
+
+            // A valid tenant B JWT has Editar on B, not authorization over A.
+            // Physical readback must demonstrate zero mutation after IDOR denial.
+            using (var crossTenant = new HttpRequestMessage(
+                HttpMethod.Put, $"/productos/{httpProductId}"))
+            {
+                crossTenant.Headers.Authorization = new AuthenticationHeaderValue(
+                    "Bearer", Sign(userB.Id, roleB.Id));
+                crossTenant.Headers.TryAddWithoutValidation("X-Empresa-Id", b.Id.ToString());
+                crossTenant.Content = new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    ["Nombre"] = "CrossTenantMutationDenied",
+                    ["Precio"] = "1"
+                });
+                using var rejected = await client.SendAsync(crossTenant);
+                Assert.Equal(HttpStatusCode.NotFound, rejected.StatusCode);
+            }
+            await using (var deniedDb = new AppDbContext(options))
+            {
+                Assert.Equal(updatedName, await deniedDb.Productos.IgnoreQueryFilters()
+                    .AsNoTracking().Where(p => p.Id == httpProductId)
+                    .Select(p => p.Nombre).SingleAsync());
+            }
+
+            // Removing Editar must revoke writes despite an unexpired signed A JWT.
+            var revokedEdit = await db.RolPermisos.SingleAsync(x =>
+                x.RolId == roleA.Id && x.PermisoId == editPermission.Id);
+            db.RolPermisos.Remove(revokedEdit);
+            await db.SaveChangesAsync();
+            using (var revokedPut = new HttpRequestMessage(
+                HttpMethod.Put, $"/productos/{httpProductId}"))
+            {
+                revokedPut.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwtA);
+                revokedPut.Headers.TryAddWithoutValidation("X-Empresa-Id", a.Id.ToString());
+                revokedPut.Content = new FormUrlEncodedContent(new Dictionary<string, string>
+                {
+                    ["Nombre"] = "RevokedMutationDenied",
+                    ["Precio"] = "1"
+                });
+                using var rejected = await client.SendAsync(revokedPut);
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, rejected.StatusCode);
+            }
+            await using (var revokedDb = new AppDbContext(options))
+            {
+                Assert.Equal(updatedName, await revokedDb.Productos.IgnoreQueryFilters()
+                    .AsNoTracking().Where(p => p.Id == httpProductId)
+                    .Select(p => p.Nombre).SingleAsync());
+            }
             client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", jwtA);
             client.DefaultRequestHeaders.Remove("X-Empresa-Id");
@@ -761,7 +871,7 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             using (var ownRead = await client.GetAsync($"/productos/{httpProductId}"))
             {
                 Assert.Equal(HttpStatusCode.OK, ownRead.StatusCode);
-                Assert.Contains(writtenName, await ownRead.Content.ReadAsStringAsync(),
+                Assert.Contains(updatedName, await ownRead.Content.ReadAsStringAsync(),
                     StringComparison.Ordinal);
             }
             // B is an authenticated tenant with a current membership but no Crear grant.
