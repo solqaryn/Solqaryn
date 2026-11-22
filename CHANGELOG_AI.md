@@ -1,3 +1,7 @@
+## 2026-11-21 — V23 C07-01.M06.06 JWT negativos issuer/audience/expiración [Javier :00]
+- Amplía prueba real ASP.NET TestServer + JWT firmado + Oracle EF/MySQL 8.4: issuer incorrecto, audiencia incorrecta y credencial expirada deben producir 401 y no filtrar productos de tenants A/B; selector válido aislado y firma del laboratorio.
+- Incremento de TEST/DOC sin mutación de la API ni del middleware de cuarentena; GitHub-hosted CI exact-SHA pendiente hasta verificación. La fase sigue EN_PROGRESO con lease V17 propio, no certifica HTTP POST, Angular/Chromium, LISTO ni A5; rollback normal git revert.
+
 ## 2026-11-21 — V23 C04-02.M03.06 durable MySQL 8.4 isolated audit [Javier :30]
 - Added fail-closed parameterized audit sink with isolated UUID test schema and physical MySQL transaction COMMIT; no production DI, billing write, credentials or tenant data persisted.
 - Added integration test with positive/negative/adversarial cases and a directed GitHub-hosted MySQL 8.4 exact-SHA TRX gate. CI still requires actual PASS, otherwise C04-02.M03.06 remains VALIDANDO and A5 remains independent. No QA/main/PROD.

@@ -466,6 +466,32 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             using (var forged = await client.GetAsync("/productos"))
                 Assert.Equal(HttpStatusCode.Unauthorized, forged.StatusCode);
 
+            // Real negative JWT boundary: a signature from the local test issuer
+            // must not authenticate when issuer, audience or lifetime is wrong.
+            // Every request includes the valid A selector so a 401 is attributable
+            // to JwtBearer validation, not the downstream tenant quarantine.
+            async Task AssertInvalidSignedJwtRejectedAsync(string invalidJwt)
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Get, "/productos");
+                request.Headers.Authorization =
+                    new AuthenticationHeaderValue("Bearer", invalidJwt);
+                request.Headers.TryAddWithoutValidation(
+                    "X-Empresa-Id", a.Id.ToString());
+                using var response = await client.SendAsync(request);
+                Assert.Equal(HttpStatusCode.Unauthorized, response.StatusCode);
+                var body = await response.Content.ReadAsStringAsync();
+                Assert.DoesNotContain("C0701RealProductoA", body, StringComparison.Ordinal);
+                Assert.DoesNotContain("C0701RealProductoB", body, StringComparison.Ordinal);
+            }
+            await AssertInvalidSignedJwtRejectedAsync(Sign(
+                userA.Id, roleA.Id, issuer: "c0701-untrusted-issuer"));
+            await AssertInvalidSignedJwtRejectedAsync(Sign(
+                userA.Id, roleA.Id, audience: "c0701-other-audience"));
+            await AssertInvalidSignedJwtRejectedAsync(Sign(
+                userA.Id, roleA.Id,
+                notBefore: DateTime.UtcNow.AddMinutes(-30),
+                expires: DateTime.UtcNow.AddMinutes(-20)));
+
             // Production quarantine must reject even an authorized JWT until
             // the explicit server-side pilot flag is enabled.
             Assert.Equal(HttpStatusCode.ServiceUnavailable,
@@ -621,7 +647,9 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
         return response.StatusCode;
     }
 
-    private static string Sign(int userId, int roleId)
+    private static string Sign(int userId, int roleId,
+        string? issuer = null, string? audience = null,
+        DateTime? notBefore = null, DateTime? expires = null)
     {
         var claims = new[]
         {
@@ -630,9 +658,9 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             new Claim("esAdministrador", "false")
         };
         var token = new JwtSecurityToken(
-            issuer: Issuer, audience: Audience, claims: claims,
-            notBefore: DateTime.UtcNow.AddMinutes(-1),
-            expires: DateTime.UtcNow.AddMinutes(15),
+            issuer: issuer ?? Issuer, audience: audience ?? Audience, claims: claims,
+            notBefore: notBefore ?? DateTime.UtcNow.AddMinutes(-1),
+            expires: expires ?? DateTime.UtcNow.AddMinutes(15),
             signingCredentials: new SigningCredentials(
                 Key, SecurityAlgorithms.HmacSha256));
         return new JwtSecurityTokenHandler().WriteToken(token);
