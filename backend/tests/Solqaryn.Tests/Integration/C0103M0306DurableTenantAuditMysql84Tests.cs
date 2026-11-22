@@ -126,6 +126,7 @@ public sealed class C0103M0306DurableTenantAuditMysql84Tests
                     .ConfigureServices(services=>{
                         services.AddDbContext<AppDbContext>(o=>o.UseMySQL(isolated,
                             m=>m.MigrationsAssembly("Solqaryn.Infrastructure.Migrations")));
+                        services.AddRouting();
                         services.AddHttpContextAccessor();
                         services.AddScoped<ICurrentUserService,HttpActor>();
                         services.AddScoped<IUsuarioScopeService,UsuarioScopeService>();

@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV03 V24 C01-03.M03.06: corregir DI de routing en prueba MySQL/JWT [Javier :20]
+- Diagnóstico causal: run 45035416542/job 137247958766, el test dirigido 1/1 FAIL al construir AuthorizationPolicyCache sin EndpointDataSource; MySQL 8.4 y compilación sí arrancaron, pero todavía NO se acredita integración autenticada ni A5.
+- Reparación mínima R2 sólo en el TestServer GitHub-hosted: registrar AddRouting antes de AddAuthorization para permitir verificar JWT/RBAC, membresía A/B, revocación y recibo durable, sin degradar controles ni introducir endpoints productivos.
+- Exact-SHA del nuevo commit pendiente de CI, A5 correctiva independiente pendiente; FAIL histórico intacto, H235 LISTO e I235 DEV01 conservados, DAG/COLA por fórmulas. Rollback por git revert normal.
+
 ## 2026-11-22 — DEV01 V24 C07-01.M06.06: Chromium real contra JWT y MySQL 8.4 [Javier :00]
 - Nuevo Playwright de Angular /productos contra API ASP.NET Core y MySQL 8.4 efímero con JWT firmado, sin page.route ni tokens simulados: contrato GET real, navegación privada, reflow 320/390/768/1280/1440 y capturas CI.
 - Negativos: JWT de A solicita B y token con firma alterada; no revelar filas privadas. Bootstrap de identidades en CI reutilizado sin credenciales ni datos productivos.
