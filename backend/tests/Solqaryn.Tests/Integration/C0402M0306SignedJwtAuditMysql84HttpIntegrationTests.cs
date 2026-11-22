@@ -3,6 +3,7 @@ using System.Net;
 using System.Net.Http.Headers;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -278,7 +279,18 @@ public sealed class C0402M0306SignedJwtAuditMysql84HttpIntegrationTests
                 var sanitizedBody = await allowed.Content.ReadAsStringAsync();
                 Assert.True(allowed.StatusCode == HttpStatusCode.OK,
                     $"Expected signed-JWT candidate HTTP 200 but got {(int)allowed.StatusCode}: {sanitizedBody}");
-                Assert.Contains(a.Id.ToString(), sanitizedBody,
+                // The test-only endpoint intentionally omits tenant/resource IDs.
+                // Validate the actual sanitized decision contract instead.
+                using var payload = JsonDocument.Parse(sanitizedBody);
+                var response = payload.RootElement;
+                Assert.Equal(JsonValueKind.Object, response.ValueKind);
+                Assert.Equal(4, response.EnumerateObject().Count());
+                Assert.Equal("REAL_AUTHORIZED_ATOMIC_TRANSACTION_AND_POLICY_STILL_REQUIRED",
+                    response.GetProperty("code").GetString());
+                Assert.True(response.GetProperty("isDomainCandidateOnly").GetBoolean());
+                Assert.False(response.GetProperty("permitsContractMutation").GetBoolean());
+                Assert.False(response.GetProperty("permitsPaymentOrRefund").GetBoolean());
+                Assert.DoesNotContain("private-contract-cause", sanitizedBody,
                     StringComparison.Ordinal);
             }
             using (var foreign = await client.GetAsync(
