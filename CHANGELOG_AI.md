@@ -1,3 +1,7 @@
+## 2026-11-21 — V23 C04-02.M03.06 audited HTTP logger-provider repair [Javier :40]
+- GitHub-hosted job 137054831062 ran signed-JWT HTTP / ephemeral MySQL 8.4, but the expected positive HTTP 200 was 403 (11 of 12 scoped tests passed). The test host registered logging filters but no concrete provider. Added a real console provider while preserving fail-closed IsEnabled and durable audit requirements; this causal repair hypothesis requires new exact-SHA CI, not a fabricated PASS.
+- Positive HTTP assertion now reports the test endpoint's sanitized decision code/flags on failure; forged JWT 401, tenant B and revoked-grant 403, real InnoDB receipts, and directed 2/2 TRX proof remain required. No production DI, payments, QA/main/PROD; normal git revert rollback and independent A5.
+
 ## 2026-11-21 — V23 C04-02.M03.06 directed CI filter correction [Javier :30]
 - Diagnosed failed GitHub job 137054115972 causally: previous filter executed only one passing MySQL 8.4 test while TRX correctly demanded two; no .NET compilation or durable audit test failure.
 - Changed directed filter to include both C0402M0306 integration test classes. New SHA CI must prove 2/2 PASS with zero skips, backend/security, Scope Lock and V5; retain VALIDANDO/A5 pending until full real ownership and DI. No QA/main/PROD.

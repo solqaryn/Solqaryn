@@ -227,7 +227,7 @@ public sealed class C0402M0306SignedJwtAuditMysql84HttpIntegrationTests
                         services.AddScoped<IC0402ContractAuditSink>(_ =>
                             new C0402IsolatedMySqlContractAuditSink(
                                 () => new MySqlConnection(isolated)));
-                        services.AddLogging(l => l.SetMinimumLevel(LogLevel.Information));
+                        services.AddLogging(l => l.SetMinimumLevel(LogLevel.Information).AddConsole());
                         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                             .AddJwtBearer(o => o.TokenValidationParameters =
                                 new TokenValidationParameters
@@ -275,9 +275,10 @@ public sealed class C0402M0306SignedJwtAuditMysql84HttpIntegrationTests
             using (var allowed = await client.GetAsync(
                 $"/c0402-m0306-test/{a.Id}"))
             {
-                Assert.Equal(HttpStatusCode.OK, allowed.StatusCode);
-                Assert.Contains(a.Id.ToString(),
-                    await allowed.Content.ReadAsStringAsync(),
+                var sanitizedBody = await allowed.Content.ReadAsStringAsync();
+                Assert.True(allowed.StatusCode == HttpStatusCode.OK,
+                    $"Expected signed-JWT candidate HTTP 200 but got {(int)allowed.StatusCode}: {sanitizedBody}");
+                Assert.Contains(a.Id.ToString(), sanitizedBody,
                     StringComparison.Ordinal);
             }
             using (var foreign = await client.GetAsync(
