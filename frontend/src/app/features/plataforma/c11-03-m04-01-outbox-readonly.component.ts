@@ -62,7 +62,7 @@ const ETAPAS = Object.freeze([
   styles: [`
     :host { display:block; color:var(--mat-sys-on-surface,#17212d); }
     .c1103 { box-sizing:border-box; max-width:74rem; margin:auto; padding:clamp(1rem,3vw,2.5rem); }
-    h1 { font-size:clamp(1.5rem,3vw,2.2rem); line-height:1.2; }
+    h1 { font-size:clamp(1.5rem, calc(1.5rem + 1vw), 2.2rem); line-height:1.2; overflow-wrap:anywhere; }
     h2 { font-size:1.22rem; } h3 { font-size:1rem; margin:0; }
     p,li { line-height:1.55; overflow-wrap:anywhere; }
     .eyebrow { font-weight:700; color:var(--mat-sys-primary,#2157a3); }

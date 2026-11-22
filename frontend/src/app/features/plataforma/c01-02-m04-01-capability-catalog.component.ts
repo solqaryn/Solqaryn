@@ -52,6 +52,7 @@ export function c0102CatalogoDeRutas(configuracion: Routes) {
     .catalogo { max-width: 1120px; padding: clamp(16px, 3vw, 32px); margin: auto; }
     ol { list-style: none; display: grid; gap: 16px; padding: 0; grid-template-columns: repeat(auto-fit,minmax(min(100%,260px),1fr)); }
     li { border: 1px solid var(--color-border, #8193a5); border-radius: 12px; padding: 14px; overflow-wrap: anywhere; }
+    h1 { font-size: clamp(1.5rem, calc(1.5rem + 1vw), 2.25rem); line-height: 1.2; overflow-wrap: anywhere; }
     h2 { font-size: 1rem; } a:focus-visible { outline: 3px solid var(--color-primary,#0868ad); outline-offset: 4px; }
   `]
 })

@@ -6,6 +6,10 @@ on:
       - '.github/workflows/v19-c15-04-m05-04-jwt-real.yml'
       - 'frontend/e2e/c15-04-m05-04-jwt-real.spec.ts'
       - 'frontend/playwright.c15-04-m05-04-real.config.ts'
+      # A111: volver a probar ampliacion de texto al cambiar superficies auditadas.
+      - 'frontend/src/app/features/plataforma/c01-02-m04-01-capability-catalog.component.ts'
+      - 'frontend/src/app/features/plataforma/c15-02-m04-01-revision-arquitectura.component.ts'
+      - 'frontend/src/app/features/plataforma/c11-03-m04-01-outbox-readonly.component.ts'
       - 'frontend/src/app/features/plataforma/c13-04-m04-01-catalogo-rutas.component.ts'
       - 'frontend/src/app/features/plataforma/cobertura-trazabilidad-v5.component.ts'
       - 'frontend/src/app/features/plataforma/revision-amenazas-v5.component.ts'
