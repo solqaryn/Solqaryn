@@ -1,3 +1,7 @@
+## 2026-11-21 — DEV05 C01-04.M03.06 auditoria QA MySQL 8.4 aislada
+- Reparacion incremental R2 bajo V17: Infrastructure agrega sink transaccional InnoDB parametrizado con segundo saneamiento; test Category=Integration crea esquema efimero y verifica tenant A/B, replay, cancelacion y fallo de almacenamiento.
+- GitHub-hosted dev-ci declara conexion local mysql:8.4 para la prueba; fuente real JWT/RBAC/expediente, DI API y A0-A4 completos NO certificados. Permanece VALIDANDO, owner historico DEV05; A5 independiente posterior y sin QA/main/PROD.
+
 ## 2026-11-21 — V23 C15-04.M05.04 A0.92 capturas publicas complementarias [Javier :10]
 - WIP R2 existente, candado V17 2000002297, sin reclamar nueva microtarea: Playwright Chromium captura 15 PNG reales de ofertas, carrito y cuenta en cinco anchos; foco Tab, landmarks, no body overflow y cero escrituras HTTP. Sin cambio de runtime, identidad ni MySQL.
 - Test frontend/e2e/c15-04-m05-04-global-ux.spec.ts, workflow v19-c15-04-m05-04-global-ux.yml y documento docs/v5/c15-04-m05-04-a092-v23-storefront-additional-evidence.md. GitHub-hosted exact-SHA pendiente al publicar; no declarar CI PASS anticipado. Mantener EN_PROGRESO global por WCAG/rutas/roles/CWV; A5 independiente cuando A0-A4 completos. Rollback git revert normal.
