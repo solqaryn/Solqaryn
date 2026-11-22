@@ -989,4 +989,50 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
     }
   });
 
+  // V23 A0.97: extension de A0.92 (cinco viewports) a texto CSS raiz 200%.
+  // Esta prueba usa Chromium real; no representa browser zoom nativo ni auditoria WCAG global.
+  test('V23 A097: oferta carrito y cuenta reflow a texto CSS 200% en cinco viewports',async({context},testInfo)=>{
+    test.setTimeout(300_000);
+    const rutas:[string,string][]=[
+      ['/tienda/ofertas','#catalogo-productos'],
+      ['/tienda/carrito','#carrito-principal'],
+      ['/tienda/cuenta','#cuenta-principal']
+    ];
+    for(const width of [320,390,768,1280,1440]){
+      for(const [ruta,selector] of rutas){
+        const current=await context.newPage();
+        const escrituras:string[]=[];
+        try{
+          await current.setViewportSize({width,height:840});
+          current.on('request',r=>{
+            if(!['GET','HEAD','OPTIONS'].includes(r.method()))escrituras.push(r.method()+' '+r.url());
+          });
+          await current.goto(ruta,{waitUntil:'domcontentloaded'});
+          await expect(current.locator('main'+selector)).toBeVisible();
+          const original=await current.locator('html').evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
+          expect(original,'fuente raiz inicial verificable').toBeGreaterThan(0);
+          await current.addStyleTag({content:'html { font-size: 200% !important; }'});
+          const resized=await current.locator('html').evaluate(el=>parseFloat(getComputedStyle(el).fontSize));
+          expect(resized,'la fuente raiz debe ampliarse realmente al doble').toBeGreaterThanOrEqual(original*1.9);
+          await expect(current.getByRole('heading',{level:1})).toHaveCount(1);
+          const salto=current.locator('a.skip-link').first();
+          await expect(salto).toHaveAttribute('href',ruta+selector);
+          await current.keyboard.press('Tab');
+          await expect(salto,'skip-link accesible por teclado sin .focus()').toBeFocused();
+          const mainBox=await current.locator('main'+selector).boundingBox();
+          expect(mainBox,'main principal tangible').not.toBeNull();
+          expect(mainBox!.x,'main empieza en viewport').toBeGreaterThanOrEqual(-1);
+          expect(mainBox!.x+mainBox!.width,'main termina en viewport').toBeLessThanOrEqual(width+1);
+          await noOverflow(current);
+          const captura=await current.screenshot({
+            path:testInfo.outputPath('v23-a097-'+ruta.replaceAll('/','_').replace(/^_/,'')+'-text200-'+width+'.png'),
+            fullPage:true,animations:'disabled'
+          });
+          expect(captura.byteLength,'captura PNG real').toBeGreaterThan(2000);
+          expect(escrituras,'cero HTTP mutante en lectura publica').toEqual([]);
+        }finally{await current.close();}
+      }
+    }
+  });
+
 });

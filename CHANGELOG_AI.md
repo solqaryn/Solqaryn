@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV02 V23 C15-04.M05.04 A0.97: reflow de rutas públicas a texto CSS 200%
+- Nuevo test Playwright/Chromium de quince combinaciones para ofertas, carrito y cuenta (320/390/768/1280/1440), h1, foco Tab real, skip-link, contenedor en viewport y cero HTTP mutante; guarda capturas reales en CI. No cambia runtime Angular, JWT, RBAC ni MySQL.
+- Se prueba ampliación de texto por CSS y **no** zoom nativo; CI exact-SHA, Scope Lock/V5 y frontend deben terminar SUCCESS antes de acreditar el incremento. A0–A4 globales siguen incompletos y A5 requerirá Task Javier independiente.
+- Estado C15-04.M05.04 EN_PROGRESO DEV02, candado V17 2000002297; sin nuevos CLAIM, QA/main/PROD ni secretos. Rollback git revert normal.
+
 ## 2026-11-22 — DEV01 V23 C07-01.M06.06: PUT HTTP firmado, IDOR y revocación real
 - Incremento R2 test-only: ProductosController.Update real mediante ASP.NET TestServer, JWT A/B firmado, filtro Editar, Oracle EF/MySQL 8.4 efímero; Nombre, variante técnica, precio y auditoría persistida con nueva lectura física.
 - Negativos adversariales: tenant B con Editar propio no puede modificar el producto A (404 y cero mutación); revocación del permiso Editar de A bloquea PUT posterior con JWT aún válido (503 y cero mutación).
