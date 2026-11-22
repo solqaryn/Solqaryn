@@ -13,7 +13,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   real-chromium:
-    name: C02-04.M05.06 - seis regresiones Chromium
+    name: C02-04.M05.06 - ocho regresiones Chromium
     runs-on: ubuntu-latest
     timeout-minutes: 35
     env:
@@ -52,6 +52,6 @@ jobs:
           done
           cat v19-c0204-m0506.log >&2
           exit 1
-      - name: Six genuine browser regressions, mocked platform session explicitly
+      - name: Eight genuine browser regressions, mocked platform session explicitly
         working-directory: frontend
         run: npx playwright test e2e/c02-04-m05-06-regression.spec.ts --config=playwright.config.ts --workers=1 --retries=0

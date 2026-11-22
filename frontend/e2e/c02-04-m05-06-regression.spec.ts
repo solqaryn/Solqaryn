@@ -203,4 +203,42 @@ test.describe('C02-04.M05.06 global catalogue regression & a11y (Chromium real)'
     expect(gets()).toBeGreaterThanOrEqual(2);
     expect(writes).toEqual([]);
   });
+
+  test('QA independiente real: cinco controles en Angular 320/390/768/1280/1440 sin PASS inventado', async ({ page }, testInfo) => {
+    const gets = await syntheticSession(page, () => 200);
+    const writes = collectWrites(page);
+    for (const width of [320, 390, 768, 1280, 1440]) {
+      await page.setViewportSize({ width, height: 820 });
+      await page.goto('/plataforma/qa-global-v19');
+      await expect(page.getByRole('heading', { name: 'Consulta de QA automático y cobertura global' })).toBeVisible();
+      await expect(page.getByTestId('c1401-qa-ready')).toBeVisible();
+      await expect(page.locator('.qa-controles li')).toHaveCount(5);
+      await expect(page.getByLabel('Estado de evidencia no verificado')).toHaveCount(5);
+      const horizontalOverflow = await page.evaluate(() =>
+        document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      expect(horizontalOverflow, 'QA global overflow at ' + width).toBeLessThanOrEqual(2);
+      if (width === 320 || width === 1440) {
+        await testInfo.attach('qa-global-' + width + '.png', {
+          body: await page.screenshot({ fullPage: true }), contentType: 'image/png'
+        });
+      }
+    }
+    expect(gets()).toBeGreaterThanOrEqual(5);
+    expect(writes).toEqual([]);
+  });
+
+  test('QA independiente: anónimo y sesión 403 jamás muestran controles privados', async ({ page }) => {
+    const writes = collectWrites(page);
+    await page.goto('/plataforma/qa-global-v19');
+    await expect.poll(() => new URL(page.url()).pathname).toBe('/login');
+    await expect(page.getByTestId('c1401-qa-global')).toHaveCount(0);
+    const gets = await syntheticSession(page, () => 403);
+    await page.goto('/plataforma/qa-global-v19');
+    await expect.poll(() => new URL(page.url()).pathname).toBe('/login');
+    await expect(page).toHaveURL(/plataforma=denegado/);
+    await expect(page.getByTestId('c1401-qa-global')).toHaveCount(0);
+    await expect(page.getByText(secretDiagnostic)).toHaveCount(0);
+    expect(gets()).toBeGreaterThanOrEqual(1);
+    expect(writes).toEqual([]);
+  });
 });

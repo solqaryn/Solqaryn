@@ -1,3 +1,9 @@
+## 2026-11-22 — DEV06 V24 C02-04.M05.06: regresión real de QA independiente, A5 correctiva pendiente
+- Reparación R2 de cobertura de pruebas: dos casos Chromium nuevos ejercitan la ruta Angular real /plataforma/qa-global-v19, diferente al inventario de rutas; cinco controles NO_VERIFICADO, cinco anchos, capturas 320/1440, denegación anónima/403 y cero mutaciones.
+- La suite dirigida pasa de 6 a 8 casos; el workflow conserva Scope Lock antes de npm, concurrency cancel-in-progress=false y GitHub-hosted. Resultado del SHA nuevo pendiente de CI, jamás PASS anticipado.
+- LIMITACIÓN causal: sesión HTTP interceptada; la pantalla QA muestra inventario, no laboratorio de ejecución independiente. Sin JWT firmado, MySQL real, MFA o aprobación de laboratorio; conservar A5_FAIL histórico y PLAN H=LISTO/I=DEV04, A5 correctiva por otra Task.
+- Ámbito y reversión: test+workflow+documento+CHANGELOG, sin runtime ni datos/secretos productivos, únicamente dev; rollback por revert normal, V17 y BITACORA/readback por separado.
+
 ## 2026-11-22 — DEV03 V24 C01-03.M04.01: foco real y zoom Chromium sin falso PASS
 - Reparacion R2 test-only: Playwright exige que Tab alcance el enlace real "Ver todos los ajustes", no solo que algun elemento salga del BODY.
 - Chromium CDP comprueba zoom de compositor/pinch 100% y 200% en 320/390/768/1280/1440 para tenants A/B con JWT y MySQL 8.4 efimeros; almacena capturas comparativas de ambas escalas en los artefactos de CI.
