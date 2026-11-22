@@ -78,6 +78,14 @@ public sealed class C0402M0306DurableAuditMysql84Tests
                 Assert.False(await records.ReadAsync());
             }
             Assert.DoesNotContain("private-client-cause", string.Join(";", logger.Lines));
+            // MySQL 8.4 regression: disabled logging must not persist a candidate.
+            var disabledLogger = new TestLogger { Enabled = false };
+            var disabledPreflight = new C0402ContractAuditedPreflight(
+                new Service(new Actor(), new Contract()), sink, disabledLogger);
+            var logUnavailable = await disabledPreflight.PrepareAuditedAsync(intent);
+            Assert.Equal("CONTRACT_STRUCTURED_LOG_UNAVAILABLE", logUnavailable.Code);
+            Assert.False(logUnavailable.IsDomainCandidateOnly);
+            Assert.Empty(disabledLogger.Lines);
             Assert.False(await sink.AppendAsync(
                 new C0402ContractAuditEntry("UNAUTHORIZED_EVENT", "OK", true),
                 CancellationToken.None));
@@ -164,7 +172,8 @@ public sealed class C0402M0306DurableAuditMysql84Tests
     {
         public List<string> Lines { get; } = [];
         public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
-        public bool IsEnabled(LogLevel level) => true;
+        public bool Enabled { get; init; } = true;
+        public bool IsEnabled(LogLevel level) => Enabled;
         public void Log<TState>(LogLevel level, EventId eventId, TState state,
             Exception? exception, Func<TState, Exception?, string> formatter) =>
             Lines.Add(formatter(state, exception));

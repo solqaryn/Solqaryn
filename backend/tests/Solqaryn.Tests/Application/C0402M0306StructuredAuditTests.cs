@@ -98,7 +98,10 @@ public sealed class C0402M0306StructuredAuditTests
         Assert.Equal(throws ? "CONTRACT_AUDIT_OR_LOG_UNAVAILABLE" :
             "CONTRACT_STRUCTURED_LOG_UNAVAILABLE", result.Code);
         Assert.False(result.IsDomainCandidateOnly);
-        Assert.Equal(1, sink.Attempts);
+        // Disabled logging must not leave a false-positive durable candidate.
+        // Logging exceptions after persistence remain non-atomic by design.
+        Assert.Equal(throws ? 1 : 0, sink.Attempts);
+        if (!throws) Assert.Null(sink.Last);
     }
 
     [Fact]

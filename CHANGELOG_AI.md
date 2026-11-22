@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV04 V23 C04-02.M03.06: auditoría segura si falla el logger
+- Reparación R2: el preflight de auditoría exige logging estructurado disponible antes del sink; un logger deshabilitado deja cero registros positivos engañosos en MySQL 8.4. Conserva verificación posterior, cancelación y redacción.
+- Prueba adversarial .NET y MySQL 8.4 real: logger deshabilitado cero intentos de sink y cero filas añadidas; limitación documentada de fallo de logger después de commit. CI exact-SHA dirigida 2/2, backend, seguridad, Scope Lock y V5 por verificar.
+- Sin nuevo runtime contractual, autorización legal, DI ni escritura productiva. Estado VALIDANDO hasta A0-A4 completos y A5 independiente; rollback git revert, sin QA/main/PROD.
+
 ## 2026-11-22 — DEV02 V23 C15-04.M05.04 A0.97.1: asegurar capturas PNG en artefactos GitHub Actions
 - Corrección P2 de trazabilidad: la suite Chromium ya escribía quince capturas A097, pero YAML no las publicaba como artefactos; agregar upload-artifact con glob preciso, retention 14 días y error cuando no existan archivos.
 - Concurrency por SHA sin cancelación de runs anteriores, Scope Lock y V5 intactos. CI exact-SHA debe aprobar para acreditar; no se modifica runtime, seguridad, bases de datos ni se da por concluida la auditoría global.

@@ -65,6 +65,10 @@ public sealed class C0402ContractAuditedPreflight
             "C0402_CONTRACT_PREFLIGHT", preview.Code, preview.IsDomainCandidateOnly);
         try
         {
+            // Reject before a durable positive audit if structured logging is disabled.
+            if (!_logger.IsEnabled(LogLevel.Information))
+                return Deny("CONTRACT_STRUCTURED_LOG_UNAVAILABLE");
+            cancellationToken.ThrowIfCancellationRequested();
             if (!await _audit.AppendAsync(entry, cancellationToken))
                 return Deny("CONTRACT_AUDIT_SINK_UNAVAILABLE");
             cancellationToken.ThrowIfCancellationRequested();
