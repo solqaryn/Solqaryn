@@ -61,3 +61,24 @@ del worker o de estas pruebas y exige 2/2 pruebas fisicas Oracle MySQL 8.4 y
 V5. El cambio no introduce provider live, DI, endpoint nuevo, JWT/RBAC del
 relay ni modifica bases productivas: conservar VALIDANDO hasta cerrar A0-A4
 y A5 independiente. Rollback: git revert fast-forward de este changeset.
+
+## V23 DEV05: validar estado y duplicados de claim ANTES de cualquier efecto externo
+
+Nueva hipotesis causal R2 distinta de errores de ACK y lotes cruzados: un adaptador
+que devolviera una fila ya Entregada con Intentos > 0 podia provocar
+un segundo envio ANTES de que el CAS del ACK la rechazara. Asimismo, dos
+filas de un mismo tenant con la misma clave idempotente en un lote podian
+provocar efectos repetidos antes de detectar un adaptador anomalo.
+
+El worker opt-in ahora exige Estado=Procesando y ProcesandoDesdeUtc no nulo,
+ademas de empresa/intentos, y rechaza claves idempotentes repetidas en todo el
+lote antes del primer envio. Las comprobaciones de estado se repiten justo
+antes de cada envio. Dos pruebas xUnit adversariales con repositorio defectuoso
+exigen cero envios, cero ACK o errores persistidos; el workflow dirigido
+requiere 6/6 contratos xUnit y conserva 2/2 Oracle EF MySQL 8.4 reales,
+Scope Lock, V5, seguridad y compilacion Release.
+
+LIMITACION: guardarrail frente a adapter roto, no demuestra autenticacion real
+JWT/RBAC, fuente HTTP/DI, proveedor remoto ni consumidor deduplicado. Por tanto
+C11-03.M06.06 sigue VALIDANDO; A0-A4 fase incompletos y A5 independiente
+pendiente. No QA/main/PROD ni secretos; rollback por git revert ordinario.

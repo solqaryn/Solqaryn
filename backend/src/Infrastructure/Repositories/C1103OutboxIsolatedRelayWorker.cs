@@ -1,5 +1,6 @@
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Enums;
 
 namespace Solqaryn.Infrastructure.Repositories;
 
@@ -49,12 +50,20 @@ public sealed class C1103OutboxIsolatedRelayWorker(
         // Reject the *entire* claimed batch before any external side effect.
         if (claimed is null || claimed.Count > maximumBatch)
             throw new InvalidOperationException("OUTBOX_CLAIM_INVALID_BATCH");
+        // A broken repository adapter must not replay an already ACKed row,
+        // nor deliver the same tenant/idempotency key twice in one batch.
+        // Preflight every row before any external side effect.
+        var seenKeys = new HashSet<string>(StringComparer.Ordinal);
         foreach (var candidate in claimed)
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (candidate is null || candidate.EmpresaId != authorizedTenantId
-                || candidate.Intentos <= 0)
+                || candidate.Intentos <= 0
+                || candidate.Estado != EstadoMensajeOutbox.Procesando
+                || candidate.ProcesandoDesdeUtc is null)
                 throw new InvalidOperationException("OUTBOX_CROSS_TENANT_OR_INVALID_CLAIM");
+            if (!seenKeys.Add(candidate.ClaveIdempotencia))
+                throw new InvalidOperationException("OUTBOX_DUPLICATE_CLAIM");
         }
 
         var delivered = 0;
@@ -65,7 +74,9 @@ public sealed class C1103OutboxIsolatedRelayWorker(
         foreach (MensajeOutbox message in claimed)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (message.EmpresaId != authorizedTenantId || message.Intentos <= 0)
+            if (message.EmpresaId != authorizedTenantId || message.Intentos <= 0
+                || message.Estado != EstadoMensajeOutbox.Procesando
+                || message.ProcesandoDesdeUtc is null)
                 throw new InvalidOperationException("OUTBOX_CROSS_TENANT_OR_INVALID_CLAIM");
 
             try

@@ -133,4 +133,60 @@ public sealed class C1103M0606ClaimBatchPreflightTests
             It.IsAny<DateTime>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
+    [Fact]
+    public async Task AlreadyDeliveredRepositoryClaimFailsClosedBeforeTransport()
+    {
+        var now = new DateTime(2026, 11, 22, 0, 0, 0, DateTimeKind.Utc);
+        var delivered = MensajeOutbox.Crear(17, "outbox.event", "{}",
+            "c1103-preflight-delivered", creadoEnUtc: now.AddMinutes(-2));
+        delivered.MarcarProcesando(now);
+        delivered.MarcarEntregado(now);
+
+        var repository = new Mock<IMensajeOutboxRepository>(MockBehavior.Strict);
+        repository.Setup(x => x.ClaimDisponiblesAsync(
+                17, now, 1, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new[] { delivered });
+        var transport = new Mock<IC1103OutboxIsolatedTransport>(MockBehavior.Strict);
+
+        var worker = new C1103OutboxIsolatedRelayWorker(repository.Object, transport.Object);
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            worker.RunTenantAsync(17, now, 1, 3, TimeSpan.FromMinutes(1)));
+
+        Assert.Equal("OUTBOX_CROSS_TENANT_OR_INVALID_CLAIM", error.Message);
+        transport.VerifyNoOtherCalls();
+        repository.Verify(x => x.MarcarEntregadoAsync(
+            It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(),
+            It.IsAny<DateTime>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task DuplicateTenantIdempotencyInClaimBatchNeverSendsFirstMessage()
+    {
+        var now = new DateTime(2026, 11, 22, 0, 0, 0, DateTimeKind.Utc);
+        var first = MensajeOutbox.Crear(17, "outbox.first", "{}",
+            "c1103-repeated-key", creadoEnUtc: now.AddMinutes(-2));
+        var second = MensajeOutbox.Crear(17, "outbox.second", "{}",
+            "c1103-repeated-key", creadoEnUtc: now.AddMinutes(-2));
+        first.MarcarProcesando(now);
+        second.MarcarProcesando(now);
+
+        var repository = new Mock<IMensajeOutboxRepository>(MockBehavior.Strict);
+        repository.Setup(x => x.ClaimDisponiblesAsync(
+                17, now, 2, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new[] { first, second });
+        var transport = new Mock<IC1103OutboxIsolatedTransport>(MockBehavior.Strict);
+
+        var worker = new C1103OutboxIsolatedRelayWorker(repository.Object, transport.Object);
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            worker.RunTenantAsync(17, now, 2, 3, TimeSpan.FromMinutes(1)));
+
+        Assert.Equal("OUTBOX_DUPLICATE_CLAIM", error.Message);
+        transport.VerifyNoOtherCalls();
+        repository.Verify(x => x.RegistrarFalloAsync(
+            It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(),
+            It.IsAny<string>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(),
+            It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+
 }
