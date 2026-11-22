@@ -88,6 +88,23 @@ public sealed class C0402M0306DurableAuditMysql84Tests
                 () => new MySqlConnection(raw)).AppendAsync(
                 new C0402ContractAuditEntry("C0402_CONTRACT_PREFLIGHT",
                     denied.Code, false), CancellationToken.None));
+            // R2 adversarial audit-integrity invariant: no false-positive
+            // candidate or disguised denied candidate may reach durable MySQL.
+            Assert.False(await sink.AppendAsync(
+                new C0402ContractAuditEntry("C0402_CONTRACT_PREFLIGHT",
+                    "LIVE_SERVER_JWT_RBAC_MEMBERSHIP_REQUIRED", true),
+                CancellationToken.None));
+            Assert.False(await sink.AppendAsync(
+                new C0402ContractAuditEntry("C0402_CONTRACT_PREFLIGHT",
+                    "REAL_AUTHORIZED_ATOMIC_TRANSACTION_AND_POLICY_STILL_REQUIRED",
+                    false), CancellationToken.None));
+            await using (var verify = new MySqlConnection(isolated))
+            {
+                await verify.OpenAsync();
+                await using var count = verify.CreateCommand();
+                count.CommandText = "SELECT COUNT(*) FROM V23C0402ContractAuditIsolated";
+                Assert.Equal(2L, Convert.ToInt64(await count.ExecuteScalarAsync()));
+            }
             await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
                 await sink.AppendAsync(new C0402ContractAuditEntry(
                     "C0402_CONTRACT_PREFLIGHT", accepted.Code, true),

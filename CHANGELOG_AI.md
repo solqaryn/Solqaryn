@@ -1,3 +1,8 @@
+## 2026-11-21 — DEV04 V23 C04-02.M03.06 integridad de auditoría contractual R2
+- El sink MySQL 8.4 aislado rechaza un falso resultado candidato en un evento de denegación y rechaza un candidato verdadero marcado como denegación, sin consultar ni escribir la base de datos; ninguna evidencia de auditoría autoriza operaciones comerciales.
+- Prueba adversarial adicional en la integración real MySQL: ambas combinaciones falsas se deniegan y una segunda conexión verifica que persisten solo dos eventos legítimos. CI obligatoria requiere TRX dirigido 2/2, Scope Lock, V5, backend y seguridad sobre SHA nuevo; IN_PROGRESS no es PASS.
+- Sin nuevo endpoint productivo, fuente de contratos autorizada ni registro DI: C04-02.M03.06 permanece VALIDANDO con autor histórico DEV04 y A5 por otra Task distinta tras A0–A4; sin QA/main/PROD.
+
 ## 2026-11-21 — DEV03 V23 C02-01.M05.04 lector SQL JWT para auto-resolucion real
 - Incremento R2: lector Infrastructure de membresia real mediante ICurrentUserService validado, UsuarioScopeService y EF/MySQL; sin JWT reemitido, grants ni DI productivo.
 - TestServer JWT firmado + MySQL 8.4 efimero: 401 sin token, dos empresas sin auto-switch, revocacion B -> A, actor ajeno y rol cruzado denegados; workflow dirigido y TRX causal por SHA.

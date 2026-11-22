@@ -25,6 +25,16 @@ public sealed class C0402IsolatedMySqlContractAuditSink(Func<DbConnection> facto
             !entry.OutcomeCode.All(static c =>
                 c is >= 'A' and <= 'Z' or >= '0' and <= '9' or '_'))
             return false;
+
+        // The audit outcome is server-controlled; a hostile or buggy caller
+        // cannot persist a synthetic positive candidate for a denied request,
+        // or disguise a candidate as a denial. Audit data is not authorization.
+        const string candidateCode =
+            "REAL_AUTHORIZED_ATOMIC_TRANSACTION_AND_POLICY_STILL_REQUIRED";
+        if (entry.IsDomainCandidateOnly !=
+            string.Equals(entry.OutcomeCode, candidateCode, StringComparison.Ordinal))
+            return false;
+
         try
         {
             await using var db = _factory();
