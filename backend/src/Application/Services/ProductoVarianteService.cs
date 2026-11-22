@@ -92,7 +92,12 @@ public class ProductoVarianteService : IProductoVarianteService
             valoresNuevos: Snapshot(variante));
         });
 
-        return ToDto((await _repository.GetByIdAsync(variante.Id))!);
+        var persistedId = (variante ?? throw new InvalidOperationException(
+            "La transaccion termino sin crear la variante.")).Id;
+        var persistedVariant = await _repository.GetByIdAsync(persistedId)
+            ?? throw new InvalidOperationException(
+                "La variante creada no pudo recuperarse del repositorio.");
+        return ToDto(persistedVariant);
     }
 
     public async Task<ProductoVarianteDto?> UpdateAsync(int productoId, int id, UpdateProductoVarianteDto dto)

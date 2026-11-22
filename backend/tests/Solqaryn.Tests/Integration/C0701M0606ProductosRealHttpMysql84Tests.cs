@@ -856,13 +856,17 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             // Select through persisted Producto/EmpresaId; never invent a category tenant column.
             var categoryAId = await db.Productos.IgnoreQueryFilters().AsNoTracking()
                 .Where(p => p.Id == productAId && p.EmpresaId == a.Id)
-                .Select(p => p.CategoriaId).SingleAsync();
+                .Select(p => p.CategoriaId).SingleAsync()
+                ?? throw new InvalidOperationException(
+                    "El producto del tenant A no tiene CategoriaId persistida.");
             // Tenant B's IDOR request must contain a B-owned category.
             // An A-owned category may be rejected as malformed before the
             // controller verifies ownership of the target product in A.
             var categoryBId = await db.Productos.IgnoreQueryFilters().AsNoTracking()
                 .Where(p => p.Id == productBId && p.EmpresaId == b.Id)
-                .Select(p => p.CategoriaId).SingleAsync();
+                .Select(p => p.CategoriaId).SingleAsync()
+                ?? throw new InvalidOperationException(
+                    "El producto del tenant B no tiene CategoriaId persistida.");
             Assert.NotEqual(categoryAId, categoryBId);
             using (var postA = new HttpRequestMessage(HttpMethod.Post, "/productos"))
             {
