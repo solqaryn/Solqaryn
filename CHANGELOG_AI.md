@@ -1,3 +1,8 @@
+## 2026-11-21 — DEV02 V23 A0.94 reparación de reflow de login al 200%
+- La CI real SHA 4c85ed8c27d17a4513330f95099a663d26cb5dbe expuso 449px de scroll horizontal en viewport de 320px con raíz CSS al 200% (27 PASS, 1 FAIL); se corrige el grid min-content del login sin eliminar la aserción.
+- La suite Chromium exige ausencia de overflow y visibilidad real de los controles de usuario/contraseña en 320/390/768/1280/1440 con texto al 200%; capturas y checks del nuevo SHA aún requieren GitHub-hosted SUCCESS.
+- C15-04.M05.04 continúa EN_PROGRESO, DEV02 mantiene V17, no se certifica matriz global de rutas/WCAG/CWV, no LISTO/A5, sin cambio de auth/tenant/DB ni producción.
+
 ## 2026-11-21 — DEV01 V23 C07-01.M06.06 prueba MySQL 8.4 de estados y auditoria positiva
 - Se amplía el xUnit Integration real con transacciones persistidas de desactivación y reactivación de producto en tenant A: auditoria estricta por accion, actor, empresa y recibo releídos desde otro contexto EF Oracle/MySQL.
 - Negativo adicional tenant B: intento de alterar producto A devuelve null y no cambia su estado ni registra recibo cruzado; no se activan HTTP write pilot, Angular ni autorizaciones productivas.

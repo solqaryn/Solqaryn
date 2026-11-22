@@ -932,6 +932,18 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
             await expect(current.locator('a.skip-link').first()).toBeFocused();
           }
           await noOverflow(current);
+          if (ruta === '/login') {
+            // El scrollWidth por sí solo no garantiza que el formulario quede usable.
+            // Los campos reales de usuario y clave deben caber sin recorte horizontal.
+            for (const campo of ['nombreUsuario', 'password']) {
+              const input = current.locator('input[formcontrolname="' + campo + '"]');
+              await expect(input).toBeVisible();
+              const box = await input.boundingBox();
+              expect(box, campo + ' debe tener caja visible').not.toBeNull();
+              expect(box!.x, campo + ' comienza dentro del viewport').toBeGreaterThanOrEqual(-1);
+              expect(box!.x + box!.width, campo + ' termina dentro del viewport').toBeLessThanOrEqual(width + 1);
+            }
+          }
           const slug=ruta.replaceAll('/','_').replace(/^_/,'');
           const capture=await current.screenshot({
             path:testInfo.outputPath('v23-a093-'+slug+'-text200-'+width+'.png'),
