@@ -1,3 +1,7 @@
+## 2026-11-21 — V23 C04-02.M03.06 durable MySQL 8.4 isolated audit [Javier :30]
+- Added fail-closed parameterized audit sink with isolated UUID test schema and physical MySQL transaction COMMIT; no production DI, billing write, credentials or tenant data persisted.
+- Added integration test with positive/negative/adversarial cases and a directed GitHub-hosted MySQL 8.4 exact-SHA TRX gate. CI still requires actual PASS, otherwise C04-02.M03.06 remains VALIDANDO and A5 remains independent. No QA/main/PROD.
+
 ## 2026-11-21 — DEV05 C01-04.M03.06 auditoria QA MySQL 8.4 aislada
 - Reparacion incremental R2 bajo V17: Infrastructure agrega sink transaccional InnoDB parametrizado con segundo saneamiento; test Category=Integration crea esquema efimero y verifica tenant A/B, replay, cancelacion y fallo de almacenamiento.
 - GitHub-hosted dev-ci declara conexion local mysql:8.4 para la prueba; fuente real JWT/RBAC/expediente, DI API y A0-A4 completos NO certificados. Permanece VALIDANDO, owner historico DEV05; A5 independiente posterior y sin QA/main/PROD.

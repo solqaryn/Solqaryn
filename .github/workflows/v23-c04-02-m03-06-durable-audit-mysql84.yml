@@ -1,0 +1,68 @@
+name: V23 C04-02.M03.06 isolated durable audit MySQL 8.4
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/src/Infrastructure/AutomationV5/C0402IsolatedMySqlContractAuditSink.cs'
+      - 'backend/tests/Solqaryn.Tests/Integration/C0402M0306DurableAuditMysql84Tests.cs'
+      - '.github/workflows/v23-c04-02-m03-06-durable-audit-mysql84.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v23-c0402-m0306-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  real-mysql84-audit:
+    name: C04-02.M03.06 - durable MySQL 8.4 positive and negatives
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: ephemeral-v23-only
+          MYSQL_DATABASE: c0402_m0306_bootstrap
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -pephemeral-v23-only"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=15
+    env:
+      C0402_M0306_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=c0402_m0306_bootstrap;User=root;Password=ephemeral-v23-only;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Exact SHA project scope lock
+        working-directory: .
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+      - name: Real MySQL 8.4 and TRX proof
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          dotnet restore tests/Solqaryn.Tests/Solqaryn.Tests.csproj
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore --filter 'FullyQualifiedName~C0402M0306DurableAuditMysql84Tests' --logger 'trx;LogFileName=C0402M0306Mysql84.trx' --verbosity normal
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          paths = list(Path('tests/Solqaryn.Tests').rglob('C0402M0306Mysql84.trx'))
+          if len(paths) != 1: raise SystemExit('NO_UNIQUE_TRX')
+          counters = ET.parse(paths[0]).getroot().find('.//{*}Counters')
+          if counters is None: raise SystemExit('NO_COUNTERS')
+          stats = {k:int(counters.attrib.get(k,-1)) for k in ('total','passed','failed','notExecuted')}
+          print('REAL_C0402_M0306_MYSQL84_TRX',stats)
+          if stats['total'] != 1 or stats['passed'] != 1 or stats['failed'] != 0 or stats['notExecuted'] != 0:
+              raise SystemExit('FAIL_MYSQL84_REAL_AUDIT')
+          PY
