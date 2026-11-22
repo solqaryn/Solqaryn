@@ -738,15 +738,17 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             // The production PrivateDraftPilotEnabled remains false and unchanged.
             pilotConfig["MultiEmpresa:PrivateDraftPilotEnabled"] = "true";
             var writtenName = "C0701HttpSignedWrite" + Guid.NewGuid().ToString("N");
-            var categoryAId = await db.Categorias.IgnoreQueryFilters().AsNoTracking()
-                .Where(c => c.Nombre == "Category C0701RealProductoA" && c.EmpresaId == a.Id)
-                .Select(c => c.Id).SingleAsync();
+            // Categoria has no EmpresaId: the verified tenant-bound Producto owns CategoriaId.
+            // Select through persisted Producto/EmpresaId; never invent a category tenant column.
+            var categoryAId = await db.Productos.IgnoreQueryFilters().AsNoTracking()
+                .Where(p => p.Id == productAId && p.EmpresaId == a.Id)
+                .Select(p => p.CategoriaId).SingleAsync();
             // Tenant B's IDOR request must contain a B-owned category.
             // An A-owned category may be rejected as malformed before the
             // controller verifies ownership of the target product in A.
-            var categoryBId = await db.Categorias.IgnoreQueryFilters().AsNoTracking()
-                .Where(c => c.Nombre == "Category C0701RealProductoB" && c.EmpresaId == b.Id)
-                .Select(c => c.Id).SingleAsync();
+            var categoryBId = await db.Productos.IgnoreQueryFilters().AsNoTracking()
+                .Where(p => p.Id == productBId && p.EmpresaId == b.Id)
+                .Select(p => p.CategoriaId).SingleAsync();
             Assert.NotEqual(categoryAId, categoryBId);
             using (var postA = new HttpRequestMessage(HttpMethod.Post, "/productos"))
             {

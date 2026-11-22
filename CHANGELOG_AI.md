@@ -1,3 +1,8 @@
+## 2026-11-22 - DEV01 V23 C07-01.M06.06 corregir CS1061 de Categoria.EmpresaId en CI
+- Diagnóstico exact-SHA `c5651b18`: 12 required jobs fallaron al compilar prueba Oracle EF/MySQL 8.4; `Categoria` no tiene `EmpresaId` (líneas 742/748 de C0701M0606ProductosRealHttpMysql84Tests).
+- Reparación mínima en test: localizar `CategoriaId` desde `Producto` filtrado por `Id` y `EmpresaId` auténticos; conservar categoría de empresa B, aserción IDOR 404, JWT/RBAC y readback de cero mutaciones, sin cambiar runtime ni gates.
+- Añadir evidencia técnica al documento C07-01.M06.06; CI dirigida/Global del nuevo SHA requiere SUCCESS exacto; mantener EN_PROGRESO y candado V17 del DEV01, sin LISTO/A5 ni QA/main/PROD. Rollback estándar mediante revert.
+
 ## 2026-11-22 - DEV05 V23 C11-03.M06.06 separar ACK SQL de fallo de transporte
 - Reparacion R2: un ACK SQL incierto despues de un envio externo aceptado ya no se clasifica como fallo del transporte ni programa un retry inmediato; reclamacion durable y recuperacion stale preservan el resultado ambiguo.
 - Dos regresiones xUnit adversariales: SQL ACK fallido con cero RegistrarFallo y timeout de transporte con retry sanitizado. Workflow GitHub-hosted amplificado para ejecutar 2/2 Oracle MySQL 8.4 y 4/4 contratos xUnit con TRX no vacio.
