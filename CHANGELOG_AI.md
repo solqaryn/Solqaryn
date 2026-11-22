@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV04 V24 C01-03.M04.05: Chromium responsive y foco real [Javier :30]
+- Incremento test-only en configuración dinámica privada: cinco anchos, Tab real, labels, capturas, control de overflow y CSS zoom de estrés con limitación expresa: NO certifica zoom nativo ni contraste WCAG.
+- Workflow GitHub-hosted .NET 10, Angular 22.2.1, JWT firmado A/B y MySQL 8.4 efímero, pruebas negativas y sin mocks de autorización; CI exact-SHA/A5 independiente pendientes, no declarar LISTO anticipado.
+- Gobierno, SKREF-03 y SKREF-10 consultados de orígenes y pins originales; V17 exclusivo, sin cambios de runtime, fórmulas, QA/main/PROD o secretos.
+
 ## 2026-11-22 — DEV03 V24 C01-03.M04.01: reparación causal de inventario y rutas [Javier :20]
 - El SHA 3878383b produjo dos FAIL reproducibles: P0-007.A detectó el componente UI omitido y C15-01.M05.04 rechazó el hash y el conteo de rutas tras la nueva entrada privada; ambos logs exact-SHA inspeccionados.
 - Inventario actualizado a 171 archivos (163 feature, 8 shared) con entry real y pruebas negativas intactas; snapshot C15-01 preserva matrices históricas y actualiza exclusivamente el blob de rutas y 122 declaraciones observadas, sin hacerse pasar por Sheet vivo.
