@@ -1,3 +1,7 @@
+## 2026-11-22 — DEV01 V24 C07-01.M06.06: API real deniega POST/PUT/DELETE y conserva catálogo A/B
+- Incremento R2 test-only: sexto Playwright en GitHub-hosted usa JWT firmados A/B, /productos real, ASP.NET Core 10 y MySQL 8.4 efímero; exige 403/503 a POST/PUT/DELETE, rechazo cruzado y snapshots SQL inalterados.
+- No altera runtime, permisos, datos productivos ni piloto de lectura. CI exact-SHA pendiente antes de acreditar A0-A4 del incremento; fase ERP (servicios, variantes, impuestos, categorías, atributos y rollback HTTP positivo) continúa EN_PROGRESO, A5 independiente pendiente, sin QA/main/PROD.
+
 ## 2026-11-22 — DEV02 C15-04.M05.04 A108: tres rutas privadas con JWT/RBAC real
 - Preflight V24: C15-04.M05.04 conserva EN_PROGRESO/owner DEV02 y lock V17 2000002297; sin nuevo CLAIM ni cambio de estados. CI anterior d7b460e8: 137/137 Playwright PASS (0 fallos, 0 omitidos) en Angular/ASP.NET Core 10, JWT firmado y MySQL 8.4 efimero, job 137303855251; Scope Lock/V5/seguridad completados SUCCESS en aquel SHA.
 - Nuevo A0.83 en la misma microtarea: casos positivos de administrador plataforma en rutas capacidades, revision de arquitectura y outbox a 320/390/768/1280/1440, con HTTP real y prueba de no overflow horizontal; negativos de empresa B comprueban HTTP 403/ausencia de contenido privado y cero escrituras. No se usan mocks de JWT ni permisos.

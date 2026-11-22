@@ -235,4 +235,62 @@ test.describe('C07-01.M06.06 navegador real y aislamiento A/B', () => {
       .toContain('C0701BrowserTenantA');
   });
 
+
+  test('API real niega POST/PUT/DELETE de catalogo y conserva SQL A/B', async ({ page, request }) => {
+    test.setTimeout(90_000);
+    const jwtA = await sessionReal(page, request, 'c1504_admin_a', '1');
+    const jwtB = await sessionReal(page, request, 'c1504_admin_b', '2');
+    const headersA = { Authorization: 'Bearer ' + jwtA, 'X-Empresa-Id': '1' };
+    const headersB = { Authorization: 'Bearer ' + jwtB, 'X-Empresa-Id': '2' };
+    const { execFileSync } = await import('node:child_process');
+    const container = execFileSync('docker',
+      ['ps', '--filter', 'ancestor=mysql:8.4', '--format', '{{.ID}}'],
+      { encoding: 'utf8' }).trim().split(/\r?\n/)[0];
+    expect(container).toMatch(/^[0-9a-f]{12,64}$/);
+    const sql = (statement: string) => execFileSync('docker', [
+      'exec', '-i', container!, 'mysql', '-uroot', '-proot',
+      'solqaryn_c1504_real_ci', '-Nse', statement
+    ], { encoding: 'utf8' }).trim();
+    const snapshot = () => sql(
+      'SELECT Id,EmpresaId,Nombre,Cantidad,Precio,Activo,Eliminado ' +
+      "FROM Productos WHERE Nombre IN ('C0701BrowserTenantA','C0701BrowserTenantB') " +
+      'ORDER BY EmpresaId;'
+    );
+    const before = snapshot();
+    expect(before.split(/\r?\n/), 'Dos filas A/B fisicas en MySQL').toHaveLength(2);
+    const idA = Number(sql(
+      "SELECT Id FROM Productos WHERE EmpresaId=1 AND Nombre='C0701BrowserTenantA' LIMIT 1;"
+    ));
+    expect(Number.isSafeInteger(idA) && idA > 0).toBe(true);
+    const ownGet = await request.get(api + '/productos?page=1&pageSize=10', { headers: headersA });
+    expect(ownGet.status(), 'Lectura autorizada A se mantiene').toBe(200);
+    const multipart = {
+      nombre: 'C0701ForbiddenCreate', marca: 'MarcaProhibida',
+      modelo: 'SoloCI', tipoInventario: '1', cantidad: '4',
+      costo: '10', precio: '30'
+    };
+    const attempts = [
+      await request.post(api + '/productos', { headers: headersA, multipart }),
+      await request.put(api + '/productos/' + idA, { headers: headersA, multipart }),
+      await request.delete(api + '/productos/' + idA, { headers: headersA })
+    ];
+    for (const result of attempts) {
+      expect([403, 503], 'Piloto privado solo lectura niega toda mutacion').toContain(result.status());
+      const body = await result.text();
+      expect(body).not.toContain('C0701BrowserTenantB');
+      expect(body).not.toContain('MySqlException');
+    }
+    const foreignDelete = await request.delete(api + '/productos/' + idA, { headers: headersB });
+    expect([403, 404, 503], 'JWT B nunca autoriza borrar producto A')
+      .toContain(foreignDelete.status());
+    expect(snapshot(), 'POST/PUT/DELETE denegados no alteran filas SQL A/B').toBe(before);
+    expect(sql("SELECT COUNT(*) FROM Productos WHERE Nombre='C0701ForbiddenCreate';"))
+      .toBe('0');
+    const ownB = await request.get(api + '/productos?page=1&pageSize=10', { headers: headersB });
+    expect(ownB.status(), 'B permanece autorizado tras los rechazos').toBe(200);
+    const namesB = (await ownB.json())?.data?.items?.map((p: { nombre?: string }) => p.nombre);
+    expect(namesB).toContain('C0701BrowserTenantB');
+    expect(namesB).not.toContain('C0701BrowserTenantA');
+  });
+
 });
