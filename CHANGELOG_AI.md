@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV05 V23 C01-04.M03.06: concurrencia InnoDB adversarial [Javier :40]
+- Nueva prueba real de dos escritores concurrentes en MySQL 8.4 efímero sobre el mismo recibo: exige exactamente un INSERT confirmado, otro rechazo sanitizado, llave InnoDB idempotente y segregación tenant A/B; anterior replay era sólo secuencial.
+- Cambia únicamente prueba xUnit, documento de evidencia y este encabezado autocontenido; CI dirigida, Backend Release, seguridad, Scope Lock y V5 del SHA nuevo pendientes de ejecución. No se altera runtime ni proveedor productivo.
+- VALIDANDO y owner DEV05 conservados: no hay lector auténtico JWT/RBAC/HTTP/DI con ownership de expediente. A0–A4 completos y A5 independiente pendientes; sin QA/main/PROD, rollback git revert normal.
+
 ## 2026-11-22 — V23 C15-03.M05.05 reparacion CI tenant-first [Javier :30]
 - Reparada prueba negativa de branding: GET privado propio 200 con JWT, EmpresaId y no-store; lectura ajena 403/404; mutación de logo ajeno continúa en cuarentena P0 503 tipada. Sin cambios al backend ni a permisos.
 - GitHub-hosted 618951a4 tuvo 9/10 Chromium/MySQL8.4 PASS y falla por expectativa 503 caducada; CI del SHA nuevo pendiente. VALIDANDO, owner DEV03 y A5_FAIL histórico intactos, P2 de ownership granular no acreditado; solo dev y rollback por revert normal.

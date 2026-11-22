@@ -163,6 +163,32 @@ public sealed class C0104M0306DurableQaAuditMysql84Tests
                 Assert.False(await reader.ReadAsync());
             }
 
+            // New R2 hypothesis: two independent writers racing the same receipt
+            // must produce one durable row and one sanitized duplicate rejection.
+            // Unlike the prior sequential replay test, these calls overlap on MySQL 8.4.
+            var contested = safe with { ObservedAtUtc = utc.AddSeconds(1) };
+            async Task<bool> AttemptConcurrentReceipt()
+            {
+                try
+                {
+                    await direct.WriteAsync(contested, CancellationToken.None);
+                    return true;
+                }
+                catch (InvalidOperationException ex)
+                {
+                    Assert.Equal("CASEFILE_QA_DURABLE_WRITE_REJECTED", ex.Message);
+                    return false;
+                }
+            }
+
+            var race = await Task.WhenAll(
+                AttemptConcurrentReceipt(), AttemptConcurrentReceipt());
+            Assert.Equal(1, race.Count(wasWritten => wasWritten));
+            Assert.Equal(1, race.Count(wasWritten => !wasWritten));
+            Assert.Equal(2L, await Count(isolated, 101, 42));
+            Assert.Equal(1L, await Count(isolated, 202, 42));
+            Assert.Equal(3L, await CountAll(isolated));
+
             // Storage outage or schema absence cannot create a successful receipt.
             await Execute(isolated, $"DROP TABLE {Table}");
             var unavailable = await a.CaptureAsync(
