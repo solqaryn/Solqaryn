@@ -82,15 +82,15 @@ public class ProductoVarianteService : IProductoVarianteService
             await _repository.AddAsync(variante);
             await _repository.SaveChangesAsync();
             await SincronizarProyeccionCompatibilidadAsync(producto);
-        });
-
-        await _auditoria.RegistrarAsync(
+            // Auditoria y variante comparten la misma transaccion: fallo => rollback.
+            await _auditoria.RegistrarEstrictoAsync(
             ModuloSistema.Productos,
             AccionPermiso.Crear,
             $"Variante creada para {producto!.Nombre}: {variante!.Sku}.",
             variante.Id,
             entidad: "ProductoVariante",
             valoresNuevos: Snapshot(variante));
+        });
 
         return ToDto((await _repository.GetByIdAsync(variante.Id))!);
     }
@@ -133,11 +133,7 @@ public class ProductoVarianteService : IProductoVarianteService
 
             await _repository.SaveChangesAsync();
             await SincronizarProyeccionCompatibilidadAsync(producto);
-        });
-
-        if (producto is null || variante is null) return null;
-
-        await _auditoria.RegistrarAsync(
+            await _auditoria.RegistrarEstrictoAsync(
             ModuloSistema.Productos,
             AccionPermiso.Editar,
             $"Variante actualizada para {producto.Nombre}: {variante.Sku}.",
@@ -145,7 +141,9 @@ public class ProductoVarianteService : IProductoVarianteService
             entidad: "ProductoVariante",
             valoresAnteriores: anteriores,
             valoresNuevos: Snapshot(variante));
+        });
 
+        if (producto is null || variante is null) return null;
         return ToDto((await _repository.GetByIdAsync(variante.Id))!);
     }
 
@@ -174,19 +172,17 @@ public class ProductoVarianteService : IProductoVarianteService
             cambioRealizado = true;
             await _repository.SaveChangesAsync();
             await SincronizarProyeccionCompatibilidadAsync(producto);
-        });
-
-        if (producto is null || variante is null) return null;
-        if (!cambioRealizado) return ToDto(variante);
-
-        await _auditoria.RegistrarAsync(
+            await _auditoria.RegistrarEstrictoAsync(
             ModuloSistema.Productos,
             activo ? AccionPermiso.Activar : AccionPermiso.Desactivar,
             $"Variante {(activo ? "activada" : "desactivada")}: {variante.Sku}.",
             variante.Id,
             entidad: "ProductoVariante",
             valoresNuevos: new { variante.Activo });
+        });
 
+        if (producto is null || variante is null) return null;
+        if (!cambioRealizado) return ToDto(variante);
         return ToDto((await _repository.GetByIdAsync(variante.Id))!);
     }
 
@@ -218,13 +214,13 @@ public class ProductoVarianteService : IProductoVarianteService
             MarcarActualizacion(variante);
             guardado = await _repository.SaveChangesAsync();
             await SincronizarProyeccionCompatibilidadAsync(producto);
+            if (guardado)
+                await _auditoria.RegistrarEstrictoAsync(ModuloSistema.Productos, AccionPermiso.EliminarLogico,
+                $"Variante eliminada lógicamente: {variante.Sku}.", variante.Id,
+                entidad: "ProductoVariante", valoresNuevos: new { variante.Eliminado, variante.FechaEliminacion });
         });
 
         if (producto is null || variante is null) return false;
-        if (guardado)
-            await _auditoria.RegistrarAsync(ModuloSistema.Productos, AccionPermiso.EliminarLogico,
-                $"Variante eliminada lógicamente: {variante.Sku}.", variante.Id,
-                entidad: "ProductoVariante", valoresNuevos: new { variante.Eliminado, variante.FechaEliminacion });
         return guardado;
     }
 

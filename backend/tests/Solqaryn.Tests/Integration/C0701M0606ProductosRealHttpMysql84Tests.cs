@@ -534,6 +534,120 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
 
 
 
+
+            // V24 DEV01: una mutacion de variante debe revertir TAMBIEN la
+            // proyeccion del producto si el recibo de auditoria durable falla.
+            // MySQL Oracle EF es real y efimero; no habilita HTTP productivo.
+            var variantAuditSku = "C0701AUDITVAR" + Guid.NewGuid().ToString("N")[..12];
+            int variantAuditId;
+            await using (var variantSeedDb = new AppDbContext(options,
+                tenantHttpContextAccessor: auditAccessor))
+            {
+                var seeded = new ProductoVariante
+                {
+                    EmpresaId = a.Id, ProductoId = productAId,
+                    Sku = variantAuditSku, Cantidad = 0,
+                    Precio = 21m, Costo = 11m, UmbralStockBajo = 2,
+                    EsTecnica = false, Activo = true, Eliminado = false
+                };
+                variantSeedDb.ProductoVariantes.Add(seeded);
+                await variantSeedDb.SaveChangesAsync();
+                variantAuditId = seeded.Id;
+                Assert.True(variantAuditId > 0);
+            }
+
+            async Task AssertVariantAuditFailureRollsBackAsync(
+                AccionPermiso action, Func<ProductoVarianteService, Task> mutate)
+            {
+                await using (var variantDb = new AppDbContext(options,
+                    tenantHttpContextAccessor: auditAccessor))
+                {
+                    var actor = new Mock<ICurrentUserService>();
+                    actor.SetupGet(x => x.UsuarioId).Returns(userA.Id);
+                    actor.SetupGet(x => x.NombreUsuario).Returns(userA.NombreUsuario);
+                    var failure = new Mock<IAuditoriaService>();
+                    failure.Setup(x => x.RegistrarEstrictoAsync(
+                            ModuloSistema.Productos, action,
+                            It.IsAny<string>(), It.IsAny<int?>(),
+                            It.IsAny<string?>(), It.IsAny<object?>(),
+                            It.IsAny<object?>(), It.IsAny<string?>(),
+                            It.IsAny<string>(), It.IsAny<string?>()))
+                        .ThrowsAsync(new InvalidOperationException(
+                            "VARIANTE_AUDIT_DURABLE_UNAVAILABLE"));
+                    var service = new ProductoVarianteService(
+                        new ProductoVarianteRepository(variantDb),
+                        new ProductoRepository(variantDb),
+                        Mock.Of<ICatalogoProductoService>(), actor.Object,
+                        new UnitOfWork(variantDb), failure.Object);
+                    var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+                        () => mutate(service));
+                    Assert.Equal("VARIANTE_AUDIT_DURABLE_UNAVAILABLE", exception.Message);
+                    failure.Verify(x => x.RegistrarEstrictoAsync(
+                        ModuloSistema.Productos, action,
+                        It.IsAny<string>(), It.IsAny<int?>(),
+                        It.IsAny<string?>(), It.IsAny<object?>(),
+                        It.IsAny<object?>(), It.IsAny<string?>(),
+                        It.IsAny<string>(), It.IsAny<string?>()), Times.Once);
+                }
+                await using (var check = new AppDbContext(options))
+                {
+                    var unchanged = await check.ProductoVariantes.IgnoreQueryFilters()
+                        .AsNoTracking().SingleAsync(v => v.Id == variantAuditId);
+                    Assert.True(unchanged.Activo);
+                    Assert.False(unchanged.Eliminado);
+                    Assert.Equal(a.Id, unchanged.EmpresaId);
+                    Assert.Equal(0, await check.RegistrosAuditoria.IgnoreQueryFilters()
+                        .CountAsync(x => x.Entidad == "ProductoVariante"
+                            && x.ReferenciaId == variantAuditId));
+                }
+            }
+
+            await AssertVariantAuditFailureRollsBackAsync(
+                AccionPermiso.Desactivar,
+                async service => { await service.CambiarEstadoAsync(
+                    productAId, variantAuditId, false); });
+            await AssertVariantAuditFailureRollsBackAsync(
+                AccionPermiso.EliminarLogico,
+                async service => { await service.DeleteAsync(
+                    productAId, variantAuditId); });
+
+            // Positivo: variante y auditoria real se consolidan conjuntamente
+            // con mismo contexto verificado y se leen desde contexto nuevo.
+            await using (var commitDb = new AppDbContext(options,
+                tenantHttpContextAccessor: auditAccessor))
+            {
+                var actor = new Mock<ICurrentUserService>();
+                actor.SetupGet(x => x.UsuarioId).Returns(userA.Id);
+                actor.SetupGet(x => x.NombreUsuario).Returns(userA.NombreUsuario);
+                var audit = new AuditoriaService(
+                    new AuditoriaRepository(commitDb), actor.Object, auditAccessor,
+                    Microsoft.Extensions.Logging.Abstractions.NullLogger<AuditoriaService>.Instance);
+                var service = new ProductoVarianteService(
+                    new ProductoVarianteRepository(commitDb),
+                    new ProductoRepository(commitDb),
+                    Mock.Of<ICatalogoProductoService>(), actor.Object,
+                    new UnitOfWork(commitDb), audit);
+                var changed = await service.CambiarEstadoAsync(
+                    productAId, variantAuditId, false);
+                Assert.NotNull(changed);
+                Assert.False(changed!.Activo);
+            }
+            await using (var committed = new AppDbContext(options))
+            {
+                var variant = await committed.ProductoVariantes.IgnoreQueryFilters()
+                    .AsNoTracking().SingleAsync(v => v.Id == variantAuditId);
+                Assert.False(variant.Activo);
+                Assert.False(variant.Eliminado);
+                Assert.Equal(a.Id, variant.EmpresaId);
+                var receipt = await committed.RegistrosAuditoria.IgnoreQueryFilters()
+                    .AsNoTracking().SingleAsync(x => x.Entidad == "ProductoVariante"
+                        && x.ReferenciaId == variantAuditId
+                        && x.Accion == AccionPermiso.Desactivar);
+                Assert.Equal(a.Id, receipt.EmpresaId);
+                Assert.Equal(userA.Id, receipt.UsuarioId);
+                Assert.Equal("Exito", receipt.Resultado);
+            }
+
             // Product and RBAC services/repositories are real. Mocked dependencies
             // belong only to other (uninvoked) CRUD methods of the controller.
             // The multiempresa quarantine is OFF by default. This in-memory

@@ -1,3 +1,7 @@
+## 2026-11-22 - DEV01 V24 C07-01.M06.06: auditoria transaccional estricta para variantes
+- Riesgo R2: `ProductoVarianteService` incorpora auditoria durable fail-closed en la transaccion para crear, editar, cambiar estado y eliminar; el error deja sin commit tanto variante como proyeccion de producto.
+- Prueba adversarial Oracle EF/MySQL 8.4 efimera con fallo de auditoria, rollback verificado y recibo positivo persistido del tenant A; CI exact-SHA por confirmar. No sustituye aceptacion JWT/HTTP positiva de variantes ni ERP completo; EN_PROGRESO, A5 pendiente, no QA/main/PROD.
+
 ## 2026-11-22 — DEV02 C15-04.M05.04 A109: teclado Tab y foco visible en tres superficies privadas
 - Incremento R2 TEST-ONLY de la EN_PROGRESO propia bajo V17 2000002297: tres casos Playwright A0.84 en /plataforma/capacidades-v19, /plataforma/revision-arquitectura-v20 y /plataforma/eventos-outbox-v22. Requieren JWT real firmado, RBAC HTTP y MySQL 8.4 efímero, cinco anchos (320/390/768/1280/1440), foco :focus-visible por Tab real en dos controles etiquetados y cero overflow del documento o mutaciones API.
 - A0 alcance y rollback acotados al test + registro; A1-A4 condicionados a GitHub-hosted exact-SHA, 146 casos esperados frente a 143/143 PASS del incremento A108 anterior. No se atribuye PASS adelantado, ni zoom 200, WCAG de las 160 rutas, CWV campo, QA/main/PROD, ni A5 independiente. SKREF-03 y SKREF-10 consultadas en origen y pin; no se importaron dependencias. Si CI falla, diagnosticar evidencia adversarial y reparar en la misma WIP antes de LISTO.
