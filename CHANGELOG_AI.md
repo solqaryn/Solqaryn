@@ -1,3 +1,7 @@
+## 2026-11-22 — DEV06 V24 C01-03.M04.05: text resize 200% en Chromium
+- Prueba adicional R2 JWT A/B MySQL 8.4 sobre DOM real: resize de texto raíz al 200%, cinco anchos, controles visibles, reflow y capturas; falla ante desbordamiento; sin cambiar runtime.
+- NO es zoom nativo Chrome ni reemplaza captura ANTES; A0-A4 CI exact-SHA pendiente, A5 independiente, H VALIDANDO owner histórico DEV04. Scope Lock STRICT, rollback FF normal y ningún cambio QA/main/PROD.
+
 ## 2026-11-22 — DEV04 V24 C01-03.M04.05: Tab auténtico en controles de configuración
 - Reparación R2 test-only del falso positivo: foco visible del shell ya no basta; se exige Tab real hasta enlace secundario y botón Recargar dentro de la ruta, :focus-visible y outline del enlace.
 - Sin alteración de runtime/JWT/RBAC/tenant/MySQL/API ni de otros scopes. CI exact-SHA pendiente, H=VALIDANDO e I=DEV04 conservados; A5 debe ser independiente.

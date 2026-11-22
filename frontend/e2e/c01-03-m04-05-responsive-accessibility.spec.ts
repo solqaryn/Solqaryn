@@ -192,6 +192,30 @@ test.describe('V24 C01-03.M04.05 actual tenant UI responsive and keyboard', () =
         await page.screenshot({path:'test-results/c0103-m0405-'+username+'-'+width+'-zoom-proxy.png',fullPage:true});
         await page.evaluate(() => {document.documentElement.style.zoom='';});
       }
+
+      // V24 real text-only 200% resizing (WCAG 1.4.4), NOT native Chrome page zoom.
+      for (const width of widths) {
+        await page.setViewportSize({width,height:900});
+        const before = await page.evaluate(() =>
+          Number.parseFloat(getComputedStyle(document.documentElement).fontSize));
+        const after = await page.evaluate(() => {
+          document.documentElement.style.fontSize = '200%';
+          return Number.parseFloat(getComputedStyle(document.documentElement).fontSize);
+        });
+        try {
+          expect(Number.isFinite(before) && Number.isFinite(after), 'real root font size').toBe(true);
+          expect(after, 'root text resize applied').toBeGreaterThanOrEqual(before * 1.95);
+          await verifyLayout(page,width,'text-only-resize-200');
+          await expect(page.getByRole('button',{name:/Recargar/})).toBeVisible();
+          await expect(page.getByRole('link',{name:'Ver todos los ajustes'})).toBeVisible();
+          await page.screenshot({
+            path:'test-results/c0103-m0405-'+username+'-'+width+'-text-resize-200.png',
+            fullPage:true
+          });
+        } finally {
+          await page.evaluate(() => {document.documentElement.style.fontSize = '';});
+        }
+      }
     });
   }
 
