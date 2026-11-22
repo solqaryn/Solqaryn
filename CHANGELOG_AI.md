@@ -1,3 +1,6 @@
+## 2026-11-22 - DEV01 V24 C07-01.M06.06: fixture MySQL independiente para audit de variantes
+- Reparacion test-only antes de cierre CI: la auditoria de estado/eliminacion de variantes opera sobre `auditedProductId`, no el producto A reservado para aserciones de precio HTTP 100. Mantiene A/B, auditoria y rollback sin contaminar la fixture del flujo siguiente; exige CI exact-SHA y conserva EN_PROGRESO/owner/lock y A5 pendiente.
+
 ## 2026-11-22 - DEV01 V24 C07-01.M06.06: auditoria transaccional estricta para variantes
 - Riesgo R2: `ProductoVarianteService` incorpora auditoria durable fail-closed en la transaccion para crear, editar, cambiar estado y eliminar; el error deja sin commit tanto variante como proyeccion de producto.
 - Prueba adversarial Oracle EF/MySQL 8.4 efimera con fallo de auditoria, rollback verificado y recibo positivo persistido del tenant A; CI exact-SHA por confirmar. No sustituye aceptacion JWT/HTTP positiva de variantes ni ERP completo; EN_PROGRESO, A5 pendiente, no QA/main/PROD.

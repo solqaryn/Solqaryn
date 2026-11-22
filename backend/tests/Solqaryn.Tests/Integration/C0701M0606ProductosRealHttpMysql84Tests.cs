@@ -545,7 +545,7 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             {
                 var seeded = new ProductoVariante
                 {
-                    EmpresaId = a.Id, ProductoId = productAId,
+                    EmpresaId = a.Id, ProductoId = auditedProductId,
                     Sku = variantAuditSku, Cantidad = 0,
                     Precio = 21m, Costo = 11m, UmbralStockBajo = 2,
                     EsTecnica = false, Activo = true, Eliminado = false
@@ -605,11 +605,11 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             await AssertVariantAuditFailureRollsBackAsync(
                 AccionPermiso.Desactivar,
                 async service => { await service.CambiarEstadoAsync(
-                    productAId, variantAuditId, false); });
+                    auditedProductId, variantAuditId, false); });
             await AssertVariantAuditFailureRollsBackAsync(
                 AccionPermiso.EliminarLogico,
                 async service => { await service.DeleteAsync(
-                    productAId, variantAuditId); });
+                    auditedProductId, variantAuditId); });
 
             // Positivo: variante y auditoria real se consolidan conjuntamente
             // con mismo contexto verificado y se leen desde contexto nuevo.
@@ -628,7 +628,7 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                     Mock.Of<ICatalogoProductoService>(), actor.Object,
                     new UnitOfWork(commitDb), audit);
                 var changed = await service.CambiarEstadoAsync(
-                    productAId, variantAuditId, false);
+                    auditedProductId, variantAuditId, false);
                 Assert.NotNull(changed);
                 Assert.False(changed!.Activo);
             }
