@@ -85,7 +85,9 @@ public class ProductoVarianteServiceTests
         Assert.Equal(4, resultado.Cantidad);
         Assert.Equal(4, _producto.Cantidad);
         _catalogoService.Verify(s => s.ValidarSeleccionProductoAsync(9, 12, 2, 3), Times.Once);
-        _auditoria.Verify(a => a.RegistrarAsync(
+        // V24: una creacion debe exigir recibo de auditoria estricta dentro de la transaccion.
+        // Esta expectativa falla si el runtime vuelve al registro tolerante a fallos.
+        _auditoria.Verify(a => a.RegistrarEstrictoAsync(
             ModuloSistema.Productos,
             AccionPermiso.Crear,
             It.IsAny<string>(),
@@ -96,6 +98,17 @@ public class ProductoVarianteServiceTests
             It.IsAny<string?>(),
             It.IsAny<string>(),
             It.IsAny<string?>()), Times.Once);
+        _auditoria.Verify(a => a.RegistrarAsync(
+            ModuloSistema.Productos,
+            AccionPermiso.Crear,
+            It.IsAny<string>(),
+            31,
+            "ProductoVariante",
+            It.IsAny<object?>(),
+            It.IsAny<object?>(),
+            It.IsAny<string?>(),
+            It.IsAny<string>(),
+            It.IsAny<string?>()), Times.Never);
     }
 
     [Fact]

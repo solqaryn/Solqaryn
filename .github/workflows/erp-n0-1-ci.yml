@@ -23,8 +23,9 @@ permissions:
   contents: read
 
 concurrency:
-  group: erp-n0-1-ci-${{ github.ref }}
-  cancel-in-progress: true
+  # Evitar que el siguiente push dev cancele un SHA con pruebas MySQL 8.4 requeridas.
+  group: erp-n0-1-ci-${{ github.sha }}
+  cancel-in-progress: false
 
 jobs:
   autoridad-producto-variante:

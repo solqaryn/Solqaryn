@@ -1,3 +1,7 @@
+## 2026-11-22 — DEV01 V24 C07-01.M06.06: reparar test de auditoria estricta y CI ERP sin cancelar otros SHA
+- Corregida expectativa xUnit/Moq `RegistrarAsync` obsoleta por `RegistrarEstrictoAsync` obligatoria; asercion negativa para evitar usar auditoria tolerante en alta de variantes.
+- Workflow ERP N0.1: concurrency por `github.sha`, `cancel-in-progress: false`; no se alteran pruebas, runtime, seguridad, migraciones ni secretos. Evidencia GitHub-hosted SHA nuevo pendiente; own WIP EN_PROGRESO, V17 conservado, no LISTO/A5/QA/main/PROD.
+
 ## 2026-11-22 — DEV06 V24 C01-03.M04.05: text resize 200% en Chromium
 - Prueba adicional R2 JWT A/B MySQL 8.4 sobre DOM real: resize de texto raíz al 200%, cinco anchos, controles visibles, reflow y capturas; falla ante desbordamiento; sin cambiar runtime.
 - NO es zoom nativo Chrome ni reemplaza captura ANTES; A0-A4 CI exact-SHA pendiente, A5 independiente, H VALIDANDO owner histórico DEV04. Scope Lock STRICT, rollback FF normal y ningún cambio QA/main/PROD.
