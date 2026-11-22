@@ -19,6 +19,20 @@ async function auth(page:Page,status=200){
 }
 async function noOverflow(page:Page){
   const x=await page.evaluate(()=>({a:document.documentElement.scrollWidth,b:window.innerWidth}));
+  if(x.a>x.b+1){
+    // Diagnostico causal sin texto, credenciales ni atributos de usuarios.
+    const offenders=await page.evaluate(()=>Array.from(document.querySelectorAll<HTMLElement>('body *'))
+      .map(el=>{
+        const rect=el.getBoundingClientRect();
+        return {tag:el.tagName.toLowerCase(),css:typeof el.className==='string'?el.className.slice(0,96):'',
+          left:Math.round(rect.left),right:Math.round(rect.right),
+          scrollWidth:el.scrollWidth,clientWidth:el.clientWidth,
+          whiteSpace:getComputedStyle(el).whiteSpace};
+      })
+      .filter(el=>el.right>window.innerWidth+1||el.left< -1)
+      .sort((a,b)=>b.right-a.right).slice(0,14));
+    console.log('[C15-04.M05.04 A095_OVERFLOW_CAUSAL_DIAGNOSTIC]',JSON.stringify({viewport:x.b,scrollWidth:x.a,offenders}));
+  }
   expect(x.a).toBeLessThanOrEqual(x.b+1);
 }
 test.describe('C15-04.M05.04 UX real, incremento no global',()=>{

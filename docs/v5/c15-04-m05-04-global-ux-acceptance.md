@@ -1,3 +1,11 @@
+## A0.95 — Reparación incremental y diagnóstico preciso de overflow en login (DEV02, 2026-11-21)
+
+GitHub-hosted SHA 150829dfb3a7a615c04fce040a60fdd1b07b96d3, run 44984195759/job 137091077518, terminó FAILURE con 27 PASS y 1 FAIL: /login, texto raíz CSS 200%, viewport 320px, document.scrollWidth=449px. La hipótesis A0.94 de min-content del grid NO corrigió el defecto y no se registra como PASS.
+
+Hipótesis nueva A0.95: el botón de acceso conserva contenido Material/etiqueta flex que no admite reflow; a 200% su min-content supera el ancho útil de la tarjeta móvil. Se permite wrap real de icono/etiqueta sin ocultar scroll, con min-width=0, white-space normal y overflow-wrap en el span; se preserva el control de envío, foco, estados de loading y tamaño táctil. Si hay más elementos implicados, la prueba Playwright noOverflow emitirá elementos desbordados, dimensiones y white-space SIN texto ni datos personales, manteniendo la aserción original y los asserts de posición de campos. Una falla requiere siguiente reparación guiada por esta evidencia, no suprimir el test.
+
+Este cambio sólo afecta CSS del login y diagnóstico test-only. A0–A4 global/160 rutas/WCAG/CWV siguen no certificados; la CI exact-SHA nueva se considera PENDIENTE hasta confirmación en GitHub; PLAN H2297 EN_PROGRESO, owner DEV02 y candado V17 2000002297 se mantienen, no nuevo CLAIM ni LISTO/A5. SKREF-03 Impeccable pin 2149fcce39a90bb409df5f16515f316a76dc6199 y SKREF-10 Angular pin 6808966993bf2b2d455d9b6245e960a59a01b9a9 consultadas en origen; sin instalaciones externas. Rollback con git revert normal en dev tras CAS, sin QA/main/PROD.
+
 ## A0.94 — Corrección real de reflow login 200% a 320px (DEV02, 2026-11-21)
 
 La ejecución causal de GitHub Actions del SHA 4c85ed8c27d17a4513330f95099a663d26cb5dbe (run 44979294676, job 137076044546) demostró un defecto UX real: 27 pruebas Chromium PASS y 1 FAIL al iniciar A0.93 en /login con viewport 320px y tamaño raíz CSS 200%. El documento tenía scrollWidth=449px frente a innerWidth=320px. Esto NO es un PASS ni un defecto que deba ocultarse suprimiendo la comprobación.

@@ -1,3 +1,8 @@
+## 2026-11-21 — DEV02 V23 A0.95 reflow del botón login y diagnóstico causal
+- GitHub Actions 150829dfb3a7a615c04fce040a60fdd1b07b96d3 falló con 27/28 Chromium: login a 320px/texto CSS 200% sigue con 449px de scroll; A0.94 no fue solución, no PASS inventado.
+- Hipótesis A0.95: botón Material con etiqueta nowrap a 200%; aplicar wrap/min-width=0 al control y su etiqueta, conservando interactividad, foco y tamaño táctil. El test imprime dimensiones/clases de ofensores sin PII si persiste el overflow, nunca oculta la falla.
+- C15-04.M05.04 mantiene H=EN_PROGRESO, owner DEV02 y lock V17; CI nueva aún pendiente, no LISTO/A5, UX global y CWV NO_MEDIDO; sin QA/main/PROD.
+
 ## 2026-11-21 — DEV02 V23 A0.94 reparación de reflow de login al 200%
 - La CI real SHA 4c85ed8c27d17a4513330f95099a663d26cb5dbe expuso 449px de scroll horizontal en viewport de 320px con raíz CSS al 200% (27 PASS, 1 FAIL); se corrige el grid min-content del login sin eliminar la aserción.
 - La suite Chromium exige ausencia de overflow y visibilidad real de los controles de usuario/contraseña en 320/390/768/1280/1440 con texto al 200%; capturas y checks del nuevo SHA aún requieren GitHub-hosted SUCCESS.

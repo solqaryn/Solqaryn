@@ -189,13 +189,33 @@
 
 .submit-button {
   width: 100%;
+  max-width: 100%;
+  min-width: 0;
   min-height: 48px;
+  height: auto;
   margin-top: 2px;
+  padding: 12px 10px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
+  flex-wrap: wrap;
   gap: 8px;
+  text-align: center;
+  white-space: normal;
+  line-height: 1.35;
   font-weight: 700;
+
+  // En texto 200%, la etiqueta Material no debe imponer una linea mas ancha que el viewport.
+  span {
+    min-width: 0;
+    max-width: 100%;
+    white-space: normal;
+    overflow-wrap: anywhere;
+  }
+
+  mat-icon {
+    flex: 0 0 auto;
+  }
 }
 
 .copyright {
