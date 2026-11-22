@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV05 V23 C01-04.M03.06: bloqueo cruzado del sink QA por tenant/case [Javier :40]
+- Reparación R2/P1: la fuente QA B podía dirigirse por error a un sink MySQL A porque SafeAuditEntry no lleva identificadores sensibles; nuevo contrato opcional de binding exige ID canónico de tenant/expediente igual al ámbito del sink antes de leer la fuente, sin suponer autorización JWT.
+- Prueba xUnit real Category=Integration en MySQL 8.4 efímero: B con sink A y scope opaco rechazados sin nuevas filas InnoDB; casos positivos A/B, duplicado concurrente, anti-replay y fallo seguro conservados. CI GitHub-hosted del SHA nuevo pendiente, no PASS inferido.
+- No hay lector real autenticado de expedientes ni DI/HTTP comercial: VALIDANDO con owner DEV05, A0-A4 global incompletos y A5 independiente pendiente; Scope Lock STRICT, dev solo, rollback revert normal.
+
 ## 2026-11-22 — DEV03 V23 C02-01.M05.04: SQL final anti-caché de rol tenant revocado
 - Reparación R2 causal: una capa scope que devuelve A+B dos veces desde caché no puede conservar autoridad B tras revocar su rol en MySQL 8.4; la lectura EF final directa de UsuarioEmpresa/Empresa/Rol exige conjunto/nombres actuales y actor JWT estable, deniega divergencias. Regresión xUnit MySQL efímero revoca Rol B, comprueba snapshot null y restaura exclusivamente fixture desechable. GitHub-hosted .NET 10 real JWT/HTTP/MySQL84 y controles Scope Lock/V5 requeridos exact-SHA; no afirmar PASS antes de CI. No se implementó preferencia SQL durable, reemisión JWT ni navegación Angular; C02-01.M05.04 conserva VALIDANDO, owner DEV03 y A5 independiente, sin QA/main/PROD.
 

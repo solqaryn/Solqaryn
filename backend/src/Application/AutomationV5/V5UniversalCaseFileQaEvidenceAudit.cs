@@ -20,6 +20,15 @@ public interface IV5UniversalCaseFileQaAuditSink
         CancellationToken cancellationToken);
 }
 
+/// <summary>
+/// Optional numeric storage-scope binding for durable QA sinks. This comparison
+/// prevents accidental A/B audit misrouting; it is NOT JWT/role authorization.
+/// </summary>
+public interface IV5UniversalCaseFileQaScopeBoundSink : IV5UniversalCaseFileQaAuditSink
+{
+    bool MatchesCanonicalScope(string tenantScope, string caseFileScope);
+}
+
 public sealed class V5UniversalCaseFileQaEvidenceAudit
 {
     private readonly IV5UniversalCaseFileQaEvidenceSource _source;
@@ -98,6 +107,13 @@ public sealed class V5UniversalCaseFileQaEvidenceAudit
             sourceSha is null || !ShaPattern.IsMatch(sourceSha) ||
             !SafeScope(trustedTenantScope) || !SafeScope(trustedCaseFileScope))
             return new("CASEFILE_QA_SCOPE_INVALID");
+
+        // Durable sinks are fixed to canonical SQL tenant/case IDs. Refuse a
+        // different or opaque caller scope before consulting any evidence source.
+        // An authenticated case-file reader and real membership/ownership remain required.
+        if (_sink is IV5UniversalCaseFileQaScopeBoundSink boundSink &&
+            !boundSink.MatchesCanonicalScope(trustedTenantScope!, trustedCaseFileScope!))
+            return new("CASEFILE_QA_DURABLE_SCOPE_MISMATCH");
 
         Observation? observation;
         try

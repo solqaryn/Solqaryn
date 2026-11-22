@@ -1,5 +1,6 @@
 using System.Data;
 using System.Data.Common;
+using System.Globalization;
 using System.Text.RegularExpressions;
 using Solqaryn.Application.AutomationV5;
 
@@ -12,7 +13,7 @@ namespace Solqaryn.Infrastructure.AutomationV5;
 /// and NOT exposed by HTTP; a future server adapter must enforce those gates.
 /// </summary>
 public sealed class V5UniversalCaseFileQaDurableMySqlAuditSink
-    : IV5UniversalCaseFileQaAuditSink
+    : IV5UniversalCaseFileQaScopeBoundSink
 {
     private const string Table = "V23C0104CaseFileQaAuditIsolated";
     private readonly Func<DbConnection> _connectionFactory;
@@ -54,6 +55,13 @@ public sealed class V5UniversalCaseFileQaDurableMySqlAuditSink
         _scopeCaseFileId = scopeCaseFileId;
         _clock = clock ?? TimeProvider.System;
     }
+
+    public bool MatchesCanonicalScope(string tenantScope, string caseFileScope) =>
+        _scopeTenantId > 0 && _scopeCaseFileId > 0 &&
+        string.Equals(tenantScope,
+            _scopeTenantId.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal) &&
+        string.Equals(caseFileScope,
+            _scopeCaseFileId.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal);
 
     public async ValueTask WriteAsync(
         V5UniversalCaseFileQaEvidenceAudit.SafeAuditEntry entry,

@@ -72,18 +72,18 @@ public sealed class C0104M0306DurableQaAuditMysql84Tests
 
             var utc = DateTimeOffset.UtcNow;
             var a = new Audit(
-                new Source(Observation(utc, "tenant-A", "case-42")),
+                new Source(Observation(utc, "101", "42")),
                 new V5UniversalCaseFileQaDurableMySqlAuditSink(
                     () => new MySqlConnection(isolated), 101, 42,
                     new FrozenClock(utc)));
             var b = new Audit(
-                new Source(Observation(utc, "tenant-B", "case-42")),
+                new Source(Observation(utc, "202", "42")),
                 new V5UniversalCaseFileQaDurableMySqlAuditSink(
                     () => new MySqlConnection(isolated), 202, 42,
                     new FrozenClock(utc)));
 
             var first = await a.CaptureAsync(
-                Microtask, "casefile.timeline", Sha, "tenant-A", "case-42");
+                Microtask, "casefile.timeline", Sha, "101", "42");
             Assert.Equal("CASEFILE_QA_ENVELOPE_WRITTEN_REVIEW_PENDING", first.Code);
             Assert.False(first.CertifiesCI);
             Assert.False(first.CertifiesA5);
@@ -93,7 +93,7 @@ public sealed class C0104M0306DurableQaAuditMysql84Tests
             Assert.Equal(0L, await Count(isolated, 202, 42));
 
             var second = await b.CaptureAsync(
-                Microtask, "casefile.timeline", Sha, "tenant-B", "case-42");
+                Microtask, "casefile.timeline", Sha, "202", "42");
             Assert.Equal("CASEFILE_QA_ENVELOPE_WRITTEN_REVIEW_PENDING", second.Code);
             Assert.Equal(1L, await Count(isolated, 101, 42));
             Assert.Equal(1L, await Count(isolated, 202, 42));
@@ -101,14 +101,34 @@ public sealed class C0104M0306DurableQaAuditMysql84Tests
 
             // Same exact-SHA event cannot silently overwrite or masquerade as a new receipt.
             var replay = await a.CaptureAsync(
-                Microtask, "casefile.timeline", Sha, "tenant-A", "case-42");
+                Microtask, "casefile.timeline", Sha, "101", "42");
             Assert.Equal("CASEFILE_QA_AUDIT_SINK_UNAVAILABLE", replay.Code);
             Assert.Equal(1L, await Count(isolated, 101, 42));
 
             // Caller scope mismatch is rejected BEFORE the durable sink is called.
             var mismatch = await a.CaptureAsync(
-                Microtask, "casefile.timeline", Sha, "tenant-B", "case-42");
-            Assert.Equal("CASEFILE_QA_TRUSTED_EVIDENCE_REQUIRED", mismatch.Code);
+                Microtask, "casefile.timeline", Sha, "202", "42");
+            Assert.Equal("CASEFILE_QA_DURABLE_SCOPE_MISMATCH", mismatch.Code);
+            Assert.Equal(2L, await CountAll(isolated));
+
+            // The trusted observation and request may agree with each other,
+            // but an A-scoped durable sink must not store B's SQL receipt.
+            // This was previously possible because SafeAuditEntry has no tenant ID.
+            var misbound = new Audit(
+                new Source(Observation(utc, "202", "42")),
+                new V5UniversalCaseFileQaDurableMySqlAuditSink(
+                    () => new MySqlConnection(isolated), 101, 42,
+                    new FrozenClock(utc)));
+            var denied = await misbound.CaptureAsync(
+                Microtask, "casefile.timeline", Sha, "202", "42");
+            Assert.Equal("CASEFILE_QA_DURABLE_SCOPE_MISMATCH", denied.Code);
+            Assert.Equal(1L, await Count(isolated, 101, 42));
+            Assert.Equal(1L, await Count(isolated, 202, 42));
+
+            // Opaque scopes must never become SQL receipts via guessed mappings.
+            var opaque = await a.CaptureAsync(
+                Microtask, "casefile.timeline", Sha, "tenant-A", "case-42");
+            Assert.Equal("CASEFILE_QA_DURABLE_SCOPE_MISMATCH", opaque.Code);
             Assert.Equal(2L, await CountAll(isolated));
 
             var direct = new V5UniversalCaseFileQaDurableMySqlAuditSink(
@@ -192,7 +212,7 @@ public sealed class C0104M0306DurableQaAuditMysql84Tests
             // Storage outage or schema absence cannot create a successful receipt.
             await Execute(isolated, $"DROP TABLE {Table}");
             var unavailable = await a.CaptureAsync(
-                Microtask, "casefile.timeline", Sha, "tenant-A", "case-42");
+                Microtask, "casefile.timeline", Sha, "101", "42");
             Assert.Equal("CASEFILE_QA_AUDIT_SINK_UNAVAILABLE", unavailable.Code);
         }
         finally
