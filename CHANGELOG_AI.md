@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV02 V23 C15-04.M05.04 A0.99: destino con foco real tras Enter
+- Refuerzo adversarial test-only de los 15 escenarios Chromium públicos con raíz CSS al 200%: después de Tab+Enter en skip-link, el `<main>` real debe recibir foco, no solo hash y `tabindex=-1`. Un enlace que cambia URL sin trasladar el foco ahora falla; cero `.focus()` simulado, sin cambios de runtime ni servicios.
+- Solicitar SUCCESS causal del workflow Chromium GitHub-hosted, Scope Lock y V5 exact-SHA; conservar capturas, no inventar pruebas JWT/MySQL/tenants o WCAG global. C15-04.M05.04 permanece EN_PROGRESO, I DEV02, lock 2000002297, A5 independiente posterior y ningún acceso QA/main/PROD.
+- Diff limitado a spec Playwright, documento A0.99 y CHANGELOG aditivo completo; rollback con revert normal, sin force-push.
+
 ## 2026-11-22 — DEV01 V23 C07-01.M06.06: negativo IDOR HTTP con formulario válido (R2)
 - Diagnóstico causal GitHub-hosted: run 45000783540 / job 137141628888, SHA 939e4dbec2f3c6f4c3b12e76483083a8e9af2317 FAILED por 400 BadRequest vs 404 NotFound en PUT cruzado B→A; el formulario de ataque omitía CategoriaId, Cantidad y Costo y no demostraba autorización.
 - Reparación exclusiva de test: completar solicitud adversarial con campos válidos como el PUT positivo, conservar JWT firmado B, X-Empresa-Id B, id Producto A, 404 obligatorio y readback de MySQL 8.4 sin mutaciones. No modificar guards, roles, código runtime ni entorno comercial.

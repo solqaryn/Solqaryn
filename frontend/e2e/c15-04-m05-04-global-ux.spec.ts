@@ -1025,6 +1025,8 @@ test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
           await expect.poll(()=>current.evaluate(()=>location.hash)).toBe(selector);
           await expect(current.locator('main'+selector)).toHaveAttribute('tabindex','-1');
           await expect(current.locator('main'+selector)).toBeVisible();
+          // A0.99: el hash correcto no basta; Enter debe transferir el foco al main real.
+          await expect(current.locator('main'+selector),'foco de salto real tras Enter, sin trampa en enlace').toBeFocused();
           const mainBox=await current.locator('main'+selector).boundingBox();
           expect(mainBox,'main principal tangible').not.toBeNull();
           expect(mainBox!.x,'main empieza en viewport').toBeGreaterThanOrEqual(-1);
