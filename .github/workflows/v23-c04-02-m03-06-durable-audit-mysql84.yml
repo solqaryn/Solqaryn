@@ -5,6 +5,7 @@ on:
     paths:
       - 'backend/src/Infrastructure/AutomationV5/C0402IsolatedMySqlContractAuditSink.cs'
       - 'backend/tests/Solqaryn.Tests/Integration/C0402M0306DurableAuditMysql84Tests.cs'
+      - 'backend/tests/Solqaryn.Tests/Integration/C0402M0306SignedJwtAuditMysql84HttpIntegrationTests.cs'
       - '.github/workflows/v23-c04-02-m03-06-durable-audit-mysql84.yml'
   workflow_dispatch:
 permissions:
@@ -63,6 +64,6 @@ jobs:
           if counters is None: raise SystemExit('NO_COUNTERS')
           stats = {k:int(counters.attrib.get(k,-1)) for k in ('total','passed','failed','notExecuted')}
           print('REAL_C0402_M0306_MYSQL84_TRX',stats)
-          if stats['total'] != 1 or stats['passed'] != 1 or stats['failed'] != 0 or stats['notExecuted'] != 0:
+          if stats['total'] != 2 or stats['passed'] != 2 or stats['failed'] != 0 or stats['notExecuted'] != 0:
               raise SystemExit('FAIL_MYSQL84_REAL_AUDIT')
           PY
