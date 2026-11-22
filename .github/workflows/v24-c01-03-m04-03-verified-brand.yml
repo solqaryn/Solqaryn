@@ -130,6 +130,16 @@ jobs:
           SELECT u.Id, 2, u.RolId, TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)
           FROM Usuarios u WHERE u.NombreUsuario='c1504_admin_b'
             AND NOT EXISTS (SELECT 1 FROM UsuarioEmpresas ue WHERE ue.UsuarioId=u.Id AND ue.EmpresaId=2);
+          -- Dual membership is CI-only; existing A-only and B-only users stay isolated.
+          INSERT INTO Usuarios (NombreUsuario, NombreCompleto, PasswordHash, RolId, Activo, Bloqueado, Eliminado, FechaCreacion)
+          SELECT 'c0103_admin_ab', 'Usuario AB efimero C0103', a.PasswordHash, a.RolId, TRUE, FALSE, FALSE, UTC_TIMESTAMP(6)
+          FROM Usuarios a WHERE a.NombreUsuario='c1504_admin_a'
+            AND NOT EXISTS (SELECT 1 FROM Usuarios d WHERE d.NombreUsuario='c0103_admin_ab');
+          INSERT INTO UsuarioEmpresas (UsuarioId, EmpresaId, RolId, Activa, FechaCreacion, FechaActualizacion)
+          SELECT u.Id, e.Id, u.RolId, TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)
+          FROM Usuarios u JOIN Empresas e ON e.Id IN (1, 2)
+          WHERE u.NombreUsuario='c0103_admin_ab'
+            AND NOT EXISTS (SELECT 1 FROM UsuarioEmpresas ue WHERE ue.UsuarioId=u.Id AND ue.EmpresaId=e.Id);
           INSERT INTO Roles
             (Nombre, NombreNormalizado, Descripcion, EsSistema, EsAdministrador, Ambito, EmpresaId, Activo, Eliminado, FechaCreacion)
           VALUES ('Global CI C1504', 'C1504_GLOBAL_CI', 'Rol efimero para aceptacion real', 1, 1, 2, NULL, 1, 0, UTC_TIMESTAMP(6));
@@ -149,6 +159,8 @@ jobs:
           test "$members" = '1'
           test "$company" = '1'
           test "$company_b" = '1'
+          dual="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_c1504_real_ci -Nse "SELECT COUNT(DISTINCT ue.EmpresaId) FROM UsuarioEmpresas ue JOIN Usuarios u ON u.Id=ue.UsuarioId WHERE u.NombreUsuario='c0103_admin_ab' AND ue.Activa=TRUE AND ue.EmpresaId IN (1,2);")"
+          test "$dual" = '2'
       - name: Node 24
         uses: actions/setup-node@v4
         with:

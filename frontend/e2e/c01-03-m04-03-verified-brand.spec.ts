@@ -112,4 +112,71 @@ test.describe('C01-03.M04.03 verified tenant branding actual server',()=>{
     await page.screenshot({path:'test-results/c0103-m0403-B-after-delayed-A.png',fullPage:true});
   });
 
+  test('same signed JWT A to B switch rejects a delayed A brand response',async({page})=>{
+    test.setTimeout(240_000);
+    const jwt=await login(page,'c0103_admin_ab');
+    const memberships=await page.request.get(api+'/tenant-context/empresas',{
+      headers:{Authorization:'Bearer '+jwt}
+    });
+    expect(memberships.status()).toBe(200);
+    const companies:unknown=(await memberships.json())?.data;
+    expect(Array.isArray(companies)).toBe(true);
+    expect((companies as {empresaId:number}[]).map(x=>x.empresaId).sort()).toEqual([1,2]);
+    for(const id of [1,2]){
+      const context=await page.request.get(api+'/tenant-context/'+id,{
+        headers:{Authorization:'Bearer '+jwt}
+      });
+      expect(context.status()).toBe(200);
+    }
+
+    const select=page.getByRole('combobox',{name:'Empresa autorizada'});
+    await expect(select).toBeVisible();
+    await select.selectOption({label:'Empresa A efimera C15'});
+    await page.getByRole('button',{name:'Entrar a la empresa'}).click();
+    await expect(page).not.toHaveURL(/\\/login(?:[?#]|$)/);
+    const switcher=page.getByRole('button',{name:'Cambiar de empresa sin cerrar sesión'});
+    await expect(switcher).toBeVisible();
+
+    let sawA!:()=>void;
+    const capturedA=new Promise<void>(resolve=>{sawA=resolve;});
+    let releaseA!:()=>void;
+    const heldA=new Promise<void>(resolve=>{releaseA=resolve;});
+    let settledA!:()=>void;
+    const settled=new Promise<void>(resolve=>{settledA=resolve;});
+    let responseCount=0;
+    await page.route(/\\/empresa-configuracion\\/tenant\\/1(?:\\?|$)/,async route=>{
+      try{
+        const real=await route.fetch();
+        expect(real.status(),'real signed JWT A read').toBe(200);
+        responseCount++;
+        sawA();
+        await heldA;
+        try{await route.fulfill({response:real});}
+        catch{ /* canceled stale request is safe after a real server response */ }
+      }finally{settledA();}
+    });
+
+    await page.goto('/configuracion/dinamica-v5',{waitUntil:'domcontentloaded'});
+    await capturedA;
+    await expect(switcher).toBeVisible();
+    await switcher.click();
+    await expect(page).toHaveURL(/\\/login(?:[?#]|$)/);
+    const selectB=page.getByRole('combobox',{name:'Empresa autorizada'});
+    await expect(selectB).toBeVisible();
+    await selectB.selectOption({label:'Empresa B efimera C15'});
+    await page.getByRole('button',{name:'Entrar a la empresa'}).click();
+    await expect(page).not.toHaveURL(/\\/login(?:[?#]|$)/);
+    const currentJwt=await page.evaluate(()=>localStorage.getItem('solqaryn_token'));
+    expect(currentJwt,'same principal and JWT, no logout or new login').toBe(jwt);
+    await page.goto('/configuracion/dinamica-v5');
+    const brand=page.getByTestId('c0103-verified-brand');
+    await expect(brand).toHaveText('Empresa B efimera C15');
+    releaseA();
+    await settled;
+    await expect(brand).toHaveText('Empresa B efimera C15');
+    await expect(page.getByText('Empresa A efimera C15',{exact:true})).toHaveCount(0);
+    expect(responseCount).toBe(1);
+    await page.screenshot({path:'test-results/c0103-m0403-same-jwt-A-to-B-stale-rejection.png',fullPage:true});
+  });
+
 });
