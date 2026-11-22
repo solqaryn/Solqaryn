@@ -46,17 +46,51 @@ test.describe('V24 C01-03.M04.01 private configuration tenant A/B', () => {
       await expect(page.locator('app-empresa-configuracion-tenant-card')).toBeVisible();
       await expect(page.getByText('Empresa #' + tenant, { exact: false })).toBeVisible();
       await expect(page.getByRole('link', { name: 'Ver todos los ajustes' })).toHaveAttribute('href', '/configuracion');
-      for (const width of [320,390,768,1280,1440]) {
-        await page.setViewportSize({ width, height: 900 });
-        const layout = await page.evaluate(() => ({
-          scrollWidth: document.documentElement.scrollWidth,
-          clientWidth: document.documentElement.clientWidth
-        }));
-        expect(layout.scrollWidth, 'Horizontal body overflow at ' + width).toBeLessThanOrEqual(layout.clientWidth + 2);
-        await page.screenshot({ path: 'test-results/c0103-m0401-' + username + '-' + width + '.png', fullPage:true });
+      // Chromium compositor pinch zoom is native CDP, not CSS zoom nor desktop text zoom.
+      // It measures zoomed viewport behavior but does not certify desktop zoom at 200%.
+      const cdp = await page.context().newCDPSession(page);
+      try {
+        for (const width of [320, 390, 768, 1280, 1440]) {
+          await page.setViewportSize({ width, height: 900 });
+          await cdp.send('Emulation.setPageScaleFactor', { pageScaleFactor: 1 });
+          const at100 = await page.evaluate(() => ({
+            scale: window.visualViewport?.scale ?? 0,
+            scrollWidth: document.documentElement.scrollWidth,
+            clientWidth: document.documentElement.clientWidth
+          }));
+          expect(at100.scale, 'Chromium zoom baseline must be 100%').toBeCloseTo(1, 1);
+          expect(at100.scrollWidth, 'Horizontal body overflow at ' + width).toBeLessThanOrEqual(at100.clientWidth + 2);
+          await page.screenshot({ path: 'test-results/c0103-m0401-' + username + '-' + width + '-zoom100.png' });
+
+          await cdp.send('Emulation.setPageScaleFactor', { pageScaleFactor: 2 });
+          const at200 = await page.evaluate(() => ({
+            scale: window.visualViewport?.scale ?? 0,
+            visualWidth: window.visualViewport?.width ?? 0,
+            layoutWidth: document.documentElement.clientWidth,
+            scrollWidth: document.documentElement.scrollWidth
+          }));
+          expect(at200.scale, 'Chromium pinch zoom must actually reach 200%').toBeGreaterThanOrEqual(1.99);
+          expect(at200.visualWidth, 'Zoom should shrink the visual viewport').toBeLessThan(at200.layoutWidth * 0.55);
+          expect(at200.scrollWidth, 'No document-level overflow from pinch zoom').toBeLessThanOrEqual(at200.layoutWidth + 2);
+          await expect(page.getByRole('heading', { name: 'Configuración dinámica' })).toBeVisible();
+          await page.screenshot({ path: 'test-results/c0103-m0401-' + username + '-' + width + '-zoom200-pinch.png' });
+        }
+      } finally {
+        await cdp.send('Emulation.setPageScaleFactor', { pageScaleFactor: 1 });
+        await cdp.detach();
       }
-      await page.keyboard.press('Tab');
-      expect(await page.evaluate(() => document.activeElement?.tagName)).not.toBe('BODY');
+
+      // Real keyboard traversal must reach the intended action, not merely leave BODY.
+      const settingsLink = page.getByRole('link', { name: 'Ver todos los ajustes' });
+      let focusedByKeyboard = false;
+      for (let press = 0; press < 80; press++) {
+        await page.keyboard.press('Tab');
+        if (await settingsLink.evaluate(el => document.activeElement === el)) {
+          focusedByKeyboard = true;
+          break;
+        }
+      }
+      expect(focusedByKeyboard, 'Tab must reach the actual settings link without .focus()').toBe(true);
     });
   }
 

@@ -1,3 +1,9 @@
+## 2026-11-22 — DEV03 V24 C01-03.M04.01: foco real y zoom Chromium sin falso PASS
+- Reparacion R2 test-only: Playwright exige que Tab alcance el enlace real "Ver todos los ajustes", no solo que algun elemento salga del BODY.
+- Chromium CDP comprueba zoom de compositor/pinch 100% y 200% en 320/390/768/1280/1440 para tenants A/B con JWT y MySQL 8.4 efimeros; almacena capturas comparativas de ambas escalas en los artefactos de CI.
+- LIMITACION: zoom de compositor no equivale a zoom de texto/escritorio nativo; capturas 100/200 no son fotos historicas antes de modificar UI. No se declara WCAG/desktop-zoom ni A0-A4 completo por este test.
+- No se modifica runtime, autorizacion, RBAC, API ni persistencia. GitHub Actions exact-SHA debe acreditar 0 FAIL y 0 SKIP del job requerido; mantener VALIDANDO y A5 independiente. Rollback mediante git revert normal, sin QA/main/PROD.
+
 ## 2026-11-22 — DEV01 V24 C07-01.M06.06: reparar test de auditoria estricta y CI ERP sin cancelar otros SHA
 - Corregida expectativa xUnit/Moq `RegistrarAsync` obsoleta por `RegistrarEstrictoAsync` obligatoria; asercion negativa para evitar usar auditoria tolerante en alta de variantes.
 - Workflow ERP N0.1: concurrency por `github.sha`, `cancel-in-progress: false`; no se alteran pruebas, runtime, seguridad, migraciones ni secretos. Evidencia GitHub-hosted SHA nuevo pendiente; own WIP EN_PROGRESO, V17 conservado, no LISTO/A5/QA/main/PROD.
