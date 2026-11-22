@@ -1,3 +1,9 @@
+## 2026-11-21 — C04-02.M03.06 tenant-denial audit assertion (V23 DEV03 cross-rescue)
+
+- Real signed-JWT HTTP / MySQL 8.4 regression repair: accept only server-controlled fail-closed tenant/revocation denial codes when the relational authorization source rejects a foreign tenant before application-level hint comparison. Preserve three audit entries, one positive and two denied, HTTP 401/403 and no private cause.
+- Source failure on SHA `a8a01bc9b3001b7abb558814f4361aa8720df90e`, GitHub Actions job `137057881058` (11/12 pass). The new test-only code requires exact-SHA GitHub-hosted CI; no PASS or LISTO assumed. Historic owner DEV04 and H=VALIDANDO preserved. Evidence: `docs/v5/c04-02-m03-06-jwt-tenant-audit-denial-repair-v23.md`.
+- A2/A3 limits: synthetic contract snapshot; no authenticated production contract repository/transaction, payment or PROD. Governance applied; V23 UI-only references NO_APLICA. Rollback normal git revert, no history rewrite.
+
 ## 2026-11-21 — V23 C15-04.M05.04 A0.93 reflujo con texto raiz 200% [Javier :10]
 - WIP R2 propio con V17 lock 2000002297; se amplia Playwright Chromium test-only para /login y /tienda en cinco anchos con font-size raiz 200%, evidencia numerica de incremento, Tab/skip-link, h1, cero overflow y cero HTTP mutante; 10 capturas esperadas. No es zoom nativo ni certificacion WCAG global.
 - CI exact-SHA GitHub-hosted, Angular build, Scope Lock y V5 pendientes al publicar; mantener EN_PROGRESO, sin nuevo CLAIM, LISTO ni A5 hasta A0-A4 global real. Referencias V23 SKREF-03/05/10 aplicadas; backend/JWT/MySQL NO_APLICA al diff test-only. Documento docs/v5/c15-04-m05-04-a093-v23-text-resize.md; rollback git revert normal.

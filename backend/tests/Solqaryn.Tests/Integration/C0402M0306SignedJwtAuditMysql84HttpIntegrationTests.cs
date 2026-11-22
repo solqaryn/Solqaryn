@@ -321,11 +321,21 @@ public sealed class C0402M0306SignedJwtAuditMysql84HttpIntegrationTests
                 Assert.True(await auditRows.ReadAsync());
                 Assert.Equal(3L, Convert.ToInt64(auditRows.GetValue(0)));
                 Assert.Equal(1L, Convert.ToInt64(auditRows.GetValue(1)));
-                var outcomes = auditRows.GetString(2);
-                Assert.Contains("REAL_AUTHORIZED_ATOMIC_TRANSACTION_AND_POLICY_STILL_REQUIRED", outcomes);
-                Assert.Contains("CLIENT_TENANT_HINT_MISMATCH", outcomes);
-                Assert.Contains("LIVE_SERVER_JWT_RBAC_MEMBERSHIP_REQUIRED", outcomes);
-                Assert.DoesNotContain("private-contract-cause", outcomes);
+                // A foreign tenant can be rejected earlier by the verified JWT/RBAC
+                // actor source, before application-level client-hint comparison.
+                // Both are valid fail-closed outcomes; the HTTP 403 and persisted
+                // audit record must never become a candidate or leak a cause.
+                var outcomes = auditRows.GetString(2)
+                    .Split(',', StringSplitOptions.RemoveEmptyEntries);
+                Assert.Equal(3, outcomes.Length);
+                Assert.Equal(
+                    "REAL_AUTHORIZED_ATOMIC_TRANSACTION_AND_POLICY_STILL_REQUIRED",
+                    outcomes[0]);
+                Assert.Equal(2, outcomes.Count(code =>
+                    code is "CLIENT_TENANT_HINT_MISMATCH" or
+                        "LIVE_SERVER_JWT_RBAC_MEMBERSHIP_REQUIRED"));
+                Assert.DoesNotContain(
+                    "private-contract-cause", string.Join(',', outcomes));
                 Assert.False(await auditRows.ReadAsync());
             }
         }
