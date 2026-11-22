@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV06 V23 C14-02.M06.06 caída MySQL post-JWT: rechazo fail-closed
+- En el HEAD previo `ad8249dba546849c7cdcdd2985138ec3d4879e16`, la CI GitHub-hosted completó 152/152 tests reales Category=Integration MySQL 8.4 sin fallos ni omitidos, incluido el fixture C14, con Scope Lock y gates pertinentes SUCCESS. No se certifica la seguridad global por esa prueba.
+- Nuevo caso adversarial TestServer/JWT firmado/MySQL 8.4: después de una lectura positiva, se elimina la tabla efímera; el mismo bearer debe recibir 403 y `TRUSTED_EVIDENCE_SOURCE_UNAVAILABLE`, además de rechazos por actor cruzado y cabecera de tenant falsificada. Exigir CI exact-SHA del nuevo caso, nunca suponer PASS antes de ejecutarlo.
+- Cambio test-only y documentación: no modifica API de producto, EF comercial, IAM, secretos ni datos productivos. Persisten límites de BOLA/IDOR, host/archivos/jobs/caché/backups/sesiones y cero P0/P1 no acreditados; `C14-02.M06.06` permanece VALIDANDO con owner DEV06 y A5 independiente pendiente; no QA/main/PROD.
+
 ## 2026-11-22 — DEV02 V23 C15-04.M05.04 A1.01: prueba de reflujo privado JWT real
 - Se endurece A0.69: tres rutas globales con JWT firmado, ASP.NET Core/Oracle MySQL 8.4 efímero y Chromium en cinco anchos 320/390/768/1280/1440; 200% CSS se verifica midiendo fuente antes/después, main único, foco por Tab, cero overflow y cero mutaciones.
 - A1.00 quedó verificado en SHA 93e1d3d9 con 29/29 Chromium y artefactos reales; A1.01 espera CI exact-SHA. Solo test/docs, no cambio de runtime ni secretos; global UX (160 rutas/roles, WCAG, CWV de campo) y A5 no certificados; mantener WIP DEV02 V17 y prohibición QA/main/PROD.

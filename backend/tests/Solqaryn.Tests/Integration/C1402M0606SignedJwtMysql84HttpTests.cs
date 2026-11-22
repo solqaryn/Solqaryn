@@ -278,4 +278,75 @@ public sealed class C1402M0606SignedJwtMysql84HttpTests
             await ExecuteAsync(connection, $"DROP TABLE IF EXISTS {table}");
         }
     }
+
+    /// <summary>
+    /// Distinct negative: a previously accepted signed-JWT preflight must not
+    /// cache the decision if its ephemeral trusted MySQL reader disappears.
+    /// This exercises only TestServer/fixture, not production API adapters.
+    /// </summary>
+    [Fact]
+    public async Task SignedJwtMysql84SqlReaderOutageAfterAllowedRequestFailsClosed()
+    {
+        var connection = Connection();
+        var table = "V23C1402Outage_" + Guid.NewGuid().ToString("N");
+        await ExecuteAsync(connection, $"""
+            CREATE TABLE {table} (
+                ActorId INT NOT NULL,
+                ResourceKey VARCHAR(96) NOT NULL,
+                TenantId INT NOT NULL,
+                OwnerTenantId INT NOT NULL,
+                BranchId INT NOT NULL,
+                HostTenantId INT NOT NULL,
+                MemberActive BOOLEAN NOT NULL,
+                GrantActive BOOLEAN NOT NULL,
+                SessionActive BOOLEAN NOT NULL,
+                AuditActive BOOLEAN NOT NULL,
+                Revoked BOOLEAN NOT NULL,
+                LinkExpired BOOLEAN NOT NULL,
+                ServiceActive BOOLEAN NOT NULL,
+                IdempotencyActive BOOLEAN NOT NULL,
+                PRIMARY KEY(ActorId, ResourceKey)
+            ) ENGINE=InnoDB
+            """);
+        try
+        {
+            await ExecuteAsync(connection, $"""
+                INSERT INTO {table} VALUES
+                (101,'resource-A',11,11,7,11,1,1,1,1,0,0,0,0)
+                """);
+            using var host = await StartAsync(connection, table);
+            using var client = host.GetTestClient();
+            var signedJwt = Token(101);
+            const V5SecurityAcceptanceDomainRules.Surface read =
+                V5SecurityAcceptanceDomainRules.Surface.BusinessRead;
+
+            using (var beforeOutage = await RequestAsync(client, "resource-A", read, signedJwt))
+            {
+                Assert.Equal(HttpStatusCode.OK, beforeOutage.StatusCode);
+                Assert.Equal("AUTHENTICATED_SECURITY_ACCEPTANCE_ADAPTER_REQUIRED",
+                    await beforeOutage.Content.ReadAsStringAsync());
+            }
+
+            // Same valid bearer, same HTTP resource: remove only the isolated
+            // SQL table so a prior 'ready' preflight cannot bypass fresh state.
+            await ExecuteAsync(connection, $"DROP TABLE {table}");
+            using (var afterOutage = await RequestAsync(client, "resource-A", read, signedJwt))
+            {
+                Assert.Equal(HttpStatusCode.Forbidden, afterOutage.StatusCode);
+                Assert.Equal("TRUSTED_EVIDENCE_SOURCE_UNAVAILABLE",
+                    await afterOutage.Content.ReadAsStringAsync());
+            }
+
+            // No success even for another actor or a spoofed client tenant.
+            using (var otherActor = await RequestAsync(client, "resource-A", read, Token(202)))
+                Assert.Equal(HttpStatusCode.Forbidden, otherActor.StatusCode);
+            using (var spoof = await RequestAsync(client, "resource-A", read, signedJwt, spoof: true))
+                Assert.Equal(HttpStatusCode.Forbidden, spoof.StatusCode);
+        }
+        finally
+        {
+            await ExecuteAsync(connection, $"DROP TABLE IF EXISTS {table}");
+        }
+    }
+
 }
