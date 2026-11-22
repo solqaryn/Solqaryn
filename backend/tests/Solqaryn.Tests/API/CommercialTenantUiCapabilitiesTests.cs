@@ -106,6 +106,37 @@ public sealed class CommercialTenantUiCapabilitiesTests
         Assert.Empty(dto.CapacidadesHabilitadas);
     }
 
+    [Fact]
+    public void C0103_ConfiguracionDinamicaSoloAdminConGrantYReadPilot_SinEditar()
+    {
+        var grants = new List<string> { "Configuracion:Ver", "Configuracion:Editar" };
+        var dto = new MisPermisosDto { Rol = "Administrador", EsAdministrador = true, Permisos = grants };
+        var enabled = Config(("MultiEmpresa:PrivateReadPilotEnabled", "true"));
+
+        CommercialTenantUiCapabilities.Apply(dto, enabled, multipleEmpresas: true);
+        Assert.Contains("Configuracion:Ver", dto.CapacidadesHabilitadas);
+        Assert.Contains("configuracion", dto.RutasHabilitadas);
+        Assert.Contains("configuracion/dinamica-v5", dto.RutasHabilitadas);
+        Assert.DoesNotContain("Configuracion:Editar", dto.CapacidadesHabilitadas);
+
+        // Negative: the flag alone cannot create Configuracion:Ver.
+        dto.Permisos = new List<string> { "Configuracion:Editar" };
+        CommercialTenantUiCapabilities.Apply(dto, enabled, multipleEmpresas: true);
+        Assert.DoesNotContain("configuracion/dinamica-v5", dto.RutasHabilitadas);
+        Assert.DoesNotContain("Configuracion:Ver", dto.CapacidadesHabilitadas);
+
+        // Negative: a non-admin with the grant still cannot open the admin UI.
+        dto.Permisos = grants;
+        dto.EsAdministrador = false;
+        CommercialTenantUiCapabilities.Apply(dto, enabled, multipleEmpresas: true);
+        Assert.DoesNotContain("configuracion/dinamica-v5", dto.RutasHabilitadas);
+
+        // Negative: no pilot flag means fail closed even for administrators.
+        dto.EsAdministrador = true;
+        CommercialTenantUiCapabilities.Apply(dto, Config(), multipleEmpresas: true);
+        Assert.DoesNotContain("configuracion/dinamica-v5", dto.RutasHabilitadas);
+    }
+
     private static IConfiguration Config(params (string Key, string Value)[] variables) =>
         new ConfigurationBuilder().AddInMemoryCollection(
             variables.ToDictionary(x => x.Key, x => (string?)x.Value)).Build();

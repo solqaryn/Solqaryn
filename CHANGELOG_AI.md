@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV04 V24 reparación de gate UI C01-03.M04.01 [Javier :30, rescate DEV03]
+- Dos CI reales .M04.01 y .M04.05 fallaron para JWT A/B al navegar: el guard correctamente exigía una ruta NO anunciada por CommercialTenantUiCapabilities. No se desactivó el guard ni se falsearon los errores.
+- Pilot UI privado sólo para administrador con Configuracion:Ver existente y PrivateReadPilotEnabled, rutas exactas configuracion y configuracion/dinamica-v5, SIN ampliar Editar; cuatro regresiones xUnit adversariales y reejecución CI GitHub-hosted MySQL8.4/Chromium.
+- Rescate V20 con lock exclusivo conserva owner histórico DEV03 y FAIL previos; exact SHA, A0–A4 y A5 genuina independiente pendientes; scope lock estricto, sin QA/main/PROD.
+
 ## 2026-11-22 — DEV04 V24 C01-03.M04.03: identidad visual real por tenant [Javier :30]
 - Angular muestra marca de empresa desde GET autenticado para tenant verificado y la valida/sanea; limpia y cancela respuestas tardías de A antes de B, sin confiar en localStorage, cabeceras o HTML/CSS externo.
 - GitHub-hosted con JWT firmado, MySQL 8.4 efímero y Chromium A/B, cinco viewport y denegaciones; WCAG numérico, zoom nativo 200 y carrera retardada todavía NO_ACREDITADO. A5 independiente y CI exact SHA pendientes.

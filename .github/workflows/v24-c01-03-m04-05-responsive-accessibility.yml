@@ -3,6 +3,8 @@ on:
   push:
     branches: [dev]
     paths:
+      - 'backend/src/API/Security/CommercialTenantUiCapabilities.cs'
+      - 'backend/tests/Solqaryn.Tests/API/CommercialTenantUiCapabilitiesTests.cs'
       - '.github/workflows/v24-c01-03-m04-05-responsive-accessibility.yml'
       - 'frontend/e2e/c01-03-m04-05-responsive-accessibility.spec.ts'
       - 'frontend/src/app/app.routes.ts'

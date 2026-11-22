@@ -81,6 +81,13 @@ public static class CommercialTenantUiCapabilities
             HabilitarSiConcedido("Roles", "Crear", "roles/nuevo");
             HabilitarSiConcedido("Roles", "Editar", "roles/:id/editar");
             HabilitarSiConcedido("Permisos", "Administrar", "permisos");
+            // C01-03.M04.01 V24: read-only UI pilot, never an RBAC grant.
+            // Only an authenticated administrator with an EXISTING Configuracion:Ver
+            // grant and the explicit private read pilot may open either route.
+            // Editing remains denied in restricted multi-company mode.
+            if (config.GetValue<bool>("MultiEmpresa:PrivateReadPilotEnabled"))
+                HabilitarSiConcedido("Configuracion", "Ver",
+                    "configuracion", "configuracion/dinamica-v5");
         }
 
         // Confirmación, pagos, PDF, descarga de media, reports y jobs son
