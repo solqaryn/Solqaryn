@@ -164,8 +164,13 @@ public sealed class V5UniversalCaseFileQaEvidenceAudit
     }
 
     private static bool SafeScope(string? scope) =>
-        scope is { Length: >= 2 and <= 128 } &&
+        // Business tenant and case-file scopes may use a canonical positive
+        // single-digit SQL ID; a single opaque letter and zero stay invalid.
+        // Reject 01/001 aliases to avoid mismatched audit/idempotency scope keys.
+        scope is { Length: >= 1 and <= 128 } &&
+        (scope.Length > 1 || scope[0] is >= '1' and <= '9') &&
         scope.All(c => (c >= 'a' && c <= 'z') ||
                        (c >= 'A' && c <= 'Z') ||
-                       (c >= '0' && c <= '9') || c is '-' or '_');
+                       (c >= '0' && c <= '9') || c is '-' or '_') &&
+        (!scope.All(char.IsAsciiDigit) || scope[0] is >= '1' and <= '9');
 }

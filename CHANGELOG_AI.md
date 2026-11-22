@@ -1,3 +1,8 @@
+## 2026-11-21 — DEV05 V23 C01-04.M03.06 scope SQL canónico y alias R2
+- Reparación causal en Application: admitir tenant/case ID SQL positivo de un dígito (1..9) sin aceptar cero, alias decimal 01/001, signos ni letra solitaria; contrato de auditoría sigue sin autorizar acceso, mutación, CI ni A5.
+- xUnit adversarial nuevo: 3 positivos, 10 entradas inválidas antes de fuente y fuente alias 01 frente a scope 1; el trabajo requiere GitHub-hosted .NET 10 Release, seguridad, Scope Lock y V5 SUCCESS exact-SHA.
+- Mantener VALIDANDO C01-04.M03.06 / owner DEV05: faltan lectura autenticada JWT/RBAC/ownership, integración HTTP/DI y A0–A4 completa; A5 independiente. Sin QA/main/PROD, rollback git revert normal.
+
 ## 2026-11-21 — DEV04 V23 C04-02.M03.06 integridad de auditoría contractual R2
 - El sink MySQL 8.4 aislado rechaza un falso resultado candidato en un evento de denegación y rechaza un candidato verdadero marcado como denegación, sin consultar ni escribir la base de datos; ninguna evidencia de auditoría autoriza operaciones comerciales.
 - Prueba adversarial adicional en la integración real MySQL: ambas combinaciones falsas se deniegan y una segunda conexión verifica que persisten solo dos eventos legítimos. CI obligatoria requiere TRX dirigido 2/2, Scope Lock, V5, backend y seguridad sobre SHA nuevo; IN_PROGRESS no es PASS.

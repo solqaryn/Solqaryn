@@ -277,4 +277,63 @@ public sealed class C0104M0306CaseFileQaAuditSafetyTests
         Assert.Equal(0, source.Reads);
         Assert.Empty(sink.Entries);
     }
+
+    [Theory]
+    [InlineData("1", "9")]
+    [InlineData("9", "1")]
+    [InlineData("7", "42")]
+    public async Task CanonicalPositiveOneDigitSqlScopesAreAcceptedAsUnverifiedOnly(
+        string tenant, string caseFile)
+    {
+        var sink = new Sink();
+        var trusted = Good() with
+        {
+            VerifiedTenantScope = tenant,
+            VerifiedCaseFileScope = caseFile
+        };
+        var verdict = await Capture(
+            new Source(trusted), sink, tenant: tenant, caseId: caseFile);
+        Assert.Equal("CASEFILE_QA_ENVELOPE_WRITTEN_REVIEW_PENDING", verdict.Code);
+        Assert.Single(sink.Entries);
+        Assert.False(verdict.CertifiesCI);
+        Assert.False(verdict.CertifiesA5);
+        Assert.False(verdict.GrantsTenantAccess);
+        Assert.False(verdict.AuthorizesCaseWrite);
+    }
+
+    [Theory]
+    [InlineData("0", "case-42")]
+    [InlineData("00", "case-42")]
+    [InlineData("01", "case-42")]
+    [InlineData("001", "case-42")]
+    [InlineData("+1", "case-42")]
+    [InlineData("-1", "case-42")]
+    [InlineData("a", "case-42")]
+    [InlineData("tenant-A", "0")]
+    [InlineData("tenant-A", "0009")]
+    [InlineData("tenant-A", "9 ")]
+    public async Task NoncanonicalNumericOrOneLetterScopeFailsBeforeSourceIo(
+        string tenant, string caseFile)
+    {
+        var source = new Source(Good());
+        var sink = new Sink();
+        var verdict = await Capture(source, sink, tenant: tenant, caseId: caseFile);
+        Assert.Equal("CASEFILE_QA_SCOPE_INVALID", verdict.Code);
+        Assert.Equal(0, source.Reads);
+        Assert.Empty(sink.Entries);
+    }
+
+    [Fact]
+    public async Task TrustedSourceUsingPaddedTenantCannotMasqueradeAsCanonicalScope()
+    {
+        var sink = new Sink();
+        var trusted = Good() with
+        {
+            VerifiedTenantScope = "01", VerifiedCaseFileScope = "9"
+        };
+        var verdict = await Capture(
+            new Source(trusted), sink, tenant: "1", caseId: "9");
+        Assert.Equal("CASEFILE_QA_TRUSTED_EVIDENCE_REQUIRED", verdict.Code);
+        Assert.Empty(sink.Entries);
+    }
 }
