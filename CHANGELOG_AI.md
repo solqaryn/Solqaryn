@@ -1,3 +1,7 @@
+## 2026-11-21 — V23 C07-01.M06.06 auditoría durable positiva MySQL [Javier :00]
+- Amplía la suite integrada de productos: el alta comercial usa auditoría estricta REAL y la misma transacción Oracle EF/MySQL 8.4, comprobando producto y recibo persistidos tras reabrir un DbContext, con tenant/actor/acción verificados.
+- Conserva las pruebas negativas de rollback, el piloto HTTP privado de sólo lectura y los límites de seguridad. Pendiente CI GitHub-hosted exact-SHA; sigue EN_PROGRESO bajo V17 propio. No acredita variantes HTTP ni Angular; sin LISTO/A5/QA/main/PROD.
+
 ## 2026-11-21 - V23 C06-01.M06.06 causal C15-01 source audit snapshot repair [Javier :30]
 - GitHub-hosted C15-01.M05.04 audit job 137025198961 failed on exact SHA 31a24c91282ae9a975412dd82fbc0c9941654ab2 because the restored root route changed frontend/src/app/app.routes.ts Git blob from 3181fab58be23bd22eab741a0edb73baa01e6a92 to 94c093bec9ab6765b4a7696a4e99aaaf03f10673 and real lexical route count from 120 to 121.
 - Updated ONLY route[0].blobSha/declarations in NON_AUTHORITATIVE docs/v5/evidence/c15-01-m05-04-snapshot.json (2340 PLAN, 2340 COLA and 2301 DAG entries untouched); audit source hash and route count remain strict and are not disabled or weakened.

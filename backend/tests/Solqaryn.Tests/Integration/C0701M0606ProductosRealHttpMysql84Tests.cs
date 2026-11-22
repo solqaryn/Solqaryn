@@ -268,6 +268,59 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             await AssertStrictAuditRollbackAsync(AccionPermiso.EliminarLogico,
                 service => service.DeleteAsync(productAId));
 
+            // Positive durable audit proof: unlike the injected-failure cases
+            // above, use the real AuditoriaService/AuditoriaRepository and the
+            // SAME Oracle EF DbContext/transaction as the product creation.
+            // Reopen from a fresh context to prove both product and audit row
+            // survive the commit and retain server-verified tenant ownership.
+            // This does not certify the quarantined private HTTP write path.
+            var auditedProductName = "C0701DurableAudit" + Guid.NewGuid().ToString("N");
+            await using (var durableDb = new AppDbContext(options,
+                tenantHttpContextAccessor: auditAccessor))
+            {
+                var categoryId = await durableDb.Categorias
+                    .Where(c => c.Nombre == "Category C0701RealProductoA")
+                    .Select(c => c.Id).SingleAsync();
+                var actor = new Mock<ICurrentUserService>();
+                actor.SetupGet(x => x.UsuarioId).Returns(userA.Id);
+                actor.SetupGet(x => x.NombreUsuario).Returns(userA.NombreUsuario);
+                var audit = new AuditoriaService(
+                    new AuditoriaRepository(durableDb), actor.Object,
+                    auditAccessor,
+                    Microsoft.Extensions.Logging.Abstractions.NullLogger<AuditoriaService>.Instance);
+                var service = new ProductoService(
+                    new ProductoRepository(durableDb),
+                    new CategoriaRepository(durableDb),
+                    Mock.Of<IImageStorageService>(), actor.Object,
+                    audit, httpContextAccessor: auditAccessor);
+                await new UnitOfWork(durableDb).ExecuteInTransactionAsync(async () =>
+                {
+                    var created = await service.CreateAsync(new CreateProductoDto
+                    {
+                        Nombre = auditedProductName,
+                        CategoriaId = categoryId
+                    });
+                    Assert.True(created.Id > 0);
+                });
+            }
+            await using (var durableReadback = new AppDbContext(options))
+            {
+                var stored = await durableReadback.Productos
+                    .IgnoreQueryFilters().AsNoTracking()
+                    .SingleAsync(p => p.Nombre == auditedProductName);
+                Assert.Equal(a.Id, stored.EmpresaId);
+                var receipt = await durableReadback.RegistrosAuditoria
+                    .IgnoreQueryFilters().AsNoTracking()
+                    .SingleAsync(log => log.Modulo == ModuloSistema.Productos
+                        && log.Accion == AccionPermiso.Crear
+                        && log.ReferenciaId == stored.Id
+                        && log.Entidad == "Producto");
+                Assert.Equal(a.Id, receipt.EmpresaId);
+                Assert.Equal(userA.Id, receipt.UsuarioId);
+                Assert.Equal(userA.NombreUsuario, receipt.NombreUsuario);
+                Assert.Equal("Exito", receipt.Resultado);
+            }
+
             // Real Oracle EF/MySQL transaction rollback at the tenant-bound
             // persistence layer. This is NOT HTTP CRUD acceptance: writes
             // through ProductosController still require separate coverage.
