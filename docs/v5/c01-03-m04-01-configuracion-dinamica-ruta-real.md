@@ -1,0 +1,10 @@
+# C01-03.M04.01 — UI privada real de configuración dinámica (DEV)
+ 
+## A0 / alcance individual
+PLAN!D236 manda una ruta o superficie funcional. Esta entrega usa el componente empresarial de configuración ya existente en la ruta privada `/configuracion/dinamica-v5`, guardada por `authGuard` y `permisoGuard` para `Configuracion:Ver`. El componente existente llama al API real para configuración por tenant, versionado y 409; la edición está condicionada al permiso Configuracion:Editar y al control del servidor. No es el catálogo arbitrario de claves ni certifica toda la meta acumulativa M04 de PLAN!E236. No se modifican JWT, Domain, EF Core, MySQL, Aiven, QA/main/PROD.
+
+## R1 y A1–A5
+A1: pruebas Chromium de ruta privada anónima, usuarios JWT firmados A/B, navbar de retorno y reflow 320/390/768/1280/1440; capturas posteriores. A2: prueba adversarial de JWT manipulado y cabecera de A contra B; no confiar en URL, formulario ni localStorage como fuente RBAC. A3: workflow GitHub-hosted con API .NET10, MySQL 8.4 efímero, Angular y Playwright; una prueba SKIPPED no es PASS. A4: Scope Lock, V5 y CI requerida SUCCESS SHA exacto y readback institucional; no declarar LISTO antes. A5 por Task Javier distinta del autor/reparador. Rollback git revert normal con FF/CAS; BITACORA histórica preservada.
+
+## Fuentes UX V23 y evidencia honesta
+Leídas del origen y pin oficiales: SKREF03 Impeccable `pbakaus/impeccable@2149fcce39a90bb409df5f16515f316a76dc6199`; SKREF10 Angular `angular/angular@6808966993bf2b2d455d9b6245e960a59a01b9a9`. Aplicado modo Operate, reuso de UI real, jerarquía, semántica, foco visible, CSS local y sin body overflow. SKREF04/05/06/11/12 NO_APLICA: no nuevo motion, landing, redacción extensa, modelado formal de amenazas ni profiling .NET; no se instalaron/copiaron herramientas. ANTES: solo `/configuracion` con muchos paneles y el card tenant; no existía la ruta nueva. DESPUÉS: ruta dedicada que reutiliza el card conectado. Captura previa de una ruta inexistente NO_APLICA; imágenes Chromium DESPUÉS deben generarse realmente en CI, no inventarlas. El zoom 200% y matices UX sin prueba quedan pendientes y no se reportan como acreditados.

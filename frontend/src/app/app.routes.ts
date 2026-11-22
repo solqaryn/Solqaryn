@@ -139,6 +139,8 @@ export const routes: Routes = [
   ...AJUSTES_INVENTARIO_ROUTES,
   ...FACTURAS_PROVEEDOR_ROUTES,
   ...PEDIDOS_VENTA_ROUTES,
+    // V24 C01-03.M04.01: private real configuration surface.
+  { path: 'configuracion/dinamica-v5', canActivate: [authGuard, permisoGuard], data: { modulo: 'Configuracion', accion: 'Ver' }, loadComponent: () => import('./features/configuracion/c0103-configuracion-dinamica-page.component').then(m => m.C0103ConfiguracionDinamicaPageComponent) },
   { path: 'configuracion', canActivate: [authGuard, permisoGuard], data: { modulo: 'Configuracion', accion: 'Ver' }, loadComponent: () => import('./features/configuracion/configuracion.component').then(m => m.ConfiguracionComponent) },
   { path: 'periodos-contables', canActivate: [authGuard, permisoGuard], data: { modulo: 'Configuracion', accion: 'Ver' }, loadComponent: () => import('./features/periodos-contables/periodos-contables.component').then(m => m.PeriodosContablesComponent) },
   { path: 'perfil', canActivate: [authGuard], loadComponent: () => import('./features/perfil/perfil.component').then(m => m.PerfilComponent) },

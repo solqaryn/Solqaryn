@@ -1,3 +1,7 @@
+## 2026-11-22 — DEV03 V24 C01-03.M04.01: ruta real de configuración dinámica [Javier :20]
+- Nueva ruta privada Angular `configuracion/dinamica-v5` con `authGuard` + `permisoGuard(Configuracion:Ver)`, UI standalone responsive, navegación de retorno y reutilización del formulario tenant conectado a HTTP real, RBAC, versiones y errores 409.
+- Cinco tests dirigidos de Chromium JWT real A/B con MySQL efímero: ruta anónima, identidad A/B, BOLA, firma alterada, teclado y 320/390/768/1280/1440; workflow dedicado GitHub-hosted exact SHA. Pruebas/CI y capturas son PENDIENTES hasta ejecución, no PASS adelantado.
+- A0 R1 sobre PLAN D236, P:S UX V23; SKREF03 Impeccable y SKREF10 Angular leídas con pins autorizados. No API nueva ni catálogo universal de claves. A0-A4, Scope Lock, V5, CI, readback y A5 independiente antes de LISTO; conservar owner DEV03 y un solo WIP.
 ## 2026-11-22 — DEV02 V24 C15-04.M05.04: contención de matriz en tarjeta, A0.69 [Javier :10]
 - CI anterior exact-SHA f213290a: 136/137 Playwright Chromium reales; falla A0.69 al 200% por document.scrollWidth 339 contra clientWidth 320 en cobertura V5. No se contabiliza PASS.
 - Corrección de hipótesis nueva: clip únicamente en mat-card de cobertura, preservando scroll horizontal de la tabla y foco, sin ocultar overflow de html/body. Test refuerza overflow CSS calculado y diagnóstico geométrico, no relaja el umbral.
