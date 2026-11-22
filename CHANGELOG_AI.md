@@ -1,3 +1,6 @@
+## 2026-11-22 - DEV02 C15-04.M05.04 A110: reflow de texto al 200% con JWT Chromium
+- Incremento TEST-ONLY R2 bajo candado V17 2000002297: tres casos A0.85 de reflow al 200% con JWT firmado/HTTP/MySQL 8.4/Chromium, cinco anchos y capturas texto 100%/200% de la misma corrida. No equivale a zoom nativo, WCAG global ni CWV de campo.
+- Suite previa A109 146/146 GREEN; A110 CI exact-SHA 149/149 requerida junto con Scope Lock/V5/frontend/backend/security pertinentes. H=EN_PROGRESO, owner DEV02 y lock preservados; sin LISTO/A5, QA/main/PROD.
 ## 2026-11-22 - DEV01 V24 C07-01.M06.06: fixture MySQL independiente para audit de variantes
 - Reparacion test-only antes de cierre CI: la auditoria de estado/eliminacion de variantes opera sobre `auditedProductId`, no el producto A reservado para aserciones de precio HTTP 100. Mantiene A/B, auditoria y rollback sin contaminar la fixture del flujo siguiente; exige CI exact-SHA y conserva EN_PROGRESO/owner/lock y A5 pendiente.
 

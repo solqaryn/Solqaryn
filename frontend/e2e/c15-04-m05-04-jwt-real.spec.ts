@@ -2987,4 +2987,77 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
       });
   }
 
+  // A0.85: reflow real de texto 200% por CSS raiz, NO zoom nativo.
+  // JWT firmado, backend y MySQL efimero: sin mocks ni cambios de runtime.
+  for (const destino of [
+    { ruta: '/plataforma/capacidades-v19', titulo: 'Catálogo global de módulos y capacidades' },
+    { ruta: '/plataforma/revision-arquitectura-v20', titulo: 'Revisión de arquitectura e integraciones' },
+    { ruta: '/plataforma/eventos-outbox-v22', titulo: 'Observabilidad del outbox' }
+  ]) {
+    test('A0.85 - reflow texto 200% JWT real ' + destino.ruta,
+      async ({ page, request }) => {
+        const jwt = await ingresarConJwtRealParaGuard(
+          page, request, 'c1504_platform_only'
+        );
+        const autorizada = await request.get(api + '/plataforma/sesion', {
+          headers: { Authorization: 'Bearer ' + jwt }
+        });
+        expect(autorizada.status(), 'Autoridad real del backend').toBe(200);
+        const mutaciones: string[] = [];
+        page.on('request', req => {
+          if (req.url().includes('localhost:5005') &&
+              /^(POST|PUT|PATCH|DELETE)$/.test(req.method())) {
+            mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+          }
+        });
+        for (const ancho of [320, 390, 768, 1280, 1440]) {
+          await page.setViewportSize({ width: ancho, height: 840 });
+          const sesion = page.waitForResponse(res =>
+            res.url().includes('/plataforma/sesion') &&
+            res.request().method() === 'GET');
+          await page.goto(destino.ruta);
+          expect((await sesion).status(), 'JWT firmado validado HTTP').toBe(200);
+          const titulo = page.getByRole('heading', {
+            level: 1, name: destino.titulo
+          });
+          await expect(titulo).toBeVisible();
+          const normal = await titulo.evaluate(el =>
+            parseFloat(getComputedStyle(el).fontSize));
+          const base = await page.evaluate(() =>
+            parseFloat(getComputedStyle(document.documentElement).fontSize));
+          expect(base, 'Tamano raiz calculado').toBeGreaterThan(0);
+          const slug = destino.ruta.split('/').pop() || 'plataforma';
+          if (ancho === 320 || ancho === 1440) {
+            await page.screenshot({
+              path: 'test-results/c1504-a110-' + slug + '-' + ancho + '-texto100.png',
+              fullPage: true
+            });
+          }
+          await page.evaluate(px => {
+            document.documentElement.style.fontSize = px + 'px';
+          }, base * 2);
+          const aumentado = await titulo.evaluate(el =>
+            parseFloat(getComputedStyle(el).fontSize));
+          expect(aumentado, 'Titulo responde al texto 200% en ' + ancho)
+            .toBeGreaterThanOrEqual(normal * 1.5);
+          await expect(titulo).toBeVisible();
+          const medidas = await page.evaluate(() => ({
+            html: document.documentElement.scrollWidth,
+            body: document.body.scrollWidth
+          }));
+          expect(Math.max(medidas.html, medidas.body),
+            'Sin overflow con texto 200% en ' + ancho)
+            .toBeLessThanOrEqual(ancho + 2);
+          if (ancho === 320 || ancho === 1440) {
+            await page.screenshot({
+              path: 'test-results/c1504-a110-' + slug + '-' + ancho + '-texto200.png',
+              fullPage: true
+            });
+          }
+        }
+        expect(mutaciones, 'Solo lectura sin cambios de API').toEqual([]);
+      });
+  }
+
+
 });
