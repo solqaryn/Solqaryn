@@ -1,3 +1,8 @@
+## 2026-11-22 - DEV05 V23 C11-03.M06.06 separar ACK SQL de fallo de transporte
+- Reparacion R2: un ACK SQL incierto despues de un envio externo aceptado ya no se clasifica como fallo del transporte ni programa un retry inmediato; reclamacion durable y recuperacion stale preservan el resultado ambiguo.
+- Dos regresiones xUnit adversariales: SQL ACK fallido con cero RegistrarFallo y timeout de transporte con retry sanitizado. Workflow GitHub-hosted amplificado para ejecutar 2/2 Oracle MySQL 8.4 y 4/4 contratos xUnit con TRX no vacio.
+- LIMITACION_FASE: worker aislado sin proveedor real JWT/RBAC/HTTP/DI, sin exactamente-una-vez ni certificado M06.06. Esperar CI exact-SHA, A0-A4 pertinentes y A5 independiente; dev-only, rollback git revert, ninguna accion QA/main/PROD.
+
 ## 2026-11-22 — DEV03 V23 C02-01.M05.04 resolución JWT/SQL por HTTP solo Development
 - Incremento R2 real: lector Oracle EF/MySQL de membresías y roles actuales conectado al DI Development y endpoint autenticado /tenant-context/resolver-login; fuera de Development devuelve 404, sin cambio de permisos de producción, JWT ni sesión.
 - Regresión MySQL 8.4/TestServer con JWT firmado: 401 anónimo o firma alterada, tenant A+B no se autoselecciona, actor ajeno denegado y B revocado deja A; ninguna respuesta emite JWT, concede recursos ni instala contexto tenant. CI exact-SHA pendiente al publicar.

@@ -39,3 +39,25 @@ backend Release en GitHub-hosted sobre el nuevo SHA. Un check en curso no
 equivale a PASS. No se conecta un transporte productivo ni se libera M06.06;
 JWT/RBAC end-to-end, deduplicación real del proveedor y A5 independiente
 continúan pendientes. Rollback: `git revert` normal del commit, sin force-push.
+
+
+## V23 DEV05: fallo de confirmacion SQL posterior al envio (R2)
+
+Hipotesis causal distinta: el `try/catch` del worker incluia tanto la llamada
+al transporte como `MarcarEntregadoAsync`. Cuando el proveedor ya habia aceptado
+un evento pero el ACK SQL lanzaba una excepcion, se interpretaba incorrectamente
+como fallo del transporte y se intentaba `RegistrarFalloAsync`, provocando
+reintentos anticipados y posible doble efecto externo. Se separan fronteras:
+solo una excepcion de `SendAsync` activa el retry/dead-letter seguro; una
+excepcion del ACK de persistencia propaga el resultado incierto y deja que
+los claims CAS/stale recuperen el mensaje. El consumidor remoto sigue necesitando
+idempotencia por (tenant,clave). No se promete entrega exactly-once.
+
+Se agregan dos xUnit adversariales: ACK SQL incierto despues de envio exitoso
+sin `RegistrarFalloAsync`, y timeout real del transporte con exactamente un
+retry saneado. El workflow dirigido GitHub-hosted ahora se activa por cambios
+del worker o de estas pruebas y exige 2/2 pruebas fisicas Oracle MySQL 8.4 y
+4/4 pruebas de contrato sin FAIL/SKIP. Verificar CI exact-SHA, Scope Lock y
+V5. El cambio no introduce provider live, DI, endpoint nuevo, JWT/RBAC del
+relay ni modifica bases productivas: conservar VALIDANDO hasta cerrar A0-A4
+y A5 independiente. Rollback: git revert fast-forward de este changeset.

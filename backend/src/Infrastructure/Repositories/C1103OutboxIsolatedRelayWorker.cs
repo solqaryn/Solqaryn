@@ -70,17 +70,11 @@ public sealed class C1103OutboxIsolatedRelayWorker(
 
             try
             {
-                // External delivery cannot be rolled back with SQL; its consumer
-                // must be idempotent. CAS protects ACK, not exactly-once delivery.
+                // The transport can fail after the receiver accepted the event.
+                // Only a *transport* failure schedules a retry/dead letter.
                 await transport.SendAsync(
                     authorizedTenantId, message.EventoId, message.TipoEvento,
                     message.PayloadJson, message.ClaveIdempotencia, cancellationToken);
-                cancellationToken.ThrowIfCancellationRequested();
-                if (await repository.MarcarEntregadoAsync(
-                    authorizedTenantId, message.Id, message.Intentos, nowUtc, cancellationToken))
-                    delivered++;
-                else
-                    stale++;
             }
             catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
             {
@@ -101,7 +95,20 @@ public sealed class C1103OutboxIsolatedRelayWorker(
                     deadLetters++;
                 else
                     retries++;
+                continue;
             }
+
+            // ACK is a separate SQL operation after an external side effect.
+            // If SQL throws, its outcome is unknown. Never mistake that for a
+            // transport failure or schedule an immediate duplicate delivery.
+            // Preserve the durable claim for CAS/stale recovery and let the
+            // downstream consumer deduplicate by tenant/idempotency key.
+            cancellationToken.ThrowIfCancellationRequested();
+            if (await repository.MarcarEntregadoAsync(
+                authorizedTenantId, message.Id, message.Intentos, nowUtc, cancellationToken))
+                delivered++;
+            else
+                stale++;
         }
         return new BatchResult(claimed.Count, delivered, retries, deadLetters, stale);
     }
