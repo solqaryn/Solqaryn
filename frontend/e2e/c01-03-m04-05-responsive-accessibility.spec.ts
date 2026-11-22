@@ -208,6 +208,10 @@ test.describe('V24 C01-03.M04.05 actual tenant UI responsive and keyboard', () =
           await verifyLayout(page,width,'text-only-resize-200');
           await expect(page.getByRole('button',{name:/Recargar/})).toBeVisible();
           await expect(page.getByRole('link',{name:'Ver todos los ajustes'})).toBeVisible();
+          // V24: aserciones adversariales reales a 200% de texto en los cinco viewports.
+          // Tab real y contraste calculado se verifican despues del reflow; no es zoom nativo.
+          await verifyTab(page);
+          await verifyWcagContrast(page);
           await page.screenshot({
             path:'test-results/c0103-m0405-'+username+'-'+width+'-text-resize-200.png',
             fullPage:true
