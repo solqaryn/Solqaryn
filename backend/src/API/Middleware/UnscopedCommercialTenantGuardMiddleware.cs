@@ -622,6 +622,9 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                        config.GetValue<bool>("MultiEmpresa:PrivateFinancialPilotEnabled");
         // Productos/compra: archivos y metadatos en rutas exactas con
         // verificación doble del dueño + storage tenant (nunca global).
+        // Opt-in independiente: no autoriza DELETE generico, archivos ni variantes.
+        var borrarProducto = HttpMethods.IsDelete(http.Request.Method) &&
+            config.GetValue<bool>("MultiEmpresa:PrivateProductDeletePilotEnabled");
         var archivos = (HttpMethods.IsGet(http.Request.Method) ||
                         HttpMethods.IsPost(http.Request.Method) ||
                         HttpMethods.IsPut(http.Request.Method) ||
@@ -653,6 +656,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         var esPdf = false;
         var esMedia = false;
         var esAdminExport = false;
+        var esBorradoProducto = false;
         var accionFinanciera = (AccionPermiso?)null;
         var accionArchivos = (AccionPermiso?)null;
         var esCargaArchivos = false;
@@ -740,6 +744,11 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             modulo = ModuloSistema.Proveedores;
             esEdicionMaestros = true;
         }
+        else if (borrarProducto && EsRutaDetallePositiva(http.Request.Path, "/productos"))
+        {
+            modulo = ModuloSistema.Productos;
+            esBorradoProducto = true;
+        }
         else if (borrador && EsRutaExacta(http.Request.Path, "/productos"))
         {
             modulo = ModuloSistema.Productos;
@@ -821,7 +830,8 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         else
             return false;
 
-        accion = accionArchivos ?? accionFinanciera ??
+        accion = esBorradoProducto ? AccionPermiso.EliminarLogico
+            : accionArchivos ?? accionFinanciera ??
             (esEdicionMaestros ? AccionPermiso.Editar
             : esPdf || esMedia || esAdminExport ? AccionPermiso.Exportar
             : lectura || reportes || inventario || adminReport ? AccionPermiso.Ver

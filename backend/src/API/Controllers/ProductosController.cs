@@ -148,8 +148,14 @@ public class ProductosController : ControllerBase
             // Scope the product before any variant cleanup: a foreign or missing
             // product must not cause mutations or expose the variant state.
             // GetByIdAsync uses the tenant-scoped product repository.
-            if (await _productoService.GetByIdAsync(id) is null)
+            var producto = await _productoService.GetByIdAsync(id);
+            if (producto is null)
                 return;
+            // Evitar mutar una variante tecnica con inventario antes del cierre.
+            // Application vuelve a comprobar las variantes comerciales bajo lock.
+            if (producto.Variantes.Any(v => v.Cantidad != 0))
+                throw new BusinessRuleException(
+                    "No se puede eliminar un producto con existencias. Ajusta el inventario de sus variantes antes de eliminarlo.");
 
             await _varianteService.EliminarTecnicaConProductoAsync(id);
             // Abort the outer transaction when the product update did not persist:

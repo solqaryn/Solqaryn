@@ -287,6 +287,12 @@ public class ProductoService : IProductoService
         var producto = await _repository.GetByIdAsync(id);
         if (producto is null) return false;
 
+        // La baja logica no puede ocultar inventario fisico de otro agregado.
+        var variantesVigentes = producto.Variantes.Where(v => !v.Eliminado).ToList();
+        if (variantesVigentes.Any(v => v.Cantidad != 0))
+            throw new BusinessRuleException(
+                "No se puede eliminar un producto con existencias en sus variantes. Ajusta el inventario antes de eliminarlo.");
+
         var valoresAnteriores = new
         {
             producto.Nombre,
@@ -300,11 +306,25 @@ public class ProductoService : IProductoService
 
         producto.Activo = false;
         producto.Eliminado = true;
-        producto.FechaEliminacion = DateTime.UtcNow;
+        var fechaBaja = DateTime.UtcNow;
+        producto.FechaEliminacion = fechaBaja;
         producto.EliminadoPorUsuarioId = _currentUser.UsuarioId;
         producto.ActualizadoPorUsuarioId = _currentUser.UsuarioId;
         producto.ActualizadoPorNombreUsuario = _currentUser.NombreUsuario;
-        producto.FechaActualizacion = DateTime.UtcNow;
+        producto.FechaActualizacion = fechaBaja;
+
+        // El DbContext y UnitOfWork de DELETE persisten todas las bajas
+        // junto con la auditoria estricta o revierten la transaccion completa.
+        foreach (var variante in variantesVigentes)
+        {
+            variante.Activo = false;
+            variante.Eliminado = true;
+            variante.FechaEliminacion = fechaBaja;
+            variante.EliminadoPorUsuarioId = _currentUser.UsuarioId;
+            variante.ActualizadoPorUsuarioId = _currentUser.UsuarioId;
+            variante.ActualizadoPorNombreUsuario = _currentUser.NombreUsuario;
+            variante.FechaActualizacion = fechaBaja;
+        }
 
         var guardado = await _repository.SaveChangesAsync();
         if (guardado)
@@ -320,7 +340,8 @@ public class ProductoService : IProductoService
                 {
                     producto.Activo,
                     producto.Eliminado,
-                    producto.FechaEliminacion
+                    producto.FechaEliminacion,
+                    VariantesEliminadasLogicamente = variantesVigentes.Count
                 });
         }
 

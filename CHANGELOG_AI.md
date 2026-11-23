@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV06 V30 C14-02.M06.06: DELETE funcional de productos con variantes
+- Runtime: ruta DELETE /productos/{id} bajo bandera independiente desactivada por defecto, JWT/RBAC y tenant verificado; no autoriza otras rutas o metodos.
+- Producto y variantes con stock cero reciben baja logica y auditoria estricta bajo UnitOfWork; stock fisico comercial o tecnico bloquea el borrado y evita ocultar existencias.
+- Dos xUnit unitarios de servicio nuevos; integracion real del DELETE con JWT tenant A/B, MySQL 8.4 y rollback aun NO PASS, condicion necesaria para A0-A4 de cierre. C14-02.M06.06 sigue VALIDANDO, A5 tercero Javier; no tocar WIP C07-01 de DEV01.
+
 ## 2026-11-23 — DEV05 V30 C01-03.M04.04: bloquear mutaciones con GET inválido y recibos tardíos
 - Corrección funcional Angular: guardar/logo exigen estado ready sin carga; respuestas de mutación iniciadas antes de un GET posterior no pisan el formulario actual ni muestran éxito falso.
 - Dos regresiones Vitest adversariales sobre GET pendiente/403 y respuesta PUT obsoleta. CI GitHub-hosted exact-SHA obligatoria pendiente; no inferir backend JWT/MySQL ni zoom nativo 200% o capturas ANTES.

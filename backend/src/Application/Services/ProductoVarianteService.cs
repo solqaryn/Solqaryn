@@ -348,6 +348,10 @@ public class ProductoVarianteService : IProductoVarianteService
             var tecnica = await _repository.GetTecnicaByProductoIdAsync(productoId);
             if (tecnica is null) return;
             tecnica = await _repository.GetByIdForUpdateAsync(tecnica.Id) ?? tecnica;
+            // Bajo el lock FOR UPDATE no puede desaparecer stock tecnico.
+            if (tecnica.Cantidad != 0)
+                throw new BusinessRuleException(
+                    "No se puede eliminar un producto con existencias en su variante tecnica. Ajusta el inventario antes de eliminarlo.");
             MarcarEliminacionTecnica(tecnica);
             await _repository.SaveChangesAsync();
         });
