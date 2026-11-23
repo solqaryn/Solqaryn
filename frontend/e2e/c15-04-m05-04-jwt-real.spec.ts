@@ -3791,4 +3791,48 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     expect(mutaciones, 'Negativa anónima no genera mutación API').toEqual([]);
   });
 
+  // A126: emulacion de pinch REAL por CDP en Chromium, distinta del text resize.
+  // No representa el Zoom 200% del menu del navegador ni WCAG global.
+  test('A0.98 - pinch Chromium 200% conserva guard anónimo, foco y ancho', async ({ page, request }) => {
+    test.setTimeout(180_000);
+    const noAutorizada = await request.get(api + '/plataforma/sesion');
+    expect(noAutorizada.status(), 'Sesión privada denegada sin JWT real').toBe(401);
+    const cdp = await page.context().newCDPSession(page);
+    try {
+      for (const ancho of [320, 390, 768, 1280, 1440]) {
+        await page.setViewportSize({ width: ancho, height: 840 });
+        await page.goto('/plataforma/catalogo-planes-v22');
+        await expect(page).toHaveURL(/\\/login(?:\\?|$)/);
+        await expect(page.getByTestId('c0401-planes-reference')).toHaveCount(0);
+        await cdp.send('Emulation.setPageScaleFactor', { pageScaleFactor: 2 });
+        const vista = await page.evaluate(() => ({
+          scale: window.visualViewport?.scale ?? 0,
+          cssWidth: window.innerWidth,
+          docWidth: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth)
+        }));
+        expect(vista.scale, 'Pinch de Chromium aplicado a ' + ancho).toBeGreaterThanOrEqual(1.95);
+        expect(vista.docWidth, 'Sin desbordamiento CSS en ' + ancho)
+          .toBeLessThanOrEqual(vista.cssWidth + 2);
+        await page.keyboard.press('Tab');
+        const enfocado = await page.evaluate(() => {
+          const e = document.activeElement;
+          if (!e || e === document.body) return false;
+          const cs = window.getComputedStyle(e);
+          return cs.visibility !== 'hidden' && cs.display !== 'none';
+        });
+        expect(enfocado, 'Tab conserva foco real con pinch ' + ancho).toBe(true);
+        if (ancho === 320 || ancho === 1440) {
+          await page.screenshot({
+            path: 'test-results/c1504-a126-pinch200-login-' + ancho + '.png',
+            fullPage: true
+          });
+        }
+        await cdp.send('Emulation.setPageScaleFactor', { pageScaleFactor: 1 });
+      }
+    } finally {
+      await cdp.send('Emulation.setPageScaleFactor', { pageScaleFactor: 1 });
+      await cdp.detach();
+    }
+  });
+
 });

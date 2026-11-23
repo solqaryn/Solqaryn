@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV02 C15-04.M05.04: A126 pinch CDP real de guard privado (R2)
+- Agrega Playwright adversarial sobre API ASP.NET Core + MySQL 8.4 efímero: anónimo HTTP 401, Angular redirige a login en cinco anchos y Chromium CDP aplica pinch 200% con comprobación de viewport, foco Tab y dos capturas.
+- Test-only sin runtime alterado; pinch NO es zoom de barra nativo. CI exact-SHA pendiente, A0–A4 de auditoría global incompletos, propietario DEV02/lock V17 preservados; sin LISTO/A5/QA/main/PROD.
+
 ## 2026-11-23 — DEV05 V26 C01-03.M04.04: CAS real y restauración efímera [Javier :40]
 - Prueba JWT/MySQL 8.4 con PUT vigente 200, PUT obsoleto 409/412 real y readback tenant A/B, seguida de restauración compensatoria versionada.
 - El 409 simulado de UI no acredita CAS backend. CI exact-SHA y A5 independiente pendientes; sin certificación de simultaneidad, zoom nativo 200%, capturas históricas, QA/main/PROD.
