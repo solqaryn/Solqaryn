@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV02 C15-04.M05.04: A124 UX ruta de planes con JWT real
+- Playwright A0.96 sobre catálogo informativo de planes: plataforma global JWT/MySQL8.4, tenant B 403, Tab natural, texto 200%, sin overflow en cinco anchos y sin mutaciones ni cobros. Fotos actuales 320/1440; no se atribuye zoom nativo ni WCAG/CWV global.
+- Test-only R2, runtime intacto, A1-A4 del nuevo SHA pendientes y A5 independiente posterior; preservar WIP/owner/lock V17, sin QA/main/PROD. Rollback git revert.
+
 ## 2026-11-23 - DEV06 C03-03.M03.03: CI de auditoria actualizada a 32 tests reales
 - El primer SHA compilo y ejecuto 32/32 xUnit PASS tras agregar dos negativos de revocacion de rol admin, pero el workflow fallo al comparar TRX contra 30.
 - El gate ahora exige exactamente 32 PASS, 0 FAIL y 0 omitidos (sin reducir controles). Esperar CI exact-SHA nueva; integracion MySQL real de ruta productiva y A5 independiente siguen pendientes.

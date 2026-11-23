@@ -3647,4 +3647,110 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     expect(mutaciones, 'Sin mutaciones HTTP por ampliar texto').toEqual([]);
   });
 
+
+  // A124 incremental: web real de catalogo solo informativo, no hay PSP ni cobro.
+  // Login y rechazo tenant B se prueban contra API/JWT/MySQL 8.4 de CI efimera.
+  test('A0.96 - catálogo de planes real, controles UX y veto tenant B', async ({ page, request }) => {
+    test.setTimeout(180_000);
+    const jwt = await ingresarConJwtRealParaGuard(page, request, 'c1504_platform_only', true);
+    const autorizada = await request.get(api + '/plataforma/sesion', {
+      headers: { Authorization: 'Bearer ' + jwt }
+    });
+    expect(autorizada.status(), 'Admin global real').toBe(200);
+    const mutaciones: string[] = [];
+    page.on('request', req => {
+      if (req.url().includes('localhost:5005') &&
+          /^(POST|PUT|PATCH|DELETE)$/.test(req.method())) {
+        mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+      }
+    });
+    for (const ancho of [320, 390, 768, 1280, 1440]) {
+      await page.setViewportSize({ width: ancho, height: 840 });
+      const sesion = page.waitForResponse(r =>
+        r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+      await page.goto('/plataforma/catalogo-planes-v22');
+      expect((await sesion).status(), 'API autoriza global ' + ancho).toBe(200);
+      await expect(page).toHaveURL(/\/plataforma\/catalogo-planes-v22$/);
+      const superficie = page.getByTestId('c0401-planes-reference');
+      await expect(superficie).toBeVisible();
+      await expect(superficie.getByRole('heading', {
+        name: 'Catálogo de planes', level: 1
+      })).toBeVisible();
+      await expect(page.getByTestId('c0401-private')).toBeVisible();
+      await expect(page.getByTestId('c0401-unapproved'))
+        .toContainText('SIN_POLITICA_COMERCIAL_APROBADA');
+      await expect(page.getByTestId('c0401-denied')).toHaveCount(0);
+      const regresar = superficie.getByRole('link', { name: 'Volver a plataforma' });
+      await expect(regresar).toBeVisible();
+      let tabLlego = false;
+      for (let paso = 0; paso < 60; paso++) {
+        await page.keyboard.press('Tab');
+        if (await regresar.evaluate(el => el === document.activeElement)) {
+          tabLlego = true;
+          break;
+        }
+      }
+      expect(tabLlego, 'Tab llega sin .focus en ' + ancho).toBe(true);
+      if (ancho === 320 || ancho === 1440) {
+        await page.screenshot({
+          path: 'test-results/c1504-a124-planes-' + ancho + '-100.png',
+          fullPage: true
+        });
+      }
+      const original = await page.evaluate(() =>
+        parseFloat(getComputedStyle(document.documentElement).fontSize));
+      expect(original).toBeGreaterThan(0);
+      await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
+      try {
+        await expect(superficie).toBeVisible();
+        await expect(regresar).toBeVisible();
+        const d = await superficie.evaluate(el => ({
+          fuente: parseFloat(getComputedStyle(document.documentElement).fontSize),
+          html: document.documentElement.scrollWidth,
+          body: document.body.scrollWidth,
+          width: window.innerWidth,
+          left: el.getBoundingClientRect().left,
+          right: el.getBoundingClientRect().right
+        }));
+        if (ancho === 320 || ancho === 1440) {
+          await page.screenshot({
+            path: 'test-results/c1504-a124-planes-' + ancho + '-text200.png',
+            fullPage: true
+          });
+        }
+        expect(d.fuente).toBeGreaterThanOrEqual(original * 1.99);
+        expect(d.left, 'Sin corte izquierda ' + ancho).toBeGreaterThanOrEqual(-2);
+        expect(d.right, 'Sin corte derecha ' + ancho).toBeLessThanOrEqual(d.width + 2);
+        expect(Math.max(d.html, d.body), 'Sin overflow global ' + ancho)
+          .toBeLessThanOrEqual(d.width + 2);
+      } finally {
+        await page.evaluate(() => {
+          document.documentElement.style.removeProperty('font-size');
+        });
+      }
+    }
+    expect(mutaciones, 'La vista informativa no muta contratos ni cobros').toEqual([]);
+    const otra = await page.context().newPage();
+    try {
+      const jwtB = await ingresarConJwtRealParaGuard(otra, request, 'c1504_admin_b', true);
+      const sinPrivilegio = await request.get(api + '/plataforma/sesion', {
+        headers: { Authorization: 'Bearer ' + jwtB }
+      });
+      expect(sinPrivilegio.status()).toBe(403);
+      for (const ancho of [320, 1440]) {
+        await otra.setViewportSize({ width: ancho, height: 840 });
+        const res = otra.waitForResponse(r =>
+          r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+        await otra.goto('/plataforma/catalogo-planes-v22');
+        expect((await res).status()).toBe(403);
+        await expect(otra).toHaveURL(/\/login\?plataforma=denegado/);
+        await expect(otra.getByTestId('c0401-private')).toHaveCount(0);
+        await expect(otra.getByTestId('c0401-planes-reference')).toHaveCount(0);
+      }
+    } finally {
+      await otra.close();
+    }
+  });
+
+
 });

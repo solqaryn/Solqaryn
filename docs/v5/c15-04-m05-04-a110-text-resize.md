@@ -116,3 +116,7 @@ Cambio incremental R2 de pruebas y evidencia, no de runtime: en GitHub-hosted re
 
 **Límites y riesgos:** test R2 de reflow auténtico, NO prueba zoom nativo del navegador, ANTES histórico ni auditoría completa de 160 rutas, WCAG/CWV de campo. A1–A4 esperan nueva CI exact-SHA (163/163 esperados, no PASS anticipado). A5 independiente posteriormente. Mantener H=EN_PROGRESO, I=DEV02, candado V17 2000002297; prohibidos LISTO falso, QA/main/PROD.
 
+## A124 — alcance real ampliado (2026-11-23)
+- C15-04.M05.04 sigue EN_PROGRESO de DEV02, candado propio V17 2000002297. Se añade un caso Playwright de `/plataforma/catalogo-planes-v22`: JWT real ASP.NET Core 10, MySQL 8.4 efímero, pantalla global permitida, empresa B denegada 403; vista sin tarifas ni cobros y sin escrituras.
+- Cinco anchos 320/390/768/1280/1440, Tab sin foco programático, estado SIN_POLITICA_COMERCIAL_APROBADA, texto raíz 200% y overflow; capturas actuales 100%/text200 en 320 y 1440.
+- Texto raíz 200% NO demuestra zoom nativo del navegador; WCAG/CWV global, histórico BEFORE, todas las rutas y A5 independiente continúan sin certificar. A0-A4 del nuevo SHA requieren CI completada SUCCESS (nunca skipped). No cambiar H/I, no QA/main/PROD. Rollback normal git revert.
