@@ -20,6 +20,7 @@ public sealed class TenantContextV5ContractTests
         public UsuarioTenantScopeActual? Actual { get; set; }
         public IReadOnlyList<EmpresaSeleccionable> Seleccionables { get; set; } =
             Array.Empty<EmpresaSeleccionable>();
+        public int SelectorCalls { get; private set; }
 
         public Task<UsuarioScopeActual?> ObtenerActualAsync() =>
             Task.FromResult<UsuarioScopeActual?>(null);
@@ -32,8 +33,11 @@ public sealed class TenantContextV5ContractTests
         }
 
         public Task<IReadOnlyList<EmpresaSeleccionable>> ListarEmpresasSeleccionablesAsync(
-            CancellationToken cancellationToken = default) =>
-            Task.FromResult(Seleccionables);
+            CancellationToken cancellationToken = default)
+        {
+            SelectorCalls++;
+            return Task.FromResult(Seleccionables);
+        }
     }
 
     // A synthetic unit principal is NOT a real JWT signature or MySQL test.
@@ -139,6 +143,42 @@ public sealed class TenantContextV5ContractTests
         Assert.Equal(0, scope.Calls);
     }
 
+
+    [Theory]
+    [InlineData("07", "19")]
+    [InlineData("7", "019")]
+    [InlineData("0", "19")]
+    [InlineData("7", "0")]
+    public async Task Selector_ClaimsNoCanonicos_RechazaSinConsultarCatalogo(
+        string actor, string role)
+    {
+        var scope = new ScopeStub
+        {
+            Seleccionables = new[] { new EmpresaSeleccionable(11, "A") }
+        };
+        var action = await WithJwtIdentity(scope, actor, role)
+            .ListarEmpresas(CancellationToken.None);
+
+        Assert.IsType<UnauthorizedObjectResult>(action);
+        Assert.Equal(0, scope.SelectorCalls);
+    }
+
+    [Fact]
+    public async Task Selector_RolDuplicado_RechazaSinConsultarCatalogo()
+    {
+        var scope = new ScopeStub
+        {
+            Seleccionables = new[] { new EmpresaSeleccionable(11, "A") }
+        };
+        var controller = WithJwtIdentity(scope);
+        ((ClaimsIdentity)controller.User.Identity!).AddClaim(
+            new Claim("rolId", "20"));
+
+        var action = await controller.ListarEmpresas(CancellationToken.None);
+        Assert.IsType<UnauthorizedObjectResult>(action);
+        Assert.Equal(0, scope.SelectorCalls);
+    }
+
     [Fact]
     public async Task Selector_DtoContieneSoloLaListaDevueltaPorServicio()
     {
@@ -146,7 +186,7 @@ public sealed class TenantContextV5ContractTests
         {
             Seleccionables = new[] { new EmpresaSeleccionable(11, "A") }
         };
-        var action = await new TenantContextController(scope).ListarEmpresas(CancellationToken.None);
+        var action = await WithJwtIdentity(scope).ListarEmpresas(CancellationToken.None);
 
         var ok = Assert.IsType<OkObjectResult>(action);
         var response = Assert.IsType<ApiResponse<IReadOnlyList<EmpresaSeleccionable>>>(ok.Value);

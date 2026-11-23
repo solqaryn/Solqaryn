@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV04 V30 C03-01.M03.03: selector tenant productivo valida claims antes del catalogo
+- Runtime `GET /tenant-context/empresas`: exige actor y rol canonicos, unicos y positivos del JWT autenticado antes de leer la lista filtrada por membresias SQL; devuelve 401 si son ambiguos, sin exponer empresas ni permitir una seleccion por header de cliente.
+- xUnit: actualiza el caso positivo con principal autenticado y agrega negativos de actor/rol no canonicos y rol duplicado, acreditando que el repositorio de catalogo no es consultado ante rechazo. No se afirma firma JWT/HTTP/MySQL fisico a partir de mocks.
+- R2, alcance de PLAN D448, Scope Lock STRICT, V17 y owner DEV04 preservados; requiere CI GitHub-hosted exact-SHA y pruebas reales de seguridad, A0-A4 y A5 independiente para cierre. Falta flujo de reemision al cambiar tenant/sucursal; no LISTO ni QA/main/PROD. Rollback: revert serializado en dev tras revalidar HEAD.
+
 ## 2026-11-23 — DEV03 V30 C03-03.M03.04: no-store para denegaciones de auditoría tenant
 - Runtime API Development: GET/POST de auditoría autenticada fijan Cache-Control: no-store ANTES de la verificación JWT/RBAC/tenant, protegiendo respuestas 403 y fallos 503 de bitácora, además del éxito 204; se preservan ledger transaccional y feature flag OFF por defecto.
 - Integración dirigida real TestServer/Oracle EF/MySQL 8.4 y JWT: rechazos GET de selector forjado y POST de empresa ajena exigen HTTP 403 con no-store. Son verificaciones de transporte y caché, no certificación de todos los requisitos M03 ni de producción.

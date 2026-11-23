@@ -31,6 +31,13 @@ public sealed class TenantContextController : ControllerBase
     [HttpGet("empresas")]
     public async Task<IActionResult> ListarEmpresas(CancellationToken cancellationToken)
     {
+        // The productive selector must not trust ambiguous actor/role claims.
+        // Authorize verifies the signature; this verifies their canonical shape
+        // before the SQL membership reader enumerates any tenant.
+        if (!TryCanonicalJwtAuthority(out _, out _))
+            return Unauthorized(ApiResponse<object>.Fail(
+                "La sesión no tiene identidad o rol verificables."));
+
         var empresas = await _usuarioScopeService.ListarEmpresasSeleccionablesAsync(cancellationToken);
         return Ok(ApiResponse<IReadOnlyList<EmpresaSeleccionable>>.Ok(
             empresas, "Empresas activas autorizadas."));
