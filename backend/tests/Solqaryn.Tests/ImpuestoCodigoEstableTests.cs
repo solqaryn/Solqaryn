@@ -29,11 +29,14 @@ public class ImpuestoCodigoEstableTests
         var repository = new Mock<IImpuestoRepository>();
         repository.Setup(x => x.GetByIdConRelacionesAsync(1)).ReturnsAsync(existente);
 
+        var unidad = new Mock<IUnitOfWork>();
+        unidad.Setup(x => x.ExecuteInTransactionAsync(It.IsAny<Func<Task>>()))
+            .Returns<Func<Task>>(async accion => await accion());
         var service = new ImpuestoService(
             repository.Object,
             Mock.Of<IAuditoriaService>(),
             Mock.Of<ICurrentUserService>(),
-            Mock.Of<IUnitOfWork>());
+            unidad.Object);
 
         var dto = new GuardarImpuestoDto
         {
@@ -96,6 +99,49 @@ public class ImpuestoCodigoEstableTests
             It.IsAny<string>(), It.IsAny<string?>()), Times.Once);
         // Mock contract proves exception propagation; physical MySQL rollback
         // remains an A3 integration requirement and is NOT certified here.
+    }
+
+    [Fact]
+    public async Task UpdateAsync_SiFallaAuditoriaEstricta_NoConfirmaCambioFiscal()
+    {
+        var existente = new Impuesto
+        {
+            Id = 9, Codigo = "ISV15", Nombre = "ISV anterior",
+            Tipo = TipoImpuesto.Porcentaje, Tasa = 15m, Activo = true
+        };
+        var repository = new Mock<IImpuestoRepository>();
+        repository.Setup(x => x.GetByIdConRelacionesAsync(9)).ReturnsAsync(existente);
+        var auditoria = new Mock<IAuditoriaService>();
+        auditoria.Setup(a => a.RegistrarEstrictoAsync(
+                ModuloSistema.Impuestos, AccionPermiso.Editar,
+                It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<string?>(),
+                It.IsAny<object?>(), It.IsAny<object?>(), It.IsAny<string?>(),
+                It.IsAny<string>(), It.IsAny<string?>()))
+            .ThrowsAsync(new InvalidOperationException("AUDIT_SINK_DOWN"));
+        var unidad = new Mock<IUnitOfWork>();
+        unidad.Setup(x => x.ExecuteInTransactionAsync(It.IsAny<Func<Task>>()))
+            .Returns<Func<Task>>(async accion => await accion());
+        var service = new ImpuestoService(repository.Object, auditoria.Object,
+            Mock.Of<ICurrentUserService>(), unidad.Object);
+
+        var dto = new GuardarImpuestoDto
+        {
+            Codigo = "ISV15", Nombre = "ISV futuro",
+            Tipo = "Porcentaje", Tasa = 16m,
+            Operaciones = ["Venta"]
+        };
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => service.UpdateAsync(9, dto));
+        Assert.Equal("AUDIT_SINK_DOWN", error.Message);
+        unidad.Verify(x => x.ExecuteInTransactionAsync(It.IsAny<Func<Task>>()), Times.Once);
+        repository.Verify(x => x.SaveChangesAsync(), Times.Once);
+        auditoria.Verify(a => a.RegistrarEstrictoAsync(
+            ModuloSistema.Impuestos, AccionPermiso.Editar,
+            It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<string?>(),
+            It.IsAny<object?>(), It.IsAny<object?>(), It.IsAny<string?>(),
+            It.IsAny<string>(), It.IsAny<string?>()), Times.Once);
+        // El mock demuestra propagación dentro de UoW; rollback físico
+        // debe acreditarse separadamente en MySQL 8.4 GitHub-hosted.
     }
 
 }

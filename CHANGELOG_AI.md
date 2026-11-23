@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV01 V30 C07-01.M06.06: edición fiscal y recibo de auditoría en una transacción
+- Cambio funcional de `ImpuestoService.UpdateAsync`: actualización de impuestos y relaciones con `RegistrarEstrictoAsync` en la misma unidad transaccional Oracle EF/MySQL; el código fiscal continúa inmutable y los documentos históricos no se recalculan.
+- Pruebas xUnit negativas del contrato de auditoría y rechazo de renombre fiscal; la excepción se propaga antes del commit, no se afirma rollback físico solo por mocks.
+- Riesgo R2: controles JWT/RBAC tenant A/B, aceptación ERP, servicio/atributos, rollback MySQL 8.4 real y checks exact-SHA siguen sin certificar. Mantener C07-01.M06.06 EN_PROGRESO, lock propio, sin LISTO/A5 ni QA/main/PROD. Rollback por revert normal y CAS.
+
 ## 2026-11-23 — DEV06 V30 C14-02.M06.06: propiedad de producto y variantes validada antes del DELETE
 - Correccion de runtime en `ProductoService.DeleteAsync`: con la marca RBAC server-side se comprueba que el producto pertenece al tenant autenticado; se rechaza antes de mutar si el agregado contiene una variante vigente de otra empresa, aun si el repositorio entregase datos cruzados por configuracion defectuosa.
 - xUnit adversarial con producto ajeno o variante ajena para asegurar denegacion y cero escrituras; A0-A4 completos y HTTP JWT firmado A/B con EF Oracle MySQL8.4 quedan pendientes de evidencia GitHub-hosted exact-SHA. No certificar P0/P1 global, LISTO, A5 ni QA/main/PROD.

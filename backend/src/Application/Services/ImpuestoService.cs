@@ -129,47 +129,75 @@ public class ImpuestoService : IImpuestoService
 
     public async Task<ImpuestoDto> UpdateAsync(int id, GuardarImpuestoDto dto)
     {
-        var impuesto = await _repository.GetByIdConRelacionesAsync(id) ?? throw new BusinessRuleException("El impuesto no existe.");
-
         if (!Enum.TryParse<TipoImpuesto>(dto.Tipo, true, out var tipo))
             throw new BusinessRuleException($"Tipo de impuesto '{dto.Tipo}' no es válido.");
 
         ValidarComun(dto, tipo);
         var operaciones = ParseOperaciones(dto.Operaciones);
-
         var codigo = dto.Codigo.Trim().ToUpperInvariant();
-        if (!string.Equals(codigo, impuesto.Codigo, StringComparison.OrdinalIgnoreCase))
-            throw new BusinessRuleException("El código del impuesto es su identidad fiscal estable y no puede modificarse después de crearlo.");
 
-        // No se recalculan documentos históricos: editar el impuesto solo afecta
-        // aplicaciones futuras (sección 12).
-        impuesto.Nombre = dto.Nombre.Trim();
-        impuesto.Descripcion = dto.Descripcion;
-        impuesto.Tipo = tipo;
-        impuesto.Tasa = dto.Tasa;
-        impuesto.MontoFijo = dto.MontoFijo;
-        impuesto.FechaInicio = dto.FechaInicio;
-        impuesto.FechaFin = dto.FechaFin;
-        impuesto.IncluidoEnPrecio = dto.IncluidoEnPrecio;
-        impuesto.SeCalculaAntesDescuento = dto.SeCalculaAntesDescuento;
-        impuesto.Acumulativo = dto.Acumulativo;
-        impuesto.Prioridad = dto.Prioridad;
-        impuesto.RequiereRetencion = dto.RequiereRetencion;
-        impuesto.FechaActualizacion = DateTime.UtcNow;
-        impuesto.ActualizadoPorUsuarioId = _currentUser.UsuarioId;
+        // Changes to fiscal configuration and their audit receipt must commit
+        // together. The UoW opens a real Oracle EF/MySQL transaction.
+        await _unitOfWork.ExecuteInTransactionAsync(async () =>
+        {
+            var impuesto = await _repository.GetByIdConRelacionesAsync(id)
+                ?? throw new BusinessRuleException("El impuesto no existe.");
+            if (!string.Equals(codigo, impuesto.Codigo, StringComparison.OrdinalIgnoreCase))
+                throw new BusinessRuleException("El código del impuesto es su identidad fiscal estable y no puede modificarse después de crearlo.");
 
-        impuesto.Productos.Clear();
-        impuesto.Categorias.Clear();
-        impuesto.Operaciones.Clear();
-        impuesto.ClientesExentos.Clear();
-        impuesto.ProveedoresExentos.Clear();
-        AplicarAlcances(impuesto, dto, operaciones);
+            var valoresAnteriores = new
+            {
+                impuesto.Codigo,
+                impuesto.Nombre,
+                impuesto.Tipo,
+                impuesto.Tasa,
+                impuesto.Activo
+            };
 
-        _repository.Update(impuesto);
-        await _repository.SaveChangesAsync();
-        await _auditoria.RegistrarAsync(ModuloSistema.Impuestos, AccionPermiso.Editar, $"Editó el impuesto '{impuesto.Nombre}'.", impuesto.Id);
+            // No recalcular documentos históricos: el cambio afecta el futuro.
+            impuesto.Nombre = dto.Nombre.Trim();
+            impuesto.Descripcion = dto.Descripcion;
+            impuesto.Tipo = tipo;
+            impuesto.Tasa = dto.Tasa;
+            impuesto.MontoFijo = dto.MontoFijo;
+            impuesto.FechaInicio = dto.FechaInicio;
+            impuesto.FechaFin = dto.FechaFin;
+            impuesto.IncluidoEnPrecio = dto.IncluidoEnPrecio;
+            impuesto.SeCalculaAntesDescuento = dto.SeCalculaAntesDescuento;
+            impuesto.Acumulativo = dto.Acumulativo;
+            impuesto.Prioridad = dto.Prioridad;
+            impuesto.RequiereRetencion = dto.RequiereRetencion;
+            impuesto.FechaActualizacion = DateTime.UtcNow;
+            impuesto.ActualizadoPorUsuarioId = _currentUser.UsuarioId;
 
-        return ToDto((await _repository.GetByIdConRelacionesAsync(id))!);
+            impuesto.Productos.Clear();
+            impuesto.Categorias.Clear();
+            impuesto.Operaciones.Clear();
+            impuesto.ClientesExentos.Clear();
+            impuesto.ProveedoresExentos.Clear();
+            AplicarAlcances(impuesto, dto, operaciones);
+
+            _repository.Update(impuesto);
+            await _repository.SaveChangesAsync();
+            await _auditoria.RegistrarEstrictoAsync(
+                ModuloSistema.Impuestos,
+                AccionPermiso.Editar,
+                $"Editó el impuesto '{impuesto.Nombre}'.",
+                impuesto.Id,
+                entidad: "Impuesto",
+                valoresAnteriores: valoresAnteriores,
+                valoresNuevos: new
+                {
+                    impuesto.Codigo,
+                    impuesto.Nombre,
+                    impuesto.Tipo,
+                    impuesto.Tasa,
+                    impuesto.Activo
+                });
+        });
+
+        return ToDto((await _repository.GetByIdConRelacionesAsync(id))
+            ?? throw new BusinessRuleException("El impuesto no existe."));
     }
 
     // Fiscal state must never commit without its durable audit receipt.
