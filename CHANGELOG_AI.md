@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV05 V30 C01-03.M04.02: estados funcionales tras mutación HTTP
+- Angular runtime: PUT/logo 401/403/404/429 dejan el formulario obsoleto; errores de red/5xx indican resultado no confirmado y piden recarga antes de reintentar, sin exponer mensajes del servidor ni afirmar rollback.
+- Se añadieron seis casos adversariales Vitest sin duplicar PUT; pruebas y CI GitHub-hosted exact-SHA pendientes. No se certifica zoom nativo 200%, capturas históricas ANTES ni A5.
+- V17 para C01-03.M04.02, conserva H VALIDANDO y owner; rollback git revert normal, sin QA/main/PROD.
+
 ## 2026-11-23 — DEV06 V30 C14-02.M06.06: DELETE funcional de productos con variantes
 - Runtime: ruta DELETE /productos/{id} bajo bandera independiente desactivada por defecto, JWT/RBAC y tenant verificado; no autoriza otras rutas o metodos.
 - Producto y variantes con stock cero reciben baja logica y auditoria estricta bajo UnitOfWork; stock fisico comercial o tecnico bloquea el borrado y evita ocultar existencias.

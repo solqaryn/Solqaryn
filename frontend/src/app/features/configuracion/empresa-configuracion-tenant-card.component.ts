@@ -47,6 +47,7 @@ import { ConfigEmpresaTenant, EmpresaConfiguracionService } from '../../services
             @case ('throttled') { <mat-icon>schedule</mat-icon><span>Hay demasiadas solicitudes. Inténtalo de nuevo más tarde.</span> }
             @case ('unavailable') { <mat-icon>cloud_off</mat-icon><span>El servicio no está disponible en este momento. La configuración no se modificó.</span> }
             @case ('invalid') { <mat-icon>gpp_bad</mat-icon><span>La respuesta no corresponde a la empresa verificada. No se muestran datos de otra empresa.</span> }
+            @case ('unconfirmed') { <mat-icon>sync_problem</mat-icon><span>No se pudo confirmar si el cambio se aplicó. Recarga el estado del servidor antes de volver a intentarlo.</span> }
           }
           <button mat-stroked-button type="button" (click)="cargar()" [disabled]="loading()">Reintentar consulta</button>
         </div>
@@ -160,7 +161,7 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
   readonly empresaId = this.tenant.empresaIdVerificada;
   readonly loading = signal(false);
   // M04.02: presentation states follow real HTTP outcomes; they never authorize access.
-  readonly loadState = signal<'ready' | 'empty' | 'forbidden' | 'session' | 'not-found' | 'throttled' | 'unavailable' | 'invalid'>('ready');
+  readonly loadState = signal<'ready' | 'empty' | 'forbidden' | 'session' | 'not-found' | 'throttled' | 'unavailable' | 'invalid' | 'unconfirmed'>('ready');
   readonly lastSaved = signal(false);
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
@@ -386,8 +387,28 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
   }
 
   private manejarErrorMutacion(err: any, fallback: string): void {
-    if (err.status === 409 || err.status === 412) {
+    const status = Number(err?.status ?? 0);
+    if (status === 409 || status === 412) {
       this.conflict.set(true);
+      return;
+    }
+    // Revoked sessions and permissions must hide stale editable form data after a
+    // failed PUT/logo action. The API remains the authority for JWT/RBAC.
+    if (status === 401 || status === 403 || status === 404 || status === 429) {
+      this.loadState.set(status === 401 ? 'session'
+        : status === 403 ? 'forbidden'
+        : status === 404 ? 'not-found'
+        : 'throttled');
+      this.lastSaved.set(false);
+      this.error.set(null);
+      return;
+    }
+    // Network failure / HTTP 5xx after a mutation has an UNKNOWN result:
+    // never claim that the server did not commit, nor automatically retry.
+    if (status === 0 || status >= 500) {
+      this.loadState.set('unconfirmed');
+      this.lastSaved.set(false);
+      this.error.set(null);
       return;
     }
     // Server messages are untrusted and can expose SQL, stack traces, or tenant data.

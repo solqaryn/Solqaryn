@@ -131,4 +131,23 @@ describe('C01-03.M04.04 - permisos reactivos en formulario tenant', () => {
     expect(snackBar.open).not.toHaveBeenCalled();
   });
 
+
+  it.each([
+    [401, 'session'], [403, 'forbidden'], [404, 'not-found'],
+    [429, 'throttled'], [503, 'unconfirmed'], [0, 'unconfirmed']
+  ])('fails closed on HTTP %s from a mutation (state %s) and blocks duplicate PUT', (status, state) => {
+    const component = create();
+    component.guardar();
+    expect(service.updateTenant).toHaveBeenCalledTimes(1);
+    mutation.error({ status, error: { message: 'PRIVATE_SQL_AND_TENANT_B' } });
+    TestBed.tick();
+
+    expect(component.loadState()).toBe(state);
+    expect(component.error()).toBeNull();
+    expect(component.lastSaved()).toBe(false);
+    expect(snackBar.open).not.toHaveBeenCalled();
+    component.guardar();
+    expect(service.updateTenant).toHaveBeenCalledTimes(1);
+  });
+
 });
