@@ -9928,3 +9928,8 @@
 - Matriz R0 documental `docs/v5/c02-04-m06-01-matriz-causal-de-pruebas-v24.md`: 8/8 Chromium con sesión `route.fulfill` explícitamente sintética, 9/9 xUnit con JWT HMAC firmado en TestServer/MySQL 8.4.13 efímero; logs de run 45091176575 revisados sin confundir ambos entornos con E2E conjunto.
 - Se documentan 401/403/revocación/tenant A-B y brechas R2 reales: MFA, reautenticación, proveedor GitHub vivo, browser+API JWT integrada, zoom 200 y rendimiento global NO_CERTIFICADOS. Alcance sólo `dev`, sin modificar runtime, claves, QA/main/PROD o fórmulas DAG/COLA.
 - Publicación condicionada a FF/CAS, Scope Lock/V5 exact-SHA y readback PLAN/COLA/BITACORA. A5 por otra Task Javier, sin autoaprobación. Rollback `git revert` normal; historial de FAIL intacto.
+
+## 2026-11-22 — C03-03.M03.01: reglas de dominio de auditoría de seguridad R2
+- Implementación pura, fail-closed y sin escritura: ámbito empresarial/plataforma explícito, rechazo tenant cruzado y rol revocado, correlación segura y requisito de transacción estricta para cambios críticos.
+- Pruebas xUnit de positivos, negativos y fronteras; un resultado positivo de dominio NO concede permiso JWT ni acredita registro MySQL durable. La integración HTTP/MySQL se implementará en sucesoras según contrato, no se declara PASS.
+- Exclusivo dev; sin DI, endpoint, migración, nuevas Tasks, QA/main/PROD; A5 por otra Task Javier tras CI exact-SHA. Rollback git revert normal.
