@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV01 V30 C07-01.M06.06: alta fiscal atómica con auditoría estricta
+- Incremento funcional .NET: `ImpuestoService.CreateAsync` confirma alta fiscal y recibo durable en una misma transacción Oracle EF/MySQL; error de auditoría bloquea commit en lugar de tolerarse silenciosamente.
+- Prueba xUnit verifica propagación y participación en la unidad transaccional; rollback MySQL 8.4 físico y positivos A/B/servicios/atributos siguen sin certificación hasta CI dirigida. WIP C07-01.M06.06, sin LISTO/A5 ni QA/main/PROD.
+
 ## 2026-11-23 — DEV06 C14-02.M06.06: bloquear DELETE sin tenant RBAC verificado en Application
 
 - Entregable funcional R2: `ProductoService.DeleteAsync` impide que una solicitud HTTP omita el gate `Productos.EliminarLogico` y alcance persistencia sin la marca server-side `VerifiedCommercialTenant`; un header `X-Empresa-Id` no constituye autoridad. El contexto interno sin HTTP conserva su contrato; el propietario legacy nullable no se usa como autoridad.

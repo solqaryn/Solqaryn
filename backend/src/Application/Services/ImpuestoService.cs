@@ -100,9 +100,20 @@ public class ImpuestoService : IImpuestoService
 
         AplicarAlcances(impuesto, dto, operaciones);
 
-        await _repository.AddAsync(impuesto);
-        await _repository.SaveChangesAsync();
-        await _auditoria.RegistrarAsync(ModuloSistema.Impuestos, AccionPermiso.Crear, $"Creó el impuesto '{impuesto.Nombre}'.", impuesto.Id);
+        // A fiscal configuration cannot exist without its durable audit receipt.
+        // The Oracle EF/MySQL unit of work owns commit and rollback of both rows.
+        await _unitOfWork.ExecuteInTransactionAsync(async () =>
+        {
+            await _repository.AddAsync(impuesto);
+            await _repository.SaveChangesAsync();
+            await _auditoria.RegistrarEstrictoAsync(
+                ModuloSistema.Impuestos,
+                AccionPermiso.Crear,
+                $"Creó el impuesto '{impuesto.Nombre}'.",
+                impuesto.Id,
+                entidad: "Impuesto",
+                valoresNuevos: new { impuesto.Codigo, impuesto.Nombre, impuesto.Tipo, impuesto.Tasa });
+        });
 
         return ToDto((await _repository.GetByIdConRelacionesAsync(impuesto.Id))!);
     }
