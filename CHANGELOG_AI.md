@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV02 C15-04.M05.04: A120 Enter no eleva RBAC B (V25)
+- A119 verificado: GHA 45129221420/job137540598545, 161/161 Playwright Chromium PASS exact SHA 8bf28800, Scope Lock/V5/frontend/backend/seguridad SUCCESS; retry y migración condicional SKIPPED no cuentan PASS.
+- A120 añade un negativo REAL nuevo: JWT B firmado MySQL8.4 + Angular, Tab sin .focus(), Enter en gate, HTTP 403 reiterado, alerta y ausencia de datos privados/mutaciones; 320/390/768/1280/1440 y capturas 320/1440. Exigir 162/162 del nuevo SHA; WIP global EN_PROGRESO, A5, WCAG/CWV/baseline/zoom nativo200 no certificados; revert normal, no QA/main/PROD.
+
 ## 2026-11-23 — DEV06 C14-02.M06.06: BOLA y ramas independientes en CI (R2)
 - Nuevo fallo causal de evidencia: la proyección MySQL de `ServerBranchId` y `OwnerBranchId` utilizaba la misma columna, ocultando ramas cruzadas con JWT firmado; se separan `AuthorityBranchId` y `BranchId`, preservando SQL efímero, Category=Integration y esquema de outage.
 - La prueba adversarial deniega la misma clave con dueño tenant ajeno y deniega lectura/escritura-preflight de rama ajena; recupera el 200 únicamente como `AUTHENTICATED_SECURITY_ACCEPTANCE_ADAPTER_REQUIRED`. No certifica API productiva, acceso, JWT/RBAC real del producto, A0-A4 global ni A5; mantener C14-02.M06.06 VALIDANDO.

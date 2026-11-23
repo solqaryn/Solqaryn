@@ -3513,4 +3513,74 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     expect(mutaciones, 'La denegacion y teclado no escriben en API').toEqual([]);
   });
 
+
+  // A120/A0.94: el acceso por Enter al gate nunca convierte JWT tenant B
+  // en autorizacion global. Navegacion y HTTP de backend reales, sin mocks.
+  test('A0.94 - Enter no eleva RBAC empresa B en cinco anchos', async ({ page, request }) => {
+    test.setTimeout(180_000);
+    const jwt = await ingresarConJwtRealParaGuard(page, request, 'c1504_admin_b', true);
+    const preflight = await request.get(api + '/plataforma/sesion', {
+      headers: { Authorization: 'Bearer ' + jwt }
+    });
+    expect(preflight.status(), 'JWT B firmado carece de autoridad global').toBe(403);
+    const mutaciones: string[] = [];
+    page.on('request', peticion => {
+      if (peticion.url().includes('localhost:5005') &&
+          /^(POST|PUT|PATCH|DELETE)$/.test(peticion.method())) {
+        mutaciones.push(peticion.method() + ' ' + new URL(peticion.url()).pathname);
+      }
+    });
+    for (const ancho of [320, 390, 768, 1280, 1440]) {
+      await page.setViewportSize({ width: ancho, height: 840 });
+      const primera = page.waitForResponse(r =>
+        r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+      await page.goto('/plataforma/capacidades-branding-v19');
+      expect((await primera).status(), '403 initial real ' + ancho).toBe(403);
+      await expect(page).toHaveURL(url =>
+        url.pathname === '/login' && url.searchParams.get('plataforma') === 'denegado');
+      const control = page.getByRole('button', { name: /Acceder a la consola global/i });
+      await expect(control, 'Control del gate visible').toBeVisible();
+      let encontrado = false;
+      for (let paso = 0; paso < 80; paso++) {
+        await page.keyboard.press('Tab');
+        if (await control.evaluate(el => document.activeElement === el)) {
+          encontrado = true;
+          break;
+        }
+      }
+      expect(encontrado, 'Teclado llega al gate sin .focus()').toBe(true);
+      if (ancho === 320 || ancho === 1440) {
+        await page.screenshot({
+          path: 'test-results/c1504-a120-rbac-' + ancho + '-antes-enter.png',
+          fullPage: true
+        });
+      }
+      const segundo = page.waitForResponse(r =>
+        r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+      await page.keyboard.press('Enter');
+      expect((await segundo).status(), 'Enter no eleva RBAC B ' + ancho).toBe(403);
+      await expect(page).toHaveURL(url =>
+        url.pathname === '/login' && url.searchParams.get('plataforma') === 'denegado');
+      await expect(page.getByRole('alert')).toContainText('no posee autoridad global');
+      await expect(page.getByRole('heading', {
+        level: 1, name: 'Branding y capacidades permitidas'
+      }), 'Enter jamas revela titulo privado').toHaveCount(0);
+      const tamanos = await page.evaluate(() => ({
+        html: document.documentElement.scrollWidth,
+        body: document.body.scrollWidth,
+        viewport: window.innerWidth
+      }));
+      expect(Math.max(tamanos.html, tamanos.body),
+        'Sin overflow tras Enter denegado ' + ancho)
+        .toBeLessThanOrEqual(tamanos.viewport + 2);
+      if (ancho === 320 || ancho === 1440) {
+        await page.screenshot({
+          path: 'test-results/c1504-a120-rbac-' + ancho + '-denegado.png',
+          fullPage: true
+        });
+      }
+    }
+    expect(mutaciones, 'Enter denegado sin mutaciones en API').toEqual([]);
+  });
+
 });
