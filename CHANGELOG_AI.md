@@ -9984,3 +9984,7 @@
 - Rescate cruzado: cuatro nuevas pruebas xUnit adversariales desactivan membresía, empresa, rol y permiso después de una consulta JWT aceptada; el lector debe denegar la evidencia y el recurso en lecturas posteriores aunque el servicio de alcance conserve el snapshot antiguo.
 - Cambio test-only R2 sin runtime ni permisos: EF InMemory NO certifica integración MySQL 8.4 física, HTTP real ni sink durable. Se conserva VALIDANDO, A0/A1/A2 sujeto a checks exact-SHA y A5 independiente de DEV03 autora y DEV06 reparadora.
 - V17/candado, Scope Lock, propietario histórico y CHANGELOG previo preservados; rollback git revert ordinario, sin QA/main/PROD.
+
+## 2026-11-22 — DEV04 C08-03.M03.03: test fisico JWT/HTTP/MySQL 8.4 aislado (V25)
+- Implementado test de integracion real en TestServer con bearer JWT firmado, Oracle EF Core MySQL 8.4 efimero, UsuarioScopeService y lector API existente; cubre tenants A/B, rol/permiso/sucursal vigente, revocacion SQL, rollback SQL e identidad falsificada. El codigo no crea ruta productiva ni concede membresias, pagos, acceso fisico o permisos de gimnasio.
+- Workflow GitHub-hosted dirigido v25-c08-03-m03-03-jwt-mysql84-http.yml con Scope Lock exact-SHA, esquema temporal y limpieza. Commit de entrega bc32ebc5c3d2fb900c36238b6df77bf270931825; CI externa y gate A0–A4 pendientes de resultado final. A5 requiere una Task Javier independiente; permanecer VALIDANDO; rollback mediante git revert sin force-push.

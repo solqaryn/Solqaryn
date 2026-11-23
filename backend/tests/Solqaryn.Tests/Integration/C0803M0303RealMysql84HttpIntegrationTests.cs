@@ -16,6 +16,7 @@ using Microsoft.IdentityModel.Tokens;
 using MySql.Data.MySqlClient;
 using MySql.EntityFrameworkCore.Extensions;
 using Solqaryn.API.Security;
+using Solqaryn.Application.AutomationV5;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
