@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV02 C15-04.M05.04 A114: rechazos reales para tres superficies privadas adicionales
+- A113 previo acreditado 152/152 Chromium PASS con JWT firmado, ASP.NET Core 10, MySQL 8.4 efímero y checks pertinentes SUCCESS en SHA 860a6069; A114 añade tres casos negativos tenant B / RBAC 403 y ausencia de contenido privado en cinco anchos.
+- A114 espera 155 tests reales en GitHub-hosted exact-SHA; NO se acredita PASS, zoom nativo, WCAG/CWV global ni las ~160 rutas antes del CI. Conserva WIP DEV02 y A5 ajena.
+- Evidencia incremental: frontend/e2e/c15-04-m05-04-jwt-real.spec.ts y docs/v5/c15-04-m05-04-a110-text-resize.md; no runtime/QA/PROD, Scope Lock V17 y rollback por revert normal.
+
 ## 2026-11-22 — DEV02 C15-04.M05.04 A113: tres pruebas autenticadas adicionales de responsive y texto 200%
 - Playwright R2 en observabilidad, inventario-rutas y mensajeria multicanal: JWT real, cinco anchos, captura 100/200% y cero mutaciones.
 - A112 previa 149/149 PASS (GitHub-hosted); A113 esperada 152, CI exact-SHA aun no acreditada. No certificar zoom nativo, WCAG/CWV global ni 160 rutas.

@@ -3117,4 +3117,58 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     });
   }
 
+
+  // A114/A0.87: la evidencia positiva A113 no prueba rechazo de empresa B.
+  // El guard consulta autoridad global del backend MySQL 8.4; sin mocks,
+  // sin otorgar permisos ni crear recursos. Esperar estabilidad post-403.
+  for (const destino of [
+    { ruta: '/plataforma/observabilidad-v5', titulo: 'Diagnóstico y señales seguras' },
+    { ruta: '/plataforma/inventario-rutas-v19', titulo: 'Inventario de programas y rutas declaradas' },
+    { ruta: '/plataforma/mensajeria-multicanal-v19', titulo: 'Mensajería multicanal' }
+  ]) {
+    test('A0.87 - tenant B denegado sin fugas en ' + destino.ruta,
+      async ({ page, request }) => {
+        test.setTimeout(180_000);
+        const jwt = await ingresarConJwtRealParaGuard(page, request, 'c1504_admin_b', true);
+        const control = await request.get(api + '/plataforma/sesion', {
+          headers: { Authorization: 'Bearer ' + jwt }
+        });
+        expect(control.status(), 'JWT B valido, pero sin rol global').toBe(403);
+        const mutaciones: string[] = [];
+        page.on('request', req => {
+          if (req.url().includes('localhost:5005') &&
+              /^(POST|PUT|PATCH|DELETE)$/.test(req.method())) {
+            mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+          }
+        });
+        for (const ancho of [320, 390, 768, 1280, 1440]) {
+          await page.setViewportSize({ width: ancho, height: 840 });
+          const sesion = page.waitForResponse(res =>
+            res.url().includes('/plataforma/sesion') &&
+            res.request().method() === 'GET');
+          await page.goto(destino.ruta);
+          expect((await sesion).status(), 'Denegacion por autoridad HTTP real').toBe(403);
+          await expect(page).toHaveURL(url =>
+            url.pathname === '/login' &&
+            url.searchParams.get('plataforma') === 'denegado');
+          await expect(page.getByRole('heading', {
+            level: 1, name: destino.titulo
+          }), 'Ninguna cabecera privada renderizada').toHaveCount(0);
+          await page.waitForTimeout(300);
+          await expect(page).toHaveURL(url =>
+            url.pathname === '/login' &&
+            url.searchParams.get('plataforma') === 'denegado');
+          const tamanos = await page.evaluate(() => ({
+            html: document.documentElement.scrollWidth,
+            body: document.body.scrollWidth
+          }));
+          expect(Math.max(tamanos.html, tamanos.body),
+            'Sin overflow global en denegacion a ' + ancho)
+            .toBeLessThanOrEqual(ancho + 2);
+        }
+        expect(mutaciones, 'RBAC denegado no provoca escrituras API').toEqual([]);
+      });
+  }
+
+
 });
