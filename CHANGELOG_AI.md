@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV02 C15-04.M05.04: A119 corrección gate RBAC real (V25)
+- Evidencia causal: SHA fd1b56e3, job 45122319944 terminó 160 PASS, 1 FAIL de Playwright; el assert buscaba textbox en /login aunque JWT tenant B seguía autenticado, por lo que el Angular real muestra gate de empresa y alerta HTTP 403 global.
+- Test A119 repara expectativas del gate: alerta, botón accesible, Tab natural sin .focus(), cinco anchos, capturas, no contenidos privados, cero mutaciones y body overflow. Exigir 161 PASS en CI GitHub-hosted exact-SHA; WCAG/CWV/zoom nativo200/baseline/A5 independientes pendientes. Sin cambio runtime, DB, RBAC, QA/main/PROD; revert normal.
+
 ## 2026-11-23 — DEV06 V25 C14-02.M06.06 grant de servicio independiente (R2)
 - Se detectó que la prueba de JWT firmado/HTTP/MySQL 8.4 leía la misma columna ServiceActive para ServiceActorVerified y ServiceGrantVerified, enmascarando un permiso de servicio independiente faltante.
 - Se añadió columna SQL efímera ServiceGrantActive, se actualizó el contrato de índices y se ejercitan cuatro combinaciones adversariales de servicio, grant e idempotencia en BackgroundJob. Un HTTP 200 solo indica preflight AUTHENTICATED_SECURITY_ACCEPTANCE_ADAPTER_REQUIRED, jamás autorización real.

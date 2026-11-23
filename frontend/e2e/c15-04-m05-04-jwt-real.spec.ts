@@ -3442,9 +3442,9 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
   });
 
 
-  // A119/A0.93: tras denegar JWT valido del tenant B, el formulario publico
-  // debe ser operable con Tab y teclado real. Sin page.route ni .focus().
-  test('A0.93 - teclado accesible tras denegacion RBAC en cinco anchos', async ({ page, request }) => {
+  // A119/A0.93: con JWT B valido, un 403 global muestra el gate
+  // autentico de empresa, NO el formulario de contrasena. Usar Tab real.
+  test('A0.93 - teclado del gate RBAC real en cinco anchos', async ({ page, request }) => {
     test.setTimeout(180_000);
     const jwt = await ingresarConJwtRealParaGuard(page, request, 'c1504_admin_b', true);
     const autoridad = await request.get(api + '/plataforma/sesion', {
@@ -3468,8 +3468,14 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
       await expect(page).toHaveURL(url =>
         url.pathname === '/login' &&
         url.searchParams.get('plataforma') === 'denegado');
-      const usuario = page.getByRole('textbox', { name: 'Nombre de usuario' });
-      await expect(usuario, 'Nombre accesible en login denegado').toBeVisible();
+      // JWT B sigue autenticado: LoginComponent muestra selector tenant y
+      // alerta global, no obliga a ingresar nuevamente la contrasena.
+      const control = page.getByRole('button', { name: /Acceder a la consola global/i });
+      await expect(control, 'Gate accesible tras 403 real').toBeVisible();
+      await expect(page.getByRole('alert'), 'Rechazo RBAC explicito')
+        .toContainText('no posee autoridad global');
+      await expect(page.getByRole('textbox', { name: 'Nombre de usuario' }),
+        'Un JWT vigente debe mostrar el gate y no duplicar credenciales').toHaveCount(0);
       await expect(page.getByRole('heading', {
         level: 1, name: 'Branding y capacidades permitidas'
       }), 'No mostrar la pagina privada denegada').toHaveCount(0);
@@ -3482,14 +3488,13 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
       let focoNatural = false;
       for (let salto = 0; salto < 80; salto++) {
         await page.keyboard.press('Tab');
-        if (await usuario.evaluate(el => document.activeElement === el)) {
+        if (await control.evaluate(el => document.activeElement === el)) {
           focoNatural = true;
           break;
         }
       }
-      expect(focoNatural, 'Tab real debe llegar al usuario en ' + ancho).toBe(true);
-      await page.keyboard.type('qa-teclado');
-      await expect(usuario, 'Escritura de teclado tras foco natural').toHaveValue('qa-teclado');
+      expect(focoNatural, 'Tab real alcanza control del gate en ' + ancho).toBe(true);
+      await expect(control, 'El gate preserva foco natural de teclado').toBeFocused();
       if (ancho === 320 || ancho === 1440) {
         await page.screenshot({
           path: 'test-results/c1504-a119-denegado-' + ancho + '-foco-tab.png',
