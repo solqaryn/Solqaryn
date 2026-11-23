@@ -20,3 +20,9 @@ Se añade el preflight `GetByIdAsync` *dentro* de la transacción de `Delete`, a
 ## Cobertura posterior obligatoria
 
 Ejecutar GET/DELETE `/productos/{id}` con verdadero `RequierePermiso`, JWT firmado A/B, sesiones/revocación y repositorio EF Oracle MySQL8.4 efímero. Verificar producto A visible, producto B ajeno 404 sin cambios ni diagnóstico de variante, restauración de transacción y sin ninguna mutación bajo permiso revocado. Luego ampliar la matriz de seguridad global según C14-02.M06.06, sin confundir el preflight aislado anterior con aprobación final.
+
+## Reparación V27 — transacción parcial ante DeleteAsync=false
+
+Hipótesis verificada por inspección del controlador real y de `UnitOfWork`: después del preflight tenant-scoped, `EliminarTecnicaConProductoAsync` puede modificar una variante, pero `IProductoService.DeleteAsync` puede devolver `false`; la `UnitOfWork` anterior hacía COMMIT sin excepción, dejando una eliminación técnica parcial. La corrección convierte el resultado `false` en error explícito dentro de la transacción, de modo que la `UnitOfWork` productiva ejecute ROLLBACK y no anuncie éxito. Un producto no visible continúa devolviendo 404 antes de mutar.
+
+El nuevo xUnit adversarial ejecuta el método real `ProductosController.Delete`, comprueba la secuencia de limpieza seguida de `false`, exige que la transacción no alcance el camino de commit y mantiene los tres casos anteriores. Este test usa una `IUnitOfWork` simulada: **no es prueba de rollback real MySQL 8.4**, ni de filtro RBAC/JWT/HTTP productivo. A3 de `C14-02.M06.06` sigue incompleto hasta comprobar el controlador, autorización efectiva, empresas A/B y la transacción real Oracle EF/MySQL efímera; no certificar LISTO/A5, P0/P1 global ni QA/main/PROD sólo por compilar. Rollback del changeset: `git revert` normal del commit bajo control de rama dev.

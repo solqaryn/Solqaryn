@@ -89,4 +89,44 @@ public sealed class C1402M0606ProductDeleteOwnershipTests
 
         product.Verify(x => x.DeleteAsync(It.IsAny<int>()), Times.Never);
     }
+
+    [Fact]
+    public async Task Delete_ProductMutationReturnsFalse_AbortsOuterTransactionAfterVariantCleanup()
+    {
+        var product = new Mock<IProductoService>(MockBehavior.Strict);
+        var variants = new Mock<IProductoVarianteService>(MockBehavior.Strict);
+        var unit = new Mock<IUnitOfWork>(MockBehavior.Strict);
+        var cleanupCalled = false;
+        var transactionCompleted = false;
+        var transactionAborted = false;
+        product.Setup(x => x.GetByIdAsync(ProductId))
+            .ReturnsAsync(new ProductoDto { Id = ProductId });
+        variants.Setup(x => x.EliminarTecnicaConProductoAsync(ProductId))
+            .Returns(() => { cleanupCalled = true; return Task.CompletedTask; });
+        product.Setup(x => x.DeleteAsync(ProductId)).ReturnsAsync(false);
+        unit.Setup(x => x.ExecuteInTransactionAsync(It.IsAny<Func<Task>>()))
+            .Returns(async (Func<Task> operation) =>
+            {
+                try
+                {
+                    await operation();
+                    transactionCompleted = true;
+                }
+                catch
+                {
+                    transactionAborted = true;
+                    throw;
+                }
+            });
+
+        var exception = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => Controller(product, variants, unit).Delete(ProductId));
+        Assert.Equal("PRODUCT_DELETE_ATOMICITY_ROLLBACK_REQUIRED", exception.Message);
+        Assert.True(cleanupCalled);
+        Assert.True(transactionAborted);
+        Assert.False(transactionCompleted);
+        product.Verify(x => x.GetByIdAsync(ProductId), Times.Once);
+        product.Verify(x => x.DeleteAsync(ProductId), Times.Once);
+        variants.Verify(x => x.EliminarTecnicaConProductoAsync(ProductId), Times.Once);
+    }
 }

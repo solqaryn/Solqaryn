@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV06 V27 C14-02.M06.06: rollback obligatorio si falla eliminación del producto
+- Reparación R2 en `ProductosController.Delete`: la limpieza de variante técnica ya no puede confirmarse si `DeleteAsync` devuelve `false`; la excepción obliga al rollback de la transacción exterior. El 404 sin mutación para ID no visible se conserva.
+- Se añade un xUnit adversarial contra el controlador real con transacción simulada y documentación de riesgo, límites y revert; conserva los tres escenarios existentes. No se modifica DB, contrato HTTP, permissions ni producción.
+- A3 productivo JWT/RBAC empresas A/B y EF Oracle/MySQL 8.4 con rollback real permanece pendiente; CI GitHub-hosted exact SHA aún no acreditada para este commit, estado VALIDANDO, sin LISTO/A5 ni QA/main/PROD.
+
 ## 2026-11-23 — DEV05 V27 C01-03.M04.04: ejecutar regression real de revocacion en CI
 - Integra la nueva suite Vitest dirigida del formulario tenant al workflow GitHub-hosted existente antes de Chromium; exige verificaciones positivas/negativas de permiso reactivo y respuesta tardia, sin desactivar los tests E2E de JWT/MySQL 8.4.
 - No acredita PASS hasta CI exact-SHA COMPLETED SUCCESS; la aceptacion V23 de zoom nativo/baseline y la A5 independiente siguen pendientes, H=VALIDANDO sin QA/main/PROD.

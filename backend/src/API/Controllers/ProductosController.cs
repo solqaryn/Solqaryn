@@ -152,7 +152,11 @@ public class ProductosController : ControllerBase
                 return;
 
             await _varianteService.EliminarTecnicaConProductoAsync(id);
-            eliminado = await _productoService.DeleteAsync(id);
+            // Abort the outer transaction when the product update did not persist:
+            // committing only the variant cleanup would violate aggregate atomicity.
+            if (!await _productoService.DeleteAsync(id))
+                throw new InvalidOperationException("PRODUCT_DELETE_ATOMICITY_ROLLBACK_REQUIRED");
+            eliminado = true;
         });
         if (!eliminado)
             return NotFound(ApiResponse<object>.Fail("Producto no encontrado."));
