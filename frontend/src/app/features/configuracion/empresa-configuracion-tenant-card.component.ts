@@ -79,11 +79,11 @@ import { ConfigEmpresaTenant, EmpresaConfiguracionService } from '../../services
             }
             <div class="logo-actions">
               <input #logoInput type="file" accept="image/*" hidden (change)="subirLogo($event)">
-              <button mat-stroked-button type="button" (click)="logoInput.click()" [disabled]="!puedeEditar() || saving()">
+              <button mat-stroked-button type="button" (click)="logoInput.click()" [disabled]="!puedeEditar() || saving() || conflict()">
                 <mat-icon>upload</mat-icon> Subir logo
               </button>
               @if (logoUrl()) {
-                <button mat-button type="button" (click)="eliminarLogo()" [disabled]="!puedeEditar() || saving()">
+                <button mat-button type="button" (click)="eliminarLogo()" [disabled]="!puedeEditar() || saving() || conflict()">
                   <mat-icon>delete_outline</mat-icon> Quitar logo
                 </button>
               }
@@ -311,7 +311,7 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
     const file = input.files?.[0];
     input.value = '';
     const empresaId = this.empresaId();
-    if (!file || !empresaId || !this.puedeEditar() || this.saving() || this.loading() || this.loadState() !== 'ready') return;
+    if (!file || !empresaId || !this.puedeEditar() || this.saving() || this.loading() || this.conflict() || this.loadState() !== 'ready') return;
 
     const generation = this.loadGeneration;
     this.saving.set(true);
@@ -349,7 +349,7 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
 
   eliminarLogo(): void {
     const empresaId = this.empresaId();
-    if (!empresaId || !this.puedeEditar() || this.saving() || this.loading() || this.loadState() !== 'ready' || !this.logoUrl()) return;
+    if (!empresaId || !this.puedeEditar() || this.saving() || this.loading() || this.conflict() || this.loadState() !== 'ready' || !this.logoUrl()) return;
 
     const generation = this.loadGeneration;
     this.saving.set(true);

@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV05 V30 C01-03.M04.04: bloqueo real de mutaciones de logo tras conflicto de version
+- El formulario Angular del tenant impide `POST /tenant/{id}/logo` y `DELETE /tenant/{id}/logo` si una escritura anterior devolvio 409/412. Antes solo el boton Guardar observaba `conflict()`: subir o quitar logo todavia podia intentar otra mutacion con la version desactualizada. Se bloquean botones y guards en los handlers, sin tocar autorizacion real de API ni otros tenants.
+- Cambios acotados a `empresa-configuracion-tenant-card.component.ts`, con rollback por revert del commit; no cambia contrato de servicios, DB, JWT, RBAC ni permisos. SKREF-03 Impeccable pin 2149fcce y SKREF-10 Angular pin 68089669 leidas desde origen; criterio operate/Reactive Forms conservado.
+- A0 diff revisado, R1 UI con control de concurrencia optimista; CI del nuevo SHA, Playwright/Chromium y capturas nativas 200%/ANTES siguen sujetos a comprobacion real, no se certifican A1-A5 ni LISTO sin evidencia; PLAN H=VALIDANDO, owner DEV05 conservado.
+
 ## 2026-11-23 — DEV04 V30 C03-01.M03.03: selector tenant productivo valida claims antes del catalogo
 - Runtime `GET /tenant-context/empresas`: exige actor y rol canonicos, unicos y positivos del JWT autenticado antes de leer la lista filtrada por membresias SQL; devuelve 401 si son ambiguos, sin exponer empresas ni permitir una seleccion por header de cliente.
 - xUnit: actualiza el caso positivo con principal autenticado y agrega negativos de actor/rol no canonicos y rol duplicado, acreditando que el repositorio de catalogo no es consultado ante rechazo. No se afirma firma JWT/HTTP/MySQL fisico a partir de mocks.
