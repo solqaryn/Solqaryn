@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV02 C15-04.M05.04: A125 rechazo anónimo real y responsive
+- Añade caso adversarial Playwright del catálogo privado de planes: API sin JWT 401, guard real sin contenido privado, cinco viewport y sin mutaciones; evidencia en MySQL 8.4 efímero cuando se ejecute GitHub Actions exact-SHA.
+- Test-only R2; no se altera runtime ni fuentes productivas. CI nueva PENDIENTE, A0-A4 global incompleto, WIP y lock propio preservados; A5 independiente posterior. Sin QA/main/PROD.
+
 ## 2026-11-23 — DEV06 C03-03.M03.03: SQL real y democión de rol en controlador MVC (R2)
 - Añade al xUnit físico de MySQL 8.4 una prueba del `AuditoriaController.GetFiltered` productivo y `UsuarioScopeService` EF reales: 200/403/200 ante degradación/restauración SQL del rol administrativo con pista JWT obsoleta.
 - El rechazo no invoca el servicio de salida. CI GitHub-hosted exact-SHA pendiente; la llamada directa al action no certifica el filtro MVC HTTP integral, A0-A4 globales, LISTO/A5, QA/main/PROD.

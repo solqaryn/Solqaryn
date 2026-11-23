@@ -3753,4 +3753,42 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
   });
 
 
+
+  // A125: negativa real de autenticacion, sin mocks de guard ni session.
+  // El navegador carece de JWT; el API ASP.NET Core con MySQL 8.4 debe dar 401.
+  test('A0.97 - anónimo sin JWT no ve catálogo privado de planes', async ({ page, request }) => {
+    test.setTimeout(180_000);
+    const noAutorizada = await request.get(api + '/plataforma/sesion');
+    expect(noAutorizada.status(), 'HTTP real exige JWT al anónimo').toBe(401);
+    const mutaciones: string[] = [];
+    page.on('request', req => {
+      if (req.url().includes('localhost:5005') &&
+          /^(POST|PUT|PATCH|DELETE)$/.test(req.method())) {
+        mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+      }
+    });
+    for (const ancho of [320, 390, 768, 1280, 1440]) {
+      await page.setViewportSize({ width: ancho, height: 840 });
+      await page.goto('/plataforma/catalogo-planes-v22');
+      await expect(page, 'Guard anónimo ' + ancho).toHaveURL(/\/login(?:\?|$)/);
+      await expect(page.getByTestId('c0401-private')).toHaveCount(0);
+      await expect(page.getByTestId('c0401-planes-reference')).toHaveCount(0);
+      const geometry = await page.evaluate(() => ({
+        html: document.documentElement.scrollWidth,
+        body: document.body.scrollWidth,
+        width: window.innerWidth
+      }));
+      expect(Math.max(geometry.html, geometry.body),
+        'Login sin desbordamiento tras guard anónimo ' + ancho)
+        .toBeLessThanOrEqual(geometry.width + 2);
+      if (ancho === 320 || ancho === 1440) {
+        await page.screenshot({
+          path: 'test-results/c1504-a125-anon-denied-' + ancho + '.png',
+          fullPage: true
+        });
+      }
+    }
+    expect(mutaciones, 'Negativa anónima no genera mutación API').toEqual([]);
+  });
+
 });

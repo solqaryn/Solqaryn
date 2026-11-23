@@ -120,3 +120,8 @@ Cambio incremental R2 de pruebas y evidencia, no de runtime: en GitHub-hosted re
 - C15-04.M05.04 sigue EN_PROGRESO de DEV02, candado propio V17 2000002297. Se añade un caso Playwright de `/plataforma/catalogo-planes-v22`: JWT real ASP.NET Core 10, MySQL 8.4 efímero, pantalla global permitida, empresa B denegada 403; vista sin tarifas ni cobros y sin escrituras.
 - Cinco anchos 320/390/768/1280/1440, Tab sin foco programático, estado SIN_POLITICA_COMERCIAL_APROBADA, texto raíz 200% y overflow; capturas actuales 100%/text200 en 320 y 1440.
 - Texto raíz 200% NO demuestra zoom nativo del navegador; WCAG/CWV global, histórico BEFORE, todas las rutas y A5 independiente continúan sin certificar. A0-A4 del nuevo SHA requieren CI completada SUCCESS (nunca skipped). No cambiar H/I, no QA/main/PROD. Rollback normal git revert.
+
+## A125 — rechazo anónimo real del catálogo global (2026-11-23)
+- Prueba negativa Playwright A0.97 sin JWT ni mocks: GET real /plataforma/sesion debe devolver 401 en API ASP.NET Core 10 con MySQL 8.4 efímero, y el guard de Angular debe redirigir a /login sin pintar c0401-private ni catálogo de planes.
+- Cinco anchos 320/390/768/1280/1440, sin overflow en login, capturas Chromium 320/1440, cero POST/PUT/PATCH/DELETE; solo test R2, runtime/API/DB inalterados.
+- A124 ya tiene check C15 JWT y tenant A/B reales MySQL 8.4 y Chromium COMPLETED/SUCCESS para SHA fbb09caf0862fc8bc69d547764e0b2c979c60894 (run 45192261460/job 137753391503); A125 exige nueva CI exact SHA y no hereda PASS. Auditoría global M05 incompleta; conservar EN_PROGRESO/autor DEV02/candado V17. No certificar zoom nativo, WCAG/CWV global, A5 ni QA/main/PROD.
