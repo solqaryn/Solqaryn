@@ -48,6 +48,10 @@ public sealed class C0301M0303TenantOwnedRoleTokenGateTests
             .ReturnsAsync(actor);
         repo.Setup(x => x.GetEmpresaAsync(actor.Id, CompanyId))
             .ReturnsAsync(membership);
+        repo.Setup(x => x.GetEmpresasAsync(actor.Id))
+            .ReturnsAsync(membership is null
+                ? new List<UsuarioEmpresa>()
+                : new List<UsuarioEmpresa> { membership });
         var jwt = new Mock<IJwtService>(MockBehavior.Strict);
         jwt.Setup(x => x.GenerarToken(actor))
             .Returns(("unsigned-test-token", DateTime.UtcNow.AddMinutes(35)));
@@ -123,15 +127,57 @@ public sealed class C0301M0303TenantOwnedRoleTokenGateTests
     }
 
     [Fact]
-    public async Task UnownedSystemEnterpriseTemplateRemainsBackwardCompatible()
+    public async Task SystemEnterpriseTemplateRequiresCurrentMembershipBeforeToken()
     {
         var actor = Actor(owned: false);
         var (service, repo, jwt) = Make(actor, null);
 
+        Assert.Null(await service.LoginAsync(new LoginRequestDto
+        {
+            NombreUsuario = actor.NombreUsuario,
+            Password = "valid-test-password"
+        }));
+        Assert.Null(await service.RenovarAsync(UserId));
+        repo.Verify(x => x.GetEmpresasAsync(UserId), Times.Exactly(2));
+        jwt.Verify(x => x.GenerarToken(It.IsAny<Usuario>()), Times.Never);
+    }
+
+    [Theory]
+    [InlineData("revoked")]
+    [InlineData("foreign-user")]
+    [InlineData("wrong-role")]
+    public async Task SystemEnterpriseTemplateRejectsNonmatchingMembership(string scenario)
+    {
+        var actor = Actor(owned: false);
+        var member = scenario switch
+        {
+            "foreign-user" => new UsuarioEmpresa(UserId + 1, CompanyId, RoleId),
+            "wrong-role" => new UsuarioEmpresa(UserId, CompanyId, RoleId + 1),
+            _ => new UsuarioEmpresa(UserId, CompanyId, RoleId)
+        };
+        if (scenario == "revoked") member.Desactivar();
+        var (service, repo, jwt) = Make(actor, member);
+
+        Assert.Null(await service.RenovarAsync(UserId));
+        repo.Verify(x => x.GetEmpresasAsync(UserId), Times.Once);
+        jwt.Verify(x => x.GenerarToken(It.IsAny<Usuario>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task MatchingSystemEnterpriseTemplateMembershipAllowsLoginAndRenewal()
+    {
+        var actor = Actor(owned: false);
+        var (service, repo, jwt) = Make(actor,
+            new UsuarioEmpresa(UserId, CompanyId, RoleId));
+
+        Assert.NotNull(await service.LoginAsync(new LoginRequestDto
+        {
+            NombreUsuario = actor.NombreUsuario,
+            Password = "valid-test-password"
+        }));
         Assert.NotNull(await service.RenovarAsync(UserId));
-        repo.Verify(x => x.GetEmpresaAsync(It.IsAny<int>(), It.IsAny<int>()),
-            Times.Never);
-        jwt.Verify(x => x.GenerarToken(actor), Times.Once);
+        repo.Verify(x => x.GetEmpresasAsync(UserId), Times.Exactly(2));
+        jwt.Verify(x => x.GenerarToken(actor), Times.Exactly(2));
     }
 
     [Fact]

@@ -60,7 +60,21 @@ public class AuthService : IAuthService
             return false;
 
         if (role.EmpresaId is null)
-            return true;
+        {
+            // A system enterprise role is a reusable template, not a tenant
+            // grant. Current SQL membership in that exact role is mandatory
+            // for both login and renewal. Platform roles remain separate.
+            if (role.Ambito == Solqaryn.Domain.Enums.AmbitoAutorizacion.Plataforma)
+                return role.EsSistema;
+            if (role.Ambito != Solqaryn.Domain.Enums.AmbitoAutorizacion.Empresa ||
+                !role.EsSistema)
+                return false;
+
+            var memberships = await _usuarioRepository.GetEmpresasAsync(usuario.Id);
+            return memberships is { Count: > 0 } &&
+                memberships.Any(m => m.Activa && m.UsuarioId == usuario.Id &&
+                    m.EmpresaId > 0 && m.RolId == role.Id);
+        }
 
         if (role.Ambito != Solqaryn.Domain.Enums.AmbitoAutorizacion.Empresa ||
             role.EmpresaId <= 0 || role.Id <= 0 || usuario.RolId != role.Id ||

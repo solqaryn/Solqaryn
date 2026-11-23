@@ -1,3 +1,9 @@
+## 2026-11-23 — DEV04 C03-01.M03.03: rol empresarial plantilla exige membresía SQL vigente
+
+- Runtime productivo: `AuthService` deniega login y renovación JWT de rol empresarial plantilla si no existe al menos una membresía SQL activa del mismo usuario, empresa positiva y rol exacto; rol empresarial plantilla no equivale a privilegio global.
+- Tests: xUnit negativo sin membresía, revocada, actor ajeno o rol distinto; positivo para BCrypt, login y renovación con membresía coincidente. La cobertura con Moq NO acredita por sí misma integración MySQL/HTTP/JWT firmada ni cambio de sucursal.
+- Riesgo R2, rama dev; sin cambios de APIs, persistencia, credenciales, migrations ni IAM productivo. A0 diff y regresión enviada a GitHub Actions; A1-A4 pendientes del SHA y A5 de otra Task. Conservar VALIDANDO y registro histórico.
+
 ## 2026-11-23 — DEV03 V30 C02-01.M05.04: rechazo funcional de renovación JWT obsoleta
 - `frontend/src/app/core/auth/auth.service.ts`: `POST /auth/renovar` acepta respuesta sólo si el JWT de origen sigue siendo el mismo en estado Angular y almacenamiento; impide resucitar sesión cerrada, sobrescribir login posterior y aceptar refresh tras cambio de pestaña.
 - Regresiones Vitest dirigidas en `frontend/src/app/core/auth/auth.service.spec.ts` y documento `docs/v5/c02-01-m05-04-jwt-renewal-stale-response-guard.md`. A0 localizado, riesgo R2; pruebas CI/Scope Lock/V5 del SHA nuevo deben verificarse, no se declaran PASS por publicar.
