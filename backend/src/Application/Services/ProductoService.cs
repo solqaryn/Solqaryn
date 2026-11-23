@@ -282,6 +282,26 @@ public class ProductoService : IProductoService
         return ProductoMapper.ToDto(producto);
     }
 
+    /// <summary>
+    /// Obtiene la lectura de bloqueo vigente del producto antes de que las
+    /// lecturas normales EF creen un snapshot REPEATABLE READ. Solo dentro de
+    /// UnitOfWork.ExecuteInTransactionAsync y con marca JWT/RBAC server-side.
+    /// El repositorio restringe empresa en el SQL FOR UPDATE; devolver false
+    /// no revela si el ID existe en otra empresa.
+    /// </summary>
+    public async Task<bool> LockForDeleteAsync(int id)
+    {
+        var http = _httpContextAccessor?.HttpContext;
+        var empresaAutorizada = VerifiedCommercialTenant.Resolve(http);
+        if (http is null || empresaAutorizada is not > 0)
+            throw new ForbiddenAccessException(
+                "La baja de productos requiere una empresa verificada por RBAC.");
+        if (id <= 0) return false;
+
+        var producto = await _repository.GetByIdForUpdateAsync(id);
+        return producto is not null && producto.EmpresaId == empresaAutorizada.Value;
+    }
+
     public async Task<bool> DeleteAsync(int id)
     {
         // Defense in depth: an HTTP delete cannot reach persistence without the

@@ -122,4 +122,33 @@ public sealed class C1402M0606ProductoDeleteRuntimeTests
         Assert.True(variante.Activo);
         repo.Verify(x => x.SaveChangesAsync(), Times.Never);
     }
+
+    [Fact]
+    public async Task DeleteLock_IsDeniedWithoutVerifiedTenantAndScopesSqlRowBeforeMutation()
+    {
+        var product = new Producto
+        {
+            Id = 301, EmpresaId = 7, Nombre = "Lock C14",
+            Marca = "", Modelo = "", Activo = true, Eliminado = false
+        };
+        var repo = new Mock<IProductoRepository>(MockBehavior.Strict);
+        repo.Setup(x => x.GetByIdForUpdateAsync(301)).ReturnsAsync(product);
+        var context = new DefaultHttpContext();
+        var accessor = new HttpContextAccessor { HttpContext = context };
+        var service = new ProductoService(repo.Object,
+            Mock.Of<ICategoriaRepository>(), Mock.Of<IImageStorageService>(),
+            Mock.Of<ICurrentUserService>(), Mock.Of<IAuditoriaService>(),
+            httpContextAccessor: accessor);
+
+        await Assert.ThrowsAsync<ForbiddenAccessException>(
+            () => service.LockForDeleteAsync(301));
+        repo.Verify(x => x.GetByIdForUpdateAsync(It.IsAny<int>()), Times.Never);
+
+        context.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = 7;
+        Assert.True(await service.LockForDeleteAsync(301));
+        product.EmpresaId = 8;
+        Assert.False(await service.LockForDeleteAsync(301));
+        repo.Verify(x => x.GetByIdForUpdateAsync(301), Times.Exactly(2));
+        repo.Verify(x => x.SaveChangesAsync(), Times.Never);
+    }
 }

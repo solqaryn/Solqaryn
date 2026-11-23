@@ -145,9 +145,15 @@ public class ProductosController : ControllerBase
         var eliminado = false;
         await _unitOfWork.ExecuteInTransactionAsync(async () =>
         {
-            // Scope the product before any variant cleanup: a foreign or missing
-            // product must not cause mutations or expose the variant state.
-            // GetByIdAsync uses the tenant-scoped product repository.
+            // C14-02.M06.06: adquirir primero el FOR UPDATE del producto
+            // (tenant verificado en SQL), ANTES del primer SELECT normal que
+            // crearia un snapshot REPEATABLE READ y podria ocultar stock
+            // actualizado por otra transaccion. Serializa variantes y producto.
+            if (!await _productoService.LockForDeleteAsync(id))
+                return;
+
+            // La lectura con variantes ocurre despues del bloqueo vigente;
+            // un ID ajeno o inexistente no permite ninguna mutacion.
             var producto = await _productoService.GetByIdAsync(id);
             if (producto is null)
                 return;

@@ -38,13 +38,14 @@ public sealed class C1402M0606ProductDeleteOwnershipTests
         var product = new Mock<IProductoService>(MockBehavior.Strict);
         var variants = new Mock<IProductoVarianteService>(MockBehavior.Strict);
         var unit = ExecutingTransaction();
-        product.Setup(x => x.GetByIdAsync(ProductId))
-            .ReturnsAsync((ProductoDto?)null);
+        product.Setup(x => x.LockForDeleteAsync(ProductId))
+            .ReturnsAsync(false);
 
         var result = await Controller(product, variants, unit).Delete(ProductId);
 
         Assert.IsType<NotFoundObjectResult>(result);
-        product.Verify(x => x.GetByIdAsync(ProductId), Times.Once);
+        product.Verify(x => x.LockForDeleteAsync(ProductId), Times.Once);
+        product.Verify(x => x.GetByIdAsync(It.IsAny<int>()), Times.Never);
         product.Verify(x => x.DeleteAsync(It.IsAny<int>()), Times.Never);
         variants.Verify(x => x.EliminarTecnicaConProductoAsync(It.IsAny<int>()), Times.Never);
         unit.Verify(x => x.ExecuteInTransactionAsync(It.IsAny<Func<Task>>()), Times.Once);
@@ -57,6 +58,8 @@ public sealed class C1402M0606ProductDeleteOwnershipTests
         var product = new Mock<IProductoService>(MockBehavior.Strict);
         var variants = new Mock<IProductoVarianteService>(MockBehavior.Strict);
         var unit = ExecutingTransaction();
+        product.Setup(x => x.LockForDeleteAsync(ProductId))
+            .ReturnsAsync(true);
         product.Setup(x => x.GetByIdAsync(ProductId))
             .ReturnsAsync(new ProductoDto { Id = ProductId });
         variants.Setup(x => x.EliminarTecnicaConProductoAsync(ProductId))
@@ -79,6 +82,8 @@ public sealed class C1402M0606ProductDeleteOwnershipTests
         var product = new Mock<IProductoService>(MockBehavior.Strict);
         var variants = new Mock<IProductoVarianteService>(MockBehavior.Strict);
         var unit = ExecutingTransaction();
+        product.Setup(x => x.LockForDeleteAsync(ProductId))
+            .ReturnsAsync(true);
         product.Setup(x => x.GetByIdAsync(ProductId))
             .ReturnsAsync(new ProductoDto { Id = ProductId });
         variants.Setup(x => x.EliminarTecnicaConProductoAsync(ProductId))
@@ -99,6 +104,8 @@ public sealed class C1402M0606ProductDeleteOwnershipTests
         var cleanupCalled = false;
         var transactionCompleted = false;
         var transactionAborted = false;
+        product.Setup(x => x.LockForDeleteAsync(ProductId))
+            .ReturnsAsync(true);
         product.Setup(x => x.GetByIdAsync(ProductId))
             .ReturnsAsync(new ProductoDto { Id = ProductId });
         variants.Setup(x => x.EliminarTecnicaConProductoAsync(ProductId))
@@ -128,5 +135,32 @@ public sealed class C1402M0606ProductDeleteOwnershipTests
         product.Verify(x => x.GetByIdAsync(ProductId), Times.Once);
         product.Verify(x => x.DeleteAsync(ProductId), Times.Once);
         variants.Verify(x => x.EliminarTecnicaConProductoAsync(ProductId), Times.Once);
+    }
+
+    [Fact]
+    public async Task Delete_LocksCurrentTenantProductBeforeOrdinaryReadOrVariantCleanup()
+    {
+        var order = new List<string>();
+        var product = new Mock<IProductoService>(MockBehavior.Strict);
+        var variants = new Mock<IProductoVarianteService>(MockBehavior.Strict);
+        var unit = ExecutingTransaction();
+        product.Setup(x => x.LockForDeleteAsync(ProductId)).ReturnsAsync(() =>
+        {
+            order.Add("for-update");
+            return true;
+        });
+        product.Setup(x => x.GetByIdAsync(ProductId)).ReturnsAsync(() =>
+        {
+            order.Add("read-variants");
+            return new ProductoDto { Id = ProductId };
+        });
+        variants.Setup(x => x.EliminarTecnicaConProductoAsync(ProductId))
+            .Returns(() => { order.Add("cleanup"); return Task.CompletedTask; });
+        product.Setup(x => x.DeleteAsync(ProductId))
+            .ReturnsAsync(() => { order.Add("delete"); return true; });
+
+        Assert.IsType<OkObjectResult>(
+            await Controller(product, variants, unit).Delete(ProductId));
+        Assert.Equal(new[] { "for-update", "read-variants", "cleanup", "delete" }, order);
     }
 }

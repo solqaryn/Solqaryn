@@ -10,5 +10,7 @@ public interface IProductoService
     Task<ProductoDto> CreateAsync(CreateProductoDto dto);
     Task<ProductoDto?> UpdateAsync(int id, UpdateProductoDto dto);
     Task<ProductoDto?> CambiarEstadoAsync(int id, bool activo);
+    /// <summary>Bloquea el producto por tenant verificado en la transaccion DELETE.</summary>
+    Task<bool> LockForDeleteAsync(int id);
     Task<bool> DeleteAsync(int id);
 }
