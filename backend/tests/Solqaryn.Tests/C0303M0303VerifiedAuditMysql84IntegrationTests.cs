@@ -1,6 +1,7 @@
 using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Common;
 using Solqaryn.API.Controllers;
+using Solqaryn.API.Middleware;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Hosting;

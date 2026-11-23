@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV03 V27 C03-03.M03.03: corregir namespace DI de prueba
+- La segunda CI (run 45229063354, job 137883343477, SHA d5edd68d) falló antes de ejecutar tests: CS0246 para IPublicStoreProofReplayStore, que reside en Solqaryn.API.Middleware.
+- Reparación mínima: using del namespace real en test, sin alterar runtime, autoridad ni mocks de identidad; exige CI MySQL8.4, JWT y MVC real exact SHA, Scope Lock/V5 y A5 independiente posterior.
+
 ## 2026-11-23 — DEV03 V27 C03-03.M03.03: reparación causal DI de MySQL/HTTP test
 - El run 45228287145, job 137880632234, SHA fa198f83 falló 1/8 (7 PASS): TestServer no resolvía IPublicStoreHostTenantResolver cuando se construía el middleware P0; no se ejecutó la prueba de HTTP real. El fallo histórico queda conservado.
 - El fixture registra sólo dos proveedores de tienda pública no-op requeridos por DI, sin ampliar permisos, sin simular JWT, RBAC, MySQL ni el flujo MVC; producción y QA continúan intactos.

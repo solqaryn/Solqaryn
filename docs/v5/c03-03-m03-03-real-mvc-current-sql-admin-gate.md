@@ -31,3 +31,8 @@ A0: diff solo xUnit, documento y CHANGELOG, sin cambios en runtime ni permisos. 
 - El job GitHub-hosted `45228287145/137880632234` para `fa198f83426c43fa23700d836ecadb6ed443fc50` **no pasó**: 7 de 8 tests aprobaron; el test nuevo de HTTP/MVC falló al construir el middleware por `IPublicStoreHostTenantResolver` no registrado en el fixture. No fue un FAIL de aislamiento tenant ni del parser; la aserción HTTP nunca alcanzó el flujo completo.
 - Corrección dirigida: el host de integración registra únicamente mocks no-op de los **dos** proveedores de tienda pública exigidos por la firma del middleware, que no se invocan en GET exacto `/auditoria`. Los servicios de identidad, permisos, filtro MVC, lectura MySQL 8.4 y auditoría permanecen reales. No cambia el comportamiento de runtime ni abre más rutas.
 - Exigir nueva ejecución física y checks SUCCESS del SHA correctivo; conservar FAIL histórico y `VALIDANDO` hasta A0-A4. Sin A5 inventado ni QA/PROD.
+
+## V27 — corrección de namespace del fixture
+
+- El run `45229063354/137883343477`, SHA `d5edd68d`, falló durante compilación del proyecto de tests con `CS0246` para `IPublicStoreProofReplayStore` (líneas 480–481). Tests ejecutados: 0 en ese run, no regresión funcional acreditada.
+- La interfaz real pertenece a `Solqaryn.API.Middleware`, no al namespace Application.Interfaces. Se añade exclusivamente su `using` al fixture; ninguna política de runtime, JWT, SQL, middleware o rutas cambia. Requiere nuevo GHA exact SHA con 8/8 ejecutadas.
