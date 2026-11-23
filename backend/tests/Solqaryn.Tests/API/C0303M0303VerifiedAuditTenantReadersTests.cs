@@ -205,6 +205,44 @@ public sealed class C0303M0303VerifiedAuditTenantReadersTests
         Assert.Null(await blocked.Reader.ReadCurrentAsync(default));
     }
 
+    /// <summary>
+    /// Real relational revocation after a valid JWT and stale scope response:
+    /// no cached membership may supply audit-read evidence for a revoked right.
+    /// </summary>
+    [Theory]
+    [InlineData("membership")]
+    [InlineData("company")]
+    [InlineData("role")]
+    [InlineData("permission")]
+    public async Task RelationalRevocationDeniesStaleScopeRegardlessOfCachedMembership(string revoked)
+    {
+        await using var f = await BuildAsync();
+        Assert.NotNull(await f.Reader.ReadCurrentAsync(default));
+
+        switch (revoked)
+        {
+            case "membership":
+                (await f.Database.UsuarioEmpresas.SingleAsync()).Desactivar();
+                break;
+            case "company":
+                (await f.Database.Set<Empresa>().SingleAsync()).Desactivar();
+                break;
+            case "role":
+                (await f.Database.Roles.SingleAsync()).Activo = false;
+                break;
+            case "permission":
+                (await f.Database.Permisos.SingleAsync()).Activo = false;
+                break;
+            default:
+                throw new ArgumentOutOfRangeException(nameof(revoked));
+        }
+
+        await f.Database.SaveChangesAsync();
+        Assert.Null(await f.Reader.ReadCurrentAsync(default));
+        Assert.Null(await f.Reader.ReadCurrentAsync(
+            Actor, Tenant, Rules.Action.AuditRead, default));
+    }
+
     [Fact]
     public async Task ArbitraryBusinessActionsAndCrossTenantResourcesNeverAttestOwnership()
     {

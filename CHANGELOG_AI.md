@@ -9978,3 +9978,9 @@
 - Adaptador API de lectura real del JWT Bearer registrado, UsuarioEmpresa y RolPermiso/Sucursales.Ver, scope de sucursal/empresa y relectura tras await para rechazar roles revocados, tenant A/B y ruta ajena; DI solo Development y apagado por defecto.
 - xUnit API adversarial con firma JWT real y EF InMemory para permisos/propiedad/revocación, sin afirmar MySQL físico. No existe permiso específico de gimnasio ni persistencia ERP: respuesta jamás autoriza puerta, pago, hardware o JWT; cualquier integración física posterior sigue pendiente.
 - V17 CAS exclusivo C08-03.M03.03, Scope Lock STRICT y pruebas GitHub-hosted exact-SHA requeridas antes de LISTO; A5 independiente, rollback git revert normal, sin QA/main/PROD.
+
+## SOLQARYN V25 — C03-03.M03.03 regresiones de revocación relacional (DEV06, 2026-11-22)
+
+- Rescate cruzado: cuatro nuevas pruebas xUnit adversariales desactivan membresía, empresa, rol y permiso después de una consulta JWT aceptada; el lector debe denegar la evidencia y el recurso en lecturas posteriores aunque el servicio de alcance conserve el snapshot antiguo.
+- Cambio test-only R2 sin runtime ni permisos: EF InMemory NO certifica integración MySQL 8.4 física, HTTP real ni sink durable. Se conserva VALIDANDO, A0/A1/A2 sujeto a checks exact-SHA y A5 independiente de DEV03 autora y DEV06 reparadora.
+- V17/candado, Scope Lock, propietario histórico y CHANGELOG previo preservados; rollback git revert ordinario, sin QA/main/PROD.
