@@ -98,14 +98,13 @@ jobs:
           set -euo pipefail
           c="${{ job.services.mysql.id }}"
           docker exec "$c" mysql -uroot -proot -e "SET GLOBAL innodb_redo_log_capacity=536870912;"
-          docker exec "$c" mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS c0701_m0503_bootstrap; CREATE DATABASE IF NOT EXISTS solqaryn_c0701_audit; CREATE DATABASE IF NOT EXISTS solqaryn_c1502_m0503; CREATE DATABASE IF NOT EXISTS c0701_m0304_bootstrap; CREATE DATABASE IF NOT EXISTS c0401_m0306_bootstrap; CREATE DATABASE IF NOT EXISTS c1402_m0606_bootstrap; CREATE DATABASE IF NOT EXISTS solqaryn_c0701_catalog; CREATE DATABASE IF NOT EXISTS c0701_m0606_bootstrap; CREATE DATABASE IF NOT EXISTS solqaryn_c0401_dispatch; CREATE DATABASE IF NOT EXISTS c0404_bootstrap; CREATE DATABASE IF NOT EXISTS solqaryn_ci;"
+          docker exec "$c" mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS c0701_m0503_bootstrap; CREATE DATABASE IF NOT EXISTS solqaryn_c0701_audit; CREATE DATABASE IF NOT EXISTS solqaryn_c1502_m0503; CREATE DATABASE IF NOT EXISTS c0701_m0304_bootstrap; CREATE DATABASE IF NOT EXISTS c0401_m0306_bootstrap; CREATE DATABASE IF NOT EXISTS c1402_m0606_bootstrap; CREATE DATABASE IF NOT EXISTS solqaryn_c0701_catalog; CREATE DATABASE IF NOT EXISTS c0701_m0606_bootstrap; CREATE DATABASE IF NOT EXISTS solqaryn_c0401_dispatch; CREATE DATABASE IF NOT EXISTS c0404_bootstrap; CREATE DATABASE IF NOT EXISTS solqaryn_ci; CREATE DATABASE IF NOT EXISTS solqaryn_n03_physical_ci;"
           docker exec "$c" mysql -uroot -proot -Nse "SELECT VERSION(), @@innodb_redo_log_capacity;"
-      - name: Restaurar, compilar y probar backend
+      - name: Restaurar y compilar backend (preflight previo a tests)
         working-directory: backend
         run: |
           dotnet restore Solqaryn.sln
           dotnet build Solqaryn.sln -c Release --no-restore -warnaserror
-          dotnet test Solqaryn.sln -c Release --no-build
       # La migracion historica N0.2/N0.3 (Pomelo/EF8) esta fuera del assembly Oracle EF10.
       # No simular esa historia ni insertar marcadores falsos en __EFMigrationsHistory.
       # Validar el runtime real en un MySQL 8.4 descartable con bootstrap canonico.
@@ -132,6 +131,8 @@ jobs:
         shell: bash
         env:
           SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+          # DB aislada para que el preflight no contamine el runner xUnit.
+          ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_n03_physical_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
         run: |
           set -euo pipefail
           test "$GITHUB_REPOSITORY" = 'solqaryn/Solqaryn'
@@ -140,28 +141,57 @@ jobs:
             --configuration Release --no-build | tee /tmp/n03-oracle-fresh.txt
           grep -Fq 'SOLQARYN_ORACLE_BOOTSTRAP=PASS mode=fresh' /tmp/n03-oracle-fresh.txt
           grep -Fq 'pending=0' /tmp/n03-oracle-fresh.txt
-      - name: Contrato físico ProductoVariantes actual, tenant y FK en MySQL
+      - name: Contrato fisico actual ProductoVariantes fail-fast EXPECTED ACTUAL
         shell: bash
         run: |
           set -euo pipefail
           c="${{ job.services.mysql.id }}"
-          q() { docker exec "$c" mysql -uroot -proot solqaryn_n03_ci --batch --skip-column-names -e "$1"; }
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")" = '1'
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId LIKE '20260811%N0_%';")" = '0'
-          test "$(q "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='ProductoVariantes' AND column_name IN ('EmpresaId','ProductoId','Sku','CodigoBarras','Cantidad','UmbralStockBajo','Costo','Precio','EsTecnica');")" = '9'
-          test "$(q "SELECT COUNT(DISTINCT index_name) FROM information_schema.statistics WHERE table_schema=DATABASE() AND table_name='ProductoVariantes' AND index_name IN ('UX_ProductoVariantes_Empresa_Sku','UX_ProductoVariantes_Empresa_CodigoBarras','UX_ProductoVariantes_IdentidadActiva','IX_ProductoVariantes_ProductoTecnicoUnico');")" = '4'
-          test "$(q "SELECT COUNT(*) FROM information_schema.key_column_usage WHERE table_schema=DATABASE() AND table_name='ProductoVariantes' AND constraint_name='FK_ProductoVariantes_Empresas_EmpresaId' AND referenced_table_name='Empresas';")" = '1'
-          test "$(q "SELECT COUNT(DISTINCT referenced_table_name) FROM information_schema.key_column_usage WHERE table_schema=DATABASE() AND table_name='ProductoVariantes' AND referenced_table_name IN ('Empresas','Productos');")" = '2'
+          q() { docker exec "$c" mysql -uroot -proot solqaryn_n03_physical_ci --batch --skip-column-names -e "$1"; }
+          diagnose() {
+            echo 'N03_DIAG_INDEXES_ACTUAL' >&2
+            q "SELECT index_name, column_name, seq_in_index, non_unique FROM information_schema.statistics WHERE table_schema=DATABASE() AND table_name='ProductoVariantes' ORDER BY index_name, seq_in_index;" >&2 || true
+            echo 'N03_DIAG_FK_ACTUAL' >&2
+            q "SELECT constraint_name, column_name, referenced_table_name, referenced_column_name FROM information_schema.key_column_usage WHERE table_schema=DATABASE() AND table_name='ProductoVariantes' AND referenced_table_name IS NOT NULL ORDER BY constraint_name, column_name;" >&2 || true
+          }
+          check_count() {
+            label="$1"; expected="$2"; sql="$3"
+            actual="$(q "$sql" | tr -d '\r[:space:]')"
+            printf 'N03_ASSERT=%s EXPECTED=%s ACTUAL=%s\n' "$label" "$expected" "$actual"
+            if [ "$actual" != "$expected" ]; then
+              echo "N03_FAIL=$label" >&2
+              diagnose
+              exit 1
+            fi
+          }
+          check_count 'oracle_baseline_marker' 1 "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';"
+          check_count 'legacy_markers_absent' 0 "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId LIKE '20260811%N0_%';"
+          check_count 'variant_columns' 9 "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='ProductoVariantes' AND column_name IN ('EmpresaId','ProductoId','Sku','CodigoBarras','Cantidad','UmbralStockBajo','Costo','Precio','EsTecnica');"
+          check_count 'variant_index_names' 4 "SELECT COUNT(DISTINCT index_name) FROM information_schema.statistics WHERE table_schema=DATABASE() AND table_name='ProductoVariantes' AND index_name IN ('UX_ProductoVariantes_Empresa_Sku','UX_ProductoVariantes_Empresa_CodigoBarras','UX_ProductoVariantes_IdentidadActiva','IX_ProductoVariantes_ProductoTecnicoUnico');"
+          check_count 'empresa_fk' 1 "SELECT COUNT(*) FROM information_schema.key_column_usage WHERE table_schema=DATABASE() AND table_name='ProductoVariantes' AND constraint_name='FK_ProductoVariantes_Empresas_EmpresaId' AND referenced_table_name='Empresas';"
+          check_count 'empresa_producto_references' 2 "SELECT COUNT(DISTINCT referenced_table_name) FROM information_schema.key_column_usage WHERE table_schema=DATABASE() AND table_name='ProductoVariantes' AND referenced_table_name IN ('Empresas','Productos');"
           # La verificación negativa usa la FK real y exige el error físico 1452.
-          if docker exec "$c" mysql -uroot -proot solqaryn_n03_ci \
+          if docker exec "$c" mysql -uroot -proot solqaryn_n03_physical_ci \
             -e "INSERT INTO ProductoVariantes (ProductoId,EmpresaId,Sku,Cantidad,UmbralStockBajo,EsTecnica,Activo,Eliminado) VALUES (2147483647,2147483647,'CI-ORPHAN-N03',0,0,0,1,0);" \
             > /tmp/n03-orphan-reject.log 2>&1; then
             echo 'ERROR: MySQL aceptó ProductoVariante huérfana/cross-tenant' >&2
             exit 1
           fi
-          grep -Eq 'ERROR 1452|foreign key constraint fails' /tmp/n03-orphan-reject.log
-          test "$(q "SELECT COUNT(*) FROM ProductoVariantes WHERE Sku='CI-ORPHAN-N03';")" = '0'
+          if ! grep -Eq 'ERROR 1452' /tmp/n03-orphan-reject.log; then
+            actual_error="$(grep -oE 'ERROR [0-9]+' /tmp/n03-orphan-reject.log | head -n 1 || true)"
+            echo "N03_FAIL=orphan_fk_error EXPECTED=ERROR_1452 ACTUAL=${actual_error:-UNKNOWN}" >&2
+            diagnose
+            exit 1
+          fi
+          echo 'N03_ASSERT=orphan_fk_error EXPECTED=1452 ACTUAL=1452'
+          check_count 'orphan_absent' 0 "SELECT COUNT(*) FROM ProductoVariantes WHERE Sku='CI-ORPHAN-N03';"
           echo 'N03_ORACLE_PHYSICAL=PASS mysql84=fresh tenant_fk=ENFORCED orphan=DENIED legacy_migration=NOT_EXECUTED'
+      # La suite completa se ejecuta siempre si preflight pasa, sin filtros.
+      - name: Suite backend xUnit completa despues de preflight fisico
+        working-directory: backend
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet test Solqaryn.sln -c Release --no-build
       - name: Snapshot EF Oracle actual sin drift
         working-directory: backend
         shell: bash
