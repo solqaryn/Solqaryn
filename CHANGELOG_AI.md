@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV06 V25 C14-02.M06.06 grant de servicio independiente (R2)
+- Se detectó que la prueba de JWT firmado/HTTP/MySQL 8.4 leía la misma columna ServiceActive para ServiceActorVerified y ServiceGrantVerified, enmascarando un permiso de servicio independiente faltante.
+- Se añadió columna SQL efímera ServiceGrantActive, se actualizó el contrato de índices y se ejercitan cuatro combinaciones adversariales de servicio, grant e idempotencia en BackgroundJob. Un HTTP 200 solo indica preflight AUTHENTICATED_SECURITY_ACCEPTANCE_ADAPTER_REQUIRED, jamás autorización real.
+- Se requieren CI GitHub-hosted exact-SHA, dos Facts Category=Integration y seguridad/ScopeLock/V5 PASS; hasta comprobarlas la evidencia nueva está PENDIENTE. C14-02.M06.06 continúa VALIDANDO, autor DEV06; A5 independiente, brechas BOLA/IDOR y API de producto abiertas, ningún claim, LISTO ni QA/main/PROD.
+
 ## 2026-11-23 — DEV04 C08-03.M03.03: ruta DEV real de lectura JWT/RBAC/MySQL (V25)
 - El endpoint de consulta de seguridad opt-in usa exactamente la misma implementación en Program y TestServer de GitHub; configuración OFF por defecto, solo Development, JWT firmado, tenant/rol actual, revocación y denegación 401/403; no habilita gimnasio, pagos, puertas ni hardware.
 - Se añaden regresiones adversariales de rol desactivado y ruta inexistente sin opt-in; Oracle EF/MySQL 8.4 efímero, falso JWT, tenant A/B y rollback permanecen exigibles. GitHub-hosted exact-SHA en curso al publicar; no certificar CI, LISTO ni A5 antes del readback.

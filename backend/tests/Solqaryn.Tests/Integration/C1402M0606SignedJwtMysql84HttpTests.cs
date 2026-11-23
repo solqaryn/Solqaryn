@@ -62,7 +62,7 @@ public sealed class C1402M0606SignedJwtMysql84HttpTests
             command.CommandText = $"""
                 SELECT TenantId,OwnerTenantId,BranchId,HostTenantId,
                        MemberActive,GrantActive,SessionActive,AuditActive,
-                       Revoked,LinkExpired,ServiceActive,IdempotencyActive
+                       Revoked,LinkExpired,ServiceActive,ServiceGrantActive,IdempotencyActive
                 FROM {table} WHERE ActorId=@actor AND ResourceKey=@resource
                 """;
             command.Parameters.AddWithValue("@actor", actor);
@@ -73,12 +73,12 @@ public sealed class C1402M0606SignedJwtMysql84HttpTests
             var tenant = rows.GetInt32(0);
             var authority = new V5SecurityAcceptanceDomainRules.VerifiedAuthority(
                 actor, tenant, rows.GetInt32(2), Sha,
-                true, true, Flag(4), Flag(5), Flag(5), Flag(10), Flag(10));
+                true, true, Flag(4), Flag(5), Flag(5), Flag(10), Flag(11));
             var target = new V5SecurityAcceptanceDomainRules.PersistedTarget(
                 rows.GetInt32(1), rows.GetInt32(2), rows.GetInt32(3),
                 true, true, Flag(8), Flag(9));
             var attempt = new V5SecurityAcceptanceDomainRules.Attempt(
-                surface, null, Sha, false, false, Flag(11));
+                surface, null, Sha, false, false, Flag(12));
             return new(resourceKey, Sha, true, Flag(6), Flag(4), Flag(5),
                 Flag(7), "git-proof:c1402-isolated-mysql", authority, target, attempt);
         }
@@ -188,6 +188,7 @@ public sealed class C1402M0606SignedJwtMysql84HttpTests
                 Revoked BOOLEAN NOT NULL,
                 LinkExpired BOOLEAN NOT NULL,
                 ServiceActive BOOLEAN NOT NULL,
+                ServiceGrantActive BOOLEAN NOT NULL,
                 IdempotencyActive BOOLEAN NOT NULL,
                 PRIMARY KEY(ActorId,ResourceKey)
             ) ENGINE=InnoDB
@@ -196,8 +197,8 @@ public sealed class C1402M0606SignedJwtMysql84HttpTests
         {
             await ExecuteAsync(connection, $"""
                 INSERT INTO {table} VALUES
-                (101,'resource-A',11,11,7,11,1,1,1,1,0,0,0,0),
-                (202,'resource-B',22,22,8,22,1,1,1,1,0,0,0,0)
+                (101,'resource-A',11,11,7,11,1,1,1,1,0,0,0,0,0),
+                (202,'resource-B',22,22,8,22,1,1,1,1,0,0,0,0,0)
                 """);
             using var host = await StartAsync(connection, table);
             using var client = host.GetTestClient();
@@ -250,6 +251,39 @@ public sealed class C1402M0606SignedJwtMysql84HttpTests
             using (var unauthorizedJob = await RequestAsync(client, "resource-A",
                 V5SecurityAcceptanceDomainRules.Surface.BackgroundJob, a))
                 Assert.Equal(HttpStatusCode.Forbidden, unauthorizedJob.StatusCode);
+
+            // New causal negative: a valid service actor is not an explicit
+            // service grant. These flags were previously both read from
+            // ServiceActive, allowing the fixture to mask absent grants.
+            await ExecuteAsync(connection, $"""
+                UPDATE {table}
+                SET ServiceActive=1, ServiceGrantActive=0, IdempotencyActive=1
+                WHERE ActorId=101
+                """);
+            using (var absentServiceGrant = await RequestAsync(client, "resource-A",
+                V5SecurityAcceptanceDomainRules.Surface.BackgroundJob, a))
+                Assert.Equal(HttpStatusCode.Forbidden, absentServiceGrant.StatusCode);
+            await ExecuteAsync(connection,
+                $"UPDATE {table} SET ServiceGrantActive=1 WHERE ActorId=101");
+            using (var allServerConditions = await RequestAsync(client, "resource-A",
+                V5SecurityAcceptanceDomainRules.Surface.BackgroundJob, a))
+            {
+                Assert.Equal(HttpStatusCode.OK, allServerConditions.StatusCode);
+                Assert.Equal("AUTHENTICATED_SECURITY_ACCEPTANCE_ADAPTER_REQUIRED",
+                    await allServerConditions.Content.ReadAsStringAsync());
+            }
+            await ExecuteAsync(connection,
+                $"UPDATE {table} SET ServiceActive=0 WHERE ActorId=101");
+            using (var missingServiceIdentity = await RequestAsync(client, "resource-A",
+                V5SecurityAcceptanceDomainRules.Surface.BackgroundJob, a))
+                Assert.Equal(HttpStatusCode.Forbidden, missingServiceIdentity.StatusCode);
+            await ExecuteAsync(connection, $"""
+                UPDATE {table} SET ServiceActive=1, IdempotencyActive=0
+                WHERE ActorId=101
+                """);
+            using (var missingIdempotency = await RequestAsync(client, "resource-A",
+                V5SecurityAcceptanceDomainRules.Surface.BackgroundJob, a))
+                Assert.Equal(HttpStatusCode.Forbidden, missingIdempotency.StatusCode);
             using (var restore = await RequestAsync(client, "resource-A",
                 V5SecurityAcceptanceDomainRules.Surface.BackupRestore, a))
                 Assert.Equal(HttpStatusCode.Forbidden, restore.StatusCode);
@@ -265,7 +299,7 @@ public sealed class C1402M0606SignedJwtMysql84HttpTests
                 command.Transaction = tx;
                 command.CommandText = $"""
                     INSERT INTO {table} VALUES
-                    (101,'resource-rollback',11,11,7,11,1,1,1,1,0,0,0,0)
+                    (101,'resource-rollback',11,11,7,11,1,1,1,1,0,0,0,0,0)
                     """;
                 await command.ExecuteNonQueryAsync();
                 await tx.RollbackAsync();
@@ -304,6 +338,7 @@ public sealed class C1402M0606SignedJwtMysql84HttpTests
                 Revoked BOOLEAN NOT NULL,
                 LinkExpired BOOLEAN NOT NULL,
                 ServiceActive BOOLEAN NOT NULL,
+                ServiceGrantActive BOOLEAN NOT NULL,
                 IdempotencyActive BOOLEAN NOT NULL,
                 PRIMARY KEY(ActorId, ResourceKey)
             ) ENGINE=InnoDB
@@ -312,7 +347,7 @@ public sealed class C1402M0606SignedJwtMysql84HttpTests
         {
             await ExecuteAsync(connection, $"""
                 INSERT INTO {table} VALUES
-                (101,'resource-A',11,11,7,11,1,1,1,1,0,0,0,0)
+                (101,'resource-A',11,11,7,11,1,1,1,1,0,0,0,0,0)
                 """);
             using var host = await StartAsync(connection, table);
             using var client = host.GetTestClient();
