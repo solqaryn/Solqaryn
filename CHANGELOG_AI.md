@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV02 V30 C15-04.M05.04: alto real de compra rapida y reflow de zoom
+- Runtime Angular storefront producto: ResizeObserver mide la barra movil visible y ajusta espacio reservado en detalle, pie y avisos, incluso con etiquetas/precio extensos o texto ampliado; en viewport bajo/estrecho la barra vuelve al flujo para no tapar controles.
+- El observador se desconecta con el componente y conserva una altura de respaldo cuando el navegador no ofrece ResizeObserver. Afecta UI publica; no altera APIs, JWT/RBAC, tenant, datos, pagos ni permisos. Rollback mediante revert normal.
+- A0-A4 globales de C15-04.M05.04, zoom nativo 200%, capturas ANTES/DESPUES y presupuesto CSS NO se declaran aprobados por este cambio. CI GitHub-hosted por SHA nuevo pendiente; A5 independiente pendiente. OWNER DEV02 y V17 lock 2000002297 preservados.
+
 ## 2026-11-23 — DEV01 V30 C07-01.M06.06: estado fiscal A/B y auditoría transaccional
 - Entregable funcional R2: piloto fiscal separado, apagado por defecto, para PATCH activar/desactivar con JWT/RBAC SQL por empresa; POST/PUT/DELETE fiscales siguen bloqueados.
 - Servicio de impuestos une estado y auditoría estricta en una transacción Oracle EF/MySQL. El test integrado ejercita empresas A/B, revocación, selector ajeno y rollback ante fallo del sink, pendiente de CI real exact-SHA.

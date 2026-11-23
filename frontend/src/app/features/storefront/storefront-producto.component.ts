@@ -8,8 +8,10 @@ import {
   OnInit,
   ViewChild,
   computed,
+  effect,
   inject,
-  signal
+  signal,
+  viewChild
 } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -76,6 +78,23 @@ export class StorefrontProductoComponent implements OnInit {
 
   @ViewChild('lightbox') private lightbox?: ElementRef<HTMLDialogElement>;
   @ViewChild('botonImagenPrincipal') private botonImagenPrincipal?: ElementRef<HTMLButtonElement>;
+
+  private readonly barraCompraMovil = viewChild<ElementRef<HTMLElement>>('barraCompraMovil');
+  readonly alturaBarraCompra = signal(180);
+
+  constructor() {
+    // Reservar el alto REAL de la barra al rotar pantalla o ampliar texto.
+    effect((onCleanup) => {
+      const barra = this.barraCompraMovil()?.nativeElement;
+      if (!barra || !this.document.defaultView || typeof ResizeObserver === 'undefined') return;
+      const observador = new ResizeObserver(() => {
+        const alto = Math.ceil(barra.getBoundingClientRect().height);
+        if (alto > 0 && alto !== this.alturaBarraCompra()) this.alturaBarraCompra.set(alto);
+      });
+      observador.observe(barra);
+      onCleanup(() => observador.disconnect());
+    });
+  }
 
   readonly controlesVistaPrevia = !environment.production && this.config.mostrarControlesVistaPrevia;
   readonly utilizarDatosBaseDatos = signal(this.config.utilizarDatosBaseDatos);

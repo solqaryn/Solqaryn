@@ -1,4 +1,4 @@
-<div class="storefront">
+<div class="storefront" [style.--store-buy-bar-height]="estado() === 'success' ? alturaBarraCompra() + 'px' : '0px'">
   <app-storefront-header
     [busqueda]="busqueda()"
     [categorias]="categoriasNavegacion()"
@@ -274,7 +274,7 @@
   </main>
 
   @if (estado() === 'success' && producto()) {
-    <aside class="mobile-buy-bar" aria-label="Compra rápida del producto">
+    <aside #barraCompraMovil class="mobile-buy-bar" aria-label="Compra rápida del producto">
       <div><small>{{ textoDisponibilidad() }}</small><strong>{{ moneda(precioActual()) }}</strong></div>
       <button type="button" class="button primary" [disabled]="!puedeAgregar()" (click)="agregarAlCarrito()">
         <app-store-icon nombre="bolsa" /> Agregar
