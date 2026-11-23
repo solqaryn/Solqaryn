@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV02 V28 C15-04.M05.04: reparar entorno secreto del preflight sin relajar pruebas
+- Falla causal del nuevo run 45235576241, job 137906263377, SHA acce32955f8b17de5c5937a11d3a24843884afc7: el preflight --list abortó antes de cualquier test (0 ejecutados) porque el spec exige C1504_TEST_PASSWORD efímero. No es regresión de JWT/tenant ni un fallo de parser. npm ci y Node 24 pasaron; baseline .NET/Chromium no llegó a iniciarse.
+- Reordena únicamente la generación ya existente de JWT secreto y password efímero (en GITHUB_ENV, enmascarados) antes de Node y npx playwright test --list, conservando el mismo comando y todas las pruebas posteriores. La clave efímera no se imprime ni se sustituye por fixture falso; no se alteran permisos, API, SQL, scopes ni reglas de seguridad.
+- Nuevo SHA requiere check exacto de Scope Lock, V5 y job C15 real; no se certifica --list ni Chromium por inferencia. WIP propio C15-04.M05.04 sigue EN_PROGRESO con candado V17 2000002297 y A0-A4 global/A5 pendientes. Reversión mediante git revert normal en dev, sin force-push.
+
 ## 2026-11-23 — DEV02 V28 C15-04.M05.04: preflight Playwright fail-fast en CI dirigida
 - Cambio acotado al workflow .github/workflows/v19-c15-04-m05-04-jwt-real.yml, bajo WIP DEV02 C15-04.M05.04 y candado V17 2000002297; evita volver a compilar .NET y Angular cuando un literal regexp/TypeScript impide descubrir tests.
 - Node 24, npm 11.19 y npm ci se ejecutan una sola vez al inicio. Se añade npx playwright test --list con el spec/config de JWT reales antes de SDK .NET, build API, migraciones y Angular; el build posterior reutiliza node_modules y conserva lint, build productivo y Chromium/MySQL/JWT E2E sin alterar filtros, permisos, variables ni tests obligatorios.

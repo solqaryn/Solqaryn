@@ -77,6 +77,19 @@ jobs:
     steps:
       - name: Checkout SHA
         uses: actions/checkout@v4
+      - name: Crear claves aleatorias solo en CI
+        shell: bash
+        run: |
+          set -euo pipefail
+          pass="$(openssl rand -hex 24)"
+          jwt="$(openssl rand -hex 40)"
+          echo "::add-mask::$pass"
+          echo "::add-mask::$jwt"
+          {
+            echo "SeedAdmin__Password=$pass"
+            echo "C1504_TEST_PASSWORD=$pass"
+            echo "Jwt__Secret=$jwt"
+          } >> "$GITHUB_ENV"
       - name: Node 24
         uses: actions/setup-node@v4
         with:
@@ -92,19 +105,6 @@ jobs:
           npm install --global npm@11.19.0
           npm ci
           npx playwright test e2e/c15-04-m05-04-jwt-real.spec.ts --config=playwright.c15-04-m05-04-real.config.ts --list
-      - name: Crear claves aleatorias solo en CI
-        shell: bash
-        run: |
-          set -euo pipefail
-          pass="$(openssl rand -hex 24)"
-          jwt="$(openssl rand -hex 40)"
-          echo "::add-mask::$pass"
-          echo "::add-mask::$jwt"
-          {
-            echo "SeedAdmin__Password=$pass"
-            echo "C1504_TEST_PASSWORD=$pass"
-            echo "Jwt__Secret=$jwt"
-          } >> "$GITHUB_ENV"
       - name: SDK .NET 10
         uses: actions/setup-dotnet@v4
         with:
