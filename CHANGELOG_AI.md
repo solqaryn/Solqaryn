@@ -9953,3 +9953,8 @@
 - Servicio Application nuevo, con lector autenticado de JWT/RBAC/tenant y consulta futura de membresía/ERP filtrada por tenant, reglas Domain de vigencia UTC, versión, revocación, sucursal, plan, pagos y bloqueo A/B. Solo candidato de revalidación; no puertas, pagos ni autorizaciones reales.
 - xUnit adversarial para entradas no confiables, expiración [inicio,fin), versionado, aislamiento, roles revocados, errores de proveedores y cancelación; sin adaptador DI/API/EF/MySQL en esta microtarea, las pruebas no son certificación de integración.
 - Publicación dev bajo V17 FF/CAS, Scope Lock STRICT y CI exact SHA; A5 revisión independiente, integración real en etapas siguientes; rollback git revert sin QA/main/PROD.
+
+## 2026-11-22 — C03-01.M03.02: Application login preflight 0/1/N (R2)
+- Autenticación BCrypt una vez contra repositorio backend; estado de usuario, membresías, empresas y roles se releen, preferencia solamente desde fuente confiable; propuestas 0/1/N nunca conceden JWT ni permisos.
+- Pruebas xUnit de positivos, password incorrecta, bloqueo, preferencias inválidas y fallo de repositorio; GitHub-hosted exact-SHA pendiente, no declarar PASS hasta resultados; integración MySQL/JWT/HTTP futura no certificada.
+- Incremento en dev con V17/CAS, Scope Lock STRICT, A5 independiente; rollback git revert normal; no QA/main/PROD.
