@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV06 C01-03.M04.02: test de ampliación de texto 200% y trazabilidad R2
+- Fallo causal GitHub-hosted del commit fbf610772c12c9c1af59b9e420d1f155565642bb, run 45168772580 / job 137672518400: 13 PASS, 1 FAIL por zoom:2 en HTML que elevó el scrollWidth físico a 640 px en viewport 320, un falso negativo de prueba.
+- Incremento de prueba y documentación en ebf96302a416593bc5e18a0ddee5cf1860b37eb1: usar font-size:200% en HTML, no zoom CSS en el elemento raíz, y comprobar alerta visible, tenant B no expuesto, formulario ausente y reflow en cinco tamaños; los checks del nuevo SHA aún requieren evidencia GitHub-hosted, no declarar PASS, LISTO ni A5 por anticipado.
+- Sin cambios Angular runtime, API, JWT, RBAC ni MySQL. Ampliación de texto no equivale a zoom nativo del navegador; capturas históricas ANTES no acreditadas. Rollback por revert/fast-forward CAS. Se conserva la BITACORA y el propietario histórico DEV05.
+
 ## 2026-11-23 — DEV05 C01-03.M04.02: reflow CSS 200% y rechazo adversarial tenant B
 - Incremento R2 test-only: Playwright autenticado comprueba que HTTP 200 forjado con empresaId=2 no muestra datos de otra empresa, formulario ni overflow global en 320/390/768/1280/1440 bajo zoom CSS 200%; capturas 100/200 de la misma sesión.
 - Ruta/API/JWT/RBAC/MySQL no cambian. Se requiere GitHub-hosted SUCCESS exact-SHA y readback antes de acreditar A0–A4; CSS zoom NO equivale a zoom nativo Chrome, capturas NO son baseline histórica, la inyección NO certifica RBAC backend. Mantener VALIDANDO, owner DEV05 y A5 independiente pendiente, sin QA/main/PROD.
