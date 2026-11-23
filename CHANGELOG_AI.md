@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV01 V29 C07-01.M06.06: GET categorías aisladas mediante piloto preexistente
+- Corrige el diagnóstico: Categorias/Impuestos ya tienen EmpresaId físico como shadow property Oracle EF, filtros tenant y ownership guard. Sin migraciones nuevas ni reinterpretación de historial NULL.
+- Autoriza únicamente GET categorías exactos si el piloto MultiEmpresa:PrivateReadPilotEnabled ya está ON, con JWT, membresía y Categorias.Ver comprobados; por defecto OFF, sin mutadores habilitados. Test de integración real JWT A/B + MySQL 8.4 verifica SQL owner, lectura propia, 404 ajeno, spoofing, revocación RBAC y cuarentena OFF; CI exact-SHA requerida, no PASS anticipado.
+- Mantener C07-01.M06.06 EN_PROGRESO con lock V17 de DEV01, positivo fiscal/servicios/atributos y ERP fase aún pendientes, A5 independiente; ninguna modificación QA/main/PROD, pagos o secretos.
+
 ## 2026-11-23 — DEV06 V29 C14-02.M06.06: SQL real para rollback por DeleteAsync=false
 - Prueba adversarial nueva en suite MySQL 8.4 efímera: controlador real y UnitOfWork real revierten una mutación SQL de variante si el servicio de producto devuelve false; readback fresco verifica A y B sin pérdida. Se inyecta la frontera de servicios para producir el error, sin afirmar HTTP/JWT productivo ni integración completa de servicio de variantes.
 - Cambios acotados a test, documento y este CHANGELOG; no runtime, migraciones, permisos, ramas ni checks modificados. CI exact-SHA y V5/Scope Lock son obligatorios; C14-02.M06.06 permanece VALIDANDO, sin LISTO/A5 hasta evidencias A0–A4 y cierre global P0/P1.

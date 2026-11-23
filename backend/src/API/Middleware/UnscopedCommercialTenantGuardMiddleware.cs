@@ -660,6 +660,13 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         if (lectura && (EsRutaExacta(http.Request.Path, "/productos") ||
                         EsRutaDetallePositiva(http.Request.Path, "/productos")))
             modulo = ModuloSistema.Productos;
+        // V29: existing opt-in read pilot; categories already have a physical
+        // EF shadow EmpresaId, scoped queries and SQL-backed role permissions.
+        // No category writes are permitted by this route addition.
+        else if (lectura && (EsRutaExacta(http.Request.Path, "/categorias") ||
+                             EsRutaExacta(http.Request.Path, "/categorias/activas") ||
+                             EsRutaDetallePositiva(http.Request.Path, "/categorias")))
+            modulo = ModuloSistema.Categorias;
         else if (lectura && (EsRutaExacta(http.Request.Path, "/clientes") ||
                              EsRutaExacta(http.Request.Path, "/clientes/activos") ||
                              EsRutaExacta(http.Request.Path, "/clientes/buscar") ||

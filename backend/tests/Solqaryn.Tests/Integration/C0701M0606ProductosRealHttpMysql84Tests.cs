@@ -120,6 +120,29 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 new RolPermiso { RolId = roleB.Id, PermisoId = permission.Id });
             await db.SaveChangesAsync();
             db.ChangeTracker.Clear();
+            // R2 category read contract: the existing EF shadow EmpresaId is
+            // physical in MySQL; authorization is still SQL-backed.
+            var categoryReadPermission = await db.Permisos.IgnoreQueryFilters()
+                .FirstOrDefaultAsync(p => p.Modulo == ModuloSistema.Categorias &&
+                    p.Accion == AccionPermiso.Ver &&
+                    p.Ambito == AmbitoAutorizacion.Empresa && p.Activo && !p.Eliminado);
+            if (categoryReadPermission is null)
+            {
+                categoryReadPermission = new Permiso
+                {
+                    Codigo = "C0701M0606.CATEGORIAS.VER",
+                    Nombre = "C0701 isolated permission for category reads",
+                    Modulo = ModuloSistema.Categorias, Accion = AccionPermiso.Ver,
+                    Ambito = AmbitoAutorizacion.Empresa, Activo = true
+                };
+                db.Permisos.Add(categoryReadPermission);
+                await db.SaveChangesAsync();
+            }
+            db.RolPermisos.AddRange(
+                new RolPermiso { RolId = roleA.Id, PermisoId = categoryReadPermission.Id },
+                new RolPermiso { RolId = roleB.Id, PermisoId = categoryReadPermission.Id });
+            await db.SaveChangesAsync();
+            db.ChangeTracker.Clear();
             // Test-only RBAC: the valid A role has Crear, while B does not.
             var createPermission = await db.Permisos.IgnoreQueryFilters()
                 .FirstOrDefaultAsync(x => x.Modulo == ModuloSistema.Productos
@@ -736,6 +759,7 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                         services.AddScoped<IPermisoService, PermisoService>();
                         services.AddScoped<IProductoRepository, ProductoRepository>();
                         services.AddScoped<ICategoriaRepository, CategoriaRepository>();
+                        services.AddScoped<ICategoriaService, CategoriaService>();
                         services.AddScoped<IProductoService, ProductoService>();
                         // Real technical variant and durable audit share the EF transaction.
                         services.AddScoped<IProductoVarianteRepository, ProductoVarianteRepository>();
@@ -1226,10 +1250,9 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             }
 
 
-            // V26 R2: Impuestos remains an unscoped legacy catalogue.
-            // Exercise each real mutator verb through production JWT routing
-            // for both live tenant memberships in isolated MySQL 8.4.
-            // Do not grant a fiscal pilot or assume an Impuesto.EmpresaId.
+            // V29 R2: Impuesto already has physical EF shadow EmpresaId;
+            // the positive fiscal HTTP/write contract remains uncertified.
+            // Exercise every real mutator without granting any fiscal pilot.
             // A row-count-only check can miss an UPDATE or logical DELETE on
             // an existing legacy fiscal row. Seed a real sentinel in the
             // disposable Oracle EF/MySQL 8.4 schema, then compare its content.
@@ -1325,9 +1348,9 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                         .AsNoTracking().CountAsync(x => x.Modulo == ModuloSistema.Impuestos));
             }
 
-            // V26 R2: Categoria has no tenant ownership column. All private
-            // category reads/mutators must stay quarantined even for A/B JWTs.
-            // This is a real MySQL 8.4 physical NON-mutation proof, not CRUD enablement.
+            // V29 R2: Categoria has EF shadow EmpresaId persisted by Oracle
+            // migrations. First prove default-off HTTP quarantine and no writes.
+            pilotConfig["MultiEmpresa:PrivateReadPilotEnabled"] = "false";
             var categoryRejectedName = "C0701CategoryDenied" + Guid.NewGuid().ToString("N");
             var categorySnapshotBefore = await db.Categorias.IgnoreQueryFilters()
                 .AsNoTracking().OrderBy(c => c.Id)
@@ -1389,6 +1412,89 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                     await categoryReadback.RegistrosAuditoria.IgnoreQueryFilters()
                         .AsNoTracking().CountAsync(x => x.Modulo == ModuloSistema.Categorias));
             }
+
+            // V29 R2: positive authenticated GET through real CategoriesController,
+            // CategoriaService, EF shadow ownership and MySQL 8.4. The production
+            // default remains OFF; no category mutation route is enabled.
+            var categoryAId = categorySnapshotBefore.Single(
+                c => c.Nombre == "Category C0701RealProductoA").Id;
+            var categoryBId = categorySnapshotBefore.Single(
+                c => c.Nombre == "Category C0701RealProductoB").Id;
+            await using (var categoryOwnersSql = new AppDbContext(options))
+            {
+                var owners = await categoryOwnersSql.Categorias
+                    .IgnoreQueryFilters().AsNoTracking()
+                    .Where(c => c.Id == categoryAId || c.Id == categoryBId)
+                    .Select(c => new
+                    {
+                        c.Id,
+                        EmpresaId = EF.Property<int?>(c, "EmpresaId")
+                    }).ToListAsync();
+                Assert.Equal(a.Id, owners.Single(c => c.Id == categoryAId).EmpresaId);
+                Assert.Equal(b.Id, owners.Single(c => c.Id == categoryBId).EmpresaId);
+            }
+
+            pilotConfig["MultiEmpresa:PrivateReadPilotEnabled"] = "true";
+            async Task<HttpResponseMessage> CategoryRequestAsync(
+                string jwt, int selectedTenant, string path)
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Get, path);
+                request.Headers.Authorization =
+                    new AuthenticationHeaderValue("Bearer", jwt);
+                request.Headers.TryAddWithoutValidation(
+                    "X-Empresa-Id", selectedTenant.ToString());
+                return await client.SendAsync(request);
+            }
+
+            foreach (var (jwt, tenantId, ownName, foreignName, ownId, foreignId) in new[]
+            {
+                (jwtA, a.Id, "Category C0701RealProductoA",
+                    "Category C0701RealProductoB", categoryAId, categoryBId),
+                (jwtB, b.Id, "Category C0701RealProductoB",
+                    "Category C0701RealProductoA", categoryBId, categoryAId)
+            })
+            {
+                foreach (var path in new[] {
+                    "/categorias", "/categorias/activas", $"/categorias/{ownId}" })
+                {
+                    using var positive = await CategoryRequestAsync(jwt, tenantId, path);
+                    Assert.Equal(HttpStatusCode.OK, positive.StatusCode);
+                    var body = await positive.Content.ReadAsStringAsync();
+                    Assert.Contains(ownName, body, StringComparison.Ordinal);
+                    Assert.DoesNotContain(foreignName, body, StringComparison.Ordinal);
+                }
+                using var foreignCategory =
+                    await CategoryRequestAsync(jwt, tenantId, $"/categorias/{foreignId}");
+                Assert.Equal(HttpStatusCode.NotFound, foreignCategory.StatusCode);
+                Assert.DoesNotContain(foreignName,
+                    await foreignCategory.Content.ReadAsStringAsync(),
+                    StringComparison.Ordinal);
+            }
+
+            foreach (var (jwt, selector) in new[] { (jwtA, b.Id), (jwtB, a.Id) })
+            {
+                using var spoof = await CategoryRequestAsync(jwt, selector, "/categorias");
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, spoof.StatusCode);
+                Assert.Contains("TENANT_DATA_ISOLATION_REQUIRED",
+                    await spoof.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+            }
+
+            // Revoke only Categories.Ver for A; B remains independently authorized.
+            var revokedCategoryGrantA = await db.RolPermisos
+                .SingleAsync(x => x.RolId == roleA.Id &&
+                    x.PermisoId == categoryReadPermission.Id);
+            db.RolPermisos.Remove(revokedCategoryGrantA);
+            await db.SaveChangesAsync();
+            using (var deniedA = await CategoryRequestAsync(jwtA, a.Id, "/categorias"))
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, deniedA.StatusCode);
+            using (var stillB = await CategoryRequestAsync(jwtB, b.Id, "/categorias"))
+                Assert.Equal(HttpStatusCode.OK, stillB.StatusCode);
+
+            // Pilot OFF remains fail-closed even for B's valid JWT and RBAC.
+            pilotConfig["MultiEmpresa:PrivateReadPilotEnabled"] = "false";
+            using (var defaultOff = await CategoryRequestAsync(jwtB, b.Id, "/categorias"))
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, defaultOff.StatusCode);
+            pilotConfig["MultiEmpresa:PrivateReadPilotEnabled"] = "true";
 
             // V26 R2: nested ProductoVariantes endpoints must not evade the
             // multiempresa guard through a parent product ID, even with a
