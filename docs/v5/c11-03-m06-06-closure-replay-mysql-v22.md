@@ -104,3 +104,8 @@ en VALIDANDO: siguen faltando JWT/RBAC HTTP real, proveedor/consumidor duradero,
 evidencia global completa A0-A4 y A5 independiente. Ejecutar el workflow
 GitHub-hosted existente y todos los checks exact-SHA obligatorios; hasta su
 resultado no se declara PASS. Reversión por git revert normal en dev.
+
+
+## V30 — corrección del contador obligatorio tras ampliar cobertura
+
+El primer SHA ba7f87d8 ejecutó de verdad **2/2 MySQL 8.4 y 7/7 xUnit adversariales**, con cero fallos y cero omitidas. El job dirigido terminó FAILED exclusivamente porque la condición de certificación conservaba el contador anterior 6/6, pese a haberse incorporado una prueba más del límite máximo de reintentos. Se actualiza el contador estricto a **exactamente 7/7**, sin permitir omisiones ni relajación de seguridad; el workflow sigue ejecutando también 2/2 MySQL reales. No se cambia el worker, los tests ni el runtime en este commit. Exigir nueva CI exact-SHA SUCCESS, Scope Lock y V5 antes de acreditar A4. C11-03.M06.06 permanece VALIDANDO por integración funcional pendiente. Sin QA/main/PROD.

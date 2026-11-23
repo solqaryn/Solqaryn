@@ -1,3 +1,7 @@
+## 2026-11-23 — V30 R2 C11-03.M06.06: corregir contador estricto del gate E2E despues del fix de reintentos
+- GitHub-hosted run45248478338 SHA ba7f87d8: Oracle EF MySQL 8.4 2/2 PASS y contrato adversarial 7/7 PASS, 0 FAIL/SKIP. Job FAIL exclusivamente por comparador historico de exactamente 6/6; contador actualizado a exactamente 7/7, sin omitir ninguna prueba.
+- Solo workflow dirigido, documentacion y CHANGELOG; commit parent ba7f87d8, workers/test funcionales sin cambio. Validacion obligatoria con run exact-SHA y Scope Lock/V5, sin CI manual duplicada. C11-03.M06.06 queda VALIDANDO por provider/HTTP/JWT/RBAC/consumidor real A0-A4, A5 distinta Task; no QA/main/PROD.
+
 ## 2026-11-23 — V30 C11-03.M06.06: bloquear envío outbox por presupuesto de reintentos agotado
 - Incidencia funcional detectada en el worker existente: un batch de filas con Intentos > maximumAttempts podia llegar a IC1103OutboxIsolatedTransport.SendAsync, incluso cuando la politica de reintentos fue reducida. Se endurece la validacion previa del lote y el guard por evento sin cambiar API/JWT/DI/migraciones.
 - Prueba adversarial orientada a un defecto real, no nueva ronda general: una fila valida seguida de otra con Intentos=2 y maximo=1 no debe ocasionar Send, ACK ni RegistrarFallo. Solo se exige reejecutar workflow C11-03.M06.06 y checks requeridos del nuevo SHA; ninguna prueba verde ya acreditada se relanza manualmente.

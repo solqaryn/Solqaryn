@@ -79,6 +79,6 @@ jobs:
           if counters is None: raise SystemExit('C1103_M0606_ADVERSARIAL_NO_COUNTERS')
           result={k:int(counters.get(k,-1)) for k in ('total','passed','failed','notExecuted')}
           print('C1103_M0606_ADVERSARIAL',result)
-          if result!={'total':6,'passed':6,'failed':0,'notExecuted':0}:
+          if result!={'total':7,'passed':7,'failed':0,'notExecuted':0}:
               raise SystemExit('C1103_M0606_ADVERSARIAL_NOT_VERIFIED')
           PY
