@@ -10,9 +10,9 @@ namespace Solqaryn.Tests.API;
 public sealed class C0303M0303DevelopmentRegistrationTests
 {
     [Theory]
-    [InlineData(Environments.Production, false)]
-    [InlineData(Environments.Staging, false)]
-    [InlineData(Environments.Development, true)]
+    [InlineData("Production", false)]
+    [InlineData("Staging", false)]
+    [InlineData("Development", true)]
     public void AuditProbeRegistrationIsDevOnly(string environmentName, bool expected)
     {
         var environment = new Mock<IHostEnvironment>();

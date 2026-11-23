@@ -1,3 +1,8 @@
+## 2026-11-23 - DEV05 C03-03.M03.03: CI CS0182 en atributos xUnit (V25)
+- Evidencia GitHub-hosted SHA a7965d91: Backend Release, multiempresa, autorización y otros jobs fallaron con CS0182 en las tres InlineData, que exigen expresiones constantes. Falla causal del test nuevo, no se atribuye a servicios productivos.
+- Corrección mínima: InlineData usa literales de ambiente Production/Staging/Development; los tres casos de denegación/registro permanecen y el helper DEV-only de Program no cambia. CI exact-SHA nueva requerida; ningún FAILED ni QUEUED se computa PASS.
+- C03-03.M03.03 permanece VALIDANDO, histórico DEV03; A0-A4 y A5 independiente aún pendientes; MySQL/JWT/HTTP CI previa también sigue su gate causal; sin QA/main/PROD.
+
 ## 2026-11-23 - DEV05 C03-03.M03.03: registro DI Development-only (V25)
 - Hallazgo P2: el lector de auditoria, interfaces y servicio Application estaban registrados incondicionalmente en Program.cs, contradiciendo DEV-only; opt-in OFF no sustituye aislamiento de DI.
 - Codigo: composition root delega a AddC0303VerifiedAuditDevelopmentOnly con IsDevelopment real, sin servicios de prueba en Staging/Production, conservando scoped y OFF en Development; sin endpoints, grants, MySQL/EF, secretos o despliegue.
