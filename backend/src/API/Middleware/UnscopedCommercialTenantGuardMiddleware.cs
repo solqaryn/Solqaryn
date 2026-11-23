@@ -1,3 +1,4 @@
+using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Configuration;
 using Solqaryn.Domain.Enums;
@@ -527,6 +528,11 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         {
             // Pilotos independientes, apagados por defecto. Solo rutas exactas
             // y acción RBAC correspondiente; ninguna bandera habilita CRUD general.
+            // C03-03.M03.03: explicit DEV-only audit-read route, OFF unless configured.
+            // This is not a generic override of the multi-tenant P0 quarantine.
+            if (empresas.Length == 2 && await AutorizarLecturaAuditoriaDevAsync(httpContext))
+                return;
+
             if (empresas.Length == 2 && await AutorizarOperacionPilotoAsync(httpContext, db))
                 return;
 
@@ -535,6 +541,53 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         }
 
         await _next(httpContext);
+    }
+
+    // C03-03.M03.03: no broadened audit access in QA/PROD or by default.
+    // Each request rechecks a signed JWT, the current SQL tenant administrator
+    // membership, and the explicit Auditoria.Ver relational grant. The MVC
+    // RequierePermiso filter performs a second, independent SQL grant check.
+    private async Task<bool> AutorizarLecturaAuditoriaDevAsync(HttpContext http)
+    {
+        var services = http.RequestServices;
+        if (!HttpMethods.IsGet(http.Request.Method) ||
+            !EsRutaExacta(http.Request.Path, "/auditoria") ||
+            http.User.Identity?.IsAuthenticated != true ||
+            services?.GetService<IHostEnvironment>()?.IsDevelopment() != true ||
+            services.GetService<IConfiguration>()?.GetValue<bool>(
+                "SecurityAudit:EnableRealAuditReadPilot") != true)
+            return false;
+
+        int empresaId;
+        try
+        {
+            empresaId = await TenantPermissionContext.RequireEmpresaIdAsync(
+                http, http.RequestAborted);
+        }
+        catch (ForbiddenAccessException)
+        {
+            return false;
+        }
+
+        var actor = services.GetRequiredService<ICurrentUserService>();
+        if (actor.UsuarioId is not > 0 || !actor.EsAdministrador)
+            return false;
+
+        var scope = await services.GetRequiredService<IUsuarioScopeService>()
+            .ObtenerActualAsync(empresaId, http.RequestAborted);
+        if (scope is null || scope.UsuarioId != actor.UsuarioId ||
+            scope.EmpresaId != empresaId || !scope.EsAdministrador)
+            return false;
+
+        if (!await services.GetRequiredService<IPermisoService>()
+            .TienePermisoAsync(empresaId, ModuloSistema.Auditoria, AccionPermiso.Ver))
+            return false;
+
+        TenantPermissionContext.MarkAuthorizedEmpresaId(http, empresaId);
+        http.Response.Headers.CacheControl = "private, no-store, max-age=0";
+        http.Response.Headers.Remove("ETag");
+        await _next(http);
+        return true;
     }
 
     private async Task<bool> AutorizarOperacionPilotoAsync(HttpContext http, AppDbContext db)

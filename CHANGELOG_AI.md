@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV03 V27 C03-03.M03.03: HTTP MVC real de auditoria por tenant en DEV
+- Implementado piloto opt-in solo Development para GET exacto /auditoria: JWT valido, SQL UsuarioEmpresa y rol administrador vigente, permiso relacional Auditoria.Ver y segundo filtro MVC; caché no-store y P0 multiempresa restante intacto.
+- Ampliada prueba GitHub-hosted MySQL 8.4 efimero con MVC real, controller, filtros y SQL para tenant A/B, JWT falso/expirado, selector invalido, revocacion/restauracion del grant; conserva prueba anterior y rollback.
+- Alcance R2: pendiente de CI exact SHA, A0-A4 causales, validacion del runtime real, A5 independiente; no LISTO ficticio, ni QA/main/PROD.
+
 ## 2026-11-23 — DEV02 V28 C15-04.M05.04: corregir regexp A126 antes de ejecutar E2E
 - Reparación quirúrgica de parser Playwright en `frontend/e2e/c15-04-m05-04-jwt-real.spec.ts`: elimina el doble escapado del literal `toHaveURL` de A126 y reproduce el patrón comprobado de A125, sin cambiar runtime, permisos, JWT, RBAC, MySQL ni aserciones funcionales.
 - Evidencia de defecto: run 45215478882, job 137835331070, SHA 9c4be44fa3f8dad8e7446d223be8f71bfb778ee2, `SyntaxError: Invalid regular expression flag (3805:42)` antes del descubrimiento de pruebas; no se atribuye regresión de producto. La nueva CI de Chromium/MySQL/JWT permanece por acreditar en el SHA publicado; no LISTO ni A5 hasta evidencia causal independiente.

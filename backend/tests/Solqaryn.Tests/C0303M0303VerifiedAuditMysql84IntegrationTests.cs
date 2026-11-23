@@ -452,6 +452,137 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
 
             }
 
+            // V27: the production /auditoria MVC route must pass the actual
+            // RequierePermiso filter, current SQL membership, tenant-bound
+            // repository and the P0 middleware. A direct controller action or
+            // a Development probe alone is NOT an end-to-end HTTP assertion.
+            var mvcConfig = new ConfigurationBuilder().AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    ["SecurityAudit:EnableRealAuditReadPilot"] = "true"
+                }).Build();
+            using (var mvcHost = await new HostBuilder()
+                .UseEnvironment(Environments.Development)
+                .ConfigureWebHost(web => web.UseTestServer()
+                    .ConfigureServices(s =>
+                    {
+                        s.AddLogging();
+                        s.AddRouting();
+                        s.AddControllers().AddApplicationPart(typeof(AuditoriaController).Assembly);
+                        s.AddHttpContextAccessor();
+                        s.AddSingleton<IConfiguration>(mvcConfig);
+                        s.AddScoped(_ => new AppDbContext(options, null,
+                            _.GetRequiredService<IHttpContextAccessor>()));
+                        s.AddScoped<ICurrentUserService, CurrentUserService>();
+                        s.AddScoped<IUsuarioScopeService, UsuarioScopeService>();
+                        s.AddScoped<IAuditoriaRepository, AuditoriaRepository>();
+                        s.AddScoped<IRolPermisoRepository, RolPermisoRepository>();
+                        s.AddScoped<IRolRepository, RolRepository>();
+                        s.AddScoped<IPermisoRepository, PermisoRepository>();
+                        s.AddScoped<IPermisoService, PermisoService>();
+                        s.AddScoped<IAuditoriaService, AuditoriaService>();
+                        s.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                            .AddJwtBearer(o =>
+                            {
+                                o.MapInboundClaims = false;
+                                o.TokenValidationParameters = new TokenValidationParameters
+                                {
+                                    ValidateIssuer = true,
+                                    ValidIssuer = "c0303-mysql-ci",
+                                    ValidateAudience = true,
+                                    ValidAudience = "c0303-mysql-ci",
+                                    ValidateIssuerSigningKey = true,
+                                    IssuerSigningKey = Signing,
+                                    ValidateLifetime = true,
+                                    ClockSkew = TimeSpan.Zero
+                                };
+                            });
+                        s.AddAuthorization();
+                    })
+                    .Configure(app =>
+                    {
+                        app.UseRouting();
+                        app.UseAuthentication();
+                        app.UseAuthorization();
+                        app.UseMiddleware<Solqaryn.API.Middleware.UnscopedCommercialTenantGuardMiddleware>();
+                        app.UseEndpoints(e => e.MapControllers());
+                    })).StartAsync())
+            {
+                using var mvcClient = mvcHost.GetTestClient();
+                var adminJwt = new JwtSecurityToken(
+                    issuer: "c0303-mysql-ci", audience: "c0303-mysql-ci",
+                    claims: [
+                        new Claim("id", actor.Id.ToString()),
+                        new Claim("nombreUsuario", username),
+                        new Claim("sub", username),
+                        new Claim("esAdministrador", "true")
+                    ],
+                    notBefore: DateTime.UtcNow.AddMinutes(-1),
+                    expires: DateTime.UtcNow.AddMinutes(8),
+                    signingCredentials: new SigningCredentials(
+                        Signing, SecurityAlgorithms.HmacSha256));
+                var realJwt = new JwtSecurityTokenHandler().WriteToken(adminJwt);
+
+                async Task<(HttpStatusCode Code, string Body, string Cache)> GetAuditAsync(
+                    string bearer, int? selector = null, string? rawSelector = null)
+                {
+                    using var request = new HttpRequestMessage(
+                        HttpMethod.Get, "/auditoria?Page=1&PageSize=25");
+                    request.Headers.Authorization = new AuthenticationHeaderValue(
+                        "Bearer", bearer);
+                    if (rawSelector is not null)
+                        request.Headers.TryAddWithoutValidation(
+                            "X-Empresa-Id", rawSelector);
+                    else if (selector.HasValue)
+                        request.Headers.TryAddWithoutValidation(
+                            "X-Empresa-Id", selector.Value.ToString());
+                    using var response = await mvcClient.SendAsync(request);
+                    var body = await response.Content.ReadAsStringAsync();
+                    return (response.StatusCode, body,
+                        response.Headers.CacheControl?.ToString() ?? string.Empty);
+                }
+
+                var authorized = await GetAuditAsync(realJwt, tenantA.Id);
+                Assert.Equal(HttpStatusCode.OK, authorized.Code);
+                Assert.Contains("no-store", authorized.Cache, StringComparison.OrdinalIgnoreCase);
+                Assert.DoesNotContain("C0303_TENANT_B_PRIVATE_SENTINEL",
+                    authorized.Body, StringComparison.Ordinal);
+                Assert.Contains("C03-03.M03.03: acceso de auditoría validado",
+                    authorized.Body, StringComparison.Ordinal);
+
+                Assert.Equal(HttpStatusCode.Forbidden,
+                    (await GetAuditAsync(realJwt, tenantB.Id)).Code);
+                Assert.Equal(HttpStatusCode.Forbidden,
+                    (await GetAuditAsync(realJwt, null, "invalid")).Code);
+                Assert.Equal(HttpStatusCode.Forbidden,
+                    (await GetAuditAsync(realJwt)).Code);
+                Assert.Equal(HttpStatusCode.Unauthorized,
+                    (await GetAuditAsync(new JwtSecurityTokenHandler().WriteToken(
+                        forgedToken), tenantA.Id)).Code);
+                Assert.Equal(HttpStatusCode.Unauthorized,
+                    (await GetAuditAsync(new JwtSecurityTokenHandler().WriteToken(
+                        expiredToken), tenantA.Id)).Code);
+
+                // A real committed SQL grant revocation must invalidate the
+                // still valid signed JWT, without changing its claims or cache.
+                var liveGrant = await db.RolPermisos.IgnoreQueryFilters()
+                    .SingleAsync(r => r.RolId == roleA.Id &&
+                                      r.PermisoId == permission.Id);
+                db.RolPermisos.Remove(liveGrant);
+                await db.SaveChangesAsync();
+                db.ChangeTracker.Clear();
+                Assert.Equal(HttpStatusCode.Forbidden,
+                    (await GetAuditAsync(realJwt, tenantA.Id)).Code);
+                db.RolPermisos.Add(new RolPermiso
+                {
+                    RolId = roleA.Id, PermisoId = permission.Id
+                });
+                await db.SaveChangesAsync();
+                db.ChangeTracker.Clear();
+                Assert.Equal(HttpStatusCode.OK,
+                    (await GetAuditAsync(realJwt, tenantA.Id)).Code);
+            }
+
             // Route spoofing, membership B and critical changes cannot borrow A.
             http.Request.RouteValues["empresaId"] = tenantB.Id.ToString();
             Assert.Null(await reader.ReadCurrentAsync(default));
