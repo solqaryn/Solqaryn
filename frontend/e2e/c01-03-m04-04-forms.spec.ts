@@ -10,7 +10,7 @@ if (process.env['CI'] !== 'true' || api !== 'http://127.0.0.1:5005' || !password
 const target = '/configuracion/dinamica-v5';
 const formSelector = 'form[aria-label="Configuración del tenant activo"]';
 
-async function loginA(page: Page): Promise<void> {
+async function loginA(page: Page): Promise<string> {
   await page.goto('/login');
   await page.getByRole('textbox', { name: 'Nombre de usuario' }).fill('c1504_admin_a');
   await page.locator('input[formcontrolname="password"]').fill(password!);
@@ -37,6 +37,7 @@ async function loginA(page: Page): Promise<void> {
   await page.evaluate(() => localStorage.setItem('solqaryn_empresa_solicitada_id', '1'));
   await page.goto(target);
   await expect(page.locator(formSelector)).toBeVisible();
+  return token as string;
 }
 
 test.describe('V24 M04.04 form: real GET, guarded duplicate mutation, error and navigation', () => {
@@ -117,5 +118,64 @@ test.describe('V24 M04.04 form: real GET, guarded duplicate mutation, error and 
       expect(capturedPuts, 'the real authenticated edit flow must issue exactly one PUT').toBe(1);
     });
   }
+
+
+  test('real signed-JWT MySQL stale version is denied and original config restored', async ({ page }) => {
+    test.setTimeout(180_000);
+    const token = await loginA(page);
+    const headers = { Authorization: 'Bearer ' + token };
+    const endpoint = api + '/empresa-configuracion/tenant/1';
+    const initial = await page.request.get(endpoint, { headers });
+    expect(initial.status()).toBe(200);
+    const prior = (await initial.json())?.data as {
+      empresaId: number; nombre: string; rtn: string | null; direccion: string | null;
+      moneda: string; zonaHoraria: string; impuestosJson: string; emisionJson: string;
+      correoRemitente: string | null; correoNombreRemitente: string | null; version: number;
+    };
+    expect(prior.empresaId).toBe(1);
+    expect(Number.isInteger(prior.version)).toBe(true);
+    const original = {
+      nombre: prior.nombre, rtn: prior.rtn, direccion: prior.direccion,
+      moneda: prior.moneda, zonaHoraria: prior.zonaHoraria,
+      impuestosJson: prior.impuestosJson, emisionJson: prior.emisionJson,
+      correoRemitente: prior.correoRemitente, correoNombreRemitente: prior.correoNombreRemitente,
+      version: prior.version
+    };
+    let modified = false;
+    try {
+      const newName = prior.nombre.slice(0, 145) + ' CI-CAS-real';
+      const first = await page.request.put(endpoint, { headers, data: { ...original, nombre: newName } });
+      modified = first.status() === 200;
+      expect(first.status(), 'authorized PUT with fresh version').toBe(200);
+      const stale = await page.request.put(endpoint, {
+        headers, data: { ...original, nombre: newName + '-stale' }
+      });
+      expect([409, 412], 'real server must deny stale version; not simulated HTTP 409')
+        .toContain(stale.status());
+      const after = await page.request.get(endpoint, { headers });
+      expect(after.status()).toBe(200);
+      const afterData = (await after.json())?.data;
+      expect(afterData.empresaId).toBe(1);
+      expect(afterData.nombre).toBe(newName);
+      expect(afterData.version).toBeGreaterThan(prior.version);
+      const foreign = await page.request.get(api + '/empresa-configuracion/tenant/2', { headers });
+      expect([403, 404], 'signed company A JWT cannot read B').toContain(foreign.status());
+    } finally {
+      if (modified) {
+        const current = await page.request.get(endpoint, { headers });
+        expect(current.status()).toBe(200);
+        const persisted = (await current.json())?.data;
+        const restore = await page.request.put(endpoint, {
+          headers, data: { ...original, version: persisted.version }
+        });
+        expect(restore.status(), 'compensating versioned restore in ephemeral MySQL').toBe(200);
+        const readback = await page.request.get(endpoint, { headers });
+        expect(readback.status()).toBe(200);
+        const restored = (await readback.json())?.data;
+        expect(restored.nombre).toBe(prior.nombre);
+        expect(restored.empresaId).toBe(1);
+      }
+    }
+  });
 
 });

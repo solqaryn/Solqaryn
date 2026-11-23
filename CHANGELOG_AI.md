@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV05 V26 C01-03.M04.04: CAS real y restauración efímera [Javier :40]
+- Prueba JWT/MySQL 8.4 con PUT vigente 200, PUT obsoleto 409/412 real y readback tenant A/B, seguida de restauración compensatoria versionada.
+- El 409 simulado de UI no acredita CAS backend. CI exact-SHA y A5 independiente pendientes; sin certificación de simultaneidad, zoom nativo 200%, capturas históricas, QA/main/PROD.
+
 ## 2026-11-23 — Rescate C01-03.M04.01: aislamiento de contextos Playwright JWT A/B (R2)
 - Reparación solo E2E: A0.98 inicia sesión como empresa B desde BrowserContext aislado para no reutilizar la página ya autenticada como A. Mantiene JWT firmados independientes, 200 positivos reales de B y denegaciones 403/404 del JWT A aun con X-Empresa-Id falso; cierre seguro del contexto B.
 - Causa observada: run45196564721/job137768470808 (15 PASS, 1 FAIL), timeout de 75s en locator.fill(password) al redirigir /login con sesión A activa. No se modifica runtime, contratos, Angular, MySQL, JWT, roles ni producción. CI GitHub-hosted exact SHA aún obligatoria; PLAN H=VALIDANDO, I DEV03 histórico, A5 independiente y evidencia UX V23 pendiente. Rollback con git revert, sin force-push ni QA/main/PROD.
