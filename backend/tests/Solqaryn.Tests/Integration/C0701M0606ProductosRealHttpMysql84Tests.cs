@@ -1173,10 +1173,32 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             // Exercise each real mutator verb through production JWT routing
             // for both live tenant memberships in isolated MySQL 8.4.
             // Do not grant a fiscal pilot or assume an Impuesto.EmpresaId.
-            int fiscalRowsBefore;
+            // A row-count-only check can miss an UPDATE or logical DELETE on
+            // an existing legacy fiscal row. Seed a real sentinel in the
+            // disposable Oracle EF/MySQL 8.4 schema, then compare its content.
+            var fiscalSentinelCode = "C0701S_" + Guid.NewGuid().ToString("N");
+            await using (var fiscalSeed = new AppDbContext(options))
+            {
+                fiscalSeed.Set<Impuesto>().Add(new Impuesto
+                {
+                    Nombre = "C0701 fiscal quarantine sentinel",
+                    Codigo = fiscalSentinelCode,
+                    Tasa = 15m,
+                    Activo = true,
+                    Eliminado = false
+                });
+                await fiscalSeed.SaveChangesAsync();
+            }
+            List<string> fiscalSnapshotBefore;
             await using (var fiscalBefore = new AppDbContext(options))
-                fiscalRowsBefore = await fiscalBefore.Set<Impuesto>()
-                    .IgnoreQueryFilters().AsNoTracking().CountAsync();
+                fiscalSnapshotBefore = await fiscalBefore.Set<Impuesto>()
+                    .IgnoreQueryFilters().AsNoTracking()
+                    .OrderBy(i => i.Id)
+                    .Select(i => i.Id + "|" + i.Codigo + "|" + i.Nombre + "|" +
+                                 i.Tasa + "|" + i.Activo + "|" + i.Eliminado)
+                    .ToListAsync();
+            Assert.Contains(fiscalSnapshotBefore,
+                row => row.Contains(fiscalSentinelCode, StringComparison.Ordinal));
 
             foreach (var (signedJwt, tenantId) in new[]
             {
@@ -1208,9 +1230,15 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 }
             }
             await using (var fiscalAfter = new AppDbContext(options))
-                Assert.Equal(fiscalRowsBefore,
-                    await fiscalAfter.Set<Impuesto>().IgnoreQueryFilters()
-                        .AsNoTracking().CountAsync());
+            {
+                var fiscalSnapshotAfter = await fiscalAfter.Set<Impuesto>()
+                    .IgnoreQueryFilters().AsNoTracking()
+                    .OrderBy(i => i.Id)
+                    .Select(i => i.Id + "|" + i.Codigo + "|" + i.Nombre + "|" +
+                                 i.Tasa + "|" + i.Activo + "|" + i.Eliminado)
+                    .ToListAsync();
+                Assert.Equal(fiscalSnapshotBefore, fiscalSnapshotAfter);
+            }
 
             var membershipA = await db.UsuarioEmpresas
                 .SingleAsync(x => x.UsuarioId == userA.Id && x.EmpresaId == a.Id);

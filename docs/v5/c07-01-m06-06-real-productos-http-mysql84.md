@@ -221,3 +221,28 @@ Impacto: un test de integración y documentación de evidencia; sin migraciones,
 El controlador real `ImpuestosController` expone POST, PUT, PATCH y DELETE, pero `Impuesto` no contiene un contrato de propiedad `EmpresaId` verificado. Como resultado no se habilitan escrituras fiscales ni se fabrica una autoridad multiempresa. La prueba `C0701M0606ProductosRealHttpMysql84Tests` extiende su TestServer con JWT firmados de A y B y membresias reales MySQL 8.4 efimero: exige HTTP 503 `TENANT_DATA_ISOLATION_REQUIRED` en doce solicitudes negativas (seis rutas mutadoras por tenant: alta, edicion, desactivacion, borrado logico, borrado permanente y duplicacion). Se compara el numero fisico de filas `Impuesto` antes/despues mediante contextos EF separados.
 
 Criterio causal: el job GitHub-hosted `v22-c07-01-m06-06-productos-real-http-mysql84.yml` del SHA publicado debe terminar `completed/success`, con TRX dirigido realmente ejecutado y sin FAIL/SKIPPED, mas Scope Lock exact-SHA y checks pertinentes. Una respuesta 400/401/403/404/500 no se normaliza a PASS. **No es prueba positiva de Impuestos**, no se modifican rutas ni flags de produccion, no desbloquea A5 ni finaliza M06.06. La matriz de ownership fiscal, servicios, categorias y atributos sigue pendiente y PLAN H1045 permanece EN_PROGRESO, owner DEV01, lock V17 2000001045. Rollback solo via git revert no destructivo y nueva verificacion de HEAD. `CHANGELOG_AI.md` supera el tamano seguro de lectura del conector: no se reconstruye ni se sobrescribe; evidencia causal en este documento y BITACORA aditiva.
+
+
+### V26 DEV01 - R2 MySQL fiscal sentinel and full row snapshot (2026-11-23)
+
+La prueba previa comparaba solo la cantidad de registros de `Impuestos`: una
+modificacion de nombre, tasa, activo o borrado logico podia conservar el conteo y
+evadir esa asercion. Se anade un impuesto centinela REAL por EF Oracle en el
+MySQL 8.4 efimero, con codigo unico, y se comparan instantaneas ordenadas de
+ID, Codigo, Nombre, Tasa, Activo y Eliminado antes y despues de las 12
+solicitudes HTTP mutadoras con JWT firmados A/B y cuarentena estricta 503.
+La prueba falla si un mutador altera el centinela sin cambiar el numero de
+filas. No se elimina el chequeo de los 12 rechazos, la membresia vigente ni los
+otros tests positivos/negativos. El fiscal catalogo global permanece sin contrato
+tenant real y no se abre ningun endpoint. No hay modificaciones de runtime,
+migracion, datos productivos ni QA/main/PROD.
+
+A0: solo test y documento, WIP C07-01.M06.06 bajo candado V17 exclusivo
+2000001045 y autor DEV01. A1-A3: exige el job dirigido GitHub-hosted real
+de test de integracion EF/MySQL 8.4 con resultado completado SUCCESS,
+0 fallos y 0 omitidos; no declarar aprobado mientras este queued/in_progress.
+A4: Scope Lock, V5, backend/security y global MySQL pertinente del SHA
+nuevo; un retry SKIPPED no cuenta como PASS. H1045 permanece EN_PROGRESO,
+A5 pendiente de otro Javier; la certificacion fiscal positiva y el cierre
+acumulativo ERP M06.06 siguen NO_GO. Revert normal fast-forward si la nueva
+regresion detecta un problema, conservando historia.
