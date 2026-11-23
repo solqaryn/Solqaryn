@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV03 C03-03.M03.03: aislamiento real de JwtBearer por request en MySQL 8.4 (V26)
+- Diagnóstico causal: GitHub-hosted SHA `fccd449e` job `137572782704` terminó FAIL 1/157; un contexto negativo con firma ajena reutilizaba el handler scoped del mismo provider raíz de la petición JWT válida. No se atribuye incorrectamente un bypass HTTP de producción.
+- Reparación R2: la prueba física `C0303M0303VerifiedAuditMysql84IntegrationTests` ahora crea un `IServiceScope` distinto para petición JWT válida y para cada intento de JWT falsificado/expirado; exige `AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme)` fallido y `ReadCurrentAsync` nulo, conservando positivo, MySQL 8.4 Oracle, RBAC A/B y rollback.
+- A0 diff comprobado; A1–A4 siguen pendientes del nuevo SHA GitHub Actions, sin convertir CANCELLED/SKIPPED/IN_PROGRESS en PASS. `PLAN_MAESTRO!H520=VALIDANDO`, owner DEV03 histórico, A5 independiente por Task diferente de autor y reparadores. No sink durable ni call-site comercial, no QA/main/PROD.
+
 ## 2026-11-23 — DEV03 C03-03.M03.03: reparar ASPDEPR004/008 en GitHub-hosted .NET 10 (V25)
 - Causa real del CI fallido en commit 2260bbbf, run 45138563036/job137570641816: dotnet build Release -warnaserror rechaza el constructor heredado WebHostBuilder y TestServer(IWebHostBuilder); no son fallos de autorización JWT ni MySQL.
 - Reparación mínima de integración: HostBuilder.ConfigureWebHost(UseTestServer).StartAsync y GetTestClient; conserva mismo endpoint DEV-only, los cinco escenarios JWT/tenant y el SQL 8.4 efímero sin desactivar advertencias ni tocar autenticación. Documentación actualizada; todo el CHANGELOG anterior preservado.

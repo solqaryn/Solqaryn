@@ -171,7 +171,8 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
                 notBefore: DateTime.UtcNow.AddMinutes(-1),
                 expires: DateTime.UtcNow.AddMinutes(8),
                 signingCredentials: new SigningCredentials(Signing, SecurityAlgorithms.HmacSha256));
-            var http = new DefaultHttpContext { RequestServices = provider };
+            await using var trustedRequestScope = provider.CreateAsyncScope();
+            var http = new DefaultHttpContext { RequestServices = trustedRequestScope.ServiceProvider };
             http.User = new ClaimsPrincipal(new ClaimsIdentity(
                 [new Claim("id", actor.Id.ToString())], "synthetic-not-a-grant"));
             http.Request.Headers.Authorization =
@@ -203,7 +204,8 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
             // This tests JwtBearer cryptography; it is not hosted HTTP proof.
             async Task AssertUntrustedBearerRejectedAsync(string bearerToken)
             {
-                var attempted = new DefaultHttpContext { RequestServices = provider };
+                await using var untrustedRequestScope = provider.CreateAsyncScope();
+                var attempted = new DefaultHttpContext { RequestServices = untrustedRequestScope.ServiceProvider };
                 attempted.User = new ClaimsPrincipal(new ClaimsIdentity(
                     [new Claim("id", actor.Id.ToString())], "synthetic-not-a-grant"));
                 attempted.Request.Headers.Authorization = "Bearer " + bearerToken;
@@ -215,6 +217,8 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
                 forgedAccessor.SetupGet(x => x.HttpContext).Returns(attempted);
                 var attemptedReader = new C0303VerifiedAuditTenantReaders(
                     forgedAccessor.Object, current.Object, scope, db, config);
+                Assert.False((await attempted.AuthenticateAsync(
+                    JwtBearerDefaults.AuthenticationScheme)).Succeeded);
                 Assert.Null(await attemptedReader.ReadCurrentAsync(default));
             }
 
