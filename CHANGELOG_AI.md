@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV06 rescate C03-03.M03.03: revocación de rol administrador en auditoría MVC
+- La API real GET /auditoria ya no confía sólo en el indicador esAdministrador del JWT: exige rol administrativo ACTUAL de MySQL por actor y tenant autenticado, además del filtro Auditoria.Ver, fail-closed.
+- Pruebas regresivas xUnit y MVC TestServer con JWT firmado: rol administrativo revocado deniega 403 sin leer auditoría; el doble de rol no acredita por sí solo SQL 8.4. Falta prueba integral SQL viva y CI exact-SHA antes de LISTO, A5 independiente DEV03/DEV06 no elegibles; QA/main/PROD prohibidos.
+
 ## 2026-11-23 — DEV05 rescate C01-03.M04.05: negativo JWT A/B fail-closed sin falso bloqueo
 - Hallazgo causal GHA SHA f56f9baf job137705266987: 4 PASS/1 FAIL; la aserción previa confundía encabezado público de página con acceso a datos B después de forzar selección local B, aunque el endpoint B respondió 403/404 real.
 - Playwright adversarial exige ahora destino /login o empresa A realmente visible, prohíbe datos B y selector B persistente; no relaja JWT/RBAC, no modifica runtime, conserva pruebas de 320–1440, Tab, contraste y 100/200% text-only. CI nueva exact SHA y A5 independiente pendientes. V17 sobre fila240, I autor DEV04 preservado; no QA/main/PROD.

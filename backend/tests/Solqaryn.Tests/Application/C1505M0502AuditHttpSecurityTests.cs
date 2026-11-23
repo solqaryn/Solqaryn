@@ -56,6 +56,22 @@ public sealed class C1505M0502AuditHttpSecurityTests
         current.SetupGet(x => x.EsAdministrador).Returns(() =>
             accessor.HttpContext?.User.HasClaim("audit_admin", "true") == true);
 
+        current.SetupGet(x => x.UsuarioId).Returns(77);
+        var scopes = new Mock<IUsuarioScopeService>(MockBehavior.Strict);
+        scopes.Setup(x => x.ObtenerActualAsync(
+                It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .Returns((int requested, CancellationToken _) =>
+            {
+                var identity = accessor.HttpContext?.User;
+                var tenant = identity?.FindFirst("tenant_fixture")?.Value;
+                var sqlAdmin = identity?.FindFirst("audit_db_admin_fixture")?.Value == "true";
+                UsuarioTenantScopeActual? current =
+                    tenant == requested.ToString(System.Globalization.CultureInfo.InvariantCulture)
+                        ? new UsuarioTenantScopeActual(77, requested, 31, "CurrentRole", sqlAdmin)
+                        : null;
+                return Task.FromResult(current);
+            });
+
         var permission = new Mock<IPermisoService>(MockBehavior.Strict);
         permission.Setup(x => x.VerificarPermisoAsync(
                 It.IsAny<int>(), ModuloSistema.Auditoria, AccionPermiso.Ver))
@@ -74,6 +90,7 @@ public sealed class C1505M0502AuditHttpSecurityTests
                     services.AddSingleton<IHttpContextAccessor>(accessor);
                     services.AddScoped(_ => reader.Object);
                     services.AddScoped(_ => current.Object);
+                    services.AddScoped(_ => scopes.Object);
                     services.AddScoped(_ => permission.Object);
                     services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                         .AddJwtBearer(options => options.TokenValidationParameters =
@@ -102,7 +119,7 @@ public sealed class C1505M0502AuditHttpSecurityTests
                 })).StartAsync();
     }
 
-    private static string Token(int tenantId, bool admin)
+    private static string Token(int tenantId, bool admin, bool? currentSqlAdmin = null)
     {
         var jwt = new JwtSecurityToken(
             issuer: Issuer,
@@ -112,7 +129,8 @@ public sealed class C1505M0502AuditHttpSecurityTests
                 new Claim(JwtRegisteredClaimNames.Sub, "audit-test-actor"),
                 new Claim("tenant_fixture",
                     tenantId.ToString(System.Globalization.CultureInfo.InvariantCulture)),
-                new Claim("audit_admin", admin ? "true" : "false")
+                new Claim("audit_admin", admin ? "true" : "false"),
+                new Claim("audit_db_admin_fixture", (currentSqlAdmin ?? admin) ? "true" : "false")
             },
             notBefore: DateTime.UtcNow.AddMinutes(-1),
             expires: DateTime.UtcNow.AddMinutes(10),
@@ -149,6 +167,21 @@ public sealed class C1505M0502AuditHttpSecurityTests
         using var host = await StartAsync(reader);
         using var client = host.GetTestClient();
         using var response = await GetAsync(client, Token(21, false));
+        Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+        reader.Verify(x => x.GetFilteredAsync(It.IsAny<AuditoriaFiltroDto>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task SignedAdminClaimDemotedInCurrentRelationalRoleReturns403()
+    {
+        // The fixture separates the signed JWT administrator hint from the
+        // current relational role, making stale-token escalation observable.
+        // This fixture proves MVC denial but not real SQL persistence.
+        var reader = Reader();
+        using var host = await StartAsync(reader);
+        using var client = host.GetTestClient();
+        using var response = await GetAsync(client,
+            Token(21, admin: true, currentSqlAdmin: false));
         Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
         reader.Verify(x => x.GetFilteredAsync(It.IsAny<AuditoriaFiltroDto>()), Times.Never);
     }

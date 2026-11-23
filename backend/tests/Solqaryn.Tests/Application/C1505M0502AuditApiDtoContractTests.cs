@@ -1,6 +1,8 @@
 using System.Reflection;
 using Moq;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Solqaryn.Application.Security;
 using Microsoft.AspNetCore.Mvc;
 using Solqaryn.API.Controllers;
 using Solqaryn.API.Filters;
@@ -22,7 +24,33 @@ public sealed class C1505M0502AuditApiDtoContractTests
     {
         var user = new Mock<ICurrentUserService>(MockBehavior.Strict);
         user.SetupGet(x => x.EsAdministrador).Returns(admin);
+        user.SetupGet(x => x.UsuarioId).Returns(77);
         return user;
+    }
+
+    private static AuditoriaController NewController(
+        IAuditoriaService service, ICurrentUserService user, bool currentSqlAdmin = true)
+    {
+        var scopes = new Mock<IUsuarioScopeService>(MockBehavior.Strict);
+        scopes.Setup(s => s.ObtenerActualAsync(21, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new UsuarioTenantScopeActual(
+                77, 21, 31, "CurrentMySqlRole", currentSqlAdmin));
+        var context = new DefaultHttpContext();
+        context.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = 21;
+        return new AuditoriaController(service, user, scopes.Object)
+        {
+            ControllerContext = new ControllerContext { HttpContext = context }
+        };
+    }
+
+    [Fact]
+    public async Task StaleSignedAdminHintCannotOverrideCurrentNonAdminSqlRole()
+    {
+        var service = new Mock<IAuditoriaService>(MockBehavior.Strict);
+        var controller = NewController(service.Object, User(true).Object, currentSqlAdmin: false);
+        Assert.IsType<ForbidResult>(
+            await controller.GetFiltered(new AuditoriaFiltroDto()));
+        service.Verify(x => x.GetFilteredAsync(It.IsAny<AuditoriaFiltroDto>()), Times.Never);
     }
 
     private static Mock<IAuditoriaService> Reader(PagedResult<RegistroAuditoriaDto> page)
@@ -52,7 +80,7 @@ public sealed class C1505M0502AuditApiDtoContractTests
     public async Task NonAdministratorGetsForbidWithoutReadingSensitiveAudit()
     {
         var service = new Mock<IAuditoriaService>(MockBehavior.Strict);
-        var controller = new AuditoriaController(service.Object, User(false).Object);
+        var controller = NewController(service.Object, User(false).Object);
         var result = await controller.GetFiltered(new AuditoriaFiltroDto());
         Assert.IsType<ForbidResult>(result);
         service.Verify(x => x.GetFilteredAsync(It.IsAny<AuditoriaFiltroDto>()), Times.Never);
@@ -62,7 +90,7 @@ public sealed class C1505M0502AuditApiDtoContractTests
     public async Task MaliciousQueryCannotCauseAuditReadForNonAdministrator()
     {
         var service = new Mock<IAuditoriaService>(MockBehavior.Strict);
-        var controller = new AuditoriaController(service.Object, User(false).Object);
+        var controller = NewController(service.Object, User(false).Object);
         var result = await controller.GetFiltered(new AuditoriaFiltroDto
         {
             Texto = "tenant-B;secret=private",
@@ -85,7 +113,7 @@ public sealed class C1505M0502AuditApiDtoContractTests
             Page = 2, PageSize = 1, TotalCount = 3
         };
         var service = Reader(page);
-        var controller = new AuditoriaController(service.Object, User(true).Object);
+        var controller = NewController(service.Object, User(true).Object);
         var ok = Assert.IsType<OkObjectResult>(
             await controller.GetFiltered(new AuditoriaFiltroDto { Page = 2, PageSize = 1 }));
         var result = Assert.IsType<ApiResponse<PagedResult<RegistroAuditoriaDto>>>(ok.Value);
@@ -103,7 +131,7 @@ public sealed class C1505M0502AuditApiDtoContractTests
         {
             Page = 1, PageSize = 50, TotalCount = 0
         };
-        var controller = new AuditoriaController(Reader(page).Object, User(true).Object);
+        var controller = NewController(Reader(page).Object, User(true).Object);
         var ok = Assert.IsType<OkObjectResult>(
             await controller.GetFiltered(new AuditoriaFiltroDto()));
         var response = Assert.IsType<ApiResponse<PagedResult<RegistroAuditoriaDto>>>(ok.Value);
@@ -122,7 +150,7 @@ public sealed class C1505M0502AuditApiDtoContractTests
             Page = 3, PageSize = 7, Modulo = "Inventario",
             Resultado = "Error", Texto = "corr-77", UsuarioId = 12
         };
-        var controller = new AuditoriaController(service.Object, User(true).Object);
+        var controller = NewController(service.Object, User(true).Object);
         Assert.IsType<OkObjectResult>(await controller.GetFiltered(filter));
         service.Verify(x => x.GetFilteredAsync(
             It.Is<AuditoriaFiltroDto>(v => ReferenceEquals(v, filter)
@@ -151,7 +179,7 @@ public sealed class C1505M0502AuditApiDtoContractTests
         };
         var filter = new AuditoriaFiltroDto { Page = int.MaxValue, PageSize = 1 };
         var service = Reader(page);
-        var controller = new AuditoriaController(service.Object, User(true).Object);
+        var controller = NewController(service.Object, User(true).Object);
         Assert.IsType<OkObjectResult>(await controller.GetFiltered(filter));
         service.Verify(x => x.GetFilteredAsync(
             It.Is<AuditoriaFiltroDto>(f => f.Page == int.MaxValue && f.PageSize == 1)),
@@ -164,7 +192,7 @@ public sealed class C1505M0502AuditApiDtoContractTests
         var service = new Mock<IAuditoriaService>(MockBehavior.Strict);
         service.Setup(x => x.GetFilteredAsync(It.IsAny<AuditoriaFiltroDto>()))
             .ThrowsAsync(new InvalidOperationException("INTERNAL_TEST_SENTINEL"));
-        var controller = new AuditoriaController(service.Object, User(true).Object);
+        var controller = NewController(service.Object, User(true).Object);
         await Assert.ThrowsAsync<InvalidOperationException>(
             () => controller.GetFiltered(new AuditoriaFiltroDto()));
         service.Verify(x => x.GetFilteredAsync(It.IsAny<AuditoriaFiltroDto>()), Times.Once);
