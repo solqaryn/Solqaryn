@@ -5,6 +5,8 @@ on:
     paths:
       - 'backend/tests/Solqaryn.Tests/Integration/C0803M0303RealMysql84HttpIntegrationTests.cs'
       - 'backend/src/API/Security/C0803GymVerifiedActorSource.cs'
+      - 'backend/src/API/Security/C0803GymReadOnlyProbeEndpoint.cs'
+      - 'backend/src/API/Program.cs'
       - '.github/workflows/v25-c08-03-m03-03-jwt-mysql84-http.yml'
   workflow_dispatch:
 permissions:

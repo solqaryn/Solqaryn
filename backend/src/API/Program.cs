@@ -437,6 +437,13 @@ app.UseMiddleware<UnscopedCommercialTenantGuardMiddleware>();
 app.MapGet("/health", () => Results.Ok(new { status = "ok", service = "Solqaryn API" })).ExcludeFromDescription();
 app.MapGet("/health/ready", async (AppDbContext db, CancellationToken cancellationToken) => { var databaseReady = false; try { databaseReady = await db.Database.CanConnectAsync(cancellationToken); } catch { databaseReady = false; } return databaseReady ? Results.Ok(new { status = "ready", database = "connected" }) : Results.Json(new { status = "not_ready", database = "unavailable" }, statusCode: StatusCodes.Status503ServiceUnavailable); }).ExcludeFromDescription();
 app.MapControllers();
+// C08-03.M03.03: the SAME endpoint mapped by the real MySQL/JWT CI host.
+// Never registered outside Development, and OFF unless explicitly configured.
+if (app.Environment.IsDevelopment() &&
+    app.Configuration.GetValue<bool>("GymAuthorization:EnableReadOnlyProbe"))
+{
+    C0803GymReadOnlyProbeEndpoint.Map(app);
+}
 // DEV-only, opt-in and read-only; no business mutation and no payment provider.
 // This probe does not bypass the existing multiempresa quarantine middleware.
 if (app.Environment.IsDevelopment() &&

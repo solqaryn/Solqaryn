@@ -66,12 +66,12 @@ public sealed class C0803M0303RealMysql84HttpIntegrationTests
                 forged ? ForgedKey : Key, SecurityAlgorithms.HmacSha256)));
     }
 
-    private static async Task<IHost> StartAsync(string connection)
+    private static async Task<IHost> StartAsync(string connection, bool enableProbe = true)
     {
         var settings = new ConfigurationBuilder().AddInMemoryCollection(
             new Dictionary<string, string?>
             {
-                ["GymAuthorization:EnableReadOnlyProbe"] = "true"
+                ["GymAuthorization:EnableReadOnlyProbe"] = enableProbe ? "true" : "false"
             }).Build();
         return await new HostBuilder().ConfigureWebHost(web => web.UseTestServer()
             .ConfigureServices(services =>
@@ -105,24 +105,11 @@ public sealed class C0803M0303RealMysql84HttpIntegrationTests
                 app.UseRouting();
                 app.UseAuthentication();
                 app.UseAuthorization();
-                app.UseEndpoints(endpoints => endpoints.MapGet(
-                    "/__c0803_m0303_mysql84/{tenantId:int}/{branchId:int}",
-                    async http =>
-                    {
-                        var result = await http.RequestServices
-                            .GetRequiredService<IC0803VerifiedGymActorSource>()
-                            .ReadCurrentAsync(http.RequestAborted);
-                        http.Response.StatusCode = result is null
-                            ? StatusCodes.Status403Forbidden : StatusCodes.Status200OK;
-                        if (result is not null)
-                        {
-                            Assert.True(result.SignedJwtValidated);
-                            Assert.True(result.CurrentMembershipAndRbacFromDatabase);
-                            Assert.False(result.Actor!.GymPermissionGrantedByServer);
-                            Assert.False(result.Actor.SaaSMembershipActive);
-                            await http.Response.WriteAsync("READONLY_NO_GYM_GRANT");
-                        }
-                    }).RequireAuthorization());
+                app.UseEndpoints(endpoints =>
+                {
+                    if (enableProbe)
+                        C0803GymReadOnlyProbeEndpoint.Map(endpoints);
+                });
             })).StartAsync();
     }
 
@@ -130,13 +117,22 @@ public sealed class C0803M0303RealMysql84HttpIntegrationTests
         HttpClient client, int tenant, int branch, string? jwt)
     {
         using var request = new HttpRequestMessage(HttpMethod.Get,
-            $"/__c0803_m0303_mysql84/{tenant}/{branch}");
+            $"/__dev/gym-auth-readonly/{tenant}/{branch}");
         if (jwt is not null)
             request.Headers.Authorization = new AuthenticationHeaderValue(
                 "Bearer", jwt);
         request.Headers.Add("X-Empresa-Id", "999999");
         request.Headers.Add("X-Rol-Id", "999999");
         return await client.SendAsync(request);
+    }
+
+    [Fact]
+    public async Task DevProbeIsNotMappedWithoutExplicitOptIn()
+    {
+        using var host = await StartAsync(BaseConnection(), enableProbe: false);
+        using var client = host.GetTestClient();
+        using var response = await ReadAsync(client, 1, 1, Token(1));
+        Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
     }
 
     [Fact]
@@ -249,6 +245,16 @@ public sealed class C0803M0303RealMysql84HttpIntegrationTests
                 Assert.Equal("READONLY_NO_GYM_GRANT",
                     await positive.Content.ReadAsStringAsync());
             }
+
+            // A signed token must not preserve a role disabled in current MySQL.
+            var liveRole = await db.Roles.SingleAsync(r => r.Id == roleA.Id);
+            liveRole.Activo = false;
+            await db.SaveChangesAsync();
+            using (var disabledRole = await ReadAsync(
+                client, tenantA.Id, branchA.Id, jwt))
+                Assert.Equal(HttpStatusCode.Forbidden, disabledRole.StatusCode);
+            liveRole.Activo = true;
+            await db.SaveChangesAsync();
 
             var committedGrant = await db.RolPermisos
                 .SingleAsync(g => g.RolId == roleA.Id &&

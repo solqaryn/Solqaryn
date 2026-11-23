@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV04 C08-03.M03.03: ruta DEV real de lectura JWT/RBAC/MySQL (V25)
+- El endpoint de consulta de seguridad opt-in usa exactamente la misma implementación en Program y TestServer de GitHub; configuración OFF por defecto, solo Development, JWT firmado, tenant/rol actual, revocación y denegación 401/403; no habilita gimnasio, pagos, puertas ni hardware.
+- Se añaden regresiones adversariales de rol desactivado y ruta inexistente sin opt-in; Oracle EF/MySQL 8.4 efímero, falso JWT, tenant A/B y rollback permanecen exigibles. GitHub-hosted exact-SHA en curso al publicar; no certificar CI, LISTO ni A5 antes del readback.
+- V17 exclusivo, Scope Lock STRICT, CHANGELOG histórico completo y propietario DEV04 preservados. Rollback por git revert normal, sin QA/main/PROD.
+
 ## 2026-11-23 — DEV02 C15-04.M05.04 A119: teclado accesible tras RBAC 403
 - A118 source SHA a437f6bf: 160/160 pruebas GitHub-hosted Chromium/JWT real/MySQL 8.4 completadas SUCCESS, cero FAIL/SKIP; Scope Lock/V5 y checks pertinentes SUCCESS.
 - A119 añade A0.93 de Tab real tras denegación RBAC HTTP 403 de tenant B en 320/390/768/1280/1440, foco y escritura accesibles sin .focus(), capturas comparables en la misma corrida, no data writes ni overflow global. Nuevo SHA exige 161/161 PASS, NO certificar todavía.
