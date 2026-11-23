@@ -1145,6 +1145,29 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
 
             Assert.Equal(HttpStatusCode.ServiceUnavailable, await ReadStatusAsync(client, a.Id, jwtB));
 
+            // C0701_M0606_TAX_QUARANTINE_TEST: risk R04 remains unresolved.
+            // The legacy tax catalog has no verified tenant ownership contract.
+            // With two real companies and valid signed JWT A/B, its private HTTP
+            // routes must remain quarantined. This is NOT a positive tax test.
+            foreach (var (signedJwt, ownTenantId) in new[]
+            {
+                (jwtA, a.Id), (jwtB, b.Id)
+            })
+            {
+                foreach (var taxRoute in new[] { "/impuestos", "/impuestos/1" })
+                {
+                    using var taxRequest = new HttpRequestMessage(HttpMethod.Get, taxRoute);
+                    taxRequest.Headers.Authorization =
+                        new AuthenticationHeaderValue("Bearer", signedJwt);
+                    taxRequest.Headers.TryAddWithoutValidation(
+                        "X-Empresa-Id", ownTenantId.ToString());
+                    using var quarantined = await client.SendAsync(taxRequest);
+                    Assert.Equal(HttpStatusCode.ServiceUnavailable, quarantined.StatusCode);
+                    Assert.Contains("TENANT_DATA_ISOLATION_REQUIRED",
+                        await quarantined.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+                }
+            }
+
             var membershipA = await db.UsuarioEmpresas
                 .SingleAsync(x => x.UsuarioId == userA.Id && x.EmpresaId == a.Id);
             membershipA.Desactivar();
