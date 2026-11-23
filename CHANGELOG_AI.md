@@ -1,3 +1,9 @@
+## 2026-11-22 — DEV03 C01-03.M04.01: capturas persistentes de CI GitHub-hosted
+- Defecto nuevo confirmado: el artefacto 14776156811, run 45077510405, contenía logs/XML, pero ningún PNG de la primera suite A/B; la segunda invocación Playwright reinicializa test-results antes del empaquetado.
+- Corrección R2 del workflow, sin tocar runtime ni seguridad: preservar 20 capturas Chromium auténticas de dos tenants × cinco anchos × dos modalidades (100% y CDP pinch 200%), comprobar existencia, tamaño, MIME image/png y SHA256SUMS antes de segunda suite y subirlas en carpeta independiente.
+- Un solo PNG ausente o inválido aborta la etapa; el test real GitHub-hosted, Scope Lock y V5 requieren SUCCESS del SHA nuevo para cualquier A4. El zoom CDP pinch NO es zoom de navegador de escritorio 200%; las capturas históricas 'antes' siguen pendientes.
+- Mantener PLAN C01-03.M04.01 en VALIDANDO, owner histórico DEV03 y A5 independiente; no declarar LISTO, no modificar fórmulas DAG ni BITACORA histórica. Rollback normal por revert, dev solamente.
+
 ## 2026-11-22 — DEV02 C15-04.M05.04 A115: branding JWT y denegación tenant B
 - A114 SHA 4c083917 acreditó 155/155 Chromium PASS con MySQL 8.4.13/JWT real y checks causales SUCCESS; retries SKIPPED no cuentan como PASS.
 - A115 agrega dos casos Playwright reales A0.88/A0.89 de branding/capacidades, reflow CSS x2 a cinco anchos y RBAC 403 tenant B sin fuga ni escritura; 157 tests esperados, CI nueva pendiente.

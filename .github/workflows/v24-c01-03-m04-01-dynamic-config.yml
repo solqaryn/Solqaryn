@@ -188,6 +188,36 @@ jobs:
       - name: Chromium tenant A/B JWT real, estados y denegacion de editar
         working-directory: frontend
         run: npx playwright test e2e/c01-03-m04-01-dynamic-config.spec.ts e2e/c01-03-m04-02-states.spec.ts e2e/c01-03-m04-04-readonly.spec.ts --config=playwright.c15-04-m05-04-real.config.ts --workers=1 --retries=0
+      # Playwright's second invocation cleans test-results; preserve the real
+      # A/B screenshots before that invocation. Pinch is not desktop zoom.
+      - name: Preservar 20 PNG reales A/B antes de reiniciar Playwright
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p v24-c0103-m0401-screenshots
+          for tenant in c1504_admin_a c1504_admin_b; do
+            for width in 320 390 768 1280 1440; do
+              for zoom in zoom100 zoom200-pinch; do
+                src="test-results/c0103-m0401-${tenant}-${width}-${zoom}.png"
+                if [ ! -s "$src" ]; then
+                  echo "::error::Missing or empty real Chromium PNG: $src"
+                  exit 1
+                fi
+                type="$(file --brief --mime-type "$src")"
+                if [ "$type" != image/png ]; then
+                  echo "::error::Not a PNG screenshot: $src ($type)"
+                  exit 1
+                fi
+                cp -- "$src" v24-c0103-m0401-screenshots/
+              done
+            done
+          done
+          count="$(find v24-c0103-m0401-screenshots -maxdepth 1 -type f -name '*.png' | wc -l)"
+          test "$count" -eq 20
+          (cd v24-c0103-m0401-screenshots && sha256sum -- *.png > SHA256SUMS.txt)
+          echo "V24_C0103_M0401_20_REAL_CHROMIUM_PNG_PRESERVED"
+
       # This database/container only exists on this GitHub-hosted runner. The
       # second phase tests the ACTUAL pre-existing single-tenant edit grant;
       # no runtime feature flag or production RBAC rule is loosened.
@@ -224,6 +254,7 @@ jobs:
             frontend/c1504-angular.log
             backend/c1504-api.log
             frontend/test-results/
+            frontend/v24-c0103-m0401-screenshots/
             frontend/playwright-report/
           if-no-files-found: warn
           retention-days: 14
