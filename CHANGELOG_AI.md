@@ -1,3 +1,8 @@
+## 2026-11-23 — V30 C03-01.M03.03: rol empresarial exige membresía vigente antes de JWT
+- Reparación R2 en LoginAsync y RenovarAsync productivos: revalidar la membresía SQL del usuario y empresa dueña del rol antes de emitir token, con rechazo cerrado de membresías ausentes, revocadas y discordantes.
+- Pruebas xUnit nuevas: login BCrypt, renovación, cruce de empresa/actor/rol y revocación; CI GitHub-hosted del SHA nuevo pendiente, sin declarar PASS anticipado.
+- LIMITACIÓN: pruebas de servicio con repositorio simulado no acreditan JWT/HTTP firmado, MySQL8.4 físico, selección tenant/sucursal ni Angular. C03-01.M03.03 sigue VALIDANDO; A5 independiente posterior, sin QA/main/PROD.
+
 ## 2026-11-23 — V30 R2 C11-03.M06.06: corregir contador estricto del gate E2E despues del fix de reintentos
 - GitHub-hosted run45248478338 SHA ba7f87d8: Oracle EF MySQL 8.4 2/2 PASS y contrato adversarial 7/7 PASS, 0 FAIL/SKIP. Job FAIL exclusivamente por comparador historico de exactamente 6/6; contador actualizado a exactamente 7/7, sin omitir ninguna prueba.
 - Solo workflow dirigido, documentacion y CHANGELOG; commit parent ba7f87d8, workers/test funcionales sin cambio. Validacion obligatoria con run exact-SHA y Scope Lock/V5, sin CI manual duplicada. C11-03.M06.06 queda VALIDANDO por provider/HTTP/JWT/RBAC/consumidor real A0-A4, A5 distinta Task; no QA/main/PROD.

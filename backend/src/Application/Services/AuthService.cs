@@ -31,6 +31,8 @@ public class AuthService : IAuthService
 
         ValidarEstadoCuenta(usuario);
         ValidarRolRelacional(usuario);
+        if (!await HasActiveMembershipForOwnedRoleAsync(usuario))
+            return null;
         return CrearRespuesta(usuario);
     }
 
@@ -41,7 +43,31 @@ public class AuthService : IAuthService
 
         ValidarEstadoCuenta(usuario);
         ValidarRolRelacional(usuario);
+        if (!await HasActiveMembershipForOwnedRoleAsync(usuario))
+            return null;
         return CrearRespuesta(usuario);
+    }
+
+
+    // Tenant-owned roles must retain a live, matching SQL membership before
+    // login or refresh can issue a JWT. No client-selected tenant is trusted.
+    private async Task<bool> HasActiveMembershipForOwnedRoleAsync(Usuario usuario)
+    {
+        var role = usuario.RolEntidad;
+        if (role.EmpresaId is null)
+            return true;
+
+        if (role.Ambito != Solqaryn.Domain.Enums.AmbitoAutorizacion.Empresa ||
+            role.EmpresaId <= 0 || role.Id <= 0 || usuario.RolId != role.Id ||
+            usuario.Id <= 0)
+            return false;
+
+        var membership = await _usuarioRepository.GetEmpresaAsync(
+            usuario.Id, role.EmpresaId.Value);
+        return membership is { Activa: true } &&
+            membership.UsuarioId == usuario.Id &&
+            membership.EmpresaId == role.EmpresaId.Value &&
+            membership.RolId == role.Id;
     }
 
     private LoginResponseDto CrearRespuesta(Usuario usuario)

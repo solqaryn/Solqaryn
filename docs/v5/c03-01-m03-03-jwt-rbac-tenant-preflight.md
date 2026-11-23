@@ -23,3 +23,12 @@ A0: diff acotado AuthController + suite xUnit `C0301M0303AuthRenewCanonicalIdent
 
 ## V27 DEV04 — signed actor canonicalization, tenant proof (2026-11-23)
 The opt-in DEV-only `C0301LoginVerifiedActorSource` now rejects a cryptographically valid JWT whose one actor id has noncanonical leading zeroes (e.g. 091 or 00091) even if it parses to the same current SQL actor. It also rejects zero/negative parsed identities, preserving the product `/auth/renovar` canonical identity rule. Signed negative xUnit cases use the actual JwtBearer validator; the existing real Oracle EF/MySQL 8.4 signed JWT HTTP tests remain mandatory in GitHub-hosted CI. This is an R2 runtime fail-closed check on the Development opt-in probe only, not a product login/refresh/tenant-branch switch implementation and not a global M03 certification. No UI, schema, migration, authentication grant or production route is added. Rollback via normal serial git revert. Keep PLAN H448 VALIDANDO, I DEV04, A5 independent; check exact-SHA ScopeLock, backend/security, V5 and directed MySQL CI before any certification.
+
+
+## V30 DEV04 — membresía vigente antes de emitir JWT productivo de rol empresarial
+
+Reparación causal R2: el servicio productivo AuthService.LoginAsync y RenovarAsync consulta IUsuarioRepository.GetEmpresaAsync cuando el rol relacional tiene propietario EmpresaId. Rechaza sin invocar GenerarToken si falta la membresía, está revocada, el actor/empresa/rol no coinciden o la identidad del rol está desalineada. Se preserva compatibilidad con roles empresariales de sistema sin propietario, sin inferir empresa/sucursal de headers ni conceder autoridad adicional.
+
+Se añadieron pruebas xUnit del servicio con BCrypt real para login, renovación positiva, revocación y adversariales de ausencia, tenant A/B, usuario cruzado, rol cruzado y rol inconsistente. El repositorio es simulado en esas pruebas; NO se certifica por ello JWT criptográfico, HTTP, integración MySQL física ni Chromium. El check Backend Release xUnit y los gates de seguridad/Scope Lock/V5 requieren SUCCESS exact SHA.
+
+LÍMITE PENDIENTE: product JWT aún no representa empresa y sucursal seleccionadas ni liga una sesión a la membresía en todos los flujos, y siguen pendientes la selección/reemisión con SQL y pruebas reales de integración JWT/HTTP/MySQL8.4 y Angular. Se conserva VALIDANDO, owner histórico DEV04, y A5 independiente futuro. Rollback git revert serializado sobre dev, sin QA/main/PROD.
