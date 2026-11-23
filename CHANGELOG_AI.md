@@ -9948,3 +9948,8 @@
 - Servicio C0303SecurityAuditApplicationService con fuentes server-side JWT/RBAC y resource ownership, reglas Domain, correlación mínima y negativos A/B, revocación, plataforma separada; no otorga acceso ni persiste auditoría, Application sólo prepara candidato seguro.
 - xUnit adversarial de autoridad falsa, tenant cruzado, transacción crítica, excepciones y cancelación entre awaits; CI GitHub-hosted exact SHA requerido antes de LISTO. Sin DI, API, esquema MySQL, migración ni cambios de seguridad global.
 - V17/CAS, Scope Lock STRICT, exclusivamente dev; integración JWT/HTTP/MySQL 8.4 durable y revisión A5 externa pendientes por fases sucesoras. Git revert como rollback; sin QA/main/PROD.
+
+## 2026-11-22 — C08-03.M03.02: elegibilidad Application de gimnasio fail-closed (R2)
+- Servicio Application nuevo, con lector autenticado de JWT/RBAC/tenant y consulta futura de membresía/ERP filtrada por tenant, reglas Domain de vigencia UTC, versión, revocación, sucursal, plan, pagos y bloqueo A/B. Solo candidato de revalidación; no puertas, pagos ni autorizaciones reales.
+- xUnit adversarial para entradas no confiables, expiración [inicio,fin), versionado, aislamiento, roles revocados, errores de proveedores y cancelación; sin adaptador DI/API/EF/MySQL en esta microtarea, las pruebas no son certificación de integración.
+- Publicación dev bajo V17 FF/CAS, Scope Lock STRICT y CI exact SHA; A5 revisión independiente, integración real en etapas siguientes; rollback git revert sin QA/main/PROD.
