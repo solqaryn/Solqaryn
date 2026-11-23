@@ -1168,6 +1168,50 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 }
             }
 
+
+            // V26 R2: Impuestos remains an unscoped legacy catalogue.
+            // Exercise each real mutator verb through production JWT routing
+            // for both live tenant memberships in isolated MySQL 8.4.
+            // Do not grant a fiscal pilot or assume an Impuesto.EmpresaId.
+            int fiscalRowsBefore;
+            await using (var fiscalBefore = new AppDbContext(options))
+                fiscalRowsBefore = await fiscalBefore.Set<Impuesto>()
+                    .IgnoreQueryFilters().AsNoTracking().CountAsync();
+
+            foreach (var (signedJwt, tenantId) in new[]
+            {
+                (jwtA, a.Id), (jwtB, b.Id)
+            })
+            {
+                foreach (var (method, path) in new[]
+                {
+                    (HttpMethod.Post, "/impuestos"),
+                    (HttpMethod.Put, "/impuestos/1"),
+                    (HttpMethod.Patch, "/impuestos/1/desactivar"),
+                    (HttpMethod.Delete, "/impuestos/1"),
+                    (HttpMethod.Delete, "/impuestos/1/permanente"),
+                    (HttpMethod.Post, "/impuestos/1/duplicar")
+                })
+                {
+                    using var request = new HttpRequestMessage(method, path);
+                    request.Headers.Authorization =
+                        new AuthenticationHeaderValue("Bearer", signedJwt);
+                    request.Headers.TryAddWithoutValidation(
+                        "X-Empresa-Id", tenantId.ToString());
+                    if (method == HttpMethod.Post || method == HttpMethod.Put)
+                        request.Content = new StringContent(
+                            "{}", Encoding.UTF8, "application/json");
+                    using var response = await client.SendAsync(request);
+                    Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+                    Assert.Contains("TENANT_DATA_ISOLATION_REQUIRED",
+                        await response.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+                }
+            }
+            await using (var fiscalAfter = new AppDbContext(options))
+                Assert.Equal(fiscalRowsBefore,
+                    await fiscalAfter.Set<Impuesto>().IgnoreQueryFilters()
+                        .AsNoTracking().CountAsync());
+
             var membershipA = await db.UsuarioEmpresas
                 .SingleAsync(x => x.UsuarioId == userA.Id && x.EmpresaId == a.Id);
             membershipA.Desactivar();
