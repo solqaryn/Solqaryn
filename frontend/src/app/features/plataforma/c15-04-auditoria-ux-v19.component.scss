@@ -26,3 +26,10 @@ p, li { line-height: 1.55; overflow-wrap: anywhere; }
 .ux-open:hover { background: var(--color-bg, #f3f7fb); text-decoration: underline; text-underline-offset: .18em; }
 .ux-open:focus-visible { outline: 3px solid var(--color-primary, #0369a1); outline-offset: 3px; }
 .ux-unavailable { font-weight: 600; color: var(--color-text-muted, #475569); }
+
+/* Navegador de superficies: se ajusta a pantallas estrechas y conserva foco visible. */
+.ux-filters { display: flex; flex-wrap: wrap; gap: .65rem; margin: 1.1rem 0 .5rem; min-width: 0; }
+.ux-filter { min-height: 44px; max-width: 100%; padding: .5rem .85rem; border: 1px solid var(--color-primary-dark, #075985); border-radius: .6rem; background: var(--color-surface, #fff); color: var(--color-primary-dark, #075985); font: inherit; font-weight: 700; cursor: pointer; white-space: normal; overflow-wrap: anywhere; }
+.ux-filter[aria-pressed="true"] { background: var(--color-primary-dark, #075985); color: #fff; }
+.ux-filter:focus-visible { outline: 3px solid var(--color-primary, #0369a1); outline-offset: 3px; }
+.ux-count { margin: 0 0 1rem; font-size: .925rem; color: var(--color-text, #111827); }

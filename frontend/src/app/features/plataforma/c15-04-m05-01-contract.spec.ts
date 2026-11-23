@@ -60,7 +60,10 @@ describe('C15-04.M05.01 — contrato unitario de auditoría UX privada', () => {
     const titleId = main?.getAttribute('aria-labelledby');
     expect(titleId).toBe('ux-audit-title');
     expect(root.querySelector('#ux-audit-title')?.textContent).toContain('Auditoría UX');
-    expect(root.querySelectorAll('form, input, select, textarea, button')).toHaveLength(0);
+    expect(root.querySelectorAll('form, input, select, textarea')).toHaveLength(0);
+    const filtros = [...root.querySelectorAll<HTMLButtonElement>('button.ux-filter')];
+    expect(filtros).toHaveLength(4);
+    expect(filtros.every(filtro => filtro.type === 'button')).toBe(true);
     const volver = root.querySelector<HTMLAnchorElement>('a.ux-back');
     expect(volver?.getAttribute('href')).toBe('/plataforma');
     expect(volver?.getAttribute('aria-label')).toContain('Volver');
@@ -86,6 +89,33 @@ describe('C15-04.M05.01 — contrato unitario de auditoría UX privada', () => {
       expect(routes.find(r => r.path === path)?.canActivate).toEqual([plataformaGuard]);
     }
     expect(routes.find(r => r.path === 'dashboard')?.canActivate?.length).toBe(2);
+  });
+
+  it('filtra por acceso en Angular sin alterar guards, rutas ni estados pendientes', async () => {
+    const { fixture, root } = await montar();
+    const botones = [...root.querySelectorAll<HTMLButtonElement>('button.ux-filter')];
+    expect(botones.map(b => b.textContent?.trim())).toEqual(['Todas', 'Públicas', 'Protegidas', 'Sin ruta publicada']);
+    const visibles = () => [...root.querySelectorAll<HTMLElement>('[data-testid="ux-surface"] h3')].map(h => h.textContent?.trim());
+    const seleccionar = (indice: number) => {
+      botones[indice].click();
+      fixture.detectChanges();
+      expect(botones[indice].getAttribute('aria-pressed')).toBe('true');
+      expect(botones.filter(b => b.getAttribute('aria-pressed') === 'true')).toHaveLength(1);
+    };
+    expect(visibles()).toEqual(['Landing', 'Portal', 'ERP', 'Builder', 'Consola global']);
+    seleccionar(1);
+    expect(visibles()).toEqual(['Landing']);
+    seleccionar(2);
+    expect(visibles()).toEqual(['Portal', 'ERP', 'Consola global']);
+    seleccionar(3);
+    expect(visibles()).toEqual(['Builder']);
+    expect(root.querySelectorAll('a.ux-open')).toHaveLength(0);
+    seleccionar(0);
+    expect(visibles()).toHaveLength(5);
+    expect(root.querySelectorAll('a.ux-open')).toHaveLength(4);
+    expect(root.querySelector('.ux-count')?.getAttribute('aria-live')).toBe('polite');
+    expect(root.textContent).toContain('El filtro no cambia los estados de verificación');
+    expect(root.querySelectorAll('[data-state="NO_MEDIDO"]')).toHaveLength(5);
   });
 
   it('declara los cuatro límites móviles/escritorio sin inventar mediciones', async () => {

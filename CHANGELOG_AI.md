@@ -1,3 +1,9 @@
+## 2026-11-23 — DEV02 V30 C15-04.M05.04: filtro funcional de navegación UX
+- Cambio Angular 22: la auditoría privada filtra las cinco superficies por pública, protegida o sin ruta, mediante botones nativos, estado aria-pressed, recuento aria-live y foco visible, con reflow CSS para ancho 320 px. Sin permisos nuevos, API, mutaciones ni rutas inventadas.
+- Regresión dirigida Vitest: cinco por defecto, una pública, tres protegidas, una sin ruta, restablecimiento y guardas sin cambios; estados NO_MEDIDO preservados. CI del SHA nuevo pendiente hasta resultado GitHub-hosted.
+- Riesgo R1: UI administrativa con guardas R2 existentes; SKREF-03 Impeccable y SKREF-10 Angular consultadas en origen/pin, 04/05/11/12 NO_APLICA al diff sin motion, landing, amenazas ni backend.
+- LIMITACIÓN: no certifica 160 rutas, WCAG/CWV global, zoom nativo 200 %, capturas ANTES/después ni A0–A5 totales. Conservar EN_PROGRESO DEV02, V17 2000002297; rollback mediante git revert sin force.
+
 ## 2026-11-23 — DEV01 V30 C07-01.M06.06: edición fiscal y recibo de auditoría en una transacción
 - Cambio funcional de `ImpuestoService.UpdateAsync`: actualización de impuestos y relaciones con `RegistrarEstrictoAsync` en la misma unidad transaccional Oracle EF/MySQL; el código fiscal continúa inmutable y los documentos históricos no se recalculan.
 - Pruebas xUnit negativas del contrato de auditoría y rechazo de renombre fiscal; la excepción se propaga antes del commit, no se afirma rollback físico solo por mocks.

@@ -9,8 +9,16 @@
   <section aria-labelledby="ux-surfaces-heading">
     <h2 id="ux-surfaces-heading">Superficies por auditar</h2>
     <p>Abre cada ruta publicada para revisar su experiencia. Los permisos originales siguen vigentes; abrir una ruta no certifica sus pruebas.</p>
+    <div class="ux-filters" role="group" aria-label="Filtrar superficies de la auditoría por acceso">
+      @for (filtro of filtros; track filtro.id) {
+        <button type="button" class="ux-filter"
+          [attr.aria-pressed]="filtroActivo() === filtro.id"
+          (click)="seleccionarFiltro(filtro.id)">{{ filtro.texto }}</button>
+      }
+    </div>
+    <p class="ux-count" aria-live="polite" aria-atomic="true">Mostrando {{ superficiesVisibles().length }} de {{ superficies.length }} superficies. El filtro no cambia los estados de verificación.</p>
     <div class="ux-grid">
-      @for (superficie of superficies; track superficie.id) {
+      @for (superficie of superficiesVisibles(); track superficie.id) {
         <article class="ux-surface" data-testid="ux-surface" [attr.data-state]="'NO_MEDIDO'">
           <h3>{{ superficie.titulo }}</h3>
           <p>{{ superficie.objetivo }}</p>
