@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV06 C03-03.M03.03: SQL real y democión de rol en controlador MVC (R2)
+- Añade al xUnit físico de MySQL 8.4 una prueba del `AuditoriaController.GetFiltered` productivo y `UsuarioScopeService` EF reales: 200/403/200 ante degradación/restauración SQL del rol administrativo con pista JWT obsoleta.
+- El rechazo no invoca el servicio de salida. CI GitHub-hosted exact-SHA pendiente; la llamada directa al action no certifica el filtro MVC HTTP integral, A0-A4 globales, LISTO/A5, QA/main/PROD.
+
 ## 2026-11-23 — DEV04 C03-01.M03.03: rechazar identidad ambigua al renovar JWT (R2)
 - Cambio runtime productivo acotado: auth/renovar exige un unico claim id positivo canonico y principal autenticado; rechaza duplicados/conflictos antes de llamar al servicio. No confia en cabeceras tenant ni concede acceso A/B.
 - Suite xUnit adversarial y filtro de workflow .NET10/JWT HTTP/MySQL8.4 efimero ampliado. Las pruebas de controlador no son una firma JWT. CI exact-SHA y A0-A4 pendientes hasta resultado real; A5 por otra Task Javier.

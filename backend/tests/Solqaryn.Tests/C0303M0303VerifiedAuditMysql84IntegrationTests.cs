@@ -1,3 +1,7 @@
+using Solqaryn.Application.DTOs;
+using Solqaryn.Application.Common;
+using Solqaryn.API.Controllers;
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Hosting;
@@ -474,6 +478,54 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
             }
             db.ChangeTracker.Clear();
             Assert.NotNull(await reader.ReadCurrentAsync(default));
+
+            // V26: production MVC read must re-read the CURRENT admin role
+            // from Oracle EF/MySQL 8.4. A stale JWT/admin hint is not a grant.
+            // Direct action call; full HTTP MVC filter is a separate gate.
+            current.SetupGet(x => x.EsAdministrador).Returns(true);
+            var auditOutput = new Mock<IAuditoriaService>(MockBehavior.Strict);
+            auditOutput.Setup(x => x.GetFilteredAsync(
+                    It.IsAny<AuditoriaFiltroDto>()))
+                .ReturnsAsync(new PagedResult<RegistroAuditoriaDto>
+                {
+                    Page = 1, PageSize = 10, TotalCount = 0
+                });
+            var productionAudit = new AuditoriaController(
+                auditOutput.Object, current.Object, scope)
+            {
+                ControllerContext = new ControllerContext
+                {
+                    HttpContext = http
+                }
+            };
+            var productionFilter = new AuditoriaFiltroDto
+            {
+                Page = 1, PageSize = 10
+            };
+            Assert.IsType<OkObjectResult>(
+                await productionAudit.GetFiltered(productionFilter));
+            auditOutput.Verify(x => x.GetFilteredAsync(
+                It.IsAny<AuditoriaFiltroDto>()), Times.Once);
+
+            var downgraded = await db.Roles.IgnoreQueryFilters()
+                .SingleAsync(r => r.Id == roleA.Id);
+            downgraded.EsAdministrador = false;
+            await db.SaveChangesAsync();
+            db.ChangeTracker.Clear();
+            Assert.IsType<ForbidResult>(
+                await productionAudit.GetFiltered(productionFilter));
+            auditOutput.Verify(x => x.GetFilteredAsync(
+                It.IsAny<AuditoriaFiltroDto>()), Times.Once);
+
+            var restored = await db.Roles.IgnoreQueryFilters()
+                .SingleAsync(r => r.Id == roleA.Id);
+            restored.EsAdministrador = true;
+            await db.SaveChangesAsync();
+            db.ChangeTracker.Clear();
+            Assert.IsType<OkObjectResult>(
+                await productionAudit.GetFiltered(productionFilter));
+            auditOutput.Verify(x => x.GetFilteredAsync(
+                It.IsAny<AuditoriaFiltroDto>()), Times.Exactly(2));
 
             // Committed revocation is observed even with an otherwise valid JWT.
             var membership = await db.UsuarioEmpresas.IgnoreQueryFilters()
