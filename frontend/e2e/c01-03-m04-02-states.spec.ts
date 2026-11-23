@@ -152,8 +152,8 @@ test.describe('V24 M04.02 UI states after real JWT login with isolated response 
     expect(genuineRecoveryGets, 'retry must reach the real authenticated MySQL-backed API').toBeGreaterThan(0);
   });
 
-  // V26 M04.02 - CSS zoom 200 adversarial. NOT equivalent to browser-native zoom.
-  test('CSS zoom 200 conserva rechazo interempresa sin overflow en cinco anchos', async ({ page }) => {
+  // V26 M04.02 - root font-size 200% text-resize adversarial. NOT browser-native page zoom.
+  test('Text resize 200 conserva rechazo interempresa sin overflow en cinco anchos', async ({ page }) => {
     test.setTimeout(180_000);
     await loginA(page);
     const sentinel = 'FOREIGN_TENANT_M0402_ZOOM200_NEVER_RENDER';
@@ -190,34 +190,34 @@ test.describe('V24 M04.02 UI states after real JWT login with isolated response 
     expect(injected, 'Intercepted the authenticated GET').toBeGreaterThan(0);
     for (const width of [320, 390, 768, 1280, 1440]) {
       await page.setViewportSize({ width, height: 900 });
-      await page.evaluate(() => { document.documentElement.style.zoom = ''; });
+      await page.evaluate(() => { document.documentElement.style.fontSize = ''; });
       await expect(denial).toBeVisible();
       await page.screenshot({
-        path: 'test-results/c0103-m0402-zoomcss-' + width + '-100.png',
+        path: 'test-results/c0103-m0402-text200-' + width + '-100.png',
         fullPage: true
       });
-      await page.evaluate(() => { document.documentElement.style.zoom = '2'; });
+      await page.evaluate(() => { document.documentElement.style.fontSize = '200%'; });
       await expect(denial).toBeVisible();
       const layout = await page.evaluate(() => ({
-        zoom: getComputedStyle(document.documentElement).zoom,
+        rootFontPx: Number.parseFloat(getComputedStyle(document.documentElement).fontSize),
         viewport: window.innerWidth,
         html: document.documentElement.scrollWidth,
         body: document.body.scrollWidth,
         alertWidth: document.querySelector('[data-config-state="invalid"]')?.getBoundingClientRect().width ?? 0
       }));
-      expect(Number(layout.zoom), 'CSS zoom 200 was actually applied').toBe(2);
+      expect(layout.rootFontPx, 'Root text size was doubled to >= 32 CSS px').toBeGreaterThanOrEqual(30);
       expect(layout.alertWidth, 'Visible non-collapsed alert').toBeGreaterThan(0);
       expect(Math.max(layout.html, layout.body),
-        'Document must not overflow under CSS zoom at ' + width)
+        'Document must not overflow under root text resize at ' + width)
         .toBeLessThanOrEqual(layout.viewport + 2);
       await expect(page.getByRole('form', { name: 'Configuración del tenant activo' })).toHaveCount(0);
       await expect(page.locator('body')).not.toContainText(sentinel);
       await expect(page.locator('body')).not.toContainText('PRIVATE_FOREIGN_RTN_ZOOM200');
       await page.screenshot({
-        path: 'test-results/c0103-m0402-zoomcss-' + width + '-200.png',
+        path: 'test-results/c0103-m0402-text200-' + width + '-200.png',
         fullPage: true
       });
-      await page.evaluate(() => { document.documentElement.style.zoom = ''; });
+      await page.evaluate(() => { document.documentElement.style.fontSize = ''; });
     }
   });
 
