@@ -1336,6 +1336,78 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                         .AsNoTracking().CountAsync(x => x.Modulo == ModuloSistema.Categorias));
             }
 
+            // V26 R2: nested ProductoVariantes endpoints must not evade the
+            // multiempresa guard through a parent product ID, even with a
+            // genuine JWT and an attacker-selected X-Empresa-Id header.
+            // Real Oracle EF/MySQL 8.4 variant and durable-audit readback:
+            // no private variant feature is activated by this negative proof.
+            var nestedVariantBefore = await db.ProductoVariantes.IgnoreQueryFilters()
+                .AsNoTracking().OrderBy(v => v.Id)
+                .Select(v => new {
+                    v.Id, v.ProductoId, v.EmpresaId, v.Sku, v.Cantidad,
+                    v.Precio, v.Costo, v.Activo, v.Eliminado
+                }).ToArrayAsync();
+            Assert.Contains(nestedVariantBefore, v => v.Id == variantAuditId
+                && v.ProductoId == auditedProductId && v.EmpresaId == a.Id
+                && !v.Activo && !v.Eliminado);
+            var nestedVariantAuditBefore = await db.RegistrosAuditoria
+                .IgnoreQueryFilters().AsNoTracking()
+                .CountAsync(x => x.Entidad == "ProductoVariante");
+            var nestedVariantRequests = 0;
+            foreach (var (signedJwt, selectedTenant) in new[]
+            {
+                (jwtA, a.Id), (jwtB, b.Id), (jwtA, b.Id), (jwtB, a.Id)
+            })
+            {
+                foreach (var (method, route) in new[]
+                {
+                    (HttpMethod.Get, $"/productos/{auditedProductId}/variantes"),
+                    (HttpMethod.Get, $"/productos/{auditedProductId}/variantes/{variantAuditId}"),
+                    (HttpMethod.Get, $"/productos/{auditedProductId}/variantes/{variantAuditId}/imagenes"),
+                    (HttpMethod.Post, $"/productos/{auditedProductId}/variantes"),
+                    (HttpMethod.Put, $"/productos/{auditedProductId}/variantes/{variantAuditId}"),
+                    (HttpMethod.Patch, $"/productos/{auditedProductId}/variantes/{variantAuditId}/estado"),
+                    (HttpMethod.Delete, $"/productos/{auditedProductId}/variantes/{variantAuditId}"),
+                    (HttpMethod.Delete, $"/productos/{auditedProductId}/variantes/{variantAuditId}/imagenes/1")
+                })
+                {
+                    using var request = new HttpRequestMessage(method, route);
+                    request.Headers.Authorization =
+                        new AuthenticationHeaderValue("Bearer", signedJwt);
+                    request.Headers.TryAddWithoutValidation(
+                        "X-Empresa-Id", selectedTenant.ToString());
+                    if (method == HttpMethod.Post || method == HttpMethod.Put)
+                        request.Content = new StringContent(
+                            "{\"sku\":\"C0701NestedDenied\",\"cantidad\":7,\"precio\":42}",
+                            Encoding.UTF8, "application/json");
+                    else if (method == HttpMethod.Patch)
+                        request.Content = new StringContent(
+                            "{\"activo\":true}", Encoding.UTF8, "application/json");
+                    using var response = await client.SendAsync(request);
+                    Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+                    var body = await response.Content.ReadAsStringAsync();
+                    Assert.Contains("TENANT_DATA_ISOLATION_REQUIRED",
+                        body, StringComparison.Ordinal);
+                    Assert.DoesNotContain(variantAuditSku, body, StringComparison.Ordinal);
+                    nestedVariantRequests++;
+                }
+            }
+            Assert.Equal(32, nestedVariantRequests);
+            await using (var nestedVariantReadback = new AppDbContext(options))
+            {
+                var nestedVariantAfter = await nestedVariantReadback.ProductoVariantes
+                    .IgnoreQueryFilters().AsNoTracking().OrderBy(v => v.Id)
+                    .Select(v => new {
+                        v.Id, v.ProductoId, v.EmpresaId, v.Sku, v.Cantidad,
+                        v.Precio, v.Costo, v.Activo, v.Eliminado
+                    }).ToArrayAsync();
+                Assert.Equal(nestedVariantBefore, nestedVariantAfter);
+                Assert.Equal(nestedVariantAuditBefore,
+                    await nestedVariantReadback.RegistrosAuditoria
+                        .IgnoreQueryFilters().AsNoTracking()
+                        .CountAsync(x => x.Entidad == "ProductoVariante"));
+            }
+
             var membershipA = await db.UsuarioEmpresas
                 .SingleAsync(x => x.UsuarioId == userA.Id && x.EmpresaId == a.Id);
             membershipA.Desactivar();
