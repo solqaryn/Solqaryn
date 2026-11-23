@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV02 V30 C15-04.M05.04: fallback CSS compatible con Fase 10
+- FALLO CI exact-SHA c0dea8d3: `validate-storefront-fase10.mjs` requiere la declaración de reserva base `padding-bottom:calc(82px + env(safe-area-inset-bottom))` para el pie en CTA móvil; los tests Fase 1/4/10 y Frontend producción detuvieron ejecución antes de certificar comportamiento real.
+- Reparación mínima: restituir el respaldo CSS de 82px y mantener inmediatamente después el cálculo dinámico de alto real de la barra mediante ResizeObserver. No se modifican el validador, rutas, contratos, seguridad ni funciones del usuario.
+- CI GitHub-hosted exact-SHA nuevo pendiente, sin afirmar PASS; zoom nativo 200%, capturas genuinas antes/después, presupuesto CSS y A0-A4 globales permanecen abiertos. OWNER DEV02 y lock V17 2000002297 conservados.
+
 ## 2026-11-23 — DEV02 V30 C15-04.M05.04: alto real de compra rapida y reflow de zoom
 - Runtime Angular storefront producto: ResizeObserver mide la barra movil visible y ajusta espacio reservado en detalle, pie y avisos, incluso con etiquetas/precio extensos o texto ampliado; en viewport bajo/estrecho la barra vuelve al flujo para no tapar controles.
 - El observador se desconecta con el componente y conserva una altura de respaldo cuando el navegador no ofrece ResizeObserver. Afecta UI publica; no altera APIs, JWT/RBAC, tenant, datos, pagos ni permisos. Rollback mediante revert normal.
