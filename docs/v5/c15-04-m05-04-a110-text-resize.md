@@ -107,3 +107,12 @@ Cambio incremental R2 de pruebas y evidencia, no de runtime: en GitHub-hosted re
 **Hipótesis nueva y cambio concreto:** ampliar sólo el panel real `ux-audit-v19` con CSS zoom 2 y reducir su ancho de layout al 50% menos margen; conservar aserciones de `html/body.scrollWidth`, posición izquierda/derecha del panel, título visible y cinco viewports 320/390/768/1280/1440. Preservar capturas comparables de 100/200 ANTES de las aserciones, incluso si otra falla. JWT firmado, API .NET y MySQL 8.4 efímero permanecen en CI real; no se cambian runtime, JWT/RBAC, tenant, datos ni permisos.
 
 **Gates A0–A5:** riesgo R2 de integración de prueba; no atribuir PASS sin job GitHub-hosted exact-SHA con 163/163, Scope Lock y V5 pertinentes. SKREF-03 y SKREF-10 consultados en pines originales; SKREF-04/05/06/11/12 NO_APLICA a test-only. LIMITACIÓN explícita: zoom CSS del componente NO prueba zoom NATIVO de navegador, WCAG global, 160 rutas, CWV de campo ni baseline visual histórica. Mantener C15-04.M05.04 EN_PROGRESO, I=DEV02, candado V17 propio 2000002297, A5 independiente pendiente. Rollback por revert FF/CAS; no QA/main/PROD.
+
+## A123 — reparación de método de ensayo con artefacto visual causal
+
+**Fallo histórico intacto:** fuente \`d03c16c4868a75d1b89d3300fa8ff0942e84a435\`, run 45163904603/job 137655864480, **162 PASS / 1 FAIL**: A0.95 detectó \`scrollWidth=324\` contra máximo 322 al viewport320. Artefacto real 14813588446: imponer \`zoom:2\` y \`width:50%\` sobre el main produjo una imagen 324x34024 y palabras cortadas; esa geometría creada por el ensayo no demuestra cómo se comporta el navegador con texto ampliado.
+
+**Reparación A123:** reemplazar A0.95 únicamente por ampliación calculada del tamaño de texto raíz al 200% en Chromium, manteniendo el ancho real. Se comprueban fuente duplicada, título, bordes del panel y scrollWidth<=viewport+2 en 320/390/768/1280/1440; capturas antes/después 100/200 a 320 y 1440. Se preservan HTTP GET 200, sesión JWT firmada en CI con MySQL 8.4 efímero y ausencia de escrituras. No cambian UI productiva, permisos, datos ni backend.
+
+**Límites y riesgos:** test R2 de reflow auténtico, NO prueba zoom nativo del navegador, ANTES histórico ni auditoría completa de 160 rutas, WCAG/CWV de campo. A1–A4 esperan nueva CI exact-SHA (163/163 esperados, no PASS anticipado). A5 independiente posteriormente. Mantener H=EN_PROGRESO, I=DEV02, candado V17 2000002297; prohibidos LISTO falso, QA/main/PROD.
+

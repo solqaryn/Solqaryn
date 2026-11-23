@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV02 C15-04.M05.04: A123 reflow real de texto 200%
+- CI anterior d03c16c4 run45163904603/job137655864480: 162 PASS y 1 FAIL A0.95 (324px/320). Artefacto 14813588446: test CSS zoom2 más 50% ancho generaba captura artificial 324x34024px, no representa reflow real.
+- Nuevo A0.95 evalúa texto raíz al 200% manteniendo ancho natural, cinco viewports, pantallas comparativas 320/1440, GET autenticado JWT/MySQL8.4 y 0 mutaciones; no relaja la aserción anti-overflow. A1–A4 CI exact SHA pendientes; zoom nativo, WCAG/CWV global, 160 rutas, A5 independiente no certificados. EN_PROGRESO owner DEV02/V17 lock conservados; sin QA/main/PROD.
+
 ## 2026-11-23 - CI: cache NuGet en workflow permanente del ERP (R2, dev)
 - Causa: restauraciones .NET repetidas en los jobs de seguridad y backend del workflow solqaryn-core-ci.yml sobre commits consecutivos de dev.
 - Cambio: actions/cache@v4 en ambos jobs, solo ~/.nuget/packages y clave exacta por csproj/props/targets/global.json. No modifica tests, triggers, permisos, aislamiento multiempresa, jobs, Scope Lock, versiones ni otras ramas.
