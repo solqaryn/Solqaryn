@@ -8,3 +8,23 @@ A1: pruebas Chromium de ruta privada anónima, usuarios JWT firmados A/B, navbar
 
 ## Fuentes UX V23 y evidencia honesta
 Leídas del origen y pin oficiales: SKREF03 Impeccable `pbakaus/impeccable@2149fcce39a90bb409df5f16515f316a76dc6199`; SKREF10 Angular `angular/angular@6808966993bf2b2d455d9b6245e960a59a01b9a9`. Aplicado modo Operate, reuso de UI real, jerarquía, semántica, foco visible, CSS local y sin body overflow. SKREF04/05/06/11/12 NO_APLICA: no nuevo motion, landing, redacción extensa, modelado formal de amenazas ni profiling .NET; no se instalaron/copiaron herramientas. ANTES: solo `/configuracion` con muchos paneles y el card tenant; no existía la ruta nueva. DESPUÉS: ruta dedicada que reutiliza el card conectado. Captura previa de una ruta inexistente NO_APLICA; imágenes Chromium DESPUÉS deben generarse realmente en CI, no inventarlas. El zoom 200% y matices UX sin prueba quedan pendientes y no se reportan como acreditados.
+
+## V26 — prueba adversarial de autorización real M04.01 (23 noviembre 2026)
+Incremento test-only R2 bajo el workflow GitHub-hosted ya existente: .NET 10,
+JWT firmados A/B, MySQL 8.4 efímero, Angular y Chromium. **A0.97** exige
+`GET /permisos/mis-permisos/empresa/1` 200 y respuesta con administrador,
+`Configuracion:Ver` y ruta privada `configuracion/dinamica-v5`, además
+de `GET /empresa-configuracion/tenant/1` 200 y pantalla real.
+**A0.98** acredita que los endpoints de B existen con JWT B (200),
+pero deniegan a JWT A con `X-Empresa-Id:2` (403/404). No se sustituyen endpoints
+por mocks ni se modifica backend, roles, datos, permisos o producción.
+Una prueba fallida constituye defecto a diagnosticar, nunca PASS inventado.
+
+La publicación en `dev` no certifica A1-A4: requerir CI terminada SUCCESS
+del SHA exacto, 0 FAIL/0 SKIP aplicables, Scope Lock/V5 y evidencia causal.
+Persisten sin certificación el zoom nativo de escritorio al 200 %, imágenes
+ANTES verificadas y demás criterios premium M04.01; conservar VALIDANDO e
+I del autor hasta A0-A4 completos. A5 corresponde a otro TASK_ID elegible.
+Rollback por git revert normal FF/CAS. `CHANGELOG_AI.md` permanece íntegro
+sin reescritura: el conector no permitió obtener el blob histórico >1 MB;
+esta evidencia aditiva se documenta aquí sin encabezados vacíos.

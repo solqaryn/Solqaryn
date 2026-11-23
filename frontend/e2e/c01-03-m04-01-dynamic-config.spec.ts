@@ -114,4 +114,50 @@ test.describe('V24 C01-03.M04.01 private configuration tenant A/B', () => {
     });
     expect(result.status()).toBe(401);
   });
+  // V26 test-only: live RBAC/JWT/MySQL evidence, not a UI mock or frontend grant.
+  test('A0.97 - authenticated grants and real config read authorize the private route', async ({ page }) => {
+    const jwt = await login(page, 'c1504_admin_a');
+    const headers = { Authorization: 'Bearer ' + jwt, 'Cache-Control': 'no-store' };
+    const ownPerms = await page.request.get(api + '/permisos/mis-permisos/empresa/1', { headers });
+    expect(ownPerms.status(), 'Live permissions endpoint must serve company A').toBe(200);
+    const granted: {
+      success?: boolean;
+      data?: { esAdministrador?: boolean; permisos?: string[]; rutasHabilitadas?: string[] };
+    } = await ownPerms.json();
+    expect(granted.success).toBe(true);
+    expect(granted.data?.esAdministrador).toBe(true);
+    expect(granted.data?.permisos).toContain('Configuracion:Ver');
+    expect(granted.data?.rutasHabilitadas).toContain('configuracion/dinamica-v5');
+
+    const ownConfig = await page.request.get(api + '/empresa-configuracion/tenant/1', { headers });
+    expect(ownConfig.status(), 'Actual tenant A config must exist').toBe(200);
+    const config: { success?: boolean; data?: { empresaId?: number } } = await ownConfig.json();
+    expect(config.success).toBe(true);
+    expect(config.data?.empresaId).toBe(1);
+
+    await page.evaluate(() => localStorage.setItem('solqaryn_empresa_solicitada_id', '1'));
+    await page.goto(target);
+    await expect(page.getByRole('heading', { name: 'Configuración dinámica' })).toBeVisible();
+    await expect(page.locator('app-empresa-configuracion-tenant-card')).toBeVisible();
+  });
+
+  test('A0.98 - JWT tenant A cannot read B permissions or B configuration', async ({ page }) => {
+    const jwtA = await login(page, 'c1504_admin_a');
+    const jwtB = await login(page, 'c1504_admin_b');
+    for (const endpoint of ['/permisos/mis-permisos/empresa/2', '/empresa-configuracion/tenant/2']) {
+      // B's real 200 prevents a false negative from an endpoint missing in CI.
+      const ownB = await page.request.get(api + endpoint, {
+        headers: { Authorization: 'Bearer ' + jwtB }
+      });
+      expect(ownB.status(), 'Actual tenant B endpoint exists: ' + endpoint).toBe(200);
+
+      const cross = await page.request.get(api + endpoint, {
+        headers: { Authorization: 'Bearer ' + jwtA, 'X-Empresa-Id': '2' }
+      });
+      expect([403, 404], 'Cross-tenant access denied: ' + endpoint).toContain(cross.status());
+      const body = await cross.text();
+      expect(body, 'Denial must not leak tenant B identity').not.toContain('Empresa B efimera C15');
+    }
+  });
+
 });
