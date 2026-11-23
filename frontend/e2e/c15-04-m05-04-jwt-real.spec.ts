@@ -3583,4 +3583,57 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     expect(mutaciones, 'Enter denegado sin mutaciones en API').toEqual([]);
   });
 
+
+  // A121/A0.95: zoom CSS al 200% es una prueba REAL de reflow en Chromium,
+  // no se presenta como zoom nativo de interfaz del navegador ni WCAG global.
+  test('A0.95 - CSS zoom 200 por ciento en auditoria privada sin overflow', async ({ page }) => {
+    test.setTimeout(180_000);
+    await ingresar(page, 'c1504_platform_only');
+    const mutaciones: string[] = [];
+    page.on('request', req => {
+      if (req.url().includes('localhost:5005') &&
+          /^(POST|PUT|PATCH|DELETE)$/.test(req.method())) {
+        mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+      }
+    });
+    for (const ancho of [320, 390, 768, 1280, 1440]) {
+      await page.setViewportSize({ width: ancho, height: 840 });
+      const sesion = page.waitForResponse(r =>
+        r.url().includes('/plataforma/sesion') && r.request().method() === 'GET');
+      await page.goto('/plataforma/auditoria-ux-v5');
+      expect((await sesion).status(), 'HTTP real de plataforma ' + ancho).toBe(200);
+      const paginaPrivada = page.locator('[data-testid="ux-audit-v19"]');
+      await expect(paginaPrivada, 'Pantalla privada autorizada').toBeVisible();
+      await expect(page.getByRole('heading', { level: 1 })).toHaveCount(1);
+      if (ancho === 320 || ancho === 1440) {
+        await page.screenshot({
+          path: 'test-results/c1504-a121-zoomcss-' + ancho + '-100.png',
+          fullPage: true
+        });
+      }
+      await page.evaluate(() => { document.documentElement.style.zoom = '2'; });
+      await expect(paginaPrivada, 'UI visible bajo zoom CSS real').toBeVisible();
+      const diagnostico = await page.evaluate(() => ({
+        zoom: getComputedStyle(document.documentElement).zoom,
+        viewport: window.innerWidth,
+        html: document.documentElement.scrollWidth,
+        body: document.body.scrollWidth,
+        titulo: document.querySelector('h1')?.getBoundingClientRect().width ?? 0
+      }));
+      expect(Number(diagnostico.zoom), 'Se aplico zoom CSS 200 real').toBe(2);
+      expect(diagnostico.titulo, 'Titulo no colapsa con zoom').toBeGreaterThan(0);
+      expect(Math.max(diagnostico.html, diagnostico.body),
+        'No overflow del documento a zoom CSS 200 ' + ancho)
+        .toBeLessThanOrEqual(diagnostico.viewport + 2);
+      if (ancho === 320 || ancho === 1440) {
+        await page.screenshot({
+          path: 'test-results/c1504-a121-zoomcss-' + ancho + '-200.png',
+          fullPage: true
+        });
+      }
+      await page.evaluate(() => { document.documentElement.style.zoom = ''; });
+    }
+    expect(mutaciones, 'Zoom y navegacion sin escribir datos de negocio').toEqual([]);
+  });
+
 });

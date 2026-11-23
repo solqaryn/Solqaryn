@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV02 C15-04.M05.04: regresión zoom CSS 200% en Chromium (A121)
+- Se añade A0.95 a Playwright real: JWT de plataforma firmado por API .NET 10, MySQL 8.4 efímero, ruta privada autorizada, cinco anchos y aserción de overflow a zoom CSS 2.
+- Se conservan capturas comparativas 100/200 de la misma corrida para 320/1440 y se rechazan mutaciones HTTP de negocio; el nuevo check debe concluir SUCCESS exact-SHA antes de cualquier PASS.
+- LIMITACIÓN: CSS zoom no demuestra zoom nativo del navegador 200%, baseline histórico, WCAG global ni CWV de campo; EN_PROGRESO/owner DEV02 y candado V17 intactos, sin LISTO/A5/QA/main/PROD.
+
 ## 2026-11-23 — DEV05 C01-03.M04.02: rechazo adversarial de respuesta interempresa (V26)
 - Se agrega prueba Playwright real en Chromium tras login JWT/MySQL 8.4 efímero de A: una respuesta GET HTTP 200 falsificada con empresaId=2 y datos centinela debe mostrar el estado invalid y nunca revelar marca, RTN ni formulario; capturas DESPUÉS en 320/390/768/1280/1440, sin body overflow.
 - Alcance R2 test-only en dev: el GET interempresa es respuesta controlada para regresión UI, NO certifica RBAC/API de servidor ni zoom nativo 200% ni capturas históricas ANTES; mantiene C01-03.M04.02 VALIDANDO hasta CI exact-SHA y aceptación UX pertinentes, con A5 independiente posterior. No QA/main/PROD.
