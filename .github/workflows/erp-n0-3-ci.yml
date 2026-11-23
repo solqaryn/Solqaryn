@@ -31,13 +31,13 @@ permissions:
   contents: read
 
 concurrency:
-  group: erp-n0-3-ci-${{ github.ref }}
-  cancel-in-progress: true
+  group: erp-n0-3-ci-${{ github.ref }}-${{ github.sha }}
+  cancel-in-progress: false
 
 jobs:
   autoridad-variante:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 60
     services:
       mysql:
         image: mysql:8.4
@@ -56,12 +56,50 @@ jobs:
       Jwt__Secret: ERP-N0-3-CI-Only-Secret-With-More-Than-32-Characters-2026
       Jwt__Issuer: Solqaryn.CI
       Jwt__Audience: Solqaryn.CI.Frontend
+      # Pruebas fisicas originales: nunca ejecutar sin MySQL 8.4 efimero.
+      C0404_M0305_MYSQL: 'Server=127.0.0.1;Port=3306;Database=solqaryn_n03_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      C0701_M0503_MYSQL_TEST: 'Server=127.0.0.1;Port=3306;Database=c0701_m0503_bootstrap;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      C0402_M0306_MYSQL_TEST: 'Server=127.0.0.1;Port=3306;Database=solqaryn_n03_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      C0401_M0303_MYSQL_TEST: 'Server=127.0.0.1;Port=3306;Database=solqaryn_n03_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      C0701_M0306_MYSQL_TEST: 'Server=127.0.0.1;Port=3306;Database=solqaryn_c0701_audit;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      C0404_M0504_MYSQL: 'Server=127.0.0.1;Port=3306;Database=solqaryn_n03_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      C0404_M0505_MYSQL: 'Server=127.0.0.1;Port=3306;Database=solqaryn_n03_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      C0401_M0503_MYSQL_TEST: 'Server=127.0.0.1;Port=3306;Database=solqaryn_n03_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      C1502_M0503_MYSQL_TEST: 'Server=127.0.0.1;Port=3306;Database=solqaryn_c1502_m0503;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      C0701_M0304_MYSQL_TEST: 'Server=127.0.0.1;Port=3306;Database=c0701_m0304_bootstrap;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      C0404_M0604_MYSQL: 'Server=127.0.0.1;Port=3306;Database=solqaryn_n03_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      C0402_M0304_MYSQL_TEST: 'Server=127.0.0.1;Port=3306;Database=solqaryn_n03_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      C0401_M0604_MYSQL: 'Server=127.0.0.1;Port=3306;Database=solqaryn_n03_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      C0401_M0306_MYSQL_TEST: 'Server=127.0.0.1;Port=3306;Database=c0401_m0306_bootstrap;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      C0404_M0503_MYSQL: 'Server=127.0.0.1;Port=3306;Database=solqaryn_n03_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      C0404_M0304_MYSQL: 'Server=127.0.0.1;Port=3306;Database=solqaryn_n03_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      C0404_M0306_MYSQL: 'Server=127.0.0.1;Port=3306;Database=solqaryn_n03_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      C0401_M0304_MYSQL_TEST: 'Server=127.0.0.1;Port=3306;Database=solqaryn_c1502_m0503;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      C0601_M0305_MYSQL_TEST: 'Server=127.0.0.1;Port=3306;Database=solqaryn_n03_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      C1402_M0606_MYSQL_TEST: 'Server=127.0.0.1;Port=3306;Database=c1402_m0606_bootstrap;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      C0104_M0306_MYSQL_TEST: 'Server=127.0.0.1;Port=3306;Database=solqaryn_n03_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      C0701_M0303_MYSQL_TEST: 'Server=127.0.0.1;Port=3306;Database=solqaryn_n03_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      C0402_M0303_MYSQL_TEST: 'Server=127.0.0.1;Port=3306;Database=solqaryn_n03_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      C0701_M0305_MYSQL_TEST: 'Server=127.0.0.1;Port=3306;Database=solqaryn_c0701_catalog;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      C0701_M0606_MYSQL_TEST: 'Server=127.0.0.1;Port=3306;Database=c0701_m0606_bootstrap;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      C0601_M0304_MYSQL_TEST: 'Server=127.0.0.1;Port=3306;Database=solqaryn_n03_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      C0601_M0303_MYSQL_TEST: 'Server=127.0.0.1;Port=3306;Database=solqaryn_n03_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      C0401_M0305_MYSQL_TEST: 'Server=127.0.0.1;Port=3306;Database=solqaryn_c0401_dispatch;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      C0601_M0306_MYSQL_TEST: 'Server=127.0.0.1;Port=3306;Database=solqaryn_n03_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-dotnet@v4
         with: { dotnet-version: '10.0.401' }
       - name: Guardas runtime N0.3
         run: python3 backend/scripts/check-erp-n0-3-runtime.py
+      - name: Preparar bases locales de integracion y redo MySQL 8.4
+        shell: bash
+        run: |
+          set -euo pipefail
+          c="${{ job.services.mysql.id }}"
+          docker exec "$c" mysql -uroot -proot -e "SET GLOBAL innodb_redo_log_capacity=536870912;"
+          docker exec "$c" mysql -uroot -proot -e "CREATE DATABASE IF NOT EXISTS c0701_m0503_bootstrap; CREATE DATABASE IF NOT EXISTS solqaryn_c0701_audit; CREATE DATABASE IF NOT EXISTS solqaryn_c1502_m0503; CREATE DATABASE IF NOT EXISTS c0701_m0304_bootstrap; CREATE DATABASE IF NOT EXISTS c0401_m0306_bootstrap; CREATE DATABASE IF NOT EXISTS c1402_m0606_bootstrap; CREATE DATABASE IF NOT EXISTS solqaryn_c0701_catalog; CREATE DATABASE IF NOT EXISTS c0701_m0606_bootstrap; CREATE DATABASE IF NOT EXISTS solqaryn_c0401_dispatch;"
+          docker exec "$c" mysql -uroot -proot -Nse "SELECT VERSION(), @@innodb_redo_log_capacity;"
       - name: Restaurar, compilar y probar backend
         working-directory: backend
         run: |
