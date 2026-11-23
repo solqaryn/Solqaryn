@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV02 V30 C15-04.M05.04: corrección sintáctica de decorador Angular
+- Diagnóstico exact-SHA 66ef3e66: Frontend producción y Chromium FALLARON antes de pruebas por TS1206 Decorators are not valid here, archivo c15-04-auditoria-ux-v19.component.ts línea 9. El alias quedó insertado entre @Component y su clase; el parser no llegó a probar el filtro.
+- Reparación mínima: mover alias arriba de documentación y @Component sin cambiar filtros, guards, permisos o tests. E2E de botones quedó ajustado en SHA 8883bf1d. CI exact-SHA nueva es obligatoria y no se presume PASS ni se reejecutan suites manualmente.
+- Conservar EN_PROGRESO DEV02 y candado V17 2000002297; no LISTO, A5, QA, main ni PROD. Rollback mediante git revert, sin force.
+
 ## 2026-11-23 — DEV02 V30 C15-04.M05.04: contrato Chromium adaptado a filtros UX reales
 - Reparación preventiva P2 de E2E: la prueba de ruta privada C15-04.M04.01 todavía prohibía cualquier botón, pero el filtro UX publicado en 66ef3e66 usa cuatro controles legítimos de solo lectura. El spec ahora valida botones semánticos, roles, aria-pressed, 3 protegidas, 1 sin ruta y restablecimiento de 5 superficies NO_MEDIDO; mantiene navegación 403, rutas y cero peticiones de escritura.
 - No es certificación de JWT/MySQL real: esta prueba usa fixture sintético preexistente. CI exact-SHA de Chromium/Angular, Scope Lock y V5 requerida para afirmar PASS; no confundir esta corrección con LISTO ni A5 y mantener V17 propio 2000002297. Referencias SKREF-03/10 aplicadas previamente, sin nueva dependencia.

@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, computed, signal } from '@angular/core';
 import { RouterLink } from '@angular/router';
 
+type FiltroAuditoriaUx = 'todas' | 'publica' | 'protegida' | 'sin-ruta';
+
 /**
  * C15-04.M04.01 — contrato visual privado de auditoria UX.
  * No es telemetria en vivo ni una certificacion WCAG o de rendimiento.
@@ -14,8 +16,6 @@ import { RouterLink } from '@angular/router';
   styleUrl: './c15-04-auditoria-ux-v19.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush
 })
-type FiltroAuditoriaUx = 'todas' | 'publica' | 'protegida' | 'sin-ruta';
-
 export class C1504AuditoriaUxV19Component {
   // Enlaces a rutas existentes; cada guard original sigue siendo la autoridad.
   // El builder no tiene una ruta unica publicada en app.routes.ts: nunca inventar acceso.
