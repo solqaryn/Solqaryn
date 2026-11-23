@@ -14,6 +14,8 @@ on:
       - 'global.json'
       - 'Directory.*'
       - 'scripts/security/ci-impact-routing.mjs'
+      - 'scripts/ci/reuse-dev-ci-evidence.mjs'
+      - '.github/workflows/solqaryn-core-ci.yml'
       - '.github/workflows/dev-ci.yml'
   pull_request:
     branches: [dev]
@@ -28,6 +30,8 @@ on:
       - 'global.json'
       - 'Directory.*'
       - 'scripts/security/ci-impact-routing.mjs'
+      - 'scripts/ci/reuse-dev-ci-evidence.mjs'
+      - '.github/workflows/solqaryn-core-ci.yml'
       - '.github/workflows/dev-ci.yml'
   workflow_dispatch:
 

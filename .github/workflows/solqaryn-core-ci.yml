@@ -15,7 +15,31 @@ concurrency:
   cancel-in-progress: false
 
 jobs:
+  exact_sha_evidence:
+    name: Evidencia exact-SHA DEV para evitar pruebas repetidas
+    runs-on: ubuntu-latest
+    timeout-minutes: 17
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      backend: ${{ steps.probe.outputs.backend }}
+      frontend: ${{ steps.probe.outputs.frontend }}
+      source_run: ${{ steps.probe.outputs.source_run }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+      - name: Verificar reglas de procedencia y SHA
+        run: node scripts/ci/reuse-dev-ci-evidence.mjs --self-test
+      - name: Consultar la evidencia real de DEV sin omitir checks fallidos
+        id: probe
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: node scripts/ci/reuse-dev-ci-evidence.mjs
   seguridad:
+    needs: exact_sha_evidence
     name: SOLQARYN - Seguridad multiempresa
     runs-on: ubuntu-latest
     timeout-minutes: 35
@@ -37,6 +61,8 @@ jobs:
         working-directory: backend
         run: dotnet restore Solqaryn.sln
       - name: Ejecutar regresiones de tenancy y autorizacion
+        # The DEV backend job already includes this complete non-integration subset.
+        if: needs.exact_sha_evidence.outputs.backend != 'success'
         working-directory: backend
         shell: bash
         run: |
@@ -57,20 +83,31 @@ jobs:
           echo 'SECURITY_DEPENDENCIES=PASS'
 
   backend:
+    needs: exact_sha_evidence
     name: SOLQARYN - Build y pruebas backend
     runs-on: ubuntu-latest
     timeout-minutes: 35
     steps:
+      - name: Acreditar resultado backend DEV exact-SHA (no repetir 6500+ pruebas)
+        if: needs.exact_sha_evidence.outputs.backend == 'success'
+        run: echo "BACKEND_REUSED_EXACT_SHA_FROM_DEV_RUN=${{ needs.exact_sha_evidence.outputs.source_run }}"
+      - name: No sustituir un backend DEV fallido por PASS
+        if: needs.exact_sha_evidence.outputs.backend == 'failure'
+        run: exit 1
       - uses: actions/checkout@v4
+        if: needs.exact_sha_evidence.outputs.backend == 'fallback'
       - uses: actions/setup-dotnet@v4
+        if: needs.exact_sha_evidence.outputs.backend == 'fallback'
         with:
           dotnet-version: '10.0.401'
       - name: Reutilizar paquetes NuGet por dependencias sin omitir pruebas
+        if: needs.exact_sha_evidence.outputs.backend == 'fallback'
         uses: actions/cache@v4
         with:
           path: ~/.nuget/packages
           key: ${{ runner.os }}-solqaryn-net10-nuget-${{ hashFiles('backend/**/*.csproj', 'backend/**/*.props', 'backend/**/*.targets', 'global.json') }}
       - name: Restaurar, compilar y probar sin imponer fases previas
+        if: needs.exact_sha_evidence.outputs.backend == 'fallback'
         working-directory: backend
         shell: bash
         run: |
@@ -81,19 +118,30 @@ jobs:
             --filter 'Category!=Integration'
 
   frontend:
+    needs: exact_sha_evidence
     name: SOLQARYN - Frontend tipado y build
     runs-on: ubuntu-latest
     timeout-minutes: 30
     steps:
+      - name: Acreditar resultado frontend DEV exact-SHA (no repetir compilacion)
+        if: needs.exact_sha_evidence.outputs.frontend == 'success'
+        run: echo "FRONTEND_REUSED_EXACT_SHA_FROM_DEV_RUN=${{ needs.exact_sha_evidence.outputs.source_run }}"
+      - name: No sustituir un frontend DEV fallido por PASS
+        if: needs.exact_sha_evidence.outputs.frontend == 'failure'
+        run: exit 1
       - uses: actions/checkout@v4
+        if: needs.exact_sha_evidence.outputs.frontend == 'fallback'
       - uses: actions/setup-node@v4
+        if: needs.exact_sha_evidence.outputs.frontend == 'fallback'
         with:
           node-version: '24.21.0'
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - name: Instalar npm version compatible
+        if: needs.exact_sha_evidence.outputs.frontend == 'fallback'
         run: npm install --global npm@11.19.0
       - name: Dependencias, tipos, calidad actual y produccion
+        if: needs.exact_sha_evidence.outputs.frontend == 'fallback'
         working-directory: frontend
         shell: bash
         run: |
