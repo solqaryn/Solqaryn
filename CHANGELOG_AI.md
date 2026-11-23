@@ -9912,3 +9912,8 @@
 - Test xUnit real MySQL 8.4 en store aislado: reservas previas A/B sobreviven a RollbackAsync de dos reservas temporales; comprobar desde DbContext nuevo, denegar acceso cruzado y cancelación sin pérdida.
 - Workflow GitHub-hosted .NET 10 Release + Scope Lock + Skill exact-SHA y TRX 1/1 cero fallos/omitidos; esperar éxito causal antes de LISTO y A5 independiente.
 - Test-only sin cobro, PSP, JWT, AppDbContext comercial, secretos, migraciones ni datos de producción; limitaciones R2 y R3 NO_GO, rollback normal git revert y BITACORA intacta.
+
+## 2026-11-22 — DEV06 C02-04.M06.01: clasificar pruebas causales y mocks de la consola global
+- Matriz R0 documental `docs/v5/c02-04-m06-01-matriz-causal-de-pruebas-v24.md`: 8/8 Chromium con sesión `route.fulfill` explícitamente sintética, 9/9 xUnit con JWT HMAC firmado en TestServer/MySQL 8.4.13 efímero; logs de run 45091176575 revisados sin confundir ambos entornos con E2E conjunto.
+- Se documentan 401/403/revocación/tenant A-B y brechas R2 reales: MFA, reautenticación, proveedor GitHub vivo, browser+API JWT integrada, zoom 200 y rendimiento global NO_CERTIFICADOS. Alcance sólo `dev`, sin modificar runtime, claves, QA/main/PROD o fórmulas DAG/COLA.
+- Publicación condicionada a FF/CAS, Scope Lock/V5 exact-SHA y readback PLAN/COLA/BITACORA. A5 por otra Task Javier, sin autoaprobación. Rollback `git revert` normal; historial de FAIL intacto.
