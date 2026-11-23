@@ -321,3 +321,9 @@ se conserva integro, con evidencia adicional en documento/bitacora.
 
 - Diagnóstico real GitHub-hosted en SHA `cb44be3b3c0ad3f1976a3715b310869a3a664cd9`: job backend `137945139590` y gate de seguridad `137945138983` fallaron **antes de ejecutar los xUnit** por `CS0128` en líneas 1419 y 1421: nombres locales `categoryAId` y `categoryBId` duplicados dentro del método largo. No es fallo de aislamiento tenant ni de aserciones; sin PASS A1/A3.
 - Reparación mínima: renombrar **solo las variables introducidas en el bloque V29** a `pilotCategoryAId` y `pilotCategoryBId` con sus usos en el mismo bloque. Sin cambios a API, middleware, tenant, flags, DB, fixtures o criterios. Publicar mediante segundo FF/CAS exact-HEAD y esperar compilación + prueba real en nuevo SHA; no relanzar manualmente el SHA fallido, no declarar listo.
+
+## 2026-11-23 — DEV01 V30: GET fiscal privado tenant A/B
+
+- Incremento funcional: `GET /impuestos` y `GET /impuestos/{id:int positivo}` entran SOLO en el piloto privado `PrivateReadPilotEnabled` preexistente, OFF por defecto. Mantiene JWT, membresía viva, selector coherente y doble `Impuestos.Ver`; datos aislados por la columna EF shadow `EmpresaId` física ya existente. No habilita mutaciones fiscales, flags nuevos, migraciones ni tratamiento de filas legacy.
+- Integración dirigida pendiente de GitHub-hosted exact-SHA: crea impuestos A/B con propietario validado en MySQL 8.4 efímero y prueba GET list/detail positivos, ajeno 404, spoof 503, revocación RBAC, piloto OFF y ownership físico. No confundir este incremento con aprobación integral de servicios, atributos, mutaciones ERP, Angular ni cierre A0–A4.
+- Continúa `C07-01.M06.06` EN_PROGRESO bajo owner DEV01 y V17 `2000001045`; A5 independiente posterior. Rollback: git revert normal mediante FF/CAS; prohibidos QA/main/PROD.

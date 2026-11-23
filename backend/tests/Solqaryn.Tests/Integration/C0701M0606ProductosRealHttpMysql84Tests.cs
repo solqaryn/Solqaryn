@@ -143,6 +143,29 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 new RolPermiso { RolId = roleB.Id, PermisoId = categoryReadPermission.Id });
             await db.SaveChangesAsync();
             db.ChangeTracker.Clear();
+            // Real Impuestos.Ver grants on isolated SQL-backed roles.
+            var taxReadPermission = await db.Permisos.IgnoreQueryFilters()
+                .FirstOrDefaultAsync(p => p.Modulo == ModuloSistema.Impuestos &&
+                    p.Accion == AccionPermiso.Ver &&
+                    p.Ambito == AmbitoAutorizacion.Empresa && p.Activo && !p.Eliminado);
+            if (taxReadPermission is null)
+            {
+                taxReadPermission = new Permiso
+                {
+                    Codigo = "C0701M0606.IMPUESTOS.VER",
+                    Nombre = "C0701 isolated fiscal read permission",
+                    Modulo = ModuloSistema.Impuestos, Accion = AccionPermiso.Ver,
+                    Ambito = AmbitoAutorizacion.Empresa, Activo = true
+                };
+                db.Permisos.Add(taxReadPermission);
+                await db.SaveChangesAsync();
+            }
+            db.RolPermisos.AddRange(
+                new RolPermiso { RolId = roleA.Id, PermisoId = taxReadPermission.Id },
+                new RolPermiso { RolId = roleB.Id, PermisoId = taxReadPermission.Id });
+            await db.SaveChangesAsync();
+            db.ChangeTracker.Clear();
+
             // Test-only RBAC: the valid A role has Crear, while B does not.
             var createPermission = await db.Permisos.IgnoreQueryFilters()
                 .FirstOrDefaultAsync(x => x.Modulo == ModuloSistema.Productos
@@ -217,6 +240,28 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             }
             var productAId = await SeedOwnedProductAsync(a.Id, "C0701RealProductoA");
             var productBId = await SeedOwnedProductAsync(b.Id, "C0701RealProductoB");
+
+            // Real Oracle EF/MySQL 8.4 tax owners, injected server-side only.
+            async Task<int> SeedOwnedTaxAsync(int tenantId, string code)
+            {
+                var context = new DefaultHttpContext();
+                context.Items[
+                    Solqaryn.Application.Security.VerifiedCommercialTenant
+                        .AuthorizedEmpresaIdItemKey] = tenantId;
+                var accessor = new HttpContextAccessor { HttpContext = context };
+                await using var owned = new AppDbContext(options,
+                    tenantHttpContextAccessor: accessor);
+                var tax = new Impuesto
+                {
+                    Nombre = "C0701Fiscal" + code, Codigo = code,
+                    Tipo = TipoImpuesto.Porcentaje, Tasa = 15m, Activo = true
+                };
+                owned.Impuestos.Add(tax);
+                await owned.SaveChangesAsync();
+                return tax.Id;
+            }
+            var taxAId = await SeedOwnedTaxAsync(a.Id, "C0701TAXA");
+            var taxBId = await SeedOwnedTaxAsync(b.Id, "C0701TAXB");
 
             // P1: una escritura de producto no puede sobrevivir si la bitacora
             // critica no se persiste. Unidad de trabajo REAL + Oracle EF/MySQL.
@@ -760,6 +805,8 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                         services.AddScoped<IProductoRepository, ProductoRepository>();
                         services.AddScoped<ICategoriaRepository, CategoriaRepository>();
                         services.AddScoped<ICategoriaService, CategoriaService>();
+                        services.AddScoped<IImpuestoRepository, ImpuestoRepository>();
+                        services.AddScoped<IImpuestoService, ImpuestoService>();
                         services.AddScoped<IProductoService, ProductoService>();
                         // Real technical variant and durable audit share the EF transaction.
                         services.AddScoped<IProductoVarianteRepository, ProductoVarianteRepository>();
@@ -1494,6 +1541,53 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             pilotConfig["MultiEmpresa:PrivateReadPilotEnabled"] = "false";
             using (var defaultOff = await CategoryRequestAsync(jwtB, b.Id, "/categorias"))
                 Assert.Equal(HttpStatusCode.ServiceUnavailable, defaultOff.StatusCode);
+            pilotConfig["MultiEmpresa:PrivateReadPilotEnabled"] = "true";
+
+            // V30: real ImpuestosController -> service -> MySQL ownership A/B.
+            await using (var taxPhysical = new AppDbContext(options))
+            {
+                var owners = await taxPhysical.Impuestos.IgnoreQueryFilters()
+                    .AsNoTracking().Where(t => t.Id == taxAId || t.Id == taxBId)
+                    .Select(t => new { t.Id, EmpresaId = EF.Property<int?>(t, "EmpresaId") })
+                    .ToArrayAsync();
+                Assert.Equal(a.Id, owners.Single(t => t.Id == taxAId).EmpresaId);
+                Assert.Equal(b.Id, owners.Single(t => t.Id == taxBId).EmpresaId);
+            }
+
+            foreach (var (jwt, tenantId, ownId, otherId, ownCode, otherCode) in new[]
+            {
+                (jwtA, a.Id, taxAId, taxBId, "C0701TAXA", "C0701TAXB"),
+                (jwtB, b.Id, taxBId, taxAId, "C0701TAXB", "C0701TAXA")
+            })
+            {
+                foreach (var path in new[] { "/impuestos", $"/impuestos/{ownId}" })
+                {
+                    using var positive = await CategoryRequestAsync(jwt, tenantId, path);
+                    Assert.Equal(HttpStatusCode.OK, positive.StatusCode);
+                    var body = await positive.Content.ReadAsStringAsync();
+                    Assert.Contains(ownCode, body, StringComparison.Ordinal);
+                    Assert.DoesNotContain(otherCode, body, StringComparison.Ordinal);
+                }
+                using var foreign = await CategoryRequestAsync(
+                    jwt, tenantId, $"/impuestos/{otherId}");
+                Assert.Equal(HttpStatusCode.NotFound, foreign.StatusCode);
+                Assert.DoesNotContain(otherCode,
+                    await foreign.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+            }
+
+            using (var spoofedTax = await CategoryRequestAsync(jwtA, b.Id, "/impuestos"))
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, spoofedTax.StatusCode);
+            var revokedTaxGrantA = await db.RolPermisos.SingleAsync(x =>
+                x.RolId == roleA.Id && x.PermisoId == taxReadPermission.Id);
+            db.RolPermisos.Remove(revokedTaxGrantA);
+            await db.SaveChangesAsync();
+            using (var revokedTax = await CategoryRequestAsync(jwtA, a.Id, "/impuestos"))
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, revokedTax.StatusCode);
+            using (var stillTaxB = await CategoryRequestAsync(jwtB, b.Id, "/impuestos"))
+                Assert.Equal(HttpStatusCode.OK, stillTaxB.StatusCode);
+            pilotConfig["MultiEmpresa:PrivateReadPilotEnabled"] = "false";
+            using (var offTax = await CategoryRequestAsync(jwtB, b.Id, "/impuestos"))
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, offTax.StatusCode);
             pilotConfig["MultiEmpresa:PrivateReadPilotEnabled"] = "true";
 
             // V26 R2: nested ProductoVariantes endpoints must not evade the

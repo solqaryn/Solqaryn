@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV01 V30 C07-01.M06.06: GET fiscal positivo bajo piloto existente
+- Runtime: permite exclusivamente GET de impuestos y detalle positivo por JWT, Impuestos.Ver y tenant SQL verificado mediante piloto OFF por defecto. Oracle EF ya define EmpresaId shadow; sin migraciones ni mutaciones fiscales, sin tocar producción.
+- Suite dirigida ampliada con MySQL 8.4 real tenant A/B, HTTP propio y ajeno, revocación RBAC y guard de selector; GitHub-hosted del nuevo SHA requerido, ningún PASS anticipado.
+- Entrega R2 parcial, WIP único C07-01.M06.06 owner DEV01 candado V17 2000001045: siguen pendientes servicios, atributos, ERP, integración UI/Chromium y A0–A4 de fase; A5 independiente. Rollback por revert FF/CAS.
+
 ## 2026-11-23 — DEV05 V30 C01-03.M04.02: estados funcionales tras mutación HTTP
 - Angular runtime: PUT/logo 401/403/404/429 dejan el formulario obsoleto; errores de red/5xx indican resultado no confirmado y piden recarga antes de reintentar, sin exponer mensajes del servidor ni afirmar rollback.
 - Se añadieron seis casos adversariales Vitest sin duplicar PUT; pruebas y CI GitHub-hosted exact-SHA pendientes. No se certifica zoom nativo 200%, capturas históricas ANTES ni A5.
