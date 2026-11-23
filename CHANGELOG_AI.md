@@ -4,6 +4,7 @@
 - Riesgo R1 de navegación con frontera R2 protegida por guards existentes; evidencia visual previa, zoom nativo 200% y capturas antes/después SIN_VERIFICAR. No marcar A0–A4 ni A5 completos con este incremento.
 - Validación posterior exigida: CI exact-SHA de Angular, Scope Lock/V5 y navegación Chromium con JWT/permisos pertinentes; no reejecutar suites ya SUCCESS del mismo SHA sin cambio causal. Rollback por git revert normal.
 
+- Corrección causal de CI: el contrato Angular Vitest anterior exigía solo un enlace (1) y falló al habilitar cuatro rutas reales; actualizado para verificar cinco enlaces, descripciones accesibles, builder sin ruta y guards protegidos. Resultado de CI nuevo aún NO_ACREDITADO.
 ## 2026-11-23 — DEV01 V30 C07-01.M06.06: alta fiscal atómica con auditoría estricta
 - Incremento funcional .NET: `ImpuestoService.CreateAsync` confirma alta fiscal y recibo durable en una misma transacción Oracle EF/MySQL; error de auditoría bloquea commit en lugar de tolerarse silenciosamente.
 - Prueba xUnit verifica propagación y participación en la unidad transaccional; rollback MySQL 8.4 físico y positivos A/B/servicios/atributos siguen sin certificación hasta CI dirigida. WIP C07-01.M06.06, sin LISTO/A5 ni QA/main/PROD.

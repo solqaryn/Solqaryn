@@ -61,10 +61,31 @@ describe('C15-04.M05.01 — contrato unitario de auditoría UX privada', () => {
     expect(titleId).toBe('ux-audit-title');
     expect(root.querySelector('#ux-audit-title')?.textContent).toContain('Auditoría UX');
     expect(root.querySelectorAll('form, input, select, textarea, button')).toHaveLength(0);
-    const links = root.querySelectorAll<HTMLAnchorElement>('a[href]');
-    expect(links).toHaveLength(1);
-    expect(links[0].getAttribute('href')).toBe('/plataforma');
-    expect(links[0].getAttribute('aria-label')).toContain('Volver');
+    const volver = root.querySelector<HTMLAnchorElement>('a.ux-back');
+    expect(volver?.getAttribute('href')).toBe('/plataforma');
+    expect(volver?.getAttribute('aria-label')).toContain('Volver');
+
+    // Las cuatro acciones nuevas son navegación real, nunca mutaciones ni bypass.
+    const accesos = [...root.querySelectorAll<HTMLAnchorElement>('a.ux-open')];
+    expect(accesos.map(a => a.getAttribute('href'))).toEqual([
+      '/conoce-solqaryn',
+      '/plataforma',
+      '/dashboard',
+      '/plataforma/consola-global-v5'
+    ]);
+    for (const acceso of accesos) {
+      const descripcion = acceso.getAttribute('aria-describedby');
+      expect(descripcion).toMatch(/^ux-access-/);
+      expect(descripcion && root.querySelector('#' + descripcion)?.textContent?.length).toBeGreaterThan(10);
+    }
+    expect(root.querySelectorAll('.ux-unavailable')).toHaveLength(1);
+    expect(root.textContent).toContain('Sin acceso directo verificado');
+
+    // Enlazar una pantalla protegida no concede permisos: los guards siguen intactos.
+    for (const path of ['plataforma', 'plataforma/consola-global-v5']) {
+      expect(routes.find(r => r.path === path)?.canActivate).toEqual([plataformaGuard]);
+    }
+    expect(routes.find(r => r.path === 'dashboard')?.canActivate?.length).toBe(2);
   });
 
   it('declara los cuatro límites móviles/escritorio sin inventar mediciones', async () => {
