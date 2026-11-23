@@ -360,4 +360,62 @@ describe('TenantContextService', () => {
     expect(service.puedeCambiarEmpresa()).toBe(false);
   });
 
+  it('no acepta el HTTP de A cuando B reemplaza su JWT en otra pestaña', () => {
+    localStorage.setItem('solqaryn_token', 'jwt-A');
+    const service = TestBed.inject(TenantContextService);
+    let failed = false;
+    service.seleccionarEmpresa(7).subscribe({ error: () => { failed = true; } });
+    const old = httpMock.expectOne(`${environment.apiUrl}/tenant-context/7`);
+    localStorage.setItem('solqaryn_token', 'jwt-B');
+    old.flush({ success: true, data: {
+      usuarioId: 3, empresaId: 7, rolId: 4, rolNombre: 'Operador A', esAdministrador: false
+    } });
+    expect(failed).toBe(true);
+    expect(service.contextoVerificado()).toBeNull();
+    expect(service.empresaSolicitadaId()).toBeNull();
+    expect(localStorage.getItem('solqaryn_token')).toBe('jwt-B');
+  });
+
+  it('no comparte la petición del actor A con el actor B aunque el tenant coincida', () => {
+    localStorage.setItem('solqaryn_token', 'jwt-A');
+    const service = TestBed.inject(TenantContextService);
+    let failedOld = false;
+    service.seleccionarEmpresa(7).subscribe({ error: () => { failedOld = true; } });
+    const old = httpMock.expectOne(`${environment.apiUrl}/tenant-context/7`);
+    localStorage.setItem('solqaryn_token', 'jwt-B');
+    let confirmedNew = false;
+    service.seleccionarEmpresa(7).subscribe({ next: () => { confirmedNew = true; } });
+    const latest = httpMock.expectOne(`${environment.apiUrl}/tenant-context/7`);
+    latest.flush({ success: true, data: {
+      usuarioId: 8, empresaId: 7, rolId: 9, rolNombre: 'Operador B', esAdministrador: false
+    } });
+    old.flush({ success: true, data: {
+      usuarioId: 3, empresaId: 7, rolId: 4, rolNombre: 'Operador A', esAdministrador: false
+    } });
+    expect(confirmedNew).toBe(true);
+    expect(failedOld).toBe(true);
+    expect(service.contextoVerificado()?.usuarioId).toBe(8);
+    expect(localStorage.getItem('solqaryn_token')).toBe('jwt-B');
+  });
+
+  it('descarta la lista tardía de A sin borrar el listado vigente de B', () => {
+    localStorage.setItem('solqaryn_token', 'jwt-A');
+    const service = TestBed.inject(TenantContextService);
+    let failedOld = false;
+    service.listarEmpresasSeleccionables().subscribe({ error: () => { failedOld = true; } });
+    const old = httpMock.expectOne(`${environment.apiUrl}/tenant-context/empresas`);
+    localStorage.setItem('solqaryn_token', 'jwt-B');
+    let idsFromB: number[] = [];
+    service.listarEmpresasSeleccionables().subscribe({
+      next: empresas => { idsFromB = empresas.map(empresa => empresa.empresaId); }
+    });
+    const latest = httpMock.expectOne(`${environment.apiUrl}/tenant-context/empresas`);
+    latest.flush({ success: true, data: [
+      { empresaId: 8, nombre: 'Empresa B' }, { empresaId: 9, nombre: 'Otra B' }
+    ] });
+    old.flush({ success: true, data: [{ empresaId: 7, nombre: 'Empresa A' }] });
+    expect(failedOld).toBe(true);
+    expect(idsFromB).toEqual([8, 9]);
+  });
+
 });

@@ -5,6 +5,7 @@ import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
 
 const EMPRESA_SOLICITADA_KEY = 'solqaryn_empresa_solicitada_id';
+const TOKEN_ACTOR_KEY = 'solqaryn_token';
 
 /** Identidad empresarial que el servidor autorizó a mostrar al usuario actual. */
 export interface EmpresaSeleccionable {
@@ -42,9 +43,11 @@ export class TenantContextService {
   private seleccionEnCurso: {
     empresaId: number;
     version: number;
+    tokenOrigen: string | null;
     solicitud: Observable<ApiResponse<TenantContextoVerificado>>;
   } | null = null;
   private versionSeleccion = 0;
+  private versionListado = 0;
 
   readonly empresaSolicitadaId = computed(() => this._empresaSolicitadaId());
   readonly contextoVerificado = computed(() => this._contextoVerificado());
@@ -61,11 +64,18 @@ export class TenantContextService {
 
   listarEmpresasSeleccionables(): Observable<EmpresaSeleccionable[]> {
     const version = this.versionSeleccion;
+    const listado = ++this.versionListado;
+    const tokenOrigen = localStorage.getItem(TOKEN_ACTOR_KEY);
     // La lista se resuelve en MySQL por membresías activas del JWT actual.
     // Este método nunca considera localStorage ni cabeceras tenant una autoridad.
     return this.http.get<ApiResponse<EmpresaSeleccionable[]>>(`${this.apiUrl}/empresas`).pipe(
       timeout({ first: 15_000 }),
       map(respuesta => {
+        // Los resultados de A nunca pueden habilitar el selector de B tras
+        // un cambio de JWT concurrente (incluido desde otra pestaña).
+        if (localStorage.getItem(TOKEN_ACTOR_KEY) !== tokenOrigen) {
+          throw new Error('La identidad cambió durante la consulta empresarial.');
+        }
         const empresas = respuesta?.success === true ? respuesta.data : null;
         if (!Array.isArray(empresas) || empresas.some(empresa =>
           !Number.isInteger(empresa?.empresaId) || empresa.empresaId <= 0 ||
@@ -78,11 +88,15 @@ export class TenantContextService {
         if (new Set(ids).size !== ids.length) {
           throw new Error('El servidor devolvió empresas duplicadas.');
         }
-        if (version === this.versionSeleccion) this._idsMembresiasListadas.set(ids);
+        if (version === this.versionSeleccion && listado === this.versionListado) {
+          this._idsMembresiasListadas.set(ids);
+        }
         return empresas;
       }),
       catchError(error => {
-        if (version === this.versionSeleccion) this._idsMembresiasListadas.set([]);
+        if (version === this.versionSeleccion && listado === this.versionListado) {
+          this._idsMembresiasListadas.set([]);
+        }
         return throwError(() => error);
       })
     );
@@ -96,7 +110,9 @@ export class TenantContextService {
 
     // Una única validación HTTP por selección: un segundo guard o el
     // selector no puede invalidar la primera al intentar la misma empresa.
-    if (this.seleccionEnCurso?.empresaId === empresaId) {
+    const tokenOrigen = localStorage.getItem(TOKEN_ACTOR_KEY);
+    if (this.seleccionEnCurso?.empresaId === empresaId &&
+        this.seleccionEnCurso.tokenOrigen === tokenOrigen) {
       return this.seleccionEnCurso.solicitud;
     }
 
@@ -116,7 +132,9 @@ export class TenantContextService {
         tap((respuesta) => {
           // Una respuesta de una empresa anterior no puede seleccionar ni
           // limpiar el tenant actual mientras se cambia de contexto.
-          if (version !== this.versionSeleccion || this._empresaSolicitadaId() !== empresaId) {
+          if (version !== this.versionSeleccion ||
+              this._empresaSolicitadaId() !== empresaId ||
+              localStorage.getItem(TOKEN_ACTOR_KEY) !== tokenOrigen) {
             throw new Error('La selección empresarial fue sustituida.');
           }
           const contexto = respuesta?.success === true ? respuesta.data : null;
@@ -137,13 +155,14 @@ export class TenantContextService {
         shareReplay({ bufferSize: 1, refCount: true })
       );
 
-    this.seleccionEnCurso = { empresaId, version, solicitud };
+    this.seleccionEnCurso = { empresaId, version, tokenOrigen, solicitud };
     return solicitud;
   }
 
   limpiar(): void {
     // Invalida también respuestas HTTP que lleguen después de cerrar/salir.
     this.versionSeleccion++;
+    this.versionListado++;
     this.seleccionEnCurso = null;
     this._empresaSolicitadaId.set(null);
     this._contextoVerificado.set(null);

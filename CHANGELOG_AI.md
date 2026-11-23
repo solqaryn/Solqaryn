@@ -1,3 +1,9 @@
+## 2026-11-23 — DEV03 V30 C02-01.M05.04: respuestas tenant vinculadas al JWT original
+- Runtime Angular: vincular la consulta de empresas y la selección de contexto al JWT que inició cada operación; una respuesta tardía de A no puede instalar membresías ni rol de B.
+- No reutilizar entre dos actores JWT una petición pendiente para el mismo tenant; descartar listados anteriores cuando llegan después de respuestas de una sesión nueva.
+- Tres regresiones adversariales para dos actores, cambio entre pestañas y llegada HTTP fuera de orden. La autorización de empresa sigue exclusivamente en MySQL/JWT del backend.
+- R2, V17 y rollback por revert conservados; pendiente la preferencia duradera SQL, reemisión JWT efectiva y aceptación Chromium/JWT/MySQL real. Sin certificar LISTO/A5/QA/PROD hasta evidencia A0–A4 completa.
+
 ## 2026-11-23 — DEV02 V30 C15-04.M05.04: navegación UX operativa por superficies
 - Cambio funcional Angular: la auditoría privada incorpora enlaces reales a landing pública, portal global, dashboard ERP y consola global, asociados a rutas existentes y sujetos a sus guards; el builder queda explícitamente sin enlace hasta existir una ruta verificada.
 - Accesibilidad: acciones de 44 px, foco visible y explicación vinculada mediante aria-describedby; sin permisos nuevos, peticiones mutantes ni métricas WCAG/CWV inventadas. Se conservan estados NO_MEDIDO y límites de rol/tenant.
