@@ -289,15 +289,26 @@ public class ProductoService : IProductoService
         // permission gate. A spoofed X-Empresa-Id header never authorizes a write.
         // Non-HTTP internal callers preserve their existing service contract.
         var http = _httpContextAccessor?.HttpContext;
-        if (http is not null && VerifiedCommercialTenant.Resolve(http) is not > 0)
+        var empresaAutorizada = VerifiedCommercialTenant.Resolve(http);
+        if (http is not null && empresaAutorizada is not > 0)
             throw new ForbiddenAccessException(
                 "La baja de productos requiere un tenant autorizado por RBAC.");
 
         var producto = await _repository.GetByIdAsync(id);
         if (producto is null) return false;
 
+        // El marcador RBAC verificado no sustituye una comprobacion de propiedad
+        // en el ultimo limite de escritura. Fallar cerrado si un repositorio,
+        // configuracion EF o relacion corrupta devuelve datos de otro tenant.
+        if (http is not null && producto.EmpresaId != empresaAutorizada)
+            throw new ForbiddenAccessException(
+                "El producto no pertenece a la empresa autorizada.");
+
         // La baja logica no puede ocultar inventario fisico de otro agregado.
         var variantesVigentes = producto.Variantes.Where(v => !v.Eliminado).ToList();
+        if (variantesVigentes.Any(v => v.EmpresaId != producto.EmpresaId))
+            throw new ForbiddenAccessException(
+                "El producto contiene variantes de otra empresa.");
         if (variantesVigentes.Any(v => v.Cantidad != 0))
             throw new BusinessRuleException(
                 "No se puede eliminar un producto con existencias en sus variantes. Ajusta el inventario antes de eliminarlo.");

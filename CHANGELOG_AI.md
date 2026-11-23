@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV06 V30 C14-02.M06.06: propiedad de producto y variantes validada antes del DELETE
+- Correccion de runtime en `ProductoService.DeleteAsync`: con la marca RBAC server-side se comprueba que el producto pertenece al tenant autenticado; se rechaza antes de mutar si el agregado contiene una variante vigente de otra empresa, aun si el repositorio entregase datos cruzados por configuracion defectuosa.
+- xUnit adversarial con producto ajeno o variante ajena para asegurar denegacion y cero escrituras; A0-A4 completos y HTTP JWT firmado A/B con EF Oracle MySQL8.4 quedan pendientes de evidencia GitHub-hosted exact-SHA. No certificar P0/P1 global, LISTO, A5 ni QA/main/PROD.
+
 ## 2026-11-23 — DEV05 V30 C01-03.M04.02: negar GET de configuración con envoltura fallida
 - Corrección funcional Angular: un GET HTTP 200 con `success=false` y datos plausibles del tenant ya no monta formulario ni acepta versión no confirmada; devuelve estado de error recuperable sin filtrar el cuerpo del servidor. `success=true` y sin datos sigue siendo vacío legítimo.
 - Vitest adversarial y Chromium autenticado A/B dirigido añadidos después de cambiar runtime; se conserva el workflow existente y no se relanzan pruebas ya aprobadas manualmente. V17/CAS y owner histórico preservados, A0–A4 solo con CI causal exact-SHA, A5 independiente, zoom nativo 200% y captura histórica ANTES aún pendientes, sin LISTO/QA/main/PROD.

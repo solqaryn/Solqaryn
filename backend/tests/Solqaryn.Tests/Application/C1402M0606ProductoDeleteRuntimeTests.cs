@@ -1,7 +1,9 @@
+using Microsoft.AspNetCore.Http;
 using Moq;
 using Solqaryn.Application.Exceptions;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Application.Services;
+using Solqaryn.Application.Security;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
 using Xunit;
@@ -82,6 +84,42 @@ public sealed class C1402M0606ProductoDeleteRuntimeTests
         Assert.True(product.Activo);
         Assert.False(variant.Eliminado);
         Assert.True(variant.Activo);
+        repo.Verify(x => x.SaveChangesAsync(), Times.Never);
+    }
+
+    [Theory]
+    [InlineData(8, 7)]
+    [InlineData(7, 8)]
+    public async Task DeleteRejectsCrossTenantProductOrVariantBeforeAnyMutation(
+        int productoTenant, int varianteTenant)
+    {
+        var variante = new ProductoVariante
+        {
+            Id = 302, ProductoId = 301, EmpresaId = varianteTenant,
+            Cantidad = 0, Activo = true, Eliminado = false
+        };
+        var producto = new Producto
+        {
+            Id = 301, EmpresaId = productoTenant, Nombre = "Producto cruzado",
+            Marca = "", Modelo = "", Activo = true, Eliminado = false,
+            Variantes = new List<ProductoVariante> { variante }
+        };
+        var repo = new Mock<IProductoRepository>(MockBehavior.Strict);
+        repo.Setup(x => x.GetByIdAsync(301)).ReturnsAsync(producto);
+        var context = new DefaultHttpContext();
+        context.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = 7;
+        var accessor = new HttpContextAccessor { HttpContext = context };
+        var service = new ProductoService(repo.Object,
+            Mock.Of<ICategoriaRepository>(), Mock.Of<IImageStorageService>(),
+            Mock.Of<ICurrentUserService>(), Mock.Of<IAuditoriaService>(),
+            httpContextAccessor: accessor);
+
+        await Assert.ThrowsAsync<ForbiddenAccessException>(
+            () => service.DeleteAsync(301));
+        Assert.False(producto.Eliminado);
+        Assert.True(producto.Activo);
+        Assert.False(variante.Eliminado);
+        Assert.True(variante.Activo);
         repo.Verify(x => x.SaveChangesAsync(), Times.Never);
     }
 }
