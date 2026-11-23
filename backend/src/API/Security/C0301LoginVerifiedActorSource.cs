@@ -73,6 +73,10 @@ public sealed class C0301LoginVerifiedActorSource(
             if (signedIds.Length != 1 ||
                 !int.TryParse(signedIds[0].Value, NumberStyles.None,
                     CultureInfo.InvariantCulture, out var actorId) ||
+                actorId <= 0 ||
+                !string.Equals(signedIds[0].Value,
+                    actorId.ToString(CultureInfo.InvariantCulture),
+                    StringComparison.Ordinal) ||
                 actorId != current.UsuarioId.Value)
                 return null;
 

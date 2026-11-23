@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV04 V27 C03-01.M03.03: ID JWT firmado canonico sin alias de ceros
+- La fuente de autorización read-only opt-in DEV ahora rechaza IDs JWT firmados como 091/00091 aunque sean convertibles al mismo actor SQL 91; conserva la identidad canónica de /auth/renovar, el aislamiento tenant A/B, las revocaciones, las denegaciones y cero permisos nuevos.
+- Suite adversarial xUnit con JwtBearer real; GitHub-hosted MySQL 8.4 y los checks exact-SHA quedan obligatorios, sin contar CI en curso como PASS. Faltan login productivo completo y cambio de tenant/sucursal; PLAN C03-01.M03.03 sigue VALIDANDO, owner histórico DEV04, A5 distinta, rollback git revert y sin QA/main/PROD.
+
 ## 2026-11-23 — DEV03 V27 C03-03.M03.03: corregir namespace DI de prueba
 - La segunda CI (run 45229063354, job 137883343477, SHA d5edd68d) falló antes de ejecutar tests: CS0246 para IPublicStoreProofReplayStore, que reside en Solqaryn.API.Middleware.
 - Reparación mínima: using del namespace real en test, sin alterar runtime, autoridad ni mocks de identidad; exige CI MySQL8.4, JWT y MVC real exact SHA, Scope Lock/V5 y A5 independiente posterior.

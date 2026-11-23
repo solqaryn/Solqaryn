@@ -29,14 +29,17 @@ public sealed class C0301M0303LoginVerifiedActorSourceTests
     private static readonly SymmetricSecurityKey Key =
         new(Encoding.UTF8.GetBytes("solqaryn-login-m0303-only-test-key-2026!"));
 
-    private static string Token(int actor = Actor, bool validSignature = true)
+    private static string Token(int actor = Actor, bool validSignature = true) =>
+        TokenWithRawId(actor.ToString(), validSignature);
+
+    private static string TokenWithRawId(string rawId, bool validSignature = true)
     {
         var key = validSignature ? Key :
             new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
                 "invalid-login-jwt-test-signature-key-2026!"));
         var jwt = new JwtSecurityToken(
             issuer: "solqaryn-login-tests", audience: "solqaryn-login-tests",
-            claims: [new Claim("id", actor.ToString())],
+            claims: [new Claim("id", rawId)],
             notBefore: DateTime.UtcNow.AddMinutes(-1),
             expires: DateTime.UtcNow.AddMinutes(10),
             signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
@@ -173,6 +176,17 @@ public sealed class C0301M0303LoginVerifiedActorSourceTests
         Assert.Null(await forged.Reader.ReadCurrentAsync(CancellationToken.None));
         await using var wrongId = await SetupAsync(token: Token(actor: 92));
         Assert.Null(await wrongId.Reader.ReadCurrentAsync(CancellationToken.None));
+    }
+
+    [Theory]
+    [InlineData("091")]
+    [InlineData("00091")]
+    public async Task SignedNonCanonicalActorIdNeverResolvesTenant(string rawId)
+    {
+        // A cryptographically valid JWT with an alias of actor 91 must not
+        // bypass the canonical identity rule already enforced by /auth/renovar.
+        await using var f = await SetupAsync(token: TokenWithRawId(rawId));
+        Assert.Null(await f.Reader.ReadCurrentAsync(CancellationToken.None));
     }
 
     [Fact]
