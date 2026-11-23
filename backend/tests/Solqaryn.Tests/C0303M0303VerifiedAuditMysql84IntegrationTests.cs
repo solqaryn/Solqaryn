@@ -451,6 +451,17 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
                     "X-Empresa-Id", tenantB.Id.ToString());
                 using var selectorResponse = await client.SendAsync(wrongSelector);
                 Assert.Equal(HttpStatusCode.Forbidden, selectorResponse.StatusCode);
+                // Fail-closed 403 must never be cached for cross-tenant probes.
+                Assert.True(selectorResponse.Headers.CacheControl?.NoStore == true);
+
+                using var foreignRecord = new HttpRequestMessage(
+                    HttpMethod.Post, "/__dev/audit-authorization/" +
+                    tenantB.Id + "/record");
+                foreignRecord.Headers.Authorization =
+                    new AuthenticationHeaderValue("Bearer", signed);
+                using var foreignResponse = await client.SendAsync(foreignRecord);
+                Assert.Equal(HttpStatusCode.Forbidden, foreignResponse.StatusCode);
+                Assert.True(foreignResponse.Headers.CacheControl?.NoStore == true);
 
             }
 

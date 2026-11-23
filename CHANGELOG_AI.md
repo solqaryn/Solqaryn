@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV03 V30 C03-03.M03.04: no-store para denegaciones de auditoría tenant
+- Runtime API Development: GET/POST de auditoría autenticada fijan Cache-Control: no-store ANTES de la verificación JWT/RBAC/tenant, protegiendo respuestas 403 y fallos 503 de bitácora, además del éxito 204; se preservan ledger transaccional y feature flag OFF por defecto.
+- Integración dirigida real TestServer/Oracle EF/MySQL 8.4 y JWT: rechazos GET de selector forjado y POST de empresa ajena exigen HTTP 403 con no-store. Son verificaciones de transporte y caché, no certificación de todos los requisitos M03 ni de producción.
+- R2 pendiente CI GitHub-hosted exact SHA y revisión independiente A5; mantener VALIDANDO hasta A0–A4 completos, rollback por revert normal sin tocar QA/main/PROD.
+
 ## 2026-11-23 — DEV02 V30 C15-04.M05.04: corrección sintáctica de decorador Angular
 - Diagnóstico exact-SHA 66ef3e66: Frontend producción y Chromium FALLARON antes de pruebas por TS1206 Decorators are not valid here, archivo c15-04-auditoria-ux-v19.component.ts línea 9. El alias quedó insertado entre @Component y su clase; el parser no llegó a probar el filtro.
 - Reparación mínima: mover alias arriba de documentación y @Component sin cambiar filtros, guards, permisos o tests. E2E de botones quedó ajustado en SHA 8883bf1d. CI exact-SHA nueva es obligatoria y no se presume PASS ni se reejecutan suites manualmente.

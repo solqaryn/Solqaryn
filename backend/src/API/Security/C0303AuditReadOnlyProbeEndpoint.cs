@@ -37,10 +37,11 @@ public static class C0303AuditReadOnlyProbeEndpoint
                 C0303SecurityAuditApplicationService audit,
                 CancellationToken cancellationToken) =>
             {
+                // Never cache an authenticated tenant denial or successful read.
+                http.Response.Headers.CacheControl = "no-store";
                 if (!await IsVerifiedAuditReaderAsync(http, empresaId,
                     scopes, audit, cancellationToken))
                     return Results.StatusCode(StatusCodes.Status403Forbidden);
-                http.Response.Headers.CacheControl = "no-store";
                 return Results.NoContent();
             })
             .RequireAuthorization()
@@ -56,6 +57,8 @@ public static class C0303AuditReadOnlyProbeEndpoint
                 C0303TransactionalAuditPersistenceAdapter writer,
                 CancellationToken cancellationToken) =>
             {
+                // Audit denial and storage failure (403/503) are sensitive too.
+                http.Response.Headers.CacheControl = "no-store";
                 if (!await IsVerifiedAuditReaderAsync(http, empresaId,
                     scopes, audit, cancellationToken))
                     return Results.StatusCode(StatusCodes.Status403Forbidden);
@@ -69,7 +72,6 @@ public static class C0303AuditReadOnlyProbeEndpoint
                     if (!await writer.RecordVerifiedAuditReadAsync(
                         empresaId, cancellationToken))
                         return Results.StatusCode(StatusCodes.Status403Forbidden);
-                    http.Response.Headers.CacheControl = "no-store";
                     return Results.NoContent();
                 }
                 catch (OperationCanceledException) when (
