@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV02 C15-04.M05.04 A115: branding JWT y denegación tenant B
+- A114 SHA 4c083917 acreditó 155/155 Chromium PASS con MySQL 8.4.13/JWT real y checks causales SUCCESS; retries SKIPPED no cuentan como PASS.
+- A115 agrega dos casos Playwright reales A0.88/A0.89 de branding/capacidades, reflow CSS x2 a cinco anchos y RBAC 403 tenant B sin fuga ni escritura; 157 tests esperados, CI nueva pendiente.
+- Scope Lock STRICT, WIP propio V17 conservado, sin QA/main/PROD; aún no se certifican zoom nativo 200%, cobertura integral, WCAG/CWV de campo, A0–A4 completo ni A5 ajena.
+
 ## 2026-11-22 — DEV06 C02-04.M05.06: laboratorio QA aislado real JWT/MySQL (R2)
 - Reparación causal del A5_FAIL P2: se agrega job GitHub-hosted independiente con MySQL 8.4 efímero, .NET 10, JWT firmado y nueve pruebas HTTP/RBAC, incluida matriz empresarial A/B con cuatro denegaciones reales; TRX exigido 9 PASS/0 FAIL/0 OMITIDOS y artefacto propio.
 - Se mantienen las ocho regresiones Angular/Chromium y su sesión sintética declarada. La evidencia backend aislada no acredita integración navegador-API JWT real ni MFA, ni constituye aprobación A5: requiere CI exact-SHA COMPLETED/SUCCESS y revisión independiente distinta de DEV04/DEV06.

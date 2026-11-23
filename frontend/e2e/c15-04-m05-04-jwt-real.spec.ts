@@ -3171,4 +3171,112 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
   }
 
 
+  // A115/A0.88: nuevas rutas privadas JWT reales; CSS root x2 NO es zoom nativo.
+  // Solo pruebas de lectura: sin alterar backend, roles ni proveedores.
+  for (const destino of [
+    { ruta: '/plataforma/capacidades-branding-v19', titulo: 'Branding y capacidades permitidas' },
+  ]) {
+    test('A0.88 - reflow texto 200% JWT real ' + destino.ruta, async ({ page, request }) => {
+      test.setTimeout(180_000);
+      const jwt = await ingresarConJwtRealParaGuard(page, request, 'c1504_platform_only');
+      const autorizado = await request.get(api + '/plataforma/sesion', {
+        headers: { Authorization: 'Bearer ' + jwt }
+      });
+      expect(autorizado.status(), 'JWT firmado aprobado').toBe(200);
+      const escrituras: string[] = [];
+      page.on('request', req => {
+        if (req.url().includes('localhost:5005') &&
+            /^(POST|PUT|PATCH|DELETE)$/.test(req.method())) {
+          escrituras.push(req.method() + ' ' + new URL(req.url()).pathname);
+        }
+      });
+      for (const ancho of [320, 390, 768, 1280, 1440]) {
+        await page.setViewportSize({ width: ancho, height: 840 });
+        const sesion = page.waitForResponse(res =>
+          res.url().includes('/plataforma/sesion') && res.request().method() === 'GET');
+        const respuesta = await page.goto(destino.ruta);
+        expect(respuesta?.status(), 'HTTP de ruta privada').toBe(200);
+        expect((await sesion).status(), 'HTTP sesión privada').toBe(200);
+        const titulo = page.getByRole('heading', { level: 1, name: destino.titulo });
+        await expect(titulo).toBeVisible();
+        const raiz = await page.evaluate(() =>
+          parseFloat(getComputedStyle(document.documentElement).fontSize));
+        expect(raiz).toBeGreaterThan(0);
+        const slug = destino.ruta.split('/').pop()!;
+        if (ancho === 320 || ancho === 1440) {
+          await page.screenshot({ path: 'test-results/c1504-a115-' + slug + '-' +
+            ancho + '-texto100.png', fullPage: true });
+        }
+        await page.evaluate(px => { document.documentElement.style.fontSize = px + 'px'; },
+          raiz * 2);
+        await expect(titulo, 'Titulo debe conservarse a 200%').toBeVisible();
+        const medidas = await page.evaluate(() => ({
+          html: document.documentElement.scrollWidth,
+          body: document.body.scrollWidth,
+          viewport: window.innerWidth
+        }));
+        expect(Math.max(medidas.html, medidas.body),
+          'No overflow global con texto 200%').toBeLessThanOrEqual(medidas.viewport + 2);
+        if (ancho === 320 || ancho === 1440) {
+          await page.screenshot({ path: 'test-results/c1504-a115-' + slug + '-' +
+            ancho + '-texto200.png', fullPage: true });
+        }
+      }
+      expect(escrituras, 'Sin mutaciones HTTP').toEqual([]);
+    });
+  }
+
+
+
+  // A115/A0.89: la evidencia positiva A113 no prueba rechazo de empresa B.
+  // El guard consulta autoridad global del backend MySQL 8.4; sin mocks,
+  // sin otorgar permisos ni crear recursos. Esperar estabilidad post-403.
+  for (const destino of [
+    { ruta: '/plataforma/capacidades-branding-v19', titulo: 'Branding y capacidades permitidas' },
+  ]) {
+    test('A0.89 - tenant B denegado sin fugas en ' + destino.ruta,
+      async ({ page, request }) => {
+        test.setTimeout(180_000);
+        const jwt = await ingresarConJwtRealParaGuard(page, request, 'c1504_admin_b', true);
+        const control = await request.get(api + '/plataforma/sesion', {
+          headers: { Authorization: 'Bearer ' + jwt }
+        });
+        expect(control.status(), 'JWT B valido, pero sin rol global').toBe(403);
+        const mutaciones: string[] = [];
+        page.on('request', req => {
+          if (req.url().includes('localhost:5005') &&
+              /^(POST|PUT|PATCH|DELETE)$/.test(req.method())) {
+            mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+          }
+        });
+        for (const ancho of [320, 390, 768, 1280, 1440]) {
+          await page.setViewportSize({ width: ancho, height: 840 });
+          const sesion = page.waitForResponse(res =>
+            res.url().includes('/plataforma/sesion') &&
+            res.request().method() === 'GET');
+          await page.goto(destino.ruta);
+          expect((await sesion).status(), 'Denegacion por autoridad HTTP real').toBe(403);
+          await expect(page).toHaveURL(url =>
+            url.pathname === '/login' &&
+            url.searchParams.get('plataforma') === 'denegado');
+          await expect(page.getByRole('heading', {
+            level: 1, name: destino.titulo
+          }), 'Ninguna cabecera privada renderizada').toHaveCount(0);
+          await page.waitForTimeout(300);
+          await expect(page).toHaveURL(url =>
+            url.pathname === '/login' &&
+            url.searchParams.get('plataforma') === 'denegado');
+          const tamanos = await page.evaluate(() => ({
+            html: document.documentElement.scrollWidth,
+            body: document.body.scrollWidth
+          }));
+          expect(Math.max(tamanos.html, tamanos.body),
+            'Sin overflow global en denegacion a ' + ancho)
+            .toBeLessThanOrEqual(ancho + 2);
+        }
+        expect(mutaciones, 'RBAC denegado no provoca escrituras API').toEqual([]);
+      });
+  }
+
+
 });

@@ -36,3 +36,11 @@ A114 agrega **tres pruebas negativas nuevas** en observabilidad, inventario-ruta
 
 **Limitación explícita:** la cobertura institucional de aproximadamente 160 rutas, zoom nativo 200%, WCAG completo, Core Web Vitals y capturas históricas previas siguen sin certificarse. Mantener \`PLAN_MAESTRO H2297=EN_PROGRESO\`, autor DEV02, candado V17 y A5 independiente; no fingir LISTO. Rollback: git revert normal del commit exacto, sin force-push.
 
+
+## A115 — regresión nueva de branding/capacidades privada (R2 test-only)
+
+A114 confirmado GitHub-hosted exact-SHA `4c0839177c3c52f9d129d4dd16b508981f6829a5`: job 137408927725/run 45087366260, 155/155 Chromium PASS, 0 FAIL/0 SKIP, MySQL 8.4.13 efímero, JWT firmado y Scope Lock/V5/backend/frontend/seguridad pertinentes SUCCESS. Retries opcionales SKIPPED no son PASS.
+
+A115 añade A0.88 (plataforma HTTP 200, H1 branding, cinco anchuras 320/390/768/1280/1440, CSS raíz x2, capturas 100/200, sin escrituras) y A0.89 (tenant B JWT real HTTP 403, redirección denegada, ausencia de contenido privado y sin mutaciones). La ruta `/plataforma/capacidades-branding-v19` ya existía bajo plataformaGuard. Se esperan 157 pruebas GitHub-hosted; NO certificar el SHA nuevo antes de CI.
+
+SKREF-03 Impeccable y SKREF-10 Angular verificados en origen/pin. Cambio sólo a Playwright, documentación y CHANGELOG; no runtime, DB, autorización ni producción. Mantener H2297 EN_PROGRESO/I DEV02 y V17 lock. Sin evidencia de zoom nativo de escritorio 200%, cobertura global de rutas, WCAG/CWV de campo, baseline visual histórica o A5 independiente. Rollback con git revert normal.
