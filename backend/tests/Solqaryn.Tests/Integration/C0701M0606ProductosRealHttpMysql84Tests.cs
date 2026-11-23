@@ -1271,6 +1271,71 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                         .AsNoTracking().CountAsync(x => x.Modulo == ModuloSistema.Impuestos));
             }
 
+            // V26 R2: Categoria has no tenant ownership column. All private
+            // category reads/mutators must stay quarantined even for A/B JWTs.
+            // This is a real MySQL 8.4 physical NON-mutation proof, not CRUD enablement.
+            var categoryRejectedName = "C0701CategoryDenied" + Guid.NewGuid().ToString("N");
+            var categorySnapshotBefore = await db.Categorias.IgnoreQueryFilters()
+                .AsNoTracking().OrderBy(c => c.Id)
+                .Select(c => new { c.Id, c.Nombre, c.Descripcion, c.Activa, c.Eliminada })
+                .ToArrayAsync();
+            Assert.Contains(categorySnapshotBefore,
+                c => c.Nombre == "Category C0701RealProductoA");
+            Assert.Contains(categorySnapshotBefore,
+                c => c.Nombre == "Category C0701RealProductoB");
+            var categoryAuditBefore = await db.RegistrosAuditoria.IgnoreQueryFilters()
+                .CountAsync(x => x.Modulo == ModuloSistema.Categorias);
+            foreach (var (signedJwt, selectedTenant) in new[]
+            {
+                (jwtA, a.Id), (jwtB, b.Id), (jwtA, b.Id), (jwtB, a.Id)
+            })
+            {
+                foreach (var (method, path) in new[]
+                {
+                    (HttpMethod.Get, "/categorias"),
+                    (HttpMethod.Get, "/categorias/activas"),
+                    (HttpMethod.Get, "/categorias/1"),
+                    (HttpMethod.Post, "/categorias"),
+                    (HttpMethod.Put, "/categorias/1"),
+                    (HttpMethod.Patch, "/categorias/1/activar"),
+                    (HttpMethod.Patch, "/categorias/1/desactivar"),
+                    (HttpMethod.Delete, "/categorias/1")
+                })
+                {
+                    using var request = new HttpRequestMessage(method, path);
+                    request.Headers.Authorization =
+                        new AuthenticationHeaderValue("Bearer", signedJwt);
+                    request.Headers.TryAddWithoutValidation(
+                        "X-Empresa-Id", selectedTenant.ToString());
+                    if (method == HttpMethod.Post || method == HttpMethod.Put)
+                        request.Content = new StringContent(
+                            "{\"nombre\":\"" + categoryRejectedName + "\"}",
+                            Encoding.UTF8, "application/json");
+                    using var response = await client.SendAsync(request);
+                    Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+                    var deniedBody = await response.Content.ReadAsStringAsync();
+                    Assert.Contains("TENANT_DATA_ISOLATION_REQUIRED",
+                        deniedBody, StringComparison.Ordinal);
+                    Assert.DoesNotContain("Category C0701RealProductoA",
+                        deniedBody, StringComparison.Ordinal);
+                    Assert.DoesNotContain("Category C0701RealProductoB",
+                        deniedBody, StringComparison.Ordinal);
+                }
+            }
+            await using (var categoryReadback = new AppDbContext(options))
+            {
+                var categorySnapshotAfter = await categoryReadback.Categorias
+                    .IgnoreQueryFilters().AsNoTracking().OrderBy(c => c.Id)
+                    .Select(c => new { c.Id, c.Nombre, c.Descripcion, c.Activa, c.Eliminada })
+                    .ToArrayAsync();
+                Assert.Equal(categorySnapshotBefore, categorySnapshotAfter);
+                Assert.DoesNotContain(categorySnapshotAfter,
+                    c => c.Nombre == categoryRejectedName);
+                Assert.Equal(categoryAuditBefore,
+                    await categoryReadback.RegistrosAuditoria.IgnoreQueryFilters()
+                        .AsNoTracking().CountAsync(x => x.Modulo == ModuloSistema.Categorias));
+            }
+
             var membershipA = await db.UsuarioEmpresas
                 .SingleAsync(x => x.UsuarioId == userA.Id && x.EmpresaId == a.Id);
             membershipA.Desactivar();

@@ -272,3 +272,9 @@ LISTO ni A5: fiscal positivo con ownership y servicios/atributos de ERP
 siguen sin integracion completa. `PLAN_MAESTRO!H1045=EN_PROGRESO`,
 owner DEV01, V17 lock 2000001045. Rollback `git revert` normal si
 aparece regresion, con readback previo de HEAD; QA/main/PROD prohibidos.
+
+## V26 DEV01 — prueba física de cuarentena de categorías sin tenant
+
+La entidad real \`Categoria\` es un catálogo global sin columna \`EmpresaId\`. Antes de conceder lectura o escritura privada es obligatorio establecer una pertenencia multiempresa verificable; una cabecera HTTP nunca confiere autorización. La suite existente añade 32 peticiones HTTP JWT firmadas a \`CategoriasController\` con empresas A/B reales y selectores propios/cruzados: GET listado, activas y detalle; POST, PUT, PATCH activar/desactivar y DELETE. Cada solicitud debe terminar 503 \`TENANT_DATA_ISOLATION_REQUIRED\`, sin exponer categorías. Un segundo DbContext Oracle EF/MySQL 8.4 efímero verifica por ID/nombre/descripción/estado que ninguna fila cambió y que los registros de auditoría del módulo permanecen idénticos.
+
+Evidencia **negativa dirigida**, no aprobación de CRUD positivo de categorías, servicios, atributos ni fiscalidad multiempresa. No modifica runtime, banderas, DI ni datos comerciales reales. CI GitHub-hosted dirigida TRX real más Scope Lock/V5 exact-SHA: exigir SUCCESS antes de acreditar A0–A4 de este incremento. M06.06 sigue EN_PROGRESO con candado legítimo DEV01; falta aceptación acumulativa ERP, Angular/API completo y A5 independiente. Rollback con revert normal FF/CAS y readback; no QA/main/PROD.

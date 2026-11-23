@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV01 C07-01.M06.06: cuarentena de categorías globales
+- Prueba R2 real de 32 solicitudes HTTP JWT A/B y selectores tenant propio/cruzado contra las rutas existentes GET/POST/PUT/PATCH/DELETE de CategoriasController: 503 sin filtración de catálogo.
+- Readback físico en MySQL 8.4 Oracle EF compara categorías y auditoría antes/después; no habilita APIs ni derechos comerciales, no certifica servicios/atributos/UX ni fase ERP completa. Exigir GitHub-hosted exact-SHA y A0–A4 reales; H=EN_PROGRESO, A5 independiente pendiente; no QA/main/PROD.
+
 ## 2026-11-23 — DEV06 C14-02.M06.06: revocación SQL posterior al preflight de servicio
 - Nueva prueba adversarial real y dirigida, con JWT firmado, HTTP TestServer y MySQL 8.4 efímero: revocar ServiceGrantActive tras una solicitud positiva fuerza 403 con el mismo token; restablecer el grant sólo permite el preflight de adaptador requerido, y tenant B recibe 403.
 - R2 test-only; no cambia API ni DI productivos y no certifica BOLA/IDOR, archivos, jobs, caché, backup ni sesiones. Exigir GitHub-hosted exact-SHA, Scope Lock/V5 y checks pertinentes; conservar C14-02.M06.06 VALIDANDO, owner DEV06 y A5 independiente, sin QA/main/PROD.
