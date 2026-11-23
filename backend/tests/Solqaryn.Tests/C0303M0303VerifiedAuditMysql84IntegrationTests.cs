@@ -471,6 +471,14 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
                         s.AddControllers().AddApplicationPart(typeof(AuditoriaController).Assembly);
                         s.AddHttpContextAccessor();
                         s.AddSingleton<IConfiguration>(mvcConfig);
+                        // The production P0 middleware declares both public-store
+                        // provider DI parameters even on unrelated private routes.
+                        // Test-only no-op providers satisfy DI; /auditoria never
+                        // calls either provider and tenant auth remains real SQL.
+                        s.AddSingleton<IPublicStoreHostTenantResolver>(
+                            Mock.Of<IPublicStoreHostTenantResolver>());
+                        s.AddSingleton<IPublicStoreProofReplayStore>(
+                            Mock.Of<IPublicStoreProofReplayStore>());
                         s.AddScoped(_ => new AppDbContext(options, null,
                             _.GetRequiredService<IHttpContextAccessor>()));
                         s.AddScoped<ICurrentUserService, CurrentUserService>();

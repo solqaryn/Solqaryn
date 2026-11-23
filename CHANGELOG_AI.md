@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV03 V27 C03-03.M03.03: reparación causal DI de MySQL/HTTP test
+- El run 45228287145, job 137880632234, SHA fa198f83 falló 1/8 (7 PASS): TestServer no resolvía IPublicStoreHostTenantResolver cuando se construía el middleware P0; no se ejecutó la prueba de HTTP real. El fallo histórico queda conservado.
+- El fixture registra sólo dos proveedores de tienda pública no-op requeridos por DI, sin ampliar permisos, sin simular JWT, RBAC, MySQL ni el flujo MVC; producción y QA continúan intactos.
+- Nueva CI exact SHA, integración MySQL84 y controles A0-A4 pendientes; H VALIDANDO / owner DEV03 y A5 independiente después, no PASS supuesto.
+
 ## 2026-11-23 — DEV03 V27 C03-03.M03.03: HTTP MVC real de auditoria por tenant en DEV
 - Implementado piloto opt-in solo Development para GET exacto /auditoria: JWT valido, SQL UsuarioEmpresa y rol administrador vigente, permiso relacional Auditoria.Ver y segundo filtro MVC; caché no-store y P0 multiempresa restante intacto.
 - Ampliada prueba GitHub-hosted MySQL 8.4 efimero con MVC real, controller, filtros y SQL para tenant A/B, JWT falso/expirado, selector invalido, revocacion/restauracion del grant; conserva prueba anterior y rollback.
