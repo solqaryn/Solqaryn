@@ -8,3 +8,11 @@ El workflow ERP-N0.3 mantiene dotnet restore, build Release -warnaserror y dotne
 
 ## Seguridad y alcance
 Credenciales del servicio efimero de CI, no secretos productivos. No modifica JWT/RBAC real, API comercial, tablas de Aiven ni despliegues QA/main/PROD. No altera BITACORA historica ni libera gates DAG. Validar check-run exact-SHA despues de publicacion y leer logs, TRX y errores; WAIT_CI/FAIL no son PASS. R2: rollback operativo git revert normal y restitucion de version anterior del workflow bajo CAS. El propietario DEV01 conserva H1045 EN_PROGRESO, I historico y candado V17 2000001045; A0-A4 de fase comercial y A5 permanecen pendientes.
+
+## Reparacion causal posterior: contratos de schema MySQL (2026-11-22)
+
+La ejecucion GitHub-hosted ERP-N0.3 `45086881088` (job `137407425360`) concluyo `8 FAIL / 6535 PASS / 0 SKIPPED` de 6543 casos; build Release con `-warnaserror` correcto. Los siete fallos C04-04 son aserciones de precondicion: las suites sustituyen literalmente `Database=c0404_bootstrap` por un schema aleatorio y el workflow anterior suministraba `Database=solqaryn_n03_ci`, de modo que la cadena aislada nunca se construia. El octavo `C01-04.M03.06` lanzo `LOOPBACK_MYSQL84_ONLY` porque exige `Database=solqaryn_ci` y recibia `solqaryn_n03_ci`.
+
+Este changeset corrige **solo** los ocho valores de entorno en `.github/workflows/erp-n0-3-ci.yml` y crea las dos bases bootstrap descartables en el contenedor MySQL 8.4 de Actions. No cambia aserciones, filtros, runtime comercial, permisos JWT/RBAC, pagos ni secretos productivos. Se mantienen las **6543 pruebas sin filtro** y la validacion real fisica MySQL 8.4. La reparacion tiene hipotesis y evidencia distintas de la anterior (49 fallos por variables ausentes). El nuevo SHA debe lograr CI completa antes de acreditar A4; ninguna ejecucion pendiente, fallida o omitida constituye PASS.
+
+`C07-01.M06.06` conserva WIP/owner historico DEV01 y lock V17 `2000001045`. La salida acumulativa ERP aun requiere su propia matriz integral y A5 independiente. Rollback: git revert normal del unico commit en `dev` y revalidacion CAS/CI, sin force-push. `CHANGELOG_AI.md` no se reescribe en este cambio debido a la imposibilidad de verificar su contenido de mas de 1 MB a traves del conector sin arriesgar su historia; documentacion de reparacion queda completa en este archivo y BITACORA.
