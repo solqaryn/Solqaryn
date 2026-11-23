@@ -1416,22 +1416,22 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             // V29 R2: positive authenticated GET through real CategoriesController,
             // CategoriaService, EF shadow ownership and MySQL 8.4. The production
             // default remains OFF; no category mutation route is enabled.
-            var categoryAId = categorySnapshotBefore.Single(
+            var pilotCategoryAId = categorySnapshotBefore.Single(
                 c => c.Nombre == "Category C0701RealProductoA").Id;
-            var categoryBId = categorySnapshotBefore.Single(
+            var pilotCategoryBId = categorySnapshotBefore.Single(
                 c => c.Nombre == "Category C0701RealProductoB").Id;
             await using (var categoryOwnersSql = new AppDbContext(options))
             {
                 var owners = await categoryOwnersSql.Categorias
                     .IgnoreQueryFilters().AsNoTracking()
-                    .Where(c => c.Id == categoryAId || c.Id == categoryBId)
+                    .Where(c => c.Id == pilotCategoryAId || c.Id == pilotCategoryBId)
                     .Select(c => new
                     {
                         c.Id,
                         EmpresaId = EF.Property<int?>(c, "EmpresaId")
                     }).ToListAsync();
-                Assert.Equal(a.Id, owners.Single(c => c.Id == categoryAId).EmpresaId);
-                Assert.Equal(b.Id, owners.Single(c => c.Id == categoryBId).EmpresaId);
+                Assert.Equal(a.Id, owners.Single(c => c.Id == pilotCategoryAId).EmpresaId);
+                Assert.Equal(b.Id, owners.Single(c => c.Id == pilotCategoryBId).EmpresaId);
             }
 
             pilotConfig["MultiEmpresa:PrivateReadPilotEnabled"] = "true";
@@ -1449,9 +1449,9 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             foreach (var (jwt, tenantId, ownName, foreignName, ownId, foreignId) in new[]
             {
                 (jwtA, a.Id, "Category C0701RealProductoA",
-                    "Category C0701RealProductoB", categoryAId, categoryBId),
+                    "Category C0701RealProductoB", pilotCategoryAId, pilotCategoryBId),
                 (jwtB, b.Id, "Category C0701RealProductoB",
-                    "Category C0701RealProductoA", categoryBId, categoryAId)
+                    "Category C0701RealProductoA", pilotCategoryBId, pilotCategoryAId)
             })
             {
                 foreach (var path in new[] {

@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV01 V29 C07-01.M06.06: reparar CS0128 en xUnit MySQL de categorías
+- GitHub-hosted SHA cb44be3b compiló error CS0128 dos veces antes de ejecutar pruebas: variables categoryAId/categoryBId duplicadas en mismo scope (Backend job137945139590 y Security job137945138983). No se declara regresión funcional ni SUCCESS.
+- Corrige únicamente los nombres locales añadidos en nuevo bloque V29 a pilotCategoryAId/pilotCategoryBId; mismo SQL, JWT, RBAC, assertions, ausencia de mutaciones, piloto OFF por defecto. CI exact-SHA nueva obligatoria; mantener EN_PROGRESO owner DEV01 lock2000001045, sin LISTO/A5.
+
 ## 2026-11-23 — DEV01 V29 C07-01.M06.06: GET categorías aisladas mediante piloto preexistente
 - Corrige el diagnóstico: Categorias/Impuestos ya tienen EmpresaId físico como shadow property Oracle EF, filtros tenant y ownership guard. Sin migraciones nuevas ni reinterpretación de historial NULL.
 - Autoriza únicamente GET categorías exactos si el piloto MultiEmpresa:PrivateReadPilotEnabled ya está ON, con JWT, membresía y Categorias.Ver comprobados; por defecto OFF, sin mutadores habilitados. Test de integración real JWT A/B + MySQL 8.4 verifica SQL owner, lectura propia, 404 ajeno, spoofing, revocación RBAC y cuarentena OFF; CI exact-SHA requerida, no PASS anticipado.
