@@ -13,6 +13,7 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
 using MySql.Data.MySqlClient;
@@ -20,10 +21,12 @@ using MySql.EntityFrameworkCore.Extensions;
 using Solqaryn.API.Security;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Application.AutomationV5;
+using Solqaryn.Application.Services;
 using Solqaryn.Application.Security;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
 using Solqaryn.Infrastructure.Persistence;
+using Solqaryn.Infrastructure.Repositories;
 using Solqaryn.Infrastructure.Services;
 using Xunit;
 using Rules = Solqaryn.Domain.Security.C0303SecurityAuditDomainRules;
@@ -291,6 +294,10 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
                     s.AddScoped<IC0303VerifiedAuditResourceReader>(
                         sp => sp.GetRequiredService<C0303VerifiedAuditTenantReaders>());
                     s.AddScoped<C0303SecurityAuditApplicationService>();
+                    s.AddScoped<IAuditoriaService>(sp => new AuditoriaService(
+                        new AuditoriaRepository(db), current.Object,
+                        sp.GetRequiredService<IHttpContextAccessor>(),
+                        sp.GetRequiredService<ILogger<AuditoriaService>>()));
                 })
                 .Configure(app =>
                 {
@@ -313,9 +320,57 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
                     return response.StatusCode;
                 }
 
+                async Task<HttpStatusCode> HttpAuditRecordAsync(
+                    int routeTenant, string bearerJwt, int? selector = null)
+                {
+                    using var request = new HttpRequestMessage(
+                        HttpMethod.Post, "/__dev/audit-authorization/" +
+                        routeTenant + "/record");
+                    request.Headers.Authorization =
+                        new AuthenticationHeaderValue("Bearer", bearerJwt);
+                    if (selector.HasValue)
+                        request.Headers.TryAddWithoutValidation(
+                            "X-Empresa-Id", selector.Value.ToString());
+                    using var response = await client.SendAsync(request);
+                    return response.StatusCode;
+                }
+
                 var signed = new JwtSecurityTokenHandler().WriteToken(jwt);
                 Assert.Equal(HttpStatusCode.NoContent,
                     await HttpAuditAsync(tenantA.Id, signed));
+                // GET must remain read-only; POST is the only ledger writer.
+                Assert.Empty(await db.RegistrosAuditoria.AsNoTracking()
+                    .Where(x => x.Entidad == "Empresa" &&
+                        x.Descripcion == "C03-03.M03.03: acceso de auditoría validado")
+                    .ToListAsync());
+                Assert.Equal(HttpStatusCode.NoContent,
+                    await HttpAuditRecordAsync(tenantA.Id, signed));
+                db.ChangeTracker.Clear();
+                var recorded = await db.RegistrosAuditoria.AsNoTracking()
+                    .Where(x => x.Entidad == "Empresa" &&
+                        x.Descripcion == "C03-03.M03.03: acceso de auditoría validado")
+                    .ToListAsync();
+                var singleRecord = Assert.Single(recorded);
+                Assert.Equal(actor.Id, singleRecord.UsuarioId);
+                Assert.Equal(tenantA.Id, singleRecord.EmpresaId);
+                Assert.Equal(tenantA.Id, singleRecord.ReferenciaId);
+                Assert.Equal(ModuloSistema.Auditoria, singleRecord.Modulo);
+                Assert.Equal(AccionPermiso.Ver, singleRecord.Accion);
+                Assert.Equal("Exito", singleRecord.Resultado);
+                Assert.Equal(HttpStatusCode.Forbidden,
+                    await HttpAuditRecordAsync(tenantB.Id, signed));
+                Assert.Equal(HttpStatusCode.Unauthorized,
+                    await HttpAuditRecordAsync(tenantA.Id,
+                        new JwtSecurityTokenHandler().WriteToken(forgedToken)));
+                Assert.Equal(HttpStatusCode.Unauthorized,
+                    await HttpAuditRecordAsync(tenantA.Id,
+                        new JwtSecurityTokenHandler().WriteToken(expiredToken)));
+                Assert.Equal(HttpStatusCode.Forbidden,
+                    await HttpAuditRecordAsync(tenantA.Id, signed, tenantB.Id));
+                Assert.Single(await db.RegistrosAuditoria.AsNoTracking()
+                    .Where(x => x.Entidad == "Empresa" &&
+                        x.Descripcion == "C03-03.M03.03: acceso de auditoría validado")
+                    .ToListAsync());
                 Assert.Equal(HttpStatusCode.Forbidden,
                     await HttpAuditAsync(tenantB.Id, signed));
                 Assert.Equal(HttpStatusCode.Unauthorized,

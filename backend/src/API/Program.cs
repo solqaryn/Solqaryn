@@ -438,8 +438,8 @@ app.UseMiddleware<UnscopedCommercialTenantGuardMiddleware>();
 app.MapGet("/health", () => Results.Ok(new { status = "ok", service = "Solqaryn API" })).ExcludeFromDescription();
 app.MapGet("/health/ready", async (AppDbContext db, CancellationToken cancellationToken) => { var databaseReady = false; try { databaseReady = await db.Database.CanConnectAsync(cancellationToken); } catch { databaseReady = false; } return databaseReady ? Results.Ok(new { status = "ready", database = "connected" }) : Results.Json(new { status = "not_ready", database = "unavailable" }, statusCode: StatusCodes.Status503ServiceUnavailable); }).ExcludeFromDescription();
 app.MapControllers();
-// C03-03.M03.03: no multiempresa grant; expose only the same DEV-only
-// read-only authenticated preflight exercised by physical MySQL/JWT tests.
+// C03-03.M03.03: DEV-only opt-in GET preflight and explicit POST for
+// a strictly persisted audit-read event. Neither grants business permission.
 if (C0303AuditReadOnlyProbeEndpoint.ShouldMap(app.Environment, app.Configuration))
 {
     C0303AuditReadOnlyProbeEndpoint.Map(app);

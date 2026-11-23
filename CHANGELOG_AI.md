@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV03 C03-03.M03.03: persistencia real del preflight JWT/RBAC en MySQL (DEV-only)
+- Incremento R2 sin habilitar QA/main/PROD: POST explícito y opt-in Development al mismo recurso de lectura autenticada; GET sigue read-only. El registro de acceso `Auditoria.Ver` pasa por `IAuditoriaService.RegistrarEstrictoAsync` y `RegistroAuditoria` persistentes, actor y empresa del contexto server-side, fallo SQL redacted como 503.
+- Prueba adversarial con TestServer, JWT firmado/falso/expirado, roles/membresía empresa A/B y MySQL 8.4 efímero: GET no registra, POST positivo crea exactamente una fila, intentos cruzados/falsificados no agregan auditorías. GitHub-hosted exact SHA pendiente hasta observar CI.
+- Limitación explícita: el endpoint es diagnóstico DEV-only; no acredita call-site comercial, transacción de negocio, uso de PROD ni A0–A5 global. Conservar VALIDANDO/owner DEV03 y A5 independiente. Revertir por git revert ordinario, sin desactivar gates.
+
 ## 2026-11-23 — DEV02 C15-04.M05.04: regresión zoom CSS 200% en Chromium (A121)
 - Se añade A0.95 a Playwright real: JWT de plataforma firmado por API .NET 10, MySQL 8.4 efímero, ruta privada autorizada, cinco anchos y aserción de overflow a zoom CSS 2.
 - Se conservan capturas comparativas 100/200 de la misma corrida para 320/1440 y se rechazan mutaciones HTTP de negocio; el nuevo check debe concluir SUCCESS exact-SHA antes de cualquier PASS.
