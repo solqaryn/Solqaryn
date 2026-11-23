@@ -1177,26 +1177,36 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             // an existing legacy fiscal row. Seed a real sentinel in the
             // disposable Oracle EF/MySQL 8.4 schema, then compare its content.
             var fiscalSentinelCode = "C0701S_" + Guid.NewGuid().ToString("N");
+            int fiscalSentinelId;
             await using (var fiscalSeed = new AppDbContext(options))
             {
-                fiscalSeed.Set<Impuesto>().Add(new Impuesto
+                var fiscalSentinel = new Impuesto
                 {
                     Nombre = "C0701 fiscal quarantine sentinel",
                     Codigo = fiscalSentinelCode,
                     Tasa = 15m,
                     Activo = true,
                     Eliminado = false
-                });
+                };
+                fiscalSeed.Set<Impuesto>().Add(fiscalSentinel);
                 await fiscalSeed.SaveChangesAsync();
+                fiscalSentinelId = fiscalSentinel.Id;
+                Assert.True(fiscalSentinelId > 0);
             }
             List<string> fiscalSnapshotBefore;
+            int fiscalAuditCountBefore;
             await using (var fiscalBefore = new AppDbContext(options))
+            {
                 fiscalSnapshotBefore = await fiscalBefore.Set<Impuesto>()
                     .IgnoreQueryFilters().AsNoTracking()
                     .OrderBy(i => i.Id)
                     .Select(i => i.Id + "|" + i.Codigo + "|" + i.Nombre + "|" +
                                  i.Tasa + "|" + i.Activo + "|" + i.Eliminado)
                     .ToListAsync();
+                fiscalAuditCountBefore = await fiscalBefore.RegistrosAuditoria
+                    .IgnoreQueryFilters().AsNoTracking()
+                    .CountAsync(x => x.Modulo == ModuloSistema.Impuestos);
+            }
             Assert.Contains(fiscalSnapshotBefore,
                 row => row.Contains(fiscalSentinelCode, StringComparison.Ordinal));
 
@@ -1205,14 +1215,21 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 (jwtA, a.Id), (jwtB, b.Id)
             })
             {
+                // Exercise the persisted sentinel ID, not a guessed ID=1.
+                // Valid payloads detect gate bypass despite model validation.
+                const string validFiscalJson =
+                    "{\"nombre\":\"C0701 Fiscal Guard\",\"codigo\":\"C0701NEW\"," +
+                    "\"tipo\":\"Porcentaje\",\"tasa\":15," +
+                    "\"operaciones\":[\"Venta\"]}";
                 foreach (var (method, path) in new[]
                 {
                     (HttpMethod.Post, "/impuestos"),
-                    (HttpMethod.Put, "/impuestos/1"),
-                    (HttpMethod.Patch, "/impuestos/1/desactivar"),
-                    (HttpMethod.Delete, "/impuestos/1"),
-                    (HttpMethod.Delete, "/impuestos/1/permanente"),
-                    (HttpMethod.Post, "/impuestos/1/duplicar")
+                    (HttpMethod.Put, $"/impuestos/{fiscalSentinelId}"),
+                    (HttpMethod.Patch, $"/impuestos/{fiscalSentinelId}/activar"),
+                    (HttpMethod.Patch, $"/impuestos/{fiscalSentinelId}/desactivar"),
+                    (HttpMethod.Delete, $"/impuestos/{fiscalSentinelId}"),
+                    (HttpMethod.Delete, $"/impuestos/{fiscalSentinelId}/permanente"),
+                    (HttpMethod.Post, $"/impuestos/{fiscalSentinelId}/duplicar")
                 })
                 {
                     using var request = new HttpRequestMessage(method, path);
@@ -1221,8 +1238,13 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                     request.Headers.TryAddWithoutValidation(
                         "X-Empresa-Id", tenantId.ToString());
                     if (method == HttpMethod.Post || method == HttpMethod.Put)
+                    {
+                        var json = path.EndsWith("/duplicar", StringComparison.Ordinal)
+                            ? "{\"nuevoNombre\":\"C0701 Duplicate\",\"nuevoCodigo\":\"C0701DUP\"}"
+                            : validFiscalJson;
                         request.Content = new StringContent(
-                            "{}", Encoding.UTF8, "application/json");
+                            json, Encoding.UTF8, "application/json");
+                    }
                     using var response = await client.SendAsync(request);
                     Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
                     Assert.Contains("TENANT_DATA_ISOLATION_REQUIRED",
@@ -1238,6 +1260,9 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                                  i.Tasa + "|" + i.Activo + "|" + i.Eliminado)
                     .ToListAsync();
                 Assert.Equal(fiscalSnapshotBefore, fiscalSnapshotAfter);
+                Assert.Equal(fiscalAuditCountBefore,
+                    await fiscalAfter.RegistrosAuditoria.IgnoreQueryFilters()
+                        .AsNoTracking().CountAsync(x => x.Modulo == ModuloSistema.Impuestos));
             }
 
             var membershipA = await db.UsuarioEmpresas

@@ -48,3 +48,11 @@ El preflight instrumentado en SHA 543ed64a72078e8094de4a8275e031cb50481844 / run
 La entidad `ProductoVariante : AuditableEntity : BaseEntity` incluye `FechaCreacion` y `FechaActualizacion` no anulables; el INSERT SQL de la prueba omitía ambas, lo que puede producir 1364 por campo obligatorio antes de evaluar las FK. Corrección concreta del fixture negativo: suministrar `UTC_TIMESTAMP(6)` para ambos, conservar IDs padre inexistentes y exigir **solo** error físico MySQL 1452 y ausencia de fila. Se imprime el inventario de columnas NOT NULL sin default de la tabla física para diagnóstico si surge otra precondición. No se cambia el modelo Oracle, no se relaja la política de seguridad ni se alteran datos de negocio. La suite completa permanece obligatoria después del preflight.
 
 Nuevo commit necesita GitHub-hosted SUCCESS exact-SHA del job N03, Scope Lock/V5 y pruebas aplicables; cualquier fallo mantiene H1045 EN_PROGRESO, owner DEV01, V17 lock 2000001045 y A5 pendiente. No certifica cierre de la fase ni QA/main/PROD.
+
+
+## V26: endurecimiento de la cuarentena fiscal con datos físicos y peticiones válidas (2026-11-23)
+
+Riesgo R2, únicamente test de integración: el caso C0701M0606 usa el ID real de un Impuesto centinela persistido en MySQL 8.4 efímero, en lugar de asumir `/impuestos/1`. Recorre POST, PUT, PATCH activar/desactivar, DELETE lógico/permanente y duplicación con JWT firmados de A y B. Los cuerpos de POST/PUT/duplicación son válidos para evitar que un 400 de model binding enmascare una omisión del aislamiento fiscal. Cada respuesta debe fallar cerrada con 503 `TENANT_DATA_ISOLATION_REQUIRED`.
+
+El readback compara antes/después **todas** las filas fiscales y el número de recibos de auditoría de Impuestos; no se atribuye al test un aislamiento fiscal positivo, pues `Impuesto` carece de `EmpresaId`. No se habilitan escrituras fiscales ni se alteran migraciones, middleware, autorización, producción o Aiven. La fase M06.06 sigue EN_PROGRESO con owner DEV01 y candado V17 2000001045; faltan ownership fiscal real, alcance positivo Servicios/Categorías/Atributos y aceptación ERP integral, A0-A4 de fase y A5 independiente. GitHub-hosted exact SHA es obligatorio antes de acreditar el test; rollback por revert ordinario con CAS. `CHANGELOG_AI.md` no se reescribe por conector al superar 1 MiB, preservando íntegro su historial.
+
