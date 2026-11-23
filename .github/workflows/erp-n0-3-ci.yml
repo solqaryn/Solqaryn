@@ -169,9 +169,13 @@ jobs:
           check_count 'variant_index_names' 4 "SELECT COUNT(DISTINCT index_name) FROM information_schema.statistics WHERE table_schema=DATABASE() AND table_name='ProductoVariantes' AND index_name IN ('UX_ProductoVariantes_Empresa_Sku','UX_ProductoVariantes_Empresa_CodigoBarras','UX_ProductoVariantes_IdentidadActiva','IX_ProductoVariantes_ProductoTecnicoUnico');"
           check_count 'empresa_fk' 1 "SELECT COUNT(*) FROM information_schema.key_column_usage WHERE table_schema=DATABASE() AND table_name='ProductoVariantes' AND constraint_name='FK_ProductoVariantes_Empresas_EmpresaId' AND referenced_table_name='Empresas';"
           check_count 'empresa_producto_references' 2 "SELECT COUNT(DISTINCT referenced_table_name) FROM information_schema.key_column_usage WHERE table_schema=DATABASE() AND table_name='ProductoVariantes' AND referenced_table_name IN ('Empresas','Productos');"
+          # La entidad AuditableEntity/BaseEntity exige fechas UTC no nulas; sin
+          # esos campos MySQL devuelve 1364 antes de alcanzar la FK (falsa negativa).
+          # Inspeccionar columnas requeridas en CI sin leer registros personales.
+          q "SELECT COLUMN_NAME FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='ProductoVariantes' AND is_nullable='NO' AND column_default IS NULL AND extra NOT LIKE '%auto_increment%' ORDER BY ordinal_position;"
           # La verificación negativa usa la FK real y exige el error físico 1452.
           if docker exec "$c" mysql -uroot -proot solqaryn_n03_physical_ci \
-            -e "INSERT INTO ProductoVariantes (ProductoId,EmpresaId,Sku,Cantidad,UmbralStockBajo,EsTecnica,Activo,Eliminado) VALUES (2147483647,2147483647,'CI-ORPHAN-N03',0,0,0,1,0);" \
+            -e "INSERT INTO ProductoVariantes (ProductoId,EmpresaId,Sku,Cantidad,UmbralStockBajo,EsTecnica,Activo,Eliminado,FechaCreacion,FechaActualizacion) VALUES (2147483647,2147483647,'CI-ORPHAN-N03',0,0,0,1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));" \
             > /tmp/n03-orphan-reject.log 2>&1; then
             echo 'ERROR: MySQL aceptó ProductoVariante huérfana/cross-tenant' >&2
             exit 1
