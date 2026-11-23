@@ -164,6 +164,13 @@ if (builder.Environment.IsDevelopment())
         C0404PaymentVerifiedEvidenceReader>();
     builder.Services.AddScoped<C0404PaymentAuthorizationGate>();
 }
+// C08-03.M03.03: verified JWT + current tenant/branch/RolPermiso READ-ONLY.
+// No gym-specific entitlement yet; flags explicitly deny door and payment.
+// Development-only, probe OFF by default, no new route or runtime grant.
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddScoped<IC0803VerifiedGymActorSource, C0803GymVerifiedActorSource>();
+}
 builder.Services.AddScoped<IPlataformaScopeService, PlataformaScopeService>();
 // C02-04.M05.02: lectura acotada de checks GitHub para QA global; sin credenciales en frontend.
 builder.Services.AddHttpClient("SolqarynPublicGitHubQa", client =>

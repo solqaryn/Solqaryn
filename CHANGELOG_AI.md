@@ -9968,3 +9968,8 @@
 - Adaptador API Security real C0303VerifiedAuditTenantReaders, opt-in DEV OFF por defecto: JWT Bearer firmado, tenant server-side, membresía y rol administrador en SQL, grant Auditoria.Ver actual y revalidado; source Empresa audit-read exclusivamente. No concede privilegios, acciones críticas, ni escribe auditorías.
 - xUnit con esquema JWT firmado y EF InMemory adversarial para A/B, spoof route/JWT, rol/permisos, revocación, bloqueo, recurso cruzado, cancelación; **no** certifica MySQL 8.4 físico, HTTP ni sink durable. GitHub-hosted exact SHA requerido, VALIDANDO pendiente mientras CI externa.
 - Scope Lock STRICT, V17 CAS, solo dev, sin migraciones ni nuevos endpoints; la persistencia y el call-site corresponden a sucesoras. A5 requiere Javier distinto de DEV03. Rollback git revert, nunca QA/main/PROD.
+
+## 2026-11-22 — C08-03.M03.03: JWT/RBAC y tenancy real para gimnasio (DEV, R2)
+- Adaptador API de lectura real del JWT Bearer registrado, UsuarioEmpresa y RolPermiso/Sucursales.Ver, scope de sucursal/empresa y relectura tras await para rechazar roles revocados, tenant A/B y ruta ajena; DI solo Development y apagado por defecto.
+- xUnit API adversarial con firma JWT real y EF InMemory para permisos/propiedad/revocación, sin afirmar MySQL físico. No existe permiso específico de gimnasio ni persistencia ERP: respuesta jamás autoriza puerta, pago, hardware o JWT; cualquier integración física posterior sigue pendiente.
+- V17 CAS exclusivo C08-03.M03.03, Scope Lock STRICT y pruebas GitHub-hosted exact-SHA requeridas antes de LISTO; A5 independiente, rollback git revert normal, sin QA/main/PROD.

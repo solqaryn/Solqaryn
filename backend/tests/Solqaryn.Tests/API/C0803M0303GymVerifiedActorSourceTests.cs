@@ -1,0 +1,215 @@
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using Moq;
+using Solqaryn.API.Security;
+using Solqaryn.Application.AutomationV5;
+using Solqaryn.Application.Interfaces;
+using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Enums;
+using Solqaryn.Infrastructure.Persistence;
+using Xunit;
+
+namespace Solqaryn.Tests.API;
+
+public sealed class C0803M0303GymVerifiedActorSourceTests
+{
+    private const int Tenant = 11;
+    private const int Actor = 91;
+    private const int Role = 23;
+    private const int Branch = 111;
+    private static readonly SymmetricSecurityKey Key =
+        new(Encoding.UTF8.GetBytes("solqaryn-gym-m0303-only-test-key-2026!"));
+
+    private static string Token(int actor = Actor, bool validSignature = true)
+    {
+        var key = validSignature ? Key :
+            new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+                "invalid-gym-jwt-test-signature-key-2026!"));
+        var jwt = new JwtSecurityToken(
+            issuer: "solqaryn-gym-tests", audience: "solqaryn-gym-tests",
+            claims: [new Claim("id", actor.ToString())],
+            notBefore: DateTime.UtcNow.AddMinutes(-1),
+            expires: DateTime.UtcNow.AddMinutes(10),
+            signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
+        return new JwtSecurityTokenHandler().WriteToken(jwt);
+    }
+
+    private static async Task<Fixture> SetupAsync(
+        bool enabled = true, string tenantRoute = "11", string branchRoute = "111",
+        bool grant = true, int scopeTenant = Tenant, int scopeRole = Role,
+        int roleTenant = Tenant, int branchTenant = Tenant,
+        string? token = null, bool branchActive = true)
+    {
+        var services = new ServiceCollection();
+        services.AddLogging();
+        services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+            .AddJwtBearer(options =>
+            {
+                options.MapInboundClaims = false;
+                options.TokenValidationParameters = new TokenValidationParameters
+                {
+                    ValidateIssuer = true, ValidIssuer = "solqaryn-gym-tests",
+                    ValidateAudience = true, ValidAudience = "solqaryn-gym-tests",
+                    ValidateIssuerSigningKey = true, IssuerSigningKey = Key,
+                    ValidateLifetime = true, ClockSkew = TimeSpan.Zero
+                };
+            });
+        var provider = services.BuildServiceProvider();
+        var http = new DefaultHttpContext { RequestServices = provider };
+        http.Request.RouteValues["tenantId"] = tenantRoute;
+        http.Request.RouteValues["branchId"] = branchRoute;
+        http.Request.Headers.Authorization = "Bearer " + (token ?? Token());
+        // This forged principal alone can NEVER authenticate the source.
+        http.User = new ClaimsPrincipal(new ClaimsIdentity(
+            [new Claim("id", Actor.ToString())], "fake-test-principal"));
+
+        var current = new Mock<ICurrentUserService>();
+        current.SetupGet(x => x.EstaAutenticado).Returns(true);
+        current.SetupGet(x => x.UsuarioId).Returns(Actor);
+        var membership = new Mock<IUsuarioScopeService>();
+        membership.Setup(x => x.ObtenerActualAsync(
+            It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((int tenant, CancellationToken _) =>
+                new UsuarioTenantScopeActual(Actor, scopeTenant, scopeRole, "GymReader", false));
+        var database = new AppDbContext(
+            new DbContextOptionsBuilder<AppDbContext>()
+                .UseInMemoryDatabase(Guid.NewGuid().ToString()).Options);
+        database.Roles.Add(new Rol
+        {
+            Id = Role, Nombre = "GymReader", EmpresaId = roleTenant,
+            Ambito = AmbitoAutorizacion.Empresa, Activo = true
+        });
+        database.Set<Sucursal>().Add(new Sucursal
+        {
+            Id = Branch, EmpresaId = branchTenant, Codigo = "GYM-01",
+            Nombre = "Sucursal gimnasio", Activa = branchActive
+        });
+        if (grant)
+        {
+            database.Permisos.Add(new Permiso
+            {
+                Id = 7, Codigo = "SUCURSALES.VER", Nombre = "Sucursales.Ver",
+                Modulo = ModuloSistema.Sucursales, Accion = AccionPermiso.Ver,
+                Ambito = AmbitoAutorizacion.Empresa, Activo = true
+            });
+            database.RolPermisos.Add(
+                new RolPermiso { Id = 7, RolId = Role, PermisoId = 7 });
+        }
+        await database.SaveChangesAsync();
+        var settings = new ConfigurationBuilder().AddInMemoryCollection(
+            new Dictionary<string, string?>
+            { ["GymAuthorization:EnableReadOnlyProbe"] = enabled.ToString() }).Build();
+        var accessor = new Mock<IHttpContextAccessor>();
+        accessor.SetupGet(x => x.HttpContext).Returns(http);
+        var reader = new C0803GymVerifiedActorSource(
+            accessor.Object, current.Object, membership.Object, database, settings);
+        return new Fixture(reader, database, provider);
+    }
+
+    private sealed record Fixture(
+        C0803GymVerifiedActorSource Reader, AppDbContext Database,
+        ServiceProvider Provider) : IAsyncDisposable
+    {
+        public async ValueTask DisposeAsync()
+        {
+            await Database.DisposeAsync();
+            await Provider.DisposeAsync();
+        }
+    }
+
+    [Fact]
+    public async Task SignedJwtCurrentScopeBranchAndGrantAreRealButNeverGymAuthorization()
+    {
+        await using var f = await SetupAsync();
+        var result = await f.Reader.ReadCurrentAsync(CancellationToken.None);
+        Assert.NotNull(result);
+        Assert.Equal(Tenant, result.Actor!.TenantEmpresaId);
+        Assert.Equal(Actor, result.Actor.ActorId);
+        Assert.Equal(Branch, result.Actor.AuthorizedBranchId);
+        Assert.True(result.SignedJwtValidated);
+        Assert.True(result.CurrentMembershipAndRbacFromDatabase);
+        Assert.False(result.Actor.SaaSMembershipActive);
+        Assert.False(result.Actor.GymPermissionGrantedByServer);
+        Assert.False(result.Actor.PermissionRevoked);
+    }
+
+    [Fact]
+    public async Task DisabledByDefaultRejectsValidTokenAndCurrentMembership()
+    {
+        await using var f = await SetupAsync(enabled: false);
+        Assert.Null(await f.Reader.ReadCurrentAsync(CancellationToken.None));
+    }
+
+    [Theory]
+    [InlineData("0", "111")]
+    [InlineData("011", "111")]
+    [InlineData("12", "111")]
+    [InlineData("11", "0")]
+    [InlineData("11", "0111")]
+    [InlineData("11", "112")]
+    [InlineData("11;DROP", "111")]
+    public async Task NonCanonicalOrCrossTenantAndBranchRoutesDeny(
+        string tenant, string branch)
+    {
+        await using var f = await SetupAsync(tenantRoute: tenant, branchRoute: branch);
+        Assert.Null(await f.Reader.ReadCurrentAsync(CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task WrongSignatureOrActorNeverTrustsForgedHttpPrincipal()
+    {
+        await using var forged = await SetupAsync(token: Token(validSignature: false));
+        Assert.Null(await forged.Reader.ReadCurrentAsync(CancellationToken.None));
+        await using var wrongId = await SetupAsync(token: Token(actor: 92));
+        Assert.Null(await wrongId.Reader.ReadCurrentAsync(CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task TenantRoleAndPhysicalBranchAreScopedToTenantA()
+    {
+        await using var foreignMember = await SetupAsync(scopeTenant: 22);
+        Assert.Null(await foreignMember.Reader.ReadCurrentAsync(CancellationToken.None));
+        await using var foreignRole = await SetupAsync(roleTenant: 22);
+        Assert.Null(await foreignRole.Reader.ReadCurrentAsync(CancellationToken.None));
+        await using var foreignBranch = await SetupAsync(branchTenant: 22);
+        Assert.Null(await foreignBranch.Reader.ReadCurrentAsync(CancellationToken.None));
+        await using var wrongRole = await SetupAsync(scopeRole: 99);
+        Assert.Null(await wrongRole.Reader.ReadCurrentAsync(CancellationToken.None));
+        await using var closedBranch = await SetupAsync(branchActive: false);
+        Assert.Null(await closedBranch.Reader.ReadCurrentAsync(CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task RevokedRelationalGrantFailsClosedOnNextRequest()
+    {
+        await using var f = await SetupAsync();
+        Assert.NotNull(await f.Reader.ReadCurrentAsync(CancellationToken.None));
+        f.Database.RolPermisos.Remove(
+            await f.Database.RolPermisos.SingleAsync());
+        await f.Database.SaveChangesAsync();
+        Assert.Null(await f.Reader.ReadCurrentAsync(CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task NoBranchPermissionIsNeverTreatedAsGymGrant()
+    {
+        await using var f = await SetupAsync(grant: false);
+        Assert.Null(await f.Reader.ReadCurrentAsync(CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task CancellationIsPreservedNotMistakenForAuthorizationDenial()
+    {
+        await using var f = await SetupAsync();
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
+            await f.Reader.ReadCurrentAsync(new CancellationToken(true)));
+    }
+}
