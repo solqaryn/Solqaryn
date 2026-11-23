@@ -356,7 +356,9 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
       this.conflict.set(true);
       return;
     }
-    this.error.set(err.error?.message ?? fallback);
+    // Server messages are untrusted and can expose SQL, stack traces, or tenant data.
+    // Never render the error body, even if it includes a `message` property.
+    this.error.set(fallback);
   }
 
   private jsonValido(controlName: 'impuestosJson' | 'emisionJson'): boolean {

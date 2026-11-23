@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV05 C01-03.M04.04: bloquear filtración de errores HTTP de escritura
+- Corrige P1/R2: el componente Angular ya no expone `err.error.message` arbitrario en mensajes tras errores de guardado/logo, y utiliza el texto seguro local. Conserva el comportamiento 409/412 y las validaciones de formulario.
+- Añade pruebas Playwright 403/500 adversariales con JWT auténtico, permiso de edición real y MySQL 8.4 efímero; simula exclusivamente la respuesta PUT con datos privados para comprobar que no se muestran y que no hay doble envío. Requiere GitHub Actions exact-SHA antes de A0–A4; A5 independiente pendiente, sin QA/main/PROD.
+
 ## 2026-11-23 — DEV04 C03-01.M03.03: reparación causal CI del negativo de rol huérfano
 - GHA fuente 37154de9, job137697176616: .NET 10 Release compila, 6507 PASS, 1 FAIL. El negativo de rol sin dueño/no-plantilla no llega al lector: CommercialTenantOwnershipGraphWriteGuard rechaza correctamente el grant en SetupAsync con BusinessRuleException. No se desactiva ni suaviza ese candado.
 - El xUnit corregido exige esa excepción física; conserva positivo de plantilla compartida y rechazo de rol de otra empresa. Nuevo SHA requiere CI real exacto (.NET, JWT/MySQL84, Scope Lock, V5, seguridad). Scope H=VALIDANDO I=DEV04 y A5 independiente hasta integración productiva y A0–A4 completas; no QA/main/PROD.

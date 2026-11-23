@@ -86,4 +86,36 @@ test.describe('V24 M04.04 form: real GET, guarded duplicate mutation, error and 
     await page.keyboard.press('Tab');
     expect(await page.evaluate(() => document.activeElement?.tagName)).not.toBe('BODY');
   });
+  for (const httpStatus of [403, 500] as const) {
+    test('mutation HTTP ' + httpStatus + ' never renders untrusted backend details', async ({ page }) => {
+      await loginA(page);
+      const sentinel = 'PRIVATE_SERVER_STACK_SQL_TENANT_B_JWT_NEVER_RENDER';
+      let capturedPuts = 0;
+      await page.route('**/empresa-configuracion/tenant/1', async route => {
+        if (route.request().method() !== 'PUT') {
+          await route.continue();
+          return;
+        }
+        capturedPuts++;
+        await route.fulfill({
+          status: httpStatus,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            message: sentinel,
+            stackTrace: 'SqlException: ' + sentinel,
+            tenantId: 2
+          })
+        });
+      });
+      const save = page.getByRole('button', { name: 'Guardar configuración tenant' });
+      await expect(save).toBeEnabled();
+      await save.click();
+      await expect(page.getByText('No se pudo guardar la configuración del tenant activo.', { exact: true }))
+        .toBeVisible();
+      await expect(page.locator('body')).not.toContainText(sentinel);
+      await expect(page.getByRole('form', { name: 'Configuración del tenant activo' })).toHaveCount(0);
+      expect(capturedPuts, 'the real authenticated edit flow must issue exactly one PUT').toBe(1);
+    });
+  }
+
 });
