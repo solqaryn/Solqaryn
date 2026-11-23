@@ -1,6 +1,6 @@
 import { Injectable, signal, computed } from '@angular/core';
 import { HttpClient } from '@angular/common/http';
-import { Observable, switchMap, tap } from 'rxjs';
+import { Observable, switchMap, tap, throwError } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
 import { LoginRequest, LoginResponse } from '../models/auth.model';
@@ -45,8 +45,20 @@ export class AuthService {
   }
 
   renovarSesion(): Observable<ApiResponse<LoginResponse>> {
+    // A renewal is only valid for the precise session that initiated it.
+    // A late HTTP response must never resurrect a logged-out user or replace
+    // a newer login (including a switch observed through another browser tab).
+    const tokenOrigen = this._token();
+    if (!tokenOrigen || localStorage.getItem(TOKEN_KEY) !== tokenOrigen) {
+      return throwError(() => new Error('La sesión cambió antes de su renovación.'));
+    }
+
     return this.http.post<ApiResponse<LoginResponse>>(`${this.apiUrl}/renovar`, {}).pipe(
-      tap((res) => {
+      tap(res => {
+        if (this._token() !== tokenOrigen ||
+            localStorage.getItem(TOKEN_KEY) !== tokenOrigen) {
+          throw new Error('La sesión cambió durante la renovación.');
+        }
         if (res.success) this.aplicarSesion(res.data);
       })
     );

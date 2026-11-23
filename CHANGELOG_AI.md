@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV03 V30 C02-01.M05.04: rechazo funcional de renovación JWT obsoleta
+- `frontend/src/app/core/auth/auth.service.ts`: `POST /auth/renovar` acepta respuesta sólo si el JWT de origen sigue siendo el mismo en estado Angular y almacenamiento; impide resucitar sesión cerrada, sobrescribir login posterior y aceptar refresh tras cambio de pestaña.
+- Regresiones Vitest dirigidas en `frontend/src/app/core/auth/auth.service.spec.ts` y documento `docs/v5/c02-01-m05-04-jwt-renewal-stale-response-guard.md`. A0 localizado, riesgo R2; pruebas CI/Scope Lock/V5 del SHA nuevo deben verificarse, no se declaran PASS por publicar.
+- Conserva `C02-01.M05.04` VALIDANDO e I histórico DEV03: aún faltan SQL persistente de preferencia por actor, JWT reemitido con autoridad servidor y navegación real Angular/Chromium tenant A/B; A5 por otro Javier. Sin QA/main/PROD.
+
 ## 2026-11-23 — DEV02 V30 C15-04.M05.04: media query mobile-first corregida
 - Diagnóstico del SHA f73cfd41: Fase 10 validó la reserva base de footer y aprobó, pero el control transversal rechazó la nueva `@media(max-width:760px)` antes del build y pruebas de navegador. No fue una falla funcional de Chromium: falló análisis estático, 0 E2E ejecutadas por ese camino.
 - Cambio mínimo runtime: solo modificar la media query a `@media(max-height:480px)` para que el reflow de CTA funcione al reducir altura disponible (incluyendo zoom) sin usar reglas max-width, conservando min-width progresivos y padding dinámico. Validadores intactos.
