@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV02 V28 C15-04.M05.04: corregir regexp A126 antes de ejecutar E2E
+- Reparación quirúrgica de parser Playwright en `frontend/e2e/c15-04-m05-04-jwt-real.spec.ts`: elimina el doble escapado del literal `toHaveURL` de A126 y reproduce el patrón comprobado de A125, sin cambiar runtime, permisos, JWT, RBAC, MySQL ni aserciones funcionales.
+- Evidencia de defecto: run 45215478882, job 137835331070, SHA 9c4be44fa3f8dad8e7446d223be8f71bfb778ee2, `SyntaxError: Invalid regular expression flag (3805:42)` antes del descubrimiento de pruebas; no se atribuye regresión de producto. La nueva CI de Chromium/MySQL/JWT permanece por acreditar en el SHA publicado; no LISTO ni A5 hasta evidencia causal independiente.
+
 ## 2026-11-23 — DEV05 V27 C01-03.M04.04: negar éxito de logo para tenant ajeno o recibo vacío
 - Corrige P2/R2 de UI: POST y DELETE logo comprueban que `data.empresaId` coincide con el tenant verificado antes de aplicar cambios o anunciar éxito; respuestas HTTP 200 de otra empresa o sin datos llevan al estado de error recuperable sin mostrar información ajena.
 - Añade dos negativas Playwright con JWT y permiso de editor reales más GET MySQL 8.4 efímero; únicamente se falsifica la respuesta del POST para comprobar el rechazo. CI exact-SHA, zoom nativo y A5 independiente pendientes. Sin cambios de backend, datos productivos, QA/main/PROD.

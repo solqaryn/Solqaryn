@@ -3802,7 +3802,7 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
       for (const ancho of [320, 390, 768, 1280, 1440]) {
         await page.setViewportSize({ width: ancho, height: 840 });
         await page.goto('/plataforma/catalogo-planes-v22');
-        await expect(page).toHaveURL(/\\/login(?:\\?|$)/);
+        await expect(page).toHaveURL(/\/login(?:\?|$)/);
         await expect(page.getByTestId('c0401-planes-reference')).toHaveCount(0);
         await cdp.send('Emulation.setPageScaleFactor', { pageScaleFactor: 2 });
         const vista = await page.evaluate(() => ({
