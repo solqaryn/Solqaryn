@@ -246,3 +246,29 @@ nuevo; un retry SKIPPED no cuenta como PASS. H1045 permanece EN_PROGRESO,
 A5 pendiente de otro Javier; la certificacion fiscal positiva y el cierre
 acumulativo ERP M06.06 siguen NO_GO. Revert normal fast-forward si la nueva
 regresion detecta un problema, conservando historia.
+
+### V26 DEV01 - selector de tenant falsificado en cuarentena fiscal (R2, 2026-11-23)
+
+Hipotesis adversarial nueva: un JWT firmado de usuario de empresa A o B podria
+acompanarse de `X-Empresa-Id` con el ID de la OTRA empresa. La cabecera es
+un selector no confiable, nunca autoridad de acceso. La suite real
+`C0701M0606ProductosRealHttpMysql84Tests` ahora combina cada JWT A/B con
+su selector legitimo y con el selector falsificado. Para cada combinacion exige
+GET fiscal 503 y `TENANT_DATA_ISOLATION_REQUIRED` en dos rutas, mas siete
+mutadores fiscales 503 con dicho codigo: 8 GET y 28 mutaciones reales HTTP
+en ASP.NET TestServer, JWT firmado y MySQL Oracle EF 8.4 efimero. El impuesto
+centinela y el numero de auditorias deben quedar fisicamente identicos antes
+y despues. La prueba falla ante una fuga de permiso inducida por cabecera.
+
+Alcance limitado a prueba y evidencia; SIN cambio de controlador, schema,
+autorizacion, tenant, runtime, dependencias ni configuracion comercial.
+A0=diff test/doc sin secreto ni cambio productivo; A1/A2/A3 pendientes de CI
+dirigida exact SHA GitHub-hosted con TRX 1/1 SUCCESS y 0 fallos/omitidos;
+A4 pendiente de Scope Lock, backend, seguridad y migracion Oracle MySQL
+cuando requieran causalidad. El SHA anterior `e044679d` tenia el job
+dirigido, migraciones Oracle EF, backend, seguridad, V5 y Scope Lock SUCCESS
+antes de este incremento, pero NO acredita el nuevo test. No certificar
+LISTO ni A5: fiscal positivo con ownership y servicios/atributos de ERP
+siguen sin integracion completa. `PLAN_MAESTRO!H1045=EN_PROGRESO`,
+owner DEV01, V17 lock 2000001045. Rollback `git revert` normal si
+aparece regresion, con readback previo de HEAD; QA/main/PROD prohibidos.

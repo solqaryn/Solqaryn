@@ -1149,9 +1149,12 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             // The legacy tax catalog has no verified tenant ownership contract.
             // With two real companies and valid signed JWT A/B, its private HTTP
             // routes must remain quarantined. This is NOT a positive tax test.
+            // Both authenticated tenants must remain quarantined even if a caller
+            // forges X-Empresa-Id to select the OTHER tenant's company.
             foreach (var (signedJwt, ownTenantId) in new[]
             {
-                (jwtA, a.Id), (jwtB, b.Id)
+                (jwtA, a.Id), (jwtB, b.Id),
+                (jwtA, b.Id), (jwtB, a.Id)
             })
             {
                 foreach (var taxRoute in new[] { "/impuestos", "/impuestos/1" })
@@ -1210,9 +1213,12 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             Assert.Contains(fiscalSnapshotBefore,
                 row => row.Contains(fiscalSentinelCode, StringComparison.Ordinal));
 
+            // Untrusted tenant selector may be spoofed, but must not open
+            // any fiscal mutator or produce a durable change or audit record.
             foreach (var (signedJwt, tenantId) in new[]
             {
-                (jwtA, a.Id), (jwtB, b.Id)
+                (jwtA, a.Id), (jwtB, b.Id),
+                (jwtA, b.Id), (jwtB, a.Id)
             })
             {
                 // Exercise the persisted sentinel ID, not a guessed ID=1.
