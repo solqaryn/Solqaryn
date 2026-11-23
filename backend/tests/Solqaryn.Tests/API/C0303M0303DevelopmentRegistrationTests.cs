@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Moq;
 using Solqaryn.API.Security;
@@ -36,6 +37,27 @@ public sealed class C0303M0303DevelopmentRegistrationTests
         }
         if (!expected)
             Assert.Empty(services);
+    }
+
+    [Theory]
+    [InlineData("Development", true, true)]
+    [InlineData("Development", false, false)]
+    [InlineData("Production", true, false)]
+    [InlineData("Staging", true, false)]
+    public void ReadOnlyEndpointCannotMapOutsideExplicitDevelopmentOptIn(
+        string environmentName, bool enabled, bool expected)
+    {
+        var environment = new Mock<IHostEnvironment>();
+        environment.SetupGet(x => x.EnvironmentName).Returns(environmentName);
+        var configuration = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["SecurityAudit:EnableReadOnlyAuthorizationProbe"] =
+                    enabled ? "true" : "false"
+            }).Build();
+        Assert.Equal(expected,
+            C0303AuditReadOnlyProbeEndpoint.ShouldMap(
+                environment.Object, configuration));
     }
 
     [Fact]

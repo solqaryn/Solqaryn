@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV03 C03-03.M03.03: endpoint DEV autenticado, sin concesión (V25)
+- Hallazgo R2 causal: la prueba TestServer construía una ruta privada y colocaba el marcador de tenant en middleware del ensayo; Program no montaba esa misma ruta, por lo que el test PASS no comprobaba integración HTTP del adaptador.
+- Corrección: endpoint read-only /__dev/audit-authorization/{empresaId} montado en Program sólo con Development y SecurityAudit:EnableReadOnlyAuthorizationProbe=true; JWT autenticado, selector coincidente, membresía vigente, verificación SQL tenant A/B y RBAC en lector, respuesta sin datos comerciales; nunca sink durable, permiso nuevo ni ruta QA/PROD.
+- Integración MySQL8.4 de GitHub-hosted reutiliza el mismo mapeo del endpoint sin inyectar marcador A artificial y prueba 204 tenant A, 403 B, 401 firma ajena y expirado, más 403 selector B falsificado. xUnit valida OFF, Development y Production/Staging. Se exige CI exact-SHA de .NET10, integración, seguridad, Scope Lock y V5; no se presume PASS antes de resultados ni LISTO/A5. Preservar H=VALIDANDO e I=DEV03; rollback git revert y ningún despliegue.
+
 ## 2026-11-23 — DEV02 C15-04.M05.04: A120 Enter no eleva RBAC B (V25)
 - A119 verificado: GHA 45129221420/job137540598545, 161/161 Playwright Chromium PASS exact SHA 8bf28800, Scope Lock/V5/frontend/backend/seguridad SUCCESS; retry y migración condicional SKIPPED no cuentan PASS.
 - A120 añade un negativo REAL nuevo: JWT B firmado MySQL8.4 + Angular, Tab sin .focus(), Enter en gate, HTTP 403 reiterado, alerta y ausencia de datos privados/mutaciones; 320/390/768/1280/1440 y capturas 320/1440. Exigir 162/162 del nuevo SHA; WIP global EN_PROGRESO, A5, WCAG/CWV/baseline/zoom nativo200 no certificados; revert normal, no QA/main/PROD.

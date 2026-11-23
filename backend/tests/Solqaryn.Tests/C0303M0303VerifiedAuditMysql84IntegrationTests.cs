@@ -18,6 +18,7 @@ using MySql.Data.MySqlClient;
 using MySql.EntityFrameworkCore.Extensions;
 using Solqaryn.API.Security;
 using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.AutomationV5;
 using Solqaryn.Application.Security;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
@@ -279,39 +280,27 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
                             };
                         });
                     s.AddScoped<C0303VerifiedAuditTenantReaders>();
+                    s.AddScoped<IC0303VerifiedAuditEventReader>(
+                        sp => sp.GetRequiredService<C0303VerifiedAuditTenantReaders>());
+                    s.AddScoped<IC0303VerifiedAuditResourceReader>(
+                        sp => sp.GetRequiredService<C0303VerifiedAuditTenantReaders>());
+                    s.AddScoped<C0303SecurityAuditApplicationService>();
                 })
                 .Configure(app =>
                 {
                     app.UseRouting();
                     app.UseAuthentication();
                     app.UseAuthorization();
-                    app.Use(async (context, next) =>
-                    {
-                        // CI harness supplies the server-verified A marker.
-                        // Neither route nor request headers can set it.
-                        context.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] =
-                            tenantA.Id;
-                        await next();
-                    });
-                    app.UseEndpoints(endpoints =>
-                    {
-                        endpoints.MapGet("/_ci/audit/{empresaId:int}", async context =>
-                        {
-                            var verified = await context.RequestServices
-                                .GetRequiredService<C0303VerifiedAuditTenantReaders>()
-                                .ReadCurrentAsync(context.RequestAborted);
-                            context.Response.StatusCode = verified is null
-                                ? StatusCodes.Status403Forbidden
-                                : StatusCodes.Status204NoContent;
-                        }).RequireAuthorization();
-                    });
+                    // Exercise the SAME endpoint mapping used in Program.cs,
+                    // no test middleware injecting a privileged tenant marker.
+                    app.UseEndpoints(C0303AuditReadOnlyProbeEndpoint.Map);
                 })))
             {
                 using var client = server.CreateClient();
                 async Task<HttpStatusCode> HttpAuditAsync(int routeTenant, string bearerJwt)
                 {
                     using var request = new HttpRequestMessage(
-                        HttpMethod.Get, "/_ci/audit/" + routeTenant);
+                        HttpMethod.Get, "/__dev/audit-authorization/" + routeTenant);
                     request.Headers.Authorization =
                         new AuthenticationHeaderValue("Bearer", bearerJwt);
                     using var response = await client.SendAsync(request);
@@ -329,6 +318,16 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
                 Assert.Equal(HttpStatusCode.Unauthorized,
                     await HttpAuditAsync(tenantA.Id,
                         new JwtSecurityTokenHandler().WriteToken(expiredToken)));
+                // Selector spoofing is never a tenant authority.
+                using var wrongSelector = new HttpRequestMessage(
+                    HttpMethod.Get, "/__dev/audit-authorization/" + tenantA.Id);
+                wrongSelector.Headers.Authorization = new AuthenticationHeaderValue(
+                    "Bearer", signed);
+                wrongSelector.Headers.TryAddWithoutValidation(
+                    "X-Empresa-Id", tenantB.Id.ToString());
+                using var selectorResponse = await client.SendAsync(wrongSelector);
+                Assert.Equal(HttpStatusCode.Forbidden, selectorResponse.StatusCode);
+
             }
 
             // Route spoofing, membership B and critical changes cannot borrow A.
