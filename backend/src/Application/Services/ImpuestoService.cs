@@ -11,12 +11,14 @@ public class ImpuestoService : IImpuestoService
     private readonly IImpuestoRepository _repository;
     private readonly IAuditoriaService _auditoria;
     private readonly ICurrentUserService _currentUser;
+    private readonly IUnitOfWork _unitOfWork;
 
-    public ImpuestoService(IImpuestoRepository repository, IAuditoriaService auditoria, ICurrentUserService currentUser)
+    public ImpuestoService(IImpuestoRepository repository, IAuditoriaService auditoria, ICurrentUserService currentUser, IUnitOfWork unitOfWork)
     {
         _repository = repository;
         _auditoria = auditoria;
         _currentUser = currentUser;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<List<ImpuestoDto>> GetAllAsync(bool incluirEliminados = false)
@@ -159,28 +161,38 @@ public class ImpuestoService : IImpuestoService
         return ToDto((await _repository.GetByIdConRelacionesAsync(id))!);
     }
 
-    public async Task<ImpuestoDto> ActivarAsync(int id)
-    {
-        var i = await _repository.GetByIdAsync(id) ?? throw new BusinessRuleException("El impuesto no existe.");
-        i.Activo = true;
-        i.FechaActualizacion = DateTime.UtcNow;
-        i.ActualizadoPorUsuarioId = _currentUser.UsuarioId;
-        _repository.Update(i);
-        await _repository.SaveChangesAsync();
-        await _auditoria.RegistrarAsync(ModuloSistema.Impuestos, AccionPermiso.Activar, $"Activó el impuesto '{i.Nombre}'.", i.Id);
-        return ToDto((await _repository.GetByIdConRelacionesAsync(id))!);
-    }
+    // Fiscal state must never commit without its durable audit receipt.
+    // Oracle EF/MySQL shares a single transaction between update and audit.
+    public Task<ImpuestoDto> ActivarAsync(int id) => CambiarEstadoAsync(id, true);
 
-    public async Task<ImpuestoDto> DesactivarAsync(int id)
+    public Task<ImpuestoDto> DesactivarAsync(int id) => CambiarEstadoAsync(id, false);
+
+    private async Task<ImpuestoDto> CambiarEstadoAsync(int id, bool activar)
     {
-        var i = await _repository.GetByIdAsync(id) ?? throw new BusinessRuleException("El impuesto no existe.");
-        i.Activo = false;
-        i.FechaActualizacion = DateTime.UtcNow;
-        i.ActualizadoPorUsuarioId = _currentUser.UsuarioId;
-        _repository.Update(i);
-        await _repository.SaveChangesAsync();
-        await _auditoria.RegistrarAsync(ModuloSistema.Impuestos, AccionPermiso.Desactivar, $"Desactivó el impuesto '{i.Nombre}'.", i.Id);
-        return ToDto((await _repository.GetByIdConRelacionesAsync(id))!);
+        await _unitOfWork.ExecuteInTransactionAsync(async () =>
+        {
+            var impuesto = await _repository.GetByIdAsync(id)
+                ?? throw new BusinessRuleException("El impuesto no existe.");
+            var activoAnterior = impuesto.Activo;
+            impuesto.Activo = activar;
+            impuesto.FechaActualizacion = DateTime.UtcNow;
+            impuesto.ActualizadoPorUsuarioId = _currentUser.UsuarioId;
+            _repository.Update(impuesto);
+            await _repository.SaveChangesAsync();
+            await _auditoria.RegistrarEstrictoAsync(
+                ModuloSistema.Impuestos,
+                activar ? AccionPermiso.Activar : AccionPermiso.Desactivar,
+                $"{(activar ? "Activó" : "Desactivó")} el impuesto '{impuesto.Nombre}'.",
+                impuesto.Id,
+                entidad: "Impuesto",
+                valoresAnteriores: new { Activo = activoAnterior },
+                valoresNuevos: new { Activo = activar });
+        });
+
+        // Tenant query filters also apply when materializing the committed DTO.
+        var confirmado = await _repository.GetByIdConRelacionesAsync(id)
+            ?? throw new BusinessRuleException("El impuesto no existe.");
+        return ToDto(confirmado);
     }
 
     public async Task EliminarLogicoAsync(int id)

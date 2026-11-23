@@ -610,6 +610,9 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         // Edición de maestros: opt-in separado, nunca habilita otros PUT.
         var editarMaestros = HttpMethods.IsPut(http.Request.Method) &&
                            config.GetValue<bool>("MultiEmpresa:PrivateMasterEditPilotEnabled");
+        // Fiscal state pilot has a separate default-off switch. No tax CRUD.
+        var estadoFiscal = HttpMethods.IsPatch(http.Request.Method) &&
+                           config.GetValue<bool>("MultiEmpresa:PrivateFiscalStatePilotEnabled");
         // No activa mutaciones de inventario ni confirmaciones fiscales.
         // El piloto adicional sólo admite altas de producto SIN archivos
         // y borradores de venta/compra; nunca altera el modo por defecto.
@@ -645,7 +648,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                           config.GetValue<bool>("MultiEmpresa:PrivateAdminReportPilotEnabled");
         if (!lectura && !alta && !editarMaestros && !borrador && !confirmar &&
             !pdf && !reportes && !inventario && !media && !adminReport &&
-            !finanzas && !archivos && !borrarProducto)
+            !finanzas && !archivos && !borrarProducto && !estadoFiscal)
             return false;
 
         ModuloSistema modulo;
@@ -658,6 +661,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         var esAdminExport = false;
         var esBorradoProducto = false;
         var accionFinanciera = (AccionPermiso?)null;
+        var accionFiscal = (AccionPermiso?)null;
         var accionArchivos = (AccionPermiso?)null;
         var esCargaArchivos = false;
         var esCargaComprobante = false;
@@ -677,6 +681,18 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                              EsRutaExacta(http.Request.Path, "/impuestos/activos") ||
                              EsRutaDetallePositiva(http.Request.Path, "/impuestos")))
             modulo = ModuloSistema.Impuestos;
+        else if (estadoFiscal &&
+                 EsRutaAccionPositiva(http.Request.Path, "/impuestos", "activar"))
+        {
+            modulo = ModuloSistema.Impuestos;
+            accionFiscal = AccionPermiso.Activar;
+        }
+        else if (estadoFiscal &&
+                 EsRutaAccionPositiva(http.Request.Path, "/impuestos", "desactivar"))
+        {
+            modulo = ModuloSistema.Impuestos;
+            accionFiscal = AccionPermiso.Desactivar;
+        }
         else if (lectura && (EsRutaExacta(http.Request.Path, "/clientes") ||
                              EsRutaExacta(http.Request.Path, "/clientes/activos") ||
                              EsRutaExacta(http.Request.Path, "/clientes/buscar") ||
@@ -837,7 +853,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             return false;
 
         accion = esBorradoProducto ? AccionPermiso.EliminarLogico
-            : accionArchivos ?? accionFinanciera ??
+            : accionFiscal ?? accionArchivos ?? accionFinanciera ??
             (esEdicionMaestros ? AccionPermiso.Editar
             : esPdf || esMedia || esAdminExport ? AccionPermiso.Exportar
             : lectura || reportes || inventario || adminReport ? AccionPermiso.Ver

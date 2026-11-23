@@ -32,7 +32,8 @@ public class ImpuestoCodigoEstableTests
         var service = new ImpuestoService(
             repository.Object,
             Mock.Of<IAuditoriaService>(),
-            Mock.Of<ICurrentUserService>());
+            Mock.Of<ICurrentUserService>(),
+            Mock.Of<IUnitOfWork>());
 
         var dto = new GuardarImpuestoDto
         {

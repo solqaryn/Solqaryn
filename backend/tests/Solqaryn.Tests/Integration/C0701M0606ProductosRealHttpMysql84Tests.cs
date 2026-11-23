@@ -166,6 +166,32 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             await db.SaveChangesAsync();
             db.ChangeTracker.Clear();
 
+            // SQL-backed fiscal-state grants for both isolated tenants.
+            foreach (var action in new[] { AccionPermiso.Activar, AccionPermiso.Desactivar })
+            {
+                var fiscalPermission = await db.Permisos.IgnoreQueryFilters()
+                    .FirstOrDefaultAsync(p => p.Modulo == ModuloSistema.Impuestos &&
+                        p.Accion == action && p.Ambito == AmbitoAutorizacion.Empresa &&
+                        p.Activo && !p.Eliminado);
+                if (fiscalPermission is null)
+                {
+                    fiscalPermission = new Permiso
+                    {
+                        Codigo = "C0701M0606.IMPUESTOS." + action.ToString().ToUpperInvariant(),
+                        Nombre = "C0701 fiscal state grant " + action,
+                        Modulo = ModuloSistema.Impuestos, Accion = action,
+                        Ambito = AmbitoAutorizacion.Empresa, Activo = true
+                    };
+                    db.Permisos.Add(fiscalPermission);
+                    await db.SaveChangesAsync();
+                }
+                db.RolPermisos.AddRange(
+                    new RolPermiso { RolId = roleA.Id, PermisoId = fiscalPermission.Id },
+                    new RolPermiso { RolId = roleB.Id, PermisoId = fiscalPermission.Id });
+            }
+            await db.SaveChangesAsync();
+            db.ChangeTracker.Clear();
+
             // Test-only RBAC: the valid A role has Crear, while B does not.
             var createPermission = await db.Permisos.IgnoreQueryFilters()
                 .FirstOrDefaultAsync(x => x.Modulo == ModuloSistema.Productos
@@ -1584,6 +1610,113 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             using (var offActive = await CategoryRequestAsync(jwtB, b.Id, "/impuestos/activos"))
                 Assert.Equal(HttpStatusCode.ServiceUnavailable, offActive.StatusCode);
             pilotConfig["MultiEmpresa:PrivateReadPilotEnabled"] = "true";
+
+            // V30: real JWT, independent SQL fiscal action grants, transaction
+            // durability and rollback on an isolated Oracle EF/MySQL 8.4 server.
+            async Task<HttpResponseMessage> FiscalStateAsync(
+                string jwt, int selector, int taxId, bool activate)
+            {
+                using var request = new HttpRequestMessage(
+                    HttpMethod.Patch,
+                    $"/impuestos/{taxId}/{(activate ? "activar" : "desactivar")}");
+                request.Headers.Authorization =
+                    new AuthenticationHeaderValue("Bearer", jwt);
+                request.Headers.TryAddWithoutValidation(
+                    "X-Empresa-Id", selector.ToString());
+                return await client.SendAsync(request);
+            }
+
+            pilotConfig["MultiEmpresa:PrivateFiscalStatePilotEnabled"] = "false";
+            using (var offFiscal = await FiscalStateAsync(jwtA, a.Id, taxAId, false))
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, offFiscal.StatusCode);
+            pilotConfig["MultiEmpresa:PrivateFiscalStatePilotEnabled"] = "true";
+            var fiscalAuditBefore = await db.RegistrosAuditoria.IgnoreQueryFilters()
+                .AsNoTracking().CountAsync(x => x.Modulo == ModuloSistema.Impuestos);
+
+            foreach (var (jwt, ownerId, taxId) in new[]
+            {
+                (jwtA, a.Id, taxAId), (jwtB, b.Id, taxBId)
+            })
+            {
+                using (var off = await FiscalStateAsync(jwt, ownerId, taxId, false))
+                    Assert.Equal(HttpStatusCode.OK, off.StatusCode);
+                await using (var readback = new AppDbContext(options))
+                {
+                    var state = await readback.Impuestos.IgnoreQueryFilters()
+                        .AsNoTracking().Where(x => x.Id == taxId)
+                        .Select(x => new
+                        {
+                            x.Activo,
+                            EmpresaId = EF.Property<int?>(x, "EmpresaId")
+                        }).SingleAsync();
+                    Assert.False(state.Activo);
+                    Assert.Equal(ownerId, state.EmpresaId);
+                }
+                using (var on = await FiscalStateAsync(jwt, ownerId, taxId, true))
+                    Assert.Equal(HttpStatusCode.OK, on.StatusCode);
+            }
+            await using (var persistedFiscal = new AppDbContext(options))
+            {
+                Assert.True(await persistedFiscal.Impuestos.IgnoreQueryFilters()
+                    .AsNoTracking().Where(x => x.Id == taxAId).Select(x => x.Activo)
+                    .SingleAsync());
+                Assert.True(await persistedFiscal.Impuestos.IgnoreQueryFilters()
+                    .AsNoTracking().Where(x => x.Id == taxBId).Select(x => x.Activo)
+                    .SingleAsync());
+                Assert.Equal(fiscalAuditBefore + 4,
+                    await persistedFiscal.RegistrosAuditoria.IgnoreQueryFilters()
+                        .AsNoTracking().CountAsync(x => x.Modulo == ModuloSistema.Impuestos));
+            }
+
+            // Foreign IDs, selector spoofing and revoked SQL grant cannot mutate.
+            using (var foreignTax = await FiscalStateAsync(jwtA, a.Id, taxBId, false))
+                Assert.NotEqual(HttpStatusCode.OK, foreignTax.StatusCode);
+            using (var spoofFiscal = await FiscalStateAsync(jwtA, b.Id, taxBId, false))
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, spoofFiscal.StatusCode);
+            var deactivateGrant = await db.Permisos.IgnoreQueryFilters()
+                .SingleAsync(x => x.Modulo == ModuloSistema.Impuestos &&
+                    x.Accion == AccionPermiso.Desactivar &&
+                    x.Ambito == AmbitoAutorizacion.Empresa && x.Activo && !x.Eliminado);
+            var revokedFiscalGrant = await db.RolPermisos.SingleAsync(x =>
+                x.RolId == roleA.Id && x.PermisoId == deactivateGrant.Id);
+            db.RolPermisos.Remove(revokedFiscalGrant);
+            await db.SaveChangesAsync();
+            using (var revokedFiscal = await FiscalStateAsync(jwtA, a.Id, taxAId, false))
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, revokedFiscal.StatusCode);
+
+            // A failing audit sink rolls back a real SQL UPDATE, verified with
+            // a fresh DbContext rather than an in-memory tracked entity.
+            var failedAudit = new Mock<IAuditoriaService>();
+            failedAudit.Setup(x => x.RegistrarEstrictoAsync(
+                    It.IsAny<ModuloSistema>(), It.IsAny<AccionPermiso>(),
+                    It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<string?>(),
+                    It.IsAny<object?>(), It.IsAny<object?>(), It.IsAny<string?>(),
+                    It.IsAny<string>(), It.IsAny<string?>()))
+                .ThrowsAsync(new InvalidOperationException("FISCAL_AUDIT_SINK_UNAVAILABLE"));
+            var fiscalContext = new DefaultHttpContext();
+            fiscalContext.Items[Solqaryn.Application.Security.VerifiedCommercialTenant
+                .AuthorizedEmpresaIdItemKey] = b.Id;
+            var fiscalAccessor = new HttpContextAccessor { HttpContext = fiscalContext };
+            await using (var rollbackFiscalDb = new AppDbContext(options,
+                tenantHttpContextAccessor: fiscalAccessor))
+            {
+                var service = new ImpuestoService(
+                    new ImpuestoRepository(rollbackFiscalDb), failedAudit.Object,
+                    Mock.Of<ICurrentUserService>(), new UnitOfWork(rollbackFiscalDb));
+                var failure = await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => service.DesactivarAsync(taxBId));
+                Assert.Equal("FISCAL_AUDIT_SINK_UNAVAILABLE", failure.Message);
+            }
+            await using (var fiscalFresh = new AppDbContext(options))
+            {
+                Assert.True(await fiscalFresh.Impuestos.IgnoreQueryFilters()
+                    .AsNoTracking().Where(x => x.Id == taxBId).Select(x => x.Activo)
+                    .SingleAsync());
+                Assert.Equal(fiscalAuditBefore + 4,
+                    await fiscalFresh.RegistrosAuditoria.IgnoreQueryFilters()
+                        .AsNoTracking().CountAsync(x => x.Modulo == ModuloSistema.Impuestos));
+            }
+            pilotConfig["MultiEmpresa:PrivateFiscalStatePilotEnabled"] = "false";
 
             // V26 R2: nested ProductoVariantes endpoints must not evade the
             // multiempresa guard through a parent product ID, even with a

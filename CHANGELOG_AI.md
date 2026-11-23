@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV01 V30 C07-01.M06.06: estado fiscal A/B y auditoría transaccional
+- Entregable funcional R2: piloto fiscal separado, apagado por defecto, para PATCH activar/desactivar con JWT/RBAC SQL por empresa; POST/PUT/DELETE fiscales siguen bloqueados.
+- Servicio de impuestos une estado y auditoría estricta en una transacción Oracle EF/MySQL. El test integrado ejercita empresas A/B, revocación, selector ajeno y rollback ante fallo del sink, pendiente de CI real exact-SHA.
+- C07-01.M06.06 permanece EN_PROGRESO con lock V17 DEV01; servicios/atributos y aceptación ERP integral aún pendientes. No certificar LISTO, A5, qa/main/PROD.
+
 ## 2026-11-23 — DEV06 V30 C14-02.M06.06: DELETE piloto productivo deja de ser inaccesible
 - Corregido un fallo funcional real: el preflight de `UnscopedCommercialTenantGuardMiddleware` excluía `borrarProducto` pese a exigir un opt-in independiente, ruta exacta `DELETE /productos/{id positivo}`, RBAC `Productos.EliminarLogico` y pertenencia al tenant.
 - Se conserva la bandera `PrivateProductDeletePilotEnabled=false` por defecto; no se abren otras rutas ni se alteran permisos de entorno. xUnit nuevo comprueba A/B, flag OFF, tenant ajeno, revocación, anónimo, rutas vecinas y métodos diferentes.
