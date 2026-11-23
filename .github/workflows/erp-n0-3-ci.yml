@@ -155,7 +155,16 @@ jobs:
           }
           check_count() {
             label="$1"; expected="$2"; sql="$3"
-            actual="$(q "$sql" | tr -d '\r[:space:]')"
+            # A query failure must identify its assertion: under set -e a bare
+            # command substitution can exit before EXPECTED/ACTUAL is printed.
+            # Emit only the MySQL error NUMBER (never SQL rows or credentials).
+            if ! actual="$(q "$sql" 2>/tmp/n03-sql-assert-error.log | tr -d '\r[:space:]')"; then
+              error_code="$(grep -oE 'ERROR [0-9]+' /tmp/n03-sql-assert-error.log | head -n 1 || true)"
+              printf 'N03_ASSERT=%s EXPECTED=%s ACTUAL=SQL_ERROR_%s\n' "$label" "$expected" "${error_code:-UNKNOWN}" >&2
+              echo "N03_FAIL=$label" >&2
+              diagnose
+              exit 1
+            fi"
             printf 'N03_ASSERT=%s EXPECTED=%s ACTUAL=%s\n' "$label" "$expected" "$actual"
             if [ "$actual" != "$expected" ]; then
               echo "N03_FAIL=$label" >&2
