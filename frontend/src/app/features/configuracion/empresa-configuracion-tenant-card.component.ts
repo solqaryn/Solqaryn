@@ -1,5 +1,5 @@
 
-import { Component, OnInit, effect, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, computed, effect, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -165,7 +165,7 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
   readonly saving = signal(false);
   readonly error = signal<string | null>(null);
   readonly conflict = signal(false);
-  readonly puedeEditar = signal(false);
+  readonly puedeEditar = computed(() => this.permisos.puede('Configuracion', 'Editar'));
   readonly correoConfigurado = signal(false);
   readonly logoUrl = signal<string | null>(null);
   readonly plantillas = signal<ConfigEmpresaTenant['plantillasCorreo']>([]);
@@ -191,9 +191,14 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
     correoNombreRemitente: ['', Validators.maxLength(200)]
   });
 
+  // Permission refresh or tenant switch must revoke editing on this mounted form.
+  // Client state remains UX only; the API is the actual authorization boundary.
+  private readonly permissionWatcher = effect(() => {
+    if (this.puedeEditar()) this.form.enable({ emitEvent: false });
+    else this.form.disable({ emitEvent: false });
+  });
+
   ngOnInit(): void {
-    this.puedeEditar.set(this.permisos.puede('Configuracion', 'Editar'));
-    if (!this.puedeEditar()) this.form.disable();
     this.initialized = true;
     this.cargar();
   }
@@ -266,6 +271,11 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
     }).pipe(finalize(() => this.saving.set(false))).subscribe({
       next: res => {
         if (empresaId !== this.empresaId()) return;
+        // An in-flight mutation cannot announce success after permission revocation.
+        if (!this.puedeEditar()) {
+          this.loadState.set('forbidden');
+          return;
+        }
         if (!res?.data || res.data.empresaId !== empresaId) {
           this.loadState.set('invalid');
           return;
@@ -293,6 +303,11 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
     this.empresaService.updateTenantLogo(empresaId, file).pipe(finalize(() => this.saving.set(false))).subscribe({
       next: res => {
         if (empresaId !== this.empresaId()) return;
+        // An in-flight mutation cannot announce success after permission revocation.
+        if (!this.puedeEditar()) {
+          this.loadState.set('forbidden');
+          return;
+        }
         // A successful HTTP response cannot authorize data from another tenant.
         // Deny malformed/foreign mutation receipts before rendering a success toast.
         if (!res?.data || res.data.empresaId !== empresaId) {
@@ -318,6 +333,11 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
     this.empresaService.restaurarTenantLogo(empresaId).pipe(finalize(() => this.saving.set(false))).subscribe({
       next: res => {
         if (empresaId !== this.empresaId()) return;
+        // An in-flight mutation cannot announce success after permission revocation.
+        if (!this.puedeEditar()) {
+          this.loadState.set('forbidden');
+          return;
+        }
         // Logo deletion must obey the same tenant-bound response contract.
         if (!res?.data || res.data.empresaId !== empresaId) {
           this.loadState.set('invalid');

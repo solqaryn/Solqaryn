@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV05 V27 C01-03.M04.04: revocar edicion en formulario tenant ya montado
+- Corrige P2/R2 de Angular: la capacidad Configuracion:Editar ahora se deriva reactivamente de permisos del tenant verificado; al perder permiso se deshabilita el formulario montado, se rechaza un nuevo PUT y no se anuncia éxito de una respuesta en vuelo.
+- Añade dos pruebas Vitest adversariales de revocación, reactivación explícita e in-flight success sin toast; Auth JWT/SQL del servidor no se modifica. Pruebas unitarias y CI exact-SHA pendientes de ejecución; V23 zoom nativo/ANTES sin certificar, H=VALIDANDO, A5 independiente y QA/main/PROD prohibidos.
+
 ## 2026-11-23 — DEV04 V27 C03-01.M03.03: ID JWT firmado canonico sin alias de ceros
 - La fuente de autorización read-only opt-in DEV ahora rechaza IDs JWT firmados como 091/00091 aunque sean convertibles al mismo actor SQL 91; conserva la identidad canónica de /auth/renovar, el aislamiento tenant A/B, las revocaciones, las denegaciones y cero permisos nuevos.
 - Suite adversarial xUnit con JwtBearer real; GitHub-hosted MySQL 8.4 y los checks exact-SHA quedan obligatorios, sin contar CI en curso como PASS. Faltan login productivo completo y cambio de tenant/sucursal; PLAN C03-01.M03.03 sigue VALIDANDO, owner histórico DEV04, A5 distinta, rollback git revert y sin QA/main/PROD.
