@@ -178,4 +178,49 @@ test.describe('V24 M04.04 form: real GET, guarded duplicate mutation, error and 
     }
   });
 
+  for (const injected of ['foreign-tenant', 'missing-data'] as const) {
+    test('logo POST rejects HTTP 200 response with ' + injected + ' and no false success', async ({ page }) => {
+      test.setTimeout(180_000);
+      const token = await loginA(page); // Real signed-JWT + persisted editor grant, not a mocked login.
+      const currentResponse = await page.request.get(api + '/empresa-configuracion/tenant/1', {
+        headers: { Authorization: 'Bearer ' + token }
+      });
+      expect(currentResponse.status()).toBe(200);
+      const originalTenant = (await currentResponse.json())?.data;
+      expect(originalTenant?.empresaId).toBe(1);
+      const sentinel = 'FOREIGN_TENANT_B_NEVER_RENDER_OR_ACKNOWLEDGE';
+      let intercepted = 0;
+      // Only the logo POST response is injected; login, permission and GET are real.
+      // This is a client fail-closed negative, NOT backend tenant-isolation certification.
+      await page.route('**/empresa-configuracion/tenant/1/logo', async route => {
+        if (route.request().method() !== 'POST') {
+          await route.continue();
+          return;
+        }
+        intercepted++;
+        await route.fulfill({
+          status: 200,
+          contentType: 'application/json',
+          body: JSON.stringify({
+            data: injected === 'foreign-tenant'
+              ? { ...originalTenant, empresaId: 2, nombre: sentinel }
+              : null
+          })
+        });
+      });
+      await page.locator('input[type="file"][accept="image/*"]').setInputFiles({
+        name: 'isolated-test.png',
+        mimeType: 'image/png',
+        buffer: Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mP8/x8AAwMCAO9dG4kAAAAASUVORK5CYII=', 'base64')
+      });
+      await expect(page.locator('[data-config-state="invalid"]')).toBeVisible();
+      await expect(page.getByRole('alert')).toContainText(
+        'La respuesta no corresponde a la empresa verificada.'
+      );
+      await expect(page.locator('body')).not.toContainText(sentinel);
+      await expect(page.getByText('Logo del tenant actualizado.', { exact: true })).toHaveCount(0);
+      expect(intercepted, 'upload must issue only one POST to the current tenant').toBe(1);
+    });
+  }
+
 });

@@ -293,6 +293,12 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
     this.empresaService.updateTenantLogo(empresaId, file).pipe(finalize(() => this.saving.set(false))).subscribe({
       next: res => {
         if (empresaId !== this.empresaId()) return;
+        // A successful HTTP response cannot authorize data from another tenant.
+        // Deny malformed/foreign mutation receipts before rendering a success toast.
+        if (!res?.data || res.data.empresaId !== empresaId) {
+          this.loadState.set('invalid');
+          return;
+        }
         this.aplicar(res.data, empresaId);
         this.snackBar.open('Logo del tenant actualizado.', 'Cerrar', { duration: 4000 });
       },
@@ -312,6 +318,11 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
     this.empresaService.restaurarTenantLogo(empresaId).pipe(finalize(() => this.saving.set(false))).subscribe({
       next: res => {
         if (empresaId !== this.empresaId()) return;
+        // Logo deletion must obey the same tenant-bound response contract.
+        if (!res?.data || res.data.empresaId !== empresaId) {
+          this.loadState.set('invalid');
+          return;
+        }
         this.aplicar(res.data, empresaId);
         this.snackBar.open('Logo del tenant eliminado.', 'Cerrar', { duration: 4000 });
       },

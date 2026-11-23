@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV05 V27 C01-03.M04.04: negar éxito de logo para tenant ajeno o recibo vacío
+- Corrige P2/R2 de UI: POST y DELETE logo comprueban que `data.empresaId` coincide con el tenant verificado antes de aplicar cambios o anunciar éxito; respuestas HTTP 200 de otra empresa o sin datos llevan al estado de error recuperable sin mostrar información ajena.
+- Añade dos negativas Playwright con JWT y permiso de editor reales más GET MySQL 8.4 efímero; únicamente se falsifica la respuesta del POST para comprobar el rechazo. CI exact-SHA, zoom nativo y A5 independiente pendientes. Sin cambios de backend, datos productivos, QA/main/PROD.
+
 ## 2026-11-23 — DEV02 C15-04.M05.04: A126 pinch CDP real de guard privado (R2)
 - Agrega Playwright adversarial sobre API ASP.NET Core + MySQL 8.4 efímero: anónimo HTTP 401, Angular redirige a login en cinco anchos y Chromium CDP aplica pinch 200% con comprobación de viewport, foco Tab y dos capturas.
 - Test-only sin runtime alterado; pinch NO es zoom de barra nativo. CI exact-SHA pendiente, A0–A4 de auditoría global incompletos, propietario DEV02/lock V17 preservados; sin LISTO/A5/QA/main/PROD.
