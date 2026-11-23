@@ -1,3 +1,9 @@
+## 2026-11-23 - CI V28: reutilizacion de dependencias NuGet en migraciones MySQL 8.4 (DEV)
+- Causa: el job de migraciones en .github/workflows/dev-ci.yml restauraba paquetes .NET 10 nuevamente en cada ejecucion aun existiendo una cache NuGet validada en el workflow permanente ERP. Evidencia: workflow de 65 minutos sin cache en este job, ci permanente previo con cache-hit comprobado.
+- Cambio minimo: anadir actions/cache@v4 para ~/.nuget/packages en el job migrations, misma clave de manifiestos que el cache existente; reusar solo paquetes NuGet descargables. Se mantienen todas las comprobaciones, filtros de impacto fail-closed, MySQL 8.4 efimero, bootstrap EF Oracle, pruebas de integracion, Scope Lock y V5.
+- Sin modificaciones funcionales: no cambia JWT, RBAC, tenants, frontend, datos, contratos, migraciones SQL, tests, timeout, jobs, triggers, aprobaciones ni produccion. No se editaron estados ni candados de las Tasks.
+- Verificacion post-commit: GitHub Actions exact-SHA, Scope Lock y V5 SUCCESS, job migrations cuando resulte aplicable con cache step success/cache-hit, pruebas restantes obligatorias success. La mejora de tiempo no se certifica hasta comparar corridas. Revertir con nuevo commit si falla sin degradar controles.
+
 ## 2026-11-23 — DEV02 C15-04.M05.04: A124 UX ruta de planes con JWT real
 - Playwright A0.96 sobre catálogo informativo de planes: plataforma global JWT/MySQL8.4, tenant B 403, Tab natural, texto 200%, sin overflow en cinco anchos y sin mutaciones ni cobros. Fotos actuales 320/1440; no se atribuye zoom nativo ni WCAG/CWV global.
 - Test-only R2, runtime intacto, A1-A4 del nuevo SHA pendientes y A5 independiente posterior; preservar WIP/owner/lock V17, sin QA/main/PROD. Rollback git revert.
