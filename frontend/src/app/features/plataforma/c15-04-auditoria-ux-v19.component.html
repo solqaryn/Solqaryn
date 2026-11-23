@@ -8,11 +8,19 @@
 
   <section aria-labelledby="ux-surfaces-heading">
     <h2 id="ux-surfaces-heading">Superficies por auditar</h2>
+    <p>Abre cada ruta publicada para revisar su experiencia. Los permisos originales siguen vigentes; abrir una ruta no certifica sus pruebas.</p>
     <div class="ux-grid">
       @for (superficie of superficies; track superficie.id) {
         <article class="ux-surface" data-testid="ux-surface" [attr.data-state]="'NO_MEDIDO'">
           <h3>{{ superficie.titulo }}</h3>
           <p>{{ superficie.objetivo }}</p>
+          <p class="ux-access" [id]="'ux-access-' + superficie.id">{{ superficie.acceso }}</p>
+          @if (superficie.ruta) {
+            <a class="ux-open" [routerLink]="superficie.ruta"
+              [attr.aria-describedby]="'ux-access-' + superficie.id">Abrir {{ superficie.titulo }}</a>
+          } @else {
+            <p class="ux-unavailable">Sin acceso directo verificado</p>
+          }
           <p class="ux-status"><strong>NO_MEDIDO</strong> · pruebas y evidencias pendientes</p>
         </article>
       }

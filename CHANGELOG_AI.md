@@ -1,3 +1,9 @@
+## 2026-11-23 — DEV02 V30 C15-04.M05.04: navegación UX operativa por superficies
+- Cambio funcional Angular: la auditoría privada incorpora enlaces reales a landing pública, portal global, dashboard ERP y consola global, asociados a rutas existentes y sujetos a sus guards; el builder queda explícitamente sin enlace hasta existir una ruta verificada.
+- Accesibilidad: acciones de 44 px, foco visible y explicación vinculada mediante aria-describedby; sin permisos nuevos, peticiones mutantes ni métricas WCAG/CWV inventadas. Se conservan estados NO_MEDIDO y límites de rol/tenant.
+- Riesgo R1 de navegación con frontera R2 protegida por guards existentes; evidencia visual previa, zoom nativo 200% y capturas antes/después SIN_VERIFICAR. No marcar A0–A4 ni A5 completos con este incremento.
+- Validación posterior exigida: CI exact-SHA de Angular, Scope Lock/V5 y navegación Chromium con JWT/permisos pertinentes; no reejecutar suites ya SUCCESS del mismo SHA sin cambio causal. Rollback por git revert normal.
+
 ## 2026-11-23 — DEV01 V30 C07-01.M06.06: alta fiscal atómica con auditoría estricta
 - Incremento funcional .NET: `ImpuestoService.CreateAsync` confirma alta fiscal y recibo durable en una misma transacción Oracle EF/MySQL; error de auditoría bloquea commit en lugar de tolerarse silenciosamente.
 - Prueba xUnit verifica propagación y participación en la unidad transaccional; rollback MySQL 8.4 físico y positivos A/B/servicios/atributos siguen sin certificación hasta CI dirigida. WIP C07-01.M06.06, sin LISTO/A5 ni QA/main/PROD.

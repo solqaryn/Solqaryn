@@ -19,3 +19,10 @@ p, li { line-height: 1.55; overflow-wrap: anywhere; }
 @media (max-width: 480px) { .ux-audit { width: calc(100% - 1.5rem); } .ux-grid { grid-template-columns: minmax(0, 1fr); } }
 @media (prefers-contrast: more) { .ux-surface { border: 2px solid CanvasText; } .ux-back:focus-visible { outline-color: CanvasText; } }
 @media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; } }
+
+/* C15-04.M05.04: accion real accesible, sin inventar un builder ni relajar guards. */
+.ux-access { font-size: .925rem; color: var(--color-text-muted, #475569); }
+.ux-open { display: inline-flex; align-items: center; justify-content: center; min-height: 44px; max-width: 100%; padding: .6rem .9rem; border: 2px solid var(--color-primary, #0369a1); border-radius: .6rem; color: var(--color-primary-dark, #075985); background: var(--color-surface, #fff); font-weight: 700; text-align: center; text-decoration: none; overflow-wrap: anywhere; }
+.ux-open:hover { background: var(--color-bg, #f3f7fb); text-decoration: underline; text-underline-offset: .18em; }
+.ux-open:focus-visible { outline: 3px solid var(--color-primary, #0369a1); outline-offset: 3px; }
+.ux-unavailable { font-weight: 600; color: var(--color-text-muted, #475569); }
