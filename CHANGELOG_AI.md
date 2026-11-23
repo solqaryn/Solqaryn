@@ -9933,3 +9933,8 @@
 - Implementación pura, fail-closed y sin escritura: ámbito empresarial/plataforma explícito, rechazo tenant cruzado y rol revocado, correlación segura y requisito de transacción estricta para cambios críticos.
 - Pruebas xUnit de positivos, negativos y fronteras; un resultado positivo de dominio NO concede permiso JWT ni acredita registro MySQL durable. La integración HTTP/MySQL se implementará en sucesoras según contrato, no se declara PASS.
 - Exclusivo dev; sin DI, endpoint, migración, nuevas Tasks, QA/main/PROD; A5 por otra Task Javier tras CI exact-SHA. Rollback git revert normal.
+
+## 2026-11-22 — C03-01.M03.01: resolución pura 0/1/N y última preferencia válida (R2)
+- Se implementa regla Domain que no concede autoridad: valida snapshots actuales 0/1/N, deniega tenant ajeno/duplicado, membresía/rol revocados, preferencia cruzada y override cliente; plataforma requiere grant distinto y servidor.
+- Se añaden tests xUnit adversariales de 0/1/N, preferencia revocada, A/B y cuenta bloqueada; faltan pruebas de integración JWT/HTTP/MySQL de las sucesoras. A3 no aplica al diff sin API/DB/UI, no implica certificación de fase.
+- Exclusivo dev, sin migraciones, secretos o cambios QA/main/PROD. A5 independiente por otra Task Javier. Rollback git revert ordinario.

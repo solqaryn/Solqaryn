@@ -1,0 +1,9 @@
+# SOLQARYN V5 — C03-01.M03.01: reglas de dominio 0/1/N de login inteligente
+
+Alcance: PLAN D446 y adenda UX_LOGIN_INTELIGENTE_V1, exclusivamente Domain + xUnit + documentación; riesgo R2; `solqaryn/Solqaryn@dev` con PROJECT_SCOPE_LOCK STRICT. No se crean endpoints, JWT, preferencia DB, migraciones, frontend, flags productivos ni QA/main/PROD.
+
+Se implementa `C0301LoginTenantResolutionDomainRules`, una proyección **no autorizadora** a partir de snapshots previamente verificados por el servidor. El dominio filtra actor, membresía, empresa y rol vigentes, rechaza duplicidad de tenants y contexto ajeno, y evalúa 0 (denegación), 1 (candidato único), N (última preferencia aún válida del mismo usuario o selector explícito). Cuenta global sólo se sugiere en un código separado con grant plataforma autenticado; nunca se transforma RolId empresarial en superadministrador. Cada resultado indica que la capa Application/API debe volver a validar JWT, autoridad SQL, revocación, pertenencia, políticas y recursos antes de emitir sesión/operación.
+
+Tests xUnit falsables para 0/1/N, rol/empresa revocados, preferencia B caducada, preferencia del usuario Y, snapshot de otro actor, duplicidad, índice 0, cabecera override, cuenta bloqueada y consola global; no se reportan como ejecutados hasta GitHub Actions exact SHA. A3 HTTP/JWT/MySQL/Chromium NO_APLICA **a este diff Domain puro**: posteriores M03.02–M03.06 y M05 deben acreditar pruebas integradas reales y compatibilidad de sesión, preferencia persistente, reauth/MFA si contratados.
+
+Dependencias directas: Domain -> Application (IUsuarioScopeService/UsuarioScopeService) -> API, sin nuevos consumidores todavía. No modifica datos/transacciones ni reduce reglas JWT/RBAC existentes. Rollback ordinario `git revert` tras revisar HEAD y lease; bitácora append-only. A5 por otra Task Javier distinta de DEV06. Esta microtarea no certifica la fase completa M03 ni la experiencia Angular.
