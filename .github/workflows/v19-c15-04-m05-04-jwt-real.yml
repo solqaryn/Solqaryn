@@ -77,6 +77,21 @@ jobs:
     steps:
       - name: Checkout SHA
         uses: actions/checkout@v4
+      - name: Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      # V28: un error de parser debe fallar antes de construir API, baseline y Angular.
+      # --list SOLO descubre las pruebas; Chromium/JWT/MySQL se ejecutan mas adelante.
+      - name: Preflight sintaxis y descubrimiento Playwright C15
+        working-directory: frontend
+        run: |
+          set -euo pipefail
+          npm install --global npm@11.19.0
+          npm ci
+          npx playwright test e2e/c15-04-m05-04-jwt-real.spec.ts --config=playwright.c15-04-m05-04-real.config.ts --list
       - name: Crear claves aleatorias solo en CI
         shell: bash
         run: |
@@ -168,18 +183,10 @@ jobs:
           test "$members" = '1'
           test "$company" = '1'
           test "$company_b" = '1'
-      - name: Node 24
-        uses: actions/setup-node@v4
-        with:
-          node-version: '24.21.0'
-          cache: npm
-          cache-dependency-path: frontend/package-lock.json
-      - name: npm y build Angular
+      - name: Lint y build Angular (dependencias del preflight)
         working-directory: frontend
         run: |
           set -euo pipefail
-          npm install --global npm@11.19.0
-          npm ci
           npm run lint
           npm run build:prod
       - name: Instalar Chromium
