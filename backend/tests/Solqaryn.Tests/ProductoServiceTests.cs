@@ -1,5 +1,6 @@
 using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Exceptions;
+using Solqaryn.Application.Security;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Application.Services;
 using Solqaryn.Domain.Entities;
@@ -127,5 +128,47 @@ public class ProductoServiceTests
         _productoRepoMock.Verify(r => r.Update(producto), Times.Never);
         _productoRepoMock.Verify(r => r.SaveChangesAsync(), Times.Once);
         _imageStorageMock.Verify(s => s.DeleteAsync(It.IsAny<string>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_HttpConHeaderEmpresaSinMarcaRbac_RechazaAntesDeLeerDatos()
+    {
+        var http = new DefaultHttpContext();
+        http.Request.Headers["X-Empresa-Id"] = "23";
+        var accessor = new Mock<IHttpContextAccessor>();
+        accessor.SetupGet(x => x.HttpContext).Returns(http);
+        var service = new ProductoService(
+            _productoRepoMock.Object, _categoriaRepoMock.Object, _imageStorageMock.Object,
+            _currentUserMock.Object, _auditoriaMock.Object,
+            httpContextAccessor: accessor.Object);
+
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() => service.DeleteAsync(1));
+
+        _productoRepoMock.Verify(r => r.GetByIdAsync(It.IsAny<int>()), Times.Never);
+        _productoRepoMock.Verify(r => r.SaveChangesAsync(), Times.Never);
+    }
+
+    [Fact]
+    public async Task DeleteAsync_HttpConMarcaRbacServerSide_PermiteBajaLogica()
+    {
+        var http = new DefaultHttpContext();
+        http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = 23;
+        var accessor = new Mock<IHttpContextAccessor>();
+        accessor.SetupGet(x => x.HttpContext).Returns(http);
+        var product = new Producto
+        {
+            Id = 1, EmpresaId = 23, Nombre = "Mouse", Marca = "X", Modelo = "Y", Activo = true
+        };
+        _productoRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(product);
+        _productoRepoMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(true);
+        var service = new ProductoService(
+            _productoRepoMock.Object, _categoriaRepoMock.Object, _imageStorageMock.Object,
+            _currentUserMock.Object, _auditoriaMock.Object,
+            httpContextAccessor: accessor.Object);
+
+        Assert.True(await service.DeleteAsync(1));
+        Assert.True(product.Eliminado);
+        Assert.False(product.Activo);
+        _productoRepoMock.Verify(r => r.SaveChangesAsync(), Times.Once);
     }
 }

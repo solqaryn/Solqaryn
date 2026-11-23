@@ -284,6 +284,15 @@ public class ProductoService : IProductoService
 
     public async Task<bool> DeleteAsync(int id)
     {
+        // Defense in depth: an HTTP delete cannot reach persistence without the
+        // server-side tenant marker set only after the Productos.EliminarLogico
+        // permission gate. A spoofed X-Empresa-Id header never authorizes a write.
+        // Non-HTTP internal callers preserve their existing service contract.
+        var http = _httpContextAccessor?.HttpContext;
+        if (http is not null && VerifiedCommercialTenant.Resolve(http) is not > 0)
+            throw new ForbiddenAccessException(
+                "La baja de productos requiere un tenant autorizado por RBAC.");
+
         var producto = await _repository.GetByIdAsync(id);
         if (producto is null) return false;
 

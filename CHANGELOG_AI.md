@@ -1,3 +1,9 @@
+## 2026-11-23 — DEV06 C14-02.M06.06: bloquear DELETE sin tenant RBAC verificado en Application
+
+- Entregable funcional R2: `ProductoService.DeleteAsync` impide que una solicitud HTTP omita el gate `Productos.EliminarLogico` y alcance persistencia sin la marca server-side `VerifiedCommercialTenant`; un header `X-Empresa-Id` no constituye autoridad. El contexto interno sin HTTP conserva su contrato; el propietario legacy nullable no se usa como autoridad.
+- Dos pruebas dirigidas: header empresarial falsificado sin marca rechaza antes de consultar repositorio o mutar, y marca RBAC server-side permite baja lógica del propio producto. Se preservan el borrado lógico de variantes, transacción con rollback y auditoría existentes.
+- Evidencia de GitHub Actions y MySQL/JWT HTTP REAL del SHA publicado todavía por verificar; este incremento NO certifica integración Oracle EF/MySQL 8.4, aislamiento real A/B ni ausencia global de P0/P1 para BOLA/IDOR, archivos, jobs, caché, backups y sesiones. Mantener C14-02.M06.06 en VALIDANDO, A5 independiente pendiente y no habilitar QA/main/PROD.
+
 ## 2026-11-23 — DEV05 C01-03.M04.04: impedir confirmación falsa en HTTP 200 sin éxito de API
 
 - Corrección funcional Angular del formulario de tenant: PUT, POST y DELETE de configuración/logo ya no aceptan recibos con `ApiResponse.success=false` aunque respondan HTTP 200 y empresaId coincida. El estado queda `unconfirmed` y solicita recarga, sin aplicar versión ni anunciar éxito.
