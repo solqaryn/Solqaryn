@@ -47,7 +47,10 @@ test('C15-04.M04.01 navega desde consola a cinco superficies NO_MEDIDO, sin escr
   await expect(view.locator('[data-testid="ux-surface"]')).toHaveCount(5);
   await expect(view.locator('[data-testid="ux-surface"][data-state="NO_MEDIDO"]')).toHaveCount(5);
   await expect(view.getByText('SIN_VERIFICAR')).toHaveCount(2);
-  await expect(view.locator('form, input, button, select, textarea')).toHaveCount(0);
+  await expect(view.locator('form, input, select, textarea')).toHaveCount(0);
+  const filtros = view.getByRole('group', { name: 'Filtrar superficies de la auditoría por acceso' });
+  await expect(filtros.getByRole('button')).toHaveCount(4);
+  await expect(filtros.getByRole('button', { name: 'Todas', exact: true })).toHaveAttribute('aria-pressed', 'true');
   for (const width of [320, 375, 768, 1280]) {
     await page.setViewportSize({ width, height: 800 });
     await expect(view.locator('[data-testid="ux-surface"]')).toHaveCount(5);
@@ -55,6 +58,15 @@ test('C15-04.M04.01 navega desde consola a cinco superficies NO_MEDIDO, sin escr
       document.documentElement.scrollWidth - document.documentElement.clientWidth);
     expect(overflow, 'sin desplazamiento horizontal a ' + width).toBeLessThanOrEqual(2);
   }
+  await filtros.getByRole('button', { name: 'Protegidas' }).click();
+  await expect(view.locator('[data-testid="ux-surface"]')).toHaveCount(3);
+  await expect(filtros.getByRole('button', { name: 'Protegidas' })).toHaveAttribute('aria-pressed', 'true');
+  await filtros.getByRole('button', { name: 'Sin ruta publicada' }).click();
+  await expect(view.locator('[data-testid="ux-surface"]')).toHaveCount(1);
+  await expect(view.locator('a.ux-open')).toHaveCount(0);
+  await filtros.getByRole('button', { name: 'Todas', exact: true }).click();
+  await expect(view.locator('[data-testid="ux-surface"]')).toHaveCount(5);
+  await expect(view.locator('[data-testid="ux-surface"][data-state="NO_MEDIDO"]')).toHaveCount(5);
   expect(writes).toEqual([]);
   await view.getByRole('link', { name: 'Volver a administración global' }).click();
   await expect(page).toHaveURL(/\/plataforma$/);

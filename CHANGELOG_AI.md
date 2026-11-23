@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV02 V30 C15-04.M05.04: contrato Chromium adaptado a filtros UX reales
+- Reparación preventiva P2 de E2E: la prueba de ruta privada C15-04.M04.01 todavía prohibía cualquier botón, pero el filtro UX publicado en 66ef3e66 usa cuatro controles legítimos de solo lectura. El spec ahora valida botones semánticos, roles, aria-pressed, 3 protegidas, 1 sin ruta y restablecimiento de 5 superficies NO_MEDIDO; mantiene navegación 403, rutas y cero peticiones de escritura.
+- No es certificación de JWT/MySQL real: esta prueba usa fixture sintético preexistente. CI exact-SHA de Chromium/Angular, Scope Lock y V5 requerida para afirmar PASS; no confundir esta corrección con LISTO ni A5 y mantener V17 propio 2000002297. Referencias SKREF-03/10 aplicadas previamente, sin nueva dependencia.
+
 ## 2026-11-23 — DEV02 V30 C15-04.M05.04: filtro funcional de navegación UX
 - Cambio Angular 22: la auditoría privada filtra las cinco superficies por pública, protegida o sin ruta, mediante botones nativos, estado aria-pressed, recuento aria-live y foco visible, con reflow CSS para ancho 320 px. Sin permisos nuevos, API, mutaciones ni rutas inventadas.
 - Regresión dirigida Vitest: cinco por defecto, una pública, tres protegidas, una sin ruta, restablecimiento y guardas sin cambios; estados NO_MEDIDO preservados. CI del SHA nuevo pendiente hasta resultado GitHub-hosted.
