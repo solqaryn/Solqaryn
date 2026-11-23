@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV02 V30 C15-04.M05.04: media query mobile-first corregida
+- Diagnóstico del SHA f73cfd41: Fase 10 validó la reserva base de footer y aprobó, pero el control transversal rechazó la nueva `@media(max-width:760px)` antes del build y pruebas de navegador. No fue una falla funcional de Chromium: falló análisis estático, 0 E2E ejecutadas por ese camino.
+- Cambio mínimo runtime: solo modificar la media query a `@media(max-height:480px)` para que el reflow de CTA funcione al reducir altura disponible (incluyendo zoom) sin usar reglas max-width, conservando min-width progresivos y padding dinámico. Validadores intactos.
+- Confirmación pendiente de nueva GitHub Actions exact-SHA, sin declarar zoom físico 200%, capturas ANTES/DESPUÉS, WCAG global ni presupuesto CSS; H=EN_PROGRESO, owner DEV02, lock V17 2000002297 y A5 pendiente.
+
 ## 2026-11-23 — DEV02 V30 C15-04.M05.04: fallback CSS compatible con Fase 10
 - FALLO CI exact-SHA c0dea8d3: `validate-storefront-fase10.mjs` requiere la declaración de reserva base `padding-bottom:calc(82px + env(safe-area-inset-bottom))` para el pie en CTA móvil; los tests Fase 1/4/10 y Frontend producción detuvieron ejecución antes de certificar comportamiento real.
 - Reparación mínima: restituir el respaldo CSS de 82px y mantener inmediatamente después el cálculo dinámico de alto real de la barra mediante ResizeObserver. No se modifican el validador, rutas, contratos, seguridad ni funciones del usuario.

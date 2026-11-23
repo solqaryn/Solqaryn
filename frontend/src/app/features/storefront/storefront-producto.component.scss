@@ -118,7 +118,7 @@ h1,h2,h3,p{margin:0}h1,h2,h3{color:var(--color-heading)}
 }
 
 /* Pantalla baja o zoom: mantener CTA en flujo, sin cubrir formulario ni pie. */
-@media (max-width:760px) and (max-height:480px){
+@media (max-height:480px){
   .mobile-buy-bar{position:static;min-height:0}
   .product-page{padding-bottom:24px}
   .store-footer{padding-bottom:0}
