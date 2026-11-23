@@ -671,16 +671,10 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                              EsRutaExacta(http.Request.Path, "/categorias/activas") ||
                              EsRutaDetallePositiva(http.Request.Path, "/categorias")))
             modulo = ModuloSistema.Categorias;
-        // V30 R2: normalized brand attributes are physically scoped in Oracle EF.
-        // Read-only, signed JWT + verified EmpresaId + Marcas.Ver; pilot OFF by default.
-        // POST/PUT/PATCH/DELETE of attributes remain quarantined.
-        else if (lectura && (EsRutaExacta(http.Request.Path, "/marcas") ||
-                             EsRutaExacta(http.Request.Path, "/marcas/activas") ||
-                             EsRutaDetallePositiva(http.Request.Path, "/marcas")))
-            modulo = ModuloSistema.Marcas;
         // V30: only tax GETs through the existing opt-in pilot; verified tenant,
         // SQL-backed Impuestos.Ver and tenant-scoped Oracle EF. No fiscal writes.
         else if (lectura && (EsRutaExacta(http.Request.Path, "/impuestos") ||
+                             EsRutaExacta(http.Request.Path, "/impuestos/activos") ||
                              EsRutaDetallePositiva(http.Request.Path, "/impuestos")))
             modulo = ModuloSistema.Impuestos;
         else if (lectura && (EsRutaExacta(http.Request.Path, "/clientes") ||

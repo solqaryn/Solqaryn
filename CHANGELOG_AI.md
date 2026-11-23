@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV01 V30 C07-01.M06.06: impuestos activos y cuarentena de marcas
+- Se publica GET /impuestos/activos en el piloto privado con JWT, permisos Impuestos.Ver de SQL y propietario físico de Oracle EF/MySQL; solo propios activos, sin escrituras fiscales y OFF por defecto.
+- Corrección R2 de fallo CS1061: Marca carece de EmpresaId, por tanto el GET de marcas experimental se retira del guard; jamás se considera aislamiento probado. Los casos MySQL fiscal A/B, inactivo, spoof, revocación y OFF esperan CI exact-SHA; test viejo GET=503 fiscal sustituido previamente por positivos reales.
+- WIP propio C07-01.M06.06 EN_PROGRESO + lock V17 2000001045 siguen intactos; servicios/atributos/ERP/UI/rollback de fase pendientes, sin LISTO/A5 y sin QA/main/PROD.
+
 ## 2026-11-23 — DEV02 V30 C15-04.M05.04: reparacion P2 de reflow mobile-first
 - Diagnostico causal: commit 93763456 permitio mejorar lectura en storefront-producto, pero el bloque @media max-width introducido fallo del validador transversal mobile-first, antes de pruebas de fases 1/2/7/8/9/10/12; no fue una regresion funcional certificada. Ejemplo: GitHub-hosted run 45259441170/job 137989913734.
 - Reparacion runtime: la barra de compra apilada se convierte en baseline 320-380 CSS px; se expande con @media min-width:381px y se conserva el reflow de migas, caracteristicas y textos del precio. Validator no debilitado; sin cambiar API, datos, JWT/RBAC/tenant ni pagos.

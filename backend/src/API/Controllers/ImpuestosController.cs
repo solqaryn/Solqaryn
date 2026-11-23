@@ -28,6 +28,17 @@ public class ImpuestosController : ControllerBase
         return Ok(ApiResponse<List<ImpuestoDto>>.Ok(lista));
     }
 
+    // Read-only active taxes. Tenant validation and SQL Impuestos.Ver remain
+    // mandatory in the existing opt-in private read pilot.
+    [HttpGet("activos")]
+    [RequierePermiso(ModuloSistema.Impuestos, AccionPermiso.Ver)]
+    public async Task<IActionResult> GetActivos()
+    {
+        var impuestos = await _service.GetAllAsync(incluirEliminados: false);
+        return Ok(ApiResponse<List<ImpuestoDto>>.Ok(
+            impuestos.Where(x => x.Activo).ToList()));
+    }
+
     [HttpGet("{id:int}")]
     [RequierePermiso(ModuloSistema.Impuestos, AccionPermiso.Ver)]
     public async Task<IActionResult> GetById(int id)

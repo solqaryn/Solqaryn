@@ -166,29 +166,6 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             await db.SaveChangesAsync();
             db.ChangeTracker.Clear();
 
-            // V30: Marcas.Ver requires authentic SQL-backed grants per company.
-            var brandReadPermission = await db.Permisos.IgnoreQueryFilters()
-                .FirstOrDefaultAsync(p => p.Modulo == ModuloSistema.Marcas &&
-                    p.Accion == AccionPermiso.Ver &&
-                    p.Ambito == AmbitoAutorizacion.Empresa && p.Activo && !p.Eliminado);
-            if (brandReadPermission is null)
-            {
-                brandReadPermission = new Permiso
-                {
-                    Codigo = "C0701M0606.MARCAS.VER",
-                    Nombre = "C0701 isolated brand attribute read permission",
-                    Modulo = ModuloSistema.Marcas, Accion = AccionPermiso.Ver,
-                    Ambito = AmbitoAutorizacion.Empresa, Activo = true
-                };
-                db.Permisos.Add(brandReadPermission);
-                await db.SaveChangesAsync();
-            }
-            db.RolPermisos.AddRange(
-                new RolPermiso { RolId = roleA.Id, PermisoId = brandReadPermission.Id },
-                new RolPermiso { RolId = roleB.Id, PermisoId = brandReadPermission.Id });
-            await db.SaveChangesAsync();
-            db.ChangeTracker.Clear();
-
             // Test-only RBAC: the valid A role has Crear, while B does not.
             var createPermission = await db.Permisos.IgnoreQueryFilters()
                 .FirstOrDefaultAsync(x => x.Modulo == ModuloSistema.Productos
@@ -265,7 +242,7 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             var productBId = await SeedOwnedProductAsync(b.Id, "C0701RealProductoB");
 
             // Real Oracle EF/MySQL 8.4 tax owners, injected server-side only.
-            async Task<int> SeedOwnedTaxAsync(int tenantId, string code)
+            async Task<int> SeedOwnedTaxAsync(int tenantId, string code, bool active = true)
             {
                 var context = new DefaultHttpContext();
                 context.Items[
@@ -277,7 +254,7 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 var tax = new Impuesto
                 {
                     Nombre = "C0701Fiscal" + code, Codigo = code,
-                    Tipo = TipoImpuesto.Porcentaje, Tasa = 15m, Activo = true
+                    Tipo = TipoImpuesto.Porcentaje, Tasa = 15m, Activo = active
                 };
                 owned.Impuestos.Add(tax);
                 await owned.SaveChangesAsync();
@@ -285,25 +262,8 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             }
             var taxAId = await SeedOwnedTaxAsync(a.Id, "C0701TAXA");
             var taxBId = await SeedOwnedTaxAsync(b.Id, "C0701TAXB");
-
-            // V30: physical normalized brand ownership, assigned only by the
-            // server's verified company mark (never a request header).
-            async Task<int> SeedOwnedBrandAsync(int tenantId, string name)
-            {
-                var context = new DefaultHttpContext();
-                context.Items[
-                    Solqaryn.Application.Security.VerifiedCommercialTenant
-                        .AuthorizedEmpresaIdItemKey] = tenantId;
-                var accessor = new HttpContextAccessor { HttpContext = context };
-                await using var owned = new AppDbContext(options,
-                    tenantHttpContextAccessor: accessor);
-                var brand = new Marca { Nombre = name, Activo = true, Orden = 1 };
-                owned.Marcas.Add(brand);
-                await owned.SaveChangesAsync();
-                return brand.Id;
-            }
-            var brandAId = await SeedOwnedBrandAsync(a.Id, "C0701MarcaA");
-            var brandBId = await SeedOwnedBrandAsync(b.Id, "C0701MarcaB");
+            var inactiveTaxAId = await SeedOwnedTaxAsync(a.Id, "C0701TAXAINACTIVE", false);
+            Assert.True(inactiveTaxAId > 0);
 
             // P1: una escritura de producto no puede sobrevivir si la bitacora
             // critica no se persiste. Unidad de trabajo REAL + Oracle EF/MySQL.
@@ -1588,6 +1548,15 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                     Assert.Contains(ownCode, body, StringComparison.Ordinal);
                     Assert.DoesNotContain(otherCode, body, StringComparison.Ordinal);
                 }
+                // Positive active-only list is private to each verified tenant.
+                using (var activeTax = await CategoryRequestAsync(jwt, tenantId, "/impuestos/activos"))
+                {
+                    Assert.Equal(HttpStatusCode.OK, activeTax.StatusCode);
+                    var activeJson = await activeTax.Content.ReadAsStringAsync();
+                    Assert.Contains(ownCode, activeJson, StringComparison.Ordinal);
+                    Assert.DoesNotContain(otherCode, activeJson, StringComparison.Ordinal);
+                    Assert.DoesNotContain("C0701TAXAINACTIVE", activeJson, StringComparison.Ordinal);
+                }
                 using var foreign = await CategoryRequestAsync(
                     jwt, tenantId, $"/impuestos/{otherId}");
                 Assert.Equal(HttpStatusCode.NotFound, foreign.StatusCode);
@@ -1597,61 +1566,23 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
 
             using (var spoofedTax = await CategoryRequestAsync(jwtA, b.Id, "/impuestos"))
                 Assert.Equal(HttpStatusCode.ServiceUnavailable, spoofedTax.StatusCode);
+            using (var spoofedActive = await CategoryRequestAsync(jwtA, b.Id, "/impuestos/activos"))
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, spoofedActive.StatusCode);
             var revokedTaxGrantA = await db.RolPermisos.SingleAsync(x =>
                 x.RolId == roleA.Id && x.PermisoId == taxReadPermission.Id);
             db.RolPermisos.Remove(revokedTaxGrantA);
             await db.SaveChangesAsync();
             using (var revokedTax = await CategoryRequestAsync(jwtA, a.Id, "/impuestos"))
                 Assert.Equal(HttpStatusCode.ServiceUnavailable, revokedTax.StatusCode);
+            using (var revokedActive = await CategoryRequestAsync(jwtA, a.Id, "/impuestos/activos"))
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, revokedActive.StatusCode);
             using (var stillTaxB = await CategoryRequestAsync(jwtB, b.Id, "/impuestos"))
                 Assert.Equal(HttpStatusCode.OK, stillTaxB.StatusCode);
             pilotConfig["MultiEmpresa:PrivateReadPilotEnabled"] = "false";
             using (var offTax = await CategoryRequestAsync(jwtB, b.Id, "/impuestos"))
                 Assert.Equal(HttpStatusCode.ServiceUnavailable, offTax.StatusCode);
-            pilotConfig["MultiEmpresa:PrivateReadPilotEnabled"] = "true";
-
-            // V30: real MarcasController -> Application -> Oracle EF/MySQL 8.4.
-            // Own list/detail/active positive; foreign id 404, spoofed company
-            // and revoked SQL role fail closed, pilot disabled returns 503.
-            await using (var brandPhysical = new AppDbContext(options))
-            {
-                var physicalOwners = await brandPhysical.Marcas.IgnoreQueryFilters()
-                    .AsNoTracking().Where(m => m.Id == brandAId || m.Id == brandBId)
-                    .Select(m => new { m.Id, m.EmpresaId }).ToArrayAsync();
-                Assert.Equal(a.Id, physicalOwners.Single(m => m.Id == brandAId).EmpresaId);
-                Assert.Equal(b.Id, physicalOwners.Single(m => m.Id == brandBId).EmpresaId);
-            }
-            foreach (var (jwt, tenantId, ownId, foreignId, ownName, foreignName) in new[]
-            {
-                (jwtA, a.Id, brandAId, brandBId, "C0701MarcaA", "C0701MarcaB"),
-                (jwtB, b.Id, brandBId, brandAId, "C0701MarcaB", "C0701MarcaA")
-            })
-            {
-                foreach (var route in new[] { "/marcas", "/marcas/activas", $"/marcas/{ownId}" })
-                {
-                    using var ownBrand = await CategoryRequestAsync(jwt, tenantId, route);
-                    Assert.Equal(HttpStatusCode.OK, ownBrand.StatusCode);
-                    var body = await ownBrand.Content.ReadAsStringAsync();
-                    Assert.Contains(ownName, body, StringComparison.Ordinal);
-                    Assert.DoesNotContain(foreignName, body, StringComparison.Ordinal);
-                }
-                using var foreignBrand = await CategoryRequestAsync(
-                    jwt, tenantId, $"/marcas/{foreignId}");
-                Assert.Equal(HttpStatusCode.NotFound, foreignBrand.StatusCode);
-            }
-            using (var forgedBrand = await CategoryRequestAsync(jwtA, b.Id, "/marcas"))
-                Assert.Equal(HttpStatusCode.ServiceUnavailable, forgedBrand.StatusCode);
-            var revokedBrandGrant = await db.RolPermisos.SingleAsync(x =>
-                x.RolId == roleA.Id && x.PermisoId == brandReadPermission.Id);
-            db.RolPermisos.Remove(revokedBrandGrant);
-            await db.SaveChangesAsync();
-            using (var noBrandGrant = await CategoryRequestAsync(jwtA, a.Id, "/marcas"))
-                Assert.Equal(HttpStatusCode.ServiceUnavailable, noBrandGrant.StatusCode);
-            using (var brandBRemains = await CategoryRequestAsync(jwtB, b.Id, "/marcas"))
-                Assert.Equal(HttpStatusCode.OK, brandBRemains.StatusCode);
-            pilotConfig["MultiEmpresa:PrivateReadPilotEnabled"] = "false";
-            using (var brandOff = await CategoryRequestAsync(jwtB, b.Id, "/marcas"))
-                Assert.Equal(HttpStatusCode.ServiceUnavailable, brandOff.StatusCode);
+            using (var offActive = await CategoryRequestAsync(jwtB, b.Id, "/impuestos/activos"))
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, offActive.StatusCode);
             pilotConfig["MultiEmpresa:PrivateReadPilotEnabled"] = "true";
 
             // V26 R2: nested ProductoVariantes endpoints must not evade the
