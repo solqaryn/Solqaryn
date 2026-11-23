@@ -1,0 +1,35 @@
+name: V24 C02-04.M06.04 - isolated Git rollback rehearsal
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'scripts/quality/verify-c0204-m0604-git-revert.sh'
+      - '.github/workflows/v24-c02-04-m06-04-rollback.yml'
+      - 'docs/v5/c02-04-m06-04-rollback-rehearsal.md'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v24-c0204-m0604-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  detached-rollback:
+    name: C02-04.M06.04 - detached no-data-loss rollback proof
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Verify SOLQARYN STRICT Scope Lock
+        run: node scripts/verify-project-scope.mjs
+      - name: Prove actual guard rejection for wrong repo, branch and arguments
+        shell: bash
+        run: |
+          set -euo pipefail
+          if env GITHUB_REPOSITORY=solqaryn/Other bash scripts/quality/verify-c0204-m0604-git-revert.sh; then echo "Wrong repo accepted" >&2; exit 1; fi
+          if env GITHUB_REF_NAME=main bash scripts/quality/verify-c0204-m0604-git-revert.sh; then echo "Wrong branch accepted" >&2; exit 1; fi
+          if bash scripts/quality/verify-c0204-m0604-git-revert.sh --unexpected-argument; then echo "Unexpected args accepted" >&2; exit 1; fi
+          echo 'C0204_M0604_NEGATIVE_REJECTION=PASS'
+      - name: Rehearse exact committed lab rollback inside disposable detached worktree
+        run: bash scripts/quality/verify-c0204-m0604-git-revert.sh
