@@ -9943,3 +9943,8 @@
 - Se implementa regla Domain que no concede autoridad: valida snapshots actuales 0/1/N, deniega tenant ajeno/duplicado, membresía/rol revocados, preferencia cruzada y override cliente; plataforma requiere grant distinto y servidor.
 - Se añaden tests xUnit adversariales de 0/1/N, preferencia revocada, A/B y cuenta bloqueada; faltan pruebas de integración JWT/HTTP/MySQL de las sucesoras. A3 no aplica al diff sin API/DB/UI, no implica certificación de fase.
 - Exclusivo dev, sin migraciones, secretos o cambios QA/main/PROD. A5 independiente por otra Task Javier. Rollback git revert ordinario.
+
+## 2026-11-22 — C03-03.M03.02: caso de uso de auditoría segura en Application (R2)
+- Servicio C0303SecurityAuditApplicationService con fuentes server-side JWT/RBAC y resource ownership, reglas Domain, correlación mínima y negativos A/B, revocación, plataforma separada; no otorga acceso ni persiste auditoría, Application sólo prepara candidato seguro.
+- xUnit adversarial de autoridad falsa, tenant cruzado, transacción crítica, excepciones y cancelación entre awaits; CI GitHub-hosted exact SHA requerido antes de LISTO. Sin DI, API, esquema MySQL, migración ni cambios de seguridad global.
+- V17/CAS, Scope Lock STRICT, exclusivamente dev; integración JWT/HTTP/MySQL 8.4 durable y revisión A5 externa pendientes por fases sucesoras. Git revert como rollback; sin QA/main/PROD.
