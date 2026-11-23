@@ -8,7 +8,6 @@ using Microsoft.Extensions.Hosting;
 using Solqaryn.Application.AutomationV5;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Application.Security;
-using Solqaryn.Domain.Enums;
 
 namespace Solqaryn.API.Security;
 
@@ -54,7 +53,8 @@ public static class C0303AuditReadOnlyProbeEndpoint
         endpoints.MapPost("/__dev/audit-authorization/{empresaId:int}/record",
             async (HttpContext http, int empresaId, IUsuarioScopeService scopes,
                 C0303SecurityAuditApplicationService audit,
-                IAuditoriaService ledger, CancellationToken cancellationToken) =>
+                C0303TransactionalAuditPersistenceAdapter writer,
+                CancellationToken cancellationToken) =>
             {
                 if (!await IsVerifiedAuditReaderAsync(http, empresaId,
                     scopes, audit, cancellationToken))
@@ -62,13 +62,13 @@ public static class C0303AuditReadOnlyProbeEndpoint
 
                 try
                 {
-                    // Strict persistence propagates failure. The existing
-                    // ledger derives actor and tenant from server context,
-                    // never from the route or an untrusted request header.
-                    await ledger.RegistrarEstrictoAsync(
-                        ModuloSistema.Auditoria, AccionPermiso.Ver,
-                        "C03-03.M03.03: acceso de auditoría validado",
-                        referenciaId: empresaId, entidad: "Empresa");
+                    // C03-03.M03.04: the adapter rechecks current relational
+                    // grant/tenant in a real MySQL transaction and writes
+                    // through the existing strict audit ledger. Never trust
+                    // route/header identifiers as authorization.
+                    if (!await writer.RecordVerifiedAuditReadAsync(
+                        empresaId, cancellationToken))
+                        return Results.StatusCode(StatusCodes.Status403Forbidden);
                     http.Response.Headers.CacheControl = "no-store";
                     return Results.NoContent();
                 }

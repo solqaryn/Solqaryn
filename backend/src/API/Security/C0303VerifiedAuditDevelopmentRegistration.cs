@@ -24,6 +24,8 @@ public static class C0303VerifiedAuditDevelopmentRegistration
         services.AddScoped<IC0303VerifiedAuditResourceReader>(
             sp => sp.GetRequiredService<C0303VerifiedAuditTenantReaders>());
         services.AddScoped<C0303SecurityAuditApplicationService>();
+        // M03.04: isolated MySQL transactional writer, no production registration.
+        services.AddScoped<C0303TransactionalAuditPersistenceAdapter>();
         return services;
     }
 }

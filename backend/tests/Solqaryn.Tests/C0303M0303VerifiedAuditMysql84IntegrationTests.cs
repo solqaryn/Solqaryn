@@ -299,6 +299,7 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
                     s.AddScoped<IC0303VerifiedAuditResourceReader>(
                         sp => sp.GetRequiredService<C0303VerifiedAuditTenantReaders>());
                     s.AddScoped<C0303SecurityAuditApplicationService>();
+                    s.AddScoped<C0303TransactionalAuditPersistenceAdapter>();
                     s.AddScoped<IAuditoriaService>(sp => new AuditoriaService(
                         new AuditoriaRepository(db), current.Object,
                         sp.GetRequiredService<IHttpContextAccessor>(),

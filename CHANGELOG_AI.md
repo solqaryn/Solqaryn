@@ -1,3 +1,9 @@
+## 2026-11-23 — DEV03 V30 C03-03.M03.04: adaptador transaccional de auditoría autenticada en MySQL
+- Runtime ASP.NET Core DEV: el POST de auditoría autenticada integra adaptador aislado que abre transacción SQL serializable, verifica rol/membresía/tenant vigente y vuelve a comprobar la autorización de auditoría JWT/RBAC antes de registrar en la bitácora estricta.
+- Solo guarda evidencia de lectura de la empresa verificada; deniega selecciones ajenas y, ante fallo del ledger, no hace commit y devuelve 503 sin exponer SQL, JWT ni secretos.
+- Composición únicamente Development y feature flag existente OFF por defecto; se reutilizan tabla RegistrosAuditoria, entidad, DI y pruebas HTTP JWT A/B MySQL 8.4 efímero existentes, sin migración o datos productivos.
+- Entrega incremental R2: CI exact-SHA dirigida y casos de rollback real pendientes antes de certificar A0–A4. A5 debe ser independiente, LISTO no automático, no QA/main/PROD.
+
 ## 2026-11-23 — DEV03 V30 C02-01.M05.04: respuestas tenant vinculadas al JWT original
 - Runtime Angular: vincular la consulta de empresas y la selección de contexto al JWT que inició cada operación; una respuesta tardía de A no puede instalar membresías ni rol de B.
 - No reutilizar entre dos actores JWT una petición pendiente para el mismo tenant; descartar listados anteriores cuando llegan después de respuestas de una sesión nueva.
