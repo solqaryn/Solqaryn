@@ -58,7 +58,7 @@ public sealed class C1103OutboxIsolatedRelayWorker(
         {
             cancellationToken.ThrowIfCancellationRequested();
             if (candidate is null || candidate.EmpresaId != authorizedTenantId
-                || candidate.Intentos <= 0
+                || candidate.Intentos is <= 0 || candidate.Intentos > maximumAttempts
                 || candidate.Estado != EstadoMensajeOutbox.Procesando
                 || candidate.ProcesandoDesdeUtc is null)
                 throw new InvalidOperationException("OUTBOX_CROSS_TENANT_OR_INVALID_CLAIM");
@@ -74,7 +74,8 @@ public sealed class C1103OutboxIsolatedRelayWorker(
         foreach (MensajeOutbox message in claimed)
         {
             cancellationToken.ThrowIfCancellationRequested();
-            if (message.EmpresaId != authorizedTenantId || message.Intentos <= 0
+            if (message.EmpresaId != authorizedTenantId
+                || message.Intentos is <= 0 || message.Intentos > maximumAttempts
                 || message.Estado != EstadoMensajeOutbox.Procesando
                 || message.ProcesandoDesdeUtc is null)
                 throw new InvalidOperationException("OUTBOX_CROSS_TENANT_OR_INVALID_CLAIM");

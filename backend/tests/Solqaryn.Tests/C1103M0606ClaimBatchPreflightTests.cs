@@ -188,5 +188,43 @@ public sealed class C1103M0606ClaimBatchPreflightTests
             It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
+    [Fact]
+    public async Task ClaimedEventAboveConfiguredRetryLimitCannotSendAnyEventInBatch()
+    {
+        var now = new DateTime(2026, 11, 23, 0, 0, 0, DateTimeKind.Utc);
+        var ordinary = MensajeOutbox.Crear(17, "outbox.allowed", "{}",
+            "c1103-retry-limit-valid", creadoEnUtc: now.AddMinutes(-5));
+        ordinary.MarcarProcesando(now);
+
+        // The run's retry policy was reduced from 3 to 1. A repository
+        // claim can still return a previously retried event; it must not
+        // trigger another external side effect even if an earlier row is valid.
+        var overLimit = MensajeOutbox.Crear(17, "outbox.overlimit", "{}",
+            "c1103-retry-limit-exhausted", creadoEnUtc: now.AddMinutes(-5));
+        overLimit.MarcarProcesando(now.AddMinutes(-4));
+        overLimit.RegistrarFallo("TRANSIENT", now.AddMinutes(-4),
+            now.AddMinutes(-3), 3);
+        overLimit.MarcarProcesando(now.AddMinutes(-2));
+        Assert.Equal(2, overLimit.Intentos);
+
+        var repository = new Mock<IMensajeOutboxRepository>(MockBehavior.Strict);
+        repository.Setup(x => x.ClaimDisponiblesAsync(
+                17, now, 2, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new[] { ordinary, overLimit });
+        var transport = new Mock<IC1103OutboxIsolatedTransport>(MockBehavior.Strict);
+        var worker = new C1103OutboxIsolatedRelayWorker(repository.Object, transport.Object);
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            worker.RunTenantAsync(17, now, 2, 1, TimeSpan.FromMinutes(1)));
+        Assert.Equal("OUTBOX_CROSS_TENANT_OR_INVALID_CLAIM", error.Message);
+        transport.VerifyNoOtherCalls();
+        repository.Verify(x => x.MarcarEntregadoAsync(
+            It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(),
+            It.IsAny<DateTime>(), It.IsAny<CancellationToken>()), Times.Never);
+        repository.Verify(x => x.RegistrarFalloAsync(
+            It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int>(),
+            It.IsAny<string>(), It.IsAny<DateTime>(), It.IsAny<DateTime>(),
+            It.IsAny<bool>(), It.IsAny<CancellationToken>()), Times.Never);
+    }
 
 }

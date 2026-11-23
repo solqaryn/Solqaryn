@@ -82,3 +82,25 @@ LIMITACION: guardarrail frente a adapter roto, no demuestra autenticacion real
 JWT/RBAC, fuente HTTP/DI, proveedor remoto ni consumidor deduplicado. Por tanto
 C11-03.M06.06 sigue VALIDANDO; A0-A4 fase incompletos y A5 independiente
 pendiente. No QA/main/PROD ni secretos; rollback por git revert ordinario.
+
+
+## V30 — reparación funcional de límite de reintentos del relay (2026-11-23)
+
+Defecto de runtime del worker opt-in: el repositorio permite reclamar un evento
+cuya columna Intentos supere el límite maximumAttempts actual (por cambio de
+política o adaptador erróneo). La validación previa solo requería Intentos > 0
+y podía hacer un envío real adicional aun con presupuesto de reintentos agotado.
+La reparación exige 1 <= Intentos <= maximumAttempts ANTES de enviar cualquier
+elemento del lote y repite el control antes de cada efecto externo. Rechaza el
+lote completo sin transporte, ACK ni fallo falsificado. Código R2 de rechazo
+preexistente, sin filtrar payload, identidad, detalles SQL ni PII.
+
+Cobertura dirigida aditiva: una fila válida A seguida de una fila ya reintentada
+dos veces, con política actual máximo 1, debe fallar sin enviar la primera fila
+y sin mutaciones adicionales. El operador debe recuperar el claim durable por
+el mecanismo stale/CAS existente; no se introduce un nuevo envío automático.
+Se mantiene el relay sin proveedor externo ni DI automática, y la microtarea
+en VALIDANDO: siguen faltando JWT/RBAC HTTP real, proveedor/consumidor duradero,
+evidencia global completa A0-A4 y A5 independiente. Ejecutar el workflow
+GitHub-hosted existente y todos los checks exact-SHA obligatorios; hasta su
+resultado no se declara PASS. Reversión por git revert normal en dev.

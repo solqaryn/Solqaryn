@@ -1,3 +1,8 @@
+## 2026-11-23 — V30 C11-03.M06.06: bloquear envío outbox por presupuesto de reintentos agotado
+- Incidencia funcional detectada en el worker existente: un batch de filas con Intentos > maximumAttempts podia llegar a IC1103OutboxIsolatedTransport.SendAsync, incluso cuando la politica de reintentos fue reducida. Se endurece la validacion previa del lote y el guard por evento sin cambiar API/JWT/DI/migraciones.
+- Prueba adversarial orientada a un defecto real, no nueva ronda general: una fila valida seguida de otra con Intentos=2 y maximo=1 no debe ocasionar Send, ACK ni RegistrarFallo. Solo se exige reejecutar workflow C11-03.M06.06 y checks requeridos del nuevo SHA; ninguna prueba verde ya acreditada se relanza manualmente.
+- Plan C11-03.M06.06 sigue VALIDANDO hasta integrar proveedor/consumidor duradero, autenticacion JWT/RBAC por tenant HTTP, A0-A4 y A5 independiente. El worker sigue opt-in, sin envios productivos. Scope Lock STRICT; dev unicamente, sin cambios QA/main/PROD. Reversion git revert.
+
 ## 2026-11-23 — DEV01 V29 C07-01.M06.06: reparar CS0128 en xUnit MySQL de categorías
 - GitHub-hosted SHA cb44be3b compiló error CS0128 dos veces antes de ejecutar pruebas: variables categoryAId/categoryBId duplicadas en mismo scope (Backend job137945139590 y Security job137945138983). No se declara regresión funcional ni SUCCESS.
 - Corrige únicamente los nombres locales añadidos en nuevo bloque V29 a pilotCategoryAId/pilotCategoryBId; mismo SQL, JWT, RBAC, assertions, ausencia de mutaciones, piloto OFF por defecto. CI exact-SHA nueva obligatoria; mantener EN_PROGRESO owner DEV01 lock2000001045, sin LISTO/A5.
