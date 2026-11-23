@@ -160,6 +160,11 @@ if (builder.Environment.IsDevelopment())
         C0404PaymentVerifiedEvidenceReader>();
     builder.Services.AddScoped<C0404PaymentAuthorizationGate>();
 }
+// C03-01.M03.03: DEV-only, read-only signed JWT + current RBAC, no login grant.
+if (builder.Environment.IsDevelopment())
+{
+    builder.Services.AddScoped<IC0301VerifiedLoginActorSource, C0301LoginVerifiedActorSource>();
+}
 // C08-03.M03.03: verified JWT + current tenant/branch/RolPermiso READ-ONLY.
 // No gym-specific entitlement yet; flags explicitly deny door and payment.
 // Development-only, probe OFF by default, no new route or runtime grant.
@@ -438,6 +443,12 @@ app.MapControllers();
 if (C0303AuditReadOnlyProbeEndpoint.ShouldMap(app.Environment, app.Configuration))
 {
     C0303AuditReadOnlyProbeEndpoint.Map(app);
+}
+// C03-01.M03.03: opt-in read-only server proof, no credential issuance.
+if (app.Environment.IsDevelopment() &&
+    app.Configuration.GetValue<bool>("LoginSecurity:EnableReadOnlyProbe"))
+{
+    C0301LoginReadOnlyProbeEndpoint.Map(app);
 }
 // C08-03.M03.03: the SAME endpoint mapped by the real MySQL/JWT CI host.
 // Never registered outside Development, and OFF unless explicitly configured.

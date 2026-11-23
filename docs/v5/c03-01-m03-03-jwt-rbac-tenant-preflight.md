@@ -1,0 +1,10 @@
+# SOLQARYN C03-01.M03.03 — R2 signed JWT/SQL tenant/branch read proof
+Autor: DEV04; ONLY solqaryn/Solqaryn dev, Scope Lock STRICT. PLAN D448, UX_LOGIN_INTELIGENTE_V1.
+## Real increment
+New C0301LoginVerifiedActorSource checks signed JWT with AuthenticateAsync, signed actor ID, fresh current user membership, tenant-specific active role (never platform fallback), branch ownership and relational Sucursales:Ver grant. Rechecks role, membership and branch after awaited calls. Denies foreign tenant/branch, forged token, disabled role, revoked membership/grant and DB failure. Fails closed. Does not trust X-Empresa-Id or X-Rol-Id.
+An actual HTTP endpoint is mapped only in ASPNETCORE_ENVIRONMENT=Development and explicit opt-in LoginSecurity:EnableReadOnlyProbe=true, OFF by default. It returns a fixed non-PII marker after RequireAuthorization. It never grants a branch, login session, tenant access or platform authority, nor issues/refreshes JWT.
+Unit tests include negative routes, forged bearer, revoked grant, cross-tenant/branch, disabled role and cancellation. A real GitHub-hosted .NET10 xUnit Category=Integration checks signed JWT/HTTP and Oracle EF on ephemeral MySQL 8.4, revoked membership and rollback. This is not a fake in-memory SQL certification.
+A0 scope R2; A1-A3 must be confirmed by the actual GitHub job. A4 exact-SHA Scope Lock/V5/security/backend checks required SUCCESS (SKIPPED/CANCELLED/IN_PROGRESS not PASS). A5 only another eligible Javier Task, not DEV04 author.
+No frontend diff (SKREF-03/04/05/06/10 NO_APLICA); no explicit threat-model task (11 NO_APLICA); no measured .NET profiling (12 NO_APLICA). No new stack/dependencies, no schema migrations, no production secrets.
+## Remaining gaps
+This DEV-only probe does NOT wire C0301LoginInteligenteApplicationService into the productive token issuance/refresh/tenant switch workflow, does NOT persist a tenant preference and does NOT certify the whole login/M03 security phase. Therefore keep VALIDANDO until full PLAN D A0-A4 and independent A5. Rollback: normal git revert of exact commit on dev after reviewing subsequent commits; no force push.

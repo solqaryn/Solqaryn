@@ -1,0 +1,53 @@
+name: V26 - C03-01.M03.03 signed JWT login tenant MySQL 8.4
+on:
+  push:
+    branches: [dev]
+    paths:
+      - 'backend/src/API/Security/C0301LoginVerifiedActorSource.cs'
+      - 'backend/src/API/Security/C0301LoginReadOnlyProbeEndpoint.cs'
+      - 'backend/tests/Solqaryn.Tests/API/C0301M0303LoginVerifiedActorSourceTests.cs'
+      - 'backend/tests/Solqaryn.Tests/Integration/C0301M0303RealMysql84HttpIntegrationTests.cs'
+      - 'backend/src/API/Program.cs'
+      - '.github/workflows/v26-c03-01-m03-03-jwt-mysql84-http.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: v26-c0301-m0303-mysql84-isolated
+  cancel-in-progress: false
+jobs:
+  signed-jwt-login-mysql:
+    name: C03-01.M03.03 - signed JWT tenant A/B Oracle MySQL 8.4 real
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: ephemeral-v26-only
+          MYSQL_DATABASE: solqaryn_c1502_m0503
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -pephemeral-v26-only"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=15
+    env:
+      C1502_M0503_MYSQL_TEST: "Server=127.0.0.1;Port=3306;Database=solqaryn_c1502_m0503;User=root;Password=ephemeral-v26-only;SslMode=Disabled;AllowPublicKeyRetrieval=True;"
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Exact SHA Scope Lock
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+      - name: Real signed JWT HTTP Oracle EF MySQL 8.4 tenant A/B and negative access
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet restore tests/Solqaryn.Tests/Solqaryn.Tests.csproj
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore --filter 'FullyQualifiedName~C0301M0303RealMysql84HttpIntegrationTests|FullyQualifiedName~C0301M0303LoginVerifiedActorSourceTests' --logger 'trx;LogFileName=C0301M0303Mysql84.trx' --verbosity normal

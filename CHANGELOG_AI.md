@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV04 C03-01.M03.03: preflight JWT + SQL real por ámbito y sucursal (V26)
+- Se añadió fuente de autorización estrictamente de lectura que revalida bearer firmado, usuario, membresía, rol de empresa, ámbito tenant A/B, sucursal y permiso relacional con relectura tras I/O; se niega fallback de plataforma, firma falsa y revocación sin emitir credenciales.
+- Endpoint opt-in únicamente Development y OFF por defecto. Pruebas adversariales y workflow GitHub-hosted MySQL 8.4 efímero + HTTP/JWT; A0-A4 y CI exact-SHA pendientes al publicar, sin certificar login productivo, M03 global ni A5. PLAN C03-01.M03.03 permanece VALIDANDO; propietario DEV04, Scope Lock STRICT; rollback mediante git revert.
+
 ## 2026-11-23 — DEV03 C03-03.M03.03: aislamiento real de JwtBearer por request en MySQL 8.4 (V26)
 - Diagnóstico causal: GitHub-hosted SHA `fccd449e` job `137572782704` terminó FAIL 1/157; un contexto negativo con firma ajena reutilizaba el handler scoped del mismo provider raíz de la petición JWT válida. No se atribuye incorrectamente un bypass HTTP de producción.
 - Reparación R2: la prueba física `C0303M0303VerifiedAuditMysql84IntegrationTests` ahora crea un `IServiceScope` distinto para petición JWT válida y para cada intento de JWT falsificado/expirado; exige `AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme)` fallido y `ReadCurrentAsync` nulo, conservando positivo, MySQL 8.4 Oracle, RBAC A/B y rollback.
