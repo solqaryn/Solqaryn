@@ -11,6 +11,7 @@ using Microsoft.IdentityModel.Tokens;
 using Moq;
 using Solqaryn.API.Security;
 using Solqaryn.Application.AutomationV5;
+using Solqaryn.Application.Exceptions;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
@@ -208,10 +209,15 @@ public sealed class C0301M0303LoginVerifiedActorSourceTests
     }
 
     [Fact]
-    public async Task UnownedNonTemplateRoleIsNeverAcceptedAsSharedEnterpriseGrant()
+    public async Task UnownedNonTemplateRoleCannotPersistAnEnterpriseGrant()
     {
-        await using var f = await SetupAsync(roleTenant: null, roleIsSystem: false);
-        Assert.Null(await f.Reader.ReadCurrentAsync(CancellationToken.None));
+        // The real persistence ownership guard rejects this invalid fixture
+        // BEFORE the read-only JWT actor source can ever run. Assert that
+        // security boundary instead of treating its rejection as test setup.
+        await Assert.ThrowsAsync<BusinessRuleException>(async () =>
+        {
+            await using var f = await SetupAsync(roleTenant: null, roleIsSystem: false);
+        });
     }
 
     [Fact]

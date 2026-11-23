@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV04 C03-01.M03.03: reparación causal CI del negativo de rol huérfano
+- GHA fuente 37154de9, job137697176616: .NET 10 Release compila, 6507 PASS, 1 FAIL. El negativo de rol sin dueño/no-plantilla no llega al lector: CommercialTenantOwnershipGraphWriteGuard rechaza correctamente el grant en SetupAsync con BusinessRuleException. No se desactiva ni suaviza ese candado.
+- El xUnit corregido exige esa excepción física; conserva positivo de plantilla compartida y rechazo de rol de otra empresa. Nuevo SHA requiere CI real exacto (.NET, JWT/MySQL84, Scope Lock, V5, seguridad). Scope H=VALIDANDO I=DEV04 y A5 independiente hasta integración productiva y A0–A4 completas; no QA/main/PROD.
+
 ## 2026-11-23 — DEV04 C03-01.M03.03: rol de plantilla empresarial compartida en validación JWT
 - Reparación R2 del lector DEV-only, firmado y de solo lectura: al verificar rol empresarial se admite rol propio del tenant o plantilla de sistema sin propietario; coincide con el contrato de dominio Rol.EsAsignableAEmpresa y con UsuarioScopeService. Mantiene JWT real, sucursal/permiso activos, revocación, denegación cross-tenant, sin tokens ni grants.
 - Tres pruebas xUnit adversariales: plantilla válida con membresía/rol de sucursal actual, rol huérfano NO-plantilla rechazado y rol de sistema de empresa ajena rechazado; no se alteran esquemas, rutas productivas ni componentes Angular.
