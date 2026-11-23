@@ -67,6 +67,60 @@ test.describe('V24 M04.02 UI states after real JWT login with isolated response 
     await expect(page.locator('[data-config-state="empty"]')).toBeVisible();
     await expect(page.getByRole('form', { name: 'Configuración del tenant activo' })).toHaveCount(0);
   });
+  test('foreign tenant HTTP 200 payload never renders company B data in company A', async ({ page }) => {
+    await loginA(page);
+    // This is a deliberately forged HTTP RESPONSE to test the fail-closed
+    // frontend boundary. It does NOT certify server-side tenant authorization.
+    const sentinel = 'SENSITIVE_FOREIGN_TENANT_M0402_DO_NOT_RENDER';
+    let interceptedGets = 0;
+    await page.route(endpoint, async route => {
+      if (route.request().method() !== 'GET') {
+        await route.continue();
+        return;
+      }
+      interceptedGets++;
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: true,
+          data: {
+            empresaId: 2,
+            nombre: sentinel,
+            rtn: 'PRIVATE_FOREIGN_RTN',
+            moneda: 'HNL',
+            zonaHoraria: 'America/Tegucigalpa',
+            impuestosJson: '{}',
+            emisionJson: '{}',
+            correoConfigurado: false,
+            version: 1,
+            plantillasCorreo: []
+          }
+        })
+      });
+    });
+    await page.goto(target);
+    const invalid = page.locator('[data-config-state="invalid"][role="alert"]');
+    await expect(invalid).toBeVisible();
+    await expect(invalid).toContainText('La respuesta no corresponde a la empresa verificada');
+    await expect(page.getByRole('form', { name: 'Configuración del tenant activo' })).toHaveCount(0);
+    await expect(page.locator('body')).not.toContainText(sentinel);
+    await expect(page.locator('body')).not.toContainText('PRIVATE_FOREIGN_RTN');
+    await expect(page.getByTestId('c0103-verified-brand')).toHaveCount(0);
+    expect(interceptedGets, 'the malicious tenant 2 response must actually be intercepted').toBeGreaterThan(0);
+    for (const width of [320, 390, 768, 1280, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      const overflow = await page.evaluate(() =>
+        document.documentElement.scrollWidth - document.documentElement.clientWidth);
+      expect(overflow, 'foreign-tenant denial must not cause body overflow at ' + width)
+        .toBeLessThanOrEqual(2);
+      await page.screenshot({
+        path: 'test-results/c0103-m0402-foreign-tenant-denied-' + width + '.png',
+        fullPage: true
+      });
+    }
+  });
+
   test('transient failure recovers on retry against the REAL API', async ({ page }) => {
     await loginA(page);
     // The page and its tenant card both GET the same authenticated endpoint.

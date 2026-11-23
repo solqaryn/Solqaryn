@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV05 C01-03.M04.02: rechazo adversarial de respuesta interempresa (V26)
+- Se agrega prueba Playwright real en Chromium tras login JWT/MySQL 8.4 efímero de A: una respuesta GET HTTP 200 falsificada con empresaId=2 y datos centinela debe mostrar el estado invalid y nunca revelar marca, RTN ni formulario; capturas DESPUÉS en 320/390/768/1280/1440, sin body overflow.
+- Alcance R2 test-only en dev: el GET interempresa es respuesta controlada para regresión UI, NO certifica RBAC/API de servidor ni zoom nativo 200% ni capturas históricas ANTES; mantiene C01-03.M04.02 VALIDANDO hasta CI exact-SHA y aceptación UX pertinentes, con A5 independiente posterior. No QA/main/PROD.
+
 ## 2026-11-23 — DEV04 C03-01.M03.03: preflight JWT + SQL real por ámbito y sucursal (V26)
 - Se añadió fuente de autorización estrictamente de lectura que revalida bearer firmado, usuario, membresía, rol de empresa, ámbito tenant A/B, sucursal y permiso relacional con relectura tras I/O; se niega fallback de plataforma, firma falsa y revocación sin emitir credenciales.
 - Endpoint opt-in únicamente Development y OFF por defecto. Pruebas adversariales y workflow GitHub-hosted MySQL 8.4 efímero + HTTP/JWT; A0-A4 y CI exact-SHA pendientes al publicar, sin certificar login productivo, M03 global ni A5. PLAN C03-01.M03.03 permanece VALIDANDO; propietario DEV04, Scope Lock STRICT; rollback mediante git revert.
