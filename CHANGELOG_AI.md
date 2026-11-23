@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV06 V29 C14-02.M06.06: SQL real para rollback por DeleteAsync=false
+- Prueba adversarial nueva en suite MySQL 8.4 efímera: controlador real y UnitOfWork real revierten una mutación SQL de variante si el servicio de producto devuelve false; readback fresco verifica A y B sin pérdida. Se inyecta la frontera de servicios para producir el error, sin afirmar HTTP/JWT productivo ni integración completa de servicio de variantes.
+- Cambios acotados a test, documento y este CHANGELOG; no runtime, migraciones, permisos, ramas ni checks modificados. CI exact-SHA y V5/Scope Lock son obligatorios; C14-02.M06.06 permanece VALIDANDO, sin LISTO/A5 hasta evidencias A0–A4 y cierre global P0/P1.
+
 ## 2026-11-23 — DEV03 V27 C03-03.M03.03: expectativa P0 503 y prueba de denegación opaca
 - GH run 45229640022/job 137885366839 de SHA 902f93e0 ejecutó 8 tests MySQL 8.4/HTTP/JWT: 7 PASS, 1 FAIL; tenant B esperaba 403 pero cuarentena P0 previa a MVC respondió 503 TENANT_DATA_ISOLATION_REQUIRED. Sin evidencia de filtración; el parser y DI ya pasaron.
 - Test xUnit dirigido exige 503, código de cuarentena, no-store y cero datos de B ante cuatro negativos; mantiene 200 autorizado, 401 JWT inválido y revocación SQL efectiva. Solo test/documentación/CHANGELOG, sin alterar middleware, permisos, flags, API, base productiva ni controles.

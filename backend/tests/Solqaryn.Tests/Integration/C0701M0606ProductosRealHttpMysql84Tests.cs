@@ -648,6 +648,60 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 Assert.Equal("Exito", receipt.Resultado);
             }
 
+            // C14-02.M06.06: exercise the REAL Oracle EF/MySQL transaction of
+            // ProductosController.Delete when DeleteAsync returns false AFTER a
+            // persisted variant change. The injected variant-service boundary
+            // performs a physical SQL write; this is not a full production JWT
+            // HTTP DELETE or a certification of the commercial variant service.
+            await using (var productDeleteDb = new AppDbContext(options,
+                tenantHttpContextAccessor: auditAccessor))
+            {
+                var product = new Mock<IProductoService>(MockBehavior.Strict);
+                var variants = new Mock<IProductoVarianteService>(MockBehavior.Strict);
+                product.Setup(x => x.GetByIdAsync(auditedProductId))
+                    .ReturnsAsync(new ProductoDto { Id = auditedProductId });
+                product.Setup(x => x.DeleteAsync(auditedProductId))
+                    .ReturnsAsync(false);
+                variants.Setup(x => x.EliminarTecnicaConProductoAsync(auditedProductId))
+                    .Returns(async () =>
+                    {
+                        var row = await productDeleteDb.ProductoVariantes
+                            .SingleAsync(v => v.Id == variantAuditId);
+                        Assert.False(row.Eliminado);
+                        row.Eliminado = true;
+                        await productDeleteDb.SaveChangesAsync();
+                        Assert.True(row.Eliminado);
+                    });
+                var controller = new ProductosController(
+                    product.Object, variants.Object, new UnitOfWork(productDeleteDb),
+                    Mock.Of<IImageStorageService>(), Mock.Of<IAuditoriaService>());
+                var failure = await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => controller.Delete(auditedProductId));
+                Assert.Equal("PRODUCT_DELETE_ATOMICITY_ROLLBACK_REQUIRED", failure.Message);
+                product.Verify(x => x.GetByIdAsync(auditedProductId), Times.Once);
+                product.Verify(x => x.DeleteAsync(auditedProductId), Times.Once);
+                variants.Verify(x => x.EliminarTecnicaConProductoAsync(auditedProductId),
+                    Times.Once);
+            }
+            // Fresh DbContext readback: no partial SQL mutation was committed.
+            await using (var deleteReadback = new AppDbContext(options))
+            {
+                var variant = await deleteReadback.ProductoVariantes
+                    .IgnoreQueryFilters().AsNoTracking()
+                    .SingleAsync(v => v.Id == variantAuditId);
+                Assert.False(variant.Eliminado);
+                Assert.False(variant.Activo);
+                Assert.Equal(a.Id, variant.EmpresaId);
+                var own = await deleteReadback.Productos.IgnoreQueryFilters()
+                    .AsNoTracking().SingleAsync(p => p.Id == auditedProductId);
+                Assert.Equal(a.Id, own.EmpresaId);
+                Assert.False(own.Eliminado);
+                var foreign = await deleteReadback.Productos.IgnoreQueryFilters()
+                    .AsNoTracking().SingleAsync(p => p.Id == productBId);
+                Assert.Equal(b.Id, foreign.EmpresaId);
+                Assert.False(foreign.Eliminado);
+            }
+
             // Product and RBAC services/repositories are real. Mocked dependencies
             // belong only to other (uninvoked) CRUD methods of the controller.
             // The multiempresa quarantine is OFF by default. This in-memory
