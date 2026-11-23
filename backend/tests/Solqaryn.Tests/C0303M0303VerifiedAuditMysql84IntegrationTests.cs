@@ -551,6 +551,24 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
                         response.Headers.CacheControl?.ToString() ?? string.Empty);
                 }
 
+                // Requests rejected by the P0 multi-company quarantine do not
+                // reach the MVC permission filter. Its explicit contract is 503
+                // with an opaque isolation code, never protected audit content.
+                async Task AssertQuarantinedAsync(
+                    string bearer, int? selector = null, string? rawSelector = null)
+                {
+                    var denied = await GetAuditAsync(bearer, selector, rawSelector);
+                    Assert.Equal(HttpStatusCode.ServiceUnavailable, denied.Code);
+                    Assert.Contains("TENANT_DATA_ISOLATION_REQUIRED", denied.Body,
+                        StringComparison.Ordinal);
+                    Assert.DoesNotContain("C0303_TENANT_B_PRIVATE_SENTINEL",
+                        denied.Body, StringComparison.Ordinal);
+                    Assert.DoesNotContain("C03-03.M03.03: acceso de auditoría validado",
+                        denied.Body, StringComparison.Ordinal);
+                    Assert.Contains("no-store", denied.Cache,
+                        StringComparison.OrdinalIgnoreCase);
+                }
+
                 var authorized = await GetAuditAsync(realJwt, tenantA.Id);
                 Assert.Equal(HttpStatusCode.OK, authorized.Code);
                 Assert.Contains("no-store", authorized.Cache, StringComparison.OrdinalIgnoreCase);
@@ -559,12 +577,9 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
                 Assert.Contains("C03-03.M03.03: acceso de auditoría validado",
                     authorized.Body, StringComparison.Ordinal);
 
-                Assert.Equal(HttpStatusCode.Forbidden,
-                    (await GetAuditAsync(realJwt, tenantB.Id)).Code);
-                Assert.Equal(HttpStatusCode.Forbidden,
-                    (await GetAuditAsync(realJwt, null, "invalid")).Code);
-                Assert.Equal(HttpStatusCode.Forbidden,
-                    (await GetAuditAsync(realJwt)).Code);
+                await AssertQuarantinedAsync(realJwt, tenantB.Id);
+                await AssertQuarantinedAsync(realJwt, null, "invalid");
+                await AssertQuarantinedAsync(realJwt);
                 Assert.Equal(HttpStatusCode.Unauthorized,
                     (await GetAuditAsync(new JwtSecurityTokenHandler().WriteToken(
                         forgedToken), tenantA.Id)).Code);
@@ -580,8 +595,7 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
                 db.RolPermisos.Remove(liveGrant);
                 await db.SaveChangesAsync();
                 db.ChangeTracker.Clear();
-                Assert.Equal(HttpStatusCode.Forbidden,
-                    (await GetAuditAsync(realJwt, tenantA.Id)).Code);
+                await AssertQuarantinedAsync(realJwt, tenantA.Id);
                 db.RolPermisos.Add(new RolPermiso
                 {
                     RolId = roleA.Id, PermisoId = permission.Id

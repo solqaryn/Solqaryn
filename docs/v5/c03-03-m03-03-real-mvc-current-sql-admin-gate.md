@@ -36,3 +36,9 @@ A0: diff solo xUnit, documento y CHANGELOG, sin cambios en runtime ni permisos. 
 
 - El run `45229063354/137883343477`, SHA `d5edd68d`, falló durante compilación del proyecto de tests con `CS0246` para `IPublicStoreProofReplayStore` (líneas 480–481). Tests ejecutados: 0 en ese run, no regresión funcional acreditada.
 - La interfaz real pertenece a `Solqaryn.API.Middleware`, no al namespace Application.Interfaces. Se añade exclusivamente su `using` al fixture; ninguna política de runtime, JWT, SQL, middleware o rutas cambia. Requiere nuevo GHA exact SHA con 8/8 ejecutadas.
+
+## V27 — 503 P0 en negativos del HTTP/MVC (23 noviembre 2026)
+
+- Diagnóstico real: GitHub Actions run 45229640022 / job 137885366839, SHA 902f93e0: 8 pruebas ejecutadas, 7 PASS y 1 FAIL. El primer negativo de tenant B exigía 403, mientras el guard P0 multiempresa devolvió 503 `TENANT_DATA_ISOLATION_REQUIRED` **antes de MVC**. No es exposición de datos ni evidencia de fallo del filtro MVC; la expectativa del test era incorrecta para esa frontera.
+- Reparación mínima **solo del fixture xUnit**: en los cuatro negativos sometidos a cuarentena P0 (tenant B, selector inválido, selector ausente y revocación real en MySQL) comprobar 503 + código de aislamiento + `Cache-Control: no-store` y ausencia de sentinel/éxito privado. Mantener 200 con JWT A, SQL y MVC reales, 401 para JWT forjado/caducado y restauración del grant. No cambiar runtime, flags ni bypass de filtros.
+- El nuevo SHA exige GitHub-hosted MySQL 8.4 efímero + JWT/HTTP/RBAC, xUnit 8/8, Scope Lock y checks pertinentes. El check global de migraciones Oracle falló en el SHA anterior y **no** se considera PASS ni se atribuye sin diagnosticar. Conservar VALIDANDO, autor histórico y A5 independiente; no prometer LISTO ni QA/main/PROD.

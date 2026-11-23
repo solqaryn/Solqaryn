@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV03 V27 C03-03.M03.03: expectativa P0 503 y prueba de denegación opaca
+- GH run 45229640022/job 137885366839 de SHA 902f93e0 ejecutó 8 tests MySQL 8.4/HTTP/JWT: 7 PASS, 1 FAIL; tenant B esperaba 403 pero cuarentena P0 previa a MVC respondió 503 TENANT_DATA_ISOLATION_REQUIRED. Sin evidencia de filtración; el parser y DI ya pasaron.
+- Test xUnit dirigido exige 503, código de cuarentena, no-store y cero datos de B ante cuatro negativos; mantiene 200 autorizado, 401 JWT inválido y revocación SQL efectiva. Solo test/documentación/CHANGELOG, sin alterar middleware, permisos, flags, API, base productiva ni controles.
+- Publicación dev por FF/CAS; no certificar nuevas CI antes de resultado exact-SHA (8/8 MySQL físico, Scope Lock, V5 y demás checks causales). Revisión A5 exclusivamente independiente; VALIDANDO e I históricos permanecen. Rollback git revert normal.
+
 ## 2026-11-23 — DEV02 V28 C15-04.M05.04: reparar entorno secreto del preflight sin relajar pruebas
 - Falla causal del nuevo run 45235576241, job 137906263377, SHA acce32955f8b17de5c5937a11d3a24843884afc7: el preflight --list abortó antes de cualquier test (0 ejecutados) porque el spec exige C1504_TEST_PASSWORD efímero. No es regresión de JWT/tenant ni un fallo de parser. npm ci y Node 24 pasaron; baseline .NET/Chromium no llegó a iniciarse.
 - Reordena únicamente la generación ya existente de JWT secreto y password efímero (en GITHUB_ENV, enmascarados) antes de Node y npx playwright test --list, conservando el mismo comando y todas las pruebas posteriores. La clave efímera no se imprime ni se sustituye por fixture falso; no se alteran permisos, API, SQL, scopes ni reglas de seguridad.
