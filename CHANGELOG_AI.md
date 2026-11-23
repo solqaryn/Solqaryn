@@ -1,3 +1,10 @@
+## 2026-11-23 - CI: cache NuGet en workflow permanente del ERP (R2, dev)
+- Causa: restauraciones .NET repetidas en los jobs de seguridad y backend del workflow solqaryn-core-ci.yml sobre commits consecutivos de dev.
+- Cambio: actions/cache@v4 en ambos jobs, solo ~/.nuget/packages y clave exacta por csproj/props/targets/global.json. No modifica tests, triggers, permisos, aislamiento multiempresa, jobs, Scope Lock, versiones ni otras ramas.
+- Control de seguridad: clave basada en manifiestos de dependencias, sin restore-key general; no datos ni secretos de produccion. Los jobs siguen restaurando, compilando y probando bajo sus reglas existentes.
+- Evidencia previa: nueve corridas recientes del workflow de 2 a 5 minutos cada una en dev. Ganancia de tiempo NO acreditada hasta disponer de corridas comparables y lectura de cache-hit; no se presenta como cierre A0-A5 de ninguna microtarea.
+- Validacion post-publicacion requerida: HEAD exacto, Scope Lock, V5/procedencia y los tres jobs del workflow completed/success; de fallar, restaurar por git revert no destructivo sin rebajar gates.
+
 ## 2026-11-23 — DEV06 C01-03.M04.02: test de ampliación de texto 200% y trazabilidad R2
 - Fallo causal GitHub-hosted del commit fbf610772c12c9c1af59b9e420d1f155565642bb, run 45168772580 / job 137672518400: 13 PASS, 1 FAIL por zoom:2 en HTML que elevó el scrollWidth físico a 640 px en viewport 320, un falso negativo de prueba.
 - Incremento de prueba y documentación en ebf96302a416593bc5e18a0ddee5cf1860b37eb1: usar font-size:200% en HTML, no zoom CSS en el elemento raíz, y comprobar alerta visible, tenant B no expuesto, formulario ausente y reflow en cinco tamaños; los checks del nuevo SHA aún requieren evidencia GitHub-hosted, no declarar PASS, LISTO ni A5 por anticipado.

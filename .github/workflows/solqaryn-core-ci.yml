@@ -28,6 +28,11 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.401'
+      - name: Reutilizar paquetes NuGet por dependencias sin omitir pruebas
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-solqaryn-net10-nuget-${{ hashFiles('backend/**/*.csproj', 'backend/**/*.props', 'backend/**/*.targets', 'global.json') }}
       - name: Restaurar backend
         working-directory: backend
         run: dotnet restore Solqaryn.sln
@@ -60,6 +65,11 @@ jobs:
       - uses: actions/setup-dotnet@v4
         with:
           dotnet-version: '10.0.401'
+      - name: Reutilizar paquetes NuGet por dependencias sin omitir pruebas
+        uses: actions/cache@v4
+        with:
+          path: ~/.nuget/packages
+          key: ${{ runner.os }}-solqaryn-net10-nuget-${{ hashFiles('backend/**/*.csproj', 'backend/**/*.props', 'backend/**/*.targets', 'global.json') }}
       - name: Restaurar, compilar y probar sin imponer fases previas
         working-directory: backend
         shell: bash
