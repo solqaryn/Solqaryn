@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV02 V30 C15-04.M05.04: reflow funcional de producto público y lectura ampliada
+- Runtime Angular: migas de pan y etiquetas de características quiebran cadenas largas sin empujar el viewport; la barra móvil de compra deja visible la disponibilidad y el precio sin truncamiento, y bajo 380 CSS px apila el botón con espacio compensado para contenido, footer y avisos.
+- Alcance: cambio localizado a storefront-producto.component.scss, sin variar datos, API, JWT/RBAC, tenant, pagos, rutas ni permisos. Riesgo R1 UX de una microtarea global R2; owner histórico DEV02 y V17 2000002297 preservados.
+- Validación: CI GitHub-hosted de SHA nuevo pendiente al publicar; no se atribuye PASS a zoom nativo 200%, WCAG global, captura ANTES o matriz de rutas por este diff. Reversión mediante git revert normal sin force-push. A0-A4 y A5 globales siguen pendientes; QA/main/PROD intactos.
+
 ## 2026-11-23 — DEV01 V30 C07-01.M06.06: lectura aislada de marcas en API
 - Runtime ASP.NET Core 10: piloto privado `GET /marcas`, `/marcas/activas`, `/marcas/{id}` con JWT firmado, selector de tenant verificado por backend, permiso relacional `Marcas.Ver` y consultas Oracle EF sobre EmpresaId en MySQL; OFF por defecto, prohibidas mutaciones.
 - En `C0701M0606ProductosRealHttpMysql84Tests` se agregan casos reales A/B, 200 propio, 404 ajeno, 503 spoof/revocación/piloto OFF; se elimina únicamente la expectativa obsoleta de GET impuestos=503, reemplazada por positivos fiscales del mismo spec, manteniendo las pruebas físicas de no-mutate impuestos.
