@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV05 V30 C01-03.M04.04: bloquear mutaciones con GET inválido y recibos tardíos
+- Corrección funcional Angular: guardar/logo exigen estado ready sin carga; respuestas de mutación iniciadas antes de un GET posterior no pisan el formulario actual ni muestran éxito falso.
+- Dos regresiones Vitest adversariales sobre GET pendiente/403 y respuesta PUT obsoleta. CI GitHub-hosted exact-SHA obligatoria pendiente; no inferir backend JWT/MySQL ni zoom nativo 200% o capturas ANTES.
+- V17 exclusivo, H VALIDANDO/owner DEV05 preservados; sin LISTO/A5 ni QA/main/PROD. Rollback git revert normal.
+
 ## 2026-11-23 — V30 C03-01.M03.03: rol empresarial exige membresía vigente antes de JWT
 - Reparación R2 en LoginAsync y RenovarAsync productivos: revalidar la membresía SQL del usuario y empresa dueña del rol antes de emitir token, con rechazo cerrado de membresías ausentes, revocadas y discordantes.
 - Pruebas xUnit nuevas: login BCrypt, renovación, cruce de empresa/actor/rol y revocación; CI GitHub-hosted del SHA nuevo pendiente, sin declarar PASS anticipado.

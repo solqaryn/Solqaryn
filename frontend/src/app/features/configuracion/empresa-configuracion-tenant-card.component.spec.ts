@@ -97,4 +97,38 @@ describe('C01-03.M04.04 - permisos reactivos en formulario tenant', () => {
     expect(component.form.disabled).toBe(true);
     expect(snackBar.open).not.toHaveBeenCalled();
   });
+  it('rejects stale PUT while reloading and after a forbidden GET even if the old form is valid', () => {
+    const component = create();
+    const pending = new Subject<unknown>();
+    service.getTenant.mockReturnValueOnce(pending.asObservable());
+    component.cargar();
+    expect(component.loading()).toBe(true);
+    component.guardar();
+    expect(service.updateTenant).not.toHaveBeenCalled();
+
+    pending.error({ status: 403 });
+    TestBed.tick();
+    expect(component.loadState()).toBe('forbidden');
+    component.guardar();
+    expect(service.updateTenant).not.toHaveBeenCalled();
+  });
+
+  it('ignores an older mutation receipt after a fresh same-tenant reload', () => {
+    const component = create();
+    component.guardar();
+    expect(service.updateTenant).toHaveBeenCalledTimes(1);
+
+    service.getTenant.mockReturnValueOnce(of({
+      data: { ...config, nombre: 'Fresh server value', version: 3 }
+    }));
+    component.cargar();
+    mutation.next({ data: { ...config, nombre: 'STALE_RECEIPT', version: 2 } });
+    mutation.complete();
+    TestBed.tick();
+
+    expect(component.form.controls.nombre.value).toBe('Fresh server value');
+    expect(component.lastSaved()).toBe(false);
+    expect(snackBar.open).not.toHaveBeenCalled();
+  });
+
 });

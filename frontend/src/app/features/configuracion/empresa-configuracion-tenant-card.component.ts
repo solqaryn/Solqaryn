@@ -250,9 +250,10 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
 
   guardar(): void {
     const empresaId = this.empresaId();
-    if (!empresaId || !this.puedeEditar() || this.saving() || this.form.invalid || this.conflict()) return;
+    if (!empresaId || !this.puedeEditar() || this.saving() || this.loading() || this.loadState() !== 'ready' || this.form.invalid || this.conflict()) return;
     if (!this.jsonValido('impuestosJson') || !this.jsonValido('emisionJson')) return;
 
+    const generation = this.loadGeneration;
     const value = this.form.getRawValue();
     this.saving.set(true);
     this.lastSaved.set(false);
@@ -270,7 +271,7 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
       version: this.version
     }).pipe(finalize(() => this.saving.set(false))).subscribe({
       next: res => {
-        if (empresaId !== this.empresaId()) return;
+        if (generation !== this.loadGeneration || empresaId !== this.empresaId()) return;
         // An in-flight mutation cannot announce success after permission revocation.
         if (!this.puedeEditar()) {
           this.loadState.set('forbidden');
@@ -285,7 +286,7 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
         this.snackBar.open('Configuración del tenant actualizada.', 'Cerrar', { duration: 4000 });
       },
       error: err => {
-        if (empresaId !== this.empresaId()) return;
+        if (generation !== this.loadGeneration || empresaId !== this.empresaId()) return;
         this.manejarErrorMutacion(err, 'No se pudo guardar la configuración del tenant activo.');
       }
     });
@@ -296,13 +297,14 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
     const file = input.files?.[0];
     input.value = '';
     const empresaId = this.empresaId();
-    if (!file || !empresaId || !this.puedeEditar() || this.saving()) return;
+    if (!file || !empresaId || !this.puedeEditar() || this.saving() || this.loading() || this.loadState() !== 'ready') return;
 
+    const generation = this.loadGeneration;
     this.saving.set(true);
     this.error.set(null);
     this.empresaService.updateTenantLogo(empresaId, file).pipe(finalize(() => this.saving.set(false))).subscribe({
       next: res => {
-        if (empresaId !== this.empresaId()) return;
+        if (generation !== this.loadGeneration || empresaId !== this.empresaId()) return;
         // An in-flight mutation cannot announce success after permission revocation.
         if (!this.puedeEditar()) {
           this.loadState.set('forbidden');
@@ -318,7 +320,7 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
         this.snackBar.open('Logo del tenant actualizado.', 'Cerrar', { duration: 4000 });
       },
       error: err => {
-        if (empresaId !== this.empresaId()) return;
+        if (generation !== this.loadGeneration || empresaId !== this.empresaId()) return;
         this.manejarErrorMutacion(err, 'No se pudo actualizar el logo del tenant.');
       }
     });
@@ -326,13 +328,14 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
 
   eliminarLogo(): void {
     const empresaId = this.empresaId();
-    if (!empresaId || !this.puedeEditar() || this.saving() || !this.logoUrl()) return;
+    if (!empresaId || !this.puedeEditar() || this.saving() || this.loading() || this.loadState() !== 'ready' || !this.logoUrl()) return;
 
+    const generation = this.loadGeneration;
     this.saving.set(true);
     this.error.set(null);
     this.empresaService.restaurarTenantLogo(empresaId).pipe(finalize(() => this.saving.set(false))).subscribe({
       next: res => {
-        if (empresaId !== this.empresaId()) return;
+        if (generation !== this.loadGeneration || empresaId !== this.empresaId()) return;
         // An in-flight mutation cannot announce success after permission revocation.
         if (!this.puedeEditar()) {
           this.loadState.set('forbidden');
@@ -347,7 +350,7 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
         this.snackBar.open('Logo del tenant eliminado.', 'Cerrar', { duration: 4000 });
       },
       error: err => {
-        if (empresaId !== this.empresaId()) return;
+        if (generation !== this.loadGeneration || empresaId !== this.empresaId()) return;
         this.manejarErrorMutacion(err, 'No se pudo eliminar el logo del tenant.');
       }
     });
