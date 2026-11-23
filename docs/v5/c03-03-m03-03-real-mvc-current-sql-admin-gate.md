@@ -8,3 +8,7 @@
 - Riesgo R2 y alcance: cambia API MVC/DI del controlador y tests .NET. No cambia Angular, migraciones EF, base de datos, configuración de despliegues, secretos, permisos concedidos, ni rutas públicas. Login y endpoints de soporte de Plataforma no adquieren permisos. El controlador exige ambas comprobaciones y falla cerrado. Antes de LISTO debe ejecutarse integración REAL sobre GET /auditoria con JWT firmado, permiso relacional mutable y MySQL 8.4 efímero de tenant A/B, revocación y salida saneada; esta entrega no puede certificar tales pruebas.
 - CI: exigir GitHub-hosted .NET Release/xUnit, auth/tenancy, Scope Lock y V5 del SHA publicado, completed/success. Si hay pruebas pendientes, mantener VALIDANDO, conservar owner, A5 sólo por Javier distinto de autor DEV03 y reparador DEV06.
 - Rollback: revert ordinario del changeset tras verificar HEAD/CAS. Nunca force-push ni QA/main/PROD.
+
+## V26 - Reparacion causal del gate CI
+
+La suite dirigida del SHA 35ee062b356c3f7cc656fc5dbcc3b647acec7b1c compilo y ejecuto **32/32 xUnit PASS, 0 FAIL, 0 omitidos** en el job 137742299224, pero el job concluyo FAILURE porque el aserto TRX antiguo exigia (30,30,0,0). Los dos nuevos tests hacen necesario exigir exactamente **(32,32,0,0)**, sin bajar controles ni desactivar tests. La verificacion real del nuevo SHA GitHub-hosted es obligatoria y el FAIL historico queda intacto.

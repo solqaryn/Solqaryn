@@ -1,3 +1,7 @@
+## 2026-11-23 - DEV06 C03-03.M03.03: CI de auditoria actualizada a 32 tests reales
+- El primer SHA compilo y ejecuto 32/32 xUnit PASS tras agregar dos negativos de revocacion de rol admin, pero el workflow fallo al comparar TRX contra 30.
+- El gate ahora exige exactamente 32 PASS, 0 FAIL y 0 omitidos (sin reducir controles). Esperar CI exact-SHA nueva; integracion MySQL real de ruta productiva y A5 independiente siguen pendientes.
+
 ## 2026-11-23 — DEV06 rescate C03-03.M03.03: revocación de rol administrador en auditoría MVC
 - La API real GET /auditoria ya no confía sólo en el indicador esAdministrador del JWT: exige rol administrativo ACTUAL de MySQL por actor y tenant autenticado, además del filtro Auditoria.Ver, fail-closed.
 - Pruebas regresivas xUnit y MVC TestServer con JWT firmado: rol administrativo revocado deniega 403 sin leer auditoría; el doble de rol no acredita por sí solo SQL 8.4. Falta prueba integral SQL viva y CI exact-SHA antes de LISTO, A5 independiente DEV03/DEV06 no elegibles; QA/main/PROD prohibidos.
