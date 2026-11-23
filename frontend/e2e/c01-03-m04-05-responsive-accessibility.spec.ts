@@ -274,6 +274,62 @@ test.describe('V24 C01-03.M04.05 actual tenant UI responsive and keyboard', () =
     });
   }
 
+
+  // Browser-managed Chromium pinch page scale, NOT CSS zoom and NOT toolbar reflow zoom.
+  // Emulation.setPageScaleFactor is verified by visualViewport.scale, not inferred from pixels.
+  // It adds real native viewport evidence while keeping desktop-browser 200% zoom unverified.
+  for (const [username, tenant] of [['c1504_admin_a', 1], ['c1504_admin_b', 2]] as const) {
+    test(username+' Chromium native CDP visualViewport pinch 200% at five widths', async ({ page }) => {
+      test.setTimeout(240_000);
+      const jwt = await login(page, username);
+      const verified = await page.request.get(api+'/tenant-context/'+tenant, {
+        headers: { Authorization: 'Bearer '+jwt }
+      });
+      expect(verified.status(), 'signed JWT verified against actual tenant SQL').toBe(200);
+      await page.evaluate(id =>
+        localStorage.setItem('solqaryn_empresa_solicitada_id', String(id)), tenant);
+      await page.goto(target);
+      await expect(page.getByRole('heading', { name: 'Configuración dinámica', exact: true })).toBeVisible();
+      await expect(page.getByText('Empresa #'+tenant, { exact: false })).toBeVisible();
+
+      const chrome = await page.context().newCDPSession(page);
+      try {
+        for (const width of widths) {
+          await page.setViewportSize({ width, height: 900 });
+          await chrome.send('Emulation.setPageScaleFactor', { pageScaleFactor: 1 });
+          const initial = await page.evaluate(() => ({
+            scale: window.visualViewport?.scale,
+            cssZoom: document.documentElement.style.zoom
+          }));
+          expect(initial.scale, 'native Chromium initial scale at '+width).toBeCloseTo(1, 1);
+          expect(initial.cssZoom, 'never substitute a CSS zoom proxy').toBe('');
+
+          await chrome.send('Emulation.setPageScaleFactor', { pageScaleFactor: 2 });
+          const magnified = await page.evaluate(() => ({
+            scale: window.visualViewport?.scale,
+            visualWidth: window.visualViewport?.width,
+            layoutWidth: document.documentElement.clientWidth,
+            cssZoom: document.documentElement.style.zoom
+          }));
+          expect(magnified.scale, 'actual browser-managed page scale at '+width).toBeCloseTo(2, 1);
+          expect(magnified.cssZoom, 'browser-managed pinch, not CSS zoom').toBe('');
+          expect(magnified.visualWidth, 'native zoom reduces visual viewport').toBeLessThan(
+            magnified.layoutWidth * 0.6);
+          await expect(page.getByText('Empresa #'+tenant, { exact: false })).toBeVisible();
+          await verifyWcagContrast(page);
+          await page.screenshot({
+            path: 'test-results/c0103-m0405-'+username+'-'+width+'-chromium-pinch200.png',
+            fullPage: true
+          });
+          await chrome.send('Emulation.setPageScaleFactor', { pageScaleFactor: 1 });
+        }
+      } finally {
+        await chrome.send('Emulation.setPageScaleFactor', { pageScaleFactor: 1 });
+        await chrome.detach();
+      }
+    });
+  }
+
   test('JWT company A cannot select B via forged header or storage',async ({page})=>{
     const jwt=await login(page,'c1504_admin_a');
     const rejected=await page.request.get(api+'/tenant-context/2',{

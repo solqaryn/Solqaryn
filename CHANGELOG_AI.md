@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV04 C01-03.M04.05: viewport pinch 200% real sin falsa certificacion toolbar
+- Amplia Playwright con 2 casos JWT A/B en Chromium/CDP y MySQL 8.4 a 5 anchos, escala nativa visualViewport=2 con contraste y 10 capturas; no usa style.zoom y distingue pinch de zoom de menu/reflow.
+- Incremento test-only R2, CI exact-SHA pendiente: mantiene H VALIDANDO, owner DEV04, A0-A4 incompletos por zoom toolbar 200% y BEFORE historico, A5 de otra Task; Scope Lock/V5 y no QA/main/PROD.
+
 ## 2026-11-23 — DEV02 C15-04.M05.04: A125 rechazo anónimo real y responsive
 - Añade caso adversarial Playwright del catálogo privado de planes: API sin JWT 401, guard real sin contenido privado, cinco viewport y sin mutaciones; evidencia en MySQL 8.4 efímero cuando se ejecute GitHub Actions exact-SHA.
 - Test-only R2; no se altera runtime ni fuentes productivas. CI nueva PENDIENTE, A0-A4 global incompleto, WIP y lock propio preservados; A5 independiente posterior. Sin QA/main/PROD.

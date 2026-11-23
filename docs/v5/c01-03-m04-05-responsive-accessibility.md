@@ -58,3 +58,10 @@ SKREF-03 Impeccable y SKREF-10 Angular Developer consultadas únicamente en sus 
 ### Ajuste de sintaxis antes de repetir CI
 
 En el commit `ac90aaebec3992b1dce4fdf742db4e14769ac405`, el literal de expresión regular del detector de `/login` quedó mal escapado. Se sustituye por `page.url().includes('/login')` sin cambiar criterios ni permisos; el primer check sigue sin contar PASS hasta su conclusión, y el nuevo SHA debe acreditar Playwright verdadero y checks aplicables. No inferir de esta corrección el cierre A0–A4 o A5.
+
+
+## V26 DEV04 — evidencia nueva de escala nativa Chromium CDP (23 noviembre 2026)
+
+Incremento adversarial solo de prueba para D240: la suite anade dos casos con JWT firmados A/B, endpoint de tenant 200 y MySQL 8.4 efimero, cada uno con cinco anchos 320/390/768/1280/1440. Una sesion CDP real de Chromium aplica Emulation.setPageScaleFactor=2 y verifica window.visualViewport.scale cercano a 2, reduccion de visualViewport.width y ausencia de style.zoom, ademas de comprobar identidad visible del tenant y contraste DOM; guarda diez PNG identificados como *pinch*. El control comienza y termina a escala 1, restaurando incluso ante excepcion.
+
+**Limite fundamental:** el zoom *pinch* gestionado nativamente por Chromium/CDP no equivale al zoom de pagina del menu/barra del navegador al 200% con reflujo. No certificar ese zoom toolbar ni capturas historicas BEFORE, ni inferir pruebas fisicas en moviles. El CSS zoom=2 y el cambio de font-size 200% permanecen pruebas independientes, nunca se renombran como zoom nativo. A0 diff test-only, sin cambios de runtime ni privilegios; A1/A3 pendientes del GitHub-hosted exact SHA con 7 casos Chromium reales, sin PASS anticipado; A2 JWT y aislamiento ya cubiertos por suites existentes que tampoco se falsifican; A4 Scope Lock/V5/backend/frontend/seguridad requeridos segun diff. H240=VALIDANDO, I autor DEV04 preservado, A5 solo Task Javier que no sea autora/reparadora, sin QA/main/PROD. Referencias SKREF-03 Impeccable y SKREF-10 Angular desde origen/pin canonicos; motion, landing, copy, amenaza formal y perf .NET NO_APLICA. Rollback git revert aditivo sobre dev.
