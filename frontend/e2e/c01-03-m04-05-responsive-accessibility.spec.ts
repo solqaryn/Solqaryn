@@ -286,7 +286,7 @@ test.describe('V24 C01-03.M04.05 actual tenant UI responsive and keyboard', () =
     // to the already-authorized A is safe; so is fail-closed redirection to login.
     // A visible route heading alone is not evidence of a security violation.
     await expect.poll(async () => {
-      if (/\\/login(?:[/?#]|$)/.test(page.url())) return 'blocked-login';
+      if (page.url().includes('/login')) return 'blocked-login';
       const ownTenant = page.getByText('Empresa #1', { exact: false });
       if (await ownTenant.count() && await ownTenant.first().isVisible()) return 'verified-tenant-a';
       return 'unverified';
