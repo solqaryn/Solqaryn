@@ -29,7 +29,9 @@ public class JwtService : IJwtService
         expiraMinutos = Math.Clamp(expiraMinutos, 35, 720);
         var expiraEn = DateTime.UtcNow.AddMinutes(expiraMinutos);
 
-        if (usuario.RolId <= 0 || usuario.RolEntidad is null || usuario.RolEntidad.Eliminado || !usuario.RolEntidad.Activo)
+        if (usuario.RolId <= 0 || usuario.RolEntidad is null ||
+            usuario.RolEntidad.Id != usuario.RolId ||
+            usuario.RolEntidad.Eliminado || !usuario.RolEntidad.Activo)
             throw new InvalidOperationException("El usuario no tiene un rol relacional activo válido.");
 
         var nombreRol = usuario.RolEntidad.Nombre;

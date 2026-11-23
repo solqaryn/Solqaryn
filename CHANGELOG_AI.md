@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV04 V30 C03-01.M03.03: proteger emisión JWT frente a rol relacional discordante
+- Cambio de runtime de producción en AuthService login/renovar: SQL RolId debe coincidir con RolEntidad.Id antes de emitir, incluso en plantillas empresariales sin dueño; sin grants ni fallback tenant.
+- Defensa en JwtService contra firma directa con relación rol discordante, sin alterar contrato HTTP ni JWT válido; pruebas xUnit específicas nuevas para login, refresh y firmante.
+- R2: GitHub-hosted exact SHA pendiente tras push; servicio/repository de tests simulados no prueban MySQL8.4/HTTP/cambio de sucursal. C03-01.M03.03 sigue VALIDANDO, A5 independiente y no QA/main/PROD.
+
 ## 2026-11-23 — DEV01 V30 C07-01.M06.06: impuestos activos y cuarentena de marcas
 - Se publica GET /impuestos/activos en el piloto privado con JWT, permisos Impuestos.Ver de SQL y propietario físico de Oracle EF/MySQL; solo propios activos, sin escrituras fiscales y OFF por defecto.
 - Corrección R2 de fallo CS1061: Marca carece de EmpresaId, por tanto el GET de marcas experimental se retira del guard; jamás se considera aislamiento probado. Los casos MySQL fiscal A/B, inactivo, spoof, revocación y OFF esperan CI exact-SHA; test viejo GET=503 fiscal sustituido previamente por positivos reales.

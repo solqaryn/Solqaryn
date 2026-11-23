@@ -54,6 +54,11 @@ public class AuthService : IAuthService
     private async Task<bool> HasActiveMembershipForOwnedRoleAsync(Usuario usuario)
     {
         var role = usuario.RolEntidad;
+        // Un rol desacoplado del RolId SQL jamás puede originar un JWT,
+        // incluso cuando sea una plantilla empresarial sin dueño.
+        if (usuario.Id <= 0 || role.Id <= 0 || usuario.RolId != role.Id)
+            return false;
+
         if (role.EmpresaId is null)
             return true;
 

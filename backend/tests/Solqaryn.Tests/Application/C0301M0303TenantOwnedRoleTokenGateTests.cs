@@ -1,4 +1,6 @@
 using Moq;
+using Microsoft.Extensions.Configuration;
+using Solqaryn.Infrastructure.Services;
 using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Application.Services;
@@ -144,5 +146,42 @@ public sealed class C0301M0303TenantOwnedRoleTokenGateTests
         repo.Verify(x => x.GetEmpresaAsync(It.IsAny<int>(), It.IsAny<int>()),
             Times.Never);
         jwt.Verify(x => x.GenerarToken(It.IsAny<Usuario>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task EnterpriseSystemTemplateWithMismatchedSqlRoleRejectsProductLoginAndRefresh()
+    {
+        var actor = Actor(owned: false);
+        actor.RolId = RoleId + 1;
+        var (service, repo, jwt) = Make(actor, null);
+
+        Assert.Null(await service.LoginAsync(new LoginRequestDto
+        {
+            NombreUsuario = actor.NombreUsuario,
+            Password = "valid-test-password"
+        }));
+        Assert.Null(await service.RenovarAsync(UserId));
+
+        repo.Verify(x => x.GetEmpresaAsync(It.IsAny<int>(), It.IsAny<int>()),
+            Times.Never);
+        jwt.Verify(x => x.GenerarToken(It.IsAny<Usuario>()), Times.Never);
+    }
+
+    [Fact]
+    public void DirectJwtSignerRejectsMismatchedSqlRoleBeforeProducingSignedToken()
+    {
+        var actor = Actor(owned: false);
+        actor.RolId = RoleId + 1;
+        var settings = new ConfigurationBuilder()
+            .AddInMemoryCollection(new Dictionary<string, string?>
+            {
+                ["Jwt:Secret"] = "Only-Test-Key-Longer-Than-32-Characters-2026",
+                ["Jwt:Issuer"] = "Solqaryn.Unit.Tests",
+                ["Jwt:Audience"] = "Solqaryn.Unit.Tests"
+            })
+            .Build();
+
+        Assert.Throws<InvalidOperationException>(() =>
+            new JwtService(settings).GenerarToken(actor));
     }
 }
