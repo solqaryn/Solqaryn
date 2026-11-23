@@ -79,6 +79,8 @@ public sealed class I8001ACierreAuditoriaCredencialesTests
         var expira = DateTime.UtcNow.AddMinutes(10);
         jwt.Setup(x => x.GenerarToken(usuario))
             .Returns(("I8001A-TOKEN-NO-FIRMADO", expira));
+        repositorio.Setup(x => x.GetEmpresasAsync(usuario.Id))
+            .ReturnsAsync(new List<UsuarioEmpresa> { new(usuario.Id, 4101, usuario.RolId) });
         var servicio = new AuthService(
             repositorio.Object, Mock.Of<IRolRepository>(), jwt.Object);
 
@@ -121,6 +123,7 @@ public sealed class I8001ACierreAuditoriaCredencialesTests
         {
             Id = 801,
             Nombre = "Operador ERP",
+            EsSistema = true,
             Activo = true,
             Eliminado = false
         };

@@ -1,3 +1,9 @@
+## 2026-11-23 — DEV04 C03-01.M03.03: reparación causal de diez fixtures heredados de login/refresh
+
+- El CI de `ec571ee6` ejecutó 6,553 xUnit: 6,543 PASS, 10 FAIL, 0 SKIP. Fallos en I8001A/C/D/E, I8005D e I8009C: sus fixtures positivos usaban roles empresariales sin marca de plantilla y sin ninguna membresía; `AuthService` ahora exige autoridad SQL vigente.
+- Se adaptaron seis fixtures para declarar explícitamente rol empresarial de sistema y membresía activa coincidente de usuario/empresa/rol. No se redujo ni desactivó la validación runtime ni se cambiaron los asserts de negación: los casos de password, bloqueo y rol revocado conservan sus requisitos.
+- Revalidación: GitHub-hosted .NET 10 exact-SHA y demás gates reales; historial de diez FAIL preservado. No certifica por sí solo JWT firmado, HTTP, MySQL 8.4 ni tenant/sucursal switching. A5 independiente y LISTO pendientes.
+
 ## 2026-11-23 — DEV04 C03-01.M03.03: rol empresarial plantilla exige membresía SQL vigente
 
 - Runtime productivo: `AuthService` deniega login y renovación JWT de rol empresarial plantilla si no existe al menos una membresía SQL activa del mismo usuario, empresa positiva y rol exacto; rol empresarial plantilla no equivale a privilegio global.

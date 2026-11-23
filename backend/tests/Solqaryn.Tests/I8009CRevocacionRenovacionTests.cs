@@ -53,7 +53,7 @@ public sealed class I8009CRevocacionRenovacionTests
         var rol = new Rol
         {
             Id = 42, Nombre = "Operador", NombreNormalizado = "OPERADOR_I8009C",
-            Activo = true, Eliminado = false
+            EsSistema = true, Activo = true, Eliminado = false
         };
         var usuario = new Usuario
         {
@@ -69,6 +69,8 @@ public sealed class I8009CRevocacionRenovacionTests
 
         var usuarios = new Mock<IUsuarioRepository>(MockBehavior.Strict);
         usuarios.Setup(x => x.GetByIdAsync(usuarioId)).ReturnsAsync(usuario);
+        usuarios.Setup(x => x.GetEmpresasAsync(usuarioId))
+            .ReturnsAsync(new List<UsuarioEmpresa> { new(usuarioId, 4102, rol.Id) });
         var roles = new Mock<IRolRepository>(MockBehavior.Strict);
         var jwt = new Mock<IJwtService>(MockBehavior.Strict);
         var expiracion = DateTime.UtcNow.AddMinutes(35);

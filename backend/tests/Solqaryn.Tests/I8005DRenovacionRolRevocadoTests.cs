@@ -23,7 +23,7 @@ public sealed class I8005DRenovacionRolRevocadoTests
     public async Task I8005D_Renovar_no_emite_otro_token_si_el_rol_fue_revocado(
         bool desactivado, bool eliminado)
     {
-        var rol = new Rol { Id = 905, Nombre = "Operador", Activo = true };
+        var rol = new Rol { Id = 905, Nombre = "Operador", EsSistema = true, Activo = true };
         var usuario = new Usuario
         {
             Id = 805,
@@ -36,6 +36,8 @@ public sealed class I8005DRenovacionRolRevocadoTests
 
         var repository = new Mock<IUsuarioRepository>();
         repository.Setup(x => x.GetByIdAsync(usuario.Id)).ReturnsAsync(usuario);
+        repository.Setup(x => x.GetEmpresasAsync(usuario.Id))
+            .ReturnsAsync(new List<UsuarioEmpresa> { new(usuario.Id, 4104, rol.Id) });
 
         var jwt = new Mock<IJwtService>(MockBehavior.Strict);
         var expiration = DateTime.UtcNow.AddMinutes(10);

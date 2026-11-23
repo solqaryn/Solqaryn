@@ -91,7 +91,7 @@ public sealed class I8001CCredencialesErpTests
         NombreCompleto = "Operador de prueba",
         PasswordHash = BCrypt.Net.BCrypt.HashPassword("clave-correcta-test"),
         RolId = 9,
-        RolEntidad = new Rol { Id = 9, Nombre = "Operador", Activo = true },
+        RolEntidad = new Rol { Id = 9, Nombre = "Operador", EsSistema = true, Activo = true },
         Activo = true
     };
 
@@ -100,6 +100,8 @@ public sealed class I8001CCredencialesErpTests
     {
         var repository = new Mock<IUsuarioRepository>();
         repository.Setup(x => x.GetByNombreUsuarioAsync("operador")).ReturnsAsync(usuario);
+        repository.Setup(x => x.GetEmpresasAsync(usuario.Id))
+            .ReturnsAsync(new List<UsuarioEmpresa> { new(usuario.Id, 4105, usuario.RolId) });
         var jwt = new Mock<IJwtService>(MockBehavior.Strict);
         var sut = new AuthService(repository.Object, Mock.Of<IRolRepository>(), jwt.Object);
         return (sut, repository, jwt);

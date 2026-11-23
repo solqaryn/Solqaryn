@@ -44,12 +44,14 @@ public sealed class I8001DPasswordHashAuditoriaTests
             NombreCompleto = "Operador auditado",
             PasswordHash = BCrypt.Net.BCrypt.HashPassword(anterior, workFactor: 4),
             RolId = 9,
-            RolEntidad = new Rol { Id = 9, Nombre = "Operador", Activo = true },
+            RolEntidad = new Rol { Id = 9, Nombre = "Operador", EsSistema = true, Activo = true },
             Activo = true
         };
         var repositorio = new Mock<IUsuarioRepository>();
         repositorio.Setup(x => x.GetByNombreUsuarioAsync("operador-erp"))
             .ReturnsAsync(usuario);
+        repositorio.Setup(x => x.GetEmpresasAsync(usuario.Id))
+            .ReturnsAsync(new List<UsuarioEmpresa> { new(usuario.Id, 4103, usuario.RolId) });
         var jwt = new Mock<IJwtService>(MockBehavior.Strict);
         var servicio = new AuthService(
             repositorio.Object, Mock.Of<IRolRepository>(), jwt.Object);

@@ -69,9 +69,12 @@ public sealed class I8001EHashCorrectoRolInvalidoTests
         {
             Id = 9,
             Nombre = "Operador",
+            EsSistema = true,
             Activo = true,
             Eliminado = false
         };
+        repositorio.Setup(x => x.GetEmpresasAsync(usuario.Id))
+            .ReturnsAsync(new List<UsuarioEmpresa> { new(usuario.Id, 4106, 9) });
         var expira = DateTime.UtcNow.AddMinutes(15);
         jwt.Setup(x => x.GenerarToken(usuario))
             .Returns(("token-sintetico-no-firmado", expira));
