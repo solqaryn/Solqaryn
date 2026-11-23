@@ -1,4 +1,5 @@
 using Solqaryn.Application.DTOs;
+using Solqaryn.Application.Exceptions;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
@@ -21,7 +22,20 @@ public class AuditoriaRepository : IAuditoriaRepository
 
     public async Task<(List<RegistroAuditoria> Items, int TotalCount)> GetFilteredAsync(AuditoriaFiltroDto filtro)
     {
-        var query = _context.RegistrosAuditoria.AsQueryable();
+        // The existing EF query filter is defence in depth, not the authority
+        // for sensitive cross-tenant audit reads. Refuse unbound background,
+        // public store/invoice and incorrectly configured DI contexts.
+        var verifiedTenant = _context.AuthorizedCommercialEmpresaId;
+        if (verifiedTenant is not > 0 && _context.IsPlatformSupportReadRequest)
+            verifiedTenant = _context.AuthorizedReadEmpresaId;
+        if (verifiedTenant is not > 0)
+            throw new ForbiddenAccessException(
+                "La lectura de auditoria requiere empresa autenticada y autorizada.");
+
+        // Explicit scoped predicate survives a later IgnoreQueryFilters and
+        // constrains BOTH the page and the aggregate count to one company.
+        var query = _context.RegistrosAuditoria.AsNoTracking()
+            .Where(r => r.EmpresaId == verifiedTenant.Value);
 
         if (filtro.UsuarioId.HasValue)
             query = query.Where(r => r.UsuarioId == filtro.UsuarioId.Value);

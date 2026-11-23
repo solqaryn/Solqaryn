@@ -371,6 +371,63 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
                     .Where(x => x.Entidad == "Empresa" &&
                         x.Descripcion == "C03-03.M03.03: acceso de auditoría validado")
                     .ToListAsync());
+                // R2 real MySQL 8.4: the shared audit repository must enforce
+                // tenant-bound reads even if EF's global filter is absent.
+                // B is seeded into the disposable database by the test harness,
+                // not by an authenticated business operation.
+                db.RegistrosAuditoria.Add(new RegistroAuditoria
+                {
+                    UsuarioId = actor.Id,
+                    NombreUsuario = username,
+                    EmpresaId = tenantB.Id,
+                    Modulo = ModuloSistema.Auditoria,
+                    Accion = AccionPermiso.Ver,
+                    Entidad = "Empresa",
+                    ReferenciaId = tenantB.Id,
+                    Descripcion = "C0303_TENANT_B_PRIVATE_SENTINEL"
+                });
+                await db.SaveChangesAsync();
+                db.ChangeTracker.Clear();
+
+                var auditReadHttp = new DefaultHttpContext();
+                auditReadHttp.Request.Method = HttpMethods.Get;
+                auditReadHttp.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] =
+                    tenantA.Id;
+                var readAccessor = new HttpContextAccessor
+                {
+                    HttpContext = auditReadHttp
+                };
+                await using var auditReadDb = new AppDbContext(options, null, readAccessor);
+                var auditRepository = new AuditoriaRepository(auditReadDb);
+                var filter = new Solqaryn.Application.DTOs.AuditoriaFiltroDto
+                {
+                    Page = 1,
+                    PageSize = 50
+                };
+                var (tenantARecords, tenantATotal) =
+                    await auditRepository.GetFilteredAsync(filter);
+                Assert.True(tenantATotal > 0);
+                Assert.All(tenantARecords,
+                    row => Assert.Equal(tenantA.Id, row.EmpresaId));
+                Assert.DoesNotContain(tenantARecords,
+                    row => row.Descripcion == "C0303_TENANT_B_PRIVATE_SENTINEL");
+
+                auditReadHttp.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] =
+                    tenantB.Id;
+                var (tenantBRecords, tenantBTotal) =
+                    await auditRepository.GetFilteredAsync(filter);
+                Assert.True(tenantBTotal > 0);
+                Assert.All(tenantBRecords,
+                    row => Assert.Equal(tenantB.Id, row.EmpresaId));
+                Assert.Contains(tenantBRecords,
+                    row => row.Descripcion == "C0303_TENANT_B_PRIVATE_SENTINEL");
+
+                auditReadHttp.Items.Remove(
+                    VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey);
+                await Assert.ThrowsAsync<
+                    Solqaryn.Application.Exceptions.ForbiddenAccessException>(
+                    () => auditRepository.GetFilteredAsync(filter));
+
                 Assert.Equal(HttpStatusCode.Forbidden,
                     await HttpAuditAsync(tenantB.Id, signed));
                 Assert.Equal(HttpStatusCode.Unauthorized,
