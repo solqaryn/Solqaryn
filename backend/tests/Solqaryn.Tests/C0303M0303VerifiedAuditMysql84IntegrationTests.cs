@@ -1,3 +1,8 @@
+using Microsoft.AspNetCore.TestHost;
+using Microsoft.AspNetCore.Hosting;
+using Microsoft.AspNetCore.Builder;
+using System.Net.Http.Headers;
+using System.Net;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -240,6 +245,91 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
                     Signing, SecurityAlgorithms.HmacSha256));
             await AssertUntrustedBearerRejectedAsync(
                 new JwtSecurityTokenHandler().WriteToken(expiredToken));
+
+
+            // Real ASP.NET Core TestServer HTTP pipeline + JwtBearer +
+            // server-owned tenant marker + ephemeral Oracle EF/MySQL 8.4.
+            // This route exists ONLY in this test; it is NOT a shipped API
+            // endpoint, audit event producer, or durable audit sink.
+            using (var server = new TestServer(new WebHostBuilder()
+                .ConfigureServices(s =>
+                {
+                    s.AddRouting();
+                    s.AddLogging();
+                    s.AddAuthorization();
+                    s.AddHttpContextAccessor();
+                    s.AddSingleton<IConfiguration>(config);
+                    s.AddSingleton(db);
+                    s.AddSingleton<ICurrentUserService>(current.Object);
+                    s.AddSingleton<IUsuarioScopeService>(scope);
+                    s.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+                        .AddJwtBearer(o =>
+                        {
+                            o.MapInboundClaims = false;
+                            o.TokenValidationParameters = new TokenValidationParameters
+                            {
+                                ValidateIssuer = true,
+                                ValidIssuer = "c0303-mysql-ci",
+                                ValidateAudience = true,
+                                ValidAudience = "c0303-mysql-ci",
+                                ValidateIssuerSigningKey = true,
+                                IssuerSigningKey = Signing,
+                                ValidateLifetime = true,
+                                ClockSkew = TimeSpan.Zero
+                            };
+                        });
+                    s.AddScoped<C0303VerifiedAuditTenantReaders>();
+                })
+                .Configure(app =>
+                {
+                    app.UseRouting();
+                    app.UseAuthentication();
+                    app.UseAuthorization();
+                    app.Use(async (context, next) =>
+                    {
+                        // CI harness supplies the server-verified A marker.
+                        // Neither route nor request headers can set it.
+                        context.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] =
+                            tenantA.Id;
+                        await next();
+                    });
+                    app.UseEndpoints(endpoints =>
+                    {
+                        endpoints.MapGet("/_ci/audit/{empresaId:int}", async context =>
+                        {
+                            var verified = await context.RequestServices
+                                .GetRequiredService<C0303VerifiedAuditTenantReaders>()
+                                .ReadCurrentAsync(context.RequestAborted);
+                            context.Response.StatusCode = verified is null
+                                ? StatusCodes.Status403Forbidden
+                                : StatusCodes.Status204NoContent;
+                        }).RequireAuthorization();
+                    });
+                })))
+            {
+                using var client = server.CreateClient();
+                async Task<HttpStatusCode> HttpAuditAsync(int routeTenant, string bearerJwt)
+                {
+                    using var request = new HttpRequestMessage(
+                        HttpMethod.Get, "/_ci/audit/" + routeTenant);
+                    request.Headers.Authorization =
+                        new AuthenticationHeaderValue("Bearer", bearerJwt);
+                    using var response = await client.SendAsync(request);
+                    return response.StatusCode;
+                }
+
+                var signed = new JwtSecurityTokenHandler().WriteToken(jwt);
+                Assert.Equal(HttpStatusCode.NoContent,
+                    await HttpAuditAsync(tenantA.Id, signed));
+                Assert.Equal(HttpStatusCode.Forbidden,
+                    await HttpAuditAsync(tenantB.Id, signed));
+                Assert.Equal(HttpStatusCode.Unauthorized,
+                    await HttpAuditAsync(tenantA.Id,
+                        new JwtSecurityTokenHandler().WriteToken(forgedToken)));
+                Assert.Equal(HttpStatusCode.Unauthorized,
+                    await HttpAuditAsync(tenantA.Id,
+                        new JwtSecurityTokenHandler().WriteToken(expiredToken)));
+            }
 
             // Route spoofing, membership B and critical changes cannot borrow A.
             http.Request.RouteValues["empresaId"] = tenantB.Id.ToString();

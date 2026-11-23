@@ -17,3 +17,27 @@ Riesgo R2; A0 diff de pruebas y documentación. A1/A2 positivos y negativos suje
 ## V25 — comprobación física Oracle EF/MySQL 8.4, DEV05 reparación independiente
 
 Nueva hipótesis causal: la evaluación relacional anterior estaba respaldada por EF InMemory, que no prueba traducción SQL ni transacciones en el proveedor Oracle. La regresión `C0303M0303VerifiedAuditMysql84IntegrationTests` se ejecuta sólo con `Category=Integration` sobre MySQL `8.4` efímero del job global, conexión limitada a loopback `127.0.0.1:3306`, esquema aleatorio con bootstrap, cleanup y `SELECT VERSION()`; utiliza `UsuarioScopeService` auténtico, lector API preexistente, JwtBearer firmado, membership A/B, grant real, revocación en SQL, lectura denegada y rollback. El JWT se autentica dentro de `DefaultHttpContext` de ensayo: NO prueba HTTP transportado por servidor ni un endpoint publicado, ni call-site de auditoría durable. `TransactionalSinkVerified` sigue `false`. A3 física sólo acreditable después de TRX con `passed=1,failed=0,notExecuted=0` y checks exact-SHA; antes de ese resultado H permanece VALIDANDO y A5 independiente, jamás PASS inferido. No se modifica runtime, migración ni despliegue. Rollback git revert normal, PROJECT_SCOPE_LOCK STRICT, no QA/main/PROD.
+
+
+## V25 - HTTP TestServer y JWT real sobre MySQL 8.4 efimero (incremento DEV03)
+
+El test C0303M0303VerifiedAuditMysql84IntegrationTests amplia la prueba fisica
+Oracle EF/MySQL 8.4 con un servidor HTTP ASP.NET Core en proceso que
+ejecuta routing, UseAuthentication, UseAuthorization, JwtBearer firmado y
+el adaptador relacional C0303VerifiedAuditTenantReaders. La ruta
+/_ci/audit/{empresaId} existe unicamente dentro del TestServer de xUnit.
+El marcador del tenant A se coloca exclusivamente en el middleware del
+servidor de ensayo; una URL de tenant B no puede cambiarlo.
+
+Criterios adversariales con Category=Integration en GitHub-hosted:
+JWT valido/tenant A devuelve 204, JWT valido/ruta de tenant B devuelve 403,
+firma ajena devuelve 401 y JWT expirado devuelve 401, todos con MySQL 8.4
+efimero, sin secretos ni datos de produccion. A0/A1/A2/A3 permanecen
+PENDIENTES de prueba fisica exact-SHA hasta observar CI; no convertir
+codigo publicado en PASS. La prueba HTTP es un contrato de transporte
+de adaptador de CI, no demuestra endpoint comercial publicado, call-site
+de cambios criticos, escritor durable, retencion ni auditoria transaccional.
+TransactionalSinkVerified=false permanece obligatorio y el opt-in de
+produccion sigue OFF. Esa brecha requiere trabajo posterior y A5 independiente,
+sin marcar LISTO antes de cumplir alcance y calidad A0-A4. Rollback: git revert
+normal del SHA causal con HEAD revalidado; no QA/main/PROD.

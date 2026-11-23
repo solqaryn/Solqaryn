@@ -1,3 +1,8 @@
+## 2026-11-23 - DEV03 C03-03.M03.03: HTTP de prueba JWT/tenant con MySQL 8.4 (V25)
+- A0/R2: nueva ejecucion HTTP real en TestServer ASP.NET Core, solo en xUnit Integration; sin ruta comercial ni permiso nuevo.
+- A1/A2/A3: positivos/negativos JWT firmado A (204), tenant B (403), firma ajena (401), token expirado (401), datos MySQL 8.4 efimeros; CI exact-SHA aun no acreditada.
+- A4/A5: exigir Scope Lock, V5, backend, seguridad e integracion MySQL 8.4 GitHub-hosted SUCCESS del SHA publicado. Sin sink durable, call-site productivo ni certificacion comercial; mantener VALIDANDO y A5 independiente. Rollback git revert y sin QA/main/PROD.
+
 ## 2026-11-23 — DEV02 C15-04.M05.04: A119 corrección gate RBAC real (V25)
 - Evidencia causal: SHA fd1b56e3, job 45122319944 terminó 160 PASS, 1 FAIL de Playwright; el assert buscaba textbox en /login aunque JWT tenant B seguía autenticado, por lo que el Angular real muestra gate de empresa y alerta HTTP 403 global.
 - Test A119 repara expectativas del gate: alerta, botón accesible, Tab natural sin .focus(), cinco anchos, capturas, no contenidos privados, cero mutaciones y body overflow. Exigir 161 PASS en CI GitHub-hosted exact-SHA; WCAG/CWV/zoom nativo200/baseline/A5 independientes pendientes. Sin cambio runtime, DB, RBAC, QA/main/PROD; revert normal.
