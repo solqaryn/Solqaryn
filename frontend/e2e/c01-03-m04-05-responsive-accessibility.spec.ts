@@ -60,6 +60,37 @@ async function verifyCardHeaderSeparation(page: Page, width: number, mode: strin
   expect(position!.space, 'Recargar/form no collision at '+width+' '+mode).toBeGreaterThanOrEqual(12);
 }
 
+// Visual regression from actual GitHub-hosted 320px/200%-root-text PNG:
+ // heading "Configuración" previously fragmented into "Configuraci" + "ón".
+ // Range.getClientRects reads browser-rendered glyph lines, not CSS declarations.
+async function verifyHeadingWholeWords(page: Page, width: number, phase: string): Promise<void> {
+  const measured = await page.evaluate(() => {
+    return ['.settings-surface h1', '.settings-surface nav a.back-link'].map(selector => {
+      const element = document.querySelector(selector);
+      const node = [...(element?.childNodes ?? [])].find(n =>
+        n.nodeType === Node.TEXT_NODE && (n.textContent ?? '').includes('Configuración'));
+      if (!node?.textContent) return { selector, present: false, segments: 0, left: 0, right: 0, viewport: 0 };
+      const start = node.textContent.indexOf('Configuración');
+      const range = document.createRange();
+      range.setStart(node,start);
+      range.setEnd(node,start+'Configuración'.length);
+      const rects = [...range.getClientRects()].filter(rect => rect.width > 0 && rect.height > 0);
+      return {
+        selector, present: true, segments: rects.length,
+        left: Math.min(...rects.map(rect => rect.left)),
+        right: Math.max(...rects.map(rect => rect.right)),
+        viewport: document.documentElement.clientWidth
+      };
+    });
+  });
+  for (const item of measured) {
+    expect(item.present, item.selector+' exists at '+width+' '+phase).toBe(true);
+    expect(item.segments, 'no mid-word wrap for Configuración at '+width+' '+phase).toBe(1);
+    expect(item.left, 'word left visible at '+width+' '+phase).toBeGreaterThanOrEqual(-2);
+    expect(item.right, 'word right visible at '+width+' '+phase).toBeLessThanOrEqual(item.viewport+2);
+  }
+}
+
 async function verifyTab(page: Page): Promise<void> {
   // V24 R2: actual Tab must reach route controls, not a random visible app-shell link.
   // Never call .focus() or bypass browser keyboard navigation.
@@ -198,6 +229,7 @@ test.describe('V24 C01-03.M04.05 actual tenant UI responsive and keyboard', () =
       for (const width of widths) {
         await page.setViewportSize({width,height:900});
         await verifyLayout(page,width,'100pct');
+        await verifyHeadingWholeWords(page,width,'100pct');
         await verifyCardHeaderSeparation(page,width,'100pct');
         await page.screenshot({path:'test-results/c0103-m0405-'+username+'-'+width+'-100.png',fullPage:true});
       }
@@ -223,6 +255,7 @@ test.describe('V24 C01-03.M04.05 actual tenant UI responsive and keyboard', () =
           expect(Number.isFinite(before) && Number.isFinite(after), 'real root font size').toBe(true);
           expect(after, 'root text resize applied').toBeGreaterThanOrEqual(before * 1.95);
           await verifyLayout(page,width,'text-only-resize-200');
+          await verifyHeadingWholeWords(page,width,'text-only-resize-200');
           await verifyCardHeaderSeparation(page,width,'text-only-resize-200');
           await expect(page.getByRole('button',{name:/Recargar/})).toBeVisible();
           await expect(page.getByRole('link',{name:'Ver todos los ajustes'})).toBeVisible();

@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV03 rescate C01-03.M04.05: reflow del título, palabra entera a texto 200% (R2)
+- Defecto causal real desde artefacto GHA 14781051271: en 320 px y texto raíz 200% el H1 rompía «Configuración» arbitrariamente por overflow-wrap heredado y mínimo 1.55rem; owner histórico DEV04 conservado.
+- Corrección Angular mobile localizada a <=390 px con tipografía fluida bajo el ajuste de texto del usuario, palabras intactas y breadcrumb protegido; regression Playwright Range.getClientRects en JWT A/B, cinco anchos, 100%/raíz 200%, sin mocks de autorización.
+- CI GitHub-hosted nueva, Scope Lock/V5 y seguridad exact-SHA obligatorios: PENDIENTE, no asumir PASS. Zoom NATIVO de escritorio 200% e imagen histórica pre-feature NO_CERTIFICADOS; VALIDANDO/A5 independiente, sin QA/main/PROD, rollback git revert normal.
+
 ## 2026-11-22 — DEV02 C15-04.M05.04 A116: Tab real y foco visible en branding JWT
 - A115 SHA 5f848bd0: CI GitHub-hosted Chromium/MySQL8.4 completó SUCCESS; checks causales de seguridad/Scope Lock/V5/frontend/backend PASS; retries opcionales SKIPPED no se consideran PASS.
 - A116 añade A0.90: enlace privado «Volver a plataforma» alcanzado con Tab real, anillo de foco >=2px, Enter y navegación, cinco anchos, cero mutaciones HTTP y capturas antes/foco del mismo run. Esperados 158 tests; CI nueva por SHA pendiente.

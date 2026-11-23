@@ -59,7 +59,14 @@ import { EmpresaConfiguracionTenantCardComponent } from './empresa-configuracion
     .secondary-link { flex:0 0 auto; font-weight:600; }
     .surface-content { min-width:0; width:100%; }
     .scope-note { margin:18px 0 0; font-size:.825rem; line-height:1.55; color:var(--text-secondary,#52606d); }
-    @media (max-width:390px) { .settings-surface { padding:12px; } .intro { align-items:flex-start; } }
+    @media (max-width:390px) {
+      .settings-surface { padding:12px; }
+      .intro { align-items:flex-start; }
+      /* Keep the longest Spanish heading word intact at 200% root text resizing.
+         Do not suppress user text scaling; reflow the heading into whole words. */
+      h1 { font-size:1.2rem; overflow-wrap:normal; word-break:normal; }
+      nav a, nav [aria-current="page"] { overflow-wrap:normal; word-break:normal; }
+    }
   `]
 })
 export class C0103ConfiguracionDinamicaPageComponent {
