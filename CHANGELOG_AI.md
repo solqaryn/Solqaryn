@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV04 C03-01.M03.03: rechazar identidad ambigua al renovar JWT (R2)
+- Cambio runtime productivo acotado: auth/renovar exige un unico claim id positivo canonico y principal autenticado; rechaza duplicados/conflictos antes de llamar al servicio. No confia en cabeceras tenant ni concede acceso A/B.
+- Suite xUnit adversarial y filtro de workflow .NET10/JWT HTTP/MySQL8.4 efimero ampliado. Las pruebas de controlador no son una firma JWT. CI exact-SHA y A0-A4 pendientes hasta resultado real; A5 por otra Task Javier.
+- Login/refresh/seleccion de tenant y sucursal productivos integrales aun incompletos: H=VALIDANDO, I=DEV04, sin LISTO ni QA/main/PROD. Rollback git revert sin force-push.
+
 ## 2026-11-23 - CI V28: reutilizacion de dependencias NuGet en migraciones MySQL 8.4 (DEV)
 - Causa: el job de migraciones en .github/workflows/dev-ci.yml restauraba paquetes .NET 10 nuevamente en cada ejecucion aun existiendo una cache NuGet validada en el workflow permanente ERP. Evidencia: workflow de 65 minutos sin cache en este job, ci permanente previo con cache-hit comprobado.
 - Cambio minimo: anadir actions/cache@v4 para ~/.nuget/packages en el job migrations, misma clave de manifiestos que el cache existente; reusar solo paquetes NuGet descargables. Se mantienen todas las comprobaciones, filtros de impacto fail-closed, MySQL 8.4 efimero, bootstrap EF Oracle, pruebas de integracion, Scope Lock y V5.

@@ -7,6 +7,8 @@ on:
       - 'backend/src/API/Security/C0301LoginReadOnlyProbeEndpoint.cs'
       - 'backend/tests/Solqaryn.Tests/API/C0301M0303LoginVerifiedActorSourceTests.cs'
       - 'backend/tests/Solqaryn.Tests/Integration/C0301M0303RealMysql84HttpIntegrationTests.cs'
+      - 'backend/src/API/Controllers/AuthController.cs'
+      - 'backend/tests/Solqaryn.Tests/API/C0301M0303AuthRenewCanonicalIdentityTests.cs'
       - 'backend/src/API/Program.cs'
       - '.github/workflows/v26-c03-01-m03-03-jwt-mysql84-http.yml'
   workflow_dispatch:
@@ -50,4 +52,4 @@ jobs:
         run: |
           set -euo pipefail
           dotnet restore tests/Solqaryn.Tests/Solqaryn.Tests.csproj
-          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore --filter 'FullyQualifiedName~C0301M0303RealMysql84HttpIntegrationTests|FullyQualifiedName~C0301M0303LoginVerifiedActorSourceTests' --logger 'trx;LogFileName=C0301M0303Mysql84.trx' --verbosity normal
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore --filter 'FullyQualifiedName~C0301M0303RealMysql84HttpIntegrationTests|FullyQualifiedName~C0301M0303LoginVerifiedActorSourceTests|FullyQualifiedName~C0301M0303AuthRenewCanonicalIdentityTests' --logger 'trx;LogFileName=C0301M0303Mysql84.trx' --verbosity normal

@@ -1,3 +1,5 @@
+using System.Globalization;
+using System.Linq;
 using System.Security.Claims;
 using Solqaryn.Application.Common;
 using Solqaryn.Application.DTOs;
@@ -56,8 +58,18 @@ public class AuthController : ControllerBase
     [HttpPost("renovar")]
     public async Task<IActionResult> Renovar()
     {
-        var idClaim = User.FindFirstValue("id");
-        if (!int.TryParse(idClaim, out var usuarioId))
+        // A signed product token contains exactly one canonical positive actor id.
+        // Never use FindFirst: duplicated/ambiguous claims could renew a stale or
+        // conflicting identity before tenant-aware checks run.
+        var actorClaims = User.FindAll("id").ToArray();
+        if (User.Identity?.IsAuthenticated != true || actorClaims.Length != 1)
+            return Unauthorized(ApiResponse<object>.Fail("No fue posible identificar la sesión."));
+
+        var actorText = actorClaims[0].Value;
+        if (!int.TryParse(actorText, NumberStyles.None, CultureInfo.InvariantCulture,
+                out var usuarioId) || usuarioId <= 0 ||
+            !string.Equals(actorText, usuarioId.ToString(CultureInfo.InvariantCulture),
+                StringComparison.Ordinal))
             return Unauthorized(ApiResponse<object>.Fail("No fue posible identificar la sesión."));
 
         var resultado = await _authService.RenovarAsync(usuarioId);
