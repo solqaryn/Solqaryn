@@ -10167,3 +10167,9 @@
 - Se refuerza la prueba de integración R2 existente con dos rechazos criptográficos de JwtBearer: token firmado con una clave ajena y token expirado, incluso ante un ClaimsPrincipal sintético y permisos SQL vigentes. La prueba conserva el caso positivo y los controles previos de tenant A/B, revocación y rollback.
 - El cambio afecta únicamente el archivo de pruebas C0303M0303VerifiedAuditMysql84IntegrationTests.cs: no altera API, rutas, DI, bases de producción, secretos ni permisos. Validación causal pendiente del nuevo SHA en GitHub-hosted MySQL 8.4, .NET 10, seguridad, Scope Lock y V5.
 - Limitación explícita: probar JwtBearer en contexto de prueba no certifica transporte HTTP real, call-site autenticado de auditoría ni sink durable. C03-03.M03.03 permanece VALIDANDO, con autor histórico DEV03 y A5 independiente pendiente; no QA/main/PROD.
+
+## V26 C14-02.M06.06 — autorización antes de eliminar producto/variante (2026-11-23)
+- API `ProductosController.Delete`: comprueba el producto visible por el repositorio tenant-scoped antes de cualquier limpieza de variante técnica, manteniendo la transacción y el 404 sin mutación para ID inexistente/ajeno.
+- Agrega tres xUnit adversariales sobre el método real (denegación sin side effects, secuencia positiva, fallo de limpieza sin borrado del producto); documentación `docs/v5/c14-02-m06-06-product-delete-ownership-gate-v26.md`.
+- R2/A0 incremento real pendiente de CI GitHub-hosted exact-SHA. Los servicios son Moq y **NO** se certifican JWT HTTP end-to-end, MySQL8.4 real, rollback de DB, P0/P1 global, LISTO/A5 ni QA/main/PROD; conservar owner histórico y Scope Lock/V17.
+

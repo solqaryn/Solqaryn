@@ -145,6 +145,12 @@ public class ProductosController : ControllerBase
         var eliminado = false;
         await _unitOfWork.ExecuteInTransactionAsync(async () =>
         {
+            // Scope the product before any variant cleanup: a foreign or missing
+            // product must not cause mutations or expose the variant state.
+            // GetByIdAsync uses the tenant-scoped product repository.
+            if (await _productoService.GetByIdAsync(id) is null)
+                return;
+
             await _varianteService.EliminarTecnicaConProductoAsync(id);
             eliminado = await _productoService.DeleteAsync(id);
         });
