@@ -3397,4 +3397,48 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     expect(mutaciones, 'JWT adulterado no permite mutaciones API').toEqual([]);
   });
 
+
+  // A118/A0.92: el navegador NO debe resucitar UI privada tras una denegacion
+  // real por RBAC de empresa B y recarga completa. No usar route mocks.
+  test('A0.92 - branding tenant B no revive tras recarga cinco anchos', async ({ page, request }) => {
+    test.setTimeout(180_000);
+    const jwt = await ingresarConJwtRealParaGuard(page, request, 'c1504_admin_b', true);
+    const preflight = await request.get(api + '/plataforma/sesion', {
+      headers: { Authorization: 'Bearer ' + jwt }
+    });
+    expect(preflight.status(), 'JWT B valido pero sin autoridad global').toBe(403);
+    const mutaciones: string[] = [];
+    page.on('request', peticion => {
+      if (peticion.url().includes('localhost:5005') &&
+          /^(POST|PUT|PATCH|DELETE)$/.test(peticion.method())) {
+        mutaciones.push(peticion.method() + ' ' + new URL(peticion.url()).pathname);
+      }
+    });
+    for (const ancho of [320, 390, 768, 1280, 1440]) {
+      await page.setViewportSize({ width: ancho, height: 840 });
+      const sesion = page.waitForResponse(respuesta =>
+        respuesta.url().includes('/plataforma/sesion') &&
+        respuesta.request().method() === 'GET');
+      await page.goto('/plataforma/capacidades-branding-v19');
+      expect((await sesion).status(), 'HTTP real deniega empresa B ' + ancho).toBe(403);
+      await expect(page).toHaveURL(url =>
+        url.pathname === '/login' &&
+        url.searchParams.get('plataforma') === 'denegado');
+      await page.reload();
+      await expect(page).toHaveURL(url => url.pathname === '/login');
+      await expect(page.getByRole('heading', {
+        level: 1, name: 'Branding y capacidades permitidas'
+      }), 'Sin contenido privado tras recarga ' + ancho).toHaveCount(0);
+      const dimension = await page.evaluate(() => ({
+        html: document.documentElement.scrollWidth,
+        body: document.body.scrollWidth,
+        viewport: window.innerWidth
+      }));
+      expect(Math.max(dimension.html, dimension.body),
+        'Sin overflow tras recarga denegada ' + ancho)
+        .toBeLessThanOrEqual(dimension.viewport + 2);
+    }
+    expect(mutaciones, 'No escribir datos de API ante RBAC 403 y recarga').toEqual([]);
+  });
+
 });

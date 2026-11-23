@@ -62,3 +62,12 @@ A116 exact-SHA `9f2eb909b5267cd0e84d1747f8896c7dbd49245c` completó GitHub-hoste
 A117 incorpora A0.91: sesión de plataforma autenticada positiva, firma JWT adulterada, rechazo HTTP 401/403 real, guard Angular a /login, ausencia de encabezado privado, sin escritura API y sin overflow global en 320/390/768/1280/1440. **159 pruebas esperadas**, a acreditar exclusivamente cuando el nuevo SHA complete GHA/CI SUCCESS y los logs muestren 159 PASS/0 FAIL/0 SKIP.
 
 Clasificación R2 test-only, sin cambios runtime, permisos, esquema ni migración; A0 alcance de prueba, A1 positivo/negativo, A2 firma y autorización reales, A3 HTTP/MySQL/Chromium en CI, A4 exact SHA y readback pendiente. No equivale a auditar todas las rutas. SKREF-03/10 previamente verificadas en UI; en este diff sólo prueba/documento, NO_APLICA nueva adopción externa. Persisten cobertura ~160 rutas, zoom nativo 200%, baseline histórico, WCAG/CWV globales y A5 independiente. H2297 EN_PROGRESO, I DEV02, lock V17 propio retenido. Rollback: `git revert` normal. No QA/main/PROD.
+
+
+## A118 - persistencia del rechazo RBAC de empresa B despues de reload
+
+A117 sobre SHA `ea090c14f73b6ea761475f462ff0302750e8dc80`: GitHub-hosted `45104753495`/`137463360972`, Chromium real 159/159 PASS, cero fallos o SKIP; API .NET 10 y MySQL 8.4.13 efimero, JWT firmado; Scope Lock, V5, build, seguridad y tipado pertinentes completaron SUCCESS. Los jobs auxiliares SKIPPED no se incluyen como aprobados.
+
+A118 agrega el caso A0.92 (160 esperados, NO certificados aun para este cambio): empresa B con JWT real recibe HTTP 403, el guard redirige a /login?plataforma=denegado; la recarga completa del navegador mantiene la denegacion, no restaura el H1 privado, no genera overflow global ni escrituras HTTP POST/PUT/PATCH/DELETE. Anchos: 320, 390, 768, 1280 y 1440, backend/JWT/MySQL/Chromium reales GitHub-hosted. A0 alcance de test; A1 positivo JWT B valido y negativos de acceso/recarga; A2 aislamiento RBAC real; A3 y A4 del nuevo SHA quedan PENDIENTES hasta comprobar logs y checks del SHA exacto.
+
+R2 test-only + documentacion + changelog, sin cambio de runtime, migracion ni permisos; SKREF-03/10 documentados previamente, sin nueva referencia externa requerida para el diff. Cobertura UX completa de unas 160 rutas, zoom nativo 200%, capturas historicas, WCAG global y CWV de campo siguen pendientes. Mantener H2297 EN_PROGRESO, I DEV02, lock V17 2000002297, A5 independiente al completar la fase. Rollback por git revert normal y CAS; prohibido QA/main/PROD.

@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV02 C15-04.M05.04 A118: denegacion RBAC despues de recarga
+- A117 exact-SHA ea090c14: GitHub-hosted 159/159 Chromium PASS, 0 FAIL/0 SKIP, API .NET 10 y MySQL 8.4.13 efimero JWT firmado, Scope Lock/V5/backend/frontend/seguridad SUCCESS.
+- A118 A0.92 comprueba que empresa B recibe HTTP 403 y que recargar /login no resucita branding privado en 320/390/768/1280/1440, sin mutaciones API ni overflow. Nuevo SHA pendiente de CI, 160 tests esperados; no afirmar PASS anticipado.
+- Scope R2 test-only: WIP C15-04.M05.04 y V17 lock 2000002297 retenidos, sin LISTO/A5 ni certificacion WCAG/CWV/zoom nativo global; QA/main/PROD prohibidos.
+
 ## 2026-11-22 — DEV02 C15-04.M05.04 A117: JWT adulterado denegado en branding
 - A116 GitHub-hosted exact-SHA 9f2eb909: 158/158 Chromium PASS con JWT real, MySQL 8.4.13 efímero, Scope Lock/V5/frontend/backend/security SUCCESS; SKIPPED opcionales no cuentan.
 - A117 añade A0.91 con login real, firma JWT alterada, rechazo HTTP 401/403, guard Angular /login, ausencia de branding privado, cero mutaciones API y cinco anchos. Esperados 159 casos; nuevo SHA requiere CI.
