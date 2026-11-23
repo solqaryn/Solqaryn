@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV02 C15-04.M05.04: reparación causal A122 de zoom CSS 200%
+- Fuente SHA 001bbf1ca6522aa32cfd060de4d8b77f4840f220, GHA 45153702353: **162 PASS, 1 FAIL** en A0.95; escalar root HTML `min-width:320px` produjo falso ancho640 en viewport320. El nuevo test aplica CSS zoom 2 al panel privado con 50% de anchura de layout y sigue detectando desbordamiento global y del panel en cinco viewports, con capturas antes de la aserción.
+- No se degradan JWT/API/tenant/MySQL efímero/Chromium, no se oculta overflow ni se alteran runtime, autorizaciones o datos. A0 corrección de test, A1–A4 y 163/163 pendientes de CI GitHub-hosted SHA nuevo; A5 independiente pendiente, zoom nativo/WCAG/CWV/baseline global NO_CERTIFICADOS. Propietario y V17 2000002297 intactos, sin LISTO/QA/main/PROD.
+
 ## 2026-11-23 — DEV03 C03-03.M03.03: persistencia real del preflight JWT/RBAC en MySQL (DEV-only)
 - Incremento R2 sin habilitar QA/main/PROD: POST explícito y opt-in Development al mismo recurso de lectura autenticada; GET sigue read-only. El registro de acceso `Auditoria.Ver` pasa por `IAuditoriaService.RegistrarEstrictoAsync` y `RegistroAuditoria` persistentes, actor y empresa del contexto server-side, fallo SQL redacted como 503.
 - Prueba adversarial con TestServer, JWT firmado/falso/expirado, roles/membresía empresa A/B y MySQL 8.4 efímero: GET no registra, POST positivo crea exactamente una fila, intentos cruzados/falsificados no agregan auditorías. GitHub-hosted exact SHA pendiente hasta observar CI.

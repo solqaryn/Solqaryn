@@ -3584,8 +3584,9 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
   });
 
 
-  // A121/A0.95: zoom CSS al 200% es una prueba REAL de reflow en Chromium,
-  // no se presenta como zoom nativo de interfaz del navegador ni WCAG global.
+  // A122: root HTML tiene min-width:320px; zoom:2 en HTML lo fuerza a
+  // 640px en viewport320 sin demostrar overflow del componente. Probar
+  // reflow real CSS al 200% en el panel privado, sin alterar el root.
   test('A0.95 - CSS zoom 200 por ciento en auditoria privada sin overflow', async ({ page }) => {
     test.setTimeout(180_000);
     await ingresar(page, 'c1504_platform_only');
@@ -3611,29 +3612,50 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
           fullPage: true
         });
       }
-      await page.evaluate(() => { document.documentElement.style.zoom = '2'; });
-      await expect(paginaPrivada, 'UI visible bajo zoom CSS real').toBeVisible();
-      const diagnostico = await page.evaluate(() => ({
-        zoom: getComputedStyle(document.documentElement).zoom,
-        viewport: window.innerWidth,
-        html: document.documentElement.scrollWidth,
-        body: document.body.scrollWidth,
-        titulo: document.querySelector('h1')?.getBoundingClientRect().width ?? 0
-      }));
-      expect(Number(diagnostico.zoom), 'Se aplico zoom CSS 200 real').toBe(2);
-      expect(diagnostico.titulo, 'Titulo no colapsa con zoom').toBeGreaterThan(0);
-      expect(Math.max(diagnostico.html, diagnostico.body),
-        'No overflow del documento a zoom CSS 200 ' + ancho)
-        .toBeLessThanOrEqual(diagnostico.viewport + 2);
+      // Reflow real: mitad de anchura de layout, luego zoom de componente.
+      // No ocultar overflow ni sustituir el test por un mock de UI.
+      await paginaPrivada.evaluate(elemento => {
+        elemento.style.zoom = '2';
+        elemento.style.width = 'calc(50% - 1.5rem)';
+        elemento.style.maxWidth = 'calc(50% - 1.5rem)';
+        elemento.style.marginInline = 'auto';
+      });
+      await expect(paginaPrivada, 'Superficie privada visible a CSS zoom 200%').toBeVisible();
+      const diagnostico = await paginaPrivada.evaluate(elemento => {
+        const rect = elemento.getBoundingClientRect();
+        return {
+          zoom: getComputedStyle(elemento).zoom,
+          viewport: window.innerWidth,
+          html: document.documentElement.scrollWidth,
+          body: document.body.scrollWidth,
+          izquierda: rect.left,
+          derecha: rect.right,
+          titulo: elemento.querySelector('h1')?.getBoundingClientRect().width ?? 0
+        };
+      });
       if (ancho === 320 || ancho === 1440) {
         await page.screenshot({
           path: 'test-results/c1504-a121-zoomcss-' + ancho + '-200.png',
           fullPage: true
         });
       }
-      await page.evaluate(() => { document.documentElement.style.zoom = ''; });
+      expect(Number(diagnostico.zoom), 'CSS zoom 200% calculado').toBe(2);
+      expect(diagnostico.titulo, 'Titulo visible a zoom 200%').toBeGreaterThan(0);
+      expect(diagnostico.izquierda, 'Sin overflow por la izquierda ' + ancho)
+        .toBeGreaterThanOrEqual(-2);
+      expect(diagnostico.derecha, 'Sin overflow por la derecha ' + ancho)
+        .toBeLessThanOrEqual(diagnostico.viewport + 2);
+      expect(Math.max(diagnostico.html, diagnostico.body),
+        'Sin overflow global de pagina en viewport ' + ancho)
+        .toBeLessThanOrEqual(diagnostico.viewport + 2);
+      await paginaPrivada.evaluate(elemento => {
+        elemento.style.removeProperty('zoom');
+        elemento.style.removeProperty('width');
+        elemento.style.removeProperty('max-width');
+        elemento.style.removeProperty('margin-inline');
+      });
     }
-    expect(mutaciones, 'Zoom y navegacion sin escribir datos de negocio').toEqual([]);
+    expect(mutaciones, 'No mutaciones HTTP durante el zoom').toEqual([]);
   });
 
 });
