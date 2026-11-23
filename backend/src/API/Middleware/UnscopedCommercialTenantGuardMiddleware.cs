@@ -645,7 +645,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                           config.GetValue<bool>("MultiEmpresa:PrivateAdminReportPilotEnabled");
         if (!lectura && !alta && !editarMaestros && !borrador && !confirmar &&
             !pdf && !reportes && !inventario && !media && !adminReport &&
-            !finanzas && !archivos)
+            !finanzas && !archivos && !borrarProducto)
             return false;
 
         ModuloSistema modulo;

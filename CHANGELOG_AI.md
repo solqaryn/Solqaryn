@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV06 V30 C14-02.M06.06: DELETE piloto productivo deja de ser inaccesible
+- Corregido un fallo funcional real: el preflight de `UnscopedCommercialTenantGuardMiddleware` excluía `borrarProducto` pese a exigir un opt-in independiente, ruta exacta `DELETE /productos/{id positivo}`, RBAC `Productos.EliminarLogico` y pertenencia al tenant.
+- Se conserva la bandera `PrivateProductDeletePilotEnabled=false` por defecto; no se abren otras rutas ni se alteran permisos de entorno. xUnit nuevo comprueba A/B, flag OFF, tenant ajeno, revocación, anónimo, rutas vecinas y métodos diferentes.
+- R2, V17 exclusivo; A0 incremento runtime, A1-A4 condicionadas a CI exact-SHA y a integración JWT/Oracle EF MySQL real pendiente. C14 global P0/P1 sin certificar, VALIDANDO conserva owner DEV06; A5 independiente pendiente. Sin QA/main/PROD; rollback `git revert` normal.
+
 ## 2026-11-23 — DEV05 V30 C01-03.M04.04: validación 422 conserva formulario editable
 - Entregable funcional Angular: feedback seguro dentro del formulario ante errores HTTP 400/422, sin perder datos ni imposibilitar la corrección. 401/403 y 5xx mantienen sus bloqueos y recuperación explícita.
 - E2E dirigido: corregir las expectativas obsoletas 403/500 (run fallido 45256221308) y añadir 422 editable sin exponer detalles internos. La nueva CI exact-SHA permanece pendiente, sin afirmar PASS.
