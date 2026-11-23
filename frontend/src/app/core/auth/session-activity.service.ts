@@ -1,8 +1,9 @@
 import { Injectable, NgZone } from '@angular/core';
 import { NavigationEnd, Router } from '@angular/router';
-import { Subscription } from 'rxjs';
+import { Subscription, switchMap } from 'rxjs';
 import { AuthService } from './auth.service';
 import { PermisosRuntimeService } from './permisos-runtime.service';
+import { TenantContextService } from './tenant-context.service';
 
 const INACTIVITY_LIMIT_MS = 30 * 60 * 1000;
 const TOKEN_RENEW_INTERVAL_MS = 5 * 60 * 1000;
@@ -34,7 +35,8 @@ export class SessionActivityService {
     private authService: AuthService,
     private permisosRuntime: PermisosRuntimeService,
     private router: Router,
-    private zone: NgZone
+    private zone: NgZone,
+    private tenantContext: TenantContextService
   ) {}
 
   iniciar(): void {
@@ -144,11 +146,49 @@ export class SessionActivityService {
     if (this.renovando || !this.authService.getToken()) return;
     this.renovando = true;
 
+    // The renewed JWT identifies the actor; it does not independently reissue
+    // verified tenant membership. Recheck the *already authorized* tenant via
+    // production SQL-backed HTTP before accepting cached ERP permissions again.
+    const empresaAnterior = this.tenantContext.empresaIdVerificada();
+
     this.zone.run(() => {
       this.authService.renovarSesion().subscribe({
-        next: () => {
-          localStorage.setItem(LAST_RENEW_KEY, String(Date.now()));
-          this.renovando = false;
+        next: respuesta => {
+          if (respuesta?.success !== true) {
+            this.renovando = false;
+            this.cerrarPor401();
+            return;
+          }
+
+          // A user may have started another tenant selection while the JWT POST
+          // was pending. Never replay A over an in-flight or verified B switch.
+          if (!empresaAnterior ||
+              this.tenantContext.empresaIdVerificada() !== empresaAnterior) {
+            localStorage.setItem(LAST_RENEW_KEY, String(Date.now()));
+            this.renovando = false;
+            return;
+          }
+
+          // Revoke permission caches before re-reading server-side membership.
+          // A successful token renewal must not perpetuate a revoked tenant.
+          this.permisosRuntime.limpiar();
+          this.tenantContext.seleccionarEmpresa(empresaAnterior).pipe(
+            switchMap(() => this.permisosRuntime.cargar())
+          ).subscribe({
+            next: autorizado => {
+              this.renovando = false;
+              if (autorizado === true &&
+                  this.tenantContext.empresaIdVerificada() === empresaAnterior) {
+                localStorage.setItem(LAST_RENEW_KEY, String(Date.now()));
+                return;
+              }
+              this.rechazarTenantTrasRenovacion(empresaAnterior);
+            },
+            error: () => {
+              this.renovando = false;
+              this.rechazarTenantTrasRenovacion(empresaAnterior);
+            }
+          });
         },
         error: (error) => {
           this.renovando = false;
@@ -158,12 +198,28 @@ export class SessionActivityService {
     });
   }
 
+  private rechazarTenantTrasRenovacion(empresaAnterior: number): void {
+    if (!this.authService.getToken()) return;
+    const solicitada = this.tenantContext.empresaSolicitadaId();
+    const confirmada = this.tenantContext.empresaIdVerificada();
+    // A newer selection is never erased by a late reply for the old tenant.
+    if ((solicitada !== null && solicitada !== empresaAnterior) ||
+        (confirmada !== null && confirmada !== empresaAnterior)) return;
+
+    this.tenantContext.limpiar();
+    this.permisosRuntime.limpiar();
+    sessionStorage.setItem(SESSION_MESSAGE_KEY,
+      'No se pudo revalidar tu empresa. Selecciona una empresa autorizada.');
+    void this.router.navigate(['/login'], { replaceUrl: true });
+  }
+
   private cerrarSesion(mensaje?: string): void {
     if (this.cerrando) return;
     this.cerrando = true;
     this.detener();
     if (mensaje) sessionStorage.setItem(SESSION_MESSAGE_KEY, mensaje);
     this.authService.logout();
+    this.tenantContext.limpiar();
     this.permisosRuntime.limpiar();
     localStorage.removeItem(LAST_ACTIVITY_KEY);
     localStorage.removeItem(LAST_RENEW_KEY);
