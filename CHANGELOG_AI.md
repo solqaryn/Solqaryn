@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV05 C01-03.M04.02: reflow CSS 200% y rechazo adversarial tenant B
+- Incremento R2 test-only: Playwright autenticado comprueba que HTTP 200 forjado con empresaId=2 no muestra datos de otra empresa, formulario ni overflow global en 320/390/768/1280/1440 bajo zoom CSS 200%; capturas 100/200 de la misma sesión.
+- Ruta/API/JWT/RBAC/MySQL no cambian. Se requiere GitHub-hosted SUCCESS exact-SHA y readback antes de acreditar A0–A4; CSS zoom NO equivale a zoom nativo Chrome, capturas NO son baseline histórica, la inyección NO certifica RBAC backend. Mantener VALIDANDO, owner DEV05 y A5 independiente pendiente, sin QA/main/PROD.
+
 ## 2026-11-23 — DEV02 C15-04.M05.04: reparación causal A122 de zoom CSS 200%
 - Fuente SHA 001bbf1ca6522aa32cfd060de4d8b77f4840f220, GHA 45153702353: **162 PASS, 1 FAIL** en A0.95; escalar root HTML `min-width:320px` produjo falso ancho640 en viewport320. El nuevo test aplica CSS zoom 2 al panel privado con 50% de anchura de layout y sigue detectando desbordamiento global y del panel en cinco viewports, con capturas antes de la aserción.
 - No se degradan JWT/API/tenant/MySQL efímero/Chromium, no se oculta overflow ni se alteran runtime, autorizaciones o datos. A0 corrección de test, A1–A4 y 163/163 pendientes de CI GitHub-hosted SHA nuevo; A5 independiente pendiente, zoom nativo/WCAG/CWV/baseline global NO_CERTIFICADOS. Propietario y V17 2000002297 intactos, sin LISTO/QA/main/PROD.
