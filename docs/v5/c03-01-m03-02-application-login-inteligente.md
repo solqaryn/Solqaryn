@@ -30,3 +30,16 @@ A5: independent Javier Task not author DEV05 or any repairer.
 Rollback: normal git revert on dev, preserve historical BITACORA, no prod/QA/main.
 SKREF-03/04/05/06/10: NOT_APPLICABLE (no UI, motion or copy).
 SKREF-11: NOT_APPLICABLE (no formal threat-model scope); SKREF-12: no profiling.
+
+## DEV05 V25 — double-read security repair (2026-11-22)
+
+Original GitHub-hosted SHA 23466f3c passed backend, security, auth, Scope Lock
+and V5. A new TOCTOU hypothesis was tested: authority could change while
+waiting for the last-tenant preference. Freeze user/member evidence, re-read
+user/company/role/membership after I/O and deny when the evidence differs.
+Four negative xUnit scenarios cover revocation, tenant deactivation, role from
+another tenant and account blocked after credentials. This Application-only
+increment does not issue a JWT or grant access, and remains VALIDANDO until
+new SHA CI succeeds. SQL persisted preference, API/DI, signed JWT and MySQL
+8.4 HTTP integration are NOT certified; issuance must revalidate atomically.
+A5 remains independent. Rollback is a normal git revert; no QA/main/PROD.

@@ -103,6 +103,12 @@ public sealed class C0301LoginInteligenteApplicationService
                     true));
             }
 
+            // Freeze authority before another I/O boundary; tracked entities are mutable.
+            var originalPasswordHash = current.PasswordHash;
+            var originalMembershipKeys = memberships
+                .Select(m => (m.UsuarioId, m.EmpresaId, m.RolId, m.Activa))
+                .OrderBy(m => m.EmpresaId).ThenBy(m => m.RolId).ToArray();
+
             // Preference is NEVER taken from a caller-supplied tenant override.
             var preferred = await _preferences.ReadLastTenantIdAsync(
                 current.Id, cancellationToken);
@@ -117,6 +123,46 @@ public sealed class C0301LoginInteligenteApplicationService
                 PlatformAuthorityVerified: false,
                 ExplicitPlatformConsoleGrantVerified: false,
                 ClientTenantOverrideAttempted: false));
+            // A preference await can race revocation and tenant/role reassignment.
+            // Re-evaluate the complete evidence. This preflight never issues a JWT.
+            var latestUser = await _users.GetByIdAsync(current.Id);
+            var latestMembers = await _users.GetEmpresasAsync(current.Id);
+            cancellationToken.ThrowIfCancellationRequested();
+            if (latestUser is null || latestUser.Id != current.Id ||
+                latestUser.PasswordHash != originalPasswordHash ||
+                !latestUser.Activo || latestUser.Bloqueado || latestUser.Eliminado ||
+                latestMembers is null || latestMembers.Any(m => m is null ||
+                    m.UsuarioId != current.Id || m.EmpresaId <= 0 || m.RolId <= 0))
+                return Denied("MEMBERSHIP_OR_ROLE_CHANGED_REAUTH_REQUIRED");
+
+            var latestKeys = latestMembers
+                .Select(m => (m.UsuarioId, m.EmpresaId, m.RolId, m.Activa))
+                .OrderBy(m => m.EmpresaId).ThenBy(m => m.RolId).ToArray();
+            if (!originalMembershipKeys.SequenceEqual(latestKeys))
+                return Denied("MEMBERSHIP_OR_ROLE_CHANGED_REAUTH_REQUIRED");
+
+            var latestEvidence = new List<C0301LoginTenantResolutionDomainRules.Membership>();
+            foreach (var member in latestMembers)
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                Empresa? company = await _companies.GetByIdAsync(
+                    member.EmpresaId, cancellationToken);
+                Rol? role = await _roles.GetByIdAsync(member.RolId);
+                cancellationToken.ThrowIfCancellationRequested();
+                latestEvidence.Add(new C0301LoginTenantResolutionDomainRules.Membership(
+                    latestUser.Id, member.EmpresaId,
+                    latestUser.Activo && !latestUser.Bloqueado && !latestUser.Eliminado,
+                    company is not null && company.Id == member.EmpresaId &&
+                        company.Activa && !company.Eliminado,
+                    member.Activa,
+                    role is not null && role.Id == member.RolId &&
+                        role.EsAsignableAEmpresa(member.EmpresaId),
+                    true));
+            }
+            if (!snapshot.OrderBy(m => m.TenantId).SequenceEqual(
+                    latestEvidence.OrderBy(m => m.TenantId)))
+                return Denied("MEMBERSHIP_OR_ROLE_CHANGED_REAUTH_REQUIRED");
+
             return new Result(result.Code, result.CandidateTenantId, result.ValidTenantIds);
         }
         catch (OperationCanceledException) { throw; }

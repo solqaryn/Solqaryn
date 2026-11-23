@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV05 C03-01.M03.02: revalidacion de autoridad tras preferencia
+- CI del SHA original completo SUCCESS para checks pertinentes; nuevo defecto TOCTOU por revocacion de tenant/rol entre lecturas.
+- Doble lectura de usuario/membresias/roles/empresa, evidencia inmutable y denegacion segura; cuatro nuevos casos xUnit adversariales. No se concede JWT/RBAC.
+- Nuevo SHA requiere GitHub-hosted; MySQL/HTTP/DI/JWT real no certificado. Sigue VALIDANDO, A5 independiente, strict scope lock, solo dev.
+
 ## 2026-11-22 — DEV02 C15-04.M05.04 A118: denegacion RBAC despues de recarga
 - A117 exact-SHA ea090c14: GitHub-hosted 159/159 Chromium PASS, 0 FAIL/0 SKIP, API .NET 10 y MySQL 8.4.13 efimero JWT firmado, Scope Lock/V5/backend/frontend/seguridad SUCCESS.
 - A118 A0.92 comprueba que empresa B recibe HTTP 403 y que recargar /login no resucita branding privado en 320/390/768/1280/1440, sin mutaciones API ni overflow. Nuevo SHA pendiente de CI, 160 tests esperados; no afirmar PASS anticipado.

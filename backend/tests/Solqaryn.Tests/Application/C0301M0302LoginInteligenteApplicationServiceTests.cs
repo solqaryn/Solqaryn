@@ -18,7 +18,8 @@ public sealed class C0301M0302LoginInteligenteApplicationServiceTests
 
     private static (C0301LoginInteligenteApplicationService Service,
         Mock<IUsuarioRepository> Users,
-        Mock<IC0301ServerTenantPreferenceReader> Preference) Create(
+        Mock<IC0301ServerTenantPreferenceReader> Preference,
+        Mock<IEmpresaRepository> Companies, Mock<IRolRepository> Roles) Create(
         int[] tenants, int? preferred = null, Usuario? user = null)
     {
         user ??= User();
@@ -41,7 +42,7 @@ public sealed class C0301M0302LoginInteligenteApplicationServiceTests
         pref.Setup(x => x.ReadLastTenantIdAsync(user.Id, It.IsAny<CancellationToken>()))
             .ReturnsAsync(preferred);
         return (new(users.Object, companies.Object, roles.Object, pref.Object),
-            users, pref);
+            users, pref, companies, roles);
     }
 
     [Fact]
@@ -54,7 +55,7 @@ public sealed class C0301M0302LoginInteligenteApplicationServiceTests
         Assert.False(actual.IssuesJwt);
         Assert.False(actual.GrantsTenantAccess);
         t.Users.Verify(x => x.GetByNombreUsuarioAsync("demo"), Times.Once);
-        t.Users.Verify(x => x.GetEmpresasAsync(11), Times.Once);
+        t.Users.Verify(x => x.GetEmpresasAsync(11), Times.Exactly(2));
     }
 
     [Fact]
@@ -124,5 +125,61 @@ public sealed class C0301M0302LoginInteligenteApplicationServiceTests
         Assert.Equal("AUTHENTICATION_OR_MEMBERSHIP_SOURCE_UNAVAILABLE", actual.Code);
         Assert.DoesNotContain("confidential", actual.Code, StringComparison.OrdinalIgnoreCase);
         Assert.False(actual.IssuesJwt);
+    }
+
+    [Fact]
+    public async Task RevocationAfterPreferenceReadInvalidatesPreviouslyEligibleMembership()
+    {
+        var t = Create([10]);
+        var active = new UsuarioEmpresa(11, 10, 110);
+        var inactive = new UsuarioEmpresa(11, 10, 110);
+        inactive.Desactivar();
+        t.Users.SetupSequence(x => x.GetEmpresasAsync(11))
+            .ReturnsAsync(new List<UsuarioEmpresa> { active })
+            .ReturnsAsync(new List<UsuarioEmpresa> { inactive });
+        var actual = await t.Service.PrepareAsync("demo", Password);
+        Assert.Equal("MEMBERSHIP_OR_ROLE_CHANGED_REAUTH_REQUIRED", actual.Code);
+        Assert.Null(actual.CandidateTenantId);
+        Assert.False(actual.IssuesJwt);
+    }
+
+    [Fact]
+    public async Task TenantDeactivatedAfterInitialReadCannotSelectTenant()
+    {
+        var t = Create([10]);
+        var active = new Empresa("Tenant") { Id = 10 };
+        var inactive = new Empresa("Tenant") { Id = 10 };
+        inactive.Desactivar();
+        t.Companies.SetupSequence(x => x.GetByIdAsync(10, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(active).ReturnsAsync(inactive);
+        var actual = await t.Service.PrepareAsync("demo", Password);
+        Assert.Equal("MEMBERSHIP_OR_ROLE_CHANGED_REAUTH_REQUIRED", actual.Code);
+        Assert.Empty(actual.ValidTenantIds);
+    }
+
+    [Fact]
+    public async Task ActualCrossTenantRoleReadIsNotACandidate()
+    {
+        var t = Create([10]);
+        t.Roles.Setup(x => x.GetByIdAsync(110)).ReturnsAsync(
+            new Rol { Id = 110, EmpresaId = 20,
+                Activo = true, Ambito = AmbitoAutorizacion.Empresa });
+        var actual = await t.Service.PrepareAsync("demo", Password);
+        Assert.Equal("NO_VALID_ENTERPRISE_MEMBERSHIP", actual.Code);
+        Assert.Null(actual.CandidateTenantId);
+    }
+
+    [Fact]
+    public async Task AccountBlockedAfterPasswordValidationCannotSelectTenant()
+    {
+        var u = User();
+        var blocked = new Usuario { Id = u.Id, NombreUsuario = u.NombreUsuario,
+            PasswordHash = u.PasswordHash, Activo = true, Bloqueado = true };
+        var t = Create([10], user: u);
+        t.Users.SetupSequence(x => x.GetByIdAsync(u.Id))
+            .ReturnsAsync(u).ReturnsAsync(blocked);
+        var actual = await t.Service.PrepareAsync("demo", Password);
+        Assert.Equal("MEMBERSHIP_OR_ROLE_CHANGED_REAUTH_REQUIRED", actual.Code);
+        Assert.False(actual.GrantsTenantAccess);
     }
 }
