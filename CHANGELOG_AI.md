@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV02 C15-04.M05.04 A117: JWT adulterado denegado en branding
+- A116 GitHub-hosted exact-SHA 9f2eb909: 158/158 Chromium PASS con JWT real, MySQL 8.4.13 efímero, Scope Lock/V5/frontend/backend/security SUCCESS; SKIPPED opcionales no cuentan.
+- A117 añade A0.91 con login real, firma JWT alterada, rechazo HTTP 401/403, guard Angular /login, ausencia de branding privado, cero mutaciones API y cinco anchos. Esperados 159 casos; nuevo SHA requiere CI.
+- Test-only y documentación bajo WIP y V17 lock propio, sin declarar LISTO/A5 ni UX global, zoom nativo, QA/main/PROD.
+
 ## 2026-11-22 — DEV03 rescate C01-03.M04.05: reflow del título, palabra entera a texto 200% (R2)
 - Defecto causal real desde artefacto GHA 14781051271: en 320 px y texto raíz 200% el H1 rompía «Configuración» arbitrariamente por overflow-wrap heredado y mínimo 1.55rem; owner histórico DEV04 conservado.
 - Corrección Angular mobile localizada a <=390 px con tipografía fluida bajo el ajuste de texto del usuario, palabras intactas y breadcrumb protegido; regression Playwright Range.getClientRects en JWT A/B, cinco anchos, 100%/raíz 200%, sin mocks de autorización.

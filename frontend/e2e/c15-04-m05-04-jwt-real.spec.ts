@@ -3347,4 +3347,54 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     expect(mutaciones, 'Navegacion no cambia datos de API').toEqual([]);
   });
 
+
+
+  // A117/A0.91: el privilegio global no deriva de un JWT con firma adulterada.
+  // API y guard reales, sin route mocks ni alteraciones del runtime.
+  test('A0.91 - branding rechazo JWT adulterado cinco anchos', async ({ page, request }) => {
+    test.setTimeout(180_000);
+    const mutaciones: string[] = [];
+    page.on('request', peticion => {
+      if (peticion.url().includes('localhost:5005') &&
+          /^(POST|PUT|PATCH|DELETE)$/.test(peticion.method()) &&
+          !new URL(peticion.url()).pathname.endsWith('/auth/login')) {
+        mutaciones.push(peticion.method() + ' ' + new URL(peticion.url()).pathname);
+      }
+    });
+    for (const ancho of [320, 390, 768, 1280, 1440]) {
+      await page.setViewportSize({ width: ancho, height: 840 });
+      const jwt = await ingresar(page, 'c1504_platform_only');
+      const control = await request.get(api + '/plataforma/sesion', {
+        headers: { Authorization: 'Bearer ' + jwt }
+      });
+      expect(control.status(), 'JWT global valido antes de adulterar').toBe(200);
+      const partes = jwt.split('.');
+      expect(partes).toHaveLength(3);
+      const firma = partes[2]!;
+      expect(firma.length).toBeGreaterThan(8);
+      const firmaFalsa = (firma[0] === 'A' ? 'B' : 'A') + firma.slice(1);
+      const falso = [partes[0], partes[1], firmaFalsa].join('.');
+      const rechazo = await request.get(api + '/plataforma/sesion', {
+        headers: { Authorization: 'Bearer ' + falso }
+      });
+      expect([401, 403], 'Firma adulterada rechazada por API real')
+        .toContain(rechazo.status());
+      await page.evaluate(token => localStorage.setItem('solqaryn_token', token), falso);
+      await page.goto('/plataforma/capacidades-branding-v19');
+      await expect(page).toHaveURL(/\/login(?:\?|$)/);
+      await expect(page.getByRole('heading', {
+        level: 1, name: 'Branding y capacidades permitidas'
+      }), 'Sin contenido privado tras rechazo JWT').toHaveCount(0);
+      const dimension = await page.evaluate(() => ({
+        html: document.documentElement.scrollWidth,
+        body: document.body.scrollWidth,
+        viewport: window.innerWidth
+      }));
+      expect(Math.max(dimension.html, dimension.body),
+        'Sin overflow en pantalla denegada ' + ancho)
+        .toBeLessThanOrEqual(dimension.viewport + 2);
+    }
+    expect(mutaciones, 'JWT adulterado no permite mutaciones API').toEqual([]);
+  });
+
 });
