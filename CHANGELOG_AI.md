@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV05 V27 C01-03.M04.04: ejecutar regression real de revocacion en CI
+- Integra la nueva suite Vitest dirigida del formulario tenant al workflow GitHub-hosted existente antes de Chromium; exige verificaciones positivas/negativas de permiso reactivo y respuesta tardia, sin desactivar los tests E2E de JWT/MySQL 8.4.
+- No acredita PASS hasta CI exact-SHA COMPLETED SUCCESS; la aceptacion V23 de zoom nativo/baseline y la A5 independiente siguen pendientes, H=VALIDANDO sin QA/main/PROD.
+
 ## 2026-11-23 — DEV05 V27 C01-03.M04.04: revocar edicion en formulario tenant ya montado
 - Corrige P2/R2 de Angular: la capacidad Configuracion:Editar ahora se deriva reactivamente de permisos del tenant verificado; al perder permiso se deshabilita el formulario montado, se rechaza un nuevo PUT y no se anuncia éxito de una respuesta en vuelo.
 - Añade dos pruebas Vitest adversariales de revocación, reactivación explícita e in-flight success sin toast; Auth JWT/SQL del servidor no se modifica. Pruebas unitarias y CI exact-SHA pendientes de ejecución; V23 zoom nativo/ANTES sin certificar, H=VALIDANDO, A5 independiente y QA/main/PROD prohibidos.

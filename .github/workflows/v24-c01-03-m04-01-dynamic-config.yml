@@ -167,6 +167,10 @@ jobs:
           npm ci
           npm run lint
           npm run build:prod
+      # Targeted Angular Vitest regression, before browser E2E and without JWT/MySQL mocks.
+      - name: Vitest formulario tenant - revocacion reactiva y respuesta tardia
+        working-directory: frontend
+        run: npx ng test --watch=false --include=src/app/features/configuracion/empresa-configuracion-tenant-card.component.spec.ts
       - name: Instalar Chromium
         working-directory: frontend
         run: npx playwright install --with-deps chromium
