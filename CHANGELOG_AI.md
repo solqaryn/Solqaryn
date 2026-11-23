@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV01 V30 C07-01.M06.06: lectura aislada de marcas en API
+- Runtime ASP.NET Core 10: piloto privado `GET /marcas`, `/marcas/activas`, `/marcas/{id}` con JWT firmado, selector de tenant verificado por backend, permiso relacional `Marcas.Ver` y consultas Oracle EF sobre EmpresaId en MySQL; OFF por defecto, prohibidas mutaciones.
+- En `C0701M0606ProductosRealHttpMysql84Tests` se agregan casos reales A/B, 200 propio, 404 ajeno, 503 spoof/revocación/piloto OFF; se elimina únicamente la expectativa obsoleta de GET impuestos=503, reemplazada por positivos fiscales del mismo spec, manteniendo las pruebas físicas de no-mutate impuestos.
+- Evidencia: commit funcional eec32040973f692a69e3a3a455ed77f52478b29c; corrección de integridad histórica del CHANGELOG 6bfc8d8ccab61211ac156b57ed494c5bd763402b. CI exact-SHA y A0–A4 de fase no certificadas hasta readback. WIP C07-01.M06.06 permanece EN_PROGRESO, owner DEV01, candado 2000001045; sin LISTO/A5, QA/main/PROD. Reversión únicamente vía commit correctivo FF/CAS.
+
 ## 2026-11-23 — DEV01 V30 C07-01.M06.06: GET fiscal positivo bajo piloto existente
 - Runtime: permite exclusivamente GET de impuestos y detalle positivo por JWT, Impuestos.Ver y tenant SQL verificado mediante piloto OFF por defecto. Oracle EF ya define EmpresaId shadow; sin migraciones ni mutaciones fiscales, sin tocar producción.
 - Suite dirigida ampliada con MySQL 8.4 real tenant A/B, HTTP propio y ajeno, revocación RBAC y guard de selector; GitHub-hosted del nuevo SHA requerido, ningún PASS anticipado.
