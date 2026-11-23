@@ -3279,4 +3279,72 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
   }
 
 
+
+  // A116/A0.90: Tab y Enter reales sobre CTA de branding autenticado.
+  // Capturas pre-foco/foco de la misma corrida; no es zoom nativo 200% ni before historico.
+  test('A0.90 - branding accesible teclado real JWT cinco anchos', async ({ page, request }) => {
+    test.setTimeout(180_000);
+    const jwt = await ingresarConJwtRealParaGuard(page, request, 'c1504_platform_only');
+    const autorizado = await request.get(api + '/plataforma/sesion', {
+      headers: { Authorization: 'Bearer ' + jwt }
+    });
+    expect(autorizado.status(), 'JWT global real aprobado').toBe(200);
+    const mutaciones: string[] = [];
+    page.on('request', req => {
+      if (req.url().includes('localhost:5005') &&
+          /^(POST|PUT|PATCH|DELETE)$/.test(req.method())) {
+        mutaciones.push(req.method() + ' ' + new URL(req.url()).pathname);
+      }
+    });
+    for (const ancho of [320, 390, 768, 1280, 1440]) {
+      await page.setViewportSize({ width: ancho, height: 840 });
+      const sesion = page.waitForResponse(res =>
+        res.url().includes('/plataforma/sesion') && res.request().method() === 'GET');
+      const respuesta = await page.goto('/plataforma/capacidades-branding-v19');
+      expect(respuesta?.status(), 'Ruta Angular real').toBe(200);
+      expect((await sesion).status(), 'API JWT real').toBe(200);
+      const retorno = page.getByRole('link', { name: 'Volver a plataforma' });
+      await expect(retorno).toBeVisible();
+      if (ancho === 320 || ancho === 1440) {
+        await page.screenshot({
+          path: 'test-results/c1504-a116-branding-' + ancho + '-antes-tab.png',
+          fullPage: true
+        });
+      }
+      let focoNatural = false;
+      for (let intento = 0; intento < 80; intento++) {
+        await page.keyboard.press('Tab');
+        if (await retorno.evaluate(el => document.activeElement === el)) {
+          focoNatural = true;
+          break;
+        }
+      }
+      expect(focoNatural, 'Tab real alcanza link a ' + ancho).toBe(true);
+      const anillo = await retorno.evaluate(el => ({
+        estilo: getComputedStyle(el).outlineStyle,
+        ancho: parseFloat(getComputedStyle(el).outlineWidth)
+      }));
+      expect(anillo.estilo, 'Contorno visible al teclado').not.toBe('none');
+      expect(anillo.ancho, 'Contorno de foco >=2px').toBeGreaterThanOrEqual(2);
+      if (ancho === 320 || ancho === 1440) {
+        await page.screenshot({
+          path: 'test-results/c1504-a116-branding-' + ancho + '-foco-tab.png',
+          fullPage: true
+        });
+      }
+      const navegacion = page.waitForURL(url => url.pathname === '/plataforma');
+      await page.keyboard.press('Enter');
+      await navegacion;
+      await expect(page).toHaveURL(url => url.pathname === '/plataforma');
+      const dimensiones = await page.evaluate(() => ({
+        html: document.documentElement.scrollWidth,
+        body: document.body.scrollWidth,
+        viewport: window.innerWidth
+      }));
+      expect(Math.max(dimensiones.html, dimensiones.body),
+        'Retorno no produce overflow global').toBeLessThanOrEqual(dimensiones.viewport + 2);
+    }
+    expect(mutaciones, 'Navegacion no cambia datos de API').toEqual([]);
+  });
+
 });

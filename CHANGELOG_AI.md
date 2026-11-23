@@ -1,3 +1,9 @@
+## 2026-11-22 — DEV02 C15-04.M05.04 A116: Tab real y foco visible en branding JWT
+- A115 SHA 5f848bd0: CI GitHub-hosted Chromium/MySQL8.4 completó SUCCESS; checks causales de seguridad/Scope Lock/V5/frontend/backend PASS; retries opcionales SKIPPED no se consideran PASS.
+- A116 añade A0.90: enlace privado «Volver a plataforma» alcanzado con Tab real, anillo de foco >=2px, Enter y navegación, cinco anchos, cero mutaciones HTTP y capturas antes/foco del mismo run. Esperados 158 tests; CI nueva por SHA pendiente.
+- Solo Playwright, documento y CHANGELOG, bajo WIP y candado V17 preexistentes. Sin runtime JWT/RBAC, base de datos, nuevos claims ni efectos en QA/main/PROD.
+- Global UX ~160 rutas, zoom nativo 200%, WCAG/CWV de campo, A0-A4 integral y A5 independiente siguen pendientes; no declarar LISTO.
+
 ## 2026-11-22 — DEV03 C01-03.M04.01: capturas persistentes de CI GitHub-hosted
 - Defecto nuevo confirmado: el artefacto 14776156811, run 45077510405, contenía logs/XML, pero ningún PNG de la primera suite A/B; la segunda invocación Playwright reinicializa test-results antes del empaquetado.
 - Corrección R2 del workflow, sin tocar runtime ni seguridad: preservar 20 capturas Chromium auténticas de dos tenants × cinco anchos × dos modalidades (100% y CDP pinch 200%), comprobar existencia, tamaño, MIME image/png y SHA256SUMS antes de segunda suite y subirlas en carpeta independiente.
