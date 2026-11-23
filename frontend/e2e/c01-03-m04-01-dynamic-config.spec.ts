@@ -141,22 +141,30 @@ test.describe('V24 C01-03.M04.01 private configuration tenant A/B', () => {
     await expect(page.locator('app-empresa-configuracion-tenant-card')).toBeVisible();
   });
 
-  test('A0.98 - JWT tenant A cannot read B permissions or B configuration', async ({ page }) => {
+  test('A0.98 - JWT tenant A cannot read B permissions or B configuration', async ({ page, browser }) => {
     const jwtA = await login(page, 'c1504_admin_a');
-    const jwtB = await login(page, 'c1504_admin_b');
-    for (const endpoint of ['/permisos/mis-permisos/empresa/2', '/empresa-configuracion/tenant/2']) {
-      // B's real 200 prevents a false negative from an endpoint missing in CI.
-      const ownB = await page.request.get(api + endpoint, {
-        headers: { Authorization: 'Bearer ' + jwtB }
-      });
-      expect(ownB.status(), 'Actual tenant B endpoint exists: ' + endpoint).toBe(200);
+    // A's authenticated Angular session redirects /login and detaches its password form.
+    // Authenticate tenant B in a separate BrowserContext; preserve both signed JWTs.
+    const tenantBContext = await browser.newContext();
+    try {
+      const tenantBPage = await tenantBContext.newPage();
+      const jwtB = await login(tenantBPage, 'c1504_admin_b');
+      for (const endpoint of ['/permisos/mis-permisos/empresa/2', '/empresa-configuracion/tenant/2']) {
+        // A real tenant-B 200 rules out a missing endpoint as a false security PASS.
+        const ownB = await tenantBPage.request.get(api + endpoint, {
+          headers: { Authorization: 'Bearer ' + jwtB }
+        });
+        expect(ownB.status(), 'Actual tenant B endpoint exists: ' + endpoint).toBe(200);
 
-      const cross = await page.request.get(api + endpoint, {
-        headers: { Authorization: 'Bearer ' + jwtA, 'X-Empresa-Id': '2' }
-      });
-      expect([403, 404], 'Cross-tenant access denied: ' + endpoint).toContain(cross.status());
-      const body = await cross.text();
-      expect(body, 'Denial must not leak tenant B identity').not.toContain('Empresa B efimera C15');
+        const cross = await page.request.get(api + endpoint, {
+          headers: { Authorization: 'Bearer ' + jwtA, 'X-Empresa-Id': '2' }
+        });
+        expect([403, 404], 'Cross-tenant access denied: ' + endpoint).toContain(cross.status());
+        const body = await cross.text();
+        expect(body, 'Denial must not leak tenant B identity').not.toContain('Empresa B efimera C15');
+      }
+    } finally {
+      await tenantBContext.close();
     }
   });
 
