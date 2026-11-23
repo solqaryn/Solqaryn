@@ -150,4 +150,24 @@ describe('C01-03.M04.04 - permisos reactivos en formulario tenant', () => {
     expect(service.updateTenant).toHaveBeenCalledTimes(1);
   });
 
+  it('rejects HTTP 200 success=false receipts even when they claim the active tenant', () => {
+    const component = create();
+    component.guardar();
+    expect(service.updateTenant).toHaveBeenCalledTimes(1);
+    mutation.next({
+      success: false,
+      data: { ...config, nombre: 'UNVERIFIED_SERVER_RECEIPT', version: 99 },
+      message: 'PRIVATE_SQL_JWT_TENANT_B'
+    });
+    mutation.complete();
+    TestBed.tick();
+
+    expect(component.loadState()).toBe('unconfirmed');
+    expect(component.lastSaved()).toBe(false);
+    expect(component.form.controls.nombre.value).toBe('Tenant A');
+    expect(snackBar.open).not.toHaveBeenCalled();
+    component.guardar();
+    expect(service.updateTenant).toHaveBeenCalledTimes(1);
+  });
+
 });

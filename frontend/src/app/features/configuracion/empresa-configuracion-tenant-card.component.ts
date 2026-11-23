@@ -278,7 +278,14 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
           this.loadState.set('forbidden');
           return;
         }
-        if (!res?.data || res.data.empresaId !== empresaId) {
+        // HTTP 200 alone cannot prove a successful write; reject an unsuccessful
+        // API envelope even if it contains a plausible same-tenant payload.
+        if (res?.success !== true) {
+          this.loadState.set('unconfirmed');
+          this.lastSaved.set(false);
+          return;
+        }
+        if (!res.data || res.data.empresaId !== empresaId) {
           this.loadState.set('invalid');
           return;
         }
@@ -313,7 +320,14 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
         }
         // A successful HTTP response cannot authorize data from another tenant.
         // Deny malformed/foreign mutation receipts before rendering a success toast.
-        if (!res?.data || res.data.empresaId !== empresaId) {
+        // HTTP 200 alone cannot prove a successful write; reject an unsuccessful
+        // API envelope even if it contains a plausible same-tenant payload.
+        if (res?.success !== true) {
+          this.loadState.set('unconfirmed');
+          this.lastSaved.set(false);
+          return;
+        }
+        if (!res.data || res.data.empresaId !== empresaId) {
           this.loadState.set('invalid');
           return;
         }
@@ -343,7 +357,14 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
           return;
         }
         // Logo deletion must obey the same tenant-bound response contract.
-        if (!res?.data || res.data.empresaId !== empresaId) {
+        // HTTP 200 alone cannot prove a successful write; reject an unsuccessful
+        // API envelope even if it contains a plausible same-tenant payload.
+        if (res?.success !== true) {
+          this.loadState.set('unconfirmed');
+          this.lastSaved.set(false);
+          return;
+        }
+        if (!res.data || res.data.empresaId !== empresaId) {
           this.loadState.set('invalid');
           return;
         }

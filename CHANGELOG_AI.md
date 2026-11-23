@@ -1,3 +1,9 @@
+## 2026-11-23 — DEV05 C01-03.M04.04: impedir confirmación falsa en HTTP 200 sin éxito de API
+
+- Corrección funcional Angular del formulario de tenant: PUT, POST y DELETE de configuración/logo ya no aceptan recibos con `ApiResponse.success=false` aunque respondan HTTP 200 y empresaId coincida. El estado queda `unconfirmed` y solicita recarga, sin aplicar versión ni anunciar éxito.
+- Se conserva el aislamiento tenant, los guards de permiso, el manejo existente 401/403/404/429/5xx y la prevención de doble envío. Prueba adversarial unitaria para recibo aparentemente válido pero negado; documentación del alcance R2 en `docs/v5/c01-03-m04-04-formularios-doble-accion.md`.
+- A0: diff limitado a componente, prueba, documento y CHANGELOG con historial intacto; A1–A4 y evidencia GitHub-hosted exact-SHA pendientes hasta concluir checks; A5 independiente, zoom nativo Chrome 200% y captura genuina ANTES pendientes. No se atribuyen PASS, LISTO ni QA/main/PROD.
+
 ## 2026-11-23 — DEV04 C03-01.M03.03: reparación causal de diez fixtures heredados de login/refresh
 
 - El CI de `ec571ee6` ejecutó 6,553 xUnit: 6,543 PASS, 10 FAIL, 0 SKIP. Fallos en I8001A/C/D/E, I8005D e I8009C: sus fixtures positivos usaban roles empresariales sin marca de plantilla y sin ninguna membresía; `AuthService` ahora exige autoridad SQL vigente.
