@@ -45,8 +45,9 @@ public sealed class C0301M0303LoginVerifiedActorSourceTests
     private static async Task<Fixture> SetupAsync(
         bool enabled = true, string tenantRoute = "11", string branchRoute = "111",
         bool grant = true, int scopeTenant = Tenant, int scopeRole = Role,
-        int roleTenant = Tenant, int branchTenant = Tenant,
-        string? token = null, bool branchActive = true)
+        int? roleTenant = Tenant, int branchTenant = Tenant,
+        string? token = null, bool branchActive = true,
+        bool roleIsSystem = false)
     {
         var services = new ServiceCollection();
         services.AddLogging();
@@ -85,6 +86,7 @@ public sealed class C0301M0303LoginVerifiedActorSourceTests
         database.Roles.Add(new Rol
         {
             Id = Role, Nombre = "LoginReader", EmpresaId = roleTenant,
+            EsSistema = roleIsSystem,
             Ambito = AmbitoAutorizacion.Empresa, Activo = true
         });
         database.Set<Sucursal>().Add(new Sucursal
@@ -185,6 +187,38 @@ public sealed class C0301M0303LoginVerifiedActorSourceTests
         Assert.Null(await wrongRole.Reader.ReadCurrentAsync(CancellationToken.None));
         await using var closedBranch = await SetupAsync(branchActive: false);
         Assert.Null(await closedBranch.Reader.ReadCurrentAsync(CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task CurrentTenantMayUseActiveSharedEnterpriseRoleTemplateWithoutGrantingAccess()
+    {
+        // Core UsuarioScopeService accepts EmpresaId=null ONLY for a system
+        // enterprise template. The DEV JWT/branch probe must agree.
+        await using var f = await SetupAsync(roleTenant: null, roleIsSystem: true);
+        var result = await f.Reader.ReadCurrentAsync(CancellationToken.None);
+
+        Assert.NotNull(result);
+        Assert.Equal(Role, result!.RoleId);
+        Assert.Equal(Tenant, result.TenantId);
+        Assert.True(result.SignedJwtValidated);
+        Assert.True(result.CurrentMembershipAndRbacFromDatabase);
+        Assert.False(result.IssuesJwt);
+        Assert.False(result.GrantsTenantAccess);
+        Assert.False(result.GrantsPlatformAccess);
+    }
+
+    [Fact]
+    public async Task UnownedNonTemplateRoleIsNeverAcceptedAsSharedEnterpriseGrant()
+    {
+        await using var f = await SetupAsync(roleTenant: null, roleIsSystem: false);
+        Assert.Null(await f.Reader.ReadCurrentAsync(CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task ForeignOwnedSystemRoleDoesNotCrossTenantDespiteTemplateFlag()
+    {
+        await using var f = await SetupAsync(roleTenant: 22, roleIsSystem: true);
+        Assert.Null(await f.Reader.ReadCurrentAsync(CancellationToken.None));
     }
 
     [Fact]

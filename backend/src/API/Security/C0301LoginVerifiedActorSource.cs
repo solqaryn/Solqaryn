@@ -83,7 +83,9 @@ public sealed class C0301LoginVerifiedActorSource(
             {
                 var role = await database.Roles.IgnoreQueryFilters().AsNoTracking()
                     .AnyAsync(r => r.Id == roleId && r.Activo && !r.Eliminado &&
-                        r.Ambito == AmbitoAutorizacion.Empresa && r.EmpresaId == tenantId && !r.EsSistema, cancellationToken);
+                        r.Ambito == AmbitoAutorizacion.Empresa &&
+                        (r.EmpresaId == tenantId ||
+                         (r.EmpresaId == null && r.EsSistema)), cancellationToken);
                 cancellationToken.ThrowIfCancellationRequested();
                 if (!role)
                     return false;

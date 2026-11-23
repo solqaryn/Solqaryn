@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV04 C03-01.M03.03: rol de plantilla empresarial compartida en validación JWT
+- Reparación R2 del lector DEV-only, firmado y de solo lectura: al verificar rol empresarial se admite rol propio del tenant o plantilla de sistema sin propietario; coincide con el contrato de dominio Rol.EsAsignableAEmpresa y con UsuarioScopeService. Mantiene JWT real, sucursal/permiso activos, revocación, denegación cross-tenant, sin tokens ni grants.
+- Tres pruebas xUnit adversariales: plantilla válida con membresía/rol de sucursal actual, rol huérfano NO-plantilla rechazado y rol de sistema de empresa ajena rechazado; no se alteran esquemas, rutas productivas ni componentes Angular.
+- CI GitHub-hosted exact-SHA requerida antes de A0–A4: xUnit/Release, seguridad, Scope Lock, V5 y MySQL 8.4/JWT HTTP según causa; SKIPPED no equivale a PASS. La emisión/renovación real y el cambio productivo de tenant todavía no están integrados; C03-01.M03.03 sigue VALIDANDO con autor DEV04, A5 independiente pendiente. Rollback mediante revert FF en dev; no QA/main/PROD.
+
 ## 2026-11-23 — DEV02 C15-04.M05.04: A123 reflow real de texto 200%
 - CI anterior d03c16c4 run45163904603/job137655864480: 162 PASS y 1 FAIL A0.95 (324px/320). Artefacto 14813588446: test CSS zoom2 más 50% ancho generaba captura artificial 324x34024px, no representa reflow real.
 - Nuevo A0.95 evalúa texto raíz al 200% manteniendo ancho natural, cinco viewports, pantallas comparativas 320/1440, GET autenticado JWT/MySQL8.4 y 0 mutaciones; no relaja la aserción anti-overflow. A1–A4 CI exact SHA pendientes; zoom nativo, WCAG/CWV global, 160 rutas, A5 independiente no certificados. EN_PROGRESO owner DEV02/V17 lock conservados; sin QA/main/PROD.
