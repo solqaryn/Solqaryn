@@ -164,7 +164,7 @@ jobs:
               echo "N03_FAIL=$label" >&2
               diagnose
               exit 1
-            fi"
+            fi
             printf 'N03_ASSERT=%s EXPECTED=%s ACTUAL=%s\n' "$label" "$expected" "$actual"
             if [ "$actual" != "$expected" ]; then
               echo "N03_FAIL=$label" >&2
