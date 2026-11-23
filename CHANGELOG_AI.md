@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV06 C14-02.M06.06: BOLA y ramas independientes en CI (R2)
+- Nuevo fallo causal de evidencia: la proyección MySQL de `ServerBranchId` y `OwnerBranchId` utilizaba la misma columna, ocultando ramas cruzadas con JWT firmado; se separan `AuthorityBranchId` y `BranchId`, preservando SQL efímero, Category=Integration y esquema de outage.
+- La prueba adversarial deniega la misma clave con dueño tenant ajeno y deniega lectura/escritura-preflight de rama ajena; recupera el 200 únicamente como `AUTHENTICATED_SECURITY_ACCEPTANCE_ADAPTER_REQUIRED`. No certifica API productiva, acceso, JWT/RBAC real del producto, A0-A4 global ni A5; mantener C14-02.M06.06 VALIDANDO.
+- Publicación propuesta con CAS fast-forward al HEAD exacto y nueva CI GitHub-hosted. Un resultado queued/in_progress/failed no es PASS; verificar TRX 2/2 y Scope Lock/V5/backend/seguridad antes de actualizar evidencia y conservar el historial intacto.
+
 ## 2026-11-23 - DEV05 C03-03.M03.03: CI CS0182 en atributos xUnit (V25)
 - Evidencia GitHub-hosted SHA a7965d91: Backend Release, multiempresa, autorización y otros jobs fallaron con CS0182 en las tres InlineData, que exigen expresiones constantes. Falla causal del test nuevo, no se atribuye a servicios productivos.
 - Corrección mínima: InlineData usa literales de ambiente Production/Staging/Development; los tres casos de denegación/registro permanecen y el helper DEV-only de Program no cambia. CI exact-SHA nueva requerida; ningún FAILED ni QUEUED se computa PASS.

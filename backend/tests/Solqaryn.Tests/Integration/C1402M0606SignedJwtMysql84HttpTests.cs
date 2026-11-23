@@ -60,7 +60,7 @@ public sealed class C1402M0606SignedJwtMysql84HttpTests
             await db.OpenAsync(cancellationToken);
             await using var command = db.CreateCommand();
             command.CommandText = $"""
-                SELECT TenantId,OwnerTenantId,BranchId,HostTenantId,
+                SELECT TenantId,OwnerTenantId,AuthorityBranchId,BranchId,HostTenantId,
                        MemberActive,GrantActive,SessionActive,AuditActive,
                        Revoked,LinkExpired,ServiceActive,ServiceGrantActive,IdempotencyActive
                 FROM {table} WHERE ActorId=@actor AND ResourceKey=@resource
@@ -73,14 +73,14 @@ public sealed class C1402M0606SignedJwtMysql84HttpTests
             var tenant = rows.GetInt32(0);
             var authority = new V5SecurityAcceptanceDomainRules.VerifiedAuthority(
                 actor, tenant, rows.GetInt32(2), Sha,
-                true, true, Flag(4), Flag(5), Flag(5), Flag(10), Flag(11));
+                true, true, Flag(5), Flag(6), Flag(6), Flag(11), Flag(12));
             var target = new V5SecurityAcceptanceDomainRules.PersistedTarget(
-                rows.GetInt32(1), rows.GetInt32(2), rows.GetInt32(3),
-                true, true, Flag(8), Flag(9));
+                rows.GetInt32(1), rows.GetInt32(3), rows.GetInt32(4),
+                true, true, Flag(9), Flag(10));
             var attempt = new V5SecurityAcceptanceDomainRules.Attempt(
-                surface, null, Sha, false, false, Flag(12));
-            return new(resourceKey, Sha, true, Flag(6), Flag(4), Flag(5),
-                Flag(7), "git-proof:c1402-isolated-mysql", authority, target, attempt);
+                surface, null, Sha, false, false, Flag(13));
+            return new(resourceKey, Sha, true, Flag(7), Flag(5), Flag(6),
+                Flag(8), "git-proof:c1402-isolated-mysql", authority, target, attempt);
         }
     }
 
@@ -179,6 +179,7 @@ public sealed class C1402M0606SignedJwtMysql84HttpTests
                 ResourceKey VARCHAR(96) NOT NULL,
                 TenantId INT NOT NULL,
                 OwnerTenantId INT NOT NULL,
+                AuthorityBranchId INT NOT NULL,
                 BranchId INT NOT NULL,
                 HostTenantId INT NOT NULL,
                 MemberActive BOOLEAN NOT NULL,
@@ -197,8 +198,8 @@ public sealed class C1402M0606SignedJwtMysql84HttpTests
         {
             await ExecuteAsync(connection, $"""
                 INSERT INTO {table} VALUES
-                (101,'resource-A',11,11,7,11,1,1,1,1,0,0,0,0,0),
-                (202,'resource-B',22,22,8,22,1,1,1,1,0,0,0,0,0)
+                (101,'resource-A',11,11,7,7,11,1,1,1,1,0,0,0,0,0),
+                (202,'resource-B',22,22,8,8,22,1,1,1,1,0,0,0,0,0)
                 """);
             using var host = await StartAsync(connection, table);
             using var client = host.GetTestClient();
@@ -224,6 +225,35 @@ public sealed class C1402M0606SignedJwtMysql84HttpTests
                 Assert.Equal(HttpStatusCode.OK, other.StatusCode);
             using (var spoof = await RequestAsync(client, "resource-A", read, a, spoof: true))
                 Assert.Equal(HttpStatusCode.Forbidden, spoof.StatusCode);
+
+            // Same actor and same resource key: ownership must come from a
+            // distinct persisted tenant column, not from the signed JWT.
+            await ExecuteAsync(connection,
+                $"UPDATE {table} SET OwnerTenantId=22 WHERE ActorId=101");
+            using (var foreignOwner = await RequestAsync(client, "resource-A", read, a))
+                Assert.Equal(HttpStatusCode.Forbidden, foreignOwner.StatusCode);
+            await ExecuteAsync(connection,
+                $"UPDATE {table} SET OwnerTenantId=11 WHERE ActorId=101");
+
+            // AuthorityBranchId and resource BranchId were previously the
+            // SAME SQL column, masking cross-branch BOLA even with valid JWT.
+            await ExecuteAsync(connection,
+                $"UPDATE {table} SET BranchId=8 WHERE ActorId=101");
+            using (var crossBranchRead = await RequestAsync(client, "resource-A",
+                V5SecurityAcceptanceDomainRules.Surface.BranchRead, a))
+                Assert.Equal(HttpStatusCode.Forbidden, crossBranchRead.StatusCode);
+            using (var crossBranchWritePreflight = await RequestAsync(client, "resource-A",
+                V5SecurityAcceptanceDomainRules.Surface.BusinessWrite, a))
+                Assert.Equal(HttpStatusCode.Forbidden, crossBranchWritePreflight.StatusCode);
+            await ExecuteAsync(connection,
+                $"UPDATE {table} SET BranchId=7 WHERE ActorId=101");
+            using (var ownBranch = await RequestAsync(client, "resource-A",
+                V5SecurityAcceptanceDomainRules.Surface.BranchRead, a))
+            {
+                Assert.Equal(HttpStatusCode.OK, ownBranch.StatusCode);
+                Assert.Equal("AUTHENTICATED_SECURITY_ACCEPTANCE_ADAPTER_REQUIRED",
+                    await ownBranch.Content.ReadAsStringAsync());
+            }
 
             foreach (var column in new[] { "SessionActive", "MemberActive", "GrantActive", "AuditActive" })
             {
@@ -299,7 +329,7 @@ public sealed class C1402M0606SignedJwtMysql84HttpTests
                 command.Transaction = tx;
                 command.CommandText = $"""
                     INSERT INTO {table} VALUES
-                    (101,'resource-rollback',11,11,7,11,1,1,1,1,0,0,0,0,0)
+                    (101,'resource-rollback',11,11,7,7,11,1,1,1,1,0,0,0,0,0)
                     """;
                 await command.ExecuteNonQueryAsync();
                 await tx.RollbackAsync();
@@ -329,6 +359,7 @@ public sealed class C1402M0606SignedJwtMysql84HttpTests
                 ResourceKey VARCHAR(96) NOT NULL,
                 TenantId INT NOT NULL,
                 OwnerTenantId INT NOT NULL,
+                AuthorityBranchId INT NOT NULL,
                 BranchId INT NOT NULL,
                 HostTenantId INT NOT NULL,
                 MemberActive BOOLEAN NOT NULL,
@@ -347,7 +378,7 @@ public sealed class C1402M0606SignedJwtMysql84HttpTests
         {
             await ExecuteAsync(connection, $"""
                 INSERT INTO {table} VALUES
-                (101,'resource-A',11,11,7,11,1,1,1,1,0,0,0,0,0)
+                (101,'resource-A',11,11,7,7,11,1,1,1,1,0,0,0,0,0)
                 """);
             using var host = await StartAsync(connection, table);
             using var client = host.GetTestClient();
