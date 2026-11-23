@@ -1,3 +1,4 @@
+using System.Globalization;
 using Solqaryn.Application.Common;
 using Solqaryn.Application.AutomationV5;
 using Solqaryn.Application.Interfaces;
@@ -70,6 +71,26 @@ public sealed class TenantContextController : ControllerBase
         });
     }
 
+    // C03-01.M03.03: bind the server-issued tenant context to the original
+    // authenticated JWT actor and role, not to client-provided identifiers.
+    private bool TryCanonicalJwtAuthority(out int actorId, out int roleId)
+    {
+        actorId = 0;
+        roleId = 0;
+        if (User.Identity?.IsAuthenticated != true) return false;
+        var actorClaims = User.FindAll("id").ToArray();
+        var roleClaims = User.FindAll("rolId").ToArray();
+        return actorClaims.Length == 1 && roleClaims.Length == 1 &&
+            CanonicalPositiveId(actorClaims[0].Value, out actorId) &&
+            CanonicalPositiveId(roleClaims[0].Value, out roleId);
+    }
+
+    private static bool CanonicalPositiveId(string raw, out int id) =>
+        int.TryParse(raw, NumberStyles.None, CultureInfo.InvariantCulture, out id) &&
+        id > 0 &&
+        string.Equals(raw, id.ToString(CultureInfo.InvariantCulture),
+            StringComparison.Ordinal);
+
     [HttpGet("{empresaId:int}")]
     public async Task<IActionResult> Obtener(
         int empresaId,
@@ -81,11 +102,15 @@ public sealed class TenantContextController : ControllerBase
                 "El identificador de empresa no es válido."));
         }
 
+        if (!TryCanonicalJwtAuthority(out var jwtActor, out var jwtRole))
+            return Unauthorized(ApiResponse<object>.Fail("La sesión no tiene identidad o rol verificables."));
+
         var contexto = await _usuarioScopeService.ObtenerActualAsync(
             empresaId,
             cancellationToken);
 
-        if (contexto is null)
+        if (contexto is null || contexto.UsuarioId != jwtActor ||
+            contexto.EmpresaId != empresaId || contexto.RolId != jwtRole)
         {
             // No distinguir empresa inexistente, inactiva o membresía ausente:
             // el rechazo fail-closed evita filtrar existencia cross-tenant.

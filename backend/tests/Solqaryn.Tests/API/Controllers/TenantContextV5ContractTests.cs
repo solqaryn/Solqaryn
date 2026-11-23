@@ -1,3 +1,5 @@
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Solqaryn.API.Controllers;
 using Solqaryn.Application.Common;
@@ -34,13 +36,31 @@ public sealed class TenantContextV5ContractTests
             Task.FromResult(Seleccionables);
     }
 
+    // A synthetic unit principal is NOT a real JWT signature or MySQL test.
+    private static TenantContextController WithJwtIdentity(
+        IUsuarioScopeService scope, string actorId = "7", string roleId = "19")
+    {
+        var principal = new ClaimsPrincipal(new ClaimsIdentity(new[]
+        {
+            new Claim("id", actorId),
+            new Claim("rolId", roleId)
+        }, "TestJwt"));
+        return new TenantContextController(scope)
+        {
+            ControllerContext = new ControllerContext
+            {
+                HttpContext = new DefaultHttpContext { User = principal }
+            }
+        };
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(-1)]
     public async Task Obtener_IdInvalido_RechazaAntesDeConsultarMembresias(int empresaId)
     {
         var scope = new ScopeStub { Actual = new UsuarioTenantScopeActual(7, 11, 19, "Operador", false) };
-        var action = await new TenantContextController(scope).Obtener(empresaId, CancellationToken.None);
+        var action = await WithJwtIdentity(scope).Obtener(empresaId, CancellationToken.None);
 
         var bad = Assert.IsType<BadRequestObjectResult>(action);
         var response = Assert.IsType<ApiResponse<object>>(bad.Value);
@@ -54,7 +74,7 @@ public sealed class TenantContextV5ContractTests
     public async Task Obtener_SinMembresiaVerificable_NoRevelaExistenciaDeEmpresa()
     {
         var scope = new ScopeStub { Actual = null };
-        var action = await new TenantContextController(scope).Obtener(22, CancellationToken.None);
+        var action = await WithJwtIdentity(scope).Obtener(22, CancellationToken.None);
 
         Assert.IsType<ForbidResult>(action);
         Assert.Equal(1, scope.Calls);
@@ -64,7 +84,7 @@ public sealed class TenantContextV5ContractTests
     public async Task Obtener_ConMembresiaVigente_DevuelveDtoVerificado()
     {
         var scope = new ScopeStub { Actual = new UsuarioTenantScopeActual(7, 11, 19, "Operador", false) };
-        var action = await new TenantContextController(scope).Obtener(11, CancellationToken.None);
+        var action = await WithJwtIdentity(scope).Obtener(11, CancellationToken.None);
 
         var ok = Assert.IsType<OkObjectResult>(action);
         var response = Assert.IsType<ApiResponse<UsuarioTenantScopeActual>>(ok.Value);
@@ -75,6 +95,48 @@ public sealed class TenantContextV5ContractTests
         Assert.Equal(19, response.Data.RolId);
         Assert.Empty(response.Errors);
         Assert.Equal(1, scope.Calls);
+    }
+
+    [Theory]
+    [InlineData(8, 11, 19)]
+    [InlineData(7, 12, 19)]
+    [InlineData(7, 11, 20)]
+    public async Task Obtener_ContextoSqlNoCoincideConJwt_RechazaSinDatos(
+        int actor, int tenant, int role)
+    {
+        var scope = new ScopeStub
+        {
+            Actual = new UsuarioTenantScopeActual(actor, tenant, role, "Operador", false)
+        };
+        var action = await WithJwtIdentity(scope).Obtener(11, CancellationToken.None);
+        Assert.IsType<ForbidResult>(action);
+        Assert.Equal(1, scope.Calls);
+    }
+
+    [Theory]
+    [InlineData("07", "19")]
+    [InlineData("7", "019")]
+    [InlineData("-7", "19")]
+    [InlineData("7", "0")]
+    public async Task Obtener_ClaimsNoCanonicos_NoConsultaMembresias(
+        string actor, string role)
+    {
+        var scope = new ScopeStub();
+        var action = await WithJwtIdentity(scope, actor, role)
+            .Obtener(11, CancellationToken.None);
+        Assert.IsType<UnauthorizedObjectResult>(action);
+        Assert.Equal(0, scope.Calls);
+    }
+
+    [Fact]
+    public async Task Obtener_DuplicacionDeActor_NoConsultaMembresias()
+    {
+        var scope = new ScopeStub();
+        var controller = WithJwtIdentity(scope);
+        ((ClaimsIdentity)controller.User.Identity!).AddClaim(new Claim("id", "8"));
+        var action = await controller.Obtener(11, CancellationToken.None);
+        Assert.IsType<UnauthorizedObjectResult>(action);
+        Assert.Equal(0, scope.Calls);
     }
 
     [Fact]

@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV04 V30 C03-01.M03.03: contexto tenant vinculado al JWT original
+- API real: proteger GET /tenant-context/{empresaId} ante JWT ambiguo, actor distinto, rol cambiado o respuesta de otra empresa; 401/403 fail-closed sin otorgar nuevas capacidades.
+- xUnit adversariales para mismatch actor/tenant/rol, claims duplicados y no canónicos; GitHub-hosted exact-SHA requerido, tests no cuentan PASS hasta finalizar.
+- Entrega R2 parcial, no reemisión de JWT para nuevo tenant/sucursal y sin aprobación A0-A5 global ni LISTO. Mantener owner, no QA/main/PROD; rollback mediante revert normal.
+
 ## 2026-11-23 — DEV03 V30 C03-03.M03.04: adaptador transaccional de auditoría autenticada en MySQL
 - Runtime ASP.NET Core DEV: el POST de auditoría autenticada integra adaptador aislado que abre transacción SQL serializable, verifica rol/membresía/tenant vigente y vuelve a comprobar la autorización de auditoría JWT/RBAC antes de registrar en la bitácora estricta.
 - Solo guarda evidencia de lectura de la empresa verificada; deniega selecciones ajenas y, ante fallo del ledger, no hace commit y devuelve 503 sin exponer SQL, JWT ni secretos.
