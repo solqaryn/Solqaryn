@@ -282,7 +282,19 @@ test.describe('V24 C01-03.M04.05 actual tenant UI responsive and keyboard', () =
     expect([403,404]).toContain(rejected.status());
     await page.evaluate(()=>localStorage.setItem('solqaryn_empresa_solicitada_id','2'));
     await page.goto(target);
-    await expect(page.getByRole('heading',{name:'Configuración dinámica'})).toHaveCount(0);
+    // A stale/forged selection must NEVER expose tenant B. A verified fallback
+    // to the already-authorized A is safe; so is fail-closed redirection to login.
+    // A visible route heading alone is not evidence of a security violation.
+    await expect.poll(async () => {
+      if (/\\/login(?:[/?#]|$)/.test(page.url())) return 'blocked-login';
+      const ownTenant = page.getByText('Empresa #1', { exact: false });
+      if (await ownTenant.count() && await ownTenant.first().isVisible()) return 'verified-tenant-a';
+      return 'unverified';
+    }, { message: 'forged tenant B must resolve to verified A or a closed login gate', timeout: 20_000 })
+      .not.toBe('unverified');
+    await expect(page.getByText('Empresa #2', { exact: false })).toHaveCount(0);
+    const savedId = await page.evaluate(() => localStorage.getItem('solqaryn_empresa_solicitada_id'));
+    expect(savedId, 'forged tenant B must not remain selected after validation').not.toBe('2');
   });
 
   test('modified signed JWT rejected by real backend',async ({page})=>{

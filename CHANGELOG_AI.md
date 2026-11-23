@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV05 rescate C01-03.M04.05: negativo JWT A/B fail-closed sin falso bloqueo
+- Hallazgo causal GHA SHA f56f9baf job137705266987: 4 PASS/1 FAIL; la aserción previa confundía encabezado público de página con acceso a datos B después de forzar selección local B, aunque el endpoint B respondió 403/404 real.
+- Playwright adversarial exige ahora destino /login o empresa A realmente visible, prohíbe datos B y selector B persistente; no relaja JWT/RBAC, no modifica runtime, conserva pruebas de 320–1440, Tab, contraste y 100/200% text-only. CI nueva exact SHA y A5 independiente pendientes. V17 sobre fila240, I autor DEV04 preservado; no QA/main/PROD.
+
 ## 2026-11-23 — DEV01 C07-01.M06.06: cuarentena de categorías globales
 - Prueba R2 real de 32 solicitudes HTTP JWT A/B y selectores tenant propio/cruzado contra las rutas existentes GET/POST/PUT/PATCH/DELETE de CategoriasController: 503 sin filtración de catálogo.
 - Readback físico en MySQL 8.4 Oracle EF compara categorías y auditoría antes/después; no habilita APIs ni derechos comerciales, no certifica servicios/atributos/UX ni fase ERP completa. Exigir GitHub-hosted exact-SHA y A0–A4 reales; H=EN_PROGRESO, A5 independiente pendiente; no QA/main/PROD.
