@@ -87,7 +87,10 @@ test.describe('V24 M04.04 form: real GET, guarded duplicate mutation, error and 
     await page.keyboard.press('Tab');
     expect(await page.evaluate(() => document.activeElement?.tagName)).not.toBe('BODY');
   });
-  for (const httpStatus of [403, 500] as const) {
+  for (const { httpStatus, expectedState, expectedText } of [
+    { httpStatus: 403, expectedState: 'forbidden', expectedText: 'No tienes permiso para consultar la configuración de esta empresa.' },
+    { httpStatus: 500, expectedState: 'unconfirmed', expectedText: 'No se pudo confirmar si el cambio se aplicó. Recarga el estado del servidor antes de volver a intentarlo.' }
+  ] as const) {
     test('mutation HTTP ' + httpStatus + ' never renders untrusted backend details', async ({ page }) => {
       await loginA(page);
       const sentinel = 'PRIVATE_SERVER_STACK_SQL_TENANT_B_JWT_NEVER_RENDER';
@@ -111,14 +114,42 @@ test.describe('V24 M04.04 form: real GET, guarded duplicate mutation, error and 
       const save = page.getByRole('button', { name: 'Guardar configuración tenant' });
       await expect(save).toBeEnabled();
       await save.click();
-      await expect(page.getByText('No se pudo guardar la configuración del tenant activo.', { exact: true }))
-        .toBeVisible();
+      await expect(page.locator('[data-config-state="' + expectedState + '"]')).toBeVisible();
+      await expect(page.getByText(expectedText, { exact: true })).toBeVisible();
       await expect(page.locator('body')).not.toContainText(sentinel);
       await expect(page.getByRole('form', { name: 'Configuración del tenant activo' })).toHaveCount(0);
       expect(capturedPuts, 'the real authenticated edit flow must issue exactly one PUT').toBe(1);
     });
   }
 
+
+
+  test('HTTP 422 preserves editable values and presents safe inline validation', async ({ page }) => {
+    await loginA(page);
+    const sentinel = 'PRIVATE_SQL_TENANT_B_STACK_MUST_NOT_RENDER';
+    const input = page.locator('input[formcontrolname="nombre"]');
+    const edited = 'Tenant A - correction after validation';
+    await input.fill(edited);
+    let putCount = 0;
+    await page.route('**/empresa-configuracion/tenant/1', async route => {
+      if (route.request().method() !== 'PUT') {
+        await route.continue();
+        return;
+      }
+      putCount++;
+      await route.fulfill({
+        status: 422, contentType: 'application/json',
+        body: JSON.stringify({ message: sentinel, tenantId: 2 })
+      });
+    });
+    await page.getByRole('button', { name: 'Guardar configuración tenant' }).click();
+    await expect(page.getByRole('form', { name: 'Configuración del tenant activo' })).toBeVisible();
+    await expect(page.getByRole('alert')).toContainText('No se pudo guardar la configuración del tenant activo.');
+    await expect(input).toHaveValue(edited);
+    await expect(input).toBeEditable();
+    await expect(page.locator('body')).not.toContainText(sentinel);
+    expect(putCount, 'validation cannot automatically retry PUT').toBe(1);
+  });
 
   test('real signed-JWT MySQL stale version is denied and original config restored', async ({ page }) => {
     test.setTimeout(180_000);
