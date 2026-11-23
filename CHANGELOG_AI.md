@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV05 V30 C01-03.M04.02: negar GET de configuración con envoltura fallida
+- Corrección funcional Angular: un GET HTTP 200 con `success=false` y datos plausibles del tenant ya no monta formulario ni acepta versión no confirmada; devuelve estado de error recuperable sin filtrar el cuerpo del servidor. `success=true` y sin datos sigue siendo vacío legítimo.
+- Vitest adversarial y Chromium autenticado A/B dirigido añadidos después de cambiar runtime; se conserva el workflow existente y no se relanzan pruebas ya aprobadas manualmente. V17/CAS y owner histórico preservados, A0–A4 solo con CI causal exact-SHA, A5 independiente, zoom nativo 200% y captura histórica ANTES aún pendientes, sin LISTO/QA/main/PROD.
+
 ## 2026-11-23 — DEV04 V30 C03-01.M03.03: contexto tenant vinculado al JWT original
 - API real: proteger GET /tenant-context/{empresaId} ante JWT ambiguo, actor distinto, rol cambiado o respuesta de otra empresa; 401/403 fail-closed sin otorgar nuevas capacidades.
 - xUnit adversariales para mismatch actor/tenant/rol, claims duplicados y no canónicos; GitHub-hosted exact-SHA requerido, tests no cuentan PASS hasta finalizar.

@@ -67,6 +67,40 @@ test.describe('V24 M04.02 UI states after real JWT login with isolated response 
     await expect(page.locator('[data-config-state="empty"]')).toBeVisible();
     await expect(page.getByRole('form', { name: 'Configuración del tenant activo' })).toHaveCount(0);
   });
+
+  test('HTTP 200 success=false with same-tenant data never exposes a writable form', async ({ page }) => {
+    await loginA(page);
+    const sentinel = 'PRIVATE_CONFIG_UNTRUSTED_ENVELOPE';
+    let forgedReads = 0;
+    await page.route(endpoint, async route => {
+      if (route.request().method() !== 'GET') {
+        await route.continue();
+        return;
+      }
+      forgedReads++;
+      await route.fulfill({
+        status: 200,
+        contentType: 'application/json',
+        body: JSON.stringify({
+          success: false,
+          message: 'PRIVATE_SQL_ERROR_DETAIL',
+          data: {
+            empresaId: 1, nombre: sentinel, version: 999,
+            moneda: 'HNL', zonaHoraria: 'America/Tegucigalpa',
+            impuestosJson: '{}', emisionJson: '{}',
+            correoConfigurado: false, plantillasCorreo: []
+          }
+        })
+      });
+    });
+    await page.goto(target);
+    await expect(page.locator('[data-config-state="unavailable"][role="alert"]')).toBeVisible();
+    await expect(page.getByRole('form', { name: 'Configuración del tenant activo' })).toHaveCount(0);
+    await expect(page.locator('body')).not.toContainText(sentinel);
+    await expect(page.locator('body')).not.toContainText('PRIVATE_SQL_ERROR_DETAIL');
+    expect(forgedReads, 'must intercept an authenticated GET').toBeGreaterThan(0);
+  });
+
   test('foreign tenant HTTP 200 payload never renders company B data in company A', async ({ page }) => {
     await loginA(page);
     // This is a deliberately forged HTTP RESPONSE to test the fail-closed

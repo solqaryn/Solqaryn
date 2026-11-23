@@ -41,7 +41,7 @@ describe('C01-03.M04.04 - permisos reactivos en formulario tenant', () => {
     mutation = new Subject<unknown>();
     snackBar = { open: vi.fn() };
     service = {
-      getTenant: vi.fn(() => of({ data: { ...config } })),
+      getTenant: vi.fn(() => of({ success: true, data: { ...config } })),
       updateTenant: vi.fn(() => mutation.asObservable())
     };
     TestBed.configureTestingModule({
@@ -119,6 +119,7 @@ describe('C01-03.M04.04 - permisos reactivos en formulario tenant', () => {
     expect(service.updateTenant).toHaveBeenCalledTimes(1);
 
     service.getTenant.mockReturnValueOnce(of({
+      success: true,
       data: { ...config, nombre: 'Fresh server value', version: 3 }
     }));
     component.cargar();
@@ -168,6 +169,22 @@ describe('C01-03.M04.04 - permisos reactivos en formulario tenant', () => {
     expect(snackBar.open).not.toHaveBeenCalled();
     component.guardar();
     expect(service.updateTenant).toHaveBeenCalledTimes(1);
+  });
+
+
+  it('rejects a failed HTTP 200 GET envelope with a forged matching-tenant payload', () => {
+    service.getTenant.mockReturnValueOnce(of({
+      success: false,
+      data: { ...config, nombre: 'PRIVATE_TENANT_B_REJECTED', version: 999 },
+      message: 'PRIVATE_SQL_SERVER_BODY'
+    }));
+    const component = create();
+    expect(component.loadState()).toBe('unavailable');
+    expect(component.form.controls.nombre.value).not.toBe('PRIVATE_TENANT_B_REJECTED');
+    expect(component.lastSaved()).toBe(false);
+    component.guardar();
+    expect(service.updateTenant).not.toHaveBeenCalled();
+    expect(snackBar.open).not.toHaveBeenCalled();
   });
 
 });

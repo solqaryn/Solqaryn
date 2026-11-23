@@ -226,7 +226,13 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
     })).subscribe({
       next: res => {
         if (generation !== this.loadGeneration || empresaId !== this.empresaId()) return;
-        if (!res?.data) {
+        // A 200 response is not proof of a successful read. A failed envelope
+        // must never populate the active company's form, even if it contains data.
+        if (res?.success !== true) {
+          this.loadState.set('unavailable');
+          return;
+        }
+        if (!res.data) {
           this.loadState.set('empty');
           return;
         }
