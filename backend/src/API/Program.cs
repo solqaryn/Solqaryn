@@ -118,13 +118,9 @@ if (builder.Environment.IsDevelopment())
 builder.Services.AddScoped<IC0401VerifiedPlanActorSource,
     C0401PlanVerifiedActorSource>();
 }
-// C03-03.M03.03: read-only JWT/RBAC/tenant audit preflight, DEV opt-in OFF.
-    builder.Services.AddScoped<C0303VerifiedAuditTenantReaders>();
-    builder.Services.AddScoped<IC0303VerifiedAuditEventReader>(
-        sp => sp.GetRequiredService<C0303VerifiedAuditTenantReaders>());
-    builder.Services.AddScoped<IC0303VerifiedAuditResourceReader>(
-        sp => sp.GetRequiredService<C0303VerifiedAuditTenantReaders>());
-    builder.Services.AddScoped<C0303SecurityAuditApplicationService>();
+// C03-03.M03.03: Development-only audit probe registration, not a grant.
+// The real environment guard is tested; read-only opt-in remains OFF by default.
+builder.Services.AddC0303VerifiedAuditDevelopmentOnly(builder.Environment);
 // C02-03.M03.03: genuine JWT + platform RolPermiso/Empresa read-only bridge,
 // DEV-only and OFF by default. No controller, lifecycle mutation or deployment.
 if (builder.Environment.IsDevelopment())

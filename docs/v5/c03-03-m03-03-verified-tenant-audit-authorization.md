@@ -41,3 +41,10 @@ TransactionalSinkVerified=false permanece obligatorio y el opt-in de
 produccion sigue OFF. Esa brecha requiere trabajo posterior y A5 independiente,
 sin marcar LISTO antes de cumplir alcance y calidad A0-A4. Rollback: git revert
 normal del SHA causal con HEAD revalidado; no QA/main/PROD.
+
+
+## V25 - DEV05: correccion P2 de registro DI fuera de Development
+
+Hallazgo nuevo: Program.cs registraba las cuatro dependencias de preflight (lector, ambas interfaces y servicio Application) fuera del bloque Development, contradiciendo DEV-only aun con opt-in OFF. El riesgo era un grafo de servicios disponible en staging/production si codigo futuro lo consumia. El nuevo metodo AddC0303VerifiedAuditDevelopmentOnly aplica IsDevelopment a la composicion real; fuera de Development no registra ninguno, y en Development conserva lifetime scoped y flag SecurityAudit:EnableReadOnlyAuthorizationProbe desactivado por defecto. No crea HTTP comercial, grant, sink durable, migracion, secretos ni cambia ambientes externos.
+
+Regresiones xUnit verifican 4/4 registros scoped solo en Development, denegacion en Staging y Production y fallo cerrado ante environment nulo. CI exact SHA (backend Release, seguridad, Scope Lock, V5) y prueba relacional MySQL 8.4 de la version causal siguen siendo exigibles; no se atribuye PASS a tests queued/in_progress/skipped. El alcance sigue VALIDANDO con autor historico DEV03; A5 por revisor distinto de autor y reparadores; no QA/main/PROD. Revertir mediante git revert normal y HEAD/CAS.

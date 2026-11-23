@@ -1,3 +1,9 @@
+## 2026-11-23 - DEV05 C03-03.M03.03: registro DI Development-only (V25)
+- Hallazgo P2: el lector de auditoria, interfaces y servicio Application estaban registrados incondicionalmente en Program.cs, contradiciendo DEV-only; opt-in OFF no sustituye aislamiento de DI.
+- Codigo: composition root delega a AddC0303VerifiedAuditDevelopmentOnly con IsDevelopment real, sin servicios de prueba en Staging/Production, conservando scoped y OFF en Development; sin endpoints, grants, MySQL/EF, secretos o despliegue.
+- xUnit adversarial: escenarios positivos Development y negativos Staging/Production/ambiente nulo; CI GitHub-hosted .NET Release, seguridad, Scope Lock, V5 y MySQL de SHA causal pendientes de comprobacion, no PASS inventado.
+- Mantener C03-03.M03.03 VALIDANDO, owner historico DEV03; A0-A4 completos y sink durable no acreditados, A5 por Task independiente distinta del autor y reparadores; rollback git revert normal; sin QA/main/PROD.
+
 ## 2026-11-23 - DEV03 C03-03.M03.03: HTTP de prueba JWT/tenant con MySQL 8.4 (V25)
 - A0/R2: nueva ejecucion HTTP real en TestServer ASP.NET Core, solo en xUnit Integration; sin ruta comercial ni permiso nuevo.
 - A1/A2/A3: positivos/negativos JWT firmado A (204), tenant B (403), firma ajena (401), token expirado (401), datos MySQL 8.4 efimeros; CI exact-SHA aun no acreditada.
