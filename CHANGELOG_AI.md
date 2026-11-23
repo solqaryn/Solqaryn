@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV03 C03-03.M03.03: reparar ASPDEPR004/008 en GitHub-hosted .NET 10 (V25)
+- Causa real del CI fallido en commit 2260bbbf, run 45138563036/job137570641816: dotnet build Release -warnaserror rechaza el constructor heredado WebHostBuilder y TestServer(IWebHostBuilder); no son fallos de autorización JWT ni MySQL.
+- Reparación mínima de integración: HostBuilder.ConfigureWebHost(UseTestServer).StartAsync y GetTestClient; conserva mismo endpoint DEV-only, los cinco escenarios JWT/tenant y el SQL 8.4 efímero sin desactivar advertencias ni tocar autenticación. Documentación actualizada; todo el CHANGELOG anterior preservado.
+- GitHub Actions sobre SHA reparado debe confirmar backend Release, seguridad, MySQL real, Scope Lock y V5. Hasta entonces VALIDANDO, A5 pendiente, sin sink durable ni QA/main/PROD; no se toma SKIPPED/QUEUED como PASS.
+
 ## 2026-11-23 — DEV03 C03-03.M03.03: endpoint DEV autenticado, sin concesión (V25)
 - Hallazgo R2 causal: la prueba TestServer construía una ruta privada y colocaba el marcador de tenant en middleware del ensayo; Program no montaba esa misma ruta, por lo que el test PASS no comprobaba integración HTTP del adaptador.
 - Corrección: endpoint read-only /__dev/audit-authorization/{empresaId} montado en Program sólo con Development y SecurityAudit:EnableReadOnlyAuthorizationProbe=true; JWT autenticado, selector coincidente, membresía vigente, verificación SQL tenant A/B y RBAC en lector, respuesta sin datos comerciales; nunca sink durable, permiso nuevo ni ruta QA/PROD.

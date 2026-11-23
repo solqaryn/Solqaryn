@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.TestHost;
+using Microsoft.Extensions.Hosting;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Builder;
 using System.Net.Http.Headers;
@@ -250,9 +251,10 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
 
             // Real ASP.NET Core TestServer HTTP pipeline + JwtBearer +
             // server-owned tenant marker + ephemeral Oracle EF/MySQL 8.4.
-            // This route exists ONLY in this test; it is NOT a shipped API
-            // endpoint, audit event producer, or durable audit sink.
-            using (var server = new TestServer(new WebHostBuilder()
+            // It maps the SAME Development opt-in route as Program.cs.
+            // No business audit event producer or durable sink is installed.
+            using (var host = await new HostBuilder().ConfigureWebHost(web => web
+                .UseTestServer()
                 .ConfigureServices(s =>
                 {
                     s.AddRouting();
@@ -294,9 +296,9 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
                     // Exercise the SAME endpoint mapping used in Program.cs,
                     // no test middleware injecting a privileged tenant marker.
                     app.UseEndpoints(C0303AuditReadOnlyProbeEndpoint.Map);
-                })))
+                })).StartAsync())
             {
-                using var client = server.CreateClient();
+                using var client = host.GetTestClient();
                 async Task<HttpStatusCode> HttpAuditAsync(int routeTenant, string bearerJwt)
                 {
                     using var request = new HttpRequestMessage(
