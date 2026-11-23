@@ -284,3 +284,28 @@ Evidencia **negativa dirigida**, no aprobación de CRUD positivo de categorías,
 Hipotesis nueva: la ruta privada `/productos/{productoId}/variantes` y sus subrutas de imagenes podrian eludir accidentalmente la cuarentena de producto por incluir mas segmentos URL. La prueba real del modulo `C07-01.M06.06` exige 32 solicitudes HTTP (JWT firmado A/B con selector propio y cruzado, ocho rutas GET/POST/PUT/PATCH/DELETE) a `ProductoVariantesController`, todas HTTP 503 `TENANT_DATA_ISOLATION_REQUIRED`. La prueba compara con un segundo DbContext Oracle EF/MySQL 8.4 fisico la instantanea COMPLETA de todas las variantes (ID, ProductoId, EmpresaId, SKU, cantidad, precio, costo, activo, eliminado) y el conteo de auditorias de variantes antes/despues. Incluye una variante A real sembrada con owner por contexto verificado y auditoria durable preexistente, para impedir falsos PASS por base vacia. No amplia permisos ni activa variantes comerciales.
 
 A0: test y documento solamente, riesgo R2; dependencia de middleware tenant vigente y JWT firmado real del TestServer, sin cambios runtime. A1-A3: GitHub-hosted debe demostrar TRX completo con 1/1 PASS, 0 FAIL, 0 SKIPPED y MySQL 8.4. A4: verificar check exact-SHA Scope Lock/V5/backend/security y cualquier CI Oracle/authorization pertinente; no interpretar QUEUED/IN_PROGRESS/SKIPPED como PASS. Si la prueba falla, investigar respuesta/guard antes de cambiar controles. Limitacion: prueba negativa, no acredita operaciones positivas ni ownership completo de servicios, categorias, impuestos, atributos o experiencia Angular/ERP; `C07-01.M06.06` sigue EN_PROGRESO con owner DEV01, V17 lock 2000001045 y A5 pendiente independiente. `CHANGELOG_AI.md` no se reemplaza: el conector de lectura no devolvio su contenido completo aunque expuso blob SHA; modificarlo asi arriesgaria borrar historial. Evidencia de este incremento en este documento, GitHub y BITACORA aditiva. Rollback: git revert normal en dev tras releer HEAD, sin force push ni produccion.
+
+## V27 DEV01 - contencion de clasificacion no vendible en SaveChanges (2026-11-23)
+
+Hipotesis causal R2 nueva: el guard de ventas en AppDbContext solamente rechazaba
+TipoInventario.InsumoAdministrativo=2. Una clasificacion desconocida (0/3/99),
+incluyendo un futuro Servicio=3, podia atravesar la validacion EF directa de
+VentaDetalle sin ser mercaderia admisible. El cambio **fail-closed** exige
+TipoInventario.MercaderiaVenta=1 tanto para Producto rastreado como para consulta
+persistida en el tenant, y conserva el mensaje previo de insumo administrativo.
+No agrega Servicio al enum, no lo habilita en UI/ventas, ni cambia la cuarentena
+de Categorias/Impuestos, rutas HTTP, DTO, schema o migraciones.
+
+A0: R2, dos ramas de la misma validacion y cinco casos negativos xUnit
+(0/3/99 rastreados, 3/99 persistidos) mas regresion previa de Insumo=2.
+Las pruebas emplean EF InMemory, **no** prueban MySQL 8.4 fisico ni HTTP
+firmado. A1-A4 dirigidos requieren GitHub-hosted dotnet Release/xUnit,
+seguridad y Scope Lock/V5 exact-SHA y evidencia causal de CI completa.
+A5 permanece independiente, sin LISTO de M06.06. La matriz positiva
+Categoria/Impuesto ownership, Servicio con tratamiento propio, endpoints
+JWT/RBAC/tenant A/B y experiencia Angular siguen pendientes, y deben ser
+implementados en incrementos siguientes antes del cierre acumulativo.
+No declarar PASS hasta leer los jobs. Rollback: git revert convencional
+sobre HEAD nuevo tras verificar CAS. CHANGELOG_AI.md no se sobrescribe
+porque el conector devuelve contenido vacio pese a un blob SHA valido;
+se conserva integro, con evidencia adicional en documento/bitacora.

@@ -284,12 +284,15 @@ public class AppDbContext : DbContext
             .Select(e => e.Entity)
             .ToList();
 
-        var insumoRastreado = productosRastreados
-            .FirstOrDefault(p => p.TipoInventario == TipoInventario.InsumoAdministrativo);
-        if (insumoRastreado is not null)
+        var noVendibleRastreado = productosRastreados
+            .FirstOrDefault(p => p.TipoInventario != TipoInventario.MercaderiaVenta);
+        if (noVendibleRastreado is not null)
         {
+            var motivo = noVendibleRastreado.TipoInventario == TipoInventario.InsumoAdministrativo
+                ? "insumo administrativo"
+                : $"tipo de inventario no vendible ({(int)noVendibleRastreado.TipoInventario})";
             throw new BusinessRuleException(
-                $"El producto '{insumoRastreado.Nombre}' es un insumo administrativo y no puede venderse ni facturarse.");
+                $"El producto '{noVendibleRastreado.Nombre}' es un {motivo} y no puede venderse ni facturarse.");
         }
 
         var idsRastreados = productosRastreados.Select(p => p.Id).ToHashSet();
@@ -297,18 +300,21 @@ public class AppDbContext : DbContext
         if (idsPorConsultar.Count == 0)
             return;
 
-        var insumoPersistido = await TenantQueryBypassGuard.RespectCurrentTenant(
+        var noVendiblePersistido = await TenantQueryBypassGuard.RespectCurrentTenant(
                 Productos.IgnoreQueryFilters(), this)
             .AsNoTracking()
             .Where(p => idsPorConsultar.Contains(p.Id) &&
-                        p.TipoInventario == TipoInventario.InsumoAdministrativo)
-            .Select(p => new { p.Id, p.Nombre })
+                        p.TipoInventario != TipoInventario.MercaderiaVenta)
+            .Select(p => new { p.Id, p.Nombre, p.TipoInventario })
             .FirstOrDefaultAsync(cancellationToken);
 
-        if (insumoPersistido is not null)
+        if (noVendiblePersistido is not null)
         {
+            var motivo = noVendiblePersistido.TipoInventario == TipoInventario.InsumoAdministrativo
+                ? "insumo administrativo"
+                : $"tipo de inventario no vendible ({(int)noVendiblePersistido.TipoInventario})";
             throw new BusinessRuleException(
-                $"El producto '{insumoPersistido.Nombre}' es un insumo administrativo y no puede venderse ni facturarse.");
+                $"El producto '{noVendiblePersistido.Nombre}' es un {motivo} y no puede venderse ni facturarse.");
         }
     }
 
