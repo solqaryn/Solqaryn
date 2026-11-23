@@ -191,6 +191,56 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
             Assert.NotNull(await reader.ReadCurrentAsync(
                 actor.Id, tenantA.Id, Rules.Action.AuditRead, default));
 
+            // Forged and expired bearer tokens must fail even when a caller
+            // manually presents an authenticated principal and valid SQL grants.
+            // This tests JwtBearer cryptography; it is not hosted HTTP proof.
+            async Task AssertUntrustedBearerRejectedAsync(string bearerToken)
+            {
+                var attempted = new DefaultHttpContext { RequestServices = provider };
+                attempted.User = new ClaimsPrincipal(new ClaimsIdentity(
+                    [new Claim("id", actor.Id.ToString())], "synthetic-not-a-grant"));
+                attempted.Request.Headers.Authorization = "Bearer " + bearerToken;
+                attempted.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] =
+                    tenantA.Id;
+                attempted.Request.RouteValues["empresaId"] = tenantA.Id.ToString();
+
+                var forgedAccessor = new Mock<IHttpContextAccessor>(MockBehavior.Strict);
+                forgedAccessor.SetupGet(x => x.HttpContext).Returns(attempted);
+                var attemptedReader = new C0303VerifiedAuditTenantReaders(
+                    forgedAccessor.Object, current.Object, scope, db, config);
+                Assert.Null(await attemptedReader.ReadCurrentAsync(default));
+            }
+
+            var wrongKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
+                "solqaryn-c0303-m0303-forged-jwt-ci-key-rejected-2026!"));
+            var forgedToken = new JwtSecurityToken(
+                issuer: "c0303-mysql-ci", audience: "c0303-mysql-ci",
+                claims: [
+                    new Claim("id", actor.Id.ToString()),
+                    new Claim("nombreUsuario", username),
+                    new Claim("sub", username)
+                ],
+                notBefore: DateTime.UtcNow.AddMinutes(-1),
+                expires: DateTime.UtcNow.AddMinutes(8),
+                signingCredentials: new SigningCredentials(
+                    wrongKey, SecurityAlgorithms.HmacSha256));
+            await AssertUntrustedBearerRejectedAsync(
+                new JwtSecurityTokenHandler().WriteToken(forgedToken));
+
+            var expiredToken = new JwtSecurityToken(
+                issuer: "c0303-mysql-ci", audience: "c0303-mysql-ci",
+                claims: [
+                    new Claim("id", actor.Id.ToString()),
+                    new Claim("nombreUsuario", username),
+                    new Claim("sub", username)
+                ],
+                notBefore: DateTime.UtcNow.AddMinutes(-15),
+                expires: DateTime.UtcNow.AddMinutes(-5),
+                signingCredentials: new SigningCredentials(
+                    Signing, SecurityAlgorithms.HmacSha256));
+            await AssertUntrustedBearerRejectedAsync(
+                new JwtSecurityTokenHandler().WriteToken(expiredToken));
+
             // Route spoofing, membership B and critical changes cannot borrow A.
             http.Request.RouteValues["empresaId"] = tenantB.Id.ToString();
             Assert.Null(await reader.ReadCurrentAsync(default));
