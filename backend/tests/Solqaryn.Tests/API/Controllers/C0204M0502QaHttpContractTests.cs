@@ -246,6 +246,78 @@ public sealed class C0204M0502QaHttpContractTests
         Assert.Equal(1, upstream.Calls);
     }
 
+    // This test runs against an isolated MySQL 8.4 service in the GH-hosted QA lab.
+    // Outside that CI lane the MySQL branch does not count as real integration.
+    [Fact]
+    public async Task LaboratorioMysql84JwtTenantsAyBDeniegaAccesoGlobalYSelectorCruzado()
+    {
+        if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(
+                "SOLQARYN_C0204_MYSQL_TEST_CONNECTION")))
+            return;
+
+        var upstream = new GitHubFake(Payload());
+        await using var fixture = await CrearAsync(upstream, mysql: true);
+        int actorA, actorB, tenantA, tenantB;
+        using (var scope = fixture.Host.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var roleId = await db.Roles
+                .Where(r => r.NombreNormalizado == "ADMIN_EMP_QA")
+                .Select(r => r.Id).SingleAsync();
+            var companyA = new Empresa("QA ephemeral tenant A");
+            var companyB = new Empresa("QA ephemeral tenant B");
+            db.Set<Empresa>().AddRange(companyA, companyB);
+            await db.SaveChangesAsync();
+
+            var userA = new Usuario
+            {
+                NombreUsuario = "qa_company_a", NombreCompleto = "QA company A",
+                PasswordHash = "ci-no-password", RolId = roleId, Activo = true
+            };
+            var userB = new Usuario
+            {
+                NombreUsuario = "qa_company_b", NombreCompleto = "QA company B",
+                PasswordHash = "ci-no-password", RolId = roleId, Activo = true
+            };
+            db.Usuarios.AddRange(userA, userB);
+            await db.SaveChangesAsync();
+            db.Set<UsuarioEmpresa>().AddRange(
+                new UsuarioEmpresa(userA.Id, companyA.Id, roleId),
+                new UsuarioEmpresa(userB.Id, companyB.Id, roleId));
+            await db.SaveChangesAsync();
+
+            actorA = userA.Id;
+            actorB = userB.Id;
+            tenantA = companyA.Id;
+            tenantB = companyB.Id;
+            Assert.NotEqual(tenantA, tenantB);
+            Assert.Equal(2, await db.Set<UsuarioEmpresa>()
+                .CountAsync(m => m.Activa &&
+                    (m.UsuarioId == actorA || m.UsuarioId == actorB)));
+        }
+
+        using var client = fixture.Host.GetTestClient();
+        foreach (var (actor, selector) in new[]
+        {
+            (actorA, tenantA),
+            (actorA, tenantB),
+            (actorB, tenantB),
+            (actorB, tenantA)
+        })
+        {
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+                "Bearer", Token(actor, "company-ci-" + actor, "true"));
+            client.DefaultRequestHeaders.Remove("X-Empresa-Id");
+            client.DefaultRequestHeaders.Add("X-Empresa-Id", selector.ToString());
+            using var response = await client.GetAsync(Path);
+            Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.DoesNotContain("private-secret", body);
+            Assert.DoesNotContain("QA ephemeral tenant", body);
+        }
+        Assert.Equal(0, upstream.Calls);
+    }
+
     private static string Token(int id, string username, string admin = "false")
     {
         var jwt = new JwtSecurityToken(

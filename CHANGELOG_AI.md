@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV06 C02-04.M05.06: laboratorio QA aislado real JWT/MySQL (R2)
+- Reparación causal del A5_FAIL P2: se agrega job GitHub-hosted independiente con MySQL 8.4 efímero, .NET 10, JWT firmado y nueve pruebas HTTP/RBAC, incluida matriz empresarial A/B con cuatro denegaciones reales; TRX exigido 9 PASS/0 FAIL/0 OMITIDOS y artefacto propio.
+- Se mantienen las ocho regresiones Angular/Chromium y su sesión sintética declarada. La evidencia backend aislada no acredita integración navegador-API JWT real ni MFA, ni constituye aprobación A5: requiere CI exact-SHA COMPLETED/SUCCESS y revisión independiente distinta de DEV04/DEV06.
+- Se preservan estado LISTO, autoría histórica, A5_FAIL previo, fórmulas DAG/COLA y BITACORA; sin modificaciones de QA/main/PROD. Rollback mediante git revert normal, Scope Lock STRICT y verificación V5.
+
 ## 2026-11-22 — DEV04 C01-03.M04.05: separación visual real de formulario tenant (R2)
 - A partir de capturas Chromium CI SHA 37f13974 (artefacto 14778154277), se encontró una separación vertical insuficiente entre «Recargar» y «Datos de empresa» en 390 px, también con texto raíz 200%.
 - Reparación Angular localizada: margen de 1rem antes de `.tenant-form`; aserción Playwright adversarial de al menos 12 px de separación calculada en DOM para ambos JWT A/B, cinco anchos y texto raíz 100%/200%.

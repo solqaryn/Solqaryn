@@ -4,6 +4,7 @@ on:
     branches: [dev]
     paths:
       - 'frontend/e2e/c02-04-m05-06-regression.spec.ts'
+      - 'backend/tests/Solqaryn.Tests/API/Controllers/C0204M0502QaHttpContractTests.cs'
       - '.github/workflows/v19-c02-04-m05-06-regression.yml'
   workflow_dispatch:
 permissions:
@@ -55,3 +56,82 @@ jobs:
       - name: Eight genuine browser regressions, mocked platform session explicitly
         working-directory: frontend
         run: npx playwright test e2e/c02-04-m05-06-regression.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+
+  isolated-real-qa-lab:
+    name: C02-04.M05.06 - isolated MySQL 8.4 and signed JWT A/B lab
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: solqaryn-ci-qa-local-only
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -psolqaryn-ci-qa-local-only --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=18
+    env:
+      SOLQARYN_C0204_MYSQL_TEST_CONNECTION: 'Server=127.0.0.1;Port=3306;User=root;Password=solqaryn-ci-qa-local-only;SslMode=Disabled;AllowPublicKeyRetrieval=True'
+    defaults:
+      run:
+        working-directory: backend
+    steps:
+      - name: Checkout exact source SHA
+        uses: actions/checkout@v4
+      - name: Verify project scope before dependencies
+        working-directory: .
+        run: node scripts/verify-project-scope.mjs
+      - name: Install .NET 10 SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Assert disposable local MySQL only
+        run: |
+          set -euo pipefail
+          test -n "$SOLQARYN_C0204_MYSQL_TEST_CONNECTION"
+          echo "$SOLQARYN_C0204_MYSQL_TEST_CONNECTION" | grep -q 'Server=127.0.0.1'
+          echo "QA_LAB_ISOLATED_MYSQL_84=CONFIGURED"
+      - name: Build backend Release
+        run: |
+          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+      - name: Execute JWT/RBAC positive-negative MySQL lab and write TRX
+        run: |
+          set -euo pipefail
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj \
+            --configuration Release --no-build \
+            --filter "FullyQualifiedName~C0204M0502QaHttpContractTests" \
+            --logger "trx;LogFileName=c0204-m0506-real-lab.trx" \
+            --results-directory qa-lab-artifacts
+      - name: Assert all nine lab tests ran and zero were skipped
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          path = Path('qa-lab-artifacts/c0204-m0506-real-lab.trx')
+          root = ET.parse(path).getroot()
+          counters = next((elem.attrib for elem in root.iter() if elem.tag.endswith('Counters')), None)
+          if counters is None:
+              raise SystemExit('Missing xUnit TRX counters')
+          total = int(counters.get('total', -1))
+          passed = int(counters.get('passed', -1))
+          failed = int(counters.get('failed', -1))
+          omitted = sum(int(counters.get(k, '0')) for k in
+                        ('notExecuted', 'notRunnable', 'inconclusive', 'aborted', 'error', 'timeout'))
+          print(f'QA_REAL_LAB_TOTAL={total} PASSED={passed} FAILED={failed} OMITTED={omitted}')
+          if (total, passed, failed, omitted) != (9, 9, 0, 0):
+              raise SystemExit('Fail closed: not all nine isolated JWT/MySQL tests ran and passed')
+          PY
+      - name: Publish real isolated QA lab TRX and executable evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c02-04-m05-06-real-qa-mysql84-jwt-trx
+          path: backend/qa-lab-artifacts/
+          if-no-files-found: warn
+          retention-days: 14
