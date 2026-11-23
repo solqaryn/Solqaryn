@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV06 C14-02.M06.06: revocación SQL posterior al preflight de servicio
+- Nueva prueba adversarial real y dirigida, con JWT firmado, HTTP TestServer y MySQL 8.4 efímero: revocar ServiceGrantActive tras una solicitud positiva fuerza 403 con el mismo token; restablecer el grant sólo permite el preflight de adaptador requerido, y tenant B recibe 403.
+- R2 test-only; no cambia API ni DI productivos y no certifica BOLA/IDOR, archivos, jobs, caché, backup ni sesiones. Exigir GitHub-hosted exact-SHA, Scope Lock/V5 y checks pertinentes; conservar C14-02.M06.06 VALIDANDO, owner DEV06 y A5 independiente, sin QA/main/PROD.
+
 ## 2026-11-23 — DEV05 C01-03.M04.04: bloquear filtración de errores HTTP de escritura
 - Corrige P1/R2: el componente Angular ya no expone `err.error.message` arbitrario en mensajes tras errores de guardado/logo, y utiliza el texto seguro local. Conserva el comportamiento 409/412 y las validaciones de formulario.
 - Añade pruebas Playwright 403/500 adversariales con JWT auténtico, permiso de edición real y MySQL 8.4 efímero; simula exclusivamente la respuesta PUT con datos privados para comprobar que no se muestran y que no hay doble envío. Requiere GitHub Actions exact-SHA antes de A0–A4; A5 independiente pendiente, sin QA/main/PROD.

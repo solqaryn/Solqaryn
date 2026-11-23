@@ -302,6 +302,26 @@ public sealed class C1402M0606SignedJwtMysql84HttpTests
                 Assert.Equal("AUTHENTICATED_SECURITY_ACCEPTANCE_ADAPTER_REQUIRED",
                     await allServerConditions.Content.ReadAsStringAsync());
             }
+            // Same signed bearer and persisted resource after a successful
+            // preflight: independent SQL service-grant revocation must deny
+            // access without an in-process cached authorization decision.
+            await ExecuteAsync(connection,
+                $"UPDATE {table} SET ServiceGrantActive=0 WHERE ActorId=101");
+            using (var revokedAfterAllowed = await RequestAsync(client, "resource-A",
+                V5SecurityAcceptanceDomainRules.Surface.BackgroundJob, a))
+                Assert.Equal(HttpStatusCode.Forbidden, revokedAfterAllowed.StatusCode);
+            await ExecuteAsync(connection,
+                $"UPDATE {table} SET ServiceGrantActive=1 WHERE ActorId=101");
+            using (var restoredServiceGrant = await RequestAsync(client, "resource-A",
+                V5SecurityAcceptanceDomainRules.Surface.BackgroundJob, a))
+            {
+                Assert.Equal(HttpStatusCode.OK, restoredServiceGrant.StatusCode);
+                Assert.Equal("AUTHENTICATED_SECURITY_ACCEPTANCE_ADAPTER_REQUIRED",
+                    await restoredServiceGrant.Content.ReadAsStringAsync());
+            }
+            using (var foreignServiceTenant = await RequestAsync(client, "resource-A",
+                V5SecurityAcceptanceDomainRules.Surface.BackgroundJob, b))
+                Assert.Equal(HttpStatusCode.Forbidden, foreignServiceTenant.StatusCode);
             await ExecuteAsync(connection,
                 $"UPDATE {table} SET ServiceActive=0 WHERE ActorId=101");
             using (var missingServiceIdentity = await RequestAsync(client, "resource-A",
