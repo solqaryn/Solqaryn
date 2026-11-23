@@ -44,6 +44,22 @@ async function verifyLayout(page: Page, width: number, phase: string): Promise<v
   }
 }
 
+// V24: regression from real 390px CI PNGs at 100% and 200% root text size.
+// The prior zero-gap header/form boundary crowded "Recargar" and "Datos de empresa".
+// Measure actual DOM geometry, not screenshots or CSS declarations alone.
+async function verifyCardHeaderSeparation(page: Page, width: number, mode: string): Promise<void> {
+  const position = await page.evaluate(() => {
+    const header = document.querySelector('app-empresa-configuracion-tenant-card .header-row');
+    const form = document.querySelector('app-empresa-configuracion-tenant-card .tenant-form');
+    if (!(header instanceof HTMLElement) || !(form instanceof HTMLElement)) return null;
+    return { space: form.getBoundingClientRect().top - header.getBoundingClientRect().bottom,
+      margin: Number.parseFloat(getComputedStyle(form).marginTop) };
+  });
+  expect(position, 'real tenant card header and form rendered').not.toBeNull();
+  expect(position!.margin, 'computed form margin at '+width+' '+mode).toBeGreaterThanOrEqual(12);
+  expect(position!.space, 'Recargar/form no collision at '+width+' '+mode).toBeGreaterThanOrEqual(12);
+}
+
 async function verifyTab(page: Page): Promise<void> {
   // V24 R2: actual Tab must reach route controls, not a random visible app-shell link.
   // Never call .focus() or bypass browser keyboard navigation.
@@ -182,6 +198,7 @@ test.describe('V24 C01-03.M04.05 actual tenant UI responsive and keyboard', () =
       for (const width of widths) {
         await page.setViewportSize({width,height:900});
         await verifyLayout(page,width,'100pct');
+        await verifyCardHeaderSeparation(page,width,'100pct');
         await page.screenshot({path:'test-results/c0103-m0405-'+username+'-'+width+'-100.png',fullPage:true});
       }
       // CSS zoom is only a 200% reflow stress PROXY, NOT native Chrome browser zoom.
@@ -206,6 +223,7 @@ test.describe('V24 C01-03.M04.05 actual tenant UI responsive and keyboard', () =
           expect(Number.isFinite(before) && Number.isFinite(after), 'real root font size').toBe(true);
           expect(after, 'root text resize applied').toBeGreaterThanOrEqual(before * 1.95);
           await verifyLayout(page,width,'text-only-resize-200');
+          await verifyCardHeaderSeparation(page,width,'text-only-resize-200');
           await expect(page.getByRole('button',{name:/Recargar/})).toBeVisible();
           await expect(page.getByRole('link',{name:'Ver todos los ajustes'})).toBeVisible();
           // V24: aserciones adversariales reales a 200% de texto en los cinco viewports.

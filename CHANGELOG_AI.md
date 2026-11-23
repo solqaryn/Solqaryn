@@ -1,3 +1,8 @@
+## 2026-11-22 — DEV04 C01-03.M04.05: separación visual real de formulario tenant (R2)
+- A partir de capturas Chromium CI SHA 37f13974 (artefacto 14778154277), se encontró una separación vertical insuficiente entre «Recargar» y «Datos de empresa» en 390 px, también con texto raíz 200%.
+- Reparación Angular localizada: margen de 1rem antes de `.tenant-form`; aserción Playwright adversarial de al menos 12 px de separación calculada en DOM para ambos JWT A/B, cinco anchos y texto raíz 100%/200%.
+- El workflow GitHub-hosted reconoce el componente cambiado y conserva MySQL 8.4 aislado, .NET 10, Chromium, JWT/RBAC y Scope Lock. CI del nuevo SHA PENDIENTE; no se certifican pruebas anticipadamente, zoom NATIVO 200%, screenshot histórico ni A5. Solo dev, rollback normal, owner DEV04 preservado.
+
 ## 2026-11-22 — DEV02 C15-04.M05.04 A114: rechazos reales para tres superficies privadas adicionales
 - A113 previo acreditado 152/152 Chromium PASS con JWT firmado, ASP.NET Core 10, MySQL 8.4 efímero y checks pertinentes SUCCESS en SHA 860a6069; A114 añade tres casos negativos tenant B / RBAC 403 y ausencia de contenido privado en cinco anchos.
 - A114 espera 155 tests reales en GitHub-hosted exact-SHA; NO se acredita PASS, zoom nativo, WCAG/CWV global ni las ~160 rutas antes del CI. Conserva WIP DEV02 y A5 ajena.
