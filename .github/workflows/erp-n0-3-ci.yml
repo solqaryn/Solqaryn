@@ -106,56 +106,68 @@ jobs:
           dotnet restore Solqaryn.sln
           dotnet build Solqaryn.sln -c Release --no-restore -warnaserror
           dotnet test Solqaryn.sln -c Release --no-build
-      - name: Instalar EF
+      # La migracion historica N0.2/N0.3 (Pomelo/EF8) esta fuera del assembly Oracle EF10.
+      # No simular esa historia ni insertar marcadores falsos en __EFMigrationsHistory.
+      # Validar el runtime real en un MySQL 8.4 descartable con bootstrap canonico.
+      - name: Comprobar frontera Oracle EF10 y exclusión de migraciones legacy
+        working-directory: backend
+        shell: bash
         run: |
           set -euo pipefail
-          dotnet tool install --global dotnet-ef --version 10.0.12
-          test -x "$HOME/.dotnet/tools/dotnet-ef"
-          "$HOME/.dotnet/tools/dotnet-ef" --version
-      - name: Crear esquema N0.2
+          dotnet tool restore
+          dotnet tool run dotnet-ef migrations list \
+            --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
+            --context AppDbContext --configuration Release --no-build --no-connect \
+            | tee /tmp/n03-oracle-migrations.txt
+          grep -Fq '20261006111818_OracleBaseline' /tmp/n03-oracle-migrations.txt
+          grep -Fq '20261018200000_TenantRoleOwnershipDeterministicBackfill' /tmp/n03-oracle-migrations.txt
+          if grep -Eq '20260811013917_N0_2_|20260811032000_N0_3_' /tmp/n03-oracle-migrations.txt; then
+            echo 'ERROR: migracion legacy reintroducida en assembly Oracle productivo' >&2
+            exit 1
+          fi
+          echo 'N03_ORACLE_MIGRATION_BOUNDARY=PASS historical_n02_n03=NOT_EXECUTED'
+      - name: Bootstrap Oracle canónico fresco en MySQL 8.4 efímero
         working-directory: backend
+        shell: bash
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
         run: |
-          "$HOME/.dotnet/tools/dotnet-ef" database update 20260811013917_N0_2_RetirarCatalogoProductoLegacy \
-            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
-            --startup-project src/API/Solqaryn.API.csproj --context AppDbContext
-      - name: Sembrar caso representativo pre-N0.3
+          set -euo pipefail
+          test "$GITHUB_REPOSITORY" = 'solqaryn/Solqaryn'
+          test "$ASPNETCORE_ENVIRONMENT" = 'Development'
+          dotnet run --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj \
+            --configuration Release --no-build | tee /tmp/n03-oracle-fresh.txt
+          grep -Fq 'SOLQARYN_ORACLE_BOOTSTRAP=PASS mode=fresh' /tmp/n03-oracle-fresh.txt
+          grep -Fq 'pending=0' /tmp/n03-oracle-fresh.txt
+      - name: Contrato físico ProductoVariantes actual, tenant y FK en MySQL
         shell: bash
         run: |
           set -euo pipefail
           c="${{ job.services.mysql.id }}"
-          docker exec "$c" mysql -uroot -proot solqaryn_n03_ci -e "
-            INSERT INTO Marcas (Id,Nombre,Orden,Activo,Eliminado,FechaCreacion,FechaActualizacion) VALUES (9301,'N03 Marca',1,1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
-            INSERT INTO Modelos (Id,MarcaId,Nombre,Orden,Activo,Eliminado,FechaCreacion,FechaActualizacion) VALUES (9302,9301,'N03 Modelo',1,1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
-            INSERT INTO Colores (Id,Nombre,CodigoVisual,Orden,Activo,Eliminado,FechaCreacion,FechaActualizacion) VALUES (9303,'N03 Color','#112233',1,1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
-            INSERT INTO Tallas (Id,Nombre,Orden,Activo,Eliminado,FechaCreacion,FechaActualizacion) VALUES (9304,'N03 Talla',1,1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
-            INSERT INTO Productos (Id,Nombre,Marca,Modelo,Cantidad,Costo,Precio,UmbralStockBajo,MarcaId,ModeloId,ColorId,TallaId,Activo,Eliminado,FechaCreacion,FechaActualizacion)
-              VALUES (9300,'N03 Producto','legacy marca','legacy modelo',7,10.00,20.00,2,9301,9302,9303,9304,1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
-            INSERT INTO ProductoVariantes (Id,ProductoId,Sku,Cantidad,UmbralStockBajo,Costo,Precio,EsTecnica,Activo,Eliminado,FechaCreacion,FechaActualizacion)
-              VALUES (9350,9300,'  tec-n03-9300  ',7,2,10.00,20.00,1,1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));"
-      - name: Preflight N0.3
-        shell: bash
-        run: |
-          c="${{ job.services.mysql.id }}"
-          test "$(docker exec -i "$c" mysql -uroot -proot solqaryn_n03_ci --batch --skip-column-names < backend/scripts/preflight-erp-n0-3-producto-variante.sql | tail -n 1)" = '0'
-      - name: Aplicar N0.3 aislado
+          q() { docker exec "$c" mysql -uroot -proot solqaryn_n03_ci --batch --skip-column-names -e "$1"; }
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")" = '1'
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId LIKE '20260811%N0_%';")" = '0'
+          test "$(q "SELECT COUNT(*) FROM information_schema.columns WHERE table_schema=DATABASE() AND table_name='ProductoVariantes' AND column_name IN ('EmpresaId','ProductoId','Sku','CodigoBarras','Cantidad','UmbralStockBajo','Costo','Precio','EsTecnica');")" = '9'
+          test "$(q "SELECT COUNT(DISTINCT index_name) FROM information_schema.statistics WHERE table_schema=DATABASE() AND table_name='ProductoVariantes' AND index_name IN ('UX_ProductoVariantes_Empresa_Sku','UX_ProductoVariantes_Empresa_CodigoBarras','UX_ProductoVariantes_IdentidadActiva','IX_ProductoVariantes_ProductoTecnicoUnico');")" = '4'
+          test "$(q "SELECT COUNT(*) FROM information_schema.key_column_usage WHERE table_schema=DATABASE() AND table_name='ProductoVariantes' AND constraint_name='FK_ProductoVariantes_Empresas_EmpresaId' AND referenced_table_name='Empresas';")" = '1'
+          test "$(q "SELECT COUNT(DISTINCT referenced_table_name) FROM information_schema.key_column_usage WHERE table_schema=DATABASE() AND table_name='ProductoVariantes' AND referenced_table_name IN ('Empresas','Productos');")" = '2'
+          # La verificación negativa usa la FK real y exige el error físico 1452.
+          if docker exec "$c" mysql -uroot -proot solqaryn_n03_ci \
+            -e "INSERT INTO ProductoVariantes (ProductoId,EmpresaId,Sku,Cantidad,UmbralStockBajo,EsTecnica,Activo,Eliminado) VALUES (2147483647,2147483647,'CI-ORPHAN-N03',0,0,0,1,0);" \
+            > /tmp/n03-orphan-reject.log 2>&1; then
+            echo 'ERROR: MySQL aceptó ProductoVariante huérfana/cross-tenant' >&2
+            exit 1
+          fi
+          grep -Eq 'ERROR 1452|foreign key constraint fails' /tmp/n03-orphan-reject.log
+          test "$(q "SELECT COUNT(*) FROM ProductoVariantes WHERE Sku='CI-ORPHAN-N03';")" = '0'
+          echo 'N03_ORACLE_PHYSICAL=PASS mysql84=fresh tenant_fk=ENFORCED orphan=DENIED legacy_migration=NOT_EXECUTED'
+      - name: Snapshot EF Oracle actual sin drift
         working-directory: backend
-        run: |
-          "$HOME/.dotnet/tools/dotnet-ef" database update 20260811032000_N0_3_ConsolidarProductoVariante \
-            --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
-            --startup-project src/API/Solqaryn.API.csproj --context AppDbContext
-      - name: Postcheck N0.3 y datos preservados
         shell: bash
         run: |
           set -euo pipefail
-          c="${{ job.services.mysql.id }}"
-          test "$(docker exec -i "$c" mysql -uroot -proot solqaryn_n03_ci --batch --skip-column-names < backend/scripts/postdeploy-erp-n0-3-producto-variante.sql | tail -n 1)" = '0'
-          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n03_ci -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20260811032000_N0_3_ConsolidarProductoVariante';")" = '1'
-          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n03_ci -Nse "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20260811174745_N0_4_ConsolidarRbacRelacional';")" = '0'
-          test "$(docker exec "$c" mysql -uroot -proot solqaryn_n03_ci -Nse "SELECT COUNT(*) FROM ProductoVariantes WHERE Id=9350 AND Sku='TEC-N03-9300' AND MarcaId=9301 AND ModeloId=9302 AND ColorId=9303 AND TallaId=9304 AND Cantidad=7 AND Costo=10.00 AND Precio=20.00 AND UmbralStockBajo=2;")" = '1'
-          if docker exec "$c" mysql -uroot -proot solqaryn_n03_ci -e "UPDATE ProductoVariantes SET Sku=' ' WHERE Id=9350;"; then echo 'CHECK SKU vacío no bloqueó' >&2; exit 1; fi
-          if docker exec "$c" mysql -uroot -proot solqaryn_n03_ci -e "UPDATE ProductoVariantes SET ModeloId=9302, MarcaId=NULL WHERE Id=9350;"; then echo 'CHECK Modelo/Marca no bloqueó' >&2; exit 1; fi
-      - name: Snapshot EF consistente
-        working-directory: backend
-        run: |
-          "$HOME/.dotnet/tools/dotnet-ef" migrations has-pending-model-changes --project src/Infrastructure/Solqaryn.Infrastructure.csproj \
-            --startup-project src/API/Solqaryn.API.csproj --context AppDbContext
+          dotnet tool run dotnet-ef migrations has-pending-model-changes \
+            --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj \
+            --startup-project src/API/Solqaryn.API.csproj \
+            --context AppDbContext --configuration Release --no-build
