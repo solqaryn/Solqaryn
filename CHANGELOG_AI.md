@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV02 V30 C15-04.M05.04: reparacion P2 de reflow mobile-first
+- Diagnostico causal: commit 93763456 permitio mejorar lectura en storefront-producto, pero el bloque @media max-width introducido fallo del validador transversal mobile-first, antes de pruebas de fases 1/2/7/8/9/10/12; no fue una regresion funcional certificada. Ejemplo: GitHub-hosted run 45259441170/job 137989913734.
+- Reparacion runtime: la barra de compra apilada se convierte en baseline 320-380 CSS px; se expande con @media min-width:381px y se conserva el reflow de migas, caracteristicas y textos del precio. Validator no debilitado; sin cambiar API, datos, JWT/RBAC/tenant ni pagos.
+- A0-A4 y zoom nativo 200% global siguen sin certificar hasta checks exact-SHA, Chromium real y evidencia antes/despues; owner historico DEV02 y V17 2000002297 conservados. No LISTO/A5; rollback por git revert normal.
+
 ## 2026-11-23 — DEV03 V30 C02-01.M05.04: revalidación real del tenant al renovar JWT
 - Runtime Angular: tras `POST /auth/renovar`, revoca permisos y vuelve a consultar contexto empresarial JWT/SQL + permisos antes de restaurar navegación empresarial, sin confiar en almacenamiento local.
 - Fail-closed: 403, respuesta inválida y error de permisos regresan al selector; cambio concurrente de empresa B no se borra por respuesta anterior de A. Logout elimina contexto tenant verificado.
