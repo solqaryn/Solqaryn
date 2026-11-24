@@ -100,13 +100,46 @@ jobs:
             const worker = context.serviceWorkers()[0] ??
               await context.waitForEvent('serviceworker', { timeout: 15000 });
             const page = context.pages()[0] ?? await context.newPage();
+            const cdp = await context.newCDPSession(page);
             const metrics = () => page.evaluate(() => ({
               inner: window.innerWidth,
+              innerHeight: window.innerHeight,
               client: document.documentElement.clientWidth,
               scroll: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
               dpr: window.devicePixelRatio,
               visualScale: window.visualViewport?.scale ?? 1
             }));
+            // Playwright fullPage supplied a CSS-sized clip at native zoom:
+            // the prior PNGs were 713px wide with DPR2 and visibly cut off the right side.
+            // Ask Chromium for the real current viewport, with no CSS-coordinate clip.
+            async function captureViewport(filename, geometry) {
+              const result = await cdp.send('Page.captureScreenshot', {
+                format: 'png', fromSurface: true, captureBeyondViewport: false
+              });
+              const png = Buffer.from(result.data, 'base64');
+              assert.ok(png.length >= 24 && png.subarray(0, 8).equals(
+                Buffer.from([137, 80, 78, 71, 13, 10, 26, 10])), 'Invalid PNG');
+              const width = png.readUInt32BE(16);
+              const height = png.readUInt32BE(20);
+              const expectedWidth = geometry.inner * geometry.dpr;
+              const expectedHeight = geometry.innerHeight * geometry.dpr;
+              assert.ok(Math.abs(width - expectedWidth) <= 40,
+                filename + ': screenshot is not physical viewport width: ' + width + ' vs ' + expectedWidth);
+              assert.ok(Math.abs(height - expectedHeight) <= 40,
+                filename + ': screenshot is not physical viewport height: ' + height + ' vs ' + expectedHeight);
+              await writeFile(join(out, filename), png);
+              return { filename, width, height, expectedWidth, expectedHeight };
+            }
+            async function horizontalGeometry(selector) {
+              const rect = await page.locator(selector).evaluate(el => {
+                const box = el.getBoundingClientRect();
+                return { left: box.left, right: box.right, width: box.width,
+                  viewport: document.documentElement.clientWidth };
+              });
+              assert.ok(rect.width > 0 && rect.left >= -2 && rect.right <= rect.viewport + 2,
+                selector + ': actual element outside horizontal viewport: ' + JSON.stringify(rect));
+              return rect;
+            }
             async function zoom(factor) {
               const actual = await worker.evaluate(async ({ url, factor }) => {
                 const tabs = await chrome.tabs.query({});
@@ -126,7 +159,7 @@ jobs:
               await page.waitForFunction(() => Math.abs(window.devicePixelRatio - 1) < 0.1);
               const before = await metrics();
               const slug = route.slice(1).replaceAll('/', '-');
-              await page.screenshot({ path: join(out, slug + '-100.png'), fullPage: true });
+              const image100 = await captureViewport(slug + '-100.png', before);
               const actual200 = await zoom(2);
               await page.waitForFunction(b => {
                 const ratio = window.devicePixelRatio / b.dpr;
@@ -135,8 +168,21 @@ jobs:
               }, before, { timeout: 10000 });
               await page.locator(selector).waitFor({ state: 'visible', timeout: 20000 });
               const after = await metrics();
-              await page.screenshot({ path: join(out, slug + '-200.png'), fullPage: true });
-              evidence.push({ route, actual100, actual200, before, after });
+              const image200 = await captureViewport(slug + '-200.png', after);
+              const horizontal = await horizontalGeometry(selector);
+              const loginControls = [];
+              if (route === '/login') {
+                for (const control of ['input[autocomplete="username"]',
+                    'input[autocomplete="current-password"]', 'button.submit-button']) {
+                  const bounds = await horizontalGeometry(control);
+                  loginControls.push({ control, bounds });
+                }
+                await page.locator('button.submit-button').scrollIntoViewIfNeeded();
+                const submitImage = await captureViewport(slug + '-200-submit.png', await metrics());
+                loginControls.push({ submitImage });
+              }
+              evidence.push({ route, actual100, actual200, before, after, image100,
+                image200, horizontal, loginControls });
               assert.ok(Math.abs(after.visualScale - 1) < 0.01, route + ': unexpected pinch scale');
               assert.ok(before.scroll <= before.client + 2, route + ': overflow at 100%');
               assert.ok(after.scroll <= after.client + 2, route + ': overflow at 200%');
@@ -145,7 +191,7 @@ jobs:
           } finally {
             await writeFile(join(out, 'metrics.json'), JSON.stringify({
               sha: process.env.GITHUB_SHA, mechanism: 'chrome.tabs.setZoom/getZoom',
-              scope: 'public routes only; no private JWT or WCAG-wide certification', evidence
+              scope: 'public viewport captures only; no private JWT, historical before/after or WCAG-wide certification', evidence
             }, null, 2));
             await context?.close();
             await rm(root, { recursive: true, force: true });

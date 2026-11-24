@@ -1,3 +1,7 @@
+## 2026-11-24 — DEV02 V31 C15-04.M05.04: corregir captura recortada del zoom nativo
+- Evidencia real del SHA 8166f227, job 138235188505: 29/29 UX y 4/4 zoom nativo 100/200 por chrome.tabs; artifact 14891649302 autentico, 8 PNG. Inspeccion visual detecto recorte derecho a 200% pese a metricas DOM: PNG de 713px con DPR2. No atribuir defecto a runtime sin prueba.
+- Cambia solo workflow dirigido: CDP Page.captureScreenshot sin clip CSS, dimensiones PNG contra viewport fisico, geometria horizontal de superficie/controles de login y captura del boton tras scroll. Mantiene zoom nativo, asserts originales, permisos, triggers, CI y V5. No modifica Angular, JWT, RBAC, DB ni presupuesto CSS. SKREF-03/10 leidas en pins autorizados; no scripts externos. CI nuevo SHA requerida; no certificar captura ni UX privada/global antes de readback real. H EN_PROGRESO/I DEV02 y V17 propio; A5 independiente posterior. Sin QA/main/PROD.
+
 ## 2026-11-24 — DEV01 V31 C07-01.M06.06: rollback fiscal HTTP con fallo físico de auditoría
 - R2: ampliar el contrato dirigido existente JWT A/B MySQL 8.4 sin cambiar runtime ni permisos. Un trigger temporal en el esquema efímero rechaza el INSERT de auditoría fiscal; exigir HTTP 503 seguro, ausencia del diagnóstico interno y readback físico de tasa, ownership, relaciones y conteo de recibos sin cambios. Eliminar trigger en finally.
 - Fuente 0226bc14: PUT fiscal 1/1, backend 6576/6576 y Oracle MySQL 160/160 SUCCESS; no relanzar esa evidencia. El incremento exige nueva CI exact-SHA; no declarar LISTO/A5 ni habilitar entornos.
