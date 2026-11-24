@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV02 V32 C15-04.M05.04: evidencia causal del foco nativo 200%
+- Los jobs 138470771596 y 138483860898 completaron 166 pruebas Chromium, pero fallaron después en el foco real de tenant A /perfil al 200%; no son PASS global ni fallo de parser.
+- Conserva el primer elemento alcanzado con Tab y permite únicamente el asentamiento natural acotado de geometría; exige mismo foco, :focus-visible, límites y hit-test sin mover foco ni hacer scroll artificial. Ante fallo guarda PNG físico y diagnóstico geométrico sin valores de formulario, mantiene FAILURE.
+- R2 test-only; JWT/RBAC, MySQL, runtime y permisos intactos. CI exact-SHA y evidencia de los cuatro contextos pendientes; WIP DEV02 y V17 conservados, sin LISTO/A5.
+
 ## 2026-11-24 — DEV04 V32 C03-01.M03.03: credencial de contexto tenant/sucursal con audiencia aislada
 - POST /tenant-context/sesion exige Bearer base y membresía, rol comercial, sucursal y permiso Sucursales.Ver vigentes desde SQL; GET requiere la credencial restringida y revalida los mismos datos, sin fallback ni grant global.
 - JWT de contexto con audiencia independiente y diez minutos de vigencia; el esquema base no lo acepta. Mantiene rol base separado del rol efectivo del tenant; no cambia DTO login, preferencias, ni permite operaciones comerciales legacy por este token.

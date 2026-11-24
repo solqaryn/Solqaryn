@@ -15,6 +15,7 @@ const root = await mkdtemp(join(tmpdir(), 'c1504-private-native-'));
 const extension = join(root, 'extension');
 const output = resolve('test-results/c1504-private-native-zoom');
 const records = [];
+const focusFailures = [];
 const apiResponse = (r, path, method) => {
   const u = new URL(r.url());
   return ['127.0.0.1', 'localhost'].includes(u.hostname) && u.port === '5005'
@@ -86,21 +87,74 @@ async function audit(page, worker, name, locator) {
   assert.ok(before.scroll <= before.client + 2, name + ': overflow at 100%');
   assert.ok(after.scroll <= after.client + 2, name + ': overflow at 200%');
   const image200 = await capture(2, after);
+  // Preserve the first keyboard-selected element. Natural CSS transition or
+  // browser scrolling can take a frame; do not select another element, force
+  // focus, scroll programmatically, or accept an obscured target.
+  const beforeTab = await page.evaluate(() => document.activeElement?.tagName ?? null);
   await page.keyboard.press('Tab');
-  const focus = await page.evaluate(() => {
-    const el = document.activeElement;
-    if (!el || el === document.body || el === document.documentElement) return false;
+  const target = await page.evaluateHandle(() => document.activeElement);
+  const snapshot = el => {
+    if (!(el instanceof HTMLElement)) return { valid: false, tag: null };
     const css = getComputedStyle(el), r = el.getBoundingClientRect();
-    return el.matches(':focus-visible') && css.visibility !== 'hidden' && css.display !== 'none'
-      && r.width > 0 && r.height > 0 && r.top >= 0 && r.bottom <= innerHeight
-      && r.left >= -1 && r.right <= document.documentElement.clientWidth + 1;
-  });
-  assert.ok(focus, name + ': real visible keyboard focus missing or clipped at 200%');
-  const focusedAnchor = page.locator(':focus-visible');
-  assert.equal(await focusedAnchor.count(), 1, name + ': unique actual focus-visible target required');
-  const focusImage200 = await capture(2, after, focusedAnchor);
-  assert.equal(await focusedAnchor.count(), 1, name + ': focus was lost during physical capture');
-  records.push({ name, actual100, actual200, before, after, bounds, image100, image200, focus, focusImage200 });
+    const x = r.left + r.width / 2, y = r.top + r.height / 2;
+    const hit = document.elementFromPoint(x, y);
+    const same = document.activeElement === el;
+    const keyboard = el.matches(':focus-visible');
+    const within = r.width > 0 && r.height > 0 && r.top >= 0
+      && r.bottom <= innerHeight && r.left >= -1
+      && r.right <= document.documentElement.clientWidth + 1;
+    const unobscured = !!hit && (hit === el || el.contains(hit));
+    return {
+      tag: el.tagName, id: el.id, role: el.getAttribute('role'),
+      same, keyboard, within, unobscured,
+      rect: { x: r.x, y: r.y, width: r.width, height: r.height },
+      viewport: { width: innerWidth, height: innerHeight },
+      visibility: css.visibility, display: css.display,
+      outlineStyle: css.outlineStyle, outlineWidth: css.outlineWidth,
+      activeTag: document.activeElement?.tagName ?? null,
+      hitTag: hit?.tagName ?? null,
+      valid: same && keyboard && within && unobscured && el !== document.body
+        && el !== document.documentElement && css.visibility !== 'hidden'
+        && css.display !== 'none'
+    };
+  };
+  const initial = await target.evaluate(snapshot);
+  let final = initial;
+  let focusImage200;
+  try {
+    // Poll only the original target for up to one second. The test still
+    // fails if the original focus is missing, moves, or stays clipped.
+    for (let attempt = 0; attempt < 10 && !final.valid && final.same && final.keyboard; attempt++) {
+      await page.waitForTimeout(100);
+      final = await target.evaluate(snapshot);
+    }
+    assert.ok(final.valid, name + ': real visible keyboard focus missing or clipped at 200%');
+    const focusedAnchor = page.locator(':focus-visible');
+    assert.equal(await focusedAnchor.count(), 1, name + ': unique actual focus-visible target required');
+    focusImage200 = await capture(2, after, focusedAnchor);
+    assert.equal(await focusedAnchor.count(), 1, name + ': focus was lost during physical capture');
+    final = await target.evaluate(snapshot);
+    assert.ok(final.valid, name + ': original keyboard focus changed or was obscured during capture');
+  } catch (error) {
+    const failureImage = name + '-200-focus-failure.png';
+    // Save authentic physical failure evidence, including cases where the
+    // element is absent or occluded. This never converts a failure to PASS.
+    try {
+      await exec('ffmpeg', ['-nostdin', '-hide_banner', '-loglevel', 'error',
+        '-f', 'x11grab', '-draw_mouse', '0', '-video_size', '1600x1200',
+        '-i', process.env.DISPLAY, '-frames:v', '1', '-threads', '1', '-y', join(output, failureImage)],
+        { timeout: 15000 });
+    } catch (captureError) {
+      console.error(name + ': failure screenshot unavailable: ' + captureError.message);
+    }
+    focusFailures.push({ name, beforeTab, initial, final, failureImage, error: error.message });
+    console.error('C1504_NATIVE_FOCUS_FAILURE ' + JSON.stringify(focusFailures.at(-1)));
+    throw error;
+  } finally {
+    await target.dispose();
+  }
+  records.push({ name, actual100, actual200, before, after, bounds, image100, image200,
+    focus: final.valid, focusImage200, focusEvidence: { beforeTab, initial, final } });
   await zoom(1);
 }
 
@@ -200,7 +254,7 @@ try {
   await writeFile(join(output, 'metrics.json'), JSON.stringify({
     sha: process.env.GITHUB_SHA, mechanism: 'chrome.tabs.setZoom/getZoom + X11 physical desktop',
     scope: 'private global UX, own tenant A/B profile and B global denial; synthetic CI identities only; not whole-product or historical before/after certification',
-    records
+    records, focusFailures
   }, null, 2));
   await rm(root, { recursive: true, force: true });
 }
