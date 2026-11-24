@@ -22,9 +22,14 @@ public sealed class TenantContextV5ContractTests
             Array.Empty<EmpresaSeleccionable>();
         public int SelectorCalls { get; private set; }
         public bool BaseVigente { get; set; } = true;
+        public Action? OnSecondBaseCheck { get; set; }
+        private int _baseChecks;
         public Task<bool> SesionBaseVigenteAsync(int actorId, int rolId,
-            CancellationToken cancellationToken = default) =>
-            Task.FromResult(BaseVigente && actorId == 7 && rolId == 19);
+            CancellationToken cancellationToken = default)
+        {
+            if (++_baseChecks == 2) OnSecondBaseCheck?.Invoke();
+            return Task.FromResult(BaseVigente && actorId == 7 && rolId == 19);
+        }
 
         public Task<UsuarioScopeActual?> ObtenerActualAsync() =>
             Task.FromResult<UsuarioScopeActual?>(null);
@@ -102,7 +107,7 @@ public sealed class TenantContextV5ContractTests
         Assert.Equal(11, response.Data.EmpresaId);
         Assert.Equal(19, response.Data.RolId);
         Assert.Empty(response.Errors);
-        Assert.Equal(1, scope.Calls);
+        Assert.Equal(2, scope.Calls);
     }
 
     // El JWT identifica al actor y aporta un rol canónico, pero el rol efectivo
@@ -143,7 +148,25 @@ public sealed class TenantContextV5ContractTests
         Assert.Equal(11, response.Data.EmpresaId);
         Assert.Equal(20, response.Data.RolId);
         Assert.Empty(response.Errors);
-        Assert.Equal(1, scope.Calls);
+        Assert.Equal(2, scope.Calls);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task Obtener_RevocacionOCambioRolDestinoDuranteRevalidacionBase_Deniega(
+        bool revoke)
+    {
+        var scope = new ScopeStub
+        {
+            Actual = new UsuarioTenantScopeActual(7, 11, 20, "Operador", false)
+        };
+        scope.OnSecondBaseCheck = () => scope.Actual = revoke
+            ? null
+            : new UsuarioTenantScopeActual(7, 11, 21, "Nuevo rol", false);
+        var action = await WithJwtIdentity(scope).Obtener(11, CancellationToken.None);
+        Assert.IsType<ForbidResult>(action);
+        Assert.Equal(2, scope.Calls);
     }
 
     [Theory]

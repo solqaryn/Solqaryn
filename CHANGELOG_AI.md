@@ -1,3 +1,7 @@
+## 2026-11-24 — DEV04 V31 C03-01.M03.03: revocación de tenant destino en selección real
+- P1/R2: relectura efectiva de membresía destino después de validar sesión base; rechaza cambio/revocación de B sin confundir rol de A, y no-store en GET de contexto.
+- Regresión adversarial del controlador y HTTP JWT firmado/MySQL 8.4 efímero A/B; CI exact-SHA pendiente, sin cierre ni A5 propia. No emite token tenant/sucursal ni cambia permisos; falta enforcement de sesión seleccionada. Solo dev, Scope Lock STRICT, owner histórico intacto.
+
 ## 2026-11-24 — DEV02 V31 C15-04.M05.04: respuesta tenant estable durante zoom nativo
 - SHA 3e3381e6, run 45382269658/job 138404053487: preflight correcto, 166 pruebas Chromium JWT/MySQL aprobadas; el paso X11 fallo al leer el cuerpo CDP de tenant-context, no por una asercion de producto.
 - Aisla la navegacion del audit en una nueva pestaña del mismo perfil autenticado; conserva el estado HTTP real del navegador y verifica empresaId en el mismo endpoint real usando la cabecera Authorization exacta observada, sin mocks ni cambios de runtime, RBAC o criterios de captura.

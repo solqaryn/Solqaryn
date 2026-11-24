@@ -29,6 +29,7 @@ public sealed class TenantContextController : ControllerBase
     /// No utiliza el catálogo administrativo global ni el ID suministrado por UI.
     /// </summary>
     [HttpGet("empresas")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public async Task<IActionResult> ListarEmpresas(CancellationToken cancellationToken)
     {
         // The productive selector must not trust ambiguous actor/role claims.
@@ -105,6 +106,7 @@ public sealed class TenantContextController : ControllerBase
             StringComparison.Ordinal);
 
     [HttpGet("{empresaId:int}")]
+    [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public async Task<IActionResult> Obtener(
         int empresaId,
         CancellationToken cancellationToken)
@@ -139,8 +141,19 @@ public sealed class TenantContextController : ControllerBase
         if (!await _usuarioScopeService.SesionBaseVigenteAsync(jwtActor, jwtRole, cancellationToken))
             return Forbid();
 
+        // The base role may belong to A while the selected membership is B.
+        // Revalidating the base alone cannot detect revocation or a role change
+        // in B during the awaited base-session check. Never return a stale
+        // effective role; the client must request a new selection.
+        var actual = await _usuarioScopeService.ObtenerActualAsync(
+            empresaId, cancellationToken);
+        if (actual is null || actual != contexto || actual.RolId <= 0 ||
+            !TryCanonicalJwtAuthority(out var currentActor, out var currentRole) ||
+            currentActor != jwtActor || currentRole != jwtRole)
+            return Forbid();
+
         return Ok(ApiResponse<UsuarioTenantScopeActual>.Ok(
-            contexto,
+            actual,
             "Contexto tenant verificado."));
     }
 }

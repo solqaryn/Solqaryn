@@ -338,6 +338,34 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
             await AssertContextAsync(HttpStatusCode.OK);
             using (var foreignContext = await ContextAsync($"/tenant-context/{tenantB.Id}", productToken))
                 Assert.Equal(HttpStatusCode.Forbidden, foreignContext.StatusCode);
+
+            // The signed base role remains A, but the destination B has a
+            // distinct current membership/role. B revocation must not fall
+            // back to A or resurrect B with the still-valid base token.
+            var roleB = new Rol
+            {
+                Nombre = "C0301 login tenant B", NombreNormalizado = "C0301_LOGIN_B",
+                Ambito = AmbitoAutorizacion.Empresa,
+                EmpresaId = tenantB.Id, Activo = true
+            };
+            db.Roles.Add(roleB);
+            await db.SaveChangesAsync();
+            var membershipB = new UsuarioEmpresa(actor.Id, tenantB.Id, roleB.Id);
+            db.UsuarioEmpresas.Add(membershipB);
+            await db.SaveChangesAsync();
+            using (var contextB = await ContextAsync($"/tenant-context/{tenantB.Id}", productToken))
+            {
+                Assert.Equal(HttpStatusCode.OK, contextB.StatusCode);
+                Assert.True(contextB.Headers.CacheControl?.NoStore == true);
+                using var json = System.Text.Json.JsonDocument.Parse(await contextB.Content.ReadAsStringAsync());
+                Assert.Equal(tenantB.Id, json.RootElement.GetProperty("data").GetProperty("empresaId").GetInt32());
+                Assert.Equal(roleB.Id, json.RootElement.GetProperty("data").GetProperty("rolId").GetInt32());
+            }
+            membershipB.Desactivar();
+            await db.SaveChangesAsync();
+            using (var revokedB = await ContextAsync($"/tenant-context/{tenantB.Id}", productToken))
+                Assert.Equal(HttpStatusCode.Forbidden, revokedB.StatusCode);
+            await AssertContextAsync(HttpStatusCode.OK);
             using (var missingRoleContext = await ContextAsync("/tenant-context/empresas", jwt))
                 Assert.Equal(HttpStatusCode.Unauthorized, missingRoleContext.StatusCode);
             using (var renewed = await RefreshAsync(productToken))
