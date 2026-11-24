@@ -106,6 +106,9 @@ public class ProductoServiceTests
     [InlineData("principal-eliminada", "galería general")]
     [InlineData("principal-variante", "galería general")]
     [InlineData("principal-cero", "galería general")]
+    [InlineData("eliminar-ajena", "galería general")]
+    [InlineData("eliminar-variante", "galería general")]
+    [InlineData("eliminar-cero", "galería general")]
     public async Task UpdateAsync_GaleriaInvalida_NoModificaNiInvocaStorage(
         string caso, string mensaje)
     {
@@ -139,6 +142,9 @@ public class ProductoServiceTests
         if (caso == "principal-eliminada") dto.ImagenPrincipalId = 1;
         if (caso == "principal-variante") dto.ImagenPrincipalId = 6;
         if (caso == "principal-cero") dto.ImagenPrincipalId = 0;
+        if (caso == "eliminar-ajena") dto.ImagenesAEliminarIds = new List<int> { 1, 999 };
+        if (caso == "eliminar-variante") dto.ImagenesAEliminarIds = new List<int> { 1, 6 };
+        if (caso == "eliminar-cero") dto.ImagenesAEliminarIds = new List<int> { 1, 0 };
 
         var error = await Assert.ThrowsAsync<BusinessRuleException>(() => _service.UpdateAsync(1, dto));
         Assert.Contains(mensaje, error.Message);

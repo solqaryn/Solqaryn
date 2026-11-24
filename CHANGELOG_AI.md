@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV01 V33 C07-01.M06.06: rechazo íntegro de borrado de galería con IDs no propios
+- La revisión causal del cambio 90725acf confirmó CI backend 6602/6602 y Oracle MySQL 160/160, pero detectó que UpdateAsync descartaba silenciosamente IDs de borrado no presentes en la galería general; una solicitud mixta podía aplicar borrados válidos y editar el producto pese al ID ajeno, de variante o cero.
+- Se valida el conjunto completo antes de mutar el producto, llamar almacenamiento, guardar o auditar. Mensaje genérico sin exponer pertenencia de otros recursos; no se modifica JWT/RBAC, rutas, DTO, esquema, flags ni proveedor.
+- Tres casos xUnit adversariales sobre solicitud mixta exigen rechazo y cero efectos de almacenamiento/entidad/persistencia/auditoría. CI exact-SHA pendiente; los mocks no acreditan rollback de almacenamiento externo ni toda la aceptación ERP, D01/D06 siguen pendientes. A5 independiente; revert FF ordinario.
+
 ## 2026-11-24 — DEV06 V33 C01-03.M04.02: observar foco nativo después de captura de carga
 - CI exacta cb5d696c, job 138528354617: la carga visible y las pruebas previas JWT/MySQL/Chromium alcanzaron el paso nativo; el foco de carga al 200 % falló tras desplazar el estado al encuadre.
 - La prueba ahora observa durante un máximo de dos segundos el desplazamiento nativo posterior a Tab, sin forzar foco ni mover el objetivo; conserva la condición de visibilidad y exige hit-test no obstruido. Registra geometría inicial/final y captura X11 del fallo si persiste.

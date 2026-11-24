@@ -157,6 +157,12 @@ public class ProductoService : IProductoService
         var aEliminar = dto.ImagenesAEliminarIds is { Count: > 0 }
             ? imagenesGenerales.Where(i => dto.ImagenesAEliminarIds.Contains(i.Id)).ToList()
             : new List<ProductoImagen>();
+        // All deletion IDs must belong to this product's general gallery.
+        // A mixed valid/foreign request is rejected atomically before storage IO.
+        if (dto.ImagenesAEliminarIds is { Count: > 0 } &&
+            dto.ImagenesAEliminarIds.Any(imagenId => imagenId <= 0 || !aEliminar.Any(i => i.Id == imagenId)))
+            throw new BusinessRuleException("Una imagen indicada para eliminar no pertenece a la galería general de este producto.");
+
         var nuevas = dto.ImagenesNuevas ?? new List<IFormFile>();
         var restantes = imagenesGenerales.Count - aEliminar.Count;
         if (restantes + nuevas.Count > MaxImagenes)
