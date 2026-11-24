@@ -1,3 +1,9 @@
+## 2026-11-24 — DEV01 C07-01.M06.06: contrato vendible antes de mutaciones ERP
+
+- R2 D06: VentaService valida la elegibilidad comercial también en Application, tanto al armar el borrador y calcular la vista previa como al confirmar bajo los locks físicos. Un producto reclasificado después del borrador o tipo no soportado no debe iniciar cambios de stock, Kardex, factura o finanzas. Se mantiene la regla vigente MercaderiaVenta, no se habilita el enum de servicios ni se modifica la anulación histórica.
+- Regresiones dirigidas: tipos 0/2/3/99 en confirmación y cálculo previo; laboratorio Oracle EF/MySQL existente con borrador de dos productos, reclasificación persistida y readback de ambas existencias, estado, factura, Kardex y finanzas sin efectos. Los mocks unitarios no acreditan MySQL/JWT; la integración física usa repositorios y UnitOfWork reales del fixture, no acredita la autorización HTTP ni servicios no inventariables.
+- A0 diff R2 Application + pruebas; A1/A3/A4 pendientes de CI exact-SHA, Scope Lock y V5. D06 requiere política persistida y consumidores venta/cotización/pedido/reserva/preparación/anulación; no LISTO ni A5 propia. Sin permisos, configuración, datos productivos ni QA/main/PROD. Revert normal FF/CAS si procede.
+
 ## 2026-11-24 — DEV05 C15-03.M05.05: fixture global de autenticación consistente
 
 - R2 CI: el run 45481909679/job 138756991654 ejecutó 10/11 casos; el caso de firma adulterada se detuvo en login real 401 antes de probar la firma. AuthService exige membresía vigente para rol base empresarial; la identidad global efímera copiaba ese rol sin membresía.

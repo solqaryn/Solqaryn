@@ -225,6 +225,54 @@ public class VentaServiceTests
         _movInvRepoMock.Verify(r => r.AddConOrigenTipadoAsync(It.IsAny<MovimientoInventario>(), It.IsAny<OrigenMovimientoInventario>()), Times.Never);
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(99)]
+    public async Task ConfirmarAsync_TipoNoVendible_RechazaAntesDeMutarInventario(int tipo)
+    {
+        var producto = ProductoDePrueba(cantidad: 10);
+        producto.TipoInventario = (TipoInventario)tipo;
+        var variante = new ProductoVariante { Id = 8, ProductoId = 1, Sku = "M185-BLK", Cantidad = 6, Activo = true };
+        var venta = VentaDePrueba(cantidadDetalle: 2, varianteId: variante.Id);
+        PrepararBloqueos(venta, producto, variante);
+
+        var error = await Assert.ThrowsAsync<BusinessRuleException>(() => _service.ConfirmarAsync(venta.Id));
+
+        Assert.Contains("no puede venderse ni facturarse", error.Message);
+        Assert.Equal(10, producto.Cantidad);
+        Assert.Equal(6, variante.Cantidad);
+        Assert.Equal(EstadoDocumento.Borrador, venta.Estado);
+        _productoRepoMock.Verify(r => r.Update(It.IsAny<Producto>()), Times.Never);
+        _varianteRepoMock.Verify(r => r.Update(It.IsAny<ProductoVariante>()), Times.Never);
+        _movInvRepoMock.Verify(r => r.AddConOrigenTipadoAsync(It.IsAny<MovimientoInventario>(), It.IsAny<OrigenMovimientoInventario>()), Times.Never);
+        _movFinRepoMock.Verify(r => r.AddAsync(It.IsAny<MovimientoFinanciero>()), Times.Never);
+        _facturaRepoMock.Verify(r => r.AddAsync(It.IsAny<Factura>()), Times.Never);
+    }
+
+    [Theory]
+    [InlineData(0)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(99)]
+    public async Task CalcularVistaPreviaAsync_TipoNoVendible_NoConsultaVarianteNiCalcula(int tipo)
+    {
+        var producto = ProductoDePrueba();
+        producto.TipoInventario = (TipoInventario)tipo;
+        _productoRepoMock.Setup(r => r.GetByIdAsync(producto.Id)).ReturnsAsync(producto);
+
+        var error = await Assert.ThrowsAsync<BusinessRuleException>(() => _service.CalcularVistaPreviaAsync(new CalcularVentaRequest
+        {
+            Detalles = { new VentaDetalleInputDto { ProductoId = producto.Id, ProductoVarianteId = 8, Cantidad = 1 } }
+        }));
+
+        Assert.Contains("no puede venderse ni facturarse", error.Message);
+        _varianteRepoMock.Verify(r => r.GetByIdAsync(It.IsAny<int>()), Times.Never);
+        _calculoMock.Verify(c => c.CalcularVentaAsync(It.IsAny<List<DetalleCalculoInput>>(),
+            It.IsAny<int?>(), It.IsAny<int?>(), It.IsAny<string?>(), It.IsAny<int?>(), It.IsAny<bool>(), It.IsAny<string?>()), Times.Never);
+    }
+
     [Fact]
     public async Task ConfirmarAsync_Genera_Factura_Con_Vendedor_Correcto()
     {

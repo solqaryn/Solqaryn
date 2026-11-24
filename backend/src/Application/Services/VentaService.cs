@@ -217,6 +217,12 @@ public class VentaService : IVentaService
                 .ToList();
             var inventario = await _inventarioConcurrency.BloquearYValidarInventarioAsync(demanda, esDeduccion: true);
 
+            // Revalidate current commercial eligibility under the inventory locks.
+            // A draft may predate a reclassification; reject the whole document
+            // before any stock, Kardex or financial mutation.
+            foreach (var producto in inventario.Productos.Values)
+                ValidarProductoVendible(producto);
+
             foreach (var productoGrupo in inventario.Demandas.GroupBy(x => x.ProductoId))
             {
                 var producto = inventario.Productos[productoGrupo.Key];
@@ -582,6 +588,7 @@ public class VentaService : IVentaService
                 throw new BusinessRuleException("La cantidad de cada producto debe ser mayor a 0.");
             var producto = await _productoRepository.GetByIdAsync(input.ProductoId)
                 ?? throw new BusinessRuleException($"El producto con id {input.ProductoId} no existe.");
+            ValidarProductoVendible(producto);
 
             ProductoVariante variante;
             if (input.ProductoVarianteId.HasValue)
@@ -649,8 +656,7 @@ public class VentaService : IVentaService
 
             var producto = await _productoRepository.GetByIdAsync(d.ProductoId)
                 ?? throw new BusinessRuleException($"El producto con id {d.ProductoId} no existe.");
-            if (!producto.Activo)
-                throw new BusinessRuleException($"El producto '{producto.Nombre}' está inactivo.");
+            ValidarProductoVendible(producto);
 
             ProductoVariante variante;
             if (d.ProductoVarianteId.HasValue)
@@ -678,6 +684,19 @@ public class VentaService : IVentaService
         }
 
         return await _calculoService.CalcularVentaAsync(entradas, request.ClienteId, _currentUser.RolId, request.CodigoPromocional, request.CostoEnvioId, request.EnvioExonerado, request.MotivoExoneracionEnvio);
+    }
+
+    private static void ValidarProductoVendible(Producto producto)
+    {
+        if (!producto.Activo || producto.Eliminado)
+            throw new BusinessRuleException($"El producto '{producto.Nombre}' está inactivo o eliminado.");
+        if (producto.TipoInventario != TipoInventario.MercaderiaVenta)
+        {
+            var motivo = producto.TipoInventario == TipoInventario.InsumoAdministrativo
+                ? "insumo administrativo"
+                : "tipo de inventario no vendible";
+            throw new BusinessRuleException($"El producto '{producto.Nombre}' es un {motivo} y no puede venderse ni facturarse.");
+        }
     }
 
     private static decimal ResolverPrecioAutorizado(Producto producto, ProductoVariante variante)

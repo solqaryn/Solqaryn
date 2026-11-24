@@ -388,6 +388,59 @@ public class InventarioDocumentConcurrencyTests
     }
 
     [Fact]
+    public async Task VentaBorradorConProductoReclasificado_RechazaSinEfectosFisicos()
+    {
+        var options = CrearOpciones($"test_venta_tipo_rollback_{Guid.NewGuid():N}");
+        int ventaId, productoAId, productoBId;
+        try
+        {
+            await using (var setup = new AppDbContext(options))
+            {
+                await Phase7MySqlTestDatabase.InitializeFreshAsync(setup);
+                var productoA = CrearProducto("Mercaderia CI", 5);
+                var productoB = CrearProducto("Reclasificado CI", 4);
+                setup.Productos.AddRange(productoA, productoB);
+                await setup.SaveChangesAsync();
+                productoAId = productoA.Id;
+                productoBId = productoB.Id;
+                var venta = CrearVenta("VEN-TIPO-ROLLBACK", (productoA, 2, 20m), (productoB, 1, 20m));
+                setup.Ventas.Add(venta);
+                await setup.SaveChangesAsync();
+                ventaId = venta.Id;
+            }
+
+            // Simulate a persisted classification change after creation of a valid draft.
+            await using (var reclassify = new AppDbContext(options))
+            {
+                var producto = await reclassify.Productos.SingleAsync(x => x.Id == productoBId);
+                producto.TipoInventario = TipoInventario.InsumoAdministrativo;
+                await reclassify.SaveChangesAsync();
+            }
+
+            await using (var context = new AppDbContext(options))
+            {
+                var error = await Assert.ThrowsAsync<BusinessRuleException>(() =>
+                    CrearVentaService(context).ConfirmarAsync(ventaId));
+                Assert.Contains("no puede venderse ni facturarse", error.Message);
+            }
+
+            await using var verify = new AppDbContext(options);
+            Assert.Equal(5, await verify.Productos.Where(x => x.Id == productoAId).Select(x => x.Cantidad).SingleAsync());
+            var reclasificado = await verify.Productos.AsNoTracking().SingleAsync(x => x.Id == productoBId);
+            Assert.Equal(4, reclasificado.Cantidad);
+            Assert.Equal(TipoInventario.InsumoAdministrativo, reclasificado.TipoInventario);
+            Assert.Equal(EstadoDocumento.Borrador, await verify.Ventas.Where(x => x.Id == ventaId).Select(x => x.Estado).SingleAsync());
+            Assert.Equal(0, await verify.Facturas.CountAsync(x => x.VentaId == ventaId));
+            Assert.Equal(0, await verify.MovimientosInventario.CountAsync(x => x.ReferenciaTipo == "Venta" && x.ReferenciaId == ventaId));
+            Assert.Equal(0, await verify.MovimientosFinancieros.CountAsync(x => x.VentaId == ventaId));
+        }
+        finally
+        {
+            await LimpiarAsync(options);
+        }
+    }
+
+    [Fact]
     public async Task DocumentosEnOrdenInverso_UsanMismoOrdenGlobalDeLocks()
     {
         var options = CrearOpciones($"test_reverse_order_{Guid.NewGuid():N}");
