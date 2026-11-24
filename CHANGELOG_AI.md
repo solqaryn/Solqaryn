@@ -1,3 +1,8 @@
+## 2026-11-24 — QA: corrección acotada de dependencias npm
+
+- Aplica los manifiestos validados por GitHub Actions, corrida 45514234636. fast-uri 3.1.9, undici 8.12.4 y zod 4.6.6; mantiene Angular CLI 22.2.1. Los dos hashes Git se verificaron contra el job 138869432468 antes de publicar.
+- Retira el workflow temporal del candidato. Queda por verificar la CI ordinaria del nuevo SHA y los despliegues, acceso e integraciones de QA. No importa cambios de dev/main ni modifica producción.
+
 ## 2026-11-24 — QA: evidencia aplicable del lockfile validado
 
 - El candidato 45513745524 pasó en QA. El job emite el delta limitado a los dos manifiestos y sus hashes Git para que el cambio se pueda aplicar y comprobar sin ejecutar el ZIP. Solo después de las mismas auditorías, lint, build y routing; no despliega ni escribe desde CI.
