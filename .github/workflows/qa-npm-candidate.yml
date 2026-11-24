@@ -82,3 +82,14 @@ jobs:
             frontend/package-lock.json
           if-no-files-found: error
           retention-days: 7
+      - name: Export checked manifest delta
+        shell: bash
+        run: |
+          set -euo pipefail
+          git diff --no-ext-diff -- package.json package-lock.json > "$RUNNER_TEMP/qa-manifests.diff"
+          test -s "$RUNNER_TEMP/qa-manifests.diff"
+          test "$(wc -c < "$RUNNER_TEMP/qa-manifests.diff")" -le 24576
+          git diff --check
+          git hash-object package.json package-lock.json | paste -sd, - | sed 's/^/QA_NPM_GIT_BLOBS=/'
+          base64 -w 0 "$RUNNER_TEMP/qa-manifests.diff" | sed 's/^/QA_NPM_PATCH_BASE64=/'
+          printf '\n'

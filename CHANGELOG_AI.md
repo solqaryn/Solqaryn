@@ -1,3 +1,7 @@
+## 2026-11-24 — QA: evidencia aplicable del lockfile validado
+
+- El candidato 45513745524 pasó en QA. El job emite el delta limitado a los dos manifiestos y sus hashes Git para que el cambio se pueda aplicar y comprobar sin ejecutar el ZIP. Solo después de las mismas auditorías, lint, build y routing; no despliega ni escribe desde CI.
+
 ## 2026-11-24 — QA: candidato reproducible para auditoría npm
 
 - Basado exclusivamente en QA `0cb199d1`; la corrida 45513062216 verificó el scope y falló en la auditoría frontend de fast-uri, undici y zod (arrastrado por Angular CLI).
