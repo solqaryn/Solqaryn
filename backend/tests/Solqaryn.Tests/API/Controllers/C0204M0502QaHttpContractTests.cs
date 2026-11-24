@@ -16,6 +16,7 @@ using Microsoft.IdentityModel.Tokens;
 using MySql.Data.MySqlClient;
 using MySql.EntityFrameworkCore.Extensions;
 using Solqaryn.API.Controllers;
+using Solqaryn.API.Middleware;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
@@ -245,8 +246,14 @@ public sealed class C0204M0502QaHttpContractTests
         using var client = fixture.Host.GetTestClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
             "Bearer", Token(fixture.GlobalId, "operadorglobal"));
+        const string goodCorrelation = "qa-global-success.20261124";
+        client.DefaultRequestHeaders.Add(CorrelationIdMiddleware.HeaderName, goodCorrelation);
         using (var good = await client.GetAsync(Path))
+        {
             Assert.Equal(HttpStatusCode.OK, good.StatusCode);
+            Assert.Equal(goodCorrelation, Assert.Single(good.Headers.GetValues(CorrelationIdMiddleware.HeaderName)));
+        }
+        client.DefaultRequestHeaders.Remove(CorrelationIdMiddleware.HeaderName);
 
         using (var scope = fixture.Host.Services.CreateScope())
         {
@@ -263,18 +270,23 @@ public sealed class C0204M0502QaHttpContractTests
             Assert.Equal(4, metadata.RootElement.GetProperty("TotalChecks").GetInt32());
             Assert.Equal(4, metadata.RootElement.GetProperty("ChecksExitosos").GetInt32());
             Assert.DoesNotContain("private-secret", audit.ValoresNuevos!);
-            Assert.True(Guid.TryParseExact(audit.CorrelationId, "N", out _));
+            Assert.Equal(goodCorrelation, audit.CorrelationId);
         }
 
         // Real HTTP + JWT + SQL: an invalid upstream contract must never yield a
         // 500 or evidence, and its bounded audit must survive a fresh context.
         upstream.Payload = "[\"private-secret\"]";
+        client.DefaultRequestHeaders.Add(CorrelationIdMiddleware.HeaderName, "invalid correlation value");
+        string errorCorrelation;
         using (var malformed = await client.GetAsync(Path))
         {
             Assert.Equal(HttpStatusCode.ServiceUnavailable, malformed.StatusCode);
+            errorCorrelation = Assert.Single(malformed.Headers.GetValues(CorrelationIdMiddleware.HeaderName));
+            Assert.True(Guid.TryParseExact(errorCorrelation, "N", out _));
             Assert.Contains("no-store", malformed.Headers.CacheControl?.ToString() ?? "");
             Assert.DoesNotContain("private-secret", await malformed.Content.ReadAsStringAsync());
         }
+        client.DefaultRequestHeaders.Remove(CorrelationIdMiddleware.HeaderName);
         using (var scope = fixture.Host.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -289,7 +301,7 @@ public sealed class C0204M0502QaHttpContractTests
             Assert.Equal(Sha, metadata.RootElement.GetProperty("Sha").GetString());
             Assert.Equal("SIN_VERIFICAR", metadata.RootElement.GetProperty("EstadoCi").GetString());
             Assert.Equal(0, metadata.RootElement.GetProperty("ChecksExitosos").GetInt32());
-            Assert.True(Guid.TryParseExact(failure.CorrelationId, "N", out _));
+            Assert.Equal(errorCorrelation, failure.CorrelationId);
         }
 
         // Real storage failure, not a mocked DbUpdateException: block INSERT
@@ -530,6 +542,7 @@ public sealed class C0204M0502QaHttpContractTests
                 })
                 .Configure(app =>
                 {
+                    app.UseMiddleware<CorrelationIdMiddleware>();
                     app.UseRouting();
                     app.UseAuthentication();
                     app.UseAuthorization();

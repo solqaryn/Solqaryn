@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Solqaryn.API.Middleware;
 using Solqaryn.Application.Common;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
@@ -99,7 +100,7 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                     Accion = AccionPermiso.ConsultarHistorial,
                     Entidad = "ConsultaEvidenciasQaGlobal",
                     Descripcion = "Consulta de evidencia QA no verificable.",
-                    CorrelationId = Guid.NewGuid().ToString("N"),
+                    CorrelationId = CorrelacionAuditoria(),
                     ValoresNuevos = JsonSerializer.Serialize(new
                     {
                         Schema = "qa-check-evidence/v1",
@@ -217,7 +218,7 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                 Accion = AccionPermiso.ConsultarHistorial,
                 Entidad = "ConsultaEvidenciasQaGlobal",
                 Descripcion = "Consulta privada de checks del commit " + sha[..12] + ".",
-                CorrelationId = Guid.NewGuid().ToString("N"),
+                CorrelationId = CorrelacionAuditoria(),
                 ValoresNuevos = JsonSerializer.Serialize(new
                 {
                     Schema = "qa-check-evidence/v1",
@@ -259,6 +260,18 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
         {
             return await FalloProveedorAsync("QA_UPSTREAM_TIMEOUT");
         }
+    }
+
+    // Reuse only the correlation value normalized by the HTTP middleware.
+    // It is diagnostic metadata, never an authority or an idempotency key.
+    private string CorrelacionAuditoria()
+    {
+        if (HttpContext.Items[CorrelationIdMiddleware.ItemKey] is string value &&
+            value.Length is >= 1 and <= 64 &&
+            value.All(c => char.IsAsciiLetterOrDigit(c) || c is '-' or '_' or '.' or ':'))
+            return value;
+
+        return Guid.NewGuid().ToString("N");
     }
 
     private ObjectResult NoVerificable() =>
