@@ -201,7 +201,12 @@ public sealed class C0204M0502QaHttpContractTests
         Assert.Equal(2, upstream.Calls);
         using var scope = fixture.Host.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-        Assert.Single(await db.Set<RegistroAuditoria>().ToListAsync());
+        var audits = await db.Set<RegistroAuditoria>().ToListAsync();
+        Assert.Equal(2, audits.Count);
+        Assert.Single(audits, a => a.Resultado == "Exito");
+        var failed = Assert.Single(audits, a => a.Resultado == "Error");
+        Assert.Equal("QA_UPSTREAM_SIZE", failed.Error);
+        Assert.DoesNotContain("padding", failed.ValoresNuevos!);
     }
 
     [Fact]
@@ -259,6 +264,32 @@ public sealed class C0204M0502QaHttpContractTests
             Assert.Equal(4, metadata.RootElement.GetProperty("ChecksExitosos").GetInt32());
             Assert.DoesNotContain("private-secret", audit.ValoresNuevos!);
             Assert.True(Guid.TryParseExact(audit.CorrelationId, "N", out _));
+        }
+
+        // Real HTTP + JWT + SQL: an invalid upstream contract must never yield a
+        // 500 or evidence, and its bounded audit must survive a fresh context.
+        upstream.Payload = "[\"private-secret\"]";
+        using (var malformed = await client.GetAsync(Path))
+        {
+            Assert.Equal(HttpStatusCode.ServiceUnavailable, malformed.StatusCode);
+            Assert.Contains("no-store", malformed.Headers.CacheControl?.ToString() ?? "");
+            Assert.DoesNotContain("private-secret", await malformed.Content.ReadAsStringAsync());
+        }
+        using (var scope = fixture.Host.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var entries = await db.Set<RegistroAuditoria>().ToListAsync();
+            Assert.Equal(2, entries.Count);
+            var failure = Assert.Single(entries, a => a.Resultado == "Error");
+            Assert.Equal("QA_UPSTREAM_CONTRACT", failure.Error);
+            Assert.Null(failure.EmpresaId);
+            Assert.Equal(AmbitoAutorizacion.Plataforma, failure.AmbitoAutoridad);
+            Assert.DoesNotContain("private-secret", failure.ValoresNuevos!);
+            using var metadata = JsonDocument.Parse(failure.ValoresNuevos!);
+            Assert.Equal(Sha, metadata.RootElement.GetProperty("Sha").GetString());
+            Assert.Equal("SIN_VERIFICAR", metadata.RootElement.GetProperty("EstadoCi").GetString());
+            Assert.Equal(0, metadata.RootElement.GetProperty("ChecksExitosos").GetInt32());
+            Assert.True(Guid.TryParseExact(failure.CorrelationId, "N", out _));
             var grant = await db.Set<UsuarioRolPlataforma>().SingleAsync(
                 x => x.UsuarioId == fixture.GlobalId);
             grant.Desactivar();
@@ -266,7 +297,7 @@ public sealed class C0204M0502QaHttpContractTests
         }
         using (var denied = await client.GetAsync(Path))
             Assert.Equal(HttpStatusCode.Forbidden, denied.StatusCode);
-        Assert.Equal(1, upstream.Calls);
+        Assert.Equal(2, upstream.Calls);
     }
 
     // This test runs against an isolated MySQL 8.4 service in the GH-hosted QA lab.

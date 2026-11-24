@@ -69,6 +69,48 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
             return BadRequest(ApiResponse<object>.Fail("SHA de evidencia inválido."));
 
         sha = sha.ToLowerInvariant();
+
+        // Only an actor whose platform grant was revalidated may create this audit.
+        // Persist a bounded error code, never the upstream body, URL, exception or JWT.
+        async Task<IActionResult> FalloProveedorAsync(string codigo, bool notFound = false)
+        {
+            try
+            {
+                _db.Set<RegistroAuditoria>().Add(new RegistroAuditoria
+                {
+                    UsuarioId = actor.UsuarioId,
+                    NombreUsuario = actor.NombreUsuario,
+                    EmpresaId = null,
+                    AmbitoAutoridad = AmbitoAutorizacion.Plataforma,
+                    OrigenAutorizacion = OrigenAutorizacion.RolPlataforma,
+                    Modulo = ModuloSistema.Configuracion,
+                    Accion = AccionPermiso.ConsultarHistorial,
+                    Entidad = "ConsultaEvidenciasQaGlobal",
+                    Descripcion = "Consulta de evidencia QA no verificable.",
+                    CorrelationId = Guid.NewGuid().ToString("N"),
+                    ValoresNuevos = JsonSerializer.Serialize(new
+                    {
+                        Schema = "qa-check-evidence/v1",
+                        Sha = sha,
+                        EstadoCi = "SIN_VERIFICAR",
+                        EstadoA5 = "SIN_VERIFICAR",
+                        TotalChecks = 0,
+                        ChecksExitosos = 0
+                    }),
+                    Resultado = "Error",
+                    Error = codigo
+                });
+                await _db.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateException)
+            {
+                return NoVerificable();
+            }
+            return notFound
+                ? NotFound(ApiResponse<object>.Fail("Revisión no encontrada."))
+                : NoVerificable();
+        }
+
         try
         {
             // Destino fijo: ni el cliente ni el SHA pueden introducir hosts o URLs.
@@ -77,11 +119,11 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                     HttpCompletionOption.ResponseHeadersRead, cancellationToken);
 
             if (response.StatusCode == HttpStatusCode.NotFound)
-                return NotFound(ApiResponse<object>.Fail("Revisión no encontrada."));
+                return await FalloProveedorAsync("QA_UPSTREAM_NOT_FOUND", notFound: true);
             const int maxGithubResponseBytes = 512_000;
             if (!response.IsSuccessStatusCode ||
                 response.Content.Headers.ContentLength is > maxGithubResponseBytes)
-                return NoVerificable();
+                return await FalloProveedorAsync("QA_UPSTREAM_UNAVAILABLE");
 
             // Content-Length may be absent for Transfer-Encoding: chunked.
             // Bound the actual bytes consumed before JSON parsing, including the
@@ -95,32 +137,34 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                 var read = await content.ReadAsync(chunk.AsMemory(0, maxRead), cancellationToken);
                 if (read == 0) break;
                 if (bounded.Length + read > maxGithubResponseBytes)
-                    return NoVerificable();
+                    return await FalloProveedorAsync("QA_UPSTREAM_SIZE");
                 await bounded.WriteAsync(chunk.AsMemory(0, read), cancellationToken);
             }
             bounded.Position = 0;
             using var document = await JsonDocument.ParseAsync(
                 bounded, new JsonDocumentOptions { MaxDepth = 20 }, cancellationToken);
             var root = document.RootElement;
-            if (!root.TryGetProperty("total_count", out var countElement) ||
+            if (root.ValueKind != JsonValueKind.Object ||
+                !root.TryGetProperty("total_count", out var countElement) ||
+                countElement.ValueKind != JsonValueKind.Number ||
                 !countElement.TryGetInt32(out var count) || count < 1 || count > 100 ||
                 !root.TryGetProperty("check_runs", out var checkRuns) ||
                 checkRuns.ValueKind != JsonValueKind.Array ||
                 checkRuns.GetArrayLength() != count)
-                return NoVerificable();
+                return await FalloProveedorAsync("QA_UPSTREAM_CONTRACT");
 
             var checks = new List<PlataformaQaCheckDto>(count);
             foreach (var item in checkRuns.EnumerateArray())
             {
                 if (item.ValueKind != JsonValueKind.Object ||
                     !string.Equals(Valor(item, "head_sha"), sha, StringComparison.OrdinalIgnoreCase))
-                    return NoVerificable();
+                    return await FalloProveedorAsync("QA_UPSTREAM_CONTRACT");
 
                 var name = Valor(item, "name");
                 var status = Valor(item, "status");
                 if (string.IsNullOrWhiteSpace(name) || name.Length > 180 ||
                     status is not ("queued" or "in_progress" or "completed" or "waiting" or "requested" or "pending"))
-                    return NoVerificable();
+                    return await FalloProveedorAsync("QA_UPSTREAM_CONTRACT");
 
                 var conclusion = Valor(item, "conclusion");
                 var details = Valor(item, "details_url");
@@ -187,15 +231,19 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
         }
         catch (HttpRequestException)
         {
-            return NoVerificable();
+            return await FalloProveedorAsync("QA_UPSTREAM_TRANSPORT");
+        }
+        catch (IOException)
+        {
+            return await FalloProveedorAsync("QA_UPSTREAM_TRANSPORT");
         }
         catch (JsonException)
         {
-            return NoVerificable();
+            return await FalloProveedorAsync("QA_UPSTREAM_CONTRACT");
         }
         catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
         {
-            return NoVerificable();
+            return await FalloProveedorAsync("QA_UPSTREAM_TIMEOUT");
         }
     }
 
