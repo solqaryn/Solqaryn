@@ -278,6 +278,93 @@ async function runState(page, worker, state) {
   await setNativeZoom(worker, page, 1);
 }
 
+// C01-03.M04.01: close the missing tenant B native-browser evidence only.
+// Reuse the proven M04.02 zoom/focus/physical capture helpers without repeating
+// its five-state fixtures. A fresh profile prevents tenant A session carryover.
+let tenantB = null;
+async function auditTenantB() {
+  const profileB = join(root, 'profile-tenant-b');
+  await mkdir(join(profileB, 'Default'), { recursive: true });
+  await writeFile(join(profileB, 'Default', 'Preferences'), JSON.stringify({
+    credentials_enable_service: false, profile: { password_manager_enabled: false }
+  }));
+  const contextB = await chromium.launchPersistentContext(profileB, {
+    headless: false, viewport: null, args: ['--window-size=1440,1000',
+      '--disable-extensions-except=' + extension, '--load-extension=' + extension]
+  });
+  try {
+    const worker = contextB.serviceWorkers()[0] ??
+      await contextB.waitForEvent('serviceworker', { timeout: 15000 });
+    const page = contextB.pages()[0] ?? await contextB.newPage();
+    await page.goto(base + '/login');
+    await page.getByRole('textbox', { name: 'Nombre de usuario' }).fill('c1504_admin_b');
+    await page.locator('input[formcontrolname="password"]').fill(process.env.C1504_TEST_PASSWORD);
+    const pending = page.waitForResponse(r => r.url().endsWith('/auth/login') &&
+      r.request().method() === 'POST');
+    await page.getByRole('button', { name: /Ingresar al sistema/ }).click();
+    const login = await pending;
+    assert.equal(login.status(), 200);
+    const token = (await login.json())?.data?.token;
+    assert.ok(typeof token === 'string' && token.split('.').length === 3);
+    const headers = { Authorization: 'Bearer ' + token };
+    const api = 'http://127.0.0.1:5005';
+    const membership = await page.request.get(api + '/tenant-context/2', { headers });
+    assert.equal(membership.status(), 200);
+    const policy = await page.request.get(api + '/permisos/mis-permisos/empresa/2', { headers });
+    assert.equal(policy.status(), 200);
+    const grants = (await policy.json())?.data;
+    assert.ok(grants?.permisos?.includes('Configuracion:Ver'), 'B must have actual read grant');
+    await page.waitForFunction(() => Boolean(localStorage.getItem('solqaryn_token')));
+    await page.evaluate(() => localStorage.setItem('solqaryn_empresa_solicitada_id', '2'));
+    const isBGet = r => {
+      const u = new URL(r.url());
+      return ['127.0.0.1', 'localhost'].includes(u.hostname) && u.port === '5005'
+        && u.pathname === '/empresa-configuracion/tenant/2' && r.request().method() === 'GET'
+        && r.status() === 200;
+    };
+    const initialGet = page.waitForResponse(isBGet);
+    await page.goto(base + '/configuracion/dinamica-v5');
+    const response = await initialGet;
+    const config = (await response.json())?.data;
+    assert.equal(config?.empresaId, 2, 'verified server tenant B only');
+    const form = page.getByRole('form', { name: 'Configuración del tenant activo' });
+    await form.waitFor({ state: 'visible' });
+    const tenantLabel = form.getByText('Empresa #2', { exact: true });
+    await tenantLabel.waitFor({ state: 'visible' });
+    const name = form.locator('input[formcontrolname="nombre"]');
+    assert.equal(await name.inputValue(), config.nombre);
+    assert.ok(await name.isDisabled(), 'B multi-tenant configuration stays read-only');
+    assert.equal(await form.getByRole('button', { name: 'Guardar configuración tenant' }).count(), 0);
+    const target = page.locator('app-empresa-configuracion-tenant-card')
+      .getByRole('button', { name: /Recargar/ });
+    assert.ok(await target.isEnabled());
+    const zoom100 = await setNativeZoom(worker, page, 1);
+    await page.waitForFunction(() => Math.abs(devicePixelRatio - 1) < .1);
+    const baseline = await geometry(page, target, 'tenant-B-100');
+    await tenantLabel.scrollIntoViewIfNeeded();
+    await physicalScreenshot(page, 'tenant-B-100.png');
+    const zoom200 = await setNativeZoom(worker, page, 2);
+    await page.waitForFunction(d => Math.abs(devicePixelRatio / d - 2) < .05, baseline.dpr);
+    const native = await geometry(page, target, 'tenant-B-200');
+    assert.ok(native.viewport < baseline.viewport && Math.abs(native.dpr / baseline.dpr - 2) < .05);
+    await tenantLabel.scrollIntoViewIfNeeded();
+    await physicalScreenshot(page, 'tenant-B-200.png');
+    const focusGeometry = await checkTabFocus(page, target, 'tenant-B');
+    await geometry(page, target, 'tenant-B-focused');
+    await physicalScreenshot(page, 'tenant-B-200-focus.png');
+    assert.ok(await target.evaluate(el => el === document.activeElement && el.matches(':focus-visible')));
+    const reload = page.waitForResponse(isBGet);
+    await page.keyboard.press('Enter');
+    assert.equal((await (await reload).json())?.data?.empresaId, 2);
+    await tenantLabel.waitFor({ state: 'visible' });
+    assert.ok(await name.isDisabled());
+    tenantB = { scope: 'C01-03.M04.01', verifiedTenant: 2, zoom100, zoom200,
+      baseline, native, focusGeometry, keyboardReload: true,
+      captures: ['tenant-B-100.png', 'tenant-B-200.png', 'tenant-B-200-focus.png'] };
+    console.log('M0401_NATIVE_TENANT_B_PASS screenshots=3');
+  } finally { await contextB.close(); }
+}
+
 try {
   await mkdir(extension, { recursive: true });
   await mkdir(output, { recursive: true });
@@ -322,13 +409,14 @@ try {
     assert.equal(results.length, 5);
     console.log('M0402_NATIVE_200_ALL_5_PASS screenshots=15');
   } finally { await context.close(); }
+  await auditTenantB();
 } finally {
   await writeFile(join(output, 'metrics.json'), JSON.stringify({
     sha: process.env.GITHUB_SHA,
     mechanism: 'chrome.tabs.setZoom/getZoom + physical X11 capture',
     note: '100% here is same-current-version baseline, NOT historical BEFORE',
     testScope: 'frontend state presentation; injected 403/503 do not certify backend authorization',
-    results
+    results, tenantB
   }, null, 2));
   await rm(root, { recursive: true, force: true });
 }

@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV05 C01-03.M04.01: evidencia nativa del tenant B
+- Brecha causal: el tenant A ya tiene evidencia nativa; B sólo tenía captura responsive y pinch. Se añade únicamente login real B aislado, permiso Configuracion:Ver, GET real, reflow a 100/200, Tab, recarga por teclado y tres PNG X11 mediante el harness existente.
+- Sin cambios en runtime, RBAC, DTO, persistencia o dependencias; mismo workflow JWT/MySQL aislado, sin relajar aserciones de M04.02. A1–A4 pendientes del SHA publicado; captura histórica ANTES y A5 independiente no acreditadas. Rollback: revert del changeset.
+- Governance, SKREF-03 2149fcce39a90bb409df5f16515f316a76dc6199 y SKREF-10 6808966993bf2b2d455d9b6245e960a59a01b9a9 consultadas en origen; motion/copy/perf no aplican.
+
 ## 2026-11-24 — DEV04 V33 C03-01.M03.03: corrección de compilación de proyección sucursal
 - CI real de 1db52dce, job 138562058204, detectó CS1503 por EmpresaId nullable en el modelo Sucursal; se proyecta el empresaId entero ya verificado y exigido por el predicado SQL, sin permitir nulos ni cambiar autorización.
 - Mantiene las pruebas HTTP JWT Oracle MySQL 8.4 del cambio previo y todos los controles. Nueva CI exact-SHA pendiente; no se declara PASS ni LISTO.
