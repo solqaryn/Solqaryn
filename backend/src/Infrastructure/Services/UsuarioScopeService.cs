@@ -96,8 +96,8 @@ public sealed class UsuarioScopeService : IUsuarioScopeService
 
         // Same live, tenant-owned membership predicate as token issuance.
         // Never use a selected tenant's role to resurrect a revoked base session.
-        return await ContextosTenantValidos(actorId, baseRole.EmpresaId)
-            .AnyAsync(c => c.RolId == rolId, cancellationToken);
+        return await ContextosTenantValidos(actorId, baseRole.EmpresaId, rolId)
+            .AnyAsync(cancellationToken);
     }
 
     public async Task<UsuarioTenantScopeActual?> ObtenerActualAsync(
@@ -162,7 +162,8 @@ public sealed class UsuarioScopeService : IUsuarioScopeService
 
     private IQueryable<UsuarioTenantScopeActual> ContextosTenantValidos(
         int usuarioId,
-        int? empresaId = null)
+        int? empresaId = null,
+        int? rolId = null)
     {
         var empresas = _context.Set<Empresa>().AsNoTracking();
 
@@ -187,7 +188,8 @@ public sealed class UsuarioScopeService : IUsuarioScopeService
                   rol.Ambito == AmbitoAutorizacion.Empresa &&
                   (rol.EmpresaId == empresa.Id ||
                    (rol.EmpresaId == null && rol.EsSistema)) &&
-                  (!empresaId.HasValue || membresia.EmpresaId == empresaId.Value)
+                  (!empresaId.HasValue || membresia.EmpresaId == empresaId.Value) &&
+                  (!rolId.HasValue || rol.Id == rolId.Value)
             select new UsuarioTenantScopeActual(
                 usuario.Id,
                 empresa.Id,

@@ -154,13 +154,15 @@ public sealed class P1010BMultiEmpresaHttpJwtCertificationTests
             await db.SaveChangesAsync();
         }
 
+        // Una cuenta bloqueada invalida la sesión base firmada, también en el catálogo.
         using var listado = await cliente.GetAsync("/tenant-context/empresas");
-        Assert.Equal(HttpStatusCode.OK, listado.StatusCode);
-        using (var json = JsonDocument.Parse(await listado.Content.ReadAsStringAsync()))
-            Assert.Empty(json.RootElement.GetProperty("data").EnumerateArray());
+        Assert.Equal(HttpStatusCode.Forbidden, listado.StatusCode);
+        Assert.Empty(await listado.Content.ReadAsStringAsync());
 
         using var contexto = await cliente.GetAsync($"/tenant-context/{escenario.EmpresaAId}");
         Assert.Equal(HttpStatusCode.Forbidden, contexto.StatusCode);
+        using var contextoB = await cliente.GetAsync($"/tenant-context/{escenario.EmpresaBId}");
+        Assert.Equal(HttpStatusCode.Forbidden, contextoB.StatusCode);
     }
 
     /// <summary>

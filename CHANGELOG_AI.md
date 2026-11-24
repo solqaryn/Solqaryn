@@ -1,3 +1,7 @@
+## 2026-11-24 — DEV06 V31 C03-01.M03.03: predicado relacional Oracle EF y sesión bloqueada
+- R2 rescate: el job 138318390097 de e35b0ba6 falló al traducir Any sobre RolId de DTO proyectado. Mover el predicado de rol al WHERE relacional antes de proyectar; mantener filtros de actor, tenant, membresía y rol vigentes, sin bypass. La prueba HTTP de cuenta bloqueada exige 403 opaco en catálogo y ambos contextos, conforme al contrato fail-closed existente; no cambiar controlador ni permisos.
+- A0 alcance y diff revisados; A1-A4 pendientes de CI exact-SHA real JWT/MySQL 8.4 y backend. Sin A5 propia, sin QA/main/PROD; rollback revert normal. No repetir suites SUCCESS del mismo SHA.
+
 ## 2026-11-24 — DEV05 V31 C01-03.M04.04: espera de PUT y restauración acotadas
 - R2 test-only: corregir discrepancia localhost/127.0.0.1 del predicado de respuesta Chromium, limitar espera y limpieza independiente sin ocultar fallo original; preservar JWT real, 409/412, PUT 200, SQL readback, restauración y tenant A/B. CI fuente 7 PASS/1 timeout; hipótesis pendiente de prueba exact-SHA.
 - A0 diff, A1-A4 CI pendiente; SKREF-03/10 pins leídos, sin cambios runtime ni permisos. A5 independiente y UX nativa/ANTES pendientes. Revert normal dev.
