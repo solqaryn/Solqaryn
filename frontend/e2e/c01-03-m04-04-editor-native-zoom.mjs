@@ -40,8 +40,8 @@ async function audit(page, worker, name, locator) {
     scroll: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
     dpr: devicePixelRatio, visualScale: visualViewport?.scale ?? 1
   }));
-  async function capture(factor, g) {
-    await locator.scrollIntoViewIfNeeded();
+  async function capture(factor, g, focused = false) {
+    if (!focused) await locator.scrollIntoViewIfNeeded();
     await page.bringToFront();
     // Native browser zoom notifications are outside the DOM. Wait for them
     // to dismiss before recording unoccluded physical screenshots.
@@ -57,7 +57,8 @@ async function audit(page, worker, name, locator) {
     assert.ok(box && box.width > 0 && box.x >= -2 && box.x + box.width <= g.client + 2,
       name + ': control horizontally clipped');
     assert.ok(box.y >= -2 && box.y + box.height <= g.height + 2, name + ': control not reachable by scroll');
-    const filename = name + '-' + (factor * 100) + '.png';
+    if (focused) assert.ok(await locator.evaluate(el => el === document.activeElement && el.matches(':focus-visible')), name + ': focus lost before capture');
+    const filename = name + '-' + (factor * 100) + (focused ? '-focus' : '') + '.png';
     await exec('ffmpeg', ['-nostdin', '-hide_banner', '-loglevel', 'error',
       '-f', 'x11grab', '-draw_mouse', '0', '-video_size', '1600x1200',
       '-i', process.env.DISPLAY, '-frames:v', '1', '-threads', '1', '-y', join(output, filename)],
@@ -112,7 +113,10 @@ async function audit(page, worker, name, locator) {
       && (hit === el || el.contains(hit));
   });
   assert.ok(focus, name + ': real target keyboard focus missing or obscured');
-  records.push({ name, actual100, actual200, before, after, bounds, image100, image200, focus });
+  // Capture the actual keyboard-focused target, not just its earlier layout.
+  const imageFocus200 = await capture(2, after, true);
+  assert.ok(await locator.evaluate(el => el === document.activeElement && el.matches(':focus-visible')), name + ': focus lost during capture');
+  records.push({ name, actual100, actual200, before, after, bounds, image100, image200, imageFocus200, focus });
   await zoom(1);
 }
 
@@ -185,7 +189,7 @@ try {
     assert.equal(await save.isEnabled(), true);
   });
   assert.equal(records.length, 2);
-  console.log('C0103_M0404_NATIVE_EDITOR_ZOOM_100_200_PASS records=2 png=4');
+  console.log('C0103_M0404_NATIVE_EDITOR_ZOOM_100_200_PASS records=2 png=6');
 } finally {
   try {
     await writeFile(join(output, 'metrics.json'), JSON.stringify({

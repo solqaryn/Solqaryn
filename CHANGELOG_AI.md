@@ -1,3 +1,7 @@
+## 2026-11-24 — DEV06 V31 C01-03.M04.04: captura de foco real tras Tab
+- Evidencia exacta 9a5ce793/run 45386778724: 13 Vitest, 17 Chromium A/B, 8 formularios y dos comprobaciones de zoom/foco nativo aprobadas; PNG 200% anteriores al Tab no prueban foco visual.
+- Se conservan cuatro capturas y se agregan dos despues de Tab real con aserciones de foco antes/despues. Test-only; sin alterar runtime, autorizacion ni datos. CI exact SHA y revision visual pendientes; BEFORE historico pendiente, A5 independiente. SKREF-03/10 oficiales, sin instalacion.
+
 ## 2026-11-24 — DEV05 V31 C01-03.M04.04: evidencia nativa sin superposiciones
 - Fuente 386a3a60 job138415708608: 13 Vitest + 17 A/B + 8 formularios PASS; zoom nativo y foco de 2 controles PASS, pero 4 PNG X11 muestran aviso de guardar contraseña. Corrección test-only del perfil efímero y espera de aviso de zoom, con hit-test adicional; sin alterar JWT/RBAC, MySQL, runtime ni pruebas existentes. Nueva CI y revisión de capturas pendientes, no LISTO/A5, ANTES histórico no acreditado. Owner DEV05 preservado; solo dev.
 
