@@ -274,10 +274,15 @@ test.describe('Storefront Fase 4 — detalle público de producto', () => {
     await page.goto('/tienda/producto/producto-fotografico-111');
     await activarBaseDatos(page);
     const imagenPrincipal = page.getByRole('button', { name: /Ampliar imagen 1 de 3/ });
+    const dialog = page.locator('dialog.lightbox');
+    await expect(imagenPrincipal).toBeVisible();
+    await expect(dialog).toHaveCount(1);
+    await expect(dialog).not.toBeVisible();
+    await expect(dialog.locator('.lightbox-stage, .lightbox-controls')).toHaveCount(0);
     await imagenPrincipal.click();
 
-    const dialog = page.locator('dialog.lightbox');
     await expect(dialog).toBeVisible();
+    await expect(dialog.locator('.lightbox-stage img')).toBeVisible();
     await expect(dialog.getByRole('button', { name: 'Agregar al carrito' })).toHaveCount(0);
     await expect(dialog.locator('.lightbox-controls span')).toHaveText('1 / 3');
     await dialog.getByRole('button', { name: 'Imagen siguiente ampliada' }).click();
@@ -285,13 +290,16 @@ test.describe('Storefront Fase 4 — detalle público de producto', () => {
 
     await page.keyboard.press('Escape');
     await expect(dialog).not.toBeVisible();
+    await expect(dialog.locator('.lightbox-stage, .lightbox-controls')).toHaveCount(0);
     await expect(page.locator('.image-position').first()).toHaveText('2 / 3');
     const imagenDos = page.getByRole('button', { name: /Ampliar imagen 2 de 3/ });
     await expect(imagenDos).toBeFocused();
 
     await imagenDos.click();
+    await expect(dialog.locator('.lightbox-controls span')).toHaveText('2 / 3');
     await dialog.getByRole('button', { name: 'Cerrar imagen ampliada' }).click();
     await expect(dialog).not.toBeVisible();
+    await expect(dialog.locator('.lightbox-stage, .lightbox-controls')).toHaveCount(0);
     await expect(page.locator('.image-position').first()).toHaveText('2 / 3');
   });
 

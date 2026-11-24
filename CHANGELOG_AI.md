@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV02 C15-04.M05.04: montaje diferido de ampliación fotográfica
+- El diálogo nativo conserva su botón de cierre y gestión de foco; la imagen ampliada y sus controles se instancian únicamente mientras el lightbox está abierto, evitando DOM y carga de imagen innecesarios en el estado cerrado.
+- Se refuerza la prueba existente de Fase 4: ausencia inicial de contenido ampliado, imagen visible al abrir, índice persistente y desmontaje al cerrar por Escape o botón. Chromium con fixtures HTTP; no certifica JWT/MySQL. A0 revisado; CI causal A1/A3/A4 pendiente. Sin cambios de permisos, backend ni dependencias; rollback por revert. El presupuesto CSS 18.25/16 kB y la cobertura global permanecen pendientes; no LISTO ni A5.
+- Governance y SKREF-03/05/10 originales consultadas para UI pública; sin QA/main/PROD.
+
 ## 2026-11-24 — DEV01 C07-01.M06.06: lectura privada de marcas y modelos con ownership real
 - Se incorpora solamente GET exacto de marcas/modelos al piloto existente desactivado por defecto, con autorización Marcas.Ver/Modelos.Ver y tenant verificado; no se habilitan escrituras ni se cambia el esquema.
 - La evidencia del modelo EF y migraciones demuestra EmpresaId shadow en ambos maestros y FK compuesta Modelo->Marca. Se corrige la hipótesis anterior de falta de ownership por ausencia de propiedad CLR.

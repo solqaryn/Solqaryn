@@ -296,7 +296,7 @@
   <dialog #lightbox class="lightbox" aria-label="Imagen ampliada del producto" (close)="alCerrarLightbox()" (click)="cerrarLightboxDesdeFondo($event)">
     <div class="lightbox-panel">
       <button type="button" class="lightbox-close" aria-label="Cerrar imagen ampliada" (click)="cerrarLightbox(true)">×</button>
-      @if (producto(); as productoLightbox) {
+      @if (lightboxAbierto() ? producto() : null; as productoLightbox) {
         <div class="lightbox-stage" (pointerdown)="iniciarSwipe($event)" (pointerup)="finalizarSwipe($event)" (pointercancel)="cancelarSwipe()">
           @if (imagenValida(imagenActual())) {
             <img [src]="imagenCloudinary(imagenActual(), 800)" [attr.srcset]="srcsetCloudinary(imagenActual())" sizes="92vw" [alt]="productoLightbox.nombre + ', imagen ampliada ' + (imagenActiva() + 1)" width="1200" height="900" decoding="async" (error)="errorImagen(imagenActual())">
