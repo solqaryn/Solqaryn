@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV06 V31 C14-02.M06.06: reparar fixture global de CI sin relajar autenticación
+- R2: los jobs C14-01.M04.03 y C14-01.M05.06 recibían HTTP 401 en login global: el fixture copiaba RolId empresarial del administrador A, aunque registraba un rol de plataforma separado. Vincular el usuario efímero al rol de plataforma creado y verificar en SQL su rol canónico, ámbito y ausencia de membresía empresarial activa.
+- Mantener autenticación, RBAC, aislamiento, MySQL 8.4, assertions Chromium, triggers, nombres de checks y concurrencia por SHA. No modificar runtime, permisos ni estados LISTO históricos. A0 diff CI; nueva evidencia exact-SHA y revisión A5 independiente pendientes; no certifica C14 global ni QA/main/PROD. Reversión por revert.
+
 ## 2026-11-23 — DEV02 V31 C15-04.M05.04: marca accesible en login sin imagen
 - Reparación de UI: no renderizar img con URL vacía; si falla la URL vigente, ocultarla y mantener el nombre de plataforma en texto visible. En desktop la imagen junto al nombre es decorativa. Sin cambios en identidad, autenticación, guards, JWT/RBAC, API ni MySQL.
 - Regresión causal en el caso de login Chromium existente a 320/375/390/768/1280/1440, sin inyectar branding, con capturas nuevas en CI. Evidencia ANTES histórica: artefacto 14883367604, SHA 02a73c54aae95665aad686aae8367970ba71f60e. No se atribuye PASS anticipado ni zoom nativo a capturas/pinch.

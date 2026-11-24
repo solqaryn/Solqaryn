@@ -136,9 +136,10 @@ jobs:
           VALUES ('Global CI C1504', 'C1504_GLOBAL_CI', 'Rol efimero para aceptacion real', 1, 1, 2, NULL, 1, 0, UTC_TIMESTAMP(6));
           INSERT INTO Usuarios
             (NombreUsuario, NombreCompleto, PasswordHash, RolId, Activo, Bloqueado, Eliminado, FechaCreacion)
-          SELECT 'c1504_platform_only', 'Plataforma CI', u.PasswordHash, u.RolId,
+          SELECT 'c1504_platform_only', 'Plataforma CI', u.PasswordHash, r.Id,
                  TRUE, FALSE, FALSE, UTC_TIMESTAMP(6)
-          FROM Usuarios u WHERE u.NombreUsuario='c1504_admin_a';
+          FROM Usuarios u CROSS JOIN Roles r
+          WHERE u.NombreUsuario='c1504_admin_a' AND r.NombreNormalizado='C1504_GLOBAL_CI';
           INSERT INTO UsuarioRolesPlataforma (UsuarioId, RolId, Activa, FechaCreacion, FechaActualizacion)
           SELECT u.Id, r.Id, TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)
           FROM Usuarios u CROSS JOIN Roles r
@@ -146,7 +147,7 @@ jobs:
           UPDATE Empresas SET LogoUrl='https://assets.example.invalid/c14-a.svg' WHERE Id=1;
           UPDATE Empresas SET LogoUrl='https://assets.example.invalid/c14-b.svg' WHERE Id=2;
           SQL
-          members="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_c1504_real_ci -Nse "SELECT COUNT(*) FROM UsuarioRolesPlataforma ur JOIN Usuarios u ON u.Id=ur.UsuarioId WHERE u.NombreUsuario='c1504_platform_only' AND ur.Activa=TRUE;")"
+          members="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_c1504_real_ci -Nse "SELECT COUNT(*) FROM UsuarioRolesPlataforma ur JOIN Usuarios u ON u.Id=ur.UsuarioId JOIN Roles r ON r.Id=ur.RolId WHERE u.NombreUsuario='c1504_platform_only' AND ur.Activa=TRUE AND u.RolId=r.Id AND r.NombreNormalizado='C1504_GLOBAL_CI' AND r.Ambito=2 AND r.EmpresaId IS NULL AND r.EsSistema=TRUE AND r.Activo=TRUE AND r.Eliminado=FALSE AND NOT EXISTS (SELECT 1 FROM UsuarioEmpresas ue WHERE ue.UsuarioId=u.Id AND ue.Activa=TRUE);")"
           company="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_c1504_real_ci -Nse "SELECT COUNT(*) FROM UsuarioEmpresas ue JOIN Usuarios u ON u.Id=ue.UsuarioId WHERE u.NombreUsuario='c1504_admin_a' AND ue.EmpresaId=1 AND ue.Activa=TRUE;")"
           company_b="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_c1504_real_ci -Nse "SELECT COUNT(*) FROM UsuarioEmpresas ue JOIN Usuarios u ON u.Id=ue.UsuarioId WHERE u.NombreUsuario='c1504_admin_b' AND ue.EmpresaId=2 AND ue.Activa=TRUE;")"
           test "$members" = '1'
