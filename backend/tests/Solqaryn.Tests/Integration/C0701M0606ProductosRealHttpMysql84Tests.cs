@@ -2049,6 +2049,110 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                     .IgnoreQueryFilters().AsNoTracking().CountAsync(x => x.Modulo == ModuloSistema.Colores));
             }
 
+            // D01: exact HTTP attribute creation, default-off, SQL RBAC and durable tenant ownership.
+            var attributeCreateCases = new[]
+            {
+                (Path: "/colores", Module: ModuloSistema.Colores),
+                (Path: "/tallas", Module: ModuloSistema.Tallas),
+                (Path: "/marcas", Module: ModuloSistema.Marcas),
+                (Path: "/modelos", Module: ModuloSistema.Modelos)
+            };
+            var attributeGrantsA = new List<RolPermiso>();
+            foreach (var entry in attributeCreateCases)
+            {
+                var grantPermission = await db.Permisos.IgnoreQueryFilters()
+                    .FirstOrDefaultAsync(p => p.Modulo == entry.Module && p.Accion == AccionPermiso.Crear
+                        && p.Ambito == AmbitoAutorizacion.Empresa && p.Activo && !p.Eliminado);
+                if (grantPermission is null)
+                {
+                    grantPermission = new Permiso
+                    {
+                        Codigo = "C0701M0606.ATTR." + entry.Module + ".CREAR",
+                        Nombre = "C0701 isolated attribute create " + entry.Module,
+                        Modulo = entry.Module, Accion = AccionPermiso.Crear,
+                        Ambito = AmbitoAutorizacion.Empresa, Activo = true
+                    };
+                    db.Permisos.Add(grantPermission);
+                    await db.SaveChangesAsync();
+                }
+                var grantA = new RolPermiso { RolId = roleA.Id, PermisoId = grantPermission.Id };
+                attributeGrantsA.Add(grantA);
+                db.RolPermisos.AddRange(grantA,
+                    new RolPermiso { RolId = roleB.Id, PermisoId = grantPermission.Id });
+            }
+            await db.SaveChangesAsync();
+            async Task<HttpResponseMessage> CreateAttributeHttpAsync(
+                string jwt, int owner, string path, string name, int? parentId = null)
+            {
+                using var req = new HttpRequestMessage(HttpMethod.Post, path);
+                req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
+                req.Headers.Add("X-Empresa-Id", owner.ToString());
+                req.Content = new StringContent(System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    nombre = name, catalogoPadreId = parentId,
+                    codigoVisual = path == "/colores" ? "#112233" : null
+                }), Encoding.UTF8, "application/json");
+                return await client.SendAsync(req);
+            }
+
+            var attributePrefix = "C0701HttpAttr_" + Guid.NewGuid().ToString("N");
+            using (var offAttribute = await CreateAttributeHttpAsync(jwtA, a.Id, "/colores", attributePrefix + "_off"))
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, offAttribute.StatusCode);
+            pilotConfig["MultiEmpresa:PrivateAttributeCreatePilotEnabled"] = "true";
+            foreach (var (jwt, owner, actorId, parentId) in new[]
+            {
+                (jwtA, a.Id, userA.Id, v34OwnedA.BrandId),
+                (jwtB, b.Id, userB.Id, v34OwnedB.BrandId)
+            })
+            {
+                foreach (var entry in attributeCreateCases)
+                {
+                    var name = attributePrefix + "_" + owner + "_" + entry.Module;
+                    using var response = await CreateAttributeHttpAsync(jwt, owner, entry.Path, name,
+                        entry.Module == ModuloSistema.Modelos ? parentId : null);
+                    Assert.Equal(HttpStatusCode.Created, response.StatusCode);
+                    await using var fresh = new AppDbContext(options);
+                    var row = entry.Module switch
+                    {
+                        ModuloSistema.Colores => await fresh.Colores.IgnoreQueryFilters().AsNoTracking()
+                            .Where(x => x.Nombre == name).Select(x => new { x.Id, Owner = EF.Property<int?>(x, "EmpresaId") }).SingleAsync(),
+                        ModuloSistema.Tallas => await fresh.Tallas.IgnoreQueryFilters().AsNoTracking()
+                            .Where(x => x.Nombre == name).Select(x => new { x.Id, Owner = EF.Property<int?>(x, "EmpresaId") }).SingleAsync(),
+                        ModuloSistema.Marcas => await fresh.Marcas.IgnoreQueryFilters().AsNoTracking()
+                            .Where(x => x.Nombre == name).Select(x => new { x.Id, Owner = EF.Property<int?>(x, "EmpresaId") }).SingleAsync(),
+                        ModuloSistema.Modelos => await fresh.Modelos.IgnoreQueryFilters().AsNoTracking()
+                            .Where(x => x.Nombre == name).Select(x => new { x.Id, Owner = EF.Property<int?>(x, "EmpresaId") }).SingleAsync(),
+                        _ => throw new InvalidOperationException()
+                    };
+                    Assert.Equal(owner, row.Owner);
+                    if (entry.Module == ModuloSistema.Modelos)
+                        Assert.Equal(parentId, await fresh.Modelos.IgnoreQueryFilters().AsNoTracking()
+                            .Where(x => x.Id == row.Id).Select(x => x.MarcaId).SingleAsync());
+                    var receipt = await fresh.RegistrosAuditoria.IgnoreQueryFilters().AsNoTracking()
+                        .SingleAsync(x => x.Modulo == entry.Module && x.Accion == AccionPermiso.Crear
+                            && x.ReferenciaId == row.Id);
+                    Assert.Equal(owner, receipt.EmpresaId);
+                    Assert.Equal(actorId, receipt.UsuarioId);
+                }
+            }
+            using (var spoofedAttribute = await CreateAttributeHttpAsync(jwtA, b.Id, "/colores", attributePrefix + "_spoof"))
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, spoofedAttribute.StatusCode);
+            using (var foreignBrand = await CreateAttributeHttpAsync(jwtA, a.Id, "/modelos",
+                attributePrefix + "_foreign", v34OwnedB.BrandId))
+                Assert.Equal(HttpStatusCode.BadRequest, foreignBrand.StatusCode);
+            db.RolPermisos.RemoveRange(attributeGrantsA);
+            await db.SaveChangesAsync();
+            using (var revokedAttribute = await CreateAttributeHttpAsync(jwtA, a.Id, "/colores", attributePrefix + "_revoked"))
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, revokedAttribute.StatusCode);
+            pilotConfig["MultiEmpresa:PrivateAttributeCreatePilotEnabled"] = "false";
+            await using (var attributeHttpFresh = new AppDbContext(options))
+            {
+                Assert.Equal(2, await attributeHttpFresh.Colores.IgnoreQueryFilters().CountAsync(x => x.Nombre.StartsWith(attributePrefix)));
+                Assert.Equal(2, await attributeHttpFresh.Tallas.IgnoreQueryFilters().CountAsync(x => x.Nombre.StartsWith(attributePrefix)));
+                Assert.Equal(2, await attributeHttpFresh.Marcas.IgnoreQueryFilters().CountAsync(x => x.Nombre.StartsWith(attributePrefix)));
+                Assert.Equal(2, await attributeHttpFresh.Modelos.IgnoreQueryFilters().CountAsync(x => x.Nombre.StartsWith(attributePrefix)));
+            }
+
             // A failing audit sink rolls back a real SQL UPDATE, verified with
             // a fresh DbContext rather than an in-memory tracked entity.
             var failedAudit = new Mock<IAuditoriaService>();

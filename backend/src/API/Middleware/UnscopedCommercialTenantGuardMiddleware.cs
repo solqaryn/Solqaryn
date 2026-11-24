@@ -610,6 +610,9 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         // Edición de maestros: opt-in separado, nunca habilita otros PUT.
         var editarMaestros = HttpMethods.IsPut(http.Request.Method) &&
                            config.GetValue<bool>("MultiEmpresa:PrivateMasterEditPilotEnabled");
+        // Attribute creation is an independent, default-off pilot, not a generic write bypass.
+        var altaAtributos = HttpMethods.IsPost(http.Request.Method) &&
+                            config.GetValue<bool>("MultiEmpresa:PrivateAttributeCreatePilotEnabled");
         // Fiscal pilots are independent, default OFF; only exact routes below.
         var altaFiscal = HttpMethods.IsPost(http.Request.Method) &&
                          config.GetValue<bool>("MultiEmpresa:PrivateFiscalCreatePilotEnabled");
@@ -652,13 +655,14 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                           config.GetValue<bool>("MultiEmpresa:PrivateAdminReportPilotEnabled");
         if (!lectura && !alta && !editarMaestros && !borrador && !confirmar &&
             !pdf && !reportes && !inventario && !media && !adminReport &&
-            !finanzas && !archivos && !borrarProducto && !estadoFiscal && !altaFiscal && !editarFiscal)
+            !finanzas && !archivos && !borrarProducto && !estadoFiscal && !altaFiscal && !editarFiscal && !altaAtributos)
             return false;
 
         ModuloSistema modulo;
         AccionPermiso accion;
         var esBorrador = false;
         var esEdicionMaestros = false;
+        var esAltaAtributos = false;
         var esConfirmacion = false;
         var esPdf = false;
         var esMedia = false;
@@ -700,6 +704,27 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                              EsRutaExacta(http.Request.Path, "/modelos/activos") ||
                              EsRutaDetallePositiva(http.Request.Path, "/modelos")))
             modulo = ModuloSistema.Modelos;
+        // Exact normalized attribute POST routes only; tenant and action are verified below.
+        else if (altaAtributos && EsRutaExacta(http.Request.Path, "/colores"))
+        {
+            modulo = ModuloSistema.Colores;
+            esAltaAtributos = true;
+        }
+        else if (altaAtributos && EsRutaExacta(http.Request.Path, "/tallas"))
+        {
+            modulo = ModuloSistema.Tallas;
+            esAltaAtributos = true;
+        }
+        else if (altaAtributos && EsRutaExacta(http.Request.Path, "/marcas"))
+        {
+            modulo = ModuloSistema.Marcas;
+            esAltaAtributos = true;
+        }
+        else if (altaAtributos && EsRutaExacta(http.Request.Path, "/modelos"))
+        {
+            modulo = ModuloSistema.Modelos;
+            esAltaAtributos = true;
+        }
         // V30: only tax GETs through the existing opt-in pilot; verified tenant,
         // SQL-backed Impuestos.Ver and tenant-scoped Oracle EF. No fiscal writes.
         else if (lectura && (EsRutaExacta(http.Request.Path, "/impuestos") ||
@@ -888,6 +913,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             return false;
 
         accion = esBorradoProducto ? AccionPermiso.EliminarLogico
+            : esAltaAtributos ? AccionPermiso.Crear
             : accionFiscal ?? accionArchivos ?? accionFinanciera ??
             (esEdicionMaestros ? AccionPermiso.Editar
             : esPdf || esMedia || esAdminExport ? AccionPermiso.Exportar
@@ -957,7 +983,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                 return false;
         }
 
-        if (esEdicionMaestros || accionFiscal == AccionPermiso.Crear || accionFiscal == AccionPermiso.Editar)
+        if (esAltaAtributos || esEdicionMaestros || accionFiscal == AccionPermiso.Crear || accionFiscal == AccionPermiso.Editar)
         {
             // Solo JSON pequeño; RBAC específico y ownership EF físico.
             const int maxJsonBytes = 32 * 1024;

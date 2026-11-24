@@ -10834,3 +10834,8 @@
 - R2: el controlador de evidencias QA exige un único claim de identidad decimal canónico y un único nombre firmado antes de resolver autoridad o atribuir denegaciones; los alias numéricos y claims ambiguos no se convierten en un actor SQL ni generan una atribución falsa. No cambia CurrentUserService, permisos, esquema ni interfaces públicas.
 - Regresión causal en el laboratorio JWT real/MySQL 8.4: credencial firmada con grant global persistido pero ID no canónico o claims duplicados debe obtener 403, sin llamada externa ni fila atribuida; se conservan los casos A/B, revocación, fallo INSERT y la aceptación positiva existente. El upstream simulado se distingue de un proveedor vivo.
 - Governance STRICT; SKREF-11 origen openai/skills pin 49f948faa9258a0c61caceaf225e179651397431 leído para límites de confianza, sin instalar ni ejecutar referencias. UI/UX y performance no aplican al diff. CI exact-SHA pendiente; no A5 propia, no LISTO, retención y recorrido vivo del proveedor aún no acreditados; rollback mediante revert normal. Sin QA/main/PROD.
+
+## 2026-11-24 — DEV01 C07-01.M06.06: altas HTTP de atributos normalizados
+
+- Piloto POST exacto independiente y apagado por defecto: JWT/RBAC Crear por módulo, tenant verificado, JSON acotado y autorización MVC; no cambios de entorno, esquema, QA/main/PROD.
+- Regresión dirigida real A/B sobre MySQL 8.4: cuatro maestros, ownership, recibos por actor, marca ajena, selector, revocación y default-off; sin certificar antes de CI exact-SHA. SKREF-11 leído para límites de confianza. D01 restante y D06 ERP siguen pendientes; V17 conservado, sin LISTO ni A5 propia.
