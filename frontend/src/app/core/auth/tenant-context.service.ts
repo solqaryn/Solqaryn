@@ -46,6 +46,7 @@ export class TenantContextService {
     tokenOrigen: string | null;
     solicitud: Observable<ApiResponse<TenantContextoVerificado>>;
   } | null = null;
+  private tokenContextoVerificado: string | null = null;
   private versionSeleccion = 0;
   private versionListado = 0;
 
@@ -61,6 +62,13 @@ export class TenantContextService {
   });
 
   constructor(private readonly http: HttpClient) {}
+
+  /** Snapshot autorizado por HTTP para la caché de permisos; nunca restaura autoridad desde storage. */
+  contextoParaPermisos(): TenantContextoVerificado | null {
+    const contexto = this._contextoVerificado();
+    if (!this.tokenContextoVerificado || localStorage.getItem(TOKEN_ACTOR_KEY) !== this.tokenContextoVerificado) return null;
+    return contexto;
+  }
 
   listarEmpresasSeleccionables(): Observable<EmpresaSeleccionable[]> {
     const version = this.versionSeleccion;
@@ -120,6 +128,7 @@ export class TenantContextService {
     // La lista autenticada del contexto anterior no puede habilitar el switch de B.
     this._idsMembresiasListadas.set([]);
     this._empresaSolicitadaId.set(empresaId);
+    this.tokenContextoVerificado = null;
     this._contextoVerificado.set(null);
     localStorage.setItem(EMPRESA_SOLICITADA_KEY, String(empresaId));
 
@@ -141,6 +150,7 @@ export class TenantContextService {
           if (!this.esContextoCoincidente(contexto, empresaId)) {
             throw new Error('El servidor no confirmó un contexto tenant válido.');
           }
+          this.tokenContextoVerificado = tokenOrigen;
           this._contextoVerificado.set(contexto);
         }),
         catchError((error) => {
@@ -165,6 +175,7 @@ export class TenantContextService {
     this.versionListado++;
     this.seleccionEnCurso = null;
     this._empresaSolicitadaId.set(null);
+    this.tokenContextoVerificado = null;
     this._contextoVerificado.set(null);
     this._idsMembresiasListadas.set([]);
     localStorage.removeItem(EMPRESA_SOLICITADA_KEY);

@@ -418,4 +418,24 @@ describe('TenantContextService', () => {
     expect(idsFromB).toEqual([8, 9]);
   });
 
+
+  it('vincula el snapshot de permisos al JWT verificado y deniega sustitución o logout', () => {
+    localStorage.setItem('solqaryn_token', 'jwt-A');
+    const service = TestBed.inject(TenantContextService);
+    service.seleccionarEmpresa(7).subscribe();
+    httpMock.expectOne(`${environment.apiUrl}/tenant-context/7`).flush({
+      success: true, data: { usuarioId: 11, empresaId: 7, rolId: 4, rolNombre: 'A', esAdministrador: true }
+    });
+    expect(service.contextoParaPermisos()?.usuarioId).toBe(11);
+    localStorage.setItem('solqaryn_token', 'jwt-B');
+    expect(service.contextoParaPermisos()).toBeNull();
+    service.seleccionarEmpresa(7).subscribe();
+    httpMock.expectOne(`${environment.apiUrl}/tenant-context/7`).flush({
+      success: true, data: { usuarioId: 22, empresaId: 7, rolId: 8, rolNombre: 'B', esAdministrador: false }
+    });
+    expect(service.contextoParaPermisos()?.usuarioId).toBe(22);
+    expect(service.contextoParaPermisos()?.rolId).toBe(8);
+    localStorage.removeItem('solqaryn_token');
+    expect(service.contextoParaPermisos()).toBeNull();
+  });
 });

@@ -1,4 +1,4 @@
-import { signal } from '@angular/core';
+import { computed, signal } from '@angular/core';
 import { of, Subject } from 'rxjs';
 import { PermisoService } from '../../services/permiso.service';
 import { TenantContextService } from './tenant-context.service';
@@ -6,6 +6,13 @@ import { PermisosRuntimeService } from './permisos-runtime.service';
 
 describe('MF3 - permisos vs capacidades empresariales', () => {
   const empresa = signal<number | null>(11);
+  const actor = signal(1);
+  const rolId = signal(4);
+  const sesionVigente = signal(true);
+  const contexto = computed(() => {
+    const e = empresa();
+    return e !== null && sesionVigente() ? { usuarioId: actor(), empresaId: e, rolId: rolId(), rolNombre: 'Operador', esAdministrador: false } : null;
+  });
   let response: any;
   let runtime: PermisosRuntimeService;
 
@@ -15,6 +22,9 @@ describe('MF3 - permisos vs capacidades empresariales', () => {
 
   beforeEach(() => {
     empresa.set(11);
+    actor.set(1);
+    rolId.set(4);
+    sesionVigente.set(true);
     response = reply({
       esAdministrador: true,
       rol: 'Administrador',
@@ -26,7 +36,8 @@ describe('MF3 - permisos vs capacidades empresariales', () => {
     const permisoService = { getMisPermisos: () => of(response) } as unknown as PermisoService;
     const tenantContext = {
       empresaIdVerificada: () => empresa(),
-      tieneContextoVerificado: () => empresa() !== null
+      tieneContextoVerificado: () => empresa() !== null,
+      contextoParaPermisos: () => contexto()
     } as unknown as TenantContextService;
     runtime = new PermisosRuntimeService(permisoService, tenantContext);
   });
@@ -115,7 +126,8 @@ describe('MF3 - permisos vs capacidades empresariales', () => {
     } as unknown as PermisoService;
     const tenantContext = {
       empresaIdVerificada: () => empresa(),
-      tieneContextoVerificado: () => empresa() !== null
+      tieneContextoVerificado: () => empresa() !== null,
+      contextoParaPermisos: () => contexto()
     } as unknown as TenantContextService;
     runtime = new PermisosRuntimeService(permisoService, tenantContext);
 
@@ -157,7 +169,8 @@ describe('MF3 - permisos vs capacidades empresariales', () => {
     } as unknown as PermisoService;
     const tenantContext = {
       empresaIdVerificada: () => empresa(),
-      tieneContextoVerificado: () => empresa() !== null
+      tieneContextoVerificado: () => empresa() !== null,
+      contextoParaPermisos: () => contexto()
     } as unknown as TenantContextService;
     runtime = new PermisosRuntimeService(permisoService, tenantContext);
 
@@ -197,7 +210,8 @@ describe('MF3 - permisos vs capacidades empresariales', () => {
     } as unknown as PermisoService;
     const tenantContext = {
       empresaIdVerificada: () => empresa(),
-      tieneContextoVerificado: () => empresa() !== null
+      tieneContextoVerificado: () => empresa() !== null,
+      contextoParaPermisos: () => contexto()
     } as unknown as TenantContextService;
     runtime = new PermisosRuntimeService(permisoService, tenantContext);
 
@@ -218,4 +232,51 @@ describe('MF3 - permisos vs capacidades empresariales', () => {
     expect(runtime.rutaHabilitada('clientes')).toBe(true);
   });
 
+
+  it('revoca la caché al cambiar actor o rol en la misma empresa', () => {
+    runtime.cargar().subscribe();
+    expect(runtime.puede('Productos', 'Ver')).toBe(true);
+    actor.set(2);
+    expect(runtime.cargado()).toBe(false);
+    expect(runtime.esAdministrador()).toBe(false);
+    expect(runtime.puede('Productos', 'Ver')).toBe(false);
+    expect(runtime.rutaHabilitada('productos')).toBe(false);
+    runtime.cargar().subscribe();
+    expect(runtime.puede('Productos', 'Ver')).toBe(true);
+    rolId.set(8);
+    expect(runtime.puede('Productos', 'Ver')).toBe(false);
+  });
+
+  it('no comparte ni aplica respuestas del actor anterior en la misma empresa', () => {
+    const a = new Subject<any>();
+    const b = new Subject<any>();
+    let solicitudes = 0;
+    const permisoService = { getMisPermisos: () => (++solicitudes === 1 ? a : b) } as unknown as PermisoService;
+    runtime = new PermisosRuntimeService(permisoService, {
+      contextoParaPermisos: () => contexto()
+    } as unknown as TenantContextService);
+    const resultados: boolean[] = [];
+    runtime.cargar().subscribe(ok => resultados.push(ok));
+    actor.set(2);
+    runtime.cargar().subscribe(ok => resultados.push(ok));
+    expect(solicitudes).toBe(2);
+    b.next(reply({ esAdministrador: false, permisos: ['Clientes:Ver'], operacionMultiEmpresaRestringida: false, capacidadesHabilitadas: [], rutasHabilitadas: [] }));
+    a.next(response);
+    expect(resultados).toEqual([true, false]);
+    expect(runtime.puede('Clientes', 'Ver')).toBe(true);
+    expect(runtime.puede('Productos', 'Ver')).toBe(false);
+    expect(runtime.esAdministrador()).toBe(false);
+    a.complete();
+    b.complete();
+  });
+
+  it('deniega permisos y carga si la sesión del contexto dejó de estar vigente', () => {
+    runtime.cargar().subscribe();
+    expect(runtime.cargado()).toBe(true);
+    sesionVigente.set(false);
+    expect(runtime.cargado()).toBe(false);
+    expect(runtime.rutaInicialPermitida()).toBeNull();
+    expect(runtime.puede('Productos', 'Ver')).toBe(false);
+    runtime.cargar().subscribe(ok => expect(ok).toBe(false));
+  });
 });

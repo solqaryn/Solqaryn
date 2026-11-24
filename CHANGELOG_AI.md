@@ -10812,3 +10812,8 @@
 
 - R2: el origen real de autoridad del probe DEV rechaza alias numéricos del claim firmado id; conserva firma, rol vigente, membresía, tenant y sucursal; no concede acceso de gimnasio.
 - La integración HTTP firmada con Oracle EF/MySQL 8.4 agrega un caso de alias firmado y conserva los positivos y las denegaciones A/B, revocación y rollback. CI exact-SHA pendiente; A5 independiente; sigue VALIDANDO sin adaptador real de membresías.
+
+## 2026-11-24 — DEV04 C03-01.M03.03: caché de permisos ligada al contexto autenticado
+
+- Revoca permisos y rutas de un actor/rol anterior aun dentro de la misma empresa; las respuestas tardías no se reutilizan y un JWT sustituido o eliminado no concede permisos desde storage.
+- Añade regresiones de actor, rol, concurrencia y logout; incluye suites en CI dirigida, sin reducir checks, sin cambios al backend ni certificar navegador real. Pendiente CI exact-SHA y A5 independiente; conserva VALIDANDO.

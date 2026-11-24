@@ -1,7 +1,7 @@
-import { Injectable, computed, signal } from '@angular/core';
+import { Injectable, signal } from '@angular/core';
 import { Observable, catchError, finalize, map, of, shareReplay } from 'rxjs';
 import { PermisoService } from '../../services/permiso.service';
-import { TenantContextService } from './tenant-context.service';
+import { TenantContextService, type TenantContextoVerificado } from './tenant-context.service';
 
 const RUTAS_PROTEGIDAS = [
   { ruta: '/dashboard', modulo: 'Dashboard', accion: 'Ver' },
@@ -32,7 +32,7 @@ export class PermisosRuntimeService {
   private readonly _permisos = signal<Set<string>>(new Set());
   private readonly _esAdministrador = signal(false);
   private readonly _cargado = signal(false);
-  private readonly _empresaPermisosId = signal<number | null>(null);
+  private readonly _contextoPermisos = signal<TenantContextoVerificado | null>(null);
   private readonly _operacionRestringida = signal(true);
   private readonly _capacidades = signal<Set<string>>(new Set());
   private readonly _rutasHabilitadas = signal<Set<string>>(new Set());
@@ -40,22 +40,19 @@ export class PermisosRuntimeService {
   // autorización de la empresa seleccionada posteriormente.
   private versionCarga = 0;
   private cargaEnCurso: {
-    empresaId: number;
+    contexto: TenantContextoVerificado;
     version: number;
     solicitud: Observable<boolean>;
   } | null = null;
 
-  readonly esAdministrador = computed(() =>
-    this._cargado() &&
-    this._esAdministrador() &&
-    this.tenantContext.tieneContextoVerificado() &&
-    this._empresaPermisosId() === this.tenantContext.empresaIdVerificada()
-  );
-  readonly cargado = computed(() =>
-    this._cargado() &&
-    this.tenantContext.tieneContextoVerificado() &&
-    this._empresaPermisosId() === this.tenantContext.empresaIdVerificada()
-  );
+  // Leer storage en cada decisión: un computed memoizado no observa sustituciones del JWT.
+  readonly esAdministrador = () => this.permisosVigentes() && this._esAdministrador();
+  readonly cargado = () => this.permisosVigentes();
+
+  private permisosVigentes(): boolean {
+    const contexto = this.tenantContext.contextoParaPermisos();
+    return this._cargado() && contexto !== null && this._contextoPermisos() === contexto;
+  }
 
   constructor(
     private permisoService: PermisoService,
@@ -63,15 +60,15 @@ export class PermisosRuntimeService {
   ) {}
 
   cargar(): Observable<boolean> {
-    const empresaId = this.tenantContext.empresaIdVerificada();
-    if (!empresaId) {
+    const contexto = this.tenantContext.contextoParaPermisos();
+    if (!contexto) {
       this.limpiar();
       return of(false);
     }
 
     // Guard y barra de navegación pueden solicitar simultáneamente los mismos
     // permisos. Compartir un único HTTP evita una falsa denegación entre guards.
-    if (this.cargaEnCurso?.empresaId === empresaId) {
+    if (this.cargaEnCurso?.contexto === contexto) {
       return this.cargaEnCurso.solicitud;
     }
 
@@ -80,12 +77,11 @@ export class PermisosRuntimeService {
     const version = ++this.versionCarga;
     this.limpiarEstado();
 
-    const solicitud = this.permisoService.getMisPermisos(empresaId).pipe(
+    const solicitud = this.permisoService.getMisPermisos(contexto.empresaId).pipe(
       map((res) => {
         // Una respuesta antigua no puede borrar los permisos del nuevo tenant.
         if (version !== this.versionCarga ||
-            this.tenantContext.empresaIdVerificada() !== empresaId ||
-            !this.tenantContext.tieneContextoVerificado()) {
+            this.tenantContext.contextoParaPermisos() !== contexto) {
           return false;
         }
 
@@ -99,7 +95,7 @@ export class PermisosRuntimeService {
             !Array.isArray(data.rutasHabilitadas)) {
           throw new Error('La API no confirmó permisos y capacidades empresariales.');
         }
-        this._empresaPermisosId.set(empresaId);
+        this._contextoPermisos.set(contexto);
         this._permisos.set(new Set(data.permisos));
         this._esAdministrador.set(data.esAdministrador === true);
         this._operacionRestringida.set(data.operacionMultiEmpresaRestringida);
@@ -112,8 +108,7 @@ export class PermisosRuntimeService {
         // Un error HTTP de A recibido después del éxito de B no puede
         // invalidar los permisos ni la navegación actual de B.
         if (version === this.versionCarga &&
-            this.tenantContext.empresaIdVerificada() === empresaId &&
-            this.tenantContext.tieneContextoVerificado()) {
+            this.tenantContext.contextoParaPermisos() === contexto) {
           this.limpiarEstado();
           this._cargado.set(true);
         }
@@ -126,7 +121,7 @@ export class PermisosRuntimeService {
       }),
       shareReplay({ bufferSize: 1, refCount: true })
     );
-    this.cargaEnCurso = { empresaId, version, solicitud };
+    this.cargaEnCurso = { contexto, version, solicitud };
     return solicitud;
   }
 
@@ -137,7 +132,7 @@ export class PermisosRuntimeService {
   }
 
   private limpiarEstado(): void {
-    this._empresaPermisosId.set(null);
+    this._contextoPermisos.set(null);
     this._permisos.set(new Set());
     this._esAdministrador.set(false);
     this._operacionRestringida.set(true);
@@ -147,8 +142,7 @@ export class PermisosRuntimeService {
   }
 
   puede(modulo: string, accion: string): boolean {
-    if (!this._cargado() || !this.tenantContext.tieneContextoVerificado() ||
-        this._empresaPermisosId() !== this.tenantContext.empresaIdVerificada()) return false;
+    if (!this.permisosVigentes()) return false;
     const clave = `${modulo}:${accion}`;
     // Administrador también requiere grants explícitos y capacidad operativa.
     return this._permisos().has(clave) &&
@@ -156,14 +150,13 @@ export class PermisosRuntimeService {
   }
 
   rutaHabilitada(ruta: string | undefined | null): boolean {
-    if (!this._cargado() || !this.tenantContext.tieneContextoVerificado() ||
-        this._empresaPermisosId() !== this.tenantContext.empresaIdVerificada()) return false;
+    if (!this.permisosVigentes()) return false;
     if (!this._operacionRestringida()) return true;
     return !!ruta && this._rutasHabilitadas().has(ruta.startsWith('/') ? ruta.slice(1) : ruta);
   }
 
   rutaInicialPermitida(): string | null {
-    if (!this.tenantContext.tieneContextoVerificado()) return null;
+    if (!this.tenantContext.contextoParaPermisos()) return null;
     if (this.puede('Dashboard', 'Ver') && this.rutaHabilitada('dashboard'))
       return '/dashboard';
     return RUTAS_PROTEGIDAS.find(item =>
