@@ -78,24 +78,31 @@ async function audit(page, worker, name, locator) {
   assert.ok(before.scroll <= before.client + 2, name + ': overflow at 100%');
   assert.ok(after.scroll <= after.client + 2, name + ': overflow at 200%');
   const image200 = await capture(2, after);
-  const editor = page.getByRole('form', { name: 'Configuración del tenant activo' });
+  // The previous probe stopped on ANY editor control, even when auditing
+  // the save button after scrolling. Test the actual target, not its container.
+  // Wait for browser-driven focus scrolling to settle; never call focus(),
+  // scrollIntoView() or click to obtain the keyboard assertion.
   let reached = false;
   for (let i = 0; i < 100; i++) {
     await page.keyboard.press('Tab');
-    if (await editor.evaluate(el => el.contains(document.activeElement)
-      && document.activeElement?.matches('input,textarea,select,button'))) {
+    await page.evaluate(() => new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done))));
+    if (await locator.evaluate(el => el === document.activeElement)) {
       reached = true;
       break;
     }
   }
-  assert.ok(reached, name + ': keyboard could not reach editor');
-  const focus = await page.evaluate(() => {
-    const el = document.activeElement;
-    if (!el || el === document.body || el === document.documentElement) return false;
+  assert.ok(reached, name + ': keyboard could not reach target');
+  const focus = await locator.evaluate(el => {
     const css = getComputedStyle(el), r = el.getBoundingClientRect();
-    return css.visibility !== 'hidden' && css.display !== 'none' && r.width > 0 && r.height > 0 && r.top >= -2 && r.bottom <= innerHeight + 2;
+    const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+    return el === document.activeElement && el.matches(':focus-visible')
+      && css.visibility !== 'hidden' && css.display !== 'none'
+      && r.width > 0 && r.height > 0
+      && r.top >= -2 && r.bottom <= innerHeight + 2
+      && r.left >= -2 && r.right <= document.documentElement.clientWidth + 2
+      && (hit === el || el.contains(hit));
   });
-  assert.ok(focus, name + ': real keyboard focus missing');
+  assert.ok(focus, name + ': real target keyboard focus missing or obscured');
   records.push({ name, actual100, actual200, before, after, bounds, image100, image200, focus });
   await zoom(1);
 }
