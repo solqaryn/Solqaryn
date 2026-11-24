@@ -123,6 +123,36 @@
         </div>
       </form>
 
+      @if (tenantContext.contextoParaPermisos()) {
+        <section class="card form-card" aria-labelledby="sucursal-contextual-titulo">
+          <h2 id="sucursal-contextual-titulo">Consultar sucursal autorizada</h2>
+          <p>Comprueba el acceso a una sucursal de tu empresa. No cambia tu sesión ni tus permisos generales.</p>
+          <button mat-stroked-button type="button" (click)="cargarSucursales()" [disabled]="consultandoSucursal()">Consultar opciones</button>
+          @if (contextoSucursalVigente()) {
+            @if (sucursalesCargadas() && !sucursales().length) {
+              <p role="status">No hay sucursales autorizadas disponibles.</p>
+            }
+            @if (sucursales().length) {
+              <div>
+                <label for="sucursal-contextual">Sucursal</label>
+                <select id="sucursal-contextual" #sucursal (change)="seleccionarSucursal(sucursal.value)" [disabled]="consultandoSucursal()">
+                  <option value="">Selecciona una sucursal</option>
+                  @for (opcion of sucursales(); track opcion.id) {
+                    <option [value]="opcion.id">{{ opcion.nombre }} ({{ opcion.codigo }})</option>
+                  }
+                </select>
+              </div>
+              <button mat-flat-button type="button" (click)="consultarSucursal()" [disabled]="consultandoSucursal() || sucursalId() === null">Verificar acceso</button>
+            }
+            @if (consultandoSucursal()) { <p role="status">Verificando con el servidor…</p> }
+            @if (errorSucursal()) { <p class="message error" role="alert">{{ errorSucursal() }}</p> }
+            @if (sucursalConsultada(); as resultado) {
+              <p role="status">Acceso confirmado en esta consulta: {{ resultado.nombre }} ({{ resultado.codigo }}).</p>
+            }
+          }
+        </section>
+      }
+
       <form [formGroup]="formPassword" (ngSubmit)="cambiarPassword()" class="card form-card password-card">
         <div class="section-heading">
           <div class="heading-icon" aria-hidden="true"><mat-icon>password</mat-icon></div>

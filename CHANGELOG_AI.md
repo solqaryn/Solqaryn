@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV04 C03-01.M03.03: consumidor contextual de sucursal en perfil
+
+- Consulta funcional de sucursal autorizada en perfil mediante listado, emisión JWT contextual y GET protegido; credencial efímera aislada del login base, sin almacenamiento, fallback ni concesión de permisos globales.
+- Validación de respuestas tenant/sucursal/rol, rechazo de emisión tardía y regresiones HTTP dirigidas; SKREF-03 y SKREF-10 originales fijadas. CI exact-SHA, navegador real A/B y A5 independiente pendientes; no LISTO. Revert normal como rollback; sin QA/main/PROD.
+
 ## 2026-11-24 — DEV02 C15-04.M05.04: corregir cascada del foco de galería
 
 - CI de ae2c228e (Fase 4, run 45446271452/job 138630790850) ejecutó la regresión de teclado y falló: outlineOffset efectivo +3 px, ancho 3 px. La regla global de enterprise-design-system impone outline-offset con !important. La excepción del componente ahora usa !important únicamente en el desplazamiento interior de foto principal y miniaturas; conserva grosor, color, forced-colors, Tab/Enter/Escape y el oráculo sin cambios. Sin API, permisos, datos o arquitectura nuevos.

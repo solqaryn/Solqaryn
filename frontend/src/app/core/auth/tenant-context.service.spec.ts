@@ -1,7 +1,7 @@
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { environment } from '../../../environments/environment';
-import { TenantContextService } from './tenant-context.service';
+import { TenantContextService, CREDENCIAL_SUCURSAL } from './tenant-context.service';
 
 describe('TenantContextService', () => {
   let httpMock: HttpTestingController;
@@ -18,6 +18,38 @@ describe('TenantContextService', () => {
   afterEach(() => {
     httpMock.verify();
     localStorage.clear();
+  });
+
+  it('consulta una sucursal con credencial contextual efímera sin cambiar el JWT base', () => {
+    localStorage.setItem('solqaryn_token', 'base-A');
+    const service = TestBed.inject(TenantContextService);
+    service.seleccionarEmpresa(1).subscribe();
+    httpMock.expectOne(`${environment.apiUrl}/tenant-context/1`).flush(tenant1);
+    service.listarSucursalesContextuales().subscribe(lista => expect(lista[0].id).toBe(5));
+    const sucursal = { id: 5, empresaId: 1, codigo: 'S1', nombre: 'Sucursal' };
+    httpMock.expectOne(`${environment.apiUrl}/tenant-context/sesion/sucursales/1`).flush({ success: true, data: [sucursal] });
+    service.consultarSucursalContextual(5).subscribe(r => expect(r).toEqual(sucursal));
+    const emision = httpMock.expectOne(`${environment.apiUrl}/tenant-context/sesion`);
+    expect(emision.request.body).toEqual({ empresaId: 1, sucursalId: 5 });
+    emision.flush({ success: true, data: { token: 'scoped-A', empresaId: 1, sucursalId: 5, rolId: 4, expiraEn: new Date(Date.now() + 60000).toISOString() } });
+    const lectura = httpMock.expectOne(`${environment.apiUrl}/tenant-context/sesion/sucursal`);
+    expect(lectura.request.context.get(CREDENCIAL_SUCURSAL)).toEqual({ baseToken: 'base-A', token: 'scoped-A', empresaId: 1, sucursalId: 5 });
+    lectura.flush({ success: true, data: sucursal });
+    expect(localStorage.getItem('solqaryn_token')).toBe('base-A');
+  });
+
+  it('no usa una emisión tardía tras sustituir el JWT', () => {
+    localStorage.setItem('solqaryn_token', 'base-A');
+    const service = TestBed.inject(TenantContextService);
+    service.seleccionarEmpresa(1).subscribe();
+    httpMock.expectOne(`${environment.apiUrl}/tenant-context/1`).flush(tenant1);
+    let rechazado = false;
+    service.consultarSucursalContextual(5).subscribe({ error: () => { rechazado = true; } });
+    const emision = httpMock.expectOne(`${environment.apiUrl}/tenant-context/sesion`);
+    localStorage.setItem('solqaryn_token', 'base-B');
+    emision.flush({ success: true, data: { token: 'scoped-A', empresaId: 1, sucursalId: 5, rolId: 4, expiraEn: new Date(Date.now() + 60000).toISOString() } });
+    expect(rechazado).toBe(true);
+    httpMock.expectNone(`${environment.apiUrl}/tenant-context/sesion/sucursal`);
   });
 
   it('no restaura autoridad desde localStorage', () => {

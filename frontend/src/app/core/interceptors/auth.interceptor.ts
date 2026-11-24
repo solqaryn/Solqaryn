@@ -5,6 +5,8 @@ import { environment } from '../../../environments/environment';
 import { AuthService } from '../auth/auth.service';
 import { SessionActivityService } from '../auth/session-activity.service';
 
+import { CREDENCIAL_SUCURSAL } from '../auth/tenant-context.service';
+
 const EMPRESA_SOLICITADA_KEY = 'solqaryn_empresa_solicitada_id';
 const TENANT_HEADER = 'X-Empresa-Id';
 const TOKEN_KEY = 'solqaryn_token';
@@ -20,6 +22,22 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   // token from storage as a new authenticated identity here.
   const mismaSesion = () => authService.getToken() === token &&
     localStorage.getItem(TOKEN_KEY) === tokenPersistido && tokenPersistido === token;
+  // A contextual credential is never a base login token or a general API grant.
+  const contextual = req.context.get(CREDENCIAL_SUCURSAL);
+  if (contextual) {
+    const apiBase = environment.apiUrl.replace(/\/$/, '');
+    if (req.method !== 'GET' || req.urlWithParams !== `${apiBase}/tenant-context/sesion/sucursal` ||
+        !token || token !== contextual.baseToken || !mismaSesion() || authService.isTokenExpired() ||
+        localStorage.getItem(EMPRESA_SOLICITADA_KEY) !== String(contextual.empresaId)) {
+      return throwError(() => ({ status: 401, message: 'Contexto de sucursal no vigente.' }));
+    }
+    // A 401/403 from this scoped resource must not replace or close the base session.
+    return next(req.clone({ setHeaders: {
+      Authorization: `Bearer ${contextual.token}`,
+      [TENANT_HEADER]: String(contextual.empresaId),
+      'X-Sucursal-Id': String(contextual.sucursalId)
+    }, redirect: 'error' }));
+  }
   // A shared-storage logout or replacement login must not dispatch a request
   // using this tab's stale in-memory identity. Never adopt storage as authority.
   if (token && tokenPersistido !== token) {

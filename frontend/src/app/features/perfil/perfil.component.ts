@@ -1,4 +1,4 @@
-import { Component, OnDestroy, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnDestroy, OnInit, DestroyRef, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, FormBuilder, Validators, AbstractControl, ValidationErrors } from '@angular/forms';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -10,7 +10,9 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { PerfilService } from '../../services/perfil.service';
 import { Perfil } from '../../core/models/perfil.model';
 import { AuthService } from '../../core/auth/auth.service';
-import { TenantContextService } from '../../core/auth/tenant-context.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { finalize } from 'rxjs';
+import { TenantContextService, SucursalContextual, TenantContextoVerificado } from '../../core/auth/tenant-context.service';
 
 function passwordsIguales(control: AbstractControl): ValidationErrors | null {
   const nueva = control.get('passwordNueva')?.value;
@@ -36,6 +38,65 @@ const MAX_FOTO_BYTES = 5 * 1024 * 1024;
 })
 export class PerfilComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
+  private readonly destroyRef = inject(DestroyRef);
+  private contextoSucursal: TenantContextoVerificado | null = null;
+  readonly sucursales = signal<SucursalContextual[]>([]);
+  readonly sucursalConsultada = signal<SucursalContextual | null>(null);
+  readonly sucursalId = signal<number | null>(null);
+  readonly consultandoSucursal = signal(false);
+  readonly errorSucursal = signal<string | null>(null);
+  readonly sucursalesCargadas = signal(false);
+
+  contextoSucursalVigente(): boolean {
+    return !!this.contextoSucursal && this.tenantContext.contextoParaPermisos() === this.contextoSucursal;
+  }
+
+  cargarSucursales(): void {
+    if (this.consultandoSucursal()) return;
+    this.contextoSucursal = this.tenantContext.contextoParaPermisos();
+    this.sucursales.set([]);
+    this.sucursalConsultada.set(null);
+    this.sucursalId.set(null);
+    this.errorSucursal.set(null);
+    this.sucursalesCargadas.set(false);
+    if (!this.contextoSucursal) return;
+    this.consultandoSucursal.set(true);
+    this.tenantContext.listarSucursalesContextuales().pipe(
+      takeUntilDestroyed(this.destroyRef), finalize(() => this.consultandoSucursal.set(false))
+    ).subscribe({
+      next: lista => {
+        if (!this.contextoSucursalVigente()) return;
+        this.sucursales.set(lista);
+        this.sucursalesCargadas.set(true);
+      },
+      error: () => this.errorSucursal.set('No se pudieron consultar las sucursales autorizadas.')
+    });
+  }
+
+  seleccionarSucursal(valor: string): void {
+    const id = Number(valor);
+    this.sucursalId.set(this.sucursales().some(s => s.id === id) ? id : null);
+    this.sucursalConsultada.set(null);
+    this.errorSucursal.set(null);
+  }
+
+  consultarSucursal(): void {
+    const id = this.sucursalId();
+    if (!this.contextoSucursalVigente() || this.consultandoSucursal() || id === null ||
+        !this.sucursales().some(s => s.id === id)) return;
+    this.sucursalConsultada.set(null);
+    this.errorSucursal.set(null);
+    this.consultandoSucursal.set(true);
+    this.tenantContext.consultarSucursalContextual(id).pipe(
+      takeUntilDestroyed(this.destroyRef), finalize(() => this.consultandoSucursal.set(false))
+    ).subscribe({
+      next: sucursal => {
+        if (this.contextoSucursalVigente() && this.sucursalId() === id) this.sucursalConsultada.set(sucursal);
+      },
+      error: () => this.errorSucursal.set('No se pudo confirmar el acceso a esta sucursal. Vuelve a consultar las opciones.')
+    });
+  }
+
   private previewObjectUrl: string | null = null;
 
   readonly loading = signal(true);

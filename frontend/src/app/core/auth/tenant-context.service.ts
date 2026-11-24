@@ -1,11 +1,31 @@
 import { Injectable, computed, signal } from '@angular/core';
-import { HttpClient } from '@angular/common/http';
-import { Observable, catchError, finalize, map, shareReplay, tap, throwError, timeout } from 'rxjs';
+import { HttpClient, HttpContext, HttpContextToken } from '@angular/common/http';
+import { Observable, defer, switchMap, catchError, finalize, map, shareReplay, tap, throwError, timeout } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../models/api-response.model';
 
 const EMPRESA_SOLICITADA_KEY = 'solqaryn_empresa_solicitada_id';
 const TOKEN_ACTOR_KEY = 'solqaryn_token';
+
+export interface SucursalContextual {
+  id: number;
+  empresaId: number;
+  codigo: string;
+  nombre: string;
+}
+
+interface SesionSucursal {
+  token: string;
+  expiraEn: string;
+  empresaId: number;
+  sucursalId: number;
+  rolId: number;
+}
+
+/** Credencial efímera: sólo el GET contextual permitido puede consumirla. */
+export const CREDENCIAL_SUCURSAL = new HttpContextToken<{
+  baseToken: string; token: string; empresaId: number; sucursalId: number;
+} | null>(() => null);
 
 /** Identidad empresarial que el servidor autorizó a mostrar al usuario actual. */
 export interface EmpresaSeleccionable {
@@ -68,6 +88,76 @@ export class TenantContextService {
     const contexto = this._contextoVerificado();
     if (!this.tokenContextoVerificado || localStorage.getItem(TOKEN_ACTOR_KEY) !== this.tokenContextoVerificado) return null;
     return contexto;
+  }
+
+  listarSucursalesContextuales(): Observable<SucursalContextual[]> {
+    return defer(() => {
+      const contexto = this.contextoParaPermisos();
+      if (!contexto) throw new Error('Contexto empresarial no vigente.');
+      return this.http.get<ApiResponse<SucursalContextual[]>>(
+        `${this.apiUrl}/sesion/sucursales/${contexto.empresaId}`
+      ).pipe(timeout({ first: 15_000 }), map(res => {
+        this.exigirContexto(contexto);
+        const lista = res?.success === true ? res.data : null;
+        if (!Array.isArray(lista) || lista.some(s => !this.sucursalValida(s, contexto.empresaId)) ||
+            new Set(lista.map(s => s.id)).size !== lista.length) {
+          throw new Error('Listado de sucursales no válido.');
+        }
+        return lista;
+      }));
+    });
+  }
+
+  consultarSucursalContextual(sucursalId: number): Observable<SucursalContextual> {
+    return defer(() => {
+      const contexto = this.contextoParaPermisos();
+      const baseToken = localStorage.getItem(TOKEN_ACTOR_KEY);
+      if (!contexto || !baseToken || !Number.isSafeInteger(sucursalId) || sucursalId <= 0) {
+        throw new Error('Selección de sucursal no válida.');
+      }
+      return this.http.post<ApiResponse<SesionSucursal>>(`${this.apiUrl}/sesion`, {
+        empresaId: contexto.empresaId, sucursalId
+      }).pipe(
+        timeout({ first: 15_000 }),
+        switchMap(res => {
+          this.exigirContexto(contexto);
+          const sesion = res?.success === true ? res.data : null;
+          if (!sesion || sesion.empresaId !== contexto.empresaId ||
+              sesion.sucursalId !== sucursalId || sesion.rolId !== contexto.rolId ||
+              typeof sesion.token !== 'string' || !sesion.token.trim() ||
+              typeof sesion.expiraEn !== 'string' || !(Date.parse(sesion.expiraEn) > Date.now())) {
+            throw new Error('Credencial contextual no válida.');
+          }
+          return this.http.get<ApiResponse<SucursalContextual>>(`${this.apiUrl}/sesion/sucursal`, {
+            context: new HttpContext().set(CREDENCIAL_SUCURSAL, {
+              baseToken, token: sesion.token, empresaId: contexto.empresaId, sucursalId
+            })
+          }).pipe(timeout({ first: 15_000 }));
+        }),
+        map(res => {
+          this.exigirContexto(contexto);
+          const sucursal = res?.success === true ? res.data : null;
+          if (!this.sucursalValida(sucursal, contexto.empresaId) || sucursal.id !== sucursalId) {
+            throw new Error('Sucursal no confirmada por el servidor.');
+          }
+          return sucursal;
+        })
+      );
+    });
+  }
+
+  private exigirContexto(contexto: TenantContextoVerificado): void {
+    if (this.contextoParaPermisos() !== contexto ||
+        localStorage.getItem(EMPRESA_SOLICITADA_KEY) !== String(contexto.empresaId)) {
+      throw new Error('El contexto empresarial cambió.');
+    }
+  }
+
+  private sucursalValida(sucursal: SucursalContextual | null | undefined, empresaId: number): sucursal is SucursalContextual {
+    return !!sucursal && sucursal.empresaId === empresaId &&
+      Number.isSafeInteger(sucursal.id) && sucursal.id > 0 &&
+      typeof sucursal.nombre === 'string' && !!sucursal.nombre.trim() &&
+      typeof sucursal.codigo === 'string';
   }
 
   listarEmpresasSeleccionables(): Observable<EmpresaSeleccionable[]> {

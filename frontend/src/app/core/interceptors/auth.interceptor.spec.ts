@@ -1,9 +1,10 @@
-import { HttpClient, provideHttpClient, withInterceptors } from '@angular/common/http';
+import { HttpClient, HttpContext, provideHttpClient, withInterceptors } from '@angular/common/http';
 import { HttpTestingController, provideHttpClientTesting } from '@angular/common/http/testing';
 import { TestBed } from '@angular/core/testing';
 import { environment } from '../../../environments/environment';
 import { AuthService } from '../auth/auth.service';
 import { SessionActivityService } from '../auth/session-activity.service';
+import { CREDENCIAL_SUCURSAL } from '../auth/tenant-context.service';
 import { authInterceptor } from './auth.interceptor';
 
 describe('Auth interceptor - identidad plataforma y tenant aislados', () => {
@@ -33,6 +34,20 @@ describe('Auth interceptor - identidad plataforma y tenant aislados', () => {
     testing.verify();
     localStorage.removeItem('solqaryn_empresa_solicitada_id');
     localStorage.removeItem('solqaryn_token');
+  });
+
+  it('usa sólo el JWT contextual en el recurso permitido y no cierra la sesión base por su 401', () => {
+    const context = new HttpContext().set(CREDENCIAL_SUCURSAL, { baseToken: 'signed-test-only', token: 'scoped-test', empresaId: 1, sucursalId: 5 });
+    const url = environment.apiUrl + '/tenant-context/sesion/sucursal';
+    http.get(url, { context }).subscribe({ error: () => undefined });
+    const req = testing.expectOne(url);
+    expect(req.request.headers.get('Authorization')).toBe('Bearer scoped-test');
+    expect(req.request.headers.get('X-Sucursal-Id')).toBe('5');
+    req.flush({}, { status: 401, statusText: 'Unauthorized' });
+    expect(cerrarPor401).not.toHaveBeenCalled();
+    http.get(environment.apiUrl + '/plataforma/sesion', { context }).subscribe({ error: () => undefined });
+    testing.expectNone(environment.apiUrl + '/plataforma/sesion');
+    expect(localStorage.getItem('solqaryn_token')).toBe('signed-test-only');
   });
 
   it('no adjunta contexto empresarial a la comprobación de autoridad global', () => {
