@@ -4,6 +4,8 @@ on:
     branches: [dev]
     paths:
       - 'backend/src/API/Security/CommercialTenantUiCapabilities.cs'
+      # The private browser authenticates against live tenant/session authority.
+      - 'backend/src/Infrastructure/Services/UsuarioScopeService.cs'
       - 'backend/tests/Solqaryn.Tests/API/CommercialTenantUiCapabilitiesTests.cs'
       - '.github/workflows/v24-c01-03-m04-01-dynamic-config.yml'
       - 'frontend/e2e/c01-03-m04-01-dynamic-config.spec.ts'
