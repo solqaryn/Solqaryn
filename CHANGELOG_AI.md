@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV01 V31 C07-01.M06.06: validación fiscal fail-closed
+- R2: ImpuestoService rechaza tipo/operación numéricos no definidos y listas compuestas antes de persistir, sin cambiar JWT/RBAC/flags ni reflejar entrada inválida.
+- Regresión HTTP JWT A/B y MySQL 8.4 efímero: 16 POST + 16 PUT negativas, positivos preservados y readback SQL/auditoría sin mutación adicional. CI exact-SHA requerida, no PASS anticipado ni reejecución manual de la fuente verde.
+- H EN_PROGRESO DEV01, V17 propio 2000001045; servicios/atributos/ERP y A5 siguen pendientes. Sin QA/main/PROD.
+
 ## 2026-11-24 — DEV06 V31 C14-02.M06.06: JWT inválido y evidencia individual de DELETE
 - R2: amplía el Fact HTTP/MySQL aislado existente con JWT malformado, emisor y audiencia incorrectos, expirado y aún no válido, con 401 y readback A/B sin mutación. Mantiene las comprobaciones previas RBAC, stock, baja, auditoría y rollback.
 - DEV CI conserva solo identidad y resultado del Fact permitido desde el TRX real, SHA/run y contadores, sin publicar TRX crudo ni datos de fixtures; no cambia filtros, mínimos, permisos, triggers ni checks. No duplica suites manualmente; nueva CI causal pendiente. No certifica alcance global C14 ni QA/main/PROD; A5 independiente pendiente. Revert del changeset como rollback.

@@ -44,8 +44,9 @@ public class ImpuestoService : IImpuestoService
         var resultado = new List<OperacionImpuesto>();
         foreach (var v in valores)
         {
-            if (!Enum.TryParse<OperacionImpuesto>(v, true, out var op))
-                throw new BusinessRuleException($"Operación '{v}' no es válida (use Venta o Compra).");
+            if (!Enum.TryParse<OperacionImpuesto>(v, true, out var op) ||
+                !Enum.IsDefined(op) || v.Contains(','))
+                throw new BusinessRuleException("Operación no válida (use Venta o Compra).");
             resultado.Add(op);
         }
         if (resultado.Count == 0)
@@ -69,8 +70,9 @@ public class ImpuestoService : IImpuestoService
 
     public async Task<ImpuestoDto> CreateAsync(GuardarImpuestoDto dto)
     {
-        if (!Enum.TryParse<TipoImpuesto>(dto.Tipo, true, out var tipo))
-            throw new BusinessRuleException($"Tipo de impuesto '{dto.Tipo}' no es válido.");
+        if (!Enum.TryParse<TipoImpuesto>(dto.Tipo, true, out var tipo) ||
+            !Enum.IsDefined(tipo) || dto.Tipo.Contains(','))
+            throw new BusinessRuleException("Tipo de impuesto no válido (use Porcentaje o MontoFijo).");
 
         ValidarComun(dto, tipo);
         var operaciones = ParseOperaciones(dto.Operaciones);
@@ -137,8 +139,9 @@ public class ImpuestoService : IImpuestoService
 
     public async Task<ImpuestoDto> UpdateAsync(int id, GuardarImpuestoDto dto)
     {
-        if (!Enum.TryParse<TipoImpuesto>(dto.Tipo, true, out var tipo))
-            throw new BusinessRuleException($"Tipo de impuesto '{dto.Tipo}' no es válido.");
+        if (!Enum.TryParse<TipoImpuesto>(dto.Tipo, true, out var tipo) ||
+            !Enum.IsDefined(tipo) || dto.Tipo.Contains(','))
+            throw new BusinessRuleException("Tipo de impuesto no válido (use Porcentaje o MontoFijo).");
 
         ValidarComun(dto, tipo);
         var operaciones = ParseOperaciones(dto.Operaciones);

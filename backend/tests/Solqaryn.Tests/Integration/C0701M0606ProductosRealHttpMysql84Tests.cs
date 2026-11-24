@@ -1777,7 +1777,8 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
 
             // V31: exact HTTP tax creation, real JWT and Oracle EF/MySQL.
             async Task<HttpResponseMessage> CreateFiscalAsync(
-                string jwt, int selector, string code, int productId, int categoryId)
+                string jwt, int selector, string code, int productId, int categoryId,
+                string tipo = "Porcentaje", string operacion = "Venta")
             {
                 using var req = new HttpRequestMessage(HttpMethod.Post, "/impuestos");
                 req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
@@ -1785,7 +1786,7 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 req.Content = new StringContent(System.Text.Json.JsonSerializer.Serialize(new
                 {
                     nombre = "C0701 HTTP fiscal " + code, codigo = code,
-                    tipo = "Porcentaje", tasa = 12m, operaciones = new[] { "Venta" },
+                    tipo, tasa = 12m, operaciones = new[] { operacion },
                     productoIds = new[] { productId }, categoriaIds = new[] { categoryId }
                 }), Encoding.UTF8, "application/json");
                 return await client.SendAsync(req);
@@ -1823,6 +1824,35 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 Assert.Equal(HttpStatusCode.BadRequest, foreignCategory.StatusCode);
             using (var spoofedCreate = await CreateFiscalAsync(jwtA, b.Id, "C0701HTTPSPOOF", productBId, pilotCategoryBId))
                 Assert.Equal(HttpStatusCode.ServiceUnavailable, spoofedCreate.StatusCode);
+            // Reject undefined numeric enums and composite values before any fiscal write.
+            // Reuse real JWT/role/tenant fixtures and the physical readback below.
+            var invalidFiscalEnums = new[]
+            {
+                (Tipo: "0", Operacion: "Venta"),
+                (Tipo: "3", Operacion: "Venta"),
+                (Tipo: "999991", Operacion: "Venta"),
+                (Tipo: "Porcentaje, Porcentaje", Operacion: "Venta"),
+                (Tipo: "Porcentaje", Operacion: "0"),
+                (Tipo: "Porcentaje", Operacion: "3"),
+                (Tipo: "Porcentaje", Operacion: "999991"),
+                (Tipo: "Porcentaje", Operacion: "Venta, Compra")
+            };
+            foreach (var (jwt, owner, productId, categoryId) in new[]
+            {
+                (jwtA, a.Id, productAId, pilotCategoryAId),
+                (jwtB, b.Id, productBId, pilotCategoryBId)
+            })
+            {
+                for (var invalidIndex = 0; invalidIndex < invalidFiscalEnums.Length; invalidIndex++)
+                {
+                    var invalid = invalidFiscalEnums[invalidIndex];
+                    using var rejected = await CreateFiscalAsync(jwt, owner,
+                        $"C0701HTTPENUM{owner}_{invalidIndex}", productId, categoryId,
+                        invalid.Tipo, invalid.Operacion);
+                    Assert.Equal(HttpStatusCode.BadRequest, rejected.StatusCode);
+                    Assert.DoesNotContain("999991", await rejected.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+                }
+            }
             var fiscalCreatePermission = await db.Permisos.IgnoreQueryFilters().AsNoTracking()
                 .SingleAsync(p => p.Modulo == ModuloSistema.Impuestos && p.Accion == AccionPermiso.Crear
                     && p.Ambito == AmbitoAutorizacion.Empresa && p.Activo && !p.Eliminado);
@@ -1846,15 +1876,16 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             var editTaxA = await db.Impuestos.IgnoreQueryFilters().AsNoTracking().SingleAsync(x => x.Codigo == "C0701HTTPA");
             var editTaxB = await db.Impuestos.IgnoreQueryFilters().AsNoTracking().SingleAsync(x => x.Codigo == "C0701HTTPB");
             async Task<HttpResponseMessage> EditFiscalAsync(string jwt, int selector, int id, string code,
-                int productId, int categoryId, decimal tasa)
+                int productId, int categoryId, decimal tasa,
+                string tipo = "Porcentaje", string operacion = "Venta")
             {
                 using var req = new HttpRequestMessage(HttpMethod.Put, $"/impuestos/{id}");
                 req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
                 req.Headers.Add("X-Empresa-Id", selector.ToString());
                 req.Content = new StringContent(System.Text.Json.JsonSerializer.Serialize(new
                 {
-                    nombre = "C0701 edit fiscal " + code, codigo = code, tipo = "Porcentaje",
-                    tasa, operaciones = new[] { "Venta" },
+                    nombre = "C0701 edit fiscal " + code, codigo = code, tipo,
+                    tasa, operaciones = new[] { operacion },
                     productoIds = new[] { productId }, categoriaIds = new[] { categoryId }
                 }), Encoding.UTF8, "application/json");
                 return await client.SendAsync(req);
@@ -1876,6 +1907,20 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 Assert.Equal(HttpStatusCode.BadRequest, crossCategory.StatusCode);
             using (var spoofEdit = await EditFiscalAsync(jwtA, b.Id, editTaxB.Id, editTaxB.Codigo, productBId, pilotCategoryBId, 99m))
                 Assert.Equal(HttpStatusCode.ServiceUnavailable, spoofEdit.StatusCode);
+            foreach (var (jwt, owner, taxId, code, productId, categoryId) in new[]
+            {
+                (jwtA, a.Id, editTaxA.Id, editTaxA.Codigo, productAId, pilotCategoryAId),
+                (jwtB, b.Id, editTaxB.Id, editTaxB.Codigo, productBId, pilotCategoryBId)
+            })
+            {
+                foreach (var invalid in invalidFiscalEnums)
+                {
+                    using var rejected = await EditFiscalAsync(jwt, owner, taxId, code,
+                        productId, categoryId, 99m, invalid.Tipo, invalid.Operacion);
+                    Assert.Equal(HttpStatusCode.BadRequest, rejected.StatusCode);
+                    Assert.DoesNotContain("999991", await rejected.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+                }
+            }
             var fiscalEditPermission = await db.Permisos.IgnoreQueryFilters().AsNoTracking()
                 .SingleAsync(p => p.Modulo == ModuloSistema.Impuestos && p.Accion == AccionPermiso.Editar
                     && p.Ambito == AmbitoAutorizacion.Empresa && p.Activo && !p.Eliminado);
@@ -1918,8 +1963,12 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 {
                     var actual = await editFresh.Impuestos.IgnoreQueryFilters().AsNoTracking()
                         .Where(x => x.Id == taxId)
-                        .Select(x => new { x.Tasa, EmpresaId = EF.Property<int?>(x, "EmpresaId") }).SingleAsync();
+                        .Select(x => new { x.Tasa, x.Tipo, EmpresaId = EF.Property<int?>(x, "EmpresaId") }).SingleAsync();
                     Assert.Equal(tasa, actual.Tasa);
+                    Assert.Equal(TipoImpuesto.Porcentaje, actual.Tipo);
+                    Assert.Equal(OperacionImpuesto.Venta, await editFresh.Set<ImpuestoOperacion>()
+                        .IgnoreQueryFilters().AsNoTracking().Where(x => x.ImpuestoId == taxId &&
+                            EF.Property<int?>(x, "EmpresaId") == owner).Select(x => x.Operacion).SingleAsync());
                     Assert.Equal(owner, actual.EmpresaId);
                     Assert.Equal(productId, await editFresh.Set<ImpuestoProducto>().IgnoreQueryFilters().AsNoTracking()
                         .Where(x => x.ImpuestoId == taxId && EF.Property<int?>(x, "EmpresaId") == owner)
