@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV01 V31 C07-01.M06.06: baja fiscal permanente atómica
+- R2 DEV: la baja permanente existente y su auditoría estricta comparten una transacción; se preservan el guard de historial, el aislamiento y la cuarentena HTTP.
+- Regresión dirigida Oracle EF/MySQL 8.4 efímero: fallo del auditor en alta, edición, baja lógica y permanente, con lectura física independiente; CI pendiente de comprobar. Sin QA/main/PROD ni certificación integral de catálogo.
+
 ## 2026-11-23 — DEV06 V31 C14-02.M06.06: prueba causal DELETE real de productos
 - R2: añade integración HTTP con controlador y servicios reales, JWT firmado, roles y membresías MySQL A/B, piloto local exclusivamente, denegación cruzada, revocación, stock, baja lógica y auditoría de variante técnica/comercial. Trigger SQL efímero provoca fallo al persistir auditoría; readback nuevo exige rollback del agregado y reintento funcional tras retirar el trigger.
 - Sin modificar runtime, rutas, permisos, flags de entornos ni fixture C07 bajo candado ajeno. CI global MySQL 8.4 exact-SHA requerida; A0-A4 y A5 pendientes, no certifica otras superficies C14 ni QA/main/PROD. Reversión por revert.

@@ -266,15 +266,22 @@ public class ImpuestoService : IImpuestoService
 
     public async Task EliminarPermanenteAsync(int id)
     {
-        var i = await _repository.GetByIdAsync(id) ?? throw new BusinessRuleException("El impuesto no existe.");
-        var usos = await _repository.ContarAplicacionesAsync(id);
-        if (usos > 0)
-            throw new BusinessRuleException("No se puede eliminar permanentemente un impuesto ya aplicado (rompería el historial de documentos).");
+        await _unitOfWork.ExecuteInTransactionAsync(async () =>
+        {
+            var i = await _repository.GetByIdAsync(id)
+                ?? throw new BusinessRuleException("El impuesto no existe.");
+            var usos = await _repository.ContarAplicacionesAsync(id);
+            if (usos > 0)
+                throw new BusinessRuleException("No se puede eliminar permanentemente un impuesto ya aplicado (rompería el historial de documentos).");
 
-        var nombre = i.Nombre;
-        _repository.Remove(i);
-        await _repository.SaveChangesAsync();
-        await _auditoria.RegistrarAsync(ModuloSistema.Impuestos, AccionPermiso.EliminarPermanente, $"Eliminó permanentemente el impuesto '{nombre}'.", id);
+            var valoresAnteriores = new { i.Codigo, i.Nombre, i.Tipo, i.Tasa, i.Activo, i.Eliminado };
+            _repository.Remove(i);
+            await _repository.SaveChangesAsync();
+            await _auditoria.RegistrarEstrictoAsync(
+                ModuloSistema.Impuestos, AccionPermiso.EliminarPermanente,
+                $"Eliminó permanentemente el impuesto '{i.Nombre}'.", id,
+                entidad: "Impuesto", valoresAnteriores: valoresAnteriores);
+        });
     }
 
     public async Task<ImpuestoDto> DuplicarAsync(int id, string nuevoNombre, string nuevoCodigo)

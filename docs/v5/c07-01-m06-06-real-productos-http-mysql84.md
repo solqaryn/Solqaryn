@@ -368,3 +368,11 @@ Se corrige el contrato de producción en `ImpuestoService.DuplicarAsync`: alta d
 La suite existente `C0701M0606ProductosRealHttpMysql84Tests` incorpora un caso de duplicación de impuesto del tenant B con fallo inyectado en el auditor. La prueba exige la excepción exacta y, mediante un `AppDbContext` nuevo y `IgnoreQueryFilters` únicamente en el esquema efímero, acredita ausencia física de la copia y preservación del conteo de auditoría. Esto se suma a la reversión real existente de activación/desactivación fiscal.
 
 A0: servicio Application, repositorio Oracle EF y auditoría; impacto R2 fiscal limitado. A1–A3: pendientes de comprobar en GitHub-hosted sobre el SHA nuevo, nunca asumir PASS antes de ejecutar. A4: comprobar Scope Lock/V5 y CI pertinentes del SHA; un fallo de CI global impide cerrar. No se ha certificado todavía el contrato acumulativo completo de servicios, atributos, Angular/ERP ni A5. Reversión: `git revert` normal del commit bajo nueva exclusividad V17 y aprobación causal, jamás reset/force.
+
+## V31 DEV01 — baja fiscal permanente atómica y regresión de mutaciones (2026-11-23)
+
+A0/R2: la baja permanente existente en ImpuestoService ahora incluye lectura, guard de historial, eliminación y recibo de auditoría estricta en la misma transacción de UnitOfWork. No se habilita la ruta HTTP en cuarentena ni se altera RBAC, tenant, modelo, migraciones o datos reales. El guard de documentos históricos se conserva.
+
+A1–A3 pendientes: la integración existente ejecutará alta, edición, baja lógica y permanente del tenant B en MySQL 8.4 efímero con fallo inyectado del auditor; verifica excepción causal, ausencia de alta y supervivencia física de la fila original con código, nombre, tasa, estado, owner y conteo de auditoría preservados desde un contexto nuevo. El JWT A/B del resto de la suite no equivale a autorización HTTP para estos CRUD en cuarentena. No afirmar PASS antes de CI exact-SHA.
+
+A4/A5 pendientes de Scope Lock, V5, CI pertinente y revisión independiente. Persisten contratos positivos HTTP de servicios/atributos/ERP y matriz de ownership completa. Rollback mediante revert FF revisado; ninguna actuación QA/main/PROD.

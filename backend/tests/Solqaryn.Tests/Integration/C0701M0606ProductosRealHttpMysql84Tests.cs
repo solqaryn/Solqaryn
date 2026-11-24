@@ -1725,10 +1725,47 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                         taxBId, "C0701 duplicate rollback", duplicateRollbackCode));
                 Assert.Equal("FISCAL_AUDIT_SINK_UNAVAILABLE", duplicationFailure.Message);
             }
+            // Distinct mutation contracts: each must reach the failing audit sink,
+            // and none may survive the actual database transaction rollback.
+            async Task AssertFiscalRollbackAsync(Func<ImpuestoService, Task> mutate)
+            {
+                await using var rollbackDb = new AppDbContext(options,
+                    tenantHttpContextAccessor: fiscalAccessor);
+                var service = new ImpuestoService(new ImpuestoRepository(rollbackDb),
+                    failedAudit.Object, Mock.Of<ICurrentUserService>(), new UnitOfWork(rollbackDb));
+                var failure = await Assert.ThrowsAsync<InvalidOperationException>(() => mutate(service));
+                Assert.Equal("FISCAL_AUDIT_SINK_UNAVAILABLE", failure.Message);
+            }
+
+            var createRollbackCode = "C0701CR_" + Guid.NewGuid().ToString("N");
+            await AssertFiscalRollbackAsync(service => service.CreateAsync(new GuardarImpuestoDto
+            {
+                Codigo = createRollbackCode, Nombre = "C0701 create rollback",
+                Tipo = "Porcentaje", Tasa = 12m, Operaciones = new() { "Venta" }
+            }));
+            await AssertFiscalRollbackAsync(service => service.UpdateAsync(taxBId, new GuardarImpuestoDto
+            {
+                Codigo = "C0701TAXB", Nombre = "C0701 update rollback",
+                Tipo = "Porcentaje", Tasa = 19m, Operaciones = new() { "Venta" }
+            }));
+            await AssertFiscalRollbackAsync(service => service.EliminarLogicoAsync(taxBId));
+            await AssertFiscalRollbackAsync(service => service.EliminarPermanenteAsync(taxBId));
+
             await using (var fiscalFresh = new AppDbContext(options))
             {
                 Assert.False(await fiscalFresh.Impuestos.IgnoreQueryFilters()
                     .AsNoTracking().AnyAsync(x => x.Codigo == duplicateRollbackCode));
+                Assert.False(await fiscalFresh.Impuestos.IgnoreQueryFilters()
+                    .AsNoTracking().AnyAsync(x => x.Codigo == createRollbackCode));
+                var restoredTax = await fiscalFresh.Impuestos.IgnoreQueryFilters()
+                    .AsNoTracking().Where(x => x.Id == taxBId)
+                    .Select(x => new { x.Codigo, x.Nombre, x.Tasa, x.Eliminado,
+                        EmpresaId = EF.Property<int?>(x, "EmpresaId") }).SingleAsync();
+                Assert.Equal("C0701TAXB", restoredTax.Codigo);
+                Assert.Equal("C0701FiscalC0701TAXB", restoredTax.Nombre);
+                Assert.Equal(15m, restoredTax.Tasa);
+                Assert.False(restoredTax.Eliminado);
+                Assert.Equal(b.Id, restoredTax.EmpresaId);
                 Assert.True(await fiscalFresh.Impuestos.IgnoreQueryFilters()
                     .AsNoTracking().Where(x => x.Id == taxBId).Select(x => x.Activo)
                     .SingleAsync());
