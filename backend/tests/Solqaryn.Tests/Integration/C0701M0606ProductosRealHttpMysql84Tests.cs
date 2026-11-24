@@ -754,6 +754,9 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             {
                 var product = new Mock<IProductoService>(MockBehavior.Strict);
                 var variants = new Mock<IProductoVarianteService>(MockBehavior.Strict);
+                // The productive DELETE locks the tenant-owned product before EF reads.
+                product.Setup(x => x.LockForDeleteAsync(auditedProductId))
+                    .ReturnsAsync(true);
                 product.Setup(x => x.GetByIdAsync(auditedProductId))
                     .ReturnsAsync(new ProductoDto { Id = auditedProductId });
                 product.Setup(x => x.DeleteAsync(auditedProductId))
@@ -774,6 +777,7 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 var failure = await Assert.ThrowsAsync<InvalidOperationException>(
                     () => controller.Delete(auditedProductId));
                 Assert.Equal("PRODUCT_DELETE_ATOMICITY_ROLLBACK_REQUIRED", failure.Message);
+                product.Verify(x => x.LockForDeleteAsync(auditedProductId), Times.Once);
                 product.Verify(x => x.GetByIdAsync(auditedProductId), Times.Once);
                 product.Verify(x => x.DeleteAsync(auditedProductId), Times.Once);
                 variants.Verify(x => x.EliminarTecnicaConProductoAsync(auditedProductId),
