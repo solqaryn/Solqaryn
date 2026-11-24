@@ -401,6 +401,12 @@ public sealed class CargaMasivaService : ICargaMasivaService
         {
             throw;
         }
+        catch (ForbiddenAccessException)
+        {
+            // A denied confirmation must never mutate the target job during recovery.
+            _db.ChangeTracker.Clear();
+            throw;
+        }
         catch (Exception ex)
         {
             _db.ChangeTracker.Clear();
@@ -409,8 +415,18 @@ public sealed class CargaMasivaService : ICargaMasivaService
             // agotó los reintentos transitorios y revirtió la transacción.
             try
             {
-                var cargaFallida = await _db.CargasMasivas
-                    .FirstOrDefaultAsync(x => x.Id == id, cancellationToken);
+                // Only recover a job actually loaded with authorization. Revalidate
+                // the live actor and ownership after rollback before any write.
+                CargaMasiva? cargaFallida = null;
+                if (carga is not null)
+                {
+                    var scope = await AutorizarCargaActualAsync(cancellationToken);
+                    cargaFallida = await _db.CargasMasivas.FirstOrDefaultAsync(x =>
+                        x.Id == id &&
+                        (scope.EmpresaId == null || EF.Property<int?>(x, "EmpresaId") == scope.EmpresaId) &&
+                        (scope.EsAdministrador || x.CreadoPorUsuarioId == scope.UsuarioId),
+                        cancellationToken);
+                }
                 if (cargaFallida is not null &&
                     cargaFallida.Estado != EstadoCargaMasiva.Confirmada)
                 {

@@ -138,6 +138,7 @@ public sealed class C1503M0505CargaMasivaOwnershipIntegrationTests
                 Assert.Equal(ownA, (await service.GetByIdAsync(ownA))?.Id);
                 Assert.Null(await service.GetByIdAsync(ownB));
                 await Assert.ThrowsAsync<ForbiddenAccessException>(() => service.GetByIdAsync(otherA));
+                await Assert.ThrowsAsync<ForbiddenAccessException>(() => service.ConfirmarAsync(otherA));
                 var page = await service.GetPagedAsync(new PagedRequest { PageSize = 100 });
                 Assert.Equal(1, page.TotalCount);
                 Assert.Equal(ownA, Assert.Single(page.Items).Id);
@@ -201,6 +202,21 @@ public sealed class C1503M0505CargaMasivaOwnershipIntegrationTests
                 await Assert.ThrowsAsync<ForbiddenAccessException>(() => service.GetByIdAsync(ownA));
                 await Assert.ThrowsAsync<ForbiddenAccessException>(() => service.GetPagedAsync(new PagedRequest()));
                 await Assert.ThrowsAsync<ForbiddenAccessException>(() => ValidateAsync(service, confirmedBytes));
+                await Assert.ThrowsAsync<ForbiddenAccessException>(() => service.ConfirmarAsync(ownA));
+            }
+            await using (var db = Context(options, aId))
+            {
+                // A denied confirmation must leave both the peer's job and the
+                // revoked actor's job unchanged in the physical database.
+                var jobs = await db.CargasMasivas.AsNoTracking()
+                    .Where(x => x.Id == otherA || x.Id == ownA).ToListAsync();
+                Assert.Equal(2, jobs.Count);
+                Assert.All(jobs, job =>
+                {
+                    Assert.Equal(EstadoCargaMasiva.Validada, job.Estado);
+                    Assert.Null(job.ErrorGeneral);
+                    Assert.Null(job.FechaConfirmacion);
+                });
             }
             await using (var db = Context(options, bId))
                 Assert.Equal(ownB, (await Service(db, actorB).GetByIdAsync(ownB))?.Id);

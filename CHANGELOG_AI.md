@@ -1,3 +1,9 @@
+## 2026-11-24 — DEV03 C15-03.M05.05: denegación de confirmación sin mutación
+
+- Evita que la recuperación tras una confirmación denegada marque como fallida la carga de otro creador o de un usuario revocado. Para otros errores, exige una carga previamente autorizada y revalida membresía y propiedad antes de persistir el fallo.
+- Amplía la regresión Oracle EF/MySQL 8.4 existente: confirmación de trabajo ajeno y revocación, comprobando estado, error y fecha de confirmación intactos desde un contexto independiente. No acredita HTTP/JWT directo ni cambia la cuarentena.
+- Riesgo R2; CI causal pendiente, sin A5 ni LISTO. Sin cambio de esquema, proveedor, permisos, interfaces o dependencias. Reversión por revert normal.
+
 ## 2026-11-24 — C15-04.M05.04 — Contrato táctil del componente compartido
 
 - Corrige la referencia de Fase 10 al selector CSS anterior: comprueba ambos consumidores y los botones/input nativos del componente, targets de 44 px y foco interior visible. Conserva validación de los otros controles y pantallas.
