@@ -253,4 +253,110 @@ test.describe('C15-03.M05.05 — negativa JWT y tenancy HTTP real', () => {
     expect(restored.status(), 'control positivo de restauracion CI').toBe(200);
   });
 
+
+  test('credencial contextual no escala a JWT base ni cambia sucursal A/B', async ({ browser, request }) => {
+    // CI aislada, misma API real y misma base Oracle MySQL 8.4 del resto del spec.
+    // No se modifica el runtime ni se levanta la cuarentena comercial.
+    const { execFileSync } = await import('node:child_process');
+    const container = execFileSync('docker', ['ps', '--filter', 'ancestor=mysql:8.4',
+      '--format', '{{.ID}}'], { encoding: 'utf8' }).trim().split(/\r?\n/)[0];
+    expect(container).toMatch(/^[0-9a-f]{12,64}$/);
+    const sql = (statement: string): string => execFileSync('docker',
+      ['exec', '-i', container!, 'mysql', '-uroot', '-proot',
+        'solqaryn_c1504_real_ci', '-Nse', statement],
+      { encoding: 'utf8', timeout: 15000 }).trim();
+    const fixtures = [
+      { tenant: 1, user: 'c1504_admin_a', code: 'C15-M0505-CONTEXT-A' },
+      { tenant: 2, user: 'c1504_admin_b', code: 'C15-M0505-CONTEXT-B' }
+    ] as const;
+    expect(sql("SELECT COUNT(*) FROM Sucursales WHERE Codigo IN ('C15-M0505-CONTEXT-A','C15-M0505-CONTEXT-B')")).toBe('0');
+    try {
+      sql("INSERT INTO Sucursales (EmpresaId,Codigo,Nombre,ZonaHoraria,Activa,Eliminado,FechaCreacion,FechaActualizacion) VALUES " +
+        "(1,'C15-M0505-CONTEXT-A','Sucursal A CI','America/Tegucigalpa',1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6))," +
+        "(2,'C15-M0505-CONTEXT-B','Sucursal B CI','America/Tegucigalpa',1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6))");
+      const ids = fixtures.map(f => {
+        const value = sql("SELECT Id FROM Sucursales WHERE EmpresaId=" + f.tenant +
+          " AND Codigo='" + f.code + "' AND Activa=1 AND Eliminado=0");
+        expect(value).toMatch(/^[1-9][0-9]*$/);
+        return Number(value);
+      });
+      expect(ids[0]).not.toBe(ids[1]);
+      for (const [i, f] of fixtures.entries()) {
+        const own = ids[i]!, other = ids[1 - i]!, foreign = fixtures[1 - i]!.tenant;
+        const context = await browser.newContext();
+        try {
+          const base = await ingresar(await context.newPage(), f.user);
+          const baseHeaders = { Authorization: 'Bearer ' + base, 'X-Empresa-Id': String(f.tenant) };
+          const catalog = await request.get(api + '/tenant-context/sesion/sucursales/' + f.tenant,
+            { headers: baseHeaders });
+          expect(catalog.status()).toBe(200);
+          const choices = (await catalog.json())?.data;
+          expect(Array.isArray(choices) && choices.every((x: { empresaId: number }) => x.empresaId === f.tenant)).toBe(true);
+          expect(choices.some((x: { id: number }) => x.id === own)).toBe(true);
+          expect(choices.some((x: { id: number }) => x.id === other)).toBe(false);
+          const forbiddenCatalog = await request.get(api + '/tenant-context/sesion/sucursales/' + foreign,
+            { headers: { ...baseHeaders, 'X-Empresa-Id': String(foreign) } });
+          expect(forbiddenCatalog.status()).toBe(403);
+          const issued = await request.post(api + '/tenant-context/sesion', {
+            headers: { ...baseHeaders, 'X-Sucursal-Id': String(own) },
+            data: { empresaId: f.tenant, sucursalId: own }
+          });
+          expect(issued.status()).toBe(200);
+          const scoped = (await issued.json())?.data;
+          expect(scoped?.empresaId).toBe(f.tenant);
+          expect(scoped?.sucursalId).toBe(own);
+          // Do not include credential text in assertion failures.
+          expect(typeof scoped?.token === 'string' && scoped.token.split('.').length === 3 && scoped.token !== base).toBe(true);
+          const headers = { Authorization: 'Bearer ' + scoped.token,
+            'X-Empresa-Id': String(f.tenant), 'X-Sucursal-Id': String(own) };
+          const resource = await request.get(api + '/tenant-context/sesion/sucursal', { headers });
+          expect(resource.status()).toBe(200);
+          expect((await resource.json())?.data).toMatchObject({ id: own, empresaId: f.tenant, codigo: f.code });
+          expect(resource.headers()['cache-control'] ?? '').toContain('no-store');
+          const wrongBranch = await request.get(api + '/tenant-context/sesion/sucursal',
+            { headers: { ...headers, 'X-Sucursal-Id': String(other) } });
+          expect(wrongBranch.status()).toBe(403);
+          const wrongTenant = await request.get(api + '/tenant-context/sesion/sucursal',
+            { headers: { ...headers, 'X-Empresa-Id': String(foreign) } });
+          expect(wrongTenant.status()).toBe(403);
+          const badIssue = await request.post(api + '/tenant-context/sesion', {
+            headers: { ...baseHeaders, 'X-Sucursal-Id': String(other) },
+            data: { empresaId: f.tenant, sucursalId: other }
+          });
+          expect(badIssue.status()).toBe(403);
+          // Base JWT cannot substitute a scoped credential; scoped JWT cannot reissue
+          // itself, enumerate base-session catalogues or escalate to the global console.
+          expect((await request.get(api + '/tenant-context/sesion/sucursal',
+            { headers: baseHeaders })).status()).toBe(401);
+          const scopedOnly = { Authorization: headers.Authorization };
+          expect((await request.get(api + '/tenant-context/sesion/sucursales/' + f.tenant,
+            { headers: scopedOnly })).status()).toBe(401);
+          expect((await request.post(api + '/tenant-context/sesion', {
+            headers: scopedOnly, data: { empresaId: f.tenant, sucursalId: own }
+          })).status()).toBe(401);
+          expect([401, 403]).toContain((await request.get(api + '/plataforma/sesion',
+            { headers: scopedOnly })).status());
+          const revoke = "UPDATE Sucursales SET Activa=0 WHERE Id=" + own + " AND EmpresaId=" + f.tenant +
+            " AND Codigo='" + f.code + "' AND Activa=1; SELECT ROW_COUNT();";
+          expect(sql(revoke)).toBe('1');
+          try {
+            expect((await request.get(api + '/tenant-context/sesion/sucursal', { headers })).status()).toBe(403);
+            expect((await request.post(api + '/tenant-context/sesion', {
+              headers: { ...baseHeaders, 'X-Sucursal-Id': String(own) },
+              data: { empresaId: f.tenant, sucursalId: own }
+            })).status()).toBe(403);
+          } finally {
+            expect(sql("UPDATE Sucursales SET Activa=1 WHERE Id=" + own + " AND EmpresaId=" + f.tenant +
+              " AND Codigo='" + f.code + "' AND Activa=0; SELECT ROW_COUNT();")).toBe('1');
+          }
+          expect((await request.get(api + '/tenant-context/sesion/sucursal', { headers })).status()).toBe(200);
+        } finally {
+          await context.close();
+        }
+      }
+    } finally {
+      sql("DELETE FROM Sucursales WHERE (EmpresaId=1 AND Codigo='C15-M0505-CONTEXT-A') OR (EmpresaId=2 AND Codigo='C15-M0505-CONTEXT-B')");
+    }
+  });
+
 });

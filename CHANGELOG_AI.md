@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV04 C15-03.M05.05: negativa contextual de sucursal A/B
+
+- Amplía el spec existente con JWT base y contextual reales, SQL efímero, selección propia/ajena, cabeceras contradictorias, separación de esquemas, rechazo de consola global y revocación/restauración real.
+- Sin cambio de runtime, permisos, esquema persistente ni cuarentena comercial. No certifica ownership directo de archivos/jobs. CI dirigida pendiente; no LISTO ni A5 propia.
+
 ## 2026-11-24 — DEV03 C03-03.M03.06: plazo total de lectura QA
 
 - Acota lectura de cabeceras, cuerpo y parseo del proveedor QA con un plazo enlazado de hasta 12 segundos; conserva cancelacion del cliente y auditoria segura QA_UPSTREAM_TIMEOUT sin exponer respuesta externa.
