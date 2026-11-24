@@ -9,6 +9,8 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Builder;
 using System.Net.Http.Headers;
 using System.Net;
+using System.Data.Common;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
@@ -49,6 +51,27 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
     private static readonly SymmetricSecurityKey Signing = new(
         Encoding.UTF8.GetBytes("solqaryn-c0303-m0303-audit-mysql84-test-only-2026!"));
 
+    // Throw at the actual EF transaction commit boundary, after strict ledger
+    // SaveChanges. The production adapter and MySQL transaction are not mocked.
+    private sealed class CommitFaultInterceptor : DbTransactionInterceptor
+    {
+        private int _armed;
+        public int Injected { get; private set; }
+        public void Arm() => Interlocked.Exchange(ref _armed, 1);
+
+        public override ValueTask<InterceptionResult> TransactionCommittingAsync(
+            DbTransaction transaction, TransactionEventData eventData,
+            InterceptionResult result, CancellationToken cancellationToken = default)
+        {
+            if (Interlocked.Exchange(ref _armed, 0) == 1)
+            {
+                Injected++;
+                throw new InvalidOperationException("C0303_TEST_COMMIT_FAILURE");
+            }
+            return base.TransactionCommittingAsync(transaction, eventData, result, cancellationToken);
+        }
+    }
+
     [Fact]
     public async Task PhysicalMysql84SignedJwtTenantAbGrantRevocationAndRollbackFailClosed()
     {
@@ -64,8 +87,10 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
         {
             Database = "v25_c0303_m0303_" + Guid.NewGuid().ToString("N")
         }.ConnectionString;
+        var commitFault = new CommitFaultInterceptor();
         var options = new DbContextOptionsBuilder<AppDbContext>()
             .UseMySQL(connection, o => o.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
+            .AddInterceptors(commitFault)
             .Options;
 
         try
@@ -377,6 +402,33 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
                     .Where(x => x.Entidad == "Empresa" &&
                         x.Descripcion == "C03-03.M03.03: acceso de auditoría validado")
                     .ToListAsync());
+                // C03-03.M03.04: an actual SQL insert followed by a failed
+                // commit must not survive. Re-read with a fresh physical context,
+                // not the writer's tracker, and preserve the original receipt.
+                commitFault.Arm();
+                using (var failedRecord = new HttpRequestMessage(
+                    HttpMethod.Post, "/__dev/audit-authorization/" + tenantA.Id + "/record"))
+                {
+                    failedRecord.Headers.Authorization =
+                        new AuthenticationHeaderValue("Bearer", signed);
+                    using var failedResponse = await client.SendAsync(failedRecord);
+                    Assert.Equal(HttpStatusCode.ServiceUnavailable, failedResponse.StatusCode);
+                    Assert.True(failedResponse.Headers.CacheControl?.NoStore == true);
+                    Assert.DoesNotContain("C0303_TEST_COMMIT_FAILURE",
+                        await failedResponse.Content.ReadAsStringAsync(), StringComparison.Ordinal);
+                }
+                Assert.Equal(1, commitFault.Injected);
+                db.ChangeTracker.Clear();
+                await using (var fresh = new AppDbContext(options))
+                {
+                    var surviving = Assert.Single(await fresh.RegistrosAuditoria.AsNoTracking()
+                        .Where(x => x.Entidad == "Empresa" &&
+                            x.Descripcion == "C03-03.M03.03: acceso de auditoría validado")
+                        .ToListAsync());
+                    Assert.Equal(singleRecord.Id, surviving.Id);
+                    Assert.Equal(actor.Id, surviving.UsuarioId);
+                    Assert.Equal(tenantA.Id, surviving.EmpresaId);
+                }
                 // R2 real MySQL 8.4: the shared audit repository must enforce
                 // tenant-bound reads even if EF's global filter is absent.
                 // B is seeded into the disposable database by the test harness,

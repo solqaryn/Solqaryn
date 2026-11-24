@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV03 V31 C03-03.M03.04: rollback de auditoría SQL ante fallo de commit
+- CI dirigida previa b3403b54: 8/8 pruebas reales JWT/RBAC tenant A/B MySQL 8.4, sin relanzar suite verde; faltaba provocar fallo al confirmar la escritura del adaptador aislado D521.
+- Regresión causal: interceptor EF de prueba falla al confirmar la transacción real después del registro estricto; HTTP 503 no-store sin detalle y contexto SQL nuevo verifica que sólo subsiste el recibo original de actor/tenant A. No se altera runtime, permisos, migraciones ni fixtures JWT.
+- R2, A0-A4/A5 pendientes del nuevo SHA GitHub-hosted; no certificar LISTO, preservar owner V17 y A5 independiente. No QA/main/PROD. Rollback por revert normal.
+
 ## 2026-11-23 — DEV02 V31 C03-01.M03.03: regresión causal de rol efectivo SQL
 - GitHub-hosted exact-SHA 25ff503f: backend 6,575/6,576 xUnit y seguridad 2,263/2,264; ambas suites fallaron en la misma teoría TenantContextV5ContractTests.cs:116, caso (actor=7, tenant=11, role=20), que esperaba Forbid ante una membresía SQL de mismo actor/tenant con rol efectivo distinto.
 - Reparación test-only de contrato: mantener negativas de actor y tenant dispares, acreditar explícitamente que el rol autorizado SQL vigente (20) prevalece sobre rol inicial del JWT (19) si actor/empresa verificables coinciden; no modificar runtime, guards, permisos ni checks. Principal unitario sintético NO prueba firma JWT ni MySQL real; las pruebas de integración A/B deben seguir ejecutándose según alcance.
