@@ -30,6 +30,8 @@ public sealed class C0201M0502TenantContextHttpApiContractTests
     private static Mock<IUsuarioScopeService> Authority()
     {
         var authority = new Mock<IUsuarioScopeService>(MockBehavior.Strict);
+        authority.Setup(x => x.SesionBaseVigenteAsync(17, 999, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
         authority.Setup(x => x.ListarEmpresasSeleccionablesAsync(It.IsAny<CancellationToken>()))
             .ReturnsAsync(new EmpresaSeleccionable[] { new(7, "Tenant A") });
         authority.Setup(x => x.ObtenerActualAsync(7, It.IsAny<CancellationToken>()))
@@ -108,6 +110,7 @@ public sealed class C0201M0502TenantContextHttpApiContractTests
         }
         authority.Verify(x => x.ObtenerActualAsync(7, It.IsAny<CancellationToken>()), Times.Once);
         authority.Verify(x => x.ListarEmpresasSeleccionablesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        authority.Verify(x => x.SesionBaseVigenteAsync(17, 999, It.IsAny<CancellationToken>()), Times.Exactly(4));
         authority.VerifyNoOtherCalls();
     }
 
@@ -126,6 +129,7 @@ public sealed class C0201M0502TenantContextHttpApiContractTests
         Assert.DoesNotContain("Tenant A", body, StringComparison.OrdinalIgnoreCase);
         Assert.DoesNotContain("Consulta A", body, StringComparison.OrdinalIgnoreCase);
         authority.Verify(x => x.ObtenerActualAsync(8, It.IsAny<CancellationToken>()), Times.Once);
+        authority.Verify(x => x.SesionBaseVigenteAsync(17, 999, It.IsAny<CancellationToken>()), Times.Once);
         authority.VerifyNoOtherCalls();
     }
 

@@ -21,6 +21,8 @@ public sealed class P1007ATenantSwitchAuthorizationTests
     {
         var scope = new Mock<IUsuarioScopeService>(MockBehavior.Strict);
         var contextoA = new UsuarioTenantScopeActual(17, 11, 3, "Operador", false);
+        scope.Setup(x => x.SesionBaseVigenteAsync(17, 3, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
         scope.Setup(x => x.ObtenerActualAsync(11, It.IsAny<CancellationToken>()))
             .ReturnsAsync(contextoA);
         scope.Setup(x => x.ObtenerActualAsync(22, It.IsAny<CancellationToken>()))
@@ -45,6 +47,8 @@ public sealed class P1007ATenantSwitchAuthorizationTests
         var activa = true;
         var contextoA = new UsuarioTenantScopeActual(17, 11, 3, "Operador", false);
         var scope = new Mock<IUsuarioScopeService>(MockBehavior.Strict);
+        scope.Setup(x => x.SesionBaseVigenteAsync(17, 3, It.IsAny<CancellationToken>()))
+            .ReturnsAsync(true);
         scope.Setup(x => x.ObtenerActualAsync(11, It.IsAny<CancellationToken>()))
             .ReturnsAsync(() => activa ? contextoA : null);
         var controller = CrearControlador(scope.Object);

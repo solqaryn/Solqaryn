@@ -69,6 +69,37 @@ public sealed class UsuarioScopeService : IUsuarioScopeService
             .SingleOrDefaultAsync();
     }
 
+    // The base session role and the selected tenant membership role are separate.
+    // A signed but stale base role cannot enter or switch tenant context.
+    public async Task<bool> SesionBaseVigenteAsync(int actorId, int rolId,
+        CancellationToken cancellationToken = default)
+    {
+        if (actorId <= 0 || rolId <= 0 || !_currentUser.EstaAutenticado ||
+            _currentUser.UsuarioId != actorId)
+            return false;
+
+        var baseRole = await _context.Usuarios.AsNoTracking()
+            .Where(u => u.Id == actorId && u.RolId == rolId &&
+                u.Activo && !u.Bloqueado && !u.Eliminado &&
+                u.RolEntidad.Id == rolId && u.RolEntidad.Activo && !u.RolEntidad.Eliminado)
+            .Select(u => new { u.RolEntidad.Ambito, u.RolEntidad.EmpresaId, u.RolEntidad.EsSistema })
+            .SingleOrDefaultAsync(cancellationToken);
+        if (baseRole is null)
+            return false;
+
+        if (baseRole.Ambito == AmbitoAutorizacion.Plataforma)
+            return baseRole.EmpresaId == null && baseRole.EsSistema;
+        if (baseRole.Ambito != AmbitoAutorizacion.Empresa ||
+            (baseRole.EmpresaId == null && !baseRole.EsSistema) ||
+            baseRole.EmpresaId is <= 0)
+            return false;
+
+        // Same live, tenant-owned membership predicate as token issuance.
+        // Never use a selected tenant's role to resurrect a revoked base session.
+        return await ContextosTenantValidos(actorId, baseRole.EmpresaId)
+            .AnyAsync(c => c.RolId == rolId, cancellationToken);
+    }
+
     public async Task<UsuarioTenantScopeActual?> ObtenerActualAsync(
         int empresaId,
         CancellationToken cancellationToken = default)

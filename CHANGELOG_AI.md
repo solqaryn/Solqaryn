@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV04 V31 C03-01.M03.03: sesión base vigente en selección tenant
+- R2, DEV: los endpoints productivos de contexto y catálogo de empresas revalidan en SQL el actor, rol base firmado, cuenta y membresía antes y después de resolver el contexto; conservan el rol efectivo de la membresía destino separado del rol base. Deniegan por defecto; no emiten JWT ni amplían autoridad de plataforma.
+- Regresión de contrato y ampliación de TestServer con JWT firmado y Oracle MySQL 8.4 efímero para catálogo/contexto A, B ajeno, rol ausente, rol inactivo y membresía revocada/restaurada. CI causal exact-SHA pendiente; no se certifica reemisión tenant/sucursal, A0-A4 integral ni A5.
+- Fuente anterior 0dd400399f8ed379814d2a05388ae5c8d9b347bc: 35/35 dirigidas y 6588/6588 backend, checks obligatorios observados SUCCESS. No rerun manual. H VALIDANDO/I histórico. Revert del commit bajo control FF; sin QA/main/PROD.
+
 ## 2026-11-24 — DEV02 V31 C15-04.M05.04: preflight causal X11
 - R2, CI exclusivamente DEV: SHA 632eb5514522b5eff5e977278034304246f8d745, run 45346203463/job 138281243807: 29 pruebas Chromium aprobadas; el paso de zoom terminó en `command -v ffmpeg` sin ejecutar captura. No es una regresión funcional.
 - Instalar ffmpeg desde paquetes Ubuntu del runner efímero solo si falta; comprobar dispositivo x11grab y captura física de un fotograma en Xvfb antes del E2E, manteniendo el control nativo 100/200, geometría, PNG, tests y permisos existentes. Sin secretos, runtime comercial ni cambio de arquitectura.

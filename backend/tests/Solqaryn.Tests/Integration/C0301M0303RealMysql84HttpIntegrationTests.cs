@@ -311,6 +311,31 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
                 request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
                 return await client.SendAsync(request);
             }
+            async Task<HttpResponseMessage> ContextAsync(string path, string token)
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Get, path);
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                request.Headers.Add("X-Empresa-Id", tenantB.Id.ToString());
+                return await client.SendAsync(request);
+            }
+            async Task AssertContextAsync(HttpStatusCode expected)
+            {
+                using var response = await ContextAsync($"/tenant-context/{tenantA.Id}", productToken);
+                Assert.Equal(expected, response.StatusCode);
+                using var list = await ContextAsync("/tenant-context/empresas", productToken);
+                Assert.Equal(expected, list.StatusCode);
+                if (expected == HttpStatusCode.OK)
+                {
+                    using var json = System.Text.Json.JsonDocument.Parse(await list.Content.ReadAsStringAsync());
+                    var data = Assert.Single(json.RootElement.GetProperty("data").EnumerateArray());
+                    Assert.Equal(tenantA.Id, data.GetProperty("empresaId").GetInt32());
+                }
+            }
+            await AssertContextAsync(HttpStatusCode.OK);
+            using (var foreignContext = await ContextAsync($"/tenant-context/{tenantB.Id}", productToken))
+                Assert.Equal(HttpStatusCode.Forbidden, foreignContext.StatusCode);
+            using (var missingRoleContext = await ContextAsync("/tenant-context/empresas", jwt))
+                Assert.Equal(HttpStatusCode.Unauthorized, missingRoleContext.StatusCode);
             using (var renewed = await RefreshAsync(productToken))
                 Assert.Equal(HttpStatusCode.OK, renewed.StatusCode);
             using (var missingRole = await RefreshAsync(jwt))
@@ -347,8 +372,10 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
             using (var disabledRole = await ReadAsync(
                 client, tenantA.Id, branchA.Id, jwt))
                 Assert.Equal(HttpStatusCode.Forbidden, disabledRole.StatusCode);
+            await AssertContextAsync(HttpStatusCode.Forbidden);
             liveRole.Activo = true;
             await db.SaveChangesAsync();
+            await AssertContextAsync(HttpStatusCode.OK);
 
             var committedGrant = await db.RolPermisos
                 .SingleAsync(g => g.RolId == roleA.Id &&
@@ -395,8 +422,10 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
                 Assert.Equal(HttpStatusCode.Forbidden,
                     disabledMembership.StatusCode);
 
+            await AssertContextAsync(HttpStatusCode.Forbidden);
             actualMembership.Activar();
             await db.SaveChangesAsync();
+            await AssertContextAsync(HttpStatusCode.OK);
             db.ChangeTracker.Clear();
             var assignedBranch = await db.Set<Sucursal>()
                 .SingleAsync(x => x.Id == branchA.Id);

@@ -35,6 +35,10 @@ public interface IUsuarioScopeService
     /// </summary>
     Task<UsuarioScopeActual?> ObtenerActualAsync();
 
+    /// <summary>Revalida el rol base firmado contra SQL; no concede contexto tenant.</summary>
+    Task<bool> SesionBaseVigenteAsync(int actorId, int rolId,
+        CancellationToken cancellationToken = default) => Task.FromResult(false);
+
     /// <summary>
     /// Lista exclusivamente empresas asociadas a membresías activas válidas
     /// del actor autenticado. Implementaciones que no soporten la operación

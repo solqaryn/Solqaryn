@@ -34,11 +34,16 @@ public sealed class TenantContextController : ControllerBase
         // The productive selector must not trust ambiguous actor/role claims.
         // Authorize verifies the signature; this verifies their canonical shape
         // before the SQL membership reader enumerates any tenant.
-        if (!TryCanonicalJwtAuthority(out _, out _))
+        if (!TryCanonicalJwtAuthority(out var actorId, out var roleId))
             return Unauthorized(ApiResponse<object>.Fail(
                 "La sesión no tiene identidad o rol verificables."));
 
+        if (!await _usuarioScopeService.SesionBaseVigenteAsync(actorId, roleId, cancellationToken))
+            return Forbid();
+
         var empresas = await _usuarioScopeService.ListarEmpresasSeleccionablesAsync(cancellationToken);
+        if (!await _usuarioScopeService.SesionBaseVigenteAsync(actorId, roleId, cancellationToken))
+            return Forbid();
         return Ok(ApiResponse<IReadOnlyList<EmpresaSeleccionable>>.Ok(
             empresas, "Empresas activas autorizadas."));
     }
@@ -110,8 +115,11 @@ public sealed class TenantContextController : ControllerBase
                 "El identificador de empresa no es válido."));
         }
 
-        if (!TryCanonicalJwtAuthority(out var jwtActor, out _))
+        if (!TryCanonicalJwtAuthority(out var jwtActor, out var jwtRole))
             return Unauthorized(ApiResponse<object>.Fail("La sesión no tiene identidad o rol verificables."));
+
+        if (!await _usuarioScopeService.SesionBaseVigenteAsync(jwtActor, jwtRole, cancellationToken))
+            return Forbid();
 
         var contexto = await _usuarioScopeService.ObtenerActualAsync(
             empresaId,
@@ -127,6 +135,9 @@ public sealed class TenantContextController : ControllerBase
             // el rechazo fail-closed evita filtrar existencia cross-tenant.
             return Forbid();
         }
+
+        if (!await _usuarioScopeService.SesionBaseVigenteAsync(jwtActor, jwtRole, cancellationToken))
+            return Forbid();
 
         return Ok(ApiResponse<UsuarioTenantScopeActual>.Ok(
             contexto,

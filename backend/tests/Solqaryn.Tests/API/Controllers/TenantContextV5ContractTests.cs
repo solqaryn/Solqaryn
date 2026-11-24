@@ -21,6 +21,10 @@ public sealed class TenantContextV5ContractTests
         public IReadOnlyList<EmpresaSeleccionable> Seleccionables { get; set; } =
             Array.Empty<EmpresaSeleccionable>();
         public int SelectorCalls { get; private set; }
+        public bool BaseVigente { get; set; } = true;
+        public Task<bool> SesionBaseVigenteAsync(int actorId, int rolId,
+            CancellationToken cancellationToken = default) =>
+            Task.FromResult(BaseVigente && actorId == 7 && rolId == 19);
 
         public Task<UsuarioScopeActual?> ObtenerActualAsync() =>
             Task.FromResult<UsuarioScopeActual?>(null);
@@ -202,6 +206,22 @@ public sealed class TenantContextV5ContractTests
         var action = await controller.ListarEmpresas(CancellationToken.None);
         Assert.IsType<UnauthorizedObjectResult>(action);
         Assert.Equal(0, scope.SelectorCalls);
+    }
+
+    [Fact]
+    public async Task RolBaseRevocado_NoConsultaNiExponeContexto()
+    {
+        var scope = new ScopeStub
+        {
+            BaseVigente = false,
+            Actual = new UsuarioTenantScopeActual(7, 11, 20, "Operador", false),
+            Seleccionables = new[] { new EmpresaSeleccionable(11, "A") }
+        };
+        var controller = WithJwtIdentity(scope);
+        Assert.IsType<ForbidResult>(await controller.ListarEmpresas(CancellationToken.None));
+        Assert.IsType<ForbidResult>(await controller.Obtener(11, CancellationToken.None));
+        Assert.Equal(0, scope.SelectorCalls);
+        Assert.Equal(0, scope.Calls);
     }
 
     [Fact]
