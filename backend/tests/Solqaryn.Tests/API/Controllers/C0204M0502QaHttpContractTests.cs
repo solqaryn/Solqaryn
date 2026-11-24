@@ -480,6 +480,51 @@ public sealed class C0204M0502QaHttpContractTests
         return new JwtSecurityTokenHandler().WriteToken(jwt);
     }
 
+
+    [Fact]
+    public async Task LaboratorioMysql84RechazaConclusionesExternasInvalidasSinEco()
+    {
+        if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(
+                "SOLQARYN_C0204_MYSQL_TEST_CONNECTION")))
+            return;
+        var upstream = new GitHubFake(Payload());
+        await using var fixture = await CrearAsync(upstream, mysql: true);
+        using var client = fixture.Host.GetTestClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer", Token(fixture.GlobalId, "operadorglobal"));
+
+        foreach (var invalid in new[]
+        {
+            Payload("private-secret"),
+            Payload().Replace("\"status\":\"completed\"", "\"status\":\"queued\""),
+            Payload().Replace("\"conclusion\":\"success\"", "\"conclusion\":null")
+        })
+        {
+            upstream.Payload = invalid;
+            using var denied = await client.GetAsync(Path);
+            Assert.Equal(HttpStatusCode.ServiceUnavailable, denied.StatusCode);
+            Assert.DoesNotContain("private-secret", await denied.Content.ReadAsStringAsync());
+        }
+
+        // A legitimate queued check with a null conclusion is not a PASS.
+        upstream.Payload = Payload().Replace("\"status\":\"completed\"", "\"status\":\"queued\"")
+            .Replace("\"conclusion\":\"success\"", "\"conclusion\":null");
+        using (var queued = await client.GetAsync(Path))
+        {
+            Assert.Equal(HttpStatusCode.OK, queued.StatusCode);
+            using var json = JsonDocument.Parse(await queued.Content.ReadAsStringAsync());
+            Assert.Equal("CI_EN_PROGRESO", json.RootElement.GetProperty("data").GetProperty("estadoCi").GetString());
+            Assert.Equal(0, json.RootElement.GetProperty("data").GetProperty("checksExitosos").GetInt32());
+        }
+
+        using var scope = fixture.Host.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var audits = await db.Set<RegistroAuditoria>().ToListAsync();
+        Assert.Equal(4, audits.Count);
+        Assert.Equal(3, audits.Count(x => x.Resultado == "Error" && x.Error == "QA_UPSTREAM_CONTRACT"));
+        Assert.All(audits, x => Assert.DoesNotContain("private-secret", x.ValoresNuevos ?? ""));
+    }
+
     private static string Payload(string conclusion = "success", string[]? detailsUrls = null)
     {
         var checkIndex = 0;

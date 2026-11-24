@@ -183,7 +183,20 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                     status is not ("queued" or "in_progress" or "completed" or "waiting" or "requested" or "pending"))
                     return await FalloProveedorAsync("QA_UPSTREAM_CONTRACT");
 
+                // GitHub has a closed conclusion vocabulary. A missing or
+                // contradictory conclusion is not evidence and must not echo
+                // arbitrary upstream strings into the response or audit.
+                if (!item.TryGetProperty("conclusion", out var conclusionElement))
+                    return await FalloProveedorAsync("QA_UPSTREAM_CONTRACT");
                 var conclusion = Valor(item, "conclusion");
+                if (status == "completed")
+                {
+                    if (conclusion is not ("success" or "failure" or "neutral" or "cancelled"
+                        or "skipped" or "timed_out" or "action_required" or "stale" or "startup_failure"))
+                        return await FalloProveedorAsync("QA_UPSTREAM_CONTRACT");
+                }
+                else if (conclusionElement.ValueKind != JsonValueKind.Null)
+                    return await FalloProveedorAsync("QA_UPSTREAM_CONTRACT");
                 var details = Valor(item, "details_url");
                 string? safeUrl = null;
                 if (Uri.TryCreate(details, UriKind.Absolute, out var parsed) &&
@@ -198,7 +211,7 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
             }
 
             var failed = checks.Any(c => c.Conclusion is
-                ("failure" or "cancelled" or "timed_out" or "action_required"));
+                ("failure" or "cancelled" or "timed_out" or "action_required" or "startup_failure"));
             var pending = checks.Any(c => c.Estado != "completed");
             var allRequired = ChecksMinimos.All(name =>
                 checks.Count(c => string.Equals(c.Nombre, name, StringComparison.Ordinal)) == 1 &&

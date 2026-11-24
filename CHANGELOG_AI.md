@@ -10817,3 +10817,8 @@
 
 - Revoca permisos y rutas de un actor/rol anterior aun dentro de la misma empresa; las respuestas tardías no se reutilizan y un JWT sustituido o eliminado no concede permisos desde storage.
 - Añade regresiones de actor, rol, concurrencia y logout; incluye suites en CI dirigida, sin reducir checks, sin cambios al backend ni certificar navegador real. Pendiente CI exact-SHA y A5 independiente; conserva VALIDANDO.
+
+## 2026-11-24 — DEV04 rescate C03-03.M03.06: contrato de conclusiones de evidencia QA
+
+- Rechaza conclusiones GitHub fuera del catálogo y estados contradictorios antes de devolver evidencia; audita QA_UPSTREAM_CONTRACT sin eco del valor externo. Startup failure es fallo; queued/null sigue pendiente.
+- Regresión causal HTTP con JWT firmado y MySQL 8.4 local; CI exact-SHA pendiente. Sin cambios de permisos, esquema, retención ni cierre; la auditoría durable de denegaciones requiere diseño de ámbito separado.
