@@ -78,15 +78,16 @@ public sealed class TenantContextController : ControllerBase
         });
     }
 
-    // C03-01.M03.03: bind the server-issued tenant context to the original
-    // authenticated JWT actor and role, not to client-provided identifiers.
+    // C03-01.M03.03: verify the canonical, signed JWT actor/role claims;
+    // authorize the selected tenant using live SQL membership and its effective role.
     private bool TryCanonicalJwtAuthority(out int actorId, out int roleId)
     {
         actorId = 0;
         roleId = 0;
-        if (User.Identity?.IsAuthenticated != true) return false;
-        var actorClaims = User.FindAll("id").ToArray();
-        var roleClaims = User.FindAll("rolId").ToArray();
+        var principal = ControllerContext?.HttpContext?.User;
+        if (principal?.Identity?.IsAuthenticated != true) return false;
+        var actorClaims = principal.FindAll("id").ToArray();
+        var roleClaims = principal.FindAll("rolId").ToArray();
         return actorClaims.Length == 1 && roleClaims.Length == 1 &&
             CanonicalPositiveId(actorClaims[0].Value, out actorId) &&
             CanonicalPositiveId(roleClaims[0].Value, out roleId);
@@ -109,15 +110,18 @@ public sealed class TenantContextController : ControllerBase
                 "El identificador de empresa no es válido."));
         }
 
-        if (!TryCanonicalJwtAuthority(out var jwtActor, out var jwtRole))
+        if (!TryCanonicalJwtAuthority(out var jwtActor, out _))
             return Unauthorized(ApiResponse<object>.Fail("La sesión no tiene identidad o rol verificables."));
 
         var contexto = await _usuarioScopeService.ObtenerActualAsync(
             empresaId,
             cancellationToken);
 
+        // A JWT role can name tenant A's role while the live tenant B
+        // membership legitimately has another role. SQL is authoritative;
+        // never grant B using a JWT role, a header or a cached tenant choice.
         if (contexto is null || contexto.UsuarioId != jwtActor ||
-            contexto.EmpresaId != empresaId || contexto.RolId != jwtRole)
+            contexto.EmpresaId != empresaId)
         {
             // No distinguir empresa inexistente, inactiva o membresía ausente:
             // el rechazo fail-closed evita filtrar existencia cross-tenant.

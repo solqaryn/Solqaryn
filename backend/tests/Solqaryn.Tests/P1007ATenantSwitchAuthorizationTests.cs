@@ -1,4 +1,6 @@
 using System.Threading;
+using System.Security.Claims;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Solqaryn.API.Controllers;
@@ -23,7 +25,7 @@ public sealed class P1007ATenantSwitchAuthorizationTests
             .ReturnsAsync(contextoA);
         scope.Setup(x => x.ObtenerActualAsync(22, It.IsAny<CancellationToken>()))
             .ReturnsAsync((UsuarioTenantScopeActual?)null);
-        var controller = new TenantContextController(scope.Object);
+        var controller = CrearControlador(scope.Object);
 
         var respuestaA = Assert.IsType<OkObjectResult>(
             await controller.Obtener(11, CancellationToken.None));
@@ -45,7 +47,7 @@ public sealed class P1007ATenantSwitchAuthorizationTests
         var scope = new Mock<IUsuarioScopeService>(MockBehavior.Strict);
         scope.Setup(x => x.ObtenerActualAsync(11, It.IsAny<CancellationToken>()))
             .ReturnsAsync(() => activa ? contextoA : null);
-        var controller = new TenantContextController(scope.Object);
+        var controller = CrearControlador(scope.Object);
 
         Assert.IsType<OkObjectResult>(
             await controller.Obtener(11, CancellationToken.None));
@@ -57,13 +59,23 @@ public sealed class P1007ATenantSwitchAuthorizationTests
             Times.Exactly(2));
     }
 
+    [Fact]
+    public async Task ControllerSinHttpContextRechazaSinExcepcionNiConsultaSQL()
+    {
+        var scope = new Mock<IUsuarioScopeService>(MockBehavior.Strict);
+        var controller = new TenantContextController(scope.Object);
+        Assert.IsType<UnauthorizedObjectResult>(
+            await controller.Obtener(11, CancellationToken.None));
+        scope.VerifyNoOtherCalls();
+    }
+
     [Theory]
     [InlineData(0)]
     [InlineData(-1)]
     public async Task EmpresaNoValidaRechazadaAntesDeConsultarMembresias(int empresaId)
     {
         var scope = new Mock<IUsuarioScopeService>(MockBehavior.Strict);
-        var controller = new TenantContextController(scope.Object);
+        var controller = CrearControlador(scope.Object);
 
         Assert.IsType<BadRequestObjectResult>(
             await controller.Obtener(empresaId, CancellationToken.None));
@@ -71,4 +83,20 @@ public sealed class P1007ATenantSwitchAuthorizationTests
         scope.Verify(x => x.ObtenerActualAsync(It.IsAny<int>(), It.IsAny<CancellationToken>()),
             Times.Never);
     }
+
+    // Direct unit fixture: JWT signature and HTTP middleware are tested separately.
+    private static TenantContextController CrearControlador(IUsuarioScopeService servicio)
+    {
+        var context = new DefaultHttpContext
+        {
+            User = new ClaimsPrincipal(new ClaimsIdentity(
+                [new Claim("id", "17"), new Claim("rolId", "3")],
+                authenticationType: "authenticated-direct-unit-fixture"))
+        };
+        return new TenantContextController(servicio)
+        {
+            ControllerContext = new ControllerContext { HttpContext = context }
+        };
+    }
+
 }

@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Linq;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
@@ -84,7 +85,11 @@ public sealed class P2013CJwtSesionRbacTenantTests
         {
             ControllerContext = new ControllerContext
             {
-                HttpContext = new DefaultHttpContext()
+                HttpContext = new DefaultHttpContext
+                {
+                    User = new ClaimsPrincipal(new ClaimsIdentity(jwt.Claims,
+                        authenticationType: "authenticated-direct-unit-fixture"))
+                }
             }
         };
         controller.HttpContext.Request.Headers["X-Empresa-Id"] =

@@ -1,4 +1,5 @@
 using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
 using System.Linq;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
@@ -80,7 +81,11 @@ public sealed class P2013EJwtRolInactivoTests
         var controller = new TenantContextController(
             new UsuarioScopeService(db, identity.Object))
         {
-            ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+            ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext
+                {
+                    User = new ClaimsPrincipal(new ClaimsIdentity(jwt.Claims,
+                        authenticationType: "authenticated-direct-unit-fixture"))
+                } }
         };
 
         // El token original da acceso a A, nunca a B aunque el cliente fuerce la cabecera.
