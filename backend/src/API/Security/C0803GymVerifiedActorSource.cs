@@ -68,7 +68,9 @@ public sealed class C0803GymVerifiedActorSource(
             if (signedIds.Length != 1 ||
                 !int.TryParse(signedIds[0].Value, NumberStyles.None,
                     CultureInfo.InvariantCulture, out var actorId) ||
-                actorId != current.UsuarioId.Value)
+                actorId != current.UsuarioId.Value ||
+                !string.Equals(signedIds[0].Value,
+                    actorId.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal))
                 return null;
 
             async Task<UsuarioTenantScopeActual?> CurrentScopeAsync() =>

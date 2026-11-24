@@ -10807,3 +10807,8 @@
 ## 2026-11-24 — DEV01 C07-01.M06.06: corregir proyección EF de ownership de color
 
 - CI backend 138624026159 del SHA f682a0e3 falló con CS1061: Color usa EmpresaId como shadow property de EF, no propiedad CLR. Ambas verificaciones de rollback y recibo positivo proyectan EF.Property<int?> dentro de SQL; conserva aserciones, tenant B y trigger de auditoría. Sin cambios runtime, esquema ni permisos; CI exact-SHA pendiente, H EN_PROGRESO, V17 propio, A5 independiente.
+
+## 2026-11-24 — C08-03.M03.03: identidad JWT canónica (DEV03)
+
+- R2: el origen real de autoridad del probe DEV rechaza alias numéricos del claim firmado id; conserva firma, rol vigente, membresía, tenant y sucursal; no concede acceso de gimnasio.
+- La integración HTTP firmada con Oracle EF/MySQL 8.4 agrega un caso de alias firmado y conserva los positivos y las denegaciones A/B, revocación y rollback. CI exact-SHA pendiente; A5 independiente; sigue VALIDANDO sin adaptador real de membresías.

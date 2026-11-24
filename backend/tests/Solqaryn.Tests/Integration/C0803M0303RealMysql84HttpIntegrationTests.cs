@@ -54,12 +54,14 @@ public sealed class C0803M0303RealMysql84HttpIntegrationTests
         return raw;
     }
 
-    private static string Token(int actor, bool forged = false)
+    private static string Token(int actor, bool forged = false) =>
+        Token(actor.ToString(System.Globalization.CultureInfo.InvariantCulture), forged);
+
+    private static string Token(string actor, bool forged = false)
     {
         return new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(
             issuer: Issuer, audience: Audience,
-            claims: [new Claim("id", actor.ToString(
-                System.Globalization.CultureInfo.InvariantCulture))],
+            claims: [new Claim("id", actor)],
             notBefore: DateTime.UtcNow.AddMinutes(-1),
             expires: DateTime.UtcNow.AddMinutes(5),
             signingCredentials: new SigningCredentials(
@@ -232,6 +234,10 @@ public sealed class C0803M0303RealMysql84HttpIntegrationTests
             using (var wrongActor = await ReadAsync(
                 client, tenantA.Id, branchA.Id, Token(actor.Id + 1)))
                 Assert.Equal(HttpStatusCode.Forbidden, wrongActor.StatusCode);
+            // Even a genuinely signed, noncanonical identity must fail closed.
+            using (var aliasActor = await ReadAsync(client, tenantA.Id, branchA.Id,
+                Token("0" + actor.Id.ToString(System.Globalization.CultureInfo.InvariantCulture))))
+                Assert.Equal(HttpStatusCode.Forbidden, aliasActor.StatusCode);
             using (var foreignTenant = await ReadAsync(
                 client, tenantB.Id, branchB.Id, jwt))
                 Assert.Equal(HttpStatusCode.Forbidden, foreignTenant.StatusCode);
