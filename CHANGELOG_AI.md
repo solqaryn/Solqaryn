@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV02 V31 C15-04.M05.04: identidad global CI coherente con rol SQL
+- R2 CI: el usuario efímero de plataforma usa como RolId principal el mismo rol global de sistema que su asignación SQL; se exige ámbito Plataforma, rol activo y cero membresías tenant. No se modifica autenticación, JWT, RBAC ni criterios Playwright; se conservan las identidades A/B y sus negativas.
+- Evidencia causal: SHA 5e5c2cf5, run 45306161884/job 138150399296, 82 PASS/84 FAIL por login global HTTP 401 tras endurecimiento de roles empresariales. Nuevo SHA requiere ejecución real GitHub-hosted MySQL 8.4/JWT/Chromium; no PASS anticipado ni certificación de zoom nativo, WCAG global o capturas históricas. H EN_PROGRESO y V17 propios conservados. Rollback por revert; sin QA/main/PROD.
+
 ## 2026-11-23 — DEV01 V31 C07-01.M06.06: baja fiscal permanente atómica
 - R2 DEV: la baja permanente existente y su auditoría estricta comparten una transacción; se preservan el guard de historial, el aislamiento y la cuarentena HTTP.
 - Regresión dirigida Oracle EF/MySQL 8.4 efímero: fallo del auditor en alta, edición, baja lógica y permanente, con lectura física independiente; CI pendiente de comprobar. Sin QA/main/PROD ni certificación integral de catálogo.
