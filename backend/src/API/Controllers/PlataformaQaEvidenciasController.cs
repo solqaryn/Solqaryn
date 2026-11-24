@@ -25,6 +25,10 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
     private static readonly Regex ShaValido = new(
         @"\A[0-9a-fA-F]{40}\z", RegexOptions.CultureInvariant | RegexOptions.Compiled);
 
+    private static readonly Regex RutaEvidenciaValida = new(
+        @"\A/solqaryn/Solqaryn/actions/runs/[1-9][0-9]*(?:/job/[1-9][0-9]*)?\z",
+        RegexOptions.CultureInvariant | RegexOptions.Compiled);
+
     // Gates mínimos para un cambio backend; los checks adicionales se muestran
     // con su conclusión REAL y nunca se convierten de SKIPPED a PASS.
     private static readonly string[] ChecksMinimos =
@@ -185,8 +189,10 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                 if (Uri.TryCreate(details, UriKind.Absolute, out var parsed) &&
                     parsed.Scheme == Uri.UriSchemeHttps &&
                     string.Equals(parsed.Host, "github.com", StringComparison.OrdinalIgnoreCase) &&
-                    parsed.AbsolutePath.StartsWith("/solqaryn/Solqaryn/actions/", StringComparison.Ordinal))
-                    safeUrl = parsed.ToString();
+                    parsed.IsDefaultPort && string.IsNullOrEmpty(parsed.UserInfo) &&
+                    string.IsNullOrEmpty(parsed.Query) && string.IsNullOrEmpty(parsed.Fragment) &&
+                    RutaEvidenciaValida.IsMatch(parsed.AbsolutePath))
+                    safeUrl = "https://github.com" + parsed.AbsolutePath;
 
                 checks.Add(new PlataformaQaCheckDto(name, status, conclusion, safeUrl));
             }

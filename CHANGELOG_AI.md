@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV03 C03-03.M03.06: minimizar enlaces de evidencia QA
+- Limita details_url a rutas HTTPS canónicas de run/job del repositorio, sin credenciales, parámetros, fragmentos ni puertos alternativos. No altera permisos ni autoridad de auditoría.
+- Extiende la prueba HTTP JWT con MySQL 8.4 aislado para conservar el enlace válido y omitir tres enlaces inseguros; mantiene revocación y persistencia previa. CI del nuevo SHA pendiente; no certifica el proveedor externo, la auditoría durable de denegaciones ni la retención.
+- Conserva VALIDANDO y autor histórico; A5 por otra Task elegible. Sin QA/main/PROD.
+
 ## 2026-11-24 — DEV06 C01-03.M04.05: etiquetas accesibles y foco real
 - Se amplía la prueba Chromium existente para identificar cinco campos por su nombre accesible y control Angular asociado en ambos tenants, cinco anchos y texto al 200%; se exige contorno y foco no oculto de enlace y Recargar por navegación Tab real.
 - Sólo pruebas: sin cambios de permisos, API, datos, dependencias ni runtime. Evidencia nativa de zoom A/B de C01-03.M04.01 reutilizable sólo tras verificar equivalencia. A0-A4/A5 y captura histórica ANTES pendientes de validación; H VALIDANDO e I DEV04 preservados. Sin QA/main/PROD.

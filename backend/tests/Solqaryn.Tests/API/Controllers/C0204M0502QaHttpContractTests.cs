@@ -241,7 +241,13 @@ public sealed class C0204M0502QaHttpContractTests
                 "SOLQARYN_C0204_MYSQL_TEST_CONNECTION")))
             return;
 
-        var upstream = new GitHubFake(Payload());
+        var upstream = new GitHubFake(Payload(detailsUrls: new[]
+        {
+            "https://github.com/solqaryn/Solqaryn/actions/runs/123/job/456",
+            "https://github.com/solqaryn/Solqaryn/actions/runs/123?token=private-secret",
+            "https://private-secret@github.com/solqaryn/Solqaryn/actions/runs/123",
+            "https://github.com:8443/solqaryn/Solqaryn/actions/runs/123"
+        }));
         await using var fixture = await CrearAsync(upstream, mysql: true);
         using var client = fixture.Host.GetTestClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
@@ -252,6 +258,16 @@ public sealed class C0204M0502QaHttpContractTests
         {
             Assert.Equal(HttpStatusCode.OK, good.StatusCode);
             Assert.Equal(goodCorrelation, Assert.Single(good.Headers.GetValues(CorrelationIdMiddleware.HeaderName)));
+            var body = await good.Content.ReadAsStringAsync();
+            Assert.DoesNotContain("private-secret", body);
+            using var document = JsonDocument.Parse(body);
+            var checks = document.RootElement.GetProperty("data").GetProperty("checks");
+            Assert.Equal(4, checks.GetArrayLength());
+            Assert.Equal("https://github.com/solqaryn/Solqaryn/actions/runs/123/job/456",
+                checks[0].GetProperty("urlEvidencia").GetString());
+            for (var i = 1; i < checks.GetArrayLength(); i++)
+                Assert.False(checks[i].TryGetProperty("urlEvidencia", out var url) &&
+                    url.ValueKind != JsonValueKind.Null);
         }
         client.DefaultRequestHeaders.Remove(CorrelationIdMiddleware.HeaderName);
 
@@ -464,15 +480,16 @@ public sealed class C0204M0502QaHttpContractTests
         return new JwtSecurityTokenHandler().WriteToken(jwt);
     }
 
-    private static string Payload(string conclusion = "success")
+    private static string Payload(string conclusion = "success", string[]? detailsUrls = null)
     {
+        var checkIndex = 0;
         object Check(string name, string result) => new
         {
             head_sha = Sha,
             name,
             status = "completed",
             conclusion = result,
-            details_url = "https://github.com/solqaryn/Solqaryn/actions/runs/123/job/456",
+            details_url = detailsUrls is null ? "https://github.com/solqaryn/Solqaryn/actions/runs/123/job/456" : detailsUrls[checkIndex++],
             output = new { summary = "private-secret-not-for-the-response" }
         };
         return JsonSerializer.Serialize(new
