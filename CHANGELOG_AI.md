@@ -1,3 +1,7 @@
+## 2026-11-24 — DEV01 V31 C07-01.M06.06: lectura privada del maestro normalizado de tallas
+- Evidencia previa exacta 9795a597: job 138366209040 Fact HTTP JWT MySQL 8.4.13 PASS 1/1; job 138367937038 integraciones Oracle PASS 160/160; Scope Lock, V5 y backend SUCCESS. No repetir esos runs.
+- Incremento R2: solo GET /tallas, /tallas/activos y /tallas/{id positivo} en piloto de lectura existente OFF por defecto, Tallas.Ver SQL/MVC, EmpresaId shadow físico y filtro EF vigentes. No habilita escrituras, ownership compartido, migración ni nuevos permisos. Test real A/B comprueba fila física, aislamiento, IDOR, selector cruzado, revocación y piloto OFF. CI exacta pendiente; no se certifican D01 generalizado ni D06 servicios/ERP; A5 independiente. Rollback por revert del changeset, sin QA/main/PROD.
+
 ## 2026-11-24 — DEV05 V31 C01-03.M04.04: zoom nativo del formulario autenticado
 - Fuente 60cb78d4, job 138354019263: 17/17 Chromium A/B y 8/8 formularios aprobados, incluido CAS real por PUT obsoleto y recuperación. Mantener la prueba de presentación 403/500 separada de la autorización backend.
 - R2 test-only: agregar probe del editor real de tenant único con JWT/MySQL efímero, autoridad persistida, zoom nativo 100/200, captura X11, geometría y Tab; preflight de sintaxis/captura y artifact exact-SHA. Sin cambio runtime, datos, RBAC ni aserciones previas. CI pendiente, ANTES histórico no certificado, A5 independiente; rollback revert normal en dev.

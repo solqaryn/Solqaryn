@@ -685,6 +685,11 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                              EsRutaExacta(http.Request.Path, "/colores/activos") ||
                              EsRutaDetallePositiva(http.Request.Path, "/colores")))
             modulo = ModuloSistema.Colores;
+        // V31: existing tenant-owned size master GETs only, with SQL/MVC Tallas.Ver.
+        else if (lectura && (EsRutaExacta(http.Request.Path, "/tallas") ||
+                             EsRutaExacta(http.Request.Path, "/tallas/activos") ||
+                             EsRutaDetallePositiva(http.Request.Path, "/tallas")))
+            modulo = ModuloSistema.Tallas;
         // V30: only tax GETs through the existing opt-in pilot; verified tenant,
         // SQL-backed Impuestos.Ver and tenant-scoped Oracle EF. No fiscal writes.
         else if (lectura && (EsRutaExacta(http.Request.Path, "/impuestos") ||

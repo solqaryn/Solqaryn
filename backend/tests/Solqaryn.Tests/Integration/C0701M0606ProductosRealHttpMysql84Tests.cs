@@ -1631,6 +1631,84 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 Assert.Equal(HttpStatusCode.ServiceUnavailable, offColor.StatusCode);
             pilotConfig["MultiEmpresa:PrivateReadPilotEnabled"] = "true";
 
+            // V31: existing normalized size master with physical shadow ownership.
+            // No generic attribute, sharing or stock semantics are assumed.
+            var tallaPermission = await db.Permisos.IgnoreQueryFilters()
+                .FirstOrDefaultAsync(p => p.Modulo == ModuloSistema.Tallas &&
+                    p.Accion == AccionPermiso.Ver &&
+                    p.Ambito == AmbitoAutorizacion.Empresa && p.Activo && !p.Eliminado);
+            if (tallaPermission is null)
+            {
+                tallaPermission = new Permiso
+                {
+                    Codigo = "C0701M0606.TALLAS.VER",
+                    Nombre = "C0701 isolated size read permission",
+                    Modulo = ModuloSistema.Tallas, Accion = AccionPermiso.Ver,
+                    Ambito = AmbitoAutorizacion.Empresa, Activo = true
+                };
+                db.Permisos.Add(tallaPermission);
+                await db.SaveChangesAsync();
+            }
+            var grantTallaA = new RolPermiso { RolId = roleA.Id, PermisoId = tallaPermission.Id };
+            db.RolPermisos.AddRange(grantTallaA,
+                new RolPermiso { RolId = roleB.Id, PermisoId = tallaPermission.Id });
+            await db.SaveChangesAsync();
+
+            async Task<int> SeedOwnedTallaAsync(int tenantId, string name)
+            {
+                var context = new DefaultHttpContext();
+                context.Items[Solqaryn.Application.Security.VerifiedCommercialTenant
+                    .AuthorizedEmpresaIdItemKey] = tenantId;
+                await using var owned = new AppDbContext(options,
+                    tenantHttpContextAccessor: new HttpContextAccessor { HttpContext = context });
+                var talla = new Talla { Nombre = name, Activo = true, Orden = 1 };
+                owned.Tallas.Add(talla);
+                await owned.SaveChangesAsync();
+                return talla.Id;
+            }
+            var ownedTallaA = await SeedOwnedTallaAsync(a.Id, "C0701TallaOwnerA");
+            var ownedTallaB = await SeedOwnedTallaAsync(b.Id, "C0701TallaOwnerB");
+            await using (var physicalSizes = new AppDbContext(options))
+            {
+                var owners = await physicalSizes.Tallas.IgnoreQueryFilters().AsNoTracking()
+                    .Where(c => c.Id == ownedTallaA || c.Id == ownedTallaB)
+                    .Select(c => new { c.Id, EmpresaId = EF.Property<int?>(c, "EmpresaId") })
+                    .ToArrayAsync();
+                Assert.Equal(a.Id, owners.Single(c => c.Id == ownedTallaA).EmpresaId);
+                Assert.Equal(b.Id, owners.Single(c => c.Id == ownedTallaB).EmpresaId);
+            }
+            foreach (var (jwt, tenantId, ownId, otherId, ownName, otherName) in new[]
+            {
+                (jwtA, a.Id, ownedTallaA, ownedTallaB, "C0701TallaOwnerA", "C0701TallaOwnerB"),
+                (jwtB, b.Id, ownedTallaB, ownedTallaA, "C0701TallaOwnerB", "C0701TallaOwnerA")
+            })
+            {
+                foreach (var path in new[] { "/tallas", "/tallas/activos", $"/tallas/{ownId}" })
+                {
+                    using var response = await CategoryRequestAsync(jwt, tenantId, path);
+                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                    var body = await response.Content.ReadAsStringAsync();
+                    Assert.Contains(ownName, body, StringComparison.Ordinal);
+                    Assert.DoesNotContain(otherName, body, StringComparison.Ordinal);
+                }
+                using var foreign = await CategoryRequestAsync(jwt, tenantId, $"/tallas/{otherId}");
+                Assert.Equal(HttpStatusCode.NotFound, foreign.StatusCode);
+                Assert.DoesNotContain(otherName, await foreign.Content.ReadAsStringAsync(),
+                    StringComparison.Ordinal);
+            }
+            using (var spoofTalla = await CategoryRequestAsync(jwtA, b.Id, "/tallas"))
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, spoofTalla.StatusCode);
+            db.RolPermisos.Remove(grantTallaA);
+            await db.SaveChangesAsync();
+            using (var deniedTalla = await CategoryRequestAsync(jwtA, a.Id, "/tallas"))
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, deniedTalla.StatusCode);
+            using (var stillTallaB = await CategoryRequestAsync(jwtB, b.Id, "/tallas"))
+                Assert.Equal(HttpStatusCode.OK, stillTallaB.StatusCode);
+            pilotConfig["MultiEmpresa:PrivateReadPilotEnabled"] = "false";
+            using (var offTalla = await CategoryRequestAsync(jwtB, b.Id, "/tallas"))
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, offTalla.StatusCode);
+            pilotConfig["MultiEmpresa:PrivateReadPilotEnabled"] = "true";
+
             // V30: real ImpuestosController -> service -> MySQL ownership A/B.
             await using (var taxPhysical = new AppDbContext(options))
             {
