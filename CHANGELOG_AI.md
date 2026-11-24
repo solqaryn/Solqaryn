@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV02 C15-04.M05.04: foco visible de galería bajo recorte
+
+- El contenedor de fotografía usa overflow:hidden y el anillo de foco externo del botón podía quedar recortado. Se conserva color y grosor y se aplica desplazamiento interior a foto principal y miniaturas. Sin cambios de API, permisos, datos ni dependencias.
+- Se amplía la regresión existente de lightbox: Tab real, comprobación del foco visible y geometría interior del outline, apertura con Enter, cierre Escape y restauración de foco; CI exact SHA pendiente, sin certificación global UX/WCAG. Presupuesto CSS y matriz completa de rutas/roles siguen pendientes. Referencias SKREF03/05/10 consultadas en pins vigentes. Rollback revert normal.
+
 ## 2026-11-24 — DEV06 C01-03.M04.05: corregir oráculo de fallback tenant en Chromium
 
 - Evidencia causal: GitHub Actions 45436206437/job/138594581810 y artefacto 14942645251, SHA 971bb35392c99bcae164d1a72bceb7af6e172935. Snapshot de fallo muestra Productos y marca Empresa A efimera C15; la prueba esperaba exclusivamente la etiqueta de configuración Empresa #1 y expiraba aunque el fallback era A. Se mantiene la denegación HTTP real A→B y se exige prueba positiva del contexto A con JWT, escritura comprobada de B, restauración de selección A y marca propia o gate login cerrado, además de ausencia de identidad B. No cambia runtime, RBAC, datos, ni criterios responsive/foco/contraste. SKREF03 pin 2149fcce39a90bb409df5f16515f316a76dc6199 y SKREF10 pin 6808966993bf2b2d455d9b6245e960a59a01b9a9 consultados; CI exact SHA pendiente, no A5 propia ni LISTO. Rollback revert normal.

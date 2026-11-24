@@ -279,7 +279,22 @@ test.describe('Storefront Fase 4 — detalle público de producto', () => {
     await expect(dialog).toHaveCount(1);
     await expect(dialog).not.toBeVisible();
     await expect(dialog.locator('.lightbox-stage, .lightbox-controls')).toHaveCount(0);
-    await imagenPrincipal.click();
+    // Navegacion real por teclado: el contenedor de la galeria recorta el overflow.
+    for (let intentos = 0; intentos < 80; intentos++) {
+      if (await imagenPrincipal.evaluate(elemento => document.activeElement === elemento)) break;
+      await page.keyboard.press('Tab');
+    }
+    await expect(imagenPrincipal).toBeFocused();
+    const foco = await imagenPrincipal.evaluate(elemento => {
+      const estilo = getComputedStyle(elemento);
+      return { visible: elemento.matches(':focus-visible'), tipo: estilo.outlineStyle,
+        ancho: parseFloat(estilo.outlineWidth), desplazamiento: parseFloat(estilo.outlineOffset) };
+    });
+    expect(foco.visible).toBe(true);
+    expect(foco.tipo).toBe('solid');
+    expect(foco.ancho).toBeGreaterThanOrEqual(2);
+    expect(foco.desplazamiento).toBeLessThanOrEqual(-foco.ancho);
+    await page.keyboard.press('Enter');
 
     await expect(dialog).toBeVisible();
     await expect(dialog.locator('.lightbox-stage img')).toBeVisible();
