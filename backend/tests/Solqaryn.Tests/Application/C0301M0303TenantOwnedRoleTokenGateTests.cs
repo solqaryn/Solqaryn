@@ -79,7 +79,7 @@ public sealed class C0301M0303TenantOwnedRoleTokenGateTests
         if (scenario == "revoked") member!.Desactivar();
         var (service, repo, jwt) = Make(actor, member);
 
-        Assert.Null(await service.RenovarAsync(UserId));
+        Assert.Null(await service.RenovarAsync(UserId, RoleId));
         repo.Verify(x => x.GetAuthenticationMembershipsAsync(UserId, RoleId, CompanyId), Times.Once);
         jwt.Verify(x => x.GenerarToken(It.IsAny<Usuario>()), Times.Never);
     }
@@ -115,7 +115,7 @@ public sealed class C0301M0303TenantOwnedRoleTokenGateTests
             NombreUsuario = actor.NombreUsuario,
             Password = "valid-test-password"
         });
-        var renew = await service.RenovarAsync(UserId);
+        var renew = await service.RenovarAsync(UserId, RoleId);
 
         Assert.NotNull(login);
         Assert.NotNull(renew);
@@ -136,7 +136,7 @@ public sealed class C0301M0303TenantOwnedRoleTokenGateTests
             NombreUsuario = actor.NombreUsuario,
             Password = "valid-test-password"
         }));
-        Assert.Null(await service.RenovarAsync(UserId));
+        Assert.Null(await service.RenovarAsync(UserId, RoleId));
         repo.Verify(x => x.GetAuthenticationMembershipsAsync(UserId, RoleId, null), Times.Exactly(2));
         jwt.Verify(x => x.GenerarToken(It.IsAny<Usuario>()), Times.Never);
     }
@@ -157,7 +157,7 @@ public sealed class C0301M0303TenantOwnedRoleTokenGateTests
         if (scenario == "revoked") member.Desactivar();
         var (service, repo, jwt) = Make(actor, member);
 
-        Assert.Null(await service.RenovarAsync(UserId));
+        Assert.Null(await service.RenovarAsync(UserId, RoleId));
         repo.Verify(x => x.GetAuthenticationMembershipsAsync(UserId, RoleId, null), Times.Once);
         jwt.Verify(x => x.GenerarToken(It.IsAny<Usuario>()), Times.Never);
     }
@@ -174,7 +174,7 @@ public sealed class C0301M0303TenantOwnedRoleTokenGateTests
             NombreUsuario = actor.NombreUsuario,
             Password = "valid-test-password"
         }));
-        Assert.NotNull(await service.RenovarAsync(UserId));
+        Assert.NotNull(await service.RenovarAsync(UserId, RoleId));
         repo.Verify(x => x.GetAuthenticationMembershipsAsync(UserId, RoleId, null), Times.Exactly(2));
         jwt.Verify(x => x.GenerarToken(actor), Times.Exactly(2));
     }
@@ -187,7 +187,7 @@ public sealed class C0301M0303TenantOwnedRoleTokenGateTests
         var (service, repo, jwt) = Make(actor,
             new UsuarioEmpresa(UserId, CompanyId, RoleId));
 
-        Assert.Null(await service.RenovarAsync(UserId));
+        Assert.Null(await service.RenovarAsync(UserId, RoleId));
         repo.Verify(x => x.GetAuthenticationMembershipsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int?>()),
             Times.Never);
         jwt.Verify(x => x.GenerarToken(It.IsAny<Usuario>()), Times.Never);
@@ -205,8 +205,20 @@ public sealed class C0301M0303TenantOwnedRoleTokenGateTests
             NombreUsuario = actor.NombreUsuario,
             Password = "valid-test-password"
         }));
-        Assert.Null(await service.RenovarAsync(UserId));
+        Assert.Null(await service.RenovarAsync(UserId, RoleId));
 
+        repo.Verify(x => x.GetAuthenticationMembershipsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int?>()),
+            Times.Never);
+        jwt.Verify(x => x.GenerarToken(It.IsAny<Usuario>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task StaleRoleCannotRenewIntoDifferentCurrentTenantRole()
+    {
+        var actor = Actor();
+        var (service, repo, jwt) = Make(actor,
+            new UsuarioEmpresa(UserId, CompanyId, RoleId));
+        Assert.Null(await service.RenovarAsync(UserId, RoleId + 1));
         repo.Verify(x => x.GetAuthenticationMembershipsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int?>()),
             Times.Never);
         jwt.Verify(x => x.GenerarToken(It.IsAny<Usuario>()), Times.Never);

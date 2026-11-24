@@ -86,13 +86,13 @@ public sealed class I8005ETokenNoLeakAntifuerzaTests
     {
         const string token = "I8005E-Token-Rechazado-No-Firmado";
         var auth = new Mock<IAuthService>(MockBehavior.Strict);
-        auth.Setup(x => x.RenovarAsync(805))
+        auth.Setup(x => x.RenovarAsync(805, 905))
             .ReturnsAsync((LoginResponseDto?)null);
         var auditoria = new Mock<IAuditoriaService>(MockBehavior.Strict);
         var http = new DefaultHttpContext();
         http.Request.Headers["Authorization"] = "Bearer " + token;
         http.User = new ClaimsPrincipal(new ClaimsIdentity(
-            new[] { new Claim("id", "805") }, "prueba-sintetica"));
+            new[] { new Claim("id", "805"), new Claim("rolId", "905") }, "prueba-sintetica"));
 
         var controller = new AuthController(auth.Object, auditoria.Object)
         {
@@ -108,7 +108,7 @@ public sealed class I8005ETokenNoLeakAntifuerzaTests
         Assert.Equal("La sesión ya no es válida.", cuerpo.Message);
         Assert.False(JsonSerializer.Serialize(cuerpo).Contains(token, StringComparison.Ordinal));
         Assert.False(http.Response.Headers.ContainsKey("Location"));
-        auth.Verify(x => x.RenovarAsync(805), Times.Once);
+        auth.Verify(x => x.RenovarAsync(805, 905), Times.Once);
         auditoria.VerifyNoOtherCalls();
     }
 }

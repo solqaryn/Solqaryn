@@ -19,7 +19,8 @@ public sealed class C0301M0303AuthRenewCanonicalIdentityTests
     private static AuthController Subject(
         Mock<IAuthService> auth, bool authenticated, params string[] actorClaims)
     {
-        var claims = actorClaims.Select(id => new Claim("id", id)).ToArray();
+        var claims = actorClaims.Select(id => new Claim("id", id))
+            .Append(new Claim("rolId", "905")).ToArray();
         var identity = new ClaimsIdentity(claims,
             authenticated ? "test-controller-authentication-only" : null);
         var http = new DefaultHttpContext
@@ -50,7 +51,7 @@ public sealed class C0301M0303AuthRenewCanonicalIdentityTests
         var action = await Subject(auth, authenticated: true, signedLikeClaim).Renovar();
 
         Assert.IsType<UnauthorizedObjectResult>(action);
-        auth.Verify(x => x.RenovarAsync(It.IsAny<int>()), Times.Never);
+        auth.Verify(x => x.RenovarAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
     }
 
     [Fact]
@@ -60,7 +61,7 @@ public sealed class C0301M0303AuthRenewCanonicalIdentityTests
         var action = await Subject(auth, authenticated: true).Renovar();
 
         Assert.IsType<UnauthorizedObjectResult>(action);
-        auth.Verify(x => x.RenovarAsync(It.IsAny<int>()), Times.Never);
+        auth.Verify(x => x.RenovarAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
     }
 
     [Theory]
@@ -73,7 +74,7 @@ public sealed class C0301M0303AuthRenewCanonicalIdentityTests
         var action = await Subject(auth, authenticated: true, first, second).Renovar();
 
         Assert.IsType<UnauthorizedObjectResult>(action);
-        auth.Verify(x => x.RenovarAsync(It.IsAny<int>()), Times.Never);
+        auth.Verify(x => x.RenovarAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
     }
 
     [Fact]
@@ -83,21 +84,41 @@ public sealed class C0301M0303AuthRenewCanonicalIdentityTests
         var action = await Subject(auth, authenticated: false, "805").Renovar();
 
         Assert.IsType<UnauthorizedObjectResult>(action);
-        auth.Verify(x => x.RenovarAsync(It.IsAny<int>()), Times.Never);
+        auth.Verify(x => x.RenovarAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task MissingDuplicateOrNoncanonicalRoleAndMissingHttpContextNeverRenew()
+    {
+        var auth = new Mock<IAuthService>(MockBehavior.Strict);
+        foreach (var roles in new[] { Array.Empty<string>(), new[] { "905", "905" },
+                     new[] { "905", "906" }, new[] { "0905" }, new[] { "0" },
+                     new[] { "2147483648" } })
+        {
+            var controller = Subject(auth, authenticated: true, "805");
+            var claims = new[] { new Claim("id", "805") }
+                .Concat(roles.Select(role => new Claim("rolId", role)));
+            controller.ControllerContext.HttpContext.User =
+                new ClaimsPrincipal(new ClaimsIdentity(claims, "test-controller-authentication-only"));
+            Assert.IsType<UnauthorizedObjectResult>(await controller.Renovar());
+        }
+        var withoutHttp = new AuthController(auth.Object, Mock.Of<IAuditoriaService>());
+        Assert.IsType<UnauthorizedObjectResult>(await withoutHttp.Renovar());
+        auth.VerifyNoOtherCalls();
     }
 
     [Fact]
     public async Task SingleCanonicalActorIdStillCallsServiceExactlyOnce()
     {
         var auth = new Mock<IAuthService>(MockBehavior.Strict);
-        auth.Setup(x => x.RenovarAsync(805)).ReturnsAsync((LoginResponseDto?)null);
+        auth.Setup(x => x.RenovarAsync(805, 905)).ReturnsAsync((LoginResponseDto?)null);
 
         var action = await Subject(auth, authenticated: true, "805").Renovar();
 
         // The service can reject a revoked session. The important positive
         // assertion is that a canonical actor reaches the actual service.
         Assert.IsType<UnauthorizedObjectResult>(action);
-        auth.Verify(x => x.RenovarAsync(805), Times.Once);
+        auth.Verify(x => x.RenovarAsync(805, 905), Times.Once);
         auth.VerifyNoOtherCalls();
     }
 }

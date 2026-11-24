@@ -58,24 +58,29 @@ public class AuthController : ControllerBase
     [HttpPost("renovar")]
     public async Task<IActionResult> Renovar()
     {
-        // A signed product token contains exactly one canonical positive actor id.
-        // Never use FindFirst: duplicated/ambiguous claims could renew a stale or
-        // conflicting identity before tenant-aware checks run.
-        var actorClaims = User.FindAll("id").ToArray();
-        if (User.Identity?.IsAuthenticated != true || actorClaims.Length != 1)
+        // The JWT identifies the actor and original base role; neither a client
+        // header nor an old token may acquire a different current SQL role.
+        var principal = ControllerContext?.HttpContext?.User;
+        if (principal?.Identity?.IsAuthenticated != true ||
+            !TryCanonicalClaim(principal, "id", out var usuarioId) ||
+            !TryCanonicalClaim(principal, "rolId", out var rolId))
             return Unauthorized(ApiResponse<object>.Fail("No fue posible identificar la sesión."));
 
-        var actorText = actorClaims[0].Value;
-        if (!int.TryParse(actorText, NumberStyles.None, CultureInfo.InvariantCulture,
-                out var usuarioId) || usuarioId <= 0 ||
-            !string.Equals(actorText, usuarioId.ToString(CultureInfo.InvariantCulture),
-                StringComparison.Ordinal))
-            return Unauthorized(ApiResponse<object>.Fail("No fue posible identificar la sesión."));
-
-        var resultado = await _authService.RenovarAsync(usuarioId);
+        var resultado = await _authService.RenovarAsync(usuarioId, rolId);
         if (resultado is null)
             return Unauthorized(ApiResponse<object>.Fail("La sesión ya no es válida."));
 
         return Ok(ApiResponse<LoginResponseDto>.Ok(resultado, "Sesión renovada correctamente."));
+    }
+
+    private static bool TryCanonicalClaim(ClaimsPrincipal principal, string name, out int id)
+    {
+        id = 0;
+        var claims = principal.FindAll(name).ToArray();
+        if (claims.Length != 1) return false;
+        var value = claims[0].Value;
+        return int.TryParse(value, NumberStyles.None, CultureInfo.InvariantCulture, out id) &&
+            id > 0 &&
+            string.Equals(value, id.ToString(CultureInfo.InvariantCulture), StringComparison.Ordinal);
     }
 }

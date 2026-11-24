@@ -242,7 +242,10 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
                     NombreUsuario = actor.NombreUsuario,
                     Password = "isolated-login-password"
                 });
-                var renewal = await auth.RenovarAsync(actor.Id);
+                var renewal = await auth.RenovarAsync(actor.Id, roleA.Id);
+                // An old signed role must not acquire the currently active role
+                // even when the actor has a valid live SQL membership.
+                Assert.Null(await auth.RenovarAsync(actor.Id, checked(roleA.Id + 1)));
                 if (!allowed)
                 {
                     Assert.Null(login);

@@ -23,7 +23,7 @@ public sealed class I8002DRenovacionSinIdentidadValidaTests
     public async Task Renovar_rechaza_id_faltante_o_invalido_sin_llamar_al_servicio(string? id)
     {
         var auth = new Mock<IAuthService>(MockBehavior.Strict);
-        var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, "42") };
+        var claims = new List<Claim> { new(ClaimTypes.NameIdentifier, "42"), new("rolId", "905") };
         if (id is not null)
             claims.Add(new Claim("id", id));
 
@@ -32,20 +32,20 @@ public sealed class I8002DRenovacionSinIdentidadValidaTests
         var response = await controller.Renovar();
 
         Assert.IsType<UnauthorizedObjectResult>(response);
-        auth.Verify(s => s.RenovarAsync(It.IsAny<int>()), Times.Never);
+        auth.Verify(s => s.RenovarAsync(It.IsAny<int>(), It.IsAny<int>()), Times.Never);
     }
 
     [Fact]
     public async Task Renovar_rechaza_sesion_invalida_aunque_el_id_sea_numerico()
     {
         var auth = new Mock<IAuthService>(MockBehavior.Strict);
-        auth.Setup(s => s.RenovarAsync(42)).ReturnsAsync((LoginResponseDto?)null);
-        var controller = CrearController(auth, new[] { new Claim("id", "42") }, "1");
+        auth.Setup(s => s.RenovarAsync(42, 905)).ReturnsAsync((LoginResponseDto?)null);
+        var controller = CrearController(auth, new[] { new Claim("id", "42"), new Claim("rolId", "905") }, "1");
 
         var response = await controller.Renovar();
 
         Assert.IsType<UnauthorizedObjectResult>(response);
-        auth.Verify(s => s.RenovarAsync(42), Times.Once);
+        auth.Verify(s => s.RenovarAsync(42, 905), Times.Once);
     }
 
     private static AuthController CrearController(

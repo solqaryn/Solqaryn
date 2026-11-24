@@ -47,7 +47,7 @@ public sealed class I8005DRenovacionRolRevocadoTests
         var sut = new AuthService(
             repository.Object, Mock.Of<IRolRepository>(), jwt.Object);
 
-        var anterior = await sut.RenovarAsync(usuario.Id);
+        var anterior = await sut.RenovarAsync(usuario.Id, rol.Id);
         Assert.NotNull(anterior);
         Assert.Equal("token-sintetico-no-firmado", anterior!.Token);
 
@@ -55,7 +55,7 @@ public sealed class I8005DRenovacionRolRevocadoTests
         rol.Eliminado = eliminado;
 
         await Assert.ThrowsAsync<BusinessRuleException>(
-            () => sut.RenovarAsync(usuario.Id));
+            () => sut.RenovarAsync(usuario.Id, rol.Id));
 
         repository.Verify(x => x.GetByIdAsync(usuario.Id), Times.Exactly(2));
         jwt.Verify(x => x.GenerarToken(usuario), Times.Once);

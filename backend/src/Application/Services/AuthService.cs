@@ -36,14 +36,24 @@ public class AuthService : IAuthService
         return CrearRespuesta(usuario);
     }
 
-    public async Task<LoginResponseDto?> RenovarAsync(int usuarioId)
+    public async Task<LoginResponseDto?> RenovarAsync(int usuarioId, int rolId)
     {
+        if (usuarioId <= 0 || rolId <= 0) return null;
         var usuario = await _usuarioRepository.GetByIdAsync(usuarioId);
-        if (usuario is null || usuario.Eliminado) return null;
+        if (usuario is null || usuario.Eliminado || usuario.Id != usuarioId) return null;
 
         ValidarEstadoCuenta(usuario);
         ValidarRolRelacional(usuario);
+        // A role change requires fresh authentication; a previously signed
+        // bearer cannot be exchanged for a different (possibly elevated) role.
+        if (usuario.RolId != rolId || usuario.RolEntidad.Id != rolId)
+            return null;
         if (!await HasActiveMembershipForOwnedRoleAsync(usuario))
+            return null;
+        if (usuario.Id != usuarioId || usuario.RolId != rolId ||
+            usuario.RolEntidad is null || usuario.RolEntidad.Id != rolId ||
+            !usuario.Activo || usuario.Bloqueado || usuario.Eliminado ||
+            !usuario.RolEntidad.Activo || usuario.RolEntidad.Eliminado)
             return null;
         return CrearRespuesta(usuario);
     }

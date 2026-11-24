@@ -52,7 +52,7 @@ public sealed class I8009DRevocacionRolRenovacionTests
         var servicio = new AuthService(usuarios.Object, roles.Object, jwt.Object);
 
         await Assert.ThrowsAsync<BusinessRuleException>(
-            () => servicio.RenovarAsync(usuarioId));
+            () => servicio.RenovarAsync(usuarioId, 42));
 
         usuarios.Verify(x => x.GetByIdAsync(usuarioId), Times.Once);
         jwt.Verify(x => x.GenerarToken(It.IsAny<Usuario>()), Times.Never);
@@ -88,7 +88,7 @@ public sealed class I8009DRevocacionRolRenovacionTests
         var jwt = new Mock<IJwtService>(MockBehavior.Strict);
         var servicio = new AuthService(usuarios.Object, roles.Object, jwt.Object);
 
-        Assert.Null(await servicio.RenovarAsync(usuarioId));
+        Assert.Null(await servicio.RenovarAsync(usuarioId, 42));
         usuarios.Verify(x => x.GetByIdAsync(usuarioId), Times.Once);
         jwt.Verify(x => x.GenerarToken(It.IsAny<Usuario>()), Times.Never);
     }

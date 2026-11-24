@@ -1,3 +1,9 @@
+## 2026-11-23 — DEV04 V31 C03-01.M03.03: renovación vinculada al rol JWT vigente
+- Revalida identidad y rol canónicos únicos en POST /auth/renovar; ausencia de contexto HTTP o claims ambiguos se rechaza antes de consultar Application.
+- AuthService compara el rol original firmado con el RolId relacional vigente, mantiene validación SQL de membresía activa y deniega reemisión a un rol distinto; no cambia el alcance de permisos comerciales ni de plataforma.
+- Adapta fixtures de renovación al contrato obligatorio de rol y añade regresión causal de rol obsoleto, claims ambiguos y ausencia de contexto; la prueba MySQL 8.4 existente comprueba denegación de renovación con rol diferente.
+- Evidencia pendiente de CI exact-SHA; no equivale a selección/reemisión tenant-sucursal ni a revocación retrospectiva de JWT. A5 independiente pendiente. H VALIDANDO, sin QA/main/PROD.
+
 ## 2026-11-23 — DEV02 V31 C15-04.M05.04: prueba causal de zoom nativo Chromium
 - Agrega al workflow UX existente un paso independiente con Chromium headed, Xvfb y extensión MV3 efímera local; `chrome.tabs.setZoom/getZoom` 100/200%, comprobación DPR/reflow sin pinch ni CSS, overflow y capturas/JSON por SHA de login y tres rutas públicas. No es certificación privada JWT, WCAG global, ni evidencia histórica anterior a cambios; no altera runtime, presupuesto, seguridad ni checks existentes. Scope R1 evidencia UX; rollback por revert normal del cambio de workflow.
 - Fuente 8135f902: suite UX 29/29 SUCCESS y artefacto AFTER 14888599835; no relanzamiento manual. Nuevo paso y SHA requieren CI real, no PASS anticipado. Mantener WIP DEV02 y V17 hasta completar alcance; A5 independiente. SKREF-03/05/10 consultadas por pin; sin herramientas externas instaladas.

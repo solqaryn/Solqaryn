@@ -40,7 +40,7 @@ public sealed class I8009CRevocacionRenovacionTests
         var servicio = new AuthService(usuarios.Object, roles.Object, jwt.Object);
 
         await Assert.ThrowsAsync<BusinessRuleException>(
-            () => servicio.RenovarAsync(usuarioId));
+            () => servicio.RenovarAsync(usuarioId, 42));
 
         usuarios.Verify(x => x.GetByIdAsync(usuarioId), Times.Once);
         jwt.Verify(x => x.GenerarToken(It.IsAny<Usuario>()), Times.Never);
@@ -78,7 +78,7 @@ public sealed class I8009CRevocacionRenovacionTests
             .Returns(("token-prueba-unicamente", expiracion));
         var servicio = new AuthService(usuarios.Object, roles.Object, jwt.Object);
 
-        var resultado = await servicio.RenovarAsync(usuarioId);
+        var resultado = await servicio.RenovarAsync(usuarioId, 42);
 
         Assert.NotNull(resultado);
         Assert.Equal("token-prueba-unicamente", resultado!.Token);
