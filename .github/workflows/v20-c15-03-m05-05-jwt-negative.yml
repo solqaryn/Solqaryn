@@ -133,9 +133,13 @@ jobs:
           VALUES ('Global CI C1504', 'C1504_GLOBAL_CI', 'Rol efimero para aceptacion real', 1, 1, 2, NULL, 1, 0, UTC_TIMESTAMP(6));
           INSERT INTO Usuarios
             (NombreUsuario, NombreCompleto, PasswordHash, RolId, Activo, Bloqueado, Eliminado, FechaCreacion)
-          SELECT 'c1504_platform_only', 'Plataforma CI', u.PasswordHash, u.RolId,
+          -- AuthService now requires a real live membership for enterprise base roles.
+          -- The platform-only fixture must have its own global base role, not the
+          -- tenant administrator's role. It retains NO enterprise membership.
+          SELECT 'c1504_platform_only', 'Plataforma CI', u.PasswordHash, r.Id,
                  TRUE, FALSE, FALSE, UTC_TIMESTAMP(6)
-          FROM Usuarios u WHERE u.NombreUsuario='c1504_admin_a';
+          FROM Usuarios u CROSS JOIN Roles r
+          WHERE u.NombreUsuario='c1504_admin_a' AND r.NombreNormalizado='C1504_GLOBAL_CI';
           INSERT INTO UsuarioRolesPlataforma (UsuarioId, RolId, Activa, FechaCreacion, FechaActualizacion)
           SELECT u.Id, r.Id, TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)
           FROM Usuarios u CROSS JOIN Roles r
@@ -144,6 +148,12 @@ jobs:
           members="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_c1504_real_ci -Nse "SELECT COUNT(*) FROM UsuarioRolesPlataforma ur JOIN Usuarios u ON u.Id=ur.UsuarioId WHERE u.NombreUsuario='c1504_platform_only' AND ur.Activa=TRUE;")"
           company="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_c1504_real_ci -Nse "SELECT COUNT(*) FROM UsuarioEmpresas ue JOIN Usuarios u ON u.Id=ue.UsuarioId WHERE u.NombreUsuario='c1504_admin_a' AND ue.EmpresaId=1 AND ue.Activa=TRUE;")"
           company_b="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_c1504_real_ci -Nse "SELECT COUNT(*) FROM UsuarioEmpresas ue JOIN Usuarios u ON u.Id=ue.UsuarioId WHERE u.NombreUsuario='c1504_admin_b' AND ue.EmpresaId=2 AND ue.Activa=TRUE;")"
+          # Verify base role and live global assignment agree, without creating a tenant grant.
+          global_base="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_c1504_real_ci -Nse "SELECT COUNT(*) FROM Usuarios u JOIN Roles r ON r.Id=u.RolId JOIN UsuarioRolesPlataforma ur ON ur.UsuarioId=u.Id AND ur.RolId=r.Id WHERE u.NombreUsuario='c1504_platform_only' AND u.Activo=TRUE AND u.Bloqueado=FALSE AND u.Eliminado=FALSE AND r.Ambito=2 AND r.EmpresaId IS NULL AND r.EsSistema=TRUE AND r.EsAdministrador=TRUE AND r.Activo=TRUE AND r.Eliminado=FALSE AND ur.Activa=TRUE;")"
+          global_tenants="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_c1504_real_ci -Nse "SELECT COUNT(*) FROM UsuarioEmpresas ue JOIN Usuarios u ON u.Id=ue.UsuarioId WHERE u.NombreUsuario='c1504_platform_only';")"
+          test "$global_base" = '1'
+          test "$global_tenants" = '0'
+          echo 'C1503_PLATFORM_FIXTURE_GLOBAL_BASE_NO_TENANT_VERIFIED'
           test "$members" = '1'
           test "$company" = '1'
           test "$company_b" = '1'

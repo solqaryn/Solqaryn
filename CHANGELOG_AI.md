@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV05 C15-03.M05.05: fixture global de autenticación consistente
+
+- R2 CI: el run 45481909679/job 138756991654 ejecutó 10/11 casos; el caso de firma adulterada se detuvo en login real 401 antes de probar la firma. AuthService exige membresía vigente para rol base empresarial; la identidad global efímera copiaba ese rol sin membresía.
+- Corrige exclusivamente el seed del workflow para usar su rol base de plataforma ya creado y su asignación global existente. Readback SQL exige correspondencia exacta de rol activo y cero membresías empresariales. Conserva las 11 pruebas, cuarentena y controles de autorización. Sin cambio de runtime, permisos productivos o esquema; CI exacta, archivos/jobs y A5 independiente pendientes.
+
 ## 2026-11-24 — C03-03.M03.06 / DEV04 — contrato QA sin claves JSON ambiguas
 
 - R2: rechazar propiedades duplicadas en raíz y check individual del proveedor antes de interpretar SHA/conclusión; 503 y auditoría acotada sin eco, no last-value-wins.
