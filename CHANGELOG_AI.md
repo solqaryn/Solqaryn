@@ -1,3 +1,6 @@
+## 2026-11-24 — DEV05 V31 C01-03.M04.04: evidencia nativa sin superposiciones
+- Fuente 386a3a60 job138415708608: 13 Vitest + 17 A/B + 8 formularios PASS; zoom nativo y foco de 2 controles PASS, pero 4 PNG X11 muestran aviso de guardar contraseña. Corrección test-only del perfil efímero y espera de aviso de zoom, con hit-test adicional; sin alterar JWT/RBAC, MySQL, runtime ni pruebas existentes. Nueva CI y revisión de capturas pendientes, no LISTO/A5, ANTES histórico no acreditado. Owner DEV05 preservado; solo dev.
+
 ## 2026-11-24 — DEV04 V31 C01-03.M04.04: foco real del control a zoom nativo
 - Reparación cruzada test-only del probe editor-save: Tab hasta el control exacto, estabilización de scroll nativo, foco visible y hit-test. Fuente a286b703/job138388313418: 13 Vitest, 17 A/B y 8 formularios PASS; probe nativo FAIL, no PASS global. Sin cambios de runtime, RBAC/JWT, MySQL ni requisitos CI. A0 revisado; nuevo SHA y A1-A4 pendientes, A5 independiente. Owner histórico DEV05 preservado, sin QA/main/PROD.
 

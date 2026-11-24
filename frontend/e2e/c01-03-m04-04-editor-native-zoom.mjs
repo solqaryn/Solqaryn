@@ -43,6 +43,15 @@ async function audit(page, worker, name, locator) {
   async function capture(factor, g) {
     await locator.scrollIntoViewIfNeeded();
     await page.bringToFront();
+    // Native browser zoom notifications are outside the DOM. Wait for them
+    // to dismiss before recording unoccluded physical screenshots.
+    await page.waitForTimeout(3000);
+    const unobscured = await locator.evaluate(el => {
+      const r = el.getBoundingClientRect();
+      const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      return !!hit && (hit === el || el.contains(hit));
+    });
+    assert.ok(unobscured, name + ': capture control obscured in page');
     await page.evaluate(() => new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done))));
     const box = await locator.boundingBox();
     assert.ok(box && box.width > 0 && box.x >= -2 && box.x + box.width <= g.client + 2,
@@ -108,7 +117,15 @@ async function audit(page, worker, name, locator) {
 }
 
 async function actor(user, tenant, run) {
-  const context = await chromium.launchPersistentContext(join(root, user), {
+  // Isolated CI profile only; do not save test credentials or display the
+  // browser's password manager overlay over the evidence. Real login unchanged.
+  const profile = join(root, user);
+  await mkdir(join(profile, 'Default'), { recursive: true });
+  await writeFile(join(profile, 'Default', 'Preferences'), JSON.stringify({
+    credentials_enable_service: false,
+    profile: { password_manager_enabled: false }
+  }));
+  const context = await chromium.launchPersistentContext(profile, {
     headless: false, viewport: null, args: ['--window-size=1440,1000',
       '--disable-extensions-except=' + extension, '--load-extension=' + extension]
   });
