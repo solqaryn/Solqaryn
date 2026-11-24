@@ -1554,7 +1554,7 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             pilotConfig["MultiEmpresa:PrivateReadPilotEnabled"] = "true";
 
             // V31: existing normalized color master with physical shadow ownership.
-            // No generic attribute, sharing or inventory semantics are assumed.
+            // No generic attribute, sharing or stock semantics are assumed.
             var colorPermission = await db.Permisos.IgnoreQueryFilters()
                 .FirstOrDefaultAsync(p => p.Modulo == ModuloSistema.Colores &&
                     p.Accion == AccionPermiso.Ver &&

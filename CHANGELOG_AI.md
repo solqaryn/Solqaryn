@@ -1,3 +1,6 @@
+## 2026-11-24 — DEV01 V31 C07-01.M06.06: reparación literal Scope Lock
+- SHA 6d4da14a, job 138365756136: el comentario nuevo del Fact contenía un término reservado por el verificador de identidad retirada. Sustituir únicamente ese término por stock; no modificar el verificador, permisos, código runtime ni asserts. Se requiere nueva CI exact-SHA.
+
 ## 2026-11-24 — DEV01 V31 C07-01.M06.06: lectura de colores con ownership físico
 - R2 incremento sobre maestro Color normalizado existente: GET exactos de lista, activos y detalle con piloto previo OFF por defecto, Colores.Ver SQL/MVC, marca tenant verificada y filtros EF. No nuevas mutaciones, ownership compartido ni migraciones.
 - Fact JWT/HTTP/Oracle EF MySQL 8.4 amplía cobertura A/B, readback EmpresaId físico, IDOR 404, selector cruzado, revocación y piloto OFF. A0 inspección; A1–A4 pendientes de CI exact-SHA, no LISTO/A5 anticipado. D01 atributos generalizados y D06 servicios no inventariables/ERP siguen pendientes. Sin QA/main/PROD.
