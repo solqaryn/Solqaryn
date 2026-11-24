@@ -2013,7 +2013,9 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 Assert.False(await attributeFresh.Colores.IgnoreQueryFilters().AsNoTracking()
                     .AnyAsync(x => x.Nombre == rollbackAttributeName));
                 var color = await attributeFresh.Colores.IgnoreQueryFilters().AsNoTracking()
-                    .SingleAsync(x => x.Id == ownedColorB);
+                    .Where(x => x.Id == ownedColorB)
+                    .Select(x => new { x.Nombre, x.CodigoVisual, x.Activo, x.Eliminado,
+                        EmpresaId = EF.Property<int?>(x, "EmpresaId") }).SingleAsync();
                 Assert.Equal(b.Id, color.EmpresaId);
                 Assert.Equal("C0701ColorOwnerB", color.Nombre);
                 Assert.Equal("#123456", color.CodigoVisual);
@@ -2035,7 +2037,8 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             await using (var committedAttributeFresh = new AppDbContext(options))
             {
                 var committedColor = await committedAttributeFresh.Colores.IgnoreQueryFilters()
-                    .AsNoTracking().SingleAsync(x => x.Id == committedAttributeId);
+                    .AsNoTracking().Where(x => x.Id == committedAttributeId)
+                    .Select(x => new { EmpresaId = EF.Property<int?>(x, "EmpresaId") }).SingleAsync();
                 Assert.Equal(b.Id, committedColor.EmpresaId);
                 var receipt = await committedAttributeFresh.RegistrosAuditoria.IgnoreQueryFilters()
                     .AsNoTracking().SingleAsync(x => x.Modulo == ModuloSistema.Colores &&

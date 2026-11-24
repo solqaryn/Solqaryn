@@ -10793,3 +10793,6 @@
 - xUnit verifica recibo estricto; integración existente exige trigger real MySQL 8.4, rollback físico de alta/edición/estado/baja y recibo positivo tenant B; CI exact-SHA pendiente, no PASS por mock.
 - D01 general y D06 servicio sin stock/compatibilidad ERP pendientes; H EN_PROGRESO/I DEV01, V17 propio, A5 independiente. Sin QA/main/PROD; rollback por revert FF/CAS.
 
+## 2026-11-24 — DEV01 C07-01.M06.06: corregir proyección EF de ownership de color
+
+- CI backend 138624026159 del SHA f682a0e3 falló con CS1061: Color usa EmpresaId como shadow property de EF, no propiedad CLR. Ambas verificaciones de rollback y recibo positivo proyectan EF.Property<int?> dentro de SQL; conserva aserciones, tenant B y trigger de auditoría. Sin cambios runtime, esquema ni permisos; CI exact-SHA pendiente, H EN_PROGRESO, V17 propio, A5 independiente.
