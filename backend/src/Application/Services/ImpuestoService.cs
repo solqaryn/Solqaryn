@@ -127,6 +127,14 @@ public class ImpuestoService : IImpuestoService
         impuesto.ProveedoresExentos = dto.ProveedorExentoIds.Distinct().Select(id => new ImpuestoProveedor { ProveedorId = id }).ToList();
     }
 
+    private static void SincronizarAlcance<T, TKey>(ICollection<T> actual, ICollection<T> nuevo, Func<T, TKey> key) where TKey : notnull
+    {
+        var deseados = nuevo.ToDictionary(key);
+        foreach (var anterior in actual.ToList())
+            if (!deseados.Remove(key(anterior))) actual.Remove(anterior);
+        foreach (var item in deseados.Values) actual.Add(item);
+    }
+
     public async Task<ImpuestoDto> UpdateAsync(int id, GuardarImpuestoDto dto)
     {
         if (!Enum.TryParse<TipoImpuesto>(dto.Tipo, true, out var tipo))
@@ -144,6 +152,11 @@ public class ImpuestoService : IImpuestoService
                 ?? throw new BusinessRuleException("El impuesto no existe.");
             if (!string.Equals(codigo, impuesto.Codigo, StringComparison.OrdinalIgnoreCase))
                 throw new BusinessRuleException("El código del impuesto es su identidad fiscal estable y no puede modificarse después de crearlo.");
+
+            // Check the entire proposed graph before mutating the tracked aggregate.
+            var alcanceNuevo = new Impuesto();
+            AplicarAlcances(alcanceNuevo, dto, operaciones);
+            await _repository.ValidarAlcancesAsync(alcanceNuevo);
 
             var valoresAnteriores = new
             {
@@ -170,12 +183,12 @@ public class ImpuestoService : IImpuestoService
             impuesto.FechaActualizacion = DateTime.UtcNow;
             impuesto.ActualizadoPorUsuarioId = _currentUser.UsuarioId;
 
-            impuesto.Productos.Clear();
-            impuesto.Categorias.Clear();
-            impuesto.Operaciones.Clear();
-            impuesto.ClientesExentos.Clear();
-            impuesto.ProveedoresExentos.Clear();
-            AplicarAlcances(impuesto, dto, operaciones);
+            // Preserve existing join identities for unchanged references.
+            SincronizarAlcance(impuesto.Productos, alcanceNuevo.Productos, x => x.ProductoId);
+            SincronizarAlcance(impuesto.Categorias, alcanceNuevo.Categorias, x => x.CategoriaId);
+            SincronizarAlcance(impuesto.Operaciones, alcanceNuevo.Operaciones, x => x.Operacion);
+            SincronizarAlcance(impuesto.ClientesExentos, alcanceNuevo.ClientesExentos, x => x.ClienteId);
+            SincronizarAlcance(impuesto.ProveedoresExentos, alcanceNuevo.ProveedoresExentos, x => x.ProveedorId);
 
             _repository.Update(impuesto);
             await _repository.SaveChangesAsync();

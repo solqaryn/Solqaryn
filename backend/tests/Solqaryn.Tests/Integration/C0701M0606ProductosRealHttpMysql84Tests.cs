@@ -167,7 +167,7 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             db.ChangeTracker.Clear();
 
             // SQL-backed fiscal grants for both isolated tenants.
-            foreach (var action in new[] { AccionPermiso.Activar, AccionPermiso.Desactivar, AccionPermiso.Crear })
+            foreach (var action in new[] { AccionPermiso.Activar, AccionPermiso.Desactivar, AccionPermiso.Crear, AccionPermiso.Editar })
             {
                 var fiscalPermission = await db.Permisos.IgnoreQueryFilters()
                     .FirstOrDefaultAsync(p => p.Modulo == ModuloSistema.Impuestos &&
@@ -1840,6 +1840,74 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 Assert.Equal(fiscalCreateAuditBefore + 2,
                     await fiscalCreateFresh.RegistrosAuditoria.IgnoreQueryFilters().AsNoTracking()
                         .CountAsync(x => x.Modulo == ModuloSistema.Impuestos));
+            }
+
+            // V31: isolated PUT pilot; positive edits and hostile references use the real controller.
+            var editTaxA = await db.Impuestos.IgnoreQueryFilters().AsNoTracking().SingleAsync(x => x.Codigo == "C0701HTTPA");
+            var editTaxB = await db.Impuestos.IgnoreQueryFilters().AsNoTracking().SingleAsync(x => x.Codigo == "C0701HTTPB");
+            async Task<HttpResponseMessage> EditFiscalAsync(string jwt, int selector, int id, string code,
+                int productId, int categoryId, decimal tasa)
+            {
+                using var req = new HttpRequestMessage(HttpMethod.Put, $"/impuestos/{id}");
+                req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
+                req.Headers.Add("X-Empresa-Id", selector.ToString());
+                req.Content = new StringContent(System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    nombre = "C0701 edit fiscal " + code, codigo = code, tipo = "Porcentaje",
+                    tasa, operaciones = new[] { "Venta" },
+                    productoIds = new[] { productId }, categoriaIds = new[] { categoryId }
+                }), Encoding.UTF8, "application/json");
+                return await client.SendAsync(req);
+            }
+            using (var editOff = await EditFiscalAsync(jwtA, a.Id, editTaxA.Id, editTaxA.Codigo, productAId, pilotCategoryAId, 13m))
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, editOff.StatusCode);
+            pilotConfig["MultiEmpresa:PrivateFiscalEditPilotEnabled"] = "true";
+            var editAuditBefore = await db.RegistrosAuditoria.IgnoreQueryFilters().AsNoTracking()
+                .CountAsync(x => x.Modulo == ModuloSistema.Impuestos);
+            using (var ownEditA = await EditFiscalAsync(jwtA, a.Id, editTaxA.Id, editTaxA.Codigo, productAId, pilotCategoryAId, 13m))
+                Assert.Equal(HttpStatusCode.OK, ownEditA.StatusCode);
+            using (var ownEditB = await EditFiscalAsync(jwtB, b.Id, editTaxB.Id, editTaxB.Codigo, productBId, pilotCategoryBId, 14m))
+                Assert.Equal(HttpStatusCode.OK, ownEditB.StatusCode);
+            using (var crossTarget = await EditFiscalAsync(jwtA, a.Id, editTaxB.Id, editTaxB.Codigo, productAId, pilotCategoryAId, 99m))
+                Assert.Equal(HttpStatusCode.BadRequest, crossTarget.StatusCode);
+            using (var crossProduct = await EditFiscalAsync(jwtA, a.Id, editTaxA.Id, editTaxA.Codigo, productBId, pilotCategoryAId, 99m))
+                Assert.Equal(HttpStatusCode.BadRequest, crossProduct.StatusCode);
+            using (var crossCategory = await EditFiscalAsync(jwtB, b.Id, editTaxB.Id, editTaxB.Codigo, productBId, pilotCategoryAId, 99m))
+                Assert.Equal(HttpStatusCode.BadRequest, crossCategory.StatusCode);
+            using (var spoofEdit = await EditFiscalAsync(jwtA, b.Id, editTaxB.Id, editTaxB.Codigo, productBId, pilotCategoryBId, 99m))
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, spoofEdit.StatusCode);
+            var fiscalEditPermission = await db.Permisos.IgnoreQueryFilters().AsNoTracking()
+                .SingleAsync(p => p.Modulo == ModuloSistema.Impuestos && p.Accion == AccionPermiso.Editar
+                    && p.Ambito == AmbitoAutorizacion.Empresa && p.Activo && !p.Eliminado);
+            var fiscalEditGrantA = await db.RolPermisos.SingleAsync(x =>
+                x.RolId == roleA.Id && x.PermisoId == fiscalEditPermission.Id);
+            db.RolPermisos.Remove(fiscalEditGrantA);
+            await db.SaveChangesAsync();
+            using (var editRevoked = await EditFiscalAsync(jwtA, a.Id, editTaxA.Id, editTaxA.Codigo, productAId, pilotCategoryAId, 99m))
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, editRevoked.StatusCode);
+            pilotConfig["MultiEmpresa:PrivateFiscalEditPilotEnabled"] = "false";
+            await using (var editFresh = new AppDbContext(options))
+            {
+                foreach (var (taxId, owner, productId, categoryId, tasa) in new[]
+                {
+                    (editTaxA.Id, a.Id, productAId, pilotCategoryAId, 13m),
+                    (editTaxB.Id, b.Id, productBId, pilotCategoryBId, 14m)
+                })
+                {
+                    var actual = await editFresh.Impuestos.IgnoreQueryFilters().AsNoTracking()
+                        .Where(x => x.Id == taxId)
+                        .Select(x => new { x.Tasa, EmpresaId = EF.Property<int?>(x, "EmpresaId") }).SingleAsync();
+                    Assert.Equal(tasa, actual.Tasa);
+                    Assert.Equal(owner, actual.EmpresaId);
+                    Assert.Equal(productId, await editFresh.Set<ImpuestoProducto>().IgnoreQueryFilters().AsNoTracking()
+                        .Where(x => x.ImpuestoId == taxId && EF.Property<int?>(x, "EmpresaId") == owner)
+                        .Select(x => x.ProductoId).SingleAsync());
+                    Assert.Equal(categoryId, await editFresh.Set<ImpuestoCategoria>().IgnoreQueryFilters().AsNoTracking()
+                        .Where(x => x.ImpuestoId == taxId && EF.Property<int?>(x, "EmpresaId") == owner)
+                        .Select(x => x.CategoriaId).SingleAsync());
+                }
+                Assert.Equal(editAuditBefore + 2, await editFresh.RegistrosAuditoria.IgnoreQueryFilters().AsNoTracking()
+                    .CountAsync(x => x.Modulo == ModuloSistema.Impuestos));
             }
 
             // V26 R2: nested ProductoVariantes endpoints must not evade the

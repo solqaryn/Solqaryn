@@ -11,6 +11,7 @@ public interface IImpuestoRepository
     Task<bool> ExisteCodigoAsync(string codigo, int? excluirId = null);
     Task<int> ContarAplicacionesAsync(int impuestoId);
     Task<List<Impuesto>> GetVigentesConRelacionesAsync(DateTime fecha, OperacionImpuesto operacion);
+    Task ValidarAlcancesAsync(Impuesto impuesto);
     Task AddAsync(Impuesto impuesto);
     void Update(Impuesto impuesto);
     void Remove(Impuesto impuesto);

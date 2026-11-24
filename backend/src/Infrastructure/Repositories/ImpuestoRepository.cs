@@ -44,7 +44,7 @@ public class ImpuestoRepository : IImpuestoRepository
             i.Operaciones.Any(o => o.Operacion == operacion)
         ).OrderBy(i => i.Prioridad).ToListAsync();
 
-    public async Task AddAsync(Impuesto impuesto)
+    public async Task ValidarAlcancesAsync(Impuesto impuesto)
     {
         // The verified server-side RBAC mark, never a DTO/header, is authority.
         // Check each referenced principal before tracking the new aggregate.
@@ -65,6 +65,11 @@ public class ImpuestoRepository : IImpuestoRepository
                     proveedores.Contains(x.Id) && x.EmpresaId == empresaId) != proveedores.Length))
                 throw new BusinessRuleException("El alcance fiscal contiene referencias no disponibles.");
         }
+    }
+
+    public async Task AddAsync(Impuesto impuesto)
+    {
+        await ValidarAlcancesAsync(impuesto);
         await _context.Impuestos.AddAsync(impuesto);
     }
     public void Update(Impuesto impuesto) => _context.Impuestos.Update(impuesto);

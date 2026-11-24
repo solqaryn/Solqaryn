@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV01 V31 C07-01.M06.06: edición fiscal piloto y validación de ownership
+- R2: PUT fiscal exacto con opt-in independiente OFF por defecto, permiso Editar SQL/MVC y límite JSON. Compartir validación de relaciones de producto, categoría, cliente y proveedor antes de modificar el agregado; conservar enlaces existentes y transacción de auditoría estricta. Sin cambio de esquema, grants reales ni habilitación de entorno.
+- Extender contrato dirigido existente JWT A/B MySQL 8.4: edición propia, ID/referencias ajenos, selector falso, revocación y OFF, con readback de filas, enlaces y auditoría. CI exact-SHA requerida; no declarar LISTO ni A5. Fuente POST 36807548: job 138209092865 TRX 1/1 SUCCESS, no relanzado.
+
 ## 2026-11-23 — DEV06 V31 C14-02.M06.06: reparar fixture global de CI sin relajar autenticación
 - R2: los jobs C14-01.M04.03 y C14-01.M05.06 recibían HTTP 401 en login global: el fixture copiaba RolId empresarial del administrador A, aunque registraba un rol de plataforma separado. Vincular el usuario efímero al rol de plataforma creado y verificar en SQL su rol canónico, ámbito y ausencia de membresía empresarial activa.
 - Mantener autenticación, RBAC, aislamiento, MySQL 8.4, assertions Chromium, triggers, nombres de checks y concurrencia por SHA. No modificar runtime, permisos ni estados LISTO históricos. A0 diff CI; nueva evidencia exact-SHA y revisión A5 independiente pendientes; no certifica C14 global ni QA/main/PROD. Reversión por revert.

@@ -613,6 +613,8 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         // Fiscal pilots are independent, default OFF; only exact routes below.
         var altaFiscal = HttpMethods.IsPost(http.Request.Method) &&
                          config.GetValue<bool>("MultiEmpresa:PrivateFiscalCreatePilotEnabled");
+        var editarFiscal = HttpMethods.IsPut(http.Request.Method) &&
+                           config.GetValue<bool>("MultiEmpresa:PrivateFiscalEditPilotEnabled");
         var estadoFiscal = HttpMethods.IsPatch(http.Request.Method) &&
                            config.GetValue<bool>("MultiEmpresa:PrivateFiscalStatePilotEnabled");
         // No activa mutaciones de inventario ni confirmaciones fiscales.
@@ -650,7 +652,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                           config.GetValue<bool>("MultiEmpresa:PrivateAdminReportPilotEnabled");
         if (!lectura && !alta && !editarMaestros && !borrador && !confirmar &&
             !pdf && !reportes && !inventario && !media && !adminReport &&
-            !finanzas && !archivos && !borrarProducto && !estadoFiscal && !altaFiscal)
+            !finanzas && !archivos && !borrarProducto && !estadoFiscal && !altaFiscal && !editarFiscal)
             return false;
 
         ModuloSistema modulo;
@@ -687,6 +689,11 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         {
             modulo = ModuloSistema.Impuestos;
             accionFiscal = AccionPermiso.Crear;
+        }
+        else if (editarFiscal && EsRutaDetallePositiva(http.Request.Path, "/impuestos"))
+        {
+            modulo = ModuloSistema.Impuestos;
+            accionFiscal = AccionPermiso.Editar;
         }
         else if (estadoFiscal &&
                  EsRutaAccionPositiva(http.Request.Path, "/impuestos", "activar"))
@@ -929,7 +936,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                 return false;
         }
 
-        if (esEdicionMaestros || accionFiscal == AccionPermiso.Crear)
+        if (esEdicionMaestros || accionFiscal == AccionPermiso.Crear || accionFiscal == AccionPermiso.Editar)
         {
             // Solo JSON pequeño; RBAC específico y ownership EF físico.
             const int maxJsonBytes = 32 * 1024;
