@@ -4,6 +4,7 @@ using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Logging;
 using Solqaryn.API.Middleware;
 using Solqaryn.Application.Common;
 using Solqaryn.Application.Interfaces;
@@ -61,14 +62,57 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
     public async Task<IActionResult> Consultar(string sha, CancellationToken cancellationToken)
     {
         Response.Headers.CacheControl = "private, no-store, max-age=0";
+        var authenticatedActorId = _current.UsuarioId;
         if (User.Identity?.IsAuthenticated != true ||
-            !_current.EstaAutenticado || _current.UsuarioId is not > 0)
+            !_current.EstaAutenticado || authenticatedActorId is not > 0)
             return Forbid();
+
+        // A denial is a server-observed security event, NOT an authorization.
+        // Only a signed/authenticated actor is recorded, with no granted
+        // company/platform scope and no raw username, JWT, selector or SHA.
+        async Task<IActionResult> DenegarAuditadoAsync()
+        {
+            try
+            {
+                _db.Set<RegistroAuditoria>().Add(new RegistroAuditoria
+                {
+                    UsuarioId = authenticatedActorId,
+                    NombreUsuario = "actor-autenticado",
+                    EmpresaId = null,
+                    AmbitoAutoridad = null,
+                    OrigenAutorizacion = null,
+                    Modulo = ModuloSistema.Configuracion,
+                    Accion = AccionPermiso.ConsultarHistorial,
+                    Entidad = "DenegacionEvidenciasQaGlobal",
+                    Descripcion = "Acceso a evidencia QA global denegado.",
+                    CorrelationId = CorrelacionAuditoria(),
+                    ValoresNuevos = JsonSerializer.Serialize(new
+                    {
+                        Schema = "qa-access-denial/v1",
+                        TargetScope = "Plataforma",
+                        AuthorityGranted = false
+                    }),
+                    Resultado = "Error",
+                    Error = "QA_ACCESS_DENIED"
+                });
+                await _db.SaveChangesAsync(cancellationToken);
+            }
+            catch (DbUpdateException)
+            {
+                // Storage failure must never authorize access or expose SQL.
+                // Only a fixed code is logged; no user/request/exception text.
+                if (HttpContext.RequestServices.GetService(typeof(ILogger<PlataformaQaEvidenciasController>))
+                    is ILogger<PlataformaQaEvidenciasController> logger)
+                    logger.LogWarning("QA_ACCESS_DENIAL_AUDIT_UNAVAILABLE");
+            }
+            return Forbid();
+        }
 
         // JWT identifica; la autorización efectiva se reconsulta en la DB en
         // CADA petición. Admin empresarial, X-Empresa-Id y claims no elevan rol.
         var actor = await _scope.ObtenerActualAsync(cancellationToken);
-        if (actor is null || actor.UsuarioId != _current.UsuarioId) return Forbid();
+        if (actor is null || actor.UsuarioId != authenticatedActorId)
+            return await DenegarAuditadoAsync();
 
         // The provider can take time. A revoked or changed global grant must
         // not authorize disclosure or a successful audit after that await.
@@ -90,7 +134,7 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
         // Persist a bounded error code, never the upstream body, URL, exception or JWT.
         async Task<IActionResult> FalloProveedorAsync(string codigo, bool notFound = false)
         {
-            if (!await VigenteAsync()) return Forbid();
+            if (!await VigenteAsync()) return await DenegarAuditadoAsync();
             try
             {
                 _db.Set<RegistroAuditoria>().Add(new RegistroAuditoria
@@ -223,7 +267,7 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                 allRequired ? "CI_MINIMA_ACREDITADA" : "SIN_VERIFICAR";
 
             var successfulChecks = checks.Count(c => c.Estado == "completed" && c.Conclusion == "success");
-            if (!await VigenteAsync()) return Forbid();
+            if (!await VigenteAsync()) return await DenegarAuditadoAsync();
 
             // Auditoría estructurada: únicamente metadatos acotados, sin cuerpo externo ni credenciales.
             _db.Set<RegistroAuditoria>().Add(new RegistroAuditoria

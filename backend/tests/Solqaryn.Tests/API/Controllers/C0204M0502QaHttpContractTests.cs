@@ -385,11 +385,25 @@ public sealed class C0204M0502QaHttpContractTests
         using (var scope = fixture.Host.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            Assert.Equal(3, await db.Set<RegistroAuditoria>().CountAsync());
+            var entries = await db.Set<RegistroAuditoria>().ToListAsync();
+            Assert.Equal(4, entries.Count);
+            Assert.Equal(2, entries.Count(a => a.Resultado == "Exito"));
+            var revoked = Assert.Single(entries, a => a.Error == "QA_ACCESS_DENIED");
+            AssertDenialAudit(revoked, fixture.GlobalId);
         }
         using (var denied = await client.GetAsync(Path))
             Assert.Equal(HttpStatusCode.Forbidden, denied.StatusCode);
         Assert.Equal(6, upstream.Calls);
+        using (var scope = fixture.Host.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var entries = await db.Set<RegistroAuditoria>().ToListAsync();
+            Assert.Equal(5, entries.Count);
+            Assert.Equal(2, entries.Count(a => a.Resultado == "Exito"));
+            var denials = entries.Where(a => a.Error == "QA_ACCESS_DENIED").ToList();
+            Assert.Equal(2, denials.Count);
+            Assert.All(denials, a => AssertDenialAudit(a, fixture.GlobalId));
+        }
     }
 
     // This test runs against an isolated MySQL 8.4 service in the GH-hosted QA lab.
@@ -462,6 +476,57 @@ public sealed class C0204M0502QaHttpContractTests
             Assert.DoesNotContain("QA ephemeral tenant", body);
         }
         Assert.Equal(0, upstream.Calls);
+
+        using (var scope = fixture.Host.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var entries = await db.Set<RegistroAuditoria>().ToListAsync();
+            Assert.Equal(4, entries.Count);
+            Assert.Equal(2, entries.Count(a => a.UsuarioId == actorA));
+            Assert.Equal(2, entries.Count(a => a.UsuarioId == actorB));
+            Assert.All(entries, a => AssertDenialAudit(a, a.UsuarioId == actorA ? actorA : actorB));
+            await db.Database.ExecuteSqlRawAsync(
+                "CREATE TRIGGER qa_ci_denial_insert_failure BEFORE INSERT ON RegistrosAuditoria " +
+                "FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'qa-ci-denial-write-blocked'");
+        }
+        try
+        {
+            using var denied = await client.GetAsync(Path);
+            Assert.Equal(HttpStatusCode.Forbidden, denied.StatusCode);
+            Assert.Contains("no-store", denied.Headers.CacheControl?.ToString() ?? "");
+            Assert.DoesNotContain("qa-ci-denial-write-blocked", await denied.Content.ReadAsStringAsync());
+            Assert.Equal(0, upstream.Calls);
+            using var scope = fixture.Host.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            Assert.Equal(4, await db.Set<RegistroAuditoria>().CountAsync());
+        }
+        finally
+        {
+            using var scope = fixture.Host.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await db.Database.ExecuteSqlRawAsync("DROP TRIGGER IF EXISTS qa_ci_denial_insert_failure");
+        }
+    }
+
+    private static void AssertDenialAudit(RegistroAuditoria row, int actorId)
+    {
+        Assert.Equal(actorId, row.UsuarioId);
+        Assert.Equal("actor-autenticado", row.NombreUsuario);
+        Assert.Null(row.EmpresaId);
+        Assert.Null(row.AmbitoAutoridad);
+        Assert.Null(row.OrigenAutorizacion);
+        Assert.Equal("Error", row.Resultado);
+        Assert.Equal("QA_ACCESS_DENIED", row.Error);
+        Assert.Equal("DenegacionEvidenciasQaGlobal", row.Entidad);
+        Assert.NotNull(row.CorrelationId);
+        Assert.Null(row.Ip);
+        Assert.Null(row.UserAgent);
+        using var metadata = JsonDocument.Parse(row.ValoresNuevos!);
+        var root = metadata.RootElement;
+        Assert.Equal(3, root.EnumerateObject().Count());
+        Assert.Equal("qa-access-denial/v1", root.GetProperty("Schema").GetString());
+        Assert.Equal("Plataforma", root.GetProperty("TargetScope").GetString());
+        Assert.False(root.GetProperty("AuthorityGranted").GetBoolean());
     }
 
     private static string Token(int id, string username, string admin = "false")

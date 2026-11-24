@@ -107,7 +107,7 @@ jobs:
             --filter "FullyQualifiedName~C0204M0502QaHttpContractTests" \
             --logger "trx;LogFileName=c0204-m0506-real-lab.trx" \
             --results-directory qa-lab-artifacts
-      - name: Assert all nine lab tests ran and zero were skipped
+      - name: Assert all ten lab tests ran and zero were skipped
         run: |
           set -euo pipefail
           python3 - <<'PY'
@@ -124,8 +124,8 @@ jobs:
           omitted = sum(int(counters.get(k, '0')) for k in
                         ('notExecuted', 'notRunnable', 'inconclusive', 'aborted', 'error', 'timeout'))
           print(f'QA_REAL_LAB_TOTAL={total} PASSED={passed} FAILED={failed} OMITTED={omitted}')
-          if (total, passed, failed, omitted) != (9, 9, 0, 0):
-              raise SystemExit('Fail closed: not all nine isolated JWT/MySQL tests ran and passed')
+          if (total, passed, failed, omitted) != (10, 10, 0, 0):
+              raise SystemExit('Fail closed: not all ten isolated JWT/MySQL tests ran and passed')
           PY
       - name: Publish real isolated QA lab TRX and executable evidence
         if: always()

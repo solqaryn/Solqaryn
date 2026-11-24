@@ -10822,3 +10822,9 @@
 
 - Rechaza conclusiones GitHub fuera del catálogo y estados contradictorios antes de devolver evidencia; audita QA_UPSTREAM_CONTRACT sin eco del valor externo. Startup failure es fallo; queued/null sigue pendiente.
 - Regresión causal HTTP con JWT firmado y MySQL 8.4 local; CI exact-SHA pendiente. Sin cambios de permisos, esquema, retención ni cierre; la auditoría durable de denegaciones requiere diseño de ámbito separado.
+
+## 2026-11-24 — DEV05 C03-03.M03.06: evidencia durable de denegación QA sin autoridad
+
+- Registra denegación autenticada y revocación durante consulta QA global con ámbito objetivo fijo Plataforma y autoridad no concedida; sin conceder rol, tenant, ni almacenar JWT, selector, nombre de usuario o contenido del proveedor.
+- Amplía los casos HTTP JWT/MySQL 8.4 A/B y revocación: registro persistido sin autoridad, no invocación del proveedor al denegar, fallo real de INSERT conserva 403; ajusta gate CI de nueve a diez tests por caso causal incorporado en SHA anterior, sin omitir fallos ni skips.
+- Scope Lock STRICT y autor histórico conservados. CI exact-SHA aún pendiente, retención y A5 independiente no acreditadas; rollback por revert ordinario. Sin cambios de esquema, permisos, QA ni producción.
