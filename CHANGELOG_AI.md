@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV03 V32 C02-01.M05.04: vigencia JWT del resolver DEV
+- El resolver DEV de empresas valida la identidad y rol JWT canónicos y la sesión base SQL antes y después de resolver; no devuelve opciones cuando el rol base es ajeno, revocado o inexistente. Conserva 404 fuera de Development y no emite JWT ni instala contexto.
+- Regresión HTTP JWT firmado y MySQL 8.4 efímero: rol base inválido/ajeno, actor ajeno y membresía base revocada; se preservan los positivos de dos y una empresa. CI dirigida incluye cambios del controlador. Evidencia de ejecución pendiente del SHA publicado.
+- C02-01.M05.04 sigue VALIDANDO: preferencia durable C03-01.M03.04 no habilitada en DAG y reemisión JWT C03-01.M03.03 incompleta; falta navegación Angular real al panel. No se certifica el flujo integral ni A5. Sin cambios QA/main/PROD.
+
 ## 2026-11-24 — DEV02 V32 C15-04.M05.04: evidencia física de foco por Tab a zoom nativo
 - Fuente exacta bbe84bda: 166/166 Chromium con JWT real/MySQL 8.4.13, 4/4 contextos nativos 100/200 y 8 PNG X11 verificados. El PNG 200% original precedía a Tab y la aserción anterior solo comprobaba geometría y visibilidad CSS, por lo que no demostraba foco-visible físico.
 - Reparación test-only del harness privado: comprobar foco-visible real y límites del elemento tras Tab, tomar PNG X11 adicional sin scroll programático de ese elemento, preservar las ocho capturas anteriores, login real, denegación B, aislamiento y presupuesto de overflow. Exigir preflight y nueva CI exact-SHA; no declarar PASS anticipado ni WCAG global, BEFORE histórico, LISTO o A5. No modificar runtime, permisos, migraciones ni workflows.

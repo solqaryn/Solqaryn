@@ -400,6 +400,11 @@ public sealed class C0201M0504SignedJwtMysqlPositiveTests
                 Assert.Equal(HttpStatusCode.Forbidden, deniedContext.StatusCode);
                 using var deniedList = await client.GetAsync("/tenant-context/empresas");
                 Assert.Equal(HttpStatusCode.Forbidden, deniedList.StatusCode);
+                using var deniedDev = await client.GetAsync("/tenant-context/resolver-login");
+                Assert.Equal(HttpStatusCode.Forbidden, deniedDev.StatusCode);
+                var deniedDevBody = await deniedDev.Content.ReadAsStringAsync();
+                Assert.DoesNotContain(a.Nombre, deniedDevBody, StringComparison.OrdinalIgnoreCase);
+                Assert.DoesNotContain(b.Nombre, deniedDevBody, StringComparison.OrdinalIgnoreCase);
                 Assert.DoesNotContain(a.Nombre, await deniedContext.Content.ReadAsStringAsync(),
                     StringComparison.OrdinalIgnoreCase);
                 Assert.DoesNotContain(b.Nombre, await deniedList.Content.ReadAsStringAsync(),
@@ -474,9 +479,13 @@ public sealed class C0201M0504SignedJwtMysqlPositiveTests
             Assert.Equal("AUTHENTICATED_CURRENT_MEMBERSHIPS_REQUIRED",
                 foreignSql.Code);
             Assert.Null(foreignSql.TenantId);
-            var foreignDev = await ReadDevResolutionAsync(client);
-            Assert.Equal("AUTHENTICATED_CURRENT_MEMBERSHIPS_REQUIRED", foreignDev.Code);
-            Assert.Null(foreignDev.TenantId);
+            using (var foreignDev = await client.GetAsync("/tenant-context/resolver-login"))
+            {
+                Assert.Equal(HttpStatusCode.Forbidden, foreignDev.StatusCode);
+                var body = await foreignDev.Content.ReadAsStringAsync();
+                Assert.DoesNotContain(a.Nombre, body, StringComparison.OrdinalIgnoreCase);
+                Assert.DoesNotContain(b.Nombre, body, StringComparison.OrdinalIgnoreCase);
+            }
 
             client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", signed);
@@ -558,6 +567,9 @@ public sealed class C0201M0504SignedJwtMysqlPositiveTests
             db.ChangeTracker.Clear();
             using (var stolenRole = await client.GetAsync("/tenant-context/" + a.Id))
                 Assert.Equal(HttpStatusCode.Forbidden, stolenRole.StatusCode);
+
+            using (var revokedDev = await client.GetAsync("/tenant-context/resolver-login"))
+                Assert.Equal(HttpStatusCode.Forbidden, revokedDev.StatusCode);
 
             var revokedRoleSql = await ReadSqlPolicyOverJwtAsync(client);
             Assert.Equal("NO_AUTHORIZED_ENTERPRISE", revokedRoleSql.Code);

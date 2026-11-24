@@ -65,12 +65,26 @@ public sealed class TenantContextController : ControllerBase
                 StringComparison.OrdinalIgnoreCase))
             return NotFound();
 
+        if (!TryCanonicalJwtAuthority(out var actorId, out var roleId))
+            return Unauthorized(ApiResponse<object>.Fail(
+                "La sesión no tiene identidad o rol verificables."));
+
+        if (!await _usuarioScopeService.SesionBaseVigenteAsync(actorId, roleId, cancellationToken))
+            return Forbid();
+
         var reader = services.GetService<ITrustedTenantLoginAuthorityReader>();
         if (reader is null)
             return StatusCode(503);
 
         var decision = await new V17IntelligentTenantLoginAuthorization(reader)
             .ResolveAsync(new(), cancellationToken);
+
+        // Do not disclose tenant choices if the signed base session was revoked
+        // while the reader resolved the candidate memberships.
+        if (!await _usuarioScopeService.SesionBaseVigenteAsync(actorId, roleId, cancellationToken) ||
+            !TryCanonicalJwtAuthority(out var currentActor, out var currentRole) ||
+            currentActor != actorId || currentRole != roleId)
+            return Forbid();
 
         return Ok(new
         {

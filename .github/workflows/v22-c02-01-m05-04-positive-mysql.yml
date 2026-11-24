@@ -7,6 +7,7 @@ on:
       - 'backend/src/Application/AutomationV5/V17IntelligentTenantLoginAuthorization.cs'
       - 'backend/src/Infrastructure/AutomationV5/C0201M0504CurrentMembershipSqlReader.cs'
       - 'backend/src/Infrastructure/Services/UsuarioScopeService.cs'
+      - 'backend/src/API/Controllers/TenantContextController.cs'
       - 'backend/tests/Solqaryn.Tests/Application/V17IntelligentTenantLoginAuthorizationTests.cs'
       - '.github/workflows/v22-c02-01-m05-04-positive-mysql.yml'
   workflow_dispatch:
