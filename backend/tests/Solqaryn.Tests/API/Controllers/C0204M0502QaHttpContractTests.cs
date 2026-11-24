@@ -290,14 +290,33 @@ public sealed class C0204M0502QaHttpContractTests
             Assert.Equal("SIN_VERIFICAR", metadata.RootElement.GetProperty("EstadoCi").GetString());
             Assert.Equal(0, metadata.RootElement.GetProperty("ChecksExitosos").GetInt32());
             Assert.True(Guid.TryParseExact(failure.CorrelationId, "N", out _));
+        }
+
+        // Revoke after the initial authorization, while the provider request is
+        // in flight. The response must never disclose a successful QA result.
+        upstream.Payload = Payload();
+        upstream.BeforeResponse = async () =>
+        {
+            using var scope = fixture.Host.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             var grant = await db.Set<UsuarioRolPlataforma>().SingleAsync(
                 x => x.UsuarioId == fixture.GlobalId);
             grant.Desactivar();
             await db.SaveChangesAsync();
+        };
+        using (var revokedInFlight = await client.GetAsync(Path))
+        {
+            Assert.Equal(HttpStatusCode.Forbidden, revokedInFlight.StatusCode);
+            Assert.DoesNotContain("CI_MINIMA_ACREDITADA", await revokedInFlight.Content.ReadAsStringAsync());
+        }
+        using (var scope = fixture.Host.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            Assert.Equal(2, await db.Set<RegistroAuditoria>().CountAsync());
         }
         using (var denied = await client.GetAsync(Path))
             Assert.Equal(HttpStatusCode.Forbidden, denied.StatusCode);
-        Assert.Equal(2, upstream.Calls);
+        Assert.Equal(3, upstream.Calls);
     }
 
     // This test runs against an isolated MySQL 8.4 service in the GH-hosted QA lab.
@@ -540,8 +559,9 @@ public sealed class C0204M0502QaHttpContractTests
         public HttpStatusCode StatusCode { get; set; } = HttpStatusCode.OK;
         public string Payload { get; set; } = payload;
         public bool OmitContentLength { get; set; }
+        public Func<Task>? BeforeResponse { get; set; }
 
-        protected override Task<HttpResponseMessage> SendAsync(
+        protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request, CancellationToken cancellationToken)
         {
             Calls++;
@@ -550,12 +570,14 @@ public sealed class C0204M0502QaHttpContractTests
                 request.RequestUri?.AbsolutePath !=
                 "/repos/solqaryn/Solqaryn/commits/" + Sha + "/check-runs")
                 throw new InvalidOperationException("Egreso fuera del repositorio canónico.");
-            return Task.FromResult(new HttpResponseMessage(StatusCode)
+            if (BeforeResponse is not null)
+                await BeforeResponse();
+            return new HttpResponseMessage(StatusCode)
             {
                 Content = OmitContentLength
                     ? new ChunkedQaContent(Payload)
                     : new StringContent(Payload, Encoding.UTF8, "application/json")
-            });
+            };
         }
     }
 

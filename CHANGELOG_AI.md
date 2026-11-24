@@ -1,3 +1,8 @@
+## 2026-11-23 — V31 C03-03.M03.06: revocación global durante consulta QA
+
+- DEV04 rescate R2: reconsultar autoridad global SQL después de E/S de proveedor y antes de divulgar resultado o persistir auditoría del actor; denegar cambios de identidad/rol sin elevar permisos ni usar credenciales de proveedor.
+- Regresión causal en suite HTTP JWT/MySQL 8.4 existente: revocación de grant durante respuesta de proveedor controlada; 403 y ninguna auditoría de éxito adicional. Requiere CI exact-SHA y A5 de otra Task; no acredita proveedor vivo ni QA/main/PROD. Rollback por revert.
+
 ## 2026-11-23 — V31 C03-01.M03.03: autenticación empresarial vinculada a SQL vigente
 
 - DEV04: login y renovación consultan membresía activa, usuario, empresa activa y rol empresarial vigente en una sola consulta Oracle EF sin tracking; no reutilizan el listado administrativo ni amplían autoridad de plataforma.

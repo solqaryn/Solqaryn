@@ -63,7 +63,18 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
         // JWT identifica; la autorización efectiva se reconsulta en la DB en
         // CADA petición. Admin empresarial, X-Empresa-Id y claims no elevan rol.
         var actor = await _scope.ObtenerActualAsync(cancellationToken);
-        if (actor is null) return Forbid();
+        if (actor is null || actor.UsuarioId != _current.UsuarioId) return Forbid();
+
+        // The provider can take time. A revoked or changed global grant must
+        // not authorize disclosure or a successful audit after that await.
+        async Task<bool> VigenteAsync()
+        {
+            var actual = await _scope.ObtenerActualAsync(cancellationToken);
+            return actual is not null &&
+                actual.UsuarioId == actor.UsuarioId &&
+                actual.RolId == actor.RolId &&
+                string.Equals(actual.NombreUsuario, actor.NombreUsuario, StringComparison.Ordinal);
+        }
 
         if (string.IsNullOrEmpty(sha) || !ShaValido.IsMatch(sha))
             return BadRequest(ApiResponse<object>.Fail("SHA de evidencia inválido."));
@@ -74,6 +85,7 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
         // Persist a bounded error code, never the upstream body, URL, exception or JWT.
         async Task<IActionResult> FalloProveedorAsync(string codigo, bool notFound = false)
         {
+            if (!await VigenteAsync()) return Forbid();
             try
             {
                 _db.Set<RegistroAuditoria>().Add(new RegistroAuditoria
@@ -191,6 +203,8 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                 allRequired ? "CI_MINIMA_ACREDITADA" : "SIN_VERIFICAR";
 
             var successfulChecks = checks.Count(c => c.Estado == "completed" && c.Conclusion == "success");
+            if (!await VigenteAsync()) return Forbid();
+
             // Auditoría estructurada: únicamente metadatos acotados, sin cuerpo externo ni credenciales.
             _db.Set<RegistroAuditoria>().Add(new RegistroAuditoria
             {
