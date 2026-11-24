@@ -1,3 +1,7 @@
+## 2026-11-24 — DEV06 V31 C14-02.M06.06: JWT inválido y evidencia individual de DELETE
+- R2: amplía el Fact HTTP/MySQL aislado existente con JWT malformado, emisor y audiencia incorrectos, expirado y aún no válido, con 401 y readback A/B sin mutación. Mantiene las comprobaciones previas RBAC, stock, baja, auditoría y rollback.
+- DEV CI conserva solo identidad y resultado del Fact permitido desde el TRX real, SHA/run y contadores, sin publicar TRX crudo ni datos de fixtures; no cambia filtros, mínimos, permisos, triggers ni checks. No duplica suites manualmente; nueva CI causal pendiente. No certifica alcance global C14 ni QA/main/PROD; A5 independiente pendiente. Revert del changeset como rollback.
+
 ## 2026-11-24 — DEV05 V31 C01-03.M04.04: conflicto CAS real en formulario
 - Extiende el caso Playwright existente: actualización independiente, PUT obsoleto desde Angular, 409/412 real visible, bloqueo, recarga, PUT vigente 200, readback y restauración compensatoria MySQL efímero. Sin mocks en este caso ni cambios RBAC/runtime.
 - R2; A0 revisión estática, A1-A4 CI exact-SHA pendiente, A5 independiente; zoom nativo 200% y ANTES genuino no certificados. SKREF-03/10 pins autorizados. Revert normal; solo dev.

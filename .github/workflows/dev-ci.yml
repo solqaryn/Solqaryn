@@ -304,10 +304,13 @@ jobs:
           python3 - <<'PY'
           from pathlib import Path
           import xml.etree.ElementTree as ET
+          import json
+          import os
           paths = list(Path('tests/Solqaryn.Tests').rglob('dev-ci-mysql84.trx'))
           if len(paths) != 1:
               raise SystemExit('FAIL_MYSQL84_MISSING_UNIQUE_TRX')
-          counters = ET.parse(paths[0]).getroot().find('.//{*}Counters')
+          root = ET.parse(paths[0]).getroot()
+          counters = root.find('.//{*}Counters')
           if counters is None:
               raise SystemExit('FAIL_MYSQL84_MISSING_TRX_COUNTERS')
           stats = {k: int(counters.attrib.get(k, -1))
@@ -316,7 +319,38 @@ jobs:
           if (stats['total'] < 144 or stats['passed'] != stats['total']
                   or stats['failed'] != 0 or stats['notExecuted'] != 0):
               raise SystemExit('FAIL_MYSQL84_INTEGRATION_INCOMPLETE')
+          # V31 C14: retain only the allowlisted Fact identity/outcome, never raw TRX,
+          # stdout, exception text, JWT, fixture values or connection strings.
+          class_name = 'Solqaryn.Tests.Integration.C1402M0606ProductDeleteRealHttpMysql84Tests'
+          method_name = 'RealDeleteRequiresLiveTenantGrantAndRollsBackProductVariantsAndAudit'
+          test_ids = set()
+          for definition in root.findall('.//{*}UnitTest'):
+              method = definition.find('{*}TestMethod')
+              test_id = definition.get('id')
+              if (method is not None and test_id
+                      and method.get('className', '').split(',')[0] == class_name
+                      and method.get('name') == method_name):
+                  test_ids.add(test_id)
+          outcomes = []
+          for result in root.findall('.//{*}UnitTestResult'):
+              if result.get('testId') in test_ids:
+                  outcome = result.get('outcome', 'Unknown')
+                  outcomes.append(outcome if outcome in ('Passed', 'Failed', 'NotExecuted', 'Skipped', 'Inconclusive') else 'Unknown')
+          evidence = {'sha': os.environ['GITHUB_SHA'], 'run_id': os.environ['GITHUB_RUN_ID'],
+                      'run_attempt': os.environ['GITHUB_RUN_ATTEMPT'],
+                      'test': class_name + '.' + method_name, 'matched_results': len(outcomes),
+                      'outcomes': outcomes, 'suite_counters': stats}
+          print('C1402_M0606_DELETE_FACT_EVIDENCE', json.dumps(evidence, sort_keys=True))
+          Path('c1402-m0606-mysql84-evidence.json').write_text(
+              json.dumps(evidence, indent=2, sort_keys=True) + '\n', encoding='utf-8')
           PY
+      - name: Conservar evidencia individual sanitizada C14 DELETE
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev-mysql84-c1402-delete-evidence
+          path: backend/c1402-m0606-mysql84-evidence.json
+          if-no-files-found: warn
+          retention-days: 7
 
   deployment-config:
     name: Docker y aislamiento de entornos

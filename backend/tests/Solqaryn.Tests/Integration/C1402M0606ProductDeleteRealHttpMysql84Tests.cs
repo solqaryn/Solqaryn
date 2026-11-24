@@ -279,6 +279,22 @@ public sealed class C1402M0606ProductDeleteRealHttpMysql84Tests
             await DeleteAsync(ownA.Product, a.Id, null, HttpStatusCode.Unauthorized);
             await DeleteAsync(ownA.Product, a.Id, jwtA, HttpStatusCode.ServiceUnavailable);
             pilotConfig["MultiEmpresa:PrivateProductDeletePilotEnabled"] = "true";
+            // Authentication must reject unusable sessions before touching the aggregate,
+            // even when the local product DELETE pilot permits the valid signed token.
+            await DeleteAsync(ownA.Product, a.Id, "not-a-jwt", HttpStatusCode.Unauthorized);
+            await DeleteAsync(ownA.Product, a.Id,
+                Sign(userA.Id, roleA.Id, issuer: Issuer + "-unexpected"), HttpStatusCode.Unauthorized);
+            await DeleteAsync(ownA.Product, a.Id,
+                Sign(userA.Id, roleA.Id, audience: Audience + "-unexpected"), HttpStatusCode.Unauthorized);
+            var clock = DateTime.UtcNow;
+            await DeleteAsync(ownA.Product, a.Id,
+                Sign(userA.Id, roleA.Id, notBefore: clock.AddMinutes(-10),
+                    expires: clock.AddMinutes(-5)), HttpStatusCode.Unauthorized);
+            await DeleteAsync(ownA.Product, a.Id,
+                Sign(userA.Id, roleA.Id, notBefore: clock.AddMinutes(5),
+                    expires: clock.AddMinutes(15)), HttpStatusCode.Unauthorized);
+            await ReadbackAsync(ownA, a.Id, false);
+            await ReadbackAsync(ownB, b.Id, false);
             await DeleteAsync(ownA.Product, a.Id, jwtB, HttpStatusCode.ServiceUnavailable);
             await DeleteAsync(ownA.Product, b.Id, jwtB, HttpStatusCode.NotFound);
             await DeleteAsync(ownB.Product, a.Id, jwtA, HttpStatusCode.NotFound);
