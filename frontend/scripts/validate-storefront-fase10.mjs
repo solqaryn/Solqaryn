@@ -35,10 +35,19 @@ expect(productoHtml.includes('class="feedback-toast"') && productoHtml.includes(
 expect(productoTs.includes('unidad agregada') && productoTs.includes('unidades agregadas'),
   'El feedback del carrito debe indicar la cantidad agregada.');
 
-for (const target of ['.button', '.icon-button', '.quantity-control button']) {
+for (const target of ['.button', '.icon-button']) {
   expect(productoScss.includes(target) || carritoScss.includes(target) || checkoutScss.includes(target),
     `Debe existir estilo táctil para ${target}.`);
 }
+const quantityScss = await read('storefront-quantity.component.scss');
+expect(productoHtml.includes('appStorefrontQuantity') && carritoHtml.includes('appStorefrontQuantity'),
+  'Detalle y carrito deben conectar el control de cantidad compartido.');
+expect(/(?:^|\n)button\s*\{[^}]*min-height\s*:\s*44px/.test(quantityScss),
+  'Los botones nativos del control de cantidad deben mantener targets de 44px.');
+expect(/(?:^|\n)input\s*\{[^}]*min-height\s*:\s*44px/.test(quantityScss),
+  'El input numérico compartido debe mantener target de 44px.');
+expect(quantityScss.includes('button:focus-visible,input:focus-visible') && quantityScss.includes('outline-offset:-3px'),
+  'El foco del control compartido debe permanecer visible dentro del borde.');
 expect(productoScss.includes('width:44px;height:44px') || productoScss.includes('min-height:44px'),
   'Los controles del detalle deben mantener targets táctiles de al menos 44px.');
 expect(carritoScss.includes('min-height:44px'), 'Los controles del carrito deben mantener targets táctiles de al menos 44px.');

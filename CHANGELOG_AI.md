@@ -1,3 +1,8 @@
+## 2026-11-24 — C15-04.M05.04 — Contrato táctil del componente compartido
+
+- Corrige la referencia de Fase 10 al selector CSS anterior: comprueba ambos consumidores y los botones/input nativos del componente, targets de 44 px y foco interior visible. Conserva validación de los otros controles y pantallas.
+- Evidencia causal: 3d4d4429858f95f0a78ea6f0dd97dc4aadd884d1 job 138849580223: Fases 1–9 aprobadas, Fase 10 bloqueada por selector antiguo. Nuevo SHA pendiente de CI.
+
 ## 2026-11-24 — C15-04.M05.04 — Validadores del control de cantidad compartido
 
 - Corrige el contrato estático de Fase 4/5 tras extraer el control: verifica los límites y bloqueos en consumidores y su propagación al input y botones nativos, más tamaño táctil. No reduce las aserciones ni altera lógica de stock.
