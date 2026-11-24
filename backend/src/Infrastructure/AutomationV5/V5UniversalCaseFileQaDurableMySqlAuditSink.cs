@@ -22,10 +22,10 @@ public sealed class V5UniversalCaseFileQaDurableMySqlAuditSink
     private readonly TimeProvider _clock;
 
     private static readonly Regex Microtask = new(
-        @"^C[0-9]{2}-[0-9]{2}\.M[0-9]{2}\.[0-9]{2}$",
+        @"\AC[0-9]{2}-[0-9]{2}\.M[0-9]{2}\.[0-9]{2}\z",
         RegexOptions.CultureInvariant | RegexOptions.Compiled);
     private static readonly Regex Sha = new(
-        "^[0-9a-f]{40}$", RegexOptions.CultureInvariant | RegexOptions.Compiled);
+        @"\A[0-9a-f]{40}\z", RegexOptions.CultureInvariant | RegexOptions.Compiled);
     private static readonly HashSet<string> Routes = new(StringComparer.Ordinal)
     {
         "casefile.timeline", "casefile.authorization",

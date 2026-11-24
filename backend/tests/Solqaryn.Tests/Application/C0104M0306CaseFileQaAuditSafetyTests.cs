@@ -82,6 +82,7 @@ public sealed class C0104M0306CaseFileQaAuditSafetyTests
     [InlineData("C01-04.M03.06;DROP")]
     [InlineData("")]
     [InlineData("C01-04.M03.06\nsecret")]
+    [InlineData("C01-04.M03.06\n")]
     public async Task MalformedMicrotaskNeverQueriesEvidence(string id)
     {
         var source = new Source(Good()); var sink = new Sink();
@@ -99,6 +100,8 @@ public sealed class C0104M0306CaseFileQaAuditSafetyTests
             (await Capture(source, sink, route: "casefile/42?token=secret")).Code);
         Assert.Equal("CASEFILE_QA_SCOPE_INVALID",
             (await Capture(source, sink, sha: new string('a', 39))).Code);
+        Assert.Equal("CASEFILE_QA_SCOPE_INVALID",
+            (await Capture(source, sink, sha: Sha + "\n")).Code);
         Assert.Equal(0, source.Reads);
         Assert.Empty(sink.Entries);
     }

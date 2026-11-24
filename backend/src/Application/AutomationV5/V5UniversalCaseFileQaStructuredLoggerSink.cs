@@ -12,10 +12,10 @@ public sealed class V5UniversalCaseFileQaStructuredLoggerSink
     : IV5UniversalCaseFileQaAuditSink
 {
     private static readonly Regex MicrotaskPattern = new(
-        @"^C[0-9]{2}-[0-9]{2}\.M[0-9]{2}\.[0-9]{2}$",
+        @"\AC[0-9]{2}-[0-9]{2}\.M[0-9]{2}\.[0-9]{2}\z",
         RegexOptions.CultureInvariant | RegexOptions.Compiled);
     private static readonly Regex ShaPattern = new(
-        "^[0-9a-f]{40}$", RegexOptions.CultureInvariant | RegexOptions.Compiled);
+        @"\A[0-9a-f]{40}\z", RegexOptions.CultureInvariant | RegexOptions.Compiled);
     private static readonly HashSet<string> RouteKeys = new(StringComparer.Ordinal)
     {
         "casefile.timeline", "casefile.authorization",

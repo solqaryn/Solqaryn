@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV04 C01-04.M03.06: identificadores de auditoría QA exactos
+
+- Corrección R2: anclas absolutas de Regex .NET para microtarea y SHA en Application, logger y sink durable; rechazo de LF final antes de I/O.
+- Regresiones negativas xUnit y MySQL 8.4 sin alterar permisos, estados ni esquema. CI exacta y A5 pendientes; integración autenticada real aún no acreditada.
+
 ## 2026-11-24 — DEV03 C02-03.M03.03: autoridad SQL coherente en preflight de ciclo de vida
 
 - Reparación R2: asignación global única, cuenta, rol, grant y empresa activa se comprueban en una sola sentencia final; no reutilizar un grant revocado durante la lectura del tenant.

@@ -144,6 +144,13 @@ public sealed class C0104M0306DurableQaAuditMysql84Tests
                 await direct.WriteAsync(safe with { CheckStatus = "skipped" }, default));
             await Assert.ThrowsAsync<InvalidOperationException>(async () =>
                 await direct.WriteAsync(safe with { VerificationClass = "PASS" }, default));
+            // Exact identifiers must not accept a final line feed before SQL.
+            var invalidId = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await direct.WriteAsync(safe with { MicrotaskId = safe.MicrotaskId + "\n" }, default));
+            Assert.Equal("CASEFILE_QA_DURABLE_SCOPE_INVALID", invalidId.Message);
+            var invalidSha = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await direct.WriteAsync(safe with { SourceSha = safe.SourceSha + "\n" }, default));
+            Assert.Equal("CASEFILE_QA_DURABLE_SCOPE_INVALID", invalidSha.Message);
             // A direct sink call must not bypass the Application freshness boundary.
             await Assert.ThrowsAsync<InvalidOperationException>(async () =>
                 await direct.WriteAsync(safe with

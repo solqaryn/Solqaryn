@@ -36,10 +36,10 @@ public sealed class V5UniversalCaseFileQaEvidenceAudit
     private readonly TimeProvider _timeProvider;
 
     private static readonly Regex MicrotaskPattern = new(
-        @"^C[0-9]{2}-[0-9]{2}\.M[0-9]{2}\.[0-9]{2}$",
+        @"\AC[0-9]{2}-[0-9]{2}\.M[0-9]{2}\.[0-9]{2}\z",
         RegexOptions.Compiled | RegexOptions.CultureInvariant);
     private static readonly Regex ShaPattern = new(
-        "^[0-9a-f]{40}$", RegexOptions.Compiled | RegexOptions.CultureInvariant);
+        @"\A[0-9a-f]{40}\z", RegexOptions.Compiled | RegexOptions.CultureInvariant);
 
     private static readonly HashSet<string> Routes = new(StringComparer.Ordinal)
     {

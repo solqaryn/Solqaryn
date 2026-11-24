@@ -90,6 +90,8 @@ public sealed class C0104M0306StructuredLoggerSinkTests
         foreach (var invalid in new[]
         {
             GoodEntry() with { MicrotaskId = "C01-04.M03.06\nPII" },
+            GoodEntry() with { MicrotaskId = Id + "\n" },
+            GoodEntry() with { SourceSha = Sha + "\n" },
             GoodEntry() with { RouteKey = "casefile.timeline?token=secret" },
             GoodEntry() with { SourceSha = new string('f', 39) },
             GoodEntry() with { CheckName = "provider bearer secret" },
