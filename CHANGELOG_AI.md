@@ -1,3 +1,7 @@
+## 2026-11-24 — DEV01 V31 C07-01.M06.06: rollback fiscal HTTP con fallo físico de auditoría
+- R2: ampliar el contrato dirigido existente JWT A/B MySQL 8.4 sin cambiar runtime ni permisos. Un trigger temporal en el esquema efímero rechaza el INSERT de auditoría fiscal; exigir HTTP 503 seguro, ausencia del diagnóstico interno y readback físico de tasa, ownership, relaciones y conteo de recibos sin cambios. Eliminar trigger en finally.
+- Fuente 0226bc14: PUT fiscal 1/1, backend 6576/6576 y Oracle MySQL 160/160 SUCCESS; no relanzar esa evidencia. El incremento exige nueva CI exact-SHA; no declarar LISTO/A5 ni habilitar entornos.
+
 ## 2026-11-23 — DEV04 V31 C03-01.M03.03: renovación vinculada al rol JWT vigente
 - Revalida identidad y rol canónicos únicos en POST /auth/renovar; ausencia de contexto HTTP o claims ambiguos se rechaza antes de consultar Application.
 - AuthService compara el rol original firmado con el RolId relacional vigente, mantiene validación SQL de membresía activa y deniega reemisión a un rol distinto; no cambia el alcance de permisos comerciales ni de plataforma.

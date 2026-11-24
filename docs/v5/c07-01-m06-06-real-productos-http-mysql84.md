@@ -376,3 +376,8 @@ A0/R2: la baja permanente existente en ImpuestoService ahora incluye lectura, gu
 A1–A3 pendientes: la integración existente ejecutará alta, edición, baja lógica y permanente del tenant B en MySQL 8.4 efímero con fallo inyectado del auditor; verifica excepción causal, ausencia de alta y supervivencia física de la fila original con código, nombre, tasa, estado, owner y conteo de auditoría preservados desde un contexto nuevo. El JWT A/B del resto de la suite no equivale a autorización HTTP para estos CRUD en cuarentena. No afirmar PASS antes de CI exact-SHA.
 
 A4/A5 pendientes de Scope Lock, V5, CI pertinente y revisión independiente. Persisten contratos positivos HTTP de servicios/atributos/ERP y matriz de ownership completa. Rollback mediante revert FF revisado; ninguna actuación QA/main/PROD.
+
+
+## V31 DEV01 — fallo físico de auditoría en PUT fiscal HTTP (2026-11-24)
+
+A0/R2: incrementar únicamente `C0701M0606ProductosRealHttpMysql84Tests` y evidencia documental. El contrato previo verifica JWT A/B, RBAC, edición propia y negativas de ownership. Ahora el mismo PUT del tenant B debe fallar con un trigger temporal `BEFORE INSERT` sobre `RegistrosAuditoria` en MySQL 8.4 efímero, usando el servicio y repositorio de auditoría reales. Exigir 503 por persistencia con mensaje genérico, sin diagnóstico interno, y un contexto nuevo verifica tasa, ownership, enlaces y conteo de auditoría sin cambios. El trigger se elimina en `finally`. No se cambia runtime, DTO, migración, flags ni datos reales. No equivale a prueba de servicios/atributos/ERP o cierre de fase; GitHub-hosted exact-SHA pendiente y A5 independiente. Reversión por revert FF.

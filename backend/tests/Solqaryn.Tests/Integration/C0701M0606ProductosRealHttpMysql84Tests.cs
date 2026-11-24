@@ -1885,6 +1885,28 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             await db.SaveChangesAsync();
             using (var editRevoked = await EditFiscalAsync(jwtA, a.Id, editTaxA.Id, editTaxA.Codigo, productAId, pilotCategoryAId, 99m))
                 Assert.Equal(HttpStatusCode.ServiceUnavailable, editRevoked.StatusCode);
+            // V31: fail the real durable audit INSERT, not a mocked service.
+            // Isolated MySQL schema only; the same JWT B, role and route already
+            // succeeded above. The generic HTTP persistence error must not expose
+            // the trigger diagnostic, and the fresh readback below must prove
+            // the attempted tax update and its receipt were rolled back.
+            await db.Database.ExecuteSqlRawAsync(
+                "CREATE TRIGGER c0701_fiscal_audit_insert_failure BEFORE INSERT ON RegistrosAuditoria " +
+                "FOR EACH ROW BEGIN IF NEW.Entidad = 'Impuesto' THEN " +
+                "SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'C0701_HTTP_FISCAL_AUDIT_INSERT_FAILURE'; END IF; END");
+            try
+            {
+                using var failedHttpEdit = await EditFiscalAsync(jwtB, b.Id, editTaxB.Id,
+                    editTaxB.Codigo, productBId, pilotCategoryBId, 99m);
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, failedHttpEdit.StatusCode);
+                var failureBody = await failedHttpEdit.Content.ReadAsStringAsync();
+                Assert.Contains("No fue posible guardar", failureBody, StringComparison.Ordinal);
+                Assert.DoesNotContain("C0701_HTTP_FISCAL_AUDIT_INSERT_FAILURE", failureBody, StringComparison.Ordinal);
+            }
+            finally
+            {
+                await db.Database.ExecuteSqlRawAsync("DROP TRIGGER IF EXISTS c0701_fiscal_audit_insert_failure");
+            }
             pilotConfig["MultiEmpresa:PrivateFiscalEditPilotEnabled"] = "false";
             await using (var editFresh = new AppDbContext(options))
             {
