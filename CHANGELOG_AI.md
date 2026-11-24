@@ -1,3 +1,9 @@
+## 2026-11-24 — DEV01 C15-03.M05.05: autorización de duplicados en cargas masivas
+
+- Valida membresía vigente y propiedad antes de revelar estado o identificador de una carga por hash; conserva el alcance empresarial y el acceso administrativo autorizado. Revalida actor antes de guardar una carga nueva.
+- Amplía regresión adversarial MySQL existente con duplicados confirmados y pendientes de otro creador, reutilización propia, revocación y conteo sin nuevas cargas. La prueba inyecta actor verificado en frontera de servicio; no equivale a JWT/HTTP directo.
+- Sin cambios de cuarentena, migraciones ni dependencias. CI causal pendiente; no constituye A5 ni LISTO. Reversión por revert normal.
+
 ## 2026-11-24 — Intervención autorizada: recuperación de readiness DEV P1-004.B
 
 - Corrige el bloqueo NETWORK_OR_TIMEOUT observado en GitHub Actions 45466600288/job 138703188800 después del preflight MySQL aprobado. Render DEV usa servicio free; no se presume un fallo de permisos ni se certifica la causa de red exacta.

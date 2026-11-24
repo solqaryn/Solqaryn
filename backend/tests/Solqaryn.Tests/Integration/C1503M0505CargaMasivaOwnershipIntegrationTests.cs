@@ -1,3 +1,5 @@
+using System.Security.Cryptography;
+using System.Text;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
@@ -5,6 +7,7 @@ using Moq;
 using MySql.Data.MySqlClient;
 using MySql.EntityFrameworkCore.Extensions;
 using Solqaryn.Application.Common;
+using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Exceptions;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Application.Security;
@@ -44,18 +47,20 @@ public sealed class C1503M0505CargaMasivaOwnershipIntegrationTests
     }
 
     private static async Task<int> JobAsync(DbContextOptions<AppDbContext> options,
-        int empresaId, int actorId, string name)
+        int empresaId, int actorId, string name, byte[]? file = null,
+        EstadoCargaMasiva state = EstadoCargaMasiva.Validada)
     {
         await using var db = Context(options, empresaId);
         var job = new CargaMasiva
         {
             Tipo = TipoCargaMasiva.VariantesInventario,
-            Estado = EstadoCargaMasiva.Validada,
+            Estado = state,
             NombreArchivo = name + ".csv",
             Extension = ".csv",
             ContentType = "text/csv",
             TamanoBytes = 64,
-            HashArchivo = Guid.NewGuid().ToString("N").PadRight(64, '0'),
+            HashArchivo = file is null ? Guid.NewGuid().ToString("N").PadRight(64, '0')
+                : Convert.ToHexString(SHA256.HashData(file)).ToLowerInvariant(),
             DatosNormalizadosJson = "[]",
             CreadoPorUsuarioId = actorId,
             CreadoPorNombreUsuario = name
@@ -149,6 +154,38 @@ public sealed class C1503M0505CargaMasivaOwnershipIntegrationTests
                 var wrongActor = Service(db, actorA);
                 await Assert.ThrowsAsync<ForbiddenAccessException>(() => wrongActor.GetByIdAsync(ownB));
             }
+            var confirmedBytes = Encoding.UTF8.GetBytes("peer-confirmed-file");
+            var pendingBytes = Encoding.UTF8.GetBytes("peer-pending-file");
+            var confirmedId = await JobAsync(options, aId, peerA, "confirmed-peer",
+                confirmedBytes, EstadoCargaMasiva.Confirmada);
+            var pendingId = await JobAsync(options, aId, peerA, "pending-peer", pendingBytes);
+
+            async Task<CargaMasivaDetalleDto> ValidateAsync(CargaMasivaService service, byte[] bytes)
+            {
+                using var stream = new MemoryStream(bytes);
+                return await service.ValidarAsync(TipoCargaMasiva.VariantesInventario,
+                    "duplicate.csv", "text/csv", bytes.Length, stream);
+            }
+
+            await using (var db = Context(options, aId))
+            {
+                var unauthorized = Service(db, actorA);
+                var deniedConfirmed = await Assert.ThrowsAsync<ForbiddenAccessException>(
+                    () => ValidateAsync(unauthorized, confirmedBytes));
+                var deniedPending = await Assert.ThrowsAsync<ForbiddenAccessException>(
+                    () => ValidateAsync(unauthorized, pendingBytes));
+                Assert.Equal("No tienes acceso a esta carga masiva.", deniedConfirmed.Message);
+                Assert.Equal(deniedConfirmed.Message, deniedPending.Message);
+                var owner = Service(db, peerA);
+                var ownConfirmed = await Assert.ThrowsAsync<BusinessRuleException>(
+                    () => ValidateAsync(owner, confirmedBytes));
+                Assert.Contains($"#{confirmedId}", ownConfirmed.Message);
+                var ownPending = await ValidateAsync(owner, pendingBytes);
+                Assert.Equal(pendingId, ownPending.Id);
+                Assert.True(ownPending.ArchivoReutilizado);
+                Assert.Equal(4, await db.CargasMasivas.CountAsync());
+            }
+
             await using (var db = new AppDbContext(options))
             {
                 await Assert.ThrowsAsync<ForbiddenAccessException>(() => Service(db, actorA)
@@ -163,6 +200,7 @@ public sealed class C1503M0505CargaMasivaOwnershipIntegrationTests
                 var service = Service(db, actorA);
                 await Assert.ThrowsAsync<ForbiddenAccessException>(() => service.GetByIdAsync(ownA));
                 await Assert.ThrowsAsync<ForbiddenAccessException>(() => service.GetPagedAsync(new PagedRequest()));
+                await Assert.ThrowsAsync<ForbiddenAccessException>(() => ValidateAsync(service, confirmedBytes));
             }
             await using (var db = Context(options, bId))
                 Assert.Equal(ownB, (await Service(db, actorB).GetByIdAsync(ownB))?.Id);

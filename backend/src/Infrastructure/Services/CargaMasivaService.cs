@@ -111,11 +111,18 @@ public sealed class CargaMasivaService : ICargaMasivaService
         var bytes = memoria.ToArray();
         var hash = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
 
+        var scope = await AutorizarCargaActualAsync(cancellationToken);
         var existente = await _db.CargasMasivas
             .AsNoTracking()
-            .FirstOrDefaultAsync(x => x.Tipo == tipo && x.HashArchivo == hash, cancellationToken);
+            .FirstOrDefaultAsync(x => x.Tipo == tipo && x.HashArchivo == hash &&
+                (scope.EmpresaId == null || EF.Property<int?>(x, "EmpresaId") == scope.EmpresaId),
+                cancellationToken);
         if (existente is not null)
         {
+            // The duplicate-file path must enforce ownership before exposing state or ID.
+            if (!scope.EsAdministrador && existente.CreadoPorUsuarioId != scope.UsuarioId)
+                throw new ForbiddenAccessException("No tienes acceso a esta carga masiva.");
+
             if (existente.Estado == EstadoCargaMasiva.Confirmada)
                 throw new BusinessRuleException($"Este archivo ya fue confirmado en la carga #{existente.Id}. No se importará nuevamente.");
 
@@ -182,6 +189,11 @@ public sealed class CargaMasivaService : ICargaMasivaService
             foreach (var fila in filas) fila.EsValida = false;
         }
 
+        // Revalidate membership after parsing, before persisting a new job.
+        var scopeActual = await AutorizarCargaActualAsync(cancellationToken);
+        if (scopeActual.EmpresaId != scope.EmpresaId || scopeActual.UsuarioId != scope.UsuarioId)
+            throw new ForbiddenAccessException("No tienes acceso a esta carga masiva.");
+
         var carga = new CargaMasiva
         {
             Tipo = tipo,
@@ -199,7 +211,7 @@ public sealed class CargaMasivaService : ICargaMasivaService
             FilasConError = filas.Count(x => !x.EsValida),
             FilasConAdvertencia = filas.Count(x => errores.Any(e => e.NumeroFila == x.NumeroFila && e.EsAdvertencia)),
             FechaValidacion = DateTime.UtcNow,
-            CreadoPorUsuarioId = _currentUser.UsuarioId,
+            CreadoPorUsuarioId = scopeActual.UsuarioId,
             CreadoPorNombreUsuario = _currentUser.NombreUsuario
         };
 
