@@ -108,34 +108,19 @@ public sealed class UsuarioScopeService : IUsuarioScopeService
             !_currentUser.EstaAutenticado || _currentUser.UsuarioId != actorId)
             return null;
 
-        async Task<bool> BaseComercialVigenteAsync() =>
-            await SesionBaseVigenteAsync(actorId, rolBaseId, cancellationToken) &&
-            await _context.Usuarios.AsNoTracking().AnyAsync(u =>
-                u.Id == actorId && u.RolId == rolBaseId && u.Activo &&
-                !u.Bloqueado && !u.Eliminado && u.RolEntidad.Activo &&
-                !u.RolEntidad.Eliminado &&
-                u.RolEntidad.Ambito == AmbitoAutorizacion.Empresa, cancellationToken);
-
         async Task<bool> SucursalYPermisoVigentesAsync(int rolId) =>
             await _context.Set<Sucursal>().IgnoreQueryFilters().AsNoTracking()
-                .AnyAsync(s => s.Id == sucursalId && s.EmpresaId == empresaId &&
-                    s.Activa && !s.Eliminado, cancellationToken) &&
-            await (from grant in _context.RolPermisos.IgnoreQueryFilters().AsNoTracking()
-                   join permiso in _context.Permisos.IgnoreQueryFilters().AsNoTracking()
-                       on grant.PermisoId equals permiso.Id
-                   where grant.RolId == rolId && permiso.Activo && !permiso.Eliminado &&
-                         permiso.Ambito == AmbitoAutorizacion.Empresa &&
-                         permiso.Modulo == ModuloSistema.Sucursales &&
-                         permiso.Accion == AccionPermiso.Ver
-                   select grant.Id).AnyAsync(cancellationToken);
+                .AnyAsync(x => x.Id == sucursalId && x.EmpresaId == empresaId &&
+                    x.Activa && !x.Eliminado, cancellationToken) &&
+            await PermisoSucursalVigenteAsync(rolId, cancellationToken);
 
-        if (!await BaseComercialVigenteAsync())
+        if (!await BaseComercialVigenteAsync(actorId, rolBaseId, cancellationToken))
             return null;
         var scope = await ObtenerActualAsync(empresaId, cancellationToken);
         if (scope is null || scope.UsuarioId != actorId || scope.EmpresaId != empresaId ||
             scope.RolId <= 0 || !await SucursalYPermisoVigentesAsync(scope.RolId))
             return null;
-        if (!await BaseComercialVigenteAsync())
+        if (!await BaseComercialVigenteAsync(actorId, rolBaseId, cancellationToken))
             return null;
         var fresh = await ObtenerActualAsync(empresaId, cancellationToken);
         if (fresh is null || fresh != scope ||
@@ -144,6 +129,67 @@ public sealed class UsuarioScopeService : IUsuarioScopeService
             return null;
 
         return fresh;
+    }
+
+    private async Task<bool> BaseComercialVigenteAsync(
+        int actorId, int rolBaseId, CancellationToken cancellationToken) =>
+        await SesionBaseVigenteAsync(actorId, rolBaseId, cancellationToken) &&
+        await _context.Usuarios.AsNoTracking().AnyAsync(u =>
+            u.Id == actorId && u.RolId == rolBaseId && u.Activo &&
+            !u.Bloqueado && !u.Eliminado && u.RolEntidad.Activo &&
+            !u.RolEntidad.Eliminado &&
+            u.RolEntidad.Ambito == AmbitoAutorizacion.Empresa, cancellationToken);
+
+    private Task<bool> PermisoSucursalVigenteAsync(int rolId, CancellationToken cancellationToken) =>
+        (from grant in _context.RolPermisos.IgnoreQueryFilters().AsNoTracking()
+         join permiso in _context.Permisos.IgnoreQueryFilters().AsNoTracking()
+             on grant.PermisoId equals permiso.Id
+         where grant.RolId == rolId && permiso.Activo && !permiso.Eliminado &&
+               permiso.Ambito == AmbitoAutorizacion.Empresa &&
+               permiso.Modulo == ModuloSistema.Sucursales &&
+               permiso.Accion == AccionPermiso.Ver
+         select grant.Id).AnyAsync(cancellationToken);
+
+    public async Task<IReadOnlyList<SucursalSeleccionable>?> ListarSucursalesSeleccionablesAsync(
+        int actorId, int rolBaseId, int empresaId, CancellationToken cancellationToken = default)
+    {
+        if (actorId <= 0 || rolBaseId <= 0 || empresaId <= 0 ||
+            !_currentUser.EstaAutenticado || _currentUser.UsuarioId != actorId)
+            return null;
+
+        async Task<UsuarioTenantScopeActual?> AuthorityAsync()
+        {
+            if (!await BaseComercialVigenteAsync(actorId, rolBaseId, cancellationToken))
+                return null;
+            var scope = await ObtenerActualAsync(empresaId, cancellationToken);
+            return scope is not null && scope.UsuarioId == actorId &&
+                scope.EmpresaId == empresaId && scope.RolId > 0 &&
+                await PermisoSucursalVigenteAsync(scope.RolId, cancellationToken)
+                ? scope : null;
+        }
+
+        Task<List<SucursalSeleccionable>> ChoicesAsync() =>
+            _context.Set<Sucursal>().IgnoreQueryFilters().AsNoTracking()
+                .Where(x => x.EmpresaId == empresaId && x.Activa && !x.Eliminado)
+                .OrderBy(x => x.Id)
+                .Select(x => new SucursalSeleccionable(x.Id, x.EmpresaId, x.Codigo, x.Nombre))
+                .ToListAsync(cancellationToken);
+
+        var authority = await AuthorityAsync();
+        if (authority is null)
+            return null;
+        var choices = await ChoicesAsync();
+        var currentAuthority = await AuthorityAsync();
+        if (currentAuthority != authority)
+            return null;
+        var currentChoices = await ChoicesAsync();
+        if (!choices.SequenceEqual(currentChoices) ||
+            await AuthorityAsync() != authority ||
+            !_currentUser.EstaAutenticado || _currentUser.UsuarioId != actorId)
+            return null;
+
+        // Selection metadata only. Issuance independently revalidates the chosen branch.
+        return currentChoices;
     }
 
     public async Task<UsuarioTenantScopeActual?> ObtenerActualAsync(

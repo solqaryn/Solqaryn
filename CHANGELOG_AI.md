@@ -1,3 +1,9 @@
+## 2026-11-24 — DEV04 V33 C03-01.M03.03: descubrimiento seguro de sucursales elegibles
+- La API de sesión contextual incorpora GET tenant-context/sesion/sucursales/{empresaId} autenticado con JWT base; no acepta JWT contextual, cabecera de otra empresa ni sucursal ambigua.
+- El servicio Oracle EF comparte las comprobaciones de sesión comercial y permiso Sucursales:Ver con la emisión; verifica membresía, rol y catálogo activo de la empresa antes de devolver exclusivamente datos mínimos de selección. Ninguna preferencia o token se emite desde el listado.
+- Se amplía la integración HTTP/JWT/MySQL 8.4 existente con A/B, cabecera cruzada, audiencia incorrecta, revocación y sucursal inactiva/trasladada. Pruebas escritas, CI exacta pendiente de evidencia; no certifica consumidor Angular ni A5.
+- Alcance R2 exclusivamente dev; sin cambios de esquema, proveedor, dependencias, permisos productivos o ramas. Rollback mediante revert normal; H/I históricos intactos.
+
 ## 2026-11-24 — DEV01 V33 C07-01.M06.06: rechazo íntegro de borrado de galería con IDs no propios
 - La revisión causal del cambio 90725acf confirmó CI backend 6602/6602 y Oracle MySQL 160/160, pero detectó que UpdateAsync descartaba silenciosamente IDs de borrado no presentes en la galería general; una solicitud mixta podía aplicar borrados válidos y editar el producto pese al ID ajeno, de variante o cero.
 - Se valida el conjunto completo antes de mutar el producto, llamar almacenamiento, guardar o auditar. Mensaje genérico sin exponer pertenencia de otros recursos; no se modifica JWT/RBAC, rutas, DTO, esquema, flags ni proveedor.

@@ -27,6 +27,9 @@ public sealed record UsuarioTenantScopeActual(
 /// </summary>
 public sealed record EmpresaSeleccionable(int EmpresaId, string Nombre);
 
+/// <summary>Datos mínimos de una sucursal elegible, sin información de contacto.</summary>
+public sealed record SucursalSeleccionable(int Id, int EmpresaId, string Codigo, string Nombre);
+
 public interface IUsuarioScopeService
 {
     /// <summary>
@@ -39,6 +42,12 @@ public interface IUsuarioScopeService
     Task<UsuarioTenantScopeActual?> ObtenerSucursalActualAsync(int actorId, int rolBaseId,
         int empresaId, int sucursalId, CancellationToken cancellationToken = default) =>
         Task.FromResult<UsuarioTenantScopeActual?>(null);
+
+    /// <summary>Lista opciones de sucursal con la misma autoridad SQL que la emisión contextual.
+    /// Null deniega la consulta; una lista vacía indica que no hay sucursales activas.</summary>
+    Task<IReadOnlyList<SucursalSeleccionable>?> ListarSucursalesSeleccionablesAsync(
+        int actorId, int rolBaseId, int empresaId, CancellationToken cancellationToken = default) =>
+        Task.FromResult<IReadOnlyList<SucursalSeleccionable>?>(null);
 
     /// <summary>Revalida el rol base firmado contra SQL; no concede contexto tenant.</summary>
     Task<bool> SesionBaseVigenteAsync(int actorId, int rolId,

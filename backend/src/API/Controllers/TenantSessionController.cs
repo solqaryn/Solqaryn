@@ -20,6 +20,34 @@ public sealed class TenantSessionController(
     public sealed record Seleccion(int EmpresaId, int SucursalId);
     public sealed record Sesion(string Token, DateTime ExpiraEn, int EmpresaId, int SucursalId, int RolId);
 
+    // Discover only branches that are currently eligible for explicit context issuance.
+    // The base token is required; a scoped credential cannot enumerate other contexts.
+    [HttpGet("sucursales/{empresaId:int}")]
+    [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
+    public async Task<IActionResult> ListarSucursales(int empresaId, CancellationToken cancellationToken)
+    {
+        if (empresaId <= 0)
+            return BadRequest();
+        var principal = ControllerContext.HttpContext?.User;
+        if (principal is null || !ClaimId(principal, "id", out var actor) ||
+            !ClaimId(principal, "rolId", out var baseRole))
+            return Unauthorized();
+        if (!HeaderMatches("X-Empresa-Id", empresaId) || Request.Headers.ContainsKey("X-Sucursal-Id"))
+            return Forbid(JwtBearerDefaults.AuthenticationScheme);
+
+        var branches = await scopes.ListarSucursalesSeleccionablesAsync(
+            actor, baseRole, empresaId, cancellationToken);
+        var current = ControllerContext.HttpContext?.User;
+        if (branches is null || current is null ||
+            !ClaimId(current, "id", out var currentActor) || currentActor != actor ||
+            !ClaimId(current, "rolId", out var currentRole) || currentRole != baseRole ||
+            !HeaderMatches("X-Empresa-Id", empresaId) || Request.Headers.ContainsKey("X-Sucursal-Id"))
+            return Forbid(JwtBearerDefaults.AuthenticationScheme);
+        cancellationToken.ThrowIfCancellationRequested();
+        return Ok(ApiResponse<IReadOnlyList<SucursalSeleccionable>>.Ok(
+            branches, "Sucursales activas autorizadas."));
+    }
+
     [HttpPost]
     [Authorize(AuthenticationSchemes = JwtBearerDefaults.AuthenticationScheme)]
     [EnableRateLimiting("AuthLogin")]

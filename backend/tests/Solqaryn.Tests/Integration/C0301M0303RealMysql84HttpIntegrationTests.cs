@@ -346,6 +346,35 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
                 request.Headers.Add("X-Empresa-Id", tenantB.Id.ToString());
                 return await client.SendAsync(request);
             }
+            async Task<HttpResponseMessage> ListBranchesAsync(string? bearer, int tenant, int? header = null)
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Get,
+                    $"/tenant-context/sesion/sucursales/{tenant}");
+                if (bearer is not null)
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearer);
+                if (header.HasValue)
+                    request.Headers.Add("X-Empresa-Id", header.Value.ToString());
+                return await client.SendAsync(request);
+            }
+            async Task AssertBranchChoicesAsync(int tenant, Sucursal? expected)
+            {
+                using var response = await ListBranchesAsync(productToken, tenant);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.True(response.Headers.CacheControl?.NoStore == true);
+                using var json = System.Text.Json.JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+                var choices = json.RootElement.GetProperty("data").EnumerateArray().ToArray();
+                if (expected is null)
+                {
+                    Assert.Empty(choices);
+                    return;
+                }
+                var data = Assert.Single(choices);
+                Assert.Equal(tenant, data.GetProperty("empresaId").GetInt32());
+                Assert.Equal(expected.Id, data.GetProperty("id").GetInt32());
+                Assert.Equal(expected.Nombre, data.GetProperty("nombre").GetString());
+                Assert.False(data.TryGetProperty("correo", out _));
+                Assert.False(data.TryGetProperty("telefono", out _));
+            }
             async Task<HttpResponseMessage> IssueContextAsync(string bearer, int tenant, int branch)
             {
                 using var request = new HttpRequestMessage(HttpMethod.Post, "/tenant-context/sesion");
@@ -422,7 +451,16 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
                 Assert.Equal(HttpStatusCode.Unauthorized, legacy.StatusCode);
                 return restricted;
             }
+            await AssertBranchChoicesAsync(tenantA.Id, branchA);
+            using (var anonymousChoices = await ListBranchesAsync(null, tenantA.Id))
+                Assert.Equal(HttpStatusCode.Unauthorized, anonymousChoices.StatusCode);
+            using (var foreignChoices = await ListBranchesAsync(productToken, tenantB.Id))
+                Assert.Equal(HttpStatusCode.Forbidden, foreignChoices.StatusCode);
+            using (var mismatchedChoices = await ListBranchesAsync(productToken, tenantA.Id, tenantB.Id))
+                Assert.Equal(HttpStatusCode.Forbidden, mismatchedChoices.StatusCode);
             var restrictedA = await RequireIssuedAsync(tenantA.Id, branchA.Id, roleA.Id);
+            using (var scopedChoices = await ListBranchesAsync(restrictedA, tenantA.Id))
+                Assert.Equal(HttpStatusCode.Unauthorized, scopedChoices.StatusCode);
             await AssertPermissionsAsync(restrictedA, roleA.Nombre, true);
             await AssertBranchAsync(restrictedA, tenantA.Id, branchA);
             using (var anonymousBranch = await ReadBranchAsync(null))
@@ -486,6 +524,7 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
             }
             db.RolPermisos.Add(new RolPermiso { RolId = roleB.Id, PermisoId = permission.Id });
             await db.SaveChangesAsync();
+            await AssertBranchChoicesAsync(tenantB.Id, branchB);
             var restrictedB = await RequireIssuedAsync(tenantB.Id, branchB.Id, roleB.Id);
             await AssertPermissionsAsync(restrictedB, roleB.Nombre, false);
             await AssertBranchAsync(restrictedB, tenantB.Id, branchB);
@@ -493,6 +532,8 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
                 Assert.Equal(HttpStatusCode.Forbidden, crossA.StatusCode);
             membershipB.Desactivar();
             await db.SaveChangesAsync();
+            using (var revokedChoices = await ListBranchesAsync(productToken, tenantB.Id))
+                Assert.Equal(HttpStatusCode.Forbidden, revokedChoices.StatusCode);
             using (var revokedBranch = await ReadBranchAsync(restrictedB))
                 Assert.Equal(HttpStatusCode.Forbidden, revokedBranch.StatusCode);
             using (var revokedPermissions = await ReadPermissionsAsync(restrictedB))
@@ -561,6 +602,8 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
                 client, tenantA.Id, branchA.Id, productToken))
                 Assert.Equal(HttpStatusCode.Forbidden, revoked.StatusCode);
 
+            using (var revokedGrantChoices = await ListBranchesAsync(productToken, tenantA.Id))
+                Assert.Equal(HttpStatusCode.Forbidden, revokedGrantChoices.StatusCode);
             using (var revokedBranchGrant = await ReadBranchAsync(restrictedA))
                 Assert.Equal(HttpStatusCode.Forbidden, revokedBranchGrant.StatusCode);
 
@@ -611,11 +654,13 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
                 .SingleAsync(x => x.Id == branchA.Id);
             assignedBranch.Activa = false;
             await db.SaveChangesAsync();
+            await AssertBranchChoicesAsync(tenantA.Id, null);
             using (var inactiveBranch = await ReadBranchAsync(restrictedA))
                 Assert.Equal(HttpStatusCode.Forbidden, inactiveBranch.StatusCode);
             assignedBranch.Activa = true;
             assignedBranch.EmpresaId = tenantB.Id;
             await db.SaveChangesAsync();
+            await AssertBranchChoicesAsync(tenantA.Id, null);
             using (var movedScopedBranch = await ReadBranchAsync(restrictedA))
                 Assert.Equal(HttpStatusCode.Forbidden, movedScopedBranch.StatusCode);
             using (var movedBranch = await ReadAsync(
