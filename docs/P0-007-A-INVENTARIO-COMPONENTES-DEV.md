@@ -614,3 +614,11 @@ El nuevo componente Angular privado, realmente introducido en el commit `3878383
 - `frontend/src/app/features/configuracion/c0103-configuracion-dinamica-page.component.ts`
 
 Este inventario no certifica JWT, RBAC, API, Chromium ni LISTO; sólo prueba la exactitud del catálogo de paths contra HEAD. R2/auth y pruebas UX tienen CI causal separada, y A5 independiente permanece pendiente.
+
+## Actualización del inventario — 2026-11-24, C15-04.M05.04
+
+El pie nativo compartido por detalle y carrito, incorporado en `cc9bb0da6c6c12a6d4004efb7e0ea859f8de971d`, es un archivo fuente Angular adicional, no una pantalla ni una ruta nueva. El total vigente pasa a **172 archivos (164 features, 8 shared)**. Se conserva íntegro el inventario anterior y la comparación estricta de conjuntos.
+
+- `frontend/src/app/features/storefront/storefront-footer.component.ts`
+
+El job 138748799332 detectó correctamente la ausencia del archivo. Esta corrección sólo mantiene el inventario estático y sus negativos; no certifica UX, JWT, RBAC, MySQL ni A5.

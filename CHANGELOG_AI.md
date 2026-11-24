@@ -1,3 +1,7 @@
+## 2026-11-24 — DEV02 C15-04.M05.04: mantener catálogo del pie compartido
+
+- Corrige causalmente el fallo P0-007.A del job 138748799332: inventario exacto de 172 archivos (164 feature, 8 shared), incluyendo la única nueva fuente Angular; preserva negativos y comparación de conjuntos. No modifica el runtime ni vuelve a lanzar manualmente pruebas Storefront en curso.
+
 ## 2026-11-24 — DEV02 C15-04.M05.04: reutilización del pie de tienda
 
 - Extrae la estructura y reglas idénticas de los pies de detalle y carrito a un componente Angular standalone, manteniendo semántica nativa, autoridad de identidad, destinos y puntos de corte propios. Conserva la reserva inferior del CTA del detalle.
