@@ -188,9 +188,17 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
         try
         {
             // Destino fijo: ni el cliente ni el SHA pueden introducir hosts o URLs.
-            using var response = await _clients.CreateClient("SolqarynPublicGitHubQa")
+            using var client = _clients.CreateClient("SolqarynPublicGitHubQa");
+            // ResponseHeadersRead only applies HttpClient.Timeout through the headers.
+            // Keep one deadline for the entire upstream read and JSON parsing.
+            using var upstreamDeadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+            var maximumBudget = TimeSpan.FromSeconds(12);
+            upstreamDeadline.CancelAfter(client.Timeout < maximumBudget && client.Timeout != Timeout.InfiniteTimeSpan
+                ? client.Timeout : maximumBudget);
+            var upstreamToken = upstreamDeadline.Token;
+            using var response = await client
                 .GetAsync("repos/solqaryn/Solqaryn/commits/" + sha + "/check-runs?per_page=100",
-                    HttpCompletionOption.ResponseHeadersRead, cancellationToken);
+                    HttpCompletionOption.ResponseHeadersRead, upstreamToken);
 
             if (response.StatusCode == HttpStatusCode.NotFound)
                 return await FalloProveedorAsync("QA_UPSTREAM_NOT_FOUND", notFound: true);
@@ -202,21 +210,21 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
             // Content-Length may be absent for Transfer-Encoding: chunked.
             // Bound the actual bytes consumed before JSON parsing, including the
             // one-byte overflow probe. Never buffer an unbounded upstream body.
-            await using var content = await response.Content.ReadAsStreamAsync(cancellationToken);
+            await using var content = await response.Content.ReadAsStreamAsync(upstreamToken);
             using var bounded = new MemoryStream();
             var chunk = new byte[16_384];
             while (true)
             {
                 var maxRead = Math.Min(chunk.Length, maxGithubResponseBytes + 1 - (int)bounded.Length);
-                var read = await content.ReadAsync(chunk.AsMemory(0, maxRead), cancellationToken);
+                var read = await content.ReadAsync(chunk.AsMemory(0, maxRead), upstreamToken);
                 if (read == 0) break;
                 if (bounded.Length + read > maxGithubResponseBytes)
                     return await FalloProveedorAsync("QA_UPSTREAM_SIZE");
-                await bounded.WriteAsync(chunk.AsMemory(0, read), cancellationToken);
+                await bounded.WriteAsync(chunk.AsMemory(0, read), upstreamToken);
             }
             bounded.Position = 0;
             using var document = await JsonDocument.ParseAsync(
-                bounded, new JsonDocumentOptions { MaxDepth = 20 }, cancellationToken);
+                bounded, new JsonDocumentOptions { MaxDepth = 20 }, upstreamToken);
             var root = document.RootElement;
             if (root.ValueKind != JsonValueKind.Object ||
                 !root.TryGetProperty("total_count", out var countElement) ||

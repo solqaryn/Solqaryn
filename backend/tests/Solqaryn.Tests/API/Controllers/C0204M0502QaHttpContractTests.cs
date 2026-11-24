@@ -581,7 +581,7 @@ public sealed class C0204M0502QaHttpContractTests
         if (string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable(
                 "SOLQARYN_C0204_MYSQL_TEST_CONNECTION")))
             return;
-        var upstream = new GitHubFake(Payload());
+        var upstream = new GitHubFake(Payload()) { ProviderTimeout = TimeSpan.FromSeconds(1) };
         await using var fixture = await CrearAsync(upstream, mysql: true);
         using var client = fixture.Host.GetTestClient();
         client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
@@ -611,10 +611,29 @@ public sealed class C0204M0502QaHttpContractTests
             Assert.Equal(0, json.RootElement.GetProperty("data").GetProperty("checksExitosos").GetInt32());
         }
 
+        // Headers arrive, but the body never yields bytes until cancellation.
+        // A separate test deadline prevents the unfixed implementation from hanging CI.
+        var stalled = new StalledQaBody();
+        upstream.StalledBody = stalled;
+        using (var testDeadline = new CancellationTokenSource(TimeSpan.FromSeconds(12)))
+        using (var timedOut = await client.GetAsync(Path, testDeadline.Token))
+        {
+            Assert.Equal(HttpStatusCode.ServiceUnavailable, timedOut.StatusCode);
+            Assert.True(stalled.ReadStarted);
+            Assert.Contains("no-store", timedOut.Headers.CacheControl?.ToString() ?? "");
+            Assert.DoesNotContain("private-secret", await timedOut.Content.ReadAsStringAsync());
+        }
+
+        upstream.StalledBody = null;
+        upstream.Payload = Payload();
+        using (var recovered = await client.GetAsync(Path))
+            Assert.Equal(HttpStatusCode.OK, recovered.StatusCode);
+
         using var scope = fixture.Host.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var audits = await db.Set<RegistroAuditoria>().ToListAsync();
-        Assert.Equal(4, audits.Count);
+        Assert.Equal(6, audits.Count);
+        Assert.Single(audits.Where(x => x.Resultado == "Error" && x.Error == "QA_UPSTREAM_TIMEOUT"));
         Assert.Equal(3, audits.Count(x => x.Resultado == "Error" && x.Error == "QA_UPSTREAM_CONTRACT"));
         Assert.All(audits, x => Assert.DoesNotContain("private-secret", x.ValoresNuevos ?? ""));
     }
@@ -677,7 +696,11 @@ public sealed class C0204M0502QaHttpContractTests
                     services.AddScoped<ICurrentUserService, CurrentUserService>();
                     services.AddScoped<IPlataformaScopeService, PlataformaScopeService>();
                     services.AddHttpClient("SolqarynPublicGitHubQa",
-                            c => c.BaseAddress = new Uri("https://api.github.com/"))
+                            c =>
+                            {
+                                c.BaseAddress = new Uri("https://api.github.com/");
+                                c.Timeout = upstream.ProviderTimeout;
+                            })
                         .ConfigurePrimaryHttpMessageHandler(() => upstream);
                     services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                         .AddJwtBearer(options => options.TokenValidationParameters =
@@ -773,6 +796,8 @@ public sealed class C0204M0502QaHttpContractTests
         public HttpStatusCode StatusCode { get; set; } = HttpStatusCode.OK;
         public string Payload { get; set; } = payload;
         public bool OmitContentLength { get; set; }
+        public TimeSpan ProviderTimeout { get; set; } = TimeSpan.FromSeconds(100);
+        public StalledQaBody? StalledBody { get; set; }
         public Func<Task>? BeforeResponse { get; set; }
 
         protected override async Task<HttpResponseMessage> SendAsync(
@@ -788,11 +813,44 @@ public sealed class C0204M0502QaHttpContractTests
                 await BeforeResponse();
             return new HttpResponseMessage(StatusCode)
             {
-                Content = OmitContentLength
+                Content = StalledBody is not null
+                    ? new StreamContent(StalledBody)
+                    : OmitContentLength
                     ? new ChunkedQaContent(Payload)
                     : new StringContent(Payload, Encoding.UTF8, "application/json")
             };
         }
+    }
+
+    private sealed class StalledQaBody : Stream
+    {
+        public bool ReadStarted { get; private set; }
+        public override bool CanRead => true;
+        public override bool CanSeek => false;
+        public override bool CanWrite => false;
+        public override long Length => throw new NotSupportedException();
+        public override long Position
+        {
+            get => throw new NotSupportedException();
+            set => throw new NotSupportedException();
+        }
+        public override void Flush() => throw new NotSupportedException();
+        public override long Seek(long offset, SeekOrigin origin) => throw new NotSupportedException();
+        public override void SetLength(long value) => throw new NotSupportedException();
+        public override void Write(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+        public override int Read(byte[] buffer, int offset, int count) => throw new NotSupportedException();
+
+        public override async ValueTask<int> ReadAsync(
+            Memory<byte> buffer, CancellationToken cancellationToken = default)
+        {
+            ReadStarted = true;
+            await Task.Delay(Timeout.InfiniteTimeSpan, cancellationToken);
+            return 0;
+        }
+
+        public override Task<int> ReadAsync(byte[] buffer, int offset, int count,
+            CancellationToken cancellationToken) =>
+            ReadAsync(buffer.AsMemory(offset, count), cancellationToken).AsTask();
     }
 
     // Forces the upstream Content-Length to be absent, just like a genuine
