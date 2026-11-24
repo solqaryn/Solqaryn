@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV05 C15-03.M05.05: propiedad persistida de metadatos de adjuntos A/B
+
+- R2, prueba causal P4 en GitHub-hosted MySQL 8.4 efímero: dos documentos sintéticos vinculados a compras reales A/B, lectura propia no vacía con JWT firmado, rechazo de ID ajeno bajo compra propia y consulta de compra ajena sin aceptar 503 como evidencia de autorización; readback SQL y limpieza acotada.
+- Se conserva el piloto de archivos existente y no se altera runtime, permisos, esquema, cuarentena ni proveedor. No acredita bytes Cloudinary ni jobs; CI exacta y A5 independiente pendientes. Rollback mediante revert normal.
+
 ## 2026-11-24 — DEV04 C01-04.M03.06: identificadores de auditoría QA exactos
 
 - Corrección R2: anclas absolutas de Regex .NET para microtarea y SHA en Application, logger y sink durable; rechazo de LF final antes de I/O.

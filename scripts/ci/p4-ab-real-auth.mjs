@@ -2,6 +2,7 @@
 // P4: aceptación HTTP/JWT REAL A/B contra MySQL local descartable.
 // No usa Render, Aiven ni credenciales de un entorno persistente.
 import assert from 'node:assert/strict';
+import { execFileSync } from 'node:child_process';
 import { request as nodeHttpRequest } from 'node:http';
 
 const api = process.env.P4_API_URL ?? 'http://127.0.0.1:5005';
@@ -568,6 +569,86 @@ for (const [jwt, company, label, supplier] of [
 }
 
 console.log('P4 FINANZAS A/B PASS: pagos en paralelo, reversión contable, anulación ventas/compras y stock propios; rechazos cruzados.');
+// C15-03.M05.05: ownership of actual persisted document metadata, not
+// an empty collection or an invented document ID. Reuse the authorized P4
+// pilot, with the already-created real purchase A/B and signed JWTs.
+// No Cloudinary upload/download is required or certified by this fixture.
+async function verifyPersistedPurchaseDocumentOwnership() {
+  assert.equal(process.env.GITHUB_ACTIONS, 'true', 'Only isolated GitHub Actions CI');
+  assert.equal(api, 'http://127.0.0.1:5005');
+  assert.equal(process.env.MultiEmpresa__PrivateCommercialFilesPilotEnabled, 'true');
+  const containers = execFileSync('docker', ['ps', '--filter', 'ancestor=mysql:8.4',
+    '--format', '{{.ID}}'], { encoding: 'utf8', timeout: 15000 }).trim().split(/\s+/);
+  assert.equal(containers.length, 1, 'Exactly one ephemeral MySQL service required');
+  assert.match(containers[0], /^[0-9a-f]{12,64}$/);
+  const sql = statement => execFileSync('docker', ['exec', containers[0], 'mysql',
+    '-uroot', '-proot', '--batch', '--skip-column-names', '--raw',
+    'solqaryn_p4_http_ab_ci', '-e', statement],
+    { encoding: 'utf8', timeout: 20000 }).trim();
+  assert.match(sql('SELECT VERSION()'), /^8\.4\./);
+  const fixtures = [
+    { tenant: aId, purchase: purchaseAId, token: jwtA, name: 'C1503-DOC-A-CI.pdf' },
+    { tenant: bId, purchase: purchaseBId, token: jwtB, name: 'C1503-DOC-B-CI.pdf' }
+  ];
+  for (const f of fixtures) {
+    assert.ok(Number.isSafeInteger(f.tenant) && f.tenant > 0);
+    assert.ok(Number.isSafeInteger(f.purchase) && f.purchase > 0);
+    assert.equal(sql('SELECT COUNT(*) FROM Compras WHERE Id=' + f.purchase +
+      ' AND EmpresaId=' + f.tenant), '1', 'Persisted parent ownership required');
+  }
+  const where = fixtures.map(f => "(EmpresaId=" + f.tenant + " AND CompraId=" +
+    f.purchase + " AND NombreOriginal='" + f.name + "')").join(' OR ');
+  assert.equal(sql('SELECT COUNT(*) FROM CompraDocumentos WHERE ' + where), '0');
+  try {
+    for (const f of fixtures) {
+      // Synthetic metadata only, with a deliberately non-provider URL. No
+      // external object exists; negative requests must stop before storage.
+      sql("INSERT INTO CompraDocumentos (EmpresaId,CompraId,NombreOriginal,ContentType,SizeBytes,Url,PublicId,ResourceType,Eliminado,FechaCreacion) VALUES (" +
+        f.tenant + "," + f.purchase + ",'" + f.name +
+        "','application/pdf',32,'https://example.invalid/c1503-test','c1503-ci-no-object','raw',0,UTC_TIMESTAMP(6))");
+      const id = Number(sql('SELECT Id FROM CompraDocumentos WHERE EmpresaId=' + f.tenant +
+        ' AND CompraId=' + f.purchase + " AND NombreOriginal='" + f.name + "' AND Eliminado=0"));
+      assert.ok(Number.isSafeInteger(id) && id > 0, 'Actual persisted document ID required');
+      f.document = id;
+    }
+    assert.notEqual(fixtures[0].document, fixtures[1].document);
+    for (const [i, f] of fixtures.entries()) {
+      const foreign = fixtures[1 - i];
+      const response = await call('GET', '/compras/' + f.purchase + '/documentos', f.token, f.tenant);
+      expectStatus(response, 200, 'persisted own document list');
+      const list = unwrap(response.payload);
+      assert.ok(Array.isArray(list));
+      const own = list.find(x => Number(x.id ?? x.Id) === f.document);
+      assert.ok(own, 'Own persisted metadata missing');
+      assert.equal(Number(own.compraId ?? own.CompraId), f.purchase);
+      assert.equal(own.nombreOriginal ?? own.NombreOriginal, f.name);
+      assert.ok(!list.some(x => Number(x.id ?? x.Id) === foreign.document));
+      assert.ok(!response.body.includes(foreign.name), 'Foreign document metadata leaked');
+      assert.ok(!response.body.includes('c1503-ci-no-object'), 'Storage identifier leaked');
+      assert.ok(!response.body.includes('example.invalid/c1503-test'), 'Storage URL leaked');
+      // An actual foreign document ID under an authorized own purchase must
+      // be rejected by resource ownership, not by a generic P0 503.
+      const crossed = await call('GET', '/compras/' + f.purchase + '/documentos/' +
+        foreign.document + '/descargar', f.token, f.tenant);
+      expectStatus(crossed, 404, 'foreign persisted document under own purchase');
+      assert.ok(!crossed.body.includes(foreign.name));
+      const foreignList = await call('GET', '/compras/' + foreign.purchase + '/documentos',
+        f.token, f.tenant);
+      assert.ok([400, 403, 404].includes(foreignList.status),
+        'Foreign purchase document list must deny without quarantine: HTTP=' + foreignList.status);
+      assert.ok(!foreignList.body.includes(foreign.name));
+    }
+    assert.equal(sql('SELECT COUNT(*) FROM CompraDocumentos WHERE (' + where +
+      ') AND Eliminado=0'), '2', 'Negative reads must not alter persisted records');
+    console.log('C1503_M0505_REAL_PERSISTED_FILE_METADATA_AB_PASS own=2 foreign_document=2 foreign_purchase=2 storage_provider=NOT_TESTED');
+  } finally {
+    sql('DELETE FROM CompraDocumentos WHERE ' + where);
+    assert.equal(sql('SELECT COUNT(*) FROM CompraDocumentos WHERE ' + where), '0',
+      'Synthetic document metadata must be removed');
+  }
+}
+await verifyPersistedPurchaseDocumentOwnership();
+
 // Rutas de archivos de compras A/B y modificación de producto bajo JWT real.
 // Se evita probar el proveedor Cloudinary con credenciales CI ficticias:
 // no se presenta como certificación externa.
