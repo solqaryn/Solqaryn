@@ -15,7 +15,7 @@ assert.ok(process.env.CI === 'true' && process.env.GITHUB_SHA &&
   'Requires GitHub CI, real local API and physical X11');
 const root = await mkdtemp(join(tmpdir(), 'sq-m0402-native-'));
 const extension = join(root, 'extension');
-const output = resolve('test-results/c0103-m0402-native-zoom');
+const output = resolve('v24-c0103-m0402-native-zoom');
 const base = 'http://127.0.0.1:4200';
 const apiPath = '/empresa-configuracion/tenant/1';
 const results = [];
@@ -110,7 +110,12 @@ async function assertState(page, state) {
     const form = page.getByRole('form', { name: 'Configuración del tenant activo' });
     await form.waitFor({ state: 'visible' });
     assert.ok(await form.locator('input[formcontrolname="nombre"]').isVisible());
-    return { target: form.locator('input[formcontrolname="nombre"]'), status: form };
+    // This step runs before the workflow removes tenant B. The real multi-company
+    // policy permits reads, not editing. Audit the actual enabled reload control.
+    assert.ok(await form.locator('input[formcontrolname="nombre"]').isDisabled(),
+      'multi-company success must remain read-only');
+    assert.equal(await form.getByRole('button', { name: 'Guardar configuración tenant' }).count(), 0);
+    return { target: card.getByRole('button', { name: /Recargar/ }), status: form };
   }
   const kind = { empty: 'empty', error: 'unavailable', permissions: 'forbidden' }[state];
   const status = card.locator('[data-config-state="' + kind + '"]');
@@ -121,10 +126,14 @@ async function assertState(page, state) {
 }
 async function runState(page, worker, state) {
   let releaseLoading;
+  let intercepted = 0;
+  let realReads = 0;
   if (state === 'loading') {
+    const held = new Promise(resolve => { releaseLoading = resolve; });
     await page.route('**' + apiPath, async route => {
       if (!isTenantGet(route.request())) return route.continue();
-      await new Promise(resolve => { releaseLoading = resolve; });
+      intercepted++;
+      await held;
       try { await route.continue(); } catch { /* navigation cleanup */ }
     });
   } else if (state !== 'success') {
@@ -136,8 +145,14 @@ async function runState(page, worker, state) {
     const fixture = fixtures[state];
     await page.route('**' + apiPath, async route => {
       if (!isTenantGet(route.request())) return route.continue();
+      intercepted++;
       await route.fulfill({ status: fixture.status, contentType: 'application/json',
         body: JSON.stringify(fixture.body) });
+    });
+  } else {
+    await page.route('**' + apiPath, async route => {
+      if (isTenantGet(route.request())) realReads++;
+      await route.continue();
     });
   }
   await page.goto(base + '/configuracion/dinamica-v5');
@@ -156,21 +171,42 @@ async function runState(page, worker, state) {
   await checkTabFocus(page, target, state);
   await geometry(page, target, state + '-focused');
   await physicalScreenshot(page, state + '-200-focus.png');
+  assert.ok(await target.evaluate(el => el === document.activeElement && el.matches(':focus-visible')),
+    state + ': focus lost during X11 capture');
+  assert.ok(await status.isVisible(), state + ': state lost during evidence capture');
   if (state === 'error' || state === 'permissions') {
     assert.ok(!(await page.locator('body').innerText()).includes('PRIVATE_'),
       state + ': backend detail leaked');
   }
   if (state === 'success') {
-    assert.ok(await target.isEditable(), 'success: field not usable');
+    assert.ok(realReads > 0, 'success must reach authenticated real API');
+    const beforeReload = realReads;
+    const response = page.waitForResponse(r => isTenantGet(r.request()) && r.status() === 200);
+    await page.keyboard.press('Enter');
+    await response;
+    await assertState(page, state);
+    assert.ok(realReads > beforeReload, 'keyboard reload must reach real API');
   } else if (state !== 'loading') {
-    // Verify that a retry control is interactable, without mutating persistence.
-    await target.click();
+    assert.ok(intercepted > 0, state + ': response fixture was never exercised');
+    const beforeRetry = intercepted;
+    const response = page.waitForResponse(r => isTenantGet(r.request()));
+    await page.keyboard.press('Enter');
+    await response;
+    await assertState(page, state);
+    assert.ok(intercepted > beforeRetry, state + ': keyboard retry must issue GET');
+  } else {
+    assert.ok(intercepted > 0, 'loading must hold actual pending GETs');
+    assert.ok(await page.locator('app-empresa-configuracion-tenant-card')
+      .getByRole('button', { name: /Recargar/ }).isDisabled(), 'loading must disable reload');
+    // Let every pending GET finish, then verify recovery without modifying data.
+    releaseLoading();
+    await assertState(page, 'success');
   }
   results.push({ state, nativeZoom: 2, baseline, native, focusVisible: true,
     captures: [state + '-100.png', state + '-200.png', state + '-200-focus.png'],
     fixture: ['error', 'permissions', 'empty'].includes(state) ? 'injected UI HTTP response' : 'real JWT/MySQL UI' });
   if (releaseLoading) releaseLoading();
-  await page.unrouteAll({ behavior: 'ignoreErrors' });
+  await page.unrouteAll({ behavior: 'wait' });
   await setNativeZoom(worker, page, 1);
 }
 
@@ -183,7 +219,12 @@ try {
     background: { service_worker: 'background.js' }
   }));
   await writeFile(join(extension, 'background.js'), 'chrome.runtime.onInstalled.addListener(() => {});');
-  const context = await chromium.launchPersistentContext(join(root, 'profile'), {
+  const profile = join(root, 'profile');
+  await mkdir(join(profile, 'Default'), { recursive: true });
+  await writeFile(join(profile, 'Default', 'Preferences'), JSON.stringify({
+    credentials_enable_service: false, profile: { password_manager_enabled: false }
+  }));
+  const context = await chromium.launchPersistentContext(profile, {
     headless: false, viewport: null, args: ['--window-size=1440,1000',
       '--disable-extensions-except=' + extension, '--load-extension=' + extension]
   });

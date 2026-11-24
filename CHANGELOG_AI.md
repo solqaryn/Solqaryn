@@ -1,3 +1,7 @@
+## 2026-11-24 — DEV05 V32 C01-03.M04.02: evidencia nativa y autoridad de lectura
+- Se corrigen dos defectos demostrables del harness: el éxito del fixture A/B debe conservar campos deshabilitados y permitir recarga real por teclado, no exigir edición que RBAC prohíbe; las capturas se guardan fuera de test-results para que la segunda invocación Playwright no las borre. El loading usa una sola barrera para todos los GET; retry/recarga exigen una nueva petición, se conserva foco tras X11 y se deshabilita el gestor de contraseñas en el perfil efímero. Sin cambios de runtime, permisos o persistencia.
+- Fuente 6ce02c4e corrige Request.method y su CI dirigida seguía en progreso al diagnóstico; este incremento requiere CI causal propia, 15 PNG/metrics, antes histórico genuino y A5 independiente. H/I VALIDANDO/DEV05 preservados, no PASS anticipado, no QA/main/PROD.
+
 ## 2026-11-24 — DEV04 V31 C03-01.M03.03: regresiones del contrato de doble lectura
 - Fuente c28dafe3: integración dirigida JWT/HTTP/MySQL 8.4.13 40/40 SUCCESS, pero backend Release job138447731188 6593/6596, tres fallos Moq por conteo de lecturas antiguas. Se exige ahora exactamente 2 para selección aceptada y 1 para revocada/denegada; 3 si se combinan ambas solicitudes. No se altera ninguna expectativa de 401/403, identidad, rol o tenant, ni se modifica runtime.
 - Nuevo SHA CI pendiente. Reemisión vinculada tenant/sucursal y enforcement siguen faltantes; H VALIDANDO, A5 independiente. No QA/main/PROD.

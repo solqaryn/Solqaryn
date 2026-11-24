@@ -290,6 +290,7 @@ jobs:
             backend/c1504-api.log
             frontend/test-results/
             frontend/v24-c0103-m0401-screenshots/
+            frontend/v24-c0103-m0402-native-zoom/
             frontend/playwright-report/
           if-no-files-found: warn
           retention-days: 14
