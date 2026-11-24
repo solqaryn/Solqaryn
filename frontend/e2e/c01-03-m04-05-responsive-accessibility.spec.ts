@@ -91,6 +91,22 @@ async function verifyHeadingWholeWords(page: Page, width: number, phase: string)
   }
 }
 
+// A visible mat-label is not sufficient: verify the browser-computed accessible
+// name identifies the actual form control, including the read-only tenant view.
+async function verifyAccessibleLabels(page: Page): Promise<void> {
+  const form = page.locator('app-empresa-configuracion-tenant-card .tenant-form');
+  const fields = [
+    ['Nombre', 'nombre'], ['RTN', 'rtn'], ['Dirección', 'direccion'],
+    ['Moneda ISO', 'moneda'], ['Zona horaria IANA', 'zonaHoraria'],
+  ] as const;
+  for (const [label, control] of fields) {
+    const named = form.getByRole('textbox', { name: label, exact: true });
+    await expect(named, 'unique accessible textbox: '+label).toHaveCount(1);
+    await expect(named).toHaveAttribute('formcontrolname', control);
+    await expect(named).toBeVisible();
+  }
+}
+
 async function verifyTab(page: Page): Promise<void> {
   // V24 R2: actual Tab must reach route controls, not a random visible app-shell link.
   // Never call .focus() or bypass browser keyboard navigation.
@@ -117,6 +133,17 @@ async function verifyTab(page: Page): Promise<void> {
     });
     if (current.link || current.reload) {
       expect(current.keyboard, 'route control has keyboard-visible focus').toBe(true);
+      expect(current.outline, 'focused route control has a visible outline').toBe(true);
+      // Wait for the browser's own keyboard scroll; never move the focus artificially.
+      await expect.poll(() => page.evaluate(() => {
+        const el = document.activeElement;
+        if (!(el instanceof HTMLElement) || !el.matches(':focus-visible')) return false;
+        const r = el.getBoundingClientRect();
+        const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        return r.left >= -1 && r.top >= -1 && r.right <= innerWidth + 1 &&
+          r.bottom <= innerHeight + 1 && r.width > 0 && r.height > 0 &&
+          hit !== null && (hit === el || el.contains(hit));
+      }), { message: 'keyboard focus stays visible and unobscured on route control' }).toBe(true);
     }
     if (current.link) {
       expect(current.outline, 'secondary link exposes a visible focus outline').toBe(true);
@@ -224,6 +251,7 @@ test.describe('V24 C01-03.M04.05 actual tenant UI responsive and keyboard', () =
       await expect(page.getByText('Zona horaria IANA',{exact:true})).toBeVisible();
       await expect(page.getByRole('button',{name:/Recargar/})).toBeVisible();
       await expect(page.getByRole('link',{name:'Ver todos los ajustes'})).toBeVisible();
+      await verifyAccessibleLabels(page);
       await verifyTab(page);
       await verifyWcagContrast(page);
       for (const width of widths) {
@@ -231,6 +259,7 @@ test.describe('V24 C01-03.M04.05 actual tenant UI responsive and keyboard', () =
         await verifyLayout(page,width,'100pct');
         await verifyHeadingWholeWords(page,width,'100pct');
         await verifyCardHeaderSeparation(page,width,'100pct');
+        await verifyAccessibleLabels(page);
         await page.screenshot({path:'test-results/c0103-m0405-'+username+'-'+width+'-100.png',fullPage:true});
       }
       // CSS zoom is only a 200% reflow stress PROXY, NOT native Chrome browser zoom.
@@ -257,6 +286,7 @@ test.describe('V24 C01-03.M04.05 actual tenant UI responsive and keyboard', () =
           await verifyLayout(page,width,'text-only-resize-200');
           await verifyHeadingWholeWords(page,width,'text-only-resize-200');
           await verifyCardHeaderSeparation(page,width,'text-only-resize-200');
+          await verifyAccessibleLabels(page);
           await expect(page.getByRole('button',{name:/Recargar/})).toBeVisible();
           await expect(page.getByRole('link',{name:'Ver todos los ajustes'})).toBeVisible();
           // V24: aserciones adversariales reales a 200% de texto en los cinco viewports.

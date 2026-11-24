@@ -1,3 +1,7 @@
+## 2026-11-24 — DEV06 C01-03.M04.05: etiquetas accesibles y foco real
+- Se amplía la prueba Chromium existente para identificar cinco campos por su nombre accesible y control Angular asociado en ambos tenants, cinco anchos y texto al 200%; se exige contorno y foco no oculto de enlace y Recargar por navegación Tab real.
+- Sólo pruebas: sin cambios de permisos, API, datos, dependencias ni runtime. Evidencia nativa de zoom A/B de C01-03.M04.01 reutilizable sólo tras verificar equivalencia. A0-A4/A5 y captura histórica ANTES pendientes de validación; H VALIDANDO e I DEV04 preservados. Sin QA/main/PROD.
+
 ## 2026-11-24 — DEV02 C15-04.M05.04: montaje diferido de ampliación fotográfica
 - El diálogo nativo conserva su botón de cierre y gestión de foco; la imagen ampliada y sus controles se instancian únicamente mientras el lightbox está abierto, evitando DOM y carga de imagen innecesarios en el estado cerrado.
 - Se refuerza la prueba existente de Fase 4: ausencia inicial de contenido ampliado, imagen visible al abrir, índice persistente y desmontaje al cerrar por Escape o botón. Chromium con fixtures HTTP; no certifica JWT/MySQL. A0 revisado; CI causal A1/A3/A4 pendiente. Sin cambios de permisos, backend ni dependencias; rollback por revert. El presupuesto CSS 18.25/16 kB y la cobertura global permanecen pendientes; no LISTO ni A5.
