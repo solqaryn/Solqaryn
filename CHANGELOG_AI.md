@@ -1,3 +1,7 @@
+## 2026-11-24 — DEV06 V31 C14-02.M06.06: revocación de membresía y bloqueo de actor en DELETE real
+- R2 test-only: ante cambio causal de UsuarioScopeService, el Fact JWT/HTTP/Oracle EF MySQL 8.4 ahora exige denegación con JWT aún firmado tras desactivar membresía o bloquear actor, readback físico A/B sin mutación, y conserva positivos y rollback SQL.
+- Documenta matriz de cobertura real por superficie y límites; sin cambios runtime, permisos, CI, QA/main/PROD ni LISTO/A5 anticipado. CI exact-SHA pendiente de verificación.
+
 ## 2026-11-24 — DEV05 V31 C01-03.M04.04: CI causal de sesión tenant compartida
 - R2 CI: 0342f747 job 138322446705 registró Vitest 13/13 y Chromium A/B 3/17; HTTP 500 previo al formulario impidió verificar CAS real. Incluir UsuarioScopeService.cs en los paths existentes de la CI privada para que una reparación de autoridad tenant no quede sin regresión del consumidor Angular. No cambiar runtime, fixtures, aserciones, permisos ni concurrencia; no relanzar suites verdes.
 - A0 revisión del diff de workflow y documentación; nueva CI exact-SHA pendiente. A1–A4, zoom nativo/ANTES y A5 independiente no acreditados. Revert normal dev; sin QA/main/PROD.

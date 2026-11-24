@@ -301,6 +301,28 @@ public sealed class C1402M0606ProductDeleteRealHttpMysql84Tests
             await ReadbackAsync(ownA, a.Id, false);
             await ReadbackAsync(ownB, b.Id, false);
 
+            // The shared UsuarioScopeService changed after the last DELETE proof.
+            // A still-signed JWT must not resurrect a revoked membership or blocked actor.
+            var membershipA = await db.UsuarioEmpresas.IgnoreQueryFilters()
+                .SingleAsync(x => x.UsuarioId == userA.Id && x.EmpresaId == a.Id);
+            membershipA.Desactivar();
+            await db.SaveChangesAsync();
+            await DeleteAsync(ownA.Product, a.Id, jwtA, HttpStatusCode.ServiceUnavailable);
+            await ReadbackAsync(ownA, a.Id, false);
+            await ReadbackAsync(ownB, b.Id, false);
+            membershipA.Activar();
+            await db.SaveChangesAsync();
+
+            var persistedActorA = await db.Usuarios.IgnoreQueryFilters()
+                .SingleAsync(x => x.Id == userA.Id);
+            persistedActorA.Bloqueado = true;
+            await db.SaveChangesAsync();
+            await DeleteAsync(ownA.Product, a.Id, jwtA, HttpStatusCode.ServiceUnavailable);
+            await ReadbackAsync(ownA, a.Id, false);
+            await ReadbackAsync(ownB, b.Id, false);
+            persistedActorA.Bloqueado = false;
+            await db.SaveChangesAsync();
+
             var grantA = await db.RolPermisos.SingleAsync(x =>
                 x.RolId == roleA.Id && x.PermisoId == permission.Id);
             db.RolPermisos.Remove(grantA);
