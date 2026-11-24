@@ -51,6 +51,117 @@ jobs:
           exit 1
       - name: UX en browser real
         run: npx playwright test e2e/c15-04-m05-04-global-ux.spec.ts --config=playwright.config.ts --workers=1 --retries=0
+      - name: Zoom nativo Chromium de paginas publicas 100 y 200 por ciento
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat > .c1504-native-zoom.mjs <<'NODE'
+          import { chromium } from '@playwright/test';
+          import assert from 'node:assert/strict';
+          import { mkdtemp, mkdir, writeFile, rm } from 'node:fs/promises';
+          import { tmpdir } from 'node:os';
+          import { join, resolve } from 'node:path';
+
+          // Browser page zoom, not CSS zoom, pinch, deviceScaleFactor or resized viewport.
+          // The extension is local to a disposable CI browser profile, with no external endpoints.
+          const root = await mkdtemp(join(tmpdir(), 'c1504-native-'));
+          const extension = join(root, 'extension');
+          const out = resolve('test-results/c1504-native-zoom');
+          const origin = 'http://127.0.0.1:4200';
+          const routes = [
+            ['/login', '#login-title'],
+            ['/tienda', '#contenido-principal'],
+            ['/tienda/productos', '#catalogo-productos'],
+            ['/tienda/categorias', '#contenido-categorias'],
+          ];
+          const evidence = [];
+          let context;
+          try {
+            await mkdir(extension);
+            await mkdir(out, { recursive: true });
+            await writeFile(join(extension, 'manifest.json'), JSON.stringify({
+              manifest_version: 3,
+              name: 'SOLQARYN local native zoom evidence',
+              version: '1.0.0',
+              permissions: ['tabs'],
+              background: { service_worker: 'background.js' }
+            }));
+            await writeFile(join(extension, 'background.js'),
+              'chrome.runtime.onInstalled.addListener(() => {});');
+            context = await chromium.launchPersistentContext(join(root, 'profile'), {
+              headless: false,
+              viewport: null,
+              args: [
+                '--window-size=1440,1000',
+                '--disable-extensions-except=' + extension,
+                '--load-extension=' + extension
+              ]
+            });
+            const worker = context.serviceWorkers()[0] ??
+              await context.waitForEvent('serviceworker', { timeout: 15000 });
+            const page = context.pages()[0] ?? await context.newPage();
+            const metrics = () => page.evaluate(() => ({
+              inner: window.innerWidth,
+              client: document.documentElement.clientWidth,
+              scroll: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
+              dpr: window.devicePixelRatio,
+              visualScale: window.visualViewport?.scale ?? 1
+            }));
+            async function zoom(factor) {
+              const actual = await worker.evaluate(async ({ url, factor }) => {
+                const tabs = await chrome.tabs.query({});
+                const tab = tabs.find(t => t.url === url);
+                if (tab?.id == null) throw Error('CI tab not found');
+                await chrome.tabs.setZoomSettings(tab.id, { mode: 'automatic', scope: 'per-tab' });
+                await chrome.tabs.setZoom(tab.id, factor);
+                return await chrome.tabs.getZoom(tab.id);
+              }, { url: page.url(), factor });
+              assert.ok(Math.abs(actual - factor) < 0.001, 'Native Chrome zoom mismatch');
+              return actual;
+            }
+            for (const [route, selector] of routes) {
+              await page.goto(origin + route, { waitUntil: 'domcontentloaded' });
+              await page.locator(selector).waitFor({ state: 'visible', timeout: 20000 });
+              const actual100 = await zoom(1);
+              await page.waitForFunction(() => Math.abs(window.devicePixelRatio - 1) < 0.1);
+              const before = await metrics();
+              const slug = route.slice(1).replaceAll('/', '-');
+              await page.screenshot({ path: join(out, slug + '-100.png'), fullPage: true });
+              const actual200 = await zoom(2);
+              await page.waitForFunction(b => {
+                const ratio = window.devicePixelRatio / b.dpr;
+                return ratio > 1.95 && ratio < 2.05 &&
+                  Math.abs(window.innerWidth * 2 - b.inner) <= 12;
+              }, before, { timeout: 10000 });
+              await page.locator(selector).waitFor({ state: 'visible', timeout: 20000 });
+              const after = await metrics();
+              await page.screenshot({ path: join(out, slug + '-200.png'), fullPage: true });
+              evidence.push({ route, actual100, actual200, before, after });
+              assert.ok(Math.abs(after.visualScale - 1) < 0.01, route + ': unexpected pinch scale');
+              assert.ok(before.scroll <= before.client + 2, route + ': overflow at 100%');
+              assert.ok(after.scroll <= after.client + 2, route + ': overflow at 200%');
+              await zoom(1);
+            }
+          } finally {
+            await writeFile(join(out, 'metrics.json'), JSON.stringify({
+              sha: process.env.GITHUB_SHA, mechanism: 'chrome.tabs.setZoom/getZoom',
+              scope: 'public routes only; no private JWT or WCAG-wide certification', evidence
+            }, null, 2));
+            await context?.close();
+            await rm(root, { recursive: true, force: true });
+          }
+          assert.equal(evidence.length, routes.length);
+          NODE
+          node --check .c1504-native-zoom.mjs
+          xvfb-run -a -s '-screen 0 1600x1200x24' node .c1504-native-zoom.mjs
+      - name: Evidencia zoom nativo Chromium
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c1504-native-zoom-public
+          path: frontend/test-results/c1504-native-zoom/
+          if-no-files-found: warn
+          retention-days: 14
       - name: Evidencia V23 de 15 capturas Chromium publicas
         if: always()
         uses: actions/upload-artifact@v4
