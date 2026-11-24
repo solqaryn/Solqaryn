@@ -14,6 +14,7 @@ using Microsoft.EntityFrameworkCore.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using System.Text.Json;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
@@ -359,6 +360,7 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
                         routeTenant + "/record");
                     request.Headers.Authorization =
                         new AuthenticationHeaderValue("Bearer", bearerJwt);
+                    request.Headers.TryAddWithoutValidation("X-Audit-Event-Id", "untrusted-client-event");
                     if (selector.HasValue)
                         request.Headers.TryAddWithoutValidation(
                             "X-Empresa-Id", selector.Value.ToString());
@@ -388,6 +390,20 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
                 Assert.Equal(ModuloSistema.Auditoria, singleRecord.Modulo);
                 Assert.Equal(AccionPermiso.Ver, singleRecord.Accion);
                 Assert.Equal("Exito", singleRecord.Resultado);
+                // The integration persists only a bounded server-issued event envelope,
+                // not an arbitrary payload, JWT or the client event-id header.
+                Assert.NotNull(singleRecord.ValoresNuevos);
+                using var receipt = JsonDocument.Parse(singleRecord.ValoresNuevos!);
+                var metadata = receipt.RootElement;
+                Assert.Equal(5, metadata.EnumerateObject().Count());
+                Assert.Equal("security-audit/v1", metadata.GetProperty("Schema").GetString());
+                var eventId = metadata.GetProperty("EventId").GetString();
+                Assert.True(Guid.TryParseExact(eventId, "N", out _));
+                Assert.NotEqual("untrusted-client-event", eventId);
+                Assert.Equal("Enterprise", metadata.GetProperty("Scope").GetString());
+                Assert.Equal("AuditRead", metadata.GetProperty("Action").GetString());
+                Assert.Equal("Allowed", metadata.GetProperty("Outcome").GetString());
+                Assert.DoesNotContain(signed, singleRecord.ValoresNuevos!);
                 Assert.Equal(HttpStatusCode.Forbidden,
                     await HttpAuditRecordAsync(tenantB.Id, signed));
                 Assert.Equal(HttpStatusCode.Unauthorized,
@@ -426,6 +442,8 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
                             x.Descripcion == "C03-03.M03.03: acceso de auditoría validado")
                         .ToListAsync());
                     Assert.Equal(singleRecord.Id, surviving.Id);
+                    using var preserved = JsonDocument.Parse(surviving.ValoresNuevos!);
+                    Assert.Equal(eventId, preserved.RootElement.GetProperty("EventId").GetString());
                     Assert.Equal(actor.Id, surviving.UsuarioId);
                     Assert.Equal(tenantA.Id, surviving.EmpresaId);
                 }

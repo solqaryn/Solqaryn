@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV04 V31 C03-03.M03.05: integración de sobre seguro con auditoría estricta
+- R2: vincular el sobre autorizado a un identificador generado por servidor y validar actor, empresa, acción y resultado antes de persistir metadata tipada, sin payload libre, sin ampliar permisos y sin nuevos proveedores. Adaptador existente DEV opt-in, sin migraciones ni QA/PROD.
+- Regresión dirigida MySQL/JWT: verificar JSON durable limitado, ID de evento no controlado por cliente y preservación del recibo original en rollback real. A0-A4 y A5 pendientes de CI exact-SHA; no se certifica toda la fase ni retención.
+
 ## 2026-11-23 — DEV03 V31 C03-03.M03.04: rollback de auditoría SQL ante fallo de commit
 - CI dirigida previa b3403b54: 8/8 pruebas reales JWT/RBAC tenant A/B MySQL 8.4, sin relanzar suite verde; faltaba provocar fallo al confirmar la escritura del adaptador aislado D521.
 - Regresión causal: interceptor EF de prueba falla al confirmar la transacción real después del registro estricto; HTTP 503 no-store sin detalle y contexto SQL nuevo verifica que sólo subsiste el recibo original de actor/tenant A. No se altera runtime, permisos, migraciones ni fixtures JWT.

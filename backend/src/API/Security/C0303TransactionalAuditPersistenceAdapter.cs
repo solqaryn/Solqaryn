@@ -6,6 +6,7 @@ using Solqaryn.Application.Interfaces;
 using Solqaryn.Application.Security;
 using Solqaryn.Domain.Enums;
 using Solqaryn.Infrastructure.Persistence;
+using Rules = Solqaryn.Domain.Security.C0303SecurityAuditDomainRules;
 
 namespace Solqaryn.API.Security;
 
@@ -52,12 +53,19 @@ public sealed class C0303TransactionalAuditPersistenceAdapter(
         // The Application gate revalidates signed JWT, membership, tenant,
         // current audit RBAC and the only proven resource (Empresa root).
         // Never make an untrusted intent decide if an audit should be stored.
+        // M03.05: a server-generated event id binds the safe envelope to the
+        // strict ledger, independent of any client-supplied correlation header.
+        var eventId = Guid.NewGuid().ToString("N");
         var decision = await audit.PrepareAsync(
-            new C0303SecurityAuditApplicationService.ClientIntent(
-                Guid.NewGuid().ToString("N")), cancellationToken);
+            new C0303SecurityAuditApplicationService.ClientIntent(eventId), cancellationToken);
         cancellationToken.ThrowIfCancellationRequested();
         if (!decision.RequiresDurableAuthenticatedAdapter ||
-            decision.Candidate is null ||
+            decision.Candidate is not { } candidate ||
+            candidate.ActorId != actorId || candidate.TenantId != tenantId ||
+            candidate.Scope != Rules.Scope.Enterprise ||
+            candidate.Action != Rules.Action.AuditRead ||
+            candidate.Outcome != Rules.Outcome.Allowed ||
+            !string.Equals(candidate.CorrelationId, eventId, StringComparison.Ordinal) ||
             VerifiedCommercialTenant.Resolve(http) != tenantId ||
             !current.EstaAutenticado || current.UsuarioId != actorId)
             return false;
@@ -68,7 +76,15 @@ public sealed class C0303TransactionalAuditPersistenceAdapter(
         await ledger.RegistrarEstrictoAsync(
             ModuloSistema.Auditoria, AccionPermiso.Ver,
             "C03-03.M03.03: acceso de auditoría validado",
-            referenciaId: tenantId, entidad: "Empresa");
+            referenciaId: tenantId, entidad: "Empresa",
+            valoresNuevos: new
+            {
+                Schema = "security-audit/v1",
+                EventId = eventId,
+                Scope = "Enterprise",
+                Action = "AuditRead",
+                Outcome = "Allowed"
+            });
         cancellationToken.ThrowIfCancellationRequested();
         await transaction.CommitAsync(cancellationToken);
         return true;
