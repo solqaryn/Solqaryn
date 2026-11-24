@@ -1,3 +1,7 @@
+## 2026-11-24 — DEV03 V31 C02-01.M05.04: reparar fixture de rol base JWT
+- R2 test-only: fuente e014336f job 138328000048, política 22/22 PASS; integración MySQL 8.4 falló en línea 400, esperaba 200 con JWT firmado rol inexistente 999999. El contrato actual verifica sesión base vigente en SQL. Firmar el positivo con rol base A persistido; mantener 999999 y rol efectivo B como negativos firmados de contexto y catálogo, ambos 403 opacos. Conservar spoofing, revocación A/B, rol cruzado y JWT alterado; no tocar runtime, autorización, configuración CI ni permisos.
+- A0 diff causal revisado; A1-A4 pendientes de CI dirigida GitHub-hosted, Scope Lock y V5 exact-SHA. No acredita reemisión JWT, preferencia durable ni navegación Angular real; A5 independiente pendiente. Rollback revert normal, sin QA/main/PROD.
+
 ## 2026-11-24 — DEV02 V31 C15-04.M05.04: zoom privado nativo con JWT y captura X11
 - Evidencia pública exact-SHA 2ee32904: 29 Chromium PASS, artefacto 14900684646 verificado SHA256 y nueve PNG físicos; zoom nativo 100/200 en login y tres rutas públicas. No reejecutar manualmente esa suite verde.
 - Añade prueba incremental de perfil propio A/B, auditoría global y denegación global B mediante login UI real en MySQL efímero, perfiles Chromium separados, zoom nativo, geometría, teclado y PNG X11; preflight de sintaxis y captura antes de levantar API. Conserva suite JWT previa y permisos; sin cambio runtime, secretos ni producción. A0-A4 global y A5 independiente pendientes; no certifica todas las rutas, WCAG, presupuesto ni ANTES histórico.
