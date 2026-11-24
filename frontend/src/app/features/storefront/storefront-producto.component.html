@@ -183,11 +183,12 @@
               <label for="cantidad-producto">Cantidad</label>
               <small>@if (contextoCarritoCargado()) { {{ stockRestante() }} disponibles para agregar } @else { Preparando carrito… }</small>
             </div>
-            <div class="quantity-control" role="group" aria-label="Cantidad a agregar">
-              <button type="button" [disabled]="!puedeSeleccionarCantidad() || cantidad() <= 1" aria-label="Disminuir cantidad" (click)="cambiarCantidad(-1)">−</button>
-              <input #cantidadInput id="cantidad-producto" type="number" [min]="stockRestante() > 0 ? 1 : 0" [max]="stockRestante()" [value]="cantidad()" [disabled]="!puedeSeleccionarCantidad()" (change)="establecerCantidad(cantidadInput.value)" aria-label="Cantidad de producto">
-              <button type="button" [disabled]="!puedeSeleccionarCantidad() || cantidad() >= stockRestante()" aria-label="Aumentar cantidad" (click)="cambiarCantidad(1)">+</button>
-            </div>
+            <div appStorefrontQuantity class="quantity-control product-quantity" role="group" aria-label="Cantidad a agregar"
+              inputId="cantidad-producto" inputLabel="Cantidad de producto" decreaseLabel="Disminuir cantidad" increaseLabel="Aumentar cantidad"
+              [minimum]="stockRestante() > 0 ? 1 : 0" [maximum]="stockRestante()" [quantity]="cantidad()"
+              [inputDisabled]="!puedeSeleccionarCantidad()" [decreaseDisabled]="!puedeSeleccionarCantidad() || cantidad() <= 1"
+              [increaseDisabled]="!puedeSeleccionarCantidad() || cantidad() >= stockRestante()"
+              (decrease)="cambiarCantidad(-1)" (increase)="cambiarCantidad(1)" (quantityChange)="establecerCantidad($event)"></div>
 
             <button type="button" class="button primary add-main" [disabled]="!puedeAgregar()" (click)="agregarAlCarrito()">
               <app-store-icon nombre="bolsa" />

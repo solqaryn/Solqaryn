@@ -521,4 +521,39 @@ test.describe('Storefront Fase 4 — detalle público de producto', () => {
       await expect(bd).toHaveAttribute('aria-pressed', 'false');
     }
   });
+
+  test('cantidad compartida mantiene límites, foco interior y controles táctiles', async ({ page }) => {
+    await prepararEmpresa(page);
+    await page.goto('/tienda/producto/demo-producto-1');
+    const group = page.getByRole('group', { name: 'Cantidad a agregar' });
+    const quantity = group.getByRole('spinbutton', { name: 'Cantidad de producto' });
+    await expect(group).toHaveClass(/product-quantity/);
+    await expect(quantity).toBeEnabled();
+    for (const width of [320, 390, 768, 1280, 1440]) {
+      await page.setViewportSize({ width, height: 844 });
+      for (const control of [quantity, group.getByRole('button', { name: 'Aumentar cantidad' })]) {
+        expect(await control.evaluate(el => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+      }
+      expect(await group.evaluate(el => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1);
+    }
+    await quantity.fill('2');
+    await quantity.press('Tab');
+    const increase = group.getByRole('button', { name: 'Aumentar cantidad' });
+    await expect(increase).toBeFocused();
+    expect(await increase.evaluate(el => {
+      const css = getComputedStyle(el);
+      return el.matches(':focus-visible') && css.outlineStyle !== 'none' &&
+        parseFloat(css.outlineWidth) >= 2 && parseFloat(css.outlineOffset) <= -2;
+    })).toBe(true);
+    await page.getByRole('button', { name: 'Agregar al carrito' }).click();
+    await page.goto('/tienda/carrito');
+    const cart = page.locator('.quantity-control.cart-quantity').first();
+    await expect(cart).toBeVisible();
+    await expect(cart.getByRole('spinbutton')).toHaveValue('2');
+    await expect(cart.getByRole('button', { name: /Disminuir cantidad/ })).toBeEnabled();
+    for (const width of [320, 390, 768, 1280, 1440]) {
+      await page.setViewportSize({ width, height: 844 });
+      expect(await cart.evaluate(el => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1);
+    }
+  });
 });

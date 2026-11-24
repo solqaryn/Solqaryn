@@ -1,3 +1,9 @@
+## 2026-11-24 — DEV02 C15-04.M05.04: control de cantidad compartido y foco interior
+
+- Reutiliza el control nativo de cantidad en detalle y carrito, conservando IDs, etiquetas, límites, eventos y autoridad de stock en sus consumidores. Reduce reglas SCSS duplicadas sin modificar presupuesto ni cambiar API, seguridad o dependencias.
+- Conserva tamaños responsive por consumidor y añade foco interior visible al grupo recortado; añade regresión dirigida de teclado, tamaño y cantidad conservada. El catálogo P0-007.A incorpora el archivo real sin retirar negativos.
+- SKREF-03/05/10 consultadas desde pins registrados; no se instalan herramientas externas. Compilación, presupuesto real y Chromium del nuevo SHA pendientes; no se certifica UX global, A5 ni LISTO. Reversión por revert normal.
+
 ## 2026-11-24 — DEV01 C15-03.M05.05: autorización de duplicados en cargas masivas
 
 - Valida membresía vigente y propiedad antes de revelar estado o identificador de una carga por hash; conserva el alcance empresarial y el acceso administrativo autorizado. Revalida actor antes de guardar una carga nueva.

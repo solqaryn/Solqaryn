@@ -630,3 +630,10 @@ El selector de fuente de vista previa compartido por detalle y carrito añade un
 - `frontend/src/app/features/storefront/storefront-preview-source.component.ts`
 
 El catálogo estático no acredita UX, integración real ni A5.
+
+
+## Actualización del inventario — 2026-11-24, C15-04.M05.04
+
+El control de cantidad nativo compartido añade un componente, no una pantalla ni una ruta. El catálogo vigente es **174 archivos (166 features, 8 shared)**; se preservan los cortes anteriores y los negativos del comparador.
+
+- `frontend/src/app/features/storefront/storefront-quantity.component.ts`

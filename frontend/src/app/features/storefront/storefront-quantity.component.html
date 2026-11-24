@@ -1,0 +1,3 @@
+<button type="button" [disabled]="decreaseDisabled()" [attr.aria-label]="decreaseLabel()" (click)="decrease.emit()">−</button>
+<input #quantityInput [id]="inputId()" type="number" [min]="minimum()" [max]="maximum()" [value]="quantity()" [disabled]="inputDisabled()" (change)="quantityChange.emit(quantityInput.value)" [attr.aria-label]="inputLabel()">
+<button type="button" [disabled]="increaseDisabled()" [attr.aria-label]="increaseLabel()" (click)="increase.emit()">+</button>

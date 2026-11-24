@@ -40,6 +40,7 @@ import { crearCategoriasTiendaEjemplo, mapearCategoriaTienda } from './storefron
 import { StorefrontHeaderComponent } from './storefront-header.component';
 import { StorefrontFooterComponent } from './storefront-footer.component';
 import { StorefrontPreviewSourceComponent } from './storefront-preview-source.component';
+import { StorefrontQuantityComponent } from './storefront-quantity.component';
 import { STOREFRONT_CONFIG } from './storefront.config';
 import { STOREFRONT_PATHS } from './storefront.paths';
 import { StorefrontSeoService } from './storefront-seo.service';
@@ -60,7 +61,7 @@ const RETORNO_CATALOGO_STORAGE = 'storefront:retorno-catalogo:v1';
 @Component({
   selector: 'app-storefront-producto',
   standalone: true,
-  imports: [StorefrontHeaderComponent, StorefrontFooterComponent, StorefrontPreviewSourceComponent, IconoTiendaComponent, IlustracionTiendaComponent],
+  imports: [StorefrontHeaderComponent, StorefrontFooterComponent, StorefrontPreviewSourceComponent, StorefrontQuantityComponent, IconoTiendaComponent, IlustracionTiendaComponent],
   templateUrl: './storefront-producto.component.html',
   styleUrl: './storefront-producto.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

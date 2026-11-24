@@ -28,7 +28,7 @@ h1,h2,h3,p{margin:0}h1,h2,h3{color:var(--color-heading)}
 .price-block{margin-top:24px;display:grid;gap:4px}.price-block>span:not(.previous-price),.price-block small{color:var(--color-text-muted);font-size:.65rem}.price-block strong{color:var(--color-heading);font-size:clamp(1.65rem,3vw,2.35rem);line-height:1.1;letter-spacing:-.04em}.previous-price{color:var(--color-text-muted);font-size:.83rem;text-decoration:line-through}
 .model-field{margin-top:24px;display:grid;gap:8px;color:var(--color-heading);font-size:.7rem;font-weight:800}.model-field select{width:100%;min-height:46px;padding:9px 34px 9px 11px;border:1px solid var(--store-line);border-radius:calc(var(--radius)*.65);background:var(--color-bg)}
 .purchase-panel{margin-top:25px;padding-top:22px;display:grid;gap:11px;border-top:1px solid var(--store-line)}.quantity-copy{display:flex;align-items:flex-start;flex-direction:column;justify-content:space-between;gap:4px}.quantity-copy label{color:var(--color-heading);font-size:.72rem;font-weight:800}.quantity-copy small,.purchase-note{color:var(--color-text-muted);font-size:.62rem;line-height:1.6}
-.quantity-control{width:100%;min-height:46px;display:grid;grid-template-columns:52px minmax(70px,1fr) 52px;overflow:hidden;border:1px solid var(--store-line);border-radius:calc(var(--radius)*.65);background:var(--color-surface)}.quantity-control button{min-height:44px;border:0;background:var(--store-soft);font-size:1.15rem;font-weight:800}.quantity-control input{width:100%;min-height:44px;padding:0 4px;border:0;border-inline:1px solid var(--store-line);background:var(--color-surface);text-align:center;appearance:textfield}.quantity-control input::-webkit-inner-spin-button,.quantity-control input::-webkit-outer-spin-button{appearance:none;margin:0}
+
 .button{min-height:46px;padding:10px 16px;display:inline-flex;align-items:center;justify-content:center;gap:8px;border:1px solid transparent;border-radius:calc(var(--radius)*.7);font-size:.72rem;font-weight:800;text-decoration:none}.button.primary{background:var(--color-button);color:var(--color-on-primary)}.button.ghost{border-color:var(--store-line);background:var(--color-surface)}.button.whatsapp{background:var(--color-success);color:var(--color-on-success,var(--color-on-primary))}.add-main{width:100%;margin-top:3px}
 .whatsapp-preview{margin-top:14px;padding:15px;border:1px solid var(--store-line);border-radius:calc(var(--radius)*.7);background:var(--color-bg)}.whatsapp-preview h2{font-size:.82rem}.whatsapp-preview pre{margin:10px 0;white-space:pre-wrap;overflow-wrap:anywhere;font:inherit;font-size:.66rem;line-height:1.65}.text-button,.text-link{min-height:44px;padding:0;display:inline-flex;align-items:center;border:0;background:transparent;color:var(--color-primary);font-size:.68rem;font-weight:800}
 
@@ -76,8 +76,6 @@ h1,h2,h3,p{margin:0}h1,h2,h3{color:var(--color-heading)}
   .product-info{padding:clamp(22px,3vw,34px)}
   .product-info h1{font-size:clamp(2rem,4.3vw,3.4rem)}
   .quantity-copy{align-items:end;flex-direction:row;gap:10px}
-  .quantity-control{width:156px;grid-template-columns:46px 64px 46px}
-  .quantity-control input{width:64px}
   .related-grid{gap:14px}
   .related-media{min-height:180px;padding:18px}
   .related-media img{height:150px}

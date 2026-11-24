@@ -99,11 +99,12 @@
                   </div>
                   <div class="quantity-field">
                     <label [for]="'cantidad-' + $index">Cantidad</label>
-                    <div class="quantity-control">
-                      <button type="button" [disabled]="item.unidades <= 1" [attr.aria-label]="'Disminuir cantidad de ' + item.nombre" (click)="disminuir(item.clave)">−</button>
-                      <input #cantidadInput [id]="'cantidad-' + $index" type="number" min="1" [max]="item.stock" [value]="item.unidades" (change)="establecerCantidad(item.clave, cantidadInput.value)" [attr.aria-label]="'Cantidad de ' + item.nombre">
-                      <button type="button" [disabled]="item.unidades >= item.stock" [attr.aria-label]="'Aumentar cantidad de ' + item.nombre" (click)="incrementar(item.clave)">+</button>
-                    </div>
+                    <div appStorefrontQuantity class="quantity-control cart-quantity"
+                      [inputId]="'cantidad-' + $index" [inputLabel]="'Cantidad de ' + item.nombre"
+                      [decreaseLabel]="'Disminuir cantidad de ' + item.nombre" [increaseLabel]="'Aumentar cantidad de ' + item.nombre"
+                      [minimum]="1" [maximum]="item.stock" [quantity]="item.unidades"
+                      [decreaseDisabled]="item.unidades <= 1" [increaseDisabled]="item.unidades >= item.stock"
+                      (decrease)="disminuir(item.clave)" (increase)="incrementar(item.clave)" (quantityChange)="establecerCantidad(item.clave, $event)"></div>
                     <small>{{ item.estadoDisponibilidad === 'lowStock' ? 'Últimas unidades' : 'Disponible' }} · máximo {{ item.stock }}</small>
                   </div>
                   <div class="item-total"><small>Total de línea</small><strong>{{ moneda(item.precio * item.unidades) }}</strong></div>
