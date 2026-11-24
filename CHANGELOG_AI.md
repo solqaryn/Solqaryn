@@ -1,3 +1,8 @@
+## 2026-11-24 — QA: candidato reproducible para auditoría npm
+
+- Basado exclusivamente en QA `0cb199d1`; la corrida 45513062216 verificó el scope y falló en la auditoría frontend de fast-uri, undici y zod (arrastrado por Angular CLI).
+- Añade una ejecución de evidencia limitada a QA, sin secretos, permisos de escritura ni despliegue. Genera el lockfile candidato en el runner, mantiene el pin de Angular CLI y publica solo los manifiestos si instalación, auditorías, lint, build y routing aprueban. No modifica todavía las dependencias de la rama ni certifica QA.
+
 ## 2026-11-24 — QA: readiness JSON acotado y alcance de evidencia
 
 - Autorización expresa del propietario: reparar exclusivamente qa sin importar dev/main. Base QA 5cedcc91bfb2b69562e7093bc1fa3d1251fa31f3.
