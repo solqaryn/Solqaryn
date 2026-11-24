@@ -86,7 +86,14 @@ export class TenantContextService {
   /** Snapshot autorizado por HTTP para la caché de permisos; nunca restaura autoridad desde storage. */
   contextoParaPermisos(): TenantContextoVerificado | null {
     const contexto = this._contextoVerificado();
-    if (!this.tokenContextoVerificado || localStorage.getItem(TOKEN_ACTOR_KEY) !== this.tokenContextoVerificado) return null;
+    if (!contexto || !this.tokenContextoVerificado) return null;
+    // A shared-storage tenant change is only an intent, never a grant. Once
+    // observed, revoke this cached proof even if the old hint is restored.
+    if (localStorage.getItem(TOKEN_ACTOR_KEY) !== this.tokenContextoVerificado ||
+        localStorage.getItem(EMPRESA_SOLICITADA_KEY) !== String(contexto.empresaId)) {
+      this.tokenContextoVerificado = null;
+      return null;
+    }
     return contexto;
   }
 
@@ -233,6 +240,7 @@ export class TenantContextService {
           // limpiar el tenant actual mientras se cambia de contexto.
           if (version !== this.versionSeleccion ||
               this._empresaSolicitadaId() !== empresaId ||
+              localStorage.getItem(EMPRESA_SOLICITADA_KEY) !== String(empresaId) ||
               localStorage.getItem(TOKEN_ACTOR_KEY) !== tokenOrigen) {
             throw new Error('La selección empresarial fue sustituida.');
           }
@@ -244,7 +252,16 @@ export class TenantContextService {
           this._contextoVerificado.set(contexto);
         }),
         catchError((error) => {
-          if (version === this.versionSeleccion) this.limpiar();
+          if (version === this.versionSeleccion) {
+            // A late response cannot erase the tenant intent of another tab
+            // or of a replacement login. Revoke only this tab's local proof.
+            if (localStorage.getItem(TOKEN_ACTOR_KEY) !== tokenOrigen ||
+                localStorage.getItem(EMPRESA_SOLICITADA_KEY) !== String(empresaId)) {
+              this.invalidarContextoLocal();
+            } else {
+              this.limpiar();
+            }
+          }
           return throwError(() => error);
         }),
         finalize(() => {
@@ -260,6 +277,11 @@ export class TenantContextService {
   }
 
   limpiar(): void {
+    this.invalidarContextoLocal();
+    localStorage.removeItem(EMPRESA_SOLICITADA_KEY);
+  }
+
+  private invalidarContextoLocal(): void {
     // Invalida también respuestas HTTP que lleguen después de cerrar/salir.
     this.versionSeleccion++;
     this.versionListado++;
@@ -268,7 +290,6 @@ export class TenantContextService {
     this.tokenContextoVerificado = null;
     this._contextoVerificado.set(null);
     this._idsMembresiasListadas.set([]);
-    localStorage.removeItem(EMPRESA_SOLICITADA_KEY);
   }
 
   private esContextoCoincidente(

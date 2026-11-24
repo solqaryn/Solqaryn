@@ -150,9 +150,40 @@ try {
       assert.equal(sql("UPDATE Sucursales SET Activa=1 WHERE Id=" + own +
         " AND EmpresaId=" + f.tenant + " AND Codigo='" + f.code + "' AND Activa=0; SELECT ROW_COUNT();"), '1');
     }
+
+    // Manipulate the same browser storage with the same signed base JWT.
+    // A tenant hint cannot retain an already verified A/B permission proof.
+    const stalePosts = [];
+    const observeStale = req => {
+      const u = new URL(req.url());
+      if (u.port === '5005' && u.pathname === '/tenant-context/sesion' && req.method() === 'POST')
+        stalePosts.push(true);
+    };
+    page.on('request', observeStale);
+    try {
+      await expect(button).toBeVisible();
+      await page.evaluate(other => {
+        const target = [...document.querySelectorAll('section[aria-labelledby="sucursal-contextual-titulo"] button')]
+          .find(element => element.textContent?.includes('Verificar acceso'));
+        if (!target) throw new Error('Expected real contextual button before storage mutation');
+        localStorage.setItem('solqaryn_empresa_solicitada_id', String(other));
+        target.click();
+      }, fixture[1-i].tenant);
+      await expect(section).toHaveCount(0);
+      assert.equal(stalePosts.length, 0, 'Stale contextual UI must not dispatch a new scoped-token POST');
+      assert.ok(await page.evaluate(t => localStorage.getItem('solqaryn_token') === t, jwt),
+        'Hint change does not replace the signed base identity');
+      assert.equal(await page.evaluate(() => localStorage.getItem('solqaryn_empresa_solicitada_id')), String(fixture[1-i].tenant));
+      // Restoring the old hint alone must not revive the old proof.
+      await page.evaluate(n => localStorage.setItem('solqaryn_empresa_solicitada_id', String(n)), f.tenant);
+      await expect(section).toHaveCount(0);
+    } finally {
+      page.off('request', observeStale);
+    }
+
     results.push({ tenant: f.tenant, branch: own, uiLogin: 200, list: 200, issue: 200,
       resource: 200, foreignBranch: 403, revokedExistingJWT: 403, revokedSelection: 403,
-      baseTokenPreserved: true, scopedTokenNotPersisted: true });
+      baseTokenPreserved: true, scopedTokenNotPersisted: true, staleHintDenied: true });
     console.log('C0301_M0303_REAL_BROWSER_TENANT_' + f.tenant + '_PASS');
   }
   assert.equal(results.length, 2);

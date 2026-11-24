@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV06 C03-01.M03.03: revocación de prueba contextual al cambiar hint tenant
+
+- Rechaza un snapshot Angular de permisos si cambia el JWT base o el hint de empresa compartido; restaurar el hint anterior no revive la prueba revocada. Una respuesta tardía no instala autoridad ni elimina la selección de otra pestaña; el backend mantiene toda autoridad y los controles JWT/RBAC no cambian.
+- Regresiones de servicio y navegador real A/B con JWT firmado y MySQL 8.4 efímero: cambio de hint con el mismo JWT, cero POST contextual obsoleto, conservación de identidad y denegación de respuesta tardía. CI exact-SHA pendiente; no LISTO ni A5 propia. SKREF-10 pin 6808966993bf2b2d455d9b6245e960a59a01b9a9; límites de confianza SKREF-11 pin 49f948faa9258a0c61caceaf225e179651397431. Rollback por revert normal; sin QA/main/PROD.
+
 ## 2026-11-24 — DEV05 C03-01.M03.03: consumidor real de sucursal A/B y revocación en navegador
 
 - Incorpora recorrido dirigido de perfil Angular con login UI real, listado, emisión y lectura contextual por JWT, tenant A/B, rechazo HTTP real de sucursal ajena y revocación física en MySQL 8.4 efímero; comprueba que el JWT contextual no se persiste ni reemplaza la sesión base.

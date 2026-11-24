@@ -470,4 +470,40 @@ describe('TenantContextService', () => {
     localStorage.removeItem('solqaryn_token');
     expect(service.contextoParaPermisos()).toBeNull();
   });
+
+  it('revoca el snapshot de permisos ante cambio de empresa con el mismo JWT y no lo resucita al restaurar el hint', () => {
+    localStorage.setItem('solqaryn_token', 'jwt-A');
+    const service = TestBed.inject(TenantContextService);
+    const data = { usuarioId: 11, empresaId: 7, rolId: 4, rolNombre: 'A', esAdministrador: true };
+    service.seleccionarEmpresa(7).subscribe();
+    httpMock.expectOne(`${environment.apiUrl}/tenant-context/7`).flush({ success: true, data });
+    expect(service.contextoParaPermisos()).toEqual(data);
+    localStorage.setItem('solqaryn_empresa_solicitada_id', '8');
+    expect(service.contextoParaPermisos()).toBeNull();
+    let rejected = false;
+    service.listarSucursalesContextuales().subscribe({ error: () => { rejected = true; } });
+    expect(rejected).toBe(true);
+    httpMock.expectNone(`${environment.apiUrl}/tenant-context/sesion/sucursales/7`);
+    localStorage.setItem('solqaryn_empresa_solicitada_id', '7');
+    expect(service.contextoParaPermisos()).toBeNull();
+    service.seleccionarEmpresa(7).subscribe();
+    httpMock.expectOne(`${environment.apiUrl}/tenant-context/7`).flush({ success: true, data });
+    expect(service.contextoParaPermisos()).toEqual(data);
+    expect(localStorage.getItem('solqaryn_token')).toBe('jwt-A');
+  });
+
+  it('una selección tardía no instala autoridad ni borra el hint de otra pestaña con el mismo JWT', () => {
+    localStorage.setItem('solqaryn_token', 'jwt-A');
+    const service = TestBed.inject(TenantContextService);
+    let rejected = false;
+    service.seleccionarEmpresa(7).subscribe({ error: () => { rejected = true; } });
+    const pending = httpMock.expectOne(`${environment.apiUrl}/tenant-context/7`);
+    localStorage.setItem('solqaryn_empresa_solicitada_id', '8');
+    pending.flush({ success: true, data: { usuarioId: 11, empresaId: 7, rolId: 4, rolNombre: 'A', esAdministrador: true } });
+    expect(rejected).toBe(true);
+    expect(service.contextoParaPermisos()).toBeNull();
+    expect(service.contextoVerificado()).toBeNull();
+    expect(localStorage.getItem('solqaryn_empresa_solicitada_id')).toBe('8');
+    expect(localStorage.getItem('solqaryn_token')).toBe('jwt-A');
+  });
 });
