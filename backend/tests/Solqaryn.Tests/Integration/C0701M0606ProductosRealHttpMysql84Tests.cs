@@ -1553,6 +1553,84 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 Assert.Equal(HttpStatusCode.ServiceUnavailable, defaultOff.StatusCode);
             pilotConfig["MultiEmpresa:PrivateReadPilotEnabled"] = "true";
 
+            // V31: existing normalized color master with physical shadow ownership.
+            // No generic attribute, sharing or inventory semantics are assumed.
+            var colorPermission = await db.Permisos.IgnoreQueryFilters()
+                .FirstOrDefaultAsync(p => p.Modulo == ModuloSistema.Colores &&
+                    p.Accion == AccionPermiso.Ver &&
+                    p.Ambito == AmbitoAutorizacion.Empresa && p.Activo && !p.Eliminado);
+            if (colorPermission is null)
+            {
+                colorPermission = new Permiso
+                {
+                    Codigo = "C0701M0606.COLORES.VER",
+                    Nombre = "C0701 isolated color read permission",
+                    Modulo = ModuloSistema.Colores, Accion = AccionPermiso.Ver,
+                    Ambito = AmbitoAutorizacion.Empresa, Activo = true
+                };
+                db.Permisos.Add(colorPermission);
+                await db.SaveChangesAsync();
+            }
+            var grantColorA = new RolPermiso { RolId = roleA.Id, PermisoId = colorPermission.Id };
+            db.RolPermisos.AddRange(grantColorA,
+                new RolPermiso { RolId = roleB.Id, PermisoId = colorPermission.Id });
+            await db.SaveChangesAsync();
+
+            async Task<int> SeedOwnedColorAsync(int tenantId, string name)
+            {
+                var context = new DefaultHttpContext();
+                context.Items[Solqaryn.Application.Security.VerifiedCommercialTenant
+                    .AuthorizedEmpresaIdItemKey] = tenantId;
+                await using var owned = new AppDbContext(options,
+                    tenantHttpContextAccessor: new HttpContextAccessor { HttpContext = context });
+                var color = new Color { Nombre = name, Activo = true, CodigoVisual = "#123456" };
+                owned.Colores.Add(color);
+                await owned.SaveChangesAsync();
+                return color.Id;
+            }
+            var ownedColorA = await SeedOwnedColorAsync(a.Id, "C0701ColorOwnerA");
+            var ownedColorB = await SeedOwnedColorAsync(b.Id, "C0701ColorOwnerB");
+            await using (var physicalColors = new AppDbContext(options))
+            {
+                var owners = await physicalColors.Colores.IgnoreQueryFilters().AsNoTracking()
+                    .Where(c => c.Id == ownedColorA || c.Id == ownedColorB)
+                    .Select(c => new { c.Id, EmpresaId = EF.Property<int?>(c, "EmpresaId") })
+                    .ToArrayAsync();
+                Assert.Equal(a.Id, owners.Single(c => c.Id == ownedColorA).EmpresaId);
+                Assert.Equal(b.Id, owners.Single(c => c.Id == ownedColorB).EmpresaId);
+            }
+            foreach (var (jwt, tenantId, ownId, otherId, ownName, otherName) in new[]
+            {
+                (jwtA, a.Id, ownedColorA, ownedColorB, "C0701ColorOwnerA", "C0701ColorOwnerB"),
+                (jwtB, b.Id, ownedColorB, ownedColorA, "C0701ColorOwnerB", "C0701ColorOwnerA")
+            })
+            {
+                foreach (var path in new[] { "/colores", "/colores/activos", $"/colores/{ownId}" })
+                {
+                    using var response = await CategoryRequestAsync(jwt, tenantId, path);
+                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                    var body = await response.Content.ReadAsStringAsync();
+                    Assert.Contains(ownName, body, StringComparison.Ordinal);
+                    Assert.DoesNotContain(otherName, body, StringComparison.Ordinal);
+                }
+                using var foreign = await CategoryRequestAsync(jwt, tenantId, $"/colores/{otherId}");
+                Assert.Equal(HttpStatusCode.NotFound, foreign.StatusCode);
+                Assert.DoesNotContain(otherName, await foreign.Content.ReadAsStringAsync(),
+                    StringComparison.Ordinal);
+            }
+            using (var spoofColor = await CategoryRequestAsync(jwtA, b.Id, "/colores"))
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, spoofColor.StatusCode);
+            db.RolPermisos.Remove(grantColorA);
+            await db.SaveChangesAsync();
+            using (var deniedColor = await CategoryRequestAsync(jwtA, a.Id, "/colores"))
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, deniedColor.StatusCode);
+            using (var stillColorB = await CategoryRequestAsync(jwtB, b.Id, "/colores"))
+                Assert.Equal(HttpStatusCode.OK, stillColorB.StatusCode);
+            pilotConfig["MultiEmpresa:PrivateReadPilotEnabled"] = "false";
+            using (var offColor = await CategoryRequestAsync(jwtB, b.Id, "/colores"))
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, offColor.StatusCode);
+            pilotConfig["MultiEmpresa:PrivateReadPilotEnabled"] = "true";
+
             // V30: real ImpuestosController -> service -> MySQL ownership A/B.
             await using (var taxPhysical = new AppDbContext(options))
             {

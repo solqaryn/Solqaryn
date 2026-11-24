@@ -1,3 +1,7 @@
+## 2026-11-24 — DEV01 V31 C07-01.M06.06: lectura de colores con ownership físico
+- R2 incremento sobre maestro Color normalizado existente: GET exactos de lista, activos y detalle con piloto previo OFF por defecto, Colores.Ver SQL/MVC, marca tenant verificada y filtros EF. No nuevas mutaciones, ownership compartido ni migraciones.
+- Fact JWT/HTTP/Oracle EF MySQL 8.4 amplía cobertura A/B, readback EmpresaId físico, IDOR 404, selector cruzado, revocación y piloto OFF. A0 inspección; A1–A4 pendientes de CI exact-SHA, no LISTO/A5 anticipado. D01 atributos generalizados y D06 servicios no inventariables/ERP siguen pendientes. Sin QA/main/PROD.
+
 ## 2026-11-24 — DEV06 V31 C14-02.M06.06: revocación de membresía y bloqueo de actor en DELETE real
 - R2 test-only: ante cambio causal de UsuarioScopeService, el Fact JWT/HTTP/Oracle EF MySQL 8.4 ahora exige denegación con JWT aún firmado tras desactivar membresía o bloquear actor, readback físico A/B sin mutación, y conserva positivos y rollback SQL.
 - Documenta matriz de cobertura real por superficie y límites; sin cambios runtime, permisos, CI, QA/main/PROD ni LISTO/A5 anticipado. CI exact-SHA pendiente de verificación.
