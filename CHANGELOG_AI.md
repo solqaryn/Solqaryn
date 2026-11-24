@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV02 C15-04.M05.04: regresión causal de entrada pública
+
+- El job real 138748798467 del SHA cc9bb0da falló 1/7 porque esperaba /login desde /; app.routes.ts establece explícitamente /conoce-solqaryn como entrada pública y conserva /login. Se verifica el destino y encabezado de la landing, el enlace visible Acceder y su navegación real al formulario, manteniendo todas las aserciones de validación local, contraseña y guardas privadas, sin mocks ni cambios de runtime o permisos.
+- Añade app.routes.ts y la landing vigente al disparador de la regresión C13-04.M05.04 sin retirar rutas, checks ni concurrencia por SHA. No cambia estados históricos C13 ni certifica la auditoría global. CI exact-SHA pendiente; presupuesto CSS restante 1.56 kB sigue abierto. SKREF-10 (Angular routing/E2E) aplicado; SKREF-03/05 consultados sin cambios de diseño ni instalación.
+
 ## 2026-11-24 — DEV01 C07-01.M06.06: contrato vendible antes de mutaciones ERP
 
 - R2 D06: VentaService valida la elegibilidad comercial también en Application, tanto al armar el borrador y calcular la vista previa como al confirmar bajo los locks físicos. Un producto reclasificado después del borrador o tipo no soportado no debe iniciar cambios de stock, Kardex, factura o finanzas. Se mantiene la regla vigente MercaderiaVenta, no se habilita el enum de servicios ni se modifica la anulación histórica.

@@ -7,9 +7,14 @@ import { expect, test } from '@playwright/test';
 test.describe('C13-04.M05.04 aceptación positiva pública sin mocks', () => {
   test.describe.configure({ retries: 0 });
 
-  test('raíz real lleva a login y la validación local bloquea envío vacío', async ({ page }) => {
+  test('raíz real lleva a la landing pública, acceso por enlace real y validación local de login', async ({ page }) => {
     const response = await page.goto('/');
     expect(response?.ok()).toBe(true);
+    await expect(page).toHaveURL(/\/conoce-solqaryn(?:\?|$)/);
+    await expect(page.locator('h1#c0601-heading')).toBeVisible();
+    const acceso = page.getByRole('link', { name: 'Acceder', exact: true });
+    await expect(acceso).toHaveAttribute('href', '/login');
+    await acceso.click();
     await expect(page).toHaveURL(/\/login(?:\?|$)/);
     await expect(page.getByRole('heading', { name: 'Iniciar sesión' })).toBeVisible();
     const submit = page.getByRole('button', { name: /Ingresar al sistema/ });

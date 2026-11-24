@@ -5,6 +5,8 @@ on:
     paths:
       - 'frontend/e2e/c13-04-m05-04-aceptacion-publica.spec.ts'
       - '.github/workflows/v19-c13-04-m05-04-aceptacion-publica.yml'
+      - 'frontend/src/app/app.routes.ts'
+      - 'frontend/src/app/features/landing/c0601-public-saas-landing.component.ts'
       - 'frontend/src/app/features/login/login.component.html'
       - 'frontend/src/app/features/storefront/storefront.component.html'
       - 'frontend/src/app/features/storefront/storefront-productos.component.html'
