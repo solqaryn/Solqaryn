@@ -46,9 +46,8 @@ public sealed class C0301M0303TenantOwnedRoleTokenGateTests
         repo.Setup(x => x.GetByIdAsync(actor.Id)).ReturnsAsync(actor);
         repo.Setup(x => x.GetByNombreUsuarioAsync(actor.NombreUsuario))
             .ReturnsAsync(actor);
-        repo.Setup(x => x.GetEmpresaAsync(actor.Id, CompanyId))
-            .ReturnsAsync(membership);
-        repo.Setup(x => x.GetEmpresasAsync(actor.Id))
+        repo.Setup(x => x.GetAuthenticationMembershipsAsync(
+                actor.Id, RoleId, actor.RolEntidad.EmpresaId))
             .ReturnsAsync(membership is null
                 ? new List<UsuarioEmpresa>()
                 : new List<UsuarioEmpresa> { membership });
@@ -81,7 +80,7 @@ public sealed class C0301M0303TenantOwnedRoleTokenGateTests
         var (service, repo, jwt) = Make(actor, member);
 
         Assert.Null(await service.RenovarAsync(UserId));
-        repo.Verify(x => x.GetEmpresaAsync(UserId, CompanyId), Times.Once);
+        repo.Verify(x => x.GetAuthenticationMembershipsAsync(UserId, RoleId, CompanyId), Times.Once);
         jwt.Verify(x => x.GenerarToken(It.IsAny<Usuario>()), Times.Never);
     }
 
@@ -100,7 +99,7 @@ public sealed class C0301M0303TenantOwnedRoleTokenGateTests
         });
 
         Assert.Null(result);
-        repo.Verify(x => x.GetEmpresaAsync(UserId, CompanyId), Times.Once);
+        repo.Verify(x => x.GetAuthenticationMembershipsAsync(UserId, RoleId, CompanyId), Times.Once);
         jwt.Verify(x => x.GenerarToken(It.IsAny<Usuario>()), Times.Never);
     }
 
@@ -122,7 +121,7 @@ public sealed class C0301M0303TenantOwnedRoleTokenGateTests
         Assert.NotNull(renew);
         Assert.Equal("unsigned-test-token", login.Token);
         Assert.Equal("unsigned-test-token", renew.Token);
-        repo.Verify(x => x.GetEmpresaAsync(UserId, CompanyId), Times.Exactly(2));
+        repo.Verify(x => x.GetAuthenticationMembershipsAsync(UserId, RoleId, CompanyId), Times.Exactly(2));
         jwt.Verify(x => x.GenerarToken(actor), Times.Exactly(2));
     }
 
@@ -138,7 +137,7 @@ public sealed class C0301M0303TenantOwnedRoleTokenGateTests
             Password = "valid-test-password"
         }));
         Assert.Null(await service.RenovarAsync(UserId));
-        repo.Verify(x => x.GetEmpresasAsync(UserId), Times.Exactly(2));
+        repo.Verify(x => x.GetAuthenticationMembershipsAsync(UserId, RoleId, null), Times.Exactly(2));
         jwt.Verify(x => x.GenerarToken(It.IsAny<Usuario>()), Times.Never);
     }
 
@@ -159,7 +158,7 @@ public sealed class C0301M0303TenantOwnedRoleTokenGateTests
         var (service, repo, jwt) = Make(actor, member);
 
         Assert.Null(await service.RenovarAsync(UserId));
-        repo.Verify(x => x.GetEmpresasAsync(UserId), Times.Once);
+        repo.Verify(x => x.GetAuthenticationMembershipsAsync(UserId, RoleId, null), Times.Once);
         jwt.Verify(x => x.GenerarToken(It.IsAny<Usuario>()), Times.Never);
     }
 
@@ -176,7 +175,7 @@ public sealed class C0301M0303TenantOwnedRoleTokenGateTests
             Password = "valid-test-password"
         }));
         Assert.NotNull(await service.RenovarAsync(UserId));
-        repo.Verify(x => x.GetEmpresasAsync(UserId), Times.Exactly(2));
+        repo.Verify(x => x.GetAuthenticationMembershipsAsync(UserId, RoleId, null), Times.Exactly(2));
         jwt.Verify(x => x.GenerarToken(actor), Times.Exactly(2));
     }
 
@@ -189,7 +188,7 @@ public sealed class C0301M0303TenantOwnedRoleTokenGateTests
             new UsuarioEmpresa(UserId, CompanyId, RoleId));
 
         Assert.Null(await service.RenovarAsync(UserId));
-        repo.Verify(x => x.GetEmpresaAsync(It.IsAny<int>(), It.IsAny<int>()),
+        repo.Verify(x => x.GetAuthenticationMembershipsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int?>()),
             Times.Never);
         jwt.Verify(x => x.GenerarToken(It.IsAny<Usuario>()), Times.Never);
     }
@@ -208,7 +207,7 @@ public sealed class C0301M0303TenantOwnedRoleTokenGateTests
         }));
         Assert.Null(await service.RenovarAsync(UserId));
 
-        repo.Verify(x => x.GetEmpresaAsync(It.IsAny<int>(), It.IsAny<int>()),
+        repo.Verify(x => x.GetAuthenticationMembershipsAsync(It.IsAny<int>(), It.IsAny<int>(), It.IsAny<int?>()),
             Times.Never);
         jwt.Verify(x => x.GenerarToken(It.IsAny<Usuario>()), Times.Never);
     }

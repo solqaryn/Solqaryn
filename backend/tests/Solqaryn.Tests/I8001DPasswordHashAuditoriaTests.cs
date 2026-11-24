@@ -50,7 +50,7 @@ public sealed class I8001DPasswordHashAuditoriaTests
         var repositorio = new Mock<IUsuarioRepository>();
         repositorio.Setup(x => x.GetByNombreUsuarioAsync("operador-erp"))
             .ReturnsAsync(usuario);
-        repositorio.Setup(x => x.GetEmpresasAsync(usuario.Id))
+        repositorio.Setup(x => x.GetAuthenticationMembershipsAsync(usuario.Id, usuario.RolId, null))
             .ReturnsAsync(new List<UsuarioEmpresa> { new(usuario.Id, 4103, usuario.RolId) });
         var jwt = new Mock<IJwtService>(MockBehavior.Strict);
         var servicio = new AuthService(

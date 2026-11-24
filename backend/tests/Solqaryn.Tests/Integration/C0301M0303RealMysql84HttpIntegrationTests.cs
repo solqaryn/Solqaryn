@@ -18,6 +18,9 @@ using MySql.EntityFrameworkCore.Extensions;
 using Solqaryn.API.Security;
 using Solqaryn.Application.AutomationV5;
 using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.DTOs;
+using Solqaryn.Application.Services;
+using Solqaryn.Infrastructure.Repositories;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
 using Solqaryn.Infrastructure.Persistence;
@@ -178,7 +181,7 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
             {
                 NombreUsuario = "login_" + Guid.NewGuid().ToString("N")[..12],
                 NombreCompleto = "Login test actor",
-                PasswordHash = "never-used-test-only",
+                PasswordHash = BCrypt.Net.BCrypt.HashPassword("isolated-login-password"),
                 RolId = roleA.Id, Activo = true
             };
             db.Usuarios.Add(actor);
@@ -219,6 +222,59 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
             db.RolPermisos.Add(grant);
             await db.SaveChangesAsync();
             db.ChangeTracker.Clear();
+
+            // Production AuthService and JWT signer on fresh Oracle EF contexts.
+            // An active membership alone cannot issue or renew a token for an inactive tenant.
+            var authSettings = new ConfigurationBuilder().AddInMemoryCollection(
+                new Dictionary<string, string?>
+                {
+                    ["Jwt:Secret"] = "c0301-login-real-mysql84-signed-jwt-test-only-2026",
+                    ["Jwt:Issuer"] = Issuer,
+                    ["Jwt:Audience"] = Audience
+                }).Build();
+            async Task AssertTokenGateAsync(bool allowed)
+            {
+                await using var authDb = new AppDbContext(options);
+                var auth = new AuthService(new UsuarioRepository(authDb),
+                    new RolRepository(authDb), new JwtService(authSettings));
+                var login = await auth.LoginAsync(new LoginRequestDto
+                {
+                    NombreUsuario = actor.NombreUsuario,
+                    Password = "isolated-login-password"
+                });
+                var renewal = await auth.RenovarAsync(actor.Id);
+                if (!allowed)
+                {
+                    Assert.Null(login);
+                    Assert.Null(renewal);
+                    return;
+                }
+
+                Assert.NotNull(login);
+                Assert.NotNull(renewal);
+                foreach (var issued in new[] { login.Token, renewal.Token })
+                {
+                    var principal = new JwtSecurityTokenHandler().ValidateToken(issued,
+                        new TokenValidationParameters
+                        {
+                            ValidIssuer = Issuer, ValidAudience = Audience,
+                            IssuerSigningKey = Key, ValidateIssuerSigningKey = true,
+                            ValidateIssuer = true, ValidateAudience = true,
+                            ValidateLifetime = true, RequireSignedTokens = true
+                        }, out _);
+                    Assert.Equal(actor.Id.ToString(), principal.FindFirst("id")?.Value);
+                    Assert.Equal(roleA.Id.ToString(), principal.FindFirst("rolId")?.Value);
+                }
+            }
+
+            await AssertTokenGateAsync(true);
+            var liveCompany = await db.Set<Empresa>().SingleAsync(e => e.Id == tenantA.Id);
+            liveCompany.Desactivar();
+            await db.SaveChangesAsync();
+            await AssertTokenGateAsync(false);
+            liveCompany.Activar();
+            await db.SaveChangesAsync();
+            await AssertTokenGateAsync(true);
 
             using var host = await StartAsync(scoped);
             using var client = host.GetTestClient();

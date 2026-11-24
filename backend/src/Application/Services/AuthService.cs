@@ -70,7 +70,7 @@ public class AuthService : IAuthService
                 !role.EsSistema)
                 return false;
 
-            var memberships = await _usuarioRepository.GetEmpresasAsync(usuario.Id);
+            var memberships = await _usuarioRepository.GetAuthenticationMembershipsAsync(usuario.Id, role.Id, null);
             return memberships is { Count: > 0 } &&
                 memberships.Any(m => m.Activa && m.UsuarioId == usuario.Id &&
                     m.EmpresaId > 0 && m.RolId == role.Id);
@@ -81,12 +81,13 @@ public class AuthService : IAuthService
             usuario.Id <= 0)
             return false;
 
-        var membership = await _usuarioRepository.GetEmpresaAsync(
-            usuario.Id, role.EmpresaId.Value);
-        return membership is { Activa: true } &&
-            membership.UsuarioId == usuario.Id &&
-            membership.EmpresaId == role.EmpresaId.Value &&
-            membership.RolId == role.Id;
+        var membershipsOwned = await _usuarioRepository.GetAuthenticationMembershipsAsync(
+            usuario.Id, role.Id, role.EmpresaId.Value);
+        return membershipsOwned is { Count: 1 } &&
+            membershipsOwned[0].Activa &&
+            membershipsOwned[0].UsuarioId == usuario.Id &&
+            membershipsOwned[0].EmpresaId == role.EmpresaId.Value &&
+            membershipsOwned[0].RolId == role.Id;
     }
 
     private LoginResponseDto CrearRespuesta(Usuario usuario)

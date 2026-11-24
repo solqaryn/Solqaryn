@@ -69,7 +69,7 @@ public sealed class I8009CRevocacionRenovacionTests
 
         var usuarios = new Mock<IUsuarioRepository>(MockBehavior.Strict);
         usuarios.Setup(x => x.GetByIdAsync(usuarioId)).ReturnsAsync(usuario);
-        usuarios.Setup(x => x.GetEmpresasAsync(usuarioId))
+        usuarios.Setup(x => x.GetAuthenticationMembershipsAsync(usuarioId, rol.Id, null))
             .ReturnsAsync(new List<UsuarioEmpresa> { new(usuarioId, 4102, rol.Id) });
         var roles = new Mock<IRolRepository>(MockBehavior.Strict);
         var jwt = new Mock<IJwtService>(MockBehavior.Strict);

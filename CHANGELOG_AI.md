@@ -1,3 +1,8 @@
+## 2026-11-23 — V31 C03-01.M03.03: autenticación empresarial vinculada a SQL vigente
+
+- DEV04: login y renovación consultan membresía activa, usuario, empresa activa y rol empresarial vigente en una sola consulta Oracle EF sin tracking; no reutilizan el listado administrativo ni amplían autoridad de plataforma.
+- Regresión causal en el laboratorio MySQL 8.4 existente: emisor JWT real, empresa desactivada con membresía activa, denegación de login y renovación, y reactivación; fixtures unitarios conservan negativos. Evidencia CI exact-SHA y A5 independiente pendientes; no certifica reemisión tenant/sucursal ni QA/main/PROD.
+
 ## 2026-11-23 — DEV03 V31 C03-03.M03.06: auditoría de errores del proveedor QA
 - R2: persistir error estructurado acotado de consulta QA autorizada (SHA, código fijo y correlación); validar tipo JSON raíz/conteo, tratar transporte y timeout como no verificable, sin cuerpo remoto, datos de tenant ni permisos nuevos. Si la auditoría no se guarda, no devolver evidencia.
 - Regresión causal en suite existente: HTTP JWT y MySQL 8.4 efímero, JSON raíz inválido devuelve 503 no-store y registro durable seguro; límite de bytes mantiene rechazo y auditoría. Proveedor fixture no certifica recorrido vivo; CI exact-SHA y A5 pendientes. Rollback por revert; solo dev.

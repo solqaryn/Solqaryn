@@ -1,6 +1,7 @@
 using Solqaryn.Application.Common;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Enums;
 using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -100,6 +101,32 @@ public class UsuarioRepository : IUsuarioRepository
 
     public async Task AddAsync(Usuario usuario) => await _context.Usuarios.AddAsync(usuario);
     public void Update(Usuario usuario) => _context.Usuarios.Update(usuario);
+
+    public async Task<List<UsuarioEmpresa>> GetAuthenticationMembershipsAsync(
+        int usuarioId, int rolId, int? empresaId)
+    {
+        if (usuarioId <= 0 || rolId <= 0 || empresaId is <= 0)
+            return new List<UsuarioEmpresa>();
+
+        var authorizedEmpresaId = _context.AuthorizedReadEmpresaId;
+        // Read live SQL state, not tracked membership/role entities or client claims.
+        // A template is not an authorization to any inactive or foreign company.
+        return await (
+            from membership in _context.UsuarioEmpresas.AsNoTracking()
+            join user in _context.Usuarios.AsNoTracking() on membership.UsuarioId equals user.Id
+            join company in _context.Set<Empresa>().AsNoTracking() on membership.EmpresaId equals company.Id
+            join role in _context.Roles.AsNoTracking() on membership.RolId equals role.Id
+            where membership.UsuarioId == usuarioId && membership.RolId == rolId &&
+                  user.RolId == rolId && membership.Activa &&
+                  user.Activo && !user.Bloqueado && !user.Eliminado &&
+                  company.Activa && role.Activo && !role.Eliminado &&
+                  role.Ambito == AmbitoAutorizacion.Empresa &&
+                  (role.EmpresaId == company.Id || (role.EmpresaId == null && role.EsSistema)) &&
+                  (!empresaId.HasValue || company.Id == empresaId.Value) &&
+                  (!authorizedEmpresaId.HasValue || company.Id == authorizedEmpresaId.Value)
+            orderby company.Id
+            select membership).ToListAsync();
+    }
 
     public async Task<List<UsuarioEmpresa>> GetEmpresasAsync(int usuarioId)
     {

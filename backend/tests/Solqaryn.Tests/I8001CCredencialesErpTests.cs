@@ -100,7 +100,7 @@ public sealed class I8001CCredencialesErpTests
     {
         var repository = new Mock<IUsuarioRepository>();
         repository.Setup(x => x.GetByNombreUsuarioAsync("operador")).ReturnsAsync(usuario);
-        repository.Setup(x => x.GetEmpresasAsync(usuario.Id))
+        repository.Setup(x => x.GetAuthenticationMembershipsAsync(usuario.Id, usuario.RolId, null))
             .ReturnsAsync(new List<UsuarioEmpresa> { new(usuario.Id, 4105, usuario.RolId) });
         var jwt = new Mock<IJwtService>(MockBehavior.Strict);
         var sut = new AuthService(repository.Object, Mock.Of<IRolRepository>(), jwt.Object);

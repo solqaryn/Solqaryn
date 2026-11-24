@@ -17,6 +17,10 @@ public interface IUsuarioRepository
     Task AddAsync(Usuario usuario);
     void Update(Usuario usuario);
 
+    // Authority for token issuance only; never fall back to administrative membership lists.
+    Task<List<UsuarioEmpresa>> GetAuthenticationMembershipsAsync(int usuarioId, int rolId, int? empresaId)
+        => Task.FromResult(new List<UsuarioEmpresa>());
+
     Task<List<UsuarioEmpresa>> GetEmpresasAsync(int usuarioId);
     Task<UsuarioEmpresa?> GetEmpresaAsync(int usuarioId, int empresaId);
     Task AddEmpresaAsync(UsuarioEmpresa usuarioEmpresa);

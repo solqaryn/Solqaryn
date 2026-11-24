@@ -73,7 +73,7 @@ public sealed class I8001EHashCorrectoRolInvalidoTests
             Activo = true,
             Eliminado = false
         };
-        repositorio.Setup(x => x.GetEmpresasAsync(usuario.Id))
+        repositorio.Setup(x => x.GetAuthenticationMembershipsAsync(usuario.Id, usuario.RolId, null))
             .ReturnsAsync(new List<UsuarioEmpresa> { new(usuario.Id, 4106, 9) });
         var expira = DateTime.UtcNow.AddMinutes(15);
         jwt.Setup(x => x.GenerarToken(usuario))
