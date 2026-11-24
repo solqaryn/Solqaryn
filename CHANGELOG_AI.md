@@ -1,3 +1,7 @@
+## 2026-11-24 — DEV05 V31 C01-03.M04.04: espera de PUT y restauración acotadas
+- R2 test-only: corregir discrepancia localhost/127.0.0.1 del predicado de respuesta Chromium, limitar espera y limpieza independiente sin ocultar fallo original; preservar JWT real, 409/412, PUT 200, SQL readback, restauración y tenant A/B. CI fuente 7 PASS/1 timeout; hipótesis pendiente de prueba exact-SHA.
+- A0 diff, A1-A4 CI pendiente; SKREF-03/10 pins leídos, sin cambios runtime ni permisos. A5 independiente y UX nativa/ANTES pendientes. Revert normal dev.
+
 ## 2026-11-24 — DEV04 V31 C03-01.M03.03: sesión base vigente en selección tenant
 - R2, DEV: los endpoints productivos de contexto y catálogo de empresas revalidan en SQL el actor, rol base firmado, cuenta y membresía antes y después de resolver el contexto; conservan el rol efectivo de la membresía destino separado del rol base. Deniegan por defecto; no emiten JWT ni amplían autoridad de plataforma.
 - Regresión de contrato y ampliación de TestServer con JWT firmado y Oracle MySQL 8.4 efímero para catálogo/contexto A, B ajeno, rol ausente, rol inactivo y membresía revocada/restaurada. CI causal exact-SHA pendiente; no se certifica reemisión tenant/sucursal, A0-A4 integral ni A5.

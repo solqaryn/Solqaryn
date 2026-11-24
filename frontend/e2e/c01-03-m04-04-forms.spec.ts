@@ -151,12 +151,17 @@ test.describe('V24 M04.04 form: real GET, guarded duplicate mutation, error and 
     expect(putCount, 'validation cannot automatically retry PUT').toBe(1);
   });
 
-  test('real signed-JWT MySQL stale version is denied and original config restored', async ({ page }) => {
+  test('real signed-JWT MySQL stale version is denied and original config restored', async ({ page, request }) => {
     test.setTimeout(180_000);
     const token = await loginA(page);
     const headers = { Authorization: 'Bearer ' + token };
     const endpoint = api + '/empresa-configuracion/tenant/1';
-    const initial = await page.request.get(endpoint, { headers });
+    // Angular dev environment uses localhost; API fixture uses 127.0.0.1.
+    // Both are explicitly approved loopback origins for this exact tenant path.
+    const browserEndpoints = new Set([endpoint, 'http://localhost:5005/empresa-configuracion/tenant/1']);
+    const requestTimeout = 10_000;
+    const responseTimeout = 15_000;
+    const initial = await page.request.get(endpoint, { headers, timeout: requestTimeout });
     expect(initial.status()).toBe(200);
     const prior = (await initial.json())?.data as {
       empresaId: number; nombre: string; rtn: string | null; direccion: string | null;
@@ -172,11 +177,13 @@ test.describe('V24 M04.04 form: real GET, guarded duplicate mutation, error and 
       correoRemitente: prior.correoRemitente, correoNombreRemitente: prior.correoNombreRemitente,
       version: prior.version
     };
-    let modified = false;
+    let mutationAttempted = false;
+    let primaryFailure: unknown;
+    const newName = prior.nombre.slice(0, 145) + ' CI-CAS-real';
+    const finalName = newName + '-reloaded';
     try {
-      const newName = prior.nombre.slice(0, 145) + ' CI-CAS-real';
-      const first = await page.request.put(endpoint, { headers, data: { ...original, nombre: newName } });
-      modified = first.status() === 200;
+      mutationAttempted = true;
+      const first = await page.request.put(endpoint, { headers, timeout: requestTimeout, data: { ...original, nombre: newName } });
       expect(first.status(), 'authorized PUT with fresh version').toBe(200);
       // The mounted browser still holds the old version; exercise the actual HTTP
       // conflict from the Angular form, not an injected Playwright response.
@@ -185,16 +192,18 @@ test.describe('V24 M04.04 form: real GET, guarded duplicate mutation, error and 
       const save = page.getByRole('button', { name: 'Guardar configuración tenant' });
       await expect(input).toHaveValue(prior.nombre);
       await input.fill(newName + '-stale');
-      const staleResponse = page.waitForResponse(response =>
-        response.url() === endpoint && response.request().method() === 'PUT');
-      await save.click();
-      const stale = await staleResponse;
+      await expect(save).toBeEnabled();
+      const [stale] = await Promise.all([
+        page.waitForResponse(response => browserEndpoints.has(response.url()) &&
+          response.request().method() === 'PUT', { timeout: responseTimeout }),
+        save.click({ timeout: responseTimeout })
+      ]);
       expect(stale.request().postDataJSON().version).toBe(prior.version);
       expect([409, 412], 'real server must deny stale browser version')
         .toContain(stale.status());
       await expect(page.getByText(/La configuración cambió en otra sesión/)).toBeVisible();
       await expect(save).toBeDisabled();
-      const after = await page.request.get(endpoint, { headers });
+      const after = await page.request.get(endpoint, { headers, timeout: requestTimeout });
       expect(after.status()).toBe(200);
       const afterData = (await after.json())?.data;
       expect(afterData.empresaId).toBe(1);
@@ -204,34 +213,51 @@ test.describe('V24 M04.04 form: real GET, guarded duplicate mutation, error and 
       await expect(input).toHaveValue(newName);
       await expect(page.getByText(/La configuración cambió en otra sesión/)).toHaveCount(0);
       await expect(save).toBeEnabled();
-      const finalName = newName + '-reloaded';
       await input.fill(finalName);
-      const recoveredResponse = page.waitForResponse(response =>
-        response.url() === endpoint && response.request().method() === 'PUT');
-      await save.click();
-      const recovered = await recoveredResponse;
+      const [recovered] = await Promise.all([
+        page.waitForResponse(response => browserEndpoints.has(response.url()) &&
+          response.request().method() === 'PUT', { timeout: responseTimeout }),
+        save.click({ timeout: responseTimeout })
+      ]);
       expect(recovered.request().postDataJSON().version).toBe(afterData.version);
       expect(recovered.status()).toBe(200);
       await expect(form).toHaveAttribute('aria-busy', 'false');
-      const persistedAfterRecovery = await page.request.get(endpoint, { headers });
+      const persistedAfterRecovery = await page.request.get(endpoint, { headers, timeout: requestTimeout });
       expect(persistedAfterRecovery.status()).toBe(200);
       expect((await persistedAfterRecovery.json())?.data?.nombre).toBe(finalName);
-      const foreign = await page.request.get(api + '/empresa-configuracion/tenant/2', { headers });
+      const foreign = await page.request.get(api + '/empresa-configuracion/tenant/2', { headers, timeout: requestTimeout });
       expect([403, 404], 'signed company A JWT cannot read B').toContain(foreign.status());
+    } catch (error) {
+      primaryFailure = error;
+      throw error;
     } finally {
-      if (modified) {
-        const current = await page.request.get(endpoint, { headers });
-        expect(current.status()).toBe(200);
-        const persisted = (await current.json())?.data;
-        const restore = await page.request.put(endpoint, {
-          headers, data: { ...original, version: persisted.version }
-        });
-        expect(restore.status(), 'compensating versioned restore in ephemeral MySQL').toBe(200);
-        const readback = await page.request.get(endpoint, { headers });
-        expect(readback.status()).toBe(200);
-        const restored = (await readback.json())?.data;
-        expect(restored.nombre).toBe(prior.nombre);
-        expect(restored.empresaId).toBe(1);
+      if (mutationAttempted) {
+        try {
+          // Separate API fixture and bounded requests keep the original failure
+          // visible, while restoring only this test's own isolated mutations.
+          const current = await request.get(endpoint, { headers, timeout: requestTimeout });
+          expect(current.status()).toBe(200);
+          const persisted = (await current.json())?.data;
+          expect(persisted.empresaId).toBe(1);
+          expect(Number.isInteger(persisted.version)).toBe(true);
+          if (persisted.nombre !== prior.nombre) {
+            expect([newName, newName + '-stale', finalName], 'restore only values written by this test').toContain(persisted.nombre);
+            const restore = await request.put(endpoint, {
+              headers, timeout: requestTimeout, data: { ...original, version: persisted.version }
+            });
+            expect(restore.status(), 'compensating versioned restore in ephemeral MySQL').toBe(200);
+          }
+          const readback = await request.get(endpoint, { headers, timeout: requestTimeout });
+          expect(readback.status()).toBe(200);
+          const restored = (await readback.json())?.data;
+          expect(restored.nombre).toBe(prior.nombre);
+          expect(restored.empresaId).toBe(1);
+        } catch (cleanupError) {
+          if (primaryFailure !== undefined) {
+            throw new AggregateError([primaryFailure, cleanupError], 'CAS browser test and compensating restore both failed');
+          }
+          throw cleanupError;
+        }
       }
     }
   });
