@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV02 V31 C15-04.M05.04: preflight causal X11
+- R2, CI exclusivamente DEV: SHA 632eb5514522b5eff5e977278034304246f8d745, run 45346203463/job 138281243807: 29 pruebas Chromium aprobadas; el paso de zoom terminó en `command -v ffmpeg` sin ejecutar captura. No es una regresión funcional.
+- Instalar ffmpeg desde paquetes Ubuntu del runner efímero solo si falta; comprobar dispositivo x11grab y captura física de un fotograma en Xvfb antes del E2E, manteniendo el control nativo 100/200, geometría, PNG, tests y permisos existentes. Sin secretos, runtime comercial ni cambio de arquitectura.
+- No repetir manualmente la suite aprobada del SHA anterior. Nuevo SHA por reparación requiere CI causal; ninguna certificación anticipada de zoom, UX global, A0-A4 o A5. WIP/owner DEV02 y V17 propios conservados. Rollback por revert ordinario en dev; sin QA/main/PROD.
+
 ## 2026-11-24 — DEV01 V31 C07-01.M06.06: validación fiscal fail-closed
 - R2: ImpuestoService rechaza tipo/operación numéricos no definidos y listas compuestas antes de persistir, sin cambiar JWT/RBAC/flags ni reflejar entrada inválida.
 - Regresión HTTP JWT A/B y MySQL 8.4 efímero: 16 POST + 16 PUT negativas, positivos preservados y readback SQL/auditoría sin mutación adicional. CI exact-SHA requerida, no PASS anticipado ni reejecución manual de la fuente verde.

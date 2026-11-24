@@ -38,6 +38,18 @@ jobs:
           npm run lint
           npm run build:prod
       - run: npx playwright install --with-deps chromium
+      - name: Preflight de captura X11 antes de ejecutar UX
+        shell: bash
+        run: |
+          set -euo pipefail
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends ffmpeg
+          fi
+          command -v ffmpeg
+          command -v xvfb-run
+          ffmpeg -hide_banner -devices 2>&1 | grep -w x11grab
+          xvfb-run -a -s '-screen 0 1600x1200x24' bash -c 'ffmpeg -nostdin -hide_banner -loglevel error -f x11grab -video_size 1600x1200 -i "$DISPLAY" -frames:v 1 -threads 1 -f null -'
       - name: Angular efimero localhost
         shell: bash
         run: |
