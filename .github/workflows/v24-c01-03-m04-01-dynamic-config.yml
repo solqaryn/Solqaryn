@@ -10,6 +10,7 @@ on:
       - '.github/workflows/v24-c01-03-m04-01-dynamic-config.yml'
       - 'frontend/e2e/c01-03-m04-01-dynamic-config.spec.ts'
       - 'frontend/e2e/c01-03-m04-02-states.spec.ts'
+      - 'frontend/e2e/c01-03-m04-02-native-zoom.mjs'
       - 'frontend/e2e/c01-03-m04-04-forms.spec.ts'
       - 'frontend/e2e/c01-03-m04-04-editor-native-zoom.mjs'
       - 'frontend/e2e/c01-03-m04-04-readonly.spec.ts'
@@ -239,6 +240,15 @@ jobs:
           (cd v24-c0103-m0401-screenshots && sha256sum -- *.png > SHA256SUMS.txt)
           echo "V24_C0103_M0401_20_REAL_CHROMIUM_PNG_PRESERVED"
 
+      # Native browser toolbar-equivalent zoom, not root-font scaling/pinch.
+      # Run while the real A/B JWT/MySQL fixture is present; no data writes.
+      - name: Preflight M04.02 native zoom syntax
+        working-directory: frontend
+        run: node --check e2e/c01-03-m04-02-native-zoom.mjs
+      - name: M04.02 Chromium native zoom 200 - five states and Tab
+        working-directory: frontend
+        shell: bash
+        run: xvfb-run -a -s '-screen 0 1600x1200x24' node e2e/c01-03-m04-02-native-zoom.mjs
       # This database/container only exists on this GitHub-hosted runner. The
       # second phase tests the ACTUAL pre-existing single-tenant edit grant;
       # no runtime feature flag or production RBAC rule is loosened.
