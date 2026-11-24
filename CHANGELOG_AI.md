@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV02 C15-04.M05.04: corregir cascada del foco de galería
+
+- CI de ae2c228e (Fase 4, run 45446271452/job 138630790850) ejecutó la regresión de teclado y falló: outlineOffset efectivo +3 px, ancho 3 px. La regla global de enterprise-design-system impone outline-offset con !important. La excepción del componente ahora usa !important únicamente en el desplazamiento interior de foto principal y miniaturas; conserva grosor, color, forced-colors, Tab/Enter/Escape y el oráculo sin cambios. Sin API, permisos, datos o arquitectura nuevos.
+- CI causal exact SHA pendiente; no se relanza el mismo SHA fallido. El presupuesto CSS 18.33/16 kB, matriz global UX/WCAG, capturas antes/después y regresión de autorización siguen abiertos; no LISTO ni A5 propia. SKREF03/05/10 consultadas en pins canónicos sin ejecutar herramientas externas. Rollback mediante revert ordinario. Scope exclusivo DEV02 V17 2000002297.
+
 ## 2026-11-24 — DEV03 C06-04.M03.05: CAS binario del titular de lease
 
 - Corrige el ACK por alias de mayúsculas en la cola InnoDB aislada: `SettleAsync` exige identidad exacta del worker además del tenant, intento y vencimiento.
