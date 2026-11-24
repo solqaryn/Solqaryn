@@ -69,6 +69,16 @@ public sealed class C0204M0502QaHttpContractTests
         Assert.Equal(AmbitoAutorizacion.Plataforma, audit.AmbitoAutoridad);
         Assert.Null(audit.EmpresaId);
         Assert.DoesNotContain("999999", audit.Descripcion);
+        Assert.NotNull(audit.ValoresNuevos);
+        using var metadata = JsonDocument.Parse(audit.ValoresNuevos!);
+        Assert.Equal("qa-check-evidence/v1", metadata.RootElement.GetProperty("Schema").GetString());
+        Assert.Equal(Sha, metadata.RootElement.GetProperty("Sha").GetString());
+        Assert.Equal("CI_MINIMA_ACREDITADA", metadata.RootElement.GetProperty("EstadoCi").GetString());
+        Assert.Equal("SIN_VERIFICAR", metadata.RootElement.GetProperty("EstadoA5").GetString());
+        Assert.Equal(4, metadata.RootElement.GetProperty("TotalChecks").GetInt32());
+        Assert.Equal(4, metadata.RootElement.GetProperty("ChecksExitosos").GetInt32());
+        Assert.DoesNotContain("private-secret", audit.ValoresNuevos!);
+        Assert.True(Guid.TryParseExact(audit.CorrelationId, "N", out _));
     }
 
     [Fact]
@@ -236,6 +246,19 @@ public sealed class C0204M0502QaHttpContractTests
         using (var scope = fixture.Host.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var audit = Assert.Single(await db.Set<RegistroAuditoria>().ToListAsync());
+            Assert.Null(audit.EmpresaId);
+            Assert.Equal(AmbitoAutorizacion.Plataforma, audit.AmbitoAutoridad);
+            Assert.NotNull(audit.ValoresNuevos);
+            using var metadata = JsonDocument.Parse(audit.ValoresNuevos!);
+            Assert.Equal("qa-check-evidence/v1", metadata.RootElement.GetProperty("Schema").GetString());
+            Assert.Equal(Sha, metadata.RootElement.GetProperty("Sha").GetString());
+            Assert.Equal("CI_MINIMA_ACREDITADA", metadata.RootElement.GetProperty("EstadoCi").GetString());
+            Assert.Equal("SIN_VERIFICAR", metadata.RootElement.GetProperty("EstadoA5").GetString());
+            Assert.Equal(4, metadata.RootElement.GetProperty("TotalChecks").GetInt32());
+            Assert.Equal(4, metadata.RootElement.GetProperty("ChecksExitosos").GetInt32());
+            Assert.DoesNotContain("private-secret", audit.ValoresNuevos!);
+            Assert.True(Guid.TryParseExact(audit.CorrelationId, "N", out _));
             var grant = await db.Set<UsuarioRolPlataforma>().SingleAsync(
                 x => x.UsuarioId == fixture.GlobalId);
             grant.Desactivar();

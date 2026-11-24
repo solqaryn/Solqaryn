@@ -3,6 +3,7 @@ using System.Text.Json;
 using System.Text.RegularExpressions;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using Solqaryn.Application.Common;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
@@ -145,7 +146,8 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                 pending ? "CI_EN_PROGRESO" :
                 allRequired ? "CI_MINIMA_ACREDITADA" : "SIN_VERIFICAR";
 
-            // Auditoría de la consulta global: sin ID tenant, JWT, PII ni logs crudos.
+            var successfulChecks = checks.Count(c => c.Estado == "completed" && c.Conclusion == "success");
+            // Auditoría estructurada: únicamente metadatos acotados, sin cuerpo externo ni credenciales.
             _db.Set<RegistroAuditoria>().Add(new RegistroAuditoria
             {
                 UsuarioId = actor.UsuarioId,
@@ -157,7 +159,16 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                 Accion = AccionPermiso.ConsultarHistorial,
                 Entidad = "ConsultaEvidenciasQaGlobal",
                 Descripcion = "Consulta privada de checks del commit " + sha[..12] + ".",
-                CorrelationId = HttpContext.TraceIdentifier,
+                CorrelationId = Guid.NewGuid().ToString("N"),
+                ValoresNuevos = JsonSerializer.Serialize(new
+                {
+                    Schema = "qa-check-evidence/v1",
+                    Sha = sha,
+                    EstadoCi = estado,
+                    EstadoA5 = "SIN_VERIFICAR",
+                    TotalChecks = checks.Count,
+                    ChecksExitosos = successfulChecks
+                }),
                 Resultado = "Exito"
             });
             await _db.SaveChangesAsync(cancellationToken);
@@ -166,8 +177,13 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                 new PlataformaQaEvidenciasDto(
                     "solqaryn/Solqaryn", sha, estado,
                     "SIN_VERIFICAR", checks.Count,
-                    checks.Count(c => c.Estado == "completed" && c.Conclusion == "success"),
+                    successfulChecks,
                     checks)));
+        }
+        catch (DbUpdateException)
+        {
+            // No devolver evidencia si no se pudo persistir su auditoría.
+            return NoVerificable();
         }
         catch (HttpRequestException)
         {
