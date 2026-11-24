@@ -19,7 +19,8 @@ concurrency:
 
 jobs:
   live:
-    name: QA exact-head, aislamiento y smoke
+    name: QA disponibilidad, aislamiento y smoke
+    if: github.ref == 'refs/heads/qa'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     environment: QA
@@ -68,9 +69,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for attempt in $(seq 1 90); do
-            code="$(curl --silent --show-error -o /tmp/qa-ready.json -w '%{http_code}' "$BACKEND/health/ready" || true)"
-            if [ "$code" = "200" ]; then
+          for attempt in $(seq 1 30); do
+            code="$(curl --connect-timeout 10 --max-time 20 --silent --show-error -o /tmp/qa-ready.json -w '%{http_code}' "$BACKEND/health/ready" || true)"
+            if [ "$code" = "200" ] && jq -e '.status == "ready" and .database == "connected"' /tmp/qa-ready.json >/dev/null 2>&1; then
               cat /tmp/qa-ready.json
               exit 0
             fi
@@ -84,9 +85,9 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          for attempt in $(seq 1 90); do
-            login="$(curl --silent --show-error -o /tmp/qa-login.html -w '%{http_code}' "$FRONTEND/login" || true)"
-            store="$(curl --silent --show-error -o /tmp/qa-store.html -w '%{http_code}' "$FRONTEND/tienda" || true)"
+          for attempt in $(seq 1 30); do
+            login="$(curl --connect-timeout 10 --max-time 20 --silent --show-error -o /tmp/qa-login.html -w '%{http_code}' "$FRONTEND/login" || true)"
+            store="$(curl --connect-timeout 10 --max-time 20 --silent --show-error -o /tmp/qa-store.html -w '%{http_code}' "$FRONTEND/tienda" || true)"
             if [ "$login" = "200" ] && [ "$store" = "200" ]; then
               exit 0
             fi
@@ -99,19 +100,29 @@ jobs:
         shell: bash
         run: |
           set -euo pipefail
-          curl --fail --silent --show-error -D /tmp/qa-proxy.headers -o /tmp/qa-proxy.json "$FRONTEND/api/health/ready"
-          tr -d '\r' < /tmp/qa-proxy.headers > /tmp/qa-proxy.normalized
-          grep -Eqi '^x-solqaryn-environment:[[:space:]]*QA$' /tmp/qa-proxy.normalized
-          jq -e '.database == "connected" or .data.database == "connected"' /tmp/qa-proxy.json >/dev/null
+          proxy_ready=false
+          for attempt in $(seq 1 30); do
+            code="$(curl --connect-timeout 10 --max-time 20 --silent --show-error -D /tmp/qa-proxy.headers -o /tmp/qa-proxy.json -w '%{http_code}' "$FRONTEND/api/health/ready" || true)"
+            tr -d '\r' < /tmp/qa-proxy.headers > /tmp/qa-proxy.normalized
+            if [ "$code" = "200" ] &&
+              grep -Eqi '^x-solqaryn-environment:[[:space:]]*QA$' /tmp/qa-proxy.normalized &&
+              jq -e '.status == "ready" and .database == "connected"' /tmp/qa-proxy.json >/dev/null 2>&1; then
+              proxy_ready=true
+              break
+            fi
+            echo "QA proxy todavía no devuelve readiness JSON válido (intento $attempt)."
+            sleep 10
+          done
+          test "$proxy_ready" = true || { echo "QA proxy no quedó ready; no se certifica aislamiento." >&2; exit 1; }
 
-          curl --fail --silent --show-error "$FRONTEND/robots.txt" -o /tmp/qa-robots.txt
+          curl --connect-timeout 10 --max-time 30 --fail --silent --show-error "$FRONTEND/robots.txt" -o /tmp/qa-robots.txt
           grep -Eqi 'Disallow:[[:space:]]*/' /tmp/qa-robots.txt
 
       - name: Certificar storefront QA
         shell: bash
         run: |
           set -euo pipefail
-          curl --fail --silent --show-error "$FRONTEND/api/tienda/bootstrap" -o /tmp/qa-bootstrap.json
+          curl --connect-timeout 10 --max-time 30 --fail --silent --show-error "$FRONTEND/api/tienda/bootstrap" -o /tmp/qa-bootstrap.json
           jq -e '.success == true and ((.data.identidad.nombreComercial | type) == "string") and ((.data.identidad.nombreComercial | length) > 0)' /tmp/qa-bootstrap.json >/dev/null
 
       - name: Certificar binding DB QA
@@ -137,4 +148,6 @@ jobs:
         run: |
           set -euo pipefail
           ! grep -Eqi 'solqaryn-api-dev|solqaryn-api-prod|solqaryn-dev\.vercel\.app|solqaryn-prod\.vercel\.app' /tmp/qa-proxy.headers
-          echo "QA_LIVE_CERTIFICATION=PASS"
+          echo "QA_AVAILABILITY_AND_DB_PROBE=PASS"
+          echo "DEPLOYED_SHA_VERIFICATION=REQUIRED_SEPARATELY"
+          echo "AUTHENTICATED_FLOWS=NOT_TESTED"

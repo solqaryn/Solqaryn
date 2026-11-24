@@ -1,3 +1,13 @@
+## 2026-11-24 — QA: readiness JSON acotado y alcance de evidencia
+
+- Autorización expresa del propietario: reparar exclusivamente qa sin importar dev/main. Base QA 5cedcc91bfb2b69562e7093bc1fa3d1251fa31f3.
+- Causa: run 39841881271 falló con jq parse error en el proxy después de aceptar HTTP 200. La espera ahora requiere JSON ready/database connected, mantiene header QA y tiene timeouts por petición y reintentos acotados. Los cuerpos de error no se imprimen en la nueva espera del proxy.
+- La certificación viva se limita a refs/heads/qa. QA CI se ejecuta también al cambiar esa certificación. El resultado distingue disponibilidad/sonda DB de SHA desplegado y flujos autenticados, que este workflow no acredita.
+- Impacto: dos workflows QA; sin cambios de API, DTO, dependencias, auth, migraciones, secretos, servicios compartidos ni automatizaciones dev. La sonda DB preexistente conserva únicamente su tabla temporal QA. Rollback: revertir este commit en qa preservando historia.
+- Evidencia previa: QA CI 39841881249 aprobó compilación/lint/auditoría npm y pruebas backend no Integration el 22-oct; no equivale a validación actual. Vercel QA dpl_CWHe9q9dwFFBSZweWVR4CtmQYLa6 y Render QA dep-db6kbd5g1s2s73couoog servían f935cc0c93add0ce321245ee8fa3c6a5a874f2f2 al revisar. La repetición del job antiguo fue rechazada por GitHub por antigüedad superior a un mes.
+- Validación: CI nueva pendiente tras publicación; aislamiento efectivo/grants, credenciales propias QA, Cloudinary y login con usuario mínimo siguen pendientes. No certifica QA listo ni autoriza promoción.
+- Gobierno: skill canónica e01f126082e00352aed39e52660f065c25175474 verificada con Scope Lock 45509576023 (self-tests de frescura PASS); STANDARD Drive canónico consultado. SKREF-06 leído desde blader/humanizer@9862685f575c65a8247f90369951df1b3416e3d6/SKILL.md para esta entrada. Sin cambio Angular/UI, modelado de amenazas ni profiling: referencias correspondientes NO_APLICA.
+
 ## 2026-10-12 — QA Oracle EF10: esquema, backup cifrado y adopción certificada
 
 - QA recibió únicamente los controles operativos de schema y respaldo por excepción de bootstrap, sin desplegar aplicación nueva; el guard de PR de promoción `dev → qa` permanece vigente. PR #3572 cerrado sin merge al detectar el guard.

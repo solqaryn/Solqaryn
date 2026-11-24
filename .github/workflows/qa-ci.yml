@@ -9,6 +9,7 @@ on:
       - 'scripts/**'
       - 'render.yaml'
       - '.github/workflows/qa-ci.yml'
+      - '.github/workflows/qa-live-certification.yml'
       - '.github/workflows/promotion-source-guard.yml'
   pull_request:
     branches: [qa]
