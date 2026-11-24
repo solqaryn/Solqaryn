@@ -37,7 +37,8 @@ public sealed class P1007ATenantSwitchAuthorizationTests
         Assert.IsType<ForbidResult>(
             await controller.Obtener(22, CancellationToken.None));
 
-        scope.Verify(x => x.ObtenerActualAsync(11, It.IsAny<CancellationToken>()), Times.Once);
+        // A successful selection verifies the destination twice; a denied B is read once.
+        scope.Verify(x => x.ObtenerActualAsync(11, It.IsAny<CancellationToken>()), Times.Exactly(2));
         scope.Verify(x => x.ObtenerActualAsync(22, It.IsAny<CancellationToken>()), Times.Once);
     }
 
@@ -60,7 +61,7 @@ public sealed class P1007ATenantSwitchAuthorizationTests
             await controller.Obtener(11, CancellationToken.None));
 
         scope.Verify(x => x.ObtenerActualAsync(11, It.IsAny<CancellationToken>()),
-            Times.Exactly(2));
+            Times.Exactly(3)); // two reads for the accepted request, one for the revoked request
     }
 
     [Fact]

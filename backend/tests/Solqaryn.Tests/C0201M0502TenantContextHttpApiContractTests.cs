@@ -108,7 +108,8 @@ public sealed class C0201M0502TenantContextHttpApiContractTests
             Assert.Equal(11, data.GetProperty("rolId").GetInt32());
             Assert.False(data.GetProperty("esAdministrador").GetBoolean());
         }
-        authority.Verify(x => x.ObtenerActualAsync(7, It.IsAny<CancellationToken>()), Times.Once);
+        // Positive selection must revalidate the destination; denial still reads once.
+        authority.Verify(x => x.ObtenerActualAsync(7, It.IsAny<CancellationToken>()), Times.Exactly(2));
         authority.Verify(x => x.ListarEmpresasSeleccionablesAsync(It.IsAny<CancellationToken>()), Times.Once);
         authority.Verify(x => x.SesionBaseVigenteAsync(17, 999, It.IsAny<CancellationToken>()), Times.Exactly(4));
         authority.VerifyNoOtherCalls();

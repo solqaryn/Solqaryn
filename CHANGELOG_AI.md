@@ -1,3 +1,7 @@
+## 2026-11-24 — DEV04 V31 C03-01.M03.03: regresiones del contrato de doble lectura
+- Fuente c28dafe3: integración dirigida JWT/HTTP/MySQL 8.4.13 40/40 SUCCESS, pero backend Release job138447731188 6593/6596, tres fallos Moq por conteo de lecturas antiguas. Se exige ahora exactamente 2 para selección aceptada y 1 para revocada/denegada; 3 si se combinan ambas solicitudes. No se altera ninguna expectativa de 401/403, identidad, rol o tenant, ni se modifica runtime.
+- Nuevo SHA CI pendiente. Reemisión vinculada tenant/sucursal y enforcement siguen faltantes; H VALIDANDO, A5 independiente. No QA/main/PROD.
+
 ## 2026-11-24 — DEV04 rescate V31 C01-03.M04.02: contrato Playwright Request en zoom nativo
 - CI 2bf5e952 run45391152622/job138434895565: preflight de sintaxis y Chromium JWT/MySQL A/B anteriores SUCCESS, paso M04.02 zoom nativo abortó con TypeError r.request is not a function. Los dos call sites pasan route.request(), por lo que el predicado debe usar Request.method() directamente; se corrige solo esa llamada.
 - No se altera navegación, permisos, autenticación, fixtures, zoom físico ni requisitos de foco/capturas. CI real nueva pendiente; BEFORE histórico sigue no acreditado. Mantener VALIDANDO, owner DEV05, revisión A5 independiente de autor y rescatista. Solo dev.
