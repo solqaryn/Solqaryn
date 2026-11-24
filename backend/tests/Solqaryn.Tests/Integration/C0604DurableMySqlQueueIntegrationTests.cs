@@ -72,6 +72,9 @@ public sealed class C0604DurableMySqlQueueIntegrationTests
             Assert.Null(await queue.TryLeaseAsync(11, "worker_B", now, 1, 2));
             Assert.False(await queue.SettleAsync(12, first.Id, "worker_A", first.Attempt, now, true, 2));
             Assert.False(await queue.SettleAsync(11, first.Id, "worker_B", first.Attempt, now, true, 2));
+            // The fixture uses a case-insensitive collation. Worker identities
+            // must still match the original lease byte-for-byte, not by SQL collation.
+            Assert.False(await queue.SettleAsync(11, first.Id, "WORKER_A", first.Attempt, now, true, 2));
 
             Assert.True(await queue.SettleAsync(11, first.Id, "worker_A", first.Attempt, now, false, 2));
             var retry = await queue.TryLeaseAsync(11, "worker_B", now.AddSeconds(1), 1, 2);

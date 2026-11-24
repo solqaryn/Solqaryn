@@ -1,3 +1,9 @@
+## 2026-11-24 — DEV03 C06-04.M03.05: CAS binario del titular de lease
+
+- Corrige el ACK por alias de mayúsculas en la cola InnoDB aislada: `SettleAsync` exige identidad exacta del worker además del tenant, intento y vencimiento.
+- Regresión causal MySQL 8.4 con colación ai_ci: alias rechazado, titular auténtico conserva su lease y sigue el flujo existente; CI exact-SHA aún no certificada.
+- Scope Lock STRICT, propietario DEV01 preservado, sin activación DI/HTTP/proveedor ni A5 propia; mantener VALIDANDO hasta integración real y revisión independiente.
+
 ## 2026-11-24 — DEV02 C15-04.M05.04: foco visible de galería bajo recorte
 
 - El contenedor de fotografía usa overflow:hidden y el anillo de foco externo del botón podía quedar recortado. Se conserva color y grosor y se aplica desplazamiento interior a foto principal y miniaturas. Sin cambios de API, permisos, datos ni dependencias.

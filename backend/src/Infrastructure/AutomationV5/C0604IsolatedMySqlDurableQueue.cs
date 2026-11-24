@@ -130,7 +130,7 @@ public sealed class C0604IsolatedMySqlDurableQueue
         await using var connection = _factory();
         await connection.OpenAsync(cancellationToken);
         await using var update = connection.CreateCommand();
-        update.CommandText = $"UPDATE {Table} SET state=CASE WHEN @ack=1 THEN 'DONE' WHEN attempts>=@max THEN 'DEAD' ELSE 'PENDING' END, leased_by=NULL, lease_until_utc=NULL WHERE tenant_id=@tenant AND id=@id AND state='LEASED' AND leased_by=@worker AND attempts=@attempt AND lease_until_utc>@now";
+        update.CommandText = $"UPDATE {Table} SET state=CASE WHEN @ack=1 THEN 'DONE' WHEN attempts>=@max THEN 'DEAD' ELSE 'PENDING' END, leased_by=NULL, lease_until_utc=NULL WHERE tenant_id=@tenant AND id=@id AND state='LEASED' AND CAST(leased_by AS BINARY)=CAST(@worker AS BINARY) AND attempts=@attempt AND lease_until_utc>@now";
         Add(update, "@ack", providerAcknowledged ? 1 : 0);
         Add(update, "@max", maxAttempts);
         Add(update, "@tenant", trustedTenantId);
