@@ -101,11 +101,13 @@ public sealed class TenantContextV5ContractTests
         Assert.Equal(1, scope.Calls);
     }
 
+    // El JWT identifica al actor y aporta un rol canónico, pero el rol efectivo
+    // de la membresía SQL puede cambiar al seleccionar otra empresa. Mantener
+    // las negativas de actor y tenant; no confundir rol SQL vigente con spoofing.
     [Theory]
     [InlineData(8, 11, 19)]
     [InlineData(7, 12, 19)]
-    [InlineData(7, 11, 20)]
-    public async Task Obtener_ContextoSqlNoCoincideConJwt_RechazaSinDatos(
+    public async Task Obtener_ActorOTenantSqlNoCoincideConJwt_RechazaSinDatos(
         int actor, int tenant, int role)
     {
         var scope = new ScopeStub
@@ -114,6 +116,29 @@ public sealed class TenantContextV5ContractTests
         };
         var action = await WithJwtIdentity(scope).Obtener(11, CancellationToken.None);
         Assert.IsType<ForbidResult>(action);
+        Assert.Equal(1, scope.Calls);
+    }
+
+    [Fact]
+    public async Task Obtener_RolSqlVigenteDistintoAlJwt_UsaMembresiaEfectiva()
+    {
+        // Sólo prueba contrato controlador/DTO con principal sintético; la firma
+        // JWT, autoridad SQL y aislamiento A/B requieren CI de integración real.
+        var scope = new ScopeStub
+        {
+            Actual = new UsuarioTenantScopeActual(7, 11, 20, "Operador", false)
+        };
+        var action = await WithJwtIdentity(scope, "7", "19")
+            .Obtener(11, CancellationToken.None);
+
+        var ok = Assert.IsType<OkObjectResult>(action);
+        var response = Assert.IsType<ApiResponse<UsuarioTenantScopeActual>>(ok.Value);
+        Assert.True(response.Success);
+        Assert.NotNull(response.Data);
+        Assert.Equal(7, response.Data.UsuarioId);
+        Assert.Equal(11, response.Data.EmpresaId);
+        Assert.Equal(20, response.Data.RolId);
+        Assert.Empty(response.Errors);
         Assert.Equal(1, scope.Calls);
     }
 
