@@ -31,7 +31,9 @@ public class AuthService : IAuthService
 
         ValidarEstadoCuenta(usuario);
         ValidarRolRelacional(usuario);
-        if (!await HasActiveMembershipForOwnedRoleAsync(usuario))
+        var authority = CaptureAuthority(usuario);
+        if (!await HasActiveMembershipForOwnedRoleAsync(usuario) ||
+            CaptureAuthority(usuario) != authority)
             return null;
         return CrearRespuesta(usuario);
     }
@@ -48,7 +50,9 @@ public class AuthService : IAuthService
         // bearer cannot be exchanged for a different (possibly elevated) role.
         if (usuario.RolId != rolId || usuario.RolEntidad.Id != rolId)
             return null;
-        if (!await HasActiveMembershipForOwnedRoleAsync(usuario))
+        var authority = CaptureAuthority(usuario);
+        if (!await HasActiveMembershipForOwnedRoleAsync(usuario) ||
+            CaptureAuthority(usuario) != authority)
             return null;
         if (usuario.Id != usuarioId || usuario.RolId != rolId ||
             usuario.RolEntidad is null || usuario.RolEntidad.Id != rolId ||
@@ -58,6 +62,21 @@ public class AuthService : IAuthService
         return CrearRespuesta(usuario);
     }
 
+
+    // Freeze authorization-bearing values across the asynchronous membership
+    // lookup. A mutable entity must not turn the validated role into a different
+    // tenant, scope or elevated token after that lookup. This is not a DB lease.
+    private static (int Actor, int RoleId, string PasswordHash, string Username,
+        bool Active, bool Blocked, bool Deleted, int? EntityRole, int? Tenant,
+        Solqaryn.Domain.Enums.AmbitoAutorizacion? Scope, bool? System,
+        bool? Admin, bool? RoleActive, bool? RoleDeleted, string? RoleName)
+        CaptureAuthority(Usuario actor) =>
+        (actor.Id, actor.RolId, actor.PasswordHash, actor.NombreUsuario,
+            actor.Activo, actor.Bloqueado, actor.Eliminado, actor.RolEntidad?.Id,
+            actor.RolEntidad?.EmpresaId, actor.RolEntidad?.Ambito,
+            actor.RolEntidad?.EsSistema, actor.RolEntidad?.EsAdministrador,
+            actor.RolEntidad?.Activo, actor.RolEntidad?.Eliminado,
+            actor.RolEntidad?.Nombre);
 
     // Tenant-owned roles must retain a live, matching SQL membership before
     // login or refresh can issue a JWT. No client-selected tenant is trusted.

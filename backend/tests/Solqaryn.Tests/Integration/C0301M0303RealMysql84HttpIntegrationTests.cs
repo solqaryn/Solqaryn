@@ -74,13 +74,25 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
         var settings = new ConfigurationBuilder().AddInMemoryCollection(
             new Dictionary<string, string?>
             {
-                ["LoginSecurity:EnableReadOnlyProbe"] = enableProbe ? "true" : "false"
+                ["LoginSecurity:EnableReadOnlyProbe"] = enableProbe ? "true" : "false",
+                ["Jwt:Secret"] = "c0301-login-real-mysql84-signed-jwt-test-only-2026",
+                ["Jwt:Issuer"] = Issuer,
+                ["Jwt:Audience"] = Audience
             }).Build();
         return await new HostBuilder().ConfigureWebHost(web => web.UseTestServer()
             .ConfigureServices(services =>
             {
                 services.AddSingleton<IConfiguration>(settings);
                 services.AddRouting();
+                services.AddControllers().AddApplicationPart(
+                    typeof(Solqaryn.API.Controllers.AuthController).Assembly);
+                services.AddScoped<IUsuarioRepository, UsuarioRepository>();
+                services.AddScoped<IRolRepository, RolRepository>();
+                services.AddScoped<IAuthService, AuthService>();
+                services.AddScoped<IJwtService, JwtService>();
+                // Refresh does not invoke auditing; this dependency is not a
+                // substitute for a real audit integration.
+                services.AddSingleton(Moq.Mock.Of<IAuditoriaService>());
                 services.AddHttpContextAccessor();
                 services.AddDbContext<AppDbContext>(options => options.UseMySQL(
                     connection, mysql => mysql.MigrationsAssembly(
@@ -110,6 +122,7 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
                 app.UseAuthorization();
                 app.UseEndpoints(endpoints =>
                 {
+                    endpoints.MapControllers();
                     if (enableProbe)
                         C0301LoginReadOnlyProbeEndpoint.Map(endpoints);
                 });
@@ -282,6 +295,28 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
             using var host = await StartAsync(scoped);
             using var client = host.GetTestClient();
             var jwt = Token(actor.Id);
+            string productToken;
+            await using (var authDb = new AppDbContext(options))
+            {
+                var auth = new AuthService(new UsuarioRepository(authDb),
+                    new RolRepository(authDb), new JwtService(authSettings));
+                var login = await auth.LoginAsync(new LoginRequestDto
+                    { NombreUsuario = actor.NombreUsuario, Password = "isolated-login-password" });
+                Assert.NotNull(login);
+                productToken = login.Token;
+            }
+            async Task<HttpResponseMessage> RefreshAsync(string token)
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Post, "/auth/renovar");
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+                return await client.SendAsync(request);
+            }
+            using (var renewed = await RefreshAsync(productToken))
+                Assert.Equal(HttpStatusCode.OK, renewed.StatusCode);
+            using (var missingRole = await RefreshAsync(jwt))
+                Assert.Equal(HttpStatusCode.Unauthorized, missingRole.StatusCode);
+            using (var invalidSignature = await RefreshAsync(Token(actor.Id, forged: true)))
+                Assert.Equal(HttpStatusCode.Unauthorized, invalidSignature.StatusCode);
             using (var anonymous = await ReadAsync(
                 client, tenantA.Id, branchA.Id, null))
                 Assert.Equal(HttpStatusCode.Unauthorized, anonymous.StatusCode);
@@ -353,6 +388,8 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
                     x.EmpresaId == tenantA.Id);
             actualMembership.Desactivar();
             await db.SaveChangesAsync();
+            using (var revokedRefresh = await RefreshAsync(productToken))
+                Assert.Equal(HttpStatusCode.Unauthorized, revokedRefresh.StatusCode);
             using (var disabledMembership = await ReadAsync(
                 client, tenantA.Id, branchA.Id, jwt))
                 Assert.Equal(HttpStatusCode.Forbidden,

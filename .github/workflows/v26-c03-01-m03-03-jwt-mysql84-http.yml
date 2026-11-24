@@ -8,6 +8,8 @@ on:
       - 'backend/tests/Solqaryn.Tests/API/C0301M0303LoginVerifiedActorSourceTests.cs'
       - 'backend/tests/Solqaryn.Tests/Integration/C0301M0303RealMysql84HttpIntegrationTests.cs'
       - 'backend/src/API/Controllers/AuthController.cs'
+      - 'backend/src/Application/Services/AuthService.cs'
+      - 'backend/tests/Solqaryn.Tests/Application/C0301M0303TenantOwnedRoleTokenGateTests.cs'
       - 'backend/tests/Solqaryn.Tests/API/C0301M0303AuthRenewCanonicalIdentityTests.cs'
       - 'backend/src/API/Program.cs'
       - '.github/workflows/v26-c03-01-m03-03-jwt-mysql84-http.yml'

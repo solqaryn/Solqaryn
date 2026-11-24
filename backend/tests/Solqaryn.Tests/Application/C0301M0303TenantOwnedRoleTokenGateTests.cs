@@ -224,6 +224,46 @@ public sealed class C0301M0303TenantOwnedRoleTokenGateTests
         jwt.Verify(x => x.GenerarToken(It.IsAny<Usuario>()), Times.Never);
     }
 
+    [Theory]
+    [InlineData(false, "admin")]
+    [InlineData(true, "admin")]
+    [InlineData(false, "tenant")]
+    [InlineData(true, "tenant")]
+    [InlineData(false, "scope")]
+    [InlineData(true, "scope")]
+    [InlineData(false, "blocked")]
+    [InlineData(true, "blocked")]
+    [InlineData(false, "password")]
+    [InlineData(true, "password")]
+    public async Task AuthorityMutationDuringMembershipLookupCannotMintToken(
+        bool renewal, string mutation)
+    {
+        var actor = Actor();
+        var member = new UsuarioEmpresa(UserId, CompanyId, RoleId);
+        var (service, repo, jwt) = Make(actor, member);
+        repo.Setup(x => x.GetAuthenticationMembershipsAsync(UserId, RoleId, CompanyId))
+            .Returns(async () =>
+            {
+                await Task.Yield();
+                switch (mutation)
+                {
+                    case "admin": actor.RolEntidad.EsAdministrador = true; break;
+                    case "tenant": actor.RolEntidad.EmpresaId = CompanyId + 1; break;
+                    case "scope": actor.RolEntidad.Ambito = AmbitoAutorizacion.Plataforma; break;
+                    case "blocked": actor.Bloqueado = true; break;
+                    case "password": actor.PasswordHash = "changed-after-validation"; break;
+                }
+                return new List<UsuarioEmpresa> { member };
+            });
+
+        var result = renewal
+            ? await service.RenovarAsync(UserId, RoleId)
+            : await service.LoginAsync(new LoginRequestDto
+                { NombreUsuario = actor.NombreUsuario, Password = "valid-test-password" });
+        Assert.Null(result);
+        jwt.Verify(x => x.GenerarToken(It.IsAny<Usuario>()), Times.Never);
+    }
+
     [Fact]
     public void DirectJwtSignerRejectsMismatchedSqlRoleBeforeProducingSignedToken()
     {

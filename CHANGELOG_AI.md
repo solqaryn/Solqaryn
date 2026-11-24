@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV04 V31 C03-01.M03.03: autoridad estable y renovación HTTP real
+- AuthService congela los valores de autoridad antes de consultar membresía y deniega emisión/renovación si la entidad cambia durante el await; no cambia grants, DTO ni separación tenant/plataforma. No es lease SQL ni revocación global.
+- Diez casos adversariales de mutación durante lookup y ampliación del TestServer existente con controlador real de renovación, JWT firmado, Oracle MySQL 8.4 efímero, rechazo de token sin rol/firma inválida y membresía revocada. Auditoría no ejercitada en este endpoint. Workflow dirigido se activa también por AuthService y conserva su filtro; las nuevas unitarias pertenecen al backend Release para no duplicarlas.
+- Pendiente CI exact-SHA, A0-A4 integral y A5 independiente; reemisión tenant/sucursal explícita todavía no certificada. Rollback: revert del commit sin reescritura.
+
 ## 2026-11-24 — DEV02 V31 C15-04.M05.04: captura fisica X11 independiente de CDP
 - Evidencia causal: SHA 869b809e6cb843a1b99676b3dfae6a1a27b6122e, run 45338842749/job 138257323620: 29 Chromium PASS, pero paso zoom nativo FAIL por Page.captureScreenshot Unable to capture screenshot antes de la primera captura. No es una regresion funcional acreditada.
 - Sustituye solo mecanismo de captura fallido por ffmpeg x11grab del escritorio Xvfb aislado, 1600x1200, con browser chrome incluido, foco, dos frames y dimensiones PNG verificadas. Conserva chrome.tabs.setZoom/getZoom, DPR/reflow, controles DOM y asserts de overflow; no simula zoom ni declara imagen de escritorio como captura exclusiva de pagina.
