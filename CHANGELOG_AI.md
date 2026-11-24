@@ -1,3 +1,8 @@
+## 2026-11-23 — V31 C03-03.M03.06: fallo real de persistencia de auditoría QA
+
+- DEV03 rescate R2: ampliar el caso HTTP/JWT/MySQL 8.4 existente con un trigger temporal de fallo de INSERT en el esquema efímero exclusivo; tanto resultado correcto del proveedor como contrato inválido deben retornar 503 no-store sin datos de evidencia ni diagnóstico SQL y sin nuevas filas de auditoría.
+- Restaurar el sink en finally y verificar recuperación real y revocación posterior; no cambia código runtime, esquema productivo ni cantidad de casos xUnit. CI exact-SHA y revisión independiente pendientes; proveedor vivo no certificado. Rollback por revert; no QA/main/PROD.
+
 ## 2026-11-23 — V31 C03-03.M03.06: revocación global durante consulta QA
 
 - DEV04 rescate R2: reconsultar autoridad global SQL después de E/S de proveedor y antes de divulgar resultado o persistir auditoría del actor; denegar cambios de identidad/rol sin elevar permisos ni usar credenciales de proveedor.

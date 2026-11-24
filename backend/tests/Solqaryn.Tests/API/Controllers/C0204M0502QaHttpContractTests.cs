@@ -292,6 +292,51 @@ public sealed class C0204M0502QaHttpContractTests
             Assert.True(Guid.TryParseExact(failure.CorrelationId, "N", out _));
         }
 
+        // Real storage failure, not a mocked DbUpdateException: block INSERT
+        // in this fixture's unique local MySQL schema and verify both paths
+        // fail closed without disclosing provider evidence or SQL diagnostics.
+        using (var scope = fixture.Host.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await db.Database.ExecuteSqlRawAsync(
+                "CREATE TRIGGER qa_ci_audit_insert_failure BEFORE INSERT ON RegistrosAuditoria " +
+                "FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'qa-ci-audit-write-blocked'");
+        }
+        try
+        {
+            foreach (var upstreamPayload in new[] { Payload(), "[\"private-secret\"]" })
+            {
+                upstream.Payload = upstreamPayload;
+                using var blockedAudit = await client.GetAsync(Path);
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, blockedAudit.StatusCode);
+                Assert.Contains("no-store", blockedAudit.Headers.CacheControl?.ToString() ?? "");
+                var body = await blockedAudit.Content.ReadAsStringAsync();
+                Assert.DoesNotContain("CI_MINIMA_ACREDITADA", body);
+                Assert.DoesNotContain("qa-ci-audit-write-blocked", body);
+                Assert.DoesNotContain("private-secret", body);
+            }
+            using var scope = fixture.Host.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            Assert.Equal(2, await db.Set<RegistroAuditoria>().CountAsync());
+        }
+        finally
+        {
+            using var scope = fixture.Host.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await db.Database.ExecuteSqlRawAsync("DROP TRIGGER IF EXISTS qa_ci_audit_insert_failure");
+        }
+
+        // Recover the real SQL sink; no failed insert may survive the fault.
+        upstream.Payload = Payload();
+        using (var recovered = await client.GetAsync(Path))
+            Assert.Equal(HttpStatusCode.OK, recovered.StatusCode);
+        using (var scope = fixture.Host.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            Assert.Equal(3, await db.Set<RegistroAuditoria>().CountAsync());
+            Assert.Equal(2, await db.Set<RegistroAuditoria>().CountAsync(a => a.Resultado == "Exito"));
+        }
+
         // Revoke after the initial authorization, while the provider request is
         // in flight. The response must never disclose a successful QA result.
         upstream.Payload = Payload();
@@ -312,11 +357,11 @@ public sealed class C0204M0502QaHttpContractTests
         using (var scope = fixture.Host.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
-            Assert.Equal(2, await db.Set<RegistroAuditoria>().CountAsync());
+            Assert.Equal(3, await db.Set<RegistroAuditoria>().CountAsync());
         }
         using (var denied = await client.GetAsync(Path))
             Assert.Equal(HttpStatusCode.Forbidden, denied.StatusCode);
-        Assert.Equal(3, upstream.Calls);
+        Assert.Equal(6, upstream.Calls);
     }
 
     // This test runs against an isolated MySQL 8.4 service in the GH-hosted QA lab.
