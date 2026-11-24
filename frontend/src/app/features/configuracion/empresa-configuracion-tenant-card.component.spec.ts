@@ -15,6 +15,8 @@ describe('C01-03.M04.04 - permisos reactivos en formulario tenant', () => {
   let service: {
     getTenant: ReturnType<typeof vi.fn>;
     updateTenant: ReturnType<typeof vi.fn>;
+    updateTenantLogo: ReturnType<typeof vi.fn>;
+    restaurarTenantLogo: ReturnType<typeof vi.fn>;
   };
   let snackBar: { open: ReturnType<typeof vi.fn> };
 
@@ -42,7 +44,9 @@ describe('C01-03.M04.04 - permisos reactivos en formulario tenant', () => {
     snackBar = { open: vi.fn() };
     service = {
       getTenant: vi.fn(() => of({ success: true, data: { ...config } })),
-      updateTenant: vi.fn(() => mutation.asObservable())
+      updateTenant: vi.fn(() => mutation.asObservable()),
+      updateTenantLogo: vi.fn(() => mutation.asObservable()),
+      restaurarTenantLogo: vi.fn(() => mutation.asObservable())
     };
     TestBed.configureTestingModule({
       providers: [
@@ -80,6 +84,36 @@ describe('C01-03.M04.04 - permisos reactivos en formulario tenant', () => {
     TestBed.tick();
     expect(component.puedeEditar()).toBe(true);
     expect(component.form.enabled).toBe(true);
+  });
+
+  it('blocks all mutations immediately after tenant switch before the watcher loads the new form', () => {
+    const component = create();
+    expect(component.configuracionVerificada()).toBe(true);
+    expect(component.form.controls.nombre.value).toBe('Tenant A');
+    component.logoUrl.set('https://example.invalid/tenant-a.png');
+    const pending = new Subject<unknown>();
+    service.getTenant.mockReturnValueOnce(pending.asObservable());
+
+    activeTenant.set(2);
+    // Deliberately no tick: the permission can still be valid for a new tenant
+    // while the editable values and optimistic version belong to the old one.
+    expect(component.configuracionVerificada()).toBe(false);
+    component.guardar();
+    component.eliminarLogo();
+    component.subirLogo({ target: { files: [new File(['x'], 'logo.png')], value: 'logo.png' } } as unknown as Event);
+    expect(service.updateTenant).not.toHaveBeenCalled();
+    expect(service.restaurarTenantLogo).not.toHaveBeenCalled();
+    expect(service.updateTenantLogo).not.toHaveBeenCalled();
+
+    TestBed.tick();
+    expect(component.loading()).toBe(true);
+    pending.next({ success: true, data: { ...config, empresaId: 2, nombre: 'Tenant B', version: 7 } });
+    pending.complete();
+    TestBed.tick();
+    expect(component.configuracionVerificada()).toBe(true);
+    component.guardar();
+    expect(service.updateTenant).toHaveBeenCalledTimes(1);
+    expect(service.updateTenant).toHaveBeenCalledWith(2, expect.objectContaining({ nombre: 'Tenant B', version: 7 }));
   });
 
   it('discards an in-flight successful mutation after permission revocation', () => {

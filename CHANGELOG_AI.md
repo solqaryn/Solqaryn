@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV05 V31 C01-03.M04.04: vincular edición al payload tenant confirmado
+- R2: el cambio de empresa verificada podía ocurrir antes de ejecutar tenantWatcher; las tres mutaciones consultaban el ID nuevo aunque el formulario, logo y versión optimista aún correspondieran al tenant anterior. El componente ahora exige coincidencia reactiva con el último payload aceptado, invalida durante recarga y oculta la superficie anterior hasta nueva confirmación. No modifica JWT/RBAC del servidor, contratos HTTP, datos ni arquitectura.
+- Regresión Vitest causal: transición A→B antes de TestBed.tick bloquea PUT, upload y delete; luego una respuesta B válida habilita únicamente datos/version B. CI Angular existente y Chromium real serán acreditados por SHA nuevo; no se repite manualmente la suite previamente verde. No se certifica zoom nativo 200%, captura histórica ANTES, integración ni A5 anticipada. Scope Lock/V17, owner histórico DEV05; sin QA/main/PROD.
+- Referencias de lectura compatibles: SKREF-03 2149fcce39a90bb409df5f16515f316a76dc6199 y SKREF-10 6808966993bf2b2d455d9b6245e960a59a01b9a9; no instalación ni cambios de dependencias. SKREF-11 49f948faa9258a0c61caceaf225e179651397431 orientó el límite tenant A/B.
+
 ## 2026-11-23 — V31 C03-03.M03.06: fallo real de persistencia de auditoría QA
 
 - DEV03 rescate R2: ampliar el caso HTTP/JWT/MySQL 8.4 existente con un trigger temporal de fallo de INSERT en el esquema efímero exclusivo; tanto resultado correcto del proveedor como contrato inválido deben retornar 503 no-store sin datos de evidencia ni diagnóstico SQL y sin nuevas filas de auditoría.

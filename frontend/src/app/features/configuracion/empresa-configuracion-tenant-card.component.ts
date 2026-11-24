@@ -33,7 +33,7 @@ import { ConfigEmpresaTenant, EmpresaConfiguracionService } from '../../services
           <mat-icon>domain_disabled</mat-icon>
           <span>No existe un contexto tenant verificado. Selecciona una empresa autorizada antes de administrar su configuración.</span>
         </div>
-      } @else if (loading()) {
+      } @else if (loading() || (loadState() === 'ready' && !configuracionVerificada())) {
         <div class="state" role="status" aria-live="polite"><mat-spinner diameter="32"></mat-spinner><span>Cargando configuración tenant…</span></div>
       } @else if (loadState() !== 'ready') {
         <div class="state state-diagnostic" [class.error]="loadState() !== 'empty'"
@@ -159,6 +159,13 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
   private readonly snackBar = inject(MatSnackBar);
 
   readonly empresaId = this.tenant.empresaIdVerificada;
+  private readonly appliedEmpresaId = signal<number | null>(null);
+  // Bind the visible form and every mutation to the last accepted tenant payload,
+  // even before the asynchronous tenantWatcher runs after a context change.
+  readonly configuracionVerificada = computed(() => {
+    const empresaId = this.empresaId();
+    return !!empresaId && empresaId === this.appliedEmpresaId();
+  });
   readonly loading = signal(false);
   // M04.02: presentation states follow real HTTP outcomes; they never authorize access.
   readonly loadState = signal<'ready' | 'empty' | 'forbidden' | 'session' | 'not-found' | 'throttled' | 'unavailable' | 'invalid' | 'unconfirmed'>('ready');
@@ -207,6 +214,7 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
   cargar(): void {
     const empresaId = this.empresaId();
     const generation = ++this.loadGeneration;
+    this.appliedEmpresaId.set(null);
     this.loadedEmpresaId = empresaId ?? null;
     this.loadState.set('ready');
     this.lastSaved.set(false);
@@ -257,7 +265,7 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
 
   guardar(): void {
     const empresaId = this.empresaId();
-    if (!empresaId || !this.puedeEditar() || this.saving() || this.loading() || this.loadState() !== 'ready' || this.form.invalid || this.conflict()) return;
+    if (!empresaId || !this.configuracionVerificada() || !this.puedeEditar() || this.saving() || this.loading() || this.loadState() !== 'ready' || this.form.invalid || this.conflict()) return;
     if (!this.jsonValido('impuestosJson') || !this.jsonValido('emisionJson')) return;
 
     const generation = this.loadGeneration;
@@ -311,7 +319,7 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
     const file = input.files?.[0];
     input.value = '';
     const empresaId = this.empresaId();
-    if (!file || !empresaId || !this.puedeEditar() || this.saving() || this.loading() || this.conflict() || this.loadState() !== 'ready') return;
+    if (!file || !empresaId || !this.configuracionVerificada() || !this.puedeEditar() || this.saving() || this.loading() || this.conflict() || this.loadState() !== 'ready') return;
 
     const generation = this.loadGeneration;
     this.saving.set(true);
@@ -349,7 +357,7 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
 
   eliminarLogo(): void {
     const empresaId = this.empresaId();
-    if (!empresaId || !this.puedeEditar() || this.saving() || this.loading() || this.conflict() || this.loadState() !== 'ready' || !this.logoUrl()) return;
+    if (!empresaId || !this.configuracionVerificada() || !this.puedeEditar() || this.saving() || this.loading() || this.conflict() || this.loadState() !== 'ready' || !this.logoUrl()) return;
 
     const generation = this.loadGeneration;
     this.saving.set(true);
@@ -411,6 +419,7 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
     if (!this.puedeEditar()) this.form.disable();
     this.conflict.set(false);
     this.error.set(null);
+    this.appliedEmpresaId.set(expectedEmpresaId);
   }
 
   private manejarErrorMutacion(err: any, fallback: string): void {
