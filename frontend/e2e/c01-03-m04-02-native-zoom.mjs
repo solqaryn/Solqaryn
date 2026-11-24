@@ -125,16 +125,44 @@ async function checkTabFocus(page, locator, state) {
     }
   }
   assert.ok(found, state + ': control unreachable by Tab');
-  const visible = await locator.evaluate(el => {
-    const style = getComputedStyle(el);
-    const r = el.getBoundingClientRect();
-    return el.matches(':focus-visible') &&
-      style.visibility !== 'hidden' && style.display !== 'none' &&
-      r.width > 0 && r.height > 0 &&
-      r.left >= -2 && r.right <= document.documentElement.clientWidth + 2 &&
-      r.top >= -2 && r.bottom <= innerHeight + 2;
+  // The loading-state screenshot scrolls to a different part of the page.
+  // Native Tab can finish focusing before Chromium finishes its own scrolling.
+  // Observe that native scroll, without moving the target or forcing focus.
+  const focus = await locator.evaluate(async el => {
+    const measure = () => {
+      const style = getComputedStyle(el), r = el.getBoundingClientRect();
+      const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+      const active = el === document.activeElement, focusVisible = el.matches(':focus-visible');
+      const inViewport = r.width > 0 && r.height > 0 &&
+        r.left >= -2 && r.right <= document.documentElement.clientWidth + 2 &&
+        r.top >= -2 && r.bottom <= innerHeight + 2;
+      const unobscured = hit === el || el.contains(hit);
+      return {
+        active, focusVisible, inViewport, unobscured,
+        visible: active && focusVisible && inViewport && unobscured &&
+          style.visibility !== 'hidden' && style.display !== 'none',
+        rect: { x:r.x, y:r.y, width:r.width, height:r.height },
+        viewport: { width:document.documentElement.clientWidth, height:innerHeight },
+        scroll: { x:window.scrollX, y:window.scrollY },
+        outlineStyle:style.outlineStyle, outlineWidth:style.outlineWidth,
+      };
+    };
+    const initial = measure();
+    const deadline = performance.now() + 2000;
+    let settled = initial;
+    while (!settled.visible && performance.now() < deadline) {
+      await new Promise(resolve => setTimeout(resolve, 50));
+      settled = measure();
+    }
+    return { initial, settled };
   });
-  assert.ok(visible, state + ': keyboard focus not visible at 200%');
+  console.log('M0402_NATIVE_TAB_GEOMETRY ' + state + ' ' + JSON.stringify(focus));
+  if (!focus.settled.visible) {
+    // Preserve the failing physical view without scrolling to the target.
+    await physicalScreenshot(page, state + '-200-focus-failure.png');
+  }
+  assert.ok(focus.settled.visible, state + ': keyboard focus not visible at 200%');
+  return focus;
 }
 async function assertState(page, state) {
   const card = page.locator('app-empresa-configuracion-tenant-card');
@@ -207,7 +235,7 @@ async function runState(page, worker, state) {
     state + ': viewport did not reflow on native browser zoom');
   if (state === 'loading') await status.scrollIntoViewIfNeeded();
   await physicalScreenshot(page, state + '-200.png', state === 'loading' ? status : null);
-  await checkTabFocus(page, target, state);
+  const focusGeometry = await checkTabFocus(page, target, state);
   await geometry(page, target, state + '-focused');
   await physicalScreenshot(page, state + '-200-focus.png');
   assert.ok(await target.evaluate(el => el === document.activeElement && el.matches(':focus-visible')),
@@ -241,7 +269,7 @@ async function runState(page, worker, state) {
     releaseLoading();
     await assertState(page, 'success');
   }
-  results.push({ state, nativeZoom: 2, baseline, native, focusVisible: true,
+  results.push({ state, nativeZoom: 2, baseline, native, focusVisible: true, focusGeometry,
     loadingIndicatorCapturedInViewport: state === 'loading' ? true : null,
     captures: [state + '-100.png', state + '-200.png', state + '-200-focus.png'],
     fixture: ['error', 'permissions', 'empty'].includes(state) ? 'injected UI HTTP response' : 'real JWT/MySQL UI' });

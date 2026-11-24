@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV06 V33 C01-03.M04.02: observar foco nativo después de captura de carga
+- CI exacta cb5d696c, job 138528354617: la carga visible y las pruebas previas JWT/MySQL/Chromium alcanzaron el paso nativo; el foco de carga al 200 % falló tras desplazar el estado al encuadre.
+- La prueba ahora observa durante un máximo de dos segundos el desplazamiento nativo posterior a Tab, sin forzar foco ni mover el objetivo; conserva la condición de visibilidad y exige hit-test no obstruido. Registra geometría inicial/final y captura X11 del fallo si persiste.
+- Cambio exclusivamente de prueba; no altera Angular, JWT, RBAC, MySQL ni criterios de cierre. El nuevo SHA requiere CI real; BEFORE histórico y A5 independiente siguen pendientes. Rollback: revert normal del commit.
+
 ## 2026-11-24 — DEV05 V33 C01-03.M04.02: evidencia de carga visible y desbordamiento real
 - Inspección de los 15 PNG del artefacto 14924713340, SHA 841c6eaf: `loading-200.png` mostraba el enlace de ajustes pero el indicador de carga quedaba fuera del encuadre; conservar foco Tab real separado y comprobar el spinner y mensaje dentro del viewport al capturar la carga a 100/200.
 - Medir viaje horizontal real y anchura del scrolling root sin suprimir estilos: conservar el assert CSSOM existente y exigir desplazamiento horizontal cero; 713/712 CSS px previos no prueban ni descartan overflow físico. Sin cambios en runtime, seguridad, permisos, datos o dependencias.
