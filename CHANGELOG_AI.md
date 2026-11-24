@@ -1,3 +1,7 @@
+## 2026-11-24 — DEV02 V31 C15-04.M05.04: zoom privado nativo con JWT y captura X11
+- Evidencia pública exact-SHA 2ee32904: 29 Chromium PASS, artefacto 14900684646 verificado SHA256 y nueve PNG físicos; zoom nativo 100/200 en login y tres rutas públicas. No reejecutar manualmente esa suite verde.
+- Añade prueba incremental de perfil propio A/B, auditoría global y denegación global B mediante login UI real en MySQL efímero, perfiles Chromium separados, zoom nativo, geometría, teclado y PNG X11; preflight de sintaxis y captura antes de levantar API. Conserva suite JWT previa y permisos; sin cambio runtime, secretos ni producción. A0-A4 global y A5 independiente pendientes; no certifica todas las rutas, WCAG, presupuesto ni ANTES histórico.
+
 ## 2026-11-24 — DEV06 V31 C03-01.M03.03: predicado relacional Oracle EF y sesión bloqueada
 - R2 rescate: el job 138318390097 de e35b0ba6 falló al traducir Any sobre RolId de DTO proyectado. Mover el predicado de rol al WHERE relacional antes de proyectar; mantener filtros de actor, tenant, membresía y rol vigentes, sin bypass. La prueba HTTP de cuenta bloqueada exige 403 opaco en catálogo y ambos contextos, conforme al contrato fail-closed existente; no cambiar controlador ni permisos.
 - A0 alcance y diff revisados; A1-A4 pendientes de CI exact-SHA real JWT/MySQL 8.4 y backend. Sin A5 propia, sin QA/main/PROD; rollback revert normal. No repetir suites SUCCESS del mismo SHA.

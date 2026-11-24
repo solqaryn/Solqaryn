@@ -5,6 +5,7 @@ on:
     paths:
       - '.github/workflows/v19-c15-04-m05-04-jwt-real.yml'
       - 'frontend/e2e/c15-04-m05-04-jwt-real.spec.ts'
+      - 'frontend/e2e/c15-04-m05-04-private-native-zoom.mjs'
       - 'frontend/playwright.c15-04-m05-04-real.config.ts'
       # A111: volver a probar ampliacion de texto al cambiar superficies auditadas.
       - 'frontend/src/app/features/plataforma/c01-02-m04-01-capability-catalog.component.ts'
@@ -105,6 +106,20 @@ jobs:
           npm install --global npm@11.19.0
           npm ci
           npx playwright test e2e/c15-04-m05-04-jwt-real.spec.ts --config=playwright.c15-04-m05-04-real.config.ts --list
+      - name: Preflight de zoom privado nativo y captura X11
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check e2e/c15-04-m05-04-private-native-zoom.mjs
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends ffmpeg
+          fi
+          command -v ffmpeg
+          command -v xvfb-run
+          ffmpeg -hide_banner -devices 2>&1 | grep -w x11grab
+          xvfb-run -a -s '-screen 0 1600x1200x24' bash -c 'ffmpeg -nostdin -hide_banner -loglevel error -f x11grab -video_size 1600x1200 -i "$DISPLAY" -frames:v 1 -threads 1 -f null -'
       - name: SDK .NET 10
         uses: actions/setup-dotnet@v4
         with:
@@ -212,6 +227,10 @@ jobs:
       - name: Chromium privado con JWT firmado y denegaciones A/B
         working-directory: frontend
         run: npx playwright test e2e/c15-04-m05-04-jwt-real.spec.ts --config=playwright.c15-04-m05-04-real.config.ts --workers=1 --retries=0
+      - name: Zoom privado nativo 100 y 200 con JWT real y captura fisica
+        working-directory: frontend
+        shell: bash
+        run: xvfb-run -a -s '-screen 0 1600x1200x24' node e2e/c15-04-m05-04-private-native-zoom.mjs
       - name: Evidencia de fallos y capturas
         if: always()
         uses: actions/upload-artifact@v4
