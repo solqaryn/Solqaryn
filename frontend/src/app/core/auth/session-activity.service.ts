@@ -11,6 +11,7 @@ const ACTIVITY_WRITE_THROTTLE_MS = 1_000;
 const SESSION_MESSAGE_KEY = 'solqaryn_session_message';
 const LAST_ACTIVITY_KEY = 'solqaryn_last_activity';
 const LAST_RENEW_KEY = 'solqaryn_last_renew';
+const TOKEN_KEY = 'solqaryn_token';
 
 @Injectable({ providedIn: 'root' })
 export class SessionActivityService {
@@ -143,7 +144,11 @@ export class SessionActivityService {
   }
 
   private renovar(): void {
-    if (this.renovando || !this.authService.getToken()) return;
+    const tokenOrigen = this.authService.getToken();
+    if (this.renovando || !tokenOrigen) return;
+    const tokenPersistido = localStorage.getItem(TOKEN_KEY);
+    const mismaSesionOrigen = () => this.authService.getToken() === tokenOrigen &&
+      localStorage.getItem(TOKEN_KEY) === tokenPersistido && tokenPersistido === tokenOrigen;
     this.renovando = true;
 
     // The renewed JWT identifies the actor; it does not independently reissue
@@ -156,7 +161,7 @@ export class SessionActivityService {
         next: respuesta => {
           if (respuesta?.success !== true) {
             this.renovando = false;
-            this.cerrarPor401();
+            if (mismaSesionOrigen()) this.cerrarPor401();
             return;
           }
 
@@ -192,7 +197,9 @@ export class SessionActivityService {
         },
         error: (error) => {
           this.renovando = false;
-          if (error?.status === 401) this.cerrarPor401();
+          // AuthService rejects stale successful renewal responses; also
+          // protect the independent error callback against a late old 401.
+          if (error?.status === 401 && mismaSesionOrigen()) this.cerrarPor401();
         }
       });
     });

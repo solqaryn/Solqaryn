@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV05 C03-01.M03.03: aislar rechazo tardío de sesión Angular
+- Corrige el efecto lateral de un HTTP 401 tardío del interceptor y de la renovación: sólo la identidad de origen aún vigente en memoria y almacenamiento puede cerrar su sesión. El error se sigue propagando y un 401 vigente mantiene el cierre fail-closed. No se concede ni se modifica autoridad JWT/RBAC, tenant o sucursal.
+- Añade cinco regresiones Angular de rechazo vigente, reemplazo de sesión en la misma empresa y cambio de token persistido; incorpora ejecución dirigida al workflow existente de C03-01.M03.03. La integración HTTP/JWT/MySQL del backend permanece intacta. CI exact-SHA y A5 independientes pendientes.
+- No se certifica todavía selección/emisión contextual de sucursal, permisos contextualizados, consumidor Angular completo, ni revocación real de sesión en navegador. Conserva VALIDANDO y autor histórico. Sin QA/main/PROD.
+
 ## 2026-11-24 — DEV03 C03-03.M03.06: minimizar enlaces de evidencia QA
 - Limita details_url a rutas HTTPS canónicas de run/job del repositorio, sin credenciales, parámetros, fragmentos ni puertos alternativos. No altera permisos ni autoridad de auditoría.
 - Extiende la prueba HTTP JWT con MySQL 8.4 aislado para conservar el enlace válido y omitir tres enlaces inseguros; mantiene revocación y persistencia previa. CI del nuevo SHA pendiente; no certifica el proveedor externo, la auditoría durable de denegaciones ni la retención.

@@ -7,14 +7,21 @@ import { SessionActivityService } from '../auth/session-activity.service';
 
 const EMPRESA_SOLICITADA_KEY = 'solqaryn_empresa_solicitada_id';
 const TENANT_HEADER = 'X-Empresa-Id';
+const TOKEN_KEY = 'solqaryn_token';
 
 export const authInterceptor: HttpInterceptorFn = (req, next) => {
   const authService = inject(AuthService);
   const sessionActivity = inject(SessionActivityService);
 
   const token = authService.getToken();
+  const tokenPersistido = localStorage.getItem(TOKEN_KEY);
+  // A late rejection belongs to the session that sent the request, not to a
+  // replacement login or a session changed by another tab. Never adopt the
+  // token from storage as a new authenticated identity here.
+  const mismaSesion = () => authService.getToken() === token &&
+    localStorage.getItem(TOKEN_KEY) === tokenPersistido && tokenPersistido === token;
   if (token && authService.isTokenExpired()) {
-    sessionActivity.cerrarPor401();
+    if (mismaSesion()) sessionActivity.cerrarPor401();
     return throwError(() => ({ status: 401, message: 'Token expirado' }));
   }
 
@@ -46,7 +53,7 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
 
   return next(authReq).pipe(
     catchError((error) => {
-      if (error.status === 401) {
+      if (error.status === 401 && mismaSesion()) {
         sessionActivity.cerrarPor401();
       }
       return throwError(() => error);

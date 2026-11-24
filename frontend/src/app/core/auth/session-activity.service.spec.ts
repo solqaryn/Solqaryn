@@ -18,6 +18,7 @@ describe('C02-01.M05.04: renovación JWT y contexto empresarial real', () => {
   let cargarPermisos: ReturnType<typeof vi.fn>;
   let navegar: ReturnType<typeof vi.fn>;
   let cerrarToken: ReturnType<typeof vi.fn>;
+  let token: string;
 
   const contexto = (empresaId: number) => ({
     success: true,
@@ -33,6 +34,8 @@ describe('C02-01.M05.04: renovación JWT y contexto empresarial real', () => {
   beforeEach(() => {
     localStorage.clear();
     sessionStorage.clear();
+    token = 'jwt-firmado-fixture';
+    localStorage.setItem('solqaryn_token', token);
     renovarSesion = vi.fn(() => of({ success: true, data: { token: 'jwt-renovado' } }));
     limpiarPermisos = vi.fn();
     cargarPermisos = vi.fn(() => of(true));
@@ -43,7 +46,7 @@ describe('C02-01.M05.04: renovación JWT y contexto empresarial real', () => {
       imports: [HttpClientTestingModule],
       providers: [
         { provide: AuthService, useValue: {
-          getToken: () => 'jwt-firmado-fixture',
+          getToken: () => token,
           renovarSesion,
           logout: cerrarToken
         } },
@@ -141,6 +144,31 @@ describe('C02-01.M05.04: renovación JWT y contexto empresarial real', () => {
     expect(cerrarToken).toHaveBeenCalledTimes(1);
     expect(tenant.contextoVerificado()).toBeNull();
     expect(tenant.empresaSolicitadaId()).toBeNull();
+    expect(navegar).toHaveBeenCalledWith(['/login']);
+  });
+
+  it('401 tardío de renovación A no elimina sesión B con la misma empresa', () => {
+    validarEmpresa(7);
+    const pendiente = new Subject<{ success: boolean; data: { token: string } }>();
+    renovarSesion.mockReturnValueOnce(pendiente.asObservable());
+    renovar();
+    token = 'jwt-nueva-sesion';
+    localStorage.setItem('solqaryn_token', token);
+    validarEmpresa(7);
+    pendiente.error({ status: 401 });
+    expect(cerrarToken).not.toHaveBeenCalled();
+    expect(tenant.empresaIdVerificada()).toBe(7);
+    expect(navegar).not.toHaveBeenCalled();
+  });
+
+  it('401 de renovación vigente sigue cerrando la sesión', () => {
+    validarEmpresa(7);
+    const pendiente = new Subject<{ success: boolean; data: { token: string } }>();
+    renovarSesion.mockReturnValueOnce(pendiente.asObservable());
+    renovar();
+    pendiente.error({ status: 401 });
+    expect(cerrarToken).toHaveBeenCalledTimes(1);
+    expect(tenant.contextoVerificado()).toBeNull();
     expect(navegar).toHaveBeenCalledWith(['/login']);
   });
 });

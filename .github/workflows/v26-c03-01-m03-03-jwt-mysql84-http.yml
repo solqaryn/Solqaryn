@@ -22,6 +22,10 @@ on:
       - 'backend/tests/Solqaryn.Tests/Application/C0301M0303TenantOwnedRoleTokenGateTests.cs'
       - 'backend/tests/Solqaryn.Tests/API/C0301M0303AuthRenewCanonicalIdentityTests.cs'
       - 'backend/src/API/Program.cs'
+      - 'frontend/src/app/core/interceptors/auth.interceptor.ts'
+      - 'frontend/src/app/core/interceptors/auth.interceptor.spec.ts'
+      - 'frontend/src/app/core/auth/session-activity.service.ts'
+      - 'frontend/src/app/core/auth/session-activity.service.spec.ts'
       - '.github/workflows/v26-c03-01-m03-03-jwt-mysql84-http.yml'
   workflow_dispatch:
 permissions:
@@ -65,3 +69,23 @@ jobs:
           set -euo pipefail
           dotnet restore tests/Solqaryn.Tests/Solqaryn.Tests.csproj
           dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore --filter 'FullyQualifiedName~C0301M0303RealMysql84HttpIntegrationTests|FullyQualifiedName~C0301M0303LoginVerifiedActorSourceTests|FullyQualifiedName~C0301M0303AuthRenewCanonicalIdentityTests' --logger 'trx;LogFileName=C0301M0303Mysql84.trx' --verbosity normal
+  angular-session-rejection:
+    name: C03-01.M03.03 - Angular session rejection race
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: frontend
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Npm institucional
+        run: npm install --global npm@11.19.0
+      - name: Dependencias reproducibles
+        run: npm ci
+      - name: Angular HTTP and renewal regression (current and stale 401)
+        run: npx ng test --watch=false --no-progress --include=src/app/core/interceptors/auth.interceptor.spec.ts --include=src/app/core/auth/session-activity.service.spec.ts

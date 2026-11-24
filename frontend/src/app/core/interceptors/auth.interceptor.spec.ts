@@ -9,15 +9,20 @@ import { authInterceptor } from './auth.interceptor';
 describe('Auth interceptor - identidad plataforma y tenant aislados', () => {
   let http: HttpClient;
   let testing: HttpTestingController;
+  let token: string | null;
+  let cerrarPor401: ReturnType<typeof vi.fn>;
 
   beforeEach(() => {
+    token = 'signed-test-only';
+    cerrarPor401 = vi.fn();
+    localStorage.setItem('solqaryn_token', token);
     localStorage.setItem('solqaryn_empresa_solicitada_id', '1');
     TestBed.configureTestingModule({
       providers: [
         provideHttpClient(withInterceptors([authInterceptor])),
         provideHttpClientTesting(),
-        { provide: AuthService, useValue: { getToken: () => 'signed-test-only', isTokenExpired: () => false } },
-        { provide: SessionActivityService, useValue: { cerrarPor401: vi.fn() } }
+        { provide: AuthService, useValue: { getToken: () => token, isTokenExpired: () => false } },
+        { provide: SessionActivityService, useValue: { cerrarPor401 } }
       ]
     });
     http = TestBed.inject(HttpClient);
@@ -27,6 +32,7 @@ describe('Auth interceptor - identidad plataforma y tenant aislados', () => {
   afterEach(() => {
     testing.verify();
     localStorage.removeItem('solqaryn_empresa_solicitada_id');
+    localStorage.removeItem('solqaryn_token');
   });
 
   it('no adjunta contexto empresarial a la comprobación de autoridad global', () => {
@@ -52,5 +58,44 @@ describe('Auth interceptor - identidad plataforma y tenant aislados', () => {
     const req = testing.expectOne(url);
     expect(req.request.headers.get('X-Empresa-Id')).toBe('1');
     req.flush({ success: true, data: {} });
+  });
+
+  it('401 vigente conserva el cierre de sesión fail-closed', () => {
+    const url = environment.apiUrl + '/tenant-context/1';
+    let status = 0;
+    http.get(url).subscribe({ error: e => { status = e.status; } });
+    testing.expectOne(url).flush({}, { status: 401, statusText: 'Unauthorized' });
+    expect(status).toBe(401);
+    expect(cerrarPor401).toHaveBeenCalledTimes(1);
+  });
+
+  it('401 tardío de la sesión A no cierra una sesión B autenticada posteriormente', () => {
+    const url = environment.apiUrl + '/tenant-context/1';
+    let status = 0;
+    http.get(url).subscribe({ error: e => { status = e.status; } });
+    const old = testing.expectOne(url);
+    expect(old.request.headers.get('Authorization')).toBe('Bearer signed-test-only');
+    token = 'signed-new-session';
+    localStorage.setItem('solqaryn_token', token);
+    http.get(url).subscribe();
+    const current = testing.expectOne(url);
+    expect(current.request.headers.get('Authorization')).toBe('Bearer signed-new-session');
+    current.flush({ success: true, data: {} });
+    old.flush({}, { status: 401, statusText: 'Unauthorized' });
+    expect(status).toBe(401);
+    expect(cerrarPor401).not.toHaveBeenCalled();
+    expect(localStorage.getItem('solqaryn_token')).toBe('signed-new-session');
+  });
+
+  it('401 de otra pestaña no elimina la identidad nueva persistida', () => {
+    const url = environment.apiUrl + '/tenant-context/1';
+    let status = 0;
+    http.get(url).subscribe({ error: e => { status = e.status; } });
+    const old = testing.expectOne(url);
+    localStorage.setItem('solqaryn_token', 'other-tab-session');
+    old.flush({}, { status: 401, statusText: 'Unauthorized' });
+    expect(status).toBe(401);
+    expect(cerrarPor401).not.toHaveBeenCalled();
+    expect(localStorage.getItem('solqaryn_token')).toBe('other-tab-session');
   });
 });
