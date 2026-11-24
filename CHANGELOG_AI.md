@@ -10917,3 +10917,8 @@
 
 - Piloto POST exacto independiente y apagado por defecto: JWT/RBAC Crear por módulo, tenant verificado, JSON acotado y autorización MVC; no cambios de entorno, esquema, QA/main/PROD.
 - Regresión dirigida real A/B sobre MySQL 8.4: cuatro maestros, ownership, recibos por actor, marca ajena, selector, revocación y default-off; sin certificar antes de CI exact-SHA. SKREF-11 leído para límites de confianza. D01 restante y D06 ERP siguen pendientes; V17 conservado, sin LISTO ni A5 propia.
+
+## 2026-11-24 — DEV01 — C07-01.M06.06 — Correccion causal de Scope Lock
+
+- El check 138776988281 de 42b8d874 fallo por una palabra inglesa en un comentario de VentaService.cs coincidente con identidad retirada. Se traduce exclusivamente ese comentario; sin cambio funcional, permisos, datos ni gate.
+- Se preservan pruebas y todo el CHANGELOG previo; no se declara CI SUCCESS hasta verificar el nuevo SHA exacto. D06 y A5 siguen pendientes.

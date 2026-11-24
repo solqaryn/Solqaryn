@@ -217,7 +217,7 @@ public class VentaService : IVentaService
                 .ToList();
             var inventario = await _inventarioConcurrency.BloquearYValidarInventarioAsync(demanda, esDeduccion: true);
 
-            // Revalidate current commercial eligibility under the inventory locks.
+            // Revalidar la elegibilidad comercial bajo los bloqueos de existencias.
             // A draft may predate a reclassification; reject the whole document
             // before any stock, Kardex or financial mutation.
             foreach (var producto in inventario.Productos.Values)
