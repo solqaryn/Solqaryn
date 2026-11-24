@@ -1,3 +1,7 @@
+## 2026-11-24 — DEV04 rescate V31 C01-03.M04.02: contrato Playwright Request en zoom nativo
+- CI 2bf5e952 run45391152622/job138434895565: preflight de sintaxis y Chromium JWT/MySQL A/B anteriores SUCCESS, paso M04.02 zoom nativo abortó con TypeError r.request is not a function. Los dos call sites pasan route.request(), por lo que el predicado debe usar Request.method() directamente; se corrige solo esa llamada.
+- No se altera navegación, permisos, autenticación, fixtures, zoom físico ni requisitos de foco/capturas. CI real nueva pendiente; BEFORE histórico sigue no acreditado. Mantener VALIDANDO, owner DEV05, revisión A5 independiente de autor y rescatista. Solo dev.
+
 ## 2026-11-24 — DEV04 V31 C03-01.M03.03: revocación de tenant destino en selección real
 - P1/R2: relectura efectiva de membresía destino después de validar sesión base; rechaza cambio/revocación de B sin confundir rol de A, y no-store en GET de contexto.
 - Regresión adversarial del controlador y HTTP JWT firmado/MySQL 8.4 efímero A/B; CI exact-SHA pendiente, sin cierre ni A5 propia. No emite token tenant/sucursal ni cambia permisos; falta enforcement de sesión seleccionada. Solo dev, Scope Lock STRICT, owner histórico intacto.

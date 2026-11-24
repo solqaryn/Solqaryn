@@ -22,7 +22,7 @@ const results = [];
 const isTenantGet = r => {
   const u = new URL(r.url());
   return ['127.0.0.1', 'localhost'].includes(u.hostname) &&
-    u.port === '5005' && u.pathname === apiPath && r.request().method() === 'GET';
+    u.port === '5005' && u.pathname === apiPath && r.method() === 'GET';
 };
 
 async function setNativeZoom(worker, page, factor) {
