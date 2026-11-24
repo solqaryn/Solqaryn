@@ -67,6 +67,19 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
             !_current.EstaAutenticado || authenticatedActorId is not > 0)
             return Forbid();
 
+        // An authenticated principal is not necessarily an unambiguous audit actor.
+        // CurrentUserService parses a decimal claim; require its exact signed form
+        // and a unique username before SQL authority or any durable attribution.
+        var actorIds = User.FindAll("id").ToArray();
+        var actorNames = User.FindAll("nombreUsuario").ToArray();
+        if (actorIds.Length != 1 || actorNames.Length != 1 ||
+            !string.Equals(actorIds[0].Value,
+                authenticatedActorId.Value.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                StringComparison.Ordinal) ||
+            string.IsNullOrWhiteSpace(actorNames[0].Value) ||
+            !string.Equals(actorNames[0].Value, _current.NombreUsuario, StringComparison.Ordinal))
+            return Forbid();
+
         // A denial is a server-observed security event, NOT an authorization.
         // Only a signed/authenticated actor is recorded, with no granted
         // company/platform scope and no raw username, JWT, selector or SHA.

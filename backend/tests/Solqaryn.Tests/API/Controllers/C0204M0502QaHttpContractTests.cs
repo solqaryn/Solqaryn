@@ -417,6 +417,31 @@ public sealed class C0204M0502QaHttpContractTests
 
         var upstream = new GitHubFake(Payload());
         await using var fixture = await CrearAsync(upstream, mysql: true);
+        // The signed JWT has a valid global grant in SQL, but ambiguous or
+        // noncanonical identity must not be normalized into an audit actor.
+        using (var ambiguous = fixture.Host.GetTestClient())
+        {
+            var canonical = fixture.GlobalId.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            var malformed = new[]
+            {
+                Token(fixture.GlobalId, "operadorglobal", actorId: "0" + canonical),
+                Token(fixture.GlobalId, "operadorglobal", actorId: "+" + canonical),
+                Token(fixture.GlobalId, "operadorglobal", actorId: " " + canonical),
+                Token(fixture.GlobalId, "operadorglobal", duplicateActorId: canonical),
+                Token(fixture.GlobalId, "operadorglobal", duplicateUsername: "operadorglobal")
+            };
+            foreach (var jwt in malformed)
+            {
+                ambiguous.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
+                using var response = await ambiguous.GetAsync(Path);
+                Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+                Assert.Contains("no-store", response.Headers.CacheControl?.ToString() ?? "");
+            }
+            Assert.Equal(0, upstream.Calls);
+            using var scope = fixture.Host.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            Assert.Empty(await db.Set<RegistroAuditoria>().ToListAsync());
+        }
         int actorA, actorB, tenantA, tenantB;
         using (var scope = fixture.Host.Services.CreateScope())
         {
@@ -529,16 +554,20 @@ public sealed class C0204M0502QaHttpContractTests
         Assert.False(root.GetProperty("AuthorityGranted").GetBoolean());
     }
 
-    private static string Token(int id, string username, string admin = "false")
+    private static string Token(int id, string username, string admin = "false",
+        string? actorId = null, string? duplicateActorId = null, string? duplicateUsername = null)
     {
+        var claims = new List<Claim>
+        {
+            new("id", actorId ?? id.ToString(System.Globalization.CultureInfo.InvariantCulture)),
+            new("nombreUsuario", username),
+            new("esAdministrador", admin)
+        };
+        if (duplicateActorId is not null) claims.Add(new Claim("id", duplicateActorId));
+        if (duplicateUsername is not null) claims.Add(new Claim("nombreUsuario", duplicateUsername));
         var jwt = new JwtSecurityToken(
             issuer: Issuer, audience: Audience,
-            claims:
-            [
-                new Claim("id", id.ToString()),
-                new Claim("nombreUsuario", username),
-                new Claim("esAdministrador", admin)
-            ],
+            claims: claims,
             notBefore: DateTime.UtcNow.AddMinutes(-1),
             expires: DateTime.UtcNow.AddMinutes(10),
             signingCredentials: new SigningCredentials(TestKey, SecurityAlgorithms.HmacSha256));

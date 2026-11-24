@@ -10828,3 +10828,9 @@
 - Registra denegación autenticada y revocación durante consulta QA global con ámbito objetivo fijo Plataforma y autoridad no concedida; sin conceder rol, tenant, ni almacenar JWT, selector, nombre de usuario o contenido del proveedor.
 - Amplía los casos HTTP JWT/MySQL 8.4 A/B y revocación: registro persistido sin autoridad, no invocación del proveedor al denegar, fallo real de INSERT conserva 403; ajusta gate CI de nueve a diez tests por caso causal incorporado en SHA anterior, sin omitir fallos ni skips.
 - Scope Lock STRICT y autor histórico conservados. CI exact-SHA aún pendiente, retención y A5 independiente no acreditadas; rollback por revert ordinario. Sin cambios de esquema, permisos, QA ni producción.
+
+## 2026-11-24 — DEV06 C03-03.M03.06: identidad de auditoría QA inequívoca
+
+- R2: el controlador de evidencias QA exige un único claim de identidad decimal canónico y un único nombre firmado antes de resolver autoridad o atribuir denegaciones; los alias numéricos y claims ambiguos no se convierten en un actor SQL ni generan una atribución falsa. No cambia CurrentUserService, permisos, esquema ni interfaces públicas.
+- Regresión causal en el laboratorio JWT real/MySQL 8.4: credencial firmada con grant global persistido pero ID no canónico o claims duplicados debe obtener 403, sin llamada externa ni fila atribuida; se conservan los casos A/B, revocación, fallo INSERT y la aceptación positiva existente. El upstream simulado se distingue de un proveedor vivo.
+- Governance STRICT; SKREF-11 origen openai/skills pin 49f948faa9258a0c61caceaf225e179651397431 leído para límites de confianza, sin instalar ni ejecutar referencias. UI/UX y performance no aplican al diff. CI exact-SHA pendiente; no A5 propia, no LISTO, retención y recorrido vivo del proveedor aún no acreditados; rollback mediante revert normal. Sin QA/main/PROD.
