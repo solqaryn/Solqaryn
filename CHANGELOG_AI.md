@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV02 V31 C15-04.M05.04: respuesta tenant estable durante zoom nativo
+- SHA 3e3381e6, run 45382269658/job 138404053487: preflight correcto, 166 pruebas Chromium JWT/MySQL aprobadas; el paso X11 fallo al leer el cuerpo CDP de tenant-context, no por una asercion de producto.
+- Aisla la navegacion del audit en una nueva pestaña del mismo perfil autenticado; conserva el estado HTTP real del navegador y verifica empresaId en el mismo endpoint real usando la cabecera Authorization exacta observada, sin mocks ni cambios de runtime, RBAC o criterios de captura.
+- Pendientes CI dirigida exact-SHA, inspeccion de PNG y cobertura UX global; no se declara LISTO ni A5. Lock V17 propio 2000002297 preservado.
+
 ## 2026-11-24 — DEV06 V31 C01-03.M04.04: captura de foco real tras Tab
 - Evidencia exacta 9a5ce793/run 45386778724: 13 Vitest, 17 Chromium A/B, 8 formularios y dos comprobaciones de zoom/foco nativo aprobadas; PNG 200% anteriores al Tab no prueban foco visual.
 - Se conservan cuatro capturas y se agregan dos despues de Tab real con aserciones de foco antes/despues. Test-only; sin alterar runtime, autorizacion ni datos. CI exact SHA y revision visual pendientes; BEFORE historico pendiente, A5 independiente. SKREF-03/10 oficiales, sin instalacion.

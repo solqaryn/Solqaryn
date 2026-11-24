@@ -124,7 +124,11 @@ async function actor(user, tenant, run) {
     assert.ok(typeof body?.data?.token === 'string' && body.data.token.split('.').length === 3);
     await page.waitForFunction(() => Boolean(localStorage.getItem('solqaryn_token')));
     if (tenant) await page.evaluate(id => localStorage.setItem('solqaryn_empresa_solicitada_id', id), tenant);
-    await run(page, worker);
+    // Isolate the audit navigation from outstanding post-login requests.
+    // The new tab uses the same authenticated, actor-specific browser profile.
+    const auditPage = await context.newPage();
+    await page.close();
+    await run(auditPage, worker);
   } finally {
     await context.close();
   }
@@ -150,7 +154,20 @@ try {
       await page.goto(origin + '/perfil');
       const response = await check;
       assert.equal(response.status(), 200);
-      assert.equal((await response.json())?.data?.empresaId, Number(tenant));
+      // Chromium can discard the DevTools response body during navigation.
+      // Keep the actual UI response status, and independently verify the same
+      // real endpoint with the exact Authorization header of that UI request.
+      const authorization = await response.request().headerValue('authorization');
+      assert.match(authorization ?? '', /^Bearer \S+$/);
+      const contract = await page.request.get(response.url(), {
+        headers: { Authorization: authorization }
+      });
+      try {
+        assert.equal(contract.status(), 200, 'Real authenticated tenant contract');
+        assert.equal((await contract.json())?.data?.empresaId, Number(tenant));
+      } finally {
+        await contract.dispose();
+      }
       await audit(page, worker, 'tenant-' + tenant + '-profile', page.getByRole('heading', { name: 'Mi perfil' }));
       if (tenant === '2') {
         const denied = page.waitForResponse(r => apiResponse(r, '/plataforma/sesion', 'GET'));
