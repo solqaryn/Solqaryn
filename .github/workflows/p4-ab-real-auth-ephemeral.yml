@@ -193,17 +193,26 @@ jobs:
             (Nombre, NombreNormalizado, Descripcion, EsSistema, EsAdministrador,
              Ambito, EmpresaId, Activo, Eliminado, FechaCreacion)
           VALUES ('Administrador global efimero', 'P4_PLAT_HTTP_CI',
-                  'Solo autoridad global de la suite P4', 1, 1, 2, NULL, 1, 0, UTC_TIMESTAMP(6));
+                  'Solo autoridad global de la suite P4', 1, 1, 2, NULL, 1, 0, UTC_TIMESTAMP(6)),
+                 ('Identidad base plataforma efimera', 'P4_PLAT_BASE_HTTP_CI',
+                  'Identidad sin privilegio global en el JWT', 1, 0, 2, NULL, 1, 0, UTC_TIMESTAMP(6));
           INSERT INTO Usuarios
             (NombreUsuario, NombreCompleto, PasswordHash, RolId, Activo, Bloqueado, Eliminado, FechaCreacion)
           SELECT 'p4_platform_only_ci', 'Usuario plataforma efimero',
+                 a.PasswordHash, r.Id, 1, 0, 0, UTC_TIMESTAMP(6)
+          FROM Usuarios a CROSS JOIN Roles r
+          WHERE a.NombreUsuario = 'p4_admin_a' AND r.NombreNormalizado = 'P4_PLAT_BASE_HTTP_CI';
+          -- Un grant global no corrige un rol base empresarial sin membresia activa.
+          INSERT INTO Usuarios
+            (NombreUsuario, NombreCompleto, PasswordHash, RolId, Activo, Bloqueado, Eliminado, FechaCreacion)
+          SELECT 'p4_invalid_base_ci', 'Identidad incompatible efimera',
                  a.PasswordHash, a.RolId, 1, 0, 0, UTC_TIMESTAMP(6)
           FROM Usuarios a WHERE a.NombreUsuario = 'p4_admin_a';
           INSERT INTO UsuarioRolesPlataforma
             (UsuarioId, RolId, Activa, FechaCreacion, FechaActualizacion)
           SELECT u.Id, r.Id, 1, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)
           FROM Usuarios u CROSS JOIN Roles r
-          WHERE u.NombreUsuario = 'p4_platform_only_ci'
+          WHERE u.NombreUsuario IN ('p4_platform_only_ci', 'p4_invalid_base_ci')
             AND r.NombreNormalizado = 'P4_PLAT_HTTP_CI';
           SQL
           count="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci -Nse "
@@ -212,6 +221,21 @@ jobs:
             WHERE u.NombreUsuario='p4_platform_only_ci' AND a.Activa=1
               AND r.Ambito=2 AND r.EsAdministrador=1 AND r.EmpresaId IS NULL;")"
           test "$count" = "1"
+          base_count="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci -Nse "
+            SELECT COUNT(*) FROM Usuarios u JOIN Roles r ON r.Id=u.RolId
+             WHERE u.NombreUsuario='p4_platform_only_ci' AND r.Ambito=2
+               AND r.EsSistema=1 AND r.EsAdministrador=0 AND r.EmpresaId IS NULL
+               AND r.Activo=1 AND r.NombreNormalizado='P4_PLAT_BASE_HTTP_CI'
+               AND NOT EXISTS (SELECT 1 FROM UsuarioEmpresas m WHERE m.UsuarioId=u.Id);")"
+          test "$base_count" = "1"
+          invalid_count="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci -Nse "
+            SELECT COUNT(*) FROM Usuarios u JOIN Roles r ON r.Id=u.RolId
+              JOIN UsuarioRolesPlataforma g ON g.UsuarioId=u.Id
+              JOIN Roles gr ON gr.Id=g.RolId
+             WHERE u.NombreUsuario='p4_invalid_base_ci' AND r.Ambito=1
+               AND g.Activa=1 AND gr.NombreNormalizado='P4_PLAT_HTTP_CI'
+               AND NOT EXISTS (SELECT 1 FROM UsuarioEmpresas m WHERE m.UsuarioId=u.Id);")"
+          test "$invalid_count" = "1"
 
       - name: Certificar HTTP JWT global activo contra MySQL real
         env:
@@ -301,6 +325,11 @@ jobs:
           test "$allowed" -ge 2
           test "$denied" -ge 2
           echo "P4 PLATFORM AUDIT PASS allowed=$allowed denied=$denied; tenant leaks=0"
+
+      - name: Eliminar JWT efimeros de prueba previos a suspension
+        if: always()
+        shell: bash
+        run: rm -f -- "$RUNNER_TEMP/p4-prior-enterprise-jwt.json"
 
       - name: Guardar evidencia y errores de API
         if: always()

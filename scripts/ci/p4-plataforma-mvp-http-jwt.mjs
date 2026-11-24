@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 // Microfase 4 - aceptación JWT/HTTP real y MySQL efímero; NUNCA Aiven ni PROD.
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
+import { join } from 'node:path';
 
 const api = process.env.P4_API_URL ?? 'http://127.0.0.1:5005';
 assert(/^http:\/\/127\.0\.0\.1:\d+$/.test(api), 'La suite exige servidor localhost descartable');
@@ -42,8 +44,22 @@ async function login(user, pass = password) {
 }
 
 const platform = await login('p4_platform_only_ci');
-const aToken = await login('p4_admin_a');
-const bToken = await login('p4_admin_b');
+let aToken, bToken;
+if (phase === 'inactive') {
+  assert(process.env.RUNNER_TEMP, 'La evidencia JWT efimera exige runner aislado');
+  const prior = JSON.parse(readFileSync(join(process.env.RUNNER_TEMP, 'p4-prior-enterprise-jwt.json'), 'utf8'));
+  aToken = prior.enterpriseA;
+  bToken = prior.enterpriseB;
+  assert(typeof aToken === 'string' && typeof bToken === 'string', 'Faltan JWT previos reales A/B');
+  for (const user of ['p4_admin_a', 'p4_admin_b']) {
+    const denied = await request('POST', '/auth/login', '', { nombreUsuario: user, password });
+    expectStatus(denied, 401, 'Empresa suspendida no permite nuevo JWT ' + user);
+    assert(!denied.value?.data?.token, 'Empresa suspendida no puede emitir JWT');
+  }
+} else {
+  aToken = await login('p4_admin_a');
+  bToken = await login('p4_admin_b');
+}
 const url = '/plataforma/gestion';
 
 if (phase === 'active') {
@@ -157,6 +173,10 @@ if (phase === 'active') {
     'Empresa A inactiva no confiere acceso empresarial');
   mustDeny(await request('GET', url + '/empresas/' + companyA + '/membresias', aToken),
     'Admin empresa inactiva no obtiene control plane');
+  mustDeny(await request('GET', '/tenant-context/' + companyB, bToken),
+    'Empresa B inactiva no confiere acceso empresarial');
+  mustDeny(await request('GET', url + '/empresas/' + companyB + '/membresias', bToken),
+    'Admin B empresa inactiva no obtiene control plane');
 } else {
   mustDeny(await request('GET', '/plataforma/empresas', platform),
     'Grant global revocado: directorio denegado');

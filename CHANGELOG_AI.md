@@ -1,3 +1,9 @@
+## 2026-11-24 — DEV03 C03-01.M03.03: alinear fixtures JWT globales con autorización fail-closed
+
+- Corrige la preparación de la identidad sintética P4: rol base de plataforma de sistema sin privilegio administrativo y grant global relacional separado; mantiene caso negativo de rol base empresarial sin membresía, aun con grant global activo.
+- Conserva las pruebas de revocación y empresas suspendidas: exige rechazo de login nuevo A/B y verifica denegación de JWT previos reales, conservados solamente en el runner efímero y eliminados al finalizar; no modifica API, permisos, datos reales ni aserciones de acceso.
+- Evidencia causal anterior: 1e7a7e0b, job 138703034358, HTTP 401 en login de identidad sintética incompatible; nuevo SHA debe ejecutar CI real MySQL 8.4 y Scope Lock/V5 antes de cualquier cierre. Rollback por revert normal; A5 independiente pendiente.
+
 ## 2026-11-24 — DEV01 C07-01.M06.06: mutaciones HTTP de maestros de atributos
 
 - Conecta PUT, PATCH activar/desactivar y DELETE lógico de colores, tallas, marcas y modelos con tres pilotos separados apagados por defecto, rutas numéricas exactas, JWT/RBAC de la acción, segundo filtro MVC y repositorio tenant Oracle EF existente. PUT exige JSON acotado; no habilita otras escrituras.
