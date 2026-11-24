@@ -23,7 +23,8 @@ public class CatalogoProductoServiceTests
         _service = new CatalogoProductoService(
             _repository.Object,
             _currentUser.Object,
-            _auditoria.Object);
+            _auditoria.Object,
+            new FakeUnitOfWork());
     }
 
     [Fact]
@@ -77,6 +78,9 @@ public class CatalogoProductoServiceTests
         Assert.Equal("#1D4ED8", guardado.CodigoVisual);
         Assert.Equal(7, guardado.CreadoPorUsuarioId);
         Assert.Equal("admin_pruebas", resultado.CreadoPorNombreUsuario);
+        _auditoria.Verify(x => x.RegistrarEstrictoAsync(
+            ModuloSistema.Colores, AccionPermiso.Crear, It.IsAny<string>(), 41,
+            "Color", null, null, null, "Exito", null), Times.Once);
     }
 
     [Fact]

@@ -16,15 +16,18 @@ public class CatalogoProductoService : ICatalogoProductoService
     private readonly ICatalogoProductoRepository _repository;
     private readonly ICurrentUserService _currentUser;
     private readonly IAuditoriaService _auditoria;
+    private readonly IUnitOfWork _unitOfWork;
 
     public CatalogoProductoService(
         ICatalogoProductoRepository repository,
         ICurrentUserService currentUser,
-        IAuditoriaService auditoria)
+        IAuditoriaService auditoria,
+        IUnitOfWork unitOfWork)
     {
         _repository = repository;
         _currentUser = currentUser;
         _auditoria = auditoria;
+        _unitOfWork = unitOfWork;
     }
 
     public async Task<List<CatalogoProductoDto>> GetAllAsync(
@@ -54,7 +57,12 @@ public class CatalogoProductoService : ICatalogoProductoService
         return elemento is null ? null : ToDto(elemento);
     }
 
-    public async Task<CatalogoProductoDto> CreateAsync(
+    public Task<CatalogoProductoDto> CreateAsync(
+        TipoCatalogoProducto tipo,
+        CreateCatalogoProductoDto dto) =>
+        ExecuteMutationAsync(() => CreateCoreAsync(tipo, dto));
+
+    private async Task<CatalogoProductoDto> CreateCoreAsync(
         TipoCatalogoProducto tipo,
         CreateCatalogoProductoDto dto)
     {
@@ -90,7 +98,13 @@ public class CatalogoProductoService : ICatalogoProductoService
         return ToDto(elemento);
     }
 
-    public async Task<CatalogoProductoDto?> UpdateAsync(
+    public Task<CatalogoProductoDto?> UpdateAsync(
+        TipoCatalogoProducto tipo,
+        int id,
+        UpdateCatalogoProductoDto dto) =>
+        ExecuteMutationAsync(() => UpdateCoreAsync(tipo, id, dto));
+
+    private async Task<CatalogoProductoDto?> UpdateCoreAsync(
         TipoCatalogoProducto tipo,
         int id,
         UpdateCatalogoProductoDto dto)
@@ -122,7 +136,13 @@ public class CatalogoProductoService : ICatalogoProductoService
         return ToDto(elemento);
     }
 
-    public async Task<CatalogoProductoDto?> CambiarEstadoAsync(
+    public Task<CatalogoProductoDto?> CambiarEstadoAsync(
+        TipoCatalogoProducto tipo,
+        int id,
+        bool activo) =>
+        ExecuteMutationAsync(() => CambiarEstadoCoreAsync(tipo, id, activo));
+
+    private async Task<CatalogoProductoDto?> CambiarEstadoCoreAsync(
         TipoCatalogoProducto tipo,
         int id,
         bool activo)
@@ -153,7 +173,10 @@ public class CatalogoProductoService : ICatalogoProductoService
         return ToDto(elemento);
     }
 
-    public async Task<bool> DeleteAsync(TipoCatalogoProducto tipo, int id)
+    public Task<bool> DeleteAsync(TipoCatalogoProducto tipo, int id) =>
+        ExecuteMutationAsync(() => DeleteCoreAsync(tipo, id));
+
+    private async Task<bool> DeleteCoreAsync(TipoCatalogoProducto tipo, int id)
     {
         var elemento = await _repository.GetByIdConRelacionesAsync(tipo, id);
         if (elemento is null) return false;
@@ -250,12 +273,25 @@ public class CatalogoProductoService : ICatalogoProductoService
     private static string? NormalizarOpcional(string? valor) =>
         string.IsNullOrWhiteSpace(valor) ? null : valor.Trim();
 
+    // Run the complete mutation inside the existing unit of work: each retry
+    // re-reads and rebuilds the entity, and a failed durable receipt rolls back
+    // the repository SaveChanges instead of acknowledging an unaudited change.
+    private async Task<T> ExecuteMutationAsync<T>(Func<Task<T>> mutation)
+    {
+        T result = default!;
+        await _unitOfWork.ExecuteInTransactionAsync(async () =>
+        {
+            result = await mutation();
+        });
+        return result;
+    }
+
     private async Task RegistrarAuditoriaAsync(
         TipoCatalogoProducto tipo,
         AccionPermiso accion,
         string descripcion,
         int id) =>
-        await _auditoria.RegistrarAsync(ObtenerModulo(tipo), accion, descripcion, id, entidad: NombreTipo(tipo));
+        await _auditoria.RegistrarEstrictoAsync(ObtenerModulo(tipo), accion, descripcion, id, entidad: NombreTipo(tipo));
 
     private static ModuloSistema ObtenerModulo(TipoCatalogoProducto tipo) => tipo switch
     {

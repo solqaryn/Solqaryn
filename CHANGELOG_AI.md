@@ -10786,3 +10786,10 @@
 - Se añade `success:true` exclusivamente al mock de respuesta POST logo en `frontend/e2e/c01-03-m04-04-forms.spec.ts`, preservando la condición adversarial de datos tenant B y data null; el test exige `invalid`, ausencia de PII y cero éxito falso. Login JWT, membresía y MySQL efímero permanecen reales donde corresponda, pero la respuesta POST inyectada NO certifica aislamiento real del backend.
 - R2 por tenant y flujo de formularios. Sin cambios runtime, JWT/RBAC, permisos, DB, migraciones o workflows; sin nuevos tests ni retry manual de suites ya verdes. A0 revisado; A1/A3 y A4 requieren CI de GitHub-hosted del nuevo SHA (no PASS anticipado). Zoom nativo 200% y capturas históricas ANTES siguen pendientes de evidencia genuina. H VALIDANDO/I DEV05 preservados; A5 únicamente otra Task Javier independiente. Sin QA/main/PROD.
 
+
+## 2026-11-24 — C07-01.M06.06: atomic durable audit for normalized attributes (DEV01)
+
+- R2 Application: CatalogoProductoService usa UnitOfWork para las cuatro mutaciones y auditoría estricta; conserva DTO, rutas, permisos, flags, ownership y cuarentena. Sin nueva migración ni cambio ERP.
+- xUnit verifica recibo estricto; integración existente exige trigger real MySQL 8.4, rollback físico de alta/edición/estado/baja y recibo positivo tenant B; CI exact-SHA pendiente, no PASS por mock.
+- D01 general y D06 servicio sin stock/compatibilidad ERP pendientes; H EN_PROGRESO/I DEV01, V17 propio, A5 independiente. Sin QA/main/PROD; rollback por revert FF/CAS.
+

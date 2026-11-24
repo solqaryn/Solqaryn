@@ -1963,6 +1963,89 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             using (var revokedFiscal = await FiscalStateAsync(jwtA, a.Id, taxAId, false))
                 Assert.Equal(HttpStatusCode.ServiceUnavailable, revokedFiscal.StatusCode);
 
+            // D01: actual attribute mutations and the real durable receipt use
+            // the same Oracle MySQL transaction. HTTP mutation quarantine is unchanged.
+            var attributeContext = new DefaultHttpContext();
+            attributeContext.Items[Solqaryn.Application.Security.VerifiedCommercialTenant
+                .AuthorizedEmpresaIdItemKey] = b.Id;
+            var attributeAccessor = new HttpContextAccessor { HttpContext = attributeContext };
+            var attributeActor = new Mock<ICurrentUserService>();
+            attributeActor.Setup(x => x.UsuarioId).Returns(userB.Id);
+            attributeActor.Setup(x => x.NombreUsuario).Returns(userB.NombreUsuario);
+            CatalogoProductoService AttributeService(AppDbContext context) => new(
+                new CatalogoProductoRepository(context), attributeActor.Object,
+                new AuditoriaService(new AuditoriaRepository(context), attributeActor.Object,
+                    attributeAccessor, Microsoft.Extensions.Logging.Abstractions.NullLogger<AuditoriaService>.Instance),
+                new UnitOfWork(context));
+            var rollbackAttributeName = "C0701AttrRollback_" + Guid.NewGuid().ToString("N");
+            var attributeAuditBefore = await db.RegistrosAuditoria.IgnoreQueryFilters()
+                .AsNoTracking().CountAsync(x => x.Modulo == ModuloSistema.Colores);
+            await db.Database.ExecuteSqlRawAsync(
+                "CREATE TRIGGER c0701_attribute_audit_failure BEFORE INSERT ON RegistrosAuditoria " +
+                "FOR EACH ROW SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT = 'C0701_ATTRIBUTE_AUDIT_FAILURE'");
+            try
+            {
+                async Task AssertAttributeRollbackAsync(Func<CatalogoProductoService, Task> mutate)
+                {
+                    await using var rollbackAttributes = new AppDbContext(options,
+                        tenantHttpContextAccessor: attributeAccessor);
+                    var failure = await Assert.ThrowsAsync<DbUpdateException>(
+                        () => mutate(AttributeService(rollbackAttributes)));
+                    Assert.Contains("C0701_ATTRIBUTE_AUDIT_FAILURE", failure.ToString(), StringComparison.Ordinal);
+                }
+                await AssertAttributeRollbackAsync(service => service.CreateAsync(
+                    TipoCatalogoProducto.Color, new CreateCatalogoProductoDto
+                    { Nombre = rollbackAttributeName, CodigoVisual = "#112233" }));
+                await AssertAttributeRollbackAsync(service => service.UpdateAsync(
+                    TipoCatalogoProducto.Color, ownedColorB, new UpdateCatalogoProductoDto
+                    { Nombre = rollbackAttributeName, CodigoVisual = "#112233" }));
+                await AssertAttributeRollbackAsync(service => service.CambiarEstadoAsync(
+                    TipoCatalogoProducto.Color, ownedColorB, false));
+                await AssertAttributeRollbackAsync(service => service.DeleteAsync(
+                    TipoCatalogoProducto.Color, ownedColorB));
+            }
+            finally
+            {
+                await db.Database.ExecuteSqlRawAsync("DROP TRIGGER IF EXISTS c0701_attribute_audit_failure");
+            }
+            await using (var attributeFresh = new AppDbContext(options))
+            {
+                Assert.False(await attributeFresh.Colores.IgnoreQueryFilters().AsNoTracking()
+                    .AnyAsync(x => x.Nombre == rollbackAttributeName));
+                var color = await attributeFresh.Colores.IgnoreQueryFilters().AsNoTracking()
+                    .SingleAsync(x => x.Id == ownedColorB);
+                Assert.Equal(b.Id, color.EmpresaId);
+                Assert.Equal("C0701ColorOwnerB", color.Nombre);
+                Assert.Equal("#123456", color.CodigoVisual);
+                Assert.True(color.Activo);
+                Assert.False(color.Eliminado);
+                Assert.Equal(attributeAuditBefore, await attributeFresh.RegistrosAuditoria
+                    .IgnoreQueryFilters().AsNoTracking().CountAsync(x => x.Modulo == ModuloSistema.Colores));
+            }
+            int committedAttributeId;
+            await using (var committedAttributeDb = new AppDbContext(options,
+                tenantHttpContextAccessor: attributeAccessor))
+            {
+                var result = await AttributeService(committedAttributeDb).CreateAsync(
+                    TipoCatalogoProducto.Color, new CreateCatalogoProductoDto
+                    { Nombre = "C0701AttrCommit_" + Guid.NewGuid().ToString("N"), CodigoVisual = "#112233" });
+                committedAttributeId = result.Id;
+                Assert.True(committedAttributeId > 0);
+            }
+            await using (var committedAttributeFresh = new AppDbContext(options))
+            {
+                var committedColor = await committedAttributeFresh.Colores.IgnoreQueryFilters()
+                    .AsNoTracking().SingleAsync(x => x.Id == committedAttributeId);
+                Assert.Equal(b.Id, committedColor.EmpresaId);
+                var receipt = await committedAttributeFresh.RegistrosAuditoria.IgnoreQueryFilters()
+                    .AsNoTracking().SingleAsync(x => x.Modulo == ModuloSistema.Colores &&
+                        x.Accion == AccionPermiso.Crear && x.ReferenciaId == committedAttributeId);
+                Assert.Equal(b.Id, receipt.EmpresaId);
+                Assert.Equal(userB.Id, receipt.UsuarioId);
+                Assert.Equal(attributeAuditBefore + 1, await committedAttributeFresh.RegistrosAuditoria
+                    .IgnoreQueryFilters().AsNoTracking().CountAsync(x => x.Modulo == ModuloSistema.Colores));
+            }
+
             // A failing audit sink rolls back a real SQL UPDATE, verified with
             // a fresh DbContext rather than an in-memory tracked entity.
             var failedAudit = new Mock<IAuditoriaService>();
