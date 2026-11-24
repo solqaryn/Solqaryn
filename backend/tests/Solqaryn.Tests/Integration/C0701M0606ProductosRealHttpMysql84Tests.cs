@@ -2075,9 +2075,9 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                     db.Permisos.Add(grantPermission);
                     await db.SaveChangesAsync();
                 }
-                var grantA = new RolPermiso { RolId = roleA.Id, PermisoId = grantPermission.Id };
-                attributeGrantsA.Add(grantA);
-                db.RolPermisos.AddRange(grantA,
+                var attributeGrantA = new RolPermiso { RolId = roleA.Id, PermisoId = grantPermission.Id };
+                attributeGrantsA.Add(attributeGrantA);
+                db.RolPermisos.AddRange(attributeGrantA,
                     new RolPermiso { RolId = roleB.Id, PermisoId = grantPermission.Id });
             }
             await db.SaveChangesAsync();

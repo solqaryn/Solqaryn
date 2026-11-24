@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV01 C07-01.M06.06: corrección CS0136 en integración HTTP de atributos
+
+- Renombra únicamente el permiso local de la iteración de atributos y sus dos referencias; conserva el permiso exterior, las aserciones de aislamiento y la revocación JWT/RBAC.
+- GitHub Actions 45461159210 / 138683765884 confirmó CS0136 antes de ejecutar pruebas. Requiere CI exact-SHA; no implica cierre del catálogo ni certificación ERP.
+
 ## 2026-11-24 — DEV04 C03-01.M03.03: consumidor contextual de sucursal en perfil
 
 - Consulta funcional de sucursal autorizada en perfil mediante listado, emisión JWT contextual y GET protegido; credencial efímera aislada del login base, sin almacenamiento, fallback ni concesión de permisos globales.
