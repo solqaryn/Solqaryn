@@ -90,6 +90,48 @@ public sealed class TenantSessionController(
         return Ok(ApiResponse<MisPermisosDto>.Ok(result, "Permisos de contexto vigentes."));
     }
 
+    // Read the actual selected branch only through the scoped credential.
+    // No client-supplied resource identifier and no legacy authorization fallback.
+    [HttpGet("sucursal")]
+    [Authorize(AuthenticationSchemes = TenantSessionToken.Scheme)]
+    public async Task<IActionResult> ObtenerSucursal(
+        [FromServices] ISucursalService sucursales, CancellationToken cancellationToken)
+    {
+        var principal = ControllerContext.HttpContext?.User;
+        if (principal is null ||
+            !ClaimId(principal, "id", out var actor) ||
+            !ClaimId(principal, "rolId", out var baseRole) ||
+            !ClaimId(principal, "tenantId", out var tenant) ||
+            !ClaimId(principal, "branchId", out var branch) ||
+            !ClaimId(principal, "tenantRoleId", out var role))
+            return Unauthorized();
+        if (!SelectorsMatch(tenant, branch))
+            return Forbid(TenantSessionToken.Scheme);
+
+        var scope = await scopes.ObtenerSucursalActualAsync(actor, baseRole, tenant, branch,
+            cancellationToken);
+        if (scope is null || scope.UsuarioId != actor || scope.EmpresaId != tenant ||
+            scope.RolId != role)
+            return Forbid(TenantSessionToken.Scheme);
+
+        var resource = await sucursales.GetByIdAsync(branch, tenant);
+        if (resource is null || resource.Id != branch || resource.EmpresaId != tenant ||
+            !resource.Activa)
+            return Forbid(TenantSessionToken.Scheme);
+
+        var fresh = await scopes.ObtenerSucursalActualAsync(actor, baseRole, tenant, branch,
+            cancellationToken);
+        if (fresh != scope || !SelectorsMatch(tenant, branch))
+            return Forbid(TenantSessionToken.Scheme);
+        cancellationToken.ThrowIfCancellationRequested();
+
+        // Return only context display fields, not contact or audit metadata.
+        return Ok(ApiResponse<object>.Ok(new
+        {
+            resource.Id, EmpresaId = tenant, resource.Codigo, resource.Nombre, resource.ZonaHoraria
+        }, "Sucursal de contexto vigente."));
+    }
+
     private bool SelectorsMatch(int tenant, int branch) =>
         HeaderMatches("X-Empresa-Id", tenant) && HeaderMatches("X-Sucursal-Id", branch);
     private bool HeaderMatches(string name, int id) =>

@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV04 V32 C03-01.M03.03: consumidor real de sucursal JWT contextual
+- Lectura de la sucursal efectiva por JWT contextual firmado, usando ISucursalService existente y revalidación SQL del actor/rol/tenant/sucursal antes y después; no acepta IDs de recurso arbitrarios ni expone contacto/auditoría. Sin cambios de cuarentena, plataforma, migraciones ni datos productivos.
+- Prueba dirigida HTTP/JWT Oracle MySQL 8.4 aislada amplía A/B, token base/anónimo, selector cruzado, revocación de membresía/grant, rollback, sucursal inactiva y traslado. CI exact SHA pendiente de verificación; no certifica navegación Angular ni persistencia de preferencias.
+- Riesgo R2, SKREF-11 pin 49f948faa9258a0c61caceaf225e179651397431 leído para límites de confianza; otras referencias NO_APLICA al diff backend. Rollback mediante revert normal en dev. Owner histórico DEV04; A5 independiente.
+
 ## 2026-11-24 — DEV03 V32 C03-01.M03.03: consumidor de permisos JWT contextual
 - Lectura privada de permisos del contexto firmado; valida actor, rol base, empresa, sucursal y rol efectivo antes y después de consultar grants relacionales de ámbito Empresa. Sin habilitar recursos legacy ni modificar cuarentena.
 - Prueba HTTP MySQL 8.4 aislada ampliada con permisos distintos A/B, JWT base rechazado, selector cruzado y revocación. CI exact SHA pendiente; no se certifica persistencia de preferencia ni navegación Angular.

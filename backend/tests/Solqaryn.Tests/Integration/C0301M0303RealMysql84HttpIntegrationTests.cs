@@ -95,6 +95,9 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
                 services.AddScoped<IRolPermisoRepository, RolPermisoRepository>();
                 services.AddScoped<IPermisoRepository, PermisoRepository>();
                 services.AddScoped<IPermisoService, PermisoService>();
+                services.AddScoped<IEmpresaRepository, EmpresaRepository>();
+                services.AddScoped<ISucursalRepository, SucursalRepository>();
+                services.AddScoped<ISucursalService, SucursalService>();
                 services.AddScoped<IAuthService, AuthService>();
                 services.AddScoped<IJwtService, JwtService>();
                 services.AddScoped<ITenantSessionTokenService, JwtService>();
@@ -365,6 +368,29 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
                 if (header.HasValue) request.Headers.Add("X-Empresa-Id", header.Value.ToString());
                 return await client.SendAsync(request);
             }
+            async Task<HttpResponseMessage> ReadBranchAsync(string? bearer, int? tenant = null, int? branch = null)
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Get, "/tenant-context/sesion/sucursal");
+                if (bearer is not null)
+                    request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearer);
+                if (tenant.HasValue) request.Headers.Add("X-Empresa-Id", tenant.Value.ToString());
+                if (branch.HasValue) request.Headers.Add("X-Sucursal-Id", branch.Value.ToString());
+                return await client.SendAsync(request);
+            }
+            async Task AssertBranchAsync(string bearer, int tenant, Sucursal branch)
+            {
+                using var response = await ReadBranchAsync(bearer);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.True(response.Headers.CacheControl?.NoStore == true);
+                using var json = System.Text.Json.JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+                var data = json.RootElement.GetProperty("data");
+                Assert.Equal(tenant, data.GetProperty("empresaId").GetInt32());
+                Assert.Equal(branch.Id, data.GetProperty("id").GetInt32());
+                Assert.Equal(branch.Nombre, data.GetProperty("nombre").GetString());
+                Assert.Equal(branch.Codigo, data.GetProperty("codigo").GetString());
+                Assert.False(data.TryGetProperty("correo", out _));
+                Assert.False(data.TryGetProperty("telefono", out _));
+            }
             async Task AssertPermissionsAsync(string bearer, string roleName, bool dashboard)
             {
                 using var response = await ReadPermissionsAsync(bearer);
@@ -398,6 +424,15 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
             }
             var restrictedA = await RequireIssuedAsync(tenantA.Id, branchA.Id, roleA.Id);
             await AssertPermissionsAsync(restrictedA, roleA.Nombre, true);
+            await AssertBranchAsync(restrictedA, tenantA.Id, branchA);
+            using (var anonymousBranch = await ReadBranchAsync(null))
+                Assert.Equal(HttpStatusCode.Unauthorized, anonymousBranch.StatusCode);
+            using (var unscopedBranch = await ReadBranchAsync(productToken))
+                Assert.Equal(HttpStatusCode.Unauthorized, unscopedBranch.StatusCode);
+            using (var foreignBranch = await ReadBranchAsync(restrictedA, tenantB.Id, branchB.Id))
+                Assert.Equal(HttpStatusCode.Forbidden, foreignBranch.StatusCode);
+            using (var foreignBranchOnly = await ReadBranchAsync(restrictedA, branch: branchB.Id))
+                Assert.Equal(HttpStatusCode.Forbidden, foreignBranchOnly.StatusCode);
             using (var basePermissions = await ReadPermissionsAsync(productToken))
                 Assert.Equal(HttpStatusCode.Unauthorized, basePermissions.StatusCode);
             using (var crossPermissions = await ReadPermissionsAsync(restrictedA, tenantB.Id))
@@ -453,8 +488,13 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
             await db.SaveChangesAsync();
             var restrictedB = await RequireIssuedAsync(tenantB.Id, branchB.Id, roleB.Id);
             await AssertPermissionsAsync(restrictedB, roleB.Nombre, false);
+            await AssertBranchAsync(restrictedB, tenantB.Id, branchB);
+            using (var crossA = await ReadBranchAsync(restrictedB, tenantA.Id, branchA.Id))
+                Assert.Equal(HttpStatusCode.Forbidden, crossA.StatusCode);
             membershipB.Desactivar();
             await db.SaveChangesAsync();
+            using (var revokedBranch = await ReadBranchAsync(restrictedB))
+                Assert.Equal(HttpStatusCode.Forbidden, revokedBranch.StatusCode);
             using (var revokedPermissions = await ReadPermissionsAsync(restrictedB))
                 Assert.Equal(HttpStatusCode.Forbidden, revokedPermissions.StatusCode);
             using (var revokedRestricted = await ReadContextAsync(restrictedB))
@@ -521,6 +561,9 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
                 client, tenantA.Id, branchA.Id, productToken))
                 Assert.Equal(HttpStatusCode.Forbidden, revoked.StatusCode);
 
+            using (var revokedBranchGrant = await ReadBranchAsync(restrictedA))
+                Assert.Equal(HttpStatusCode.Forbidden, revokedBranchGrant.StatusCode);
+
             // A rolled-back MySQL grant must not become visible to EF readers.
             await using (var sql = new MySqlConnection(scoped))
             {
@@ -535,6 +578,8 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
                 await insert.ExecuteNonQueryAsync();
                 await tx.RollbackAsync();
             }
+            using (var rolledBackBranchGrant = await ReadBranchAsync(restrictedA))
+                Assert.Equal(HttpStatusCode.Forbidden, rolledBackBranchGrant.StatusCode);
             using (var afterRollback = await ReadAsync(
                 client, tenantA.Id, branchA.Id, productToken))
                 Assert.Equal(HttpStatusCode.Forbidden, afterRollback.StatusCode);
@@ -564,8 +609,15 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
             db.ChangeTracker.Clear();
             var assignedBranch = await db.Set<Sucursal>()
                 .SingleAsync(x => x.Id == branchA.Id);
+            assignedBranch.Activa = false;
+            await db.SaveChangesAsync();
+            using (var inactiveBranch = await ReadBranchAsync(restrictedA))
+                Assert.Equal(HttpStatusCode.Forbidden, inactiveBranch.StatusCode);
+            assignedBranch.Activa = true;
             assignedBranch.EmpresaId = tenantB.Id;
             await db.SaveChangesAsync();
+            using (var movedScopedBranch = await ReadBranchAsync(restrictedA))
+                Assert.Equal(HttpStatusCode.Forbidden, movedScopedBranch.StatusCode);
             using (var movedBranch = await ReadAsync(
                 client, tenantA.Id, branchA.Id, productToken))
                 Assert.Equal(HttpStatusCode.Forbidden, movedBranch.StatusCode);
