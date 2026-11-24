@@ -39,9 +39,10 @@ async function audit(page, worker, name, locator) {
     scroll: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
     dpr: devicePixelRatio, visualScale: visualViewport?.scale ?? 1
   }));
-  async function capture(factor, g) {
-    const anchor = name === 'global-ux' ? locator.getByRole('heading').first() : locator;
-    await anchor.scrollIntoViewIfNeeded();
+  async function capture(factor, g, focusedAnchor = null) {
+    const anchor = focusedAnchor ?? (name === 'global-ux' ? locator.getByRole('heading').first() : locator);
+    // Do not programmatically scroll the post-Tab capture: browser keyboard navigation must reveal its own focus.
+    if (!focusedAnchor) await anchor.scrollIntoViewIfNeeded();
     await page.bringToFront();
     // Chrome's native zoom bubble is outside the page DOM and transient.
     // Wait for it to dismiss before taking the actual desktop screenshot.
@@ -55,7 +56,7 @@ async function audit(page, worker, name, locator) {
     });
     assert.ok(visible, name + ': capture anchor is vertically visible and unobscured in the page');
     await page.evaluate(() => new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done))));
-    const filename = name + '-' + (factor * 100) + '.png';
+    const filename = name + '-' + (factor * 100) + (focusedAnchor ? '-focus' : '') + '.png';
     await exec('ffmpeg', ['-nostdin', '-hide_banner', '-loglevel', 'error',
       '-f', 'x11grab', '-draw_mouse', '0', '-video_size', '1600x1200',
       '-i', process.env.DISPLAY, '-frames:v', '1', '-threads', '1', '-y', join(output, filename)],
@@ -90,10 +91,16 @@ async function audit(page, worker, name, locator) {
     const el = document.activeElement;
     if (!el || el === document.body || el === document.documentElement) return false;
     const css = getComputedStyle(el), r = el.getBoundingClientRect();
-    return css.visibility !== 'hidden' && css.display !== 'none' && r.width > 0 && r.height > 0;
+    return el.matches(':focus-visible') && css.visibility !== 'hidden' && css.display !== 'none'
+      && r.width > 0 && r.height > 0 && r.top >= 0 && r.bottom <= innerHeight
+      && r.left >= -1 && r.right <= document.documentElement.clientWidth + 1;
   });
-  assert.ok(focus, name + ': real keyboard focus missing');
-  records.push({ name, actual100, actual200, before, after, bounds, image100, image200, focus });
+  assert.ok(focus, name + ': real visible keyboard focus missing or clipped at 200%');
+  const focusedAnchor = page.locator(':focus-visible');
+  assert.equal(await focusedAnchor.count(), 1, name + ': unique actual focus-visible target required');
+  const focusImage200 = await capture(2, after, focusedAnchor);
+  assert.equal(await focusedAnchor.count(), 1, name + ': focus was lost during physical capture');
+  records.push({ name, actual100, actual200, before, after, bounds, image100, image200, focus, focusImage200 });
   await zoom(1);
 }
 
