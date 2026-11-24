@@ -37,9 +37,25 @@ async function setNativeZoom(worker, page, factor) {
   assert.ok(Math.abs(actual - factor) < .001, 'chrome.tabs.getZoom mismatch');
   return actual;
 }
-async function physicalScreenshot(page, filename) {
+async function physicalScreenshot(page, filename, loadingStatus = null) {
   await page.bringToFront();
   await page.waitForTimeout(3000);
+  // A visible DOM node can be below the fold. Check the actual loading evidence
+  // at capture time, independently of the keyboard-focus screenshot.
+  if (loadingStatus) {
+    for (const locator of [loadingStatus, loadingStatus.getByText(/Cargando configuración tenant/),
+      loadingStatus.locator('mat-spinner')]) {
+      const visible = await locator.evaluate(el => {
+        const r = el.getBoundingClientRect(), css = getComputedStyle(el);
+        const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        return css.visibility !== 'hidden' && css.display !== 'none' &&
+          r.width > 0 && r.height > 0 &&
+          r.left >= 0 && r.right <= document.documentElement.clientWidth &&
+          r.top >= 0 && r.bottom <= innerHeight && (hit === el || el.contains(hit));
+      });
+      assert.ok(visible, filename + ': loading indicator/message not in captured viewport');
+    }
+  }
   const path = join(output, filename);
   await exec('ffmpeg', ['-nostdin', '-hide_banner', '-loglevel', 'error',
     '-f', 'x11grab', '-draw_mouse', '0', '-video_size', '1600x1200',
@@ -53,15 +69,36 @@ async function physicalScreenshot(page, filename) {
   return filename;
 }
 async function geometry(page, locator, state) {
-  const g = await page.evaluate(() => ({
-    viewport: innerWidth, height: innerHeight, dpr: devicePixelRatio,
-    pinch: visualViewport?.scale ?? 1,
-    document: document.documentElement.scrollWidth, body: document.body.scrollWidth,
-    client: document.documentElement.clientWidth,
-  }));
+  const g = await page.evaluate(() => {
+    const root = document.scrollingElement;
+    if (!root) throw Error('No scrolling element');
+    const x = window.scrollX, y = window.scrollY;
+    let left, right;
+    try {
+      window.scrollTo({ left: 100000, top: y, behavior: 'instant' });
+      right = window.scrollX;
+      window.scrollTo({ left: -100000, top: y, behavior: 'instant' });
+      left = window.scrollX;
+    } finally {
+      window.scrollTo({ left: x, top: y, behavior: 'instant' });
+    }
+    return {
+      viewport: innerWidth, height: innerHeight, dpr: devicePixelRatio,
+      pinch: visualViewport?.scale ?? 1,
+      document: document.documentElement.scrollWidth, body: document.body.scrollWidth,
+      client: document.documentElement.clientWidth,
+      scrollingClient: root.clientWidth, scrollingWidth: root.scrollWidth,
+      actualHorizontalTravel: Math.abs(right - left),
+      bodyRectWidth: document.body.getBoundingClientRect().width,
+    };
+  });
   assert.ok(Math.abs(g.pinch - 1) < .02, state + ': pinch zoom is not native zoom');
   assert.ok(Math.max(g.document, g.body) <= g.client + 2,
     state + ': horizontal body overflow');
+  // Preserve the original CSSOM check, and additionally require zero real
+  // horizontal travel; a rounded one-pixel body measurement alone is inconclusive.
+  assert.equal(g.actualHorizontalTravel, 0, state + ': document can scroll horizontally');
+  assert.equal(g.scrollingWidth, g.scrollingClient, state + ': scrolling root overflow');
   assert.ok(await locator.isVisible(), state + ': target invisible');
   await locator.scrollIntoViewIfNeeded();
   const rect = await locator.boundingBox();
@@ -161,13 +198,15 @@ async function runState(page, worker, state) {
   assert.ok(await target.isEnabled(), state + ': actionable control disabled');
   const baseline = await geometry(page, target, state + '-100');
   assert.ok(Math.abs(baseline.dpr - 1) < .1, 'baseline must be 100%');
-  await physicalScreenshot(page, state + '-100.png');
+  if (state === 'loading') await status.scrollIntoViewIfNeeded();
+  await physicalScreenshot(page, state + '-100.png', state === 'loading' ? status : null);
   assert.equal(await setNativeZoom(worker, page, 2), 2);
   await page.waitForFunction(d => Math.abs(devicePixelRatio / d - 2) < .05, baseline.dpr);
   const native = await geometry(page, target, state + '-200');
   assert.ok(native.viewport < baseline.viewport && Math.abs(native.dpr/baseline.dpr - 2) < .05,
     state + ': viewport did not reflow on native browser zoom');
-  await physicalScreenshot(page, state + '-200.png');
+  if (state === 'loading') await status.scrollIntoViewIfNeeded();
+  await physicalScreenshot(page, state + '-200.png', state === 'loading' ? status : null);
   await checkTabFocus(page, target, state);
   await geometry(page, target, state + '-focused');
   await physicalScreenshot(page, state + '-200-focus.png');
@@ -203,6 +242,7 @@ async function runState(page, worker, state) {
     await assertState(page, 'success');
   }
   results.push({ state, nativeZoom: 2, baseline, native, focusVisible: true,
+    loadingIndicatorCapturedInViewport: state === 'loading' ? true : null,
     captures: [state + '-100.png', state + '-200.png', state + '-200-focus.png'],
     fixture: ['error', 'permissions', 'empty'].includes(state) ? 'injected UI HTTP response' : 'real JWT/MySQL UI' });
   if (releaseLoading) releaseLoading();

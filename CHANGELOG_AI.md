@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV05 V33 C01-03.M04.02: evidencia de carga visible y desbordamiento real
+- Inspección de los 15 PNG del artefacto 14924713340, SHA 841c6eaf: `loading-200.png` mostraba el enlace de ajustes pero el indicador de carga quedaba fuera del encuadre; conservar foco Tab real separado y comprobar el spinner y mensaje dentro del viewport al capturar la carga a 100/200.
+- Medir viaje horizontal real y anchura del scrolling root sin suprimir estilos: conservar el assert CSSOM existente y exigir desplazamiento horizontal cero; 713/712 CSS px previos no prueban ni descartan overflow físico. Sin cambios en runtime, seguridad, permisos, datos o dependencias.
+- Los artefactos históricos 14767549250 (parent bb47a965) y 14767662001 (3878383b) contienen capturas de Productos tras redirección, no ANTES visual de la configuración; no se acreditan como comparación. CI nueva exact-SHA y A5 independiente pendientes; no LISTO, QA/main/PROD.
+
 ## 2026-11-24 — DEV04 V32 C03-01.M03.03: consumidor real de sucursal JWT contextual
 - Lectura de la sucursal efectiva por JWT contextual firmado, usando ISucursalService existente y revalidación SQL del actor/rol/tenant/sucursal antes y después; no acepta IDs de recurso arbitrarios ni expone contacto/auditoría. Sin cambios de cuarentena, plataforma, migraciones ni datos productivos.
 - Prueba dirigida HTTP/JWT Oracle MySQL 8.4 aislada amplía A/B, token base/anónimo, selector cruzado, revocación de membresía/grant, rollback, sucursal inactiva y traslado. CI exact SHA pendiente de verificación; no certifica navegación Angular ni persistencia de preferencias.
