@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV02 V31 C15-04.M05.04: regresión causal de filtro de auditoría UX
+- Falla real en el SHA e414dbf7: GitHub-hosted V19 C15-04.M04.06, job 138087518707, completó 2/3 Chromium; el caso de 320 px esperaba 0 botones y encontró los 4 filtros nativos de solo lectura añadidos por DEV02. No es prueba de un fallo de JWT/MySQL ni de controles mutantes.
+- Reparación dirigida de un solo spec: conservar cero formularios/campos/controles no reconocidos y cero POST/PUT/PATCH/DELETE, admitir exactamente cuatro botones de filtro con `type=button` y `aria-pressed`, preservar límites de densidad/scroll y estados `NO_MEDIDO`. No modificar runtime, guards, permisos ni workflow.
+- R2 del WIP global; esta regresión test-only no certifica zoom nativo 200 %, WCAG/CWV global, 160 rutas ni evidencias ANTES. CI exact-SHA del commit nuevo requerida, sin reutilizar FAIL como PASS; EN_PROGRESO DEV02, candado SQV17 2000002297 permanece; no LISTO/A5/QA/main/PROD. Rollback normal por `git revert`, sin force.
+
 ## 2026-11-23 — DEV01 V31 C07-01.M06.06: baja fiscal lógica y auditoría atómicas
 - Entregable runtime: `ImpuestoService.EliminarLogicoAsync` incorpora validación de documentos, mutación fiscal y auditoría estricta en la misma unidad transaccional Oracle EF/MySQL, sin modificar rutas, roles, migraciones ni documentos históricos.
 - Test adversarial xUnit verifica propagación de falla del sink dentro del callback transaccional; NO sustituye rollback físico MySQL 8.4, JWT A/B ni contrato ERP de servicios/atributos. C07-01.M06.06 continúa EN_PROGRESO bajo lock V17; A0-A4 completos/A5/LISTO no declarados.

@@ -65,12 +65,14 @@ test.describe('C15-04.M04.06 densidad, carga progresiva y ligereza', () => {
       const metrics = await view.evaluate(el => ({
         text: el.textContent?.trim().length ?? 0,
         overflow: document.documentElement.scrollWidth - document.documentElement.clientWidth,
-        inputs: el.querySelectorAll('form,input,button,select,textarea').length
+        invalidControls: el.querySelectorAll('form,input,select,textarea,button:not(.ux-filter)').length,
+        filters: el.querySelectorAll('button.ux-filter[type="button"][aria-pressed]').length
       }));
       expect(metrics.text, 'empty audit on ' + width).toBeGreaterThan(100);
       expect(metrics.text, 'density text budget on ' + width).toBeLessThanOrEqual(2500);
       expect(metrics.overflow, 'horizontal overflow on ' + width).toBeLessThanOrEqual(2);
-      expect(metrics.inputs, 'readonly audit on ' + width).toBe(0);
+      expect(metrics.invalidControls, 'readonly audit on ' + width).toBe(0);
+      expect(metrics.filters, 'accessible readonly filters on ' + width).toBe(4);
     }
     expect(writes).toEqual([]);
   });
