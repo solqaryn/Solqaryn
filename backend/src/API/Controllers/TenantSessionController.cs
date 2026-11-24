@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.RateLimiting;
 using Solqaryn.Application.Common;
 using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.DTOs;
 
 namespace Solqaryn.API.Controllers;
 
@@ -68,6 +69,25 @@ public sealed class TenantSessionController(
             return Forbid(TenantSessionToken.Scheme);
         return Ok(ApiResponse<object>.Ok(new { EmpresaId = tenant, SucursalId = branch,
             RolId = role }, "Contexto vigente."));
+    }
+
+    // Scoped JWT consumer: this describes live grants, never authorizes a resource.
+    [HttpGet("permisos")]
+    [Authorize(AuthenticationSchemes = TenantSessionToken.Scheme)]
+    public async Task<IActionResult> ObtenerPermisos(
+        [FromServices] IPermisoService permisos, CancellationToken cancellationToken)
+    {
+        if (!ClaimId(User, "id", out var actor) || !ClaimId(User, "rolId", out var baseRole) ||
+            !ClaimId(User, "tenantId", out var tenant) || !ClaimId(User, "branchId", out var branch) ||
+            !ClaimId(User, "tenantRoleId", out var role))
+            return Unauthorized();
+        if (!SelectorsMatch(tenant, branch))
+            return Forbid(TenantSessionToken.Scheme);
+        var result = await permisos.GetMisPermisosContextoAsync(actor, baseRole, tenant, branch, role,
+            cancellationToken);
+        if (result is null)
+            return Forbid(TenantSessionToken.Scheme);
+        return Ok(ApiResponse<MisPermisosDto>.Ok(result, "Permisos de contexto vigentes."));
     }
 
     private bool SelectorsMatch(int tenant, int branch) =>

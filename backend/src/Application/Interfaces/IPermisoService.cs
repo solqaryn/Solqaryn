@@ -16,6 +16,9 @@ public interface IPermisoService
 
     Task<MisPermisosDto> GetMisPermisosAsync();
     Task<MisPermisosDto> GetMisPermisosAsync(int empresaId);
+    Task<MisPermisosDto?> GetMisPermisosContextoAsync(int actorId, int rolBaseId,
+        int empresaId, int sucursalId, int rolId, CancellationToken cancellationToken = default)
+        => Task.FromResult<MisPermisosDto?>(null);
     Task<bool> TienePermisoAsync(ModuloSistema modulo, AccionPermiso accion);
     Task<bool> TienePermisoAsync(int empresaId, ModuloSistema modulo, AccionPermiso accion);
     Task VerificarPermisoAsync(ModuloSistema modulo, AccionPermiso accion);

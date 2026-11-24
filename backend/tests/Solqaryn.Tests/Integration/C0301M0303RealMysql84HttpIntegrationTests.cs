@@ -92,6 +92,9 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
                     typeof(Solqaryn.API.Controllers.AuthController).Assembly);
                 services.AddScoped<IUsuarioRepository, UsuarioRepository>();
                 services.AddScoped<IRolRepository, RolRepository>();
+                services.AddScoped<IRolPermisoRepository, RolPermisoRepository>();
+                services.AddScoped<IPermisoRepository, PermisoRepository>();
+                services.AddScoped<IPermisoService, PermisoService>();
                 services.AddScoped<IAuthService, AuthService>();
                 services.AddScoped<IJwtService, JwtService>();
                 services.AddScoped<ITenantSessionTokenService, JwtService>();
@@ -239,6 +242,22 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
             await db.SaveChangesAsync();
             var grant = new RolPermiso { RolId = roleA.Id, PermisoId = permission.Id };
             db.RolPermisos.Add(grant);
+            var dashboardPermission = await db.Permisos.IgnoreQueryFilters()
+                .FirstOrDefaultAsync(p => p.Modulo == ModuloSistema.Dashboard &&
+                    p.Accion == AccionPermiso.Ver &&
+                    p.Ambito == AmbitoAutorizacion.Empresa && p.Activo && !p.Eliminado);
+            if (dashboardPermission is null)
+            {
+                dashboardPermission = new Permiso
+                {
+                    Codigo = "C0301.DASHBOARD.VER", Nombre = "C0301 isolated dashboard read",
+                    Modulo = ModuloSistema.Dashboard, Accion = AccionPermiso.Ver,
+                    Ambito = AmbitoAutorizacion.Empresa, Activo = true
+                };
+                db.Permisos.Add(dashboardPermission);
+                await db.SaveChangesAsync();
+            }
+            db.RolPermisos.Add(new RolPermiso { RolId = roleA.Id, PermisoId = dashboardPermission.Id });
             await db.SaveChangesAsync();
             db.ChangeTracker.Clear();
 
@@ -339,6 +358,25 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
                 if (header.HasValue) request.Headers.Add("X-Empresa-Id", header.Value.ToString());
                 return await client.SendAsync(request);
             }
+            async Task<HttpResponseMessage> ReadPermissionsAsync(string bearer, int? header = null)
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Get, "/tenant-context/sesion/permisos");
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearer);
+                if (header.HasValue) request.Headers.Add("X-Empresa-Id", header.Value.ToString());
+                return await client.SendAsync(request);
+            }
+            async Task AssertPermissionsAsync(string bearer, string roleName, bool dashboard)
+            {
+                using var response = await ReadPermissionsAsync(bearer);
+                Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                Assert.True(response.Headers.CacheControl?.NoStore == true);
+                using var json = System.Text.Json.JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+                var data = json.RootElement.GetProperty("data");
+                Assert.Equal(roleName, data.GetProperty("rol").GetString());
+                var grants = data.GetProperty("permisos").EnumerateArray().Select(p => p.GetString()).ToArray();
+                Assert.Contains("Sucursales:Ver", grants);
+                Assert.Equal(dashboard, grants.Contains("Dashboard:Ver"));
+            }
             async Task<string> RequireIssuedAsync(int tenant, int branch, int role)
             {
                 using var issued = await IssueContextAsync(productToken, tenant, branch);
@@ -359,6 +397,11 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
                 return restricted;
             }
             var restrictedA = await RequireIssuedAsync(tenantA.Id, branchA.Id, roleA.Id);
+            await AssertPermissionsAsync(restrictedA, roleA.Nombre, true);
+            using (var basePermissions = await ReadPermissionsAsync(productToken))
+                Assert.Equal(HttpStatusCode.Unauthorized, basePermissions.StatusCode);
+            using (var crossPermissions = await ReadPermissionsAsync(restrictedA, tenantB.Id))
+                Assert.Equal(HttpStatusCode.Forbidden, crossPermissions.StatusCode);
             using (var baseOnly = await ReadContextAsync(productToken))
                 Assert.Equal(HttpStatusCode.Unauthorized, baseOnly.StatusCode);
             using (var crossHeader = await ReadContextAsync(restrictedA, tenantB.Id))
@@ -409,8 +452,11 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
             db.RolPermisos.Add(new RolPermiso { RolId = roleB.Id, PermisoId = permission.Id });
             await db.SaveChangesAsync();
             var restrictedB = await RequireIssuedAsync(tenantB.Id, branchB.Id, roleB.Id);
+            await AssertPermissionsAsync(restrictedB, roleB.Nombre, false);
             membershipB.Desactivar();
             await db.SaveChangesAsync();
+            using (var revokedPermissions = await ReadPermissionsAsync(restrictedB))
+                Assert.Equal(HttpStatusCode.Forbidden, revokedPermissions.StatusCode);
             using (var revokedRestricted = await ReadContextAsync(restrictedB))
                 Assert.Equal(HttpStatusCode.Forbidden, revokedRestricted.StatusCode);
             using (var revokedB = await ContextAsync($"/tenant-context/{tenantB.Id}", productToken))

@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV03 V32 C03-01.M03.03: consumidor de permisos JWT contextual
+- Lectura privada de permisos del contexto firmado; valida actor, rol base, empresa, sucursal y rol efectivo antes y después de consultar grants relacionales de ámbito Empresa. Sin habilitar recursos legacy ni modificar cuarentena.
+- Prueba HTTP MySQL 8.4 aislada ampliada con permisos distintos A/B, JWT base rechazado, selector cruzado y revocación. CI exact SHA pendiente; no se certifica persistencia de preferencia ni navegación Angular.
+- Owner histórico DEV04 conservado. Rollback por revert del commit en dev, sin migraciones ni cambios de datos productivos.
+
 ## 2026-11-24 — DEV02 V32 C15-04.M05.04: evidencia causal del foco nativo 200%
 - Los jobs 138470771596 y 138483860898 completaron 166 pruebas Chromium, pero fallaron después en el foco real de tenant A /perfil al 200%; no son PASS global ni fallo de parser.
 - Conserva el primer elemento alcanzado con Tab y permite únicamente el asentamiento natural acotado de geometría; exige mismo foco, :focus-visible, límites y hit-test sin mover foco ni hacer scroll artificial. Ante fallo guarda PNG físico y diagnóstico geométrico sin valores de formulario, mantiene FAILURE.

@@ -162,6 +162,37 @@ public class PermisoService : IPermisoService
             : await ConstruirMisPermisosAsync(alcance.RolId, alcance.RolNombre, alcance.EsAdministrador);
     }
 
+    public async Task<MisPermisosDto?> GetMisPermisosContextoAsync(int actorId, int rolBaseId,
+        int empresaId, int sucursalId, int rolId, CancellationToken cancellationToken = default)
+    {
+        var scope = await _usuarioScope.ObtenerSucursalActualAsync(actorId, rolBaseId,
+            empresaId, sucursalId, cancellationToken);
+        if (scope is null || scope.UsuarioId != actorId || scope.EmpresaId != empresaId ||
+            scope.RolId != rolId)
+            return null;
+
+        var filas = await _repository.GetByRolIdAsync(rolId);
+        var permisos = filas
+            .Where(p => p.Permiso is { Activo: true, Eliminado: false, Ambito: AmbitoAutorizacion.Empresa })
+            .Select(p => $"{p.Permiso.Modulo}:{p.Permiso.Accion}")
+            .Distinct(StringComparer.OrdinalIgnoreCase)
+            .OrderBy(p => p, StringComparer.Ordinal)
+            .ToList();
+
+        var fresh = await _usuarioScope.ObtenerSucursalActualAsync(actorId, rolBaseId,
+            empresaId, sucursalId, cancellationToken);
+        if (fresh != scope)
+            return null;
+
+        cancellationToken.ThrowIfCancellationRequested();
+        return new MisPermisosDto
+        {
+            Rol = scope.RolNombre,
+            EsAdministrador = scope.EsAdministrador,
+            Permisos = permisos
+        };
+    }
+
     public async Task<bool> TienePermisoAsync(ModuloSistema modulo, AccionPermiso accion)
     {
         var alcance = await _usuarioScope.ObtenerActualAsync();
