@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV02 V31 C15-04.M05.04: marca accesible en login sin imagen
+- Reparación de UI: no renderizar img con URL vacía; si falla la URL vigente, ocultarla y mantener el nombre de plataforma en texto visible. En desktop la imagen junto al nombre es decorativa. Sin cambios en identidad, autenticación, guards, JWT/RBAC, API ni MySQL.
+- Regresión causal en el caso de login Chromium existente a 320/375/390/768/1280/1440, sin inyectar branding, con capturas nuevas en CI. Evidencia ANTES histórica: artefacto 14883367604, SHA 02a73c54aae95665aad686aae8367970ba71f60e. No se atribuye PASS anticipado ni zoom nativo a capturas/pinch.
+- SKREF-03/10 originales fijadas, refinamiento del formulario existente; sin instalar herramientas. Scope R2 global pendiente: build, CI exact-SHA, comparación visual, CSS de producto, zoom nativo y A5 independiente. Conservar WIP V17. Revert normal del commit en dev si se detecta regresión.
+
 ## 2026-11-23 — DEV01 V31 C07-01.M06.06: alta fiscal HTTP acotada y propiedad de alcances
 - R2: POST exacto /impuestos mediante piloto independiente PrivateFiscalCreatePilotEnabled, apagado por defecto; JWT, membresía SQL, Impuestos.Crear y JSON acotado. PUT/DELETE/duplicación siguen fuera de este piloto.
 - Infraestructura: validar propiedad física de producto, categoría, cliente y proveedor antes de agregar el agregado; sin columnas ni migraciones nuevas. Conserva transacción Oracle EF y auditoría estricta.

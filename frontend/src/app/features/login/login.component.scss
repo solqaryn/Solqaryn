@@ -45,6 +45,8 @@
   font-size: 18px;
   font-weight: 800;
   letter-spacing: 0.01em;
+  min-width: 0;
+  overflow-wrap: anywhere;
 }
 
 .intro-logo {
@@ -130,6 +132,16 @@
   display: none;
   justify-content: center;
   margin-bottom: 4px;
+}
+
+.brand-name {
+  min-width: 0;
+  max-width: 100%;
+  overflow-wrap: anywhere;
+  color: var(--color-text);
+  text-align: center;
+  font-size: 1.25rem;
+  font-weight: 800;
 }
 
 .brand-logo {

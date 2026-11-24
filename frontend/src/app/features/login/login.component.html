@@ -2,7 +2,9 @@
   <section class="login-shell" aria-label="Acceso a {{ identidad.nombreSistema() }}">
     <aside class="login-intro">
       <div class="intro-brand">
-        <img class="intro-logo" [src]="identidad.logoUrl()" [alt]="identidad.nombreSistema()">
+        @if (logoVisible(); as logo) {
+          <img class="intro-logo" [src]="logo" alt="" (error)="ocultarLogoFallido(logo)">
+        }
         <span>{{ identidad.nombreSistema() }}</span>
       </div>
 
@@ -35,7 +37,11 @@
     } @else {
       <form class="card login-card" [formGroup]="form" (ngSubmit)="submit()" aria-labelledby="login-title" novalidate>
         <div class="mobile-brand">
-          <img class="brand-logo" [src]="identidad.logoUrl()" [alt]="identidad.nombreSistema()">
+          @if (logoVisible(); as logo) {
+            <img class="brand-logo" [src]="logo" [alt]="identidad.nombreSistema()" (error)="ocultarLogoFallido(logo)">
+          } @else {
+            <span class="brand-name">{{ identidad.nombreSistema() }}</span>
+          }
         </div>
 
         <header class="header">

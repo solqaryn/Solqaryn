@@ -1,4 +1,4 @@
-import { Component, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, inject, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 
 import { HttpErrorResponse } from '@angular/common/http';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
@@ -46,6 +46,15 @@ export class LoginComponent {
   readonly loading = signal(false);
   readonly errorMessage = signal<string | null>(null);
   readonly hidePassword = signal(true);
+  private readonly logoFallido = signal<string | null>(null);
+  readonly logoVisible = computed(() => {
+    const logo = this.identidad.logoUrl();
+    return logo && logo !== this.logoFallido() ? logo : null;
+  });
+
+  ocultarLogoFallido(logo: string): void {
+    if (this.identidad.logoUrl() === logo) this.logoFallido.set(logo);
+  }
   readonly errorPlataforma = signal<string | null>(this.route.snapshot.queryParamMap.get('plataforma') === 'denegado'
     ? 'Tu sesión no posee autoridad global de SOLQARYN. Accede únicamente a una empresa autorizada.'
     : this.route.snapshot.queryParamMap.get('plataforma') === 'no-disponible'

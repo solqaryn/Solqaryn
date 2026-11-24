@@ -83,6 +83,14 @@ jobs:
           path: frontend/test-results/**/v23-a097-*.png
           if-no-files-found: error
           retention-days: 14
+      - name: Evidencia causal de marca login sin imagen
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c1504-login-brand-after
+          path: frontend/test-results/c1504-login-brand-after-*.png
+          if-no-files-found: error
+          retention-days: 14
       - name: Evidencia de falla
         if: failure()
         uses: actions/upload-artifact@v4

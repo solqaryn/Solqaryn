@@ -38,13 +38,19 @@ async function noOverflow(page:Page){
 test.describe('C15-04.M05.04 UX real, incremento no global',()=>{
   test.describe.configure({retries:0});
   test('login: labels, campos y ancho 320/375/768/1280',async({page})=>{
-    for(const width of widths){
+    for(const width of [320,375,390,768,1280,1440]){
       await page.setViewportSize({width,height:800}); await page.goto('/login');
       await expect(page.locator('#login-title')).toHaveText('Iniciar sesión');
+      // Login inicia con marca neutra sin URL configurada. No se inyecta identidad.
+      await expect(page.locator('.intro-logo, .brand-logo')).toHaveCount(0);
+      const marca = page.locator(width <= 820 ? '.mobile-brand .brand-name' : '.intro-brand span');
+      await expect(marca).toHaveText('SOLQARYN');
+      await expect(marca).toBeVisible();
       await expect(page.locator('input[formcontrolname="nombreUsuario"]')).toBeVisible();
       await expect(page.locator('input[formcontrolname="password"]')).toBeVisible();
       await expect(page.locator('mat-label').filter({hasText:'Nombre de usuario'})).toBeVisible();
       await noOverflow(page);
+      await page.screenshot({path:'test-results/c1504-login-brand-after-'+width+'.png',fullPage:true});
     }
   });
   test('superficies privadas: responsive, 5 NO_MEDIDO, cero mutaciones',async({page})=>{
