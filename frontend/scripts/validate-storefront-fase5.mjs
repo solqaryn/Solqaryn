@@ -128,10 +128,11 @@ for (const required of [
   'Subtotal',
   'Total del carrito',
   'carrito.total()',
-  'min="1"',
-  '[max]="item.stock"',
-  '[disabled]="item.unidades <= 1"',
-  '[disabled]="item.unidades >= item.stock"',
+  'appStorefrontQuantity',
+  '[minimum]="1"',
+  '[maximum]="item.stock"',
+  '[decreaseDisabled]="item.unidades <= 1"',
+  '[increaseDisabled]="item.unidades >= item.stock"',
   'Agrega al menos un producto antes de continuar con tu compra',
   'El carrito no reserva inventario'
 ]) {
@@ -151,10 +152,18 @@ expect(cartScss.includes('@media(min-width:391px)') && !/@media\s*\(\s*max-width
 
 expect(productTs.includes('stockRestante'), 'El detalle debe descontar lo ya agregado al validar una nueva cantidad.');
 expect(productTs.includes('this.carritoStore.unidadesDe'), 'El stock restante del detalle debe salir del carrito global.');
-expect(productHtml.includes('[max]="stockRestante()"'), 'El input del detalle debe mostrar el stock realmente restante, no el stock total.');
+expect(productHtml.includes('[maximum]="stockRestante()"'), 'El input del detalle debe mostrar el stock realmente restante, no el stock total.');
 expect(productHtml.includes('cantidad() >= stockRestante()'), 'El botón + del detalle debe bloquearse en el stock restante.');
 expect(homeTs.includes('navigateByUrl(STOREFRONT_PATHS.producto(producto.slug))'), 'El home debe llevar productos destacados al detalle canónico por slug.');
 expect(!homeTs.includes('detalleDialog?.nativeElement.showModal'), 'El home no debe abrir un modal como detalle principal.');
+
+const quantityHtml = await readFeature('storefront-quantity.component.html');
+const quantityTs = await readFeature('storefront-quantity.component.ts');
+const quantityScss = await readFeature('storefront-quantity.component.scss');
+expect(quantityTs.includes('readonly maximum = input.required<number>()') && quantityTs.includes('readonly minimum = input.required<number>()'), 'El control compartido debe exigir límites numéricos.');
+expect(quantityHtml.includes('type="number"') && quantityHtml.includes('[min]="minimum()"') && quantityHtml.includes('[max]="maximum()"'), 'Los límites deben llegar al input numérico nativo.');
+expect(quantityHtml.includes('[disabled]="decreaseDisabled()"') && quantityHtml.includes('[disabled]="increaseDisabled()"') && quantityHtml.includes('[disabled]="inputDisabled()"'), 'El control nativo debe respetar los bloqueos de ambos botones y del input.');
+expect(/min-height\s*:\s*44px/.test(quantityScss), 'El control compartido debe conservar objetivos táctiles de 44 px.');
 
 if (failures.length) {
   console.error('Fase 5 — validación de carrito global FALLÓ:');

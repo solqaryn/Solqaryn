@@ -91,7 +91,10 @@ for (const required of [
   'SKU',
   'Precio del producto',
   'Cantidad a agregar',
-  '[max]="stockRestante()"',
+  '[maximum]="stockRestante()"',
+  '[increaseDisabled]="!puedeSeleccionarCantidad() || cantidad() >= stockRestante()"',
+  '[minimum]="stockRestante() > 0 ? 1 : 0"',
+  'appStorefrontQuantity',
   'Agregar al carrito',
   'Comprar por WhatsApp',
   'Descripción',
@@ -139,6 +142,14 @@ expect(!productScss.includes('--color-background') && !productScss.includes('--c
 expect(backendController.includes('[AllowAnonymous]'), 'El controlador público de tienda debe mantenerse anónimo.');
 expect(/\[HttpGet\("productos\/\{slug\}"\)\][\s\S]{0,180}GetProducto\(string slug\)/.test(backendController), 'El backend debe exponer producto público por slug.');
 expect(/producto\s+is\s+null\s+\|\|\s+!producto\.Activo/.test(backendController), 'Producto inexistente o inactivo debe resolverse como no disponible desde la fuente pública.');
+
+const quantityHtml = await readFeature('storefront-quantity.component.html');
+const quantityTs = await readFeature('storefront-quantity.component.ts');
+const quantityScss = await readFeature('storefront-quantity.component.scss');
+expect(quantityTs.includes('readonly maximum = input.required<number>()') && quantityTs.includes('readonly minimum = input.required<number>()'), 'El control compartido debe exigir límites numéricos.');
+expect(quantityHtml.includes('type="number"') && quantityHtml.includes('[min]="minimum()"') && quantityHtml.includes('[max]="maximum()"'), 'Los límites deben llegar al input numérico nativo.');
+expect(quantityHtml.includes('[disabled]="decreaseDisabled()"') && quantityHtml.includes('[disabled]="increaseDisabled()"') && quantityHtml.includes('[disabled]="inputDisabled()"'), 'El control nativo debe respetar los bloqueos de ambos botones y del input.');
+expect(/min-height\s*:\s*44px/.test(quantityScss), 'El control compartido debe conservar objetivos táctiles de 44 px.');
 
 if (failures.length) {
   console.error('Fase 4 — validación de detalle público FALLÓ:');

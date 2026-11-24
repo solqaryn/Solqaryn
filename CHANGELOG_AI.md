@@ -1,3 +1,8 @@
+## 2026-11-24 — C15-04.M05.04 — Validadores del control de cantidad compartido
+
+- Corrige el contrato estático de Fase 4/5 tras extraer el control: verifica los límites y bloqueos en consumidores y su propagación al input y botones nativos, más tamaño táctil. No reduce las aserciones ni altera lógica de stock.
+- Evidencia causal: SHA 2ebb0a219a7e0ff6f8694d40abc38a9a161647de, job 138848636130, error de literal [max] en plantilla consumidora; validación del nuevo SHA pendiente.
+
 ## 2026-11-24 — DEV02 C15-04.M05.04: control de cantidad compartido y foco interior
 
 - Reutiliza el control nativo de cantidad en detalle y carrito, conservando IDs, etiquetas, límites, eventos y autoridad de stock en sus consumidores. Reduce reglas SCSS duplicadas sin modificar presupuesto ni cambiar API, seguridad o dependencias.
