@@ -100,6 +100,52 @@ public sealed class UsuarioScopeService : IUsuarioScopeService
             .AnyAsync(cancellationToken);
     }
 
+    public async Task<UsuarioTenantScopeActual?> ObtenerSucursalActualAsync(
+        int actorId, int rolBaseId, int empresaId, int sucursalId,
+        CancellationToken cancellationToken = default)
+    {
+        if (actorId <= 0 || rolBaseId <= 0 || empresaId <= 0 || sucursalId <= 0 ||
+            !_currentUser.EstaAutenticado || _currentUser.UsuarioId != actorId)
+            return null;
+
+        async Task<bool> BaseComercialVigenteAsync() =>
+            await SesionBaseVigenteAsync(actorId, rolBaseId, cancellationToken) &&
+            await _context.Usuarios.AsNoTracking().AnyAsync(u =>
+                u.Id == actorId && u.RolId == rolBaseId && u.Activo &&
+                !u.Bloqueado && !u.Eliminado && u.RolEntidad.Activo &&
+                !u.RolEntidad.Eliminado &&
+                u.RolEntidad.Ambito == AmbitoAutorizacion.Empresa, cancellationToken);
+
+        async Task<bool> SucursalYPermisoVigentesAsync(int rolId) =>
+            await _context.Set<Sucursal>().IgnoreQueryFilters().AsNoTracking()
+                .AnyAsync(s => s.Id == sucursalId && s.EmpresaId == empresaId &&
+                    s.Activa && !s.Eliminado, cancellationToken) &&
+            await (from grant in _context.RolPermisos.IgnoreQueryFilters().AsNoTracking()
+                   join permiso in _context.Permisos.IgnoreQueryFilters().AsNoTracking()
+                       on grant.PermisoId equals permiso.Id
+                   where grant.RolId == rolId && permiso.Activo && !permiso.Eliminado &&
+                         permiso.Ambito == AmbitoAutorizacion.Empresa &&
+                         permiso.Modulo == ModuloSistema.Sucursales &&
+                         permiso.Accion == AccionPermiso.Ver
+                   select grant.Id).AnyAsync(cancellationToken);
+
+        if (!await BaseComercialVigenteAsync())
+            return null;
+        var scope = await ObtenerActualAsync(empresaId, cancellationToken);
+        if (scope is null || scope.UsuarioId != actorId || scope.EmpresaId != empresaId ||
+            scope.RolId <= 0 || !await SucursalYPermisoVigentesAsync(scope.RolId))
+            return null;
+        if (!await BaseComercialVigenteAsync())
+            return null;
+        var fresh = await ObtenerActualAsync(empresaId, cancellationToken);
+        if (fresh is null || fresh != scope ||
+            !await SucursalYPermisoVigentesAsync(fresh.RolId) ||
+            !_currentUser.EstaAutenticado || _currentUser.UsuarioId != actorId)
+            return null;
+
+        return fresh;
+    }
+
     public async Task<UsuarioTenantScopeActual?> ObtenerActualAsync(
         int empresaId,
         CancellationToken cancellationToken = default)

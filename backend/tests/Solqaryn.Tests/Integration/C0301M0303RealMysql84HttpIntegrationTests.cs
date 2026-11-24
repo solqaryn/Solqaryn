@@ -94,6 +94,7 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
                 services.AddScoped<IRolRepository, RolRepository>();
                 services.AddScoped<IAuthService, AuthService>();
                 services.AddScoped<IJwtService, JwtService>();
+                services.AddScoped<ITenantSessionTokenService, JwtService>();
                 // Refresh does not invoke auditing; this dependency is not a
                 // substitute for a real audit integration.
                 services.AddSingleton(Moq.Mock.Of<IAuditoriaService>());
@@ -117,7 +118,8 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
                             ValidateLifetime = true, ClockSkew = TimeSpan.Zero,
                             RequireSignedTokens = true, RequireExpirationTime = true
                         };
-                    });
+                    }).AddJwtBearer(TenantSessionToken.Scheme, options =>
+                        TenantSessionBearer.Configure(options, Issuer, Audience, Key));
                 services.AddAuthorization();
             }).Configure(app =>
             {
@@ -322,6 +324,49 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
                 request.Headers.Add("X-Empresa-Id", tenantB.Id.ToString());
                 return await client.SendAsync(request);
             }
+            async Task<HttpResponseMessage> IssueContextAsync(string bearer, int tenant, int branch)
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Post, "/tenant-context/sesion");
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearer);
+                request.Content = new StringContent(System.Text.Json.JsonSerializer.Serialize(
+                    new { empresaId = tenant, sucursalId = branch }), Encoding.UTF8, "application/json");
+                return await client.SendAsync(request);
+            }
+            async Task<HttpResponseMessage> ReadContextAsync(string bearer, int? header = null)
+            {
+                using var request = new HttpRequestMessage(HttpMethod.Get, "/tenant-context/sesion");
+                request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", bearer);
+                if (header.HasValue) request.Headers.Add("X-Empresa-Id", header.Value.ToString());
+                return await client.SendAsync(request);
+            }
+            async Task<string> RequireIssuedAsync(int tenant, int branch, int role)
+            {
+                using var issued = await IssueContextAsync(productToken, tenant, branch);
+                Assert.Equal(HttpStatusCode.OK, issued.StatusCode);
+                using var json = System.Text.Json.JsonDocument.Parse(await issued.Content.ReadAsStringAsync());
+                var data = json.RootElement.GetProperty("data");
+                Assert.Equal(role, data.GetProperty("rolId").GetInt32());
+                var restricted = data.GetProperty("token").GetString()!;
+                var decoded = new JwtSecurityTokenHandler().ReadJwtToken(restricted);
+                Assert.Equal(TenantSessionToken.Audience(Audience), Assert.Single(decoded.Audiences));
+                Assert.True(decoded.ValidTo <= new JwtSecurityTokenHandler().ReadJwtToken(productToken).ValidTo);
+                Assert.DoesNotContain(decoded.Claims, claim => claim.Type == "esAdministrador");
+                Assert.Equal(role.ToString(), decoded.Claims.Single(claim => claim.Type == "tenantRoleId").Value);
+                using var read = await ReadContextAsync(restricted);
+                Assert.Equal(HttpStatusCode.OK, read.StatusCode);
+                using var legacy = await RefreshAsync(restricted);
+                Assert.Equal(HttpStatusCode.Unauthorized, legacy.StatusCode);
+                return restricted;
+            }
+            var restrictedA = await RequireIssuedAsync(tenantA.Id, branchA.Id, roleA.Id);
+            using (var baseOnly = await ReadContextAsync(productToken))
+                Assert.Equal(HttpStatusCode.Unauthorized, baseOnly.StatusCode);
+            using (var crossHeader = await ReadContextAsync(restrictedA, tenantB.Id))
+                Assert.Equal(HttpStatusCode.Forbidden, crossHeader.StatusCode);
+            using (var crossBranch = await IssueContextAsync(productToken, tenantA.Id, branchB.Id))
+                Assert.Equal(HttpStatusCode.Forbidden, crossBranch.StatusCode);
+            using (var noMembership = await IssueContextAsync(productToken, tenantB.Id, branchB.Id))
+                Assert.Equal(HttpStatusCode.Forbidden, noMembership.StatusCode);
             async Task AssertContextAsync(HttpStatusCode expected)
             {
                 using var response = await ContextAsync($"/tenant-context/{tenantA.Id}", productToken);
@@ -361,8 +406,13 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
                 Assert.Equal(tenantB.Id, json.RootElement.GetProperty("data").GetProperty("empresaId").GetInt32());
                 Assert.Equal(roleB.Id, json.RootElement.GetProperty("data").GetProperty("rolId").GetInt32());
             }
+            db.RolPermisos.Add(new RolPermiso { RolId = roleB.Id, PermisoId = permission.Id });
+            await db.SaveChangesAsync();
+            var restrictedB = await RequireIssuedAsync(tenantB.Id, branchB.Id, roleB.Id);
             membershipB.Desactivar();
             await db.SaveChangesAsync();
+            using (var revokedRestricted = await ReadContextAsync(restrictedB))
+                Assert.Equal(HttpStatusCode.Forbidden, revokedRestricted.StatusCode);
             using (var revokedB = await ContextAsync($"/tenant-context/{tenantB.Id}", productToken))
                 Assert.Equal(HttpStatusCode.Forbidden, revokedB.StatusCode);
             await AssertContextAsync(HttpStatusCode.OK);

@@ -1209,7 +1209,8 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             return true;
 
         if (HttpMethods.IsPost(request.Method) &&
-            (EsRutaExacta(path, "/auth/login") || EsRutaExacta(path, "/auth/renovar")))
+            (EsRutaExacta(path, "/auth/login") || EsRutaExacta(path, "/auth/renovar") ||
+             EsRutaExacta(path, "/tenant-context/sesion")))
             return true;
 
         // Permite a la sesión autenticada consultar su membresía tenant válida, pero

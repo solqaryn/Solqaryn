@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV04 V32 C03-01.M03.03: credencial de contexto tenant/sucursal con audiencia aislada
+- POST /tenant-context/sesion exige Bearer base y membresía, rol comercial, sucursal y permiso Sucursales.Ver vigentes desde SQL; GET requiere la credencial restringida y revalida los mismos datos, sin fallback ni grant global.
+- JWT de contexto con audiencia independiente y diez minutos de vigencia; el esquema base no lo acepta. Mantiene rol base separado del rol efectivo del tenant; no cambia DTO login, preferencias, ni permite operaciones comerciales legacy por este token.
+- Amplía integración HTTP JWT firmado con Oracle EF/MySQL 8.4 efímero: A/B, sucursal cruzada, selector ajeno, membresía revocada y rechazo en renovación base. La CI del nuevo SHA debe acreditar las pruebas; todavía VALIDANDO y A5 independiente, sin certificar migración de consumidores Angular/API ni QA/main/PROD.
+
 ## 2026-11-24 — DEV03 V32 C02-01.M05.04: vigencia JWT del resolver DEV
 - El resolver DEV de empresas valida la identidad y rol JWT canónicos y la sesión base SQL antes y después de resolver; no devuelve opciones cuando el rol base es ajeno, revocado o inexistente. Conserva 404 fuera de Development y no emite JWT ni instala contexto.
 - Regresión HTTP JWT firmado y MySQL 8.4 efímero: rol base inválido/ajeno, actor ajeno y membresía base revocada; se preservan los positivos de dos y una empresa. CI dirigida incluye cambios del controlador. Evidencia de ejecución pendiente del SHA publicado.

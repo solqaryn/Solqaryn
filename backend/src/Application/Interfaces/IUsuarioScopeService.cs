@@ -35,6 +35,11 @@ public interface IUsuarioScopeService
     /// </summary>
     Task<UsuarioScopeActual?> ObtenerActualAsync();
 
+    /// <summary>Seleccion explícita de sucursal y permiso vigente, sin fallback.</summary>
+    Task<UsuarioTenantScopeActual?> ObtenerSucursalActualAsync(int actorId, int rolBaseId,
+        int empresaId, int sucursalId, CancellationToken cancellationToken = default) =>
+        Task.FromResult<UsuarioTenantScopeActual?>(null);
+
     /// <summary>Revalida el rol base firmado contra SQL; no concede contexto tenant.</summary>
     Task<bool> SesionBaseVigenteAsync(int actorId, int rolId,
         CancellationToken cancellationToken = default) => Task.FromResult(false);

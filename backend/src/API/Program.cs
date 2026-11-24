@@ -285,6 +285,7 @@ builder.Services.AddScoped<IUsuarioAdministracionEmpresaService, UsuarioAdminist
 builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
+builder.Services.AddScoped<ITenantSessionTokenService, JwtService>();
 builder.Services.AddScoped<IImageStorageService, CloudinaryImageStorageService>();
 builder.Services.AddScoped<ICompraDocumentoStorageService, CloudinaryCompraDocumentoStorageService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
@@ -340,7 +341,9 @@ builder.Services.AddAuthentication(options => { options.DefaultAuthenticateSchem
 {
     options.TokenValidationParameters = new TokenValidationParameters { ValidateIssuer = true, ValidateAudience = true, ValidateLifetime = true, ValidateIssuerSigningKey = true, ValidIssuer = jwtIssuer, ValidAudience = jwtAudience, IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)), ClockSkew = TimeSpan.Zero };
     options.Events = new JwtBearerEvents { OnAuthenticationFailed = async context => { if (context.Exception is SecurityTokenExpiredException) { var auditoria = context.HttpContext.RequestServices.GetService<IAuditoriaService>(); if (auditoria is not null) await auditoria.RegistrarAsync(ModuloSistema.Usuarios, AccionPermiso.ConsultarHistorial, "Intento de uso de token expirado.", entidad: "Sesion", resultado: "Rechazado", error: "Token expirado"); } } };
-});
+}).AddJwtBearer(TenantSessionToken.Scheme, options =>
+    TenantSessionBearer.Configure(options, jwtIssuer, jwtAudience,
+        new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret))));
 builder.Services.AddAuthorization();
 var loginRateLimitPerMinute = Math.Clamp(builder.Configuration.GetValue<int?>("Security:LoginRateLimitPerMinute") ?? 60, 5, 300);
 builder.Services.AddRateLimiter(options => { options.RejectionStatusCode = StatusCodes.Status429TooManyRequests; options.OnRejected = async (context, cancellationToken) => { context.HttpContext.Response.ContentType = "application/json"; await context.HttpContext.Response.WriteAsJsonAsync(ApiResponse<object>.Fail("Demasiados intentos de acceso. Espera un minuto e intenta nuevamente."), cancellationToken); }; options.AddPolicy("AuthLogin", httpContext => RateLimitPartition.GetFixedWindowLimiter(partitionKey: TrustedClientIpResolver.Resolve(httpContext, isRender), factory: _ => new FixedWindowRateLimiterOptions { AutoReplenishment = true, PermitLimit = loginRateLimitPerMinute, QueueLimit = 0, Window = TimeSpan.FromMinutes(1) })); });
