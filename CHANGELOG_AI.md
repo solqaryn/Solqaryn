@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV01 C03-01.M03.03: guards ERP exigen prueba contextual vigente
+
+- Cierra el atajo de navegación que aceptaba el contexto Angular memorizado tras sustituir el JWT o el hint tenant. Los dos guards consultan la prueba vigente, deniegan el contexto obsoleto sin reescribir la intención de otra pestaña y vuelven a exigir prueba HTTP después de seleccionar empresa. La autorización efectiva permanece en backend.
+- Regresión dirigida: caso positivo con prueba HTTP vigente y negativos de sustitución de tenant/JWT sin consulta de permisos ni selección implícita. CI exact-SHA pendiente; sin LISTO ni A5 propia. SKREF-10 Angular pin 6808966993bf2b2d455d9b6245e960a59a01b9a9; límite de confianza SKREF-11 pin 49f948faa9258a0c61caceaf225e179651397431.
+
 ## 2026-11-24 — DEV06 C03-01.M03.03: revocación de prueba contextual al cambiar hint tenant
 
 - Rechaza un snapshot Angular de permisos si cambia el JWT base o el hint de empresa compartido; restaurar el hint anterior no revive la prueba revocada. Una respuesta tardía no instala autoridad ni elimina la selección de otra pestaña; el backend mantiene toda autoridad y los controles JWT/RBAC no cambian.

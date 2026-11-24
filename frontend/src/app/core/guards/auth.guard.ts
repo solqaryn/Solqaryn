@@ -14,7 +14,12 @@ export const authGuard: CanActivateFn = () => {
   if (authService.isAuthenticated()) {
     // Autenticación por sí sola no autoriza el shell ERP. Cada navegación
     // protegida exige un contexto tenant materializado por el backend.
-    if (tenantContext.tieneContextoVerificado()) return true;
+    if (tenantContext.tieneContextoVerificado()) {
+      // The cached signal is not proof that the shared tenant intent and JWT
+      // still belong to this tab. Never implicitly reselect its stale hint.
+      return tenantContext.contextoParaPermisos() !== null
+        ? true : router.parseUrl('/login');
+    }
 
     // Tras una recarga completa el contexto verificado vive únicamente en memoria,
     // pero la empresa solicitada puede persistir como una intención no autoritativa.
@@ -24,7 +29,7 @@ export const authGuard: CanActivateFn = () => {
     const empresaSolicitadaId = tenantContext.empresaSolicitadaId();
     if (empresaSolicitadaId) {
       return tenantContext.seleccionarEmpresa(empresaSolicitadaId).pipe(
-        map(() => tenantContext.tieneContextoVerificado()
+        map(() => tenantContext.contextoParaPermisos() !== null
           ? true
           : router.parseUrl('/login')),
         catchError(() => of(router.parseUrl('/login')))

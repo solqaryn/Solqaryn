@@ -1,4 +1,11 @@
 import { TestBed } from '@angular/core/testing';
+import { ActivatedRouteSnapshot, RouterStateSnapshot, UrlTree, provideRouter } from '@angular/router';
+import { firstValueFrom, isObservable, of } from 'rxjs';
+import { AuthService } from './auth.service';
+import { SessionActivityService } from './session-activity.service';
+import { PermisosRuntimeService } from './permisos-runtime.service';
+import { authGuard } from '../guards/auth.guard';
+import { permisoGuard } from '../guards/permiso.guard';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { environment } from '../../../environments/environment';
 import { TenantContextService, CREDENCIAL_SUCURSAL } from './tenant-context.service';
@@ -505,5 +512,70 @@ describe('TenantContextService', () => {
     expect(service.contextoVerificado()).toBeNull();
     expect(localStorage.getItem('solqaryn_empresa_solicitada_id')).toBe('8');
     expect(localStorage.getItem('solqaryn_token')).toBe('jwt-A');
+  });
+});
+
+describe('Guards ERP con prueba contextual vigente', () => {
+  let http: HttpTestingController;
+  let tenant: TenantContextService;
+  const permisos = {
+    cargar: vi.fn(() => of(true)),
+    puede: vi.fn(() => true),
+    rutaHabilitada: vi.fn(() => true),
+    rutaInicialPermitida: vi.fn(() => '/perfil')
+  };
+  const route = { data: { modulo: 'Ventas', accion: 'Ver' }, pathFromRoot: [] } as unknown as ActivatedRouteSnapshot;
+  const state = {} as RouterStateSnapshot;
+
+  beforeEach(() => {
+    localStorage.clear();
+    vi.clearAllMocks();
+    localStorage.setItem('solqaryn_token', 'jwt-A');
+    TestBed.configureTestingModule({
+      imports: [HttpClientTestingModule],
+      providers: [
+        provideRouter([]),
+        { provide: AuthService, useValue: { isAuthenticated: () => true } },
+        { provide: SessionActivityService, useValue: {} },
+        { provide: PermisosRuntimeService, useValue: permisos }
+      ]
+    });
+    http = TestBed.inject(HttpTestingController);
+    tenant = TestBed.inject(TenantContextService);
+    tenant.seleccionarEmpresa(7).subscribe();
+    http.expectOne(`${environment.apiUrl}/tenant-context/7`).flush({
+      success: true, data: { usuarioId: 11, empresaId: 7, rolId: 4, rolNombre: 'A', esAdministrador: true }
+    });
+  });
+
+  afterEach(() => {
+    http.verify();
+    localStorage.clear();
+  });
+
+  it('permite navegar con prueba HTTP vigente del mismo actor y tenant', async () => {
+    expect(TestBed.runInInjectionContext(() => authGuard(route, state))).toBe(true);
+    const decision = TestBed.runInInjectionContext(() => permisoGuard(route, state));
+    if (!isObservable(decision)) throw new Error('Se esperaba la consulta de permisos.');
+    expect(await firstValueFrom(decision)).toBe(true);
+    expect(permisos.cargar).toHaveBeenCalledTimes(1);
+  });
+
+  it.each([
+    ['solqaryn_empresa_solicitada_id', '8'],
+    ['solqaryn_token', 'jwt-B']
+  ])('deniega ambos guards al sustituir %s sin reescribir la selección compartida', (key, replacement) => {
+    localStorage.setItem(key, replacement);
+    // The cached context still exists, but its proof has expired.
+    expect(tenant.tieneContextoVerificado()).toBe(true);
+    const authDecision = TestBed.runInInjectionContext(() => authGuard(route, state));
+    const permisoDecision = TestBed.runInInjectionContext(() => permisoGuard(route, state));
+    expect(authDecision).toBeInstanceOf(UrlTree);
+    expect(String(authDecision)).toBe('/login');
+    expect(permisoDecision).toBeInstanceOf(UrlTree);
+    expect(String(permisoDecision)).toBe('/login');
+    expect(permisos.cargar).not.toHaveBeenCalled();
+    expect(localStorage.getItem(key)).toBe(replacement);
+    http.expectNone(`${environment.apiUrl}/tenant-context/7`);
   });
 });

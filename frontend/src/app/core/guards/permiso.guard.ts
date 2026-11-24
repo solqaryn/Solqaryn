@@ -36,7 +36,10 @@ export const permisoGuard: CanActivateFn = (route) => {
   // La empresa persistida sigue siendo sólo una solicitud: se vuelve a confirmar
   // server-side antes de consultar permisos. Cualquier fallo permanece fail-closed.
   if (tenantContext.tieneContextoVerificado()) {
-    return resolverPermiso();
+    // A stale verified signal must not trigger a permissions load or
+    // overwrite another tab's intent via an implicit reselection.
+    return tenantContext.contextoParaPermisos() !== null
+      ? resolverPermiso() : router.createUrlTree(['/login']);
   }
 
   const empresaSolicitadaId = tenantContext.empresaSolicitadaId();
@@ -45,7 +48,8 @@ export const permisoGuard: CanActivateFn = (route) => {
   }
 
   return tenantContext.seleccionarEmpresa(empresaSolicitadaId).pipe(
-    switchMap(() => resolverPermiso()),
+    switchMap(() => tenantContext.contextoParaPermisos() !== null
+      ? resolverPermiso() : of(router.createUrlTree(['/login']))),
     catchError(() => of(router.createUrlTree(['/login'])))
   );
 };
