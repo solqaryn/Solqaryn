@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV01 C07-01.M06.06: coherencia de clasificación en cotizaciones ERP
+
+- D06 R2: las altas y ediciones de cotización rechazan insumos administrativos y valores de clasificación no comerciales antes de consultar la variante o persistir el documento; se conserva precio autorizado, autorización y transacción.
+- Regresiones unitarias sobre documento mixto y reclasificación; la aceptación positiva existente se conserva. CI exacta pendiente; no se acredita integración nueva ni A5. No se habilita servicio sin existencias: faltan política histórica persistida, reservas y anulaciones coherentes y migración Oracle con bootstrap físico verificado.
+
 ## 2026-11-24 — DEV05 C15-03.M05.05: propiedad persistida de metadatos de adjuntos A/B
 
 - R2, prueba causal P4 en GitHub-hosted MySQL 8.4 efímero: dos documentos sintéticos vinculados a compras reales A/B, lectura propia no vacía con JWT firmado, rechazo de ID ajeno bajo compra propia y consulta de compra ajena sin aceptar 503 como evidencia de autorización; readback SQL y limpieza acotada.

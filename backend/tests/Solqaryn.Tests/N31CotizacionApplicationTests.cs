@@ -222,6 +222,76 @@ public sealed class N31CotizacionApplicationTests
         _auditoria.VerifyNoOtherCalls();
     }
 
+    [Theory]
+    [InlineData(0)]
+    [InlineData(2)]
+    [InlineData(3)]
+    [InlineData(99)]
+    public async Task Crear_rechaza_tipo_no_comercial_antes_de_persistir_documento_mixto(int tipo)
+    {
+        _clientes.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(new Cliente
+        {
+            Id = 1, Nombre = "Cliente", Activo = true
+        });
+        _productos.Setup(x => x.GetByIdAsync(10)).ReturnsAsync(new Producto
+        {
+            Id = 10, Nombre = "Mercadería", Precio = 50m, Activo = true
+        });
+        _productos.Setup(x => x.GetByIdAsync(11)).ReturnsAsync(new Producto
+        {
+            Id = 11, Nombre = "No comercial", Precio = 25m, Activo = true,
+            TipoInventario = (TipoInventario)tipo
+        });
+
+        var dto = new CreateCotizacionDto
+        {
+            ClienteId = 1,
+            Detalles =
+            [
+                new CreateCotizacionDetalleDto { ProductoId = 10, Cantidad = 1, PrecioUnitario = 50m },
+                new CreateCotizacionDetalleDto { ProductoId = 11, ProductoVarianteId = 8, Cantidad = 1, PrecioUnitario = 25m }
+            ]
+        };
+
+        var error = await Assert.ThrowsAsync<BusinessRuleException>(() => _service.CrearAsync(dto));
+        Assert.Contains("no está habilitado para cotización comercial", error.Message);
+        _variantes.Verify(x => x.GetByIdAsync(It.IsAny<int>()), Times.Never);
+        _repository.Verify(x => x.AddAsync(It.IsAny<Cotizacion>()), Times.Never);
+        _repository.Verify(x => x.SaveChangesAsync(), Times.Never);
+        _auditoria.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task Actualizar_rechaza_producto_reclasificado_sin_persistir_ni_auditar()
+    {
+        var cotizacion = CrearBorradorValido(20);
+        var detalle = cotizacion.Detalles.Single();
+        _repository.Setup(x => x.GetByIdForUpdateAsync(20)).ReturnsAsync(cotizacion);
+        _productos.Setup(x => x.GetByIdAsync(10)).ReturnsAsync(new Producto
+        {
+            Id = 10, Nombre = "Insumo", Precio = 50m, Activo = true,
+            TipoInventario = TipoInventario.InsumoAdministrativo
+        });
+
+        var dto = new UpdateCotizacionDto
+        {
+            Id = 20, ClienteId = 1,
+            Detalles =
+            [
+                new UpdateCotizacionDetalleDto
+                {
+                    Id = detalle.Id, ProductoId = 10, Cantidad = 2, PrecioUnitario = 50m
+                }
+            ]
+        };
+
+        var error = await Assert.ThrowsAsync<BusinessRuleException>(() => _service.ActualizarAsync(dto));
+        Assert.Contains("no está habilitado para cotización comercial", error.Message);
+        Assert.Equal(1m, detalle.Cantidad);
+        _repository.Verify(x => x.SaveChangesAsync(), Times.Never);
+        _auditoria.VerifyNoOtherCalls();
+    }
+
     private static Cotizacion CrearBorradorValido(int id)
     {
         var cotizacion = new Cotizacion

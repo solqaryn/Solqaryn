@@ -384,6 +384,11 @@ public sealed class CotizacionService : ICotizacionService
         if (!producto.Activo || producto.Eliminado)
             throw new BusinessRuleException($"El producto {producto.Nombre} no está disponible.");
 
+        // Mantener la misma política comercial que VentaService. La incorporación
+        // de servicios requiere su contrato de inventario y reversión completo.
+        if (producto.TipoInventario != TipoInventario.MercaderiaVenta)
+            throw new BusinessRuleException("El producto no está habilitado para cotización comercial.");
+
         ProductoVariante? variante = null;
         if (varianteId.HasValue)
         {
