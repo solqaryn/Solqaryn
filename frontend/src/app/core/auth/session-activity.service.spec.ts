@@ -1,4 +1,3 @@
-import { NgZone } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { HttpClientTestingModule, HttpTestingController } from '@angular/common/http/testing';
 import { Router } from '@angular/router';
@@ -54,11 +53,7 @@ describe('C02-01.M05.04: renovación JWT y contexto empresarial real', () => {
           limpiar: limpiarPermisos,
           cargar: cargarPermisos
         } },
-        { provide: Router, useValue: { navigate: navegar, events: of() } },
-        { provide: NgZone, useValue: {
-          run: (fn: () => unknown) => fn(),
-          runOutsideAngular: (fn: () => unknown) => fn()
-        } }
+        { provide: Router, useValue: { navigate: navegar, events: of() } }
       ]
     });
     tenant = TestBed.inject(TenantContextService);

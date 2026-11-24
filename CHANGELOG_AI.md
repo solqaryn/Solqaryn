@@ -1,3 +1,7 @@
+## 2026-11-24 — C03-01.M03.03 — DEV05: causal Angular TestBed repair
+- Source CI 138609367913 on 0b4f7334: interceptor 6/6 pass; renewal suite 7/7 failed in setup because partial NgZone fake lacks scheduler observables.
+- Remove incomplete NgZone provider and use TestBed's real zone; retain all seven assertions and production fail-closed logic. Exact new SHA CI required; no A5/LISTO claim.
+
 ## 2026-11-24 — DEV05 C03-01.M03.03: aislar rechazo tardío de sesión Angular
 - Corrige el efecto lateral de un HTTP 401 tardío del interceptor y de la renovación: sólo la identidad de origen aún vigente en memoria y almacenamiento puede cerrar su sesión. El error se sigue propagando y un 401 vigente mantiene el cierre fail-closed. No se concede ni se modifica autoridad JWT/RBAC, tenant o sucursal.
 - Añade cinco regresiones Angular de rechazo vigente, reemplazo de sesión en la misma empresa y cambio de token persistido; incorpora ejecución dirigida al workflow existente de C03-01.M03.03. La integración HTTP/JWT/MySQL del backend permanece intacta. CI exact-SHA y A5 independientes pendientes.
