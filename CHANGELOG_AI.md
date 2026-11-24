@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV03 C02-03.M03.03: autoridad SQL coherente en preflight de ciclo de vida
+
+- Reparación R2: asignación global única, cuenta, rol, grant y empresa activa se comprueban en una sola sentencia final; no reutilizar un grant revocado durante la lectura del tenant.
+- Regresión JWT/HTTP/Oracle EF/MySQL 8.4: revocar el grant desde conexión independiente antes de leer empresa, exigir 403 opaco y restaurar 200; pruebas exact-SHA pendientes. Sin mutación de ciclo de vida ni cambio de permisos, esquema o flags; VALIDANDO y A5 independiente.
+
 ## 2026-11-24 — DEV02 C15-04.M05.04: regresión causal de entrada pública
 
 - El job real 138748798467 del SHA cc9bb0da falló 1/7 porque esperaba /login desde /; app.routes.ts establece explícitamente /conoce-solqaryn como entrada pública y conserva /login. Se verifica el destino y encabezado de la landing, el enlace visible Acceder y su navegación real al formulario, manteniendo todas las aserciones de validación local, contraseña y guardas privadas, sin mocks ni cambios de runtime o permisos.

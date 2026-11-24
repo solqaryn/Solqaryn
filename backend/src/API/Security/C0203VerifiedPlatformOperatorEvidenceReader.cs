@@ -97,31 +97,42 @@ public sealed class C0203VerifiedPlatformOperatorEvidenceReader(
                     StringComparison.Ordinal))
                 return null;
 
-            // An explicit global scope alone is not a grant. The active,
-            // platform-scoped RolPermiso / Permiso row must exist as well.
-            var hasGrant = await (
-                from relation in database.RolPermisos.IgnoreQueryFilters().AsNoTracking()
-                join permission in database.Permisos.IgnoreQueryFilters().AsNoTracking()
-                    on relation.PermisoId equals permission.Id
-                where relation.RolId == authority.RolId &&
-                      permission.Ambito == AmbitoAutorizacion.Plataforma &&
-                      permission.Modulo == ModuloSistema.Configuracion &&
-                      permission.Accion == AccionPermiso.CambiarEstado &&
-                      permission.Activo && !permission.Eliminado
-                select relation.Id
-            ).AnyAsync(cancellationToken);
+            // Read the live assignment, account, role, explicit permission and
+            // active target in ONE SQL statement. Separate grant and tenant reads
+            // can accept a grant revoked while the target query is waiting.
+            // The earlier platform scope is a candidate, not a reusable grant.
+            var finalActors = await (
+                from assignment in database.Set<Solqaryn.Domain.Entities.UsuarioRolPlataforma>()
+                    .IgnoreQueryFilters().AsNoTracking()
+                join user in database.Usuarios.IgnoreQueryFilters().AsNoTracking()
+                    on assignment.UsuarioId equals user.Id
+                join role in database.Roles.IgnoreQueryFilters().AsNoTracking()
+                    on assignment.RolId equals role.Id
+                where assignment.UsuarioId == signedActor &&
+                      assignment.RolId == authority.RolId && assignment.Activa &&
+                      user.Activo && !user.Bloqueado && !user.Eliminado &&
+                      role.Activo && !role.Eliminado && role.EsAdministrador && role.EsSistema &&
+                      role.Ambito == AmbitoAutorizacion.Plataforma && role.EmpresaId == null &&
+                      database.Set<Solqaryn.Domain.Entities.UsuarioRolPlataforma>()
+                          .IgnoreQueryFilters().Count(a => a.UsuarioId == signedActor && a.Activa) == 1 &&
+                      (from relation in database.RolPermisos.IgnoreQueryFilters()
+                       join permission in database.Permisos.IgnoreQueryFilters()
+                           on relation.PermisoId equals permission.Id
+                       where relation.RolId == role.Id &&
+                             permission.Ambito == AmbitoAutorizacion.Plataforma &&
+                             permission.Modulo == ModuloSistema.Configuracion &&
+                             permission.Accion == AccionPermiso.CambiarEstado &&
+                             permission.Activo && !permission.Eliminado
+                       select relation.Id).Any() &&
+                      database.Set<Solqaryn.Domain.Entities.Empresa>().IgnoreQueryFilters()
+                          .Any(e => e.Id == tenantId && e.Activa)
+                select user.NombreUsuario
+            ).Take(2).ToArrayAsync(cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
-            if (!hasGrant)
-                return null;
-
-            // Do not trust route/header claims as proof of target ownership.
-            // The platform-admin scope is the only global authority and the
-            // target must be an actual active Empresa row in the current DB.
-            var targetExists = await database.Set<Solqaryn.Domain.Entities.Empresa>().IgnoreQueryFilters()
-                .AsNoTracking().AnyAsync(e => e.Id == tenantId && e.Activa,
-                    cancellationToken);
-            cancellationToken.ThrowIfCancellationRequested();
-            if (!targetExists)
+            if (finalActors.Length != 1 ||
+                !string.Equals(finalActors[0], names[0].Value, StringComparison.Ordinal) ||
+                !current.EstaAutenticado || current.UsuarioId != signedActor ||
+                !string.Equals(current.NombreUsuario, names[0].Value, StringComparison.Ordinal))
                 return null;
 
             // A positive result is only an informational READONLY preflight;

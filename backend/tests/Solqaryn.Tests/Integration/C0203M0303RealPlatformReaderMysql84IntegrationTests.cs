@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http.Headers;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -71,7 +73,27 @@ public sealed class C0203M0303RealPlatformReaderMysql84IntegrationTests
             signingCredentials: new SigningCredentials(
                 forged ? BadKey : Key, SecurityAlgorithms.HmacSha256)));
 
-    private static Task<IHost> StartAsync(string scopedConnection) =>
+    // Runs once immediately before the target SQL read, using an independent
+    // committed MySQL connection. No mocked grant or target decision.
+    private sealed class BeforeTargetRead(Func<Task> revoke) : DbCommandInterceptor
+    {
+        private int _fired;
+        public bool Fired => Volatile.Read(ref _fired) != 0;
+
+        public override async ValueTask<InterceptionResult<DbDataReader>> ReaderExecutingAsync(
+            DbCommand command, CommandEventData eventData,
+            InterceptionResult<DbDataReader> result,
+            CancellationToken cancellationToken = default)
+        {
+            if (command.CommandText.Contains("Empresas", StringComparison.OrdinalIgnoreCase) &&
+                Interlocked.Exchange(ref _fired, 1) == 0)
+                await revoke();
+            return result;
+        }
+    }
+
+    private static Task<IHost> StartAsync(string scopedConnection,
+        DbCommandInterceptor? interceptor = null) =>
         new HostBuilder().ConfigureWebHost(web => web.UseTestServer()
             .ConfigureServices(services =>
             {
@@ -102,9 +124,11 @@ public sealed class C0203M0303RealPlatformReaderMysql84IntegrationTests
                         var accessor = http.RequestServices
                             .GetRequiredService<IHttpContextAccessor>();
                         var current = new CurrentUserService(accessor);
-                        var options = new DbContextOptionsBuilder<AppDbContext>()
-                            .UseMySQL(scopedConnection).Options;
-                        await using var db = new AppDbContext(options,
+                        var builder = new DbContextOptionsBuilder<AppDbContext>()
+                            .UseMySQL(scopedConnection);
+                        if (interceptor is not null)
+                            builder.AddInterceptors(interceptor);
+                        await using var db = new AppDbContext(builder.Options,
                             tenantHttpContextAccessor: accessor);
                         var platform = new PlataformaScopeService(db, current);
                         var config = new ConfigurationBuilder().AddInMemoryCollection(
@@ -248,6 +272,23 @@ public sealed class C0203M0303RealPlatformReaderMysql84IntegrationTests
                     Assert.Equal("LIFECYCLE_ACCESS_DENIED",
                         await deniedAlias.Content.ReadAsStringAsync());
             }
+
+            // Revoke the actual grant just as the target is read. The old
+            // two-query reader could return 200 after seeing a stale grant.
+            var revokeDuringTarget = new BeforeTargetRead(
+                () => ExecuteAsync("DELETE FROM RolPermisos WHERE Id=61"));
+            using (var raceHost = await StartAsync(scoped, revokeDuringTarget))
+            using (var raceClient = raceHost.GetTestClient())
+            using (var revokedDuringTarget = await ReadAsync(raceClient, 811, jwt))
+            {
+                Assert.True(revokeDuringTarget.Fired);
+                Assert.Equal(HttpStatusCode.Forbidden, revokedDuringTarget.StatusCode);
+                Assert.Equal("LIFECYCLE_ACCESS_DENIED",
+                    await revokedDuringTarget.Content.ReadAsStringAsync());
+            }
+            await ExecuteAsync("INSERT INTO RolPermisos(Id,RolId,PermisoId) VALUES(61,17,51)");
+            using (var recoveredGrant = await ReadAsync(client, 811, jwt))
+                Assert.Equal(HttpStatusCode.OK, recoveredGrant.StatusCode);
 
             // New V22 adversarial boundary: a second active platform grant for
             // the same signed-JWT actor is ambiguous, even when both point to
