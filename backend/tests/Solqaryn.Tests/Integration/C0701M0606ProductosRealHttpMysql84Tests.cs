@@ -1711,8 +1711,24 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                     () => service.DesactivarAsync(taxBId));
                 Assert.Equal("FISCAL_AUDIT_SINK_UNAVAILABLE", failure.Message);
             }
+            // A failed durable audit also rolls back a real duplicated tax row,
+            // not just an in-memory mock or the HTTP quarantine response.
+            var duplicateRollbackCode = "C0701DUPR_" + Guid.NewGuid().ToString("N");
+            await using (var duplicateFiscalDb = new AppDbContext(options,
+                tenantHttpContextAccessor: fiscalAccessor))
+            {
+                var duplicateService = new ImpuestoService(
+                    new ImpuestoRepository(duplicateFiscalDb), failedAudit.Object,
+                    Mock.Of<ICurrentUserService>(), new UnitOfWork(duplicateFiscalDb));
+                var duplicationFailure = await Assert.ThrowsAsync<InvalidOperationException>(
+                    () => duplicateService.DuplicarAsync(
+                        taxBId, "C0701 duplicate rollback", duplicateRollbackCode));
+                Assert.Equal("FISCAL_AUDIT_SINK_UNAVAILABLE", duplicationFailure.Message);
+            }
             await using (var fiscalFresh = new AppDbContext(options))
             {
+                Assert.False(await fiscalFresh.Impuestos.IgnoreQueryFilters()
+                    .AsNoTracking().AnyAsync(x => x.Codigo == duplicateRollbackCode));
                 Assert.True(await fiscalFresh.Impuestos.IgnoreQueryFilters()
                     .AsNoTracking().Where(x => x.Id == taxBId).Select(x => x.Activo)
                     .SingleAsync());

@@ -309,9 +309,20 @@ public class ImpuestoService : IImpuestoService
             ProveedoresExentos = original.ProveedoresExentos.Select(p => new ImpuestoProveedor { ProveedorId = p.ProveedorId }).ToList()
         };
 
-        await _repository.AddAsync(copia);
-        await _repository.SaveChangesAsync();
-        await _auditoria.RegistrarAsync(ModuloSistema.Impuestos, AccionPermiso.Duplicar, $"Duplicó el impuesto '{original.Nombre}' como '{copia.Nombre}'.", copia.Id);
+        // A fiscal duplicate and its audit receipt must commit or roll back together.
+        // Preserve the same Oracle EF/MySQL transaction used by other tax mutators.
+        await _unitOfWork.ExecuteInTransactionAsync(async () =>
+        {
+            await _repository.AddAsync(copia);
+            await _repository.SaveChangesAsync();
+            await _auditoria.RegistrarEstrictoAsync(
+                ModuloSistema.Impuestos,
+                AccionPermiso.Duplicar,
+                $"Duplicó el impuesto '{original.Nombre}' como '{copia.Nombre}'.",
+                copia.Id,
+                entidad: "Impuesto",
+                valoresNuevos: new { copia.Codigo, copia.Nombre, copia.Tipo, copia.Tasa });
+        });
 
         return ToDto((await _repository.GetByIdConRelacionesAsync(copia.Id))!);
     }
