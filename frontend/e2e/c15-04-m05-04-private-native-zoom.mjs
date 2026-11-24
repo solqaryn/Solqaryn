@@ -40,8 +40,20 @@ async function audit(page, worker, name, locator) {
     dpr: devicePixelRatio, visualScale: visualViewport?.scale ?? 1
   }));
   async function capture(factor, g) {
-    await locator.scrollIntoViewIfNeeded();
+    const anchor = name === 'global-ux' ? locator.getByRole('heading').first() : locator;
+    await anchor.scrollIntoViewIfNeeded();
     await page.bringToFront();
+    // Chrome's native zoom bubble is outside the page DOM and transient.
+    // Wait for it to dismiss before taking the actual desktop screenshot.
+    await page.waitForTimeout(3000);
+    const visible = await anchor.evaluate(el => {
+      const r = el.getBoundingClientRect();
+      const x = Math.max(0, Math.min(innerWidth - 1, r.left + r.width / 2));
+      const y = Math.max(0, Math.min(innerHeight - 1, r.top + r.height / 2));
+      const hit = document.elementFromPoint(x, y);
+      return r.top >= 0 && r.bottom <= innerHeight && !!hit && (hit === el || el.contains(hit));
+    });
+    assert.ok(visible, name + ': capture anchor is vertically visible and unobscured in the page');
     await page.evaluate(() => new Promise(done => requestAnimationFrame(() => requestAnimationFrame(done))));
     const filename = name + '-' + (factor * 100) + '.png';
     await exec('ffmpeg', ['-nostdin', '-hide_banner', '-loglevel', 'error',
@@ -86,7 +98,15 @@ async function audit(page, worker, name, locator) {
 }
 
 async function actor(user, tenant, run) {
-  const context = await chromium.launchPersistentContext(join(root, user), {
+  // CI-only browser profile: prevent the browser's credential-save UI from
+  // covering the physical screenshot. Application authentication is unchanged.
+  const profile = join(root, user);
+  await mkdir(join(profile, 'Default'), { recursive: true });
+  await writeFile(join(profile, 'Default', 'Preferences'), JSON.stringify({
+    credentials_enable_service: false,
+    profile: { password_manager_enabled: false }
+  }));
+  const context = await chromium.launchPersistentContext(profile, {
     headless: false, viewport: null, args: ['--window-size=1440,1000',
       '--disable-extensions-except=' + extension, '--load-extension=' + extension]
   });
