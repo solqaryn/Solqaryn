@@ -57,12 +57,16 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
         return raw;
     }
 
-    private static string Token(int actor, bool forged = false)
+    private static string Token(int actor, bool forged = false, int? role = null)
     {
+        var claims = new List<Claim> { new("id", actor.ToString(
+            System.Globalization.CultureInfo.InvariantCulture)) };
+        if (role.HasValue)
+            claims.Add(new Claim("rolId", role.Value.ToString(
+                System.Globalization.CultureInfo.InvariantCulture)));
         return new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(
             issuer: Issuer, audience: Audience,
-            claims: [new Claim("id", actor.ToString(
-                System.Globalization.CultureInfo.InvariantCulture))],
+            claims: claims,
             notBefore: DateTime.UtcNow.AddMinutes(-1),
             expires: DateTime.UtcNow.AddMinutes(5),
             signingCredentials: new SigningCredentials(
@@ -349,16 +353,23 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
                 client, tenantA.Id, branchA.Id, Token(actor.Id, forged: true)))
                 Assert.Equal(HttpStatusCode.Unauthorized, forged.StatusCode);
             using (var wrongActor = await ReadAsync(
-                client, tenantA.Id, branchA.Id, Token(actor.Id + 1)))
+                client, tenantA.Id, branchA.Id, Token(actor.Id + 1, role: roleA.Id)))
                 Assert.Equal(HttpStatusCode.Forbidden, wrongActor.StatusCode);
+            using (var missingBaseRole = await ReadAsync(
+                client, tenantA.Id, branchA.Id, jwt))
+                Assert.Equal(HttpStatusCode.Forbidden, missingBaseRole.StatusCode);
+            using (var wrongBaseRole = await ReadAsync(
+                client, tenantA.Id, branchA.Id,
+                Token(actor.Id, role: checked(roleA.Id + 1))))
+                Assert.Equal(HttpStatusCode.Forbidden, wrongBaseRole.StatusCode);
             using (var foreignTenant = await ReadAsync(
-                client, tenantB.Id, branchB.Id, jwt))
+                client, tenantB.Id, branchB.Id, productToken))
                 Assert.Equal(HttpStatusCode.Forbidden, foreignTenant.StatusCode);
             using (var foreignBranch = await ReadAsync(
-                client, tenantA.Id, branchB.Id, jwt))
+                client, tenantA.Id, branchB.Id, productToken))
                 Assert.Equal(HttpStatusCode.Forbidden, foreignBranch.StatusCode);
             using (var positive = await ReadAsync(
-                client, tenantA.Id, branchA.Id, jwt))
+                client, tenantA.Id, branchA.Id, productToken))
             {
                 Assert.Equal(HttpStatusCode.OK, positive.StatusCode);
                 Assert.Equal("LOGIN_SELECTION_ONLY_NO_TOKEN_OR_GRANT",
@@ -370,7 +381,7 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
             liveRole.Activo = false;
             await db.SaveChangesAsync();
             using (var disabledRole = await ReadAsync(
-                client, tenantA.Id, branchA.Id, jwt))
+                client, tenantA.Id, branchA.Id, productToken))
                 Assert.Equal(HttpStatusCode.Forbidden, disabledRole.StatusCode);
             await AssertContextAsync(HttpStatusCode.Forbidden);
             liveRole.Activo = true;
@@ -383,7 +394,7 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
             db.RolPermisos.Remove(committedGrant);
             await db.SaveChangesAsync();
             using (var revoked = await ReadAsync(
-                client, tenantA.Id, branchA.Id, jwt))
+                client, tenantA.Id, branchA.Id, productToken))
                 Assert.Equal(HttpStatusCode.Forbidden, revoked.StatusCode);
 
             // A rolled-back MySQL grant must not become visible to EF readers.
@@ -401,7 +412,7 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
                 await tx.RollbackAsync();
             }
             using (var afterRollback = await ReadAsync(
-                client, tenantA.Id, branchA.Id, jwt))
+                client, tenantA.Id, branchA.Id, productToken))
                 Assert.Equal(HttpStatusCode.Forbidden, afterRollback.StatusCode);
 
             db.RolPermisos.Add(new RolPermiso
@@ -418,7 +429,7 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
             using (var revokedRefresh = await RefreshAsync(productToken))
                 Assert.Equal(HttpStatusCode.Unauthorized, revokedRefresh.StatusCode);
             using (var disabledMembership = await ReadAsync(
-                client, tenantA.Id, branchA.Id, jwt))
+                client, tenantA.Id, branchA.Id, productToken))
                 Assert.Equal(HttpStatusCode.Forbidden,
                     disabledMembership.StatusCode);
 
@@ -432,7 +443,7 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
             assignedBranch.EmpresaId = tenantB.Id;
             await db.SaveChangesAsync();
             using (var movedBranch = await ReadAsync(
-                client, tenantA.Id, branchA.Id, jwt))
+                client, tenantA.Id, branchA.Id, productToken))
                 Assert.Equal(HttpStatusCode.Forbidden, movedBranch.StatusCode);
         }
         finally

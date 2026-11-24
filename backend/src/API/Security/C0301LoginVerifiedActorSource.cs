@@ -80,6 +80,31 @@ public sealed class C0301LoginVerifiedActorSource(
                 actorId != current.UsuarioId.Value)
                 return null;
 
+            // A valid signature authenticates the actor, not a stale base role.
+            // Keep the signed role separate from the tenant membership role.
+            var signedRoles = bearer.Principal.FindAll("rolId").ToArray();
+            if (signedRoles.Length != 1 ||
+                !int.TryParse(signedRoles[0].Value, NumberStyles.None,
+                    CultureInfo.InvariantCulture, out var baseRoleId) ||
+                baseRoleId <= 0 ||
+                !string.Equals(signedRoles[0].Value,
+                    baseRoleId.ToString(CultureInfo.InvariantCulture),
+                    StringComparison.Ordinal))
+                return null;
+
+            async Task<bool> BaseSessionCurrentAsync()
+            {
+                if (!current.EstaAutenticado || current.UsuarioId != actorId)
+                    return false;
+                var valid = await memberships.SesionBaseVigenteAsync(
+                    actorId, baseRoleId, cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
+                return valid && current.EstaAutenticado && current.UsuarioId == actorId;
+            }
+
+            if (!await BaseSessionCurrentAsync())
+                return null;
+
             async Task<UsuarioTenantScopeActual?> CurrentScopeAsync() =>
                 await memberships.ObtenerActualAsync(tenantId, cancellationToken);
 
@@ -134,6 +159,11 @@ public sealed class C0301LoginVerifiedActorSource(
                 !await CurrentBranchAndGrantAsync(fresh.RolId))
                 return null;
             cancellationToken.ThrowIfCancellationRequested();
+
+            // A base role or account may have been revoked during the branch
+            // and grant reads. The effective tenant role cannot replace it.
+            if (!await BaseSessionCurrentAsync())
+                return null;
 
             // Read-only proof; not JWT issuance, tenant selection, or platform access.
             return new C0301VerifiedLoginSelection(actorId, tenantId, branchId,

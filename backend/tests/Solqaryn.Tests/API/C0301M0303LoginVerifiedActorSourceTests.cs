@@ -32,14 +32,18 @@ public sealed class C0301M0303LoginVerifiedActorSourceTests
     private static string Token(int actor = Actor, bool validSignature = true) =>
         TokenWithRawId(actor.ToString(), validSignature);
 
-    private static string TokenWithRawId(string rawId, bool validSignature = true)
+    private static string TokenWithRawId(string rawId, bool validSignature = true,
+        string? rawRole = "23")
     {
         var key = validSignature ? Key :
             new SymmetricSecurityKey(Encoding.UTF8.GetBytes(
                 "invalid-login-jwt-test-signature-key-2026!"));
+        var claims = new List<Claim> { new("id", rawId) };
+        if (rawRole is not null)
+            claims.Add(new Claim("rolId", rawRole));
         var jwt = new JwtSecurityToken(
             issuer: "solqaryn-login-tests", audience: "solqaryn-login-tests",
-            claims: [new Claim("id", rawId)],
+            claims: claims,
             notBefore: DateTime.UtcNow.AddMinutes(-1),
             expires: DateTime.UtcNow.AddMinutes(10),
             signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
@@ -51,7 +55,7 @@ public sealed class C0301M0303LoginVerifiedActorSourceTests
         bool grant = true, int scopeTenant = Tenant, int scopeRole = Role,
         int? roleTenant = Tenant, int branchTenant = Tenant,
         string? token = null, bool branchActive = true,
-        bool roleIsSystem = false)
+        bool roleIsSystem = false, bool revokeBaseDuringRead = false)
     {
         var services = new ServiceCollection();
         services.AddLogging();
@@ -80,6 +84,12 @@ public sealed class C0301M0303LoginVerifiedActorSourceTests
         current.SetupGet(x => x.EstaAutenticado).Returns(true);
         current.SetupGet(x => x.UsuarioId).Returns(Actor);
         var membership = new Mock<IUsuarioScopeService>();
+        var baseReads = 0;
+        membership.Setup(x => x.SesionBaseVigenteAsync(
+            It.IsAny<int>(), It.IsAny<int>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync((int actor, int role, CancellationToken _) =>
+                actor == Actor && role == Role &&
+                (!revokeBaseDuringRead || ++baseReads == 1));
         membership.Setup(x => x.ObtenerActualAsync(
             It.IsAny<int>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((int tenant, CancellationToken _) =>
@@ -186,6 +196,25 @@ public sealed class C0301M0303LoginVerifiedActorSourceTests
         // A cryptographically valid JWT with an alias of actor 91 must not
         // bypass the canonical identity rule already enforced by /auth/renovar.
         await using var f = await SetupAsync(token: TokenWithRawId(rawId));
+        Assert.Null(await f.Reader.ReadCurrentAsync(CancellationToken.None));
+    }
+
+    [Theory]
+    [InlineData(null)]
+    [InlineData("023")]
+    [InlineData("0")]
+    [InlineData("99")]
+    public async Task MissingNonCanonicalOrWrongSignedBaseRoleCannotResolveBranch(string? rawRole)
+    {
+        await using var f = await SetupAsync(token: TokenWithRawId(
+            Actor.ToString(), rawRole: rawRole));
+        Assert.Null(await f.Reader.ReadCurrentAsync(CancellationToken.None));
+    }
+
+    [Fact]
+    public async Task BaseRoleRevokedDuringReadCannotReturnVerifiedSelection()
+    {
+        await using var f = await SetupAsync(revokeBaseDuringRead: true);
         Assert.Null(await f.Reader.ReadCurrentAsync(CancellationToken.None));
     }
 
