@@ -690,6 +690,16 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                              EsRutaExacta(http.Request.Path, "/tallas/activos") ||
                              EsRutaDetallePositiva(http.Request.Path, "/tallas")))
             modulo = ModuloSistema.Tallas;
+        // Existing physical tenant-owned brand/model masters; GET only.
+        // The shadow owner and composite FK are already enforced by Oracle EF/MySQL.
+        else if (lectura && (EsRutaExacta(http.Request.Path, "/marcas") ||
+                             EsRutaExacta(http.Request.Path, "/marcas/activas") ||
+                             EsRutaDetallePositiva(http.Request.Path, "/marcas")))
+            modulo = ModuloSistema.Marcas;
+        else if (lectura && (EsRutaExacta(http.Request.Path, "/modelos") ||
+                             EsRutaExacta(http.Request.Path, "/modelos/activos") ||
+                             EsRutaDetallePositiva(http.Request.Path, "/modelos")))
+            modulo = ModuloSistema.Modelos;
         // V30: only tax GETs through the existing opt-in pilot; verified tenant,
         // SQL-backed Impuestos.Ver and tenant-scoped Oracle EF. No fiscal writes.
         else if (lectura && (EsRutaExacta(http.Request.Path, "/impuestos") ||

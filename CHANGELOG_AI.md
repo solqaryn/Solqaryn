@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV01 C07-01.M06.06: lectura privada de marcas y modelos con ownership real
+- Se incorpora solamente GET exacto de marcas/modelos al piloto existente desactivado por defecto, con autorización Marcas.Ver/Modelos.Ver y tenant verificado; no se habilitan escrituras ni se cambia el esquema.
+- La evidencia del modelo EF y migraciones demuestra EmpresaId shadow en ambos maestros y FK compuesta Modelo->Marca. Se corrige la hipótesis anterior de falta de ownership por ausencia de propiedad CLR.
+- Se amplía la integración real HTTP JWT/MySQL con maestros A/B, owner físico, padre propio/ajeno, lectura por ID, spoofing, revocación RBAC y piloto apagado. CI exact SHA pendiente; no se certifica A0-A5 ni LISTO. D06 servicio sin stock sigue pendiente; no agregar enum aislado que permita deducciones o reversión de stock incorrectas. Sin QA/main/PROD.
+
 ## 2026-11-24 — DEV05 C01-03.M04.01: evidencia nativa del tenant B
 - Brecha causal: el tenant A ya tiene evidencia nativa; B sólo tenía captura responsive y pinch. Se añade únicamente login real B aislado, permiso Configuracion:Ver, GET real, reflow a 100/200, Tab, recarga por teclado y tres PNG X11 mediante el harness existente.
 - Sin cambios en runtime, RBAC, DTO, persistencia o dependencias; mismo workflow JWT/MySQL aislado, sin relajar aserciones de M04.02. A1–A4 pendientes del SHA publicado; captura histórica ANTES y A5 independiente no acreditadas. Rollback: revert del changeset.

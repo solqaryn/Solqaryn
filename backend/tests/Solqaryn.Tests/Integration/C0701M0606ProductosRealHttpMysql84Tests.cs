@@ -1709,6 +1709,125 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 Assert.Equal(HttpStatusCode.ServiceUnavailable, offTalla.StatusCode);
             pilotConfig["MultiEmpresa:PrivateReadPilotEnabled"] = "true";
 
+            // V34: verify both remaining normalized attribute masters using real HTTP.
+            var v34AttributeGrantsA = new List<RolPermiso>();
+            foreach (var v34Module in new[] { ModuloSistema.Marcas, ModuloSistema.Modelos })
+            {
+                var v34Permission = await db.Permisos.IgnoreQueryFilters()
+                    .FirstOrDefaultAsync(p => p.Modulo == v34Module &&
+                        p.Accion == AccionPermiso.Ver &&
+                        p.Ambito == AmbitoAutorizacion.Empresa && p.Activo && !p.Eliminado);
+                if (v34Permission is null)
+                {
+                    v34Permission = new Permiso
+                    {
+                        Codigo = $"C0701M0606.{v34Module}.VER",
+                        Nombre = $"C0701 isolated {v34Module} read permission",
+                        Modulo = v34Module, Accion = AccionPermiso.Ver,
+                        Ambito = AmbitoAutorizacion.Empresa, Activo = true
+                    };
+                    db.Permisos.Add(v34Permission);
+                    await db.SaveChangesAsync();
+                }
+                var v34Grant = new RolPermiso { RolId = roleA.Id, PermisoId = v34Permission.Id };
+                v34AttributeGrantsA.Add(v34Grant);
+                db.RolPermisos.AddRange(v34Grant,
+                    new RolPermiso { RolId = roleB.Id, PermisoId = v34Permission.Id });
+                await db.SaveChangesAsync();
+            }
+
+            async Task<(int BrandId, int ModelId)> SeedOwnedBrandModelV34Async(int tenantId, string suffix)
+            {
+                var context = new DefaultHttpContext();
+                context.Items[Solqaryn.Application.Security.VerifiedCommercialTenant
+                    .AuthorizedEmpresaIdItemKey] = tenantId;
+                await using var owned = new AppDbContext(options,
+                    tenantHttpContextAccessor: new HttpContextAccessor { HttpContext = context });
+                var brand = new Marca { Nombre = "C0701BrandOwner" + suffix, Activo = true, Orden = 1 };
+                owned.Marcas.Add(brand);
+                await owned.SaveChangesAsync();
+                var model = new Modelo
+                {
+                    Nombre = "C0701ModelOwner" + suffix, MarcaId = brand.Id, Activo = true, Orden = 1
+                };
+                owned.Modelos.Add(model);
+                await owned.SaveChangesAsync();
+                return (brand.Id, model.Id);
+            }
+            var v34OwnedA = await SeedOwnedBrandModelV34Async(a.Id, "A");
+            var v34OwnedB = await SeedOwnedBrandModelV34Async(b.Id, "B");
+            await using (var v34Physical = new AppDbContext(options))
+            {
+                foreach (var (v34Tenant, v34Ids) in new[] { (a.Id, v34OwnedA), (b.Id, v34OwnedB) })
+                {
+                    var brandOwner = await v34Physical.Marcas.IgnoreQueryFilters().AsNoTracking()
+                        .Where(x => x.Id == v34Ids.BrandId)
+                        .Select(x => EF.Property<int?>(x, "EmpresaId")).SingleAsync();
+                    Assert.Equal(v34Tenant, brandOwner);
+                    var modelOwner = await v34Physical.Modelos.IgnoreQueryFilters().AsNoTracking()
+                        .Where(x => x.Id == v34Ids.ModelId)
+                        .Select(x => new { x.MarcaId, EmpresaId = EF.Property<int?>(x, "EmpresaId") })
+                        .SingleAsync();
+                    Assert.Equal(v34Tenant, modelOwner.EmpresaId);
+                    Assert.Equal(v34Ids.BrandId, modelOwner.MarcaId);
+                }
+            }
+            foreach (var (v34Jwt, v34Tenant, v34Own, v34Other, v34Suffix, v34OtherSuffix) in new[]
+            {
+                (jwtA, a.Id, v34OwnedA, v34OwnedB, "A", "B"),
+                (jwtB, b.Id, v34OwnedB, v34OwnedA, "B", "A")
+            })
+            {
+                foreach (var (v34Path, v34Prefix) in new[]
+                {
+                    ("/marcas", "C0701BrandOwner"),
+                    ("/marcas/activas", "C0701BrandOwner"),
+                    ($"/marcas/{v34Own.BrandId}", "C0701BrandOwner"),
+                    ("/modelos", "C0701ModelOwner"),
+                    ($"/modelos/activos?marcaId={v34Own.BrandId}", "C0701ModelOwner"),
+                    ($"/modelos/{v34Own.ModelId}", "C0701ModelOwner")
+                })
+                {
+                    using var response = await CategoryRequestAsync(v34Jwt, v34Tenant, v34Path);
+                    Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+                    var body = await response.Content.ReadAsStringAsync();
+                    Assert.Contains(v34Prefix + v34Suffix, body, StringComparison.Ordinal);
+                    Assert.DoesNotContain(v34Prefix + v34OtherSuffix, body, StringComparison.Ordinal);
+                }
+                foreach (var v34ForeignPath in new[]
+                    { $"/marcas/{v34Other.BrandId}", $"/modelos/{v34Other.ModelId}" })
+                {
+                    using var response = await CategoryRequestAsync(v34Jwt, v34Tenant, v34ForeignPath);
+                    Assert.Equal(HttpStatusCode.NotFound, response.StatusCode);
+                }
+                using var foreignParent = await CategoryRequestAsync(v34Jwt, v34Tenant,
+                    $"/modelos/activos?marcaId={v34Other.BrandId}");
+                Assert.Equal(HttpStatusCode.OK, foreignParent.StatusCode);
+                var foreignParentBody = await foreignParent.Content.ReadAsStringAsync();
+                Assert.DoesNotContain("C0701ModelOwner", foreignParentBody, StringComparison.Ordinal);
+            }
+            foreach (var v34Path in new[] { "/marcas", "/modelos" })
+            {
+                using var spoof = await CategoryRequestAsync(jwtA, b.Id, v34Path);
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, spoof.StatusCode);
+            }
+            db.RolPermisos.RemoveRange(v34AttributeGrantsA);
+            await db.SaveChangesAsync();
+            foreach (var v34Path in new[] { "/marcas", "/modelos" })
+            {
+                using var denied = await CategoryRequestAsync(jwtA, a.Id, v34Path);
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, denied.StatusCode);
+                using var stillB = await CategoryRequestAsync(jwtB, b.Id, v34Path);
+                Assert.Equal(HttpStatusCode.OK, stillB.StatusCode);
+            }
+            pilotConfig["MultiEmpresa:PrivateReadPilotEnabled"] = "false";
+            foreach (var v34Path in new[] { "/marcas", "/modelos" })
+            {
+                using var off = await CategoryRequestAsync(jwtB, b.Id, v34Path);
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, off.StatusCode);
+            }
+            pilotConfig["MultiEmpresa:PrivateReadPilotEnabled"] = "true";
+
             // V30: real ImpuestosController -> service -> MySQL ownership A/B.
             await using (var taxPhysical = new AppDbContext(options))
             {
