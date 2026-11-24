@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV05 C03-01.M03.03: consumidor real de sucursal A/B y revocación en navegador
+
+- Incorpora recorrido dirigido de perfil Angular con login UI real, listado, emisión y lectura contextual por JWT, tenant A/B, rechazo HTTP real de sucursal ajena y revocación física en MySQL 8.4 efímero; comprueba que el JWT contextual no se persiste ni reemplaza la sesión base.
+- Reutiliza el runner P4 y permisos reales existentes; únicamente fixtures sintéticos de sucursal, sin cambiar API, RBAC, runtime, esquema ni QA/main/PROD. Evidencia de capturas y métricas sin tokens, CI exact-SHA pendiente y A5 independiente; rollback por revert normal.
+
 ## 2026-11-24 — DEV03 C03-01.M03.03: alinear fixtures JWT globales con autorización fail-closed
 
 - Corrige la preparación de la identidad sintética P4: rol base de plataforma de sistema sin privilegio administrativo y grant global relacional separado; mantiene caso negativo de rol base empresarial sin membresía, aun con grant global activo.

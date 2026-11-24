@@ -5,6 +5,11 @@ on:
     branches: [dev]
     paths:
       - .github/workflows/p4-ab-real-auth-ephemeral.yml
+      - frontend/e2e/c03-01-m03-03-real-branch-consumer.mjs
+      - frontend/src/app/features/perfil/perfil.component.ts
+      - frontend/src/app/features/perfil/perfil.component.html
+      - frontend/src/app/core/auth/tenant-context.service.ts
+      - frontend/src/app/core/interceptors/auth.interceptor.ts
       - scripts/ci/p4-ab-real-auth.mjs
       - scripts/ci/c02-04-m05-03-real-persistence-provider.mjs
       - backend/src/API/Middleware/UnscopedCommercialTenantGuardMiddleware.cs
@@ -25,6 +30,11 @@ on:
     branches: [dev]
     paths:
       - .github/workflows/p4-ab-real-auth-ephemeral.yml
+      - frontend/e2e/c03-01-m03-03-real-branch-consumer.mjs
+      - frontend/src/app/features/perfil/perfil.component.ts
+      - frontend/src/app/features/perfil/perfil.component.html
+      - frontend/src/app/core/auth/tenant-context.service.ts
+      - frontend/src/app/core/interceptors/auth.interceptor.ts
       - 'frontend/e2e/c02-04-m05-05-security.spec.ts'
       - scripts/ci/p4-ab-real-auth.mjs
       - backend/src/API/Middleware/UnscopedCommercialTenantGuardMiddleware.cs
@@ -66,6 +76,8 @@ jobs:
       SeedAdmin__Password: 'P4.Admin#2026!'
       P4_TEST_PASSWORD: 'P4.Admin#2026!'
       P4_API_URL: 'http://127.0.0.1:5005'
+      Cors__AllowedOrigins__0: 'http://127.0.0.1:4200'
+      Cors__AllowedOrigins__1: 'http://localhost:4200'
       P4_COMPANY_A_ID: '1'
       P4_COMPANY_B_ID: '2'
       P4_COMPANY_C_ID: '3'
@@ -263,6 +275,63 @@ jobs:
           ab_count="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci -Nse "SELECT COUNT(DISTINCT m.EmpresaId) FROM UsuarioEmpresas m JOIN Usuarios u ON u.Id=m.UsuarioId WHERE m.Activa=TRUE AND ((u.NombreUsuario='p4_admin_a' AND m.EmpresaId=1) OR (u.NombreUsuario='p4_admin_b' AND m.EmpresaId=2));")"
           test "$ab_count" = '2'
           echo "C0204_M0503_REAL_MYSQL_84_AB_PASS"
+
+      - name: Node dependencies and real Chromium for C03-01 branch consumer
+        working-directory: frontend
+        run: |
+          set -euo pipefail
+          node --check e2e/c03-01-m03-03-real-branch-consumer.mjs
+          npm install --global npm@11.19.0
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: C03-01.M03.03 - Angular real A/B branch consumer and live revocation
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          mysql_container="$(docker ps --filter 'ancestor=mysql:8.4' --format '{{.ID}}' | head -n 1)"
+          test -n "$mysql_container"
+          # Isolated fixture: require existing real role/permission grants, do not
+          # grant platform access or change the product's authorization rules.
+          grants="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci -Nse "
+            SELECT COUNT(DISTINCT u.Id) FROM Usuarios u
+              JOIN UsuarioEmpresas m ON m.UsuarioId=u.Id AND m.Activa=1
+              JOIN RolPermisos g ON g.RolId=m.RolId JOIN Permisos p ON p.Id=g.PermisoId
+             WHERE ((u.NombreUsuario='p4_admin_a' AND m.EmpresaId=1) OR
+                    (u.NombreUsuario='p4_admin_b' AND m.EmpresaId=2))
+               AND p.Modulo=28 AND p.Accion=1 AND p.Ambito=1 AND p.Activo=1 AND p.Eliminado=0;")"
+          test "$grants" = '2'
+          existing="$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci -Nse "SELECT COUNT(*) FROM Sucursales WHERE Codigo IN ('P4-C0301-BROWSER-A','P4-C0301-BROWSER-B');")"
+          test "$existing" = '0'
+          docker exec -i "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci <<'SQL'
+          INSERT INTO Sucursales (EmpresaId,Codigo,Nombre,ZonaHoraria,Activa,Eliminado,FechaCreacion,FechaActualizacion)
+          VALUES (1,'P4-C0301-BROWSER-A','Sucursal A navegador CI','America/Tegucigalpa',1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)),
+                 (2,'P4-C0301-BROWSER-B','Sucursal B navegador CI','America/Tegucigalpa',1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
+          SQL
+          cleanup() {
+            docker exec "$mysql_container" mysql -uroot -proot solqaryn_p4_http_ab_ci -e "
+              DELETE FROM Sucursales WHERE (EmpresaId=1 AND Codigo='P4-C0301-BROWSER-A') OR (EmpresaId=2 AND Codigo='P4-C0301-BROWSER-B');"
+          }
+          trap cleanup EXIT
+          PORT=4200 nohup npm start -- --host 127.0.0.1 --port 4200 > c0301-branch-angular.log 2>&1 &
+          ready=0
+          for attempt in $(seq 1 90); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then
+              ready=1
+              break
+            fi
+            sleep 2
+          done
+          test "$ready" = '1'
+          C0301_MYSQL_CONTAINER="$mysql_container" node e2e/c03-01-m03-03-real-branch-consumer.mjs
+      - name: Preserve C03-01 browser evidence without JWT or trace
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c0301-real-branch-browser
+          path: frontend/c0301-branch-browser-evidence/
+          if-no-files-found: warn
+          retention-days: 14
 
       - name: Revocacion inmediata de membresia global JWT
         shell: bash
