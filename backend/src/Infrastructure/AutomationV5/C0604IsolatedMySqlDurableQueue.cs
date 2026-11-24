@@ -78,10 +78,11 @@ public sealed class C0604IsolatedMySqlDurableQueue
         await using var connection = _factory();
         await connection.OpenAsync(cancellationToken);
         await using var transaction = await connection.BeginTransactionAsync(cancellationToken);
-        // An expired last attempt with no ACK must not remain LEASED forever.
-        // This tenant-scoped transition is durable and never retries provider delivery.
+        // A reduced retry limit can exhaust already-PENDING work as well as
+        // expired leases. Neither may remain stranded outside the lease selector.
+        // Preserve unexpired leases and every other tenant's work.
         await using (var exhausted = Command(connection, transaction,
-            $"UPDATE {Table} SET state='DEAD', leased_by=NULL, lease_until_utc=NULL WHERE tenant_id=@tenant AND state='LEASED' AND attempts>=@max AND lease_until_utc<=@now",
+            $"UPDATE {Table} SET state='DEAD', leased_by=NULL, lease_until_utc=NULL WHERE tenant_id=@tenant AND attempts>=@max AND (state='PENDING' OR (state='LEASED' AND lease_until_utc<=@now))",
             ("@tenant", trustedTenantId), ("@max", maxAttempts), ("@now", nowUtc)))
         {
             await exhausted.ExecuteNonQueryAsync(cancellationToken);

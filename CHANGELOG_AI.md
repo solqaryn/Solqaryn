@@ -1,3 +1,9 @@
+## 2026-11-24 — DEV03 C06-04.M03.05: agotamiento durable de reintentos
+
+- La cola MySQL aislada lleva PENDING agotados a DEAD cuando se reduce el límite, dentro de la transacción del tenant; no altera leases vigentes ni otros tenants.
+- Regresión causal MySQL 8.4: NACK, reducción y elevación del límite, aislamiento y ACK del lease vigente. No se relajan permisos, no se habilitan proveedores ni se declara CI PASS antes de su resultado exacto.
+- Se preserva íntegro el historial. D990 permanece VALIDANDO hasta integración real y A5 independiente.
+
 ## 2026-11-24 — DEV02 C15-04.M05.04: selector de fuente compartido
 
 - Extrae el panel de vista previa de detalle y carrito a un componente standalone con inputs/output tipados; conserva textos, estados aria-pressed, límites de desarrollo, selección y puntos de corte de cada consumidor. La autoridad de fuente y los servicios permanecen en sus componentes originales.

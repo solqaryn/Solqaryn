@@ -126,6 +126,27 @@ public sealed class C0604DurableMySqlQueueIntegrationTests
             Assert.True(await queue.SettleAsync(17, secondLease!.Id, "worker_shared",
                 secondLease.Attempt, now.AddMinutes(2), true, 2));
 
+            // Retry policy reduction: pending work at the new limit must reach
+            // DEAD, not disappear from the lease selector forever. Keep other
+            // tenants and an unexpired lease untouched.
+            foreach (var tenant in new[] { 18, 19 })
+            {
+                Assert.Equal(Queue.Reservation.Stored,
+                    await queue.ReserveAsync(tenant, "customer_retry", "customer-preference-sync", "request_retry", 1));
+                var attempted = await queue.TryLeaseAsync(tenant, "worker_retry", now, 1, 2);
+                Assert.NotNull(attempted);
+                Assert.True(await queue.SettleAsync(tenant, attempted!.Id, "worker_retry",
+                    attempted.Attempt, now, false, 2));
+            }
+            Assert.Null(await queue.TryLeaseAsync(18, "worker_reduced", now.AddSeconds(1), 1, 1));
+            Assert.Null(await queue.TryLeaseAsync(18, "worker_raised", now.AddSeconds(2), 1, 2));
+
+            Assert.Equal(Queue.Reservation.Stored,
+                await queue.ReserveAsync(20, "customer_active", "customer-preference-sync", "request_active", 1));
+            var active = await queue.TryLeaseAsync(20, "worker_active", now, 1, 2);
+            Assert.NotNull(active);
+            Assert.Null(await queue.TryLeaseAsync(20, "worker_reduced", now.AddSeconds(1), 1, 1));
+
             var snapshot = new List<(int Tenant, string State, int Attempts)>();
             await using (var inspect = admin.CreateCommand())
             {
@@ -139,7 +160,12 @@ public sealed class C0604DurableMySqlQueueIntegrationTests
             Assert.Contains(snapshot, x => x == (14, "DONE", 2));
             Assert.Contains(snapshot, x => x == (15, "DEAD", 1));
             Assert.Contains(snapshot, x => x == (17, "DONE", 2));
-            Assert.Equal(5, snapshot.Count);
+            Assert.Contains(snapshot, x => x == (18, "DEAD", 1));
+            Assert.Contains(snapshot, x => x == (19, "PENDING", 1));
+            Assert.Contains(snapshot, x => x == (20, "LEASED", 1));
+            Assert.Equal(8, snapshot.Count);
+            Assert.True(await queue.SettleAsync(20, active!.Id, "worker_active", active.Attempt,
+                now.AddSeconds(2), true, 1));
         }
         finally
         {
