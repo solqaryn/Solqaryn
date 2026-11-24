@@ -622,3 +622,11 @@ El pie nativo compartido por detalle y carrito, incorporado en `cc9bb0da6c6c12a6
 - `frontend/src/app/features/storefront/storefront-footer.component.ts`
 
 El job 138748799332 detectó correctamente la ausencia del archivo. Esta corrección sólo mantiene el inventario estático y sus negativos; no certifica UX, JWT, RBAC, MySQL ni A5.
+
+## Actualización del inventario — 2026-11-24, C15-04.M05.04
+
+El selector de fuente de vista previa compartido por detalle y carrito añade un archivo Angular, no una pantalla ni una ruta. El inventario vigente es **173 archivos (165 features, 8 shared)**; se conserva la comparación estricta y los negativos existentes.
+
+- `frontend/src/app/features/storefront/storefront-preview-source.component.ts`
+
+El catálogo estático no acredita UX, integración real ni A5.

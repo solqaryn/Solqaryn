@@ -485,4 +485,40 @@ test.describe('Storefront Fase 4 — detalle público de producto', () => {
       }
     }
   });
+
+  test('selector de fuente compartido conserva etiqueta, selección y reflujo en detalle y carrito', async ({ page }) => {
+    await prepararEmpresa(page);
+    const principal = productoReal(171, 'Producto Selector', { slug: 'demo-producto-1' });
+    await mockFuenteReal(page, principal);
+    for (const [url, clase, titulo, breakpoint] of [
+      ['/tienda/producto/demo-producto-1', 'product-preview', 'Vista previa de detalle', 761],
+      ['/tienda/carrito', 'cart-preview', 'Vista previa del carrito', 681]
+    ] as const) {
+      await page.goto(url);
+      const panel = page.getByRole('region', { name: 'Opciones de vista previa' });
+      await expect(panel).toHaveCount(1);
+      await expect(panel).toHaveClass(new RegExp(clase));
+      await expect(panel).toContainText(titulo);
+      const grupo = panel.getByRole('group', { name: 'Origen de datos' });
+      const demo = grupo.getByRole('button', { name: 'Datos de ejemplo' });
+      const bd = grupo.getByRole('button', { name: 'Base de datos' });
+      await expect(demo).toHaveAttribute('aria-pressed', 'true');
+      await expect(bd).toHaveAttribute('aria-pressed', 'false');
+      for (const width of [320, 390, breakpoint - 1, breakpoint, 1280, 1440]) {
+        await page.setViewportSize({ width, height: 844 });
+        await expect(panel).toBeVisible();
+        await expect(panel).toHaveCSS('flex-direction', width < breakpoint ? 'column' : 'row');
+        expect(await panel.evaluate(el => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1);
+        for (const boton of [demo, bd]) {
+          expect(await boton.evaluate(el => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+        }
+      }
+      await bd.click();
+      await expect(bd).toHaveAttribute('aria-pressed', 'true');
+      await expect(demo).toHaveAttribute('aria-pressed', 'false');
+      await demo.click();
+      await expect(demo).toHaveAttribute('aria-pressed', 'true');
+      await expect(bd).toHaveAttribute('aria-pressed', 'false');
+    }
+  });
 });

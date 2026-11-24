@@ -14,16 +14,9 @@
     (carritoSolicitado)="abrirCarrito()" />
 
   @if (controlesVistaPrevia) {
-    <section class="container preview-panel" aria-label="Opciones de vista previa">
-      <div class="preview-copy">
-        <app-store-icon nombre="sol" />
-        <span><strong>Vista previa de detalle</strong><small>La fuente real y los fixtures permanecen separados.</small></span>
-      </div>
-      <div class="segmented" role="group" aria-label="Origen de datos">
-        <button type="button" [class.active]="!utilizarDatosBaseDatos()" [attr.aria-pressed]="!utilizarDatosBaseDatos()" (click)="cambiarFuente(false)">Datos de ejemplo</button>
-        <button type="button" [class.active]="utilizarDatosBaseDatos()" [attr.aria-pressed]="utilizarDatosBaseDatos()" (click)="cambiarFuente(true)">Base de datos</button>
-      </div>
-    </section>
+    <section appStorefrontPreviewSource class="container preview-panel product-preview" aria-label="Opciones de vista previa"
+      titulo="Vista previa de detalle" descripcion="La fuente real y los fixtures permanecen separados."
+      [baseDatos]="utilizarDatosBaseDatos()" (fuenteSeleccionada)="cambiarFuente($event)"></section>
   }
 
   @if (!utilizarDatosBaseDatos()) {

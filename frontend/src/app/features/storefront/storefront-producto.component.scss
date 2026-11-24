@@ -12,9 +12,7 @@ button:focus-visible,a:focus-visible,input:focus-visible,select:focus-visible{ou
 .main-image-button:focus-visible,.thumbnail:focus-visible{outline-offset:-4px!important}
 h1,h2,h3,p{margin:0}h1,h2,h3{color:var(--color-heading)}
 
-.preview-panel{margin-top:20px;padding:13px 16px;display:flex;align-items:stretch;flex-direction:column;gap:14px;border:1px dashed color-mix(in srgb,var(--color-primary) 45%,var(--store-line));border-radius:var(--radius);background:var(--color-surface)}
-.preview-copy{margin:0;display:flex;align-items:center;gap:10px}
-.segmented{width:100%;display:flex;gap:3px;padding:3px;border-radius:calc(var(--radius)*.7);background:var(--color-bg)}.segmented button{min-height:44px;flex:1;padding:8px 12px;border:0;border-radius:calc(var(--radius)*.55);background:transparent;font-size:.69rem}.segmented .active{background:var(--color-button);color:var(--color-on-primary)}
+
 
 .product-page{min-height:62vh;padding:16px 0 calc(var(--store-buy-bar-height,180px) + 24px + env(safe-area-inset-bottom))}.detail-trail{margin-bottom:10px;display:flex;align-items:flex-start;gap:10px}.back-button{width:44px;height:44px;flex:0 0 44px;display:grid;place-items:center;border:1px solid var(--store-line);border-radius:50%;background:var(--color-surface);color:var(--color-heading);box-shadow:var(--shadow-card)}.back-button:hover{border-color:color-mix(in srgb,var(--color-primary) 48%,var(--store-line));color:var(--color-primary);background:var(--store-soft)}.back-button app-store-icon{font-size:1.15rem}.breadcrumbs{min-height:44px;flex:1;display:flex;align-items:center;flex-wrap:wrap;gap:8px;color:var(--color-text-muted);font-size:.69rem}.breadcrumbs a{min-height:44px;display:inline-flex;align-items:center}.breadcrumbs a:hover{color:var(--color-primary);text-decoration:underline}.breadcrumbs a,.breadcrumbs span{min-width:0;max-width:100%;overflow-wrap:anywhere}
 .product-layout,.loading-layout{display:grid;grid-template-columns:1fr;gap:24px;align-items:start}
@@ -70,9 +68,6 @@ h1,h2,h3,p{margin:0}h1,h2,h3{color:var(--color-heading)}
 
 @media (min-width: 761px) {
   .container{width:min(100% - 40px,1240px)}
-  .preview-panel{align-items:center;flex-direction:row}
-  .preview-copy{margin-right:auto}
-  .segmented{width:auto}.segmented button{flex:0 1 auto}
   .product-page{padding:26px 0 80px}
   .detail-trail{margin-bottom:19px}
   .gallery-stage,.main-image-button{min-height:420px;height:420px}

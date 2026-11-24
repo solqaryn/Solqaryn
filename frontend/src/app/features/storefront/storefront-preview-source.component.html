@@ -1,0 +1,8 @@
+<div class="preview-copy">
+  <app-store-icon nombre="sol" />
+  <span><strong>{{ titulo() }}</strong><small>{{ descripcion() }}</small></span>
+</div>
+<div class="segmented" role="group" aria-label="Origen de datos">
+  <button type="button" [class.active]="!baseDatos()" [attr.aria-pressed]="!baseDatos()" (click)="fuenteSeleccionada.emit(false)">Datos de ejemplo</button>
+  <button type="button" [class.active]="baseDatos()" [attr.aria-pressed]="baseDatos()" (click)="fuenteSeleccionada.emit(true)">Base de datos</button>
+</div>

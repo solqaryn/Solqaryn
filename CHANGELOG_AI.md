@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV02 C15-04.M05.04: selector de fuente compartido
+
+- Extrae el panel de vista previa de detalle y carrito a un componente standalone con inputs/output tipados; conserva textos, estados aria-pressed, límites de desarrollo, selección y puntos de corte de cada consumidor. La autoridad de fuente y los servicios permanecen en sus componentes originales.
+- Regresión Playwright Fase 4 para ambos consumidores con reflujo 320–1440 px, objetivos táctiles y cambio de fuente; fixtures explícitos de UI, no prueba JWT/MySQL. Inventario P0-007.A actualizado a 173 archivos sin relajar comparación. SKREF-03/05/10: extracción localizada, tokens existentes y accesibilidad; sin nuevas dependencias. Pendientes build exact-SHA, medición del presupuesto CSS, cobertura UX global y A5 independiente.
+
 ## 2026-11-24 — DEV01 C07-01.M06.06: coherencia de clasificación en cotizaciones ERP
 
 - D06 R2: las altas y ediciones de cotización rechazan insumos administrativos y valores de clasificación no comerciales antes de consultar la variante o persistir el documento; se conserva precio autorizado, autorización y transacción.
