@@ -100,6 +100,77 @@ public class ProductoServiceTests
         await Assert.ThrowsAsync<BusinessRuleException>(() => _service.UpdateAsync(1, dto));
     }
 
+    [Theory]
+    [InlineData("maximo", "máximo")]
+    [InlineData("archivo", "Solo se permiten")]
+    [InlineData("principal-eliminada", "galería general")]
+    [InlineData("principal-variante", "galería general")]
+    [InlineData("principal-cero", "galería general")]
+    public async Task UpdateAsync_GaleriaInvalida_NoModificaNiInvocaStorage(
+        string caso, string mensaje)
+    {
+        var producto = new Producto { Id = 1, Nombre = "Original", EmpresaId = 23 };
+        for (var i = 1; i <= 5; i++)
+            producto.Imagenes.Add(new ProductoImagen
+            {
+                Id = i, Url = $"url{i}", PublicId = $"pid{i}", Orden = i, EsPrincipal = i == 1
+            });
+        producto.Imagenes.Add(new ProductoImagen
+        {
+            Id = 6, ProductoVarianteId = 77, Url = "variante", PublicId = "variante"
+        });
+        _productoRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(producto);
+        var dto = new UpdateProductoDto
+        {
+            Nombre = "No persistir",
+            ImagenesAEliminarIds = new List<int> { 1 }
+        };
+        if (caso == "maximo")
+            dto.ImagenesNuevas = new List<IFormFile>
+            {
+                Mock.Of<IFormFile>(f => f.Length == 100 && f.ContentType == "image/jpeg" && f.FileName == "a.jpg"),
+                Mock.Of<IFormFile>(f => f.Length == 100 && f.ContentType == "image/jpeg" && f.FileName == "b.jpg")
+            };
+        if (caso == "archivo")
+            dto.ImagenesNuevas = new List<IFormFile>
+            {
+                Mock.Of<IFormFile>(f => f.Length == 100 && f.ContentType == "application/pdf" && f.FileName == "a.pdf")
+            };
+        if (caso == "principal-eliminada") dto.ImagenPrincipalId = 1;
+        if (caso == "principal-variante") dto.ImagenPrincipalId = 6;
+        if (caso == "principal-cero") dto.ImagenPrincipalId = 0;
+
+        var error = await Assert.ThrowsAsync<BusinessRuleException>(() => _service.UpdateAsync(1, dto));
+        Assert.Contains(mensaje, error.Message);
+        Assert.Equal("Original", producto.Nombre);
+        Assert.Equal(6, producto.Imagenes.Count);
+        Assert.True(producto.Imagenes.Single(i => i.Id == 1).EsPrincipal);
+        Assert.Equal(77, producto.Imagenes.Single(i => i.Id == 6).ProductoVarianteId);
+        Assert.Empty(_imageStorageMock.Invocations);
+        Assert.Empty(_auditoriaMock.Invocations);
+        _productoRepoMock.Verify(r => r.SaveChangesAsync(), Times.Never);
+    }
+
+    [Fact]
+    public async Task UpdateAsync_GaleriaValida_SinCambioDeArchivos_PersistePrincipal()
+    {
+        var producto = new Producto { Id = 1, Nombre = "Original" };
+        producto.Imagenes.Add(new ProductoImagen { Id = 1, EsPrincipal = true });
+        producto.Imagenes.Add(new ProductoImagen { Id = 2 });
+        _productoRepoMock.Setup(r => r.GetByIdAsync(1)).ReturnsAsync(producto);
+        _productoRepoMock.Setup(r => r.SaveChangesAsync()).ReturnsAsync(true);
+
+        var resultado = await _service.UpdateAsync(1,
+            new UpdateProductoDto { Nombre = "Actualizado", ImagenPrincipalId = 2 });
+
+        Assert.NotNull(resultado);
+        Assert.Equal("Actualizado", producto.Nombre);
+        Assert.False(producto.Imagenes.Single(i => i.Id == 1).EsPrincipal);
+        Assert.True(producto.Imagenes.Single(i => i.Id == 2).EsPrincipal);
+        Assert.Empty(_imageStorageMock.Invocations);
+        _productoRepoMock.Verify(r => r.SaveChangesAsync(), Times.Once);
+    }
+
     [Fact]
     public async Task DeleteAsync_Marca_Eliminacion_Logica_Y_Conserva_Imagenes()
     {

@@ -150,10 +150,26 @@ public class ProductoService : IProductoService
         await ValidarCategoriaAsync(dto.CategoriaId, exigirActiva: false);
 
         if (dto.TipoInventario.HasValue)
-        {
             ValidarTipoInventario(dto.TipoInventario.Value);
+
+        // Reject the entire gallery edit before changing tracked state or calling
+        // storage: a database rollback cannot restore a deleted remote image.
+        var aEliminar = dto.ImagenesAEliminarIds is { Count: > 0 }
+            ? imagenesGenerales.Where(i => dto.ImagenesAEliminarIds.Contains(i.Id)).ToList()
+            : new List<ProductoImagen>();
+        var nuevas = dto.ImagenesNuevas ?? new List<IFormFile>();
+        var restantes = imagenesGenerales.Count - aEliminar.Count;
+        if (restantes + nuevas.Count > MaxImagenes)
+            throw new BusinessRuleException(
+                $"Un producto puede tener máximo {MaxImagenes} fotos generales ({restantes} existentes + {nuevas.Count} nuevas excede el límite).");
+        ValidarImagenes(nuevas);
+        if (dto.ImagenPrincipalId.HasValue &&
+            (dto.ImagenPrincipalId.Value <= 0 ||
+             !imagenesGenerales.Any(i => i.Id == dto.ImagenPrincipalId.Value && !aEliminar.Contains(i))))
+            throw new BusinessRuleException("La imagen indicada como principal no pertenece a la galería general de este producto.");
+
+        if (dto.TipoInventario.HasValue)
             producto.TipoInventario = dto.TipoInventario.Value;
-        }
         producto.Nombre = dto.Nombre.Trim();
         producto.Descripcion = string.IsNullOrWhiteSpace(dto.Descripcion) ? null : dto.Descripcion.Trim();
         producto.CategoriaId = dto.CategoriaId;
@@ -163,13 +179,9 @@ public class ProductoService : IProductoService
         producto.ActualizadoPorNombreUsuario = _currentUser.NombreUsuario;
         producto.FechaActualizacion = DateTime.UtcNow;
 
-        if (dto.ImagenesAEliminarIds is { Count: > 0 })
+        if (aEliminar.Count > 0)
         {
-            var aEliminar = imagenesGenerales
-                .Where(i => dto.ImagenesAEliminarIds.Contains(i.Id))
-                .ToList();
-            if (aEliminar.Count > 0)
-                storageTenant = await ResolverStorageTenantAsync();
+            storageTenant = await ResolverStorageTenantAsync();
 
             foreach (var imagen in aEliminar)
             {
@@ -181,12 +193,6 @@ public class ProductoService : IProductoService
                 imagenesGenerales.Remove(imagen);
             }
         }
-
-        var nuevas = dto.ImagenesNuevas ?? new List<IFormFile>();
-        if (imagenesGenerales.Count + nuevas.Count > MaxImagenes)
-            throw new BusinessRuleException(
-                $"Un producto puede tener máximo {MaxImagenes} fotos generales ({imagenesGenerales.Count} existentes + {nuevas.Count} nuevas excede el límite).");
-        ValidarImagenes(nuevas);
 
         var siguienteOrden = imagenesGenerales.Count == 0
             ? 0
