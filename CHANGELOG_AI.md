@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV06 C03-01.M03.03: rechazar JWT obsoleto antes del despacho
+- En el interceptor Angular se impide enviar solicitudes con JWT en memoria cuando el almacenamiento compartido registra otra sesión o logout. No se adopta el token persistido ni se borra la sesión de otra pestaña; el POST explícito de login conserva la recuperación sin cabeceras de autoridad antiguas.
+- Tres regresiones HttpTestingController verifican ausencia de petición GET/DELETE con sesión sustituida o eliminada y login sin JWT/tenant obsoletos. Sin cambios de autoridad backend, DTO, BD, workflow ni permisos; SKREF-10 Angular original pin 6808966993bf2b2d455d9b6245e960a59a01b9a9 (HTTP/testing); rollback por revert. CI exact-SHA y A5 independiente pendientes.
+- Mantiene VALIDANDO, responsable histórico DEV04; no certifica todavía consumidor contextual, caché de permisos vinculada a identidad ni navegador real A/B. Sin QA/main/PROD.
+
 ## 2026-11-24 — C03-01.M03.03 — DEV05: causal Angular TestBed repair
 - Source CI 138609367913 on 0b4f7334: interceptor 6/6 pass; renewal suite 7/7 failed in setup because partial NgZone fake lacks scheduler observables.
 - Remove incomplete NgZone provider and use TestBed's real zone; retain all seven assertions and production fail-closed logic. Exact new SHA CI required; no A5/LISTO claim.

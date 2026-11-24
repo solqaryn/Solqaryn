@@ -98,4 +98,37 @@ describe('Auth interceptor - identidad plataforma y tenant aislados', () => {
     expect(cerrarPor401).not.toHaveBeenCalled();
     expect(localStorage.getItem('solqaryn_token')).toBe('other-tab-session');
   });
+
+  it('rechaza antes de enviar una petición con JWT de memoria sustituido en otra pestaña', () => {
+    const url = environment.apiUrl + '/tenant-context/1';
+    localStorage.setItem('solqaryn_token', 'other-tab-session');
+    let status = 0;
+    http.get(url).subscribe({ error: e => { status = e.status; } });
+    testing.expectNone(url);
+    expect(status).toBe(401);
+    expect(cerrarPor401).not.toHaveBeenCalled();
+    expect(localStorage.getItem('solqaryn_token')).toBe('other-tab-session');
+  });
+
+  it('no envía una mutación con JWT de memoria después de un logout compartido', () => {
+    const url = environment.apiUrl + '/productos/1';
+    localStorage.removeItem('solqaryn_token');
+    let status = 0;
+    http.delete(url).subscribe({ error: e => { status = e.status; } });
+    testing.expectNone(url);
+    expect(status).toBe(401);
+    expect(cerrarPor401).not.toHaveBeenCalled();
+    expect(localStorage.getItem('solqaryn_token')).toBeNull();
+  });
+
+  it('permite recuperar la sesión por POST login sin JWT viejo ni tenant solicitado', () => {
+    const url = environment.apiUrl.replace(/\/$/, '') + '/auth/login';
+    localStorage.setItem('solqaryn_token', 'other-tab-session');
+    http.post(url, {}, { headers: { Authorization: 'Bearer signed-test-only', 'X-Empresa-Id': '1' } }).subscribe();
+    const req = testing.expectOne(url);
+    expect(req.request.headers.has('Authorization')).toBe(false);
+    expect(req.request.headers.has('X-Empresa-Id')).toBe(false);
+    req.flush({ success: true, data: {} });
+    expect(cerrarPor401).not.toHaveBeenCalled();
+  });
 });

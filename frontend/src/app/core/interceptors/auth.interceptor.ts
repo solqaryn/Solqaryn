@@ -20,6 +20,18 @@ export const authInterceptor: HttpInterceptorFn = (req, next) => {
   // token from storage as a new authenticated identity here.
   const mismaSesion = () => authService.getToken() === token &&
     localStorage.getItem(TOKEN_KEY) === tokenPersistido && tokenPersistido === token;
+  // A shared-storage logout or replacement login must not dispatch a request
+  // using this tab's stale in-memory identity. Never adopt storage as authority.
+  if (token && tokenPersistido !== token) {
+    const apiBase = environment.apiUrl.replace(/\/$/, '');
+    // An explicit login is the recovery path; it must be unauthenticated.
+    if (req.method === 'POST' && req.url === `${apiBase}/auth/login`) {
+      return next(req.clone({
+        headers: req.headers.delete('Authorization').delete(TENANT_HEADER)
+      }));
+    }
+    return throwError(() => ({ status: 401, message: 'La sesión cambió. Inicia sesión nuevamente.' }));
+  }
   if (token && authService.isTokenExpired()) {
     if (mismaSesion()) sessionActivity.cerrarPor401();
     return throwError(() => ({ status: 401, message: 'Token expirado' }));
