@@ -1,3 +1,9 @@
+## 2026-11-24 — Intervención autorizada: recuperación de readiness DEV P1-004.B
+
+- Corrige el bloqueo NETWORK_OR_TIMEOUT observado en GitHub Actions 45466600288/job 138703188800 después del preflight MySQL aprobado. Render DEV usa servicio free; no se presume un fallo de permisos ni se certifica la causa de red exacta.
+- Solo GET /health/ready antes de autenticación: hasta cuatro intentos, pausa de 10 s, reintentar exclusivamente error de red/timeout y HTTP 502/503/504. Otros códigos y agotamiento fallan cerrados. Las operaciones JWT, concesión, revocación, auditoría y rollback siguen sin reintento ni alteración.
+- Amplía self-test offline para éxito tras transitorios, rechazo 401 inmediato y agotamiento de red/503. CI causal nueva pendiente; no constituye cierre A5 ni LISTO. Revert normal del changeset como rollback. Sin QA/main/PROD, cambios de infraestructura o secretos.
+
 ## 2026-11-24 — DEV05 C06-04.M03.05: liquidación de lease activo tras reducción de reintentos
 
 - Conserva la liquidación del lease vigente exacto por tenant, worker e intento cuando maxAttempts se reduce por debajo del intento ya emitido. ACK termina DONE; NACK agotado termina DEAD. El CAS de lease obsoleto sigue intacto.

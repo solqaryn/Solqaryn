@@ -17,7 +17,7 @@ const field=(obj,key)=>dataOf(obj)?.[key]??dataOf(obj)?.[key[0].toUpperCase()+ke
 const literal=value=>"CONVERT(UNHEX('"+Buffer.from(value,'utf8').toString('hex')+"') USING utf8mb4)";
 const reasonSuffix=()=>String(process.env.GITHUB_SHA||'').slice(0,12);
 
-function selfTest(){
+async function selfTest(){
   assert.equal(positive('42','X'),42);
   assert.equal(field({data:{token:'synthetic'}},'token'),'synthetic');
   assert.equal(field({Data:{UsuarioId:3}},'usuarioId'),3);
@@ -29,6 +29,26 @@ function selfTest(){
   assert.notEqual(literal('Desactivar'),literal('9'));
   assert.notEqual(literal('ConsultarHistorial'),literal('20'));
   assert.equal(ORIGIN,'https://solqaryn-api-dev-fxx8.onrender.com');
+  // Exercise the readiness policy without network, credentials or delays.
+  let attempts=0;
+  let pauses=0;
+  await waitForDevReady(async (path,method)=>{
+    assert.equal(path,'/health/ready'); assert.equal(method,'GET');
+    attempts++;
+    if(attempts===1)throw Error('NETWORK_OR_TIMEOUT');
+    if(attempts===2)return {status:503};
+    return {status:200};
+  },async ms=>{assert.equal(ms,10000);pauses++;});
+  assert.equal(attempts,3); assert.equal(pauses,2);
+  attempts=0;
+  await assert.rejects(waitForDevReady(async()=>{attempts++;return {status:401};},async()=>{}),/RENDER_DEV_READY_HTTP_401/);
+  assert.equal(attempts,1);
+  attempts=0;
+  await assert.rejects(waitForDevReady(async()=>{attempts++;throw Error('NETWORK_OR_TIMEOUT');},async()=>{}),/RENDER_DEV_READY_NETWORK_OR_TIMEOUT/);
+  assert.equal(attempts,4);
+  attempts=0;
+  await assert.rejects(waitForDevReady(async()=>{attempts++;return {status:503};},async()=>{}),/RENDER_DEV_READY_HTTP_503/);
+  assert.equal(attempts,4);
   console.log('P1004B_OFFLINE_CONTRACT=PASS');
 }
 function preflightEnv(){
@@ -105,6 +125,30 @@ async function call(path,method='GET',jwt='',payload=undefined){
   });
 }
 const expect=(response,status,step)=>must(response.status===status,step+'_HTTP_'+response.status);
+
+/* Readiness is a safe GET before login or any delegation mutation. Render DEV
+ * can be starting while a push triggers CI. Never retry authorization or writes. */
+async function waitForDevReady(request=call, pause=ms=>new Promise(resolve=>setTimeout(resolve,ms))){
+  const attempts=4;
+  for(let attempt=1;attempt<=attempts;attempt++){
+    let response;
+    try{
+      response=await request('/health/ready','GET');
+    }catch(error){
+      if(error?.message!=='NETWORK_OR_TIMEOUT')throw error;
+      if(attempt===attempts)fail('RENDER_DEV_READY_NETWORK_OR_TIMEOUT');
+    }
+    if(response?.status===200)return response;
+    if(response && ![502,503,504].includes(response.status)){
+      expect(response,200,'RENDER_DEV_READY');
+    }
+    if(attempt===attempts)fail('RENDER_DEV_READY_HTTP_'+response?.status);
+    console.log('P1004B_WAIT_DEV_READINESS='+attempt+'/'+attempts);
+    await pause(10000);
+  }
+  fail('RENDER_DEV_READY_EXHAUSTED');
+}
+
 async function login(name,pw,label){
   const r=await call('/auth/login','POST','',{nombreUsuario:name,password:pw});
   expect(r,200,'LOGIN_'+label);
@@ -154,8 +198,7 @@ function readback({platformId,targetId,tenantMembership},grantReason,revokeReaso
 async function run(){
   preflightEnv();
   const context=preflightDb();
-  const ready=await call('/health/ready');
-  expect(ready,200,'RENDER_DEV_READY');
+  await waitForDevReady();
   const superJwt=await login(process.env.PLATFORM_USERNAME,process.env.PLATFORM_PASSWORD,'PLATFORM');
   const businessJwt=await login(process.env.BUSINESS_USERNAME,process.env.BUSINESS_PASSWORD,'BUSINESS');
   expect(await call('/plataforma/sesion','GET',superJwt),200,'SUPERADMIN');
@@ -212,5 +255,5 @@ async function run(){
     }
   }
 }
-if(process.argv.includes('--self-test'))selfTest();
+if(process.argv.includes('--self-test'))await selfTest();
 else run().catch(e=>{console.error(String(e?.message||'P1004B_NO_GO=UNEXPECTED'));process.exitCode=1;});
