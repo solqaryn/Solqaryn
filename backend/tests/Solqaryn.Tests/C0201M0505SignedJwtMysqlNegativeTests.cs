@@ -156,13 +156,29 @@ public sealed class C0201M0505SignedJwtMysqlNegativeTests
             // Anonymous and a tampered signature never reach tenant membership.
             using (var anonymous = await client.GetAsync("/tenant-context/empresas"))
                 Assert.Equal(HttpStatusCode.Unauthorized, anonymous.StatusCode);
-            var signed = Sign(user.Id);
+            var signed = Sign(user.Id, roleA.Id);
             var parts = signed.Split('.');
             parts[2] = (parts[2][0] == 'A' ? "B" : "A") + parts[2][1..];
             client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", string.Join(".", parts));
             using (var forgedJwt = await client.GetAsync("/tenant-context/" + a.Id))
                 Assert.Equal(HttpStatusCode.Unauthorized, forgedJwt.StatusCode);
+
+            // A correctly signed token with an invalid base role must still
+            // fail closed; the selected tenant's role is not the actor's base role.
+            foreach (var invalidRoleId in new[] { 999999, roleB.Id })
+            {
+                client.DefaultRequestHeaders.Authorization =
+                    new AuthenticationHeaderValue("Bearer", Sign(user.Id, invalidRoleId));
+                using var denied = await client.GetAsync("/tenant-context/" + a.Id);
+                Assert.Equal(HttpStatusCode.Forbidden, denied.StatusCode);
+                using var deniedList = await client.GetAsync("/tenant-context/empresas");
+                Assert.Equal(HttpStatusCode.Forbidden, deniedList.StatusCode);
+                Assert.DoesNotContain(a.Nombre, await denied.Content.ReadAsStringAsync(),
+                    StringComparison.OrdinalIgnoreCase);
+                Assert.DoesNotContain(b.Nombre, await deniedList.Content.ReadAsStringAsync(),
+                    StringComparison.OrdinalIgnoreCase);
+            }
 
             client.DefaultRequestHeaders.Authorization =
                 new AuthenticationHeaderValue("Bearer", signed);
@@ -182,7 +198,7 @@ public sealed class C0201M0505SignedJwtMysqlNegativeTests
             }
             // Another signed actor with zero persisted memberships cannot borrow A.
             client.DefaultRequestHeaders.Authorization =
-                new AuthenticationHeaderValue("Bearer", Sign(user.Id + 100000));
+                new AuthenticationHeaderValue("Bearer", Sign(user.Id + 100000, roleA.Id));
             using (var foreignActor = await client.GetAsync("/tenant-context/" + a.Id))
                 Assert.Equal(HttpStatusCode.Forbidden, foreignActor.StatusCode);
 
@@ -239,14 +255,14 @@ public sealed class C0201M0505SignedJwtMysqlNegativeTests
         }
     }
 
-    private static string Sign(int id)
+    private static string Sign(int id, int baseRoleId)
     {
         var jwt = new JwtSecurityToken(
             issuer: Issuer, audience: Audience,
             claims:
             [
                 new Claim("id", id.ToString()),
-                new Claim("rolId", "999999"),
+                new Claim("rolId", baseRoleId.ToString(System.Globalization.CultureInfo.InvariantCulture)),
                 new Claim("esAdministrador", "true")
             ],
             notBefore: DateTime.UtcNow.AddMinutes(-1),
