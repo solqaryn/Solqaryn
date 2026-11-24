@@ -591,7 +591,11 @@ public sealed class C0204M0502QaHttpContractTests
         {
             Payload("private-secret"),
             Payload().Replace("\"status\":\"completed\"", "\"status\":\"queued\""),
-            Payload().Replace("\"conclusion\":\"success\"", "\"conclusion\":null")
+            Payload().Replace("\"conclusion\":\"success\"", "\"conclusion\":null"),
+            // Last-value-wins parsing used to accept these contradictory fields.
+            Payload().Replace("\"total_count\":4", "\"total_count\":1,\"total_count\":4"),
+            Payload().Replace("\"conclusion\":\"success\"", "\"conclusion\":\"failure\",\"conclusion\":\"success\""),
+            Payload().Replace("\"head_sha\":", "\"head_sha\":\"private-secret\",\"head_sha\":")
         })
         {
             upstream.Payload = invalid;
@@ -632,9 +636,9 @@ public sealed class C0204M0502QaHttpContractTests
         using var scope = fixture.Host.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var audits = await db.Set<RegistroAuditoria>().ToListAsync();
-        Assert.Equal(6, audits.Count);
+        Assert.Equal(9, audits.Count);
         Assert.Single(audits.Where(x => x.Resultado == "Error" && x.Error == "QA_UPSTREAM_TIMEOUT"));
-        Assert.Equal(3, audits.Count(x => x.Resultado == "Error" && x.Error == "QA_UPSTREAM_CONTRACT"));
+        Assert.Equal(6, audits.Count(x => x.Resultado == "Error" && x.Error == "QA_UPSTREAM_CONTRACT"));
         Assert.All(audits, x => Assert.DoesNotContain("private-secret", x.ValoresNuevos ?? ""));
     }
 

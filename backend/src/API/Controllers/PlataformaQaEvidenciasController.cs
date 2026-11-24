@@ -226,7 +226,7 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
             using var document = await JsonDocument.ParseAsync(
                 bounded, new JsonDocumentOptions { MaxDepth = 20 }, upstreamToken);
             var root = document.RootElement;
-            if (root.ValueKind != JsonValueKind.Object ||
+            if (root.ValueKind != JsonValueKind.Object || !PropiedadesUnicas(root) ||
                 !root.TryGetProperty("total_count", out var countElement) ||
                 countElement.ValueKind != JsonValueKind.Number ||
                 !countElement.TryGetInt32(out var count) || count < 1 || count > 100 ||
@@ -238,7 +238,7 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
             var checks = new List<PlataformaQaCheckDto>(count);
             foreach (var item in checkRuns.EnumerateArray())
             {
-                if (item.ValueKind != JsonValueKind.Object ||
+                if (item.ValueKind != JsonValueKind.Object || !PropiedadesUnicas(item) ||
                     !string.Equals(Valor(item, "head_sha"), sha, StringComparison.OrdinalIgnoreCase))
                     return await FalloProveedorAsync("QA_UPSTREAM_CONTRACT");
 
@@ -361,6 +361,17 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
     private ObjectResult NoVerificable() =>
         StatusCode(StatusCodes.Status503ServiceUnavailable,
             ApiResponse<object>.Fail("Evidencia externa temporalmente no verificable."));
+
+    // TryGetProperty resolves duplicate keys to the last value. Conflicting
+    // provider metadata must never be interpreted as a successful check.
+    private static bool PropiedadesUnicas(JsonElement item)
+    {
+        var seen = new HashSet<string>(StringComparer.Ordinal);
+        foreach (var property in item.EnumerateObject())
+            if (!seen.Add(property.Name))
+                return false;
+        return true;
+    }
 
     private static string? Valor(JsonElement item, string key) =>
         item.TryGetProperty(key, out var value) && value.ValueKind == JsonValueKind.String

@@ -1,3 +1,8 @@
+## 2026-11-24 — C03-03.M03.06 / DEV04 — contrato QA sin claves JSON ambiguas
+
+- R2: rechazar propiedades duplicadas en raíz y check individual del proveedor antes de interpretar SHA/conclusión; 503 y auditoría acotada sin eco, no last-value-wins.
+- Extiende el laboratorio HTTP JWT/MySQL 8.4 con tres casos causales de conteo, conclusión y SHA duplicados; CI exacta pendiente. Sin cambio de permisos ni esquema; no acredita retención, proveedor vivo ni A5.
+
 ## 2026-11-24 — DEV04 C15-03.M05.05: negativa contextual de sucursal A/B
 
 - Amplía el spec existente con JWT base y contextual reales, SQL efímero, selección propia/ajena, cabeceras contradictorias, separación de esquemas, rechazo de consola global y revocación/restauración real.
