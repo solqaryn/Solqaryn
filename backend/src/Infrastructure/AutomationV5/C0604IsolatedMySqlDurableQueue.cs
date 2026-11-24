@@ -125,9 +125,12 @@ public sealed class C0604IsolatedMySqlDurableQueue
         cancellationToken.ThrowIfCancellationRequested();
         if (trustedTenantId <= 0 || workId <= 0 || !SafeId(workerId, 64) ||
             nowUtc.Kind != DateTimeKind.Utc || maxAttempts is < 1 or > 10 ||
-            expectedAttempt is < 1 or > 10 || expectedAttempt > maxAttempts)
+            expectedAttempt is < 1 or > 10)
             return false;
 
+        // Retry policy may shrink after the worker acquired its lease. The
+        // exact tenant/worker/attempt/expiry CAS still fences stale settlements;
+        // a valid ACK must settle DONE, and a valid NACK at the new limit DEAD.
         await using var connection = _factory();
         await connection.OpenAsync(cancellationToken);
         await using var update = connection.CreateCommand();

@@ -147,6 +147,32 @@ public sealed class C0604DurableMySqlQueueIntegrationTests
             Assert.NotNull(active);
             Assert.Null(await queue.TryLeaseAsync(20, "worker_reduced", now.AddSeconds(1), 1, 1));
 
+            // A policy reduction must not strand an active SECOND attempt.
+            // Both ACK and NACK must settle the exact still-valid lease; a
+            // stale first-attempt settlement remains denied by the SQL CAS.
+            foreach (var tenant in new[] { 21, 22 })
+            {
+                Assert.Equal(Queue.Reservation.Stored,
+                    await queue.ReserveAsync(tenant, "customer_reduce_active",
+                        "customer-preference-sync", "request_reduce", 1));
+                var original = await queue.TryLeaseAsync(tenant, "worker_reduce", now, 1, 2);
+                Assert.NotNull(original);
+                Assert.True(await queue.SettleAsync(tenant, original!.Id, "worker_reduce",
+                    original.Attempt, now, false, 2));
+                var second = await queue.TryLeaseAsync(tenant, "worker_reduce", now.AddSeconds(1), 1, 2);
+                Assert.NotNull(second);
+                Assert.Equal(original.Id, second!.Id);
+                Assert.Equal(2, second.Attempt);
+                Assert.Null(await queue.TryLeaseAsync(tenant, "worker_reduced",
+                    now.AddSeconds(2), 1, 1));
+                Assert.False(await queue.SettleAsync(tenant, second.Id, "worker_reduce",
+                    original.Attempt, now.AddSeconds(2), true, 1));
+                Assert.True(await queue.SettleAsync(tenant, second.Id, "worker_reduce",
+                    second.Attempt, now.AddSeconds(2), tenant == 21, 1));
+                Assert.Null(await queue.TryLeaseAsync(tenant, "worker_after",
+                    now.AddMinutes(2), 1, 2));
+            }
+
             var snapshot = new List<(int Tenant, string State, int Attempts)>();
             await using (var inspect = admin.CreateCommand())
             {
@@ -163,7 +189,9 @@ public sealed class C0604DurableMySqlQueueIntegrationTests
             Assert.Contains(snapshot, x => x == (18, "DEAD", 1));
             Assert.Contains(snapshot, x => x == (19, "PENDING", 1));
             Assert.Contains(snapshot, x => x == (20, "LEASED", 1));
-            Assert.Equal(8, snapshot.Count);
+            Assert.Contains(snapshot, x => x == (21, "DONE", 2));
+            Assert.Contains(snapshot, x => x == (22, "DEAD", 2));
+            Assert.Equal(10, snapshot.Count);
             Assert.True(await queue.SettleAsync(20, active!.Id, "worker_active", active.Attempt,
                 now.AddSeconds(2), true, 1));
         }

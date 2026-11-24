@@ -1,3 +1,9 @@
+## 2026-11-24 — DEV05 C06-04.M03.05: liquidación de lease activo tras reducción de reintentos
+
+- Conserva la liquidación del lease vigente exacto por tenant, worker e intento cuando maxAttempts se reduce por debajo del intento ya emitido. ACK termina DONE; NACK agotado termina DEAD. El CAS de lease obsoleto sigue intacto.
+- Amplía la integración MySQL 8.4 real aislada existente con ACK y NACK del segundo intento tras reducir el límite, rechazo del primer intento obsoleto, estado durable y no repetición. Sin registro runtime, autorización CUSTOMER, proveedor, migración ni producción.
+- CI dirigida InnoDB y checks pertinentes del SHA exacto pendientes tras publicación; A5 independiente, mantener VALIDANDO. Rollback mediante git revert normal.
+
 ## 2026-11-24 — DEV04 C15-03.M05.05: prueba de propiedad de cargas masivas
 
 - Se añade una integración Oracle EF/MySQL 8.4 efímera con dos tenants y tres actores para comprobar detalle, listado, pertenencia del creador y revocación de membresía usando CargaMasivaService y UsuarioScopeService reales.
