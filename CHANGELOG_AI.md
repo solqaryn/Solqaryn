@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV04 C01-03.M04.01: cobertura de disparo CI por consumidores de autorización
+
+- El job dirigido 138567522295 aprobó 1ef35ba4, pero los guards, el contexto tenant y el interceptor cambiaron posteriormente sin activar este workflow. Incluir las siete rutas causales exactas en el filtro push de dev para que cambios en estos consumidores vuelvan a ejecutar la misma aceptación privada real.
+- No se alteran pruebas, aserciones, permisos, datos, entorno ni concurrencia por SHA. La nueva ejecución debe acreditar JWT A/B, MySQL 8.4 y Chromium antes de A4; A5 queda reservada a una Task independiente. No se certifica LISTO anticipadamente.
+
 ## 2026-11-24 — DEV03 C15-03.M05.05: denegación de confirmación sin mutación
 
 - Evita que la recuperación tras una confirmación denegada marque como fallida la carga de otro creador o de un usuario revocado. Para otros errores, exige una carga previamente autorizada y revalida membresía y propiedad antes de persistir el fallo.
