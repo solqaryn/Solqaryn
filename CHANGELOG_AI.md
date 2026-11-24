@@ -1,3 +1,9 @@
+## 2026-11-24 — DEV04 C15-03.M05.05: prueba de propiedad de cargas masivas
+
+- Se añade una integración Oracle EF/MySQL 8.4 efímera con dos tenants y tres actores para comprobar detalle, listado, pertenencia del creador y revocación de membresía usando CargaMasivaService y UsuarioScopeService reales.
+- El actor y la marca verificada se proporcionan en la frontera del servicio; esta prueba no acredita JWT/HTTP de jobs ni acceso a bytes Cloudinary. No se cambia runtime, permisos, cuarentena ni proveedores. No se declara PASS hasta CI exacta y revisión independiente.
+- Se conserva el historial y el A5_FAIL anterior; C15-03.M05.05 sigue VALIDANDO.
+
 ## 2026-11-24 — DEV03 C06-04.M03.05: agotamiento durable de reintentos
 
 - La cola MySQL aislada lleva PENDING agotados a DEAD cuando se reduce el límite, dentro de la transacción del tenant; no altera leases vigentes ni otros tenants.
