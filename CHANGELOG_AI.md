@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV01 C07-01.M06.06: mutaciones HTTP de maestros de atributos
+
+- Conecta PUT, PATCH activar/desactivar y DELETE lógico de colores, tallas, marcas y modelos con tres pilotos separados apagados por defecto, rutas numéricas exactas, JWT/RBAC de la acción, segundo filtro MVC y repositorio tenant Oracle EF existente. PUT exige JSON acotado; no habilita otras escrituras.
+- Extiende integración real MySQL 8.4 para editar, desactivar, activar y eliminar los ocho maestros A/B creados por el caso existente, comprobar filas físicas y recibos durables por acción, y rechazar piloto apagado, IDOR y revocación. Pruebas nuevas pendientes de ejecución causal; no certifica D06 ni cierre de fase.
+
 ## 2026-11-24 — DEV01 C07-01.M06.06: corrección CS0136 en integración HTTP de atributos
 
 - Renombra únicamente el permiso local de la iteración de atributos y sus dos referencias; conserva el permiso exterior, las aserciones de aislamiento y la revocación JWT/RBAC.

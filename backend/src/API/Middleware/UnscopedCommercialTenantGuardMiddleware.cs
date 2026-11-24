@@ -613,6 +613,13 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         // Attribute creation is an independent, default-off pilot, not a generic write bypass.
         var altaAtributos = HttpMethods.IsPost(http.Request.Method) &&
                             config.GetValue<bool>("MultiEmpresa:PrivateAttributeCreatePilotEnabled");
+        // Attribute mutations are separate, default-off pilots. No generic write bypass.
+        var editarAtributos = HttpMethods.IsPut(http.Request.Method) &&
+            config.GetValue<bool>("MultiEmpresa:PrivateAttributeEditPilotEnabled");
+        var estadoAtributos = HttpMethods.IsPatch(http.Request.Method) &&
+            config.GetValue<bool>("MultiEmpresa:PrivateAttributeStatePilotEnabled");
+        var borrarAtributos = HttpMethods.IsDelete(http.Request.Method) &&
+            config.GetValue<bool>("MultiEmpresa:PrivateAttributeDeletePilotEnabled");
         // Fiscal pilots are independent, default OFF; only exact routes below.
         var altaFiscal = HttpMethods.IsPost(http.Request.Method) &&
                          config.GetValue<bool>("MultiEmpresa:PrivateFiscalCreatePilotEnabled");
@@ -655,7 +662,8 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                           config.GetValue<bool>("MultiEmpresa:PrivateAdminReportPilotEnabled");
         if (!lectura && !alta && !editarMaestros && !borrador && !confirmar &&
             !pdf && !reportes && !inventario && !media && !adminReport &&
-            !finanzas && !archivos && !borrarProducto && !estadoFiscal && !altaFiscal && !editarFiscal && !altaAtributos)
+            !finanzas && !archivos && !borrarProducto && !estadoFiscal && !altaFiscal && !editarFiscal && !altaAtributos &&
+            !editarAtributos && !estadoAtributos && !borrarAtributos)
             return false;
 
         ModuloSistema modulo;
@@ -663,6 +671,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         var esBorrador = false;
         var esEdicionMaestros = false;
         var esAltaAtributos = false;
+        AccionPermiso? accionAtributos = null;
         var esConfirmacion = false;
         var esPdf = false;
         var esMedia = false;
@@ -724,6 +733,11 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         {
             modulo = ModuloSistema.Modelos;
             esAltaAtributos = true;
+        }
+        else if (TryResolveAttributeMutation(http.Request.Path, editarAtributos,
+                     estadoAtributos, borrarAtributos, out modulo, out var attributeAction))
+        {
+            accionAtributos = attributeAction;
         }
         // V30: only tax GETs through the existing opt-in pilot; verified tenant,
         // SQL-backed Impuestos.Ver and tenant-scoped Oracle EF. No fiscal writes.
@@ -914,7 +928,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
 
         accion = esBorradoProducto ? AccionPermiso.EliminarLogico
             : esAltaAtributos ? AccionPermiso.Crear
-            : accionFiscal ?? accionArchivos ?? accionFinanciera ??
+            : accionAtributos ?? accionFiscal ?? accionArchivos ?? accionFinanciera ??
             (esEdicionMaestros ? AccionPermiso.Editar
             : esPdf || esMedia || esAdminExport ? AccionPermiso.Exportar
             : lectura || reportes || inventario || adminReport ? AccionPermiso.Ver
@@ -983,7 +997,8 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                 return false;
         }
 
-        if (esAltaAtributos || esEdicionMaestros || accionFiscal == AccionPermiso.Crear || accionFiscal == AccionPermiso.Editar)
+        if (esAltaAtributos || accionAtributos == AccionPermiso.Editar || esEdicionMaestros ||
+            accionFiscal == AccionPermiso.Crear || accionFiscal == AccionPermiso.Editar)
         {
             // Solo JSON pequeño; RBAC específico y ownership EF físico.
             const int maxJsonBytes = 32 * 1024;
@@ -1031,6 +1046,54 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         TenantPermissionContext.MarkAuthorizedEmpresaId(http, empresaId);
         await _next(http);
         return true;
+    }
+
+    private static bool TryResolveAttributeMutation(
+        PathString path, bool edit, bool state, bool delete,
+        out ModuloSistema modulo, out AccionPermiso accion)
+    {
+        modulo = default;
+        accion = default;
+        if (!edit && !state && !delete)
+            return false;
+
+        foreach (var (prefix, module) in new[]
+        {
+            ("/colores", ModuloSistema.Colores),
+            ("/tallas", ModuloSistema.Tallas),
+            ("/marcas", ModuloSistema.Marcas),
+            ("/modelos", ModuloSistema.Modelos)
+        })
+        {
+            if ((edit || delete) && EsRutaDetallePositiva(path, prefix))
+            {
+                modulo = module;
+                accion = edit ? AccionPermiso.Editar : AccionPermiso.EliminarLogico;
+                return true;
+            }
+
+            if (state && path.Value is { } route)
+            {
+                // Reject missing/overlapping identifier segments before slicing.
+                if (route.Length > prefix.Length + "/activar".Length + 1 &&
+                    EsRutaAccionPositiva(path, prefix, "activar"))
+                {
+                    modulo = module;
+                    accion = AccionPermiso.Activar;
+                    return true;
+                }
+
+                if (route.Length > prefix.Length + "/desactivar".Length + 1 &&
+                    EsRutaAccionPositiva(path, prefix, "desactivar"))
+                {
+                    modulo = module;
+                    accion = AccionPermiso.Desactivar;
+                    return true;
+                }
+            }
+        }
+
+        return false;
     }
 
     private static PlatformSupportAuditContext CreateSupportAuditContext(HttpContext context) =>

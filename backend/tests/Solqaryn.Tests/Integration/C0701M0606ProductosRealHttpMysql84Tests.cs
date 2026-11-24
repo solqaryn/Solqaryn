@@ -2096,6 +2096,7 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             }
 
             var attributePrefix = "C0701HttpAttr_" + Guid.NewGuid().ToString("N");
+            var attributeCreatedIds = new Dictionary<(int Owner, ModuloSistema Module), int>();
             using (var offAttribute = await CreateAttributeHttpAsync(jwtA, a.Id, "/colores", attributePrefix + "_off"))
                 Assert.Equal(HttpStatusCode.ServiceUnavailable, offAttribute.StatusCode);
             pilotConfig["MultiEmpresa:PrivateAttributeCreatePilotEnabled"] = "true";
@@ -2125,6 +2126,7 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                         _ => throw new InvalidOperationException()
                     };
                     Assert.Equal(owner, row.Owner);
+                    attributeCreatedIds.Add((owner, entry.Module), row.Id);
                     if (entry.Module == ModuloSistema.Modelos)
                         Assert.Equal(parentId, await fresh.Modelos.IgnoreQueryFilters().AsNoTracking()
                             .Where(x => x.Id == row.Id).Select(x => x.MarcaId).SingleAsync());
@@ -2151,6 +2153,144 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                 Assert.Equal(2, await attributeHttpFresh.Tallas.IgnoreQueryFilters().CountAsync(x => x.Nombre.StartsWith(attributePrefix)));
                 Assert.Equal(2, await attributeHttpFresh.Marcas.IgnoreQueryFilters().CountAsync(x => x.Nombre.StartsWith(attributePrefix)));
                 Assert.Equal(2, await attributeHttpFresh.Modelos.IgnoreQueryFilters().CountAsync(x => x.Nombre.StartsWith(attributePrefix)));
+            }
+
+            // D01: real HTTP update, state transitions and soft-delete of each
+            // physical attribute master, with a separate default-off route gate.
+            var attributeMutations = new[]
+            {
+                (Method: HttpMethod.Put, Action: AccionPermiso.Editar, Suffix: "",
+                    Flag: "MultiEmpresa:PrivateAttributeEditPilotEnabled"),
+                (Method: HttpMethod.Patch, Action: AccionPermiso.Desactivar, Suffix: "/desactivar",
+                    Flag: "MultiEmpresa:PrivateAttributeStatePilotEnabled"),
+                (Method: HttpMethod.Patch, Action: AccionPermiso.Activar, Suffix: "/activar",
+                    Flag: "MultiEmpresa:PrivateAttributeStatePilotEnabled"),
+                (Method: HttpMethod.Delete, Action: AccionPermiso.EliminarLogico, Suffix: "",
+                    Flag: "MultiEmpresa:PrivateAttributeDeletePilotEnabled")
+            };
+            foreach (var attributeMutation in attributeMutations)
+            {
+                foreach (var attributeEntry in attributeCreateCases)
+                {
+                    var attributeMutationPermission = await db.Permisos.IgnoreQueryFilters()
+                        .FirstOrDefaultAsync(p => p.Modulo == attributeEntry.Module
+                            && p.Accion == attributeMutation.Action
+                            && p.Ambito == AmbitoAutorizacion.Empresa && p.Activo && !p.Eliminado);
+                    if (attributeMutationPermission is null)
+                    {
+                        attributeMutationPermission = new Permiso
+                        {
+                            Codigo = "C0701M0606.ATTR." + attributeEntry.Module + "." + attributeMutation.Action,
+                            Nombre = "C0701 isolated attribute mutation " + attributeMutation.Action,
+                            Modulo = attributeEntry.Module, Accion = attributeMutation.Action,
+                            Ambito = AmbitoAutorizacion.Empresa, Activo = true
+                        };
+                        db.Permisos.Add(attributeMutationPermission);
+                        await db.SaveChangesAsync();
+                    }
+                    db.RolPermisos.AddRange(
+                        new RolPermiso { RolId = roleA.Id, PermisoId = attributeMutationPermission.Id },
+                        new RolPermiso { RolId = roleB.Id, PermisoId = attributeMutationPermission.Id });
+                }
+            }
+            await db.SaveChangesAsync();
+
+            async Task<HttpResponseMessage> MutateAttributeHttpAsync(HttpMethod attributeHttpMethod, string attributeHttpToken,
+                int attributeHttpTenant, string attributeHttpRoute, string attributeHttpName, int? attributeHttpParent = null)
+            {
+                using var attributeMutationRequest = new HttpRequestMessage(attributeHttpMethod, attributeHttpRoute);
+                attributeMutationRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", attributeHttpToken);
+                attributeMutationRequest.Headers.Add("X-Empresa-Id", attributeHttpTenant.ToString());
+                if (attributeHttpMethod == HttpMethod.Put)
+                    attributeMutationRequest.Content = new StringContent(
+                        System.Text.Json.JsonSerializer.Serialize(new
+                        {
+                            nombre = attributeHttpName, catalogoPadreId = attributeHttpParent,
+                            codigoVisual = attributeHttpRoute.StartsWith("/colores/", StringComparison.Ordinal)
+                                ? "#334455" : null
+                        }), Encoding.UTF8, "application/json");
+                return await client.SendAsync(attributeMutationRequest);
+            }
+
+            async Task AssertAttributePhysicalAsync(int attributeHttpTenant, int attributeAuditActor, ModuloSistema attributePhysicalModule,
+                int attributePhysicalId, string attributeExpectedName, bool attributeExpectedActive, bool attributeExpectedDeleted,
+                AccionPermiso attributeExpectedAction)
+            {
+                await using var attributeMutationFresh = new AppDbContext(options);
+                var attributePhysical = attributePhysicalModule switch
+                {
+                    ModuloSistema.Colores => await attributeMutationFresh.Colores.IgnoreQueryFilters().AsNoTracking()
+                        .Where(x => x.Id == attributePhysicalId).Select(x => new { x.Nombre, x.Activo, x.Eliminado, Owner = EF.Property<int?>(x, "EmpresaId") }).SingleAsync(),
+                    ModuloSistema.Tallas => await attributeMutationFresh.Tallas.IgnoreQueryFilters().AsNoTracking()
+                        .Where(x => x.Id == attributePhysicalId).Select(x => new { x.Nombre, x.Activo, x.Eliminado, Owner = EF.Property<int?>(x, "EmpresaId") }).SingleAsync(),
+                    ModuloSistema.Marcas => await attributeMutationFresh.Marcas.IgnoreQueryFilters().AsNoTracking()
+                        .Where(x => x.Id == attributePhysicalId).Select(x => new { x.Nombre, x.Activo, x.Eliminado, Owner = EF.Property<int?>(x, "EmpresaId") }).SingleAsync(),
+                    ModuloSistema.Modelos => await attributeMutationFresh.Modelos.IgnoreQueryFilters().AsNoTracking()
+                        .Where(x => x.Id == attributePhysicalId).Select(x => new { x.Nombre, x.Activo, x.Eliminado, Owner = EF.Property<int?>(x, "EmpresaId") }).SingleAsync(),
+                    _ => throw new InvalidOperationException()
+                };
+                Assert.Equal(attributeHttpTenant, attributePhysical.Owner);
+                Assert.Equal(attributeExpectedName, attributePhysical.Nombre);
+                Assert.Equal(attributeExpectedActive, attributePhysical.Activo);
+                Assert.Equal(attributeExpectedDeleted, attributePhysical.Eliminado);
+                var attributeMutationReceipt = await attributeMutationFresh.RegistrosAuditoria.IgnoreQueryFilters().AsNoTracking()
+                    .SingleAsync(x => x.Modulo == attributePhysicalModule && x.Accion == attributeExpectedAction &&
+                        x.ReferenciaId == attributePhysicalId);
+                Assert.Equal(attributeHttpTenant, attributeMutationReceipt.EmpresaId);
+                Assert.Equal(attributeAuditActor, attributeMutationReceipt.UsuarioId);
+            }
+
+            foreach (var attributeMutation in attributeMutations)
+            {
+                var attributeColorAPath = "/colores/" + attributeCreatedIds[(a.Id, ModuloSistema.Colores)] + attributeMutation.Suffix;
+                using (var attributeMutationOff = await MutateAttributeHttpAsync(attributeMutation.Method,
+                    jwtA, a.Id, attributeColorAPath, attributePrefix + "_off"))
+                    Assert.Equal(HttpStatusCode.ServiceUnavailable, attributeMutationOff.StatusCode);
+
+                pilotConfig[attributeMutation.Flag] = "true";
+                foreach (var attributeEntry in attributeCreateCases)
+                {
+                    var attributeForeignId = attributeCreatedIds[(b.Id, attributeEntry.Module)];
+                    using var attributeForeignMutation = await MutateAttributeHttpAsync(attributeMutation.Method,
+                        jwtA, a.Id, attributeEntry.Path + "/" + attributeForeignId + attributeMutation.Suffix,
+                        attributePrefix + "_foreign_mutation",
+                        attributeEntry.Module == ModuloSistema.Modelos ? v34OwnedA.BrandId : null);
+                    Assert.Equal(HttpStatusCode.NotFound, attributeForeignMutation.StatusCode);
+                }
+
+                var attributeRevokedGrant = await db.RolPermisos.SingleAsync(rp => rp.RolId == roleA.Id &&
+                    db.Permisos.Any(p => p.Id == rp.PermisoId && p.Modulo == ModuloSistema.Colores &&
+                        p.Accion == attributeMutation.Action && p.Ambito == AmbitoAutorizacion.Empresa));
+                var attributeRevokedPermissionId = attributeRevokedGrant.PermisoId;
+                db.RolPermisos.Remove(attributeRevokedGrant);
+                await db.SaveChangesAsync();
+                using (var attributeMutationDenied = await MutateAttributeHttpAsync(attributeMutation.Method,
+                    jwtA, a.Id, attributeColorAPath, attributePrefix + "_revoked"))
+                    Assert.Equal(HttpStatusCode.ServiceUnavailable, attributeMutationDenied.StatusCode);
+                db.RolPermisos.Add(new RolPermiso { RolId = roleA.Id, PermisoId = attributeRevokedPermissionId });
+                await db.SaveChangesAsync();
+
+                foreach (var (attributeJwt, attributeOwner, attributeUser, attributeParent) in new[]
+                {
+                    (jwtA, a.Id, userA.Id, v34OwnedA.BrandId),
+                    (jwtB, b.Id, userB.Id, v34OwnedB.BrandId)
+                })
+                {
+                    foreach (var attributeEntry in attributeCreateCases)
+                    {
+                        var attributeId = attributeCreatedIds[(attributeOwner, attributeEntry.Module)];
+                        var attributeName = attributePrefix + "_" + attributeOwner + "_" + attributeEntry.Module + "_edit";
+                        using var attributeMutationOk = await MutateAttributeHttpAsync(attributeMutation.Method,
+                            attributeJwt, attributeOwner, attributeEntry.Path + "/" + attributeId + attributeMutation.Suffix,
+                            attributeName, attributeEntry.Module == ModuloSistema.Modelos ? attributeParent : null);
+                        Assert.Equal(HttpStatusCode.OK, attributeMutationOk.StatusCode);
+                        await AssertAttributePhysicalAsync(attributeOwner, attributeUser, attributeEntry.Module,
+                            attributeId, attributeName,
+                            attributeMutation.Action is AccionPermiso.Editar or AccionPermiso.Activar,
+                            attributeMutation.Action == AccionPermiso.EliminarLogico, attributeMutation.Action);
+                    }
+                }
+                pilotConfig[attributeMutation.Flag] = "false";
             }
 
             // A failing audit sink rolls back a real SQL UPDATE, verified with
