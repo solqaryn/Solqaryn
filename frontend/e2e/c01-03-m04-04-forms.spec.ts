@@ -233,6 +233,7 @@ test.describe('V24 M04.04 form: real GET, guarded duplicate mutation, error and 
           status: 200,
           contentType: 'application/json',
           body: JSON.stringify({
+            success: true,
             data: injected === 'foreign-tenant'
               ? { ...originalTenant, empresaId: 2, nombre: sentinel }
               : null
