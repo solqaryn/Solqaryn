@@ -366,19 +366,31 @@ test.describe('V24 C01-03.M04.05 actual tenant UI responsive and keyboard', () =
       headers:{Authorization:'Bearer '+jwt,'X-Empresa-Id':'2'}
     });
     expect([403,404]).toContain(rejected.status());
+    // Establish the signed actor's authorized company independently of the UI.
+    const own = await page.request.get(api+'/tenant-context/1',{
+      headers:{Authorization:'Bearer '+jwt,'X-Empresa-Id':'1'}
+    });
+    expect(own.status()).toBe(200);
+    expect((await own.json())?.data?.empresaId).toBe(1);
     await page.evaluate(()=>localStorage.setItem('solqaryn_empresa_solicitada_id','2'));
+    expect(await page.evaluate(()=>localStorage.getItem('solqaryn_empresa_solicitada_id'))).toBe('2');
     await page.goto(target);
-    // A stale/forged selection must NEVER expose tenant B. A verified fallback
-    // to the already-authorized A is safe; so is fail-closed redirection to login.
-    // A visible route heading alone is not evidence of a security violation.
+    // The actual CI failure snapshot shows a safe fallback to Productos with
+    // the verified A company in the application shell, not the settings heading.
+    // Require an explicit A identity AND the restored selection on any ERP fallback.
+    const ownBrand = page.getByRole('complementary',{name:'Menú principal'})
+      .getByText('Empresa A efimera C15',{exact:true});
     await expect.poll(async () => {
-      if (page.url().includes('/login')) return 'blocked-login';
+      const saved = await page.evaluate(()=>localStorage.getItem('solqaryn_empresa_solicitada_id'));
+      if (page.url().includes('/login') && saved !== '2') return 'blocked-login';
       const ownTenant = page.getByText('Empresa #1', { exact: false });
-      if (await ownTenant.count() && await ownTenant.first().isVisible()) return 'verified-tenant-a';
+      if (saved === '1' && (await ownBrand.isVisible() ||
+          (await ownTenant.count() && await ownTenant.first().isVisible()))) return 'verified-tenant-a';
       return 'unverified';
     }, { message: 'forged tenant B must resolve to verified A or a closed login gate', timeout: 20_000 })
       .not.toBe('unverified');
     await expect(page.getByText('Empresa #2', { exact: false })).toHaveCount(0);
+    await expect(page.getByText('Empresa B efimera C15', { exact: false })).toHaveCount(0);
     const savedId = await page.evaluate(() => localStorage.getItem('solqaryn_empresa_solicitada_id'));
     expect(savedId, 'forged tenant B must not remain selected after validation').not.toBe('2');
   });
