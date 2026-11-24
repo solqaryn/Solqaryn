@@ -1,3 +1,9 @@
+## 2026-11-24 — DEV02 C15-04.M05.04: reutilización del pie de tienda
+
+- Extrae la estructura y reglas idénticas de los pies de detalle y carrito a un componente Angular standalone, manteniendo semántica nativa, autoridad de identidad, destinos y puntos de corte propios. Conserva la reserva inferior del CTA del detalle.
+- Añade regresión Playwright de ambos consumidores, navegación y reflujo. Baseline exacto ad54e27b: detalle 18.34 kB frente a presupuesto 16 kB. El nuevo presupuesto y los resultados de CI siguen pendientes; no certifica auditoría global ni cambia límites.
+- SKREF03/05/10 consultadas; no nuevas dependencias ni cambios a seguridad, API o datos.
+
 ## 2026-11-24 — DEV01 C03-01.M03.03: guards ERP exigen prueba contextual vigente
 
 - Cierra el atajo de navegación que aceptaba el contexto Angular memorizado tras sustituir el JWT o el hint tenant. Los dos guards consultan la prueba vigente, deniegan el contexto obsoleto sin reescribir la intención de otra pestaña y vuelven a exigir prueba HTTP después de seleccionar empresa. La autorización efectiva permanece en backend.

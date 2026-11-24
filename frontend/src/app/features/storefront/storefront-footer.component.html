@@ -1,0 +1,6 @@
+<div class="container footer-grid">
+  <div><strong>{{ nombre() }}</strong><p>{{ texto() }}</p></div>
+  <div><b>Tienda</b><a [href]="enlaces.inicio">Inicio</a><a [href]="enlaces.productos">Productos</a><a [href]="enlaces.ofertas">Ofertas</a><a [href]="enlaces.categorias">Categorías</a></div>
+  <div><b>Ayuda</b><a [href]="enlaces.contacto">Contacto</a>@if (ayuda()) { <span>{{ ayuda() }}</span> }</div>
+</div>
+<div class="container footer-bottom">@if (mostrarCopyright()) { <small>{{ copyrightTexto() }}</small> }</div>

@@ -10,6 +10,7 @@ import { CategoriaTienda, ProductoCatalogoPublico, ProductoTienda, crearCatalogo
 import { StorefrontCarritoService } from './storefront-carrito.service';
 import { crearCategoriasTiendaEjemplo, mapearCategoriaTienda } from './storefront-categorias.catalog';
 import { StorefrontHeaderComponent } from './storefront-header.component';
+import { StorefrontFooterComponent } from './storefront-footer.component';
 import { STOREFRONT_CONFIG } from './storefront.config';
 import { EstadoConsultaPublica } from './storefront.models';
 import { STOREFRONT_PATHS } from './storefront.paths';
@@ -19,7 +20,7 @@ import { IconoTiendaComponent, IlustracionTiendaComponent } from './storefront.v
 @Component({
   selector: 'app-storefront-carrito',
   standalone: true,
-  imports: [StorefrontHeaderComponent, IconoTiendaComponent, IlustracionTiendaComponent],
+  imports: [StorefrontHeaderComponent, StorefrontFooterComponent, IconoTiendaComponent, IlustracionTiendaComponent],
   templateUrl: './storefront-carrito.component.html',
   styleUrl: './storefront-carrito.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

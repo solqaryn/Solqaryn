@@ -140,14 +140,11 @@
   </main>
 
   @if (identidad.config().piePaginaActivo) {
-    <footer class="store-footer">
-      <div class="container footer-grid">
-        <div><strong>{{ identidad.nombreSistema() }}</strong><p>{{ identidad.config().piePaginaTexto || identidad.config().eslogan }}</p></div>
-        <div><b>Tienda</b><a [href]="enlaces.inicio">Inicio</a><a [href]="enlaces.productos">Productos</a><a [href]="enlaces.ofertas">Ofertas</a><a [href]="enlaces.categorias">Categorías</a></div>
-        <div><b>Ayuda</b><a [href]="enlaces.contacto">Contacto</a><span>Tu selección se conserva mientras revisas el catálogo.</span></div>
-      </div>
-      <div class="container footer-bottom">@if (identidad.mostrarCopyright()) { <small>{{ identidad.copyright() }}</small> }</div>
-    </footer>
+    <footer appStorefrontFooter class="store-footer cart-footer"
+      [nombre]="identidad.nombreSistema()"
+      [texto]="identidad.config().piePaginaTexto || identidad.config().eslogan"
+      [mostrarCopyright]="identidad.mostrarCopyright()" [copyrightTexto]="identidad.copyright()"
+      ayuda="Tu selección se conserva mientras revisas el catálogo."></footer>
   }
 
   <div class="sr-only" role="status" aria-live="polite">{{ aviso() || carrito.aviso() }}</div>

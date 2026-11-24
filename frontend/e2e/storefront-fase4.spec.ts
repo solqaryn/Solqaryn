@@ -463,4 +463,26 @@ test.describe('Storefront Fase 4 — detalle público de producto', () => {
     await expect(preview).toContainText('Cantidad: *2*');
     await expect(preview).toContainText('36,980');
   });
+
+  test('detalle y carrito reutilizan pie semántico con identidad, enlaces y reflujo', async ({ page }) => {
+    await prepararEmpresa(page);
+    for (const [url, clase] of [
+      ['/tienda/producto/demo-producto-1', 'product-footer'],
+      ['/tienda/carrito', 'cart-footer']
+    ]) {
+      await page.goto(url);
+      const footer = page.locator('footer.store-footer');
+      await expect(footer).toHaveCount(1);
+      await expect(footer).toHaveClass(new RegExp(clase));
+      const contacto = footer.getByRole('link', { name: 'Contacto' });
+      await expect(contacto).toHaveAttribute('href', '/tienda#contacto');
+      await expect(footer.getByRole('link', { name: 'Productos', exact: true })).toHaveAttribute('href', '/tienda/productos');
+      for (const width of [320, 390, 768, 1280]) {
+        await page.setViewportSize({ width, height: 844 });
+        await expect(footer).toBeVisible();
+        expect(await contacto.evaluate(el => el.getBoundingClientRect().height)).toBeGreaterThanOrEqual(44);
+        expect(await footer.evaluate(el => el.scrollWidth - el.clientWidth)).toBeLessThanOrEqual(1);
+      }
+    }
+  });
 });
