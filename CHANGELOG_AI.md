@@ -1,3 +1,8 @@
+## 2026-11-24 — MAIN: contención responsive del listado de Clientes
+
+- Hotfix autorizado por el propietario: tabla dentro de un contenedor horizontal accesible y tarjetas móviles hasta 920 px, siguiendo Productos; ajuste de filtros y textos largos. Se conservan acciones y permisos, sin cambios de API, datos ni otros módulos.
+- Respaldo previo: `RESPALDO-DE-MAIN-(PROD)` en `072df831585f879cfd7bb429575d6d387076d97b`. Validación de navegador y despliegue pendientes.
+
 ## 2026-10-02 — Limpieza integral de identidad legacy en DEV
 
 - Se ejecutó un barrido repository-wide sobre todos los archivos versionados de texto y se normalizaron **378 archivos** que aún contenían terminología o identificadores retirados.
