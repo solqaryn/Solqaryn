@@ -172,7 +172,7 @@ public sealed class UsuarioScopeService : IUsuarioScopeService
             _context.Set<Sucursal>().IgnoreQueryFilters().AsNoTracking()
                 .Where(x => x.EmpresaId == empresaId && x.Activa && !x.Eliminado)
                 .OrderBy(x => x.Id)
-                .Select(x => new SucursalSeleccionable(x.Id, x.EmpresaId, x.Codigo, x.Nombre))
+                .Select(x => new SucursalSeleccionable(x.Id, empresaId, x.Codigo, x.Nombre))
                 .ToListAsync(cancellationToken);
 
         var authority = await AuthorityAsync();

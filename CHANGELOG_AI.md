@@ -1,3 +1,7 @@
+## 2026-11-24 — DEV04 V33 C03-01.M03.03: corrección de compilación de proyección sucursal
+- CI real de 1db52dce, job 138562058204, detectó CS1503 por EmpresaId nullable en el modelo Sucursal; se proyecta el empresaId entero ya verificado y exigido por el predicado SQL, sin permitir nulos ni cambiar autorización.
+- Mantiene las pruebas HTTP JWT Oracle MySQL 8.4 del cambio previo y todos los controles. Nueva CI exact-SHA pendiente; no se declara PASS ni LISTO.
+
 ## 2026-11-24 — DEV04 V33 C03-01.M03.03: descubrimiento seguro de sucursales elegibles
 - La API de sesión contextual incorpora GET tenant-context/sesion/sucursales/{empresaId} autenticado con JWT base; no acepta JWT contextual, cabecera de otra empresa ni sucursal ambigua.
 - El servicio Oracle EF comparte las comprobaciones de sesión comercial y permiso Sucursales:Ver con la emisión; verifica membresía, rol y catálogo activo de la empresa antes de devolver exclusivamente datos mínimos de selección. Ninguna preferencia o token se emite desde el listado.
