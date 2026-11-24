@@ -1,3 +1,7 @@
+## 2026-11-24 — DEV05 V31 C01-03.M04.04: conflicto CAS real en formulario
+- Extiende el caso Playwright existente: actualización independiente, PUT obsoleto desde Angular, 409/412 real visible, bloqueo, recarga, PUT vigente 200, readback y restauración compensatoria MySQL efímero. Sin mocks en este caso ni cambios RBAC/runtime.
+- R2; A0 revisión estática, A1-A4 CI exact-SHA pendiente, A5 independiente; zoom nativo 200% y ANTES genuino no certificados. SKREF-03/10 pins autorizados. Revert normal; solo dev.
+
 ## 2026-11-24 — DEV04 V31 C03-01.M03.03: autoridad estable y renovación HTTP real
 - AuthService congela los valores de autoridad antes de consultar membresía y deniega emisión/renovación si la entidad cambia durante el await; no cambia grants, DTO ni separación tenant/plataforma. No es lease SQL ni revocación global.
 - Diez casos adversariales de mutación durante lookup y ampliación del TestServer existente con controlador real de renovación, JWT firmado, Oracle MySQL 8.4 efímero, rechazo de token sin rol/firma inválida y membresía revocada. Auditoría no ejercitada en este endpoint. Workflow dirigido se activa también por AuthService y conserva su filtro; las nuevas unitarias pertenecen al backend Release para no duplicarlas.

@@ -71,3 +71,9 @@ Pruebas dirigidas: actualizar las expectativas Playwright de 403/500 a estados r
 
 **Regresion dirigida:** el unitario de Angular comprueba que `success=false` con empresaId A y una version falsamente mas reciente NO actualiza el formulario, NO abre snackbar, bloquea reintento hasta consulta y no muestra detalles privados del recibo. Los checks de compilacion, Vitest, Scope Lock y V5 pertenecen al SHA nuevo y no se declaran PASS sin readback; las pruebas E2E reales JWT/MySQL/Chromium se reusan solo si los archivos causales permanecen identicos y la equivalencia se acredita. Antes de LISTO siguen pendientes captura genuina ANTES, zoom nativo Chrome 200% aplicable y A5 de otra Task Javier; no equivalen a pinch CSS/CDP. Riesgo R2 contenido; rollback git revert FF/CAS del commit dev, sin otras ramas ni produccion.
 
+
+
+## V31 — CAS real desde el formulario Chromium
+
+- La prueba existente ahora provoca una versión obsoleta mediante una actualización autenticada independiente, envía desde el formulario Angular sin interceptar HTTP y exige 409/412 real, conflicto visible, guardado bloqueado, persistencia sin sobrescritura y recuperación mediante recarga y PUT real 200. Conserva restauración compensatoria en MySQL efímero y denegación cruzada; no modifica permisos, runtime ni producción.
+- R2 por concurrencia e integración; A0 revisión del diff, A1-A4 pendientes de GitHub-hosted exact-SHA. SKREF-03 y SKREF-10 consultadas en sus pins autorizados; sin dependencias nuevas. Zoom nativo 200%, capturas históricas y A5 independiente siguen sin acreditar. Revert normal si falla.

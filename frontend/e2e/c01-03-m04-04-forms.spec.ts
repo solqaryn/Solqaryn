@@ -178,17 +178,44 @@ test.describe('V24 M04.04 form: real GET, guarded duplicate mutation, error and 
       const first = await page.request.put(endpoint, { headers, data: { ...original, nombre: newName } });
       modified = first.status() === 200;
       expect(first.status(), 'authorized PUT with fresh version').toBe(200);
-      const stale = await page.request.put(endpoint, {
-        headers, data: { ...original, nombre: newName + '-stale' }
-      });
-      expect([409, 412], 'real server must deny stale version; not simulated HTTP 409')
+      // The mounted browser still holds the old version; exercise the actual HTTP
+      // conflict from the Angular form, not an injected Playwright response.
+      const form = page.locator(formSelector);
+      const input = form.locator('input[formcontrolname="nombre"]');
+      const save = page.getByRole('button', { name: 'Guardar configuración tenant' });
+      await expect(input).toHaveValue(prior.nombre);
+      await input.fill(newName + '-stale');
+      const staleResponse = page.waitForResponse(response =>
+        response.url() === endpoint && response.request().method() === 'PUT');
+      await save.click();
+      const stale = await staleResponse;
+      expect(stale.request().postDataJSON().version).toBe(prior.version);
+      expect([409, 412], 'real server must deny stale browser version')
         .toContain(stale.status());
+      await expect(page.getByText(/La configuración cambió en otra sesión/)).toBeVisible();
+      await expect(save).toBeDisabled();
       const after = await page.request.get(endpoint, { headers });
       expect(after.status()).toBe(200);
       const afterData = (await after.json())?.data;
       expect(afterData.empresaId).toBe(1);
       expect(afterData.nombre).toBe(newName);
       expect(afterData.version).toBeGreaterThan(prior.version);
+      await page.getByRole('button', { name: 'Recargar versión' }).click();
+      await expect(input).toHaveValue(newName);
+      await expect(page.getByText(/La configuración cambió en otra sesión/)).toHaveCount(0);
+      await expect(save).toBeEnabled();
+      const finalName = newName + '-reloaded';
+      await input.fill(finalName);
+      const recoveredResponse = page.waitForResponse(response =>
+        response.url() === endpoint && response.request().method() === 'PUT');
+      await save.click();
+      const recovered = await recoveredResponse;
+      expect(recovered.request().postDataJSON().version).toBe(afterData.version);
+      expect(recovered.status()).toBe(200);
+      await expect(form).toHaveAttribute('aria-busy', 'false');
+      const persistedAfterRecovery = await page.request.get(endpoint, { headers });
+      expect(persistedAfterRecovery.status()).toBe(200);
+      expect((await persistedAfterRecovery.json())?.data?.nombre).toBe(finalName);
       const foreign = await page.request.get(api + '/empresa-configuracion/tenant/2', { headers });
       expect([403, 404], 'signed company A JWT cannot read B').toContain(foreign.status());
     } finally {
