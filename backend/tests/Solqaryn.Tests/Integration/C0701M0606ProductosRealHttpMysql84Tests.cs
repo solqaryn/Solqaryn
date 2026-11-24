@@ -166,8 +166,8 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
             await db.SaveChangesAsync();
             db.ChangeTracker.Clear();
 
-            // SQL-backed fiscal-state grants for both isolated tenants.
-            foreach (var action in new[] { AccionPermiso.Activar, AccionPermiso.Desactivar })
+            // SQL-backed fiscal grants for both isolated tenants.
+            foreach (var action in new[] { AccionPermiso.Activar, AccionPermiso.Desactivar, AccionPermiso.Crear })
             {
                 var fiscalPermission = await db.Permisos.IgnoreQueryFilters()
                     .FirstOrDefaultAsync(p => p.Modulo == ModuloSistema.Impuestos &&
@@ -1774,6 +1774,73 @@ public sealed class C0701M0606ProductosRealHttpMysql84Tests
                         .AsNoTracking().CountAsync(x => x.Modulo == ModuloSistema.Impuestos));
             }
             pilotConfig["MultiEmpresa:PrivateFiscalStatePilotEnabled"] = "false";
+
+            // V31: exact HTTP tax creation, real JWT and Oracle EF/MySQL.
+            async Task<HttpResponseMessage> CreateFiscalAsync(
+                string jwt, int selector, string code, int productId, int categoryId)
+            {
+                using var req = new HttpRequestMessage(HttpMethod.Post, "/impuestos");
+                req.Headers.Authorization = new AuthenticationHeaderValue("Bearer", jwt);
+                req.Headers.Add("X-Empresa-Id", selector.ToString());
+                req.Content = new StringContent(System.Text.Json.JsonSerializer.Serialize(new
+                {
+                    nombre = "C0701 HTTP fiscal " + code, codigo = code,
+                    tipo = "Porcentaje", tasa = 12m, operaciones = new[] { "Venta" },
+                    productoIds = new[] { productId }, categoriaIds = new[] { categoryId }
+                }), Encoding.UTF8, "application/json");
+                return await client.SendAsync(req);
+            }
+
+            using (var offCreate = await CreateFiscalAsync(jwtA, a.Id, "C0701HTTPOFF", productAId, pilotCategoryAId))
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, offCreate.StatusCode);
+            pilotConfig["MultiEmpresa:PrivateFiscalCreatePilotEnabled"] = "true";
+            var fiscalCreateAuditBefore = await db.RegistrosAuditoria.IgnoreQueryFilters()
+                .AsNoTracking().CountAsync(x => x.Modulo == ModuloSistema.Impuestos);
+            foreach (var (jwt, owner, code, productId, categoryId) in new[]
+            {
+                (jwtA, a.Id, "C0701HTTPA", productAId, pilotCategoryAId),
+                (jwtB, b.Id, "C0701HTTPB", productBId, pilotCategoryBId)
+            })
+            {
+                using var created = await CreateFiscalAsync(jwt, owner, code, productId, categoryId);
+                Assert.Equal(HttpStatusCode.Created, created.StatusCode);
+                await using var fresh = new AppDbContext(options);
+                var row = await fresh.Impuestos.IgnoreQueryFilters().AsNoTracking()
+                    .Where(x => x.Codigo == code)
+                    .Select(x => new { x.Id, EmpresaId = EF.Property<int?>(x, "EmpresaId") })
+                    .SingleAsync();
+                Assert.Equal(owner, row.EmpresaId);
+                Assert.Equal(productId, await fresh.Set<ImpuestoProducto>().IgnoreQueryFilters().AsNoTracking()
+                    .Where(x => x.ImpuestoId == row.Id && EF.Property<int?>(x, "EmpresaId") == owner)
+                    .Select(x => x.ProductoId).SingleAsync());
+                Assert.Equal(categoryId, await fresh.Set<ImpuestoCategoria>().IgnoreQueryFilters().AsNoTracking()
+                    .Where(x => x.ImpuestoId == row.Id && EF.Property<int?>(x, "EmpresaId") == owner)
+                    .Select(x => x.CategoriaId).SingleAsync());
+            }
+            using (var foreignProduct = await CreateFiscalAsync(jwtA, a.Id, "C0701HTTPXPROD", productBId, pilotCategoryAId))
+                Assert.Equal(HttpStatusCode.BadRequest, foreignProduct.StatusCode);
+            using (var foreignCategory = await CreateFiscalAsync(jwtB, b.Id, "C0701HTTPXCAT", productBId, pilotCategoryAId))
+                Assert.Equal(HttpStatusCode.BadRequest, foreignCategory.StatusCode);
+            using (var spoofedCreate = await CreateFiscalAsync(jwtA, b.Id, "C0701HTTPSPOOF", productBId, pilotCategoryBId))
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, spoofedCreate.StatusCode);
+            var fiscalCreatePermission = await db.Permisos.IgnoreQueryFilters().AsNoTracking()
+                .SingleAsync(p => p.Modulo == ModuloSistema.Impuestos && p.Accion == AccionPermiso.Crear
+                    && p.Ambito == AmbitoAutorizacion.Empresa && p.Activo && !p.Eliminado);
+            var fiscalCreateGrantA = await db.RolPermisos.SingleAsync(x =>
+                x.RolId == roleA.Id && x.PermisoId == fiscalCreatePermission.Id);
+            db.RolPermisos.Remove(fiscalCreateGrantA);
+            await db.SaveChangesAsync();
+            using (var revokedCreate = await CreateFiscalAsync(jwtA, a.Id, "C0701HTTPREVOKE", productAId, pilotCategoryAId))
+                Assert.Equal(HttpStatusCode.ServiceUnavailable, revokedCreate.StatusCode);
+            pilotConfig["MultiEmpresa:PrivateFiscalCreatePilotEnabled"] = "false";
+            await using (var fiscalCreateFresh = new AppDbContext(options))
+            {
+                Assert.Equal(2, await fiscalCreateFresh.Impuestos.IgnoreQueryFilters().AsNoTracking()
+                    .CountAsync(x => x.Codigo.StartsWith("C0701HTTP")));
+                Assert.Equal(fiscalCreateAuditBefore + 2,
+                    await fiscalCreateFresh.RegistrosAuditoria.IgnoreQueryFilters().AsNoTracking()
+                        .CountAsync(x => x.Modulo == ModuloSistema.Impuestos));
+            }
 
             // V26 R2: nested ProductoVariantes endpoints must not evade the
             // multiempresa guard through a parent product ID, even with a

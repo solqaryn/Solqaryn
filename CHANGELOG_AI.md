@@ -1,3 +1,8 @@
+## 2026-11-23 — DEV01 V31 C07-01.M06.06: alta fiscal HTTP acotada y propiedad de alcances
+- R2: POST exacto /impuestos mediante piloto independiente PrivateFiscalCreatePilotEnabled, apagado por defecto; JWT, membresía SQL, Impuestos.Crear y JSON acotado. PUT/DELETE/duplicación siguen fuera de este piloto.
+- Infraestructura: validar propiedad física de producto, categoría, cliente y proveedor antes de agregar el agregado; sin columnas ni migraciones nuevas. Conserva transacción Oracle EF y auditoría estricta.
+- Integración causal: JWT firmado A/B, altas y relaciones propias, rechazo de referencias ajenas, selector falsificado, permiso revocado y piloto apagado, readback MySQL de filas y auditoría. CI exact-SHA pendiente, no certifica A0-A5 ni LISTO.
+
 ## 2026-11-23 — DEV05 V31 C01-03.M04.04: vincular edición al payload tenant confirmado
 - R2: el cambio de empresa verificada podía ocurrir antes de ejecutar tenantWatcher; las tres mutaciones consultaban el ID nuevo aunque el formulario, logo y versión optimista aún correspondieran al tenant anterior. El componente ahora exige coincidencia reactiva con el último payload aceptado, invalida durante recarga y oculta la superficie anterior hasta nueva confirmación. No modifica JWT/RBAC del servidor, contratos HTTP, datos ni arquitectura.
 - Regresión Vitest causal: transición A→B antes de TestBed.tick bloquea PUT, upload y delete; luego una respuesta B válida habilita únicamente datos/version B. CI Angular existente y Chromium real serán acreditados por SHA nuevo; no se repite manualmente la suite previamente verde. No se certifica zoom nativo 200%, captura histórica ANTES, integración ni A5 anticipada. Scope Lock/V17, owner histórico DEV05; sin QA/main/PROD.

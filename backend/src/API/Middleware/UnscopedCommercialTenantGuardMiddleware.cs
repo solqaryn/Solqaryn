@@ -610,7 +610,9 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
         // Edición de maestros: opt-in separado, nunca habilita otros PUT.
         var editarMaestros = HttpMethods.IsPut(http.Request.Method) &&
                            config.GetValue<bool>("MultiEmpresa:PrivateMasterEditPilotEnabled");
-        // Fiscal state pilot has a separate default-off switch. No tax CRUD.
+        // Fiscal pilots are independent, default OFF; only exact routes below.
+        var altaFiscal = HttpMethods.IsPost(http.Request.Method) &&
+                         config.GetValue<bool>("MultiEmpresa:PrivateFiscalCreatePilotEnabled");
         var estadoFiscal = HttpMethods.IsPatch(http.Request.Method) &&
                            config.GetValue<bool>("MultiEmpresa:PrivateFiscalStatePilotEnabled");
         // No activa mutaciones de inventario ni confirmaciones fiscales.
@@ -648,7 +650,7 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                           config.GetValue<bool>("MultiEmpresa:PrivateAdminReportPilotEnabled");
         if (!lectura && !alta && !editarMaestros && !borrador && !confirmar &&
             !pdf && !reportes && !inventario && !media && !adminReport &&
-            !finanzas && !archivos && !borrarProducto && !estadoFiscal)
+            !finanzas && !archivos && !borrarProducto && !estadoFiscal && !altaFiscal)
             return false;
 
         ModuloSistema modulo;
@@ -681,6 +683,11 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                              EsRutaExacta(http.Request.Path, "/impuestos/activos") ||
                              EsRutaDetallePositiva(http.Request.Path, "/impuestos")))
             modulo = ModuloSistema.Impuestos;
+        else if (altaFiscal && EsRutaExacta(http.Request.Path, "/impuestos"))
+        {
+            modulo = ModuloSistema.Impuestos;
+            accionFiscal = AccionPermiso.Crear;
+        }
         else if (estadoFiscal &&
                  EsRutaAccionPositiva(http.Request.Path, "/impuestos", "activar"))
         {
@@ -922,9 +929,9 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
                 return false;
         }
 
-        if (esEdicionMaestros)
+        if (esEdicionMaestros || accionFiscal == AccionPermiso.Crear)
         {
-            // Solo JSON pequeño: ID propio, RBAC Editar y filtro EF físico.
+            // Solo JSON pequeño; RBAC específico y ownership EF físico.
             const int maxJsonBytes = 32 * 1024;
             var length = http.Request.ContentLength;
             if (length is null || length <= 0 || length > maxJsonBytes ||
