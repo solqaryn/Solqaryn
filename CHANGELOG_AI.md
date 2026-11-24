@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV02 V31 C15-04.M05.04: zoom nativo en rechazo autenticado
+- Run 45363457995 job 138339044227 del SHA ff474b0b: preflight correcto, 166 pruebas Chromium con JWT firmado y MySQL 8.4 efimero aprobadas; prueba de zoom privado fallo esperando #login-title en el rechazo autenticado B. El template Angular muestra selector de empresa y alerta de autoridad global, no formulario anonimo.
+- Corregir exclusivamente el probe privado: seleccionar la alerta real con role=alert, comprobar texto de denegacion, ausencia del formulario anonimo y de la superficie global; mantener HTTP 403, URL de rechazo, zoom nativo 100/200, capturas X11, geometria y foco. Sin cambio runtime, datos, permisos ni workflows. A0 revisado; preflight y CI nuevo SHA pendientes. No repetir manualmente suites verdes.
+- Mantener WIP DEV02, lock 2000002297 y A5 independiente; alcance UX global, capturas historicas ANTES y presupuesto CSS pendientes. Rollback git revert normal sobre dev.
+
 ## 2026-11-24 — DEV01 V31 C07-01.M06.06: reparación literal Scope Lock
 - SHA 6d4da14a, job 138365756136: el comentario nuevo del Fact contenía un término reservado por el verificador de identidad retirada. Sustituir únicamente ese término por stock; no modificar el verificador, permisos, código runtime ni asserts. Se requiere nueva CI exact-SHA.
 

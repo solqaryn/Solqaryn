@@ -138,7 +138,16 @@ try {
         assert.equal((await denied).status(), 403);
         await page.waitForURL(/\/login\?plataforma=denegado/);
         assert.equal(await page.getByTestId('ux-audit-v19').count(), 0);
-        await audit(page, worker, 'tenant-2-global-denied', page.locator('#login-title'));
+        // Authenticated denial renders the tenant selector and explicit alert,
+        // not the anonymous credentials form. Preserve the real 403 and guard.
+        const denial = page.locator('.plataforma-error[role="alert"]');
+        await denial.waitFor({ state: 'visible', timeout: 20000 });
+        assert.match(await denial.innerText(), /Tu sesión no posee autoridad global de SOLQARYN/);
+        assert.equal(await page.locator('#login-title').count(), 0);
+        await audit(page, worker, 'tenant-2-global-denied', denial);
+        assert.match(page.url(), /\/login\?plataforma=denegado/);
+        assert.match(await denial.innerText(), /Tu sesión no posee autoridad global de SOLQARYN/);
+        assert.equal(await page.getByTestId('ux-audit-v19').count(), 0);
       }
     });
   }
