@@ -144,4 +144,41 @@ public class ImpuestoCodigoEstableTests
         // debe acreditarse separadamente en MySQL 8.4 GitHub-hosted.
     }
 
+    [Fact]
+    public async Task EliminarLogicoAsync_FalloAuditoriaEstricta_PropagaExcepcionDentroDeTransaccion()
+    {
+        var existente = new Impuesto
+        {
+            Id = 31, Codigo = "ISV15", Nombre = "ISV vigente",
+            Tipo = TipoImpuesto.Porcentaje, Tasa = 15m, Activo = true
+        };
+        var repository = new Mock<IImpuestoRepository>();
+        repository.Setup(x => x.GetByIdAsync(31)).ReturnsAsync(existente);
+        repository.Setup(x => x.ContarAplicacionesAsync(31)).ReturnsAsync(0);
+        var auditoria = new Mock<IAuditoriaService>();
+        auditoria.Setup(a => a.RegistrarEstrictoAsync(
+                ModuloSistema.Impuestos, AccionPermiso.EliminarLogico,
+                It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<string?>(),
+                It.IsAny<object?>(), It.IsAny<object?>(), It.IsAny<string?>(),
+                It.IsAny<string>(), It.IsAny<string?>()))
+            .ThrowsAsync(new InvalidOperationException("AUDIT_SINK_DOWN"));
+        var unidad = new Mock<IUnitOfWork>();
+        unidad.Setup(x => x.ExecuteInTransactionAsync(It.IsAny<Func<Task>>()))
+            .Returns<Func<Task>>(async accion => await accion());
+        var service = new ImpuestoService(repository.Object, auditoria.Object,
+            Mock.Of<ICurrentUserService>(), unidad.Object);
+
+        var error = await Assert.ThrowsAsync<InvalidOperationException>(
+            () => service.EliminarLogicoAsync(31));
+        Assert.Equal("AUDIT_SINK_DOWN", error.Message);
+        unidad.Verify(x => x.ExecuteInTransactionAsync(It.IsAny<Func<Task>>()), Times.Once);
+        repository.Verify(x => x.SaveChangesAsync(), Times.Once);
+        auditoria.Verify(a => a.RegistrarEstrictoAsync(
+            ModuloSistema.Impuestos, AccionPermiso.EliminarLogico,
+            It.IsAny<string>(), It.IsAny<int?>(), It.IsAny<string?>(),
+            It.IsAny<object?>(), It.IsAny<object?>(), It.IsAny<string?>(),
+            It.IsAny<string>(), It.IsAny<string?>()), Times.Once);
+        // Este mock no acredita rollback SQL: se requiere A3 MySQL 8.4 efímero.
+    }
+
 }

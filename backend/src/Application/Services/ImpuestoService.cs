@@ -236,18 +236,32 @@ public class ImpuestoService : IImpuestoService
 
     public async Task EliminarLogicoAsync(int id)
     {
-        var i = await _repository.GetByIdAsync(id) ?? throw new BusinessRuleException("El impuesto no existe.");
-        var usos = await _repository.ContarAplicacionesAsync(id);
-        if (usos > 0)
-            throw new BusinessRuleException("No se puede eliminar un impuesto que ya fue aplicado en documentos. Desactívalo en su lugar.");
+        // A fiscal soft-delete and its durable audit receipt are one transaction:
+        // failure of the audit sink must roll back the state change in Oracle EF/MySQL.
+        await _unitOfWork.ExecuteInTransactionAsync(async () =>
+        {
+            var impuesto = await _repository.GetByIdAsync(id)
+                ?? throw new BusinessRuleException("El impuesto no existe.");
+            var usos = await _repository.ContarAplicacionesAsync(id);
+            if (usos > 0)
+                throw new BusinessRuleException("No se puede eliminar un impuesto que ya fue aplicado en documentos. Desactívalo en su lugar.");
 
-        i.Eliminado = true;
-        i.Activo = false;
-        i.FechaEliminacion = DateTime.UtcNow;
-        i.EliminadoPorUsuarioId = _currentUser.UsuarioId;
-        _repository.Update(i);
-        await _repository.SaveChangesAsync();
-        await _auditoria.RegistrarAsync(ModuloSistema.Impuestos, AccionPermiso.EliminarLogico, $"Eliminó (lógico) el impuesto '{i.Nombre}'.", i.Id);
+            var valoresAnteriores = new { impuesto.Eliminado, impuesto.Activo };
+            impuesto.Eliminado = true;
+            impuesto.Activo = false;
+            impuesto.FechaEliminacion = DateTime.UtcNow;
+            impuesto.EliminadoPorUsuarioId = _currentUser.UsuarioId;
+            _repository.Update(impuesto);
+            await _repository.SaveChangesAsync();
+            await _auditoria.RegistrarEstrictoAsync(
+                ModuloSistema.Impuestos,
+                AccionPermiso.EliminarLogico,
+                $"Eliminó (lógico) el impuesto '{impuesto.Nombre}'.",
+                impuesto.Id,
+                entidad: "Impuesto",
+                valoresAnteriores: valoresAnteriores,
+                valoresNuevos: new { impuesto.Eliminado, impuesto.Activo });
+        });
     }
 
     public async Task EliminarPermanenteAsync(int id)

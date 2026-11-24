@@ -1,3 +1,7 @@
+## 2026-11-23 — DEV01 V31 C07-01.M06.06: baja fiscal lógica y auditoría atómicas
+- Entregable runtime: `ImpuestoService.EliminarLogicoAsync` incorpora validación de documentos, mutación fiscal y auditoría estricta en la misma unidad transaccional Oracle EF/MySQL, sin modificar rutas, roles, migraciones ni documentos históricos.
+- Test adversarial xUnit verifica propagación de falla del sink dentro del callback transaccional; NO sustituye rollback físico MySQL 8.4, JWT A/B ni contrato ERP de servicios/atributos. C07-01.M06.06 continúa EN_PROGRESO bajo lock V17; A0-A4 completos/A5/LISTO no declarados.
+
 ## 2026-11-23 — DEV06 V30 C14-02.M06.06: serializacion real del DELETE antes de snapshot MySQL
 - Entregable funcional: `ProductosController.Delete` adquiere el bloqueo SQL `FOR UPDATE` del producto con tenant JWT/RBAC verificado como primera lectura de su transaccion; evita snapshot REPEATABLE READ anterior al lock que podria ocultar existencias/variantes concurrentes. La baja comercial mantiene orden, rollback atomico y auditoria estricta sin ampliar rutas ni flags.
 - Contrato `IProductoService.LockForDeleteAsync` y su implementacion fail-closed delegan al repositorio SQL tenant-scoped existente; pruebas unitarias nuevas se agregan DESPUES de cambiar runtime para orden lock/lectura/limpieza/delete, sin RBAC, empresa A y ajena.
