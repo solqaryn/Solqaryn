@@ -1,3 +1,8 @@
+## 2026-11-25 — DEV01 — C15-03.M05.05 — R12 autorización previa a lock de confirmación
+- TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a; RUN_ID 640479dd-af80-832b-8fa0-9f1c7865b191; base 562cb93d41ddefd72aa2a420e1fd4c38522157e5; V17 H2262:I2262; adopta preparación causal DEV06 RUN 114ae855-c750-832c-a640-a21b3e6db184 (monitor AA7:AN7); autoría compartida DEV06/DEV01, A5 independiente de autores/reparadores.
+- Controlador confirma propiedad y membresía persistidas antes del GET_LOCK; revalida antes de exponer contención. Conserva RequierePermiso, lock nativo, autorización y transacción FOR UPDATE existentes; sin cambio de grant, migración, datos, cuarentena P0 ni configuración.
+- Amplía Fact real MySQL 8.4 efímero C1503M0505CargaMasivaOwnershipIntegrationTests con propietario, ajeno mismo tenant, tenant cruzado/missing indistinguibles, cancelación, contención y revocación. Prueba por servicio/controlador directo; no acredita HTTP JWT ni proveedor de bytes. A0 estático acotado; CI exact SHA y A5 pendientes. SKREF-11 original pin 49f948faa9258a0c61caceaf225e179651397431. Sin QA/main/PROD.
+
 ## 2026-11-25 — DEV06 — C01-04.M03.03 / foco C01-04.M03.06 — R12/R11 cancelacion del gate Application
 - TASK_ID 6af16bbad26881918c283abe06e1f32a; RUN_ID 96a7680f-69d8-8321-b8d3-7b8a32fe36ce; base 76484e42e85f8711533021e29a5ba06c028c2256; V17 H268:I268; comprobacion CancellationToken inmediatamente despues de lectura confiable para impedir veredicto posterior a cancelacion. Dos variantes xUnit con evidencia valida y nula, sin alterar grants, DB, DI, migraciones ni runtime autentico; no sustituye R11. A5 independiente y CI pendientes, conserva cierre historico y owner de .03; foco .06 VALIDANDO. Sin CAS.
 

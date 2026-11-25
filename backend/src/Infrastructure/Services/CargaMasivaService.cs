@@ -300,6 +300,22 @@ public sealed class CargaMasivaService : ICargaMasivaService
         return MapDetalle(carga, filas, errores);
     }
 
+    public async Task AutorizarConfirmacionAsync(int id, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var scope = await AutorizarCargaActualAsync(cancellationToken);
+        var target = await _db.CargasMasivas.AsNoTracking()
+            .Where(x => x.Id == id && (scope.EmpresaId == null ||
+                EF.Property<int?>(x, "EmpresaId") == scope.EmpresaId))
+            .Select(x => new { x.CreadoPorUsuarioId })
+            .SingleOrDefaultAsync(cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
+        if (target is null)
+            throw new BusinessRuleException("La carga masiva no existe.");
+        if (!scope.EsAdministrador && target.CreadoPorUsuarioId != scope.UsuarioId)
+            throw new ForbiddenAccessException("No tienes acceso a esta carga masiva.");
+    }
+
     public async Task<CargaMasivaDetalleDto> ConfirmarAsync(
         int id,
         CancellationToken cancellationToken = default)

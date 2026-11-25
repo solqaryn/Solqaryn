@@ -17,6 +17,7 @@ public interface ICargaMasivaService
         CancellationToken cancellationToken = default);
     Task<PagedResult<CargaMasivaDto>> GetPagedAsync(PagedRequest request);
     Task<CargaMasivaDetalleDto?> GetByIdAsync(int id);
+    Task AutorizarConfirmacionAsync(int id, CancellationToken cancellationToken = default);
     Task<CargaMasivaDetalleDto> ConfirmarAsync(int id, CancellationToken cancellationToken = default);
     Task<ArchivoDescargableDto> DescargarErroresAsync(int id, string formato);
 }

@@ -136,6 +136,38 @@ public sealed class C1503M0505CargaMasivaOwnershipIntegrationTests
             {
                 var service = Service(db, actorA);
                 Assert.Equal(ownA, (await service.GetByIdAsync(ownA))?.Id);
+                await service.AutorizarConfirmacionAsync(ownA);
+                await Assert.ThrowsAsync<ForbiddenAccessException>(() => service.AutorizarConfirmacionAsync(otherA));
+                var foreign = await Assert.ThrowsAsync<BusinessRuleException>(() => service.AutorizarConfirmacionAsync(ownB));
+                var missing = await Assert.ThrowsAsync<BusinessRuleException>(() => service.AutorizarConfirmacionAsync(int.MaxValue));
+                Assert.Equal(missing.Message, foreign.Message);
+                using (var cancelled = new CancellationTokenSource())
+                {
+                    cancelled.Cancel();
+                    await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
+                        service.AutorizarConfirmacionAsync(ownA, cancelled.Token));
+                }
+                await using (var lockDb = Context(options, aId))
+                {
+                    await using var held = await CargaMasivaConfirmationLock.TryAcquireAsync(lockDb, otherA, CancellationToken.None);
+                    Assert.NotNull(held);
+                    var controller = new Solqaryn.API.Controllers.CargasMasivasController(service, db);
+                    await Assert.ThrowsAsync<ForbiddenAccessException>(async () =>
+                    {
+                        await controller.Confirmar(otherA, CancellationToken.None);
+                    });
+                }
+                await using (var lockDb = Context(options, aId))
+                {
+                    await using var held = await CargaMasivaConfirmationLock.TryAcquireAsync(lockDb, ownA, CancellationToken.None);
+                    Assert.NotNull(held);
+                    var controller = new Solqaryn.API.Controllers.CargasMasivasController(service, db);
+                    var busy = await Assert.ThrowsAsync<BusinessRuleException>(async () =>
+                    {
+                        await controller.Confirmar(ownA, CancellationToken.None);
+                    });
+                    Assert.Equal("Esta carga ya está siendo confirmada por otra solicitud. Espera a que finalice.", busy.Message);
+                }
                 Assert.Null(await service.GetByIdAsync(ownB));
                 await Assert.ThrowsAsync<ForbiddenAccessException>(() => service.GetByIdAsync(otherA));
                 await Assert.ThrowsAsync<ForbiddenAccessException>(() => service.ConfirmarAsync(otherA));
@@ -202,6 +234,7 @@ public sealed class C1503M0505CargaMasivaOwnershipIntegrationTests
                 await Assert.ThrowsAsync<ForbiddenAccessException>(() => service.GetByIdAsync(ownA));
                 await Assert.ThrowsAsync<ForbiddenAccessException>(() => service.GetPagedAsync(new PagedRequest()));
                 await Assert.ThrowsAsync<ForbiddenAccessException>(() => ValidateAsync(service, confirmedBytes));
+                await Assert.ThrowsAsync<ForbiddenAccessException>(() => service.AutorizarConfirmacionAsync(ownA));
                 await Assert.ThrowsAsync<ForbiddenAccessException>(() => service.ConfirmarAsync(ownA));
             }
             await using (var db = Context(options, aId))

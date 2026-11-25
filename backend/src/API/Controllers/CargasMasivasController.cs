@@ -123,8 +123,13 @@ public class CargasMasivasController : ControllerBase
     [RequierePermiso(ModuloSistema.CargasMasivas, AccionPermiso.Confirmar)]
     public async Task<IActionResult> Confirmar(int id, CancellationToken cancellationToken)
     {
-        await using var lease = await CargaMasivaConfirmationLock.TryAcquireAsync(_db, id, cancellationToken)
-            ?? throw new BusinessRuleException("Esta carga ya está siendo confirmada por otra solicitud. Espera a que finalice.");
+        await _service.AutorizarConfirmacionAsync(id, cancellationToken);
+        await using var lease = await CargaMasivaConfirmationLock.TryAcquireAsync(_db, id, cancellationToken);
+        if (lease is null)
+        {
+            await _service.AutorizarConfirmacionAsync(id, cancellationToken);
+            throw new BusinessRuleException("Esta carga ya está siendo confirmada por otra solicitud. Espera a que finalice.");
+        }
 
         var resultado = await _service.ConfirmarAsync(id, cancellationToken);
         return Ok(ApiResponse<CargaMasivaDetalleDto>.Ok(resultado, "Carga confirmada mediante una transacción completa."));
