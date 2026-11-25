@@ -1,3 +1,7 @@
+## 2026-11-25 — QA: densidad visual de portada y tarjetas de categoría
+
+- Ajuste móvil de jerarquía tipográfica, espacios, imagen hero y etiqueta destacada sin solapamiento; tarjetas de categoría reducidas y destacados verticales con altura mínima adaptable al contenido, título ajustado, descripción y precio visibles. Imágenes con contain dentro de su marco. Se conserva identidad, funciones y el ancho al 75% de destacados. Regresión Playwright ampliada para comprobar geometría de título, descripción, precio e imagen a 320/390/768/1366px. No se cambian API, datos, permisos ni dependencias. Scope Lock DEV 562cb93 run 45699418085 PASS; rollback mediante revert del changeset exclusivamente en qa.
+
 ## 2026-11-25 — QA: corrección TS2345 del formulario de variantes
 
 - Run 45697121191: higiene y backend SUCCESS; frontend falló en `npm run lint` porque `editar()` usaba `FormGroup.setValue` sin el control nuevo `almacenInicialId`. Se inicializa explícitamente a null tanto al editar como al cancelar, manteniendo el bloqueo de cantidad en edición y evitando reutilizar el almacén de otra alta. Se conserva el formulario tipado, sin casts ni relajación de validaciones.

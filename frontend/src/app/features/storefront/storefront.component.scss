@@ -110,7 +110,7 @@ h1, h2, h3 { color: var(--color-heading); }
   border-radius: 50%;
 }
 .hero-product { position: relative; z-index: 1; width: 100%; height: 270px; border: 0; background: transparent; }
-.hero-product img { width: 100%; height: 100%; object-fit: contain; }
+.hero-product img { display: block; width: 100%; height: 100%; max-width: 100%; max-height: 100%; object-fit: contain; }
 .hero-placeholder { position: relative; z-index: 1; width: min(260px, 100%); }
 .hero-card {
   position: absolute;
@@ -171,23 +171,23 @@ h1, h2, h3 { color: var(--color-heading); }
 .category-art app-store-art { width: 100%; height: 100%; }
 .category-copy { margin-top: auto; min-width: 0; }
 .category-copy strong, .category-copy small { display: block; }
-.category-copy strong { overflow: hidden; text-overflow: ellipsis; font-size: .73rem; white-space: nowrap; }
+.category-copy strong { font-size: .73rem; line-height: 1.35; overflow-wrap: anywhere; }
 .category-copy small { margin-top: 5px; color: var(--color-text-muted); font-size: .59rem; }
 .category-card > app-store-icon { position: absolute; right: 12px; bottom: 12px; color: var(--color-primary); font-size: .9rem; opacity: 0; transform: translateX(-4px); transition: opacity .2s ease, transform .2s ease; }
 .category-card:hover > app-store-icon { opacity: 1; transform: translateX(0); }
 
 .featured-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 18px; }
-.featured-card { min-width: 0; overflow: hidden; border: 1px solid var(--home-line); border-radius: var(--radius); background: var(--color-surface); transition: transform .2s ease, box-shadow .2s ease; }
+.featured-card { min-width: 0; display: flex; flex-direction: column; overflow: hidden; border: 1px solid var(--home-line); border-radius: var(--radius); background: var(--color-surface); transition: transform .2s ease, box-shadow .2s ease; }
 .featured-card:hover { transform: translateY(-3px); box-shadow: var(--shadow-card); }
-.featured-media { position: relative; width: 100%; height: 210px; padding: 27px 16px 12px; border: 0; background: linear-gradient(150deg, var(--color-surface), var(--home-soft)); }
-.featured-media img { width: 100%; height: 100%; object-fit: contain; }
+.featured-media { position: relative; display: block; flex: 0 0 auto; min-width: 0; overflow: hidden; width: 100%; height: 210px; padding: 27px 16px 12px; border: 0; background: linear-gradient(150deg, var(--color-surface), var(--home-soft)); }
+.featured-media img, .featured-media app-store-art { display: block; width: 100%; height: 100%; max-width: 100%; max-height: 100%; object-fit: contain; }
 .featured-badge { position: absolute; top: 11px; left: 11px; z-index: 2; padding: 5px 8px; border: 1px solid var(--home-line); border-radius: calc(var(--radius) * .5); background: var(--color-surface); color: var(--color-primary); font-size: .52rem; font-weight: 800; }
-.featured-body { padding: 15px 16px 17px; }
+.featured-body { min-width: 0; flex: 1 0 auto; display: flex; flex-direction: column; padding: 15px 16px 17px; overflow-wrap: anywhere; }
 .featured-body > p { color: var(--color-text-muted); font-size: .56rem; letter-spacing: .08em; text-transform: uppercase; }
 .featured-body h3 { margin-top: 6px; font-size: .83rem; line-height: 1.4; }
-.featured-body h3 button { padding: 0; border: 0; background: transparent; text-align: left; font-weight: 800; }
-.featured-body > span { min-height: 3em; margin-top: 5px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; color: var(--color-text-muted); font-size: .64rem; line-height: 1.5; }
-.featured-body > div { margin-top: 12px; padding-top: 11px; border-top: 1px solid var(--home-line); }
+.featured-body h3 button { display: block; max-width: 100%; padding: 0; border: 0; background: transparent; text-align: left; font: inherit; font-weight: 700; line-height: inherit; white-space: normal; overflow-wrap: anywhere; }
+.featured-body > span { min-height: 3em; margin-top: 5px; margin-bottom: 8px; display: -webkit-box; -webkit-box-orient: vertical; -webkit-line-clamp: 2; overflow: hidden; color: var(--color-text-muted); font-size: .64rem; line-height: 1.5; }
+.featured-body > div { margin-top: auto; padding-top: 8px; border-top: 1px solid var(--home-line); }
 .featured-body small, .featured-body strong { display: block; }
 .featured-body small { color: var(--color-text-muted); font-size: .56rem; }
 .featured-body strong { margin-top: 3px; font-size: 1rem; }

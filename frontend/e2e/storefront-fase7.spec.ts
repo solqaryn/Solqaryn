@@ -58,6 +58,21 @@ test.describe('Storefront Fase 7 — home comercial', () => {
       const gap = columns === 4 ? 18 : 10;
       expect(Math.abs(size.width - (gridWidth - (columns - 1) * gap) / columns * .75)).toBeLessThanOrEqual(2);
       expect(size.height).toBeGreaterThan(size.width);
+      const title = card.locator('h3 button');
+      const description = card.locator('.featured-body > span');
+      const price = card.locator('.featured-body > div strong');
+      for (const part of [title, description, price]) {
+        await expect(part).toBeVisible();
+        const bounds = (await part.boundingBox())!;
+        expect(bounds.y + bounds.height).toBeLessThanOrEqual(size.y + size.height + 1);
+        expect(bounds.x + bounds.width).toBeLessThanOrEqual(size.x + size.width + 1);
+      }
+      const media = card.locator('.featured-media');
+      const art = media.locator('img, app-store-art').first();
+      const frame = (await media.boundingBox())!;
+      const image = (await art.boundingBox())!;
+      expect(image.width).toBeLessThanOrEqual(frame.width + 1);
+      expect(image.height).toBeLessThanOrEqual(frame.height + 1);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBeTruthy();
     }
   });
