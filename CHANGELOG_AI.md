@@ -1,3 +1,6 @@
+## 2026-11-25 — DEV04 — C01-04.M03.06 — R12 correccion causal gate V19
+- TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09; RUN_ID bf9b175d-f364-8333-aa86-46a244a2abde; base ac1289cac5ec493439da36926a15c9c156a7ae3b; job139490363632: 22/22 xUnit PASS, 0 fallo/omitido, pero gate estricto obsoleto esperaba 11 tras las 11 nuevas variantes DEV03. Actualiza nombre, tupla exacta (22,22,0,0) y error de V19; mantiene las 11 Fact, 11 InlineData, prueba de revocacion separada 1/1 y todos los controles. Sin cambio runtime, datos, migracion, permisos, A5 ni LISTO. CI nuevo SHA pendiente.
+
 ## 2026-11-25 — DEV03 — C01-04.M03.06 — R12 identidad de gate backend permanente
 - TASK_ID 6adc2e4bd8a48191ac7d8641ed95a1a3; RUN_ID 1d4fd1ca-ba48-8326-a8f0-887abca8203e; base db6c2abe26d1a934933b61e83ec576264172d9d2; adopta hallazgo independiente DEV02 evento12229 sin atribuirle autoria. Mantiene gate DEV historico cuando existe y verifica core permanente solo ante ausencia; identidad real App/suite, run/intento/job/check, workflow fijo y paso build/test o reuse exact-SHA; no aliases laxos ni PASS para FAIL/SKIPPED. 11 casos HTTP/JWT fixture y prueba real GitHub/MySQL efimero en V23 sobre SHA base; CI nueva pendiente. GLOBAL sin EmpresaId, sin nueva migracion, grant, infraestructura, tenant, QA/main/PROD, A5 ni LISTO. Conserva CHANGELOG completo.
 
