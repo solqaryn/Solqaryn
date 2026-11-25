@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV03 C01-03.M04.01: reproducción histórica aislada V44
+
+- Añade evidencia exclusiva del padre d7b460e8, ruta /configuracion y card preexistente, con JWT/MySQL 8.4 reales y zoom nativo Chromium/X11. Observa acceso single y A/B sin modificar runtime histórico ni simular autorización.
+- Conserva la CI actual 34967bcf sin relanzarla; workflow independiente por SHA, solo rutas propias. Capturas reproducidas, no contemporáneas; A5 independiente y LISTO pendientes de evidencia real.
+
 ## 2026-11-24 — DEV04 C01-03.M04.01: cobertura de disparo CI por consumidores de autorización
 
 - El job dirigido 138567522295 aprobó 1ef35ba4, pero los guards, el contexto tenant y el interceptor cambiaron posteriormente sin activar este workflow. Incluir las siete rutas causales exactas en el filtro push de dev para que cambios en estos consumidores vuelvan a ejecutar la misma aceptación privada real.
