@@ -8,6 +8,7 @@ on:
       - 'backend/src/Infrastructure/AutomationV5/V5UniversalCaseFileQaGitHubJobReader.cs'
       - 'backend/tests/Solqaryn.Tests/Integration/C0104M0306DurableQaAuditMysql84Tests.cs'
       - '.github/ci/c0104-github-live-proof.cs'
+      - '.github/ci/c0104-global-http-live-proof.py'
       - '.github/ci/c0104-r11-lab.sh'
       - '.github/ci/c0104-r11-bootstrap-recipe.json'
       - '.github/workflows/v23-c01-04-m03-06-durable-qa-mysql84.yml'
@@ -108,6 +109,43 @@ jobs:
           </Project>
           EOF
           dotnet run --project "$proof/Proof.csproj" --configuration Release
+
+      - name: Verify real global controller JWT GitHub and MySQL in one isolated request
+        working-directory: .
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$GITHUB_ACTIONS" = true
+          test "$RUNNER_ENVIRONMENT" = github-hosted
+          export SOLQARYN_C0204_MYSQL_TEST_CONNECTION="$C0104_M0306_MYSQL_TEST"
+          target="backend/tests/Solqaryn.Tests/API/Controllers/C0204M0502QaHttpContractTests.cs"
+          backup="$(mktemp "$RUNNER_TEMP/c0104-http-source.XXXXXX")"
+          cp "$target" "$backup"
+          trap 'cp "$backup" "$target"; rm -f "$backup"' EXIT
+          python3 .github/ci/c0104-global-http-live-proof.py
+          dotnet test backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --no-restore --filter 'FullyQualifiedName~C0104GlobalHttpLiveProviderProof' --logger 'trx;LogFileName=C0104GlobalHttpLiveProviderProof.trx' --results-directory "$RUNNER_TEMP/c0104-global-http"
+          python3 - <<'PY'
+          import os
+          from pathlib import Path
+          import xml.etree.ElementTree as ET
+          root = ET.parse(Path(os.environ['RUNNER_TEMP']) / 'c0104-global-http/C0104GlobalHttpLiveProviderProof.trx').getroot()
+          counters = root.find('.//{*}Counters')
+          if counters is None or any(int(counters.attrib.get(k, -1)) != v for k, v in dict(total=1, passed=1, failed=0, notExecuted=0).items()):
+              raise SystemExit('GLOBAL_HTTP_REAL_TEST_NOT_FULLY_PASSED')
+          names = [x.attrib.get('testName', '') for x in root.findall('.//{*}UnitTestResult')]
+          if len(names) != 1 or 'C0104GlobalHttpLiveProviderProof' not in names[0]:
+              raise SystemExit('WRONG_OR_SKIPPED_TEST')
+          print('GLOBAL_HTTP_JWT_GITHUB_MYSQL_TRX_PASS')
+          PY
+      - name: Upload global controller live proof
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c0104-global-http-live-proof
+          path: ${{ runner.temp }}/c0104-global-http/
+          if-no-files-found: warn
+          retention-days: 14
 
   r11-ownership-migration-lab:
     name: C01-04.M03.06 - R11 isolated P01/P02 migration and rollback

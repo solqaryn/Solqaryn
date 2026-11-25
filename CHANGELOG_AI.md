@@ -1,3 +1,6 @@
+## 2026-11-25 — DEV06 — C01-04.M03.06 — R12 QA GLOBAL integrated HTTP evidence
+- TASK_ID 6af16bbad26881918c283abe06e1f32a; RUN_ID a3ff18dc-3abc-8331-b0c8-175c00d93107; base 2da6c6693777a12a5b5d9b7276c73907075b57d6. CI-only: new isolated proof combines real signed JWT, global controller, public GitHub reader and Oracle EF/MySQL 8.4 readback in one request; enterprise admin denied, no tenant attribution. Existing 11 tests unchanged outside ephemeral checkout. Strict named TRX; no runtime, migration, grants, Aiven, QA/main/PROD or A5. Execution pending.
+
 ## 2026-11-25 — DEV05 — C01-04.M03.06 — R12 QA GLOBAL live provider proof
 - TASK_ID 6adc2e55f47c81919f6374e561687076; RUN_ID 86d847b8-17fc-8327-ac9f-072bd53d994c; base 3e46d05670bb544d06b0503ce212cdf29293355e; adopta receta DEV03 a66063e1-8fd0-8322-99ac-5f177a1a0940. CI-only: lector C# de producción vía HTTP público, fixture histórico inmutable y negativo de check; runner GitHub-hosted, sin token, datos tenant, migraciones runtime ni Aiven. Conserva los dos jobs y TRX existente. No equivale a aprobación del SHA histórico ni A5. CI exacta pendiente; rollback revert dev.
 
