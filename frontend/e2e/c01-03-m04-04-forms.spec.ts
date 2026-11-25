@@ -1,4 +1,4 @@
-import { expect, test, type Page } from '@playwright/test';
+import { expect, test, type Page, type Locator } from '@playwright/test';
 
 // C01-03.M04.04: real server/login/GET with a controlled slow PUT response.
 // Simulated 409 only tests UI concurrency: never count it as real backend CAS evidence.
@@ -40,8 +40,124 @@ async function loginA(page: Page): Promise<string> {
   return token as string;
 }
 
+
+async function assertFeedbackContrast(message: Locator): Promise<void> {
+  await expect(message).toBeVisible();
+  const ratio = await message.evaluate(el => {
+    const ctx = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+    if (!ctx) throw new Error('Missing canvas color parser');
+    const rgba = (value: string) => {
+      if (!CSS.supports('color', value)) throw new Error('Unsupported computed color: ' + value);
+      ctx.clearRect(0, 0, 1, 1);
+      ctx.fillStyle = value;
+      ctx.fillRect(0, 0, 1, 1);
+      return Array.from(ctx.getImageData(0, 0, 1, 1).data, n => n / 255);
+    };
+    const over = (fg: number[], bg: number[]) => fg.slice(0, 3).map((n, i) => n * fg[3] + bg[i] * (1 - fg[3]));
+    const chain: Element[] = [];
+    for (let node: Element | null = el; node; node = node.parentElement) chain.unshift(node);
+    let bg = [1, 1, 1];
+    for (const node of chain) {
+      const style = getComputedStyle(node);
+      if (Number(style.opacity) !== 1 || style.backgroundImage !== 'none') {
+        throw new Error('Feedback contrast requires explicit compositing for non-solid or translucent ancestor');
+      }
+      bg = over(rgba(style.backgroundColor), bg);
+    }
+    const style = getComputedStyle(el);
+    const fg = over(rgba(style.webkitTextFillColor || style.color), bg);
+    const luminance = (rgb: number[]) => rgb.map(n => n <= 0.04045 ? n / 12.92 : ((n + 0.055) / 1.055) ** 2.4)
+      .reduce((sum, n, i) => sum + n * [0.2126, 0.7152, 0.0722][i], 0);
+    const a = luminance(fg), b = luminance(bg);
+    return (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05);
+  });
+  expect(ratio, 'visible feedback text WCAG AA: ' + await message.innerText()).toBeGreaterThanOrEqual(4.5);
+  console.log('C0103_M0404_FEEDBACK_CONTRAST', JSON.stringify({ text: await message.innerText(), ratio }));
+}
+
 test.describe('V24 M04.04 form: real GET, guarded duplicate mutation, error and navigation', () => {
   test.describe.configure({ retries: 0 });
+
+  test('authorized editable form is reachable at the five required viewport widths', async ({ page }, testInfo) => {
+    test.setTimeout(180_000);
+    await loginA(page);
+    const form = page.locator(formSelector);
+    const name = form.locator('input[formcontrolname="nombre"]');
+    const save = form.getByRole('button', { name: 'Guardar configuración tenant' });
+    const records = [];
+    for (const width of [320, 390, 768, 1280, 1440]) {
+      await page.setViewportSize({ width, height: 900 });
+      await expect(name).toBeEditable();
+      await expect(save).toBeEnabled();
+      await page.evaluate(() => new Promise<void>(resolve => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))));
+      const geometry = await form.evaluate(el => {
+        const root = document.scrollingElement;
+        if (!root) throw new Error('Missing document scrolling element');
+        const targets = new Set<Element>([root, el]);
+        for (let node = el.parentElement; node; node = node.parentElement) targets.add(node);
+        return [...targets].map(node => {
+          const x = node.scrollLeft, y = node.scrollTop;
+          let positive = x, negative = x;
+          try {
+            node.scrollTo({ left: 1000000, top: y, behavior: 'instant' });
+            positive = node.scrollLeft;
+            node.scrollTo({ left: -1000000, top: y, behavior: 'instant' });
+            negative = node.scrollLeft;
+          } finally {
+            node.scrollTo({ left: x, top: y, behavior: 'instant' });
+          }
+          return { tag: node.tagName, root: node === root, client: node.clientWidth, scroll: node.scrollWidth,
+            travel: Math.max(x, positive, negative) - Math.min(x, positive, negative),
+            restored: node.scrollLeft === x && node.scrollTop === y };
+        });
+      });
+      expect(geometry.some(g => g.root)).toBe(true);
+      for (const g of geometry) {
+        expect(g.travel, width + 'px horizontal travel ' + g.tag).toBe(0);
+        expect(g.restored, width + 'px scroll restoration ' + g.tag).toBe(true);
+      }
+      const controls = form.locator('input:not([type=hidden]):not([type=file]):visible, textarea:visible, button:visible');
+      expect(await controls.count(), 'editable form controls').toBeGreaterThanOrEqual(10);
+      for (const control of await controls.all()) {
+        await control.scrollIntoViewIfNeeded();
+        const bounds = await control.evaluate(el => {
+          const r = el.getBoundingClientRect();
+          return { left: r.left, right: r.right, width: r.width, client: document.documentElement.clientWidth };
+        });
+        expect(bounds.width).toBeGreaterThan(0);
+        expect(bounds.left, width + 'px control left edge').toBeGreaterThanOrEqual(-0.5);
+        expect(bounds.right, width + 'px control right edge').toBeLessThanOrEqual(bounds.client + 0.5);
+      }
+      // A programmatic starting point is not a keyboard test: require actual
+      // forward Tab traversal from the first field to the enabled submit.
+      await name.focus();
+      await name.scrollIntoViewIfNeeded();
+      await page.screenshot({ path: testInfo.outputPath('editor-' + width + '-name.png') });
+      let reachedSave = false;
+      for (let n = 0; n < 40; n++) {
+        await page.keyboard.press('Tab');
+        if (await save.evaluate(el => document.activeElement === el)) {
+          reachedSave = true;
+          break;
+        }
+      }
+      expect(reachedSave, width + 'px Tab must reach the enabled submit').toBe(true);
+      await expect(save).toBeFocused();
+      await save.scrollIntoViewIfNeeded();
+      expect(await save.evaluate(el => {
+        const r = el.getBoundingClientRect();
+        const hit = document.elementFromPoint(r.left + r.width / 2, r.top + r.height / 2);
+        return !!hit && (hit === el || el.contains(hit));
+      }), width + 'px submit center unobscured').toBe(true);
+      await page.screenshot({ path: testInfo.outputPath('editor-' + width + '-save.png') });
+      records.push({ width, geometry, controlCount: await controls.count(), reachedSave });
+    }
+    await testInfo.attach('editor-responsive-metrics', {
+      body: JSON.stringify(records, null, 2), contentType: 'application/json'
+    });
+    console.log('C0103_M0404_EDITOR_FIVE_WIDTHS_PASS', JSON.stringify(records));
+  });
+
 
   test('double submit under an outstanding PUT sends precisely one request and recovers from conflict', async ({ page }) => {
     test.setTimeout(180_000);
@@ -80,6 +196,7 @@ test.describe('V24 M04.04 form: real GET, guarded duplicate mutation, error and 
     await page.locator('textarea[formcontrolname="impuestosJson"]').fill('{invalid');
     await form.evaluate(el => el.dispatchEvent(new Event('submit', { bubbles: true, cancelable: true })));
     await expect(page.getByText('La política de impuestos debe ser JSON válido.')).toBeVisible();
+    await assertFeedbackContrast(form.locator('.form-feedback span'));
     expect(putCount, 'invalid JSON must not reach API').toBe(0);
     await expect(page.getByRole('link', { name: 'Ver todos los ajustes' })).toHaveAttribute('href', '/configuracion');
     await page.getByRole('link', { name: 'Ver todos los ajustes' }).click();
@@ -116,6 +233,7 @@ test.describe('V24 M04.04 form: real GET, guarded duplicate mutation, error and 
       await save.click();
       await expect(page.locator('[data-config-state="' + expectedState + '"]')).toBeVisible();
       await expect(page.getByText(expectedText, { exact: true })).toBeVisible();
+      await assertFeedbackContrast(page.getByText(expectedText, { exact: true }));
       await expect(page.locator('body')).not.toContainText(sentinel);
       await expect(page.getByRole('form', { name: 'Configuración del tenant activo' })).toHaveCount(0);
       expect(capturedPuts, 'the real authenticated edit flow must issue exactly one PUT').toBe(1);
@@ -145,6 +263,7 @@ test.describe('V24 M04.04 form: real GET, guarded duplicate mutation, error and 
     await page.getByRole('button', { name: 'Guardar configuración tenant' }).click();
     await expect(page.getByRole('form', { name: 'Configuración del tenant activo' })).toBeVisible();
     await expect(page.getByRole('alert')).toContainText('No se pudo guardar la configuración del tenant activo.');
+    await assertFeedbackContrast(page.locator('.form-feedback span'));
     await expect(input).toHaveValue(edited);
     await expect(input).toBeEditable();
     await expect(page.locator('body')).not.toContainText(sentinel);
@@ -222,6 +341,7 @@ test.describe('V24 M04.04 form: real GET, guarded duplicate mutation, error and 
       expect(recovered.request().postDataJSON().version).toBe(afterData.version);
       expect(recovered.status()).toBe(200);
       await expect(form).toHaveAttribute('aria-busy', 'false');
+      await assertFeedbackContrast(form.locator('[data-config-state="saved"]'));
       const persistedAfterRecovery = await page.request.get(endpoint, { headers, timeout: requestTimeout });
       expect(persistedAfterRecovery.status()).toBe(200);
       expect((await persistedAfterRecovery.json())?.data?.nombre).toBe(finalName);
