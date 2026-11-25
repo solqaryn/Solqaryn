@@ -1,3 +1,8 @@
+## 2026-11-25 — QA: preflight de activación de la galería
+
+- El backup cifrado con restore aislado reconoce únicamente dos estados exactos: baseline anterior (137 tablas incluyendo historial, 108 migraciones) o baseline con galería (138 tablas, 109 migraciones, marcador y tabla presentes). No se amplían tolerancias para otros drifts.
+- Runbook QA de migración, backup, certificación y despliegue manual del backend. No se habilita aplicación automática de migraciones.
+
 ## 2026-11-25 — QA: galería de categorías por empresa
 
 - Hasta cinco imágenes por categoría, portada elegida por orden, vista previa, retirada y edición con control de concurrencia; almacenamiento de imágenes validado y separado por empresa.

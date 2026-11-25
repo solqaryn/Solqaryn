@@ -123,12 +123,17 @@ jobs:
             test "$a" = "$b" || { echo 'QA_RESTORE_ROWCOUNT_MISMATCH' >&2; exit 1; }
             count=$((count+1))
           done <<< "$tables"
-          test "$count" = "137" || { echo 'QA_RESTORE_TABLECOUNT_DRIFT' >&2; exit 1; }
           export MYSQL_PWD=solqaryn-ci-qa-disposable-only
           marker="$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")"
+          gallery_marker="$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261125212000_CategoriasGalerias';")"
+          gallery_table="$(qlocal "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='CategoriasGalerias' AND TABLE_TYPE='BASE TABLE';")"
           history="$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory;")"
-          test "$marker" = "1" && test "$history" = "108"
-          echo "QA_BACKUP_RESTORE=PASS tables=$count history=$history rows_exact=YES oracle_marker=$marker"
+          test "$marker" = "1"
+          case "$gallery_marker:$gallery_table:$count:$history" in
+            0:0:137:108|1:1:138:109) ;;
+            *) echo 'QA_RESTORE_TABLECOUNT_OR_HISTORY_DRIFT' >&2; exit 1 ;;
+          esac
+          echo "QA_BACKUP_RESTORE=PASS tables=$count history=$history rows_exact=YES oracle_marker=$marker category_gallery=$gallery_marker"
           echo "QA_ORIGINAL_DB_WRITES=0"
 
 
