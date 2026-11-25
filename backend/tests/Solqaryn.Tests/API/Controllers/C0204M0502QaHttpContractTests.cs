@@ -747,6 +747,101 @@ public sealed class C0204M0502QaHttpContractTests
         Assert.All(audits, x => Assert.Null(x.EmpresaId));
     }
 
+    [Theory]
+    [InlineData("valid", "CI_MINIMA_ACREDITADA", HttpStatusCode.OK)]
+    [InlineData("reuse", "CI_MINIMA_ACREDITADA", HttpStatusCode.OK)]
+    [InlineData("wrong-workflow", null, HttpStatusCode.ServiceUnavailable)]
+    [InlineData("wrong-check", null, HttpStatusCode.ServiceUnavailable)]
+    [InlineData("wrong-suite", null, HttpStatusCode.ServiceUnavailable)]
+    [InlineData("wrong-sha", null, HttpStatusCode.ServiceUnavailable)]
+    [InlineData("wrong-step", null, HttpStatusCode.ServiceUnavailable)]
+    [InlineData("duplicate", "SIN_VERIFICAR", HttpStatusCode.OK)]
+    [InlineData("wrong-name", "SIN_VERIFICAR", HttpStatusCode.OK)]
+    [InlineData("skipped", "SIN_VERIFICAR", HttpStatusCode.OK)]
+    [InlineData("failure", "CI_FALLIDA", HttpStatusCode.OK)]
+    public async Task CoreBackendGateRequiresCanonicalWorkflowAndExactJob(
+        string scenario, string? expected, HttpStatusCode httpStatus)
+    {
+        const string root = "/repos/solqaryn/Solqaryn/";
+        const string core = "SOLQARYN - Build y pruebas backend";
+        const string details = "https://github.com/solqaryn/Solqaryn/actions/runs/123/job/7899";
+        const string checkLink = "https://api.github.com/repos/solqaryn/Solqaryn/check-runs/459";
+        var conclusion = scenario is "failure" or "skipped" ? scenario : "success";
+        var payload = Payload(conclusion, [details, details, details, details])
+            .Replace("Backend Release y pruebas", scenario == "wrong-name" ? core + " copia" : core,
+                StringComparison.Ordinal);
+        if (scenario == "wrong-sha")
+            payload = payload.Replace(Sha, new string('a', 40), StringComparison.Ordinal);
+        if (scenario == "duplicate")
+        {
+            using var data = JsonDocument.Parse(payload);
+            var checks = data.RootElement.GetProperty("check_runs").EnumerateArray().ToArray();
+            using var duplicate = JsonDocument.Parse(checks[3].GetRawText()
+                .Replace("\"id\":459", "\"id\":460", StringComparison.Ordinal));
+            payload = JsonSerializer.Serialize(new { total_count = 5,
+                check_runs = checks.Append(duplicate.RootElement).ToArray() });
+        }
+        var job = new
+        {
+            id = 7899L, run_id = 123L, run_attempt = 2, head_sha = Sha, head_branch = "dev",
+            name = core, status = "completed", conclusion = "success", html_url = details,
+            check_run_url = scenario == "wrong-check" ? checkLink.Replace("459", "460") : checkLink,
+            steps = new[]
+            {
+                new { name = "Restaurar, compilar y probar sin imponer fases previas",
+                    status = "completed", conclusion = scenario == "reuse" ? "skipped" :
+                        scenario == "wrong-step" ? "failure" : "success" },
+                new { name = "Acreditar resultado backend DEV exact-SHA (no repetir 6500+ pruebas)",
+                    status = "completed", conclusion = scenario == "reuse" ? "success" : "skipped" },
+                new { name = "No sustituir un backend DEV fallido por PASS",
+                    status = "completed", conclusion = "skipped" }
+            }
+        };
+        var jobs = JsonSerializer.Serialize(new { total_count = 1, jobs = new[] { job } });
+        var attempt = JsonSerializer.Serialize(new
+        {
+            id = 123L, run_attempt = 2, head_sha = Sha, head_branch = "dev", @event = "push",
+            path = scenario == "wrong-workflow" ? ".github/workflows/untrusted.yml" :
+                ".github/workflows/solqaryn-core-ci.yml",
+            workflow_id = 393193776L, check_suite_id = scenario == "wrong-suite" ? 793L : 792L,
+            repository = new { full_name = "solqaryn/Solqaryn" },
+            head_repository = new { full_name = "solqaryn/Solqaryn" }
+        });
+        var upstream = new GitHubFake(payload);
+        upstream.AdditionalResponses[root + "actions/runs/123/jobs?filter=all&per_page=100"] = jobs;
+        upstream.AdditionalResponses[root + "actions/runs/123/attempts/2"] = attempt;
+        upstream.AdditionalResponses[root + "actions/runs/123/attempts/2/jobs?per_page=100"] = jobs;
+        await using var fixture = await CrearAsync(upstream);
+        using var client = fixture.Host.GetTestClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer", Token(fixture.GlobalId, "operadorglobal"));
+        using var response = await client.GetAsync(Path);
+        Assert.Equal(httpStatus, response.StatusCode);
+        if (expected is not null)
+        {
+            using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            Assert.Equal(expected, json.RootElement.GetProperty("data").GetProperty("estadoCi").GetString());
+            Assert.Equal("SIN_VERIFICAR", json.RootElement.GetProperty("data").GetProperty("estadoA5").GetString());
+        }
+        if (scenario is "valid" or "reuse")
+        {
+            Assert.Equal(4, upstream.Calls);
+            using var scope = fixture.Host.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var audit = Assert.Single(await db.Set<RegistroAuditoria>().ToListAsync());
+            Assert.Null(audit.EmpresaId);
+            using var metadata = JsonDocument.Parse(audit.ValoresNuevos!);
+            var identity = Assert.Single(metadata.RootElement.GetProperty("ChecksIdentificados")
+                .EnumerateArray().Where(x => x.GetProperty("CheckId").GetInt64() == 459))
+                .GetProperty("CoreBackend");
+            Assert.Equal(393193776L, identity.GetProperty("WorkflowId").GetInt64());
+            Assert.Equal(2, identity.GetProperty("Attempt").GetInt32());
+            Assert.Equal(459L, identity.GetProperty("CheckRunId").GetInt64());
+            Assert.Equal(scenario == "reuse" ? "EXACT_SHA_REUSE" : "BUILD_TEST",
+                identity.GetProperty("Mode").GetString());
+        }
+    }
+
     private static string Payload(string conclusion = "success", string[]? detailsUrls = null)
     {
         var checkIndex = 0;

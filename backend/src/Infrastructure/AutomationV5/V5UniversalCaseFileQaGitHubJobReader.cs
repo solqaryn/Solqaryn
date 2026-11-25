@@ -99,6 +99,105 @@ public sealed class V5UniversalCaseFileQaGitHubJobReader(IHttpClientFactory clie
         catch (JsonException) { return null; }
     }
 
+    public const string CoreBackendCheckName = "SOLQARYN - Build y pruebas backend";
+    private const long CoreBackendWorkflowId = 393193776;
+    private const string CoreBackendWorkflowPath = ".github/workflows/solqaryn-core-ci.yml";
+    private const string CoreBuildStep = "Restaurar, compilar y probar sin imponer fases previas";
+    private const string CoreReuseStep = "Acreditar resultado backend DEV exact-SHA (no repetir 6500+ pruebas)";
+
+    // Global CI provenance only: no microtask attribution, company or A5.
+    public sealed record VerifiedCoreBackend(string SourceSha, long WorkflowId,
+        long RunId, int Attempt, long JobId, long CheckRunId, long CheckSuiteId, string Mode);
+
+    public async Task<VerifiedCoreBackend?> ReadCoreBackendFromCheckAsync(
+        string sha, long checkId, long suiteId, string? detailsUrl, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (sha.Length != 40 || !sha.All(c => c is >= '0' and <= '9' or >= 'a' and <= 'f') ||
+            checkId <= 0 || suiteId <= 0 || !TryJobDetails(detailsUrl, out var runId, out var jobId))
+            return null;
+        using var client = clients.CreateClient("SolqarynPublicGitHubQa");
+        if (client.BaseAddress != Provider) return null;
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        var budget = TimeSpan.FromSeconds(12);
+        deadline.CancelAfter(client.Timeout != Timeout.InfiniteTimeSpan && client.Timeout < budget
+            ? client.Timeout : budget);
+        var ct = deadline.Token;
+        var runNumber = runId.ToString(CultureInfo.InvariantCulture);
+
+        JsonElement SelectJob(JsonDocument doc, long expectedAttempt = 0)
+        {
+            var jobs = Prop(doc.RootElement, "jobs");
+            var count = Number(doc.RootElement, "total_count");
+            if (count is < 1 or > 100 || jobs.ValueKind != JsonValueKind.Array ||
+                jobs.GetArrayLength() != count) return default;
+            var ids = new HashSet<long>();
+            foreach (var item in jobs.EnumerateArray())
+                if (Number(item, "id") is not > 0 || !ids.Add(Number(item, "id"))) return default;
+            var candidates = jobs.EnumerateArray().Where(x => Number(x, "id") == jobId).ToArray();
+            if (candidates.Length != 1) return default;
+            var job = candidates[0];
+            var attempt = Number(job, "run_attempt");
+            if (attempt is < 1 or > int.MaxValue || (expectedAttempt != 0 && expectedAttempt != attempt) ||
+                Number(job, "run_id") != runId || Str(job, "head_sha") != sha ||
+                Str(job, "head_branch") != "dev" || Str(job, "name") != CoreBackendCheckName ||
+                Str(job, "status") != "completed" || Str(job, "conclusion") != "success" ||
+                Str(job, "html_url") != detailsUrl ||
+                !TryCheckId(Str(job, "check_run_url"), out var joinedCheck) || joinedCheck != checkId)
+                return default;
+            return job;
+        }
+
+        try
+        {
+            using var discovery = await ReadAsync(client, Root + "actions/runs/" + runNumber +
+                "/jobs?filter=all&per_page=100", ct);
+            if (discovery is null) return null;
+            var job = SelectJob(discovery);
+            if (job.ValueKind != JsonValueKind.Object) return null;
+            var attempt = Number(job, "run_attempt");
+            var attemptNumber = attempt.ToString(CultureInfo.InvariantCulture);
+            using var runDoc = await ReadAsync(client, Root + "actions/runs/" + runNumber +
+                "/attempts/" + attemptNumber, ct);
+            if (runDoc is null) return null;
+            var run = runDoc.RootElement;
+            if (Number(run, "id") != runId || Number(run, "run_attempt") != attempt ||
+                Number(run, "workflow_id") != CoreBackendWorkflowId ||
+                Number(run, "check_suite_id") != suiteId ||
+                Str(run, "path") != CoreBackendWorkflowPath || Str(run, "head_sha") != sha ||
+                Str(run, "head_branch") != "dev" || Str(run, "event") != "push" ||
+                Str(Prop(run, "repository"), "full_name") != Repository ||
+                Str(Prop(run, "head_repository"), "full_name") != Repository)
+                return null;
+            using var exactJobs = await ReadAsync(client, Root + "actions/runs/" + runNumber +
+                "/attempts/" + attemptNumber + "/jobs?per_page=100", ct);
+            if (exactJobs is null) return null;
+            var exactJob = SelectJob(exactJobs, attempt);
+            if (exactJob.ValueKind != JsonValueKind.Object) return null;
+            var steps = Prop(exactJob, "steps");
+            if (steps.ValueKind != JsonValueKind.Array) return null;
+            bool Step(string name, string result)
+            {
+                var matched = steps.EnumerateArray().Where(x => Str(x, "name") == name).ToArray();
+                return matched.Length == 1 && Str(matched[0], "status") == "completed" &&
+                    Str(matched[0], "conclusion") == result;
+            }
+            var fallback = Step(CoreBuildStep, "success") && Step(CoreReuseStep, "skipped");
+            var reuse = Step(CoreReuseStep, "success") && Step(CoreBuildStep, "skipped");
+            if (fallback == reuse ||
+                !Step("No sustituir un backend DEV fallido por PASS", "skipped")) return null;
+            ct.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
+            return new VerifiedCoreBackend(sha, CoreBackendWorkflowId, runId, (int)attempt,
+                jobId, checkId, suiteId, fallback ? "BUILD_TEST" : "EXACT_SHA_REUSE");
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        { return null; }
+        catch (HttpRequestException) { return null; }
+        catch (IOException) { return null; }
+        catch (JsonException) { return null; }
+    }
+
     private static bool TryJobDetails(string? url, out long runId, out long jobId)
     {
         runId = jobId = 0;

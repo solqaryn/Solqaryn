@@ -38,16 +38,18 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
     [
         "verify-solqaryn-project-scope",
         "V5 - Sin encabezados vacios ni atribucion cruzada",
-        "SOLQARYN - Seguridad multiempresa",
-        "Backend Release y pruebas"
+        "SOLQARYN - Seguridad multiempresa"
     ];
+    private const string DevBackendCheckName = "Backend Release y pruebas";
+    private const string CoreBackendCheckName = V5UniversalCaseFileQaGitHubJobReader.CoreBackendCheckName;
 
     // Stable identity of GitHub Actions on github.com, not an authorization grant.
     private const long GitHubActionsAppId = 15368;
 
     private sealed record QaCheckIdentity(string Check, long CheckId, long CheckSuiteId,
         long AppId, string AppSlug, string Status, string? Conclusion,
-        V5UniversalCaseFileQaEvidenceAudit.ProviderJobIdentity? Build = null);
+        V5UniversalCaseFileQaEvidenceAudit.ProviderJobIdentity? Build = null,
+        V5UniversalCaseFileQaGitHubJobReader.VerifiedCoreBackend? CoreBackend = null);
 
     private readonly IPlataformaScopeService _scope;
     private readonly ICurrentUserService _current;
@@ -277,6 +279,7 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                 // Only provider-authenticated identities can support the minimum gates
                 // or the directed case-file QA check. Unknown checks remain display-only.
                 if (ChecksMinimos.Contains(name, StringComparer.Ordinal) ||
+                    name is DevBackendCheckName or CoreBackendCheckName ||
                     string.Equals(name, V5UniversalCaseFileQaEvidenceAudit.DirectedDurableCheckName,
                         StringComparison.Ordinal))
                 {
@@ -322,7 +325,27 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
             var failed = checks.Any(c => c.Conclusion is
                 ("failure" or "cancelled" or "timed_out" or "action_required" or "startup_failure"));
             var pending = checks.Any(c => c.Estado != "completed");
-            var allRequired = ChecksMinimos.All(name =>
+            // The historical DEV gate remains authoritative when present. Only its
+            // absence permits the exact permanent-core workflow alternative, not
+            // an arbitrary alias or an unsuccessful historical gate.
+            var legacyBackend = checks.Where(c => c.Nombre == DevBackendCheckName).ToArray();
+            var coreBackend = checks.Where(c => c.Nombre == CoreBackendCheckName).ToArray();
+            var backendSuccess = legacyBackend.Length == 1 &&
+                legacyBackend[0].Estado == "completed" && legacyBackend[0].Conclusion == "success";
+            if (!failed && !pending && legacyBackend.Length == 0 && coreBackend.Length == 1 &&
+                coreBackend[0].Estado == "completed" && coreBackend[0].Conclusion == "success")
+            {
+                var index = identities.FindIndex(x => x.Check == CoreBackendCheckName);
+                if (index < 0) return await FalloProveedorAsync("QA_UPSTREAM_CONTRACT");
+                var identity = identities[index];
+                var verified = await new V5UniversalCaseFileQaGitHubJobReader(_clients)
+                    .ReadCoreBackendFromCheckAsync(sha, identity.CheckId, identity.CheckSuiteId,
+                        coreBackend[0].UrlEvidencia, upstreamToken);
+                if (verified is null) return await FalloProveedorAsync("QA_UPSTREAM_CONTRACT");
+                identities[index] = identity with { CoreBackend = verified };
+                backendSuccess = true;
+            }
+            var allRequired = backendSuccess && coreBackend.Length <= 1 && ChecksMinimos.All(name =>
                 checks.Count(c => string.Equals(c.Nombre, name, StringComparison.Ordinal)) == 1 &&
                 checks.Any(c => c.Nombre == name && c.Estado == "completed" &&
                                 c.Conclusion == "success"));
