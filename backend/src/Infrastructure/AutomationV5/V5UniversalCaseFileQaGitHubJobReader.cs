@@ -14,6 +14,7 @@ public sealed class V5UniversalCaseFileQaGitHubJobReader(IHttpClientFactory clie
     private const string Repository = "solqaryn/Solqaryn";
     private const string Microtask = "C01-04.M03.06";
     private const string WorkflowPath = ".github/workflows/v23-c01-04-m03-06-durable-qa-mysql84.yml";
+    private const string R11LabName = "C01-04.M03.06 - R11 isolated P01/P02 migration and rollback";
     private const string Root = "repos/solqaryn/Solqaryn/";
     private const string CheckPrefix = "https://api.github.com/repos/solqaryn/Solqaryn/check-runs/";
     private const int MaximumBytes = 512_000;
@@ -162,12 +163,37 @@ public sealed class V5UniversalCaseFileQaGitHubJobReader(IHttpClientFactory clie
                 runNumber + "/attempts/" + attemptNumber + "/jobs?per_page=100", ct);
             if (jobsDoc is null) return null;
             var jobs = Prop(jobsDoc.RootElement, "jobs");
-            // This directed workflow has exactly one job. Reject partial pages,
-            // unexpected additional jobs and ambiguous names rather than guessing.
-            if (Number(jobsDoc.RootElement, "total_count") != 1 ||
-                jobs.ValueKind != JsonValueKind.Array || jobs.GetArrayLength() != 1)
+            // Historical attempts have one job; R11 can add one known auxiliary job.
+            // Never select that auxiliary job as durable QA evidence.
+            var jobCount = Number(jobsDoc.RootElement, "total_count");
+            if (jobCount is < 1 or > 2 || jobs.ValueKind != JsonValueKind.Array ||
+                jobs.GetArrayLength() != jobCount)
                 return null;
-            var job = jobs[0];
+            var attemptIds = new HashSet<long>();
+            var attemptChecks = new HashSet<long>();
+            var attemptNames = new HashSet<string>(StringComparer.Ordinal);
+            JsonElement job = default;
+            foreach (var candidate in jobs.EnumerateArray())
+            {
+                var candidateId = Number(candidate, "id");
+                var candidateName = Str(candidate, "name");
+                var candidateConclusion = Str(candidate, "conclusion");
+                if (candidateId <= 0 || candidateName is null ||
+                    (candidateName != name && candidateName != R11LabName) ||
+                    !attemptIds.Add(candidateId) || !attemptNames.Add(candidateName) ||
+                    Number(candidate, "run_id") != runId || Number(candidate, "run_attempt") != attempt ||
+                    Str(candidate, "head_sha") != sha || Str(candidate, "head_branch") != "dev" ||
+                    Str(candidate, "status") != "completed" ||
+                    candidateConclusion is not ("success" or "failure" or "cancelled" or "skipped") ||
+                    (conclusion == "success" && candidateConclusion is not ("success" or "skipped")) ||
+                    Str(candidate, "html_url") != "https://github.com/" + Repository + "/actions/runs/" +
+                        runNumber + "/job/" + candidateId.ToString(CultureInfo.InvariantCulture) ||
+                    !TryCheckId(Str(candidate, "check_run_url"), out var candidateCheckId) ||
+                    !attemptChecks.Add(candidateCheckId))
+                    return null;
+                if (candidateName == name) job = candidate;
+            }
+            if (job.ValueKind != JsonValueKind.Object) return null;
             var checkUrl = Str(job, "check_run_url");
             if (Number(job, "id") != jobId || Number(job, "run_id") != runId ||
                 Number(job, "run_attempt") != attempt || Str(job, "head_sha") != sha ||

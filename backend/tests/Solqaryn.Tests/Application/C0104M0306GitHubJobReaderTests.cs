@@ -31,22 +31,36 @@ public sealed class C0104M0306GitHubJobReaderTests
             var jobId = Job + (attempt - 1) * 10L;
             var checkId = Check + (attempt - 1) * 10L;
             var details = DetailsPrefix + jobId.ToString(System.Globalization.CultureInfo.InvariantCulture);
+            var includesLab = fault.StartsWith("r11_", StringComparison.Ordinal);
+            object LabJob()
+            {
+                var labId = fault == "r11_duplicate_id" ? jobId : jobId + 1000L;
+                var labCheck = fault == "r11_duplicate_check" ? checkId : checkId + 1000L;
+                return new { id = labId, run_id = Run,
+                    run_attempt = fault == "r11_wrong_attempt" ? attempt + 1 : attempt,
+                    head_sha = fault == "r11_wrong_sha" ? new string('a', 40) : Sha,
+                    head_branch = fault == "r11_wrong_branch" ? "qa" : "dev",
+                    name = fault == "r11_unknown" ? "Unknown job" : fault == "r11_duplicate_name" ? Name :
+                        "C01-04.M03.06 - R11 isolated P01/P02 migration and rollback",
+                    status = fault == "r11_not_completed" ? "in_progress" : "completed",
+                    conclusion = fault == "r11_skipped" ? "skipped" : fault == "r11_inconsistent" ? "failure" : "success",
+                    html_url = DetailsPrefix + labId.ToString(System.Globalization.CultureInfo.InvariantCulture),
+                    check_run_url = $"https://api.github.com/repos/solqaryn/Solqaryn/check-runs/{labCheck}" };
+            }
             object body;
             if (n == 0)
             {
                 Assert.Equal($"/repos/solqaryn/Solqaryn/actions/runs/{Run}/jobs?filter=all&per_page=100", Paths[^1]);
-                body = new
-                {
-                    total_count = fault == "discovery_partial" ? 2 : 1,
-                    jobs = new[]
-                    {
-                        new { id = jobId, run_id = Run,
+                var directed = new { id = jobId, run_id = Run,
                             run_attempt = fault == "discovery_bad_attempt" ? 0 : attempt,
                             head_sha = Sha, head_branch = "dev", name = Name,
                             status = "completed", conclusion = fault == "failure" ? "failure" : "success",
                             html_url = details,
-                            check_run_url = $"https://api.github.com/repos/solqaryn/Solqaryn/check-runs/{(fault == "discovery_wrong_check" ? checkId + 1 : checkId)}" }
-                    }
+                            check_run_url = $"https://api.github.com/repos/solqaryn/Solqaryn/check-runs/{(fault == "discovery_wrong_check" ? checkId + 1 : checkId)}" };
+                body = new
+                {
+                    total_count = fault == "discovery_partial" || includesLab ? 2 : 1,
+                    jobs = includesLab ? new object[] { LabJob(), directed } : new object[] { directed }
                 };
             }
             else if (n == 1)
@@ -67,17 +81,15 @@ public sealed class C0104M0306GitHubJobReaderTests
             else if (n == 2)
             {
                 Assert.Contains($"/attempts/{attempt}/jobs?", Paths[^1]);
-                body = new
-                {
-                    total_count = fault == "partial" ? 2 : 1,
-                    jobs = new[]
-                    {
-                        new { id = jobId, run_id = Run, run_attempt = attempt, head_sha = Sha, head_branch = "dev",
+                var directed = new { id = jobId, run_id = Run, run_attempt = attempt, head_sha = Sha, head_branch = "dev",
                             name = Name, status = "completed", conclusion = fault == "failure" ? "failure" : "success",
                             html_url = details,
                             check_run_url = fault == "foreign_url" ? "https://example.org/check-runs/1" :
-                                $"https://api.github.com/repos/solqaryn/Solqaryn/check-runs/{checkId}" }
-                    }
+                                $"https://api.github.com/repos/solqaryn/Solqaryn/check-runs/{checkId}" };
+                body = new
+                {
+                    total_count = fault == "r11_extra" ? 3 : fault == "partial" || includesLab ? 2 : 1,
+                    jobs = fault == "r11_extra" ? new object[] { LabJob(), directed, directed } : includesLab ? new object[] { LabJob(), directed } : new object[] { directed }
                 };
             }
             else
@@ -116,6 +128,8 @@ public sealed class C0104M0306GitHubJobReaderTests
     [Theory]
     [InlineData("", "success")]
     [InlineData("failure", "failure")]
+    [InlineData("r11_success", "success")]
+    [InlineData("r11_skipped", "success")]
     public async Task ReturnsOnlyCorroboratedBuildIdentityAndActualConclusion(string fault, string conclusion)
     {
         using var handler = new Handler(fault);
@@ -138,6 +152,16 @@ public sealed class C0104M0306GitHubJobReaderTests
     [InlineData("suite", 3)]
     [InlineData("duplicate", 3)]
     [InlineData("wrong_app", 3)]
+    [InlineData("r11_unknown", 2)]
+    [InlineData("r11_duplicate_id", 2)]
+    [InlineData("r11_duplicate_name", 2)]
+    [InlineData("r11_duplicate_check", 2)]
+    [InlineData("r11_wrong_sha", 2)]
+    [InlineData("r11_wrong_attempt", 2)]
+    [InlineData("r11_wrong_branch", 2)]
+    [InlineData("r11_inconsistent", 2)]
+    [InlineData("r11_not_completed", 2)]
+    [InlineData("r11_extra", 2)]
     public async Task RejectsUnlinkedOrIncompleteProviderEvidence(string fault, int requests)
     {
         using var handler = new Handler(fault);
@@ -197,6 +221,20 @@ public sealed class C0104M0306GitHubJobReaderTests
         Assert.Null(await reader.ReadDirectedFromCheckAsync(Id, Sha, Check, Suite,
             DetailsPrefix + Job, "success"));
         Assert.Single(handler.Paths);
+    }
+
+    [Theory]
+    [InlineData("r11_success")]
+    [InlineData("r11_skipped")]
+    public async Task DiscoverySelectsOnlyDirectedJobWhenR11LabIsAlsoPresent(string fault)
+    {
+        using var handler = new Handler(fault, discover: true);
+        var reader = new V5UniversalCaseFileQaGitHubJobReader(new Factory(handler));
+        var result = await reader.ReadDirectedFromCheckAsync(Id, Sha, Check, Suite,
+            DetailsPrefix + Job, "success");
+        Assert.NotNull(result);
+        Assert.Equal((Job, Check, Suite), (result.JobId, result.CheckRunId, result.CheckSuiteId));
+        Assert.Equal(4, handler.Paths.Count);
     }
 
     [Fact]

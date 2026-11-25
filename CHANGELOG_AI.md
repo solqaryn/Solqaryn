@@ -1,3 +1,9 @@
+## 2026-11-25 — C01-04.M03.06 — DEV01 — R12/R11 cardinalidad de jobs
+
+- TASK_ID: 6adbb9fff1548191a1bd5b30d9e9984a; RUN_ID: f4de3c64-fdbc-832e-920e-1f04d9966745; base: 6523c8099fd73d2b18676686548a2d937d11cdce; V17: SQV17_C01_04_M03_06.
+- A0: lector GitHub y tests, documento de auditoría; aceptar exclusivamente job dirigido y auxiliar R11 legítimo, preservar identidad de intento/check, fail-closed y evidencia causal. Run real 45659172913; sin cambios de API, permisos, persistencia, migraciones ni infraestructura.
+- A1-A4: 14 casos nuevos, CI exacta pendiente; A5 independiente pendiente. Rollback: revert del commit en dev. Sin LISTO.
+
 ## 2026-11-25 — DEV06 C01-04.M03.06: laboratorio R11 P01/P02 exclusivamente CI (V44-R12/R11/R5)
 
 - TASK_ID=6af16bbad26881918c283abe06e1f32a; RUN_ID=6c39fe21-ac3c-832f-a1e9-a797b2eba1f1; base b8d21c119a9de7f904ca49e15a828a6a63ad2e4a; foco fila271 V17 2000000271; proveedor .04 fila269 LISTO histórico intacto. Adopta parche integrado DEV04 ad667661-b2bc-832d-905d-c865812e3fad (DEV01 c125dff7, DEV03 aba14e52, DEV06 f1ca3d1b) y ejecutor DEV05 fd1e2579-c6e4-8325-b998-ad416c0c3f5d blob 35a7b2532b705073bf31a28a1de32f2e913d626a; DEV02 preservado candidato A5 sujeto a procedencia.
