@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV04 C01-03.M04.04: historical editor baseline V44-R1
+
+- Foco orden 238/fila 239, D/R/S: obtener ANTES genuino del editor en parent inmutable `ca947be748896312f8e91836de078fd81095a83f` de 39322f00. El código histórico carece de guard saving() al entrar guardar(); el HEAD vigente lo exige. Nuevo harness/CI aislado usa login JWT, permisos Editar reales, MySQL 8.4, capturas X11 editor nombre/guardar 100/200 y Tab, geometría/recorrido horizontal observado, PUT 409 sintético para observar doble submit sin escritura durable. Evidencia histórica NO equivale a aceptación actual.
+- R2 evidencia únicamente, sin cambios de runtime/DI/auth/DB/dependencias ni pruebas actuales. CI pendiente; no A5. SKREF-03 pbakaus/impeccable 2149fcce y SKREF-10 angular/angular 68089669 originales consultados sin ejecutar scripts externos. Rollback revert FF/CAS del changeset si procede. Base `8f85a528e2b887b43ab2924e1d56585662b441fd`; evento V44R1-J30-808A3180-C0103M0404-HISTORICAL-EDITOR.
+
 ## 2026-11-24 — DEV05 C01-03.M04.02: HTTP 500 literal y recuperación causal V44-R1
 
 - Foco orden 236/fila 237, PLAN R237 exige 500 literal. El caso 503 de matriz y el zoom nativo 503 se conservan; el caso de recuperación existente ahora inyecta exactamente HTTP 500 (presentación únicamente), verifica alerta, ausencia de formulario/detalle interno y recuperación por GET real HTTP 200 con success=true y empresaId=1 tras Reintentar consulta.

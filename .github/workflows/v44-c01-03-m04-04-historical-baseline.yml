@@ -1,0 +1,195 @@
+name: V44 C01-03.M04.04 - historical parent evidence only
+on:
+  push:
+    branches: [dev]
+    paths:
+      - '.github/workflows/v44-c01-03-m04-04-historical-baseline.yml'
+      - 'frontend/e2e/c01-03-m04-04-historical-baseline.mjs'
+permissions:
+  contents: read
+concurrency:
+  group: v44-c0103-m0404-historical-${{ github.sha }}
+  cancel-in-progress: false
+jobs:
+  historical-browser:
+    name: C01-03.M04.04 - historical parent native comparison
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_DATABASE: solqaryn_c1504_real_ci
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      CI: 'true'
+      ASPNETCORE_ENVIRONMENT: Development
+      PORT: '5005'
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_c1504_real_ci;User=root;Password=root;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+      Database__ServerVersion: '8.4.0'
+      Database__ApplyMigrationsOnStartup: 'true'
+
+      Jwt__Issuer: 'Solqaryn.API'
+      Jwt__Audience: 'Solqaryn.Frontend'
+      Jwt__ExpiraMinutos: '120'
+      SeedAdmin__Username: 'c1504_admin_a'
+      # Solo CI aislada, sin cambiar entornos productivos.
+      MultiEmpresa__PrivateReadPilotEnabled: 'true'
+      Security__LoginRateLimitPerMinute: '300'
+      Cors__AllowedOrigins__0: 'http://127.0.0.1:4200'
+      Cors__AllowedOrigins__1: 'http://localhost:4200'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+      C1504_API_URL: 'http://127.0.0.1:5005'
+      Cloudinary__CloudName: 'c1504-ci-unused'
+      Cloudinary__ApiKey: 'c1504-ci-unused'
+      Cloudinary__ApiSecret: 'c1504-ci-unused'
+    steps:
+      - name: Checkout evidence harness SHA
+        uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Preserve evidence-only harness
+        run: cp frontend/e2e/c01-03-m04-04-historical-baseline.mjs "$RUNNER_TEMP/c0103-m0404-historical.mjs"
+      - name: Checkout immutable historical parent
+        uses: actions/checkout@v4
+        with:
+          ref: ca947be748896312f8e91836de078fd81095a83f
+          persist-credentials: false
+      - name: Confirm historical source and copy test-only harness
+        run: |
+          test "$(git rev-parse HEAD)" = 'ca947be748896312f8e91836de078fd81095a83f'
+          git diff --exit-code
+          cp "$RUNNER_TEMP/c0103-m0404-historical.mjs" frontend/e2e/c01-03-m04-04-historical-baseline.mjs
+          node --check frontend/e2e/c01-03-m04-04-historical-baseline.mjs
+      - name: Crear claves aleatorias solo en CI
+        shell: bash
+        run: |
+          set -euo pipefail
+          pass="$(openssl rand -hex 24)"
+          jwt="$(openssl rand -hex 40)"
+          echo "::add-mask::$pass"
+          echo "::add-mask::$jwt"
+          {
+            echo "SeedAdmin__Password=$pass"
+            echo "C1504_TEST_PASSWORD=$pass"
+            echo "Jwt__Secret=$jwt"
+          } >> "$GITHUB_ENV"
+      - name: SDK .NET 10
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+          cache: true
+          cache-dependency-path: backend/**/*.csproj
+      - name: Compilar API Release
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+      - name: Crear baseline MySQL 8.4 aislado
+        working-directory: backend
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+        run: |
+          set -euo pipefail
+          dotnet run --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj --configuration Release --no-build --no-launch-profile
+      - name: Levantar API real local
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          nohup dotnet run --project src/API/Solqaryn.API.csproj --configuration Release --no-build --no-launch-profile > c1504-api.log 2>&1 &
+          for attempt in $(seq 1 60); do
+            if curl --fail --silent http://127.0.0.1:5005/health >/dev/null && curl --fail --silent http://127.0.0.1:5005/health/ready >/dev/null; then
+              echo 'C1504_API_READY'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat c1504-api.log >&2
+          exit 1
+      - name: Prepare real single tenant in ephemeral MySQL
+        shell: bash
+        run: |
+          set -euo pipefail
+          mysql_container="$(docker ps --filter 'ancestor=mysql:8.4' --format '{{.ID}}' | head -n 1)"
+          test -n "$mysql_container"
+          docker exec -i "$mysql_container" mysql -uroot -proot solqaryn_c1504_real_ci <<'SQL'
+          INSERT INTO Empresas (Id, Nombre, Activa, FechaCreacion, FechaActualizacion)
+          VALUES (1, 'Empresa A efimera C15', TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6))
+          ON DUPLICATE KEY UPDATE Activa=TRUE, FechaActualizacion=UTC_TIMESTAMP(6);
+          INSERT INTO UsuarioEmpresas (UsuarioId, EmpresaId, RolId, Activa, FechaCreacion, FechaActualizacion)
+          SELECT u.Id, 1, u.RolId, TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)
+          FROM Usuarios u WHERE u.NombreUsuario='c1504_admin_a'
+            AND NOT EXISTS (SELECT 1 FROM UsuarioEmpresas ue WHERE ue.UsuarioId=u.Id AND ue.EmpresaId=1);
+          SQL
+          test "$(docker exec "$mysql_container" mysql -uroot -proot solqaryn_c1504_real_ci -Nse 'SELECT COUNT(*) FROM Empresas;')" = '1'
+      - name: Node 24
+        uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: npm y build Angular
+        working-directory: frontend
+        run: |
+          set -euo pipefail
+          npm install --global npm@11.19.0
+          npm ci
+      - name: Instalar Chromium
+        working-directory: frontend
+        run: npx playwright install --with-deps chromium
+      - name: Preflight historical syntax and X11
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          node --check e2e/c01-03-m04-04-historical-baseline.mjs
+          if ! command -v ffmpeg >/dev/null 2>&1; then
+            sudo apt-get update
+            sudo apt-get install -y --no-install-recommends ffmpeg
+          fi
+          command -v ffmpeg
+          command -v xvfb-run
+          ffmpeg -hide_banner -devices 2>&1 | grep -w x11grab
+          xvfb-run -a -s '-screen 0 1600x1200x24' bash -c 'ffmpeg -nostdin -hide_banner -loglevel error -f x11grab -video_size 1600x1200 -i "$DISPLAY" -frames:v 1 -threads 1 -f null -'
+      - name: Levantar Angular local
+        working-directory: frontend
+        run: |
+          set -euo pipefail
+          PORT=4200 nohup npm start -- --host 127.0.0.1 --port 4200 > c1504-angular.log 2>&1 &
+          for attempt in $(seq 1 70); do
+            if curl --fail --silent http://127.0.0.1:4200/login >/dev/null; then
+              echo 'C1504_ANGULAR_READY'
+              exit 0
+            fi
+            sleep 2
+          done
+          cat c1504-angular.log >&2
+          exit 1
+      - name: Historical authorized single tenant editor native comparison
+        working-directory: frontend
+        env:
+          BASELINE_PHASE: single
+        run: xvfb-run -a -s '-screen 0 1600x1200x24' node e2e/c01-03-m04-04-historical-baseline.mjs
+      - name: Verify historical tracked sources untouched and hash captures
+        if: always()
+        run: |
+          test "$(git rev-parse HEAD)" = 'ca947be748896312f8e91836de078fd81095a83f'
+          git diff --exit-code
+          cd frontend/v44-c0103-m0404-historical
+          sha256sum -- *.png > SHA256SUMS.txt
+      - name: Upload historical editor comparison evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c01-03-m04-04-historical-parent-ca947be7
+          path: frontend/v44-c0103-m0404-historical/
+          if-no-files-found: error
+          retention-days: 14
