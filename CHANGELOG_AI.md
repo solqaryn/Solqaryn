@@ -1,3 +1,7 @@
+## 2026-11-25 — DEV06 C01-04.M03.06: reparar contador estricto de CI causal (V44-R8)
+
+- R2: el job 139143578436 del SHA ce4a392a01216e378e6c4a322b244f674a65eab2 ejecutó 11/11 pruebas JWT/MySQL sin fallos ni omisiones, incluido el nuevo contrato GlobalDirectedBuildIdentityIsPersistedOnlyAfterProviderJoin de DEV04, pero falló el gate histórico de diez. Se alinea exclusivamente la cardinalidad exacta del workflow v19-c02-04-m05-06-regression.yml con los once Fact existentes; se mantienen cero fallos/omisiones, filtro, aislamiento, permisos y ejecución real. No se modifica el runtime, no se relanza un verde ni se certifica A5/CI hasta nuevo SHA exacto. Historial íntegro.
+
 ## 2026-11-25 — DEV04 C01-04.M03.06: integración global de identidad de build (V44-R8)
 
 - R2: adopta preparación DEV03: descubre run/attempt/job desde lista fija del proveedor y enlace canónico, exige página completa, check/suite/ID app GitHub Actions 15368 y reutiliza lector de intento exacto bajo deadline compartido. La auditoría global persiste identidad tipada por microtarea/build/SHA y ruta real de consulta, con grant JWT/MySQL revalidado; no concede ownership tenant ni A5. Pruebas lector de dos intentos, negativos de página/vínculo y contrato HTTP JWT/MySQL con job/check distintos, persistencia y fallo cerrado. Sin migraciones ni ampliación de permisos. DEV04/DEV03 no elegibles A5. CI exact-SHA pendiente; historial preservado íntegro.
