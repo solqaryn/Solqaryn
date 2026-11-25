@@ -1,3 +1,8 @@
+## 2026-11-25 — QA: tabla de Clientes con desplazamiento propio
+
+- Corrección visual autorizada exclusivamente en qa. El propietario rechazó las tarjetas de clientes en móvil y pidió conservar la tabla original de nueve columnas con scroll horizontal propio. Se elimina la segunda representación de filas y la regla que ocultaba la tabla hasta 920px. El contenedor conserva el ancho disponible, admite foco y desplazamiento táctil/teclado; la tabla mantiene un mínimo de 900px para legibilidad. Filtros, segmentación, acciones y paginador se conservan; el paginador permanece fuera del scroll. No se alteran el shell global, diseño de otros módulos, API, datos, RBAC, backend ni ramas dev/main.
+- Regresión Angular de tabla única, estado vacío y permisos incorporada a QA CI; Playwright M5 verifica 320/390/768/920/1024/1440px, acceso a última columna y ausencia de desborde del documento. Ejecución pendiente: no se certifica captura móvil ni E2E hasta obtener evidencia. Rollback: revertir exclusivamente este changeset en qa.
+
 ## 2026-11-25 — QA: contrato MySQL 8.4.11
 
 - Autorización explícita del propietario, exclusivamente rama qa: corregir QA_MYSQL_PATCH_MISMATCH del run 45684532918. Versión observada 8.4.11 por el propietario. Guard de Render por entorno, configuración Staging, Blueprint QA y workflows QA de esquema y backup/restore homologados; DEV/PROD conservan 8.4.8 y appsettings base intacto.

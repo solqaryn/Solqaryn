@@ -34,7 +34,7 @@ async function loginUi(page: Page): Promise<void> {
 }
 
 function filaCliente(page: Page, nombre: string) {
-  return page.locator('table.table-desktop tbody tr', { hasText: nombre });
+  return page.getByRole('region', { name: 'Tabla de clientes' }).locator('table tbody tr', { hasText: nombre });
 }
 
 test.describe('M5 — Clientes y segmentación', () => {
@@ -157,6 +157,45 @@ test.describe('M5 — Clientes y segmentación', () => {
     await expect(filaCliente(page, clienteA)).toBeVisible();
     await expect(filaCliente(page, clienteB)).toBeVisible();
     await expect(page).not.toHaveURL(/tipoClienteId=/);
+  });
+
+  test('conserva tabla única y scroll horizontal interno en móvil y escritorio', async ({ page }) => {
+    await loginUi(page);
+    await page.goto(`/clientes?tipoClienteId=${segmentoA.id}`);
+    const region = page.getByRole('region', { name: 'Tabla de clientes' });
+    const table = region.getByRole('table');
+    const row = filaCliente(page, clienteA);
+    await expect(row).toBeVisible();
+    for (const width of [320, 390, 768, 920, 1024, 1440]) {
+      await page.setViewportSize({ width, height: 844 });
+      await expect(table).toBeVisible();
+      await expect(table.getByRole('columnheader')).toHaveCount(9);
+      await expect(page.locator('app-clientes-list .cards-mobile')).toHaveCount(0);
+      await expect(page.locator('app-clientes-list mat-paginator')).toBeVisible();
+      await expect.poll(() => region.evaluate(element => {
+        const bounds = element.getBoundingClientRect();
+        const doc = document.documentElement;
+        return bounds.left >= -2 && bounds.right <= doc.clientWidth + 2 &&
+          Math.max(doc.scrollWidth, document.body.scrollWidth) <= doc.clientWidth + 2;
+      }), { message: `Sin desborde global a ${width}px` }).toBe(true);
+      await region.evaluate(element => { element.scrollLeft = 0; });
+      const dimensions = await region.evaluate(element => ({
+        scroll: element.scrollWidth, viewport: element.clientWidth,
+        overflow: getComputedStyle(element).overflowX
+      }));
+      expect(dimensions.overflow).toBe('auto');
+      if (width <= 920) {
+        expect(dimensions.scroll).toBeGreaterThan(dimensions.viewport + 2);
+        await region.focus();
+        await expect(region).toBeFocused();
+        await region.evaluate(element => { element.scrollLeft = element.scrollWidth; });
+        await expect.poll(() => region.evaluate(element => element.scrollLeft)).toBeGreaterThan(0);
+        expect(await row.locator('td.actions').evaluate(element => {
+          const region = element.closest('.table-scroll')!;
+          return element.getBoundingClientRect().right <= region.getBoundingClientRect().right + 2;
+        })).toBe(true);
+      }
+    }
   });
 
   test('exporta CSV con el conjunto filtrado completo', async ({ page }) => {

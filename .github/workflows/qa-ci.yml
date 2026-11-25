@@ -84,5 +84,7 @@ jobs:
       - run: npm run lint
       - name: Regresión de nombres de tallas
         run: npm run test:unit -- --include=src/app/features/catalogos-producto/catalogo-producto-list.component.spec.ts
+      - name: Regresión de tabla única de Clientes
+        run: npm run test:unit -- --include=src/app/features/clientes/clientes-list.component.spec.ts
       - run: npm run build:prod
       - run: node scripts/validate-environment-routing.mjs
