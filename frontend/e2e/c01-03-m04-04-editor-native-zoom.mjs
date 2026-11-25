@@ -40,6 +40,82 @@ async function audit(page, worker, name, locator) {
     scroll: Math.max(document.documentElement.scrollWidth, document.body.scrollWidth),
     dpr: devicePixelRatio, visualScale: visualViewport?.scale ?? 1
   }));
+  // Distinguish fractional body width rounding from reachable horizontal
+  // overflow. Probe both directions on the root and editor ancestors.
+  const horizontalTravel = () => locator.evaluate(el => {
+    const root = document.scrollingElement;
+    if (!root) throw Error('Missing document scrolling element');
+    const targets = new Set([root]);
+    for (let node = el.parentElement; node; node = node.parentElement) {
+      targets.add(node);
+    }
+    return [...targets].map(node => {
+      const initial = node.scrollLeft, top = node.scrollTop;
+      let positive, negative, restored;
+      try {
+        node.scrollTo({ left: 1000000, top, behavior: 'instant' });
+        positive = node.scrollLeft;
+        node.scrollTo({ left: -1000000, top, behavior: 'instant' });
+        negative = node.scrollLeft;
+      } finally {
+        node.scrollTo({ left: initial, top, behavior: 'instant' });
+        restored = node.scrollLeft;
+      }
+      return { tag: node.tagName, root: node === root, client: node.clientWidth,
+        scroll: node.scrollWidth, initial, positive, negative, restored,
+        travel: Math.max(initial, positive, negative) - Math.min(initial, positive, negative) };
+    });
+  });
+  const contrast = () => locator.evaluate(el => {
+    const form = el.closest('form');
+    if (!form) throw Error('Editor form missing');
+    const targets = [...form.querySelectorAll('input:not([type=hidden]), textarea, button')].filter(node =>
+      !node.disabled && node.getClientRects().length && getComputedStyle(node).visibility === 'visible');
+    if (!targets.includes(el)) throw Error('Audited editor control not included in contrast');
+    const ctx = document.createElement('canvas').getContext('2d', { willReadFrequently: true });
+    const rgba = value => {
+      if (!CSS.supports('color', value)) throw Error('Unsupported computed color: ' + value);
+      ctx.clearRect(0, 0, 1, 1);
+      ctx.fillStyle = value;
+      ctx.fillRect(0, 0, 1, 1);
+      return [...ctx.getImageData(0, 0, 1, 1).data].map(v => v / 255);
+    };
+    const over = (fg, bg) => fg.slice(0, 3).map((v, i) => v * fg[3] + bg[i] * (1 - fg[3]));
+    const luminance = rgb => rgb.slice(0, 3).map(v => v <= 0.04045 ? v / 12.92 : ((v + 0.055) / 1.055) ** 2.4)
+      .reduce((sum, v, i) => sum + v * [0.2126, 0.7152, 0.0722][i], 0);
+    return targets.map(node => {
+      const label = node.querySelector('.mdc-button__label') ?? node;
+      const chain = [];
+      for (let ancestor = label; ancestor; ancestor = ancestor.parentElement) chain.unshift(ancestor);
+      let bg = [1, 1, 1];
+      for (const ancestor of chain) {
+        const style = getComputedStyle(ancestor);
+        if (Number(style.opacity) !== 1 || style.backgroundImage !== 'none') {
+          throw Error('Contrast requires explicit compositing for non-solid or translucent ancestor');
+        }
+        bg = over(rgba(style.backgroundColor), bg);
+      }
+      const style = getComputedStyle(label);
+      const fg = over(rgba(style.webkitTextFillColor || style.color), bg);
+      const a = luminance(fg), b = luminance(bg);
+      return { control: node.getAttribute('formcontrolname') ?? node.getAttribute('aria-label') ?? node.tagName,
+        foreground: fg, background: bg, ratio: (Math.max(a, b) + 0.05) / (Math.min(a, b) + 0.05) };
+    });
+  });
+  async function assertEditorSurface(factor) {
+    const travel = await horizontalTravel();
+    assert.ok(travel.some(item => item.root), name + ': missing root scroll evidence');
+    for (const item of travel) {
+      assert.equal(item.travel, 0, name + ': horizontal travel at ' + factor * 100 + '% ' + item.tag);
+      assert.equal(item.restored, item.initial, name + ': horizontal position not restored');
+    }
+    const colors = await contrast();
+    assert.ok(colors.length >= 2, name + ': editor contrast controls missing');
+    for (const item of colors) {
+      assert.ok(item.ratio >= 4.5, name + ': WCAG AA text contrast at ' + factor * 100 + '% ' + item.control + ' = ' + item.ratio);
+    }
+    return { travel, colors };
+  }
   async function capture(factor, g, focused = false) {
     if (!focused) await locator.scrollIntoViewIfNeeded();
     await page.bringToFront();
@@ -74,6 +150,7 @@ async function audit(page, worker, name, locator) {
   const actual100 = await zoom(1);
   await page.waitForFunction(() => Math.abs(devicePixelRatio - 1) < 0.1);
   const before = await geometry();
+  const surface100 = await assertEditorSurface(1);
   const image100 = await capture(1, before);
   const actual200 = await zoom(2);
   await page.waitForFunction(b => Math.abs(devicePixelRatio / b.dpr - 2) < 0.05
@@ -87,6 +164,7 @@ async function audit(page, worker, name, locator) {
   assert.ok(Math.abs(after.visualScale - 1) < 0.01, name + ': pinch is not native zoom');
   assert.ok(before.scroll <= before.client + 2, name + ': overflow at 100%');
   assert.ok(after.scroll <= after.client + 2, name + ': overflow at 200%');
+  const surface200 = await assertEditorSurface(2);
   const image200 = await capture(2, after);
   // The previous probe stopped on ANY editor control, even when auditing
   // the save button after scrolling. Test the actual target, not its container.
@@ -116,7 +194,7 @@ async function audit(page, worker, name, locator) {
   // Capture the actual keyboard-focused target, not just its earlier layout.
   const imageFocus200 = await capture(2, after, true);
   assert.ok(await locator.evaluate(el => el === document.activeElement && el.matches(':focus-visible')), name + ': focus lost during capture');
-  records.push({ name, actual100, actual200, before, after, bounds, image100, image200, imageFocus200, focus });
+  records.push({ name, actual100, actual200, before, after, bounds, surface100, surface200, image100, image200, imageFocus200, focus });
   await zoom(1);
 }
 

@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV03 C01-03.M04.04: strict editor scroll and text contrast V44-R1
+
+- Foco orden 238/fila 239, evento V44R1-J20-5B2B84EA-C0103M0404-EDITOR-A11Y; D/R/S. Existing editor native Chromium harness now measures actual root/editor ancestor horizontal travel in both directions, restores position, and records computed text contrast of visible enabled form controls at native 100/200%. Existing geometry, JWT/MySQL, Tab, focus and X11 assertions retained. R2 targeted evidence only; no runtime, API, DI, DB, security grants or dependency changes. Historical and Oracle evidence already approved at base dc57573c18143de30cec8624b5e763d5175235e0; new CI required, not PASS. Responsive five-width editor and feedback contrast still require evidence; no A5 or LISTO.
+- SKREF-03 pbakaus/impeccable 2149fcce and SKREF-10 angular/angular 68089669 consulted at pinned original; no external scripts. Rollback normal git revert if needed, preserve historical evidence.
+
 ## 2026-11-24 — DEV04 C01-03.M04.04: historical editor baseline V44-R1
 
 - Foco orden 238/fila 239, D/R/S: obtener ANTES genuino del editor en parent inmutable `ca947be748896312f8e91836de078fd81095a83f` de 39322f00. El código histórico carece de guard saving() al entrar guardar(); el HEAD vigente lo exige. Nuevo harness/CI aislado usa login JWT, permisos Editar reales, MySQL 8.4, capturas X11 editor nombre/guardar 100/200 y Tab, geometría/recorrido horizontal observado, PUT 409 sintético para observar doble submit sin escritura durable. Evidencia histórica NO equivale a aceptación actual.
