@@ -98,6 +98,7 @@ public sealed class V5UniversalCaseFileAuthorizationGate
             return Deny("CASEFILE_CLIENT_TENANT_INVALID");
 
         var evidence = await _reader.ReadForActionAsync(request.CaseFileId, request.Action, cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
         if (evidence is null ||
             !string.Equals(evidence.ObservedSourceSha,
                 request.ExpectedSourceSha, StringComparison.Ordinal))

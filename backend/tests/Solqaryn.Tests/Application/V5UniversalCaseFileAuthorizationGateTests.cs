@@ -15,12 +15,14 @@ public sealed class V5UniversalCaseFileAuthorizationGateTests
         public Gate.VerifiedEvidence? Evidence { get; set; } = ValidEvidence();
         public int Calls { get; private set; }
         public bool BindRequestedAction { get; set; } = true;
+        public Action? AfterRead { get; set; }
 
         public ValueTask<Gate.VerifiedEvidence?> ReadAsync(
             int caseFileId, CancellationToken cancellationToken)
         {
             cancellationToken.ThrowIfCancellationRequested();
             Calls++;
+            AfterRead?.Invoke();
             return ValueTask.FromResult(Evidence);
         }
 
@@ -245,6 +247,22 @@ public sealed class V5UniversalCaseFileAuthorizationGateTests
         Assert.Equal("CASEFILE_TRUSTED_EVIDENCE_MISSING_OR_STALE",
             (await new Gate(reader).EvaluateAsync(Read())).Code);
         Assert.Equal(0, reader.Calls);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task CancellationDuringTrustedReadCannotReturnVerdict(bool hasEvidence)
+    {
+        using var cts = new CancellationTokenSource();
+        var reader = new Reader
+        {
+            Evidence = hasEvidence ? ValidEvidence() : null,
+            AfterRead = () => cts.Cancel()
+        };
+        await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
+            await new Gate(reader).EvaluateAsync(Read(), cts.Token));
+        Assert.Equal(1, reader.Calls);
     }
 
     [Fact]

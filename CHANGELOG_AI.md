@@ -1,3 +1,6 @@
+## 2026-11-25 — DEV06 — C01-04.M03.03 / foco C01-04.M03.06 — R12/R11 cancelacion del gate Application
+- TASK_ID 6af16bbad26881918c283abe06e1f32a; RUN_ID 96a7680f-69d8-8321-b8d3-7b8a32fe36ce; base 76484e42e85f8711533021e29a5ba06c028c2256; V17 H268:I268; comprobacion CancellationToken inmediatamente despues de lectura confiable para impedir veredicto posterior a cancelacion. Dos variantes xUnit con evidencia valida y nula, sin alterar grants, DB, DI, migraciones ni runtime autentico; no sustituye R11. A5 independiente y CI pendientes, conserva cierre historico y owner de .03; foco .06 VALIDANDO. Sin CAS.
+
 ## 2026-11-25 — DEV04 — C01-04.M03.06 — R12 correccion causal gate V19
 - TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09; RUN_ID bf9b175d-f364-8333-aa86-46a244a2abde; base ac1289cac5ec493439da36926a15c9c156a7ae3b; job139490363632: 22/22 xUnit PASS, 0 fallo/omitido, pero gate estricto obsoleto esperaba 11 tras las 11 nuevas variantes DEV03. Actualiza nombre, tupla exacta (22,22,0,0) y error de V19; mantiene las 11 Fact, 11 InlineData, prueba de revocacion separada 1/1 y todos los controles. Sin cambio runtime, datos, migracion, permisos, A5 ni LISTO. CI nuevo SHA pendiente.
 
