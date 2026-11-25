@@ -216,6 +216,31 @@ public sealed class C0104M0306DurableQaAuditMysql84Tests
             Assert.Equal(1L, await Count(isolated, 202, 42));
             Assert.Equal(3L, await CountAll(isolated));
 
+            // Admit the actual directed job for this ID without certifying its source.
+            var directed = new Audit(new Source(Observation(utc, "101", "42") with
+                { CheckName = "C01-04.M03.06 - directed durable MySQL 8.4 QA proof" }), direct, new FrozenClock(utc));
+            var directedReceipt = await directed.CaptureAsync(Microtask, "casefile.timeline", Sha, "101", "42");
+            Assert.Equal("CASEFILE_QA_ENVELOPE_WRITTEN_REVIEW_PENDING", directedReceipt.Code);
+            Assert.False(directedReceipt.CertifiesCI);
+            Assert.False(directedReceipt.CertifiesA5);
+            var directedEntry = safe with { CheckName = "C01-04.M03.06 - directed durable MySQL 8.4 QA proof" };
+            var wrongTask = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await direct.WriteAsync(directedEntry with { MicrotaskId = "C01-04.M03.05" }, default));
+            Assert.Equal("CASEFILE_QA_DURABLE_SCOPE_INVALID", wrongTask.Message);
+            var alteredName = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await direct.WriteAsync(directedEntry with { CheckName = directedEntry.CheckName + "\n" }, default));
+            Assert.Equal("CASEFILE_QA_DURABLE_SCOPE_INVALID", alteredName.Message);
+            Assert.Equal(4L, await CountAll(isolated));
+            await using (var verify = new MySqlConnection(isolated))
+            {
+                await verify.OpenAsync();
+                await using var cmd = verify.CreateCommand();
+                cmd.CommandText = $"SELECT COUNT(*) FROM {Table} WHERE TenantId=101 AND CaseFileId=42 AND MicrotaskId=@task AND CheckName=@name";
+                cmd.Parameters.AddWithValue("@task", Microtask);
+                cmd.Parameters.AddWithValue("@name", directedEntry.CheckName);
+                Assert.Equal(1L, Convert.ToInt64(await cmd.ExecuteScalarAsync()));
+            }
+
             // Storage outage or schema absence cannot create a successful receipt.
             await Execute(isolated, $"DROP TABLE {Table}");
             var unavailable = await a.CaptureAsync(

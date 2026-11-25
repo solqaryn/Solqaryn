@@ -21,13 +21,6 @@ public sealed class V5UniversalCaseFileQaStructuredLoggerSink
         "casefile.timeline", "casefile.authorization",
         "casefile.attachment", "casefile.qa-evidence"
     };
-    private static readonly HashSet<string> CheckNames = new(StringComparer.Ordinal)
-    {
-        "verify-solqaryn-project-scope",
-        "SOLQARYN - Seguridad multiempresa",
-        "Backend Release y pruebas",
-        "Authorization, files, secrets and tenant gate"
-    };
     private static readonly HashSet<string> CheckStatuses = new(StringComparer.Ordinal)
     {
         "queued", "in_progress", "completed"
@@ -74,7 +67,7 @@ public sealed class V5UniversalCaseFileQaStructuredLoggerSink
         entry.MicrotaskId is not null && MicrotaskPattern.IsMatch(entry.MicrotaskId) &&
         entry.SourceSha is not null && ShaPattern.IsMatch(entry.SourceSha) &&
         RouteKeys.Contains(entry.RouteKey) &&
-        CheckNames.Contains(entry.CheckName) &&
+        V5UniversalCaseFileQaEvidenceAudit.IsAllowedCheck(entry.MicrotaskId, entry.CheckName) &&
         CheckStatuses.Contains(entry.CheckStatus) &&
         CheckConclusions.Contains(entry.CheckConclusion) &&
         ((entry.CheckStatus == "completed" && entry.CheckConclusion != "pending") ||

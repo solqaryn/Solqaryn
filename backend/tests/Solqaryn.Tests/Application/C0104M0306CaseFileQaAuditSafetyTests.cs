@@ -78,6 +78,26 @@ public sealed class C0104M0306CaseFileQaAuditSafetyTests
         Assert.False(result.AllowsProduction);
     }
 
+    [Fact]
+    public async Task DirectedCheckIsAcceptedOnlyForItsOwnMicrotaskAndNeverCertifiesCi()
+    {
+        var sink = new Sink();
+        var directed = Good() with { CheckName = "C01-04.M03.06 - directed durable MySQL 8.4 QA proof" };
+        var result = await Capture(new Source(directed), sink);
+        Assert.Equal("CASEFILE_QA_ENVELOPE_WRITTEN_REVIEW_PENDING", result.Code);
+        Assert.Equal(directed.CheckName, Assert.Single(sink.Entries).CheckName);
+        Assert.False(result.CertifiesCI);
+        Assert.False(result.CertifiesA5);
+        Assert.False(result.GrantsTenantAccess);
+        var rejected = new Sink();
+        var wrong = await Capture(new Source(directed with { MicrotaskId = "C01-04.M03.05" }),
+            rejected, id: "C01-04.M03.05");
+        Assert.Equal("CASEFILE_QA_CHECK_OR_TIME_INVALID", wrong.Code);
+        var altered = await Capture(new Source(directed with { CheckName = directed.CheckName + "\n" }), rejected);
+        Assert.Equal("CASEFILE_QA_CHECK_OR_TIME_INVALID", altered.Code);
+        Assert.Empty(rejected.Entries);
+    }
+
     [Theory]
     [InlineData("C01-04.M03.06;DROP")]
     [InlineData("")]

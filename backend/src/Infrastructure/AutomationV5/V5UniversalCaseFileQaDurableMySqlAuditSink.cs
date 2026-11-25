@@ -31,11 +31,6 @@ public sealed class V5UniversalCaseFileQaDurableMySqlAuditSink
         "casefile.timeline", "casefile.authorization",
         "casefile.attachment", "casefile.qa-evidence"
     };
-    private static readonly HashSet<string> Checks = new(StringComparer.Ordinal)
-    {
-        "verify-solqaryn-project-scope", "SOLQARYN - Seguridad multiempresa",
-        "Backend Release y pruebas", "Authorization, files, secrets and tenant gate"
-    };
     private static readonly HashSet<string> Statuses = new(StringComparer.Ordinal)
     {
         "queued", "in_progress", "completed"
@@ -119,7 +114,7 @@ public sealed class V5UniversalCaseFileQaDurableMySqlAuditSink
     private static bool Valid(V5UniversalCaseFileQaEvidenceAudit.SafeAuditEntry? e) =>
         e is not null && e.MicrotaskId is not null && Microtask.IsMatch(e.MicrotaskId) &&
         e.SourceSha is not null && Sha.IsMatch(e.SourceSha) &&
-        Routes.Contains(e.RouteKey) && Checks.Contains(e.CheckName) &&
+        Routes.Contains(e.RouteKey) && V5UniversalCaseFileQaEvidenceAudit.IsAllowedCheck(e.MicrotaskId, e.CheckName) &&
         Statuses.Contains(e.CheckStatus) && Conclusions.Contains(e.CheckConclusion) &&
         ((e.CheckStatus == "completed" && e.CheckConclusion != "pending") ||
          (e.CheckStatus != "completed" && e.CheckConclusion == "pending")) &&

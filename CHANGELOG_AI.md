@@ -1,3 +1,8 @@
+## 2026-11-25 — DEV04 C01-04.M03.06: política de job dirigido QA exacto R8
+
+- R2: nombre real del job MySQL dirigido permitido exclusivamente para C01-04.M03.06 en Application, logger e Infrastructure; sin ampliar autorización ni certificar CI/A5.
+- Regresiones de nombre exacto, ID ajeno, sufijo LF y persistencia aislada MySQL; CI exacta pendiente. Fuente autenticada, ownership y trazabilidad build/run pendientes. H/I preservados.
+
 ## 2026-11-25 — DEV04 C01-03.M04.05: preserve permission message words at narrow reflow V44-R8
 
 - D/R/S: DEV03 inspected original artifact 15000177105 at exact SHA 902305c1746ecaa285e81aaa25e13dacbf031676 and found Configuración split at 320px root text 200% in both tenants despite the successful icon geometry test. Adopt the isolated Chromium hypothesis prepared by DEV03 (not a real integration result); narrow read-only row may wrap the label below its preserved 24px icon.

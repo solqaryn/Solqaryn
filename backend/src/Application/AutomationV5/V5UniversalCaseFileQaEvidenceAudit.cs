@@ -53,6 +53,14 @@ public sealed class V5UniversalCaseFileQaEvidenceAudit
         "Backend Release y pruebas",
         "Authorization, files, secrets and tenant gate"
     };
+    // A directed workflow is scoped to its own microtask; it is not a generic QA grant.
+    public const string DirectedDurableCheckName = "C01-04.M03.06 - directed durable MySQL 8.4 QA proof";
+
+    public static bool IsAllowedCheck(string? microtaskId, string? checkName) =>
+        checkName is not null && (Checks.Contains(checkName) ||
+            (string.Equals(microtaskId, "C01-04.M03.06", StringComparison.Ordinal) &&
+             string.Equals(checkName, DirectedDurableCheckName, StringComparison.Ordinal)));
+
     private static readonly HashSet<string> States = new(StringComparer.Ordinal)
     {
         "queued", "in_progress", "completed"
@@ -143,7 +151,7 @@ public sealed class V5UniversalCaseFileQaEvidenceAudit
         // Do not recycle an old or future-dated provider observation as a fresh QA receipt.
         // An authenticated source and exact-SHA CI proof remain separate requirements.
         var nowUtc = _timeProvider.GetUtcNow();
-        if (observation.CheckName is null || !Checks.Contains(observation.CheckName) ||
+        if (observation.CheckName is null || !IsAllowedCheck(microtaskId, observation.CheckName) ||
             observation.CheckStatus is null || !States.Contains(observation.CheckStatus) ||
             observation.CheckConclusion is null || !Conclusions.Contains(observation.CheckConclusion) ||
             observation.ObservedAtUtc == default ||

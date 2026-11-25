@@ -83,6 +83,22 @@ public sealed class C0104M0306StructuredLoggerSinkTests
     }
 
     [Fact]
+    public async Task DirectedJobLogsExactNameOnlyForItsOwnMicrotask()
+    {
+        var logger = new ProbeLogger();
+        var sink = new V5UniversalCaseFileQaStructuredLoggerSink(logger);
+        var directed = GoodEntry() with { CheckName = "C01-04.M03.06 - directed durable MySQL 8.4 QA proof" };
+        await sink.WriteAsync(directed, default);
+        Assert.Contains(Assert.Single(logger.Calls).Fields,
+            p => p.Key == "CheckName" && Equals(p.Value, directed.CheckName));
+        await Assert.ThrowsAsync<ArgumentException>(async () =>
+            await sink.WriteAsync(directed with { MicrotaskId = "C01-04.M03.05" }, default));
+        await Assert.ThrowsAsync<ArgumentException>(async () =>
+            await sink.WriteAsync(directed with { CheckName = directed.CheckName + "\n" }, default));
+        Assert.Single(logger.Calls);
+    }
+
+    [Fact]
     public async Task DirectSinkRejectsForgedSensitiveAndUnverifiedFieldsWithoutLogging()
     {
         var logger = new ProbeLogger();
