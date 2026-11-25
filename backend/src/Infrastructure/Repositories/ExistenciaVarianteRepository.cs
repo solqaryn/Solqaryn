@@ -93,11 +93,14 @@ public sealed class ExistenciaVarianteRepository : IExistenciaVarianteRepository
         if (ids.Length == 0)
             return new List<ExistenciaVariante>();
 
-        return await Existencias
-            .AsNoTracking()
-            .Where(e =>
-                ids.Contains(e.ProductoVarianteId)
-                && e.ProductoVariante.Activo
+        return await OperativasPublicas(Existencias.AsNoTracking())
+            .Where(e => ids.Contains(e.ProductoVarianteId))
+            .ToListAsync();
+    }
+
+    internal static IQueryable<ExistenciaVariante> OperativasPublicas(IQueryable<ExistenciaVariante> query) =>
+        query.Where(e =>
+                e.ProductoVariante.Activo
                 && !e.ProductoVariante.Eliminado
                 && e.ProductoVariante.Producto.Activo
                 && !e.ProductoVariante.Producto.Eliminado
@@ -109,9 +112,7 @@ public sealed class ExistenciaVarianteRepository : IExistenciaVarianteRepository
                     || (e.UbicacionAlmacen != null
                         && e.UbicacionAlmacen.Activa
                         && !e.UbicacionAlmacen.Eliminado))
-                && (e.Almacen.Tipo == TipoAlmacen.Tienda || e.Almacen.Tipo == TipoAlmacen.Bodega))
-            .ToListAsync();
-    }
+                && (e.Almacen.Tipo == TipoAlmacen.Tienda || e.Almacen.Tipo == TipoAlmacen.Bodega));
 
     public async Task<(List<ExistenciaVariante> Items, int Total)> BuscarAsync(
         int? productoId,

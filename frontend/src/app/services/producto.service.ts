@@ -133,6 +133,7 @@ export class ProductoService {
     formData.append('TipoInventario', String(value.tipoInventario ?? TipoInventario.MercaderiaVenta));
     formData.append('EsDestacado', String(Boolean(value.esDestacado)));
     formData.append('Cantidad', String(value.cantidad));
+    if (value.almacenInicialId != null) formData.append('AlmacenInicialId', String(value.almacenInicialId));
     formData.append('Costo', String(value.costo));
     formData.append('Precio', String(value.precio));
     formData.append('UmbralStockBajo', String(value.umbralStockBajo));

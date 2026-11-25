@@ -25,6 +25,9 @@ public class ProductoVarianteFormularioDto
 
 public class CreateProductoDto
 {
+    // Almacén explícito para el registro físico del stock inicial; opcional por compatibilidad.
+    public int? AlmacenInicialId { get; set; }
+
     public string Nombre { get; set; } = string.Empty;
 
     // Compatibilidad de entrada para clientes anteriores. Estos campos NO son fuente de verdad:

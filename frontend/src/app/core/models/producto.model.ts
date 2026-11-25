@@ -42,6 +42,7 @@ export interface ProductoVariante {
 }
 
 export interface ProductoVarianteFormValue {
+  almacenInicialId?: number | null;
   id?: number;
   marcaId?: number | null;
   modeloId?: number | null;
@@ -127,6 +128,7 @@ export interface ProductoEscaneadoCompra extends ProductoEscaneadoBase {
 }
 
 export interface ProductoFormValue {
+  almacenInicialId?: number | null;
   nombre: string;
   marca: string;
   modelo: string;

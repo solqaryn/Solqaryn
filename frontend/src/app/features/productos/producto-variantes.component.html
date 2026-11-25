@@ -4,6 +4,7 @@
     <h1>Variantes y existencias</h1>
     @if (producto(); as p) {
       <p>{{ p.nombre }} · Stock consolidado: <strong>{{ p.cantidad }}</strong></p>
+      <p>La disponibilidad de venta se calcula con las existencias físicas por almacén y sus reservas. Usa Configurar existencia física para revisar cada variante.</p>
     }
   </div>
 </div>
@@ -74,6 +75,17 @@
       @if (editandoId()) { <mat-hint>Usa “Ajustar stock” para modificar existencias con trazabilidad.</mat-hint> }
     </mat-form-field>
 
+    @if (!editandoId() && (form.controls.cantidad.value ?? 0) > 0) {
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Almacén del stock inicial</mat-label>
+        <mat-select formControlName="almacenInicialId">
+          @for (almacen of almacenesIniciales(); track almacen.id) {
+            <mat-option [value]="almacen.id">{{ almacen.sucursalNombre }} · {{ almacen.nombre }}</mat-option>
+          }
+        </mat-select>
+        <mat-hint>{{ mensajeAlmacen() || 'Las unidades se registrarán físicamente en este almacén.' }}</mat-hint>
+      </mat-form-field>
+    }
     <mat-form-field appearance="outline">
       <mat-label>Umbral de stock bajo</mat-label>
       <input matInput type="number" min="0" formControlName="umbralStockBajo">

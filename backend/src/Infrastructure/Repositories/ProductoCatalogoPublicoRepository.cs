@@ -164,18 +164,19 @@ public sealed class ProductoCatalogoPublicoRepository : IProductoCatalogoPublico
             query = query.Where(p => p.Activo == request.Activo.Value);
         if (request.EsDestacado.HasValue)
             query = query.Where(p => p.EsDestacado == request.EsDestacado.Value);
-        if (request.Agotado.HasValue)
-            query = request.Agotado.Value
-                ? query.Where(p => !p.Variantes.Any(v => !v.Eliminado && v.Activo && v.Cantidad > 0))
-                : query.Where(p => p.Variantes.Any(v => !v.Eliminado && v.Activo && v.Cantidad > 0));
-
-        if (request.SoloDisponibles == true)
+        if (request.Agotado.HasValue || request.SoloDisponibles == true)
         {
-            query = query.Where(p =>
-                p.Variantes.Any(v => !v.Eliminado && v.Activo &&
-                    _context.ExistenciasVariante.Any(e =>
-                        e.ProductoVarianteId == v.Id && e.StockDisponible > 0))
-                || (!p.Variantes.Any(v => !v.Eliminado && v.Activo) && p.Cantidad > 0));
+            // Misma elegibilidad física que InventarioPublicoService: no contar reservas,
+            // ubicaciones o almacenes inactivos, tránsito, devolución ni cuarentena.
+            var disponibles = ExistenciaVarianteRepository.OperativasPublicas(_context.ExistenciasVariante.AsNoTracking())
+                .Where(e => e.StockDisponible > 0)
+                .Select(e => e.ProductoVariante.ProductoId);
+            if (request.Agotado == true)
+                query = query.Where(p => !disponibles.Contains(p.Id)
+                    && (p.Variantes.Any(v => !v.Eliminado && v.Activo) || p.Cantidad <= 0));
+            if (request.Agotado == false || request.SoloDisponibles == true)
+                query = query.Where(p => disponibles.Contains(p.Id)
+                    || (!p.Variantes.Any(v => !v.Eliminado && v.Activo) && p.Cantidad > 0));
         }
 
         if (request.PrecioMinimo.HasValue)

@@ -15,6 +15,8 @@ import { CatalogoProducto } from '../../core/models/catalogo-producto.model';
 import { Producto, ProductoImagen, ProductoVariante, ProductoVarianteFormValue } from '../../core/models/producto.model';
 import { CatalogoProductoService } from '../../services/catalogo-producto.service';
 import { ProductoService } from '../../services/producto.service';
+import { AlmacenService } from '../../services/almacen.service';
+import { Almacen } from '../../core/models/almacen.model';
 import { AppAlertService } from '../../shared/alerts/app-alert.service';
 import { ProductoImagenComponent } from '../../shared/producto-imagen/producto-imagen.component';
 import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
@@ -42,6 +44,9 @@ export class ProductoVariantesComponent implements OnInit {
   private readonly snackBar = inject(MatSnackBar);
   private readonly alerts = inject(AppAlertService);
   private readonly permisosRuntime = inject(PermisosRuntimeService);
+  private readonly almacenService = inject(AlmacenService);
+  readonly almacenesIniciales = signal<Almacen[]>([]);
+  readonly mensajeAlmacen = signal('');
 
   readonly producto = signal<Producto | null>(null);
   readonly variantes = signal<ProductoVariante[]>([]);
@@ -72,6 +77,7 @@ export class ProductoVariantesComponent implements OnInit {
     sku: ['', Validators.maxLength(80)],
     codigoBarras: ['', Validators.maxLength(120)],
     cantidad: [0, [Validators.required, Validators.min(0)]],
+    almacenInicialId: [null as number | null],
     umbralStockBajo: [5, [Validators.required, Validators.min(0)]],
     costo: [0, [Validators.required, Validators.min(0)]],
     precio: [0, [Validators.required, Validators.min(0.01)]]
@@ -79,6 +85,7 @@ export class ProductoVariantesComponent implements OnInit {
 
   ngOnInit(): void {
     this.puedeExportar.set(this.permisosRuntime.puede('Productos', 'Exportar'));
+    this.cargarAlmacenesIniciales();
     this.productoId = Number(this.route.snapshot.paramMap.get('id'));
     forkJoin({
       marcas: this.catalogoService.getActivos('Marca'),
@@ -222,6 +229,22 @@ export class ProductoVariantesComponent implements OnInit {
     });
   }
 
+  private cargarAlmacenesIniciales(): void {
+    if (!this.permisosRuntime.puede('Inventario', 'Crear') || !this.permisosRuntime.puede('Almacenes', 'Ver')) {
+      this.mensajeAlmacen.set('Para registrar stock inicial necesitas permisos de Inventario y Almacenes.');
+      return;
+    }
+    this.mensajeAlmacen.set('Cargando almacenes activos…');
+    this.almacenService.getActivos().subscribe({
+      next: res => {
+        const almacenes = res.data.filter(a => a.activo && (a.tipo === 'Tienda' || a.tipo === 'Bodega'));
+        this.almacenesIniciales.set(almacenes);
+        this.mensajeAlmacen.set(almacenes.length ? '' : 'No hay tiendas o bodegas activas. Registra una antes de agregar stock.');
+      },
+      error: () => this.mensajeAlmacen.set('No se pudieron cargar los almacenes. Vuelve a abrir el formulario.')
+    });
+  }
+
   guardar(): void {
     if (this.form.invalid) {
       this.form.markAllAsTouched();
@@ -229,7 +252,13 @@ export class ProductoVariantesComponent implements OnInit {
     }
 
     const raw = this.form.getRawValue();
+    const almacenInicialId = !this.editandoId() && Number(raw.cantidad) > 0 ? raw.almacenInicialId : null;
+    if (!this.editandoId() && Number(raw.cantidad) > 0 && !this.almacenesIniciales().some(a => a.id === almacenInicialId)) {
+      this.errorMessage.set(this.mensajeAlmacen() || 'Selecciona el almacén físico del stock inicial.');
+      return;
+    }
     const value: ProductoVarianteFormValue = {
+      almacenInicialId,
       marcaId: raw.marcaId || null,
       modeloId: raw.modeloId || null,
       colorId: raw.colorId || null,

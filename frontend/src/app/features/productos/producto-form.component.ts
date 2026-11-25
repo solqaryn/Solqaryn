@@ -11,6 +11,9 @@ import { MatCheckboxModule } from '@angular/material/checkbox';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { ProductoService } from '../../services/producto.service';
+import { AlmacenService } from '../../services/almacen.service';
+import { Almacen } from '../../core/models/almacen.model';
+import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
 import { CategoriaService } from '../../services/categoria.service';
 import { CatalogoProductoService } from '../../services/catalogo-producto.service';
 import { Categoria } from '../../core/models/categoria.model';
@@ -50,6 +53,10 @@ const MAX_IMAGENES = 5;
 })
 export class ProductoFormComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
+  private readonly almacenService = inject(AlmacenService);
+  private readonly permisosRuntime = inject(PermisosRuntimeService);
+  readonly almacenesIniciales = signal<Almacen[]>([]);
+  readonly mensajeAlmacen = signal('');
   readonly loading = signal(false);
   readonly saving = signal(false);
   readonly errorMessage = signal<string | null>(null);
@@ -80,6 +87,7 @@ export class ProductoFormComponent implements OnInit {
     descripcion: [''],
     categoriaId: [null as number | null],
     esDestacado: [false],
+    almacenInicialId: [null as number | null],
     variantes: this.fb.array<any>([])
   });
 
@@ -117,6 +125,7 @@ export class ProductoFormComponent implements OnInit {
           this.cargarProducto(this.productoId);
         } else {
           this.agregarVariante();
+          this.cargarAlmacenesIniciales();
           this.loading.set(false);
         }
       },
@@ -365,6 +374,22 @@ export class ProductoFormComponent implements OnInit {
     this.imagenes.set(this.imagenes().map((img, i) => ({ ...img, esPrincipal: i === index })));
   }
 
+  private cargarAlmacenesIniciales(): void {
+    if (!this.permisosRuntime.puede('Inventario', 'Crear') || !this.permisosRuntime.puede('Almacenes', 'Ver')) {
+      this.mensajeAlmacen.set('Para registrar stock inicial necesitas permisos de Inventario y Almacenes.');
+      return;
+    }
+    this.mensajeAlmacen.set('Cargando almacenes activos…');
+    this.almacenService.getActivos().subscribe({
+      next: res => {
+        const almacenes = res.data.filter(a => a.activo && (a.tipo === 'Tienda' || a.tipo === 'Bodega'));
+        this.almacenesIniciales.set(almacenes);
+        this.mensajeAlmacen.set(almacenes.length ? '' : 'No hay tiendas o bodegas activas. Registra una antes de agregar stock.');
+      },
+      error: () => this.mensajeAlmacen.set('No se pudieron cargar los almacenes. Vuelve a abrir el formulario.')
+    });
+  }
+
   submit(): void {
     if (this.form.invalid || this.variantes.length === 0) {
       this.form.markAllAsTouched();
@@ -422,6 +447,11 @@ export class ProductoFormComponent implements OnInit {
     const marca = this.marcas().find(item => item.id === marcaComunId);
     const modelo = this.modelosTodos().find(item => item.id === modeloComunId);
     const total = variantes.reduce((suma, variante) => suma + variante.cantidad, 0);
+    const almacenInicialId = !this.isEdit() && total > 0 ? this.form.controls.almacenInicialId.value : null;
+    if (!this.isEdit() && total > 0 && !this.almacenesIniciales().some(a => a.id === almacenInicialId)) {
+      this.errorMessage.set(this.mensajeAlmacen() || 'Selecciona el almacén donde se encuentran físicamente las unidades iniciales.');
+      return;
+    }
     const costo = total > 0
       ? variantes.reduce((suma, variante) => suma + variante.costo * variante.cantidad, 0) / total
       : variantes[0].costo;
@@ -443,6 +473,7 @@ export class ProductoFormComponent implements OnInit {
       descripcion: this.form.value.descripcion || undefined,
       esDestacado: this.form.value.esDestacado === true,
       cantidad: total,
+      almacenInicialId,
       costo: Math.round(costo * 100) / 100,
       precio,
       umbralStockBajo: variantes.reduce((suma, variante) => suma + variante.umbralStockBajo, 0),

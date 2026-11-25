@@ -71,6 +71,17 @@
       @if (isEdit() && productoId) { <a mat-stroked-button color="primary" [routerLink]="['/productos', productoId, 'variantes']"><mat-icon>tune</mat-icon>Administrar variantes</a> } @else { <button mat-stroked-button color="primary" type="button" (click)="agregarVariante()"><mat-icon>add</mat-icon>Agregar variante</button> }
     </div>
     <div class="stock-summary" aria-live="polite"><div><span>Variantes físicas</span><strong>{{ variantes.length }}</strong></div><div><span>Stock total calculado</span><strong>{{ stockTotal }} unidades</strong></div><div><span>Umbral consolidado</span><strong>{{ umbralTotal }} unidades</strong></div></div>
+    @if (!isEdit() && stockTotal > 0) {
+      <mat-form-field appearance="outline" subscriptSizing="dynamic">
+        <mat-label>Almacén del stock inicial</mat-label>
+        <mat-select formControlName="almacenInicialId">
+          @for (almacen of almacenesIniciales(); track almacen.id) {
+            <mat-option [value]="almacen.id">{{ almacen.sucursalNombre }} · {{ almacen.nombre }}</mat-option>
+          }
+        </mat-select>
+        <mat-hint>{{ mensajeAlmacen() || 'Las unidades se registrarán físicamente en este almacén.' }}</mat-hint>
+      </mat-form-field>
+    }
     @if (!isEdit()) {
       <app-producto-combination-generator
         [marcas]="marcas()"

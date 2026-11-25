@@ -64,8 +64,10 @@ public class ProductosController : ControllerBase
         await _unitOfWork.ExecuteInTransactionAsync(async () =>
         {
             var (variantes, forzarTecnica) = ResolverVariantesSolicitud(dto);
+            if (dto.AlmacenInicialId is int almacenId && variantes.Any(v => v.Cantidad > 0))
+                await StockInicialProducto.ValidarAlmacenAsync(HttpContext, almacenId);
             creado = await _productoService.CreateAsync(dto);
-            await SincronizarVariantesAsync(creado.Id, variantes, Array.Empty<ProductoVarianteDto>(), forzarTecnica);
+            await SincronizarVariantesAsync(creado.Id, variantes, Array.Empty<ProductoVarianteDto>(), forzarTecnica, dto.AlmacenInicialId);
         });
 
         var resultado = await _productoService.GetByIdAsync(creado!.Id) ?? creado;
@@ -252,7 +254,8 @@ public class ProductosController : ControllerBase
         int productoId,
         IReadOnlyCollection<ProductoVarianteFormularioDto> solicitadas,
         IReadOnlyCollection<ProductoVarianteDto> existentes,
-        bool forzarTecnica = false)
+        bool forzarTecnica = false,
+        int? almacenInicialId = null)
     {
         var tecnica = existentes.SingleOrDefault(v => v.EsTecnica);
         var comercialesExistentes = existentes.Where(v => !v.EsTecnica).ToList();
@@ -263,7 +266,9 @@ public class ProductosController : ControllerBase
                 throw new BusinessRuleException("No puedes convertir el producto en simple mientras alguna variante comercial tenga existencias.");
             foreach (var comercial in comercialesExistentes)
                 await _varianteService.DeleteAsync(productoId, comercial.Id);
-            await _varianteService.SincronizarTecnicaAsync(productoId, solicitadas.Single());
+            var creada = await _varianteService.SincronizarTecnicaAsync(productoId, solicitadas.Single());
+            if (almacenInicialId is int almacenId && creada.Cantidad > 0)
+                await StockInicialProducto.RegistrarAsync(HttpContext, almacenId, creada);
             return;
         }
 
@@ -331,6 +336,8 @@ public class ProductosController : ControllerBase
                     Costo = solicitada.Costo,
                     Precio = solicitada.Precio
                 });
+                if (almacenInicialId is int almacenId && creada.Cantidad > 0)
+                    await StockInicialProducto.RegistrarAsync(HttpContext, almacenId, creada);
                 if (!solicitada.Activo)
                     await _varianteService.CambiarEstadoAsync(productoId, creada.Id, false);
             }

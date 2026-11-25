@@ -5,6 +5,7 @@ using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Solqaryn.API.Controllers;
 
@@ -43,7 +44,23 @@ public class ProductoVariantesController : ControllerBase
     [RequierePermiso(ModuloSistema.Productos, AccionPermiso.Crear)]
     public async Task<IActionResult> Create(int productoId, CreateProductoVarianteDto dto)
     {
-        var creada = await _service.CreateAsync(productoId, dto);
+        ProductoVarianteDto creada;
+        if (dto.AlmacenInicialId is int almacenId && dto.Cantidad > 0)
+        {
+            ProductoVarianteDto? resultado = null;
+            var uow = HttpContext.RequestServices.GetRequiredService<IUnitOfWork>();
+            await uow.ExecuteInTransactionAsync(async () =>
+            {
+                await StockInicialProducto.ValidarAlmacenAsync(HttpContext, almacenId);
+                resultado = await _service.CreateAsync(productoId, dto);
+                await StockInicialProducto.RegistrarAsync(HttpContext, almacenId, resultado);
+            });
+            creada = resultado!;
+        }
+        else
+        {
+            creada = await _service.CreateAsync(productoId, dto);
+        }
         return CreatedAtAction(nameof(GetById), new { productoId, id = creada.Id },
             ApiResponse<ProductoVarianteDto>.Ok(creada, "Variante creada correctamente."));
     }

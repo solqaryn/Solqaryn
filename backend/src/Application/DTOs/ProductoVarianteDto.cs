@@ -33,6 +33,7 @@ public class ProductoVarianteDto
 
 public class CreateProductoVarianteDto
 {
+    public int? AlmacenInicialId { get; set; }
     public int? MarcaId { get; set; }
     public int? ModeloId { get; set; }
     public int? ColorId { get; set; }

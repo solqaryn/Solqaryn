@@ -1,3 +1,9 @@
+## 2026-11-25 — QA: alta de stock físico y disponibilidad del Storefront
+
+- Alta de producto y de variante: selección explícita de tienda/bodega activa para unidades iniciales positivas desde la interfaz; registro físico por variante en la misma transacción de creación, sin modificar reservas, tránsito ni movimientos existentes. Verifica Inventario.Crear, Almacenes.Ver y empresa autorizada antes de escribir. Campo API aditivo para conservar clientes legacy; sin fallback de cantidad para variantes sin existencia física.
+- Los filtros Agotado/SoloDisponibles reutilizan la elegibilidad del repositorio de inventario público. La invalidación de caché existente de ExistenciaVariante se conserva. Sin migración, cambios de datos históricos, cambios de dependencias ni escrituras en dev/main.
+- Prueba de controlador para 5 unidades, almacenes operativos/no operativos y aislamiento entre empresas; QA CI pendiente. El stock de productos previamente registrados debe reconciliarse en su almacén físico real; no se asume ubicación ni se duplican existencias. Rollback: revertir únicamente este changeset en qa.
+
 ## 2026-11-25 — QA: proporciones de destacados y galería del Storefront
 
 - Corrección autorizada exclusivamente en qa: ancho de destacados al 75% del anterior por breakpoint, altura de medio y espaciados reducidos proporcionalmente, sin reducir tipografía ni cambiar identidad; tarjeta vertical. Detalle: columna de miniaturas solamente si hay varias imágenes, miniaturas de tamaño uniforme con 8px de separación y scroll propio, imagen completa con contain y alineación de las cuatro áreas en escritorio, reflow móvil.
