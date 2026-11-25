@@ -1,3 +1,7 @@
+## 2026-11-25 — DEV05 C01-04.M03.06: exigir build del check dirigido completado (V44-R8)
+
+- Autoría causal compartida: DEV04 preparación, DEV05 integración. Se rechaza identidad ausente en el check dirigido completado, sin convertir observaciones pendientes en certificación. Application, logger y sink durable conservan la misma política. Se añaden negativos xUnit y MySQL aislado sin modificar esquema ni autorización; el método dirigido conserva conteos y deduplicación. A0 revisado; A1-A4 CI nueva pendiente; fuente autenticada real y A5 independiente pendientes. Rollback revert normal. Base 34784228cb988ede587663dfa728d857860dfddd.
+
 ## 2026-11-25 — DEV06 C01-04.M03.06: reparar contador estricto de CI causal (V44-R8)
 
 - R2: el job 139143578436 del SHA ce4a392a01216e378e6c4a322b244f674a65eab2 ejecutó 11/11 pruebas JWT/MySQL sin fallos ni omisiones, incluido el nuevo contrato GlobalDirectedBuildIdentityIsPersistedOnlyAfterProviderJoin de DEV04, pero falló el gate histórico de diez. Se alinea exclusivamente la cardinalidad exacta del workflow v19-c02-04-m05-06-regression.yml con los once Fact existentes; se mantienen cero fallos/omisiones, filtro, aislamiento, permisos y ejecución real. No se modifica el runtime, no se relanza un verde ni se certifica A5/CI hasta nuevo SHA exacto. Historial íntegro.

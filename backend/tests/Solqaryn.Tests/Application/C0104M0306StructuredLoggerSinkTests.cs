@@ -87,7 +87,12 @@ public sealed class C0104M0306StructuredLoggerSinkTests
     {
         var logger = new ProbeLogger();
         var sink = new V5UniversalCaseFileQaStructuredLoggerSink(logger);
-        var directed = GoodEntry() with { CheckName = "C01-04.M03.06 - directed durable MySQL 8.4 QA proof" };
+        var directed = GoodEntry() with
+        {
+            CheckName = Audit.DirectedDurableCheckName,
+            ProviderJob = new Audit.ProviderJobIdentity(Id, Sha, 100, 200, 1, 300, 400, 500,
+                Audit.DirectedDurableCheckName, "completed", "success")
+        };
         await sink.WriteAsync(directed, default);
         Assert.Contains(Assert.Single(logger.Calls).Fields,
             p => p.Key == "CheckName" && Equals(p.Value, directed.CheckName));
@@ -96,6 +101,23 @@ public sealed class C0104M0306StructuredLoggerSinkTests
         await Assert.ThrowsAsync<ArgumentException>(async () =>
             await sink.WriteAsync(directed with { CheckName = directed.CheckName + "\n" }, default));
         Assert.Single(logger.Calls);
+    }
+
+    [Theory]
+    [InlineData("success")]
+    [InlineData("failure")]
+    [InlineData("cancelled")]
+    [InlineData("skipped")]
+    public async Task CompletedDirectedReceiptWithoutIdentityCannotLog(string conclusion)
+    {
+        var logger = new ProbeLogger();
+        var sink = new V5UniversalCaseFileQaStructuredLoggerSink(logger);
+        await Assert.ThrowsAsync<ArgumentException>(async () => await sink.WriteAsync(
+            GoodEntry() with
+            {
+                CheckName = Audit.DirectedDurableCheckName, CheckConclusion = conclusion
+            }, default));
+        Assert.Empty(logger.Calls);
     }
 
     [Fact]

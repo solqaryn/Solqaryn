@@ -90,8 +90,10 @@ public sealed class V5UniversalCaseFileQaEvidenceAudit
     public static bool ProviderJobMatches(
         ProviderJobIdentity? job, string? microtaskId, string? sha,
         string? checkName, string? status, string? conclusion) =>
-        job is null ||
-        (microtaskId == "C01-04.M03.06" && checkName == DirectedDurableCheckName &&
+        // A completed directed check without a build identity cannot be stored as a legacy receipt.
+        job is null
+        ? checkName != DirectedDurableCheckName || status != "completed"
+        : (microtaskId == "C01-04.M03.06" && checkName == DirectedDurableCheckName &&
          status == "completed" && conclusion is ("success" or "failure" or "cancelled" or "skipped") &&
          job.MicrotaskId == microtaskId && job.SourceSha == sha &&
          job.CheckName == checkName && job.Status == status && job.Conclusion == conclusion &&

@@ -223,14 +223,32 @@ public sealed class C0104M0306DurableQaAuditMysql84Tests
             Assert.Equal(1L, await Count(isolated, 202, 42));
             Assert.Equal(3L, await CountAll(isolated));
 
-            // Admit the actual directed job for this ID without certifying its source.
+            // Reject completed directed receipts without build identity at both boundaries,
+            // even at different observation times (no temporal fallback or durable rows).
+            foreach (var observed in new[] { utc, utc.AddSeconds(1) })
+            {
+                var missing = new Audit(new Source(Observation(observed, "101", "42") with
+                { CheckName = Audit.DirectedDurableCheckName }), direct, new FrozenClock(utc));
+                Assert.Equal("CASEFILE_QA_CHECK_OR_TIME_INVALID",
+                    (await missing.CaptureAsync(Microtask, "casefile.timeline", Sha, "101", "42")).Code);
+                await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                    await direct.WriteAsync(safe with
+                    {
+                        CheckName = Audit.DirectedDurableCheckName, ObservedAtUtc = observed
+                    }, default));
+            }
+            Assert.Equal(3L, await CountAll(isolated));
+
+            // Admit a structurally bound synthetic build; no external certification.
+            var initialJob = new Audit.ProviderJobIdentity(Microtask, Sha, 100, 199,
+                1, 299, 399, 499, Audit.DirectedDurableCheckName, "completed", "success");
             var directed = new Audit(new Source(Observation(utc, "101", "42") with
-                { CheckName = "C01-04.M03.06 - directed durable MySQL 8.4 QA proof" }), direct, new FrozenClock(utc));
+                { CheckName = Audit.DirectedDurableCheckName, ProviderJob = initialJob }), direct, new FrozenClock(utc));
             var directedReceipt = await directed.CaptureAsync(Microtask, "casefile.timeline", Sha, "101", "42");
             Assert.Equal("CASEFILE_QA_ENVELOPE_WRITTEN_REVIEW_PENDING", directedReceipt.Code);
             Assert.False(directedReceipt.CertifiesCI);
             Assert.False(directedReceipt.CertifiesA5);
-            var directedEntry = safe with { CheckName = "C01-04.M03.06 - directed durable MySQL 8.4 QA proof" };
+            var directedEntry = safe with { CheckName = Audit.DirectedDurableCheckName, ProviderJob = initialJob };
             var wrongTask = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
                 await direct.WriteAsync(directedEntry with { MicrotaskId = "C01-04.M03.05" }, default));
             Assert.Equal("CASEFILE_QA_DURABLE_SCOPE_INVALID", wrongTask.Message);

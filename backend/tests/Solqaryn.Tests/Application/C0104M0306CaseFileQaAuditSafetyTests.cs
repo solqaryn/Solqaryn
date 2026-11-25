@@ -82,7 +82,12 @@ public sealed class C0104M0306CaseFileQaAuditSafetyTests
     public async Task DirectedCheckIsAcceptedOnlyForItsOwnMicrotaskAndNeverCertifiesCi()
     {
         var sink = new Sink();
-        var directed = Good() with { CheckName = "C01-04.M03.06 - directed durable MySQL 8.4 QA proof" };
+        var directed = Good() with
+        {
+            CheckName = Audit.DirectedDurableCheckName,
+            ProviderJob = new Audit.ProviderJobIdentity(Id, Sha, 100, 200, 1, 300, 400, 500,
+                Audit.DirectedDurableCheckName, "completed", "success")
+        };
         var result = await Capture(new Source(directed), sink);
         Assert.Equal("CASEFILE_QA_ENVELOPE_WRITTEN_REVIEW_PENDING", result.Code);
         Assert.Equal(directed.CheckName, Assert.Single(sink.Entries).CheckName);
@@ -96,6 +101,38 @@ public sealed class C0104M0306CaseFileQaAuditSafetyTests
         var altered = await Capture(new Source(directed with { CheckName = directed.CheckName + "\n" }), rejected);
         Assert.Equal("CASEFILE_QA_CHECK_OR_TIME_INVALID", altered.Code);
         Assert.Empty(rejected.Entries);
+    }
+
+    [Theory]
+    [InlineData("success")]
+    [InlineData("failure")]
+    [InlineData("cancelled")]
+    [InlineData("skipped")]
+    public async Task CompletedDirectedCheckWithoutProviderIdentityCannotWrite(string conclusion)
+    {
+        var sink = new Sink();
+        var observation = Good() with
+        {
+            CheckName = Audit.DirectedDurableCheckName, CheckConclusion = conclusion
+        };
+        var result = await Capture(new Source(observation), sink);
+        Assert.Equal("CASEFILE_QA_CHECK_OR_TIME_INVALID", result.Code);
+        Assert.Empty(sink.Entries);
+    }
+
+    [Fact]
+    public async Task PendingDirectedCheckWithoutProviderIdentityRemainsUncertified()
+    {
+        var sink = new Sink();
+        var result = await Capture(new Source(Good() with
+        {
+            CheckName = Audit.DirectedDurableCheckName,
+            CheckStatus = "in_progress", CheckConclusion = "pending"
+        }), sink);
+        Assert.Equal("CASEFILE_QA_ENVELOPE_WRITTEN_REVIEW_PENDING", result.Code);
+        Assert.Equal("pending", Assert.Single(sink.Entries).CheckConclusion);
+        Assert.False(result.CertifiesCI);
+        Assert.False(result.CertifiesA5);
     }
 
     [Theory]
