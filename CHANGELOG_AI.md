@@ -1,3 +1,8 @@
+## 2026-11-25 — QA: contención responsive del listado de Clientes
+
+- Aplica solo las dos vistas/estilos del commit 39203b5961ae7a7961e1a74c3cdf14a6d98688a9 (PR #4062, todavía abierto contra main), tras comprobar que las versiones base HTML y SCSS de QA coinciden con el padre de la corrección. No fusiona ramas ni altera TypeScript, permisos, API, datos o descarga de imágenes.
+- La tabla tiene desplazamiento interno accesible, y pantallas de hasta 920 px muestran tarjetas. Se verificará compilación en el SHA de QA y el comportamiento visual tras el despliegue de QA.
+
 ## 2026-11-24 — QA: corrección acotada de dependencias npm
 
 - Aplica los manifiestos validados por GitHub Actions, corrida 45514234636. fast-uri 3.1.9, undici 8.12.4 y zod 4.6.6; mantiene Angular CLI 22.2.1. Los dos hashes Git se verificaron contra el job 138869432468 antes de publicar.
