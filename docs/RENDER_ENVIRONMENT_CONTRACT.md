@@ -10,13 +10,15 @@ Contrato canónico: **28 claves en DEV, 28 claves en QA y 28 claves en PROD**.
 
 QA: `AllowedHosts=solqaryn.onrender.com`, `AppSettings__BackendPublicUrl=https://solqaryn.onrender.com` y `Cors__AllowedOrigins__0=https://solqarynqa-nu.vercel.app`. Se conserva Staging, base/usuario QA y migraciones automáticas desactivadas. El nuevo runtime todavía requiere certificación; el Auto-Deploy permanece Off.
 
+QA, 2026-11-25: el propietario observó MySQL 8.4.11 en DBeaver; se actualiza exclusivamente el pin de QA en el guard, Blueprint y workflows de certificación y respaldo. La certificación SQL debe confirmar la versión real y conservar las 136 tablas, fingerprints, baseline Oracle, triggers y CHECK existentes. Las 28 claves siguen siendo iguales; el fingerprint de configuración que incluye la versión puede diferir en QA por este cambio autorizado. Mantener `Database__ApplyMigrationsOnStartup=false` y Auto-Deploy Off. Tras CI y certificación de esquema satisfactorias, guardar `Database__ServerVersion=8.4.11` solo en el servicio QA y desplegar el SHA certificado. No modificar versiones de DEV/PROD ni datos; no se certifica por anticipado el runtime.
+
 El backend refuerza este contrato en runtime con `RenderEnvironmentContractGuard`: cualquier clave administrada faltante o extra, valor requerido vacío o constante pública compartida incompatible aborta el arranque del nuevo deployment antes de reemplazar la instancia sana. El guard no registra valores; sólo conteo y fingerprints no sensibles. Las identidades/secretos propios de cada entorno —incluyendo conexión, JWT, Cloudinary y refresh token SMTP— pueden diferir.
 
 | Variable | Estado | Motivo | Valor por entorno |
 |---|---|---|---|
 | `ASPNETCORE_ENVIRONMENT` | REQUERIDA | Selecciona comportamiento Development/Staging/Production del host ASP.NET. | Diferente |
 | `AllowedHosts` | REQUERIDA | Restringe Host headers al hostname del servicio. | Diferente |
-| `Database__ServerVersion` | REQUERIDA | Configura Pomelo/MySQL para la versión real de Aiven. | Normalmente igual |
+| `Database__ServerVersion` | REQUERIDA | Versión exacta exigida por el contrato de entorno; la conexión usa Oracle MySql.EntityFrameworkCore. | QA: `8.4.11`; DEV/PROD: `8.4.8` sin cambios |
 | `Database__ApplyMigrationsOnStartup` | REQUERIDA | Política explícita de migraciones: DEV puede aplicarlas; QA y PROD no. | Diferente |
 | `ConnectionStrings__DefaultConnection` | REQUERIDA/SECRETA | Conexión a la base MySQL del entorno. | Diferente |
 | `Jwt__Secret` | REQUERIDA/SECRETA | Firma de tokens JWT. | Diferente |

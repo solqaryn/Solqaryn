@@ -78,6 +78,7 @@ public static class RenderEnvironmentContractGuard
     private sealed record ExpectedEnvironment(
         string AspNetEnvironment,
         string AllowedHost,
+        string DatabaseServerVersion,
         string ApplyMigrationsOnStartup,
         string JwtIssuer,
         string JwtAudience,
@@ -140,7 +141,7 @@ public static class RenderEnvironmentContractGuard
 
         Expect(variables, "ASPNETCORE_ENVIRONMENT", expected.AspNetEnvironment);
         Expect(variables, "AllowedHosts", expected.AllowedHost);
-        Expect(variables, "Database__ServerVersion", "8.4.8");
+        Expect(variables, "Database__ServerVersion", expected.DatabaseServerVersion);
         Expect(variables, "Database__ApplyMigrationsOnStartup", expected.ApplyMigrationsOnStartup);
         Expect(variables, "Jwt__Issuer", expected.JwtIssuer);
         Expect(variables, "Jwt__Audience", expected.JwtAudience);
@@ -186,6 +187,7 @@ public static class RenderEnvironmentContractGuard
             "Development" => new ExpectedEnvironment(
                 "Development",
                 "solqaryn-api-dev-fxx8.onrender.com",
+                "8.4.8",
                 "true",
                 "Solqaryn.DEV.API",
                 "Solqaryn.DEV.Frontend",
@@ -196,6 +198,7 @@ public static class RenderEnvironmentContractGuard
             "Staging" => new ExpectedEnvironment(
                 "Staging",
                 "solqaryn.onrender.com",
+                "8.4.11",
                 "false",
                 "Solqaryn.QA.API",
                 "Solqaryn.QA.Frontend",
@@ -206,6 +209,7 @@ public static class RenderEnvironmentContractGuard
             "Production" => new ExpectedEnvironment(
                 "Production",
                 "solqaryn-api-prod.onrender.com",
+                "8.4.8",
                 "false",
                 "Solqaryn.PROD.API",
                 "Solqaryn.PROD.Frontend",

@@ -93,6 +93,10 @@ public sealed class RenderEnvironmentContractGuardTests
     [InlineData("AppSettings__BackendPublicUrl", "https://solqaryn-api-dev-fxx8.onrender.com")]
     [InlineData("Cors__AllowedOrigins__0", "https://solqaryn-qa.vercel.app")]
     [InlineData("Cors__AllowedOrigins__0", "https://solqaryn-prod.vercel.app")]
+    [InlineData("Database__ServerVersion", "8.4.8")]
+    [InlineData("Database__ServerVersion", "8.4.12")]
+    [InlineData("Database__ServerVersion", "8.0.11")]
+    [InlineData("Database__ApplyMigrationsOnStartup", "true")]
     public void Validate_QA_RechazaIdentidadAnteriorYCruces(string key, string value)
     {
         var variables = Canonical("Staging", "solqaryn.onrender.com", "false",
@@ -105,7 +109,7 @@ public sealed class RenderEnvironmentContractGuardTests
     }
 
     [Fact]
-    public void Validate_ComparteFingerprintPublicoEntreEntornos()
+    public void Validate_MantieneParidadDeClavesYRegistraVersionPropiaDeQA()
     {
         var dev = RenderEnvironmentContractGuard.Validate("Development", CanonicalDev());
         var qaVariables = Canonical(
@@ -137,8 +141,26 @@ public sealed class RenderEnvironmentContractGuardTests
 
         Assert.Equal(dev.KeySetFingerprint, qa.KeySetFingerprint);
         Assert.Equal(dev.KeySetFingerprint, prod.KeySetFingerprint);
-        Assert.Equal(dev.SharedConfigurationFingerprint, qa.SharedConfigurationFingerprint);
+        Assert.NotEqual(dev.SharedConfigurationFingerprint, qa.SharedConfigurationFingerprint);
         Assert.Equal(dev.SharedConfigurationFingerprint, prod.SharedConfigurationFingerprint);
+    }
+
+    [Fact]
+    public void Validate_DEVyPROD_NoAceptanVersionQA()
+    {
+        var dev = CanonicalDev();
+        dev["Database__ServerVersion"] = "8.4.11";
+        var exDev = Assert.Throws<InvalidOperationException>(() =>
+            RenderEnvironmentContractGuard.Validate("Development", dev));
+        Assert.Contains("Database__ServerVersion", exDev.Message);
+
+        var prod = Canonical("Production", "solqaryn-api-prod.onrender.com", "false",
+            "Solqaryn.PROD.API", "Solqaryn.PROD.Frontend", "solqaryn_prod",
+            "https://solqaryn-prod.vercel.app", "https://solqaryn-api-prod.onrender.com", "SOLQARYN PROD");
+        prod["Database__ServerVersion"] = "8.4.11";
+        var exProd = Assert.Throws<InvalidOperationException>(() =>
+            RenderEnvironmentContractGuard.Validate("Production", prod));
+        Assert.Contains("Database__ServerVersion", exProd.Message);
     }
 
     private static Dictionary<string, string?> CanonicalDev() =>
@@ -167,7 +189,7 @@ public sealed class RenderEnvironmentContractGuardTests
         {
             ["ASPNETCORE_ENVIRONMENT"] = environment,
             ["AllowedHosts"] = allowedHost,
-            ["Database__ServerVersion"] = "8.4.8",
+            ["Database__ServerVersion"] = environment == "Staging" ? "8.4.11" : "8.4.8",
             ["Database__ApplyMigrationsOnStartup"] = applyMigrations,
             ["ConnectionStrings__DefaultConnection"] = "Server=db;Port=3306;Database=db;User=u;Password=p;SslMode=Required;",
             ["Jwt__Secret"] = "secret-value",

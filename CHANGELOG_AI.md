@@ -1,3 +1,8 @@
+## 2026-11-25 — QA: contrato MySQL 8.4.11
+
+- Autorización explícita del propietario, exclusivamente rama qa: corregir QA_MYSQL_PATCH_MISMATCH del run 45684532918. Versión observada 8.4.11 por el propietario. Guard de Render por entorno, configuración Staging, Blueprint QA y workflows QA de esquema y backup/restore homologados; DEV/PROD conservan 8.4.8 y appsettings base intacto.
+- No cambia API/DTO, proveedor Oracle EF10, esquemas, datos, migraciones, RBAC/JWT, TLS, CORS, secretos, integraciones ni automatizaciones DEV. El control de esquema sigue fail-closed: versión exacta 8.4.11 (incluye sufijo de distribución), 136 tablas, hashes de topología, baseline Oracle, triggers y CHECK. Pruebas de rechazo de parches no autorizados, cruce de entornos y migraciones QA; se conserva paridad de claves y se registra fingerprint distinto por versión. La ejecución CI/certificación y el despliegue QA aún no están acreditados. Rollback: revertir solo este changeset en qa y coordinar el valor de Render con el SHA restaurado, sin downgrade del servidor MySQL.
+
 ## 2026-11-25 — QA: permitir tallas de un carácter
 
 - Solicitud expresa del propietario: corrección exclusivamente en qa. El formulario de catálogos y la validación de creación/edición del backend permiten tallas como S, M, L y 0 (1–120 caracteres; sin espacios solos). Marcas, colores y modelos conservan su mínimo de 2. Sin cambios de API, DTO, persistencia, migraciones, JWT, RBAC, auditoría, aislamiento, integraciones ni ramas dev/main.

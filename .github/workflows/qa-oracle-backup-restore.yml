@@ -44,7 +44,7 @@ jobs:
       - name: Checkout QA (identidad)
         uses: actions/checkout@v4
 
-      - name: Guard QA solo Aiven 8.4.8 y secretos
+      - name: Guard QA solo Aiven 8.4.11 y secretos
         shell: bash
         run: |
           set -euo pipefail
@@ -76,7 +76,8 @@ jobs:
           trap 'rm -f "$dump"' EXIT
           export MYSQL_PWD="$DB_PASSWORD"
           version="$(mysql --protocol=TCP --ssl-mode=REQUIRED -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --batch --skip-column-names "$DB_NAME" -e 'SELECT VERSION();')"
-          case "$version" in 8.4.8|8.4.8-*) ;; *) echo "QA_MYSQL_VERSION_INVALID" >&2; exit 1;; esac
+          case "$version" in 8.4.11|8.4.11-*) ;; *) echo "QA_MYSQL_VERSION_INVALID: se exige 8.4.11; version observada: $version" >&2; exit 1;; esac
+          echo "QA_BACKUP_AIVEN_MYSQL_VERSION=$version"
           mysqldump --protocol=TCP --ssl-mode=REQUIRED -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" \
             --single-transaction --skip-lock-tables --no-tablespaces --set-gtid-purged=OFF \
             --routines --triggers "$DB_NAME" > "$dump"

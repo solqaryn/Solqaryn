@@ -82,7 +82,7 @@ services:
       - key: AllowedHosts
         value: solqaryn.onrender.com
       - key: Database__ServerVersion
-        value: 8.4.8
+        value: 8.4.11
       - key: Database__ApplyMigrationsOnStartup
         value: "false"
       - key: ConnectionStrings__DefaultConnection
