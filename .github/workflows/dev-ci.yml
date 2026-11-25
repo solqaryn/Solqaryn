@@ -343,6 +343,24 @@ jobs:
           print('C1402_M0606_DELETE_FACT_EVIDENCE', json.dumps(evidence, sort_keys=True))
           Path('c1402-m0606-mysql84-evidence.json').write_text(
               json.dumps(evidence, indent=2, sort_keys=True) + '\n', encoding='utf-8')
+          # V44 R10: sanitized exact Fact identity; never upload raw TRX or fixture values.
+          class_name = 'Solqaryn.Tests.C1503M0505CargaMasivaOwnershipIntegrationTests'
+          method_name = 'RealMySqlJobsRequireLiveTenantMembershipAndCreatorEvenWithLegacyAdmin'
+          definitions = [d for d in root.findall('.//{*}UnitTest') if d.find('{*}TestMethod') is not None and d.find('{*}TestMethod').get('className', '').split(',')[0] == class_name and d.find('{*}TestMethod').get('name') == method_name]
+          if len(definitions) != 1 or not definitions[0].get('id'):
+              raise SystemExit('FAIL_C1503_M0505_FACT_DEFINITION_NOT_UNIQUE')
+          matched_id = definitions[0].get('id')
+          if sum(d.get('id') == matched_id for d in root.findall('.//{*}UnitTest')) != 1:
+              raise SystemExit('FAIL_C1503_M0505_FACT_ID_NOT_UNIQUE')
+          outcomes = [r.get('outcome', 'Unknown') for r in root.findall('.//{*}UnitTestResult') if r.get('testId') == matched_id]
+          if outcomes != ['Passed']:
+              raise SystemExit('FAIL_C1503_M0505_FACT_RESULT_NOT_UNIQUE_PASS')
+          evidence = {'sha': os.environ['GITHUB_SHA'], 'run_id': os.environ['GITHUB_RUN_ID'],
+                      'run_attempt': os.environ['GITHUB_RUN_ATTEMPT'],
+                      'test': class_name + '.' + method_name, 'matched_results': 1,
+                      'outcomes': outcomes, 'suite_counters': stats}
+          print('C1503_M0505_OWNERSHIP_FACT_EVIDENCE', json.dumps(evidence, sort_keys=True))
+          Path('c1503-m0505-mysql84-evidence.json').write_text(json.dumps(evidence, indent=2, sort_keys=True) + '\n', encoding='utf-8')
           PY
       - name: Conservar evidencia individual sanitizada C14 DELETE
         uses: actions/upload-artifact@v4
@@ -350,6 +368,13 @@ jobs:
           name: dev-mysql84-c1402-delete-evidence
           path: backend/c1402-m0606-mysql84-evidence.json
           if-no-files-found: warn
+          retention-days: 7
+      - name: Conservar evidencia individual sanitizada C15 OWNERSHIP
+        uses: actions/upload-artifact@v4
+        with:
+          name: dev-mysql84-c1503-ownership-evidence
+          path: backend/c1503-m0505-mysql84-evidence.json
+          if-no-files-found: error
           retention-days: 7
 
   deployment-config:
