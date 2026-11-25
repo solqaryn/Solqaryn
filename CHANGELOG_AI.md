@@ -1,3 +1,8 @@
+## 2026-11-25 — QA: corrección TS2345 del formulario de variantes
+
+- Run 45697121191: higiene y backend SUCCESS; frontend falló en `npm run lint` porque `editar()` usaba `FormGroup.setValue` sin el control nuevo `almacenInicialId`. Se inicializa explícitamente a null tanto al editar como al cancelar, manteniendo el bloqueo de cantidad en edición y evitando reutilizar el almacén de otra alta. Se conserva el formulario tipado, sin casts ni relajación de validaciones.
+- Regresión unitaria dirigida a edición de variante, limpieza al cancelar y rechazo de stock positivo sin almacén, incorporada a QA CI antes del build; no se suprimen controles. Sin cambios de API, datos, dependencias, arquitectura, permisos o ramas dev/main. Scope Lock DEV 76484e42: run 45696324947 PASS; validación del nuevo SHA QA pendiente. Rollback: revertir sólo este changeset en qa.
+
 ## 2026-11-25 — QA: alta de stock físico y disponibilidad del Storefront
 
 - Alta de producto y de variante: selección explícita de tienda/bodega activa para unidades iniciales positivas desde la interfaz; registro físico por variante en la misma transacción de creación, sin modificar reservas, tránsito ni movimientos existentes. Verifica Inventario.Crear, Almacenes.Ver y empresa autorizada antes de escribir. Campo API aditivo para conservar clientes legacy; sin fallback de cantidad para variantes sin existencia física.

@@ -153,6 +153,7 @@ export class ProductoVariantesComponent implements OnInit {
       sku: variante.sku,
       codigoBarras: variante.codigoBarras ?? '',
       cantidad: variante.cantidad,
+      almacenInicialId: null,
       umbralStockBajo: variante.umbralStockBajo,
       costo: variante.costo,
       precio: variante.precio
@@ -172,6 +173,7 @@ export class ProductoVariantesComponent implements OnInit {
       sku: '',
       codigoBarras: '',
       cantidad: 0,
+      almacenInicialId: null,
       umbralStockBajo: 5,
       costo: 0,
       precio: 0

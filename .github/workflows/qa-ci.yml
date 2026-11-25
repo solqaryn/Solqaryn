@@ -86,6 +86,8 @@ jobs:
         run: npm run test:unit -- --include=src/app/features/catalogos-producto/catalogo-producto-list.component.spec.ts
       - name: Regresión de tabla única de Clientes
         run: npm run test:unit -- --include=src/app/features/clientes/clientes-list.component.spec.ts
+      - name: Regresión de edición y stock inicial de variantes
+        run: npm run test:unit -- --include=src/app/features/productos/producto-variantes.component.spec.ts
       - run: npm run build:prod
       - run: node scripts/validate-environment-routing.mjs
       - name: Instalar Chromium para regresión dirigida de Storefront
