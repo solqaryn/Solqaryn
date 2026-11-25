@@ -51,15 +51,34 @@ async function verifyStatusIconGeometry(page: Page, width: number, phase: string
     const icon = row?.querySelector('mat-icon');
     const label = row?.querySelector('span');
     if (!(row instanceof HTMLElement) || !(icon instanceof HTMLElement) || !(label instanceof HTMLElement)) {
-      return { selector, present: false, iconWidth: 0, iconHeight: 0, travel: 0, labelTravel: 0, contained: false };
+      return { selector, present: false, iconWidth: 0, iconHeight: 0, travel: 0, labelTravel: 0, contained: false, wholeWord: false };
     }
     const r = row.getBoundingClientRect();
     const i = icon.getBoundingClientRect();
     const l = label.getBoundingClientRect();
+    // A narrow row may reflow the label beneath the icon; both layouts must
+    // retain complete, ordered, non-overlapping content inside the card.
+    const sideBySide = i.right <= l.left + 1;
+    const stacked = selector === '.readonly' && i.bottom <= l.top + 1;
+    const word = 'Configuración';
+    const node = [...label.childNodes].find(n =>
+      n.nodeType === Node.TEXT_NODE && (n.textContent ?? '').includes(word));
+    let wholeWord = selector !== '.readonly';
+    if (selector === '.readonly' && node?.textContent) {
+      const start = node.textContent.indexOf(word);
+      const range = document.createRange();
+      range.setStart(node, start);
+      range.setEnd(node, start + word.length);
+      const rects = [...range.getClientRects()].filter(rect => rect.width > 0 && rect.height > 0);
+      wholeWord = rects.length === 1 && rects.every(rect =>
+        rect.left >= l.left - 1 && rect.right <= l.right + 1);
+    }
     return { selector, present: true, iconWidth: i.width, iconHeight: i.height,
       travel: row.scrollWidth - row.clientWidth, labelTravel: label.scrollWidth - label.clientWidth,
-      contained: i.left >= r.left - 1 && l.right <= r.right + 1 && i.right <= l.left + 1 &&
-        i.top >= r.top - 1 && i.bottom <= r.bottom + 1 && l.top >= r.top - 1 && l.bottom <= r.bottom + 1 };
+      contained: i.left >= r.left - 1 && i.right <= r.right + 1 &&
+        l.left >= r.left - 1 && l.right <= r.right + 1 && (sideBySide || stacked) &&
+        i.top >= r.top - 1 && i.bottom <= r.bottom + 1 && l.top >= r.top - 1 && l.bottom <= r.bottom + 1,
+      wholeWord };
   }));
   for (const row of rows) {
     const context = row.selector + ' ' + width + ' ' + phase;
@@ -69,6 +88,7 @@ async function verifyStatusIconGeometry(page: Page, width: number, phase: string
     expect(row.travel, context + ' row horizontal travel').toBeLessThanOrEqual(1);
     expect(row.labelTravel, context + ' label horizontal travel').toBeLessThanOrEqual(1);
     expect(row.contained, context + ' icon and label contained without overlap').toBe(true);
+    expect(row.wholeWord, context + ' permission label Configuración remains intact').toBe(true);
   }
 }
 

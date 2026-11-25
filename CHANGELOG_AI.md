@@ -1,3 +1,9 @@
+## 2026-11-25 — DEV04 C01-03.M04.05: preserve permission message words at narrow reflow V44-R8
+
+- D/R/S: DEV03 inspected original artifact 15000177105 at exact SHA 902305c1746ecaa285e81aaa25e13dacbf031676 and found Configuración split at 320px root text 200% in both tenants despite the successful icon geometry test. Adopt the isolated Chromium hypothesis prepared by DEV03 (not a real integration result); narrow read-only row may wrap the label below its preserved 24px icon.
+- Scope: component styles and the existing directed E2E geometry assertions. Preserve message, permission semantics, icon dimensions, containment, no local overflow, JWT/RBAC, and all other existing assertions. Add browser Range.getClientRects for the complete word within the label; stacked layout must still be ordered and non-overlapping. No API/DTO/data/schema/migration or security changes. Shared route consumers require fresh CI; rollback ordinary revert.
+- TASK 6aeacb7820ac8191b7d768a6f33dfa09; RUN 88662e62-86b4-832c-b03c-767f54a2b34e; V17 2000000240; owner DEV04 preserved. SKREF03 pbakaus/impeccable@2149fcce39a90bb409df5f16515f316a76dc6199 and SKREF10 angular/angular@6808966993bf2b2d455d9b6245e960a59a01b9a9 read at pinned origins; no external scripts. No self-A5. Real A/B Chromium/MySQL, shared native zoom and required exact-SHA CI pending.
+
 ## 2026-11-25 — DEV01 C01-03.M04.05: preserve configuration status icon geometry V44-R8
 
 - R8/R5 D/R/S: DEV06 found compressed status icons in artifact 14998633760. DEV01 reproduced the layout cause in isolated local Chromium: at 320px and root text 200%, lock width 6.42px and mail icon 10.52px; fixed layout preserves 24px and zero document travel in that isolated reproduction. This is not real JWT/MySQL acceptance.
