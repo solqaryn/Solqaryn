@@ -1,3 +1,10 @@
+## 2026-11-25 — QA: compatibilidad acotada del toolchain Vercel
+
+- Por orden expresa del propietario, incorpora selectivamente el validador, la política y sus pruebas desde DEV `6523c8099fd73d2b18676686548a2d937d11cdce` a QA `288a29b86989ae2efa8e8d1acc2752dac7f4dd71`, sin merge de ramas. La segunda instalación de Vercel del 25-nov reportó Node 24.22.3 y npm 11.19.1 tras compilar Angular correctamente.
+- Se preservan los pins exactos Node 24.21.0 y npm 11.19.0 en CI/local y las declaraciones del manifiesto; únicamente en Vercel se admite Node 24.x desde 24.21.0 y npm 11.19.x. Las versiones fuera del contrato siguen rechazadas. Sin modificación de dependencias, API, DTO, datos, migraciones, auth, secretos, automatizaciones o PROD. Sin cambio de arquitectura.
+- Evidencia anterior a publicación: Scope Lock DEV exact-SHA run 45659173082 SUCCESS; frescura de skill PASS. Pruebas puras de política 5/5 PASS en Node 22.16.0 del entorno de inspección (no certificación de toolchain real); blobs de política y pruebas comprobados por hash Git. Caso observado 24.22.3/11.19.1 aceptado en modo Vercel y rechazado en CI/local. CI y despliegue QA del nuevo SHA pendientes; rollback por revert en QA.
+- No se cambian los bindings de proyecto ni los dominios QA: requieren el nuevo Project ID y origen frontend verificados.
+
 ## 2026-11-25 — QA: contención responsive del listado de Clientes
 
 - Aplica solo las dos vistas/estilos del commit 39203b5961ae7a7961e1a74c3cdf14a6d98688a9 (PR #4062, todavía abierto contra main), tras comprobar que las versiones base HTML y SCSS de QA coinciden con el padre de la corrección. No fusiona ramas ni altera TypeScript, permisos, API, datos o descarga de imágenes.
