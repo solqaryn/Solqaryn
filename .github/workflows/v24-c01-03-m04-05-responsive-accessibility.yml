@@ -118,6 +118,10 @@ jobs:
           INSERT INTO Empresas (Id, Nombre, Activa, FechaCreacion, FechaActualizacion)
           VALUES (2, 'Empresa B efimera C15', TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6))
           ON DUPLICATE KEY UPDATE Activa=TRUE, FechaActualizacion=UTC_TIMESTAMP(6);
+          -- Real tenant-isolated fixtures for the new keyboard-search control.
+          INSERT INTO PlantillasCorreoEmpresa (EmpresaId, TipoPlantilla, Asunto, Cuerpo, Activa, FechaCreacion, FechaActualizacion)
+          VALUES (1, 'CI_M0405_A', 'Plantilla accesible A', 'Cuerpo efimero A', TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)),
+                 (2, 'CI_M0405_B', 'Plantilla accesible B', 'Cuerpo efimero B', TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6));
           INSERT INTO UsuarioEmpresas (UsuarioId, EmpresaId, RolId, Activa, FechaCreacion, FechaActualizacion)
           SELECT u.Id, 1, u.RolId, TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)
           FROM Usuarios u WHERE u.NombreUsuario='c1504_admin_a'

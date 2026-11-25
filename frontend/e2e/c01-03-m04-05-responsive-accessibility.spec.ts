@@ -105,6 +105,9 @@ async function verifyAccessibleLabels(page: Page): Promise<void> {
     await expect(named).toHaveAttribute('formcontrolname', control);
     await expect(named).toBeVisible();
   }
+  const search = form.getByRole('searchbox', { name: 'Filtrar plantillas', exact: true });
+  await expect(search, 'unique accessible template search').toHaveCount(1);
+  await expect(search).toBeEditable();
 }
 
 async function verifyTab(page: Page): Promise<void> {
@@ -112,12 +115,13 @@ async function verifyTab(page: Page): Promise<void> {
   // Never call .focus() or bypass browser keyboard navigation.
   let linkReached = false;
   let reloadReached = false;
-  for (let n = 0; n < 120 && !(linkReached && reloadReached); n++) {
+  let filterReached = false;
+  for (let n = 0; n < 120 && !(linkReached && reloadReached && filterReached); n++) {
     await page.keyboard.press('Tab');
     const current = await page.evaluate(() => {
       const element = document.activeElement;
       if (!(element instanceof HTMLElement)) {
-        return { link: false, reload: false, keyboard: false, outline: false };
+        return { link: false, reload: false, filter: false, materialFocus: false, keyboard: false, outline: false };
       }
       const rect = element.getBoundingClientRect();
       const style = getComputedStyle(element);
@@ -127,13 +131,19 @@ async function verifyTab(page: Page): Promise<void> {
       return {
         link: within && element.matches('a.secondary-link'),
         reload: within && element.matches('button') && /Recargar/i.test(element.textContent ?? ''),
+        filter: within && element.matches('input[type="search"]') && element.closest('app-empresa-configuracion-tenant-card') !== null,
+        materialFocus: element.closest('mat-form-field')?.classList.contains('mat-focused') === true,
         keyboard: element.matches(':focus-visible'),
         outline: style.outlineStyle !== 'none' && Number.parseFloat(style.outlineWidth) > 0
       };
     });
-    if (current.link || current.reload) {
+    if (current.link || current.reload || current.filter) {
       expect(current.keyboard, 'route control has keyboard-visible focus').toBe(true);
-      expect(current.outline, 'focused route control has a visible outline').toBe(true);
+      if (current.filter) {
+        expect(current.materialFocus || current.outline, 'template search displays Material or native focus state').toBe(true);
+      } else {
+        expect(current.outline, 'focused route control has a visible outline').toBe(true);
+      }
       // Wait for the browser's own keyboard scroll; never move the focus artificially.
       await expect.poll(() => page.evaluate(() => {
         const el = document.activeElement;
@@ -150,7 +160,9 @@ async function verifyTab(page: Page): Promise<void> {
       linkReached = true;
     }
     if (current.reload) reloadReached = true;
+    if (current.filter) filterReached = true;
   }
+  expect(filterReached, 'natural Tab must reach the newly added template search').toBe(true);
   expect(linkReached, 'Tab must reach settings secondary link, not just shell controls').toBe(true);
   expect(reloadReached, 'Tab must reach real tenant reload button').toBe(true);
 }
@@ -251,6 +263,18 @@ test.describe('V24 C01-03.M04.05 actual tenant UI responsive and keyboard', () =
       await expect(page.getByText('Zona horaria IANA',{exact:true})).toBeVisible();
       await expect(page.getByRole('button',{name:/Recargar/})).toBeVisible();
       await expect(page.getByRole('link',{name:'Ver todos los ajustes'})).toBeVisible();
+      const ownTemplate = tenant === 1 ? 'CI_M0405_A' : 'CI_M0405_B';
+      const foreignTemplate = tenant === 1 ? 'CI_M0405_B' : 'CI_M0405_A';
+      const ownConfig = await page.request.get(api+'/empresa-configuracion/tenant/'+tenant, {
+        headers: { Authorization: 'Bearer '+jwt, 'X-Empresa-Id': String(tenant) }
+      });
+      expect(ownConfig.status(), 'real authorized template source').toBe(200);
+      const config = (await ownConfig.json())?.data;
+      expect(config?.empresaId).toBe(tenant);
+      expect(config?.plantillasCorreo?.map((item: {tipoPlantilla: string}) => item.tipoPlantilla)).toContain(ownTemplate);
+      expect(config?.plantillasCorreo?.map((item: {tipoPlantilla: string}) => item.tipoPlantilla)).not.toContain(foreignTemplate);
+      await expect(page.getByText(ownTemplate, {exact: true})).toBeVisible();
+      await expect(page.getByText(foreignTemplate, {exact: true})).toHaveCount(0);
       await verifyAccessibleLabels(page);
       await verifyTab(page);
       await verifyWcagContrast(page);
@@ -260,6 +284,7 @@ test.describe('V24 C01-03.M04.05 actual tenant UI responsive and keyboard', () =
         await verifyHeadingWholeWords(page,width,'100pct');
         await verifyCardHeaderSeparation(page,width,'100pct');
         await verifyAccessibleLabels(page);
+        await verifyTab(page);
         await page.screenshot({path:'test-results/c0103-m0405-'+username+'-'+width+'-100.png',fullPage:true});
       }
       // CSS zoom is only a 200% reflow stress PROXY, NOT native Chrome browser zoom.
