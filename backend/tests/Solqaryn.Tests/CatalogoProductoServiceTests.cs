@@ -149,4 +149,85 @@ public class CatalogoProductoServiceTests
 
         _repository.Verify(r => r.UpdateAsync(It.IsAny<MaestroProductoRegistro>()), Times.Never);
     }
+
+    [Theory]
+    [InlineData("S", "S")]
+    [InlineData(" M ", "M")]
+    [InlineData("L", "L")]
+    [InlineData("0", "0")]
+    [InlineData("XL", "XL")]
+    public async Task CreateAsync_Talla_AceptaNombreValido(string entrada, string esperado)
+    {
+        _repository.Setup(r => r.ExisteNombreAsync(TipoCatalogoProducto.Talla, esperado, null, null))
+            .ReturnsAsync(false);
+        _repository.Setup(r => r.AddAsync(It.IsAny<MaestroProductoRegistro>()))
+            .ReturnsAsync(41);
+
+        var resultado = await _service.CreateAsync(TipoCatalogoProducto.Talla,
+            new CreateCatalogoProductoDto { Nombre = entrada });
+
+        Assert.Equal(esperado, resultado.Nombre);
+        _repository.Verify(r => r.AddAsync(It.Is<MaestroProductoRegistro>(
+            c => c.Tipo == TipoCatalogoProducto.Talla && c.Nombre == esperado)), Times.Once);
+    }
+
+    [Theory]
+    [InlineData("S")]
+    [InlineData("M")]
+    [InlineData("L")]
+    [InlineData("1")]
+    public async Task UpdateAsync_Talla_AceptaUnCaracter(string nombre)
+    {
+        _repository.Setup(r => r.GetByIdAsync(TipoCatalogoProducto.Talla, 41))
+            .ReturnsAsync(new MaestroProductoRegistro
+            {
+                Id = 41, Tipo = TipoCatalogoProducto.Talla, Nombre = "XL", Activo = true
+            });
+        _repository.Setup(r => r.ExisteNombreAsync(TipoCatalogoProducto.Talla, nombre, null, 41))
+            .ReturnsAsync(false);
+        _repository.Setup(r => r.UpdateAsync(It.IsAny<MaestroProductoRegistro>()))
+            .ReturnsAsync(true);
+
+        var resultado = await _service.UpdateAsync(TipoCatalogoProducto.Talla, 41,
+            new UpdateCatalogoProductoDto { Nombre = nombre });
+
+        Assert.NotNull(resultado);
+        Assert.Equal(nombre, resultado!.Nombre);
+        _repository.Verify(r => r.UpdateAsync(It.Is<MaestroProductoRegistro>(
+            c => c.Id == 41 && c.Nombre == nombre)), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(TipoCatalogoProducto.Talla, "")]
+    [InlineData(TipoCatalogoProducto.Talla, "   ")]
+    [InlineData(TipoCatalogoProducto.Color, "A")]
+    [InlineData(TipoCatalogoProducto.Marca, "A")]
+    [InlineData(TipoCatalogoProducto.Modelo, "A")]
+    public async Task NombreInvalido_NoPersisteEnCreacionNiEdicion(TipoCatalogoProducto tipo, string nombre)
+    {
+        _repository.Setup(r => r.GetByIdAsync(tipo, 41))
+            .ReturnsAsync(new MaestroProductoRegistro { Id = 41, Tipo = tipo, Nombre = "XL", Activo = true });
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            _service.CreateAsync(tipo, new CreateCatalogoProductoDto { Nombre = nombre }));
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            _service.UpdateAsync(tipo, 41, new UpdateCatalogoProductoDto { Nombre = nombre }));
+
+        _repository.Verify(r => r.AddAsync(It.IsAny<MaestroProductoRegistro>()), Times.Never);
+        _repository.Verify(r => r.UpdateAsync(It.IsAny<MaestroProductoRegistro>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task CreateAsync_Talla_ConservaMaximoYControlDeDuplicados()
+    {
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            _service.CreateAsync(TipoCatalogoProducto.Talla,
+                new CreateCatalogoProductoDto { Nombre = new string('A', 121) }));
+        _repository.Setup(r => r.ExisteNombreAsync(TipoCatalogoProducto.Talla, "M", null, null))
+            .ReturnsAsync(true);
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            _service.CreateAsync(TipoCatalogoProducto.Talla,
+                new CreateCatalogoProductoDto { Nombre = "M" }));
+        _repository.Verify(r => r.AddAsync(It.IsAny<MaestroProductoRegistro>()), Times.Never);
+    }
 }

@@ -58,7 +58,7 @@ public class CatalogoProductoService : ICatalogoProductoService
         TipoCatalogoProducto tipo,
         CreateCatalogoProductoDto dto)
     {
-        var nombre = ValidarNombre(dto.Nombre);
+        var nombre = ValidarNombre(tipo, dto.Nombre);
         var padre = await ValidarYObtenerPadreAsync(tipo, dto.CatalogoPadreId);
         var padreId = padre?.Id;
 
@@ -98,7 +98,7 @@ public class CatalogoProductoService : ICatalogoProductoService
         var elemento = await _repository.GetByIdAsync(tipo, id);
         if (elemento is null) return null;
 
-        var nombre = ValidarNombre(dto.Nombre);
+        var nombre = ValidarNombre(tipo, dto.Nombre);
         var padre = await ValidarYObtenerPadreAsync(tipo, dto.CatalogoPadreId);
         var padreId = padre?.Id;
 
@@ -229,11 +229,12 @@ public class CatalogoProductoService : ICatalogoProductoService
             throw new BusinessRuleException("Solo los modelos pueden relacionarse con una marca.");
     }
 
-    private static string ValidarNombre(string? nombre)
+    private static string ValidarNombre(TipoCatalogoProducto tipo, string? nombre)
     {
         var normalizado = nombre?.Trim() ?? string.Empty;
-        if (normalizado.Length < 2 || normalizado.Length > 120)
-            throw new BusinessRuleException("El nombre debe contener entre 2 y 120 caracteres.");
+        var minimo = tipo == TipoCatalogoProducto.Talla ? 1 : 2;
+        if (normalizado.Length < minimo || normalizado.Length > 120)
+            throw new BusinessRuleException($"El nombre debe contener entre {minimo} y 120 caracteres.");
         return normalizado;
     }
 

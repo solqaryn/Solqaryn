@@ -27,8 +27,8 @@
       <mat-form-field appearance="outline">
         <mat-label>Nombre</mat-label>
         <input matInput formControlName="nombre" maxlength="120" autocomplete="off">
-        @if (form.controls.nombre.hasError('required')) { <mat-error>El nombre es obligatorio.</mat-error> }
-        @if (form.controls.nombre.hasError('minlength')) { <mat-error>Escribe al menos 2 caracteres.</mat-error> }
+        @if (form.controls.nombre.hasError('required') || form.controls.nombre.hasError('pattern')) { <mat-error>El nombre es obligatorio.</mat-error> }
+        @if (form.controls.nombre.hasError('minlength')) { <mat-error>Escribe al menos {{ nombreMinLength }} caracteres.</mat-error> }
       </mat-form-field>
 
       @if (esModelo) {

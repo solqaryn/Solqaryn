@@ -60,8 +60,15 @@ export class CatalogoProductoListComponent implements OnInit {
   readonly puedeDesactivar = signal(false);
   readonly puedeEliminar = signal(false);
 
+  readonly nombreMinLength = this.tipo === 'Talla' ? 1 : 2;
+
   readonly form = this.fb.group({
-    nombre: ['', [Validators.required, Validators.minLength(2), Validators.maxLength(120)]],
+    nombre: ['', [
+      Validators.required,
+      Validators.minLength(this.nombreMinLength),
+      Validators.maxLength(120),
+      ...(this.tipo === 'Talla' ? [Validators.pattern(/\S/)] : [])
+    ]],
     descripcion: ['', Validators.maxLength(500)],
     codigoVisual: ['#1D4ED8', Validators.pattern(/^#[0-9A-Fa-f]{6}$/)],
     orden: [0, [Validators.required, Validators.min(0)]],

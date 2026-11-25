@@ -1,3 +1,8 @@
+## 2026-11-25 — QA: permitir tallas de un carácter
+
+- Solicitud expresa del propietario: corrección exclusivamente en qa. El formulario de catálogos y la validación de creación/edición del backend permiten tallas como S, M, L y 0 (1–120 caracteres; sin espacios solos). Marcas, colores y modelos conservan su mínimo de 2. Sin cambios de API, DTO, persistencia, migraciones, JWT, RBAC, auditoría, aislamiento, integraciones ni ramas dev/main.
+- Pruebas dirigidas: formulario (creación, edición, longitud, valores vacíos y otros catálogos), servicio (creación/edición, duplicados, longitud máxima y rechazo sin persistencia); QA CI ejecuta regresión frontend y suite backend. Evidencia de ejecución pendiente en este SHA; no se certifica despliegue. Rollback: revertir exclusivamente este changeset en qa.
+
 ## 2026-11-25 — QA: normalización documental de la identidad autorizada
 
 - Corrige exclusivamente las dos referencias al nombre anterior del equipo Vercel introducidas en el changeset 163fe61; la identidad canónica del proyecto nuevo sigue siendo `prj_BIjoIFQz2oSHCosjj7lcc5blck9E`, dominio `https://solqarynqa-nu.vercel.app`, cuenta personal autorizada sólo para QA. No se modifica el guard ni se autoriza infraestructura retirada.
