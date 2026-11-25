@@ -97,10 +97,11 @@
                 <mat-slide-toggle [checked]="u.activo" (change)="toggleEstado(u)" [aria-label]="(u.activo ? 'Desactivar ' : 'Activar ') + u.nombreCompleto"></mat-slide-toggle>
               } @else {
                 <span class="badge" [class.success]="u.activo" [class.muted]="!u.activo">{{ u.activo ? 'Activo' : 'Inactivo' }}</span>
+                @if (esUsuarioActual(u)) { <span class="badge muted" title="No puedes desactivar ni eliminar tu propia cuenta">Tu cuenta</span> }
               }
             </td>
             <td class="actions">
-              <a [routerLink]="['/usuarios', u.id]" mat-icon-button title="Ver detalle"><mat-icon>visibility</mat-icon></a>
+              <a class="action-view" [routerLink]="['/usuarios', u.id]" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver ' + u.nombreCompleto"><mat-icon>visibility</mat-icon></a>
               @if (puedeEditar()) {
                 <a [routerLink]="['/usuarios', u.id, 'editar']" mat-icon-button title="Editar usuario"><mat-icon>edit</mat-icon></a>
               }
@@ -138,6 +139,7 @@
               <mat-slide-toggle [checked]="u.activo" (change)="toggleEstado(u)" [aria-label]="(u.activo ? 'Desactivar ' : 'Activar ') + u.nombreCompleto"></mat-slide-toggle>
             } @else {
               <span class="badge" [class.success]="u.activo" [class.muted]="!u.activo">{{ u.activo ? 'Activo' : 'Inactivo' }}</span>
+                @if (esUsuarioActual(u)) { <span class="badge muted" title="No puedes desactivar ni eliminar tu propia cuenta">Tu cuenta</span> }
             }
           </div>
           <p class="item-card-desc">&#64;{{ u.nombreUsuario }}</p>

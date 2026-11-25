@@ -2,23 +2,59 @@
   <div>
     <h1 class="page-title">Permisos por rol</h1>
     <p class="subtitle">
-      El rol <strong>Administrador</strong> siempre conserva acceso total y no aparece en esta matriz. Selecciona otro rol para definir sus acciones permitidas por módulo.
+      Consulta el catálogo de permisos del sistema y administra las asignaciones por rol. El rol <strong>Administrador</strong> está protegido contra la revocación de sus permisos.
     </p>
   </div>
 </header>
 
+<section class="card catalogo-card" aria-labelledby="catalogo-permisos-heading">
+  <div class="matrix-heading">
+    <div><h2 id="catalogo-permisos-heading">Catálogo de permisos</h2><p>Permisos registrados en el sistema, independientemente de los roles creados. Consulta de solo lectura.</p></div>
+  </div>
+  @if (loadingCatalogo()) {
+    <div class="loading" role="status"><mat-spinner diameter="32"></mat-spinner><span>Cargando catálogo…</span></div>
+  } @else if (errorCatalogo()) {
+    <div class="catalogo-error" role="alert"><mat-icon>error_outline</mat-icon><span>{{ errorCatalogo() }}</span><button mat-button type="button" (click)="cargarCatalogo()">Reintentar</button></div>
+  } @else {
+    <mat-form-field appearance="outline" class="selector-filtro">
+      <mat-label>Buscar permiso</mat-label><mat-icon matPrefix>search</mat-icon>
+      <input matInput [ngModel]="filtroCatalogo()" (ngModelChange)="filtroCatalogo.set($event)" placeholder="Módulo, acción o nombre" autocomplete="off">
+    </mat-form-field>
+    <p class="catalogo-count" aria-live="polite">{{ catalogoFiltrado().length }} de {{ catalogo().length }} permisos</p>
+    <div class="catalogo-scroll" role="region" tabindex="0" aria-label="Catálogo de permisos">
+      <table class="catalogo-tabla">
+        <thead><tr><th>Módulo</th><th>Acción</th><th>Nombre</th><th>Estado</th><th>Roles asignados</th><th>Acciones</th></tr></thead>
+        <tbody>
+          @for (p of catalogoFiltrado(); track p.id) {
+            <tr>
+              <td>{{ nombreModulo(p.modulo) }}</td><td>{{ nombreAccion(p.accion) }}</td><td>{{ p.nombre }}</td>
+              <td>{{ p.activo ? 'Activo' : 'Inactivo' }}</td><td>{{ p.cantidadRolesAsignados }}</td>
+              <td><button class="action-view" mat-icon-button type="button" title="Ver detalle" [attr.aria-label]="'Ver permiso ' + p.nombre" [appConsultaRegistro]="{ titulo: 'Permiso: ' + p.nombre, campos: { 'Nombre': p.nombre, 'Código': p.codigo, 'Descripción': p.descripcion, 'Módulo': nombreModulo(p.modulo), 'Acción': nombreAccion(p.accion), 'Estado': p.activo ? 'Activo' : 'Inactivo', 'Permiso del sistema': p.esSistema, 'Roles asignados': p.cantidadRolesAsignados, 'Fecha de creación': p.fechaCreacion, 'Fecha de actualización': p.fechaActualizacion } }"><mat-icon>visibility</mat-icon></button></td>
+            </tr>
+          } @empty { <tr><td colspan="6">No hay permisos que coincidan con la búsqueda.</td></tr> }
+        </tbody>
+      </table>
+    </div>
+  }
+</section>
+
+<h2 class="seccion-matriz">Asignación por rol</h2>
+
+
 @if (loadingRoles()) {
   <div class="loading" aria-live="polite"><mat-spinner></mat-spinner><span class="sr-copy">Cargando roles...</span></div>
+} @else if (errorRoles()) {
+  <div class="card empty-state" role="alert"><mat-icon>error_outline</mat-icon><p>{{ errorRoles() }}</p></div>
 } @else if (roles().length === 0) {
   <div class="card empty-state">
     <mat-icon>admin_panel_settings</mat-icon>
-    <p>No hay roles no administradores disponibles. Crea un rol en la sección <strong>Roles</strong> para configurar sus permisos.</p>
+    <p>No hay roles no administradores disponibles. Puedes consultar todos los permisos arriba. Crea un rol en la sección <strong>Roles</strong> para asignarle permisos.</p>
   </div>
 } @else {
   <div class="selector-row" aria-label="Selección y filtro de permisos">
     <mat-form-field appearance="outline" class="selector-rol">
       <mat-label>Rol que se configurará</mat-label>
-      <mat-select [value]="rolSeleccionadoId()" (selectionChange)="seleccionarRol($event.value)">
+      <mat-select [value]="rolSeleccionadoId()" (selectionChange)="seleccionarRol($event.value)" [disabled]="saving()">
         @for (rol of roles(); track rol.id) {
           <mat-option [value]="rol.id">{{ rol.nombre }}</mat-option>
         }
@@ -46,6 +82,8 @@
 
   @if (loadingMatriz()) {
     <div class="loading" aria-live="polite"><mat-spinner></mat-spinner><span class="sr-copy">Cargando permisos...</span></div>
+  } @else if (errorMatriz()) {
+    <div class="card empty-state" role="alert"><mat-icon>error_outline</mat-icon><p>{{ errorMatriz() }}</p></div>
   } @else {
     <div class="card permisos-card">
       <div class="matrix-heading">
@@ -61,7 +99,7 @@
             <h3>{{ nombreModulo(modulo) }}</h3>
             <div class="acciones-cell">
               @for (item of accionesDelModulo(modulo); track item.accion) {
-                <mat-checkbox [checked]="item.permitido" (change)="toggle(item)">
+                <mat-checkbox [checked]="item.permitido" [disabled]="!permiteGuardar()" (change)="toggle(item)">
                   {{ nombreAccion(item.accion) }}
                 </mat-checkbox>
               }
@@ -77,7 +115,7 @@
 
       <div class="form-actions">
         <span class="save-hint">Los cambios se aplicarán desde la siguiente solicitud realizada por cada usuario.</span>
-        <button mat-flat-button color="primary" [disabled]="saving()" (click)="guardar()">
+        <button mat-flat-button color="primary" [disabled]="!permiteGuardar()" (click)="guardar()">
           @if (saving()) {
             <mat-spinner diameter="20"></mat-spinner>
           } @else {

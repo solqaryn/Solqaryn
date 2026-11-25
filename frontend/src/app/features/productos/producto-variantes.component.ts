@@ -1,3 +1,4 @@
+import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -27,7 +28,7 @@ const MAX_IMAGENES_VARIANTE = 5;
 @Component({
   selector: 'app-producto-variantes',
   standalone: true,
-  imports: [
+  imports: [ConsultaRegistroDirective,
     CommonModule, ReactiveFormsModule, RouterLink, MatButtonModule, MatFormFieldModule,
     MatIconModule, MatInputModule, MatProgressSpinnerModule, MatSelectModule, MatTableModule,
     ProductoImagenComponent

@@ -1,3 +1,4 @@
+import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 import { CommonModule } from '@angular/common';
 import { Component, EventEmitter, Input, Output, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -68,7 +69,7 @@ export type CajaAccionUi = 'ABRIR' | 'INICIAR_OPERACIONES' | 'REGISTRAR_MOVIMIEN
 @Component({
   selector: 'app-caja-flujo-shell',
   standalone: true,
-  imports: [
+  imports: [ConsultaRegistroDirective,
     CommonModule,
     FormsModule,
     MatButtonModule,
@@ -228,7 +229,7 @@ export type CajaAccionUi = 'ABRIR' | 'INICIAR_OPERACIONES' | 'REGISTRAR_MOVIMIEN
             @if (s.movimientos.length > 0) {
               <div class="table-wrap">
                 <table>
-                  <thead><tr><th>Fecha</th><th>Tipo</th><th>Referencia</th><th class="amount">Monto</th><th class="amount">Impacto</th></tr></thead>
+                  <thead><tr><th>Fecha</th><th>Tipo</th><th>Referencia</th><th class="amount">Monto</th><th class="amount">Impacto</th><th>Acciones</th></tr></thead>
                   <tbody>
                     @for (movimiento of s.movimientos; track trackMovimiento($index, movimiento)) {
                       <tr>
@@ -237,6 +238,7 @@ export type CajaAccionUi = 'ABRIR' | 'INICIAR_OPERACIONES' | 'REGISTRAR_MOVIMIEN
                         <td>{{ movimiento.referencia || '—' }}</td>
                         <td class="amount">{{ movimiento.monto | currency:'HNL':'symbol-narrow':'1.2-2' }}</td>
                         <td class="amount" [class.negative]="movimiento.impactoSaldo < 0">{{ movimiento.impactoSaldo | currency:'HNL':'symbol-narrow':'1.2-2' }}</td>
+                        <td><button type="button" class="action-view" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver movimiento de caja ' + movimiento.id" [appConsultaRegistro]="{ titulo: 'Movimiento de caja #' + movimiento.id, campos: { 'Sesión': movimiento.cajaSesionId, 'Usuario (ID)': movimiento.usuarioId, 'Tipo': tipoMovimiento(movimiento.tipo), 'Referencia': movimiento.referencia, 'Monto (HNL)': movimiento.monto, 'Impacto (HNL)': movimiento.impactoSaldo, 'Fecha': (movimiento.fechaOperacion | date:'dd/MM/yyyy HH:mm') } }"><mat-icon>visibility</mat-icon></button></td>
                       </tr>
                     }
                   </tbody>

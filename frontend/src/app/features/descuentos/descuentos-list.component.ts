@@ -1,3 +1,4 @@
+import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { RouterLink } from '@angular/router';
@@ -14,7 +15,7 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
 @Component({
   selector: 'app-descuentos-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatSlideToggleModule],
+  imports: [ConsultaRegistroDirective, CommonModule, RouterLink, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatSlideToggleModule],
   templateUrl: './descuentos-list.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './descuentos-list.component.scss'

@@ -35,6 +35,7 @@
               }
             </td>
             <td class="actions">
+              <button type="button" class="action-view" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver ' + p.nombre" [appConsultaRegistro]="{ titulo: 'Proveedor: ' + p.nombre, campos: { 'Nombre': p.nombre, 'Documento': p.documento, 'Teléfono': p.telefono, 'Correo': p.correo, 'Dirección': p.direccion, 'Estado': p.activo ? 'Activo' : 'Inactivo', 'Compras': p.totalCompras, 'Total comprado (HNL)': p.totalComprado, 'Creado por': p.creadoPorNombreUsuario, 'Fecha de creación': p.fechaCreacion } }"><mat-icon>visibility</mat-icon></button>
               @if (puedeEditar()) {
                 <a [routerLink]="['/proveedores', p.id, 'editar']" mat-icon-button title="Editar"><mat-icon>edit</mat-icon></a>
               }
@@ -67,6 +68,7 @@
           </div>
           @if (puedeEditar() || puedeEliminar()) {
             <div class="item-card-actions">
+              <button type="button" class="action-view" mat-button title="Ver detalle" [attr.aria-label]="'Ver ' + p.nombre" [appConsultaRegistro]="{ titulo: 'Proveedor: ' + p.nombre, campos: { 'Nombre': p.nombre, 'Documento': p.documento, 'Teléfono': p.telefono, 'Correo': p.correo, 'Dirección': p.direccion, 'Estado': p.activo ? 'Activo' : 'Inactivo', 'Compras': p.totalCompras, 'Total comprado (HNL)': p.totalComprado, 'Creado por': p.creadoPorNombreUsuario, 'Fecha de creación': p.fechaCreacion } }"><mat-icon>visibility</mat-icon> Ver</button>
               @if (puedeEditar()) {
                 <a [routerLink]="['/proveedores', p.id, 'editar']" mat-button><mat-icon>edit</mat-icon> Editar</a>
               }

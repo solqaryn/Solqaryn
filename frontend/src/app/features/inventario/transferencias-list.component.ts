@@ -79,7 +79,7 @@ import { TransferenciaInventarioService } from '../../services/transferencia-inv
                   <td><span class="status" [attr.data-state]="item.estado">{{ item.estado }}</span></td>
                   <td>{{ item.detalles.length }}</td>
                   <td class="actions">
-                    <button mat-button type="button" (click)="ver(item.id)">Ver</button>
+                    <button class="action-view" mat-icon-button type="button" (click)="ver(item.id)" title="Ver detalle" [attr.aria-label]="'Ver transferencia ' + item.id"><mat-icon>visibility</mat-icon></button>
                     @if (puedeEditar && item.estado === 'Borrador') {
                       <button mat-button type="button" (click)="editar(item.id)">Editar</button>
                     }

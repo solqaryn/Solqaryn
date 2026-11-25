@@ -1,3 +1,4 @@
+import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -16,7 +17,7 @@ import { PeriodoContableService } from '../../core/services/periodo-contable.ser
 @Component({
   selector: 'app-periodos-contables',
   standalone: true,
-  imports: [
+  imports: [ConsultaRegistroDirective,
     CommonModule,
     ReactiveFormsModule,
     MatButtonModule,
@@ -106,6 +107,7 @@ import { PeriodoContableService } from '../../core/services/periodo-contable.ser
               <ng-container matColumnDef="acciones">
                 <th mat-header-cell *matHeaderCellDef>Acciones</th>
                 <td mat-cell *matCellDef="let p">
+                  <button class="action-view" mat-icon-button type="button" title="Ver detalle" [attr.aria-label]="'Ver período ' + p.id" [appConsultaRegistro]="{ titulo: 'Período contable #' + p.id, campos: { 'Fecha inicial': p.fechaInicio, 'Fecha final': p.fechaFin, 'Estado': estadoTexto(p.estado), 'Cierre UTC': p.cerradoEnUtc } }"><mat-icon>visibility</mat-icon></button>
                   @if (puedeCerrar()) {
                     <button mat-stroked-button color="warn" type="button" (click)="cerrar(p)"
                       [disabled]="p.estado === EstadoPeriodoContable.Cerrado || cerrandoId() === p.id"

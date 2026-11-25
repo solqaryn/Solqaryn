@@ -1,3 +1,4 @@
+import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 
 import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -17,7 +18,7 @@ import { ExistenciaVarianteService } from '../../services/existencia-variante.se
 @Component({
   selector: 'app-existencias-variante-list',
   standalone: true,
-  imports: [FormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatPaginatorModule, MatProgressSpinnerModule, MatSelectModule],
+  imports: [ConsultaRegistroDirective, FormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatPaginatorModule, MatProgressSpinnerModule, MatSelectModule],
   template: `
     <section class="page" aria-labelledby="existencias-title">
       <header class="header">
@@ -71,9 +72,7 @@ import { ExistenciaVarianteService } from '../../services/existencia-variante.se
           <div class="table-shell">
             <table>
               <caption class="sr-only">Existencias de inventario por variante</caption>
-              <thead><tr><th>Producto / variante</th><th>Almacén / ubicación</th><th>Físico</th><th>Reservado</th><th>Disponible</th><th>Tránsito</th><th>Mín.</th><th>Máx.</th><th>Estado</th>@if (puedeEditar()) {
-              <th>Acciones</th>
-            }</tr></thead>
+              <thead><tr><th>Producto / variante</th><th>Almacén / ubicación</th><th>Físico</th><th>Reservado</th><th>Disponible</th><th>Tránsito</th><th>Mín.</th><th>Máx.</th><th>Estado</th><th>Acciones</th></tr></thead>
             <tbody>
               @for (item of existencias(); track trackById($index, item)) {
                 <tr>
@@ -87,12 +86,13 @@ import { ExistenciaVarianteService } from '../../services/existencia-variante.se
                     }@if (!item.estaAgotada && !item.tieneStockBajo) {
                     <span class="status ok">Disponible</span>
                   }</td>
-                  @if (puedeEditar()) {
                     <td data-label="Acciones" class="row-actions">
+                      <button class="action-view" mat-icon-button type="button" title="Ver detalle" [attr.aria-label]="'Ver existencia ' + item.id" [appConsultaRegistro]="{ titulo: 'Existencia: ' + item.productoNombre, campos: { 'Producto': item.productoNombre, 'Variante': item.varianteSku, 'Almacén': item.almacenCodigo + ' · ' + item.almacenNombre, 'Ubicación': item.ubicacionNombre || 'Raíz de almacén', 'Stock físico': item.stockFisico, 'Reservado': item.stockReservado, 'Disponible': item.stockDisponible, 'En tránsito': item.stockTransito, 'Stock mínimo': item.stockMinimo, 'Stock máximo': item.stockMaximo, 'Estado': item.estaAgotada ? 'Agotado' : item.tieneStockBajo ? 'Bajo mínimo' : 'Disponible', 'Fecha de creación': item.fechaCreacion, 'Fecha de actualización': item.fechaActualizacion } }"><mat-icon>visibility</mat-icon></button>
+                      @if (puedeEditar()) {
                       <button mat-button color="primary" type="button" (click)="editar(item)"><mat-icon>tune</mat-icon> Configurar</button>
                       <button mat-button type="button" (click)="trazabilidad(item)"><mat-icon>qr_code_2</mat-icon> Trazabilidad</button>
+                      }
                     </td>
-                  }
                 </tr>
               }
             </tbody>

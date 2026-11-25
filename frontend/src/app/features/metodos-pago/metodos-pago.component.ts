@@ -1,3 +1,4 @@
+import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 
 import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -18,7 +19,7 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
 @Component({
   selector: 'app-metodos-pago',
   standalone: true,
-  imports: [
+  imports: [ConsultaRegistroDirective,
     ReactiveFormsModule,
     MatButtonModule,
     MatCheckboxModule,
@@ -140,14 +141,12 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
                         @if (!metodo.requiereReferencia && !metodo.requiereBanco && !metodo.permiteCambio) { <span class="muted-chip">Sin reglas extra</span> }
                       </div>
                     </td>
-                    <td><span class="status" [class.ok]="metodo.activo">{{ metodo.activo ? 'Activo' : 'Inactivo' }}</span></td>
+                    <td>@if (puedeCambiarEstado(metodo)) {
+                      <mat-slide-toggle [checked]="metodo.activo" (change)="cambiarEstado(metodo)" [aria-label]="(metodo.activo ? 'Desactivar ' : 'Activar ') + metodo.nombre"></mat-slide-toggle>
+                    } @else { <span class="status" [class.ok]="metodo.activo">{{ metodo.activo ? 'Activo' : 'Inactivo' }}</span> }</td>
                     <td class="actions">
+                      <button type="button" class="action-view" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver ' + metodo.nombre" [appConsultaRegistro]="{ titulo: 'Método de pago: ' + metodo.nombre, campos: { 'Nombre': metodo.nombre, 'Código': metodo.codigo, 'Tipo': metodo.tipo, 'Estado': metodo.activo ? 'Activo' : 'Inactivo', 'Requiere referencia': metodo.requiereReferencia, 'Requiere banco': metodo.requiereBanco, 'Permite cambio': metodo.permiteCambio, 'Orden': metodo.orden } }"><mat-icon>visibility</mat-icon></button>
                       @if (puedeEditar()) { <button mat-icon-button type="button" (click)="editar(metodo)" aria-label="Editar método"><mat-icon>edit</mat-icon></button> }
-                      @if (puedeCambiarEstado(metodo)) {
-                        <button mat-icon-button type="button" (click)="cambiarEstado(metodo)" [attr.aria-label]="metodo.activo ? 'Desactivar método' : 'Activar método'">
-                          <mat-icon>{{ metodo.activo ? 'toggle_off' : 'toggle_on' }}</mat-icon>
-                        </button>
-                      }
                       @if (puedeEliminar()) { <button mat-icon-button type="button" (click)="eliminar(metodo)" aria-label="Eliminar método"><mat-icon>delete_outline</mat-icon></button> }
                     </td>
                   </tr>

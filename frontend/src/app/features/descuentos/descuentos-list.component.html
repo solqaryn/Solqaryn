@@ -40,6 +40,7 @@
               }
             </td>
             <td class="actions">
+              <button type="button" class="action-view" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver ' + d.nombre" [appConsultaRegistro]="{ titulo: 'Descuento: ' + d.nombre, campos: { 'Nombre': d.nombre, 'Descripción': d.descripcion, 'Código promocional': d.codigoPromocional, 'Tipo': d.tipo, 'Valor': d.valor, 'Inicio': d.fechaInicio, 'Fin': d.fechaFin, 'Monto mínimo': d.montoMinimo, 'Máximo descuento': d.montoMaximoDescuento, 'Cantidad mínima': d.cantidadMinima, 'Requiere aprobación': d.requiereAprobacion, 'Acumulable': d.acumulable, 'Prioridad': d.prioridad, 'Límite total de usos': d.limiteTotalUsos, 'Límite por cliente': d.limiteUsosPorCliente, 'Usos realizados': d.usosRealizados, 'Estado': d.activo ? 'Activo' : 'Inactivo', 'ID de productos': d.productoIds, 'ID de categorías': d.categoriaIds, 'ID de clientes': d.clienteIds, 'ID de roles': d.rolIds, 'Fecha de creación': d.fechaCreacion, 'Fecha de actualización': d.fechaActualizacion } }"><mat-icon>visibility</mat-icon></button>
               @if (puedeEditar()) {
                 <a [routerLink]="['/descuentos', d.id, 'editar']" mat-icon-button title="Editar"><mat-icon>edit</mat-icon></a>
               }
@@ -75,6 +76,7 @@
             <span>{{ d.usosRealizados }}{{ d.limiteTotalUsos ? ' / ' + d.limiteTotalUsos : '' }} usos</span>
           </div>
           <div class="item-card-actions">
+              <button type="button" class="action-view" mat-button title="Ver detalle" [attr.aria-label]="'Ver ' + d.nombre" [appConsultaRegistro]="{ titulo: 'Descuento: ' + d.nombre, campos: { 'Nombre': d.nombre, 'Descripción': d.descripcion, 'Código promocional': d.codigoPromocional, 'Tipo': d.tipo, 'Valor': d.valor, 'Inicio': d.fechaInicio, 'Fin': d.fechaFin, 'Monto mínimo': d.montoMinimo, 'Máximo descuento': d.montoMaximoDescuento, 'Cantidad mínima': d.cantidadMinima, 'Requiere aprobación': d.requiereAprobacion, 'Acumulable': d.acumulable, 'Prioridad': d.prioridad, 'Límite total de usos': d.limiteTotalUsos, 'Límite por cliente': d.limiteUsosPorCliente, 'Usos realizados': d.usosRealizados, 'Estado': d.activo ? 'Activo' : 'Inactivo', 'ID de productos': d.productoIds, 'ID de categorías': d.categoriaIds, 'ID de clientes': d.clienteIds, 'ID de roles': d.rolIds, 'Fecha de creación': d.fechaCreacion, 'Fecha de actualización': d.fechaActualizacion } }"><mat-icon>visibility</mat-icon> Ver</button>
             @if (puedeEditar()) { <a [routerLink]="['/descuentos', d.id, 'editar']" mat-button><mat-icon>edit</mat-icon> Editar</a> }
             @if (puedeDuplicar()) { <button mat-button (click)="duplicar(d)"><mat-icon>content_copy</mat-icon> Duplicar</button> }
             @if (puedeEliminar()) { <button mat-button (click)="eliminar(d)"><mat-icon>delete_outline</mat-icon> Eliminar</button> }

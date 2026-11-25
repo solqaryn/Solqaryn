@@ -1,3 +1,4 @@
+import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 
 import { RouterLink } from '@angular/router';
@@ -14,7 +15,7 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
 @Component({
   selector: 'app-roles-list',
   standalone: true,
-  imports: [RouterLink, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatSlideToggleModule],
+  imports: [ConsultaRegistroDirective, RouterLink, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatSlideToggleModule],
   templateUrl: './roles-list.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './roles-list.component.scss'
@@ -75,7 +76,7 @@ export class RolesListComponent implements OnInit {
   }
 
   async eliminar(rol: Rol): Promise<void> {
-    if (!this.puedeEliminar()) return;
+    if (!this.puedeEliminar() || rol.esSistema || rol.cantidadUsuarios > 0) return;
 
     const confirmado = await this.alerts.confirmar({
       titulo: 'Eliminar rol',

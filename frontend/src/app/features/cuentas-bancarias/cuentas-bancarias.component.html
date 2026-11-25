@@ -103,8 +103,9 @@
       <ng-container matColumnDef="acciones">
         <th mat-header-cell *matHeaderCellDef scope="col">Acciones</th>
         <td mat-cell *matCellDef="let element" class="acciones-cell">
+          <button type="button" class="action-view" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver cuenta ' + element.nombre" [appConsultaRegistro]="{ titulo: 'Cuenta bancaria: ' + element.nombre, campos: { 'Nombre': element.nombre, 'Banco (ID)': element.bancoId, 'Número de cuenta': element.numeroCuenta, 'Moneda': element.moneda, 'Saldo inicial': element.saldoInicial, 'Estado': element.estado === 1 ? 'Activa' : 'Inactiva' } }"><mat-icon>visibility</mat-icon></button>
           @if (puedeEditar()) {
-            <button mat-button type="button" (click)="editar(element)" [attr.aria-label]="'Editar cuenta ' + element.nombre">Editar</button>
+            <button class="action-edit" mat-icon-button type="button" title="Editar" (click)="editar(element)" [attr.aria-label]="'Editar cuenta ' + element.nombre"><mat-icon>edit</mat-icon></button>
           }
           @if (puedeActivar() && element.estado === 2) {
             <button mat-button type="button" color="primary" (click)="activar(element)" [attr.aria-label]="'Activar cuenta ' + element.nombre">Activar</button>

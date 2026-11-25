@@ -53,6 +53,7 @@
               }
             </td>
             <td class="actions">
+              <button type="button" class="action-view" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver ' + t.nombre" [appConsultaRegistro]="{ titulo: 'Clasificación: ' + t.nombre, campos: { 'Nombre': t.nombre, 'Código': t.codigo, 'Descripción': t.descripcion, 'Color': t.colorHex, 'Orden': t.orden, 'Clasificación de sistema': t.esSistema, 'Predeterminada': t.esPredeterminado, 'Clientes asignados': t.totalClientesAsignados, 'Estado': t.activo ? 'Activa' : 'Inactiva' } }"><mat-icon>visibility</mat-icon></button>
               @if (puedeEditar()) {
                 <a [routerLink]="['/tipo-clientes', t.id, 'editar']" mat-icon-button title="Editar"><mat-icon>edit</mat-icon></a>
               }
@@ -94,6 +95,7 @@
           </div>
           @if (puedeEditar() || (puedeEliminar() && !t.esSistema && !t.esPredeterminado && t.totalClientesAsignados === 0)) {
             <div class="item-card-actions">
+              <button type="button" class="action-view" mat-button title="Ver detalle" [attr.aria-label]="'Ver ' + t.nombre" [appConsultaRegistro]="{ titulo: 'Clasificación: ' + t.nombre, campos: { 'Nombre': t.nombre, 'Código': t.codigo, 'Descripción': t.descripcion, 'Color': t.colorHex, 'Orden': t.orden, 'Clasificación de sistema': t.esSistema, 'Predeterminada': t.esPredeterminado, 'Clientes asignados': t.totalClientesAsignados, 'Estado': t.activo ? 'Activa' : 'Inactiva' } }"><mat-icon>visibility</mat-icon> Ver</button>
               @if (puedeEditar()) {
                 <a [routerLink]="['/tipo-clientes', t.id, 'editar']" mat-button><mat-icon>edit</mat-icon> Editar</a>
               }

@@ -1,3 +1,4 @@
+import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 
 import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -17,7 +18,7 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
 @Component({
   selector: 'app-centros-costo',
   standalone: true,
-  imports: [ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressSpinnerModule, MatSelectModule, MatSlideToggleModule],
+  imports: [ConsultaRegistroDirective, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressSpinnerModule, MatSelectModule, MatSlideToggleModule],
   template: `
     <section class="page-shell">
       <header class="page-header">
@@ -49,9 +50,9 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
         @else if (items().length === 0) { <div class="state"><mat-icon>account_tree</mat-icon><h2>Sin centros de costo</h2><p>No hay registros para los filtros actuales.</p></div> }
         @else {
           <div class="table-scroll"><table><thead><tr><th>Código</th><th>Nombre</th><th>Tipo</th><th>Sucursal</th><th>Estado</th><th class="right">Acciones</th></tr></thead><tbody>
-          @for (item of items(); track item.id) { <tr [class.inactive]="!item.activo"><td><code>{{ item.codigo }}</code></td><td><strong>{{ item.nombre }}</strong></td><td>{{ tipoNombre(item.tipo) }}</td><td>{{ item.sucursalNombre || item.sucursalCodigo || '—' }}</td><td><span class="status" [class.ok]="item.activo">{{ item.activo ? 'Activo' : 'Inactivo' }}</span></td><td class="right">
+          @for (item of items(); track item.id) { <tr [class.inactive]="!item.activo"><td><code>{{ item.codigo }}</code></td><td><strong>{{ item.nombre }}</strong></td><td>{{ tipoNombre(item.tipo) }}</td><td>{{ item.sucursalNombre || item.sucursalCodigo || '—' }}</td><td>@if (puedeCambiarEstado(item)) { <mat-slide-toggle [checked]="item.activo" (change)="cambiarEstado(item)" [aria-label]="(item.activo ? 'Desactivar ' : 'Activar ') + item.nombre"></mat-slide-toggle> } @else { <span class="status" [class.ok]="item.activo">{{ item.activo ? 'Activo' : 'Inactivo' }}</span> }</td><td class="right">
+            <button class="action-view" mat-icon-button type="button" title="Ver detalle" [attr.aria-label]="'Ver ' + item.nombre" [appConsultaRegistro]="{ titulo: 'Centro de costo: ' + item.nombre, campos: { 'Código': item.codigo, 'Nombre': item.nombre, 'Descripción': item.descripcion, 'Tipo': tipoNombre(item.tipo), 'Sucursal': item.sucursalNombre || item.sucursalCodigo, 'Estado': item.activo ? 'Activo' : 'Inactivo', 'Fecha de creación': item.fechaCreacion, 'Fecha de actualización': item.fechaActualizacion } }"><mat-icon>visibility</mat-icon></button>
             @if (puedeEditar()) { <button mat-icon-button type="button" (click)="editar(item)" [attr.aria-label]="'Editar ' + item.nombre"><mat-icon>edit</mat-icon></button> }
-            @if (puedeCambiarEstado(item)) { <button mat-icon-button type="button" (click)="cambiarEstado(item)" [attr.aria-label]="(item.activo ? 'Desactivar ' : 'Activar ') + item.nombre"><mat-icon>{{ item.activo ? 'toggle_off' : 'toggle_on' }}</mat-icon></button> }
             @if (puedeEliminar()) { <button mat-icon-button type="button" (click)="eliminar(item)" [attr.aria-label]="'Eliminar ' + item.nombre"><mat-icon>delete_outline</mat-icon></button> }
           </td></tr> }
           </tbody></table></div>

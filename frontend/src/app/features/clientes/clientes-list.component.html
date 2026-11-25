@@ -115,6 +115,7 @@
               }
             </td>
             <td class="actions">
+              <button type="button" class="action-view" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver ' + c.nombre" [appConsultaRegistro]="{ titulo: 'Cliente: ' + c.nombre, campos: { 'Nombre': c.nombre, 'Identidad/RTN': c.identidadORTN, 'Teléfono': c.telefono, 'Correo': c.correo, 'Dirección': c.direccion, 'Clasificación': c.tipoClienteNombre, 'Estado': c.activo ? 'Activo' : 'Inactivo', 'Ventas': c.totalVentas, 'Total vendido (HNL)': c.totalVendido, 'Creado por': c.creadoPorNombreUsuario, 'Fecha de creación': c.fechaCreacion } }"><mat-icon>visibility</mat-icon></button>
               @if (puedeEditar()) {
                 <a [routerLink]="['/clientes', c.id, 'editar']" mat-icon-button title="Editar"><mat-icon>edit</mat-icon></a>
               }

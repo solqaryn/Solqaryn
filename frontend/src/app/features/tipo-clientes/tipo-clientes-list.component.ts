@@ -1,3 +1,4 @@
+import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 
 import { RouterLink } from '@angular/router';
@@ -15,7 +16,7 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
 @Component({
   selector: 'app-tipo-clientes-list',
   standalone: true,
-  imports: [RouterLink, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatSlideToggleModule, FormsModule],
+  imports: [ConsultaRegistroDirective, RouterLink, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatSlideToggleModule, FormsModule],
   templateUrl: './tipo-clientes-list.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './tipo-clientes-list.component.scss'

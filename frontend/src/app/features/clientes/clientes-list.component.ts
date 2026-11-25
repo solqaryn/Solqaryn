@@ -1,3 +1,4 @@
+import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
@@ -37,7 +38,7 @@ interface SegmentoClienteResumen {
 @Component({
   selector: 'app-clientes-list',
   standalone: true,
-  imports: [
+  imports: [ConsultaRegistroDirective,
     CommonModule, RouterLink, MatIconModule, MatButtonModule, MatProgressSpinnerModule,
     MatSlideToggleModule, MatFormFieldModule, MatInputModule, MatSelectModule, MatPaginatorModule, FormsModule
   ],

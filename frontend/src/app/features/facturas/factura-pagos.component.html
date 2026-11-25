@@ -242,6 +242,7 @@
                   <td>{{ pagoItem.cambio | currency:'HNL':'symbol':'1.2-2':'es-HN' }}</td>
                   <td>{{ pagoItem.anulado ? 'Anulado' : 'Aplicado' }}</td>
                   <td>
+                    <button type="button" class="action-view" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver pago ' + pagoItem.id" [appConsultaRegistro]="{ titulo: 'Pago #' + pagoItem.id, campos: { 'Fecha': pagoItem.fechaPago, 'Método de pago': pagoItem.metodoPago, 'Banco': pagoItem.bancoNombre, 'Código de banco': pagoItem.bancoCodigo, 'Referencia': pagoItem.referencia, 'Recibido (HNL)': pagoItem.montoRecibido, 'Aplicado (HNL)': pagoItem.monto, 'Cambio (HNL)': pagoItem.cambio, 'Observaciones': pagoItem.observaciones, 'Estado': pagoItem.anulado ? 'Anulado' : 'Aplicado', 'Fecha de anulación': pagoItem.fechaAnulacion, 'Motivo de anulación': pagoItem.motivoAnulacion } }"><mat-icon>visibility</mat-icon></button>
                     <button mat-button color="warn"
                       [disabled]="pagoItem.anulado || anulandoId() !== null"
                       (click)="anularPago(pagoItem)">

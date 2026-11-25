@@ -1,3 +1,5 @@
+import { MatIconModule } from '@angular/material/icon';
+import { MatButtonModule } from '@angular/material/button';
 import { CommonModule } from '@angular/common';
 import { HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, computed, inject, signal, ChangeDetectionStrategy } from '@angular/core';
@@ -9,7 +11,7 @@ import { FacturaService } from '../../services/factura.service';
 @Component({
   selector: 'app-cuentas-por-cobrar',
   standalone: true,
-  imports: [CommonModule, RouterLink],
+  imports: [CommonModule, RouterLink, MatIconModule, MatButtonModule],
   template: `
     <section class="page" aria-labelledby="cxc-title">
       <header class="page-header">
@@ -96,7 +98,7 @@ import { FacturaService } from '../../services/factura.service';
                   <td data-label="Pagado" class="numeric">{{ cuenta.moneda }} {{ cuenta.totalPagado | number:'1.2-2' }}</td>
                   <td data-label="Saldo" class="numeric balance">{{ cuenta.moneda }} {{ cuenta.saldoPendiente | number:'1.2-2' }}</td>
                   <td data-label="Acciones" class="actions">
-                    <a class="secondary link-button" [routerLink]="['/facturas', cuenta.id]">Ver factura</a>
+                    <a class="action-view" mat-icon-button title="Ver factura" [attr.aria-label]="'Ver factura ' + cuenta.numeroFactura" [routerLink]="['/facturas', cuenta.id]"><mat-icon>visibility</mat-icon></a>
                     <a class="primary link-button" [routerLink]="['/facturas', cuenta.id, 'pagos']">Pagos</a>
                   </td>
                 </tr>

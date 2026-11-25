@@ -133,6 +133,7 @@
                 }
               </td>
               <td class="actions">
+              <button type="button" class="action-view" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver ' + elemento.nombre" [appConsultaRegistro]="{ titulo: elemento.tipo + ': ' + elemento.nombre, campos: { 'Nombre': elemento.nombre, 'Descripción': elemento.descripcion, 'Tipo': elemento.tipo, 'Código visual': elemento.codigoVisual, 'Marca asociada': elemento.catalogoPadreNombre, 'Orden': elemento.orden, 'Estado': elemento.activo ? 'Activo' : 'Inactivo', 'Productos asociados': elemento.totalProductos, 'Modelos asociados': elemento.totalModelos, 'Creado por': elemento.creadoPorNombreUsuario, 'Actualizado por': elemento.actualizadoPorNombreUsuario, 'Fecha de creación': elemento.fechaCreacion, 'Fecha de actualización': elemento.fechaActualizacion } }"><mat-icon>visibility</mat-icon></button>
                 @if (puedeEditar()) {
                   <button class="action-button action-edit" mat-icon-button type="button" title="Editar" [attr.aria-label]="'Editar ' + elemento.nombre" (click)="editar(elemento)">
                     <mat-icon>edit</mat-icon>

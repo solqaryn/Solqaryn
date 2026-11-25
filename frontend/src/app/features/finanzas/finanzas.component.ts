@@ -1,3 +1,4 @@
+import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
@@ -23,7 +24,7 @@ type OrdenMovimientoFinanciero = 'fecha' | 'concepto' | 'tipo' | 'monto';
 @Component({
   selector: 'app-finanzas',
   standalone: true,
-  imports: [
+  imports: [ConsultaRegistroDirective,
     CommonModule, FormsModule, ReactiveFormsModule, MatFormFieldModule, MatInputModule, MatSelectModule,
     MatButtonModule, MatIconModule, MatProgressSpinnerModule, MatDialogModule, MetodoPagoSelectComponent
   ],

@@ -64,6 +64,7 @@ describe('ClientesListComponent: tabla única con scroll propio', () => {
     expect(root.querySelector('.cards-mobile')).toBeNull();
     expect(root.querySelector('mat-paginator')).toBeTruthy();
     expect(scroll.querySelector('mat-paginator')).toBeNull();
+    expect(scroll.querySelector('[title="Ver detalle"]')).toBeTruthy();
     expect(scroll.querySelector('[title="Editar"]')).toBeTruthy();
     expect(scroll.querySelector('[title="Eliminar"]')).toBeTruthy();
   });
@@ -80,6 +81,7 @@ describe('ClientesListComponent: tabla única con scroll propio', () => {
   it('mantiene las restricciones de permisos sin duplicar acciones', async () => {
     puedeOperar = false;
     const root = await render();
+    expect(root.querySelector('.table-scroll .actions [title="Ver detalle"]')).toBeTruthy();
     expect(root.querySelector('.table-scroll .actions [title="Editar"]')).toBeNull();
     expect(root.querySelector('.table-scroll .actions [title="Eliminar"]')).toBeNull();
     expect(root.querySelector('.table-scroll mat-slide-toggle')).toBeNull();

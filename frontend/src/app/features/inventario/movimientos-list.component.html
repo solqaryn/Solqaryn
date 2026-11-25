@@ -151,7 +151,7 @@
             <th>Valor unitario</th>
             <th>Origen</th>
             <th>Correlación</th>
-            <th>Responsable</th>
+            <th>Responsable</th><th>Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -201,9 +201,10 @@
                 <code [title]="m.correlationId || ''">{{ m.correlationId || '—' }}</code>
               </td>
               <td>{{ m.creadoPorNombreUsuario || '—' }}</td>
+              <td><button class="action-view" mat-icon-button type="button" title="Ver detalle" [attr.aria-label]="'Ver movimiento ' + m.id" [appConsultaRegistro]="{ titulo: 'Movimiento de inventario #' + m.id, campos: { 'Producto': m.productoNombre, 'SKU': m.productoSku, 'Variante ID': m.productoVarianteId, 'Color': m.productoColor, 'Almacén': etiquetaAlmacen(m.almacenId), 'Ubicación': etiquetaUbicacion(m.ubicacionAlmacenId), 'Tipo': m.tipo, 'Causa': etiquetaCausa(m.causa), 'Cantidad': m.cantidad, 'Stock anterior': m.stockAnterior, 'Stock nuevo': m.stockNuevo, 'Costo unitario (HNL)': m.costoUnitario, 'Precio unitario (HNL)': m.precioUnitario, 'Origen': etiquetaOrigen(m), 'Correlación': m.correlationId, 'Referencia': m.referenciaTipo + ' #' + m.referenciaId, 'Descripción': m.descripcion, 'Responsable': m.creadoPorNombreUsuario, 'Fecha': m.fecha } }"><mat-icon>visibility</mat-icon></button></td>
             </tr>
           } @empty {
-            <tr><td colspan="10" class="empty">No hay movimientos registrados con los filtros seleccionados.</td></tr>
+            <tr><td colspan="11" class="empty">No hay movimientos registrados con los filtros seleccionados.</td></tr>
           }
         </tbody>
       </table>

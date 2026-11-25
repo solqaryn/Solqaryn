@@ -1,3 +1,4 @@
+import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 
 import { HttpClient } from '@angular/common/http';
 import { Component, OnDestroy, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
@@ -31,7 +32,7 @@ interface EmpresaOpcion {
 @Component({
   selector: 'app-sucursales-list',
   standalone: true,
-  imports: [
+  imports: [ConsultaRegistroDirective,
     FormsModule,
     RouterLink,
     MatButtonModule,

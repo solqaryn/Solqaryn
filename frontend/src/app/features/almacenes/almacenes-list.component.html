@@ -118,6 +118,7 @@
               }
             </td>
             <td class="actions">
+              <button type="button" class="action-view" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver ' + a.nombre" [appConsultaRegistro]="{ titulo: 'Almacén: ' + a.nombre, campos: { 'Nombre': a.nombre, 'Código': a.codigo, 'Sucursal': a.sucursalCodigo + ' · ' + a.sucursalNombre, 'Tipo': a.tipo, 'Estado': a.activo ? 'Activo' : 'Inactivo', 'Creado por': a.creadoPorNombreUsuario, 'Actualizado por': a.actualizadoPorNombreUsuario, 'Fecha de creación': a.fechaCreacion, 'Fecha de actualización': a.fechaActualizacion } }"><mat-icon>visibility</mat-icon></button>
               @if (puedeEditar()) {
                 <a [routerLink]="['/almacenes', a.id, 'editar']" mat-icon-button [attr.aria-label]="'Editar ' + a.nombre" title="Editar">
                   <mat-icon>edit</mat-icon>
@@ -174,6 +175,7 @@
 
           @if (puedeEditar() || puedeEliminar()) {
             <div class="item-card-actions">
+              <button type="button" class="action-view" mat-button title="Ver detalle" [attr.aria-label]="'Ver ' + a.nombre" [appConsultaRegistro]="{ titulo: 'Almacén: ' + a.nombre, campos: { 'Nombre': a.nombre, 'Código': a.codigo, 'Sucursal': a.sucursalCodigo + ' · ' + a.sucursalNombre, 'Tipo': a.tipo, 'Estado': a.activo ? 'Activo' : 'Inactivo', 'Creado por': a.creadoPorNombreUsuario, 'Actualizado por': a.actualizadoPorNombreUsuario, 'Fecha de creación': a.fechaCreacion, 'Fecha de actualización': a.fechaActualizacion } }"><mat-icon>visibility</mat-icon> Ver</button>
               @if (puedeEditar()) {
                 <a [routerLink]="['/almacenes', a.id, 'editar']" mat-button><mat-icon>edit</mat-icon> Editar</a>
               }

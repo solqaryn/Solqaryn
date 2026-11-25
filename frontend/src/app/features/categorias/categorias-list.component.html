@@ -37,6 +37,7 @@
               }
             </td>
             <td class="actions">
+              <button type="button" class="action-view" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver ' + c.nombre" [appConsultaRegistro]="{ titulo: 'Categoría: ' + c.nombre, campos: { 'Nombre': c.nombre, 'Descripción': c.descripcion, 'Estado': c.activa ? 'Activa' : 'Inactiva', 'Productos asociados': c.totalProductos, 'Creado por': c.creadoPorNombreUsuario, 'Actualizado por': c.actualizadoPorNombreUsuario, 'Fecha de creación': c.fechaCreacion, 'Fecha de actualización': c.fechaActualizacion }, categoriaId: c.id }"><mat-icon>visibility</mat-icon></button>
               @if (puedeEditar()) {
                 <a [routerLink]="['/categorias', c.id, 'editar']" mat-icon-button title="Editar">
                   <mat-icon>edit</mat-icon>
@@ -70,6 +71,7 @@
           <div class="item-card-meta"><span>{{ c.totalProductos }} productos</span></div>
           @if (puedeEditar() || puedeEliminar()) {
             <div class="item-card-actions">
+              <button type="button" class="action-view" mat-button title="Ver detalle" [attr.aria-label]="'Ver ' + c.nombre" [appConsultaRegistro]="{ titulo: 'Categoría: ' + c.nombre, campos: { 'Nombre': c.nombre, 'Descripción': c.descripcion, 'Estado': c.activa ? 'Activa' : 'Inactiva', 'Productos asociados': c.totalProductos, 'Creado por': c.creadoPorNombreUsuario, 'Actualizado por': c.actualizadoPorNombreUsuario, 'Fecha de creación': c.fechaCreacion, 'Fecha de actualización': c.fechaActualizacion }, categoriaId: c.id }"><mat-icon>visibility</mat-icon> Ver</button>
               @if (puedeEditar()) {
                 <a [routerLink]="['/categorias', c.id, 'editar']" mat-button><mat-icon>edit</mat-icon> Editar</a>
               }

@@ -1,3 +1,4 @@
+import { ConsultaRegistroDirective } from '../../../shared/consulta-registro/consulta-registro';
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Component, Injectable, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
@@ -24,7 +25,7 @@ export class CuentasPorCobrarService {
 @Component({
   selector: 'app-cuentas-por-cobrar',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule, MatTableModule],
+  imports: [ConsultaRegistroDirective, CommonModule, MatButtonModule, MatCardModule, MatIconModule, MatProgressSpinnerModule, MatTableModule],
   template: `
     <section class="cxc-page" aria-labelledby="cxc-title">
       <header class="page-header">
@@ -99,6 +100,7 @@ export class CuentasPorCobrarService {
                   <td mat-cell *matCellDef="let row"><strong>{{ row.saldoPendiente | number:'1.2-2' }} {{ row.moneda }}</strong></td>
                 </ng-container>
 
+                <ng-container matColumnDef="acciones"><th mat-header-cell *matHeaderCellDef>Acciones</th><td mat-cell *matCellDef="let row"><button type="button" class="action-view" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver cuenta por cobrar ' + row.numeroFactura" [appConsultaRegistro]="{ titulo: 'Cuenta por cobrar: ' + row.numeroFactura, campos: { 'Factura': row.numeroFactura, 'Cliente': row.clienteNombre, 'Emisión': row.fechaEmision, 'Vencimiento': row.fechaVencimiento, 'Estado': row.estado, 'Moneda': row.moneda, 'Total': row.total, 'Pagado': row.totalPagado, 'Saldo pendiente': row.saldoPendiente } }"><mat-icon>visibility</mat-icon></button></td></ng-container>
                 <tr mat-header-row *matHeaderRowDef="columns"></tr>
                 <tr mat-row *matRowDef="let row; columns: columns"></tr>
               </table>
@@ -119,7 +121,7 @@ export class CuentasPorCobrarComponent implements OnInit {
   readonly loading = signal(false);
   readonly error = signal('');
   readonly items = signal<Factura[]>([]);
-  readonly columns = ['numero', 'cliente', 'vencimiento', 'estado', 'total', 'pagado', 'pendiente'];
+  readonly columns = ['numero', 'cliente', 'vencimiento', 'estado', 'total', 'pagado', 'pendiente', 'acciones'];
 
   ngOnInit(): void {
     this.cargar();

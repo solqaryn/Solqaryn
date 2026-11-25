@@ -95,6 +95,7 @@
       <ng-container matColumnDef="acciones">
         <th mat-header-cell *matHeaderCellDef>Acciones</th>
         <td mat-cell *matCellDef="let item" class="row-actions">
+          <button type="button" class="action-view" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver costo de envío ' + item.nombre" [appConsultaRegistro]="{ titulo: 'Costo de envío: ' + item.nombre, campos: { 'Nombre': item.nombre, 'Descripción': item.descripcion, 'Cobertura': cobertura(item), 'Monto (HNL)': item.monto, 'Desde': item.vigenteDesde, 'Hasta': item.vigenteHasta, 'Prioridad': item.prioridad, 'Predeterminado': item.esPredeterminado, 'Activo': item.activo, 'Vigente': item.estaVigente, 'Creación': item.fechaCreacion, 'Actualización': item.fechaActualizacion } }"><mat-icon>visibility</mat-icon></button>
           <button mat-icon-button type="button" (click)="editar(item)" aria-label="Editar costo de envío"><mat-icon>edit</mat-icon></button>
           <button mat-icon-button type="button" (click)="cambiarEstado(item)" [attr.aria-label]="item.activo ? 'Desactivar costo de envío' : 'Activar costo de envío'"><mat-icon>{{ item.activo ? 'toggle_off' : 'toggle_on' }}</mat-icon></button>
           <button mat-icon-button color="warn" type="button" (click)="eliminar(item)" aria-label="Eliminar costo de envío"><mat-icon>delete</mat-icon></button>

@@ -134,6 +134,7 @@
               }
             </td>
             <td class="actions">
+              <button type="button" class="action-view" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver ' + u.nombre" [appConsultaRegistro]="{ titulo: 'Ubicación: ' + u.nombre, campos: { 'Nombre': u.nombre, 'Código': u.codigo, 'Almacén': u.almacenCodigo + ' · ' + u.almacenNombre, 'Ubicación padre': u.ubicacionPadreNombre || 'Raíz', 'Tipo': u.tipo, 'Estado': u.activa ? 'Activa' : 'Inactiva', 'Creado por': u.creadoPorNombreUsuario, 'Actualizado por': u.actualizadoPorNombreUsuario, 'Fecha de creación': u.fechaCreacion, 'Fecha de actualización': u.fechaActualizacion } }"><mat-icon>visibility</mat-icon></button>
               @if (puedeEditar()) {
                 <a [routerLink]="['/ubicaciones-almacen', u.id, 'editar']" mat-icon-button [attr.aria-label]="'Editar ' + u.nombre" title="Editar"><mat-icon>edit</mat-icon></a>
               }
@@ -171,6 +172,7 @@
 
           @if (puedeEditar() || puedeEliminar()) {
             <div class="item-card-actions">
+              <button type="button" class="action-view" mat-button title="Ver detalle" [attr.aria-label]="'Ver ' + u.nombre" [appConsultaRegistro]="{ titulo: 'Ubicación: ' + u.nombre, campos: { 'Nombre': u.nombre, 'Código': u.codigo, 'Almacén': u.almacenCodigo + ' · ' + u.almacenNombre, 'Ubicación padre': u.ubicacionPadreNombre || 'Raíz', 'Tipo': u.tipo, 'Estado': u.activa ? 'Activa' : 'Inactiva', 'Creado por': u.creadoPorNombreUsuario, 'Actualizado por': u.actualizadoPorNombreUsuario, 'Fecha de creación': u.fechaCreacion, 'Fecha de actualización': u.fechaActualizacion } }"><mat-icon>visibility</mat-icon> Ver</button>
               @if (puedeEditar()) { <a [routerLink]="['/ubicaciones-almacen', u.id, 'editar']" mat-button><mat-icon>edit</mat-icon> Editar</a> }
               @if (puedeEliminar()) { <button mat-button type="button" [disabled]="estaOperando(u.id)" (click)="eliminar(u)"><mat-icon>delete</mat-icon> Eliminar</button> }
             </div>

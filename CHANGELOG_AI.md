@@ -1,3 +1,9 @@
+## 2026-11-25 — QA: consulta individual y auditoría de acciones administrativas
+
+- Consulta individual reutilizable de solo lectura con campos explícitos, foco de diálogo, cierre al cambiar contexto de empresa/usuario/rol y galería de categorías mediante API existente. Incorporada en catálogos maestros, sucursales, almacenes, ubicaciones, clientes, proveedores, roles, métodos de pago, descuentos, impuestos y registros operativos seleccionados de inventario, finanzas, caja y pagos. Se preservan los permisos de mutación, la protección del último administrador y la eliminación lógica.
+- Catálogo de permisos separado de la asignación a roles: consulta y búsqueda aunque no existan roles no administradores; errores explícitos, bloqueo de cambios durante carga/guardado, rechazo de respuestas obsoletas al cambiar rol. No se habilitan permisos nuevos ni se cambian endpoints.
+- Regresión de consulta, catálogo sin roles editables y tabla única de clientes incluida en QA CI. Auditoría por código fuente; certificación visual y operativa pendiente de CI y validación autenticada. Sin cambios de backend, base de datos, Render, configuración general, DEV ni MAIN. Rollback: revertir este changeset en qa.
+
 ## 2026-11-25 — QA: corregir NETSDK1004 en ensayo de migración
 
 - Restaurar NuGet y compilar API Release antes de generar SQL EF10. Run 45708742692: respaldo y restore PASS; escritura QA omitida. Se conserva el control de SQL y certificación física; nuevo intento limitado al SHA padre.

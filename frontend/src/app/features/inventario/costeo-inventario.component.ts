@@ -1,3 +1,4 @@
+import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -22,7 +23,7 @@ import {
 @Component({
   selector: 'app-costeo-inventario',
   standalone: true,
-  imports: [
+  imports: [ConsultaRegistroDirective,
     CommonModule,
     FormsModule,
     MatButtonModule,
@@ -164,7 +165,7 @@ import {
           @if (!historyLoading && !historyError && historial.length) {
             <div class="table-wrap">
               <table>
-                <thead><tr><th>Método</th><th>Desde</th><th>Hasta</th><th>Estado</th><th>Motivo</th></tr></thead>
+                <thead><tr><th>Método</th><th>Desde</th><th>Hasta</th><th>Estado</th><th>Motivo</th><th>Acciones</th></tr></thead>
                 <tbody>
                   @for (politica of historial; track politica) {
                     <tr>
@@ -172,7 +173,7 @@ import {
                       <td>{{ politica.vigenteDesdeUtc | date:'medium' }}</td>
                       <td>{{ politica.vigenteHastaUtc ? (politica.vigenteHastaUtc | date:'medium') : '—' }}</td>
                       <td><span class="badge" [class.active]="politica.estaVigente">{{ politica.estaVigente ? 'Vigente' : 'Histórica' }}</span></td>
-                      <td>{{ politica.motivo }}</td>
+                      <td>{{ politica.motivo }}</td><td><button class="action-view" mat-icon-button type="button" title="Ver detalle" [attr.aria-label]="'Ver política de costeo ' + politica.id" [appConsultaRegistro]="{ titulo: 'Política de costeo: ' + politica.metodoNombre, campos: { 'Método': politica.metodoNombre, 'Vigente desde': politica.vigenteDesdeUtc, 'Vigente hasta': politica.vigenteHastaUtc, 'Estado': politica.estaVigente ? 'Vigente' : 'Histórica', 'Motivo': politica.motivo, 'Fecha de creación': politica.fechaCreacion, 'Fecha de actualización': politica.fechaActualizacion } }"><mat-icon>visibility</mat-icon></button></td>
                     </tr>
                   }
                 </tbody>

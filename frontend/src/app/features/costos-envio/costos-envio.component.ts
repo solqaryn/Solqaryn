@@ -1,3 +1,4 @@
+import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -15,7 +16,7 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
 @Component({
   selector: 'app-costos-envio',
   standalone: true,
-  imports: [
+  imports: [ConsultaRegistroDirective,
     CommonModule, ReactiveFormsModule, MatButtonModule, MatCheckboxModule,
     MatFormFieldModule, MatIconModule, MatInputModule, MatProgressSpinnerModule, MatTableModule
   ],

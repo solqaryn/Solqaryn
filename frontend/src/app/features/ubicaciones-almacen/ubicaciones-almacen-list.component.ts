@@ -1,3 +1,4 @@
+import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 
 import { Component, OnDestroy, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -25,7 +26,7 @@ type PadreFiltro = 'todos' | 'raiz' | number;
 @Component({
   selector: 'app-ubicaciones-almacen-list',
   standalone: true,
-  imports: [
+  imports: [ConsultaRegistroDirective,
     FormsModule,
     RouterLink,
     MatButtonModule,

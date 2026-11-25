@@ -1,3 +1,4 @@
+import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 
 import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -18,7 +19,7 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
 @Component({
   selector: 'app-catalogo-producto-list',
   standalone: true,
-  imports: [
+  imports: [ConsultaRegistroDirective,
     ReactiveFormsModule,
     MatButtonModule,
     MatFormFieldModule,

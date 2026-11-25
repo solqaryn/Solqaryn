@@ -44,6 +44,7 @@
               }
             </td>
             <td class="actions">
+              <button type="button" class="action-view" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver ' + r.nombre" [appConsultaRegistro]="{ titulo: 'Rol: ' + r.nombre, campos: { 'Nombre': r.nombre, 'Descripción': r.descripcion, 'Rol del sistema': r.esSistema, 'Administrador': r.esAdministrador, 'Estado': r.activo ? 'Activo' : 'Inactivo', 'Usuarios asignados': r.cantidadUsuarios, 'Permisos registrados': r.cantidadPermisos, 'Fecha de creación': r.fechaCreacion, 'Fecha de actualización': r.fechaActualizacion } }"><mat-icon>visibility</mat-icon></button>
               @if (puedeEditar()) {
                 <a [routerLink]="['/roles', r.id, 'editar']" mat-icon-button title="Editar">
                   <mat-icon>edit</mat-icon>
@@ -54,7 +55,7 @@
                   <mat-icon>content_copy</mat-icon>
                 </button>
               }
-              @if (puedeEliminar() && !r.esSistema) {
+              @if (puedeEliminar() && !r.esSistema && r.cantidadUsuarios === 0) {
                 <button mat-icon-button title="Eliminar" (click)="eliminar(r)">
                   <mat-icon>delete_outline</mat-icon>
                 </button>
@@ -88,13 +89,14 @@
             @if (r.esAdministrador) { <span class="badge badge-admin">Admin</span> }
           </div>
           <div class="rol-card-actions">
+              <button type="button" class="action-view" mat-button title="Ver detalle" [attr.aria-label]="'Ver ' + r.nombre" [appConsultaRegistro]="{ titulo: 'Rol: ' + r.nombre, campos: { 'Nombre': r.nombre, 'Descripción': r.descripcion, 'Rol del sistema': r.esSistema, 'Administrador': r.esAdministrador, 'Estado': r.activo ? 'Activo' : 'Inactivo', 'Usuarios asignados': r.cantidadUsuarios, 'Permisos registrados': r.cantidadPermisos, 'Fecha de creación': r.fechaCreacion, 'Fecha de actualización': r.fechaActualizacion } }"><mat-icon>visibility</mat-icon> Ver</button>
             @if (puedeEditar()) {
               <a [routerLink]="['/roles', r.id, 'editar']" mat-button><mat-icon>edit</mat-icon> Editar</a>
             }
             @if (puedeDuplicar()) {
               <button mat-button (click)="duplicar(r)"><mat-icon>content_copy</mat-icon> Duplicar</button>
             }
-            @if (puedeEliminar() && !r.esSistema) {
+            @if (puedeEliminar() && !r.esSistema && r.cantidadUsuarios === 0) {
               <button mat-button (click)="eliminar(r)"><mat-icon>delete_outline</mat-icon> Eliminar</button>
             }
           </div>

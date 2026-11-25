@@ -1,3 +1,4 @@
+import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -29,7 +30,7 @@ interface OpcionFiltro {
 @Component({
   selector: 'app-movimientos-list',
   standalone: true,
-  imports: [
+  imports: [ConsultaRegistroDirective,
     CommonModule,
     FormsModule,
     MatButtonModule,

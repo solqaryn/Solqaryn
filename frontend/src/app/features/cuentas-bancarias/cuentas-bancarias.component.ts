@@ -1,3 +1,5 @@
+import { MatIconModule } from '@angular/material/icon';
+import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
 import { Component, OnInit, effect, inject, signal, ChangeDetectionStrategy } from '@angular/core';
@@ -55,7 +57,7 @@ interface RegistrarMatchesDto {
 @Component({
   selector: 'app-cuentas-bancarias',
   standalone: true,
-  imports: [
+  imports: [ConsultaRegistroDirective, MatIconModule,
     FormsModule,
     ReactiveFormsModule,
     MatFormFieldModule,

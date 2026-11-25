@@ -1,3 +1,5 @@
+import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
+import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
 import { Component, OnInit, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 
 import { FormsModule } from '@angular/forms';
@@ -11,13 +13,13 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { PermisoService } from '../../services/permiso.service';
 import { RolService } from '../../services/rol.service';
-import { PermisoMatrizItem } from '../../core/models/permiso.model';
+import { PermisoMatrizItem, PermisoCatalogo } from '../../core/models/permiso.model';
 import { Rol } from '../../core/models/rol.model';
 
 @Component({
   selector: 'app-permisos-matrix',
   standalone: true,
-  imports: [
+  imports: [ConsultaRegistroDirective,
     FormsModule,
     MatCheckboxModule,
     MatButtonModule,
@@ -33,6 +35,17 @@ import { Rol } from '../../core/models/rol.model';
 })
 export class PermisosMatrixComponent implements OnInit {
   readonly roles = signal<Rol[]>([]);
+  readonly catalogo = signal<PermisoCatalogo[]>([]);
+  readonly loadingCatalogo = signal(false);
+  readonly errorCatalogo = signal('');
+  readonly errorRoles = signal('');
+  readonly errorMatriz = signal('');
+  readonly filtroCatalogo = signal('');
+  readonly catalogoFiltrado = computed(() => {
+    const filtro = this.filtroCatalogo().trim().toLocaleLowerCase('es');
+    return this.catalogo().filter(item => !filtro || [item.codigo, item.nombre, item.modulo, item.accion, item.descripcion ?? ''].some(valor => valor.toLocaleLowerCase('es').includes(filtro)));
+  });
+  readonly permiteGuardar = computed(() => this.rolSeleccionado()?.activo === true && !this.loadingMatriz() && !this.errorMatriz() && this.items().length > 0 && !this.saving());
   readonly rolSeleccionadoId = signal<number | null>(null);
   readonly items = signal<PermisoMatrizItem[]>([]);
   readonly loadingRoles = signal(true);
@@ -77,37 +90,64 @@ export class PermisosMatrixComponent implements OnInit {
   constructor(
     private permisoService: PermisoService,
     private rolService: RolService,
-    private snackBar: MatSnackBar
+    private snackBar: MatSnackBar,
+    private permisosRuntime: PermisosRuntimeService
   ) {}
 
   ngOnInit(): void {
+    this.cargarCatalogo();
     this.loadingRoles.set(true);
+    this.errorRoles.set('');
     this.rolService.getAll().subscribe({
       next: (res) => {
-        const seleccionables = res.data.filter((r) => !r.esAdministrador);
+        if (!res.success) { this.errorRoles.set(res.message || 'No fue posible cargar los roles.'); this.loadingRoles.set(false); return; }
+        const seleccionables = (res.data ?? []).filter((r) => !r.esAdministrador);
         this.roles.set(seleccionables);
         this.loadingRoles.set(false);
         if (seleccionables.length > 0) {
           this.seleccionarRol(seleccionables[0].id);
         }
       },
-      error: () => this.loadingRoles.set(false)
+      error: () => { this.errorRoles.set('No fue posible cargar los roles.'); this.loadingRoles.set(false); }
+    });
+  }
+
+  cargarCatalogo(): void {
+    this.catalogo.set([]);
+    this.errorCatalogo.set('');
+    if (!this.permisosRuntime.puede('Permisos', 'Ver')) {
+      this.errorCatalogo.set('Tu rol no tiene autorización para consultar el catálogo de permisos.');
+      return;
+    }
+    this.loadingCatalogo.set(true);
+    this.permisoService.getCatalogo().subscribe({
+      next: res => {
+        if (res.success) this.catalogo.set(res.data ?? []);
+        else this.errorCatalogo.set(res.message || 'No fue posible consultar el catálogo.');
+        this.loadingCatalogo.set(false);
+      },
+      error: () => { this.errorCatalogo.set('No fue posible consultar el catálogo.'); this.loadingCatalogo.set(false); }
     });
   }
 
   seleccionarRol(rolId: number): void {
+    if (this.saving() || !this.roles().some(r => r.id === rolId)) return;
     this.rolSeleccionadoId.set(rolId);
     this.cargarMatriz(rolId);
   }
 
   cargarMatriz(rolId: number): void {
+    this.items.set([]);
+    this.errorMatriz.set('');
     this.loadingMatriz.set(true);
     this.permisoService.getMatriz(rolId).subscribe({
       next: (res) => {
-        this.items.set(res.data ?? []);
+        if (this.rolSeleccionadoId() !== rolId) return;
+        if (res.success) this.items.set(res.data ?? []);
+        else this.errorMatriz.set(res.message || 'No fue posible cargar los permisos del rol.');
         this.loadingMatriz.set(false);
       },
-      error: () => this.loadingMatriz.set(false)
+      error: () => { if (this.rolSeleccionadoId() === rolId) { this.errorMatriz.set('No fue posible cargar los permisos del rol.'); this.loadingMatriz.set(false); } }
     });
   }
 
@@ -132,16 +172,18 @@ export class PermisosMatrixComponent implements OnInit {
   }
 
   toggle(item: PermisoMatrizItem): void {
+    if (!this.permiteGuardar()) return;
     this.items.set(this.items().map((i) => (i === item ? { ...i, permitido: !i.permitido } : i)));
   }
 
   guardar(): void {
     const rolId = this.rolSeleccionadoId();
-    if (!rolId) return;
+    if (!rolId || !this.permiteGuardar()) return;
 
     this.saving.set(true);
     this.permisoService.updateMatriz(rolId, this.items()).subscribe({
       next: (res) => {
+        if (!res.success) { this.saving.set(false); this.snackBar.open(res.message || 'No se pudo actualizar la matriz.', 'Cerrar', { duration: 5000 }); return; }
         this.items.set(res.data ?? []);
         this.saving.set(false);
         this.snackBar.open(

@@ -1,3 +1,4 @@
+import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 
 import { Component, computed, inject, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -20,7 +21,7 @@ interface CuentaRow extends CuentaContable {
 @Component({
   selector: 'app-plan-cuentas',
   standalone: true,
-  imports: [
+  imports: [ConsultaRegistroDirective,
     ReactiveFormsModule,
     MatButtonModule,
     MatCheckboxModule,
@@ -128,7 +129,7 @@ interface CuentaRow extends CuentaContable {
                     <td>{{ tipoLabel(row.tipo) }}</td>
                     <td><span class="status" [class.inactive]="!row.activa">{{ row.activa ? 'Activa' : 'Inactiva' }}</span></td>
                     <td>{{ row.aceptaMovimientos ? 'Sí' : 'No' }}</td>
-                    <td>@if (puedeEditar()) { <button mat-icon-button type="button" (click)="editar(row)" [attr.aria-label]="'Editar ' + row.nombre" title="Editar"><mat-icon>edit</mat-icon></button> }</td>
+                    <td><button class="action-view" mat-icon-button type="button" title="Ver detalle" [attr.aria-label]="'Ver cuenta ' + row.nombre" [appConsultaRegistro]="{ titulo: 'Cuenta: ' + row.codigo + ' · ' + row.nombre, campos: { 'Código': row.codigo, 'Nombre': row.nombre, 'Descripción': row.descripcion, 'Tipo': tipoLabel(row.tipo), 'Cuenta padre ID': row.cuentaPadreId, 'Cuenta raíz': row.esRaiz, 'Acepta movimientos': row.aceptaMovimientos, 'Estado': row.activa ? 'Activa' : 'Inactiva' } }"><mat-icon>visibility</mat-icon></button>@if (puedeEditar()) { <button mat-icon-button type="button" (click)="editar(row)" [attr.aria-label]="'Editar ' + row.nombre" title="Editar"><mat-icon>edit</mat-icon></button> }</td>
                   </tr>
                 }
               </tbody>

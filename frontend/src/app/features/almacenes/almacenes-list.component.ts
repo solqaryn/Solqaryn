@@ -1,3 +1,4 @@
+import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 
 import { Component, OnDestroy, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -24,7 +25,7 @@ type EstadoAlmacenFiltro = 'todos' | 'activos' | 'inactivos';
 @Component({
   selector: 'app-almacenes-list',
   standalone: true,
-  imports: [
+  imports: [ConsultaRegistroDirective,
     FormsModule,
     RouterLink,
     MatButtonModule,
