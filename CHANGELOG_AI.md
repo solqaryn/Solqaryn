@@ -1,3 +1,8 @@
+## 2026-11-25 — DEV06 C01-04.M03.06: laboratorio R11 P01/P02 exclusivamente CI (V44-R12/R11/R5)
+
+- TASK_ID=6af16bbad26881918c283abe06e1f32a; RUN_ID=6c39fe21-ac3c-832f-a1e9-a797b2eba1f1; base b8d21c119a9de7f904ca49e15a828a6a63ad2e4a; foco fila271 V17 2000000271; proveedor .04 fila269 LISTO histórico intacto. Adopta parche integrado DEV04 ad667661-b2bc-832d-905d-c865812e3fad (DEV01 c125dff7, DEV03 aba14e52, DEV06 f1ca3d1b) y ejecutor DEV05 fd1e2579-c6e4-8325-b998-ad416c0c3f5d blob 35a7b2532b705073bf31a28a1de32f2e913d626a; DEV02 preservado candidato A5 sujeto a procedencia.
+- A0: sólo .github/ci/c0104-r11-ownership.patch, .github/ci/c0104-r11-lab.sh, job adicional V23 y CHANGELOG_AI. Patch de seis rutas no aplicado al árbol runtime. Runner GitHub-hosted verifica parent/paths, servicio MySQL 8.4 efímero GUID/loopback, bootstrap prepatch, migración Oracle EF aditiva, FK tenant/sucursal, negativos A/B/legacy, TRX y rollback/reapply. Sin migraciones versionadas en runtime, grants, datos reales, API, infraestructura ni cambio de entorno. Dockerfile sólo copia backend. CI nueva pendiente; no prueba JWT/RBAC real ni fuente auténtica, no A5/LISTO. Rollback git revert normal.
+
 ## 2026-11-25 — DEV05 C01-04.M03.06: ejecutar laboratorio HTTP/JWT/MySQL ante cambios causales del auditor (V44-R12/R11/R5)
 
 - TASK_ID=6adc2e55f47c81919f6374e561687076; RUN_ID=59dee591-a524-832e-a2d8-4c7af870a9c1; base a29f11470ebbbc24b87be301a67da4f5c7f78cca; fila 271, V17 2000000271. Adopta relevo DEV04 run ccb9e418-65e4-8322-a04a-ad31d9ea9e3a. El cambio de identidad de build aa00c35d no disparaba el laboratorio V19 porque faltaba el archivo Application en push.paths.

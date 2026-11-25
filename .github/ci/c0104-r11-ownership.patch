@@ -1,0 +1,408 @@
+diff --git a/backend/src/Domain/Entities/V5CaseFileOwnership.cs b/backend/src/Domain/Entities/V5CaseFileOwnership.cs
+new file mode 100644
+--- /dev/null
++++ b/backend/src/Domain/Entities/V5CaseFileOwnership.cs
+@@ -0,0 +1,54 @@
++namespace Solqaryn.Domain.Entities;
++
++// P01: no resource ownership is inferred by this record. Only a future
++// authorized writer may create it after checking the underlying resource.
++public sealed class V5CaseFileOwnership
++{
++    private V5CaseFileOwnership() { }
++    public int EmpresaId { get; private set; }
++    public int Id { get; private set; }
++    public int? SucursalId { get; private set; }
++    public string RecursoTipo { get; private set; } = string.Empty;
++    public string RecursoId { get; private set; } = string.Empty;
++    public bool Archivado { get; private set; }
++
++    public V5CaseFileOwnership(int empresaId, int id, int? sucursalId,
++        string recursoTipo, string recursoId)
++    {
++        if (empresaId <= 0 || id <= 0 || sucursalId is <= 0)
++            throw new ArgumentOutOfRangeException(nameof(empresaId));
++        if (string.IsNullOrWhiteSpace(recursoTipo) || recursoTipo.Length > 64 ||
++            string.IsNullOrWhiteSpace(recursoId) || recursoId.Length > 128)
++            throw new ArgumentException("CASEFILE_RESOURCE_INVALID");
++        EmpresaId = empresaId; Id = id; SucursalId = sucursalId;
++        RecursoTipo = recursoTipo; RecursoId = recursoId;
++    }
++}
++
++// P02: append-only revision shape. A monotonic writer/transaction is not
++// implemented by this type; no business effect is exposed by this package.
++public sealed class V5CaseFileVersion
++{
++    private V5CaseFileVersion() { }
++    public int EmpresaId { get; private set; }
++    public int ExpedienteId { get; private set; }
++    public long Version { get; private set; }
++    public string ContentHash { get; private set; } = string.Empty;
++    public int ActorId { get; private set; }
++    public DateTime FechaUtc { get; private set; }
++    public string Motivo { get; private set; } = string.Empty;
++
++    public V5CaseFileVersion(int empresaId, int expedienteId, long version,
++        string contentHash, int actorId, DateTime fechaUtc, string motivo)
++    {
++        if (empresaId <= 0 || expedienteId <= 0 || version < 0 || actorId <= 0)
++            throw new ArgumentOutOfRangeException(nameof(empresaId));
++        if (contentHash is not { Length: 64 } || !contentHash.All(Uri.IsHexDigit) ||
++            fechaUtc.Kind != DateTimeKind.Utc || string.IsNullOrWhiteSpace(motivo) ||
++            motivo.Length > 512)
++            throw new ArgumentException("CASEFILE_REVISION_INVALID");
++        EmpresaId = empresaId; ExpedienteId = expedienteId; Version = version;
++        ContentHash = contentHash.ToLowerInvariant(); ActorId = actorId;
++        FechaUtc = fechaUtc; Motivo = motivo;
++    }
++}
+diff --git a/backend/src/Infrastructure/Persistence/Configurations/V5CaseFileOwnershipConfiguration.cs b/backend/src/Infrastructure/Persistence/Configurations/V5CaseFileOwnershipConfiguration.cs
+new file mode 100644
+--- /dev/null
++++ b/backend/src/Infrastructure/Persistence/Configurations/V5CaseFileOwnershipConfiguration.cs
+@@ -0,0 +1,50 @@
++using Microsoft.EntityFrameworkCore;
++using Microsoft.EntityFrameworkCore.Metadata.Builders;
++using Solqaryn.Domain.Entities;
++
++namespace Solqaryn.Infrastructure.Persistence.Configurations;
++
++public sealed class V5CaseFileOwnershipConfiguration : IEntityTypeConfiguration<V5CaseFileOwnership>
++{
++    public void Configure(EntityTypeBuilder<V5CaseFileOwnership> b)
++    {
++        b.ToTable("V5CaseFileOwnerships", t =>
++        {
++            t.HasCheckConstraint("CK_V5CaseFile_Owner", "EmpresaId > 0 AND Id > 0 AND (SucursalId IS NULL OR SucursalId > 0)");
++            t.HasCheckConstraint("CK_V5CaseFile_Resource", "LENGTH(TRIM(RecursoTipo)) > 0 AND LENGTH(TRIM(RecursoId)) > 0");
++        });
++        b.HasKey(x => new { x.EmpresaId, x.Id });
++        b.Property(x => x.Id).ValueGeneratedNever();
++        b.Property(x => x.RecursoTipo).HasMaxLength(64).IsRequired();
++        b.Property(x => x.RecursoId).HasMaxLength(128).IsRequired();
++        b.HasIndex(x => new { x.EmpresaId, x.RecursoTipo, x.RecursoId });
++        b.HasIndex(x => new { x.EmpresaId, x.SucursalId });
++        b.HasOne<Empresa>().WithMany().HasForeignKey(x => x.EmpresaId).OnDelete(DeleteBehavior.Restrict);
++        b.HasOne<Sucursal>().WithMany().HasForeignKey(x => x.SucursalId).OnDelete(DeleteBehavior.Restrict);
++        // Composite tenant/sucursal FK is appended in Oracle migration, as in
++        // 20261013231000_CommercialTenantRemainingScopedFks. Do not turn nullable
++        // legacy Sucursal.EmpresaId into an EF alternate key.
++    }
++}
++
++public sealed class V5CaseFileVersionConfiguration : IEntityTypeConfiguration<V5CaseFileVersion>
++{
++    public void Configure(EntityTypeBuilder<V5CaseFileVersion> b)
++    {
++        b.ToTable("V5CaseFileVersions", t =>
++        {
++            t.HasCheckConstraint("CK_V5CaseFileVersion_Ids", "EmpresaId > 0 AND ExpedienteId > 0 AND Version >= 0 AND ActorId > 0");
++            t.HasCheckConstraint("CK_V5CaseFileVersion_Hash", "LENGTH(ContentHash) = 64 AND LENGTH(TRIM(Motivo)) > 0");
++        });
++        b.HasKey(x => new { x.EmpresaId, x.ExpedienteId, x.Version });
++        b.Property(x => x.Version).ValueGeneratedNever();
++        b.Property(x => x.ContentHash).HasMaxLength(64).IsRequired();
++        b.Property(x => x.FechaUtc).HasPrecision(6);
++        b.Property(x => x.Motivo).HasMaxLength(512).IsRequired();
++        b.HasOne<V5CaseFileOwnership>().WithMany()
++            .HasForeignKey(x => new { x.EmpresaId, x.ExpedienteId })
++            .OnDelete(DeleteBehavior.Restrict);
++        b.HasOne<Usuario>().WithMany().HasForeignKey(x => x.ActorId)
++            .OnDelete(DeleteBehavior.Restrict);
++    }
++}
+diff --git a/backend/src/Infrastructure/AutomationV5/V5CaseFilePersistentOwnershipReader.cs b/backend/src/Infrastructure/AutomationV5/V5CaseFilePersistentOwnershipReader.cs
+new file mode 100644
+--- /dev/null
++++ b/backend/src/Infrastructure/AutomationV5/V5CaseFilePersistentOwnershipReader.cs
+@@ -0,0 +1,41 @@
++using Microsoft.EntityFrameworkCore;
++using Solqaryn.Domain.Entities;
++using Solqaryn.Infrastructure.Persistence;
++
++namespace Solqaryn.Infrastructure.AutomationV5;
++
++// Internal ownership candidate only. The caller still must authenticate,
++// resolve current grant for the exact operation AND resource, and revalidate
++// after I/O. This is not IV5CaseFileTenantScopedSnapshotSource or an API grant.
++internal sealed class V5CaseFilePersistentOwnershipReader(AppDbContext db)
++{
++    internal sealed record Candidate(int EmpresaId, int Id, int? SucursalId,
++        string RecursoTipo, string RecursoId, long Version, bool Archivado);
++
++    internal async Task<Candidate?> ReadAsync(int tenantId, int caseId, int? trustedBranchId,
++        CancellationToken cancellationToken)
++    {
++        cancellationToken.ThrowIfCancellationRequested();
++        if (tenantId <= 0 || caseId <= 0 || trustedBranchId is <= 0 ||
++            db.AuthorizedCommercialEmpresaId != tenantId)
++            return null;
++
++        var row = await (
++            from p in db.Set<V5CaseFileOwnership>().AsNoTracking()
++            join v in db.Set<V5CaseFileVersion>().AsNoTracking()
++                on new { p.EmpresaId, ExpedienteId = p.Id }
++                equals new { v.EmpresaId, v.ExpedienteId }
++            where p.EmpresaId == tenantId && p.Id == caseId
++                && db.Set<Empresa>().Any(e => e.Id == tenantId && e.Activa)
++                && (p.SucursalId == null ||
++                    (p.SucursalId == trustedBranchId && db.Set<Sucursal>().Any(s =>
++                        s.Id == p.SucursalId && s.EmpresaId == tenantId && s.Activa && !s.Eliminado)))
++            orderby v.Version descending
++            select new Candidate(p.EmpresaId, p.Id, p.SucursalId, p.RecursoTipo,
++                p.RecursoId, v.Version, p.Archivado)
++        ).FirstOrDefaultAsync(cancellationToken);
++
++        cancellationToken.ThrowIfCancellationRequested();
++        return db.AuthorizedCommercialEmpresaId == tenantId ? row : null;
++    }
++}
+diff --git a/backend/tests/Solqaryn.Tests/C0104M0304OwnershipPhysicalAssertions.cs b/backend/tests/Solqaryn.Tests/C0104M0304OwnershipPhysicalAssertions.cs
+new file mode 100644
+--- /dev/null
++++ b/backend/tests/Solqaryn.Tests/C0104M0304OwnershipPhysicalAssertions.cs
+@@ -0,0 +1,91 @@
++using Microsoft.EntityFrameworkCore;
++using MySql.Data.MySqlClient;
++using Solqaryn.Domain.Entities;
++using Solqaryn.Infrastructure.Persistence;
++using Xunit;
++
++namespace Solqaryn.Tests;
++
++// Adoption prerequisite: the proposed P01/P02 types, model configuration and
++// Oracle migration must exist. This helper is not a runtime authorization source.
++internal static class C0104M0304OwnershipPhysicalAssertions
++{
++    internal static async Task VerifyAsync(AppDbContext db, int a, int b,
++        int branchA, int branchB, int legacyBranch, int actor)
++    {
++        var cs = new MySqlConnectionStringBuilder(db.Database.GetDbConnection().ConnectionString);
++        if (Environment.GetEnvironmentVariable("GITHUB_ACTIONS") != "true" ||
++            (cs.Server != "127.0.0.1" && cs.Server != "localhost") ||
++            !cs.Database.StartsWith("c0104_casefile_", StringComparison.Ordinal) ||
++            cs.Database.Length != "c0104_casefile_".Length + 32 ||
++            !Guid.TryParseExact(cs.Database["c0104_casefile_".Length..], "N", out _))
++            throw new InvalidOperationException("Disposable GitHub MySQL only.");
++
++        Assert.NotEqual(a, b);
++        Assert.Equal(a, await db.Set<Sucursal>().IgnoreQueryFilters()
++            .Where(x => x.Id == branchA).Select(x => x.EmpresaId).SingleAsync());
++        Assert.Equal(b, await db.Set<Sucursal>().IgnoreQueryFilters()
++            .Where(x => x.Id == branchB).Select(x => x.EmpresaId).SingleAsync());
++        Assert.Null(await db.Set<Sucursal>().IgnoreQueryFilters()
++            .Where(x => x.Id == legacyBranch).Select(x => x.EmpresaId).SingleAsync());
++
++        var hash = new string('a', 64);
++        var at = new DateTime(2026, 11, 25, 0, 0, 0, DateTimeKind.Utc);
++        async Task P01(int tenant, int caseId, int? branch)
++        {
++            await db.Database.ExecuteSqlInterpolatedAsync($"""
++                INSERT INTO V5CaseFileOwnerships
++                (EmpresaId, Id, SucursalId, RecursoTipo, RecursoId, Archivado)
++                VALUES ({tenant}, {caseId}, {branch}, {"FIXTURE"}, {"ONLY-CI"}, {false})
++                """);
++        }
++        async Task P02(int tenant, int caseId, long version)
++        {
++            await db.Database.ExecuteSqlInterpolatedAsync($"""
++                INSERT INTO V5CaseFileVersions
++                (EmpresaId, ExpedienteId, Version, ContentHash, ActorId, FechaUtc, Motivo)
++                VALUES ({tenant}, {caseId}, {version}, {hash}, {actor}, {at}, {"CI fixture"})
++                """);
++        }
++        async Task Reject(int expectedNumber, Func<Task> action)
++        {
++            var failure = await Assert.ThrowsAsync<MySqlException>(action);
++            Assert.Equal(expectedNumber, failure.Number);
++        }
++        async Task<int> Owners(int tenant) =>
++            await db.Set<V5CaseFileOwnership>().IgnoreQueryFilters().AsNoTracking()
++                .CountAsync(x => x.EmpresaId == tenant);
++        async Task<int> Versions(int tenant) =>
++            await db.Set<V5CaseFileVersion>().IgnoreQueryFilters().AsNoTracking()
++                .CountAsync(x => x.EmpresaId == tenant);
++
++        await P01(a, 9001, branchA);
++        await P01(b, 9001, branchB); // Same local ID is legal across tenants.
++        await P01(a, 9002, null); // Optional verified branch.
++        await P02(a, 9001, 1);
++        await P02(b, 9001, 1);
++        await P02(a, 9001, 2); // Existing revisions survive.
++        await Reject(1452, () => P01(a, 9003, branchB));
++        await Reject(1452, () => P01(a, 9004, legacyBranch));
++        await Reject(1452, () => P02(b, 9002, 1));
++        await Reject(1062, () => P02(a, 9001, 1));
++        await Reject(1062, () => P01(a, 9001, branchA));
++        Assert.Equal(2, await Owners(a));
++        Assert.Equal(1, await Owners(b));
++        Assert.Equal(2, await Versions(a));
++        Assert.Equal(1, await Versions(b));
++
++        await using (var tx = await db.Database.BeginTransactionAsync())
++        {
++            await P01(a, 9005, branchA);
++            await P02(a, 9005, 1);
++            Assert.Equal(3, await Owners(a));
++            Assert.Equal(3, await Versions(a));
++            await tx.RollbackAsync();
++        }
++        Assert.Equal(2, await Owners(a));
++        Assert.Equal(2, await Versions(a));
++        Assert.Equal(1, await Owners(b));
++        Assert.Equal(1, await Versions(b));
++    }
++}
+diff --git a/backend/src/Infrastructure/Persistence/AppDbContext.cs b/backend/src/Infrastructure/Persistence/AppDbContext.cs
+--- a/backend/src/Infrastructure/Persistence/AppDbContext.cs
++++ b/backend/src/Infrastructure/Persistence/AppDbContext.cs
+@@ -500,7 +500,12 @@
+         // Se aplica al FINAL, después de todas las configuraciones, para
+         // preservar borrado lógico y abarcar también propiedades shadow.
+         CommercialTenantReadFilterModel.Apply(modelBuilder, this);
+         CommercialTenantReadFilterModel.ApplySharedIdentityMembershipFilter(modelBuilder, this);
++        // A platform/public/support tenant marker or absent marker is not case-file authority.
++        modelBuilder.Entity<V5CaseFileOwnership>().HasQueryFilter(x =>
++            AuthorizedCommercialEmpresaId != null && x.EmpresaId == AuthorizedCommercialEmpresaId);
++        modelBuilder.Entity<V5CaseFileVersion>().HasQueryFilter(x =>
++            AuthorizedCommercialEmpresaId != null && x.EmpresaId == AuthorizedCommercialEmpresaId);
+ 
+         static string LimitIdentifier(string name) =>
+             name.Length <= 64 ? name : name[..64];
+diff --git a/backend/tests/Solqaryn.Tests/C0104M0304OwnershipMigrationFixtureTests.cs b/backend/tests/Solqaryn.Tests/C0104M0304OwnershipMigrationFixtureTests.cs
+new file mode 100644
+--- /dev/null
++++ b/backend/tests/Solqaryn.Tests/C0104M0304OwnershipMigrationFixtureTests.cs
+@@ -0,0 +1,131 @@
++using Microsoft.AspNetCore.Http;
++using Microsoft.EntityFrameworkCore;
++using MySql.Data.MySqlClient;
++using MySql.EntityFrameworkCore.Extensions;
++using Solqaryn.Application.Security;
++using Solqaryn.Domain.Entities;
++using Solqaryn.Infrastructure.Persistence;
++using Xunit;
++
++namespace Solqaryn.Tests;
++
++// Adopt only in the dedicated R11 isolated checkout after the DEV01 patch,
++// Oracle migration, and DEV06 physical assertions have been applied.
++// This test never bootstraps the current model or calls EnsureCreated.
++[Trait("Category", "Integration")]
++[Trait("Lab", "C0104CaseFileOwnershipMigration")]
++public sealed class C0104M0304OwnershipMigrationFixtureTests
++{
++    private const string Prefix = "c0104_casefile_";
++    private const string Previous = "20261117215700_V19WhatsAppE164LiteralPlus";
++
++    [Fact]
++    public async Task MigratedOracleSchemaEnforcesOwnershipAndTenantFilters()
++    {
++        // Separate explicit lab connection: never fall back to the app DSN.
++        var raw = Environment.GetEnvironmentVariable("SOLQARYN_CASEFILE_MIGRATION_LAB_CONNECTION")
++            ?? throw new InvalidOperationException("Dedicated disposable lab connection required.");
++        var cs = new MySqlConnectionStringBuilder(raw);
++        if (Environment.GetEnvironmentVariable("GITHUB_ACTIONS") != "true" ||
++            cs.Server != "127.0.0.1" || cs.Port != 3306 ||
++            !cs.Database.StartsWith(Prefix, StringComparison.Ordinal) ||
++            cs.Database.Length != Prefix.Length + 32 ||
++            !Guid.TryParseExact(cs.Database[Prefix.Length..], "N", out _))
++            throw new InvalidOperationException("Disposable GitHub MySQL only.");
++
++        var target = Environment.GetEnvironmentVariable("SOLQARYN_CASEFILE_MIGRATION_LAB_TARGET")
++            ?? throw new InvalidOperationException("Exact generated migration ID required.");
++        Assert.Matches("^[0-9]{14}_V44C0104CaseFileOwnership$", target);
++        var options = new DbContextOptionsBuilder<AppDbContext>()
++            .UseMySQL(cs.ConnectionString, x => x.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"))
++            .Options;
++        int a, b, branchA, branchB, legacy, actor;
++        var suffix = cs.Database[Prefix.Length..];
++        await using (var db = new AppDbContext(options))
++        {
++            await db.Database.OpenConnectionAsync();
++            await using (var command = db.Database.GetDbConnection().CreateCommand())
++            {
++                command.CommandText = "SELECT VERSION(), DATABASE()";
++                await using var result = await command.ExecuteReaderAsync();
++                Assert.True(await result.ReadAsync());
++                Assert.StartsWith("8.4.", result.GetString(0));
++                Assert.Equal(cs.Database, result.GetString(1));
++            }
++            var applied = (await db.Database.GetAppliedMigrationsAsync()).ToArray();
++            Assert.True(applied.Length >= 2);
++            Assert.Equal(Previous, applied[^2]);
++            Assert.Equal(target, applied[^1]);
++            Assert.Empty(await db.Database.GetPendingMigrationsAsync());
++            Assert.Equal(0, await db.Set<V5CaseFileOwnership>().IgnoreQueryFilters().CountAsync());
++            Assert.Equal(0, await db.Set<V5CaseFileVersion>().IgnoreQueryFilters().CountAsync());
++
++            var companyA = new Empresa("CASEFILE CI A " + suffix);
++            var companyB = new Empresa("CASEFILE CI B " + suffix);
++            db.Set<Empresa>().AddRange(companyA, companyB);
++            await db.SaveChangesAsync();
++            (a, b) = (companyA.Id, companyB.Id);
++            Assert.True(a > 0 && b > 0 && a != b);
++            var role = new Rol { Nombre = "CASEFILE CI " + suffix,
++                NombreNormalizado = "CASEFILE_CI_" + suffix.ToUpperInvariant(), EsSistema = true, Activo = true };
++            db.Set<Rol>().Add(role);
++            await db.SaveChangesAsync();
++            var user = new Usuario { NombreUsuario = "cf-ci-" + suffix,
++                NombreCompleto = "Synthetic CI actor", PasswordHash = "not-a-runtime-credential",
++                RolId = role.Id, Activo = true };
++            db.Set<Usuario>().Add(user);
++            await db.SaveChangesAsync();
++            actor = user.Id;
++            Assert.True(actor > 0);
++
++            // Direct fixture SQL only after CI/schema guards. The legacy row is
++            // intentionally unattributed, not a grant or production backfill.
++            async Task<int> Branch(int? owner, string kind)
++            {
++                var code = kind + suffix;
++                var at = DateTime.UtcNow;
++                await db.Database.ExecuteSqlInterpolatedAsync($"""
++                    INSERT INTO Sucursales
++                    (EmpresaId, Codigo, Nombre, ZonaHoraria, Activa, Eliminado, FechaCreacion, FechaActualizacion)
++                    VALUES ({owner}, {code}, {kind}, {"America/Tegucigalpa"}, {true}, {false}, {at}, {at})
++                    """);
++                return await db.Set<Sucursal>().IgnoreQueryFilters().AsNoTracking()
++                    .Where(x => x.Codigo == code).Select(x => x.Id).SingleAsync();
++            }
++            branchA = await Branch(a, "A");
++            branchB = await Branch(b, "B");
++            legacy = await Branch(null, "L");
++            await C0104M0304OwnershipPhysicalAssertions.VerifyAsync(db, a, b, branchA, branchB, legacy, actor);
++        }
++
++        // Real EF/MySQL filters; the test-only server marker is NOT JWT/RBAC
++        // evidence and cannot be reused as a production actor source.
++        async Task VerifyTenant(int tenant, int foreign, int owners, int revisions, long lastVersion)
++        {
++            var http = new DefaultHttpContext();
++            http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = tenant;
++            await using var db = new AppDbContext(options,
++                tenantHttpContextAccessor: new HttpContextAccessor { HttpContext = http });
++            Assert.Equal(tenant, db.AuthorizedCommercialEmpresaId);
++            var visible = await db.Set<V5CaseFileOwnership>().AsNoTracking().ToArrayAsync();
++            Assert.Equal(owners, visible.Length);
++            Assert.All(visible, row => Assert.Equal(tenant, row.EmpresaId));
++            Assert.DoesNotContain(visible, row => row.EmpresaId == foreign);
++            var versions = await db.Set<V5CaseFileVersion>().AsNoTracking().ToArrayAsync();
++            Assert.Equal(revisions, versions.Length);
++            Assert.All(versions, row => Assert.Equal(tenant, row.EmpresaId));
++            Assert.Equal(lastVersion, versions.Where(x => x.ExpedienteId == 9001).Max(x => x.Version));
++            Assert.DoesNotContain(visible, row => row.Id == 9005); // Rolled back by helper.
++            Assert.DoesNotContain(versions, row => row.ExpedienteId == 9005);
++        }
++        await VerifyTenant(a, b, 2, 2, 2);
++        await VerifyTenant(b, a, 1, 1, 1);
++        await using (var noAuthority = new AppDbContext(options))
++        {
++            Assert.Null(noAuthority.AuthorizedCommercialEmpresaId);
++            Assert.Empty(await noAuthority.Set<V5CaseFileOwnership>().AsNoTracking().ToArrayAsync());
++            Assert.Empty(await noAuthority.Set<V5CaseFileVersion>().AsNoTracking().ToArrayAsync());
++        }
++        // Runner owns schema rollback/reapply and disposable DB cleanup.
++    }
++}

@@ -79,3 +79,53 @@ jobs:
           if len(names) != 1 or expected not in names[0]:
               raise SystemExit('WRONG_OR_SKIPPED_TEST_CASE')
           PY
+
+  r11-ownership-migration-lab:
+    name: C01-04.M03.06 - R11 isolated P01/P02 migration and rollback
+    if: ${{ github.event_name == 'push' && github.ref == 'refs/heads/dev' && contains(github.event.head_commit.message, '[c0104-r11-lab]') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 50
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: ephemeral-v44-only
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -pephemeral-v44-only"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=15
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+          persist-credentials: false
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Verify exact SHA and isolated runner
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          node scripts/verify-project-scope.mjs
+          bash -n .github/ci/c0104-r11-lab.sh
+      - name: Run isolated Oracle EF and MySQL migration lab
+        shell: bash
+        env:
+          MYSQL_SERVICE_ID: ${{ job.services.mysql.id }}
+          LAB_RUNNER_ENVIRONMENT: ${{ runner.environment }}
+        run: bash .github/ci/c0104-r11-lab.sh
+      - name: Upload isolated evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: c0104-r11-ownership-migration
+          path: ${{ runner.temp }}/c0104-r11-artifacts/
+          retention-days: 14
+          if-no-files-found: warn
