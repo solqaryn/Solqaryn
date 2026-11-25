@@ -14,12 +14,52 @@
     <textarea matInput formControlName="descripcion" rows="2"></textarea>
   </mat-form-field>
 
+  <section class="category-gallery" aria-labelledby="category-gallery-title">
+    <div class="gallery-heading">
+      <div>
+        <h2 id="category-gallery-title">Imágenes de la categoría</h2>
+        <p>Agrega hasta cinco fotografías. La primera será la portada de la tienda.</p>
+      </div>
+      <span class="gallery-count">{{ imagenes().length }} / {{ maxImagenes }}</span>
+    </div>
+    @if (galeriaDisponible()) {
+      <div class="gallery-grid">
+        @for (imagen of imagenes(); track imagen.url; let i = $index) {
+          <div class="gallery-item">
+            <img [src]="imagen.url" [alt]="'Fotografía ' + (i + 1) + ' de la categoría'">
+            @if (i === 0) {
+              <span class="cover-label">Portada</span>
+            }
+            <div class="gallery-actions">
+              @if (i !== 0) {
+                <button type="button" mat-icon-button title="Establecer como portada" [attr.aria-label]="'Establecer foto ' + (i + 1) + ' como portada'" [disabled]="saving() || preparando()" (click)="portada(i)"><mat-icon>star_outline</mat-icon></button>
+              }
+              <button type="button" mat-icon-button title="Retirar fotografía" [attr.aria-label]="'Retirar foto ' + (i + 1)" [disabled]="saving() || preparando()" (click)="quitar(i)"><mat-icon>close</mat-icon></button>
+            </div>
+          </div>
+        }
+        @if (imagenes().length < maxImagenes) {
+          <button class="gallery-upload" type="button" [disabled]="saving() || preparando() || loading()" (click)="selectorImagenes.click()">
+            <mat-icon>add_photo_alternate</mat-icon>
+            <strong>{{ preparando() ? 'Preparando…' : 'Agregar imágenes' }}</strong>
+            <small>JPG, PNG, WebP</small>
+          </button>
+        }
+      </div>
+      <input #selectorImagenes type="file" accept="image/jpeg,image/png,image/webp" multiple hidden (change)="seleccionarImagenes($event)">
+      <p class="gallery-help">Hasta 10 MB por fotografía. Las imágenes grandes se optimizan antes del envío.</p>
+    } @else {
+      <p class="gallery-help">La edición de fotografías requiere permiso de edición de categorías y una galería disponible.</p>
+    }
+    @if (errorGaleria()) { <p class="error" role="alert">{{ errorGaleria() }}</p> }
+  </section>
+
   @if (errorMessage()) {
-    <p class="error">{{ errorMessage() }}</p>
+    <p class="error" role="alert">{{ errorMessage() }}</p>
   }
 
   <div class="form-actions">
     <a routerLink="/categorias" mat-button type="button">Cancelar</a>
-    <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving()">Guardar</button>
+    <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || form.disabled || saving() || loading() || preparando()">Guardar</button>
   </div>
 </form>

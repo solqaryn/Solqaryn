@@ -58,6 +58,12 @@ export class StorefrontCategoriaComponent implements OnInit {
   readonly cargandoProductos = signal(true);
   readonly errorProductos = signal('');
   readonly imagenesConError = signal(new Set<string>());
+  readonly fotoCategoriaSeleccionada = signal('');
+  readonly fotosCategoria = computed(() => (this.categoria()?.imagenes ?? []).filter(url => this.imagenValida(url)));
+  readonly fotoCategoriaActual = computed(() => {
+    const fotos = this.fotosCategoria();
+    return fotos.includes(this.fotoCategoriaSeleccionada()) ? this.fotoCategoriaSeleccionada() : fotos[0] ?? '';
+  });
 
   readonly productosCategoria = computed(() => {
     const categoria = this.categoria();
@@ -186,6 +192,7 @@ export class StorefrontCategoriaComponent implements OnInit {
   private cargarCategoria(): void {
     this.cargaCategoria?.unsubscribe();
     this.categoria.set(null);
+    this.fotoCategoriaSeleccionada.set('');
     this.error.set('');
     this.estado.set('loading');
     const slug = this.slugSolicitado();

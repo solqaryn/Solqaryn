@@ -121,7 +121,14 @@
         <div class="category-grid">
           @for (categoria of categoriasPortada(); track categoria.id) {
             <button class="category-card" type="button" (click)="abrirCategoria(categoria)" [attr.aria-label]="'Explorar ' + categoria.nombre">
-              <span class="category-art"><app-store-art tipo="paquete" /></span>
+              <span class="category-art" aria-hidden="true">
+                @let portada = categoria.imagenUrl || '';
+                @if (imagenValida(portada)) {
+                  <img [src]="imagenCloudinary(portada, 320)" [attr.srcset]="srcsetCloudinary(portada)" sizes="160px" width="320" height="240" alt="" loading="lazy" decoding="async" (error)="errorImagen(portada)">
+                } @else {
+                  <app-store-art tipo="paquete" />
+                }
+              </span>
               <span class="category-copy"><strong>{{ categoria.nombre }}</strong><small>{{ textoCantidadCategoria(categoria) }}</small></span>
               <app-store-icon nombre="flecha" />
             </button>

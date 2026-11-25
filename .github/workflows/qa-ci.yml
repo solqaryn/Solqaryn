@@ -90,6 +90,8 @@ jobs:
         run: npm run test:unit -- --include=src/app/features/productos/producto-variantes.component.spec.ts
       - run: npm run build:prod
       - run: node scripts/validate-environment-routing.mjs
+      - name: Regresión de portadas de categorías
+        run: npm run test:unit -- --include=src/app/features/storefront/storefront-categorias.catalog.spec.ts
       - name: Instalar Chromium para regresión dirigida de Storefront
         run: npx playwright install --with-deps chromium
       - name: Regresión QA de galería y destacados

@@ -11,5 +11,6 @@ public sealed class CategoriaCatalogoPublicoDto
     public string Slug { get; init; } = string.Empty;
     public string Nombre { get; init; } = string.Empty;
     public string? Descripcion { get; init; }
+    public IReadOnlyList<string> Imagenes { get; init; } = Array.Empty<string>();
     public int? TotalProductos { get; init; }
 }

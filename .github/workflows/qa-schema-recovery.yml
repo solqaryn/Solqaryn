@@ -71,8 +71,8 @@ jobs:
           echo "QA_AIVEN_MYSQL_VERSION=$version"
 
           application_tables="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME <> '__EFMigrationsHistory';")"
-          test "$application_tables" = "136" || {
-            echo "QA_ORACLE_SCHEMA_DRIFT: cantidad de tablas distinta de las 136 certificadas en DEV." >&2
+          test "$application_tables" = "137" || {
+            echo "QA_ORACLE_SCHEMA_DRIFT: Se requieren las 136 tablas de la baseline y CategoriasGalerias. Si falta la migracion 20261125212000_CategoriasGalerias, aplicarla con backup y autorizacion QA antes del deploy." >&2
             exit 1
           }
 
@@ -82,8 +82,8 @@ jobs:
             exit 1
           }
 
-          required_tables="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('Empresas','Productos','ConfigEmpresas','AutomatizacionConfiguraciones','SuscripcionSaaSIdempotencia');")"
-          test "$required_tables" = "5" || {
+          required_tables="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('Empresas','Productos','ConfigEmpresas','AutomatizacionConfiguraciones','SuscripcionSaaSIdempotencia','CategoriasGalerias');")"
+          test "$required_tables" = "6" || {
             echo "QA_ORACLE_SCHEMA_DRIFT: faltan tablas requeridas por OracleBaseline." >&2
             exit 1
           }
@@ -95,9 +95,9 @@ jobs:
           # DIAGNOSTICO READ-ONLY COMPLETO: no interrumpir antes de leer topologia.
           # Si falta el marcador, se emiten diagnosticos independientes para
           # verificar si la adopcion Oracle requiere cambios fisicos o solo metadata.
-          table_diag="$(q "SELECT CONCAT(TABLE_NAME,'|',ENGINE,'|',COALESCE(TABLE_COLLATION,'')) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME;" | sha256sum | awk '{print $1}')"
-          fk_diag="$(q "SELECT CONCAT(TABLE_NAME,'|',CONSTRAINT_NAME,'|',REFERENCED_TABLE_NAME,'|',UNIQUE_CONSTRAINT_NAME) FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() ORDER BY TABLE_NAME,CONSTRAINT_NAME;" | sha256sum | awk '{print $1}')"
-          index_diag="$(q "SELECT CONCAT(TABLE_NAME,'|',INDEX_NAME,'|',SEQ_IN_INDEX,'|',COALESCE(COLUMN_NAME,''),'|',NON_UNIQUE,'|',INDEX_TYPE) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() ORDER BY TABLE_NAME,INDEX_NAME,SEQ_IN_INDEX;" | sha256sum | awk '{print $1}')"
+          table_diag="$(q "SELECT CONCAT(TABLE_NAME,'|',ENGINE,'|',COALESCE(TABLE_COLLATION,'')) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME<>'CategoriasGalerias' ORDER BY TABLE_NAME;" | sha256sum | awk '{print $1}')"
+          fk_diag="$(q "SELECT CONCAT(TABLE_NAME,'|',CONSTRAINT_NAME,'|',REFERENCED_TABLE_NAME,'|',UNIQUE_CONSTRAINT_NAME) FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME<>'CategoriasGalerias' ORDER BY TABLE_NAME,CONSTRAINT_NAME;" | sha256sum | awk '{print $1}')"
+          index_diag="$(q "SELECT CONCAT(TABLE_NAME,'|',INDEX_NAME,'|',SEQ_IN_INDEX,'|',COALESCE(COLUMN_NAME,''),'|',NON_UNIQUE,'|',INDEX_TYPE) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME<>'CategoriasGalerias' ORDER BY TABLE_NAME,INDEX_NAME,SEQ_IN_INDEX;" | sha256sum | awk '{print $1}')"
           triggers_diag="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_SCHEMA=DATABASE() AND TRIGGER_NAME IN ('TR_MovimientosInventario_N06_OrigenTipado_BI','TR_MovimientosInventario_N06_OrigenTipado_BU');")"
           checks_diag="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME='MovimientosInventario' AND CONSTRAINT_TYPE='CHECK' AND CONSTRAINT_NAME='CK_MovimientosInventario_OrigenTipado_Exclusivo_N06';")"
           diagnose() {
@@ -121,9 +121,9 @@ jobs:
 
           # Fingerprints del origen DEV real restaurado, run 38107320797 (2026-10-11).
           # La topologia de QA no puede divergir de la fuente certificada.
-          table_hash="$(q "SELECT CONCAT(TABLE_NAME,'|',ENGINE,'|',COALESCE(TABLE_COLLATION,'')) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME;" | sha256sum | awk '{print $1}')"
-          fk_hash="$(q "SELECT CONCAT(TABLE_NAME,'|',CONSTRAINT_NAME,'|',REFERENCED_TABLE_NAME,'|',UNIQUE_CONSTRAINT_NAME) FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() ORDER BY TABLE_NAME,CONSTRAINT_NAME;" | sha256sum | awk '{print $1}')"
-          index_hash="$(q "SELECT CONCAT(TABLE_NAME,'|',INDEX_NAME,'|',SEQ_IN_INDEX,'|',COALESCE(COLUMN_NAME,''),'|',NON_UNIQUE,'|',INDEX_TYPE) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() ORDER BY TABLE_NAME,INDEX_NAME,SEQ_IN_INDEX;" | sha256sum | awk '{print $1}')"
+          table_hash="$(q "SELECT CONCAT(TABLE_NAME,'|',ENGINE,'|',COALESCE(TABLE_COLLATION,'')) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME<>'CategoriasGalerias' ORDER BY TABLE_NAME;" | sha256sum | awk '{print $1}')"
+          fk_hash="$(q "SELECT CONCAT(TABLE_NAME,'|',CONSTRAINT_NAME,'|',REFERENCED_TABLE_NAME,'|',UNIQUE_CONSTRAINT_NAME) FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME<>'CategoriasGalerias' ORDER BY TABLE_NAME,CONSTRAINT_NAME;" | sha256sum | awk '{print $1}')"
+          index_hash="$(q "SELECT CONCAT(TABLE_NAME,'|',INDEX_NAME,'|',SEQ_IN_INDEX,'|',COALESCE(COLUMN_NAME,''),'|',NON_UNIQUE,'|',INDEX_TYPE) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME<>'CategoriasGalerias' ORDER BY TABLE_NAME,INDEX_NAME,SEQ_IN_INDEX;" | sha256sum | awk '{print $1}')"
 
           test "$table_hash" = "36b725a682b43d744509c8fd27a6ae54b6017d1c46e1301ee796f86f760e7489" || {
             echo "QA_ORACLE_TABLE_TOPOLOGY=FAIL: tablas/engine/collation no coinciden con DEV certificado." >&2
@@ -137,7 +137,18 @@ jobs:
             echo "QA_ORACLE_INDEX_TOPOLOGY=FAIL: indices no coinciden con DEV certificado." >&2
             exit 1
           }
-          echo "QA_ORACLE_TOPOLOGY=PASS tables_fks_indexes_identical_to_dev"
+          echo "QA_ORACLE_TOPOLOGY=PASS baseline_tables_fks_indexes_identical_to_dev"
+
+          gallery_marker="$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261125212000_CategoriasGalerias';")"
+          test "$gallery_marker" = "1" || { echo "QA_CATEGORY_GALLERY_MIGRATION=PENDING" >&2; exit 1; }
+          gallery_columns="$(q "SELECT CONCAT(COLUMN_NAME,':',COLUMN_TYPE,':',IS_NULLABLE) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='CategoriasGalerias' ORDER BY COLUMN_NAME;")"
+          test "$gallery_columns" = "$(printf '%s\n' 'CategoriaId:int:NO' 'EmpresaId:int:NO' 'ImagenesJson:longtext:NO' 'Version:varchar(32):NO')" || { echo "QA_CATEGORY_GALLERY_COLUMNS=FAIL" >&2; exit 1; }
+          gallery_indexes="$(q "SELECT CONCAT(INDEX_NAME,':',SEQ_IN_INDEX,':',COLUMN_NAME,':',NON_UNIQUE) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='CategoriasGalerias' ORDER BY INDEX_NAME,SEQ_IN_INDEX;")"
+          test "$gallery_indexes" = "$(printf '%s\n' 'IX_CategoriasGalerias_CategoriaId:1:CategoriaId:1' 'PRIMARY:1:EmpresaId:0' 'PRIMARY:2:CategoriaId:0')" || { echo "QA_CATEGORY_GALLERY_INDEXES=FAIL" >&2; exit 1; }
+          gallery_fks="$(q "SELECT CONCAT(k.COLUMN_NAME,':',k.REFERENCED_TABLE_NAME,':',k.REFERENCED_COLUMN_NAME,':',r.DELETE_RULE) FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE k JOIN INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS r ON r.CONSTRAINT_SCHEMA=k.CONSTRAINT_SCHEMA AND r.CONSTRAINT_NAME=k.CONSTRAINT_NAME AND r.TABLE_NAME=k.TABLE_NAME WHERE k.TABLE_SCHEMA=DATABASE() AND k.TABLE_NAME='CategoriasGalerias' ORDER BY k.COLUMN_NAME;")"
+          test "$gallery_fks" = "$(printf '%s\n' 'CategoriaId:Categorias:Id:RESTRICT' 'EmpresaId:Empresas:Id:RESTRICT')" || { echo "QA_CATEGORY_GALLERY_FKS=FAIL" >&2; exit 1; }
+          test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='CategoriasGalerias' AND ENGINE='InnoDB';")" = "1" || { echo "QA_CATEGORY_GALLERY_ENGINE=FAIL" >&2; exit 1; }
+          echo "QA_CATEGORY_GALLERY_SCHEMA=PASS"
 
           trigger_count="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_SCHEMA=DATABASE() AND TRIGGER_NAME IN ('TR_MovimientosInventario_N06_OrigenTipado_BI','TR_MovimientosInventario_N06_OrigenTipado_BU');")"
           check_count="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME='MovimientosInventario' AND CONSTRAINT_TYPE='CHECK' AND CONSTRAINT_NAME='CK_MovimientosInventario_OrigenTipado_Exclusivo_N06';")"
@@ -146,7 +157,7 @@ jobs:
             exit 1
           }
 
-          echo "QA_ORACLE_SCHEMA_CERT=PASS app_tables=136 baseline=1 triggers=2 check=1 mysql=$version"
+          echo "QA_ORACLE_SCHEMA_CERT=PASS app_tables=137 baseline=1 category_gallery=1 triggers=2 check=1 mysql=$version"
           echo "QA_DATABASE_WRITES=0"
 
           # Readback despues de QA Oracle adoption certificada: run 38303606678.

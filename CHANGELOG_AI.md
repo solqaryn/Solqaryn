@@ -1,3 +1,10 @@
+## 2026-11-25 — QA: galería de categorías por empresa
+
+- Hasta cinco imágenes por categoría, portada elegida por orden, vista previa, retirada y edición con control de concurrencia; almacenamiento de imágenes validado y separado por empresa.
+- Nueva tabla aditiva `CategoriasGalerias` y migración Oracle EF10 `20261125212000_CategoriasGalerias`; conserva las categorías existentes. Certificación QA de esquema read-only mantiene fingerprints de la baseline y exige estructura y marcador de la nueva tabla.
+- Portadas reales en inicio/listado público y galería en detalle; fallback visual cuando no hay fotos. Carga optimizada, imágenes contenidas, contrato anterior compatible.
+- Validaciones dirigidas backend y frontend incorporadas. Aplicar migración únicamente en QA tras respaldo verificado y revisar certificación antes de desplegar backend. Sin activar migraciones automáticas en arranque. DEV y MAIN no se modifican.
+
 ## 2026-11-25 — QA: densidad visual de portada y tarjetas de categoría
 
 - Ajuste móvil de jerarquía tipográfica, espacios, imagen hero y etiqueta destacada sin solapamiento; tarjetas de categoría reducidas y destacados verticales con altura mínima adaptable al contenido, título ajustado, descripción y precio visibles. Imágenes con contain dentro de su marco. Se conserva identidad, funciones y el ancho al 75% de destacados. Regresión Playwright ampliada para comprobar geometría de título, descripción, precio e imagen a 320/390/768/1366px. No se cambian API, datos, permisos ni dependencias. Scope Lock DEV 562cb93 run 45699418085 PASS; rollback mediante revert del changeset exclusivamente en qa.

@@ -3443,6 +3443,31 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.ToTable("Descuentos", (string)null);
                 });
 
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CategoriaGaleria", b =>
+                {
+                    b.Property<int>("EmpresaId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("CategoriaId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("ImagenesJson")
+                        .IsRequired()
+                        .HasColumnType("longtext");
+
+                    b.Property<string>("Version")
+                        .IsConcurrencyToken()
+                        .IsRequired()
+                        .HasMaxLength(32)
+                        .HasColumnType("varchar(32)");
+
+                    b.HasKey("EmpresaId", "CategoriaId");
+
+                    b.HasIndex("CategoriaId");
+
+                    b.ToTable("CategoriasGalerias", (string)null);
+                });
+
             modelBuilder.Entity("Solqaryn.Domain.Entities.DescuentoCategoria", b =>
                 {
                     b.Property<int>("Id")
@@ -10991,6 +11016,21 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Navigation("Rol");
 
                     b.Navigation("Usuario");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CategoriaGaleria", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Categoria", null)
+                        .WithMany()
+                        .HasForeignKey("CategoriaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
                 });
 
             modelBuilder.Entity("Solqaryn.Domain.Entities.DescuentoCategoria", b =>

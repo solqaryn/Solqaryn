@@ -10,6 +10,16 @@ export interface Categoria {
   fechaActualizacion: string;
 }
 
+export interface CategoriaImagen {
+  id: string;
+  url: string;
+}
+
+export interface CategoriaGaleria {
+  version: string;
+  imagenes: CategoriaImagen[];
+}
+
 export interface CategoriaFormValue {
   nombre: string;
   descripcion?: string;

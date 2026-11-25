@@ -3,7 +3,7 @@ import { HttpClient } from '@angular/common/http';
 import { Observable } from 'rxjs';
 import { environment } from '../../environments/environment';
 import { ApiResponse } from '../core/models/api-response.model';
-import { Categoria, CategoriaFormValue } from '../core/models/categoria.model';
+import { Categoria, CategoriaFormValue, CategoriaGaleria } from '../core/models/categoria.model';
 
 @Injectable({ providedIn: 'root' })
 export class CategoriaService {
@@ -29,6 +29,18 @@ export class CategoriaService {
 
   update(id: number, value: CategoriaFormValue): Observable<ApiResponse<Categoria>> {
     return this.http.put<ApiResponse<Categoria>>(`${this.apiUrl}/${id}`, value);
+  }
+
+  obtenerGaleria(id: number): Observable<ApiResponse<CategoriaGaleria>> {
+    return this.http.get<ApiResponse<CategoriaGaleria>>(this.apiUrl + '/' + id + '/imagenes');
+  }
+
+  guardarGaleria(id: number, version: string, orden: string[], archivos: File[]): Observable<ApiResponse<CategoriaGaleria>> {
+    const datos = new FormData();
+    datos.append('Version', version);
+    orden.forEach(item => datos.append('Orden', item));
+    archivos.forEach(archivo => datos.append('Archivos', archivo, archivo.name));
+    return this.http.put<ApiResponse<CategoriaGaleria>>(this.apiUrl + '/' + id + '/imagenes', datos);
   }
 
   activar(id: number): Observable<ApiResponse<Categoria>> {

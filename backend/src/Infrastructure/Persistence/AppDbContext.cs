@@ -23,6 +23,7 @@ public class AppDbContext : DbContext
     public DbSet<ProductoVariante> ProductoVariantes => Set<ProductoVariante>();
     public DbSet<ProductoImagen> ProductoImagenes => Set<ProductoImagen>();
     public DbSet<Categoria> Categorias => Set<Categoria>();
+    public DbSet<CategoriaGaleria> CategoriasGalerias => Set<CategoriaGaleria>();
     public DbSet<Marca> Marcas => Set<Marca>();
     public DbSet<Modelo> Modelos => Set<Modelo>();
     public DbSet<Color> Colores => Set<Color>();
@@ -136,6 +137,10 @@ public class AppDbContext : DbContext
 
                 case TemaVisual:
                     segments.Add(PublicStoreCacheSegments.Theme);
+                    break;
+
+                case CategoriaGaleria:
+                    segments.Add(PublicStoreCacheSegments.Categories);
                     break;
 
                 case Categoria:

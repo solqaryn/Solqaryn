@@ -120,8 +120,14 @@ export class StorefrontCategoriasComponent implements OnInit {
     return `${categoria.cantidadProductos} ${categoria.cantidadProductos === 1 ? 'producto' : 'productos'}`;
   }
 
+  readonly imagenesFallidas = signal(new Set<string>());
+
   imagenValida(categoria: CategoriaTienda): boolean {
-    return Boolean(categoria.imagenUrl?.trim());
+    return Boolean(categoria.imagenUrl?.trim()) && !this.imagenesFallidas().has(categoria.imagenUrl ?? '');
+  }
+
+  errorPortadaCategoria(url?: string): void {
+    if (url) this.imagenesFallidas.update(actuales => new Set([...actuales, url]));
   }
 
   private cargarCategorias(): void {

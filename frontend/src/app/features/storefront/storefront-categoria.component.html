@@ -86,8 +86,21 @@
               <a class="button ghost" [href]="enlaces.categorias">Volver a categorías</a>
             </div>
           </div>
-          <div class="category-art" aria-hidden="true">
-            <app-store-art tipo="paquete" />
+          <div class="category-art">
+            @if (fotoCategoriaActual(); as foto) {
+              <img class="category-cover" [src]="imagenCloudinary(foto, 640)" [attr.srcset]="srcsetCloudinary(foto)" sizes="(max-width: 820px) 85vw, 320px" width="640" height="480" [alt]="'Imagen de ' + (categoria()?.nombre || 'la categoría')" (error)="errorImagen(foto)" decoding="async">
+              @if (fotosCategoria().length > 1) {
+                <div class="category-thumbnails" role="group" aria-label="Galería de la categoría">
+                  @for (imagen of fotosCategoria(); track imagen; let i = $index) {
+                    <button type="button" [attr.aria-label]="'Ver fotografía ' + (i + 1)" [attr.aria-pressed]="foto === imagen" (click)="fotoCategoriaSeleccionada.set(imagen)">
+                      <img [src]="imagenCloudinary(imagen, 120)" width="120" height="120" alt="" loading="lazy" (error)="errorImagen(imagen)">
+                    </button>
+                  }
+                </div>
+              }
+            } @else {
+              <app-store-art tipo="paquete" aria-hidden="true" />
+            }
           </div>
         </section>
 

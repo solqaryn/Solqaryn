@@ -13,6 +13,7 @@ public sealed class TiendaBootstrapService : ITiendaBootstrapService
     private readonly IWhatsAppPublicoService _whatsApp;
     private readonly IPublicStoreCache? _cache;
     private readonly IPublicStoreTenantKeyProvider? _tenantKeyProvider;
+    private readonly ICategoriaGaleriaService? _galerias;
 
     public TiendaBootstrapService(
         IEmpresaConfiguracionService empresaConfiguracion,
@@ -21,7 +22,8 @@ public sealed class TiendaBootstrapService : ITiendaBootstrapService
         ICatalogoPublicoService catalogo,
         IWhatsAppPublicoService whatsApp,
         IPublicStoreCache? cache = null,
-        IPublicStoreTenantKeyProvider? tenantKeyProvider = null)
+        IPublicStoreTenantKeyProvider? tenantKeyProvider = null,
+        ICategoriaGaleriaService? galerias = null)
     {
         _empresaConfiguracion = empresaConfiguracion;
         _temaVisual = temaVisual;
@@ -30,6 +32,7 @@ public sealed class TiendaBootstrapService : ITiendaBootstrapService
         _whatsApp = whatsApp;
         _cache = cache;
         _tenantKeyProvider = tenantKeyProvider;
+        _galerias = galerias;
     }
 
     public async Task<TiendaBootstrapDto> ObtenerAsync(CancellationToken cancellationToken = default)
@@ -108,20 +111,26 @@ public sealed class TiendaBootstrapService : ITiendaBootstrapService
         return await CacheAsync(
             tenantKey,
             PublicStoreCacheSegments.Categories,
-            "public-categories:v1",
+            "public-categories:v2",
             PublicStoreCacheDurations.Categories,
             async ct =>
             {
                 ct.ThrowIfCancellationRequested();
-                return (await _categorias.GetActivasAsync())
-                    .Where(categoria => categoria.Activa)
-                    .OrderBy(categoria => categoria.Nombre)
-                    .Select(categoria => new CategoriaCatalogoPublicoDto
+                var categorias = (await _categorias.GetActivasAsync())
+                    .Where(categoria => categoria.Activa).OrderBy(categoria => categoria.Nombre).ToList();
+                var imagenes = new Dictionary<int, string[]>();
+                // La identidad pública ambigua nunca obtiene imágenes de otro tenant.
+                if (_galerias is not null && tenantKey is not null
+                    && tenantKey.StartsWith("empresa:", StringComparison.Ordinal)
+                    && int.TryParse(tenantKey["empresa:".Length..], out var empresaId) && empresaId > 0)
+                    imagenes = await _galerias.ObtenerPublicasAsync(empresaId, categorias.Select(c => c.Id).ToArray(), ct);
+                return categorias.Select(categoria => new CategoriaCatalogoPublicoDto
                     {
                         Id = categoria.Id,
                         Slug = PublicSlug.Create(categoria.Nombre, categoria.Id),
                         Nombre = categoria.Nombre,
                         Descripcion = categoria.Descripcion,
+                        Imagenes = imagenes.GetValueOrDefault(categoria.Id) ?? Array.Empty<string>(),
                         TotalProductos = null
                     })
                     .ToList();

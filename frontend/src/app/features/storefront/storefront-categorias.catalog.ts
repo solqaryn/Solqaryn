@@ -14,7 +14,13 @@ export function mapearCategoriaTienda(categoria: CategoriaCatalogoPublico): Cate
     throw new Error('Conteo público de categoría no válido.');
   }
 
+  const imagenes = Array.isArray(categoria.imagenes)
+    ? [...new Set(categoria.imagenes.filter(url => typeof url === 'string' && /^https:\/\//i.test(url)))].slice(0, 5)
+    : [];
+
   return {
+    imagenes,
+    imagenUrl: imagenes[0],
     id,
     nombre,
     slug,

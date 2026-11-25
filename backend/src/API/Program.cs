@@ -127,6 +127,8 @@ builder.Services.AddScoped<IProductoVarianteService, ProductoVarianteService>();
 builder.Services.AddScoped<IProductoVarianteImagenService, ProductoVarianteImagenService>();
 builder.Services.AddScoped<IProductoEscanerService, ProductoEscanerService>();
 builder.Services.AddScoped<ICategoriaService, CategoriaService>();
+builder.Services.AddScoped<ICategoriaGaleriaRepository, CategoriaGaleriaRepository>();
+builder.Services.AddScoped<ICategoriaGaleriaService, CategoriaGaleriaService>();
 builder.Services.AddScoped<ISucursalService, SucursalService>();
 builder.Services.AddScoped<ICentroCostoService, CentroCostoService>();
 builder.Services.AddScoped<IAlmacenService, AlmacenService>();

@@ -147,6 +147,7 @@ export interface TiendaBootstrapPublico {
 }
 
 export interface CategoriaCatalogoPublico {
+  imagenes?: string[];
   id: number;
   slug: string;
   nombre: string;
@@ -207,6 +208,7 @@ export interface ProductoTienda {
 
 /** Modelo unico que deben consumir todas las paginas publicas de categoria. */
 export interface CategoriaTienda {
+  imagenes?: string[];
   id: number;
   nombre: string;
   slug: string;

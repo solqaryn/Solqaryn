@@ -168,7 +168,7 @@ h1, h2, h3 { color: var(--color-heading); }
 }
 .category-card:hover { transform: translateY(-3px); border-color: var(--color-primary); box-shadow: var(--shadow-card); }
 .category-art { height: 105px; display: block; }
-.category-art app-store-art { width: 100%; height: 100%; }
+.category-art app-store-art, .category-art img { display: block; width: 100%; height: 100%; max-width: 100%; max-height: 100%; object-fit: contain; }
 .category-copy { margin-top: auto; min-width: 0; }
 .category-copy strong, .category-copy small { display: block; }
 .category-copy strong { font-size: .73rem; line-height: 1.35; overflow-wrap: anywhere; }
