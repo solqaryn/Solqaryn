@@ -1,3 +1,9 @@
+## 2026-11-25 — DEV05 C01-04.M03.06: identidad durable de build y deduplicación estable (V44-R8)
+
+- R2: propaga identidad tipada workflow/run/attempt/job/check/suite del lector al contrato de auditoría, logger y sink aislado; valida concordancia con microtarea, SHA, nombre, estado y conclusión. La identidad es metadato, no prueba por sí sola de autoridad, CI o A5; se conserva la clase no verificada y no se añade ruta HTTP, permiso ni DI.
+- MySQL aislado: clave por empresa/expediente, microtarea/ruta/SHA/check y run/attempt/job, no timestamp para identidad de proveedor; observaciones históricas sin identidad conservan deduplicación por microsegundo y campos nulos. Solo DDL de fixture efímero; sin migración de negocio ni datos productivos.
+- Pruebas propuestas de propagación, identidad alterada, mismo build observado luego, intentos y runs distintos con mismo SHA y fecha, separación A/B y resultado no certificante. CI exacta pendiente. Fuente real JWT/RBAC/ownership y vinculación HTTP/DI siguen pendientes; rollback revert normal. TASK 6adc2e55f47c81919f6374e561687076; RUN 0819d325-399c-8326-a182-8c6bf838dc73; base d40cb0be65cae4a9b8120c07a4a2562afd33db41; no A5 propia.
+
 ## 2026-11-25 — DEV04 C01-04.M03.06: identidad inmutable de intento GitHub (V44-R8)
 
 - R2: adopta preparación causal DEV03; consulta metadatos del intento solicitado y conserva verificación de run/attempt/job/check/suite/repositorio/SHA, sin convertir evidencia histórica en autorización o A5. Regresión de dos intentos del mismo run y SHA con resultados distintos y paths exactos. Cliente HTTP fijo, límites y rechazo fail-closed conservados. Sin nueva ruta, permisos, DI ni cambios de esquema. CI exacta pendiente; identidad durable y fuente real de autoridad siguen pendientes. Rollback: revert normal.

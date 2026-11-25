@@ -1,6 +1,8 @@
 using System.Data;
 using System.Data.Common;
 using System.Globalization;
+using System.Security.Cryptography;
+using System.Text;
 using System.Text.RegularExpressions;
 using Solqaryn.Application.AutomationV5;
 
@@ -81,9 +83,11 @@ public sealed class V5UniversalCaseFileQaDurableMySqlAuditSink
                 INSERT INTO {Table}
                     (TenantId, CaseFileId, MicrotaskId, RouteKey, SourceSha,
                      CheckName, CheckStatus, CheckConclusion, ObservedUtc,
-                     VerificationClass)
+                     VerificationClass, EvidenceKey, ProviderWorkflowId, ProviderRunId,
+                     ProviderAttempt, ProviderJobId, ProviderCheckRunId, ProviderCheckSuiteId)
                 VALUES (@tenant, @casefile, @task, @route, @sha,
-                        @name, @status, @conclusion, @observed, @class)
+                        @name, @status, @conclusion, @observed, @class, @key,
+                        @workflow, @run, @attempt, @job, @check, @suite)
                 """;
             Add(cmd, "@tenant", _scopeTenantId);
             Add(cmd, "@casefile", _scopeCaseFileId);
@@ -95,6 +99,13 @@ public sealed class V5UniversalCaseFileQaDurableMySqlAuditSink
             Add(cmd, "@conclusion", entry.CheckConclusion);
             Add(cmd, "@observed", entry.ObservedAtUtc.UtcDateTime);
             Add(cmd, "@class", entry.VerificationClass);
+            Add(cmd, "@key", EvidenceKey(entry));
+            Add(cmd, "@workflow", entry.ProviderJob?.WorkflowId);
+            Add(cmd, "@run", entry.ProviderJob?.RunId);
+            Add(cmd, "@attempt", entry.ProviderJob?.Attempt);
+            Add(cmd, "@job", entry.ProviderJob?.JobId);
+            Add(cmd, "@check", entry.ProviderJob?.CheckRunId);
+            Add(cmd, "@suite", entry.ProviderJob?.CheckSuiteId);
             if (await cmd.ExecuteNonQueryAsync(cancellationToken) != 1)
                 throw new InvalidOperationException("CASEFILE_QA_DURABLE_WRITE_REJECTED");
             cancellationToken.ThrowIfCancellationRequested();
@@ -119,16 +130,31 @@ public sealed class V5UniversalCaseFileQaDurableMySqlAuditSink
         ((e.CheckStatus == "completed" && e.CheckConclusion != "pending") ||
          (e.CheckStatus != "completed" && e.CheckConclusion == "pending")) &&
         e.ObservedAtUtc != default && e.ObservedAtUtc.Offset == TimeSpan.Zero &&
-        e.VerificationClass == "UNVERIFIED_EXTERNAL_REVIEW_REQUIRED";
+        e.VerificationClass == "UNVERIFIED_EXTERNAL_REVIEW_REQUIRED" &&
+        V5UniversalCaseFileQaEvidenceAudit.ProviderJobMatches(e.ProviderJob,
+            e.MicrotaskId, e.SourceSha, e.CheckName, e.CheckStatus, e.CheckConclusion);
 
     private static bool FreshUtc(DateTimeOffset observed, DateTimeOffset nowUtc) =>
         observed >= nowUtc.AddMinutes(-10) && observed <= nowUtc.AddSeconds(5);
 
-    private static void Add(DbCommand command, string name, object value)
+    // Tenant and case are part of the SQL primary key. A provider build identity
+    // is immutable across observation timestamps and cannot overwrite prior receipts.
+    // Historical observations without provider identity retain timestamp granularity
+    // (MySQL DATETIME(6)); they never masquerade as provider-bound receipts.
+    private static string EvidenceKey(V5UniversalCaseFileQaEvidenceAudit.SafeAuditEntry e)
+    {
+        var build = e.ProviderJob is { } job
+            ? FormattableString.Invariant($"github|{job.RunId}|{job.Attempt}|{job.JobId}")
+            : FormattableString.Invariant($"legacy|{e.ObservedAtUtc.UtcDateTime.Ticks / 10}");
+        var canonical = $"{e.MicrotaskId}|{e.RouteKey}|{e.SourceSha}|{e.CheckName}|{build}";
+        return Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(canonical))).ToLowerInvariant();
+    }
+
+    private static void Add(DbCommand command, string name, object? value)
     {
         var parameter = command.CreateParameter();
         parameter.ParameterName = name;
-        parameter.Value = value;
+        parameter.Value = value ?? DBNull.Value;
         command.Parameters.Add(parameter);
     }
 }

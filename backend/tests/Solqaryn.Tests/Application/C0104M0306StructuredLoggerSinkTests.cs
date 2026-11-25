@@ -99,6 +99,30 @@ public sealed class C0104M0306StructuredLoggerSinkTests
     }
 
     [Fact]
+    public async Task ProviderIdentityIsStructuredAndBoundToTheAuditEnvelope()
+    {
+        var logger = new ProbeLogger();
+        var sink = new V5UniversalCaseFileQaStructuredLoggerSink(logger);
+        var name = Audit.DirectedDurableCheckName;
+        var job = new Audit.ProviderJobIdentity(Id, Sha, 100, 200, 2, 300, 400, 500,
+            name, "completed", "success");
+        var observation = GoodObservation() with { CheckName = name, ProviderJob = job };
+        var result = await new Audit(new Source(observation), sink, new FrozenClock()).CaptureAsync(
+            Id, "casefile.timeline", Sha, "tenant-A", "case-42");
+        Assert.Equal("CASEFILE_QA_ENVELOPE_WRITTEN_REVIEW_PENDING", result.Code);
+        Assert.False(result.CertifiesCI);
+        Assert.False(result.GrantsTenantAccess);
+        var call = Assert.Single(logger.Calls);
+        Assert.Contains(call.Fields, p => p.Key == "ProviderRunId" && Equals(p.Value, 200L));
+        Assert.Contains(call.Fields, p => p.Key == "ProviderAttempt" && Equals(p.Value, 2));
+        Assert.Contains(call.Fields, p => p.Key == "ProviderCheckRunId" && Equals(p.Value, 400L));
+        Assert.DoesNotContain("secret", call.Text, StringComparison.OrdinalIgnoreCase);
+        await Assert.ThrowsAsync<ArgumentException>(async () => await sink.WriteAsync(
+            GoodEntry() with { CheckName = name, ProviderJob = job with { SourceSha = new string('f', 40) } }, default));
+        Assert.Single(logger.Calls);
+    }
+
+    [Fact]
     public async Task DirectSinkRejectsForgedSensitiveAndUnverifiedFieldsWithoutLogging()
     {
         var logger = new ProbeLogger();

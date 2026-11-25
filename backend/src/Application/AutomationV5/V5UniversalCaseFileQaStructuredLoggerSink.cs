@@ -55,10 +55,13 @@ public sealed class V5UniversalCaseFileQaStructuredLoggerSink
         // No tenant, case, user, credential, payload or provider diagnostic.
         _logger.LogInformation(
             new EventId(1040306, "CaseFileQaEvidence"),
-            "CaseFileQaEvidence {MicrotaskId} {RouteKey} {SourceSha} {CheckName} {CheckStatus} {CheckConclusion} {ObservedAtUtc} {VerificationClass}",
+            "CaseFileQaEvidence {MicrotaskId} {RouteKey} {SourceSha} {CheckName} {CheckStatus} {CheckConclusion} {ObservedAtUtc} {VerificationClass} {ProviderWorkflowId} {ProviderRunId} {ProviderAttempt} {ProviderJobId} {ProviderCheckRunId} {ProviderCheckSuiteId}",
             entry.MicrotaskId, entry.RouteKey, entry.SourceSha,
             entry.CheckName, entry.CheckStatus, entry.CheckConclusion,
-            entry.ObservedAtUtc, entry.VerificationClass);
+            entry.ObservedAtUtc, entry.VerificationClass,
+            entry.ProviderJob?.WorkflowId, entry.ProviderJob?.RunId,
+            entry.ProviderJob?.Attempt, entry.ProviderJob?.JobId,
+            entry.ProviderJob?.CheckRunId, entry.ProviderJob?.CheckSuiteId);
         return ValueTask.CompletedTask;
     }
 
@@ -74,5 +77,7 @@ public sealed class V5UniversalCaseFileQaStructuredLoggerSink
          (entry.CheckStatus != "completed" && entry.CheckConclusion == "pending")) &&
         entry.ObservedAtUtc != default &&
         entry.ObservedAtUtc.Offset == TimeSpan.Zero &&
-        entry.VerificationClass == "UNVERIFIED_EXTERNAL_REVIEW_REQUIRED";
+        entry.VerificationClass == "UNVERIFIED_EXTERNAL_REVIEW_REQUIRED" &&
+        V5UniversalCaseFileQaEvidenceAudit.ProviderJobMatches(entry.ProviderJob,
+            entry.MicrotaskId, entry.SourceSha, entry.CheckName, entry.CheckStatus, entry.CheckConclusion);
 }

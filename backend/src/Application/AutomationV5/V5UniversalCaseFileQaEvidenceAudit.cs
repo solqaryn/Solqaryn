@@ -75,14 +75,38 @@ public sealed class V5UniversalCaseFileQaEvidenceAudit
         string? VerifiedTenantScope, string? VerifiedCaseFileScope,
         bool SourceAuthenticated, bool SourceOwnedByTenant,
         string? CheckName, string? CheckStatus, string? CheckConclusion,
-        DateTimeOffset ObservedAtUtc, string? RawProviderDiagnostic = null);
+        DateTimeOffset ObservedAtUtc, string? RawProviderDiagnostic = null)
+    {
+        public ProviderJobIdentity? ProviderJob { get; init; }
+    }
+
+    // Provider metadata is not tenant authorization or CI/A5 certification.
+    // The trusted adapter must obtain it from the fixed provider reader, not caller input.
+    public sealed record ProviderJobIdentity(
+        string MicrotaskId, string SourceSha, long WorkflowId, long RunId,
+        int Attempt, long JobId, long CheckRunId, long CheckSuiteId,
+        string CheckName, string Status, string Conclusion);
+
+    public static bool ProviderJobMatches(
+        ProviderJobIdentity? job, string? microtaskId, string? sha,
+        string? checkName, string? status, string? conclusion) =>
+        job is null ||
+        (microtaskId == "C01-04.M03.06" && checkName == DirectedDurableCheckName &&
+         status == "completed" && conclusion is ("success" or "failure" or "cancelled" or "skipped") &&
+         job.MicrotaskId == microtaskId && job.SourceSha == sha &&
+         job.CheckName == checkName && job.Status == status && job.Conclusion == conclusion &&
+         job.WorkflowId > 0 && job.RunId > 0 && job.Attempt > 0 &&
+         job.JobId > 0 && job.CheckRunId > 0 && job.CheckSuiteId > 0);
 
     // Intentionally excludes tenant, case ID, user, token, file name,
     // provider exception and any raw evidence payload.
     public sealed record SafeAuditEntry(
         string MicrotaskId, string RouteKey, string SourceSha,
         string CheckName, string CheckStatus, string CheckConclusion,
-        DateTimeOffset ObservedAtUtc, string VerificationClass);
+        DateTimeOffset ObservedAtUtc, string VerificationClass)
+    {
+        public ProviderJobIdentity? ProviderJob { get; init; }
+    }
 
     public readonly record struct Verdict(string Code)
     {
@@ -159,13 +183,18 @@ public sealed class V5UniversalCaseFileQaEvidenceAudit
             observation.ObservedAtUtc < nowUtc.AddMinutes(-10) ||
             observation.ObservedAtUtc > nowUtc.AddSeconds(5) ||
             (observation.CheckStatus == "completed" && observation.CheckConclusion == "pending") ||
-            (observation.CheckStatus != "completed" && observation.CheckConclusion != "pending"))
+            (observation.CheckStatus != "completed" && observation.CheckConclusion != "pending") ||
+            !ProviderJobMatches(observation.ProviderJob, microtaskId, sourceSha,
+                observation.CheckName, observation.CheckStatus, observation.CheckConclusion))
             return new("CASEFILE_QA_CHECK_OR_TIME_INVALID");
 
         var entry = new SafeAuditEntry(
             microtaskId, routeKey, sourceSha, observation.CheckName,
             observation.CheckStatus, observation.CheckConclusion,
-            observation.ObservedAtUtc, "UNVERIFIED_EXTERNAL_REVIEW_REQUIRED");
+            observation.ObservedAtUtc, "UNVERIFIED_EXTERNAL_REVIEW_REQUIRED")
+        {
+            ProviderJob = observation.ProviderJob
+        };
         try
         {
             await _sink.WriteAsync(entry, cancellationToken);

@@ -22,7 +22,12 @@ public sealed class V5UniversalCaseFileQaGitHubJobReader(IHttpClientFactory clie
     public sealed record VerifiedJob(
         string MicrotaskId, string SourceSha, long WorkflowId, long RunId,
         int Attempt, long JobId, long CheckRunId, long CheckSuiteId,
-        string CheckName, string Status, string Conclusion);
+        string CheckName, string Status, string Conclusion)
+    {
+        public V5UniversalCaseFileQaEvidenceAudit.ProviderJobIdentity ToAuditIdentity() =>
+            new(MicrotaskId, SourceSha, WorkflowId, RunId, Attempt, JobId,
+                CheckRunId, CheckSuiteId, CheckName, Status, Conclusion);
+    }
 
     public async Task<VerifiedJob?> ReadDirectedAsync(
         string? microtaskId, string? sha, long runId, int attempt, long jobId,

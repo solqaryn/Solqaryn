@@ -66,7 +66,14 @@ public sealed class C0104M0306DurableQaAuditMysql84Tests
                   CheckConclusion VARCHAR(16) NOT NULL,
                   ObservedUtc DATETIME(6) NOT NULL,
                   VerificationClass VARCHAR(64) NOT NULL,
-                  PRIMARY KEY(TenantId,CaseFileId,SourceSha,RouteKey,CheckName,ObservedUtc)
+                  EvidenceKey CHAR(64) CHARACTER SET ascii NOT NULL,
+                  ProviderWorkflowId BIGINT NULL,
+                  ProviderRunId BIGINT NULL,
+                  ProviderAttempt INT NULL,
+                  ProviderJobId BIGINT NULL,
+                  ProviderCheckRunId BIGINT NULL,
+                  ProviderCheckSuiteId BIGINT NULL,
+                  PRIMARY KEY(TenantId,CaseFileId,EvidenceKey)
                 ) ENGINE=InnoDB
                 """);
 
@@ -239,6 +246,56 @@ public sealed class C0104M0306DurableQaAuditMysql84Tests
                 cmd.Parameters.AddWithValue("@task", Microtask);
                 cmd.Parameters.AddWithValue("@name", directedEntry.CheckName);
                 Assert.Equal(1L, Convert.ToInt64(await cmd.ExecuteScalarAsync()));
+            }
+
+            // Synthetic provider identity exercises real MySQL storage and replay only.
+            // It does not certify the provider or authenticated tenant ownership.
+            var provider = new Audit.ProviderJobIdentity(Microtask, Sha, 100, 200,
+                1, 300, 400, 500, directedEntry.CheckName, "completed", "failure");
+            async Task<Audit.Verdict> CaptureProvider(Audit.ProviderJobIdentity job,
+                DateTimeOffset observed, string tenant)
+            {
+                var sink = new V5UniversalCaseFileQaDurableMySqlAuditSink(
+                    () => new MySqlConnection(isolated), int.Parse(tenant), 42, new FrozenClock(utc));
+                return await new Audit(new Source(Observation(observed, tenant, "42") with
+                {
+                    CheckName = job.CheckName, CheckConclusion = job.Conclusion, ProviderJob = job
+                }), sink, new FrozenClock(utc)).CaptureAsync(Microtask, "casefile.timeline", Sha, tenant, "42");
+            }
+            var firstBuild = await CaptureProvider(provider, utc, "101");
+            Assert.Equal("CASEFILE_QA_ENVELOPE_WRITTEN_REVIEW_PENDING", firstBuild.Code);
+            Assert.False(firstBuild.CertifiesCI);
+            Assert.False(firstBuild.CertifiesA5);
+            Assert.False(firstBuild.GrantsTenantAccess);
+            Assert.Equal("CASEFILE_QA_AUDIT_SINK_UNAVAILABLE",
+                (await CaptureProvider(provider, utc.AddSeconds(1), "101")).Code);
+            // Same run/SHA/timestamp, distinct attempt/job: preserve both outcomes.
+            var secondAttempt = provider with { Attempt = 2, JobId = 301, CheckRunId = 401, Conclusion = "success" };
+            Assert.Equal("CASEFILE_QA_ENVELOPE_WRITTEN_REVIEW_PENDING",
+                (await CaptureProvider(secondAttempt, utc, "101")).Code);
+            var secondRun = provider with { RunId = 201, JobId = 302, CheckRunId = 402 };
+            Assert.Equal("CASEFILE_QA_ENVELOPE_WRITTEN_REVIEW_PENDING",
+                (await CaptureProvider(secondRun, utc, "101")).Code);
+            Assert.Equal("CASEFILE_QA_ENVELOPE_WRITTEN_REVIEW_PENDING",
+                (await CaptureProvider(provider, utc, "202")).Code);
+            Assert.Equal("CASEFILE_QA_CHECK_OR_TIME_INVALID",
+                (await CaptureProvider(provider with { SourceSha = new string('f', 40) }, utc, "101")).Code);
+            await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                await direct.WriteAsync(directedEntry with { ProviderJob = provider with { Attempt = 0 } }, default));
+            Assert.Equal(8L, await CountAll(isolated));
+            await using (var verifyProvider = new MySqlConnection(isolated))
+            {
+                await verifyProvider.OpenAsync();
+                await using var cmd = verifyProvider.CreateCommand();
+                cmd.CommandText = $"SELECT ProviderWorkflowId,ProviderRunId,ProviderAttempt,ProviderJobId,ProviderCheckRunId,ProviderCheckSuiteId,CheckConclusion FROM {Table} WHERE TenantId=101 AND CaseFileId=42 AND ProviderRunId=200 ORDER BY ProviderAttempt";
+                await using var reader = await cmd.ExecuteReaderAsync();
+                Assert.True(await reader.ReadAsync());
+                Assert.Equal((100L, 200L, 1, 300L, 400L, 500L, "failure"),
+                    (reader.GetInt64(0), reader.GetInt64(1), reader.GetInt32(2), reader.GetInt64(3), reader.GetInt64(4), reader.GetInt64(5), reader.GetString(6)));
+                Assert.True(await reader.ReadAsync());
+                Assert.Equal((100L, 200L, 2, 301L, 401L, 500L, "success"),
+                    (reader.GetInt64(0), reader.GetInt64(1), reader.GetInt32(2), reader.GetInt64(3), reader.GetInt64(4), reader.GetInt64(5), reader.GetString(6)));
+                Assert.False(await reader.ReadAsync());
             }
 
             // Storage outage or schema absence cannot create a successful receipt.

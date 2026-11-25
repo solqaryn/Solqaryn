@@ -144,6 +144,10 @@ public sealed class C0104M0306GitHubJobReaderTests
             (old.RunId, old.Attempt, old.JobId, old.CheckRunId, old.SourceSha, old.Conclusion));
         Assert.Equal((Run, 2, Job + 10, Check + 10, Sha, "success"),
             (latest.RunId, latest.Attempt, latest.JobId, latest.CheckRunId, latest.SourceSha, latest.Conclusion));
+        var oldIdentity = old.ToAuditIdentity();
+        var latestIdentity = latest.ToAuditIdentity();
+        Assert.Equal((Run, 1, Job, Check, "failure"), (oldIdentity.RunId, oldIdentity.Attempt, oldIdentity.JobId, oldIdentity.CheckRunId, oldIdentity.Conclusion));
+        Assert.Equal((Run, 2, Job + 10, Check + 10, "success"), (latestIdentity.RunId, latestIdentity.Attempt, latestIdentity.JobId, latestIdentity.CheckRunId, latestIdentity.Conclusion));
         Assert.Equal(3, first.Paths.Count);
         Assert.Equal(3, second.Paths.Count);
     }
