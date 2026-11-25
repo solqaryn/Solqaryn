@@ -85,7 +85,7 @@ Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para
 
 ### Vercel
 - Proyecto DEV activo: `solqaryn-dev`.
-- Nuevo proyecto QA: `solqaryn_qa` (equipo `vari-app`, cuenta personal autorizada), dominio `https://solqarynqa-nu.vercel.app`. Despliegue inicial observado desde `qa`; falta confirmar Production Branch `qa` y certificar runtime.
+- Nuevo proyecto QA: `solqaryn_qa` (nuevo proyecto del equipo SOLQARYN, cuenta personal autorizada exclusivamente para QA), dominio `https://solqarynqa-nu.vercel.app`. Despliegue inicial observado desde `qa`; falta confirmar Production Branch `qa` y certificar runtime.
 - Proyecto PROD corporativo activo: `solqaryn-prod`.
 - PROD fue certificado sobre la rama `main` y permanece operativo mediante el alias administrado `https://solqaryn-prod.vercel.app`.
 - No se reutiliza infraestructura legacy como fallback. El nuevo proyecto personal está autorizado exclusivamente para QA; DEV y PROD mantienen sus identidades.

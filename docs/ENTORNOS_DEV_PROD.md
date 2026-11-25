@@ -60,7 +60,7 @@ La migración histórica del tenant inicial hacia `solqaryn_prod` ya fue ejecuta
 
 - Proyecto DEV activo: `solqaryn-dev`.
 - Dominio DEV: `https://solqaryn-dev.vercel.app`.
-- Nuevo proyecto QA autorizado por el propietario: `solqaryn_qa` (equipo `vari-app`, cuenta personal) (`prj_BIjoIFQz2oSHCosjj7lcc5blck9E`).
+- Nuevo proyecto QA autorizado por el propietario: `solqaryn_qa` (nuevo proyecto del equipo SOLQARYN, cuenta personal autorizada exclusivamente para QA) (`prj_BIjoIFQz2oSHCosjj7lcc5blck9E`).
 - Dominio QA: `https://solqarynqa-nu.vercel.app`.
 - El primer deployment QA se observó desde `qa`; queda pendiente confirmar Production Branch `qa` en Vercel y certificar el nuevo proxy y backend. Auto-Deploy Render permanece Off hasta verificar readiness y aislamiento. No sincronizar un Blueprint antiguo sobre el servicio nuevo.
 - Proyecto PROD corporativo activo: `solqaryn-prod`.

@@ -1,3 +1,8 @@
+## 2026-11-25 — QA: normalización documental de la identidad autorizada
+
+- Corrige exclusivamente las dos referencias al nombre anterior del equipo Vercel introducidas en el changeset 163fe61; la identidad canónica del proyecto nuevo sigue siendo `prj_BIjoIFQz2oSHCosjj7lcc5blck9E`, dominio `https://solqarynqa-nu.vercel.app`, cuenta personal autorizada sólo para QA. No se modifica el guard ni se autoriza infraestructura retirada.
+- Evidencia: jobs 139376244606 y 139376251238 fallaron por el mismo patrón documental; frontend y backend CI del changeset previo aprobaron. Sin modificación de runtime, pruebas, secretos, ramas dev/main, infraestructura ni configuración de despliegue. Revalidación de Scope Lock/CI pendiente en el nuevo SHA.
+
 ## 2026-11-25 — QA: homologación del nuevo proyecto Vercel y servicio Render
 
 - Scope expresamente autorizado por el propietario: sólo qa, base `ad47c41dd6a3afc139b5daa44c183891d1480e24`. Project ID y dominio verificados en la vista del proyecto Vercel; servicio Render `srv-dc3390c0916s73fi7q30` verificado en rama qa. Nuevo binding `prj_BIjoIFQz2oSHCosjj7lcc5blck9E` -> QA -> `https://solqaryn.onrender.com`; origen `https://solqarynqa-nu.vercel.app`. Retira la identidad anterior de la allowlist de QA, sin fallback.
