@@ -1,3 +1,7 @@
+## 2026-11-25 — DEV06 — C01-04.M03.06 — R12 reparación estricta V19 29/29
+- TASK_ID 6af16bbad26881918c283abe06e1f32a; RUN_ID 1d6d10d3-9098-8323-ad67-81e9252268f3; base b1d68de1af5d4be8e1cf8c0809d56b1bfe34b0ce; V17 H271:I271. Adopta preparación DEV05 RUN 02a009d2-1b2c-832d-8cb0-c193d7c1f466, posterior a siete escenarios DEV03; autoría causal conservada.
+- Job 139553229837 exact SHA: 29/29 PASS, 0 FAIL/SKIP; fallo del gate histórico de 22. Actualiza tres anclas del workflow a 29 exactos, conserva cero fallos/omisiones, revocación posterior y artefactos. Sin cambio runtime, DB, grants o migraciones; CI nuevo SHA y A5 independientes pendientes. Solo dev, R5 directa.
+
 ## 2026-11-25 — DEV03 — C01-04.M03.06 — R12 cobertura coexistencia DEV/core
 - TASK_ID 6adc2e4bd8a48191ac7d8641ed95a1a3; RUN_ID 9f89251f-8a68-8328-bfe0-1a998ac8dc08; base ef8ea6d2fbb8540e280380c730d49f6d356b055e; V17 H271:I271. Adopta hallazgo de cobertura DEV02 RUN 50ead076-4254-832e-b1cc-d81d3c89157d (sin autoría causal); preservar revisor independiente.
 - Siete escenarios HTTP TestServer/JWT real con respuestas GitHub fixture: ambos checks, DEV omitido/fallido sin fallback, core duplicado/pendiente/fallido/omitido; se verifica que no haya consulta alternativa de job ni recibo core, auditoría de plataforma sin EmpresaId ni A5 inventada. Sin cambio runtime, grants, DB, DI ni migración; no afirma proveedor GitHub/MySQL real. CI exact SHA y A5 pendientes, R11 pendiente. Solo dev, sin CAS.
