@@ -25,8 +25,8 @@ jobs:
     timeout-minutes: 25
     environment: QA
     env:
-      FRONTEND: https://solqaryn-qa.vercel.app
-      BACKEND: https://solqaryn-api-qa.onrender.com
+      FRONTEND: https://solqarynqa-nu.vercel.app
+      BACKEND: https://solqaryn.onrender.com
       DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
       DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
       DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}
@@ -50,11 +50,11 @@ jobs:
           test -n "$DB_PORT"
           test -n "$DB_PASSWORD"
           case "$FRONTEND" in
-            https://solqaryn-qa.vercel.app) ;;
+            https://solqarynqa-nu.vercel.app) ;;
             *) echo "FRONTEND QA no canónico: $FRONTEND" >&2; exit 1 ;;
           esac
           case "$BACKEND" in
-            https://solqaryn-api-qa*.onrender.com) ;;
+            https://solqaryn.onrender.com) ;;
             *) echo "BACKEND QA no canónico: $BACKEND" >&2; exit 1 ;;
           esac
 

@@ -195,13 +195,13 @@ public static class RenderEnvironmentContractGuard
                 "SOLQARYN DEV"),
             "Staging" => new ExpectedEnvironment(
                 "Staging",
-                "solqaryn-api-qa.onrender.com",
+                "solqaryn.onrender.com",
                 "false",
                 "Solqaryn.QA.API",
                 "Solqaryn.QA.Frontend",
                 "solqaryn_qa",
-                "https://solqaryn-qa.vercel.app",
-                "https://solqaryn-api-qa.onrender.com",
+                "https://solqarynqa-nu.vercel.app",
+                "https://solqaryn.onrender.com",
                 "SOLQARYN QA"),
             "Production" => new ExpectedEnvironment(
                 "Production",

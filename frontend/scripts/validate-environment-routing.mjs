@@ -15,7 +15,7 @@ const proxy = await readFile(path.join(frontendDir, 'api/backend-proxy.js'), 'ut
 const ignoreBuild = await readFile(path.join(frontendDir, 'scripts/vercel-ignore-build.mjs'), 'utf8');
 
 const DEV_PROJECT_ID = 'prj_1Anhx5mWyXEBX89lWC24Py6JXe7A';
-const QA_PROJECT_ID = 'prj_n5STx5F6VboqXd1oLUMR8AvZZtml';
+const QA_PROJECT_ID = 'prj_BIjoIFQz2oSHCosjj7lcc5blck9E';
 const PROD_PROJECT_ID = 'prj_si3ORH7lBhM4aSAYfYvXsbJT2lHA';
 
 const apiRewrites = (vercel.rewrites || []).filter(item => item?.source === '/api/:path*');
@@ -36,18 +36,23 @@ expect(VERCEL_PROJECT_BINDINGS[PROD_PROJECT_ID]?.environment === 'PROD', 'Bindin
 
 expect(resolves({VERCEL_PROJECT_ID:DEV_PROJECT_ID})?.apiUpstream === CANONICAL_API_UPSTREAMS.DEV, 'Proyecto Vercel DEV debe resolver DEV sin depender de variables manuales.');
 expect(resolves({VERCEL_PROJECT_ID:QA_PROJECT_ID})?.apiUpstream === CANONICAL_API_UPSTREAMS.QA, 'Proyecto Vercel QA debe resolver QA sin depender de variables manuales.');
-expect(resolves({VERCEL_PROJECT_ID:QA_PROJECT_ID})?.publicOrigin === 'https://solqaryn-qa.vercel.app', 'Proyecto Vercel QA debe resolver origen público canónico.');
+expect(resolves({VERCEL_PROJECT_ID:QA_PROJECT_ID})?.publicOrigin === 'https://solqarynqa-nu.vercel.app', 'Proyecto Vercel QA debe resolver origen público canónico.');
 expect(resolves({VERCEL_PROJECT_ID:QA_PROJECT_ID})?.seoIndexingEnabled === false, 'Proyecto Vercel QA debe permanecer noindex.');
 expect(resolves({VERCEL_PROJECT_ID:PROD_PROJECT_ID})?.apiUpstream === CANONICAL_API_UPSTREAMS.PROD, 'Proyecto Vercel PROD debe resolver PROD sin depender de variables manuales.');
 expect(resolves({VERCEL_PROJECT_ID:PROD_PROJECT_ID})?.publicOrigin === 'https://solqaryn-prod.vercel.app', 'Proyecto Vercel PROD debe resolver origen público canónico.');
 expect(resolves({VERCEL_PROJECT_ID:PROD_PROJECT_ID})?.seoIndexingEnabled === true, 'Proyecto Vercel PROD debe habilitar SEO canónico.');
 
 expect(resolves({SOLQARYN_ENV:'DEV',API_UPSTREAM:CANONICAL_API_UPSTREAMS.DEV,PUBLIC_ORIGIN:'https://solqaryn-dev.vercel.app',SEO_INDEXING_ENABLED:'false'})?.environment === 'DEV','Binding explícito DEV válido fuera de Vercel.');
-expect(resolves({SOLQARYN_ENV:'QA',API_UPSTREAM:CANONICAL_API_UPSTREAMS.QA,PUBLIC_ORIGIN:'https://solqaryn-qa.vercel.app',SEO_INDEXING_ENABLED:'false'})?.environment === 'QA','Binding explícito QA válido fuera de Vercel.');
+expect(resolves({SOLQARYN_ENV:'QA',API_UPSTREAM:CANONICAL_API_UPSTREAMS.QA,PUBLIC_ORIGIN:'https://solqarynqa-nu.vercel.app',SEO_INDEXING_ENABLED:'false'})?.environment === 'QA','Binding explícito QA válido fuera de Vercel.');
 expect(resolves({SOLQARYN_ENV:'PROD',API_UPSTREAM:CANONICAL_API_UPSTREAMS.PROD,PUBLIC_ORIGIN:'https://solqaryn-prod.vercel.app',SEO_INDEXING_ENABLED:'true'})?.environment === 'PROD','Binding explícito PROD válido fuera de Vercel.');
 
 expect(rejects({}), 'Configuración ausente fuera de Vercel debe fallar cerrada.');
 expect(rejects({VERCEL_PROJECT_ID:'prj_desconocido'}), 'Proyecto Vercel desconocido debe fallar cerrado.');
+expect(rejects({VERCEL_PROJECT_ID:'prj_n5STx5F6VboqXd1oLUMR8AvZZtml'}), 'Proyecto QA anterior debe fallar cerrado.');
+expect(resolves({VERCEL_PROJECT_ID:QA_PROJECT_ID})?.apiUpstream === 'https://solqaryn.onrender.com', 'QA debe apuntar al nuevo backend autorizado.');
+expect(rejects({VERCEL_PROJECT_ID:QA_PROJECT_ID,API_UPSTREAM:'https://solqaryn-api-qa.onrender.com'}), 'QA no puede usar el backend anterior.');
+expect(rejects({VERCEL_PROJECT_ID:QA_PROJECT_ID,PUBLIC_ORIGIN:'https://solqaryn-qa.vercel.app'}), 'QA no puede usar el origen anterior.');
+expect(ignoreBuild.includes("'" + QA_PROJECT_ID + "': 'qa'"), 'Proyecto QA debe quedar ligado exclusivamente a qa.');
 expect(rejects({VERCEL_PROJECT_ID:DEV_PROJECT_ID,SOLQARYN_ENV:'QA'}), 'Proyecto DEV no puede declararse QA.');
 expect(rejects({VERCEL_PROJECT_ID:DEV_PROJECT_ID,SOLQARYN_ENV:'PROD'}), 'Proyecto DEV no puede declararse PROD.');
 expect(rejects({VERCEL_PROJECT_ID:QA_PROJECT_ID,SOLQARYN_ENV:'DEV'}), 'Proyecto QA no puede declararse DEV.');
@@ -62,8 +67,8 @@ expect(rejects({VERCEL_PROJECT_ID:DEV_PROJECT_ID,SEO_INDEXING_ENABLED:'true'}), 
 expect(rejects({VERCEL_PROJECT_ID:QA_PROJECT_ID,SEO_INDEXING_ENABLED:'true'}), 'Proyecto QA no puede activar SEO PROD.');
 expect(rejects({SOLQARYN_ENV:'DEV',API_UPSTREAM:CANONICAL_API_UPSTREAMS.QA,PUBLIC_ORIGIN:'https://solqaryn-dev.vercel.app',SEO_INDEXING_ENABLED:'false'}), 'DEV -> QA debe rechazarse.');
 expect(rejects({SOLQARYN_ENV:'DEV',API_UPSTREAM:CANONICAL_API_UPSTREAMS.PROD,PUBLIC_ORIGIN:'https://solqaryn-dev.vercel.app',SEO_INDEXING_ENABLED:'false'}), 'DEV -> PROD debe rechazarse.');
-expect(rejects({SOLQARYN_ENV:'QA',API_UPSTREAM:CANONICAL_API_UPSTREAMS.DEV,PUBLIC_ORIGIN:'https://solqaryn-qa.vercel.app',SEO_INDEXING_ENABLED:'false'}), 'QA -> DEV debe rechazarse.');
-expect(rejects({SOLQARYN_ENV:'QA',API_UPSTREAM:CANONICAL_API_UPSTREAMS.PROD,PUBLIC_ORIGIN:'https://solqaryn-qa.vercel.app',SEO_INDEXING_ENABLED:'false'}), 'QA -> PROD debe rechazarse.');
+expect(rejects({SOLQARYN_ENV:'QA',API_UPSTREAM:CANONICAL_API_UPSTREAMS.DEV,PUBLIC_ORIGIN:'https://solqarynqa-nu.vercel.app',SEO_INDEXING_ENABLED:'false'}), 'QA -> DEV debe rechazarse.');
+expect(rejects({SOLQARYN_ENV:'QA',API_UPSTREAM:CANONICAL_API_UPSTREAMS.PROD,PUBLIC_ORIGIN:'https://solqarynqa-nu.vercel.app',SEO_INDEXING_ENABLED:'false'}), 'QA -> PROD debe rechazarse.');
 expect(rejects({SOLQARYN_ENV:'PROD',API_UPSTREAM:CANONICAL_API_UPSTREAMS.DEV,PUBLIC_ORIGIN:'https://solqaryn-prod.vercel.app',SEO_INDEXING_ENABLED:'true'}), 'PROD -> DEV debe rechazarse.');
 
 if (failures.length) {

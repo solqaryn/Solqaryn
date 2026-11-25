@@ -7,7 +7,7 @@ const vercelProjectId = process.env.VERCEL_PROJECT_ID;
 
 const PROJECT_BRANCH_BINDINGS = Object.freeze({
   'prj_1Anhx5mWyXEBX89lWC24Py6JXe7A': 'dev',
-  'prj_n5STx5F6VboqXd1oLUMR8AvZZtml': 'qa',
+  'prj_BIjoIFQz2oSHCosjj7lcc5blck9E': 'qa',
   'prj_si3ORH7lBhM4aSAYfYvXsbJT2lHA': 'main'
 });
 

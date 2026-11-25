@@ -26,7 +26,7 @@ Estado operativo vigente. Este documento reemplaza referencias históricas de in
 | Entorno | Servicio | Rama | URL | Health de plataforma |
 |---|---|---|---|---|
 | DEV | `solqaryn-api-dev` | `dev` | `https://solqaryn-api-dev-fxx8.onrender.com` | `/health` |
-| QA | `solqaryn-api-qa` | `qa` | `https://solqaryn-api-qa.onrender.com` | `/health` |
+| QA | `Solqaryn` | `qa` | `https://solqaryn.onrender.com` | `/health` |
 | PROD | `solqaryn-api-prod` | `main` | `https://solqaryn-api-prod.onrender.com` | `/health` |
 
 `/health/ready` se conserva para diagnosticar dependencias como MySQL, no como probe de despliegue.
@@ -60,8 +60,9 @@ La migración histórica del tenant inicial hacia `solqaryn_prod` ya fue ejecuta
 
 - Proyecto DEV activo: `solqaryn-dev`.
 - Dominio DEV: `https://solqaryn-dev.vercel.app`.
-- Proyecto QA activo: `solqaryn-qa` (`prj_n5STx5F6VboqXd1oLUMR8AvZZtml`).
-- Dominio QA: `https://solqaryn-qa.vercel.app`.
+- Nuevo proyecto QA autorizado por el propietario: `solqaryn_qa` (equipo `vari-app`, cuenta personal) (`prj_BIjoIFQz2oSHCosjj7lcc5blck9E`).
+- Dominio QA: `https://solqarynqa-nu.vercel.app`.
+- El primer deployment QA se observó desde `qa`; queda pendiente confirmar Production Branch `qa` en Vercel y certificar el nuevo proxy y backend. Auto-Deploy Render permanece Off hasta verificar readiness y aislamiento. No sincronizar un Blueprint antiguo sobre el servicio nuevo.
 - Proyecto PROD corporativo activo: `solqaryn-prod`.
 - Dominio administrado PROD: `https://solqaryn-prod.vercel.app`.
 - El proyecto PROD permanece separado del proyecto DEV; una futura promoción de código/configuración se ejecuta únicamente con autorización explícita.
@@ -70,7 +71,7 @@ La migración histórica del tenant inicial hacia `solqaryn_prod` ya fue ejecuta
 ## Binding Vercel -> API
 
 - `/api/*` usa binding explícito por `VERCEL_PROJECT_ID`; no selecciona backend por hostname ni alias.
-- `prj_1Anhx5mWyXEBX89lWC24Py6JXe7A` sólo acepta DEV -> `solqaryn-api-dev-fxx8.onrender.com`; `prj_n5STx5F6VboqXd1oLUMR8AvZZtml` sólo acepta QA -> `solqaryn-api-qa.onrender.com`; `prj_si3ORH7lBhM4aSAYfYvXsbJT2lHA` sólo acepta PROD -> `solqaryn-api-prod.onrender.com`.
+- `prj_1Anhx5mWyXEBX89lWC24Py6JXe7A` sólo acepta DEV -> `solqaryn-api-dev-fxx8.onrender.com`; `prj_BIjoIFQz2oSHCosjj7lcc5blck9E` sólo acepta QA -> `solqaryn.onrender.com`; `prj_si3ORH7lBhM4aSAYfYvXsbJT2lHA` sólo acepta PROD -> `solqaryn-api-prod.onrender.com`.
 - Overrides opcionales `SOLQARYN_ENV`/`API_UPSTREAM`/`PUBLIC_ORIGIN`/`SEO_INDEXING_ENABLED` deben coincidir con el proyecto canónico; proyecto desconocido o cruce falla cerrado.
 - Render valida además la pareja entorno/base/usuario: Development -> `solqaryn_dev`/`solqaryn_dev_user`; Staging -> `solqaryn_qa`/`solqaryn_qa_user`; Production -> `solqaryn_prod`/`solqaryn_prod_user`.
 - Contrato de cierre y promoción: `docs/DEV_CIERRE_TECNICO_PROMOCION.md`.

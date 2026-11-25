@@ -1,6 +1,6 @@
 const CANONICAL_API_UPSTREAMS = Object.freeze({
   DEV: 'https://solqaryn-api-dev-fxx8.onrender.com',
-  QA: 'https://solqaryn-api-qa.onrender.com',
+  QA: 'https://solqaryn.onrender.com',
   PROD: 'https://solqaryn-api-prod.onrender.com'
 });
 
@@ -11,10 +11,10 @@ const VERCEL_PROJECT_BINDINGS = Object.freeze({
     publicOrigin: 'https://solqaryn-dev.vercel.app',
     seoIndexingEnabled: false
   }),
-  'prj_n5STx5F6VboqXd1oLUMR8AvZZtml': Object.freeze({
+  'prj_BIjoIFQz2oSHCosjj7lcc5blck9E': Object.freeze({
     environment: 'QA',
     apiUpstream: CANONICAL_API_UPSTREAMS.QA,
-    publicOrigin: 'https://solqaryn-qa.vercel.app',
+    publicOrigin: 'https://solqarynqa-nu.vercel.app',
     seoIndexingEnabled: false
   }),
   'prj_si3ORH7lBhM4aSAYfYvXsbJT2lHA': Object.freeze({

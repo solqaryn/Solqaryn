@@ -67,12 +67,12 @@ services:
       - key: Smtp__RetryBaseDelayMilliseconds
         value: "500"
   - type: web
-    name: solqaryn-api-qa
+    name: Solqaryn
     runtime: docker
     plan: free
     region: oregon
     branch: qa
-    autoDeployTrigger: checksPass
+    autoDeployTrigger: off
     healthCheckPath: /health
     dockerfilePath: ./backend/Dockerfile
     dockerContext: .
@@ -80,7 +80,7 @@ services:
       - key: ASPNETCORE_ENVIRONMENT
         value: Staging
       - key: AllowedHosts
-        value: solqaryn-api-qa.onrender.com
+        value: solqaryn.onrender.com
       - key: Database__ServerVersion
         value: 8.4.8
       - key: Database__ApplyMigrationsOnStartup
@@ -106,9 +106,9 @@ services:
       - key: Cloudinary__EnvironmentPrefix
         value: solqaryn_qa
       - key: Cors__AllowedOrigins__0
-        value: https://solqaryn-qa.vercel.app
+        value: https://solqarynqa-nu.vercel.app
       - key: AppSettings__BackendPublicUrl
-        value: https://solqaryn-api-qa.onrender.com
+        value: https://solqaryn.onrender.com
       - key: AppSettings__EnlacePublicoFacturaHorasValidez
         value: "24"
       - key: AppSettings__EnlacePublicoFacturaMaximoAccesos

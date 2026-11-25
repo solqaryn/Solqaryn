@@ -64,7 +64,7 @@ Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para
 
 ### Render
 - Servicio DEV: `solqaryn-api-dev`.
-- Servicio QA: `solqaryn-api-qa`.
+- Nuevo servicio QA autorizado: `Solqaryn` (`srv-dc3390c0916s73fi7q30`), rama `qa`; Auto-Deploy Off durante homologación.
 - Servicio PROD: `solqaryn-api-prod`.
 - Estado de compute actual: DEV, QA y PROD están en Render `free`. DEV/QA pueden aceptar cold starts para ahorro; PROD no se considera backend comercial `always-on` mientras permanezca Free. Está prohibido usar keep-alive artificial como sustituto de un plan always-on; cualquier upgrade productivo requiere autorización explícita de gasto.
 - Health de plataforma Render: `/health` (liveness rápida). `/health/ready` se conserva para readiness/diagnóstico de dependencias como MySQL, pero no como probe de despliegue.
@@ -77,18 +77,18 @@ Consultar `ARCHITECTURE.md` para cambios estructurales y `PROJECT_INDEX.md` para
 ### Binding Vercel -> API
 
 - El backend de un deployment no se decide por hostname ni alias.
-- `frontend/server/environment-binding.js` usa `VERCEL_PROJECT_ID` como identidad primaria del deployment y sólo reconoce los tres proyectos corporativos autorizados.
-- Proyecto `prj_1Anhx5mWyXEBX89lWC24Py6JXe7A` resuelve exclusivamente DEV -> `solqaryn-api-dev-fxx8.onrender.com`; `prj_n5STx5F6VboqXd1oLUMR8AvZZtml` resuelve exclusivamente QA -> `solqaryn-api-qa.onrender.com`; `prj_si3ORH7lBhM4aSAYfYvXsbJT2lHA` resuelve exclusivamente PROD -> `solqaryn-api-prod.onrender.com`.
+- `frontend/server/environment-binding.js` usa `VERCEL_PROJECT_ID` como identidad primaria del deployment y sólo reconoce los tres proyectos autorizados.
+- Proyecto `prj_1Anhx5mWyXEBX89lWC24Py6JXe7A` resuelve exclusivamente DEV -> `solqaryn-api-dev-fxx8.onrender.com`; `prj_BIjoIFQz2oSHCosjj7lcc5blck9E` resuelve exclusivamente QA -> `solqaryn.onrender.com`; `prj_si3ORH7lBhM4aSAYfYvXsbJT2lHA` resuelve exclusivamente PROD -> `solqaryn-api-prod.onrender.com`.
 - `SOLQARYN_ENV`, `API_UPSTREAM`, `PUBLIC_ORIGIN` y `SEO_INDEXING_ENABLED` son controles opcionales de coherencia: si existen, deben coincidir con el proyecto canónico o el runtime falla cerrado.
 - `frontend/api/backend-proxy.js` es la frontera server-side de `/api/*`; alias, previews y custom domains no cambian el upstream.
 - Un `VERCEL_PROJECT_ID` desconocido jamás obtiene fallback DEV/PROD.
 
 ### Vercel
 - Proyecto DEV activo: `solqaryn-dev`.
-- Proyecto QA activo: `solqaryn-qa`.
+- Nuevo proyecto QA: `solqaryn_qa` (equipo `vari-app`, cuenta personal autorizada), dominio `https://solqarynqa-nu.vercel.app`. Despliegue inicial observado desde `qa`; falta confirmar Production Branch `qa` y certificar runtime.
 - Proyecto PROD corporativo activo: `solqaryn-prod`.
 - PROD fue certificado sobre la rama `main` y permanece operativo mediante el alias administrado `https://solqaryn-prod.vercel.app`.
-- No se reutiliza ningún proyecto personal o legacy.
+- No se reutiliza infraestructura legacy como fallback. El nuevo proyecto personal está autorizado exclusivamente para QA; DEV y PROD mantienen sus identidades.
 
 ### Aiven
 - Proyecto: `solqaryn`.

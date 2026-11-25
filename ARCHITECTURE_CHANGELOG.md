@@ -1,3 +1,8 @@
+## 2026-11-25 — QA: homologación de nuevas identidades de alojamiento
+
+- QA se vincula al nuevo proyecto autorizado `prj_BIjoIFQz2oSHCosjj7lcc5blck9E`, origen `https://solqarynqa-nu.vercel.app` y API `https://solqaryn.onrender.com`; se reemplaza la identidad anterior exclusivamente en qa. No se amplía la allowlist ni se relajan controles.
+- Se preservan los 28 nombres de variables, noindex, los pins de CI y el aislamiento MySQL/JWT. DEV y PROD sin cambios de infraestructura. Production Branch QA, CORS y readiness real quedan pendientes de confirmación; no se activa Auto-Deploy.
+
 ## 2026-10-07 — Hotfix de sanitización de imágenes
 
 - SixLabors.ImageSharp 3.1.12 se retira después de que los scanners NuGet comenzaron a reportar advisories high/moderate sobre esa versión.

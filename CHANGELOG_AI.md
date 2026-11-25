@@ -1,3 +1,9 @@
+## 2026-11-25 — QA: homologación del nuevo proyecto Vercel y servicio Render
+
+- Scope expresamente autorizado por el propietario: sólo qa, base `ad47c41dd6a3afc139b5daa44c183891d1480e24`. Project ID y dominio verificados en la vista del proyecto Vercel; servicio Render `srv-dc3390c0916s73fi7q30` verificado en rama qa. Nuevo binding `prj_BIjoIFQz2oSHCosjj7lcc5blck9E` -> QA -> `https://solqaryn.onrender.com`; origen `https://solqarynqa-nu.vercel.app`. Retira la identidad anterior de la allowlist de QA, sin fallback.
+- Actualiza guard de startup, rama de build, pruebas positivas/negativas, workflow de certificación viva para los endpoints nuevos y documentación canónica. Blueprint QA refleja el servicio nuevo con auto-deploy Off; no se aplica Blueprint ni se modifican recursos/secretos. Se conservan DEV/PROD, API/DTO, datos, migraciones desactivadas en Staging, JWT, base/usuario QA, Cloudinary, SMTP y 28 claves administradas.
+- Evidencia previa: despliegue Vercel de `ad47c41dd6a3afc139b5daa44c183891d1480e24` observado READY desde qa; Scope Lock DEV exact-SHA `ee5fd6e3b6f7f12febc66d926c36ce503571a693`, run 45661942743 SUCCESS y prueba de frescura SUCCESS. El nuevo SHA aún requiere CI, CORS, Production Branch qa, despliegue manual backend y readiness/proxy/noindex; no se certifica operatividad. Rollback por revert del changeset en qa y restitución explícita de la configuración QA correspondiente, sin reactivar recursos retirados.
+
 ## 2026-11-25 — QA: compatibilidad acotada del toolchain Vercel
 
 - Por orden expresa del propietario, incorpora selectivamente el validador, la política y sus pruebas desde DEV `6523c8099fd73d2b18676686548a2d937d11cdce` a QA `288a29b86989ae2efa8e8d1acc2752dac7f4dd71`, sin merge de ramas. La segunda instalación de Vercel del 25-nov reportó Node 24.22.3 y npm 11.19.1 tras compilar Angular correctamente.

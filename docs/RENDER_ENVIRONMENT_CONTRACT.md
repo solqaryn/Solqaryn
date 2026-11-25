@@ -1,12 +1,14 @@
 # Contrato canónico de variables de entorno — Render
 
-Estado vigente para `solqaryn-api-dev`, `solqaryn-api-qa` y `solqaryn-api-prod`.
+Estado del contrato para DEV (`solqaryn-api-dev`), QA (nuevo servicio `Solqaryn`, rama `qa`) y PROD (`solqaryn-api-prod`).
 
 ## Regla de paridad
 
 DEV, QA y PROD deben tener exactamente las mismas claves administradas por SOLQARYN. Solo pueden cambiar los valores propios del entorno (por ejemplo conexión MySQL, JWT, CORS, prefijo Cloudinary, URL pública y refresh token OAuth2).
 
 Contrato canónico: **28 claves en DEV, 28 claves en QA y 28 claves en PROD**.
+
+QA: `AllowedHosts=solqaryn.onrender.com`, `AppSettings__BackendPublicUrl=https://solqaryn.onrender.com` y `Cors__AllowedOrigins__0=https://solqarynqa-nu.vercel.app`. Se conserva Staging, base/usuario QA y migraciones automáticas desactivadas. El nuevo runtime todavía requiere certificación; el Auto-Deploy permanece Off.
 
 El backend refuerza este contrato en runtime con `RenderEnvironmentContractGuard`: cualquier clave administrada faltante o extra, valor requerido vacío o constante pública compartida incompatible aborta el arranque del nuevo deployment antes de reemplazar la instancia sana. El guard no registra valores; sólo conteo y fingerprints no sensibles. Las identidades/secretos propios de cada entorno —incluyendo conexión, JWT, Cloudinary y refresh token SMTP— pueden diferir.
 

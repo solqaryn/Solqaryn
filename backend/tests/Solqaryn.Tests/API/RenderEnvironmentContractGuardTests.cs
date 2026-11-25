@@ -7,7 +7,7 @@ public sealed class RenderEnvironmentContractGuardTests
 {
     [Theory]
     [InlineData("Development", "solqaryn-api-dev-fxx8.onrender.com", "true", "Solqaryn.DEV.API", "Solqaryn.DEV.Frontend", "solqaryn_dev", "https://solqaryn-dev.vercel.app", "https://solqaryn-api-dev-fxx8.onrender.com", "SOLQARYN DEV")]
-    [InlineData("Staging", "solqaryn-api-qa.onrender.com", "false", "Solqaryn.QA.API", "Solqaryn.QA.Frontend", "solqaryn_qa", "https://solqaryn-qa.vercel.app", "https://solqaryn-api-qa.onrender.com", "SOLQARYN QA")]
+    [InlineData("Staging", "solqaryn.onrender.com", "false", "Solqaryn.QA.API", "Solqaryn.QA.Frontend", "solqaryn_qa", "https://solqarynqa-nu.vercel.app", "https://solqaryn.onrender.com", "SOLQARYN QA")]
     [InlineData("Production", "solqaryn-api-prod.onrender.com", "false", "Solqaryn.PROD.API", "Solqaryn.PROD.Frontend", "solqaryn_prod", "https://solqaryn-prod.vercel.app", "https://solqaryn-api-prod.onrender.com", "SOLQARYN PROD")]
     public void Validate_AceptaContratoCanonico(
         string environment,
@@ -86,19 +86,37 @@ public sealed class RenderEnvironmentContractGuardTests
             RenderEnvironmentContractGuard.Validate("Development", variables));
     }
 
+    [Theory]
+    [InlineData("AllowedHosts", "solqaryn-api-qa.onrender.com")]
+    [InlineData("AllowedHosts", "solqaryn-api-prod.onrender.com")]
+    [InlineData("AppSettings__BackendPublicUrl", "https://solqaryn-api-qa.onrender.com")]
+    [InlineData("AppSettings__BackendPublicUrl", "https://solqaryn-api-dev-fxx8.onrender.com")]
+    [InlineData("Cors__AllowedOrigins__0", "https://solqaryn-qa.vercel.app")]
+    [InlineData("Cors__AllowedOrigins__0", "https://solqaryn-prod.vercel.app")]
+    public void Validate_QA_RechazaIdentidadAnteriorYCruces(string key, string value)
+    {
+        var variables = Canonical("Staging", "solqaryn.onrender.com", "false",
+            "Solqaryn.QA.API", "Solqaryn.QA.Frontend", "solqaryn_qa",
+            "https://solqarynqa-nu.vercel.app", "https://solqaryn.onrender.com", "SOLQARYN QA");
+        variables[key] = value;
+        var ex = Assert.Throws<InvalidOperationException>(() =>
+            RenderEnvironmentContractGuard.Validate("Staging", variables));
+        Assert.Contains(key, ex.Message);
+    }
+
     [Fact]
     public void Validate_ComparteFingerprintPublicoEntreEntornos()
     {
         var dev = RenderEnvironmentContractGuard.Validate("Development", CanonicalDev());
         var qaVariables = Canonical(
             "Staging",
-            "solqaryn-api-qa.onrender.com",
+            "solqaryn.onrender.com",
             "false",
             "Solqaryn.QA.API",
             "Solqaryn.QA.Frontend",
             "solqaryn_qa",
-            "https://solqaryn-qa.vercel.app",
-            "https://solqaryn-api-qa.onrender.com",
+            "https://solqarynqa-nu.vercel.app",
+            "https://solqaryn.onrender.com",
             "SOLQARYN QA");
         qaVariables["Cloudinary__CloudName"] = "qa-cloud";
 
