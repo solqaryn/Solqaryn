@@ -1,3 +1,7 @@
+## 2026-11-25 — QA: corregir NETSDK1004 en ensayo de migración
+
+- Restaurar NuGet y compilar API Release antes de generar SQL EF10. Run 45708742692: respaldo y restore PASS; escritura QA omitida. Se conserva el control de SQL y certificación física; nuevo intento limitado al SHA padre.
+
 ## 2026-11-25 — QA: ejecución única autorizada de migración de galería
 
 - Workflow de aplicación única restringido al repositorio, rama QA y SHA padre aprobado. Respaldo cifrado nuevo y restauración comprobada, generación EF10 del delta exacto, whitelist de SQL, ensayo aislado y certificación postmigración sin relajar fingerprints. Sin migración automática en Render, sin DEV/MAIN ni credenciales nuevas. La ejecución real y las pruebas Cloudinary quedan sujetas a evidencia de los respectivos jobs.

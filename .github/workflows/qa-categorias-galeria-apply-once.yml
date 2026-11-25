@@ -15,7 +15,7 @@ concurrency:
 
 jobs:
   verify-restore:
-    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == 'b5c4887b54ba328432273265772342859fae7d7b'
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == 'f52a0bf1f620dddaae9847038388e80130625756'
     name: QA backup, ensayo, migracion exacta y certificacion
     runs-on: ubuntu-latest
     timeout-minutes: 45
@@ -51,9 +51,9 @@ jobs:
           set -euo pipefail
           test "$GITHUB_REF_NAME" = "qa"
           node scripts/verify-project-scope.mjs
-          test "$(git rev-parse HEAD^)" = "b5c4887b54ba328432273265772342859fae7d7b"
+          test "$(git rev-parse HEAD^)" = "f52a0bf1f620dddaae9847038388e80130625756"
           test "$(git ls-remote origin refs/heads/qa | cut -f1)" = "$GITHUB_SHA"
-          git diff --exit-code "b5c4887b54ba328432273265772342859fae7d7b" HEAD -- backend frontend render.yaml .github/workflows/qa-schema-recovery.yml
+          git diff --exit-code "f52a0bf1f620dddaae9847038388e80130625756" HEAD -- backend frontend render.yaml .github/workflows/qa-schema-recovery.yml
           test "$DB_HOST" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
           test "$DB_PORT" = "14402"
           test "$DB_NAME" = "solqaryn_qa"
@@ -255,6 +255,8 @@ jobs:
           export ConnectionStrings__DefaultConnection='Server=127.0.0.1;Port=3306;Database=solqaryn_qa_restore_ephemeral;User=root;Password=solqaryn-ci-qa-disposable-only;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
           cd backend
           dotnet tool restore
+          dotnet restore src/API/Solqaryn.API.csproj
+          dotnet build src/API/Solqaryn.API.csproj --configuration Release --no-restore
           dotnet ef migrations script 20261006111818_OracleBaseline 20261125212000_CategoriasGalerias --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release --output "$RUNNER_TEMP/qa-category-gallery.sql"
           python3 - "$RUNNER_TEMP/qa-category-gallery.sql" <<'PY'
           import re, sys, pathlib
