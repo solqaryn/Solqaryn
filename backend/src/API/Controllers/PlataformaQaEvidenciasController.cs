@@ -186,6 +186,8 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                     Error = codigo
                 });
                 await _db.SaveChangesAsync(cancellationToken);
+                cancellationToken.ThrowIfCancellationRequested();
+                if (!await VigenteAsync()) return await DenegarAuditadoAsync();
             }
             catch (DbUpdateException)
             {
@@ -386,6 +388,10 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                 Resultado = "Exito"
             });
             await _db.SaveChangesAsync(cancellationToken);
+            // The audit write is another I/O boundary. Never disclose evidence
+            // if the platform grant was revoked during durable persistence.
+            cancellationToken.ThrowIfCancellationRequested();
+            if (!await VigenteAsync()) return await DenegarAuditadoAsync();
 
             return Ok(ApiResponse<PlataformaQaEvidenciasDto>.Ok(
                 new PlataformaQaEvidenciasDto(

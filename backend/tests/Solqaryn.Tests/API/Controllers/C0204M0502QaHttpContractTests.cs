@@ -413,6 +413,64 @@ public sealed class C0204M0502QaHttpContractTests
             Assert.Equal(2, denials.Count);
             Assert.All(denials, a => AssertDenialAudit(a, fixture.GlobalId));
         }
+
+        // Force revocation at the actual audit INSERT, not during upstream I/O.
+        // This fixture owns a disposable local MySQL schema.
+        upstream.BeforeResponse = null;
+        using (var scope = fixture.Host.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await db.Database.ExecuteSqlRawAsync(
+                "CREATE TRIGGER qa_ci_revoke_on_audit AFTER INSERT ON RegistrosAuditoria " +
+                "FOR EACH ROW UPDATE UsuarioRolesPlataforma SET Activa = 0 " +
+                "WHERE UsuarioId = NEW.UsuarioId AND NEW.Entidad = 'ConsultaEvidenciasQaGlobal'");
+        }
+        try
+        {
+            foreach (var (payload, expectedAuditResult) in new[]
+            {
+                (Payload(), "Exito"),
+                ("[\"private-secret\"]", "Error")
+            })
+            {
+                using (var scope = fixture.Host.Services.CreateScope())
+                {
+                    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                    var grant = await db.Set<UsuarioRolPlataforma>().SingleAsync(
+                        x => x.UsuarioId == fixture.GlobalId);
+                    grant.Activar();
+                    await db.SaveChangesAsync();
+                }
+                upstream.Payload = payload;
+                var correlation = Guid.NewGuid().ToString("N");
+                using var request = new HttpRequestMessage(HttpMethod.Get, Path);
+                request.Headers.Add(CorrelationIdMiddleware.HeaderName, correlation);
+                using var response = await client.SendAsync(request);
+                Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+                Assert.Contains("no-store", response.Headers.CacheControl?.ToString() ?? "");
+                var body = await response.Content.ReadAsStringAsync();
+                Assert.DoesNotContain("CI_MINIMA_ACREDITADA", body);
+                Assert.DoesNotContain("private-secret", body);
+
+                using var scopeAfter = fixture.Host.Services.CreateScope();
+                var after = scopeAfter.ServiceProvider.GetRequiredService<AppDbContext>();
+                var rows = await after.Set<RegistroAuditoria>().Where(
+                    x => x.CorrelationId == correlation).ToListAsync();
+                Assert.Equal(2, rows.Count);
+                var query = Assert.Single(rows, x => x.Entidad == "ConsultaEvidenciasQaGlobal");
+                Assert.Equal(expectedAuditResult, query.Resultado);
+                var deniedAfterWrite = Assert.Single(rows, x => x.Error == "QA_ACCESS_DENIED");
+                AssertDenialAudit(deniedAfterWrite, fixture.GlobalId);
+                Assert.False((await after.Set<UsuarioRolPlataforma>().SingleAsync(
+                    x => x.UsuarioId == fixture.GlobalId)).Activa);
+            }
+        }
+        finally
+        {
+            using var scope = fixture.Host.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await db.Database.ExecuteSqlRawAsync("DROP TRIGGER IF EXISTS qa_ci_revoke_on_audit");
+        }
     }
 
     // This test runs against an isolated MySQL 8.4 service in the GH-hosted QA lab.
