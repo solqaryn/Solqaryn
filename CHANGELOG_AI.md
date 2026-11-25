@@ -1,3 +1,9 @@
+## 2026-11-25 — DEV04 C15-04.M05.04: recuperar fallback accesible y reducir CSS (V44-R10/R11/R5)
+
+- Autoría: JAVIER_CHATGPT DEV04; TASK_ID=6aeacb7820ac8191b7d768a6f33dfa09; RUN_ID=a961a0c3-f648-832b-91ef-f0ba81a5ff33; base 25afbdefd8979c6400b4c3b3fe167cdd97ed5694; fila 2297, EN_PROGRESO, owner histórico DEV02. Paquete preparado por DEV03 en AJ4/run a1f4290c-9d78-8332-8e27-f9eade26464b; no A5 de autores/reparadores.
+- A0: restaura el fallback de 82px de .store-footer exigido por validate-storefront-fase10.mjs, mantiene el cálculo dinámico y overrides. Elimina la repetición de align-items:flex-start en 481px (base idéntica; 761px conserva end); agrupa min-height/height de galería y botón en 821px, manteniendo order base 0 equivalente al initial. Tres anclas únicas; CSS 16605 -> 16591 caracteres fuente. No se rebaja el presupuesto Angular ni se modifica ninguna aserción.
+- Causa: CI exacta del padre 25afbdefd8979c6400b4c3b3fe167cdd97ed5694, frontend job 139267115297 FAIL en lint tras retirar fallback; restaurado el patrón exigido por el validador. Compilación Angular real, regresión Storefront Fase 4/10 y verificación CTA/footer/foco responsive pendientes del nuevo SHA; no confundir comprobación estática con CI. Conserva controles JWT/RBAC/tenant, API, DB, migraciones y demás contratos. SKREF-03/10 originales fijadas consultadas, sin ejecutar scripts externos. CI push por SHA no cancela integración Oracle anterior de C15-03.M05.05. Rollback mediante revert normal, sin QA/main/PROD ni infraestructura. CHANGELOG_AI histórico íntegro. A0-A4 global UX y A5 pendientes.
+
 ## 2026-11-25 — DEV02 C15-04.M05.04: presupuesto CSS detalle público (V44-R10/R5)
 
 - Autoría: JAVIER_CHATGPT DEV02; TASK_ID=6af16bb9492c8191b8e8c7d606f11507; RUN_ID=f48a0f8e-ec7c-8324-9b96-e7ee901ab5b2; base cd8c67dd046ca56bbb3f41d7ee5af89290af660c. Scope C15-04.M05.04, fila 2297 EN_PROGRESO. Evento V44R10-J10-F48A0F8E-C1504M0504-CSSBUDGET. Revisión A5 por otra Task elegible.
