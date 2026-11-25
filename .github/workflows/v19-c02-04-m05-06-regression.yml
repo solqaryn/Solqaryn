@@ -5,6 +5,7 @@ on:
     paths:
       - 'frontend/e2e/c02-04-m05-06-regression.spec.ts'
       - 'backend/tests/Solqaryn.Tests/API/Controllers/C0204M0502QaHttpContractTests.cs'
+      - 'backend/src/Application/AutomationV5/V5UniversalCaseFileQaEvidenceAudit.cs'
       - '.github/workflows/v19-c02-04-m05-06-regression.yml'
   workflow_dispatch:
 permissions:

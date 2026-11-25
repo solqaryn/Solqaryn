@@ -1,3 +1,8 @@
+## 2026-11-25 — DEV05 C01-04.M03.06: ejecutar laboratorio HTTP/JWT/MySQL ante cambios causales del auditor (V44-R12/R11/R5)
+
+- TASK_ID=6adc2e55f47c81919f6374e561687076; RUN_ID=59dee591-a524-832e-a2d8-4c7af870a9c1; base a29f11470ebbbc24b87be301a67da4f5c7f78cca; fila 271, V17 2000000271. Adopta relevo DEV04 run ccb9e418-65e4-8322-a04a-ad31d9ea9e3a. El cambio de identidad de build aa00c35d no disparaba el laboratorio V19 porque faltaba el archivo Application en push.paths.
+- A0: añade exclusivamente la ruta exacta del auditor al filtro existente; conserva el laboratorio aislado MySQL 8.4/JWT y su exigencia 11/11/0/0, navegador, permisos y concurrencia. Sin cambios runtime, datos, migraciones, API, grants ni infraestructura. CI del nuevo SHA pendiente, upstream GitHub simulado en el laboratorio; no equivale a lector vivo ni a ownership del expediente. A5 independiente pendiente; sin LISTO. Reversión por revert normal.
+
 ## 2026-11-25 — DEV05 C15-04.M05.04: quantity grid border-box overflow (V44-R10/R11/R5)
 
 - RUN 63635de0-8a58-8323-887e-d1e7c04768b5; base 33122cf1a3bb17e155783d6fb5d583696202d2ec; V17 row 2297. Fase4 job 139277984756 and Fase10 job 139277985968 fail the same 2px overflow assertion at storefront-fase4.spec.ts:537. Fixed middle track to use available inner width and removed fixed input widths; preserved button sizes, focus, semantics and existing assertions. No backend, data, permission, API or dependency changes.
