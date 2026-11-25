@@ -6,6 +6,7 @@ using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using Solqaryn.API.Middleware;
+using Solqaryn.Application.AutomationV5;
 using Solqaryn.Application.Common;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
@@ -39,6 +40,12 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
         "SOLQARYN - Seguridad multiempresa",
         "Backend Release y pruebas"
     ];
+
+    // Stable identity of GitHub Actions on github.com, not an authorization grant.
+    private const long GitHubActionsAppId = 15368;
+
+    private sealed record QaCheckIdentity(string Check, long CheckId, long CheckSuiteId,
+        long AppId, string AppSlug, string Status, string? Conclusion);
 
     private readonly IPlataformaScopeService _scope;
     private readonly ICurrentUserService _current;
@@ -236,10 +243,13 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                 return await FalloProveedorAsync("QA_UPSTREAM_CONTRACT");
 
             var checks = new List<PlataformaQaCheckDto>(count);
+            var checkIds = new HashSet<long>();
+            var identities = new List<QaCheckIdentity>();
             foreach (var item in checkRuns.EnumerateArray())
             {
                 if (item.ValueKind != JsonValueKind.Object || !PropiedadesUnicas(item) ||
-                    !string.Equals(Valor(item, "head_sha"), sha, StringComparison.OrdinalIgnoreCase))
+                    !string.Equals(Valor(item, "head_sha"), sha, StringComparison.OrdinalIgnoreCase) ||
+                    !EnteroPositivo(item, "id", out var checkId) || !checkIds.Add(checkId))
                     return await FalloProveedorAsync("QA_UPSTREAM_CONTRACT");
 
                 var name = Valor(item, "name");
@@ -262,6 +272,25 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                 }
                 else if (conclusionElement.ValueKind != JsonValueKind.Null)
                     return await FalloProveedorAsync("QA_UPSTREAM_CONTRACT");
+                // Only provider-authenticated identities can support the minimum gates
+                // or the directed case-file QA check. Unknown checks remain display-only.
+                if (ChecksMinimos.Contains(name, StringComparer.Ordinal) ||
+                    string.Equals(name, V5UniversalCaseFileQaEvidenceAudit.DirectedDurableCheckName,
+                        StringComparison.Ordinal))
+                {
+                    if (!item.TryGetProperty("check_suite", out var suite) ||
+                        suite.ValueKind != JsonValueKind.Object || !PropiedadesUnicas(suite) ||
+                        !EnteroPositivo(suite, "id", out var suiteId) ||
+                        !item.TryGetProperty("app", out var app) ||
+                        app.ValueKind != JsonValueKind.Object || !PropiedadesUnicas(app) ||
+                        !EnteroPositivo(app, "id", out var appId) || appId != GitHubActionsAppId ||
+                        !string.Equals(Valor(app, "slug"), "github-actions", StringComparison.Ordinal))
+                        return await FalloProveedorAsync("QA_UPSTREAM_CONTRACT");
+
+                    identities.Add(new QaCheckIdentity(name, checkId, suiteId, appId,
+                        "github-actions", status, conclusion));
+                }
+
                 var details = Valor(item, "details_url");
                 string? safeUrl = null;
                 if (Uri.TryCreate(details, UriKind.Absolute, out var parsed) &&
@@ -310,7 +339,10 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                     EstadoCi = estado,
                     EstadoA5 = "SIN_VERIFICAR",
                     TotalChecks = checks.Count,
-                    ChecksExitosos = successfulChecks
+                    ChecksExitosos = successfulChecks,
+                    // Bounded, allowlisted metadata only. This is not run/attempt
+                    // verification, tenant ownership, or an A5 certification.
+                    ChecksIdentificados = identities
                 }),
                 Resultado = "Exito"
             });
@@ -371,6 +403,13 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
             if (!seen.Add(property.Name))
                 return false;
         return true;
+    }
+
+    private static bool EnteroPositivo(JsonElement item, string key, out long number)
+    {
+        number = 0;
+        return item.TryGetProperty(key, out var value) &&
+            value.ValueKind == JsonValueKind.Number && value.TryGetInt64(out number) && number > 0;
     }
 
     private static string? Valor(JsonElement item, string key) =>

@@ -78,6 +78,15 @@ public sealed class C0204M0502QaHttpContractTests
         Assert.Equal("SIN_VERIFICAR", metadata.RootElement.GetProperty("EstadoA5").GetString());
         Assert.Equal(4, metadata.RootElement.GetProperty("TotalChecks").GetInt32());
         Assert.Equal(4, metadata.RootElement.GetProperty("ChecksExitosos").GetInt32());
+        var identities = metadata.RootElement.GetProperty("ChecksIdentificados");
+        Assert.Equal(new long[] { 456, 457, 458, 459 },
+            identities.EnumerateArray().Select(x => x.GetProperty("CheckId").GetInt64()).ToArray());
+        Assert.All(identities.EnumerateArray(), x =>
+        {
+            Assert.Equal(15368, x.GetProperty("AppId").GetInt64());
+            Assert.Equal("github-actions", x.GetProperty("AppSlug").GetString());
+            Assert.True(x.GetProperty("CheckSuiteId").GetInt64() > 0);
+        });
         Assert.DoesNotContain("private-secret", audit.ValoresNuevos!);
         Assert.True(Guid.TryParseExact(audit.CorrelationId, "N", out _));
     }
@@ -595,7 +604,15 @@ public sealed class C0204M0502QaHttpContractTests
             // Last-value-wins parsing used to accept these contradictory fields.
             Payload().Replace("\"total_count\":4", "\"total_count\":1,\"total_count\":4"),
             Payload().Replace("\"conclusion\":\"success\"", "\"conclusion\":\"failure\",\"conclusion\":\"success\""),
-            Payload().Replace("\"head_sha\":", "\"head_sha\":\"private-secret\",\"head_sha\":")
+            Payload().Replace("\"head_sha\":", "\"head_sha\":\"private-secret\",\"head_sha\":"),
+            // Required evidence must retain a unique, positive check and suite identity
+            // from GitHub Actions; matching names and SHA alone are insufficient.
+            Payload().Replace("\"id\":456,", ""),
+            Payload().Replace("\"id\":457,", "\"id\":456,"),
+            Payload().Replace("\"id\":456,", "\"id\":0,"),
+            Payload().Replace("\"check_suite\":{\"id\":789}", "\"check_suite\":{\"id\":0}"),
+            Payload().Replace("\"slug\":\"github-actions\"", "\"slug\":\"private-secret\""),
+            Payload().Replace("\"id\":15368,", "\"id\":15369,")
         })
         {
             upstream.Payload = invalid;
@@ -636,24 +653,37 @@ public sealed class C0204M0502QaHttpContractTests
         using var scope = fixture.Host.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var audits = await db.Set<RegistroAuditoria>().ToListAsync();
-        Assert.Equal(9, audits.Count);
+        Assert.Equal(15, audits.Count);
         Assert.Single(audits.Where(x => x.Resultado == "Error" && x.Error == "QA_UPSTREAM_TIMEOUT"));
-        Assert.Equal(6, audits.Count(x => x.Resultado == "Error" && x.Error == "QA_UPSTREAM_CONTRACT"));
+        Assert.Equal(12, audits.Count(x => x.Resultado == "Error" && x.Error == "QA_UPSTREAM_CONTRACT"));
+        var recoveredAudit = Assert.Single(audits.Where(x => x.Resultado == "Exito" &&
+            (x.ValoresNuevos ?? "").Contains("\"CI_MINIMA_ACREDITADA\"", StringComparison.Ordinal)));
+        Assert.Null(recoveredAudit.EmpresaId);
+        Assert.Equal(AmbitoAutorizacion.Plataforma, recoveredAudit.AmbitoAutoridad);
+        using var recoveredMetadata = JsonDocument.Parse(recoveredAudit.ValoresNuevos!);
+        Assert.Equal(4, recoveredMetadata.RootElement.GetProperty("ChecksIdentificados").GetArrayLength());
         Assert.All(audits, x => Assert.DoesNotContain("private-secret", x.ValoresNuevos ?? ""));
     }
 
     private static string Payload(string conclusion = "success", string[]? detailsUrls = null)
     {
         var checkIndex = 0;
-        object Check(string name, string result) => new
+        object Check(string name, string result)
         {
-            head_sha = Sha,
-            name,
-            status = "completed",
-            conclusion = result,
-            details_url = detailsUrls is null ? "https://github.com/solqaryn/Solqaryn/actions/runs/123/job/456" : detailsUrls[checkIndex++],
-            output = new { summary = "private-secret-not-for-the-response" }
-        };
+            var index = checkIndex++;
+            return new
+            {
+                id = 456L + index,
+                check_suite = new { id = 789L + index },
+                app = new { id = 15368L, slug = "github-actions" },
+                head_sha = Sha,
+                name,
+                status = "completed",
+                conclusion = result,
+                details_url = detailsUrls is null ? "https://github.com/solqaryn/Solqaryn/actions/runs/123/job/456" : detailsUrls[index],
+                output = new { summary = "private-secret-not-for-the-response" }
+            };
+        }
         return JsonSerializer.Serialize(new
         {
             total_count = 4,

@@ -1,3 +1,8 @@
+## 2026-11-25 — DEV03 C01-04.M03.06: procedencia y registro de checks QA globales (V44-R8)
+
+- R2: adopta hallazgo DEV01 en PlataformaQaEvidenciasController; exige ID positivo y único por check, suite positiva y aplicación GitHub Actions (id 15368 y slug exacto) para gates mínimos y prueba dirigida. Persiste únicamente identidades acotadas de checks autorizados en RegistroAuditoria; conserva DTO, grant global revalidado, sanitización, ausencia de tenant y A5 SIN_VERIFICAR. No convierte metadata en ownership de expediente ni certifica run/attempt/job.
+- Extiende contrato HTTP JWT/MySQL aislado existente con seis negativos de identidad/procedencia y readback de metadata; CI exact-SHA pendiente. No migraciones, infraestructura ni cambios de permisos. DEV03/DEV01 no elegibles A5 por reparación causal; preservar revisor independiente. R5 publicación fast-forward bajo V17; CHANGELOG histórico íntegro.
+
 ## 2026-11-25 — DEV05 C01-04.M03.06: identidad durable de build y deduplicación estable (V44-R8)
 
 - R2: propaga identidad tipada workflow/run/attempt/job/check/suite del lector al contrato de auditoría, logger y sink aislado; valida concordancia con microtarea, SHA, nombre, estado y conclusión. La identidad es metadato, no prueba por sí sola de autoridad, CI o A5; se conserva la clase no verificada y no se añade ruta HTTP, permiso ni DI.
