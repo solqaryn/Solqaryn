@@ -1,3 +1,8 @@
+## 2026-11-24 — DEV04 C01-03.M04.01: corregir observador de API histórica V44
+
+- Job 138880773218, SHA e757c330: login, API, MySQL y formulario histórico alcanzados; el assert de empresa recibe undefined por el filtro del GET del navegador. El padre d7b460e8 declara environment.apiUrl http://localhost:5005, mientras la sonda directa utiliza 127.0.0.1:5005.
+- Ajusta únicamente el observador del harness histórico al origen real de Angular y conserva comprobación de identidad, nombre, JWT, MySQL, zoom nativo y PNG. No modifica el padre, runtime, permisos ni suite actual. Conserva evidencia FAIL y A5 independiente pendiente; nueva CI necesaria antes de certificar capturas históricas. Rollback: revert del changeset de evidencia.
+
 ## 2026-11-24 — DEV03 C01-03.M04.01: reproducción histórica aislada V44
 
 - Añade evidencia exclusiva del padre d7b460e8, ruta /configuracion y card preexistente, con JWT/MySQL 8.4 reales y zoom nativo Chromium/X11. Observa acceso single y A/B sin modificar runtime histórico ni simular autorización.

@@ -14,6 +14,8 @@ assert.ok(['single','multi'].includes(phase) && process.env.C1504_TEST_PASSWORD)
 assert.equal((await exec('git',['rev-parse','HEAD'])).stdout.trim(), parent);
 const base = 'http://127.0.0.1:4200';
 const api = 'http://127.0.0.1:5005';
+// The immutable historical Angular environment.ts uses localhost, not the direct API probe origin.
+const browserApi = 'http://localhost:5005';
 const root = await mkdtemp(join(tmpdir(),'sq-historical-'));
 const extension = join(root,'extension');
 const output = resolve('v44-c0103-m0401-historical');
@@ -104,7 +106,7 @@ async function inspect(id, username) {
     await page.evaluate(tenant=>localStorage.setItem('solqaryn_empresa_solicitada_id',String(tenant)),id);
     const reads=[];
     page.on('response', async r=>{
-      if(r.url()===api+'/empresa-configuracion/tenant/'+id&&r.request().method()==='GET'){
+      if(r.url()===browserApi+'/empresa-configuracion/tenant/'+id&&r.request().method()==='GET'){
         let data=null;
         if(r.status()===200)try{const b=(await r.json())?.data;data={empresaId:b?.empresaId,nombre:b?.nombre};}catch{}
         reads.push({status:r.status(),data});
@@ -127,7 +129,7 @@ async function inspect(id, username) {
       await form.getByText('Empresa #'+id,{exact:true}).waitFor({state:'visible'});
       for(let i=0;i<30&&!reads.some(r=>r.status===200);i++)await page.waitForTimeout(100);
       const data=reads.find(r=>r.status===200)?.data;
-      assert.equal(data?.empresaId,id);
+      assert.equal(data?.empresaId,id,'Historical browser GET must return the selected tenant (observed statuses: '+reads.map(r=>r.status).join(',')+')');
       assert.equal(await form.locator('input[formcontrolname="nombre"]').inputValue(),data.nombre);
     }else{
       assert.notEqual(route,'/configuracion','route did not settle');
