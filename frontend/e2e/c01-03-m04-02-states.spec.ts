@@ -155,7 +155,7 @@ test.describe('V24 M04.02 UI states after real JWT login with isolated response 
     }
   });
 
-  test('transient failure recovers on retry against the REAL API', async ({ page }) => {
+  test('HTTP 500 recovers on retry against the REAL API', async ({ page }) => {
     await loginA(page);
     // The page and its tenant card both GET the same authenticated endpoint.
     // Fail ALL initial GETs, not merely the first (which could be the brand GET).
@@ -170,17 +170,29 @@ test.describe('V24 M04.02 UI states after real JWT login with isolated response 
       }
       if (simulateOutage) {
         injectedFailures++;
-        await route.fulfill({ status: 503, contentType: 'application/json', body: '{}' });
+        await route.fulfill({
+          status: 500, contentType: 'application/json',
+          body: JSON.stringify({ message: 'PRIVATE_HTTP500_DETAIL_NOT_FOR_UI' })
+        });
       } else {
         genuineRecoveryGets++;
         await route.continue();
       }
     });
     await page.goto(target);
-    await expect(page.locator('[data-config-state="unavailable"]')).toBeVisible();
-    expect(injectedFailures, 'must exercise at least one true simulated outage on initial GET').toBeGreaterThan(0);
+    await expect(page.locator('[data-config-state="unavailable"][role="alert"]')).toBeVisible();
+    await expect(page.getByRole('form', { name: 'Configuración del tenant activo' })).toHaveCount(0);
+    await expect(page.locator('body')).not.toContainText('PRIVATE_HTTP500_DETAIL_NOT_FOR_UI');
+    expect(injectedFailures, 'must exercise at least one simulated HTTP 500 on initial GET').toBeGreaterThan(0);
     simulateOutage = false;
+    const recovered = page.waitForResponse(r =>
+      r.url().endsWith('/empresa-configuracion/tenant/1') &&
+      r.request().method() === 'GET' && r.status() === 200);
     await page.getByRole('button', { name: 'Reintentar consulta' }).click();
+    const response = await recovered;
+    const payload = await response.json();
+    expect(payload.success).toBe(true);
+    expect(payload.data.empresaId).toBe(1);
     await expect(page.getByRole('form', { name: 'Configuración del tenant activo' })).toBeVisible();
     await expect(page.getByText('Empresa #1', { exact: false })).toBeVisible();
     expect(genuineRecoveryGets, 'retry must reach the real authenticated MySQL-backed API').toBeGreaterThan(0);

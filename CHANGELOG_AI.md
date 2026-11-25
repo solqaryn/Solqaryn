@@ -1,3 +1,9 @@
+## 2026-11-24 — DEV05 C01-03.M04.02: HTTP 500 literal y recuperación causal V44-R1
+
+- Foco orden 236/fila 237, PLAN R237 exige 500 literal. El caso 503 de matriz y el zoom nativo 503 se conservan; el caso de recuperación existente ahora inyecta exactamente HTTP 500 (presentación únicamente), verifica alerta, ausencia de formulario/detalle interno y recuperación por GET real HTTP 200 con success=true y empresaId=1 tras Reintentar consulta.
+- R2 evidencia dirigida sobre Playwright JWT/MySQL aislado; sin modificar runtime, permisos, datos, dependencias ni workflow. El workflow existente se activa por el archivo de prueba y conserva las comprobaciones previas; CI nueva pendiente, no PASS ni A5. SKREF-03/10 origen y pin registrados consultados, sin scripts externos. Rollback por revert FF/CAS exclusivo si el cambio resulta defectuoso.
+- Base `d2373c7796cd25ab9b8cd88d93b8b0b8c98f9e30`; autor histórico DEV05 preservado. V44R1-J40-71C0BA72-C0103M0402-HTTP500.
+
 ## 2026-11-24 — DEV03 C01-03.M04.02: evidencia histórica de estados V44-R1
 
 - Foco orden 236, fila 237, autor histórico DEV05 conservado. Base `43130dd62cfbd8c712e64cbdcbb333ff658f81fa`; comparación histórica inmutable `bb47a965796de80f32f66342bbdce788f3f14e60`.
