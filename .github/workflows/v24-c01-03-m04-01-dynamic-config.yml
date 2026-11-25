@@ -133,6 +133,11 @@ jobs:
           INSERT INTO Empresas (Id, Nombre, Activa, FechaCreacion, FechaActualizacion)
           VALUES (2, 'Empresa B efimera C15', TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6))
           ON DUPLICATE KEY UPDATE Activa=TRUE, FechaActualizacion=UTC_TIMESTAMP(6);
+          -- Real ephemeral template data for tenant-scoped filtering; FK and uniqueness remain active.
+          INSERT INTO PlantillasCorreoEmpresa (EmpresaId, TipoPlantilla, Asunto, Cuerpo, Activa, FechaCreacion, FechaActualizacion)
+          VALUES (1, 'CI_M0404_A_FACTURA', 'Factura de prueba A', 'Cuerpo efimero A1', TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)),
+                 (1, 'CI_M0404_A_AVISO', 'Aviso de prueba A', 'Cuerpo efimero A2', FALSE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)),
+                 (2, 'CI_M0404_B_PRIVADA', 'Privada de prueba B', 'Cuerpo efimero B', TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6));
           INSERT INTO UsuarioEmpresas (UsuarioId, EmpresaId, RolId, Activa, FechaCreacion, FechaActualizacion)
           SELECT u.Id, 1, u.RolId, TRUE, UTC_TIMESTAMP(6), UTC_TIMESTAMP(6)
           FROM Usuarios u WHERE u.NombreUsuario='c1504_admin_a'

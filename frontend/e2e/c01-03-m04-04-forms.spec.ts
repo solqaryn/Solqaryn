@@ -159,6 +159,43 @@ test.describe('V24 M04.04 form: real GET, guarded duplicate mutation, error and 
   });
 
 
+  test('real tenant templates filter by type and subject without submitting the editor', async ({ page }) => {
+    test.setTimeout(90_000);
+    const token = await loginA(page);
+    const real = await page.request.get(api + '/empresa-configuracion/tenant/1', {
+      headers: { Authorization: 'Bearer ' + token }
+    });
+    expect(real.status()).toBe(200);
+    const persisted = (await real.json())?.data;
+    expect(persisted?.empresaId).toBe(1);
+    expect(persisted?.plantillasCorreo.map((p: { tipoPlantilla: string }) => p.tipoPlantilla))
+      .toEqual(expect.arrayContaining(['CI_M0404_A_FACTURA', 'CI_M0404_A_AVISO']));
+    const form = page.locator(formSelector);
+    const filter = form.getByRole('searchbox', { name: 'Filtrar plantillas' });
+    const list = form.getByRole('list', { name: 'Plantillas de correo' });
+    let puts = 0;
+    page.on('request', request => {
+      if (request.method() === 'PUT' && /\/empresa-configuracion\/tenant\//.test(request.url())) puts++;
+    });
+    await filter.fill('ci_m0404_a_factura');
+    await expect(list.getByRole('listitem')).toHaveCount(1);
+    await expect(list.getByText('CI_M0404_A_FACTURA', { exact: true })).toBeVisible();
+    await filter.fill(' AVISO DE PRUEBA A ');
+    await expect(list.getByRole('listitem')).toHaveCount(1);
+    await expect(list.getByText('CI_M0404_A_AVISO', { exact: true })).toBeVisible();
+    await filter.press('Enter');
+    await expect(form.getByRole('button', { name: 'Guardar configuración tenant' })).toBeEnabled();
+    await filter.fill('CI_M0404_B_PRIVADA');
+    await expect(form.getByText('No hay plantillas que coincidan con el filtro.', { exact: true })).toBeVisible();
+    await expect(list).toHaveCount(0);
+    await page.locator('app-empresa-configuracion-tenant-card').getByRole('button', { name: /Recargar/ }).first().click();
+    await expect(filter).toHaveValue('');
+    await expect(list.getByText('CI_M0404_A_FACTURA', { exact: true })).toBeVisible();
+    await expect(list.getByText('CI_M0404_A_AVISO', { exact: true })).toBeVisible();
+    await expect(form.getByText('CI_M0404_B_PRIVADA', { exact: true })).toHaveCount(0);
+    expect(puts, 'filter Enter and reload must never mutate configuration').toBe(0);
+  });
+
   test('double submit under an outstanding PUT sends precisely one request and recovers from conflict', async ({ page }) => {
     test.setTimeout(180_000);
     await loginA(page);

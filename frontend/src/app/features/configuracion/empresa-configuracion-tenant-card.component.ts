@@ -117,11 +117,21 @@ import { ConfigEmpresaTenant, EmpresaConfiguracionService } from '../../services
           @if (plantillas().length === 0) {
             <p class="hint">No hay plantillas de correo configuradas para esta empresa.</p>
           } @else {
-            <div class="templates" role="list">
-              @for (plantilla of plantillas(); track plantilla.tipoPlantilla) {
-                <article role="listitem"><strong>{{ plantilla.tipoPlantilla }}</strong><span>{{ plantilla.activa ? 'Activa' : 'Inactiva' }}</span><small>{{ plantilla.asunto }}</small></article>
-              }
-            </div>
+            <mat-form-field appearance="outline" class="templates-filter">
+              <mat-label>Filtrar plantillas</mat-label>
+              <input matInput #filtroInput type="search" [value]="filtroPlantillas()"
+                (input)="filtroPlantillas.set(filtroInput.value)" (keydown.enter)="$event.preventDefault()">
+            </mat-form-field>
+            <p class="templates-count" role="status" aria-live="polite">{{ plantillasFiltradas().length }} de {{ plantillas().length }} plantillas</p>
+            @if (plantillasFiltradas().length === 0) {
+              <p>No hay plantillas que coincidan con el filtro.</p>
+            } @else {
+              <div class="templates" role="list" aria-label="Plantillas de correo">
+                @for (plantilla of plantillasFiltradas(); track plantilla.tipoPlantilla) {
+                  <article role="listitem"><strong>{{ plantilla.tipoPlantilla }}</strong><span>{{ plantilla.activa ? 'Activa' : 'Inactiva' }}</span><small>{{ plantilla.asunto }}</small></article>
+                }
+              </div>
+            }
           }
 
           @if (conflict()) {
@@ -148,7 +158,7 @@ import { ConfigEmpresaTenant, EmpresaConfiguracionService } from '../../services
   `,
   changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
-    .tenant-card{margin-top:1.25rem;padding:1.25rem;min-width:0;max-width:100%;box-sizing:border-box}.state-diagnostic{flex-wrap:wrap;padding:1rem;border-radius:.75rem;border:1px solid rgba(0,0,0,.12);overflow-wrap:anywhere}.state-diagnostic span{flex:1 1 15rem}.state-diagnostic button{flex:0 1 auto}.form-feedback{display:flex;align-items:flex-start;gap:.75rem;padding:.875rem 1rem;border:1px solid currentColor;border-radius:.75rem;color:var(--color-error,#b3261e);overflow-wrap:anywhere;margin:0}.form-feedback span{min-width:0}.saved-state{min-height:auto;justify-content:flex-start;flex-wrap:wrap;color:var(--color-text,#111827);text-align:left;padding:.75rem 1rem;border:1px solid var(--color-success,#1b5e20);border-radius:.75rem;margin:0}.header-row,.section-title,.actions,.mail-status,.conflict,.readonly,.logo-row,.logo-actions{display:flex;align-items:center;gap:.75rem}.header-row,.section-title{justify-content:space-between;flex-wrap:wrap}h2,h3{margin:0}.tenant-form{display:grid;gap:1rem;margin-top:1rem}.hint{margin:.25rem 0;opacity:.78}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}.wide{grid-column:1/-1}.state{min-height:120px;display:flex;align-items:center;justify-content:center;gap:.75rem;text-align:center}.error,.conflict{color:var(--color-error,#b3261e)}.state.error{flex-wrap:wrap}.mail-status,.conflict,.readonly{padding:.75rem 1rem;border:1px solid rgba(0,0,0,.12);border-radius:8px}.mail-status.configured{color:#1b5e20}.logo-row{align-items:flex-start;flex-wrap:wrap}.tenant-logo,.logo-placeholder{width:120px;height:72px;border:1px solid rgba(0,0,0,.12);border-radius:8px;object-fit:contain;background:rgba(0,0,0,.02)}.logo-placeholder{display:grid;place-items:center}.logo-actions{flex-wrap:wrap}.templates{display:grid;gap:.5rem}.templates article{display:grid;grid-template-columns:minmax(140px,1fr) auto;gap:.25rem 1rem;padding:.75rem 1rem;border:1px solid rgba(0,0,0,.12);border-radius:8px}.templates small{grid-column:1/-1;opacity:.75}.actions{justify-content:flex-end}.readonly{width:fit-content}@media(max-width:760px){.grid{grid-template-columns:1fr}.wide{grid-column:auto}.header-row>button,.actions button,.conflict button{width:100%}.conflict{align-items:flex-start;flex-wrap:wrap}.logo-actions{width:100%}.logo-actions button{flex:1}}
+    .tenant-card{margin-top:1.25rem;padding:1.25rem;min-width:0;max-width:100%;box-sizing:border-box}.state-diagnostic{flex-wrap:wrap;padding:1rem;border-radius:.75rem;border:1px solid rgba(0,0,0,.12);overflow-wrap:anywhere}.state-diagnostic span{flex:1 1 15rem}.state-diagnostic button{flex:0 1 auto}.form-feedback{display:flex;align-items:flex-start;gap:.75rem;padding:.875rem 1rem;border:1px solid currentColor;border-radius:.75rem;color:var(--color-error,#b3261e);overflow-wrap:anywhere;margin:0}.form-feedback span{min-width:0}.saved-state{min-height:auto;justify-content:flex-start;flex-wrap:wrap;color:var(--color-text,#111827);text-align:left;padding:.75rem 1rem;border:1px solid var(--color-success,#1b5e20);border-radius:.75rem;margin:0}.header-row,.section-title,.actions,.mail-status,.conflict,.readonly,.logo-row,.logo-actions{display:flex;align-items:center;gap:.75rem}.header-row,.section-title{justify-content:space-between;flex-wrap:wrap}h2,h3{margin:0}.tenant-form{display:grid;gap:1rem;margin-top:1rem}.hint{margin:.25rem 0;opacity:.78}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:1rem}.wide{grid-column:1/-1}.state{min-height:120px;display:flex;align-items:center;justify-content:center;gap:.75rem;text-align:center}.error,.conflict{color:var(--color-error,#b3261e)}.state.error{flex-wrap:wrap}.mail-status,.conflict,.readonly{padding:.75rem 1rem;border:1px solid rgba(0,0,0,.12);border-radius:8px}.mail-status.configured{color:#1b5e20}.logo-row{align-items:flex-start;flex-wrap:wrap}.tenant-logo,.logo-placeholder{width:120px;height:72px;border:1px solid rgba(0,0,0,.12);border-radius:8px;object-fit:contain;background:rgba(0,0,0,.02)}.logo-placeholder{display:grid;place-items:center}.logo-actions{flex-wrap:wrap}.templates-filter{width:100%;min-width:0}.templates-count{margin:0;color:var(--color-text,#111827)}.templates{display:grid;gap:.5rem;min-width:0}.templates article{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:.25rem 1rem;padding:.75rem 1rem;border:1px solid rgba(0,0,0,.12);border-radius:8px;min-width:0;overflow-wrap:anywhere}.templates small{grid-column:1/-1;opacity:.75}.actions{justify-content:flex-end}.readonly{width:fit-content}@media(max-width:760px){.grid{grid-template-columns:1fr}.wide{grid-column:auto}.header-row>button,.actions button,.conflict button{width:100%}.conflict{align-items:flex-start;flex-wrap:wrap}.logo-actions{width:100%}.logo-actions button{flex:1}}
   `]
 })
 export class EmpresaConfiguracionTenantCardComponent implements OnInit {
@@ -177,6 +187,15 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
   readonly correoConfigurado = signal(false);
   readonly logoUrl = signal<string | null>(null);
   readonly plantillas = signal<ConfigEmpresaTenant['plantillasCorreo']>([]);
+  readonly filtroPlantillas = signal('');
+  readonly plantillasFiltradas = computed(() => {
+    if (!this.configuracionVerificada()) return [];
+    const filtro = this.filtroPlantillas().trim().toLocaleLowerCase('es');
+    const autorizadas = this.plantillas();
+    return filtro ? autorizadas.filter(p =>
+      p.tipoPlantilla.toLocaleLowerCase('es').includes(filtro) ||
+      p.asunto.toLocaleLowerCase('es').includes(filtro)) : autorizadas;
+  });
   private version = 0;
   private initialized = false;
   private loadedEmpresaId: number | null = null;
@@ -215,6 +234,7 @@ export class EmpresaConfiguracionTenantCardComponent implements OnInit {
     const empresaId = this.empresaId();
     const generation = ++this.loadGeneration;
     this.appliedEmpresaId.set(null);
+    this.filtroPlantillas.set('');
     this.loadedEmpresaId = empresaId ?? null;
     this.loadState.set('ready');
     this.lastSaved.set(false);
