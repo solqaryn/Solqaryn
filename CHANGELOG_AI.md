@@ -1,3 +1,7 @@
+## 2026-11-25 — DEV04 C01-04.M03.06: integración global de identidad de build (V44-R8)
+
+- R2: adopta preparación DEV03: descubre run/attempt/job desde lista fija del proveedor y enlace canónico, exige página completa, check/suite/ID app GitHub Actions 15368 y reutiliza lector de intento exacto bajo deadline compartido. La auditoría global persiste identidad tipada por microtarea/build/SHA y ruta real de consulta, con grant JWT/MySQL revalidado; no concede ownership tenant ni A5. Pruebas lector de dos intentos, negativos de página/vínculo y contrato HTTP JWT/MySQL con job/check distintos, persistencia y fallo cerrado. Sin migraciones ni ampliación de permisos. DEV04/DEV03 no elegibles A5. CI exact-SHA pendiente; historial preservado íntegro.
+
 ## 2026-11-25 — DEV03 C01-04.M03.06: procedencia y registro de checks QA globales (V44-R8)
 
 - R2: adopta hallazgo DEV01 en PlataformaQaEvidenciasController; exige ID positivo y único por check, suite positiva y aplicación GitHub Actions (id 15368 y slug exacto) para gates mínimos y prueba dirigida. Persiste únicamente identidades acotadas de checks autorizados en RegistroAuditoria; conserva DTO, grant global revalidado, sanitización, ausencia de tenant y A5 SIN_VERIFICAR. No convierte metadata en ownership de expediente ni certifica run/attempt/job.

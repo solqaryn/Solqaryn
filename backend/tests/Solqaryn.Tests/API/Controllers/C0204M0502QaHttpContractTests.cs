@@ -665,6 +665,88 @@ public sealed class C0204M0502QaHttpContractTests
         Assert.All(audits, x => Assert.DoesNotContain("private-secret", x.ValoresNuevos ?? ""));
     }
 
+    [Fact]
+    public async Task GlobalDirectedBuildIdentityIsPersistedOnlyAfterProviderJoin()
+    {
+        const string root = "/repos/solqaryn/Solqaryn/";
+        const string directedName = "C01-04.M03.06 - directed durable MySQL 8.4 QA proof";
+        const string details = "https://github.com/solqaryn/Solqaryn/actions/runs/123/job/7899";
+        const string checkLink = "https://api.github.com/repos/solqaryn/Solqaryn/check-runs/460";
+        using var existing = JsonDocument.Parse(Payload());
+        var directed = new
+        {
+            id = 460L, name = directedName, head_sha = Sha, status = "completed",
+            conclusion = "success", details_url = details, check_suite = new { id = 793L },
+            app = new { id = 15368L, slug = "github-actions" }
+        };
+        var combined = JsonSerializer.Serialize(new
+        {
+            total_count = 5,
+            check_runs = existing.RootElement.GetProperty("check_runs").EnumerateArray()
+                .Select(x => (object)x.Clone()).Append(directed).ToArray()
+        });
+        var job = new
+        {
+            id = 7899L, run_id = 123L, run_attempt = 2, head_sha = Sha, head_branch = "dev",
+            name = directedName, status = "completed", conclusion = "success",
+            html_url = details, check_run_url = checkLink
+        };
+        var jobs = JsonSerializer.Serialize(new { total_count = 1, jobs = new[] { job } });
+        var attempt = JsonSerializer.Serialize(new
+        {
+            id = 123L, run_attempt = 2, head_sha = Sha, head_branch = "dev", @event = "push",
+            path = ".github/workflows/v23-c01-04-m03-06-durable-qa-mysql84.yml",
+            repository = new { full_name = "solqaryn/Solqaryn" },
+            head_repository = new { full_name = "solqaryn/Solqaryn" },
+            workflow_id = 426472921L, check_suite_id = 793L, status = "completed", conclusion = "success"
+        });
+        var discovery = root + "actions/runs/123/jobs?filter=all&per_page=100";
+        var upstream = new GitHubFake(combined);
+        upstream.AdditionalResponses[discovery] = jobs;
+        upstream.AdditionalResponses[root + "actions/runs/123/attempts/2"] = attempt;
+        upstream.AdditionalResponses[root + "actions/runs/123/attempts/2/jobs?per_page=100"] = jobs;
+        upstream.AdditionalResponses[root + "commits/" + Sha + "/check-runs?per_page=100&filter=all"] = combined;
+        await using var fixture = await CrearAsync(upstream, mysql: !string.IsNullOrWhiteSpace(
+            Environment.GetEnvironmentVariable("SOLQARYN_C0204_MYSQL_TEST_CONNECTION")));
+        using var client = fixture.Host.GetTestClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer", Token(fixture.GlobalId, "operadorglobal"));
+        using (var response = await client.GetAsync(Path))
+        {
+            Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+            using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+            Assert.Equal("SIN_VERIFICAR", json.RootElement.GetProperty("data").GetProperty("estadoA5").GetString());
+        }
+        Assert.Equal(5, upstream.Calls);
+
+        // A valid-looking check link to another check must not become a build receipt.
+        upstream.AdditionalResponses[discovery] = jobs.Replace(checkLink,
+            "https://api.github.com/repos/solqaryn/Solqaryn/check-runs/461", StringComparison.Ordinal);
+        using (var denied = await client.GetAsync(Path))
+            Assert.Equal(HttpStatusCode.ServiceUnavailable, denied.StatusCode);
+
+        using var scope = fixture.Host.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var audits = await db.Set<RegistroAuditoria>().ToListAsync();
+        var success = Assert.Single(audits.Where(x => x.Resultado == "Exito"));
+        Assert.Null(success.EmpresaId);
+        Assert.Equal(AmbitoAutorizacion.Plataforma, success.AmbitoAutoridad);
+        using var metadata = JsonDocument.Parse(success.ValoresNuevos!);
+        Assert.Equal("/plataforma/gestion/qa/evidencias/{sha}",
+            metadata.RootElement.GetProperty("RutaConsulta").GetString());
+        var build = Assert.Single(metadata.RootElement.GetProperty("ChecksIdentificados").EnumerateArray()
+            .Where(x => x.GetProperty("CheckId").GetInt64() == 460)).GetProperty("Build");
+        Assert.Equal("C01-04.M03.06", build.GetProperty("MicrotaskId").GetString());
+        Assert.Equal(Sha, build.GetProperty("SourceSha").GetString());
+        Assert.Equal(123L, build.GetProperty("RunId").GetInt64());
+        Assert.Equal(2, build.GetProperty("Attempt").GetInt32());
+        Assert.Equal(7899L, build.GetProperty("JobId").GetInt64());
+        Assert.Equal(460L, build.GetProperty("CheckRunId").GetInt64());
+        Assert.Equal(793L, build.GetProperty("CheckSuiteId").GetInt64());
+        Assert.Single(audits.Where(x => x.Resultado == "Error" && x.Error == "QA_UPSTREAM_CONTRACT"));
+        Assert.All(audits, x => Assert.Null(x.EmpresaId));
+    }
+
     private static string Payload(string conclusion = "success", string[]? detailsUrls = null)
     {
         var checkIndex = 0;
@@ -833,18 +915,25 @@ public sealed class C0204M0502QaHttpContractTests
         public TimeSpan ProviderTimeout { get; set; } = TimeSpan.FromSeconds(100);
         public StalledQaBody? StalledBody { get; set; }
         public Func<Task>? BeforeResponse { get; set; }
+        public Dictionary<string, string> AdditionalResponses { get; } = new(StringComparer.Ordinal);
 
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request, CancellationToken cancellationToken)
         {
             Calls++;
             LastHost = request.RequestUri?.Host;
-            if (LastHost != "api.github.com" ||
-                request.RequestUri?.AbsolutePath !=
-                "/repos/solqaryn/Solqaryn/commits/" + Sha + "/check-runs")
+            if (LastHost != "api.github.com")
                 throw new InvalidOperationException("Egreso fuera del repositorio canónico.");
             if (BeforeResponse is not null)
                 await BeforeResponse();
+            if (AdditionalResponses.TryGetValue(request.RequestUri!.PathAndQuery, out var additional))
+                return new HttpResponseMessage(StatusCode)
+                {
+                    Content = new StringContent(additional, Encoding.UTF8, "application/json")
+                };
+            if (request.RequestUri.AbsolutePath !=
+                "/repos/solqaryn/Solqaryn/commits/" + Sha + "/check-runs")
+                throw new InvalidOperationException("Egreso fuera del repositorio canónico.");
             return new HttpResponseMessage(StatusCode)
             {
                 Content = StalledBody is not null

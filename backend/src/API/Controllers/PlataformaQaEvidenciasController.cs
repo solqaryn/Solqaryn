@@ -12,6 +12,7 @@ using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
 using Solqaryn.Infrastructure.Persistence;
+using Solqaryn.Infrastructure.AutomationV5;
 
 namespace Solqaryn.API.Controllers;
 
@@ -45,7 +46,8 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
     private const long GitHubActionsAppId = 15368;
 
     private sealed record QaCheckIdentity(string Check, long CheckId, long CheckSuiteId,
-        long AppId, string AppSlug, string Status, string? Conclusion);
+        long AppId, string AppSlug, string Status, string? Conclusion,
+        V5UniversalCaseFileQaEvidenceAudit.ProviderJobIdentity? Build = null);
 
     private readonly IPlataformaScopeService _scope;
     private readonly ICurrentUserService _current;
@@ -287,8 +289,21 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                         !string.Equals(Valor(app, "slug"), "github-actions", StringComparison.Ordinal))
                         return await FalloProveedorAsync("QA_UPSTREAM_CONTRACT");
 
+                    V5UniversalCaseFileQaEvidenceAudit.ProviderJobIdentity? build = null;
+                    if (status == "completed" && string.Equals(name,
+                        V5UniversalCaseFileQaEvidenceAudit.DirectedDurableCheckName, StringComparison.Ordinal))
+                    {
+                        // Only this directed workflow has a server-owned microtask mapping.
+                        // A check link is not proof of a job/attempt until independently joined.
+                        var verified = await new V5UniversalCaseFileQaGitHubJobReader(_clients)
+                            .ReadDirectedFromCheckAsync("C01-04.M03.06", sha, checkId, suiteId,
+                                Valor(item, "details_url"), conclusion, upstreamToken);
+                        if (verified is null)
+                            return await FalloProveedorAsync("QA_UPSTREAM_CONTRACT");
+                        build = verified.ToAuditIdentity();
+                    }
                     identities.Add(new QaCheckIdentity(name, checkId, suiteId, appId,
-                        "github-actions", status, conclusion));
+                        "github-actions", status, conclusion, build));
                 }
 
                 var details = Valor(item, "details_url");
@@ -340,8 +355,9 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                     EstadoA5 = "SIN_VERIFICAR",
                     TotalChecks = checks.Count,
                     ChecksExitosos = successfulChecks,
-                    // Bounded, allowlisted metadata only. This is not run/attempt
-                    // verification, tenant ownership, or an A5 certification.
+                    // The route is the actual global audit endpoint, not a claim of
+                    // tenant case-file ownership or proof of unrelated application routes.
+                    RutaConsulta = "/plataforma/gestion/qa/evidencias/{sha}",
                     ChecksIdentificados = identities
                 }),
                 Resultado = "Exito"

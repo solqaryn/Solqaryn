@@ -29,6 +29,89 @@ public sealed class V5UniversalCaseFileQaGitHubJobReader(IHttpClientFactory clie
                 CheckRunId, CheckSuiteId, CheckName, Status, Conclusion);
     }
 
+    /// <summary>
+    /// Discover the immutable attempt from the canonical run/job link supplied by
+    /// the check list. The job and check IDs need not be equal. All discovery and
+    /// corroboration share a single deadline and use fixed provider paths.
+    /// </summary>
+    public async Task<VerifiedJob?> ReadDirectedFromCheckAsync(
+        string? microtaskId, string? sha, long checkRunId, long checkSuiteId,
+        string? detailsUrl, string? conclusion, CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        if (microtaskId != Microtask || sha is not { Length: 40 } ||
+            !sha.All(c => c is >= '0' and <= '9' or >= 'a' and <= 'f') ||
+            checkRunId <= 0 || checkSuiteId <= 0 ||
+            conclusion is not ("success" or "failure" or "cancelled" or "skipped") ||
+            !TryJobDetails(detailsUrl, out var runId, out var jobId))
+            return null;
+
+        using var client = clients.CreateClient("SolqarynPublicGitHubQa");
+        if (client.BaseAddress != Provider) return null;
+        using var deadline = CancellationTokenSource.CreateLinkedTokenSource(cancellationToken);
+        var budget = TimeSpan.FromSeconds(12);
+        deadline.CancelAfter(client.Timeout != Timeout.InfiniteTimeSpan && client.Timeout < budget
+            ? client.Timeout : budget);
+        var ct = deadline.Token;
+
+        try
+        {
+            var runNumber = runId.ToString(CultureInfo.InvariantCulture);
+            using var jobsDoc = await ReadAsync(client, Root + "actions/runs/" +
+                runNumber + "/jobs?filter=all&per_page=100", ct);
+            if (jobsDoc is null) return null;
+            var jobs = Prop(jobsDoc.RootElement, "jobs");
+            var count = Number(jobsDoc.RootElement, "total_count");
+            if (count is < 1 or > 100 || jobs.ValueKind != JsonValueKind.Array ||
+                jobs.GetArrayLength() != count)
+                return null;
+            var ids = new HashSet<long>();
+            foreach (var candidate in jobs.EnumerateArray())
+                if (Number(candidate, "id") is not > 0 || !ids.Add(Number(candidate, "id")))
+                    return null;
+            var matched = jobs.EnumerateArray().Where(x => Number(x, "id") == jobId).ToArray();
+            if (matched.Length != 1) return null;
+            var job = matched[0];
+            var attempt = Number(job, "run_attempt");
+            if (attempt is < 1 or > int.MaxValue || Number(job, "run_id") != runId ||
+                Str(job, "head_sha") != sha || Str(job, "head_branch") != "dev" ||
+                Str(job, "name") != V5UniversalCaseFileQaEvidenceAudit.DirectedDurableCheckName ||
+                Str(job, "status") != "completed" || Str(job, "conclusion") != conclusion ||
+                Str(job, "html_url") != detailsUrl ||
+                !TryCheckId(Str(job, "check_run_url"), out var discoveredCheck) ||
+                discoveredCheck != checkRunId)
+                return null;
+
+            // Pass the linked token so the original deadline also bounds the
+            // three existing immutable-attempt requests.
+            var verified = await ReadDirectedAsync(microtaskId, sha, runId, (int)attempt, jobId, ct);
+            ct.ThrowIfCancellationRequested();
+            cancellationToken.ThrowIfCancellationRequested();
+            return verified is not null && verified.CheckRunId == checkRunId &&
+                verified.CheckSuiteId == checkSuiteId && verified.Conclusion == conclusion
+                ? verified : null;
+        }
+        catch (OperationCanceledException) when (!cancellationToken.IsCancellationRequested)
+        { return null; }
+        catch (HttpRequestException) { return null; }
+        catch (IOException) { return null; }
+        catch (JsonException) { return null; }
+    }
+
+    private static bool TryJobDetails(string? url, out long runId, out long jobId)
+    {
+        runId = jobId = 0;
+        const string prefix = "https://github.com/" + Repository + "/actions/runs/";
+        if (url is null || !url.StartsWith(prefix, StringComparison.Ordinal)) return false;
+        var parts = url[prefix.Length..].Split("/job/", StringSplitOptions.None);
+        return parts.Length == 2 &&
+            long.TryParse(parts[0], NumberStyles.None, CultureInfo.InvariantCulture, out runId) &&
+            long.TryParse(parts[1], NumberStyles.None, CultureInfo.InvariantCulture, out jobId) &&
+            runId > 0 && jobId > 0 &&
+            parts[0] == runId.ToString(CultureInfo.InvariantCulture) &&
+            parts[1] == jobId.ToString(CultureInfo.InvariantCulture);
+    }
+
     public async Task<VerifiedJob?> ReadDirectedAsync(
         string? microtaskId, string? sha, long runId, int attempt, long jobId,
         CancellationToken cancellationToken = default)
@@ -109,6 +192,7 @@ public sealed class V5UniversalCaseFileQaGitHubJobReader(IHttpClientFactory clie
                 Str(check, "status") != "completed" || Str(check, "conclusion") != conclusion ||
                 Str(check, "details_url") != details ||
                 Number(Prop(check, "check_suite"), "id") != suiteId ||
+                Number(Prop(check, "app"), "id") != 15368 ||
                 Str(Prop(check, "app"), "slug") != "github-actions")
                 return null;
             ct.ThrowIfCancellationRequested();
