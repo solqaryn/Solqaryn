@@ -7,6 +7,7 @@ on:
       - 'backend/src/Infrastructure/AutomationV5/V5UniversalCaseFileQaDurableMySqlAuditSink.cs'
       - 'backend/src/Infrastructure/AutomationV5/V5UniversalCaseFileQaGitHubJobReader.cs'
       - 'backend/tests/Solqaryn.Tests/Integration/C0104M0306DurableQaAuditMysql84Tests.cs'
+      - '.github/ci/c0104-github-live-proof.cs'
       - '.github/ci/c0104-r11-lab.sh'
       - '.github/ci/c0104-r11-bootstrap-recipe.json'
       - '.github/workflows/v23-c01-04-m03-06-durable-qa-mysql84.yml'
@@ -81,6 +82,32 @@ jobs:
           if len(names) != 1 or expected not in names[0]:
               raise SystemExit('WRONG_OR_SKIPPED_TEST_CASE')
           PY
+      - name: Verify production GitHub reader against immutable public QA fixture
+        working-directory: .
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$GITHUB_ACTIONS" = true
+          test "$RUNNER_ENVIRONMENT" = github-hosted
+          proof="$(mktemp -d "$RUNNER_TEMP/c0104-live-proof.XXXXXX")"
+          trap 'rm -rf -- "$proof"' EXIT
+          cp .github/ci/c0104-github-live-proof.cs "$proof/Program.cs"
+          cat > "$proof/Proof.csproj" <<EOF
+          <Project Sdk="Microsoft.NET.Sdk">
+            <PropertyGroup>
+              <OutputType>Exe</OutputType>
+              <TargetFramework>net10.0</TargetFramework>
+              <ImplicitUsings>enable</ImplicitUsings>
+              <Nullable>enable</Nullable>
+            </PropertyGroup>
+            <ItemGroup>
+              <FrameworkReference Include="Microsoft.AspNetCore.App" />
+              <ProjectReference Include="$GITHUB_WORKSPACE/backend/src/Infrastructure/Solqaryn.Infrastructure.csproj" />
+            </ItemGroup>
+          </Project>
+          EOF
+          dotnet run --project "$proof/Proof.csproj" --configuration Release
 
   r11-ownership-migration-lab:
     name: C01-04.M03.06 - R11 isolated P01/P02 migration and rollback
