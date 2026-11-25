@@ -14,6 +14,7 @@ public sealed class V5UniversalCaseFileAuthorizationGateTests
     {
         public Gate.VerifiedEvidence? Evidence { get; set; } = ValidEvidence();
         public int Calls { get; private set; }
+        public bool BindRequestedAction { get; set; } = true;
 
         public ValueTask<Gate.VerifiedEvidence?> ReadAsync(
             int caseFileId, CancellationToken cancellationToken)
@@ -21,6 +22,24 @@ public sealed class V5UniversalCaseFileAuthorizationGateTests
             cancellationToken.ThrowIfCancellationRequested();
             Calls++;
             return ValueTask.FromResult(Evidence);
+        }
+
+        public async ValueTask<Gate.VerifiedEvidence?> ReadForActionAsync(
+            int caseFileId, Rules.CaseAction action, CancellationToken cancellationToken)
+        {
+            var evidence = await ReadAsync(caseFileId, cancellationToken);
+            return BindRequestedAction && evidence is not null
+                ? evidence with { VerifiedAction = action } : evidence;
+        }
+    }
+
+    private sealed class LegacyReader : IV5UniversalCaseFileVerifiedEvidenceReader
+    {
+        public int Calls { get; private set; }
+        public ValueTask<Gate.VerifiedEvidence?> ReadAsync(int caseFileId, CancellationToken ct)
+        {
+            Calls++;
+            return ValueTask.FromResult<Gate.VerifiedEvidence?>(ValidEvidence());
         }
     }
 
@@ -205,6 +224,27 @@ public sealed class V5UniversalCaseFileAuthorizationGateTests
         };
         Assert.Equal("ATTACHMENT_ACCESS_DENIED",
             (await gate.EvaluateAsync(attachment)).Code);
+    }
+
+    [Fact]
+    public async Task ReadGrantCannotBeReusedForDifferentOperation()
+    {
+        var reader = new Reader { BindRequestedAction = false,
+            Evidence = ValidEvidence() with { VerifiedAction = Rules.CaseAction.ReadTimeline } };
+        var gate = new Gate(reader);
+        Assert.Equal("TRUSTED_CASEFILE_EXECUTION_REQUIRED", (await gate.EvaluateAsync(Read())).Code);
+        Assert.Equal("CASEFILE_ACTION_GRANT_MISMATCH", (await gate.EvaluateAsync(Write())).Code);
+        reader.Evidence = ValidEvidence();
+        Assert.Equal("CASEFILE_ACTION_GRANT_MISMATCH", (await gate.EvaluateAsync(Read())).Code);
+    }
+
+    [Fact]
+    public async Task LegacyReaderWithoutOperationBindingFailsClosed()
+    {
+        var reader = new LegacyReader();
+        Assert.Equal("CASEFILE_TRUSTED_EVIDENCE_MISSING_OR_STALE",
+            (await new Gate(reader).EvaluateAsync(Read())).Code);
+        Assert.Equal(0, reader.Calls);
     }
 
     [Fact]

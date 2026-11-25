@@ -12,6 +12,14 @@ public interface IV5UniversalCaseFileVerifiedEvidenceReader
 {
     ValueTask<V5UniversalCaseFileAuthorizationGate.VerifiedEvidence?> ReadAsync(
         int caseFileId, CancellationToken cancellationToken);
+
+    // A legacy reader cannot attest a grant for a particular operation.
+    ValueTask<V5UniversalCaseFileAuthorizationGate.VerifiedEvidence?> ReadForActionAsync(
+        int caseFileId, Rules.CaseAction action, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return ValueTask.FromResult<V5UniversalCaseFileAuthorizationGate.VerifiedEvidence?>(null);
+    }
 }
 
 public sealed class V5UniversalCaseFileAuthorizationGate
@@ -53,7 +61,10 @@ public sealed class V5UniversalCaseFileAuthorizationGate
         Rules.StoredCase? Stored,
         bool IndependentDecisionReviewVerified,
         bool AttachmentOwnershipVerified,
-        bool AttachmentLinkExpired);
+        bool AttachmentLinkExpired)
+    {
+        public Rules.CaseAction? VerifiedAction { get; init; }
+    }
 
     public readonly record struct Result(string Code)
     {
@@ -86,11 +97,14 @@ public sealed class V5UniversalCaseFileAuthorizationGate
         if (request.ClientSelectedTenantId is <= 0)
             return Deny("CASEFILE_CLIENT_TENANT_INVALID");
 
-        var evidence = await _reader.ReadAsync(request.CaseFileId, cancellationToken);
+        var evidence = await _reader.ReadForActionAsync(request.CaseFileId, request.Action, cancellationToken);
         if (evidence is null ||
             !string.Equals(evidence.ObservedSourceSha,
                 request.ExpectedSourceSha, StringComparison.Ordinal))
             return Deny("CASEFILE_TRUSTED_EVIDENCE_MISSING_OR_STALE");
+
+        if (evidence.VerifiedAction != request.Action)
+            return Deny("CASEFILE_ACTION_GRANT_MISMATCH");
 
         if (!evidence.ServerAuthenticationVerified ||
             !evidence.MembershipReadFromTrustedBackend ||

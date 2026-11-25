@@ -1,3 +1,6 @@
+## 2026-11-25 — DEV01 — C01-04.M03.06 / R11 contrato de autoridad .03
+- RUN_ID 98538ecc-6900-8325-9acb-bc22e3b15bac; base 8d8b0d93fa8014d37edaf4d75c9a656364b85988; vínculo exacto acción/recurso antes de I/O; lectores legacy fail-closed; cinco pruebas xUnit nuevas. Sin grants, DI, migraciones, ni integración JWT real; post-I/O pendiente de fuente auténtica. A0 estático, CI exacta y A5 independiente pendientes. Referencia SKREF-11 pin 49f948faa9258a0c61caceaf225e179651397431; rollback revert dev.
+
 ## 2026-11-25 — C01-04.M03.06 — DEV06 — R12/R11 lector persistente en laboratorio aislado
 
 - TASK_ID: 6af16bbad26881918c283abe06e1f32a; RUN_ID: c43c4979-fb24-8326-8fe6-c97daa85e2e4; base: 54342d239a708f5c6b103172e86767c39e0446c9; V17: SQV17_C01_04_M03_06.

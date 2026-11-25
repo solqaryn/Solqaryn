@@ -19,3 +19,8 @@ La nueva suite `V5UniversalCaseFileAuthorizationGateTests` añade once escenario
 M03.03 sigue a C01-04.M02 y M03.01/M03.02, sin liberar M03.04 ni sucesoras antes de estados A0–A5 reales. Se usa una sola Task autora y las revisiones A5 deben proceder de **otra** de las seis Javier. Impacto: nueva clase Application y xUnit; Domain sin cambios; sin migraciones ni datos; ningún cambio a frontend o integración externa. Seguridad fail-closed, tenant A/B y errores con códigos sin PII.
 
 Rollback mediante `git revert` no destructivo del commit y revalidación de CI; conservar BITACORA append-only y SHA. Sin cambios a main/QA/PROD, infraestructura, secretos o proveedores reales.
+
+
+## R11: vinculación de evidencia a operación y expediente (2026-11-25)
+
+El contrato aislado distingue selector de autoridad: el lector por acción recibe `caseFileId` y `CaseAction`, y la evidencia debe acreditar esa acción exacta. El adaptador requiere que su fuente de actor confirme recurso y operación antes del I/O. Los proveedores anteriores que no implementan el nuevo contrato deniegan por defecto. No se crean grants, ni se deduce permiso de un rol global, del JWT o de los parámetros del cliente. Las pruebas xUnit de contrato no acreditan integración JWT/RBAC/MySQL; sigue pendiente la fuente auténtica de permisos por operación y revalidación post-I/O. R11, foco C01-04.M03.06; se conserva la certificación histórica aislada y no se otorga nueva A5. Rollback: revert ordinario del commit en dev y CI causal.

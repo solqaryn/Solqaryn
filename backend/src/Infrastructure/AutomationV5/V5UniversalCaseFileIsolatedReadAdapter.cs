@@ -11,6 +11,15 @@ public interface IV5CaseFileTrustedActorSnapshotSource
 {
     ValueTask<V5UniversalCaseFileIsolatedReadAdapter.ActorSnapshot?> ReadCurrentAsync(
         CancellationToken cancellationToken);
+
+    // The requested action and resource are selectors, never authority. Legacy
+    // providers cannot attest the exact resource/operation; deny by default.
+    ValueTask<V5UniversalCaseFileIsolatedReadAdapter.ActorSnapshot?> ReadCurrentForActionAsync(
+        int caseFileId, Rules.CaseAction action, CancellationToken cancellationToken)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        return ValueTask.FromResult<V5UniversalCaseFileIsolatedReadAdapter.ActorSnapshot?>(null);
+    }
 }
 
 /// <summary>
@@ -49,7 +58,11 @@ public sealed class V5UniversalCaseFileIsolatedReadAdapter : IV5UniversalCaseFil
         int ActorId, int TenantId, int? BranchId, string? SourceSha,
         bool ServerAuthenticationVerified, bool MembershipReadFromTrustedBackend,
         bool PermissionReadFromTrustedBackend, bool PermissionRevoked,
-        bool MembershipActive, bool ExplicitPermissionGranted);
+        bool MembershipActive, bool ExplicitPermissionGranted)
+    {
+        public int? VerifiedCaseFileId { get; init; }
+        public Rules.CaseAction? VerifiedAction { get; init; }
+    }
 
     public sealed record CaseSnapshot(
         int CaseFileId, int OwnerTenantId, int? OwnerBranchId,
@@ -58,17 +71,22 @@ public sealed class V5UniversalCaseFileIsolatedReadAdapter : IV5UniversalCaseFil
         bool IndependentDecisionReviewVerified,
         bool AttachmentOwnershipVerified, bool AttachmentLinkExpired);
 
-    public async ValueTask<V5UniversalCaseFileAuthorizationGate.VerifiedEvidence?> ReadAsync(
-        int caseFileId, CancellationToken cancellationToken)
+    public ValueTask<V5UniversalCaseFileAuthorizationGate.VerifiedEvidence?> ReadAsync(
+        int caseFileId, CancellationToken cancellationToken) =>
+        ReadForActionAsync(caseFileId, Rules.CaseAction.ReadTimeline, cancellationToken);
+
+    public async ValueTask<V5UniversalCaseFileAuthorizationGate.VerifiedEvidence?> ReadForActionAsync(
+        int caseFileId, Rules.CaseAction action, CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         // Fail before touching either source for an invalid resource.
-        if (caseFileId <= 0)
+        if (caseFileId <= 0 || !Enum.IsDefined(action))
             return null;
 
-        var actor = await _actors.ReadCurrentAsync(cancellationToken);
-        if (actor is null || actor.ActorId <= 0 || actor.TenantId <= 0 ||
+        var actor = await _actors.ReadCurrentForActionAsync(caseFileId, action, cancellationToken);
+        if (actor is null || actor.VerifiedCaseFileId != caseFileId ||
+            actor.VerifiedAction != action || actor.ActorId <= 0 || actor.TenantId <= 0 ||
             actor.BranchId is <= 0 || !FullSha(actor.SourceSha) ||
             !actor.ServerAuthenticationVerified ||
             !actor.MembershipReadFromTrustedBackend ||
@@ -107,7 +125,10 @@ public sealed class V5UniversalCaseFileIsolatedReadAdapter : IV5UniversalCaseFil
             actor.PermissionReadFromTrustedBackend, actor.PermissionRevoked,
             stored.OwnershipVerifiedFromPersistence, authority, caseFile,
             stored.IndependentDecisionReviewVerified,
-            stored.AttachmentOwnershipVerified, stored.AttachmentLinkExpired);
+            stored.AttachmentOwnershipVerified, stored.AttachmentLinkExpired)
+        {
+            VerifiedAction = actor.VerifiedAction
+        };
     }
 
     private static bool FullSha(string? value) =>

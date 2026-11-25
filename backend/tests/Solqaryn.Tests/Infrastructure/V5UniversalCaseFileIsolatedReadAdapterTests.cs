@@ -14,12 +14,31 @@ public sealed class V5UniversalCaseFileIsolatedReadAdapterTests
     private sealed class Actors : IV5CaseFileTrustedActorSnapshotSource
     {
         public Adapter.ActorSnapshot? Snapshot { get; set; } = ValidActor();
+        public bool BindRequestedScope { get; set; } = true;
         public int Calls { get; private set; }
         public ValueTask<Adapter.ActorSnapshot?> ReadCurrentAsync(CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
             Calls++;
             return ValueTask.FromResult(Snapshot);
+        }
+        public async ValueTask<Adapter.ActorSnapshot?> ReadCurrentForActionAsync(
+            int caseFileId, Rules.CaseAction action, CancellationToken ct)
+        {
+            var snapshot = await ReadCurrentAsync(ct);
+            return BindRequestedScope && snapshot is not null
+                ? snapshot with { VerifiedCaseFileId = caseFileId, VerifiedAction = action }
+                : snapshot;
+        }
+    }
+
+    private sealed class LegacyActors : IV5CaseFileTrustedActorSnapshotSource
+    {
+        public int Calls { get; private set; }
+        public ValueTask<Adapter.ActorSnapshot?> ReadCurrentAsync(CancellationToken ct)
+        {
+            Calls++;
+            return ValueTask.FromResult<Adapter.ActorSnapshot?>(ValidActor());
         }
     }
 
@@ -57,6 +76,7 @@ public sealed class V5UniversalCaseFileIsolatedReadAdapterTests
         Assert.Equal(100, cases.SeenTenant);
         Assert.Equal(41, cases.SeenCase);
         Assert.Equal(11, evidence.VerifiedActorId);
+        Assert.Equal<Rules.CaseAction?>(Rules.CaseAction.ReadTimeline, evidence.VerifiedAction);
         Assert.Equal(100, evidence.VerifiedTenantId);
         Assert.True(evidence.Authority!.MembershipActive);
         Assert.True(evidence.Authority.ExplicitPermissionCurrent);
@@ -195,6 +215,41 @@ public sealed class V5UniversalCaseFileIsolatedReadAdapterTests
         cts.Cancel();
         await Assert.ThrowsAnyAsync<OperationCanceledException>(async () =>
             await bridge.ReadAsync(41, cts.Token));
+    }
+
+    [Fact]
+    public async Task ActorGrantMustMatchExactResourceAndOperationBeforeCaseIo()
+    {
+        var actor = new Actors { BindRequestedScope = false, Snapshot = ValidActor() with
+            { VerifiedCaseFileId = 41, VerifiedAction = Rules.CaseAction.ReadTimeline } };
+        var cases = new Cases();
+        var bridge = new Adapter(actor, cases);
+        Assert.Null(await bridge.ReadForActionAsync(41, Rules.CaseAction.AddObservation, CancellationToken.None));
+        actor.Snapshot = ValidActor() with { VerifiedCaseFileId = 42, VerifiedAction = Rules.CaseAction.ReadTimeline };
+        Assert.Null(await bridge.ReadAsync(41, CancellationToken.None));
+        actor.Snapshot = ValidActor();
+        Assert.Null(await bridge.ReadAsync(41, CancellationToken.None));
+        Assert.Equal(0, cases.Calls);
+    }
+
+    [Fact]
+    public async Task ActionAwareBridgePreservesVerifiedOperationButGrantsNothing()
+    {
+        var bridge = new Adapter(new Actors(), new Cases());
+        var evidence = await bridge.ReadForActionAsync(41, Rules.CaseAction.AddObservation, CancellationToken.None);
+        Assert.NotNull(evidence);
+        Assert.Equal<Rules.CaseAction?>(Rules.CaseAction.AddObservation, evidence.VerifiedAction);
+        Assert.Equal(41, evidence.VerifiedCaseFileId);
+    }
+
+    [Fact]
+    public async Task LegacyActorProviderCannotAttestExactGrant()
+    {
+        var actors = new LegacyActors();
+        var cases = new Cases();
+        Assert.Null(await new Adapter(actors, cases).ReadAsync(41, CancellationToken.None));
+        Assert.Equal(0, actors.Calls);
+        Assert.Equal(0, cases.Calls);
     }
 
     [Fact]
