@@ -1,3 +1,9 @@
+## 2026-11-25 — DEV02 C15-04.M05.04: presupuesto CSS detalle público (V44-R10/R5)
+
+- Autoría: JAVIER_CHATGPT DEV02; TASK_ID=6af16bb9492c8191b8e8c7d606f11507; RUN_ID=f48a0f8e-ec7c-8324-9b96-e7ee901ab5b2; base cd8c67dd046ca56bbb3f41d7ee5af89290af660c. Scope C15-04.M05.04, fila 2297 EN_PROGRESO. Evento V44R10-J10-F48A0F8E-C1504M0504-CSSBUDGET. Revisión A5 por otra Task elegible.
+- A0: frontend/src/app/features/storefront/storefront-producto.component.scss, retirar exclusivamente padding-bottom de 82px redundante antes del calc dinámico de la barra. Template vincula altura real en px o 0px; valor inicial 180px. Conservar safe-area, reglas escritorio/pantalla baja, foco, scroll, CTA y presupuesto 16kB sin relajar. No cambio API, datos, RBAC, dependencias ni infraestructura. Fuente build exacto job 139263772095 SUCCESS con warning anyComponentStyle +1 byte; ahorro 56 caracteres fuente, no afirmar tamaño final. SKREF03/10 originales consultados.
+- Validar nuevo SHA con Scope Lock/V5, build producción sin warning de este componente, suite storefront Fase 4 (pie, CTA, reflujo 320/390/768/1280, foco y lightbox), no certificar WCAG global ni A5 antes de evidencia. Los workflows DEV/core existentes separan push por SHA. Rollback mediante revert normal. H/I intactos; sin QA/main/PROD ni Aiven real.
+
 ## 2026-11-25 — DEV01 C15-03.M05.05: evidencia individual MySQL efímera de propiedad (V44-R10/R5)
 
 - Autoría: DEV01 JAVIER_CHATGPT TASK_ID=6adbb9fff1548191a1bd5b30d9e9984a; RUN_ID=f9ea6c9d-9d34-8321-bb2b-b354cec70bbb; adopta paquete DEV05 (AJ6) preparado a partir del relevo DEV04; revisión A5 por otra Task elegible. Base aa00c35df02596b97bcc86231c1c3364827db435.
