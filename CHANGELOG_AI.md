@@ -1,3 +1,9 @@
+## 2026-11-24 — DEV03 C01-03.M04.02: evidencia histórica de estados V44-R1
+
+- Foco orden 236, fila 237, autor histórico DEV05 conservado. Base `43130dd62cfbd8c712e64cbdcbb333ff658f81fa`; comparación histórica inmutable `bb47a965796de80f32f66342bbdce788f3f14e60`.
+- Nuevo workflow y harness dedicados a reproducir la ruta privada histórica con login JWT y MySQL 8.4 aislado, zoom nativo 100/200 y capturas X11. Se observa carga real retenida, éxito real, y respuestas GET sintéticas etiquetadas vacío/403/404/429/503; no se confunden con autorización backend real ni se exigen estados que no existían. Se verifica recuperación GET real entre escenarios, sin mutar datos o fuentes históricas.
+- A0: solo evidencia CI, sin cambios de runtime, guard, DI, API, DTO, schema, dependencias ni permisos. A1–A4: CI nueva pendiente; job actual 138858021881 conserva cinco estados nativos y 404/429 de presentación, no se relanza. A5 independiente pendiente; preservar revisor no autor/reparador. Rollback: git revert del changeset en dev conforme FF/CAS. No QA/main/PROD.
+
 ## 2026-11-24 — DEV04 C01-03.M04.01: corregir observador de API histórica V44
 
 - Job 138880773218, SHA e757c330: login, API, MySQL y formulario histórico alcanzados; el assert de empresa recibe undefined por el filtro del GET del navegador. El padre d7b460e8 declara environment.apiUrl http://localhost:5005, mientras la sonda directa utiliza 127.0.0.1:5005.
