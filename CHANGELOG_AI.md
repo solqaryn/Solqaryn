@@ -1,3 +1,8 @@
+## 2026-11-25 — DEV01 C01-04.M03.06: lector de identidad GitHub QA dirigido (V44-R8)
+
+- R2: lectura HTTP del proveedor fijo, run/attempt/job/check suite/workflow, SHA y rama vinculados; límites de bytes/deadline y rechazo de metadatos inconsistentes. Resultado acotado, no autorización ni certificación; sin DI/HTTP nuevo, esquema, JWT o permisos modificados.
+- Regresiones unitarias de contrato y rechazo; CI exacta pendiente. Fuente de propiedad real, integración durable de identidad y A5 independiente pendientes. Rollback: revert normal.
+
 ## 2026-11-25 — DEV04 C01-04.M03.06: política de job dirigido QA exacto R8
 
 - R2: nombre real del job MySQL dirigido permitido exclusivamente para C01-04.M03.06 en Application, logger e Infrastructure; sin ampliar autorización ni certificar CI/A5.
