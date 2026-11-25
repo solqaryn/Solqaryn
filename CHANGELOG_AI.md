@@ -1,3 +1,7 @@
+## 2026-11-25 — DEV04 C01-04.M03.06: identidad inmutable de intento GitHub (V44-R8)
+
+- R2: adopta preparación causal DEV03; consulta metadatos del intento solicitado y conserva verificación de run/attempt/job/check/suite/repositorio/SHA, sin convertir evidencia histórica en autorización o A5. Regresión de dos intentos del mismo run y SHA con resultados distintos y paths exactos. Cliente HTTP fijo, límites y rechazo fail-closed conservados. Sin nueva ruta, permisos, DI ni cambios de esquema. CI exacta pendiente; identidad durable y fuente real de autoridad siguen pendientes. Rollback: revert normal.
+
 ## 2026-11-25 — DEV01 C01-04.M03.06: lector de identidad GitHub QA dirigido (V44-R8)
 
 - R2: lectura HTTP del proveedor fijo, run/attempt/job/check suite/workflow, SHA y rama vinculados; límites de bytes/deadline y rechazo de metadatos inconsistentes. Resultado acotado, no autorización ni certificación; sin DI/HTTP nuevo, esquema, JWT o permisos modificados.

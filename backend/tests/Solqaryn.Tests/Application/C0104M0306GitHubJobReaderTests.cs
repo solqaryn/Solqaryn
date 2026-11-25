@@ -16,9 +16,9 @@ public sealed class C0104M0306GitHubJobReaderTests
     // Deliberately distinct job and check IDs: the linked API URL, not equality, is the proof.
     private const long Check = 139079124951L;
     private const long Suite = 123321053186L;
-    private const string Details = "https://github.com/solqaryn/Solqaryn/actions/runs/45577552132/job/139079124950";
+    private const string DetailsPrefix = "https://github.com/solqaryn/Solqaryn/actions/runs/45577552132/job/";
 
-    private sealed class Handler(string fault) : HttpMessageHandler
+    private sealed class Handler(string fault, int attempt = 1) : HttpMessageHandler
     {
         public List<string> Paths { get; } = new();
 
@@ -28,11 +28,16 @@ public sealed class C0104M0306GitHubJobReaderTests
             Assert.Equal("api.github.com", request.RequestUri!.Host);
             Paths.Add(request.RequestUri.PathAndQuery);
             var n = Paths.Count;
+            var jobId = Job + (attempt - 1) * 10L;
+            var checkId = Check + (attempt - 1) * 10L;
+            var details = DetailsPrefix + jobId.ToString(System.Globalization.CultureInfo.InvariantCulture);
             object body;
             if (n == 1)
+            {
+                Assert.Equal($"/repos/solqaryn/Solqaryn/actions/runs/{Run}/attempts/{attempt}", Paths[^1]);
                 body = new
                 {
-                    id = Run, run_attempt = fault == "attempt" ? 2 : 1,
+                    id = Run, run_attempt = fault == "attempt" ? attempt + 1 : attempt,
                     head_sha = Sha, head_branch = "dev", @event = "push",
                     path = ".github/workflows/v23-c01-04-m03-06-durable-qa-mysql84.yml",
                     repository = new { full_name = "solqaryn/Solqaryn" },
@@ -41,19 +46,20 @@ public sealed class C0104M0306GitHubJobReaderTests
                     status = fault == "pending" ? "in_progress" : "completed",
                     conclusion = fault == "failure" ? "failure" : "success"
                 };
+            }
             else if (n == 2)
             {
-                Assert.Contains("/attempts/1/jobs?", Paths[^1]);
+                Assert.Contains($"/attempts/{attempt}/jobs?", Paths[^1]);
                 body = new
                 {
                     total_count = fault == "partial" ? 2 : 1,
                     jobs = new[]
                     {
-                        new { id = Job, run_id = Run, run_attempt = 1, head_sha = Sha, head_branch = "dev",
+                        new { id = jobId, run_id = Run, run_attempt = attempt, head_sha = Sha, head_branch = "dev",
                             name = Name, status = "completed", conclusion = fault == "failure" ? "failure" : "success",
-                            html_url = Details,
+                            html_url = details,
                             check_run_url = fault == "foreign_url" ? "https://example.org/check-runs/1" :
-                                $"https://api.github.com/repos/solqaryn/Solqaryn/check-runs/{Check}" }
+                                $"https://api.github.com/repos/solqaryn/Solqaryn/check-runs/{checkId}" }
                     }
                 };
             }
@@ -62,9 +68,9 @@ public sealed class C0104M0306GitHubJobReaderTests
                 Assert.Contains("/commits/" + Sha + "/check-runs?", Paths[^1]);
                 var check = new
                 {
-                    id = Check, name = Name, head_sha = fault == "wrong_sha" ? new string('a', 40) : Sha,
+                    id = checkId, name = Name, head_sha = fault == "wrong_sha" ? new string('a', 40) : Sha,
                     status = "completed", conclusion = fault == "failure" ? "failure" : "success",
-                    details_url = Details, check_suite = new { id = fault == "suite" ? Suite + 1 : Suite },
+                    details_url = details, check_suite = new { id = fault == "suite" ? Suite + 1 : Suite },
                     app = new { slug = "github-actions" }
                 };
                 body = new { total_count = fault == "duplicate" ? 2 : 1,
@@ -121,6 +127,25 @@ public sealed class C0104M0306GitHubJobReaderTests
             .ReadDirectedAsync(Id, Sha, Run, 1, Job);
         Assert.Null(result);
         Assert.Equal(requests, handler.Paths.Count);
+    }
+
+    [Fact]
+    public async Task DistinctAttemptsOfSameRunAndShaRetainTheirOwnEvidence()
+    {
+        using var first = new Handler("failure", 1);
+        using var second = new Handler("", 2);
+        var old = await new V5UniversalCaseFileQaGitHubJobReader(new Factory(first))
+            .ReadDirectedAsync(Id, Sha, Run, 1, Job);
+        var latest = await new V5UniversalCaseFileQaGitHubJobReader(new Factory(second))
+            .ReadDirectedAsync(Id, Sha, Run, 2, Job + 10);
+        Assert.NotNull(old);
+        Assert.NotNull(latest);
+        Assert.Equal((Run, 1, Job, Check, Sha, "failure"),
+            (old.RunId, old.Attempt, old.JobId, old.CheckRunId, old.SourceSha, old.Conclusion));
+        Assert.Equal((Run, 2, Job + 10, Check + 10, Sha, "success"),
+            (latest.RunId, latest.Attempt, latest.JobId, latest.CheckRunId, latest.SourceSha, latest.Conclusion));
+        Assert.Equal(3, first.Paths.Count);
+        Assert.Equal(3, second.Paths.Count);
     }
 
     [Fact]

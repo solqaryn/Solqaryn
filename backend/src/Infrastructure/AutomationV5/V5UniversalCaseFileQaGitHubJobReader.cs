@@ -53,7 +53,9 @@ public sealed class V5UniversalCaseFileQaGitHubJobReader(IHttpClientFactory clie
         {
             // The fixed named client disables redirects. Never fetch a URL supplied
             // by the response. All three requests share a single bounded deadline.
-            using var runDoc = await ReadAsync(client, Root + "actions/runs/" + runNumber, ct);
+            // Read the requested immutable attempt, never the mutable latest-run metadata.
+            using var runDoc = await ReadAsync(client, Root + "actions/runs/" +
+                runNumber + "/attempts/" + attemptNumber, ct);
             if (runDoc is null) return null;
             var run = runDoc.RootElement;
             var workflowId = Number(run, "workflow_id");
