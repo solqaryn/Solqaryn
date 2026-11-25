@@ -1,3 +1,7 @@
+## 2026-11-25 — DEV06 — C03-03.M03.06 — R12 revocacion en vuelo con proveedor real
+- TASK_ID 6af16bbad26881918c283abe06e1f32a; RUN_ID aa50434d-2f88-8328-b0b4-cf879b97242c; base fe9d3619db26a83c8c4e16a0676e6bc3ef676ba6; adopcion del relevo DEV05 d12769cc-5a9c-8332-b1c7-5253dc11db66, reconstruido (artefacto original no recuperable).
+- CI aislada: JWT firmado, GitHub HTTPS real, MySQL 8.4 efimero, revocacion de grant durante I/O, 403 posterior sin nuevo egreso y auditoria original preservada con dos denegaciones saneadas. Gate 11 existente intacto; nuevo TRX dirigido 1/1 requerido. Sin runtime, migraciones, permisos ni despliegue modificado. CI pendiente; no A5 ni LISTO.
+
 ## 2026-11-25 — DEV06 — C01-04.M03.06 — R12 QA GLOBAL integrated HTTP evidence
 - TASK_ID 6af16bbad26881918c283abe06e1f32a; RUN_ID a3ff18dc-3abc-8331-b0c8-175c00d93107; base 2da6c6693777a12a5b5d9b7276c73907075b57d6. CI-only: new isolated proof combines real signed JWT, global controller, public GitHub reader and Oracle EF/MySQL 8.4 readback in one request; enterprise admin denied, no tenant attribution. Existing 11 tests unchanged outside ephemeral checkout. Strict named TRX; no runtime, migration, grants, Aiven, QA/main/PROD or A5. Execution pending.
 

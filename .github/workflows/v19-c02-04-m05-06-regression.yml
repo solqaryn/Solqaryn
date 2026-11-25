@@ -6,6 +6,7 @@ on:
       - 'frontend/e2e/c02-04-m05-06-regression.spec.ts'
       - 'backend/tests/Solqaryn.Tests/API/Controllers/C0204M0502QaHttpContractTests.cs'
       - 'backend/src/Application/AutomationV5/V5UniversalCaseFileQaEvidenceAudit.cs'
+      - '.github/ci/c0303-global-live-revocation.py'
       - '.github/workflows/v19-c02-04-m05-06-regression.yml'
   workflow_dispatch:
 permissions:
@@ -128,6 +129,35 @@ jobs:
           if (total, passed, failed, omitted) != (11, 11, 0, 0):
               raise SystemExit('Fail closed: not all eleven isolated JWT/MySQL tests ran and passed')
           PY
+      - name: Verify live provider revocation preserves durable global audit
+        working-directory: .
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
+          test "$GITHUB_ACTIONS" = true
+          test "$RUNNER_ENVIRONMENT" = github-hosted
+          f="$PWD/backend/tests/Solqaryn.Tests/API/Controllers/C0204M0502QaHttpContractTests.cs"
+          backup=$(mktemp)
+          cp "$f" "$backup"
+          trap 'cp "$backup" "$f"; rm -f "$backup"' EXIT
+          python3 .github/ci/c0303-global-live-revocation.py
+          cd backend
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release \
+            --filter "FullyQualifiedName~C0303LiveGithubRevocationInFlightPreservesAuditHistory" \
+            --logger "trx;LogFileName=c0303-live-revocation.trx" --results-directory qa-lab-artifacts
+          cd ..
+          python3 - <<'PY_TRX'
+          import xml.etree.ElementTree as ET
+          root = ET.parse('backend/qa-lab-artifacts/c0303-live-revocation.trx').getroot()
+          c = next(e.attrib for e in root.iter() if e.tag.endswith('Counters'))
+          assert tuple(int(c.get(k, -1)) for k in ('total','executed','passed','failed')) == (1,1,1,0)
+          assert all(int(c.get(k, 0)) == 0 for k in ('notExecuted','notRunnable','inconclusive','aborted','error','timeout'))
+          results = [e.attrib for e in root.iter() if e.tag.endswith('UnitTestResult')]
+          assert len(results) == 1 and results[0]['outcome'] == 'Passed'
+          assert results[0]['testName'].endswith('C0303LiveGithubRevocationInFlightPreservesAuditHistory')
+          print('C0303_LIVE_REVOCATION_JWT_MYSQL_TRX_PASS')
+          PY_TRX
       - name: Publish real isolated QA lab TRX and executable evidence
         if: always()
         uses: actions/upload-artifact@v4
