@@ -18,3 +18,7 @@ La identidad de la galería es EmpresaId + CategoriaId. El backend antiguo puede
 ## Reversión
 
 Si el nuevo backend falla, desplegar el SHA anterior manteniendo la tabla aditiva. No ejecutar Down ni borrar las imágenes sin respaldo y autorización explícita.
+
+## Ejecución excepcional autorizada (25 de noviembre de 2026)
+
+El workflow `qa-categorias-galeria-apply-once.yml` aplica únicamente este delta desde el SHA padre aprobado, después de repetir respaldo/restore, verificar SQL generado por EF y ensayar en MySQL aislado. No se dispara por cambios de código ordinarios ni desde otras ramas. La certificación read-only original permanece intacta. No repetir una escritura si el estado de la base cambió o si el ensayo no aprueba. El despliegue de Render y la prueba Cloudinary autenticada son verificaciones separadas.

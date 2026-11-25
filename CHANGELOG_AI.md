@@ -1,3 +1,7 @@
+## 2026-11-25 — QA: ejecución única autorizada de migración de galería
+
+- Workflow de aplicación única restringido al repositorio, rama QA y SHA padre aprobado. Respaldo cifrado nuevo y restauración comprobada, generación EF10 del delta exacto, whitelist de SQL, ensayo aislado y certificación postmigración sin relajar fingerprints. Sin migración automática en Render, sin DEV/MAIN ni credenciales nuevas. La ejecución real y las pruebas Cloudinary quedan sujetas a evidencia de los respectivos jobs.
+
 ## 2026-11-25 — QA: preflight de activación de la galería
 
 - El backup cifrado con restore aislado reconoce únicamente dos estados exactos: baseline anterior (137 tablas incluyendo historial, 108 migraciones) o baseline con galería (138 tablas, 109 migraciones, marcador y tabla presentes). No se amplían tolerancias para otros drifts.
