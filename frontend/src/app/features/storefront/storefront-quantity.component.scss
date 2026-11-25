@@ -6,15 +6,13 @@ button{min-height:44px;border:0;background:var(--store-soft);font-size:1rem;font
 button:disabled{cursor:not-allowed;opacity:.5}
 :host(.product-quantity) button{font-size:1.15rem}
 :host(.product-quantity) button:disabled{opacity:.52}
-input{width:100%;min-height:44px;padding:0 4px;border:0;border-inline:1px solid var(--store-line);background:var(--color-surface);text-align:center;appearance:textfield}
+input{width:100%;min-width:0;min-height:44px;padding:0 4px;border:0;border-inline:1px solid var(--store-line);background:var(--color-surface);text-align:center;appearance:textfield}
 input::-webkit-inner-spin-button,input::-webkit-outer-spin-button{appearance:none;margin:0}
 /* The group clips overflow; an inset outline keeps keyboard focus visible. */
 button:focus-visible,input:focus-visible{outline:2px solid var(--color-primary);outline-offset:-3px!important}
 @media(min-width:681px){
-  :host(.cart-quantity){width:154px;grid-template-columns:44px 66px 44px}
-  :host(.cart-quantity) input{width:66px}
+  :host(.cart-quantity){width:154px;grid-template-columns:44px minmax(0,1fr) 44px}
 }
 @media(min-width:761px){
-  :host(.product-quantity){width:156px;grid-template-columns:46px 64px 46px}
-  :host(.product-quantity) input{width:64px}
+  :host(.product-quantity){width:156px;grid-template-columns:46px minmax(0,1fr) 46px}
 }

@@ -1,3 +1,8 @@
+## 2026-11-25 — DEV05 C15-04.M05.04: quantity grid border-box overflow (V44-R10/R11/R5)
+
+- RUN 63635de0-8a58-8323-887e-d1e7c04768b5; base 33122cf1a3bb17e155783d6fb5d583696202d2ec; V17 row 2297. Fase4 job 139277984756 and Fase10 job 139277985968 fail the same 2px overflow assertion at storefront-fase4.spec.ts:537. Fixed middle track to use available inner width and removed fixed input widths; preserved button sizes, focus, semantics and existing assertions. No backend, data, permission, API or dependency changes.
+- Isolated Chromium fixture using exact source CSS: 10/18 baseline cases overflow; 18/18 patched cases zero overflow, across nine widths for cart and product, with 44px targets and keyboard focus. Full Angular and real storefront CI on new SHA pending; no global A0-A4/A5 or LISTO. Rollback by normal revert. Historical owner/H/I unchanged.
+
 ## 2026-11-25 — DEV04 C15-04.M05.04: recuperar fallback accesible y reducir CSS (V44-R10/R11/R5)
 
 - Autoría: JAVIER_CHATGPT DEV04; TASK_ID=6aeacb7820ac8191b7d768a6f33dfa09; RUN_ID=a961a0c3-f648-832b-91ef-f0ba81a5ff33; base 25afbdefd8979c6400b4c3b3fe167cdd97ed5694; fila 2297, EN_PROGRESO, owner histórico DEV02. Paquete preparado por DEV03 en AJ4/run a1f4290c-9d78-8332-8e27-f9eade26464b; no A5 de autores/reparadores.
