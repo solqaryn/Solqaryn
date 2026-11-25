@@ -1,3 +1,7 @@
+## 2026-11-25 — DEV03 — C01-04.M03.06 — R12 cobertura coexistencia DEV/core
+- TASK_ID 6adc2e4bd8a48191ac7d8641ed95a1a3; RUN_ID 9f89251f-8a68-8328-bfe0-1a998ac8dc08; base ef8ea6d2fbb8540e280380c730d49f6d356b055e; V17 H271:I271. Adopta hallazgo de cobertura DEV02 RUN 50ead076-4254-832e-b1cc-d81d3c89157d (sin autoría causal); preservar revisor independiente.
+- Siete escenarios HTTP TestServer/JWT real con respuestas GitHub fixture: ambos checks, DEV omitido/fallido sin fallback, core duplicado/pendiente/fallido/omitido; se verifica que no haya consulta alternativa de job ni recibo core, auditoría de plataforma sin EmpresaId ni A5 inventada. Sin cambio runtime, grants, DB, DI ni migración; no afirma proveedor GitHub/MySQL real. CI exact SHA y A5 pendientes, R11 pendiente. Solo dev, sin CAS.
+
 ## 2026-11-25 — DEV01 — C15-03.M05.05 — R12 autorización previa a lock de confirmación
 - TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a; RUN_ID 640479dd-af80-832b-8fa0-9f1c7865b191; base 562cb93d41ddefd72aa2a420e1fd4c38522157e5; V17 H2262:I2262; adopta preparación causal DEV06 RUN 114ae855-c750-832c-a640-a21b3e6db184 (monitor AA7:AN7); autoría compartida DEV06/DEV01, A5 independiente de autores/reparadores.
 - Controlador confirma propiedad y membresía persistidas antes del GET_LOCK; revalida antes de exponer contención. Conserva RequierePermiso, lock nativo, autorización y transacción FOR UPDATE existentes; sin cambio de grant, migración, datos, cuarentena P0 ni configuración.

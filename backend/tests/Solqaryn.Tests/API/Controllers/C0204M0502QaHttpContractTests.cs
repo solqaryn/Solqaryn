@@ -842,6 +842,63 @@ public sealed class C0204M0502QaHttpContractTests
         }
     }
 
+    [Theory]
+    [InlineData("success", "success", false, "CI_MINIMA_ACREDITADA")]
+    [InlineData("skipped", "success", false, "SIN_VERIFICAR")]
+    [InlineData("failure", "success", false, "CI_FALLIDA")]
+    [InlineData("success", "success", true, "SIN_VERIFICAR")]
+    [InlineData("success", null, false, "CI_EN_PROGRESO")]
+    [InlineData("success", "failure", false, "CI_FALLIDA")]
+    [InlineData("success", "skipped", false, "CI_MINIMA_ACREDITADA")]
+    public async Task CoexistingBackendGatesNeverFallbackFromHistoricalDev(
+        string devConclusion, string? coreConclusion, bool duplicateCore, string expected)
+    {
+        const string core = "SOLQARYN - Build y pruebas backend";
+        using var basePayload = JsonDocument.Parse(Payload(devConclusion));
+        var checks = basePayload.RootElement.GetProperty("check_runs").EnumerateArray().ToList();
+        JsonElement CoreCheck(long id) => JsonSerializer.SerializeToElement(new
+        {
+            id,
+            check_suite = new { id = 793L },
+            app = new { id = 15368L, slug = "github-actions" },
+            head_sha = Sha,
+            name = core,
+            status = coreConclusion is null ? "in_progress" : "completed",
+            conclusion = coreConclusion,
+            details_url = "https://github.com/solqaryn/Solqaryn/actions/runs/123/job/7899"
+        });
+        checks.Add(CoreCheck(460L));
+        if (duplicateCore) checks.Add(CoreCheck(461L));
+        var upstream = new GitHubFake(JsonSerializer.Serialize(new
+        {
+            total_count = checks.Count,
+            check_runs = checks
+        }));
+        await using var fixture = await CrearAsync(upstream);
+        using var client = fixture.Host.GetTestClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer", Token(fixture.GlobalId, "operadorglobal"));
+        using var response = await client.GetAsync(Path);
+        Assert.Equal(HttpStatusCode.OK, response.StatusCode);
+        using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
+        Assert.Equal(expected, json.RootElement.GetProperty("data").GetProperty("estadoCi").GetString());
+        Assert.Equal("SIN_VERIFICAR", json.RootElement.GetProperty("data").GetProperty("estadoA5").GetString());
+
+        // A legacy DEV check is present: no core job/attempt lookup may substitute it.
+        Assert.Equal(1, upstream.Calls);
+        using var scope = fixture.Host.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var audit = Assert.Single(await db.Set<RegistroAuditoria>().ToListAsync());
+        Assert.Null(audit.EmpresaId);
+        Assert.Equal(AmbitoAutorizacion.Plataforma, audit.AmbitoAutoridad);
+        using var metadata = JsonDocument.Parse(audit.ValoresNuevos!);
+        var coreIdentities = metadata.RootElement.GetProperty("ChecksIdentificados").EnumerateArray()
+            .Where(x => x.GetProperty("CheckId").GetInt64() is 460L or 461L).ToArray();
+        Assert.Equal(duplicateCore ? 2 : 1, coreIdentities.Length);
+        Assert.All(coreIdentities, x => Assert.True(
+            !x.TryGetProperty("CoreBackend", out var receipt) || receipt.ValueKind == JsonValueKind.Null));
+    }
+
     private static string Payload(string conclusion = "success", string[]? detailsUrls = null)
     {
         var checkIndex = 0;
