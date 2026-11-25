@@ -44,6 +44,34 @@ async function verifyLayout(page: Page, width: number, phase: string): Promise<v
   }
 }
 
+// Preserve the entire status icon and its text within the card at narrow widths.
+async function verifyStatusIconGeometry(page: Page, width: number, phase: string): Promise<void> {
+  const rows = await page.evaluate(() => ['.mail-status', '.readonly'].map(selector => {
+    const row = document.querySelector('app-empresa-configuracion-tenant-card ' + selector);
+    const icon = row?.querySelector('mat-icon');
+    const label = row?.querySelector('span');
+    if (!(row instanceof HTMLElement) || !(icon instanceof HTMLElement) || !(label instanceof HTMLElement)) {
+      return { selector, present: false, iconWidth: 0, iconHeight: 0, travel: 0, labelTravel: 0, contained: false };
+    }
+    const r = row.getBoundingClientRect();
+    const i = icon.getBoundingClientRect();
+    const l = label.getBoundingClientRect();
+    return { selector, present: true, iconWidth: i.width, iconHeight: i.height,
+      travel: row.scrollWidth - row.clientWidth, labelTravel: label.scrollWidth - label.clientWidth,
+      contained: i.left >= r.left - 1 && l.right <= r.right + 1 && i.right <= l.left + 1 &&
+        i.top >= r.top - 1 && i.bottom <= r.bottom + 1 && l.top >= r.top - 1 && l.bottom <= r.bottom + 1 };
+  }));
+  for (const row of rows) {
+    const context = row.selector + ' ' + width + ' ' + phase;
+    expect(row.present, context + ' rendered icon and label').toBe(true);
+    expect(row.iconWidth, context + ' icon width').toBeGreaterThanOrEqual(23.5);
+    expect(row.iconHeight, context + ' icon height').toBeGreaterThanOrEqual(23.5);
+    expect(row.travel, context + ' row horizontal travel').toBeLessThanOrEqual(1);
+    expect(row.labelTravel, context + ' label horizontal travel').toBeLessThanOrEqual(1);
+    expect(row.contained, context + ' icon and label contained without overlap').toBe(true);
+  }
+}
+
 // V24: regression from real 390px CI PNGs at 100% and 200% root text size.
 // The prior zero-gap header/form boundary crowded "Recargar" and "Datos de empresa".
 // Measure actual DOM geometry, not screenshots or CSS declarations alone.
@@ -283,6 +311,7 @@ test.describe('V24 C01-03.M04.05 actual tenant UI responsive and keyboard', () =
         await verifyLayout(page,width,'100pct');
         await verifyHeadingWholeWords(page,width,'100pct');
         await verifyCardHeaderSeparation(page,width,'100pct');
+        await verifyStatusIconGeometry(page,width,'100pct');
         await verifyAccessibleLabels(page);
         await verifyTab(page);
         await page.screenshot({path:'test-results/c0103-m0405-'+username+'-'+width+'-100.png',fullPage:true});
@@ -311,6 +340,7 @@ test.describe('V24 C01-03.M04.05 actual tenant UI responsive and keyboard', () =
           await verifyLayout(page,width,'text-only-resize-200');
           await verifyHeadingWholeWords(page,width,'text-only-resize-200');
           await verifyCardHeaderSeparation(page,width,'text-only-resize-200');
+          await verifyStatusIconGeometry(page,width,'text-only-resize-200');
           await verifyAccessibleLabels(page);
           await expect(page.getByRole('button',{name:/Recargar/})).toBeVisible();
           await expect(page.getByRole('link',{name:'Ver todos los ajustes'})).toBeVisible();
