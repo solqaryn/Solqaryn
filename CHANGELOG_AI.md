@@ -1,3 +1,8 @@
+## 2026-11-25 — QA: proporciones de destacados y galería del Storefront
+
+- Corrección autorizada exclusivamente en qa: ancho de destacados al 75% del anterior por breakpoint, altura de medio y espaciados reducidos proporcionalmente, sin reducir tipografía ni cambiar identidad; tarjeta vertical. Detalle: columna de miniaturas solamente si hay varias imágenes, miniaturas de tamaño uniforme con 8px de separación y scroll propio, imagen completa con contain y alineación de las cuatro áreas en escritorio, reflow móvil.
+- Regresión Playwright dirigida a una imagen, tres imágenes, stock publicado de cinco (fixture, no certificación de datos QA), tamaño destacado y 320/390/768/1024/1366px; integrada en QA CI. No cambia API, datos, autorización, arquitectura, dependencias ni dev/main. Scope Lock DEV run 45696324947 success y frescura PASS; ejecución del nuevo SHA pendiente. La discrepancia entre cantidad de compatibilidad y existencia física requiere reconciliación separada; no se habilita venta por fallback. Rollback: revertir exclusivamente este changeset en qa.
+
 ## 2026-11-25 — QA: tabla de Clientes con desplazamiento propio
 
 - Corrección visual autorizada exclusivamente en qa. El propietario rechazó las tarjetas de clientes en móvil y pidió conservar la tabla original de nueve columnas con scroll horizontal propio. Se elimina la segunda representación de filas y la regla que ocultaba la tabla hasta 920px. El contenedor conserva el ancho disponible, admite foco y desplazamiento táctil/teclado; la tabla mantiene un mínimo de 900px para legibilidad. Filtros, segmentación, acciones y paginador se conservan; el paginador permanece fuera del scroll. No se alteran el shell global, diseño de otros módulos, API, datos, RBAC, backend ni ramas dev/main.

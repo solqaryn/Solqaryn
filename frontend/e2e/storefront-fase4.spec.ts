@@ -163,6 +163,54 @@ async function gestoSwipeIzquierda(page: Page, selector: string): Promise<void> 
 test.describe('Storefront Fase 4 — detalle público de producto', () => {
   test.describe.configure({ retries: 0 });
 
+  test('QA visual: una foto ocupa toda la galería y cinco unidades habilitan compra', async ({ page }) => {
+    await prepararEmpresa(page);
+    const principal = productoReal(181, 'Producto QA una foto', { stock: 5, imagenes: [imagenData('Única')] });
+    await mockFuenteReal(page, principal);
+    await page.setViewportSize({ width: 1366, height: 900 });
+    await page.goto('/tienda/producto/producto-real-181');
+    await activarBaseDatos(page);
+    await expect(page.getByRole('heading', { level: 1, name: 'Producto QA una foto' })).toBeVisible();
+    await expect(page.locator('.thumbnail')).toHaveCount(0);
+    await expect(page.locator('.main-image-button img')).toHaveCSS('object-fit', 'contain');
+    await expect(page.getByRole('spinbutton', { name: 'Cantidad de producto' })).toHaveAttribute('max', '5');
+    await expect(page.getByRole('button', { name: 'Agregar al carrito' })).toBeEnabled();
+    for (const width of [320, 390, 768, 1024, 1366]) {
+      await page.setViewportSize({ width, height: 900 });
+      await expect(page.locator('.main-image-button img')).toBeVisible();
+      const stageWidth = (await page.locator('.gallery-stage').boundingBox())!.width;
+      const galleryWidth = (await page.locator('.gallery').boundingBox())!.width;
+      expect(Math.abs(stageWidth - galleryWidth)).toBeLessThanOrEqual(2);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBeTruthy();
+    }
+  });
+
+  test('QA visual: miniaturas compactas y todas accesibles', async ({ page }) => {
+    await prepararEmpresa(page);
+    const principal = productoReal(182, 'Producto QA tres fotos', { imagenes: [imagenData('Uno'), imagenData('Dos'), imagenData('Tres')] });
+    await mockFuenteReal(page, principal);
+    await page.setViewportSize({ width: 1366, height: 900 });
+    await page.goto('/tienda/producto/producto-real-182');
+    await activarBaseDatos(page);
+    const miniaturas = page.locator('.thumbnail');
+    await expect(miniaturas).toHaveCount(3);
+    const first = (await miniaturas.nth(0).boundingBox())!;
+    const second = (await miniaturas.nth(1).boundingBox())!;
+    expect(second.y - first.y - first.height).toBeGreaterThanOrEqual(6);
+    expect(second.y - first.y - first.height).toBeLessThanOrEqual(10);
+    for (let i = 0; i < 3; i++) {
+      await miniaturas.nth(i).click();
+      await expect(page.locator('.image-position').first()).toHaveText(`${i + 1} / 3`);
+    }
+    await page.setViewportSize({ width: 390, height: 844 });
+    const mobileFirst = (await miniaturas.nth(0).boundingBox())!;
+    const mobileSecond = (await miniaturas.nth(1).boundingBox())!;
+    expect(mobileSecond.x - mobileFirst.x - mobileFirst.width).toBeGreaterThanOrEqual(6);
+    expect(mobileSecond.x - mobileFirst.x - mobileFirst.width).toBeLessThanOrEqual(10);
+    expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBeTruthy();
+  });
+
+
   test('URL demo directa muestra detalle independiente y cantidad nunca supera stock', async ({ page }) => {
     await prepararEmpresa(page);
     await page.setViewportSize({ width: 1366, height: 900 });

@@ -82,7 +82,7 @@
     } @else if (producto(); as detalle) {
       @let modelo = modeloSeleccionado();
       <section class="product-layout" aria-labelledby="producto-title">
-        <section class="gallery" aria-label="Galería de imágenes del producto">
+        <section class="gallery" [class.has-thumbnails]="imagenes().length > 1" aria-label="Galería de imágenes del producto">
           @if (imagenes().length > 1) {
             <div class="thumbnails" aria-label="Miniaturas del producto">
               @for (imagen of imagenes(); track imagen; let indice = $index) {

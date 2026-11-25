@@ -45,6 +45,24 @@ async function activarBaseDatos(page: Page): Promise<void> {
 test.describe('Storefront Fase 7 — home comercial', () => {
   test.describe.configure({ retries: 0 });
 
+  test('QA visual: destacados verticales con ancho al 75 por ciento', async ({ page }) => {
+    await prepararEmpresa(page);
+    await abrirHome(page);
+    const card = page.locator('.featured-card').first();
+    await expect(card).toBeVisible();
+    for (const width of [320, 390, 768, 1366]) {
+      await page.setViewportSize({ width, height: 900 });
+      const gridWidth = (await page.locator('.featured-grid').last().boundingBox())!.width;
+      const size = (await card.boundingBox())!;
+      const columns = width <= 380 ? 1 : width <= 1120 ? 2 : 4;
+      const gap = columns === 4 ? 18 : 10;
+      expect(Math.abs(size.width - (gridWidth - (columns - 1) * gap) / columns * .75)).toBeLessThanOrEqual(2);
+      expect(size.height).toBeGreaterThan(size.width);
+      expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBeTruthy();
+    }
+  });
+
+
   test('bootstrap inicial consolida identidad, tema, categorías y destacados en una sola llamada', async ({ page }) => {
     const requests = {
       bootstrap: 0,
