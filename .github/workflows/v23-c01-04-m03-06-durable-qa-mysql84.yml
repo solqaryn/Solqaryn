@@ -7,6 +7,8 @@ on:
       - 'backend/src/Infrastructure/AutomationV5/V5UniversalCaseFileQaDurableMySqlAuditSink.cs'
       - 'backend/src/Infrastructure/AutomationV5/V5UniversalCaseFileQaGitHubJobReader.cs'
       - 'backend/tests/Solqaryn.Tests/Integration/C0104M0306DurableQaAuditMysql84Tests.cs'
+      - '.github/ci/c0104-r11-lab.sh'
+      - '.github/ci/c0104-r11-bootstrap-recipe.json'
       - '.github/workflows/v23-c01-04-m03-06-durable-qa-mysql84.yml'
   workflow_dispatch:
 permissions:

@@ -1,3 +1,10 @@
+## 2026-11-25 — C01-04.M03.06 — DEV04 — R12/R11 laboratorio bootstrap aislado
+
+- TASK_ID: 6aeacb7820ac8191b7d768a6f33dfa09; RUN_ID: 86c54c75-56dc-8324-b3ca-97867a946dd0; base: ee5fd6e3b6f7f12febc66d926c36ce503571a693; V17: SQV17_C01_04_M03_06.
+- A0: adoptar receta DEV03 dac1d1f4 (4 anclas), hallazgo DEV02 preservado como revisión independiente. Sólo .github/ci y workflow V23; bootstrap runtime, migración, permisos y Aiven sin cambios.
+- A1-A3: nuevo ensayo Oracle EF/MySQL 8.4 efímero de bootstrap adopt/fresh, adopción idempotente, fixture tenant A/B, FK y marcador ausentes con rechazo y huellas iguales, rollback/reapply; pendiente CI exact-SHA, no PASS anticipado.
+- A4 Scope Lock/V5 pendiente del nuevo SHA; A5 independiente pendiente, DEV02 candidato condicionado. H/I y evidencia histórica intactos. Rollback: revert normal del changeset CI-only.
+
 ## 2026-11-25 — C01-04.M03.06 — DEV01 — R12/R11 cardinalidad de jobs
 
 - TASK_ID: 6adbb9fff1548191a1bd5b30d9e9984a; RUN_ID: f4de3c64-fdbc-832e-920e-1f04d9966745; base: 6523c8099fd73d2b18676686548a2d937d11cdce; V17: SQV17_C01_04_M03_06.
