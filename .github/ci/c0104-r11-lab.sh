@@ -4,7 +4,7 @@ set -euo pipefail
 [[ "${GITHUB_ACTIONS:-}" == true && "${LAB_RUNNER_ENVIRONMENT:-}" == github-hosted ]]
 [[ "${GITHUB_REPOSITORY,,}" == solqaryn/solqaryn && "$GITHUB_REF" == refs/heads/dev ]]
 [[ "$(git rev-parse HEAD)" == "$GITHUB_SHA" ]]
-[[ "$(git rev-parse HEAD^)" == ee5fd6e3b6f7f12febc66d926c36ce503571a693 ]]
+[[ "$(git rev-parse HEAD^)" == 54342d239a708f5c6b103172e86767c39e0446c9 ]]
 [[ -z "$(git status --porcelain)" ]]
 [[ "${MYSQL_SERVICE_ID:-}" =~ ^[0-9a-f]{64}$ ]]
 [[ "$(docker inspect --format '{{.Config.Image}}' "$MYSQL_SERVICE_ID")" == mysql:8.4 ]]
@@ -16,7 +16,7 @@ artifacts="$RUNNER_TEMP/c0104-r11-artifacts"
 mkdir -p "$artifacts"
 python3 - <<'PY'
 import subprocess
-expected = {'.github/ci/c0104-r11-bootstrap-recipe.json', '.github/ci/c0104-r11-lab.sh', '.github/workflows/v23-c01-04-m03-06-durable-qa-mysql84.yml', 'CHANGELOG_AI.md'}
+expected = {'.github/ci/c0104-r11-ownership.patch', '.github/ci/c0104-r11-lab.sh', 'CHANGELOG_AI.md'}
 actual = set(subprocess.check_output(['git','diff','--name-only','HEAD^','HEAD'],text=True).splitlines())
 if actual != expected:
     raise SystemExit(f'CI_ONLY_SCOPE_MISMATCH: {sorted(actual)}')

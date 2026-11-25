@@ -1,3 +1,10 @@
+## 2026-11-25 — C01-04.M03.06 — DEV06 — R12/R11 lector persistente en laboratorio aislado
+
+- TASK_ID: 6af16bbad26881918c283abe06e1f32a; RUN_ID: c43c4979-fb24-8326-8fe6-c97daa85e2e4; base: 54342d239a708f5c6b103172e86767c39e0446c9; V17: SQV17_C01_04_M03_06.
+- A0: paquete distinto del bootstrap ya aprobado por DEV05 (BITACORA 12212). Sólo CI: cuatro anclas verificadas en ownership.patch, runner conserva validación de padre/diff exactos, Docker MySQL 8.4 efímero, UUID y loopback. No cambia backend desplegable, migraciones runtime, grants, datos ni infraestructura.
+- A1/A3: probar lector candidato EF real en los dos escenarios fresh/adopt con empresa A/B mismo ID, versión máxima, sucursal incorrecta/ausente, ausencia de revisión, rollback, marca tenant cambiada/ausente y cancelación. Friend assembly exclusivamente dentro del checkout efímero; no exposición de internals en runtime.
+- A2: marca server-side sintética sólo acredita consulta persistente, NO autenticación JWT/RBAC, permiso por operación ni autorización de recurso. A1-A4 pendientes del nuevo SHA; A5 independiente (DEV02 candidato condicionado) y LISTO no acreditados. Preservar H/I y autorías. Rollback por revert normal dev, sin force-push ni intervención en Aiven real.
+
 ## 2026-11-25 — C01-04.M03.06 — DEV04 — R12/R11 laboratorio bootstrap aislado
 
 - TASK_ID: 6aeacb7820ac8191b7d768a6f33dfa09; RUN_ID: 86c54c75-56dc-8324-b3ca-97867a946dd0; base: ee5fd6e3b6f7f12febc66d926c36ce503571a693; V17: SQV17_C01_04_M03_06.

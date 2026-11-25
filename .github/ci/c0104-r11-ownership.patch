@@ -116,10 +116,13 @@ diff --git a/backend/src/Infrastructure/AutomationV5/V5CaseFilePersistentOwnersh
 new file mode 100644
 --- /dev/null
 +++ b/backend/src/Infrastructure/AutomationV5/V5CaseFilePersistentOwnershipReader.cs
-@@ -0,0 +1,41 @@
+@@ -0,0 +1,44 @@
 +using Microsoft.EntityFrameworkCore;
 +using Solqaryn.Domain.Entities;
 +using Solqaryn.Infrastructure.Persistence;
++
++// Test visibility exists only inside the isolated lab checkout.
++[assembly: System.Runtime.CompilerServices.InternalsVisibleTo("Solqaryn.Tests")]
 +
 +namespace Solqaryn.Infrastructure.AutomationV5;
 +
@@ -274,13 +277,14 @@ diff --git a/backend/tests/Solqaryn.Tests/C0104M0304OwnershipMigrationFixtureTes
 new file mode 100644
 --- /dev/null
 +++ b/backend/tests/Solqaryn.Tests/C0104M0304OwnershipMigrationFixtureTests.cs
-@@ -0,0 +1,131 @@
+@@ -0,0 +1,161 @@
 +using Microsoft.AspNetCore.Http;
 +using Microsoft.EntityFrameworkCore;
 +using MySql.Data.MySqlClient;
 +using MySql.EntityFrameworkCore.Extensions;
 +using Solqaryn.Application.Security;
 +using Solqaryn.Domain.Entities;
++using Solqaryn.Infrastructure.AutomationV5;
 +using Solqaryn.Infrastructure.Persistence;
 +using Xunit;
 +
@@ -394,6 +398,33 @@ new file mode 100644
 +            Assert.Equal(lastVersion, versions.Where(x => x.ExpedienteId == 9001).Max(x => x.Version));
 +            Assert.DoesNotContain(visible, row => row.Id == 9005); // Rolled back by helper.
 +            Assert.DoesNotContain(versions, row => row.ExpedienteId == 9005);
++
++            // Exercise the actual internal persisted candidate reader, not just DbSet filters.
++            // The synthetic marker proves the ownership query only, never JWT/RBAC authority.
++            var ownBranch = tenant == a ? branchA : branchB;
++            var otherBranch = tenant == a ? branchB : branchA;
++            var reader = new V5CaseFilePersistentOwnershipReader(db);
++            var candidate = await reader.ReadAsync(tenant, 9001, ownBranch, default);
++            Assert.NotNull(candidate);
++            Assert.Equal(tenant, candidate!.EmpresaId);
++            Assert.Equal(9001, candidate.Id);
++            Assert.Equal<int?>(ownBranch, candidate.SucursalId);
++            Assert.Equal(lastVersion, candidate.Version);
++            Assert.Equal("FIXTURE", candidate.RecursoTipo);
++            Assert.False(candidate.Archivado);
++            Assert.Null(await reader.ReadAsync(foreign, 9001, otherBranch, default));
++            Assert.Null(await reader.ReadAsync(tenant, 9001, otherBranch, default));
++            Assert.Null(await reader.ReadAsync(tenant, 9001, null, default));
++            Assert.Null(await reader.ReadAsync(tenant, 9002, ownBranch, default));
++            Assert.Null(await reader.ReadAsync(tenant, 9005, ownBranch, default));
++            Assert.Null(await reader.ReadAsync(tenant, 0, ownBranch, default));
++            http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = foreign;
++            Assert.Null(await reader.ReadAsync(tenant, 9001, ownBranch, default));
++            http.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = tenant;
++            using var cancelled = new CancellationTokenSource();
++            cancelled.Cancel();
++            await Assert.ThrowsAnyAsync<OperationCanceledException>(() =>
++                reader.ReadAsync(tenant, 9001, ownBranch, cancelled.Token));
 +        }
 +        await VerifyTenant(a, b, 2, 2, 2);
 +        await VerifyTenant(b, a, 1, 1, 1);
@@ -402,6 +433,8 @@ new file mode 100644
 +            Assert.Null(noAuthority.AuthorizedCommercialEmpresaId);
 +            Assert.Empty(await noAuthority.Set<V5CaseFileOwnership>().AsNoTracking().ToArrayAsync());
 +            Assert.Empty(await noAuthority.Set<V5CaseFileVersion>().AsNoTracking().ToArrayAsync());
++            var reader = new V5CaseFilePersistentOwnershipReader(noAuthority);
++            Assert.Null(await reader.ReadAsync(a, 9001, branchA, default));
 +        }
 +        // Runner owns schema rollback/reapply and disposable DB cleanup.
 +    }
