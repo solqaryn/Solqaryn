@@ -286,6 +286,7 @@ builder.Services.AddScoped<IAuthService, AuthService>();
 builder.Services.AddScoped<IDashboardService, DashboardService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 builder.Services.AddScoped<ITenantSessionTokenService, JwtService>();
+builder.Services.AddScoped<V5CaseFileAuditCorrelationAuthority>();
 builder.Services.AddScoped<IImageStorageService, CloudinaryImageStorageService>();
 builder.Services.AddScoped<ICompraDocumentoStorageService, CloudinaryCompraDocumentoStorageService>();
 builder.Services.AddScoped<IUnitOfWork, UnitOfWork>();
