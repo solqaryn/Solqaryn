@@ -269,10 +269,43 @@ mat-icon {
 .app-table-shell .app-data-table .actions-group { justify-content: center; }
 .app-data-table tbody tr:hover { background: color-mix(in srgb, var(--color-primary) 4%, var(--color-surface)); }
 .app-data-table tbody tr:last-child td { border-bottom: 0; }
-.app-table-filters { display: flex; align-items: center; flex-wrap: wrap; gap: 12px; margin-bottom: 14px; min-width: 0; }
-.app-table-filters mat-form-field { min-width: 0; flex: 1 1 180px; }
+.app-table-filters { display: flex; flex-direction: row; align-items: flex-start; flex-wrap: wrap; gap: 12px; margin-bottom: 14px; min-width: 0; }
+.app-table-filters > mat-form-field { min-width: 0; max-width: 100%; flex: 1 1 180px; }
+.app-table-filters > .search-field { flex: 2 1 300px; }
+.app-table-filters > .filter-actions { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.app-table-filters > button, .app-table-filters > .filter-actions { flex: 0 0 auto; }
+/* Los filtros no crean un segundo layout vertical ni cambian la altura de Material. */
+.app-list-surface {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  align-content: start;
+  gap: var(--space-4);
+  min-inline-size: 0;
+}
+.app-list-surface > .app-table-filters { margin-bottom: 0; }
+.app-list-surface > mat-paginator { background: var(--color-surface); }
+.app-list-surface > .app-list-empty {
+  min-block-size: 160px;
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  gap: 8px;
+  padding: var(--space-5);
+  text-align: center;
+  border: 0;
+  color: var(--color-text-muted);
+  overflow-wrap: anywhere;
+}
+.app-list-empty > mat-icon { color: var(--color-text-muted); }
+.app-list-empty > :is(h2, strong) { color: var(--color-heading); margin: 0; font-size: var(--font-size-md); }
+.app-list-empty > p { margin: 0; max-width: 60ch; }
 .app-table-footer { display: flex; flex-wrap: wrap; justify-content: flex-end; align-items: center; padding: 12px 4px 0; color: var(--color-text-muted); font-size: .85rem; }
-@media (max-width: 600px) { .app-table-filters > * { width: 100%; } }
+@media (max-width: 600px) {
+  .app-table-filters > * { width: 100%; }
+  .app-table-filters > mat-form-field, .app-table-filters > .search-field { flex: 1 1 100%; }
+  .app-table-filters > .filter-actions { flex: 1 1 100%; }
+}
 
 .mat-mdc-snack-bar-container {
   --mdc-snackbar-container-shape: 10px;

@@ -29,9 +29,9 @@ import { ConteoInventarioService } from '../../services/conteo-inventario.servic
     <section class="page" aria-labelledby="conteos-title">
       <header class="header">
         <div>
-          <p class="eyebrow">Inventario empresarial</p>
+          
           <h1 id="conteos-title">Conteos físicos</h1>
-          <p>Gestiona conteos generales, cíclicos, por ubicación, categoría y ciegos con trazabilidad de diferencias.</p>
+          <p>Registra conteos físicos y revisa las diferencias de inventario.</p>
         </div>
         @if (puedeCrear) {
           <button mat-flat-button color="primary" type="button" (click)="nuevo()">
@@ -39,6 +39,7 @@ import { ConteoInventarioService } from '../../services/conteo-inventario.servic
           </button>
         }
       </header>
+      <div class="card app-list-surface">
     
       <form class="filters app-table-filters" (ngSubmit)="aplicarFiltros()">
         <mat-form-field appearance="outline"><mat-label>Buscar</mat-label><input matInput name="search" [(ngModel)]="search" placeholder="Número, almacén..." /></mat-form-field>
@@ -64,7 +65,7 @@ import { ConteoInventarioService } from '../../services/conteo-inventario.servic
       <div class="state error" role="alert"><mat-icon>error_outline</mat-icon><span>{{ error }}</span><button mat-button type="button" (click)="cargar()">Reintentar</button></div>
     }
     @if (!loading && !error && items.length === 0) {
-      <div class="state empty"><mat-icon>warehouse</mat-icon><strong>No hay conteos para los filtros seleccionados.</strong></div>
+      <div class="state empty app-list-empty"><mat-icon>warehouse</mat-icon><strong>No se encontraron conteos</strong><p>Cambia los filtros para ampliar la búsqueda.</p></div>
     }
     
     @if (!loading && !error && items.length) {
@@ -97,11 +98,12 @@ import { ConteoInventarioService } from '../../services/conteo-inventario.servic
     @if (totalCount > 0) {
       <mat-paginator [length]="totalCount" [pageIndex]="page - 1" [pageSize]="pageSize" [pageSizeOptions]="[10,20,50,100]" (page)="cambiarPagina($event)"></mat-paginator>
     }
+    </div>
     </section>
     `,
   changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
-    .page{padding:24px;display:grid;gap:20px}.header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.header h1{margin:0;font-size:1.75rem}.header p{margin:6px 0 0;color:var(--text-secondary,#667085)}.eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:.72rem;font-weight:700;color:var(--primary,#3f51b5)!important}.header button mat-icon{margin-right:6px}.filters{display:grid;grid-template-columns:2fr 1fr 1fr 1fr auto;gap:12px;align-items:start}.filter-actions{display:flex;gap:6px;padding-top:4px}.catalog-warning{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;background:#fffaeb;color:#7a2e0e}.state{min-height:180px;display:flex;align-items:center;justify-content:center;gap:12px;border:1px dashed #d0d5dd;border-radius:12px;padding:24px}.state.error{color:#b42318}.state.empty{flex-direction:column;color:#667085}.table-wrap{overflow:auto;border:1px solid #e4e7ec;border-radius:12px}table{width:100%;border-collapse:collapse;min-width:900px}th,td{padding:14px 16px;text-align:left;border-bottom:1px solid #eaecf0;vertical-align:middle}th{font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;color:#667085;background:#f9fafb}td small{display:block;margin-top:3px;color:#667085}.badge{display:inline-flex;border-radius:999px;padding:4px 9px;background:#f2f4f7;font-size:.78rem;font-weight:600}.diff{color:#b54708}.actions{white-space:nowrap}@media(max-width:900px){.page{padding:16px}.header{flex-direction:column}.filters{grid-template-columns:1fr 1fr}.filter-actions{grid-column:1/-1}}@media(max-width:560px){.filters{grid-template-columns:1fr}}
+    .page{padding:24px;display:grid;grid-template-columns:minmax(0,1fr);gap:20px;min-width:0}.header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.header h1{margin:0;font-size:1.75rem}.header p{margin:6px 0 0;color:var(--text-secondary,#667085)}.eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:.72rem;font-weight:700;color:var(--primary,#3f51b5)!important}.header button mat-icon{margin-right:6px}.catalog-warning{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;background:#fffaeb;color:#7a2e0e}.state{min-height:180px;display:flex;align-items:center;justify-content:center;gap:12px;border-radius:12px;padding:24px}.state.error{color:#b42318}.table-wrap{overflow:auto;border:1px solid #e4e7ec;border-radius:12px}table{width:100%;border-collapse:collapse;min-width:900px}th,td{padding:14px 16px;text-align:left;border-bottom:1px solid #eaecf0;vertical-align:middle}th{font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;color:#667085;background:#f9fafb}td small{display:block;margin-top:3px;color:#667085}.badge{display:inline-flex;border-radius:999px;padding:4px 9px;background:#f2f4f7;font-size:.78rem;font-weight:600}.diff{color:#b54708}.actions{white-space:nowrap}@media(max-width:900px){.page{padding:16px}.header{flex-direction:column}}@media(max-width:560px){}
   `]
 })
 export class ConteosInventarioListComponent implements OnInit {

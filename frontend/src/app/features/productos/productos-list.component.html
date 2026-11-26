@@ -1,7 +1,7 @@
 <div class="header-row">
   <div class="header-copy">
     <h1 class="page-title">Productos</h1>
-    <p class="page-subtitle">Consulta existencias, clasificación, precios y estado del inventario.</p>
+    <p class="page-subtitle">Consulta productos, existencias y precios de venta.</p>
   </div>
   @if (puedeCrear()) {
     <button type="button" (click)="abrirProducto('crear')" mat-flat-button color="primary">
@@ -20,7 +20,6 @@
       <mat-hint>Nombre, marca, modelo, color o talla.</mat-hint>
     </mat-form-field>
 
-    <div class="filters-grid">
       <mat-form-field appearance="outline">
         <mat-label>Marca</mat-label>
         <mat-select [ngModel]="marcaId" (ngModelChange)="onMarcaFilterChange($event)" [disabled]="loadingFilters()">
@@ -84,7 +83,6 @@
           <mat-option value="disponibles">Con existencia</mat-option>
         </mat-select>
       </mat-form-field>
-    </div>
 
     <button mat-stroked-button type="button" class="clear-filters" (click)="limpiarFiltros()">
       <mat-icon>filter_alt_off</mat-icon>

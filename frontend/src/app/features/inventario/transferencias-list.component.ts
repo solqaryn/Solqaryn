@@ -26,9 +26,9 @@ import { TransferenciaInventarioService } from '../../services/transferencia-inv
     <section class="page" aria-labelledby="transferencias-title">
       <header class="header">
         <div>
-          <p class="eyebrow">Inventario empresarial</p>
+          
           <h1 id="transferencias-title">Transferencias de inventario</h1>
-          <p>Controla solicitud, aprobación, tránsito, recepción y cancelación entre almacenes.</p>
+          <p>Consulta y gestiona los traslados de mercancía entre almacenes.</p>
         </div>
         @if (puedeCrear) {
           <button mat-flat-button color="primary" type="button" (click)="nueva()">
@@ -36,6 +36,7 @@ import { TransferenciaInventarioService } from '../../services/transferencia-inv
           </button>
         }
       </header>
+      <div class="card app-list-surface">
     
       <form class="filters app-table-filters" (ngSubmit)="aplicarFiltros()">
         <mat-form-field appearance="outline"><mat-label>Número</mat-label><input matInput name="numero" [(ngModel)]="numero" /></mat-form-field>
@@ -63,7 +64,7 @@ import { TransferenciaInventarioService } from '../../services/transferencia-inv
         <div class="state error">{{ error }}</div>
       }
       @if (!loading && !error && items.length === 0) {
-        <div class="state">No hay transferencias que coincidan con los filtros.</div>
+        <div class="state app-list-empty"><mat-icon aria-hidden="true">swap_horiz</mat-icon><strong>No se encontraron transferencias</strong><p>Cambia los filtros para ampliar la búsqueda.</p></div>
       }
     
       @if (!loading && items.length > 0) {
@@ -91,12 +92,15 @@ import { TransferenciaInventarioService } from '../../services/transferencia-inv
         </div>
       }
     
+      @if (totalCount > 0) {
       <mat-paginator [length]="totalCount" [pageIndex]="page - 1" [pageSize]="pageSize" [pageSizeOptions]="[10, 20, 50]" (page)="cambiarPagina($event)"></mat-paginator>
+      }
+    </div>
     </section>
     `,
   changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
-    .page{padding:24px;display:grid;gap:20px}.header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:12px;font-weight:700;margin:0}.header h1{margin:4px 0}.header p{margin:0;color:var(--text-secondary,#667085)}.filters{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr)) auto;gap:12px;align-items:start}.filter-actions{display:flex;gap:8px;padding-top:4px}.state{min-height:100px;display:flex;gap:12px;align-items:center;justify-content:center}.error{color:#b42318}.table-wrap{overflow:auto;border:1px solid rgba(0,0,0,.12);border-radius:12px}table{width:100%;border-collapse:collapse}th,td{padding:14px;text-align:left;border-bottom:1px solid rgba(0,0,0,.08);white-space:nowrap}.actions{display:flex;gap:4px}.status{display:inline-flex;padding:4px 10px;border-radius:999px;background:rgba(0,0,0,.06);font-weight:600}@media(max-width:1000px){.filters{grid-template-columns:1fr 1fr}.header{flex-direction:column}}@media(max-width:640px){.page{padding:16px}.filters{grid-template-columns:1fr}}
+    .page{padding:24px;display:grid;grid-template-columns:minmax(0,1fr);gap:20px;min-width:0}.header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:12px;font-weight:700;margin:0}.header h1{margin:4px 0}.header p{margin:0;color:var(--text-secondary,#667085)}.state{min-height:100px;display:flex;gap:12px;align-items:center;justify-content:center}.error{color:#b42318}.table-wrap{overflow:auto;border:1px solid rgba(0,0,0,.12);border-radius:12px}table{width:100%;border-collapse:collapse}th,td{padding:14px;text-align:left;border-bottom:1px solid rgba(0,0,0,.08);white-space:nowrap}.actions{display:flex;gap:4px}.status{display:inline-flex;padding:4px 10px;border-radius:999px;background:rgba(0,0,0,.06);font-weight:600}@media(max-width:1000px){.header{flex-direction:column}}@media(max-width:640px){.page{padding:16px}}
   `]
 })
 export class TransferenciasListComponent implements OnInit {

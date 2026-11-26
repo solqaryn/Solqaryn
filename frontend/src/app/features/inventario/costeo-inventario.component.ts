@@ -39,9 +39,9 @@ import {
     <section class="page" aria-labelledby="costeo-title">
       <header class="header">
         <div>
-          <p class="eyebrow">Inventario empresarial</p>
+          
           <h1 id="costeo-title">Política de costeo</h1>
-          <p>Administra el método contable vigente y consulta su historial auditable.</p>
+          <p>Consulta y configura el método de valoración de existencias.</p>
         </div>
         <button mat-stroked-button type="button" (click)="recargar()" [disabled]="loading">
           <mat-icon>refresh</mat-icon>Actualizar

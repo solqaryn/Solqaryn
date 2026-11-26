@@ -29,19 +29,19 @@ import { ReservaInventarioService } from '../../services/reserva-inventario.serv
               <button mat-stroked-button type="button" (click)="editar()"><mat-icon>edit</mat-icon>Editar</button>
             }
             @if (puedeConfirmar && reserva.estado === 'Borrador') {
-              <button mat-flat-button color="primary" type="button" [disabled]="procesando" (click)="activar()">Activar</button>
+              <button mat-flat-button color="primary" type="button" [disabled]="procesando || editor.pendiente()" (click)="activar()">Activar</button>
             }
             @if (puedeConfirmar && reserva.estado === 'Activa') {
-              <button mat-flat-button color="primary" type="button" [disabled]="procesando" (click)="consumir()">Consumir</button>
+              <button mat-flat-button color="primary" type="button" [disabled]="procesando || editor.pendiente()" (click)="consumir()">Consumir</button>
             }
             @if (puedeAnular && reserva.estado === 'Activa') {
-              <button mat-stroked-button type="button" [disabled]="procesando" (click)="liberar()">Liberar</button>
+              <button mat-stroked-button type="button" [disabled]="procesando || editor.pendiente()" (click)="liberar()">Liberar</button>
             }
             @if (puedeCambiarEstado && reserva.estado === 'Activa') {
-              <button mat-stroked-button type="button" [disabled]="procesando || !reservaPuedeExpirar" [attr.aria-disabled]="procesando || !reservaPuedeExpirar" [title]="reservaPuedeExpirar ? 'Marcar reserva como expirada' : 'Disponible cuando alcance su fecha de expiración'" (click)="expirar()">Expirar</button>
+              <button mat-stroked-button type="button" [disabled]="procesando || editor.pendiente() || !reservaPuedeExpirar" [attr.aria-disabled]="procesando || editor.pendiente() || !reservaPuedeExpirar" [title]="reservaPuedeExpirar ? 'Marcar reserva como expirada' : 'Disponible cuando alcance su fecha de expiración'" (click)="expirar()">Expirar</button>
             }
             @if (puedeAnular && (reserva.estado === 'Borrador' || reserva.estado === 'Activa')) {
-              <button mat-stroked-button color="warn" type="button" [disabled]="procesando" (click)="cancelar()">Cancelar</button>
+              <button mat-stroked-button color="warn" type="button" [disabled]="procesando || editor.pendiente()" (click)="cancelar()">Cancelar</button>
             }
           </div>
         }

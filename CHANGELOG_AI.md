@@ -1,3 +1,9 @@
+## 2026-11-25 — QA: filtros, superficies y reapertura de confirmaciones
+- Se corrige la causa de la regresión de Productos: el estándar flex afecta sólo hijos directos, todos los filtros comparten fila adaptable y desaparece el contenedor vertical incompatible.
+- Transferencias, Reservas, Conteos y Ajustes usan una tarjeta de listado con el token existente fondoTarjetas, filtros comunes, tabla y estado vacío contenido. Se elimina paginación de cero elementos en Transferencias. Se revisan textos de Productos, Almacenes, Ubicaciones, Kardex, Costeo y listados de inventario.
+- La ejecución 45734701200 falló cinco escenarios por desmontaje del modal de confirmación durante la segunda pulsación. Los botones de transición respetan pendiente() y las pruebas esperan el cierre efectivo, reactivación y reapertura; no se omiten casos ni aserciones de escrituras/estado/permisos.
+- Nueva regresión sintética en 1440/390/320 px de geometría de filtros y tarjeta/estado vacío, contraste de superficies y limpieza de filtros. Referencias fijadas SKREF-03, SKREF-06, SKREF-10 consultadas, sin ejecutar herramientas externas. Sin cambios backend/API/DB, DEV o MAIN. Certificación exact-SHA y visual autenticada pendientes.
+
 ## 2026-11-25 — QA: regresión de modales de inventario
 - Pruebas sintéticas de transferencia, reserva y conteo en escritorio y móvil: abrir/cancelar, transición confirmada, actualización del listado y visibilidad por permisos. Se adaptan las expectativas históricas a confirmación Material y se mantienen las rutas directas.
 - La tabla institucional centraliza scroll horizontal y ancho intrínseco.

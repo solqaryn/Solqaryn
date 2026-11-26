@@ -147,19 +147,19 @@ type RecepcionLinea = {
           <h2>Acciones de lifecycle</h2>
           <div class="actions">
             @if (transferencia.estado === 'Borrador' && puedeCambiarEstado) {
-              <button mat-flat-button color="primary" type="button" (click)="solicitar()" [disabled]="busy">Solicitar</button>
+              <button mat-flat-button color="primary" type="button" (click)="solicitar()" [disabled]="busy || editor.pendiente()">Solicitar</button>
             }
             @if (transferencia.estado === 'Solicitada' && puedeAprobar) {
-              <button mat-flat-button color="primary" type="button" (click)="aprobar()" [disabled]="busy">Aprobar</button>
+              <button mat-flat-button color="primary" type="button" (click)="aprobar()" [disabled]="busy || editor.pendiente()">Aprobar</button>
             }
             @if (transferencia.estado === 'Aprobada' && puedeConfirmar) {
-              <button mat-flat-button color="primary" type="button" (click)="despachar()" [disabled]="busy">Despachar</button>
+              <button mat-flat-button color="primary" type="button" (click)="despachar()" [disabled]="busy || editor.pendiente()">Despachar</button>
             }
             @if (transferencia.estado === 'EnTransito' && puedeConfirmar) {
-              <button mat-flat-button color="primary" type="button" (click)="recibir()" [disabled]="busy || !recepcionValida">Registrar recepción</button>
+              <button mat-flat-button color="primary" type="button" (click)="recibir()" [disabled]="busy || editor.pendiente() || !recepcionValida">Registrar recepción</button>
             }
             @if (transferencia.estado !== 'Recibida' && transferencia.estado !== 'Cancelada' && puedeAnular) {
-              <button mat-stroked-button color="warn" type="button" (click)="cancelar()" [disabled]="busy">Cancelar</button>
+              <button mat-stroked-button color="warn" type="button" (click)="cancelar()" [disabled]="busy || editor.pendiente()">Cancelar</button>
             }
             @if (busy) {
               <mat-spinner diameter="24"></mat-spinner>

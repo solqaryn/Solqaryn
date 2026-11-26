@@ -49,24 +49,24 @@ import { ConteoInventarioService } from '../../services/conteo-inventario.servic
             <button mat-stroked-button type="button" (click)="editar()"><mat-icon>edit</mat-icon>Editar</button>
           }
           @if (puedeCambiarEstado && item.estado === Estado.Borrador) {
-            <button mat-flat-button color="primary" type="button" [disabled]="accionando" (click)="iniciar()"><mat-icon>play_arrow</mat-icon>Iniciar</button>
+            <button mat-flat-button color="primary" type="button" [disabled]="accionando || editor.pendiente()" (click)="iniciar()"><mat-icon>play_arrow</mat-icon>Iniciar</button>
           }
           @if (puedeCerrar && item.estado === Estado.EnProceso) {
-            <button mat-flat-button color="primary" type="button" [disabled]="accionando || item.cantidadCapturadas !== item.cantidadLineas" (click)="cerrar()"><mat-icon>lock</mat-icon>Cerrar</button>
+            <button mat-flat-button color="primary" type="button" [disabled]="accionando || editor.pendiente() || item.cantidadCapturadas !== item.cantidadLineas" (click)="cerrar()"><mat-icon>lock</mat-icon>Cerrar</button>
           }
           @if (puedeAprobar && item.estado === Estado.Cerrado) {
-            <button mat-flat-button color="primary" type="button" [disabled]="accionando" (click)="aprobar()"><mat-icon>verified</mat-icon>Aprobar</button>
+            <button mat-flat-button color="primary" type="button" [disabled]="accionando || editor.pendiente()" (click)="aprobar()"><mat-icon>verified</mat-icon>Aprobar</button>
           }
           @if (puedeCrear && item.estado === Estado.Aprobado && item.cantidadConDiferencia > 0) {
-            <button mat-stroked-button color="primary" type="button" [disabled]="accionando" (click)="generarAjuste()"><mat-icon>tune</mat-icon>Generar ajuste</button>
+            <button mat-stroked-button color="primary" type="button" [disabled]="accionando || editor.pendiente()" (click)="generarAjuste()"><mat-icon>tune</mat-icon>Generar ajuste</button>
           }
           @if (puedeAnular && item.estado !== Estado.Aprobado && item.estado !== Estado.Cancelado) {
-            <button mat-stroked-button color="warn" type="button" [disabled]="accionando" (click)="cancelar()"><mat-icon>cancel</mat-icon>Cancelar</button>
+            <button mat-stroked-button color="warn" type="button" [disabled]="accionando || editor.pendiente()" (click)="cancelar()"><mat-icon>cancel</mat-icon>Cancelar</button>
           }
         </div>
         <section class="table-wrap" aria-labelledby="lineas-title">
           <div class="section-title"><div><h2 id="lineas-title">Líneas de conteo</h2><p>La captura se persiste por clave física. El stock esperado se oculta en modo ciego mientras el conteo está en proceso.</p></div>@if (puedeEditar && item.estado === Estado.EnProceso) {
-          <button mat-flat-button color="primary" type="button" [disabled]="accionando || !hayCapturasPendientes" (click)="guardarCapturas()">Guardar capturas</button>
+          <button mat-flat-button color="primary" type="button" [disabled]="accionando || editor.pendiente() || !hayCapturasPendientes" (click)="guardarCapturas()">Guardar capturas</button>
         }</div>
         <div class="scroll app-table-shell" role="region" tabindex="0" aria-label="Detalle de conteos"><table class="app-data-table"><thead><tr><th>Variante</th><th>Ubicación</th><th>Stock esperado</th><th>Conteo</th><th>Diferencia</th><th>Ajuste</th></tr></thead><tbody>@for (detalle of item.detalles; track detalle) {
         <tr><td><strong>{{ detalle.productoSku || ('Variante #' + detalle.productoVarianteId) }}</strong><small>{{ descripcion(detalle) }}</small></td><td>{{ detalle.ubicacionAlmacenId ? ('#' + detalle.ubicacionAlmacenId) : 'Sin ubicación' }}</td><td>{{ stockEsperadoVisible(detalle) }}</td><td>@if (puedeEditar && item.estado === Estado.EnProceso) {

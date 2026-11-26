@@ -53,8 +53,12 @@ for (const caso of casos) for (const viewport of [{width:1280,height:900},{width
     const confirmacion=page.locator('.solqaryn-modal--s');
     await expect(confirmacion).toBeVisible();
     await confirmacion.getByRole('button',{name:'Cancelar',exact:true}).click();
+    await expect(confirmacion).toHaveCount(0);
     expect(escrituras).toBe(0);
-    await modal.getByRole('button',{name:caso.accion,exact:true}).click();
+    const accion = modal.getByRole('button',{name:caso.accion,exact:true});
+    await expect(accion).toBeEnabled();
+    await accion.click();
+    await expect(confirmacion).toBeVisible();
     await confirmacion.getByRole('button',{name:caso.accion,exact:true}).click();
     await expect(modal.getByText(caso.estado,{exact:true})).toBeVisible();
     expect(escrituras).toBe(1);

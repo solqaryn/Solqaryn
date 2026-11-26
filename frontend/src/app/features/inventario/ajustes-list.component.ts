@@ -36,9 +36,9 @@ import { AjusteInventarioService } from '../../services/ajuste-inventario.servic
     <section class="ajustes-page" aria-labelledby="ajustes-title">
       <header class="page-header">
         <div>
-          <p class="eyebrow">Inventario empresarial</p>
+          
           <h1 id="ajustes-title">Ajustes de inventario</h1>
-          <p class="subtitle">Consulta y controla el ciclo Borrador → Confirmado → Anulado.</p>
+          <p class="subtitle">Consulta y registra correcciones de existencias.</p>
         </div>
         <div class="page-actions">
           @if (puedeCrear()) {
@@ -53,8 +53,9 @@ import { AjusteInventarioService } from '../../services/ajuste-inventario.servic
           </button>
         </div>
       </header>
+      <div class="card app-list-surface">
     
-      <form class="filters" (ngSubmit)="aplicarFiltros()">
+      <form class="filters app-table-filters" (ngSubmit)="aplicarFiltros()">
         <mat-form-field appearance="outline">
           <mat-label>Buscar</mat-label>
           <input matInput name="search" [(ngModel)]="search" placeholder="Número o motivo" />
@@ -113,15 +114,15 @@ import { AjusteInventarioService } from '../../services/ajuste-inventario.servic
     
       @if (!loading() && !error()) {
         @if (ajustes().length === 0) {
-          <div class="empty">
+          <div class="empty app-list-empty">
             <mat-icon>warehouse</mat-icon>
-            <h2>No hay ajustes para los filtros seleccionados</h2>
-            <p>Modifica los filtros o crea un borrador desde el flujo de inventario.</p>
+            <h2>No se encontraron ajustes</h2>
+            <p>Cambia los filtros o registra un nuevo ajuste.</p>
           </div>
         }
         @if (ajustes().length > 0) {
-          <div class="table-shell">
-            <table>
+          <div class="table-shell app-table-shell" role="region" aria-label="Tabla de ajustes" tabindex="0">
+            <table class="app-data-table">
               <thead>
                 <tr>
                   <th>Número</th>
@@ -201,6 +202,7 @@ import { AjusteInventarioService } from '../../services/ajuste-inventario.servic
           </div>
         }
       }
+    </div>
     </section>
     
     @if (dialogAjuste(); as ajusteDialog) {
@@ -319,13 +321,13 @@ import { AjusteInventarioService } from '../../services/ajuste-inventario.servic
     .eyebrow { margin: 0 0 4px; font-size: 12px; font-weight: 700; text-transform: uppercase; letter-spacing: .08em; opacity: .65; }
     h1 { margin: 0; font-size: clamp(24px, 3vw, 34px); }
     .subtitle { margin: 6px 0 0; opacity: .72; }
-    .filters { display: grid; grid-template-columns: minmax(220px, 2fr) repeat(3, minmax(150px, 1fr)) auto; gap: 12px; align-items: start; margin-bottom: 18px; }
-    .filter-actions { display: flex; gap: 8px; min-height: 56px; align-items: center; }
+    
+    
     .feedback, .loading, .empty { display: flex; align-items: center; justify-content: center; gap: 10px; padding: 28px; border-radius: 12px; }
     .feedback.error { justify-content: flex-start; border: 1px solid rgba(244,67,54,.32); background: rgba(244,67,54,.06); }
     .feedback.success { justify-content: flex-start; margin-bottom: 16px; border: 1px solid rgba(46,125,50,.28); background: rgba(46,125,50,.07); }
     .feedback.success span { flex: 1; }
-    .empty { min-height: 220px; flex-direction: column; text-align: center; border: 1px dashed rgba(127,127,127,.35); }
+    .empty { min-height: 220px; flex-direction: column; text-align: center; border: 0; }
     .empty h2, .empty p { margin: 0; }
     .empty mat-icon { width: 42px; height: 42px; font-size: 42px; opacity: .5; }
     .table-shell { overflow-x: auto; border: 1px solid rgba(127,127,127,.22); border-radius: 12px; }
@@ -391,15 +393,15 @@ import { AjusteInventarioService } from '../../services/ajuste-inventario.servic
     .modal-actions mat-spinner { display: inline-block; margin-right: 7px; }
 
     @media (max-width: 1050px) {
-      .filters { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-      .filter-actions { grid-column: span 2; }
+      
+      
     }
     @media (max-width: 640px) {
       .ajustes-page { padding: 16px; }
       .page-header { flex-direction: column; }
       .page-actions { width: 100%; justify-content: flex-start; }
-      .filters { grid-template-columns: 1fr; }
-      .filter-actions { grid-column: auto; }
+      
+      
       .modal-backdrop { padding: 12px; }
       .modal-card { padding: 22px 18px 18px; border-radius: 16px; }
       .modal-summary { grid-template-columns: 1fr; }
