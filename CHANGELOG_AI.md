@@ -1,3 +1,7 @@
+## 2026-11-26 — DEV06 — C01-04.M03.06 — V44/R1/R5
+
+- TASK_ID=6af16bbad26881918c283abe06e1f32a; RUN_ID=8ea34a28-3b10-8331-9a7f-be62c12abcb1; base=7c7629c300d13ae560da24bdf03612231b74485e. Reparar SOURCE_ANCHOR_MISMATCH del job 139917596312 (V23), generado por la ampliación del fixture CrearAsync con DenialReadbackFault. Ajustar exclusivamente las dos cadenas de firma del generador CI, conservar parámetro opcional, interceptor, cuatro anclas únicas, aserciones, GitHub HTTP real y guards GH-hosted/MySQL descartable. A0 transformación estática reproducida sobre blob exacto; A1-A4 CI nueva y A5 pendientes. Sin cambios runtime, permisos, esquema ni datos reales. Rollback revert normal.
+
 ## 2026-11-26 — DEV05 — C01-04.M03.06 — V44/R1/R5
 
 - TASK_ID=6adc2e55f47c81919f6374e561687076; RUN_ID=748a5841-2770-8327-9ba6-05a5fefcd77b; base=faadb2d0709805a206e69118e785de54b4668c07. D270: conservar HTTP 403 ante DbException durante readback/COMMIT del recibo de denegación ya determinada; no confundir con autoridad indeterminada (503). Mantener cancelación y aviso sanitizado, rollback y no divulgación. Regresión en laboratorio JWT/HTTP/Oracle MySQL real A/B: SELECT de recibo contra tabla inexistente, 403/no-store, cero llamadas upstream, cuatro recibos previos intactos. Sin grants, esquema, datos productivos ni retención inventada. A0 estático; CI/A5 pendientes. Foco empresarial API12/P01/P02 aún no acreditado. Rollback por revert normal.
