@@ -67,6 +67,40 @@ describe('CuentasPorCobrarComponent', () => {
     expect(fixture.nativeElement.textContent).toContain('Forbidden');
   });
 
+  it('no muestra saldos durante carga o cuarentena y usa un mensaje seguro sin payload', () => {
+    const fixture = TestBed.createComponent(CuentasPorCobrarComponent);
+    fixture.detectChanges();
+    const host = fixture.nativeElement as HTMLElement;
+    const url = `${environment.apiUrl}/cuentas-por-cobrar`;
+    expect(host.querySelector('.summary')).toBeNull();
+    http.expectOne(url).flush({ success: true, data: [], message: '', errors: [] });
+    fixture.detectChanges();
+    expect(host.querySelector('.summary')).not.toBeNull();
+    fixture.componentInstance.cargar();
+    fixture.detectChanges();
+    expect(host.querySelector('.summary')).toBeNull();
+    http.expectOne(url).flush({ success: false, code: 'TENANT_DATA_ISOLATION_REQUIRED', message: 'detalle no confiable' }, { status: 503, statusText: 'Service Unavailable' });
+    fixture.detectChanges();
+    expect(fixture.componentInstance.cuentas()).toEqual([]);
+    expect(host.querySelector('[role="alert"]')?.textContent).toContain('proteger los datos empresariales');
+    expect(host.textContent).not.toContain('detalle no confiable');
+    expect(host.querySelector('.summary, .state.empty, .table-shell')).toBeNull();
+    (host.querySelector('[role="alert"] button') as HTMLButtonElement).click();
+    http.expectOne(url).flush({ success: true, data: [], message: '', errors: [] });
+    fixture.detectChanges();
+    expect(host.querySelector('[role="alert"]')).toBeNull();
+    expect(host.querySelector('.state.empty')).not.toBeNull();
+  });
+
+  it('no clasifica cualquier 503 como cuarentena empresarial', () => {
+    const fixture = TestBed.createComponent(CuentasPorCobrarComponent);
+    fixture.detectChanges();
+    http.expectOne(`${environment.apiUrl}/cuentas-por-cobrar`).flush({ code: 'OTHER_FAILURE', message: 'Servicio no disponible' }, { status: 503, statusText: 'Service Unavailable' });
+    fixture.detectChanges();
+    expect(fixture.componentInstance.errorMessage()).toBe('Servicio no disponible');
+    expect(fixture.nativeElement.querySelector('.summary')).toBeNull();
+  });
+
   it('no acepta success=false como carga valida', () => {
     const fixture = TestBed.createComponent(CuentasPorCobrarComponent);
     fixture.detectChanges();

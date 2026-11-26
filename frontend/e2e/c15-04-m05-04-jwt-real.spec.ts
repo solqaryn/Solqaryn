@@ -2187,6 +2187,36 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     }
   }
 
+  // A0.68S: la ruta real no debe montar CxC cuando la proyeccion server-side la mantiene en cuarentena.
+  for (const empresa of [{ id: 1, usuario: 'c1504_admin_a' }, { id: 2, usuario: 'c1504_admin_b' }]) {
+    test(`A0.68S - guard CxC real conserva cuarentena empresa ${empresa.id}`, async ({ page, request }) => {
+      const jwt = await ingresarConJwtRealParaGuard(page, request, empresa.usuario);
+      const headers = { Authorization: 'Bearer ' + jwt, 'X-Empresa-Id': String(empresa.id) };
+      const pathPermisos = '/permisos/mis-permisos/empresa/' + empresa.id;
+      const permisos = await request.get(api + pathPermisos, { headers });
+      expect(permisos.status()).toBe(200);
+      const cuerpo = await permisos.json();
+      expect(cuerpo.success).toBe(true);
+      expect(cuerpo.data.operacionMultiEmpresaRestringida).toBe(true);
+      expect(cuerpo.data.rutasHabilitadas).not.toContain('cuentas-por-cobrar');
+      const rutas = cuerpo.data.rutasHabilitadas as string[];
+      const consultas: string[] = [];
+      page.on('request', req => {
+        if (req.method() === 'GET' && ['fetch', 'xhr'].includes(req.resourceType()) &&
+            new URL(req.url()).pathname === '/cuentas-por-cobrar') consultas.push(req.url());
+      });
+      const permisosNavegador = page.waitForResponse(res =>
+        new URL(res.url()).pathname === pathPermisos && res.request().method() === 'GET');
+      await page.goto('/cuentas-por-cobrar');
+      const respuestaNavegador = await permisosNavegador;
+      expect(respuestaNavegador.status()).toBe(200);
+      expect((await respuestaNavegador.json()).data.rutasHabilitadas).not.toContain('cuentas-por-cobrar');
+      await expect(page).toHaveURL(url => url.pathname === '/perfil' || rutas.includes(url.pathname.slice(1)));
+      await expect(page.locator('app-cuentas-por-cobrar')).toHaveCount(0);
+      expect(consultas).toEqual([]);
+    });
+  }
+
   // A0.69: evidencia incremental de reflujo a 200% sobre superficies globales
   // autenticas: JWT firmado, HTTP .NET y MySQL descartable, sin page.route.
   test('A0.69 - reflujo 200% y foco visible por teclado en 5 superficies JWT reales', async ({ page, request }) => {

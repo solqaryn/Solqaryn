@@ -1,3 +1,7 @@
+## 2026-11-26 | DEV03 | C15-04.M05.04 | R1-RESTAURADA
+- V44R1-J20-41D63181-C1504M0504-A068RS | Base 56714fa6bb73606b25d76126504a91b2eb042897; adopcion A0.68R DEV02 run d8b7241b-adec-832d-8c76-102a01169ee6: corregir componente canonico de CxC cargado por app.routes.ts, no el componente alterno A0.68Q; ocultar resumen durante carga/error y mensaje fijo 503 TENANT_DATA_ISOLATION_REQUIRED. Dos unitarios nuevos; A0.68S agrega dos casos Chromium con permisos reales A/B, guard sin montar CxC ni consultar datos cuando la ruta no esta habilitada. Sin ampliar grant, piloto, API o cuarentena.
+- SKREF-03 Impeccable 2149fcce39a90bb409df5f16515f316a76dc6199 y SKREF-10 Angular 6808966993bf2b2d455d9b6245e960a59a01b9a9 leidos; no scripts externos. CI exact-SHA n44-cxc-regression y v19-c15-04-m05-04-jwt-real pendiente; no A5/LISTO. Foco colectivo C01-04.M03.06 sin cambio; excepcion R1 por dependencia P01/P02/API12/retencion no autorizada.
+
 ## 2026-11-26 | DEV05 | C07-01.M06.06 | R1-RESTAURADA
 - V44R1-J40-EAC6A317-C0701M0606-QUOTE-FIXTURE-FK | Base c43894392a2cf305b4385dceef81930b0275879d; CI job 139786956826 FAIL (6 PASS, 1 FAIL): fixture SQL 1452, FK Clientes/TipoClientes compuesta por EmpresaId. Sembrar un tipo por empresa y unir por EmpresaId/código; comprobar dos vínculos propietarios antes de requests. Sin modificar FK, RBAC, cuarentena, expectativas ni runtime.
 - A0 diff dirigido; A1-A4 nueva CI exact-SHA pendiente; D01/D06 y A5 independiente pendientes. Foco C01-04.M03.06 sin autorización P01/P02/API12 nueva. Preservar CHANGELOG completo.

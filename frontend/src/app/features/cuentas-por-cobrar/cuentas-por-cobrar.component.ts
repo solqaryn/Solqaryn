@@ -23,6 +23,7 @@ import { FacturaService } from '../../services/factura.service';
         </button>
       </header>
     
+      @if (!loading() && !errorMessage()) {
       <div class="summary" aria-live="polite">
         <div class="summary-card">
           <span>Documentos pendientes</span>
@@ -37,6 +38,7 @@ import { FacturaService } from '../../services/factura.service';
           <strong>{{ totalVencidos() }}</strong>
         </div>
       </div>
+      }
     
       @if (loading()) {
         <div class="state" role="status" aria-live="polite">
@@ -203,6 +205,9 @@ export class CuentasPorCobrarComponent implements OnInit {
   }
 
   private extractError(error: HttpErrorResponse): string {
+    if (error.status === 503 && error.error?.code === 'TENANT_DATA_ISOLATION_REQUIRED') {
+      return 'La consulta está temporalmente bloqueada para proteger los datos empresariales.';
+    }
     const apiMessage = error.error?.message;
     if (typeof apiMessage === 'string' && apiMessage.trim()) return apiMessage;
     if (error.status === 403) return 'No tiene permiso Facturacion/Ver para consultar esta información.';
