@@ -1,3 +1,8 @@
+## 2026-11-26 — DEV06 — C01-04.M03.06 — V44/R1/R5
+
+- TASK_ID=6af16bbad26881918c283abe06e1f32a; RUN_ID=9f65c00a-f840-8328-9a8d-9c5ca0b8778c; base 82add5001b314ac55ba2e52e2b06e1f44162e09a.
+- Revalidación de autoridad global antes de consultas secundarias GitHub para workflow dirigido y core backend, análoga al camino legacy; denegación auditada ante revocación durante consulta inicial. Se amplían dos casos existentes sin variar cardinalidad de CI, incluyendo fixture MySQL del workflow dirigido cuando está configurado. Sin nuevo permiso, esquema, dependencia ni acceso a datos reales; CI exact-SHA pendiente. No prueba atomicidad entre autorización e I/O; P01/P02/API12 empresarial, DI, retención y A5 pendientes. Rollback revert normal.
+
 ## 2026-11-26 — DEV04 — C15-04.M05.04 — V44/R1/R5
 
 - TASK_ID=6aeacb7820ac8191b7d768a6f33dfa09; RUN_ID=6e39c6d3-f98c-8326-889a-360aa4161cc5; adopción del paquete A0.68T DEV02 RUN=175f75c8-475c-8333-b546-c82b209b6d6f, contrastado por DEV03 RUN=6503659f-a73c-832d-bbe1-77a16cb4ba4e.

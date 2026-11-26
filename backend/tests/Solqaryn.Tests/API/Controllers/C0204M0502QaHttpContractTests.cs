@@ -1025,6 +1025,9 @@ public sealed class C0204M0502QaHttpContractTests
         Assert.Equal(793L, build.GetProperty("CheckSuiteId").GetInt64());
         Assert.Single(audits.Where(x => x.Resultado == "Error" && x.Error == "QA_UPSTREAM_CONTRACT"));
         Assert.All(audits, x => Assert.Null(x.EmpresaId));
+
+        upstream.AdditionalResponses[discovery] = jobs;
+        await AssertNoSecondaryCallsAfterRevocationAsync(upstream, fixture, client);
     }
 
     [Theory]
@@ -1119,6 +1122,8 @@ public sealed class C0204M0502QaHttpContractTests
             Assert.Equal(459L, identity.GetProperty("CheckRunId").GetInt64());
             Assert.Equal(scenario == "reuse" ? "EXACT_SHA_REUSE" : "BUILD_TEST",
                 identity.GetProperty("Mode").GetString());
+            if (scenario == "valid")
+                await AssertNoSecondaryCallsAfterRevocationAsync(upstream, fixture, client);
         }
     }
 
@@ -1388,6 +1393,33 @@ public sealed class C0204M0502QaHttpContractTests
                 await db.Database.EnsureDeletedAsync();
             }
         }
+    }
+
+    private static async Task AssertNoSecondaryCallsAfterRevocationAsync(
+        GitHubFake upstream, Fixture fixture, HttpClient client)
+    {
+        var callsBefore = upstream.Calls;
+        upstream.BeforeResponse = async () =>
+        {
+            upstream.BeforeResponse = null;
+            using var revokedScope = fixture.Host.Services.CreateScope();
+            var revokedDb = revokedScope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var grant = await revokedDb.Set<UsuarioRolPlataforma>().SingleAsync(
+                x => x.UsuarioId == fixture.GlobalId);
+            grant.Desactivar();
+            await revokedDb.SaveChangesAsync();
+        };
+        using (var revoked = await client.GetAsync(Path))
+        {
+            Assert.Equal(HttpStatusCode.Forbidden, revoked.StatusCode);
+            Assert.DoesNotContain("CI_MINIMA_ACREDITADA", await revoked.Content.ReadAsStringAsync());
+        }
+        Assert.Equal(callsBefore + 1, upstream.Calls);
+        using var scope = fixture.Host.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var denial = Assert.Single(await db.Set<RegistroAuditoria>().AsNoTracking()
+            .Where(x => x.Error == "QA_ACCESS_DENIED").ToListAsync());
+        AssertDenialAudit(denial, fixture.GlobalId);
     }
 
     private sealed class GitHubFake(string payload) : HttpMessageHandler

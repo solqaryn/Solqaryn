@@ -331,6 +331,7 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                     if (status == "completed" && string.Equals(name,
                         V5UniversalCaseFileQaEvidenceAudit.DirectedDurableCheckName, StringComparison.Ordinal))
                     {
+                        if (!await VigenteAsync()) return await DenegarAuditadoAsync();
                         // Only this directed workflow has a server-owned microtask mapping.
                         // A check link is not proof of a job/attempt until independently joined.
                         var verified = await new V5UniversalCaseFileQaGitHubJobReader(_clients)
@@ -387,6 +388,7 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
             if (!failed && !pending && legacyBackend.Length == 0 && coreBackend.Length == 1 &&
                 coreBackend[0].Estado == "completed" && coreBackend[0].Conclusion == "success")
             {
+                if (!await VigenteAsync()) return await DenegarAuditadoAsync();
                 var index = identities.FindIndex(x => x.Check == CoreBackendCheckName);
                 if (index < 0) return await FalloProveedorAsync("QA_UPSTREAM_CONTRACT");
                 var identity = identities[index];
