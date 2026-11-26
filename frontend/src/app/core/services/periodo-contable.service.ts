@@ -11,7 +11,7 @@ import {
 
 @Injectable({ providedIn: 'root' })
 export class PeriodoContableService {
-  private readonly apiUrl = `${environment.apiUrl}/periodos-contables`;
+  private readonly apiUrl = `${environment.apiUrl}/api/periodos-contables`;
 
   constructor(private readonly http: HttpClient) {}
 

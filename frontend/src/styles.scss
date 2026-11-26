@@ -245,10 +245,17 @@ mat-icon {
   max-height: calc(100dvh - 24px);
 }
 
-/* Los paneles de select/autocomplete viven en el overlay global. En móvil no
-   deben heredar el ancho intrínseco accidental de un trigger comprimido: el
-   panel conserva un mínimo legible y nunca rebasa el viewport. */
-.mat-mdc-select-panel,
+/* CDK debe posicionar el ancho real del select, no el ancho comprimido
+   del trigger: el mínimo legible pertenece al contenedor posicionado. */
+.cdk-overlay-pane:has(.mat-mdc-select-panel) {
+  min-width: min(320px, calc(100vw - 24px)) !important;
+}
+.mat-mdc-select-panel {
+  box-sizing: border-box;
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
 .mat-mdc-autocomplete-panel {
   width: auto !important;
   min-width: min(320px, calc(100vw - 24px)) !important;

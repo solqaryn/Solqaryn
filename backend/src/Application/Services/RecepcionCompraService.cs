@@ -132,7 +132,8 @@ public sealed class RecepcionCompraService : IRecepcionCompraService
                     return;
                 }
 
-                var orden = await ObtenerOrdenAprobadaAsync(dto.OrdenCompraId);
+                // La orden existente debe conservar su estado Unchanged al agregar la recepción.
+                var orden = await ObtenerOrdenAprobadaAsync(dto.OrdenCompraId, tracking: true);
                 var ahora = DateTime.UtcNow;
                 var usuarioId = ObtenerUsuarioId();
                 var recepcion = new RecepcionCompra
@@ -302,11 +303,11 @@ public sealed class RecepcionCompraService : IRecepcionCompraService
         }
     }
 
-    private async Task<OrdenCompra> ObtenerOrdenAprobadaAsync(int ordenCompraId)
+    private async Task<OrdenCompra> ObtenerOrdenAprobadaAsync(int ordenCompraId, bool tracking = false)
     {
         if (ordenCompraId <= 0)
             throw new BusinessRuleException("La orden de compra es obligatoria.");
-        var orden = await _ordenes.GetByIdAsync(ordenCompraId)
+        var orden = await _ordenes.GetByIdAsync(ordenCompraId, tracking: tracking)
             ?? throw new BusinessRuleException("La orden de compra indicada no existe.");
         if (orden.Estado != EstadoOrdenCompra.Aprobada)
             throw new BusinessRuleException("Solo una orden de compra aprobada puede recibir mercancía.");

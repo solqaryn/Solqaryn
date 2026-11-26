@@ -25,19 +25,15 @@
 .hint { font-size: 12px; color: var(--color-text-muted); text-align: right; }
 .error { color: var(--color-danger); font-size: 13px; }
 .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; a[mat-button] { text-decoration: none; } }
-@media (max-width: 960px) {
-  .detalle-row { grid-template-columns: 52px repeat(3, minmax(0, 1fr)) auto; grid-template-areas: "imagen producto producto producto eliminar" "imagen variante variante cantidad costo"; row-gap: 2px; }
+@media (max-width: 1200px) {
+  .detalle-row { grid-template-columns: 52px repeat(2, minmax(0, 1fr)) 48px; grid-template-areas: "imagen producto producto eliminar" "imagen variante variante variante" ". cantidad costo costo"; row-gap: 2px; }
   .col-imagen { grid-area: imagen; } .col-producto { grid-area: producto; } .col-variante { grid-area: variante; } .col-cantidad { grid-area: cantidad; } .col-costo { grid-area: costo; } .col-eliminar { grid-area: eliminar; justify-self: end; } .col-subtotal { display: none; }
 }
 @media (max-width: 640px) {
   .fields-grid { grid-template-columns: 1fr; } .fields-grid .full-width { grid-column: auto; }
-  /* Mantén cantidad y precio como dos columnas reales. La columna `auto`
-     permitía que el precio tomara todo el ancho y comprimía cantidad hasta
-     solapar su outline/label con el siguiente control. */
-  /* Reservar una columna táctil estable para cantidad y otra flexible para
-     precio evita que un área de producto que ocupa dos columnas colapse la
-     cantidad a 0 px en viewports angostos. */
-  .detalle-row { grid-template-columns: 52px minmax(64px, max-content) minmax(0, 1fr) 48px; grid-template-areas: "imagen producto producto eliminar" "imagen variante variante ." ". cantidad costo ."; }
+  /* En teléfonos angostos, los campos ocupan todo el ancho disponible:
+     ni el precio de catálogo ni la cantidad compiten con la miniatura. */
+  .detalle-row { grid-template-columns: minmax(0, 1fr) 48px; grid-template-areas: "imagen eliminar" "producto producto" "variante variante" "cantidad cantidad" "costo costo"; }
   .header-row { align-items: flex-start; } .form { padding: 14px; } .totales { max-width: none; } .hint { text-align: left; }
   .form-actions { flex-direction: column-reverse; align-items: stretch; button, a { width: 100%; } }
 }

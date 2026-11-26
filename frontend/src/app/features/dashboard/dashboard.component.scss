@@ -13,3 +13,8 @@
 @media(max-width:640px){.dashboard-title{align-items:flex-start;flex-direction:column}.metric-grid{grid-template-columns:1fr;gap:10px}.metric-card{padding:15px 16px}.combo-chart{grid-template-columns:repeat(10,42px)}.settings-grid{grid-template-columns:1fr}.analytics-card,.company-summary,.table-card,.list-card{padding:16px}}
 
 .automation-compact{display:flex;align-items:center;justify-content:space-between;gap:18px;padding:15px 20px}.automation-compact h2{margin:0;font-size:14px}.automation-compact p{margin:4px 0 0;color:var(--color-text-muted);font-size:11px}.automation-status{display:flex;align-items:center;gap:6px;color:var(--color-text-muted);font-size:12px;white-space:nowrap}.automation-status mat-icon{color:var(--color-success);width:18px;height:18px;font-size:18px}@media(max-width:640px){.automation-compact{align-items:flex-start;flex-direction:column}}
+
+@media (max-width: 768px) {
+  .dashboard-shell a { display: inline-flex; align-items: center; min-inline-size: 44px; min-block-size: 44px; white-space: normal; }
+  .panel-heading { flex-wrap: wrap; }
+}

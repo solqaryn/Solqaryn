@@ -20,6 +20,7 @@ export async function prepareRouteFixtures(): Promise<void> {
     catalogos: ['/categorias/1/editar', '/ubicaciones-almacen/1/editar', '/proveedores/1/editar', '/descuentos/1/editar'],
     transferencias: ['/inventario/transferencias/1', '/inventario/transferencias/1/editar'],
     reservas: ['/inventario/reservas/1', '/inventario/reservas/1/editar'],
+    costeo: ['/inventario/costeo'],
     inventario: ['/inventario/conteos/1', '/inventario/conteos/1/editar',
       '/inventario/ajustes/1', '/inventario/ajustes/1/editar'],
     sales: ['/ventas/1', '/ventas/1/editar', '/facturas/1', '/facturas/1/pagos'],
@@ -41,7 +42,7 @@ export async function prepareRouteFixtures(): Promise<void> {
   const label = 'QA matriz ' + nonce;
 
   // Do not publish response bodies, credentials or request headers in artifacts.
-  async function call(path: string, method: 'GET' | 'POST' = 'GET',
+  async function call(path: string, method: 'GET' | 'POST' | 'PUT' = 'GET',
       data?: Record<string, unknown>, multipart?: Record<string, string>): Promise<any> {
     stage = method + ' ' + path;
     lastStatus = undefined;
@@ -196,7 +197,9 @@ export async function prepareRouteFixtures(): Promise<void> {
       requireStock();
       stage = 'cliente y método de pago';
       if (!clienteId || !metodoPago) throw new Error('Datos base de venta ausentes');
+      // Venta presencial de CI: el retiro en mostrador no requiere una tarifa de envío.
       const data = { clienteId, clienteNombre: label, metodoPago, estadoPago: 'Pendiente', notas: label,
+        envioExonerado: true, motivoExoneracionEnvio: 'Retiro en mostrador QA',
         detalles: [{ productoId, productoVarianteId: varianteId, cantidad: 1, precioUnitario: 180 }] };
       const draft = idOf(await call('/ventas', 'POST', data));
       await persisted('/ventas', draft);
@@ -270,6 +273,18 @@ export async function prepareRouteFixtures(): Promise<void> {
       const draftInvoiceId = idOf(await call('/facturas-proveedor', 'POST', { ...invoice, numeroFactura: 'QA-B-' + nonce, detalles: [{ ...invoice.detalles[0], cantidadFacturada: 1 }] }));
       await persisted('/facturas-proveedor', draftInvoiceId);
       bind('/facturas-proveedor/1/editar', '/facturas-proveedor/' + draftInvoiceId + '/editar');
+    });
+    // Configuración real de la empresa desechable, después de los documentos comerciales.
+    await family(families.costeo, async () => {
+      const politica = await call('/costeo-inventario/politica-vigente', 'PUT', {
+        metodo: 1, motivo: 'Política representativa de QA aislado'
+      });
+      const vigente = await call('/costeo-inventario/politica-vigente');
+      if (idOf(vigente) !== idOf(politica) || vigente.estaVigente !== true ||
+          (vigente.metodo !== 1 && vigente.metodo !== 'PromedioPonderado')) {
+        throw new Error('Política de costeo no acreditada');
+      }
+      bind('/inventario/costeo', '/inventario/costeo');
     });
     // Create the discount after the commercial fixtures, so it cannot change their amounts.
     await family(['/descuentos/1/editar'], async () => {
