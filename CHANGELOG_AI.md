@@ -1,8 +1,12 @@
+## 2026-11-25 — QA: restauración de higiene documental
+- Se retiran menciones de identidad no vigente de la documentación activa, sin cambiar el validador ni sus patrones. Se conservan los enlaces causales a GitHub y el contrato autorizado. El control de scope detectó el defecto en run 45743625598 / 965bfab3.
+- Comparación de configuración de rutas: 172 inscripciones anteriores, 151 actuales, cero duplicadas, misma primera coincidencia de cada URL; 149 rutas de pantalla, más dos redirecciones. Pendiente gate exact-SHA de Angular.
+
 ## 2026-11-25 — QA: registro único de rutas y continuidad de certificación
 - Se eliminan expansiones redundantes de Transferencias y Facturas de proveedor, y la segunda inscripción de Cuentas por cobrar. Se preservan exactamente las primeras rutas efectivas, sus componentes, guards, metadata y lazy loading. No se elimina el componente alternativo hasta verificar paridad y consumidores.
 - Se incorpora regresión de rutas efectivas, unicidad, permisos y componente activo de Cuentas por cobrar a QA CI. Sin cambios de servicios, API, datos, dependencias, DEV o MAIN.
 - Evidencia previa 4a556cd6: CI 45742232482 SUCCESS, 68/68 Chromium, 52 escenarios de 13 anchos y 16 adicionales; Costeo 13/13; build inicial 743,24 kB; certificación de disponibilidad 45742232552 SUCCESS (no cubre autenticación ni SHA desplegado). Persiste aviso de 650 kB/SCSS de storefront.
-- Se identifica el proyecto QA autorizado prj_BIjoIFQz2oSHCosjj7lcc5blck9E, distinto del proyecto histórico solqaryn-qa de equipo SOLQARYN. Ambos checks de equipo vari-app reportan cuota; acceso al equipo denegado, autorización no disponible. No se elimina ni modifica ningún proyecto Vercel.
+- El contrato de entorno autoriza QA exclusivamente mediante prj_BIjoIFQz2oSHCosjj7lcc5blck9E. Los checks externos de Vercel reportan cuota; queda pendiente contrastar sus IDs y dependencias con el contrato vigente. Evidencia: estados de commit 4a556cd6 y 965bfab3. No se elimina ni modifica ningún proyecto Vercel.
 
 ## 2026-11-25 — QA: Costeo, superficies y matriz responsive de 13 anchos
 - El motivo histórico exacto de la migración de costeo se presenta en español comercial sin modificar la persistencia ni motivos registrados por empresas. Se ajustan descripción, fechas visibles, superficies, filtros, tabla, scroll, paginación y detalle con tokens y controles existentes.
