@@ -1,3 +1,8 @@
+## 2026-11-25 — QA: Costeo, superficies y matriz responsive de 13 anchos
+- El motivo histórico exacto de la migración de costeo se presenta en español comercial sin modificar la persistencia ni motivos registrados por empresas. Se ajustan descripción, fechas visibles, superficies, filtros, tabla, scroll, paginación y detalle con tokens y controles existentes.
+- Se amplía la suite de superficies a 52 escenarios sintéticos (13 anchos por 4 grupos) y se integran pruebas unitarias de paginación y presentación de Costeo al gate QA. Se conservan las regresiones anteriores. No es certificación autenticada integral.
+- Evidencia previa: 046fbbcf, run 45741260378 SUCCESS, 25/25 Chromium y build inicial 743,24 kB; run 45741260357 SUCCESS. Persiste aviso de 650 kB y SCSS de storefront. Se actualiza registro de pendientes y se conserva el fallo de cuota de Vercel solqaryn_qa. Gobernanza STRICT exact-SHA verificada. Sin cambios de API, backend, datos, DEV o MAIN.
+
 ## 2026-11-25 — QA: restauración del presupuesto de compilación y paginación localizada
 - Se retira MatPaginatorIntl del bootstrap y se localiza su proveedor compartido en 20 vistas paginadas. Se conservan las etiquetas, navegación, guardas y contratos; no se aumentan los límites de compilación.
 - Se añade control estático contra importación eager del paginador y contra consumidores sin proveedor, más pruebas de las etiquetas y rangos. Verificación exact-SHA pendiente de CI. Scope Lock de DEV 3cb65287: run 45738293793, frescura y 9 negativos PASS.

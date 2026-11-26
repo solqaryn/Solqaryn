@@ -1,4 +1,5 @@
 import { PAGINADOR_ESPANOL_PROVIDER } from '../../shared/paginador-institucional';
+import { presentarMotivoCosteo } from './costeo-presentacion';
 import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
@@ -42,8 +43,8 @@ import {
       <header class="header">
         <div>
           
-          <h1 id="costeo-title">Política de costeo</h1>
-          <p>Consulta y configura el método de valoración de existencias.</p>
+          <h1 id="costeo-title" class="page-title">Política de costeo</h1>
+          <p class="page-subtitle">Consulta el método utilizado para valorar las existencias, revisa su vigencia y registra cambios en la política de costeo de tu empresa.</p>
         </div>
         <button mat-stroked-button type="button" (click)="recargar()" [disabled]="loading">
           <mat-icon>refresh</mat-icon>Actualizar
@@ -68,11 +69,14 @@ import {
           <mat-card>
             <mat-card-header><mat-card-title>Política vigente</mat-card-title></mat-card-header>
             <mat-card-content>
-              <div class="current-method"><mat-icon>calculate</mat-icon><strong>{{ vigente.metodoNombre }}</strong></div>
+              <div class="current-method"><mat-icon aria-hidden="true">calculate</mat-icon><strong>{{ vigente.metodoNombre }}</strong></div>
+              @if (vigente.metodo === metodoPromedioPonderado) {
+                <p class="method-description">El promedio ponderado considera el costo de las existencias y el de las nuevas entradas para calcular un costo unitario promedio.</p>
+              }
               <dl>
-                <div><dt>Vigente desde</dt><dd>{{ vigente.vigenteDesdeUtc | date:'medium' }}</dd></div>
-                <div><dt>Motivo</dt><dd>{{ vigente.motivo || 'Sin detalle' }}</dd></div>
-                <div><dt>Última actualización</dt><dd>{{ vigente.fechaActualizacion | date:'medium' }}</dd></div>
+                <div><dt>Vigente desde</dt><dd>{{ vigente.vigenteDesdeUtc | date:'dd/MM/yyyy HH:mm' }}</dd></div>
+                <div><dt>Motivo</dt><dd>{{ motivoVisible(vigente.motivo, vigente.metodo) }}</dd></div>
+                <div><dt>Última actualización</dt><dd>{{ vigente.fechaActualizacion | date:'dd/MM/yyyy HH:mm' }}</dd></div>
               </dl>
             </mat-card-content>
           </mat-card>
@@ -119,7 +123,7 @@ import {
       <mat-card>
         <mat-card-header><mat-card-title>Historial de políticas</mat-card-title></mat-card-header>
         <mat-card-content>
-          <form class="filters" (ngSubmit)="aplicarFiltros()">
+          <form class="filters app-table-filters" (ngSubmit)="aplicarFiltros()" aria-label="Filtros del historial de costeo">
             <mat-form-field appearance="outline">
               <mat-label>Método</mat-label>
               <mat-select name="filtroMetodo" [(ngModel)]="filtroMetodo">
@@ -165,17 +169,17 @@ import {
           }
     
           @if (!historyLoading && !historyError && historial.length) {
-            <div class="table-wrap">
-              <table>
-                <thead><tr><th>Método</th><th>Desde</th><th>Hasta</th><th>Estado</th><th>Motivo</th><th>Acciones</th></tr></thead>
+            <div class="table-wrap app-table-shell" role="region" aria-label="Historial de políticas de costeo" tabindex="0">
+              <table class="app-data-table">
+                <thead><tr><th>Método</th><th>Desde</th><th>Hasta</th><th>Estado</th><th>Motivo</th><th class="actions">Acciones</th></tr></thead>
                 <tbody>
                   @for (politica of historial; track politica) {
                     <tr>
                       <td><strong>{{ politica.metodoNombre }}</strong></td>
-                      <td>{{ politica.vigenteDesdeUtc | date:'medium' }}</td>
-                      <td>{{ politica.vigenteHastaUtc ? (politica.vigenteHastaUtc | date:'medium') : '—' }}</td>
+                      <td>{{ politica.vigenteDesdeUtc | date:'dd/MM/yyyy HH:mm' }}</td>
+                      <td>{{ politica.vigenteHastaUtc ? (politica.vigenteHastaUtc | date:'dd/MM/yyyy HH:mm') : '—' }}</td>
                       <td><span class="badge" [class.active]="politica.estaVigente">{{ politica.estaVigente ? 'Vigente' : 'Histórica' }}</span></td>
-                      <td>{{ politica.motivo }}</td><td><button class="action-view" mat-icon-button type="button" title="Ver detalle" [attr.aria-label]="'Ver política de costeo ' + politica.id" [appConsultaRegistro]="{ titulo: 'Política de costeo: ' + politica.metodoNombre, campos: { 'Método': politica.metodoNombre, 'Vigente desde': politica.vigenteDesdeUtc, 'Vigente hasta': politica.vigenteHastaUtc, 'Estado': politica.estaVigente ? 'Vigente' : 'Histórica', 'Motivo': politica.motivo, 'Fecha de creación': politica.fechaCreacion, 'Fecha de actualización': politica.fechaActualizacion } }"><mat-icon>visibility</mat-icon></button></td>
+                      <td>{{ motivoVisible(politica.motivo, politica.metodo) }}</td><td class="actions"><button class="action-view" mat-icon-button type="button" title="Ver detalle" [attr.aria-label]="'Ver política de costeo ' + politica.id" [appConsultaRegistro]="{ titulo: 'Política de costeo: ' + politica.metodoNombre, campos: { 'Método': politica.metodoNombre, 'Vigente desde': politica.vigenteDesdeUtc, 'Vigente hasta': politica.vigenteHastaUtc, 'Estado': politica.estaVigente ? 'Vigente' : 'Histórica', 'Motivo': motivoVisible(politica.motivo, politica.metodo), 'Fecha de creación': politica.fechaCreacion, 'Fecha de actualización': politica.fechaActualizacion } }"><mat-icon>visibility</mat-icon></button></td>
                     </tr>
                   }
                 </tbody>
@@ -183,7 +187,7 @@ import {
             </div>
           }
           @if (totalCount > 0) {
-            <mat-paginator [length]="totalCount" [pageIndex]="page - 1" [pageSize]="pageSize" [pageSizeOptions]="[10,20,50,100]" (page)="cambiarPagina($event)"></mat-paginator>
+            <mat-paginator aria-label="Paginación del historial de costeo" [length]="totalCount" [pageIndex]="page - 1" [pageSize]="pageSize" [pageSizeOptions]="[10,20,50,100]" (page)="cambiarPagina($event)"></mat-paginator>
           }
         </mat-card-content>
       </mat-card>
@@ -191,10 +195,45 @@ import {
     `,
   changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
-    .page{padding:24px;display:grid;gap:20px}.header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.header h1{margin:0;font-size:1.75rem}.header p{margin:6px 0 0;color:var(--text-secondary,#667085)}.eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:.72rem;font-weight:700;color:var(--primary,#3f51b5)!important}.header button mat-icon{margin-right:6px}.summary-grid{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:20px}.current-method{display:flex;align-items:center;gap:10px;font-size:1.35rem;margin:18px 0}.current-method mat-icon{color:var(--primary,#3f51b5)}dl{display:grid;gap:10px;margin:0}dl div{display:grid;grid-template-columns:160px 1fr;gap:12px}dt{font-weight:600;color:#667085}dd{margin:0}.change-form{display:grid;gap:10px;margin-top:16px}.change-form button{justify-self:start}.change-form button mat-icon{margin-right:6px}.change-form mat-spinner{display:inline-block;margin-right:8px}.filters{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr)) auto;gap:12px;align-items:start;margin-top:16px}.filter-actions{display:flex;gap:6px;padding-top:4px}.state{min-height:160px;display:flex;align-items:center;justify-content:center;gap:12px;border:1px dashed #d0d5dd;border-radius:12px;padding:20px}.state.compact{min-height:100px;margin-top:10px}.state.error,.inline-error{color:#b42318}.state.empty{color:#667085}.inline-success{color:#067647}.table-wrap{overflow:auto;border:1px solid #e4e7ec;border-radius:12px;margin-top:8px}table{width:100%;border-collapse:collapse;min-width:820px}th,td{padding:13px 14px;text-align:left;border-bottom:1px solid #eaecf0;vertical-align:top}th{font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;color:#667085;background:#f9fafb}.badge{display:inline-flex;border-radius:999px;padding:4px 9px;background:#f2f4f7;font-size:.78rem;font-weight:600}.badge.active{background:#ecfdf3;color:#067647}@media(max-width:1000px){.summary-grid{grid-template-columns:1fr}.filters{grid-template-columns:1fr 1fr}.filter-actions{grid-column:1/-1}}@media(max-width:600px){.page{padding:16px}.header{flex-direction:column}.filters{grid-template-columns:1fr}dl div{grid-template-columns:1fr;gap:2px}}
+    :host { display:block; min-width:0; }
+    .page { display:grid; grid-template-columns:minmax(0,1fr); gap:20px; min-width:0; }
+    .header { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; }
+    .header > div { min-width:0; }
+    .header h1 { margin:0; }
+    .header p { margin:6px 0 0; max-width:70ch; color:var(--color-text-muted); }
+    .summary-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr)); gap:20px; min-width:0; }
+    mat-card { min-width:0; background:var(--color-surface); color:var(--color-text); border:1px solid var(--color-border); border-radius:var(--radius); box-shadow:var(--shadow-card); }
+    mat-card-title { color:var(--color-heading); }
+    mat-card-content { min-width:0; }
+    .current-method { display:flex; align-items:center; gap:10px; font-size:1.2rem; margin:16px 0 8px; overflow-wrap:anywhere; }
+    .current-method mat-icon { flex:none; color:var(--color-primary); }
+    .method-description { margin:0 0 16px; color:var(--color-text-muted); line-height:1.5; max-width:65ch; }
+    dl { display:grid; gap:10px; margin:0; }
+    dl div { display:grid; grid-template-columns:minmax(100px,145px) minmax(0,1fr); gap:12px; }
+    dt { font-weight:600; color:var(--color-text-muted); }
+    dd { margin:0; min-width:0; overflow-wrap:anywhere; white-space:pre-wrap; }
+    .change-form { display:grid; grid-template-columns:minmax(0,1fr); gap:10px; margin-top:16px; }
+    .change-form button { justify-self:start; }
+    .change-form mat-spinner { display:inline-block; margin-right:8px; }
+    .filters { margin-top:16px; }
+    .state { min-height:120px; display:flex; align-items:center; justify-content:center; flex-wrap:wrap; gap:12px; border:1px dashed var(--color-border); border-radius:var(--radius); padding:16px; text-align:center; overflow-wrap:anywhere; }
+    .state.compact { min-height:100px; margin-top:10px; }
+    .state.error,.inline-error { color:var(--color-danger); }
+    .state.empty { color:var(--color-text-muted); }
+    .inline-success { color:var(--color-success); }
+    .table-wrap { border:1px solid var(--color-border); border-radius:var(--radius); margin-top:8px; }
+    table { min-width:820px; }
+    th,td { vertical-align:middle; }
+    td:nth-child(5) { min-width:180px; max-width:360px; overflow-wrap:anywhere; white-space:pre-wrap; }
+    .badge { display:inline-flex; border-radius:999px; padding:4px 9px; background:var(--color-bg); color:var(--color-text); font-size:.78rem; font-weight:600; }
+    .badge.active { background:color-mix(in srgb,var(--color-success) 12%,var(--color-surface)); color:var(--color-text); }
+    mat-paginator { background:var(--color-surface); color:var(--color-text); }
+    @media(max-width:600px) { .header { flex-direction:column; } dl div { grid-template-columns:minmax(0,1fr); gap:2px; } .change-form button { width:100%; } }
   `]
 })
 export class CosteoInventarioComponent implements OnInit {
+  readonly motivoVisible = presentarMotivoCosteo;
+  readonly metodoPromedioPonderado = MetodoCosteoInventario.PromedioPonderado;
   vigente: PoliticaCosteoInventario | null = null;
   metodos: MetodoCosteoInventarioOption[] = [];
   historial: PoliticaCosteoInventario[] = [];

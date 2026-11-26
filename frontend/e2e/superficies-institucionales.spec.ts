@@ -18,7 +18,16 @@ async function contexto(page: Page): Promise<void> {
   await page.route(url => url.origin === API && ['/productos','/transferencias-inventario','/reservas-inventario','/conteos-inventario','/inventario/ajustes','/existencias-variante','/ordenes-compra','/recepciones-compra','/periodos-contables'].includes(url.pathname), r=>r.fulfill({json:ok(vacio)}));
 }
 
-for (const viewport of [{width:1440,height:900},{width:390,height:844},{width:320,height:568}]) {
+// Anchos CSS aprobados para móvil, tableta, escritorio y pantallas amplias.
+const viewports = [
+  {width:320,height:568}, {width:360,height:800}, {width:390,height:844},
+  {width:414,height:896}, {width:480,height:854}, {width:768,height:1024},
+  {width:1024,height:768}, {width:1280,height:800}, {width:1440,height:900},
+  {width:1920,height:1080}, {width:2048,height:1152}, {width:2400,height:1350},
+  {width:2560,height:1440}
+] as const;
+
+for (const viewport of viewports) {
   test('QA visual: filtros de productos compactos ' + viewport.width, async ({page},testInfo) => {
     await page.setViewportSize(viewport);
     await contexto(page);
@@ -73,7 +82,7 @@ for (const viewport of [{width:1440,height:900},{width:390,height:844},{width:32
   });
 }
 
-for (const viewport of [{width:1440,height:900},{width:390,height:844},{width:320,height:568}]) {
+for (const viewport of viewports) {
   test('QA visual: tarjetas de compras y contabilidad ' + viewport.width, async ({page},testInfo) => {
     await page.setViewportSize(viewport);
     await contexto(page);
@@ -104,5 +113,54 @@ for (const viewport of [{width:1440,height:900},{width:390,height:844},{width:32
       expect(geometry.overflow).toBe(false);
       await page.screenshot({path:testInfo.outputPath(caso.ruta.slice(1).replaceAll('/','-')+'.png'),fullPage:true});
     }
+  });
+}
+
+
+for (const viewport of viewports) {
+  test('QA visual: costeo comercial, tabla y paginación ' + viewport.width, async ({page},testInfo) => {
+    await page.setViewportSize(viewport);
+    await contexto(page);
+    const original = 'Cutover ERP-N1.10 — Promedio Ponderado compatible';
+    const comercial = 'Se adoptó el promedio ponderado como política inicial de valoración de existencias.';
+    const motivoEmpresa = 'Cambio autorizado por cierre contable: ' + 'referencia-comercial-'.repeat(8);
+    const politica = {
+      id:1, empresaConfiguracionId:1, metodo:1, metodoNombre:'Promedio Ponderado',
+      vigenteDesdeUtc:'2026-10-02T12:00:00Z', vigenteHastaUtc:null, estaVigente:true,
+      motivo:original, fechaCreacion:'2026-10-02T12:00:00Z', fechaActualizacion:'2026-10-02T12:00:00Z'
+    };
+    const historica = {...politica, id:2, estaVigente:false, vigenteHastaUtc:'2026-10-02T12:00:00Z', motivo:motivoEmpresa};
+    await page.route(API+'/costeo-inventario/politica-vigente', r=>r.fulfill({json:ok(politica)}));
+    await page.route(API+'/costeo-inventario/metodos', r=>r.fulfill({json:ok([{id:1,nombre:'Promedio Ponderado'},{id:2,nombre:'FIFO'},{id:3,nombre:'Estándar'}])}));
+    await page.route(url=>url.origin===API && url.pathname==='/costeo-inventario/politicas', r=>r.fulfill({json:ok({items:[politica,historica],totalCount:2,page:1,pageSize:20,totalPages:1})}));
+    await page.goto('/inventario/costeo');
+    await expect(page.getByRole('heading',{name:'Política de costeo',exact:true})).toBeVisible();
+    await expect(page.locator('.summary-grid').getByText(comercial,{exact:true})).toBeVisible();
+    const tabla=page.getByRole('region',{name:'Historial de políticas de costeo'});
+    await expect(tabla.getByText(comercial,{exact:true})).toBeVisible();
+    await expect(tabla.getByText(motivoEmpresa,{exact:true})).toBeVisible();
+    await expect(page.getByText(original,{exact:true})).toHaveCount(0);
+    const paginador=page.getByRole('group',{name:'Paginación del historial de costeo'});
+    await expect(paginador.getByText('Registros por página',{exact:true})).toBeVisible();
+    await expect(paginador.getByText('1–2 de 2',{exact:true})).toBeVisible();
+    const geometria=await tabla.evaluate(el=>({
+      clientWidth:el.clientWidth, scrollWidth:el.scrollWidth,
+      overflow:document.documentElement.scrollWidth>window.innerWidth+1,
+      overflowX:getComputedStyle(el).overflowX,
+      contained:el.getBoundingClientRect().right<=window.innerWidth+1
+    }));
+    expect(geometria.overflow).toBe(false);
+    expect(geometria.contained).toBe(true);
+    expect(geometria.overflowX).toBe('auto');
+    if(geometria.clientWidth<818) expect(geometria.scrollWidth).toBeGreaterThan(geometria.clientWidth);
+    if(viewport.width===390 || viewport.width===1440) {
+      await tabla.getByRole('button',{name:'Ver política de costeo 1',exact:true}).click();
+      const detalle=page.getByRole('dialog');
+      await expect(detalle.getByText(comercial,{exact:true})).toBeVisible();
+      await expect(detalle.getByText(original,{exact:true})).toHaveCount(0);
+      await detalle.getByRole('button',{name:'Cerrar',exact:true}).click();
+      await expect(detalle).toHaveCount(0);
+    }
+    await page.screenshot({path:testInfo.outputPath('costeo.png'),fullPage:true});
   });
 }
