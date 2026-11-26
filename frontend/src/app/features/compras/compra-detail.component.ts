@@ -1,3 +1,7 @@
+import { crearEditorInstitucional, crearAccionesInstitucionales } from '../../shared/modal-institucional/acciones-institucionales';
+import { modalInstitucional } from '../../shared/modal-institucional/modal-institucional';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { firstValueFrom } from 'rxjs';
 import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -10,7 +14,6 @@ import { CompraService } from '../../services/compra.service';
 import { Compra, CompraDocumento } from '../../core/models/compra.model';
 import { ImpuestoAplicado } from '../../core/models/venta.model';
 import { AnularDialogComponent } from '../../shared/anular-dialog.component';
-import { ConfirmDialogComponent } from '../../shared/confirm-dialog.component';
 import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
 import { ProductoImagenComponent } from '../../shared/producto-imagen/producto-imagen.component';
 import { descargarBlobSeguro } from '../../shared/descarga-segura';
@@ -24,6 +27,20 @@ import { descargarBlobSeguro } from '../../shared/descarga-segura';
   styleUrl: './compra-detail.component.scss'
 })
 export class CompraDetailComponent implements OnInit {
+  readonly editor = crearEditorInstitucional('Compras');
+  private readonly acciones = crearAccionesInstitucionales('Compras');
+  readonly errorOperacion = signal<string | null>(null);
+  private modificado = false;
+
+  cerrarModal(): void { if (!this.procesando() && !this.subiendoDocumento() && this.eliminandoDocumentoId() === null) this.editor.cerrar(this.modificado); }
+
+  async editarBorrador(): Promise<void> {
+    if (!this.editor.valido('Editar') || this.compra()?.estado !== 'Borrador' || this.procesando()) return;
+    if (await this.acciones.abrir(() => import('./compra-form.component').then(m => m.CompraFormComponent), 'xl', 'Editar', this.compraId)) {
+      this.modificado = true; this.cargar();
+    }
+  }
+
   private readonly permisosRuntime = inject(PermisosRuntimeService);
 
   readonly compra = signal<Compra | null>(null);
@@ -57,23 +74,26 @@ export class CompraDetailComponent implements OnInit {
     this.puedeEliminar.set(this.permisosRuntime.puede('Compras', 'EliminarLogico'));
     this.puedeExportar.set(this.permisosRuntime.puede('Compras', 'Exportar'));
 
-    this.compraId = Number(this.route.snapshot.paramMap.get('id'));
+    this.compraId = Number(this.editor.ref ? this.editor.id : this.route.snapshot.paramMap.get('id'));
+    if (!this.editor.valido('Ver') || !Number.isInteger(this.compraId) || this.compraId <= 0) {
+      this.editor.cerrar(false); this.loading.set(false); this.errorOperacion.set('No se pudo autorizar la consulta.'); return;
+    }
     this.cargar();
     this.cargarDocumentos();
   }
 
   cargar(): void {
     this.loading.set(true);
-    this.compraService.getById(this.compraId).subscribe({
+    this.compraService.getById(this.compraId).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
       next: (res) => { this.compra.set(res.data); this.loading.set(false); },
-      error: () => this.loading.set(false)
+      error: err => { this.loading.set(false); this.errorOperacion.set(err.error?.message ?? 'No se pudo consultar el registro.'); }
     });
   }
 
   cargarDocumentos(): void {
     this.loadingDocumentos.set(true);
     this.documentosError.set(null);
-    this.compraService.getDocumentos(this.compraId).subscribe({
+    this.compraService.getDocumentos(this.compraId).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
       next: (res) => {
         this.documentos.set(res.data);
         this.loadingDocumentos.set(false);
@@ -113,7 +133,7 @@ export class CompraDetailComponent implements OnInit {
     return Math.max(0, calculado);
   }
 
-  seleccionarDocumento(event: Event): void {
+  async seleccionarDocumento(event: Event): Promise<void> {
     const input = event.target as HTMLInputElement;
     const archivo = input.files?.[0];
     input.value = '';
@@ -135,7 +155,8 @@ export class CompraDetailComponent implements OnInit {
     }
 
     this.subiendoDocumento.set(true);
-    this.compraService.subirDocumento(this.compraId, archivo).subscribe({
+    if (!await this.editor.confirmar('Editar', { titulo: 'Adjuntar comprobante', mensaje: '¿Deseas adjuntar «' + archivo.name + '» a esta compra?', confirmarTexto: 'Adjuntar' })) { this.subiendoDocumento.set(false); return; }
+    this.compraService.subirDocumento(this.compraId, archivo).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
       next: () => {
         this.subiendoDocumento.set(false);
         this.snackBar.open('Comprobante adjuntado correctamente.', 'Cerrar', { duration: 3500 });
@@ -149,10 +170,10 @@ export class CompraDetailComponent implements OnInit {
   }
 
   descargarDocumento(documento: CompraDocumento): void {
-    if (!this.puedeExportar() || this.descargandoDocumentoId() !== null) return;
+    if (!this.editor.valido('Exportar') || !this.puedeExportar() || this.descargandoDocumentoId() !== null) return;
 
     this.descargandoDocumentoId.set(documento.id);
-    this.compraService.descargarDocumento(this.compraId, documento.id).subscribe({
+    this.compraService.descargarDocumento(this.compraId, documento.id).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
       next: (blob) => {
         this.descargandoDocumentoId.set(null);
         if (!descargarBlobSeguro(blob, documento.nombreOriginal, `comprobante-${documento.id}`)) {
@@ -166,30 +187,13 @@ export class CompraDetailComponent implements OnInit {
     });
   }
 
-  eliminarDocumento(documento: CompraDocumento): void {
+  async eliminarDocumento(documento: CompraDocumento): Promise<void> {
     if (!this.puedeEditar() || this.eliminandoDocumentoId() !== null) return;
-
-    const ref = this.dialog.open(ConfirmDialogComponent, {
-      data: {
-        title: 'Retirar comprobante',
-        message: `¿Deseas retirar "${documento.nombreOriginal}"? La acción quedará registrada en auditoría.`
-      }
-    });
-
-    ref.afterClosed().subscribe((confirmado) => {
-      if (!confirmado) return;
-      this.eliminandoDocumentoId.set(documento.id);
-      this.compraService.eliminarDocumento(this.compraId, documento.id).subscribe({
-        next: () => {
-          this.eliminandoDocumentoId.set(null);
-          this.snackBar.open('Comprobante retirado correctamente.', 'Cerrar', { duration: 3500 });
-          this.cargarDocumentos();
-        },
-        error: (err) => {
-          this.eliminandoDocumentoId.set(null);
-          this.snackBar.open(err.error?.message ?? 'No se pudo retirar el comprobante.', 'Cerrar', { duration: 5000 });
-        }
-      });
+    this.eliminandoDocumentoId.set(documento.id);
+    if (!await this.editor.confirmar('Editar', { titulo: 'Retirar comprobante', mensaje: '¿Deseas retirar «' + documento.nombreOriginal + '»? La acción quedará registrada en auditoría.', tipo: 'peligro', confirmarTexto: 'Retirar' })) { this.eliminandoDocumentoId.set(null); return; }
+    this.compraService.eliminarDocumento(this.compraId, documento.id).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
+      next: () => { this.eliminandoDocumentoId.set(null); this.snackBar.open('Comprobante retirado correctamente.', 'Cerrar', { duration: 3500 }); this.cargarDocumentos(); },
+      error: err => { this.eliminandoDocumentoId.set(null); this.snackBar.open(err.error?.message ?? 'No se pudo retirar el comprobante.', 'Cerrar', { duration: 5000 }); }
     });
   }
 
@@ -203,40 +207,42 @@ export class CompraDetailComponent implements OnInit {
     return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
   }
 
-  confirmar(): void {
-    if (!this.puedeConfirmar() || this.procesando()) return;
-
-    this.procesando.set(true);
-    this.compraService.confirmar(this.compraId).subscribe({
-      next: (res) => { this.compra.set(res.data); this.procesando.set(false); },
-      error: () => this.procesando.set(false)
+  async confirmar(): Promise<void> {
+    if (!this.puedeConfirmar() || this.procesando() || this.compra()?.estado !== 'Borrador') return;
+    this.procesando.set(true); this.errorOperacion.set(null);
+    if (!await this.editor.confirmar('Confirmar', { titulo: 'Confirmar compra', mensaje: '¿Deseas confirmar esta compra? Se aplicarán las reglas de inventario y facturación vigentes.', tipo: 'advertencia', confirmarTexto: 'Confirmar' }) || this.compra()?.estado !== 'Borrador') { this.procesando.set(false); return; }
+    this.compraService.confirmar(this.compraId).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
+      next: res => {
+        this.compra.set(res.data); this.modificado = true; this.procesando.set(false);
+        
+      },
+      error: err => { this.procesando.set(false); this.errorOperacion.set(err.error?.message ?? 'No se pudo confirmar la compra.'); }
     });
   }
 
-  anular(): void {
-    if (!this.puedeAnular() || this.procesando()) return;
-
-    const ref = this.dialog.open(AnularDialogComponent, {
-      data: { title: 'Anular compra', message: 'Esta acción revertirá el stock de los productos. Escribe el motivo:' }
-    });
-
-    ref.afterClosed().subscribe((motivo: string | undefined) => {
-      if (!motivo) return;
-      this.procesando.set(true);
-      this.compraService.anular(this.compraId, motivo).subscribe({
-        next: (res) => { this.compra.set(res.data); this.procesando.set(false); },
-        error: () => this.procesando.set(false)
-      });
+  async anular(): Promise<void> {
+    if (!this.puedeAnular() || !this.editor.valido('Anular') || this.procesando() || this.compra()?.estado !== 'Confirmada') return;
+    this.procesando.set(true); this.errorOperacion.set(null);
+    let motivo: string | undefined;
+    try {
+      motivo = await firstValueFrom(this.dialog.open(AnularDialogComponent, modalInstitucional('s', {
+        data: { title: 'Anular compra', message: 'Esta acción revertirá el stock de los productos. Escribe el motivo:' }
+      })).afterClosed().pipe(takeUntilDestroyed(this.editor.destroyRef)));
+    } catch { motivo = undefined; }
+    if (!motivo?.trim() || !this.editor.valido('Anular') || this.compra()?.estado !== 'Confirmada') { this.procesando.set(false); return; }
+    this.compraService.anular(this.compraId, motivo.trim()).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
+      next: res => { this.compra.set(res.data); this.modificado = true; this.procesando.set(false); },
+      error: err => { this.procesando.set(false); this.errorOperacion.set(err.error?.message ?? 'No se pudo anular la compra.'); }
     });
   }
 
-  eliminarBorrador(): void {
-    if (!this.puedeEliminar() || this.procesando()) return;
-
-    this.procesando.set(true);
-    this.compraService.deleteBorrador(this.compraId).subscribe({
-      next: () => this.router.navigate(['/compras']),
-      error: () => this.procesando.set(false)
+  async eliminarBorrador(): Promise<void> {
+    if (!this.puedeEliminar() || this.procesando() || this.compra()?.estado !== 'Borrador') return;
+    this.procesando.set(true); this.errorOperacion.set(null);
+    if (!await this.editor.confirmar('EliminarLogico', { titulo: 'Eliminar borrador', mensaje: '¿Deseas eliminar este borrador de compra?', tipo: 'peligro', confirmarTexto: 'Eliminar' }) || this.compra()?.estado !== 'Borrador') { this.procesando.set(false); return; }
+    this.compraService.deleteBorrador(this.compraId).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
+      next: () => { this.modificado = true; this.procesando.set(false); if (this.editor.ref) this.editor.cerrar(true); else void this.router.navigate(['/compras']); },
+      error: err => { this.procesando.set(false); this.errorOperacion.set(err.error?.message ?? 'No se pudo eliminar el borrador.'); }
     });
   }
 }

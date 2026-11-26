@@ -1,10 +1,16 @@
+<div [class.app-dialog-layout]="!!editor.ref">
+@if (editor.ref) { <h2 mat-dialog-title>{{ isEdit() ? 'Editar compra (Borrador)' : 'Nueva compra' }}</h2> }
+<div [class.app-dialog-layout__body]="!!editor.ref">
+@if (!editor.ref) {
 <div class="header-row"><a routerLink="/compras" mat-icon-button aria-label="Volver a compras"><mat-icon>arrow_back</mat-icon></a><h1 class="page-title">{{ isEdit() ? 'Editar compra (Borrador)' : 'Nueva compra' }}</h1></div>
+}
+
 @if (loading()) { <div class="loading"><mat-spinner></mat-spinner></div> } @else {
-<form class="card form" [formGroup]="form" (ngSubmit)="submit()">
+<form id="compra-borrador-institucional" class="card form" [formGroup]="form" (ngSubmit)="submit()">
   <h2 class="section-title">Datos del proveedor</h2>
   <div class="fields-grid">
     <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Buscar proveedor existente (nombre, documento/RTN o teléfono)</mat-label>
+      <mat-label>Buscar proveedor existente</mat-label>
       <input matInput [formControl]="buscadorProveedor" [matAutocomplete]="autoProveedor" placeholder="Escribe al menos 2 caracteres...">
       @if (buscandoProveedor()) { <mat-spinner matSuffix diameter="18"></mat-spinner> } @else if (proveedorSeleccionado()) { <button matSuffix mat-icon-button type="button" (click)="limpiarProveedorSeleccionado()"><mat-icon>close</mat-icon></button> }
       <mat-autocomplete #autoProveedor="matAutocomplete" [displayWith]="displayProveedor" (optionSelected)="onProveedorSeleccionado($event)">
@@ -117,6 +123,13 @@
     } @else { <p class="hint">Busca o escanea un producto para calcular.</p> }
   </div>
   @if (errorMessage()) { <p class="error" role="alert">{{ errorMessage() }}</p> }
-  <div class="form-actions"><a routerLink="/compras" mat-button>Cancelar</a><button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || detalles.length === 0 || !resultado() || saving() || cargandoMetodosPago() || metodosPago().length === 0 || !!errorMetodosPago()">Guardar borrador</button></div>
+  @if (!editor.ref) {
+<div class="form-actions"><a routerLink="/compras" mat-button>Cancelar</a><button mat-flat-button color="primary" type="submit" [disabled]="form.disabled || loading() || calculando() || form.invalid || detalles.length === 0 || !resultado() || saving() || cargandoMetodosPago() || metodosPago().length === 0 || !!errorMetodosPago()">Guardar borrador</button></div>
+}
 </form>
 }
+</div>
+@if (editor.ref) {
+<mat-dialog-actions align="end"><button mat-button type="button" (click)="cancelarModal()" [disabled]="saving()">Cancelar</button><button mat-flat-button color="primary" type="submit" form="compra-borrador-institucional" [disabled]="form.disabled || loading() || calculando() || form.invalid || detalles.length === 0 || !resultado() || saving() || cargandoMetodosPago() || metodosPago().length === 0 || !!errorMetodosPago()">{{ saving() ? 'Guardando…' : 'Guardar borrador' }}</button></mat-dialog-actions>
+}
+</div>

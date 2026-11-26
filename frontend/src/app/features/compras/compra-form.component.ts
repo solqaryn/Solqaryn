@@ -1,3 +1,6 @@
+import { MatDialogModule } from '@angular/material/dialog';
+import { crearEditorInstitucional } from '../../shared/modal-institucional/acciones-institucionales';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Component, OnInit, ViewChild, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ReactiveFormsModule, AbstractControl, FormBuilder, FormArray, FormControl, Validators } from '@angular/forms';
@@ -25,7 +28,7 @@ import { CodigoScannerInputComponent } from '../../shared/codigo-scanner-input/c
 @Component({
   selector: 'app-compra-form',
   standalone: true,
-  imports: [
+  imports: [MatDialogModule, 
     CommonModule, ReactiveFormsModule, RouterLink, MatFormFieldModule, MatInputModule,
     MatSelectModule, MatAutocompleteModule, MatButtonModule, MatIconModule,
     MatProgressSpinnerModule, ProductoImagenComponent, CodigoScannerInputComponent
@@ -35,6 +38,8 @@ import { CodigoScannerInputComponent } from '../../shared/codigo-scanner-input/c
   styleUrl: './compra-form.component.scss'
 })
 export class CompraFormComponent implements OnInit {
+  readonly editor = crearEditorInstitucional('Compras');
+  cancelarModal(): void { if (!this.saving()) this.editor.cerrar(false); }
   private readonly fb = inject(FormBuilder);
   @ViewChild(CodigoScannerInputComponent) private scannerInput?: CodigoScannerInputComponent;
 
@@ -84,9 +89,12 @@ export class CompraFormComponent implements OnInit {
   get detalles(): FormArray { return this.form.get('detalles') as FormArray; }
 
   ngOnInit(): void {
+    const idParam = this.editor.ref ? this.editor.id : this.route.snapshot.paramMap.get('id');
+    if (!this.editor.valido(idParam ? 'Editar' : 'Crear') || (idParam && (!Number.isInteger(Number(idParam)) || Number(idParam) <= 0))) {
+      this.form.disable(); this.editor.cerrar(false); this.errorMessage.set('No tienes autorización para este borrador.'); return;
+    }
     this.cargarMetodosPagoActivos();
 
-    const idParam = this.route.snapshot.paramMap.get('id');
     if (idParam) { this.isEdit.set(true); this.compraId = Number(idParam); this.cargarCompra(this.compraId); }
     else this.agregarDetalle();
 
@@ -102,7 +110,7 @@ export class CompraFormComponent implements OnInit {
           this.errorBusquedaProveedor.set('No se pudo buscar proveedores. Intenta de nuevo.'); return of(null);
         }));
       })
-    ).subscribe((res) => { this.buscandoProveedor.set(false); if (res) this.opcionesProveedor.set(res.data); });
+    ).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe((res) => { this.buscandoProveedor.set(false); if (res) this.opcionesProveedor.set(res.data); });
 
     this.buscadorProducto.valueChanges.pipe(
       debounceTime(300),
@@ -125,11 +133,11 @@ export class CompraFormComponent implements OnInit {
           finalize(() => this.buscandoProducto.set(false))
         );
       })
-    ).subscribe((res) => this.opcionesProducto.set(res?.data ?? []));
+    ).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe((res) => this.opcionesProducto.set(res?.data ?? []));
 
     this.form.valueChanges.pipe(
       debounceTime(500), distinctUntilChanged((a, b) => JSON.stringify(a) === JSON.stringify(b))
-    ).subscribe(() => this.recalcular());
+    ).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe(() => this.recalcular());
   }
 
   onProveedorSeleccionado(event: MatAutocompleteSelectedEvent): void {
@@ -172,7 +180,7 @@ export class CompraFormComponent implements OnInit {
         this.procesandoEscaneo.set(false);
         this.scannerInput?.reenfocar();
       })
-    ).subscribe({
+    ).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
       next: (res) => this.mensajeEscaneo.set(this.aplicarProductoOperacion(res.data)),
       error: (err) => {
         this.errorEscaneo.set(true);
@@ -296,7 +304,7 @@ export class CompraFormComponent implements OnInit {
 
     this.metodoPagoService.getActivos().pipe(
       finalize(() => this.cargandoMetodosPago.set(false))
-    ).subscribe({
+    ).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
       next: (res) => {
         this.metodosPago.set([...res.data].sort((a, b) => a.orden - b.orden || a.nombre.localeCompare(b.nombre)));
         this.reconciliarMetodoPagoActivo();
@@ -347,9 +355,10 @@ export class CompraFormComponent implements OnInit {
 
   private cargarCompra(id: number): void {
     this.loading.set(true);
-    this.compraService.getById(id).subscribe({
+    this.compraService.getById(id).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
       next: (res) => {
         const c = res.data;
+        if (c.estado !== 'Borrador') { this.form.disable(); this.loading.set(false); this.errorMessage.set('Solo se pueden editar borradores.'); return; }
         this.buscadorProveedor.setValue(c.proveedorNombre, { emitEvent: false });
         this.form.patchValue({
           proveedorNombre: c.proveedorNombre, proveedorTelefono: c.proveedorTelefono,
@@ -373,13 +382,13 @@ export class CompraFormComponent implements OnInit {
         });
         this.loading.set(false);
       },
-      error: () => this.loading.set(false)
+      error: () => { this.loading.set(false); this.form.disable(); this.errorMessage.set('No se pudo cargar el borrador.'); }
     });
   }
 
   private hidratarProductosReferenciados(productoIds: number[]): void {
     [...new Set(productoIds)].forEach((productoId) => {
-      this.productoService.getById(productoId).subscribe({
+      this.productoService.getById(productoId).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
         next: (res) => {
           const actuales = this.productos().filter((producto) => producto.id !== productoId);
           this.productos.set([...actuales, res.data].sort((a, b) => a.nombre.localeCompare(b.nombre)));
@@ -452,15 +461,15 @@ export class CompraFormComponent implements OnInit {
     }
 
     this.calculando.set(true);
-    this.compraService.calcular(this.proveedorId, detallesValidos).subscribe({
+    this.compraService.calcular(this.proveedorId, detallesValidos).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
       next: (res) => { this.resultado.set(res.data); this.calculando.set(false); this.errorMessage.set(null); },
       error: (err) => { this.calculando.set(false); this.resultado.set(null); this.errorMessage.set(err.error?.message ?? 'No se pudo calcular la compra.'); }
     });
   }
 
-  submit(): void {
+  async submit(): Promise<void> {
     if (
-      this.form.invalid ||
+      this.form.invalid || this.form.disabled || this.loading() || this.calculando() ||
       this.detalles.length === 0 ||
       !this.resultado() ||
       this.saving() ||
@@ -471,9 +480,13 @@ export class CompraFormComponent implements OnInit {
 
     this.saving.set(true); this.errorMessage.set(null);
     const value = { ...this.form.getRawValue(), descuento: 0, impuesto: 0 } as any;
+    const accion = this.isEdit() ? 'Editar' : 'Crear';
+    if (!await this.editor.confirmar(accion, { titulo: 'Guardar borrador de compra', mensaje: '¿Deseas guardar los datos y las líneas de este borrador?', confirmarTexto: 'Guardar' })) {
+      this.saving.set(false); return;
+    }
     const request$ = this.isEdit() ? this.compraService.update(this.compraId!, value) : this.compraService.create(value);
-    request$.subscribe({
-      next: (res) => { this.saving.set(false); this.router.navigate(['/compras', res.data.id]); },
+    request$.pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
+      next: (res) => { this.saving.set(false); if (this.editor.ref) this.editor.cerrar(true); else void this.router.navigate(['/compras', res.data.id]); },
       error: (err) => { this.saving.set(false); this.errorMessage.set(err.error?.message ?? 'No se pudo guardar la compra.'); }
     });
   }

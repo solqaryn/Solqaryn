@@ -105,7 +105,7 @@ jobs:
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
           for attempt in $(seq 1 60); do
             if curl --fail --silent http://127.0.0.1:4200/tienda > /dev/null; then
-              npx playwright test e2e/storefront-fase4.spec.ts e2e/storefront-fase7.spec.ts e2e/modales-institucionales.spec.ts --grep 'QA visual:'
+              npx playwright test e2e/storefront-fase4.spec.ts e2e/storefront-fase7.spec.ts e2e/modales-institucionales.spec.ts e2e/modales-operativos.spec.ts --grep 'QA visual:'
               exit 0
             fi
             sleep 2

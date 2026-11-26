@@ -1,16 +1,22 @@
+<div [class.app-dialog-layout]="!!editor.ref">
+@if (editor.ref) { <h2 mat-dialog-title>{{ isEdit() ? 'Editar venta (Borrador)' : 'Nueva venta' }}</h2> }
+<div [class.app-dialog-layout__body]="!!editor.ref">
+@if (!editor.ref) {
 <div class="header-row">
   <a routerLink="/ventas" mat-icon-button aria-label="Volver a ventas"><mat-icon>arrow_back</mat-icon></a>
   <h1 class="page-title">{{ isEdit() ? 'Editar venta (Borrador)' : 'Nueva venta' }}</h1>
 </div>
+}
+
 
 @if (loading()) {
   <div class="loading"><mat-spinner></mat-spinner></div>
 } @else {
-  <form class="card form" [formGroup]="form" (ngSubmit)="submit()">
+  <form id="venta-borrador-institucional" class="card form" [formGroup]="form" (ngSubmit)="submit()">
     <h2 class="section-title">Datos del cliente</h2>
     <div class="fields-grid">
       <mat-form-field appearance="outline" class="full-width">
-        <mat-label>Buscar cliente existente (nombre, identidad/RTN, teléfono o correo)</mat-label>
+        <mat-label>Buscar cliente existente</mat-label>
         <input matInput [formControl]="buscadorCliente" [matAutocomplete]="autoCliente" placeholder="Escribe al menos 2 caracteres...">
         @if (buscandoCliente()) { <mat-spinner matSuffix diameter="18" style="margin-right: 8px;"></mat-spinner> }
         @else if (clienteSeleccionado()) { <button matSuffix mat-icon-button type="button" title="Quitar selección" aria-label="Quitar cliente seleccionado" (click)="limpiarClienteSeleccionado()"><mat-icon>close</mat-icon></button> }
@@ -18,7 +24,7 @@
           @for (c of opcionesCliente(); track c.id) { <mat-option [value]="c"><strong>{{ c.nombre }}</strong><span class="opcion-detalle">{{ c.identidadORTN || c.telefono || c.correo || '' }}</span></mat-option> }
           @if (opcionesCliente().length === 0 && buscadorCliente.value && buscadorCliente.value.length >= 2 && !buscandoCliente()) { <mat-option disabled>Sin resultados — se creará un cliente nuevo con los datos de abajo.</mat-option> }
         </mat-autocomplete>
-        @if (errorBusquedaCliente()) { <mat-error>{{ errorBusquedaCliente() }}</mat-error> }
+        @if (errorBusquedaCliente()) { <mat-error>{{ errorBusquedaCliente() }}</mat-error> } @else { <mat-hint>Nombre, identidad/RTN, teléfono o correo</mat-hint> }
       </mat-form-field>
 
       @if (clienteSeleccionado()) { <p class="cliente-modo cliente-existente full-width"><mat-icon>check_circle</mat-icon> Cliente existente seleccionado: <strong>{{ clienteSeleccionado()!.nombre }}</strong></p> }
@@ -147,6 +153,13 @@
     </div>
 
     @if (errorMessage()) { <p class="error" role="alert">{{ errorMessage() }}</p> }
-    <div class="form-actions"><a routerLink="/ventas" mat-button type="button">Cancelar</a><button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || detalles.length === 0 || !resultado() || saving()">Guardar borrador</button></div>
+    @if (!editor.ref) {
+<div class="form-actions"><a routerLink="/ventas" mat-button type="button">Cancelar</a><button mat-flat-button color="primary" type="submit" [disabled]="form.disabled || loading() || calculando() || form.invalid || detalles.length === 0 || !resultado() || saving()">Guardar borrador</button></div>
+}
   </form>
 }
+</div>
+@if (editor.ref) {
+<mat-dialog-actions align="end"><button mat-button type="button" (click)="cancelarModal()" [disabled]="saving()">Cancelar</button><button mat-flat-button color="primary" type="submit" form="venta-borrador-institucional" [disabled]="form.disabled || loading() || calculando() || form.invalid || detalles.length === 0 || !resultado() || saving()">{{ saving() ? 'Guardando…' : 'Guardar borrador' }}</button></mat-dialog-actions>
+}
+</div>

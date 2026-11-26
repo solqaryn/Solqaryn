@@ -1,3 +1,7 @@
+import { crearEditorInstitucional, crearAccionesInstitucionales } from '../../shared/modal-institucional/acciones-institucionales';
+import { modalInstitucional } from '../../shared/modal-institucional/modal-institucional';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { firstValueFrom } from 'rxjs';
 import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -20,6 +24,20 @@ import { ProductoImagenComponent } from '../../shared/producto-imagen/producto-i
   styleUrl: './venta-detail.component.scss'
 })
 export class VentaDetailComponent implements OnInit {
+  readonly editor = crearEditorInstitucional('Ventas');
+  private readonly acciones = crearAccionesInstitucionales('Ventas');
+  readonly errorOperacion = signal<string | null>(null);
+  private modificado = false;
+
+  cerrarModal(): void { if (!this.procesando()) this.editor.cerrar(this.modificado); }
+
+  async editarBorrador(): Promise<void> {
+    if (!this.editor.valido('Editar') || this.venta()?.estado !== 'Borrador' || this.procesando()) return;
+    if (await this.acciones.abrir(() => import('./venta-form.component').then(m => m.VentaFormComponent), 'xl', 'Editar', this.ventaId)) {
+      this.modificado = true; this.cargar();
+    }
+  }
+
   private readonly permisosRuntime = inject(PermisosRuntimeService);
 
   readonly venta = signal<Venta | null>(null);
@@ -51,58 +69,57 @@ export class VentaDetailComponent implements OnInit {
       this.permisosRuntime.puede('Finanzas', 'Administrar')
     );
 
-    this.ventaId = Number(this.route.snapshot.paramMap.get('id'));
+    this.ventaId = Number(this.editor.ref ? this.editor.id : this.route.snapshot.paramMap.get('id'));
+    if (!this.editor.valido('Ver') || !Number.isInteger(this.ventaId) || this.ventaId <= 0) {
+      this.editor.cerrar(false); this.loading.set(false); this.errorOperacion.set('No se pudo autorizar la consulta.'); return;
+    }
     this.cargar();
   }
 
   cargar(): void {
     this.loading.set(true);
-    this.ventaService.getById(this.ventaId).subscribe({
+    this.ventaService.getById(this.ventaId).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
       next: (res) => { this.venta.set(res.data); this.loading.set(false); },
-      error: () => this.loading.set(false)
+      error: err => { this.loading.set(false); this.errorOperacion.set(err.error?.message ?? 'No se pudo consultar el registro.'); }
     });
   }
 
-  confirmar(): void {
-    if (!this.puedeConfirmar() || this.procesando()) return;
-
-    this.procesando.set(true);
-    this.ventaService.confirmar(this.ventaId).subscribe({
-      next: (res) => {
-        this.venta.set(res.data);
-        this.procesando.set(false);
-        if (res.data.facturaId && this.puedeVerFactura()) {
-          this.router.navigate(['/facturas', res.data.facturaId]);
-        }
+  async confirmar(): Promise<void> {
+    if (!this.puedeConfirmar() || this.procesando() || this.venta()?.estado !== 'Borrador') return;
+    this.procesando.set(true); this.errorOperacion.set(null);
+    if (!await this.editor.confirmar('Confirmar', { titulo: 'Confirmar venta', mensaje: '¿Deseas confirmar esta venta? Se aplicarán las reglas de inventario y facturación vigentes.', tipo: 'advertencia', confirmarTexto: 'Confirmar' }) || this.venta()?.estado !== 'Borrador') { this.procesando.set(false); return; }
+    this.ventaService.confirmar(this.ventaId).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
+      next: res => {
+        this.venta.set(res.data); this.modificado = true; this.procesando.set(false);
+        if (!this.editor.ref && res.data.facturaId && this.puedeVerFactura()) void this.router.navigate(['/facturas', res.data.facturaId]);
       },
-      error: () => this.procesando.set(false)
+      error: err => { this.procesando.set(false); this.errorOperacion.set(err.error?.message ?? 'No se pudo confirmar la venta.'); }
     });
   }
 
-  anular(): void {
-    if (!this.puedeAnular() || this.procesando()) return;
-
-    const ref = this.dialog.open(AnularDialogComponent, {
-      data: { title: 'Anular venta', message: 'Esta acción revertirá el stock y anulará la factura. Escribe el motivo:' }
-    });
-
-    ref.afterClosed().subscribe((motivo: string | undefined) => {
-      if (!motivo) return;
-      this.procesando.set(true);
-      this.ventaService.anular(this.ventaId, motivo).subscribe({
-        next: (res) => { this.venta.set(res.data); this.procesando.set(false); },
-        error: () => this.procesando.set(false)
-      });
+  async anular(): Promise<void> {
+    if (!this.puedeAnular() || !this.editor.valido('Anular') || this.procesando() || this.venta()?.estado !== 'Confirmada') return;
+    this.procesando.set(true); this.errorOperacion.set(null);
+    let motivo: string | undefined;
+    try {
+      motivo = await firstValueFrom(this.dialog.open(AnularDialogComponent, modalInstitucional('s', {
+        data: { title: 'Anular venta', message: 'Esta acción revertirá el stock y anulará la factura. Escribe el motivo:' }
+      })).afterClosed().pipe(takeUntilDestroyed(this.editor.destroyRef)));
+    } catch { motivo = undefined; }
+    if (!motivo?.trim() || !this.editor.valido('Anular') || this.venta()?.estado !== 'Confirmada') { this.procesando.set(false); return; }
+    this.ventaService.anular(this.ventaId, motivo.trim()).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
+      next: res => { this.venta.set(res.data); this.modificado = true; this.procesando.set(false); },
+      error: err => { this.procesando.set(false); this.errorOperacion.set(err.error?.message ?? 'No se pudo anular la venta.'); }
     });
   }
 
-  eliminarBorrador(): void {
-    if (!this.puedeEliminar() || this.procesando()) return;
-
-    this.procesando.set(true);
-    this.ventaService.deleteBorrador(this.ventaId).subscribe({
-      next: () => this.router.navigate(['/ventas']),
-      error: () => this.procesando.set(false)
+  async eliminarBorrador(): Promise<void> {
+    if (!this.puedeEliminar() || this.procesando() || this.venta()?.estado !== 'Borrador') return;
+    this.procesando.set(true); this.errorOperacion.set(null);
+    if (!await this.editor.confirmar('EliminarLogico', { titulo: 'Eliminar borrador', mensaje: '¿Deseas eliminar este borrador de venta?', tipo: 'peligro', confirmarTexto: 'Eliminar' }) || this.venta()?.estado !== 'Borrador') { this.procesando.set(false); return; }
+    this.ventaService.deleteBorrador(this.ventaId).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
+      next: () => { this.modificado = true; this.procesando.set(false); if (this.editor.ref) this.editor.cerrar(true); else void this.router.navigate(['/ventas']); },
+      error: err => { this.procesando.set(false); this.errorOperacion.set(err.error?.message ?? 'No se pudo eliminar el borrador.'); }
     });
   }
 }

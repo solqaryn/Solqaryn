@@ -1,6 +1,9 @@
-import { Component, OnDestroy, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { crearAccionesInstitucionales } from '../../shared/modal-institucional/acciones-institucionales';
+import { MatSnackBar } from '@angular/material/snack-bar';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, OnDestroy, OnInit, signal, ChangeDetectionStrategy, inject, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -18,12 +21,45 @@ import { ProductoImagenComponent } from '../../shared/producto-imagen/producto-i
 @Component({
   selector: 'app-compras-list',
   standalone: true,
-  imports: [CommonModule, RouterLink, FormsModule, MatIconModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatPaginatorModule, MatProgressSpinnerModule, ProductoImagenComponent],
+  imports: [CommonModule, FormsModule, MatIconModule, MatButtonModule, MatFormFieldModule, MatInputModule, MatPaginatorModule, MatProgressSpinnerModule, ProductoImagenComponent],
   templateUrl: './compras-list.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './compras-list.component.scss'
 })
 export class ComprasListComponent implements OnInit, OnDestroy {
+  private readonly acciones = crearAccionesInstitucionales('Compras');
+  private readonly snackBar = inject(MatSnackBar);
+  private readonly destroyRef = inject(DestroyRef);
+  readonly puedeEditar = signal(false);
+  readonly puedeEliminar = signal(false);
+  readonly eliminandoId = signal<number | null>(null);
+
+  async abrir(modo: 'Ver' | 'Crear' | 'Editar', id?: number): Promise<void> {
+    const item = this.compras().find(x => x.id === id);
+    if (modo === 'Editar' && item?.estado !== 'Borrador') return;
+    const actualizado = await this.acciones.abrir(
+      modo === 'Ver'
+        ? () => import('./compra-detail.component').then(m => m.CompraDetailComponent)
+        : () => import('./compra-form.component').then(m => m.CompraFormComponent),
+      'xl', modo, id
+    );
+    if (actualizado) this.cargar();
+  }
+
+  async eliminarBorrador(item: Compra): Promise<void> {
+    if (item.estado !== 'Borrador' || !this.puedeEliminar() || this.eliminandoId() !== null) return;
+    this.eliminandoId.set(item.id);
+    const autorizado = await this.acciones.confirmar('EliminarLogico', {
+      titulo: 'Eliminar borrador', mensaje: '¿Deseas eliminar el borrador ' + item.numeroCompra + '?',
+      tipo: 'peligro', confirmarTexto: 'Eliminar'
+    });
+    if (!autorizado || this.compras().find(x => x.id === item.id)?.estado !== 'Borrador') { this.eliminandoId.set(null); return; }
+    this.compraService.deleteBorrador(item.id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => { this.eliminandoId.set(null); this.cargar(); },
+      error: err => { this.eliminandoId.set(null); this.snackBar.open(err.error?.message ?? 'No se pudo eliminar el borrador.', 'Cerrar', { duration: 5000 }); }
+    });
+  }
+
   readonly compras = signal<Compra[]>([]);
   readonly loading = signal(true);
   readonly totalCount = signal(0);
@@ -58,6 +94,8 @@ export class ComprasListComponent implements OnInit, OnDestroy {
     this.sortBy = ['Fecha', 'ProveedorNombre', 'Total'].includes(state.sortBy) ? state.sortBy : 'Fecha';
     this.sortDirection = state.sortDirection === 'asc' ? 'asc' : 'desc';
     this.puedeCrear.set(this.permisosRuntime.puede('Compras', 'Crear'));
+    this.puedeEditar.set(this.permisosRuntime.puede('Compras', 'Editar'));
+    this.puedeEliminar.set(this.permisosRuntime.puede('Compras', 'EliminarLogico'));
     this.cargar();
   }
 

@@ -1,3 +1,8 @@
+## 2026-11-25 — QA: modales y tablas de ventas y compras
+
+- Listados transaccionales con tabla única desplazable, acciones Ver/Editar/Eliminar según permiso y estado Borrador, apertura XL del mismo formulario y detalle existente. Confirmaciones de borrador/confirmación/eliminación/anulación y comprobantes; revalidación del tenant, permisos y estado, cancelación sin mutaciones. Se preservan cálculos, rutas directas, auditoría, documentos y API. Los detalles en modal mantienen la factura disponible por enlace; no se cambia su ruta todavía.
+- Prueba Playwright sintética de cancelación, confirmación, permisos, tabla en móvil/escritorio y preservación de ruta. Pendiente CI exact-SHA; no modifica datos ni backend, DEV o MAIN.
+
 ## 2026-11-25 — QA: estándar único de campos y modales, corrección de regresión visual
 
 - Se elimina el doble anillo de foco de Material sin eliminar el foco accesible de controles nativos; contorno, etiqueta y caret consumen token de contraste del tema. Se consolidan los estilos de foco y chrome de diálogo en `styles/_institutional-controls.scss`; se restituye padding superior del contenido (Material lo suprime tras el título), color legible de encabezado y botones y foco inicial en el diálogo.
