@@ -11474,3 +11474,8 @@
 ## 2026-11-26 — intervención directa autorizada — C01-04.M03.06
 
 - Materializar integración empresarial real P01/P02/P12/API12 sobre Almacen -> Sucursal -> Empresa, con grant de recurso y de operación bloqueados en SQL, JWT de tenant, permiso técnico de escritura separado y sin asignaciones automáticas. DEV-only DI/rutas explícitas, cuarentena exacta por metadata, respuestas minimizadas, preservación de recibos/versiones. Prueba HTTP/JWT/Oracle MySQL A/A/B y revocación, sin tocar bases reales, estados del plan o Tasks. CI exact-SHA y A5 independiente requeridas; no afirmar LISTO. Revert normal en dev.
+
+
+## 2026-11-26 — DEV03 — C01-04.M03.06 — V44/R1/R5
+
+- TASK_ID=6adc2e4bd8a48191ac7d8641ed95a1a3; RUN_ID=978ac5ae-6abc-832c-9b0f-a621406ac9bb; base 0db5c3d13d68fb0c865372b53fdcf7494986c5bb; adopted DEV01's prepared RBAC E2E correction after exact-SHA acceptance job 140145177579 failed at line 135 (93 passed, 1 failed, 6 not run). Require exactly both explicit-deny Auditoria operations (ReadAuditCorrelation and WriteCaseFileVersion), retain every other mandatory grant, exact denied set, relational matrix and coverage checks. No runtime permission changes, no seed grants, no UI or dependency changes. A0 anchors verified; exact-SHA CI and independent A5 pending. Preserve historical failure; normal dev revert.

@@ -124,13 +124,13 @@ test.describe('Fase 6 — permisos, auditoría y reportes administrativos', () =
     expect(response.status(), await response.text()).toBe(200);
     const matrix = await dataOf(response) as Array<Record<string, any>>;
     expect(matrix.length).toBeGreaterThan(20);
-    // API12 is catalogued but is deliberately not granted by the administrator seed.
-    const api12 = matrix.filter(item =>
-      item.modulo === 'Auditoria' && item.accion === 'ReadAuditCorrelation');
-    expect(api12).toHaveLength(1);
-    expect(api12[0].permitido).toBe(false);
-    const mandatory = matrix.filter(item =>
-      !(item.modulo === 'Auditoria' && item.accion === 'ReadAuditCorrelation'));
+    // Both case-file operations are catalogued but deliberately require explicit grants.
+    const explicitActions = ['ReadAuditCorrelation', 'WriteCaseFileVersion'];
+    const explicit = matrix.filter(item =>
+      item.modulo === 'Auditoria' && explicitActions.includes(item.accion));
+    expect(explicit.map(item => item.accion).sort()).toEqual(explicitActions);
+    expect(explicit.every(item => item.permitido === false)).toBe(true);
+    const mandatory = matrix.filter(item => !explicit.includes(item));
     expect(mandatory.length).toBeGreaterThan(20);
     expect(mandatory.every(item => item.permitido === true)).toBe(true);
     expect(matrix.some(item => item.modulo === 'ReportesAdministrativos' && item.accion === 'Ver')).toBe(true);
@@ -184,7 +184,9 @@ test.describe('Fase 6 — permisos, auditoría y reportes administrativos', () =
     expect(matrixResponse.status(), await matrixResponse.text()).toBe(200);
     const matrix = await dataOf(matrixResponse) as Array<Record<string, any>>;
     const denied = matrix.filter(item => item.permitido === false);
-    expect(denied.map(item => `${item.modulo}:${item.accion}`)).toEqual(['Auditoria:ReadAuditCorrelation']);
+    expect(denied.map(item => `${item.modulo}:${item.accion}`).sort()).toEqual([
+      'Auditoria:ReadAuditCorrelation', 'Auditoria:WriteCaseFileVersion'
+    ]);
     const granted = matrix.filter(item => item.permitido === true)
       .map(item => `${item.modulo}:${item.accion}`).sort();
     expect(adminRole.permisosAsignados).toBe(granted.length);
