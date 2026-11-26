@@ -1,3 +1,7 @@
+## 2026-11-26 — QA-FN-05: alineación de la salvaguarda estática del checkout
+
+- Run 45901564836 job 140188322975 FALLÓ exclusivamente en lint estático Fase 6 por literal de llamada previa sin cobertura; TypeScript y controles anteriores PASS. Se exige ahora la llamada tipada con referencias + cobertura, invalidación al editar, distinción tarifa nula/cero, coherencia de subtotal + costo y vencimiento UTC; se conservan todas las restricciones previas. Los escenarios de envío faltante/cambio y total no cero se etiquetan QA visual para que el gate existente los ejecute realmente. Sin modificación funcional del checkout, backend, esquema o infraestructura; CI causal frontend pendiente. Scope Lock DEV 86c4ec13 job 140176890384 SUCCESS.
+
 ## 2026-11-26 — QA-FN-05: cotización pública de envíos
 
 - Checkout público consume CostoEnvioService.ResolverAsync con contexto de tienda verificado por middleware y fecha UTC del servidor. Entrada sólo cobertura, no importe, ID, tenant o fecha arbitraria; salida importe nullable (sin tarifa no equivale a cero), nombre y total. Vencimiento limitado por vigencia de tarifa. UI consulta cobertura, invalida la cotización cuando cambia, impide continuar sin tarifa válida, distingue subtotal y total e incluye costo en WhatsApp y recibo sin guardar ubicación. Proveedor de pago configurado recibe cobertura sin habilitar nuevos cobros; no crea pedido ni reserva ERP. Se mantienen pendientes certificación de proveedor real, integración transaccional y despliegue.

@@ -275,7 +275,7 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
     expect(mensaje).toContain('✅ Solicitud generada desde *Storefront Checkout Audit*.');
   });
 
-  test('fuente real revalida en servidor sin enviar precio/stock y WhatsApp usa el total autoritativo', async ({ page }) => {
+  test('QA visual: fuente real revalida en servidor sin enviar precio/stock y WhatsApp usa el total autoritativo', async ({ page }) => {
     await prepararEmpresa(page);
     await sembrarCarrito(page, 'bd', modeloClaveReal, 501, 2);
     await mockCatalogoReal(page, 1750, 3);
@@ -392,7 +392,7 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
     expect(reciboRaw).not.toContain('99991111');
   });
 
-  test('cotización de envío ausente bloquea la compra; cobertura nueva exige recalcular', async ({ page }) => {
+  test('QA visual: cotización de envío ausente bloquea la compra; cobertura nueva exige recalcular', async ({ page }) => {
     await prepararEmpresa(page);
     await sembrarCarrito(page, 'bd', modeloClaveReal, 501, 2);
     await mockCatalogoReal(page);

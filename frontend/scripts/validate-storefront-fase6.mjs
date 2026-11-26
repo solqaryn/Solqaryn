@@ -88,7 +88,10 @@ expect(
 expect(!/TokenSecretoReferencia|WebhookSecretoReferencia/.test((whatsappController.match(/GetPublicoAsync[\s\S]*?\n    }/m)?.[0] || '')), 'El endpoint público de WhatsApp no debe leer ni exponer referencias secretas.');
 
 for (const required of [
-  'this.servicio.validarCheckout(this.referenciasCheckout())',
+  'this.servicio.validarCheckout(this.referenciasCheckout(), this.datosEnvio())',
+  'this.formularioEnvio.valueChanges',
+  'this.envioPendiente.set(true)',
+  "!this.envioPendiente() && typeof this.validado()?.costoEnvio === 'number'",
   'this.carrito.hidratar(productos',
   'Validators.required',
   'Validators.email',
@@ -124,6 +127,9 @@ for (const required of [
   'Correo electrónico',
   'Notas para el comercio',
   'Total validado',
+  'Actualizar costo de envío',
+  'Subtotal sin envío',
+  'Por cotizar',
   'Preparar pedido por WhatsApp',
   'Tarjeta no disponible',
   'Nunca ingreses número de tarjeta, CVV o PIN'
@@ -142,6 +148,7 @@ expect(storefrontService.includes("private readonly urlValidarCheckout = `${this
 expect(storefrontService.includes('this.http.post<ApiResponse<CheckoutValidado>>'), 'La revalidación debe usar POST tipado.');
 expect(storefrontService.includes("!ruta.startsWith('tienda/')") && storefrontService.includes("ruta.includes('..')"), 'El endpoint configurable de tarjeta debe permanecer dentro de la frontera publica /tienda y aceptar solo rutas relativas seguras.');
 expect(storefrontService.includes('checkoutValidado(data)'), 'El cliente debe validar estructuralmente la respuesta de checkout.');
+expect(storefrontService.includes('data.costoEnvio === null') && storefrontService.includes('data.total - data.subtotal - (data.costoEnvio ?? 0)'), 'La respuesta debe distinguir ausencia de tarifa de cero configurado y validar el total.');
 
 const checkoutItemBlock = models.match(/export interface CheckoutItemRequest \{([\s\S]*?)\n\}/)?.[1] || '';
 expect(
@@ -164,6 +171,11 @@ expect(
   'El DTO backend debe aceptar identidad de agrupación y cantidad, nunca importes.'
 );
 expect(!/Precio|Total|Stock/i.test(backendItemBlock), 'El DTO backend no debe aceptar precio, total ni stock del cliente.');
+const envioFront = models.match(/export interface CheckoutEnvioRequest \{([\s\S]*?)\n\}/)?.[1] || '';
+const envioBack = backendDto.match(/public sealed class CheckoutTiendaEnvioRequestDto\s*\{([\s\S]*?)\n\}/)?.[1] || '';
+for (const [block, fields] of [[envioFront, ['departamento','ciudad','zona','modalidad']], [envioBack,['Departamento','Ciudad','Zona','Modalidad']]]) {
+  expect(fields.every(field => block.includes(field)) && !/precio|total|stock|monto|costo|empresaId|tarifaId|fecha/i.test(block), 'El envío público acepta exclusivamente cobertura, nunca autoridad monetaria o empresarial.');
+}
 for (const required of [
   '[AllowAnonymous]',
   '[HttpPost("checkout/validar")]',
@@ -177,6 +189,11 @@ for (const required of [
   'var precioVigente = oferta?.PrecioOferta ?? precio;',
   'Total = precioVigente * solicitud.Unidades',
   'var subtotal = lineas.Sum(linea => linea.Total)',
+  '_costoEnvioService.ResolverAsync(new ResolverCostoEnvioDto',
+  'FechaUtc = ahoraUtc',
+  'CostoEnvio = costoEnvio',
+  'Total = subtotal + (costoEnvio ?? 0m)',
+  'if (limite < expira) expira = limite',
   'Guid.NewGuid().ToString("N")',
   'TimeSpan.FromMinutes(10)'
 ]) {
