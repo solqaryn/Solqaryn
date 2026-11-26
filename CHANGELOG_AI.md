@@ -1,3 +1,8 @@
+## 2026-11-26 — DEV03 — C01-04.M03.06 — V44/R1/R5
+
+- TASK_ID=6adc2e4bd8a48191ac7d8641ed95a1a3; RUN_ID=fcc6b338-2a74-8324-9e90-fec8947881c3; base 172ff840eb5a549dac44719c0e115f51d125f42c; adopta relevo DEV01 RUN=86c995ad-efa4-8327-81bc-9ae6e8f9001a.
+- Revalida autoridad global antes de cada GET del lector GitHub (directed, core y legacy), dentro del deadline y con revocación latched por solicitud; conserva denegación auditada, sin permiso empresarial implícito. Regresiones JWT con grant independiente, revocación en segundo GET, exactamente dos llamadas y una denegación sin auditoría adicional; MySQL descartable en CI si configurado. No modifica API pública, schema, grants, P01/P02/API12 ni retención. CI exact-SHA pendiente, no A5/LISTO; rollback por revert normal.
+
 ## 2026-11-26 — DEV06 — C01-04.M03.06 — V44/R1/R5
 
 - TASK_ID=6af16bbad26881918c283abe06e1f32a; RUN_ID=9f65c00a-f840-8328-9a8d-9c5ca0b8778c; base 82add5001b314ac55ba2e52e2b06e1f44162e09a.

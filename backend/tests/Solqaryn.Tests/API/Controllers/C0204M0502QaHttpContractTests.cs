@@ -91,6 +91,7 @@ public sealed class C0204M0502QaHttpContractTests
         });
         Assert.DoesNotContain("private-secret", audit.ValoresNuevos!);
         Assert.True(Guid.TryParseExact(audit.CorrelationId, "N", out _));
+        await AssertRevocationDuringSecondaryReadAsync(upstream);
     }
 
     [Fact]
@@ -1028,6 +1029,7 @@ public sealed class C0204M0502QaHttpContractTests
 
         upstream.AdditionalResponses[discovery] = jobs;
         await AssertNoSecondaryCallsAfterRevocationAsync(upstream, fixture, client);
+        await AssertRevocationDuringSecondaryReadAsync(upstream);
     }
 
     [Theory]
@@ -1123,7 +1125,10 @@ public sealed class C0204M0502QaHttpContractTests
             Assert.Equal(scenario == "reuse" ? "EXACT_SHA_REUSE" : "BUILD_TEST",
                 identity.GetProperty("Mode").GetString());
             if (scenario == "valid")
+            {
                 await AssertNoSecondaryCallsAfterRevocationAsync(upstream, fixture, client);
+                await AssertRevocationDuringSecondaryReadAsync(upstream);
+            }
         }
     }
 
@@ -1395,12 +1400,33 @@ public sealed class C0204M0502QaHttpContractTests
         }
     }
 
+    private static async Task AssertRevocationDuringSecondaryReadAsync(GitHubFake template)
+    {
+        // A new host, database and persisted grant: never reuse the revoked grant.
+        var upstream = new GitHubFake(template.Payload) { LegacyScenario = template.LegacyScenario };
+        foreach (var entry in template.AdditionalResponses)
+            upstream.AdditionalResponses.Add(entry.Key, entry.Value);
+        await using var fixture = await CrearAsync(upstream, mysql: !string.IsNullOrWhiteSpace(
+            Environment.GetEnvironmentVariable("SOLQARYN_C0204_MYSQL_TEST_CONNECTION")));
+        using var client = fixture.Host.GetTestClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer", Token(fixture.GlobalId, "operadorglobal"));
+        await AssertNoSecondaryCallsAfterRevocationAsync(upstream, fixture, client, revokeOnCall: 2);
+    }
+
     private static async Task AssertNoSecondaryCallsAfterRevocationAsync(
-        GitHubFake upstream, Fixture fixture, HttpClient client)
+        GitHubFake upstream, Fixture fixture, HttpClient client, int revokeOnCall = 1)
     {
         var callsBefore = upstream.Calls;
+        int auditsBefore;
+        using (var beforeScope = fixture.Host.Services.CreateScope())
+        {
+            var beforeDb = beforeScope.ServiceProvider.GetRequiredService<AppDbContext>();
+            auditsBefore = await beforeDb.Set<RegistroAuditoria>().CountAsync();
+        }
         upstream.BeforeResponse = async () =>
         {
+            if (upstream.Calls != callsBefore + revokeOnCall) return;
             upstream.BeforeResponse = null;
             using var revokedScope = fixture.Host.Services.CreateScope();
             var revokedDb = revokedScope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -1414,9 +1440,10 @@ public sealed class C0204M0502QaHttpContractTests
             Assert.Equal(HttpStatusCode.Forbidden, revoked.StatusCode);
             Assert.DoesNotContain("CI_MINIMA_ACREDITADA", await revoked.Content.ReadAsStringAsync());
         }
-        Assert.Equal(callsBefore + 1, upstream.Calls);
+        Assert.Equal(callsBefore + revokeOnCall, upstream.Calls);
         using var scope = fixture.Host.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        Assert.Equal(auditsBefore + 1, await db.Set<RegistroAuditoria>().CountAsync());
         var denial = Assert.Single(await db.Set<RegistroAuditoria>().AsNoTracking()
             .Where(x => x.Error == "QA_ACCESS_DENIED").ToListAsync());
         AssertDenialAudit(denial, fixture.GlobalId);

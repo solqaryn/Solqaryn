@@ -9,7 +9,8 @@ namespace Solqaryn.Infrastructure.AutomationV5;
 /// Returns only corroborated build identity and status. This is not a
 /// tenant/case-file authorization source, CI certification, or A5.
 /// </summary>
-public sealed class V5UniversalCaseFileQaGitHubJobReader(IHttpClientFactory clients)
+public sealed class V5UniversalCaseFileQaGitHubJobReader(IHttpClientFactory clients,
+    Func<CancellationToken, Task<bool>>? authorizeBeforeRead = null)
 {
     private const string Repository = "solqaryn/Solqaryn";
     private const string Microtask = "C01-04.M03.06";
@@ -363,8 +364,11 @@ public sealed class V5UniversalCaseFileQaGitHubJobReader(IHttpClientFactory clie
         catch (JsonException) { return null; }
     }
 
-    private static async Task<JsonDocument?> ReadAsync(HttpClient client, string path, CancellationToken ct)
+    private async Task<JsonDocument?> ReadAsync(HttpClient client, string path, CancellationToken ct)
     {
+        ct.ThrowIfCancellationRequested();
+        if (authorizeBeforeRead is not null && !await authorizeBeforeRead(ct)) return null;
+        ct.ThrowIfCancellationRequested();
         using var response = await client.GetAsync(path, HttpCompletionOption.ResponseHeadersRead, ct);
         if (!response.IsSuccessStatusCode || response.Content.Headers.ContentLength is > MaximumBytes)
             return null;

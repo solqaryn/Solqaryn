@@ -172,13 +172,19 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
 
         // The provider can take time. A revoked or changed global grant must
         // not authorize disclosure or a successful audit after that await.
-        async Task<bool> VigenteAsync()
+        // Once observed, a revocation cannot be undone inside the same request.
+        // The optional token keeps each provider join inside its original deadline.
+        var authorizationRevoked = false;
+        async Task<bool> VigenteAsync(CancellationToken? token = null)
         {
-            var actual = await _scope.ObtenerActualAsync(cancellationToken);
-            return actual is not null &&
+            if (authorizationRevoked) return false;
+            var actual = await _scope.ObtenerActualAsync(token ?? cancellationToken);
+            var valid = actual is not null &&
                 actual.UsuarioId == actor.UsuarioId &&
                 actual.RolId == actor.RolId &&
                 string.Equals(actual.NombreUsuario, actor.NombreUsuario, StringComparison.Ordinal);
+            if (!valid) authorizationRevoked = true;
+            return valid;
         }
 
         if (string.IsNullOrEmpty(sha) || !ShaValido.IsMatch(sha))
@@ -334,9 +340,10 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                         if (!await VigenteAsync()) return await DenegarAuditadoAsync();
                         // Only this directed workflow has a server-owned microtask mapping.
                         // A check link is not proof of a job/attempt until independently joined.
-                        var verified = await new V5UniversalCaseFileQaGitHubJobReader(_clients)
+                        var verified = await new V5UniversalCaseFileQaGitHubJobReader(_clients, ct => VigenteAsync(ct))
                             .ReadDirectedFromCheckAsync("C01-04.M03.06", sha, checkId, suiteId,
                                 Valor(item, "details_url"), conclusion, upstreamToken);
+                        if (authorizationRevoked) return await DenegarAuditadoAsync();
                         if (verified is null)
                             return await FalloProveedorAsync("QA_UPSTREAM_CONTRACT");
                         build = verified.ToAuditIdentity();
@@ -378,9 +385,10 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                 var index = identities.FindIndex(x => x.Check == DevBackendCheckName);
                 if (index < 0) return await FalloProveedorAsync("QA_UPSTREAM_CONTRACT");
                 var identity = identities[index];
-                var verified = await new V5UniversalCaseFileQaGitHubJobReader(_clients)
+                var verified = await new V5UniversalCaseFileQaGitHubJobReader(_clients, ct => VigenteAsync(ct))
                     .ReadLegacyBackendFromCheckAsync(sha, identity.CheckId, identity.CheckSuiteId,
                         legacyBackend[0].UrlEvidencia, upstreamToken);
+                if (authorizationRevoked) return await DenegarAuditadoAsync();
                 if (verified is null) return await FalloProveedorAsync("QA_UPSTREAM_CONTRACT");
                 identities[index] = identity with { LegacyBackend = verified };
                 backendSuccess = true;
@@ -392,9 +400,10 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                 var index = identities.FindIndex(x => x.Check == CoreBackendCheckName);
                 if (index < 0) return await FalloProveedorAsync("QA_UPSTREAM_CONTRACT");
                 var identity = identities[index];
-                var verified = await new V5UniversalCaseFileQaGitHubJobReader(_clients)
+                var verified = await new V5UniversalCaseFileQaGitHubJobReader(_clients, ct => VigenteAsync(ct))
                     .ReadCoreBackendFromCheckAsync(sha, identity.CheckId, identity.CheckSuiteId,
                         coreBackend[0].UrlEvidencia, upstreamToken);
+                if (authorizationRevoked) return await DenegarAuditadoAsync();
                 if (verified is null) return await FalloProveedorAsync("QA_UPSTREAM_CONTRACT");
                 identities[index] = identity with { CoreBackend = verified };
                 backendSuccess = true;
