@@ -8,12 +8,12 @@ import { CuentaContableService } from '../../services/cuenta-contable.service';
 import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
 
 class AsientoServiceStub {
-  getAll() { return of({ data: { items: [], total: 0 } }); }
-  create() { return of({ data: {} }); }
+  getAll() { return of({ success: true, message: '', errors: [], data: { items: [], total: 0 } }); }
+  create() { return of({ success: true, message: '', errors: [], data: {} }); }
 }
 
 class CuentaServiceStub {
-  getAll() { return of({ data: [] }); }
+  getAll() { return of({ success: true, message: '', errors: [], data: [] }); }
 }
 
 class PermisosRuntimeStub {
@@ -57,6 +57,21 @@ describe('AsientosContablesComponent', () => {
     component.detallesFormArray.at(1).patchValue({ cuentaContableId: 2, debe: 0, haber: 90 });
     component.asientoForm.updateValueAndValidity();
     expect(component.asientoForm.hasError('descuadrado')).toBe(true);
+  });
+
+  it('conserva un asiento balanceado cuando el servidor rechaza su creación', () => {
+    const service = TestBed.inject(AsientoContableService);
+    const create = vi.spyOn(service, 'create').mockReturnValue(of({ success: false, message: 'Período cerrado.', errors: [], data: null! }));
+    component.nuevoAsiento();
+    component.asientoForm.patchValue({ concepto: 'Asiento QA' });
+    component.detallesFormArray.at(0).patchValue({ cuentaContableId: 1, debe: 100, haber: 0 });
+    component.detallesFormArray.at(1).patchValue({ cuentaContableId: 2, debe: 0, haber: 100 });
+    component.guardarAsiento();
+    expect(create).toHaveBeenCalledTimes(1);
+    expect(component.guardando()).toBe(false);
+    expect(component.mostrarFormulario()).toBe(true);
+    expect(component.asientoForm.enabled).toBe(true);
+    expect(component.asientoForm.controls.concepto.value).toBe('Asiento QA');
   });
 
   it('accepts a balanced asiento', () => {

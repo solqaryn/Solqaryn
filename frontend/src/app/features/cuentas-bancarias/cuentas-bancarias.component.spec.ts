@@ -185,7 +185,9 @@ describe('CuentasBancariasComponent', () => {
   });
 
   it('no permite envíos duplicados mientras la creación está pendiente', () => {
+    permisos.puede.mockImplementation((_modulo, accion) => accion === 'Crear');
     fixture.detectChanges();
+    component.mostrarFormulario.set(true);
     cuentaService.getAll.mockClear();
 
     const dto = {
@@ -211,7 +213,9 @@ describe('CuentasBancariasComponent', () => {
   });
 
   it('restablece el estado submitting al completar la creación con éxito', () => {
+    permisos.puede.mockImplementation((_modulo, accion) => accion === 'Crear');
     fixture.detectChanges();
+    component.mostrarFormulario.set(true);
 
     const dto = {
       bancoId: 1,
@@ -229,7 +233,9 @@ describe('CuentasBancariasComponent', () => {
   });
 
   it('restablece el estado submitting cuando la creación falla', () => {
+    permisos.puede.mockImplementation((_modulo, accion) => accion === 'Crear');
     fixture.detectChanges();
+    component.mostrarFormulario.set(true);
 
     const dto = {
       bancoId: 1,
@@ -252,7 +258,9 @@ describe('CuentasBancariasComponent', () => {
   });
 
   it('crea una cuenta válida, resetea el formulario y recarga', () => {
+    permisos.puede.mockImplementation((_modulo, accion) => accion === 'Crear');
     fixture.detectChanges();
+    component.mostrarFormulario.set(true);
     cuentaService.getAll.mockClear();
 
     const dto = {
@@ -281,6 +289,36 @@ describe('CuentasBancariasComponent', () => {
       saldoInicial: 0
     });
     expect(cuentaService.getAll).toHaveBeenCalledTimes(1);
+  });
+
+  it('no guarda directamente sin permiso de creación o con el editor cerrado', () => {
+    fixture.detectChanges();
+    component.formulario.setValue({ bancoId: 1, nombre: 'Cuenta QA', numeroCuenta: '111', moneda: 'HNL', saldoInicial: 0 });
+    component.mostrarFormulario.set(true);
+    component.guardarCuenta();
+    expect(cuentaService.create).not.toHaveBeenCalled();
+    permisos.puede.mockReturnValue(true);
+    component.puedeCrear.set(true);
+    component.mostrarFormulario.set(false);
+    component.guardarCuenta();
+    expect(cuentaService.create).not.toHaveBeenCalled();
+  });
+
+  it('una consulta anterior no reemplaza el resultado del filtro vigente', () => {
+    fixture.detectChanges();
+    const anterior = new Subject<CuentaBancariaPage<CuentaBancaria>>();
+    const actual = new Subject<CuentaBancariaPage<CuentaBancaria>>();
+    cuentaService.getAll.mockReturnValueOnce(anterior).mockReturnValueOnce(actual);
+    component.cargarCuentas();
+    component.search = 'USD';
+    component.cargarCuentas();
+    anterior.next(cuentasPage);
+    anterior.complete();
+    expect(component.loading()).toBe(true);
+    actual.next({ ...cuentasPage, items: [cuentasPage.items[1]], totalCount: 1 });
+    actual.complete();
+    expect(component.cuentas()).toEqual([cuentasPage.items[1]]);
+    expect(component.loading()).toBe(false);
   });
 
   it('bloquea activar/desactivar cuando RBAC no lo permite', () => {

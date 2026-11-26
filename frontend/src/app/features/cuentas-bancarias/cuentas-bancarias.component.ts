@@ -2,7 +2,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 
 import { HttpClient, HttpErrorResponse } from '@angular/common/http';
-import { Component, OnInit, effect, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, DestroyRef, OnInit, effect, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, FormsModule, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -11,7 +11,8 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
 import { MatTableModule } from '@angular/material/table';
 import { ActivatedRoute } from '@angular/router';
-import { Subject, debounceTime, finalize } from 'rxjs';
+import { Subject, debounceTime, finalize, Subscription } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { environment } from '../../../environments/environment';
 import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
 import {
@@ -78,6 +79,9 @@ export class CuentasBancariasComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly navigationState = inject(ListNavigationStateService);
   private readonly searchSubject = new Subject<string>();
+  private readonly destroyRef = inject(DestroyRef);
+  private carga?: Subscription;
+  private secuenciaCarga = 0;
   private readonly http = inject(HttpClient, { optional: true });
 
   readonly cuentas = signal<CuentaBancaria[]>([]);
@@ -118,7 +122,7 @@ export class CuentasBancariasComponent implements OnInit {
   });
 
   constructor() {
-    this.searchSubject.pipe(debounceTime(250)).subscribe(() => this.aplicarFiltros());
+    this.searchSubject.pipe(debounceTime(250), takeUntilDestroyed(this.destroyRef)).subscribe(() => this.aplicarFiltros());
     effect(() => {
       if (!this.mostrarFormulario()) {
         this.cuentaEnEdicion.set(null);
@@ -147,6 +151,8 @@ export class CuentasBancariasComponent implements OnInit {
   }
 
   cargarCuentas(): void {
+    const secuencia = ++this.secuenciaCarga;
+    this.carga?.unsubscribe();
     this.errorMessage.set(null);
     this.loading.set(true);
     const filtros: CuentaBancariaQueryFilter = {
@@ -156,12 +162,15 @@ export class CuentasBancariasComponent implements OnInit {
       estado: this.estadoFilter ?? undefined
     };
 
-    this.cuentaService.getAll(filtros).subscribe({
+    this.carga = this.cuentaService.getAll(filtros).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res) => {
+        if (secuencia !== this.secuenciaCarga) return;
         this.cuentas.set(res.items);
         this.loading.set(false);
       },
       error: (err) => {
+        if (secuencia !== this.secuenciaCarga) return;
+        this.cuentas.set([]);
         this.loading.set(false);
         this.errorMessage.set(this.extractErrorMessage(err, 'Ocurrió un error al cargar las cuentas.'));
       }
@@ -190,7 +199,10 @@ export class CuentasBancariasComponent implements OnInit {
       this.formulario.markAllAsTouched();
       return;
     }
-    if (this.submitting()) return;
+    if (this.submitting() || !this.mostrarFormulario()) return;
+    if (this.cuentaEnEdicion()
+      ? (!this.puedeEditar() || !this.permisos.puede('Finanzas', 'Editar'))
+      : (!this.puedeCrear() || !this.permisos.puede('Finanzas', 'Crear'))) return;
 
     this.errorMessage.set(null);
     this.submitting.set(true);
@@ -227,7 +239,7 @@ export class CuentasBancariasComponent implements OnInit {
   }
 
   editar(cuenta: CuentaBancaria): void {
-    if (!this.puedeEditar()) return;
+    if (!this.puedeEditar() || this.submitting()) return;
     this.cuentaEnEdicion.set(cuenta);
     this.formulario.patchValue({
       nombre: cuenta.nombre,
@@ -258,6 +270,7 @@ export class CuentasBancariasComponent implements OnInit {
   }
 
   seleccionarCuentaParaConciliacion(cuenta: CuentaBancaria): void {
+    if (this.reconSubmitting()) return;
     this.reconSelectedAccount.set(cuenta);
     this.reconError.set(null);
     this.reconSuccess.set(false);
@@ -267,7 +280,7 @@ export class CuentasBancariasComponent implements OnInit {
   }
 
   importarEstadoCuenta(idempotencyKey: string, movimientos: ImportacionMovimientoDto[]): void {
-    if (!this.puedeImportar() || !this.http) return;
+    if (!this.puedeImportar() || !this.permisos.puede('Finanzas', 'Importar') || !this.http || this.reconSubmitting()) return;
     const cuenta = this.reconSelectedAccount();
     if (!cuenta) return;
 
@@ -294,7 +307,7 @@ export class CuentasBancariasComponent implements OnInit {
   }
 
   registrarMatches(idempotencyKey: string, matches: MatchDto[]): void {
-    if (!this.puedeCrear() || !this.http) return;
+    if (!this.puedeCrear() || !this.permisos.puede('Finanzas', 'Crear') || !this.http || this.reconSubmitting()) return;
     const cuenta = this.reconSelectedAccount();
     if (!cuenta) return;
 

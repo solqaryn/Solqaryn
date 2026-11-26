@@ -1,6 +1,7 @@
 import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 import { CommonModule } from '@angular/common';
-import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { forkJoin } from 'rxjs';
@@ -44,6 +45,8 @@ import {
   styleUrl: './factura-pagos.component.scss'
 })
 export class FacturaPagosComponent implements OnInit {
+  private readonly permisos = inject(PermisosRuntimeService);
+  private secuenciaOnline = 0;
   readonly factura = signal<Factura | null>(null);
   readonly cargando = signal(true);
   readonly cargandoCatalogos = signal(true);
@@ -85,10 +88,18 @@ export class FacturaPagosComponent implements OnInit {
 
   cargar(): void {
     const id = Number(this.route.snapshot.paramMap.get('id'));
+    this.factura.set(null);
+    this.pagosOnline.set([]);
     this.cargando.set(true);
     this.facturaService.getById(id).subscribe({
       next: (respuesta) => {
+        if (!respuesta.success || !respuesta.data || respuesta.data.id !== id) {
+          this.cargando.set(false);
+          this.snackBar.open(respuesta.message || 'No se pudo cargar la factura.', 'Cerrar', { duration: 5000 });
+          return;
+        }
         this.factura.set(respuesta.data);
+        this.pagoOnline.moneda = respuesta.data.moneda;
         const saldo = Math.max(0, respuesta.data.saldoPendiente);
         this.pago.monto = saldo;
         this.pagoOnline.monto = saldo;
@@ -109,6 +120,13 @@ export class FacturaPagosComponent implements OnInit {
       bancos: this.metodoPagoService.getBancosActivos()
     }).subscribe({
       next: ({ metodos, bancos }) => {
+        if (!metodos.success || !Array.isArray(metodos.data) || !bancos.success || !Array.isArray(bancos.data)) {
+          this.metodosPago.set([]);
+          this.bancos.set([]);
+          this.cargandoCatalogos.set(false);
+          this.snackBar.open('No se pudieron cargar los métodos de pago y bancos activos.', 'Cerrar', { duration: 5000 });
+          return;
+        }
         const activos = [...metodos.data]
           .filter((metodo) => metodo.activo)
           .sort((a, b) => a.orden - b.orden || a.codigo.localeCompare(b.codigo));
@@ -118,6 +136,8 @@ export class FacturaPagosComponent implements OnInit {
         this.cargandoCatalogos.set(false);
       },
       error: () => {
+        this.metodosPago.set([]);
+        this.bancos.set([]);
         this.cargandoCatalogos.set(false);
         this.snackBar.open('No se pudieron cargar los métodos de pago y bancos activos.', 'Cerrar', { duration: 5000 });
       }
@@ -156,6 +176,11 @@ export class FacturaPagosComponent implements OnInit {
       observaciones: this.pago.observaciones?.trim() || undefined
     }).subscribe({
       next: (respuesta) => {
+        if (!respuesta.success || !respuesta.data || respuesta.data.id !== factura.id) {
+          this.guardando.set(false);
+          this.snackBar.open(respuesta.message || 'No se pudo registrar el pago.', 'Cerrar', { duration: 5000 });
+          return;
+        }
         this.factura.set(respuesta.data);
         const saldo = Math.max(0, respuesta.data.saldoPendiente);
         this.pago = this.nuevoPago(saldo);
@@ -173,21 +198,35 @@ export class FacturaPagosComponent implements OnInit {
 
   async anularPago(pago: FacturaPago): Promise<void> {
     const factura = this.factura();
-    if (!factura || pago.anulado || this.anulandoId() !== null) return;
-
-    const motivo = await this.alerts.solicitarTexto({
+    if (!factura || !this.puedeAnular(pago)) return;
+    const empresaId = this.tenantContext.empresaIdVerificada();
+    this.anulandoId.set(pago.id);
+    let motivo: string | null;
+    try {
+      motivo = await this.alerts.solicitarTexto({
       titulo: 'Anular pago',
       mensaje: `El pago aplicado a ${factura.numeroFactura || `FAC-${factura.id}`} se revertirá.`,
       detalle: 'El saldo de la factura y el movimiento financiero se recalcularán; indica el motivo para la auditoría.',
       tipo: 'peligro',
       entrada: { etiqueta: 'Motivo de anulación', requerida: true },
       confirmarTexto: 'Anular pago'
-    });
-    if (!motivo) return;
-
-    this.anulandoId.set(pago.id);
+      });
+    } catch {
+      this.anulandoId.set(null);
+      return;
+    }
+    if (!motivo?.trim() || this.factura() !== factura || empresaId !== this.tenantContext.empresaIdVerificada() ||
+        !this.permisos.puede('Facturacion', 'Anular') || !factura.pagos.some(item => item.id === pago.id && !item.anulado)) {
+      this.anulandoId.set(null);
+      return;
+    }
     this.facturaService.anularPago(factura.id, pago.id, motivo).subscribe({
       next: (respuesta) => {
+        if (!respuesta.success || !respuesta.data || respuesta.data.id !== factura.id) {
+          this.anulandoId.set(null);
+          this.snackBar.open(respuesta.message || 'No se pudo anular el pago.', 'Cerrar', { duration: 5000 });
+          return;
+        }
         this.factura.set(respuesta.data);
         const saldo = Math.max(0, respuesta.data.saldoPendiente);
         this.pago.monto = saldo;
@@ -202,11 +241,20 @@ export class FacturaPagosComponent implements OnInit {
     });
   }
 
+  puedeAnular(pago: FacturaPago): boolean {
+    const factura = this.factura();
+    return !!factura && this.permisos.puede('Facturacion', 'Anular') && !!this.tenantContext.empresaIdVerificada() &&
+      !this.guardando() && !this.iniciandoOnline() && this.anulandoId() === null &&
+      factura.pagos.some(item => item.id === pago.id && !item.anulado);
+  }
+
   cargarPagosOnline(): void {
+    const secuencia = ++this.secuenciaOnline;
     const factura = this.factura();
     const empresaId = this.tenantContext.empresaIdVerificada();
     if (!factura || !empresaId) {
       this.pagosOnline.set([]);
+      this.cargandoOnline.set(false);
       this.errorOnline.set('Selecciona y verifica una empresa para consultar pagos online.');
       return;
     }
@@ -215,10 +263,21 @@ export class FacturaPagosComponent implements OnInit {
     this.errorOnline.set(null);
     this.pagoOnlineService.listar(empresaId, factura.id, this.estadoOnlineFiltro()).subscribe({
       next: (respuesta) => {
-        this.pagosOnline.set(respuesta.data.items);
+        if (secuencia !== this.secuenciaOnline) return;
         this.cargandoOnline.set(false);
+        if (empresaId !== this.tenantContext.empresaIdVerificada() || factura !== this.factura()) {
+          this.pagosOnline.set([]);
+          return;
+        }
+        if (!respuesta.success || !Array.isArray(respuesta.data?.items)) {
+          this.pagosOnline.set([]);
+          this.errorOnline.set(respuesta.message || 'No se pudieron cargar los pagos online.');
+          return;
+        }
+        this.pagosOnline.set(respuesta.data.items);
       },
       error: (error) => {
+        if (secuencia !== this.secuenciaOnline) return;
         this.pagosOnline.set([]);
         this.cargandoOnline.set(false);
         this.errorOnline.set(error.error?.message ?? 'No se pudieron cargar los pagos online.');
@@ -242,6 +301,10 @@ export class FacturaPagosComponent implements OnInit {
     }, this.crearIdempotencyKey()).subscribe({
       next: (respuesta) => {
         this.iniciandoOnline.set(false);
+        if (!respuesta.success || !respuesta.data?.pago) {
+          this.errorOnline.set(respuesta.message || 'No se pudo iniciar el pago online.');
+          return;
+        }
         const pagoCreado = respuesta.data.pago;
         this.snackBar.open(
           respuesta.data.reutilizado ? 'Solicitud de pago recuperada de forma idempotente.' : 'Pago online iniciado.',
@@ -263,11 +326,13 @@ export class FacturaPagosComponent implements OnInit {
   puedeRegistrar(): boolean {
     const factura = this.factura();
     const metodo = this.metodoSeleccionado();
-    if (!factura || !metodo || this.cargandoCatalogos() || this.guardando()) return false;
+    if (!factura || !metodo || !this.permisos.puede('Facturacion', 'Aplicar') || !this.tenantContext.empresaIdVerificada() ||
+        this.cargando() || this.cargandoCatalogos() || this.guardando() || this.anulandoId() !== null || this.iniciandoOnline() ||
+        !Number.isFinite(this.pago.monto)) return false;
     if (['Anulada', 'Cancelada'].includes(factura.estado) || factura.saldoPendiente <= 0 || this.pago.monto <= 0) return false;
     if (this.pago.monto > factura.saldoPendiente && !metodo.permiteCambio) return false;
     if (metodo.requiereReferencia && !this.pago.referencia?.trim()) return false;
-    if (metodo.requiereBanco && (!this.pago.bancoId || this.pago.bancoId <= 0)) return false;
+    if (metodo.requiereBanco && !this.bancos().some(banco => banco.id === this.pago.bancoId)) return false;
     return true;
   }
 
@@ -276,6 +341,10 @@ export class FacturaPagosComponent implements OnInit {
     const empresaId = this.tenantContext.empresaIdVerificada();
     return !!factura
       && !!empresaId
+      && this.permisos.puede('Facturacion', 'Aplicar')
+      && !this.cargando() && !this.guardando() && this.anulandoId() === null
+      && Number.isFinite(this.pagoOnline.monto)
+      && this.pagoOnline.moneda.trim().toUpperCase() === factura.moneda.trim().toUpperCase()
       && !['Anulada', 'Cancelada'].includes(factura.estado)
       && factura.saldoPendiente > 0
       && this.pagoOnline.monto > 0

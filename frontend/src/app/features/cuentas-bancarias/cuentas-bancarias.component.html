@@ -115,7 +115,7 @@
             <button mat-button type="button" color="warn" (click)="desactivar(element)" [attr.aria-label]="'Desactivar cuenta ' + element.nombre">Desactivar</button>
           }
           @if (puedeImportar() || puedeCrear()) {
-            <button mat-button type="button" (click)="seleccionarCuentaParaConciliacion(element)" [attr.aria-label]="'Conciliar cuenta ' + element.nombre">Conciliar</button>
+            <button mat-button type="button" [disabled]="reconSubmitting()" (click)="seleccionarCuentaParaConciliacion(element)" [attr.aria-label]="'Conciliar cuenta ' + element.nombre">Conciliar</button>
           }
         </td>
       </ng-container>

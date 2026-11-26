@@ -1,5 +1,5 @@
 
-import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, computed, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -68,7 +68,7 @@ import { SecuenciaDocumentoService } from '../../services/secuencia-documento.se
           <p class="notice error" role="alert">{{ errorMessage() }}</p>
         }
 
-        @if (secuencia(); as item) {
+        @if (secuenciaVigente(); as item) {
           <div class="sequence-summary" aria-live="polite">
             <div><span>Tipo</span><strong>{{ item.tipoDocumento }}</strong></div>
             <div><span>Ámbito</span><strong>{{ item.sucursalId ? ('Sucursal ' + item.sucursalId) : 'Empresa' }}</strong></div>
@@ -88,7 +88,7 @@ import { SecuenciaDocumentoService } from '../../services/secuencia-documento.se
           } @else {
             <p class="readonly-hint"><mat-icon>info</mat-icon> Solo lectura: necesitas “Configuración: Editar” para reservar números.</p>
           }
-        } @else if (!loading() && consulted()) {
+        } @else if (!loading() && consulted() && !errorMessage()) {
           <p class="empty-state">No se encontró una secuencia para el ámbito solicitado.</p>
         }
       }
@@ -129,6 +129,11 @@ export class SecuenciaDocumentoCardComponent implements OnInit {
   readonly secuencia = signal<SecuenciaDocumentoConsulta | null>(null);
   readonly puedeEditar = signal(false);
   readonly tenantId = this.tenant.empresaIdVerificada;
+  private revisionConsulta = 0;
+  readonly secuenciaVigente = computed(() => {
+    const item = this.secuencia();
+    return item && item.empresaId === this.tenantId() ? item : null;
+  });
 
   readonly form = this.fb.group({
     tipoDocumento: ['FACTURA', [Validators.required, Validators.maxLength(80)]],
@@ -140,8 +145,12 @@ export class SecuenciaDocumentoCardComponent implements OnInit {
   }
 
   consultar(): void {
+    if (this.reserving()) return;
+    const revision = ++this.revisionConsulta;
     const empresaId = this.tenantId();
-    if (empresaId === null || this.form.invalid) {
+    if (empresaId === null || this.form.invalid || !this.form.controls.tipoDocumento.value?.trim() ||
+        (this.form.controls.sucursalId.value !== null && this.normalizarSucursal(this.form.controls.sucursalId.value) === null)) {
+      this.loading.set(false);
       this.secuencia.set(null);
       return;
     }
@@ -156,11 +165,20 @@ export class SecuenciaDocumentoCardComponent implements OnInit {
 
     this.service.obtener(empresaId, sucursalId, tipoDocumento).subscribe({
       next: (response) => {
+        if (revision !== this.revisionConsulta) return;
         this.loading.set(false);
+        if (empresaId !== this.tenantId()) return;
+        if (!response.success || (response.data && (response.data.empresaId !== empresaId ||
+            response.data.sucursalId !== sucursalId || response.data.tipoDocumento.toUpperCase() !== tipoDocumento.toUpperCase()))) {
+          this.errorMessage.set(response.message || 'No se pudo consultar la numeración del ámbito seleccionado.');
+          return;
+        }
         this.secuencia.set(response.data ?? null);
       },
       error: (error) => {
+        if (revision !== this.revisionConsulta) return;
         this.loading.set(false);
+        if (empresaId !== this.tenantId()) return;
         this.errorMessage.set(error.error?.message ?? 'No se pudo consultar la numeración.');
       }
     });
@@ -168,8 +186,10 @@ export class SecuenciaDocumentoCardComponent implements OnInit {
 
   reservarSiguiente(): void {
     const empresaId = this.tenantId();
-    const item = this.secuencia();
-    if (empresaId === null || !item || !this.puedeEditar() || this.reserving()) return;
+    const item = this.secuenciaVigente();
+    if (empresaId === null || !item || !item.activa || !this.puedeEditar() || !this.permisos.puede('Configuracion', 'Editar') ||
+        this.reserving() || this.loading() || item.sucursalId !== this.normalizarSucursal(this.form.controls.sucursalId.value) ||
+        item.tipoDocumento.toUpperCase() !== (this.form.controls.tipoDocumento.value || '').trim().toUpperCase()) return;
 
     this.reserving.set(true);
     this.errorMessage.set(null);
@@ -181,6 +201,12 @@ export class SecuenciaDocumentoCardComponent implements OnInit {
     }).subscribe({
       next: (response) => {
         this.reserving.set(false);
+        if (empresaId !== this.tenantId()) return;
+        if (!response.success || !response.data || response.data.empresaId !== empresaId ||
+            response.data.sucursalId !== item.sucursalId || response.data.tipoDocumento.toUpperCase() !== item.tipoDocumento.toUpperCase()) {
+          this.errorMessage.set(response.message || 'No se pudo reservar el siguiente número.');
+          return;
+        }
         this.snackBar.open(`Número reservado: ${response.data.numero}`, 'Cerrar', { duration: 5000 });
         this.consultar();
       },

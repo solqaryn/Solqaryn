@@ -1,5 +1,5 @@
 
-import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, inject, DestroyRef, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -8,7 +8,9 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import { forkJoin, finalize } from 'rxjs';
+import { forkJoin, finalize, Subscription } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
 import { Almacen } from '../../core/models/almacen.model';
 import { Producto, ProductoVariante } from '../../core/models/producto.model';
 import { UbicacionAlmacen } from '../../core/models/ubicacion-almacen.model';
@@ -144,6 +146,12 @@ import { UbicacionAlmacenService } from '../../services/ubicacion-almacen.servic
   `]
 })
 export class ExistenciaVarianteFormComponent implements OnInit {
+  private readonly permisos = inject(PermisosRuntimeService);
+  private readonly destroyRef = inject(DestroyRef);
+  private variantesRequest?: Subscription;
+  private ubicacionesRequest?: Subscription;
+  private revisionVariantes = 0;
+  private revisionUbicaciones = 0;
   readonly productos = signal<Producto[]>([]);
   readonly variantes = signal<ProductoVariante[]>([]);
   readonly almacenes = signal<Almacen[]>([]);
@@ -187,6 +195,11 @@ export class ExistenciaVarianteFormComponent implements OnInit {
       almacenes: this.almacenService.getActivos()
     }).subscribe({
       next: ({ productos, almacenes }) => {
+        if (!productos.success || !productos.data || !almacenes.success || !Array.isArray(almacenes.data)) {
+          this.loading.set(false);
+          this.error.set('No fue posible cargar productos y almacenes.');
+          return;
+        }
         this.productos.set(productos.data.items);
         this.almacenes.set(almacenes.data);
         if (this.editando()) {
@@ -211,6 +224,9 @@ export class ExistenciaVarianteFormComponent implements OnInit {
   get stockDisponible(): number { return Math.max(0, Number(this.stockFisico || 0) - Number(this.stockReservado || 0)); }
 
   onProductoChange(): void {
+    ++this.revisionVariantes;
+    this.variantesRequest?.unsubscribe();
+    this.cargandoVariantes.set(false);
     this.productoVarianteId = null;
     this.variantes.set([]);
     if (!this.productoId) return;
@@ -218,6 +234,9 @@ export class ExistenciaVarianteFormComponent implements OnInit {
   }
 
   onAlmacenChange(): void {
+    ++this.revisionUbicaciones;
+    this.ubicacionesRequest?.unsubscribe();
+    this.cargandoUbicaciones.set(false);
     this.ubicacionAlmacenId = null;
     this.ubicaciones.set([]);
     if (!this.almacenId) return;
@@ -225,6 +244,7 @@ export class ExistenciaVarianteFormComponent implements OnInit {
   }
 
   guardar(): void {
+    if (this.saving()) return;
     this.error.set('');
     if (!this.puedeGuardar()) {
       this.error.set('Completa una combinación operativa válida antes de guardar.');
@@ -272,9 +292,16 @@ export class ExistenciaVarianteFormComponent implements OnInit {
   volver(): void { void this.router.navigate(['/inventario/existencias']); }
 
   puedeGuardar(): boolean {
-    if (!this.almacenId || this.stockMinimo < 0 || (this.stockMaximo != null && this.stockMaximo < 0)) return false;
-    if (this.editando()) return true;
-    return !!this.productoId && !!this.productoVarianteId && this.stockFisico >= 0 && this.stockReservado >= 0 && this.stockTransito >= 0;
+    if (!this.permisos.puede('Inventario', this.editando() ? 'Editar' : 'Crear') ||
+        this.loading() || this.saving() || this.cargandoVariantes() || this.cargandoUbicaciones()) return false;
+    if (!this.almacenId || !Number.isFinite(this.stockMinimo) || this.stockMinimo < 0 ||
+        (this.stockMaximo != null && (!Number.isFinite(this.stockMaximo) || this.stockMaximo < this.stockMinimo))) return false;
+    if (this.ubicacionAlmacenId !== null && !this.ubicaciones().some(ubicacion => ubicacion.id === this.ubicacionAlmacenId && ubicacion.almacenId === this.almacenId)) return false;
+    if (this.editando()) return this.id > 0 && !!this.productoVarianteId;
+    return this.almacenes().some(almacen => almacen.id === this.almacenId && almacen.activo) &&
+      this.variantes().some(variante => variante.id === this.productoVarianteId && variante.productoId === this.productoId && variante.activo) &&
+      [this.stockFisico, this.stockReservado, this.stockTransito].every(valor => Number.isFinite(valor) && valor >= 0) &&
+      this.stockReservado <= this.stockFisico;
   }
 
   etiquetaVariante(variante: ProductoVariante): string {
@@ -311,29 +338,54 @@ export class ExistenciaVarianteFormComponent implements OnInit {
   }
 
   private cargarVariantes(productoId: number): void {
+    const revision = ++this.revisionVariantes;
+    this.variantesRequest?.unsubscribe();
     this.cargandoVariantes.set(true);
-    this.productoService.getVariantes(productoId, false).pipe(finalize(() => this.cargandoVariantes.set(false))).subscribe({
+    this.variantesRequest = this.productoService.getVariantes(productoId, this.editando()).pipe(
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => { if (revision === this.revisionVariantes) this.cargandoVariantes.set(false); })
+    ).subscribe({
       next: response => {
-        const activas = (response.data ?? []).filter(v => v.activo);
+        if (revision !== this.revisionVariantes || this.productoId !== productoId) return;
+        if (!response.success || !Array.isArray(response.data)) {
+          this.variantes.set([]);
+          this.error.set(response.message || 'No fue posible cargar las variantes.');
+          return;
+        }
+        const activas = response.data.filter(v => v.productoId === productoId && (v.activo || (this.editando() && v.id === this.productoVarianteId)));
         this.variantes.set(activas);
-        if (this.productoVarianteId) {
+        if (this.productoVarianteId && !this.editando()) {
           const preseleccionada = activas.find(v => v.id === this.productoVarianteId);
           if (preseleccionada) this.stockMinimo = preseleccionada.umbralStockBajo;
           else this.productoVarianteId = null;
         }
       },
-      error: err => this.error.set(this.extraerError(err, 'No fue posible cargar las variantes activas.'))
+      error: err => { if (revision === this.revisionVariantes) this.error.set(this.extraerError(err, 'No fue posible cargar las variantes activas.')); }
     });
   }
 
   private cargarUbicaciones(almacenId: number, done?: () => void): void {
+    const revision = ++this.revisionUbicaciones;
+    this.ubicacionesRequest?.unsubscribe();
     this.cargandoUbicaciones.set(true);
-    this.ubicacionService.getActivas(almacenId).pipe(finalize(() => {
-      this.cargandoUbicaciones.set(false);
-      done?.();
-    })).subscribe({
-      next: response => this.ubicaciones.set(response.data ?? []),
-      error: err => this.error.set(this.extraerError(err, 'No fue posible cargar las ubicaciones activas.'))
+    this.ubicacionesRequest = this.ubicacionService.getActivas(almacenId).pipe(
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => {
+        if (revision !== this.revisionUbicaciones) return;
+        this.cargandoUbicaciones.set(false);
+        done?.();
+      })
+    ).subscribe({
+      next: response => {
+        if (revision !== this.revisionUbicaciones || this.almacenId !== almacenId) return;
+        if (!response.success || !Array.isArray(response.data)) {
+          this.ubicaciones.set([]);
+          this.error.set(response.message || 'No fue posible cargar las ubicaciones activas.');
+          return;
+        }
+        this.ubicaciones.set(response.data.filter(ubicacion => ubicacion.almacenId === almacenId && ubicacion.activa));
+      },
+      error: err => { if (revision === this.revisionUbicaciones) this.error.set(this.extraerError(err, 'No fue posible cargar las ubicaciones activas.')); }
     });
   }
 

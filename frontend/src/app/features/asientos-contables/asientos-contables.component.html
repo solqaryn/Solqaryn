@@ -156,7 +156,7 @@
         </div>
       }
       <div style="margin-top: 2rem; display: flex; gap: 1rem;">
-        <button type="button" mat-button (click)="cancelar()">Cancelar</button>
+        <button type="button" mat-button [disabled]="guardando()" (click)="cancelar()">Cancelar</button>
         <button type="submit" mat-raised-button color="primary" [disabled]="asientoForm.invalid || guardando()">
           @if (guardando()) {
             <mat-spinner diameter="20" style="display: inline-block; margin-right: 8px;"></mat-spinner>

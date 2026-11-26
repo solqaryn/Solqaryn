@@ -104,6 +104,8 @@ jobs:
         run: npm run test:unit -- --include=src/app/services/theme-applier.service.spec.ts
       - name: Regresión de listados de Solicitudes, Centros de costo y Cuentas por cobrar
         run: npm run test:unit -- --include=src/app/features/solicitudes-compra/solicitudes-compra-shell.component.spec.ts --include=src/app/features/centros-costo/centros-costo.a11y.spec.ts --include=src/app/features/centros-costo/centros-costo.component.spec.ts --include=src/app/services/centro-costo.service.spec.ts --include=src/app/features/cuentas-por-cobrar/cuentas-por-cobrar.component.spec.ts --include=src/app/features/recepciones-compra/recepcion-compra-form.component.spec.ts --include=src/app/features/periodos-contables/periodos-contables.component.spec.ts
+      - name: Regresión de operaciones financieras, inventario y configuración
+        run: npm run test:unit -- --include=src/app/features/facturas/factura-pagos.component.spec.ts --include=src/app/features/cuentas-bancarias/cuentas-bancarias.component.spec.ts --include=src/app/features/inventario/existencia-variante-form.component.spec.ts --include=src/app/features/asientos-contables/asientos-contables.component.spec.ts --include=src/app/features/configuracion/secuencia-documento-card.component.spec.ts
       - name: Compilación de producción con evidencia de tamaño
         shell: bash
         run: |

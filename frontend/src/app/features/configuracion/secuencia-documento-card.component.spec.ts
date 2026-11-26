@@ -77,6 +77,22 @@ describe('N6.6.E Numeraciones frontend UX', () => {
     httpMock.expectNone(`${environment.apiUrl}/secuencias-documento`);
   });
 
+  it('no utiliza una secuencia de otra empresa ni una consulta rechazada', () => {
+    const component = createComponent();
+    component.ngOnInit();
+    component.consultar();
+    const req = httpMock.expectOne(request => request.url === `${environment.apiUrl}/secuencias-documento`);
+    empresaIdVerificada.set(8);
+    req.flush({ success: true, data: { empresaId: 7, sucursalId: null, tipoDocumento: 'FACTURA', activa: true } });
+    expect(component.secuenciaVigente()).toBeNull();
+    component.reservarSiguiente();
+    httpMock.expectNone(`${environment.apiUrl}/secuencias-documento/siguiente`);
+    component.consultar();
+    httpMock.expectOne(request => request.url === `${environment.apiUrl}/secuencias-documento`).flush({ success: false, message: 'Consulta rechazada.', data: null });
+    expect(component.errorMessage()).toBe('Consulta rechazada.');
+    expect(component.secuenciaVigente()).toBeNull();
+  });
+
   it('reserves the next number inside the same verified scope and refreshes the query', () => {
     const component = createComponent();
     component.ngOnInit();

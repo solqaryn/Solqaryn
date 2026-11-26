@@ -28,7 +28,7 @@ export function asientoBalanceValidator(control: AbstractControl): ValidationErr
   for (const detalle of detalles.controls) {
     const debe = Number(detalle.get('debe')?.value || 0);
     const haber = Number(detalle.get('haber')?.value || 0);
-    if (debe < 0 || haber < 0 || (debe > 0 && haber > 0)) return { montosInvalidos: true };
+    if (!Number.isFinite(debe) || !Number.isFinite(haber) || debe < 0 || haber < 0 || (debe > 0 && haber > 0)) return { montosInvalidos: true };
     if (debe > 0 || haber > 0) hasMovement = true;
     totalDebe += debe;
     totalHaber += haber;
@@ -116,7 +116,13 @@ export class AsientosContablesComponent implements OnInit, OnDestroy {
 
     this.asientoService.getAll(params).subscribe({
       next: (res) => {
-        this.asientos.set(res.data?.items ?? []);
+        if (!res.success || !res.data) {
+          this.asientos.set([]);
+          this.loading.set(false);
+          this.snackBar.open(res.message || 'No se pudieron cargar los asientos.', 'Cerrar', { duration: 3000 });
+          return;
+        }
+        this.asientos.set(res.data.items ?? []);
         this.loading.set(false);
       },
       error: () => {
@@ -138,7 +144,8 @@ export class AsientosContablesComponent implements OnInit, OnDestroy {
         }
         return result;
       };
-      this.cuentasContables.set(flatten(res.data ?? []));
+      if (!res.success || !Array.isArray(res.data)) throw new Error('Catálogo rechazado');
+      this.cuentasContables.set(flatten(res.data));
     } catch {
       this.cuentasContables.set([]);
       this.snackBar.open('Error al cargar cuentas contables', 'Cerrar', { duration: 3000 });
@@ -169,6 +176,7 @@ export class AsientosContablesComponent implements OnInit, OnDestroy {
   }
 
   cancelar(): void {
+    if (this.guardando()) return;
     this.mostrarFormulario.set(false);
     this.asientoSeleccionado.set(null);
   }
@@ -187,7 +195,8 @@ export class AsientosContablesComponent implements OnInit, OnDestroy {
   }
 
   guardarAsiento(): void {
-    if (this.asientoForm.invalid || !this.puedeCrearAsiento() || this.guardando()) return;
+    if (this.asientoForm.invalid || !this.puedeCrearAsiento() || !this.permisosRuntime.puede('Finanzas', 'Crear') ||
+        this.guardando() || !this.mostrarFormulario() || this.asientoSeleccionado()) return;
     const val = this.asientoForm.getRawValue();
     const dto: CrearAsientoContableDto = {
       concepto: val.concepto ?? '',
@@ -204,10 +213,14 @@ export class AsientosContablesComponent implements OnInit, OnDestroy {
     this.asientoForm.disable();
     this.guardando.set(true);
     this.asientoService.create(dto).subscribe({
-      next: () => {
-        this.snackBar.open('Asiento creado exitosamente', 'Cerrar', { duration: 3000 });
+      next: respuesta => {
         this.asientoForm.enable();
         this.guardando.set(false);
+        if (!respuesta.success || !respuesta.data) {
+          this.snackBar.open(respuesta.message || 'No se pudo crear el asiento.', 'Cerrar', { duration: 5000 });
+          return;
+        }
+        this.snackBar.open('Asiento contable creado.', 'Cerrar', { duration: 3000 });
         this.mostrarFormulario.set(false);
         this.cargarAsientos();
       },
