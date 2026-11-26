@@ -1,4 +1,5 @@
 using Solqaryn.Application.DTOs;
+using Solqaryn.Application.Exceptions;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
@@ -21,7 +22,14 @@ public class AuditoriaRepository : IAuditoriaRepository
 
     public async Task<(List<RegistroAuditoria> Items, int TotalCount)> GetFilteredAsync(AuditoriaFiltroDto filtro)
     {
-        var query = _context.RegistrosAuditoria.AsQueryable();
+        // Never trust the raw tenant header, public storefront context, or a
+        // global role claim. Authorization must precede both count and paging.
+        var empresaId = _context.AuthorizedEmpresaId;
+        if (empresaId is not > 0)
+            throw new ForbiddenAccessException("La auditoría requiere una empresa autorizada.");
+        var query = _context.RegistrosAuditoria.AsNoTracking()
+            .Where(r => r.EmpresaId == empresaId &&
+                r.AmbitoAutoridad == AmbitoAutorizacion.Empresa);
 
         if (filtro.UsuarioId.HasValue)
             query = query.Where(r => r.UsuarioId == filtro.UsuarioId.Value);

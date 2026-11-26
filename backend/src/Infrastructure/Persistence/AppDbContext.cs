@@ -28,7 +28,8 @@ public class AppDbContext : DbContext
     }
     public int? CommercialReadEmpresaId => ContextId(AuthorizedTenantItemKey) ??
         ContextId(PublicStoreTenantItemKey) ?? _publicInvoiceEmpresaId;
-    public bool CommercialPrivateWriteAuthorized => ContextId(AuthorizedTenantItemKey).HasValue;
+    public int? AuthorizedEmpresaId => ContextId(AuthorizedTenantItemKey);
+    public bool CommercialPrivateWriteAuthorized => AuthorizedEmpresaId.HasValue;
     public int? CommercialWriteEmpresaId => ContextId(AuthorizedTenantItemKey) ??
         (_http?.HttpContext?.Request.Path.StartsWithSegments("/tienda/cuenta/registrar") == true ?
             ContextId(PublicStoreTenantItemKey) : null);

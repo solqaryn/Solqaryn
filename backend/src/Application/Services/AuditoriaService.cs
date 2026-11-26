@@ -52,11 +52,16 @@ public class AuditoriaService : IAuditoriaService
         // La auditoría consume únicamente ese valor saneado; nunca vuelve a
         // confiar en el header bruto controlado por el cliente.
         var correlationId = http?.TraceIdentifier;
+        var empresaId = http?.Items.TryGetValue("SOLQARYN_AUTHORIZED_EMPRESA_ID", out var authority) == true &&
+            authority is int id && id > 0 ? (int?)id : null;
 
         await _repository.AddAsync(new RegistroAuditoria
         {
             UsuarioId = _currentUser.UsuarioId,
             NombreUsuario = _currentUser.NombreUsuario ?? "Sistema",
+            EmpresaId = empresaId,
+            AmbitoAutoridad = empresaId.HasValue ? AmbitoAutorizacion.Empresa : null,
+            OrigenAutorizacion = empresaId.HasValue ? OrigenAutorizacion.MembresiaEmpresa : null,
             Modulo = modulo,
             Accion = accion,
             Entidad = entidad,

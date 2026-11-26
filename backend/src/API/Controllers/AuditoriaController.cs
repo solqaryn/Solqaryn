@@ -15,12 +15,12 @@ namespace Solqaryn.API.Controllers;
 public class AuditoriaController : ControllerBase
 {
     private readonly IAuditoriaService _service;
-    private readonly ICurrentUserService _currentUser;
+    private readonly IUsuarioScopeService _scopeService;
 
-    public AuditoriaController(IAuditoriaService service, ICurrentUserService currentUser)
+    public AuditoriaController(IAuditoriaService service, IUsuarioScopeService scopeService)
     {
         _service = service;
-        _currentUser = currentUser;
+        _scopeService = scopeService;
     }
 
     [HttpGet]
@@ -29,7 +29,9 @@ public class AuditoriaController : ControllerBase
         // La auditoría contiene información transversal y sensible de toda la empresa.
         // Aun cuando una matriz de permisos se configure incorrectamente, nunca se
         // entrega a un rol no administrativo.
-        if (!_currentUser.EsAdministrador)
+        var empresaId = TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext);
+        var scope = await _scopeService.ObtenerActualAsync(empresaId, HttpContext.RequestAborted);
+        if (scope is null || scope.EmpresaId != empresaId || !scope.EsAdministrador)
             return Forbid();
 
         var resultado = await _service.GetFilteredAsync(filtro);

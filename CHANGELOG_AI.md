@@ -1,3 +1,10 @@
+## 2026-11-26 — QA-FN-05: autorización y propiedad de auditoría
+
+- Run 45879941637 job 140116448932: numeraciones/suscripciones/límites/dashboard A/B y limpieza PASS, auditoría B 403 por rol no administrativo. Inspección adicional: AuditoriaController usaba claim de administrador; AuditoriaRepository consultaba sin EmpresaId; AuditoriaService genérico no atribuía el tenant.
+- API: exige rol administrativo efectivo de membresía en empresa marcada por gate RBAC, no claim global. Infrastructure: exige contexto autorizado y filtra EmpresaId + ámbito Empresa antes de contar/paginar; no incluye legacy o plataforma. Application: registra propiedad/ámbito/origen exclusivamente desde autoridad verificada; no toma header bruto. Conserva logging sin tenant para eventos no atribuidos. No cambia DTO, rutas, interfaces públicas existentes, datos históricos ni esquema.
+- Regresiones dirigidas: administrador efectivo, operador y ausencia de membresía/gate, cabecera discordante, conteo/paginación A/B, registros legacy/plataforma y atribución de nueva auditoría. Pendiente CI y prueba viva; no declarar cierre ni modificar permisos del propietario.
+- Scope QA autorizado. DEV 434137171eb94cd9cde4521d01b31c4d55ca868c Scope Lock job 140120558850 PASS, SKREF-11 original/pin consultado para límite de confianza. Sin merge DEV/MAIN, migraciones, dependencias o automatizaciones. Rollback por revert y redespliegue QA.
+
 ## 2026-11-26 — QA-FN-05: normalización de metadata del fixture
 
 - Revisión estática del preflight: EXTRA vacío debe proyectarse como NONE para conservar exactamente cuatro columnas TSV incluso después de strip() del cliente SQL. Sin ello la última fila podría perder su tabulador final. Se corrige antes de las mutaciones de prueba; sólo cambia script de QA, no código de aplicación. Ejecución serializada, no repetir los cuatro gates aprobados. Scope exacto DEV 2ec240a9c4845d35b5b5f84bdcb8adf58d7c98cb sin cambios.
