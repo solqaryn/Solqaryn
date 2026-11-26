@@ -1,6 +1,6 @@
-import { Component, OnDestroy, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnDestroy, OnInit, signal, ChangeDetectionStrategy, inject, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { ActivatedRoute, RouterLink } from '@angular/router';
+import { ActivatedRoute } from '@angular/router';
 import { FormsModule } from '@angular/forms';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -10,7 +10,12 @@ import { MatSelectModule } from '@angular/material/select';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSlideToggleModule, MatSlideToggleChange } from '@angular/material/slide-toggle';
+import { modalInstitucional } from '../../shared/modal-institucional/modal-institucional';
+import { TenantContextService } from '../../core/auth/tenant-context.service';
+import { firstValueFrom } from 'rxjs';
+import { AppAlertService } from '../../shared/alerts/app-alert.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { debounceTime, forkJoin, Subject, Subscription } from 'rxjs';
 import { ProductoService } from '../../services/producto.service';
 import { CategoriaService } from '../../services/categoria.service';
@@ -29,7 +34,7 @@ type EstadoProductoFiltro = 'todos' | 'activos' | 'inactivos' | 'agotados' | 'di
   selector: 'app-productos-list',
   standalone: true,
   imports: [
-    CommonModule, RouterLink, FormsModule, MatIconModule, MatButtonModule,
+    CommonModule, FormsModule, MatIconModule, MatButtonModule,
     MatFormFieldModule, MatInputModule, MatSelectModule, MatPaginatorModule,
     MatProgressSpinnerModule, MatDialogModule, MatSlideToggleModule, ProductoImagenComponent
   ],
@@ -38,6 +43,12 @@ type EstadoProductoFiltro = 'todos' | 'activos' | 'inactivos' | 'agotados' | 'di
   styleUrl: './productos-list.component.scss'
 })
 export class ProductosListComponent implements OnInit, OnDestroy {
+  private readonly tenant = inject(TenantContextService);
+  private readonly modalDestroyRef = inject(DestroyRef);
+  private modalPendiente = false;
+  readonly cambiandoEstado = signal(false);
+  private readonly alerts = inject(AppAlertService);
+  private readonly modalSnackBar = inject(MatSnackBar);
   readonly productos = signal<Producto[]>([]);
   readonly categorias = signal<Categoria[]>([]);
   readonly colores = signal<CatalogoProducto[]>([]);
@@ -96,6 +107,27 @@ export class ProductosListComponent implements OnInit, OnDestroy {
       this.page = 1;
       this.cargar();
     });
+  }
+
+  async abrirProducto(modo: 'ver' | 'crear' | 'editar', id?: number): Promise<void> {
+    const permiso = modo === 'ver' ? 'Ver' : modo === 'crear' ? 'Crear' : 'Editar';
+    if (this.modalPendiente || !this.permisosRuntime.puede('Productos', permiso)) return;
+    const contexto = this.tenant.contextoVerificado();
+    if (!contexto) return;
+    this.modalPendiente = true;
+    try {
+      if (modo === 'ver') {
+        const { ProductoDetailComponent } = await import('./producto-detail.component');
+        if (this.modalDestroyRef.destroyed || contexto !== this.tenant.contextoVerificado() || !this.permisosRuntime.puede('Productos', permiso)) return;
+        await firstValueFrom(this.dialog.open(ProductoDetailComponent, modalInstitucional('xl', { data: { id }, ariaLabel: 'Detalle de producto' })).afterClosed());
+      } else {
+        const { ProductoFormComponent } = await import('./producto-form.component');
+        if (this.modalDestroyRef.destroyed || contexto !== this.tenant.contextoVerificado() || !this.permisosRuntime.puede('Productos', permiso)) return;
+        const guardado = await firstValueFrom(this.dialog.open(ProductoFormComponent, modalInstitucional('xl', { data: { id }, ariaLabel: modo === 'crear' ? 'Nuevo producto' : 'Editar producto' })).afterClosed());
+        if (guardado === true && !this.modalDestroyRef.destroyed) this.cargar();
+      }
+    } catch { this.modalSnackBar.open('No se pudo abrir el producto.', 'Cerrar', { duration: 5000 }); }
+    finally { this.modalPendiente = false; }
   }
 
   ngOnInit(): void {
@@ -198,17 +230,20 @@ export class ProductosListComponent implements OnInit, OnDestroy {
     return producto.activo ? this.puedeDesactivar() : this.puedeActivar();
   }
 
-  cambiarEstado(producto: Producto): void {
-    if (!this.puedeCambiarEstado(producto)) return;
-
-    const operacion = producto.activo
-      ? this.productoService.desactivar(producto.id)
-      : this.productoService.activar(producto.id);
-
-    operacion.subscribe({
-      next: () => this.cargar(),
-      error: () => this.cargar()
-    });
+  async cambiarEstado(producto: Producto, evento: MatSlideToggleChange): Promise<void> {
+    evento.source.checked = producto.activo;
+    if (!this.puedeCambiarEstado(producto) || this.cambiandoEstado()) return;
+    const contexto = this.tenant.contextoVerificado();
+    if (!contexto) return;
+    this.cambiandoEstado.set(true);
+    try {
+      const accion = producto.activo ? 'Desactivar' : 'Activar';
+      const confirmado = await this.alerts.confirmar({ titulo: accion + ' producto', mensaje: '¿Deseas ' + accion.toLowerCase() + ' «' + producto.nombre + '»?', confirmarTexto: accion });
+      if (!confirmado || contexto !== this.tenant.contextoVerificado() || !this.permisosRuntime.puede('Productos', accion)) return;
+      await firstValueFrom(producto.activo ? this.productoService.desactivar(producto.id) : this.productoService.activar(producto.id));
+      this.cargar();
+    } catch { this.modalSnackBar.open('No se pudo cambiar el estado.', 'Cerrar', { duration: 5000 }); }
+    finally { this.cambiandoEstado.set(false); }
   }
 
   onPageChange(event: PageEvent): void {
@@ -229,17 +264,18 @@ export class ProductosListComponent implements OnInit, OnDestroy {
   }
 
   eliminar(producto: Producto): void {
-    if (!this.puedeEliminar()) return;
+    const contexto = this.tenant.contextoVerificado();
+    if (!this.puedeEliminar() || !contexto) return;
 
-    const ref = this.dialog.open(ConfirmDialogComponent, {
+    const ref = this.dialog.open(ConfirmDialogComponent, modalInstitucional('s', {
       data: {
         title: 'Eliminar producto',
         message: `¿Deseas eliminar lógicamente "${producto.nombre}"? Su historial e imágenes se conservarán.`
       }
-    });
+    }));
 
     ref.afterClosed().subscribe((confirmado) => {
-      if (!confirmado) return;
+      if (confirmado !== true || contexto !== this.tenant.contextoVerificado() || !this.permisosRuntime.puede('Productos', 'EliminarLogico')) return;
       this.productoService.delete(producto.id).subscribe(() => this.cargar());
     });
   }

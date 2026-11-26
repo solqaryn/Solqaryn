@@ -1,4 +1,7 @@
-import { Component, HostListener, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import { TenantContextService } from '../../core/auth/tenant-context.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, HostListener, OnInit, signal, ChangeDetectionStrategy, inject, effect, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
@@ -15,12 +18,16 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
 @Component({
   selector: 'app-producto-detail',
   standalone: true,
-  imports: [CommonModule, RouterLink, MatIconModule, MatButtonModule, MatProgressSpinnerModule, ProductoImagenComponent],
+  imports: [CommonModule, RouterLink, MatIconModule, MatButtonModule, MatProgressSpinnerModule, ProductoImagenComponent, MatDialogModule],
   templateUrl: './producto-detail.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './producto-detail.component.scss'
 })
 export class ProductoDetailComponent implements OnInit {
+  readonly modalRef = inject(MatDialogRef<ProductoDetailComponent>, { optional: true });
+  private readonly modalData = inject<{ id: number }>(MAT_DIALOG_DATA, { optional: true });
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly tenant = inject(TenantContextService);
   readonly producto = signal<Producto | null>(null);
   readonly loading = signal(true);
   readonly notFound = signal(false);
@@ -36,19 +43,25 @@ export class ProductoDetailComponent implements OnInit {
     private permisosRuntime: PermisosRuntimeService,
     private snackBar: MatSnackBar,
     private alerts: AppAlertService
-  ) {}
+  ) {
+    if (this.modalRef) {
+      const contexto = this.tenant.contextoVerificado();
+      effect(() => { if (!contexto || this.tenant.contextoVerificado() !== contexto) this.modalRef?.close(); });
+    }
+  }
 
   ngOnInit(): void {
     this.puedeExportar.set(this.permisosRuntime.puede('Productos', 'Exportar'));
-    this.puedeEditar.set(this.permisosRuntime.puede('Productos', 'Editar'));
+    this.puedeEditar.set(!this.modalRef && this.permisosRuntime.puede('Productos', 'Editar'));
 
-    const id = Number(this.route.snapshot.paramMap.get('id'));
+    const id = Number(this.modalRef ? this.modalData?.id : this.route.snapshot.paramMap.get('id'));
+    if (this.modalRef && (!Number.isInteger(id) || id <= 0 || !this.permisosRuntime.puede('Productos', 'Ver'))) { this.modalRef.close(); return; }
     this.cargarProducto(id);
   }
 
   private cargarProducto(id: number): void {
     this.loading.set(true);
-    this.productoService.getById(id).subscribe({
+    this.productoService.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res) => {
         this.producto.set(res.data);
         this.notFound.set(false);

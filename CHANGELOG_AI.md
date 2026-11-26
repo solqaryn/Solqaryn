@@ -1,3 +1,8 @@
+## 2026-11-25 — QA: productos en modales institucionales
+
+- Lista de productos: ver, crear y editar abren el modal XL y conservan las rutas protegidas para accesos directos. El detalle modal es consultivo, conserva imágenes y exportación autorizada, y el editor reutiliza su formulario y validaciones de variantes/inventario sin duplicar lógica. Se exige confirmación de guardado y cambio de estado; eliminar usa modal S. Los cierres por cambio de contexto se conservan como protección de datos.
+- No cambia API, inventario, permisos, base de datos, DEV ni MAIN. CI y validación visual autenticada pendientes; rollback por revert del changeset en QA.
+
 ## 2026-11-25 — QA: catálogos y métodos de pago adoptan modales institucionales
 
 - Colores, tallas, marcas y modelos: formulario mediano, confirmación explícita al guardar o cambiar estado, filtros de búsqueda/estado y tabla institucional con scroll propio, alineación coherente y pie. Conserva validación de tallas de un carácter.

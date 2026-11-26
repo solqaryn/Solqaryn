@@ -1,4 +1,8 @@
-import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import { AppAlertService } from '../../shared/alerts/app-alert.service';
+import { TenantContextService } from '../../core/auth/tenant-context.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, OnInit, OnDestroy, DestroyRef, effect, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 
 import { ReactiveFormsModule, FormArray, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -34,7 +38,7 @@ const MAX_IMAGENES = 5;
 @Component({
   selector: 'app-producto-form',
   standalone: true,
-  imports: [
+  imports: [MatDialogModule,
     ReactiveFormsModule,
     RouterLink,
     MatFormFieldModule,
@@ -51,7 +55,15 @@ const MAX_IMAGENES = 5;
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrls: ['./producto-form.component.scss', './producto-form-variants.component.scss']
 })
-export class ProductoFormComponent implements OnInit {
+export class ProductoFormComponent implements OnInit, OnDestroy {
+  readonly modalRef = inject(MatDialogRef<ProductoFormComponent>, { optional: true });
+  private readonly modalData = inject<{ id?: number }>(MAT_DIALOG_DATA, { optional: true });
+  private readonly alerts = inject(AppAlertService);
+  private readonly tenant = inject(TenantContextService);
+  private readonly destroyRef = inject(DestroyRef);
+  private readonly contextoModal = this.tenant.contextoVerificado();
+  cancelarModal(): void { if (!this.saving()) this.modalRef?.close(false); }
+
   private readonly fb = inject(FormBuilder);
   private readonly almacenService = inject(AlmacenService);
   private readonly permisosRuntime = inject(PermisosRuntimeService);
@@ -97,13 +109,16 @@ export class ProductoFormComponent implements OnInit {
     private catalogoService: CatalogoProductoService,
     private route: ActivatedRoute,
     private router: Router
-  ) {}
+  ) {
+    if (this.modalRef) effect(() => { if (!this.contextoModal || this.tenant.contextoVerificado() !== this.contextoModal) this.modalRef?.close(false); });
+  }
 
   get variantes(): FormArray { return this.form.controls.variantes; }
   get stockTotal(): number { return this.variantes.getRawValue().reduce((total, variante) => total + Number(variante.cantidad ?? 0), 0); }
   get umbralTotal(): number { return this.variantes.getRawValue().reduce((total, variante) => total + Number(variante.umbralStockBajo ?? 0), 0); }
 
   ngOnInit(): void {
+    if (this.modalRef && (!this.contextoModal || !this.permisosRuntime.puede('Productos', this.modalData?.id ? 'Editar' : 'Crear'))) { this.modalRef.close(false); return; }
     this.loading.set(true);
     forkJoin({
       categorias: this.categoriaService.getActivas(),
@@ -111,14 +126,14 @@ export class ProductoFormComponent implements OnInit {
       tallas: this.catalogoService.getActivos('Talla'),
       marcas: this.catalogoService.getActivos('Marca'),
       modelos: this.catalogoService.getAll('Modelo')
-    }).subscribe({
+    }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res) => {
         this.categorias.set(res.categorias.data);
         this.colores.set(res.colores.data);
         this.tallas.set(res.tallas.data);
         this.marcas.set(res.marcas.data);
         this.modelosTodos.set(res.modelos.data.filter(modelo => modelo.activo));
-        const idParam = this.route.snapshot.paramMap.get('id');
+        const idParam = this.modalRef ? this.modalData?.id : this.route.snapshot.paramMap.get('id');
         if (idParam) {
           this.isEdit.set(true);
           this.productoId = Number(idParam);
@@ -280,7 +295,7 @@ export class ProductoFormComponent implements OnInit {
   }
 
   private cargarProducto(id: number): void {
-    this.productoService.getById(id).subscribe({
+    this.productoService.getById(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: (res) => {
         const p = res.data;
         const marcaId = p.marcaId ?? null;
@@ -380,7 +395,7 @@ export class ProductoFormComponent implements OnInit {
       return;
     }
     this.mensajeAlmacen.set('Cargando almacenes activos…');
-    this.almacenService.getActivos().subscribe({
+    this.almacenService.getActivos().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: res => {
         const almacenes = res.data.filter(a => a.activo && (a.tipo === 'Tienda' || a.tipo === 'Bodega'));
         this.almacenesIniciales.set(almacenes);
@@ -390,7 +405,8 @@ export class ProductoFormComponent implements OnInit {
     });
   }
 
-  submit(): void {
+  async submit(): Promise<void> {
+    if (this.saving() || this.loading()) return;
     if (this.form.invalid || this.variantes.length === 0) {
       this.form.markAllAsTouched();
       this.errorMessage.set('Completa los datos obligatorios y agrega al menos una variante física.');
@@ -484,17 +500,25 @@ export class ProductoFormComponent implements OnInit {
       imagenPrincipalId: imagenPrincipal?.id ?? null
     };
 
+    const contexto = this.tenant.contextoVerificado();
+    const confirmado = await this.alerts.confirmar({ titulo: this.isEdit() ? 'Confirmar actualización' : 'Confirmar creación', mensaje: '¿Deseas guardar el producto y sus variantes?', confirmarTexto: 'Guardar' }).catch(() => false);
+    if (!confirmado || this.destroyRef.destroyed || !contexto || contexto !== this.tenant.contextoVerificado() || !this.permisosRuntime.puede('Productos', this.isEdit() ? 'Editar' : 'Crear')) { this.saving.set(false); return; }
     const request$ = this.isEdit() ? this.productoService.update(this.productoId!, value) : this.productoService.create(value);
-    request$.subscribe({
+    request$.pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.saving.set(false);
-        this.router.navigate(['/productos']);
+        if (this.modalRef) this.modalRef.close(true);
+        else void this.router.navigate(['/productos']);
       },
       error: (err) => {
         this.saving.set(false);
         this.errorMessage.set(err.error?.message ?? 'No se pudo guardar el producto y sus variantes.');
       }
     });
+  }
+
+  ngOnDestroy(): void {
+    this.imagenes().forEach(img => { if (img.archivo) URL.revokeObjectURL(img.url); });
   }
 
   private normalizarId(valor: unknown): number | null {

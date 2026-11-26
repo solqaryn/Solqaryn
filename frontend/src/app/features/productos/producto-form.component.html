@@ -1,3 +1,5 @@
+<div [class.app-dialog-layout]="!!modalRef">
+@if (modalRef) { <h2 mat-dialog-title id="producto-form-title">{{ isEdit() ? 'Editar producto' : 'Nuevo producto' }}</h2> } @else {
 <div class="header-row">
   <a routerLink="/productos" mat-icon-button aria-label="Volver a productos" title="Volver a productos"><mat-icon>arrow_back</mat-icon></a>
   <div class="header-copy">
@@ -5,13 +7,15 @@
     <p class="page-subtitle">Configura cada combinación física de Marca, Modelo, Color y Talla. El inventario se controla por variante exacta.</p>
   </div>
 </div>
+}
+<div [class.app-dialog-layout__body]="!!modalRef">
 @if (isEdit() && auditoria(); as a) {
   <p class="audit-info">Registrado por <strong>{{ a.creadoPor || '—' }}</strong>@if (a.actualizadoPor) { <span>· Última actualización por <strong>{{ a.actualizadoPor }}</strong></span> }</p>
 }
 @if (loading()) {
   <div class="loading" aria-live="polite"><mat-spinner></mat-spinner></div>
 } @else {
-<form class="card form" [formGroup]="form" (ngSubmit)="submit()" aria-labelledby="producto-form-title">
+<form id="producto-form-institucional" class="card form" [formGroup]="form" (ngSubmit)="submit()" aria-labelledby="producto-form-title">
   <section class="gallery-section" aria-labelledby="producto-fotos-title">
     <div class="gallery-header"><div><h2 id="producto-fotos-title">Fotos generales del producto</h2><p>Estas imágenes funcionan como galería y respaldo cuando una variante no tenga fotografías propias.</p></div><span class="counter">{{ imagenes().length }}/{{ maxImagenes }} fotos</span></div>
     <div class="gallery-grid">
@@ -68,7 +72,7 @@
 
   <section class="variants-section" aria-labelledby="producto-variantes-title">
     <div class="variants-heading"><div><h2 id="producto-variantes-title">Variantes y existencias</h2>@if (isEdit()) { <p>La identidad exacta es Producto + Marca + Modelo + Color + Talla. Usa el mantenimiento especializado para editar o ajustar stock.</p> } @else { <p>Agrega una fila por cada combinación física existente. No es obligatorio utilizar dimensiones que no apliquen al producto.</p> }</div>
-      @if (isEdit() && productoId) { <a mat-stroked-button color="primary" [routerLink]="['/productos', productoId, 'variantes']"><mat-icon>tune</mat-icon>Administrar variantes</a> } @else { <button mat-stroked-button color="primary" type="button" (click)="agregarVariante()"><mat-icon>add</mat-icon>Agregar variante</button> }
+      @if (isEdit() && productoId && !modalRef) { <a mat-stroked-button color="primary" [routerLink]="['/productos', productoId, 'variantes']"><mat-icon>tune</mat-icon>Administrar variantes</a> } @else if (!isEdit()) { <button mat-stroked-button color="primary" type="button" (click)="agregarVariante()"><mat-icon>add</mat-icon>Agregar variante</button> }
     </div>
     <div class="stock-summary" aria-live="polite"><div><span>Variantes físicas</span><strong>{{ variantes.length }}</strong></div><div><span>Stock total calculado</span><strong>{{ stockTotal }} unidades</strong></div><div><span>Umbral consolidado</span><strong>{{ umbralTotal }} unidades</strong></div></div>
     @if (!isEdit() && stockTotal > 0) {
@@ -127,6 +131,16 @@
     @if (!isEdit()) { <button class="add-color-bottom" mat-stroked-button color="primary" type="button" (click)="agregarVariante()"><mat-icon>add_circle</mat-icon>Agregar variante</button> }
   </section>
   @if (errorMessage()) { <p class="message error" role="alert">{{ errorMessage() }}</p> }
+  @if (!modalRef) {
   <div class="form-actions"><a routerLink="/productos" mat-button type="button">Cancelar</a><button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving() || variantes.length === 0">@if (saving()) { <mat-spinner diameter="20"></mat-spinner><span>Guardando producto y variantes...</span> } @else { <ng-container><mat-icon>save</mat-icon><span>Guardar producto</span></ng-container> }</button></div>
+  }
 </form>
 }
+</div>
+@if (modalRef) {
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" [disabled]="saving()" (click)="cancelarModal()">Cancelar</button>
+    <button mat-flat-button color="primary" type="submit" form="producto-form-institucional" [disabled]="form.invalid || saving() || loading() || variantes.length === 0">{{ saving() ? 'Guardando…' : 'Guardar producto' }}</button>
+  </mat-dialog-actions>
+}
+</div>

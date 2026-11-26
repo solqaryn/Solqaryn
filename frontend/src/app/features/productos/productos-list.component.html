@@ -4,10 +4,10 @@
     <p class="page-subtitle">Consulta existencias, clasificación, precios y estado del inventario.</p>
   </div>
   @if (puedeCrear()) {
-    <a routerLink="/productos/nuevo" mat-flat-button color="primary">
+    <button type="button" (click)="abrirProducto('crear')" mat-flat-button color="primary">
       <mat-icon>add</mat-icon>
       <span>Nuevo producto</span>
-    </a>
+    </button>
   }
 </div>
 
@@ -149,7 +149,7 @@
               <td class="status-cell">
                 <div class="status-group">
                   @if (puedeCambiarEstado(p)) {
-                    <mat-slide-toggle class="status-toggle" [checked]="p.activo" (change)="cambiarEstado(p)" [aria-label]="(p.activo ? 'Desactivar ' : 'Activar ') + p.nombre"></mat-slide-toggle>
+                    <mat-slide-toggle class="status-toggle" [checked]="p.activo" [disabled]="cambiandoEstado()" (change)="cambiarEstado(p, $event)" [aria-label]="(p.activo ? 'Desactivar ' : 'Activar ') + p.nombre"></mat-slide-toggle>
                   } @else {
                     <span class="badge" [class.success]="p.activo" [class.muted]="!p.activo">{{ p.activo ? 'Activo' : 'Inactivo' }}</span>
                   }
@@ -160,9 +160,9 @@
               </td>
               <td class="actions">
                 <div class="actions-group">
-                  <a class="action-view" [routerLink]="['/productos', p.id]" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver ' + p.nombre"><mat-icon>visibility</mat-icon></a>
+                  <button type="button" class="action-view"  (click)="abrirProducto('ver', p.id)" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver ' + p.nombre"><mat-icon>visibility</mat-icon></button>
                   @if (puedeEditar()) {
-                    <a class="action-edit" [routerLink]="['/productos', p.id, 'editar']" mat-icon-button title="Editar" [attr.aria-label]="'Editar ' + p.nombre"><mat-icon>edit</mat-icon></a>
+                    <button type="button" class="action-edit"  (click)="abrirProducto('editar', p.id)" mat-icon-button title="Editar" [attr.aria-label]="'Editar ' + p.nombre"><mat-icon>edit</mat-icon></button>
                   }
                   @if (puedeEliminar()) {
                     <button class="action-delete" mat-icon-button title="Eliminar lógicamente" [attr.aria-label]="'Eliminar ' + p.nombre" (click)="eliminar(p)"><mat-icon>delete</mat-icon></button>
@@ -200,7 +200,7 @@
               <span class="producto-card-sub">{{ p.categoriaNombre || 'Sin categoría' }}</span>
             </div>
             @if (puedeCambiarEstado(p)) {
-              <mat-slide-toggle class="status-toggle" [checked]="p.activo" (change)="cambiarEstado(p)" [aria-label]="(p.activo ? 'Desactivar ' : 'Activar ') + p.nombre"></mat-slide-toggle>
+              <mat-slide-toggle class="status-toggle" [checked]="p.activo" [disabled]="cambiandoEstado()" (change)="cambiarEstado(p, $event)" [aria-label]="(p.activo ? 'Desactivar ' : 'Activar ') + p.nombre"></mat-slide-toggle>
             }
           </div>
           <div class="item-card-meta">
@@ -212,9 +212,9 @@
             }
           </div>
           <div class="item-card-actions">
-            <a [routerLink]="['/productos', p.id]" mat-button><mat-icon>visibility</mat-icon><span>Ver</span></a>
+            <button type="button"  (click)="abrirProducto('ver', p.id)" mat-button><mat-icon>visibility</mat-icon><span>Ver</span></button>
             @if (puedeEditar()) {
-              <a [routerLink]="['/productos', p.id, 'editar']" mat-button><mat-icon>edit</mat-icon><span>Editar</span></a>
+              <button type="button"  (click)="abrirProducto('editar', p.id)" mat-button><mat-icon>edit</mat-icon><span>Editar</span></button>
             }
             @if (puedeEliminar()) {
               <button class="action-delete" mat-button (click)="eliminar(p)"><mat-icon>delete</mat-icon><span>Eliminar</span></button>

@@ -1,8 +1,11 @@
+<div [class.app-dialog-layout]="!!modalRef">
+@if (modalRef) { <h2 mat-dialog-title>Detalle de producto</h2> } @else {
 <div class="header-row">
   <a routerLink="/productos" mat-icon-button title="Volver" aria-label="Volver a productos"><mat-icon>arrow_back</mat-icon></a>
   <h1 class="page-title">Detalle de producto</h1>
 </div>
-
+}
+<div [class.app-dialog-layout__body]="!!modalRef">
 @if (loading()) {
   <div class="loading" aria-live="polite"><mat-spinner></mat-spinner></div>
 } @else if (notFound()) {
@@ -96,6 +99,9 @@
   </article>
 
   @if (imagenAmpliada(); as img) {
-    <div class="lightbox" role="dialog" aria-modal="true" [attr.aria-label]="'Imagen ampliada de ' + p.nombre" (click)="cerrarAmpliada()"><div class="lightbox-media" (click)="$event.stopPropagation()"><app-producto-imagen variant="lightbox" [src]="img.url" [alt]="'Imagen ampliada de ' + p.nombre" [fallbackLabel]="'No se pudo cargar la imagen ampliada de ' + p.nombre" loading="eager" [priority]="true"></app-producto-imagen></div><button mat-icon-button class="cerrar" type="button" aria-label="Cerrar imagen ampliada" (click)="$event.stopPropagation(); cerrarAmpliada()"><mat-icon>close</mat-icon></button></div>
+    <div class="lightbox" role="dialog" aria-modal="true" [attr.aria-label]="'Imagen ampliada de ' + p.nombre"><div class="lightbox-media"><app-producto-imagen variant="lightbox" [src]="img.url" [alt]="'Imagen ampliada de ' + p.nombre" [fallbackLabel]="'No se pudo cargar la imagen ampliada de ' + p.nombre" loading="eager" [priority]="true"></app-producto-imagen></div><button mat-icon-button class="cerrar" type="button" aria-label="Cerrar imagen ampliada" (click)="$event.stopPropagation(); cerrarAmpliada()"><mat-icon>close</mat-icon></button></div>
   }
 }
+</div>
+@if (modalRef) { <mat-dialog-actions align="end"><button mat-button type="button" mat-dialog-close>Cerrar</button></mat-dialog-actions> }
+</div>
