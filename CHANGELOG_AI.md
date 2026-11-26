@@ -1,3 +1,6 @@
+## 2026-11-26 — QA-FN-05: identidad del certificador físico
+- Corregidos tres términos de los mensajes/comentarios de inventario del certificador; el control de identidad los interpretaba como denominación histórica. No se cambia ninguna comprobación SQL, migración, permiso ni política de seguridad.
+
 ## 2026-11-26 — QA-FN-05: ensayo de migración y certificado físico exacto
 
 - Se incorpora ensayo causal sobre respaldo cifrado del QA real, restaurado sólo en MySQL local desechable: genera SQL EF, aplica a copia, compara huella de Usuarios/Roles/Permisos/grants/membresías y conteos completos de todas las tablas sin mostrar datos. Ningún paso modifica la fuente QA.

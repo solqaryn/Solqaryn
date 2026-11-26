@@ -101,11 +101,11 @@ for table,col,ix in natural:
     require(scalar(f"SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='{table}' AND COLUMN_NAME='EmpresaUnicidad' AND EXTRA LIKE '%STORED GENERATED%'") == "1", "Generated tenant key missing")
     index(table,ix,["EmpresaUnicidad",col],True)
 
-# Preserve the previous gallery and typed-inventory gates exactly.
+# Preserve the previous gallery and typed-inventario gates exactly.
 require(query("SELECT CONCAT(COLUMN_NAME,':',COLUMN_TYPE,':',IS_NULLABLE) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='CategoriasGalerias' ORDER BY COLUMN_NAME") == ["CategoriaId:int:NO","EmpresaId:int:NO","ImagenesJson:longtext:NO","Version:varchar(32):NO"], "Gallery columns mismatch")
 require(query("SELECT CONCAT(INDEX_NAME,':',SEQ_IN_INDEX,':',COLUMN_NAME,':',NON_UNIQUE) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='CategoriasGalerias' ORDER BY INDEX_NAME,SEQ_IN_INDEX") == ["IX_CategoriasGalerias_CategoriaId:1:CategoriaId:1","PRIMARY:1:EmpresaId:0","PRIMARY:2:CategoriaId:0"], "Gallery indexes mismatch")
 require(query("SELECT CONCAT(k.COLUMN_NAME,':',k.REFERENCED_TABLE_NAME,':',k.REFERENCED_COLUMN_NAME,':',r.DELETE_RULE) FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE k JOIN INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS r ON r.CONSTRAINT_SCHEMA=k.CONSTRAINT_SCHEMA AND r.CONSTRAINT_NAME=k.CONSTRAINT_NAME AND r.TABLE_NAME=k.TABLE_NAME WHERE k.TABLE_SCHEMA=DATABASE() AND k.TABLE_NAME='CategoriasGalerias' ORDER BY k.COLUMN_NAME") == ["CategoriaId:Categorias:Id:RESTRICT","EmpresaId:Empresas:Id:RESTRICT"], "Gallery FKs mismatch")
-require(scalar("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_SCHEMA=DATABASE() AND TRIGGER_NAME IN ('TR_MovimientosInventario_N06_OrigenTipado_BI','TR_MovimientosInventario_N06_OrigenTipado_BU')") == "2", "Inventory triggers missing")
-require(scalar("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME='MovimientosInventario' AND CONSTRAINT_TYPE='CHECK' AND CONSTRAINT_NAME='CK_MovimientosInventario_OrigenTipado_Exclusivo_N06'") == "1", "Inventory CHECK missing")
+require(scalar("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_SCHEMA=DATABASE() AND TRIGGER_NAME IN ('TR_MovimientosInventario_N06_OrigenTipado_BI','TR_MovimientosInventario_N06_OrigenTipado_BU')") == "2", "inventario triggers missing")
+require(scalar("SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME='MovimientosInventario' AND CONSTRAINT_TYPE='CHECK' AND CONSTRAINT_NAME='CK_MovimientosInventario_OrigenTipado_Exclusivo_N06'") == "1", "inventario CHECK missing")
 print("QA_COMMERCIAL_SCHEMA_EXACT=PASS tables=27 composite_fks=48 natural_keys=15 baseline_preserved=YES")
 print("QA_DATABASE_WRITES=0")
