@@ -4,14 +4,14 @@
     <p class="page-subtitle">Administra la topología de almacenamiento por sucursal. Existencias y ubicaciones internas se incorporan en las siguientes fases de ERP-N1.</p>
   </div>
   @if (puedeCrear()) {
-    <a routerLink="/almacenes/nuevo" mat-flat-button color="primary">
+    <button type="button" (click)="abrirEditor()" mat-flat-button color="primary">
       <mat-icon>add_business</mat-icon> Nuevo almacén
-    </a>
+    </button>
   }
 </div>
 
 <div class="card">
-  <div class="toolbar" aria-label="Búsqueda y filtros de almacenes">
+  <div class="toolbar app-table-filters" aria-label="Búsqueda y filtros de almacenes">
     <mat-form-field appearance="outline" class="search-field">
       <mat-label>Buscar almacén</mat-label>
       <input
@@ -74,20 +74,21 @@
       </button>
     </div>
   } @else {
-    <div class="results-summary" aria-live="polite">
+    <div class="results-summary app-table-footer" aria-live="polite">
       {{ total() }} almacén{{ total() === 1 ? '' : 'es' }} encontrado{{ total() === 1 ? '' : 's' }}
       @if (totalPaginas() > 1) { · Página {{ pagina }} de {{ totalPaginas() }} }
     </div>
 
-    <table class="table table-desktop">
+    <div class="app-table-shell" role="region" aria-label="Tabla de almacenes" tabindex="0">
+    <table class="app-data-table">
       <thead>
         <tr>
           <th>Código</th>
           <th>Nombre</th>
           <th>Sucursal</th>
           <th>Tipo</th>
-          <th>Estado</th>
-          <th><span class="visually-hidden">Acciones</span></th>
+          <th class="app-col-center">Estado</th>
+          <th class="actions-heading">Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -103,12 +104,12 @@
               <span class="branch-name">{{ a.sucursalNombre }}</span>
             </td>
             <td><span class="type-chip">{{ a.tipo }}</span></td>
-            <td>
+            <td class="app-col-center">
               @if (puedeCambiarEstado(a)) {
                 <mat-slide-toggle
                   [checked]="a.activo"
                   [disabled]="estaOperando(a.id)"
-                  (change)="toggleActivo(a)"
+                  (change)="toggleActivo(a, $event)"
                   [aria-label]="(a.activo ? 'Desactivar ' : 'Activar ') + a.nombre">
                 </mat-slide-toggle>
               } @else {
@@ -120,9 +121,9 @@
             <td class="actions">
               <button type="button" class="action-view" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver ' + a.nombre" [appConsultaRegistro]="{ titulo: 'Almacén: ' + a.nombre, campos: { 'Nombre': a.nombre, 'Código': a.codigo, 'Sucursal': a.sucursalCodigo + ' · ' + a.sucursalNombre, 'Tipo': a.tipo, 'Estado': a.activo ? 'Activo' : 'Inactivo', 'Creado por': a.creadoPorNombreUsuario, 'Actualizado por': a.actualizadoPorNombreUsuario, 'Fecha de creación': a.fechaCreacion, 'Fecha de actualización': a.fechaActualizacion } }"><mat-icon>visibility</mat-icon></button>
               @if (puedeEditar()) {
-                <a [routerLink]="['/almacenes', a.id, 'editar']" mat-icon-button [attr.aria-label]="'Editar ' + a.nombre" title="Editar">
+                <button type="button"  (click)="abrirEditor(a.id)" mat-icon-button [attr.aria-label]="'Editar ' + a.nombre" title="Editar">
                   <mat-icon>edit</mat-icon>
-                </a>
+                </button>
               }
               @if (puedeEliminar()) {
                 <button
@@ -147,50 +148,9 @@
         }
       </tbody>
     </table>
-
-    <div class="cards-mobile">
-      @for (a of almacenes(); track a.id) {
-        <article class="item-card">
-          <div class="item-card-header">
-            <div>
-              <span class="code-chip">{{ a.codigo }}</span>
-              <h2>{{ a.nombre }}</h2>
-            </div>
-            @if (puedeCambiarEstado(a)) {
-              <mat-slide-toggle
-                [checked]="a.activo"
-                [disabled]="estaOperando(a.id)"
-                (change)="toggleActivo(a)"
-                [aria-label]="(a.activo ? 'Desactivar ' : 'Activar ') + a.nombre">
-              </mat-slide-toggle>
-            } @else {
-              <span class="badge" [class.success]="a.activo" [class.muted]="!a.activo">{{ a.activo ? 'Activo' : 'Inactivo' }}</span>
-            }
-          </div>
-
-          <dl class="item-details">
-            <div><dt>Sucursal</dt><dd>{{ a.sucursalCodigo }} · {{ a.sucursalNombre }}</dd></div>
-            <div><dt>Tipo</dt><dd>{{ a.tipo }}</dd></div>
-          </dl>
-
-          @if (puedeEditar() || puedeEliminar()) {
-            <div class="item-card-actions">
-              <button type="button" class="action-view" mat-button title="Ver detalle" [attr.aria-label]="'Ver ' + a.nombre" [appConsultaRegistro]="{ titulo: 'Almacén: ' + a.nombre, campos: { 'Nombre': a.nombre, 'Código': a.codigo, 'Sucursal': a.sucursalCodigo + ' · ' + a.sucursalNombre, 'Tipo': a.tipo, 'Estado': a.activo ? 'Activo' : 'Inactivo', 'Creado por': a.creadoPorNombreUsuario, 'Actualizado por': a.actualizadoPorNombreUsuario, 'Fecha de creación': a.fechaCreacion, 'Fecha de actualización': a.fechaActualizacion } }"><mat-icon>visibility</mat-icon> Ver</button>
-              @if (puedeEditar()) {
-                <a [routerLink]="['/almacenes', a.id, 'editar']" mat-button><mat-icon>edit</mat-icon> Editar</a>
-              }
-              @if (puedeEliminar()) {
-                <button mat-button type="button" [disabled]="estaOperando(a.id)" (click)="eliminar(a)">
-                  <mat-icon>delete</mat-icon> Eliminar
-                </button>
-              }
-            </div>
-          }
-        </article>
-      } @empty {
-        <div class="empty mobile-empty"><mat-icon>warehouse</mat-icon><span>No hay almacenes que coincidan con los filtros.</span></div>
-      }
     </div>
+
+    
 
     <mat-paginator
       [length]="total()"

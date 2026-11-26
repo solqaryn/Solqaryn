@@ -1,3 +1,6 @@
+import { MatDialogModule } from '@angular/material/dialog';
+import { crearEditorInstitucional } from '../../shared/modal-institucional/acciones-institucionales';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -23,7 +26,7 @@ interface SucursalAlmacenOpcion {
 @Component({
   selector: 'app-almacen-form',
   standalone: true,
-  imports: [
+  imports: [MatDialogModule, 
     ReactiveFormsModule,
     RouterLink,
     MatButtonModule,
@@ -38,6 +41,9 @@ interface SucursalAlmacenOpcion {
   styleUrl: './almacen-form.component.scss'
 })
 export class AlmacenFormComponent implements OnInit {
+  readonly editor = crearEditorInstitucional('Almacenes');
+  cancelarModal(): void { if (!this.saving()) this.editor.cerrar(false); }
+
   private readonly fb = inject(FormBuilder);
   readonly isEdit = signal(false);
   readonly loading = signal(true);
@@ -63,7 +69,8 @@ export class AlmacenFormComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const idParam = this.route.snapshot.paramMap.get('id');
+    const idParam = this.editor.ref ? this.editor.id : this.route.snapshot.paramMap.get('id');
+    if (this.editor.ref && !this.editor.valido(idParam ? 'Editar' : 'Crear')) { this.editor.cerrar(false); return; }
     if (!idParam) {
       this.cargarNuevo();
       return;
@@ -82,9 +89,9 @@ export class AlmacenFormComponent implements OnInit {
     this.cargarEdicion(id);
   }
 
-  submit(): void {
+  async submit(): Promise<void> {
     this.form.markAllAsTouched();
-    if (this.form.invalid || this.saving() || this.loading()) return;
+    if (this.form.invalid || this.form.disabled || this.saving() || this.loading()) return;
 
     this.saving.set(true);
     this.errorMessage.set(null);
@@ -97,14 +104,16 @@ export class AlmacenFormComponent implements OnInit {
       tipo: raw.tipo?.trim() ?? ''
     };
 
+    const accion = this.isEdit() ? 'Editar' : 'Crear';
+    if (!await this.editor.confirmar(accion, { titulo: 'Confirmar ' + (this.isEdit() ? 'actualización' : 'creación'), mensaje: '¿Deseas guardar los datos del registro?', confirmarTexto: 'Guardar' })) { this.saving.set(false); return; }
     const request$ = this.isEdit()
       ? this.almacenService.update(this.almacenId!, value)
       : this.almacenService.create(value);
 
-    request$.subscribe({
+    request$.pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
       next: () => {
         this.saving.set(false);
-        this.router.navigate(['/almacenes']);
+        if (this.editor.ref) this.editor.cerrar(true); else void this.router.navigate(['/almacenes']);
       },
       error: (err) => {
         this.saving.set(false);
@@ -121,7 +130,7 @@ export class AlmacenFormComponent implements OnInit {
     forkJoin({
       sucursales: this.sucursalService.getActivas(),
       tipos: this.almacenService.getTipos()
-    }).subscribe({
+    }).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
       next: ({ sucursales, tipos }) => {
         this.sucursales.set(sucursales.data.map(s => ({ id: s.id, codigo: s.codigo, nombre: s.nombre, activa: true })));
         this.tipos.set(tipos.data);
@@ -144,7 +153,7 @@ export class AlmacenFormComponent implements OnInit {
       almacen: this.almacenService.getById(id),
       sucursales: this.sucursalService.getActivas(),
       tipos: this.almacenService.getTipos()
-    }).subscribe({
+    }).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
       next: ({ almacen, sucursales, tipos }) => {
         const actual = almacen.data;
         const opciones: SucursalAlmacenOpcion[] = sucursales.data.map(s => ({

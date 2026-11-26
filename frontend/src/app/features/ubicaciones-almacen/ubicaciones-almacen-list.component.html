@@ -4,14 +4,14 @@
     <p class="page-subtitle">Modela pasillos, racks, estantes, secciones y bins dentro de cada almacén. Las existencias se incorporan en ERP-N1.4.</p>
   </div>
   @if (puedeCrear()) {
-    <a routerLink="/ubicaciones-almacen/nueva" mat-flat-button color="primary">
+    <button type="button" (click)="abrirEditor()" mat-flat-button color="primary">
       <mat-icon>add_location_alt</mat-icon> Nueva ubicación
-    </a>
+    </button>
   }
 </div>
 
 <div class="card">
-  <div class="toolbar" aria-label="Búsqueda y filtros de ubicaciones internas">
+  <div class="toolbar app-table-filters" aria-label="Búsqueda y filtros de ubicaciones internas">
     <mat-form-field appearance="outline" class="search-field">
       <mat-label>Buscar ubicación</mat-label>
       <input
@@ -84,12 +84,13 @@
       <button mat-stroked-button type="button" (click)="cargar()"><mat-icon>refresh</mat-icon> Reintentar</button>
     </div>
   } @else {
-    <div class="results-summary" aria-live="polite">
+    <div class="results-summary app-table-footer" aria-live="polite">
       {{ total() }} ubicación{{ total() === 1 ? '' : 'es' }} encontrada{{ total() === 1 ? '' : 's' }}
       @if (totalPaginas() > 1) { · Página {{ pagina }} de {{ totalPaginas() }} }
     </div>
 
-    <table class="table table-desktop">
+    <div class="app-table-shell" role="region" aria-label="Tabla de ubicaciones-almacen" tabindex="0">
+    <table class="app-data-table">
       <thead>
         <tr>
           <th>Código</th>
@@ -97,8 +98,8 @@
           <th>Almacén</th>
           <th>Padre</th>
           <th>Tipo</th>
-          <th>Estado</th>
-          <th><span class="visually-hidden">Acciones</span></th>
+          <th class="app-col-center">Estado</th>
+          <th class="actions-heading">Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -121,12 +122,12 @@
               }
             </td>
             <td><span class="type-chip">{{ u.tipo }}</span></td>
-            <td>
+            <td class="app-col-center">
               @if (puedeCambiarEstado(u)) {
                 <mat-slide-toggle
                   [checked]="u.activa"
                   [disabled]="estaOperando(u.id)"
-                  (change)="toggleActiva(u)"
+                  (change)="toggleActiva(u, $event)"
                   [aria-label]="(u.activa ? 'Desactivar ' : 'Activar ') + u.nombre">
                 </mat-slide-toggle>
               } @else {
@@ -136,7 +137,7 @@
             <td class="actions">
               <button type="button" class="action-view" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver ' + u.nombre" [appConsultaRegistro]="{ titulo: 'Ubicación: ' + u.nombre, campos: { 'Nombre': u.nombre, 'Código': u.codigo, 'Almacén': u.almacenCodigo + ' · ' + u.almacenNombre, 'Ubicación padre': u.ubicacionPadreNombre || 'Raíz', 'Tipo': u.tipo, 'Estado': u.activa ? 'Activa' : 'Inactiva', 'Creado por': u.creadoPorNombreUsuario, 'Actualizado por': u.actualizadoPorNombreUsuario, 'Fecha de creación': u.fechaCreacion, 'Fecha de actualización': u.fechaActualizacion } }"><mat-icon>visibility</mat-icon></button>
               @if (puedeEditar()) {
-                <a [routerLink]="['/ubicaciones-almacen', u.id, 'editar']" mat-icon-button [attr.aria-label]="'Editar ' + u.nombre" title="Editar"><mat-icon>edit</mat-icon></a>
+                <button type="button"  (click)="abrirEditor(u.id)" mat-icon-button [attr.aria-label]="'Editar ' + u.nombre" title="Editar"><mat-icon>edit</mat-icon></button>
               }
               @if (puedeEliminar()) {
                 <button mat-icon-button type="button" [disabled]="estaOperando(u.id)" [attr.aria-label]="'Eliminar ' + u.nombre" title="Eliminar" (click)="eliminar(u)"><mat-icon>delete</mat-icon></button>
@@ -148,40 +149,9 @@
         }
       </tbody>
     </table>
-
-    <div class="cards-mobile">
-      @for (u of ubicaciones(); track u.id) {
-        <article class="item-card">
-          <div class="item-card-header">
-            <div>
-              <span class="code-chip">{{ u.codigo }}</span>
-              <h2>{{ u.nombre }}</h2>
-            </div>
-            @if (puedeCambiarEstado(u)) {
-              <mat-slide-toggle [checked]="u.activa" [disabled]="estaOperando(u.id)" (change)="toggleActiva(u)" [aria-label]="(u.activa ? 'Desactivar ' : 'Activar ') + u.nombre"></mat-slide-toggle>
-            } @else {
-              <span class="badge" [class.success]="u.activa" [class.muted]="!u.activa">{{ u.activa ? 'Activa' : 'Inactiva' }}</span>
-            }
-          </div>
-
-          <dl class="item-details">
-            <div><dt>Almacén</dt><dd>{{ u.almacenCodigo }} · {{ u.almacenNombre }}</dd></div>
-            <div><dt>Padre</dt><dd>{{ etiquetaPadre(u) }}</dd></div>
-            <div><dt>Tipo</dt><dd>{{ u.tipo }}</dd></div>
-          </dl>
-
-          @if (puedeEditar() || puedeEliminar()) {
-            <div class="item-card-actions">
-              <button type="button" class="action-view" mat-button title="Ver detalle" [attr.aria-label]="'Ver ' + u.nombre" [appConsultaRegistro]="{ titulo: 'Ubicación: ' + u.nombre, campos: { 'Nombre': u.nombre, 'Código': u.codigo, 'Almacén': u.almacenCodigo + ' · ' + u.almacenNombre, 'Ubicación padre': u.ubicacionPadreNombre || 'Raíz', 'Tipo': u.tipo, 'Estado': u.activa ? 'Activa' : 'Inactiva', 'Creado por': u.creadoPorNombreUsuario, 'Actualizado por': u.actualizadoPorNombreUsuario, 'Fecha de creación': u.fechaCreacion, 'Fecha de actualización': u.fechaActualizacion } }"><mat-icon>visibility</mat-icon> Ver</button>
-              @if (puedeEditar()) { <a [routerLink]="['/ubicaciones-almacen', u.id, 'editar']" mat-button><mat-icon>edit</mat-icon> Editar</a> }
-              @if (puedeEliminar()) { <button mat-button type="button" [disabled]="estaOperando(u.id)" (click)="eliminar(u)"><mat-icon>delete</mat-icon> Eliminar</button> }
-            </div>
-          }
-        </article>
-      } @empty {
-        <div class="empty mobile-empty"><mat-icon>account_tree</mat-icon><span>No hay ubicaciones que coincidan con los filtros.</span></div>
-      }
     </div>
+
+    
 
     <mat-paginator
       [length]="total()"

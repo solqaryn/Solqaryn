@@ -1,3 +1,7 @@
+<div [class.app-dialog-layout]="!!editor.ref">
+@if (editor.ref) { <h2 mat-dialog-title>{{ isEdit() ? 'Editar ubicación' : 'Nueva ubicación' }}</h2> }
+<div [class.app-dialog-layout__body]="!!editor.ref">
+@if (!editor.ref) {
 <div class="header-row">
   <a routerLink="/ubicaciones-almacen" mat-icon-button aria-label="Volver a ubicaciones internas"><mat-icon>arrow_back</mat-icon></a>
   <div>
@@ -5,8 +9,9 @@
     <p class="page-subtitle">Define la topología interna del almacén. El stock y las existencias se administrarán en ERP-N1.4.</p>
   </div>
 </div>
+}
 
-<form class="card form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+<form id="ubicacion-almacen-form-institucional" class="card form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
   @if (loading()) {
     <div class="loading" role="status" aria-live="polite">
       <mat-spinner diameter="42"></mat-spinner>
@@ -89,12 +94,22 @@
       </div>
     }
 
-    <div class="form-actions">
+    @if (!editor.ref) {
+<div class="form-actions">
       <a routerLink="/ubicaciones-almacen" mat-button type="button">Cancelar</a>
-      <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving() || loading()">
+      <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || form.disabled || saving() || loading()">
         @if (saving()) { <mat-spinner diameter="20"></mat-spinner> }
         <span>{{ saving() ? 'Guardando…' : 'Guardar ubicación' }}</span>
       </button>
     </div>
+}
   }
 </form>
+</div>
+@if (editor.ref) {
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" [disabled]="saving()" (click)="cancelarModal()">Cancelar</button>
+    <button mat-flat-button color="primary" type="submit" form="ubicacion-almacen-form-institucional" [disabled]="form.invalid || form.disabled || loading() || saving()">{{ saving() ? 'Guardando…' : 'Guardar' }}</button>
+  </mat-dialog-actions>
+}
+</div>

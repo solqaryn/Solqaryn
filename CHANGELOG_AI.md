@@ -1,3 +1,7 @@
+## 2026-11-25 — QA: almacenes y ubicaciones internas migrados
+
+- Apertura de formularios en modal L con permisos, confirmación de altas/ediciones/estado/eliminación; scroll propio y tabla institucional única, conservando filtros, paginación, relaciones padre y sucursal. Sin cambios de inventario, datos o API. CI y revisión visual pendientes.
+
 ## 2026-11-25 — QA: corregir compilación de duplicación de descuentos e impuestos
 
 - Las entradas de texto de duplicación pasan por el controlador institucional y revalidan permiso/contexto, incluyendo la segunda etapa de código único de impuestos. Corrige TS2339 detectado por CI del SHA 42ccc639.

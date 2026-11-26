@@ -1,8 +1,9 @@
+import { crearAccionesInstitucionales } from '../../shared/modal-institucional/acciones-institucionales';
+import { firstValueFrom } from 'rxjs';
 import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 
 import { Component, OnDestroy, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -10,7 +11,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSlideToggleModule, MatSlideToggleChange } from '@angular/material/slide-toggle';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { forkJoin, Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
@@ -18,7 +19,6 @@ import { Almacen, TipoAlmacenOpcion } from '../../core/models/almacen.model';
 import { Sucursal } from '../../core/models/sucursal.model';
 import { AlmacenService } from '../../services/almacen.service';
 import { SucursalService } from '../../services/sucursal.service';
-import { AppAlertService } from '../../shared/alerts/app-alert.service';
 
 type EstadoAlmacenFiltro = 'todos' | 'activos' | 'inactivos';
 
@@ -27,7 +27,6 @@ type EstadoAlmacenFiltro = 'todos' | 'activos' | 'inactivos';
   standalone: true,
   imports: [ConsultaRegistroDirective,
     FormsModule,
-    RouterLink,
     MatButtonModule,
     MatFormFieldModule,
     MatIconModule,
@@ -42,6 +41,12 @@ type EstadoAlmacenFiltro = 'todos' | 'activos' | 'inactivos';
   styleUrl: './almacenes-list.component.scss'
 })
 export class AlmacenesListComponent implements OnInit, OnDestroy {
+  private readonly acciones = crearAccionesInstitucionales('Almacenes');
+  readonly cambiandoEstado = signal(false);
+  async abrirEditor(id?: number): Promise<void> {
+    if (await this.acciones.abrir(() => import('./almacen-form.component').then(m => m.AlmacenFormComponent), 'l', id ? 'Editar' : 'Crear', id)) this.cargar();
+  }
+
   readonly almacenes = signal<Almacen[]>([]);
   readonly sucursales = signal<Sucursal[]>([]);
   readonly tipos = signal<TipoAlmacenOpcion[]>([]);
@@ -72,8 +77,7 @@ export class AlmacenesListComponent implements OnInit, OnDestroy {
     private almacenService: AlmacenService,
     private sucursalService: SucursalService,
     private permisosRuntime: PermisosRuntimeService,
-    private snackBar: MatSnackBar,
-    private alerts: AppAlertService
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -183,30 +187,25 @@ export class AlmacenesListComponent implements OnInit, OnDestroy {
     return this.operandoIds().has(id);
   }
 
-  toggleActivo(almacen: Almacen): void {
-    if (!this.puedeCambiarEstado(almacen)) return;
-
+  async toggleActivo(almacen: Almacen, evento: MatSlideToggleChange): Promise<void> {
+    evento.source.checked = almacen.activo;
+    if (!this.puedeCambiarEstado(almacen) || this.cambiandoEstado()) return;
+    this.cambiandoEstado.set(true);
     this.marcarOperacion(almacen.id, true);
-    const operacion = almacen.activo
-      ? this.almacenService.desactivar(almacen.id)
-      : this.almacenService.activar(almacen.id);
-
-    operacion.subscribe({
-      next: (res) => {
-        this.almacenes.update(items => items.map(item => item.id === almacen.id ? res.data : item));
-        this.marcarOperacion(almacen.id, false);
-      },
-      error: (err) => {
-        this.marcarOperacion(almacen.id, false);
-        this.snackBar.open(err.error?.message ?? 'No se pudo cambiar el estado del almacén.', 'Cerrar', { duration: 5000 });
-      }
-    });
+    try {
+      const accion = almacen.activo ? 'Desactivar' : 'Activar';
+      if (!await this.acciones.confirmar(accion, { titulo: accion + ' registro', mensaje: '¿Deseas ' + accion.toLowerCase() + ' «' + almacen.nombre + '»?', confirmarTexto: accion })) return;
+      const res = await firstValueFrom(almacen.activo ? this.almacenService.desactivar(almacen.id) : this.almacenService.activar(almacen.id));
+      this.almacenes.update(items => items.map(item => item.id === almacen.id ? res.data : item));
+      
+    } catch { this.snackBar.open('No se pudo cambiar el estado.', 'Cerrar', { duration: 5000 }); }
+    finally { this.marcarOperacion(almacen.id, false); this.cambiandoEstado.set(false); }
   }
 
   async eliminar(almacen: Almacen): Promise<void> {
     if (this.estaOperando(almacen.id)) return;
 
-    const confirmado = await this.alerts.confirmar({
+    const confirmado = await this.acciones.confirmar('EliminarLogico', {
       titulo: 'Eliminar almacén',
       mensaje: `Se ocultará “${almacen.codigo} · ${almacen.nombre}” sin borrar su historial.`,
       tipo: 'peligro',

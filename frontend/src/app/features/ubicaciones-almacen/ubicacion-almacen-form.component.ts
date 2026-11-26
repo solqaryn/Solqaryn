@@ -1,3 +1,6 @@
+import { MatDialogModule } from '@angular/material/dialog';
+import { crearEditorInstitucional } from '../../shared/modal-institucional/acciones-institucionales';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -30,7 +33,7 @@ interface PadreOpcion {
 @Component({
   selector: 'app-ubicacion-almacen-form',
   standalone: true,
-  imports: [
+  imports: [MatDialogModule, 
     ReactiveFormsModule,
     RouterLink,
     MatButtonModule,
@@ -45,6 +48,9 @@ interface PadreOpcion {
   styleUrl: './ubicacion-almacen-form.component.scss'
 })
 export class UbicacionAlmacenFormComponent implements OnInit {
+  readonly editor = crearEditorInstitucional('UbicacionesAlmacen');
+  cancelarModal(): void { if (!this.saving()) this.editor.cerrar(false); }
+
   private readonly fb = inject(FormBuilder);
   readonly isEdit = signal(false);
   readonly loading = signal(true);
@@ -74,7 +80,8 @@ export class UbicacionAlmacenFormComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    const idParam = this.route.snapshot.paramMap.get('id');
+    const idParam = this.editor.ref ? this.editor.id : this.route.snapshot.paramMap.get('id');
+    if (this.editor.ref && !this.editor.valido(idParam ? 'Editar' : 'Crear')) { this.editor.cerrar(false); return; }
     if (!idParam) {
       this.cargarNuevo();
       return;
@@ -100,9 +107,9 @@ export class UbicacionAlmacenFormComponent implements OnInit {
     if (almacenId > 0) this.cargarPadres(almacenId);
   }
 
-  submit(): void {
+  async submit(): Promise<void> {
     this.form.markAllAsTouched();
-    if (this.form.invalid || this.saving() || this.loading()) return;
+    if (this.form.invalid || this.form.disabled || this.saving() || this.loading()) return;
 
     this.saving.set(true);
     this.errorMessage.set(null);
@@ -116,14 +123,16 @@ export class UbicacionAlmacenFormComponent implements OnInit {
       tipo: raw.tipo?.trim() ?? ''
     };
 
+    const accion = this.isEdit() ? 'Editar' : 'Crear';
+    if (!await this.editor.confirmar(accion, { titulo: 'Confirmar ' + (this.isEdit() ? 'actualización' : 'creación'), mensaje: '¿Deseas guardar los datos del registro?', confirmarTexto: 'Guardar' })) { this.saving.set(false); return; }
     const request$ = this.isEdit()
       ? this.ubicacionService.update(this.ubicacionId!, value)
       : this.ubicacionService.create(value);
 
-    request$.subscribe({
+    request$.pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
       next: () => {
         this.saving.set(false);
-        this.router.navigate(['/ubicaciones-almacen']);
+        if (this.editor.ref) this.editor.cerrar(true); else void this.router.navigate(['/ubicaciones-almacen']);
       },
       error: (err) => {
         this.saving.set(false);
@@ -139,7 +148,7 @@ export class UbicacionAlmacenFormComponent implements OnInit {
     forkJoin({
       almacenes: this.almacenService.getActivos(),
       tipos: this.ubicacionService.getTipos()
-    }).subscribe({
+    }).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
       next: ({ almacenes, tipos }) => {
         this.almacenes.set(almacenes.data.map(a => ({ id: a.id, codigo: a.codigo, nombre: a.nombre, activo: true })));
         this.tipos.set(tipos.data);
@@ -161,7 +170,7 @@ export class UbicacionAlmacenFormComponent implements OnInit {
       ubicacion: this.ubicacionService.getById(id),
       almacenes: this.almacenService.getActivos(),
       tipos: this.ubicacionService.getTipos()
-    }).subscribe({
+    }).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
       next: ({ ubicacion, almacenes, tipos }) => {
         const actual = ubicacion.data;
         this.ubicacionActual = actual;
@@ -192,7 +201,7 @@ export class UbicacionAlmacenFormComponent implements OnInit {
 
   private cargarPadres(almacenId: number, actual: UbicacionAlmacen | null = this.ubicacionActual): void {
     this.loadingPadres.set(true);
-    this.ubicacionService.getActivas(almacenId).subscribe({
+    this.ubicacionService.getActivas(almacenId).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
       next: (res) => {
         const opciones: PadreOpcion[] = res.data
           .filter(p => p.id !== this.ubicacionId)
