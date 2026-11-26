@@ -169,7 +169,9 @@ jobs:
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261029150000_EnforceTenantRoleNameUniqueIndex';")" = 1
           # Verificar la nueva migración Oracle por ID exacto además del total, sin aflojar historia.
           test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261117215700_V19WhatsAppE164LiteralPlus';")" = 1
-          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 18
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261126165100_V44CaseFileOwnershipStore';")" = 1
+          test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME IN ('V5CaseFileOwnerships','V5CaseFileVersions');")" = 2
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory;")" = 19
           test "$(q "SELECT COUNT(*) FROM (
             SELECT INDEX_NAME FROM INFORMATION_SCHEMA.STATISTICS
              WHERE TABLE_SCHEMA=DATABASE()
@@ -182,6 +184,7 @@ jobs:
 
           table_count_after="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME <> '__EFMigrationsHistory';")"
           test "$table_count_after" -ge 136
+          test "$table_count_after" = 141
           test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('Empresas','Productos','ConfigEmpresas','AutomatizacionConfiguraciones','SuscripcionSaaSIdempotencia');")" = 5
           echo "RECOVERY_TABLES_AFTER=$table_count_after"
           echo 'ORACLE_BASELINE_RECOVERY=PASS'
