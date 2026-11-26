@@ -1,3 +1,8 @@
+## 2026-11-25 | DEV06 | C01-04.M03.06 | R1-RESTAURADA
+- V44R1-J50-9A573FE6-C0104M0306-V23-PATH-ROUTING | RUN_ID 9a573fe6-3590-8323-a821-56b766ab40f4 | TASK_ID 6af16bbad26881918c283abe06e1f32a
+- Base a92708cc9c630d7061ca74f62a3c5e0ca8f714b5: DEV04 cambió el controlador de evidencias QA global y su prueba HTTP; V23 consume ambos pero no los incluía en push.paths. Incorporar exactamente ambos paths para ejecutar la evidencia causal HTTP/JWT/GitHub/MySQL efímera al cambiar cualquiera. No alterar pasos, criterios, permisos, concurrencia ni activar laboratorio R11. Sin datos reales, cambios de infraestructura ni migraciones.
+- A0 revisión de diferencia y dependencias; A1-A4 pendientes de CI del nuevo SHA; A5 por Task independiente. Mantener VALIDANDO, owner histórico intacto. Rollback: revert del commit en dev.
+
 ## 2026-11-25 — DEV04 — C01-04.M03.06 — R1 restaurada: fallo de lectura de autoridad QA GLOBAL
 - TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09; RUN_ID ca75ffcb-d5c0-8321-9887-707a14f3ccbc; base 13699630824e96abb3838dcf3a312228a3ebb2e4; V17 exact H271:I271, escritura directa R5.
 - A0: encapsula DbException de lectura de autoridad en endpoint existente; 503 fijo/no-store y código de log sin excepción; cancelación conservada. Sin cambios de grants, JWT, DTO, tablas comerciales, migraciones, DI ni infraestructura.

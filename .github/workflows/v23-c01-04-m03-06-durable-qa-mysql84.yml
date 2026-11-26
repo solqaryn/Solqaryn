@@ -6,6 +6,8 @@ on:
       - 'backend/src/Application/AutomationV5/V5UniversalCaseFileQaEvidenceAudit.cs'
       - 'backend/src/Infrastructure/AutomationV5/V5UniversalCaseFileQaDurableMySqlAuditSink.cs'
       - 'backend/src/Infrastructure/AutomationV5/V5UniversalCaseFileQaGitHubJobReader.cs'
+      - 'backend/src/API/Controllers/PlataformaQaEvidenciasController.cs'
+      - 'backend/tests/Solqaryn.Tests/API/Controllers/C0204M0502QaHttpContractTests.cs'
       - 'backend/tests/Solqaryn.Tests/Integration/C0104M0306DurableQaAuditMysql84Tests.cs'
       - '.github/ci/c0104-github-live-proof.cs'
       - '.github/ci/c0104-global-http-live-proof.py'
