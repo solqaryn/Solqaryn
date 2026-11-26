@@ -128,7 +128,7 @@ public sealed class V5CaseFileAuditCorrelationAuthority(
 
             if (await ResolveInCurrentTransactionAsync(db, ct) != expected)
                 return await DenyAsync();
-            var candidate = await V5CaseFileOwnershipStore.ReadCandidateInCurrentTransactionAsync(
+            var candidate = await V5CaseFileOwnershipStore.ReadCandidateForAuditReceiptInCurrentTransactionAsync(
                 db, expected.TenantId, caseId, expected.BranchId, ct);
             if (candidate is null)
                 return await DenyAsync();

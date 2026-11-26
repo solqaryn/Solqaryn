@@ -220,8 +220,18 @@ public sealed class V5CaseFileOwnershipStore
     /// The enterprise consumer must verify actual resource ownership and exact
     /// current authorization in the SAME transaction before any durable effect.
     /// </summary>
-    public static async Task<Candidate?> ReadCandidateInCurrentTransactionAsync(
-        AppDbContext db, int tenant, int caseId, int branch, CancellationToken ct = default)
+    public static Task<Candidate?> ReadCandidateInCurrentTransactionAsync(
+        AppDbContext db, int tenant, int caseId, int branch, CancellationToken ct = default) =>
+        ReadCandidateWithLockAsync(db, tenant, caseId, branch, false, ct);
+
+    // API12 writes a durable receipt even for a read operation. Serialize receipt
+    // writers on the existing tenant/case ownership row before any receipt lookup.
+    public static Task<Candidate?> ReadCandidateForAuditReceiptInCurrentTransactionAsync(
+        AppDbContext db, int tenant, int caseId, int branch, CancellationToken ct = default) =>
+        ReadCandidateWithLockAsync(db, tenant, caseId, branch, true, ct);
+
+    private static async Task<Candidate?> ReadCandidateWithLockAsync(AppDbContext db,
+        int tenant, int caseId, int branch, bool exclusiveOwnership, CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(db);
         ct.ThrowIfCancellationRequested();
@@ -233,10 +243,17 @@ public sealed class V5CaseFileOwnershipStore
 
         string resourceType, resourceRef;
         // Same lock ordering as the sanctioned writer: branch, ownership, version.
-        await using (var owner = Command(db, tx, """
-            SELECT RecursoTipo,RecursoRef FROM V5CaseFileOwnerships
-            WHERE EmpresaId=@tenant AND Id=@case AND SucursalId=@branch FOR SHARE
-            """, ("@tenant", tenant), ("@case", caseId), ("@branch", branch)))
+        var ownerSql = exclusiveOwnership
+            ? """
+                SELECT RecursoTipo,RecursoRef FROM V5CaseFileOwnerships
+                WHERE EmpresaId=@tenant AND Id=@case AND SucursalId=@branch FOR UPDATE
+                """
+            : """
+                SELECT RecursoTipo,RecursoRef FROM V5CaseFileOwnerships
+                WHERE EmpresaId=@tenant AND Id=@case AND SucursalId=@branch FOR SHARE
+                """;
+        await using (var owner = Command(db, tx, ownerSql,
+            ("@tenant", tenant), ("@case", caseId), ("@branch", branch)))
         await using (var reader = await owner.ExecuteReaderAsync(ct))
         {
             if (!await reader.ReadAsync(ct)) return null;

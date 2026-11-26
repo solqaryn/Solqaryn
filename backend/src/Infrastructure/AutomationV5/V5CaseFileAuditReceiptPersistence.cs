@@ -161,7 +161,7 @@ public static class V5CaseFileAuditReceiptPersistence
                 !await V5CaseFileAuditGrantLock.TryAcquireAsync(db, actor, baseRole,
                     expected.TenantId, expected.BranchId, tenantRole, ct))
                 return false;
-            var current = await V5CaseFileOwnershipStore.ReadCandidateInCurrentTransactionAsync(
+            var current = await V5CaseFileOwnershipStore.ReadCandidateForAuditReceiptInCurrentTransactionAsync(
                 db, expected.TenantId, expected.CaseId, expected.BranchId, ct);
             if (current != expected ||
                 !await verifyActualResource(db, current!, ct))
@@ -173,6 +173,34 @@ public static class V5CaseFileAuditReceiptPersistence
         }
 
         if (!await StillAuthorizedAsync()) return null;
+        // The ownership row is held exclusively until commit/rollback. Reject
+        // a previously persisted operation GUID in this narrow API12 case scope;
+        // do not return or overwrite a prior receipt or grant. Ordinary audit
+        // correlation can legitimately span multiple events and is unchanged.
+        await using (var replay = db.Database.GetDbConnection().CreateCommand())
+        {
+            replay.Transaction = tx.GetDbTransaction();
+            replay.CommandText = """
+                SELECT 1 FROM RegistrosAuditoria
+                WHERE EmpresaId=@tenant AND ReferenciaId=@case AND AmbitoAutoridad=@scope AND OrigenAutorizacion=@origin
+                  AND CAST(Modulo AS BINARY)=CAST(@module AS BINARY)
+                  AND CAST(Accion AS BINARY)=CAST(@action AS BINARY)
+                  AND CAST(Entidad AS BINARY)=CAST(@entity AS BINARY)
+                  AND CorrelationId=@operation LIMIT 1 FOR SHARE
+                """;
+            foreach (var (name, value) in new (string, object)[]
+            {
+                ("@tenant", expected.TenantId), ("@case", expected.CaseId),
+                ("@scope", (int)AmbitoAutorizacion.Empresa), ("@origin", (int)OrigenAutorizacion.MembresiaEmpresa),
+                ("@module", nameof(ModuloSistema.Auditoria)), ("@action", nameof(AccionPermiso.ReadAuditCorrelation)),
+                ("@entity", "ExpedienteUniversal"), ("@operation", correlation.ToString("N"))
+            })
+            {
+                var p = replay.CreateParameter(); p.ParameterName = name; p.Value = value; replay.Parameters.Add(p);
+            }
+            if (await replay.ExecuteScalarAsync(ct) is not null) return null;
+        }
+        ct.ThrowIfCancellationRequested();
         // Persist only opaque correlation and minimal server-side attribution.
         // Do not serialize resource ref, token, display name, IP or request payload.
         var receipt = new RegistroAuditoria

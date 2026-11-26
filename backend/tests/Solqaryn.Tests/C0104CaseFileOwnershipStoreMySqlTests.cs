@@ -258,15 +258,47 @@ public sealed class C0104CaseFileOwnershipStoreMySqlTests
             }
             Assert.False(await dbA.Set<RegistroAuditoria>().AsNoTracking()
                 .AnyAsync(r => r.CorrelationId == revokedDuringReceipt.ToString("N")));
-            var committedCorrelation = Guid.NewGuid();
+            // A rolled-back GUID can be retried, but an already committed or
+            // in-transaction duplicate must not create a second API12 receipt.
+            var committedCorrelation = correlation;
             await using (var receiptTx = await dbA.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted))
             {
                 Assert.NotNull(await V5CaseFileAuditReceiptPersistence.AppendEnterpriseInCurrentTransactionAsync(
                     dbA, auditCandidate, actor, role.Id, role.Id, committedCorrelation, VerifyFixtureResource));
+                Assert.Null(await V5CaseFileAuditReceiptPersistence.AppendEnterpriseInCurrentTransactionAsync(
+                    dbA, auditCandidate, actor, role.Id, role.Id, committedCorrelation, VerifyFixtureResource));
+
+                // A rival independent connection cannot even obtain a shared
+                // ownership lock while the sanctioned receipt writer holds it.
+                await using var competing = new MySqlConnection(origin.ConnectionString);
+                await competing.OpenAsync();
+                await using var contender = competing.CreateCommand();
+                contender.CommandText = "SET SESSION innodb_lock_wait_timeout=1";
+                await contender.ExecuteNonQueryAsync();
+                await using var rivalTx = (MySqlTransaction)await competing.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+                contender.Transaction = rivalTx;
+                contender.CommandText = """
+                    SELECT Id FROM V5CaseFileOwnerships
+                    WHERE EmpresaId=@tenant AND Id=@case FOR SHARE
+                    """;
+                contender.Parameters.AddWithValue("@tenant", a.Id);
+                contender.Parameters.AddWithValue("@case", 1);
+                var blocked = await Assert.ThrowsAsync<MySqlException>(async () =>
+                {
+                    await contender.ExecuteScalarAsync();
+                });
+                Assert.Equal(1205, blocked.Number);
+                await rivalTx.RollbackAsync();
                 await receiptTx.CommitAsync();
             }
-            Assert.True(await dbA.Set<RegistroAuditoria>().AsNoTracking()
-                .AnyAsync(r => r.EmpresaId == a.Id && r.CorrelationId == committedCorrelation.ToString("N")));
+            await using (var replayTx = await dbA.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted))
+            {
+                Assert.Null(await V5CaseFileAuditReceiptPersistence.AppendEnterpriseInCurrentTransactionAsync(
+                    dbA, auditCandidate, actor, role.Id, role.Id, committedCorrelation, VerifyFixtureResource));
+                await replayTx.RollbackAsync();
+            }
+            Assert.Equal(1, await dbA.Set<RegistroAuditoria>().AsNoTracking()
+                .CountAsync(r => r.EmpresaId == a.Id && r.CorrelationId == committedCorrelation.ToString("N")));
             Assert.False(await dbB.Set<RegistroAuditoria>().AsNoTracking()
                 .AnyAsync(r => r.EmpresaId == b.Id && r.CorrelationId == committedCorrelation.ToString("N")));
             // Real JwtBearer signature validation plus real Oracle grant/receipt locks.
