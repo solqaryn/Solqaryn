@@ -85,9 +85,12 @@ public sealed class V5UniversalCaseFileIsolatedReadAdapter : IV5UniversalCaseFil
             return null;
 
         var actor = await _actors.ReadCurrentForActionAsync(caseFileId, action, cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
         if (actor is null || actor.VerifiedCaseFileId != caseFileId ||
             actor.VerifiedAction != action || actor.ActorId <= 0 || actor.TenantId <= 0 ||
-            actor.BranchId is <= 0 || !FullSha(actor.SourceSha) ||
+            actor.BranchId is <= 0 ||
+            (action == Rules.CaseAction.ReadAuditCorrelation && actor.BranchId is not > 0) ||
+            !FullSha(actor.SourceSha) ||
             !actor.ServerAuthenticationVerified ||
             !actor.MembershipReadFromTrustedBackend ||
             !actor.PermissionReadFromTrustedBackend || actor.PermissionRevoked ||
@@ -99,9 +102,11 @@ public sealed class V5UniversalCaseFileIsolatedReadAdapter : IV5UniversalCaseFil
         // affirmative permission. These are checked before case-file I/O.
         // The tenant identifier originates from the trusted source, never from a URL/header.
         var stored = await _cases.ReadAsync(actor.TenantId, caseFileId, cancellationToken);
+        cancellationToken.ThrowIfCancellationRequested();
         if (stored is null || stored.CaseFileId != caseFileId ||
             stored.OwnerTenantId != actor.TenantId ||
             stored.OwnerBranchId is <= 0 || stored.Version < 0 ||
+            (action == Rules.CaseAction.ReadAuditCorrelation && stored.OwnerBranchId is not > 0) ||
             !stored.OwnershipVerifiedFromPersistence || stored.UnattributedLegacy ||
             !FullSha(stored.SourceSha) ||
             !string.Equals(actor.SourceSha, stored.SourceSha, StringComparison.Ordinal) ||
@@ -109,13 +114,24 @@ public sealed class V5UniversalCaseFileIsolatedReadAdapter : IV5UniversalCaseFil
              actor.BranchId != stored.OwnerBranchId))
             return null;
 
-        // API12 must not return preflight evidence based on a grant that changed
-        // during the persistent case lookup. Execution must still revalidate at its own boundary.
+        // API12 must reject changes to either the grant or the persisted ownership/version.
+        // These alternating observations are not an atomic transaction; the consumer must
+        // still revalidate the actual resource and grant within its persistence boundary.
         if (action == Rules.CaseAction.ReadAuditCorrelation)
         {
             var refreshed = await _actors.ReadCurrentForActionAsync(caseFileId, action, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
             if (refreshed != actor)
+                return null;
+
+            var currentCase = await _cases.ReadAsync(actor.TenantId, caseFileId, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            if (currentCase != stored)
+                return null;
+
+            var finalActor = await _actors.ReadCurrentForActionAsync(caseFileId, action, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            if (finalActor != actor)
                 return null;
         }
 

@@ -265,8 +265,8 @@ public sealed class V5UniversalCaseFileIsolatedReadAdapterTests
         } };
         var evidence = await new Adapter(actors, cases).ReadForActionAsync(
             41, Rules.CaseAction.ReadAuditCorrelation, CancellationToken.None);
-        Assert.Equal(2, actors.Calls);
-        Assert.Equal(1, cases.Calls);
+        Assert.Equal(change == "unchanged" ? 3 : 2, actors.Calls);
+        Assert.Equal(change == "unchanged" ? 2 : 1, cases.Calls);
         if (change == "unchanged")
         {
             Assert.NotNull(evidence);
@@ -274,6 +274,72 @@ public sealed class V5UniversalCaseFileIsolatedReadAdapterTests
         }
         else
             Assert.Null(evidence);
+    }
+
+    [Theory]
+    [InlineData("version")]
+    [InlineData("tenant")]
+    [InlineData("branch")]
+    [InlineData("missing")]
+    [InlineData("unverified")]
+    [InlineData("legacy")]
+    [InlineData("archived")]
+    public async Task AuditCorrelationRejectsChangedPersistedSnapshot(string change)
+    {
+        var actors = new Actors();
+        var cases = new Cases();
+        cases.AfterRead = () =>
+        {
+            if (cases.Calls != 2)
+                return;
+            cases.Snapshot = change switch
+            {
+                "version" => ValidCase() with { Version = 4 },
+                "tenant" => ValidCase() with { OwnerTenantId = 200 },
+                "branch" => ValidCase() with { OwnerBranchId = 6 },
+                "missing" => null,
+                "unverified" => ValidCase() with { OwnershipVerifiedFromPersistence = false },
+                "legacy" => ValidCase() with { UnattributedLegacy = true },
+                _ => ValidCase() with { Archived = true }
+            };
+        };
+        Assert.Null(await new Adapter(actors, cases).ReadForActionAsync(
+            41, Rules.CaseAction.ReadAuditCorrelation, CancellationToken.None));
+        Assert.Equal(2, cases.Calls);
+        Assert.Equal(2, actors.Calls);
+    }
+
+    [Fact]
+    public async Task AuditCorrelationRejectsRevocationDuringSecondCaseLookup()
+    {
+        var actors = new Actors();
+        var cases = new Cases();
+        cases.AfterRead = () =>
+        {
+            if (cases.Calls == 2)
+                actors.Snapshot = ValidActor() with { PermissionRevoked = true };
+        };
+        Assert.Null(await new Adapter(actors, cases).ReadForActionAsync(
+            41, Rules.CaseAction.ReadAuditCorrelation, CancellationToken.None));
+        Assert.Equal(3, actors.Calls);
+        Assert.Equal(2, cases.Calls);
+    }
+
+    [Theory]
+    [InlineData(true)]
+    [InlineData(false)]
+    public async Task AuditCorrelationRequiresVerifiedPositiveBranch(bool missingActorBranch)
+    {
+        var actors = new Actors();
+        var cases = new Cases();
+        if (missingActorBranch)
+            actors.Snapshot = ValidActor() with { BranchId = null };
+        else
+            cases.Snapshot = ValidCase() with { OwnerBranchId = null };
+
+        Assert.Null(await new Adapter(actors, cases).ReadForActionAsync(
+            41, Rules.CaseAction.ReadAuditCorrelation, CancellationToken.None));
+        Assert.Equal(missingActorBranch ? 0 : 1, cases.Calls);
     }
 
     [Fact]
