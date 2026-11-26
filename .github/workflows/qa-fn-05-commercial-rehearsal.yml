@@ -1,14 +1,8 @@
 name: QA - FN-05 ensayo migracion comercial sobre respaldo cifrado
 
+# Historical V1 rehearsal requires the pre-V1 schema (109 migrations).
+# V2 and later checks must use their own read-only rehearsal workflow.
 on:
-  push:
-    branches: [qa]
-    paths:
-      - '.github/workflows/qa-fn-05-commercial-ownership.yml'
-      - '.github/workflows/qa-fn-05-commercial-rehearsal.yml'
-      - 'backend/src/Infrastructure.Migrations/Migrations/20261126170000_QaCommercialOwnershipV1.cs'
-      - 'backend/src/Infrastructure/Persistence/QaCommercialOwnershipV1.cs'
-      - '.github/qa/qa-commercial-schema.py'
   workflow_dispatch:
 
 permissions:
