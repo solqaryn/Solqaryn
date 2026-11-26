@@ -5,18 +5,43 @@ using Solqaryn.Domain.Entities.Contabilidad;
 using Solqaryn.Domain.Enums;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.AspNetCore.Http;
 
 namespace Solqaryn.Infrastructure.Persistence;
 
 public class AppDbContext : DbContext
 {
     private readonly IPublicStoreCache? _publicStoreCache;
+    private readonly IHttpContextAccessor? _http;
+    private int? _publicInvoiceEmpresaId;
+
+    // Only internal verified authority, never the raw X-Empresa-Id header.
+    public const string PublicStoreTenantItemKey = "SOLQARYN_QA_PUBLIC_STORE_EMPRESA_ID";
+    private const string AuthorizedTenantItemKey = "SOLQARYN_AUTHORIZED_EMPRESA_ID";
+    // API-created contexts without a request also fail closed. Explicitly constructed
+    // maintenance/test contexts without an accessor remain available offline.
+    public bool CommercialRequestRequiresTenant => _http is not null;
+    private int? ContextId(string key)
+    {
+        var items = _http?.HttpContext?.Items;
+        return items is not null && items.TryGetValue(key, out var value) && value is int id && id > 0 ? id : null;
+    }
+    public int? CommercialReadEmpresaId => ContextId(AuthorizedTenantItemKey) ??
+        ContextId(PublicStoreTenantItemKey) ?? _publicInvoiceEmpresaId;
+    public bool CommercialPrivateWriteAuthorized => ContextId(AuthorizedTenantItemKey).HasValue;
+    public int? CommercialWriteEmpresaId => ContextId(AuthorizedTenantItemKey) ??
+        (_http?.HttpContext?.Request.Path.StartsWithSegments("/tienda/cuenta/registrar") == true ?
+            ContextId(PublicStoreTenantItemKey) : null);
+    internal void SetPublicInvoiceEmpresa(int empresaId) =>
+        _publicInvoiceEmpresaId = empresaId > 0 ? empresaId : throw new ForbiddenAccessException("Empresa inválida.");
 
     public AppDbContext(
         DbContextOptions<AppDbContext> options,
-        IPublicStoreCache? publicStoreCache = null) : base(options)
+        IPublicStoreCache? publicStoreCache = null,
+        IHttpContextAccessor? httpContextAccessor = null) : base(options)
     {
         _publicStoreCache = publicStoreCache;
+        _http = httpContextAccessor;
     }
 
     public DbSet<Producto> Productos => Set<Producto>();
@@ -106,13 +131,27 @@ public class AppDbContext : DbContext
     public DbSet<DashboardKpiConfiguracion> DashboardKpiConfiguraciones => Set<DashboardKpiConfiguracion>();
     public DbSet<MensajeOutbox> MensajesOutbox => Set<MensajeOutbox>();
 
-    public override async Task<int> SaveChangesAsync(CancellationToken cancellationToken = default)
+    public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
+        if (CommercialRequestRequiresTenant && ChangeTracker.Entries().Any(e =>
+            QaCommercialOwnershipV1.Tables.Any(t => t.Entity == e.Metadata.ClrType) &&
+            e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted))
+            throw new InvalidOperationException("Las escrituras comerciales HTTP requieren SaveChangesAsync.");
+        return base.SaveChanges(acceptAllChangesOnSuccess);
+    }
+
+    public override Task<int> SaveChangesAsync(CancellationToken cancellationToken = default) =>
+        SaveChangesAsync(true, cancellationToken);
+
+    public override async Task<int> SaveChangesAsync(bool acceptAllChangesOnSuccess, CancellationToken cancellationToken = default)
+    {
+        await QaCommercialOwnershipModel.ValidateWritesAsync(this, cancellationToken);
         var cacheSegments = DetectarInvalidacionesStorefront();
 
         await ValidarAislamientoComercialVentasAsync(cancellationToken);
         await PrepararValorizacionComprasAsync(cancellationToken);
-        var guardados = await base.SaveChangesAsync(cancellationToken);
+        await QaCommercialOwnershipModel.ValidateWritesAsync(this, cancellationToken);
+        var guardados = await base.SaveChangesAsync(acceptAllChangesOnSuccess, cancellationToken);
 
         if (guardados > 0 && cacheSegments.Count > 0)
             _publicStoreCache?.InvalidateAll(cacheSegments.ToArray());
@@ -216,7 +255,7 @@ public class AppDbContext : DbContext
             return;
 
         var insumoPersistido = await Productos
-            .IgnoreQueryFilters()
+            .IgnoreQueryFilters(new[] { QaCommercialOwnershipV1.SoftDeleteFilter })
             .AsNoTracking()
             .Where(p => idsPorConsultar.Contains(p.Id) &&
                         p.TipoInventario == TipoInventario.InsumoAdministrativo)
@@ -391,6 +430,7 @@ public class AppDbContext : DbContext
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.ApplyConfigurationsFromAssembly(typeof(AppDbContext).Assembly);
+        QaCommercialOwnershipModel.Configure(modelBuilder, this);
         base.OnModelCreating(modelBuilder);
 
         modelBuilder.HasAnnotation(RelationalAnnotationNames.MaxIdentifierLength, 64);

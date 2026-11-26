@@ -30,7 +30,7 @@ public class CompraConfiguration : IEntityTypeConfiguration<Compra>
         builder.HasIndex(c => c.Eliminado);
         builder.HasIndex(c => c.MetodoPagoId)
             .HasDatabaseName("IX_Compras_MetodoPagoId");
-        builder.HasQueryFilter(c => !c.Eliminado);
+        builder.HasQueryFilter("QaCommercialSoftDelete", c => !c.Eliminado);
 
         builder.HasOne(c => c.MetodoPagoCatalogo)
             .WithMany()

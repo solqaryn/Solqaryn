@@ -74,14 +74,14 @@ public class CompraRepository : ICompraRepository
         if (alcance.EsAdministrador)
         {
             cabecera = await _context.Compras
-                .FromSqlInterpolated($"SELECT c.* FROM Compras c WHERE c.Id = {id} AND c.Eliminado = 0 FOR UPDATE")
+                .FromSqlInterpolated($"SELECT c.* FROM Compras c WHERE c.Id = {id} AND c.Eliminado = 0 AND ({_context.CommercialRequestRequiresTenant} = 0 OR c.EmpresaId = {_context.CommercialReadEmpresaId}) FOR UPDATE")
                 .AsTracking()
                 .FirstOrDefaultAsync();
         }
         else
         {
             cabecera = await _context.Compras
-                .FromSqlInterpolated($"SELECT c.* FROM Compras c WHERE c.Id = {id} AND c.Eliminado = 0 AND c.CreadoPorUsuarioId = {alcance.UsuarioId} FOR UPDATE")
+                .FromSqlInterpolated($"SELECT c.* FROM Compras c WHERE c.Id = {id} AND c.Eliminado = 0 AND c.CreadoPorUsuarioId = {alcance.UsuarioId} AND ({_context.CommercialRequestRequiresTenant} = 0 OR c.EmpresaId = {_context.CommercialReadEmpresaId}) FOR UPDATE")
                 .AsTracking()
                 .FirstOrDefaultAsync();
         }
@@ -190,7 +190,7 @@ public class CompraRepository : ICompraRepository
     }
 
     public async Task<int> ContarTodasAsync() =>
-        await _context.Compras.IgnoreQueryFilters().CountAsync();
+        await _context.Compras.IgnoreQueryFilters(new[] { QaCommercialOwnershipV1.SoftDeleteFilter }).CountAsync();
 
     public async Task AddAsync(Compra compra) =>
         await _context.Compras.AddAsync(compra);

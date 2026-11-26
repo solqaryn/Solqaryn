@@ -24,7 +24,7 @@ public class ProductoConfiguration : IEntityTypeConfiguration<Producto>
         builder.Property(p => p.EsDestacado).HasDefaultValue(false);
         builder.Property(p => p.Eliminado).HasDefaultValue(false);
 
-        builder.HasQueryFilter(p => !p.Eliminado);
+        builder.HasQueryFilter("QaCommercialSoftDelete", p => !p.Eliminado);
 
         builder.Ignore(p => p.ImagenPrincipal);
         builder.Ignore(p => p.TieneStockBajo);

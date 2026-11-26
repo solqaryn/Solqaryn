@@ -255,3 +255,11 @@ Cuando cambie una capa, módulo, integración, ruta/API, modelo de datos o coman
 No registrar en el changelog arquitectónico correcciones internas que no cambien este mapa.
 
 Sanitización de imágenes: `backend/src/Infrastructure/Services/ImagenUploadSecurity.cs` usa SkiaSharp 4.152.1 para validar y recodificar JPG/PNG/WebP antes de Cloudinary; conserva límites de tamaño/dimensiones y no confía en MIME/extensión del cliente.
+
+## QA — propiedad comercial
+
+- `backend/src/Infrastructure/Persistence/QaCommercialOwnershipV1.cs`: contrato físico inmutable y verificación de índices/FKs.
+- `backend/src/Infrastructure/Persistence/QaCommercialOwnershipModel.cs`: mapeo, filtros y guard de escrituras.
+- `backend/src/Infrastructure.Migrations/Migrations/20261126170000_QaCommercialOwnershipV1.cs`: migración independiente de QA.
+- `backend/tests/Solqaryn.Tests/QaCommercialOwnershipMySqlTests.cs`: aislamiento A/B, claves y relaciones físicas.
+- `.github/workflows/qa-fn-05-commercial-ownership.yml`: validación dirigida en MySQL descartable.

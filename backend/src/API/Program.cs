@@ -319,6 +319,20 @@ if (maintenanceEnabled)
     });
 }
 app.UseAuthentication(); app.UseAuthorization();
+// Public catalog context is resolved from the existing configured storefront,
+// never from a request's company selector. Ambiguous resolution fails closed.
+app.Use(async (context, next) =>
+{
+    if (context.Request.Path.StartsWithSegments("/tienda"))
+    {
+        var resolver = context.RequestServices.GetRequiredService<IPublicStoreTenantKeyProvider>();
+        var key = await resolver.GetTenantKeyAsync(context.RequestAborted);
+        if (key.StartsWith("empresa:", StringComparison.Ordinal) &&
+            int.TryParse(key.AsSpan("empresa:".Length), out var empresaId) && empresaId > 0)
+            context.Items[AppDbContext.PublicStoreTenantItemKey] = empresaId;
+    }
+    await next();
+});
 app.MapGet("/health", () => Results.Ok(new { status = "ok", service = "Solqaryn API" })).ExcludeFromDescription();
 app.MapGet("/health/ready", async (AppDbContext db, CancellationToken cancellationToken) => { var databaseReady = false; try { databaseReady = await db.Database.CanConnectAsync(cancellationToken); } catch { databaseReady = false; } return databaseReady ? Results.Ok(new { status = "ready", database = "connected" }) : Results.Json(new { status = "not_ready", database = "unavailable" }, statusCode: StatusCodes.Status503ServiceUnavailable); }).ExcludeFromDescription();
 app.MapControllers();

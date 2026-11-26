@@ -88,7 +88,7 @@ public sealed class OrdenCompraRepository : IOrdenCompraRepository
             throw new InvalidOperationException("GetByIdForUpdateAsync requiere una transacción activa.");
 
         var orden = await _context.Set<OrdenCompra>()
-            .FromSqlInterpolated($"SELECT o.* FROM OrdenesCompra o WHERE o.Id = {id} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT o.* FROM OrdenesCompra o WHERE o.Id = {id} AND ({_context.CommercialRequestRequiresTenant} = 0 OR o.EmpresaId = {_context.CommercialReadEmpresaId}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
         if (orden is not null)

@@ -131,8 +131,8 @@ public class InventarioConcurrencyService : IInventarioConcurrencyService
         foreach (var id in ids.Distinct().OrderBy(x => x))
         {
             var producto = await _context.Productos
-                .FromSqlInterpolated($"SELECT p.* FROM Productos p WHERE p.Id = {id} FOR UPDATE")
-                .IgnoreQueryFilters()
+                .FromSqlInterpolated($"SELECT p.* FROM Productos p WHERE p.Id = {id} AND ({_context.CommercialRequestRequiresTenant} = 0 OR p.EmpresaId = {_context.CommercialReadEmpresaId}) FOR UPDATE")
+                .IgnoreQueryFilters(new[] { QaCommercialOwnershipV1.SoftDeleteFilter })
                 .AsTracking()
                 .FirstOrDefaultAsync();
             if (producto is not null)
@@ -147,8 +147,8 @@ public class InventarioConcurrencyService : IInventarioConcurrencyService
         foreach (var id in ids.Distinct().OrderBy(x => x))
         {
             var variante = await _context.ProductoVariantes
-                .FromSqlInterpolated($"SELECT pv.* FROM ProductoVariantes pv WHERE pv.Id = {id} FOR UPDATE")
-                .IgnoreQueryFilters()
+                .FromSqlInterpolated($"SELECT pv.* FROM ProductoVariantes pv WHERE pv.Id = {id} AND ({_context.CommercialRequestRequiresTenant} = 0 OR pv.EmpresaId = {_context.CommercialReadEmpresaId}) FOR UPDATE")
+                .IgnoreQueryFilters(new[] { QaCommercialOwnershipV1.SoftDeleteFilter })
                 .AsTracking()
                 .FirstOrDefaultAsync();
             if (variante is not null)

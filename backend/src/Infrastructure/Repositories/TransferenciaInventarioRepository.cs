@@ -98,7 +98,7 @@ public sealed class TransferenciaInventarioRepository : ITransferenciaInventario
             throw new InvalidOperationException("GetByIdForUpdateAsync requiere una transacción activa.");
 
         var transferencia = await Transferencias
-            .FromSqlInterpolated($"SELECT t.* FROM TransferenciasInventario t WHERE t.Id = {id} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT t.* FROM TransferenciasInventario t WHERE t.Id = {id} AND ({_context.CommercialRequestRequiresTenant} = 0 OR t.EmpresaId = {_context.CommercialReadEmpresaId}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
 

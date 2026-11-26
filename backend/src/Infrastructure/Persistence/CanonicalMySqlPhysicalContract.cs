@@ -18,6 +18,7 @@ public static class CanonicalMySqlPhysicalContract
         await SeedPaymentMethodsAsync(db, cancellationToken);
         await SeedTipoClientePredeterminadoAsync(db, cancellationToken);
         await EnsureInventarioOriginBridgeAsync(db, cancellationToken);
+        await QaCommercialOwnershipV1.InstallFreshPhysicalAsync(db, cancellationToken);
     }
 
     public static async Task VerifyAsync(
@@ -25,6 +26,7 @@ public static class CanonicalMySqlPhysicalContract
         CancellationToken cancellationToken = default)
     {
         ArgumentNullException.ThrowIfNull(db);
+        await QaCommercialOwnershipV1.VerifyPhysicalAsync(db, cancellationToken);
 
         var triggerCount = await db.Database
             .SqlQueryRaw<long>("""

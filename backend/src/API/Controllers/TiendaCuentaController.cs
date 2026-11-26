@@ -98,7 +98,8 @@ public sealed class TiendaCuentaController : ControllerBase
         if (correo is null || string.IsNullOrEmpty(clave))
             return Unauthorized(ApiResponse<object>.Fail("Correo o contraseña incorrectos."));
 
-        var cuenta = await _db.TiendaCuentasCliente.FirstOrDefaultAsync(x => x.CorreoNormalizado == correo);
+        var cuenta = await _db.TiendaCuentasCliente.FirstOrDefaultAsync(x => x.CorreoNormalizado == correo &&
+            _db.Clientes.Any(cliente => cliente.Id == x.ClienteId));
         if (cuenta is null || !cuenta.Activa || !BCrypt.Net.BCrypt.Verify(clave, cuenta.PasswordHash))
             return Unauthorized(ApiResponse<object>.Fail("Correo o contraseña incorrectos."));
 
@@ -389,7 +390,7 @@ public sealed class TiendaCuentaController : ControllerBase
         var query = tracking ? _db.TiendaSesionesCliente.AsTracking() : _db.TiendaSesionesCliente.AsNoTracking();
         return await query
             .Include(x => x.CuentaCliente)
-            .FirstOrDefaultAsync(x => x.TokenHash == hash
+            .FirstOrDefaultAsync(x => x.TokenHash == hash && _db.Clientes.Any(cliente => cliente.Id == x.CuentaCliente.ClienteId)
                 && x.RevocadaUtc == null
                 && x.ExpiraUtc > ahora
                 && x.CuentaCliente.Activa);

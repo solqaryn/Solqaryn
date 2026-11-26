@@ -666,7 +666,7 @@ public sealed class CargaMasivaService : ICargaMasivaService
         var modelos = await _db.Modelos.AsNoTracking().Where(x => x.Activo && !x.Eliminado).ToListAsync(ct);
         var colores = await _db.Colores.AsNoTracking().Where(x => x.Activo && !x.Eliminado).ToListAsync(ct);
         var tallas = await _db.Tallas.AsNoTracking().Where(x => x.Activo && !x.Eliminado).ToListAsync(ct);
-        var variantes = await _db.ProductoVariantes.IgnoreQueryFilters().AsNoTracking().Where(x => !x.Eliminado).ToListAsync(ct);
+        var variantes = await _db.ProductoVariantes.IgnoreQueryFilters(new[] { QaCommercialOwnershipV1.SoftDeleteFilter }).AsNoTracking().Where(x => !x.Eliminado).ToListAsync(ct);
         var combinacionesArchivo = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var skusArchivo = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
         var codigosArchivo = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
@@ -1018,7 +1018,7 @@ public sealed class CargaMasivaService : ICargaMasivaService
         foreach (var productoId in productoIds)
         {
             var producto = await _db.Productos
-                .FromSqlInterpolated($"SELECT p.* FROM Productos p WHERE p.Id = {productoId} AND p.Eliminado = 0 FOR UPDATE")
+                .FromSqlInterpolated($"SELECT p.* FROM Productos p WHERE p.Id = {productoId} AND p.Eliminado = 0 AND ({_db.CommercialRequestRequiresTenant} = 0 OR p.EmpresaId = {_db.CommercialReadEmpresaId}) FOR UPDATE")
                 .AsTracking().SingleOrDefaultAsync(ct)
                 ?? throw new BusinessRuleException($"El producto ID '{productoId}' ya no existe. Revalida el archivo.");
             productos.Add(producto.Id, producto);
@@ -1028,7 +1028,7 @@ public sealed class CargaMasivaService : ICargaMasivaService
         foreach (var varianteId in varianteIds)
         {
             var variante = await _db.ProductoVariantes
-                .FromSqlInterpolated($"SELECT v.* FROM ProductoVariantes v WHERE v.Id = {varianteId} AND v.Eliminado = 0 FOR UPDATE")
+                .FromSqlInterpolated($"SELECT v.* FROM ProductoVariantes v WHERE v.Id = {varianteId} AND v.Eliminado = 0 AND ({_db.CommercialRequestRequiresTenant} = 0 OR v.EmpresaId = {_db.CommercialReadEmpresaId}) FOR UPDATE")
                 .AsTracking().SingleOrDefaultAsync(ct)
                 ?? throw new BusinessRuleException($"La variante ID '{varianteId}' ya no existe. Revalida el archivo.");
             variantes.Add(variante.Id, variante);
@@ -1040,7 +1040,7 @@ public sealed class CargaMasivaService : ICargaMasivaService
         foreach (var productoId in productoIds)
         {
             var tecnica = await _db.ProductoVariantes
-                .FromSqlInterpolated($"SELECT v.* FROM ProductoVariantes v WHERE v.ProductoId = {productoId} AND v.EsTecnica = 1 AND v.Eliminado = 0 FOR UPDATE")
+                .FromSqlInterpolated($"SELECT v.* FROM ProductoVariantes v WHERE v.ProductoId = {productoId} AND v.EsTecnica = 1 AND v.Eliminado = 0 AND ({_db.CommercialRequestRequiresTenant} = 0 OR v.EmpresaId = {_db.CommercialReadEmpresaId}) FOR UPDATE")
                 .AsTracking().SingleOrDefaultAsync(ct);
             if (tecnica is not null)
                 tecnicas.Add(productoId, tecnica);
@@ -1107,7 +1107,7 @@ public sealed class CargaMasivaService : ICargaMasivaService
                     tecnicas.Remove(producto.Id);
                 }
 
-                var conflicto = await _db.ProductoVariantes.IgnoreQueryFilters().AsNoTracking().AnyAsync(x =>
+                var conflicto = await _db.ProductoVariantes.IgnoreQueryFilters(new[] { QaCommercialOwnershipV1.SoftDeleteFilter }).AsNoTracking().AnyAsync(x =>
                     !x.Eliminado && !x.EsTecnica &&
                     (x.Sku == sku ||
                      (codigoBarras != null && x.CodigoBarras == codigoBarras) ||

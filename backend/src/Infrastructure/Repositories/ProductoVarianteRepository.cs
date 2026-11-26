@@ -32,7 +32,7 @@ public class ProductoVarianteRepository : IProductoVarianteRepository
             throw new InvalidOperationException("GetByIdForUpdateAsync requiere una transacción activa.");
 
         return await _context.ProductoVariantes
-            .FromSqlInterpolated($"SELECT pv.* FROM ProductoVariantes pv WHERE pv.Id = {id} AND pv.Eliminado = 0 FOR UPDATE")
+            .FromSqlInterpolated($"SELECT pv.* FROM ProductoVariantes pv WHERE pv.Id = {id} AND pv.Eliminado = 0 AND ({_context.CommercialRequestRequiresTenant} = 0 OR pv.EmpresaId = {_context.CommercialReadEmpresaId}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
     }
@@ -99,7 +99,7 @@ public class ProductoVarianteRepository : IProductoVarianteRepository
     public Task<ProductoVariante?> GetTecnicaByProductoIdAsync(int productoId, bool incluirEliminada = false)
     {
         var query = Query()
-            .IgnoreQueryFilters()
+            .IgnoreQueryFilters(new[] { QaCommercialOwnershipV1.SoftDeleteFilter })
             .Where(v => v.ProductoId == productoId && v.EsTecnica);
         if (!incluirEliminada)
             query = query.Where(v => !v.Eliminado);

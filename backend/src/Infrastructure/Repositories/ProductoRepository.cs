@@ -31,7 +31,7 @@ public class ProductoRepository : IProductoRepository
         if (_context.Database.CurrentTransaction is null)
             throw new InvalidOperationException("GetByIdForUpdateAsync requiere una transacción activa.");
         return await _context.Productos
-            .FromSqlInterpolated($"SELECT p.* FROM Productos p WHERE p.Id = {id} AND p.Eliminado = 0 FOR UPDATE")
+            .FromSqlInterpolated($"SELECT p.* FROM Productos p WHERE p.Id = {id} AND p.Eliminado = 0 AND ({_context.CommercialRequestRequiresTenant} = 0 OR p.EmpresaId = {_context.CommercialReadEmpresaId}) FOR UPDATE")
             .AsTracking().FirstOrDefaultAsync();
     }
 

@@ -174,3 +174,7 @@ Contrato operativo y superficie administrativa:
 - Queda prohibido usar cuentas personales, repositorios retirados, ramas legacy o infraestructura legacy como fallback.
 
 La implementación existente puede ser reutilizada, extendida, refactorizada o reemplazada cuando el objetivo vigente lo requiera, siempre preservando seguridad, RBAC, tenancy, integridad de datos, trazabilidad, revisión, rollback y las autorizaciones explícitas requeridas para `main`/PROD.
+
+## QA-FN-05: propiedad comercial QA
+
+Implementación independiente de la rama QA: modelo EF y migración Oracle `20261126170000_QaCommercialOwnershipV1` (27 tablas, 48 relaciones tenant y 15 claves de negocio). Dueños legacy NULL quedan invisibles al tenant; no hay borrado ni cambios IAM. La promoción y certificación requieren evidencia de CI y restore. DEV conserva su arquitectura y no se modifica.

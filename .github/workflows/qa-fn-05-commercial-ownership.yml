@@ -1,0 +1,74 @@
+name: QA - FN-05 propiedad comercial y MySQL A/B
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [qa]
+    paths:
+      - '.github/workflows/qa-fn-05-commercial-ownership.yml'
+      - 'backend/src/Infrastructure/Persistence/QaCommercialOwnership*.cs'
+      - 'backend/src/Infrastructure/Persistence/AppDbContext.cs'
+      - 'backend/src/Infrastructure.Migrations/Migrations/20261126170000_QaCommercialOwnershipV1.cs'
+      - 'backend/src/Infrastructure.Migrations/Migrations/OracleAppDbContextModelSnapshot.cs'
+      - 'backend/tests/Solqaryn.Tests/QaCommercialOwnershipMySqlTests.cs'
+      - 'backend/src/Infrastructure/Persistence/CanonicalMySqlPhysicalContract.cs'
+
+permissions:
+  contents: read
+concurrency:
+  group: qa-fn-05-commercial-ownership
+  cancel-in-progress: false
+jobs:
+  ownership:
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa'
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_ROOT_HOST: '%'
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: |
+          test "$GITHUB_REF" = refs/heads/qa
+          node scripts/verify-project-scope.mjs
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+          cache: true
+          cache-dependency-path: backend/**/*.csproj
+      - name: Propiedad física, lectura y escritura A/B
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter 'FullyQualifiedName~QaCommercialOwnershipMySqlTests' --logger "trx;LogFileName=qa-commercial-ownership.trx"
+          echo QA_COMMERCIAL_OWNERSHIP_MYSQL=PASS
+      - name: Comprobar snapshot y generar migración EF exacta
+        working-directory: backend
+        env:
+          ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=qa_ownership_design_only;User=root;Password=root;'
+        run: |
+          set -euo pipefail
+          dotnet tool restore
+          dotnet ef migrations has-pending-model-changes --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release
+          dotnet ef migrations script 20261125212000_CategoriasGalerias 20261126170000_QaCommercialOwnershipV1 --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release --output "$RUNNER_TEMP/qa-commercial-ownership.sql"
+          test -s "$RUNNER_TEMP/qa-commercial-ownership.sql"
+          echo QA_COMMERCIAL_EF_MODEL=PASS
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-commercial-ownership-trx
+          path: backend/tests/Solqaryn.Tests/TestResults/qa-commercial-ownership.trx
+          if-no-files-found: error
+          retention-days: 14

@@ -20,7 +20,21 @@ public class FacturaRepository : IFacturaRepository
     public async Task<CatalogoMetodoPago?> GetMetodoPagoPorCodigoONombreAsync(string valor){var n=valor.Trim().ToUpper();return await _context.Set<CatalogoMetodoPago>().AsTracking().FirstOrDefaultAsync(m=>m.Activo&&!m.Eliminado&&(m.Codigo.ToUpper()==n||m.Nombre.ToUpper()==n));}
     public Task<CatalogoBanco?> GetBancoActivoPorIdAsync(int id)=>_context.Set<CatalogoBanco>().AsTracking().FirstOrDefaultAsync(b=>b.Id==id&&b.Activo&&!b.Eliminado);
     public Task<List<CatalogoBanco>> GetBancosActivosAsync()=>_context.Set<CatalogoBanco>().AsNoTracking().Where(b=>b.Activo&&!b.Eliminado).OrderBy(b=>b.Nombre).ThenBy(b=>b.Codigo).ThenBy(b=>b.Id).ToListAsync();
-    public async Task<Factura?> GetByIdParaEnlacePublicoValidadoAsync(int id)=>TieneAccesoPublicoValidado(id)?await ConIncludes().FirstOrDefaultAsync(f=>f.Id==id):null;
+    public async Task<Factura?> GetByIdParaEnlacePublicoValidadoAsync(int id)
+    {
+        if (!TieneAccesoPublicoValidado(id)) return null;
+        if (_context.CommercialRequestRequiresTenant)
+        {
+            // Exact invoice ID already bound to validated token; no public list
+            // or arbitrary caller-provided tenant can establish this context.
+            var empresa = await _context.Facturas.IgnoreQueryFilters(new[] { QaCommercialOwnershipV1.TenantFilter })
+                .AsNoTracking().Where(f => f.Id == id)
+                .Select(f => EF.Property<int?>(f, "EmpresaId")).SingleOrDefaultAsync();
+            if (empresa is not > 0) return null;
+            _context.SetPublicInvoiceEmpresa(empresa.Value);
+        }
+        return await ConIncludes().FirstOrDefaultAsync(f => f.Id == id);
+    }
     public async Task AddAsync(Factura factura){FacturaDetalleDistribuidor.Aplicar(factura);await _context.Facturas.AddAsync(factura);} public void Update(Factura factura)=>_context.Facturas.Update(factura); public async Task<bool> SaveChangesAsync()=>await _context.SaveChangesAsync()>0;
     private bool TieneAccesoPublicoValidado(int facturaId){var items=_httpContextAccessor?.HttpContext?.Items;return items is not null&&items.TryGetValue(PublicInvoiceAccessContext.FacturaIdKey,out var value)&&value is int autorizado&&autorizado==facturaId;}
 }

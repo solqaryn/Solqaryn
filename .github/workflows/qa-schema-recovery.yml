@@ -6,6 +6,7 @@ on:
     paths:
       - 'backend/**'
       - '.github/workflows/qa-schema-recovery.yml'
+      - '.github/qa/qa-commercial-schema.py'
   workflow_dispatch:
 
 permissions:
@@ -69,6 +70,15 @@ jobs:
             *) echo "QA_MYSQL_PATCH_MISMATCH: se exige Aiven MySQL 8.4.11 para QA; version observada: $version; no se actualiza automaticamente." >&2; exit 1 ;;
           esac
           echo "QA_AIVEN_MYSQL_VERSION=$version"
+
+          # The QA-native ownership migration is a deliberate, exact delta.
+          # Before migration keep the original full baseline fingerprints.
+          ownership_marker="$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261126170000_QaCommercialOwnershipV1';")"
+          if [ "$ownership_marker" = "1" ]; then
+            python3 .github/qa/qa-commercial-schema.py --live
+            exit 0
+          fi
+          test "$ownership_marker" = "0"
 
           application_tables="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME <> '__EFMigrationsHistory';")"
           test "$application_tables" = "137" || {

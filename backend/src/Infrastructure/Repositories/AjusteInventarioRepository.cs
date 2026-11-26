@@ -88,7 +88,7 @@ public class AjusteInventarioRepository : IAjusteInventarioRepository
             throw new InvalidOperationException("GetByIdForUpdateAsync requiere una transacción activa.");
 
         var ajuste = await _context.AjustesInventario
-            .FromSqlInterpolated($"SELECT a.* FROM AjustesInventario a WHERE a.Id = {id} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT a.* FROM AjustesInventario a WHERE a.Id = {id} AND ({_context.CommercialRequestRequiresTenant} = 0 OR a.EmpresaId = {_context.CommercialReadEmpresaId}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
 

@@ -1,3 +1,16 @@
+## 2026-11-26 — QA-FN-05: ensayo de migración y certificado físico exacto
+
+- Se incorpora ensayo causal sobre respaldo cifrado del QA real, restaurado sólo en MySQL local desechable: genera SQL EF, aplica a copia, compara huella de Usuarios/Roles/Permisos/grants/membresías y conteos completos de todas las tablas sin mostrar datos. Ningún paso modifica la fuente QA.
+- Certificador read-only deriva los 27 propietarios, 48 FKs y 15 claves naturales del manifiesto C# inmutable, valida detalle de columnas/índices/FKs y reconstruye fingerprints previos excluyendo únicamente el delta aprobado. Conserva los controles de CategoriasGalerias, inventario y baseline. El gate original sigue íntegro antes de la migración.
+- Scope Lock DEV 5d9ad8b77ef06099cff2cfe89659b5396fca75ee, job 140062173213, frescura y nueve casos negativos PASS. QA único ámbito de escritura. Sin cambio de DEV, MAIN ni automatizaciones. No se aplica todavía la migración al QA vivo ni se publica backend sin resultados de ensayo y CI.
+
+## 2026-11-26 — QA-FN-05: implementación independiente de propiedad comercial
+
+- Autorización explícita: QA exclusivamente; sin importar código, migraciones ni snapshot de DEV, sin modificar DEV/MAIN/automatizaciones. Los registros comerciales históricos son fixtures descartables según propietario; se elige conservarlos en cuarentena NULL, sin borrar usuarios/roles/permisos ni otros registros.
+- Nueva migración y snapshot QA, 27 tablas, 48 relaciones compuestas, 15 claves de negocio aisladas. Se conserva unicidad del bucket legacy por columna computada. FK simple EmpresaId, índices únicos (EmpresaId,Id), referencia de variante triple (EmpresaId,ProductoId,Id). No DML sobre datos históricos.
+- Filtros EF nombrados y verificación del dueño persistido/relaciones antes de escrituras, locks SQL con tenant, manejo de tienda/factura pública separado, bootstrap fresco y verificador físico. Prueba A/B dirigida MySQL con rechazo de lectura/escritura ajena, cuarentena y FK real; gate snapshot y generación SQL. Sin cambios a DTO, UI, secretos, proveedor o versiones. No se autoriza despliegue antes de resultado exact-SHA, restore de QA y comprobación del delta físico.
+- Render QA dep-dc465lui0phs73990o60 del SHA 0e935ae240b1528cb4cf57626b0f1dcbafae4fac confirmado LIVE; sigue siendo el binario previo estable hasta certificar cambios nuevos. Scope Lock comprobado en DEV exacto y código canónico antes de publicar. QA-FN-05 permanece abierto.
+
 ## 2026-11-26 — QA-FN-05: gate de administración viva y preflight comercial
 
 - Render QA deploy dep-dc45s5vlk1mc739nghi0 comprobado LIVE, exact-SHA c4abbcf60de611e80534e5c9094524aca763800e, antes de preparar el gate; el SHA 793fb7231d084d96df08a8f49e73424b0dfe3a5a con catálogo/paquetes/prueba de contraseña está todavía en CI y NO se considera desplegado. El gate nuevo declara SHA esperado y exige evidencia de Render externa antes/después; el checkout del workflow no se confunde con el binario vivo.

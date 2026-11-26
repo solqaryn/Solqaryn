@@ -47,7 +47,7 @@ public class VentaConfiguration : IEntityTypeConfiguration<Venta>
             .HasDatabaseName("IX_Ventas_CreadoPorUsuarioId");
         builder.HasIndex(v => v.MetodoPagoId)
             .HasDatabaseName("IX_Ventas_MetodoPagoId");
-        builder.HasQueryFilter(v => !v.Eliminado);
+        builder.HasQueryFilter("QaCommercialSoftDelete", v => !v.Eliminado);
 
         builder.HasOne(v => v.MetodoPagoCatalogo)
             .WithMany()

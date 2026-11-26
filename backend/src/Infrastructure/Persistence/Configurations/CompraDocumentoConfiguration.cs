@@ -19,7 +19,7 @@ public class CompraDocumentoConfiguration : IEntityTypeConfiguration<CompraDocum
         builder.Property(d => d.Eliminado).HasDefaultValue(false);
 
         builder.HasIndex(d => new { d.CompraId, d.Eliminado });
-        builder.HasQueryFilter(d => !d.Eliminado);
+        builder.HasQueryFilter("QaCommercialSoftDelete", d => !d.Eliminado);
 
         builder.HasOne(d => d.Compra)
             .WithMany()

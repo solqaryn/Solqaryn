@@ -78,14 +78,14 @@ public class VentaRepository : IVentaRepository
         if (alcance.EsAdministrador)
         {
             cabecera = await _context.Ventas
-                .FromSqlInterpolated($"SELECT v.* FROM Ventas v WHERE v.Id = {id} AND v.Eliminado = 0 FOR UPDATE")
+                .FromSqlInterpolated($"SELECT v.* FROM Ventas v WHERE v.Id = {id} AND v.Eliminado = 0 AND ({_context.CommercialRequestRequiresTenant} = 0 OR v.EmpresaId = {_context.CommercialReadEmpresaId}) FOR UPDATE")
                 .AsTracking()
                 .FirstOrDefaultAsync();
         }
         else
         {
             cabecera = await _context.Ventas
-                .FromSqlInterpolated($"SELECT v.* FROM Ventas v WHERE v.Id = {id} AND v.Eliminado = 0 AND v.CreadoPorUsuarioId = {alcance.UsuarioId} FOR UPDATE")
+                .FromSqlInterpolated($"SELECT v.* FROM Ventas v WHERE v.Id = {id} AND v.Eliminado = 0 AND v.CreadoPorUsuarioId = {alcance.UsuarioId} AND ({_context.CommercialRequestRequiresTenant} = 0 OR v.EmpresaId = {_context.CommercialReadEmpresaId}) FOR UPDATE")
                 .AsTracking()
                 .FirstOrDefaultAsync();
         }

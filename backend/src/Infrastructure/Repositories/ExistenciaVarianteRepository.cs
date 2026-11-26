@@ -39,7 +39,7 @@ public sealed class ExistenciaVarianteRepository : IExistenciaVarianteRepository
                     WHERE ev.ProductoVarianteId = {productoVarianteId}
                       AND ev.AlmacenId = {almacenId}
                       AND (({ubicacionAlmacenId} IS NULL AND ev.UbicacionAlmacenId IS NULL)
-                           OR ev.UbicacionAlmacenId = {ubicacionAlmacenId})
+                           OR ev.UbicacionAlmacenId = {ubicacionAlmacenId}) AND ({_context.CommercialRequestRequiresTenant} = 0 OR ev.EmpresaId = {_context.CommercialReadEmpresaId})
                     FOR UPDATE")
                 .Include(e => e.ProductoVariante).ThenInclude(v => v.Producto)
                 .Include(e => e.ProductoVariante).ThenInclude(v => v.Marca)
@@ -73,9 +73,9 @@ public sealed class ExistenciaVarianteRepository : IExistenciaVarianteRepository
                 WHERE ev.ProductoVarianteId = {productoVarianteId}
                   AND ev.AlmacenId = {almacenId}
                   AND (({ubicacionAlmacenId} IS NULL AND ev.UbicacionAlmacenId IS NULL)
-                       OR ev.UbicacionAlmacenId = {ubicacionAlmacenId})
+                       OR ev.UbicacionAlmacenId = {ubicacionAlmacenId}) AND ({_context.CommercialRequestRequiresTenant} = 0 OR ev.EmpresaId = {_context.CommercialReadEmpresaId})
                 FOR UPDATE")
-            .IgnoreQueryFilters()
+            .IgnoreQueryFilters(new[] { QaCommercialOwnershipV1.SoftDeleteFilter })
             .Include(e => e.ProductoVariante).ThenInclude(v => v.Producto)
             .Include(e => e.ProductoVariante).ThenInclude(v => v.Marca)
             .Include(e => e.ProductoVariante).ThenInclude(v => v.Modelo)

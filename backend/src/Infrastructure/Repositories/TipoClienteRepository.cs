@@ -36,7 +36,7 @@ public class TipoClienteRepository : ITipoClienteRepository
         await _context.TipoClientes.AnyAsync(tc => tc.NombreNormalizado.ToLower() == nombreNormalizado.ToLower() && (excluirId == null || tc.Id != excluirId));
 
     public async Task<bool> TieneClientesAsignadosAsync(int id) =>
-        await _context.Clientes.IgnoreQueryFilters().AnyAsync(c => c.TipoClienteId == id);
+        await _context.Clientes.IgnoreQueryFilters(new[] { QaCommercialOwnershipV1.SoftDeleteFilter }).AnyAsync(c => c.TipoClienteId == id);
 
     public async Task AddAsync(TipoCliente tipoCliente) =>
         await _context.TipoClientes.AddAsync(tipoCliente);

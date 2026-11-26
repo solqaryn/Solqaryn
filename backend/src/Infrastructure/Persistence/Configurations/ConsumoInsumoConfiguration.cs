@@ -21,7 +21,7 @@ public class ConsumoInsumoConfiguration : IEntityTypeConfiguration<ConsumoInsumo
         builder.Property(c => c.Eliminado).HasDefaultValue(false);
         builder.HasIndex(c => new { c.Estado, c.FechaConsumo });
         builder.HasIndex(c => c.Eliminado);
-        builder.HasQueryFilter(c => !c.Eliminado);
+        builder.HasQueryFilter("QaCommercialSoftDelete", c => !c.Eliminado);
 
         builder.HasMany(c => c.Detalles)
             .WithOne(d => d.ConsumoInsumo)

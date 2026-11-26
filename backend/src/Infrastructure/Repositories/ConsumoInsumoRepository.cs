@@ -34,7 +34,7 @@ public class ConsumoInsumoRepository : IConsumoInsumoRepository
             throw new InvalidOperationException("GetByIdForUpdateAsync requiere una transacción activa.");
 
         var consumo = await _context.ConsumosInsumos
-            .FromSqlInterpolated($"SELECT c.* FROM ConsumosInsumos c WHERE c.Id = {id} AND c.Eliminado = 0 FOR UPDATE")
+            .FromSqlInterpolated($"SELECT c.* FROM ConsumosInsumos c WHERE c.Id = {id} AND c.Eliminado = 0 AND ({_context.CommercialRequestRequiresTenant} = 0 OR c.EmpresaId = {_context.CommercialReadEmpresaId}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
 
