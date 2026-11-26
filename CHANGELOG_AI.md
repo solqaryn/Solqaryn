@@ -1,3 +1,8 @@
+## 2026-11-26 — QA-FN-05: aplicacion autorizada de migracion comercial
+- Seis gates del SHA f22b5afe03634a909910ad8121a4ab653ddb4e13 aprobados (45868066642, 45868066681, 45868066782, 45868066639, 45868066649, 45868066733); backend 2476/2476, auditoria NuGet sin avisos, ensayo con 138 tablas y 109 migraciones, identidad intacta y contrato fisico exacto.
+- Autorizacion expresa del propietario para escribir exclusivamente MySQL QA. Workflow de una sola ejecucion, padre exacto, HEAD vivo, artefacto cifrado, nueva restauracion, comparacion de identidad y filas, aplicacion del mismo SQL ensayado, verificacion fisica posterior. Sin DELETE, cambios IAM, secretos, DEV, MAIN ni promocion.
+- El nuevo workflow no modifica backend ni frontend. Scope Lock DEV 10b3187121329da9e039e0ae44b0e4ab5fc3ff4b job 140077481936 PASS. Despliegue Render QA manual queda condicionado al resultado real de la aplicacion; no se afirma cierre antes de evidencia viva.
+
 ## 2026-11-26 — QA-FN-05: reparacion causal DDL MySQL y auditoria NuGet
 
 - QA exclusivamente, desde b8696f246dc8fcbadd423c1aa3673adeec6fb95a; Scope Lock DEV 4cf22a6ba3bd649383f5bf989c3d3e100d81e651, job 140073769460, frescura y nueve pruebas negativas PASS.

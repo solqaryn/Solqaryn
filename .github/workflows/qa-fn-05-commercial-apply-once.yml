@@ -1,0 +1,379 @@
+name: QA - FN-05 aplicacion unica migracion comercial certificada
+
+on:
+  push:
+    branches: [qa]
+    paths:
+      - '.github/workflows/qa-fn-05-commercial-apply-once.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: qa-oracle-schema-preflight-refs/heads/qa
+  cancel-in-progress: false
+
+jobs:
+  verify-restore:
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == 'f22b5afe03634a909910ad8121a4ab653ddb4e13' && github.run_attempt == 1
+    name: QA backup, restore, ensayo y aplicacion exacta
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: QA
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: solqaryn-ci-qa-disposable-only
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -psolqaryn-ci-qa-disposable-only --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_QA_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_QA_DB_PASSWORD }}
+      BACKUP_PASSPHRASE: ${{ secrets.SOLQARYN_QA_BACKUP_PASSPHRASE }}
+    steps:
+      - name: Checkout QA (identidad)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Guard QA solo Aiven 8.4.11 y secretos
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "qa"
+          node scripts/verify-project-scope.mjs
+          test "$(git rev-parse HEAD^)" = "f22b5afe03634a909910ad8121a4ab653ddb4e13"
+          test "$(git ls-remote origin refs/heads/qa | cut -f1)" = "$GITHUB_SHA"
+          git diff --exit-code "f22b5afe03634a909910ad8121a4ab653ddb4e13" HEAD -- backend frontend render.yaml .github/qa/qa-commercial-schema.py
+          test "$DB_HOST" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
+          test "$DB_PORT" = "14402"
+          test "$DB_NAME" = "solqaryn_qa"
+          test "$DB_USER" = "solqaryn_qa_user"
+          test -n "$DB_PASSWORD" && test -n "$BACKUP_PASSPHRASE"
+          echo "QA_BACKUP_SCOPE=PASS"
+
+      - name: Comprobar seis gates causales del codigo inalterado
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for id in 45868066642 45868066681 45868066782 45868066639 45868066649 45868066733; do
+            gh api "repos/solqaryn/Solqaryn/actions/runs/$id" | jq -e --arg sha "f22b5afe03634a909910ad8121a4ab653ddb4e13" '.head_branch == "qa" and .head_sha == $sha and .status == "completed" and .conclusion == "success"' >/dev/null
+          done
+          echo QA_COMMERCIAL_CAUSAL_GATES=PASS
+
+      - name: Instalar cliente MySQL
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+
+      - name: Certificar baseline QA de solo lectura antes de backup
+        shell: bash
+        run: |
+          set -euo pipefail
+          export MYSQL_PWD="$DB_PASSWORD"
+          q() {
+            mysql --protocol=TCP --connect-timeout=12 --ssl-mode=REQUIRED --default-character-set=utf8mb4 \
+              -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" \
+              --batch --raw --skip-column-names "$DB_NAME" -e "$1"
+          }
+
+          version="$(q 'SELECT VERSION();')"
+          case "$version" in
+            8.4.11|8.4.11-*) ;;
+            *) echo "QA_MYSQL_PATCH_MISMATCH: se exige Aiven MySQL 8.4.11 para QA; version observada: $version; no se actualiza automaticamente." >&2; exit 1 ;;
+          esac
+          echo "QA_AIVEN_MYSQL_VERSION=$version"
+
+          # The QA-native ownership migration is a deliberate, exact delta.
+          # Before migration keep the original full baseline fingerprints.
+          ownership_marker="$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261126170000_QaCommercialOwnershipV1';")"
+          test "$ownership_marker" = "0"
+          test "$(q 'SELECT COUNT(*) FROM __EFMigrationsHistory;')" = "109"
+          test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='Productos' AND COLUMN_NAME='EmpresaId';")" = "0"
+
+          application_tables="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME <> '__EFMigrationsHistory';")"
+          test "$application_tables" = "137" || {
+            echo "QA_ORACLE_SCHEMA_DRIFT: Se requieren las 136 tablas de la baseline y CategoriasGalerias. Si falta la migracion 20261125212000_CategoriasGalerias, aplicarla con backup y autorizacion QA antes del deploy." >&2
+            exit 1
+          }
+
+          history_table="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='__EFMigrationsHistory';")"
+          test "$history_table" = "1" || {
+            echo "QA_ORACLE_SCHEMA_DRIFT: falta historial EF; prohibida la promocion." >&2
+            exit 1
+          }
+
+          required_tables="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME IN ('Empresas','Productos','ConfigEmpresas','AutomatizacionConfiguraciones','SuscripcionSaaSIdempotencia','CategoriasGalerias');")"
+          test "$required_tables" = "6" || {
+            echo "QA_ORACLE_SCHEMA_DRIFT: faltan tablas requeridas por OracleBaseline." >&2
+            exit 1
+          }
+
+          history_count="$(q 'SELECT COUNT(*) FROM __EFMigrationsHistory;')"
+          marker="$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")"
+          echo "QA_ORACLE_HISTORY_AUDIT=PASS app_tables=$application_tables history_count=$history_count oracle_marker=$marker"
+
+          # DIAGNOSTICO READ-ONLY COMPLETO: no interrumpir antes de leer topologia.
+          # Si falta el marcador, se emiten diagnosticos independientes para
+          # verificar si la adopcion Oracle requiere cambios fisicos o solo metadata.
+          table_diag="$(q "SELECT CONCAT(TABLE_NAME,'|',ENGINE,'|',COALESCE(TABLE_COLLATION,'')) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME<>'CategoriasGalerias' ORDER BY TABLE_NAME;" | sha256sum | awk '{print $1}')"
+          fk_diag="$(q "SELECT CONCAT(TABLE_NAME,'|',CONSTRAINT_NAME,'|',REFERENCED_TABLE_NAME,'|',UNIQUE_CONSTRAINT_NAME) FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME<>'CategoriasGalerias' ORDER BY TABLE_NAME,CONSTRAINT_NAME;" | sha256sum | awk '{print $1}')"
+          index_diag="$(q "SELECT CONCAT(TABLE_NAME,'|',INDEX_NAME,'|',SEQ_IN_INDEX,'|',COALESCE(COLUMN_NAME,''),'|',NON_UNIQUE,'|',INDEX_TYPE) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME<>'CategoriasGalerias' ORDER BY TABLE_NAME,INDEX_NAME,SEQ_IN_INDEX;" | sha256sum | awk '{print $1}')"
+          triggers_diag="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_SCHEMA=DATABASE() AND TRIGGER_NAME IN ('TR_MovimientosInventario_N06_OrigenTipado_BI','TR_MovimientosInventario_N06_OrigenTipado_BU');")"
+          checks_diag="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME='MovimientosInventario' AND CONSTRAINT_TYPE='CHECK' AND CONSTRAINT_NAME='CK_MovimientosInventario_OrigenTipado_Exclusivo_N06';")"
+          diagnose() {
+            if [ "$2" = "$3" ]; then
+              echo "QA_ORACLE_DIAG_$1=PASS"
+            else
+              echo "QA_ORACLE_DIAG_$1=DRIFT"
+            fi
+          }
+          diagnose TABLES "$table_diag" "36b725a682b43d744509c8fd27a6ae54b6017d1c46e1301ee796f86f760e7489"
+          diagnose FKS "$fk_diag" "79f67fec9b5761f66cf93dbbcab3a7e7cfd769e132019e720e51d0317ef93b3c"
+          diagnose INDEXES "$index_diag" "3f91e8d03e2700329472bb3ee678c0f3d680495217d4cb4da48291351b3b90ec"
+          diagnose TRIGGERS "$triggers_diag" "2"
+          diagnose CHECK "$checks_diag" "1"
+          echo "QA_ORACLE_DIAG_DB_WRITES=0"
+
+          test "$marker" = "1" || {
+            echo "QA_ORACLE_BASELINE=PENDING: certificacion QA bloqueada. Aplicar adoption Oracle con backup verificado y autorizacion separada; esta prueba es SOLO LECTURA." >&2
+            exit 1
+          }
+
+          # Fingerprints del origen DEV real restaurado, run 38107320797 (2026-10-11).
+          # La topologia de QA no puede divergir de la fuente certificada.
+          table_hash="$(q "SELECT CONCAT(TABLE_NAME,'|',ENGINE,'|',COALESCE(TABLE_COLLATION,'')) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME<>'CategoriasGalerias' ORDER BY TABLE_NAME;" | sha256sum | awk '{print $1}')"
+          fk_hash="$(q "SELECT CONCAT(TABLE_NAME,'|',CONSTRAINT_NAME,'|',REFERENCED_TABLE_NAME,'|',UNIQUE_CONSTRAINT_NAME) FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME<>'CategoriasGalerias' ORDER BY TABLE_NAME,CONSTRAINT_NAME;" | sha256sum | awk '{print $1}')"
+          index_hash="$(q "SELECT CONCAT(TABLE_NAME,'|',INDEX_NAME,'|',SEQ_IN_INDEX,'|',COALESCE(COLUMN_NAME,''),'|',NON_UNIQUE,'|',INDEX_TYPE) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME<>'CategoriasGalerias' ORDER BY TABLE_NAME,INDEX_NAME,SEQ_IN_INDEX;" | sha256sum | awk '{print $1}')"
+
+          test "$table_hash" = "36b725a682b43d744509c8fd27a6ae54b6017d1c46e1301ee796f86f760e7489" || {
+            echo "QA_ORACLE_TABLE_TOPOLOGY=FAIL: tablas/engine/collation no coinciden con DEV certificado." >&2
+            exit 1
+          }
+          test "$fk_hash" = "79f67fec9b5761f66cf93dbbcab3a7e7cfd769e132019e720e51d0317ef93b3c" || {
+            echo "QA_ORACLE_FK_TOPOLOGY=FAIL: constraints FK no coinciden con DEV certificado." >&2
+            exit 1
+          }
+          test "$index_hash" = "3f91e8d03e2700329472bb3ee678c0f3d680495217d4cb4da48291351b3b90ec" || {
+            echo "QA_ORACLE_INDEX_TOPOLOGY=FAIL: indices no coinciden con DEV certificado." >&2
+            exit 1
+          }
+          echo "QA_ORACLE_TOPOLOGY=PASS baseline_tables_fks_indexes_identical_to_dev"
+
+          gallery_marker="$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261125212000_CategoriasGalerias';")"
+          test "$gallery_marker" = "1" || { echo "QA_CATEGORY_GALLERY_MIGRATION=PENDING" >&2; exit 1; }
+          gallery_columns="$(q "SELECT CONCAT(COLUMN_NAME,':',COLUMN_TYPE,':',IS_NULLABLE) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='CategoriasGalerias' ORDER BY COLUMN_NAME;")"
+          test "$gallery_columns" = "$(printf '%s\n' 'CategoriaId:int:NO' 'EmpresaId:int:NO' 'ImagenesJson:longtext:NO' 'Version:varchar(32):NO')" || { echo "QA_CATEGORY_GALLERY_COLUMNS=FAIL" >&2; exit 1; }
+          gallery_indexes="$(q "SELECT CONCAT(INDEX_NAME,':',SEQ_IN_INDEX,':',COLUMN_NAME,':',NON_UNIQUE) FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='CategoriasGalerias' ORDER BY INDEX_NAME,SEQ_IN_INDEX;")"
+          test "$gallery_indexes" = "$(printf '%s\n' 'IX_CategoriasGalerias_CategoriaId:1:CategoriaId:1' 'PRIMARY:1:EmpresaId:0' 'PRIMARY:2:CategoriaId:0')" || { echo "QA_CATEGORY_GALLERY_INDEXES=FAIL" >&2; exit 1; }
+          gallery_fks="$(q "SELECT CONCAT(k.COLUMN_NAME,':',k.REFERENCED_TABLE_NAME,':',k.REFERENCED_COLUMN_NAME,':',r.DELETE_RULE) FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE k JOIN INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS r ON r.CONSTRAINT_SCHEMA=k.CONSTRAINT_SCHEMA AND r.CONSTRAINT_NAME=k.CONSTRAINT_NAME AND r.TABLE_NAME=k.TABLE_NAME WHERE k.TABLE_SCHEMA=DATABASE() AND k.TABLE_NAME='CategoriasGalerias' ORDER BY k.COLUMN_NAME;")"
+          test "$gallery_fks" = "$(printf '%s\n' 'CategoriaId:Categorias:Id:RESTRICT' 'EmpresaId:Empresas:Id:RESTRICT')" || { echo "QA_CATEGORY_GALLERY_FKS=FAIL" >&2; exit 1; }
+          test "$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='CategoriasGalerias' AND ENGINE='InnoDB';")" = "1" || { echo "QA_CATEGORY_GALLERY_ENGINE=FAIL" >&2; exit 1; }
+          echo "QA_CATEGORY_GALLERY_SCHEMA=PASS"
+
+          trigger_count="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_SCHEMA=DATABASE() AND TRIGGER_NAME IN ('TR_MovimientosInventario_N06_OrigenTipado_BI','TR_MovimientosInventario_N06_OrigenTipado_BU');")"
+          check_count="$(q "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME='MovimientosInventario' AND CONSTRAINT_TYPE='CHECK' AND CONSTRAINT_NAME='CK_MovimientosInventario_OrigenTipado_Exclusivo_N06';")"
+          test "$trigger_count" = "2" && test "$check_count" = "1" || {
+            echo "QA_ORACLE_PHYSICAL_CONTRACT=FAIL: triggers o CHECK faltantes; no promover backend." >&2
+            exit 1
+          }
+
+          echo "QA_ORACLE_SCHEMA_CERT=PASS app_tables=137 baseline=1 category_gallery=1 triggers=2 check=1 mysql=$version"
+          echo "QA_DATABASE_WRITES=0"
+
+          # Readback despues de QA Oracle adoption certificada: run 38303606678.
+
+      - name: Backup transaccional de QA y cifrado AES-256 (sin dump en artefacto)
+        id: backup
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          folder="$RUNNER_TEMP/solqaryn-qa-oracle-backup"
+          mkdir -p "$folder"
+          dump="$folder/qa.sql"
+          enc="$folder/qa.sql.enc"
+          trap 'rm -f "$dump"' EXIT
+          export MYSQL_PWD="$DB_PASSWORD"
+          version="$(mysql --protocol=TCP --ssl-mode=REQUIRED -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --batch --skip-column-names "$DB_NAME" -e 'SELECT VERSION();')"
+          case "$version" in 8.4.11|8.4.11-*) ;; *) echo "QA_MYSQL_VERSION_INVALID: se exige 8.4.11; version observada: $version" >&2; exit 1;; esac
+          echo "QA_BACKUP_AIVEN_MYSQL_VERSION=$version"
+          mysqldump --protocol=TCP --ssl-mode=REQUIRED -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" \
+            --single-transaction --skip-lock-tables --no-tablespaces --set-gtid-purged=OFF \
+            --routines --triggers "$DB_NAME" > "$dump"
+          test -s "$dump"
+          sha256sum "$dump" | cut -d' ' -f1 > "$folder/qa-plaintext.sha256"
+          openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt \
+            -pass env:BACKUP_PASSPHRASE -in "$dump" -out "$enc"
+          test -s "$enc"
+          sha256sum "$enc" > "$folder/qa-encrypted.sha256"
+          rm -f "$dump"
+          trap - EXIT
+          echo "encrypted=$enc" >> "$GITHUB_OUTPUT"
+          echo "QA_BACKUP_ENCRYPTED=PASS"
+          echo "QA_DATABASE_WRITES=0"
+
+      - name: Restore real del respaldo cifrado en MySQL local efímero
+        shell: bash
+        env:
+          ENCRYPTED_FILE: ${{ steps.backup.outputs.encrypted }}
+        run: |
+          set -euo pipefail
+          test -s "$ENCRYPTED_FILE"
+          export MYSQL_PWD=solqaryn-ci-qa-disposable-only
+          mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root \
+            -e 'CREATE DATABASE solqaryn_qa_restore_ephemeral CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
+          # El SQL descifrado fluye directamente a mysql local: no hay fichero SQL en disco.
+          openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 \
+            -pass env:BACKUP_PASSPHRASE -in "$ENCRYPTED_FILE" |
+            mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root solqaryn_qa_restore_ephemeral
+          qlocal(){ mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root -Nse "$1" solqaryn_qa_restore_ephemeral; }
+          export MYSQL_PWD="$DB_PASSWORD"
+          qsource(){ mysql --protocol=TCP --ssl-mode=REQUIRED -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -Nse "$1" "$DB_NAME"; }
+          sql="SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME;"
+          tables="$(qsource "$sql")"
+          count=0
+          while IFS= read -r tbl; do
+            test -n "$tbl" || continue
+            [[ "$tbl" =~ ^[A-Za-z0-9_]+$ ]] || { echo 'QA_RESTORE_TABLE_NAME_INVALID' >&2; exit 1; }
+            a="$(qsource "SELECT COUNT(*) FROM \`$tbl\`;")"
+            export MYSQL_PWD=solqaryn-ci-qa-disposable-only
+            b="$(qlocal "SELECT COUNT(*) FROM \`$tbl\`;")"
+            export MYSQL_PWD="$DB_PASSWORD"
+            test "$a" = "$b" || { echo 'QA_RESTORE_ROWCOUNT_MISMATCH' >&2; exit 1; }
+            count=$((count+1))
+          done <<< "$tables"
+          export MYSQL_PWD=solqaryn-ci-qa-disposable-only
+          marker="$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")"
+          gallery_marker="$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261125212000_CategoriasGalerias';")"
+          gallery_table="$(qlocal "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='CategoriasGalerias' AND TABLE_TYPE='BASE TABLE';")"
+          history="$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory;")"
+          test "$marker" = "1"
+          case "$gallery_marker:$gallery_table:$count:$history" in
+            1:1:138:109) ;;
+            *) echo 'QA_RESTORE_TABLECOUNT_OR_HISTORY_DRIFT' >&2; exit 1 ;;
+          esac
+          echo "QA_BACKUP_RESTORE=PASS tables=$count history=$history rows_exact=YES oracle_marker=$marker category_gallery=$gallery_marker"
+          echo "QA_ORIGINAL_DB_WRITES=0"
+
+
+      - name: Guardar exclusivamente backup cifrado y checksums (14 días)
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-commercial-pre-migration-encrypted-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/solqaryn-qa-oracle-backup/qa.sql.enc
+            ${{ runner.temp }}/solqaryn-qa-oracle-backup/qa-encrypted.sha256
+            ${{ runner.temp }}/solqaryn-qa-oracle-backup/qa-plaintext.sha256
+          retention-days: 14
+          if-no-files-found: error
+
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Ensayar SQL EF solo en copia local y comprobar identidades intactas
+        shell: bash
+        env:
+          LOCAL_MYSQL_PASSWORD: solqaryn-ci-qa-disposable-only
+        run: |
+          set -euo pipefail
+          umask 077
+          export MYSQL_PWD="$LOCAL_MYSQL_PASSWORD"
+          qlocal(){ mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root -Nse "$1" solqaryn_qa_restore_ephemeral; }
+          test "$(qlocal 'SELECT DATABASE()')" = solqaryn_qa_restore_ephemeral
+          test "$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261126170000_QaCommercialOwnershipV1'")" = 0
+          fingerprint_iam(){
+            mysqldump --protocol=TCP -h 127.0.0.1 -P 3306 -u root --no-create-info --skip-comments --compact --skip-extended-insert --order-by-primary --skip-lock-tables --no-tablespaces --set-gtid-purged=OFF solqaryn_qa_restore_ephemeral Usuarios Roles Permisos RolPermisos UsuarioEmpresas UsuarioRolesPlataforma | sha256sum | cut -d' ' -f1
+          }
+          fingerprint_rows(){
+            while IFS= read -r t; do
+              [[ "$t" =~ ^[A-Za-z0-9_]+$ ]] || exit 1
+              printf '%s:' "$t"
+              qlocal "SELECT COUNT(*) FROM \`$t\`;"
+            done < <(qlocal "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME<>'__EFMigrationsHistory' ORDER BY TABLE_NAME")
+          }
+          before_iam="$(fingerprint_iam)"
+          before_rows="$(fingerprint_rows)"
+          export ConnectionStrings__DefaultConnection='Server=127.0.0.1;Port=3306;Database=solqaryn_qa_restore_ephemeral;User=root;Password=solqaryn-ci-qa-disposable-only;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+          cd backend
+          dotnet tool restore
+          dotnet restore src/API/Solqaryn.API.csproj
+          dotnet restore src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj
+          dotnet ef migrations has-pending-model-changes --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release
+          dotnet ef migrations script 20261125212000_CategoriasGalerias 20261126170000_QaCommercialOwnershipV1 --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release --output "$RUNNER_TEMP/qa-commercial-ownership.sql"
+          cd ..
+          # First apply the exact SQL only to the restored local database.
+          test -s "$RUNNER_TEMP/qa-commercial-ownership.sql"
+          sha256sum "$RUNNER_TEMP/qa-commercial-ownership.sql" > "$RUNNER_TEMP/qa-commercial-ownership.sha256"
+          printf '%s\n' "$before_iam" > "$RUNNER_TEMP/qa-iam-before.sha256"
+          printf '%s\n' "$before_rows" | sha256sum | cut -d' ' -f1 > "$RUNNER_TEMP/qa-rows-before.sha256"
+          mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root solqaryn_qa_restore_ephemeral < "$RUNNER_TEMP/qa-commercial-ownership.sql"
+          test "$(fingerprint_iam)" = "$before_iam"
+          test "$(fingerprint_rows)" = "$before_rows"
+          echo QA_COMMERCIAL_REHEARSAL_IAM_IDENTICAL=PASS
+          echo QA_COMMERCIAL_REHEARSAL_ROWS_PRESERVED=PASS
+          python3 .github/qa/qa-commercial-schema.py --local
+          echo QA_COMMERCIAL_REHEARSAL=PASS
+          echo QA_ORIGINAL_DB_WRITES=0
+
+      - name: Aplicar una sola migracion certificada en Aiven QA y verificar preservacion
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          test "$GITHUB_REPOSITORY" = "solqaryn/Solqaryn"
+          test "$GITHUB_REF" = "refs/heads/qa"
+          test "$GITHUB_RUN_ATTEMPT" = "1"
+          test "$(git ls-remote origin refs/heads/qa | cut -f1)" = "$GITHUB_SHA"
+          test "$DB_HOST" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
+          test "$DB_PORT" = "14402"
+          test "$DB_NAME" = "solqaryn_qa"
+          test "$DB_USER" = "solqaryn_qa_user"
+          export MYSQL_PWD="$DB_PASSWORD"
+          qsource(){ mysql --protocol=TCP --connect-timeout=12 --ssl-mode=REQUIRED -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -Nse "$1" "$DB_NAME"; }
+          test "$(qsource 'SELECT DATABASE()')" = "solqaryn_qa"
+          test "$(qsource "SELECT SUBSTRING_INDEX(CURRENT_USER(),'@',1)")" = "solqaryn_qa_user"
+          case "$(qsource 'SELECT VERSION()')" in 8.4.11|8.4.11-*) ;; *) exit 1;; esac
+          test "$(qsource 'SELECT COUNT(*) FROM __EFMigrationsHistory')" = 109
+          test "$(qsource "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261126170000_QaCommercialOwnershipV1'")" = 0
+          fingerprint_iam(){
+            mysqldump --protocol=TCP --ssl-mode=REQUIRED -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --no-create-info --skip-comments --compact --skip-extended-insert --order-by-primary --skip-lock-tables --no-tablespaces --set-gtid-purged=OFF "$DB_NAME" Usuarios Roles Permisos RolPermisos UsuarioEmpresas UsuarioRolesPlataforma | sha256sum | cut -d' ' -f1
+          }
+          fingerprint_rows(){
+            while IFS= read -r t; do
+              [[ "$t" =~ ^[A-Za-z0-9_]+$ ]] || exit 1
+              printf '%s:' "$t"
+              qsource "SELECT COUNT(*) FROM \`$t\`;"
+            done < <(qsource "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME<>'__EFMigrationsHistory' ORDER BY TABLE_NAME")
+          }
+          before_iam="$(cat "$RUNNER_TEMP/qa-iam-before.sha256")"
+          before_rows="$(cat "$RUNNER_TEMP/qa-rows-before.sha256")"
+          test "$(fingerprint_iam)" = "$before_iam" || { echo QA_IAM_DRIFT_BEFORE_APPLY; exit 1; }
+          test "$(fingerprint_rows | sha256sum | cut -d' ' -f1)" = "$before_rows" || { echo QA_ROWCOUNT_DRIFT_BEFORE_APPLY; exit 1; }
+          sha256sum -c "$RUNNER_TEMP/qa-commercial-ownership.sha256"
+          test "$(git ls-remote origin refs/heads/qa | cut -f1)" = "$GITHUB_SHA"
+          # MySQL DDL is not atomic across statements; no retry on partial failure.
+          # Keep the verified encrypted backup; stop on the first SQL error.
+          echo QA_COMMERCIAL_APPLY_STARTED
+          mysql --protocol=TCP --ssl-mode=REQUIRED -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" "$DB_NAME" < "$RUNNER_TEMP/qa-commercial-ownership.sql"
+          python3 .github/qa/qa-commercial-schema.py --live
+          test "$(fingerprint_iam)" = "$before_iam" || { echo QA_IAM_DRIFT_AFTER_APPLY; exit 1; }
+          test "$(fingerprint_rows | sha256sum | cut -d' ' -f1)" = "$before_rows" || { echo QA_ROWCOUNT_DRIFT_AFTER_APPLY; exit 1; }
+          echo QA_COMMERCIAL_LIVE_IAM_IDENTICAL=PASS
+          echo QA_COMMERCIAL_LIVE_ROWS_PRESERVED=PASS
+          echo QA_COMMERCIAL_LIVE_MIGRATION=PASS
