@@ -23,7 +23,7 @@ import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
       background: rgba(127, 127, 127, 0.08);
       border-radius: 0.25rem;
     }
-    .disclosure-text { margin: 0; line-height: 1.5; }
+    .disclosure-text { margin: 0; line-height: 1.5; min-width: 0; overflow-wrap: anywhere; }
     .disclosure-text + .disclosure-text { margin-top: 0.5rem; }
     .sr-only {
       position: absolute;

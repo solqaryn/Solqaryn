@@ -28,8 +28,8 @@
 
   <h2 class="section-title">Productos y variantes</h2>
   <div class="producto-busqueda-remota">
-    <mat-form-field appearance="outline" class="full-width">
-      <mat-label>Buscar producto por nombre, marca, modelo, color, SKU o código de barras</mat-label>
+    <mat-form-field subscriptSizing="dynamic" appearance="outline" class="full-width">
+      <mat-label>Buscar producto</mat-label>
       <input
         matInput
         data-testid="compra-producto-autocomplete"
@@ -54,7 +54,7 @@
           <mat-option disabled>No se encontraron variantes activas para la compra.</mat-option>
         }
       </mat-autocomplete>
-      <mat-hint>La consulta es remota, admite stock cero y devuelve como máximo 30 variantes.</mat-hint>
+      <mat-hint>Nombre, marca, modelo, color, SKU o código de barras. La consulta es remota, admite stock cero y devuelve como máximo 30 variantes.</mat-hint>
       @if (errorBusquedaProducto()) { <mat-error>{{ errorBusquedaProducto() }}</mat-error> }
     </mat-form-field>
     @if (mensajeBusquedaProducto()) { <p class="producto-busqueda-mensaje" role="status"><mat-icon>check_circle</mat-icon>{{ mensajeBusquedaProducto() }}</p> }
