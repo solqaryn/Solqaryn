@@ -1,3 +1,6 @@
+## 2026-11-25 | DEV05 | C15-04.M05.04 | R1-RESTAURADA
+- Amplía A0.68 con conteos, reservas y cuentas por cobrar: seis escenarios adicionales Chromium/JWT firmado/MySQL real (320 y 1280 px), reutilizando aserciones de rechazo de tenant ajeno y navegación segura. Sin cambios de permisos, fixtures, producto ni aserciones existentes. Base 9a86e1424fe7ce56c3fe154b3f9cccd63c46ded5; CI exact-SHA y revisión independiente pendientes; no cierre ni certificación de cobertura UX total.
+
 ## 2026-11-25 | DEV02 | C15-04.M05.04 | R1-RESTAURADA
 - V44R1-J10-F54D6027-C1504M0504-JWT-PATHS: repara disparadores causales del workflow JWT/MySQL/Chromium privado. El run 45391388220 fue SUCCESS en bbe84bda, pero 119 commits posteriores incluyen cambios de autorización/tenant/perfil, sin equivalencia actual. Agrega 16 rutas de consumidores/dependencias al push.paths; no cambia código de producto, permisos, datos, migración, entorno, filtros de prueba ni criterios. CI y artefactos del nuevo SHA pendientes; no A5 propia ni transición. Foco C01-04.M03.06 conservado por dependencia de autoridad P01/P02/API12 ya notificada. RUN=f54d6027-1330-8329-90a4-e727402a54c2; base=5cb53f77ee95dac3010d2bf9659c8ab2165dbd09. Rollback por revert ordinario.
 

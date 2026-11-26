@@ -2138,7 +2138,10 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     { nombre: 'transferencias', ruta: '/inventario/transferencias' },
     { nombre: 'pedidos-venta', ruta: '/pedidos-venta' },
     { nombre: 'facturas-proveedor', ruta: '/facturas-proveedor' },
-    { nombre: 'cuentas-por-pagar', ruta: '/cuentas-por-pagar' }
+    { nombre: 'cuentas-por-pagar', ruta: '/cuentas-por-pagar' },
+    { nombre: 'conteos-inventario', ruta: '/inventario/conteos' },
+    { nombre: 'reservas-inventario', ruta: '/inventario/reservas' },
+    { nombre: 'cuentas-por-cobrar', ruta: '/cuentas-por-cobrar' }
   ]) {
     for (const ancho of [320, 1280]) {
       test(`A0.68 - tenant B no suplanta A en ${destino.nombre} a ${ancho}px`, async ({ page, request }) => {
