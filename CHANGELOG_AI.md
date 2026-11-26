@@ -11484,3 +11484,8 @@
 ## 2026-11-26 — DEV04 — C01-04.M03.06 — V44/R1/R5
 
 - TASK_ID=6aeacb7820ac8191b7d768a6f33dfa09; RUN_ID=492f0c9c-6a20-8325-ae49-8c6b99dfdb9f; base 7bbeb14a. Extend existing Oracle integration Fact to exercise compiled Program over Kestrel/loopback with isolated MySQL and ephemeral JWT, actual DI and DEV opt-in (off + non-Development deny, on write/read/correlation, B denial, independent writer revocation). Add exact sanitized TRX Fact artifact with SHA/run/attempt and no raw logs. No runtime code, grants, data, environment deployments or schema changes; preserve previous acceptance and CI, exact-SHA checks/A5 still required. Revert normal in dev.
+
+
+## 2026-11-26 — DEV05 — C01-04.M03.06 — V44/R1/R5
+
+- TASK_ID=6adc2e55f47c81919f6374e561687076; RUN_ID=13a825e8-0fb0-8331-a426-8bed9679cfe7; base fff9a9c67f8e1d774606302e4a65606cbf01af43. M02.02 T11 and M02.05 section 3: authorized API12 commit-uncertain response formerly discarded its server-issued operation correlation, preventing reconciliation of a possibly durable effect. Preserve the opaque GUID only for that specific outcome; HTTP 503 JSON safe code+correlation, no-store, no receipt ID/PII/SQL, no automatic retry, no grant or ownership change. Extend existing Oracle MySQL HTTP Fact with EF post-commit acknowledgement-loss injection, verify durable unique row, A read recovery and B denial, preserve real Program proof. A0 exact anchors, A1-A4 CI pending; independent A5 required. No migration, real data, QA/main/PROD or task change. Normal dev revert.

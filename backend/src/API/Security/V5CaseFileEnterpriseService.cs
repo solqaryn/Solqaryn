@@ -75,7 +75,8 @@ public sealed class V5CaseFileEnterpriseService(AppDbContext db,
             ? await authority.ReadAuthorizedReceiptCorrelationAsync(db, caseId, linked, operation, VerifyResource, ct)
             : await authority.AppendAuthorizedReceiptAsync(db, caseId, operation, VerifyResource, ct);
         // The internal numeric audit receipt ID is deliberately never exposed.
-        return new(result.Code, result.ReceiptId.HasValue ? operation : null, result.TargetVersion);
+        return new(result.Code, result.ReceiptId.HasValue || result.Code == "CASEFILE_AUDIT_COMMIT_UNCERTAIN"
+            ? operation : null, result.TargetVersion);
     }
 
     private sealed class WriteAuthority(V5CaseFileAuditCorrelationAuthority authority,

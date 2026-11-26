@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.Diagnostics;
 using System.Globalization;
 using System.IdentityModel.Tokens.Jwt;
@@ -14,6 +15,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.IdentityModel.Tokens;
 using Moq;
@@ -39,6 +41,21 @@ public sealed class C0104CaseFileEnterpriseHttpMySqlTests
     private sealed class FixtureAccessor : IHttpContextAccessor
     {
         public HttpContext? HttpContext { get; set; }
+    }
+
+    // Throw after the real MySQL commit, modelling a lost acknowledgement without
+    // replacing the provider or simulating the durable database effect.
+    private sealed class LostCommitAcknowledgement : DbTransactionInterceptor
+    {
+        private int _armed;
+        public void Arm() => Interlocked.Exchange(ref _armed, 1);
+        public override Task TransactionCommittedAsync(DbTransaction transaction,
+            TransactionEndEventData eventData, CancellationToken cancellationToken = default)
+        {
+            if (Interlocked.Exchange(ref _armed, 0) == 1)
+                throw new InvalidOperationException("Fixture lost commit acknowledgement.");
+            return Task.CompletedTask;
+        }
     }
 
     [Fact]
@@ -120,8 +137,9 @@ public sealed class C0104CaseFileEnterpriseHttpMySqlTests
             builder.WebHost.UseTestServer();
             builder.Configuration["CaseFile:EnableEnterpriseIntegration"] = "true";
             builder.Services.AddHttpContextAccessor();
+            var lostCommit = new LostCommitAcknowledgement();
             builder.Services.AddDbContext<AppDbContext>(o => o.UseMySQL(origin.ConnectionString,
-                x => x.MigrationsAssembly("Solqaryn.Infrastructure.Migrations")));
+                x => x.MigrationsAssembly("Solqaryn.Infrastructure.Migrations")).AddInterceptors(lostCommit));
             builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
             builder.Services.AddScoped<IUsuarioScopeService, UsuarioScopeService>();
             builder.Services.AddScoped<IRolPermisoRepository, RolPermisoRepository>();
@@ -210,6 +228,25 @@ public sealed class C0104CaseFileEnterpriseHttpMySqlTests
             await Expect(HttpStatusCode.Forbidden, tokenB, 1, "auditoria/correlacion", read);
             await Expect(HttpStatusCode.Forbidden, tokenA, 999, "auditoria/correlacion", read);
             await Expect(HttpStatusCode.Unauthorized, "not-a-jwt", 1, "auditoria/correlacion", read);
+
+            // The database has committed, but the acknowledgement is lost. The
+            // caller receives only an opaque recovery correlation and safe code.
+            lostCommit.Arm();
+            using var uncertain = await Post(tokenA, 1, "auditoria/registrar", new { });
+            Assert.Equal(HttpStatusCode.ServiceUnavailable, uncertain.StatusCode);
+            Assert.True(uncertain.Headers.CacheControl?.NoStore == true);
+            using var uncertainBody = JsonDocument.Parse(await uncertain.Content.ReadAsStringAsync());
+            Assert.Equal("CASEFILE_AUDIT_COMMIT_UNCERTAIN", uncertainBody.RootElement.GetProperty("code").GetString());
+            var uncertainCorrelation = uncertainBody.RootElement.GetProperty("correlation").GetString();
+            Assert.True(Guid.TryParseExact(uncertainCorrelation, "N", out _));
+            Assert.Equal(2, uncertainBody.RootElement.EnumerateObject().Count());
+            Assert.Equal(1, await setup.Set<RegistroAuditoria>().IgnoreQueryFilters().AsNoTracking()
+                .CountAsync(x => x.EmpresaId == a.Id && x.CorrelationId == uncertainCorrelation));
+            var recovery = new { Correlation = uncertainCorrelation };
+            await Expect(HttpStatusCode.OK, tokenA, 1, "auditoria/correlacion", recovery);
+            await Expect(HttpStatusCode.Forbidden, tokenB, 1, "auditoria/correlacion", recovery);
+            Assert.Equal(1, await setup.Set<RegistroAuditoria>().IgnoreQueryFilters().AsNoTracking()
+                .CountAsync(x => x.EmpresaId == a.Id && x.CorrelationId == uncertainCorrelation));
 
             // Exercise the compiled application's actual composition root, not a
             // second hand-built DI container. The same disposable DB and explicit

@@ -66,6 +66,9 @@ public static class V5CaseFileEnterpriseEndpoints
         {
             "CASEFILE_AUDIT_RECEIPT_WRITTEN" or "CASEFILE_AUDIT_CORRELATION_READ" =>
                 Results.Ok(new { result.Code, Correlation = result.Correlation?.ToString("N"), result.TargetVersion }),
+            "CASEFILE_AUDIT_COMMIT_UNCERTAIN" when result.Correlation.HasValue =>
+                Results.Json(new { result.Code, Correlation = result.Correlation.Value.ToString("N") },
+                    statusCode: StatusCodes.Status503ServiceUnavailable),
             "CASEFILE_AUDIT_DENIED" => Results.StatusCode(StatusCodes.Status403Forbidden),
             _ => Results.StatusCode(StatusCodes.Status503ServiceUnavailable)
         };
