@@ -1,3 +1,4 @@
+import { PAGINADOR_ESPANOL_PROVIDER } from '../../shared/paginador-institucional';
 import { Component, OnDestroy, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { FormsModule } from '@angular/forms';
@@ -13,6 +14,7 @@ import { RegistroAuditoria } from '../../core/models/auditoria.model';
 import { ReportesAdministrativosComponent } from '../reportes-administrativos/reportes-administrativos.component';
 
 @Component({
+  viewProviders: [PAGINADOR_ESPANOL_PROVIDER],
   selector: 'app-auditoria-list',
   standalone: true,
   imports: [

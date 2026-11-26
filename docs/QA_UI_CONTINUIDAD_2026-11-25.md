@@ -1,33 +1,28 @@
-# QA — Registro de continuidad visual y funcional
-Fecha: 2026-11-25. Base causal: 9702bcf158e9e1a020e71a6c31d0b6f6e353ef8f. Alcance exclusivo QA, sin datos productivos.
-## Evidencia anterior
-- Run 45734701200: higiene y backend SUCCESS, frontend FAILURE, 11 Playwright PASS, 5 FAIL (transferencias 1280/390, reservas 1280/390, conteos 1280). La evidencia dice que el botón se desmontó al intentar confirmar de nuevo; no demuestra una falla del backend.
-## Revisión por áreas (no equivale a certificación A5)
-1. Filtros y geometría: regresión Productos localizada; se aplanan filtros y se corrige el selector global. Prueba nueva pendiente de resultado.
-2. Superficies: cuatro listados de inventario en tarjeta; se reutiliza fondoTarjetas (--color-surface). Sin quinto color, sin migración de tema. Falta revisar todos los demás listados y estados vacíos.
-3. Microcopy: se retiran referencias internas ERP-N1 de Almacenes y Ubicaciones y se acortan descripciones de Productos/Kardex/Costeo/Transferencias/Reservas/Conteos/Ajustes. Falta revisión exhaustiva de textos dinámicos, errores, ayuda y traducciones (paginador incluido).
-4. Acciones/confirmaciones: bloqueo de reentrada visible mientras el modal cierra; se conservan permiso, tenant, estado y pruebas negativas. Falta comprobar todos los formularios restantes, especialmente ajustes (modal manual), recepciones, órdenes, solicitudes, facturas, finanzas, caja, bancos, contabilidad, configuración, permisos, auditoría y reportes. No se añaden acciones contrarias al dominio.
-5. CI/seguridad: nuevas pruebas integradas en gate existente sin deshabilitar pruebas previas. Resultado del nuevo SHA pendiente; inspección autenticada pendiente. No declarar PASS global antes de ambos.
-## Criterios de aceptación
-- Todos los listados con superficie visible, filtros adaptables, estados vacío/error/carga, scroll propio de tabla, acciones según permiso, etiquetas legibles y copy español breve y factual.
-- Cancelar no muta, confirmar una sola vez, tenant/RBAC y estados revalidados; sin cambio de API ni semántica contable.
-- CI exact-SHA, capturas escritorio/móvil y recorrido autenticado de todas las rutas. Si queda un fallo, registrar causa y corregir; no certificar por compilación.
+# QA — Registro activo de pendientes visuales y funcionales
 
-## Segunda revisión — evidencia y continuidad
-- SHA 35f3acbfdd5625cce59634717b694557a2354df7: run 45737518387, 20/22 pruebas de navegador aprobadas (incluidas las seis nuevas de Productos y tarjetas a 1440/390/320 px); higiene/backend correctos. Certificación viva 45737518375 y ambos despliegues Vercel correctos. Dos fallos restantes de Transferencias en 1280/390 px: la aserción de texto coincidía con el encabezado de tabla «Solicitada» antes de que se ejecutara la petición POST. Se exige respuesta POST exitosa y estado del resumen, sin retirar verificación de cancelación, escritura única, permisos o actualización del listado.
-- Se migran superficies de Órdenes, Recepciones, Existencias, Períodos y Cuentas por cobrar; se adapta scroll de Cuentas bancarias, Asientos y Estados financieros. Plan de cuentas, Solicitudes, Finanzas, Configuración y detalle de Transferencias reciben correcciones puntuales de textos. Paginador Material centralizado en español. No se altera lógica de negocio.
-- Se añaden tres escenarios sintéticos de cinco nuevos listados vacíos en 1440/390/320 px. Pendientes de ejecución y validación visual autenticada. No equivale a certificación integral.
-### Cinco revisiones técnicas realizadas en esta intervención
-1. Layout: composición de filtros, tamaños mínimos, scroll local y revisión de las nuevas tarjetas; seis pruebas previas aprobaron.
-2. Superficies y tema: uso del token existente, estados vacíos, separación del fondo; nuevas rutas pendientes de pruebas.
-3. Textos: eliminación de jerga de fases, copy descriptivo en módulos intervenidos, traducción global del paginador. Pendiente revisar textos de estados, errores y ayuda dinámica de todas las pantallas, incluidas traducciones de fecha y vocabulario de dominio.
-4. Acciones: reapertura segura de confirmaciones y aserción de escritura real; falta verificar los dos casos corregidos y migrar flujos restantes. Conservados permisos, guardas y contratos.
-5. Integración: se revisan resultados y diferencias de cambios; verificar nuevo SHA, capturas y sesión autenticada. No declarar cierre por build o despliegue solamente.
-### Pendientes concretos (orden de continuación)
-- Validar confirmaciones de Transferencias y las cinco superficies nuevas con CI exact-SHA; revisar trazas si falla cualquier escenario.
-- Solicitudes, órdenes y recepciones: creación, edición, detalle y confirmaciones uniformes; evitar duplicación entre vista inline y modal. 
-- Facturas de venta/proveedor, pagos, devoluciones, notas de crédito, cuentas por pagar, caja y bancos: respetar acciones de estado y permisos; no introducir eliminación ajena al dominio.
-- Inventario: existencias y movimientos, detalle/creación de ajustes y costeo; revisar formularios, estados cargando/error y acciones restantes.
-- Finanzas: centros de costo (filtro fuera de tarjeta, editor inline), asientos, plan de cuentas, períodos, reportes; completar acciones y revisión de tablas de cada estado.
-- Administración: usuarios, roles, clientes, proveedores, permisos, configuración y auditoría (tabla/vista móvil duplicadas); revisar cobertura integral de modales/confirmaciones/tablas y textos por ruta.
-- Inspección visual autenticada en QA, con tema real por empresa, en escritorio y móvil; no sustituirla por mocks. Mantener las cinco auditorías completas finales abiertas hasta obtener esa evidencia.
+Fecha: 2026-11-25. Alcance exclusivo `qa`. Se retira un hallazgo sólo cuando exista evidencia causal de la corrección, prueba en QA y confirmación del propietario cuando corresponda. Los antecedentes quedan en el historial de Git. No se modifican datos productivos.
+
+## Pendientes de integración y rendimiento
+- **QA-CI-01** — Run 45738243072, SHA 2bfdf3bc: compilación inicial 992,23 kB frente a 750 kB máximo (650 kB advertencia). Base anterior 35f3acbf: 743,23 kB. Se localiza el proveedor de paginación en sus consumidores; queda pendiente verificar el nuevo build exact-SHA, tamaño real y traducciones. Conservar budgets, routing y regresiones; optimizar también hasta el umbral de advertencia si es viable.
+- **QA-CI-02** — Estilos de storefront-producto: 18,04 kB frente a 16 kB de advertencia. Reducir duplicación sin alterar la apariencia ni el comportamiento.
+- **QA-CI-03** — Repetir las dos confirmaciones de Transferencias que fallaron en 1280/390 y los escenarios de superficies nuevos. No retirar cancelación, verificación POST, escritura única, estado ni permisos.
+- **QA-CI-04** — Verificar CI completo (higiene, frontend, backend), certificación viva y despliegues Vercel solqaryn-qa y solqaryn_qa en el SHA causal. No certificar por build o deploy aislado.
+
+## Pendientes visuales transversales
+- **QA-UI-01** — Inventario de todas las rutas, incluidas públicas, autenticadas, listados, creación, detalle, edición, configuración y subrutas. Revisar individualmente todas las pantallas y sus estados vacío, carga, error y datos reales.
+- **QA-UI-02** — Fondos, contraste y superficies de tarjetas según tema de empresa; respetar fondoTarjetas (--color-surface), sin introducir otro color; verificar también pie de página, encabezados, tipografía, alineación, iconos y foco accesible. No sobreescribir texto de identidad configurado por empresa sin verificar su origen.
+- **QA-UI-03** — Filtros, tablas con scroll interno, paginación en español y geometría sin desbordes en anchos CSS 320, 360, 390, 414, 480, 768, 1024, 1280, 1440, 1920, 2048, 2400 y 2560. Ampliar pruebas existentes, no sustituirlas.
+- **QA-UI-04** — Microcopy estático y dinámico en todos los módulos: títulos, explicaciones, etiquetas, ayuda, estados vacíos, errores, confirmaciones, fechas y traducciones. En Costeo se visualiza el motivo técnico histórico de la migración ERP-N1.10; presentar una descripción comercial fiel y preservar el motivo original para trazabilidad, sin cambiar registros contables ni motivos escritos por usuarios.
+
+## Pendientes funcionales por módulo
+- **QA-FN-01** — Solicitudes, órdenes y recepciones de compra: superficies y filtros, creación/edición/detalle, modales y confirmaciones según estado y permiso.
+- **QA-FN-02** — Facturas de venta/proveedor, pagos, devoluciones, notas de crédito, cuentas por cobrar y pagar, caja y bancos: acciones legítimas según estado, detalle, editor, cancelación, tablas, paginación y textos.
+- **QA-FN-03** — Inventario: existencias, movimientos, ajustes, costeo, reservas, transferencias, conteos, Kardex, trazabilidad, almacenes y ubicaciones: revisar formularios, listados, confirmaciones, estados y datos dinámicos.
+- **QA-FN-04** — Finanzas: centros de costo, asientos, plan de cuentas, períodos, estados financieros y reportes; superficies, filtros, edición, detalle y acciones legítimas.
+- **QA-FN-05** — Administración, dashboard, catálogos, productos y variantes, usuarios, roles, clientes, proveedores, permisos, configuración, auditoría y reportes; cobertura integral por ruta, con conservación de RBAC y aislamiento empresarial.
+- **QA-FN-06** — Storefront y cuenta/checkout/carrito: recorrido responsive, texto y estilos; verificar sin afectar la identidad pública de cada empresa.
+
+## Certificación final pendiente
+- Diseño/adaptabilidad; fondos/tarjetas/tema; microcopy/traducciones; funcionamiento/modales/acciones; integración/seguridad/despliegues. Cinco auditorías deben corregir hallazgos, repetir pruebas y conservar evidencia del SHA causal.
+- Recorrido autenticado real por rutas y empresas QA con tema configurado; pruebas sintéticas no sustituyen datos, permisos ni operación real. Verificar acciones negativas, cancelación sin mutación, confirmación única, tenant y RBAC, sin modificar API ni semántica contable.
+- Cierre del registro: retirar exclusivamente hallazgos verificados y confirmados. Cuando no queden pendientes, registrar «No hay defectos pendientes por resolver».

@@ -1,3 +1,4 @@
+import { PAGINADOR_ESPANOL_PROVIDER } from '../../shared/paginador-institucional';
 import { Component, OnDestroy, OnInit, signal, ChangeDetectionStrategy, inject, DestroyRef } from '@angular/core';
 import { CommonModule } from '@angular/common';
 import { ActivatedRoute } from '@angular/router';
@@ -31,6 +32,7 @@ import { ProductoImagenComponent } from '../../shared/producto-imagen/producto-i
 type EstadoProductoFiltro = 'todos' | 'activos' | 'inactivos' | 'agotados' | 'disponibles';
 
 @Component({
+  viewProviders: [PAGINADOR_ESPANOL_PROVIDER],
   selector: 'app-productos-list',
   standalone: true,
   imports: [

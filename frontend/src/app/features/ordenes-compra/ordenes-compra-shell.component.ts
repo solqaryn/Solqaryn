@@ -1,3 +1,4 @@
+import { PAGINADOR_ESPANOL_PROVIDER } from '../../shared/paginador-institucional';
 import { CommonModule } from '@angular/common';
 import { Component, OnDestroy, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -18,6 +19,7 @@ import { ProveedorService } from '../../services/proveedor.service';
 import { AppAlertService } from '../../shared/alerts/app-alert.service';
 
 @Component({
+  viewProviders: [PAGINADOR_ESPANOL_PROVIDER],
   selector: 'app-ordenes-compra-shell',
   standalone: true,
   imports: [

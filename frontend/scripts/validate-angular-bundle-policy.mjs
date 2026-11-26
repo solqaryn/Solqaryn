@@ -40,4 +40,24 @@ if (app.includes('@angular/material') || navigation.includes('@angular/material'
   fail('El shell raíz y su navegación no deben volver a cargar Material JS de forma eager.');
 }
 
+// Los paginadores pertenecen a las vistas cargadas bajo demanda, no al bootstrap.
+if (appConfig.includes('@angular/material/paginator') || appConfig.includes('paginador-institucional')) {
+  fail('El proveedor de paginación debe permanecer fuera del bootstrap.');
+}
+function inspectPaginatorConsumers(dir) {
+  for (const entry of fs.readdirSync(path.join(root, dir), { withFileTypes: true })) {
+    const relative = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      inspectPaginatorConsumers(relative);
+    } else if (entry.name.endsWith('.ts') && !/\.(spec|test)\.ts$/.test(entry.name)) {
+      const source = read(relative);
+      const importsPaginator = /import\s*\{[^}]*\bMatPaginator(?:Module)?\b[^}]*\}\s*from\s*['"]@angular\/material\/paginator['"]/.test(source);
+      if (importsPaginator && !source.includes('viewProviders: [PAGINADOR_ESPANOL_PROVIDER]')) {
+        fail('Falta proveedor local de paginación en ' + relative);
+      }
+    }
+  }
+}
+inspectPaginatorConsumers('src/app/features');
+
 if (!process.exitCode) console.log('[angular-bundle-policy] PASS');

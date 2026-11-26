@@ -1,3 +1,4 @@
+import { PAGINADOR_ESPANOL_PROVIDER } from '../../shared/paginador-institucional';
 import { crearAccionesInstitucionales } from '../../shared/modal-institucional/acciones-institucionales';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
@@ -17,6 +18,7 @@ import { AlmacenService } from '../../services/almacen.service';
 import { ReservaInventarioService } from '../../services/reserva-inventario.service';
 
 @Component({
+  viewProviders: [PAGINADOR_ESPANOL_PROVIDER],
   selector: 'app-reservas-inventario-list',
   standalone: true,
   imports: [CommonModule, FormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatPaginatorModule, MatProgressSpinnerModule, MatSelectModule],

@@ -1,3 +1,4 @@
+import { PAGINADOR_ESPANOL_PROVIDER } from '../../shared/paginador-institucional';
 import { crearAccionesInstitucionales } from '../../shared/modal-institucional/acciones-institucionales';
 import { firstValueFrom } from 'rxjs';
 import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
@@ -38,6 +39,7 @@ interface SegmentoClienteResumen {
 }
 
 @Component({
+  viewProviders: [PAGINADOR_ESPANOL_PROVIDER],
   selector: 'app-clientes-list',
   standalone: true,
   imports: [ConsultaRegistroDirective,

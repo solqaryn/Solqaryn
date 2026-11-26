@@ -1,3 +1,4 @@
+import { PAGINADOR_ESPANOL_PROVIDER } from '../../shared/paginador-institucional';
 import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 
 import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
@@ -16,6 +17,7 @@ import { ExistenciaVariante, ExistenciaVarianteFiltro } from '../../core/models/
 import { ExistenciaVarianteService } from '../../services/existencia-variante.service';
 
 @Component({
+  viewProviders: [PAGINADOR_ESPANOL_PROVIDER],
   selector: 'app-existencias-variante-list',
   standalone: true,
   imports: [ConsultaRegistroDirective, FormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatPaginatorModule, MatProgressSpinnerModule, MatSelectModule],

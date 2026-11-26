@@ -4,8 +4,6 @@ import { provideHttpClient, withInterceptors, withXhr } from '@angular/common/ht
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { routes } from './app.routes';
 import { MAT_DIALOG_DEFAULT_OPTIONS } from '@angular/material/dialog';
-import { MatPaginatorIntl } from '@angular/material/paginator';
-import { crearPaginadorEspanol } from './shared/paginador-institucional';
 import { MODAL_DEFAULTS } from './shared/modal-institucional/modal-institucional';
 import { ALMACENES_ROUTES } from './features/almacenes/almacenes.routes';
 import { UBICACIONES_ALMACEN_ROUTES } from './features/ubicaciones-almacen/ubicaciones-almacen.routes';
@@ -18,7 +16,6 @@ import { AfterRenderSelectivePreloadingStrategy } from './core/performance/after
 export const appConfig: ApplicationConfig = {
   providers: [
     { provide: MAT_DIALOG_DEFAULT_OPTIONS, useValue: MODAL_DEFAULTS },
-    { provide: MatPaginatorIntl, useFactory: crearPaginadorEspanol },
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter([
       ...UBICACIONES_ALMACEN_ROUTES,

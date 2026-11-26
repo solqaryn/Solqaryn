@@ -1,3 +1,4 @@
+import { PAGINADOR_ESPANOL_PROVIDER } from '../../shared/paginador-institucional';
 import { crearAccionesInstitucionales } from '../../shared/modal-institucional/acciones-institucionales';
 
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
@@ -19,6 +20,7 @@ import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service
 import { TransferenciaInventarioService } from '../../services/transferencia-inventario.service';
 
 @Component({
+  viewProviders: [PAGINADOR_ESPANOL_PROVIDER],
   selector: 'app-transferencias-list',
   standalone: true,
   imports: [FormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatPaginatorModule, MatProgressSpinnerModule, MatSelectModule],

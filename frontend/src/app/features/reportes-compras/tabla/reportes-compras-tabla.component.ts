@@ -1,3 +1,4 @@
+import { PAGINADOR_ESPANOL_PROVIDER } from '../../../shared/paginador-institucional';
 import { Component, Input, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule, DecimalPipe, DatePipe } from '@angular/common';
 import { MatTableModule } from '@angular/material/table';
@@ -10,6 +11,7 @@ import { EventEmitter, Output } from '@angular/core';
 import { PagedResult } from '../../../core/models/api-response.model';
 
 @Component({
+  viewProviders: [PAGINADOR_ESPANOL_PROVIDER],
   selector: 'app-reportes-compras-tabla',
   standalone: true,
   imports: [

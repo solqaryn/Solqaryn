@@ -1,3 +1,8 @@
+## 2026-11-25 — QA: restauración del presupuesto de compilación y paginación localizada
+- Se retira MatPaginatorIntl del bootstrap y se localiza su proveedor compartido en 20 vistas paginadas. Se conservan las etiquetas, navegación, guardas y contratos; no se aumentan los límites de compilación.
+- Se añade control estático contra importación eager del paginador y contra consumidores sin proveedor, más pruebas de las etiquetas y rangos. Verificación exact-SHA pendiente de CI. Scope Lock de DEV 3cb65287: run 45738293793, frescura y 9 negativos PASS.
+- Se consolida el registro de continuidad QA: sólo pendientes y condiciones de aceptación, sin certificar correcciones todavía no probadas. No se modifica DEV, MAIN, backend ni datos.
+
 ## 2026-11-25 — QA: segunda revisión institucional de listados y textos
 - Se extiende la tarjeta y scroll institucional a compras, existencias, períodos y cobros; se revisan bancos, asientos y estados financieros, sin modificar dominio.
 - Paginación Material en español mediante proveedor compartido y microcopy sin jerga interna. Se añaden pruebas de nuevas superficies en tres resoluciones.

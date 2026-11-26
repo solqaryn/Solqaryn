@@ -17,3 +17,6 @@ export function crearPaginadorEspanol(): MatPaginatorIntl {
   };
   return intl;
 }
+
+/** Instancia local de cada vista paginada: no importar en el bootstrap. */
+export const PAGINADOR_ESPANOL_PROVIDER = { provide: MatPaginatorIntl, useFactory: crearPaginadorEspanol };

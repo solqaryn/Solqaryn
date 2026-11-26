@@ -1,3 +1,4 @@
+import { PAGINADOR_ESPANOL_PROVIDER } from '../../shared/paginador-institucional';
 import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
@@ -21,6 +22,7 @@ import {
 } from './costeo-inventario.model';
 
 @Component({
+  viewProviders: [PAGINADOR_ESPANOL_PROVIDER],
   selector: 'app-costeo-inventario',
   standalone: true,
   imports: [ConsultaRegistroDirective,

@@ -1,3 +1,4 @@
+import { PAGINADOR_ESPANOL_PROVIDER } from '../../shared/paginador-institucional';
 import { crearAccionesInstitucionales } from '../../shared/modal-institucional/acciones-institucionales';
 import { firstValueFrom } from 'rxjs';
 import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
@@ -24,6 +25,7 @@ type EstadoFiltro = 'todos' | 'activas' | 'inactivas';
 type PadreFiltro = 'todos' | 'raiz' | number;
 
 @Component({
+  viewProviders: [PAGINADOR_ESPANOL_PROVIDER],
   selector: 'app-ubicaciones-almacen-list',
   standalone: true,
   imports: [ConsultaRegistroDirective,

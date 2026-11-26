@@ -1,3 +1,4 @@
+import { PAGINADOR_ESPANOL_PROVIDER } from '../../shared/paginador-institucional';
 import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
@@ -28,6 +29,7 @@ interface OpcionFiltro {
 }
 
 @Component({
+  viewProviders: [PAGINADOR_ESPANOL_PROVIDER],
   selector: 'app-movimientos-list',
   standalone: true,
   imports: [ConsultaRegistroDirective,

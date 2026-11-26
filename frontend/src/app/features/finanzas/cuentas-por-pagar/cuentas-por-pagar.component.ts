@@ -1,3 +1,4 @@
+import { PAGINADOR_ESPANOL_PROVIDER } from '../../../shared/paginador-institucional';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -23,6 +24,7 @@ import { CuentasPorPagarService } from '../../../core/services/cuentas-por-pagar
 import { AppAlertService } from '../../../shared/alerts/app-alert.service';
 
 @Component({
+  viewProviders: [PAGINADOR_ESPANOL_PROVIDER],
   selector: 'app-cuentas-por-pagar',
   standalone: true,
   imports: [
