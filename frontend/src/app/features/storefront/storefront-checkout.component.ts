@@ -69,6 +69,12 @@ export class StorefrontCheckoutComponent implements OnInit {
   } as const;
 
   ngOnInit(): void {
+    this.formulario.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      if (!this.enlaceWhatsapp()) return;
+      this.enlaceWhatsapp.set('');
+      this.aviso.set('Los datos de contacto cambiaron. Vuelve a preparar la solicitud.');
+    });
+
     if (!environment.production && this.config.mostrarControlesVistaPrevia
       && this.route.snapshot.queryParamMap.get('fuente') === 'bd') {
       this.utilizarDatosBaseDatos.set(true);

@@ -1,3 +1,7 @@
+## 2026-11-26 — C15-04.M05.04 — DEV02 — R1/R5
+- Checkout: invalidar el enlace WhatsApp preparado cuando cambian los datos del comprador, conservando las validaciones, el destino seguro y la expiración. Evita reutilizar datos de contacto o notas desactualizados; no cambia permisos ni proveedor. Regresión Chromium de formulario inválido, regeneración y ausencia de recibo antes de salida (fixture HTTP, no integración empresarial). A0 estático; ejecución CI y A5 pendientes.
+- TASK_ID=6af16bb9492c8191b8e8c7d606f11507; RUN_ID=1f88743f-3a44-8328-89b2-c57321ac0523; base=482c8dcc9c730982f461b6df1d75f12f6dbf8958; V17 H2297:I2297; foco C01-04.M03.06 preservado: API12 sin acción específica y P01/P02 no materializados, no se reabren LISTO. R1/R5, DEV exclusivamente. 2026-11-26T12:20:19.082Z
+
 ## 2026-11-26 — DEV05 — C07-01.M06.06 — V44/R1/R5
 - Base 88bd0ec3e7beaace6f4934399f356f57af2466c0; RUN 7cf707c9-15ac-8330-a187-67cc1015ec2e; D06 reserva: lectura bloqueante vigente de variantes, validación de conjunto exacto y contraste de instancia EF rastreada con fila vigente antes de existencias, reserva o auditoría; conserva relación EF y aislamiento tenant.
 - Pruebas dirigidas: variante desactivada, identidad incorrecta, SKU rastreado obsoleto; integración MySQL A/B con desactivación desde contexto separado y readback sin efectos. CI pendiente; no certifica D01/D06, JWT ni A5.

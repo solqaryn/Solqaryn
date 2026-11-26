@@ -379,6 +379,42 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
     expect(reciboRaw).not.toContain('99991111');
   });
 
+  test('editar los datos de contacto invalida la solicitud WhatsApp preparada', async ({ page }) => {
+    await prepararEmpresa(page);
+    await sembrarCarrito(page, 'bd', modeloClaveReal, 501, 2);
+    await mockCatalogoReal(page, 1750, 3);
+    await mockCheckoutValido(page);
+    await page.goto('/tienda/checkout?fuente=bd');
+    await llenarComprador(page);
+    const preparar = page.getByRole('button', { name: 'Preparar pedido por WhatsApp' });
+    const enlace = page.getByRole('link', { name: 'Abrir WhatsApp y continuar' });
+    await preparar.click();
+    await expect(enlace).toBeVisible();
+
+    const telefono = page.getByRole('textbox', { name: 'Teléfono' });
+    await telefono.fill('');
+    await expect(enlace).toHaveCount(0);
+    await preparar.click();
+    await expect(enlace).toHaveCount(0);
+    await expect(page.getByText('Revisa los datos de contacto marcados antes de continuar.')).toBeVisible();
+
+    await telefono.fill('+504 9999-2222');
+    await preparar.click();
+    await expect(enlace).toBeVisible();
+    const mensaje = new URL((await enlace.getAttribute('href'))!).searchParams.get('text') || '';
+    expect(mensaje).toContain('50499992222');
+    expect(mensaje).not.toContain('50499991111');
+
+    await page.getByRole('textbox', { name: 'Notas para el comercio' }).fill('Entregar por la mañana.');
+    await expect(enlace).toHaveCount(0);
+    await preparar.click();
+    const actualizado = new URL((await enlace.getAttribute('href'))!).searchParams.get('text') || '';
+    expect(actualizado).toContain('Entregar por la mañana.');
+    expect(actualizado).not.toContain('Entregar por la tarde.');
+    const recibos = await page.evaluate(() => Object.keys(sessionStorage).filter(key => key.startsWith('storefront:pedido:')));
+    expect(recibos).toHaveLength(0);
+  });
+
   test('si vence la validación después de preparar WhatsApp bloquea la salida y exige revalidar', async ({ page }) => {
     await prepararEmpresa(page);
     await sembrarCarrito(page, 'bd', modeloClaveReal, 501, 2);
