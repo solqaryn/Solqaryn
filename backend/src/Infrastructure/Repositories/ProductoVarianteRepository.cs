@@ -51,6 +51,19 @@ public class ProductoVarianteRepository : IProductoVarianteRepository
                 .AsNoTracking().FirstOrDefaultAsync();
             if (row is not null) result.Add(row);
         }
+        // The variant FK is tenant-scoped and locked. Read shared catalog labels
+        // with current SQL reads, never from an already tracked navigation.
+        foreach (var row in result)
+        {
+            if (row.MarcaId is int marcaId)
+                row.Marca = await _context.Marcas.FromSqlInterpolated($"SELECT m.* FROM Marcas m WHERE m.Id = {marcaId} AND m.Eliminado = 0 FOR SHARE").AsNoTracking().FirstOrDefaultAsync();
+            if (row.ModeloId is int modeloId)
+                row.Modelo = await _context.Modelos.FromSqlInterpolated($"SELECT m.* FROM Modelos m WHERE m.Id = {modeloId} AND m.Eliminado = 0 FOR SHARE").AsNoTracking().FirstOrDefaultAsync();
+            if (row.ColorId is int colorId)
+                row.Color = await _context.Colores.FromSqlInterpolated($"SELECT c.* FROM Colores c WHERE c.Id = {colorId} AND c.Eliminado = 0 FOR SHARE").AsNoTracking().FirstOrDefaultAsync();
+            if (row.TallaId is int tallaId)
+                row.Talla = await _context.Tallas.FromSqlInterpolated($"SELECT t.* FROM Tallas t WHERE t.Id = {tallaId} AND t.Eliminado = 0 FOR SHARE").AsNoTracking().FirstOrDefaultAsync();
+        }
         return result;
     }
 

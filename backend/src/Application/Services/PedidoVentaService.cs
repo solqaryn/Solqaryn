@@ -280,6 +280,7 @@ public sealed class PedidoVentaService : IPedidoVentaService
             foreach (var asignacion in plan.Asignaciones)
             {
                 var variante = porId[asignacion.ProductoVarianteId];
+                var vigente = vigentesPorId[asignacion.ProductoVarianteId];
                 var detalle = new ReservaInventarioDetalle
                 {
                     ReservaInventario = reserva,
@@ -287,11 +288,11 @@ public sealed class PedidoVentaService : IPedidoVentaService
                     ProductoVariante = variante,
                     AlmacenId = asignacion.AlmacenId,
                     UbicacionAlmacenId = asignacion.UbicacionAlmacenId,
-                    ProductoSkuSnapshot = variante.Sku,
-                    ProductoMarcaSnapshot = variante.Marca?.Nombre,
-                    ProductoModeloSnapshot = variante.Modelo?.Nombre,
-                    ProductoColorSnapshot = variante.Color?.Nombre,
-                    ProductoTallaSnapshot = variante.Talla?.Nombre,
+                    ProductoSkuSnapshot = vigente.Sku,
+                    ProductoMarcaSnapshot = vigente.Marca?.Nombre,
+                    ProductoModeloSnapshot = vigente.Modelo?.Nombre,
+                    ProductoColorSnapshot = vigente.Color?.Nombre,
+                    ProductoTallaSnapshot = vigente.Talla?.Nombre,
                     FechaCreacion = ahora,
                     FechaActualizacion = ahora,
                     CreadoPorUsuarioId = usuarioId,

@@ -23,7 +23,7 @@ namespace Solqaryn.Tests;
 [Trait("Category", "Integration")]
 public sealed class C0701ReservaClasificacionMySqlIntegrationTests
 {
-    private sealed record Seed(int OrderId, int WarehouseId, int[] Products, int[] Variants, int[] Stocks);
+    private sealed record Seed(int OrderId, int WarehouseId, int[] Products, int[] Variants, int[] Stocks, string Suffix);
 
     [Fact]
     public async Task MixedClassification_DeniesWithoutEffects_ThenAuditFailureRollsBack_AndReplayIsIdempotent()
@@ -85,8 +85,15 @@ public sealed class C0701ReservaClasificacionMySqlIntegrationTests
                 TipoInventario = TipoInventario.MercaderiaVenta }).ToArray();
             db.Productos.AddRange(products);
             await db.SaveChangesAsync();
+            var marca = new Marca { Nombre = "QA Marca " + suffix };
+            var modelo = new Modelo { Nombre = "QA Modelo " + suffix, Marca = marca };
+            var color = new Color { Nombre = "QA Color " + suffix };
+            var talla = new Talla { Nombre = "QA Talla " + suffix };
+            db.AddRange(marca, modelo, color, talla);
+            await db.SaveChangesAsync();
             var variants = products.Select((p, i) => new ProductoVariante {
-                ProductoId = p.Id, Sku = "QA_" + suffix + i, Cantidad = 10, Precio = 25m, Costo = 12m }).ToArray();
+                ProductoId = p.Id, Sku = "QA_" + suffix + i, Cantidad = 10, Precio = 25m, Costo = 12m,
+                MarcaId = marca.Id, ModeloId = modelo.Id, ColorId = color.Id, TallaId = talla.Id }).ToArray();
             db.ProductoVariantes.AddRange(variants);
             await db.SaveChangesAsync();
             var stocks = variants.Select(v => {
@@ -114,7 +121,7 @@ public sealed class C0701ReservaClasificacionMySqlIntegrationTests
             db.PedidosVenta.Add(order);
             await db.SaveChangesAsync();
             return new Seed(order.Id, warehouse.Id, products.Select(p => p.Id).ToArray(),
-                variants.Select(v => v.Id).ToArray(), stocks.Select(e => e.Id).ToArray());
+                variants.Select(v => v.Id).ToArray(), stocks.Select(e => e.Id).ToArray(), suffix);
         }
 
         static ConfirmarPedidoVentaDto Request(Seed s)
@@ -124,6 +131,31 @@ public sealed class C0701ReservaClasificacionMySqlIntegrationTests
                 dto.Asignaciones.Add(new AsignacionReservaPedidoDto {
                     ProductoVarianteId = s.Variants[i], AlmacenId = s.WarehouseId, Cantidad = i == 0 ? 2 : 1 });
             return dto;
+        }
+
+        async Task ConfirmWithRenamedLabelsAsync(int tenant, Seed s)
+        {
+            var access = Access(tenant);
+            await using var stale = new AppDbContext(options, tenantHttpContextAccessor: access);
+            var tracked = await stale.ProductoVariantes.Include(v => v.Marca).Include(v => v.Modelo)
+                .Include(v => v.Color).Include(v => v.Talla).SingleAsync(v => v.Id == s.Variants[0]);
+            Assert.Equal("QA Marca " + s.Suffix, tracked.Marca!.Nombre);
+            Assert.Equal("QA Modelo " + s.Suffix, tracked.Modelo!.Nombre);
+            Assert.Equal("QA Color " + s.Suffix, tracked.Color!.Nombre);
+            Assert.Equal("QA Talla " + s.Suffix, tracked.Talla!.Nombre);
+            await using (var writer = new AppDbContext(options, tenantHttpContextAccessor: access))
+            {
+                (await writer.Marcas.SingleAsync(x => x.Id == tracked.MarcaId)).Nombre += " vigente";
+                (await writer.Modelos.SingleAsync(x => x.Id == tracked.ModeloId)).Nombre += " vigente";
+                (await writer.Colores.SingleAsync(x => x.Id == tracked.ColorId)).Nombre += " vigente";
+                (await writer.Tallas.SingleAsync(x => x.Id == tracked.TallaId)).Nombre += " vigente";
+                await writer.SaveChangesAsync();
+            }
+            Assert.Equal("QA Marca " + s.Suffix, tracked.Marca.Nombre);
+            Assert.Equal("QA Modelo " + s.Suffix, tracked.Modelo.Nombre);
+            Assert.Equal("QA Color " + s.Suffix, tracked.Color.Nombre);
+            Assert.Equal("QA Talla " + s.Suffix, tracked.Talla.Nombre);
+            await Compose(stale, access).ConfirmarAsync(s.OrderId, Request(s));
         }
 
         async Task VerifyAsync(int tenant, Seed s, bool confirmed)
@@ -156,6 +188,13 @@ public sealed class C0701ReservaClasificacionMySqlIntegrationTests
                 var reservation = Assert.Single(reservations);
                 Assert.Equal(EstadoReservaInventario.Activa, reservation.Estado);
                 Assert.Equal(2, reservation.Detalles.Count);
+                Assert.All(reservation.Detalles, detail =>
+                {
+                    Assert.Equal("QA Marca " + s.Suffix + " vigente", detail.ProductoMarcaSnapshot);
+                    Assert.Equal("QA Modelo " + s.Suffix + " vigente", detail.ProductoModeloSnapshot);
+                    Assert.Equal("QA Color " + s.Suffix + " vigente", detail.ProductoColorSnapshot);
+                    Assert.Equal("QA Talla " + s.Suffix + " vigente", detail.ProductoTallaSnapshot);
+                });
                 Assert.Equal(2, audit.Count);
                 Assert.Contains(audit, x => x.Entidad == nameof(PedidoVenta) && x.ReferenciaId == s.OrderId);
                 Assert.Contains(audit, x => x.Entidad == nameof(ReservaInventario) && x.ReferenciaId == reservation.Id);
@@ -294,9 +333,14 @@ public sealed class C0701ReservaClasificacionMySqlIntegrationTests
             // After rollback, same request succeeds; a committed replay cannot reserve again.
             for (int attempt = 0; attempt < 2; attempt++)
             {
-                var access = Access(a);
-                await using var db = new AppDbContext(options, tenantHttpContextAccessor: access);
-                await Compose(db, access).ConfirmarAsync(sa.OrderId, Request(sa));
+                if (attempt == 0)
+                    await ConfirmWithRenamedLabelsAsync(a, sa);
+                else
+                {
+                    var access = Access(a);
+                    await using var db = new AppDbContext(options, tenantHttpContextAccessor: access);
+                    await Compose(db, access).ConfirmarAsync(sa.OrderId, Request(sa));
+                }
                 await VerifyAsync(a, sa, true);
                 await VerifyAsync(b, sb, false);
             }
@@ -309,9 +353,14 @@ public sealed class C0701ReservaClasificacionMySqlIntegrationTests
             await VerifyAsync(b, sb, false);
             for (int attempt = 0; attempt < 2; attempt++)
             {
-                var access = Access(b);
-                await using var db = new AppDbContext(options, tenantHttpContextAccessor: access);
-                await Compose(db, access).ConfirmarAsync(sb.OrderId, Request(sb));
+                if (attempt == 0)
+                    await ConfirmWithRenamedLabelsAsync(b, sb);
+                else
+                {
+                    var access = Access(b);
+                    await using var db = new AppDbContext(options, tenantHttpContextAccessor: access);
+                    await Compose(db, access).ConfirmarAsync(sb.OrderId, Request(sb));
+                }
                 await VerifyAsync(a, sa, true);
                 await VerifyAsync(b, sb, true);
             }
