@@ -1,5 +1,6 @@
 using System.Text.Json;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
 using Solqaryn.Infrastructure.Persistence;
@@ -62,6 +63,72 @@ public static class V5CaseFileAuditReceiptPersistence
         return true;
     }
 
+    // Narrow P12 source: only durable API12 receipts already bound to the exact
+    // case/tenant/branch. The authenticated caller must hold grant, P01/P02 and
+    // actual-resource locks. Do not return raw audit JSON, IDs or actor details.
+    public static async Task<long?> ReadReceiptVersionInCurrentTransactionAsync(
+        AppDbContext db, V5CaseFileOwnershipStore.Candidate expected, Guid target,
+        CancellationToken ct = default)
+    {
+        ct.ThrowIfCancellationRequested();
+        var tx = db.Database.CurrentTransaction;
+        if (tx is null || !db.Database.IsRelational() || expected is null || target == Guid.Empty ||
+            expected.TenantId <= 0 || expected.CaseId <= 0 || expected.BranchId <= 0 || expected.Version <= 0 ||
+            db.AuthorizedCommercialEmpresaId != expected.TenantId || db.ChangeTracker.HasChanges())
+            return null;
+        var canonical = target.ToString("N");
+        await using var cmd = db.Database.GetDbConnection().CreateCommand();
+        cmd.Transaction = tx.GetDbTransaction();
+        cmd.CommandText = """
+            SELECT CorrelationId, ValoresNuevos FROM RegistrosAuditoria
+            WHERE EmpresaId=@tenant AND ReferenciaId=@case AND AmbitoAutoridad=@scope AND OrigenAutorizacion=@origin
+              AND CAST(Modulo AS BINARY)=CAST(@module AS BINARY)
+              AND CAST(Accion AS BINARY)=CAST(@action AS BINARY)
+              AND CAST(Entidad AS BINARY)=CAST(@entity AS BINARY)
+              AND CAST(Resultado AS BINARY)=CAST(@result AS BINARY)
+              AND CorrelationId=@target LIMIT 2 FOR SHARE
+            """;
+        foreach (var (name, value) in new (string, object)[]
+        {
+            ("@tenant", expected.TenantId), ("@case", expected.CaseId),
+            ("@scope", (int)AmbitoAutorizacion.Empresa), ("@origin", (int)OrigenAutorizacion.MembresiaEmpresa),
+            ("@module", nameof(ModuloSistema.Auditoria)), ("@action", nameof(AccionPermiso.ReadAuditCorrelation)),
+            ("@entity", "ExpedienteUniversal"), ("@result", "Exito"), ("@target", canonical)
+        })
+        {
+            var p = cmd.CreateParameter(); p.ParameterName = name; p.Value = value; cmd.Parameters.Add(p);
+        }
+        string payload;
+        await using (var reader = await cmd.ExecuteReaderAsync(ct))
+        {
+            if (!await reader.ReadAsync(ct) || reader.IsDBNull(0) || reader.IsDBNull(1) ||
+                !string.Equals(reader.GetString(0), canonical, StringComparison.Ordinal)) return null;
+            payload = reader.GetString(1);
+            if (await reader.ReadAsync(ct)) return null; // ambiguous target: deny, not first match
+        }
+        long version;
+        try
+        {
+            using var json = JsonDocument.Parse(payload);
+            var root = json.RootElement;
+            if (root.ValueKind != JsonValueKind.Object ||
+                !root.TryGetProperty("SucursalId", out var branch) || branch.ValueKind != JsonValueKind.Number ||
+                !branch.TryGetInt32(out var branchId) || branchId != expected.BranchId ||
+                !root.TryGetProperty("Version", out var storedVersion) || storedVersion.ValueKind != JsonValueKind.Number ||
+                !storedVersion.TryGetInt64(out version) || version <= 0 || version > expected.Version) return null;
+            var properties = root.EnumerateObject().ToArray();
+            if (properties.Length is < 2 or > 3 || properties.Select(p => p.Name).Distinct(StringComparer.Ordinal).Count() != properties.Length ||
+                properties.Any(p => p.Name is not ("SucursalId" or "Version" or "TargetCorrelation"))) return null;
+            if (root.TryGetProperty("TargetCorrelation", out var linked) &&
+                (linked.ValueKind != JsonValueKind.String || !Guid.TryParseExact(linked.GetString(), "N", out var previous) ||
+                 previous == Guid.Empty || linked.GetString() != previous.ToString("N"))) return null;
+        }
+        catch (JsonException) { return null; }
+        ct.ThrowIfCancellationRequested();
+        return ReferenceEquals(tx, db.Database.CurrentTransaction) &&
+            db.AuthorizedCommercialEmpresaId == expected.TenantId && !db.ChangeTracker.HasChanges() ? version : null;
+    }
+
     /// <summary>
     /// API12 receipt only, never an ownership/version writer or a route. A future
     /// authenticated caller MUST supply an authoritative resource resolver, which
@@ -73,12 +140,13 @@ public static class V5CaseFileAuditReceiptPersistence
         AppDbContext db, V5CaseFileOwnershipStore.Candidate expected,
         int actor, int baseRole, int tenantRole, Guid correlation,
         Func<AppDbContext, V5CaseFileOwnershipStore.Candidate, CancellationToken, ValueTask<bool>> verifyActualResource,
-        CancellationToken ct = default)
+        CancellationToken ct = default, Guid? targetCorrelation = null)
     {
         ct.ThrowIfCancellationRequested();
         var tx = db.Database.CurrentTransaction;
         if (tx is null || !db.Database.IsRelational() || expected is null ||
             verifyActualResource is null || correlation == Guid.Empty ||
+            targetCorrelation == Guid.Empty || targetCorrelation == correlation ||
             actor <= 0 || baseRole <= 0 || tenantRole <= 0 || expected.Version <= 0 ||
             expected.TenantId <= 0 || expected.BranchId <= 0 || expected.CaseId <= 0 ||
             db.AuthorizedCommercialEmpresaId != expected.TenantId ||
@@ -122,11 +190,9 @@ public static class V5CaseFileAuditReceiptPersistence
             Descripcion = "Consulta de correlacion de auditoria",
             CorrelationId = correlation.ToString("N"),
             Resultado = "Exito",
-            ValoresNuevos = JsonSerializer.Serialize(new
-            {
-                SucursalId = expected.BranchId,
-                expected.Version
-            })
+            ValoresNuevos = targetCorrelation is Guid target
+                ? JsonSerializer.Serialize(new { SucursalId = expected.BranchId, expected.Version, TargetCorrelation = target.ToString("N") })
+                : JsonSerializer.Serialize(new { SucursalId = expected.BranchId, expected.Version })
         };
         if (!await AppendAndVerifyAsync(db, receipt, ct) ||
             !await StillAuthorizedAsync())

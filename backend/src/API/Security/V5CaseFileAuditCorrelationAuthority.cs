@@ -78,16 +78,32 @@ public sealed class V5CaseFileAuditCorrelationAuthority(
     // The caller supplies a dedicated context and a server-owned allowlisted resource
     // resolver. The operation correlation is generated server-side, not the target
     // correlation being queried. A receipt ID is internal persistence evidence only.
-    public sealed record ReceiptResult(string Code, int? ReceiptId = null);
+    public sealed record ReceiptResult(string Code, int? ReceiptId = null)
+    {
+        public long? TargetVersion { get; init; }
+    }
 
-    public async Task<ReceiptResult> AppendAuthorizedReceiptAsync(AppDbContext db, int caseId,
+    public Task<ReceiptResult> AppendAuthorizedReceiptAsync(AppDbContext db, int caseId,
         Guid operationCorrelation,
         Func<AppDbContext, V5CaseFileOwnershipStore.Candidate, CancellationToken, ValueTask<bool>> verifyActualResource,
-        CancellationToken ct = default)
+        CancellationToken ct = default) => ExecuteReceiptAsync(db, caseId, operationCorrelation, null, verifyActualResource, ct);
+
+    // Internal P12 consumer for already case-bound receipts only, not a generic
+    // audit search or a route. The operation GUID must be issued server-side.
+    public Task<ReceiptResult> ReadAuthorizedReceiptCorrelationAsync(AppDbContext db, int caseId,
+        Guid targetCorrelation, Guid operationCorrelation,
+        Func<AppDbContext, V5CaseFileOwnershipStore.Candidate, CancellationToken, ValueTask<bool>> verifyActualResource,
+        CancellationToken ct = default) => ExecuteReceiptAsync(db, caseId, operationCorrelation, targetCorrelation, verifyActualResource, ct);
+
+    private async Task<ReceiptResult> ExecuteReceiptAsync(AppDbContext db, int caseId,
+        Guid operationCorrelation, Guid? targetCorrelation,
+        Func<AppDbContext, V5CaseFileOwnershipStore.Candidate, CancellationToken, ValueTask<bool>> verifyActualResource,
+        CancellationToken ct)
     {
         ArgumentNullException.ThrowIfNull(db);
         ct.ThrowIfCancellationRequested();
-        if (caseId <= 0 || operationCorrelation == Guid.Empty || verifyActualResource is null ||
+        if (caseId <= 0 || operationCorrelation == Guid.Empty || targetCorrelation == Guid.Empty ||
+            targetCorrelation == operationCorrelation || verifyActualResource is null ||
             !db.Database.IsRelational() || db.Database.CurrentTransaction is not null ||
             db.ChangeTracker.HasChanges())
             return new("CASEFILE_AUDIT_DENIED");
@@ -117,9 +133,18 @@ public sealed class V5CaseFileAuditCorrelationAuthority(
             if (candidate is null)
                 return await DenyAsync();
 
+            long? targetVersion = null;
+            if (targetCorrelation is Guid target)
+            {
+                if (!await verifyActualResource(db, candidate, ct) ||
+                    await ResolveInCurrentTransactionAsync(db, ct) != expected) return await DenyAsync();
+                targetVersion = await V5CaseFileAuditReceiptPersistence.ReadReceiptVersionInCurrentTransactionAsync(db, candidate, target, ct);
+                if (targetVersion is null) return await DenyAsync();
+            }
+
             var receipt = await V5CaseFileAuditReceiptPersistence.AppendEnterpriseInCurrentTransactionAsync(
                 db, candidate, expected.ActorId, expected.BaseRoleId, expected.TenantRoleId,
-                operationCorrelation, verifyActualResource, ct);
+                operationCorrelation, verifyActualResource, ct, targetCorrelation);
             // Relational locks protect the grant and source; recheck the signed
             // session after all I/O as its expiry/context can change independently.
             if (receipt is null || await ResolveInCurrentTransactionAsync(db, ct) != expected ||
@@ -129,11 +154,15 @@ public sealed class V5CaseFileAuditCorrelationAuthority(
                 expected.ExpiresUnix <= DateTimeOffset.UtcNow.ToUnixTimeSeconds())
                 return await DenyAsync();
 
+            if (targetCorrelation is Guid linked &&
+                (await V5CaseFileAuditReceiptPersistence.ReadReceiptVersionInCurrentTransactionAsync(db, candidate, linked, ct) != targetVersion ||
+                 await ResolveInCurrentTransactionAsync(db, ct) != expected)) return await DenyAsync();
             ct.ThrowIfCancellationRequested();
             commitStarted = true;
             await tx.CommitAsync(ct);
             committed = true;
-            return new("CASEFILE_AUDIT_RECEIPT_WRITTEN", receipt);
+            return new(targetCorrelation.HasValue ? "CASEFILE_AUDIT_CORRELATION_READ" : "CASEFILE_AUDIT_RECEIPT_WRITTEN", receipt)
+                { TargetVersion = targetVersion };
         }
         catch (OperationCanceledException) when (!commitStarted) { throw; }
         catch (Exception)

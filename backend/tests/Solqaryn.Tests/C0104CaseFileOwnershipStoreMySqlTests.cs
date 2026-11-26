@@ -273,7 +273,7 @@ public sealed class C0104CaseFileOwnershipStoreMySqlTests
             // Preliminary permission projection and resource mapping are explicit fixtures:
             // this is not a commercial HTTP/DI or authentic-resource certification.
             async Task CheckAuthenticatedReceipt(int tenant, int branch, int caseId,
-                bool changeSessionDuringIo, bool shouldCommit)
+                bool changeSessionDuringIo, bool shouldCommit, Guid? target = null)
             {
                 var requestAccessor = Access(tenant);
                 var request = requestAccessor.HttpContext!;
@@ -332,10 +332,12 @@ public sealed class C0104CaseFileOwnershipStoreMySqlTests
                         candidate.ResourceType == "fixture");
                 }
 
-                var result = await authority.AppendAuthorizedReceiptAsync(
-                    requestDb, caseId, operation, VerifyFixture);
-                Assert.Equal(shouldCommit ? "CASEFILE_AUDIT_RECEIPT_WRITTEN" : "CASEFILE_AUDIT_DENIED", result.Code);
+                var result = target is Guid linked
+                    ? await authority.ReadAuthorizedReceiptCorrelationAsync(requestDb, caseId, linked, operation, VerifyFixture)
+                    : await authority.AppendAuthorizedReceiptAsync(requestDb, caseId, operation, VerifyFixture);
+                Assert.Equal(shouldCommit ? (target.HasValue ? "CASEFILE_AUDIT_CORRELATION_READ" : "CASEFILE_AUDIT_RECEIPT_WRITTEN") : "CASEFILE_AUDIT_DENIED", result.Code);
                 Assert.Equal(shouldCommit, result.ReceiptId.HasValue);
+                Assert.Equal(shouldCommit && target.HasValue ? (long?)auditCandidate.Version : null, result.TargetVersion);
                 Assert.Null(requestDb.Database.CurrentTransaction);
                 var durable = await requestDb.Set<RegistroAuditoria>().AsNoTracking()
                     .Where(r => r.CorrelationId == operation.ToString("N")).ToListAsync();
@@ -348,13 +350,20 @@ public sealed class C0104CaseFileOwnershipStoreMySqlTests
                     Assert.Equal("actor-autenticado", row.NombreUsuario);
                     Assert.Null(row.Ip);
                     Assert.Null(row.UserAgent);
-                    Assert.Equal(2, checks);
+                    Assert.Equal(target.HasValue ? 3 : 2, checks);
+                    if (target is Guid selected)
+                    {
+                        using var link = System.Text.Json.JsonDocument.Parse(row.ValoresNuevos!);
+                        Assert.Equal(3, link.RootElement.EnumerateObject().Count());
+                        Assert.Equal(selected.ToString("N"), link.RootElement.GetProperty("TargetCorrelation").GetString());
+                        Assert.NotEqual(selected.ToString("N"), row.CorrelationId);
+                    }
                 }
                 else
                 {
                     Assert.Empty(durable);
                     Assert.Empty(requestDb.ChangeTracker.Entries());
-                    if (changeSessionDuringIo) Assert.Equal(2, checks);
+                    if (changeSessionDuringIo) Assert.Equal(target.HasValue ? 3 : 2, checks);
                 }
             }
             await CheckAuthenticatedReceipt(a.Id, branchA.Id, 1, false, true);
@@ -362,6 +371,11 @@ public sealed class C0104CaseFileOwnershipStoreMySqlTests
             await CheckAuthenticatedReceipt(b.Id, branchB.Id, 1, false, true);
             await CheckAuthenticatedReceipt(b.Id, branchB.Id, 2, false, false);
             await CheckAuthenticatedReceipt(a.Id, branchA.Id, 1, true, false);
+            await CheckAuthenticatedReceipt(a.Id, branchA.Id, 1, false, true, committedCorrelation);
+            await CheckAuthenticatedReceipt(a.Id, branchA.Id, 2, false, false, committedCorrelation);
+            await CheckAuthenticatedReceipt(b.Id, branchB.Id, 1, false, false, committedCorrelation);
+            await CheckAuthenticatedReceipt(a.Id, branchA.Id, 1, false, false, Guid.NewGuid());
+            await CheckAuthenticatedReceipt(a.Id, branchA.Id, 1, true, false, committedCorrelation);
 
             // Legacy readers must not enumerate, count or export committed API12 receipts.
             var ordinaryCorrelation = Guid.NewGuid().ToString("N");
@@ -445,6 +459,7 @@ public sealed class C0104CaseFileOwnershipStoreMySqlTests
                 await revokedGrantTx.RollbackAsync();
             }
             await CheckAuthenticatedReceipt(a.Id, branchA.Id, 1, false, false);
+            await CheckAuthenticatedReceipt(a.Id, branchA.Id, 1, false, false, committedCorrelation);
             var revoke = new FixtureAuthority(a.Id,branchA.Id,actor) { RevokeAfterWrite = true };
             var revokedStore = new V5CaseFileOwnershipStore(dbA,revoke);
             var three = one with { CaseId = 3, ResourceRef = "r3" };
