@@ -105,3 +105,8 @@ h1,h2,h3,p{margin:0}h1,h2,h3{color:var(--color-heading)}
 }
 
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+@media (max-width: 900px) {
+  .breadcrumbs { flex-wrap: wrap; }
+  .breadcrumbs a { display: inline-flex; align-items: center; justify-content: center; min-inline-size: 44px; min-block-size: 44px; }
+}

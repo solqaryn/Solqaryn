@@ -28,6 +28,27 @@ async function bodyOverflow(page: Page): Promise<number> {
   ) - document.documentElement.clientWidth);
 }
 
+async function overflowDiagnostic(page: Page): Promise<string> {
+  return page.evaluate(() => {
+    const root = document.documentElement;
+    const width = root.clientWidth;
+    const body = document.body;
+    const offenders = Array.from(body.querySelectorAll<HTMLElement>('*')).flatMap(el => {
+      const rect = el.getBoundingClientRect();
+      if (rect.width <= 0 || rect.height <= 0 || rect.right <= width + 2) return [];
+      const style = getComputedStyle(el);
+      if (style.visibility === 'hidden' || style.display === 'none') return [];
+      for (let parent = el.parentElement; parent && parent !== body; parent = parent.parentElement) {
+        if (['auto', 'scroll', 'hidden', 'clip'].includes(getComputedStyle(parent).overflowX)) return [];
+      }
+      return [{ tag: el.tagName, cls: (el.getAttribute('class') ?? '').slice(0, 65), right: Math.round(rect.right) }];
+    }).sort((a, b) => b.right - a.right).slice(0, 5);
+    return JSON.stringify({ inner: innerWidth, client: width, rootScroll: root.scrollWidth,
+      bodyScroll: body.scrollWidth, bodyWidth: Math.round(body.getBoundingClientRect().width),
+      gutter: getComputedStyle(root).scrollbarGutter, offenders });
+  });
+}
+
 async function auditGeometry(page: Page, route: string, mobile: boolean): Promise<void> {
   const result = await page.evaluate(({ route: currentRoute, mobile: isMobile }) => {
     const viewportWidth = document.documentElement.clientWidth;
@@ -162,7 +183,13 @@ async function certifyRoute(page: Page, route: string, mobile: boolean, errors: 
     await expect(page.locator('#main-content')).toBeVisible();
     await expect(page.locator('#main-content h1').first()).toBeVisible({ timeout: 15_000 });
   }
-  await expect.poll(() => bodyOverflow(page), { timeout: 5_000 }).toBeLessThanOrEqual(2);
+  // Evitar medir texto durante la descarga de fuentes; sus errores siguen siendo FAIL.
+  await page.evaluate(async () => { await document.fonts.ready; });
+  try {
+    await expect.poll(() => bodyOverflow(page), { timeout: 5_000 }).toBeLessThanOrEqual(2);
+  } catch {
+    throw new Error('Desborde de documento en ' + route + ': ' + await overflowDiagnostic(page));
+  }
   if (route.startsWith('/tienda')) await auditGeometry(page, route, mobile);
   if (route !== '/' && !route.startsWith('/tienda') && route !== '/login') {
     await auditGeometry(page, route, mobile);
@@ -217,6 +244,13 @@ test.describe('Responsive global — route sweep y regression gate', () => {
       const monitor = (target: Page, destino: string[]) => {
         target.on('console', (message) => { if (message.type() === 'error') destino.push(message.text()); });
         target.on('pageerror', (error) => destino.push(`pageerror: ${error.message}`));
+        target.on('request', request => {
+          const url = new URL(request.url());
+          const header = request.headers()['x-empresa-id'];
+          if (header && url.origin !== 'http://127.0.0.1:5005' && url.origin !== 'http://localhost:5005') {
+            destino.push('Cabecera de tenant fuera de API local: ' + url.origin);
+          }
+        });
         target.on('response', response => {
           const url = new URL(response.url());
           if (['localhost', '127.0.0.1'].includes(url.hostname) && url.port === '5005' && response.status() >= 400) {

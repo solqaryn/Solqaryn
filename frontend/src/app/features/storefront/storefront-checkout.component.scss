@@ -90,3 +90,8 @@
   .payment-options { grid-template-columns: repeat(2, minmax(0, 1fr)); }
   .summary-card { position: sticky; }
 }
+
+@media (max-width: 900px) {
+  .breadcrumbs { flex-wrap: wrap; }
+  .breadcrumbs a { display: inline-flex; align-items: center; justify-content: center; min-inline-size: 44px; min-block-size: 44px; }
+}

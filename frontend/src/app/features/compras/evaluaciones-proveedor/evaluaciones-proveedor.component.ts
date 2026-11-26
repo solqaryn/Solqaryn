@@ -156,12 +156,12 @@ import { EvaluacionProveedorService } from '../../../services/evaluacion-proveed
   `,
   changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
-    .page{max-width:1280px;margin:0 auto;padding:16px;display:grid;gap:16px}header h1{margin-bottom:4px}header p,.generate p{margin:0;color:var(--color-text-secondary,#666)}
+    .page{max-width:1280px;min-width:0;margin:0 auto;padding:16px;display:grid;grid-template-columns:minmax(0,1fr);gap:16px}header h1{margin-bottom:4px}header p,.generate p{margin:0;color:var(--color-text-secondary,#666)}
     .filters{display:grid;grid-template-columns:repeat(5,minmax(150px,1fr));gap:12px;align-items:start}.filter-actions{display:flex;gap:8px;align-items:center;grid-column:1/-1}
-    .generate{display:grid;grid-template-columns:1fr minmax(180px,280px) auto;gap:16px;align-items:center}.table{overflow:auto;max-width:100%}table{width:100%;border-collapse:collapse;min-width:1050px}th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--color-border,#ddd);white-space:nowrap}.selected{background:rgba(25,118,210,.08)}.empty{text-align:center;padding:28px}
+    .generate{display:grid;grid-template-columns:1fr minmax(180px,280px) auto;gap:16px;align-items:center}.table{overflow:auto;max-width:100%;min-width:0}table{width:100%;border-collapse:collapse;min-width:1050px}th,td{padding:10px 12px;text-align:left;border-bottom:1px solid var(--color-border,#ddd);white-space:nowrap}.selected{background:rgba(25,118,210,.08)}.empty{text-align:center;padding:28px}
     footer{display:flex;justify-content:space-between;align-items:center;gap:12px;padding-top:12px}.pager{display:flex;align-items:center;gap:8px}.center{display:flex;gap:12px;align-items:center;justify-content:center;padding:32px}.error{color:var(--color-danger,#b00020)}
     dl{display:grid;grid-template-columns:repeat(3,minmax(160px,1fr));gap:12px}dl div{padding:10px;border:1px solid var(--color-border,#ddd);border-radius:6px}dt{font-size:.85rem;color:var(--color-text-secondary,#666)}dd{margin:4px 0 0;font-weight:600}
-    @media(max-width:900px){.filters{grid-template-columns:1fr 1fr}.generate{grid-template-columns:1fr}.generate button{justify-self:start}dl{grid-template-columns:1fr 1fr}}@media(max-width:600px){.filters,dl{grid-template-columns:1fr}footer{align-items:flex-start;flex-direction:column}}
+    @media(max-width:1100px){.filters{grid-template-columns:repeat(2,minmax(0,1fr))}.generate{grid-template-columns:minmax(0,1fr)}.generate button{justify-self:start}dl{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){.filters,dl{grid-template-columns:1fr}footer{align-items:flex-start;flex-direction:column}}
   `]
 })
 export class EvaluacionesProveedorComponent implements OnInit {

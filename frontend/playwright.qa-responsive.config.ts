@@ -22,7 +22,8 @@ export default defineConfig({
   reporter: [['list']],
   use: {
     baseURL,
-    extraHTTPHeaders: { 'X-Empresa-Id': '1' },
+    // El interceptor Angular adjunta el tenant solo a peticiones autenticadas;
+    // una cabecera global de Playwright contamina fuentes y otros recursos externos.
     storageState: {
       cookies: [],
       origins: [{ origin: baseURL, localStorage: [{ name: 'solqaryn_empresa_solicitada_id', value: '1' }] }]

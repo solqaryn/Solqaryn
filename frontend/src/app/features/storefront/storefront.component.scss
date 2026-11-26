@@ -240,3 +240,7 @@ h1, h2, h3 { color: var(--color-heading); }
 .footer-bottom { padding-block: 14px 22px; border-top: 1px solid var(--home-line); color: var(--color-text-muted); font-size: .6rem; }
 
 .sr-only { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0, 0, 0, 0) !important; white-space: nowrap !important; border: 0 !important; }
+
+@media (max-width: 900px) {
+  .hero-card a { display: inline-flex; align-items: center; min-inline-size: 44px; min-block-size: 44px; }
+}
