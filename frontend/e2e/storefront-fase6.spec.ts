@@ -398,7 +398,18 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
     await expect(enlace).toHaveCount(0);
     await expect(page.getByText('Revisa los datos de contacto marcados antes de continuar.')).toBeVisible();
 
+    await telefono.fill('()--()--');
+    await preparar.click();
+    await expect(enlace).toHaveCount(0);
+    await expect(telefono).toHaveAttribute('aria-invalid', 'true');
+
     await telefono.fill('+504 9999-2222');
+    const nombre = page.getByRole('textbox', { name: 'Nombre completo' });
+    await nombre.fill('   ');
+    await preparar.click();
+    await expect(enlace).toHaveCount(0);
+    await expect(nombre).toHaveAttribute('aria-invalid', 'true');
+    await nombre.fill('Cliente Auditoría');
     await preparar.click();
     await expect(enlace).toBeVisible();
     const mensaje = new URL((await enlace.getAttribute('href'))!).searchParams.get('text') || '';

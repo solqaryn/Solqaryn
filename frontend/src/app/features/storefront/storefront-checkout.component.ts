@@ -56,8 +56,8 @@ export class StorefrontCheckoutComponent implements OnInit {
   readonly subtotalHeader = computed<number | null>(() => this.validado()?.subtotal ?? (this.carrito.listo() ? this.carrito.subtotal() : null));
 
   readonly formulario = new FormGroup({
-    nombre: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(2), Validators.maxLength(120)] }),
-    telefono: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.pattern(/^\+?[0-9 ()-]{8,24}$/)] }),
+    nombre: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(2), Validators.maxLength(120), control => String(control.value).trim().length >= 2 ? null : { minlength: true }] }),
+    telefono: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.pattern(/^\+?[0-9 ()-]{8,24}$/), control => String(control.value).replace(/\D/g, '').length >= 8 ? null : { pattern: true }] }),
     correo: new FormControl('', { nonNullable: true, validators: [Validators.email, Validators.maxLength(160)] }),
     notas: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(600)] })
   });
