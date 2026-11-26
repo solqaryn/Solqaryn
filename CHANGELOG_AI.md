@@ -1,3 +1,6 @@
+## 2026-11-25 — QA: coherencia del foco Material
+- Se refuerza el color de la etiqueta activa en el estándar único, manteniendo excepciones para campos inválidos y deshabilitados. La prueba espera la transición de Material y comprueba el mismo color del borde, además de geometría y foco único. No se reduce la exigencia de la regresión.
+
 ## 2026-11-25 — QA: foco compuesto sin supresión de accesibilidad
 
 - Se excluyen exclusivamente los inputs/selects administrados por Material del anillo nativo global, en vez de sobrescribir su outline. Se conserva el foco compuesto de Material y el indicador de contraste forzado, así como el foco de botones auxiliares. Corrección causal de lint-quality de la ejecución 45733523860, sin modificar ni exceptuar el gate. Pendiente verificación exact-SHA.

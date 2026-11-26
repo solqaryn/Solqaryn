@@ -22,9 +22,12 @@ async function verificarCromo(dialogo: Locator): Promise<void> {
 }
 
 async function verificarCampo(campo: Locator): Promise<void> {
-  await campo.scrollIntoViewIfNeeded();
+  const contenedor = campo.locator('xpath=ancestor::mat-form-field');
+  await contenedor.scrollIntoViewIfNeeded();
   await campo.focus();
-  await expect(campo.locator('xpath=ancestor::mat-form-field')).toHaveClass(/mat-focused/);
+  await expect(contenedor).toHaveClass(/mat-focused/);
+  // Esperar el estado estable de la transición de color de Material, sin relajar el contrato.
+  await expect.poll(() => contenedor.evaluate(field => getComputedStyle(field.querySelector('.mdc-floating-label')!).color === getComputedStyle(field.querySelector('.mdc-notched-outline__leading')!).borderLeftColor)).toBe(true);
   const medida = await campo.evaluate(el => {
     const field = el.closest('mat-form-field')!;
     const label = field.querySelector('.mdc-floating-label')!;
