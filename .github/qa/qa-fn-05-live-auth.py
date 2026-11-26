@@ -93,7 +93,7 @@ seed_columns = {
     "PlanLimites": {"PlanId","Clave","ValorMaximo"},
 }
 for table, supplied in seed_columns.items():
-    metadata = sql(f"SELECT COLUMN_NAME,IS_NULLABLE,IF(COLUMN_DEFAULT IS NULL,'NONE','DEFAULT'),EXTRA FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='{table}';", "fixture schema "+table)
+    metadata = sql(f"SELECT COLUMN_NAME,IS_NULLABLE,IF(COLUMN_DEFAULT IS NULL,'NONE','DEFAULT'),IF(EXTRA='','NONE',EXTRA) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='{table}';", "fixture schema "+table)
     columns = {parts[0]:parts[1:] for parts in (line.split("\t") for line in metadata.splitlines())}
     require(supplied <= columns.keys(),"Missing fixture columns in "+table)
     mandatory = {name for name,(nullable,default,extra) in columns.items() if nullable=="NO" and default=="NONE" and "auto_increment" not in extra.lower() and "generated" not in extra.lower()}

@@ -1,3 +1,7 @@
+## 2026-11-26 — QA-FN-05: normalización de metadata del fixture
+
+- Revisión estática del preflight: EXTRA vacío debe proyectarse como NONE para conservar exactamente cuatro columnas TSV incluso después de strip() del cliente SQL. Sin ello la última fila podría perder su tabulador final. Se corrige antes de las mutaciones de prueba; sólo cambia script de QA, no código de aplicación. Ejecución serializada, no repetir los cuatro gates aprobados. Scope exacto DEV 2ec240a9c4845d35b5b5f84bdcb8adf58d7c98cb sin cambios.
+
 ## 2026-11-26 — QA-FN-05: reanudación de numeraciones y suscripciones
 
 - Run 45878868796 job 140112796616 PASS parciales: productos A/B y variantes, edición propia, rechazo 404 exacto ajeno con readback idéntico, clientes/proveedores A/B CRUD y duplicados, configuración tenant A/B, revocación y limpieza. Falla preparación de secuencias y plan, no endpoints. Migraciones N66C/N69C exigen FechaActualizacion NOT NULL sin default en SecuenciasDocumento y Planes; el fixture omitía ambas.
