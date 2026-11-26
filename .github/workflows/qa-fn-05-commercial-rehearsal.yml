@@ -183,6 +183,8 @@ jobs:
           export ConnectionStrings__DefaultConnection='Server=127.0.0.1;Port=3306;Database=solqaryn_qa_restore_ephemeral;User=root;Password=solqaryn-ci-qa-disposable-only;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
           cd backend
           dotnet tool restore
+          dotnet restore src/API/Solqaryn.API.csproj
+          dotnet restore src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj
           dotnet ef migrations has-pending-model-changes --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release
           dotnet ef migrations script 20261125212000_CategoriasGalerias 20261126170000_QaCommercialOwnershipV1 --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release --output "$RUNNER_TEMP/qa-commercial-ownership.sql"
           cd ..

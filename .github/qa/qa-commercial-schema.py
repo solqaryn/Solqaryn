@@ -98,7 +98,7 @@ for ch, cols, par, pcols, ix, name, cascade in edges:
     index(ch, ix, cols, False)
     fk(ch, name, cols, par, pcols, "CASCADE" if cascade else "RESTRICT")
 for table,col,ix in natural:
-    require(scalar(f"SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='{table}' AND COLUMN_NAME='EmpresaUnicidad' AND EXTRA LIKE '%STORED GENERATED%'") == "1", "Generated tenant key missing")
+    require(scalar(f"SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='{table}' AND COLUMN_NAME='EmpresaUnicidad' AND DATA_TYPE='int' AND IS_NULLABLE='NO' AND EXTRA LIKE '%STORED GENERATED%' AND LOWER(REPLACE(REPLACE(GENERATION_EXPRESSION,'`',''),' ',''))='coalesce(empresaid,0)'") == "1", "Generated tenant key missing")
     index(table,ix,["EmpresaUnicidad",col],True)
 
 # Preserve the previous gallery and typed-inventario gates exactly.

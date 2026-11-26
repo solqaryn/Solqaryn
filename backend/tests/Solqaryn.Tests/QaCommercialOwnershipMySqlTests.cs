@@ -118,6 +118,15 @@ public sealed class QaCommercialOwnershipMySqlTests
                     await Assert.ThrowsAsync<DbUpdateException>(() => duplicate.SaveChangesAsync());
                 }
 
+                await using (var duplicateBarcode = new AppDbContext(options, httpContextAccessor: accessor))
+                {
+                    duplicateBarcode.ProductoVariantes.Add(new ProductoVariante
+                    {
+                        ProductoId = pa.Producto, Sku = "SKU-DISTINTO", CodigoBarras = "1234567890123"
+                    });
+                    await Assert.ThrowsAsync<DbUpdateException>(() => duplicateBarcode.SaveChangesAsync());
+                }
+
                 accessor.HttpContext.Items["SOLQARYN_AUTHORIZED_EMPRESA_ID"] = b;
                 await using (var scoped = new AppDbContext(options, httpContextAccessor: accessor))
                 {

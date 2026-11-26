@@ -31,12 +31,16 @@ public sealed class N23RecepcionCompraPersistenceModelTests
         Assert.Equal(64, entity.FindProperty(nameof(RecepcionCompra.IdempotencyFingerprint))!.GetMaxLength());
 
         var indiceNumero = entity.GetIndexes().Single(i =>
-            i.Properties.Select(p => p.Name).SequenceEqual(new[] { nameof(RecepcionCompra.NumeroRecepcion) }));
+            i.Properties.Select(p => p.Name).SequenceEqual(new[] { QaCommercialOwnershipV1.ScopeColumn, nameof(RecepcionCompra.NumeroRecepcion) }));
         var indiceIdempotencia = entity.GetIndexes().Single(i =>
-            i.Properties.Select(p => p.Name).SequenceEqual(new[] { nameof(RecepcionCompra.IdempotencyKey) }));
+            i.Properties.Select(p => p.Name).SequenceEqual(new[] { QaCommercialOwnershipV1.ScopeColumn, nameof(RecepcionCompra.IdempotencyKey) }));
 
         Assert.True(indiceNumero.IsUnique);
+        Assert.DoesNotContain(entity.GetIndexes(), i => i.IsUnique &&
+            i.Properties.Select(p => p.Name).SequenceEqual(new[] { nameof(RecepcionCompra.NumeroRecepcion) }));
         Assert.True(indiceIdempotencia.IsUnique);
+        Assert.DoesNotContain(entity.GetIndexes(), i => i.IsUnique &&
+            i.Properties.Select(p => p.Name).SequenceEqual(new[] { nameof(RecepcionCompra.IdempotencyKey) }));
 
         var fkOrden = entity.GetForeignKeys().Single(fk =>
             fk.Properties.Select(p => p.Name).SequenceEqual(new[] { nameof(RecepcionCompra.OrdenCompraId) }));

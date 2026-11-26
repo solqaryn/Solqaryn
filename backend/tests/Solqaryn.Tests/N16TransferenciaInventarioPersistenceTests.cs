@@ -38,8 +38,10 @@ public class N16TransferenciaInventarioPersistenceTests
 
         var numeroIndex = Assert.Single(transferencia.GetIndexes()
             .Where(i => i.Properties.Select(p => p.Name)
-                .SequenceEqual(new[] { nameof(TransferenciaInventario.Numero) })));
+                .SequenceEqual(new[] { QaCommercialOwnershipV1.ScopeColumn, nameof(TransferenciaInventario.Numero) })));
         Assert.True(numeroIndex.IsUnique);
+        Assert.DoesNotContain(transferencia.GetIndexes(), i => i.IsUnique &&
+            i.Properties.Select(p => p.Name).SequenceEqual(new[] { nameof(TransferenciaInventario.Numero) }));
         Assert.Equal("UX_TransferenciasInventario_Numero", numeroIndex.GetDatabaseName());
 
         var checksCabecera = transferencia.GetCheckConstraints().Select(c => c.Name).ToHashSet();

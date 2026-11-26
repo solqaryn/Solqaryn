@@ -24,8 +24,9 @@ public sealed class QaCommercialOwnershipMigrationV1 : Migration
             new[] { "EmpresaId", "ProductoId", "Id" }, unique: true);
         foreach (var group in QaCommercialOwnershipV1.NaturalKeys.GroupBy(k => k.Table))
         {
-            migrationBuilder.AddColumn<int>(QaCommercialOwnershipV1.ScopeColumn, group.Key,
-                type: "int", nullable: false, computedColumnSql: "COALESCE(`EmpresaId`, 0)", stored: true);
+            // Use exact MySQL DDL so the physical generated column does not
+            // depend on how the Oracle EF SQL generator handles IsStored.
+            migrationBuilder.Sql($"ALTER TABLE `{group.Key}` ADD COLUMN {QaCommercialOwnershipV1.ScopeColumnDefinition};");
             foreach (var key in group)
             {
                 migrationBuilder.DropIndex(key.Index, key.Table);

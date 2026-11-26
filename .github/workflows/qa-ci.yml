@@ -63,7 +63,21 @@ jobs:
           dotnet-version: '10.0.401'
           cache: true
           cache-dependency-path: backend/**/*.csproj
-      - run: dotnet restore Solqaryn.sln
+      - name: Restaurar y auditar dependencias NuGet directas y transitivas
+        run: dotnet restore Solqaryn.sln -p:NuGetAudit=true -p:NuGetAuditMode=all -p:NuGetAuditLevel=low -p:WarningsAsErrors=NU1900%3BNU1901%3BNU1902%3BNU1903%3BNU1904%3BNU1905
+      - name: Verificar inventario NuGet sin vulnerabilidades conocidas
+        shell: bash
+        run: |
+          set -euo pipefail
+          dotnet list Solqaryn.sln package --vulnerable --include-transitive --format json > "$RUNNER_TEMP/qa-nuget-vulnerabilities.json"
+          jq -e '(.projects | type == "array" and length > 0) and ([.. | objects | .vulnerabilities? // empty | arrays | .[]] | length == 0)' "$RUNNER_TEMP/qa-nuget-vulnerabilities.json"
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-nuget-vulnerabilities
+          path: ${{ runner.temp }}/qa-nuget-vulnerabilities.json
+          if-no-files-found: warn
+          retention-days: 14
       - run: dotnet build Solqaryn.sln --configuration Release --no-restore
       - run: dotnet test Solqaryn.sln --configuration Release --no-build --filter "Category!=Integration" --logger "trx;LogFileName=qa-tests.trx"
       - if: always()

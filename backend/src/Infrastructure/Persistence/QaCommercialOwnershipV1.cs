@@ -10,6 +10,7 @@ public static class QaCommercialOwnershipV1
     public const string TenantFilter = "QaCommercialTenant";
     public const string SoftDeleteFilter = "QaCommercialSoftDelete";
     public const string ScopeColumn = "EmpresaUnicidad";
+    public const string ScopeColumnDefinition = "`EmpresaUnicidad` int GENERATED ALWAYS AS (COALESCE(`EmpresaId`, 0)) STORED NOT NULL";
     public const string VariantKey = "UX_QACT_Variante_Owner_Product_Id";
     public sealed record Owned(Type Entity, string Table);
     public sealed record Edge(string Child, string[] Columns, string Parent, string[] Principal,
@@ -125,6 +126,27 @@ public static class QaCommercialOwnershipV1
 
     public static async Task InstallFreshPhysicalAsync(AppDbContext db, CancellationToken ct = default)
     {
+        // The Oracle provider may not materialize a STORED generated column
+        // from the EF relational annotation in EnsureCreated. Normalize only
+        // the empty tables in a newly created schema; never repair live data.
+        foreach (var group in NaturalKeys.GroupBy(k => k.Table))
+        {
+            if (await HasExactScopeColumnAsync(db, group.Key, ct)) continue;
+            var rows = await db.Database.SqlQueryRaw<long>(
+                $"SELECT COUNT(*) AS Value FROM {Quote(group.Key)}").SingleAsync(ct);
+            if (rows != 0)
+                throw new InvalidOperationException($"Fresh ownership DDL requires an empty table: {group.Key}");
+            foreach (var key in group)
+                await VerifyIndexAsync(db, key.Table, key.Index, new[] { ScopeColumn, key.Column }, true, ct);
+            var clauses = group.Select(k => $"DROP INDEX {Quote(k.Index)}").ToList();
+            clauses.Add($"DROP COLUMN {Quote(ScopeColumn)}");
+            clauses.Add($"ADD COLUMN {ScopeColumnDefinition}");
+            clauses.AddRange(group.Select(k =>
+                $"ADD UNIQUE INDEX {Quote(k.Index)} ({Quote(ScopeColumn)}, {Quote(k.Column)})"));
+            await db.Database.ExecuteSqlRawAsync(
+                $"ALTER TABLE {Quote(group.Key)} {string.Join(", ", clauses)};", ct);
+        }
+
         // Fresh EnsureCreated has the model columns and indexes. Nullable legacy
         // ownership cannot be an EF alternate key; install the physical FKs.
         foreach (var edge in Relations)
@@ -172,13 +194,21 @@ public static class QaCommercialOwnershipV1
         }
         foreach (var k in NaturalKeys)
         {
-            var n = await db.Database.SqlQueryRaw<long>(
-                "SELECT COUNT(*) AS Value FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() " +
-                "AND TABLE_NAME={0} AND COLUMN_NAME='EmpresaUnicidad' AND EXTRA LIKE '%STORED GENERATED%'",
-                k.Table).SingleAsync(ct);
-            if (n != 1) throw new InvalidOperationException($"Scoped uniqueness mismatch: {k.Table}");
+            if (!await HasExactScopeColumnAsync(db, k.Table, ct))
+                throw new InvalidOperationException($"Scoped uniqueness mismatch: {k.Table} (expected STORED non-null COALESCE owner)");
             await VerifyIndexAsync(db, k.Table, k.Index, new[] { ScopeColumn, k.Column }, true, ct);
         }
+    }
+
+    private static async Task<bool> HasExactScopeColumnAsync(AppDbContext db, string table, CancellationToken ct)
+    {
+        var n = await db.Database.SqlQueryRaw<long>(
+            "SELECT COUNT(*) AS Value FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() " +
+            "AND TABLE_NAME={0} AND COLUMN_NAME='EmpresaUnicidad' AND DATA_TYPE='int' " +
+            "AND IS_NULLABLE='NO' AND EXTRA LIKE '%STORED GENERATED%' " +
+            "AND LOWER(REPLACE(REPLACE(GENERATION_EXPRESSION,'`',''),' ',''))='coalesce(empresaid,0)'",
+            table).SingleAsync(ct);
+        return n == 1;
     }
 
     private static async Task VerifyIndexAsync(AppDbContext db, string table, string name,

@@ -1,3 +1,11 @@
+## 2026-11-26 — QA-FN-05: reparacion causal DDL MySQL y auditoria NuGet
+
+- QA exclusivamente, desde b8696f246dc8fcbadd423c1aa3673adeec6fb95a; Scope Lock DEV 4cf22a6ba3bd649383f5bf989c3d3e100d81e651, job 140073769460, frescura y nueve pruebas negativas PASS.
+- DDL explicito MySQL para EmpresaUnicidad STORED NOT NULL COALESCE(EmpresaId,0); fresh bootstrap normaliza solo tablas vacias si el proveedor genera una definicion distinta. Verificadores C# y Python comprueban tipo, expresion, almacenamiento, indices y FKs. Se preservan los filtros, escritura autorizada, datos de identidad y esquema anterior.
+- N16, N21, N22, N23 prueban unicidad empresarial y ausencia de unicidad global residual; prueba MySQL añade colision de codigo de barras en la misma empresa. Ensayo cifrado restaura los proyectos NuGet antes de EF.
+- Pkcs 10.0.13 y MySqlConnector 2.6.2 ya presentes en los proyectos activos; se añade gate NuGet de dependencias directas y transitivas con evidencia JSON y fallo ante avisos de seguridad. Sin cambio de proveedor, framework, API, DTO, secretos, DEV ni MAIN. No se reactivan componentes retirados.
+- Validacion pendiente del SHA publicado: CI QA, MySQL A/B, barrido de rutas, ensayo local del respaldo y certificado fisico. Sin escritura en base viva ni despliegue manual. Rollback de codigo por revert; si se aplica DDL real, restaurar respaldo QA verificado.
+
 ## 2026-11-26 — QA-FN-05: dependencias causales de CI
 - Los controles de QA se disparan ante cambios del certificador comercial; ensayo y certificación física también ante cambios del workflow de propiedad comercial. Permite verificar el SHA corregido sin repetir ejecuciones del SHA anterior ni omitir las comprobaciones de alcance.
 

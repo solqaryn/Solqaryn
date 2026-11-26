@@ -33,8 +33,10 @@ public sealed class N21SolicitudCompraPersistenceModelTests
 
         var indiceNumero = entity.GetIndexes()
             .Single(i => i.Properties.Select(p => p.Name)
-                .SequenceEqual(new[] { nameof(SolicitudCompra.NumeroSolicitud) }));
+                .SequenceEqual(new[] { QaCommercialOwnershipV1.ScopeColumn, nameof(SolicitudCompra.NumeroSolicitud) }));
         Assert.True(indiceNumero.IsUnique);
+        Assert.DoesNotContain(entity.GetIndexes(), i => i.IsUnique &&
+            i.Properties.Select(p => p.Name).SequenceEqual(new[] { nameof(SolicitudCompra.NumeroSolicitud) }));
 
         var fkProveedor = entity.GetForeignKeys()
             .Single(fk => fk.Properties.Select(p => p.Name)
