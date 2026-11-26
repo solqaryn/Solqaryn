@@ -35,7 +35,17 @@ public sealed class C1505M0502AuditApiDtoContractTests
         scopes.Setup(s => s.ObtenerActualAsync(21, It.IsAny<CancellationToken>()))
             .ReturnsAsync(new UsuarioTenantScopeActual(
                 77, 21, 31, "CurrentMySqlRole", currentSqlAdmin));
-        var context = new DefaultHttpContext();
+        // Direct invocation does not execute the MVC authorization filter.
+        // Explicitly provide the existing permission service required by the
+        // post-read authorization check, without weakening runtime behavior.
+        var permission = new Mock<IPermisoService>(MockBehavior.Strict);
+        permission.Setup(p => p.VerificarPermisoAsync(
+                21, ModuloSistema.Auditoria, AccionPermiso.Ver))
+            .Returns(Task.CompletedTask);
+        var provider = new Mock<IServiceProvider>(MockBehavior.Strict);
+        provider.Setup(p => p.GetService(typeof(IPermisoService)))
+            .Returns(permission.Object);
+        var context = new DefaultHttpContext { RequestServices = provider.Object };
         context.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = 21;
         return new AuditoriaController(service, user, scopes.Object)
         {

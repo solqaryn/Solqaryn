@@ -11313,3 +11313,7 @@
 
 - Se completa el fixture de llamada MVC directa con PermisoService y repositorios reales; la nueva revalidación no debe recibir DI ficticia ni un permiso implícito. El host HTTP de auditoría conserva el piloto DEV existente, con middleware de excepciones real.
 - Interceptor Oracle EF sobre SELECT de RegistrosAuditoria, armado una vez, confirma revocación de grant desde otro contexto MySQL 8.4 antes de entregar respuesta: 403 sin filas de A/B, readback SQL de revocación y restauración del grant sintético, posterior 200. No modifica runtime ni grants de entornos. Pendiente CI exact SHA, no se certifica PASS ni A5; se conserva foco colectivo y rollback por revert normal.
+
+## 2026-11-26 — DEV06 — C14-02.M06.06 — Reparación fixture directo de contrato de auditoría
+
+- CI 139891687091 de cbc1051d falló 4/38 por ausencia de IPermisoService en el fixture de invocación directa de MVC. Se registra explícitamente el mock estricto de permiso 21/Auditoria/Ver y proveedor de servicios; conserva las cuatro aserciones 200/DTO y negativas. No altera runtime, grants, aserciones ni gate. TestServer JWT y MySQL real siguen independientes; CI nuevo pendiente, sin A5 ni LISTO.
