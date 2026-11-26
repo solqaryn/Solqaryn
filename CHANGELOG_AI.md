@@ -11412,3 +11412,6 @@
 
 ### 2026-11-26 | DEV06 | C01-04.M03.06 | P01/P02 exact receipt and fixture correction
 - RUN 636037e4-8df0-8321-bc2c-8a6d91d93fe0; base 847c6ef1806401e59f9cf4daab79b0467a3e7c90. Readback P01/P02 exact receipt before revalidation and commit. Fixture creates local actor and two memberships; Phase7 does not ensure an existing user. Empty migration downgrade/reapply exercised by test, not yet executed. No runtime grant or DI. CI and independent A5 pending.
+
+### 2026-11-26 | DEV01 | C01-04.M03.06 | P01/P02 bootstrap compatibility
+- RUN cc272f91-3a78-8320-b24e-b9d6ecaccc4f; TASK 6adbb9fff1548191a1bd5b30d9e9984a; base 5d9ad8b77ef06099cff2cfe89659b5396fca75ee. Two existing exact-SHA jobs 140062173611 and 140062172372 fail Oracle bootstrap (138 -> 141; expected 139) because the new additive P01/P02 migration adds two named tables. Count only the explicitly named missing pair, reject partial pair and inconsistent adoption history; verify both tables and the exact migration marker after real MigrateAsync. Preserve all existing count/constraint checks, no fabricated migration history, no grants, no production operations. New exact-SHA CI and corrective independent A5 pending.

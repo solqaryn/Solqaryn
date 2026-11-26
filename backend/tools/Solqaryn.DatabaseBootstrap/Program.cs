@@ -135,6 +135,14 @@ var supportTableBeforeAdoption = await ScalarLongAsync(db, """
       AND TABLE_TYPE = 'BASE TABLE';
     """);
 
+var caseFileTablesBeforeAdoption = await ScalarLongAsync(db, """
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_TYPE = 'BASE TABLE'
+      AND TABLE_NAME IN ('V5CaseFileOwnerships', 'V5CaseFileVersions');
+    """);
+if (caseFileTablesBeforeAdoption is not (0 or 2))
+    throw new InvalidOperationException("P01/P02 storage is incomplete; refusing bootstrap.");
+
 await db.Database.CloseConnectionAsync();
 if (mode == "fresh")
 {
@@ -295,6 +303,16 @@ if (mode == "adopt")
     if ((supportTableBeforeAdoption == 1) != (supportMigrationRecorded == 1))
         throw new InvalidOperationException(
             "Support-session table and P1-003 migration marker are inconsistent; refusing implicit adoption.");
+
+    await db.Database.OpenConnectionAsync();
+    var caseFileMigrationRecorded = await ScalarLongAsync(db, """
+        SELECT COUNT(*) FROM __EFMigrationsHistory
+        WHERE MigrationId = '20261126165100_V44CaseFileOwnershipStore';
+        """);
+    await db.Database.CloseConnectionAsync();
+    if ((caseFileTablesBeforeAdoption == 2) != (caseFileMigrationRecorded == 1))
+        throw new InvalidOperationException(
+            "P01/P02 tables and V44 migration marker are inconsistent; refusing implicit adoption.");
 }
 else
 {
@@ -323,9 +341,23 @@ var afterAdoption = await ScalarLongAsync(
 // the empty support table, so its net count remains unchanged.
 var expectedAfterAdoption = beforeAdoption + (publicStoreTableBeforeAdoption == 0 ? 1 : 0)
     + (replayTableBeforeAdoption == 0 ? 1 : 0)
-    + (supportTableBeforeAdoption == 0 ? 1 : 0);
+    + (supportTableBeforeAdoption == 0 ? 1 : 0)
+    + (caseFileTablesBeforeAdoption == 0 ? 2 : 0);
 if (afterAdoption != expectedAfterAdoption)
     throw new InvalidOperationException($"Oracle bootstrap changed unexpected table count: before={beforeAdoption}, after={afterAdoption}, expected={expectedAfterAdoption}.");
+
+// Verify the named tables and real migration receipt, not only the net table count.
+var caseFileTablesAfterAdoption = await ScalarLongAsync(db, """
+    SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
+    WHERE TABLE_SCHEMA = DATABASE() AND TABLE_TYPE = 'BASE TABLE'
+      AND TABLE_NAME IN ('V5CaseFileOwnerships', 'V5CaseFileVersions');
+    """);
+var caseFileMarker = await ScalarLongAsync(db, """
+    SELECT COUNT(*) FROM __EFMigrationsHistory
+    WHERE MigrationId = '20261126165100_V44CaseFileOwnershipStore';
+    """);
+if (caseFileTablesAfterAdoption != 2 || caseFileMarker != 1)
+    throw new InvalidOperationException("P01/P02 bootstrap table or migration receipt mismatch.");
 
 var marker = await ScalarLongAsync(
     db,
