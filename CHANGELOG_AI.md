@@ -1,3 +1,6 @@
+## 2026-11-25 | DEV04 | C01-04.M03.06 | R1-RESTAURADA
+- V44R1-J30-0EDDF9AB-C0104M0306-V23-DIAG: instrumentación causal del test generado exclusivamente GitHub-hosted/MySQL efímero, ante V23 HTTP 503 (job 139649722994, artifact 15081897273). Registra solo etapa legacy/core, status, tiempo y código fijo allowlist de auditoría; no cuerpo, PII ni cambio funcional. Preserva las dos aserciones HTTP 200 y demás negativos; no declara causa ni PASS. RUN 0eddf9ab-ea58-8323-ad0e-4c91c21d0594 TASK 6aeacb7820ac8191b7d768a6f33dfa09; base 31468a14c479fcf7c0a39ee349af26b8fe29f699; rollback revert normal; CI y A5 pendientes.
+
 ## 2026-11-25 | DEV03 | C01-04.M03.06 | R1-RESTAURADA
 - V44R1-J20-CD4F5BCC-C0104M0306-DURABLE-READBACK: Infrastructure sink aislado verifica recibo completo por parámetros tipados dentro de transacción InnoDB antes de COMMIT; compara scope, clave, campos saneados, correlación, UTC microsegundos e identidad proveedor. Regresión MySQL 8.4 real prevista: trigger altera correlación con affectedRows=1, exige rollback; observación caducada y replay fresco del mismo build conservan recibo original, sin inventar TTL. R2, D/E y M02.06 §3 / M02.05 ID08. Sin DDL runtime, DI/HTTP tenant, permisos ni Aiven; no acredita retención comercial ni A5. CI exact-SHA pendiente; revert normal en dev.
 
