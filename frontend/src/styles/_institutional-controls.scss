@@ -11,18 +11,14 @@
 
   /* Incluye botones, enlaces y controles nativos fuera de Material.
      Evita dibujar un segundo rectángulo dentro de la caja MDC. */
-  :where(a, button, input, select, textarea, summary, [role='button'], [tabindex]:not([tabindex='-1'])):focus-visible {
+  :where(a, button, input, select, textarea, summary, [role='button'], [tabindex]:not([tabindex='-1'])):where(:not(.mat-mdc-form-field :is(input.mat-mdc-input-element, textarea.mat-mdc-input-element, select[matNativeControl], .mat-mdc-select))):focus-visible {
     outline: 3px solid var(--color-control-focus) !important;
     outline-offset: 3px !important;
     box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 5px color-mix(in srgb, var(--color-control-focus) 38%, transparent) !important;
   }
 
-  .mat-mdc-form-field :is(input.mat-mdc-input-element, textarea.mat-mdc-input-element, select[matNativeControl], .mat-mdc-select):focus,
-  .mat-mdc-form-field :is(input.mat-mdc-input-element, textarea.mat-mdc-input-element, select[matNativeControl], .mat-mdc-select):focus-visible {
-    outline: none !important;
-    outline-offset: 0 !important;
-    box-shadow: none !important;
-  }
+  /* Material gestiona el indicador de foco de estos controles en el
+     contorno compuesto; no se resetea ni elimina su indicador nativo. */
 
   .mat-mdc-form-field {
     --mdc-outlined-text-field-focus-outline-color: var(--color-control-focus);
@@ -139,7 +135,7 @@
   }
 
   @media (forced-colors: active) {
-    :where(a, button, input, select, textarea, summary, [role='button'], [tabindex]:not([tabindex='-1'])):focus-visible {
+    :where(a, button, input, select, textarea, summary, [role='button'], [tabindex]:not([tabindex='-1'])):where(:not(.mat-mdc-form-field :is(input.mat-mdc-input-element, textarea.mat-mdc-input-element, select[matNativeControl], .mat-mdc-select))):focus-visible {
       outline: 3px solid Highlight !important;
       box-shadow: none !important;
     }

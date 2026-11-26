@@ -1,3 +1,7 @@
+## 2026-11-25 — QA: foco compuesto sin supresión de accesibilidad
+
+- Se excluyen exclusivamente los inputs/selects administrados por Material del anillo nativo global, en vez de sobrescribir su outline. Se conserva el foco compuesto de Material y el indicador de contraste forzado, así como el foco de botones auxiliares. Corrección causal de lint-quality de la ejecución 45733523860, sin modificar ni exceptuar el gate. Pendiente verificación exact-SHA.
+
 ## 2026-11-25 — QA: modales y tablas de ventas y compras
 
 - Listados transaccionales con tabla única desplazable, acciones Ver/Editar/Eliminar según permiso y estado Borrador, apertura XL del mismo formulario y detalle existente. Confirmaciones de borrador/confirmación/eliminación/anulación y comprobantes; revalidación del tenant, permisos y estado, cancelación sin mutaciones. Se preservan cálculos, rutas directas, auditoría, documentos y API. Los detalles en modal mantienen la factura disponible por enlace; no se cambia su ruta todavía.
