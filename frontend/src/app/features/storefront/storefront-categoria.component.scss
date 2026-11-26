@@ -503,7 +503,9 @@ h2 {
 .category-thumbnails button:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 2px; }
 .category-thumbnails img { display: block; width: 100%; height: 100%; object-fit: contain; }
 
-@media (max-width: 900px) {
-  .breadcrumbs { flex-wrap: wrap; }
-  .breadcrumbs a { display: inline-flex; align-items: center; justify-content: center; min-inline-size: 44px; min-block-size: 44px; }
+.breadcrumbs { flex-wrap: wrap; }
+.breadcrumbs a { display: inline-flex; align-items: center; justify-content: center; min-inline-size: 44px; min-block-size: 44px; }
+
+@media (min-width: 901px) {
+  .breadcrumbs a { display: inline; align-items: normal; justify-content: normal; min-inline-size: auto; min-block-size: auto; }
 }

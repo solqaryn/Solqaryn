@@ -56,7 +56,9 @@ h1 { max-width: 760px; margin: 0 0 12px; font-size: clamp(1.9rem, 4vw, 2.8rem); 
   .total-box { order: initial; }
 }
 
-@media (max-width: 900px) {
-  .breadcrumbs { flex-wrap: wrap; }
-  .breadcrumbs a { display: inline-flex; align-items: center; justify-content: center; min-inline-size: 44px; min-block-size: 44px; }
+.breadcrumbs { flex-wrap: wrap; }
+.breadcrumbs a { display: inline-flex; align-items: center; justify-content: center; min-inline-size: 44px; min-block-size: 44px; }
+
+@media (min-width: 901px) {
+  .breadcrumbs a { display: inline; align-items: normal; justify-content: normal; min-inline-size: auto; min-block-size: auto; }
 }

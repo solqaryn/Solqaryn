@@ -91,7 +91,9 @@
   .summary-card { position: sticky; }
 }
 
-@media (max-width: 900px) {
-  .breadcrumbs { flex-wrap: wrap; }
-  .breadcrumbs a { display: inline-flex; align-items: center; justify-content: center; min-inline-size: 44px; min-block-size: 44px; }
+.breadcrumbs { flex-wrap: wrap; }
+.breadcrumbs a { display: inline-flex; align-items: center; justify-content: center; min-inline-size: 44px; min-block-size: 44px; }
+
+@media (min-width: 901px) {
+  .breadcrumbs a { display: inline; align-items: normal; justify-content: normal; min-inline-size: auto; min-block-size: auto; }
 }

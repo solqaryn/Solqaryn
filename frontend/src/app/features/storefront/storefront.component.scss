@@ -241,6 +241,8 @@ h1, h2, h3 { color: var(--color-heading); }
 
 .sr-only { position: absolute !important; width: 1px !important; height: 1px !important; padding: 0 !important; margin: -1px !important; overflow: hidden !important; clip: rect(0, 0, 0, 0) !important; white-space: nowrap !important; border: 0 !important; }
 
-@media (max-width: 900px) {
-  .hero-card a { display: inline-flex; align-items: center; min-inline-size: 44px; min-block-size: 44px; }
+.hero-card a { display: inline-flex; align-items: center; min-inline-size: 44px; min-block-size: 44px; }
+
+@media (min-width: 901px) {
+  .hero-card a { display: block; align-items: normal; min-inline-size: auto; min-block-size: auto; }
 }
