@@ -30,8 +30,9 @@ public sealed class SecuenciasDocumentoController : ControllerBase
         [FromQuery] string tipoDocumento,
         CancellationToken cancellationToken)
     {
+        var empresaAutorizada = TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext, empresaId);
         var secuencia = await _service.ObtenerAsync(
-            empresaId,
+            empresaAutorizada,
             sucursalId,
             tipoDocumento,
             cancellationToken);
@@ -45,6 +46,7 @@ public sealed class SecuenciasDocumentoController : ControllerBase
         [FromBody] ReservarSecuenciaDocumentoRequest request,
         CancellationToken cancellationToken)
     {
+        TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext, request.EmpresaId);
         var reserva = await _service.ReservarSiguienteAsync(request, cancellationToken);
         return Ok(ApiResponse<SecuenciaDocumentoSiguienteDto>.Ok(
             reserva,

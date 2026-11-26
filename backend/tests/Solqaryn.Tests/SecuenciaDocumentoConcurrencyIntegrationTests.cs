@@ -2,6 +2,7 @@ using MySql.EntityFrameworkCore.Extensions;
 using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Enums;
 using Solqaryn.Infrastructure.Persistence;
 using Solqaryn.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
@@ -63,7 +64,10 @@ public sealed class SecuenciaDocumentoConcurrencyIntegrationTests
             await using var verify = new AppDbContext(options);
             var persisted = await verify.SecuenciasDocumento.AsNoTracking().SingleAsync(x => x.Id == secuenciaId);
             var audits = await verify.RegistrosAuditoria.AsNoTracking()
-                .CountAsync(x => x.Entidad == nameof(SecuenciaDocumento) && x.ReferenciaId == secuenciaId);
+                .CountAsync(x => x.Entidad == nameof(SecuenciaDocumento) &&
+                    x.ReferenciaId == secuenciaId && x.EmpresaId == empresaId &&
+                    x.AmbitoAutoridad == AmbitoAutorizacion.Empresa &&
+                    x.OrigenAutorizacion == OrigenAutorizacion.MembresiaEmpresa);
             Assert.Equal(110, persisted.UltimoValor);
             Assert.Equal(10, audits);
         }

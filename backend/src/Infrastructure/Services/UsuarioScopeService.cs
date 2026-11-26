@@ -1,5 +1,6 @@
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Enums;
 using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -99,6 +100,8 @@ public sealed class UsuarioScopeService : IUsuarioScopeService
                   empresa.Activa &&
                   rol.Activo &&
                   !rol.Eliminado &&
+                  rol.Ambito == AmbitoAutorizacion.Empresa &&
+                  (!rol.EmpresaId.HasValue || rol.EmpresaId.Value == membresia.EmpresaId) &&
                   (!empresaId.HasValue || membresia.EmpresaId == empresaId.Value)
             select new UsuarioTenantScopeActual(
                 usuario.Id,

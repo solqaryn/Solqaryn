@@ -69,6 +69,15 @@ public class UsuarioService : IUsuarioService
         return rol;
     }
 
+    private async Task<Rol> ResolverRolEmpresaAsync(int? rolId, int empresaId)
+    {
+        var rol = await ResolverRolDinamicoAsync(rolId);
+        if (rol.Ambito != AmbitoAutorizacion.Empresa ||
+            (rol.EmpresaId.HasValue && rol.EmpresaId.Value != empresaId))
+            throw new ForbiddenAccessException("El rol no pertenece al ámbito empresarial solicitado.");
+        return rol;
+    }
+
     public async Task<UsuarioDto> CreateAsync(CreateUsuarioDto dto)
     {
         var nombreUsuario = NormalizarNombreUsuario(dto.NombreUsuario);
@@ -281,7 +290,7 @@ public class UsuarioService : IUsuarioService
     {
         var usuario = await ObtenerUsuarioValidoParaMembresiaAsync(usuarioId, exigirActivo: true);
         var empresa = await ObtenerEmpresaActivaAsync(dto.EmpresaId);
-        var rol = await ResolverRolDinamicoAsync(dto.RolId);
+        var rol = await ResolverRolEmpresaAsync(dto.RolId, empresa.Id);
 
         if (await _repository.GetEmpresaAsync(usuarioId, empresa.Id) is not null)
             throw new BusinessRuleException("El usuario ya tiene una membresía registrada para la empresa seleccionada.");
@@ -309,7 +318,7 @@ public class UsuarioService : IUsuarioService
     {
         var usuario = await ObtenerUsuarioValidoParaMembresiaAsync(usuarioId, exigirActivo: true);
         await ObtenerEmpresaActivaAsync(empresaId);
-        var rol = await ResolverRolDinamicoAsync(rolId);
+        var rol = await ResolverRolEmpresaAsync(rolId, empresaId);
         var membresia = await ObtenerMembresiaAsync(usuarioId, empresaId);
         var rolAnterior = membresia.RolId;
 
@@ -340,7 +349,7 @@ public class UsuarioService : IUsuarioService
         var membresia = await ObtenerMembresiaAsync(usuarioId, empresaId);
         if (activa)
         {
-            await ResolverRolDinamicoAsync(membresia.RolId);
+            await ResolverRolEmpresaAsync(membresia.RolId, empresaId);
             membresia.Activar();
         }
         else

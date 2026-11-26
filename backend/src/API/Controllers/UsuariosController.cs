@@ -1,6 +1,7 @@
 using Solqaryn.API.Filters;
 using Solqaryn.Application.Common;
 using Solqaryn.Application.DTOs;
+using Solqaryn.Application.Exceptions;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -143,20 +144,23 @@ public class UsuariosController : ControllerBase
     [RequierePermiso(ModuloSistema.Usuarios, AccionPermiso.Ver)]
     public async Task<IActionResult> GetEmpresas(int id)
     {
+        var empresaAutorizada = TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext);
         var membresias = await _usuarioService.GetEmpresasAsync(id);
-        return Ok(ApiResponse<List<UsuarioEmpresaDto>>.Ok(membresias));
+        return Ok(ApiResponse<List<UsuarioEmpresaDto>>.Ok(
+            membresias.Where(m => m.EmpresaId == empresaAutorizada).ToList()));
     }
 
     [HttpPost("{id:int}/empresas")]
     [RequierePermiso(ModuloSistema.Usuarios, AccionPermiso.AsignarRol)]
     public async Task<IActionResult> AsignarEmpresa(int id, [FromBody] AsignarUsuarioEmpresaDto dto)
     {
+        TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext, dto.EmpresaId);
         var membresia = await _usuarioService.AsignarEmpresaAsync(id, dto);
         return Ok(ApiResponse<UsuarioEmpresaDto>.Ok(membresia, "Empresa asignada al usuario correctamente."));
     }
 
     [HttpPut("{id:int}/empresas/{empresaId:int}/rol")]
-    [RequierePermiso(ModuloSistema.Usuarios, AccionPermiso.AsignarRol)]
+    [RequierePermiso(ModuloSistema.Usuarios, AccionPermiso.AsignarRol, VincularEmpresaRuta = true)]
     public async Task<IActionResult> CambiarRolEmpresa(
         int id,
         int empresaId,
@@ -172,11 +176,18 @@ public class UsuariosController : ControllerBase
         int empresaId,
         [FromBody] UpdateUsuarioEmpresaEstadoDto dto)
     {
-        await _permisoService.VerificarPermisoAsync(
-            ModuloSistema.Usuarios,
-            dto.Activa ? AccionPermiso.Activar : AccionPermiso.Desactivar);
+        var empresaAutorizada = await TenantPermissionContext.RequireEmpresaIdAsync(
+            HttpContext, HttpContext.RequestAborted);
+        if (empresaId != empresaAutorizada)
+            throw new ForbiddenAccessException(
+                "La empresa de la membresía no coincide con el contexto de autorización.");
 
-        var membresia = await _usuarioService.CambiarEstadoEmpresaAsync(id, empresaId, dto.Activa);
+        await _permisoService.VerificarPermisoAsync(
+            empresaAutorizada, ModuloSistema.Usuarios,
+            dto.Activa ? AccionPermiso.Activar : AccionPermiso.Desactivar);
+        TenantPermissionContext.MarkAuthorizedEmpresaId(HttpContext, empresaAutorizada);
+
+        var membresia = await _usuarioService.CambiarEstadoEmpresaAsync(id, empresaAutorizada, dto.Activa);
         return Ok(ApiResponse<UsuarioEmpresaDto>.Ok(
             membresia,
             dto.Activa ? "Membresía empresarial activada correctamente." : "Membresía empresarial desactivada correctamente."));

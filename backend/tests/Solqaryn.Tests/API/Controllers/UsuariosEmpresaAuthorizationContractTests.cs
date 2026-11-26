@@ -5,6 +5,8 @@ using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Http;
+using Solqaryn.Application.Exceptions;
 using Microsoft.AspNetCore.Mvc;
 using Moq;
 using Xunit;
@@ -68,12 +70,16 @@ public class UsuariosEmpresaAuthorizationContractTests
             .Setup(service => service.CambiarEstadoEmpresaAsync(7, 11, true))
             .ReturnsAsync((UsuarioEmpresaDto)null!);
 
-        var controller = new UsuariosController(usuarioService.Object, permisoService.Object, currentUser.Object);
+        var controller = new UsuariosController(usuarioService.Object, permisoService.Object, currentUser.Object)
+        {
+            ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+        };
+        controller.HttpContext.Request.Headers["X-Empresa-Id"] = "11";
 
         await controller.CambiarEstadoEmpresa(7, 11, new UpdateUsuarioEmpresaEstadoDto { Activa = true });
 
         permisoService.Verify(
-            service => service.VerificarPermisoAsync(ModuloSistema.Usuarios, AccionPermiso.Activar),
+            service => service.VerificarPermisoAsync(11, ModuloSistema.Usuarios, AccionPermiso.Activar),
             Times.Once);
         usuarioService.Verify(service => service.CambiarEstadoEmpresaAsync(7, 11, true), Times.Once);
     }
@@ -88,13 +94,72 @@ public class UsuariosEmpresaAuthorizationContractTests
             .Setup(service => service.CambiarEstadoEmpresaAsync(7, 11, false))
             .ReturnsAsync((UsuarioEmpresaDto)null!);
 
-        var controller = new UsuariosController(usuarioService.Object, permisoService.Object, currentUser.Object);
+        var controller = new UsuariosController(usuarioService.Object, permisoService.Object, currentUser.Object)
+        {
+            ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+        };
+        controller.HttpContext.Request.Headers["X-Empresa-Id"] = "11";
 
         await controller.CambiarEstadoEmpresa(7, 11, new UpdateUsuarioEmpresaEstadoDto { Activa = false });
 
         permisoService.Verify(
-            service => service.VerificarPermisoAsync(ModuloSistema.Usuarios, AccionPermiso.Desactivar),
+            service => service.VerificarPermisoAsync(11, ModuloSistema.Usuarios, AccionPermiso.Desactivar),
             Times.Once);
         usuarioService.Verify(service => service.CambiarEstadoEmpresaAsync(7, 11, false), Times.Once);
     }
+    [Fact]
+    public async Task CambiarEstadoEmpresa_RechazaRutaAjenaSinMutar()
+    {
+        var usuarioService = new Mock<IUsuarioService>(MockBehavior.Strict);
+        var permisoService = new Mock<IPermisoService>(MockBehavior.Strict);
+        var controller = new UsuariosController(usuarioService.Object, permisoService.Object,
+            Mock.Of<ICurrentUserService>())
+        {
+            ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+        };
+        controller.HttpContext.Request.Headers["X-Empresa-Id"] = "11";
+
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() =>
+            controller.CambiarEstadoEmpresa(7, 12, new UpdateUsuarioEmpresaEstadoDto { Activa = false }));
+        usuarioService.VerifyNoOtherCalls();
+        permisoService.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task AsignarEmpresa_RechazaEmpresaAjenaEnElCuerpo()
+    {
+        var usuarioService = new Mock<IUsuarioService>(MockBehavior.Strict);
+        var controller = new UsuariosController(usuarioService.Object, Mock.Of<IPermisoService>(),
+            Mock.Of<ICurrentUserService>())
+        {
+            ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+        };
+        controller.HttpContext.Items["SOLQARYN_AUTHORIZED_EMPRESA_ID"] = 11;
+
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() =>
+            controller.AsignarEmpresa(7, new AsignarUsuarioEmpresaDto { EmpresaId = 12, RolId = 3 }));
+        usuarioService.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task GetEmpresas_OcultaMembresiasDeOtrasEmpresas()
+    {
+        var usuarioService = new Mock<IUsuarioService>();
+        usuarioService.Setup(x => x.GetEmpresasAsync(7)).ReturnsAsync(new List<UsuarioEmpresaDto>
+        {
+            new() { UsuarioId = 7, EmpresaId = 11, RolId = 3, Activa = true },
+            new() { UsuarioId = 7, EmpresaId = 12, RolId = 9, Activa = true }
+        });
+        var controller = new UsuariosController(usuarioService.Object, Mock.Of<IPermisoService>(),
+            Mock.Of<ICurrentUserService>())
+        {
+            ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+        };
+        controller.HttpContext.Items["SOLQARYN_AUTHORIZED_EMPRESA_ID"] = 11;
+
+        var result = Assert.IsType<OkObjectResult>(await controller.GetEmpresas(7));
+        var response = Assert.IsType<Solqaryn.Application.Common.ApiResponse<List<UsuarioEmpresaDto>>>(result.Value);
+        Assert.Equal(11, Assert.Single(response.Data!).EmpresaId);
+    }
+
 }

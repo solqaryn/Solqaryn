@@ -2,6 +2,10 @@ using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Exceptions;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Enums;
+using Solqaryn.API.Controllers;
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
 using Solqaryn.Infrastructure.Persistence;
 using Solqaryn.Infrastructure.Services;
 using Microsoft.Data.Sqlite;
@@ -116,10 +120,35 @@ public sealed class SecuenciaDocumentoServiceTests
 
         Assert.Equal(42, secuencia.UltimoValor);
         Assert.Equal(10, auditoria.UsuarioId);
+        Assert.Equal(empresa.Id, auditoria.EmpresaId);
+        Assert.Equal(AmbitoAutorizacion.Empresa, auditoria.AmbitoAutoridad);
+        Assert.Equal(OrigenAutorizacion.MembresiaEmpresa, auditoria.OrigenAutorizacion);
         Assert.Equal(nameof(SecuenciaDocumento), auditoria.Entidad);
         Assert.Equal(secuencia.Id, auditoria.ReferenciaId);
         Assert.Equal("Exito", auditoria.Resultado);
         Assert.Contains($"\"empresaId\":{empresa.Id}", auditoria.ValoresNuevos ?? string.Empty, StringComparison.Ordinal);
         Assert.Contains("\"valorSiguiente\":42", auditoria.ValoresNuevos ?? string.Empty, StringComparison.Ordinal);
+    }
+    [Fact]
+    public async Task Controller_RechazaConsultaYReservaDeEmpresaDistintaAntesDePersistencia()
+    {
+        var options = new DbContextOptionsBuilder<AppDbContext>()
+            .UseInMemoryDatabase($"qa-fn05-sequence-{Guid.NewGuid():N}")
+            .Options;
+        await using var db = new AppDbContext(options);
+        var scope = new Mock<IUsuarioScopeService>(MockBehavior.Strict);
+        var controller = new SecuenciasDocumentoController(db, scope.Object)
+        {
+            ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
+        };
+        controller.HttpContext.Items["SOLQARYN_AUTHORIZED_EMPRESA_ID"] = 11;
+
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() =>
+            controller.Get(12, null, "FACTURA", CancellationToken.None));
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() =>
+            controller.ReservarSiguiente(
+                new ReservarSecuenciaDocumentoRequest(12, null, "FACTURA"), CancellationToken.None));
+        scope.VerifyNoOtherCalls();
+        Assert.Empty(db.RegistrosAuditoria);
     }
 }

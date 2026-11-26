@@ -35,6 +35,15 @@ internal static class TenantPermissionContext
         httpContext.Items[AuthorizedEmpresaIdItemKey] = empresaId;
     }
 
+    internal static int GetAuthorizedEmpresaId(HttpContext httpContext, int empresaSolicitada)
+    {
+        var empresaAutorizada = GetAuthorizedEmpresaId(httpContext);
+        if (empresaSolicitada != empresaAutorizada)
+            throw new ForbiddenAccessException(
+                "La empresa solicitada no coincide con el contexto de autorización.");
+        return empresaAutorizada;
+    }
+
     internal static int GetAuthorizedEmpresaId(HttpContext httpContext)
     {
         if (httpContext.Items.TryGetValue(AuthorizedEmpresaIdItemKey, out var value) &&
