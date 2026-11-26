@@ -1,9 +1,10 @@
+import { crearAccionesInstitucionales } from '../../shared/modal-institucional/acciones-institucionales';
+import { firstValueFrom } from 'rxjs';
 import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 
 import { HttpClient } from '@angular/common/http';
 import { Component, OnDestroy, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -11,7 +12,7 @@ import { MatInputModule } from '@angular/material/input';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSlideToggleModule, MatSlideToggleChange } from '@angular/material/slide-toggle';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { Subject, debounceTime, distinctUntilChanged, takeUntil } from 'rxjs';
 import { environment } from '../../../environments/environment';
@@ -19,7 +20,6 @@ import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service
 import { ApiResponse } from '../../core/models/api-response.model';
 import { Sucursal } from '../../core/models/sucursal.model';
 import { SucursalService } from '../../services/sucursal.service';
-import { AppAlertService } from '../../shared/alerts/app-alert.service';
 
 type EstadoSucursalFiltro = 'todas' | 'activas' | 'inactivas';
 
@@ -34,7 +34,6 @@ interface EmpresaOpcion {
   standalone: true,
   imports: [ConsultaRegistroDirective,
     FormsModule,
-    RouterLink,
     MatButtonModule,
     MatFormFieldModule,
     MatIconModule,
@@ -49,6 +48,13 @@ interface EmpresaOpcion {
   styleUrl: './sucursales-list.component.scss'
 })
 export class SucursalesListComponent implements OnInit, OnDestroy {
+  private readonly acciones = crearAccionesInstitucionales('Sucursales');
+  readonly cambiandoEstado = signal(false);
+
+  async abrirEditor(id?: number): Promise<void> {
+    if (await this.acciones.abrir(() => import('./sucursal-form.component').then(m => m.SucursalFormComponent), 'l', id ? 'Editar' : 'Crear', id)) this.cargar();
+  }
+
   readonly sucursales = signal<Sucursal[]>([]);
   readonly total = signal(0);
   readonly totalPaginas = signal(0);
@@ -79,8 +85,7 @@ export class SucursalesListComponent implements OnInit, OnDestroy {
     private sucursalService: SucursalService,
     private http: HttpClient,
     private permisosRuntime: PermisosRuntimeService,
-    private snackBar: MatSnackBar,
-    private alerts: AppAlertService
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -189,30 +194,24 @@ export class SucursalesListComponent implements OnInit, OnDestroy {
     return this.operandoIds().has(id);
   }
 
-  toggleActiva(sucursal: Sucursal): void {
-    if (!this.puedeCambiarEstado(sucursal)) return;
-
+  async toggleActiva(sucursal: Sucursal, evento: MatSlideToggleChange): Promise<void> {
+    evento.source.checked = sucursal.activa;
+    if (!this.puedeCambiarEstado(sucursal) || this.cambiandoEstado()) return;
+    this.cambiandoEstado.set(true);
     this.marcarOperacion(sucursal.id, true);
-    const operacion = sucursal.activa
-      ? this.sucursalService.desactivar(sucursal.id)
-      : this.sucursalService.activar(sucursal.id);
-
-    operacion.subscribe({
-      next: (res) => {
-        this.sucursales.update(items => items.map(item => item.id === sucursal.id ? res.data : item));
-        this.marcarOperacion(sucursal.id, false);
-      },
-      error: (err) => {
-        this.marcarOperacion(sucursal.id, false);
-        this.snackBar.open(err.error?.message ?? 'No se pudo cambiar el estado de la sucursal.', 'Cerrar', { duration: 5000 });
-      }
-    });
+    try {
+      const accion = sucursal.activa ? 'Desactivar' : 'Activar';
+      if (!await this.acciones.confirmar(accion, { titulo: accion + ' registro', mensaje: '¿Deseas ' + accion.toLowerCase() + ' «' + sucursal.nombre + '»?', confirmarTexto: accion })) return;
+      const res = await firstValueFrom(sucursal.activa ? this.sucursalService.desactivar(sucursal.id) : this.sucursalService.activar(sucursal.id));
+      this.sucursales.update(items => items.map(item => item.id === sucursal.id ? res.data : item));
+    } catch { this.snackBar.open('No se pudo cambiar el estado.', 'Cerrar', { duration: 5000 }); }
+    finally { this.marcarOperacion(sucursal.id, false); this.cambiandoEstado.set(false); }
   }
 
   async eliminar(sucursal: Sucursal): Promise<void> {
     if (this.estaOperando(sucursal.id)) return;
 
-    const confirmado = await this.alerts.confirmar({
+    const confirmado = await this.acciones.confirmar('EliminarLogico', {
       titulo: 'Eliminar sucursal',
       mensaje: `Se ocultará “${sucursal.codigo} · ${sucursal.nombre}” sin borrar su historial.`,
       tipo: 'peligro',

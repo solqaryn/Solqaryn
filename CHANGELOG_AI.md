@@ -1,3 +1,8 @@
+## 2026-11-25 — QA: clientes, clasificaciones y sucursales migrados
+
+- Modales reutilizables XL/M/L, confirmaciones de guardado y estado, confirmación del crédito y sus operaciones sensibles, validación de contexto y permisos. Se conserva estado original del cliente durante edición, controles de sistema/predeterminado de clasificación y ownership de sucursales. Tablas únicas con scroll y filtros, sin retirar paginación/exportación/segmentación.
+- Sin cambios de API, datos, DEV ni MAIN; CI y revisión visual exact-SHA pendientes.
+
 ## 2026-11-25 — QA: proveedores, descuentos e impuestos migrados
 
 - Formularios reutilizados en modales institucionales M/L, confirmación antes de crear/editar/activar/desactivar/eliminar y revalidación de permisos/contexto. Tabla única con scroll, búsqueda, estado, acciones y pie compartidos. Se preserva estado original del proveedor al editar y se bloquea edición si falla carga. Pruebas del control compartido incluidas en QA CI.

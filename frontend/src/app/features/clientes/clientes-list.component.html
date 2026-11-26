@@ -10,9 +10,9 @@
       <mat-icon>download</mat-icon> Exportar CSV
     </button>
     @if (puedeCrear()) {
-      <a routerLink="/clientes/nuevo" mat-flat-button color="primary">
+      <button type="button" (click)="abrirEditor()" mat-flat-button color="primary">
         <mat-icon>add</mat-icon> Nuevo cliente
-      </a>
+      </button>
     }
   </div>
 </div>
@@ -56,7 +56,7 @@
 </div>
 
 <div class="card">
-  <div class="product-toolbar" aria-label="Búsqueda y filtros de clientes">
+  <div class="product-toolbar app-table-filters" aria-label="Búsqueda y filtros de clientes">
     <mat-form-field appearance="outline" class="search-field">
       <mat-label>Buscar clientes</mat-label>
       <input matInput [ngModel]="search" (ngModelChange)="onSearchChange($event)" autocomplete="off">
@@ -85,16 +85,16 @@
   @if (loading()) {
     <div class="loading"><mat-spinner></mat-spinner></div>
   } @else {
-    <div class="results-summary" aria-live="polite">
+    <div class="results-summary app-table-footer" aria-live="polite">
       {{ totalCount() }} cliente{{ totalCount() === 1 ? '' : 's' }} con los filtros actuales
     </div>
 
-    <div class="table-scroll" role="region" aria-label="Tabla de clientes" tabindex="0">
-    <table class="table">
+    <div class="table-scroll app-table-shell" role="region" aria-label="Tabla de clientes" tabindex="0">
+    <table class="app-data-table">
       <thead>
         <tr>
           <th class="sortable" (click)="ordenarPor('nombre')">Nombre</th><th>Teléfono</th><th>Identidad/RTN</th><th>Correo</th>
-          <th>Clasificación</th><th class="sortable" (click)="ordenarPor('totalVentas')">Ventas</th><th class="sortable" (click)="ordenarPor('totalVendido')">Total vendido</th><th>Estado</th><th></th>
+          <th>Clasificación</th><th class="sortable" (click)="ordenarPor('totalVentas')">Ventas</th><th class="sortable" (click)="ordenarPor('totalVendido')">Total vendido</th><th class="app-col-center">Estado</th><th class="actions-heading">Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -107,9 +107,9 @@
             <td><span class="badge-tipo" [style.background-color]="c.tipoClienteColorHex">{{ c.tipoClienteNombre }}</span></td>
             <td>{{ c.totalVentas }}</td>
             <td>{{ c.totalVendido | currency:'HNL':'symbol':'1.2-2' }}</td>
-            <td>
+            <td class="app-col-center">
               @if (puedeCambiarEstado(c)) {
-                <mat-slide-toggle [checked]="c.activo" (change)="toggleActivo(c)" [aria-label]="(c.activo ? 'Desactivar ' : 'Activar ') + c.nombre"></mat-slide-toggle>
+                <mat-slide-toggle [checked]="c.activo" [disabled]="cambiandoEstado()" (change)="toggleActivo(c, $event)" [aria-label]="(c.activo ? 'Desactivar ' : 'Activar ') + c.nombre"></mat-slide-toggle>
               } @else {
                 <span class="badge" [class.success]="c.activo" [class.muted]="!c.activo">{{ c.activo ? 'Activo' : 'Inactivo' }}</span>
               }
@@ -117,7 +117,7 @@
             <td class="actions">
               <button type="button" class="action-view" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver ' + c.nombre" [appConsultaRegistro]="{ titulo: 'Cliente: ' + c.nombre, campos: { 'Nombre': c.nombre, 'Identidad/RTN': c.identidadORTN, 'Teléfono': c.telefono, 'Correo': c.correo, 'Dirección': c.direccion, 'Clasificación': c.tipoClienteNombre, 'Estado': c.activo ? 'Activo' : 'Inactivo', 'Ventas': c.totalVentas, 'Total vendido (HNL)': c.totalVendido, 'Creado por': c.creadoPorNombreUsuario, 'Fecha de creación': c.fechaCreacion } }"><mat-icon>visibility</mat-icon></button>
               @if (puedeEditar()) {
-                <a [routerLink]="['/clientes', c.id, 'editar']" mat-icon-button title="Editar"><mat-icon>edit</mat-icon></a>
+                <button type="button"  (click)="abrirEditor(c.id)" mat-icon-button title="Editar"><mat-icon>edit</mat-icon></button>
               }
               @if (puedeEliminar()) {
                 <button mat-icon-button title="Eliminar" (click)="eliminar(c)"><mat-icon>delete</mat-icon></button>

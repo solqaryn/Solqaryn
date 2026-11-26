@@ -1,3 +1,5 @@
+import { crearAccionesInstitucionales } from '../../shared/modal-institucional/acciones-institucionales';
+import { firstValueFrom } from 'rxjs';
 import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
@@ -5,7 +7,7 @@ import { ActivatedRoute, RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSlideToggleModule, MatSlideToggleChange } from '@angular/material/slide-toggle';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
@@ -47,6 +49,13 @@ interface SegmentoClienteResumen {
   styleUrl: './clientes-list.component.scss'
 })
 export class ClientesListComponent implements OnInit {
+  private readonly acciones = crearAccionesInstitucionales('Clientes');
+  readonly cambiandoEstado = signal(false);
+
+  async abrirEditor(id?: number): Promise<void> {
+    if (await this.acciones.abrir(() => import('./cliente-form.component').then(m => m.ClienteFormComponent), 'xl', id ? 'Editar' : 'Crear', id)) this.cargar();
+  }
+
   readonly clientes = signal<Cliente[]>([]);
   readonly tiposCliente = signal<TipoCliente[]>([]);
   readonly resumenSegmentos = signal<SegmentoClienteResumen[]>([]);
@@ -197,20 +206,22 @@ export class ClientesListComponent implements OnInit {
     return cliente.activo ? this.puedeDesactivar() : this.puedeActivar();
   }
 
-  toggleActivo(c: Cliente): void {
-    if (!this.puedeCambiarEstado(c)) return;
-    const operacion = c.activo
-      ? this.clienteService.desactivar(c.id)
-      : this.clienteService.activar(c.id);
-
-    operacion.subscribe({
-      next: () => this.cargar(),
-      error: (err) => this.snackBar.open(err.error?.message ?? 'No se pudo cambiar el estado del cliente.', 'Cerrar', { duration: 5000 })
-    });
+  async toggleActivo(c: Cliente, evento: MatSlideToggleChange): Promise<void> {
+    evento.source.checked = c.activo;
+    if (!this.puedeCambiarEstado(c) || this.cambiandoEstado()) return;
+    this.cambiandoEstado.set(true);
+    
+    try {
+      const accion = c.activo ? 'Desactivar' : 'Activar';
+      if (!await this.acciones.confirmar(accion, { titulo: accion + ' registro', mensaje: '¿Deseas ' + accion.toLowerCase() + ' «' + c.nombre + '»?', confirmarTexto: accion })) return;
+      await firstValueFrom(c.activo ? this.clienteService.desactivar(c.id) : this.clienteService.activar(c.id));
+      this.cargar();
+    } catch { this.snackBar.open('No se pudo cambiar el estado.', 'Cerrar', { duration: 5000 }); }
+    finally { this.cambiandoEstado.set(false); }
   }
 
   async eliminar(c: Cliente): Promise<void> {
-    const confirmado = await this.alerts.confirmar({ titulo: 'Eliminar cliente', mensaje: `Se ocultará a "${c.nombre}" sin borrar sus ventas históricas.`, tipo: 'peligro', confirmarTexto: 'Eliminar' });
+    const confirmado = await this.acciones.confirmar('EliminarLogico', { titulo: 'Eliminar cliente', mensaje: `Se ocultará a "${c.nombre}" sin borrar sus ventas históricas.`, tipo: 'peligro', confirmarTexto: 'Eliminar' });
     if (!confirmado) return;
 
     this.clienteService.delete(c.id).subscribe({

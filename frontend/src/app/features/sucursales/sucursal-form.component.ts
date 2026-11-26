@@ -1,3 +1,6 @@
+import { MatDialogModule } from '@angular/material/dialog';
+import { crearEditorInstitucional } from '../../shared/modal-institucional/acciones-institucionales';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { HttpClient } from '@angular/common/http';
 import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
@@ -23,7 +26,7 @@ interface EmpresaOpcion {
 @Component({
   selector: 'app-sucursal-form',
   standalone: true,
-  imports: [
+  imports: [MatDialogModule, 
     ReactiveFormsModule,
     RouterLink,
     MatButtonModule,
@@ -38,6 +41,9 @@ interface EmpresaOpcion {
   styleUrl: './sucursal-form.component.scss'
 })
 export class SucursalFormComponent implements OnInit {
+  readonly editor = crearEditorInstitucional('Sucursales');
+  cancelarModal(): void { if (!this.saving()) this.editor.cerrar(false); }
+
   private readonly fb = inject(FormBuilder);
   readonly isEdit = signal(false);
   readonly loading = signal(false);
@@ -80,7 +86,8 @@ export class SucursalFormComponent implements OnInit {
   ngOnInit(): void {
     this.cargarEmpresas();
 
-    const idParam = this.route.snapshot.paramMap.get('id');
+    const idParam = this.editor.ref ? this.editor.id : this.route.snapshot.paramMap.get('id');
+    if (this.editor.ref && !this.editor.valido(idParam ? 'Editar' : 'Crear')) { this.editor.cerrar(false); return; }
     if (!idParam) return;
 
     const id = Number(idParam);
@@ -95,9 +102,9 @@ export class SucursalFormComponent implements OnInit {
     this.cargarSucursal(id);
   }
 
-  submit(): void {
+  async submit(): Promise<void> {
     this.form.markAllAsTouched();
-    if (this.form.invalid || this.saving() || this.loading() || this.empresasLoading() || this.empresasError()) return;
+    if (this.form.invalid || this.form.disabled || this.saving() || this.loading() || this.empresasLoading() || this.empresasError()) return;
 
     this.saving.set(true);
     this.errorMessage.set(null);
@@ -120,14 +127,16 @@ export class SucursalFormComponent implements OnInit {
       zonaHoraria: raw.zonaHoraria?.trim() || 'America/Tegucigalpa'
     };
 
+    const accion = this.isEdit() ? 'Editar' : 'Crear';
+    if (!await this.editor.confirmar(accion, { titulo: 'Confirmar ' + (this.isEdit() ? 'actualización' : 'creación'), mensaje: '¿Deseas guardar los datos del registro?', confirmarTexto: 'Guardar' })) { this.saving.set(false); return; }
     const request$ = this.isEdit()
       ? this.sucursalService.update(this.sucursalId!, value)
       : this.sucursalService.create(value);
 
-    request$.subscribe({
+    request$.pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
       next: () => {
         this.saving.set(false);
-        this.router.navigate(['/sucursales']);
+        if (this.editor.ref) this.editor.cerrar(true); else void this.router.navigate(['/sucursales']);
       },
       error: (err) => {
         this.saving.set(false);
@@ -139,7 +148,7 @@ export class SucursalFormComponent implements OnInit {
   private cargarEmpresas(): void {
     this.empresasLoading.set(true);
     this.empresasError.set(null);
-    this.http.get<ApiResponse<EmpresaOpcion[]>>(this.empresasUrl).subscribe({
+    this.http.get<ApiResponse<EmpresaOpcion[]>>(this.empresasUrl).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
       next: (res) => {
         this.empresas.set(res.data ?? []);
         this.empresasLoading.set(false);
@@ -158,7 +167,7 @@ export class SucursalFormComponent implements OnInit {
     this.errorMessage.set(null);
     this.form.disable();
 
-    this.sucursalService.getById(id).subscribe({
+    this.sucursalService.getById(id).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
       next: (res) => {
         const sucursal = res.data;
         this.form.patchValue({

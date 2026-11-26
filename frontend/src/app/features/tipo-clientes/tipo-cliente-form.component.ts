@@ -1,3 +1,6 @@
+import { MatDialogModule } from '@angular/material/dialog';
+import { crearEditorInstitucional } from '../../shared/modal-institucional/acciones-institucionales';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
 
 import { ReactiveFormsModule, FormBuilder, Validators, FormGroup } from '@angular/forms';
@@ -14,7 +17,7 @@ import { TipoCliente } from '../../core/models/tipo-cliente.model';
 @Component({
   selector: 'app-tipo-cliente-form',
   standalone: true,
-  imports: [
+  imports: [MatDialogModule, 
     ReactiveFormsModule,
     RouterLink,
     MatFormFieldModule,
@@ -29,6 +32,10 @@ import { TipoCliente } from '../../core/models/tipo-cliente.model';
   styleUrl: './tipo-cliente-form.component.scss'
 })
 export class TipoClienteFormComponent implements OnInit {
+  readonly editor = crearEditorInstitucional('TiposClientes');
+  readonly loading = signal(false);
+  cancelarModal(): void { if (!this.saving()) this.editor.cerrar(false); }
+
   readonly isEdit = signal(false);
   readonly saving = signal(false);
   readonly errorMessage = signal<string | null>(null);
@@ -55,11 +62,14 @@ export class TipoClienteFormComponent implements OnInit {
       activo: [true]
     });
 
-    const idParam = this.route.snapshot.paramMap.get('id');
+    const idParam = this.editor.ref ? this.editor.id : this.route.snapshot.paramMap.get('id');
+    if (this.editor.ref && !this.editor.valido(idParam ? 'Editar' : 'Crear')) { this.editor.cerrar(false); return; }
     if (idParam) {
       this.isEdit.set(true);
       this.tipoId = Number(idParam);
-      this.tipoClienteService.getById(this.tipoId).subscribe((res) => {
+      this.loading.set(true);
+      this.tipoClienteService.getById(this.tipoId).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({ next: (res) => {
+        this.loading.set(false);
         this.form.patchValue(res.data);
         this.esSistema.set(res.data.esSistema);
         this.codigo.set(res.data.codigo);
@@ -68,25 +78,27 @@ export class TipoClienteFormComponent implements OnInit {
           this.form.get('activo')?.disable();
           this.form.get('esPredeterminado')?.disable();
         }
-      });
+      }, error: () => { this.loading.set(false); this.form.disable(); this.errorMessage.set('No se pudo cargar el registro.'); } });
     }
   }
 
-  submit(): void {
-    if (this.form.invalid) return;
+  async submit(): Promise<void> {
+    if (this.form.invalid || this.form.disabled || this.loading() || this.saving()) return;
 
     this.saving.set(true);
     this.errorMessage.set(null);
 
     const value = this.form.getRawValue();
+    const accion = this.isEdit() ? 'Editar' : 'Crear';
+    if (!await this.editor.confirmar(accion, { titulo: 'Confirmar ' + (this.isEdit() ? 'actualización' : 'creación'), mensaje: '¿Deseas guardar los datos del registro?', confirmarTexto: 'Guardar' })) { this.saving.set(false); return; }
     const request$ = this.isEdit()
       ? this.tipoClienteService.update(this.tipoId!, value)
       : this.tipoClienteService.create(value);
 
-    request$.subscribe({
+    request$.pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
       next: () => {
         this.saving.set(false);
-        this.router.navigate(['/tipo-clientes']);
+        if (this.editor.ref) this.editor.cerrar(true); else void this.router.navigate(['/tipo-clientes']);
       },
       error: (err) => {
         this.saving.set(false);

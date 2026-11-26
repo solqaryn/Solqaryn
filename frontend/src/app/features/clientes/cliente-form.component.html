@@ -1,12 +1,17 @@
+<div [class.app-dialog-layout]="!!editor.ref">
+@if (editor.ref) { <h2 mat-dialog-title>{{ isEdit() ? 'Editar Cliente' : 'Nuevo Cliente' }}</h2> }
+<div [class.app-dialog-layout__body]="!!editor.ref">
 <div class="cliente-form-container">
-  <div class="header">
+  @if (!editor.ref) {
+<div class="header">
     <h1>{{ isEdit() ? 'Editar Cliente' : 'Nuevo Cliente' }}</h1>
     <a routerLink="/clientes" mat-button><mat-icon>arrow_back</mat-icon> Volver</a>
   </div>
+}
 
-  @if (!saving()) {
+  @if (!loading()) {
     <div class="form-container">
-      <form [formGroup]="form" (ngSubmit)="submit()">
+      <form id="cliente-form-institucional" [formGroup]="form" (ngSubmit)="submit()">
         <mat-form-field appearance="outline"><mat-label>Nombre *</mat-label><input matInput formControlName="nombre" required><mat-error>El nombre es obligatorio</mat-error></mat-form-field>
         <mat-form-field appearance="outline"><mat-label>Teléfono</mat-label><input matInput formControlName="telefono"></mat-form-field>
         <mat-form-field appearance="outline"><mat-label>Identidad/RTN</mat-label><input matInput formControlName="identidadORTN"></mat-form-field>
@@ -24,14 +29,16 @@
         @if (errorMessage()) {
           <div class="error-message">{{ errorMessage() }}</div>
         }
-        <div class="actions">
-          <button type="submit" mat-raised-button color="primary" [disabled]="form.invalid">{{ isEdit() ? 'Actualizar' : 'Crear' }}</button>
+        @if (!editor.ref) {
+<div class="actions">
+          <button type="submit" mat-raised-button color="primary" [disabled]="form.invalid || form.disabled || loading() || saving()">{{ isEdit() ? 'Actualizar' : 'Crear' }}</button>
           <a routerLink="/clientes" mat-button>Cancelar</a>
         </div>
+}
       </form>
     </div>
   } @else {
-    <div class="loading-container"><mat-spinner></mat-spinner><p>Guardando...</p></div>
+    <div class="loading-container"><mat-spinner></mat-spinner><p>Cargando registro…</p></div>
   }
 
   @if (isEdit()) {
@@ -73,11 +80,11 @@
             @if (puedeEditarCredito() && !credito()!.bloqueadoAutomaticamente) {
               <form [formGroup]="bloqueoForm" (ngSubmit)="aplicarBloqueo()">
                 <mat-form-field appearance="outline"><mat-label>Motivo</mat-label><input matInput formControlName="motivo"></mat-form-field>
-                <button mat-stroked-button type="submit" [disabled]="bloqueoForm.invalid">Aplicar bloqueo</button>
+                <button mat-stroked-button type="submit" [disabled]="bloqueoForm.invalid || creditoSaving()">Aplicar bloqueo</button>
               </form>
             }
             @if (puedeEditarCredito() && credito()!.bloqueadoAutomaticamente) {
-              <button mat-stroked-button type="button" (click)="liberarBloqueo()">Liberar bloqueo</button>
+              <button mat-stroked-button type="button" [disabled]="creditoSaving()" (click)="liberarBloqueo()">Liberar bloqueo</button>
             }
           </div>
         }
@@ -94,11 +101,11 @@
               <form [formGroup]="excepcionForm" (ngSubmit)="autorizarExcepcion()">
                 <mat-form-field appearance="outline"><mat-label>Monto</mat-label><input matInput type="number" min="0.01" formControlName="monto"></mat-form-field>
                 <mat-form-field appearance="outline"><mat-label>Vigente hasta</mat-label><input matInput type="datetime-local" formControlName="vigenteHastaLocal"></mat-form-field>
-                <button mat-stroked-button type="submit" [disabled]="excepcionForm.invalid">Autorizar excepción</button>
+                <button mat-stroked-button type="submit" [disabled]="excepcionForm.invalid || creditoSaving()">Autorizar excepción</button>
               </form>
             }
             @if (puedeEditarCredito() && credito()!.montoExcepcion != null) {
-              <button mat-stroked-button type="button" (click)="revocarExcepcion()">Revocar excepción</button>
+              <button mat-stroked-button type="button" [disabled]="creditoSaving()" (click)="revocarExcepcion()">Revocar excepción</button>
             }
           </div>
         }
@@ -106,4 +113,12 @@
     </section>
   }
 
+</div>
+</div>
+@if (editor.ref) {
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" [disabled]="saving() || creditoSaving()" (click)="cancelarModal()">Cancelar</button>
+    <button mat-flat-button color="primary" type="submit" form="cliente-form-institucional" [disabled]="form.invalid || form.disabled || loading() || saving() || creditoSaving()">{{ saving() ? 'Guardando…' : 'Guardar' }}</button>
+  </mat-dialog-actions>
+}
 </div>

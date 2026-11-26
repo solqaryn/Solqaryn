@@ -4,14 +4,14 @@
     <p class="page-subtitle">Administra los puntos operativos con su empresa propietaria visible y trazable.</p>
   </div>
   @if (puedeCrear()) {
-    <a routerLink="/sucursales/nueva" mat-flat-button color="primary">
+    <button type="button" (click)="abrirEditor()" mat-flat-button color="primary">
       <mat-icon>add_business</mat-icon> Nueva sucursal
-    </a>
+    </button>
   }
 </div>
 
 <div class="card">
-  <div class="toolbar" aria-label="Búsqueda y filtros de sucursales">
+  <div class="toolbar app-table-filters" aria-label="Búsqueda y filtros de sucursales">
     <mat-form-field appearance="outline" class="search-field">
       <mat-label>Buscar sucursal</mat-label>
       <input
@@ -73,7 +73,8 @@
       @if (totalPaginas() > 1) { · Página {{ pagina }} de {{ totalPaginas() }} }
     </div>
 
-    <table class="table table-desktop">
+    <div class="app-table-shell" role="region" aria-label="Tabla de sucursales" tabindex="0">
+    <table class="app-data-table">
       <thead>
         <tr>
           <th>Código</th>
@@ -82,8 +83,8 @@
           <th>Dirección</th>
           <th>Zona horaria</th>
           <th>Empresa propietaria</th>
-          <th>Estado</th>
-          <th><span class="visually-hidden">Acciones</span></th>
+          <th class="app-col-center">Estado</th>
+          <th class="actions-heading">Acciones</th>
         </tr>
       </thead>
       <tbody>
@@ -107,12 +108,12 @@
                 <span class="badge muted" title="Registro legado pendiente de ownership">Sin asignar</span>
               }
             </td>
-            <td>
+            <td class="app-col-center">
               @if (puedeCambiarEstado(s)) {
                 <mat-slide-toggle
                   [checked]="s.activa"
                   [disabled]="estaOperando(s.id)"
-                  (change)="toggleActiva(s)"
+                  (change)="toggleActiva(s, $event)"
                   [aria-label]="(s.activa ? 'Desactivar ' : 'Activar ') + s.nombre">
                 </mat-slide-toggle>
               } @else {
@@ -124,9 +125,9 @@
             <td class="actions">
               <button type="button" class="action-view" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver ' + s.nombre" [appConsultaRegistro]="{ titulo: 'Sucursal: ' + s.nombre, campos: { 'Nombre': s.nombre, 'Código': s.codigo, 'Empresa propietaria': nombreEmpresa(s.empresaId), 'Dirección': s.direccion, 'Teléfono': s.telefono, 'Correo': s.correo, 'Zona horaria': s.zonaHoraria, 'Estado': s.activa ? 'Activa' : 'Inactiva', 'Creado por': s.creadoPorNombreUsuario, 'Actualizado por': s.actualizadoPorNombreUsuario, 'Fecha de creación': s.fechaCreacion, 'Fecha de actualización': s.fechaActualizacion } }"><mat-icon>visibility</mat-icon></button>
               @if (puedeEditar()) {
-                <a [routerLink]="['/sucursales', s.id, 'editar']" mat-icon-button [attr.aria-label]="'Editar ' + s.nombre" title="Editar">
+                <button type="button"  (click)="abrirEditor(s.id)" mat-icon-button [attr.aria-label]="'Editar ' + s.nombre" title="Editar">
                   <mat-icon>edit</mat-icon>
-                </a>
+                </button>
               }
               @if (puedeEliminar()) {
                 <button
@@ -151,53 +152,9 @@
         }
       </tbody>
     </table>
-
-    <div class="cards-mobile">
-      @for (s of sucursales(); track s.id) {
-        <article class="item-card">
-          <div class="item-card-header">
-            <div>
-              <span class="code-chip">{{ s.codigo }}</span>
-              <h2>{{ s.nombre }}</h2>
-            </div>
-            @if (puedeCambiarEstado(s)) {
-              <mat-slide-toggle
-                [checked]="s.activa"
-                [disabled]="estaOperando(s.id)"
-                (change)="toggleActiva(s)"
-                [aria-label]="(s.activa ? 'Desactivar ' : 'Activar ') + s.nombre">
-              </mat-slide-toggle>
-            } @else {
-              <span class="badge" [class.success]="s.activa" [class.muted]="!s.activa">{{ s.activa ? 'Activa' : 'Inactiva' }}</span>
-            }
-          </div>
-
-          <dl class="item-details">
-            <div><dt>Dirección</dt><dd>{{ s.direccion || '—' }}</dd></div>
-            <div><dt>Teléfono</dt><dd>{{ s.telefono || '—' }}</dd></div>
-            <div><dt>Correo</dt><dd>{{ s.correo || '—' }}</dd></div>
-            <div><dt>Zona horaria</dt><dd>{{ s.zonaHoraria }}</dd></div>
-            <div><dt>Empresa propietaria</dt><dd>{{ nombreEmpresa(s.empresaId) }}</dd></div>
-          </dl>
-
-          @if (puedeEditar() || puedeEliminar()) {
-            <div class="item-card-actions">
-              <button type="button" class="action-view" mat-button title="Ver detalle" [attr.aria-label]="'Ver ' + s.nombre" [appConsultaRegistro]="{ titulo: 'Sucursal: ' + s.nombre, campos: { 'Nombre': s.nombre, 'Código': s.codigo, 'Empresa propietaria': nombreEmpresa(s.empresaId), 'Dirección': s.direccion, 'Teléfono': s.telefono, 'Correo': s.correo, 'Zona horaria': s.zonaHoraria, 'Estado': s.activa ? 'Activa' : 'Inactiva', 'Creado por': s.creadoPorNombreUsuario, 'Actualizado por': s.actualizadoPorNombreUsuario, 'Fecha de creación': s.fechaCreacion, 'Fecha de actualización': s.fechaActualizacion } }"><mat-icon>visibility</mat-icon> Ver</button>
-              @if (puedeEditar()) {
-                <a [routerLink]="['/sucursales', s.id, 'editar']" mat-button><mat-icon>edit</mat-icon> Editar</a>
-              }
-              @if (puedeEliminar()) {
-                <button mat-button type="button" [disabled]="estaOperando(s.id)" (click)="eliminar(s)">
-                  <mat-icon>delete</mat-icon> Eliminar
-                </button>
-              }
-            </div>
-          }
-        </article>
-      } @empty {
-        <div class="empty mobile-empty"><mat-icon>storefront</mat-icon><span>No hay sucursales que coincidan con los filtros.</span></div>
-      }
     </div>
+
+    
 
     <mat-paginator
       [length]="total()"

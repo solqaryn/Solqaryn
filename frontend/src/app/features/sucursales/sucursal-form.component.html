@@ -1,3 +1,7 @@
+<div [class.app-dialog-layout]="!!editor.ref">
+@if (editor.ref) { <h2 mat-dialog-title>{{ isEdit() ? 'Editar sucursal' : 'Nueva sucursal' }}</h2> }
+<div [class.app-dialog-layout__body]="!!editor.ref">
+@if (!editor.ref) {
 <div class="header-row">
   <a routerLink="/sucursales" mat-icon-button aria-label="Volver a sucursales"><mat-icon>arrow_back</mat-icon></a>
   <div>
@@ -5,8 +9,9 @@
     <p class="page-subtitle">Cada sucursal debe conservar una empresa propietaria explícita; este dato identifica ownership operativo, no sustituye la autorización del backend.</p>
   </div>
 </div>
+}
 
-<form class="card form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
+<form id="sucursal-form-institucional" class="card form" [formGroup]="form" (ngSubmit)="submit()" novalidate>
   @if (loading()) {
     <div class="loading" role="status" aria-live="polite">
       <mat-spinner diameter="42"></mat-spinner>
@@ -101,12 +106,22 @@
       </div>
     }
 
-    <div class="form-actions">
+    @if (!editor.ref) {
+<div class="form-actions">
       <a routerLink="/sucursales" mat-button type="button">Cancelar</a>
-      <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving() || loading()">
+      <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || form.disabled || saving() || loading()">
         @if (saving()) { <mat-spinner diameter="20"></mat-spinner> }
         <span>{{ saving() ? 'Guardando…' : 'Guardar sucursal' }}</span>
       </button>
     </div>
+}
   }
 </form>
+</div>
+@if (editor.ref) {
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" [disabled]="saving()" (click)="cancelarModal()">Cancelar</button>
+    <button mat-flat-button color="primary" type="submit" form="sucursal-form-institucional" [disabled]="form.invalid || form.disabled || loading() || saving() || empresasLoading() || !!empresasError()">{{ saving() ? 'Guardando…' : 'Guardar' }}</button>
+  </mat-dialog-actions>
+}
+</div>

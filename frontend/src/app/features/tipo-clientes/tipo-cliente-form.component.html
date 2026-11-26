@@ -1,15 +1,20 @@
+<div [class.app-dialog-layout]="!!editor.ref">
+@if (editor.ref) { <h2 mat-dialog-title>{{ isEdit() ? 'Editar Clasificación' : 'Nueva Clasificación' }}</h2> }
+<div [class.app-dialog-layout__body]="!!editor.ref">
 <div class="tipo-cliente-form-container">
-  <div class="header">
+  @if (!editor.ref) {
+<div class="header">
     <h1>{{ isEdit() ? 'Editar Clasificación' : 'Nueva Clasificación' }}</h1>
     <a routerLink="/tipo-clientes" mat-button>
       <mat-icon>arrow_back</mat-icon>
       Volver
     </a>
   </div>
+}
 
-  @if (!saving()) {
+  @if (!loading()) {
     <div class="form-container">
-      <form [formGroup]="form" (ngSubmit)="submit()">
+      <form id="tipo-cliente-form-institucional" [formGroup]="form" (ngSubmit)="submit()">
         @if (isEdit() && esSistema()) {
           <div class="system-badge">
             <mat-icon>lock</mat-icon>
@@ -59,19 +64,29 @@
             {{ errorMessage() }}
           </div>
         }
-        <div class="actions">
-          <button type="submit" mat-raised-button color="primary" [disabled]="form.invalid">
+        @if (!editor.ref) {
+<div class="actions">
+          <button type="submit" mat-raised-button color="primary" [disabled]="form.invalid || form.disabled || loading() || saving()">
             {{ isEdit() ? 'Actualizar' : 'Crear' }}
           </button>
           <a routerLink="/tipo-clientes" mat-button>Cancelar</a>
         </div>
+}
       </form>
     </div>
   } @else {
     <div class="loading-container">
       <mat-spinner></mat-spinner>
-      <p>Guardando...</p>
+      <p>Cargando registro…</p>
     </div>
   }
 
+</div>
+</div>
+@if (editor.ref) {
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" [disabled]="saving()" (click)="cancelarModal()">Cancelar</button>
+    <button mat-flat-button color="primary" type="submit" form="tipo-cliente-form-institucional" [disabled]="form.invalid || form.disabled || loading() || saving()">{{ saving() ? 'Guardando…' : 'Guardar' }}</button>
+  </mat-dialog-actions>
+}
 </div>
