@@ -1,3 +1,6 @@
+## 2026-11-26 | DEV04 | C07-01.M06.06 | R1-RESTAURADA
+- V44R1-J30-2725E846-C0701M0606-QUOTE-HTTP-DENY: prueba HTTP negativa real de duplicación de cotizaciones A/B con JWT firmado, MySQL 8.4 efímero, dos documentos con detalles y control positivo de catálogo; exige 503 exacto/no-store y snapshots SQL intactos, sin recibo comercial exitoso. No cambia autorización, pilotos, runtime, esquema ni datos comerciales. La suite A3 previa 164/164 no acredita HTTP; ejecución del nuevo caso pendiente, D01/D06 y A5 independiente pendientes. Foco C01-04.M03.06 conservado; alternativa acotada por falta de fuente P01/P02/API12 autorizada. Rollback: revert normal en dev.
+
 ## 2026-11-26 | DEV03 | C15-04.M05.04 | R1-RESTAURADA
 - Adopta paquete A0.68Q preparado por DEV02 (RUN 70caac7e-2750-8322-aa0e-26f4843263b1): Cuentas por cobrar distingue cuarentena empresarial 503 TENANT_DATA_ISOLATION_REQUIRED con mensaje fijo y sin exponer payload; conserva 401/403 y 503 genérico. Dos unitarios y seis escenarios HTTP JWT A/B para tres rutas en cuarentena, sin ampliar permisos, pilotos ni datos. CI exact-SHA, criterio D/E integral y A5 independiente pendientes. SKREF-03/10 originales consultadas; sin scripts externos. Foco C01-04.M03.06 preservado. RUN 8059040c-b14c-8330-8aa8-0968ae3345ed.
 

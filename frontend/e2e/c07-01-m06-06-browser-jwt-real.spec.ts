@@ -293,4 +293,75 @@ test.describe('C07-01.M06.06 navegador real y aislamiento A/B', () => {
     expect(namesB).not.toContain('C0701BrowserTenantA');
   });
 
+  test('Duplicar cotización en cuarentena no altera documentos ni detalles SQL A/B', async ({ page, request }) => {
+    test.setTimeout(90_000);
+    const jwtA = await sessionReal(page, request, 'c1504_admin_a', '1');
+    const jwtB = await sessionReal(page, request, 'c1504_admin_b', '2');
+    const headersA = { Authorization: 'Bearer ' + jwtA, 'X-Empresa-Id': '1' };
+    const headersB = { Authorization: 'Bearer ' + jwtB, 'X-Empresa-Id': '2' };
+    const { execFileSync } = await import('node:child_process');
+    const containers = execFileSync('docker',
+      ['ps', '--filter', 'ancestor=mysql:8.4', '--format', '{{.ID}}'],
+      { encoding: 'utf8' }).trim().split(/\r?\n/);
+    expect(containers, 'Un solo contenedor MySQL efímero').toHaveLength(1);
+    const container = containers[0];
+    expect(container).toMatch(/^[0-9a-f]{12,64}$/);
+    const sql = (statement: string) => execFileSync('docker', [
+      'exec', '-i', container!, 'mysql', '-uroot', '-proot',
+      'solqaryn_c1504_real_ci', '-Nse', statement
+    ], { encoding: 'utf8' }).trim();
+
+    // Fixtures CI exclusivos. No se cambia ningún grant, piloto o middleware.
+    sql(`INSERT INTO TipoClientes
+      (Codigo,Nombre,NombreNormalizado,ColorHex,Activo,EsSistema,Orden,EsPredeterminado,Eliminado,FechaCreacion,FechaActualizacion)
+      VALUES ('C0701_QUOTE_QA','C0701 Quote QA','C0701_QUOTE_QA','#FFFFFF',1,0,0,0,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
+      INSERT INTO Clientes (EmpresaId,Nombre,Activo,TipoClienteId,FechaCreacion,FechaActualizacion)
+      SELECT e.Id,CONCAT('C0701QuoteClient',e.Id),1,t.Id,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)
+      FROM Empresas e CROSS JOIN TipoClientes t WHERE e.Id IN (1,2) AND t.Codigo='C0701_QUOTE_QA';
+      INSERT INTO Cotizaciones (EmpresaId,Estado,ClienteId,ClienteNombreSnapshot,FechaCreacion,FechaActualizacion)
+      SELECT EmpresaId,1,Id,Nombre,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)
+      FROM Clientes WHERE Nombre IN ('C0701QuoteClient1','C0701QuoteClient2');
+      INSERT INTO CotizacionDetalles (EmpresaId,CotizacionId,ProductoId,ProductoNombreSnapshot,Cantidad,PrecioUnitario,FechaCreacion,FechaActualizacion)
+      SELECT q.EmpresaId,q.Id,p.Id,p.Nombre,2,p.Precio,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)
+      FROM Cotizaciones q JOIN Productos p ON p.EmpresaId=q.EmpresaId
+      WHERE q.ClienteNombreSnapshot IN ('C0701QuoteClient1','C0701QuoteClient2')
+      AND p.Nombre IN ('C0701BrowserTenantA','C0701BrowserTenantB');`);
+    const snapshot = () => [
+      sql('SELECT Id,EmpresaId,Estado,ClienteId,ClienteNombreSnapshot,FechaActualizacion FROM Cotizaciones ORDER BY Id'),
+      sql('SELECT Id,EmpresaId,CotizacionId,ProductoId,Cantidad,PrecioUnitario,FechaActualizacion FROM CotizacionDetalles ORDER BY Id'),
+      sql("SELECT COUNT(*) FROM RegistrosAuditoria WHERE Entidad='Cotizacion' AND Resultado='Exito'")
+    ];
+    const quoteId = (tenant: number) => Number(sql(
+      "SELECT Id FROM Cotizaciones WHERE EmpresaId=" + tenant +
+      " AND ClienteNombreSnapshot='C0701QuoteClient" + tenant + "'"
+    ));
+    const idA = quoteId(1), idB = quoteId(2);
+    expect(Number.isSafeInteger(idA) && idA > 0).toBe(true);
+    expect(Number.isSafeInteger(idB) && idB > 0 && idB !== idA).toBe(true);
+    expect(sql("SELECT COUNT(*) FROM CotizacionDetalles d JOIN Cotizaciones q ON q.Id=d.CotizacionId AND q.EmpresaId=d.EmpresaId WHERE q.ClienteNombreSnapshot IN ('C0701QuoteClient1','C0701QuoteClient2')")).toBe('2');
+    const before = snapshot();
+    const ownCatalog = async (headers: Record<string, string>, own: string, foreign: string) => {
+      const res = await request.get(api + '/productos?page=1&pageSize=10', { headers });
+      expect(res.status(), 'Control positivo de JWT y membresía vigente').toBe(200);
+      const names = (await res.json())?.data?.items?.map((p: { nombre?: string }) => p.nombre);
+      expect(names).toContain(own);
+      expect(names).not.toContain(foreign);
+    };
+    await ownCatalog(headersA, 'C0701BrowserTenantA', 'C0701BrowserTenantB');
+    await ownCatalog(headersB, 'C0701BrowserTenantB', 'C0701BrowserTenantA');
+    for (const [headers, id] of [[headersA, idA], [headersA, idB], [headersB, idB], [headersB, idA]] as const) {
+      const res = await request.post(api + '/cotizaciones/' + id + '/duplicar', { headers });
+      expect(res.status(), 'Cuarentena comercial impide incluso duplicar el documento propio').toBe(503);
+      expect(res.headers()['cache-control']).toContain('no-store');
+      const body = await res.json();
+      expect(body).toEqual({
+        success: false, code: 'TENANT_DATA_ISOLATION_REQUIRED',
+        message: 'Esta operación está temporalmente bloqueada por seguridad de los datos empresariales.'
+      });
+      expect(snapshot(), 'Sin duplicación, modificación ni recibo comercial exitoso').toEqual(before);
+    }
+    await ownCatalog(headersA, 'C0701BrowserTenantA', 'C0701BrowserTenantB');
+    await ownCatalog(headersB, 'C0701BrowserTenantB', 'C0701BrowserTenantA');
+  });
+
 });
