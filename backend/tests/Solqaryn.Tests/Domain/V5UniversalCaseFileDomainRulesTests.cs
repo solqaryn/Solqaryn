@@ -37,6 +37,19 @@ public sealed class V5UniversalCaseFileDomainRulesTests
     }
 
     [Fact]
+    public void AuditCorrelationIsReadOnlyAndRequiresCurrentOwnerAndAuthority()
+    {
+        var read = Read() with { Action = V5UniversalCaseFileDomainRules.CaseAction.ReadAuditCorrelation };
+        var verdict = V5UniversalCaseFileDomainRules.Evaluate(Authority(), Stored() with { Archived = true }, read);
+        Assert.True(verdict.RequiresTrustedApplicationEnforcement);
+        Assert.False(verdict.AuthorizesPersistence);
+        Assert.False(verdict.AuthorizesExternalMediaAccess);
+        Assert.Equal("SERVER_AUTHORITY_REQUIRED", Check(auth: Authority() with { ExplicitPermissionCurrent = false }, cmd: read));
+        Assert.Equal("CASEFILE_OWNER_OR_LEGACY_SCOPE_DENIED", Check(stored: Stored() with { OwnerTenantId = 200 }, cmd: read));
+        Assert.Equal("CASEFILE_BRANCH_MISMATCH", Check(stored: Stored() with { OwnerBranchId = 6 }, cmd: read));
+    }
+
+    [Fact]
     public void MissingOrRevokedIdentityAlwaysDenied()
     {
         Assert.Equal("SERVER_AUTHORITY_REQUIRED",

@@ -241,6 +241,25 @@ public sealed class V5UniversalCaseFileAuthorizationGateTests
     }
 
     [Fact]
+    public async Task AuditCorrelationRequiresItsOwnGrantAndNeverAuthorizesPersistence()
+    {
+        var request = Read() with { Action = Rules.CaseAction.ReadAuditCorrelation };
+        var reader = new Reader { BindRequestedAction = false,
+            Evidence = ValidEvidence() with { VerifiedAction = Rules.CaseAction.ReadTimeline } };
+        var gate = new Gate(reader);
+        Assert.Equal("CASEFILE_ACTION_GRANT_MISMATCH", (await gate.EvaluateAsync(request)).Code);
+        reader.Evidence = ValidEvidence() with { VerifiedAction = Rules.CaseAction.ReadAuditCorrelation };
+        var result = await gate.EvaluateAsync(request);
+        Assert.Equal("TRUSTED_CASEFILE_EXECUTION_REQUIRED", result.Code);
+        Assert.False(result.GrantsTimelineRead);
+        Assert.False(result.GrantsCaseWrite);
+        Assert.False(result.GrantsInstitutionalWrite);
+        Assert.Equal("CASEFILE_ACTION_GRANT_MISMATCH", (await gate.EvaluateAsync(Read())).Code);
+        reader.Evidence = ValidEvidence() with { VerifiedAction = Rules.CaseAction.ReadAuditCorrelation, PermissionRevoked = true };
+        Assert.Equal("CASEFILE_CURRENT_AUTHORIZATION_REQUIRED", (await gate.EvaluateAsync(request)).Code);
+    }
+
+    [Fact]
     public async Task LegacyReaderWithoutOperationBindingFailsClosed()
     {
         var reader = new LegacyReader();

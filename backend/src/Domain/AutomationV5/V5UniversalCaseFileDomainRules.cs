@@ -8,7 +8,7 @@ namespace Solqaryn.Domain.AutomationV5;
 /// </summary>
 public static class V5UniversalCaseFileDomainRules
 {
-    public enum CaseAction { ReadTimeline, AddObservation, RecordDecision, LinkAttachment }
+    public enum CaseAction { ReadTimeline, AddObservation, RecordDecision, LinkAttachment, ReadAuditCorrelation }
 
     public sealed record ServerAuthority(
         int? ActorId, int? TenantId, int? BranchId,
@@ -60,7 +60,8 @@ public static class V5UniversalCaseFileDomainRules
              authority.BranchId != stored.OwnerBranchId))
             return new Verdict("CASEFILE_BRANCH_MISMATCH");
 
-        if (command.Action == CaseAction.ReadTimeline)
+        // API12 is a distinct read operation; the trusted application gate must attest its exact grant.
+        if (command.Action is CaseAction.ReadTimeline or CaseAction.ReadAuditCorrelation)
             return new Verdict("READY_FOR_TRUSTED_CASEFILE_ENFORCEMENT");
 
         if (stored.Archived)

@@ -48,6 +48,7 @@ public sealed class V5UniversalCaseFileIsolatedReadAdapterTests
         public int Calls { get; private set; }
         public int? SeenTenant { get; private set; }
         public int? SeenCase { get; private set; }
+        public Action? AfterRead { get; set; }
         public ValueTask<Adapter.CaseSnapshot?> ReadAsync(
             int tenantId, int caseFileId, CancellationToken ct)
         {
@@ -55,6 +56,7 @@ public sealed class V5UniversalCaseFileIsolatedReadAdapterTests
             Calls++;
             SeenTenant = tenantId;
             SeenCase = caseFileId;
+            AfterRead?.Invoke();
             return ValueTask.FromResult(Snapshot);
         }
     }
@@ -240,6 +242,38 @@ public sealed class V5UniversalCaseFileIsolatedReadAdapterTests
         Assert.NotNull(evidence);
         Assert.Equal<Rules.CaseAction?>(Rules.CaseAction.AddObservation, evidence.VerifiedAction);
         Assert.Equal(41, evidence.VerifiedCaseFileId);
+    }
+
+    [Theory]
+    [InlineData("revoked")]
+    [InlineData("missing-grant")]
+    [InlineData("membership")]
+    [InlineData("tenant")]
+    [InlineData("branch")]
+    [InlineData("unchanged")]
+    public async Task AuditCorrelationRechecksExactActorAfterCaseLookup(string change)
+    {
+        var actors = new Actors();
+        var cases = new Cases { AfterRead = () => actors.Snapshot = change switch
+        {
+            "revoked" => ValidActor() with { PermissionRevoked = true },
+            "missing-grant" => ValidActor() with { ExplicitPermissionGranted = false },
+            "membership" => ValidActor() with { MembershipActive = false },
+            "tenant" => ValidActor() with { TenantId = 200 },
+            "branch" => ValidActor() with { BranchId = 6 },
+            _ => ValidActor()
+        } };
+        var evidence = await new Adapter(actors, cases).ReadForActionAsync(
+            41, Rules.CaseAction.ReadAuditCorrelation, CancellationToken.None);
+        Assert.Equal(2, actors.Calls);
+        Assert.Equal(1, cases.Calls);
+        if (change == "unchanged")
+        {
+            Assert.NotNull(evidence);
+            Assert.Equal<Rules.CaseAction?>(Rules.CaseAction.ReadAuditCorrelation, evidence.VerifiedAction);
+        }
+        else
+            Assert.Null(evidence);
     }
 
     [Fact]

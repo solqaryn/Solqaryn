@@ -109,6 +109,16 @@ public sealed class V5UniversalCaseFileIsolatedReadAdapter : IV5UniversalCaseFil
              actor.BranchId != stored.OwnerBranchId))
             return null;
 
+        // API12 must not return preflight evidence based on a grant that changed
+        // during the persistent case lookup. Execution must still revalidate at its own boundary.
+        if (action == Rules.CaseAction.ReadAuditCorrelation)
+        {
+            var refreshed = await _actors.ReadCurrentForActionAsync(caseFileId, action, cancellationToken);
+            cancellationToken.ThrowIfCancellationRequested();
+            if (refreshed != actor)
+                return null;
+        }
+
         var authority = new Rules.ServerAuthority(
             actor.ActorId, actor.TenantId, actor.BranchId,
             actor.ServerAuthenticationVerified, actor.MembershipActive,
