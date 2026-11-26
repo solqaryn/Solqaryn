@@ -74,6 +74,83 @@ public sealed class V5CaseFileAuditCorrelationAuthority(
         return session;
     }
 
+    // Internal orchestration boundary, not an HTTP endpoint or an ownership writer.
+    // The caller supplies a dedicated context and a server-owned allowlisted resource
+    // resolver. The operation correlation is generated server-side, not the target
+    // correlation being queried. A receipt ID is internal persistence evidence only.
+    public sealed record ReceiptResult(string Code, int? ReceiptId = null);
+
+    public async Task<ReceiptResult> AppendAuthorizedReceiptAsync(AppDbContext db, int caseId,
+        Guid operationCorrelation,
+        Func<AppDbContext, V5CaseFileOwnershipStore.Candidate, CancellationToken, ValueTask<bool>> verifyActualResource,
+        CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(db);
+        ct.ThrowIfCancellationRequested();
+        if (caseId <= 0 || operationCorrelation == Guid.Empty || verifyActualResource is null ||
+            !db.Database.IsRelational() || db.Database.CurrentTransaction is not null ||
+            db.ChangeTracker.HasChanges())
+            return new("CASEFILE_AUDIT_DENIED");
+
+        var transactionStarted = false;
+        var commitStarted = false;
+        var committed = false;
+        try
+        {
+            var expected = await ResolveAsync(ct);
+            if (expected is null || db.AuthorizedCommercialEmpresaId != expected.TenantId)
+                return new("CASEFILE_AUDIT_DENIED");
+
+            await using var tx = await db.Database.BeginTransactionAsync(
+                System.Data.IsolationLevel.ReadCommitted, ct);
+            transactionStarted = true;
+            async Task<ReceiptResult> DenyAsync()
+            {
+                await tx.RollbackAsync(CancellationToken.None);
+                return new("CASEFILE_AUDIT_DENIED");
+            }
+
+            if (await ResolveInCurrentTransactionAsync(db, ct) != expected)
+                return await DenyAsync();
+            var candidate = await V5CaseFileOwnershipStore.ReadCandidateInCurrentTransactionAsync(
+                db, expected.TenantId, caseId, expected.BranchId, ct);
+            if (candidate is null)
+                return await DenyAsync();
+
+            var receipt = await V5CaseFileAuditReceiptPersistence.AppendEnterpriseInCurrentTransactionAsync(
+                db, candidate, expected.ActorId, expected.BaseRoleId, expected.TenantRoleId,
+                operationCorrelation, verifyActualResource, ct);
+            // Relational locks protect the grant and source; recheck the signed
+            // session after all I/O as its expiry/context can change independently.
+            if (receipt is null || await ResolveInCurrentTransactionAsync(db, ct) != expected ||
+                !ReferenceEquals(tx, db.Database.CurrentTransaction) ||
+                db.AuthorizedCommercialEmpresaId != expected.TenantId ||
+                db.ChangeTracker.HasChanges() ||
+                expected.ExpiresUnix <= DateTimeOffset.UtcNow.ToUnixTimeSeconds())
+                return await DenyAsync();
+
+            ct.ThrowIfCancellationRequested();
+            commitStarted = true;
+            await tx.CommitAsync(ct);
+            committed = true;
+            return new("CASEFILE_AUDIT_RECEIPT_WRITTEN", receipt);
+        }
+        catch (OperationCanceledException) when (!commitStarted) { throw; }
+        catch (Exception)
+        {
+            // A commit error is not proof of rollback. Reconcile the server-issued
+            // operation correlation before considering any recovery; never retry here.
+            return new(commitStarted ? "CASEFILE_AUDIT_COMMIT_UNCERTAIN" : "CASEFILE_AUDIT_FAILED");
+        }
+        finally
+        {
+            // Only a dedicated context may be passed. Do not leave an EF receipt
+            // tracked after rollback or an uncertain result for a later SaveChanges.
+            if (transactionStarted && !committed)
+                db.ChangeTracker.Clear();
+        }
+    }
+
     private bool Matches(HttpContext http, Session session) =>
         ReferenceEquals(accessor.HttpContext, http) &&
         Read(http.User) == session &&

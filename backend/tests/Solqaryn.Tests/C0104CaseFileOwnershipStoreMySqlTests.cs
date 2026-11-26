@@ -1,4 +1,15 @@
 using System.Data;
+using System.Globalization;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Security.Cryptography;
+using Microsoft.AspNetCore.Authentication;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.IdentityModel.Tokens;
+using Moq;
+using Solqaryn.API.Security;
+using Solqaryn.Application.Interfaces;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using MySql.Data.MySqlClient;
@@ -258,6 +269,100 @@ public sealed class C0104CaseFileOwnershipStoreMySqlTests
                 .AnyAsync(r => r.EmpresaId == a.Id && r.CorrelationId == committedCorrelation.ToString("N")));
             Assert.False(await dbB.Set<RegistroAuditoria>().AsNoTracking()
                 .AnyAsync(r => r.EmpresaId == b.Id && r.CorrelationId == committedCorrelation.ToString("N")));
+            // Real JwtBearer signature validation plus real Oracle grant/receipt locks.
+            // Preliminary permission projection and resource mapping are explicit fixtures:
+            // this is not a commercial HTTP/DI or authentic-resource certification.
+            async Task CheckAuthenticatedReceipt(int tenant, int branch, int caseId,
+                bool changeSessionDuringIo, bool shouldCommit)
+            {
+                var requestAccessor = Access(tenant);
+                var request = requestAccessor.HttpContext!;
+                var key = new SymmetricSecurityKey(RandomNumberGenerator.GetBytes(32));
+                var signed = new JwtSecurityToken("casefile-fixture", "casefile-fixture",
+                    new[]
+                    {
+                        new Claim("id", actor.ToString(CultureInfo.InvariantCulture)),
+                        new Claim("rolId", role.Id.ToString(CultureInfo.InvariantCulture)),
+                        new Claim("tenantId", tenant.ToString(CultureInfo.InvariantCulture)),
+                        new Claim("branchId", branch.ToString(CultureInfo.InvariantCulture)),
+                        new Claim("tenantRoleId", role.Id.ToString(CultureInfo.InvariantCulture))
+                    }, expires: DateTime.UtcNow.AddMinutes(5),
+                    signingCredentials: new SigningCredentials(key, SecurityAlgorithms.HmacSha256));
+                using var provider = new ServiceCollection().AddLogging()
+                    .AddAuthentication(TenantSessionToken.Scheme)
+                    .AddJwtBearer(TenantSessionToken.Scheme, jwt =>
+                    {
+                        jwt.MapInboundClaims = false;
+                        jwt.TokenValidationParameters = new TokenValidationParameters
+                        {
+                            ValidateIssuerSigningKey = true, IssuerSigningKey = key,
+                            ValidateIssuer = true, ValidIssuer = "casefile-fixture",
+                            ValidateAudience = true, ValidAudience = "casefile-fixture",
+                            ValidateLifetime = true, ClockSkew = TimeSpan.Zero
+                        };
+                    }).Services.BuildServiceProvider();
+                await using var requestScope = provider.CreateAsyncScope();
+                request.RequestServices = requestScope.ServiceProvider;
+                request.Request.Headers["Authorization"] = "Bearer " + new JwtSecurityTokenHandler().WriteToken(signed);
+                var authenticated = await request.AuthenticateAsync(TenantSessionToken.Scheme);
+                Assert.True(authenticated.Succeeded);
+                request.User = authenticated.Principal!;
+                var preliminary = new Mock<IPermisoService>(MockBehavior.Strict);
+                preliminary.Setup(p => p.GetMisPermisosContextoAsync(actor, role.Id, tenant,
+                    branch, role.Id, It.IsAny<CancellationToken>()))
+                    .ReturnsAsync(new MisPermisosDto
+                    {
+                        Rol = "fixture", Permisos = new List<string> { "Auditoria:ReadAuditCorrelation" }
+                    });
+                var authority = new V5CaseFileAuditCorrelationAuthority(requestAccessor, preliminary.Object);
+                await using var requestDb = new AppDbContext(options, tenantHttpContextAccessor: requestAccessor);
+                var operation = Guid.NewGuid();
+                var checks = 0;
+                ValueTask<bool> VerifyFixture(AppDbContext context,
+                    V5CaseFileOwnershipStore.Candidate candidate, CancellationToken ct)
+                {
+                    ct.ThrowIfCancellationRequested();
+                    Assert.Same(requestDb, context);
+                    Assert.NotNull(context.Database.CurrentTransaction);
+                    checks++;
+                    if (changeSessionDuringIo && checks == 2)
+                        request.User = new ClaimsPrincipal(new ClaimsIdentity());
+                    return ValueTask.FromResult(candidate.TenantId == tenant &&
+                        candidate.BranchId == branch && candidate.CaseId == caseId &&
+                        candidate.ResourceType == "fixture");
+                }
+
+                var result = await authority.AppendAuthorizedReceiptAsync(
+                    requestDb, caseId, operation, VerifyFixture);
+                Assert.Equal(shouldCommit ? "CASEFILE_AUDIT_RECEIPT_WRITTEN" : "CASEFILE_AUDIT_DENIED", result.Code);
+                Assert.Equal(shouldCommit, result.ReceiptId.HasValue);
+                Assert.Null(requestDb.Database.CurrentTransaction);
+                var durable = await requestDb.Set<RegistroAuditoria>().AsNoTracking()
+                    .Where(r => r.CorrelationId == operation.ToString("N")).ToListAsync();
+                if (shouldCommit)
+                {
+                    var row = Assert.Single(durable);
+                    Assert.Equal(tenant, row.EmpresaId);
+                    Assert.Equal(caseId, row.ReferenciaId);
+                    Assert.Equal(AccionPermiso.ReadAuditCorrelation, row.Accion);
+                    Assert.Equal("actor-autenticado", row.NombreUsuario);
+                    Assert.Null(row.Ip);
+                    Assert.Null(row.UserAgent);
+                    Assert.Equal(2, checks);
+                }
+                else
+                {
+                    Assert.Empty(durable);
+                    Assert.Empty(requestDb.ChangeTracker.Entries());
+                    if (changeSessionDuringIo) Assert.Equal(2, checks);
+                }
+            }
+            await CheckAuthenticatedReceipt(a.Id, branchA.Id, 1, false, true);
+            await CheckAuthenticatedReceipt(a.Id, branchA.Id, 2, false, true);
+            await CheckAuthenticatedReceipt(b.Id, branchB.Id, 1, false, true);
+            await CheckAuthenticatedReceipt(b.Id, branchB.Id, 2, false, false);
+            await CheckAuthenticatedReceipt(a.Id, branchA.Id, 1, true, false);
+
             // Legacy readers must not enumerate, count or export committed API12 receipts.
             var ordinaryCorrelation = Guid.NewGuid().ToString("N");
             dbA.Set<RegistroAuditoria>().Add(new RegistroAuditoria
@@ -339,6 +444,7 @@ public sealed class C0104CaseFileOwnershipStoreMySqlTests
                 Assert.Equal(priorChecks, resourceChecks);
                 await revokedGrantTx.RollbackAsync();
             }
+            await CheckAuthenticatedReceipt(a.Id, branchA.Id, 1, false, false);
             var revoke = new FixtureAuthority(a.Id,branchA.Id,actor) { RevokeAfterWrite = true };
             var revokedStore = new V5CaseFileOwnershipStore(dbA,revoke);
             var three = one with { CaseId = 3, ResourceRef = "r3" };
