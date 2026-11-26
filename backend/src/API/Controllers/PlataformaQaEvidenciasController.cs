@@ -502,46 +502,8 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
         await using var tx = _db.Database.IsRelational()
             ? await _db.Database.BeginTransactionAsync(cancellationToken)
             : null;
-        // Oracle MySQL stores Fecha as datetime(6). Normalize before INSERT so
-        // the durable readback can distinguish timestamp tampering from precision loss.
-        expected.Fecha = expected.Fecha.AddTicks(-(expected.Fecha.Ticks % TimeSpan.TicksPerMicrosecond));
-        _db.Set<RegistroAuditoria>().Add(expected);
-        if (await _db.SaveChangesAsync(cancellationToken) != 1 || expected.Id <= 0)
+        if (!await V5CaseFileAuditReceiptPersistence.AppendAndVerifyAsync(_db, expected, cancellationToken))
             return false;
-
-        var actual = await _db.Set<RegistroAuditoria>().AsNoTracking()
-            .SingleOrDefaultAsync(x => x.Id == expected.Id, cancellationToken);
-        if (actual is null ||
-            actual.Fecha != expected.Fecha ||
-            actual.UsuarioId != expected.UsuarioId ||
-            actual.NombreUsuario != expected.NombreUsuario ||
-            actual.EmpresaId != expected.EmpresaId ||
-            actual.AmbitoAutoridad != expected.AmbitoAutoridad ||
-            actual.OrigenAutorizacion != expected.OrigenAutorizacion ||
-            actual.Modulo != expected.Modulo || actual.Accion != expected.Accion ||
-            actual.Entidad != expected.Entidad || actual.ReferenciaId != expected.ReferenciaId ||
-            actual.Descripcion != expected.Descripcion ||
-            actual.CorrelationId != expected.CorrelationId ||
-            actual.Resultado != expected.Resultado || actual.Error != expected.Error ||
-            actual.Motivo != expected.Motivo || actual.Ip != expected.Ip ||
-            actual.UserAgent != expected.UserAgent ||
-            actual.ValoresAnteriores != expected.ValoresAnteriores ||
-            actual.ValoresNuevos is null || expected.ValoresNuevos is null)
-            return false;
-        try
-        {
-            // MySQL JSON may normalize property ordering and whitespace.
-            using var actualJson = JsonDocument.Parse(actual.ValoresNuevos);
-            using var expectedJson = JsonDocument.Parse(expected.ValoresNuevos);
-            if (!JsonElement.DeepEquals(actualJson.RootElement, expectedJson.RootElement))
-                return false;
-        }
-        catch (JsonException)
-        {
-            return false;
-        }
-
-        cancellationToken.ThrowIfCancellationRequested();
         if (tx is not null)
             await tx.CommitAsync(cancellationToken);
         return true;

@@ -169,6 +169,83 @@ public sealed class C0104CaseFileOwnershipStoreMySqlTests
             var grant = new RolPermiso { RolId = role.Id, PermisoId = auditPermission.Id };
             setup.RolPermisos.AddRange(grant, new RolPermiso { RolId = role.Id, PermisoId = branchPermission.Id });
             await setup.SaveChangesAsync();
+            // The receipt writer is a real SQL storage primitive. This explicit
+            // synthetic resolver is NOT an authenticated commercial resource mapping.
+            var auditCandidate = (await storeA.ReadCandidateAsync(a.Id, 1, branchA.Id))!;
+            var otherCandidate = (await storeB.ReadCandidateAsync(b.Id, 1, branchB.Id))!;
+            var correlation = Guid.NewGuid();
+            int resourceChecks = 0;
+            ValueTask<bool> VerifyFixtureResource(AppDbContext context,
+                V5CaseFileOwnershipStore.Candidate candidate, CancellationToken ct)
+            {
+                ct.ThrowIfCancellationRequested();
+                Assert.Same(dbA, context);
+                Assert.NotNull(context.Database.CurrentTransaction);
+                resourceChecks++;
+                return ValueTask.FromResult(candidate == auditCandidate);
+            }
+            Assert.Null(await V5CaseFileAuditReceiptPersistence.AppendEnterpriseInCurrentTransactionAsync(
+                dbA, auditCandidate, actor, role.Id, role.Id, correlation, VerifyFixtureResource));
+            await using (var receiptTx = await dbA.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted))
+            {
+                Assert.Null(await V5CaseFileAuditReceiptPersistence.AppendEnterpriseInCurrentTransactionAsync(
+                    dbA, otherCandidate, actor, role.Id, role.Id, correlation, VerifyFixtureResource));
+                Assert.Equal(0, resourceChecks);
+                var receiptId = await V5CaseFileAuditReceiptPersistence.AppendEnterpriseInCurrentTransactionAsync(
+                    dbA, auditCandidate, actor, role.Id, role.Id, correlation, VerifyFixtureResource);
+                Assert.NotNull(receiptId);
+                Assert.Equal(2, resourceChecks);
+                Assert.Same(receiptTx, dbA.Database.CurrentTransaction);
+                var audit = await dbA.Set<RegistroAuditoria>().AsNoTracking()
+                    .SingleAsync(r => r.Id == receiptId.Value);
+                Assert.Equal(a.Id, audit.EmpresaId);
+                Assert.Equal(actor, audit.UsuarioId);
+                Assert.Equal(AmbitoAutorizacion.Empresa, audit.AmbitoAutoridad);
+                Assert.Equal(OrigenAutorizacion.MembresiaEmpresa, audit.OrigenAutorizacion);
+                Assert.Equal(AccionPermiso.ReadAuditCorrelation, audit.Accion);
+                Assert.Equal(correlation.ToString("N"), audit.CorrelationId);
+                Assert.Equal("actor-autenticado", audit.NombreUsuario);
+                Assert.Null(audit.Ip);
+                Assert.Null(audit.UserAgent);
+                Assert.Null(audit.ValoresAnteriores);
+                Assert.Null(audit.Motivo);
+                Assert.Null(audit.Error);
+                using var payload = System.Text.Json.JsonDocument.Parse(audit.ValoresNuevos!);
+                Assert.Equal(2, payload.RootElement.EnumerateObject().Count());
+                Assert.Equal(branchA.Id, payload.RootElement.GetProperty("SucursalId").GetInt32());
+                Assert.Equal(auditCandidate.Version, payload.RootElement.GetProperty("Version").GetInt64());
+                await receiptTx.RollbackAsync();
+            }
+            Assert.False(await dbA.Set<RegistroAuditoria>().AsNoTracking()
+                .AnyAsync(r => r.CorrelationId == correlation.ToString("N")));
+            var revokedDuringReceipt = Guid.NewGuid();
+            int rechecks = 0;
+            ValueTask<bool> RevokedAfterIo(AppDbContext context,
+                V5CaseFileOwnershipStore.Candidate candidate, CancellationToken ct)
+            {
+                ct.ThrowIfCancellationRequested();
+                return ValueTask.FromResult(++rechecks == 1 && candidate == auditCandidate);
+            }
+            await using (var receiptTx = await dbA.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted))
+            {
+                Assert.Null(await V5CaseFileAuditReceiptPersistence.AppendEnterpriseInCurrentTransactionAsync(
+                    dbA, auditCandidate, actor, role.Id, role.Id, revokedDuringReceipt, RevokedAfterIo));
+                Assert.Equal(2, rechecks);
+                await receiptTx.RollbackAsync();
+            }
+            Assert.False(await dbA.Set<RegistroAuditoria>().AsNoTracking()
+                .AnyAsync(r => r.CorrelationId == revokedDuringReceipt.ToString("N")));
+            var committedCorrelation = Guid.NewGuid();
+            await using (var receiptTx = await dbA.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted))
+            {
+                Assert.NotNull(await V5CaseFileAuditReceiptPersistence.AppendEnterpriseInCurrentTransactionAsync(
+                    dbA, auditCandidate, actor, role.Id, role.Id, committedCorrelation, VerifyFixtureResource));
+                await receiptTx.CommitAsync();
+            }
+            Assert.True(await dbA.Set<RegistroAuditoria>().AsNoTracking()
+                .AnyAsync(r => r.EmpresaId == a.Id && r.CorrelationId == committedCorrelation.ToString("N")));
+            Assert.False(await dbB.Set<RegistroAuditoria>().AsNoTracking()
+                .AnyAsync(r => r.EmpresaId == b.Id && r.CorrelationId == committedCorrelation.ToString("N")));
             await using (var grantTx = await dbA.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted))
             {
                 Assert.False(await V5CaseFileAuditGrantLock.TryAcquireAsync(
@@ -197,6 +274,10 @@ public sealed class C0104CaseFileOwnershipStoreMySqlTests
             {
                 Assert.False(await V5CaseFileAuditGrantLock.TryAcquireAsync(
                     dbA, actor, role.Id, a.Id, branchA.Id, role.Id));
+                var priorChecks = resourceChecks;
+                Assert.Null(await V5CaseFileAuditReceiptPersistence.AppendEnterpriseInCurrentTransactionAsync(
+                    dbA, auditCandidate, actor, role.Id, role.Id, Guid.NewGuid(), VerifyFixtureResource));
+                Assert.Equal(priorChecks, resourceChecks);
                 await revokedGrantTx.RollbackAsync();
             }
             var revoke = new FixtureAuthority(a.Id,branchA.Id,actor) { RevokeAfterWrite = true };
