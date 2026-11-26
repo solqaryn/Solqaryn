@@ -473,6 +473,88 @@ public sealed class C0204M0502QaHttpContractTests
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             await db.Database.ExecuteSqlRawAsync("DROP TRIGGER IF EXISTS qa_ci_revoke_on_audit");
         }
+
+        // Force an actual failed authority SELECT in the disposable MySQL
+        // schema, both before provider I/O and during the upstream request.
+        int auditCount;
+        using (var scope = fixture.Host.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            var grant = await db.Set<UsuarioRolPlataforma>().SingleAsync(
+                x => x.UsuarioId == fixture.GlobalId);
+            grant.Activar();
+            await db.SaveChangesAsync();
+            auditCount = await db.Set<RegistroAuditoria>().CountAsync();
+        }
+
+        async Task MoveAuthorityTableAsync(bool unavailable)
+        {
+            using var scope = fixture.Host.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            await db.Database.ExecuteSqlRawAsync(unavailable
+                ? "RENAME TABLE UsuarioRolesPlataforma TO qa_ci_authority_unavailable"
+                : "RENAME TABLE qa_ci_authority_unavailable TO UsuarioRolesPlataforma");
+        }
+
+        async Task AssertAuthorityUnavailableAsync()
+        {
+            using var response = await client.GetAsync(Path);
+            Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+            Assert.Contains("no-store", response.Headers.CacheControl?.ToString() ?? "");
+            var body = await response.Content.ReadAsStringAsync();
+            Assert.DoesNotContain("CI_MINIMA_ACREDITADA", body);
+            Assert.DoesNotContain("UsuarioRolesPlataforma", body);
+            Assert.DoesNotContain("qa_ci_authority_unavailable", body);
+            Assert.DoesNotContain("private-secret", body);
+        }
+
+        var callsBeforeUnavailable = upstream.Calls;
+        await MoveAuthorityTableAsync(true);
+        try
+        {
+            await AssertAuthorityUnavailableAsync();
+            Assert.Equal(callsBeforeUnavailable, upstream.Calls);
+        }
+        finally
+        {
+            await MoveAuthorityTableAsync(false);
+        }
+
+        foreach (var unavailablePayload in new[] { Payload(), "[\"private-secret\"]" })
+        {
+            upstream.Payload = unavailablePayload;
+            var moved = false;
+            upstream.BeforeResponse = async () =>
+            {
+                upstream.BeforeResponse = null;
+                await MoveAuthorityTableAsync(true);
+                moved = true;
+            };
+            try
+            {
+                await AssertAuthorityUnavailableAsync();
+                Assert.True(moved);
+            }
+            finally
+            {
+                upstream.BeforeResponse = null;
+                if (moved) await MoveAuthorityTableAsync(false);
+            }
+        }
+
+        using (var scope = fixture.Host.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            Assert.Equal(auditCount, await db.Set<RegistroAuditoria>().CountAsync());
+        }
+        upstream.Payload = Payload();
+        using (var restored = await client.GetAsync(Path))
+            Assert.Equal(HttpStatusCode.OK, restored.StatusCode);
+        using (var scope = fixture.Host.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            Assert.Equal(auditCount + 1, await db.Set<RegistroAuditoria>().CountAsync());
+        }
     }
 
     // This test runs against an isolated MySQL 8.4 service in the GH-hosted QA lab.

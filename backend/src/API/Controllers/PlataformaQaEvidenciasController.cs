@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.Net;
 using System.Text.Json;
 using System.Text.RegularExpressions;
@@ -72,6 +73,24 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
     [HttpGet("{sha}")]
     [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
     public async Task<IActionResult> Consultar(string sha, CancellationToken cancellationToken)
+    {
+        try
+        {
+            return await ConsultarCoreAsync(sha, cancellationToken);
+        }
+        catch (DbException)
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            // A failed authoritative SELECT is not a denial or a valid grant.
+            // Never let provider SQL diagnostics escape this QA boundary.
+            if (HttpContext.RequestServices.GetService(typeof(ILogger<PlataformaQaEvidenciasController>))
+                is ILogger<PlataformaQaEvidenciasController> logger)
+                logger.LogWarning("QA_AUTHORITY_READ_UNAVAILABLE");
+            return NoVerificable();
+        }
+    }
+
+    private async Task<IActionResult> ConsultarCoreAsync(string sha, CancellationToken cancellationToken)
     {
         Response.Headers.CacheControl = "private, no-store, max-age=0";
         var authenticatedActorId = _current.UsuarioId;

@@ -1,3 +1,9 @@
+## 2026-11-25 — DEV04 — C01-04.M03.06 — R1 restaurada: fallo de lectura de autoridad QA GLOBAL
+- TASK_ID 6aeacb7820ac8191b7d768a6f33dfa09; RUN_ID ca75ffcb-d5c0-8321-9887-707a14f3ccbc; base 13699630824e96abb3838dcf3a312228a3ebb2e4; V17 exact H271:I271, escritura directa R5.
+- A0: encapsula DbException de lectura de autoridad en endpoint existente; 503 fijo/no-store y código de log sin excepción; cancelación conservada. Sin cambios de grants, JWT, DTO, tablas comerciales, migraciones, DI ni infraestructura.
+- A1-A3: tres variantes de SELECT fallido mediante rename reversible de tabla únicamente en fixture MySQL local descartable (previo al proveedor y en vuelo, éxito/error), sin evidencia ni auditoría ficticia y recuperación comprobable. Se conserva Fact existente y cardinalidad de CI; ejecución pendiente, no PASS.
+- A4: CI exact-SHA por verificar; A5 independiente pendiente (DEV04 autor causal). No reabrir otros IDs; no QA/main/PROD ni Aiven. Rollback mediante revert ordinario.
+
 ## 2026-11-25 — DEV01 — C01-04.M03.06 — R1 restaurada: procedencia exacta del backend DEV histórico
 - TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a; RUN_ID 1c31a2f8-2ccc-832b-b16f-57f16af96af4; base d02b3e02b58a752c6c66c471faadbf239315e64f; V17 H271:I271; adopta DEV03 RUN 0bf73c78-54e8-8333-b15b-da4703103810 y DEV06 RUN 47a40afd-21b4-832e-9dff-8f6988fd39bd; conserva autoría causal.
 - Verifica job/check/suite/attempt/workflow DEV histórico y pasos restore/build/test exactos; no sustituye un DEV presente por core. Agrega recibo LegacyBackend saneado en auditoría global, conserva la revalidación posterior a escritura, autorización vigente y separación tenant. Cuatro escenarios negativos V19; contador 33 y prueba HTTP/JWT/GitHub/MySQL real V23 con recibo. Sin cambio de grants, esquema, DTO público, infraestructura ni datos reales. CI nuevo SHA pendiente; rollback git revert; A5 independiente pendiente. Solo dev, R5 directa.
