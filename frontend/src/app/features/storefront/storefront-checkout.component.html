@@ -107,9 +107,9 @@
           </div>
 
           <ul class="summary-lines">
-            @for (linea of resumen.lineas; track linea.productoId + '-' + linea.modeloId) {
+            @for (linea of resumen.lineas; track (linea.productoVarianteId ?? 0) > 0 ? 'v-' + linea.productoId + '-' + linea.productoVarianteId : 'l-' + $index) {
               <li>
-                <div><strong>{{ linea.nombre }}</strong>@if (linea.modelo) { <small>{{ linea.modelo }}</small> }</div>
+                <div><strong>{{ linea.nombre }}</strong>@if (linea.modelo) { <small>{{ linea.modelo }}</small> }@if (linea.sku) { <small>SKU: {{ linea.sku }}</small> }</div>
                 <span>{{ linea.unidades }} × {{ moneda(linea.precioUnitario) }}</span>
                 <b>{{ moneda(linea.total) }}</b>
               </li>

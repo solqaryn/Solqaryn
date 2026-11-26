@@ -379,6 +379,62 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
     expect(reciboRaw).not.toContain('99991111');
   });
 
+  test('checkout y recibo distinguen dos variantes físicas del mismo modelo por SKU', async ({ page }) => {
+    await prepararEmpresa(page);
+    const producto = productoReal();
+    const varianteA = producto.modelos[0];
+    const varianteB = { ...varianteA, productoVarianteId: varianteA.productoVarianteId + 1, sku: 'SKU-501-B', precio: 1850 };
+    producto.modelos.push(varianteB);
+    const variantes = [varianteA, varianteB];
+    await page.addInitScript(({ refs }) => localStorage.setItem('storefront:carrito:v2:905:bd', JSON.stringify(refs)), {
+      refs: variantes.map(v => ({ productoId: producto.id, modeloClave: 'variante:' + v.productoVarianteId, unidades: 1 }))
+    });
+    await page.route('http://localhost:5005/tienda/productos/contexto', route => route.fulfill({
+      status: 200, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' },
+      body: JSON.stringify({ success: true, data: [producto] })
+    }));
+    let requestCheckout: unknown = null;
+    const lineas = variantes.map(v => ({
+      productoId: producto.id, productoVarianteId: v.productoVarianteId, modeloId: v.modeloId,
+      nombre: producto.nombre, modelo: v.modeloNombre, sku: v.sku, unidades: 1,
+      stockDisponible: v.cantidadDisponible, precioUnitario: v.precio, total: v.precio
+    }));
+    const total = lineas.reduce((sum, linea) => sum + linea.total, 0);
+    await page.route('http://localhost:5005/tienda/checkout/validar', route => {
+      requestCheckout = route.request().postDataJSON();
+      return route.fulfill({
+        status: 200, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' },
+        body: JSON.stringify({ success: true, data: {
+          validacionId: referenciaValidada, expiraUtc: new Date(Date.now() + 600000).toISOString(),
+          subtotal: total, total, lineas
+        } })
+      });
+    });
+    await page.goto('/tienda/checkout?fuente=bd');
+    const resumen = page.locator('.summary-lines li');
+    await expect(resumen).toHaveCount(2);
+    await expect(resumen.nth(0)).toContainText('SKU: SKU-501-A');
+    await expect(resumen.nth(1)).toContainText('SKU: SKU-501-B');
+    expect(requestCheckout).toEqual({ items: variantes.map(v => ({
+      productoId: producto.id, productoVarianteId: v.productoVarianteId,
+      modeloId: null, modeloNombre: null, marcaNombre: null, unidades: 1
+    })) });
+    await llenarComprador(page);
+    await page.getByRole('button', { name: 'Preparar pedido por WhatsApp' }).click();
+    const enlace = page.getByRole('link', { name: 'Abrir WhatsApp y continuar' });
+    const href = await enlace.getAttribute('href');
+    const mensaje = new URL(href!).searchParams.get('text') || '';
+    expect(mensaje).toContain('SKU: SKU-501-A');
+    expect(mensaje).toContain('SKU: SKU-501-B');
+    page.on('popup', popup => { void popup.close(); });
+    await enlace.click();
+    await expect(page).toHaveURL(new URL('/tienda/pedido/' + referenciaValidada, page.url()).href);
+    const recibo = page.locator('.order-lines li');
+    await expect(recibo).toHaveCount(2);
+    await expect(recibo.nth(0)).toContainText('SKU: SKU-501-A');
+    await expect(recibo.nth(1)).toContainText('SKU: SKU-501-B');
+  });
+
   test('editar los datos de contacto invalida la solicitud WhatsApp preparada', async ({ page }) => {
     await prepararEmpresa(page);
     await sembrarCarrito(page, 'bd', modeloClaveReal, 501, 2);

@@ -44,9 +44,9 @@
           <section aria-labelledby="productos-title">
             <h2 id="productos-title">Resumen validado</h2>
             <ul class="order-lines">
-              @for (linea of pedido.lineas; track linea.productoId + '-' + linea.modeloId) {
+              @for (linea of pedido.lineas; track (linea.productoVarianteId ?? 0) > 0 ? 'v-' + linea.productoId + '-' + linea.productoVarianteId : 'l-' + $index) {
                 <li>
-                  <div><strong>{{ linea.nombre }}</strong>@if (linea.modelo) { <small>{{ linea.modelo }}</small> }</div>
+                  <div><strong>{{ linea.nombre }}</strong>@if (linea.modelo) { <small>{{ linea.modelo }}</small> }@if (linea.sku) { <small>SKU: {{ linea.sku }}</small> }</div>
                   <span>{{ linea.unidades }} × {{ moneda(linea.precioUnitario, pedido.moneda) }}</span>
                   <b>{{ moneda(linea.total, pedido.moneda) }}</b>
                 </li>

@@ -1,3 +1,8 @@
+## 2026-11-26 — DEV04 — C15-04.M05.04 — V44/R1/R5
+
+- TASK_ID=6aeacb7820ac8191b7d768a6f33dfa09; RUN_ID=6e39c6d3-f98c-8326-889a-360aa4161cc5; adopción del paquete A0.68T DEV02 RUN=175f75c8-475c-8333-b546-c82b209b6d6f, contrastado por DEV03 RUN=6503659f-a73c-832d-bbe1-77a16cb4ba4e.
+- Base 79821d85ca867d07370e674deefb3538fe06dc8e. Identidad de variante física en checkout y recibo, SKU visible y regresión de dos variantes del mismo modelo; conserva contrato de pedido, permisos, datos y esquema. Cinco archivos, siete anclas únicas. Prueba Chromium pendiente de CI; sin A5 ni LISTO.
+
 ## 2026-11-26 — DEV06 — C03-03.M03.06 — V44/R1/R5
 
 - TASK_ID=6af16bbad26881918c283abe06e1f32a; RUN_ID=8ea34a28-3b10-8331-9a7f-be62c12abcb1; base=9694d076cca89fcbcf9343dcc1a167373401f9ea. Reparar SOURCE_ANCHOR_MISMATCH V19 job139917596979 después de 33/33 JWT/MySQL PASS en 7c7629c3. Ajustar exclusivamente anclas de firma del generador CI de revocación para conservar DenialReadbackFault opcional y liveHandler; cuatro anclas únicas verificadas sobre fixture actual, sin cambiar aserciones, proveedor real, guards ni runtime. V23 foco C01 conserva su corrida por SHA (cancel-in-progress false; ruta C03 no la dispara); no sustituye propiedad/retención empresarial. A0 estático; A1-A4 CI y A5 pendientes. Rollback revert normal.

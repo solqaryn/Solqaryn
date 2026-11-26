@@ -41,7 +41,7 @@
 .summary-lines li { display: grid; grid-template-columns: 1fr; gap: 5px 14px; padding: 14px 0; border-bottom: 1px solid var(--color-border); }
 .summary-lines li div { min-width: 0; }
 .summary-lines strong, .summary-lines small { display: block; }
-.summary-lines small { margin-top: 3px; color: var(--color-text-muted); }
+.summary-lines small { margin-top: 3px; color: var(--color-text-muted); overflow-wrap: anywhere; }
 .summary-lines li > span { color: var(--color-text-muted); font-size: .88rem; }
 .summary-lines li > b { grid-column: 1; color: var(--color-heading); text-align: left; }
 .totals { margin: 18px 0 0; }
