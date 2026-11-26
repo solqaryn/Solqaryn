@@ -114,7 +114,7 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
         // A denial is a server-observed security event, NOT an authorization.
         // Only a signed/authenticated actor is recorded, with no granted
         // company/platform scope and no raw username, JWT, selector or SHA.
-        async Task<IActionResult> DenegarAuditadoAsync()
+        async Task<IActionResult> DenegarAuditadoAsync(int? priorAuditId = null)
         {
             try
             {
@@ -130,12 +130,20 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                     Entidad = "DenegacionEvidenciasQaGlobal",
                     Descripcion = "Acceso a evidencia QA global denegado.",
                     CorrelationId = CorrelacionAuditoria(),
-                    ValoresNuevos = JsonSerializer.Serialize(new
-                    {
-                        Schema = "qa-access-denial/v1",
-                        TargetScope = "Plataforma",
-                        AuthorityGranted = false
-                    }),
+                    ValoresNuevos = priorAuditId is > 0
+                        ? JsonSerializer.Serialize(new
+                        {
+                            Schema = "qa-access-denial/v1",
+                            TargetScope = "Plataforma",
+                            AuthorityGranted = false,
+                            PriorAuditId = priorAuditId.Value
+                        })
+                        : JsonSerializer.Serialize(new
+                        {
+                            Schema = "qa-access-denial/v1",
+                            TargetScope = "Plataforma",
+                            AuthorityGranted = false
+                        }),
                     Resultado = "Error",
                     Error = "QA_ACCESS_DENIED"
                 });
@@ -181,7 +189,7 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
             if (!await VigenteAsync()) return await DenegarAuditadoAsync();
             try
             {
-                _db.Set<RegistroAuditoria>().Add(new RegistroAuditoria
+                var priorAudit = new RegistroAuditoria
                 {
                     UsuarioId = actor.UsuarioId,
                     NombreUsuario = actor.NombreUsuario,
@@ -204,10 +212,11 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                     }),
                     Resultado = "Error",
                     Error = codigo
-                });
+                };
+                _db.Set<RegistroAuditoria>().Add(priorAudit);
                 await _db.SaveChangesAsync(cancellationToken);
                 cancellationToken.ThrowIfCancellationRequested();
-                if (!await VigenteAsync()) return await DenegarAuditadoAsync();
+                if (!await VigenteAsync()) return await DenegarAuditadoAsync(priorAudit.Id);
             }
             catch (DbUpdateException)
             {
@@ -394,7 +403,7 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
             if (!await VigenteAsync()) return await DenegarAuditadoAsync();
 
             // Auditoría estructurada: únicamente metadatos acotados, sin cuerpo externo ni credenciales.
-            _db.Set<RegistroAuditoria>().Add(new RegistroAuditoria
+            var priorAudit = new RegistroAuditoria
             {
                 UsuarioId = actor.UsuarioId,
                 NombreUsuario = actor.NombreUsuario,
@@ -420,12 +429,13 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                     ChecksIdentificados = identities
                 }),
                 Resultado = "Exito"
-            });
+            };
+            _db.Set<RegistroAuditoria>().Add(priorAudit);
             await _db.SaveChangesAsync(cancellationToken);
             // The audit write is another I/O boundary. Never disclose evidence
             // if the platform grant was revoked during durable persistence.
             cancellationToken.ThrowIfCancellationRequested();
-            if (!await VigenteAsync()) return await DenegarAuditadoAsync();
+            if (!await VigenteAsync()) return await DenegarAuditadoAsync(priorAudit.Id);
 
             return Ok(ApiResponse<PlataformaQaEvidenciasDto>.Ok(
                 new PlataformaQaEvidenciasDto(

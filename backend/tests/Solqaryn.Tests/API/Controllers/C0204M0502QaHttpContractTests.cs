@@ -429,6 +429,10 @@ public sealed class C0204M0502QaHttpContractTests
         }
         try
         {
+            // The client may reuse a syntactically valid correlation value.
+            // Link the compensation to the exact persisted audit, not that value.
+            var correlation = Guid.NewGuid().ToString("N");
+            var previousAuditId = 0;
             foreach (var (payload, expectedAuditResult) in new[]
             {
                 (Payload(), "Exito"),
@@ -444,7 +448,6 @@ public sealed class C0204M0502QaHttpContractTests
                     await db.SaveChangesAsync();
                 }
                 upstream.Payload = payload;
-                var correlation = Guid.NewGuid().ToString("N");
                 using var request = new HttpRequestMessage(HttpMethod.Get, Path);
                 request.Headers.Add(CorrelationIdMiddleware.HeaderName, correlation);
                 using var response = await client.SendAsync(request);
@@ -457,12 +460,13 @@ public sealed class C0204M0502QaHttpContractTests
                 using var scopeAfter = fixture.Host.Services.CreateScope();
                 var after = scopeAfter.ServiceProvider.GetRequiredService<AppDbContext>();
                 var rows = await after.Set<RegistroAuditoria>().Where(
-                    x => x.CorrelationId == correlation).ToListAsync();
+                    x => x.CorrelationId == correlation && x.Id > previousAuditId).ToListAsync();
                 Assert.Equal(2, rows.Count);
+                previousAuditId = rows.Max(x => x.Id);
                 var query = Assert.Single(rows, x => x.Entidad == "ConsultaEvidenciasQaGlobal");
                 Assert.Equal(expectedAuditResult, query.Resultado);
                 var deniedAfterWrite = Assert.Single(rows, x => x.Error == "QA_ACCESS_DENIED");
-                AssertDenialAudit(deniedAfterWrite, fixture.GlobalId);
+                AssertDenialAudit(deniedAfterWrite, fixture.GlobalId, query.Id);
                 Assert.False((await after.Set<UsuarioRolPlataforma>().SingleAsync(
                     x => x.UsuarioId == fixture.GlobalId)).Activa);
             }
@@ -684,7 +688,7 @@ public sealed class C0204M0502QaHttpContractTests
         }
     }
 
-    private static void AssertDenialAudit(RegistroAuditoria row, int actorId)
+    private static void AssertDenialAudit(RegistroAuditoria row, int actorId, int? priorAuditId = null)
     {
         Assert.Equal(actorId, row.UsuarioId);
         Assert.Equal("actor-autenticado", row.NombreUsuario);
@@ -699,7 +703,14 @@ public sealed class C0204M0502QaHttpContractTests
         Assert.Null(row.UserAgent);
         using var metadata = JsonDocument.Parse(row.ValoresNuevos!);
         var root = metadata.RootElement;
-        Assert.Equal(3, root.EnumerateObject().Count());
+        Assert.Equal(priorAuditId.HasValue ? 4 : 3, root.EnumerateObject().Count());
+        if (priorAuditId.HasValue)
+        {
+            Assert.True(priorAuditId.Value > 0);
+            Assert.Equal(priorAuditId.Value, root.GetProperty("PriorAuditId").GetInt32());
+        }
+        else
+            Assert.False(root.TryGetProperty("PriorAuditId", out _));
         Assert.Equal("qa-access-denial/v1", root.GetProperty("Schema").GetString());
         Assert.Equal("Plataforma", root.GetProperty("TargetScope").GetString());
         Assert.False(root.GetProperty("AuthorityGranted").GetBoolean());

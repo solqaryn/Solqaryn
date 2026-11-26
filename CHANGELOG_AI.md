@@ -1,3 +1,8 @@
+## 2026-11-25 | DEV05 | C01-04.M03.06 | R1-RESTAURADA
+- V44R1-J40-4E242BDF-C0104M0306-COMPENSATION | RUN_ID 4e242bdf-1844-8324-8ed5-22992a4a874c | TASK_ID 6adc2e55f47c81919f6374e561687076 | base 67d0c6011fa64da640e17fb4e8ff63d8f180c54e
+- Adoptado paquete DEV04 RUN b3ea05d9-bd18-832c-b815-9b1e95b27790: vincular denegación compensatoria post-INSERT con PriorAuditId de la consulta realmente persistida, tanto Exito como Error. Sin grants, cambios de esquema, tenant, middleware ni datos reales. Prueba MySQL con correlación reutilizada y vínculo exacto; 13 anclas comprobadas sobre blobs intactos.
+- CI base V23 1/1 durable A/B y replay más 1/1 HTTP JWT GitHub MySQL; V19 33/33 y revocación 1/1, Scope Lock/frescura PASS. Nuevo SHA exige CI causal; no A5 ni LISTO. Rollback revert normal en dev.
+
 ## 2026-11-25 | DEV03 | C01-04.M03.06 | R1-RESTAURADA
 - V44R1-J20-BE489016-C0104M0306-OPAQUE-CORRELATION | RUN_ID be489016-f554-8333-b4bc-fd3f6994e900 | TASK_ID 6adc2e4bd8a48191ac7d8641ed95a1a3 | base 717df5c45e70a40dea5f7945d71049a34ac71ab8
 - D/E y M02.06 §3/M02.05 §3: correlación opaca generada server-side por captura, mismo Guid en recibo seguro y entrada; logger estructurado y sink MySQL aislado persisten N sin alterar EvidenceKey/tenant compuesto ni aceptar cabeceras, PII o grants. Fallos controlados conservan correlación, cancelación se propaga. Pruebas existentes ampliadas con readback A/B y replay sin modificación de fila. Solo esquema efímero de fixture; no migración comercial, DI, HTTP, datos reales ni reapertura R11.
