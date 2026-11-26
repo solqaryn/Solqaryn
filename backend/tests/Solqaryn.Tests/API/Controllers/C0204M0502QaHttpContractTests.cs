@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http.Headers;
@@ -10,6 +11,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using Microsoft.IdentityModel.Tokens;
@@ -667,7 +669,8 @@ public sealed class C0204M0502QaHttpContractTests
             return;
 
         var upstream = new GitHubFake(Payload());
-        await using var fixture = await CrearAsync(upstream, mysql: true);
+        var denialReadbackFault = new DenialReadbackFault();
+        await using var fixture = await CrearAsync(upstream, mysql: true, denialReadbackFault: denialReadbackFault);
         // The signed JWT has a valid global grant in SQL, but ambiguous or
         // noncanonical identity must not be normalized into an audit actor.
         using (var ambiguous = fixture.Host.GetTestClient())
@@ -782,6 +785,34 @@ public sealed class C0204M0502QaHttpContractTests
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             await db.Database.ExecuteSqlRawAsync("DROP TRIGGER IF EXISTS qa_ci_denial_insert_failure");
         }
+
+        // Fail the actual Oracle MySQL SELECT after INSERT; a known denial
+        // must remain 403 and the uncommitted receipt must roll back.
+        foreach (var (actor, selector) in new[] { (actorA, tenantB), (actorB, tenantA) })
+        {
+            client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+                "Bearer", Token(actor, "company-ci-" + actor, "true"));
+            client.DefaultRequestHeaders.Remove("X-Empresa-Id");
+            client.DefaultRequestHeaders.Add("X-Empresa-Id", selector.ToString());
+            denialReadbackFault.Enabled = true;
+            try
+            {
+                using var denied = await client.GetAsync(Path);
+                Assert.Equal(HttpStatusCode.Forbidden, denied.StatusCode);
+                Assert.Contains("no-store", denied.Headers.CacheControl?.ToString() ?? "");
+                Assert.DoesNotContain("qa_ci_missing_denial_receipt_table",
+                    await denied.Content.ReadAsStringAsync());
+                Assert.Equal(0, upstream.Calls);
+            }
+            finally
+            {
+                denialReadbackFault.Enabled = false;
+            }
+            using var scope = fixture.Host.Services.CreateScope();
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            Assert.Equal(4, await db.Set<RegistroAuditoria>().CountAsync());
+        }
+        Assert.Equal(2, denialReadbackFault.Failures);
     }
 
     private static void AssertDenialAudit(RegistroAuditoria row, int actorId, int? priorAuditId = null)
@@ -1207,7 +1238,8 @@ public sealed class C0204M0502QaHttpContractTests
         });
     }
 
-    private static async Task<Fixture> CrearAsync(GitHubFake upstream, bool mysql = false)
+    private static async Task<Fixture> CrearAsync(GitHubFake upstream, bool mysql = false,
+        DenialReadbackFault? denialReadbackFault = null)
     {
         string? connection = null;
         if (mysql)
@@ -1236,6 +1268,8 @@ public sealed class C0204M0502QaHttpContractTests
                                 mysqlOptions.MigrationsAssembly("Solqaryn.Infrastructure.Migrations"));
                         else
                             opts.UseInMemoryDatabase(dbName);
+                        if (denialReadbackFault is not null)
+                            opts.AddInterceptors(denialReadbackFault);
                     });
                     services.AddScoped<ICurrentUserService, CurrentUserService>();
                     services.AddScoped<IPlataformaScopeService, PlataformaScopeService>();
@@ -1307,6 +1341,29 @@ public sealed class C0204M0502QaHttpContractTests
                 new UsuarioRolPlataforma(globalUser.Id, global.Id));
             await db.SaveChangesAsync();
             return new Fixture(host, globalUser.Id, adminEmpresa.Id, dbConnection);
+        }
+    }
+
+    private sealed class DenialReadbackFault : DbCommandInterceptor
+    {
+        public bool Enabled { get; set; }
+        public int Failures { get; private set; }
+
+        public override ValueTask<InterceptionResult<DbDataReader>> ReaderExecutingAsync(
+            DbCommand command, CommandEventData eventData,
+            InterceptionResult<DbDataReader> result,
+            CancellationToken cancellationToken = default)
+        {
+            if (Enabled &&
+                command.CommandText.TrimStart().StartsWith("SELECT", StringComparison.OrdinalIgnoreCase) &&
+                command.CommandText.Contains("`RegistrosAuditoria`", StringComparison.Ordinal))
+            {
+                Failures++;
+                command.CommandText = command.CommandText.Replace(
+                    "`RegistrosAuditoria`", "`qa_ci_missing_denial_receipt_table`",
+                    StringComparison.Ordinal);
+            }
+            return base.ReaderExecutingAsync(command, eventData, result, cancellationToken);
         }
     }
 

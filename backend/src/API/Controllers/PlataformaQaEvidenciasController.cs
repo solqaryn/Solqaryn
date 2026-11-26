@@ -152,8 +152,9 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                         is ILogger<PlataformaQaEvidenciasController> logger)
                     logger.LogWarning("QA_ACCESS_DENIAL_AUDIT_UNAVAILABLE");
             }
-            catch (DbUpdateException)
+            catch (Exception ex) when (ex is DbUpdateException or DbException)
             {
+                cancellationToken.ThrowIfCancellationRequested();
                 // Storage failure must never authorize access or expose SQL.
                 // Only a fixed code is logged; no user/request/exception text.
                 if (HttpContext.RequestServices.GetService(typeof(ILogger<PlataformaQaEvidenciasController>))

@@ -1,3 +1,7 @@
+## 2026-11-26 — DEV05 — C01-04.M03.06 — V44/R1/R5
+
+- TASK_ID=6adc2e55f47c81919f6374e561687076; RUN_ID=748a5841-2770-8327-9ba6-05a5fefcd77b; base=faadb2d0709805a206e69118e785de54b4668c07. D270: conservar HTTP 403 ante DbException durante readback/COMMIT del recibo de denegación ya determinada; no confundir con autoridad indeterminada (503). Mantener cancelación y aviso sanitizado, rollback y no divulgación. Regresión en laboratorio JWT/HTTP/Oracle MySQL real A/B: SELECT de recibo contra tabla inexistente, 403/no-store, cero llamadas upstream, cuatro recibos previos intactos. Sin grants, esquema, datos productivos ni retención inventada. A0 estático; CI/A5 pendientes. Foco empresarial API12/P01/P02 aún no acreditado. Rollback por revert normal.
+
 ## 2026-11-26 — DEV04 — C03-01.M03.03 — V44/R1/R5
 
 - TASK_ID=6aeacb7820ac8191b7d768a6f33dfa09; RUN_ID=edbfd3e8-87a0-832f-b47f-501aeecb7a74; base=1a730bd861cfdbd0ea2b065ffc2dd8eb795162d6. D447: el selector de empresas materializaba autorizaciones y consultaba nombres después; el controlador podía devolver opciones de B revocadas mientras el rol base de A seguía vigente. Predicado relacional compartido, selector en una consulta SQL, relectura y comparación tras revalidar sesión e identidad. Sin nuevos permisos, rutas, esquemas ni cambios de entorno.
