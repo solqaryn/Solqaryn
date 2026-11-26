@@ -2,7 +2,6 @@ import { Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { permisoGuard } from './core/guards/permiso.guard';
 import { AJUSTES_INVENTARIO_ROUTES } from './features/inventario/ajustes.routes';
-import { FACTURAS_PROVEEDOR_ROUTES } from './features/compras/facturas-proveedor/facturas-proveedor.routes';
 import { PEDIDOS_VENTA_ROUTES } from './features/pedidos-venta/pedidos-venta.routes';
 
 export const routes: Routes = [
@@ -98,7 +97,6 @@ export const routes: Routes = [
   { path: 'inventario/movimientos', canActivate: [authGuard, permisoGuard], data: { modulo: 'MovimientosInventario', accion: 'Ver' }, loadComponent: () => import('./features/inventario/movimientos-list.component').then(m => m.MovimientosListComponent) },
   { path: 'inventario/costeo', canActivate: [authGuard, permisoGuard], data: { modulo: 'MovimientosInventario', accion: 'Ver' }, loadComponent: () => import('./features/inventario/costeo-inventario.component').then(m => m.CosteoInventarioComponent) },
   ...AJUSTES_INVENTARIO_ROUTES,
-  ...FACTURAS_PROVEEDOR_ROUTES,
   ...PEDIDOS_VENTA_ROUTES,
   { path: 'configuracion', canActivate: [authGuard, permisoGuard], data: { modulo: 'Configuracion', accion: 'Ver' }, loadComponent: () => import('./features/configuracion/configuracion.component').then(m => m.ConfiguracionComponent) },
   { path: 'periodos-contables', canActivate: [authGuard, permisoGuard], data: { modulo: 'Configuracion', accion: 'Ver' }, loadComponent: () => import('./features/periodos-contables/periodos-contables.component').then(m => m.PeriodosContablesComponent) },

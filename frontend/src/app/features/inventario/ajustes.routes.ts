@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from '../../core/guards/auth.guard';
 import { permisoGuard } from '../../core/guards/permiso.guard';
-import { TRANSFERENCIAS_INVENTARIO_ROUTES } from './transferencias.routes';
 import { CONTEOS_INVENTARIO_ROUTES } from './conteos.routes';
 import { RESERVAS_INVENTARIO_ROUTES } from './reservas.routes';
 import { FACTURAS_PROVEEDOR_ROUTES } from '../compras/facturas-proveedor/facturas-proveedor.routes';
@@ -74,7 +73,6 @@ export const AJUSTES_INVENTARIO_ROUTES: Routes = [
     loadComponent: () => import('../recepciones-compra/recepciones-compra-shell.component').then(m => m.RecepcionesCompraShellComponent)
   },
   ...FACTURAS_PROVEEDOR_ROUTES,
-  ...TRANSFERENCIAS_INVENTARIO_ROUTES,
   ...CONTEOS_INVENTARIO_ROUTES,
   ...RESERVAS_INVENTARIO_ROUTES
 ];

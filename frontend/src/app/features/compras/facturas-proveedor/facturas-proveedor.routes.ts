@@ -1,7 +1,6 @@
 import { Routes } from '@angular/router';
 import { authGuard } from '../../../core/guards/auth.guard';
 import { permisoGuard } from '../../../core/guards/permiso.guard';
-import { CUENTAS_POR_COBRAR_ROUTES } from '../../finanzas/cuentas-por-cobrar/cuentas-por-cobrar.routes';
 import { CUENTAS_POR_PAGAR_ROUTES } from '../../finanzas/cuentas-por-pagar/cuentas-por-pagar.routes';
 
 export const FACTURAS_PROVEEDOR_ROUTES: Routes = [
@@ -89,6 +88,5 @@ export const FACTURAS_PROVEEDOR_ROUTES: Routes = [
     data: { modulo: 'Compras', accion: 'Ver' },
     loadComponent: () => import('../evaluaciones-proveedor/evaluaciones-proveedor.component').then(m => m.EvaluacionesProveedorComponent)
   },
-  ...CUENTAS_POR_PAGAR_ROUTES,
-  ...CUENTAS_POR_COBRAR_ROUTES
+  ...CUENTAS_POR_PAGAR_ROUTES
 ];

@@ -1,3 +1,9 @@
+## 2026-11-25 — QA: registro único de rutas y continuidad de certificación
+- Se eliminan expansiones redundantes de Transferencias y Facturas de proveedor, y la segunda inscripción de Cuentas por cobrar. Se preservan exactamente las primeras rutas efectivas, sus componentes, guards, metadata y lazy loading. No se elimina el componente alternativo hasta verificar paridad y consumidores.
+- Se incorpora regresión de rutas efectivas, unicidad, permisos y componente activo de Cuentas por cobrar a QA CI. Sin cambios de servicios, API, datos, dependencias, DEV o MAIN.
+- Evidencia previa 4a556cd6: CI 45742232482 SUCCESS, 68/68 Chromium, 52 escenarios de 13 anchos y 16 adicionales; Costeo 13/13; build inicial 743,24 kB; certificación de disponibilidad 45742232552 SUCCESS (no cubre autenticación ni SHA desplegado). Persiste aviso de 650 kB/SCSS de storefront.
+- Se identifica el proyecto QA autorizado prj_BIjoIFQz2oSHCosjj7lcc5blck9E, distinto del proyecto histórico solqaryn-qa de equipo SOLQARYN. Ambos checks de equipo vari-app reportan cuota; acceso al equipo denegado, autorización no disponible. No se elimina ni modifica ningún proyecto Vercel.
+
 ## 2026-11-25 — QA: Costeo, superficies y matriz responsive de 13 anchos
 - El motivo histórico exacto de la migración de costeo se presenta en español comercial sin modificar la persistencia ni motivos registrados por empresas. Se ajustan descripción, fechas visibles, superficies, filtros, tabla, scroll, paginación y detalle con tokens y controles existentes.
 - Se amplía la suite de superficies a 52 escenarios sintéticos (13 anchos por 4 grupos) y se integran pruebas unitarias de paginación y presentación de Costeo al gate QA. Se conservan las regresiones anteriores. No es certificación autenticada integral.
