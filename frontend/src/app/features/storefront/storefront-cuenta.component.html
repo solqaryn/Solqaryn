@@ -126,7 +126,7 @@
                 <div><strong>{{ producto.nombre }}</strong><p>{{ producto.categoria }}</p></div>
                 <div class="favorite-actions">
                   <a [routerLink]="['/tienda/producto', producto.slug]">Ver producto</a>
-                  <button type="button" (click)="quitarFavorito(producto.id)">Quitar</button>
+                  <button type="button" [disabled]="procesando()" (click)="quitarFavorito(producto.id)">Quitar</button>
                 </div>
               </article>
             }

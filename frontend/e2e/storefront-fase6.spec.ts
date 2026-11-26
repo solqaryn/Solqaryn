@@ -379,6 +379,29 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
     expect(reciboRaw).not.toContain('99991111');
   });
 
+  test('QA visual: modificar contacto invalida el enlace de WhatsApp preparado', async ({ page }) => {
+    await prepararEmpresa(page);
+    await sembrarCarrito(page, 'bd', modeloClaveReal, 501, 2);
+    await mockCatalogoReal(page);
+    await mockCheckoutValido(page);
+    await page.goto('/tienda/checkout?fuente=bd');
+    await expect(page.getByRole('heading', { name: 'Tu compra' })).toBeVisible();
+    await llenarComprador(page);
+    const preparar = page.getByRole('button', { name: 'Preparar pedido por WhatsApp' });
+    const enlace = page.getByRole('link', { name: 'Abrir WhatsApp y continuar' });
+    await preparar.click();
+    await expect(enlace).toBeVisible();
+    await page.getByRole('textbox', { name: 'Nombre completo' }).fill('Cliente actualizado QA');
+    await expect(enlace).toHaveCount(0);
+    await expect(page.getByText('Actualizaste tus datos. Prepara nuevamente la solicitud antes de abrir WhatsApp.')).toBeVisible();
+    await preparar.click();
+    await expect(enlace).toBeVisible();
+    const mensaje = new URL((await enlace.getAttribute('href'))!).searchParams.get('text') || '';
+    expect(mensaje).toContain('Cliente actualizado QA');
+    expect(mensaje).not.toContain('Cliente Auditoría');
+    expect(await page.evaluate(() => Object.keys(sessionStorage).filter(key => key.startsWith('storefront:pedido:')).length)).toBe(0);
+  });
+
   test('si vence la validación después de preparar WhatsApp bloquea la salida y exige revalidar', async ({ page }) => {
     await prepararEmpresa(page);
     await sembrarCarrito(page, 'bd', modeloClaveReal, 501, 2);

@@ -2,7 +2,7 @@ import { CommonModule } from '@angular/common';
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { Router, RouterLink } from '@angular/router';
-import { forkJoin, map, switchMap } from 'rxjs';
+import { Subject, forkJoin, map, switchMap, takeUntil } from 'rxjs';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { StorefrontIdentidadService } from './storefront-identidad.service';
 import { mapearProducto } from './storefront.catalog';
@@ -26,6 +26,7 @@ export class StorefrontCuentaComponent implements OnInit {
   private readonly router = inject(Router);
   private readonly tienda = inject(StorefrontService);
   private readonly carrito = inject(StorefrontCarritoService);
+  private readonly finSesion$ = new Subject<void>();
 
   readonly identidad = inject(StorefrontIdentidadService);
   readonly cuenta = inject(StorefrontCuentaService);
@@ -100,6 +101,7 @@ export class StorefrontCuentaComponent implements OnInit {
     this.cuenta.login(correo, clave).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.procesando.set(false);
+        this.loginForm.controls.clave.reset();
         this.aviso.set('Sesión iniciada. Tu catálogo y checkout siguen disponibles como siempre.');
         this.cargarPanel();
       },
@@ -116,7 +118,8 @@ export class StorefrontCuentaComponent implements OnInit {
     this.cuenta.registrar(nombre, correo, clave).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.procesando.set(false);
-        this.aviso.set('Cuenta creada. Comprar como invitado sigue siendo opcional.');
+        this.registroForm.controls.clave.reset();
+        this.aviso.set('Cuenta creada. Puedes seguir comprando como invitado si lo prefieres.');
         this.cargarPanel();
       },
       error: error => this.fallar(error)
@@ -124,22 +127,28 @@ export class StorefrontCuentaComponent implements OnInit {
   }
 
   cerrarSesion(): void {
-    this.cuenta.logout().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
-      this.direcciones.set([]);
-      this.favoritos.set([]);
-      this.pedidos.set([]);
-      this.notificaciones.set([]);
-      this.catalogo.set([]);
-      this.aviso.set('Sesión cerrada.');
-      this.error.set('');
-    });
+    if (!this.cuenta.autenticado()) return;
+    this.finSesion$.next();
+    this.direcciones.set([]);
+    this.favoritos.set([]);
+    this.pedidos.set([]);
+    this.notificaciones.set([]);
+    this.catalogo.set([]);
+    this.loginForm.reset();
+    this.registroForm.reset();
+    this.direccionForm.reset();
+    this.procesando.set(false);
+    this.cargando.set(false);
+    this.error.set('');
+    this.aviso.set('Sesión cerrada.');
+    this.cuenta.logout().pipe(takeUntilDestroyed(this.destroyRef)).subscribe();
   }
 
   guardarDireccion(): void {
     this.direccionForm.markAllAsTouched();
-    if (this.direccionForm.invalid || this.procesando()) return;
+    if (!this.cuenta.autenticado() || this.direccionForm.invalid || this.procesando()) return;
     this.procesando.set(true);
-    this.cuenta.guardarDireccion(this.direccionForm.getRawValue()).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    this.cuenta.guardarDireccion(this.direccionForm.getRawValue()).pipe(takeUntil(this.finSesion$), takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.procesando.set(false);
         this.direccionForm.reset({ alias: '', recibe: '', telefono: '', direccion: '', predeterminada: false });
@@ -151,9 +160,9 @@ export class StorefrontCuentaComponent implements OnInit {
   }
 
   eliminarDireccion(id: number): void {
-    if (this.procesando()) return;
+    if (!this.cuenta.autenticado() || this.procesando()) return;
     this.procesando.set(true);
-    this.cuenta.eliminarDireccion(id).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    this.cuenta.eliminarDireccion(id).pipe(takeUntil(this.finSesion$), takeUntilDestroyed(this.destroyRef)).subscribe({
       next: () => {
         this.procesando.set(false);
         this.recargarDirecciones();
@@ -163,13 +172,19 @@ export class StorefrontCuentaComponent implements OnInit {
   }
 
   quitarFavorito(productoId: number): void {
-    this.cuenta.quitarFavorito(productoId).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
-      next: () => this.favoritos.update(ids => ids.filter(id => id !== productoId)),
+    if (!this.cuenta.autenticado() || this.procesando()) return;
+    this.procesando.set(true);
+    this.cuenta.quitarFavorito(productoId).pipe(takeUntil(this.finSesion$), takeUntilDestroyed(this.destroyRef)).subscribe({
+      next: () => {
+        this.favoritos.update(ids => ids.filter(id => id !== productoId));
+        this.procesando.set(false);
+      },
       error: error => this.fallar(error)
     });
   }
 
   recompra(pedido: TiendaPedidoCuenta): void {
+    if (!this.cuenta.autenticado()) return;
     const productos = this.catalogo();
     if (!productos.length) {
       this.error.set('No pudimos cargar el catálogo vigente para la recompra.');
@@ -225,6 +240,7 @@ export class StorefrontCuentaComponent implements OnInit {
   }
 
   private cargarPanel(): void {
+    if (!this.cuenta.autenticado()) return;
     this.cargando.set(true);
     forkJoin({
       direcciones: this.cuenta.direcciones(),
@@ -241,6 +257,7 @@ export class StorefrontCuentaComponent implements OnInit {
           map(catalogo => ({ ...data, catalogo }))
         );
       }),
+      takeUntil(this.finSesion$),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe({
       next: data => {
@@ -259,7 +276,7 @@ export class StorefrontCuentaComponent implements OnInit {
   }
 
   private recargarDirecciones(): void {
-    this.cuenta.direcciones().pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
+    this.cuenta.direcciones().pipe(takeUntil(this.finSesion$), takeUntilDestroyed(this.destroyRef)).subscribe({
       next: items => {
         this.direcciones.set(items);
         this.procesando.set(false);

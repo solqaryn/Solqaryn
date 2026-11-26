@@ -209,12 +209,20 @@ export class PeriodosContablesComponent implements OnInit {
       estado: value.estado ?? undefined
     }).subscribe({
       next: response => {
-        this.periodos.set(response.data?.items ?? []);
+        if (!response.success || !response.data) {
+          this.periodos.set([]);
+          this.totalPages.set(1);
+          this.loading.set(false);
+          this.snack.open(response.message || 'No se pudieron cargar los períodos contables.', 'Cerrar', { duration: 4000 });
+          return;
+        }
+        this.periodos.set(response.data.items ?? []);
         this.totalPages.set(Math.max(response.data?.totalPages ?? 1, 1));
         this.loading.set(false);
       },
       error: () => {
         this.periodos.set([]);
+        this.totalPages.set(1);
         this.loading.set(false);
         this.snack.open('No se pudieron cargar los períodos contables.', 'Cerrar', { duration: 4000 });
       }
@@ -222,7 +230,7 @@ export class PeriodosContablesComponent implements OnInit {
   }
 
   crear(): void {
-    if (this.alta.invalid || this.guardando() || !this.puedeCrear()) return;
+    if (this.alta.invalid || this.guardando() || !this.puedeCrear() || !this.permisos.puede('Configuracion', 'Crear')) return;
     const value = this.alta.getRawValue();
     if (!value.fechaInicio || !value.fechaFin) return;
     if (value.fechaInicio > value.fechaFin) {
@@ -231,8 +239,12 @@ export class PeriodosContablesComponent implements OnInit {
     }
     this.guardando.set(true);
     this.service.create({ fechaInicio: value.fechaInicio, fechaFin: value.fechaFin }).subscribe({
-      next: () => {
+      next: response => {
         this.guardando.set(false);
+        if (!response.success || !response.data) {
+          this.snack.open(response.message || 'No se pudo crear el período contable.', 'Cerrar', { duration: 5000 });
+          return;
+        }
         this.mostrarAlta.set(false);
         this.alta.reset();
         this.page.set(1);
@@ -247,11 +259,15 @@ export class PeriodosContablesComponent implements OnInit {
   }
 
   cerrar(periodo: PeriodoContable): void {
-    if (!this.puedeCerrar() || periodo.estado === EstadoPeriodoContable.Cerrado || this.cerrandoId() !== null) return;
+    if (!this.puedeCerrar() || !this.permisos.puede('Configuracion', 'Cerrar') || periodo.estado === EstadoPeriodoContable.Cerrado || this.cerrandoId() !== null) return;
     this.cerrandoId.set(periodo.id);
     this.service.cerrar(periodo.id).subscribe({
-      next: () => {
+      next: response => {
         this.cerrandoId.set(null);
+        if (!response.success) {
+          this.snack.open(response.message || 'No se pudo cerrar el período contable.', 'Cerrar', { duration: 5000 });
+          return;
+        }
         this.snack.open('Período contable cerrado.', 'Cerrar', { duration: 3000 });
         this.cargar();
       },

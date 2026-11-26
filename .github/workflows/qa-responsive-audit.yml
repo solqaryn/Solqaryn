@@ -1,0 +1,136 @@
+name: QA - Barrido integral de rutas
+
+on:
+  push:
+    branches: [qa]
+    paths:
+      - '.github/workflows/qa-responsive-audit.yml'
+      - 'frontend/e2e/responsive-global.spec.ts'
+      - 'frontend/src/app/testing/qa-responsive-catalog.ts'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qa-responsive-${{ github.ref }}-${{ github.sha }}
+  cancel-in-progress: false
+
+jobs:
+  responsive:
+    if: github.ref == 'refs/heads/qa'
+    name: Rutas y tema - ${{ matrix.widths }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 120
+    strategy:
+      fail-fast: false
+      max-parallel: 2
+      matrix:
+        widths: ['320,360,375,390', '412,414,430,480', '768,1024,1280,1440', '1920,2048,2400,2560']
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: qa-local-fixture-only
+          MYSQL_DATABASE: solqaryn_qa_route_audit
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      ASPNETCORE_ENVIRONMENT: Development
+      PORT: '5005'
+      ConnectionStrings__DefaultConnection: 'Server=127.0.0.1;Port=3306;Database=solqaryn_qa_route_audit;User=root;Password=qa-local-fixture-only;SslMode=None;'
+      Database__ServerVersion: '8.4.0'
+      Database__ApplyMigrationsOnStartup: 'true'
+      Jwt__Issuer: 'Solqaryn.API'
+      Jwt__Audience: 'Solqaryn.Frontend'
+      Jwt__ExpiraMinutos: '120'
+      Security__LoginRateLimitPerMinute: '300'
+      SeedAdmin__Username: 'e2e_admin'
+      PHASE7_ADMIN_USERNAME: 'e2e_admin'
+      PHASE7_API_URL: 'http://127.0.0.1:5005'
+      PLAYWRIGHT_TEST_BASE_URL: 'http://127.0.0.1:4200'
+      E2E_TENANT_ID: '1'
+      QA_RESPONSIVE_WIDTHS: ${{ matrix.widths }}
+      Cors__AllowedOrigins__0: 'http://127.0.0.1:4200'
+      Cors__AllowedOrigins__1: 'http://localhost:4200'
+      AppSettings__BackendPublicUrl: 'https://qa-route-audit.invalid'
+      AppSettings__LogoPublicUrl: 'https://qa-route-audit.invalid/logo.png'
+      Cloudinary__CloudName: 'e2e-not-used'
+      Cloudinary__ApiKey: '000000000000000'
+      Cloudinary__ApiSecret: 'ci-local-placeholder'
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Scope y credenciales desechables
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = refs/heads/qa
+          test "$PHASE7_API_URL" = http://127.0.0.1:5005
+          test "$PLAYWRIGHT_TEST_BASE_URL" = http://127.0.0.1:4200
+          node scripts/verify-project-scope.mjs
+          pass="Aa1!$(openssl rand -hex 24)"
+          jwt="$(openssl rand -hex 32)"
+          echo "::add-mask::$pass"
+          echo "::add-mask::$jwt"
+          printf 'SeedAdmin__Password=%s\nPHASE7_ADMIN_PASSWORD=%s\nJwt__Secret=%s\n' "$pass" "$pass" "$jwt" >> "$GITHUB_ENV"
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+          cache: true
+          cache-dependency-path: backend/**/*.csproj
+      - name: Preparar API y MySQL aislado
+        working-directory: backend
+        shell: bash
+        env:
+          SOLQARYN_DATABASE_BOOTSTRAP_MODE: fresh
+        run: |
+          set -euo pipefail
+          dotnet restore Solqaryn.sln
+          dotnet build Solqaryn.sln --configuration Release --no-restore
+          dotnet run --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj --configuration Release --no-build
+          nohup dotnet run --project src/API/Solqaryn.API.csproj --configuration Release --no-build --no-launch-profile > "$RUNNER_TEMP/qa-route-api.log" 2>&1 &
+          for attempt in $(seq 1 90); do
+            if curl --fail --silent http://127.0.0.1:5005/health > /dev/null && curl --fail --silent http://127.0.0.1:5005/health/ready > /dev/null; then exit 0; fi
+            sleep 2
+          done
+          echo 'La API local no alcanzó readiness.' >&2
+          exit 1
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Preparar navegador y frontend local
+        working-directory: frontend
+        shell: bash
+        run: |
+          set -euo pipefail
+          sudo apt-get update -qq
+          sudo apt-get install -y default-mysql-client
+          npm ci
+          npx playwright install --with-deps chromium
+          nohup npm start -- --host 127.0.0.1 --port 4200 > "$RUNNER_TEMP/qa-route-frontend.log" 2>&1 &
+          for attempt in $(seq 1 90); do
+            if curl --fail --silent http://127.0.0.1:4200/login > /dev/null; then exit 0; fi
+            sleep 2
+          done
+          echo 'Angular local no está disponible.' >&2
+          exit 1
+      - name: Ejecutar el barrido sin depender de Vercel
+        working-directory: frontend
+        run: npx playwright test e2e/responsive-global.spec.ts --workers=1 --retries=0
+      - name: Publicar únicamente matriz de rutas y resultados
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-route-audit-${{ strategy.job-index }}
+          path: frontend/test-results/**/qa-route-audit.json
+          if-no-files-found: warn
+          retention-days: 14

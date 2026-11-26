@@ -1,5 +1,5 @@
 
-import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, DestroyRef, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -8,7 +8,8 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import { finalize, forkJoin } from 'rxjs';
+import { finalize, forkJoin, Subscription } from 'rxjs';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
 import { Almacen } from '../../core/models/almacen.model';
 import { OrdenCompra } from '../../core/models/orden-compra.model';
@@ -133,6 +134,9 @@ export class RecepcionCompraFormComponent implements OnInit {
   private readonly ordenesService = inject(OrdenCompraService);
   private readonly almacenesService = inject(AlmacenService);
   private readonly permisos = inject(PermisosRuntimeService);
+  private readonly destroyRef = inject(DestroyRef);
+  private saldoSubscription?: Subscription;
+  private secuenciaSaldo = 0;
 
   readonly ordenes = signal<OrdenCompra[]>([]);
   readonly almacenes = signal<Almacen[]>([]);
@@ -159,9 +163,15 @@ export class RecepcionCompraFormComponent implements OnInit {
     forkJoin({
       ordenes: this.ordenesService.getPaged({ page: 1, pageSize: 100, estado: 'Aprobada' }),
       almacenes: this.almacenesService.getActivos()
-    }).pipe(finalize(() => this.cargandoCatalogos.set(false))).subscribe({
+    }).pipe(takeUntilDestroyed(this.destroyRef), finalize(() => this.cargandoCatalogos.set(false))).subscribe({
       next: ({ ordenes, almacenes }) => {
-        this.ordenes.set(ordenes.data?.items ?? []);
+        if (!ordenes.success || !ordenes.data || !almacenes.success || !almacenes.data) {
+          this.ordenes.set([]);
+          this.almacenes.set([]);
+          this.error.set('No fue posible cargar las órdenes aprobadas y los almacenes activos.');
+          return;
+        }
+        this.ordenes.set(ordenes.data.items ?? []);
         this.almacenes.set(almacenes.data ?? []);
         const preseleccionada = Number(this.route.snapshot.queryParamMap.get('ordenCompraId'));
         if (Number.isInteger(preseleccionada) && preseleccionada > 0 && this.ordenes().some(x => x.id === preseleccionada)) {
@@ -174,25 +184,34 @@ export class RecepcionCompraFormComponent implements OnInit {
   }
 
   seleccionarOrden(ordenCompraId: number | null): void {
-    if (!this.puedeCrear()) return;
+    if (!this.puedeCrear() || !this.permisos.puede('Compras', 'Crear') || this.guardando()) return;
+    const secuencia = ++this.secuenciaSaldo;
+    this.saldoSubscription?.unsubscribe();
     this.detalles.clear();
     this.saldo.set(null);
     this.error.set('');
-    if (!ordenCompraId) return;
+    this.cargandoSaldo.set(false);
+    if (!ordenCompraId || this.form.controls.ordenCompraId.value !== ordenCompraId) return;
 
     this.cargandoSaldo.set(true);
-    this.recepciones.getSaldoOrden(ordenCompraId).pipe(finalize(() => this.cargandoSaldo.set(false))).subscribe({
+    this.saldoSubscription = this.recepciones.getSaldoOrden(ordenCompraId).pipe(
+      takeUntilDestroyed(this.destroyRef),
+      finalize(() => { if (secuencia === this.secuenciaSaldo) this.cargandoSaldo.set(false); })
+    ).subscribe({
       next: response => {
+        if (secuencia !== this.secuenciaSaldo || this.form.controls.ordenCompraId.value !== ordenCompraId) return;
         const saldo = response.data;
-        if (!saldo) {
-          this.error.set('No se encontró saldo disponible para la orden seleccionada.');
+        if (!response.success || !saldo || saldo.ordenCompraId !== ordenCompraId || !Array.isArray(saldo.lineas)) {
+          this.error.set('No fue posible consultar el saldo de la orden seleccionada.');
           return;
         }
         this.saldo.set(saldo);
         for (const linea of saldo.lineas) this.detalles.push(this.crearDetalle(linea));
         if (!saldo.lineas.length || saldo.completa) this.error.set('La orden seleccionada no tiene cantidades pendientes por recibir.');
       },
-      error: () => this.error.set('No fue posible cargar el saldo pendiente de la orden.')
+      error: () => {
+        if (secuencia === this.secuenciaSaldo) this.error.set('No fue posible cargar el saldo pendiente de la orden.');
+      }
     });
   }
 
@@ -205,7 +224,7 @@ export class RecepcionCompraFormComponent implements OnInit {
     const faltante = this.numero(value.cantidadFaltante);
     const sobrante = this.numero(value.cantidadSobrante);
     if ([recibida, danada, faltante, sobrante].some(x => x < 0)) return 'Las cantidades no pueden ser negativas.';
-    if (danada + sobrante > recibida) return 'Dañada + sobrante no puede superar la cantidad físicamente recibida.';
+    if (danada + sobrante > recibida) return 'La suma de las cantidades dañada y sobrante no puede superar la cantidad recibida.';
     if (recibida === 0 && faltante === 0) return 'Registra recepción física o una cantidad faltante.';
     const aceptada = recibida - danada - sobrante;
     if (aceptada > linea.cantidadPendiente) return `La cantidad aceptada (${aceptada}) supera el saldo pendiente (${linea.cantidadPendiente}).`;
@@ -214,7 +233,7 @@ export class RecepcionCompraFormComponent implements OnInit {
 
   puedeGuardar(): boolean {
     const saldo = this.saldo();
-    return this.puedeCrear() && !this.guardando() && !this.cargandoSaldo() && this.form.valid && !!saldo && !saldo.completa && saldo.lineas.length > 0
+    return this.puedeCrear() && this.permisos.puede('Compras', 'Crear') && !this.guardando() && !this.cargandoSaldo() && this.form.valid && !!saldo && saldo.ordenCompraId === this.form.controls.ordenCompraId.value && !saldo.completa && saldo.lineas.length > 0 && this.detalles.length === saldo.lineas.length
       && saldo.lineas.every((linea, index) => !this.errorLinea(index, linea));
   }
 
@@ -245,8 +264,14 @@ export class RecepcionCompraFormComponent implements OnInit {
 
     this.guardando.set(true);
     this.error.set('');
-    this.recepciones.create(payload).pipe(finalize(() => this.guardando.set(false))).subscribe({
-      next: response => void this.router.navigate(['/recepciones-compra', response.data.id]),
+    this.recepciones.create(payload).pipe(takeUntilDestroyed(this.destroyRef), finalize(() => this.guardando.set(false))).subscribe({
+      next: response => {
+        if (!response.success || !response.data || !Number.isInteger(response.data.id) || response.data.id <= 0) {
+          this.error.set(response.message || 'No fue posible guardar la recepción de compra.');
+          return;
+        }
+        void this.router.navigate(['/recepciones-compra', response.data.id]);
+      },
       error: () => this.error.set('No fue posible guardar la recepción de compra.')
     });
   }

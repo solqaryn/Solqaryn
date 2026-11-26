@@ -1,7 +1,7 @@
 import { DOCUMENT } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
-import { Observable, catchError, map, of, tap } from 'rxjs';
+import { Observable, catchError, defer, map, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../core/models/api-response.model';
 import {
@@ -20,53 +20,68 @@ export class StorefrontCuentaService {
   private readonly document = inject(DOCUMENT);
   private readonly baseUrl = `${environment.apiUrl}/tienda/cuenta`;
 
+  private revisionSesion = 0;
   private readonly _perfil = signal<TiendaCuentaPerfil | null>(null);
   readonly perfil = this._perfil.asReadonly();
   readonly autenticado = computed(() => this._perfil() !== null);
 
   registrar(nombre: string, correo: string, clave: string): Observable<TiendaCuentaPerfil> {
-    return this.http.post<ApiResponse<TiendaCuentaSesion>>(`${this.baseUrl}/registrar`, { nombre, correo, clave }).pipe(
-      map(res => this.validarSesion(res)),
-      tap(sesion => this.aplicarSesion(sesion)),
-      map(sesion => sesion.perfil)
-    );
+    return this.iniciarSesion('registrar', { nombre, correo, clave });
   }
 
   login(correo: string, clave: string): Observable<TiendaCuentaPerfil> {
-    return this.http.post<ApiResponse<TiendaCuentaSesion>>(`${this.baseUrl}/login`, { correo, clave }).pipe(
-      map(res => this.validarSesion(res)),
-      tap(sesion => this.aplicarSesion(sesion)),
-      map(sesion => sesion.perfil)
-    );
+    return this.iniciarSesion('login', { correo, clave });
+  }
+
+  private iniciarSesion(accion: 'registrar' | 'login', datos: { nombre?: string; correo: string; clave: string }): Observable<TiendaCuentaPerfil> {
+    return defer(() => {
+      const revision = ++this.revisionSesion;
+      return this.http.post<ApiResponse<TiendaCuentaSesion>>(`${this.baseUrl}/${accion}`, datos).pipe(
+        map(res => this.validarSesion(res)),
+        tap(sesion => {
+          if (revision !== this.revisionSesion) throw new Error('La sesión cambió antes de completar el acceso.');
+          this.aplicarSesion(sesion);
+        }),
+        map(sesion => sesion.perfil)
+      );
+    });
   }
 
   restaurar(): Observable<TiendaCuentaPerfil | null> {
-    const token = this.token();
-    if (!token) {
-      this.limpiarSesion();
-      return of(null);
-    }
-
-    return this.http.get<ApiResponse<TiendaCuentaPerfil>>(this.baseUrl, { headers: this.headers() }).pipe(
-      map(res => {
-        if (!res.success || !this.perfilValido(res.data)) throw new Error('Sesión de cliente no válida.');
-        return res.data;
-      }),
-      tap(perfil => this._perfil.set(perfil)),
-      catchError(() => {
-        this.limpiarSesion();
+    return defer(() => {
+      const token = this.token();
+      const revision = this.revisionSesion;
+      if (!token) {
+        this._perfil.set(null);
         return of(null);
-      })
-    );
+      }
+      const vigente = () => revision === this.revisionSesion && token === this.token();
+      return this.http.get<ApiResponse<TiendaCuentaPerfil>>(this.baseUrl, { headers: this.headers() }).pipe(
+        map(res => {
+          if (!vigente()) return null;
+          if (!res.success || !this.perfilValido(res.data)) throw new Error('Sesión de cliente no válida.');
+          return res.data;
+        }),
+        tap(perfil => { if (perfil && vigente()) this._perfil.set(perfil); }),
+        catchError(() => {
+          if (vigente()) this.limpiarSesion();
+          return of(null);
+        })
+      );
+    });
   }
 
   logout(): Observable<void> {
-    const headers = this.headers();
-    return this.http.post<ApiResponse<object>>(`${this.baseUrl}/logout`, {}, { headers }).pipe(
-      map(() => undefined),
-      catchError(() => of(undefined)),
-      tap(() => this.limpiarSesion())
-    );
+    return defer(() => {
+      const headers = this.headers();
+      // Invalidar localmente antes de esperar la red. La respuesta de un cierre
+      // anterior no puede borrar una sesión iniciada posteriormente.
+      this.limpiarSesion();
+      return this.http.post<ApiResponse<object>>(`${this.baseUrl}/logout`, {}, { headers }).pipe(
+        map(() => undefined),
+        catchError(() => of(undefined))
+      );
+    });
   }
 
   direcciones(): Observable<TiendaDireccionCliente[]> {
@@ -165,6 +180,7 @@ export class StorefrontCuentaService {
   }
 
   private limpiarSesion(): void {
+    ++this.revisionSesion;
     try {
       this.document.defaultView?.sessionStorage.removeItem(SESSION_KEY);
     } catch {

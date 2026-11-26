@@ -143,9 +143,9 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
             <div><p class="eyebrow">Detalle</p><h2 id="detail-title">{{ orden.numeroOrden }}</h2></div>
             <div class="row-actions">
               @if (esBorrador(orden) && permisosRuntime.puede('Compras', 'Editar')) {
-                <button mat-stroked-button type="button" (click)="editarOrden(orden.id)" [disabled]="accionLoading()"><mat-icon>edit</mat-icon> Editar</button>
+                <button mat-stroked-button type="button" (click)="editarOrden(orden.id)" [disabled]="accionLoading() || confirmando()"><mat-icon>edit</mat-icon> Editar</button>
               }
-              <button mat-icon-button type="button" (click)="cerrarDetalle()" aria-label="Cerrar detalle" [disabled]="accionLoading()"><mat-icon>close</mat-icon></button>
+              <button mat-icon-button type="button" (click)="cerrarDetalle()" aria-label="Cerrar detalle" [disabled]="accionLoading() || confirmando()"><mat-icon>close</mat-icon></button>
             </div>
           </div>
 
@@ -166,19 +166,19 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
 
           <div class="lifecycle-actions" aria-label="Acciones de ciclo de vida de la orden">
             @if (esBorrador(orden) && permisosRuntime.puede('Compras', 'Confirmar')) {
-              <button mat-flat-button type="button" (click)="enviarAprobacion(orden)" [disabled]="accionLoading()">
+              <button mat-flat-button type="button" (click)="enviarAprobacion(orden)" [disabled]="accionLoading() || confirmando()">
                 <mat-icon>forward_to_inbox</mat-icon>
                 Enviar a aprobación
               </button>
             }
             @if (esPendienteAprobacion(orden) && permisosRuntime.puede('Compras', 'Aprobar')) {
-              <button mat-flat-button type="button" (click)="aprobar(orden)" [disabled]="accionLoading()">
+              <button mat-flat-button type="button" (click)="aprobar(orden)" [disabled]="accionLoading() || confirmando()">
                 <mat-icon>verified</mat-icon>
                 Aprobar
               </button>
             }
             @if (esCancelable(orden) && permisosRuntime.puede('Compras', 'Anular')) {
-              <button mat-stroked-button type="button" (click)="cancelar(orden)" [disabled]="accionLoading()">
+              <button mat-stroked-button type="button" (click)="cancelar(orden)" [disabled]="accionLoading() || confirmando()">
                 <mat-icon>cancel</mat-icon>
                 Cancelar
               </button>
@@ -255,6 +255,7 @@ export class OrdenesCompraShellComponent implements OnInit, OnDestroy {
   readonly detalleLoading = signal(false);
   readonly detalleError = signal<string | null>(null);
   readonly accionLoading = signal(false);
+  readonly confirmando = signal(false);
   readonly accionError = signal<string | null>(null);
   readonly accionMensaje = signal<string | null>(null);
 
@@ -401,56 +402,67 @@ export class OrdenesCompraShellComponent implements OnInit, OnDestroy {
     });
   }
 
+  private accionPermitida(orden: OrdenCompra, permiso: string, estadoValido: (actual: OrdenCompra) => boolean): boolean {
+    const actual = this.detalle();
+    return !this.confirmando() && !this.accionLoading() && !this.detalleLoading() &&
+      !!actual && actual.id === orden.id && estadoValido(actual) && this.permisosRuntime.puede('Compras', permiso);
+  }
+
   async enviarAprobacion(orden: OrdenCompra): Promise<void> {
-    if (!this.esBorrador(orden) || !this.permisosRuntime.puede('Compras', 'Confirmar') || this.accionLoading()) return;
-    const confirmado = await this.alerts.confirmar({
-      titulo: 'Enviar orden a aprobación',
-      mensaje: `La orden ${orden.numeroOrden} dejará de ser editable como borrador.`,
-      detalle: 'La operación conserva sus líneas y totales, pero inicia el flujo de aprobación.',
-      tipo: 'advertencia',
-      confirmarTexto: 'Enviar a aprobación'
-    });
-    if (!confirmado) return;
-    this.ejecutarAccion(
-      () => this.ordenService.enviarAprobacion(orden.id),
-      'Orden enviada a aprobación correctamente.'
-    );
+    const autorizado = () => this.accionPermitida(orden, 'Confirmar', actual => this.esBorrador(actual));
+    if (!autorizado()) return;
+    const secuencia = this.secuenciaDetalle;
+    this.confirmando.set(true);
+    let confirmado: boolean;
+    try {
+      confirmado = await this.alerts.confirmar({
+        titulo: 'Enviar orden a aprobación',
+        mensaje: `La orden ${orden.numeroOrden} dejará de ser editable como borrador.`,
+        detalle: 'La operación conserva sus líneas y totales, pero inicia el flujo de aprobación.',
+        tipo: 'advertencia',
+        confirmarTexto: 'Enviar a aprobación'
+      });
+    } finally { this.confirmando.set(false); }
+    if (!confirmado || secuencia !== this.secuenciaDetalle || !autorizado()) return;
+    this.ejecutarAccion(() => this.ordenService.enviarAprobacion(orden.id), 'Orden enviada a aprobación correctamente.');
   }
 
   async aprobar(orden: OrdenCompra): Promise<void> {
-    if (!this.esPendienteAprobacion(orden) || !this.permisosRuntime.puede('Compras', 'Aprobar') || this.accionLoading()) return;
-    const confirmado = await this.alerts.confirmar({
-      titulo: 'Aprobar orden de compra',
-      mensaje: `¿Aprobar la orden ${orden.numeroOrden}?`,
-      detalle: 'La aprobación no recibe mercancía ni modifica inventario; el impacto ocurre en la recepción autorizada.',
-      confirmarTexto: 'Aprobar orden'
-    });
-    if (!confirmado) return;
-    this.ejecutarAccion(
-      () => this.ordenService.aprobar(orden.id),
-      'Orden de compra aprobada correctamente.'
-    );
+    const autorizado = () => this.accionPermitida(orden, 'Aprobar', actual => this.esPendienteAprobacion(actual));
+    if (!autorizado()) return;
+    const secuencia = this.secuenciaDetalle;
+    this.confirmando.set(true);
+    let confirmado: boolean;
+    try {
+      confirmado = await this.alerts.confirmar({
+        titulo: 'Aprobar orden de compra',
+        mensaje: `¿Aprobar la orden ${orden.numeroOrden}?`,
+        detalle: 'La aprobación no recibe mercancía ni modifica inventario; el impacto ocurre en la recepción autorizada.',
+        confirmarTexto: 'Aprobar orden'
+      });
+    } finally { this.confirmando.set(false); }
+    if (!confirmado || secuencia !== this.secuenciaDetalle || !autorizado()) return;
+    this.ejecutarAccion(() => this.ordenService.aprobar(orden.id), 'Orden de compra aprobada correctamente.');
   }
 
   async cancelar(orden: OrdenCompra): Promise<void> {
-    if (!this.esCancelable(orden) || !this.permisosRuntime.puede('Compras', 'Anular') || this.accionLoading()) return;
-    const motivo = await this.alerts.solicitarTexto({
-      titulo: 'Cancelar orden de compra',
-      mensaje: `La orden ${orden.numeroOrden} se marcará como cancelada y no podrá continuar su ciclo.`,
-      detalle: 'Indica un motivo trazable para la auditoría.',
-      tipo: 'peligro',
-      entrada: { etiqueta: 'Motivo de cancelación', requerida: true },
-      confirmarTexto: 'Cancelar orden'
-    });
-    if (!motivo) {
-      this.accionMensaje.set(null);
-      this.accionError.set('La cancelación exige un motivo.');
-      return;
-    }
-    this.ejecutarAccion(
-      () => this.ordenService.cancelar(orden.id, motivo),
-      'Orden de compra cancelada correctamente.'
-    );
+    const autorizado = () => this.accionPermitida(orden, 'Anular', actual => this.esCancelable(actual));
+    if (!autorizado()) return;
+    const secuencia = this.secuenciaDetalle;
+    this.confirmando.set(true);
+    let motivo: string | null;
+    try {
+      motivo = await this.alerts.solicitarTexto({
+        titulo: 'Cancelar orden de compra',
+        mensaje: `La orden ${orden.numeroOrden} se marcará como cancelada y no podrá continuar su ciclo.`,
+        detalle: 'Indica un motivo trazable para la auditoría.',
+        tipo: 'peligro',
+        entrada: { etiqueta: 'Motivo de cancelación', requerida: true },
+        confirmarTexto: 'Cancelar orden'
+      });
+    } finally { this.confirmando.set(false); }
+    if (!motivo?.trim() || secuencia !== this.secuenciaDetalle || !autorizado()) return;
+    this.ejecutarAccion(() => this.ordenService.cancelar(orden.id, motivo), 'Orden de compra cancelada correctamente.');
   }
 
   cerrarDetalle(): void {

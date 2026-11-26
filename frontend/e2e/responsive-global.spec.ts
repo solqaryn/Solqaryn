@@ -1,11 +1,19 @@
 import { expect, Page, test } from '@playwright/test';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
 import { REQUIRED_QA_WIDTHS, RESPONSIVE_ROUTES, RESPONSIVE_VIEWPORTS } from '../src/app/testing/qa-responsive-catalog';
 export { RESPONSIVE_ROUTES, RESPONSIVE_VIEWPORTS } from '../src/app/testing/qa-responsive-catalog';
 
-const ADMIN_USERNAME = process.env['PHASE7_ADMIN_USERNAME'] ?? 'e2e_admin';
-const ADMIN_PASSWORD = process.env['PHASE7_ADMIN_PASSWORD'] ?? 'E2E.Admin#2026!';
+const ADMIN_USERNAME = process.env['PHASE7_ADMIN_USERNAME'];
+const ADMIN_PASSWORD = process.env['PHASE7_ADMIN_PASSWORD'];
+const subset = process.env['QA_RESPONSIVE_WIDTHS']?.split(',').map(Number);
+if (subset && (subset.some(width => !RESPONSIVE_VIEWPORTS.some(viewport => viewport.width === width)) || new Set(subset).size !== subset.length)) {
+  throw new Error('QA_RESPONSIVE_WIDTHS contiene anchos inválidos o duplicados.');
+}
+const viewports = subset ? RESPONSIVE_VIEWPORTS.filter(viewport => subset.includes(viewport.width)) : RESPONSIVE_VIEWPORTS;
 
 async function login(page: Page): Promise<void> {
+  if (!ADMIN_USERNAME || !ADMIN_PASSWORD) throw new Error('Configura credenciales efímeras de CI para el barrido.');
   await page.goto('/login');
   await page.locator('input[formcontrolname="nombreUsuario"]').fill(ADMIN_USERNAME);
   await page.locator('input[formcontrolname="password"]').fill(ADMIN_PASSWORD);
@@ -139,17 +147,37 @@ async function auditFirstSelectOverlay(page: Page, route: string): Promise<void>
 
 async function certifyRoute(page: Page, route: string, mobile: boolean, errors: string[]): Promise<void> {
   errors.length = 0;
-  await page.goto(route, { waitUntil: 'domcontentloaded' });
-  await page.waitForTimeout(150);
-  if (route === '/' || route.startsWith('/tienda') || route === '/login') {
-    await expect(page.locator('body')).toBeVisible();
+  const response = await page.goto(route, { waitUntil: 'domcontentloaded' });
+  expect(response?.ok(), `HTTP no válido en ${route}`).toBe(true);
+  const esperado = route === '/' ? '/login' : route;
+  await expect.poll(() => new URL(page.url()).pathname.replace(/\/$/, '') || '/', {
+    message: `Ruta solicitada ${route}: no aceptar redirecciones inesperadas`, timeout: 15_000
+  }).toBe(esperado);
+  if (esperado === '/login') {
+    await expect(page.locator('form[aria-labelledby="login-title"]')).toBeVisible();
+  } else if (route.startsWith('/tienda')) {
+    await expect(page.locator('main').first()).toBeVisible();
+    await expect(page.locator('main h1').first()).toBeVisible({ timeout: 15_000 });
   } else {
     await expect(page.locator('#main-content')).toBeVisible();
     await expect(page.locator('#main-content h1').first()).toBeVisible({ timeout: 15_000 });
   }
   await expect.poll(() => bodyOverflow(page), { timeout: 5_000 }).toBeLessThanOrEqual(2);
+  if (route.startsWith('/tienda')) await auditGeometry(page, route, mobile);
   if (route !== '/' && !route.startsWith('/tienda') && route !== '/login') {
     await auditGeometry(page, route, mobile);
+    const superficies = await page.evaluate(() => {
+      const probe = document.createElement('span');
+      probe.style.backgroundColor = 'var(--color-surface)';
+      document.body.append(probe);
+      const esperado = getComputedStyle(probe).backgroundColor;
+      probe.remove();
+      return [...document.querySelectorAll<HTMLElement>('.app-list-surface, .mat-mdc-card')]
+        .filter(el => el.getBoundingClientRect().width > 0 && el.getBoundingClientRect().height > 0 && getComputedStyle(el).visibility !== 'hidden')
+        .filter(el => getComputedStyle(el).backgroundColor !== esperado)
+        .map(el => ({ clase: el.className, color: getComputedStyle(el).backgroundColor, esperado }));
+    });
+    expect(superficies, 'Superficies que no respetan el token empresarial en ' + route).toEqual([]);
     await auditFirstSelectOverlay(page, route);
     if (route === '/ventas/nueva') {
       const priceInputs = page.locator('main input[formcontrolname="precioUnitario"]');
@@ -159,11 +187,14 @@ async function certifyRoute(page: Page, route: string, mobile: boolean, errors: 
       }
     }
   }
+  const caracteresInvalidos = await page.locator('body').innerText().then(texto => /\uFFFD|Ã[¡©­³º±]/.test(texto));
+  expect(caracteresInvalidos, 'Texto con codificación defectuosa en ' + route).toBe(false);
+  expect(new URL(page.url()).pathname.replace(/\/$/, '') || '/', `Redirección tardía en ${route}`).toBe(esperado);
   expect(errors, `Errores de consola en ${route}: ${errors.join(' | ')}`).toEqual([]);
 }
 
 test.describe('Responsive global — route sweep y regression gate', () => {
-  test.describe.configure({ mode: 'serial', retries: 0 });
+  test.describe.configure({ mode: 'default', retries: 0 });
 
   test('el catálogo compartido no repite rutas y cubre los anchos QA', () => {
     expect(new Set(RESPONSIVE_ROUTES).size).toBe(RESPONSIVE_ROUTES.length);
@@ -172,16 +203,63 @@ test.describe('Responsive global — route sweep y regression gate', () => {
     expect(REQUIRED_QA_WIDTHS.filter(width => !widths.includes(width))).toEqual([]);
   });
 
-  for (const viewport of RESPONSIVE_VIEWPORTS) {
-    test(`${viewport.name}x${viewport.height} recorre todas las rutas reales`, async ({ page }) => {
-      test.setTimeout(15 * 60_000);
-      await page.setViewportSize({ width: viewport.width, height: viewport.height });
+  for (const viewport of viewports) {
+    test(`${viewport.name}x${viewport.height} recorre todas las rutas reales`, async ({ page, browser }, testInfo) => {
+      test.setTimeout(45 * 60_000);
+      const size = { width: viewport.width, height: viewport.height };
+      await page.setViewportSize(size);
+      page.setDefaultTimeout(8000);
+      page.setDefaultNavigationTimeout(12000);
+      const resultados: { ruta: string; estado: 'PASS' | 'FAIL' | 'NOT_RUN'; motivo?: string }[] =
+        RESPONSIVE_ROUTES.map(ruta => ({ ruta, estado: 'NOT_RUN' }));
       const errors: string[] = [];
-      page.on('console', (message) => { if (message.type() === 'error') errors.push(message.text()); });
-      page.on('pageerror', (error) => errors.push(`pageerror: ${error.message}`));
-      await login(page);
-      await assertNavigationMode(page, viewport.mobile);
-      for (const route of RESPONSIVE_ROUTES) await certifyRoute(page, route, viewport.mobile, errors);
+      const guestErrors: string[] = [];
+      const monitor = (target: Page, destino: string[]) => {
+        target.on('console', (message) => { if (message.type() === 'error') destino.push(message.text()); });
+        target.on('pageerror', (error) => destino.push(`pageerror: ${error.message}`));
+        target.on('response', response => {
+          const url = new URL(response.url());
+          if (['localhost', '127.0.0.1'].includes(url.hostname) && url.port === '5005' && response.status() >= 400) {
+            destino.push('API ' + response.status() + ' ' + url.pathname);
+          }
+        });
+      };
+      monitor(page, errors);
+      const guestContext = await browser.newContext({ baseURL: testInfo.project.use.baseURL, viewport: size });
+      try {
+        const guest = await guestContext.newPage();
+        guest.setDefaultTimeout(8000);
+        guest.setDefaultNavigationTimeout(12000);
+        monitor(guest, guestErrors);
+        let falloLogin: string | undefined;
+        try {
+          await login(page);
+          await assertNavigationMode(page, viewport.mobile);
+        } catch (error) {
+          falloLogin = error instanceof Error ? error.message.slice(0, 500) : 'No se pudo abrir una sesión de prueba.';
+        }
+        for (const resultado of resultados) {
+          const route = resultado.ruta;
+          const publico = route === '/' || route === '/login' || route.startsWith('/tienda');
+          if (!publico && falloLogin) {
+            resultado.motivo = falloLogin;
+            continue;
+          }
+          try {
+            await test.step(route, () => certifyRoute(publico ? guest : page, route, viewport.mobile, publico ? guestErrors : errors));
+            resultado.estado = 'PASS';
+          } catch (error) {
+            resultado.estado = 'FAIL';
+            resultado.motivo = error instanceof Error ? error.message.slice(0, 700) : 'Falló una comprobación de la ruta.';
+          }
+        }
+      } finally {
+        const path = testInfo.outputPath('qa-route-audit.json');
+        mkdirSync(dirname(path), { recursive: true });
+        writeFileSync(path, JSON.stringify({ width: viewport.width, sha: process.env['GITHUB_SHA'] ?? null, resultados }, null, 2));
+        await guestContext.close();
+      }
+      expect(resultados.filter(resultado => resultado.estado !== 'PASS').map(({ ruta, estado }) => ({ ruta, estado }))).toEqual([]);
     });
   }
 });

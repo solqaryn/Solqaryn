@@ -164,18 +164,26 @@ for (const viewport of viewports) {
       const metodo = form.getByRole('combobox',{name:'Método',exact:true});
       const aplicar = form.getByRole('button',{name:'Aplicar política'});
       await expect(aplicar).toBeDisabled();
-      await metodo.click();
-      await page.getByRole('option',{name:'FIFO',exact:true}).click();
+      const seleccionarMetodo = async (nombre: string) => {
+        await expect(metodo).toHaveAttribute('aria-expanded','false');
+        await expect(page.getByRole('listbox')).toHaveCount(0);
+        await metodo.click();
+        await expect(metodo).toHaveAttribute('aria-expanded','true');
+        const panel = page.getByRole('listbox');
+        await expect(panel).toBeVisible();
+        await panel.getByRole('option',{name:nombre,exact:true}).click();
+        await expect(metodo).toHaveAttribute('aria-expanded','false');
+        await expect(panel).toHaveCount(0);
+      };
+      await seleccionarMetodo('FIFO');
       await expect(form.getByText(/asigna a las salidas el costo de las entradas más antiguas/)).toBeVisible();
       await expect(form.getByText(/no modifica las políticas anteriores ni recalcula costos ya registrados/)).toBeVisible();
       await expect(aplicar).toBeDisabled();
       await form.getByRole('textbox',{name:'Motivo del cambio'}).fill('Validación visual sin guardar');
       await expect(aplicar).toBeEnabled();
-      await metodo.click();
-      await page.getByRole('option',{name:'Estándar',exact:true}).click();
+      await seleccionarMetodo('Estándar');
       await expect(form.getByText(/utiliza un costo de referencia establecido/)).toBeVisible();
-      await metodo.click();
-      await page.getByRole('option',{name:'Promedio Ponderado',exact:true}).click();
+      await seleccionarMetodo('Promedio Ponderado');
       await expect(form.locator('.method-description')).toHaveCount(0);
       await expect(aplicar).toBeDisabled();
     }

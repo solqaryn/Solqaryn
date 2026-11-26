@@ -69,6 +69,12 @@ export class StorefrontCheckoutComponent implements OnInit {
   } as const;
 
   ngOnInit(): void {
+    this.formulario.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      if (this.enlaceWhatsapp()) {
+        this.enlaceWhatsapp.set('');
+        this.aviso.set('Actualizaste tus datos. Prepara nuevamente la solicitud antes de abrir WhatsApp.');
+      }
+    });
     if (!environment.production && this.config.mostrarControlesVistaPrevia
       && this.route.snapshot.queryParamMap.get('fuente') === 'bd') {
       this.utilizarDatosBaseDatos.set(true);
@@ -88,6 +94,7 @@ export class StorefrontCheckoutComponent implements OnInit {
   }
 
   revalidar(): void {
+    if (this.procesando() || this.estado() === 'loading') return;
     this.procesando.set(true);
     this.error.set('');
     this.enlaceWhatsapp.set('');
@@ -105,7 +112,7 @@ export class StorefrontCheckoutComponent implements OnInit {
   }
 
   prepararWhatsapp(): void {
-    if (!this.permiteWhatsapp() || !this.validarFormulario()) return;
+    if (this.procesando() || this.estado() !== 'success' || !this.permiteWhatsapp() || !this.validarFormulario()) return;
     const destino = telefonoWhatsapp(this.identidad.config().whatsApp);
     if (!destino) {
       this.error.set('Este comercio no tiene un número de WhatsApp válido configurado.');
@@ -139,7 +146,7 @@ export class StorefrontCheckoutComponent implements OnInit {
 
   confirmarSalidaWhatsapp(evento: Event): void {
     const validado = this.validado();
-    if (!validado || !this.enlaceWhatsapp()) {
+    if (this.procesando() || !validado || !this.enlaceWhatsapp() || this.formulario.invalid) {
       evento.preventDefault();
       return;
     }
@@ -155,7 +162,7 @@ export class StorefrontCheckoutComponent implements OnInit {
   }
 
   continuarTarjeta(): void {
-    if (!this.permiteTarjeta() || !this.validarFormulario()) return;
+    if (this.procesando() || this.estado() !== 'success' || !this.permiteTarjeta() || !this.validarFormulario()) return;
     const validado = this.validado();
     if (!validado || !this.validacionVigente()) {
       this.error.set('La validación del carrito venció. Actualízala antes de continuar.');
