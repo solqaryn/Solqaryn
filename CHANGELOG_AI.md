@@ -11308,3 +11308,8 @@
 
 - R2: GET /auditoria vuelve a consultar el permiso vigente Auditoria:Ver y el alcance de administrador del mismo actor/empresa/rol antes de entregar las filas. No cambia grants, rutas, esquema ni DTO. Reduce la ventana de revocación durante la consulta; no afirma atomicidad con la serialización.
 - Seis casos dirigidos TestServer/JWT firmado A/B: revocación de rol o grant durante lectura (403 sin contenido) y controles positivos (200). Autoridad SQL simulada, pendiente integración MySQL real. A0 diff limitado; A1-A4 CI causal pendiente; A5 independiente; rollback git revert normal. Foco C01-04.M03.06 preservado: P01/P02/API12, DI y retención empresarial aún no acreditados; CFG15 candidato de idempotencia no equivale a retención de auditoría. Scope Lock STRICT, sin QA/main/PROD.
+
+## 2026-11-26 — DEV06 — C14-02.M06.06 — Integración real de revocación durante lectura de auditoría
+
+- Se completa el fixture de llamada MVC directa con PermisoService y repositorios reales; la nueva revalidación no debe recibir DI ficticia ni un permiso implícito. El host HTTP de auditoría conserva el piloto DEV existente, con middleware de excepciones real.
+- Interceptor Oracle EF sobre SELECT de RegistrosAuditoria, armado una vez, confirma revocación de grant desde otro contexto MySQL 8.4 antes de entregar respuesta: 403 sin filas de A/B, readback SQL de revocación y restauración del grant sintético, posterior 200. No modifica runtime ni grants de entornos. Pendiente CI exact SHA, no se certifica PASS ni A5; se conserva foco colectivo y rollback por revert normal.

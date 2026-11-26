@@ -73,6 +73,33 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
         }
     }
 
+    // Pause the response at the real EF audit SELECT, then commit the revocation
+    // using an independent MySQL context before the controller releases any rows.
+    private sealed class AuditReadRevocationInterceptor : DbCommandInterceptor
+    {
+        private Func<Task>? _armed;
+        public int Invocations { get; private set; }
+        public void Arm(Func<Task> revoke) => Interlocked.Exchange(ref _armed, revoke);
+
+        public override async ValueTask<DbDataReader> ReaderExecutedAsync(
+            DbCommand command, CommandExecutedEventData eventData, DbDataReader result,
+            CancellationToken cancellationToken = default)
+        {
+            if (command.CommandText.TrimStart().StartsWith("SELECT", StringComparison.OrdinalIgnoreCase) &&
+                command.CommandText.Contains("RegistrosAuditoria", StringComparison.OrdinalIgnoreCase) &&
+                !command.CommandText.Contains("COUNT(", StringComparison.OrdinalIgnoreCase))
+            {
+                var revoke = Interlocked.Exchange(ref _armed, null);
+                if (revoke is not null)
+                {
+                    await revoke();
+                    Invocations++;
+                }
+            }
+            return result;
+        }
+    }
+
     [Fact]
     public async Task PhysicalMysql84SignedJwtTenantAbGrantRevocationAndRollbackFailClosed()
     {
@@ -178,6 +205,12 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
 
             var services = new ServiceCollection();
             services.AddLogging();
+            // The direct MVC action assertion below now also revalidates the
+            // actual relational permission after its reader returns.
+            services.AddSingleton<IPermisoService>(new PermisoService(
+                new RolPermisoRepository(db), new RolRepository(db),
+                new PermisoRepository(db), Mock.Of<IAuditoriaService>(),
+                current.Object, scope));
             services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
                 .AddJwtBearer(o =>
                 {
@@ -539,6 +572,9 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
             // RequierePermiso filter, current SQL membership, tenant-bound
             // repository and the P0 middleware. A direct controller action or
             // a Development probe alone is NOT an end-to-end HTTP assertion.
+            var revokeAfterRead = new AuditReadRevocationInterceptor();
+            var mvcOptions = new DbContextOptionsBuilder<AppDbContext>(options)
+                .AddInterceptors(revokeAfterRead).Options;
             var mvcConfig = new ConfigurationBuilder().AddInMemoryCollection(
                 new Dictionary<string, string?>
                 {
@@ -562,7 +598,7 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
                             Mock.Of<IPublicStoreHostTenantResolver>());
                         s.AddSingleton<IPublicStoreProofReplayStore>(
                             Mock.Of<IPublicStoreProofReplayStore>());
-                        s.AddScoped(_ => new AppDbContext(options, null,
+                        s.AddScoped(_ => new AppDbContext(mvcOptions, null,
                             _.GetRequiredService<IHttpContextAccessor>()));
                         s.AddScoped<ICurrentUserService, CurrentUserService>();
                         s.AddScoped<IUsuarioScopeService, UsuarioScopeService>();
@@ -593,6 +629,7 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
                     .Configure(app =>
                     {
                         app.UseRouting();
+                        app.UseMiddleware<ExceptionHandlingMiddleware>();
                         app.UseAuthentication();
                         app.UseAuthorization();
                         app.UseMiddleware<Solqaryn.API.Middleware.UnscopedCommercialTenantGuardMiddleware>();
@@ -668,6 +705,37 @@ public sealed class C0303M0303VerifiedAuditMysql84IntegrationTests
                 Assert.Equal(HttpStatusCode.Unauthorized,
                     (await GetAuditAsync(new JwtSecurityTokenHandler().WriteToken(
                         expiredToken), tenantA.Id)).Code);
+
+                // Revoke after the actual tenant audit SELECT has executed, while
+                // the HTTP request is still in flight. Use a separate SQL context
+                // so the request cannot read a stale tracked grant.
+                revokeAfterRead.Arm(async () =>
+                {
+                    await using var revoker = new AppDbContext(options);
+                    var grant = await revoker.RolPermisos.IgnoreQueryFilters()
+                        .SingleAsync(r => r.RolId == roleA.Id &&
+                                          r.PermisoId == permission.Id);
+                    revoker.RolPermisos.Remove(grant);
+                    await revoker.SaveChangesAsync();
+                });
+                var revokedDuringRead = await GetAuditAsync(realJwt, tenantA.Id);
+                Assert.Equal(1, revokeAfterRead.Invocations);
+                Assert.Equal(HttpStatusCode.Forbidden, revokedDuringRead.Code);
+                Assert.DoesNotContain("C03-03.M03.03: acceso de auditoría validado",
+                    revokedDuringRead.Body, StringComparison.Ordinal);
+                Assert.DoesNotContain("C0303_TENANT_B_PRIVATE_SENTINEL",
+                    revokedDuringRead.Body, StringComparison.Ordinal);
+                db.ChangeTracker.Clear();
+                Assert.False(await db.RolPermisos.IgnoreQueryFilters()
+                    .AnyAsync(r => r.RolId == roleA.Id && r.PermisoId == permission.Id));
+                db.RolPermisos.Add(new RolPermiso
+                {
+                    RolId = roleA.Id, PermisoId = permission.Id
+                });
+                await db.SaveChangesAsync();
+                db.ChangeTracker.Clear();
+                Assert.Equal(HttpStatusCode.OK,
+                    (await GetAuditAsync(realJwt, tenantA.Id)).Code);
 
                 // A real committed SQL grant revocation must invalidate the
                 // still valid signed JWT, without changing its claims or cache.
