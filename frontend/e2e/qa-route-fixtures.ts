@@ -17,7 +17,7 @@ export async function prepareRouteFixtures(): Promise<void> {
   const families = {
     common: ['/productos/1', '/productos/1/editar', '/productos/1/variantes',
       '/sucursales/1/editar', '/almacenes/1/editar'],
-    inventory: ['/inventario/conteos/1', '/inventario/conteos/1/editar',
+    inventario: ['/inventario/conteos/1', '/inventario/conteos/1/editar',
       '/inventario/ajustes/1', '/inventario/ajustes/1/editar'],
     sales: ['/ventas/1', '/ventas/1/editar', '/facturas/1', '/facturas/1/pagos'],
     quotes: ['/cotizaciones/1', '/cotizaciones/1/editar', '/pedidos-venta/1', '/pedidos-venta/1/editar'],
@@ -113,7 +113,7 @@ export async function prepareRouteFixtures(): Promise<void> {
       lastStatus = undefined;
       if (!productoId || !varianteId || !almacenId) throw new Error('Fixture base no acreditado');
     }
-    await family(families.inventory, async () => {
+    await family(families.inventario, async () => {
       requireStock();
       const ajusteId = idOf(await call('/inventario/ajustes', 'POST', { motivo: label, observaciones: 'Ajuste borrador CI', detalles: [{ productoId, productoVarianteId: varianteId, almacenId, ubicacionAlmacenId: null, cantidadObjetivo: 32 }] }));
       await persisted('/inventario/ajustes', ajusteId);
