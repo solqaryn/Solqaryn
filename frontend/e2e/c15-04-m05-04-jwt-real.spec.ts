@@ -2167,6 +2167,26 @@ test.describe('C15 UX R2 - JWT firmado en MySQL 8.4 descartable', () => {
     }
   }
 
+  // A0.68Q: una membresía válida no levanta la cuarentena P0 de rutas no habilitadas.
+  for (const endpoint of ['/conteos-inventario', '/reservas-inventario', '/cuentas-por-cobrar']) {
+    for (const empresa of [{ id: 1, usuario: 'c1504_admin_a' }, { id: 2, usuario: 'c1504_admin_b' }]) {
+      test(`A0.68Q - cuarentena real ${endpoint} con empresa propia ${empresa.id}`, async ({ page, request }) => {
+        const jwt = await ingresarConJwtRealParaGuard(page, request, empresa.usuario);
+        const headers = { Authorization: 'Bearer ' + jwt, 'X-Empresa-Id': String(empresa.id) };
+        const propia = await request.get(api + '/tenant-context/' + empresa.id, { headers });
+        expect(propia.status()).toBe(200);
+        expect((await propia.json())?.data?.empresaId).toBe(empresa.id);
+        const respuesta = await request.get(api + endpoint, { headers });
+        expect(respuesta.status()).toBe(503);
+        const cuerpo = await respuesta.json();
+        expect(cuerpo.success).toBe(false);
+        expect(cuerpo.code).toBe('TENANT_DATA_ISOLATION_REQUIRED');
+        expect(cuerpo.data).toBeUndefined();
+        expect(respuesta.headers()['cache-control']).toContain('no-store');
+      });
+    }
+  }
+
   // A0.69: evidencia incremental de reflujo a 200% sobre superficies globales
   // autenticas: JWT firmado, HTTP .NET y MySQL descartable, sin page.route.
   test('A0.69 - reflujo 200% y foco visible por teclado en 5 superficies JWT reales', async ({ page, request }) => {

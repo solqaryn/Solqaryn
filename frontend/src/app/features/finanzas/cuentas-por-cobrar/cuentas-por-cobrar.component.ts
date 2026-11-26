@@ -143,6 +143,8 @@ export class CuentasPorCobrarComponent implements OnInit {
           this.error.set('No tiene permiso Facturacion/Ver para consultar esta información.');
         } else if (err.status === 401) {
           this.error.set('La sesión no está autorizada para consultar esta información.');
+        } else if (err.status === 503 && err.error?.code === 'TENANT_DATA_ISOLATION_REQUIRED') {
+          this.error.set('La consulta está temporalmente bloqueada para proteger los datos empresariales.');
         } else {
           this.error.set('Verifica tu conexión o permisos e inténtalo nuevamente.');
         }

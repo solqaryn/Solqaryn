@@ -1,3 +1,6 @@
+## 2026-11-26 | DEV03 | C15-04.M05.04 | R1-RESTAURADA
+- Adopta paquete A0.68Q preparado por DEV02 (RUN 70caac7e-2750-8322-aa0e-26f4843263b1): Cuentas por cobrar distingue cuarentena empresarial 503 TENANT_DATA_ISOLATION_REQUIRED con mensaje fijo y sin exponer payload; conserva 401/403 y 503 genérico. Dos unitarios y seis escenarios HTTP JWT A/B para tres rutas en cuarentena, sin ampliar permisos, pilotos ni datos. CI exact-SHA, criterio D/E integral y A5 independiente pendientes. SKREF-03/10 originales consultadas; sin scripts externos. Foco C01-04.M03.06 preservado. RUN 8059040c-b14c-8330-8aa8-0968ae3345ed.
+
 ## 2026-11-26 | DEV05 | C07-01.M06.06 | R1-RESTAURADA
 - Adopta el paquete A3 de DEV04 (RUN 5b4b7b5e-2684-8332-83bb-529e9d25a518): prueba Oracle EF/MySQL efímero de duplicación de cotización con dos empresas, denegación bilateral, reclasificación, rollback por fallo SQL de auditoría y copias válidas con snapshots/precios históricos. No modifica servicios, grants, esquema ni middleware. Identidad del fixture sintética; no certifica HTTP/JWT/RBAC. CI exact-SHA, D01/D06 integrales y A5 independiente pendientes. Foco C01-04.M03.06 conserva prioridad; fuente empresarial P01/P02/API12 y retención ya notificadas. RUN 039137c2-8d68-832a-9356-6f2759d5d32b.
 
