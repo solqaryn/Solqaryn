@@ -4,6 +4,7 @@ on:
   push:
     branches: [qa]
     paths:
+      - '.github/workflows/qa-fn-05-commercial-ownership.yml'
       - 'backend/**'
       - '.github/workflows/qa-schema-recovery.yml'
       - '.github/qa/qa-commercial-schema.py'

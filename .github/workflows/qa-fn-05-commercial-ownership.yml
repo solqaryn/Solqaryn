@@ -5,6 +5,7 @@ on:
   push:
     branches: [qa]
     paths:
+      - '.github/qa/qa-commercial-schema.py'
       - '.github/workflows/qa-fn-05-commercial-ownership.yml'
       - 'backend/src/Infrastructure/Persistence/QaCommercialOwnership*.cs'
       - 'backend/src/Infrastructure/Persistence/AppDbContext.cs'

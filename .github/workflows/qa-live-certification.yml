@@ -5,6 +5,7 @@ on:
   push:
     branches: [qa]
     paths:
+      - '.github/qa/qa-commercial-schema.py'
       - 'backend/**'
       - 'frontend/**'
       - 'render.yaml'

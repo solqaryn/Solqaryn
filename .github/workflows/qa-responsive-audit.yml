@@ -4,6 +4,7 @@ on:
   push:
     branches: [qa]
     paths:
+      - '.github/qa/qa-commercial-schema.py'
       - '.github/workflows/qa-responsive-audit.yml'
       - 'frontend/e2e/responsive-global.spec.ts'
       - 'frontend/e2e/qa-responsive-setup.ts'

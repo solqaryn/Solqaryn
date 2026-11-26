@@ -1,3 +1,6 @@
+## 2026-11-26 — QA-FN-05: dependencias causales de CI
+- Los controles de QA se disparan ante cambios del certificador comercial; ensayo y certificación física también ante cambios del workflow de propiedad comercial. Permite verificar el SHA corregido sin repetir ejecuciones del SHA anterior ni omitir las comprobaciones de alcance.
+
 ## 2026-11-26 — QA-FN-05: identidad del certificador físico
 - Corregidos tres términos de los mensajes/comentarios de inventario del certificador; el control de identidad los interpretaba como denominación histórica. No se cambia ninguna comprobación SQL, migración, permiso ni política de seguridad.
 

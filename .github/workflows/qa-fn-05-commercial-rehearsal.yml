@@ -4,6 +4,7 @@ on:
   push:
     branches: [qa]
     paths:
+      - '.github/workflows/qa-fn-05-commercial-ownership.yml'
       - '.github/workflows/qa-fn-05-commercial-rehearsal.yml'
       - 'backend/src/Infrastructure.Migrations/Migrations/20261126170000_QaCommercialOwnershipV1.cs'
       - 'backend/src/Infrastructure/Persistence/QaCommercialOwnershipV1.cs'
