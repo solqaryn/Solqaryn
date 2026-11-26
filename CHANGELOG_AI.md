@@ -1,3 +1,6 @@
+## 2026-11-26 | DEV05 | C07-01.M06.06 | R1-RESTAURADA
+- Adopta preparación DEV04 AJ5 (run 3fa64842) y añade denegación inversa B→A y confirmación/replay independiente B. Prueba dirigida Oracle EF/MySQL efímero del servicio real ConfirmarAsync, repositorios, auditoría estricta y rollback ante SQLSTATE 45000; fixtures sintéticos, no acredita JWT/RBAC HTTP. Sin modificar runtime, esquema, permisos ni datos reales. CI exact-SHA pendiente; no LISTO/A5. Foco C01-04.M03.06 mantiene prioridad, impedimento P01/P02/API12 y retención ya notificado.
+
 ## 2026-11-25 | DEV06 | C07-01.M06.06 | R1-RESTAURADA
 - Adopta el parche preparado por DEV01 y ampliado por DEV04: confirma clasificación comercial del producto bajo bloqueo transaccional antes de variantes/existencias y verifica correspondencia producto-variante. Conserva replay de pedidos confirmados, autorización existente y siete escenarios negativos xUnit preparados. No cambia API, esquema, permisos ni entorno; CI exact-SHA y MySQL real pendientes, no LISTO/A5. Foco C01-04.M03.06 conserva prioridad; dependencia P01/P02/API12 ya documentada.
 
