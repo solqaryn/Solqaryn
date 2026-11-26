@@ -4,15 +4,20 @@ import { TestBed } from '@angular/core/testing';
 import { provideRouter } from '@angular/router';
 import { environment } from '../../../environments/environment';
 import { Factura } from '../../core/models/factura.model';
+import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
+import { signal } from '@angular/core';
 import { CuentasPorCobrarComponent } from './cuentas-por-cobrar.component';
 
 describe('CuentasPorCobrarComponent', () => {
   let http: HttpTestingController;
+  const permisos = signal(new Set<string>());
+  const puede = (modulo: string, accion: string) => permisos().has(modulo + ':' + accion);
 
   beforeEach(async () => {
+    permisos.set(new Set(['Facturacion:Ver', 'Facturacion:Aplicar', 'Ventas:Ver']));
     await TestBed.configureTestingModule({
       imports: [CuentasPorCobrarComponent],
-      providers: [provideHttpClient(withXhr()), provideHttpClientTesting(), provideRouter([])]
+      providers: [provideHttpClient(withXhr()), provideHttpClientTesting(), provideRouter([]), { provide: PermisosRuntimeService, useValue: { puede } }]
     }).compileComponents();
     http = TestBed.inject(HttpTestingController);
   });
@@ -63,8 +68,40 @@ describe('CuentasPorCobrarComponent', () => {
     fixture.detectChanges();
 
     expect(fixture.componentInstance.cuentas()).toEqual([]);
-    expect(fixture.componentInstance.errorMessage()).toBe('Forbidden');
-    expect(fixture.nativeElement.textContent).toContain('Forbidden');
+    expect(fixture.componentInstance.errorMessage()).toBe('Tu perfil no tiene permiso para consultar cuentas por cobrar.');
+    expect(fixture.nativeElement.textContent).toContain('Tu perfil no tiene permiso');
+    expect(fixture.nativeElement.textContent).not.toContain('Forbidden');
+  });
+
+  it('mantiene saldos separados por moneda y oculta acciones no autorizadas', () => {
+    permisos.set(new Set(['Facturacion:Ver']));
+    const fixture = TestBed.createComponent(CuentasPorCobrarComponent);
+    fixture.detectChanges();
+    const request = http.expectOne(`${environment.apiUrl}/cuentas-por-cobrar`);
+    const base = { id: 1, ventaId: 10, numeroFactura: 'FAC-HNL', numeroVentaOrigen: 'VEN-10',
+      clienteNombre: 'Cliente QA', estado: 'Emitida', estadoPago: 'Pendiente',
+      total: 100, totalPagado: 0, saldoPendiente: 100, moneda: 'HNL' } as unknown as Factura;
+    request.flush({ success: true, data: [
+      base,
+      { ...base, id: 2, numeroFactura: 'FAC-USD', moneda: 'USD', total: 50, saldoPendiente: 50 },
+      { ...base, id: 3, numeroFactura: 'FAC-HNL-2', total: 25, saldoPendiente: 25 }
+    ], message: '', errors: [] });
+    fixture.detectChanges();
+    expect(fixture.componentInstance.saldosPorMoneda()).toEqual([{ moneda: 'HNL', total: 125 }, { moneda: 'USD', total: 50 }]);
+    const host: HTMLElement = fixture.nativeElement;
+    const resumen = host.querySelector('[aria-label="Saldo pendiente por moneda"]');
+    expect(resumen?.textContent).toContain('HNL 125.00');
+    expect(resumen?.textContent).toContain('USD 50.00');
+    expect(resumen?.textContent).not.toContain('HNL 175.00');
+    const links = Array.from(host.querySelectorAll('a'), anchor => anchor.getAttribute('href'));
+    expect(links).toContain('/facturas/1');
+    expect(links).not.toContain('/ventas/10');
+    expect(links.some(link => link?.endsWith('/pagos'))).toBe(false);
+    expect(host.textContent).toContain('VEN-10');
+    permisos.set(new Set(['Facturacion:Ver', 'Facturacion:Aplicar', 'Ventas:Ver']));
+    fixture.detectChanges();
+    expect(host.querySelector('a[href="/facturas/1/pagos"]')).not.toBeNull();
+    expect(host.querySelector('a[href="/ventas/10"]')).not.toBeNull();
   });
 
   it('no acepta success=false como carga valida', () => {

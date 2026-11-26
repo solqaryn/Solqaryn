@@ -71,16 +71,26 @@ test.describe('Storefront Fase 10 — responsive, UX y accesibilidad', () => {
     }
   });
 
-  test('detalle móvil ofrece feedback visible, CTA seguro y targets táctiles', async ({ page }) => {
+  test('QA visual: detalle móvil ofrece feedback visible, CTA seguro y targets táctiles', async ({ page }) => {
     await preparar(page);
     await page.setViewportSize({ width: 390, height: 844 });
     await page.goto('/tienda/producto/demo-producto-1');
 
     const agregar = page.getByRole('button', { name: 'Agregar al carrito', exact: true });
     await expect(agregar).toBeEnabled();
+    const aviso = page.locator('div[app-storefront-feedback]');
+    await expect(aviso).toHaveAttribute('role', 'status');
+    await expect(aviso).toHaveAttribute('aria-live', 'polite');
+    await expect(aviso).toHaveAttribute('aria-atomic', 'true');
+    await expect(aviso).toHaveClass(/sr-only/);
+    const regionOriginal = await aviso.elementHandle();
     await agregar.click();
 
-    await expect(page.locator('.feedback-toast')).toContainText(/unidad agregada|unidades agregadas/);
+    await expect(aviso).toHaveClass(/feedback-toast/);
+    await expect(aviso).toContainText(/unidad agregada|unidades agregadas/);
+    await expect(aviso).toBeVisible();
+    expect(await aviso.evaluate((el, anterior) => el === anterior, regionOriginal)).toBe(true);
+    await regionOriginal?.dispose();
     await expect(page.locator('.mobile-buy-bar')).toBeVisible();
 
     const alturas = await page.locator('button, .button').evaluateAll(elements =>
@@ -96,6 +106,20 @@ test.describe('Storefront Fase 10 — responsive, UX y accesibilidad', () => {
     const bar = await page.locator('.mobile-buy-bar').boundingBox();
     expect(bar).not.toBeNull();
     expect((bar?.y || 0) + (bar?.height || 0)).toBeLessThanOrEqual(845);
+
+    for (const width of [320, 360, 390, 414, 480, 768, 1024, 1280, 1440, 1920, 2048, 2400, 2560]) {
+      await page.setViewportSize({ width, height: 900 });
+      await expect(aviso).toBeVisible();
+      const bounds = await aviso.boundingBox();
+      expect(bounds).not.toBeNull();
+      expect(bounds!.x).toBeGreaterThanOrEqual(0);
+      expect(bounds!.x + bounds!.width).toBeLessThanOrEqual(width + 1);
+      if (width < 761) {
+        const mobile = await page.locator('.mobile-buy-bar').boundingBox();
+        expect(mobile).not.toBeNull();
+        expect(bounds!.y + bounds!.height).toBeLessThanOrEqual(mobile!.y + 1);
+      }
+    }
   });
 
   test('fullscreen abre, permite swipe táctil, cierra y devuelve foco', async ({ page }) => {

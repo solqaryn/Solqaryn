@@ -1,5 +1,5 @@
 import { PAGINADOR_ESPANOL_PROVIDER } from '../../shared/paginador-institucional';
-import { presentarMotivoCosteo } from './costeo-presentacion';
+import { describirMetodoCosteo, presentarMotivoCosteo } from './costeo-presentacion';
 import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
@@ -70,8 +70,8 @@ import {
             <mat-card-header><mat-card-title>Política vigente</mat-card-title></mat-card-header>
             <mat-card-content>
               <div class="current-method"><mat-icon aria-hidden="true">calculate</mat-icon><strong>{{ vigente.metodoNombre }}</strong></div>
-              @if (vigente.metodo === metodoPromedioPonderado) {
-                <p class="method-description">El promedio ponderado considera el costo de las existencias y el de las nuevas entradas para calcular un costo unitario promedio.</p>
+              @if (descripcionMetodo(vigente.metodo); as descripcion) {
+                <p class="method-description">{{ descripcion }}</p>
               }
               <dl>
                 <div><dt>Vigente desde</dt><dd>{{ vigente.vigenteDesdeUtc | date:'dd/MM/yyyy HH:mm' }}</dd></div>
@@ -93,6 +93,12 @@ import {
                       }
                     </mat-select>
                   </mat-form-field>
+                  @if (metodoSeleccionado !== vigente.metodo) {
+                    @if (descripcionMetodo(metodoSeleccionado); as descripcionSeleccionada) {
+                      <p class="method-description" aria-live="polite">{{ descripcionSeleccionada }}</p>
+                    }
+                  }
+                  <p class="policy-note">El cambio crea una nueva versión de la política; no modifica las políticas anteriores ni recalcula costos ya registrados.</p>
                   <mat-form-field appearance="outline">
                     <mat-label>Motivo del cambio</mat-label>
                     <textarea matInput name="motivo" [(ngModel)]="motivo" minlength="3" maxlength="500" rows="3" required></textarea>
@@ -212,6 +218,7 @@ import {
     dl div { display:grid; grid-template-columns:minmax(100px,145px) minmax(0,1fr); gap:12px; }
     dt { font-weight:600; color:var(--color-text-muted); }
     dd { margin:0; min-width:0; overflow-wrap:anywhere; white-space:pre-wrap; }
+    .policy-note { margin:0; color:var(--color-text-muted); line-height:1.5; overflow-wrap:anywhere; }
     .change-form { display:grid; grid-template-columns:minmax(0,1fr); gap:10px; margin-top:16px; }
     .change-form button { justify-self:start; }
     .change-form mat-spinner { display:inline-block; margin-right:8px; }
@@ -233,7 +240,7 @@ import {
 })
 export class CosteoInventarioComponent implements OnInit {
   readonly motivoVisible = presentarMotivoCosteo;
-  readonly metodoPromedioPonderado = MetodoCosteoInventario.PromedioPonderado;
+  readonly descripcionMetodo = describirMetodoCosteo;
   vigente: PoliticaCosteoInventario | null = null;
   metodos: MetodoCosteoInventarioOption[] = [];
   historial: PoliticaCosteoInventario[] = [];

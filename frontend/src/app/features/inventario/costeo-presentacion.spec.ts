@@ -1,5 +1,5 @@
 import { MetodoCosteoInventario } from './costeo-inventario.model';
-import { presentarMotivoCosteo } from './costeo-presentacion';
+import { describirMetodoCosteo, presentarMotivoCosteo } from './costeo-presentacion';
 
 describe('Presentación comercial de Costeo', () => {
   it('explica la referencia exacta de la migración sin alterar el motivo de origen', () => {
@@ -13,5 +13,23 @@ describe('Presentación comercial de Costeo', () => {
     expect(presentarMotivoCosteo('  Motivo de prueba  ', MetodoCosteoInventario.FIFO)).toBe('  Motivo de prueba  ');
     expect(presentarMotivoCosteo(' ', MetodoCosteoInventario.PromedioPonderado)).toBe('Sin motivo registrado.');
     expect(presentarMotivoCosteo(null, MetodoCosteoInventario.PromedioPonderado)).toBe('Sin motivo registrado.');
+  });
+});
+
+describe('Descripción de los métodos de costeo', () => {
+  it('explica cada método sin confundir sus criterios de valoración', () => {
+    expect(describirMetodoCosteo(MetodoCosteoInventario.PromedioPonderado)).toContain('costo unitario promedio');
+    expect(describirMetodoCosteo(MetodoCosteoInventario.FIFO)).toContain('entradas más antiguas');
+    expect(describirMetodoCosteo(MetodoCosteoInventario.Estandar)).toContain('costo de referencia');
+    expect(new Set([
+      describirMetodoCosteo(MetodoCosteoInventario.PromedioPonderado),
+      describirMetodoCosteo(MetodoCosteoInventario.FIFO),
+      describirMetodoCosteo(MetodoCosteoInventario.Estandar)
+    ]).size).toBe(3);
+  });
+  it('no atribuye un método desconocido o no seleccionado a una política', () => {
+    expect(describirMetodoCosteo(null)).toBeNull();
+    expect(describirMetodoCosteo(undefined)).toBeNull();
+    expect(describirMetodoCosteo(99 as MetodoCosteoInventario)).toBeNull();
   });
 });

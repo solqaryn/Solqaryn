@@ -1,0 +1,39 @@
+:host { display: block; }
+:host(.sr-only) {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0,0,0,0);
+  white-space: nowrap;
+  border: 0;
+}
+:host(.feedback-toast) {
+  position: fixed;
+  z-index: 30;
+  left: 13px;
+  right: 13px;
+  bottom: calc(96px + env(safe-area-inset-bottom));
+  max-width: none;
+  padding: 13px 16px;
+  border: 1px solid color-mix(in srgb,var(--color-success) 45%,var(--color-border));
+  border-radius: calc(var(--radius)*.75);
+  background: var(--color-surface);
+  color: var(--color-heading);
+  box-shadow: var(--shadow-card);
+  font-size: .72rem;
+  font-weight: 750;
+  line-height: 1.45;
+  overflow-wrap: anywhere;
+  pointer-events: none;
+}
+@media (min-width: 761px) {
+  :host(.feedback-toast) {
+    left: auto;
+    right: 20px;
+    bottom: 20px;
+    max-width: min(420px,calc(100% - 40px));
+  }
+}

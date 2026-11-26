@@ -70,3 +70,42 @@ describe('QA — Registro único de rutas institucionales', () => {
     expect(await route?.loadComponent?.()).toBe(CuentasPorCobrarComponent);
   });
 });
+
+// Informe de alcance de QA derivado del Router real, no de una lista manual de módulos.
+describe('QA — Inventario de pantallas y permisos', () => {
+  function recorrer(routes: Routes, prefix = '', authPadre = false, permisoPadre = false): {
+    ruta: string; tipo: 'pantalla' | 'redireccion' | 'contenedor'; modulo: string | null; accion: string | null;
+    autenticacion: boolean; permiso: boolean; parametros: string[];
+  }[] {
+    return routes.flatMap(route => {
+      const fullPath = [prefix, route.path ?? ''].filter(Boolean).join('/');
+      const auth = authPadre || Boolean(route.canActivate?.includes(authGuard));
+      const permiso = permisoPadre || Boolean(route.canActivate?.includes(permisoGuard));
+      const tipo = route.redirectTo !== undefined ? 'redireccion' : route.component || route.loadComponent ? 'pantalla' : 'contenedor';
+      const entrada = {
+        ruta: '/' + fullPath,
+        tipo,
+        modulo: typeof route.data?.['modulo'] === 'string' ? route.data['modulo'] as string : null,
+        accion: typeof route.data?.['accion'] === 'string' ? route.data['accion'] as string : null,
+        autenticacion: auth,
+        permiso,
+        parametros: fullPath.split('/').filter(segment => segment.startsWith(':')).map(segment => segment.slice(1))
+      } as const;
+      return [{ ...entrada, parametros: [...entrada.parametros] }, ...recorrer(route.children ?? [], fullPath, auth, permiso)];
+    });
+  }
+
+  it('enumera las 151 inscripciones efectivas y conserva autenticación y permiso en pantallas con contrato RBAC', () => {
+    TestBed.configureTestingModule({ providers: appConfig.providers });
+    const inventario = recorrer(TestBed.inject(Router).config);
+    expect(inventario).toHaveLength(151);
+    expect(inventario.filter(item => item.tipo === 'pantalla')).toHaveLength(149);
+    expect(inventario.filter(item => item.tipo === 'redireccion')).toHaveLength(2);
+    expect(new Set(inventario.map(item => item.ruta)).size).toBe(inventario.length);
+    expect(inventario.filter(item => item.modulo !== null && (!item.autenticacion || !item.permiso || !item.accion))).toEqual([]);
+    for (const item of inventario) {
+      console.info('[QA-RUTA] ' + JSON.stringify(item));
+    }
+    console.info('[QA-RUTAS] 149 pantallas y 2 redirecciones. Este inventario no certifica renderizado ni API real.');
+  });
+});

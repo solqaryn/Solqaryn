@@ -7,14 +7,16 @@ const frontendDir = path.resolve(scriptsDir, '..');
 const featureDir = path.join(frontendDir, 'src/app/features/storefront');
 const read = name => readFile(path.join(featureDir, name), 'utf8');
 
-const [productoHtml, productoTs, productoScss, carritoHtml, carritoScss, checkoutHtml, checkoutScss] = await Promise.all([
+const [productoHtml, productoTs, productoScss, carritoHtml, carritoScss, checkoutHtml, checkoutScss, feedbackTs, feedbackScss] = await Promise.all([
   read('storefront-producto.component.html'),
   read('storefront-producto.component.ts'),
   read('storefront-producto.component.scss'),
   read('storefront-carrito.component.html'),
   read('storefront-carrito.component.scss'),
   read('storefront-checkout.component.html'),
-  read('storefront-checkout.component.scss')
+  read('storefront-checkout.component.scss'),
+  read('storefront-feedback.component.ts'),
+  read('storefront-feedback.component.scss')
 ]);
 
 const failures = [];
@@ -30,8 +32,12 @@ expect(productoTs.includes('this.botonImagenPrincipal?.nativeElement.focus()'), 
 expect(productoScss.includes('env(safe-area-inset-bottom)'), 'El CTA móvil debe respetar safe areas.');
 expect(/\.store-footer\{[^}]*padding-bottom:calc\(82px \+ env\(safe-area-inset-bottom\)\)/.test(productoScss),
   'El CTA fijo no debe tapar el pie de página.');
-expect(productoHtml.includes('class="feedback-toast"') && productoHtml.includes('aria-live="polite"'),
-  'Agregar al carrito debe producir feedback visible y anunciado.');
+expect(productoHtml.includes('app-storefront-feedback') && productoHtml.includes('[mensaje]="aviso()"')
+  && productoHtml.includes('[mostrarAviso]="true"')
+  && feedbackTs.includes("'role': 'status'") && feedbackTs.includes("'aria-live': 'polite'")
+  && feedbackTs.includes("'aria-atomic': 'true'") && feedbackTs.includes("'[class.feedback-toast]': 'visible()'")
+  && feedbackScss.includes(':host(.feedback-toast)') && feedbackScss.includes('env(safe-area-inset-bottom)'),
+  'Agregar al carrito debe producir feedback visible, anunciado y sin cubrir la barra móvil.');
 expect(productoTs.includes('unidad agregada') && productoTs.includes('unidades agregadas'),
   'El feedback del carrito debe indicar la cantidad agregada.');
 

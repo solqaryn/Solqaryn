@@ -20,13 +20,14 @@ import {
 } from './storefront.catalog';
 import { crearCategoriasTiendaEjemplo, mapearCategoriaTienda } from './storefront-categorias.catalog';
 import { StorefrontHeaderComponent } from './storefront-header.component';
+import { StorefrontFeedbackComponent } from './storefront-feedback.component';
 import { STOREFRONT_PATHS } from './storefront.paths';
 import { IconoTiendaComponent, IlustracionTiendaComponent } from './storefront.visual';
 
 @Component({
   selector: 'app-storefront',
   standalone: true,
-  imports: [StorefrontHeaderComponent, IconoTiendaComponent, IlustracionTiendaComponent],
+  imports: [StorefrontHeaderComponent, StorefrontFeedbackComponent, IconoTiendaComponent, IlustracionTiendaComponent],
   templateUrl: './storefront.component.html',
   styleUrls: ['./storefront.component.scss', './storefront.responsive.scss'],
   changeDetection: ChangeDetectionStrategy.OnPush

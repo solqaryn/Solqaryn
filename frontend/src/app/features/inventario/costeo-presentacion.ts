@@ -10,3 +10,17 @@ export function presentarMotivoCosteo(motivo: string | null | undefined, metodo:
   }
   return motivo?.trim() ? motivo : 'Sin motivo registrado.';
 }
+
+/** Explicación comercial del método configurado, sin alterar su cálculo o vigencia. */
+export function describirMetodoCosteo(metodo: MetodoCosteoInventario | null | undefined): string | null {
+  switch (metodo) {
+    case MetodoCosteoInventario.PromedioPonderado:
+      return 'El promedio ponderado considera el costo de las existencias y el de las nuevas entradas para calcular un costo unitario promedio.';
+    case MetodoCosteoInventario.FIFO:
+      return 'El método de primeras entradas, primeras salidas (FIFO) asigna a las salidas el costo de las entradas más antiguas disponibles.';
+    case MetodoCosteoInventario.Estandar:
+      return 'El costeo estándar utiliza un costo de referencia establecido para valorar las existencias y comparar las diferencias frente al costo real.';
+    default:
+      return null;
+  }
+}

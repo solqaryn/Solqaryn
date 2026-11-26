@@ -2,6 +2,13 @@ import { existsSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join, relative, resolve } from 'node:path';
 import { brotliCompressSync, gzipSync } from 'node:zlib';
 
+const config = JSON.parse(readFileSync(resolve(process.cwd(), 'angular.json'), 'utf8'));
+const budget = config.projects['solqaryn-frontend'].architect.build.configurations.production.budgets.find(item => item.type === 'initial');
+function budgetBytes(value) {
+  const match = /^([0-9]+(?:\.[0-9]+)?)\s*(b|kb|mb)$/i.exec(String(value ?? '').trim());
+  if (!match) throw new Error('Presupuesto inicial no reconocido: ' + value);
+  return Number(match[1]) * ({ b: 1, kb: 1000, mb: 1000000 }[match[2].toLowerCase()]);
+}
 const distRoot = resolve(process.cwd(), 'dist/solqaryn-frontend');
 const browserRoot = existsSync(join(distRoot, 'browser')) ? join(distRoot, 'browser') : distRoot;
 const indexPath = join(browserRoot, 'index.html');
@@ -47,8 +54,8 @@ const report = {
   generatedAtUtc: new Date().toISOString(),
   buildRoot: relative(process.cwd(), browserRoot).replaceAll('\\', '/'),
   existingInitialBudget: {
-    warningBytes: 1024 * 1024,
-    errorBytes: 2 * 1024 * 1024
+    warningBytes: budgetBytes(budget?.maximumWarning),
+    errorBytes: budgetBytes(budget?.maximumError)
   },
   initial: {
     fileCount: initial.length,

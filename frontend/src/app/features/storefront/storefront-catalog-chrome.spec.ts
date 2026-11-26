@@ -2,6 +2,7 @@ import { signal } from '@angular/core';
 import { TestBed } from '@angular/core/testing';
 import { StorefrontCatalogFooterComponent } from './storefront-catalog-footer.component';
 import { StorefrontPreviewComponent } from './storefront-preview.component';
+import { StorefrontFeedbackComponent } from './storefront-feedback.component';
 import { StorefrontIdentidadService } from './storefront-identidad.service';
 
 describe('Componentes compartidos de catálogo y detalle', () => {
@@ -63,5 +64,39 @@ describe('Componentes compartidos de catálogo y detalle', () => {
     expect(host.textContent).toContain('Vista previa de catálogo');
     botones[0].click();
     expect(evento).toHaveBeenLastCalledWith(false);
+  });
+});
+
+describe('Avisos accesibles de Storefront', () => {
+  it('mantiene la región viva al cambiar el mensaje y conserva los modos visual y sólo lector', async () => {
+    TestBed.configureTestingModule({ imports: [StorefrontFeedbackComponent] });
+    const fixture = TestBed.createComponent(StorefrontFeedbackComponent);
+    fixture.componentRef.setInput('mensaje', '');
+    fixture.componentRef.setInput('mostrarAviso', true);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    const host: HTMLElement = fixture.nativeElement;
+    expect(host.getAttribute('role')).toBe('status');
+    expect(host.getAttribute('aria-live')).toBe('polite');
+    expect(host.getAttribute('aria-atomic')).toBe('true');
+    expect(host.classList.contains('sr-only')).toBe(true);
+    expect(host.classList.contains('feedback-toast')).toBe(false);
+    fixture.componentRef.setInput('mensaje', '1 unidad agregada al carrito.');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(fixture.nativeElement).toBe(host);
+    expect(host.textContent).toContain('1 unidad agregada al carrito.');
+    expect(host.classList.contains('feedback-toast')).toBe(true);
+    expect(host.classList.contains('sr-only')).toBe(false);
+    fixture.componentRef.setInput('mostrarAviso', false);
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(host.textContent).toContain('1 unidad agregada al carrito.');
+    expect(host.classList.contains('sr-only')).toBe(true);
+    expect(host.classList.contains('feedback-toast')).toBe(false);
+    fixture.componentRef.setInput('mensaje', '');
+    fixture.detectChanges();
+    await fixture.whenStable();
+    expect(host.textContent?.trim()).toBe('');
   });
 });

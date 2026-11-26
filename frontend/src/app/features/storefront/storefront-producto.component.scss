@@ -43,7 +43,6 @@ h1,h2,h3,p{margin:0}h1,h2,h3{color:var(--color-heading)}
 
 .lightbox{width:calc(100% - 12px);max-width:none;max-height:calc(100dvh - 12px);padding:0;border:1px solid var(--store-line);border-radius:calc(var(--radius)*1.05);background:var(--color-surface);color:var(--color-text);box-shadow:var(--shadow-card)}.lightbox::backdrop{background:color-mix(in srgb,var(--color-heading) 65%,transparent);backdrop-filter:blur(4px)}.lightbox-panel{position:relative;min-height:calc(100dvh - 14px);padding:max(10px,env(safe-area-inset-top)) max(10px,env(safe-area-inset-right)) max(10px,env(safe-area-inset-bottom)) max(10px,env(safe-area-inset-left));display:grid;grid-template-rows:minmax(0,1fr) auto}.lightbox-close{position:absolute;z-index:2;top:max(10px,env(safe-area-inset-top));right:max(10px,env(safe-area-inset-right));width:46px;height:46px;display:grid;place-items:center;border:1px solid var(--store-line);border-radius:50%;background:var(--color-surface);font-size:1.5rem}.lightbox-stage{min-height:0;display:grid;place-items:center;overflow:hidden;overscroll-behavior:contain;touch-action:pan-y}.lightbox-stage img{width:100%;height:min(78dvh,calc(100dvh - 120px));object-fit:contain}.lightbox-controls{color:var(--color-text-muted);font-size:.72rem;font-weight:800}
 .mobile-buy-bar{position:fixed;z-index:12;left:0;right:0;bottom:0;min-height:82px;padding:10px max(13px,env(safe-area-inset-left)) calc(10px + env(safe-area-inset-bottom)) max(13px,env(safe-area-inset-right));display:flex;align-items:center;justify-content:space-between;gap:12px;border-top:1px solid var(--store-line);background:color-mix(in srgb,var(--color-surface) 96%,transparent);backdrop-filter:blur(14px);box-shadow:var(--shadow-card)}.mobile-buy-bar>div{min-width:0;display:grid;gap:2px}.mobile-buy-bar small{overflow:hidden;color:var(--color-text-muted);font-size:.57rem;text-overflow:ellipsis;white-space:nowrap}.mobile-buy-bar strong{color:var(--color-heading);font-size:1rem}.mobile-buy-bar .button{flex:0 0 auto;min-width:118px;padding-inline:13px}
-.feedback-toast{position:fixed;z-index:30;left:13px;right:13px;bottom:calc(96px + env(safe-area-inset-bottom));max-width:none;padding:13px 16px;border:1px solid color-mix(in srgb,var(--color-success) 45%,var(--store-line));border-radius:calc(var(--radius)*.75);background:var(--color-surface);color:var(--color-heading);box-shadow:var(--shadow-card);font-size:.72rem;font-weight:750;line-height:1.45;pointer-events:none}
 
 /* Responsive canonico mobile-first: telefono es el baseline y cada breakpoint solo expande. */
 @media (min-width: 481px) {
@@ -78,7 +77,6 @@ h1,h2,h3,p{margin:0}h1,h2,h3{color:var(--color-heading)}
   .section-heading{align-items:end}
   .mobile-buy-bar{display:none}
   .store-footer{padding-bottom:0}
-  .feedback-toast{left:auto;right:20px;bottom:20px;max-width:min(420px,calc(100% - 40px))}
 }
 
 @media (min-width: 821px) {

@@ -9,7 +9,9 @@ const statsPath = [
   join(distRoot, 'stats.json'),
   join(distRoot, 'browser-stats.json'),
   join(browserRoot, 'stats.json'),
-  join(browserRoot, 'browser-stats.json')
+  join(browserRoot, 'browser-stats.json'),
+  resolve(cwd, 'stats.json'),
+  resolve(cwd, 'browser-stats.json')
 ]
   .find(candidate => existsSync(candidate));
 

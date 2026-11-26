@@ -36,6 +36,7 @@ import { EstadoRecursoPublico } from './storefront.models';
 import { StorefrontCuentaService } from './storefront-cuenta.service';
 import { crearCategoriasTiendaEjemplo, mapearCategoriaTienda } from './storefront-categorias.catalog';
 import { StorefrontHeaderComponent } from './storefront-header.component';
+import { StorefrontFeedbackComponent } from './storefront-feedback.component';
 import { StorefrontCatalogFooterComponent } from './storefront-catalog-footer.component';
 import { StorefrontPreviewComponent } from './storefront-preview.component';
 import { STOREFRONT_CONFIG } from './storefront.config';
@@ -58,7 +59,7 @@ const RETORNO_CATALOGO_STORAGE = 'storefront:retorno-catalogo:v1';
 @Component({
   selector: 'app-storefront-producto',
   standalone: true,
-  imports: [StorefrontHeaderComponent, StorefrontCatalogFooterComponent, StorefrontPreviewComponent, IconoTiendaComponent, IlustracionTiendaComponent],
+  imports: [StorefrontHeaderComponent, StorefrontFeedbackComponent, StorefrontCatalogFooterComponent, StorefrontPreviewComponent, IconoTiendaComponent, IlustracionTiendaComponent],
   templateUrl: './storefront-producto.component.html',
   styleUrl: './storefront-producto.component.scss',
   changeDetection: ChangeDetectionStrategy.OnPush

@@ -1,56 +1,46 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 
+// El log causal del build es la fuente del presupuesto de Angular. El desglose
+// por entrada es diagnóstico adicional, nunca un sustituto del tamaño medido.
+const logPath = process.argv[2];
+if (!logPath || !fs.existsSync(logPath)) {
+  console.error('[initial-stats] Falta el log del build exacto.');
+  process.exit(1);
+}
+const log = fs.readFileSync(logPath, 'utf8').replace(/\u001b\[[0-9;]*m/g, '');
+const totals = [...log.matchAll(/\|\s*Initial total\s*\|\s*(\d+(?:\.\d+)?)\s*(bytes|kB|MB)\s*\|/gi)];
+if (totals.length !== 1) {
+  console.error('[initial-stats] No se pudo acreditar un único tamaño inicial.');
+  process.exit(1);
+}
+const [, amount, unit] = totals[0];
+const bytes = Number(amount) * ({ bytes: 1, kb: 1000, mb: 1000000 }[unit.toLowerCase()]);
+const warnings = log.split('\n').filter(line => /exceeded maximum budget/i.test(line));
+console.log('[initial-stats] Tamaño inicial Angular: ' + amount + ' ' + unit + '; aviso: 650 kB.');
+if (!Number.isFinite(bytes) || bytes > 650000 || warnings.length) {
+  for (const warning of warnings) console.error('[initial-stats] ' + warning.trim());
+  console.error('[initial-stats] Presupuesto de advertencia no cumplido; no se certifica rendimiento.');
+  process.exitCode = 1;
+} else {
+  console.log('[initial-stats] Presupuestos de advertencia: PASS');
+}
+
+// Reutilizar el analizador existente: no mantener dos algoritmos de contribuciones.
 const root = path.resolve('dist/solqaryn-frontend');
-const statsPath = [path.join(root, 'stats.json'), path.join(root, 'browser', 'stats.json')].find(file => fs.existsSync(file));
-const indexPath = [path.join(root, 'browser', 'index.html'), path.join(root, 'index.html')].find(file => fs.existsSync(file));
-if (!statsPath || !indexPath) {
-  console.warn('[initial-stats] No se encontraron metadatos e index del build. Diagnóstico no verificado.');
-  process.exit(0);
-}
-
-const { outputs } = JSON.parse(fs.readFileSync(statsPath, 'utf8'));
-if (!outputs || typeof outputs !== 'object') {
-  console.warn('[initial-stats] Formato de metadatos no reconocido.');
-  process.exit(0);
-}
-const normalized = value => value.replaceAll('\\', '/');
-const byName = new Map();
-for (const key of Object.keys(outputs)) {
-  const name = path.posix.basename(normalized(key));
-  if (/\.(?:js|css)$/.test(name)) {
-    const previous = byName.get(name);
-    if (previous && previous !== key) {
-      console.warn('[initial-stats] Nombre de salida ambiguo: ' + name);
-      process.exit(0);
-    }
-    byName.set(name, key);
+const browserRoot = fs.existsSync(path.join(root, 'browser')) ? path.join(root, 'browser') : root;
+const candidates = [
+  path.join(root, 'stats.json'), path.join(root, 'browser-stats.json'),
+  path.join(browserRoot, 'stats.json'), path.join(browserRoot, 'browser-stats.json'),
+  path.resolve('stats.json'), path.resolve('browser-stats.json')
+];
+if (!fs.existsSync(path.join(browserRoot, 'index.html')) || !candidates.some(file => fs.existsSync(file))) {
+  console.warn('[initial-stats] Desglose por entrada no disponible: faltan metadatos o index; el presupuesto se comprueba por el log causal.');
+} else {
+  const result = spawnSync(process.execPath, [path.resolve('scripts/analyze-angular-stats.mjs')], { stdio: 'inherit' });
+  if (result.status !== 0) {
+    console.error('[initial-stats] No se pudo verificar el desglose de contribuciones.');
+    process.exitCode = 1;
   }
-}
-const html = fs.readFileSync(indexPath, 'utf8');
-const entries = [...html.matchAll(/(?:src|href)=["']([^"']+\.(?:js|css))(?:\?[^"']*)?["']/g)]
-  .map(match => match[1]).filter(value => !/^(?:[a-z]+:|\/\/)/i.test(value))
-  .map(value => byName.get(path.posix.basename(value))).filter(Boolean);
-const visited = new Set();
-const totals = new Map();
-function walk(key) {
-  if (!key || visited.has(key) || !outputs[key]) return;
-  visited.add(key);
-  const output = outputs[key];
-  for (const [input, info] of Object.entries(output.inputs || {})) {
-    totals.set(input, (totals.get(input) || 0) + (info.bytesInOutput || 0));
-  }
-  for (const entry of output.imports || []) {
-    if (entry.external || entry.kind === 'dynamic-import') continue;
-    walk(outputs[entry.path] ? entry.path : byName.get(path.posix.basename(normalized(entry.path))));
-  }
-}
-entries.forEach(walk);
-if (!visited.size) {
-  console.warn('[initial-stats] No se identificaron entradas iniciales; no se estima una reducción.');
-  process.exit(0);
-}
-console.log('[initial-stats] Archivos iniciales identificados: ' + visited.size + '; bytes: ' + [...visited].reduce((sum, key) => sum + (outputs[key].bytes || 0), 0));
-for (const [input, bytes] of [...totals.entries()].sort((a, b) => b[1] - a[1]).slice(0, 30)) {
-  console.log('[initial-stats] ' + bytes + ' bytes ' + input);
 }
