@@ -1,3 +1,10 @@
+## 2026-11-26 — QA-FN-05: reanudacion dirigida del recorrido comercial
+
+- Run 45872602673 job 140091567686: preflight fisico exacto, proxy/Render ready, usuarios, roles, membresias, matrices, denegaciones, password y auditoria aprobados; revocacion/limpieza PASS. Primer fallo: productos CREATE A HTTP 400.
+- El probe usaba urlencoded; Angular usa FormData multipart, proxy puede serializar body objeto como JSON. Se corrige el probe para usar multipart con nombres y campos canónicos y diagnóstico seguro de campos de validación sin valores. Hipótesis causal pendiente de nueva prueba; no se relaja API ni RBAC.
+- Se corrige aserción de eliminación lógica de Clientes/Proveedores (historial inactivo y excluido de activos); Productos exige eliminado y 404. Se reanuda únicamente comercio/configuración/numeración/suscripciones con evidencia previa de administración verificable sobre idéntico código desplegado. Sin cambio de app, datos de negocio preexistentes, secretos, DEV, MAIN o infraestructura. Scope Lock DEV 6af070cc8a31b13623f27ce80efd8ee3f0f2ac41 job 140094833665 PASS. Rollback por revert del test/workflow.
+- Cierre QA-FN-05 pendiente de ejecución comercial y recorridos autenticados de interfaz.
+
 ## 2026-11-26 — QA-FN-05: certificacion autenticada post-migracion
 
 - Migracion real aprobada (45869741846): QA_COMMERCIAL_LIVE_MIGRATION, IAM_IDENTICAL y ROWS_PRESERVED PASS; 27 tablas, 48 relaciones compuestas, 15 claves naturales, 110 migraciones. Sin borrado de datos preexistentes.

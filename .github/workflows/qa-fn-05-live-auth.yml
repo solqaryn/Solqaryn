@@ -14,12 +14,13 @@ on:
 
 permissions:
   contents: read
+  actions: read
 concurrency:
   group: qa-fn-05-live-admin
   cancel-in-progress: false
 jobs:
   authenticated:
-    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && (github.event_name == 'workflow_dispatch' || github.event.before == '9c7ecc45cd72795212361a509f73c1890c53f934')
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && (github.event_name == 'workflow_dispatch' || github.event.before == '84902ad764bdc9754fa9c9586e053fb0b65b407d')
     runs-on: ubuntu-latest
     timeout-minutes: 25
     environment: QA
@@ -40,6 +41,9 @@ jobs:
       - name: Preflight fisico certificado y administracion A/B real
         env:
           EXPECTED_DEPLOYED_SHA: ${{ inputs.expected_deployed_sha || '9c7ecc45cd72795212361a509f73c1890c53f934' }}
+          GH_TOKEN: ${{ github.token }}
+          QA_FN05_MODE: ${{ github.event_name == 'push' && 'commercial' || 'full' }}
+          QA_FN05_PRIOR_ADMIN_RUN: '45872602673'
           DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
           DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
           DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}
@@ -50,5 +54,14 @@ jobs:
           [[ "$EXPECTED_DEPLOYED_SHA" =~ ^[0-9a-f]{40}$ ]]
           git merge-base --is-ancestor "$EXPECTED_DEPLOYED_SHA" HEAD
           git diff --exit-code "$EXPECTED_DEPLOYED_SHA" HEAD -- backend frontend render.yaml
+          if [ "$QA_FN05_MODE" = commercial ]; then
+            gh api repos/solqaryn/Solqaryn/actions/runs/45872602673 | jq -e '.head_branch == "qa" and .head_sha == "84902ad764bdc9754fa9c9586e053fb0b65b407d" and .status == "completed" and .conclusion == "failure"' >/dev/null
+            gh api repos/solqaryn/Solqaryn/actions/jobs/140091567686/logs > "$RUNNER_TEMP/qa-prior-admin.log"
+            for marker in QA_FN05_RESET_AUDIT QA_FN05_NEW_PASSWORD_AUTHENTICATES QA_FN05_MATRIX_DENIED QA_FN05_FOREIGN_SELECTOR QA_FN05_EPHEMERAL_CLEANUP QA_FN05_COMMERCIAL_CLEANUP; do
+              grep -q "${marker}=PASS" "$RUNNER_TEMP/qa-prior-admin.log"
+            done
+            grep -Fq 'QA_FN05_PRODUCTOS_CREATE_A: expected HTTP (201,), got 400' "$RUNNER_TEMP/qa-prior-admin.log"
+            rm -f "$RUNNER_TEMP/qa-prior-admin.log"
+          fi
           python3 .github/qa/qa-commercial-schema.py --live
           python3 .github/qa/qa-fn-05-live-auth.py

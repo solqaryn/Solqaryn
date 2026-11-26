@@ -1,7 +1,6 @@
 """QA-FN-05 live administrative probe; only run-owned ephemeral rows."""
 import json
 import datetime
-import urllib.parse
 import os
 import re
 import secrets
@@ -99,8 +98,20 @@ def call(path, label, expected=200, token=None, tenant=None, body=None, method=N
     if token: headers["Authorization"] = "Bearer " + token
     if tenant: headers["X-Empresa-Id"] = str(tenant)
     if idem is not None: headers["Idempotency-Key"] = idem
-    if body is not None: headers["Content-Type"] = "application/x-www-form-urlencoded" if form else "application/json"
-    encoded = (urllib.parse.urlencode(body).encode() if form else json.dumps(body).encode()) if body is not None else None
+    encoded = None
+    if body is not None and form:
+        # Mirror Angular FormData exactly; Vercel can parse urlencoded bodies
+        # into objects which the proxy serializes as JSON under the old MIME.
+        boundary = "qa-fn05-" + secrets.token_hex(24)
+        chunks = []
+        for key, value in body.items():
+            require(re.fullmatch(r"[A-Za-z0-9_.\[\]]+", key) is not None, "Invalid form field")
+            chunks.append(f'--{boundary}\r\nContent-Disposition: form-data; name="{key}"\r\n\r\n{value}\r\n'.encode("utf-8"))
+        encoded = b"".join(chunks) + f"--{boundary}--\r\n".encode("ascii")
+        headers["Content-Type"] = "multipart/form-data; boundary=" + boundary
+    elif body is not None:
+        headers["Content-Type"] = "application/json"
+        encoded = json.dumps(body).encode()
     req = urllib.request.Request(base+path, data=encoded, headers=headers, method=method)
     try:
         r = opener.open(req, timeout=40)
@@ -108,7 +119,20 @@ def call(path, label, expected=200, token=None, tenant=None, body=None, method=N
         r = error
     with r:
         statuses = (expected,) if isinstance(expected,int) else expected
-        require(r.status in statuses, f"{label}: expected HTTP {statuses}, got {r.status}")
+        if r.status not in statuses:
+            # Report status and validation field names only. No response values,
+            # request data, tokens, credentials, SQL or user content in logs.
+            diagnostic = {}
+            try:
+                diagnostic = json.loads(r.read(65536))
+            except (ValueError, UnicodeError):
+                pass
+            fields = diagnostic.get("errors", {}) if isinstance(diagnostic, dict) else {}
+            if isinstance(fields, dict):
+                known = {"nombre","marca","modelo","tipoinventario","cantidad","costo","precio","umbralstockbajo","categoriaid","variantes","tipoclienteid","documento","identidadortn","direccion","moneda","zonahoraria","impuestosjson","emisionjson","version"}
+                safe_fields = sorted(k for k in fields if isinstance(k,str) and k.lower() in known)
+                print(f"{label}_VALIDATION_FIELDS={','.join(safe_fields)};TOTAL={len(fields)}",flush=True)
+            raise RuntimeError(f"{label}: expected HTTP {statuses}, got {r.status}")
         if base == proxy:
             require(r.headers.get("X-Solqaryn-Environment") == "QA", label+": wrong proxy environment")
         data = json.load(r) if r.status in (200, 201) else None
@@ -165,60 +189,68 @@ try:
     print("QA_FN05_EPHEMERAL_IDENTITIES=PASS",flush=True)
     ta = login(a,passwords[a],"QA_FN05_LOGIN_A")
     tb = login(b,passwords[b],"QA_FN05_LOGIN_B")
-    login(target,passwords[target],"QA_FN05_TARGET_LOGIN_BEFORE")
+    # The previous deployment passed every administrative assertion through
+    # QA_FN05_RESET_AUDIT. Resume on the same immutable runtime code instead
+    # of resetting passwords again. Full mode remains available for future changes.
+    if os.environ.get("QA_FN05_MODE","full") == "commercial":
+        require(expected_sha == "9c7ecc45cd72795212361a509f73c1890c53f934","Prior administration evidence only applies to the certified runtime")
+        require(os.environ.get("QA_FN05_PRIOR_ADMIN_RUN") == "45872602673","Prior evidence required")
+        print("QA_FN05_ADMINISTRATION_PRIOR_EVIDENCE=45872602673",flush=True)
+    else:
+        login(target,passwords[target],"QA_FN05_TARGET_LOGIN_BEFORE")
 
-    call("/usuarios","QA_FN05_ANONYMOUS",401)
-    rows_a = data(call("/usuarios","QA_FN05_USERS_A",token=ta,tenant=ea))
-    rows_b = data(call("/usuarios","QA_FN05_USERS_B",token=tb,tenant=eb))
-    require({x["id"] for x in rows_a}=={ua,ut,us},"Unexpected identities in A")
-    require({x["id"] for x in rows_b}=={ub,us},"Unexpected identities in B")
-    require(next(x for x in rows_a if x["id"]==us)["rolId"]==rt,"Shared identity A role mismatch")
-    require(next(x for x in rows_b if x["id"]==us)["rolId"]==rb and next(x for x in rows_b if x["id"]==us)["activo"] is False,"Shared identity B inactive membership mismatch")
-    page = data(call("/usuarios/paginado?page=1&pageSize=1","QA_FN05_PAGED_A",token=ta,tenant=ea))
-    require(page.get("totalCount")==3 and len(page.get("items",[]))==1,"Tenant pagination mismatch")
-    call(f"/usuarios/{ub}","QA_FN05_FOREIGN_USER",404,token=ta,tenant=ea)
-    call("/usuarios","QA_FN05_FOREIGN_SELECTOR",403,token=ta,tenant=eb)
-    own = data(call(f"/usuarios/{us}/empresas","QA_FN05_MEMBERSHIPS_A",token=ta,tenant=ea))
-    require(len(own)==1 and own[0].get("empresaId")==ea,"Foreign memberships exposed")
-    roles_a = data(call("/roles","QA_FN05_ROLES_A",token=ta,tenant=ea))
-    roles_b = data(call("/roles","QA_FN05_ROLES_B",token=tb,tenant=eb))
-    require({ra,rt}.issubset({r["id"] for r in roles_a}) and rb not in {r["id"] for r in roles_a},"Foreign role exposed A")
-    require(rb in {r["id"] for r in roles_b} and not {ra,rt}.intersection({r["id"] for r in roles_b}),"Foreign role exposed B")
-    call(f"/roles/{rb}","QA_FN05_FOREIGN_ROLE",404,token=ta,tenant=ea)
-    call(f"/permisos/matriz/{rt}","QA_FN05_MATRIX_OWN",token=ta,tenant=ea)
-    call(f"/permisos/matriz/{rb}","QA_FN05_MATRIX_FOREIGN",(400,403,404,422),token=ta,tenant=ea)
-    call(f"/permisos/matriz/{rb}","QA_FN05_MATRIX_DENIED",403,token=tb,tenant=eb)
-    direct = data(call(f"/usuarios/{ut}","QA_FN05_RENDER_DIRECT_USER",token=ta,tenant=ea,base=backend))
-    require(direct.get("id")==ut and direct.get("rolId")==rt,"Render/proxy target mismatch")
-    call(f"/usuarios/{ut}","QA_FN05_RESET_WITHOUT_GRANT",403,token=ta,tenant=ea,
-         body=user_update(target,rt,new_target),method="PUT")
-    require(sql(f"SELECT PasswordHash FROM Usuarios WHERE Id={ut} AND NombreUsuario='{target}';","hash before grant")==hashes[target],"Unauthorized hash change")
-    sql(f"INSERT INTO RolPermisos (RolId,PermisoId) SELECT Id,{reset_user} FROM Roles WHERE Id={ra} AND Nombre='{a}' AND EmpresaId={ea};","grant only fixture A")
-    call(f"/usuarios/{ut}","QA_FN05_SAME_PASSWORD_REJECTED",(400,422),token=ta,tenant=ea,
-         body=user_update(target,rt,passwords[target]),method="PUT")
-    call(f"/usuarios/{us}","QA_FN05_SHARED_PASSWORD_DENIED",403,token=ta,tenant=ea,
-         body=user_update(shared,rt,new_target),method="PUT")
-    call(f"/usuarios/{ub}","QA_FN05_FOREIGN_PASSWORD_DENIED",403,token=ta,tenant=ea,
-         body=user_update(b,rb,new_target),method="PUT")
-    call(f"/usuarios/{ut}","QA_FN05_RESET_OWN",token=ta,tenant=ea,
-         body=user_update(target,rt,new_target),method="PUT")
-    login(target,passwords[target],"QA_FN05_OLD_PASSWORD_REJECTED",401)
-    login(target,new_target,"QA_FN05_NEW_PASSWORD_AUTHENTICATES")
-    require(sql(f"SELECT PasswordHash FROM Usuarios WHERE Id={us} AND NombreUsuario='{shared}';","shared hash")==hashes[shared],"Shared hash changed")
-    require(sql(f"SELECT PasswordHash FROM Usuarios WHERE Id={ub} AND NombreUsuario='{b}';","foreign hash")==hashes[b],"Foreign hash changed")
-    actual_hash = sql(f"SELECT PasswordHash FROM Usuarios WHERE Id={ut} AND NombreUsuario='{target}';","new hash")
-    require(actual_hash!=hashes[target] and re.fullmatch(r"\$2[aby]\$12\$[./A-Za-z0-9]{53}",actual_hash) is not None,"Password hash was not safely changed")
-    audit = sql(f"SELECT ValoresNuevos FROM RegistrosAuditoria WHERE EmpresaId={ea} AND UsuarioId={ua} AND ReferenciaId={ut} AND Modulo='Usuarios' AND Accion='Editar' AND Entidad='Usuario';","tenant reset audit")
-    require(json.loads(audit).get("PasswordRestablecida") is True,"Tenant audit missing")
-    require(all(v not in audit for v in (passwords[target],new_target,hashes[target],actual_hash)),"Credential present in audit")
-    print("QA_FN05_RESET_AUDIT=PASS",flush=True)
+        call("/usuarios","QA_FN05_ANONYMOUS",401)
+        rows_a = data(call("/usuarios","QA_FN05_USERS_A",token=ta,tenant=ea))
+        rows_b = data(call("/usuarios","QA_FN05_USERS_B",token=tb,tenant=eb))
+        require({x["id"] for x in rows_a}=={ua,ut,us},"Unexpected identities in A")
+        require({x["id"] for x in rows_b}=={ub,us},"Unexpected identities in B")
+        require(next(x for x in rows_a if x["id"]==us)["rolId"]==rt,"Shared identity A role mismatch")
+        require(next(x for x in rows_b if x["id"]==us)["rolId"]==rb and next(x for x in rows_b if x["id"]==us)["activo"] is False,"Shared identity B inactive membership mismatch")
+        page = data(call("/usuarios/paginado?page=1&pageSize=1","QA_FN05_PAGED_A",token=ta,tenant=ea))
+        require(page.get("totalCount")==3 and len(page.get("items",[]))==1,"Tenant pagination mismatch")
+        call(f"/usuarios/{ub}","QA_FN05_FOREIGN_USER",404,token=ta,tenant=ea)
+        call("/usuarios","QA_FN05_FOREIGN_SELECTOR",403,token=ta,tenant=eb)
+        own = data(call(f"/usuarios/{us}/empresas","QA_FN05_MEMBERSHIPS_A",token=ta,tenant=ea))
+        require(len(own)==1 and own[0].get("empresaId")==ea,"Foreign memberships exposed")
+        roles_a = data(call("/roles","QA_FN05_ROLES_A",token=ta,tenant=ea))
+        roles_b = data(call("/roles","QA_FN05_ROLES_B",token=tb,tenant=eb))
+        require({ra,rt}.issubset({r["id"] for r in roles_a}) and rb not in {r["id"] for r in roles_a},"Foreign role exposed A")
+        require(rb in {r["id"] for r in roles_b} and not {ra,rt}.intersection({r["id"] for r in roles_b}),"Foreign role exposed B")
+        call(f"/roles/{rb}","QA_FN05_FOREIGN_ROLE",404,token=ta,tenant=ea)
+        call(f"/permisos/matriz/{rt}","QA_FN05_MATRIX_OWN",token=ta,tenant=ea)
+        call(f"/permisos/matriz/{rb}","QA_FN05_MATRIX_FOREIGN",(400,403,404,422),token=ta,tenant=ea)
+        call(f"/permisos/matriz/{rb}","QA_FN05_MATRIX_DENIED",403,token=tb,tenant=eb)
+        direct = data(call(f"/usuarios/{ut}","QA_FN05_RENDER_DIRECT_USER",token=ta,tenant=ea,base=backend))
+        require(direct.get("id")==ut and direct.get("rolId")==rt,"Render/proxy target mismatch")
+        call(f"/usuarios/{ut}","QA_FN05_RESET_WITHOUT_GRANT",403,token=ta,tenant=ea,
+             body=user_update(target,rt,new_target),method="PUT")
+        require(sql(f"SELECT PasswordHash FROM Usuarios WHERE Id={ut} AND NombreUsuario='{target}';","hash before grant")==hashes[target],"Unauthorized hash change")
+        sql(f"INSERT INTO RolPermisos (RolId,PermisoId) SELECT Id,{reset_user} FROM Roles WHERE Id={ra} AND Nombre='{a}' AND EmpresaId={ea};","grant only fixture A")
+        call(f"/usuarios/{ut}","QA_FN05_SAME_PASSWORD_REJECTED",(400,422),token=ta,tenant=ea,
+             body=user_update(target,rt,passwords[target]),method="PUT")
+        call(f"/usuarios/{us}","QA_FN05_SHARED_PASSWORD_DENIED",403,token=ta,tenant=ea,
+             body=user_update(shared,rt,new_target),method="PUT")
+        call(f"/usuarios/{ub}","QA_FN05_FOREIGN_PASSWORD_DENIED",403,token=ta,tenant=ea,
+             body=user_update(b,rb,new_target),method="PUT")
+        call(f"/usuarios/{ut}","QA_FN05_RESET_OWN",token=ta,tenant=ea,
+             body=user_update(target,rt,new_target),method="PUT")
+        login(target,passwords[target],"QA_FN05_OLD_PASSWORD_REJECTED",401)
+        login(target,new_target,"QA_FN05_NEW_PASSWORD_AUTHENTICATES")
+        require(sql(f"SELECT PasswordHash FROM Usuarios WHERE Id={us} AND NombreUsuario='{shared}';","shared hash")==hashes[shared],"Shared hash changed")
+        require(sql(f"SELECT PasswordHash FROM Usuarios WHERE Id={ub} AND NombreUsuario='{b}';","foreign hash")==hashes[b],"Foreign hash changed")
+        actual_hash = sql(f"SELECT PasswordHash FROM Usuarios WHERE Id={ut} AND NombreUsuario='{target}';","new hash")
+        require(actual_hash!=hashes[target] and re.fullmatch(r"\$2[aby]\$12\$[./A-Za-z0-9]{53}",actual_hash) is not None,"Password hash was not safely changed")
+        audit = sql(f"SELECT ValoresNuevos FROM RegistrosAuditoria WHERE EmpresaId={ea} AND UsuarioId={ua} AND ReferenciaId={ut} AND Modulo='Usuarios' AND Accion='Editar' AND Entidad='Usuario';","tenant reset audit")
+        require(json.loads(audit).get("PasswordRestablecida") is True,"Tenant audit missing")
+        require(all(v not in audit for v in (passwords[target],new_target,hashes[target],actual_hash)),"Credential present in audit")
+        print("QA_FN05_RESET_AUDIT=PASS",flush=True)
 
     # Business actions over the real proxy; SQL checks persisted owner only.
     doc_number = str(1000000000000 + secrets.randbelow(9000000000000))
     for route, table, form in (("productos","Productos",True),("clientes","Clientes",False),("proveedores","Proveedores",False)):
         def payload(name):
             if route == "productos":
-                return {"nombre":name,"cantidad":0,"costo":5,"precio":10,"umbralStockBajo":2,"activo":"true"}
+                return {"Nombre":name,"Marca":"","Modelo":"","TipoInventario":1,"EsDestacado":"false","Cantidad":0,"Costo":5,"Precio":10,"UmbralStockBajo":2}
             if route == "clientes":
                 return {"nombre":name,"identidadORTN":doc_number}
             return {"nombre":name,"documento":doc_number}
@@ -259,7 +291,15 @@ try:
         unchanged=data(call(f"/{route}/{cb}","QA_FN05_"+table.upper()+"_B_INTACT",token=tb,tenant=eb))
         require(unchanged.get("nombre")==b and unchanged.get("activo") is True,"Foreign record changed")
         call(f"/{route}/{ca}","QA_FN05_"+table.upper()+"_DELETE_A",token=ta,tenant=ea,method="DELETE")
-        call(f"/{route}/{ca}","QA_FN05_"+table.upper()+"_DELETED_NOT_READABLE",404,token=ta,tenant=ea)
+        if route=="productos":
+            call(f"/{route}/{ca}","QA_FN05_PRODUCTOS_DELETED_NOT_READABLE",404,token=ta,tenant=ea)
+            require(sql(f"SELECT COUNT(*) FROM Productos WHERE Id={ca} AND EmpresaId={ea} AND Eliminado=1 AND Activo=0;","product logical delete")=="1","Product history not preserved")
+        else:
+            deleted=data(call(f"/{route}/{ca}","QA_FN05_"+table.upper()+"_INACTIVE_HISTORY",token=ta,tenant=ea))
+            require(deleted.get("id")==ca and deleted.get("activo") is False,"Logical deletion must preserve inactive history")
+            active=data(call(f"/{route}/activos","QA_FN05_"+table.upper()+"_ACTIVE_EXCLUSION",token=ta,tenant=ea))
+            require(isinstance(active,list) and all(x["id"]!=ca for x in active),"Inactive record exposed as active")
+            require(sql(f"SELECT COUNT(*) FROM {table} WHERE Id={ca} AND EmpresaId={ea} AND Activo=0;","logical delete readback")=="1","Inactive record history not preserved")
         print("QA_FN05_"+table.upper()+"_AB=PASS",flush=True)
     conf_a=data(call(f"/empresa-configuracion/tenant/{ea}","QA_FN05_CONFIG_A",token=ta,tenant=ea))
     conf_b=data(call(f"/empresa-configuracion/tenant/{eb}","QA_FN05_CONFIG_B",token=tb,tenant=eb))
@@ -351,4 +391,6 @@ COMMIT;""","cleanup only run-owned fixtures, preserve audit")
 +(SELECT COUNT(*) FROM Roles WHERE Nombre IN {names})
 +(SELECT COUNT(*) FROM Empresas WHERE Nombre IN {names} AND Activa=1);""","cleanup verification")=="0","Fixture cleanup incomplete")
         print("QA_FN05_EPHEMERAL_CLEANUP=PASS",flush=True)
-print("QA_FN05_LIVE_ADMINISTRATION=PASS",flush=True)
+if os.environ.get("QA_FN05_MODE","full") == "full":
+    print("QA_FN05_LIVE_ADMINISTRATION=PASS",flush=True)
+print("QA_FN05_LIVE_RUN=PASS",flush=True)
