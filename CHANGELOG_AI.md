@@ -1,3 +1,7 @@
+## 2026-11-26 | DEV03 | C07-01.M06.06 | R1-RESTAURADA
+- Adopta paquete DEV01 de duplicación de cotización: revalida clasificación comercial actual y vínculo/disponibilidad de variantes bajo locks producto→variante dentro de la transacción; conserva precio y snapshots históricos, sin ampliar tipos, grants, API ni esquema.
+- Corrige nombres locales que colisionaban con id, añade ocho negativos y un positivo unitarios; CI exact-SHA e integración HTTP/JWT/MySQL dirigidas pendientes. Reserva real MySQL histórica 163/163 verificada por suite, no TRX individual. A5 y D01/D06 integrales pendientes. RUN 30db95d1-b190-8325-9fa6-15fbe32212d1.
+
 ## 2026-11-26 | DEV06 | C14-02.M06.06 | R1-RESTAURADA
 - Revalida acceso actual y estado de factura en ambos caminos de replay del correo (antes y después del semáforo), conserva cancelación, idempotencia y autorización del controlador. Reutiliza FacturaRepository/alcance vigente, sin cambios de API, permisos, datos, infraestructura o esquema. Añade dos casos xUnit de revocación de acceso al recurso y anulación tras primer envío, sin duplicar correo ni historial; son pruebas unitarias, no certificación HTTP/JWT/MySQL. C14 A0-A4 integral y A5 siguen pendientes; CI exact-SHA pendiente. Foco C01-04.M03.06 sigue prioritario con impedimento P01/P02/API12/retención ya notificado.
 

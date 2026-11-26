@@ -264,6 +264,25 @@ public sealed class CotizacionService : ICotizacionService
             var original = await _repository.GetByIdAsync(id, asNoTracking: true)
                 ?? throw new ResourceNotFoundException($"Cotización con Id {id} no encontrada.");
 
+            // Duplicar crea un documento nuevo: no reutilizar autoridad comercial histórica.
+            // Conservar precios y snapshots de la copia; validar disponibilidad actual bajo locks.
+            var productoIds = original.Detalles.Select(x => x.ProductoId).Distinct().OrderBy(x => x).ToArray();
+            var productos = (await _productoRepository.GetByIdsForUpdateAsync(productoIds)).ToDictionary(x => x.Id);
+            if (productoIds.Any(productoId => !productos.TryGetValue(productoId, out var p) ||
+                !p.Activo || p.Eliminado || p.TipoInventario != TipoInventario.MercaderiaVenta))
+                throw new BusinessRuleException("El producto no está habilitado para cotización comercial.");
+
+            var varianteIds = original.Detalles.Where(x => x.ProductoVarianteId.HasValue)
+                .Select(x => x.ProductoVarianteId!.Value).Distinct().OrderBy(x => x).ToArray();
+            if (varianteIds.Length > 0)
+            {
+                var variantes = (await _varianteRepository.GetByIdsForUpdateAsync(varianteIds)).ToDictionary(x => x.Id);
+                if (original.Detalles.Any(x => x.ProductoVarianteId is int varianteId &&
+                    (!variantes.TryGetValue(varianteId, out var v) || !v.Activo || v.Eliminado ||
+                     v.ProductoId != x.ProductoId)))
+                    throw new BusinessRuleException("La variante no está disponible para cotización comercial.");
+            }
+
             var copia = original.DuplicarComoBorrador();
             copia.CreadoPorUsuarioId = usuarioId;
 

@@ -292,6 +292,65 @@ public sealed class N31CotizacionApplicationTests
         _auditoria.VerifyNoOtherCalls();
     }
 
+    [Theory]
+    [InlineData(0)] // Producto ausente del ámbito autorizado.
+    [InlineData(1)] // Reclasificado después del documento original.
+    [InlineData(2)] // Inactivo.
+    [InlineData(3)] // Eliminado.
+    [InlineData(4)] // Variante ajena al producto.
+    [InlineData(5)] // Variante ausente.
+    [InlineData(6)] // Variante inactiva.
+    [InlineData(7)] // Variante eliminada.
+    public async Task Duplicar_revalida_catalogo_actual_antes_de_persistir(int caso)
+    {
+        var original = CrearBorradorValido(20);
+        var segundo = new CotizacionDetalle { ProductoId = 11, ProductoVarianteId = 81 };
+        segundo.EstablecerValores(2m, 25m);
+        original.Detalles.Add(segundo);
+        _repository.Setup(x => x.GetByIdAsync(20, true)).ReturnsAsync(original);
+        var productos = new List<Producto> { new Producto { Id = 10, Activo = true, TipoInventario = TipoInventario.MercaderiaVenta } };
+        if (caso != 0)
+            productos.Add(new Producto
+            {
+                Id = 11, Activo = caso != 2, Eliminado = caso == 3,
+                TipoInventario = caso == 1 ? TipoInventario.InsumoAdministrativo : TipoInventario.MercaderiaVenta
+            });
+        _productos.Setup(x => x.GetByIdsForUpdateAsync(It.IsAny<IEnumerable<int>>())).ReturnsAsync(productos);
+        var variantes = new List<ProductoVariante>();
+        if (caso != 5)
+            variantes.Add(new ProductoVariante { Id = 81, ProductoId = caso == 4 ? 10 : 11, Activo = caso != 6, Eliminado = caso == 7 });
+        _variantes.Setup(x => x.GetByIdsForUpdateAsync(It.IsAny<IEnumerable<int>>())).ReturnsAsync(variantes);
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() => _service.DuplicarComoBorradorAsync(20));
+
+        _productos.Verify(x => x.GetByIdsForUpdateAsync(It.Is<IEnumerable<int>>(ids => ids.SequenceEqual(new[] { 10, 11 }))), Times.Once);
+        _variantes.Verify(x => x.GetByIdsForUpdateAsync(It.IsAny<IEnumerable<int>>()), caso <= 3 ? Times.Never() : Times.Once());
+        _repository.Verify(x => x.AddAsync(It.IsAny<Cotizacion>()), Times.Never);
+        _repository.Verify(x => x.SaveChangesAsync(), Times.Never);
+        _auditoria.VerifyNoOtherCalls();
+        Assert.Equal(2, original.Detalles.Count);
+    }
+
+    [Fact]
+    public async Task Duplicar_valida_mercaderia_vigente_y_conserva_snapshot_del_original()
+    {
+        var original = CrearBorradorValido(20);
+        _repository.Setup(x => x.GetByIdAsync(20, true)).ReturnsAsync(original);
+        _productos.Setup(x => x.GetByIdsForUpdateAsync(It.IsAny<IEnumerable<int>>())).ReturnsAsync(
+            new List<Producto> { new Producto { Id = 10, Activo = true, TipoInventario = TipoInventario.MercaderiaVenta, Precio = 999m } });
+        Cotizacion? copia = null;
+        _repository.Setup(x => x.AddAsync(It.IsAny<Cotizacion>())).Callback<Cotizacion>(x => { x.Id = 77; copia = x; }).Returns(Task.CompletedTask);
+        _repository.Setup(x => x.SaveChangesAsync()).ReturnsAsync(true);
+        _repository.Setup(x => x.GetByIdAsync(77, true)).ReturnsAsync(() => copia);
+        await _service.DuplicarComoBorradorAsync(20);
+        Assert.NotNull(copia);
+        Assert.NotSame(original, copia);
+        Assert.Equal(50m, copia!.Detalles.Single().PrecioUnitario);
+        Assert.Equal(50m, original.Detalles.Single().PrecioUnitario);
+        _repository.Verify(x => x.SaveChangesAsync(), Times.Once);
+        _variantes.Verify(x => x.GetByIdsForUpdateAsync(It.IsAny<IEnumerable<int>>()), Times.Never);
+    }
+
     private static Cotizacion CrearBorradorValido(int id)
     {
         var cotizacion = new Cotizacion
