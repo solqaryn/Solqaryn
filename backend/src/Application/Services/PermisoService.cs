@@ -175,7 +175,7 @@ public class PermisoService : IPermisoService
         var alcance = await _usuarioScope.ObtenerActualAsync(empresaId);
         return alcance is null
             ? PermisosVacios()
-            : await ConstruirMisPermisosAsync(alcance.RolId, alcance.RolNombre, alcance.EsAdministrador);
+            : await ConstruirMisPermisosAsync(alcance.RolId, alcance.RolNombre, alcance.EsAdministrador, soloEmpresa: true);
     }
 
     public async Task<bool> TienePermisoAsync(ModuloSistema modulo, AccionPermiso accion)
@@ -212,11 +212,13 @@ public class PermisoService : IPermisoService
     private async Task<MisPermisosDto> ConstruirMisPermisosAsync(
         int rolId,
         string rolNombre,
-        bool esAdministrador)
+        bool esAdministrador,
+        bool soloEmpresa = false)
     {
         var filas = await _repository.GetByRolIdAsync(rolId);
         var permisos = filas
-            .Where(p => p.Permiso is { Activo: true, Eliminado: false })
+            .Where(p => p.Permiso is { Activo: true, Eliminado: false } &&
+                (!soloEmpresa || p.Permiso.Ambito == AmbitoAutorizacion.Empresa))
             .Select(p => $"{p.Permiso.Modulo}:{p.Permiso.Accion}")
             .Distinct(StringComparer.OrdinalIgnoreCase)
             .ToList();

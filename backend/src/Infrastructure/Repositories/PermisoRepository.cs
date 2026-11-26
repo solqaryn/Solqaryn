@@ -28,6 +28,22 @@ public class PermisoRepository : IPermisoRepository
             .OrderBy(p => p.Modulo).ThenBy(p => p.Accion)
             .ToListAsync();
 
+    public async Task<List<Permiso>> GetAllEmpresaAsync(bool incluirEliminados = false) =>
+        await _context.Permisos.AsNoTracking()
+            .Where(p => p.Ambito == AmbitoAutorizacion.Empresa && (incluirEliminados || !p.Eliminado))
+            .OrderBy(p => p.Modulo).ThenBy(p => p.Accion).ToListAsync();
+
+    public async Task<Permiso?> GetByIdEmpresaAsync(int id) =>
+        await _context.Permisos.AsNoTracking()
+            .FirstOrDefaultAsync(p => p.Id == id && p.Ambito == AmbitoAutorizacion.Empresa && !p.Eliminado);
+
+    public async Task<int> ContarAsignacionesEmpresaAsync(int permisoId, int empresaId) =>
+        await _context.RolPermisos.CountAsync(rp => empresaId > 0 &&
+            rp.PermisoId == permisoId && rp.Permiso.Ambito == AmbitoAutorizacion.Empresa &&
+            rp.RolEntidad.Ambito == AmbitoAutorizacion.Empresa && !rp.RolEntidad.Eliminado &&
+            (rp.RolEntidad.EmpresaId == empresaId ||
+                (rp.RolEntidad.EmpresaId == null && rp.RolEntidad.EsSistema)));
+
     public async Task<bool> ExisteCodigoAsync(string codigo, int? excluirId = null) =>
         await _context.Permisos.AnyAsync(p =>
             !p.Eliminado && p.Codigo == codigo && (excluirId == null || p.Id != excluirId));

@@ -38,7 +38,24 @@ public class PermisoCatalogoService : IPermisoCatalogoService
         return permiso is null ? null : await MapAsync(permiso);
     }
 
-    private async Task<PermisoCatalogoDto> MapAsync(Permiso p) => new()
+    public async Task<List<PermisoCatalogoDto>> GetAllEmpresaAsync(int empresaId, bool incluirEliminados = false)
+    {
+        if (empresaId <= 0) throw new ForbiddenAccessException("Se requiere una empresa autorizada.");
+        var permisos = await _repository.GetAllEmpresaAsync(incluirEliminados);
+        var resultado = new List<PermisoCatalogoDto>();
+        foreach (var p in permisos.Where(p => p.Ambito == AmbitoAutorizacion.Empresa))
+            resultado.Add(await MapAsync(p, empresaId));
+        return resultado;
+    }
+
+    public async Task<PermisoCatalogoDto?> GetByIdEmpresaAsync(int id, int empresaId)
+    {
+        if (empresaId <= 0) throw new ForbiddenAccessException("Se requiere una empresa autorizada.");
+        var p = await _repository.GetByIdEmpresaAsync(id);
+        return p is null || p.Ambito != AmbitoAutorizacion.Empresa ? null : await MapAsync(p, empresaId);
+    }
+
+    private async Task<PermisoCatalogoDto> MapAsync(Permiso p, int? empresaId = null) => new()
     {
         Id = p.Id,
         Codigo = p.Codigo,
@@ -48,7 +65,9 @@ public class PermisoCatalogoService : IPermisoCatalogoService
         Accion = p.Accion.ToString(),
         EsSistema = p.EsSistema,
         Activo = p.Activo,
-        CantidadRolesAsignados = await _repository.ContarAsignacionesAsync(p.Id),
+        CantidadRolesAsignados = empresaId.HasValue
+            ? await _repository.ContarAsignacionesEmpresaAsync(p.Id, empresaId.Value)
+            : await _repository.ContarAsignacionesAsync(p.Id),
         FechaCreacion = p.FechaCreacion,
         FechaActualizacion = p.FechaActualizacion
     };

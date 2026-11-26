@@ -8,6 +8,14 @@ on:
       - '.github/workflows/qa-fn-05-roles.yml'
       - 'backend/tests/Solqaryn.Tests/QaFn05RoleAdministration*Tests.cs'
       - 'backend/tests/Solqaryn.Tests/QaFn05UserAdministration*Tests.cs'
+      - 'backend/tests/Solqaryn.Tests/QaFn05PasswordAndCatalog*Tests.cs'
+      - 'backend/src/Application/Services/PermisoCatalogoService.cs'
+      - 'backend/src/Application/Interfaces/IPermisoCatalogoService.cs'
+      - 'backend/src/Application/Interfaces/IPermisoRepository.cs'
+      - 'backend/src/Infrastructure/Repositories/PermisoRepository.cs'
+      - 'backend/src/Infrastructure/Repositories/RolPermisoRepository.cs'
+      - 'backend/src/Infrastructure/Solqaryn.Infrastructure.csproj'
+      - 'backend/tests/Solqaryn.Tests/Solqaryn.Tests.csproj'
       - 'backend/tests/Solqaryn.Tests/API/Controllers/UsuariosEmpresaAuthorizationContractTests.cs'
       - 'backend/src/Application/Interfaces/IUsuarioAdministracionEmpresaService.cs'
       - 'backend/src/Infrastructure/Services/UsuarioAdministracionEmpresaService.cs'
@@ -64,7 +72,7 @@ jobs:
         working-directory: backend
         run: |
           set -euo pipefail
-          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter 'FullyQualifiedName~QaFn05RoleAdministration|FullyQualifiedName~QaFn05UserAdministration|FullyQualifiedName~UsuariosEmpresaAuthorizationContractTests' --logger "trx;LogFileName=qa-fn05-roles.trx"
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter 'FullyQualifiedName~QaFn05RoleAdministration|FullyQualifiedName~QaFn05UserAdministration|FullyQualifiedName~QaFn05PasswordAndCatalog|FullyQualifiedName~UsuariosEmpresaAuthorizationContractTests' --logger "trx;LogFileName=qa-fn05-roles.trx"
           echo QA_FN05_ROLE_ADMINISTRATION=PASS
       - if: always()
         uses: actions/upload-artifact@v4

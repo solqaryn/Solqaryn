@@ -11,6 +11,9 @@ public interface IPermisoRepository
     Task<Permiso?> GetByIdAsync(int id);
     Task<Permiso?> GetByModuloAccionAsync(Solqaryn.Domain.Enums.ModuloSistema modulo, Solqaryn.Domain.Enums.AccionPermiso accion);
     Task<List<Permiso>> GetAllAsync(bool incluirEliminados = false);
+    Task<List<Permiso>> GetAllEmpresaAsync(bool incluirEliminados = false);
+    Task<Permiso?> GetByIdEmpresaAsync(int id);
+    Task<int> ContarAsignacionesEmpresaAsync(int permisoId, int empresaId);
     Task<bool> ExisteCodigoAsync(string codigo, int? excluirId = null);
     Task<bool> ExisteModuloAccionAsync(Solqaryn.Domain.Enums.ModuloSistema modulo, Solqaryn.Domain.Enums.AccionPermiso accion, int? excluirId = null);
     Task<int> ContarAsignacionesAsync(int permisoId);

@@ -34,6 +34,7 @@ public class RolPermisoRepository : IRolPermisoRepository
     public async Task<bool> TienePermisoPorRolIdAsync(int rolId, ModuloSistema modulo, AccionPermiso accion) =>
         await _context.RolPermisos.AnyAsync(rp =>
             rp.RolId == rolId &&
+            rp.RolEntidad.Ambito == rp.Permiso.Ambito &&
             rp.Permiso.Activo &&
             !rp.Permiso.Eliminado &&
             rp.Permiso.Modulo == modulo &&

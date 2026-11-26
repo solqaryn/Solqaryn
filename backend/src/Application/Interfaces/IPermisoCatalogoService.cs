@@ -6,6 +6,10 @@ public interface IPermisoCatalogoService
 {
     Task<List<PermisoCatalogoDto>> GetAllAsync(bool incluirEliminados = false);
     Task<PermisoCatalogoDto?> GetByIdAsync(int id);
+    // Las definiciones empresariales son compartidas y de solo lectura.
+    // El conteo de asignaciones no incluye roles privados de otros tenants.
+    Task<List<PermisoCatalogoDto>> GetAllEmpresaAsync(int empresaId, bool incluirEliminados = false);
+    Task<PermisoCatalogoDto?> GetByIdEmpresaAsync(int id, int empresaId);
     Task<PermisoCatalogoDto> CreateAsync(CrearPermisoDto dto);
     Task<PermisoCatalogoDto> UpdateAsync(int id, ActualizarPermisoDto dto);
     Task<PermisoCatalogoDto> ActivarAsync(int id);

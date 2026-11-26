@@ -1,6 +1,7 @@
 using Solqaryn.API.Filters;
 using Solqaryn.Application.Common;
 using Solqaryn.Application.DTOs;
+using Solqaryn.Application.Exceptions;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
@@ -61,7 +62,7 @@ public class PermisosController : ControllerBase
     [RequierePermiso(ModuloSistema.Permisos, AccionPermiso.Ver)]
     public async Task<IActionResult> GetCatalogo([FromQuery] bool incluirEliminados = false)
     {
-        var permisos = await _catalogoService.GetAllAsync(incluirEliminados);
+        var permisos = await _catalogoService.GetAllEmpresaAsync(TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext), incluirEliminados);
         return Ok(ApiResponse<List<PermisoCatalogoDto>>.Ok(permisos));
     }
 
@@ -69,7 +70,7 @@ public class PermisosController : ControllerBase
     [RequierePermiso(ModuloSistema.Permisos, AccionPermiso.Ver)]
     public async Task<IActionResult> GetCatalogoById(int id)
     {
-        var permiso = await _catalogoService.GetByIdAsync(id);
+        var permiso = await _catalogoService.GetByIdEmpresaAsync(id, TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext));
         if (permiso is null)
             return NotFound(ApiResponse<object>.Fail("Permiso no encontrado."));
 
@@ -78,60 +79,39 @@ public class PermisosController : ControllerBase
 
     [HttpPost("catalogo")]
     [RequierePermiso(ModuloSistema.Permisos, AccionPermiso.Crear)]
-    public async Task<IActionResult> CreateCatalogo([FromBody] CrearPermisoDto dto)
-    {
-        var creado = await _catalogoService.CreateAsync(dto);
-        return CreatedAtAction(nameof(GetCatalogoById), new { id = creado.Id },
-            ApiResponse<PermisoCatalogoDto>.Ok(creado, "Permiso creado correctamente."));
-    }
+    public Task<IActionResult> CreateCatalogo([FromBody] CrearPermisoDto dto) => DenegarMutacionCatalogoAsync();
 
     [HttpPut("catalogo/{id:int}")]
     [RequierePermiso(ModuloSistema.Permisos, AccionPermiso.Editar)]
-    public async Task<IActionResult> UpdateCatalogo(int id, [FromBody] ActualizarPermisoDto dto)
-    {
-        var actualizado = await _catalogoService.UpdateAsync(id, dto);
-        return Ok(ApiResponse<PermisoCatalogoDto>.Ok(actualizado, "Permiso actualizado correctamente."));
-    }
+    public Task<IActionResult> UpdateCatalogo(int id, [FromBody] ActualizarPermisoDto dto) => DenegarMutacionCatalogoAsync();
 
     [HttpPatch("catalogo/{id:int}/activar")]
     [RequierePermiso(ModuloSistema.Permisos, AccionPermiso.Activar)]
-    public async Task<IActionResult> ActivarCatalogo(int id)
-    {
-        var permiso = await _catalogoService.ActivarAsync(id);
-        return Ok(ApiResponse<PermisoCatalogoDto>.Ok(permiso, "Permiso activado correctamente."));
-    }
+    public Task<IActionResult> ActivarCatalogo(int id) => DenegarMutacionCatalogoAsync();
 
     [HttpPatch("catalogo/{id:int}/desactivar")]
     [RequierePermiso(ModuloSistema.Permisos, AccionPermiso.Desactivar)]
-    public async Task<IActionResult> DesactivarCatalogo(int id)
-    {
-        var permiso = await _catalogoService.DesactivarAsync(id);
-        return Ok(ApiResponse<PermisoCatalogoDto>.Ok(permiso, "Permiso desactivado correctamente."));
-    }
+    public Task<IActionResult> DesactivarCatalogo(int id) => DenegarMutacionCatalogoAsync();
 
     [HttpDelete("catalogo/{id:int}")]
     [RequierePermiso(ModuloSistema.Permisos, AccionPermiso.EliminarLogico)]
-    public async Task<IActionResult> EliminarLogicoCatalogo(int id)
-    {
-        await _catalogoService.EliminarLogicoAsync(id);
-        return Ok(ApiResponse<object>.Ok(new { }, "Permiso eliminado correctamente."));
-    }
+    public Task<IActionResult> EliminarLogicoCatalogo(int id) => DenegarMutacionCatalogoAsync();
 
     [HttpDelete("catalogo/{id:int}/permanente")]
     [RequierePermiso(ModuloSistema.Permisos, AccionPermiso.EliminarPermanente)]
-    public async Task<IActionResult> EliminarPermanenteCatalogo(int id)
-    {
-        await _catalogoService.EliminarPermanenteAsync(id);
-        return Ok(ApiResponse<object>.Ok(new { }, "Permiso eliminado permanentemente."));
-    }
+    public Task<IActionResult> EliminarPermanenteCatalogo(int id) => DenegarMutacionCatalogoAsync();
 
     [HttpPost("catalogo/{id:int}/duplicar")]
     [RequierePermiso(ModuloSistema.Permisos, AccionPermiso.Duplicar)]
-    public async Task<IActionResult> DuplicarCatalogo(int id, [FromBody] DuplicarPermisoRequest request)
+    public Task<IActionResult> DuplicarCatalogo(int id, [FromBody] DuplicarPermisoRequest request) => DenegarMutacionCatalogoAsync();
+    // Permiso is a global definition (no EmpresaId). Tenant RBAC authorizes
+    // grants on owned roles, never mutation of definitions shared by all tenants.
+    // A separate, verified platform authority is required for global management.
+    private Task<IActionResult> DenegarMutacionCatalogoAsync()
     {
-        var copia = await _catalogoService.DuplicarAsync(id, request.NuevoNombre, request.NuevaAccion);
-        return CreatedAtAction(nameof(GetCatalogoById), new { id = copia.Id },
-            ApiResponse<PermisoCatalogoDto>.Ok(copia, "Permiso duplicado correctamente."));
+        _ = TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext);
+        throw new ForbiddenAccessException(
+            "El catálogo de permisos es de solo lectura para las empresas. Administre las asignaciones desde la matriz de roles.");
     }
 }
 
