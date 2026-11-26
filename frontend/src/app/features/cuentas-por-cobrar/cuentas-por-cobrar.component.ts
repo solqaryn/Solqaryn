@@ -152,7 +152,7 @@ import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service
     .actions { display: flex; gap: .45rem; white-space: nowrap; }
     button, .link-button { border: 0; border-radius: 9px; padding: .58rem .78rem; font: inherit; font-weight: 650; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; justify-content: center; }
     button:disabled { cursor: not-allowed; opacity: .55; }
-    .primary { background: var(--mat-sys-primary, #1f5eff); color: var(--mat-sys-on-primary, #fff); }
+    .primary { background: var(--color-button); color: var(--color-on-primary); }
     .secondary { background: rgba(127,127,127,.14); color: inherit; }
     @media (max-width: 760px) {
       .summary { grid-template-columns: 1fr; }

@@ -69,7 +69,7 @@ describe('N4.11.E CentrosCostoComponent deterministic states', () => {
 
     component.guardar();
 
-    expect(component.errorFormulario()).toBe('Sucursal ID es obligatoria para centros de tipo Sucursal.');
+    expect(component.errorFormulario()).toBe('Indica la sucursal para crear o editar un centro de tipo Sucursal.');
     expect(service.create).not.toHaveBeenCalled();
     expect(service.update).not.toHaveBeenCalled();
   });

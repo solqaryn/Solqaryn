@@ -164,3 +164,30 @@ for (const viewport of viewports) {
     await page.screenshot({path:testInfo.outputPath('costeo.png'),fullPage:true});
   });
 }
+
+// Afirmaciones exactas de tokens y superficies, no sólo "distinto del fondo".
+for (const width of [390, 1440]) {
+  test('QA visual: tema de empresa en tarjetas y barra superior ' + width, async ({page}) => {
+    await page.setViewportSize({width,height:900});
+    await contexto(page);
+    const tema = {
+      colorPrimario:'#245b49',colorSecundario:'#204a3a',colorAcento:'#996b22',
+      fondoPrincipal:'#f4eee4',fondoTarjetas:'#e7f0e8',menuLateral:'#182c25',
+      barraSuperior:'#14251e',encabezados:'#182c25',botonesPrincipales:'#245b49',
+      textoPrincipal:'#182c25',textoSecundario:'#354c40',colorExito:'#166534',
+      colorAdvertencia:'#a16207',colorError:'#b91c1c',colorInformacion:'#1d4ed8'
+    };
+    await page.route(API+'/tema-visual', r=>r.fulfill({json:ok(tema)}));
+    for (const ruta of ['/ordenes-compra','/inventario/existencias','/periodos-contables','/cuentas-por-cobrar']) {
+      await page.goto(ruta);
+      const surface = page.locator('.card.app-list-surface');
+      await expect(surface.locator('.app-list-empty')).toBeVisible();
+      await expect(surface).toHaveCSS('background-color','rgb(231, 240, 232)');
+      await expect(page.locator('body')).toHaveCSS('background-color','rgb(244, 238, 228)');
+      await expect(page.locator('.topbar')).toHaveCSS('background-color','rgb(20, 37, 30)');
+      await expect(page.locator('.topbar .user-name')).toHaveCSS('color','rgb(255, 255, 255)');
+      await expect(page.locator('.topbar .user-role')).toHaveCSS('background-color','rgb(36, 91, 73)');
+      if(width===390) await expect(page.locator('#menu-toggle')).toHaveCSS('color','rgb(255, 255, 255)');
+    }
+  });
+}

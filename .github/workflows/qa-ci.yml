@@ -100,6 +100,8 @@ jobs:
         run: npm run test:unit -- --include=src/app/shared/consulta-registro/consulta-registro.spec.ts --include=src/app/shared/modal-institucional/modal-institucional.spec.ts --include=src/app/shared/modal-institucional/acciones-institucionales.spec.ts --include=src/app/features/permisos/permisos-matrix.component.spec.ts --include=src/app/shared/paginador-institucional.spec.ts --include=src/app/features/inventario/costeo-presentacion.spec.ts
       - name: Regresión de rutas únicas y permisos
         run: npm run test:unit -- --include=src/app/app.routes.centros-costo.spec.ts
+      - name: Regresión del contrato visual empresarial
+        run: npm run test:unit -- --include=src/app/services/theme-applier.service.spec.ts
       - name: Regresión de listados de Solicitudes, Centros de costo y Cuentas por cobrar
         run: npm run test:unit -- --include=src/app/features/solicitudes-compra/solicitudes-compra-shell.component.spec.ts --include=src/app/features/centros-costo/centros-costo.a11y.spec.ts --include=src/app/services/centro-costo.service.spec.ts --include=src/app/features/cuentas-por-cobrar/cuentas-por-cobrar.component.spec.ts
       - name: Compilación de producción con evidencia de tamaño

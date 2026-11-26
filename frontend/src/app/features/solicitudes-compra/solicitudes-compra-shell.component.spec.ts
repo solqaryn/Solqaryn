@@ -76,6 +76,16 @@ describe('QA: listado institucional de solicitudes de compra', () => {
     expect(servicio.getPaged).toHaveBeenLastCalledWith(expect.objectContaining({ page: 1, pageSize: 10, numero: '' }));
   });
 
+  it('rechaza una respuesta de listado success=false sin presentar registros como válidos', () => {
+    servicio.getPaged.mockReturnValue(of({ ...respuesta([borrador]), success: false, message: 'Consulta rechazada.' }));
+    const fixture = TestBed.createComponent(SolicitudesCompraShellComponent);
+    fixture.detectChanges();
+    expect(fixture.componentInstance.error()).toBe('Consulta rechazada.');
+    expect(fixture.componentInstance.solicitudes()).toEqual([]);
+    expect(fixture.componentInstance.totalCount()).toBe(0);
+    expect(fixture.componentInstance.loading()).toBe(false);
+  });
+
   it('presenta un estado vacío contextual en la superficie compartida', () => {
     servicio.getPaged.mockReturnValue(of(respuesta([])));
     const fixture = TestBed.createComponent(SolicitudesCompraShellComponent);

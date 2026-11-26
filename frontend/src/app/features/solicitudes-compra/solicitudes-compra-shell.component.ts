@@ -194,6 +194,13 @@ export class SolicitudesCompraShellComponent implements OnInit, OnDestroy {
     }).subscribe({
       next: res => {
         if (secuencia !== this.secuenciaLista) return;
+        if (!res.success || !res.data) {
+          this.solicitudes.set([]);
+          this.totalCount.set(0);
+          this.error.set(res.message || 'No fue posible cargar las solicitudes de compra.');
+          this.loading.set(false);
+          return;
+        }
         this.solicitudes.set(res.data.items ?? []);
         this.totalCount.set(res.data.totalCount ?? 0);
         this.loading.set(false);
@@ -264,6 +271,10 @@ export class SolicitudesCompraShellComponent implements OnInit, OnDestroy {
 
     request.pipe(finalize(() => this.guardando.set(false))).subscribe({
       next: res => {
+        if (!res.success || !res.data) {
+          this.formError.set(res.message || 'No fue posible guardar la solicitud de compra.');
+          return;
+        }
         this.detalle.set(res.data);
         this.detalleId.set(res.data.id);
         this.modoFormulario.set(null);
@@ -367,8 +378,12 @@ export class SolicitudesCompraShellComponent implements OnInit, OnDestroy {
     this.detalleSubscription = this.solicitudService.getById(id).subscribe({
       next: res => {
         if (secuencia !== this.secuenciaDetalle) return;
-        this.detalle.set(res.data);
         this.detalleLoading.set(false);
+        if (!res.success || !res.data) {
+          this.detalleError.set(res.message || 'No fue posible consultar la solicitud de compra.');
+          return;
+        }
+        this.detalle.set(res.data);
         if (prepararEdicion) {
           if (res.data.estado !== 'Borrador') {
             this.modoFormulario.set(null);
@@ -459,6 +474,10 @@ export class SolicitudesCompraShellComponent implements OnInit, OnDestroy {
     this.detalleError.set(null);
     requestFactory().pipe(finalize(() => this.accionando.set(false))).subscribe({
       next: res => {
+        if (!res.success || !res.data) {
+          this.detalleError.set(res.message || fallback);
+          return;
+        }
         this.detalle.set(res.data);
         this.cargar();
       },

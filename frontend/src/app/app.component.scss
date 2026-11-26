@@ -151,12 +151,14 @@
   gap: 12px;
   padding: 8px 14px 8px 10px;
   border-bottom: 1px solid var(--color-border);
-  background: color-mix(in srgb, var(--color-topbar) 94%, transparent);
+  background: var(--color-topbar);
   backdrop-filter: blur(14px);
 
   .menu-toggle {
     display: none;
     flex: 0 0 auto;
+    color: var(--color-on-topbar) !important;
+    background: transparent;
   }
 
   .header-text {
@@ -165,7 +167,7 @@
     max-width: 760px;
     display: -webkit-box;
     overflow: hidden;
-    color: var(--color-text-muted);
+    color: var(--color-on-topbar);
     font-size: 13px;
     line-height: 1.35;
     overflow-wrap: anywhere;
@@ -179,7 +181,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    color: var(--color-text-muted);
+    color: var(--color-on-topbar);
     font-size: 14px;
 
     .user-copy {
@@ -193,7 +195,7 @@
 
     .user-name {
       max-width: 250px;
-      color: var(--color-text);
+      color: var(--color-on-topbar);
       font-size: 13px;
       font-weight: 700;
       line-height: 1.25;
@@ -205,8 +207,8 @@
       display: block;
       padding: 3px 8px;
       border-radius: 999px;
-      background: color-mix(in srgb, var(--color-primary) 10%, var(--color-surface));
-      color: var(--color-primary-dark);
+      background: var(--color-button);
+      color: var(--color-on-primary);
       font-size: 9px;
       font-weight: 800;
       letter-spacing: 0.03em;

@@ -17,6 +17,7 @@
   --color-card: var(--color-surface);
   --color-sidebar: #08131f;
   --color-topbar: #ffffff;
+  --color-on-topbar: #111827;
   --color-heading: #0f172a;
   --color-button: #0369a1;
   --color-text: #111827;
@@ -207,6 +208,15 @@ mat-icon {
 
 .mat-mdc-icon-button.mat-mdc-button-base {
   min-width: var(--target-min);
+}
+
+/* Material cards share the enterprise surface instead of the prebuilt palette. */
+.mat-mdc-card {
+  --mdc-elevated-card-container-color: var(--color-surface);
+  --mdc-filled-card-container-color: var(--color-surface);
+  --mdc-outlined-card-container-color: var(--color-surface);
+  background-color: var(--color-surface);
+  color: var(--color-text);
 }
 
 .mat-mdc-dialog-container {

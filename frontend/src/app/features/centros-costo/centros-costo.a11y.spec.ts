@@ -92,6 +92,23 @@ describe('N4.11.G CentroCosto accessibility regression', () => {
     expect(service.buscar).toHaveBeenLastCalledWith({ termino: '', pagina: 1, tamanoPagina: 20 });
   });
 
+  it('conserva el formulario y no anuncia éxito cuando la API rechaza el guardado', () => {
+    service.create.mockReturnValue(of({ success: false, data: null, message: 'El código ya existe.', errors: [] }));
+    const fixture = TestBed.createComponent(CentrosCostoComponent);
+    fixture.detectChanges();
+    const component = fixture.componentInstance;
+    component.nuevo();
+    component.form.patchValue({ codigo: 'CC-007', nombre: 'Operaciones', tipo: TipoCentroCosto.Departamento });
+    component.guardar();
+    fixture.detectChanges();
+    expect(component.mostrandoFormulario()).toBe(true);
+    expect(component.saving()).toBe(false);
+    expect(component.form.controls.codigo.value).toBe('CC-007');
+    expect(component.errorFormulario()).toBe('El código ya existe.');
+    expect(snack.open).not.toHaveBeenCalled();
+    expect(fixture.nativeElement.querySelector('form [role="alert"]')?.textContent).toContain('El código ya existe.');
+  });
+
   it('announces load errors through an alert role', () => {
     const fixture = TestBed.createComponent(CentrosCostoComponent);
     fixture.detectChanges();
