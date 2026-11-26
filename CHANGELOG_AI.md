@@ -1,3 +1,9 @@
+## 2026-11-26 — DEV05 — C01-04.M03.06 — V44/R1/R5
+
+- TASK_ID=6adc2e55f47c81919f6374e561687076; RUN_ID=0eaac951-5600-8329-b559-8c7d6be518c4; base d06f78c03011dfe8533e61f789038cf1ba0e0311; adopta relevo causal DEV04 RUN=42baa109-3fe4-8331-b7fe-876d44d90922.
+- Corrige contrato Application de seleccion de evidencia: microtarea/ruta/SHA/tenant/expediente llegan juntos al source antes de I/O, sin declarar autoridad por dichos selectores; representacion textual redactada, comprobaciones posteriores de observacion y scope/sink intactas. Actualiza todos los implementadores localizados (fixtures de auditoria, logger y MySQL), y prueba dos expedientes de A, mismo ID en B y selector inexistente; sin conceder permisos, DI ficticio, schema comercial ni reabrir LISTO.
+- CI de base comprobada: Scope Lock job139975378970 freshness 9/9; backend job139975379241 6727/6727; HTTP JWT MySQL job139975378278 33/33; V23 job139975378402 durable 1/1 y HTTP JWT GitHub MySQL 1/1. Evidencia del nuevo SHA pendiente. R11 SKIPPED, no PASS. El selector no implementa P01/P02, API12, fuente autentica, DI o retencion. No A5 ni LISTO. Rollback por git revert normal.
+
 ## 2026-11-26 — DEV03 — C01-04.M03.06 — V44/R1/R5
 
 - TASK_ID=6adc2e4bd8a48191ac7d8641ed95a1a3; RUN_ID=fcc6b338-2a74-8324-9e90-fec8947881c3; base 172ff840eb5a549dac44719c0e115f51d125f42c; adopta relevo DEV01 RUN=86c995ad-efa4-8327-81bc-9ae6e8f9001a.

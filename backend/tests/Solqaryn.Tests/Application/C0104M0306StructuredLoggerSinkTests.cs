@@ -28,7 +28,7 @@ public sealed class C0104M0306StructuredLoggerSinkTests
     private sealed class Source(Audit.Observation observation) : IV5UniversalCaseFileQaEvidenceSource
     {
         public ValueTask<Audit.Observation?> ReadAsync(
-            string microtaskId, string routeKey, CancellationToken cancellationToken) =>
+            Audit.EvidenceSelection selection, CancellationToken cancellationToken) =>
             ValueTask.FromResult<Audit.Observation?>(observation);
     }
 

@@ -20,7 +20,7 @@ public sealed class C0104M0306DurableQaAuditMysql84Tests
     private sealed class Source(Audit.Observation observation) : IV5UniversalCaseFileQaEvidenceSource
     {
         public ValueTask<Audit.Observation?> ReadAsync(
-            string microtaskId, string routeKey, CancellationToken token)
+            Audit.EvidenceSelection selection, CancellationToken token)
         {
             token.ThrowIfCancellationRequested();
             return ValueTask.FromResult<Audit.Observation?>(observation);

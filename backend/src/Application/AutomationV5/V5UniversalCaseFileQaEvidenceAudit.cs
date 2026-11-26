@@ -10,7 +10,7 @@ namespace Solqaryn.Application.AutomationV5;
 public interface IV5UniversalCaseFileQaEvidenceSource
 {
     ValueTask<V5UniversalCaseFileQaEvidenceAudit.Observation?> ReadAsync(
-        string microtaskId, string routeKey, CancellationToken cancellationToken);
+        V5UniversalCaseFileQaEvidenceAudit.EvidenceSelection selection, CancellationToken cancellationToken);
 }
 
 public interface IV5UniversalCaseFileQaAuditSink
@@ -69,6 +69,15 @@ public sealed class V5UniversalCaseFileQaEvidenceAudit
     {
         "success", "failure", "cancelled", "skipped", "pending"
     };
+
+    // Selectors only: a source must independently verify live identity, ownership and access.
+    // These values are not a grant, a request DTO or safe structured-log fields.
+    public sealed record EvidenceSelection(
+        string MicrotaskId, string RouteKey, string SourceSha,
+        string TenantScope, string CaseFileScope)
+    {
+        public override string ToString() => "CASEFILE_QA_EVIDENCE_SELECTION";
+    }
 
     public sealed record Observation(
         string? MicrotaskId, string? RouteKey, string? SourceSha,
@@ -157,7 +166,8 @@ public sealed class V5UniversalCaseFileQaEvidenceAudit
         Observation? observation;
         try
         {
-            observation = await _source.ReadAsync(microtaskId, routeKey, cancellationToken);
+            observation = await _source.ReadAsync(new EvidenceSelection(microtaskId, routeKey, sourceSha,
+                trustedTenantScope!, trustedCaseFileScope!), cancellationToken);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {

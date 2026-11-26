@@ -26,7 +26,7 @@ public sealed class C0104M0306CaseFileQaAuditSafetyTests
     {
         public int Reads { get; private set; }
         public ValueTask<Audit.Observation?> ReadAsync(
-            string id, string route, CancellationToken ct)
+            Audit.EvidenceSelection selection, CancellationToken ct)
         {
             ct.ThrowIfCancellationRequested();
             Reads++;
@@ -53,6 +53,58 @@ public sealed class C0104M0306CaseFileQaAuditSafetyTests
         string? sha = Sha, string? tenant = "tenant-A", string? caseId = "case-42",
         CancellationToken ct = default) =>
         new Audit(source, sink, new FrozenClock()).CaptureAsync(id, route, sha, tenant, caseId, ct);
+
+    private sealed class SelectingSource(
+        IReadOnlyDictionary<Audit.EvidenceSelection, Audit.Observation> observations)
+        : IV5UniversalCaseFileQaEvidenceSource
+    {
+        public List<Audit.EvidenceSelection> Selections { get; } = [];
+        public ValueTask<Audit.Observation?> ReadAsync(
+            Audit.EvidenceSelection selection, CancellationToken ct)
+        {
+            ct.ThrowIfCancellationRequested();
+            Selections.Add(selection);
+            return ValueTask.FromResult<Audit.Observation?>(observations.GetValueOrDefault(selection));
+        }
+    }
+
+    [Fact]
+    public async Task SourceSelectionDistinguishesCasesAndTenantsBeforeEvidenceIo()
+    {
+        var keys = new[]
+        {
+            new Audit.EvidenceSelection(Id, "casefile.timeline", Sha, "tenant-A", "case-42"),
+            new Audit.EvidenceSelection(Id, "casefile.timeline", Sha, "tenant-A", "case-43"),
+            new Audit.EvidenceSelection(Id, "casefile.timeline", Sha, "tenant-B", "case-42")
+        };
+        var observations = keys.ToDictionary(key => key, key => Good() with
+        {
+            VerifiedTenantScope = key.TenantScope,
+            VerifiedCaseFileScope = key.CaseFileScope
+        });
+        var source = new SelectingSource(observations);
+        var sink = new Sink();
+        var audit = new Audit(source, sink, new FrozenClock());
+        foreach (var key in keys)
+        {
+            var verdict = await audit.CaptureAsync(
+                key.MicrotaskId, key.RouteKey, key.SourceSha, key.TenantScope, key.CaseFileScope);
+            Assert.Equal("CASEFILE_QA_ENVELOPE_WRITTEN_REVIEW_PENDING", verdict.Code);
+            Assert.False(verdict.GrantsTenantAccess);
+            Assert.DoesNotContain(key.TenantScope, key.ToString());
+            Assert.DoesNotContain(key.CaseFileScope, key.ToString());
+        }
+        var missing = await audit.CaptureAsync(Id, "casefile.timeline", Sha, "tenant-B", "case-43");
+        Assert.Equal("CASEFILE_QA_TRUSTED_EVIDENCE_REQUIRED", missing.Code);
+        Assert.Equal(keys.Append(new Audit.EvidenceSelection(
+            Id, "casefile.timeline", Sha, "tenant-B", "case-43")).ToArray(), source.Selections.ToArray());
+        Assert.Equal(3, sink.Entries.Count);
+        var rendered = System.Text.Json.JsonSerializer.Serialize(sink.Entries);
+        Assert.DoesNotContain("tenant-A", rendered);
+        Assert.DoesNotContain("tenant-B", rendered);
+        Assert.DoesNotContain("case-42", rendered);
+        Assert.DoesNotContain("case-43", rendered);
+    }
 
     [Fact]
     public async Task TrustedAuditProducesOnlyRedactedStructuredEnvelope()
@@ -242,7 +294,7 @@ public sealed class C0104M0306CaseFileQaAuditSafetyTests
         : IV5UniversalCaseFileQaEvidenceSource
     {
         public ValueTask<Audit.Observation?> ReadAsync(
-            string id, string route, CancellationToken cancellationToken)
+            Audit.EvidenceSelection selection, CancellationToken cancellationToken)
         {
             // Simulates a non-cooperative provider that finishes after caller cancellation.
             cancellation.Cancel();
