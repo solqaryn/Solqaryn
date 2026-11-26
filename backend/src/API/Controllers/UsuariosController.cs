@@ -14,44 +14,34 @@ namespace Solqaryn.API.Controllers;
 [Route("usuarios")]
 public class UsuariosController : ControllerBase
 {
-    private readonly IUsuarioService _usuarioService;
+    private readonly IUsuarioAdministracionEmpresaService _administracion;
     private readonly IPermisoService _permisoService;
-    private readonly ICurrentUserService _currentUser;
 
-    public UsuariosController(
-        IUsuarioService usuarioService,
-        IPermisoService permisoService,
-        ICurrentUserService currentUser)
+    public UsuariosController(IUsuarioAdministracionEmpresaService administracion, IPermisoService permisoService)
     {
-        _usuarioService = usuarioService;
+        _administracion = administracion;
         _permisoService = permisoService;
-        _currentUser = currentUser;
     }
+
+    private int Empresa => TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext);
+    private CancellationToken Ct => HttpContext.RequestAborted;
 
     [HttpGet]
     [RequierePermiso(ModuloSistema.Usuarios, AccionPermiso.Ver)]
-    public async Task<IActionResult> GetAll()
-    {
-        var usuarios = await _usuarioService.GetAllAsync();
-        return Ok(ApiResponse<List<UsuarioDto>>.Ok(usuarios));
-    }
+    public async Task<IActionResult> GetAll() =>
+        Ok(ApiResponse<List<UsuarioDto>>.Ok(await _administracion.GetAllAsync(Empresa, Ct)));
 
     [HttpGet("paginado")]
     [RequierePermiso(ModuloSistema.Usuarios, AccionPermiso.Ver)]
-    public async Task<IActionResult> GetPaged([FromQuery] PagedRequest request)
-    {
-        var resultado = await _usuarioService.GetPagedAsync(request);
-        return Ok(ApiResponse<PagedResult<UsuarioDto>>.Ok(resultado));
-    }
+    public async Task<IActionResult> GetPaged([FromQuery] PagedRequest request) =>
+        Ok(ApiResponse<PagedResult<UsuarioDto>>.Ok(await _administracion.GetPagedAsync(Empresa, request, Ct)));
 
     [HttpGet("{id:int}")]
     [RequierePermiso(ModuloSistema.Usuarios, AccionPermiso.Ver)]
     public async Task<IActionResult> GetById(int id)
     {
-        var usuario = await _usuarioService.GetByIdAsync(id);
-        if (usuario is null)
-            return NotFound(ApiResponse<object>.Fail("Usuario no encontrado."));
-
+        var usuario = await _administracion.GetByIdAsync(Empresa, id, Ct);
+        if (usuario is null) return NotFound(ApiResponse<object>.Fail("Usuario no encontrado."));
         return Ok(ApiResponse<UsuarioDetalleDto>.Ok(usuario));
     }
 
@@ -59,76 +49,40 @@ public class UsuariosController : ControllerBase
     [RequierePermiso(ModuloSistema.Usuarios, AccionPermiso.Crear)]
     public async Task<IActionResult> Create([FromBody] CreateUsuarioDto dto)
     {
-        await _permisoService.VerificarPermisoAsync(ModuloSistema.Usuarios, AccionPermiso.AsignarRol);
-
-        try
-        {
-            var creado = await _usuarioService.CreateAsync(dto);
-            return Ok(ApiResponse<UsuarioDto>.Ok(creado, "Usuario creado correctamente."));
-        }
-        catch (InvalidOperationException ex)
-        {
-            return BadRequest(ApiResponse<object>.Fail(ex.Message));
-        }
+        var creado = await _administracion.CrearAsync(Empresa, dto, Ct);
+        return Ok(ApiResponse<UsuarioDto>.Ok(creado, "Usuario creado correctamente."));
     }
 
     [HttpPut("{id:int}")]
     [RequierePermiso(ModuloSistema.Usuarios, AccionPermiso.Editar)]
     public async Task<IActionResult> Update(int id, [FromBody] UpdateUsuarioDto dto)
     {
-        var actual = await _usuarioService.GetByIdAsync(id);
-        if (actual is null)
-            return NotFound(ApiResponse<object>.Fail("Usuario no encontrado."));
-
-        var cambiaRol = dto.RolId.HasValue
-            ? actual.RolId != dto.RolId
-            : !string.IsNullOrWhiteSpace(dto.Rol) &&
-              !string.Equals(actual.Rol, dto.Rol, StringComparison.OrdinalIgnoreCase);
-
-        if (cambiaRol)
-            await _permisoService.VerificarPermisoAsync(ModuloSistema.Usuarios, AccionPermiso.AsignarRol);
-
-        if (!string.IsNullOrWhiteSpace(dto.NuevaPassword))
-            await _permisoService.VerificarPermisoAsync(ModuloSistema.Usuarios, AccionPermiso.RestablecerContrasena);
-
-        var actualizado = await _usuarioService.UpdateAsync(id, dto);
-        if (actualizado is null)
-            return NotFound(ApiResponse<object>.Fail("Usuario no encontrado."));
-
+        var actualizado = await _administracion.ActualizarAsync(Empresa, id, dto, Ct);
+        if (actualizado is null) return NotFound(ApiResponse<object>.Fail("Usuario no encontrado."));
         return Ok(ApiResponse<UsuarioDto>.Ok(actualizado, "Usuario actualizado correctamente."));
     }
 
     [HttpPut("{id:int}/estado")]
     public async Task<IActionResult> UpdateEstado(int id, [FromBody] UpdateUsuarioEstadoDto dto)
     {
-        if (!dto.Activo && _currentUser.UsuarioId == id)
-            return BadRequest(ApiResponse<object>.Fail("No puedes desactivar tu propia cuenta."));
-
-        await _permisoService.VerificarPermisoAsync(
-            ModuloSistema.Usuarios,
-            dto.Activo ? AccionPermiso.Activar : AccionPermiso.Desactivar);
-
-        var actualizado = await _usuarioService.UpdateEstadoAsync(id, dto.Activo);
-        if (actualizado is null)
-            return NotFound(ApiResponse<object>.Fail("Usuario no encontrado."));
-
-        var accion = dto.Activo ? "activado" : "desactivado";
-        return Ok(ApiResponse<UsuarioDto>.Ok(actualizado, $"Usuario {accion} correctamente."));
+        var empresa = await AutorizarAsync(dto.Activo ? AccionPermiso.Activar : AccionPermiso.Desactivar);
+        var actualizado = await _administracion.UpdateEstadoAsync(empresa, id, dto.Activo, Ct);
+        return Ok(ApiResponse<UsuarioDto>.Ok(actualizado, "Estado del usuario actualizado correctamente."));
     }
 
     [HttpPut("{id:int}/bloquear")]
     public async Task<IActionResult> Bloquear(int id, [FromBody] BloquearUsuarioDto dto)
     {
-        await _permisoService.VerificarPermisoAsync(ModuloSistema.Usuarios, AccionPermiso.Desactivar);
-        var actualizado = await _usuarioService.BloquearAsync(id, dto.Motivo);
+        var empresa = await AutorizarAsync(AccionPermiso.Desactivar);
+        var actualizado = await _administracion.BloquearAsync(empresa, id, dto.Motivo, Ct);
         return Ok(ApiResponse<UsuarioDto>.Ok(actualizado, "Usuario bloqueado correctamente."));
     }
 
     [HttpPut("{id:int}/desbloquear")]
     public async Task<IActionResult> Desbloquear(int id)
     {
-        await _permisoService.VerificarPermisoAsync(ModuloSistema.Usuarios, AccionPermiso.Activar);
-        var actualizado = await _usuarioService.DesbloquearAsync(id);
+        var empresa = await AutorizarAsync(AccionPermiso.Activar);
+        var actualizado = await _administracion.DesbloquearAsync(empresa, id, Ct);
         return Ok(ApiResponse<UsuarioDto>.Ok(actualizado, "Usuario desbloqueado correctamente."));
     }
 
@@ -136,7 +90,7 @@ public class UsuariosController : ControllerBase
     [RequierePermiso(ModuloSistema.Usuarios, AccionPermiso.EliminarLogico)]
     public async Task<IActionResult> Eliminar(int id)
     {
-        await _usuarioService.EliminarAsync(id);
+        await _administracion.EliminarAsync(Empresa, id, Ct);
         return Ok(ApiResponse<object>.Ok(new { }, "Usuario eliminado correctamente."));
     }
 
@@ -144,52 +98,45 @@ public class UsuariosController : ControllerBase
     [RequierePermiso(ModuloSistema.Usuarios, AccionPermiso.Ver)]
     public async Task<IActionResult> GetEmpresas(int id)
     {
-        var empresaAutorizada = TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext);
-        var membresias = await _usuarioService.GetEmpresasAsync(id);
-        return Ok(ApiResponse<List<UsuarioEmpresaDto>>.Ok(
-            membresias.Where(m => m.EmpresaId == empresaAutorizada).ToList()));
+        var empresa = Empresa;
+        var membresias = await _administracion.GetEmpresasAsync(empresa, id, Ct);
+        return Ok(ApiResponse<List<UsuarioEmpresaDto>>.Ok(membresias.Where(m => m.EmpresaId == empresa).ToList()));
     }
 
     [HttpPost("{id:int}/empresas")]
     [RequierePermiso(ModuloSistema.Usuarios, AccionPermiso.AsignarRol)]
     public async Task<IActionResult> AsignarEmpresa(int id, [FromBody] AsignarUsuarioEmpresaDto dto)
     {
-        TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext, dto.EmpresaId);
-        var membresia = await _usuarioService.AsignarEmpresaAsync(id, dto);
-        return Ok(ApiResponse<UsuarioEmpresaDto>.Ok(membresia, "Empresa asignada al usuario correctamente."));
+        var empresa = TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext, dto.EmpresaId);
+        var membresia = await _administracion.AsignarEmpresaAsync(empresa, id, dto.RolId, Ct);
+        return Ok(ApiResponse<UsuarioEmpresaDto>.Ok(membresia, "Membresía empresarial asignada correctamente."));
     }
 
     [HttpPut("{id:int}/empresas/{empresaId:int}/rol")]
     [RequierePermiso(ModuloSistema.Usuarios, AccionPermiso.AsignarRol, VincularEmpresaRuta = true)]
-    public async Task<IActionResult> CambiarRolEmpresa(
-        int id,
-        int empresaId,
-        [FromBody] CambiarRolUsuarioEmpresaDto dto)
+    public async Task<IActionResult> CambiarRolEmpresa(int id, int empresaId, [FromBody] CambiarRolUsuarioEmpresaDto dto)
     {
-        var membresia = await _usuarioService.CambiarRolEmpresaAsync(id, empresaId, dto.RolId);
+        var empresa = TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext, empresaId);
+        var membresia = await _administracion.CambiarRolEmpresaAsync(empresa, id, dto.RolId, Ct);
         return Ok(ApiResponse<UsuarioEmpresaDto>.Ok(membresia, "Rol empresarial actualizado correctamente."));
     }
 
     [HttpPut("{id:int}/empresas/{empresaId:int}/estado")]
-    public async Task<IActionResult> CambiarEstadoEmpresa(
-        int id,
-        int empresaId,
-        [FromBody] UpdateUsuarioEmpresaEstadoDto dto)
+    public async Task<IActionResult> CambiarEstadoEmpresa(int id, int empresaId, [FromBody] UpdateUsuarioEmpresaEstadoDto dto)
     {
-        var empresaAutorizada = await TenantPermissionContext.RequireEmpresaIdAsync(
-            HttpContext, HttpContext.RequestAborted);
-        if (empresaId != empresaAutorizada)
-            throw new ForbiddenAccessException(
-                "La empresa de la membresía no coincide con el contexto de autorización.");
-
-        await _permisoService.VerificarPermisoAsync(
-            empresaAutorizada, ModuloSistema.Usuarios,
-            dto.Activa ? AccionPermiso.Activar : AccionPermiso.Desactivar);
-        TenantPermissionContext.MarkAuthorizedEmpresaId(HttpContext, empresaAutorizada);
-
-        var membresia = await _usuarioService.CambiarEstadoEmpresaAsync(id, empresaAutorizada, dto.Activa);
-        return Ok(ApiResponse<UsuarioEmpresaDto>.Ok(
-            membresia,
+        var empresa = await AutorizarAsync(dto.Activa ? AccionPermiso.Activar : AccionPermiso.Desactivar, empresaId);
+        var membresia = await _administracion.CambiarEstadoEmpresaAsync(empresa, id, dto.Activa, Ct);
+        return Ok(ApiResponse<UsuarioEmpresaDto>.Ok(membresia,
             dto.Activa ? "Membresía empresarial activada correctamente." : "Membresía empresarial desactivada correctamente."));
+    }
+
+    private async Task<int> AutorizarAsync(AccionPermiso accion, int? empresaRuta = null)
+    {
+        var empresa = await TenantPermissionContext.RequireEmpresaIdAsync(HttpContext, Ct);
+        if (empresaRuta.HasValue && empresaRuta.Value != empresa)
+            throw new ForbiddenAccessException("La empresa no coincide con el contexto de autorización.");
+        await _permisoService.VerificarPermisoAsync(empresa, ModuloSistema.Usuarios, accion);
+        TenantPermissionContext.MarkAuthorizedEmpresaId(HttpContext, empresa);
+        return empresa;
     }
 }

@@ -1,4 +1,4 @@
-name: QA - FN-05 administracion de roles y matrices
+name: QA - FN-05 administracion empresarial dirigida
 
 on:
   workflow_dispatch:
@@ -7,6 +7,11 @@ on:
     paths:
       - '.github/workflows/qa-fn-05-roles.yml'
       - 'backend/tests/Solqaryn.Tests/QaFn05RoleAdministration*Tests.cs'
+      - 'backend/tests/Solqaryn.Tests/QaFn05UserAdministration*Tests.cs'
+      - 'backend/tests/Solqaryn.Tests/API/Controllers/UsuariosEmpresaAuthorizationContractTests.cs'
+      - 'backend/src/Application/Interfaces/IUsuarioAdministracionEmpresaService.cs'
+      - 'backend/src/Infrastructure/Services/UsuarioAdministracionEmpresaService.cs'
+      - 'backend/src/API/Controllers/UsuariosController.cs'
       - 'backend/tests/Solqaryn.Tests/N65FTenantPermissionIsolationTests.cs'
       - 'backend/src/Application/Interfaces/IPermisoService.cs'
       - 'backend/src/Application/Interfaces/IRolService.cs'
@@ -55,11 +60,11 @@ jobs:
           dotnet-version: '10.0.401'
           cache: true
           cache-dependency-path: backend/**/*.csproj
-      - name: Roles y matrices de permisos A/B en MySQL desechable
+      - name: Roles, matrices e identidades A/B en MySQL desechable
         working-directory: backend
         run: |
           set -euo pipefail
-          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter 'FullyQualifiedName~QaFn05RoleAdministration' --logger "trx;LogFileName=qa-fn05-roles.trx"
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter 'FullyQualifiedName~QaFn05RoleAdministration|FullyQualifiedName~QaFn05UserAdministration|FullyQualifiedName~UsuariosEmpresaAuthorizationContractTests' --logger "trx;LogFileName=qa-fn05-roles.trx"
           echo QA_FN05_ROLE_ADMINISTRATION=PASS
       - if: always()
         uses: actions/upload-artifact@v4

@@ -63,14 +63,14 @@ public class UsuariosEmpresaAuthorizationContractTests
     [Fact]
     public async Task CambiarEstadoEmpresa_DebeExigirPermisoActivar_CuandoActivaEsTrue()
     {
-        var usuarioService = new Mock<IUsuarioService>();
+        var usuarioService = new Mock<IUsuarioAdministracionEmpresaService>();
         var permisoService = new Mock<IPermisoService>();
         var currentUser = new Mock<ICurrentUserService>();
         usuarioService
-            .Setup(service => service.CambiarEstadoEmpresaAsync(7, 11, true))
+            .Setup(service => service.CambiarEstadoEmpresaAsync(11, 7, true, It.IsAny<CancellationToken>()))
             .ReturnsAsync((UsuarioEmpresaDto)null!);
 
-        var controller = new UsuariosController(usuarioService.Object, permisoService.Object, currentUser.Object)
+        var controller = new UsuariosController(usuarioService.Object, permisoService.Object)
         {
             ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
         };
@@ -81,20 +81,20 @@ public class UsuariosEmpresaAuthorizationContractTests
         permisoService.Verify(
             service => service.VerificarPermisoAsync(11, ModuloSistema.Usuarios, AccionPermiso.Activar),
             Times.Once);
-        usuarioService.Verify(service => service.CambiarEstadoEmpresaAsync(7, 11, true), Times.Once);
+        usuarioService.Verify(service => service.CambiarEstadoEmpresaAsync(11, 7, true, It.IsAny<CancellationToken>()), Times.Once);
     }
 
     [Fact]
     public async Task CambiarEstadoEmpresa_DebeExigirPermisoDesactivar_CuandoActivaEsFalse()
     {
-        var usuarioService = new Mock<IUsuarioService>();
+        var usuarioService = new Mock<IUsuarioAdministracionEmpresaService>();
         var permisoService = new Mock<IPermisoService>();
         var currentUser = new Mock<ICurrentUserService>();
         usuarioService
-            .Setup(service => service.CambiarEstadoEmpresaAsync(7, 11, false))
+            .Setup(service => service.CambiarEstadoEmpresaAsync(11, 7, false, It.IsAny<CancellationToken>()))
             .ReturnsAsync((UsuarioEmpresaDto)null!);
 
-        var controller = new UsuariosController(usuarioService.Object, permisoService.Object, currentUser.Object)
+        var controller = new UsuariosController(usuarioService.Object, permisoService.Object)
         {
             ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
         };
@@ -105,15 +105,14 @@ public class UsuariosEmpresaAuthorizationContractTests
         permisoService.Verify(
             service => service.VerificarPermisoAsync(11, ModuloSistema.Usuarios, AccionPermiso.Desactivar),
             Times.Once);
-        usuarioService.Verify(service => service.CambiarEstadoEmpresaAsync(7, 11, false), Times.Once);
+        usuarioService.Verify(service => service.CambiarEstadoEmpresaAsync(11, 7, false, It.IsAny<CancellationToken>()), Times.Once);
     }
     [Fact]
     public async Task CambiarEstadoEmpresa_RechazaRutaAjenaSinMutar()
     {
-        var usuarioService = new Mock<IUsuarioService>(MockBehavior.Strict);
+        var usuarioService = new Mock<IUsuarioAdministracionEmpresaService>(MockBehavior.Strict);
         var permisoService = new Mock<IPermisoService>(MockBehavior.Strict);
-        var controller = new UsuariosController(usuarioService.Object, permisoService.Object,
-            Mock.Of<ICurrentUserService>())
+        var controller = new UsuariosController(usuarioService.Object, permisoService.Object)
         {
             ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
         };
@@ -128,9 +127,8 @@ public class UsuariosEmpresaAuthorizationContractTests
     [Fact]
     public async Task AsignarEmpresa_RechazaEmpresaAjenaEnElCuerpo()
     {
-        var usuarioService = new Mock<IUsuarioService>(MockBehavior.Strict);
-        var controller = new UsuariosController(usuarioService.Object, Mock.Of<IPermisoService>(),
-            Mock.Of<ICurrentUserService>())
+        var usuarioService = new Mock<IUsuarioAdministracionEmpresaService>(MockBehavior.Strict);
+        var controller = new UsuariosController(usuarioService.Object, Mock.Of<IPermisoService>())
         {
             ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
         };
@@ -144,14 +142,13 @@ public class UsuariosEmpresaAuthorizationContractTests
     [Fact]
     public async Task GetEmpresas_OcultaMembresiasDeOtrasEmpresas()
     {
-        var usuarioService = new Mock<IUsuarioService>();
-        usuarioService.Setup(x => x.GetEmpresasAsync(7)).ReturnsAsync(new List<UsuarioEmpresaDto>
+        var usuarioService = new Mock<IUsuarioAdministracionEmpresaService>();
+        usuarioService.Setup(x => x.GetEmpresasAsync(11, 7, It.IsAny<CancellationToken>())).ReturnsAsync(new List<UsuarioEmpresaDto>
         {
             new() { UsuarioId = 7, EmpresaId = 11, RolId = 3, Activa = true },
             new() { UsuarioId = 7, EmpresaId = 12, RolId = 9, Activa = true }
         });
-        var controller = new UsuariosController(usuarioService.Object, Mock.Of<IPermisoService>(),
-            Mock.Of<ICurrentUserService>())
+        var controller = new UsuariosController(usuarioService.Object, Mock.Of<IPermisoService>())
         {
             ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext() }
         };
