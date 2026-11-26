@@ -213,8 +213,8 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                     Resultado = "Error",
                     Error = codigo
                 };
-                _db.Set<RegistroAuditoria>().Add(priorAudit);
-                await _db.SaveChangesAsync(cancellationToken);
+                if (!await PersistirConsultaAuditadaAsync(priorAudit, cancellationToken))
+                    return NoVerificable();
                 cancellationToken.ThrowIfCancellationRequested();
                 if (!await VigenteAsync()) return await DenegarAuditadoAsync(priorAudit.Id);
             }
@@ -430,8 +430,8 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                 }),
                 Resultado = "Exito"
             };
-            _db.Set<RegistroAuditoria>().Add(priorAudit);
-            await _db.SaveChangesAsync(cancellationToken);
+            if (!await PersistirConsultaAuditadaAsync(priorAudit, cancellationToken))
+                return NoVerificable();
             // The audit write is another I/O boundary. Never disclose evidence
             // if the platform grant was revoked during durable persistence.
             cancellationToken.ThrowIfCancellationRequested();
@@ -477,6 +477,55 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
             return value;
 
         return Guid.NewGuid().ToString("N");
+    }
+
+    // The provider result may be disclosed only after the actual persisted receipt
+    // matches the intended audit. A successful INSERT alone is not evidence of integrity.
+    private async Task<bool> PersistirConsultaAuditadaAsync(
+        RegistroAuditoria expected, CancellationToken cancellationToken)
+    {
+        await using var tx = _db.Database.IsRelational()
+            ? await _db.Database.BeginTransactionAsync(cancellationToken)
+            : null;
+        _db.Set<RegistroAuditoria>().Add(expected);
+        if (await _db.SaveChangesAsync(cancellationToken) != 1 || expected.Id <= 0)
+            return false;
+
+        var actual = await _db.Set<RegistroAuditoria>().AsNoTracking()
+            .SingleOrDefaultAsync(x => x.Id == expected.Id, cancellationToken);
+        if (actual is null ||
+            actual.UsuarioId != expected.UsuarioId ||
+            actual.NombreUsuario != expected.NombreUsuario ||
+            actual.EmpresaId != expected.EmpresaId ||
+            actual.AmbitoAutoridad != expected.AmbitoAutoridad ||
+            actual.OrigenAutorizacion != expected.OrigenAutorizacion ||
+            actual.Modulo != expected.Modulo || actual.Accion != expected.Accion ||
+            actual.Entidad != expected.Entidad || actual.ReferenciaId != expected.ReferenciaId ||
+            actual.Descripcion != expected.Descripcion ||
+            actual.CorrelationId != expected.CorrelationId ||
+            actual.Resultado != expected.Resultado || actual.Error != expected.Error ||
+            actual.Motivo != expected.Motivo || actual.Ip != expected.Ip ||
+            actual.UserAgent != expected.UserAgent ||
+            actual.ValoresAnteriores != expected.ValoresAnteriores ||
+            actual.ValoresNuevos is null || expected.ValoresNuevos is null)
+            return false;
+        try
+        {
+            // MySQL JSON may normalize property ordering and whitespace.
+            using var actualJson = JsonDocument.Parse(actual.ValoresNuevos);
+            using var expectedJson = JsonDocument.Parse(expected.ValoresNuevos);
+            if (!JsonElement.DeepEquals(actualJson.RootElement, expectedJson.RootElement))
+                return false;
+        }
+        catch (JsonException)
+        {
+            return false;
+        }
+
+        cancellationToken.ThrowIfCancellationRequested();
+        if (tx is not null)
+            await tx.CommitAsync(cancellationToken);
+        return true;
     }
 
     private ObjectResult NoVerificable() =>

@@ -1,3 +1,6 @@
+## 2026-11-25 | DEV01 | C01-04.M03.06 | R1-RESTAURADA
+- V44R1-J00-E6263A76-C0104M0306-GLOBAL-AUDIT-READBACK: confirma recibo GLOBAL antes de COMMIT, rechazo de mutaciones SQL silenciosas, rollback y recuperación en prueba HTTP/JWT/MySQL existente. Sin modificar grants ni datos comerciales; CI exact-SHA y A5 independiente pendientes.
+
 ## 2026-11-25 | DEV04 | C01-04.M03.06 | R1-RESTAURADA
 - V44R1-J30-0EDDF9AB-C0104M0306-V23-DIAG: instrumentación causal del test generado exclusivamente GitHub-hosted/MySQL efímero, ante V23 HTTP 503 (job 139649722994, artifact 15081897273). Registra solo etapa legacy/core, status, tiempo y código fijo allowlist de auditoría; no cuerpo, PII ni cambio funcional. Preserva las dos aserciones HTTP 200 y demás negativos; no declara causa ni PASS. RUN 0eddf9ab-ea58-8323-ad0e-4c91c21d0594 TASK 6aeacb7820ac8191b7d768a6f33dfa09; base 31468a14c479fcf7c0a39ee349af26b8fe29f699; rollback revert normal; CI y A5 pendientes.
 

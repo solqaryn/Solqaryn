@@ -559,6 +559,51 @@ public sealed class C0204M0502QaHttpContractTests
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
             Assert.Equal(auditCount + 1, await db.Set<RegistroAuditoria>().CountAsync());
         }
+
+        // An apparently successful INSERT is insufficient: a real SQL trigger
+        // can alter the audit receipt. Both success and error must roll back.
+        foreach (var triggerSql in new[]
+        {
+            "CREATE TRIGGER qa_ci_audit_readback_mutation BEFORE INSERT ON RegistrosAuditoria FOR EACH ROW SET NEW.CorrelationId = 'qa-ci-mutated'",
+            "CREATE TRIGGER qa_ci_audit_readback_mutation BEFORE INSERT ON RegistrosAuditoria FOR EACH ROW SET NEW.ValoresNuevos = JSON_SET(NEW.ValoresNuevos, '$.EstadoCi', 'qa-ci-mutated')"
+        })
+        {
+            using (var scope = fixture.Host.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                await db.Database.ExecuteSqlRawAsync(triggerSql);
+            }
+            try
+            {
+                foreach (var payload in new[] { Payload(), "[\"private-secret\"]" })
+                {
+                    upstream.Payload = payload;
+                    using var rejected = await client.GetAsync(Path);
+                    Assert.Equal(HttpStatusCode.ServiceUnavailable, rejected.StatusCode);
+                    var body = await rejected.Content.ReadAsStringAsync();
+                    Assert.DoesNotContain("CI_MINIMA_ACREDITADA", body);
+                    Assert.DoesNotContain("qa-ci-mutated", body);
+                    Assert.DoesNotContain("private-secret", body);
+                    using var scope = fixture.Host.Services.CreateScope();
+                    var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                    Assert.Equal(auditCount + 1, await db.Set<RegistroAuditoria>().CountAsync());
+                }
+            }
+            finally
+            {
+                using var scope = fixture.Host.Services.CreateScope();
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                await db.Database.ExecuteSqlRawAsync("DROP TRIGGER IF EXISTS qa_ci_audit_readback_mutation");
+            }
+        }
+        upstream.Payload = Payload();
+        using (var recovered = await client.GetAsync(Path))
+            Assert.Equal(HttpStatusCode.OK, recovered.StatusCode);
+        using (var scope = fixture.Host.Services.CreateScope())
+        {
+            var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+            Assert.Equal(auditCount + 2, await db.Set<RegistroAuditoria>().CountAsync());
+        }
     }
 
     // This test runs against an isolated MySQL 8.4 service in the GH-hosted QA lab.
