@@ -59,7 +59,7 @@ public class C0701PedidoReservaClasificacionTests
             6 => new List<Producto> { new() { Id = 99, Activo = true, TipoInventario = TipoInventario.MercaderiaVenta } },
             _ => new List<Producto> { producto }
         };
-        productos.Setup(x => x.GetByIdsForUpdateAsync(It.IsAny<IEnumerable<int>>()))
+        productos.Setup(x => x.GetByIdsForReadLockAsync(It.IsAny<IEnumerable<int>>()))
             .ReturnsAsync(persistidos);
         var variantes = new Mock<IProductoVarianteRepository>(MockBehavior.Strict);
         if (caso == 4)
@@ -83,7 +83,7 @@ public class C0701PedidoReservaClasificacionTests
         await Assert.ThrowsAsync<BusinessRuleException>(() => servicio.ConfirmarAsync(51, dto));
         Assert.Equal(EstadoPedidoVenta.Borrador, pedido.Estado);
         var expectedIds = caso == 5 ? new[] { 11, 12 } : new[] { 11 };
-        productos.Verify(x => x.GetByIdsForUpdateAsync(It.Is<IEnumerable<int>>(ids => ids.SequenceEqual(expectedIds))), Times.Once);
+        productos.Verify(x => x.GetByIdsForReadLockAsync(It.Is<IEnumerable<int>>(ids => ids.SequenceEqual(expectedIds))), Times.Once);
         productos.VerifyNoOtherCalls();
         if (caso == 4) variantes.Verify(x => x.GetByIdsForUpdateAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
         variantes.VerifyNoOtherCalls();

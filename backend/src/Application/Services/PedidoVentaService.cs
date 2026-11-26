@@ -206,7 +206,8 @@ public sealed class PedidoVentaService : IPedidoVentaService
             var productos = _productos
                 ?? throw new InvalidOperationException("IProductoRepository no está configurado para confirmar pedidos con reserva.");
             var productoIds = pedido.Detalles.Select(x => x.ProductoId).Distinct().OrderBy(x => x).ToArray();
-            var productosPersistidos = await productos.GetByIdsForUpdateAsync(productoIds);
+            // La clasificación comercial se consulta bajo lock sin reutilizar entidades previamente rastreadas.
+            var productosPersistidos = await productos.GetByIdsForReadLockAsync(productoIds);
             if (productosPersistidos.Count != productoIds.Length ||
                 !productosPersistidos.Select(x => x.Id).ToHashSet().SetEquals(productoIds) ||
                 productosPersistidos.Any(x => !x.Activo || x.Eliminado ||

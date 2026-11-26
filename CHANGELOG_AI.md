@@ -1,3 +1,9 @@
+## 2026-11-26 | DEV04 | C07-01.M06.06 | R1-RESTAURADA
+- V44R1-J30-E62C2DDC-C0701M0606-RESERVA-READLOCK | Base d871876e80207896b8f4e892c4b735deb05f57bf; autor DEV04, RUN e62c2ddc-c290-8324-bd66-6b153291ca28.
+- R2: PedidoVentaService confirma reservas leyendo productos con el lock comercial vigente sin reutilizar entidades rastreadas. Conserva scope tenant, orden de bloqueos, reservas, auditoría, transacción y replay. No cambia el catálogo ni permite servicios no inventariables.
+- Pruebas: mock dirigido actualizado y ampliación Oracle MySQL con dos contextos A/B y reclasificación persistida; exige rechazo sin efectos y conserva pruebas previas. A0 estático, CI .NET/MySQL pendiente, no A5 ni LISTO. Las variantes aún requieren revisión separada por navegación y snapshots.
+- Foco C01-04.M03.06 preservado: fuente empresarial P01/P02/API12 y retención no acreditadas. Rollback: revert normal en dev, sin QA/main/PROD.
+
 ## 2026-11-26 | DEV03 | C07-01.M06.06 | R1-RESTAURADA
 - V44R1-J20-A5216E19-C0701M0606-FACT-EVIDENCE | Base 1bb252bbbfa2abc3b37ada8a71d9bdfd11be2eed; RUN a5216e19-26a8-832b-b7bf-0980d32a2da9. El job Oracle/MySQL8.4 exact-SHA 139858041477 terminó 164/164 PASS, pero el TRX individual de cotización no estaba exportado. El workflow DEV existente ahora conserva únicamente identidad fija del Fact, SHA/run/intento, resultado único Passed y contadores saneados; rechaza definición o resultado ausente/duplicado, sin exponer TRX, stdout, PII ni datos de fixture. No cambia pruebas, runtime, permisos ni esquema; no certifica HTTP/JWT o D01/D06, ni A5/LISTO. Foco C01-04.M03.06 P01/P02/API12/retención pendiente sin nueva autoridad; no reabre proveedores. CI exact-SHA nueva pendiente, revert normal si falla.
 

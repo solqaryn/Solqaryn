@@ -193,6 +193,37 @@ public sealed class C0701ReservaClasificacionMySqlIntegrationTests
             await using (var db = new AppDbContext(options, tenantHttpContextAccessor: cross))
                 await Assert.ThrowsAsync<ResourceNotFoundException>(() => Compose(db, cross).ConfirmarAsync(sb.OrderId, Request(sb)));
 
+            // A stale tracked product must not override the SQL row acquired under lock.
+            // Prove both tenant directions before the existing fresh-context cases.
+            foreach (var (tenant, seed) in new[] { (a, sa), (b, sb) })
+            {
+                var access = Access(tenant);
+                await using var stale = new AppDbContext(options, tenantHttpContextAccessor: access);
+                var cached = await stale.Productos.SingleAsync(x => x.Id == seed.Products[1]);
+                Assert.Equal(TipoInventario.MercaderiaVenta, cached.TipoInventario);
+
+                await using (var writer = new AppDbContext(options, tenantHttpContextAccessor: Access(tenant)))
+                {
+                    var current = await writer.Productos.SingleAsync(x => x.Id == seed.Products[1]);
+                    current.TipoInventario = TipoInventario.InsumoAdministrativo;
+                    await writer.SaveChangesAsync();
+                }
+                Assert.Equal(TipoInventario.MercaderiaVenta, cached.TipoInventario);
+
+                var deniedStale = await Assert.ThrowsAsync<BusinessRuleException>(
+                    () => Compose(stale, access).ConfirmarAsync(seed.OrderId, Request(seed)));
+                Assert.Contains("no disponibles para reserva comercial", deniedStale.Message);
+                await VerifyAsync(a, sa, false);
+                await VerifyAsync(b, sb, false);
+
+                await using (var writer = new AppDbContext(options, tenantHttpContextAccessor: Access(tenant)))
+                {
+                    var current = await writer.Productos.SingleAsync(x => x.Id == seed.Products[1]);
+                    current.TipoInventario = TipoInventario.MercaderiaVenta;
+                    await writer.SaveChangesAsync();
+                }
+            }
+
             // A draft exists before a product is reclassified; its other line stays commercial.
             await using (var db = new AppDbContext(options, tenantHttpContextAccessor: Access(a)))
             {
