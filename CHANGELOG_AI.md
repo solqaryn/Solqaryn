@@ -11405,3 +11405,7 @@
 ## 2026-11-26 — DEV05 — C01-04.M03.06 — V44/R1/R5
 
 - TASK_ID=6adc2e55f47c81919f6374e561687076; RUN_ID=6b595012-65d8-832b-a1b0-e4bd0b265a35; base 40dcc71f357be644f945d52dbb31228a8820ec8d. Correctivo M03.03 bajo alcance 26/11: gate Application de API12 deniega sucursal ausente/ajena aun si un lector alternativo entrega snapshots; mantiene timeline legado opcional y no concede persistencia ni permisos. 6 xUnit nuevos, no ejecutados. H/I y A5 histórica .03/.04 intactos; ScopeLock base exacto SUCCESS 9/9, V5 SUCCESS; backend base en curso, nuevo CI pendiente. No altera Domain M03.01, RBAC, schema ni datos. A5 correctiva ajena, P01/P02 real, escritor y transacción/DI/rollback pendientes; rollback revert normal dev.
+
+
+### 2026-11-26 | DEV06 | C01-04.M03.06 | P01/P02 almacenamiento correctivo
+- Base 4118e091930811417348d7947b36e6f907e553d0; RUN_ID 636037e4-8df0-8321-bc2c-8a6d91d93fe0; TASK_ID 6af16bbad26881918c283abe06e1f32a. Migracion aditiva Oracle MySQL, claves compuestas empresa/expediente y empresa/sucursal; escritor append-only con autoridad de escritura independiente, locks transaccionales, revision antes/despues, version monotona y rollback ante denegacion. Sin registro DI, grant, backfill ni tipos de negocio inferidos. Prueba dirigida A/B con autoridad sintetica, pendiente de GitHub Actions. No acredita JWT/API12 ni A5 correctiva; preservar H/I y evidencia historica de proveedores.
