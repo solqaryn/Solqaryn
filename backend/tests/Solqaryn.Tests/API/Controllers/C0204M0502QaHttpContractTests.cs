@@ -471,11 +471,7 @@ public sealed class C0204M0502QaHttpContractTests
                     x => x.UsuarioId == fixture.GlobalId)).Activa);
             }
 
-            foreach (var mutationSql in new[]
-            {
-                "NEW.ValoresNuevos = IF(NEW.Entidad = 'DenegacionEvidenciasQaGlobal', JSON_SET(NEW.ValoresNuevos, '$.PriorAuditId', 0), NEW.ValoresNuevos)",
-                "NEW.Fecha = IF(NEW.Entidad = 'DenegacionEvidenciasQaGlobal', DATE_ADD(NEW.Fecha, INTERVAL 1 DAY), NEW.Fecha)"
-            })
+            foreach (var mutatePriorAuditId in new[] { true, false })
             {
                 // The prior receipt is already durable; a silently mutated
                 // compensation must not invent its causal link or timestamp.
@@ -486,9 +482,13 @@ public sealed class C0204M0502QaHttpContractTests
                         x => x.UsuarioId == fixture.GlobalId);
                     grant.Activar();
                     await db.SaveChangesAsync();
-                    await db.Database.ExecuteSqlRawAsync(
-                        "CREATE TRIGGER qa_ci_mutate_compensation BEFORE INSERT ON RegistrosAuditoria " +
-                        "FOR EACH ROW SET " + mutationSql);
+                    // Both DDL commands are fixed test literals, never assembled from SQL fragments.
+                    if (mutatePriorAuditId)
+                        await db.Database.ExecuteSqlRawAsync(
+                            "CREATE TRIGGER qa_ci_mutate_compensation BEFORE INSERT ON RegistrosAuditoria FOR EACH ROW SET NEW.ValoresNuevos = IF(NEW.Entidad = 'DenegacionEvidenciasQaGlobal', JSON_SET(NEW.ValoresNuevos, '$.PriorAuditId', 0), NEW.ValoresNuevos)");
+                    else
+                        await db.Database.ExecuteSqlRawAsync(
+                            "CREATE TRIGGER qa_ci_mutate_compensation BEFORE INSERT ON RegistrosAuditoria FOR EACH ROW SET NEW.Fecha = IF(NEW.Entidad = 'DenegacionEvidenciasQaGlobal', DATE_ADD(NEW.Fecha, INTERVAL 1 DAY), NEW.Fecha)");
                 }
                 try
                 {
