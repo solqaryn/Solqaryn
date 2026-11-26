@@ -137,6 +137,12 @@ public sealed class C0104CaseFileEnterpriseHttpMySqlTests
             builder.WebHost.UseTestServer();
             builder.Configuration["CaseFile:EnableEnterpriseIntegration"] = "true";
             builder.Services.AddHttpContextAccessor();
+            // UseMiddleware resolves all InvokeAsync service parameters through DI,
+            // including the two public-store dependencies not exercised by this route.
+            // Match Program composition without enabling any public-store capability.
+            builder.Configuration["PublicStore:EnableMultiEmpresaBinding"] = "false";
+            builder.Services.AddSingleton<IPublicStoreHostTenantResolver, ConfiguredPublicStoreHostTenantResolver>();
+            builder.Services.AddScoped<IPublicStoreProofReplayStore, MySqlPublicStoreProofReplayStore>();
             var lostCommit = new LostCommitAcknowledgement();
             builder.Services.AddDbContext<AppDbContext>(o => o.UseMySQL(origin.ConnectionString,
                 x => x.MigrationsAssembly("Solqaryn.Infrastructure.Migrations")).AddInterceptors(lostCommit));
