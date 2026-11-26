@@ -32,6 +32,14 @@ jobs:
           fetch-depth: 0
       - name: Verificar scope SOLQARYN
         run: node scripts/verify-project-scope.mjs
+      - name: Impedir referencias residuales a la alternativa de Cuentas por cobrar
+        shell: bash
+        run: |
+          set -euo pipefail
+          test -z "$(git ls-files -- frontend/src/app/features/finanzas/cuentas-por-cobrar/)"
+          status=0
+          git grep -n -E 'CUENTAS_POR_COBRAR_ROUTES|CuentasPorCobrarService|finanzas/cuentas-por-cobrar' -- frontend/src frontend/e2e frontend/scripts || status=$?
+          test "$status" -eq 1
       - name: Bloquear temporales, conflictos y diffs inválidos
         shell: bash
         run: |
