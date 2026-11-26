@@ -7,6 +7,10 @@ on:
     paths:
       - '.github/workflows/qa-fn-05-roles.yml'
       - 'backend/tests/Solqaryn.Tests/QaFn05RoleAdministration*Tests.cs'
+      - 'backend/tests/Solqaryn.Tests/N65FTenantPermissionIsolationTests.cs'
+      - 'backend/src/Application/Interfaces/IPermisoService.cs'
+      - 'backend/src/Application/Interfaces/IRolService.cs'
+      - 'backend/src/Application/Interfaces/IRolRepository.cs'
       - 'backend/src/API/Controllers/RolesController.cs'
       - 'backend/src/API/Controllers/PermisosController.cs'
       - 'backend/src/Application/Services/RolService.cs'

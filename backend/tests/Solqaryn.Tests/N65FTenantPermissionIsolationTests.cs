@@ -244,6 +244,17 @@ public sealed class N65FTenantPermissionIsolationTests
             UpdatePermisoMatrizDto dto) =>
             Task.FromResult(new List<PermisoMatrizItemDto>());
 
+        // This double exercises the permission gate, not role administration.
+        // Unexpected scoped-matrix operations must fail rather than simulate success.
+        public Task<List<PermisoMatrizItemDto>> GetMatrizEmpresaAsync(int rolId, int empresaId) =>
+            throw new NotSupportedException("El doble de prueba no implementa consultas de matriz empresarial.");
+
+        public Task<List<PermisoMatrizItemDto>> UpdateMatrizEmpresaAsync(
+            int rolId,
+            UpdatePermisoMatrizDto dto,
+            int empresaId) =>
+            throw new NotSupportedException("El doble de prueba no implementa mutaciones de matriz empresarial.");
+
         public Task PrecargarMatrizPorDefectoAsync(int rolId, bool esAdministrador) =>
             Task.CompletedTask;
 

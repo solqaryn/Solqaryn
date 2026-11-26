@@ -1,3 +1,6 @@
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+using Solqaryn.API.Controllers;
 using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Exceptions;
 using Solqaryn.Application.Interfaces;
@@ -14,6 +17,55 @@ namespace Solqaryn.Tests;
 
 public sealed class QaFn05RoleAdministrationIsolationTests
 {
+    [Fact]
+    public async Task ControladorMatriz_UsaSoloEmpresaAutorizadaPorElGate()
+    {
+        var permisos = new Mock<IPermisoService>(MockBehavior.Strict);
+        var dto = new UpdatePermisoMatrizDto();
+        permisos.Setup(x => x.GetMatrizEmpresaAsync(7, 11))
+            .ReturnsAsync(new List<PermisoMatrizItemDto>());
+        permisos.Setup(x => x.UpdateMatrizEmpresaAsync(7, dto, 11))
+            .ReturnsAsync(new List<PermisoMatrizItemDto>());
+        var http = new DefaultHttpContext();
+        // Simulate the already verified gate context and an unrelated raw header.
+        http.Items["SOLQARYN_AUTHORIZED_EMPRESA_ID"] = 11;
+        http.Request.Headers["X-Empresa-Id"] = "12";
+        var controller = new PermisosController(permisos.Object, Mock.Of<IPermisoCatalogoService>())
+        {
+            ControllerContext = new ControllerContext { HttpContext = http }
+        };
+
+        Assert.IsType<OkObjectResult>(await controller.GetMatriz(7));
+        Assert.IsType<OkObjectResult>(await controller.UpdateMatriz(7, dto));
+        permisos.Verify(x => x.GetMatrizEmpresaAsync(7, 11), Times.Once);
+        permisos.Verify(x => x.UpdateMatrizEmpresaAsync(7, dto, 11), Times.Once);
+        permisos.VerifyNoOtherCalls();
+    }
+
+    [Fact]
+    public async Task ControladoresAdministrativos_NoAceptanCabeceraSinGateAutorizado()
+    {
+        var permisos = new Mock<IPermisoService>(MockBehavior.Strict);
+        var roles = new Mock<IRolService>(MockBehavior.Strict);
+        var http = new DefaultHttpContext();
+        http.Request.Headers["X-Empresa-Id"] = "11";
+        var permisosController = new PermisosController(permisos.Object, Mock.Of<IPermisoCatalogoService>())
+        {
+            ControllerContext = new ControllerContext { HttpContext = http }
+        };
+        var rolesController = new RolesController(roles.Object)
+        {
+            ControllerContext = new ControllerContext { HttpContext = http }
+        };
+
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() => permisosController.GetMatriz(7));
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() => permisosController.UpdateMatriz(7, new UpdatePermisoMatrizDto()));
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() => rolesController.GetAll());
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() => rolesController.GetById(7));
+        permisos.VerifyNoOtherCalls();
+        roles.VerifyNoOtherCalls();
+    }
+
     [Fact]
     public async Task RolesEmpresariales_NoExponenRolesAjenosNiGlobalesYProtegenPlantillas()
     {
