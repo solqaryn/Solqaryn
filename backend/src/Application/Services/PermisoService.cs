@@ -97,11 +97,18 @@ public class PermisoService : IPermisoService
 
         if (rol.EsAdministrador)
         {
-            var permisosActivos = catalogoActivo.Select(p => p.Id).ToHashSet();
-            if (!permisoIds.SetEquals(permisosActivos))
+            var permisosActivos = catalogoActivo
+                .Where(p => !CatalogoPermisosBase.RequiereGrantExplicito(p.Accion))
+                .Select(p => p.Id).ToHashSet();
+            var opcionalesExplicitos = catalogoActivo
+                .Where(p => CatalogoPermisosBase.RequiereGrantExplicito(p.Accion))
+                .Select(p => p.Id).ToHashSet();
+            // Keep the existing complete administrative matrix invariant for the
+            // ordinary catalog, without requiring or synthesizing an API12 grant.
+            if (!permisoIds.Where(id => !opcionalesExplicitos.Contains(id)).ToHashSet().SetEquals(permisosActivos))
             {
                 throw new BusinessRuleException(
-                    "Los roles administradores deben conservar grants explícitos para todo el catálogo activo.");
+                    "Los roles administradores deben conservar grants explícitos para el catálogo obligatorio activo.");
             }
         }
 
@@ -128,7 +135,8 @@ public class PermisoService : IPermisoService
         var filas = new List<RolPermiso>();
         if (esAdministrador)
         {
-            foreach (var permiso in (await _permisoRepository.GetAllAsync()).Where(p => p.Activo && !p.Eliminado))
+            foreach (var permiso in (await _permisoRepository.GetAllAsync()).Where(p => p.Activo && !p.Eliminado &&
+                         !CatalogoPermisosBase.RequiereGrantExplicito(p.Accion)))
             {
                 filas.Add(new RolPermiso { RolId = rolId, PermisoId = permiso.Id });
             }

@@ -32,5 +32,7 @@ public enum AccionPermiso
     ExonerarEnvio = 26,
     Importar = 27,
     Cerrar = 28,
-    Reabrir = 29
+    Reabrir = 29,
+    // API12: requiere grant explícito, nunca asignado por defecto.
+    ReadAuditCorrelation = 30
 }

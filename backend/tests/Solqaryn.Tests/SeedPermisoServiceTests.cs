@@ -31,7 +31,7 @@ public class SeedPermisoServiceTests
         var administrador = Assert.Single(roles.Where(r => r.NombreNormalizado == "ADMINISTRADOR"));
         var vendedor = Assert.Single(roles.Where(r => r.NombreNormalizado == "VENDEDOR"));
         var permisosActivos = await context.Permisos.IgnoreQueryFilters()
-            .CountAsync(p => p.Activo && !p.Eliminado);
+            .CountAsync(p => p.Activo && !p.Eliminado && p.Accion != AccionPermiso.ReadAuditCorrelation);
         var grantsAdministrador = await context.RolPermisos
             .CountAsync(p => p.RolId == administrador.Id);
 
@@ -110,7 +110,7 @@ public class SeedPermisoServiceTests
             .SingleAsync(r => r.NombreNormalizado == "ADMINISTRADOR");
         var permiso = await context.Permisos
             .IgnoreQueryFilters()
-            .FirstAsync(p => p.Activo && !p.Eliminado);
+            .FirstAsync(p => p.Activo && !p.Eliminado && p.Accion != AccionPermiso.ReadAuditCorrelation);
         var grant = await context.RolPermisos
             .SingleAsync(p => p.RolId == administrador.Id && p.PermisoId == permiso.Id);
         context.RolPermisos.Remove(grant);

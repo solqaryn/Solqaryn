@@ -129,6 +129,7 @@ public class SeedPermisoService
         {
             foreach (var permiso in permisos)
             {
+                if (CatalogoPermisosBase.RequiereGrantExplicito(permiso.Accion)) continue;
                 if (claves.Add((rol.Id, permiso.Id)))
                     _context.RolPermisos.Add(new RolPermiso { RolId = rol.Id, PermisoId = permiso.Id });
             }
@@ -177,6 +178,9 @@ public class SeedPermisoService
                     });
                     continue;
                 }
+
+                // A restart must not reactivate an explicitly disabled API12 permission.
+                if (CatalogoPermisosBase.RequiereGrantExplicito(accion)) continue;
 
                 permiso.Codigo = codigo;
                 permiso.Nombre = $"{modulo} - {accion}";
