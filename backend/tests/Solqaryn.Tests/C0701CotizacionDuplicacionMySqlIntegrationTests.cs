@@ -4,6 +4,7 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging.Abstractions;
 using MySql.Data.MySqlClient;
 using MySql.EntityFrameworkCore.Extensions;
+using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Exceptions;
 using Solqaryn.Application.Security;
 using Solqaryn.Application.Services;
@@ -217,6 +218,54 @@ public sealed class C0701CotizacionDuplicacionMySqlIntegrationTests
                 copyB = (await Compose(db, accessB).DuplicarComoBorradorAsync(sb.QuoteId)).Id;
             await VerifyAsync(a, sa, copyA);
             await VerifyAsync(b, sb, copyB);
+
+            // Alta y edición reales usan el mismo contrato de locks sin habilitar HTTP.
+            foreach (var (tenant, own, other) in new[] { (a, sa, sb), (b, sb, sa) })
+            {
+                int clientId, productId, variantId, draftId, lineId;
+                var access = Access(tenant);
+                await using (var db = new AppDbContext(options, tenantHttpContextAccessor: access))
+                {
+                    var original = await db.Cotizaciones.AsNoTracking().Include(x => x.Detalles).SingleAsync(x => x.Id == own.QuoteId);
+                    var line = original.Detalles.Single(x => x.ProductoId == own.ReclassProductId);
+                    clientId = original.ClienteId; productId = line.ProductoId; variantId = line.ProductoVarianteId!.Value;
+                    var service = Compose(db, access);
+                    draftId = (await service.CrearAsync(new CreateCotizacionDto { ClienteId = clientId, Detalles = [new CreateCotizacionDetalleDto { ProductoId = productId, ProductoVarianteId = variantId, Cantidad = 1m, PrecioUnitario = 25m }] })).Id;
+                }
+                await using (var db = new AppDbContext(options, tenantHttpContextAccessor: Access(tenant)))
+                {
+                    var draft = await db.Cotizaciones.AsNoTracking().Include(x => x.Detalles).SingleAsync(x => x.Id == draftId);
+                    Assert.Equal(tenant, draft.EmpresaId);
+                    Assert.Equal(EstadoCotizacion.Borrador, draft.Estado);
+                    lineId = draft.Detalles.Single().Id;
+                    Assert.Equal(1m, draft.Detalles.Single().Cantidad);
+                    Assert.Equal(1, await db.RegistrosAuditoria.CountAsync(x => x.Entidad == nameof(Cotizacion) && x.ReferenciaId == draftId && x.Accion == AccionPermiso.Crear));
+                }
+                var deniedAccess = Access(tenant);
+                await using (var db = new AppDbContext(options, tenantHttpContextAccessor: deniedAccess))
+                {
+                    await Assert.ThrowsAsync<BusinessRuleException>(() => Compose(db, deniedAccess).CrearAsync(new CreateCotizacionDto { ClienteId = clientId, Detalles = [new CreateCotizacionDetalleDto { ProductoId = other.ReclassProductId, Cantidad = 1m, PrecioUnitario = 25m }] }));
+                }
+                await using (var db = new AppDbContext(options, tenantHttpContextAccessor: Access(tenant)))
+                {
+                    var product = await db.Productos.SingleAsync(x => x.Id == productId);
+                    product.TipoInventario = TipoInventario.InsumoAdministrativo;
+                    await db.SaveChangesAsync();
+                }
+                var editAccess = Access(tenant);
+                await using (var db = new AppDbContext(options, tenantHttpContextAccessor: editAccess))
+                {
+                    await Assert.ThrowsAsync<BusinessRuleException>(() => Compose(db, editAccess).ActualizarAsync(new UpdateCotizacionDto { Id = draftId, ClienteId = clientId, Detalles = [new UpdateCotizacionDetalleDto { Id = lineId, ProductoId = productId, ProductoVarianteId = variantId, Cantidad = 2m, PrecioUnitario = 25m }] }));
+                }
+                await using (var verify = new AppDbContext(options, tenantHttpContextAccessor: Access(tenant)))
+                {
+                    Assert.Equal(3, await verify.Cotizaciones.CountAsync());
+                    var draft = await verify.Cotizaciones.AsNoTracking().Include(x => x.Detalles).SingleAsync(x => x.Id == draftId);
+                    Assert.Equal(1m, draft.Detalles.Single().Cantidad);
+                    Assert.Equal(EstadoCotizacion.Borrador, draft.Estado);
+                    Assert.Equal(0, await verify.RegistrosAuditoria.CountAsync(x => x.Entidad == nameof(Cotizacion) && x.ReferenciaId == draftId && x.Accion == AccionPermiso.Editar));
+                }
+            }
         }
         finally
         {

@@ -69,6 +69,7 @@ public sealed class CotizacionService : ICotizacionService
         await _unitOfWork.ExecuteInTransactionAsync(async () =>
         {
             var cliente = await RequerirClienteActivoAsync(dto.ClienteId);
+            await BloquearCatalogoVigenteAsync((dto.Detalles ?? []).Select(x => (x.ProductoId, x.ProductoVarianteId)));
             var cotizacion = new Cotizacion
             {
                 ClienteId = cliente.Id,
@@ -117,6 +118,14 @@ public sealed class CotizacionService : ICotizacionService
         {
             var cotizacion = await RequerirForUpdateAsync(dto.Id);
             cotizacion.AsegurarEditable();
+
+            // No modificar el agregado ni tomar locks del catálogo por un detalle ajeno.
+            foreach (var solicitado in dto.Detalles ?? [])
+            {
+                if (solicitado.Id is > 0 && !cotizacion.Detalles.Any(x => x.Id == solicitado.Id.Value))
+                    throw new BusinessRuleException($"El detalle {solicitado.Id.Value} no pertenece a la cotización {cotizacion.Id}.");
+            }
+            await BloquearCatalogoVigenteAsync((dto.Detalles ?? []).Select(x => (x.ProductoId, x.ProductoVarianteId)));
 
             var valoresAnteriores = new
             {
@@ -389,6 +398,40 @@ public sealed class CotizacionService : ICotizacionService
     {
         if (fecha.HasValue && fecha.Value.Kind != DateTimeKind.Utc)
             throw new BusinessRuleException($"{nombre} debe estar expresada en UTC.");
+    }
+
+    // Tomar primero todos los locks de producto y después los de variante, en orden
+    // ascendente, dentro de la transacción de alta/edición. Las lecturas posteriores
+    // conservan los snapshots y las validaciones de negocio existentes.
+    private async Task BloquearCatalogoVigenteAsync(IEnumerable<(int ProductoId, int? ProductoVarianteId)> detalles)
+    {
+        var lineas = detalles.ToArray();
+        if (lineas.Length == 0) return;
+        var ids = lineas.Select(x => x.ProductoId).Distinct().OrderBy(x => x).ToArray();
+        var productos = (await _productoRepository.GetByIdsForUpdateAsync(ids)).ToDictionary(x => x.Id);
+        foreach (var id in ids)
+        {
+            if (!productos.TryGetValue(id, out var p))
+                throw new BusinessRuleException($"Producto con Id {id} no encontrado.");
+            if (!p.Activo || p.Eliminado)
+                throw new BusinessRuleException("El producto no está disponible.");
+            if (p.TipoInventario != TipoInventario.MercaderiaVenta)
+                throw new BusinessRuleException("El producto no está habilitado para cotización comercial.");
+        }
+        var varianteIds = lineas.Where(x => x.ProductoVarianteId.HasValue)
+            .Select(x => x.ProductoVarianteId!.Value).Distinct().OrderBy(x => x).ToArray();
+        if (varianteIds.Length == 0) return;
+        var variantes = (await _varianteRepository.GetByIdsForUpdateAsync(varianteIds)).ToDictionary(x => x.Id);
+        foreach (var linea in lineas.Where(x => x.ProductoVarianteId.HasValue))
+        {
+            var id = linea.ProductoVarianteId!.Value;
+            if (!variantes.TryGetValue(id, out var v))
+                throw new BusinessRuleException($"Variante con Id {id} no encontrada.");
+            if (v.ProductoId != linea.ProductoId)
+                throw new BusinessRuleException($"La variante {id} no pertenece al producto {linea.ProductoId}.");
+            if (!v.Activo || v.Eliminado)
+                throw new BusinessRuleException("La variante no está disponible para cotización comercial.");
+        }
     }
 
     private async Task<CotizacionDetalle> CrearDetalleDesdeDtoAsync(

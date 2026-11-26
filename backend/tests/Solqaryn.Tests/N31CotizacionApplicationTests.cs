@@ -27,6 +27,30 @@ public sealed class N31CotizacionApplicationTests
             .Setup(x => x.ExecuteInTransactionAsync(It.IsAny<Func<Task>>()))
             .Returns((Func<Task> operation) => operation());
 
+        // Fixtures de unidad: la autoridad real del lock se prueba por separado en MySQL.
+        _productos.Setup(x => x.GetByIdsForUpdateAsync(It.IsAny<IEnumerable<int>>()))
+            .Returns(async (IEnumerable<int> ids) =>
+            {
+                var rows = new List<Producto>();
+                foreach (var id in ids)
+                {
+                    var row = await _productos.Object.GetByIdAsync(id);
+                    if (row is not null) rows.Add(row);
+                }
+                return rows;
+            });
+        _variantes.Setup(x => x.GetByIdsForUpdateAsync(It.IsAny<IEnumerable<int>>()))
+            .Returns(async (IEnumerable<int> ids) =>
+            {
+                var rows = new List<ProductoVariante>();
+                foreach (var id in ids)
+                {
+                    var row = await _variantes.Object.GetByIdAsync(id);
+                    if (row is not null) rows.Add(row);
+                }
+                return rows;
+            });
+
         _service = new CotizacionService(
             _repository.Object,
             _clientes.Object,
@@ -349,6 +373,42 @@ public sealed class N31CotizacionApplicationTests
         Assert.Equal(50m, original.Detalles.Single().PrecioUnitario);
         _repository.Verify(x => x.SaveChangesAsync(), Times.Once);
         _variantes.Verify(x => x.GetByIdsForUpdateAsync(It.IsAny<IEnumerable<int>>()), Times.Never);
+    }
+
+    [Theory]
+    [InlineData(false, false)]
+    [InlineData(true, false)]
+    [InlineData(false, true)]
+    [InlineData(true, true)]
+    public async Task Alta_edicion_rechazan_catalogo_invalido_en_lock_antes_de_lecturas_y_escrituras(bool editar, bool varianteAjena)
+    {
+        var cotizacion = CrearBorradorValido(20);
+        _repository.Setup(x => x.GetByIdForUpdateAsync(20)).ReturnsAsync(cotizacion);
+        _clientes.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(new Cliente { Id = 1, Nombre = "Cliente", Activo = true });
+        _productos.Setup(x => x.GetByIdAsync(10)).ReturnsAsync(new Producto { Id = 10, Nombre = "Mercadería", Precio = 50m, Activo = true, TipoInventario = TipoInventario.MercaderiaVenta });
+        _variantes.Setup(x => x.GetByIdAsync(81)).ReturnsAsync(new ProductoVariante { Id = 81, ProductoId = 10, Activo = true });
+        _productos.Setup(x => x.GetByIdsForUpdateAsync(It.IsAny<IEnumerable<int>>())).ReturnsAsync(new List<Producto>
+        {
+            new() { Id = 10, Activo = true, TipoInventario = varianteAjena ? TipoInventario.MercaderiaVenta : TipoInventario.InsumoAdministrativo }
+        });
+        _variantes.Setup(x => x.GetByIdsForUpdateAsync(It.IsAny<IEnumerable<int>>())).ReturnsAsync(new List<ProductoVariante>
+        {
+            new() { Id = 81, ProductoId = 99, Activo = true }
+        });
+        Func<Task> operacion = editar
+            ? () => _service.ActualizarAsync(new UpdateCotizacionDto { Id = 20, ClienteId = 1, Detalles = [new UpdateCotizacionDetalleDto { Id = 100, ProductoId = 10, ProductoVarianteId = 81, Cantidad = 2, PrecioUnitario = 50m }] })
+            : () => _service.CrearAsync(new CreateCotizacionDto { ClienteId = 1, Detalles = [new CreateCotizacionDetalleDto { ProductoId = 10, ProductoVarianteId = 81, Cantidad = 2, PrecioUnitario = 50m }] });
+        var error = await Assert.ThrowsAsync<BusinessRuleException>(operacion);
+        Assert.Contains(varianteAjena ? "no pertenece al producto" : "no está habilitado para cotización comercial", error.Message);
+        _productos.Verify(x => x.GetByIdsForUpdateAsync(It.Is<IEnumerable<int>>(ids => ids.SequenceEqual(new[] { 10 }))), Times.Once);
+        _variantes.Verify(x => x.GetByIdsForUpdateAsync(It.IsAny<IEnumerable<int>>()), varianteAjena ? Times.Once() : Times.Never());
+        _productos.Verify(x => x.GetByIdAsync(It.IsAny<int>()), Times.Never);
+        _variantes.Verify(x => x.GetByIdAsync(It.IsAny<int>()), Times.Never);
+        _repository.Verify(x => x.AddAsync(It.IsAny<Cotizacion>()), Times.Never);
+        _repository.Verify(x => x.Update(It.IsAny<Cotizacion>()), Times.Never);
+        _repository.Verify(x => x.SaveChangesAsync(), Times.Never);
+        _auditoria.VerifyNoOtherCalls();
+        Assert.Equal(1m, cotizacion.Detalles.Single().Cantidad);
     }
 
     private static Cotizacion CrearBorradorValido(int id)
