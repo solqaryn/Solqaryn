@@ -25,6 +25,7 @@ public sealed class TiendaController : ControllerBase
     private readonly IInventarioPublicoService _inventarioPublicoService;
     private readonly ICatalogoPublicoService _catalogoPublicoService;
     private readonly ITiendaBootstrapService _bootstrapService;
+    private readonly ICostoEnvioService _costoEnvioService;
 
     public TiendaController(
         IProductoService productoService,
@@ -32,7 +33,8 @@ public sealed class TiendaController : ControllerBase
         IPromocionPublicaService promocionPublicaService,
         IInventarioPublicoService inventarioPublicoService,
         ICatalogoPublicoService catalogoPublicoService,
-        ITiendaBootstrapService bootstrapService)
+        ITiendaBootstrapService bootstrapService,
+        ICostoEnvioService costoEnvioService)
     {
         _productoService = productoService;
         _categoriaService = categoriaService;
@@ -40,6 +42,7 @@ public sealed class TiendaController : ControllerBase
         _inventarioPublicoService = inventarioPublicoService;
         _catalogoPublicoService = catalogoPublicoService ?? throw new ArgumentNullException(nameof(catalogoPublicoService));
         _bootstrapService = bootstrapService ?? throw new ArgumentNullException(nameof(bootstrapService));
+        _costoEnvioService = costoEnvioService ?? throw new ArgumentNullException(nameof(costoEnvioService));
     }
 
     [HttpGet("bootstrap")]
@@ -120,7 +123,8 @@ public sealed class TiendaController : ControllerBase
 
     /// <summary>
     /// Recalcula precio, variante y stock exclusivamente desde el catálogo vigente.
-    /// El cliente nunca envía importes y esta validación no reserva inventario ni crea un pedido ERP.
+    /// El cliente nunca envía importes. La tarifa se resuelve por cobertura y tenant público verificado.
+    /// Esta cotización no reserva inventario ni crea un pedido ERP.
     /// </summary>
     [HttpPost("checkout/validar")]
     public async Task<IActionResult> ValidarCheckout([FromBody] ValidarCheckoutTiendaDto dto)
@@ -141,6 +145,11 @@ public sealed class TiendaController : ControllerBase
         {
             return BadRequest(ApiResponse<CheckoutTiendaValidadoDto>.Fail("El carrito contiene una referencia o cantidad no válida."));
         }
+
+        var envio = dto.Envio;
+        if ((envio?.Departamento?.Length ?? 0) > 120 || (envio?.Ciudad?.Length ?? 0) > 120 ||
+            (envio?.Zona?.Length ?? 0) > 150 || (envio?.Modalidad?.Length ?? 0) > 80)
+            return BadRequest(ApiResponse<CheckoutTiendaValidadoDto>.Fail("La cobertura de envío supera la longitud permitida."));
 
         var agrupadas = dto.Items
             .GroupBy(item => new
@@ -270,16 +279,33 @@ public sealed class TiendaController : ControllerBase
         }
 
         var subtotal = lineas.Sum(linea => linea.Total);
+        // The same resolver used by administration is scoped by verified middleware.
+        var tarifa = await _costoEnvioService.ResolverAsync(new ResolverCostoEnvioDto
+        {
+            Departamento = envio?.Departamento, Ciudad = envio?.Ciudad,
+            Zona = envio?.Zona, Modalidad = envio?.Modalidad, FechaUtc = ahoraUtc
+        });
+        var costoEnvio = tarifa is { Monto: >= 0m } ? tarifa.Monto : (decimal?)null;
+        var expira = ahoraUtc.Add(VigenciaValidacionCheckout);
+        if (costoEnvio.HasValue && tarifa?.VigenteHasta is DateTime limite)
+        {
+            limite = limite.Kind == DateTimeKind.Unspecified ? DateTime.SpecifyKind(limite, DateTimeKind.Utc) : limite.ToUniversalTime();
+            if (limite < expira) expira = limite;
+        }
         var validado = new CheckoutTiendaValidadoDto
         {
             ValidacionId = Guid.NewGuid().ToString("N"),
-            ExpiraUtc = ahoraUtc.Add(VigenciaValidacionCheckout),
+            ExpiraUtc = expira,
             Subtotal = subtotal,
-            Total = subtotal,
+            CostoEnvio = costoEnvio,
+            TarifaEnvio = costoEnvio.HasValue ? tarifa!.Nombre : null,
+            Total = subtotal + (costoEnvio ?? 0m),
             Lineas = lineas
         };
 
-        return Ok(ApiResponse<CheckoutTiendaValidadoDto>.Ok(validado, "Carrito validado contra el catálogo vigente."));
+        return Ok(ApiResponse<CheckoutTiendaValidadoDto>.Ok(validado, costoEnvio.HasValue
+            ? "Carrito y envío cotizados contra la configuración vigente."
+            : "Carrito validado; no existe una tarifa de envío aplicable."));
     }
 
     private static CategoriaCatalogoPublicoDto MapearCategoria(CategoriaDto categoria) => new()

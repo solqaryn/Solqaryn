@@ -89,6 +89,8 @@ public sealed class TiendaControllerCheckoutTests
         Assert.True(validado.ExpiraUtc <= DateTime.UtcNow.AddMinutes(11));
         Assert.Equal(370.35m, validado.Subtotal);
         Assert.Equal(validado.Subtotal, validado.Total);
+        Assert.Null(validado.CostoEnvio);
+        Assert.Null(validado.TarifaEnvio);
 
         var linea = Assert.Single(validado.Lineas);
         Assert.Equal(501, linea.ProductoId);
@@ -294,7 +296,50 @@ public sealed class TiendaControllerCheckoutTests
         productos.VerifyNoOtherCalls();
     }
 
-    private static TiendaController CrearController(Mock<IProductoService> productos)
+    [Theory]
+    [InlineData(0)]
+    [InlineData(37)]
+    public async Task Checkout_UsaTarifaPersistida_YRespetaVigencia(int monto)
+    {
+        var productos = new Mock<IProductoService>();
+        productos.Setup(x => x.GetByIdAsync(71)).ReturnsAsync(new ProductoDto
+        { Id=71, Nombre="Fixture", Activo=true, Precio=100m, Cantidad=4 });
+        var envios = new Mock<ICostoEnvioService>(MockBehavior.Strict);
+        var limite = DateTime.UtcNow.AddMinutes(2);
+        envios.Setup(x => x.ResolverAsync(It.Is<ResolverCostoEnvioDto>(dto =>
+            dto.Ciudad == "Fixture" && dto.Modalidad == "Entrega" &&
+            dto.FechaUtc.HasValue && dto.FechaUtc.Value <= limite)))
+            .ReturnsAsync(new CostoEnvioDto { Nombre="Tarifa de prueba", Monto=monto, VigenteHasta=limite });
+        var resultado = Assert.IsType<OkObjectResult>(await CrearController(productos,envios).ValidarCheckout(new ValidarCheckoutTiendaDto
+        {
+            Items = { new CheckoutTiendaItemRequestDto { ProductoId=71, Unidades=2 } },
+            Envio = new CheckoutTiendaEnvioRequestDto { Ciudad="Fixture", Modalidad="Entrega" }
+        }));
+        var data = Assert.IsType<ApiResponse<CheckoutTiendaValidadoDto>>(resultado.Value).Data!;
+        Assert.Equal(200m,data.Subtotal);
+        Assert.Equal((decimal?)monto,data.CostoEnvio);
+        Assert.Equal(200m+monto,data.Total);
+        Assert.Equal("Tarifa de prueba",data.TarifaEnvio);
+        Assert.Equal(limite,data.ExpiraUtc);
+        envios.VerifyAll();
+    }
+
+    [Fact]
+    public async Task Checkout_ValidaCobertura_AntesDeConsultarCatalogo()
+    {
+        var productos=new Mock<IProductoService>(MockBehavior.Strict);
+        var envios=new Mock<ICostoEnvioService>(MockBehavior.Strict);
+        var resultado=await CrearController(productos,envios).ValidarCheckout(new ValidarCheckoutTiendaDto
+        {
+            Items={new CheckoutTiendaItemRequestDto { ProductoId=71, Unidades=1 }},
+            Envio=new CheckoutTiendaEnvioRequestDto { Ciudad=new string('a',121) }
+        });
+        Assert.IsType<BadRequestObjectResult>(resultado);
+        productos.VerifyNoOtherCalls();
+        envios.VerifyNoOtherCalls();
+    }
+
+    private static TiendaController CrearController(Mock<IProductoService> productos, Mock<ICostoEnvioService>? envios = null)
     {
         var categorias = new Mock<ICategoriaService>(MockBehavior.Strict);
         var promociones = new Mock<IPromocionPublicaService>();
@@ -310,6 +355,7 @@ public sealed class TiendaControllerCheckoutTests
             promociones.Object,
             inventario.Object,
             new Mock<ICatalogoPublicoService>().Object,
-            new Mock<ITiendaBootstrapService>().Object);
+            new Mock<ITiendaBootstrapService>().Object,
+            (envios ?? new Mock<ICostoEnvioService>()).Object);
     }
 }

@@ -12,7 +12,7 @@ import { StorefrontCarritoService } from './storefront-carrito.service';
 import { mensajeWhatsappCheckout, normalizarDatosComprador, urlCheckoutPermitida } from './storefront-checkout.rules';
 import { STOREFRONT_CONFIG } from './storefront.config';
 import { StorefrontHeaderComponent } from './storefront-header.component';
-import { CheckoutItemRequest, CheckoutValidado, DatosCompradorCheckout, EstadoConsultaPublica, ReciboPedidoPublico } from './storefront.models';
+import { CheckoutEnvioRequest, CheckoutItemRequest, CheckoutValidado, DatosCompradorCheckout, EstadoConsultaPublica, ReciboPedidoPublico } from './storefront.models';
 import { STOREFRONT_PATHS } from './storefront.paths';
 import { StorefrontPedidoService } from './storefront-pedido.service';
 import { StorefrontService } from './storefront.service';
@@ -45,6 +45,13 @@ export class StorefrontCheckoutComponent implements OnInit {
   readonly procesando = signal(false);
   readonly validado = signal<CheckoutValidado | null>(null);
   readonly enlaceWhatsapp = signal('');
+  readonly envioPendiente = signal(false);
+  readonly formularioEnvio = new FormGroup({
+    departamento: new FormControl('', { nonNullable:true, validators:[Validators.maxLength(120)] }),
+    ciudad: new FormControl('', { nonNullable:true, validators:[Validators.maxLength(120)] }),
+    zona: new FormControl('', { nonNullable:true, validators:[Validators.maxLength(150)] }),
+    modalidad: new FormControl('', { nonNullable:true, validators:[Validators.maxLength(80)] })
+  });
   readonly aviso = signal('');
   private readonly slugsProducto = new Map<number, string>();
 
@@ -69,6 +76,11 @@ export class StorefrontCheckoutComponent implements OnInit {
   } as const;
 
   ngOnInit(): void {
+    this.formularioEnvio.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      this.envioPendiente.set(true);
+      this.enlaceWhatsapp.set('');
+      this.aviso.set('Cambió la cobertura. Actualiza la cotización de envío.');
+    });
     this.formulario.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       if (this.enlaceWhatsapp()) {
         this.enlaceWhatsapp.set('');
@@ -95,6 +107,7 @@ export class StorefrontCheckoutComponent implements OnInit {
 
   revalidar(): void {
     if (this.procesando() || this.estado() === 'loading') return;
+    if (this.formularioEnvio.invalid) { this.formularioEnvio.markAllAsTouched(); this.error.set('Revisa la cobertura de envío.'); return; }
     this.procesando.set(true);
     this.error.set('');
     this.enlaceWhatsapp.set('');
@@ -133,7 +146,10 @@ export class StorefrontCheckoutComponent implements OnInit {
       moneda,
       validado.lineas,
       validado.total,
-      this.enlacesProductos(validado)
+      this.enlacesProductos(validado),
+      this.utilizarDatosBaseDatos() && typeof validado.costoEnvio === 'number'
+        ? { monto: validado.costoEnvio, nombre: validado.tarifaEnvio || '', cobertura: this.datosEnvio() }
+        : undefined
     );
     const enlace = construirEnlaceWhatsApp(destino, mensaje);
     if (!enlace) {
@@ -188,6 +204,7 @@ export class StorefrontCheckoutComponent implements OnInit {
       validacionId: validado.validacionId,
       items: this.referenciasCheckout(),
       comprador: this.datosComprador(),
+      envio: this.datosEnvio(),
       idempotencyKey
     }).pipe(takeUntilDestroyed(this.destroyRef)).subscribe({
       next: respuesta => {
@@ -210,7 +227,8 @@ export class StorefrontCheckoutComponent implements OnInit {
 
   validacionVigente(): boolean {
     const expira = Date.parse(this.validado()?.expiraUtc || '');
-    return Number.isFinite(expira) && expira > Date.now();
+    return Number.isFinite(expira) && expira > Date.now() &&
+      (!this.utilizarDatosBaseDatos() || (!this.envioPendiente() && typeof this.validado()?.costoEnvio === 'number'));
   }
 
   moneda(valor: number): string {
@@ -250,7 +268,7 @@ export class StorefrontCheckoutComponent implements OnInit {
       this.carrito.hidratar(productos, this.identidad.config().id, this.utilizarDatosBaseDatos());
       if (this.carrito.vacio()) return of(null);
       return this.utilizarDatosBaseDatos()
-        ? this.servicio.validarCheckout(this.referenciasCheckout())
+        ? this.servicio.validarCheckout(this.referenciasCheckout(), this.datosEnvio())
         : of(this.validacionDemo());
     }));
   }
@@ -277,6 +295,7 @@ export class StorefrontCheckoutComponent implements OnInit {
       return;
     }
     this.validado.set(validado);
+    this.envioPendiente.set(false);
     this.estado.set('success');
   }
 
@@ -350,6 +369,13 @@ export class StorefrontCheckoutComponent implements OnInit {
     return true;
   }
 
+  private datosEnvio(): CheckoutEnvioRequest | undefined {
+    const raw = this.formularioEnvio.getRawValue();
+    const datos = { departamento:raw.departamento.trim() || undefined, ciudad:raw.ciudad.trim() || undefined,
+      zona:raw.zona.trim() || undefined, modalidad:raw.modalidad.trim() || undefined };
+    return Object.values(datos).some(Boolean) ? datos : undefined;
+  }
+
   private datosComprador(): DatosCompradorCheckout {
     return normalizarDatosComprador(this.formulario.getRawValue());
   }
@@ -361,6 +387,7 @@ export class StorefrontCheckoutComponent implements OnInit {
       creadoUtc: new Date().toISOString(),
       expiraUtc: validado.expiraUtc,
       total: validado.total,
+      ...(typeof validado.costoEnvio === 'number' ? { costoEnvio:validado.costoEnvio } : {}),
       moneda: this.identidad.config().moneda || 'HNL',
       lineas: validado.lineas
     });

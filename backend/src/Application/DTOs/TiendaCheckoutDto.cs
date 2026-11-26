@@ -3,6 +3,16 @@ namespace Solqaryn.Application.DTOs;
 public sealed class ValidarCheckoutTiendaDto
 {
     public List<CheckoutTiendaItemRequestDto> Items { get; set; } = new();
+    public CheckoutTiendaEnvioRequestDto? Envio { get; set; }
+}
+
+// Coverage only. No client price, date, company or tariff ID.
+public sealed class CheckoutTiendaEnvioRequestDto
+{
+    public string? Departamento { get; set; }
+    public string? Ciudad { get; set; }
+    public string? Zona { get; set; }
+    public string? Modalidad { get; set; }
 }
 
 public sealed class CheckoutTiendaItemRequestDto
@@ -20,6 +30,9 @@ public sealed class CheckoutTiendaValidadoDto
     public string ValidacionId { get; set; } = string.Empty;
     public DateTime ExpiraUtc { get; set; }
     public decimal Subtotal { get; set; }
+    // Null means delivery is not quoted; a configured zero is valid.
+    public decimal? CostoEnvio { get; set; }
+    public string? TarifaEnvio { get; set; }
     public decimal Total { get; set; }
     public List<CheckoutTiendaLineaDto> Lineas { get; set; } = new();
 }

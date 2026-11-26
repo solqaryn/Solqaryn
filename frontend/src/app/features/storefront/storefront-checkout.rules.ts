@@ -1,4 +1,4 @@
-import { CheckoutLineaValidada, DatosCompradorCheckout } from './storefront.models';
+import { CheckoutEnvioRequest, CheckoutLineaValidada, DatosCompradorCheckout } from './storefront.models';
 import { normalizarTelefonoWhatsApp } from '../../core/services/whatsapp-share.service';
 
 export function urlCheckoutPermitida(url: string, origenesPermitidos: readonly string[]): string {
@@ -68,7 +68,8 @@ export function mensajeWhatsappCheckout(
   moneda: string,
   lineas: readonly CheckoutLineaValidada[],
   total: number,
-  enlacesProducto: Readonly<Record<number, string>> = {}
+  enlacesProducto: Readonly<Record<number, string>> = {},
+  envio?: { monto: number; nombre: string; cobertura?: CheckoutEnvioRequest }
 ): string {
   const formato = new Intl.NumberFormat('es-HN', { style: 'currency', currency: moneda || 'HNL' });
   const marca = limpiarTextoWhatsapp(comercio || 'Tienda');
@@ -114,6 +115,12 @@ export function mensajeWhatsappCheckout(
     '',
     bloquesProductos,
     '',
+    ...(envio ? [
+      '🚚 *Envío*',
+      limpiarTextoWhatsapp(envio.nombre),
+      Object.values(envio.cobertura ?? {}).filter(Boolean).map(valor => limpiarTextoWhatsapp(String(valor))).join(' · '),
+      `Costo de envío: *${formato.format(envio.monto)}*`
+    ] : []),
     '────────────',
     `💰 *TOTAL: ${formato.format(total)}*`,
     notas,

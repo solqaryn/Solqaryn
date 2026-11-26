@@ -22,6 +22,7 @@ export class StorefrontPedidoService {
       creadoUtc: recibo.creadoUtc,
       expiraUtc: new Date(expira).toISOString(),
       total: recibo.total,
+      ...(typeof recibo.costoEnvio === 'number' ? { costoEnvio:recibo.costoEnvio } : {}),
       moneda: recibo.moneda,
       lineas: recibo.lineas.map(linea => ({ ...linea }))
     };
@@ -60,6 +61,7 @@ export class StorefrontPedidoService {
       && expira > Date.now()
       && Number.isFinite(recibo.total)
       && recibo.total >= 0
+      && (recibo.costoEnvio === undefined || (Number.isFinite(recibo.costoEnvio) && recibo.costoEnvio >= 0 && recibo.costoEnvio <= recibo.total))
       && typeof recibo.moneda === 'string'
       && Array.isArray(recibo.lineas)
       && recibo.lineas.length > 0;

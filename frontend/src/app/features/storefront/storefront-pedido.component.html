@@ -55,6 +55,7 @@
           </section>
 
           <aside class="total-box">
+            @if (pedido.costoEnvio != null) { <span>Envío: {{ moneda(pedido.costoEnvio, pedido.moneda) }}</span> }
             <span>Total validado</span>
             <strong>{{ moneda(pedido.total, pedido.moneda) }}</strong>
             <small>Este importe es el snapshot validado durante el checkout y no sustituye la confirmación comercial o del proveedor de pago.</small>

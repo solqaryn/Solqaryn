@@ -96,6 +96,24 @@ public sealed class QaCommercialOwnershipV2MySqlTests
                 await Assert.ThrowsAsync<DbUpdateException>(() => physical.SaveChangesAsync());
             }
             accessor.HttpContext.Items.Clear();
+            accessor.HttpContext.Request.Path="/tienda/checkout/validar";
+            accessor.HttpContext.Items[AppDbContext.PublicStoreTenantItemKey]=a;
+            await using(var publicA=new AppDbContext(options,httpContextAccessor:accessor))
+            {
+                var svc=new CostoEnvioService(new CostoEnvioRepository(publicA),current,audit.Object);
+                Assert.Equal(13m,(await svc.ResolverAsync(new ResolverCostoEnvioDto()))!.Monto);
+                Assert.Null(await svc.GetByIdAsync(tb));
+                Assert.Null(await svc.GetByIdAsync(legacy));
+                await Assert.ThrowsAsync<ForbiddenAccessException>(() => svc.CreateAsync(new GuardarCostoEnvioDto { Nombre="No autorizado", Monto=0m }));
+            }
+            accessor.HttpContext.Items[AppDbContext.PublicStoreTenantItemKey]=b;
+            await using(var publicB=new AppDbContext(options,httpContextAccessor:accessor))
+            {
+                var svc=new CostoEnvioService(new CostoEnvioRepository(publicB),current,audit.Object);
+                Assert.Equal(28m,(await svc.ResolverAsync(new ResolverCostoEnvioDto()))!.Monto);
+                Assert.Null(await svc.GetByIdAsync(ta));
+            }
+            accessor.HttpContext.Items.Clear();
             await using(var noGate = new AppDbContext(options,httpContextAccessor:accessor))
             {
                 Assert.Empty(await noGate.CostosEnvio.ToListAsync());

@@ -97,6 +97,19 @@
             </div>
           </form>
 
+          @if (utilizarDatosBaseDatos()) {
+            <section aria-label="Cobertura de envío">
+              <h3>Envío</h3>
+              <p>Indica la ubicación y modalidad para consultar la tarifa vigente del comercio.</p>
+              <form [formGroup]="formularioEnvio" (ngSubmit)="revalidar()" class="field-grid" novalidate>
+                <label class="field"><span>Departamento</span><input formControlName="departamento" maxlength="120" autocomplete="address-level1"></label>
+                <label class="field"><span>Ciudad</span><input formControlName="ciudad" maxlength="120" autocomplete="address-level2"></label>
+                <label class="field"><span>Zona</span><input formControlName="zona" maxlength="150"></label>
+                <label class="field"><span>Modalidad</span><input formControlName="modalidad" maxlength="80"></label>
+                <button type="submit" class="button ghost full field-wide" [disabled]="procesando() || formularioEnvio.invalid">Actualizar costo de envío</button>
+              </form>
+            </section>
+          }
           <div class="privacy-note"><app-store-icon nombre="escudo" /><span><strong>Datos mínimos.</strong> {{ identidad.config().nombreComercial || 'Tienda' }} no guarda estos datos de contacto en el almacenamiento local del navegador.</span></div>
         </section>
 
@@ -118,8 +131,23 @@
 
           <dl class="totals">
             <div><dt>Subtotal</dt><dd>{{ moneda(resumen.subtotal) }}</dd></div>
-            <div class="grand-total"><dt>Total validado</dt><dd>{{ moneda(resumen.total) }}</dd></div>
+            @if (utilizarDatosBaseDatos()) {
+              <div><dt>Envío</dt><dd>{{ !envioPendiente() && resumen.costoEnvio != null ? moneda(resumen.costoEnvio) : 'Por cotizar' }}</dd></div>
+              @if (!envioPendiente() && resumen.costoEnvio != null) {
+                <div><dt>Tarifa</dt><dd>{{ resumen.tarifaEnvio }}</dd></div>
+              }
+              @if (envioPendiente() || resumen.costoEnvio == null) {
+                <div class="grand-total"><dt>Subtotal sin envío</dt><dd>{{ moneda(resumen.subtotal) }}</dd></div>
+              } @else {
+                <div class="grand-total"><dt>Total validado</dt><dd>{{ moneda(resumen.total) }}</dd></div>
+              }
+            } @else {
+              <div class="grand-total"><dt>Total validado</dt><dd>{{ moneda(resumen.total) }}</dd></div>
+            }
           </dl>
+          @if (utilizarDatosBaseDatos() && (envioPendiente() || resumen.costoEnvio == null)) {
+            <p class="validation-note" role="status">No se puede continuar hasta cotizar el envío. Actualiza la cobertura o contacta al comercio si no hay una tarifa disponible.</p>
+          }
           <p class="validation-note"><app-store-icon nombre="escudo" /> Validación temporal: el carrito no reserva inventario hasta que el comercio confirme el pedido.</p>
           @if (!validacionVigente()) {
             <button type="button" class="button ghost full" (click)="revalidar()" [disabled]="procesando()">Actualizar precios y existencias</button>

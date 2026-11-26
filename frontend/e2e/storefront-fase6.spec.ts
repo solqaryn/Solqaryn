@@ -89,8 +89,10 @@ async function mockCatalogoReal(page: Page, precio = 1750, stock = 3): Promise<v
   });
 }
 
-async function mockCheckoutValido(page: Page, total = 4200): Promise<void> {
+async function mockCheckoutValido(page: Page, total = 4200,
+  resolverEnvio: (body: { envio?: { ciudad?: string } }) => number | null = () => 0): Promise<void> {
   await page.route('http://localhost:5005/tienda/checkout/validar', async route => {
+    const costoEnvio = resolverEnvio(route.request().postDataJSON());
     await route.fulfill({
       status: 200,
       contentType: 'application/json',
@@ -101,7 +103,9 @@ async function mockCheckoutValido(page: Page, total = 4200): Promise<void> {
           validacionId: referenciaValidada,
           expiraUtc: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
           subtotal: total,
-          total,
+          costoEnvio,
+          tarifaEnvio: costoEnvio === null ? null : 'Tarifa general de prueba',
+          total: total + (costoEnvio ?? 0),
           lineas: [{
             productoId: 501,
             productoVarianteId: productoVarianteReal,
@@ -215,6 +219,8 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
             validacionId: referenciaValidada,
             expiraUtc: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
             subtotal: 150,
+            costoEnvio: 0,
+            tarifaEnvio: 'Tarifa general de prueba',
             total: 150,
             lineas: [{
               productoId,
@@ -287,7 +293,9 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
             validacionId: referenciaValidada,
             expiraUtc: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
             subtotal: 4200,
-            total: 4200,
+            costoEnvio: 37,
+            tarifaEnvio: 'Tarifa general de prueba',
+            total: 4237,
             lineas: [{
               productoId: 501,
               modeloId: 5010,
@@ -323,6 +331,8 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
     await expect(resumen).toContainText('2 ×');
     await expect(resumen).toContainText('2,100');
     await expect(resumen).toContainText('4,200');
+    await expect(resumen).toContainText('4,237');
+    await expect(resumen).toContainText('Tarifa general de prueba');
     await expect(page.getByRole('button', { name: 'Tarjeta no disponible' })).toBeDisabled();
 
     await llenarComprador(page);
@@ -349,6 +359,8 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
     expect(mensaje).toContain('Subtotal:');
     expect(mensaje).toContain('💰 *TOTAL:');
     expect(mensaje).toContain('4,200');
+    expect(mensaje).toContain('4,237');
+    expect(mensaje).toContain('Costo de envío:');
     expect(mensaje).toContain('📝 *Nota del cliente*');
     expect(mensaje).toContain('Entregar por la tarde.');
     expect(mensaje).toContain('La tienda confirmará disponibilidad, entrega y condiciones antes de finalizar la compra.');
@@ -371,12 +383,46 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
     const reciboRaw = await page.evaluate(ref => sessionStorage.getItem(`storefront:pedido:v1:${ref}`), referenciaValidada);
     expect(reciboRaw).toBeTruthy();
     const recibo = JSON.parse(reciboRaw!);
-    expect(Object.keys(recibo).sort()).toEqual(['creadoUtc', 'estado', 'expiraUtc', 'lineas', 'moneda', 'referencia', 'total']);
+    expect(Object.keys(recibo).sort()).toEqual(['costoEnvio', 'creadoUtc', 'estado', 'expiraUtc', 'lineas', 'moneda', 'referencia', 'total']);
     expect(recibo.estado).toBe('whatsapp-preparado');
-    expect(recibo.total).toBe(4200);
+    expect(recibo.total).toBe(4237);
+    expect(recibo.costoEnvio).toBe(37);
     expect(reciboRaw).not.toContain('Cliente Auditoría');
     expect(reciboRaw).not.toContain('cliente@example.com');
     expect(reciboRaw).not.toContain('99991111');
+  });
+
+  test('cotización de envío ausente bloquea la compra; cobertura nueva exige recalcular', async ({ page }) => {
+    await prepararEmpresa(page);
+    await sembrarCarrito(page, 'bd', modeloClaveReal, 501, 2);
+    await mockCatalogoReal(page);
+    await mockCheckoutValido(page, 4200, body => {
+      expect(JSON.stringify(body)).not.toMatch(/precio|stock|total|monto|empresaId/i);
+      return body.envio?.ciudad === 'Ciudad de prueba' ? 45 : null;
+    });
+    await page.goto('/tienda/checkout?fuente=bd');
+    await expect(page.getByRole('heading', { name: 'Tu compra' })).toBeVisible();
+    await expect(page.getByText('Por cotizar', { exact: true })).toBeVisible();
+    const preparar = page.getByRole('button', { name: 'Preparar pedido por WhatsApp' });
+    await expect(preparar).toBeDisabled();
+    await page.getByRole('textbox', { name: 'Ciudad', exact: true }).fill('Ciudad de prueba');
+    await page.getByRole('button', { name: 'Actualizar costo de envío' }).click();
+    await expect(page.locator('.summary-card')).toContainText('4,245');
+    await expect(preparar).toBeEnabled();
+    await llenarComprador(page);
+    await preparar.click();
+    const enlace = page.getByRole('link', { name: 'Abrir WhatsApp y continuar' });
+    await expect(enlace).toBeVisible();
+    const mensaje = new URL((await enlace.getAttribute('href'))!).searchParams.get('text') || '';
+    expect(mensaje).toContain('Ciudad de prueba');
+    expect(mensaje).toContain('4,245');
+    await page.getByRole('textbox', { name: 'Ciudad', exact: true }).fill('Otra ciudad');
+    await expect(enlace).toHaveCount(0);
+    await expect(preparar).toBeDisabled();
+    await expect(page.getByText('Por cotizar', { exact: true })).toBeVisible();
+    await page.getByRole('button', { name: 'Actualizar costo de envío' }).click();
+    await expect(page.getByText('Por cotizar', { exact: true })).toBeVisible();
+    await expect(preparar).toBeDisabled();
   });
 
   test('QA visual: modificar contacto invalida el enlace de WhatsApp preparado', async ({ page }) => {

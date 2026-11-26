@@ -274,11 +274,20 @@ export interface CheckoutLineaValidada {
   total: number;
 }
 
+export interface CheckoutEnvioRequest {
+  departamento?: string;
+  ciudad?: string;
+  zona?: string;
+  modalidad?: string;
+}
+
 /** Snapshot calculado por el servidor. No equivale a reserva ni a pedido ERP. */
 export interface CheckoutValidado {
   validacionId: string;
   expiraUtc: string;
   subtotal: number;
+  costoEnvio?: number | null;
+  tarifaEnvio?: string | null;
   total: number;
   lineas: CheckoutLineaValidada[];
 }
@@ -294,6 +303,7 @@ export interface CheckoutTarjetaRequest {
   validacionId: string;
   items: CheckoutItemRequest[];
   comprador: DatosCompradorCheckout;
+  envio?: CheckoutEnvioRequest;
   idempotencyKey: string;
 }
 
@@ -311,6 +321,7 @@ export interface ReciboPedidoPublico {
   creadoUtc: string;
   expiraUtc: string;
   total: number;
+  costoEnvio?: number;
   moneda: string;
   lineas: CheckoutLineaValidada[];
 }

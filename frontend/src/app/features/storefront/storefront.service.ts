@@ -6,6 +6,7 @@ import { ApiResponse, PagedResult } from '../../core/models/api-response.model';
 import {
   CategoriaCatalogoPublico,
   CheckoutItemRequest,
+  CheckoutEnvioRequest,
   CheckoutTarjetaRequest,
   CheckoutTarjetaResponse,
   CheckoutValidado,
@@ -150,7 +151,7 @@ export class StorefrontService {
     );
   }
 
-  validarCheckout(items: CheckoutItemRequest[]): Observable<CheckoutValidado> {
+  validarCheckout(items: CheckoutItemRequest[], envio?: CheckoutEnvioRequest): Observable<CheckoutValidado> {
     const referencias = items.map(item => ({
       productoId: item.productoId,
       productoVarianteId: item.productoVarianteId,
@@ -159,7 +160,7 @@ export class StorefrontService {
       marcaNombre: item.marcaNombre,
       unidades: item.unidades
     }));
-    return this.http.post<ApiResponse<CheckoutValidado>>(this.urlValidarCheckout, { items: referencias }).pipe(
+    return this.http.post<ApiResponse<CheckoutValidado>>(this.urlValidarCheckout, { items: referencias, ...(envio ? { envio } : {}) }).pipe(
       map(res => {
         const data = res.data;
         if (!res.success || !data || !this.checkoutValidado(data)) {
@@ -194,6 +195,9 @@ export class StorefrontService {
       && data.subtotal >= 0
       && Number.isFinite(data.total)
       && data.total >= 0
+      && (data.costoEnvio === null || (typeof data.costoEnvio === 'number' && Number.isFinite(data.costoEnvio) && data.costoEnvio >= 0
+        && typeof data.tarifaEnvio === 'string' && data.tarifaEnvio.trim().length > 0))
+      && Math.abs(data.total - data.subtotal - (data.costoEnvio ?? 0)) < 0.005
       && Array.isArray(data.lineas)
       && data.lineas.length > 0
       && data.lineas.every(linea => Number.isSafeInteger(linea.productoId)
