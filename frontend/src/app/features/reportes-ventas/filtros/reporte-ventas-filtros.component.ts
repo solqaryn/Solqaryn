@@ -78,9 +78,9 @@ type ReporteVentasSelectorControl =
   `,
   changeDetection: ChangeDetectionStrategy.Eager,
   styles: [
-    `.filter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:.75rem;align-items:end}`,
-    `.filter-grid label{display:grid;gap:.25rem}`,
-    `.filter-grid input,.filter-grid select,.filter-grid button{min-height:2.5rem;max-width:100%}`,
+    `:host{display:block;min-width:0}.filter-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(160px,100%),1fr));gap:.75rem;align-items:end;min-width:0}`,
+    `.filter-grid label{display:grid;grid-template-columns:minmax(0,1fr);min-width:0;gap:.25rem}`,
+    `.filter-grid input,.filter-grid select,.filter-grid button{min-height:2.5rem;min-width:0;width:100%;max-width:100%;box-sizing:border-box}`,
     `.status,.error{grid-column:1/-1;margin:0}`,
     `.error{color:#b91c1c}`,
   ],

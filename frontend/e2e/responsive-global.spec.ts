@@ -159,7 +159,9 @@ async function auditFirstSelectOverlay(page: Page, route: string): Promise<void>
     select = page.locator('main mat-select[aria-disabled="false"]:visible').first();
     await expect(select, 'Selector editable de ubicación en ' + route).toBeVisible();
   }
-  await select.click();
+  // The arrow is a real pointer target of Material's combobox. Clicking the
+  // center of an empty control can hit its floating label instead.
+  await select.locator('.mat-mdc-select-arrow-wrapper').click();
   const panel = page.locator('.mat-mdc-select-panel').first();
   await expect(panel, `El select no abrió panel en ${route}`).toBeVisible();
   const geometry = await panel.evaluate((element) => {
@@ -235,6 +237,26 @@ async function certifyRoute(page: Page, route: string, mobile: boolean, errors: 
         .map(el => ({ clase: el.className, color: getComputedStyle(el).backgroundColor, esperado }));
     });
     expect(superficies, 'Superficies que no respetan el token empresarial en ' + route).toEqual([]);
+    if (process.env.QA_RESPONSIVE_WIDTHS && (route === '/compras/nueva' || route === '/ventas/nueva')) {
+      // These forms deliberately fetch product options on search, rather than
+      // preloading the entire catalogue. Exercise the genuine remote search.
+      const sku = process.env.QA_ROUTE_FIXTURE_PRODUCT_SKU;
+      if (!sku) throw new Error('Falta SKU acreditado para búsqueda comercial');
+      if (route === '/ventas/nueva') {
+        await page.getByRole('checkbox', { name: /Exonerar excepcionalmente/ }).check();
+        await page.locator('textarea[formcontrolname="motivoExoneracionEnvio"]').fill('Retiro en mostrador QA');
+      }
+      const tipo = route === '/ventas/nueva' ? 'venta' : 'compra';
+      await page.getByTestId(tipo + '-producto-autocomplete').fill(sku);
+      const option = page.locator('.mat-mdc-autocomplete-panel .mat-mdc-option').filter({ hasText: sku });
+      await expect(option).toHaveCount(1);
+      await expect(option).toBeVisible();
+      await option.click();
+      await expect(page.locator('main mat-select[formcontrolname="productoId"]').first()).not.toHaveClass(/mat-mdc-select-empty/);
+      await auditGeometry(page, route, mobile);
+      expect(await bodyOverflow(page), 'Desborde tras búsqueda comercial en ' + route).toBeLessThanOrEqual(2);
+      assertNoRouteErrors(route, errors);
+    }
     await auditFirstSelectOverlay(page, route);
     if (route === '/ventas/nueva') {
       const priceInputs = page.locator('main input[formcontrolname="precioUnitario"]');

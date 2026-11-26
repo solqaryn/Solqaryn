@@ -24,6 +24,10 @@ export async function prepareRouteFixtures(): Promise<void> {
     inventario: ['/inventario/conteos/1', '/inventario/conteos/1/editar',
       '/inventario/ajustes/1', '/inventario/ajustes/1/editar'],
     sales: ['/ventas/1', '/ventas/1/editar', '/facturas/1', '/facturas/1/pagos'],
+    devolucionesCliente: ['/devoluciones-clientes/1'],
+    creditoCliente: ['/notas-credito-cliente/1'],
+    creditoProveedor: ['/notas-credito-proveedor/1', '/notas-credito-proveedor/1/editar'],
+    preparacion: ['/pedidos-venta/1/preparacion'],
     quotes: ['/cotizaciones/1', '/cotizaciones/1/editar', '/pedidos-venta/1', '/pedidos-venta/1/editar'],
     purchases: ['/compras/1', '/compras/1/editar', '/ordenes-compra/1/editar',
       '/compras/1/three-way-match', '/recepciones-compra/1', '/facturas-proveedor/1',
@@ -120,6 +124,7 @@ export async function prepareRouteFixtures(): Promise<void> {
         throw new Error('Lectura persistida de variante no coincide');
       }
       varianteId = idOf(variante);
+      process.env.QA_ROUTE_FIXTURE_PRODUCT_SKU = sku;
       for (const suffix of ['', '/editar', '/variantes']) bind('/productos/1' + suffix, '/productos/' + productoId + suffix);
     });
     await family(['/categorias/1/editar'], async () => {
@@ -214,6 +219,24 @@ export async function prepareRouteFixtures(): Promise<void> {
       if (Number(factura.ventaId) !== ventaId) throw new Error('Factura no corresponde a venta');
       bind('/facturas/1', '/facturas/' + facturaId);
       bind('/facturas/1/pagos', '/facturas/' + facturaId + '/pagos');
+      await family(families.devolucionesCliente, async () => {
+        const id = idOf(await call('/devoluciones-clientes', 'POST', {
+          ventaId, facturaId, observaciones: label, detalles: [
+            { ventaDetalleId: detailId(venta), cantidad: 1, resolucion: 3 }
+          ]
+        }));
+        const devolucion = await persisted('/devoluciones-clientes', id);
+        if (Number(devolucion.ventaId) !== ventaId) throw new Error('Devolución de otra venta');
+        bind('/devoluciones-clientes/1', '/devoluciones-clientes/' + id);
+      });
+      await family(families.creditoCliente, async () => {
+        const id = idOf(await call('/notas-credito-cliente', 'POST', {
+          facturaId, montoCredito: 1, motivo: label
+        }));
+        const nota = await persisted('/notas-credito-cliente', id);
+        if (Number(nota.facturaId) !== facturaId || Number(nota.montoCredito) !== 1) throw new Error('Nota de cliente no acreditada');
+        bind('/notas-credito-cliente/1', '/notas-credito-cliente/' + id);
+      });
     });
     await family(families.quotes, async () => {
       requireStock();
@@ -232,6 +255,20 @@ export async function prepareRouteFixtures(): Promise<void> {
       await persisted('/pedidos-venta', pedidoId);
       bind('/pedidos-venta/1', '/pedidos-venta/' + pedidoId);
       bind('/pedidos-venta/1/editar', '/pedidos-venta/' + pedidoId + '/editar');
+      await family(families.preparacion, async () => {
+        // A separate confirmed order keeps the already proven editable draft intact.
+        const cot = idOf(await call('/cotizaciones', 'POST', data));
+        await call('/cotizaciones/' + cot + '/enviar', 'POST');
+        await call('/cotizaciones/' + cot + '/aceptar', 'POST');
+        const pedido = idOf(await call('/pedidos-venta', 'POST', { cotizacionId: cot, observaciones: label }));
+        await call('/pedidos-venta/' + pedido + '/confirmar', 'POST', {
+          asignaciones: [{ productoVarianteId: varianteId, almacenId, cantidad: 1 }]
+        });
+        const preparado = await call('/preparaciones-pedido-venta/pedido/' + pedido, 'POST');
+        const persistido = await call('/preparaciones-pedido-venta/pedido/' + pedido);
+        if (idOf(persistido) !== idOf(preparado) || Number(persistido.pedidoVentaId) !== pedido) throw new Error('Preparación no acreditada');
+        bind('/pedidos-venta/1/preparacion', '/pedidos-venta/' + pedido + '/preparacion');
+      });
     });
     await family(families.purchases, async () => {
       requireStock();
@@ -273,6 +310,17 @@ export async function prepareRouteFixtures(): Promise<void> {
       const draftInvoiceId = idOf(await call('/facturas-proveedor', 'POST', { ...invoice, numeroFactura: 'QA-B-' + nonce, detalles: [{ ...invoice.detalles[0], cantidadFacturada: 1 }] }));
       await persisted('/facturas-proveedor', draftInvoiceId);
       bind('/facturas-proveedor/1/editar', '/facturas-proveedor/' + draftInvoiceId + '/editar');
+      await family(families.creditoProveedor, async () => {
+        const id = idOf(await call('/notas-credito-proveedor', 'POST', {
+          numeroNotaCredito: 'NC-QA-' + nonce, facturaProveedorId: facturaId,
+          fechaEmisionUtc: new Date().toISOString(), moneda: 'HNL', motivo: label,
+          subtotalCredito: 1, impuestoCredito: 0
+        }));
+        const nota = await persisted('/notas-credito-proveedor', id);
+        if (Number(nota.facturaProveedorId) !== facturaId || Number(nota.totalCredito) !== 1) throw new Error('Nota de proveedor no acreditada');
+        bind('/notas-credito-proveedor/1', '/notas-credito-proveedor/' + id);
+        bind('/notas-credito-proveedor/1/editar', '/notas-credito-proveedor/' + id + '/editar');
+      });
     });
     // Configuración real de la empresa desechable, después de los documentos comerciales.
     await family(families.costeo, async () => {

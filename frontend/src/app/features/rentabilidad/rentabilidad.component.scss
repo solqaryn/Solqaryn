@@ -1,5 +1,8 @@
 .rentabilidad-page {
   display: grid;
+  grid-template-columns: minmax(0, 1fr);
+  width: 100%;
+  min-width: 0;
   gap: 1rem;
   padding: 1rem;
   max-width: 1200px;
@@ -32,3 +35,5 @@
     align-items: stretch;
   }
 }
+
+.rentabilidad-page > *, .rentabilidad-header > * { min-width: 0; max-width: 100%; }

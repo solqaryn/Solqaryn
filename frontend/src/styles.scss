@@ -256,6 +256,25 @@ mat-icon {
   min-width: 0 !important;
   max-width: 100% !important;
 }
+/* The floating label is descriptive, not an overlapping pointer target. */
+.mat-mdc-form-field:has(mat-select) .mdc-notched-outline .mdc-floating-label {
+  pointer-events: none;
+}
+/* At 320/360px the measured minimum leaves only 12px at each edge.
+   Constrain the horizontal CDK positioning box and keep vertical placement. */
+@media (max-width: 360px) {
+  .cdk-overlay-connected-position-bounding-box:has(> .cdk-overlay-pane .mat-mdc-select-panel) {
+    left: 12px !important;
+    right: 12px !important;
+    width: auto !important;
+    align-items: center !important;
+  }
+  .cdk-overlay-connected-position-bounding-box > .cdk-overlay-pane:has(.mat-mdc-select-panel) {
+    left: 0 !important;
+    right: 0 !important;
+    width: calc(100vw - 24px) !important;
+  }
+}
 .mat-mdc-autocomplete-panel {
   width: auto !important;
   min-width: min(320px, calc(100vw - 24px)) !important;

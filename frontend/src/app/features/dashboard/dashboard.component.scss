@@ -17,4 +17,7 @@
 @media (max-width: 768px) {
   .dashboard-shell a { display: inline-flex; align-items: center; min-inline-size: 44px; min-block-size: 44px; white-space: normal; }
   .panel-heading { flex-wrap: wrap; }
+  .setting-actions button { width: 44px; height: 44px; flex: 0 0 44px; }
+  .setting-item { flex-wrap: wrap; }
+  .setting-item label { min-width: 0; }
 }

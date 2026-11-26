@@ -37,7 +37,10 @@ export type { RentabilidadAgrupacion } from '../../../core/models/reporte-rentab
       background-color: #fff;
       font-size: 0.875rem;
       color: #1f2937;
-      min-width: 200px;
+      width: 100%;
+      min-width: min(200px, 100%);
+      max-width: 100%;
+      box-sizing: border-box;
     }
     .agrupacion-select:focus { outline: 2px solid #3b82f6; outline-offset: 2px; }
     .agrupacion-select:disabled { background-color: #f3f4f6; cursor: not-allowed; opacity: 0.7; }

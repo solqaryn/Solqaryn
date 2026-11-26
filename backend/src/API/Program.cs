@@ -86,6 +86,7 @@ builder.Services.AddScoped<ISolicitudCompraRepository, SolicitudCompraRepository
 builder.Services.AddScoped<IOrdenCompraRepository, OrdenCompraRepository>();
 builder.Services.AddScoped<IRecepcionCompraRepository, RecepcionCompraRepository>();
 builder.Services.AddScoped<IFacturaProveedorRepository, FacturaProveedorRepository>();
+builder.Services.AddScoped<IDevolucionProveedorRepository, DevolucionProveedorRepository>();
 builder.Services.AddScoped<IReservaInventarioRepository, ReservaInventarioRepository>();
 builder.Services.AddScoped<IDevolucionClienteRepository, DevolucionClienteRepository>();
 builder.Services.AddScoped<ICreditoClienteRepository, CreditoClienteRepository>();
