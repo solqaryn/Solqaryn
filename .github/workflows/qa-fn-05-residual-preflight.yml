@@ -1,0 +1,39 @@
+name: QA - FN-05 preflight residual de propiedad y dependencias
+on:
+  push:
+    branches: [qa]
+    paths:
+      - '.github/workflows/qa-fn-05-residual-preflight.yml'
+permissions:
+  contents: read
+concurrency:
+  group: qa-fn05-residual-preflight
+  cancel-in-progress: false
+jobs:
+  residual-preflight:
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == '19af145d11cac32e6591fb20c6ded1f6a9eac912'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    environment: QA
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validar alcance y sintaxis
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = refs/heads/qa
+          node scripts/verify-project-scope.mjs
+          python3 -m py_compile .github/qa/qa-fn-05-residual-preflight.py
+      - name: Preparar cliente SQL
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y mysql-client
+      - name: Inventario físico residual solo lectura
+        env:
+          DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
+          DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
+          DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}
+          DB_USER: ${{ vars.SOLQARYN_QA_DB_USER }}
+          DB_PASSWORD: ${{ secrets.SOLQARYN_QA_DB_PASSWORD }}
+        run: python3 .github/qa/qa-fn-05-residual-preflight.py
