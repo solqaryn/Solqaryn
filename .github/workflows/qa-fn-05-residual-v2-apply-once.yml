@@ -1,0 +1,282 @@
+name: QA - FN-05 V2 aplicacion unica migracion comercial certificada
+
+on:
+  push:
+    branches: [qa]
+    paths:
+      - '.github/workflows/qa-fn-05-residual-v2-apply-once.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: qa-oracle-schema-preflight-refs/heads/qa
+  cancel-in-progress: false
+
+jobs:
+  verify-restore:
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == '1f55e887fb0b3a08ad5dbea9a667fd9285bf410d' && github.run_attempt == 1
+    name: QA backup, restore, ensayo y aplicacion exacta
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: QA
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: solqaryn-ci-qa-disposable-only
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -psolqaryn-ci-qa-disposable-only --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_QA_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_QA_DB_PASSWORD }}
+      BACKUP_PASSPHRASE: ${{ secrets.SOLQARYN_QA_BACKUP_PASSPHRASE }}
+    steps:
+      - name: Checkout QA (identidad)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Guard QA solo Aiven 8.4.11 y secretos
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "qa"
+          node scripts/verify-project-scope.mjs
+          test "$(git rev-parse HEAD^)" = "1f55e887fb0b3a08ad5dbea9a667fd9285bf410d"
+          test "$(git ls-remote origin refs/heads/qa | cut -f1)" = "$GITHUB_SHA"
+          git diff --exit-code "9f521e7f06cf7d1a92cefb90e136f9a626e18be2" HEAD -- backend frontend render.yaml .github/qa/qa-commercial-schema.py .github/qa/qa-commercial-schema-v2.py .github/workflows/qa-ci.yml .github/workflows/qa-responsive-audit.yml .github/workflows/qa-fn-05-commercial-ownership.yml .github/workflows/qa-fn-05-residual-v2-rehearsal.yml .github/workflows/qa-live-certification.yml
+          test "$(git diff --name-only HEAD^ HEAD)" = '.github/workflows/qa-fn-05-residual-v2-apply-once.yml'
+          test "$DB_HOST" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
+          test "$DB_PORT" = "14402"
+          test "$DB_NAME" = "solqaryn_qa"
+          test "$DB_USER" = "solqaryn_qa_user"
+          test -n "$DB_PASSWORD" && test -n "$BACKUP_PASSPHRASE"
+          echo "QA_BACKUP_SCOPE=PASS"
+
+      - name: Exigir seis gates causales completos y verdes antes de escribir
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          for id in 45896589305 45896589376 45896589396 45896589314 45896589320 45896589342; do
+            for attempt in $(seq 1 120); do
+              response="$(gh api "repos/solqaryn/Solqaryn/actions/runs/$id")"
+              jq -e --arg sha "9f521e7f06cf7d1a92cefb90e136f9a626e18be2" '.head_branch == "qa" and .head_sha == $sha' <<< "$response" >/dev/null
+              state="$(jq -r .status <<< "$response")"
+              if [ "$state" = completed ]; then
+                jq -e '.conclusion == "success"' <<< "$response" >/dev/null || { echo "QA_V2_CAUSAL_GATE_FAILED run=$id"; exit 1; }
+                echo "QA_V2_CAUSAL_GATE=PASS run=$id"
+                break
+              fi
+              test "$attempt" -lt 120 || { echo "QA_V2_CAUSAL_GATE_TIMEOUT run=$id"; exit 1; }
+              sleep 5
+            done
+          done
+          echo QA_COMMERCIAL_CAUSAL_GATES=PASS
+
+      - name: Instalar cliente MySQL
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+
+      - name: Certificar V1 en QA antes de V2 (solo lectura)
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 .github/qa/qa-commercial-schema.py --live
+          echo QA_COMMERCIAL_V1_BASELINE_BEFORE_V2=PASS
+
+      - name: Backup transaccional de QA y cifrado AES-256 (sin dump en artefacto)
+        id: backup
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          folder="$RUNNER_TEMP/solqaryn-qa-oracle-backup"
+          mkdir -p "$folder"
+          dump="$folder/qa.sql"
+          enc="$folder/qa.sql.enc"
+          trap 'rm -f "$dump"' EXIT
+          export MYSQL_PWD="$DB_PASSWORD"
+          version="$(mysql --protocol=TCP --ssl-mode=REQUIRED -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --batch --skip-column-names "$DB_NAME" -e 'SELECT VERSION();')"
+          case "$version" in 8.4.11|8.4.11-*) ;; *) echo "QA_MYSQL_VERSION_INVALID: se exige 8.4.11; version observada: $version" >&2; exit 1;; esac
+          echo "QA_BACKUP_AIVEN_MYSQL_VERSION=$version"
+          mysqldump --protocol=TCP --ssl-mode=REQUIRED -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" \
+            --single-transaction --skip-lock-tables --no-tablespaces --set-gtid-purged=OFF \
+            --routines --triggers "$DB_NAME" > "$dump"
+          test -s "$dump"
+          sha256sum "$dump" | cut -d' ' -f1 > "$folder/qa-plaintext.sha256"
+          openssl enc -aes-256-cbc -pbkdf2 -iter 200000 -salt \
+            -pass env:BACKUP_PASSPHRASE -in "$dump" -out "$enc"
+          test -s "$enc"
+          sha256sum "$enc" > "$folder/qa-encrypted.sha256"
+          rm -f "$dump"
+          trap - EXIT
+          echo "encrypted=$enc" >> "$GITHUB_OUTPUT"
+          echo "QA_BACKUP_ENCRYPTED=PASS"
+          echo "QA_DATABASE_WRITES=0"
+
+      - name: Restore real del respaldo cifrado en MySQL local efímero
+        shell: bash
+        env:
+          ENCRYPTED_FILE: ${{ steps.backup.outputs.encrypted }}
+        run: |
+          set -euo pipefail
+          test -s "$ENCRYPTED_FILE"
+          export MYSQL_PWD=solqaryn-ci-qa-disposable-only
+          mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root \
+            -e 'CREATE DATABASE solqaryn_qa_restore_ephemeral CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
+          # El SQL descifrado fluye directamente a mysql local: no hay fichero SQL en disco.
+          openssl enc -d -aes-256-cbc -pbkdf2 -iter 200000 \
+            -pass env:BACKUP_PASSPHRASE -in "$ENCRYPTED_FILE" |
+            mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root solqaryn_qa_restore_ephemeral
+          qlocal(){ mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root -Nse "$1" solqaryn_qa_restore_ephemeral; }
+          export MYSQL_PWD="$DB_PASSWORD"
+          qsource(){ mysql --protocol=TCP --ssl-mode=REQUIRED -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -Nse "$1" "$DB_NAME"; }
+          sql="SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME;"
+          tables="$(qsource "$sql")"
+          count=0
+          while IFS= read -r tbl; do
+            test -n "$tbl" || continue
+            [[ "$tbl" =~ ^[A-Za-z0-9_]+$ ]] || { echo 'QA_RESTORE_TABLE_NAME_INVALID' >&2; exit 1; }
+            a="$(qsource "SELECT COUNT(*) FROM \`$tbl\`;")"
+            export MYSQL_PWD=solqaryn-ci-qa-disposable-only
+            b="$(qlocal "SELECT COUNT(*) FROM \`$tbl\`;")"
+            export MYSQL_PWD="$DB_PASSWORD"
+            test "$a" = "$b" || { echo 'QA_RESTORE_ROWCOUNT_MISMATCH' >&2; exit 1; }
+            count=$((count+1))
+          done <<< "$tables"
+          export MYSQL_PWD=solqaryn-ci-qa-disposable-only
+          marker="$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")"
+          gallery_marker="$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261125212000_CategoriasGalerias';")"
+          gallery_table="$(qlocal "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='CategoriasGalerias' AND TABLE_TYPE='BASE TABLE';")"
+          history="$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory;")"
+          test "$marker" = "1"
+          case "$gallery_marker:$gallery_table:$count:$history" in
+            1:1:138:110) ;;
+            *) echo 'QA_RESTORE_TABLECOUNT_OR_HISTORY_DRIFT' >&2; exit 1 ;;
+          esac
+          echo "QA_BACKUP_RESTORE=PASS tables=$count history=$history rows_exact=YES oracle_marker=$marker category_gallery=$gallery_marker"
+          echo "QA_ORIGINAL_DB_WRITES=0"
+
+
+      - name: Guardar exclusivamente backup cifrado y checksums (14 días)
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-commercial-pre-migration-encrypted-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/solqaryn-qa-oracle-backup/qa.sql.enc
+            ${{ runner.temp }}/solqaryn-qa-oracle-backup/qa-encrypted.sha256
+            ${{ runner.temp }}/solqaryn-qa-oracle-backup/qa-plaintext.sha256
+          retention-days: 14
+          if-no-files-found: error
+
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Ensayar SQL EF solo en copia local y comprobar identidades intactas
+        shell: bash
+        env:
+          LOCAL_MYSQL_PASSWORD: solqaryn-ci-qa-disposable-only
+        run: |
+          set -euo pipefail
+          umask 077
+          export MYSQL_PWD="$LOCAL_MYSQL_PASSWORD"
+          qlocal(){ mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root -Nse "$1" solqaryn_qa_restore_ephemeral; }
+          test "$(qlocal 'SELECT DATABASE()')" = solqaryn_qa_restore_ephemeral
+          test "$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261126211000_QaCommercialOwnershipV2'")" = 0
+          fingerprint_iam(){
+            mysqldump --protocol=TCP -h 127.0.0.1 -P 3306 -u root --no-create-info --skip-comments --compact --skip-extended-insert --order-by-primary --skip-lock-tables --no-tablespaces --set-gtid-purged=OFF solqaryn_qa_restore_ephemeral Usuarios Roles Permisos RolPermisos UsuarioEmpresas UsuarioRolesPlataforma | sha256sum | cut -d' ' -f1
+          }
+          fingerprint_rows(){
+            while IFS= read -r t; do
+              [[ "$t" =~ ^[A-Za-z0-9_]+$ ]] || exit 1
+              printf '%s:' "$t"
+              qlocal "SELECT COUNT(*) FROM \`$t\`;"
+            done < <(qlocal "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME<>'__EFMigrationsHistory' ORDER BY TABLE_NAME")
+          }
+          before_iam="$(fingerprint_iam)"
+          before_rows="$(fingerprint_rows)"
+          export ConnectionStrings__DefaultConnection='Server=127.0.0.1;Port=3306;Database=solqaryn_qa_restore_ephemeral;User=root;Password=solqaryn-ci-qa-disposable-only;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+          cd backend
+          dotnet tool restore
+          dotnet restore src/API/Solqaryn.API.csproj
+          dotnet restore src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj
+          dotnet ef migrations has-pending-model-changes --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release
+          dotnet ef migrations script 20261126170000_QaCommercialOwnershipV1 20261126211000_QaCommercialOwnershipV2 --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release --output "$RUNNER_TEMP/qa-commercial-ownership.sql"
+          cd ..
+          # First apply the exact SQL only to the restored local database.
+          test -s "$RUNNER_TEMP/qa-commercial-ownership.sql"
+          sha256sum "$RUNNER_TEMP/qa-commercial-ownership.sql" > "$RUNNER_TEMP/qa-commercial-ownership.sha256"
+          printf '%s\n' "$before_iam" > "$RUNNER_TEMP/qa-iam-before.sha256"
+          printf '%s\n' "$before_rows" | sha256sum | cut -d' ' -f1 > "$RUNNER_TEMP/qa-rows-before.sha256"
+          mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root solqaryn_qa_restore_ephemeral < "$RUNNER_TEMP/qa-commercial-ownership.sql"
+          test "$(fingerprint_iam)" = "$before_iam"
+          test "$(fingerprint_rows)" = "$before_rows"
+          echo QA_COMMERCIAL_REHEARSAL_IAM_IDENTICAL=PASS
+          echo QA_COMMERCIAL_REHEARSAL_ROWS_PRESERVED=PASS
+          python3 .github/qa/qa-commercial-schema-v2.py --local
+          echo QA_COMMERCIAL_V2_REHEARSAL=PASS
+          echo QA_ORIGINAL_DB_WRITES=0
+
+      - name: Aplicar una sola migracion certificada en Aiven QA y verificar preservacion
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          test "$GITHUB_REPOSITORY" = "solqaryn/Solqaryn"
+          test "$GITHUB_REF" = "refs/heads/qa"
+          test "$GITHUB_RUN_ATTEMPT" = "1"
+          test "$(git ls-remote origin refs/heads/qa | cut -f1)" = "$GITHUB_SHA"
+          test "$DB_HOST" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
+          test "$DB_PORT" = "14402"
+          test "$DB_NAME" = "solqaryn_qa"
+          test "$DB_USER" = "solqaryn_qa_user"
+          export MYSQL_PWD="$DB_PASSWORD"
+          qsource(){ mysql --protocol=TCP --connect-timeout=12 --ssl-mode=REQUIRED -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -Nse "$1" "$DB_NAME"; }
+          test "$(qsource 'SELECT DATABASE()')" = "solqaryn_qa"
+          test "$(qsource "SELECT SUBSTRING_INDEX(CURRENT_USER(),'@',1)")" = "solqaryn_qa_user"
+          case "$(qsource 'SELECT VERSION()')" in 8.4.11|8.4.11-*) ;; *) exit 1;; esac
+          test "$(qsource 'SELECT COUNT(*) FROM __EFMigrationsHistory')" = 110
+          test "$(qsource "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261126211000_QaCommercialOwnershipV2'")" = 0
+          fingerprint_iam(){
+            mysqldump --protocol=TCP --ssl-mode=REQUIRED -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --no-create-info --skip-comments --compact --skip-extended-insert --order-by-primary --skip-lock-tables --no-tablespaces --set-gtid-purged=OFF "$DB_NAME" Usuarios Roles Permisos RolPermisos UsuarioEmpresas UsuarioRolesPlataforma | sha256sum | cut -d' ' -f1
+          }
+          fingerprint_rows(){
+            while IFS= read -r t; do
+              [[ "$t" =~ ^[A-Za-z0-9_]+$ ]] || exit 1
+              printf '%s:' "$t"
+              qsource "SELECT COUNT(*) FROM \`$t\`;"
+            done < <(qsource "SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' AND TABLE_NAME<>'__EFMigrationsHistory' ORDER BY TABLE_NAME")
+          }
+          before_iam="$(cat "$RUNNER_TEMP/qa-iam-before.sha256")"
+          before_rows="$(cat "$RUNNER_TEMP/qa-rows-before.sha256")"
+          test "$(fingerprint_iam)" = "$before_iam" || { echo QA_IAM_DRIFT_BEFORE_APPLY; exit 1; }
+          test "$(fingerprint_rows | sha256sum | cut -d' ' -f1)" = "$before_rows" || { echo QA_ROWCOUNT_DRIFT_BEFORE_APPLY; exit 1; }
+          sha256sum -c "$RUNNER_TEMP/qa-commercial-ownership.sha256"
+          test "$(git ls-remote origin refs/heads/qa | cut -f1)" = "$GITHUB_SHA"
+          python3 .github/qa/qa-commercial-schema.py --live
+          # MySQL DDL is not atomic across statements; no retry on partial failure.
+          # Keep the verified encrypted backup; stop on the first SQL error.
+          echo QA_COMMERCIAL_APPLY_STARTED
+          mysql --protocol=TCP --ssl-mode=REQUIRED -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" "$DB_NAME" < "$RUNNER_TEMP/qa-commercial-ownership.sql"
+          python3 .github/qa/qa-commercial-schema-v2.py --live
+          test "$(fingerprint_iam)" = "$before_iam" || { echo QA_IAM_DRIFT_AFTER_APPLY; exit 1; }
+          test "$(fingerprint_rows | sha256sum | cut -d' ' -f1)" = "$before_rows" || { echo QA_ROWCOUNT_DRIFT_AFTER_APPLY; exit 1; }
+          echo QA_COMMERCIAL_LIVE_IAM_IDENTICAL=PASS
+          echo QA_COMMERCIAL_LIVE_ROWS_PRESERVED=PASS
+          echo QA_COMMERCIAL_V2_LIVE_MIGRATION=PASS
