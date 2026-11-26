@@ -1,3 +1,9 @@
+## 2026-11-26 — QA-FN-05: prueba viva de auditoría empresarial dirigida
+
+- Backend 242628b6b502f8ab79858fb43801448a5daa917f: compilación Release, auditoría NuGet y 2480/2480 pruebas aprobadas (45882381618 job 140124619338), Render dep-dc48c46q1p3s73d7nq30 LIVE. Probe dedicado a auditoría: conserva operador B con grant explícito para demostrar 403, crea identidad administrativa B adicional exclusiva del run, autentica A/B, genera eventos reales mediante PUT de configuración tenant y verifica dueño, ámbito, origen, filtro cruzado y paginación. Limpieza conserva auditoría y revoca/retira identidades propias; sin alterar usuario/roles existentes.
+- El gate verifica exactamente el diff de cuatro archivos de auditoría, CI del SHA desplegado, y logs anteriores de IAM, comercio, secuencias, suscripciones y dashboard. Full sigue disponible. No repetir mutaciones ya certificadas; no declarar cierre hasta resultado y comprobación externa de Render. Reportes administrativos y configuración global permanecen separados y requieren remediación real.
+- QA solamente; Scope Lock DEV 434137171eb94cd9cde4521d01b31c4d55ca868c job 140120558850 PASS; sin cambios de aplicación, migraciones, dependencias, DEV, MAIN ni automatizaciones. Rollback por revert.
+
 ## 2026-11-26 — QA-FN-05: autorización y propiedad de auditoría
 
 - Run 45879941637 job 140116448932: numeraciones/suscripciones/límites/dashboard A/B y limpieza PASS, auditoría B 403 por rol no administrativo. Inspección adicional: AuditoriaController usaba claim de administrador; AuditoriaRepository consultaba sin EmpresaId; AuditoriaService genérico no atribuía el tenant.

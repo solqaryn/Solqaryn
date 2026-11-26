@@ -60,9 +60,9 @@ print("QA_COMMERCIAL_PREFLIGHT_READ_ONLY=PASS", flush=True)
 run, attempt = os.environ["GITHUB_RUN_ID"], os.environ["GITHUB_RUN_ATTEMPT"]
 require(run.isdigit() and attempt.isdigit(), "Invalid run identity")
 prefix = "qa_fn05_" + run + "_" + attempt + "_" + secrets.token_hex(6)
-a, b, target, shared = (prefix + "_" + x for x in ("a", "b", "t", "s"))
+a, b, target, shared, admin_b = (prefix + "_" + x for x in ("a", "b", "t", "s", "g"))
 require(len(shared) <= 50, "Fixture name too long")
-names = "(" + ",".join("'" + x + "'" for x in (a, b, target, shared)) + ")"
+names = "(" + ",".join("'" + x + "'" for x in (a, b, target, shared, admin_b)) + ")"
 for table, column in (("Empresas","Nombre"),("Roles","Nombre"),("Usuarios","NombreUsuario")):
     require(sql(f"SELECT COUNT(*) FROM {table} WHERE {column} IN {names};", "collision") == "0", "Fixture collision")
 
@@ -79,7 +79,11 @@ matrix = grant("PERMISOS.ADMINISTRAR")
 commercial_grants = tuple(grant(mod + "." + action) for mod in ("PRODUCTOS", "CLIENTES", "PROVEEDORES") for action in ("VER", "CREAR", "EDITAR", "ACTIVAR", "DESACTIVAR", "ELIMINARLOGICO"))
 configuration_grants = tuple(grant(code) for code in ("CONFIGURACION.VER", "CONFIGURACION.CREAR", "CONFIGURACION.EDITAR", "DASHBOARD.VER", "AUDITORIA.VER"))
 mode = os.environ.get("QA_FN05_MODE","full")
-require(mode in ("full","commercial","remaining"), "Unknown QA FN05 mode")
+require(mode in ("full","commercial","remaining","audit"), "Unknown QA FN05 mode")
+if mode == "audit":
+    require(expected_sha == "242628b6b502f8ab79858fb43801448a5daa917f", "Audit evidence requires exact corrected runtime")
+    require(os.environ.get("QA_FN05_PRIOR_REMAINING_RUN") == "45879941637", "Missing prior sequence/subscription evidence")
+    print("QA_FN05_REMAINING_PRIOR_EVIDENCE=45879941637", flush=True)
 if mode == "remaining":
     require(expected_sha == "a3a730750920f56e0d4250b3d5a223f57da24c90", "Remaining evidence requires exact deployed runtime")
     require(os.environ.get("QA_FN05_PRIOR_COMMERCIAL_RUN") == "45878868796", "Missing prior commercial evidence")
@@ -104,7 +108,7 @@ require(sql(f"SELECT COUNT(*) FROM Planes WHERE Codigo='{plan_code}';", "test pl
 
 def new_password():
     return "Qa!7" + secrets.token_urlsafe(32)
-passwords = {n: new_password() for n in (a, b, target, shared)}
+passwords = {n: new_password() for n in (a, b, target, shared, admin_b)}
 new_target = new_password()
 def bcrypt(name, password):
     r = subprocess.run(["htpasswd","-niBC","12",name], input=password+"\n", text=True,capture_output=True,timeout=20)
@@ -222,11 +226,11 @@ try:
         statements += [
           f"INSERT INTO Empresas (Nombre,Activa,FechaCreacion,FechaActualizacion) VALUES ('{name}',1,UTC_TIMESTAMP(),UTC_TIMESTAMP());",
           f"SET @e{suffix}=LAST_INSERT_ID();"]
-    for suffix, name, company, admin in (("a",a,"a",1),("b",b,"b",0),("t",target,"a",0)):
+    for suffix, name, company, admin in (("a",a,"a",1),("b",b,"b",0),("t",target,"a",0),("g",admin_b,"b",1)):
         statements += [
           f"INSERT INTO Roles (Nombre,NombreNormalizado,Descripcion,EsSistema,EsAdministrador,Ambito,EmpresaId,Activo,Eliminado,FechaCreacion) VALUES ('{name}','{name.upper()}','Fixture temporal QA FN05',0,{admin},1,@e{company},1,0,UTC_TIMESTAMP());",
           f"SET @r{suffix}=LAST_INSERT_ID();"]
-    for suffix, name, role, company in (("a",a,"a","a"),("b",b,"b","b"),("t",target,"t","a"),("s",shared,"t","a")):
+    for suffix, name, role, company in (("a",a,"a","a"),("b",b,"b","b"),("t",target,"t","a"),("s",shared,"t","a"),("g",admin_b,"g","b")):
         statements += [
           f"INSERT INTO Usuarios (NombreUsuario,NombreCompleto,PasswordHash,RolId,Activo,Bloqueado,Eliminado,FechaCreacion) VALUES ('{name}','{name}','{hashes[name]}',@r{role},1,0,0,UTC_TIMESTAMP());",
           f"SET @u{suffix}=LAST_INSERT_ID();",
@@ -234,23 +238,24 @@ try:
     # Inactive second membership still makes the identity shared.
     statements += [
        "INSERT INTO UsuarioEmpresas (UsuarioId,EmpresaId,RolId,Activa,FechaCreacion,FechaActualizacion) VALUES (@us,@eb,@rb,0,UTC_TIMESTAMP(),UTC_TIMESTAMP());"]
-    for role, grants in (("a",(view_user,edit_user,view_role,matrix)+commercial_grants+configuration_grants),("b",(view_user,view_role)+commercial_grants+configuration_grants)):
+    for role, grants in (("a",(view_user,edit_user,view_role,matrix)+commercial_grants+configuration_grants),("b",(view_user,view_role)+commercial_grants+configuration_grants),("g",configuration_grants)):
         for p in grants:
             statements.append(f"INSERT INTO RolPermisos (RolId,PermisoId) VALUES (@r{role},{p});")
-    statements += ["COMMIT;","SELECT @ea,@eb,@ua,@ub,@ut,@us,@ra,@rb,@rt;"]
+    statements += ["COMMIT;","SELECT @ea,@eb,@ua,@ub,@ut,@us,@ra,@rb,@rt,@ug,@rg;"]
     created = True
     ids = sql("\n".join(statements), "create isolated administrative fixtures").split("\t")
-    require(len(ids)==9 and all(x.isdigit() and int(x)>0 for x in ids),"Fixture readback missing")
-    ea,eb,ua,ub,ut,us,ra,rb,rt = map(int,ids)
-    require(ea!=eb and len({ua,ub,ut,us})==4 and len({ra,rb,rt})==3,"Fixture identity collision")
+    require(len(ids)==11 and all(x.isdigit() and int(x)>0 for x in ids),"Fixture readback missing")
+    ea,eb,ua,ub,ut,us,ra,rb,rt,ug,rg = map(int,ids)
+    require(ea!=eb and len({ua,ub,ut,us,ug})==5 and len({ra,rb,rt,rg})==4,"Fixture identity collision")
     print("QA_FN05_EPHEMERAL_IDENTITIES=PASS",flush=True)
     ta = login(a,passwords[a],"QA_FN05_LOGIN_A")
     tb = login(b,passwords[b],"QA_FN05_LOGIN_B")
+    tg = login(admin_b,passwords[admin_b],"QA_FN05_LOGIN_ADMIN_B")
     # The previous deployment passed every administrative assertion through
     # QA_FN05_RESET_AUDIT. Resume on the same immutable runtime code instead
     # of resetting passwords again. Full mode remains available for future changes.
-    if mode in ("commercial","remaining"):
-        require(expected_sha == "a3a730750920f56e0d4250b3d5a223f57da24c90","Prior administration evidence requires exact QA runtime with verified product-only diff")
+    if mode in ("commercial","remaining","audit"):
+        require(expected_sha == ("242628b6b502f8ab79858fb43801448a5daa917f" if mode == "audit" else "a3a730750920f56e0d4250b3d5a223f57da24c90"),"Prior administration evidence requires exact QA runtime with verified product-only diff")
         require(os.environ.get("QA_FN05_PRIOR_ADMIN_RUN") == "45872602673","Prior evidence required")
         print("QA_FN05_ADMINISTRATION_PRIOR_EVIDENCE=45872602673",flush=True)
     else:
@@ -260,7 +265,7 @@ try:
         rows_a = data(call("/usuarios","QA_FN05_USERS_A",token=ta,tenant=ea))
         rows_b = data(call("/usuarios","QA_FN05_USERS_B",token=tb,tenant=eb))
         require({x["id"] for x in rows_a}=={ua,ut,us},"Unexpected identities in A")
-        require({x["id"] for x in rows_b}=={ub,us},"Unexpected identities in B")
+        require({x["id"] for x in rows_b}=={ub,us,ug},"Unexpected identities in B")
         require(next(x for x in rows_a if x["id"]==us)["rolId"]==rt,"Shared identity A role mismatch")
         require(next(x for x in rows_b if x["id"]==us)["rolId"]==rb and next(x for x in rows_b if x["id"]==us)["activo"] is False,"Shared identity B inactive membership mismatch")
         page = data(call("/usuarios/paginado?page=1&pageSize=1","QA_FN05_PAGED_A",token=ta,tenant=ea))
@@ -272,7 +277,7 @@ try:
         roles_a = data(call("/roles","QA_FN05_ROLES_A",token=ta,tenant=ea))
         roles_b = data(call("/roles","QA_FN05_ROLES_B",token=tb,tenant=eb))
         require({ra,rt}.issubset({r["id"] for r in roles_a}) and rb not in {r["id"] for r in roles_a},"Foreign role exposed A")
-        require(rb in {r["id"] for r in roles_b} and not {ra,rt}.intersection({r["id"] for r in roles_b}),"Foreign role exposed B")
+        require({rb,rg}.issubset({r["id"] for r in roles_b}) and not {ra,rt}.intersection({r["id"] for r in roles_b}),"Foreign role exposed B")
         call(f"/roles/{rb}","QA_FN05_FOREIGN_ROLE",404,token=ta,tenant=ea)
         call(f"/permisos/matriz/{rt}","QA_FN05_MATRIX_OWN",token=ta,tenant=ea)
         call(f"/permisos/matriz/{rb}","QA_FN05_MATRIX_FOREIGN",(400,403,404,422),token=ta,tenant=ea)
@@ -302,7 +307,7 @@ try:
         require(all(v not in audit for v in (passwords[target],new_target,hashes[target],actual_hash)),"Credential present in audit")
         print("QA_FN05_RESET_AUDIT=PASS",flush=True)
 
-    if mode != "remaining":
+    if mode not in ("remaining","audit"):
         # Business actions over the real proxy; SQL checks persisted owner only.
         doc_number = str(1000000000000 + secrets.randbelow(9000000000000))
         for route, table, form in (("productos","Productos",True),("clientes","Clientes",False),("proveedores","Proveedores",False)):
@@ -383,53 +388,79 @@ try:
         call(f"/empresa-configuracion/tenant/{eb}","QA_FN05_CONFIG_FOREIGN_EDIT",403,token=ta,tenant=ea,body=config_payload,method="PUT")
         require(data(call(f"/empresa-configuracion/tenant/{eb}","QA_FN05_CONFIG_B_INTACT",token=tb,tenant=eb))==conf_b,"Foreign config changed")
         print("QA_FN05_CONFIG_AB=PASS",flush=True)
-    # Test-only counters and plan; no external billing or real numbering.
-    kind=(prefix+"_SEQ").upper()
-    seed = sql(f"""START TRANSACTION;
-INSERT INTO SecuenciasDocumento (EmpresaId,SucursalId,TipoDocumento,UltimoValor,Prefijo,LongitudNumero,Activa,FechaCreacion,FechaActualizacion) VALUES ({ea},NULL,'{kind}',0,'QA-',6,1,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)),({eb},NULL,'{kind}',0,'QA-',6,1,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
-INSERT INTO Planes (Codigo,Nombre,Activo,FechaCreacion,FechaActualizacion) VALUES ('{plan_code}','{prefix}',1,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
-SET @plan=LAST_INSERT_ID();
-INSERT INTO PlanLimites (PlanId,Clave,ValorMaximo) VALUES (@plan,'QA_TEST_LIMIT',7);
-COMMIT;
-SELECT (SELECT COUNT(*) FROM SecuenciasDocumento WHERE EmpresaId IN ({ea},{eb}) AND TipoDocumento='{kind}' AND SucursalId IS NULL AND UltimoValor=0),(SELECT COUNT(*) FROM Planes p JOIN PlanLimites l ON l.PlanId=p.Id WHERE p.Codigo='{plan_code}' AND l.Clave='QA_TEST_LIMIT' AND l.ValorMaximo=7);""","seed isolated sequence and test plan")
-    require(seed.split("\t")==["2","1"],"Sequence/plan fixture readback failed")
-    print("QA_FN05_SEQUENCE_PLAN_SEED=PASS",flush=True)
-    for token,tenant,suffix in ((ta,ea,"A"),(tb,eb,"B")):
-        current=data(call(f"/secuencias-documento?empresaId={tenant}&tipoDocumento={kind}","QA_FN05_SEQUENCE_"+suffix+"_READ",token=token,tenant=tenant))
-        require(current.get("empresaId")==tenant and current.get("ultimoValor")==0,"Initial counter mismatch")
-        seq=data(call("/secuencias-documento/siguiente","QA_FN05_SEQUENCE_"+suffix+"_RESERVE",token=token,tenant=tenant,body={"empresaId":tenant,"tipoDocumento":kind}))
-        require(seq.get("empresaId")==tenant and seq.get("valor")==1,"Tenant counter not reserved")
-    call(f"/secuencias-documento?empresaId={eb}&tipoDocumento={kind}","QA_FN05_SEQUENCE_FOREIGN",403,token=ta,tenant=ea)
-    call("/secuencias-documento/siguiente","QA_FN05_SEQUENCE_FOREIGN_WRITE",403,token=ta,tenant=ea,body={"empresaId":eb,"tipoDocumento":kind})
-    require(sql(f"SELECT COUNT(*) FROM SecuenciasDocumento WHERE EmpresaId IN ({ea},{eb}) AND TipoDocumento='{kind}' AND UltimoValor=1;","independent counter readback")=="2","Counter isolation mismatch")
-    call(f"/secuencias-documento?empresaId={ea}&tipoDocumento={kind}","QA_FN05_SEQUENCE_FOREIGN_B",403,token=tb,tenant=eb)
-    call("/secuencias-documento/siguiente","QA_FN05_SEQUENCE_FOREIGN_WRITE_B",403,token=tb,tenant=eb,body={"empresaId":ea,"tipoDocumento":kind})
-    require(sql(f"SELECT COUNT(*) FROM SecuenciasDocumento WHERE EmpresaId IN ({ea},{eb}) AND TipoDocumento='{kind}' AND UltimoValor=1;","final counter readback")=="2","Cross-tenant counter changed")
-    print("QA_FN05_SEQUENCE_AB=PASS",flush=True)
-    begin=(datetime.datetime.now(datetime.timezone.utc)-datetime.timedelta(minutes=1)).isoformat()
-    subs_payload={"planCodigo":plan_code,"inicioUtc":begin}
-    subscription_ids=[]
-    for token,tenant,suffix in ((ta,ea,"A"),(tb,eb,"B")):
-        path=f"/saas/tenants/{tenant}"
-        subscription=data(call(path+"/onboarding","QA_FN05_SUBSCRIPTION_"+suffix,token=token,tenant=tenant,body=subs_payload,idem=prefix))
-        require(type(subscription.get("id")) is int and subscription["id"]>0 and subscription.get("planCodigo")==plan_code,"Subscription fixture mismatch")
-        replay=data(call(path+"/onboarding","QA_FN05_SUBSCRIPTION_"+suffix+"_REPLAY",token=token,tenant=tenant,body=subs_payload,idem=prefix))
-        require(replay.get("id")==subscription["id"],"Subscription idempotency mismatch")
-        actual=data(call(path+"/suscripcion","QA_FN05_SUBSCRIPTION_"+suffix+"_READ",token=token,tenant=tenant))
-        require(actual.get("id")==subscription["id"],"Subscription readback mismatch")
-        limits=data(call(path+"/limites?clave=QA_TEST_LIMIT","QA_FN05_LIMITS_"+suffix,token=token,tenant=tenant))
-        require(limits.get("total")==1 and limits.get("items")==[{"clave":"QA_TEST_LIMIT","valorMaximo":7}],"Subscription limit mismatch")
-        subscription_ids.append(subscription["id"])
-    require(len(set(subscription_ids))==2,"Subscription leaked across companies")
-    call(f"/saas/tenants/{eb}/suscripcion","QA_FN05_SUBSCRIPTION_FOREIGN",403,token=ta,tenant=ea)
-    call(f"/saas/tenants/{eb}/limites","QA_FN05_LIMITS_FOREIGN",403,token=ta,tenant=ea)
-    call(f"/saas/tenants/{ea}/suscripcion","QA_FN05_SUBSCRIPTION_FOREIGN_B",403,token=tb,tenant=eb)
-    call(f"/saas/tenants/{ea}/limites","QA_FN05_LIMITS_FOREIGN_B",403,token=tb,tenant=eb)
-    require(sql(f"SELECT COUNT(*) FROM Suscripciones s JOIN Planes p ON p.Id=s.PlanId WHERE s.EmpresaId IN ({ea},{eb}) AND p.Codigo='{plan_code}';","subscription owner readback")=="2","Subscription ownership mismatch")
-    print("QA_FN05_SUBSCRIPTIONS_AB=PASS",flush=True)
-    for token,tenant,suffix in ((ta,ea,"A"),(tb,eb,"B")):
-        data(call("/dashboard/resumen","QA_FN05_DASHBOARD_"+suffix,token=token,tenant=tenant))
-        data(call("/auditoria","QA_FN05_AUDIT_"+suffix,token=token,tenant=tenant))
+    if mode != "audit":
+        # Test-only counters and plan; no external billing or real numbering.
+        kind=(prefix+"_SEQ").upper()
+        seed = sql(f"""START TRANSACTION;
+    INSERT INTO SecuenciasDocumento (EmpresaId,SucursalId,TipoDocumento,UltimoValor,Prefijo,LongitudNumero,Activa,FechaCreacion,FechaActualizacion) VALUES ({ea},NULL,'{kind}',0,'QA-',6,1,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)),({eb},NULL,'{kind}',0,'QA-',6,1,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
+    INSERT INTO Planes (Codigo,Nombre,Activo,FechaCreacion,FechaActualizacion) VALUES ('{plan_code}','{prefix}',1,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
+    SET @plan=LAST_INSERT_ID();
+    INSERT INTO PlanLimites (PlanId,Clave,ValorMaximo) VALUES (@plan,'QA_TEST_LIMIT',7);
+    COMMIT;
+    SELECT (SELECT COUNT(*) FROM SecuenciasDocumento WHERE EmpresaId IN ({ea},{eb}) AND TipoDocumento='{kind}' AND SucursalId IS NULL AND UltimoValor=0),(SELECT COUNT(*) FROM Planes p JOIN PlanLimites l ON l.PlanId=p.Id WHERE p.Codigo='{plan_code}' AND l.Clave='QA_TEST_LIMIT' AND l.ValorMaximo=7);""","seed isolated sequence and test plan")
+        require(seed.split("\t")==["2","1"],"Sequence/plan fixture readback failed")
+        print("QA_FN05_SEQUENCE_PLAN_SEED=PASS",flush=True)
+        for token,tenant,suffix in ((ta,ea,"A"),(tb,eb,"B")):
+            current=data(call(f"/secuencias-documento?empresaId={tenant}&tipoDocumento={kind}","QA_FN05_SEQUENCE_"+suffix+"_READ",token=token,tenant=tenant))
+            require(current.get("empresaId")==tenant and current.get("ultimoValor")==0,"Initial counter mismatch")
+            seq=data(call("/secuencias-documento/siguiente","QA_FN05_SEQUENCE_"+suffix+"_RESERVE",token=token,tenant=tenant,body={"empresaId":tenant,"tipoDocumento":kind}))
+            require(seq.get("empresaId")==tenant and seq.get("valor")==1,"Tenant counter not reserved")
+        call(f"/secuencias-documento?empresaId={eb}&tipoDocumento={kind}","QA_FN05_SEQUENCE_FOREIGN",403,token=ta,tenant=ea)
+        call("/secuencias-documento/siguiente","QA_FN05_SEQUENCE_FOREIGN_WRITE",403,token=ta,tenant=ea,body={"empresaId":eb,"tipoDocumento":kind})
+        require(sql(f"SELECT COUNT(*) FROM SecuenciasDocumento WHERE EmpresaId IN ({ea},{eb}) AND TipoDocumento='{kind}' AND UltimoValor=1;","independent counter readback")=="2","Counter isolation mismatch")
+        call(f"/secuencias-documento?empresaId={ea}&tipoDocumento={kind}","QA_FN05_SEQUENCE_FOREIGN_B",403,token=tb,tenant=eb)
+        call("/secuencias-documento/siguiente","QA_FN05_SEQUENCE_FOREIGN_WRITE_B",403,token=tb,tenant=eb,body={"empresaId":ea,"tipoDocumento":kind})
+        require(sql(f"SELECT COUNT(*) FROM SecuenciasDocumento WHERE EmpresaId IN ({ea},{eb}) AND TipoDocumento='{kind}' AND UltimoValor=1;","final counter readback")=="2","Cross-tenant counter changed")
+        print("QA_FN05_SEQUENCE_AB=PASS",flush=True)
+        begin=(datetime.datetime.now(datetime.timezone.utc)-datetime.timedelta(minutes=1)).isoformat()
+        subs_payload={"planCodigo":plan_code,"inicioUtc":begin}
+        subscription_ids=[]
+        for token,tenant,suffix in ((ta,ea,"A"),(tb,eb,"B")):
+            path=f"/saas/tenants/{tenant}"
+            subscription=data(call(path+"/onboarding","QA_FN05_SUBSCRIPTION_"+suffix,token=token,tenant=tenant,body=subs_payload,idem=prefix))
+            require(type(subscription.get("id")) is int and subscription["id"]>0 and subscription.get("planCodigo")==plan_code,"Subscription fixture mismatch")
+            replay=data(call(path+"/onboarding","QA_FN05_SUBSCRIPTION_"+suffix+"_REPLAY",token=token,tenant=tenant,body=subs_payload,idem=prefix))
+            require(replay.get("id")==subscription["id"],"Subscription idempotency mismatch")
+            actual=data(call(path+"/suscripcion","QA_FN05_SUBSCRIPTION_"+suffix+"_READ",token=token,tenant=tenant))
+            require(actual.get("id")==subscription["id"],"Subscription readback mismatch")
+            limits=data(call(path+"/limites?clave=QA_TEST_LIMIT","QA_FN05_LIMITS_"+suffix,token=token,tenant=tenant))
+            require(limits.get("total")==1 and limits.get("items")==[{"clave":"QA_TEST_LIMIT","valorMaximo":7}],"Subscription limit mismatch")
+            subscription_ids.append(subscription["id"])
+        require(len(set(subscription_ids))==2,"Subscription leaked across companies")
+        call(f"/saas/tenants/{eb}/suscripcion","QA_FN05_SUBSCRIPTION_FOREIGN",403,token=ta,tenant=ea)
+        call(f"/saas/tenants/{eb}/limites","QA_FN05_LIMITS_FOREIGN",403,token=ta,tenant=ea)
+        call(f"/saas/tenants/{ea}/suscripcion","QA_FN05_SUBSCRIPTION_FOREIGN_B",403,token=tb,tenant=eb)
+        call(f"/saas/tenants/{ea}/limites","QA_FN05_LIMITS_FOREIGN_B",403,token=tb,tenant=eb)
+        require(sql(f"SELECT COUNT(*) FROM Suscripciones s JOIN Planes p ON p.Id=s.PlanId WHERE s.EmpresaId IN ({ea},{eb}) AND p.Codigo='{plan_code}';","subscription owner readback")=="2","Subscription ownership mismatch")
+        print("QA_FN05_SUBSCRIPTIONS_AB=PASS",flush=True)
+        for token,tenant,suffix in ((ta,ea,"A"),(tb,eb,"B")):
+            data(call("/dashboard/resumen","QA_FN05_DASHBOARD_"+suffix,token=token,tenant=tenant))
+
+    # B operator explicitly retains AUDITORIA.VER, but is not an administrator.
+    call("/auditoria","QA_FN05_AUDIT_OPERATOR_B_DENIED",403,token=tb,tenant=eb)
+    call("/auditoria","QA_FN05_AUDIT_ANONYMOUS",401)
+    # Generate a real event through the scoped configuration API in each tenant.
+    audit_ids = {}
+    for token,tenant,uid,suffix in ((ta,ea,ua,"A"),(tg,eb,ug,"B")):
+        path=f"/empresa-configuracion/tenant/{tenant}"
+        current=data(call(path,"QA_FN05_AUDIT_CONFIG_READ_"+suffix,token=token,tenant=tenant))
+        payload={k:current[k] for k in ("nombre","rtn","direccion","moneda","zonaHoraria","impuestosJson","emisionJson","correoRemitente","correoNombreRemitente","version") if k in current}
+        payload["direccion"]="QA audit "+prefix+" "+suffix
+        updated=data(call(path,"QA_FN05_AUDIT_CONFIG_WRITE_"+suffix,token=token,tenant=tenant,body=payload,method="PUT"))
+        require(updated.get("empresaId")==tenant and updated.get("direccion")==payload["direccion"],"Audit fixture update mismatch")
+        ids=sql(f"SELECT Id FROM RegistrosAuditoria WHERE EmpresaId={tenant} AND UsuarioId={uid} AND AmbitoAutoridad=1 AND OrigenAutorizacion=1 AND Modulo='Configuracion' AND Accion='Editar' AND Entidad='ConfigEmpresa' AND ReferenciaId={tenant} ORDER BY Id DESC LIMIT 1;","audit persisted owner "+suffix)
+        require(ids.isdigit(),"Missing persisted tenant audit "+suffix)
+        audit_ids[suffix]=int(ids)
+        print("QA_FN05_AUDIT_PERSISTED_"+suffix+"=PASS",flush=True)
+    require(audit_ids["A"]!=audit_ids["B"],"Audit identity collision")
+    for token,tenant,uid,other,other_uid,suffix,foreign_suffix in ((ta,ea,ua,eb,ug,"A","B"),(tg,eb,ug,ea,ua,"B","A")):
+        own=data(call(f"/auditoria?entidad=ConfigEmpresa&referenciaId={tenant}&usuarioId={uid}&page=1&pageSize=1","QA_FN05_AUDIT_ADMIN_"+suffix,token=token,tenant=tenant))
+        require(own.get("totalCount",0)>0 and len(own.get("items",[]))==1 and own["items"][0].get("id")==audit_ids[suffix],"Missing owned audit page "+suffix)
+        foreign=data(call(f"/auditoria?entidad=ConfigEmpresa&referenciaId={other}&usuarioId={other_uid}&page=1&pageSize=1","QA_FN05_AUDIT_FOREIGN_FILTER_"+suffix,token=token,tenant=tenant))
+        require(foreign.get("totalCount")==0 and foreign.get("items")==[],"Foreign audit exposed "+suffix)
+        call("/auditoria","QA_FN05_AUDIT_FOREIGN_SELECTOR_"+suffix,403,token=token,tenant=other)
+        print("QA_FN05_AUDIT_ISOLATION_"+suffix+"=PASS",flush=True)
+    print("QA_FN05_AUDIT_AB=PASS",flush=True)
     print("QA_FN05_LIVE_COMMERCIAL=PASS",flush=True)
 finally:
     if created:

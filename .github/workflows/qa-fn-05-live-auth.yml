@@ -20,7 +20,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   authenticated:
-    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && (github.event_name == 'workflow_dispatch' || github.event.before == '537aa9b1aaafad088aad54a765c6f7189f34631b')
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && (github.event_name == 'workflow_dispatch' || github.event.before == '242628b6b502f8ab79858fb43801448a5daa917f')
     runs-on: ubuntu-latest
     timeout-minutes: 25
     environment: QA
@@ -40,11 +40,12 @@ jobs:
           sudo apt-get install -y mysql-client apache2-utils
       - name: Preflight fisico certificado y administracion A/B real
         env:
-          EXPECTED_DEPLOYED_SHA: ${{ inputs.expected_deployed_sha || 'a3a730750920f56e0d4250b3d5a223f57da24c90' }}
+          EXPECTED_DEPLOYED_SHA: ${{ inputs.expected_deployed_sha || '242628b6b502f8ab79858fb43801448a5daa917f' }}
           GH_TOKEN: ${{ github.token }}
-          QA_FN05_MODE: ${{ github.event_name == 'push' && 'remaining' || 'full' }}
+          QA_FN05_MODE: ${{ github.event_name == 'push' && 'audit' || 'full' }}
           QA_FN05_PRIOR_ADMIN_RUN: '45872602673'
           QA_FN05_PRIOR_COMMERCIAL_RUN: '45878868796'
+          QA_FN05_PRIOR_REMAINING_RUN: '45879941637'
           DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
           DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
           DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}
@@ -55,12 +56,17 @@ jobs:
           [[ "$EXPECTED_DEPLOYED_SHA" =~ ^[0-9a-f]{40}$ ]]
           git merge-base --is-ancestor "$EXPECTED_DEPLOYED_SHA" HEAD
           git diff --exit-code "$EXPECTED_DEPLOYED_SHA" HEAD -- backend frontend render.yaml
-          if [ "$QA_FN05_MODE" = remaining ]; then
-            test "$EXPECTED_DEPLOYED_SHA" = "a3a730750920f56e0d4250b3d5a223f57da24c90"
+          if [ "$QA_FN05_MODE" = audit ]; then
+            test "$EXPECTED_DEPLOYED_SHA" = "242628b6b502f8ab79858fb43801448a5daa917f"
+            prior_runtime="a3a730750920f56e0d4250b3d5a223f57da24c90"
+            git merge-base --is-ancestor "$prior_runtime" "$EXPECTED_DEPLOYED_SHA"
+            expected_paths="$(printf '%s\n' backend/src/API/Controllers/AuditoriaController.cs backend/src/Application/Services/AuditoriaService.cs backend/src/Infrastructure/Persistence/AppDbContext.cs backend/src/Infrastructure/Repositories/AuditoriaRepository.cs)"
+            test "$(git diff --name-only "$prior_runtime" "$EXPECTED_DEPLOYED_SHA" -- backend/src frontend render.yaml)" = "$expected_paths"
+            gh api repos/solqaryn/Solqaryn/actions/jobs/140124619338 | jq -e '.head_sha == "242628b6b502f8ab79858fb43801448a5daa917f" and .conclusion == "success"' >/dev/null
             # Reuse IAM evidence only if the one changed runtime file is the
             # product controller, with all administration code unchanged.
-            git merge-base --is-ancestor "9c7ecc45cd72795212361a509f73c1890c53f934" "$EXPECTED_DEPLOYED_SHA"
-            test "$(git diff --name-only "9c7ecc45cd72795212361a509f73c1890c53f934" "$EXPECTED_DEPLOYED_SHA" -- backend/src frontend render.yaml)" = backend/src/API/Controllers/ProductosController.cs
+            git merge-base --is-ancestor "9c7ecc45cd72795212361a509f73c1890c53f934" "$prior_runtime"
+            test "$(git diff --name-only "9c7ecc45cd72795212361a509f73c1890c53f934" "$prior_runtime" -- backend/src frontend render.yaml)" = backend/src/API/Controllers/ProductosController.cs
             gh api repos/solqaryn/Solqaryn/actions/jobs/140110019656 | jq -e '.head_sha == "a3a730750920f56e0d4250b3d5a223f57da24c90" and .conclusion == "success"' >/dev/null
             echo QA_FN05_ADMIN_RUNTIME_SCOPE_VERIFIED=PASS
             gh api repos/solqaryn/Solqaryn/actions/runs/45872602673 | jq -e '.head_branch == "qa" and .head_sha == "84902ad764bdc9754fa9c9586e053fb0b65b407d" and .status == "completed" and .conclusion == "failure"' >/dev/null
@@ -76,7 +82,7 @@ jobs:
             rm -f "$RUNNER_TEMP/qa-prior-admin.log"
             echo QA_FN05_PRIOR_ADMIN_LOG_VERIFIED=PASS
             gh api repos/solqaryn/Solqaryn/actions/runs/45878868796 | jq -e '.head_branch == "qa" and .head_sha == "34caa72c055fb671529e562c5eaa1f36682f469a" and .status == "completed" and .conclusion == "failure"' >/dev/null
-            git diff --exit-code "$EXPECTED_DEPLOYED_SHA" "34caa72c055fb671529e562c5eaa1f36682f469a" -- backend frontend render.yaml
+            git diff --exit-code "$prior_runtime" "34caa72c055fb671529e562c5eaa1f36682f469a" -- backend frontend render.yaml
             trap 'rm -f "$RUNNER_TEMP/qa-prior-admin.log" "$RUNNER_TEMP/qa-prior-commercial.log"' EXIT
             gh api --allow-escape-sequences repos/solqaryn/Solqaryn/actions/jobs/140112796616/logs > "$RUNNER_TEMP/qa-prior-commercial.log"
             for marker in QA_FN05_ADMIN_RUNTIME_SCOPE_VERIFIED QA_FN05_PRODUCTOS_A_VALID_OWN_EDIT QA_FN05_PRODUCTOS_B_VALID_OWN_EDIT QA_FN05_PRODUCTOS_A_FOREIGN_EDIT QA_FN05_PRODUCTOS_B_FOREIGN_EDIT QA_FN05_PRODUCTOS_A_FOREIGN_EDIT_UNCHANGED QA_FN05_PRODUCTOS_B_FOREIGN_EDIT_UNCHANGED QA_FN05_VARIANT_OWNERS QA_FN05_PRODUCTOS_DELETED_NOT_EDITABLE QA_FN05_PRODUCTOS_AB QA_FN05_CLIENTES_AB QA_FN05_PROVEEDORES_AB QA_FN05_CONFIG_AB QA_FN05_EPHEMERAL_REVOKE QA_FN05_COMMERCIAL_CLEANUP QA_FN05_EPHEMERAL_CLEANUP; do
@@ -85,6 +91,16 @@ jobs:
             grep -Fq 'RuntimeError: SQL stage failed: seed isolated sequence and test plan' "$RUNNER_TEMP/qa-prior-commercial.log"
             rm -f "$RUNNER_TEMP/qa-prior-commercial.log"
             echo QA_FN05_PRIOR_COMMERCIAL_LOG_VERIFIED=PASS
+            gh api repos/solqaryn/Solqaryn/actions/runs/45879941637 | jq -e '.head_branch == "qa" and .head_sha == "b79fb1a4b2ce030a6c6fb49d649eea652fc2d260" and .status == "completed" and .conclusion == "failure"' >/dev/null
+            git diff --exit-code "$prior_runtime" "b79fb1a4b2ce030a6c6fb49d649eea652fc2d260" -- backend frontend render.yaml
+            trap 'rm -f "$RUNNER_TEMP/qa-prior-admin.log" "$RUNNER_TEMP/qa-prior-commercial.log" "$RUNNER_TEMP/qa-prior-remaining.log"' EXIT
+            gh api --allow-escape-sequences repos/solqaryn/Solqaryn/actions/jobs/140116448932/logs > "$RUNNER_TEMP/qa-prior-remaining.log"
+            for marker in QA_FN05_PRIOR_COMMERCIAL_LOG_VERIFIED QA_FN05_SEQUENCE_PLAN_SEED QA_FN05_SEQUENCE_AB QA_FN05_SUBSCRIPTIONS_AB QA_FN05_DASHBOARD_A QA_FN05_DASHBOARD_B QA_FN05_EPHEMERAL_REVOKE QA_FN05_COMMERCIAL_CLEANUP QA_FN05_EPHEMERAL_CLEANUP; do
+              grep -q "${marker}=PASS" "$RUNNER_TEMP/qa-prior-remaining.log"
+            done
+            grep -Fq 'QA_FN05_AUDIT_B: expected HTTP (200,), got 403' "$RUNNER_TEMP/qa-prior-remaining.log"
+            rm -f "$RUNNER_TEMP/qa-prior-remaining.log"
+            echo QA_FN05_PRIOR_REMAINING_LOG_VERIFIED=PASS
           fi
           python3 .github/qa/qa-commercial-schema.py --live
           python3 .github/qa/qa-fn-05-live-auth.py
