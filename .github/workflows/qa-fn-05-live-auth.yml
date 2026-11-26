@@ -1,4 +1,4 @@
-name: QA - FN-05 operacion administrativa autenticada
+name: QA - FN-05 operacion administrativa y comercial autenticada
 on:
   workflow_dispatch:
     inputs:
@@ -19,28 +19,36 @@ concurrency:
   cancel-in-progress: false
 jobs:
   authenticated:
-    if: github.ref == 'refs/heads/qa'
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && (github.event_name == 'workflow_dispatch' || github.event.before == '9c7ecc45cd72795212361a509f73c1890c53f934')
     runs-on: ubuntu-latest
-    timeout-minutes: 12
+    timeout-minutes: 25
     environment: QA
     steps:
       - uses: actions/checkout@v4
         with:
           persist-credentials: false
+          fetch-depth: 0
       - name: Verificar scope QA
         run: |
           test "$GITHUB_REF" = refs/heads/qa
           node scripts/verify-project-scope.mjs
+          python3 -m py_compile .github/qa/qa-fn-05-live-auth.py
       - name: Preparar cliente SQL y BCrypt
         run: |
           sudo apt-get update -qq
           sudo apt-get install -y mysql-client apache2-utils
-      - name: Preflight comercial de solo lectura y administración A/B real
+      - name: Preflight fisico certificado y administracion A/B real
         env:
-          EXPECTED_DEPLOYED_SHA: ${{ inputs.expected_deployed_sha || 'c4abbcf60de611e80534e5c9094524aca763800e' }}
+          EXPECTED_DEPLOYED_SHA: ${{ inputs.expected_deployed_sha || '9c7ecc45cd72795212361a509f73c1890c53f934' }}
           DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
           DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
           DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}
           DB_USER: ${{ vars.SOLQARYN_QA_DB_USER }}
           DB_PASSWORD: ${{ secrets.SOLQARYN_QA_DB_PASSWORD }}
-        run: python3 .github/qa/qa-fn-05-live-auth.py
+        run: |
+          set -euo pipefail
+          [[ "$EXPECTED_DEPLOYED_SHA" =~ ^[0-9a-f]{40}$ ]]
+          git merge-base --is-ancestor "$EXPECTED_DEPLOYED_SHA" HEAD
+          git diff --exit-code "$EXPECTED_DEPLOYED_SHA" HEAD -- backend frontend render.yaml
+          python3 .github/qa/qa-commercial-schema.py --live
+          python3 .github/qa/qa-fn-05-live-auth.py

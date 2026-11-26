@@ -1,3 +1,10 @@
+## 2026-11-26 — QA-FN-05: certificacion autenticada post-migracion
+
+- Migracion real aprobada (45869741846): QA_COMMERCIAL_LIVE_MIGRATION, IAM_IDENTICAL y ROWS_PRESERVED PASS; 27 tablas, 48 relaciones compuestas, 15 claves naturales, 110 migraciones. Sin borrado de datos preexistentes.
+- Render personal dep-dc475mc9v7es73e2q030 LIVE y Vercel personal dpl_4T6YatKZpTuQc4BnHTSivxRBAocq READY en 9c7ecc45cd72795212361a509f73c1890c53f934. Se conservan configuracion, proxy y despliegue manual.
+- Se amplia el probe HTTP A/B para registros comerciales creados por API, relaciones y propiedad en MySQL, permisos negativos, configuracion por empresa, numeraciones independientes no fiscales, plan de prueba, idempotencia, limites, dashboard y auditoria. Solo empresas, plan, roles y registros temporales del run; revocacion y limpieza acotadas, preservando auditoria. El guard exige migracion fisica certificada y equivalencia de codigo desplegado.
+- Scope Lock DEV ae2064c430034d225fe24a782ad13a87cc1cf891 job 140085390956 PASS. QA unicamente; sin modificaciones en backend/frontend/DEV/MAIN ni automatizaciones. No declarar cierre hasta evidencia HTTP y recorridos pendientes.
+
 ## 2026-11-26 — QA-FN-05: aplicacion autorizada de migracion comercial
 - Seis gates del SHA f22b5afe03634a909910ad8121a4ab653ddb4e13 aprobados (45868066642, 45868066681, 45868066782, 45868066639, 45868066649, 45868066733); backend 2476/2476, auditoria NuGet sin avisos, ensayo con 138 tablas y 109 migraciones, identidad intacta y contrato fisico exacto.
 - Autorizacion expresa del propietario para escribir exclusivamente MySQL QA. Workflow de una sola ejecucion, padre exacto, HEAD vivo, artefacto cifrado, nueva restauracion, comparacion de identidad y filas, aplicacion del mismo SQL ensayado, verificacion fisica posterior. Sin DELETE, cambios IAM, secretos, DEV, MAIN ni promocion.
