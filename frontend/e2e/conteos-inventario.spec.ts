@@ -1,4 +1,4 @@
-import { expect, Page, test } from '@playwright/test';
+import { expect, Page, test } from './tenant-aware-test';
 
 const almacenActivo = { id: 11, sucursalId: 1, sucursalCodigo: 'S1', sucursalNombre: 'Principal', codigo: 'BOD', nombre: 'Bodega E2E', tipo: 'Bodega', activo: true, fechaCreacion: '2026-08-16T00:00:00Z', fechaActualizacion: '2026-08-16T00:00:00Z' };
 
@@ -22,6 +22,7 @@ async function autenticar(page: Page): Promise<void> {
     localStorage.setItem('solqaryn_nombre_completo', 'E2E Conteos');
     localStorage.setItem('solqaryn_rol', 'Administrador');
     localStorage.setItem('solqaryn_expira_en', '2099-12-31T23:59:59Z');
+      localStorage.setItem('solqaryn_empresa_solicitada_id', '1');
   });
   await page.route('**/permisos/mis-permisos/empresa/*', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, message: 'Permisos cargados', errors: [], data: { permisos: ['MovimientosInventario:Ver','MovimientosInventario:Crear','MovimientosInventario:Editar','MovimientosInventario:CambiarEstado','MovimientosInventario:Cerrar','MovimientosInventario:Aprobar','MovimientosInventario:Anular'], esAdministrador: false } }) }));
   await page.route('**/almacenes/activos', route => route.fulfill({ status: 200, contentType: 'application/json', body: JSON.stringify({ success: true, message: 'OK', errors: [], data: [almacenActivo] }) }));
@@ -50,8 +51,10 @@ test.describe('N1.7.E - Conteos físicos', () => {
     await seleccionarMatOption(page, 'Almacén', 'BOD · Bodega E2E');
     await page.getByRole('button', { name: 'Filtrar' }).click();
     await expect.poll(() => consultas.at(-1)?.searchParams.get('almacenId')).toBe('11');
+    await page.route('**/conteos-inventario/701', route => route.fulfill({ json: { success: true, data: conteoBase } }));
     await row.getByRole('button', { name: 'Ver conteo' }).click();
-    await expect(page).toHaveURL(/\/inventario\/conteos\/701$/);
+    await expect(page).toHaveURL(/\/inventario\/conteos$/);
+    await expect(page.locator('.solqaryn-modal--xl').getByRole('heading', { name: 'CNT-E2E-701' })).toBeVisible();
   });
 
   test('crea conteo por ubicación usando catálogos activos y scope físico válido', async ({ page }) => {
@@ -64,6 +67,7 @@ test.describe('N1.7.E - Conteos físicos', () => {
     await seleccionarMatOption(page, 'Ubicación', 'A-01 · Pasillo A');
     await page.getByRole('textbox', { name: 'Variantes específicas' }).fill('44');
     await page.getByRole('button', { name: 'Crear conteo' }).click();
+    await page.locator('.solqaryn-modal--s').getByRole('button', { name: 'Guardar', exact: true }).click();
     await expect(page).toHaveURL(/\/inventario\/conteos\/701$/);
   });
 
@@ -85,6 +89,7 @@ test.describe('N1.7.E - Conteos físicos', () => {
     await expect(page.getByText('Oculto')).toBeVisible();
     await page.getByLabel('Cantidad contada para SKU-E2E-44').fill('6');
     await page.getByRole('button', { name: 'Guardar capturas' }).click();
+    await page.locator('.solqaryn-modal--s').getByRole('button', { name: 'Guardar', exact: true }).click();
     await expect(page.locator('tbody').getByText('-2', { exact: true })).toBeVisible();
   });
 
@@ -96,13 +101,13 @@ test.describe('N1.7.E - Conteos físicos', () => {
     await page.goto('/inventario/conteos/701');
     const cerrar = page.getByRole('button', { name: 'Cerrar', exact: true });
     await expect(cerrar).toBeVisible();
-    page.once('dialog', dialog => dialog.accept());
     await cerrar.click();
+    await page.locator('.solqaryn-modal--s').getByRole('button', { name: 'Cerrar conteo', exact: true }).click();
     await expect(page.getByText('Cerrado', { exact: true })).toBeVisible();
     const aprobar = page.getByRole('button', { name: 'Aprobar', exact: true });
     await expect(aprobar).toBeVisible();
-    page.once('dialog', dialog => dialog.accept());
     await aprobar.click();
+    await page.locator('.solqaryn-modal--s').getByRole('button', { name: 'Aprobar', exact: true }).click();
     await expect(page.getByText('Aprobado', { exact: true })).toBeVisible();
     await expect(page.getByRole('button', { name: 'Generar ajuste', exact: true })).toBeVisible();
   });

@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './tenant-aware-test';
 
 const transferencia = (estado = 'Borrador') => ({
   id: 41,
@@ -59,6 +59,7 @@ test.describe('Transferencias de inventario - lifecycle UI', () => {
       localStorage.setItem('solqaryn_nombre_completo', 'Admin E2E');
       localStorage.setItem('solqaryn_rol', 'Administrador');
       localStorage.setItem('solqaryn_expira_en', '2099-12-31T23:59:59Z');
+      localStorage.setItem('solqaryn_empresa_solicitada_id', '1');
     });
 
     await page.route('**/permisos/mis-permisos/empresa/*', route => route.fulfill({
@@ -114,7 +115,8 @@ test.describe('Transferencias de inventario - lifecycle UI', () => {
     await expect(page.getByText('Tienda Centro')).toBeVisible();
 
     await page.getByRole('button', { name: 'Ver' }).click();
-    await expect(page).toHaveURL(/\/inventario\/transferencias\/41$/);
+    await expect(page).toHaveURL(/\/inventario\/transferencias$/);
+    await expect(page.locator('.solqaryn-modal--xl')).toBeVisible();
     await expect(page.getByRole('heading', { name: 'TR-000041' })).toBeVisible();
 
     await page.getByRole('button', { name: 'Solicitar' }).click();

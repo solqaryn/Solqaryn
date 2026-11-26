@@ -73,6 +73,7 @@ test.describe('Reservas de inventario - formulario', () => {
 
     await page.locator('input[formcontrolname="cantidad"]').first().fill('4');
     await page.getByRole('button', { name: 'Guardar reserva', exact: true }).click();
+    await page.locator('.solqaryn-modal--s').getByRole('button', { name: 'Guardar', exact: true }).click();
 
     await expect(page).toHaveURL(/\/inventario\/reservas\/901$/);
     expect(payload).toMatchObject({ detalles: [{ productoVarianteId: 15, almacenId: 3, ubicacionAlmacenId: 8, cantidad: 4 }] });

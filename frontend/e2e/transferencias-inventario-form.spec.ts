@@ -1,4 +1,4 @@
-import { test, expect } from '@playwright/test';
+import { test, expect } from './tenant-aware-test';
 
 test.describe('Transferencias de inventario - formulario', () => {
   test.beforeEach(async ({ page }) => {
@@ -8,6 +8,7 @@ test.describe('Transferencias de inventario - formulario', () => {
       localStorage.setItem('solqaryn_nombre_completo', 'Admin E2E');
       localStorage.setItem('solqaryn_rol', 'Administrador');
       localStorage.setItem('solqaryn_expira_en', '2099-12-31T23:59:59Z');
+      localStorage.setItem('solqaryn_empresa_solicitada_id', '1');
     });
 
     await page.route('**/permisos/mis-permisos/empresa/*', route => route.fulfill({
@@ -174,6 +175,7 @@ test.describe('Transferencias de inventario - formulario', () => {
     await page.getByLabel('Cantidad').fill('3');
     await page.getByLabel('Observaciones').fill('Reposición de tienda');
     await page.getByRole('button', { name: 'Crear transferencia' }).click();
+    await page.locator('.solqaryn-modal--s').getByRole('button', { name: 'Guardar', exact: true }).click();
 
     await expect.poll(() => payload).toEqual({
       almacenOrigenId: 1,

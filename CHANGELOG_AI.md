@@ -1,3 +1,7 @@
+## 2026-11-25 — QA: regresión de modales de inventario
+- Pruebas sintéticas de transferencia, reserva y conteo en escritorio y móvil: abrir/cancelar, transición confirmada, actualización del listado y visibilidad por permisos. Se adaptan las expectativas históricas a confirmación Material y se mantienen las rutas directas.
+- La tabla institucional centraliza scroll horizontal y ancho intrínseco.
+
 ## 2026-11-25 — QA: transferencia, reserva y conteo físico
 - Se reutilizan los formularios, detalles y tablas existentes en modales XL desde sus listados. Se mantienen rutas directas y permisos; no se crea eliminación de documentos de stock cuando no existe operación de dominio.
 - Confirmaciones con revalidación del tenant, permiso y estado, también para captura de conteo. Las solicitudes HTTP se cancelan al destruir el editor. No se modifican API, reglas de stock ni base de datos.

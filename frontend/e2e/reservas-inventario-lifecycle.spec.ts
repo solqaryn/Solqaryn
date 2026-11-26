@@ -48,13 +48,14 @@ test.describe('Reservas de inventario - UX y lifecycle', () => {
     await expect(page.getByText('3 unidades reservadas', { exact: true })).toBeVisible();
 
     await page.getByRole('button', { name: 'Ver reserva' }).click();
-    await expect(page).toHaveURL(/\/inventario\/reservas\/801$/);
+    await expect(page).toHaveURL(/\/inventario\/reservas$/);
+    await expect(page.locator('.solqaryn-modal--xl').getByRole('heading', { name: 'RES-E2E-801' })).toBeVisible();
     await expect(page.getByText('SKU-E2E', { exact: true })).toBeVisible();
     await expect(page.getByText('#2', { exact: true })).toBeVisible();
     await expect(page.getByText('#5', { exact: true })).toBeVisible();
 
-    page.once('dialog', dialog => dialog.accept());
     await page.getByRole('button', { name: 'Activar', exact: true }).click();
+    await page.locator('.solqaryn-modal--s').getByRole('button', { name: 'Activar', exact: true }).click();
     await expect(page.getByText('Activa', { exact: true })).toBeVisible();
     await expect(page.getByText('Reserva activada.', { exact: true })).toBeVisible();
   });

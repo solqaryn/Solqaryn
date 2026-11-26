@@ -96,7 +96,7 @@ jobs:
         run: npm run test:unit -- --include=src/app/features/storefront/storefront-categorias.catalog.spec.ts
       - name: Instalar Chromium para regresión dirigida de Storefront
         run: npx playwright install --with-deps chromium
-      - name: Regresión QA de galería y destacados
+      - name: Regresión QA visual de storefront y módulos institucionales
         shell: bash
         run: |
           set -euo pipefail
@@ -105,7 +105,7 @@ jobs:
           trap 'kill "$server_pid" 2>/dev/null || true' EXIT
           for attempt in $(seq 1 60); do
             if curl --fail --silent http://127.0.0.1:4200/tienda > /dev/null; then
-              npx playwright test e2e/storefront-fase4.spec.ts e2e/storefront-fase7.spec.ts e2e/modales-institucionales.spec.ts e2e/modales-operativos.spec.ts --grep 'QA visual:'
+              npx playwright test e2e/storefront-fase4.spec.ts e2e/storefront-fase7.spec.ts e2e/modales-institucionales.spec.ts e2e/modales-operativos.spec.ts e2e/modales-inventario.spec.ts --grep 'QA visual:'
               exit 0
             fi
             sleep 2

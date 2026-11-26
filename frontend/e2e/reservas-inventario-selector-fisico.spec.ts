@@ -91,6 +91,7 @@ test.describe('Reservas de inventario - selector físico', () => {
 
     await page.locator('input[formcontrolname="cantidad"]').first().fill('4');
     await page.getByRole('button', { name: 'Guardar reserva', exact: true }).click();
+    await page.locator('.solqaryn-modal--s').getByRole('button', { name: 'Guardar', exact: true }).click();
 
     await expect.poll(() => payload).toBeTruthy();
     expect(payload).toMatchObject({
