@@ -343,12 +343,21 @@ try:
         ui=subprocess.run(["node",".github/qa/qa-fn-05-final-ui.mjs"],input=json.dumps(spec),text=True,capture_output=True,timeout=360,env=ui_env)
         for line in (ui.stdout+"\n"+ui.stderr).splitlines():
             if re.fullmatch(r"QA_FN05_UI_[A-Z0-9_]+=PASS|QA_FN05_UI_FAILED_STAGE=[A-Z0-9_]+;CLASS=[A-Za-z0-9_]+",line): print(line,flush=True)
-        require(ui.returncode==0,"Authenticated browser failed")
+        # Inspect every completed file independently of a later browser assertion.
+        # Missing or invalid content and any browser failure remain fatal.
+        content_ok=True
         for suffix,own,foreign in (("A",a,(b,operator,root_role)),("B",b,(a,platform,root_role))):
             for fmt in ("csv","xlsx","pdf"):
                 path=pathlib.Path(out)/(suffix+"-usuarios."+fmt)
-                require(path.is_file(),"Missing browser download")
-                inspect_report(path.read_bytes(),fmt,own,foreign,f"QA_FN05_UI_DOWNLOAD_{suffix}_{fmt.upper()}")
+                label=f"QA_FN05_UI_CONTENT_{suffix}_{fmt.upper()}"
+                try:
+                    require(path.is_file(),"Missing browser download")
+                    inspect_report(path.read_bytes(),fmt,own,foreign,label)
+                except Exception:
+                    content_ok=False
+                    print(label+"=FAIL",flush=True)
+        require(content_ok,"Browser download content failed")
+        require(ui.returncode==0,"Authenticated browser failed")
     require(data(call("/empresa-configuracion/publica","QA_FN05_PUBLIC_IDENTITY_AFTER"))==public_before,"Global identity changed")
     require(data(call("/tema-visual","QA_FN05_PUBLIC_THEME_AFTER"))==theme_before,"Global theme changed")
     sql(f"UPDATE UsuarioRolesPlataforma SET Activa=0,FechaActualizacion=UTC_TIMESTAMP(6) WHERE UsuarioId={up} AND RolId={rr};","revoke ephemeral platform assignment")

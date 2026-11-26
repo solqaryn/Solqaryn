@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   final-live:
-    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == '54ece72064137f9e47307a3e5873285c7fc97355'
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == '3cabaf063e7a664e4565fcdc76de7040e9af6116'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     environment: QA

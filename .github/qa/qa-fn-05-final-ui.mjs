@@ -30,8 +30,39 @@ async function route(page,path,heading,api){
   await expect(page.getByRole('heading',{name:heading,exact:true})).toBeVisible();
 }
 async function overflow(page){
-  const extra=await page.evaluate(()=>Math.max(document.documentElement.scrollWidth,document.body.scrollWidth)-document.documentElement.clientWidth);
-  if(extra>2) throw new Error('Viewport overflow');
+  await expect.poll(()=>page.evaluate(()=>Math.max(document.documentElement.scrollWidth,document.body.scrollWidth)-document.documentElement.clientWidth),{timeout:5000}).toBeLessThanOrEqual(2);
+}
+async function selectReportTab(page,name){
+  const group=page.locator('mat-tab-group.reports-tabs');
+  const tab=group.getByRole('tab',{name,exact:true});
+  const next=group.locator('.mat-mdc-tab-header-pagination-after');
+  await expect(tab).toBeAttached();
+  // A tab can exist in the DOM while its center is clipped by Material's mobile header.
+  // Use the same pagination control a touch user uses, never force a click.
+  const centerVisible=()=>tab.evaluate(el=>{
+    const clip=el.closest('.mat-mdc-tab-label-container');
+    if(!clip) return true;
+    const rect=el.getBoundingClientRect(), viewport=clip.getBoundingClientRect();
+    const center=rect.left+rect.width/2;
+    return rect.width>0 && center>=viewport.left+1 && center<=viewport.right-1;
+  });
+  if(!await centerVisible() && await next.isVisible()){
+    await expect(next).not.toHaveClass(/mat-mdc-tab-header-pagination-disabled/);
+    await next.click();
+    await expect.poll(centerVisible,{timeout:5000}).toBe(true);
+  }
+  await tab.click();
+  await expect(tab).toHaveAttribute('aria-selected','true');
+}
+async function tableOverflow(page,table){
+  await expect(table).toBeVisible();
+  const wrap=table.locator('..');
+  await expect.poll(()=>wrap.evaluate(el=>{
+    const rect=el.getBoundingClientRect(), width=document.documentElement.clientWidth;
+    return rect.width>0 && rect.left>=-2 && rect.right<=width+2 &&
+      (el.scrollWidth<=el.clientWidth+2 || ['auto','scroll'].includes(getComputedStyle(el).overflowX));
+  }),{timeout:5000}).toBe(true);
+  await overflow(page);
 }
 async function config(page,identity,global){
   await route(page,'/configuracion','Configuración de la empresa','empresa-configuracion/plataforma/capacidades');
@@ -53,7 +84,9 @@ async function reports(page,identity,suffix,foreign){
   const table=page.getByRole('table',{name:'Reporte de usuarios y accesos'});
   await expect(table.getByText(identity.user,{exact:true}).first()).toBeVisible();
   await expect(table.getByText(foreign,{exact:true})).toHaveCount(0);
-  await overflow(page);
+  stage='USERS_OVERFLOW_'+suffix;
+  await tableOverflow(page,table);
+  mark(stage);
   for(const [fmt,label] of [['csv','CSV'],['xlsx','Excel'],['pdf','Descargar reporte de usuarios en PDF']]){
     stage='DOWNLOAD_'+suffix+'_'+fmt.toUpperCase();
     const button=page.locator('.export-actions').getByRole('button',{name:label,exact:fmt==='pdf'});
@@ -63,10 +96,27 @@ async function reports(page,identity,suffix,foreign){
     if(await download.failure()) throw new Error('Download failed');
     mark(stage);
   }
-  await page.getByRole('tab',{name:'Roles y permisos',exact:true}).click();
-  await expect(page.getByText(identity.user,{exact:true}).first()).toBeVisible();
-  await page.getByRole('tab',{name:'Actividad de auditoría',exact:true}).click();
-  await overflow(page);
+  stage='ROLES_TAB_'+suffix;
+  await selectReportTab(page,'Roles y permisos');
+  mark(stage);
+  stage='ROLES_CONTENT_'+suffix;
+  const roles=page.getByRole('table',{name:'Reporte de roles y permisos',exact:true});
+  await expect(roles.getByText(identity.user,{exact:true})).toBeVisible();
+  await expect(roles.getByText(foreign,{exact:true})).toHaveCount(0);
+  mark(stage);
+  stage='ROLES_OVERFLOW_'+suffix;
+  await tableOverflow(page,roles);
+  mark(stage);
+  stage='AUDIT_TAB_'+suffix;
+  await selectReportTab(page,'Actividad de auditoría');
+  mark(stage);
+  stage='AUDIT_CONTENT_'+suffix;
+  const audit=page.getByRole('table',{name:'Actividad de auditoría por módulo',exact:true});
+  await expect(audit).toBeVisible();
+  mark(stage);
+  stage='AUDIT_OVERFLOW_'+suffix;
+  await tableOverflow(page,audit);
+  mark(stage);
 }
 try{
   for(const [suffix,identity,foreign,viewport] of [['A',spec.a,spec.b.user,{width:1440,height:900}],['B',spec.b,spec.a.user,{width:390,height:844}]]){
@@ -81,9 +131,13 @@ try{
     await context.close();
   }
   stage='PLATFORM_LOGIN';
-  const p=await login(spec.p,{width:1440,height:900});await config(p.page,spec.p,true);mark('PLATFORM_READONLY');await p.context.close();
+  const p=await login(spec.p,{width:1440,height:900});mark('PLATFORM_LOGIN');
+  stage='PLATFORM_READONLY';
+  await config(p.page,spec.p,true);mark('PLATFORM_READONLY');await p.context.close();
   stage='OPERATOR_LOGIN';
-  const o=await login(spec.o,{width:1280,height:800});await o.page.goto(spec.base+'/centro-reportes');
+  const o=await login(spec.o,{width:1280,height:800});mark('OPERATOR_LOGIN');
+  stage='OPERATOR_REPORT_MENU_DENIED';
+  await o.page.goto(spec.base+'/centro-reportes');
   await expect(o.page.getByRole('heading',{name:'Centro de Reportes',exact:true})).toBeVisible();
   await expect(o.page.getByRole('link',{name:'Reportes administrativos',exact:true})).toHaveCount(0);
   await o.context.close();mark('OPERATOR_REPORT_MENU_DENIED');mark('AUTHENTICATED_ROUTES');

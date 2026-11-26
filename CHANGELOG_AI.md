@@ -1,3 +1,8 @@
+## 2026-11-26 — QA-FN-05: corrección dirigida del recorrido autenticado y evidencia de archivos
+
+- Run 45886681601: 18 exportaciones API A/B y autoridad global PASS, seis descargas Chromium PASS; fallo posterior en navegador etiquetado erróneamente como DOWNLOAD_B_PDF. Hipótesis causal: pestaña Material recortada por paginación móvil; la prueba usa paginador real sin clic forzado, valida selección, tablas propias/ajenas y scroll local por panel. Etapas de roles, auditoría, plataforma y operador diferenciadas.
+- Inspección de los seis archivos aun si falla una etapa posterior; cualquier archivo ausente/inválido o fallo UI sigue siendo fatal. No se publican contenidos, PII ni secretos. Sin cambio de aplicación, esquema, RBAC, despliegue ni DEV/MAIN; workflow dirigido con SHA de runtime previamente certificado 54ece72064137f9e47307a3e5873285c7fc97355. Cierre pendiente del nuevo run y atestación de despliegues. Rollback: revertir exclusivamente este changeset QA.
+
 ## 2026-11-26 — QA-FN-05: certificación real de exportaciones, plataforma y navegador
 
 - Backend 2499/2499 PASS run 45885943600 job 140136672757 y esquema Oracle read-only 45885943692 PASS. Runtime 54ece72064137f9e47307a3e5873285c7fc97355; Render QA dep-dc48ppbl550s738hjq70. Se conserva auditoría autenticada ya aprobada run 45883190610.
