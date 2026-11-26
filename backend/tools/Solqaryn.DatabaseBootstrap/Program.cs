@@ -143,4 +143,24 @@ var pending = (await db.Database.GetPendingMigrationsAsync()).ToArray();
 if (pending.Length != 0)
     throw new InvalidOperationException($"Pending Oracle migrations remain: {string.Join(",", pending)}.");
 
+// The QA route audit requires an actual SaaS plan. Never seed it into an
+// adopted schema, another CI database, or a deployed environment.
+if (mode == "fresh" &&
+    Environment.GetEnvironmentVariable("CI") == "true" &&
+    Environment.GetEnvironmentVariable("GITHUB_REF") == "refs/heads/qa" &&
+    Environment.GetEnvironmentVariable("PHASE7_API_URL") == "http://127.0.0.1:5005" &&
+    Environment.GetEnvironmentVariable("E2E_TENANT_ID") == "1" &&
+    !string.IsNullOrWhiteSpace(Environment.GetEnvironmentVariable("QA_RESPONSIVE_WIDTHS")) &&
+    System.Text.RegularExpressions.Regex.IsMatch(connectionString,
+        @"\AServer=127\.0\.0\.1;Port=3306;Database=solqaryn_qa_route_audit;User=root;Password=[^;]+;SslMode=Required;\z"))
+{
+    var plan = new Solqaryn.Domain.Entities.Plan("QA_ROUTE_AUDIT", "Plan de prueba QA");
+    db.Set<Solqaryn.Domain.Entities.Plan>().Add(plan);
+    await db.SaveChangesAsync();
+    if (plan.Id <= 0 || !await db.Set<Solqaryn.Domain.Entities.Plan>()
+            .AsNoTracking().AnyAsync(x => x.Id == plan.Id && x.Codigo == "QA_ROUTE_AUDIT" && x.Activo))
+        throw new InvalidOperationException("QA route audit plan was not persisted.");
+    Console.WriteLine("QA_ROUTE_AUDIT_PLAN=PASS");
+}
+
 Console.WriteLine($"SOLQARYN_ORACLE_BOOTSTRAP=PASS mode={mode} tables={afterAdoption} pending=0");

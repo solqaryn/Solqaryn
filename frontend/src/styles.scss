@@ -281,6 +281,33 @@ mat-icon {
   max-width: calc(100vw - 24px) !important;
 }
 
+/* These two commercial product panels use the width measured and positioned
+   by CDK. Growing the child beyond that pane breaks its viewport placement. */
+.mat-mdc-autocomplete-panel.commercial-product-autocomplete {
+  width: 100% !important;
+  min-width: 0 !important;
+  max-width: 100% !important;
+}
+.mat-mdc-autocomplete-panel.commercial-product-autocomplete .mat-mdc-option {
+  min-width: 0;
+  overflow-wrap: anywhere;
+}
+
+/* The paginator's auxiliary touch target must not intercept the page-size
+   select. Preserve an actual 44px native hit area on navigation buttons. */
+:is(app-compras-list, app-ventas-list) mat-paginator .mat-mdc-paginator-range-actions button {
+  position: relative;
+  min-width: 44px;
+  min-height: 44px;
+}
+:is(app-compras-list, app-ventas-list) mat-paginator .mat-mdc-paginator-touch-target {
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  transform: none;
+  pointer-events: none;
+}
+
 .mat-mdc-option {
   min-height: 48px;
   height: auto !important;

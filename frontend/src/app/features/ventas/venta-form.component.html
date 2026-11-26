@@ -49,7 +49,7 @@
           autocomplete="off">
         @if (buscandoProducto()) { <mat-spinner matSuffix diameter="18" style="margin-right: 8px;"></mat-spinner> }
         <mat-autocomplete
-          #autoProductoVenta="matAutocomplete"
+          #autoProductoVenta="matAutocomplete" class="commercial-product-autocomplete"
           [displayWith]="displayProductoOperacion"
           (optionSelected)="onProductoBuscadoSeleccionado($event)">
           @for (item of opcionesProducto(); track item.productoVarianteId) {

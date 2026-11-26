@@ -37,3 +37,5 @@
 }
 
 .rentabilidad-page > *, .rentabilidad-header > * { min-width: 0; max-width: 100%; }
+
+:host { display: block; min-width: 0; max-width: 100%; }

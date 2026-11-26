@@ -37,3 +37,8 @@
   .header-row { align-items: flex-start; } .form { padding: 14px; } .totales { max-width: none; } .hint { text-align: left; }
   .form-actions { flex-direction: column-reverse; align-items: stretch; button, a { width: 100%; } }
 }
+
+/* Keep the populated product line within its form; long labels wrap. */
+:host { display: block; min-width: 0; max-width: 100%; }
+.detalles, .producto-busqueda-remota, .producto-busqueda-mensaje { min-width: 0; max-width: 100%; }
+.producto-busqueda-mensaje { overflow-wrap: anywhere; }

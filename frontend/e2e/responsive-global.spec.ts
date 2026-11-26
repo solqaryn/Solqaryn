@@ -251,17 +251,35 @@ async function certifyRoute(page: Page, route: string, mobile: boolean, errors: 
       const option = page.locator('.mat-mdc-autocomplete-panel .mat-mdc-option').filter({ hasText: sku });
       await expect(option).toHaveCount(1);
       await expect(option).toBeVisible();
+      const productPanel = page.locator('.mat-mdc-autocomplete-panel');
+      await expect(productPanel).toBeVisible();
+      const panelRect = await productPanel.evaluate(element => {
+        const rect = element.getBoundingClientRect();
+        return { left: rect.left, right: rect.right, viewport: document.documentElement.clientWidth };
+      });
+      expect(panelRect.left, 'Búsqueda comercial fuera del viewport por la izquierda').toBeGreaterThanOrEqual(-2);
+      expect(panelRect.right, 'Búsqueda comercial fuera del viewport por la derecha').toBeLessThanOrEqual(panelRect.viewport + 2);
       await option.click();
+      await expect(productPanel).toBeHidden();
       await expect(page.locator('main mat-select[formcontrolname="productoId"]').first()).not.toHaveClass(/mat-mdc-select-empty/);
       await auditGeometry(page, route, mobile);
-      expect(await bodyOverflow(page), 'Desborde tras búsqueda comercial en ' + route).toBeLessThanOrEqual(2);
+      try {
+        await expect.poll(() => bodyOverflow(page), { timeout: 5_000,
+          message: 'Desborde tras búsqueda comercial en ' + route }).toBeLessThanOrEqual(2);
+      } catch {
+        throw new Error('Desborde tras búsqueda comercial en ' + route + ': ' + await overflowDiagnostic(page));
+      }
       assertNoRouteErrors(route, errors);
     }
     await auditFirstSelectOverlay(page, route);
     if (route === '/ventas/nueva') {
       const priceInputs = page.locator('main input[formcontrolname="precioUnitario"]');
+      await expect(priceInputs.first(), 'Debe existir un precio unitario de catálogo').toBeVisible();
       for (let index = 0; index < await priceInputs.count(); index += 1) {
-        await expect(priceInputs.nth(index), 'El precio unitario debe ser solo lectura').toHaveAttribute('readonly', '');
+        // readonly is an HTML boolean attribute; Material serializes it as "true".
+        // Verify the browser property, not a particular attribute spelling.
+        await expect(priceInputs.nth(index), 'El precio unitario debe ser solo lectura').toHaveJSProperty('readOnly', true);
+        await expect(priceInputs.nth(index), 'El precio unitario no debe ser editable').not.toBeEditable();
         await expect(priceInputs.nth(index), 'El precio unitario debe declarar lectura').toHaveAttribute('aria-readonly', 'true');
       }
     }

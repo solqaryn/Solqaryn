@@ -15,6 +15,7 @@ export async function prepareRouteFixtures(): Promise<void> {
   }
 
   const families = {
+    saas: ['/configuracion'],
     common: ['/productos/1', '/productos/1/editar', '/productos/1/variantes',
       '/sucursales/1/editar', '/almacenes/1/editar'],
     catalogos: ['/categorias/1/editar', '/ubicaciones-almacen/1/editar', '/proveedores/1/editar', '/descuentos/1/editar'],
@@ -333,6 +334,22 @@ export async function prepareRouteFixtures(): Promise<void> {
         throw new Error('Política de costeo no acreditada');
       }
       bind('/inventario/costeo', '/inventario/costeo');
+    });
+    // Real onboarding through the authenticated tenant API, only after
+    // commercial fixtures so subscription entitlements cannot alter their setup.
+    await family(families.saas, async () => {
+      const base = '/saas/tenants/1';
+      const created = await call(base + '/onboarding', 'POST', {
+        planCodigo: 'QA_ROUTE_AUDIT',
+        inicioUtc: new Date(Date.now() - 60_000).toISOString()
+      });
+      const actual = await call(base + '/suscripcion');
+      if (idOf(actual) !== idOf(created) || actual.planCodigo !== 'QA_ROUTE_AUDIT') {
+        throw new Error('Suscripción vigente de QA no acreditada');
+      }
+      const limites = await call(base + '/limites');
+      if (!Array.isArray(limites.items)) throw new Error('Límites del plan QA no acreditados');
+      bind('/configuracion', '/configuracion');
     });
     // Create the discount after the commercial fixtures, so it cannot change their amounts.
     await family(['/descuentos/1/editar'], async () => {

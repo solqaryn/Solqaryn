@@ -16,3 +16,8 @@
 .form-actions { display: flex; justify-content: flex-end; gap: 10px; margin-top: 18px; a[mat-button] { text-decoration: none; } }
 @media (max-width: 1200px) { .detalle-row { grid-template-columns: 52px repeat(2, minmax(0, 1fr)) 48px; grid-template-areas: "imagen producto producto eliminar" "imagen variante variante variante" ". cantidad costo costo"; } .col-imagen { grid-area: imagen; } .col-producto { grid-area: producto; } .col-variante { grid-area: variante; } .col-cantidad { grid-area: cantidad; } .col-costo { grid-area: costo; } .col-eliminar { grid-area: eliminar; } .col-subtotal { display: none; } }
 @media (max-width: 640px) { .fields-grid { grid-template-columns: 1fr; } .fields-grid .full-width { grid-column: auto; } .detalle-row { grid-template-columns: minmax(0, 1fr) 48px; grid-template-areas: "imagen eliminar" "producto producto" "variante variante" "cantidad cantidad" "costo costo"; } .form { padding: 14px; } .totales { max-width: none; } .form-actions { flex-direction: column-reverse; button, a { width: 100%; } } }
+
+/* Keep the populated product line within its form; long labels wrap. */
+:host { display: block; min-width: 0; max-width: 100%; }
+.detalles, .producto-busqueda-remota, .producto-busqueda-mensaje { min-width: 0; max-width: 100%; }
+.producto-busqueda-mensaje { overflow-wrap: anywhere; }

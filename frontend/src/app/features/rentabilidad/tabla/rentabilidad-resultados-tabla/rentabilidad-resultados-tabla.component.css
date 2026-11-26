@@ -1,5 +1,11 @@
+:host { display: block; min-width: 0; max-width: 100%; }
+
 .table-container {
+  position: relative;
   width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  contain: inline-size;
   overflow-x: auto;
   margin-top: 1rem;
 }
