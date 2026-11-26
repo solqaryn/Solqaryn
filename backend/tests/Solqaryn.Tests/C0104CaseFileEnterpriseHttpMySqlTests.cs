@@ -78,10 +78,11 @@ public sealed class C0104CaseFileEnterpriseHttpMySqlTests
             setup.Set<Empresa>().AddRange(a, b);
             await setup.SaveChangesAsync();
             var branchA = new Sucursal { EmpresaId = a.Id, Codigo = "EXP_A", Nombre = "QA A" };
+            var branchASecond = new Sucursal { EmpresaId = a.Id, Codigo = "EXP_A_SECOND", Nombre = "QA A second branch" };
             var branchB = new Sucursal { EmpresaId = b.Id, Codigo = "EXP_B", Nombre = "QA B" };
             var role = new Rol { Nombre = "QA Casefile HTTP", NombreNormalizado = "QA_CASEFILE_HTTP",
                 EsSistema = true, Activo = true };
-            setup.Set<Sucursal>().AddRange(branchA, branchB);
+            setup.Set<Sucursal>().AddRange(branchA, branchASecond, branchB);
             setup.Roles.Add(role);
             await setup.SaveChangesAsync();
             var user = new Usuario { NombreUsuario = "qa-casefile-http", NombreCompleto = "QA Casefile HTTP",
@@ -127,6 +128,7 @@ public sealed class C0104CaseFileEnterpriseHttpMySqlTests
             }
             var warehouseA = await WarehouseAsync(a.Id, branchA.Id, "EXP_A1");
             var warehouseA2 = await WarehouseAsync(a.Id, branchA.Id, "EXP_A2");
+            var warehouseASecond = await WarehouseAsync(a.Id, branchASecond.Id, "EXP_A_SECOND1");
             var warehouseB = await WarehouseAsync(b.Id, branchB.Id, "EXP_B1");
 
             var jwtSecret = Convert.ToHexString(RandomNumberGenerator.GetBytes(32));
@@ -297,6 +299,59 @@ public sealed class C0104CaseFileEnterpriseHttpMySqlTests
                     Assert.Equal(HttpStatusCode.Forbidden, foreign.StatusCode);
                     Assert.True(await setup.Set<RegistroAuditoria>().IgnoreQueryFilters().AsNoTracking()
                         .AnyAsync(x => x.EmpresaId == a.Id && x.CorrelationId == actualCorrelation));
+                    // The same company and role do not make another signed branch
+                    // interchangeable. Exercise both valid branch contexts in real Program.
+                    var secondA = Token(a.Id, branchASecond.Id);
+                    using var secondVersion = await Post(secondA, 4, "versiones",
+                        Version(warehouseASecond), actualClient: actual);
+                    Assert.Equal(HttpStatusCode.OK, secondVersion.StatusCode);
+                    using var secondReceipt = await Post(secondA, 4, "auditoria/registrar",
+                        new { }, actualClient: actual);
+                    Assert.Equal(HttpStatusCode.OK, secondReceipt.StatusCode);
+                    using var secondRecorded = JsonDocument.Parse(await secondReceipt.Content.ReadAsStringAsync());
+                    var secondCorrelation = secondRecorded.RootElement.GetProperty("correlation").GetString();
+                    Assert.True(Guid.TryParseExact(secondCorrelation, "N", out _));
+                    var secondRead = new { Correlation = secondCorrelation };
+                    using var secondResponse = await Post(secondA, 4, "auditoria/correlacion",
+                        secondRead, actualClient: actual);
+                    Assert.Equal(HttpStatusCode.OK, secondResponse.StatusCode);
+                    using var secondLinked = JsonDocument.Parse(await secondResponse.Content.ReadAsStringAsync());
+                    Assert.Equal(1L, secondLinked.RootElement.GetProperty("targetVersion").GetInt64());
+                    Assert.False(secondLinked.RootElement.TryGetProperty("receiptId", out _));
+
+                    // Count durable P01, P02 and API12 effects, not unrelated HTTP logs.
+                    // The connection is exclusively the disposable fixture created above.
+                    async Task<(long Owners, long Versions, long Receipts)> DurableCountsAsync()
+                    {
+                        await using var connection = new MySqlConnection(origin.ConnectionString);
+                        await connection.OpenAsync();
+                        await using var command = connection.CreateCommand();
+                        command.CommandText = """
+                            SELECT (SELECT COUNT(*) FROM V5CaseFileOwnerships),
+                                   (SELECT COUNT(*) FROM V5CaseFileVersions),
+                                   (SELECT COUNT(*) FROM RegistrosAuditoria
+                                    WHERE Entidad='ExpedienteUniversal' AND Accion='ReadAuditCorrelation')
+                            """;
+                        await using var rows = await command.ExecuteReaderAsync();
+                        Assert.True(await rows.ReadAsync());
+                        return (rows.GetInt64(0), rows.GetInt64(1), rows.GetInt64(2));
+                    }
+
+                    var beforeDenials = await DurableCountsAsync();
+                    async Task DenyAcrossBranchAsync(string token, int caseId, string suffix, object body)
+                    {
+                        using var denied = await Post(token, caseId, suffix, body, actualClient: actual);
+                        Assert.Equal(HttpStatusCode.Forbidden, denied.StatusCode);
+                    }
+                    await DenyAcrossBranchAsync(secondA, 1, "versiones", Version(warehouseA, 3));
+                    await DenyAcrossBranchAsync(secondA, 1, "versiones", Version(warehouseASecond, 3));
+                    await DenyAcrossBranchAsync(secondA, 1, "auditoria/registrar", new { });
+                    await DenyAcrossBranchAsync(secondA, 1, "auditoria/correlacion", actualRead);
+                    await DenyAcrossBranchAsync(freshA, 4, "versiones", Version(warehouseA, 1));
+                    await DenyAcrossBranchAsync(freshA, 4, "auditoria/registrar", new { });
+                    await DenyAcrossBranchAsync(freshA, 4, "auditoria/correlacion", secondRead);
+                    Assert.Equal(beforeDenials, await DurableCountsAsync());
+
                     // Both exact operation grants are still live. A missing actual
                     // warehouse must deny creation, even with a valid tenant session.
                     Assert.False(await setup.Set<Almacen>().IgnoreQueryFilters().AsNoTracking()
