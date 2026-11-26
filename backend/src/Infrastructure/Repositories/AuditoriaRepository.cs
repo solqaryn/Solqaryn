@@ -35,7 +35,9 @@ public class AuditoriaRepository : IAuditoriaRepository
         // Explicit scoped predicate survives a later IgnoreQueryFilters and
         // constrains BOTH the page and the aggregate count to one company.
         var query = _context.RegistrosAuditoria.AsNoTracking()
-            .Where(r => r.EmpresaId == verifiedTenant.Value);
+            // API12 receipts need dedicated resource/branch authorization, not legacy Auditoria.Ver.
+            .Where(r => r.EmpresaId == verifiedTenant.Value &&
+                r.Accion != AccionPermiso.ReadAuditCorrelation);
 
         if (filtro.UsuarioId.HasValue)
             query = query.Where(r => r.UsuarioId == filtro.UsuarioId.Value);

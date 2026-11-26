@@ -11441,3 +11441,8 @@
 
 - RUN_ID f5cb8993-cb68-832b-9bcc-40d682d2aaa8; base 087a2d20730af40db6dd28282b21030b62a1b215; V17 H271:I271; TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a.
 - Job 140085389752 (ae2064c4): 93 PASS, 1 FAIL, 6 no ejecutados. La aserción de matriz completa incluía API12, que CatalogoPermisosBase, SeedPermisoService y PermisoService mantienen opt-in. Aserción exacta de una entrada Auditoria/ReadAuditCorrelation denegada en seed; todos los demás grants ordinarios siguen siendo obligatorios y se conservan las comprobaciones de ReportesAdministrativos y Facturacion. Sin cambios de grants, seed, roles o runtime. CI posterior pendiente; A5 independiente pendiente; no transición LISTO.
+
+
+## 2026-11-26 — C01-04.M03.06 — R1/R5 — DEV03 — API12 legacy isolation
+
+- TASK_ID=6adc2e4bd8a48191ac7d8641ed95a1a3; RUN_ID=7de3dd59-d1b8-8328-9e6f-98ccad95b7ae; base 6af070cc8a31b13623f27ce80efd8ee3f0f2ac41; V17 H271:I271. Remediate DEV02 finding: legacy AuditoriaRepository page/count and ReporteAdministrativoService aggregate/export exclude ReadAuditCorrelation before projection/pagination; preserve receipts and ordinary audit, no grants or commercial route. Oracle fixture A/B denies legacy enumeration and export, retains receipt, positive ordinary control. Job 140094834010: 95 PASS, 1 FAIL, 4 not run; legacy 100% coverage assertion contradicted API12 opt-in (99.58%). E2E verifies exact live grants and actual catalog denominator, no grant changes. CI exact SHA pending; actual resource mapping, writer authority, DI and corrective independent A5 remain pending. No H/I change, production or purge; rollback normal dev revert.

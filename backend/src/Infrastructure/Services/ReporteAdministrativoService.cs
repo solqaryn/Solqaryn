@@ -214,7 +214,8 @@ public sealed class ReporteAdministrativoService : IReporteAdministrativoService
         var (desde, hasta) = NormalizarPeriodo(filtro);
         var eventos = await _db.RegistrosAuditoria
             .AsNoTracking()
-            .Where(x => x.EmpresaId == empresaId && x.Fecha >= desde && x.Fecha <= hasta)
+            .Where(x => x.EmpresaId == empresaId && x.Fecha >= desde && x.Fecha <= hasta &&
+                        x.Accion != AccionPermiso.ReadAuditCorrelation)
             .Select(x => new { x.Modulo, x.Accion, x.Resultado, x.UsuarioId })
             .ToListAsync(cancellationToken);
 
@@ -307,7 +308,8 @@ public sealed class ReporteAdministrativoService : IReporteAdministrativoService
             {
                 var (desde, hasta) = NormalizarPeriodo(filtro);
                 var datos = await _db.RegistrosAuditoria.AsNoTracking()
-                    .Where(x => x.EmpresaId == empresaId && x.Fecha >= desde && x.Fecha <= hasta)
+                    .Where(x => x.EmpresaId == empresaId && x.Fecha >= desde && x.Fecha <= hasta &&
+                        x.Accion != AccionPermiso.ReadAuditCorrelation)
                     .OrderByDescending(x => x.Fecha)
                     .Take(50_000)
                     .ToListAsync(cancellationToken);

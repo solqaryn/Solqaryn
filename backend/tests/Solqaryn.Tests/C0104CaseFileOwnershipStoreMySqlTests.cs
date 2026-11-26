@@ -4,6 +4,9 @@ using Microsoft.EntityFrameworkCore;
 using MySql.Data.MySqlClient;
 using MySql.EntityFrameworkCore.Extensions;
 using Solqaryn.Application.Security;
+using Solqaryn.Application.DTOs;
+using Solqaryn.Infrastructure.Repositories;
+using Solqaryn.Infrastructure.Services;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
 using Solqaryn.Infrastructure.AutomationV5;
@@ -246,6 +249,53 @@ public sealed class C0104CaseFileOwnershipStoreMySqlTests
                 .AnyAsync(r => r.EmpresaId == a.Id && r.CorrelationId == committedCorrelation.ToString("N")));
             Assert.False(await dbB.Set<RegistroAuditoria>().AsNoTracking()
                 .AnyAsync(r => r.EmpresaId == b.Id && r.CorrelationId == committedCorrelation.ToString("N")));
+            // Legacy readers must not enumerate, count or export committed API12 receipts.
+            var ordinaryCorrelation = Guid.NewGuid().ToString("N");
+            dbA.Set<RegistroAuditoria>().Add(new RegistroAuditoria
+            {
+                Fecha = DateTime.UtcNow, UsuarioId = actor, NombreUsuario = "fixture-actor",
+                EmpresaId = a.Id, AmbitoAutoridad = AmbitoAutorizacion.Empresa,
+                OrigenAutorizacion = OrigenAutorizacion.MembresiaEmpresa,
+                Modulo = ModuloSistema.Auditoria, Accion = AccionPermiso.Ver,
+                Entidad = "FixtureOrdinaryAudit", Descripcion = "ordinary fixture",
+                CorrelationId = ordinaryCorrelation, Resultado = "Exito"
+            });
+            await dbA.SaveChangesAsync();
+            var legacyA = new AuditoriaRepository(dbA);
+            var legacyB = new AuditoriaRepository(dbB);
+            foreach (var legacy in new[] { legacyA, legacyB })
+            {
+                var hidden = await legacy.GetFilteredAsync(new AuditoriaFiltroDto
+                {
+                    Modulo = "Auditoria", Accion = "ReadAuditCorrelation"
+                });
+                Assert.Equal(0, hidden.TotalCount);
+                Assert.Empty(hidden.Items);
+            }
+            var ordinaryFilter = new AuditoriaFiltroDto { Entidad = "FixtureOrdinaryAudit" };
+            var visible = await legacyA.GetFilteredAsync(ordinaryFilter);
+            Assert.Equal(1, visible.TotalCount);
+            Assert.Equal(ordinaryCorrelation, Assert.Single(visible.Items).CorrelationId);
+            Assert.Equal(0, (await legacyB.GetFilteredAsync(ordinaryFilter)).TotalCount);
+            var period = new ReporteAdministrativoFiltroDto
+            {
+                Desde = DateTime.UtcNow.Date.AddDays(-1), Hasta = DateTime.UtcNow.Date.AddDays(1)
+            };
+            foreach (var report in new[] { new ReporteAdministrativoService(dbA),
+                         new ReporteAdministrativoService(dbB) })
+            {
+                var summary = await report.ObtenerResumenAuditoriaAsync(period);
+                Assert.DoesNotContain(summary.PorAccion, row => row.Accion == "ReadAuditCorrelation");
+                var export = await report.ExportarAsync("auditoria", "csv", period);
+                var csv = System.Text.Encoding.UTF8.GetString(export.Contenido);
+                Assert.DoesNotContain(committedCorrelation.ToString("N"), csv, StringComparison.Ordinal);
+                Assert.DoesNotContain("ReadAuditCorrelation", csv, StringComparison.Ordinal);
+            }
+            var ordinaryExport = await new ReporteAdministrativoService(dbA).ExportarAsync("auditoria", "csv", period);
+            Assert.Contains(ordinaryCorrelation, System.Text.Encoding.UTF8.GetString(ordinaryExport.Contenido), StringComparison.Ordinal);
+            Assert.True(await dbA.Set<RegistroAuditoria>().AsNoTracking()
+                .AnyAsync(r => r.EmpresaId == a.Id && r.CorrelationId == committedCorrelation.ToString("N")));
+
             await using (var grantTx = await dbA.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted))
             {
                 Assert.False(await V5CaseFileAuditGrantLock.TryAcquireAsync(

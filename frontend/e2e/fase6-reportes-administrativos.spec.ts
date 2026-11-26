@@ -178,7 +178,27 @@ test.describe('Fase 6 — permisos, auditoría y reportes administrativos', () =
     const adminRole = roles.find(item => item.rolId === adminRoleId);
     const limitedRole = roles.find(item => item.rolId === limitedRoleId);
     expect(adminRole.nivelPrivilegio).toBe('Crítico administrado');
-    expect(adminRole.porcentajeCobertura).toBe(100);
+    const matrixResponse = await request.get(`${API_URL}/permisos/matriz/${adminRoleId}`, {
+      headers: auth(adminToken)
+    });
+    expect(matrixResponse.status(), await matrixResponse.text()).toBe(200);
+    const matrix = await dataOf(matrixResponse) as Array<Record<string, any>>;
+    const denied = matrix.filter(item => item.permitido === false);
+    expect(denied.map(item => `${item.modulo}:${item.accion}`)).toEqual(['Auditoria:ReadAuditCorrelation']);
+    const granted = matrix.filter(item => item.permitido === true)
+      .map(item => `${item.modulo}:${item.accion}`).sort();
+    expect(adminRole.permisosAsignados).toBe(granted.length);
+    expect([...adminRole.permisos].sort()).toEqual(granted);
+    const summaryResponse = await request.get(`${API_URL}/reportes-administrativos/resumen`, {
+      headers: auth(adminToken)
+    });
+    expect(summaryResponse.status(), await summaryResponse.text()).toBe(200);
+    const summary = await dataOf(summaryResponse);
+    expect(summary.permisosCatalogados).toBeGreaterThanOrEqual(matrix.length);
+    expect(adminRole.porcentajeCobertura).toBe(
+      Number((granted.length * 100 / summary.permisosCatalogados).toFixed(2))
+    );
+    expect(adminRole.porcentajeCobertura).toBeLessThan(100);
     expect(limitedRole.permisosAsignados).toBe(1);
     expect(limitedRole.nivelPrivilegio).toBe('Bajo');
   });
