@@ -297,6 +297,36 @@ public sealed class C0104CaseFileEnterpriseHttpMySqlTests
                     Assert.Equal(HttpStatusCode.Forbidden, foreign.StatusCode);
                     Assert.True(await setup.Set<RegistroAuditoria>().IgnoreQueryFilters().AsNoTracking()
                         .AnyAsync(x => x.EmpresaId == a.Id && x.CorrelationId == actualCorrelation));
+                    // Both exact operation grants are still live. A missing actual
+                    // warehouse must deny creation, even with a valid tenant session.
+                    Assert.False(await setup.Set<Almacen>().IgnoreQueryFilters().AsNoTracking()
+                        .AnyAsync(x => x.Id == int.MaxValue));
+                    using var missingWarehouse = await Post(freshA, 3, "versiones",
+                        Version(int.MaxValue), actualClient: actual);
+                    Assert.Equal(HttpStatusCode.Forbidden, missingWarehouse.StatusCode);
+
+                    // Revoke only B's membership while retaining the shared role and
+                    // both grants. A remains authorized; B's own receipt must deny.
+                    using var bReceipt = await Post(freshB, 1, "auditoria/registrar",
+                        new { }, actualClient: actual);
+                    Assert.Equal(HttpStatusCode.OK, bReceipt.StatusCode);
+                    using var bRecorded = JsonDocument.Parse(await bReceipt.Content.ReadAsStringAsync());
+                    var bCorrelation = bRecorded.RootElement.GetProperty("correlation").GetString();
+                    Assert.True(Guid.TryParseExact(bCorrelation, "N", out _));
+                    var membershipB = await setup.UsuarioEmpresas.IgnoreQueryFilters()
+                        .SingleAsync(x => x.UsuarioId == user.Id && x.EmpresaId == b.Id);
+                    membershipB.Desactivar();
+                    await setup.SaveChangesAsync();
+                    using var revokedBWrite = await Post(freshB, 1, "versiones",
+                        Version(warehouseB, 1), actualClient: actual);
+                    Assert.Equal(HttpStatusCode.Forbidden, revokedBWrite.StatusCode);
+                    using var revokedBRead = await Post(freshB, 1, "auditoria/correlacion",
+                        new { Correlation = bCorrelation }, actualClient: actual);
+                    Assert.Equal(HttpStatusCode.Forbidden, revokedBRead.StatusCode);
+                    using var unaffectedA = await Post(freshA, 1, "auditoria/correlacion",
+                        actualRead, actualClient: actual);
+                    Assert.Equal(HttpStatusCode.OK, unaffectedA.StatusCode);
+
                     setup.RolPermisos.Remove(writerGrant);
                     await setup.SaveChangesAsync();
                     using var deniedWrite = await Post(freshA, 1, "versiones",

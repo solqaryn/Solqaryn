@@ -11494,3 +11494,8 @@
 ## 2026-11-26 — DEV06 — C01-04.M03.06 — V44/R1/R5
 
 - TASK_ID=6af16bbad26881918c283abe06e1f32a; RUN_ID=62ee2cbe-1bac-8327-8582-afbbe2ab20eb; base f30ca45292e96900fb20dec3aedfbf94b31450f8. Exact historical Oracle job 140147438578 failed 1/166 (165 PASS) at first API12-only write-denial HTTP assertion (expected 403, actual 500, line181). TestServer DI omitted both concrete dependencies of UnscopedCommercialTenantGuardMiddleware.InvokeAsync that Program registers. Correct fixture composition with the actual host resolver (binding explicitly off) and MySQL replay store; preserve original 403 assertions, real grant/warehouse/tenant SQL, lost-ACK regression and real Program proof. No production runtime code, grants, schema, data, QA/main/PROD or task changes. A0 anchors/DI mapping; root hypothesis to verify in exact-SHA CI; no A5/LISTO. Normal dev revert.
+
+
+## 2026-11-26 — DEV01 — C01-04.M03.06 — V44/R1/R5
+
+- TASK_ID=6adbb9fff1548191a1bd5b30d9e9984a; RUN_ID=aad0dda3-1ff4-8326-8f9d-c165edaacf80; base 33423302973a85afa37b914d66d3f8ec04bd13d2. M02.06 §3 / OUT01–02: final P01/P02 writer authority used to precede the last branch SQL read. Complete that I/O first and re-resolve authority last, retaining the same transaction, branch lock, exact grant and denial; no new permission or schema. Extend the existing real Program/Kestrel JWT+Oracle fixture with non-existent warehouse rejection and revoked B membership (own receipt/read and write deny with grants unchanged, A remains allowed). Preserve all earlier assertions and independent push CI; no deterministic expiry-boundary result or integration PASS claimed before CI. A0 exact anchors, A1–A4 pending, independent A5 required. No QA/main/PROD, real data, grants or purge. Normal dev revert.

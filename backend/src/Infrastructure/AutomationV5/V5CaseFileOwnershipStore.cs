@@ -177,9 +177,12 @@ public sealed class V5CaseFileOwnershipStore
 
             // Re-resolve the independent write authority after I/O. A changed grant,
             // resource or actor rolls back both P01 and P02. Never retry a commit blindly.
+            // Finish the branch I/O before the final signed-session/authority check.
+            // An expiring session must not be accepted based on a check preceding it.
+            if (!await ActiveBranchAsync(_db, tx, tenant, a.BranchId, ct))
+                return new("CASEFILE_WRITE_DENIED");
             var latest = await _authority.ResolveAsync(_db, selection, ct);
-            if (latest != a || !Matches(latest, selection, tenant) ||
-                !await ActiveBranchAsync(_db, tx, tenant, a.BranchId, ct))
+            if (latest != a || !Matches(latest, selection, tenant))
                 return new("CASEFILE_WRITE_DENIED");
             ct.ThrowIfCancellationRequested();
             if (_db.AuthorizedCommercialEmpresaId != tenant)
