@@ -29,6 +29,23 @@ on:
       - 'frontend/src/app/core/auth/auth.service.ts'
       - 'frontend/src/app/core/guards/plataforma.guard.ts'
       - 'frontend/src/app/app.routes.ts'
+      # Revalidar el zoom privado cuando cambian las dependencias causales de JWT y perfil A/B.
+      - 'backend/src/API/Controllers/TenantContextController.cs'
+      - 'backend/src/API/Controllers/TenantSessionController.cs'
+      - 'backend/src/API/Middleware/UnscopedCommercialTenantGuardMiddleware.cs'
+      - 'backend/src/Application/Interfaces/IPermisoService.cs'
+      - 'backend/src/Application/Interfaces/ITenantSessionTokenService.cs'
+      - 'backend/src/Application/Interfaces/IUsuarioScopeService.cs'
+      - 'backend/src/Application/Services/PermisoService.cs'
+      - 'backend/src/Infrastructure/Services/JwtService.cs'
+      - 'backend/src/Infrastructure/Services/UsuarioScopeService.cs'
+      - 'frontend/src/app/core/auth/tenant-context.service.ts'
+      - 'frontend/src/app/core/auth/permisos-runtime.service.ts'
+      - 'frontend/src/app/core/auth/session-activity.service.ts'
+      - 'frontend/src/app/core/guards/auth.guard.ts'
+      - 'frontend/src/app/core/guards/permiso.guard.ts'
+      - 'frontend/src/app/core/interceptors/auth.interceptor.ts'
+      - 'frontend/src/app/features/perfil/perfil.component.*'
   workflow_dispatch:
 permissions:
   contents: read
