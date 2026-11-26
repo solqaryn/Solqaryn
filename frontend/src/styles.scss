@@ -1,5 +1,6 @@
 @use './styles/enterprise-design-system';
 @use './styles/m10-accessibility';
+@use './styles/institutional-controls' as institutional;
 
 * {
   box-sizing: border-box;
@@ -9,6 +10,7 @@
   --color-primary: #0369a1;
   --color-primary-dark: #075985;
   --color-on-secondary: #ffffff;
+  --color-control-focus: #0369a1;
   --color-accent: #f97316;
   --color-bg: #f3f7fb;
   --color-surface: #ffffff;
@@ -121,18 +123,7 @@ canvas {
   white-space: pre-wrap;
 }
 
-button,
-a,
-input,
-textarea,
-select,
-[tabindex] {
-  &:focus-visible {
-    outline: 2px solid var(--color-primary);
-    outline-offset: 2px;
-    box-shadow: var(--focus-ring);
-  }
-}
+/* El foco de controles nativos y Material se define una sola vez en institutional-controls. */
 
 ::selection {
   background: color-mix(in srgb, var(--color-primary) 22%, transparent);
@@ -260,37 +251,6 @@ mat-icon {
   white-space: normal !important;
   line-height: 1.35;
   overflow-wrap: anywhere;
-}
-
-/* Estándar institucional: los tamaños se eligen en modal-institucional.ts. */
-.mat-mdc-dialog-container :is(.mat-mdc-dialog-title, .mat-mdc-dialog-actions) {
-  background: var(--color-primary-dark);
-  color: var(--color-on-secondary);
-}
-.mat-mdc-dialog-container .mat-mdc-dialog-title {
-  margin: 0;
-  overflow-wrap: anywhere;
-}
-.mat-mdc-dialog-container .mat-mdc-dialog-actions {
-  margin: 0;
-  padding: 12px 24px;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-.mat-mdc-dialog-container .mat-mdc-dialog-actions button:not(.mat-mdc-unelevated-button) {
-  --mdc-text-button-label-text-color: var(--color-on-secondary);
-  color: var(--color-on-secondary) !important;
-  border: 1px solid currentColor;
-  background: transparent !important;
-}
-.mat-mdc-dialog-container .mat-mdc-dialog-content { min-height: 0; overflow: auto; overscroll-behavior: contain; }
-.solqaryn-modal .mat-mdc-dialog-surface { overflow: hidden; }
-.solqaryn-modal .app-dialog-layout { max-height: calc(100dvh - 24px); }
-.solqaryn-modal .app-dialog-layout__body { padding: 16px; }
-.solqaryn-modal .app-dialog-layout .card.form { margin: 0; }
-@media (max-width: 480px) {
-  .mat-mdc-dialog-container .mat-mdc-dialog-actions { padding: 10px 14px; }
-  .solqaryn-modal .app-dialog-layout__body { padding: 12px; }
 }
 
 /* Tabla institucional: alineación de encabezado y celda por columna. */
@@ -458,6 +418,9 @@ h3,
     scroll-behavior: auto !important;
   }
 }
+
+/* Estándar compartido de controles y modales, después de los estilos base. */
+@include institutional.styles;
 
 @media print {
   body {

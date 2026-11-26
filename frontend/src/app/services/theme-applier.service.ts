@@ -24,7 +24,7 @@ export class ThemeApplierService {
     for (const campo of CAMPOS_TEMA) root.style.removeProperty(campo.variableCss);
     for (const variable of [
       '--color-on-primary', '--color-on-secondary', '--color-on-sidebar', '--color-on-danger',
-      '--color-on-success', '--color-on-warning', '--color-on-info'
+      '--color-on-success', '--color-on-warning', '--color-on-info', '--color-control-focus'
     ]) {
       root.style.removeProperty(variable);
     }
@@ -48,6 +48,7 @@ export class ThemeApplierService {
       root.style.setProperty(campo.variableCss, value.trim());
     }
 
+    root.style.setProperty('--color-control-focus', this.colorContrast.ensureReadable(tema.colorPrimario || '#0369a1', [surface]));
     root.style.setProperty('--color-on-primary', this.colorContrast.foregroundFor(tema.botonesPrincipales));
     root.style.setProperty('--color-on-secondary', this.colorContrast.foregroundFor(tema.colorSecundario || '#075985'));
     root.style.setProperty('--color-on-sidebar', this.colorContrast.foregroundFor(tema.menuLateral));

@@ -13,6 +13,8 @@ describe('Estándar institucional de modales', () => {
       expect(config.panelClass).toContain('solqaryn-modal--' + size);
     }
     expect(MODAL_DEFAULTS.disableClose).toBe(true);
+    expect(MODAL_DEFAULTS.autoFocus).toBe('dialog');
+    expect(modalInstitucional('s', { autoFocus: 'first-tabbable' }).autoFocus).toBe('first-tabbable');
   });
   it('conserva datos y clases del consumidor', () => {
     const data = { id: 42 };

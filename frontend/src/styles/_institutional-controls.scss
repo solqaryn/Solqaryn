@@ -1,0 +1,152 @@
+/* Contrato SOLQARYN: Material posee el contorno de sus campos; los controles
+   nativos conservan su anillo de teclado. Este archivo es la única autoridad
+   visual para el foco de formularios y la estructura de los diálogos.
+   No se alteran validators, mensajes de error, estados disabled ni RBAC. */
+@mixin styles {
+  :root {
+    --app-dialog-body-padding: clamp(16px, 2.5vw, 24px);
+    --app-dialog-chrome-bg: var(--color-primary-dark);
+    --app-dialog-chrome-fg: var(--color-on-secondary);
+  }
+
+  /* Incluye botones, enlaces y controles nativos fuera de Material.
+     Evita dibujar un segundo rectángulo dentro de la caja MDC. */
+  :where(a, button, input, select, textarea, summary, [role='button'], [tabindex]:not([tabindex='-1'])):focus-visible {
+    outline: 3px solid var(--color-control-focus) !important;
+    outline-offset: 3px !important;
+    box-shadow: 0 0 0 2px var(--color-surface), 0 0 0 5px color-mix(in srgb, var(--color-control-focus) 38%, transparent) !important;
+  }
+
+  .mat-mdc-form-field :is(input.mat-mdc-input-element, textarea.mat-mdc-input-element, select[matNativeControl], .mat-mdc-select):focus,
+  .mat-mdc-form-field :is(input.mat-mdc-input-element, textarea.mat-mdc-input-element, select[matNativeControl], .mat-mdc-select):focus-visible {
+    outline: none !important;
+    outline-offset: 0 !important;
+    box-shadow: none !important;
+  }
+
+  .mat-mdc-form-field {
+    --mdc-outlined-text-field-focus-outline-color: var(--color-control-focus);
+    --mdc-outlined-text-field-focus-label-text-color: var(--color-control-focus);
+    --mdc-outlined-text-field-caret-color: var(--color-control-focus);
+    --mdc-outlined-text-field-focus-outline-width: 2px;
+    --mat-form-field-outlined-focus-outline-color: var(--color-control-focus);
+    --mat-form-field-outlined-focus-label-text-color: var(--color-control-focus);
+    --mat-form-field-outlined-caret-color: var(--color-control-focus);
+    --mat-form-field-outlined-focus-outline-width: 2px;
+    --mdc-filled-text-field-focus-active-indicator-color: var(--color-control-focus);
+    --mdc-filled-text-field-focus-label-text-color: var(--color-control-focus);
+    --mdc-filled-text-field-caret-color: var(--color-control-focus);
+    --mat-form-field-filled-focus-active-indicator-color: var(--color-control-focus);
+    --mat-form-field-filled-focus-label-text-color: var(--color-control-focus);
+    --mat-form-field-filled-caret-color: var(--color-control-focus);
+    --mdc-outlined-text-field-label-text-color: var(--color-text-muted);
+    --mdc-outlined-text-field-input-text-color: var(--color-text);
+    --mat-form-field-outlined-label-text-color: var(--color-text-muted);
+    --mat-form-field-outlined-input-text-color: var(--color-text);
+    --mdc-filled-text-field-label-text-color: var(--color-text-muted);
+    --mdc-filled-text-field-input-text-color: var(--color-text);
+    --mat-form-field-filled-label-text-color: var(--color-text-muted);
+    --mat-form-field-filled-input-text-color: var(--color-text);
+    --mat-select-enabled-trigger-text-color: var(--color-text);
+    min-inline-size: 0;
+  }
+
+  /* Error y disabled siguen siendo propiedad de Material. Sólo se refuerza
+     el contorno normal activo; nunca se sobreescribe el borde de la muesca. */
+  .mat-mdc-form-field.mat-focused:not(.mat-form-field-invalid):not(.mat-form-field-disabled)
+    .mdc-text-field--outlined .mdc-notched-outline > :is(.mdc-notched-outline__leading, .mdc-notched-outline__notch, .mdc-notched-outline__trailing) {
+    border-color: var(--color-control-focus);
+  }
+
+  .mat-mdc-form-field.mat-focused:not(.mat-form-field-invalid):not(.mat-form-field-disabled)
+    .mdc-floating-label {
+    color: var(--color-control-focus);
+  }
+
+  /* Chrome institucional. El color de texto corresponde al fondo real,
+     no al encabezado genérico de la página ni al tema índigo de Material. */
+  .mat-mdc-dialog-container {
+    --mat-dialog-subhead-color: var(--app-dialog-chrome-fg);
+    --mdc-dialog-subhead-color: var(--app-dialog-chrome-fg);
+  }
+
+  .mat-mdc-dialog-container :is(.mat-mdc-dialog-title, .mat-mdc-dialog-actions) {
+    background: var(--app-dialog-chrome-bg);
+    color: var(--app-dialog-chrome-fg) !important;
+    flex: 0 0 auto;
+    min-inline-size: 0;
+  }
+
+  .mat-mdc-dialog-container .mat-mdc-dialog-title {
+    margin: 0;
+    padding: 16px var(--app-dialog-body-padding);
+    font-weight: var(--font-weight-semibold);
+    line-height: 1.35;
+    overflow-wrap: anywhere;
+  }
+
+  /* Material suprime el padding superior cuando el título precede al
+     contenido. Restituirlo evita recortar etiquetas flotantes al abrir. */
+  .mat-mdc-dialog-container .mat-mdc-dialog-content,
+  .mat-mdc-dialog-container .app-dialog-layout__body {
+    padding: var(--app-dialog-body-padding) !important;
+    min-height: 0;
+    min-inline-size: 0;
+    overflow: auto;
+    overscroll-behavior: contain;
+    scroll-padding-block: var(--app-dialog-body-padding);
+  }
+
+  .mat-mdc-dialog-container .mat-mdc-dialog-actions {
+    margin: 0;
+    padding: 12px var(--app-dialog-body-padding);
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .mat-mdc-dialog-container .mat-mdc-dialog-actions button:not(.mat-mdc-unelevated-button) {
+    --mdc-text-button-label-text-color: var(--app-dialog-chrome-fg);
+    --mat-button-text-label-text-color: var(--app-dialog-chrome-fg);
+    color: var(--app-dialog-chrome-fg) !important;
+    border: 1px solid currentColor;
+    background: transparent !important;
+  }
+
+  .mat-mdc-dialog-container .mat-mdc-dialog-actions .mat-mdc-unelevated-button:is(.mat-primary, [color='primary']):not(:disabled):not(.app-alert__confirm--danger) {
+    --mdc-filled-button-container-color: var(--color-button);
+    --mdc-filled-button-label-text-color: var(--color-on-primary);
+    --mat-button-filled-container-color: var(--color-button);
+    --mat-button-filled-label-text-color: var(--color-on-primary);
+    color: var(--color-on-primary) !important;
+    background-color: var(--color-button) !important;
+  }
+
+  .mat-mdc-dialog-container .mat-mdc-dialog-actions button:disabled {
+    opacity: .64;
+  }
+
+  .solqaryn-modal .mat-mdc-dialog-surface { overflow: hidden; }
+  .solqaryn-modal .app-dialog-layout {
+    max-height: calc(100dvh - 24px);
+    min-height: 0;
+  }
+  .solqaryn-modal .app-dialog-layout .card.form { margin: 0; }
+
+  @media (max-width: 480px) {
+    :root { --app-dialog-body-padding: 16px; }
+    .mat-mdc-dialog-container .mat-mdc-dialog-actions { padding: 10px var(--app-dialog-body-padding); }
+    .mat-mdc-dialog-container .mat-mdc-dialog-title { padding-block: 14px; }
+  }
+
+  @media (forced-colors: active) {
+    :where(a, button, input, select, textarea, summary, [role='button'], [tabindex]:not([tabindex='-1'])):focus-visible {
+      outline: 3px solid Highlight !important;
+      box-shadow: none !important;
+    }
+    /* High contrast: un solo indicador externo en el campo compuesto. */
+    .mat-mdc-form-field.mat-focused .mat-mdc-text-field-wrapper {
+      outline: 2px solid Highlight !important;
+      outline-offset: 1px;
+    }
+  }
+}

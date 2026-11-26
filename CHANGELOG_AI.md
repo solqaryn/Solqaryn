@@ -1,3 +1,8 @@
+## 2026-11-25 — QA: estándar único de campos y modales, corrección de regresión visual
+
+- Se elimina el doble anillo de foco de Material sin eliminar el foco accesible de controles nativos; contorno, etiqueta y caret consumen token de contraste del tema. Se consolidan los estilos de foco y chrome de diálogo en `styles/_institutional-controls.scss`; se restituye padding superior del contenido (Material lo suprime tras el título), color legible de encabezado y botones y foco inicial en el diálogo.
+- Regresión Playwright de edición de talla en 1280/390/320 px: geometría de etiquetas, foco de texto/número/textarea, contraste de título/botones, cancelación y no mutación. Referencias originales SKREF-10 Angular (6808966993bf2b2d455d9b6245e960a59a01b9a9) y SKREF-03 Impeccable (2149fcce39a90bb409df5f16515f316a76dc6199), sin ejecutar herramientas externas. Sin cambio de dependencias, API, datos, DEV o MAIN. CI y revisión autenticada exact-SHA pendientes.
+
 # QA — 2026-11-25 — Regresión visual institucional y contexto de editores
 
 - Catálogos y métodos de pago retienen contexto verificado al abrir el formulario y lo revalidan antes de escribir; no se autoriza el guardado con otra empresa.

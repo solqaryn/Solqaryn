@@ -10,6 +10,7 @@ export const MODAL_DEFAULTS: MatDialogConfig = {
   maxWidth: 'calc(100vw - 24px)',
   maxHeight: 'calc(100dvh - 24px)',
   restoreFocus: true,
+  autoFocus: 'dialog',
   closeOnNavigation: true
 };
 

@@ -1,9 +1,60 @@
-import { expect, test } from './tenant-aware-test';
+import { expect, test, Locator } from './tenant-aware-test';
 
 const API = 'http://localhost:5005';
 function ok(data: unknown) { return { success: true, message: 'OK', errors: [], data }; }
 
-for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 }]) {
+async function verificarCromo(dialogo: Locator): Promise<void> {
+  const contraste = await dialogo.evaluate(el => {
+    const rgb = (value: string) => value.match(/[\d.]+/g)!.slice(0, 3).map(Number);
+    const lum = (value: string) => rgb(value).map(n => n / 255).map(n => n <= .04045 ? n / 12.92 : ((n + .055) / 1.055) ** 2.4).reduce((s,n,i) => s + n * [0.2126,0.7152,0.0722][i], 0);
+    const ratio = (a: string, b: string) => (Math.max(lum(a), lum(b)) + .05) / (Math.min(lum(a), lum(b)) + .05);
+    const title = getComputedStyle(el.querySelector('.mat-mdc-dialog-title')!);
+    const footer = getComputedStyle(el.querySelector('.mat-mdc-dialog-actions')!);
+    const botones = [...el.querySelectorAll<HTMLButtonElement>('.mat-mdc-dialog-actions button:not(:disabled)')].map(b => {
+      const css = getComputedStyle(b);
+      const bg = css.backgroundColor === 'rgba(0, 0, 0, 0)' ? footer.backgroundColor : css.backgroundColor;
+      return ratio(css.color, bg);
+    });
+    return { title: ratio(title.color, title.backgroundColor), botones };
+  });
+  expect(contraste.title).toBeGreaterThanOrEqual(4.5);
+  expect(contraste.botones.every(r => r >= 4.5)).toBe(true);
+}
+
+async function verificarCampo(campo: Locator): Promise<void> {
+  await campo.scrollIntoViewIfNeeded();
+  await campo.focus();
+  await expect(campo.locator('xpath=ancestor::mat-form-field')).toHaveClass(/mat-focused/);
+  const medida = await campo.evaluate(el => {
+    const field = el.closest('mat-form-field')!;
+    const label = field.querySelector('.mdc-floating-label')!;
+    const border = field.querySelector('.mdc-notched-outline__leading')!;
+    const content = field.closest('.mat-mdc-dialog-content')!;
+    const header = field.closest('.mat-mdc-dialog-container')!.querySelector('.mat-mdc-dialog-title')!;
+    const css = getComputedStyle(el);
+    const b = getComputedStyle(border);
+    const labelRect = label.getBoundingClientRect();
+    return {
+      outline: css.outlineStyle,
+      shadow: css.boxShadow,
+      borderWidth: parseFloat(b.borderLeftWidth),
+      borderColor: b.borderLeftColor,
+      labelColor: getComputedStyle(label).color,
+      labelHeight: labelRect.height,
+      visibleTop: labelRect.top >= Math.max(content.getBoundingClientRect().top, header.getBoundingClientRect().bottom) - 1,
+      visibleBottom: labelRect.bottom <= content.getBoundingClientRect().bottom + 1,
+    };
+  });
+  expect(medida.outline).toBe('none');
+  expect(medida.shadow).toBe('none');
+  expect(medida.borderWidth).toBeGreaterThanOrEqual(2);
+  expect(medida.labelColor).toBe(medida.borderColor);
+  expect(medida.labelHeight).toBeGreaterThan(8);
+  expect(medida.visibleTop).toBe(true);
+  expect(medida.visibleBottom).toBe(true);
+}
+
+for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 }, { width: 320, height: 568 }]) {
   test('QA visual: modales institucionales de catálogo y confirmaciones ' + viewport.width, async ({ page }, testInfo) => {
     await page.setViewportSize(viewport);
     await page.addInitScript(() => {
@@ -56,9 +107,23 @@ for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 
       const f = el.querySelector('.mat-mdc-dialog-actions')!;
       return getComputedStyle(h).backgroundColor === getComputedStyle(f).backgroundColor && getComputedStyle(h).backgroundColor !== 'rgba(0, 0, 0, 0)';
     })).toBe(true);
+    await verificarCromo(consulta);
     await page.screenshot({ path: testInfo.outputPath('consulta.png') });
     await consulta.getByRole('button', { name: 'Cerrar', exact: true }).click();
     await expect(consulta).toHaveCount(0);
+
+    // Reproduce exactamente el editor existente reportado por el usuario.
+    await fila.getByRole('button', { name: 'Editar M', exact: true }).click();
+    const editar = page.locator('.solqaryn-modal--m');
+    await expect(editar).toBeVisible();
+    await verificarCromo(editar);
+    await verificarCampo(editar.getByRole('textbox', { name: 'Nombre', exact: true }));
+    await verificarCampo(editar.getByRole('spinbutton', { name: 'Orden', exact: true }));
+    await verificarCampo(editar.getByRole('textbox', { name: 'Descripción (opcional)', exact: true }));
+    await page.screenshot({ path: testInfo.outputPath('editar-foco.png') });
+    await editar.getByRole('button', { name: 'Cancelar', exact: true }).click();
+    await expect(editar).toHaveCount(0);
+    expect(posts).toBe(0);
 
     await page.getByRole('button', { name: /Nuevo talla/i }).click();
     const editor = page.locator('.solqaryn-modal--m');
@@ -71,6 +136,7 @@ for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 
     await page.keyboard.press('Escape');
     await expect(confirmacion).toBeVisible();
     expect(posts).toBe(0);
+    await verificarCromo(confirmacion);
     await page.screenshot({ path: testInfo.outputPath('confirmacion.png') });
     await confirmacion.getByRole('button', { name: 'Cancelar', exact: true }).click();
     await expect(confirmacion).toHaveCount(0);
