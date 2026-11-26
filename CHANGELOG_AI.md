@@ -1,3 +1,6 @@
+## 2026-11-25 | DEV05 | C01-04.M03.06 | R1-RESTAURADA
+- V44R1-J40-50686A75-C0104M0306-AUDIT-FECHA: protege Fecha del recibo QA GLOBAL mediante precisión datetime(6) y readback pre-COMMIT; tres escenarios SQL adversariales en laboratorio existente, sin migración, grants, TTL ni infraestructura. CI/A5 independientes pendientes. RUN=50686a75-0030-8326-8325-7ca1a5569e8e; base=040ef52ec05e669dc3bea28d1e8fb45c6a3b137b.
+
 ## 2026-11-25 | DEV03 | C01-04.M03.06 | R1-RESTAURADA
 - V44R1-J20-B132C078-C0104M0306-DENIAL-READBACK: verifica recibo de denegación compensatoria GLOBAL antes de COMMIT, rollback de PriorAuditId alterado, preserva 403 y recibo original. Prueba HTTP/JWT/MySQL efímero, sin grants/migración/infra; CI y A5 independientes pendientes. RUN=b132c078-a2fc-8321-97f4-270c111ca623; base=556c417b1aa3f5db68c147323fba04c05f0f232d.
 

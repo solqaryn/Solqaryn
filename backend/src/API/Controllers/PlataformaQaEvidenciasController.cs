@@ -490,6 +490,9 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
         await using var tx = _db.Database.IsRelational()
             ? await _db.Database.BeginTransactionAsync(cancellationToken)
             : null;
+        // Oracle MySQL stores Fecha as datetime(6). Normalize before INSERT so
+        // the durable readback can distinguish timestamp tampering from precision loss.
+        expected.Fecha = expected.Fecha.AddTicks(-(expected.Fecha.Ticks % TimeSpan.TicksPerMicrosecond));
         _db.Set<RegistroAuditoria>().Add(expected);
         if (await _db.SaveChangesAsync(cancellationToken) != 1 || expected.Id <= 0)
             return false;
@@ -497,6 +500,7 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
         var actual = await _db.Set<RegistroAuditoria>().AsNoTracking()
             .SingleOrDefaultAsync(x => x.Id == expected.Id, cancellationToken);
         if (actual is null ||
+            actual.Fecha != expected.Fecha ||
             actual.UsuarioId != expected.UsuarioId ||
             actual.NombreUsuario != expected.NombreUsuario ||
             actual.EmpresaId != expected.EmpresaId ||
