@@ -32,11 +32,14 @@ public sealed class C0301LoginVerifiedActorSource(
     AppDbContext database,
     IConfiguration configuration) : IC0301VerifiedLoginActorSource
 {
+    private bool ProbeEnabled() =>
+        bool.TryParse(configuration["LoginSecurity:EnableReadOnlyProbe"], out var enabled) && enabled;
+
     public async ValueTask<C0301VerifiedLoginSelection?> ReadCurrentAsync(
         CancellationToken cancellationToken)
     {
         cancellationToken.ThrowIfCancellationRequested();
-        if (!configuration.GetValue<bool>("LoginSecurity:EnableReadOnlyProbe"))
+        if (!ProbeEnabled())
             return null;
 
         var http = contexts.HttpContext;
@@ -163,6 +166,9 @@ public sealed class C0301LoginVerifiedActorSource(
             // A base role or account may have been revoked during the branch
             // and grant reads. The effective tenant role cannot replace it.
             if (!await BaseSessionCurrentAsync())
+                return null;
+
+            if (!ProbeEnabled())
                 return null;
 
             // Read-only proof; not JWT issuance, tenant selection, or platform access.

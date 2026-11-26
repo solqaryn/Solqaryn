@@ -75,7 +75,8 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
                 forged ? ForgedKey : Key, SecurityAlgorithms.HmacSha256)));
     }
 
-    private sealed class SelectorRevocationInterceptor(Func<Task> revoke) : DbCommandInterceptor
+    private sealed class SelectorRevocationInterceptor(Func<Task> revoke,
+        string queryMarker = "C0301_SELECTOR_CURRENT_MEMBERSHIPS") : DbCommandInterceptor
     {
         private int _fired;
         public bool Fired => Volatile.Read(ref _fired) == 1;
@@ -84,7 +85,7 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
             DbCommand command, CommandExecutedEventData eventData, DbDataReader result,
             CancellationToken cancellationToken = default)
         {
-            if (command.CommandText.Contains("C0301_SELECTOR_CURRENT_MEMBERSHIPS", StringComparison.Ordinal) &&
+            if (command.CommandText.Contains(queryMarker, StringComparison.Ordinal) &&
                 Interlocked.Exchange(ref _fired, 1) == 0)
                 await revoke();
             return result;
@@ -641,6 +642,29 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
                 Assert.Equal(HttpStatusCode.OK, positive.StatusCode);
                 Assert.Equal("LOGIN_SELECTION_ONLY_NO_TOKEN_OR_GRANT",
                     await positive.Content.ReadAsStringAsync());
+            }
+
+            // The opt-in may be withdrawn while the verified branch is read.
+            IConfiguration? livePolicy = null;
+            var probeRace = new SelectorRevocationInterceptor(() =>
+            {
+                livePolicy!["LoginSecurity:EnableReadOnlyProbe"] = "false";
+                return Task.CompletedTask;
+            }, "Sucursales");
+            using (var raceHost = await StartAsync(scoped, selectorInterceptor: probeRace))
+            using (var raceClient = raceHost.GetTestClient())
+            {
+                livePolicy = raceHost.Services.GetRequiredService<IConfiguration>();
+                using (var disabledDuringRead = await ReadAsync(
+                    raceClient, tenantA.Id, branchA.Id, productToken))
+                {
+                    Assert.True(probeRace.Fired);
+                    Assert.Equal(HttpStatusCode.Forbidden, disabledDuringRead.StatusCode);
+                }
+                livePolicy["LoginSecurity:EnableReadOnlyProbe"] = "true";
+                using (var enabledAgain = await ReadAsync(
+                    raceClient, tenantA.Id, branchA.Id, productToken))
+                    Assert.Equal(HttpStatusCode.OK, enabledAgain.StatusCode);
             }
 
             // A signed token must not preserve a role disabled in current MySQL.

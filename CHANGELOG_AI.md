@@ -1,3 +1,8 @@
+## 2026-11-26 — DEV06 — C03-01.M03.03 — V44/R1/R5
+
+- TASK_ID=6af16bbad26881918c283abe06e1f32a; RUN_ID=c43551c5-ec84-8333-9a44-12b8bbc4c486; base dac64109ed6eec02c933a8914084a251bbb9922b. Foco C01-04.M03.06 preservado por falta de P01/P02/API12 auténticos; C02-03.M03.03 integración dirigida 2/2 PASS y backend 6728/6728 PASS, otros gates en ejecución. No se cancelan las ejecuciones push por SHA.
+- D447 denegación por defecto: releer opt-in backend del probe DEV tras validar JWT, membresía, sucursal y grant de MySQL y antes del snapshot. Desactivación o valor inválido deniegan sin conceder token, acceso o permiso. Regresión real con interceptor SQL de sucursales y cambio de configuración en vuelo, espera 403 y 200 al restaurar; preserva las pruebas del selector. CI exact SHA pendiente, no A5 ni LISTO; rollback revert normal dev.
+
 ## 2026-11-26 — DEV06 — C02-03.M03.03 — V44/R1/R5
 
 - TASK_ID=6af16bbad26881918c283abe06e1f32a; RUN_ID=c43551c5-ec84-8333-9a44-12b8bbc4c486; base ce7cbb2d5a1e3568a44012c210b24a97982ce363. Foco colectivo C01-04.M03.06 conservado; excepción R1 por falta de escritor/fuente P01/P02 y grant API12 auténticos fuera del alcance del adaptador actual.
