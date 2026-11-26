@@ -1,6 +1,7 @@
+import { crearAccionesInstitucionales } from '../../shared/modal-institucional/acciones-institucionales';
 import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 
-import { Component, OnInit, inject, signal, ChangeDetectionStrategy, TemplateRef, ViewChild } from '@angular/core';
+import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -17,7 +18,6 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MetodoPago, MetodoPagoCreate, MetodoPagoUpdate } from '../../core/models/metodo-pago.model';
 import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
 import { MetodoPagoService } from '../../services/metodo-pago.service';
-import { AppAlertService } from '../../shared/alerts/app-alert.service';
 
 @Component({
   selector: 'app-metodos-pago',
@@ -109,23 +109,29 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
       </ng-template>
 
       <div class="list-card">
+        <div class="app-table-filters" aria-label="Filtros de métodos de pago">
+          <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>Buscar por nombre o código</mat-label><mat-icon matPrefix>search</mat-icon><input matInput #busqueda [value]="buscar()" (input)="buscar.set(busqueda.value)"></mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>Estado</mat-label><mat-select [value]="estadoFiltro()" (selectionChange)="estadoFiltro.set($event.value)"><mat-option value="todos">Todos</mat-option><mat-option value="activos">Activos</mat-option><mat-option value="inactivos">Inactivos</mat-option></mat-select></mat-form-field>
+          <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>Tipo</mat-label><mat-select [value]="tipoFiltro()" (selectionChange)="tipoFiltro.set($event.value)"><mat-option value="todos">Todos</mat-option>@for (tipo of tipos; track tipo) { <mat-option [value]="tipo">{{ tipo }}</mat-option> }</mat-select></mat-form-field>
+          <button mat-stroked-button type="button" (click)="limpiarFiltros()"><mat-icon>filter_alt_off</mat-icon> Limpiar filtros</button>
+        </div>
         @if (loading()) {
           <div class="loading"><mat-spinner diameter="38"></mat-spinner><span>Cargando métodos de pago…</span></div>
-        } @else if (metodos().length === 0) {
+        } @else if (visibles().length === 0) {
           <div class="empty"><mat-icon>payments</mat-icon><h2>Sin métodos de pago</h2><p>No hay registros disponibles.</p></div>
         } @else {
           <div class="app-table-shell">
             <table class="app-data-table">
               <thead><tr><th>Orden</th><th>Código</th><th>Nombre</th><th>Tipo</th><th>Reglas</th><th class="app-col-center">Estado</th><th class="actions-col">Acciones</th></tr></thead>
               <tbody>
-                @for (metodo of metodos(); track metodo.id; let i = $index) {
+                @for (metodo of visibles(); track metodo.id; let i = $index) {
                   <tr [class.inactivo]="!metodo.activo">
                     <td class="order-cell">
                       <span>{{ metodo.orden }}</span>
                       @if (puedeEditar()) {
                         <span class="order-buttons">
-                          <button mat-icon-button type="button" [disabled]="i === 0 || reordering()" (click)="mover(i, -1)" aria-label="Subir método"><mat-icon>keyboard_arrow_up</mat-icon></button>
-                          <button mat-icon-button type="button" [disabled]="i === metodos().length - 1 || reordering()" (click)="mover(i, 1)" aria-label="Bajar método"><mat-icon>keyboard_arrow_down</mat-icon></button>
+                          <button mat-icon-button type="button" [disabled]="filtrado() || i === 0 || reordering()" (click)="mover(i, -1)" aria-label="Subir método"><mat-icon>keyboard_arrow_up</mat-icon></button>
+                          <button mat-icon-button type="button" [disabled]="filtrado() || i === metodos().length - 1 || reordering()" (click)="mover(i, 1)" aria-label="Bajar método"><mat-icon>keyboard_arrow_down</mat-icon></button>
                         </span>
                       }
                     </td>
@@ -153,7 +159,7 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
               </tbody>
             </table>
           </div>
-          <footer class="app-table-footer" aria-live="polite">{{ metodos().length }} registro(s)</footer>
+          <footer class="app-table-footer" aria-live="polite">{{ visibles().length }} de {{ metodos().length }} registro(s)</footer>
         }
       </div>
     </section>
@@ -168,7 +174,6 @@ export class MetodosPagoComponent implements OnInit {
   private readonly service = inject(MetodoPagoService);
   private readonly permisos = inject(PermisosRuntimeService);
   private readonly snackBar = inject(MatSnackBar);
-  private readonly alerts = inject(AppAlertService);
   private readonly dialog = inject(MatDialog, { optional: true });
   @ViewChild('formularioModal') private formularioModal?: TemplateRef<unknown>;
   private editorRef?: MatDialogRef<unknown>;
@@ -187,7 +192,19 @@ export class MetodosPagoComponent implements OnInit {
     });
   }
 
+  private readonly acciones = crearAccionesInstitucionales('MetodosPago');
   readonly metodos = signal<MetodoPago[]>([]);
+  readonly buscar = signal('');
+  readonly estadoFiltro = signal<'todos' | 'activos' | 'inactivos'>('todos');
+  readonly tipoFiltro = signal('todos');
+  readonly visibles = computed(() => {
+    const termino = this.buscar().trim().toLocaleLowerCase('es-HN');
+    return this.metodos().filter(item => (!termino || (item.nombre + ' ' + item.codigo).toLocaleLowerCase('es-HN').includes(termino)) &&
+      (this.estadoFiltro() === 'todos' || item.activo === (this.estadoFiltro() === 'activos')) &&
+      (this.tipoFiltro() === 'todos' || item.tipo === this.tipoFiltro()));
+  });
+  readonly filtrado = computed(() => !!this.buscar().trim() || this.estadoFiltro() !== 'todos' || this.tipoFiltro() !== 'todos');
+  limpiarFiltros(): void { this.buscar.set(''); this.estadoFiltro.set('todos'); this.tipoFiltro.set('todos'); }
   readonly loading = signal(true);
   readonly saving = signal(false);
   readonly reordering = signal(false);
@@ -299,7 +316,7 @@ export class MetodosPagoComponent implements OnInit {
 
     const id = this.editandoId();
     this.saving.set(true);
-    const confirmado = await this.alerts.confirmar({ titulo: id ? 'Confirmar actualización' : 'Confirmar creación', mensaje: '¿Deseas guardar los cambios del método de pago?', confirmarTexto: 'Guardar' }).catch(() => false);
+    const confirmado = await this.acciones.confirmar(id ? 'Editar' : 'Crear', { titulo: id ? 'Confirmar actualización' : 'Confirmar creación', mensaje: '¿Deseas guardar los cambios del método de pago?', confirmarTexto: 'Guardar' }).catch(() => false);
     if (!confirmado || !this.mostrandoFormulario() || !this.permisos.puede('MetodosPago', id ? 'Editar' : 'Crear')) { this.saving.set(false); return; }
     const request$ = id
       ? this.service.update(id, base)
@@ -329,7 +346,7 @@ export class MetodosPagoComponent implements OnInit {
     this.cambiandoEstado.set(true);
     try {
       const accion = metodo.activo ? 'Desactivar' : 'Activar';
-      if (!await this.alerts.confirmar({ titulo: accion + ' método', mensaje: '¿Deseas ' + accion.toLowerCase() + ' «' + metodo.nombre + '»?', confirmarTexto: accion }) || !this.permisos.puede('MetodosPago', accion)) return;
+      if (!await this.acciones.confirmar(accion, { titulo: accion + ' método', mensaje: '¿Deseas ' + accion.toLowerCase() + ' «' + metodo.nombre + '»?', confirmarTexto: accion }) || !this.permisos.puede('MetodosPago', accion)) return;
       const { data } = await firstValueFrom(metodo.activo ? this.service.desactivar(metodo.id) : this.service.activar(metodo.id));
       this.metodos.update(items => items.map(item => item.id === data.id ? data : item));
     } catch { this.error('No se pudo cambiar el estado del método de pago.'); }
@@ -337,7 +354,7 @@ export class MetodosPagoComponent implements OnInit {
   }
 
   async eliminar(metodo: MetodoPago): Promise<void> {
-    const confirmado = await this.alerts.confirmar({
+    const confirmado = await this.acciones.confirmar('EliminarLogico', {
       titulo: 'Eliminar método de pago',
       mensaje: `Se ocultará “${metodo.nombre}” para nuevas operaciones sin borrar su historial relacionado.`,
       tipo: 'peligro',
@@ -356,13 +373,13 @@ export class MetodosPagoComponent implements OnInit {
   }
 
   async mover(indice: number, delta: -1 | 1): Promise<void> {
-    if (this.reordering()) return;
+    if (this.reordering() || this.filtrado()) return;
     const destino = indice + delta;
     const actual = [...this.metodos()];
     if (destino < 0 || destino >= actual.length) return;
 
     this.reordering.set(true);
-    const confirmado = await this.alerts.confirmar({ titulo: 'Confirmar orden', mensaje: '¿Deseas cambiar el orden de este método de pago?', confirmarTexto: 'Mover' }).catch(() => false);
+    const confirmado = await this.acciones.confirmar('Editar', { titulo: 'Confirmar orden', mensaje: '¿Deseas cambiar el orden de este método de pago?', confirmarTexto: 'Mover' }).catch(() => false);
     if (!confirmado || !this.permisos.puede('MetodosPago', 'Editar')) { this.reordering.set(false); return; }
     [actual[indice], actual[destino]] = [actual[destino], actual[indice]];
     const normalizados = actual.map((item, position) => ({ ...item, orden: position }));

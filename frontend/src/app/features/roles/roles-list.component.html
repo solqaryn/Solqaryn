@@ -8,10 +8,16 @@
 </div>
 
 <div class="card">
+  <div class="app-table-filters" aria-label="Filtros del listado">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>Buscar por nombre</mat-label><mat-icon matPrefix>search</mat-icon><input matInput #busqueda [value]="buscar()" (input)="buscar.set(busqueda.value)"></mat-form-field>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>Estado</mat-label><mat-select [value]="estadoFiltro()" (selectionChange)="estadoFiltro.set($event.value)"><mat-option value="todos">Todos</mat-option><mat-option value="activos">Activos</mat-option><mat-option value="inactivos">Inactivos</mat-option></mat-select></mat-form-field>
+    <button mat-stroked-button type="button" (click)="limpiarFiltros()"><mat-icon>filter_alt_off</mat-icon> Limpiar filtros</button>
+  </div>
   @if (loading()) {
     <div class="loading"><mat-spinner></mat-spinner></div>
   } @else {
-    <table class="table table-desktop">
+    <div class="app-table-shell" role="region" aria-label="Tabla de roles" tabindex="0">
+    <table class="app-data-table">
       <thead>
         <tr>
           <th>Nombre</th>
@@ -19,12 +25,12 @@
           <th>Usuarios</th>
           <th>Permisos</th>
           <th>Tipo</th>
-          <th>Estado</th>
-          <th>Acciones</th>
+          <th class="app-col-center">Estado</th>
+          <th class="actions-heading">Acciones</th>
         </tr>
       </thead>
       <tbody>
-        @for (r of roles(); track r.id) {
+        @for (r of visibles(); track r.id) {
           <tr>
             <td>{{ r.nombre }}</td>
             <td>{{ r.descripcion || '—' }}</td>
@@ -34,7 +40,7 @@
               @if (r.esSistema) { <span class="badge badge-sistema">Sistema</span> }
               @if (r.esAdministrador) { <span class="badge badge-admin">Admin</span> }
             </td>
-            <td>
+            <td class="app-col-center">
               @if (puedeCambiarEstado(r)) {
                 <mat-slide-toggle [checked]="r.activo" [disabled]="cambiandoEstado()" (change)="toggleActivo(r, $event)" [aria-label]="(r.activo ? 'Desactivar ' : 'Activar ') + r.nombre"></mat-slide-toggle>
               } @else {
@@ -67,43 +73,9 @@
         }
       </tbody>
     </table>
-
-    <div class="cards-mobile">
-      @for (r of roles(); track r.id) {
-        <div class="rol-card">
-          <div class="rol-card-header">
-            <strong>{{ r.nombre }}</strong>
-            @if (puedeCambiarEstado(r)) {
-              <mat-slide-toggle [checked]="r.activo" [disabled]="cambiandoEstado()" (change)="toggleActivo(r, $event)" [aria-label]="(r.activo ? 'Desactivar ' : 'Activar ') + r.nombre"></mat-slide-toggle>
-            } @else {
-              <span class="badge" [class.success]="r.activo" [class.muted]="!r.activo">
-                {{ r.activo ? 'Activo' : 'Inactivo' }}
-              </span>
-            }
-          </div>
-          <p class="rol-card-desc">{{ r.descripcion || 'Sin descripción' }}</p>
-          <div class="rol-card-meta">
-            <span>{{ r.cantidadUsuarios }} usuarios</span>
-            <span>{{ r.cantidadPermisos }} permisos</span>
-            @if (r.esSistema) { <span class="badge badge-sistema">Sistema</span> }
-            @if (r.esAdministrador) { <span class="badge badge-admin">Admin</span> }
-          </div>
-          <div class="rol-card-actions">
-              <button type="button" class="action-view" mat-button title="Ver detalle" [attr.aria-label]="'Ver ' + r.nombre" [appConsultaRegistro]="{ titulo: 'Rol: ' + r.nombre, campos: { 'Nombre': r.nombre, 'Descripción': r.descripcion, 'Rol del sistema': r.esSistema, 'Administrador': r.esAdministrador, 'Estado': r.activo ? 'Activo' : 'Inactivo', 'Usuarios asignados': r.cantidadUsuarios, 'Permisos registrados': r.cantidadPermisos, 'Fecha de creación': r.fechaCreacion, 'Fecha de actualización': r.fechaActualizacion } }"><mat-icon>visibility</mat-icon> Ver</button>
-            @if (puedeEditar()) {
-              <button type="button"  (click)="abrirRol(r.id)" mat-button><mat-icon>edit</mat-icon> Editar</button>
-            }
-            @if (puedeDuplicar()) {
-              <button mat-button (click)="duplicar(r)"><mat-icon>content_copy</mat-icon> Duplicar</button>
-            }
-            @if (puedeEliminar() && !r.esSistema && r.cantidadUsuarios === 0) {
-              <button mat-button (click)="eliminar(r)"><mat-icon>delete_outline</mat-icon> Eliminar</button>
-            }
-          </div>
-        </div>
-      } @empty {
-        <p class="empty">No hay roles registrados.</p>
-      }
     </div>
+    <footer class="app-table-footer" aria-live="polite">{{ visibles().length }} de {{ roles().length }} registro(s)</footer>
+
+    
   }
 </div>

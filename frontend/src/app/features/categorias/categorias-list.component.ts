@@ -1,5 +1,9 @@
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { crearAccionesInstitucionales } from '../../shared/modal-institucional/acciones-institucionales';
 import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
-import { Component, OnInit, signal, ChangeDetectionStrategy, inject, DestroyRef } from '@angular/core';
+import { Component, OnInit, signal, computed, ChangeDetectionStrategy, inject, DestroyRef } from '@angular/core';
 
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -18,12 +22,18 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
 @Component({
   selector: 'app-categorias-list',
   standalone: true,
-  imports: [ConsultaRegistroDirective, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatSlideToggleModule],
+  imports: [MatFormFieldModule, MatInputModule, MatSelectModule, ConsultaRegistroDirective, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatSlideToggleModule],
   templateUrl: './categorias-list.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './categorias-list.component.scss'
 })
 export class CategoriasListComponent implements OnInit {
+  private readonly acciones = crearAccionesInstitucionales('Categorias');
+  readonly buscar = signal('');
+  readonly estadoFiltro = signal<'todos' | 'activos' | 'inactivos'>('todos');
+  readonly visibles = computed(() => { const termino = this.buscar().trim().toLocaleLowerCase('es-HN'); return this.categorias().filter(item => (!termino || item.nombre.toLocaleLowerCase('es-HN').includes(termino)) && (this.estadoFiltro() === 'todos' || item.activa === (this.estadoFiltro() === 'activos'))); });
+  limpiarFiltros(): void { this.buscar.set(''); this.estadoFiltro.set('todos'); }
+
   private readonly dialog = inject(MatDialog);
   private readonly tenant = inject(TenantContextService);
   private readonly destroyRef = inject(DestroyRef);
@@ -103,7 +113,7 @@ export class CategoriasListComponent implements OnInit {
   }
 
   async eliminar(categoria: Categoria): Promise<void> {
-    const confirmado = await this.alerts.confirmar({
+    const confirmado = await this.acciones.confirmar('EliminarLogico', {
       titulo: 'Eliminar categoría',
       mensaje: `Se ocultará “${categoria.nombre}” sin borrar el historial relacionado.`,
       tipo: 'peligro',

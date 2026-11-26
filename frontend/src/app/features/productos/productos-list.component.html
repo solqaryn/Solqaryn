@@ -12,7 +12,7 @@
 </div>
 
 <div class="card products-card">
-  <div class="product-toolbar" aria-label="Búsqueda y filtros de inventario">
+  <div class="product-toolbar app-table-filters" aria-label="Búsqueda y filtros de inventario">
     <mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
       <mat-label>Buscar productos</mat-label>
       <input matInput [ngModel]="search" (ngModelChange)="onSearchChange($event)" autocomplete="off">
@@ -95,8 +95,8 @@
   @if (loading()) {
     <div class="loading" aria-live="polite"><mat-spinner></mat-spinner></div>
   } @else {
-    <div class="table-scroll">
-      <table class="table table-desktop">
+    <div class="table-scroll app-table-shell" role="region" aria-label="Tabla de productos" tabindex="0">
+      <table class="table table-desktop app-data-table">
         <thead>
           <tr>
             <th scope="col" class="image-column"><span class="visually-hidden">Imagen</span></th>
@@ -104,11 +104,11 @@
             <th scope="col" (click)="ordenarPor('Marca')" class="sortable">Marca / modelo</th>
             <th scope="col">Color / talla</th>
             <th scope="col">Categoría</th>
-            <th scope="col" (click)="ordenarPor('Cantidad')" class="sortable">Stock</th>
-            <th scope="col" (click)="ordenarPor('Costo')" class="sortable">Costo</th>
-            <th scope="col" (click)="ordenarPor('Precio')" class="sortable">Precio</th>
-            <th scope="col">Estado</th>
-            <th scope="col" class="actions-column">Acciones</th>
+            <th scope="col" (click)="ordenarPor('Cantidad')" class="sortable app-col-number">Stock</th>
+            <th scope="col" (click)="ordenarPor('Costo')" class="sortable app-col-number">Costo</th>
+            <th scope="col" (click)="ordenarPor('Precio')" class="sortable app-col-number">Precio</th>
+            <th scope="col" class="app-col-center">Estado</th>
+            <th scope="col" class="actions-column actions-heading">Acciones</th>
           </tr>
         </thead>
         <tbody>
@@ -143,10 +143,10 @@
                 @if (p.tallaNombre) { <div><small>Talla: {{ p.tallaNombre }}</small></div> }
               </td>
               <td>{{ p.categoriaNombre || '—' }}</td>
-              <td class="number-cell">{{ p.cantidad }}</td>
-              <td class="money-cell">L. {{ p.costo | number:'1.2-2' }}</td>
-              <td class="money-cell">L. {{ p.precio | number:'1.2-2' }}</td>
-              <td class="status-cell">
+              <td class="number-cell app-col-number">{{ p.cantidad }}</td>
+              <td class="money-cell app-col-number">L. {{ p.costo | number:'1.2-2' }}</td>
+              <td class="money-cell app-col-number">L. {{ p.precio | number:'1.2-2' }}</td>
+              <td class="status-cell app-col-center">
                 <div class="status-group">
                   @if (puedeCambiarEstado(p)) {
                     <mat-slide-toggle class="status-toggle" [checked]="p.activo" [disabled]="cambiandoEstado()" (change)="cambiarEstado(p, $event)" [aria-label]="(p.activo ? 'Desactivar ' : 'Activar ') + p.nombre"></mat-slide-toggle>
@@ -177,54 +177,7 @@
       </table>
     </div>
 
-    <div class="cards-mobile">
-      @for (p of productos(); track p.id) {
-        <article class="item-card producto-card">
-          <div class="producto-card-top">
-            <div class="thumb-wrapper">
-              <app-producto-imagen
-                variant="card"
-                [src]="p.imagenPrincipalUrl"
-                [alt]="'Imagen principal de ' + p.nombre"
-                [fallbackLabel]="p.nombre + ' no tiene imagen disponible'"
-                loading="lazy">
-              </app-producto-imagen>
-              @if (p.totalImagenes > 1) {
-                <span class="img-count" [attr.aria-label]="(p.totalImagenes - 1) + ' imágenes adicionales'">+{{ p.totalImagenes - 1 }}</span>
-              }
-            </div>
-            <div class="producto-card-info">
-              <strong>{{ p.nombre }}</strong>
-              <span class="producto-card-sub">{{ p.marca }} · {{ p.modelo }}</span>
-              <span class="producto-card-sub">{{ p.colorNombre || 'Sin color' }} · {{ p.tallaNombre || 'Sin talla' }}</span>
-              <span class="producto-card-sub">{{ p.categoriaNombre || 'Sin categoría' }}</span>
-            </div>
-            @if (puedeCambiarEstado(p)) {
-              <mat-slide-toggle class="status-toggle" [checked]="p.activo" [disabled]="cambiandoEstado()" (change)="cambiarEstado(p, $event)" [aria-label]="(p.activo ? 'Desactivar ' : 'Activar ') + p.nombre"></mat-slide-toggle>
-            }
-          </div>
-          <div class="item-card-meta">
-            <span>Stock: <strong>{{ p.cantidad }}</strong></span>
-            <span>Precio: <strong>L. {{ p.precio | number:'1.2-2' }}</strong></span>
-            <span class="badge" [class.success]="p.activo" [class.muted]="!p.activo">{{ p.activo ? 'Activo' : 'Inactivo' }}</span>
-            @if (p.activo && p.estaAgotado) {
-              <span class="badge danger">Agotado</span>
-            }
-          </div>
-          <div class="item-card-actions">
-            <button type="button"  (click)="abrirProducto('ver', p.id)" mat-button><mat-icon>visibility</mat-icon><span>Ver</span></button>
-            @if (puedeEditar()) {
-              <button type="button"  (click)="abrirProducto('editar', p.id)" mat-button><mat-icon>edit</mat-icon><span>Editar</span></button>
-            }
-            @if (puedeEliminar()) {
-              <button class="action-delete" mat-button (click)="eliminar(p)"><mat-icon>delete</mat-icon><span>Eliminar</span></button>
-            }
-          </div>
-        </article>
-      } @empty {
-        <p class="empty">No se encontraron productos con los filtros seleccionados.</p>
-      }
-    </div>
+    
 
     <mat-paginator [length]="totalCount()" [pageSize]="pageSize" [pageIndex]="page - 1" [pageSizeOptions]="[10, 25, 50]" (page)="onPageChange($event)"></mat-paginator>
   }

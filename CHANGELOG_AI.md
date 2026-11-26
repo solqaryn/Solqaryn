@@ -1,3 +1,8 @@
+## 2026-11-25 — QA: tablas institucionales de productos, categorías, roles y medios de pago
+
+- Productos conserva columnas, miniaturas, acciones, filtros y paginación en tabla única desplazable. Categorías y roles incorporan filtros de búsqueda/estado, conteo y tabla compartida; acciones de eliminación/duplicado revalidan contexto y permiso. Métodos de pago agrega filtros, bloquea reordenación mientras hay filtrado y usa control compartido para confirmaciones.
+- Sin cambios de API o datos; CI y revisión visual exact-SHA pendientes.
+
 ## 2026-11-25 — QA: almacenes y ubicaciones internas migrados
 
 - Apertura de formularios en modal L con permisos, confirmación de altas/ediciones/estado/eliminación; scroll propio y tabla institucional única, conservando filtros, paginación, relaciones padre y sucursal. Sin cambios de inventario, datos o API. CI y revisión visual pendientes.

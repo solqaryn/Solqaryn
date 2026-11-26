@@ -1,5 +1,9 @@
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
+import { crearAccionesInstitucionales } from '../../shared/modal-institucional/acciones-institucionales';
 import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
-import { Component, OnInit, signal, ChangeDetectionStrategy, inject, DestroyRef } from '@angular/core';
+import { Component, OnInit, signal, computed, ChangeDetectionStrategy, inject, DestroyRef } from '@angular/core';
 
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
@@ -18,12 +22,18 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
 @Component({
   selector: 'app-roles-list',
   standalone: true,
-  imports: [ConsultaRegistroDirective, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatSlideToggleModule],
+  imports: [MatFormFieldModule, MatInputModule, MatSelectModule, ConsultaRegistroDirective, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatSlideToggleModule],
   templateUrl: './roles-list.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './roles-list.component.scss'
 })
 export class RolesListComponent implements OnInit {
+  private readonly acciones = crearAccionesInstitucionales('Roles');
+  readonly buscar = signal('');
+  readonly estadoFiltro = signal<'todos' | 'activos' | 'inactivos'>('todos');
+  readonly visibles = computed(() => { const termino = this.buscar().trim().toLocaleLowerCase('es-HN'); return this.roles().filter(item => (!termino || item.nombre.toLocaleLowerCase('es-HN').includes(termino)) && (this.estadoFiltro() === 'todos' || item.activo === (this.estadoFiltro() === 'activos'))); });
+  limpiarFiltros(): void { this.buscar.set(''); this.estadoFiltro.set('todos'); }
+
   private readonly dialog = inject(MatDialog);
   private readonly tenant = inject(TenantContextService);
   private readonly destroyRef = inject(DestroyRef);
@@ -104,7 +114,7 @@ export class RolesListComponent implements OnInit {
   async eliminar(rol: Rol): Promise<void> {
     if (!this.puedeEliminar() || rol.esSistema || rol.cantidadUsuarios > 0) return;
 
-    const confirmado = await this.alerts.confirmar({
+    const confirmado = await this.acciones.confirmar('EliminarLogico', {
       titulo: 'Eliminar rol',
       mensaje: `Se eliminará el rol "${rol.nombre}".`,
       detalle: 'El rol quedará inactivo y la operación se registrará en auditoría.',
@@ -122,7 +132,7 @@ export class RolesListComponent implements OnInit {
   async duplicar(rol: Rol): Promise<void> {
     if (!this.puedeDuplicar()) return;
 
-    const nuevoNombre = await this.alerts.solicitarTexto({
+    const nuevoNombre = await this.acciones.solicitarTexto('Duplicar', {
       titulo: 'Duplicar rol',
       mensaje: `Define el nombre de la copia de "${rol.nombre}".`,
       confirmarTexto: 'Crear copia',

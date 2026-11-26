@@ -287,13 +287,8 @@ mat-paginator {
 }
 
 @media (max-width: 920px) {
-  .table-desktop {
-    display: none;
-  }
-
-  .table-scroll {
-    display: none;
-  }
+  .table-desktop { display: table; }
+  .table-scroll { display: block; }
 
   .cards-mobile {
     display: flex;
