@@ -1,0 +1,62 @@
+name: QA - FN-05 reportes, plataforma y navegador autenticados
+on:
+  push:
+    branches: [qa]
+    paths:
+      - '.github/workflows/qa-fn-05-final-live.yml'
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: qa-fn-05-live-admin
+  cancel-in-progress: false
+jobs:
+  final-live:
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == '54ece72064137f9e47307a3e5873285c7fc97355'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: QA
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Validar scope, código desplegado y evidencia causal
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = refs/heads/qa
+          node scripts/verify-project-scope.mjs
+          python3 -m py_compile .github/qa/qa-fn-05-final-live.py
+          node --check .github/qa/qa-fn-05-final-ui.mjs
+          git diff --exit-code "54ece72064137f9e47307a3e5873285c7fc97355" HEAD -- backend frontend render.yaml
+          gh api repos/solqaryn/Solqaryn/actions/jobs/140136672757 | jq -e '.head_sha == "54ece72064137f9e47307a3e5873285c7fc97355" and .conclusion == "success"' >/dev/null
+          gh api repos/solqaryn/Solqaryn/actions/runs/45883190610 | jq -e '.head_branch == "qa" and .status == "completed" and .conclusion == "success"' >/dev/null
+          echo QA_FN05_FINAL_CAUSAL_EVIDENCE=PASS
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Preparar cliente SQL, BCrypt y PDF
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y mysql-client apache2-utils poppler-utils
+      - name: Preparar Chromium de QA
+        working-directory: frontend
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Certificación física y funcional real QA
+        env:
+          EXPECTED_DEPLOYED_SHA: '54ece72064137f9e47307a3e5873285c7fc97355'
+          DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
+          DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
+          DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}
+          DB_USER: ${{ vars.SOLQARYN_QA_DB_USER }}
+          DB_PASSWORD: ${{ secrets.SOLQARYN_QA_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          python3 .github/qa/qa-commercial-schema.py --live
+          python3 .github/qa/qa-fn-05-final-live.py

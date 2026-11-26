@@ -1,3 +1,9 @@
+## 2026-11-26 — QA-FN-05: certificación real de exportaciones, plataforma y navegador
+
+- Backend 2499/2499 PASS run 45885943600 job 140136672757 y esquema Oracle read-only 45885943692 PASS. Runtime 54ece72064137f9e47307a3e5873285c7fc97355; Render QA dep-dc48ppbl550s738hjq70. Se conserva auditoría autenticada ya aprobada run 45883190610.
+- Probe dirigido comprueba tres tipos de reportes en CSV/XLSX/PDF A/B, integridad y contenido de archivos, denegaciones cruzadas, operador y anónimo. Catálogo de plataforma append-only de cinco permisos canónicos, sin modificar grants anteriores. Prueba de autoridad global con identidad desechable, CRUD de empresa de prueba, revocación y lectura separada; no escribe identidad ni tema global. Navegador real desktop/móvil, login, rutas de administración y catálogos, configuración y descargas; evidencia de contenido sin publicar PII, capturas, tokens ni archivos. Limpieza acotada a fixtures.
+- Sin cambios de aplicación, migraciones ni automatizaciones. Ejecución condicionada a atestación externa del SHA desplegado. Scope Lock DEV 6dd92a5c06f2a0e85f9faf4ba6a6257721d86abe job 140136683840 PASS. Referencias originales SKREF-10/11 consultadas. Cierre pendiente de evidencia causal y comprobación posterior de despliegues.
+
 ## 2026-11-26 — QA-FN-05: regresión histórica de autoridad de empresas
 
 - Run 45885493703 job 140135048384: Release compila, 2493/2497 pruebas PASS; cuatro fallos N61G esperaban CONFIGURACION empresarial en mutaciones de directorio raíz. Nuevo contrato requiere CONFIGURACIONPLATAFORMA y gate explícito de plataforma; no modificar runtime ni conceder permisos.
