@@ -1,3 +1,6 @@
+## 2026-11-25 | DEV03 | C01-04.M03.06 | R1-RESTAURADA
+- V44R1-J20-B132C078-C0104M0306-DENIAL-READBACK: verifica recibo de denegación compensatoria GLOBAL antes de COMMIT, rollback de PriorAuditId alterado, preserva 403 y recibo original. Prueba HTTP/JWT/MySQL efímero, sin grants/migración/infra; CI y A5 independientes pendientes. RUN=b132c078-a2fc-8321-97f4-270c111ca623; base=556c417b1aa3f5db68c147323fba04c05f0f232d.
+
 ## 2026-11-25 | DEV01 | C01-04.M03.06 | R1-RESTAURADA
 - V44R1-J00-E6263A76-C0104M0306-GLOBAL-AUDIT-READBACK: confirma recibo GLOBAL antes de COMMIT, rechazo de mutaciones SQL silenciosas, rollback y recuperación en prueba HTTP/JWT/MySQL existente. Sin modificar grants ni datos comerciales; CI exact-SHA y A5 independiente pendientes.
 

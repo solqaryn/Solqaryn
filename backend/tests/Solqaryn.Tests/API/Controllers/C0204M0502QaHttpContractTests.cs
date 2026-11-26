@@ -470,6 +470,50 @@ public sealed class C0204M0502QaHttpContractTests
                 Assert.False((await after.Set<UsuarioRolPlataforma>().SingleAsync(
                     x => x.UsuarioId == fixture.GlobalId)).Activa);
             }
+
+            // The prior receipt is already durable; a silently mutated
+            // compensation must not invent its causal link.
+            using (var scope = fixture.Host.Services.CreateScope())
+            {
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                var grant = await db.Set<UsuarioRolPlataforma>().SingleAsync(
+                    x => x.UsuarioId == fixture.GlobalId);
+                grant.Activar();
+                await db.SaveChangesAsync();
+                await db.Database.ExecuteSqlRawAsync(
+                    "CREATE TRIGGER qa_ci_mutate_compensation BEFORE INSERT ON RegistrosAuditoria " +
+                    "FOR EACH ROW SET NEW.ValoresNuevos = IF(NEW.Entidad = 'DenegacionEvidenciasQaGlobal', " +
+                    "JSON_SET(NEW.ValoresNuevos, '$.PriorAuditId', 0), NEW.ValoresNuevos)");
+            }
+            try
+            {
+                var mutatedCorrelation = Guid.NewGuid().ToString("N");
+                upstream.Payload = Payload();
+                using var request = new HttpRequestMessage(HttpMethod.Get, Path);
+                request.Headers.Add(CorrelationIdMiddleware.HeaderName, mutatedCorrelation);
+                using var response = await client.SendAsync(request);
+                Assert.Equal(HttpStatusCode.Forbidden, response.StatusCode);
+                Assert.Contains("no-store", response.Headers.CacheControl?.ToString() ?? "");
+                var body = await response.Content.ReadAsStringAsync();
+                Assert.DoesNotContain("CI_MINIMA_ACREDITADA", body);
+                Assert.DoesNotContain("PriorAuditId", body);
+                Assert.DoesNotContain("qa_ci_mutate_compensation", body);
+
+                using var scopeAfter = fixture.Host.Services.CreateScope();
+                var after = scopeAfter.ServiceProvider.GetRequiredService<AppDbContext>();
+                var prior = Assert.Single(await after.Set<RegistroAuditoria>().Where(
+                    x => x.CorrelationId == mutatedCorrelation).ToListAsync());
+                Assert.Equal("ConsultaEvidenciasQaGlobal", prior.Entidad);
+                Assert.Equal("Exito", prior.Resultado);
+                Assert.False((await after.Set<UsuarioRolPlataforma>().SingleAsync(
+                    x => x.UsuarioId == fixture.GlobalId)).Activa);
+            }
+            finally
+            {
+                using var scope = fixture.Host.Services.CreateScope();
+                var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+                await db.Database.ExecuteSqlRawAsync("DROP TRIGGER IF EXISTS qa_ci_mutate_compensation");
+            }
         }
         finally
         {

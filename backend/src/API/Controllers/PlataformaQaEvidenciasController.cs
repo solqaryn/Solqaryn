@@ -118,7 +118,7 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
         {
             try
             {
-                _db.Set<RegistroAuditoria>().Add(new RegistroAuditoria
+                var denial = new RegistroAuditoria
                 {
                     UsuarioId = authenticatedActorId,
                     NombreUsuario = "actor-autenticado",
@@ -146,8 +146,11 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                         }),
                     Resultado = "Error",
                     Error = "QA_ACCESS_DENIED"
-                });
-                await _db.SaveChangesAsync(cancellationToken);
+                };
+                if (!await PersistirConsultaAuditadaAsync(denial, cancellationToken) &&
+                    HttpContext.RequestServices.GetService(typeof(ILogger<PlataformaQaEvidenciasController>))
+                        is ILogger<PlataformaQaEvidenciasController> logger)
+                    logger.LogWarning("QA_ACCESS_DENIAL_AUDIT_UNAVAILABLE");
             }
             catch (DbUpdateException)
             {
