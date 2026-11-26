@@ -1,3 +1,4 @@
+import { TenantContextoVerificado } from '../../core/auth/tenant-context.service';
 import { crearAccionesInstitucionales } from '../../shared/modal-institucional/acciones-institucionales';
 import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 
@@ -177,9 +178,13 @@ export class MetodosPagoComponent implements OnInit {
   private readonly dialog = inject(MatDialog, { optional: true });
   @ViewChild('formularioModal') private formularioModal?: TemplateRef<unknown>;
   private editorRef?: MatDialogRef<unknown>;
+  private contextoEditor: TenantContextoVerificado | null = null;
   readonly cambiandoEstado = signal(false);
 
   private abrirFormulario(): void {
+    const contexto = this.acciones.contexto();
+    if (!this.acciones.vigente(contexto, this.editandoId() ? 'Editar' : 'Crear')) return;
+    this.contextoEditor = contexto;
     this.mostrandoFormulario.set(true);
     if (!this.formularioModal || !this.dialog) return;
     const ref = this.dialog.open(this.formularioModal, modalInstitucional('l', { ariaLabel: this.editandoId() ? 'Editar registro' : 'Crear registro' }));
@@ -317,7 +322,7 @@ export class MetodosPagoComponent implements OnInit {
     const id = this.editandoId();
     this.saving.set(true);
     const confirmado = await this.acciones.confirmar(id ? 'Editar' : 'Crear', { titulo: id ? 'Confirmar actualización' : 'Confirmar creación', mensaje: '¿Deseas guardar los cambios del método de pago?', confirmarTexto: 'Guardar' }).catch(() => false);
-    if (!confirmado || !this.mostrandoFormulario() || !this.permisos.puede('MetodosPago', id ? 'Editar' : 'Crear')) { this.saving.set(false); return; }
+    if (!confirmado || !this.mostrandoFormulario() || !this.acciones.vigente(this.contextoEditor, id ? 'Editar' : 'Crear')) { this.saving.set(false); return; }
     const request$ = id
       ? this.service.update(id, base)
       : this.service.create({ ...base, codigo: raw.codigo!.trim().toUpperCase() } satisfies MetodoPagoCreate);

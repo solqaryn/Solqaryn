@@ -1,6 +1,6 @@
 import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 
-import { Component, OnInit, inject, signal, ChangeDetectionStrategy, TemplateRef, ViewChild, computed } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy, TemplateRef, ViewChild, computed, effect } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -17,7 +17,8 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { CatalogoProductoService } from '../../services/catalogo-producto.service';
 import { CatalogoProducto, TipoCatalogoProducto } from '../../core/models/catalogo-producto.model';
 import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
-import { AppAlertService } from '../../shared/alerts/app-alert.service';
+import { crearAccionesInstitucionales } from '../../shared/modal-institucional/acciones-institucionales';
+import { TenantContextoVerificado } from '../../core/auth/tenant-context.service';
 
 @Component({
   selector: 'app-catalogo-producto-list',
@@ -42,13 +43,16 @@ export class CatalogoProductoListComponent implements OnInit {
   private readonly service = inject(CatalogoProductoService);
   private readonly permisos = inject(PermisosRuntimeService);
   private readonly snackBar = inject(MatSnackBar);
-  private readonly alerts = inject(AppAlertService);
   private readonly dialog = inject(MatDialog, { optional: true });
   @ViewChild('formularioModal') private formularioModal?: TemplateRef<unknown>;
   private editorRef?: MatDialogRef<unknown>;
+  private contextoEditor: TenantContextoVerificado | null = null;
   readonly cambiandoEstado = signal(false);
 
   private abrirFormulario(): void {
+    const contexto = this.acciones.contexto();
+    if (!this.acciones.vigente(contexto, this.editandoId() ? 'Editar' : 'Crear')) return;
+    this.contextoEditor = contexto;
     this.mostrandoFormulario.set(true);
     if (!this.formularioModal || !this.dialog) return;
     const ref = this.dialog.open(this.formularioModal, modalInstitucional('m', { ariaLabel: this.editandoId() ? 'Editar registro' : 'Crear registro' }));
@@ -63,6 +67,7 @@ export class CatalogoProductoListComponent implements OnInit {
 
   readonly tipo = this.route.snapshot.data['tipo'] as TipoCatalogoProducto;
   readonly modulo = this.route.snapshot.data['modulo'] as string;
+  private readonly acciones = crearAccionesInstitucionales(this.modulo);
   readonly titulo = this.route.snapshot.data['titulo'] as string;
   readonly singular = this.route.snapshot.data['singular'] as string;
   readonly icono = this.route.snapshot.data['icono'] as string;
@@ -99,6 +104,14 @@ export class CatalogoProductoListComponent implements OnInit {
     orden: [0, [Validators.required, Validators.min(0)]],
     catalogoPadreId: [null as number | null]
   });
+
+  constructor() {
+    effect(() => {
+      if (this.mostrandoFormulario() && this.contextoEditor !== this.acciones.contexto()) {
+        this.editorRef?.close(); this.mostrandoFormulario.set(false); this.editandoId.set(null);
+      }
+    });
+  }
 
   get esColor(): boolean { return this.tipo === 'Color'; }
   get esModelo(): boolean { return this.tipo === 'Modelo'; }
@@ -184,8 +197,8 @@ export class CatalogoProductoListComponent implements OnInit {
     }
 
     this.saving.set(true);
-    const confirmado = await this.alerts.confirmar({ titulo: this.editandoId() ? 'Confirmar actualización' : 'Confirmar creación', mensaje: '¿Deseas guardar los datos de este registro?', confirmarTexto: 'Guardar' }).catch(() => false);
-    if (!confirmado || !this.mostrandoFormulario() || !this.permisos.puede(this.modulo, this.editandoId() ? 'Editar' : 'Crear')) { this.saving.set(false); return; }
+    const confirmado = await this.acciones.confirmar(this.editandoId() ? 'Editar' : 'Crear', { titulo: this.editandoId() ? 'Confirmar actualización' : 'Confirmar creación', mensaje: '¿Deseas guardar los datos de este registro?', confirmarTexto: 'Guardar' }).catch(() => false);
+    if (!confirmado || !this.mostrandoFormulario() || !this.acciones.vigente(this.contextoEditor, this.editandoId() ? 'Editar' : 'Crear')) { this.saving.set(false); return; }
     const raw = this.form.getRawValue();
     const value = {
       nombre: raw.nombre!.trim(),
@@ -224,7 +237,7 @@ export class CatalogoProductoListComponent implements OnInit {
     this.cambiandoEstado.set(true);
     try {
       const accion = elemento.activo ? 'Desactivar' : 'Activar';
-      const confirmado = await this.alerts.confirmar({ titulo: accion + ' registro', mensaje: '¿Deseas ' + accion.toLowerCase() + ' «' + elemento.nombre + '»?', confirmarTexto: accion });
+      const confirmado = await this.acciones.confirmar(accion, { titulo: accion + ' registro', mensaje: '¿Deseas ' + accion.toLowerCase() + ' «' + elemento.nombre + '»?', confirmarTexto: accion });
       if (!confirmado || !this.permisos.puede(this.modulo, accion)) return;
       const request$ = elemento.activo
       ? this.service.desactivar(this.tipo, elemento.id)
@@ -237,7 +250,7 @@ export class CatalogoProductoListComponent implements OnInit {
   }
 
   async eliminar(elemento: CatalogoProducto): Promise<void> {
-    const confirmado = await this.alerts.confirmar({
+    const confirmado = await this.acciones.confirmar('EliminarLogico', {
       titulo: `Eliminar ${this.singular.toLowerCase()}`,
       mensaje: `Se ocultará “${elemento.nombre}” sin borrar el historial relacionado.`,
       tipo: 'peligro',

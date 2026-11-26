@@ -1,3 +1,9 @@
+# QA — 2026-11-25 — Regresión visual institucional y contexto de editores
+
+- Catálogos y métodos de pago retienen contexto verificado al abrir el formulario y lo revalidan antes de escribir; no se autoriza el guardado con otra empresa.
+- Playwright dirigido a tallas: dos viewports, tabla alineada sin desborde de página, consulta y confirmación sin cierre accidental, conservación de datos al cancelar, y POST/PATCH solo tras aceptar. API sintética, sin mutaciones de datos reales. Se incorporan al CI QA existente y se guardan capturas.
+- La certificación efectiva depende del resultado del workflow exacto y no sustituye revisión autenticada de otros módulos.
+
 # QA — 2026-11-25 — Recuperación de acciones de variantes en diálogo institucional
 
 - Productos conserva acceso visible a variantes y existencias, apertura XL con autorización y contexto de empresa, confirmaciones de guardado/estado/galería, y actualización del listado al cerrar. Detalle conserva acciones autorizadas como operaciones independientes.

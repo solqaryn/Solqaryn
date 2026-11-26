@@ -3,6 +3,7 @@ import { FormBuilder } from '@angular/forms';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 import { of } from 'rxjs';
+import { TenantContextService } from '../../core/auth/tenant-context.service';
 import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
 import { TipoCatalogoProducto } from '../../core/models/catalogo-producto.model';
 import { CatalogoProductoService } from '../../services/catalogo-producto.service';
@@ -12,6 +13,8 @@ import { CatalogoProductoListComponent } from './catalogo-producto-list.componen
 describe('CatalogoProductoListComponent: longitud del nombre', () => {
   const route = { snapshot: { data: { tipo: 'Talla' as TipoCatalogoProducto, singular: 'Talla', titulo: 'Tallas' } } };
   const confirmar = vi.fn(async () => true);
+  const contextoOriginal = { empresaId: 1, usuarioId: 1, rolId: 1 };
+  let contexto = contextoOriginal;
   const service = {
     create: vi.fn(() => of({ data: {} })),
     update: vi.fn(() => of({ data: {} })),
@@ -21,6 +24,7 @@ describe('CatalogoProductoListComponent: longitud del nombre', () => {
   beforeEach(() => {
     vi.clearAllMocks();
     confirmar.mockResolvedValue(true);
+    contexto = contextoOriginal;
     TestBed.configureTestingModule({
       providers: [
         FormBuilder,
@@ -28,7 +32,8 @@ describe('CatalogoProductoListComponent: longitud del nombre', () => {
         { provide: CatalogoProductoService, useValue: service },
         { provide: PermisosRuntimeService, useValue: { puede: () => true } },
         { provide: MatSnackBar, useValue: { open: vi.fn() } },
-        { provide: AppAlertService, useValue: { confirmar } }
+        { provide: AppAlertService, useValue: { confirmar } },
+        { provide: TenantContextService, useValue: { contextoVerificado: () => contexto } }
       ]
     });
   });
@@ -75,6 +80,15 @@ describe('CatalogoProductoListComponent: longitud del nombre', () => {
     expect(component.mostrandoFormulario()).toBe(true);
     expect(component.form.controls.nombre.value).toBe('M');
     expect(component.saving()).toBe(false);
+  });
+
+  it('no guarda un formulario abierto bajo otra empresa', async () => {
+    const component = componentFor('Talla');
+    component.nuevo();
+    component.form.controls.nombre.setValue('M');
+    contexto = { empresaId: 2, usuarioId: 1, rolId: 1 };
+    await component.guardar();
+    expect(service.create).not.toHaveBeenCalled();
   });
 
   it.each<TipoCatalogoProducto>(['Color', 'Marca', 'Modelo'])('conserva el mínimo de dos caracteres en %s', tipo => {
