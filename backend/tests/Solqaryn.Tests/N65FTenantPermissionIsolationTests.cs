@@ -1,3 +1,5 @@
+using System.Reflection;
+using Solqaryn.API.Controllers;
 using Solqaryn.API.Filters;
 using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Exceptions;
@@ -96,6 +98,79 @@ public sealed class N65FTenantPermissionIsolationTests
         Assert.Equal(23, fake.EmpresaVerificada);
         Assert.Equal(23, context.HttpContext.Items["SOLQARYN_AUTHORIZED_EMPRESA_ID"]);
         Assert.False(fake.LegacyInvocado);
+    }
+
+    [Theory]
+    [InlineData("23")]
+    [InlineData("0")]
+    [InlineData("invalida")]
+    [InlineData(null)]
+    public async Task RequierePermiso_tenant_owned_rechaza_ruta_distinta_o_invalida(string? empresaRuta)
+    {
+        // Even when the actor has the required grant in tenant 17, it must
+        // never be applied to a different route tenant.
+        var fake = new TenantAwarePermisoService();
+        var context = CreateContext(fake, empresaId: 17);
+        if (empresaRuta is not null)
+            context.RouteData.Values["empresaId"] = empresaRuta;
+        var filter = new RequierePermisoAttribute(ModuloSistema.Configuracion, AccionPermiso.Editar)
+        {
+            VincularEmpresaRuta = true
+        };
+        var nextInvoked = false;
+        await Assert.ThrowsAsync<ForbiddenAccessException>(() =>
+            filter.OnActionExecutionAsync(context, () =>
+            {
+                nextInvoked = true;
+                return CreateNext(context)();
+            }));
+
+        Assert.False(nextInvoked);
+        Assert.Null(fake.EmpresaVerificada);
+        Assert.False(fake.LegacyInvocado);
+        Assert.False(context.HttpContext.Items.ContainsKey("SOLQARYN_AUTHORIZED_EMPRESA_ID"));
+    }
+
+    [Fact]
+    public async Task RequierePermiso_tenant_owned_acepta_solo_la_empresa_autorizada()
+    {
+        var fake = new TenantAwarePermisoService();
+        var context = CreateContext(fake, empresaId: 17);
+        context.RouteData.Values["empresaId"] = "17";
+        var filter = new RequierePermisoAttribute(ModuloSistema.Configuracion, AccionPermiso.Ver)
+        {
+            VincularEmpresaRuta = true
+        };
+        var nextInvoked = false;
+        await filter.OnActionExecutionAsync(context, () =>
+        {
+            nextInvoked = true;
+            return CreateNext(context)();
+        });
+        Assert.True(nextInvoked);
+        Assert.Equal(17, fake.EmpresaVerificada);
+        Assert.Equal(17, context.HttpContext.Items["SOLQARYN_AUTHORIZED_EMPRESA_ID"]);
+        Assert.False(fake.LegacyInvocado);
+    }
+
+    [Theory]
+    [InlineData(typeof(EmpresaConfiguracionController), nameof(EmpresaConfiguracionController.GetTenant))]
+    [InlineData(typeof(EmpresaConfiguracionController), nameof(EmpresaConfiguracionController.UpdateTenant))]
+    [InlineData(typeof(EmpresaConfiguracionController), nameof(EmpresaConfiguracionController.UpdateTenantLogo))]
+    [InlineData(typeof(EmpresaConfiguracionController), nameof(EmpresaConfiguracionController.RestaurarTenantLogo))]
+    [InlineData(typeof(EmpresaConfiguracionController), nameof(EmpresaConfiguracionController.UpsertPlantillaTenant))]
+    [InlineData(typeof(EmpresaConfiguracionController), nameof(EmpresaConfiguracionController.DesactivarPlantillaTenant))]
+    [InlineData(typeof(SuscripcionesSaaSController), nameof(SuscripcionesSaaSController.Onboarding))]
+    [InlineData(typeof(SuscripcionesSaaSController), nameof(SuscripcionesSaaSController.ObtenerActual))]
+    [InlineData(typeof(SuscripcionesSaaSController), nameof(SuscripcionesSaaSController.ObtenerLimites))]
+    [InlineData(typeof(SuscripcionesSaaSController), nameof(SuscripcionesSaaSController.EvaluarModulo))]
+    public void Accion_administrativa_tenant_owned_vincula_ruta_y_autorizacion(Type controller, string methodName)
+    {
+        var method = controller.GetMethod(methodName);
+        Assert.NotNull(method);
+        var attribute = method!.GetCustomAttribute<RequierePermisoAttribute>();
+        Assert.NotNull(attribute);
+        Assert.True(attribute!.VincularEmpresaRuta);
     }
 
     private static ActionExecutingContext CreateContext(

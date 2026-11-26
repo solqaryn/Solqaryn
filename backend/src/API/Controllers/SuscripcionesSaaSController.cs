@@ -49,7 +49,7 @@ public sealed class SuscripcionesSaaSController : ControllerBase
     }
 
     [HttpPost("onboarding")]
-    [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Crear)]
+    [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Crear, VincularEmpresaRuta = true)]
     public async Task<IActionResult> Onboarding(
         int empresaId,
         [FromHeader(Name = "Idempotency-Key")] string? idempotencyKey,
@@ -80,7 +80,7 @@ public sealed class SuscripcionesSaaSController : ControllerBase
     }
 
     [HttpGet("suscripcion")]
-    [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Ver)]
+    [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Ver, VincularEmpresaRuta = true)]
     public async Task<IActionResult> ObtenerActual(
         int empresaId,
         [FromQuery] DateTime? instanteUtc,
@@ -95,7 +95,7 @@ public sealed class SuscripcionesSaaSController : ControllerBase
     }
 
     [HttpGet("limites")]
-    [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Ver)]
+    [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Ver, VincularEmpresaRuta = true)]
     public async Task<IActionResult> ObtenerLimites(
         int empresaId,
         [FromQuery] int pagina = 1,
@@ -109,7 +109,7 @@ public sealed class SuscripcionesSaaSController : ControllerBase
     }
 
     [HttpGet("modulos/{moduloClave}/entitlement")]
-    [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Ver)]
+    [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Ver, VincularEmpresaRuta = true)]
     public async Task<IActionResult> EvaluarModulo(
         int empresaId,
         string moduloClave,

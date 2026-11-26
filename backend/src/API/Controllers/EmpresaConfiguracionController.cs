@@ -67,7 +67,7 @@ public class EmpresaConfiguracionController : ControllerBase
 
     [HttpGet("tenant/{empresaId:int}")]
     [Authorize]
-    [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Ver)]
+    [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Ver, VincularEmpresaRuta = true)]
     public async Task<IActionResult> GetTenant(int empresaId, CancellationToken cancellationToken)
     {
         var config = await _service.GetTenantAsync(empresaId, cancellationToken);
@@ -76,7 +76,7 @@ public class EmpresaConfiguracionController : ControllerBase
 
     [HttpPut("tenant/{empresaId:int}")]
     [Authorize]
-    [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Editar)]
+    [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Editar, VincularEmpresaRuta = true)]
     public async Task<IActionResult> UpdateTenant(
         int empresaId,
         [FromBody] UpdateConfigEmpresaTenantDto dto,
@@ -89,7 +89,7 @@ public class EmpresaConfiguracionController : ControllerBase
     [HttpPost("tenant/{empresaId:int}/logo")]
     [Authorize]
     [RequestSizeLimit(5 * 1024 * 1024)]
-    [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Editar)]
+    [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Editar, VincularEmpresaRuta = true)]
     public async Task<IActionResult> UpdateTenantLogo(
         int empresaId,
         IFormFile logo,
@@ -101,7 +101,7 @@ public class EmpresaConfiguracionController : ControllerBase
 
     [HttpDelete("tenant/{empresaId:int}/logo")]
     [Authorize]
-    [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Editar)]
+    [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Editar, VincularEmpresaRuta = true)]
     public async Task<IActionResult> RestaurarTenantLogo(int empresaId, CancellationToken cancellationToken)
     {
         var actualizada = await _service.RestaurarTenantLogoAsync(empresaId, cancellationToken);
@@ -110,7 +110,7 @@ public class EmpresaConfiguracionController : ControllerBase
 
     [HttpPut("tenant/{empresaId:int}/plantillas/{tipoPlantilla}")]
     [Authorize]
-    [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Editar)]
+    [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Editar, VincularEmpresaRuta = true)]
     public async Task<IActionResult> UpsertPlantillaTenant(
         int empresaId,
         string tipoPlantilla,
@@ -127,7 +127,7 @@ public class EmpresaConfiguracionController : ControllerBase
 
     [HttpDelete("tenant/{empresaId:int}/plantillas/{tipoPlantilla}")]
     [Authorize]
-    [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Editar)]
+    [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Editar, VincularEmpresaRuta = true)]
     public async Task<IActionResult> DesactivarPlantillaTenant(
         int empresaId,
         string tipoPlantilla,
