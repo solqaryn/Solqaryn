@@ -11464,3 +11464,8 @@
 
 ## 2026-11-26 | DEV05 | C01-04.M03.06 | P12 durable target correlation boundary (R1/R5)
 - TASK_ID=6adc2e55f47c81919f6374e561687076; RUN_ID=1285c0e9-65ec-8324-bb24-deb5192e11a9; base 80303459e87747d83c8f4d5195fe0311702fd980; V17 H271:I271. Enforce same tenant/case/branch target receipt existence and unambiguous version in the durable API12 primitive before INSERT and re-read after authorized persistence; internal callers cannot create dangling target links. Oracle fixture adds direct negative missing-target/no-write and positive existing-target/rollback, preserves existing JWT A/B/replay assertions. A0 three exact anchors; SKREF-11 pinned trust-boundary review; no external execution. No route/DI/DDL/grant/retention change; actual resource mapping and separate P01/P02 write authority remain unaccredited. A1-A4 exact-SHA CI and corrective independent A5 pending; no LISTO. Rollback normal dev revert.
+
+
+## 2026-11-26 — DEV06 — C01-04.M03.06 — V44/R1/R5
+
+- TASK_ID=6af16bbad26881918c283abe06e1f32a; RUN_ID=70a60be6-0810-832e-86f2-69b7399b7895; base 6dd92a5c06f2a0e85f9faf4ba6a6257721d86abe; P12 now verifies the exact historical P02 composite version row under the caller transaction, not merely version <= MAX. Disposable Oracle integration fixture creates a gap and changes a receipt inside rollback, verifies existing version read, rejects missing exact version and forbids linked receipt persistence. No production data, new grants, retention purge, resource mapping, routes or DI changes. A0 source anchors reviewed; CI exact SHA and independent corrective A5 pending. Rollback normal dev revert; preserve original evidence. Prior Oracle 165/165 source jobs 140116911180 and 140120705668, not equivalent to this change.

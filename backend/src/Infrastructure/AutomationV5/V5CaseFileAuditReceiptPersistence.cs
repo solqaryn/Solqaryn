@@ -124,6 +124,30 @@ public static class V5CaseFileAuditReceiptPersistence
                  previous == Guid.Empty || linked.GetString() != previous.ToString("N"))) return null;
         }
         catch (JsonException) { return null; }
+        // A numeric version below the latest is not proof that P02 actually
+        // contains that historical version (e.g. incomplete restoration or corrupt receipt).
+        // Verify the exact composite version row within the caller's transaction.
+        ct.ThrowIfCancellationRequested();
+        if (!ReferenceEquals(tx, db.Database.CurrentTransaction) ||
+            db.AuthorizedCommercialEmpresaId != expected.TenantId || db.ChangeTracker.HasChanges())
+            return null;
+        await using var versionCheck = db.Database.GetDbConnection().CreateCommand();
+        versionCheck.Transaction = tx.GetDbTransaction();
+        versionCheck.CommandText = """
+            SELECT Version FROM V5CaseFileVersions
+            WHERE EmpresaId=@tenant AND ExpedienteId=@case AND Version=@version FOR SHARE
+            """;
+        foreach (var (name, value) in new (string, object)[]
+        {
+            ("@tenant", expected.TenantId), ("@case", expected.CaseId), ("@version", version)
+        })
+        {
+            var p = versionCheck.CreateParameter(); p.ParameterName = name; p.Value = value; versionCheck.Parameters.Add(p);
+        }
+        var durableVersion = await versionCheck.ExecuteScalarAsync(ct);
+        if (durableVersion is null or DBNull ||
+            Convert.ToInt64(durableVersion, System.Globalization.CultureInfo.InvariantCulture) != version)
+            return null;
         ct.ThrowIfCancellationRequested();
         return ReferenceEquals(tx, db.Database.CurrentTransaction) &&
             db.AuthorizedCommercialEmpresaId == expected.TenantId && !db.ChangeTracker.HasChanges() ? version : null;

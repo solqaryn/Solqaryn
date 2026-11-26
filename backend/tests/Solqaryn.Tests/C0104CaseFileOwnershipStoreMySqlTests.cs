@@ -324,6 +324,46 @@ public sealed class C0104CaseFileOwnershipStoreMySqlTests
             }
             Assert.False(await dbA.Set<RegistroAuditoria>().AsNoTracking()
                 .AnyAsync(r => r.CorrelationId == validLinkOperation.ToString("N")));
+            // Corrupt/gapped historical version simulation confined to the disposable
+            // transaction: a receipt version below MAX is not sufficient P02 provenance.
+            // No deletion, migration or retained audit data is committed by this fixture.
+            var gapOperation = Guid.NewGuid();
+            await using (var gapTx = await dbA.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted))
+            {
+                Assert.Equal(1, await dbA.Database.ExecuteSqlInterpolatedAsync($"""
+                    INSERT INTO V5CaseFileVersions
+                      (EmpresaId,ExpedienteId,Version,ActorId,ContentHash,ReasonCode,FechaUtc)
+                    SELECT EmpresaId,ExpedienteId,4,ActorId,ContentHash,ReasonCode,FechaUtc
+                    FROM V5CaseFileVersions WHERE EmpresaId={a.Id} AND ExpedienteId=1 AND Version=2
+                    """));
+                var gapCandidate = await V5CaseFileOwnershipStore.ReadCandidateForAuditReceiptInCurrentTransactionAsync(
+                    dbA, a.Id, 1, branchA.Id);
+                Assert.NotNull(gapCandidate);
+                Assert.Equal(4L, gapCandidate!.Version);
+                Assert.Equal(2L, await V5CaseFileAuditReceiptPersistence.ReadReceiptVersionInCurrentTransactionAsync(
+                    dbA, gapCandidate, committedCorrelation));
+                Assert.Equal(1, await dbA.Database.ExecuteSqlInterpolatedAsync($"""
+                    UPDATE RegistrosAuditoria SET ValoresNuevos=JSON_SET(ValoresNuevos,'$.Version',3)
+                    WHERE EmpresaId={a.Id} AND ReferenciaId=1 AND CorrelationId={committedCorrelation.ToString("N")}
+                    """));
+                Assert.Null(await V5CaseFileAuditReceiptPersistence.ReadReceiptVersionInCurrentTransactionAsync(
+                    dbA, gapCandidate, committedCorrelation));
+                ValueTask<bool> VerifyGapResource(AppDbContext context,
+                    V5CaseFileOwnershipStore.Candidate current, CancellationToken ct)
+                {
+                    ct.ThrowIfCancellationRequested();
+                    return ValueTask.FromResult(ReferenceEquals(context, dbA) && current == gapCandidate);
+                }
+                Assert.Null(await V5CaseFileAuditReceiptPersistence.AppendEnterpriseInCurrentTransactionAsync(
+                    dbA, gapCandidate, actor, role.Id, role.Id, gapOperation, VerifyGapResource,
+                    targetCorrelation: committedCorrelation));
+                Assert.False(await dbA.Set<RegistroAuditoria>().AsNoTracking()
+                    .AnyAsync(r => r.CorrelationId == gapOperation.ToString("N")));
+                await gapTx.RollbackAsync();
+            }
+            Assert.Equal(auditCandidate, await storeA.ReadCandidateAsync(a.Id, 1, branchA.Id));
+            Assert.False(await dbA.Set<RegistroAuditoria>().AsNoTracking()
+                .AnyAsync(r => r.CorrelationId == gapOperation.ToString("N")));
             // Real JwtBearer signature validation plus real Oracle grant/receipt locks.
             // Preliminary permission projection and resource mapping are explicit fixtures:
             // this is not a commercial HTTP/DI or authentic-resource certification.
