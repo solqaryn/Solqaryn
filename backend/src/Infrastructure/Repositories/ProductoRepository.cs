@@ -36,6 +36,22 @@ public class ProductoRepository : IProductoRepository
             .AsTracking().FirstOrDefaultAsync();
     }
 
+    public async Task<List<Producto>> GetByIdsForReadLockAsync(IEnumerable<int> ids)
+    {
+        if (_context.Database.CurrentTransaction is null)
+            throw new InvalidOperationException("GetByIdsForReadLockAsync requiere una transacción activa.");
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
+        var result = new List<Producto>();
+        foreach (var id in ids.Distinct().OrderBy(x => x))
+        {
+            var row = await _context.Productos
+                .FromSqlInterpolated($"SELECT p.* FROM Productos p WHERE p.Id = {id} AND p.Eliminado = 0 AND ({tenant} IS NULL OR p.EmpresaId = {tenant}) FOR UPDATE")
+                .AsNoTracking().FirstOrDefaultAsync();
+            if (row is not null) result.Add(row);
+        }
+        return result;
+    }
+
     public async Task<List<Producto>> GetByIdsForUpdateAsync(IEnumerable<int> ids)
     {
         if (_context.Database.CurrentTransaction is null)

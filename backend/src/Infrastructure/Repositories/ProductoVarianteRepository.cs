@@ -38,6 +38,22 @@ public class ProductoVarianteRepository : IProductoVarianteRepository
             .FirstOrDefaultAsync();
     }
 
+    public async Task<List<ProductoVariante>> GetByIdsForReadLockAsync(IEnumerable<int> ids)
+    {
+        if (_context.Database.CurrentTransaction is null)
+            throw new InvalidOperationException("GetByIdsForReadLockAsync requiere una transacción activa.");
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
+        var result = new List<ProductoVariante>();
+        foreach (var id in ids.Distinct().OrderBy(x => x))
+        {
+            var row = await _context.ProductoVariantes
+                .FromSqlInterpolated($"SELECT pv.* FROM ProductoVariantes pv WHERE pv.Id = {id} AND pv.Eliminado = 0 AND ({tenant} IS NULL OR pv.EmpresaId = {tenant}) FOR UPDATE")
+                .AsNoTracking().FirstOrDefaultAsync();
+            if (row is not null) result.Add(row);
+        }
+        return result;
+    }
+
     public async Task<List<ProductoVariante>> GetByIdsForUpdateAsync(IEnumerable<int> ids)
     {
         if (_context.Database.CurrentTransaction is null)

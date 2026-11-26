@@ -9,6 +9,8 @@ public interface IProductoRepository
     Task<Producto?> GetByIdAsync(int id);
     Task<Producto?> GetByIdForUpdateAsync(int id);
     Task<List<Producto>> GetByIdsForUpdateAsync(IEnumerable<int> ids);
+    // Lectura vigente bajo lock; no reutiliza el identity map ni devuelve entidades para mutar.
+    Task<List<Producto>> GetByIdsForReadLockAsync(IEnumerable<int> ids);
     Task<(List<Producto> Items, int TotalCount)> GetPagedAsync(PagedRequest request);
     Task<List<Producto>> GetStockBajoAsync();
     Task<List<Producto>> GetUltimosAgregadosAsync(int cantidad = 5);

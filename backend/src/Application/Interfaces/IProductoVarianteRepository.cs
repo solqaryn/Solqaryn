@@ -8,6 +8,8 @@ public interface IProductoVarianteRepository
     Task<ProductoVariante?> GetByIdAsync(int id);
     Task<ProductoVariante?> GetByIdForUpdateAsync(int id);
     Task<List<ProductoVariante>> GetByIdsForUpdateAsync(IEnumerable<int> ids);
+    // Lectura vigente bajo lock; no reutiliza el identity map ni devuelve entidades para mutar.
+    Task<List<ProductoVariante>> GetByIdsForReadLockAsync(IEnumerable<int> ids);
     Task<List<ProductoVariante>> GetByProductoIdAsync(int productoId, bool incluirInactivas = true);
     Task<List<ProductoVariante>> GetForReporteAsync(
         int? productoId = null,

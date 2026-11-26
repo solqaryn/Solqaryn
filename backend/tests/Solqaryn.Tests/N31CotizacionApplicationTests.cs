@@ -28,7 +28,7 @@ public sealed class N31CotizacionApplicationTests
             .Returns((Func<Task> operation) => operation());
 
         // Fixtures de unidad: la autoridad real del lock se prueba por separado en MySQL.
-        _productos.Setup(x => x.GetByIdsForUpdateAsync(It.IsAny<IEnumerable<int>>()))
+        _productos.Setup(x => x.GetByIdsForReadLockAsync(It.IsAny<IEnumerable<int>>()))
             .Returns(async (IEnumerable<int> ids) =>
             {
                 var rows = new List<Producto>();
@@ -39,7 +39,7 @@ public sealed class N31CotizacionApplicationTests
                 }
                 return rows;
             });
-        _variantes.Setup(x => x.GetByIdsForUpdateAsync(It.IsAny<IEnumerable<int>>()))
+        _variantes.Setup(x => x.GetByIdsForReadLockAsync(It.IsAny<IEnumerable<int>>()))
             .Returns(async (IEnumerable<int> ids) =>
             {
                 var rows = new List<ProductoVariante>();
@@ -339,16 +339,16 @@ public sealed class N31CotizacionApplicationTests
                 Id = 11, Activo = caso != 2, Eliminado = caso == 3,
                 TipoInventario = caso == 1 ? TipoInventario.InsumoAdministrativo : TipoInventario.MercaderiaVenta
             });
-        _productos.Setup(x => x.GetByIdsForUpdateAsync(It.IsAny<IEnumerable<int>>())).ReturnsAsync(productos);
+        _productos.Setup(x => x.GetByIdsForReadLockAsync(It.IsAny<IEnumerable<int>>())).ReturnsAsync(productos);
         var variantes = new List<ProductoVariante>();
         if (caso != 5)
             variantes.Add(new ProductoVariante { Id = 81, ProductoId = caso == 4 ? 10 : 11, Activo = caso != 6, Eliminado = caso == 7 });
-        _variantes.Setup(x => x.GetByIdsForUpdateAsync(It.IsAny<IEnumerable<int>>())).ReturnsAsync(variantes);
+        _variantes.Setup(x => x.GetByIdsForReadLockAsync(It.IsAny<IEnumerable<int>>())).ReturnsAsync(variantes);
 
         await Assert.ThrowsAsync<BusinessRuleException>(() => _service.DuplicarComoBorradorAsync(20));
 
-        _productos.Verify(x => x.GetByIdsForUpdateAsync(It.Is<IEnumerable<int>>(ids => ids.SequenceEqual(new[] { 10, 11 }))), Times.Once);
-        _variantes.Verify(x => x.GetByIdsForUpdateAsync(It.IsAny<IEnumerable<int>>()), caso <= 3 ? Times.Never() : Times.Once());
+        _productos.Verify(x => x.GetByIdsForReadLockAsync(It.Is<IEnumerable<int>>(ids => ids.SequenceEqual(new[] { 10, 11 }))), Times.Once);
+        _variantes.Verify(x => x.GetByIdsForReadLockAsync(It.IsAny<IEnumerable<int>>()), caso <= 3 ? Times.Never() : Times.Once());
         _repository.Verify(x => x.AddAsync(It.IsAny<Cotizacion>()), Times.Never);
         _repository.Verify(x => x.SaveChangesAsync(), Times.Never);
         _auditoria.VerifyNoOtherCalls();
@@ -360,7 +360,7 @@ public sealed class N31CotizacionApplicationTests
     {
         var original = CrearBorradorValido(20);
         _repository.Setup(x => x.GetByIdAsync(20, true)).ReturnsAsync(original);
-        _productos.Setup(x => x.GetByIdsForUpdateAsync(It.IsAny<IEnumerable<int>>())).ReturnsAsync(
+        _productos.Setup(x => x.GetByIdsForReadLockAsync(It.IsAny<IEnumerable<int>>())).ReturnsAsync(
             new List<Producto> { new Producto { Id = 10, Activo = true, TipoInventario = TipoInventario.MercaderiaVenta, Precio = 999m } });
         Cotizacion? copia = null;
         _repository.Setup(x => x.AddAsync(It.IsAny<Cotizacion>())).Callback<Cotizacion>(x => { x.Id = 77; copia = x; }).Returns(Task.CompletedTask);
@@ -372,7 +372,7 @@ public sealed class N31CotizacionApplicationTests
         Assert.Equal(50m, copia!.Detalles.Single().PrecioUnitario);
         Assert.Equal(50m, original.Detalles.Single().PrecioUnitario);
         _repository.Verify(x => x.SaveChangesAsync(), Times.Once);
-        _variantes.Verify(x => x.GetByIdsForUpdateAsync(It.IsAny<IEnumerable<int>>()), Times.Never);
+        _variantes.Verify(x => x.GetByIdsForReadLockAsync(It.IsAny<IEnumerable<int>>()), Times.Never);
     }
 
     [Theory]
@@ -387,11 +387,11 @@ public sealed class N31CotizacionApplicationTests
         _clientes.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(new Cliente { Id = 1, Nombre = "Cliente", Activo = true });
         _productos.Setup(x => x.GetByIdAsync(10)).ReturnsAsync(new Producto { Id = 10, Nombre = "Mercadería", Precio = 50m, Activo = true, TipoInventario = TipoInventario.MercaderiaVenta });
         _variantes.Setup(x => x.GetByIdAsync(81)).ReturnsAsync(new ProductoVariante { Id = 81, ProductoId = 10, Activo = true });
-        _productos.Setup(x => x.GetByIdsForUpdateAsync(It.IsAny<IEnumerable<int>>())).ReturnsAsync(new List<Producto>
+        _productos.Setup(x => x.GetByIdsForReadLockAsync(It.IsAny<IEnumerable<int>>())).ReturnsAsync(new List<Producto>
         {
             new() { Id = 10, Activo = true, TipoInventario = varianteAjena ? TipoInventario.MercaderiaVenta : TipoInventario.InsumoAdministrativo }
         });
-        _variantes.Setup(x => x.GetByIdsForUpdateAsync(It.IsAny<IEnumerable<int>>())).ReturnsAsync(new List<ProductoVariante>
+        _variantes.Setup(x => x.GetByIdsForReadLockAsync(It.IsAny<IEnumerable<int>>())).ReturnsAsync(new List<ProductoVariante>
         {
             new() { Id = 81, ProductoId = 99, Activo = true }
         });
@@ -400,8 +400,8 @@ public sealed class N31CotizacionApplicationTests
             : () => _service.CrearAsync(new CreateCotizacionDto { ClienteId = 1, Detalles = [new CreateCotizacionDetalleDto { ProductoId = 10, ProductoVarianteId = 81, Cantidad = 2, PrecioUnitario = 50m }] });
         var error = await Assert.ThrowsAsync<BusinessRuleException>(operacion);
         Assert.Contains(varianteAjena ? "no pertenece al producto" : "no está habilitado para cotización comercial", error.Message);
-        _productos.Verify(x => x.GetByIdsForUpdateAsync(It.Is<IEnumerable<int>>(ids => ids.SequenceEqual(new[] { 10 }))), Times.Once);
-        _variantes.Verify(x => x.GetByIdsForUpdateAsync(It.IsAny<IEnumerable<int>>()), varianteAjena ? Times.Once() : Times.Never());
+        _productos.Verify(x => x.GetByIdsForReadLockAsync(It.Is<IEnumerable<int>>(ids => ids.SequenceEqual(new[] { 10 }))), Times.Once);
+        _variantes.Verify(x => x.GetByIdsForReadLockAsync(It.IsAny<IEnumerable<int>>()), varianteAjena ? Times.Once() : Times.Never());
         _productos.Verify(x => x.GetByIdAsync(It.IsAny<int>()), Times.Never);
         _variantes.Verify(x => x.GetByIdAsync(It.IsAny<int>()), Times.Never);
         _repository.Verify(x => x.AddAsync(It.IsAny<Cotizacion>()), Times.Never);

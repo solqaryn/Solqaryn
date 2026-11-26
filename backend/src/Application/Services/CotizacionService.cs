@@ -69,7 +69,7 @@ public sealed class CotizacionService : ICotizacionService
         await _unitOfWork.ExecuteInTransactionAsync(async () =>
         {
             var cliente = await RequerirClienteActivoAsync(dto.ClienteId);
-            await BloquearCatalogoVigenteAsync((dto.Detalles ?? []).Select(x => (x.ProductoId, x.ProductoVarianteId)));
+            var catalogo = await BloquearCatalogoVigenteAsync((dto.Detalles ?? []).Select(x => (x.ProductoId, x.ProductoVarianteId)));
             var cotizacion = new Cotizacion
             {
                 ClienteId = cliente.Id,
@@ -81,7 +81,7 @@ public sealed class CotizacionService : ICotizacionService
 
             foreach (var detalleDto in dto.Detalles ?? [])
             {
-                cotizacion.Detalles.Add(await CrearDetalleDesdeDtoAsync(
+                cotizacion.Detalles.Add(await CrearDetalleDesdeDtoAsync(catalogo,
                     detalleDto.ProductoId,
                     detalleDto.ProductoVarianteId,
                     detalleDto.Cantidad,
@@ -125,7 +125,7 @@ public sealed class CotizacionService : ICotizacionService
                 if (solicitado.Id is > 0 && !cotizacion.Detalles.Any(x => x.Id == solicitado.Id.Value))
                     throw new BusinessRuleException($"El detalle {solicitado.Id.Value} no pertenece a la cotización {cotizacion.Id}.");
             }
-            await BloquearCatalogoVigenteAsync((dto.Detalles ?? []).Select(x => (x.ProductoId, x.ProductoVarianteId)));
+            var catalogo = await BloquearCatalogoVigenteAsync((dto.Detalles ?? []).Select(x => (x.ProductoId, x.ProductoVarianteId)));
 
             var valoresAnteriores = new
             {
@@ -165,7 +165,7 @@ public sealed class CotizacionService : ICotizacionService
                         ?? throw new BusinessRuleException(
                             $"El detalle {detalleDto.Id.Value} no pertenece a la cotización {cotizacion.Id}.");
 
-                    var snapshot = await CrearDetalleDesdeDtoAsync(
+                    var snapshot = await CrearDetalleDesdeDtoAsync(catalogo,
                         detalleDto.ProductoId,
                         detalleDto.ProductoVarianteId,
                         detalleDto.Cantidad,
@@ -175,7 +175,7 @@ public sealed class CotizacionService : ICotizacionService
                 }
                 else
                 {
-                    cotizacion.Detalles.Add(await CrearDetalleDesdeDtoAsync(
+                    cotizacion.Detalles.Add(await CrearDetalleDesdeDtoAsync(catalogo,
                         detalleDto.ProductoId,
                         detalleDto.ProductoVarianteId,
                         detalleDto.Cantidad,
@@ -276,7 +276,7 @@ public sealed class CotizacionService : ICotizacionService
             // Duplicar crea un documento nuevo: no reutilizar autoridad comercial histórica.
             // Conservar precios y snapshots de la copia; validar disponibilidad actual bajo locks.
             var productoIds = original.Detalles.Select(x => x.ProductoId).Distinct().OrderBy(x => x).ToArray();
-            var productos = (await _productoRepository.GetByIdsForUpdateAsync(productoIds)).ToDictionary(x => x.Id);
+            var productos = (await _productoRepository.GetByIdsForReadLockAsync(productoIds)).ToDictionary(x => x.Id);
             if (productoIds.Any(productoId => !productos.TryGetValue(productoId, out var p) ||
                 !p.Activo || p.Eliminado || p.TipoInventario != TipoInventario.MercaderiaVenta))
                 throw new BusinessRuleException("El producto no está habilitado para cotización comercial.");
@@ -285,7 +285,7 @@ public sealed class CotizacionService : ICotizacionService
                 .Select(x => x.ProductoVarianteId!.Value).Distinct().OrderBy(x => x).ToArray();
             if (varianteIds.Length > 0)
             {
-                var variantes = (await _varianteRepository.GetByIdsForUpdateAsync(varianteIds)).ToDictionary(x => x.Id);
+                var variantes = (await _varianteRepository.GetByIdsForReadLockAsync(varianteIds)).ToDictionary(x => x.Id);
                 if (original.Detalles.Any(x => x.ProductoVarianteId is int varianteId &&
                     (!variantes.TryGetValue(varianteId, out var v) || !v.Activo || v.Eliminado ||
                      v.ProductoId != x.ProductoId)))
@@ -400,15 +400,15 @@ public sealed class CotizacionService : ICotizacionService
             throw new BusinessRuleException($"{nombre} debe estar expresada en UTC.");
     }
 
-    // Tomar primero todos los locks de producto y después los de variante, en orden
-    // ascendente, dentro de la transacción de alta/edición. Las lecturas posteriores
-    // conservan los snapshots y las validaciones de negocio existentes.
-    private async Task BloquearCatalogoVigenteAsync(IEnumerable<(int ProductoId, int? ProductoVarianteId)> detalles)
+    // La autoridad comercial se obtiene de filas vigentes sin tracking bajo locks
+    // ordenados. El snapshot de detalle consume esas mismas filas, no el identity map.
+    private async Task<(Dictionary<int, Producto> Productos, Dictionary<int, ProductoVariante> Variantes)> BloquearCatalogoVigenteAsync(
+        IEnumerable<(int ProductoId, int? ProductoVarianteId)> detalles)
     {
         var lineas = detalles.ToArray();
-        if (lineas.Length == 0) return;
         var ids = lineas.Select(x => x.ProductoId).Distinct().OrderBy(x => x).ToArray();
-        var productos = (await _productoRepository.GetByIdsForUpdateAsync(ids)).ToDictionary(x => x.Id);
+        var productos = ids.Length == 0 ? new Dictionary<int, Producto>()
+            : (await _productoRepository.GetByIdsForReadLockAsync(ids)).ToDictionary(x => x.Id);
         foreach (var id in ids)
         {
             if (!productos.TryGetValue(id, out var p))
@@ -420,8 +420,8 @@ public sealed class CotizacionService : ICotizacionService
         }
         var varianteIds = lineas.Where(x => x.ProductoVarianteId.HasValue)
             .Select(x => x.ProductoVarianteId!.Value).Distinct().OrderBy(x => x).ToArray();
-        if (varianteIds.Length == 0) return;
-        var variantes = (await _varianteRepository.GetByIdsForUpdateAsync(varianteIds)).ToDictionary(x => x.Id);
+        var variantes = varianteIds.Length == 0 ? new Dictionary<int, ProductoVariante>()
+            : (await _varianteRepository.GetByIdsForReadLockAsync(varianteIds)).ToDictionary(x => x.Id);
         foreach (var linea in lineas.Where(x => x.ProductoVarianteId.HasValue))
         {
             var id = linea.ProductoVarianteId!.Value;
@@ -432,16 +432,18 @@ public sealed class CotizacionService : ICotizacionService
             if (!v.Activo || v.Eliminado)
                 throw new BusinessRuleException("La variante no está disponible para cotización comercial.");
         }
+        return (productos, variantes);
     }
 
     private async Task<CotizacionDetalle> CrearDetalleDesdeDtoAsync(
+        (Dictionary<int, Producto> Productos, Dictionary<int, ProductoVariante> Variantes) catalogo,
         int productoId,
         int? varianteId,
         decimal cantidad,
         decimal precioUnitario)
     {
-        var producto = await _productoRepository.GetByIdAsync(productoId)
-            ?? throw new BusinessRuleException($"Producto con Id {productoId} no encontrado.");
+        if (!catalogo.Productos.TryGetValue(productoId, out var producto))
+            throw new BusinessRuleException($"Producto con Id {productoId} no encontrado.");
 
         if (!producto.Activo || producto.Eliminado)
             throw new BusinessRuleException($"El producto {producto.Nombre} no está disponible.");
@@ -452,16 +454,25 @@ public sealed class CotizacionService : ICotizacionService
             throw new BusinessRuleException("El producto no está habilitado para cotización comercial.");
 
         ProductoVariante? variante = null;
+        ProductoVariante? etiquetas = null;
         if (varianteId.HasValue)
         {
-            variante = await _varianteRepository.GetByIdAsync(varianteId.Value)
-                ?? throw new BusinessRuleException($"Variante con Id {varianteId.Value} no encontrada.");
+            if (!catalogo.Variantes.TryGetValue(varianteId.Value, out variante))
+                throw new BusinessRuleException($"Variante con Id {varianteId.Value} no encontrada.");
 
             if (variante.ProductoId != productoId)
                 throw new BusinessRuleException($"La variante {varianteId.Value} no pertenece al producto {productoId}.");
 
             if (!variante.Activo || variante.Eliminado)
                 throw new BusinessRuleException($"La variante {varianteId.Value} no está disponible.");
+
+            // La consulta de navegación sólo aporta etiquetas descriptivas.
+            // No reemplaza precio, SKU, clasificación, estado ni vínculo bloqueados.
+            etiquetas = await _varianteRepository.GetByIdAsync(varianteId.Value);
+            if (etiquetas is null || etiquetas.Id != variante.Id || etiquetas.ProductoId != variante.ProductoId ||
+                etiquetas.MarcaId != variante.MarcaId || etiquetas.ModeloId != variante.ModeloId ||
+                etiquetas.ColorId != variante.ColorId || etiquetas.TallaId != variante.TallaId)
+                throw new BusinessRuleException("El catálogo cambió; vuelva a consultar el producto.");
         }
 
         var detalle = new CotizacionDetalle
@@ -470,10 +481,10 @@ public sealed class CotizacionService : ICotizacionService
             ProductoVarianteId = variante?.Id,
             ProductoSkuSnapshot = variante?.Sku,
             ProductoNombreSnapshot = producto.Nombre,
-            ProductoMarcaSnapshot = variante?.Marca?.Nombre ?? producto.Marca,
-            ProductoModeloSnapshot = variante?.Modelo?.Nombre ?? producto.Modelo,
-            ProductoColorSnapshot = variante?.Color?.Nombre,
-            ProductoTallaSnapshot = variante?.Talla?.Nombre
+            ProductoMarcaSnapshot = etiquetas?.Marca?.Nombre ?? producto.Marca,
+            ProductoModeloSnapshot = etiquetas?.Modelo?.Nombre ?? producto.Modelo,
+            ProductoColorSnapshot = etiquetas?.Color?.Nombre,
+            ProductoTallaSnapshot = etiquetas?.Talla?.Nombre
         };
 
         var precioAutorizado = variante?.Precio ?? producto.Precio;

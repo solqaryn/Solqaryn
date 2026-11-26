@@ -265,6 +265,158 @@ public sealed class C0701CotizacionDuplicacionMySqlIntegrationTests
                     Assert.Equal(EstadoCotizacion.Borrador, draft.Estado);
                     Assert.Equal(0, await verify.RegistrosAuditoria.CountAsync(x => x.Entidad == nameof(Cotizacion) && x.ReferenciaId == draftId && x.Accion == AccionPermiso.Editar));
                 }
+
+                // Dos contextos independientes: el tracker del consumidor conserva la versión previa.
+                // El writer confirma reclasificación antes de que Crear/Actualizar tomen el lock.
+                foreach (var operationKind in new[] { 0, 1, 2 })
+                {
+                    var staleAccess = Access(tenant);
+                    await using var stale = new AppDbContext(options, tenantHttpContextAccessor: staleAccess);
+                    await using (var restore = new AppDbContext(options, tenantHttpContextAccessor: Access(tenant)))
+                    {
+                        var p = await restore.Productos.SingleAsync(x => x.Id == productId);
+                        p.TipoInventario = TipoInventario.MercaderiaVenta;
+                        await restore.SaveChangesAsync();
+                    }
+                    var cached = await stale.Productos.SingleAsync(x => x.Id == productId);
+                    Assert.Equal(TipoInventario.MercaderiaVenta, cached.TipoInventario);
+                    await using (var writer = new AppDbContext(options, tenantHttpContextAccessor: Access(tenant)))
+                    {
+                        var p = await writer.Productos.SingleAsync(x => x.Id == productId);
+                        p.TipoInventario = TipoInventario.InsumoAdministrativo;
+                        await writer.SaveChangesAsync();
+                    }
+                    var service = Compose(stale, staleAccess);
+                    Func<Task> operation = operationKind switch
+                    {
+                        0 => () => service.CrearAsync(new CreateCotizacionDto { ClienteId = clientId, Detalles = [new CreateCotizacionDetalleDto { ProductoId = productId, ProductoVarianteId = variantId, Cantidad = 1m, PrecioUnitario = 25m }] }),
+                        1 => () => service.ActualizarAsync(new UpdateCotizacionDto { Id = draftId, ClienteId = clientId, Detalles = [new UpdateCotizacionDetalleDto { Id = lineId, ProductoId = productId, ProductoVarianteId = variantId, Cantidad = 2m, PrecioUnitario = 25m }] }),
+                        _ => () => service.DuplicarComoBorradorAsync(own.QuoteId)
+                    };
+                    var error = await Assert.ThrowsAsync<BusinessRuleException>(operation);
+                    Assert.Contains("no está habilitado para cotización comercial", error.Message);
+                    await using var verify = new AppDbContext(options, tenantHttpContextAccessor: Access(tenant));
+                    Assert.Equal(3, await verify.Cotizaciones.CountAsync());
+                    var draft = await verify.Cotizaciones.AsNoTracking().Include(x => x.Detalles).SingleAsync(x => x.Id == draftId);
+                    Assert.Equal(1m, draft.Detalles.Single().Cantidad);
+                    Assert.Equal(0, await verify.RegistrosAuditoria.CountAsync(x => x.Entidad == nameof(Cotizacion) && x.ReferenciaId == draftId && x.Accion == AccionPermiso.Editar));
+                    Assert.Equal(1, await verify.RegistrosAuditoria.CountAsync(x => x.Entidad == nameof(Cotizacion) && x.Accion == AccionPermiso.Duplicar));
+                }
+
+                // El precio comercial tampoco puede provenir de una entidad rastreada antigua.
+                await using (var restore = new AppDbContext(options, tenantHttpContextAccessor: Access(tenant)))
+                {
+                    var product = await restore.Productos.SingleAsync(x => x.Id == productId);
+                    product.TipoInventario = TipoInventario.MercaderiaVenta;
+                    var variant = await restore.ProductoVariantes.SingleAsync(x => x.Id == variantId);
+                    variant.Precio = 25m;
+                    await restore.SaveChangesAsync();
+                }
+                var stalePriceAccess = Access(tenant);
+                await using var stalePrice = new AppDbContext(options, tenantHttpContextAccessor: stalePriceAccess);
+                var cachedVariant = await stalePrice.ProductoVariantes.SingleAsync(x => x.Id == variantId);
+                Assert.Equal<decimal?>(25m, cachedVariant.Precio);
+                await using (var writer = new AppDbContext(options, tenantHttpContextAccessor: Access(tenant)))
+                {
+                    var variant = await writer.ProductoVariantes.SingleAsync(x => x.Id == variantId);
+                    variant.Precio = 80m;
+                    await writer.SaveChangesAsync();
+                }
+                var freshQuote = await Compose(stalePrice, stalePriceAccess).CrearAsync(new CreateCotizacionDto
+                {
+                    ClienteId = clientId,
+                    Detalles = [new CreateCotizacionDetalleDto { ProductoId = productId, ProductoVarianteId = variantId, Cantidad = 1m, PrecioUnitario = 25m }]
+                });
+                Assert.Equal(80m, freshQuote.Detalles.Single().PrecioUnitario);
+                await using (var verify = new AppDbContext(options, tenantHttpContextAccessor: Access(tenant)))
+                {
+                    Assert.Equal(4, await verify.Cotizaciones.CountAsync());
+                    var persisted = await verify.Cotizaciones.AsNoTracking().Include(x => x.Detalles).SingleAsync(x => x.Id == freshQuote.Id);
+                    Assert.Equal(80m, persisted.Detalles.Single().PrecioUnitario);
+                    Assert.Equal(1, await verify.RegistrosAuditoria.CountAsync(x => x.Entidad == nameof(Cotizacion) && x.ReferenciaId == freshQuote.Id && x.Accion == AccionPermiso.Crear));
+                }
+
+                // Carrera real: dos conexiones abiertas a la vez. El escritor conserva
+                // el lock hasta agotar los reintentos de UnitOfWork; sin sleeps de prueba.
+                foreach (var operationKind in new[] { 0, 1, 2 })
+                {
+                    int quotesBefore, receiptsBefore;
+                    await using (var restore = new AppDbContext(options, tenantHttpContextAccessor: Access(tenant)))
+                    {
+                        var product = await restore.Productos.SingleAsync(x => x.Id == productId);
+                        product.TipoInventario = TipoInventario.MercaderiaVenta;
+                        await restore.SaveChangesAsync();
+                        quotesBefore = await restore.Cotizaciones.CountAsync();
+                        receiptsBefore = await restore.RegistrosAuditoria.CountAsync(x =>
+                            x.EmpresaId == tenant && x.Entidad == nameof(Cotizacion));
+                    }
+                    Func<CotizacionService, Task> attempt = operationKind switch
+                    {
+                        0 => service => service.CrearAsync(new CreateCotizacionDto
+                        {
+                            ClienteId = clientId, Detalles = [new CreateCotizacionDetalleDto
+                            {
+                                ProductoId = productId, ProductoVarianteId = variantId,
+                                Cantidad = 1m, PrecioUnitario = 25m
+                            }]
+                        }),
+                        1 => service => service.ActualizarAsync(new UpdateCotizacionDto
+                        {
+                            Id = draftId, ClienteId = clientId, Detalles = [new UpdateCotizacionDetalleDto
+                            {
+                                Id = lineId, ProductoId = productId, ProductoVarianteId = variantId,
+                                Cantidad = 2m, PrecioUnitario = 25m
+                            }]
+                        }),
+                        _ => service => service.DuplicarComoBorradorAsync(own.QuoteId)
+                    };
+                    await using (var writer = new AppDbContext(options, tenantHttpContextAccessor: Access(tenant)))
+                    {
+                        await using var writerTx = await writer.Database.BeginTransactionAsync();
+                        var product = await writer.Productos.SingleAsync(x => x.Id == productId);
+                        product.TipoInventario = TipoInventario.InsumoAdministrativo;
+                        await writer.SaveChangesAsync(); // UPDATE real, sin COMMIT todavía.
+
+                        var blockedAccess = Access(tenant);
+                        await using (var blocked = new AppDbContext(options, tenantHttpContextAccessor: blockedAccess))
+                        {
+                            await blocked.Database.OpenConnectionAsync();
+                            try
+                            {
+                                await blocked.Database.ExecuteSqlRawAsync("SET SESSION innodb_lock_wait_timeout = 1");
+                                var error = await Record.ExceptionAsync(() => attempt(Compose(blocked, blockedAccess)));
+                                Assert.NotNull(error);
+                                var lockTimeout = false;
+                                for (Exception? current = error; current is not null; current = current.InnerException)
+                                    if (current is MySqlException mysql && mysql.Number == 1205)
+                                        lockTimeout = true;
+                                Assert.True(lockTimeout, "Se requiere timeout real MySQL 1205 mientras el escritor retiene el lock.");
+                            }
+                            finally
+                            {
+                                await blocked.Database.ExecuteSqlRawAsync("SET SESSION innodb_lock_wait_timeout = DEFAULT");
+                                await blocked.Database.CloseConnectionAsync();
+                            }
+                        }
+                        await writerTx.CommitAsync();
+                    }
+                    // Tras el COMMIT rival, una transacción fresca debe rechazar el nuevo estado.
+                    var freshAccess = Access(tenant);
+                    await using (var fresh = new AppDbContext(options, tenantHttpContextAccessor: freshAccess))
+                    {
+                        var error = await Assert.ThrowsAsync<BusinessRuleException>(() => attempt(Compose(fresh, freshAccess)));
+                        Assert.Contains("no está habilitado para cotización comercial", error.Message);
+                    }
+                    await using (var verify = new AppDbContext(options, tenantHttpContextAccessor: Access(tenant)))
+                    {
+                        Assert.Equal(quotesBefore, await verify.Cotizaciones.CountAsync());
+                        Assert.Equal(receiptsBefore, await verify.RegistrosAuditoria.CountAsync(x =>
+                            x.EmpresaId == tenant && x.Entidad == nameof(Cotizacion)));
+                        var draft = await verify.Cotizaciones.AsNoTracking().Include(x => x.Detalles).SingleAsync(x => x.Id == draftId);
+                        Assert.Equal(1m, draft.Detalles.Single().Cantidad);
+                        Assert.Equal(EstadoCotizacion.Borrador, draft.Estado);
+                    }
+                }
             }
         }
         finally
