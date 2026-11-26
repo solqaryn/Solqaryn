@@ -2,6 +2,9 @@ using System.Globalization;
 using System.Security.Claims;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Http;
+using Microsoft.EntityFrameworkCore;
+using Solqaryn.Infrastructure.AutomationV5;
+using Solqaryn.Infrastructure.Persistence;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Enums;
 
@@ -47,6 +50,29 @@ public sealed class V5CaseFileAuditCorrelationAuthority(
     public async Task<bool> RevalidateAsync(Session expected,
         CancellationToken cancellationToken = default) =>
         expected is not null && await ResolveAsync(cancellationToken) == expected;
+
+    // Call in the same transaction that locks P01/P02 and writes the audit.
+    // This is only session authority; actual resource ownership must still be verified.
+    public async Task<Session?> ResolveInCurrentTransactionAsync(AppDbContext db,
+        CancellationToken cancellationToken = default)
+    {
+        cancellationToken.ThrowIfCancellationRequested();
+        var tx = db.Database.CurrentTransaction;
+        if (tx is null) return null;
+        var session = await ResolveAsync(cancellationToken);
+        if (session is null ||
+            !ReferenceEquals(tx, db.Database.CurrentTransaction) ||
+            !await V5CaseFileAuditGrantLock.TryAcquireAsync(db, session.ActorId,
+                session.BaseRoleId, session.TenantId, session.BranchId,
+                session.TenantRoleId, cancellationToken))
+            return null;
+        // Repeat the signed-session/context checks while the relational locks are held.
+        if (!await RevalidateAsync(session, cancellationToken) ||
+            !ReferenceEquals(tx, db.Database.CurrentTransaction) ||
+            db.AuthorizedCommercialEmpresaId != session.TenantId)
+            return null;
+        return session;
+    }
 
     private bool Matches(HttpContext http, Session session) =>
         ReferenceEquals(accessor.HttpContext, http) &&

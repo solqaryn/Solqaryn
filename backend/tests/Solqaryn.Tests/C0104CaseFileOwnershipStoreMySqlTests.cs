@@ -5,6 +5,7 @@ using MySql.Data.MySqlClient;
 using MySql.EntityFrameworkCore.Extensions;
 using Solqaryn.Application.Security;
 using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Enums;
 using Solqaryn.Infrastructure.AutomationV5;
 using Solqaryn.Infrastructure.Persistence;
 using Xunit;
@@ -136,6 +137,68 @@ public sealed class C0104CaseFileOwnershipStoreMySqlTests
                 await contender.ExecuteNonQueryAsync();
             }
             Assert.Equal(2L, (await storeA.ReadCandidateAsync(a.Id, 1, branchA.Id))!.Version);
+            // Supplemental API12 grant lock: explicit fixture grants only. The
+            // test is a real SQL boundary test, not an authenticated HTTP proof.
+            Assert.False(await V5CaseFileAuditGrantLock.TryAcquireAsync(
+                dbA, actor, role.Id, a.Id, branchA.Id, role.Id));
+            await using (var noGrant = await dbA.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted))
+            {
+                Assert.False(await V5CaseFileAuditGrantLock.TryAcquireAsync(
+                    dbA, actor, role.Id, a.Id, branchA.Id, role.Id));
+                await noGrant.RollbackAsync();
+            }
+            async Task<Permiso> FixturePermission(ModuloSistema modulo, AccionPermiso accion)
+            {
+                var existing = await setup.Permisos.IgnoreQueryFilters()
+                    .SingleOrDefaultAsync(p => p.Modulo == modulo && p.Accion == accion);
+                if (existing is not null)
+                {
+                    Assert.True(existing.Activo && !existing.Eliminado);
+                    Assert.Equal(AmbitoAutorizacion.Empresa, existing.Ambito);
+                    return existing;
+                }
+                var created = new Permiso { Codigo = $"QA.{modulo}.{accion}",
+                    Nombre = $"QA {modulo} {accion}", Modulo = modulo, Accion = accion,
+                    Ambito = AmbitoAutorizacion.Empresa, Activo = true };
+                setup.Permisos.Add(created);
+                await setup.SaveChangesAsync();
+                return created;
+            }
+            var auditPermission = await FixturePermission(ModuloSistema.Auditoria, AccionPermiso.ReadAuditCorrelation);
+            var branchPermission = await FixturePermission(ModuloSistema.Sucursales, AccionPermiso.Ver);
+            var grant = new RolPermiso { RolId = role.Id, PermisoId = auditPermission.Id };
+            setup.RolPermisos.AddRange(grant, new RolPermiso { RolId = role.Id, PermisoId = branchPermission.Id });
+            await setup.SaveChangesAsync();
+            await using (var grantTx = await dbA.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted))
+            {
+                Assert.False(await V5CaseFileAuditGrantLock.TryAcquireAsync(
+                    dbA, actor, role.Id, b.Id, branchB.Id, role.Id));
+                Assert.False(await V5CaseFileAuditGrantLock.TryAcquireAsync(
+                    dbA, actor, role.Id, a.Id, branchB.Id, role.Id));
+                Assert.True(await V5CaseFileAuditGrantLock.TryAcquireAsync(
+                    dbA, actor, role.Id, a.Id, branchA.Id, role.Id));
+                Assert.Same(grantTx, dbA.Database.CurrentTransaction);
+                await using var revoker = new MySqlConnection(origin.ConnectionString);
+                await revoker.OpenAsync();
+                await using var revokeCommand = revoker.CreateCommand();
+                revokeCommand.CommandText = "SET SESSION innodb_lock_wait_timeout=1";
+                await revokeCommand.ExecuteNonQueryAsync();
+                revokeCommand.CommandText = "DELETE FROM RolPermisos WHERE Id=@grant";
+                revokeCommand.Parameters.AddWithValue("@grant", grant.Id);
+                var blockedRevoke = await Assert.ThrowsAsync<MySqlException>(async () =>
+                {
+                    await revokeCommand.ExecuteNonQueryAsync();
+                });
+                Assert.Equal(1205, blockedRevoke.Number);
+                await grantTx.RollbackAsync();
+                Assert.Equal(1, await revokeCommand.ExecuteNonQueryAsync());
+            }
+            await using (var revokedGrantTx = await dbA.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted))
+            {
+                Assert.False(await V5CaseFileAuditGrantLock.TryAcquireAsync(
+                    dbA, actor, role.Id, a.Id, branchA.Id, role.Id));
+                await revokedGrantTx.RollbackAsync();
+            }
             var revoke = new FixtureAuthority(a.Id,branchA.Id,actor) { RevokeAfterWrite = true };
             var revokedStore = new V5CaseFileOwnershipStore(dbA,revoke);
             var three = one with { CaseId = 3, ResourceRef = "r3" };
