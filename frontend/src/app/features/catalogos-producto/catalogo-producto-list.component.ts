@@ -1,6 +1,6 @@
 import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 
-import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy, TemplateRef, ViewChild, computed } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
@@ -9,7 +9,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSlideToggleModule, MatSlideToggleChange } from '@angular/material/slide-toggle';
+import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { modalInstitucional } from '../../shared/modal-institucional/modal-institucional';
+import { firstValueFrom } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { CatalogoProductoService } from '../../services/catalogo-producto.service';
 import { CatalogoProducto, TipoCatalogoProducto } from '../../core/models/catalogo-producto.model';
@@ -27,7 +30,7 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
     MatInputModule,
     MatProgressSpinnerModule,
     MatSelectModule,
-    MatSlideToggleModule
+    MatSlideToggleModule, MatDialogModule
 ],
   templateUrl: './catalogo-producto-list.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
@@ -40,6 +43,23 @@ export class CatalogoProductoListComponent implements OnInit {
   private readonly permisos = inject(PermisosRuntimeService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly alerts = inject(AppAlertService);
+  private readonly dialog = inject(MatDialog, { optional: true });
+  @ViewChild('formularioModal') private formularioModal?: TemplateRef<unknown>;
+  private editorRef?: MatDialogRef<unknown>;
+  readonly cambiandoEstado = signal(false);
+
+  private abrirFormulario(): void {
+    this.mostrandoFormulario.set(true);
+    if (!this.formularioModal || !this.dialog) return;
+    const ref = this.dialog.open(this.formularioModal, modalInstitucional('m', { ariaLabel: this.editandoId() ? 'Editar registro' : 'Crear registro' }));
+    this.editorRef = ref;
+    ref.afterClosed().subscribe(() => {
+      if (this.editorRef !== ref) return;
+      this.editorRef = undefined;
+      this.mostrandoFormulario.set(false);
+      this.editandoId.set(null);
+    });
+  }
 
   readonly tipo = this.route.snapshot.data['tipo'] as TipoCatalogoProducto;
   readonly modulo = this.route.snapshot.data['modulo'] as string;
@@ -54,6 +74,10 @@ export class CatalogoProductoListComponent implements OnInit {
   readonly mostrandoFormulario = signal(false);
   readonly editandoId = signal<number | null>(null);
   readonly buscar = signal('');
+  readonly estadoFiltro = signal<'todos' | 'activos' | 'inactivos'>('todos');
+  readonly elementosVisibles = computed(() => this.elementos().filter(item => this.estadoFiltro() === 'todos' || item.activo === (this.estadoFiltro() === 'activos')));
+
+  limpiarFiltros(): void { this.buscar.set(''); this.estadoFiltro.set('todos'); this.cargar(); }
 
   readonly puedeCrear = signal(false);
   readonly puedeEditar = signal(false);
@@ -118,6 +142,7 @@ export class CatalogoProductoListComponent implements OnInit {
   }
 
   nuevo(): void {
+    if (this.mostrandoFormulario()) return;
     this.editandoId.set(null);
     this.form.reset({
       nombre: '',
@@ -127,10 +152,11 @@ export class CatalogoProductoListComponent implements OnInit {
       catalogoPadreId: null
     });
     if (!this.esColor) this.form.controls.codigoVisual.disable();
-    this.mostrandoFormulario.set(true);
+    this.abrirFormulario();
   }
 
   editar(elemento: CatalogoProducto): void {
+    if (this.mostrandoFormulario()) return;
     this.editandoId.set(elemento.id);
     this.form.patchValue({
       nombre: elemento.nombre,
@@ -139,21 +165,27 @@ export class CatalogoProductoListComponent implements OnInit {
       orden: elemento.orden,
       catalogoPadreId: elemento.catalogoPadreId ?? null
     });
-    this.mostrandoFormulario.set(true);
+    this.abrirFormulario();
   }
 
   cancelar(): void {
+    if (this.saving()) return;
+    const ref = this.editorRef;
+    this.editorRef = undefined;
+    ref?.close();
     this.mostrandoFormulario.set(false);
     this.editandoId.set(null);
   }
 
-  guardar(): void {
+  async guardar(): Promise<void> {
     if (this.form.invalid || this.saving()) {
       this.form.markAllAsTouched();
       return;
     }
 
     this.saving.set(true);
+    const confirmado = await this.alerts.confirmar({ titulo: this.editandoId() ? 'Confirmar actualización' : 'Confirmar creación', mensaje: '¿Deseas guardar los datos de este registro?', confirmarTexto: 'Guardar' }).catch(() => false);
+    if (!confirmado || !this.mostrandoFormulario() || !this.permisos.puede(this.modulo, this.editandoId() ? 'Editar' : 'Crear')) { this.saving.set(false); return; }
     const raw = this.form.getRawValue();
     const value = {
       nombre: raw.nombre!.trim(),
@@ -186,18 +218,22 @@ export class CatalogoProductoListComponent implements OnInit {
     return elemento.activo ? this.puedeDesactivar() : this.puedeActivar();
   }
 
-  cambiarEstado(elemento: CatalogoProducto): void {
-    if (!this.puedeCambiarEstado(elemento)) return;
-    const request$ = elemento.activo
+  async cambiarEstado(elemento: CatalogoProducto, evento: MatSlideToggleChange): Promise<void> {
+    evento.source.checked = elemento.activo;
+    if (!this.puedeCambiarEstado(elemento) || this.cambiandoEstado()) return;
+    this.cambiandoEstado.set(true);
+    try {
+      const accion = elemento.activo ? 'Desactivar' : 'Activar';
+      const confirmado = await this.alerts.confirmar({ titulo: accion + ' registro', mensaje: '¿Deseas ' + accion.toLowerCase() + ' «' + elemento.nombre + '»?', confirmarTexto: accion });
+      if (!confirmado || !this.permisos.puede(this.modulo, accion)) return;
+      const request$ = elemento.activo
       ? this.service.desactivar(this.tipo, elemento.id)
       : this.service.activar(this.tipo, elemento.id);
 
-    request$.subscribe({
-      next: (res) => {
-        this.elementos.update(items => items.map(item => item.id === elemento.id ? res.data : item));
-      },
-      error: (err) => this.mostrarError(err.error?.message ?? 'No se pudo cambiar el estado.')
-    });
+      const res = await firstValueFrom(request$);
+      this.elementos.update(items => items.map(item => item.id === elemento.id ? res.data : item));
+    } catch { this.mostrarError('No se pudo cambiar el estado.'); }
+    finally { this.cambiandoEstado.set(false); }
   }
 
   async eliminar(elemento: CatalogoProducto): Promise<void> {

@@ -11,6 +11,7 @@ import { CatalogoProductoListComponent } from './catalogo-producto-list.componen
 
 describe('CatalogoProductoListComponent: longitud del nombre', () => {
   const route = { snapshot: { data: { tipo: 'Talla' as TipoCatalogoProducto, singular: 'Talla', titulo: 'Tallas' } } };
+  const confirmar = vi.fn(async () => true);
   const service = {
     create: vi.fn(() => of({ data: {} })),
     update: vi.fn(() => of({ data: {} })),
@@ -19,6 +20,7 @@ describe('CatalogoProductoListComponent: longitud del nombre', () => {
 
   beforeEach(() => {
     vi.clearAllMocks();
+    confirmar.mockResolvedValue(true);
     TestBed.configureTestingModule({
       providers: [
         FormBuilder,
@@ -26,7 +28,7 @@ describe('CatalogoProductoListComponent: longitud del nombre', () => {
         { provide: CatalogoProductoService, useValue: service },
         { provide: PermisosRuntimeService, useValue: { puede: () => true } },
         { provide: MatSnackBar, useValue: { open: vi.fn() } },
-        { provide: AppAlertService, useValue: {} }
+        { provide: AppAlertService, useValue: { confirmar } }
       ]
     });
   });
@@ -36,31 +38,43 @@ describe('CatalogoProductoListComponent: longitud del nombre', () => {
     return TestBed.runInInjectionContext(() => new CatalogoProductoListComponent());
   }
 
-  it.each(['S', 'M', 'L', '0', 'XL', ' M '])('acepta y envía la talla %s', nombre => {
+  it.each(['S', 'M', 'L', '0', 'XL', ' M '])('acepta y envía la talla %s', async nombre => {
     const component = componentFor('Talla');
     component.nuevo();
     component.form.controls.nombre.setValue(nombre);
     expect(component.form.valid).toBe(true);
-    component.guardar();
+    await component.guardar();
     expect(service.create).toHaveBeenCalledWith('Talla', expect.objectContaining({ nombre: nombre.trim() }));
   });
 
-  it('permite editar una talla a un solo carácter', () => {
+  it('permite editar una talla a un solo carácter', async () => {
     const component = componentFor('Talla');
     component.nuevo();
     component.editandoId.set(41);
     component.form.controls.nombre.setValue('M');
-    component.guardar();
+    await component.guardar();
     expect(service.update).toHaveBeenCalledWith('Talla', 41, expect.objectContaining({ nombre: 'M' }));
   });
 
-  it.each(['', '   ', 'A'.repeat(121)])('rechaza una talla inválida: %s', nombre => {
+  it.each(['', '   ', 'A'.repeat(121)])('rechaza una talla inválida: %s', async nombre => {
     const component = componentFor('Talla');
     component.nuevo();
     component.form.controls.nombre.setValue(nombre);
     expect(component.form.invalid).toBe(true);
-    component.guardar();
+    await component.guardar();
     expect(service.create).not.toHaveBeenCalled();
+  });
+
+  it('no crea ni pierde el formulario si se cancela la confirmación', async () => {
+    const component = componentFor('Talla');
+    component.nuevo();
+    component.form.controls.nombre.setValue('M');
+    confirmar.mockResolvedValue(false);
+    await component.guardar();
+    expect(service.create).not.toHaveBeenCalled();
+    expect(component.mostrandoFormulario()).toBe(true);
+    expect(component.form.controls.nombre.value).toBe('M');
+    expect(component.saving()).toBe(false);
   });
 
   it.each<TipoCatalogoProducto>(['Color', 'Marca', 'Modelo'])('conserva el mínimo de dos caracteres en %s', tipo => {

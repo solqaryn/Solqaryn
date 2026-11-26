@@ -1,3 +1,8 @@
+## 2026-11-25 — QA: catálogos y métodos de pago adoptan modales institucionales
+
+- Colores, tallas, marcas y modelos: formulario mediano, confirmación explícita al guardar o cambiar estado, filtros de búsqueda/estado y tabla institucional con scroll propio, alineación coherente y pie. Conserva validación de tallas de un carácter.
+- Métodos de pago: formulario grande, confirmaciones para guardar, activar/desactivar y reordenar; tabla y pie compartidos. Se conserva el orden y las reglas de negocio. Regresión de cancelación de guardado agregada al test de catálogos; certificación visual y CI pendientes.
+
 ## 2026-11-25 — QA: base institucional de modales y tablas
 
 - Cuatro tamaños reutilizables, configuración Material centralizada con bloqueo de cierre accidental, cabecera y pie con color secundario y contraste calculado. Consulta individual y alertas existentes adoptan el estándar.

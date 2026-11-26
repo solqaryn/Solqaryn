@@ -14,15 +14,10 @@
   }
 </div>
 
-@if (mostrandoFormulario()) {
-  <form class="card catalog-form" [formGroup]="form" (ngSubmit)="guardar()">
-    <div class="form-heading">
-      <h2>{{ editandoId() ? 'Editar' : 'Crear' }} {{ singular.toLowerCase() }}</h2>
-      <button mat-icon-button type="button" aria-label="Cerrar formulario" (click)="cancelar()">
-        <mat-icon>close</mat-icon>
-      </button>
-    </div>
-
+<ng-template #formularioModal>
+  <form class="app-dialog-layout" [formGroup]="form" (ngSubmit)="guardar()">
+    <h2 mat-dialog-title>{{ editandoId() ? 'Editar' : 'Crear' }} {{ singular.toLowerCase() }}</h2>
+    <mat-dialog-content class="app-dialog-layout__body">
     <div class="form-grid">
       <mat-form-field appearance="outline">
         <mat-label>Nombre</mat-label>
@@ -68,43 +63,45 @@
       </mat-form-field>
     </div>
 
-    <div class="form-actions">
-      <button mat-button type="button" (click)="cancelar()">Cancelar</button>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button type="button" [disabled]="saving()" (click)="cancelar()">Cancelar</button>
       <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving()">
         @if (saving()) { <mat-spinner diameter="20"></mat-spinner> } @else { Guardar }
       </button>
-    </div>
+    </mat-dialog-actions>
   </form>
-}
+</ng-template>
 
 <div class="card catalog-card">
-  <div class="toolbar">
+  <div class="app-table-filters" aria-label="Filtros del catálogo">
     <mat-form-field appearance="outline" subscriptSizing="dynamic">
       <mat-label>Buscar</mat-label>
       <mat-icon matPrefix>search</mat-icon>
       <input matInput [value]="buscar()" (input)="buscarAhora($event)" [placeholder]="'Buscar en ' + titulo.toLowerCase()">
     </mat-form-field>
-    <span class="result-count" aria-live="polite">{{ elementos().length }} registro(s)</span>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>Estado</mat-label><mat-select [value]="estadoFiltro()" (selectionChange)="estadoFiltro.set($event.value)"><mat-option value="todos">Todos</mat-option><mat-option value="activos">Activos</mat-option><mat-option value="inactivos">Inactivos</mat-option></mat-select></mat-form-field>
+    <button mat-stroked-button type="button" (click)="limpiarFiltros()"><mat-icon>filter_alt_off</mat-icon> Limpiar filtros</button>
   </div>
 
   @if (loading()) {
     <div class="loading"><mat-spinner></mat-spinner></div>
   } @else {
-    <div class="table-scroll">
-      <table class="table">
+    <div class="app-table-shell">
+      <table class="app-data-table">
         <thead>
           <tr>
             <th>Nombre</th>
             @if (esColor) { <th>Color</th> }
             @if (esModelo) { <th>Marca</th> }
             <th>Descripción</th>
-            <th>Uso</th>
-            <th>Estado</th>
+            <th class="app-col-center">Uso</th>
+            <th class="app-col-center">Estado</th>
             <th class="actions-heading">Acciones</th>
           </tr>
         </thead>
         <tbody>
-          @for (elemento of elementos(); track elemento.id) {
+          @for (elemento of elementosVisibles(); track elemento.id) {
             <tr>
               <td><strong>{{ elemento.nombre }}</strong></td>
               @if (esColor) {
@@ -115,15 +112,15 @@
               }
               @if (esModelo) { <td>{{ elemento.catalogoPadreNombre || '—' }}</td> }
               <td>{{ elemento.descripcion || '—' }}</td>
-              <td>
+              <td class="app-col-center">
                 {{ elemento.totalProductos }} producto(s)
                 @if (elemento.totalModelos > 0) { · {{ elemento.totalModelos }} modelo(s) }
               </td>
-              <td>
+              <td class="app-col-center">
                 @if (puedeCambiarEstado(elemento)) {
                   <mat-slide-toggle
                     [checked]="elemento.activo"
-                    (change)="cambiarEstado(elemento)"
+                    [disabled]="cambiandoEstado()" (change)="cambiarEstado(elemento, $event)"
                     [aria-label]="(elemento.activo ? 'Desactivar ' : 'Activar ') + elemento.nombre">
                   </mat-slide-toggle>
                 } @else {
@@ -152,5 +149,6 @@
         </tbody>
       </table>
     </div>
+    <footer class="app-table-footer" aria-live="polite">{{ elementosVisibles().length }} de {{ elementos().length }} registro(s)</footer>
   }
 </div>

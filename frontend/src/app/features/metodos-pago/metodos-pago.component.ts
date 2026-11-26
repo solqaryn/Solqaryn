@@ -1,6 +1,6 @@
 import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 
-import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, inject, signal, ChangeDetectionStrategy, TemplateRef, ViewChild } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatCheckboxModule } from '@angular/material/checkbox';
@@ -9,7 +9,10 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSlideToggleModule, MatSlideToggleChange } from '@angular/material/slide-toggle';
+import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { modalInstitucional } from '../../shared/modal-institucional/modal-institucional';
+import { firstValueFrom } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { MetodoPago, MetodoPagoCreate, MetodoPagoUpdate } from '../../core/models/metodo-pago.model';
 import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
@@ -28,7 +31,7 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
     MatInputModule,
     MatProgressSpinnerModule,
     MatSelectModule,
-    MatSlideToggleModule
+    MatSlideToggleModule, MatDialogModule
 ],
   template: `
     <section class="page-shell">
@@ -45,15 +48,10 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
         }
       </header>
 
-      @if (mostrandoFormulario()) {
-        <form class="editor" [formGroup]="form" (ngSubmit)="guardar()">
-          <div class="editor-title">
-            <div>
-              <h2>{{ editandoId() ? 'Editar método de pago' : 'Nuevo método de pago' }}</h2>
-              <p>Las reglas operativas se aplican también en backend; el formulario no sustituye las validaciones fail-closed.</p>
-            </div>
-            <button mat-icon-button type="button" (click)="cancelar()" aria-label="Cerrar formulario"><mat-icon>close</mat-icon></button>
-          </div>
+      <ng-template #formularioModal>
+        <form class="app-dialog-layout" [formGroup]="form" (ngSubmit)="guardar()">
+          <h2 mat-dialog-title>{{ editandoId() ? 'Editar método de pago' : 'Nuevo método de pago' }}</h2>
+          <mat-dialog-content class="app-dialog-layout__body">
 
           <div class="form-grid">
             <mat-form-field appearance="outline">
@@ -98,16 +96,17 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
 
           @if (metadataError()) { <p class="form-error" role="alert">{{ metadataError() }}</p> }
 
-          <div class="form-actions">
-            <button mat-button type="button" (click)="cancelar()">Cancelar</button>
+          </mat-dialog-content>
+          <mat-dialog-actions align="end">
+            <button mat-button type="button" [disabled]="saving()" (click)="cancelar()">Cancelar</button>
             <button mat-flat-button color="primary" type="submit" [disabled]="saving()">
               @if (saving()) { <mat-spinner diameter="20"></mat-spinner> }
               @if (!saving()) { <mat-icon>save</mat-icon> }
               <span>{{ saving() ? 'Guardando…' : 'Guardar' }}</span>
             </button>
-          </div>
+          </mat-dialog-actions>
         </form>
-      }
+      </ng-template>
 
       <div class="list-card">
         @if (loading()) {
@@ -115,9 +114,9 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
         } @else if (metodos().length === 0) {
           <div class="empty"><mat-icon>payments</mat-icon><h2>Sin métodos de pago</h2><p>No hay registros disponibles.</p></div>
         } @else {
-          <div class="table-scroll">
-            <table>
-              <thead><tr><th>Orden</th><th>Código</th><th>Nombre</th><th>Tipo</th><th>Reglas</th><th>Estado</th><th class="actions-col">Acciones</th></tr></thead>
+          <div class="app-table-shell">
+            <table class="app-data-table">
+              <thead><tr><th>Orden</th><th>Código</th><th>Nombre</th><th>Tipo</th><th>Reglas</th><th class="app-col-center">Estado</th><th class="actions-col">Acciones</th></tr></thead>
               <tbody>
                 @for (metodo of metodos(); track metodo.id; let i = $index) {
                   <tr [class.inactivo]="!metodo.activo">
@@ -141,8 +140,8 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
                         @if (!metodo.requiereReferencia && !metodo.requiereBanco && !metodo.permiteCambio) { <span class="muted-chip">Sin reglas extra</span> }
                       </div>
                     </td>
-                    <td>@if (puedeCambiarEstado(metodo)) {
-                      <mat-slide-toggle [checked]="metodo.activo" (change)="cambiarEstado(metodo)" [aria-label]="(metodo.activo ? 'Desactivar ' : 'Activar ') + metodo.nombre"></mat-slide-toggle>
+                    <td class="app-col-center">@if (puedeCambiarEstado(metodo)) {
+                      <mat-slide-toggle [checked]="metodo.activo" [disabled]="cambiandoEstado()" (change)="cambiarEstado(metodo, $event)" [aria-label]="(metodo.activo ? 'Desactivar ' : 'Activar ') + metodo.nombre"></mat-slide-toggle>
                     } @else { <span class="status" [class.ok]="metodo.activo">{{ metodo.activo ? 'Activo' : 'Inactivo' }}</span> }</td>
                     <td class="actions">
                       <button type="button" class="action-view" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver ' + metodo.nombre" [appConsultaRegistro]="{ titulo: 'Método de pago: ' + metodo.nombre, campos: { 'Nombre': metodo.nombre, 'Código': metodo.codigo, 'Tipo': metodo.tipo, 'Estado': metodo.activo ? 'Activo' : 'Inactivo', 'Requiere referencia': metodo.requiereReferencia, 'Requiere banco': metodo.requiereBanco, 'Permite cambio': metodo.permiteCambio, 'Orden': metodo.orden } }"><mat-icon>visibility</mat-icon></button>
@@ -154,13 +153,14 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
               </tbody>
             </table>
           </div>
+          <footer class="app-table-footer" aria-live="polite">{{ metodos().length }} registro(s)</footer>
         }
       </div>
     </section>
   `,
   changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
-    .page-shell{display:grid;gap:20px}.page-header{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}.page-header h1{margin:2px 0 6px;font-size:clamp(1.6rem,2.5vw,2.2rem)}.page-header p{margin:0;color:var(--text-secondary,#64748b)}.eyebrow{text-transform:uppercase;letter-spacing:.09em;font-weight:700;font-size:.75rem;color:var(--primary,#2563eb)!important}.editor,.list-card{background:var(--surface,#fff);border:1px solid var(--border,#e2e8f0);border-radius:16px;padding:20px;box-shadow:0 8px 24px rgba(15,23,42,.05)}.editor-title{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:18px}.editor-title h2{margin:0 0 4px}.editor-title p{margin:0;color:var(--text-secondary,#64748b)}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.flags{display:flex;flex-wrap:wrap;gap:18px 28px;align-items:center;margin:4px 0 18px}.metadata-field{width:100%}.form-actions{display:flex;justify-content:flex-end;gap:10px;align-items:center}.form-error{color:#b91c1c;margin:0 0 12px}.loading,.empty{min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--text-secondary,#64748b)}.empty mat-icon{font-size:42px;width:42px;height:42px}.empty h2,.empty p{margin:0}.table-scroll{overflow:auto}table{width:100%;border-collapse:collapse;min-width:900px}th,td{text-align:left;padding:13px 10px;border-bottom:1px solid var(--border,#e2e8f0);vertical-align:middle}th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-secondary,#64748b)}tr.inactivo{opacity:.68}.actions-col,.actions{text-align:right}.actions{white-space:nowrap}.order-cell{display:flex;align-items:center;gap:6px}.order-buttons{display:inline-flex}.order-buttons button{width:30px;height:30px}.chips{display:flex;gap:5px;flex-wrap:wrap}.chips span,.status{display:inline-flex;padding:3px 8px;border-radius:999px;background:#eef2ff;font-size:.76rem}.chips .muted-chip{background:#f1f5f9}.status{background:#fee2e2;color:#991b1b}.status.ok{background:#dcfce7;color:#166534}code{font-size:.85rem}@media(max-width:760px){.page-header{flex-direction:column}.form-grid{grid-template-columns:1fr}.editor,.list-card{padding:14px}}
+    .page-shell{display:grid;gap:20px}.page-header{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}.page-header h1{margin:2px 0 6px;font-size:clamp(1.6rem,2.5vw,2.2rem)}.page-header p{margin:0;color:var(--text-secondary,#64748b)}.eyebrow{text-transform:uppercase;letter-spacing:.09em;font-weight:700;font-size:.75rem;color:var(--primary,#2563eb)!important}.editor,.list-card{background:var(--surface,#fff);border:1px solid var(--border,#e2e8f0);border-radius:16px;padding:20px;box-shadow:0 8px 24px rgba(15,23,42,.05)}.editor-title{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:18px}.editor-title h2{margin:0 0 4px}.editor-title p{margin:0;color:var(--text-secondary,#64748b)}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.flags{display:flex;flex-wrap:wrap;gap:18px 28px;align-items:center;margin:4px 0 18px}.metadata-field{width:100%}.form-actions{display:flex;justify-content:flex-end;gap:10px;align-items:center}.form-error{color:#b91c1c;margin:0 0 12px}.loading,.empty{min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--text-secondary,#64748b)}.empty mat-icon{font-size:42px;width:42px;height:42px}.empty h2,.empty p{margin:0}.table-scroll{overflow:auto}table{width:100%;border-collapse:collapse;min-width:900px}th,td{text-align:left;padding:13px 10px;border-bottom:1px solid var(--border,#e2e8f0);vertical-align:middle}th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-secondary,#64748b)}tr.inactivo{opacity:.68}.actions{white-space:nowrap}.order-cell{white-space:nowrap}.order-cell>span{vertical-align:middle}.order-buttons{display:inline-flex}.order-buttons button{width:30px;height:30px}.chips{display:flex;gap:5px;flex-wrap:wrap}.chips span,.status{display:inline-flex;padding:3px 8px;border-radius:999px;background:#eef2ff;font-size:.76rem}.chips .muted-chip{background:#f1f5f9}.status{background:#fee2e2;color:#991b1b}.status.ok{background:#dcfce7;color:#166534}code{font-size:.85rem}@media(max-width:760px){.page-header{flex-direction:column}.form-grid{grid-template-columns:1fr}.editor,.list-card{padding:14px}}
   `]
 })
 export class MetodosPagoComponent implements OnInit {
@@ -169,6 +169,23 @@ export class MetodosPagoComponent implements OnInit {
   private readonly permisos = inject(PermisosRuntimeService);
   private readonly snackBar = inject(MatSnackBar);
   private readonly alerts = inject(AppAlertService);
+  private readonly dialog = inject(MatDialog, { optional: true });
+  @ViewChild('formularioModal') private formularioModal?: TemplateRef<unknown>;
+  private editorRef?: MatDialogRef<unknown>;
+  readonly cambiandoEstado = signal(false);
+
+  private abrirFormulario(): void {
+    this.mostrandoFormulario.set(true);
+    if (!this.formularioModal || !this.dialog) return;
+    const ref = this.dialog.open(this.formularioModal, modalInstitucional('l', { ariaLabel: this.editandoId() ? 'Editar registro' : 'Crear registro' }));
+    this.editorRef = ref;
+    ref.afterClosed().subscribe(() => {
+      if (this.editorRef !== ref) return;
+      this.editorRef = undefined;
+      this.mostrandoFormulario.set(false);
+      this.editandoId.set(null);
+    });
+  }
 
   readonly metodos = signal<MetodoPago[]>([]);
   readonly loading = signal(true);
@@ -221,14 +238,16 @@ export class MetodosPagoComponent implements OnInit {
   }
 
   nuevo(): void {
+    if (this.mostrandoFormulario()) return;
     this.editandoId.set(null);
     this.form.controls.codigo.enable();
     this.form.reset({ codigo: '', nombre: '', tipo: 'Otro', activo: true, requiereReferencia: false, requiereBanco: false, permiteCambio: false, orden: this.siguienteOrden(), metadata: '' });
     this.metadataError.set('');
-    this.mostrandoFormulario.set(true);
+    this.abrirFormulario();
   }
 
   editar(metodo: MetodoPago): void {
+    if (this.mostrandoFormulario()) return;
     this.editandoId.set(metodo.id);
     this.form.reset({
       codigo: metodo.codigo,
@@ -243,17 +262,21 @@ export class MetodosPagoComponent implements OnInit {
     });
     this.form.controls.codigo.disable();
     this.metadataError.set('');
-    this.mostrandoFormulario.set(true);
+    this.abrirFormulario();
   }
 
   cancelar(): void {
+    if (this.saving()) return;
+    const ref = this.editorRef;
+    this.editorRef = undefined;
+    ref?.close();
     this.mostrandoFormulario.set(false);
     this.editandoId.set(null);
     this.form.controls.codigo.enable();
     this.metadataError.set('');
   }
 
-  guardar(): void {
+  async guardar(): Promise<void> {
     if (this.form.invalid || this.saving()) {
       this.form.markAllAsTouched();
       return;
@@ -276,6 +299,8 @@ export class MetodosPagoComponent implements OnInit {
 
     const id = this.editandoId();
     this.saving.set(true);
+    const confirmado = await this.alerts.confirmar({ titulo: id ? 'Confirmar actualización' : 'Confirmar creación', mensaje: '¿Deseas guardar los cambios del método de pago?', confirmarTexto: 'Guardar' }).catch(() => false);
+    if (!confirmado || !this.mostrandoFormulario() || !this.permisos.puede('MetodosPago', id ? 'Editar' : 'Crear')) { this.saving.set(false); return; }
     const request$ = id
       ? this.service.update(id, base)
       : this.service.create({ ...base, codigo: raw.codigo!.trim().toUpperCase() } satisfies MetodoPagoCreate);
@@ -298,12 +323,17 @@ export class MetodosPagoComponent implements OnInit {
     return metodo.activo ? this.puedeDesactivar() : this.puedeActivar();
   }
 
-  cambiarEstado(metodo: MetodoPago): void {
-    const request$ = metodo.activo ? this.service.desactivar(metodo.id) : this.service.activar(metodo.id);
-    request$.subscribe({
-      next: ({ data }) => this.metodos.update(items => items.map(item => item.id === data.id ? data : item)),
-      error: err => this.error(err.error?.message ?? 'No se pudo cambiar el estado del método de pago.')
-    });
+  async cambiarEstado(metodo: MetodoPago, evento: MatSlideToggleChange): Promise<void> {
+    evento.source.checked = metodo.activo;
+    if (!this.puedeCambiarEstado(metodo) || this.cambiandoEstado()) return;
+    this.cambiandoEstado.set(true);
+    try {
+      const accion = metodo.activo ? 'Desactivar' : 'Activar';
+      if (!await this.alerts.confirmar({ titulo: accion + ' método', mensaje: '¿Deseas ' + accion.toLowerCase() + ' «' + metodo.nombre + '»?', confirmarTexto: accion }) || !this.permisos.puede('MetodosPago', accion)) return;
+      const { data } = await firstValueFrom(metodo.activo ? this.service.desactivar(metodo.id) : this.service.activar(metodo.id));
+      this.metodos.update(items => items.map(item => item.id === data.id ? data : item));
+    } catch { this.error('No se pudo cambiar el estado del método de pago.'); }
+    finally { this.cambiandoEstado.set(false); }
   }
 
   async eliminar(metodo: MetodoPago): Promise<void> {
@@ -325,12 +355,15 @@ export class MetodosPagoComponent implements OnInit {
     });
   }
 
-  mover(indice: number, delta: -1 | 1): void {
+  async mover(indice: number, delta: -1 | 1): Promise<void> {
     if (this.reordering()) return;
     const destino = indice + delta;
     const actual = [...this.metodos()];
     if (destino < 0 || destino >= actual.length) return;
 
+    this.reordering.set(true);
+    const confirmado = await this.alerts.confirmar({ titulo: 'Confirmar orden', mensaje: '¿Deseas cambiar el orden de este método de pago?', confirmarTexto: 'Mover' }).catch(() => false);
+    if (!confirmado || !this.permisos.puede('MetodosPago', 'Editar')) { this.reordering.set(false); return; }
     [actual[indice], actual[destino]] = [actual[destino], actual[indice]];
     const normalizados = actual.map((item, position) => ({ ...item, orden: position }));
     this.reordering.set(true);

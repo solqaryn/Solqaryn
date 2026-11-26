@@ -114,19 +114,15 @@ h2 {
   place-items: center;
 }
 
-.table td {
+.app-data-table td {
   min-width: 110px;
 }
 
-.table td:nth-child(1) {
+.app-data-table td:nth-child(1) {
   min-width: 160px;
 }
 
-.actions,
-.actions-heading {
-  text-align: right;
-  white-space: nowrap;
-}
+
 
 .color-swatch {
   display: inline-block;
