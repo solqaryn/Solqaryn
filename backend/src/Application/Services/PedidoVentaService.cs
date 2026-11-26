@@ -20,6 +20,7 @@ public sealed class PedidoVentaService : IPedidoVentaService
     private readonly IReservaInventarioRepository? _reservaRepository;
     private readonly IProductoVarianteRepository? _variantes;
     private readonly IExistenciaVarianteConcurrencyService? _existencias;
+    private readonly IProductoRepository? _productos;
 
     public PedidoVentaService(
         IPedidoVentaRepository repository,
@@ -29,7 +30,8 @@ public sealed class PedidoVentaService : IPedidoVentaService
         IUnitOfWork unitOfWork,
         IReservaInventarioRepository? reservaRepository = null,
         IProductoVarianteRepository? variantes = null,
-        IExistenciaVarianteConcurrencyService? existencias = null)
+        IExistenciaVarianteConcurrencyService? existencias = null,
+        IProductoRepository? productos = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _cotizacionRepository = cotizacionRepository ?? throw new ArgumentNullException(nameof(cotizacionRepository));
@@ -39,6 +41,7 @@ public sealed class PedidoVentaService : IPedidoVentaService
         _reservaRepository = reservaRepository;
         _variantes = variantes;
         _existencias = existencias;
+        _productos = productos;
     }
 
     public async Task<PedidoVentaDto> GetByIdAsync(int id)
@@ -198,6 +201,18 @@ public sealed class PedidoVentaService : IPedidoVentaService
                 throw new BusinessRuleException("El pedido ya tiene una reserva automática persistida y no puede crear otra.");
 
             var plan = pedido.PrepararReservaAutomatica(asignaciones);
+            // Bloquear primero los productos, después las variantes y existencias.
+            // Un borrador puede preceder una reclasificación comercial.
+            var productos = _productos
+                ?? throw new InvalidOperationException("IProductoRepository no está configurado para confirmar pedidos con reserva.");
+            var productoIds = pedido.Detalles.Select(x => x.ProductoId).Distinct().OrderBy(x => x).ToArray();
+            var productosPersistidos = await productos.GetByIdsForUpdateAsync(productoIds);
+            if (productosPersistidos.Count != productoIds.Length ||
+                !productosPersistidos.Select(x => x.Id).ToHashSet().SetEquals(productoIds) ||
+                productosPersistidos.Any(x => !x.Activo || x.Eliminado ||
+                    x.TipoInventario != TipoInventario.MercaderiaVenta))
+                throw new BusinessRuleException("El pedido contiene productos no disponibles para reserva comercial.");
+
             var varianteIds = plan.Asignaciones.Select(x => x.ProductoVarianteId).Distinct().ToArray();
             var variantesPersistidas = await variantes.GetByIdsForUpdateAsync(varianteIds);
             if (variantesPersistidas.Count != varianteIds.Length)
@@ -209,6 +224,11 @@ public sealed class PedidoVentaService : IPedidoVentaService
                 if (variante.Eliminado || !variante.Activo)
                     throw new BusinessRuleException($"La variante {variante.Id} no está activa para reservar inventario.");
             }
+
+            if (pedido.Detalles.Any(detalle => detalle.ProductoVarianteId is not int varianteId ||
+                !porId.TryGetValue(varianteId, out var variante) ||
+                variante.ProductoId != detalle.ProductoId))
+                throw new BusinessRuleException("La variante asignada no corresponde al producto del pedido.");
 
             var demandas = plan.Asignaciones.Select(asignacion =>
             {

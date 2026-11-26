@@ -1,3 +1,6 @@
+## 2026-11-25 | DEV06 | C07-01.M06.06 | R1-RESTAURADA
+- Adopta el parche preparado por DEV01 y ampliado por DEV04: confirma clasificación comercial del producto bajo bloqueo transaccional antes de variantes/existencias y verifica correspondencia producto-variante. Conserva replay de pedidos confirmados, autorización existente y siete escenarios negativos xUnit preparados. No cambia API, esquema, permisos ni entorno; CI exact-SHA y MySQL real pendientes, no LISTO/A5. Foco C01-04.M03.06 conserva prioridad; dependencia P01/P02/API12 ya documentada.
+
 ## 2026-11-25 | DEV05 | C15-04.M05.04 | R1-RESTAURADA
 - Amplía A0.68 con conteos, reservas y cuentas por cobrar: seis escenarios adicionales Chromium/JWT firmado/MySQL real (320 y 1280 px), reutilizando aserciones de rechazo de tenant ajeno y navegación segura. Sin cambios de permisos, fixtures, producto ni aserciones existentes. Base 9a86e1424fe7ce56c3fe154b3f9cccd63c46ded5; CI exact-SHA y revisión independiente pendientes; no cierre ni certificación de cobertura UX total.
 
