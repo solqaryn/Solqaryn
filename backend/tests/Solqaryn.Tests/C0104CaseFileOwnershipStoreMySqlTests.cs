@@ -18,6 +18,13 @@ namespace Solqaryn.Tests;
 [Trait("Category", "Integration")]
 public sealed class C0104CaseFileOwnershipStoreMySqlTests
 {
+    // HttpContextAccessor uses a static AsyncLocal across instances. Two simulated
+    // requests in the same async flow must not overwrite each other's tenant marker.
+    private sealed class IsolatedFixtureAccessor : IHttpContextAccessor
+    {
+        public HttpContext? HttpContext { get; set; }
+    }
+
     // Explicit synthetic source for storage integration only: no production grant.
     private sealed class FixtureAuthority(int tenant, int branch, int actor)
         : V5CaseFileOwnershipStore.IWriteAuthority
@@ -79,14 +86,16 @@ public sealed class C0104CaseFileOwnershipStoreMySqlTests
             setup.UsuarioEmpresas.AddRange(new UsuarioEmpresa(actor, a.Id, role.Id),
                 new UsuarioEmpresa(actor, b.Id, role.Id));
             await setup.SaveChangesAsync();
-            HttpContextAccessor Access(int tenant)
+            IHttpContextAccessor Access(int tenant)
             {
                 var h = new DefaultHttpContext();
                 h.Items[VerifiedCommercialTenant.AuthorizedEmpresaIdItemKey] = tenant;
-                return new() { HttpContext = h };
+                return new IsolatedFixtureAccessor { HttpContext = h };
             }
             await using var dbA = new AppDbContext(options, tenantHttpContextAccessor: Access(a.Id));
             await using var dbB = new AppDbContext(options, tenantHttpContextAccessor: Access(b.Id));
+            Assert.Equal(a.Id, dbA.AuthorizedCommercialEmpresaId);
+            Assert.Equal(b.Id, dbB.AuthorizedCommercialEmpresaId);
             var storeA = new V5CaseFileOwnershipStore(dbA, new FixtureAuthority(a.Id, branchA.Id, actor));
             var storeB = new V5CaseFileOwnershipStore(dbB, new FixtureAuthority(b.Id, branchB.Id, actor));
             var one = new V5CaseFileOwnershipStore.Selection(1,"fixture","r1",null,new string('a',64),"create");
