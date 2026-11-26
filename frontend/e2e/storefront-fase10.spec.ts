@@ -348,6 +348,10 @@ test.describe('Storefront Fase 10 — responsive, UX y accesibilidad', () => {
 
     const nombre = page.locator('input[formcontrolname="nombre"]');
     const telefono = page.locator('input[formcontrolname="telefono"]');
+    await expect(nombre).toHaveJSProperty('required', true);
+    await expect(telefono).toHaveJSProperty('required', true);
+    await expect(page.locator('input[formcontrolname="correo"]')).toHaveJSProperty('required', false);
+    await expect(page.locator('textarea[formcontrolname="notas"]')).toHaveJSProperty('required', false);
     await expect(nombre).toHaveAttribute('aria-invalid', 'true');
     await expect(telefono).toHaveAttribute('aria-invalid', 'true');
     await expect(nombre).toHaveAttribute('aria-describedby', /nombre-error/);

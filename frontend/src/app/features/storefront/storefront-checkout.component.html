@@ -62,7 +62,7 @@
             <div class="field-grid">
               <label class="field">
                 <span>Nombre completo <b aria-hidden="true">*</b></span>
-                <input type="text" formControlName="nombre" autocomplete="name" maxlength="120"
+                <input type="text" formControlName="nombre" required autocomplete="name" maxlength="120"
                   [attr.aria-invalid]="mostrarError('nombre') ? 'true' : null"
                   [attr.aria-describedby]="mostrarError('nombre') ? 'nombre-ayuda nombre-error' : 'nombre-ayuda'">
                 <small id="nombre-ayuda">Lo usaremos para identificar tu solicitud.</small>
@@ -71,7 +71,7 @@
 
               <label class="field">
                 <span>Teléfono <b aria-hidden="true">*</b></span>
-                <input type="tel" formControlName="telefono" autocomplete="tel" inputmode="tel" maxlength="24"
+                <input type="tel" formControlName="telefono" required autocomplete="tel" inputmode="tel" maxlength="24"
                   [attr.aria-invalid]="mostrarError('telefono') ? 'true' : null"
                   [attr.aria-describedby]="mostrarError('telefono') ? 'telefono-ayuda telefono-error' : 'telefono-ayuda'">
                 <small id="telefono-ayuda">Incluye código de país si estás fuera de Honduras.</small>
