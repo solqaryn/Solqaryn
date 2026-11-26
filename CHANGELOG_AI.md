@@ -1,3 +1,10 @@
+## 2026-11-26 — QA-FN-05: certificacion desplegada de edicion comercial
+
+- QA commit a3a730750920f56e0d4250b3d5a223f57da24c90: higiene, compilacion Release, inventario de dependencias sin vulnerabilidades y 2478/2478 pruebas no integracion PASS (run 45878040200 job 140110019656); esquema Oracle EF10 read-only PASS (45878040379).
+- Render personal dep-dc47set6e07s73eeajl0 LIVE, finalizado 18:48:03Z; Vercel personal dpl_WPAbjzopqdv8wnAoBjJmvUbstKpJ READY, ambos en a3a730750920f56e0d4250b3d5a223f57da24c90. Confirmar mismo runtime al finalizar. No se modifica infraestructura ni base.
+- Probe reanuda comercio sobre runtime nuevo: mismo payload PUT valido sobre producto propio, 404 exacto sobre ajeno en A/B y readback completo antes/despues sin cambios. Producto eliminado no editable. Mantiene todos los controles posteriores. Conserva evidencia administrativa 45872602673 solo con diff de aplicacion limitado al controlador de productos y CI backend aprobado; guard verifica el SHA exacto. Pendiente resultado HTTP integral y UI.
+- QA solamente; sin cambios DEV, MAIN, secretos ni automatizaciones. Scope Lock DEV 2ec240a9c4845d35b5b5f84bdcb8adf58d7c98cb job 140105587189 PASS. Rollback por revert del probe/workflow.
+
 ## 2026-11-26 — QA-FN-05: edición de producto fuera del contexto empresarial
 
 - Run 45876501311 job 140104801368: esquema 27 tablas/48 FKs/15 claves, Render/proxy, creación A/B, lectura/listado propio y denegación de lectura ajena A PASS; PUT ajeno HTTP 400. Revocación y limpieza PASS.

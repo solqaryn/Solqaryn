@@ -224,7 +224,7 @@ try:
     # QA_FN05_RESET_AUDIT. Resume on the same immutable runtime code instead
     # of resetting passwords again. Full mode remains available for future changes.
     if os.environ.get("QA_FN05_MODE","full") == "commercial":
-        require(expected_sha == "9c7ecc45cd72795212361a509f73c1890c53f934","Prior administration evidence only applies to the certified runtime")
+        require(expected_sha == "a3a730750920f56e0d4250b3d5a223f57da24c90","Prior administration evidence requires exact QA runtime with verified product-only diff")
         require(os.environ.get("QA_FN05_PRIOR_ADMIN_RUN") == "45872602673","Prior evidence required")
         print("QA_FN05_ADMINISTRATION_PRIOR_EVIDENCE=45872602673",flush=True)
     else:
@@ -300,7 +300,19 @@ try:
             rows = listed.get("items") if isinstance(listed,dict) else listed
             require(isinstance(rows,list) and {x["id"] for x in rows}=={item},"Catalog list is not isolated")
             call(f"/{route}/{foreign}",tag+"_FOREIGN_READ",(403,404),token=token,tenant=tenant)
-            call(f"/{route}/{foreign}",tag+"_FOREIGN_EDIT",(403,404),token=token,tenant=tenant,body=payload(name),method="PUT",form=form)
+            edit_payload = payload(name)
+            if route == "productos":
+                # The identical body must succeed for an owned product first.
+                own_edit = data(call(f"/{route}/{item}",tag+"_VALID_OWN_EDIT",token=token,tenant=tenant,body=edit_payload,method="PUT",form=form))
+                require(own_edit.get("id")==item and own_edit.get("nombre")==name,"Owned edit did not persist")
+                owner_token = tb if tenant==ea else ta
+                before = data(call(f"/{route}/{foreign}",tag+"_FOREIGN_OWNER_BEFORE",token=owner_token,tenant=other))
+                call(f"/{route}/{foreign}",tag+"_FOREIGN_EDIT",404,token=token,tenant=tenant,body=edit_payload,method="PUT",form=form)
+                after = data(call(f"/{route}/{foreign}",tag+"_FOREIGN_OWNER_AFTER",token=owner_token,tenant=other))
+                require(before==after,"Rejected cross-tenant edit altered product or variants")
+                print(tag+"_FOREIGN_EDIT_UNCHANGED=PASS",flush=True)
+            else:
+                call(f"/{route}/{foreign}",tag+"_FOREIGN_EDIT",(403,404),token=token,tenant=tenant,body=edit_payload,method="PUT",form=form)
             call(f"/{route}/{foreign}/desactivar",tag+"_FOREIGN_STATE",(403,404),token=token,tenant=tenant,method="PATCH")
             call(f"/{route}/{foreign}",tag+"_FOREIGN_DELETE",(403,404),token=token,tenant=tenant,method="DELETE")
             call("/"+route,tag+"_FOREIGN_SELECTOR",403,token=token,tenant=other)
@@ -324,6 +336,7 @@ try:
         call(f"/{route}/{ca}","QA_FN05_"+table.upper()+"_DELETE_A",token=ta,tenant=ea,method="DELETE")
         if route=="productos":
             call(f"/{route}/{ca}","QA_FN05_PRODUCTOS_DELETED_NOT_READABLE",404,token=ta,tenant=ea)
+            call(f"/{route}/{ca}","QA_FN05_PRODUCTOS_DELETED_NOT_EDITABLE",404,token=ta,tenant=ea,body=payload(amended),method="PUT",form=form)
             require(sql(f"SELECT COUNT(*) FROM Productos WHERE Id={ca} AND EmpresaId={ea} AND Eliminado=1 AND Activo=0;","product logical delete")=="1","Product history not preserved")
         else:
             deleted=data(call(f"/{route}/{ca}","QA_FN05_"+table.upper()+"_INACTIVE_HISTORY",token=ta,tenant=ea))

@@ -20,7 +20,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   authenticated:
-    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && (github.event_name == 'workflow_dispatch' || github.event.before == '76b230eb71ea8fefa5d153eb9e72deda19efe828')
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && (github.event_name == 'workflow_dispatch' || github.event.before == 'a3a730750920f56e0d4250b3d5a223f57da24c90')
     runs-on: ubuntu-latest
     timeout-minutes: 25
     environment: QA
@@ -40,7 +40,7 @@ jobs:
           sudo apt-get install -y mysql-client apache2-utils
       - name: Preflight fisico certificado y administracion A/B real
         env:
-          EXPECTED_DEPLOYED_SHA: ${{ inputs.expected_deployed_sha || '9c7ecc45cd72795212361a509f73c1890c53f934' }}
+          EXPECTED_DEPLOYED_SHA: ${{ inputs.expected_deployed_sha || 'a3a730750920f56e0d4250b3d5a223f57da24c90' }}
           GH_TOKEN: ${{ github.token }}
           QA_FN05_MODE: ${{ github.event_name == 'push' && 'commercial' || 'full' }}
           QA_FN05_PRIOR_ADMIN_RUN: '45872602673'
@@ -55,6 +55,13 @@ jobs:
           git merge-base --is-ancestor "$EXPECTED_DEPLOYED_SHA" HEAD
           git diff --exit-code "$EXPECTED_DEPLOYED_SHA" HEAD -- backend frontend render.yaml
           if [ "$QA_FN05_MODE" = commercial ]; then
+            test "$EXPECTED_DEPLOYED_SHA" = "a3a730750920f56e0d4250b3d5a223f57da24c90"
+            # Reuse IAM evidence only if the one changed runtime file is the
+            # product controller, with all administration code unchanged.
+            git merge-base --is-ancestor "9c7ecc45cd72795212361a509f73c1890c53f934" "$EXPECTED_DEPLOYED_SHA"
+            test "$(git diff --name-only "9c7ecc45cd72795212361a509f73c1890c53f934" "$EXPECTED_DEPLOYED_SHA" -- backend/src frontend render.yaml)" = backend/src/API/Controllers/ProductosController.cs
+            gh api repos/solqaryn/Solqaryn/actions/jobs/140110019656 | jq -e '.head_sha == "a3a730750920f56e0d4250b3d5a223f57da24c90" and .conclusion == "success"' >/dev/null
+            echo QA_FN05_ADMIN_RUNTIME_SCOPE_VERIFIED=PASS
             gh api repos/solqaryn/Solqaryn/actions/runs/45872602673 | jq -e '.head_branch == "qa" and .head_sha == "84902ad764bdc9754fa9c9586e053fb0b65b407d" and .status == "completed" and .conclusion == "failure"' >/dev/null
             umask 077
             # GitHub job logs contain ANSI controls. Redirect to a private
