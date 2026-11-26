@@ -1,3 +1,6 @@
+## 2026-11-25 | DEV03 | C01-04.M03.06 | R1-RESTAURADA
+- V44R1-J20-CD4F5BCC-C0104M0306-DURABLE-READBACK: Infrastructure sink aislado verifica recibo completo por parámetros tipados dentro de transacción InnoDB antes de COMMIT; compara scope, clave, campos saneados, correlación, UTC microsegundos e identidad proveedor. Regresión MySQL 8.4 real prevista: trigger altera correlación con affectedRows=1, exige rollback; observación caducada y replay fresco del mismo build conservan recibo original, sin inventar TTL. R2, D/E y M02.06 §3 / M02.05 ID08. Sin DDL runtime, DI/HTTP tenant, permisos ni Aiven; no acredita retención comercial ni A5. CI exact-SHA pendiente; revert normal en dev.
+
 ## 2026-11-25 | DEV05 | C01-04.M03.06 | R1-RESTAURADA
 - V44R1-J40-4E242BDF-C0104M0306-COMPENSATION | RUN_ID 4e242bdf-1844-8324-8ed5-22992a4a874c | TASK_ID 6adc2e55f47c81919f6374e561687076 | base 67d0c6011fa64da640e17fb4e8ff63d8f180c54e
 - Adoptado paquete DEV04 RUN b3ea05d9-bd18-832c-b815-9b1e95b27790: vincular denegación compensatoria post-INSERT con PriorAuditId de la consulta realmente persistida, tanto Exito como Error. Sin grants, cambios de esquema, tenant, middleware ni datos reales. Prueba MySQL con correlación reutilizada y vínculo exacto; 13 anclas comprobadas sobre blobs intactos.

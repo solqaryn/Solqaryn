@@ -97,7 +97,9 @@ public sealed class V5UniversalCaseFileQaDurableMySqlAuditSink
             Add(cmd, "@name", entry.CheckName);
             Add(cmd, "@status", entry.CheckStatus);
             Add(cmd, "@conclusion", entry.CheckConclusion);
-            Add(cmd, "@observed", entry.ObservedAtUtc.UtcDateTime);
+            // DATETIME(6) and the legacy evidence key share microsecond precision.
+            var observed = entry.ObservedAtUtc.UtcDateTime;
+            Add(cmd, "@observed", observed.AddTicks(-(observed.Ticks % 10)));
             Add(cmd, "@class", entry.VerificationClass);
             // Correlation is separate from the immutable idempotency key.
             Add(cmd, "@correlation", entry.CorrelationId.ToString("N"));
@@ -109,6 +111,30 @@ public sealed class V5UniversalCaseFileQaDurableMySqlAuditSink
             Add(cmd, "@check", entry.ProviderJob?.CheckRunId);
             Add(cmd, "@suite", entry.ProviderJob?.CheckSuiteId);
             if (await cmd.ExecuteNonQueryAsync(cancellationToken) != 1)
+                throw new InvalidOperationException("CASEFILE_QA_DURABLE_WRITE_REJECTED");
+            cancellationToken.ThrowIfCancellationRequested();
+            // Affected-row count alone cannot establish that the stored envelope
+            // matches the receipt (for example, a BEFORE INSERT trigger may alter it).
+            // Reuse the typed parameters and check within the same transaction.
+            cmd.CommandText = $"""
+                SELECT COUNT(*) FROM {Table}
+                WHERE TenantId=@tenant AND CaseFileId=@casefile
+                  AND CAST(EvidenceKey AS BINARY)=CAST(@key AS BINARY)
+                  AND CAST(MicrotaskId AS BINARY)=CAST(@task AS BINARY)
+                  AND CAST(RouteKey AS BINARY)=CAST(@route AS BINARY)
+                  AND CAST(SourceSha AS BINARY)=CAST(@sha AS BINARY)
+                  AND CAST(CheckName AS BINARY)=CAST(@name AS BINARY)
+                  AND CAST(CheckStatus AS BINARY)=CAST(@status AS BINARY)
+                  AND CAST(CheckConclusion AS BINARY)=CAST(@conclusion AS BINARY)
+                  AND ObservedUtc=@observed
+                  AND CAST(VerificationClass AS BINARY)=CAST(@class AS BINARY)
+                  AND CAST(CorrelationId AS BINARY)=CAST(@correlation AS BINARY)
+                  AND ProviderWorkflowId <=> @workflow AND ProviderRunId <=> @run
+                  AND ProviderAttempt <=> @attempt AND ProviderJobId <=> @job
+                  AND ProviderCheckRunId <=> @check AND ProviderCheckSuiteId <=> @suite
+                """;
+            if (Convert.ToInt64(await cmd.ExecuteScalarAsync(cancellationToken),
+                    CultureInfo.InvariantCulture) != 1)
                 throw new InvalidOperationException("CASEFILE_QA_DURABLE_WRITE_REJECTED");
             cancellationToken.ThrowIfCancellationRequested();
             await tx.CommitAsync(cancellationToken);

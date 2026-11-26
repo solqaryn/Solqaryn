@@ -335,6 +335,57 @@ public sealed class C0104M0306DurableQaAuditMysql84Tests
                 Assert.False(await reader.ReadAsync());
             }
 
+            // Admission freshness is not a retention policy: an old receipt must
+            // still exist and a fresh observation of its build must not overwrite it.
+            var later = utc.AddMinutes(11);
+            var laterClock = new FrozenClock(later);
+            var laterSink = new V5UniversalCaseFileQaDurableMySqlAuditSink(
+                () => new MySqlConnection(isolated), 101, 42, laterClock);
+            var originalObservation = Observation(utc, "101", "42") with
+            {
+                CheckName = provider.CheckName, CheckConclusion = provider.Conclusion,
+                ProviderJob = provider
+            };
+            var oldAudit = new Audit(new Source(originalObservation), laterSink, laterClock);
+            Assert.Equal("CASEFILE_QA_CHECK_OR_TIME_INVALID",
+                (await oldAudit.CaptureAsync(Microtask, "casefile.timeline", Sha, "101", "42")).Code);
+            var freshReplay = new Audit(new Source(originalObservation with
+            {
+                ObservedAtUtc = later
+            }), laterSink, laterClock);
+            Assert.Equal("CASEFILE_QA_AUDIT_SINK_UNAVAILABLE",
+                (await freshReplay.CaptureAsync(Microtask, "casefile.timeline", Sha, "101", "42")).Code);
+            Assert.Equal(8L, await CountAll(isolated));
+            await using (var retained = new MySqlConnection(isolated))
+            {
+                await retained.OpenAsync();
+                await using var cmd = retained.CreateCommand();
+                cmd.CommandText = $"SELECT CorrelationId,CheckConclusion,ObservedUtc FROM {Table} WHERE TenantId=101 AND CaseFileId=42 AND ProviderRunId=200 AND ProviderAttempt=1 AND ProviderJobId=300";
+                await using var reader = await cmd.ExecuteReaderAsync();
+                Assert.True(await reader.ReadAsync());
+                Assert.Equal(firstBuild.CorrelationId.ToString("N"), reader.GetString(0));
+                Assert.Equal("failure", reader.GetString(1));
+                Assert.Equal(utc.UtcDateTime.Ticks / 10, reader.GetDateTime(2).Ticks / 10);
+                Assert.False(await reader.ReadAsync());
+            }
+
+            // An actual MySQL trigger can return affectedRows=1 while corrupting
+            // the receipt. Verify fail-closed and rollback, not just the count.
+            await Execute(isolated, $"CREATE TRIGGER C0104AlterReceipt BEFORE INSERT ON {Table} FOR EACH ROW SET NEW.CorrelationId = REPEAT('0', 32)");
+            try
+            {
+                var corrupted = await Assert.ThrowsAsync<InvalidOperationException>(async () =>
+                    await direct.WriteAsync(safe with { ObservedAtUtc = utc.AddSeconds(2) }, default));
+                Assert.Equal("CASEFILE_QA_DURABLE_WRITE_REJECTED", corrupted.Message);
+                Assert.Equal(8L, await CountAll(isolated));
+                Assert.Equal(6L, await Count(isolated, 101, 42));
+                Assert.Equal(2L, await Count(isolated, 202, 42));
+            }
+            finally
+            {
+                await Execute(isolated, "DROP TRIGGER C0104AlterReceipt");
+            }
+
             // Storage outage or schema absence cannot create a successful receipt.
             await Execute(isolated, $"DROP TABLE {Table}");
             var unavailable = await a.CaptureAsync(
