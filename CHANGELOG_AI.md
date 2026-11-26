@@ -1,3 +1,7 @@
+## 2026-11-26 — QA-FN-05: ajustar fixture PDF a autoridad efectiva
+
+- Run 45884147779 job 140130555350: 2481/2482; regresiones nuevas de reportes aprobadas. Prueba histórica N58DExportPdfServiceTests generaba PDF sin contexto autorizado y ahora recibe rechazo correcto. Fixture incorpora exclusivamente marca interna de tenant autorizado; conserva las aserciones de PDF real y formato inválido. Sin modificar runtime ni relajar controles. Pendiente rerun del nuevo SHA. Scope Lock DEV 80303459e87747d83c8f4d5195fe0311702fd980 job 140131696626 PASS; cambios concurrentes DEV no trasladados a QA.
+
 ## 2026-11-26 — QA-FN-05: cierre auditoría viva y aislamiento reportes administrativos
 
 - Run 45883190610 job 140127330537 SUCCESS: auditoría A/B, operador 403, anónimo 401, registros reales por propietario/ámbito, filtros/paginación, rechazo cruzado y limpieza PASS. Render dep-dc48c46q1p3s73d7nq30 LIVE 242628b6, Vercel 71c2027f READY. CI 2480/2480, auditoría NuGet, barrido, propiedad comercial y Oracle read-only aprobados.

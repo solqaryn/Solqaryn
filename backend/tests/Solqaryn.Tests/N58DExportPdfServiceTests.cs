@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Http;
 using Solqaryn.Application.DTOs;
 using Solqaryn.Infrastructure.Persistence;
 using Solqaryn.Infrastructure.Services;
@@ -15,7 +16,9 @@ public sealed class N58DExportPdfServiceTests
             .UseInMemoryDatabase($"n58d-pdf-{Guid.NewGuid():N}")
             .Options;
 
-        await using var db = new AppDbContext(options);
+        var http = new DefaultHttpContext();
+        http.Items["SOLQARYN_AUTHORIZED_EMPRESA_ID"] = 11;
+        await using var db = new AppDbContext(options, httpContextAccessor: new HttpContextAccessor { HttpContext = http });
         var service = new ReporteAdministrativoService(db);
 
         var archivo = await service.ExportarAsync(
