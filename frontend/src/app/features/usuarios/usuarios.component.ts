@@ -1,14 +1,18 @@
-import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { MatDialog, MatDialogModule, MatDialogRef } from '@angular/material/dialog';
+import { modalInstitucional } from '../../shared/modal-institucional/modal-institucional';
+import { crearAccionesInstitucionales } from '../../shared/modal-institucional/acciones-institucionales';
+import { TenantContextoVerificado } from '../../core/auth/tenant-context.service';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { Component, OnInit, inject, signal, computed, ChangeDetectionStrategy, TemplateRef, ViewChild, effect, DestroyRef } from '@angular/core';
 
 import { ReactiveFormsModule, FormBuilder, FormControl, Validators } from '@angular/forms';
-import { RouterLink } from '@angular/router';
 import { debounceTime, distinctUntilChanged } from 'rxjs/operators';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
-import { MatSelectModule } from '@angular/material/select';
+import { MatSelectModule, MatSelectChange } from '@angular/material/select';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSlideToggleModule, MatSlideToggleChange } from '@angular/material/slide-toggle';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { UsuarioService, UsuarioEmpresa } from '../../services/usuario.service';
@@ -19,7 +23,6 @@ import { Rol } from '../../core/models/rol.model';
 import { PagedResult } from '../../core/models/api-response.model';
 import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
 import { AuthService } from '../../core/auth/auth.service';
-import { AppAlertService } from '../../shared/alerts/app-alert.service';
 
 const USUARIO_VALIDO = /^[a-zA-Z0-9._-]{3,50}$/;
 const PASSWORD_SEGURA = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{10,128}$/;
@@ -29,7 +32,7 @@ const PASSWORD_SEGURA = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{10,1
   standalone: true,
   imports: [
     ReactiveFormsModule,
-    RouterLink,
+    MatDialogModule,
     MatFormFieldModule,
     MatInputModule,
     MatSelectModule,
@@ -44,6 +47,41 @@ const PASSWORD_SEGURA = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{10,1
 })
 export class UsuariosComponent implements OnInit {
   private readonly fb = inject(FormBuilder);
+  private readonly acciones = crearAccionesInstitucionales('Usuarios');
+  private readonly dialog = inject(MatDialog);
+  private readonly destroyRef = inject(DestroyRef);
+  @ViewChild('crearUsuarioModal') private crearUsuarioModal?: TemplateRef<unknown>;
+  @ViewChild('gestionEmpresasModal') private gestionEmpresasModal?: TemplateRef<unknown>;
+  private crearRef?: MatDialogRef<unknown>;
+  private empresasRef?: MatDialogRef<unknown>;
+  private contextoEditor: TenantContextoVerificado | null = null;
+  private contextoEmpresas: TenantContextoVerificado | null = null;
+  readonly cambiandoEstado = signal(false);
+  readonly estadoFiltro = signal<'todos' | 'activos' | 'inactivos' | 'bloqueados'>('todos');
+  readonly usuariosVisibles = computed(() => this.usuarios().filter(u => this.estadoFiltro() === 'todos' ||
+    (this.estadoFiltro() === 'bloqueados' ? u.bloqueado : u.activo === (this.estadoFiltro() === 'activos'))));
+  limpiarFiltros(): void { this.estadoFiltro.set('todos'); this.buscador.setValue(''); }
+
+  abrirCreacion(): void {
+    const contexto = this.acciones.contexto();
+    if (!this.crearUsuarioModal || this.crearRef || !this.acciones.vigente(contexto, 'Crear') || !this.permisosRuntime.puede('Usuarios', 'AsignarRol')) return;
+    this.contextoEditor = contexto;
+    this.form.reset();
+    this.errorMessage.set(null);
+    this.mostrarFormulario.set(true);
+    const ref = this.dialog.open(this.crearUsuarioModal, modalInstitucional('l', { ariaLabel: 'Nuevo usuario' }));
+    this.crearRef = ref;
+    ref.afterClosed().subscribe(() => { if (this.crearRef !== ref) return; this.crearRef = undefined; this.mostrarFormulario.set(false); this.form.reset(); });
+  }
+
+  cancelarCreacion(): void { if (!this.saving()) this.crearRef?.close(); }
+
+  async abrirUsuario(id: number, modo: 'Ver' | 'Editar'): Promise<void> {
+    if (modo === 'Ver') {
+      await this.acciones.abrir(() => import('./usuario-detail.component').then(m => m.UsuarioDetailComponent), 'm', modo, id);
+    } else if (await this.acciones.abrir(() => import('./usuario-form.component').then(m => m.UsuarioFormComponent), 'l', modo, id)) this.cargar();
+  }
+
 
   readonly usuarios = signal<Usuario[]>([]);
   readonly roles = signal<Rol[]>([]);
@@ -86,9 +124,14 @@ export class UsuariosComponent implements OnInit {
     private empresaService: EmpresaService,
     private permisosRuntime: PermisosRuntimeService,
     private auth: AuthService,
-    private snackBar: MatSnackBar,
-    private alerts: AppAlertService
-  ) {}
+    private snackBar: MatSnackBar
+  ) {
+    effect(() => {
+      const contexto = this.acciones.contexto();
+      if (this.mostrarFormulario() && contexto !== this.contextoEditor) this.crearRef?.close();
+      if (this.usuarioGestionado() && contexto !== this.contextoEmpresas) this.empresasRef?.close();
+    });
+  }
 
   ngOnInit(): void {
     this.puedeAsignarRol.set(this.permisosRuntime.puede('Usuarios', 'AsignarRol'));
@@ -109,7 +152,7 @@ export class UsuariosComponent implements OnInit {
     }
 
     this.buscador.valueChanges
-      .pipe(debounceTime(350), distinctUntilChanged())
+      .pipe(debounceTime(350), distinctUntilChanged(), takeUntilDestroyed(this.destroyRef))
       .subscribe(() => this.cargar());
   }
 
@@ -198,14 +241,17 @@ export class UsuariosComponent implements OnInit {
   }
 
   abrirGestionEmpresas(usuario: Usuario): void {
-    if (!this.puedeGestionarEmpresas()) return;
-
-    if (this.usuarioGestionado()?.id === usuario.id) {
-      this.cerrarGestionEmpresas();
-      return;
-    }
-
+    const contexto = this.acciones.contexto();
+    if (!this.gestionEmpresasModal || this.empresasRef || !this.puedeGestionarEmpresas() || !this.acciones.vigente(contexto, 'AsignarRol')) return;
+    this.contextoEmpresas = contexto;
     this.usuarioGestionado.set(usuario);
+    const ref = this.dialog.open(this.gestionEmpresasModal, modalInstitucional('xl', { ariaLabel: 'Empresas y roles del usuario' }));
+    this.empresasRef = ref;
+    ref.afterClosed().subscribe(() => {
+      if (this.empresasRef !== ref) return;
+      this.empresasRef = undefined;
+      this.usuarioGestionado.set(null); this.membresias.set([]); this.empresaForm.reset(); this.mensajeMembresias.set(null);
+    });
     this.empresaForm.reset();
     this.mensajeMembresias.set(null);
 
@@ -219,17 +265,13 @@ export class UsuariosComponent implements OnInit {
     this.cargarMembresias(usuario.id);
   }
 
-  cerrarGestionEmpresas(): void {
-    this.usuarioGestionado.set(null);
-    this.membresias.set([]);
-    this.empresaForm.reset();
-    this.mensajeMembresias.set(null);
-  }
+  cerrarGestionEmpresas(): void { if (!this.savingMembresia()) this.empresasRef?.close(); }
 
   private cargarMembresias(usuarioId: number): void {
     this.loadingMembresias.set(true);
     this.usuarioService.getEmpresas(usuarioId).subscribe({
       next: (res) => {
+        if (this.usuarioGestionado()?.id !== usuarioId || !this.acciones.vigente(this.contextoEmpresas, 'AsignarRol')) return;
         this.membresias.set(res.data ?? []);
         this.loadingMembresias.set(false);
       },
@@ -253,9 +295,9 @@ export class UsuariosComponent implements OnInit {
     return this.roles().find((r) => r.id === rolId)?.nombre ?? `Rol #${rolId}`;
   }
 
-  asignarEmpresa(): void {
+  async asignarEmpresa(): Promise<void> {
     const usuario = this.usuarioGestionado();
-    if (!usuario || !this.puedeGestionarEmpresas() || !this.puedeVerEmpresas() || !this.puedeVerRoles()) return;
+    if (this.savingMembresia() || !usuario || !this.puedeGestionarEmpresas() || !this.puedeVerEmpresas() || !this.puedeVerRoles()) return;
     if (this.empresaForm.invalid) {
       this.empresaForm.markAllAsTouched();
       return;
@@ -265,6 +307,7 @@ export class UsuariosComponent implements OnInit {
     if (empresaId === null || rolId === null || this.empresaYaAsignada(empresaId)) return;
 
     this.savingMembresia.set(true);
+    if (!await this.acciones.confirmar('AsignarRol', { titulo: 'Asignar empresa', mensaje: '¿Deseas asignar la empresa y el rol seleccionados a este usuario?', confirmarTexto: 'Asignar' }) || !this.acciones.vigente(this.contextoEmpresas, 'AsignarRol')) { this.savingMembresia.set(false); return; }
     this.mensajeMembresias.set(null);
     this.usuarioService.asignarEmpresa(usuario.id, empresaId, rolId).subscribe({
       next: () => {
@@ -280,11 +323,14 @@ export class UsuariosComponent implements OnInit {
     });
   }
 
-  cambiarRolMembresia(membresia: UsuarioEmpresa, rolId: number): void {
+  async cambiarRolMembresia(membresia: UsuarioEmpresa, evento: MatSelectChange): Promise<void> {
+    const rolId = Number(evento.value);
+    evento.source.value = membresia.rolId;
     const usuario = this.usuarioGestionado();
-    if (!usuario || !this.puedeAsignarRol() || rolId === membresia.rolId) return;
+    if (!usuario || this.savingMembresia() || !this.puedeAsignarRol() || rolId === membresia.rolId) return;
 
     this.savingMembresia.set(true);
+    if (!await this.acciones.confirmar('AsignarRol', { titulo: 'Confirmar cambio de rol', mensaje: '¿Deseas asignar «' + this.nombreRol(rolId) + '» en esta empresa?', confirmarTexto: 'Cambiar rol' }) || !this.acciones.vigente(this.contextoEmpresas, 'AsignarRol')) { this.savingMembresia.set(false); return; }
     this.mensajeMembresias.set(null);
     this.usuarioService.cambiarRolEmpresa(usuario.id, membresia.empresaId, rolId).subscribe({
       next: () => {
@@ -302,19 +348,18 @@ export class UsuariosComponent implements OnInit {
 
   async toggleMembresia(membresia: UsuarioEmpresa): Promise<void> {
     const usuario = this.usuarioGestionado();
-    if (!usuario || !this.puedeCambiarEstadoMembresia(membresia)) return;
+    if (!usuario || this.savingMembresia() || !this.puedeCambiarEstadoMembresia(membresia)) return;
 
     const activar = !membresia.activa;
-    const confirmado = await this.alerts.confirmar({
+    this.savingMembresia.set(true);
+    const confirmado = await this.acciones.confirmar(activar ? 'Activar' : 'Desactivar', {
       titulo: activar ? 'Restaurar empresa' : 'Quitar empresa',
       mensaje: `${activar ? 'Se restaurará' : 'Se quitará'} ${this.nombreEmpresa(membresia.empresaId)} para ${usuario.nombreCompleto}.`,
       detalle: activar ? 'La membresía volverá a estar activa.' : 'La membresía quedará inactiva y podrá restaurarse después.',
       tipo: activar ? 'info' : 'advertencia',
       confirmarTexto: activar ? 'Restaurar' : 'Quitar'
     });
-    if (!confirmado) return;
-
-    this.savingMembresia.set(true);
+    if (!confirmado || !this.acciones.vigente(this.contextoEmpresas, 'AsignarRol')) { this.savingMembresia.set(false); return; }
     this.mensajeMembresias.set(null);
     this.usuarioService.cambiarEstadoEmpresa(usuario.id, membresia.empresaId, activar).subscribe({
       next: () => {
@@ -329,8 +374,8 @@ export class UsuariosComponent implements OnInit {
     });
   }
 
-  crear(): void {
-    if (!this.puedeCrear() || this.form.invalid) {
+  async crear(): Promise<void> {
+    if (this.saving() || !this.puedeCrear() || this.form.invalid) {
       this.form.markAllAsTouched();
       return;
     }
@@ -339,6 +384,7 @@ export class UsuariosComponent implements OnInit {
     this.errorMessage.set(null);
 
     const valor = this.form.getRawValue();
+    if (!await this.acciones.confirmar('Crear', { titulo: 'Confirmar nuevo usuario', mensaje: '¿Deseas crear este usuario con el rol seleccionado?', confirmarTexto: 'Crear usuario' }) || !this.acciones.vigente(this.contextoEditor, 'Crear') || !this.permisosRuntime.puede('Usuarios', 'AsignarRol')) { this.saving.set(false); return; }
     this.usuarioService.create({
       nombreUsuario: valor.nombreUsuario!.trim(),
       nombreCompleto: valor.nombreCompleto!.trim(),
@@ -348,6 +394,7 @@ export class UsuariosComponent implements OnInit {
     }).subscribe({
       next: () => {
         this.saving.set(false);
+        this.crearRef?.close(true);
         this.mostrarFormulario.set(false);
         this.form.reset();
         this.cargar();
@@ -359,29 +406,31 @@ export class UsuariosComponent implements OnInit {
     });
   }
 
-  async toggleEstado(usuario: Usuario): Promise<void> {
-    if (!this.puedeCambiarEstado(usuario)) return;
+  async toggleEstado(usuario: Usuario, evento: MatSlideToggleChange): Promise<void> {
+    evento.source.checked = usuario.activo;
+    if (!this.puedeCambiarEstado(usuario) || this.cambiandoEstado()) return;
+    this.cambiandoEstado.set(true);
 
     const activar = !usuario.activo;
-    const confirmado = await this.alerts.confirmar({
+    const confirmado = await this.acciones.confirmar(activar ? 'Activar' : 'Desactivar', {
       titulo: activar ? 'Activar usuario' : 'Desactivar usuario',
       mensaje: `Se ${activar ? 'habilitará' : 'deshabilitará'} el acceso de "${usuario.nombreCompleto}".`,
       detalle: activar ? 'Podrá ingresar según los permisos de su rol.' : 'No podrá iniciar nuevas sesiones.',
       tipo: activar ? 'info' : 'advertencia',
       confirmarTexto: activar ? 'Activar' : 'Desactivar'
     });
-    if (!confirmado) return;
+    if (!confirmado || this.esUsuarioActual(usuario)) { this.cambiandoEstado.set(false); return; }
 
     this.usuarioService.updateEstado(usuario.id, activar).subscribe({
-      next: () => this.cargar(),
-      error: (err) => this.snackBar.open(err.error?.message ?? 'No se pudo cambiar el estado.', 'Cerrar', { duration: 5000 })
+      next: () => { this.cambiandoEstado.set(false); this.cargar(); },
+      error: (err) => { this.cambiandoEstado.set(false); this.snackBar.open(err.error?.message ?? 'No se pudo cambiar el estado.', 'Cerrar', { duration: 5000 }); }
     });
   }
 
   async bloquear(usuario: Usuario): Promise<void> {
     if (!this.puedeBloquearUsuario(usuario) || usuario.bloqueado) return;
 
-    const motivo = await this.alerts.solicitarTexto({
+    const motivo = await this.acciones.solicitarTexto('Desactivar', {
       titulo: 'Bloquear usuario',
       mensaje: `Indica por qué se bloqueará a "${usuario.nombreCompleto}".`,
       tipo: 'advertencia',
@@ -399,7 +448,7 @@ export class UsuariosComponent implements OnInit {
   async desbloquear(usuario: Usuario): Promise<void> {
     if (!this.puedeBloquearUsuario(usuario) || !usuario.bloqueado) return;
 
-    const confirmado = await this.alerts.confirmar({
+    const confirmado = await this.acciones.confirmar('Activar', {
       titulo: 'Desbloquear usuario',
       mensaje: `Se restablecerá el acceso de "${usuario.nombreCompleto}".`,
       confirmarTexto: 'Desbloquear'
@@ -415,7 +464,7 @@ export class UsuariosComponent implements OnInit {
   async eliminar(usuario: Usuario): Promise<void> {
     if (!this.puedeEliminar() || this.esUsuarioActual(usuario)) return;
 
-    const confirmado = await this.alerts.confirmar({
+    const confirmado = await this.acciones.confirmar('EliminarLogico', {
       titulo: 'Eliminar usuario',
       mensaje: `Se eliminará lógicamente a "${usuario.nombreCompleto}".`,
       detalle: 'Sus registros históricos se conservarán.',

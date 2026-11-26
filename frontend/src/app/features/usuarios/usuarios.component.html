@@ -1,25 +1,31 @@
 <div class="header-row">
   <h1 class="page-title">Usuarios</h1>
   @if (puedeCrear()) {
-    <button mat-flat-button color="primary" (click)="mostrarFormulario.set(!mostrarFormulario())">
-      <mat-icon>{{ mostrarFormulario() ? 'close' : 'add' }}</mat-icon>
-      {{ mostrarFormulario() ? 'Cancelar' : 'Nuevo usuario' }}
+    <button mat-flat-button color="primary" type="button" (click)="abrirCreacion()">
+      <mat-icon>add</mat-icon>
+      Nuevo usuario
     </button>
   }
 </div>
 
-<mat-form-field appearance="outline" class="search-field">
+<div class="app-table-filters" aria-label="Filtros de usuarios">
+<mat-form-field appearance="outline" class="search-field" subscriptSizing="dynamic">
   <mat-label>Buscar por usuario o nombre</mat-label>
   <input matInput [formControl]="buscador" placeholder="Escribe para buscar...">
   <mat-icon matSuffix>search</mat-icon>
 </mat-form-field>
+<mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>Estado</mat-label><mat-select [value]="estadoFiltro()" (selectionChange)="estadoFiltro.set($event.value)"><mat-option value="todos">Todos</mat-option><mat-option value="activos">Activos</mat-option><mat-option value="inactivos">Inactivos</mat-option><mat-option value="bloqueados">Bloqueados</mat-option></mat-select></mat-form-field>
+<button mat-stroked-button type="button" (click)="limpiarFiltros()"><mat-icon>filter_alt_off</mat-icon> Limpiar filtros</button>
+</div>
 
 @if (errorMessage() && !mostrarFormulario()) {
   <p class="error">{{ errorMessage() }}</p>
 }
 
-@if (mostrarFormulario() && puedeCrear()) {
-  <form class="card form" [formGroup]="form" (ngSubmit)="crear()">
+<ng-template #crearUsuarioModal>
+  <form class="app-dialog-layout" [formGroup]="form" (ngSubmit)="crear()">
+    <h2 mat-dialog-title>Nuevo usuario</h2>
+    <mat-dialog-content class="app-dialog-layout__body">
     <div class="fields-grid">
       <mat-form-field appearance="outline">
         <mat-label>Nombre de usuario (login)</mat-label>
@@ -61,20 +67,22 @@
       <p class="error">{{ errorMessage() }}</p>
     }
 
-    <div class="form-actions">
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
+      <button mat-button type="button" [disabled]="saving()" (click)="cancelarCreacion()">Cancelar</button>
       <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving()">
         @if (saving()) { <mat-spinner diameter="18"></mat-spinner> }
         Crear usuario
       </button>
-    </div>
+    </mat-dialog-actions>
   </form>
-}
+</ng-template>
 
 <div class="card">
   @if (loading()) {
     <div class="loading"><mat-spinner></mat-spinner></div>
   } @else {
-    <table class="table table-desktop">
+    <div class="app-table-shell" role="region" aria-label="Tabla de usuarios" tabindex="0"><table class="app-data-table">
       <thead>
         <tr>
           <th>Usuario</th>
@@ -85,7 +93,7 @@
         </tr>
       </thead>
       <tbody>
-        @for (u of usuarios(); track u.id) {
+        @for (u of usuariosVisibles(); track u.id) {
           <tr>
             <td>{{ u.nombreUsuario }}</td>
             <td>{{ u.nombreCompleto }}</td>
@@ -94,16 +102,16 @@
               @if (u.bloqueado) {
                 <span class="badge danger">Bloqueado</span>
               } @else if (puedeCambiarEstado(u)) {
-                <mat-slide-toggle [checked]="u.activo" (change)="toggleEstado(u)" [aria-label]="(u.activo ? 'Desactivar ' : 'Activar ') + u.nombreCompleto"></mat-slide-toggle>
+                <mat-slide-toggle [checked]="u.activo" [disabled]="cambiandoEstado()" (change)="toggleEstado(u, $event)" [aria-label]="(u.activo ? 'Desactivar ' : 'Activar ') + u.nombreCompleto"></mat-slide-toggle>
               } @else {
                 <span class="badge" [class.success]="u.activo" [class.muted]="!u.activo">{{ u.activo ? 'Activo' : 'Inactivo' }}</span>
                 @if (esUsuarioActual(u)) { <span class="badge muted" title="No puedes desactivar ni eliminar tu propia cuenta">Tu cuenta</span> }
               }
             </td>
             <td class="actions">
-              <a class="action-view" [routerLink]="['/usuarios', u.id]" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver ' + u.nombreCompleto"><mat-icon>visibility</mat-icon></a>
+              <button type="button" class="action-view"  (click)="abrirUsuario(u.id, 'Ver')" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver ' + u.nombreCompleto"><mat-icon>visibility</mat-icon></button>
               @if (puedeEditar()) {
-                <a [routerLink]="['/usuarios', u.id, 'editar']" mat-icon-button title="Editar usuario"><mat-icon>edit</mat-icon></a>
+                <button type="button"  (click)="abrirUsuario(u.id, 'Editar')" mat-icon-button title="Editar usuario"><mat-icon>edit</mat-icon></button>
               }
               @if (puedeGestionarEmpresas()) {
                 <button mat-icon-button title="Gestionar empresas y roles" (click)="abrirGestionEmpresas(u)" [attr.aria-expanded]="usuarioGestionado()?.id === u.id" [attr.aria-controls]="'empresas-usuario-' + u.id">
@@ -126,59 +134,25 @@
           <tr><td colspan="5" class="empty">No hay usuarios registrados.</td></tr>
         }
       </tbody>
-    </table>
+    </table></div>
+    <footer class="app-table-footer" aria-live="polite">{{ usuariosVisibles().length }} de {{ usuarios().length }} registro(s)</footer>
 
-    <div class="cards-mobile">
-      @for (u of usuarios(); track u.id) {
-        <div class="item-card">
-          <div class="item-card-header">
-            <strong>{{ u.nombreCompleto }}</strong>
-            @if (u.bloqueado) {
-              <span class="badge danger">Bloqueado</span>
-            } @else if (puedeCambiarEstado(u)) {
-              <mat-slide-toggle [checked]="u.activo" (change)="toggleEstado(u)" [aria-label]="(u.activo ? 'Desactivar ' : 'Activar ') + u.nombreCompleto"></mat-slide-toggle>
-            } @else {
-              <span class="badge" [class.success]="u.activo" [class.muted]="!u.activo">{{ u.activo ? 'Activo' : 'Inactivo' }}</span>
-                @if (esUsuarioActual(u)) { <span class="badge muted" title="No puedes desactivar ni eliminar tu propia cuenta">Tu cuenta</span> }
-            }
-          </div>
-          <p class="item-card-desc">&#64;{{ u.nombreUsuario }}</p>
-          <div class="item-card-meta"><span>{{ u.rol }}</span></div>
-          <div class="item-card-actions">
-            <a [routerLink]="['/usuarios', u.id]" mat-button><mat-icon>visibility</mat-icon> Ver</a>
-            @if (puedeEditar()) {
-              <a [routerLink]="['/usuarios', u.id, 'editar']" mat-button><mat-icon>edit</mat-icon> Editar</a>
-            }
-            @if (puedeGestionarEmpresas()) {
-              <button mat-button (click)="abrirGestionEmpresas(u)" [attr.aria-expanded]="usuarioGestionado()?.id === u.id" [attr.aria-controls]="'empresas-usuario-' + u.id"><mat-icon>business</mat-icon> Empresas</button>
-            }
-            @if (puedeBloquearUsuario(u)) {
-              @if (u.bloqueado) {
-                <button mat-button (click)="desbloquear(u)"><mat-icon>lock_open</mat-icon> Desbloquear</button>
-              } @else {
-                <button mat-button (click)="bloquear(u)"><mat-icon>lock</mat-icon> Bloquear</button>
-              }
-            }
-            @if (puedeEliminar() && !esUsuarioActual(u)) {
-              <button mat-button (click)="eliminar(u)"><mat-icon>delete_outline</mat-icon> Eliminar</button>
-            }
-          </div>
-        </div>
-      } @empty {
-        <p class="empty">No hay usuarios registrados.</p>
-      }
-    </div>
+    
   }
 </div>
 
+<ng-template #gestionEmpresasModal>
 @if (usuarioGestionado(); as usuario) {
+  <div class="app-dialog-layout">
+  <h2 mat-dialog-title>Empresas de {{ usuario.nombreCompleto }}</h2>
+  <mat-dialog-content class="app-dialog-layout__body">
   <section class="card form" [id]="'empresas-usuario-' + usuario.id" aria-labelledby="titulo-empresas-usuario" aria-live="polite">
     <div class="header-row">
       <div>
-        <h2 id="titulo-empresas-usuario">Empresas de {{ usuario.nombreCompleto }}</h2>
+        <h3 id="titulo-empresas-usuario">Membresías y roles</h3>
         <p class="item-card-desc">Asigna una empresa y el rol efectivo del usuario dentro de ella.</p>
       </div>
-      <button mat-icon-button type="button" (click)="cerrarGestionEmpresas()" aria-label="Cerrar gestión de empresas"><mat-icon>close</mat-icon></button>
+      
     </div>
 
     @if (!puedeVerEmpresas() || !puedeVerRoles()) {
@@ -225,8 +199,8 @@
     @if (loadingMembresias()) {
       <div class="loading"><mat-spinner diameter="32"></mat-spinner></div>
     } @else {
-      <div class="table-desktop">
-        <table class="table">
+      <div class="app-table-shell" role="region" aria-label="Membresías empresariales" tabindex="0">
+        <table class="app-data-table">
           <thead><tr><th>Empresa</th><th>Rol</th><th>Estado</th><th>Acciones</th></tr></thead>
           <tbody>
             @for (m of membresias(); track m.id) {
@@ -235,7 +209,7 @@
                 <td>
                   @if (puedeAsignarRol() && puedeVerRoles()) {
                     <mat-form-field appearance="outline">
-                      <mat-select [value]="m.rolId" (selectionChange)="cambiarRolMembresia(m, $event.value)" [disabled]="savingMembresia()" [attr.aria-label]="'Rol de ' + nombreEmpresa(m.empresaId)">
+                      <mat-select [value]="m.rolId" (selectionChange)="cambiarRolMembresia(m, $event)" [disabled]="savingMembresia()" [attr.aria-label]="'Rol de ' + nombreEmpresa(m.empresaId)">
                         @for (rol of roles(); track rol.id) { <mat-option [value]="rol.id">{{ rol.nombre }}</mat-option> }
                       </mat-select>
                     </mat-form-field>
@@ -255,25 +229,11 @@
         </table>
       </div>
 
-      <div class="cards-mobile">
-        @for (m of membresias(); track m.id) {
-          <div class="item-card">
-            <div class="item-card-header"><strong>{{ nombreEmpresa(m.empresaId) }}</strong><span class="badge" [class.success]="m.activa" [class.muted]="!m.activa">{{ m.activa ? 'Activa' : 'Inactiva' }}</span></div>
-            <p class="item-card-desc">{{ nombreRol(m.rolId) }}</p>
-            @if (puedeAsignarRol() && puedeVerRoles()) {
-              <mat-form-field appearance="outline">
-                <mat-label>Rol en la empresa</mat-label>
-                <mat-select [value]="m.rolId" (selectionChange)="cambiarRolMembresia(m, $event.value)" [disabled]="savingMembresia()">
-                  @for (rol of roles(); track rol.id) { <mat-option [value]="rol.id">{{ rol.nombre }}</mat-option> }
-                </mat-select>
-              </mat-form-field>
-            }
-            @if (puedeCambiarEstadoMembresia(m)) {
-              <button mat-button type="button" (click)="toggleMembresia(m)" [disabled]="savingMembresia()"><mat-icon>{{ m.activa ? 'link_off' : 'link' }}</mat-icon>{{ m.activa ? 'Quitar empresa' : 'Restaurar empresa' }}</button>
-            }
-          </div>
-        } @empty { <p class="empty">Este usuario todavía no tiene empresas asignadas.</p> }
-      </div>
+      
     }
   </section>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end"><button mat-button type="button" [disabled]="savingMembresia()" (click)="cerrarGestionEmpresas()">Cerrar</button></mat-dialog-actions>
+  </div>
 }
+</ng-template>

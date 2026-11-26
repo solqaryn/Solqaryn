@@ -1,3 +1,6 @@
+import { MatDialogModule } from '@angular/material/dialog';
+import { crearEditorInstitucional } from '../../shared/modal-institucional/acciones-institucionales';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 
 import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -20,7 +23,7 @@ const PASSWORD_SEGURA = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{10,1
 @Component({
   selector: 'app-usuario-form',
   standalone: true,
-  imports: [
+  imports: [MatDialogModule,
     ReactiveFormsModule,
     RouterLink,
     MatButtonModule,
@@ -35,6 +38,8 @@ const PASSWORD_SEGURA = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[^A-Za-z0-9]).{10,1
   styleUrl: './usuario-form.component.scss'
 })
 export class UsuarioFormComponent implements OnInit {
+  readonly editor = crearEditorInstitucional('Usuarios');
+  cancelarModal(): void { if (!this.saving()) this.editor.cerrar(false); }
   private readonly fb = inject(FormBuilder);
   private readonly permisosRuntime = inject(PermisosRuntimeService);
 
@@ -75,13 +80,14 @@ export class UsuarioFormComponent implements OnInit {
     if (!this.puedeAsignarRol()) this.form.controls.rolId.disable();
     if (!this.puedeRestablecerPassword()) this.form.controls.nuevaPassword.disable();
 
-    this.usuarioId = Number(this.route.snapshot.paramMap.get('id'));
+    this.usuarioId = Number(this.editor.ref ? this.editor.id : this.route.snapshot.paramMap.get('id'));
+    if (this.editor.ref && !this.editor.valido('Editar')) { this.editor.cerrar(false); return; }
     if (!Number.isInteger(this.usuarioId) || this.usuarioId <= 0) {
-      this.router.navigate(['/usuarios']);
+      if (this.editor.ref) this.editor.cerrar(false); else void this.router.navigate(['/usuarios']);
       return;
     }
 
-    this.usuarioService.getById(this.usuarioId).subscribe({
+    this.usuarioService.getById(this.usuarioId).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
       next: (usuario) => {
         const u = usuario.data;
         this.usuarioOriginal.set(u.nombreUsuario);
@@ -106,7 +112,7 @@ export class UsuarioFormComponent implements OnInit {
   }
 
   private cargarRoles(rolActualId?: number): void {
-    this.rolService.getAll(false).subscribe({
+    this.rolService.getAll(false).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
       next: (roles) => {
         this.roles.set(roles.data.filter((rol) => rol.activo || rol.id === rolActualId));
         this.loading.set(false);
@@ -118,8 +124,8 @@ export class UsuarioFormComponent implements OnInit {
     });
   }
 
-  guardar(): void {
-    if (this.form.invalid || this.saving()) {
+  async guardar(): Promise<void> {
+    if (this.form.invalid || this.form.disabled || this.loading() || this.saving()) {
       this.form.markAllAsTouched();
       return;
     }
@@ -139,6 +145,9 @@ export class UsuarioFormComponent implements OnInit {
     }
 
     this.saving.set(true);
+    if (!await this.editor.confirmar('Editar', { titulo: 'Confirmar actualización', mensaje: '¿Deseas guardar los datos, rol y cambios autorizados de este usuario?', confirmarTexto: 'Guardar cambios' }) ||
+        (this.puedeAsignarRol() && !this.permisosRuntime.puede('Usuarios', 'AsignarRol')) ||
+        (valor.nuevaPassword?.trim() && !this.permisosRuntime.puede('Usuarios', 'RestablecerContrasena'))) { this.saving.set(false); return; }
     this.errorMessage.set(null);
     this.usuarioService.update(this.usuarioId, {
       nombreUsuario: valor.nombreUsuario!.trim(),
@@ -148,11 +157,11 @@ export class UsuarioFormComponent implements OnInit {
       nuevaPassword: this.puedeRestablecerPassword()
         ? valor.nuevaPassword?.trim() || undefined
         : undefined
-    }).subscribe({
+    }).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
       next: () => {
         this.saving.set(false);
         this.snackBar.open('Usuario actualizado correctamente.', 'Cerrar', { duration: 4000 });
-        this.router.navigate(['/usuarios', this.usuarioId]);
+        if (this.editor.ref) this.editor.cerrar(true); else void this.router.navigate(['/usuarios', this.usuarioId]);
       },
       error: (err) => {
         this.saving.set(false);

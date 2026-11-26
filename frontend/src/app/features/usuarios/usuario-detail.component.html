@@ -1,8 +1,12 @@
+<div [class.app-dialog-layout]="!!editor.ref">
+@if (editor.ref) { <h2 mat-dialog-title>Detalle de usuario</h2> }
+<div [class.app-dialog-layout__body]="!!editor.ref">
+@if (!editor.ref) {
 <div class="header-row">
   <a routerLink="/usuarios" mat-icon-button title="Volver"><mat-icon>arrow_back</mat-icon></a>
   <h1 class="page-title">Detalle de usuario</h1>
 </div>
-
+}
 @if (loading()) {
   <div class="loading"><mat-spinner></mat-spinner></div>
 } @else if (notFound()) {
@@ -38,8 +42,13 @@
       }
     </div>
 
-    <div class="form-actions">
+    @if (!editor.ref) {
+<div class="form-actions">
       <a [routerLink]="['/usuarios']" mat-button>Volver al listado</a>
     </div>
+}
   </div>
 }
+</div>
+@if (editor.ref) { <mat-dialog-actions align="end"><button mat-button type="button" mat-dialog-close>Cerrar</button></mat-dialog-actions> }
+</div>

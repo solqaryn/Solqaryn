@@ -1,3 +1,7 @@
+## 2026-11-25 — QA: usuarios, edición y membresías en modales institucionales
+
+- Ver M, crear/editar L y empresas/roles XL; confirmación previa de cambios, bloqueo y eliminación, revalidación de contexto/permiso, restablecimiento de estado visual si se cancela. Conserva protecciones de usuario actual y permisos separados de rol y contraseña. Tabla única con filtros y scroll. Sin cambios de RBAC backend, datos o API. Pruebas y revisión visual pendientes.
+
 ## 2026-11-25 — QA: tablas institucionales de productos, categorías, roles y medios de pago
 
 - Productos conserva columnas, miniaturas, acciones, filtros y paginación en tabla única desplazable. Categorías y roles incorporan filtros de búsqueda/estado, conteo y tabla compartida; acciones de eliminación/duplicado revalidan contexto y permiso. Métodos de pago agrega filtros, bloquea reordenación mientras hay filtrado y usa control compartido para confirmaciones.
