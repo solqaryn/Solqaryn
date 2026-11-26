@@ -37,10 +37,17 @@ public sealed class C0402M0306StructuredAuditTests
         Assert.Equal(result.Code, sink.Last?.OutcomeCode);
         Assert.Single(logger.Lines);
         Assert.Contains("C0402_CONTRACT_PREFLIGHT", logger.Lines[0]);
-        Assert.DoesNotContain("private-caller-secret", logger.Lines[0]);
-        Assert.DoesNotContain("7001", logger.Lines[0]);
-        Assert.DoesNotContain("101", logger.Lines[0]);
-        Assert.DoesNotContain("911", logger.Lines[0]);
+        var auditId = Assert.IsType<C0402ContractAuditEntry>(sink.Last).EventId;
+        Assert.True(Guid.TryParseExact(auditId, "N", out var parsed));
+        Assert.NotEqual(Guid.Empty, parsed);
+        Assert.Contains(auditId, logger.Lines[0]);
+        // Random hex can coincidentally contain short decimal IDs. Remove only
+        // the verified opaque event ID before checking that actor/tenant/resource IDs are absent.
+        var withoutEventId = logger.Lines[0].Replace(auditId, "", StringComparison.Ordinal);
+        Assert.DoesNotContain("private-caller-secret", withoutEventId);
+        Assert.DoesNotContain("7001", withoutEventId);
+        Assert.DoesNotContain("101", withoutEventId);
+        Assert.DoesNotContain("911", withoutEventId);
     }
 
     [Theory]

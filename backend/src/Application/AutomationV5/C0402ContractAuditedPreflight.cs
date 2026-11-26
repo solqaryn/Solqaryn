@@ -8,7 +8,11 @@ namespace Solqaryn.Application.AutomationV5;
 /// a contract identifier, a user identifier, credentials or tenant metadata.
 /// </summary>
 public sealed record C0402ContractAuditEntry(
-    string EventCode, string OutcomeCode, bool IsDomainCandidateOnly);
+    string EventCode, string OutcomeCode, bool IsDomainCandidateOnly)
+{
+    // Server-generated, opaque identifier for this attempt; never an actor or contract ID.
+    public string EventId { get; } = Guid.NewGuid().ToString("N");
+}
 
 /// <summary>
 /// The caller must supply a trustworthy sink. This contract alone is not durable
@@ -72,8 +76,8 @@ public sealed class C0402ContractAuditedPreflight
                 return Deny("CONTRACT_STRUCTURED_LOG_UNAVAILABLE");
             cancellationToken.ThrowIfCancellationRequested();
             _logger.LogInformation(
-                "Contract preflight audit attempt {EventCode} {OutcomeCode} {DomainCandidateOnly}",
-                entry.EventCode, entry.OutcomeCode, entry.IsDomainCandidateOnly);
+                "Contract preflight audit attempt {EventId} {EventCode} {OutcomeCode} {DomainCandidateOnly}",
+                entry.EventId, entry.EventCode, entry.OutcomeCode, entry.IsDomainCandidateOnly);
             cancellationToken.ThrowIfCancellationRequested();
             if (!await _audit.AppendAsync(entry, cancellationToken))
                 return Deny("CONTRACT_AUDIT_SINK_UNAVAILABLE");

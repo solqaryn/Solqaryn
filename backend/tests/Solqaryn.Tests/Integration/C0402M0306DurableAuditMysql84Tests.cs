@@ -64,7 +64,7 @@ public sealed class C0402M0306DurableAuditMysql84Tests
                 await inspect.OpenAsync();
                 await using var query = inspect.CreateCommand();
                 query.CommandText = """
-                    SELECT OutcomeCode, IsDomainCandidateOnly
+                    SELECT OutcomeCode, IsDomainCandidateOnly, EventId
                     FROM V23C0402ContractAuditIsolated
                     ORDER BY IsDomainCandidateOnly DESC
                     """;
@@ -72,9 +72,18 @@ public sealed class C0402M0306DurableAuditMysql84Tests
                 Assert.True(await records.ReadAsync());
                 Assert.Equal(accepted.Code, records.GetString(0));
                 Assert.True(records.GetBoolean(1));
+                var acceptedEventId = records.GetString(2);
+                Assert.True(Guid.TryParseExact(acceptedEventId, "N", out _));
+                Assert.Contains(acceptedEventId, logger.Lines[0]);
                 Assert.True(await records.ReadAsync());
                 Assert.Equal(denied.Code, records.GetString(0));
                 Assert.False(records.GetBoolean(1));
+                var deniedEventId = records.GetString(2);
+                Assert.True(Guid.TryParseExact(deniedEventId, "N", out _));
+                Assert.NotEqual(acceptedEventId, deniedEventId);
+                Assert.Contains(deniedEventId, logger.Lines[1]);
+                Assert.DoesNotContain(acceptedEventId, logger.Lines[1]);
+                Assert.DoesNotContain(deniedEventId, logger.Lines[0]);
                 Assert.False(await records.ReadAsync());
             }
             Assert.DoesNotContain("private-client-cause", string.Join(";", logger.Lines));

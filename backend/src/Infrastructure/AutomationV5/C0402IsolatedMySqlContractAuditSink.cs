@@ -21,6 +21,7 @@ public sealed class C0402IsolatedMySqlContractAuditSink(Func<DbConnection> facto
         token.ThrowIfCancellationRequested();
         if (entry is null ||
             entry.EventCode != "C0402_CONTRACT_PREFLIGHT" ||
+            !Guid.TryParseExact(entry.EventId, "N", out var eventId) || eventId == Guid.Empty ||
             entry.OutcomeCode is not { Length: >= 3 and <= 96 } ||
             !entry.OutcomeCode.All(static c =>
                 c is >= 'A' and <= 'Z' or >= '0' and <= '9' or '_'))
@@ -59,7 +60,7 @@ public sealed class C0402IsolatedMySqlContractAuditSink(Func<DbConnection> facto
                 p.Value = value;
                 cmd.Parameters.Add(p);
             }
-            Add("@id", Guid.NewGuid().ToString("N"));
+            Add("@id", entry.EventId);
             Add("@event", entry.EventCode);
             Add("@outcome", entry.OutcomeCode);
             Add("@candidate", entry.IsDomainCandidateOnly);
