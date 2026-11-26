@@ -28,6 +28,16 @@ public sealed class C0203VerifiedPlatformOperatorEvidenceReader(
     AppDbContext database,
     IConfiguration configuration) : IC0203VerifiedOperatorEvidenceReader
 {
+    private int? ReadEnabledPolicyRevision()
+    {
+        if (!bool.TryParse(configuration["TenantLifecycle:EnableReadOnlyAuthorizationProbe"], out var enabled) || !enabled ||
+            !bool.TryParse(configuration["TenantLifecycle:AllowSuspendReadOnly"], out var allowed) || !allowed ||
+            !int.TryParse(configuration["TenantLifecycle:ReadOnlyPolicyRevision"], NumberStyles.Integer,
+                CultureInfo.InvariantCulture, out var revision) || revision <= 0)
+            return null;
+        return revision;
+    }
+
     public async ValueTask<Gate.TrustedOperatorSnapshot?> ReadAsync(
         string requestedTenantId,
         Rules.Command requestedCommand,
@@ -37,9 +47,8 @@ public sealed class C0203VerifiedPlatformOperatorEvidenceReader(
 
         // All opt-ins are backend-only and OFF if absent. Do not enable other
         // lifecycle commands by implication, especially reactivation/deletion.
-        if (!configuration.GetValue<bool>("TenantLifecycle:EnableReadOnlyAuthorizationProbe") ||
-            !configuration.GetValue<bool>("TenantLifecycle:AllowSuspendReadOnly") ||
-            configuration.GetValue<int>("TenantLifecycle:ReadOnlyPolicyRevision") <= 0 ||
+        var policyRevision = ReadEnabledPolicyRevision();
+        if (policyRevision is null ||
             requestedCommand != Rules.Command.Suspend ||
             !int.TryParse(requestedTenantId, NumberStyles.None,
                 CultureInfo.InvariantCulture, out var tenantId) || tenantId <= 0 ||
@@ -129,7 +138,9 @@ public sealed class C0203VerifiedPlatformOperatorEvidenceReader(
                 select user.NombreUsuario
             ).Take(2).ToArrayAsync(cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
-            if (finalActors.Length != 1 ||
+            // Reject a policy disabled or revised while JWT/SQL evidence was in flight.
+            // This is a fresh check, not an atomic lease on mutable configuration.
+            if (ReadEnabledPolicyRevision() != policyRevision || finalActors.Length != 1 ||
                 !string.Equals(finalActors[0], names[0].Value, StringComparison.Ordinal) ||
                 !current.EstaAutenticado || current.UsuarioId != signedActor ||
                 !string.Equals(current.NombreUsuario, names[0].Value, StringComparison.Ordinal))

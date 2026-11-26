@@ -93,7 +93,7 @@ public sealed class C0203M0303RealPlatformReaderMysql84IntegrationTests
     }
 
     private static Task<IHost> StartAsync(string scopedConnection,
-        DbCommandInterceptor? interceptor = null) =>
+        DbCommandInterceptor? interceptor = null, IConfiguration? policyConfiguration = null) =>
         new HostBuilder().ConfigureWebHost(web => web.UseTestServer()
             .ConfigureServices(services =>
             {
@@ -131,7 +131,7 @@ public sealed class C0203M0303RealPlatformReaderMysql84IntegrationTests
                         await using var db = new AppDbContext(builder.Options,
                             tenantHttpContextAccessor: accessor);
                         var platform = new PlataformaScopeService(db, current);
-                        var config = new ConfigurationBuilder().AddInMemoryCollection(
+                        var config = policyConfiguration ?? new ConfigurationBuilder().AddInMemoryCollection(
                             new Dictionary<string, string?>
                             {
                                 ["TenantLifecycle:EnableReadOnlyAuthorizationProbe"] = "true",
@@ -289,6 +289,41 @@ public sealed class C0203M0303RealPlatformReaderMysql84IntegrationTests
             await ExecuteAsync("INSERT INTO RolPermisos(Id,RolId,PermisoId) VALUES(61,17,51)");
             using (var recoveredGrant = await ReadAsync(client, 811, jwt))
                 Assert.Equal(HttpStatusCode.OK, recoveredGrant.StatusCode);
+
+            // Policy changes during the real target query cannot authorize a stale preflight.
+            // Keep the real grant and JWT valid so only the changed policy causes denial.
+            foreach (var (key, original, changed) in new[]
+            {
+                ("TenantLifecycle:EnableReadOnlyAuthorizationProbe", "true", "false"),
+                ("TenantLifecycle:AllowSuspendReadOnly", "true", "false"),
+                ("TenantLifecycle:ReadOnlyPolicyRevision", "1", "2")
+            })
+            {
+                var policy = new ConfigurationBuilder().AddInMemoryCollection(
+                    new Dictionary<string, string?>
+                    {
+                        ["TenantLifecycle:EnableReadOnlyAuthorizationProbe"] = "true",
+                        ["TenantLifecycle:AllowSuspendReadOnly"] = "true",
+                        ["TenantLifecycle:ReadOnlyPolicyRevision"] = "1"
+                    }).Build();
+                var changeDuringTarget = new BeforeTargetRead(() =>
+                {
+                    policy[key] = changed;
+                    return Task.CompletedTask;
+                });
+                using var policyHost = await StartAsync(scoped, changeDuringTarget, policy);
+                using var policyClient = policyHost.GetTestClient();
+                using (var stalePolicy = await ReadAsync(policyClient, 811, jwt))
+                {
+                    Assert.True(changeDuringTarget.Fired);
+                    Assert.Equal(HttpStatusCode.Forbidden, stalePolicy.StatusCode);
+                    Assert.Equal("LIFECYCLE_ACCESS_DENIED",
+                        await stalePolicy.Content.ReadAsStringAsync());
+                }
+                policy[key] = original;
+                using (var freshPolicy = await ReadAsync(policyClient, 811, jwt))
+                    Assert.Equal(HttpStatusCode.OK, freshPolicy.StatusCode);
+            }
 
             // New V22 adversarial boundary: a second active platform grant for
             // the same signed-JWT actor is ambiguous, even when both point to

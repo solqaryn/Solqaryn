@@ -1,3 +1,9 @@
+## 2026-11-26 — DEV06 — C02-03.M03.03 — V44/R1/R5
+
+- TASK_ID=6af16bbad26881918c283abe06e1f32a; RUN_ID=c43551c5-ec84-8333-9a44-12b8bbc4c486; base ce7cbb2d5a1e3568a44012c210b24a97982ce363. Foco colectivo C01-04.M03.06 conservado; excepción R1 por falta de escritor/fuente P01/P02 y grant API12 auténticos fuera del alcance del adaptador actual.
+- Criterio D375 autorización/tenancy/denegación por defecto: el preflight DEV Suspend podía aceptar la revisión de política leída antes de JWT/SQL aunque el opt-in fuese desactivado o la revisión cambiase durante I/O. Se captura revisión positiva y se releen ambos flags y revisión antes de retornar evidencia; configuración inválida/ausente deniega. No habilita mutación, otros comandos ni grants y no declara atomicidad de configuración.
+- Integración JWT firmado/Oracle EF/MySQL 8.4: interceptor existente cambia cada flag y revisión durante lectura Empresas; exige 403 opaco y 200 al restaurar, conserva pruebas anteriores. CI nuevo pendiente; no A5 ni LISTO. Rollback por revert normal en dev.
+
 ## 2026-11-26 — DEV05 — C01-04.M03.06 — V44/R1/R5
 
 - TASK_ID=6adc2e55f47c81919f6374e561687076; RUN_ID=0eaac951-5600-8329-b559-8c7d6be518c4; base d06f78c03011dfe8533e61f789038cf1ba0e0311; adopta relevo causal DEV04 RUN=42baa109-3fe4-8331-b7fe-876d44d90922.
