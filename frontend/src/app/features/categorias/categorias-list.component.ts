@@ -1,11 +1,14 @@
 import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
-import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy, inject, DestroyRef } from '@angular/core';
 
-import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSlideToggleModule, MatSlideToggleChange } from '@angular/material/slide-toggle';
+import { MatDialog } from '@angular/material/dialog';
+import { modalInstitucional } from '../../shared/modal-institucional/modal-institucional';
+import { TenantContextService } from '../../core/auth/tenant-context.service';
+import { firstValueFrom } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { CategoriaService } from '../../services/categoria.service';
 import { Categoria } from '../../core/models/categoria.model';
@@ -15,12 +18,17 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
 @Component({
   selector: 'app-categorias-list',
   standalone: true,
-  imports: [ConsultaRegistroDirective, RouterLink, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatSlideToggleModule],
+  imports: [ConsultaRegistroDirective, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatSlideToggleModule],
   templateUrl: './categorias-list.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './categorias-list.component.scss'
 })
 export class CategoriasListComponent implements OnInit {
+  private readonly dialog = inject(MatDialog);
+  private readonly tenant = inject(TenantContextService);
+  private readonly destroyRef = inject(DestroyRef);
+  private modalPendiente = false;
+  readonly cambiandoEstado = signal(false);
   readonly categorias = signal<Categoria[]>([]);
   readonly loading = signal(true);
   readonly puedeCrear = signal(false);
@@ -35,6 +43,21 @@ export class CategoriasListComponent implements OnInit {
     private snackBar: MatSnackBar,
     private alerts: AppAlertService
   ) {}
+
+  async abrirCategoria(id?: number): Promise<void> {
+    const permiso = id ? 'Editar' : 'Crear';
+    if (this.modalPendiente || !this.permisosRuntime.puede('Categorias', permiso)) return;
+    const contexto = this.tenant.contextoVerificado();
+    if (!contexto) return;
+    this.modalPendiente = true;
+    try {
+      const { CategoriaFormComponent } = await import('./categoria-form.component');
+      if (this.destroyRef.destroyed || contexto !== this.tenant.contextoVerificado() || !this.permisosRuntime.puede('Categorias', permiso)) return;
+      const guardado = await firstValueFrom(this.dialog.open(CategoriaFormComponent, modalInstitucional('l', { data: { id }, ariaLabel: id ? 'Editar registro' : 'Crear registro' })).afterClosed());
+      if (guardado === true && !this.destroyRef.destroyed) this.cargar();
+    } catch { this.snackBar.open('No se pudo abrir el registro.', 'Cerrar', { duration: 5000 }); }
+    finally { this.modalPendiente = false; }
+  }
 
   ngOnInit(): void {
     this.puedeCrear.set(this.permisosRuntime.puede('Categorias', 'Crear'));
@@ -63,18 +86,20 @@ export class CategoriasListComponent implements OnInit {
     return categoria.activa ? this.puedeDesactivar() : this.puedeActivar();
   }
 
-  toggleActiva(categoria: Categoria): void {
-    if (!this.puedeCambiarEstado(categoria)) return;
-    const operacion = categoria.activa
-      ? this.categoriaService.desactivar(categoria.id)
-      : this.categoriaService.activar(categoria.id);
-
-    operacion.subscribe({
-      next: (res) => {
-        this.categorias.update(items => items.map(item => item.id === categoria.id ? res.data : item));
-      },
-      error: (err) => this.snackBar.open(err.error?.message ?? 'No se pudo cambiar el estado de la categoría.', 'Cerrar', { duration: 5000 })
-    });
+  async toggleActiva(categoria: Categoria, evento: MatSlideToggleChange): Promise<void> {
+    evento.source.checked = categoria.activa;
+    if (!this.puedeCambiarEstado(categoria) || this.cambiandoEstado()) return;
+    const contexto = this.tenant.contextoVerificado();
+    if (!contexto) return;
+    this.cambiandoEstado.set(true);
+    try {
+      const accion = categoria.activa ? 'Desactivar' : 'Activar';
+      const confirmado = await this.alerts.confirmar({ titulo: accion + ' registro', mensaje: '¿Deseas ' + accion.toLowerCase() + ' «' + categoria.nombre + '»?', confirmarTexto: accion });
+      if (!confirmado || contexto !== this.tenant.contextoVerificado() || !this.permisosRuntime.puede('Categorias', accion)) return;
+      const res = await firstValueFrom(categoria.activa ? this.categoriaService.desactivar(categoria.id) : this.categoriaService.activar(categoria.id));
+      this.categorias.update(items => items.map(item => item.id === categoria.id ? res.data : item));
+    } catch { this.snackBar.open('No se pudo cambiar el estado.', 'Cerrar', { duration: 5000 }); }
+    finally { this.cambiandoEstado.set(false); }
   }
 
   async eliminar(categoria: Categoria): Promise<void> {

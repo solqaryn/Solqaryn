@@ -1,11 +1,14 @@
 import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
-import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, signal, ChangeDetectionStrategy, inject, DestroyRef } from '@angular/core';
 
-import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSlideToggleModule, MatSlideToggleChange } from '@angular/material/slide-toggle';
+import { MatDialog } from '@angular/material/dialog';
+import { modalInstitucional } from '../../shared/modal-institucional/modal-institucional';
+import { TenantContextService } from '../../core/auth/tenant-context.service';
+import { firstValueFrom } from 'rxjs';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { RolService } from '../../services/rol.service';
 import { Rol } from '../../core/models/rol.model';
@@ -15,12 +18,17 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
 @Component({
   selector: 'app-roles-list',
   standalone: true,
-  imports: [ConsultaRegistroDirective, RouterLink, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatSlideToggleModule],
+  imports: [ConsultaRegistroDirective, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatSlideToggleModule],
   templateUrl: './roles-list.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './roles-list.component.scss'
 })
 export class RolesListComponent implements OnInit {
+  private readonly dialog = inject(MatDialog);
+  private readonly tenant = inject(TenantContextService);
+  private readonly destroyRef = inject(DestroyRef);
+  private modalPendiente = false;
+  readonly cambiandoEstado = signal(false);
   readonly roles = signal<Rol[]>([]);
   readonly loading = signal(true);
   readonly puedeCrear = signal(false);
@@ -36,6 +44,21 @@ export class RolesListComponent implements OnInit {
     private snackBar: MatSnackBar,
     private alerts: AppAlertService
   ) {}
+
+  async abrirRol(id?: number): Promise<void> {
+    const permiso = id ? 'Editar' : 'Crear';
+    if (this.modalPendiente || !this.permisosRuntime.puede('Roles', permiso)) return;
+    const contexto = this.tenant.contextoVerificado();
+    if (!contexto) return;
+    this.modalPendiente = true;
+    try {
+      const { RolFormComponent } = await import('./rol-form.component');
+      if (this.destroyRef.destroyed || contexto !== this.tenant.contextoVerificado() || !this.permisosRuntime.puede('Roles', permiso)) return;
+      const guardado = await firstValueFrom(this.dialog.open(RolFormComponent, modalInstitucional('m', { data: { id }, ariaLabel: id ? 'Editar registro' : 'Crear registro' })).afterClosed());
+      if (guardado === true && !this.destroyRef.destroyed) this.cargar();
+    } catch { this.snackBar.open('No se pudo abrir el registro.', 'Cerrar', { duration: 5000 }); }
+    finally { this.modalPendiente = false; }
+  }
 
   ngOnInit(): void {
     this.puedeCrear.set(this.permisosRuntime.puede('Roles', 'Crear'));
@@ -62,17 +85,20 @@ export class RolesListComponent implements OnInit {
     return rol.activo ? this.puedeDesactivar() : this.puedeActivar();
   }
 
-  toggleActivo(rol: Rol): void {
-    if (!this.puedeCambiarEstado(rol)) return;
-
-    const accion$ = rol.activo
-      ? this.rolService.desactivar(rol.id)
-      : this.rolService.activar(rol.id);
-
-    accion$.subscribe({
-      next: () => this.cargar(),
-      error: (err) => this.snackBar.open(err.error?.message ?? 'No se pudo cambiar el estado del rol.', 'Cerrar', { duration: 5000 })
-    });
+  async toggleActivo(rol: Rol, evento: MatSlideToggleChange): Promise<void> {
+    evento.source.checked = rol.activo;
+    if (!this.puedeCambiarEstado(rol) || this.cambiandoEstado()) return;
+    const contexto = this.tenant.contextoVerificado();
+    if (!contexto) return;
+    this.cambiandoEstado.set(true);
+    try {
+      const accion = rol.activo ? 'Desactivar' : 'Activar';
+      const confirmado = await this.alerts.confirmar({ titulo: accion + ' registro', mensaje: '¿Deseas ' + accion.toLowerCase() + ' «' + rol.nombre + '»?', confirmarTexto: accion });
+      if (!confirmado || contexto !== this.tenant.contextoVerificado() || !this.permisosRuntime.puede('Roles', accion)) return;
+      await firstValueFrom(rol.activo ? this.rolService.desactivar(rol.id) : this.rolService.activar(rol.id));
+      this.cargar();
+    } catch { this.snackBar.open('No se pudo cambiar el estado.', 'Cerrar', { duration: 5000 }); }
+    finally { this.cambiandoEstado.set(false); }
   }
 
   async eliminar(rol: Rol): Promise<void> {

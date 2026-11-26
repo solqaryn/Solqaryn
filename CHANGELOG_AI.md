@@ -1,3 +1,8 @@
+## 2026-11-25 — QA: categorías y roles en modales institucionales
+
+- Categorías y roles abren creación/edición en modales L/M respectivamente, reutilizan formularios y conservan rutas protegidas. Confirmación previa de guardado y cambio de estado, con permisos revalidados y contexto de empresa verificado. Se preservan galería, rol de sistema y duplicación con nombre confirmado.
+- Sin cambios de backend, RBAC, datos, DEV ni MAIN. Pruebas y revisión visual exact-SHA pendientes.
+
 ## 2026-11-25 — QA: productos en modales institucionales
 
 - Lista de productos: ver, crear y editar abren el modal XL y conservan las rutas protegidas para accesos directos. El detalle modal es consultivo, conserva imágenes y exportación autorizada, y el editor reutiliza su formulario y validaciones de variantes/inventario sin duplicar lógica. Se exige confirmación de guardado y cambio de estado; eliminar usa modal S. Los cierres por cambio de contexto se conservan como protección de datos.

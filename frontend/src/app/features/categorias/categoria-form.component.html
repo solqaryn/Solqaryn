@@ -1,9 +1,12 @@
+<div [class.app-dialog-layout]="!!modalRef">
+@if (modalRef) { <h2 mat-dialog-title>{{ isEdit() ? 'Editar categoría' : 'Nueva categoría' }}</h2> } @else {
 <div class="header-row">
   <a routerLink="/categorias" mat-icon-button><mat-icon>arrow_back</mat-icon></a>
   <h1 class="page-title">{{ isEdit() ? 'Editar categoría' : 'Nueva categoría' }}</h1>
 </div>
-
-<form class="card form" [formGroup]="form" (ngSubmit)="submit()">
+}
+<div [class.app-dialog-layout__body]="!!modalRef">
+<form id="categoria-form-institucional" class="card form" [formGroup]="form" (ngSubmit)="submit()">
   <mat-form-field appearance="outline">
     <mat-label>Nombre</mat-label>
     <input matInput formControlName="nombre">
@@ -58,8 +61,18 @@
     <p class="error" role="alert">{{ errorMessage() }}</p>
   }
 
+  @if (!modalRef) {
   <div class="form-actions">
     <a routerLink="/categorias" mat-button type="button">Cancelar</a>
     <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || form.disabled || saving() || loading() || preparando()">Guardar</button>
   </div>
+  }
 </form>
+</div>
+@if (modalRef) {
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" [disabled]="saving()" (click)="cancelarModal()">Cancelar</button>
+    <button mat-flat-button color="primary" type="submit" form="categoria-form-institucional" [disabled]="form.invalid || form.disabled || saving() || loading() || preparando()">{{ saving() ? 'Guardando…' : 'Guardar' }}</button>
+  </mat-dialog-actions>
+}
+</div>

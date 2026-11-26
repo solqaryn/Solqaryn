@@ -1,9 +1,9 @@
 <div class="header-row">
   <h1 class="page-title">Categorías</h1>
   @if (puedeCrear()) {
-    <a routerLink="/categorias/nueva" mat-flat-button color="primary">
+    <button type="button" (click)="abrirCategoria()" mat-flat-button color="primary">
       <mat-icon>add</mat-icon> Nueva categoría
-    </a>
+    </button>
   }
 </div>
 
@@ -31,7 +31,7 @@
             <td>{{ c.creadoPorNombreUsuario || '—' }}</td>
             <td>
               @if (puedeCambiarEstado(c)) {
-                <mat-slide-toggle [checked]="c.activa" (change)="toggleActiva(c)" [aria-label]="(c.activa ? 'Desactivar ' : 'Activar ') + c.nombre"></mat-slide-toggle>
+                <mat-slide-toggle [checked]="c.activa" [disabled]="cambiandoEstado()" (change)="toggleActiva(c, $event)" [aria-label]="(c.activa ? 'Desactivar ' : 'Activar ') + c.nombre"></mat-slide-toggle>
               } @else {
                 <span class="badge" [class.success]="c.activa" [class.muted]="!c.activa">{{ c.activa ? 'Activa' : 'Inactiva' }}</span>
               }
@@ -39,9 +39,9 @@
             <td class="actions">
               <button type="button" class="action-view" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver ' + c.nombre" [appConsultaRegistro]="{ titulo: 'Categoría: ' + c.nombre, campos: { 'Nombre': c.nombre, 'Descripción': c.descripcion, 'Estado': c.activa ? 'Activa' : 'Inactiva', 'Productos asociados': c.totalProductos, 'Creado por': c.creadoPorNombreUsuario, 'Actualizado por': c.actualizadoPorNombreUsuario, 'Fecha de creación': c.fechaCreacion, 'Fecha de actualización': c.fechaActualizacion }, categoriaId: c.id }"><mat-icon>visibility</mat-icon></button>
               @if (puedeEditar()) {
-                <a [routerLink]="['/categorias', c.id, 'editar']" mat-icon-button title="Editar">
+                <button type="button"  (click)="abrirCategoria(c.id)" mat-icon-button title="Editar">
                   <mat-icon>edit</mat-icon>
-                </a>
+                </button>
               }
               @if (puedeEliminar()) {
                 <button mat-icon-button title="Eliminar" (click)="eliminar(c)">
@@ -62,7 +62,7 @@
           <div class="item-card-header">
             <strong>{{ c.nombre }}</strong>
             @if (puedeCambiarEstado(c)) {
-              <mat-slide-toggle [checked]="c.activa" (change)="toggleActiva(c)" [aria-label]="(c.activa ? 'Desactivar ' : 'Activar ') + c.nombre"></mat-slide-toggle>
+              <mat-slide-toggle [checked]="c.activa" [disabled]="cambiandoEstado()" (change)="toggleActiva(c, $event)" [aria-label]="(c.activa ? 'Desactivar ' : 'Activar ') + c.nombre"></mat-slide-toggle>
             } @else {
               <span class="badge" [class.success]="c.activa" [class.muted]="!c.activa">{{ c.activa ? 'Activa' : 'Inactiva' }}</span>
             }
@@ -73,7 +73,7 @@
             <div class="item-card-actions">
               <button type="button" class="action-view" mat-button title="Ver detalle" [attr.aria-label]="'Ver ' + c.nombre" [appConsultaRegistro]="{ titulo: 'Categoría: ' + c.nombre, campos: { 'Nombre': c.nombre, 'Descripción': c.descripcion, 'Estado': c.activa ? 'Activa' : 'Inactiva', 'Productos asociados': c.totalProductos, 'Creado por': c.creadoPorNombreUsuario, 'Actualizado por': c.actualizadoPorNombreUsuario, 'Fecha de creación': c.fechaCreacion, 'Fecha de actualización': c.fechaActualizacion }, categoriaId: c.id }"><mat-icon>visibility</mat-icon> Ver</button>
               @if (puedeEditar()) {
-                <a [routerLink]="['/categorias', c.id, 'editar']" mat-button><mat-icon>edit</mat-icon> Editar</a>
+                <button type="button"  (click)="abrirCategoria(c.id)" mat-button><mat-icon>edit</mat-icon> Editar</button>
               }
               @if (puedeEliminar()) {
                 <button mat-button type="button" (click)="eliminar(c)"><mat-icon>delete</mat-icon> Eliminar</button>

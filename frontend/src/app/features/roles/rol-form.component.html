@@ -1,9 +1,12 @@
+<div [class.app-dialog-layout]="!!modalRef">
+@if (modalRef) { <h2 mat-dialog-title>{{ isEdit() ? 'Editar rol' : 'Nuevo rol' }}</h2> } @else {
 <div class="header-row">
   <a routerLink="/roles" mat-icon-button title="Volver"><mat-icon>arrow_back</mat-icon></a>
   <h1 class="page-title">{{ isEdit() ? 'Editar rol' : 'Nuevo rol' }}</h1>
 </div>
-
-<form [formGroup]="form" (ngSubmit)="submit()" class="card form-card">
+}
+<div [class.app-dialog-layout__body]="!!modalRef">
+<form id="rol-form-institucional" [formGroup]="form" (ngSubmit)="submit()" class="card form-card">
   @if (esSistema()) {
     <p class="warning">Este es un rol de sistema. El nombre no se puede modificar.</p>
   }
@@ -29,10 +32,20 @@
     <p class="error">{{ errorMessage() }}</p>
   }
 
+  @if (!modalRef) {
   <div class="form-actions">
-    <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving()">
+    <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || form.disabled || saving() || loading()">
       {{ saving() ? 'Guardando...' : 'Guardar' }}
     </button>
     <a routerLink="/roles" mat-button>Cancelar</a>
   </div>
+  }
 </form>
+</div>
+@if (modalRef) {
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" [disabled]="saving()" (click)="cancelarModal()">Cancelar</button>
+    <button mat-flat-button color="primary" type="submit" form="rol-form-institucional" [disabled]="form.invalid || form.disabled || saving() || loading()">{{ saving() ? 'Guardando…' : 'Guardar' }}</button>
+  </mat-dialog-actions>
+}
+</div>

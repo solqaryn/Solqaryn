@@ -1,9 +1,9 @@
 <div class="header-row">
   <h1 class="page-title">Roles</h1>
   @if (puedeCrear()) {
-    <a routerLink="/roles/nuevo" mat-flat-button color="primary">
+    <button type="button" (click)="abrirRol()" mat-flat-button color="primary">
       <mat-icon>add</mat-icon> Nuevo rol
-    </a>
+    </button>
   }
 </div>
 
@@ -36,7 +36,7 @@
             </td>
             <td>
               @if (puedeCambiarEstado(r)) {
-                <mat-slide-toggle [checked]="r.activo" (change)="toggleActivo(r)" [aria-label]="(r.activo ? 'Desactivar ' : 'Activar ') + r.nombre"></mat-slide-toggle>
+                <mat-slide-toggle [checked]="r.activo" [disabled]="cambiandoEstado()" (change)="toggleActivo(r, $event)" [aria-label]="(r.activo ? 'Desactivar ' : 'Activar ') + r.nombre"></mat-slide-toggle>
               } @else {
                 <span class="badge" [class.success]="r.activo" [class.muted]="!r.activo">
                   {{ r.activo ? 'Activo' : 'Inactivo' }}
@@ -46,9 +46,9 @@
             <td class="actions">
               <button type="button" class="action-view" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver ' + r.nombre" [appConsultaRegistro]="{ titulo: 'Rol: ' + r.nombre, campos: { 'Nombre': r.nombre, 'Descripción': r.descripcion, 'Rol del sistema': r.esSistema, 'Administrador': r.esAdministrador, 'Estado': r.activo ? 'Activo' : 'Inactivo', 'Usuarios asignados': r.cantidadUsuarios, 'Permisos registrados': r.cantidadPermisos, 'Fecha de creación': r.fechaCreacion, 'Fecha de actualización': r.fechaActualizacion } }"><mat-icon>visibility</mat-icon></button>
               @if (puedeEditar()) {
-                <a [routerLink]="['/roles', r.id, 'editar']" mat-icon-button title="Editar">
+                <button type="button"  (click)="abrirRol(r.id)" mat-icon-button title="Editar">
                   <mat-icon>edit</mat-icon>
-                </a>
+                </button>
               }
               @if (puedeDuplicar()) {
                 <button mat-icon-button title="Duplicar" (click)="duplicar(r)">
@@ -74,7 +74,7 @@
           <div class="rol-card-header">
             <strong>{{ r.nombre }}</strong>
             @if (puedeCambiarEstado(r)) {
-              <mat-slide-toggle [checked]="r.activo" (change)="toggleActivo(r)" [aria-label]="(r.activo ? 'Desactivar ' : 'Activar ') + r.nombre"></mat-slide-toggle>
+              <mat-slide-toggle [checked]="r.activo" [disabled]="cambiandoEstado()" (change)="toggleActivo(r, $event)" [aria-label]="(r.activo ? 'Desactivar ' : 'Activar ') + r.nombre"></mat-slide-toggle>
             } @else {
               <span class="badge" [class.success]="r.activo" [class.muted]="!r.activo">
                 {{ r.activo ? 'Activo' : 'Inactivo' }}
@@ -91,7 +91,7 @@
           <div class="rol-card-actions">
               <button type="button" class="action-view" mat-button title="Ver detalle" [attr.aria-label]="'Ver ' + r.nombre" [appConsultaRegistro]="{ titulo: 'Rol: ' + r.nombre, campos: { 'Nombre': r.nombre, 'Descripción': r.descripcion, 'Rol del sistema': r.esSistema, 'Administrador': r.esAdministrador, 'Estado': r.activo ? 'Activo' : 'Inactivo', 'Usuarios asignados': r.cantidadUsuarios, 'Permisos registrados': r.cantidadPermisos, 'Fecha de creación': r.fechaCreacion, 'Fecha de actualización': r.fechaActualizacion } }"><mat-icon>visibility</mat-icon> Ver</button>
             @if (puedeEditar()) {
-              <a [routerLink]="['/roles', r.id, 'editar']" mat-button><mat-icon>edit</mat-icon> Editar</a>
+              <button type="button"  (click)="abrirRol(r.id)" mat-button><mat-icon>edit</mat-icon> Editar</button>
             }
             @if (puedeDuplicar()) {
               <button mat-button (click)="duplicar(r)"><mat-icon>content_copy</mat-icon> Duplicar</button>

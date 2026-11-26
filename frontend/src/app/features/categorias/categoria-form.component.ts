@@ -1,4 +1,6 @@
-import { Component, OnInit, OnDestroy, DestroyRef, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
+import { AppAlertService } from '../../shared/alerts/app-alert.service';
+import { Component, OnInit, OnDestroy, DestroyRef, effect, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
 import { ActivatedRoute, Router, RouterLink } from '@angular/router';
@@ -20,7 +22,7 @@ interface ImagenCategoriaPreview {
 @Component({
   selector: 'app-categoria-form',
   standalone: true,
-  imports: [ReactiveFormsModule, RouterLink, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule],
+  imports: [MatDialogModule, ReactiveFormsModule, RouterLink, MatFormFieldModule, MatInputModule, MatButtonModule, MatIconModule],
   templateUrl: './categoria-form.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './categoria-form.component.scss'
@@ -29,6 +31,11 @@ export class CategoriaFormComponent implements OnInit, OnDestroy {
   private readonly fb = inject(FormBuilder);
   private readonly permisos = inject(PermisosRuntimeService);
   private readonly tenant = inject(TenantContextService);
+  readonly modalRef = inject(MatDialogRef<CategoriaFormComponent>, { optional: true });
+  private readonly modalData = inject<{ id?: number }>(MAT_DIALOG_DATA, { optional: true });
+  private readonly alerts = inject(AppAlertService);
+  private readonly contextoModal = this.tenant.contextoVerificado();
+  cancelarModal(): void { if (!this.saving()) this.modalRef?.close(false); }
   private readonly destroyRef = inject(DestroyRef);
   private empresaId: number | null = null;
   private destruido = false;
@@ -55,11 +62,14 @@ export class CategoriaFormComponent implements OnInit, OnDestroy {
     private categoriaService: CategoriaService,
     private route: ActivatedRoute,
     private router: Router
-  ) {}
+  ) {
+    if (this.modalRef) effect(() => { if (!this.contextoModal || this.tenant.contextoVerificado() !== this.contextoModal) this.modalRef?.close(false); });
+  }
 
   ngOnInit(): void {
+    if (this.modalRef && (!this.contextoModal || !this.permisos.puede('Categorias', this.modalData?.id ? 'Editar' : 'Crear'))) { this.modalRef.close(false); return; }
     this.empresaId = this.tenant.empresaIdVerificada();
-    const idParam = this.route.snapshot.paramMap.get('id');
+    const idParam = this.modalRef ? this.modalData?.id : this.route.snapshot.paramMap.get('id');
     const permiteGaleria = this.permisos.puede('Categorias', 'Editar');
     this.galeriaDisponible.set(permiteGaleria);
     if (!idParam) return;
@@ -176,9 +186,12 @@ export class CategoriaFormComponent implements OnInit, OnDestroy {
     this.errorGaleria.set(null);
   }
 
-  submit(): void {
+  async submit(): Promise<void> {
     if (this.form.invalid || this.form.disabled || this.loading() || this.saving() || this.preparando() || !this.contextoValido()) return;
     this.saving.set(true);
+    const contexto = this.tenant.contextoVerificado();
+    const confirmado = await this.alerts.confirmar({ titulo: this.isEdit() ? 'Confirmar actualización' : 'Confirmar creación', mensaje: '¿Deseas guardar los datos y fotografías de la categoría?', confirmarTexto: 'Guardar' }).catch(() => false);
+    if (!confirmado || this.destruido || !contexto || contexto !== this.tenant.contextoVerificado() || !this.contextoValido() || !this.permisos.puede('Categorias', this.isEdit() ? 'Editar' : 'Crear')) { this.saving.set(false); return; }
     this.errorMessage.set(null);
     this.errorGaleria.set(null);
     const value = { nombre: this.form.value.nombre!, descripcion: this.form.value.descripcion || undefined, activa: this.activa };
@@ -205,7 +218,8 @@ export class CategoriaFormComponent implements OnInit, OnDestroy {
     ).subscribe({
       next: () => {
         this.saving.set(false);
-        void this.router.navigate(['/categorias']);
+        if (this.modalRef) this.modalRef.close(true);
+        else void this.router.navigate(['/categorias']);
       },
       error: err => {
         this.saving.set(false);
