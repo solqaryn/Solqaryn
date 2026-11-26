@@ -1,3 +1,8 @@
+## 2026-11-26 — QA-FN-05: correccion de lectura de evidencia CI
+
+- Run 45875913795 job 140102815831 fallo antes de iniciar el preflight de la base o la API: gh api rechazo secuencias de escape ANSI en logs. Se permite su lectura solamente hacia archivo privado temporal, se verifican marcadores exactos, se elimina el archivo y se emite comprobacion. No se imprime contenido ni se ejecuta como codigo. Conserva el gate y el SHA previo.
+- QA exclusivamente. Sin cambios de aplicacion, dependencias, datos, infraestructura, DEV ni MAIN. Reanudar prueba comercial con multipart del commit 413754d7; pendiente evidencia real. Rollback por revert.
+
 ## 2026-11-26 — QA-FN-05: reanudacion dirigida del recorrido comercial
 
 - Run 45872602673 job 140091567686: preflight fisico exacto, proxy/Render ready, usuarios, roles, membresias, matrices, denegaciones, password y auditoria aprobados; revocacion/limpieza PASS. Primer fallo: productos CREATE A HTTP 400.
