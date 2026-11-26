@@ -1,3 +1,9 @@
+## 2026-11-26 — QA-FN-05: regresión histórica de autoridad de empresas
+
+- Run 45885493703 job 140135048384: Release compila, 2493/2497 pruebas PASS; cuatro fallos N61G esperaban CONFIGURACION empresarial en mutaciones de directorio raíz. Nuevo contrato requiere CONFIGURACIONPLATAFORMA y gate explícito de plataforma; no modificar runtime ni conceder permisos.
+- Se conserva prueba fail-closed y se amplía a ocho casos: lecturas tenant, dos lecturas plataforma y cuatro mutaciones plataforma; exige módulo, acción, ámbito, autorización y ausencia de acceso anónimo. Validación pendiente CI del nuevo SHA; exportaciones reales y UI pendientes de despliegue.
+- Scope QA exclusivo; DEV 80303459e87747d83c8f4d5195fe0311702fd980, job 140131696626 PASS. Sin cambios a backend productivo, frontend, esquema, usuarios, roles, secretos, DEV, MAIN ni automatizaciones. Rollback por revert.
+
 ## 2026-11-26 — QA-FN-05: separar identidad global y administración raíz del tenant
 
 - Backend de reportes 2482/2482 PASS, Release y NuGet aprobados run 45884648305 job 140132331070; la validación viva de reportes sigue pendiente.

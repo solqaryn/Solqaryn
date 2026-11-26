@@ -136,13 +136,15 @@ public sealed class N61GTenantEmpresaRegressionTests
     }
 
     [Theory]
-    [InlineData(nameof(EmpresasController.List), AccionPermiso.Ver)]
-    [InlineData(nameof(EmpresasController.GetById), AccionPermiso.Ver)]
-    [InlineData(nameof(EmpresasController.Create), AccionPermiso.Crear)]
-    [InlineData(nameof(EmpresasController.Update), AccionPermiso.Editar)]
-    [InlineData(nameof(EmpresasController.Activar), AccionPermiso.Activar)]
-    [InlineData(nameof(EmpresasController.Desactivar), AccionPermiso.Desactivar)]
-    public void EmpresasController_Fail_Closed_RBAC_Configuration(string methodName, AccionPermiso expectedAction)
+    [InlineData(nameof(EmpresasController.List), ModuloSistema.Configuracion, AccionPermiso.Ver, false)]
+    [InlineData(nameof(EmpresasController.GetById), ModuloSistema.Configuracion, AccionPermiso.Ver, false)]
+    [InlineData(nameof(EmpresasController.ListPlataforma), ModuloSistema.ConfiguracionPlataforma, AccionPermiso.Ver, true)]
+    [InlineData(nameof(EmpresasController.GetByIdPlataforma), ModuloSistema.ConfiguracionPlataforma, AccionPermiso.Ver, true)]
+    [InlineData(nameof(EmpresasController.Create), ModuloSistema.ConfiguracionPlataforma, AccionPermiso.Crear, true)]
+    [InlineData(nameof(EmpresasController.Update), ModuloSistema.ConfiguracionPlataforma, AccionPermiso.Editar, true)]
+    [InlineData(nameof(EmpresasController.Activar), ModuloSistema.ConfiguracionPlataforma, AccionPermiso.Activar, true)]
+    [InlineData(nameof(EmpresasController.Desactivar), ModuloSistema.ConfiguracionPlataforma, AccionPermiso.Desactivar, true)]
+    public void EmpresasController_Fail_Closed_RBAC_Configuration(string methodName, ModuloSistema expectedModule, AccionPermiso expectedAction, bool expectedPlatform)
     {
         var controllerType = typeof(EmpresasController);
 
@@ -161,7 +163,8 @@ public sealed class N61GTenantEmpresaRegressionTests
         Assert.NotNull(moduloField);
         Assert.NotNull(accionField);
 
-        Assert.Equal(ModuloSistema.Configuracion, (ModuloSistema)moduloField!.GetValue(permiso)!);
+        Assert.Equal(expectedModule, (ModuloSistema)moduloField!.GetValue(permiso)!);
+        Assert.Equal(expectedPlatform, permiso!.Plataforma);
         Assert.Equal(expectedAction, (AccionPermiso)accionField!.GetValue(permiso)!);
     }
 }
