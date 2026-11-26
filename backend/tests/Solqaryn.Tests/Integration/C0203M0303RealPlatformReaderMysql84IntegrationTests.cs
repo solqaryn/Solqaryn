@@ -58,7 +58,7 @@ public sealed class C0203M0303RealPlatformReaderMysql84IntegrationTests
     }
 
     private static string Token(bool forged = false, bool wrongSubject = false,
-        string? actorId = null) =>
+        string? actorId = null, DateTime? expiresAt = null) =>
         new JwtSecurityTokenHandler().WriteToken(new JwtSecurityToken(
             issuer: Issuer, audience: Audience,
             claims:
@@ -69,7 +69,7 @@ public sealed class C0203M0303RealPlatformReaderMysql84IntegrationTests
                 new Claim("id", actorId ?? "911")
             ],
             notBefore: DateTime.UtcNow.AddMinutes(-1),
-            expires: DateTime.UtcNow.AddMinutes(10),
+            expires: expiresAt ?? DateTime.UtcNow.AddMinutes(10),
             signingCredentials: new SigningCredentials(
                 forged ? BadKey : Key, SecurityAlgorithms.HmacSha256)));
 
@@ -289,6 +289,30 @@ public sealed class C0203M0303RealPlatformReaderMysql84IntegrationTests
             await ExecuteAsync("INSERT INTO RolPermisos(Id,RolId,PermisoId) VALUES(61,17,51)");
             using (var recoveredGrant = await ReadAsync(client, 811, jwt))
                 Assert.Equal(HttpStatusCode.OK, recoveredGrant.StatusCode);
+
+            // The actual signed JWT must remain valid at the end of target I/O.
+            // Hold the real Oracle query until after the verified token expires;
+            // the live role/grant/target remain unchanged throughout this request.
+            DateTime expiresAt = default;
+            var expireDuringTarget = new BeforeTargetRead(async () =>
+            {
+                var remaining = expiresAt.AddSeconds(1) - DateTime.UtcNow;
+                if (remaining > TimeSpan.Zero)
+                    await Task.Delay(remaining);
+            });
+            using (var expiryHost = await StartAsync(scoped, expireDuringTarget))
+            using (var expiryClient = expiryHost.GetTestClient())
+            {
+                expiresAt = DateTime.UtcNow.AddSeconds(15);
+                using var expiredDuringTarget = await ReadAsync(expiryClient, 811,
+                    Token(expiresAt: expiresAt));
+                Assert.True(expireDuringTarget.Fired);
+                Assert.Equal(HttpStatusCode.Forbidden, expiredDuringTarget.StatusCode);
+                Assert.Equal("LIFECYCLE_ACCESS_DENIED",
+                    await expiredDuringTarget.Content.ReadAsStringAsync());
+                using var freshJwt = await ReadAsync(expiryClient, 811, Token());
+                Assert.Equal(HttpStatusCode.OK, freshJwt.StatusCode);
+            }
 
             // Policy changes during the real target query cannot authorize a stale preflight.
             // Keep the real grant and JWT valid so only the changed policy causes denial.

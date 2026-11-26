@@ -75,7 +75,11 @@ public sealed class C0203VerifiedPlatformOperatorEvidenceReader(
             // ClaimsPrincipal, custom X-Empresa-Id, or unsigned JWT is insufficient.
             var bearer = await http.AuthenticateAsync(JwtBearerDefaults.AuthenticationScheme);
             cancellationToken.ThrowIfCancellationRequested();
-            if (!bearer.Succeeded || bearer.Principal?.Identity?.IsAuthenticated != true)
+            // AuthenticateAsync may return the request's cached successful result.
+            // Bind the verified token's expiration to the final authorization decision.
+            var expiresUtc = bearer.Properties?.ExpiresUtc;
+            if (!bearer.Succeeded || bearer.Principal?.Identity?.IsAuthenticated != true ||
+                expiresUtc is null || expiresUtc.Value <= DateTimeOffset.UtcNow)
                 return null;
 
             var ids = bearer.Principal.FindAll("id").ToArray();
@@ -140,7 +144,8 @@ public sealed class C0203VerifiedPlatformOperatorEvidenceReader(
             cancellationToken.ThrowIfCancellationRequested();
             // Reject a policy disabled or revised while JWT/SQL evidence was in flight.
             // This is a fresh check, not an atomic lease on mutable configuration.
-            if (ReadEnabledPolicyRevision() != policyRevision || finalActors.Length != 1 ||
+            if (expiresUtc.Value <= DateTimeOffset.UtcNow ||
+                ReadEnabledPolicyRevision() != policyRevision || finalActors.Length != 1 ||
                 !string.Equals(finalActors[0], names[0].Value, StringComparison.Ordinal) ||
                 !current.EstaAutenticado || current.UsuarioId != signedActor ||
                 !string.Equals(current.NombreUsuario, names[0].Value, StringComparison.Ordinal))
