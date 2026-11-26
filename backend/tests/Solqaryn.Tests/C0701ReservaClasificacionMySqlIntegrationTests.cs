@@ -224,6 +224,33 @@ public sealed class C0701ReservaClasificacionMySqlIntegrationTests
                 }
             }
 
+            // A variant tracked before deactivation must not be accepted by a later locking query.
+            foreach (var (tenant, seed) in new[] { (a, sa), (b, sb) })
+            {
+                var access = Access(tenant);
+                await using var stale = new AppDbContext(options, tenantHttpContextAccessor: access);
+                var cached = await stale.ProductoVariantes.SingleAsync(x => x.Id == seed.Variants[1]);
+                Assert.True(cached.Activo);
+                await using (var writer = new AppDbContext(options, tenantHttpContextAccessor: Access(tenant)))
+                {
+                    var current = await writer.ProductoVariantes.SingleAsync(x => x.Id == seed.Variants[1]);
+                    current.Activo = false;
+                    await writer.SaveChangesAsync();
+                }
+                Assert.True(cached.Activo);
+                var deniedVariant = await Assert.ThrowsAsync<BusinessRuleException>(
+                    () => Compose(stale, access).ConfirmarAsync(seed.OrderId, Request(seed)));
+                Assert.Contains("no está activa para reservar inventario", deniedVariant.Message);
+                await VerifyAsync(a, sa, false);
+                await VerifyAsync(b, sb, false);
+                await using (var writer = new AppDbContext(options, tenantHttpContextAccessor: Access(tenant)))
+                {
+                    var current = await writer.ProductoVariantes.SingleAsync(x => x.Id == seed.Variants[1]);
+                    current.Activo = true;
+                    await writer.SaveChangesAsync();
+                }
+            }
+
             // A draft exists before a product is reclassified; its other line stays commercial.
             await using (var db = new AppDbContext(options, tenantHttpContextAccessor: Access(a)))
             {

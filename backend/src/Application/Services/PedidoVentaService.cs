@@ -214,22 +214,42 @@ public sealed class PedidoVentaService : IPedidoVentaService
                     x.TipoInventario != TipoInventario.MercaderiaVenta))
                 throw new BusinessRuleException("El pedido contiene productos no disponibles para reserva comercial.");
 
-            var varianteIds = plan.Asignaciones.Select(x => x.ProductoVarianteId).Distinct().ToArray();
-            var variantesPersistidas = await variantes.GetByIdsForUpdateAsync(varianteIds);
-            if (variantesPersistidas.Count != varianteIds.Length)
+            var varianteIds = plan.Asignaciones.Select(x => x.ProductoVarianteId).Distinct().OrderBy(x => x).ToArray();
+            // El lock SQL no refresca una entidad EF que ya estaba rastreada.
+            var variantesVigentes = await variantes.GetByIdsForReadLockAsync(varianteIds);
+            if (variantesVigentes.Count != varianteIds.Length ||
+                !variantesVigentes.Select(x => x.Id).ToHashSet().SetEquals(varianteIds))
                 throw new BusinessRuleException("Una o más variantes asignadas no existen.");
 
-            var porId = variantesPersistidas.ToDictionary(x => x.Id);
-            foreach (var variante in variantesPersistidas)
+            var vigentesPorId = variantesVigentes.ToDictionary(x => x.Id);
+            foreach (var variante in variantesVigentes)
             {
                 if (variante.Eliminado || !variante.Activo)
                     throw new BusinessRuleException($"La variante {variante.Id} no está activa para reservar inventario.");
             }
 
             if (pedido.Detalles.Any(detalle => detalle.ProductoVarianteId is not int varianteId ||
-                !porId.TryGetValue(varianteId, out var variante) ||
+                !vigentesPorId.TryGetValue(varianteId, out var variante) ||
                 variante.ProductoId != detalle.ProductoId))
                 throw new BusinessRuleException("La variante asignada no corresponde al producto del pedido.");
+
+            // Conservar la instancia rastreada para la relación EF de la reserva, pero
+            // nunca usarla si sus datos de identidad/snapshot contradicen la fila bloqueada.
+            var variantesPersistidas = await variantes.GetByIdsForUpdateAsync(varianteIds);
+            if (variantesPersistidas.Count != varianteIds.Length ||
+                !variantesPersistidas.Select(x => x.Id).ToHashSet().SetEquals(varianteIds))
+                throw new BusinessRuleException("Una o más variantes asignadas no existen.");
+            var porId = variantesPersistidas.ToDictionary(x => x.Id);
+            foreach (var vigente in variantesVigentes)
+            {
+                var rastreada = porId[vigente.Id];
+                if (rastreada.EmpresaId != vigente.EmpresaId || rastreada.ProductoId != vigente.ProductoId ||
+                    rastreada.Activo != vigente.Activo || rastreada.Eliminado != vigente.Eliminado ||
+                    !string.Equals(rastreada.Sku, vigente.Sku, StringComparison.Ordinal) ||
+                    rastreada.MarcaId != vigente.MarcaId || rastreada.ModeloId != vigente.ModeloId ||
+                    rastreada.ColorId != vigente.ColorId || rastreada.TallaId != vigente.TallaId)
+                    throw new BusinessRuleException("La variante cambió desde la lectura anterior; vuelva a consultar el pedido antes de confirmar.");
+            }
 
             var demandas = plan.Asignaciones.Select(asignacion =>
             {

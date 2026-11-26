@@ -19,6 +19,9 @@ public class C0701PedidoReservaClasificacionTests
     [InlineData(4)]
     [InlineData(5)] // Pedido mixto: producto válido + producto reclasificado.
     [InlineData(6)] // Respuesta de repositorio con cardinalidad correcta pero ID incorrecto.
+    [InlineData(7)] // Variante vigente desactivada.
+    [InlineData(8)] // Identificador de variante incorrecto pese a cardinalidad correcta.
+    [InlineData(9)] // SKU rastreado obsoleto frente a fila bloqueada.
     public async Task Confirmar_rechaza_pedido_inconsistente_antes_de_reservar(int caso)
     {
         var cotizacion = new Cotizacion
@@ -62,9 +65,15 @@ public class C0701PedidoReservaClasificacionTests
         productos.Setup(x => x.GetByIdsForReadLockAsync(It.IsAny<IEnumerable<int>>()))
             .ReturnsAsync(persistidos);
         var variantes = new Mock<IProductoVarianteRepository>(MockBehavior.Strict);
-        if (caso == 4)
+        if (caso is 4 or 7 or 8 or 9)
+            variantes.Setup(x => x.GetByIdsForReadLockAsync(It.IsAny<IEnumerable<int>>()))
+                .ReturnsAsync(new List<ProductoVariante> { new() { Id = caso == 8 ? 99 : 21,
+                    ProductoId = 11, Activo = caso != 7, Sku = "SKU-001" } });
+        if (caso is 4 or 9)
             variantes.Setup(x => x.GetByIdsForUpdateAsync(It.IsAny<IEnumerable<int>>()))
-                .ReturnsAsync(new List<ProductoVariante> { new() { Id = 21, ProductoId = 999, Activo = true } });
+                .ReturnsAsync(new List<ProductoVariante> { new() { Id = 21,
+                    ProductoId = caso == 4 ? 999 : 11, Activo = true,
+                    Sku = caso == 9 ? "SKU-OBSOLETO" : "SKU-001" } });
         var existencias = new Mock<IExistenciaVarianteConcurrencyService>(MockBehavior.Strict);
         var auditoria = new Mock<IAuditoriaService>(MockBehavior.Strict);
         var usuario = new Mock<ICurrentUserService>();
@@ -85,7 +94,8 @@ public class C0701PedidoReservaClasificacionTests
         var expectedIds = caso == 5 ? new[] { 11, 12 } : new[] { 11 };
         productos.Verify(x => x.GetByIdsForReadLockAsync(It.Is<IEnumerable<int>>(ids => ids.SequenceEqual(expectedIds))), Times.Once);
         productos.VerifyNoOtherCalls();
-        if (caso == 4) variantes.Verify(x => x.GetByIdsForUpdateAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
+        if (caso is 4 or 7 or 8 or 9) variantes.Verify(x => x.GetByIdsForReadLockAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
+        if (caso is 4 or 9) variantes.Verify(x => x.GetByIdsForUpdateAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
         variantes.VerifyNoOtherCalls();
         existencias.VerifyNoOtherCalls();
         auditoria.VerifyNoOtherCalls();

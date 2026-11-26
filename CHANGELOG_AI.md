@@ -1,3 +1,8 @@
+## 2026-11-26 — DEV05 — C07-01.M06.06 — V44/R1/R5
+- Base 88bd0ec3e7beaace6f4934399f356f57af2466c0; RUN 7cf707c9-15ac-8330-a187-67cc1015ec2e; D06 reserva: lectura bloqueante vigente de variantes, validación de conjunto exacto y contraste de instancia EF rastreada con fila vigente antes de existencias, reserva o auditoría; conserva relación EF y aislamiento tenant.
+- Pruebas dirigidas: variante desactivada, identidad incorrecta, SKU rastreado obsoleto; integración MySQL A/B con desactivación desde contexto separado y readback sin efectos. CI pendiente; no certifica D01/D06, JWT ni A5.
+- Foco colectivo C01-04.M03.06 sin cambio; dependencia empresarial fuera de alcance acreditada. Sin migraciones, grants, datos reales, QA/main/PROD.
+
 ## 2026-11-26 | DEV04 | C07-01.M06.06 | R1-RESTAURADA
 - V44R1-J30-E62C2DDC-C0701M0606-RESERVA-READLOCK | Base d871876e80207896b8f4e892c4b735deb05f57bf; autor DEV04, RUN e62c2ddc-c290-8324-bd66-6b153291ca28.
 - R2: PedidoVentaService confirma reservas leyendo productos con el lock comercial vigente sin reutilizar entidades rastreadas. Conserva scope tenant, orden de bloqueos, reservas, auditoría, transacción y replay. No cambia el catálogo ni permite servicios no inventariables.
