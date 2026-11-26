@@ -83,6 +83,12 @@ public class ProductosController : ControllerBase
 
         await _unitOfWork.ExecuteInTransactionAsync(async () =>
         {
+            // La consulta de producto respeta el contexto empresarial autorizado.
+            // Un id ajeno, eliminado o inexistente debe tener la misma respuesta 404,
+            // sin consultar variantes ni iniciar escrituras sobre el agregado.
+            if (await _productoService.GetByIdAsync(id) is null)
+                return;
+
             var (variantes, forzarTecnica) = ResolverVariantesSolicitud(dto);
             var existentes = await _varianteService.GetByProductoIdAsync(id, incluirInactivas: true);
             actualizado = await _productoService.UpdateAsync(id, dto);

@@ -1,3 +1,10 @@
+## 2026-11-26 — QA-FN-05: edición de producto fuera del contexto empresarial
+
+- Run 45876501311 job 140104801368: esquema 27 tablas/48 FKs/15 claves, Render/proxy, creación A/B, lectura/listado propio y denegación de lectura ajena A PASS; PUT ajeno HTTP 400. Revocación y limpieza PASS.
+- Causa: ProductosController.Update consultaba GetByProductoIdAsync, que lanza BusinessRuleException al no encontrar el producto filtrado por tenant. Se consulta primero IProductoService.GetByIdAsync dentro de la transacción; 404 uniforme para ajeno/inexistente/eliminado, sin consultar variantes ni escribir. Se conserva RBAC, filtro comercial, transacción, DTO, sincronización de variantes y semántica de errores de negocio.
+- Regresiones ProductoEdicionTenantTests: null filtrado => 404 sin invocar variantes/escrituras; producto visible => orden correcto y edición/sincronización original. QA CI debe aprobar antes de nuevo Render. Se mantienen las expectativas HTTP 403/404 del probe A/B; no aceptar 400.
+- Impacto acotado a API de productos PUT y pruebas/docs. Sin migración, cambios de esquema, credenciales, frontend, contratos nuevos, infraestructura ni automatizaciones. Sin traslado DEV/MAIN. Scope Lock DEV 2ec240a9c4845d35b5b5f84bdcb8adf58d7c98cb job 140105587189 PASS. Rollback por revert y redespliegue QA. No declarar cierre antes de evidencia desplegada y UI.
+
 ## 2026-11-26 — QA-FN-05: disponibilidad tras arranque en frio
 
 - Run 45876040049 job 140103242995: evidencia administrativa previa y esquema fisico exacto PASS; fallo HTTP 502 del proxy en health/ready antes de crear fixtures. Render registro arranque 18:29:12Z, inicializacion del modelo EF y HTTP 503 de readiness a 18:29:36Z. No se ejecutaron operaciones comerciales.
