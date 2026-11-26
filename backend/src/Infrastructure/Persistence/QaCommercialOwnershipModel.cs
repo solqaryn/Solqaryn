@@ -6,9 +6,12 @@ namespace Solqaryn.Infrastructure.Persistence;
 
 internal static class QaCommercialOwnershipModel
 {
+    internal static IReadOnlyList<QaCommercialOwnershipV1.Owned> OwnedTables { get; } = QaCommercialOwnershipV1.Tables.Concat(QaCommercialOwnershipV2.Tables).ToArray();
+    private static IReadOnlyList<QaCommercialOwnershipV1.Edge> Relations { get; } = QaCommercialOwnershipV1.Relations.Concat(QaCommercialOwnershipV2.Relations).ToArray();
+
     internal static void Configure(ModelBuilder model, AppDbContext db)
     {
-        foreach (var entry in QaCommercialOwnershipV1.Tables)
+        foreach (var entry in OwnedTables)
         {
             var b = model.Entity(entry.Entity);
             b.Property<int?>("EmpresaId").HasColumnType("int");
@@ -18,12 +21,12 @@ internal static class QaCommercialOwnershipModel
         }
         model.Entity<ProductoVariante>().HasIndex("EmpresaId", "ProductoId", "Id")
             .IsUnique().HasDatabaseName(QaCommercialOwnershipV1.VariantKey);
-        foreach (var edge in QaCommercialOwnershipV1.Relations)
-            model.Entity(QaCommercialOwnershipV1.Tables.Single(t => t.Table == edge.Child).Entity)
+        foreach (var edge in Relations)
+            model.Entity(OwnedTables.Single(t => t.Table == edge.Child).Entity)
                 .HasIndex(edge.Columns).HasDatabaseName(edge.Index);
         foreach (var group in QaCommercialOwnershipV1.NaturalKeys.GroupBy(k => k.Table))
         {
-            var b = model.Entity(QaCommercialOwnershipV1.Tables.Single(t => t.Table == group.Key).Entity);
+            var b = model.Entity(OwnedTables.Single(t => t.Table == group.Key).Entity);
             b.Property<int>(QaCommercialOwnershipV1.ScopeColumn)
                 .HasComputedColumnSql("COALESCE(`EmpresaId`, 0)", stored: true);
             foreach (var key in group)
@@ -61,6 +64,10 @@ internal static class QaCommercialOwnershipModel
         Scope<OrdenCompraDetalle>(model, db);
         Scope<SolicitudCompra>(model, db);
         Scope<SolicitudCompraDetalle>(model, db);
+        Scope<CostoEnvio>(model, db);
+        Scope<DashboardKpiConfiguracion>(model, db);
+        Scope<MovimientoFinanciero>(model, db);
+        Scope<RevisionFinanciera>(model, db);
     }
 
     private static void Scope<TEntity>(ModelBuilder model, AppDbContext db) where TEntity : class =>
@@ -73,7 +80,7 @@ internal static class QaCommercialOwnershipModel
     {
         if (!db.CommercialRequestRequiresTenant) return;
         var entries = db.ChangeTracker.Entries().Where(e =>
-            QaCommercialOwnershipV1.Tables.Any(t => t.Entity == e.Metadata.ClrType) &&
+            OwnedTables.Any(t => t.Entity == e.Metadata.ClrType) &&
             e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted).ToArray();
         if (entries.Length == 0) return;
         var tenant = db.CommercialWriteEmpresaId;
@@ -103,15 +110,15 @@ internal static class QaCommercialOwnershipModel
         // temporary IDs. Verify the graph before executing the database write.
         foreach (var entry in entries.Where(e => e.State != EntityState.Deleted))
         {
-            var owned = QaCommercialOwnershipV1.Tables.Single(t => t.Entity == entry.Metadata.ClrType);
-            foreach (var edge in QaCommercialOwnershipV1.Relations.Where(e => e.Child == owned.Table))
+            var owned = OwnedTables.Single(t => t.Entity == entry.Metadata.ClrType);
+            foreach (var edge in Relations.Where(e => e.Child == owned.Table))
             {
                 if (edge.Columns.Skip(1).Any(col => entry.Property(col).CurrentValue is null))
                     continue; // nullable reference, never a nullable owner
                 var id = entry.Property(edge.Columns[^1]).CurrentValue;
                 if (id is not int)
                     throw new ForbiddenAccessException("Referencia comercial inválida.");
-                var principal = QaCommercialOwnershipV1.Tables.Single(t => t.Table == edge.Parent);
+                var principal = OwnedTables.Single(t => t.Table == edge.Parent);
                 var tracked = db.ChangeTracker.Entries().FirstOrDefault(p => p.Metadata.ClrType == principal.Entity &&
                     Equals(p.Property("Id").CurrentValue, id));
                 if (tracked is null)

@@ -5,6 +5,8 @@ namespace Solqaryn.Application.Interfaces;
 public interface ICostoEnvioRepository
 {
     Task<List<CostoEnvio>> GetAllAsync();
+    Task<bool> ExisteIncluidoEliminadoAsync(int id);
+    Task<T> EnTransaccionAsync<T>(Func<Task<T>> accion);
     Task<CostoEnvio?> GetByIdAsync(int id);
     Task<CostoEnvio?> GetPredeterminadoVigenteAsync(DateTime fecha);
     Task<bool> ExisteNombreAsync(string nombreNormalizado, int? excluirId = null);

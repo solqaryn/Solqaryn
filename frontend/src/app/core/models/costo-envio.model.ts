@@ -31,3 +31,11 @@ export interface GuardarCostoEnvio {
   esPredeterminado: boolean;
   activo: boolean;
 }
+
+export interface ResolverCostoEnvio {
+  departamento?: string;
+  ciudad?: string;
+  zona?: string;
+  modalidad?: string;
+  fechaUtc?: string;
+}

@@ -16,6 +16,9 @@ public sealed class DashboardKpiConfiguracionConfiguration : IEntityTypeConfigur
         });
 
         builder.HasKey(x => x.Id);
+        builder.Property<int?>("EmpresaId");
+        builder.HasIndex(x => x.UsuarioId).HasDatabaseName("IX_DashboardKpiConfiguraciones_UsuarioId");
+        builder.HasIndex(x => x.RolId).HasDatabaseName("IX_DashboardKpiConfiguraciones_RolId");
 
         builder.Property(x => x.MetricKey)
             .IsRequired()
@@ -34,11 +37,11 @@ public sealed class DashboardKpiConfiguracionConfiguration : IEntityTypeConfigur
         // exactly one owner, the corresponding unique index prevents duplicate
         // metric configuration for that user or role while the other index is
         // intentionally non-applicable to the row.
-        builder.HasIndex(x => new { x.UsuarioId, x.MetricKey })
+        builder.HasIndex("EmpresaId", nameof(DashboardKpiConfiguracion.UsuarioId), nameof(DashboardKpiConfiguracion.MetricKey))
             .IsUnique()
             .HasDatabaseName("UX_DashboardKpiConfiguraciones_Usuario_MetricKey");
 
-        builder.HasIndex(x => new { x.RolId, x.MetricKey })
+        builder.HasIndex("EmpresaId", nameof(DashboardKpiConfiguracion.RolId), nameof(DashboardKpiConfiguracion.MetricKey))
             .IsUnique()
             .HasDatabaseName("UX_DashboardKpiConfiguraciones_Rol_MetricKey");
 

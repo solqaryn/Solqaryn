@@ -12,6 +12,7 @@ const RUTAS_PROTEGIDAS = [
   { ruta: '/proveedores', modulo: 'Proveedores', accion: 'Ver' },
   { ruta: '/ventas', modulo: 'Ventas', accion: 'Ver' },
   { ruta: '/clientes', modulo: 'Clientes', accion: 'Ver' },
+  { ruta: '/costos-envio', modulo: 'Facturacion', accion: 'Administrar' },
   { ruta: '/finanzas', modulo: 'Finanzas', accion: 'Ver' },
   { ruta: '/plan-cuentas', modulo: 'Finanzas', accion: 'Ver' },
   { ruta: '/inventario/movimientos', modulo: 'MovimientosInventario', accion: 'Ver' },

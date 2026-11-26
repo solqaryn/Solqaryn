@@ -135,7 +135,7 @@ public class AppDbContext : DbContext
     public override int SaveChanges(bool acceptAllChangesOnSuccess)
     {
         if (CommercialRequestRequiresTenant && ChangeTracker.Entries().Any(e =>
-            QaCommercialOwnershipV1.Tables.Any(t => t.Entity == e.Metadata.ClrType) &&
+            QaCommercialOwnershipModel.OwnedTables.Any(t => t.Entity == e.Metadata.ClrType) &&
             e.State is EntityState.Added or EntityState.Modified or EntityState.Deleted))
             throw new InvalidOperationException("Las escrituras comerciales HTTP requieren SaveChangesAsync.");
         return base.SaveChanges(acceptAllChangesOnSuccess);

@@ -10,6 +10,7 @@ public class CostoEnvioConfiguration : IEntityTypeConfiguration<CostoEnvio>
     {
         builder.ToTable("CostosEnvio");
         builder.HasKey(x => x.Id);
+        builder.Property<int?>("EmpresaId");
         builder.Property(x => x.Nombre).HasMaxLength(120).IsRequired();
         builder.Property(x => x.Descripcion).HasMaxLength(500);
         builder.Property(x => x.Departamento).HasMaxLength(120);
@@ -24,7 +25,7 @@ public class CostoEnvioConfiguration : IEntityTypeConfiguration<CostoEnvio>
         builder.HasIndex(x => new { x.Activo, x.EsPredeterminado });
         builder.HasIndex(x => new { x.Departamento, x.Ciudad, x.Zona, x.Modalidad, x.Activo, x.Prioridad })
             .HasDatabaseName("IX_CostosEnvio_Resolucion");
-        builder.HasIndex(x => x.PredeterminadoActivoUnico)
+        builder.HasIndex("EmpresaId", nameof(CostoEnvio.PredeterminadoActivoUnico))
             .IsUnique()
             .HasDatabaseName("UX_CostosEnvio_PredeterminadoActivo");
     }

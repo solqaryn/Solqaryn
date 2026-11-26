@@ -12,6 +12,7 @@ on:
       - 'backend/src/Infrastructure.Migrations/Migrations/20261126170000_QaCommercialOwnershipV1.cs'
       - 'backend/src/Infrastructure.Migrations/Migrations/OracleAppDbContextModelSnapshot.cs'
       - 'backend/tests/Solqaryn.Tests/QaCommercialOwnershipMySqlTests.cs'
+      - 'backend/tests/Solqaryn.Tests/QaCommercialOwnershipV2MySqlTests.cs'
       - 'backend/src/Infrastructure/Persistence/CanonicalMySqlPhysicalContract.cs'
 
 permissions:
@@ -53,7 +54,7 @@ jobs:
         working-directory: backend
         run: |
           set -euo pipefail
-          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter 'FullyQualifiedName~QaCommercialOwnershipMySqlTests' --logger "trx;LogFileName=qa-commercial-ownership.trx"
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter 'FullyQualifiedName~QaCommercialOwnershipMySqlTests|FullyQualifiedName~QaCommercialOwnershipV2MySqlTests' --logger "trx;LogFileName=qa-commercial-ownership.trx"
           echo QA_COMMERCIAL_OWNERSHIP_MYSQL=PASS
       - name: Comprobar snapshot y generar migración EF exacta
         working-directory: backend
@@ -65,6 +66,8 @@ jobs:
           dotnet ef migrations has-pending-model-changes --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release
           dotnet ef migrations script 20261125212000_CategoriasGalerias 20261126170000_QaCommercialOwnershipV1 --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release --output "$RUNNER_TEMP/qa-commercial-ownership.sql"
           test -s "$RUNNER_TEMP/qa-commercial-ownership.sql"
+          dotnet ef migrations script 20261126170000_QaCommercialOwnershipV1 20261126211000_QaCommercialOwnershipV2 --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release --output "$RUNNER_TEMP/qa-commercial-v2.sql"
+          test -s "$RUNNER_TEMP/qa-commercial-v2.sql"
           echo QA_COMMERCIAL_EF_MODEL=PASS
       - if: always()
         uses: actions/upload-artifact@v4

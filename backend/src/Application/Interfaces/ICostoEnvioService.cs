@@ -5,6 +5,8 @@ namespace Solqaryn.Application.Interfaces;
 public interface ICostoEnvioService
 {
     Task<List<CostoEnvioDto>> GetAllAsync();
+    Task<bool> ExisteIncluidoEliminadoAsync(int id);
+    Task<CostoEnvioDto?> ResolverAsync(ResolverCostoEnvioDto dto);
     Task<CostoEnvioDto?> GetByIdAsync(int id);
     Task<CostoEnvioDto?> GetPredeterminadoVigenteAsync();
     Task<CostoEnvioDto> CreateAsync(GuardarCostoEnvioDto dto);

@@ -34,6 +34,7 @@
       {"route":"/ventas","modulo":"Ventas","accion":"Ver"},
       {"route":"/pedidos-venta","modulo":"Ventas","accion":"Ver"}
     ]},
+    {"id":"facturacion","children":[{"route":"/costos-envio","modulo":"Facturacion","accion":"Administrar"}]},
     {"id":"inventario","children":[
       {"route":"/inventario/movimientos","modulo":"MovimientosInventario","accion":"Ver"},
       {"route":"/inventario/transferencias","modulo":"MovimientosInventario","accion":"Ver"},

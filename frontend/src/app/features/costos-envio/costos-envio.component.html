@@ -1,21 +1,33 @@
 <div class="page-header">
   <div>
     <h1>Costos de envío</h1>
-    <p>Administra tarifas por departamento, ciudad, zona y modalidad, con prioridad y vigencia.</p>
+    <p>Administra tarifas de la empresa activa por departamento, ciudad, zona y modalidad.</p>
   </div>
+  <button mat-flat-button type="button" color="primary" (click)="nuevo()" [disabled]="!ready() || saving()"><mat-icon>add</mat-icon>Nueva tarifa</button>
 </div>
 
 @if (error()) {
   <div class="error" role="alert">{{ error() }}</div>
 }
 
-<section class="card editor">
+@if (notice()) { <p class="notice" role="status">{{ notice() }}</p> }
+@if (!loading() && !ready()) { <button mat-stroked-button (click)="cargar()">Reintentar conexión</button> }
+@if (ready()) {
+  <section class="summary" aria-label="Resumen de tarifas">
+    <div class="card"><span>Tarifas registradas</span><strong>{{ items().length }}</strong></div>
+    <div class="card"><span>Vigentes</span><strong>{{ activas() }}</strong></div>
+    <div class="card"><span>Predeterminada vigente</span><strong>{{ predeterminado()?.nombre || 'Sin configurar' }}</strong></div>
+  </section>
+  @if (!predeterminado()) { <p class="notice" role="status">Configure una tarifa general predeterminada. No se aplicará un importe fijo ni se heredarán tarifas de otra empresa.</p> }
+}
+@if (ready() && editor()) {
+<section class="card editor" aria-label="Formulario de tarifa">
   <h2>{{ editandoId() ? 'Editar costo de envío' : 'Nuevo costo de envío' }}</h2>
   <form [formGroup]="form" (ngSubmit)="guardar()">
     <div class="grid">
       <mat-form-field appearance="outline">
         <mat-label>Nombre</mat-label>
-        <input matInput formControlName="nombre" maxlength="150">
+        <input matInput formControlName="nombre" maxlength="120">
       </mat-form-field>
       <mat-form-field appearance="outline"><mat-label>Departamento</mat-label><input matInput formControlName="departamento" maxlength="120"></mat-form-field>
       <mat-form-field appearance="outline"><mat-label>Ciudad</mat-label><input matInput formControlName="ciudad" maxlength="120"></mat-form-field>
@@ -32,23 +44,21 @@
       </mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label>Vigente desde</mat-label>
-        <input matInput type="date" formControlName="vigenteDesde">
+        <input matInput type="datetime-local" formControlName="vigenteDesde">
       </mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label>Vigente hasta</mat-label>
-        <input matInput type="date" formControlName="vigenteHasta">
+        <input matInput type="datetime-local" formControlName="vigenteHasta">
       </mat-form-field>
       <mat-form-field appearance="outline" class="full">
         <mat-label>Descripción</mat-label>
         <textarea matInput rows="2" maxlength="500" formControlName="descripcion"></textarea>
       </mat-form-field>
-      <mat-checkbox formControlName="esPredeterminado">Usar como costo predeterminado</mat-checkbox>
+      <mat-checkbox formControlName="esPredeterminado">Tarifa general predeterminada</mat-checkbox>
       <mat-checkbox formControlName="activo">Activo</mat-checkbox>
     </div>
     <div class="actions">
-      @if (editandoId()) {
-        <button mat-button type="button" (click)="cancelar()">Cancelar edición</button>
-      }
+      <button mat-button type="button" (click)="cancelar()" [disabled]="saving()">Cancelar</button>
       <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving()">
         @if (saving()) { <mat-spinner diameter="18"></mat-spinner> }
         {{ editandoId() ? 'Actualizar' : 'Crear' }}
@@ -56,12 +66,17 @@
     </div>
   </form>
 </section>
-
-<section class="card table-card">
+}
+<section class="card table-card" aria-label="Listado de tarifas">
+  <div class="filters">
+    <mat-form-field appearance="outline"><mat-label>Buscar tarifa</mat-label><input matInput [value]="search()" (input)="search.set($any($event.target).value)" [disabled]="!ready()"></mat-form-field>
+    <label>Estado <select [value]="status()" (change)="status.set($any($event.target).value)" [disabled]="!ready()"><option value="todos">Todos</option><option value="vigente">Vigentes</option><option value="fuera">Fuera de vigencia</option><option value="inactivo">Inactivos</option></select></label>
+  </div>
   @if (loading()) {
     <div class="loading"><mat-spinner></mat-spinner></div>
-  } @else {
-    <table mat-table [dataSource]="items()">
+  } @else if (ready()) {
+    <div class="table-scroll" tabindex="0" role="region" aria-label="Tabla de tarifas desplazable">
+    <table mat-table [dataSource]="filtradas()" aria-label="Costos de envío de la empresa">
       <ng-container matColumnDef="nombre">
         <th mat-header-cell *matHeaderCellDef>Nombre</th>
         <td mat-cell *matCellDef="let item">
@@ -96,14 +111,56 @@
         <th mat-header-cell *matHeaderCellDef>Acciones</th>
         <td mat-cell *matCellDef="let item" class="row-actions">
           <button type="button" class="action-view" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver costo de envío ' + item.nombre" [appConsultaRegistro]="{ titulo: 'Costo de envío: ' + item.nombre, campos: { 'Nombre': item.nombre, 'Descripción': item.descripcion, 'Cobertura': cobertura(item), 'Monto (HNL)': item.monto, 'Desde': item.vigenteDesde, 'Hasta': item.vigenteHasta, 'Prioridad': item.prioridad, 'Predeterminado': item.esPredeterminado, 'Activo': item.activo, 'Vigente': item.estaVigente, 'Creación': item.fechaCreacion, 'Actualización': item.fechaActualizacion } }"><mat-icon>visibility</mat-icon></button>
-          <button mat-icon-button type="button" (click)="editar(item)" aria-label="Editar costo de envío"><mat-icon>edit</mat-icon></button>
-          <button mat-icon-button type="button" (click)="cambiarEstado(item)" [attr.aria-label]="item.activo ? 'Desactivar costo de envío' : 'Activar costo de envío'"><mat-icon>{{ item.activo ? 'toggle_off' : 'toggle_on' }}</mat-icon></button>
-          <button mat-icon-button color="warn" type="button" (click)="eliminar(item)" aria-label="Eliminar costo de envío"><mat-icon>delete</mat-icon></button>
+          <button mat-icon-button type="button" (click)="editar(item)" [disabled]="saving()" aria-label="Editar costo de envío"><mat-icon>edit</mat-icon></button>
+          <button mat-icon-button type="button" (click)="cambiarEstado(item)" [disabled]="saving()" [attr.aria-label]="item.activo ? 'Desactivar costo de envío' : 'Activar costo de envío'"><mat-icon>{{ item.activo ? 'toggle_off' : 'toggle_on' }}</mat-icon></button>
+          <button mat-icon-button type="button" (click)="verHistorial(item)" aria-label="Ver historial de tarifa"><mat-icon>history</mat-icon></button>
+          <button mat-icon-button color="warn" type="button" (click)="eliminar(item)" [disabled]="saving()" aria-label="Eliminar costo de envío"><mat-icon>delete</mat-icon></button>
         </td>
       </ng-container>
       <tr mat-header-row *matHeaderRowDef="columnas"></tr>
       <tr mat-row *matRowDef="let row; columns: columnas"></tr>
     </table>
-    @if (items().length === 0) { <p class="empty">No hay costos de envío registrados.</p> }
+    </div>
+    @if (filtradas().length === 0) { <p class="empty">{{ items().length ? "No hay tarifas que coincidan con los filtros." : "No hay tarifas registradas para esta empresa." }}</p> }
   }
 </section>
+
+@if (ready()) {
+<section class="card editor" aria-label="Simulación de tarifa">
+  <h2>Simular tarifa</h2>
+  <p>Consulta la tarifa que resolvería el servidor para una cobertura y fecha. No modifica datos.</p>
+  <form [formGroup]="simulador" (ngSubmit)="simular()">
+    <div class="grid">
+      <mat-form-field appearance="outline"><mat-label>Departamento</mat-label><input matInput formControlName="departamento"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Ciudad</mat-label><input matInput formControlName="ciudad"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Zona</mat-label><input matInput formControlName="zona"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Modalidad</mat-label><input matInput formControlName="modalidad"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Fecha de consulta (opcional)</mat-label><input matInput type="datetime-local" formControlName="fecha"></mat-form-field>
+    </div>
+    <button mat-stroked-button type="submit" [disabled]="simulador.invalid || simulando()">{{ simulando() ? 'Consultando…' : 'Resolver tarifa' }}</button>
+  </form>
+  @if (simulacion(); as tarifa) { <div class="notice" role="status"><strong>{{ tarifa.nombre }} · L. {{ tarifa.monto | number:'1.2-2' }}</strong><p>{{ cobertura(tarifa) }}</p></div> }
+  @if (simulacionError()) { <p class="error" role="alert">{{ simulacionError() }}</p> }
+</section>
+}
+@if (historialItem(); as item) {
+<section class="card" aria-label="Historial de tarifa">
+  <div class="page-header"><h2>Historial: {{ item.nombre }}</h2><button mat-button type="button" (click)="cerrarHistorial()">Cerrar</button></div>
+  @if (historialLoading()) { <p role="status">Consultando historial…</p> }
+  @if (historialError()) { <p class="error" role="alert">{{ historialError() }}</p> }
+  @if (historial(); as result) {
+    @for (registro of result.items; track registro.id) {
+      <article class="history-row">
+        <strong>{{ registro.accion }} · {{ registro.fecha | date:'dd/MM/yyyy HH:mm' }}</strong>
+        <p>{{ registro.nombreUsuario }} — {{ registro.descripcion }}</p>
+        @if (registro.valoresAnteriores || registro.valoresNuevos) {
+          <details><summary>Ver cambios registrados</summary><p>Antes: {{ registro.valoresAnteriores || 'No aplica' }}</p><p>Después: {{ registro.valoresNuevos || 'No aplica' }}</p></details>
+        }
+      </article>
+    } @empty { <p class="empty">No hay eventos registrados para esta tarifa.</p> }
+    <div class="actions"><button mat-button type="button" [disabled]="result.page <= 1" (click)="verHistorial(item,result.page-1)">Anterior</button>
+      <span>Página {{ result.page }} de {{ result.totalPages || 1 }}</span>
+      <button mat-button type="button" [disabled]="result.page >= result.totalPages" (click)="verHistorial(item,result.page+1)">Siguiente</button></div>
+  }
+</section>
+}

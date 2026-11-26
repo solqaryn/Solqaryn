@@ -90,6 +90,13 @@ import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service
       </section>
     }
 
+    @if (permisosRuntime.puede('Facturacion', 'Administrar')) {
+      <section class="nav-group" aria-labelledby="nav-facturacion">
+        <h2 id="nav-facturacion" class="nav-group__title">Facturación</h2>
+        <a routerLink="/costos-envio" routerLinkActive="active" ariaCurrentWhenActive="page"><span class="material-icons" aria-hidden="true">local_shipping</span> Costos de envío</a>
+      </section>
+    }
+
     @if (permisosRuntime.puede('MovimientosInventario', 'Ver') || permisosRuntime.puede('Inventario', 'Ver')) {
       <section class="nav-group" aria-labelledby="nav-inventario">
         <h2 id="nav-inventario" class="nav-group__title">Inventario</h2>
