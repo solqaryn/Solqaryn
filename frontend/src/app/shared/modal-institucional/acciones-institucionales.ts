@@ -30,6 +30,17 @@ export function crearAccionesInstitucionales(modulo: string) {
     }
   }
 
+  async function solicitarTexto(accion: string, data: AppAlertData): Promise<string | null> {
+    const inicial = contexto();
+    if (!inicial || !autorizado(accion) || pendiente()) return null;
+    pendiente.set(true);
+    try {
+      const respuesta = await injector.get(AppAlertService).solicitarTexto(data);
+      return typeof respuesta === 'string' && !!respuesta.trim() && inicial === contexto() && autorizado(accion) ? respuesta.trim() : null;
+    } catch { return null; }
+    finally { pendiente.set(false); }
+  }
+
   async function abrir(
     cargar: () => Promise<Type<unknown>>, tamano: TamanoModal, accion: 'Crear' | 'Editar' | 'Ver',
     id?: number
@@ -53,7 +64,7 @@ export function crearAccionesInstitucionales(modulo: string) {
     }
   }
 
-  return { confirmar, abrir, pendiente: pendiente.asReadonly() };
+  return { confirmar, solicitarTexto, abrir, contexto, vigente: (inicial: ReturnType<typeof contexto>, accion: string) => !!inicial && inicial === contexto() && autorizado(accion), pendiente: pendiente.asReadonly() };
 }
 
 /** Adaptador de formulario para navegación directa protegida o diálogo de la lista. */

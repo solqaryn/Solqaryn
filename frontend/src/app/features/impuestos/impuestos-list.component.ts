@@ -109,22 +109,24 @@ export class ImpuestosListComponent implements OnInit {
 
   async duplicar(impuesto: Impuesto): Promise<void> {
     if (!this.puedeDuplicar()) return;
+    const contexto = this.acciones.contexto();
+    if (!this.acciones.vigente(contexto, 'Duplicar')) return;
 
-    const nuevoNombre = await this.alerts.solicitarTexto({
+    const nuevoNombre = await this.acciones.solicitarTexto('Duplicar', {
       titulo: 'Duplicar impuesto',
       mensaje: `Define el nombre de la copia de "${impuesto.nombre}".`,
       confirmarTexto: 'Continuar',
       entrada: { etiqueta: 'Nombre del impuesto', valor: `${impuesto.nombre} (copia)`, requerida: true }
     });
-    if (!nuevoNombre) return;
+    if (!nuevoNombre || !this.acciones.vigente(contexto, 'Duplicar')) return;
 
-    const nuevoCodigo = await this.alerts.solicitarTexto({
+    const nuevoCodigo = await this.acciones.solicitarTexto('Duplicar', {
       titulo: 'Código del impuesto',
       mensaje: 'El código debe ser único en el sistema.',
       confirmarTexto: 'Crear copia',
       entrada: { etiqueta: 'Código único', valor: `${impuesto.codigo}-COPIA`, requerida: true }
     });
-    if (!nuevoCodigo) return;
+    if (!nuevoCodigo || !this.acciones.vigente(contexto, 'Duplicar')) return;
 
     this.service.duplicar(impuesto.id, nuevoNombre, nuevoCodigo).subscribe({
       next: () => this.cargar(),

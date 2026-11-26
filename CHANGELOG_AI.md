@@ -1,3 +1,7 @@
+## 2026-11-25 — QA: corregir compilación de duplicación de descuentos e impuestos
+
+- Las entradas de texto de duplicación pasan por el controlador institucional y revalidan permiso/contexto, incluyendo la segunda etapa de código único de impuestos. Corrige TS2339 detectado por CI del SHA 42ccc639.
+
 ## 2026-11-25 — QA: clientes, clasificaciones y sucursales migrados
 
 - Modales reutilizables XL/M/L, confirmaciones de guardado y estado, confirmación del crédito y sus operaciones sensibles, validación de contexto y permisos. Se conserva estado original del cliente durante edición, controles de sistema/predeterminado de clasificación y ownership de sucursales. Tablas únicas con scroll y filtros, sin retirar paginación/exportación/segmentación.

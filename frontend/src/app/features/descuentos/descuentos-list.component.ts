@@ -109,14 +109,16 @@ export class DescuentosListComponent implements OnInit {
 
   async duplicar(descuento: Descuento): Promise<void> {
     if (!this.puedeDuplicar()) return;
+    const contexto = this.acciones.contexto();
+    if (!this.acciones.vigente(contexto, 'Duplicar')) return;
 
-    const nuevoNombre = await this.alerts.solicitarTexto({
+    const nuevoNombre = await this.acciones.solicitarTexto('Duplicar', {
       titulo: 'Duplicar descuento',
       mensaje: `Define el nombre de la copia de "${descuento.nombre}".`,
       confirmarTexto: 'Crear copia',
       entrada: { etiqueta: 'Nombre del descuento', valor: `${descuento.nombre} (copia)`, requerida: true }
     });
-    if (!nuevoNombre) return;
+    if (!nuevoNombre || !this.acciones.vigente(contexto, 'Duplicar')) return;
 
     this.service.duplicar(descuento.id, nuevoNombre).subscribe({
       next: () => this.cargar(),
