@@ -342,7 +342,7 @@ try:
         ui_env={k:v for k,v in os.environ.items() if k not in ("DB_PASSWORD","MYSQL_PWD","GH_TOKEN")}
         ui=subprocess.run(["node",".github/qa/qa-fn-05-final-ui.mjs"],input=json.dumps(spec),text=True,capture_output=True,timeout=360,env=ui_env)
         for line in (ui.stdout+"\n"+ui.stderr).splitlines():
-            if re.fullmatch(r"QA_FN05_UI_[A-Z0-9_]+=PASS|QA_FN05_UI_FAILED_STAGE=[A-Z0-9_]+;CLASS=[A-Za-z0-9_]+",line): print(line,flush=True)
+            if re.fullmatch(r"QA_FN05_UI_[A-Z0-9_]+=PASS|QA_FN05_UI_FAILED_STAGE=[A-Z0-9_]+;CLASS=[A-Za-z0-9_]+;REASON=(?:TAB_[A-Z_]+|ASSERTION_OR_INTERACTION)",line): print(line,flush=True)
         # Inspect every completed file independently of a later browser assertion.
         # Missing or invalid content and any browser failure remain fatal.
         content_ok=True

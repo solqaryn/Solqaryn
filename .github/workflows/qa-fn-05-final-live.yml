@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   final-live:
-    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == '3cabaf063e7a664e4565fcdc76de7040e9af6116'
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == '17a6a4295530f0f5b16626c77daa680952edc766'
     runs-on: ubuntu-latest
     timeout-minutes: 25
     environment: QA
@@ -30,6 +30,7 @@ jobs:
           node scripts/verify-project-scope.mjs
           python3 -m py_compile .github/qa/qa-fn-05-final-live.py
           node --check .github/qa/qa-fn-05-final-ui.mjs
+          node --check .github/qa/qa-fn-05-report-tabs.mjs
           git diff --exit-code "54ece72064137f9e47307a3e5873285c7fc97355" HEAD -- backend frontend render.yaml
           gh api repos/solqaryn/Solqaryn/actions/jobs/140136672757 | jq -e '.head_sha == "54ece72064137f9e47307a3e5873285c7fc97355" and .conclusion == "success"' >/dev/null
           gh api repos/solqaryn/Solqaryn/actions/runs/45883190610 | jq -e '.head_branch == "qa" and .status == "completed" and .conclusion == "success"' >/dev/null
@@ -48,6 +49,8 @@ jobs:
         run: |
           npm ci
           npx playwright install --with-deps chromium
+      - name: Regresión aislada de navegación Chromium
+        run: node .github/qa/qa-fn-05-report-tabs.mjs --self-test
       - name: Certificación física y funcional real QA
         env:
           EXPECTED_DEPLOYED_SHA: '54ece72064137f9e47307a3e5873285c7fc97355'

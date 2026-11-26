@@ -1,3 +1,8 @@
+## 2026-11-26 — QA-FN-05: regresión reproducida de paginación y escenarios independientes
+
+- Run 45888152368 job 140143915756: 18 exportaciones API y 6/6 archivos descargados inspeccionados PASS; escritorio y roles móvil PASS; fallo localizado AUDIT_TAB_B. Regresión aislada Chromium real del arnés: un clic y centro recortado no bastan; nuevo helper con paginación progresiva, punto visible hit-tested, clic físico y selección ARIA verificada. Escenarios controlados anterior/fallo, progresivo, centro recortado con paginador agotado, inaccesible fail-closed y escritorio PASS; blob local verificado ced055896c1d4a7e4195855c71d5a39f58748fe9. No equivale a PASS del sistema desplegado.
+- Separar A/B, plataforma y operador para obtener evidencia independiente incluso ante fallo móvil; código de razón saneado; cualquier fallo conserva exit code no cero; contenido de archivos y revocación/limpieza siguen obligatorios. Scope Lock DEV 0db5c3d13d68fb0c865372b53fdcf7494986c5bb job 140145178706 SUCCESS; skill y versiones coinciden. Sin cambio en runtime, API, MySQL, permisos ni automatizaciones. Cierre pendiente run exacto y atestación de despliegues. Rollback: revertir este changeset QA.
+
 ## 2026-11-26 — QA-FN-05: corrección dirigida del recorrido autenticado y evidencia de archivos
 
 - Run 45886681601: 18 exportaciones API A/B y autoridad global PASS, seis descargas Chromium PASS; fallo posterior en navegador etiquetado erróneamente como DOWNLOAD_B_PDF. Hipótesis causal: pestaña Material recortada por paginación móvil; la prueba usa paginador real sin clic forzado, valida selección, tablas propias/ajenas y scroll local por panel. Etapas de roles, auditoría, plataforma y operador diferenciadas.
