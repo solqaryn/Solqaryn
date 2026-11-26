@@ -26,7 +26,9 @@ public sealed record UsuarioTenantScopeActual(
 public interface IUsuarioScopeService
 {
     /// <summary>
-    /// Compatibilidad legacy. No concede autoridad sobre una empresa concreta.
+    /// Proyección compatible: con contexto previamente autorizado por el servidor
+    /// utiliza la membresía efectiva; sin él conserva la lectura legacy.
+    /// No concede autoridad empresarial por sí misma.
     /// Los flujos tenant-owned deben usar la sobrecarga con EmpresaId.
     /// </summary>
     Task<UsuarioScopeActual?> ObtenerActualAsync();

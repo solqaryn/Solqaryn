@@ -22,13 +22,23 @@ public sealed class UsuarioScopeService : IUsuarioScopeService
     }
 
     /// <summary>
-    /// Camino legacy conservado para no romper consumidores aún no tenant-aware.
-    /// No debe utilizarse para autorizar recursos pertenecientes a una Empresa.
+    /// Proyección compatible para consumidores históricos. Si el gate ya autorizó
+    /// una empresa, utiliza la membresía vigente y nunca el rol base. Sin ese
+    /// contexto conserva la lectura legacy, que no concede autoridad empresarial.
     /// </summary>
     public async Task<UsuarioScopeActual?> ObtenerActualAsync()
     {
         if (!_currentUser.EstaAutenticado || !_currentUser.UsuarioId.HasValue)
             return null;
+
+        if (_context.AuthorizedEmpresaId is int empresaAutorizada)
+        {
+            var efectivo = await ObtenerActualAsync(empresaAutorizada);
+            return efectivo is not null && efectivo.EmpresaId == empresaAutorizada
+                ? new UsuarioScopeActual(efectivo.UsuarioId, efectivo.RolId,
+                    efectivo.RolNombre, efectivo.EsAdministrador)
+                : null;
+        }
 
         var usuarioId = _currentUser.UsuarioId.Value;
         return await _context.Usuarios

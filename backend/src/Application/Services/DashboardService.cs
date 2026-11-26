@@ -92,7 +92,7 @@ public class DashboardService : IDashboardService
             ValorInventarioCostoMercaderia = valorCostoMercaderia,
             ValorInventarioCostoInsumosAdministrativos = valorCostoInsumos,
             ValorPotencialVentaMercaderia = valorVentaMercaderia,
-            ProductosStockBajo = stockBajo.Select(ProductoMapper.ToDto).ToList(),
+            ProductosStockBajo = stockBajo.Select(p => MapearAlertaStock(p, esAdministrador)).ToList(),
             UltimosAgregados = ultimosProductos.Select(ProductoMapper.ToDto).ToList(),
 
             ComprasDelMes = esAdministrador ? await _compraRepository.GetTotalDelMesAsync() : 0,
@@ -196,6 +196,20 @@ public class DashboardService : IDashboardService
             PorTalla = Agrupar(filas, x => x.TallaId, x => x.Talla),
             Variantes = filas
         };
+    }
+
+    // El DTO completo de alerta incluye costos de producto y variantes.
+    // Aplicar la misma restricción que a las valoraciones del dashboard.
+    private static ProductoDto MapearAlertaStock(Producto producto, bool esAdministrador)
+    {
+        var dto = ProductoMapper.ToDto(producto);
+        if (!esAdministrador)
+        {
+            dto.Costo = 0m;
+            foreach (var variante in dto.Variantes)
+                variante.Costo = 0m;
+        }
+        return dto;
     }
 
     private static List<InventarioDimensionResumenDto> Agrupar(
