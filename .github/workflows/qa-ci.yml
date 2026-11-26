@@ -94,10 +94,19 @@ jobs:
         run: npm run test:unit -- --include=src/app/app.routes.centros-costo.spec.ts
       - name: Regresión de listados de Solicitudes y Centros de costo
         run: npm run test:unit -- --include=src/app/features/solicitudes-compra/solicitudes-compra-shell.component.spec.ts --include=src/app/features/centros-costo/centros-costo.a11y.spec.ts --include=src/app/services/centro-costo.service.spec.ts
-      - run: npm run build:prod
+      - run: npm run build:prod -- --stats-json
+      - name: Diagnóstico de contribuciones al paquete inicial
+        run: node scripts/report-initial-bundle.mjs
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-angular-build-stats
+          path: frontend/dist/**/stats.json
+          if-no-files-found: warn
+          retention-days: 14
       - run: node scripts/validate-environment-routing.mjs
-      - name: Regresión de portadas de categorías
-        run: npm run test:unit -- --include=src/app/features/storefront/storefront-categorias.catalog.spec.ts
+      - name: Regresión de portadas y componentes compartidos de Storefront
+        run: npm run test:unit -- --include=src/app/features/storefront/storefront-categorias.catalog.spec.ts --include=src/app/features/storefront/storefront-catalog-chrome.spec.ts
       - name: Instalar Chromium para regresión dirigida de Storefront
         run: npx playwright install --with-deps chromium
       - name: Regresión QA visual de storefront y módulos institucionales

@@ -3,8 +3,6 @@ import { provideRouter, withPreloading } from '@angular/router';
 import { provideHttpClient, withInterceptors, withXhr } from '@angular/common/http';
 import { provideAnimationsAsync } from '@angular/platform-browser/animations/async';
 import { routes } from './app.routes';
-import { MAT_DIALOG_DEFAULT_OPTIONS } from '@angular/material/dialog';
-import { MODAL_DEFAULTS } from './shared/modal-institucional/modal-institucional';
 import { ALMACENES_ROUTES } from './features/almacenes/almacenes.routes';
 import { UBICACIONES_ALMACEN_ROUTES } from './features/ubicaciones-almacen/ubicaciones-almacen.routes';
 import { TRANSFERENCIAS_INVENTARIO_ROUTES } from './features/inventario/transferencias.routes';
@@ -15,7 +13,6 @@ import { AfterRenderSelectivePreloadingStrategy } from './core/performance/after
 
 export const appConfig: ApplicationConfig = {
   providers: [
-    { provide: MAT_DIALOG_DEFAULT_OPTIONS, useValue: MODAL_DEFAULTS },
     provideZoneChangeDetection({ eventCoalescing: true }),
     provideRouter([
       ...UBICACIONES_ALMACEN_ROUTES,

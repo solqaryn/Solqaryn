@@ -64,7 +64,7 @@ function resolveEnvironmentBinding(env = process.env) {
   const projectId = String(env.VERCEL_PROJECT_ID || '').trim();
   if (!projectId) return resolveExplicitBinding(env);
 
-  const binding = VERCEL_PROJECT_BINDINGS[projectId];
+  const binding = Object.hasOwn(VERCEL_PROJECT_BINDINGS, projectId) ? VERCEL_PROJECT_BINDINGS[projectId] : undefined;
   if (!binding) throw new Error('VERCEL_PROJECT_ID no pertenece a un proyecto SOLQARYN autorizado.');
 
   validateOptionalOverride(env, 'SOLQARYN_ENV', binding.environment, value => String(value || '').trim().toUpperCase());

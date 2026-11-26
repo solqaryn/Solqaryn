@@ -2,6 +2,7 @@
 import { Component, Inject, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
 import { MAT_DIALOG_DATA, MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { configurarModal } from '../../shared/modal-institucional/modal-institucional';
 import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
@@ -142,13 +143,13 @@ export class RecepcionCompraDetailComponent implements OnInit {
     const actual = this.recepcion();
     if (!actual || !this.esBorrador(actual.estado) || !this.puedeConfirmar() || this.procesando()) return;
     this.procesando.set(true);
-    const ref = this.dialog.open(ConfirmarRecepcionDialogComponent, {
+    const ref = this.dialog.open(ConfirmarRecepcionDialogComponent, configurarModal({
       disableClose: true,
       data: {
         title: 'Confirmar recepción',
         message: 'Al confirmar se materializará la cantidad aceptada en el stock físico. Esta acción queda auditada.'
       }
-    });
+    }));
     ref.afterClosed().subscribe((confirmado: boolean | undefined) => {
       if (!confirmado) {
         this.procesando.set(false);
@@ -166,13 +167,13 @@ export class RecepcionCompraDetailComponent implements OnInit {
     const actual = this.recepcion();
     if (!actual || !this.esRecibida(actual.estado) || !this.puedeAnular() || this.procesando()) return;
     this.procesando.set(true);
-    const ref = this.dialog.open(AnularDialogComponent, {
+    const ref = this.dialog.open(AnularDialogComponent, configurarModal({
       disableClose: true,
       data: {
         title: 'Anular recepción de compra',
         message: 'La anulación revertirá el stock materializado. Indica el motivo obligatorio:'
       }
-    });
+    }));
     ref.afterClosed().subscribe((motivo: string | undefined) => {
       const normalizado = motivo?.trim();
       if (!normalizado) {

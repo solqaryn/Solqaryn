@@ -10,6 +10,7 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { configurarModal } from '../../shared/modal-institucional/modal-institucional';
 import { debounceTime, Subject } from 'rxjs';
 import { FinanzasService } from '../../services/finanzas.service';
 import { FinanzasResumen, MovimientoFinanciero, RevisionFinanciera } from '../../core/models/finanzas.model';
@@ -197,9 +198,9 @@ export class FinanzasComponent implements OnInit {
   anularMovimiento(m: MovimientoFinanciero): void {
     if (!this.puedeAnularMovimiento()) return;
 
-    const ref = this.dialog.open(AnularDialogComponent, {
+    const ref = this.dialog.open(AnularDialogComponent, configurarModal({
       data: { title: 'Anular movimiento', message: `¿Anular "${m.concepto}"?` }
-    });
+    }));
     ref.afterClosed().subscribe((motivo: string | undefined) => {
       if (!motivo) return;
       this.finanzasService.anularMovimiento(m.id, motivo).subscribe(() => this.cargarTodo());

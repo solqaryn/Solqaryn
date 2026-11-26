@@ -13,6 +13,7 @@ import {
 import { FormControl, ReactiveFormsModule } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatDialog, MatDialogModule } from '@angular/material/dialog';
+import { configurarModal } from '../modal-institucional/modal-institucional';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
@@ -60,13 +61,13 @@ export class CodigoScannerInputComponent implements AfterViewInit {
   }
 
   abrirCamara(): void {
-    const referencia = this.dialog.open(CodigoScannerDialogComponent, {
+    const referencia = this.dialog.open(CodigoScannerDialogComponent, configurarModal({
       width: 'min(94vw, 680px)',
       maxWidth: '680px',
       disableClose: true,
       autoFocus: false,
       restoreFocus: true
-    });
+    }));
 
     referencia.afterClosed().subscribe((codigo: string | undefined) => {
       const normalizado = codigo?.trim();

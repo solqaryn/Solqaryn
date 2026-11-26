@@ -1,4 +1,5 @@
 import { readFile } from 'node:fs/promises';
+import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 import { createRequire } from 'node:module';
 import { fileURLToPath } from 'node:url';
@@ -53,6 +54,20 @@ expect(resolves({VERCEL_PROJECT_ID:QA_PROJECT_ID})?.apiUpstream === 'https://sol
 expect(rejects({VERCEL_PROJECT_ID:QA_PROJECT_ID,API_UPSTREAM:'https://solqaryn-api-qa.onrender.com'}), 'QA no puede usar el backend anterior.');
 expect(rejects({VERCEL_PROJECT_ID:QA_PROJECT_ID,PUBLIC_ORIGIN:'https://solqaryn-qa.vercel.app'}), 'QA no puede usar el origen anterior.');
 expect(ignoreBuild.includes("'" + QA_PROJECT_ID + "': 'qa'"), 'Proyecto QA debe quedar ligado exclusivamente a qa.');
+
+// Prueba la decisión efectiva del comando de Vercel, no sólo el texto fuente.
+const ignoreExit = (projectId, branch) => spawnSync(process.execPath,
+  [path.join(frontendDir, 'scripts/vercel-ignore-build.mjs')],
+  { cwd: frontendDir, env: { ...process.env, VERCEL_PROJECT_ID: projectId, VERCEL_GIT_COMMIT_REF: branch }, encoding: 'utf8' }).status;
+expect(ignoreExit(QA_PROJECT_ID, 'qa') === 1, 'El proyecto autorizado debe compilar la rama qa.');
+expect(ignoreExit(QA_PROJECT_ID, 'dev') === 0, 'El proyecto QA no debe compilar dev.');
+expect(ignoreExit(QA_PROJECT_ID, 'main') === 0, 'El proyecto QA no debe compilar main.');
+expect(ignoreExit(DEV_PROJECT_ID, 'qa') === 0, 'El proyecto DEV no debe compilar qa.');
+expect(ignoreExit(PROD_PROJECT_ID, 'qa') === 0, 'El proyecto PROD no debe compilar qa.');
+expect(ignoreExit('prj_desconocido', 'qa') === 0, 'Un proyecto explícitamente desconocido debe omitir la compilación.');
+expect(ignoreExit('__proto__', 'qa') === 0, 'La identidad no puede heredarse del prototipo.');
+expect(ignoreExit('', 'qa') === 1, 'Conservar el contrato existente cuando no se suministra ID.');
+expect(rejects({VERCEL_PROJECT_ID:'__proto__'}), 'El binding tampoco puede heredarse del prototipo.');
 expect(rejects({VERCEL_PROJECT_ID:DEV_PROJECT_ID,SOLQARYN_ENV:'QA'}), 'Proyecto DEV no puede declararse QA.');
 expect(rejects({VERCEL_PROJECT_ID:DEV_PROJECT_ID,SOLQARYN_ENV:'PROD'}), 'Proyecto DEV no puede declararse PROD.');
 expect(rejects({VERCEL_PROJECT_ID:QA_PROJECT_ID,SOLQARYN_ENV:'DEV'}), 'Proyecto QA no puede declararse DEV.');

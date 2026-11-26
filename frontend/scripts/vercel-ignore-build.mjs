@@ -3,7 +3,7 @@ import { execFileSync } from 'node:child_process';
 const branch = process.env.VERCEL_GIT_COMMIT_REF;
 const current = process.env.VERCEL_GIT_COMMIT_SHA || 'HEAD';
 const configuredPrevious = process.env.VERCEL_GIT_PREVIOUS_SHA;
-const vercelProjectId = process.env.VERCEL_PROJECT_ID;
+const vercelProjectId = String(process.env.VERCEL_PROJECT_ID || '').trim();
 
 const PROJECT_BRANCH_BINDINGS = Object.freeze({
   'prj_1Anhx5mWyXEBX89lWC24Py6JXe7A': 'dev',
@@ -11,7 +11,7 @@ const PROJECT_BRANCH_BINDINGS = Object.freeze({
   'prj_si3ORH7lBhM4aSAYfYvXsbJT2lHA': 'main'
 });
 
-const expectedBranch = PROJECT_BRANCH_BINDINGS[vercelProjectId];
+const expectedBranch = Object.hasOwn(PROJECT_BRANCH_BINDINGS, vercelProjectId) ? PROJECT_BRANCH_BINDINGS[vercelProjectId] : undefined;
 
 // Cada proyecto Vercel corporativo sólo construye su rama canónica.
 // Exit 0 es el contrato de Vercel para ignorar el build.
@@ -20,10 +20,14 @@ if (expectedBranch && branch !== expectedBranch) {
   process.exit(0);
 }
 
-// Un project ID desconocido falla abierto a build para no ocultar una
-// configuración nueva accidental; environment-binding.js fallará cerrado
-// en runtime hasta que el proyecto sea explícitamente autorizado.
+// Un ID explícito desconocido no puede operar con el binding canónico.
+// No gastar compilaciones en ese recurso. Si no se suministra ningún ID,
+// conservar el comportamiento existente para configuración explícita externa.
 if (!expectedBranch) {
+  if (vercelProjectId) {
+    console.log('UNAUTHORIZED_PROJECT_SKIP');
+    process.exit(0);
+  }
   process.exit(1);
 }
 

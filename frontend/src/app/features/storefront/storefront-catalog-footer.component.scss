@@ -1,0 +1,36 @@
+:host { display: block; }
+.container { width: var(--store-container-width); margin-inline: auto; }
+a { color: inherit; text-decoration: none; }
+a:focus-visible { outline: 2px solid var(--color-primary); outline-offset: 3px; }
+p { margin: 0; }
+
+.footer-grid { padding: 30px 0; display: grid; grid-template-columns: 1fr; gap: 18px; }
+.footer-grid > div:not(:first-child) { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+.footer-grid strong, .footer-grid b { color: var(--color-heading); font-size: .76rem; }
+.footer-grid p, .footer-grid span, .footer-grid a { color: var(--color-text-muted); font-size: .67rem; line-height: 1.6; }
+.footer-grid a { min-height: 44px; display: inline-flex; align-items: center; }
+.footer-grid a:hover { color: var(--color-primary); }
+.footer-bottom { padding: 13px 0 20px; border-top: 1px solid var(--store-line); color: var(--color-text-muted); font-size: .62rem; }
+
+/* Cada página conserva sus dimensiones y jerarquía previa. */
+:host(.catalogo) .footer-grid { padding: 34px 0; gap: 20px; }
+:host(.catalogo) .footer-grid > div:not(:first-child) { gap: 7px; }
+:host(.catalogo) .footer-grid strong { font-size: .9rem; }
+:host(.catalogo) .footer-grid b { font-size: .7rem; }
+:host(.catalogo) .footer-grid p,
+:host(.catalogo) .footer-grid span,
+:host(.catalogo) .footer-grid a { font-size: .68rem; line-height: 1.7; }
+:host(.catalogo) .footer-grid p { margin-top: 8px; max-width: 420px; }
+
+@media (min-width: 761px) {
+  .footer-grid { grid-template-columns: 1fr 1fr; gap: 28px; }
+  :host(.catalogo) .footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
+  :host(.catalogo) .footer-grid > div:first-child { grid-column: 1 / -1; }
+}
+@media (min-width: 1081px) {
+  :host(:not(.catalogo)) .footer-grid { grid-template-columns: 1.5fr 1fr 1fr; }
+}
+@media (min-width: 1367px), (min-width: 1181px) and (hover: hover) and (pointer: fine) {
+  :host(.catalogo) .footer-grid { grid-template-columns: 1.5fr 1fr 1fr; gap: 32px; }
+  :host(.catalogo) .footer-grid > div:first-child { grid-column: auto; }
+}

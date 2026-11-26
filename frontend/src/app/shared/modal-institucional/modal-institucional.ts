@@ -14,6 +14,13 @@ export const MODAL_DEFAULTS: MatDialogConfig = {
   closeOnNavigation: true
 };
 
+/** Conserva los defaults institucionales al abrir vistas diferidas, sin cargar Material en el arranque.
+ * Las excepciones explícitas existentes (por ejemplo, foco y ancho del escáner) se preservan.
+ */
+export function configurarModal<D = unknown>(opciones: MatDialogConfig<D> = {}): MatDialogConfig<D> {
+  return { ...MODAL_DEFAULTS, ...opciones };
+}
+
 export function modalInstitucional<D = unknown>(
   tamano: TamanoModal, opciones: MatDialogConfig<D> = {}
 ): MatDialogConfig<D> {

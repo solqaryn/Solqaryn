@@ -14,16 +14,8 @@
     (carritoSolicitado)="abrirCarrito()" />
 
   @if (controlesVistaPrevia) {
-    <section class="container preview-panel" aria-label="Opciones de vista previa">
-      <div class="preview-copy">
-        <app-store-icon nombre="sol" />
-        <span><strong>Vista previa de catálogo</strong><small>La fuente puede alternarse solo fuera de producción.</small></span>
-      </div>
-      <div class="segmented" role="group" aria-label="Origen de datos">
-        <button type="button" [class.active]="!utilizarDatosBaseDatos()" [attr.aria-pressed]="!utilizarDatosBaseDatos()" (click)="cambiarFuente(false)">Datos de ejemplo</button>
-        <button type="button" [class.active]="utilizarDatosBaseDatos()" [attr.aria-pressed]="utilizarDatosBaseDatos()" (click)="cambiarFuente(true)">Base de datos</button>
-      </div>
-    </section>
+    <section app-storefront-preview class="container preview-panel" aria-label="Opciones de vista previa"
+      variante="catalogo" [usaDatosReales]="utilizarDatosBaseDatos()" (fuenteCambiada)="cambiarFuente($event)"></section>
   }
 
   @if (!utilizarDatosBaseDatos()) {
@@ -236,14 +228,8 @@
   </main>
 
   @if (identidad.config().piePaginaActivo) {
-    <footer class="store-footer">
-      <div class="container footer-grid">
-        <div><strong>{{ (identidad.config().nombreComercial || 'Tienda') }}</strong><p>{{ identidad.config().piePaginaTexto || identidad.config().eslogan }}</p></div>
-        <div><b>Tienda</b><a [href]="enlaces.inicio">Inicio</a><a [href]="enlaces.productos">Productos</a><a [href]="enlaces.ofertas">Ofertas</a><a [href]="enlaces.categorias">Categorías</a></div>
-        <div><b>Ayuda</b><a [href]="enlaces.contacto">Contacto</a>@if (permiteWhatsapp) { <span>Pedidos por WhatsApp</span> }</div>
-      </div>
-      <div class="container footer-bottom">@if (identidad.mostrarCopyright()) { <small>{{ identidad.copyright() }}</small> }</div>
-    </footer>
+    <footer app-storefront-catalog-footer class="store-footer" variante="catalogo"
+      [permiteWhatsapp]="permiteWhatsapp"></footer>
   }
 
   <div class="sr-only" role="status" aria-live="polite">{{ aviso() }}</div>

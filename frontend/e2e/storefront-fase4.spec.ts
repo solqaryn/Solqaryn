@@ -175,13 +175,29 @@ test.describe('Storefront Fase 4 — detalle público de producto', () => {
     await expect(page.locator('.main-image-button img')).toHaveCSS('object-fit', 'contain');
     await expect(page.getByRole('spinbutton', { name: 'Cantidad de producto' })).toHaveAttribute('max', '5');
     await expect(page.getByRole('button', { name: 'Agregar al carrito' })).toBeEnabled();
-    for (const width of [320, 390, 768, 1024, 1366]) {
+    const footer = page.locator('footer.store-footer');
+    await expect(footer).toHaveCount(1);
+    await expect(footer.getByText('Pie de auditoría', { exact: true })).toBeVisible();
+    await expect(footer.getByRole('link', { name: 'Productos', exact: true })).toHaveAttribute('href', '/tienda/productos');
+    for (const width of [320, 360, 390, 414, 480, 768, 1024, 1280, 1366, 1440, 1920, 2048, 2400, 2560]) {
       await page.setViewportSize({ width, height: 900 });
       await expect(page.locator('.main-image-button img')).toBeVisible();
       const stageWidth = (await page.locator('.gallery-stage').boundingBox())!.width;
       const galleryWidth = (await page.locator('.gallery').boundingBox())!.width;
       expect(Math.abs(stageWidth - galleryWidth)).toBeLessThanOrEqual(2);
       expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBeTruthy();
+      const footerGeometry = await footer.evaluate(el => {
+        const grid = el.querySelector<HTMLElement>('.footer-grid')!;
+        const bounds = grid.getBoundingClientRect();
+        return { left: bounds.left, right: bounds.right, width: window.innerWidth,
+          paddingBottom: parseFloat(getComputedStyle(el).paddingBottom),
+          columns: getComputedStyle(grid).gridTemplateColumns.split(' ').length };
+      });
+      expect(footerGeometry.left).toBeGreaterThanOrEqual(0);
+      expect(footerGeometry.right).toBeLessThanOrEqual(footerGeometry.width + 1);
+      expect(footerGeometry.columns).toBe(width < 761 ? 1 : width < 1081 ? 2 : 3);
+      if (width < 761) expect(footerGeometry.paddingBottom).toBeGreaterThanOrEqual(82);
+      else expect(footerGeometry.paddingBottom).toBe(0);
     }
   });
 

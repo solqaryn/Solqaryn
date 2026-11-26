@@ -1,5 +1,6 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import ts from 'typescript';
 
 const root = process.cwd();
 const read = relative => fs.readFileSync(path.join(root, relative), 'utf8');
@@ -59,5 +60,55 @@ function inspectPaginatorConsumers(dir) {
   }
 }
 inspectPaginatorConsumers('src/app/features');
+
+// Material Dialog no debe entrar por el bootstrap. Las aperturas de la aplicación
+// reciben exactamente los defaults institucionales desde sus consumidores lazy.
+if (appConfig.includes('@angular/material/dialog') || appConfig.includes('modal-institucional')) {
+  fail('El bootstrap no debe cargar Material Dialog ni los defaults de sus vistas diferidas.');
+}
+
+const configPath = path.join(root, 'tsconfig.app.json');
+const configFile = ts.readConfigFile(configPath, ts.sys.readFile);
+const parsed = configFile.error ? null : ts.parseJsonConfigFileContent(configFile.config, ts.sys, root);
+if (!parsed || parsed.errors.length) {
+  fail('No se pudo analizar el programa TypeScript para verificar la política de modales.');
+} else {
+  const program = ts.createProgram({ rootNames: parsed.fileNames, options: parsed.options });
+  const checker = program.getTypeChecker();
+  const sourceRoot = path.join(root, 'src', 'app') + path.sep;
+  const helperPath = path.join(root, 'src', 'app', 'shared', 'modal-institucional', 'modal-institucional.ts');
+  let count = 0;
+
+  function usesInstitutionalConfig(node) {
+    if (!node || !ts.isCallExpression(node)) return false;
+    let symbol = checker.getSymbolAtLocation(node.expression);
+    if (symbol && (symbol.flags & ts.SymbolFlags.Alias)) symbol = checker.getAliasedSymbol(symbol);
+    return Boolean(symbol && ['modalInstitucional', 'configurarModal'].includes(symbol.getName()) &&
+      symbol.declarations?.some(declaration => path.resolve(declaration.getSourceFile().fileName) === helperPath));
+  }
+
+  function inspect(node, source) {
+    if (ts.isCallExpression(node) && ts.isPropertyAccessExpression(node.expression) && node.expression.name.text === 'open') {
+      const receiver = checker.getTypeAtLocation(node.expression.expression);
+      const method = checker.getSymbolAtLocation(node.expression.name);
+      const isDialog = receiver.getSymbol()?.getName() === 'MatDialog' ||
+        method?.declarations?.some(declaration => declaration.parent?.name?.text === 'MatDialog');
+      if (isDialog) {
+        count++;
+        if (!usesInstitutionalConfig(node.arguments[1])) {
+          const line = source.getLineAndCharacterOfPosition(node.getStart(source)).line + 1;
+          fail('MatDialog.open sin defaults institucionales: ' + path.relative(root, source.fileName) + ':' + line);
+        }
+      }
+    }
+    ts.forEachChild(node, child => inspect(child, source));
+  }
+
+  for (const source of program.getSourceFiles()) {
+    if (!source.isDeclarationFile && path.resolve(source.fileName).startsWith(sourceRoot)) inspect(source, source);
+  }
+  if (count === 0) fail('No se verificaron aperturas MatDialog en el programa de la aplicación.');
+  else console.log('[angular-bundle-policy] MatDialog: ' + count + ' aperturas verificadas');
+}
 
 if (!process.exitCode) console.log('[angular-bundle-policy] PASS');

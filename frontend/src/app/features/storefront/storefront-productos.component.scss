@@ -6,11 +6,12 @@
   --store-soft: color-mix(in srgb, var(--color-primary) 7%, var(--color-surface));
   --store-soft-2: color-mix(in srgb, var(--color-primary) 13%, var(--color-surface));
   --store-line: var(--color-border);
+  --store-container-width: min(100% - 22px, 1320px);
 }
 
 * { box-sizing: border-box; }
 .storefront { min-height: 100vh; background: var(--color-bg); }
-.container { width: min(100% - 22px, 1320px); margin-inline: auto; }
+.container { width: var(--store-container-width); margin-inline: auto; }
 a { color: inherit; text-decoration: none; }
 button, input, select { font: inherit; color: inherit; }
 button { cursor: pointer; }
@@ -18,25 +19,6 @@ button:focus-visible, a:focus-visible, input:focus-visible, select:focus-visible
 h1, h2, p { margin: 0; }
 h1, h2 { color: var(--color-heading); }
 
-.preview-panel {
-  margin-top: 20px;
-  padding: 13px 16px;
-  display: flex;
-  align-items: stretch;
-  flex-direction: column;
-  gap: 14px;
-  border: 1px dashed color-mix(in srgb, var(--color-primary) 45%, var(--store-line));
-  border-radius: var(--radius);
-  background: var(--color-surface);
-}
-.preview-copy { margin-right: 0; display: flex; align-items: center; gap: 10px; }
-.preview-copy app-store-icon { color: var(--color-primary); font-size: 1.3rem; }
-.preview-copy strong, .preview-copy small { display: block; }
-.preview-copy strong { font-size: .76rem; }
-.preview-copy small { margin-top: 2px; color: var(--color-text-muted); font-size: .64rem; }
-.segmented { width: 100%; display: flex; gap: 3px; padding: 3px; border-radius: calc(var(--radius) * .7); background: var(--color-bg); }
-.segmented button { min-height: 44px; flex: 1; padding: 8px 12px; border: 0; border-radius: calc(var(--radius) * .55); background: transparent; font-size: .69rem; }
-.segmented button.active { background: var(--color-button); color: var(--color-on-primary); }
 .demo-note { margin-top: 8px; color: var(--color-text-muted); font-size: .69rem; line-height: 1.6; }
 
 .products-page { padding: 32px 0 52px; scroll-margin-top: 120px; }
@@ -143,15 +125,6 @@ fieldset > button small { color: var(--color-text-muted); font-size: .62rem; }
 .pagination strong { color: var(--color-heading); }
 
 .store-footer { margin-top: 18px; border-top: 1px solid var(--store-line); background: var(--color-surface); }
-.footer-grid { padding: 34px 0; display: grid; grid-template-columns: 1fr; gap: 20px; }
-.footer-grid strong { color: var(--color-heading); font-size: .9rem; }
-.footer-grid p, .footer-grid span, .footer-grid a { color: var(--color-text-muted); font-size: .68rem; line-height: 1.7; }
-.footer-grid p { margin-top: 8px; max-width: 420px; }
-.footer-grid > div:not(:first-child) { display: flex; flex-direction: column; align-items: flex-start; gap: 7px; }
-.footer-grid b { color: var(--color-heading); font-size: .7rem; }
-.footer-grid a { min-height: 44px; display: inline-flex; align-items: center; }
-.footer-grid a:hover { color: var(--color-primary); }
-.footer-bottom { padding: 13px 0 20px; border-top: 1px solid var(--store-line); color: var(--color-text-muted); font-size: .62rem; }
 .sr-only { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); white-space: nowrap; border: 0; }
 
 /* Responsive canonico mobile-first: el baseline anterior es telefono; solo expandimos con min-width. */
@@ -166,7 +139,7 @@ fieldset > button small { color: var(--color-text-muted); font-size: .62rem; }
 }
 
 @media (min-width: 601px) {
-  .container { width: min(100% - 30px, 1320px); }
+  :host { --store-container-width: min(100% - 30px, 1320px); }
   .catalog-toolbar { gap: 14px; }
   .sort-field { width: auto; justify-content: flex-start; margin-left: auto; }
   .sort-field select { flex: 0 1 auto; }
@@ -179,11 +152,7 @@ fieldset > button small { color: var(--color-text-muted); font-size: .62rem; }
 }
 
 @media (min-width: 761px) {
-  .container { width: min(100% - 40px, 1320px); }
-  .preview-panel { align-items: center; flex-direction: row; }
-  .preview-copy { margin-right: auto; }
-  .segmented { width: auto; }
-  .segmented button { flex: 0 1 auto; }
+  :host { --store-container-width: min(100% - 40px, 1320px); }
   .products-page { padding: 44px 0 72px; scroll-margin-top: 150px; }
   .product-media { min-height: 225px; padding: 24px; }
   .product-media img { height: 190px; }
@@ -193,12 +162,10 @@ fieldset > button small { color: var(--color-text-muted); font-size: .62rem; }
   .description { font-size: .69rem; }
   .product-actions { gap: 8px; }
   .product-actions .button { min-height: 44px; }
-  .footer-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 22px; }
-  .footer-grid > div:first-child { grid-column: 1 / -1; }
 }
 
 @media (min-width: 1367px), (min-width: 1181px) and (hover: hover) and (pointer: fine) {
-  .container { width: min(1320px, calc(100% - 64px)); }
+  :host { --store-container-width: min(1320px, calc(100% - 64px)); }
   .page-heading { align-items: end; flex-direction: row; gap: 28px; }
   .catalog-layout { display: grid; grid-template-columns: minmax(210px, 245px) minmax(0, 1fr); gap: 26px; align-items: start; }
   .filters { position: sticky; top: 150px; display: block; margin-bottom: 0; }
@@ -208,6 +175,4 @@ fieldset > button small { color: var(--color-text-muted); font-size: .62rem; }
   .mobile-filters { display: none; }
   .sort-field { margin-left: 0; }
   .product-grid { grid-template-columns: repeat(auto-fit, minmax(min(100%, 290px), 1fr)); gap: 17px; }
-  .footer-grid { grid-template-columns: 1.5fr 1fr 1fr; gap: 32px; }
-  .footer-grid > div:first-child { grid-column: auto; }
 }
