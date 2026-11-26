@@ -56,10 +56,10 @@ public sealed class V5CaseFileOwnershipStore
         a.CaseId == s.CaseId && a.ResourceType == s.ResourceType &&
         a.ResourceRef == s.ResourceRef && _db.AuthorizedCommercialEmpresaId == tenant;
 
-    private DbCommand Command(IDbContextTransaction tx, string sql,
+    private static DbCommand Command(AppDbContext db, IDbContextTransaction tx, string sql,
         params (string Name, object Value)[] parameters)
     {
-        var cmd = _db.Database.GetDbConnection().CreateCommand();
+        var cmd = db.Database.GetDbConnection().CreateCommand();
         cmd.Transaction = tx.GetDbTransaction();
         cmd.CommandText = sql;
         foreach (var (name, value) in parameters)
@@ -72,10 +72,10 @@ public sealed class V5CaseFileOwnershipStore
         return cmd;
     }
 
-    private async Task<bool> ActiveBranchAsync(IDbContextTransaction tx, int tenant,
+    private static async Task<bool> ActiveBranchAsync(AppDbContext db, IDbContextTransaction tx, int tenant,
         int branch, CancellationToken ct)
     {
-        await using var cmd = Command(tx, """
+        await using var cmd = Command(db, tx, """
             SELECT s.Id FROM Sucursales s INNER JOIN Empresas e ON e.Id=s.EmpresaId
             WHERE s.EmpresaId=@tenant AND s.Id=@branch AND s.Activa=1
               AND s.Eliminado=0 AND e.Activa=1 FOR SHARE
@@ -96,11 +96,11 @@ public sealed class V5CaseFileOwnershipStore
             var a = await _authority.ResolveAsync(_db, selection, ct);
             ct.ThrowIfCancellationRequested();
             if (a is null || !Matches(a, selection, tenant) ||
-                !await ActiveBranchAsync(tx, tenant, a.BranchId, ct))
+                !await ActiveBranchAsync(_db, tx, tenant, a.BranchId, ct))
                 return new("CASEFILE_WRITE_DENIED");
 
             bool exists;
-            await using (var cmd = Command(tx, """
+            await using (var cmd = Command(_db, tx, """
                 SELECT SucursalId, RecursoTipo, RecursoRef FROM V5CaseFileOwnerships
                 WHERE EmpresaId=@tenant AND Id=@case FOR UPDATE
                 """, ("@tenant", tenant), ("@case", selection.CaseId)))
@@ -117,7 +117,7 @@ public sealed class V5CaseFileOwnershipStore
             if (!exists)
             {
                 if (selection.ExpectedVersion is not null) return new("CASEFILE_VERSION_CONFLICT");
-                await using var insert = Command(tx, """
+                await using var insert = Command(_db, tx, """
                     INSERT INTO V5CaseFileOwnerships (EmpresaId,Id,SucursalId,RecursoTipo,RecursoRef)
                     VALUES (@tenant,@case,@branch,@type,@ref)
                     """, ("@tenant", tenant), ("@case", selection.CaseId),
@@ -129,7 +129,7 @@ public sealed class V5CaseFileOwnershipStore
             }
             else
             {
-                await using var version = Command(tx, """
+                await using var version = Command(_db, tx, """
                     SELECT MAX(Version) FROM V5CaseFileVersions
                     WHERE EmpresaId=@tenant AND ExpedienteId=@case
                     """, ("@tenant", tenant), ("@case", selection.CaseId));
@@ -142,7 +142,7 @@ public sealed class V5CaseFileOwnershipStore
                 next = current + 1;
             }
 
-            await using (var write = Command(tx, """
+            await using (var write = Command(_db, tx, """
                 INSERT INTO V5CaseFileVersions
                     (EmpresaId,ExpedienteId,Version,ActorId,ContentHash,ReasonCode,FechaUtc)
                 VALUES (@tenant,@case,@version,@actor,@hash,@reason,UTC_TIMESTAMP(6))
@@ -156,7 +156,7 @@ public sealed class V5CaseFileOwnershipStore
             // Read back the exact joined P01/P02 receipt before authorization recheck.
             // Compare token bytes, not PAD SPACE collation equivalence (e.g. a trigger
             // adding a trailing space to a resource or reason must roll back the write).
-            await using (var receipt = Command(tx, """
+            await using (var receipt = Command(_db, tx, """
                 SELECT COUNT(*) FROM V5CaseFileOwnerships o
                 INNER JOIN V5CaseFileVersions v ON v.EmpresaId=o.EmpresaId AND v.ExpedienteId=o.Id
                 WHERE o.EmpresaId=@tenant AND o.Id=@case AND o.SucursalId=@branch
@@ -179,7 +179,7 @@ public sealed class V5CaseFileOwnershipStore
             // resource or actor rolls back both P01 and P02. Never retry a commit blindly.
             var latest = await _authority.ResolveAsync(_db, selection, ct);
             if (latest != a || !Matches(latest, selection, tenant) ||
-                !await ActiveBranchAsync(tx, tenant, a.BranchId, ct))
+                !await ActiveBranchAsync(_db, tx, tenant, a.BranchId, ct))
                 return new("CASEFILE_WRITE_DENIED");
             ct.ThrowIfCancellationRequested();
             if (_db.AuthorizedCommercialEmpresaId != tenant)
@@ -205,26 +205,57 @@ public sealed class V5CaseFileOwnershipStore
             _db.AuthorizedCommercialEmpresaId != tenant || _db.Database.CurrentTransaction is not null)
             return null;
         await using var tx = await _db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
-        if (!await ActiveBranchAsync(tx, tenant, branch, ct)) return null;
-        await using var cmd = Command(tx, """
-            SELECT o.RecursoTipo,o.RecursoRef,v.Version FROM V5CaseFileOwnerships o
-            INNER JOIN V5CaseFileVersions v ON v.EmpresaId=o.EmpresaId AND v.ExpedienteId=o.Id
-            WHERE o.EmpresaId=@tenant AND o.Id=@case AND o.SucursalId=@branch
-            ORDER BY v.Version DESC LIMIT 1
-            """, ("@tenant", tenant), ("@case", caseId), ("@branch", branch));
-        Candidate? result;
-        await using (var reader = await cmd.ExecuteReaderAsync(ct))
-        {
-            result = await reader.ReadAsync(ct)
-                ? new(tenant, caseId, branch, reader.GetString(0), reader.GetString(1), reader.GetInt64(2))
-                : null;
-        }
-        ct.ThrowIfCancellationRequested();
-        if (_db.AuthorizedCommercialEmpresaId != tenant ||
-            (result is not null && (!ValidToken(result.ResourceType, 64) ||
-                !ValidToken(result.ResourceRef, 128) || result.Version <= 0)))
-            return null;
+        var result = await ReadCandidateInCurrentTransactionAsync(_db, tenant, caseId, branch, ct);
+        if (result is null) return null;
         await tx.CommitAsync(ct);
         return result;
+    }
+
+    /// <summary>
+    /// Read a storage candidate inside the caller's existing transaction, retaining
+    /// shared branch/ownership locks until that caller commits or rolls back.
+    /// A sanctioned AppendAsync writer requires an exclusive ownership-row lock.
+    /// No writer grant is required to construct this read primitive. This is not
+    /// resource authorization, a verified SHA, or an API12 permission decision.
+    /// The enterprise consumer must verify actual resource ownership and exact
+    /// current authorization in the SAME transaction before any durable effect.
+    /// </summary>
+    public static async Task<Candidate?> ReadCandidateInCurrentTransactionAsync(
+        AppDbContext db, int tenant, int caseId, int branch, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(db);
+        ct.ThrowIfCancellationRequested();
+        var tx = db.Database.CurrentTransaction;
+        if (tx is null || tenant <= 0 || caseId <= 0 || branch <= 0 ||
+            db.AuthorizedCommercialEmpresaId != tenant)
+            return null;
+        if (!await ActiveBranchAsync(db, tx, tenant, branch, ct)) return null;
+
+        string resourceType, resourceRef;
+        // Same lock ordering as the sanctioned writer: branch, ownership, version.
+        await using (var owner = Command(db, tx, """
+            SELECT RecursoTipo,RecursoRef FROM V5CaseFileOwnerships
+            WHERE EmpresaId=@tenant AND Id=@case AND SucursalId=@branch FOR SHARE
+            """, ("@tenant", tenant), ("@case", caseId), ("@branch", branch)))
+        await using (var reader = await owner.ExecuteReaderAsync(ct))
+        {
+            if (!await reader.ReadAsync(ct)) return null;
+            resourceType = reader.GetString(0);
+            resourceRef = reader.GetString(1);
+        }
+        if (!ValidToken(resourceType, 64) || !ValidToken(resourceRef, 128)) return null;
+        await using var version = Command(db, tx, """
+            SELECT Version FROM V5CaseFileVersions
+            WHERE EmpresaId=@tenant AND ExpedienteId=@case
+            ORDER BY Version DESC LIMIT 1 FOR SHARE
+            """, ("@tenant", tenant), ("@case", caseId));
+        var raw = await version.ExecuteScalarAsync(ct);
+        if (raw is null or DBNull) return null;
+        var value = Convert.ToInt64(raw, CultureInfo.InvariantCulture);
+        ct.ThrowIfCancellationRequested();
+        if (value <= 0 || db.AuthorizedCommercialEmpresaId != tenant ||
+            !ReferenceEquals(db.Database.CurrentTransaction, tx))
+            return null;
+        return new(tenant, caseId, branch, resourceType, resourceRef, value);
     }
 }

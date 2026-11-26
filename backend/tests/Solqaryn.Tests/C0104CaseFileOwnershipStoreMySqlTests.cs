@@ -1,3 +1,4 @@
+using System.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using MySql.Data.MySqlClient;
@@ -97,6 +98,44 @@ public sealed class C0104CaseFileOwnershipStoreMySqlTests
                 (await storeA.AppendAsync(one with { ExpectedVersion = 1 })).Code);
             Assert.Equal(2L,(await storeA.ReadCandidateAsync(a.Id,1,branchA.Id))!.Version);
             Assert.Equal(1L,(await storeB.ReadCandidateAsync(b.Id,1,branchB.Id))!.Version);
+            // The audit consumer must be able to retain the actual P01/P02 candidate
+            // lock in its own transaction; standalone reads cannot establish this.
+            Assert.Null(await V5CaseFileOwnershipStore.ReadCandidateInCurrentTransactionAsync(
+                dbA, a.Id, 1, branchA.Id));
+            await using (var candidateTx = await dbA.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted))
+            {
+                Assert.Null(await V5CaseFileOwnershipStore.ReadCandidateInCurrentTransactionAsync(
+                    dbA, b.Id, 1, branchB.Id));
+                Assert.Null(await V5CaseFileOwnershipStore.ReadCandidateInCurrentTransactionAsync(
+                    dbA, a.Id, 1, branchB.Id));
+                var locked = await V5CaseFileOwnershipStore.ReadCandidateInCurrentTransactionAsync(
+                    dbA, a.Id, 1, branchA.Id);
+                Assert.Equal(2L, locked!.Version);
+                Assert.Equal("r1", locked.ResourceRef);
+                Assert.Same(candidateTx, dbA.Database.CurrentTransaction);
+                await using var competing = new MySqlConnection(origin.ConnectionString);
+                await competing.OpenAsync();
+                await using var contender = competing.CreateCommand();
+                contender.CommandText = "SET SESSION innodb_lock_wait_timeout=1";
+                await contender.ExecuteNonQueryAsync();
+                contender.CommandText = """
+                    UPDATE V5CaseFileOwnerships SET RecursoRef=RecursoRef
+                    WHERE EmpresaId=@tenant AND Id=@case
+                    """;
+                contender.Parameters.AddWithValue("@tenant", a.Id);
+                contender.Parameters.AddWithValue("@case", 1);
+                var blocked = await Assert.ThrowsAsync<MySqlException>(async () =>
+                {
+                    await contender.ExecuteNonQueryAsync();
+                });
+                Assert.Equal(1205, blocked.Number);
+                Assert.Equal(locked, await V5CaseFileOwnershipStore.ReadCandidateInCurrentTransactionAsync(
+                    dbA, a.Id, 1, branchA.Id));
+                await candidateTx.RollbackAsync();
+                // The second session can now obtain the lock; no source row is changed.
+                await contender.ExecuteNonQueryAsync();
+            }
+            Assert.Equal(2L, (await storeA.ReadCandidateAsync(a.Id, 1, branchA.Id))!.Version);
             var revoke = new FixtureAuthority(a.Id,branchA.Id,actor) { RevokeAfterWrite = true };
             var revokedStore = new V5CaseFileOwnershipStore(dbA,revoke);
             var three = one with { CaseId = 3, ResourceRef = "r3" };
