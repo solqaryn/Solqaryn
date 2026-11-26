@@ -1,0 +1,48 @@
+name: QA - Integracion autenticada y aislamiento
+on:
+  workflow_dispatch:
+  push:
+    branches: [qa]
+    paths:
+      - '.github/workflows/qa-ci-04-live-auth.yml'
+      - '.github/qa/qa-ci-04-live-auth.py'
+permissions:
+  contents: read
+concurrency:
+  group: qa-ci-04-live-auth
+  cancel-in-progress: false
+jobs:
+  authenticated:
+    if: github.ref == 'refs/heads/qa'
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    environment: QA
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verificar scope y guard de compilaciones cruzadas
+        shell: bash
+        run: |
+          set -euo pipefail
+          node scripts/verify-project-scope.mjs
+          export VERCEL_PROJECT_ID=prj_BIjoIFQz2oSHCosjj7lcc5blck9E
+          for ref in dev main; do
+            VERCEL_GIT_COMMIT_REF="$ref" node frontend/scripts/vercel-ignore-build.mjs
+          done
+          status=0
+          VERCEL_GIT_COMMIT_REF=qa node frontend/scripts/vercel-ignore-build.mjs || status=$?
+          test "$status" -eq 1
+          echo QA_BUILD_GUARD=PASS
+      - name: Preparar cliente SQL y BCrypt
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y mysql-client apache2-utils
+      - name: Verificar login real, RBAC y aislamiento por proxy QA
+        env:
+          DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
+          DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
+          DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}
+          DB_USER: ${{ vars.SOLQARYN_QA_DB_USER }}
+          DB_PASSWORD: ${{ secrets.SOLQARYN_QA_DB_PASSWORD }}
+        run: python3 .github/qa/qa-ci-04-live-auth.py

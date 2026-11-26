@@ -3,7 +3,7 @@
 Fecha: 2026-11-26. Alcance exclusivo `qa`. El registro contiene únicamente trabajo restante; la evidencia de cierres parciales y completos se conserva en `CHANGELOG_AI.md` y en el historial Git. Se retira un hallazgo sólo cuando exista evidencia causal de la corrección, prueba en QA y confirmación del propietario cuando corresponda. Los antecedentes quedan en el historial de Git. No se modifican datos productivos.
 
 ## Pendientes de integración y rendimiento
-- **QA-CI-04** — Resolver compilaciones cruzadas y acreditar el ajuste de previews de QA (solicitud previa aceptada, readback no acreditado); desplegar el SHA funcional validado y verificar alias/SHA, navegación autenticada, roles y aislamiento empresarial en el entorno desplegado. No modificar otras ramas ni contratar planes.
+- **QA-CI-04** — Acreditar readback efectivo de previews y prevención de compilaciones cruzadas en Vercel; completar prueba dirigida de login, roles, permisos y aislamiento empresarial sobre el despliegue QA. Frontend READY y backend LIVE sincronizados en cf04c2ee (equivalente funcional a f99d2e32); proxy QA readiness y sesión de administrador observados. No modificar otras ramas ni contratar planes.
 
 ## Pendientes visuales transversales
 - **QA-UI-01** — Completar la auditoría de estados internos, query params, modales, subrutas, tablas, filtros y paginación no ejercitados por el barrido aprobado; verificar estados vacío, carga, error y datos representativos que aún no se han probado. Conservar acciones, foco, accesibilidad y scroll interno sin desbordamiento.
