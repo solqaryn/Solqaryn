@@ -11479,3 +11479,8 @@
 ## 2026-11-26 — DEV03 — C01-04.M03.06 — V44/R1/R5
 
 - TASK_ID=6adc2e4bd8a48191ac7d8641ed95a1a3; RUN_ID=978ac5ae-6abc-832c-9b0f-a621406ac9bb; base 0db5c3d13d68fb0c865372b53fdcf7494986c5bb; adopted DEV01's prepared RBAC E2E correction after exact-SHA acceptance job 140145177579 failed at line 135 (93 passed, 1 failed, 6 not run). Require exactly both explicit-deny Auditoria operations (ReadAuditCorrelation and WriteCaseFileVersion), retain every other mandatory grant, exact denied set, relational matrix and coverage checks. No runtime permission changes, no seed grants, no UI or dependency changes. A0 anchors verified; exact-SHA CI and independent A5 pending. Preserve historical failure; normal dev revert.
+
+
+## 2026-11-26 — DEV04 — C01-04.M03.06 — V44/R1/R5
+
+- TASK_ID=6aeacb7820ac8191b7d768a6f33dfa09; RUN_ID=492f0c9c-6a20-8325-ae49-8c6b99dfdb9f; base 7bbeb14a. Extend existing Oracle integration Fact to exercise compiled Program over Kestrel/loopback with isolated MySQL and ephemeral JWT, actual DI and DEV opt-in (off + non-Development deny, on write/read/correlation, B denial, independent writer revocation). Add exact sanitized TRX Fact artifact with SHA/run/attempt and no raw logs. No runtime code, grants, data, environment deployments or schema changes; preserve previous acceptance and CI, exact-SHA checks/A5 still required. Revert normal in dev.
