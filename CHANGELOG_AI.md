@@ -11435,3 +11435,9 @@
 ## 2026-11-26 — DEV01 — C01-04.M03.06 — V44/R1/R5
 
 - TASK_ID=6adbb9fff1548191a1bd5b30d9e9984a; RUN_ID=f5cb8993-cb68-832b-9bcc-40d682d2aaa8; base ae2064c430034d225fe24a782ad13a87cc1cf891. Paquete causal adoptado de DEV06: extracción del recibo durable global conservando sus controles y su commit en el caller; escritor empresarial API12 en RegistrosAuditoria con transacción del consumidor, grant y P01/P02 revalidados antes/después de I/O, resolver auténtico obligatorio sin implementación por defecto, recibo mínimo sin IP/UA/nombre real ni recurso bruto. No escritura P01/P02 por grant lector, no ruta ni DI comercial activada. Pruebas dirigidas Oracle MySQL efímero con fixture explícito: A/B, ausencia de transacción y grant tras revocación, recibo, rollback, revocación durante I/O y commit; fixture no acredita mapping empresarial. CI exacta pendiente, A5 independiente pendiente, no LISTO ni cambio de H/I. Pendiente resolver mapping real y conectar consumidor autenticado. Retención preservada, sin purga ni grants reales; rollback revert normal dev.
+
+
+## 2026-11-26 — C01-04.M03.06 — R1 — DEV01 — API12 / matriz E2E
+
+- RUN_ID f5cb8993-cb68-832b-9bcc-40d682d2aaa8; base 087a2d20730af40db6dd28282b21030b62a1b215; V17 H271:I271; TASK_ID 6adbb9fff1548191a1bd5b30d9e9984a.
+- Job 140085389752 (ae2064c4): 93 PASS, 1 FAIL, 6 no ejecutados. La aserción de matriz completa incluía API12, que CatalogoPermisosBase, SeedPermisoService y PermisoService mantienen opt-in. Aserción exacta de una entrada Auditoria/ReadAuditCorrelation denegada en seed; todos los demás grants ordinarios siguen siendo obligatorios y se conservan las comprobaciones de ReportesAdministrativos y Facturacion. Sin cambios de grants, seed, roles o runtime. CI posterior pendiente; A5 independiente pendiente; no transición LISTO.

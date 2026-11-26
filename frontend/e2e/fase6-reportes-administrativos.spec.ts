@@ -124,7 +124,15 @@ test.describe('Fase 6 — permisos, auditoría y reportes administrativos', () =
     expect(response.status(), await response.text()).toBe(200);
     const matrix = await dataOf(response) as Array<Record<string, any>>;
     expect(matrix.length).toBeGreaterThan(20);
-    expect(matrix.every(item => item.permitido === true)).toBe(true);
+    // API12 is catalogued but is deliberately not granted by the administrator seed.
+    const api12 = matrix.filter(item =>
+      item.modulo === 'Auditoria' && item.accion === 'ReadAuditCorrelation');
+    expect(api12).toHaveLength(1);
+    expect(api12[0].permitido).toBe(false);
+    const mandatory = matrix.filter(item =>
+      !(item.modulo === 'Auditoria' && item.accion === 'ReadAuditCorrelation'));
+    expect(mandatory.length).toBeGreaterThan(20);
+    expect(mandatory.every(item => item.permitido === true)).toBe(true);
     expect(matrix.some(item => item.modulo === 'ReportesAdministrativos' && item.accion === 'Ver')).toBe(true);
     expect(matrix.some(item => item.modulo === 'ReportesAdministrativos' && item.accion === 'Exportar')).toBe(true);
     expect(matrix.some(item => item.modulo === 'Facturacion' && item.accion === 'Administrar')).toBe(true);
