@@ -8,6 +8,7 @@ on:
       - 'backend/**'
       - '.github/workflows/qa-schema-recovery.yml'
       - '.github/qa/qa-commercial-schema.py'
+      - '.github/qa/qa-commercial-schema-v2.py'
   workflow_dispatch:
 
 permissions:
@@ -75,6 +76,13 @@ jobs:
           # The QA-native ownership migration is a deliberate, exact delta.
           # Before migration keep the original full baseline fingerprints.
           ownership_marker="$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261126170000_QaCommercialOwnershipV1';")"
+          v2_marker="$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261126211000_QaCommercialOwnershipV2';")"
+          test "$v2_marker" = "0" || test "$v2_marker" = "1"
+          if [ "$v2_marker" = "1" ]; then
+            test "$ownership_marker" = "1"
+            python3 .github/qa/qa-commercial-schema-v2.py --live
+            exit 0
+          fi
           if [ "$ownership_marker" = "1" ]; then
             python3 .github/qa/qa-commercial-schema.py --live
             exit 0
