@@ -49,7 +49,8 @@ public sealed class C1505M0502AuditHttpSecurityTests
         return service;
     }
 
-    private static async Task<IHost> StartAsync(Mock<IAuditoriaService> reader)
+    private static async Task<IHost> StartAsync(Mock<IAuditoriaService> reader,
+        Func<bool>? roleRevoked = null, Func<bool>? grantRevoked = null)
     {
         var accessor = new HttpContextAccessor();
         var current = new Mock<ICurrentUserService>(MockBehavior.Strict);
@@ -64,7 +65,8 @@ public sealed class C1505M0502AuditHttpSecurityTests
             {
                 var identity = accessor.HttpContext?.User;
                 var tenant = identity?.FindFirst("tenant_fixture")?.Value;
-                var sqlAdmin = identity?.FindFirst("audit_db_admin_fixture")?.Value == "true";
+                var sqlAdmin = identity?.FindFirst("audit_db_admin_fixture")?.Value == "true" &&
+                    roleRevoked?.Invoke() != true;
                 UsuarioTenantScopeActual? current =
                     tenant == requested.ToString(System.Globalization.CultureInfo.InvariantCulture)
                         ? new UsuarioTenantScopeActual(77, requested, 31, "CurrentRole", sqlAdmin)
@@ -78,7 +80,8 @@ public sealed class C1505M0502AuditHttpSecurityTests
             .Returns((int empresaId, ModuloSistema _, AccionPermiso _) =>
             {
                 var selected = accessor.HttpContext?.User.FindFirst("tenant_fixture")?.Value;
-                if (selected != empresaId.ToString(System.Globalization.CultureInfo.InvariantCulture))
+                if (selected != empresaId.ToString(System.Globalization.CultureInfo.InvariantCulture) ||
+                    grantRevoked?.Invoke() == true)
                     throw new ForbiddenAccessException("Tenant fixture sin permiso.");
                 return Task.CompletedTask;
             });
@@ -208,6 +211,48 @@ public sealed class C1505M0502AuditHttpSecurityTests
         Assert.Contains("\"success\":true", await response.Content.ReadAsStringAsync());
         reader.Verify(x => x.GetFilteredAsync(
             It.Is<AuditoriaFiltroDto>(p => p.Page == 1 && p.PageSize == 50)), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(21, true, false)]
+    [InlineData(21, false, true)]
+    [InlineData(22, true, false)]
+    [InlineData(22, false, true)]
+    [InlineData(21, false, false)]
+    [InlineData(22, false, false)]
+    public async Task AuditoriaRevalidaAutoridadDespuesDeConsultar(
+        int tenantId, bool revokeRole, bool revokeGrant)
+    {
+        const string sentinel = "FIXTURE_AUDIT_NOT_FOR_RELEASE";
+        var readFinished = false;
+        var reader = Reader();
+        reader.Setup(x => x.GetFilteredAsync(It.IsAny<AuditoriaFiltroDto>()))
+            .Returns((AuditoriaFiltroDto _) =>
+            {
+                readFinished = true;
+                return Task.FromResult(new PagedResult<RegistroAuditoriaDto>
+                {
+                    Page = 1, PageSize = 50, TotalCount = 1,
+                    Items = new List<RegistroAuditoriaDto>
+                    {
+                        new() { Descripcion = sentinel }
+                    }
+                });
+            });
+
+        using var host = await StartAsync(reader,
+            () => readFinished && revokeRole, () => readFinished && revokeGrant);
+        using var client = host.GetTestClient();
+        using var response = await GetAsync(client, Token(tenantId, true),
+            selectedTenant: tenantId);
+        var body = await response.Content.ReadAsStringAsync();
+        Assert.Equal(revokeRole || revokeGrant ? HttpStatusCode.Forbidden : HttpStatusCode.OK,
+            response.StatusCode);
+        if (revokeRole || revokeGrant)
+            Assert.DoesNotContain(sentinel, body, StringComparison.Ordinal);
+        else
+            Assert.Contains(sentinel, body, StringComparison.Ordinal);
+        reader.Verify(x => x.GetFilteredAsync(It.IsAny<AuditoriaFiltroDto>()), Times.Once);
     }
 
     [Fact]

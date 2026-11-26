@@ -11303,3 +11303,8 @@
 
 - El check 138776988281 de 42b8d874 fallo por una palabra inglesa en un comentario de VentaService.cs coincidente con identidad retirada. Se traduce exclusivamente ese comentario; sin cambio funcional, permisos, datos ni gate.
 - Se preservan pruebas y todo el CHANGELOG previo; no se declara CI SUCCESS hasta verificar el nuevo SHA exacto. D06 y A5 siguen pendientes.
+
+## 2026-11-26 — DEV06 — C14-02.M06.06 — Revalidación de auditoría tras lectura
+
+- R2: GET /auditoria vuelve a consultar el permiso vigente Auditoria:Ver y el alcance de administrador del mismo actor/empresa/rol antes de entregar las filas. No cambia grants, rutas, esquema ni DTO. Reduce la ventana de revocación durante la consulta; no afirma atomicidad con la serialización.
+- Seis casos dirigidos TestServer/JWT firmado A/B: revocación de rol o grant durante lectura (403 sin contenido) y controles positivos (200). Autoridad SQL simulada, pendiente integración MySQL real. A0 diff limitado; A1-A4 CI causal pendiente; A5 independiente; rollback git revert normal. Foco C01-04.M03.06 preservado: P01/P02/API12, DI y retención empresarial aún no acreditados; CFG15 candidato de idempotencia no equivale a retención de auditoría. Scope Lock STRICT, sin QA/main/PROD.

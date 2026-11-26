@@ -6,6 +6,7 @@ using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace Solqaryn.API.Controllers;
 
@@ -53,6 +54,26 @@ public class AuditoriaController : ControllerBase
             return Forbid();
 
         var resultado = await _service.GetFilteredAsync(filtro);
+        // Revalidate live RBAC after the sensitive data read.
+        HttpContext.RequestAborted.ThrowIfCancellationRequested();
+        if (VerifiedCommercialTenant.Resolve(HttpContext) != tenantId ||
+            _currentUser.UsuarioId != actorId || !_currentUser.EsAdministrador)
+            return Forbid();
+
+        var permissionService = HttpContext.RequestServices?.GetService<IPermisoService>();
+        if (permissionService is null)
+            return Forbid();
+
+        await permissionService.VerificarPermisoAsync(
+            tenantId.Value, ModuloSistema.Auditoria, AccionPermiso.Ver);
+        var refreshedScope = await _tenantScopes.ObtenerActualAsync(
+            tenantId.Value, HttpContext.RequestAborted);
+        HttpContext.RequestAborted.ThrowIfCancellationRequested();
+        if (refreshedScope != currentScope ||
+            VerifiedCommercialTenant.Resolve(HttpContext) != tenantId ||
+            _currentUser.UsuarioId != actorId || !_currentUser.EsAdministrador)
+            return Forbid();
+
         return Ok(ApiResponse<PagedResult<RegistroAuditoriaDto>>.Ok(resultado));
     }
 }
