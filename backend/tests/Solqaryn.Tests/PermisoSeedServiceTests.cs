@@ -1,3 +1,4 @@
+using Solqaryn.Domain.Enums;
 using Solqaryn.Infrastructure.Persistence;
 using Solqaryn.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
@@ -22,7 +23,7 @@ public class PermisoSeedServiceTests
 
         var administrador = await context.Roles.IgnoreQueryFilters().SingleAsync(r => r.EsAdministrador);
         var vendedor = await context.Roles.IgnoreQueryFilters().SingleAsync(r => r.NombreNormalizado == "VENDEDOR");
-        var permisosActivos = await context.Permisos.IgnoreQueryFilters().CountAsync(p => p.Activo && !p.Eliminado);
+        var permisosActivos = await context.Permisos.IgnoreQueryFilters().CountAsync(p => p.Ambito == AmbitoAutorizacion.Empresa && p.Activo && !p.Eliminado);
 
         var grantsAdmin = await context.RolPermisos.CountAsync(rp => rp.RolId == administrador.Id);
         var grantsVendedor = await context.RolPermisos.CountAsync(rp => rp.RolId == vendedor.Id);

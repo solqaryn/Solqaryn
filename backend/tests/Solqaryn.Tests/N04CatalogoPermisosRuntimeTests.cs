@@ -12,7 +12,7 @@ public class N04CatalogoPermisosRuntimeTests
     [Fact]
     public void AtributosRuntime_SoloExigenPermisosPresentesEnCatalogoBase()
     {
-        var catalogo = CatalogoPermisosBase.Definicion
+        var catalogo = CatalogoPermisosBase.Definicion.Concat(CatalogoPermisosBase.DefinicionPlataforma)
             .SelectMany(x => x.Acciones.Select(accion => (x.Modulo, Accion: accion)))
             .ToHashSet();
 

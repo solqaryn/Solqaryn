@@ -61,6 +61,8 @@ public sealed class N61FEmpresaSecurityAuditTests
     [Theory]
     [InlineData(nameof(EmpresasController.List), AccionPermiso.Ver)]
     [InlineData(nameof(EmpresasController.GetById), AccionPermiso.Ver)]
+    [InlineData(nameof(EmpresasController.ListPlataforma), AccionPermiso.Ver)]
+    [InlineData(nameof(EmpresasController.GetByIdPlataforma), AccionPermiso.Ver)]
     [InlineData(nameof(EmpresasController.Create), AccionPermiso.Crear)]
     [InlineData(nameof(EmpresasController.Update), AccionPermiso.Editar)]
     [InlineData(nameof(EmpresasController.Activar), AccionPermiso.Activar)]
@@ -79,7 +81,10 @@ public sealed class N61FEmpresaSecurityAuditTests
         Assert.NotNull(moduloField);
         Assert.NotNull(accionField);
 
-        Assert.Equal(ModuloSistema.Configuracion, (ModuloSistema)moduloField!.GetValue(permiso)!);
+        var plataforma = methodName != nameof(EmpresasController.List) && methodName != nameof(EmpresasController.GetById);
+        Assert.Equal(plataforma ? ModuloSistema.ConfiguracionPlataforma : ModuloSistema.Configuracion,
+            (ModuloSistema)moduloField!.GetValue(permiso)!);
+        Assert.Equal(plataforma, permiso!.Plataforma);
         Assert.Equal(expectedAction, (AccionPermiso)accionField!.GetValue(permiso)!);
     }
 

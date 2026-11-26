@@ -20,9 +20,23 @@ public class RequierePermisoAttribute : Attribute, IAsyncActionFilter
     // Opt-in: una ruta tenant-owned no puede utilizar el permiso de otra
     // membresía del mismo usuario. No modifica consumidores legacy del filtro.
     public bool VincularEmpresaRuta { get; set; }
+    public bool Plataforma { get; set; }
 
     public async Task OnActionExecutionAsync(ActionExecutingContext context, ActionExecutionDelegate next)
     {
+        if (Plataforma)
+        {
+            var scope = context.HttpContext.RequestServices.GetRequiredService<IUsuarioScopeService>();
+            if (VincularEmpresaRuta || !await scope.TienePermisoPlataformaAsync(
+                _modulo, _accion, context.HttpContext.RequestAborted))
+                throw new ForbiddenAccessException("Se requiere autorización explícita de plataforma.");
+
+            context.HttpContext.Items.Remove(TenantPermissionContext.AuthorizedEmpresaIdItemKey);
+            context.HttpContext.Items["SOLQARYN_AUTHORIZED_PLATFORM"] = true;
+            await next();
+            return;
+        }
+
         var empresaId = await TenantPermissionContext.RequireEmpresaIdAsync(context.HttpContext, context.HttpContext.RequestAborted);
         if (VincularEmpresaRuta &&
             (!context.RouteData.Values.TryGetValue("empresaId", out var valorRuta) ||

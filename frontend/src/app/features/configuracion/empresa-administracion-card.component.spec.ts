@@ -27,28 +27,30 @@ describe('N6.1.E Empresa administration UX', () => {
   afterEach(() => httpMock.verify());
 
   function createComponent(): EmpresaAdministracionCardComponent {
-    return TestBed.runInInjectionContext(() => new EmpresaAdministracionCardComponent());
+    const component = TestBed.runInInjectionContext(() => new EmpresaAdministracionCardComponent());
+    component.capacidades = { ver: true, crear: true, editar: true, activar: true, desactivar: true };
+    return component;
   }
 
   it('loads the list and settles the loading state', () => {
     const component = createComponent();
     component.ngOnInit();
 
-    const req = httpMock.expectOne(`${environment.apiUrl}/empresas`);
+    const req = httpMock.expectOne(`${environment.apiUrl}/empresas/plataforma`);
     expect(req.request.method).toBe('GET');
     req.flush({ data: [{ id: 1, nombre: 'Empresa Uno', activa: true, fechaCreacion: '', fechaActualizacion: '' }] });
 
     expect(component.loading()).toBe(false);
     expect(component.empresas()).toHaveLength(1);
-    expect(permisos.puede).toHaveBeenCalledWith('Configuracion', 'Crear');
-    expect(permisos.puede).toHaveBeenCalledWith('Configuracion', 'Desactivar');
+    expect(component.puedeCrear()).toBe(true);
+    expect(component.puedeDesactivar()).toBe(true);
   });
 
   it('preserves an explicit inactive filter', () => {
     const component = createComponent();
     component.cambiarEstado('inactivas');
 
-    const req = httpMock.expectOne(request => request.url === `${environment.apiUrl}/empresas`);
+    const req = httpMock.expectOne(request => request.url === `${environment.apiUrl}/empresas/plataforma`);
     expect(req.request.method).toBe('GET');
     expect(req.request.params.get('activa')).toBe('false');
     req.flush({ data: [] });
@@ -60,10 +62,10 @@ describe('N6.1.E Empresa administration UX', () => {
   it('keeps the newest filter result when responses arrive out of order', () => {
     const component = createComponent();
     component.cargar();
-    const older = httpMock.expectOne(request => request.url === `${environment.apiUrl}/empresas` && !request.params.has('activa'));
+    const older = httpMock.expectOne(request => request.url === `${environment.apiUrl}/empresas/plataforma` && !request.params.has('activa'));
 
     component.cambiarEstado('inactivas');
-    const newest = httpMock.expectOne(request => request.url === `${environment.apiUrl}/empresas` && request.params.get('activa') === 'false');
+    const newest = httpMock.expectOne(request => request.url === `${environment.apiUrl}/empresas/plataforma` && request.params.get('activa') === 'false');
 
     newest.flush({ data: [{ id: 2, nombre: 'Empresa Inactiva', activa: false, fechaCreacion: '', fechaActualizacion: '' }] });
     expect(component.empresas().map(item => item.id)).toEqual([2]);
@@ -83,7 +85,7 @@ describe('N6.1.E Empresa administration UX', () => {
     component.guardar();
 
     expect(component.form.controls.nombre.hasError('whitespace')).toBe(true);
-    httpMock.expectNone(`${environment.apiUrl}/empresas`);
+    httpMock.expectNone(`${environment.apiUrl}/empresas/plataforma`);
   });
 
   it('uses the canonical state endpoint and updates the local row', () => {

@@ -1,12 +1,14 @@
 <h1 class="page-title">Configuración de la empresa</h1>
-<p class="subtitle">Administra la identidad, documentos, logo y colores de esta empresa.</p>
+<p class="subtitle">Administra la configuración de tu empresa. Los ajustes globales requieren autorización independiente de plataforma.</p>
 
 @if (loading()) {
   <div class="loading"><mat-spinner></mat-spinner></div>
 } @else {
+  @if (capacidadesPlataforma().ver) {
+  <h2>Identidad global de la plataforma</h2>
   @if (!puedeEditar()) {
     <p class="hint readonly-hint">
-      <mat-icon>info</mat-icon> Solo puedes ver esta configuración. Necesitas el permiso "Configuración: Editar" para modificarla.
+      <mat-icon>info</mat-icon> Solo puedes ver esta configuración. Necesitas autorización de plataforma para modificarla.
     </p>
   }
 
@@ -87,7 +89,8 @@
     @if (puedeEditar()) { <div class="form-actions"><button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving()">{{ saving() ? 'Guardando...' : 'Guardar configuración' }}</button></div> }
   </form>
 
-  <app-empresa-administracion-card></app-empresa-administracion-card>
+  <app-empresa-administracion-card [capacidades]="capacidadesPlataforma()"></app-empresa-administracion-card>
+  }
   <app-empresa-configuracion-tenant-card></app-empresa-configuracion-tenant-card>
   <app-empresa-configuracion-plantillas-tenant-card></app-empresa-configuracion-plantillas-tenant-card>
   <app-whatsapp-business-card></app-whatsapp-business-card>
@@ -96,11 +99,12 @@
   <app-secuencia-documento-card></app-secuencia-documento-card>
   <app-automatizacion-configuracion-card></app-automatizacion-configuracion-card>
 
+  @if (capacidadesPlataforma().ver) {
   <div class="card tema-card">
     <h2 class="section-title">Colores del sistema</h2>
-    <p class="subtitle">Personaliza los colores del menú, los botones, los encabezados, las tarjetas y los estados de la empresa.</p>
+    <p class="subtitle">Personaliza los colores globales de la plataforma.</p>
     @if (loadingTema()) { <div class="loading"><mat-spinner></mat-spinner></div> }
-    @else if (!puedeEditar()) { <p class="hint readonly-hint"><mat-icon>info</mat-icon> Necesitas el permiso "Configuración: Editar" para modificar los colores.</p> }
+    @else if (!puedeEditar()) { <p class="hint readonly-hint"><mat-icon>info</mat-icon> Necesitas autorización de plataforma para modificar los colores.</p> }
     @else {
       <div class="colores-grid">
         @for (campo of campos; track campo.clave) {
@@ -121,4 +125,5 @@
       </div>
     }
   </div>
+  }
 }

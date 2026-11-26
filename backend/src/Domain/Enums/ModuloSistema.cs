@@ -32,5 +32,6 @@ public enum ModuloSistema
     Sucursales = 28,
     Almacenes = 29,
     UbicacionesAlmacen = 30,
-    Caja = 31
+    Caja = 31,
+    ConfiguracionPlataforma = 32
 }

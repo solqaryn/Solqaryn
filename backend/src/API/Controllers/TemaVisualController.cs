@@ -34,7 +34,7 @@ public class TemaVisualController : ControllerBase
 
     [HttpPut]
     [Authorize]
-    [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Editar)]
+    [RequierePermiso(ModuloSistema.ConfiguracionPlataforma, AccionPermiso.Editar, Plataforma = true)]
     public async Task<IActionResult> Update([FromBody] ActualizarTemaVisualDto dto)
     {
         var actualizado = await _service.UpdateAsync(dto);
@@ -43,7 +43,7 @@ public class TemaVisualController : ControllerBase
 
     [HttpPost("restaurar")]
     [Authorize]
-    [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Editar)]
+    [RequierePermiso(ModuloSistema.ConfiguracionPlataforma, AccionPermiso.Editar, Plataforma = true)]
     public async Task<IActionResult> Restaurar()
     {
         var restaurado = await _service.RestaurarPredeterminadoAsync();

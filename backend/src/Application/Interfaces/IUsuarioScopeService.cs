@@ -1,3 +1,5 @@
+using Solqaryn.Domain.Enums;
+
 namespace Solqaryn.Application.Interfaces;
 
 /// <summary>
@@ -28,6 +30,11 @@ public interface IUsuarioScopeService
     /// Los flujos tenant-owned deben usar la sobrecarga con EmpresaId.
     /// </summary>
     Task<UsuarioScopeActual?> ObtenerActualAsync();
+
+    /// <summary>Autoridad global exclusivamente por asignación y grant vigentes; falla cerrado.</summary>
+    Task<bool> TienePermisoPlataformaAsync(
+        ModuloSistema modulo, AccionPermiso accion,
+        CancellationToken cancellationToken = default) => Task.FromResult(false);
 
     /// <summary>
     /// Resuelve el contexto efectivo para la empresa solicitada a partir de

@@ -78,6 +78,31 @@ public sealed class UsuarioScopeService : IUsuarioScopeService
         return candidatos.Count == 1 ? candidatos[0] : null;
     }
 
+    public async Task<bool> TienePermisoPlataformaAsync(
+        ModuloSistema modulo, AccionPermiso accion,
+        CancellationToken cancellationToken = default)
+    {
+        if (!_currentUser.EstaAutenticado || !_currentUser.UsuarioId.HasValue ||
+            modulo != ModuloSistema.ConfiguracionPlataforma)
+            return false;
+
+        var usuarioId = _currentUser.UsuarioId.Value;
+        return await (
+            from asignacion in _context.UsuarioRolesPlataforma.AsNoTracking()
+            join usuario in _context.Usuarios.AsNoTracking() on asignacion.UsuarioId equals usuario.Id
+            join rol in _context.Roles.AsNoTracking() on asignacion.RolId equals rol.Id
+            join grant in _context.RolPermisos.AsNoTracking() on rol.Id equals grant.RolId
+            join permiso in _context.Permisos.AsNoTracking() on grant.PermisoId equals permiso.Id
+            where asignacion.UsuarioId == usuarioId && asignacion.Activa
+                && usuario.Activo && !usuario.Bloqueado && !usuario.Eliminado
+                && rol.Activo && !rol.Eliminado && rol.Ambito == AmbitoAutorizacion.Plataforma
+                && rol.EmpresaId == null
+                && permiso.Activo && !permiso.Eliminado && permiso.Ambito == AmbitoAutorizacion.Plataforma
+                && permiso.Modulo == modulo && permiso.Accion == accion
+            select grant.Id
+        ).AnyAsync(cancellationToken);
+    }
+
     private IQueryable<UsuarioTenantScopeActual> ContextosTenantValidos(
         int usuarioId,
         int? empresaId = null)

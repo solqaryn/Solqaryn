@@ -5,6 +5,14 @@ import { environment } from '../../environments/environment';
 import { ApiResponse } from '../core/models/api-response.model';
 import { ActualizarEmpresaConfiguracionValue, EmpresaConfiguracion } from '../core/models/empresa-configuracion.model';
 
+export interface CapacidadesConfiguracionPlataforma {
+  ver: boolean;
+  editar: boolean;
+  crear: boolean;
+  activar: boolean;
+  desactivar: boolean;
+}
+
 export interface WhatsAppPublico {
   numeroTelefonoE164: string | null;
   disponible: boolean;
@@ -62,6 +70,10 @@ export class EmpresaConfiguracionService {
 
   get(): Observable<ApiResponse<EmpresaConfiguracion>> {
     return this.http.get<ApiResponse<EmpresaConfiguracion>>(this.apiUrl);
+  }
+
+  capacidadesPlataforma(): Observable<ApiResponse<CapacidadesConfiguracionPlataforma>> {
+    return this.http.get<ApiResponse<CapacidadesConfiguracionPlataforma>>(`${this.apiUrl}/plataforma/capacidades`);
   }
 
   getPublica(): Observable<ApiResponse<EmpresaConfiguracion>> {

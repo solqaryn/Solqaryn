@@ -1,5 +1,6 @@
 using Solqaryn.Application.Common;
 using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Enums;
 using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -23,6 +24,7 @@ public class SeedPermisoService
     public async Task SeedDefaultsAsync()
     {
         await SeedCatalogoPermisosAsync();
+        await SeedCatalogoPlataformaAsync();
         await _context.SaveChangesAsync();
 
         var roles = await SeedRolesSistemaAsync();
@@ -40,7 +42,8 @@ public class SeedPermisoService
 
     private async Task<(Rol Administrador, Rol Vendedor, bool VendedorCreado)> SeedRolesSistemaAsync()
     {
-        var existentes = await _context.Roles.IgnoreQueryFilters().ToListAsync();
+        var existentes = await _context.Roles.IgnoreQueryFilters()
+            .Where(r => r.Ambito == AmbitoAutorizacion.Empresa).ToListAsync();
 
         var administrador = existentes.FirstOrDefault(r =>
             r.NombreNormalizado == AdministradorNormalizado ||
@@ -101,13 +104,13 @@ public class SeedPermisoService
     {
         var administradores = await _context.Roles
             .IgnoreQueryFilters()
-            .Where(r => r.EsAdministrador && r.Activo && !r.Eliminado)
+            .Where(r => r.Ambito == AmbitoAutorizacion.Empresa && r.EsAdministrador && r.Activo && !r.Eliminado)
             .ToListAsync();
         if (administradores.Count == 0) return;
 
         var permisos = await _context.Permisos
             .IgnoreQueryFilters()
-            .Where(p => p.Activo && !p.Eliminado)
+            .Where(p => p.Ambito == AmbitoAutorizacion.Empresa && p.Activo && !p.Eliminado)
             .ToListAsync();
 
         var rolIds = administradores.Select(r => r.Id).ToList();
@@ -140,6 +143,31 @@ public class SeedPermisoService
             if (!existe)
                 _context.RolPermisos.Add(new RolPermiso { RolId = vendedor.Id, PermisoId = permiso.Id });
         }
+    }
+
+    private async Task SeedCatalogoPlataformaAsync()
+    {
+        foreach (var (modulo, acciones) in CatalogoPermisosBase.DefinicionPlataforma)
+        foreach (var accion in acciones)
+        {
+            var existente = await _context.Permisos.IgnoreQueryFilters()
+                .SingleOrDefaultAsync(p => p.Modulo == modulo && p.Accion == accion);
+            if (existente is not null)
+            {
+                if (existente.Ambito != AmbitoAutorizacion.Plataforma)
+                    throw new InvalidOperationException("Colisión de ámbito en catálogo de plataforma.");
+                continue;
+            }
+
+            _context.Permisos.Add(new Permiso
+            {
+                Codigo = $"{modulo}.{accion}".ToUpperInvariant(),
+                Nombre = $"{modulo} - {accion}",
+                Modulo = modulo, Accion = accion, Ambito = AmbitoAutorizacion.Plataforma,
+                EsSistema = true, Activo = true
+            });
+        }
+        // Sin roles, asignaciones ni grants automáticos de plataforma.
     }
 
     private async Task SeedCatalogoPermisosAsync()

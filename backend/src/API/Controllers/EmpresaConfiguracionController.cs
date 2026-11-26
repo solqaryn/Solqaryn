@@ -30,7 +30,7 @@ public class EmpresaConfiguracionController : ControllerBase
 
     [HttpGet]
     [Authorize]
-    [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Ver)]
+    [RequierePermiso(ModuloSistema.ConfiguracionPlataforma, AccionPermiso.Ver, Plataforma = true)]
     public async Task<IActionResult> Get()
     {
         var config = await _service.GetActivaAsync();
@@ -39,7 +39,7 @@ public class EmpresaConfiguracionController : ControllerBase
 
     [HttpPut]
     [Authorize]
-    [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Editar)]
+    [RequierePermiso(ModuloSistema.ConfiguracionPlataforma, AccionPermiso.Editar, Plataforma = true)]
     public async Task<IActionResult> Update([FromBody] UpdateEmpresaConfiguracionDto dto)
     {
         var actualizada = await _service.UpdateAsync(dto);
@@ -49,7 +49,7 @@ public class EmpresaConfiguracionController : ControllerBase
     [HttpPost("logo")]
     [Authorize]
     [RequestSizeLimit(5 * 1024 * 1024)]
-    [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Editar)]
+    [RequierePermiso(ModuloSistema.ConfiguracionPlataforma, AccionPermiso.Editar, Plataforma = true)]
     public async Task<IActionResult> UpdateLogo(IFormFile logo)
     {
         var actualizada = await _service.UpdateLogoAsync(logo);
@@ -58,11 +58,30 @@ public class EmpresaConfiguracionController : ControllerBase
 
     [HttpDelete("logo")]
     [Authorize]
-    [RequierePermiso(ModuloSistema.Configuracion, AccionPermiso.Editar)]
+    [RequierePermiso(ModuloSistema.ConfiguracionPlataforma, AccionPermiso.Editar, Plataforma = true)]
     public async Task<IActionResult> RestaurarLogo()
     {
         var actualizada = await _service.RestaurarLogoAsync();
         return Ok(ApiResponse<EmpresaConfiguracionDto>.Ok(actualizada, "Logo restaurado correctamente."));
+    }
+
+    [HttpGet("plataforma/capacidades")]
+    [Authorize]
+    public async Task<IActionResult> CapacidadesPlataforma(
+        [FromServices] IUsuarioScopeService scope, CancellationToken cancellationToken)
+    {
+        async Task<bool> Tiene(AccionPermiso accion) =>
+            await scope.TienePermisoPlataformaAsync(ModuloSistema.ConfiguracionPlataforma, accion, cancellationToken);
+
+        var capacidades = new
+        {
+            Ver = await Tiene(AccionPermiso.Ver),
+            Editar = await Tiene(AccionPermiso.Editar),
+            Crear = await Tiene(AccionPermiso.Crear),
+            Activar = await Tiene(AccionPermiso.Activar),
+            Desactivar = await Tiene(AccionPermiso.Desactivar)
+        };
+        return Ok(ApiResponse<object>.Ok(capacidades));
     }
 
     [HttpGet("tenant/{empresaId:int}")]

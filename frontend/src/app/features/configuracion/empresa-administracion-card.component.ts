@@ -1,6 +1,6 @@
 import { CommonModule } from '@angular/common';
 import { HttpClient, HttpParams } from '@angular/common/http';
-import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, Input, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -12,7 +12,7 @@ import { MatSnackBar } from '@angular/material/snack-bar';
 import { MatTooltipModule } from '@angular/material/tooltip';
 import { finalize } from 'rxjs';
 import { environment } from '../../../environments/environment';
-import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
+import { CapacidadesConfiguracionPlataforma } from '../../services/empresa-configuracion.service';
 import { ApiResponse } from '../../core/models/api-response.model';
 
 interface EmpresaRaiz {
@@ -161,7 +161,7 @@ type EstadoFiltro = 'todas' | 'activas' | 'inactivas';
 export class EmpresaAdministracionCardComponent implements OnInit {
   private readonly http = inject(HttpClient);
   private readonly fb = inject(FormBuilder);
-  private readonly permisos = inject(PermisosRuntimeService);
+  @Input() capacidades: CapacidadesConfiguracionPlataforma = { ver: false, editar: false, crear: false, activar: false, desactivar: false };
   private readonly snackBar = inject(MatSnackBar);
   private readonly apiUrl = `${environment.apiUrl}/empresas`;
   private cargaRequestId = 0;
@@ -183,10 +183,10 @@ export class EmpresaAdministracionCardComponent implements OnInit {
   readonly form = this.fb.group({ nombre: ['', [Validators.required, Validators.maxLength(200), this.noWhitespaceValidator]] });
 
   ngOnInit(): void {
-    this.puedeCrear.set(this.permisos.puede('Configuracion', 'Crear'));
-    this.puedeEditar.set(this.permisos.puede('Configuracion', 'Editar'));
-    this.puedeActivar.set(this.permisos.puede('Configuracion', 'Activar'));
-    this.puedeDesactivar.set(this.permisos.puede('Configuracion', 'Desactivar'));
+    this.puedeCrear.set(this.capacidades.crear === true);
+    this.puedeEditar.set(this.capacidades.editar === true);
+    this.puedeActivar.set(this.capacidades.activar === true);
+    this.puedeDesactivar.set(this.capacidades.desactivar === true);
     this.cargar();
   }
 
@@ -196,7 +196,7 @@ export class EmpresaAdministracionCardComponent implements OnInit {
     this.error.set(null);
     let params = new HttpParams();
     if (this.estado() !== 'todas') params = params.set('activa', this.estado() === 'activas');
-    this.http.get<ApiResponse<EmpresaRaiz[]>>(this.apiUrl, { params }).pipe(finalize(() => {
+    this.http.get<ApiResponse<EmpresaRaiz[]>>(`${this.apiUrl}/plataforma`, { params }).pipe(finalize(() => {
       if (requestId === this.cargaRequestId) this.loading.set(false);
     })).subscribe({
       next: res => {
@@ -215,7 +215,7 @@ export class EmpresaAdministracionCardComponent implements OnInit {
 
   ver(id: number): void {
     this.error.set(null);
-    this.http.get<ApiResponse<EmpresaRaiz>>(`${this.apiUrl}/${id}`).subscribe({
+    this.http.get<ApiResponse<EmpresaRaiz>>(`${this.apiUrl}/plataforma/${id}`).subscribe({
       next: res => this.detalle.set(res.data),
       error: err => this.error.set(err.error?.message ?? 'No se pudo cargar el detalle de la empresa.')
     });

@@ -181,6 +181,17 @@ public static class CatalogoPermisosBase
         })
     };
 
+    // No forma parte de la matriz de administración empresarial.
+    // Toda asignación de plataforma requiere un grant explícito e independiente.
+    public static readonly (ModuloSistema Modulo, AccionPermiso[] Acciones)[] DefinicionPlataforma =
+    {
+        (ModuloSistema.ConfiguracionPlataforma, new[]
+        {
+            AccionPermiso.Ver, AccionPermiso.Editar, AccionPermiso.Crear,
+            AccionPermiso.Activar, AccionPermiso.Desactivar
+        })
+    };
+
     public static readonly (ModuloSistema Modulo, AccionPermiso Accion)[] NuevosPermisosAdministrador =
         Definicion.SelectMany(d => d.Acciones.Select(a => (d.Modulo, a))).ToArray();
 

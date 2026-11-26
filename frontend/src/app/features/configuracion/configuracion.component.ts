@@ -7,11 +7,10 @@ import { MatButtonModule } from '@angular/material/button';
 import { MatIconModule } from '@angular/material/icon';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSnackBar } from '@angular/material/snack-bar';
-import { EmpresaConfiguracionService } from '../../services/empresa-configuracion.service';
+import { EmpresaConfiguracionService, CapacidadesConfiguracionPlataforma } from '../../services/empresa-configuracion.service';
 import { TemaVisualService } from '../../services/tema-visual.service';
 import { ThemeApplierService } from '../../services/theme-applier.service';
 import { EmpresaIdentidadService } from '../../services/empresa-identidad.service';
-import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
 import { CAMPOS_TEMA, TemaVisual } from '../../core/models/tema-visual.model';
 import { EmpresaConfiguracion } from '../../core/models/empresa-configuracion.model';
 import { AppAlertService } from '../../shared/alerts/app-alert.service';
@@ -56,6 +55,7 @@ export class ConfiguracionComponent implements OnInit {
   readonly errorMessage = signal<string | null>(null);
   readonly successMessage = signal<string | null>(null);
   readonly puedeEditar = signal(false);
+  readonly capacidadesPlataforma = signal<CapacidadesConfiguracionPlataforma>({ ver: false, editar: false, crear: false, activar: false, desactivar: false });
   readonly logoUrl = signal<string | undefined>(undefined);
   readonly logoPreview = signal<string | undefined>(undefined);
   private logoSeleccionado?: File;
@@ -104,7 +104,6 @@ export class ConfiguracionComponent implements OnInit {
     private temaVisualService: TemaVisualService,
     private themeApplier: ThemeApplierService,
     private identidadService: EmpresaIdentidadService,
-    private permisosRuntime: PermisosRuntimeService,
     private alerts: AppAlertService,
     private snackBar: MatSnackBar
   ) {}
@@ -114,9 +113,28 @@ export class ConfiguracionComponent implements OnInit {
   }
 
   ngOnInit(): void {
-    this.puedeEditar.set(this.permisosRuntime.puede('Configuracion', 'Editar'));
-    if (!this.puedeEditar()) this.form.disable();
+    this.form.disable();
+    this.empresaService.capacidadesPlataforma().subscribe({
+      next: res => {
+        const capacidades = res.data;
+        if (!capacidades?.ver) {
+          this.loading.set(false);
+          this.loadingTema.set(false);
+          return;
+        }
+        this.capacidadesPlataforma.set(capacidades);
+        this.puedeEditar.set(capacidades.editar === true);
+        if (this.puedeEditar()) this.form.enable();
+        this.cargarPlataforma();
+      },
+      error: () => {
+        this.loading.set(false);
+        this.loadingTema.set(false);
+      }
+    });
+  }
 
+  private cargarPlataforma(): void {
     this.empresaService.get().subscribe({
       next: (res) => {
         this.cargarEmpresa(res.data);
@@ -172,6 +190,7 @@ export class ConfiguracionComponent implements OnInit {
   }
 
   guardar(): void {
+    if (!this.puedeEditar()) return;
     if (this.form.invalid) return;
     this.saving.set(true);
     this.errorMessage.set(null);
@@ -200,6 +219,7 @@ export class ConfiguracionComponent implements OnInit {
   }
 
   seleccionarLogo(event: Event): void {
+    if (!this.puedeEditar()) return;
     const input = event.target as HTMLInputElement;
     const file = input.files?.[0];
     if (!file) return;
@@ -210,6 +230,7 @@ export class ConfiguracionComponent implements OnInit {
   }
 
   subirLogo(): void {
+    if (!this.puedeEditar()) return;
     if (!this.logoSeleccionado) return;
     this.uploadingLogo.set(true);
     this.empresaService.updateLogo(this.logoSeleccionado).subscribe({
@@ -219,6 +240,7 @@ export class ConfiguracionComponent implements OnInit {
   }
 
   async restaurarLogo(): Promise<void> {
+    if (!this.puedeEditar()) return;
     if (!await this.alerts.confirmar({ titulo: 'Restaurar logo', mensaje: 'Se quitará el logo actual y se restaurará la configuración predeterminada de la empresa.', tipo: 'advertencia', confirmarTexto: 'Restaurar logo' })) return;
     this.uploadingLogo.set(true);
     this.empresaService.restaurarLogo().subscribe({
@@ -227,9 +249,10 @@ export class ConfiguracionComponent implements OnInit {
     });
   }
 
-  previsualizar(): void { this.themeApplier.aplicar(this.tema); }
+  previsualizar(): void { if (this.puedeEditar()) this.themeApplier.aplicar(this.tema); }
 
   async guardarTema(): Promise<void> {
+    if (!this.puedeEditar()) return;
     if (!await this.alerts.confirmar({ titulo: 'Aplicar tema visual', mensaje: 'Los nuevos colores se aplicarán a todo el sistema y a todos los usuarios.', tipo: 'advertencia', confirmarTexto: 'Aplicar colores' })) return;
     this.guardandoTema.set(true); this.errorTema.set(null);
     this.temaVisualService.update(this.tema).subscribe({
@@ -241,6 +264,7 @@ export class ConfiguracionComponent implements OnInit {
   cancelarTema(): void { this.tema = { ...this.temaOriginal }; this.themeApplier.aplicar(this.tema); }
 
   async restaurarTema(): Promise<void> {
+    if (!this.puedeEditar()) return;
     if (!await this.alerts.confirmar({ titulo: 'Restaurar tema', mensaje: 'Se restaurarán los colores predeterminados del sistema para todos los usuarios.', tipo: 'advertencia', confirmarTexto: 'Restaurar colores' })) return;
     this.restaurandoTema.set(true);
     this.temaVisualService.restaurar().subscribe({

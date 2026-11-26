@@ -1,3 +1,11 @@
+## 2026-11-26 — QA-FN-05: separar identidad global y administración raíz del tenant
+
+- Backend de reportes 2482/2482 PASS, Release y NuGet aprobados run 45884648305 job 140132331070; la validación viva de reportes sigue pendiente.
+- Nuevo permiso ConfiguracionPlataforma con catálogo separado, sin grants ni asignaciones automáticas, autorización sólo por UsuarioRolesPlataforma activo y permiso explícito de ámbito Plataforma. Seed empresarial conserva matriz empresarial y no concede grants cruzados; catálogo de plataforma se registra solamente en inicialización autorizada. No se cambian grants originales, roles ni usuarios.
+- Legacy identidad/logo/tema: escrituras globales requieren gate de plataforma; GET privado global también. Lecturas públicas de login y colores sin cambios. Directorio empresarial sólo devuelve empresa autorizada, GET ajeno 404; administración raíz crea/edita/activa/desactiva/lista por autoridad global independiente. Auditoría genérica distingue marca de plataforma de marca empresarial.
+- Configuración UI: capacidades verificadas por API antes de mostrar controles globales, tarjetas tenant conservadas, raíz usa rutas plataforma. Regresiones de autoridad, catálogo sin elevación, directorio y contrato de rutas. Pendientes CI, Render, Vercel, prueba viva con identidad temporal y recorridos UI. Sin migración física ni cambios de automatizaciones.
+- Scope QA exclusivo; Scope Lock DEV 80303459e87747d83c8f4d5195fe0311702fd980 job 140131696626 PASS. Cambios DEV concurrentes no trasladados. Rollback por revert.
+
 ## 2026-11-26 — QA-FN-05: ajustar fixture PDF a autoridad efectiva
 
 - Run 45884147779 job 140130555350: 2481/2482; regresiones nuevas de reportes aprobadas. Prueba histórica N58DExportPdfServiceTests generaba PDF sin contexto autorizado y ahora recibe rechazo correcto. Fixture incorpora exclusivamente marca interna de tenant autorizado; conserva las aserciones de PDF real y formato inválido. Sin modificar runtime ni relajar controles. Pendiente rerun del nuevo SHA. Scope Lock DEV 80303459e87747d83c8f4d5195fe0311702fd980 job 140131696626 PASS; cambios concurrentes DEV no trasladados a QA.

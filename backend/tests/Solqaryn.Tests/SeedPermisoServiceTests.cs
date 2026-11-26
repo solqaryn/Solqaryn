@@ -29,7 +29,7 @@ public class SeedPermisoServiceTests
         var administrador = Assert.Single(roles.Where(r => r.NombreNormalizado == "ADMINISTRADOR"));
         var vendedor = Assert.Single(roles.Where(r => r.NombreNormalizado == "VENDEDOR"));
         var permisosActivos = await context.Permisos.IgnoreQueryFilters()
-            .CountAsync(p => p.Activo && !p.Eliminado);
+            .CountAsync(p => p.Ambito == AmbitoAutorizacion.Empresa && p.Activo && !p.Eliminado);
         var grantsAdministrador = await context.RolPermisos
             .CountAsync(p => p.RolId == administrador.Id);
 
