@@ -20,7 +20,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   authenticated:
-    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && (github.event_name == 'workflow_dispatch' || github.event.before == '413754d770febb37ecb6a400de96ccc597768d3f')
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && (github.event_name == 'workflow_dispatch' || github.event.before == '76b230eb71ea8fefa5d153eb9e72deda19efe828')
     runs-on: ubuntu-latest
     timeout-minutes: 25
     environment: QA

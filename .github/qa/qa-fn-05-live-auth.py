@@ -1,6 +1,7 @@
 """QA-FN-05 live administrative probe; only run-owned ephemeral rows."""
 import json
 import datetime
+import time
 import os
 import re
 import secrets
@@ -93,6 +94,37 @@ class NoRedirect(urllib.request.HTTPRedirectHandler):
     def redirect_request(self,*args,**kwargs):
         return None
 opener = urllib.request.build_opener(NoRedirect())
+
+def wait_ready(base, label, budget=180):
+    # Only idempotent health GETs may be retried. Never retry mutations.
+    deadline = time.monotonic() + budget
+    attempts = 0
+    while time.monotonic() < deadline:
+        attempts += 1
+        status = "transport"
+        try:
+            req = urllib.request.Request(base + "/health/ready", headers={"Accept":"application/json"}, method="GET")
+            try:
+                response = opener.open(req, timeout=min(45, max(1, deadline-time.monotonic())))
+            except urllib.error.HTTPError as error:
+                response = error
+            with response:
+                status = response.status
+                if status == 200:
+                    if base == proxy:
+                        require(response.headers.get("X-Solqaryn-Environment") == "QA", label+": wrong proxy environment")
+                    payload = json.load(response)
+                    require(payload.get("status") == "ready" and payload.get("database") == "connected", label+": unexpected readiness payload")
+                    print(label+"=PASS", flush=True)
+                    return
+                require(status in (502, 503, 504), f"{label}: unexpected HTTP {status}")
+        except (urllib.error.URLError, TimeoutError):
+            pass
+        print(f"{label}_READINESS_RETRY attempt={attempts} status={status}",flush=True)
+        remaining = deadline-time.monotonic()
+        if remaining > 0:
+            time.sleep(min(8,remaining))
+    raise RuntimeError(f"{label}: readiness budget exhausted")
 def call(path, label, expected=200, token=None, tenant=None, body=None, method=None, base=proxy, form=False, idem=None):
     headers = {"Accept":"application/json"}
     if token: headers["Authorization"] = "Bearer " + token
@@ -156,10 +188,9 @@ def user_update(name, role, password):
 
 created = False
 try:
-    ready = call("/health/ready", "QA_FN05_PROXY_READY")
-    require(ready.get("status")=="ready" and ready.get("database")=="connected", "QA not ready")
-    ready_direct = call("/health/ready","QA_FN05_RENDER_READY",base=backend)
-    require(ready_direct.get("status")=="ready" and ready_direct.get("database")=="connected", "Render not ready")
+    # Warm the verified QA backend first, then confirm the QA proxy.
+    wait_ready(backend,"QA_FN05_RENDER_READY")
+    wait_ready(proxy,"QA_FN05_PROXY_READY")
     statements = ["START TRANSACTION;"]
     for suffix, name in (("a",a),("b",b)):
         statements += [

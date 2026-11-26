@@ -1,3 +1,9 @@
+## 2026-11-26 — QA-FN-05: disponibilidad tras arranque en frio
+
+- Run 45876040049 job 140103242995: evidencia administrativa previa y esquema fisico exacto PASS; fallo HTTP 502 del proxy en health/ready antes de crear fixtures. Render registro arranque 18:29:12Z, inicializacion del modelo EF y HTTP 503 de readiness a 18:29:36Z. No se ejecutaron operaciones comerciales.
+- Se verifica readiness directo Render primero y despues proxy QA, con presupuesto acotado y reintentos exclusivamente de GET health ante 502/503/504 o transporte. Exige status ready, database connected y cabecera QA del proxy; no reintenta mutaciones, no modifica plan Render ni timeouts de la aplicacion, no reduce controles de aislamiento.
+- QA solamente; rollback por revert. Sin cambios DEV, MAIN, secretos, infraestructura o datos preexistentes. Scope Lock DEV f16a7da60c646f06f522a32acfd5472924398133 job 140104116336 PASS. Cierre pendiente de prueba comercial y navegador.
+
 ## 2026-11-26 — QA-FN-05: correccion de lectura de evidencia CI
 
 - Run 45875913795 job 140102815831 fallo antes de iniciar el preflight de la base o la API: gh api rechazo secuencias de escape ANSI en logs. Se permite su lectura solamente hacia archivo privado temporal, se verifican marcadores exactos, se elimina el archivo y se emite comprobacion. No se imprime contenido ni se ejecuta como codigo. Conserva el gate y el SHA previo.
