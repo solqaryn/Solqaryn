@@ -6,6 +6,9 @@ on:
       - 'frontend/e2e/c15-04-m05-04-global-ux.spec.ts'
       - 'frontend/src/app/features/storefront/storefront-header.component.ts'
       - 'frontend/src/app/features/storefront/storefront-header.component.html'
+      - 'frontend/src/app/features/storefront/storefront-producto.component.ts'
+      - 'frontend/src/app/features/storefront/storefront-producto.component.html'
+      - 'frontend/src/app/features/storefront/storefront-producto.component.scss'
       - '.github/workflows/v19-c15-04-m05-04-global-ux.yml'
   workflow_dispatch:
 permissions:
@@ -88,6 +91,7 @@ jobs:
             ['/tienda', '#contenido-principal'],
             ['/tienda/productos', '#catalogo-productos'],
             ['/tienda/categorias', '#contenido-categorias'],
+            ['/tienda/producto/demo-producto-1', '#detalle-producto .product-info h1'],
           ];
           const evidence = [];
           let context;
@@ -174,10 +178,41 @@ jobs:
               return actual;
             }
             for (const [route, selector] of routes) {
+              const isDetail = route === '/tienda/producto/demo-producto-1';
+              if (isDetail) {
+                const empresaBase = {
+                  id: 901,
+                  nombreComercial: 'Storefront Audit',
+                  nombreVisibleSistema: 'Storefront Audit',
+                  eslogan: 'Compra simple y segura',
+                  descripcionSistema: 'Tienda pública de auditoría',
+                  mensajeLogin: 'Administración',
+                  copyright: '© 2026 Storefront Audit',
+                  mostrarCopyright: true,
+                  usarAnioAutomaticoCopyright: true,
+                  encabezadoActivo: true,
+                  encabezadoTexto: 'Atención pública de auditoría',
+                  piePaginaActivo: true,
+                  piePaginaTexto: 'Pie de auditoría',
+                  moneda: 'HNL',
+                  zonaHoraria: 'America/Tegucigalpa',
+                  formatoFecha: 'dd/MM/yyyy',
+                  whatsApp: '9876-5432'
+                };
+                await page.route(/^http:\/\/localhost:5005\/(?:empresa-configuracion\/publica|tienda\/configuracion)$/, r => r.fulfill({ status: 200, contentType: 'application/json', headers: { 'Access-Control-Allow-Origin': '*' }, body: JSON.stringify({ success: true, data: empresaBase }) }));
+              }
               await page.goto(origin + route, { waitUntil: 'domcontentloaded' });
+              if (isDetail) {
+                await page.getByRole('heading', { level: 1, name: 'Laptop Pro 14', exact: true }).waitFor({ state: 'visible' });
+                await page.locator('.add-main:enabled').waitFor({ state: 'visible' });
+              }
               await page.locator(selector).waitFor({ state: 'visible', timeout: 20000 });
               const actual100 = await zoom(1);
               await page.waitForFunction(() => Math.abs(window.devicePixelRatio - 1) < 0.1);
+              const detailControls = [];
+              if (isDetail) for (const control of ['#cantidad-producto', '.add-main']) {
+                detailControls.push({ zoom: 100, control, bounds: await horizontalGeometry(control) });
+              }
               const before = await metrics();
               const slug = route.slice(1).replaceAll('/', '-');
               const image100 = await captureViewport(slug + '-100.png', before);
@@ -202,8 +237,38 @@ jobs:
                 const submitImage = await captureViewport(slug + '-200-submit.png', await metrics());
                 loginControls.push({ submitImage });
               }
+              if (isDetail) {
+                await page.locator('.add-main:enabled').waitFor({ state: 'visible' });
+                for (const control of ['#cantidad-producto', '.add-main']) {
+                  detailControls.push({ zoom: 200, control, bounds: await horizontalGeometry(control) });
+                }
+                await page.locator('.add-main').scrollIntoViewIfNeeded();
+                const quantity = page.getByRole('spinbutton', { name: 'Cantidad de producto' });
+                const increase = page.getByRole('button', { name: 'Aumentar cantidad', exact: true });
+                const add = page.locator('.add-main');
+                await quantity.focus();
+                await page.keyboard.press('Control+A');
+                await page.keyboard.type('2');
+                await page.keyboard.press('Tab');
+                assert.equal(await quantity.inputValue(), '2', 'Quantity remains editable at native 200%');
+                assert.ok(await increase.evaluate(el => document.activeElement === el && el.matches(':focus-visible')), 'Tab must reach the increase control');
+                await page.keyboard.press('Tab');
+                assert.ok(await add.evaluate(el => {
+                  const css = getComputedStyle(el);
+                  return document.activeElement === el && el.matches(':focus-visible') &&
+                    css.outlineStyle !== 'none' && parseFloat(css.outlineWidth) >= 2;
+                }), 'Tab must reach the purchase CTA with a visible focus outline');
+                detailControls.push({ ctaImage: await captureViewport(slug + '-200-cta.png', await metrics()) });
+                await page.keyboard.press('Enter');
+                await page.locator('app-storefront-header').getByRole('button', { name: 'Abrir carrito con 2 unidades' }).waitFor({ state: 'visible' });
+                const cart = await page.evaluate(() => JSON.parse(localStorage.getItem('storefront:carrito:v2:901:demo') ?? '[]'));
+                assert.equal(cart.length, 1, 'Only the chosen demo product may be added');
+                assert.equal(cart[0].productoId, 1);
+                assert.equal(cart[0].unidades, 2);
+                detailControls.push({ keyboardActivation: true, zoom: 200, quantity: 2, cartVerified: true });
+              }
               evidence.push({ route, actual100, actual200, before, after, image100,
-                image200, horizontal, loginControls });
+                image200, horizontal, loginControls, detailControls });
               assert.ok(Math.abs(after.visualScale - 1) < 0.01, route + ': unexpected pinch scale');
               assert.ok(before.scroll <= before.client + 2, route + ': overflow at 100%');
               assert.ok(after.scroll <= after.client + 2, route + ': overflow at 200%');

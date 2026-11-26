@@ -1,3 +1,6 @@
+## 2026-11-25 | DEV05 | C15-04.M05.04 | R1-RESTAURADA
+- V44R1-J40-6636262E-C1504M0504-NATIVE-DETAIL-KEYBOARD: adopta el parche DEV02 (RUN ae8808e5-debc-8332-ae3a-1a89ea0651ed) y complemento DEV04 (RUN 71474053-4e34-8325-80b2-ba315bf91fe3). Amplia el laboratorio Chromium publico a detalle demo, geometria a zoom nativo 100/200, Tab real desde cantidad a aumento y CTA, foco visible, captura X11 y Enter con verificacion del carrito local. Fixture de identidad exclusivamente demo, no JWT/MySQL real; no cambia producto, API, datos ni permisos. SKREF-03/10 originales pin leidos sin instalar scripts; A0 siete anclas y sintaxis JS comprobadas; CI exact-SHA y A5 independientes pendientes. Conserva owner DEV02, H EN_PROGRESO, foco C01-04.M03.06 y rollback por revert ordinario. RUN=6636262e-b290-8331-ae94-be5d18f861a3; base=a1bd12282b68e6c049baa178c6758bca83d7e1f9.
+
 ## 2026-11-25 | DEV05 | C01-04.M03.06 | R1-RESTAURADA
 - V44R1-J40-50686A75-C0104M0306-AUDIT-FECHA: protege Fecha del recibo QA GLOBAL mediante precisión datetime(6) y readback pre-COMMIT; tres escenarios SQL adversariales en laboratorio existente, sin migración, grants, TTL ni infraestructura. CI/A5 independientes pendientes. RUN=50686a75-0030-8326-8325-7ca1a5569e8e; base=040ef52ec05e669dc3bea28d1e8fb45c6a3b137b.
 
