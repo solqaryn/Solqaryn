@@ -3,6 +3,7 @@ import { Router, Routes } from '@angular/router';
 import { authGuard } from './core/guards/auth.guard';
 import { permisoGuard } from './core/guards/permiso.guard';
 import { appConfig } from './app.config';
+import { canonicalRoute, REQUIRED_QA_WIDTHS, RESPONSIVE_ROUTES, RESPONSIVE_VIEWPORTS } from './testing/qa-responsive-catalog';
 
 describe('N4.11.G CentroCosto application route registration', () => {
   it('registers the protected centros-costo route in the application router', () => {
@@ -103,6 +104,16 @@ describe('QA — Inventario de pantallas y permisos', () => {
     expect(inventario.filter(item => item.tipo === 'redireccion')).toHaveLength(2);
     expect(new Set(inventario.map(item => item.ruta)).size).toBe(inventario.length);
     expect(inventario.filter(item => item.modulo !== null && (!item.autenticacion || !item.permiso || !item.accion))).toEqual([]);
+    // El barrido de navegador comparte el catálogo con esta prueba; no se
+    // aceptan omisiones ni URLs inventadas por un escaneo regex de fuentes.
+    const esperadas = inventario
+      .filter(item => item.tipo === 'pantalla' || item.ruta === '/')
+      .map(item => canonicalRoute(item.ruta)).sort();
+    expect(new Set(esperadas).size).toBe(esperadas.length);
+    expect([...RESPONSIVE_ROUTES].sort()).toEqual(esperadas);
+    const anchos = RESPONSIVE_VIEWPORTS.map(viewport => Number(viewport.width));
+    expect(new Set(anchos).size).toBe(anchos.length);
+    expect(REQUIRED_QA_WIDTHS.filter(ancho => !anchos.includes(ancho))).toEqual([]);
     for (const item of inventario) {
       console.info('[QA-RUTA] ' + JSON.stringify(item));
     }

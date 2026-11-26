@@ -1,103 +1,9 @@
 import { expect, Page, test } from '@playwright/test';
-import { readdirSync, readFileSync, statSync } from 'node:fs';
-import { join } from 'node:path';
-
-/**
- * This is the one route list used by the responsive regression gate.  Every
- * parameter is represented by a harmless, read-only fixture id.  The list is
- * deliberately kept here (rather than in a feature spec) so adding a route
- * without adding it to the gate fails the route catalog check below.
- */
-export const RESPONSIVE_ROUTES = [
-  '/', '/login',
-  '/tienda', '/tienda/productos', '/tienda/categorias',
-  '/tienda/carrito', '/tienda/checkout', '/tienda/producto/demo',
-  '/tienda/categoria/demo', '/tienda/pedido/1',
-  '/dashboard', '/productos', '/productos/nuevo', '/productos/1', '/productos/1/editar', '/productos/1/variantes',
-  '/categorias', '/categorias/nueva', '/categorias/1/editar',
-  '/sucursales', '/sucursales/nueva', '/sucursales/1/editar',
-  '/almacenes', '/almacenes/nuevo', '/almacenes/1/editar',
-  '/ubicaciones-almacen', '/ubicaciones-almacen/nueva', '/ubicaciones-almacen/1/editar',
-  '/colores', '/tallas', '/marcas', '/modelos', '/metodos-pago',
-  '/proveedores', '/proveedores/nuevo', '/proveedores/1/editar',
-  '/clientes', '/clientes/nuevo', '/clientes/1/editar',
-  '/tipo-clientes', '/tipo-clientes/nuevo', '/tipo-clientes/1/editar',
-  '/usuarios', '/usuarios/1', '/usuarios/1/editar',
-  '/roles', '/roles/nuevo', '/roles/1/editar', '/permisos',
-  '/descuentos', '/descuentos/nuevo', '/descuentos/1/editar',
-  '/impuestos', '/impuestos/nuevo', '/impuestos/1/editar',
-  '/costos-envio', '/cargas-masivas', '/auditoria', '/configuracion', '/periodos-contables', '/perfil',
-  '/solicitudes-compra', '/ordenes-compra', '/ordenes-compra/nueva', '/ordenes-compra/1/editar',
-  '/compras', '/compras/nueva', '/compras/1', '/compras/1/editar',
-  '/facturas-proveedor', '/facturas-proveedor/nueva', '/facturas-proveedor/1', '/facturas-proveedor/1/editar',
-  '/compras/1/three-way-match', '/devoluciones-proveedor', '/devoluciones-proveedor/nueva', '/devoluciones-proveedor/1', '/devoluciones-proveedor/1/editar',
-  '/notas-credito-proveedor', '/notas-credito-proveedor/nueva', '/notas-credito-proveedor/1', '/notas-credito-proveedor/1/editar', '/evaluaciones-proveedor',
-  '/recepciones-compra', '/recepciones-compra/nueva', '/recepciones-compra/1',
-  '/ventas', '/ventas/nueva', '/ventas/1', '/ventas/1/editar',
-  '/cotizaciones', '/cotizaciones/nueva', '/cotizaciones/1', '/cotizaciones/1/editar',
-  '/pedidos-venta', '/pedidos-venta/nuevo', '/pedidos-venta/1', '/pedidos-venta/1/editar', '/pedidos-venta/1/preparacion', '/preparaciones-pedido-venta',
-  '/devoluciones-clientes', '/devoluciones-clientes/nueva', '/devoluciones-clientes/1',
-  '/notas-credito-cliente', '/notas-credito-cliente/nueva', '/notas-credito-cliente/1',
-  '/cuentas-por-cobrar', '/cuentas-por-pagar', '/facturas/1', '/facturas/1/pagos',
-  '/finanzas', '/plan-cuentas', '/cuentas-bancarias', '/asientos-contables', '/estados-financieros', '/centros-costo',
-  '/centro-reportes', '/centro-reportes/financieros', '/centro-reportes/administrativos',
-  '/centro-reportes/inventario/valorizacion', '/centro-reportes/inventario/kardex', '/centro-reportes/inventario/stock-health', '/centro-reportes/inventario/reconciliacion',
-  '/centro-reportes/ventas', '/centro-reportes/compras', '/centro-reportes/rentabilidad',
-  '/inventario/movimientos', '/inventario/costeo', '/inventario/transferencias', '/inventario/transferencias/nueva', '/inventario/transferencias/1', '/inventario/transferencias/1/editar',
-  '/inventario/conteos', '/inventario/conteos/nuevo', '/inventario/conteos/1', '/inventario/conteos/1/editar',
-  '/inventario/reservas', '/inventario/reservas/nueva', '/inventario/reservas/1', '/inventario/reservas/1/editar',
-  '/inventario/ajustes', '/inventario/ajustes/nuevo', '/inventario/ajustes/1', '/inventario/ajustes/1/editar',
-  '/inventario/existencias', '/inventario/existencias/nueva', '/inventario/existencias/1/editar', '/inventario/trazabilidad/1'
-] as const;
-
-export const RESPONSIVE_VIEWPORTS = [
-  { name: '320', width: 320, height: 568, mobile: true },
-  { name: '360', width: 360, height: 800, mobile: true },
-  { name: '375', width: 375, height: 812, mobile: true },
-  { name: '390', width: 390, height: 844, mobile: true },
-  { name: '412', width: 412, height: 915, mobile: true },
-  { name: '430', width: 430, height: 932, mobile: true },
-  { name: '768', width: 768, height: 1024, mobile: true },
-  { name: '1024', width: 1024, height: 768, mobile: false },
-  { name: '1440', width: 1440, height: 900, mobile: false }
-] as const;
+import { REQUIRED_QA_WIDTHS, RESPONSIVE_ROUTES, RESPONSIVE_VIEWPORTS } from '../src/app/testing/qa-responsive-catalog';
+export { RESPONSIVE_ROUTES, RESPONSIVE_VIEWPORTS } from '../src/app/testing/qa-responsive-catalog';
 
 const ADMIN_USERNAME = process.env['PHASE7_ADMIN_USERNAME'] ?? 'e2e_admin';
 const ADMIN_PASSWORD = process.env['PHASE7_ADMIN_PASSWORD'] ?? 'E2E.Admin#2026!';
-
-function routeSourceFiles(directory: string): string[] {
-  return readdirSync(directory, { withFileTypes: true }).flatMap((entry) => {
-    const path = join(directory, entry.name);
-    if (entry.isDirectory()) return routeSourceFiles(path);
-    return entry.isFile() && entry.name.endsWith('.routes.ts') ? [path] : [];
-  });
-}
-
-function canonicalRoute(path: string): string {
-  return path.split('/').filter(Boolean).map((part) => part.startsWith(':') ? (
-    part.toLowerCase().includes('slug') ? 'demo' : '1'
-  ) : part).join('/').replace(/^/, '/');
-}
-
-function sourceRouteCatalog(): string[] {
-  const root = join(process.cwd(), 'src', 'app');
-  const paths = routeSourceFiles(root).flatMap((path) => {
-    const source = readFileSync(path, 'utf8');
-    return [...source.matchAll(/path\s*:\s*['"]([^'"]*)['"]/g)].map((match) => match[1]);
-  });
-  return [...new Set(paths.filter((path) => path && path !== '**').map((path) => {
-    // The report center declares its children relative to the parent route.
-    // Keep that relationship explicit so the source catalog compares the
-    // same URL that the browser actually navigates to.
-    const canonical = canonicalRoute(path);
-    const reportChild = new Set([
-      '/financieros', '/administrativos', '/inventario/valorizacion',
-      '/inventario/kardex', '/inventario/stock-health', '/inventario/reconciliacion',
-      '/ventas', '/compras', '/rentabilidad'
-    ]);
-    return reportChild.has(canonical) ? `/centro-reportes${canonical}` : canonical;
-  }))];
-}
 
 async function login(page: Page): Promise<void> {
   await page.goto('/login');
@@ -259,10 +165,11 @@ async function certifyRoute(page: Page, route: string, mobile: boolean, errors: 
 test.describe('Responsive global — route sweep y regression gate', () => {
   test.describe.configure({ mode: 'serial', retries: 0 });
 
-  test('inventario de rutas permanece cubierto por el gate', () => {
-    const listed = new Set(RESPONSIVE_ROUTES.map(canonicalRoute));
-    const missing = sourceRouteCatalog().filter((route) => !listed.has(route));
-    expect(missing, `Rutas nuevas sin cobertura responsive: ${missing.join(', ')}`).toEqual([]);
+  test('el catálogo compartido no repite rutas y cubre los anchos QA', () => {
+    expect(new Set(RESPONSIVE_ROUTES).size).toBe(RESPONSIVE_ROUTES.length);
+    const widths = RESPONSIVE_VIEWPORTS.map(viewport => Number(viewport.width));
+    expect(new Set(widths).size).toBe(widths.length);
+    expect(REQUIRED_QA_WIDTHS.filter(width => !widths.includes(width))).toEqual([]);
   });
 
   for (const viewport of RESPONSIVE_VIEWPORTS) {
