@@ -48,6 +48,12 @@ public sealed class C0104CaseFileOwnershipStoreMySqlTests
         try
         {
             await Phase7MySqlTestDatabase.InitializeFreshAsync(setup);
+            // Exercise only the additive migration's empty-schema downgrade/reapply.
+            await setup.Database.MigrateAsync("20261117215700_V19WhatsAppE164LiteralPlus");
+            Assert.Contains("20261126165100_V44CaseFileOwnershipStore",
+                await setup.Database.GetPendingMigrationsAsync());
+            await setup.Database.MigrateAsync();
+            Assert.Empty(await setup.Database.GetPendingMigrationsAsync());
             var a = new Empresa("QA A");
             var b = new Empresa("QA B");
             setup.Set<Empresa>().AddRange(a,b);
@@ -55,9 +61,19 @@ public sealed class C0104CaseFileOwnershipStoreMySqlTests
             var branchA = new Sucursal { EmpresaId = a.Id, Codigo = "QA_A", Nombre = "QA A" };
             var branchB = new Sucursal { EmpresaId = b.Id, Codigo = "QA_B", Nombre = "QA B" };
             setup.Set<Sucursal>().AddRange(branchA,branchB);
-            // Use an existing seeded fixture actor, never create or grant a real account.
+            // Phase7 bootstrap does not guarantee a user. Seed only this disposable DB.
+            var role = new Rol { Nombre = "QA Casefile", NombreNormalizado = "QA_CASEFILE",
+                EsSistema = true, Activo = true };
+            setup.Roles.Add(role);
             await setup.SaveChangesAsync();
-            var actor = await setup.Set<Usuario>().IgnoreQueryFilters().Select(u => u.Id).FirstAsync();
+            var user = new Usuario { NombreUsuario = "qa-casefile", NombreCompleto = "QA Casefile",
+                PasswordHash = "fixture-no-login", RolId = role.Id, Activo = true };
+            setup.Usuarios.Add(user);
+            await setup.SaveChangesAsync();
+            var actor = user.Id;
+            setup.UsuarioEmpresas.AddRange(new UsuarioEmpresa(actor, a.Id, role.Id),
+                new UsuarioEmpresa(actor, b.Id, role.Id));
+            await setup.SaveChangesAsync();
             HttpContextAccessor Access(int tenant)
             {
                 var h = new DefaultHttpContext();

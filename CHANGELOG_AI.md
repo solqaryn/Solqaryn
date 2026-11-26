@@ -11409,3 +11409,6 @@
 
 ### 2026-11-26 | DEV06 | C01-04.M03.06 | P01/P02 almacenamiento correctivo
 - Base 4118e091930811417348d7947b36e6f907e553d0; RUN_ID 636037e4-8df0-8321-bc2c-8a6d91d93fe0; TASK_ID 6af16bbad26881918c283abe06e1f32a. Migracion aditiva Oracle MySQL, claves compuestas empresa/expediente y empresa/sucursal; escritor append-only con autoridad de escritura independiente, locks transaccionales, revision antes/despues, version monotona y rollback ante denegacion. Sin registro DI, grant, backfill ni tipos de negocio inferidos. Prueba dirigida A/B con autoridad sintetica, pendiente de GitHub Actions. No acredita JWT/API12 ni A5 correctiva; preservar H/I y evidencia historica de proveedores.
+
+### 2026-11-26 | DEV06 | C01-04.M03.06 | P01/P02 exact receipt and fixture correction
+- RUN 636037e4-8df0-8321-bc2c-8a6d91d93fe0; base 847c6ef1806401e59f9cf4daab79b0467a3e7c90. Readback P01/P02 exact receipt before revalidation and commit. Fixture creates local actor and two memberships; Phase7 does not ensure an existing user. Empty migration downgrade/reapply exercised by test, not yet executed. No runtime grant or DI. CI and independent A5 pending.

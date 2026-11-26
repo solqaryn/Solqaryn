@@ -95,8 +95,8 @@ public sealed class V5CaseFileOwnershipStore
             await using var tx = await _db.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted, ct);
             var a = await _authority.ResolveAsync(_db, selection, ct);
             ct.ThrowIfCancellationRequested();
-            if (!Matches(a, selection, tenant) ||
-                !await ActiveBranchAsync(tx, tenant, a!.BranchId, ct))
+            if (a is null || !Matches(a, selection, tenant) ||
+                !await ActiveBranchAsync(tx, tenant, a.BranchId, ct))
                 return new("CASEFILE_WRITE_DENIED");
 
             bool exists;
@@ -150,6 +150,23 @@ public sealed class V5CaseFileOwnershipStore
                 ("@actor", a.ActorId), ("@hash", selection.ContentHash), ("@reason", selection.ReasonCode)))
             {
                 if (await write.ExecuteNonQueryAsync(ct) != 1) return new("CASEFILE_WRITE_FAILED");
+            }
+            ct.ThrowIfCancellationRequested();
+
+            // Read back the exact joined P01/P02 receipt before authorization recheck.
+            await using (var receipt = Command(tx, """
+                SELECT COUNT(*) FROM V5CaseFileOwnerships o
+                INNER JOIN V5CaseFileVersions v ON v.EmpresaId=o.EmpresaId AND v.ExpedienteId=o.Id
+                WHERE o.EmpresaId=@tenant AND o.Id=@case AND o.SucursalId=@branch
+                  AND o.RecursoTipo=@type AND o.RecursoRef=@ref AND v.Version=@version
+                  AND v.ActorId=@actor AND v.ContentHash=@hash AND v.ReasonCode=@reason
+                """, ("@tenant", tenant), ("@case", selection.CaseId), ("@branch", a.BranchId),
+                ("@type", selection.ResourceType), ("@ref", selection.ResourceRef),
+                ("@version", next), ("@actor", a.ActorId),
+                ("@hash", selection.ContentHash), ("@reason", selection.ReasonCode)))
+            {
+                if (Convert.ToInt64(await receipt.ExecuteScalarAsync(ct), CultureInfo.InvariantCulture) != 1)
+                    return new("CASEFILE_WRITE_FAILED");
             }
             ct.ThrowIfCancellationRequested();
 
