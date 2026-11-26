@@ -1,3 +1,8 @@
+## 2026-11-26 — DEV04 — C03-01.M03.03 — V44/R1/R5
+
+- TASK_ID=6aeacb7820ac8191b7d768a6f33dfa09; RUN_ID=edbfd3e8-87a0-832f-b47f-501aeecb7a74; base=1a730bd861cfdbd0ea2b065ffc2dd8eb795162d6. D447: el selector de empresas materializaba autorizaciones y consultaba nombres después; el controlador podía devolver opciones de B revocadas mientras el rol base de A seguía vigente. Predicado relacional compartido, selector en una consulta SQL, relectura y comparación tras revalidar sesión e identidad. Sin nuevos permisos, rutas, esquemas ni cambios de entorno.
+- Regresión unitaria, actualización de contrato HTTP y prueba real JWT/Oracle EF MySQL 8.4 de revocación B desde una segunda conexión durante el selector, preservando A. A0 estático; A1-A4 y A5 pendientes de CI y revisión independiente. V17 fila448, foco C01-04.M03.06 conservado por P01/P02/API12/DI/retención sin fuente autorizada. No reabrir LISTO ni promover .04. Rollback por revert normal.
+
 ## 2026-11-26 — C15-04.M05.04 — DEV03 — V44 R1/R5
 - RUN 4c88f3b9-ff98-8322-8fe9-d413eec4ee88; base 5bd574a6059ff9f74b9532b261c963d4f56fee42. Checkout: el nombre con espacios y el teléfono compuesto sólo por separadores superaban los validadores por longitud antes de normalizarse; se exige nombre útil de dos caracteres y ocho dígitos como mínimo, conservando límite y formato existentes. Reutiliza errores accesibles y no cambia API, grants ni proveedor de pago.
 - Extiende el caso Chromium de invalidación de contacto: rechazo de teléfono sin dígitos y nombre en blanco, aria-invalid, recuperación y enlace/recibo coherentes. CI pendiente; no A5 ni cierre. Referencias SKREF-03/10 originales fijadas; sin scripts externos. V17 C15-04.M05.04, fila2297; foco C01-04.M03.06 conservado. Revert normal si falla.

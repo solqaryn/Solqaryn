@@ -227,32 +227,37 @@ public sealed class UsuarioScopeService : IUsuarioScopeService
         if (!_currentUser.EstaAutenticado || !_currentUser.UsuarioId.HasValue)
             return Array.Empty<EmpresaSeleccionable>();
 
-        // Materializar primero los scopes que el mismo predicado JWT/RBAC
-        // autorizó desde MySQL. El proveedor Oracle de EF Core no traduce
-        // Contains sobre la proyección intermedia de UsuarioTenantScopeActual.
-        // La segunda consulta recibe únicamente IDs autorizados, nunca un
-        // catálogo global ni una membresía inactiva/ajena.
-        var contextosAutorizados = await ContextosTenantValidos(_currentUser.UsuarioId.Value)
+        // El nombre de la empresa y su autorización provienen de la misma
+        // consulta relacional. No materializar IDs autorizados y reutilizarlos
+        // después de una posible revocación de membresía, rol o empresa.
+        var actorId = _currentUser.UsuarioId.Value;
+        var empresas = await (
+            from membresia in MembresiasTenantValidas(actorId)
+            join empresa in _context.Set<Empresa>().AsNoTracking()
+                on membresia.EmpresaId equals empresa.Id
+            orderby empresa.Nombre, empresa.Id
+            select new EmpresaSeleccionable(empresa.Id, empresa.Nombre))
+            .TagWith("C0301_SELECTOR_CURRENT_MEMBERSHIPS")
             .ToListAsync(cancellationToken);
 
-        if (contextosAutorizados.Count == 0)
-            return Array.Empty<EmpresaSeleccionable>();
-
-        var empresasAutorizadas = contextosAutorizados
-            .Select(contexto => contexto.EmpresaId)
-            .Distinct()
-            .ToArray();
-
-        return await _context.Set<Empresa>()
-            .AsNoTracking()
-            .Where(empresa => empresasAutorizadas.Contains(empresa.Id))
-            .OrderBy(empresa => empresa.Nombre)
-            .ThenBy(empresa => empresa.Id)
-            .Select(empresa => new EmpresaSeleccionable(empresa.Id, empresa.Nombre))
-            .ToListAsync(cancellationToken);
+        return _currentUser.EstaAutenticado && _currentUser.UsuarioId == actorId
+            ? empresas.DistinctBy(empresa => empresa.EmpresaId).ToArray()
+            : Array.Empty<EmpresaSeleccionable>();
     }
 
     private IQueryable<UsuarioTenantScopeActual> ContextosTenantValidos(
+        int usuarioId,
+        int? empresaId = null,
+        int? rolId = null) =>
+        from membresia in MembresiasTenantValidas(usuarioId, empresaId, rolId)
+        join rol in _context.Roles.AsNoTracking() on membresia.RolId equals rol.Id
+        select new UsuarioTenantScopeActual(
+            membresia.UsuarioId, membresia.EmpresaId, rol.Id, rol.Nombre,
+            rol.EsAdministrador);
+
+    // Predicado compartido antes de cualquier proyección DTO. Mantener todos
+    // los joins y filtros de autorización en SQL, también para el selector.
+    private IQueryable<UsuarioEmpresa> MembresiasTenantValidas(
         int usuarioId,
         int? empresaId = null,
         int? rolId = null)
@@ -282,11 +287,6 @@ public sealed class UsuarioScopeService : IUsuarioScopeService
                    (rol.EmpresaId == null && rol.EsSistema)) &&
                   (!empresaId.HasValue || membresia.EmpresaId == empresaId.Value) &&
                   (!rolId.HasValue || rol.Id == rolId.Value)
-            select new UsuarioTenantScopeActual(
-                usuario.Id,
-                empresa.Id,
-                rol.Id,
-                rol.Nombre,
-                rol.EsAdministrador);
+            select membresia;
     }
 }

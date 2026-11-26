@@ -248,6 +248,22 @@ public sealed class TenantContextV5ContractTests
     }
 
     [Fact]
+    public async Task Selector_RevocacionEmpresaBConRolBaseAVigente_DeniegaSnapshotAnterior()
+    {
+        var scope = new ScopeStub
+        {
+            Seleccionables = new[] { new EmpresaSeleccionable(11, "A"), new EmpresaSeleccionable(22, "B") }
+        };
+        scope.OnSecondBaseCheck = () => scope.Seleccionables =
+            new[] { new EmpresaSeleccionable(11, "A") };
+
+        var action = await WithJwtIdentity(scope).ListarEmpresas(CancellationToken.None);
+
+        Assert.IsType<ForbidResult>(action);
+        Assert.Equal(2, scope.SelectorCalls);
+    }
+
+    [Fact]
     public async Task Selector_DtoContieneSoloLaListaDevueltaPorServicio()
     {
         var scope = new ScopeStub

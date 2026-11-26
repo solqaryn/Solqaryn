@@ -1,3 +1,4 @@
+using System.Data.Common;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net;
 using System.Net.Http.Headers;
@@ -9,6 +10,7 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -73,7 +75,24 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
                 forged ? ForgedKey : Key, SecurityAlgorithms.HmacSha256)));
     }
 
-    private static async Task<IHost> StartAsync(string connection, bool enableProbe = true)
+    private sealed class SelectorRevocationInterceptor(Func<Task> revoke) : DbCommandInterceptor
+    {
+        private int _fired;
+        public bool Fired => Volatile.Read(ref _fired) == 1;
+
+        public override async ValueTask<DbDataReader> ReaderExecutedAsync(
+            DbCommand command, CommandExecutedEventData eventData, DbDataReader result,
+            CancellationToken cancellationToken = default)
+        {
+            if (command.CommandText.Contains("C0301_SELECTOR_CURRENT_MEMBERSHIPS", StringComparison.Ordinal) &&
+                Interlocked.Exchange(ref _fired, 1) == 0)
+                await revoke();
+            return result;
+        }
+    }
+
+    private static async Task<IHost> StartAsync(string connection, bool enableProbe = true,
+        DbCommandInterceptor? selectorInterceptor = null)
     {
         var settings = new ConfigurationBuilder().AddInMemoryCollection(
             new Dictionary<string, string?>
@@ -105,9 +124,13 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
                 // substitute for a real audit integration.
                 services.AddSingleton(Moq.Mock.Of<IAuditoriaService>());
                 services.AddHttpContextAccessor();
-                services.AddDbContext<AppDbContext>(options => options.UseMySQL(
-                    connection, mysql => mysql.MigrationsAssembly(
-                        "Solqaryn.Infrastructure.Migrations")));
+                services.AddDbContext<AppDbContext>(options =>
+                {
+                    options.UseMySQL(connection, mysql => mysql.MigrationsAssembly(
+                        "Solqaryn.Infrastructure.Migrations"));
+                    if (selectorInterceptor is not null)
+                        options.AddInterceptors(selectorInterceptor);
+                });
                 services.AddScoped<ICurrentUserService, CurrentUserService>();
                 services.AddScoped<IUsuarioScopeService, UsuarioScopeService>();
                 services.AddScoped<IC0301VerifiedLoginActorSource,
@@ -530,6 +553,45 @@ public sealed class C0301M0303RealMysql84HttpIntegrationTests
             await AssertBranchAsync(restrictedB, tenantB.Id, branchB);
             using (var crossA = await ReadBranchAsync(restrictedB, tenantA.Id, branchA.Id))
                 Assert.Equal(HttpStatusCode.Forbidden, crossA.StatusCode);
+            // Revocar B después de ejecutar la primera consulta del selector,
+            // desde otra conexión real, conservando el rol base y la membresía A.
+            using (var beforeRace = await ContextAsync("/tenant-context/empresas", productToken))
+            {
+                Assert.Equal(HttpStatusCode.OK, beforeRace.StatusCode);
+                using var choices = System.Text.Json.JsonDocument.Parse(await beforeRace.Content.ReadAsStringAsync());
+                Assert.Equal(new[] { tenantA.Id, tenantB.Id }.OrderBy(x => x).ToArray(),
+                    choices.RootElement.GetProperty("data").EnumerateArray()
+                        .Select(x => x.GetProperty("empresaId").GetInt32()).OrderBy(x => x).ToArray());
+            }
+            var selectorRace = new SelectorRevocationInterceptor(async () =>
+            {
+                await using var revokeDb = new AppDbContext(options);
+                var currentB = await revokeDb.UsuarioEmpresas.SingleAsync(x =>
+                    x.UsuarioId == actor.Id && x.EmpresaId == tenantB.Id);
+                currentB.Desactivar();
+                await revokeDb.SaveChangesAsync();
+            });
+            using (var raceHost = await StartAsync(scoped, selectorInterceptor: selectorRace))
+            using (var raceClient = raceHost.GetTestClient())
+            using (var raceRequest = new HttpRequestMessage(HttpMethod.Get, "/tenant-context/empresas"))
+            {
+                raceRequest.Headers.Authorization = new AuthenticationHeaderValue("Bearer", productToken);
+                using var denied = await raceClient.SendAsync(raceRequest);
+                Assert.True(selectorRace.Fired);
+                Assert.Equal(HttpStatusCode.Forbidden, denied.StatusCode);
+                Assert.DoesNotContain(tenantB.Nombre, await denied.Content.ReadAsStringAsync(),
+                    StringComparison.OrdinalIgnoreCase);
+            }
+            await using (var verifyDb = new AppDbContext(options))
+            {
+                var currentB = await verifyDb.UsuarioEmpresas.SingleAsync(x =>
+                    x.UsuarioId == actor.Id && x.EmpresaId == tenantB.Id);
+                Assert.False(currentB.Activa);
+                Assert.True(await verifyDb.UsuarioEmpresas.AnyAsync(x =>
+                    x.UsuarioId == actor.Id && x.EmpresaId == tenantA.Id && x.Activa));
+                currentB.Activar();
+                await verifyDb.SaveChangesAsync();
+            }
             membershipB.Desactivar();
             await db.SaveChangesAsync();
             using (var revokedChoices = await ListBranchesAsync(productToken, tenantB.Id))

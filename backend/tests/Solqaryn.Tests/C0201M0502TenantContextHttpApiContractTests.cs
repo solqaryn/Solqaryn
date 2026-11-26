@@ -110,7 +110,7 @@ public sealed class C0201M0502TenantContextHttpApiContractTests
         }
         // Positive selection must revalidate the destination; denial still reads once.
         authority.Verify(x => x.ObtenerActualAsync(7, It.IsAny<CancellationToken>()), Times.Exactly(2));
-        authority.Verify(x => x.ListarEmpresasSeleccionablesAsync(It.IsAny<CancellationToken>()), Times.Once);
+        authority.Verify(x => x.ListarEmpresasSeleccionablesAsync(It.IsAny<CancellationToken>()), Times.Exactly(2));
         authority.Verify(x => x.SesionBaseVigenteAsync(17, 999, It.IsAny<CancellationToken>()), Times.Exactly(4));
         authority.VerifyNoOtherCalls();
     }

@@ -42,11 +42,21 @@ public sealed class TenantContextController : ControllerBase
         if (!await _usuarioScopeService.SesionBaseVigenteAsync(actorId, roleId, cancellationToken))
             return Forbid();
 
-        var empresas = await _usuarioScopeService.ListarEmpresasSeleccionablesAsync(cancellationToken);
+        var empresas = (await _usuarioScopeService.ListarEmpresasSeleccionablesAsync(cancellationToken)).ToArray();
         if (!await _usuarioScopeService.SesionBaseVigenteAsync(actorId, roleId, cancellationToken))
             return Forbid();
+
+        // El rol base de A puede seguir vigente cuando se revoca la membresía B.
+        // Reconsultar las opciones después de validar la sesión; no devolver el
+        // snapshot anterior ni cambiar silenciosamente la selección propuesta.
+        var actuales = (await _usuarioScopeService.ListarEmpresasSeleccionablesAsync(cancellationToken)).ToArray();
+        if (!empresas.SequenceEqual(actuales) ||
+            !TryCanonicalJwtAuthority(out var currentActor, out var currentRole) ||
+            currentActor != actorId || currentRole != roleId)
+            return Forbid();
+
         return Ok(ApiResponse<IReadOnlyList<EmpresaSeleccionable>>.Ok(
-            empresas, "Empresas activas autorizadas."));
+            actuales, "Empresas activas autorizadas."));
     }
 
     /// <summary>
