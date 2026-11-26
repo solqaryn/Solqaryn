@@ -14,17 +14,24 @@ namespace Solqaryn.API.Controllers;
 public class ReportesAdministrativosController : ControllerBase
 {
     private readonly IReporteAdministrativoService _service;
-    private readonly ICurrentUserService _currentUser;
+    private readonly IUsuarioScopeService _scopeService;
     private readonly IAuditoriaService _auditoria;
 
     public ReportesAdministrativosController(
         IReporteAdministrativoService service,
-        ICurrentUserService currentUser,
+        IUsuarioScopeService scopeService,
         IAuditoriaService auditoria)
     {
         _service = service;
-        _currentUser = currentUser;
+        _scopeService = scopeService;
         _auditoria = auditoria;
+    }
+
+    private async Task<bool> EsAdministradorEfectivoAsync(CancellationToken cancellationToken)
+    {
+        var empresaId = TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext);
+        var scope = await _scopeService.ObtenerActualAsync(empresaId, cancellationToken);
+        return scope is not null && scope.EmpresaId == empresaId && scope.EsAdministrador;
     }
 
     [HttpGet("resumen")]
@@ -33,7 +40,7 @@ public class ReportesAdministrativosController : ControllerBase
         [FromQuery] ReporteAdministrativoFiltroDto filtro,
         CancellationToken cancellationToken)
     {
-        if (!_currentUser.EsAdministrador) return Forbid();
+        if (!await EsAdministradorEfectivoAsync(cancellationToken)) return Forbid();
         var resultado = await _service.ObtenerResumenAsync(filtro, cancellationToken);
         return Ok(ApiResponse<ResumenAdministrativoDto>.Ok(resultado));
     }
@@ -42,7 +49,7 @@ public class ReportesAdministrativosController : ControllerBase
     [RequierePermiso(ModuloSistema.ReportesAdministrativos, AccionPermiso.Ver)]
     public async Task<IActionResult> UsuariosAccesos(CancellationToken cancellationToken)
     {
-        if (!_currentUser.EsAdministrador) return Forbid();
+        if (!await EsAdministradorEfectivoAsync(cancellationToken)) return Forbid();
         var resultado = await _service.ObtenerUsuariosAccesoAsync(cancellationToken);
         return Ok(ApiResponse<List<UsuarioAccesoReporteDto>>.Ok(resultado));
     }
@@ -51,7 +58,7 @@ public class ReportesAdministrativosController : ControllerBase
     [RequierePermiso(ModuloSistema.ReportesAdministrativos, AccionPermiso.Ver)]
     public async Task<IActionResult> RolesPermisos(CancellationToken cancellationToken)
     {
-        if (!_currentUser.EsAdministrador) return Forbid();
+        if (!await EsAdministradorEfectivoAsync(cancellationToken)) return Forbid();
         var resultado = await _service.ObtenerRolesPermisosAsync(cancellationToken);
         return Ok(ApiResponse<List<RolPermisosReporteDto>>.Ok(resultado));
     }
@@ -62,7 +69,7 @@ public class ReportesAdministrativosController : ControllerBase
         [FromQuery] ReporteAdministrativoFiltroDto filtro,
         CancellationToken cancellationToken)
     {
-        if (!_currentUser.EsAdministrador) return Forbid();
+        if (!await EsAdministradorEfectivoAsync(cancellationToken)) return Forbid();
         var resultado = await _service.ObtenerResumenAuditoriaAsync(filtro, cancellationToken);
         return Ok(ApiResponse<AuditoriaResumenDto>.Ok(resultado));
     }
@@ -75,7 +82,7 @@ public class ReportesAdministrativosController : ControllerBase
         [FromQuery] ReporteAdministrativoFiltroDto filtro,
         CancellationToken cancellationToken)
     {
-        if (!_currentUser.EsAdministrador) return Forbid();
+        if (!await EsAdministradorEfectivoAsync(cancellationToken)) return Forbid();
         var archivo = await _service.ExportarAsync(tipo, formato, filtro, cancellationToken);
 
         await _auditoria.RegistrarAsync(

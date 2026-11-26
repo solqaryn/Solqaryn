@@ -1,3 +1,9 @@
+## 2026-11-26 — QA-FN-05: cierre auditoría viva y aislamiento reportes administrativos
+
+- Run 45883190610 job 140127330537 SUCCESS: auditoría A/B, operador 403, anónimo 401, registros reales por propietario/ámbito, filtros/paginación, rechazo cruzado y limpieza PASS. Render dep-dc48c46q1p3s73d7nq30 LIVE 242628b6, Vercel 71c2027f READY. CI 2480/2480, auditoría NuGet, barrido, propiedad comercial y Oracle read-only aprobados.
+- Reportes administrativos: controlador exige administrador de membresía vigente; servicio filtra usuarios por membresías, rol efectivo, catálogo/grants de empresa y registros de auditoría antes de materializar, incluyendo exportaciones. Guard frontend exige administrador efectivo en ruta auditoría. Pruebas regresivas de no contexto, roles/usuarios compartidos e inactivos, exclusión cruzada/legacy/plataforma y CSV. Pendiente CI y prueba viva de reportes. No alterar datos originales, migraciones ni dependencias.
+- QA solamente, Scope Lock DEV 434137171eb94cd9cde4521d01b31c4d55ca868c job 140120558850 PASS. Configuración global y recorridos autenticados de interfaz aún pendientes. Rollback por revert.
+
 ## 2026-11-26 — QA-FN-05: prueba viva de auditoría empresarial dirigida
 
 - Backend 242628b6b502f8ab79858fb43801448a5daa917f: compilación Release, auditoría NuGet y 2480/2480 pruebas aprobadas (45882381618 job 140124619338), Render dep-dc48c46q1p3s73d7nq30 LIVE. Probe dedicado a auditoría: conserva operador B con grant explícito para demostrar 403, crea identidad administrativa B adicional exclusiva del run, autentica A/B, genera eventos reales mediante PUT de configuración tenant y verifica dueño, ámbito, origen, filtro cruzado y paginación. Limpieza conserva auditoría y revoca/retira identidades propias; sin alterar usuario/roles existentes.

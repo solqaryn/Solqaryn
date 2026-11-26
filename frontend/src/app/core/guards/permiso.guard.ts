@@ -16,6 +16,7 @@ export const permisoGuard: CanActivateFn = (route) => {
 
   const resolverPermiso = () => permisosRuntime.cargar().pipe(
     map((ok) => ok && permisosRuntime.puede(modulo, accion)
+      && (route.data?.['soloAdministrador'] !== true || permisosRuntime.esAdministrador())
       ? true
       : router.createUrlTree([permisosRuntime.rutaInicialPermitida() ?? '/login']))
   );
