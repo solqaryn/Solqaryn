@@ -11317,3 +11317,7 @@
 ## 2026-11-26 — DEV06 — C14-02.M06.06 — Reparación fixture directo de contrato de auditoría
 
 - CI 139891687091 de cbc1051d falló 4/38 por ausencia de IPermisoService en el fixture de invocación directa de MVC. Se registra explícitamente el mock estricto de permiso 21/Auditoria/Ver y proveedor de servicios; conserva las cuatro aserciones 200/DTO y negativas. No altera runtime, grants, aserciones ni gate. TestServer JWT y MySQL real siguen independientes; CI nuevo pendiente, sin A5 ni LISTO.
+
+## 2026-11-26 — DEV01 — C14-02.M06.06 — Gate V19 de auditoría DTO/JWT
+
+- Causa nueva confirmada en CI exact-SHA 6a631764: job 139893848367 ejecutó y aprobó 38/38, incluidos seis casos A/B de revocación de rol/grant tras consulta; falló exclusivamente el contador TRX fijo (32,32,0,0). Actualizar expectativa exacta a (38,38,0,0) y marcador coherente, sin cambiar filtro, pruebas, aserciones de seguridad, tolerancia de fallos ni runtime. CI nueva pendiente; no A5 ni LISTO. Foco colectivo C01-04.M03.06 conservado, excepción R1 por ausencia de fuente empresarial auténtica autorizada. Rollback por revert normal.
