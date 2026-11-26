@@ -9,6 +9,8 @@ public interface IPermisoService
     /// válidas según CatalogoPermisosBase, con Permitido según lo guardado).
     Task<List<PermisoMatrizItemDto>> GetMatrizAsync(int rolId);
     Task<List<PermisoMatrizItemDto>> UpdateMatrizAsync(int rolId, UpdatePermisoMatrizDto dto);
+    Task<List<PermisoMatrizItemDto>> GetMatrizEmpresaAsync(int rolId, int empresaId);
+    Task<List<PermisoMatrizItemDto>> UpdateMatrizEmpresaAsync(int rolId, UpdatePermisoMatrizDto dto, int empresaId);
 
     /// Siembra los permisos por defecto de un rol recién creado, solo si el rol
     /// no tiene ninguna fila en su matriz todavía (idempotente, sección 8/9).

@@ -1,5 +1,6 @@
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Domain.Entities;
+using Solqaryn.Domain.Enums;
 using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
 
@@ -22,6 +23,36 @@ public class RolRepository : IRolRepository
             .Where(r => incluirEliminados || !r.Eliminado)
             .OrderBy(r => r.Nombre)
             .ToListAsync();
+
+    private IQueryable<Rol> RolesEmpresa(int empresaId) =>
+        _context.Roles.Where(r => empresaId > 0 &&
+            r.Ambito == AmbitoAutorizacion.Empresa &&
+            (r.EmpresaId == empresaId || (r.EmpresaId == null && r.EsSistema)));
+
+    public async Task<List<Rol>> GetAllEmpresaAsync(int empresaId, bool incluirEliminados = false) =>
+        await RolesEmpresa(empresaId).Where(r => incluirEliminados || !r.Eliminado)
+            .OrderBy(r => r.Nombre).ToListAsync();
+
+    public async Task<Rol?> GetByIdEmpresaAsync(int id, int empresaId) =>
+        await RolesEmpresa(empresaId).FirstOrDefaultAsync(r => r.Id == id && !r.Eliminado);
+
+    public async Task<int> ContarMembresiasEmpresaAsync(int rolId, int empresaId) =>
+        await _context.UsuarioEmpresas.CountAsync(m => m.RolId == rolId && m.EmpresaId == empresaId);
+
+    public async Task<int> ContarMembresiasPorRolAsync(int rolId) =>
+        await _context.UsuarioEmpresas.CountAsync(m => m.RolId == rolId);
+
+    public async Task<int> ContarAdministradoresEmpresaActivosAsync(int empresaId, int excluirRolId) =>
+        await (from m in _context.UsuarioEmpresas
+               join u in _context.Usuarios on m.UsuarioId equals u.Id
+               join r in RolesEmpresa(empresaId) on m.RolId equals r.Id
+               where m.EmpresaId == empresaId && m.Activa && u.Activo && !u.Eliminado &&
+                   !u.Bloqueado && r.Id != excluirRolId && r.Activo && !r.Eliminado && r.EsAdministrador
+               select m.UsuarioId).Distinct().CountAsync();
+
+    public async Task<int> ContarRolesAdministradorEmpresaAsync(int empresaId, int excluirRolId) =>
+        await RolesEmpresa(empresaId).CountAsync(r => r.Id != excluirRolId &&
+            r.Activo && !r.Eliminado && r.EsAdministrador);
 
     public async Task<bool> ExisteNombreAsync(string nombreNormalizado, int? excluirId = null) =>
         await _context.Roles.AnyAsync(r =>

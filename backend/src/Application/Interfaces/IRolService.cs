@@ -13,4 +13,16 @@ public interface IRolService
     Task EliminarLogicoAsync(int id);
     Task EliminarPermanenteAsync(int id);
     Task<RolDto> DuplicarAsync(int id, string nuevoNombre);
+
+    // Contrato de administración empresarial: nunca usar los métodos legacy
+    // desde rutas tenant autorizadas.
+    Task<List<RolDto>> GetAllEmpresaAsync(int empresaId, bool incluirEliminados = false);
+    Task<RolDto?> GetByIdEmpresaAsync(int id, int empresaId);
+    Task<RolDto> CreateEmpresaAsync(CrearRolDto dto, int empresaId);
+    Task<RolDto> UpdateEmpresaAsync(int id, ActualizarRolDto dto, int empresaId);
+    Task<RolDto> ActivarEmpresaAsync(int id, int empresaId);
+    Task<RolDto> DesactivarEmpresaAsync(int id, int empresaId);
+    Task EliminarLogicoEmpresaAsync(int id, int empresaId);
+    Task EliminarPermanenteEmpresaAsync(int id, int empresaId);
+    Task<RolDto> DuplicarEmpresaAsync(int id, string nuevoNombre, int empresaId);
 }

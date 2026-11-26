@@ -26,7 +26,7 @@ public class PermisosController : ControllerBase
     [RequierePermiso(ModuloSistema.Permisos, AccionPermiso.Administrar)]
     public async Task<IActionResult> GetMatriz(int rolId)
     {
-        var matriz = await _service.GetMatrizAsync(rolId);
+        var matriz = await _service.GetMatrizEmpresaAsync(rolId, TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext));
         return Ok(ApiResponse<List<PermisoMatrizItemDto>>.Ok(matriz));
     }
 
@@ -34,7 +34,7 @@ public class PermisosController : ControllerBase
     [RequierePermiso(ModuloSistema.Permisos, AccionPermiso.Administrar)]
     public async Task<IActionResult> UpdateMatriz(int rolId, [FromBody] UpdatePermisoMatrizDto dto)
     {
-        var actualizada = await _service.UpdateMatrizAsync(rolId, dto);
+        var actualizada = await _service.UpdateMatrizEmpresaAsync(rolId, dto, TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext));
         return Ok(ApiResponse<List<PermisoMatrizItemDto>>.Ok(actualizada, "Matriz de permisos actualizada correctamente."));
     }
 

@@ -31,14 +31,33 @@ public class PermisoService : IPermisoService
         _ = currentUser;
     }
 
-    public async Task<List<PermisoMatrizItemDto>> GetMatrizAsync(int rolId)
+    private async Task<Rol> ExigirRolMatrizAsync(int rolId, int? empresaId, bool modificar)
     {
-        var rol = await _rolRepository.GetByIdAsync(rolId)
-            ?? throw new BusinessRuleException("El rol seleccionado no existe.");
+        if (empresaId.HasValue && empresaId.Value <= 0)
+            throw new ForbiddenAccessException("Se requiere una empresa autorizada.");
+        var rol = empresaId.HasValue
+            ? await _rolRepository.GetByIdEmpresaAsync(rolId, empresaId.Value)
+            : await _rolRepository.GetByIdAsync(rolId);
+        if (rol is null) throw new BusinessRuleException("El rol seleccionado no existe.");
+        if (empresaId.HasValue && (rol.Ambito != AmbitoAutorizacion.Empresa ||
+            (rol.EmpresaId != empresaId && !(rol.EsSistema && rol.EmpresaId == null)) ||
+            (modificar && (rol.EsSistema || rol.EmpresaId != empresaId))))
+            throw new ForbiddenAccessException("El rol no pertenece a la administración de la empresa autorizada.");
+        return rol;
+    }
+
+    public Task<List<PermisoMatrizItemDto>> GetMatrizAsync(int rolId) => GetMatrizCoreAsync(rolId, null);
+
+    public Task<List<PermisoMatrizItemDto>> GetMatrizEmpresaAsync(int rolId, int empresaId) =>
+        GetMatrizCoreAsync(rolId, empresaId);
+
+    private async Task<List<PermisoMatrizItemDto>> GetMatrizCoreAsync(int rolId, int? empresaId)
+    {
+        var rol = await ExigirRolMatrizAsync(rolId, empresaId, modificar: false);
 
         var existentes = await _repository.GetByRolIdAsync(rolId);
         var catalogo = (await _permisoRepository.GetAllAsync())
-            .Where(p => p.Activo && !p.Eliminado)
+            .Where(p => p.Activo && !p.Eliminado && (!empresaId.HasValue || p.Ambito == AmbitoAutorizacion.Empresa))
             .OrderBy(p => p.Modulo)
             .ThenBy(p => p.Accion)
             .ToList();
@@ -52,15 +71,20 @@ public class PermisoService : IPermisoService
         }).ToList();
     }
 
-    public async Task<List<PermisoMatrizItemDto>> UpdateMatrizAsync(int rolId, UpdatePermisoMatrizDto dto)
+    public Task<List<PermisoMatrizItemDto>> UpdateMatrizAsync(int rolId, UpdatePermisoMatrizDto dto) =>
+        UpdateMatrizCoreAsync(rolId, dto, null);
+
+    public Task<List<PermisoMatrizItemDto>> UpdateMatrizEmpresaAsync(int rolId, UpdatePermisoMatrizDto dto, int empresaId) =>
+        UpdateMatrizCoreAsync(rolId, dto, empresaId);
+
+    private async Task<List<PermisoMatrizItemDto>> UpdateMatrizCoreAsync(int rolId, UpdatePermisoMatrizDto dto, int? empresaId)
     {
-        var rol = await _rolRepository.GetByIdAsync(rolId)
-            ?? throw new BusinessRuleException("El rol seleccionado no existe.");
+        var rol = await ExigirRolMatrizAsync(rolId, empresaId, modificar: true);
         if (!rol.Activo)
             throw new BusinessRuleException("No se pueden asignar permisos a un rol inactivo.");
 
         var catalogoActivo = (await _permisoRepository.GetAllAsync())
-            .Where(p => p.Activo && !p.Eliminado)
+            .Where(p => p.Activo && !p.Eliminado && (!empresaId.HasValue || p.Ambito == AmbitoAutorizacion.Empresa))
             .ToList();
         var nuevaMatriz = new List<RolPermiso>();
         var permisoIds = new HashSet<int>();
@@ -73,6 +97,9 @@ public class PermisoService : IPermisoService
 
             var permiso = await _permisoRepository.GetByModuloAccionAsync(modulo, accion)
                 ?? throw new BusinessRuleException($"El permiso '{modulo}:{accion}' no existe, está inactivo o fue eliminado.");
+
+            if (empresaId.HasValue && permiso.Ambito != AmbitoAutorizacion.Empresa)
+                throw new ForbiddenAccessException("No se puede asignar un permiso de plataforma a un rol empresarial.");
 
             if (!permisoIds.Add(permiso.Id))
                 throw new BusinessRuleException($"El permiso '{permiso.Codigo}' viene duplicado en la solicitud.");
@@ -94,9 +121,9 @@ public class PermisoService : IPermisoService
             }
         }
 
-        var matrizAnterior = await GetMatrizAsync(rolId);
+        var matrizAnterior = await GetMatrizCoreAsync(rolId, empresaId);
         await _repository.ReemplazarMatrizPorRolIdAsync(rolId, nuevaMatriz);
-        var matrizNueva = await GetMatrizAsync(rolId);
+        var matrizNueva = await GetMatrizCoreAsync(rolId, empresaId);
 
         await _auditoria.RegistrarAsync(
             ModuloSistema.Permisos,

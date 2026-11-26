@@ -1,0 +1,66 @@
+name: QA - FN-05 administracion de roles y matrices
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [qa]
+    paths:
+      - '.github/workflows/qa-fn-05-roles.yml'
+      - 'backend/tests/Solqaryn.Tests/QaFn05RoleAdministration*Tests.cs'
+      - 'backend/src/API/Controllers/RolesController.cs'
+      - 'backend/src/API/Controllers/PermisosController.cs'
+      - 'backend/src/Application/Services/RolService.cs'
+      - 'backend/src/Application/Services/PermisoService.cs'
+      - 'backend/src/Infrastructure/Repositories/RolRepository.cs'
+
+permissions:
+  contents: read
+
+concurrency:
+  group: qa-fn-05-roles
+  cancel-in-progress: true
+
+jobs:
+  focused:
+    if: github.ref == 'refs/heads/qa'
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_ROOT_HOST: '%'
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verificar rama y scope
+        run: |
+          test "$GITHUB_REF" = refs/heads/qa
+          node scripts/verify-project-scope.mjs
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+          cache: true
+          cache-dependency-path: backend/**/*.csproj
+      - name: Roles y matrices de permisos A/B en MySQL desechable
+        working-directory: backend
+        run: |
+          set -euo pipefail
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter 'FullyQualifiedName~QaFn05RoleAdministration' --logger "trx;LogFileName=qa-fn05-roles.trx"
+          echo QA_FN05_ROLE_ADMINISTRATION=PASS
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-fn05-roles-tests
+          path: backend/tests/Solqaryn.Tests/TestResults/qa-fn05-roles.trx
+          if-no-files-found: error
+          retention-days: 14

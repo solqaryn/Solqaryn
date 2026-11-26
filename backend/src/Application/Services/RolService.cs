@@ -38,7 +38,43 @@ public class RolService : IRolService
         return rol is null ? null : await MapAsync(rol);
     }
 
-    private async Task<RolDto> MapAsync(Rol rol) => new()
+    private static void ExigirEmpresa(int empresaId)
+    {
+        if (empresaId <= 0) throw new ForbiddenAccessException("Se requiere una empresa autorizada.");
+    }
+
+    private async Task<Rol> ExigirRolAsync(int id, int? empresaId, bool modificar)
+    {
+        if (empresaId.HasValue) ExigirEmpresa(empresaId.Value);
+        var rol = empresaId.HasValue
+            ? await _repository.GetByIdEmpresaAsync(id, empresaId.Value)
+            : await _repository.GetByIdAsync(id);
+        if (rol is null) throw new BusinessRuleException("El rol no existe.");
+        if (empresaId.HasValue && (rol.Ambito != AmbitoAutorizacion.Empresa ||
+            (rol.EmpresaId != empresaId && !(rol.EmpresaId == null && rol.EsSistema)) ||
+            (modificar && (rol.EsSistema || rol.EmpresaId != empresaId))))
+            throw new ForbiddenAccessException("El rol no pertenece a la administración de la empresa autorizada.");
+        return rol;
+    }
+
+    public async Task<List<RolDto>> GetAllEmpresaAsync(int empresaId, bool incluirEliminados = false)
+    {
+        ExigirEmpresa(empresaId);
+        var roles = await _repository.GetAllEmpresaAsync(empresaId, incluirEliminados);
+        var resultado = new List<RolDto>();
+        foreach (var rol in roles)
+            resultado.Add(await MapAsync(rol, empresaId));
+        return resultado;
+    }
+
+    public async Task<RolDto?> GetByIdEmpresaAsync(int id, int empresaId)
+    {
+        ExigirEmpresa(empresaId);
+        var rol = await _repository.GetByIdEmpresaAsync(id, empresaId);
+        return rol is null ? null : await MapAsync(rol, empresaId);
+    }
+
+    private async Task<RolDto> MapAsync(Rol rol, int? empresaId = null) => new()
     {
         Id = rol.Id,
         Nombre = rol.Nombre,
@@ -46,13 +82,23 @@ public class RolService : IRolService
         EsSistema = rol.EsSistema,
         EsAdministrador = rol.EsAdministrador,
         Activo = rol.Activo,
-        CantidadUsuarios = await _repository.ContarUsuariosAsync(rol.Id),
+        CantidadUsuarios = empresaId.HasValue
+            ? await _repository.ContarMembresiasEmpresaAsync(rol.Id, empresaId.Value)
+            : await _repository.ContarUsuariosAsync(rol.Id),
         CantidadPermisos = await _repository.ContarPermisosAsync(rol.Id),
         FechaCreacion = rol.FechaCreacion,
         FechaActualizacion = rol.FechaActualizacion
     };
 
-    public async Task<RolDto> CreateAsync(CrearRolDto dto)
+    public Task<RolDto> CreateAsync(CrearRolDto dto) => CreateCoreAsync(dto, null);
+
+    public Task<RolDto> CreateEmpresaAsync(CrearRolDto dto, int empresaId)
+    {
+        ExigirEmpresa(empresaId);
+        return CreateCoreAsync(dto, empresaId);
+    }
+
+    private async Task<RolDto> CreateCoreAsync(CrearRolDto dto, int? empresaId)
     {
         var nombre = dto.Nombre.Trim();
         if (string.IsNullOrWhiteSpace(nombre))
@@ -69,6 +115,8 @@ public class RolService : IRolService
             Descripcion = dto.Descripcion,
             EsAdministrador = dto.EsAdministrador,
             EsSistema = false,
+            Ambito = AmbitoAutorizacion.Empresa,
+            EmpresaId = empresaId,
             Activo = true,
             CreadoPorUsuarioId = _currentUser.UsuarioId
         };
@@ -79,13 +127,20 @@ public class RolService : IRolService
         await _auditoria.RegistrarAsync(ModuloSistema.Roles, AccionPermiso.Crear,
             $"Creó el rol '{rol.Nombre}'.", rol.Id);
 
-        return await MapAsync(rol);
+        return await MapAsync(rol, empresaId);
     }
 
-    public async Task<RolDto> UpdateAsync(int id, ActualizarRolDto dto)
+    public Task<RolDto> UpdateAsync(int id, ActualizarRolDto dto) => UpdateCoreAsync(id, dto, null);
+
+    public Task<RolDto> UpdateEmpresaAsync(int id, ActualizarRolDto dto, int empresaId)
     {
-        var rol = await _repository.GetByIdAsync(id)
-            ?? throw new BusinessRuleException("El rol no existe.");
+        ExigirEmpresa(empresaId);
+        return UpdateCoreAsync(id, dto, empresaId);
+    }
+
+    private async Task<RolDto> UpdateCoreAsync(int id, ActualizarRolDto dto, int? empresaId)
+    {
+        var rol = await ExigirRolAsync(id, empresaId, modificar: true);
 
         var nombre = dto.Nombre.Trim();
         if (string.IsNullOrWhiteSpace(nombre))
@@ -113,13 +168,20 @@ public class RolService : IRolService
             $"Editó el rol '{rol.Nombre}'.", rol.Id,
             entidad: "Rol", valoresAnteriores: anterior, valoresNuevos: new { rol.Nombre, rol.Descripcion });
 
-        return await MapAsync(rol);
+        return await MapAsync(rol, empresaId);
     }
 
-    public async Task<RolDto> ActivarAsync(int id)
+    public Task<RolDto> ActivarAsync(int id) => ActivarCoreAsync(id, null);
+
+    public Task<RolDto> ActivarEmpresaAsync(int id, int empresaId)
     {
-        var rol = await _repository.GetByIdAsync(id)
-            ?? throw new BusinessRuleException("El rol no existe.");
+        ExigirEmpresa(empresaId);
+        return ActivarCoreAsync(id, empresaId);
+    }
+
+    private async Task<RolDto> ActivarCoreAsync(int id, int? empresaId)
+    {
+        var rol = await ExigirRolAsync(id, empresaId, modificar: true);
 
         rol.Activo = true;
         rol.FechaActualizacion = DateTime.UtcNow;
@@ -130,17 +192,26 @@ public class RolService : IRolService
         await _auditoria.RegistrarAsync(ModuloSistema.Roles, AccionPermiso.Activar,
             $"Activó el rol '{rol.Nombre}'.", rol.Id);
 
-        return await MapAsync(rol);
+        return await MapAsync(rol, empresaId);
     }
 
-    public async Task<RolDto> DesactivarAsync(int id)
+    public Task<RolDto> DesactivarAsync(int id) => DesactivarCoreAsync(id, null);
+
+    public Task<RolDto> DesactivarEmpresaAsync(int id, int empresaId)
     {
-        var rol = await _repository.GetByIdAsync(id)
-            ?? throw new BusinessRuleException("El rol no existe.");
+        ExigirEmpresa(empresaId);
+        return DesactivarCoreAsync(id, empresaId);
+    }
+
+    private async Task<RolDto> DesactivarCoreAsync(int id, int? empresaId)
+    {
+        var rol = await ExigirRolAsync(id, empresaId, modificar: true);
 
         if (rol.EsAdministrador)
         {
-            var otrosAdmins = await _repository.ContarAdministradoresActivosAsync(excluirRolId: rol.Id);
+            var otrosAdmins = empresaId.HasValue
+                ? await _repository.ContarAdministradoresEmpresaActivosAsync(empresaId.Value, rol.Id)
+                : await _repository.ContarAdministradoresActivosAsync(excluirRolId: rol.Id);
             if (otrosAdmins == 0)
                 throw new BusinessRuleException(
                     "No se puede desactivar el último rol administrador con usuarios activos.");
@@ -155,24 +226,34 @@ public class RolService : IRolService
         await _auditoria.RegistrarAsync(ModuloSistema.Roles, AccionPermiso.Desactivar,
             $"Desactivó el rol '{rol.Nombre}'.", rol.Id);
 
-        return await MapAsync(rol);
+        return await MapAsync(rol, empresaId);
     }
 
-    public async Task EliminarLogicoAsync(int id)
+    public Task EliminarLogicoAsync(int id) => EliminarLogicoCoreAsync(id, null);
+
+    public Task EliminarLogicoEmpresaAsync(int id, int empresaId)
     {
-        var rol = await _repository.GetByIdAsync(id)
-            ?? throw new BusinessRuleException("El rol no existe.");
+        ExigirEmpresa(empresaId);
+        return EliminarLogicoCoreAsync(id, empresaId);
+    }
+
+    private async Task EliminarLogicoCoreAsync(int id, int? empresaId)
+    {
+        var rol = await ExigirRolAsync(id, empresaId, modificar: true);
 
         if (rol.EsSistema)
             throw new BusinessRuleException("No se puede eliminar un rol de sistema.");
 
         var usuarios = await _repository.ContarUsuariosAsync(rol.Id);
+        if (empresaId.HasValue) usuarios += await _repository.ContarMembresiasPorRolAsync(rol.Id);
         if (usuarios > 0)
             throw new BusinessRuleException("No se puede eliminar un rol que tiene usuarios asignados.");
 
         if (rol.EsAdministrador)
         {
-            var otrosAdmins = await _repository.ContarAdministradoresActivosAsync(excluirRolId: rol.Id);
+            var otrosAdmins = empresaId.HasValue
+                ? await _repository.ContarAdministradoresEmpresaActivosAsync(empresaId.Value, rol.Id)
+                : await _repository.ContarAdministradoresActivosAsync(excluirRolId: rol.Id);
             if (otrosAdmins == 0)
                 throw new BusinessRuleException("No se puede eliminar el último rol administrador.");
         }
@@ -188,15 +269,23 @@ public class RolService : IRolService
             $"Eliminó (lógico) el rol '{rol.Nombre}'.", rol.Id);
     }
 
-    public async Task EliminarPermanenteAsync(int id)
+    public Task EliminarPermanenteAsync(int id) => EliminarPermanenteCoreAsync(id, null);
+
+    public Task EliminarPermanenteEmpresaAsync(int id, int empresaId)
     {
-        var rol = await _repository.GetByIdAsync(id)
-            ?? throw new BusinessRuleException("El rol no existe.");
+        ExigirEmpresa(empresaId);
+        return EliminarPermanenteCoreAsync(id, empresaId);
+    }
+
+    private async Task EliminarPermanenteCoreAsync(int id, int? empresaId)
+    {
+        var rol = await ExigirRolAsync(id, empresaId, modificar: true);
 
         if (rol.EsSistema)
             throw new BusinessRuleException("No se puede eliminar permanentemente un rol de sistema.");
 
         var usuarios = await _repository.ContarUsuariosAsync(rol.Id);
+        if (empresaId.HasValue) usuarios += await _repository.ContarMembresiasPorRolAsync(rol.Id);
         if (usuarios > 0)
             throw new BusinessRuleException("No se puede eliminar permanentemente un rol con usuarios asociados.");
 
@@ -213,7 +302,9 @@ public class RolService : IRolService
         // nuevo administrador sin intervención directa en base de datos.
         if (rol.EsAdministrador)
         {
-            var otrosAdminsRoles = await _repository.ContarRolesAdministradorAsync(excluirRolId: rol.Id);
+            var otrosAdminsRoles = empresaId.HasValue
+                ? await _repository.ContarRolesAdministradorEmpresaAsync(empresaId.Value, rol.Id)
+                : await _repository.ContarRolesAdministradorAsync(excluirRolId: rol.Id);
             if (otrosAdminsRoles == 0)
                 throw new BusinessRuleException("No se puede eliminar permanentemente el último rol de tipo administrador del sistema.");
         }
@@ -226,10 +317,17 @@ public class RolService : IRolService
             $"Eliminó permanentemente el rol '{nombre}'.", id);
     }
 
-    public async Task<RolDto> DuplicarAsync(int id, string nuevoNombre)
+    public Task<RolDto> DuplicarAsync(int id, string nuevoNombre) => DuplicarCoreAsync(id, nuevoNombre, null);
+
+    public Task<RolDto> DuplicarEmpresaAsync(int id, string nuevoNombre, int empresaId)
     {
-        var original = await _repository.GetByIdAsync(id)
-            ?? throw new BusinessRuleException("El rol no existe.");
+        ExigirEmpresa(empresaId);
+        return DuplicarCoreAsync(id, nuevoNombre, empresaId);
+    }
+
+    private async Task<RolDto> DuplicarCoreAsync(int id, string nuevoNombre, int? empresaId)
+    {
+        var original = await ExigirRolAsync(id, empresaId, modificar: false);
 
         var nombre = nuevoNombre.Trim();
         var normalizado = Normalizar(nombre);
@@ -243,6 +341,8 @@ public class RolService : IRolService
             Descripcion = original.Descripcion,
             EsAdministrador = original.EsAdministrador,
             EsSistema = false,
+            Ambito = AmbitoAutorizacion.Empresa,
+            EmpresaId = empresaId,
             Activo = true,
             CreadoPorUsuarioId = _currentUser.UsuarioId
         };
@@ -253,6 +353,6 @@ public class RolService : IRolService
         await _auditoria.RegistrarAsync(ModuloSistema.Roles, AccionPermiso.Duplicar,
             $"Duplicó el rol '{original.Nombre}' como '{copia.Nombre}'.", copia.Id);
 
-        return await MapAsync(copia);
+        return await MapAsync(copia, empresaId);
     }
 }

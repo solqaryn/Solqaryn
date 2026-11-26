@@ -24,7 +24,7 @@ public class RolesController : ControllerBase
     [RequierePermiso(ModuloSistema.Roles, AccionPermiso.Ver)]
     public async Task<IActionResult> GetAll([FromQuery] bool incluirEliminados = false)
     {
-        var roles = await _rolService.GetAllAsync(incluirEliminados);
+        var roles = await _rolService.GetAllEmpresaAsync(TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext), incluirEliminados);
         return Ok(ApiResponse<List<RolDto>>.Ok(roles));
     }
 
@@ -32,7 +32,7 @@ public class RolesController : ControllerBase
     [RequierePermiso(ModuloSistema.Roles, AccionPermiso.Ver)]
     public async Task<IActionResult> GetById(int id)
     {
-        var rol = await _rolService.GetByIdAsync(id);
+        var rol = await _rolService.GetByIdEmpresaAsync(id, TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext));
         if (rol is null)
             return NotFound(ApiResponse<object>.Fail("Rol no encontrado."));
 
@@ -43,7 +43,7 @@ public class RolesController : ControllerBase
     [RequierePermiso(ModuloSistema.Roles, AccionPermiso.Crear)]
     public async Task<IActionResult> Create([FromBody] CrearRolDto dto)
     {
-        var creado = await _rolService.CreateAsync(dto);
+        var creado = await _rolService.CreateEmpresaAsync(dto, TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext));
         return CreatedAtAction(nameof(GetById), new { id = creado.Id },
             ApiResponse<RolDto>.Ok(creado, "Rol creado correctamente."));
     }
@@ -52,7 +52,7 @@ public class RolesController : ControllerBase
     [RequierePermiso(ModuloSistema.Roles, AccionPermiso.Editar)]
     public async Task<IActionResult> Update(int id, [FromBody] ActualizarRolDto dto)
     {
-        var actualizado = await _rolService.UpdateAsync(id, dto);
+        var actualizado = await _rolService.UpdateEmpresaAsync(id, dto, TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext));
         return Ok(ApiResponse<RolDto>.Ok(actualizado, "Rol actualizado correctamente."));
     }
 
@@ -60,7 +60,7 @@ public class RolesController : ControllerBase
     [RequierePermiso(ModuloSistema.Roles, AccionPermiso.Activar)]
     public async Task<IActionResult> Activar(int id)
     {
-        var rol = await _rolService.ActivarAsync(id);
+        var rol = await _rolService.ActivarEmpresaAsync(id, TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext));
         return Ok(ApiResponse<RolDto>.Ok(rol, "Rol activado correctamente."));
     }
 
@@ -68,7 +68,7 @@ public class RolesController : ControllerBase
     [RequierePermiso(ModuloSistema.Roles, AccionPermiso.Desactivar)]
     public async Task<IActionResult> Desactivar(int id)
     {
-        var rol = await _rolService.DesactivarAsync(id);
+        var rol = await _rolService.DesactivarEmpresaAsync(id, TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext));
         return Ok(ApiResponse<RolDto>.Ok(rol, "Rol desactivado correctamente."));
     }
 
@@ -76,7 +76,7 @@ public class RolesController : ControllerBase
     [RequierePermiso(ModuloSistema.Roles, AccionPermiso.EliminarLogico)]
     public async Task<IActionResult> EliminarLogico(int id)
     {
-        await _rolService.EliminarLogicoAsync(id);
+        await _rolService.EliminarLogicoEmpresaAsync(id, TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext));
         return Ok(ApiResponse<object>.Ok(new { }, "Rol eliminado correctamente."));
     }
 
@@ -84,7 +84,7 @@ public class RolesController : ControllerBase
     [RequierePermiso(ModuloSistema.Roles, AccionPermiso.EliminarPermanente)]
     public async Task<IActionResult> EliminarPermanente(int id)
     {
-        await _rolService.EliminarPermanenteAsync(id);
+        await _rolService.EliminarPermanenteEmpresaAsync(id, TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext));
         return Ok(ApiResponse<object>.Ok(new { }, "Rol eliminado permanentemente."));
     }
 
@@ -92,7 +92,7 @@ public class RolesController : ControllerBase
     [RequierePermiso(ModuloSistema.Roles, AccionPermiso.Duplicar)]
     public async Task<IActionResult> Duplicar(int id, [FromBody] DuplicarRolRequest request)
     {
-        var copia = await _rolService.DuplicarAsync(id, request.NuevoNombre);
+        var copia = await _rolService.DuplicarEmpresaAsync(id, request.NuevoNombre, TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext));
         return CreatedAtAction(nameof(GetById), new { id = copia.Id },
             ApiResponse<RolDto>.Ok(copia, "Rol duplicado correctamente."));
     }
