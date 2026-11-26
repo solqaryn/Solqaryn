@@ -109,7 +109,7 @@ export class ProductosListComponent implements OnInit, OnDestroy {
     });
   }
 
-  async abrirProducto(modo: 'ver' | 'crear' | 'editar', id?: number): Promise<void> {
+  async abrirProducto(modo: 'ver' | 'crear' | 'editar' | 'variantes', id?: number): Promise<void> {
     const permiso = modo === 'ver' ? 'Ver' : modo === 'crear' ? 'Crear' : 'Editar';
     if (this.modalPendiente || !this.permisosRuntime.puede('Productos', permiso)) return;
     const contexto = this.tenant.contextoVerificado();
@@ -120,6 +120,12 @@ export class ProductosListComponent implements OnInit, OnDestroy {
         const { ProductoDetailComponent } = await import('./producto-detail.component');
         if (this.modalDestroyRef.destroyed || contexto !== this.tenant.contextoVerificado() || !this.permisosRuntime.puede('Productos', permiso)) return;
         await firstValueFrom(this.dialog.open(ProductoDetailComponent, modalInstitucional('xl', { data: { id }, ariaLabel: 'Detalle de producto' })).afterClosed());
+        if (!this.modalDestroyRef.destroyed && contexto === this.tenant.contextoVerificado()) this.cargar();
+      } else if (modo === 'variantes') {
+        const { ProductoVariantesComponent } = await import('./producto-variantes.component');
+        if (this.modalDestroyRef.destroyed || contexto !== this.tenant.contextoVerificado() || !this.permisosRuntime.puede('Productos', permiso)) return;
+        const guardado = await firstValueFrom(this.dialog.open(ProductoVariantesComponent, modalInstitucional('xl', { data: { id }, ariaLabel: 'Variantes y existencias' })).afterClosed());
+        if (guardado === true && !this.modalDestroyRef.destroyed && contexto === this.tenant.contextoVerificado()) this.cargar();
       } else {
         const { ProductoFormComponent } = await import('./producto-form.component');
         if (this.modalDestroyRef.destroyed || contexto !== this.tenant.contextoVerificado() || !this.permisosRuntime.puede('Productos', permiso)) return;

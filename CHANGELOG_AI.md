@@ -1,3 +1,8 @@
+# QA — 2026-11-25 — Recuperación de acciones de variantes en diálogo institucional
+
+- Productos conserva acceso visible a variantes y existencias, apertura XL con autorización y contexto de empresa, confirmaciones de guardado/estado/galería, y actualización del listado al cerrar. Detalle conserva acciones autorizadas como operaciones independientes.
+- No cambia la API, existencias ni datos de usuarios; rutas anteriores permanecen disponibles. Prueba de cancelación de edición añadida. La certificación del nuevo SHA requiere CI y revisión de interfaz.
+
 ## 2026-11-25 — QA: usuarios, edición y membresías en modales institucionales
 
 - Ver M, crear/editar L y empresas/roles XL; confirmación previa de cambios, bloqueo y eliminación, revalidación de contexto/permiso, restablecimiento de estado visual si se cancela. Conserva protecciones de usuario actual y permisos separados de rol y contraseña. Tabla única con filtros y scroll. Sin cambios de RBAC backend, datos o API. Pruebas y revisión visual pendientes.

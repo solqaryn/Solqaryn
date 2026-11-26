@@ -163,6 +163,7 @@
                   <button type="button" class="action-view"  (click)="abrirProducto('ver', p.id)" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver ' + p.nombre"><mat-icon>visibility</mat-icon></button>
                   @if (puedeEditar()) {
                     <button type="button" class="action-edit"  (click)="abrirProducto('editar', p.id)" mat-icon-button title="Editar" [attr.aria-label]="'Editar ' + p.nombre"><mat-icon>edit</mat-icon></button>
+                    <button type="button" class="action-edit" (click)="abrirProducto('variantes', p.id)" mat-icon-button title="Administrar variantes" [attr.aria-label]="'Administrar variantes de ' + p.nombre"><mat-icon>tune</mat-icon></button>
                   }
                   @if (puedeEliminar()) {
                     <button class="action-delete" mat-icon-button title="Eliminar lógicamente" [attr.aria-label]="'Eliminar ' + p.nombre" (click)="eliminar(p)"><mat-icon>delete</mat-icon></button>

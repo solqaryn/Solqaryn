@@ -1,7 +1,9 @@
+<div [class.app-dialog-layout]="!!editor.ref">
+@if (editor.ref) { <h2 mat-dialog-title>Variantes y existencias</h2> }
+<div [class.app-dialog-layout__body]="!!editor.ref">
 <div class="page-header">
   <div>
-    <a [routerLink]="['/productos', productoId]" mat-button><mat-icon>arrow_back</mat-icon> Volver al producto</a>
-    <h1>Variantes y existencias</h1>
+    @if (!editor.ref) { <a [routerLink]="['/productos', productoId]" mat-button><mat-icon>arrow_back</mat-icon> Volver al producto</a><h1>Variantes y existencias</h1> }
     @if (producto(); as p) {
       <p>{{ p.nombre }} · Stock consolidado: <strong>{{ p.cantidad }}</strong></p>
       <p>La disponibilidad de venta se calcula con las existencias físicas por almacén y sus reservas. Usa Configurar existencia física para revisar cada variante.</p>
@@ -13,7 +15,7 @@
   <div class="alert" role="alert"><mat-icon>error_outline</mat-icon>{{ errorMessage() }}</div>
 }
 
-<section class="card form-card">
+<section class="card form-card" id="editor-variante">
   <div class="section-title">
     <div>
       <h2>{{ editandoId() ? 'Editar variante' : 'Nueva variante' }}</h2>
@@ -105,7 +107,7 @@
 
     <div class="form-actions">
       @if (editandoId()) { <button mat-button type="button" (click)="cancelar()">Cancelar</button> }
-      <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving()">
+      <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving() || mutando()">
         @if (saving()) { <mat-spinner diameter="18"></mat-spinner> } @else { <mat-icon>save</mat-icon> }
         Guardar variante
       </button>
@@ -126,8 +128,8 @@
   } @else if (variantes().length === 0) {
     <div class="empty"><mat-icon>warehouse</mat-icon><span>Este producto todavía no tiene variantes.</span></div>
   } @else {
-    <div class="table-wrap">
-      <table mat-table [dataSource]="variantes()">
+    <div class="table-wrap app-table-shell" role="region" aria-label="Tabla de variantes" tabindex="0">
+      <table class="app-data-table" mat-table [dataSource]="variantes()">
         <ng-container matColumnDef="variante">
           <th mat-header-cell *matHeaderCellDef>Variante exacta</th>
           <td mat-cell *matCellDef="let v">
@@ -166,7 +168,7 @@
             <button mat-icon-button type="button" title="Galería de la variante" [attr.aria-label]="'Administrar imágenes de ' + (v.etiqueta || v.sku)" (click)="gestionarImagenes(v)"><mat-icon>photo_library</mat-icon></button>
             <button mat-icon-button type="button" title="Configurar existencia física" [attr.aria-label]="'Configurar existencia física de ' + (v.etiqueta || v.sku)" [routerLink]="['/inventario/existencias/nueva']" [queryParams]="{ productoId: productoId, productoVarianteId: v.id }"><mat-icon>warehouse</mat-icon></button>
             <button mat-icon-button type="button" title="Editar metadatos" [disabled]="v.esTecnica" (click)="editar(v)"><mat-icon>edit</mat-icon></button>
-            <button mat-icon-button type="button" [title]="v.activo ? 'Desactivar' : 'Activar'" [disabled]="v.esTecnica" (click)="cambiarEstado(v)"><mat-icon>{{ v.activo ? 'toggle_on' : 'toggle_off' }}</mat-icon></button>
+            <button mat-icon-button type="button" [title]="v.activo ? 'Desactivar' : 'Activar'" [disabled]="v.esTecnica || saving() || mutando()" (click)="cambiarEstado(v)"><mat-icon>{{ v.activo ? 'toggle_on' : 'toggle_off' }}</mat-icon></button>
             <button mat-icon-button type="button" title="Eliminar" [disabled]="v.esTecnica || v.cantidad !== 0" (click)="eliminar(v)"><mat-icon>delete</mat-icon></button>
           </td>
         </ng-container>
@@ -239,3 +241,7 @@
     }
   </section>
 }
+
+</div>
+@if (editor.ref) { <mat-dialog-actions align="end"><button mat-button type="button" [disabled]="saving() || mutando() || subiendoImagenes() || ajustandoId() !== null" (click)="cerrarModal()">Cerrar</button></mat-dialog-actions> }
+</div>

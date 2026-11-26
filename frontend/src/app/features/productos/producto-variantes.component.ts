@@ -1,3 +1,6 @@
+import { MatDialogModule } from '@angular/material/dialog';
+import { crearEditorInstitucional, crearAccionesInstitucionales } from '../../shared/modal-institucional/acciones-institucionales';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
@@ -18,7 +21,6 @@ import { CatalogoProductoService } from '../../services/catalogo-producto.servic
 import { ProductoService } from '../../services/producto.service';
 import { AlmacenService } from '../../services/almacen.service';
 import { Almacen } from '../../core/models/almacen.model';
-import { AppAlertService } from '../../shared/alerts/app-alert.service';
 import { ProductoImagenComponent } from '../../shared/producto-imagen/producto-imagen.component';
 import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
 import { descargarBlobSeguro } from '../../shared/descarga-segura';
@@ -28,7 +30,7 @@ const MAX_IMAGENES_VARIANTE = 5;
 @Component({
   selector: 'app-producto-variantes',
   standalone: true,
-  imports: [ConsultaRegistroDirective,
+  imports: [ConsultaRegistroDirective, MatDialogModule,
     CommonModule, ReactiveFormsModule, RouterLink, MatButtonModule, MatFormFieldModule,
     MatIconModule, MatInputModule, MatProgressSpinnerModule, MatSelectModule, MatTableModule,
     ProductoImagenComponent
@@ -38,12 +40,14 @@ const MAX_IMAGENES_VARIANTE = 5;
   styleUrl: './producto-variantes.component.scss'
 })
 export class ProductoVariantesComponent implements OnInit {
+  readonly editor = crearEditorInstitucional('Productos');
+  private readonly acciones = crearAccionesInstitucionales('Productos');
+  readonly mutando = signal(false);
   private readonly fb = inject(FormBuilder);
   private readonly productoService = inject(ProductoService);
   private readonly catalogoService = inject(CatalogoProductoService);
   private readonly route = inject(ActivatedRoute);
   private readonly snackBar = inject(MatSnackBar);
-  private readonly alerts = inject(AppAlertService);
   private readonly permisosRuntime = inject(PermisosRuntimeService);
   private readonly almacenService = inject(AlmacenService);
   readonly almacenesIniciales = signal<Almacen[]>([]);
@@ -87,7 +91,10 @@ export class ProductoVariantesComponent implements OnInit {
   ngOnInit(): void {
     this.puedeExportar.set(this.permisosRuntime.puede('Productos', 'Exportar'));
     this.cargarAlmacenesIniciales();
-    this.productoId = Number(this.route.snapshot.paramMap.get('id'));
+    this.productoId = Number(this.editor.ref ? this.editor.id : this.route.snapshot.paramMap.get('id'));
+    if (!Number.isInteger(this.productoId) || this.productoId <= 0 || !this.editor.valido('Editar')) {
+      this.editor.cerrar(false); this.loading.set(false); this.errorMessage.set('Producto o autorización inválidos.'); return;
+    }
     forkJoin({
       marcas: this.catalogoService.getActivos('Marca'),
       modelos: this.catalogoService.getAll('Modelo'),
@@ -160,8 +167,11 @@ export class ProductoVariantesComponent implements OnInit {
       precio: variante.precio
     });
     this.form.controls.cantidad.disable({ emitEvent: false });
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    if (this.editor.ref) document.getElementById('editor-variante')?.scrollIntoView({ block: 'start' });
+    else window.scrollTo({ top: 0, behavior: 'smooth' });
   }
+
+  cerrarModal(): void { if (!this.saving() && !this.mutando() && !this.subiendoImagenes() && this.ajustandoId() === null) this.editor.cerrar(true); }
 
   cancelar(): void {
     this.editandoId.set(null);
@@ -184,7 +194,9 @@ export class ProductoVariantesComponent implements OnInit {
   async ajustarStock(variante: ProductoVariante): Promise<void> {
     if (this.ajustandoId() !== null) return;
 
-    const cantidadTexto = await this.alerts.solicitarTexto({
+    const contexto = this.acciones.contexto();
+    if (!this.editor.valido('Editar')) return;
+    const cantidadTexto = await this.acciones.solicitarTexto('Editar', {
       titulo: 'Ajustar inventario de variante',
       mensaje: `Stock actual de ${variante.etiqueta || variante.sku}: ${variante.cantidad}. Ingresa la nueva cantidad.`,
       tipo: 'advertencia',
@@ -199,13 +211,15 @@ export class ProductoVariantesComponent implements OnInit {
       return;
     }
 
-    const motivo = await this.alerts.solicitarTexto({
+    if (!this.acciones.vigente(contexto, 'Editar')) return;
+    const motivo = await this.acciones.solicitarTexto('Editar', {
       titulo: 'Motivo del ajuste',
       mensaje: 'Registra un motivo para mantener la trazabilidad del cambio de inventario.',
       tipo: 'advertencia',
       confirmarTexto: 'Aplicar ajuste',
       entrada: { etiqueta: 'Motivo obligatorio', requerida: true }
     });
+    if (!this.acciones.vigente(contexto, 'Editar')) return;
     if (!motivo) {
       this.errorMessage.set('El motivo del ajuste es obligatorio.');
       return;
@@ -248,7 +262,8 @@ export class ProductoVariantesComponent implements OnInit {
     });
   }
 
-  guardar(): void {
+  async guardar(): Promise<void> {
+    if (this.saving() || this.mutando() || !this.editor.valido('Editar')) return;
     if (this.form.invalid) {
       this.form.markAllAsTouched();
       return;
@@ -296,12 +311,15 @@ export class ProductoVariantesComponent implements OnInit {
     }
 
     this.saving.set(true);
+    const editando = this.editandoId();
+    const aceptado = await this.editor.confirmar('Editar', { titulo: editando ? 'Guardar cambios de variante' : 'Crear variante', mensaje: '¿Confirma guardar esta combinación de producto?', confirmarTexto: 'Guardar' });
+    if (!aceptado) { this.saving.set(false); return; }
     this.errorMessage.set(null);
-    const request$ = this.editandoId()
-      ? this.productoService.actualizarVariante(this.productoId, this.editandoId()!, value)
+    const request$ = editando
+      ? this.productoService.actualizarVariante(this.productoId, editando!, value)
       : this.productoService.crearVariante(this.productoId, value);
 
-    request$.subscribe({
+    request$.pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
       next: () => {
         this.saving.set(false);
         this.cancelar();
@@ -315,17 +333,20 @@ export class ProductoVariantesComponent implements OnInit {
     });
   }
 
-  cambiarEstado(variante: ProductoVariante): void {
-    if (variante.esTecnica) return;
-    this.productoService.cambiarEstadoVariante(this.productoId, variante.id, !variante.activo).subscribe({
-      next: () => this.cargar(),
-      error: (err) => this.errorMessage.set(err.error?.message ?? 'No se pudo cambiar el estado.')
+  async cambiarEstado(variante: ProductoVariante): Promise<void> {
+    if (variante.esTecnica || this.saving() || this.mutando()) return;
+    this.mutando.set(true);
+    const accion = variante.activo ? 'Desactivar' : 'Activar';
+    if (!await this.editor.confirmar('Editar', { titulo: accion + ' variante', mensaje: '¿Confirma cambiar el estado de ' + variante.sku + '?', confirmarTexto: accion })) { this.mutando.set(false); return; }
+    this.productoService.cambiarEstadoVariante(this.productoId, variante.id, !variante.activo).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
+      next: () => { this.mutando.set(false); this.cargar(); },
+      error: (err) => { this.mutando.set(false); this.errorMessage.set(err.error?.message ?? 'No se pudo cambiar el estado.'); }
     });
   }
 
   async eliminar(variante: ProductoVariante): Promise<void> {
     if (variante.esTecnica) return;
-    const confirmado = await this.alerts.confirmar({
+    const confirmado = await this.editor.confirmar('Editar', {
       titulo: 'Eliminar variante',
       mensaje: `¿Eliminar lógicamente la variante ${variante.etiqueta || variante.sku}? Solo es posible con stock cero.`,
       tipo: 'peligro',
@@ -383,7 +404,7 @@ export class ProductoVariantesComponent implements OnInit {
     return Math.max(0, this.maxImagenesVariante - this.imagenesEspecificasCount);
   }
 
-  onImagenesVarianteSelected(event: Event): void {
+  async onImagenesVarianteSelected(event: Event): Promise<void> {
     const variante = this.imagenVariante();
     const input = event.target as HTMLInputElement;
     const archivos = Array.from(input.files ?? []);
@@ -403,6 +424,7 @@ export class ProductoVariantesComponent implements OnInit {
       this.errorMessage.set(`Solo se cargarán ${seleccion.length} imagen(es); el máximo por variante es ${this.maxImagenesVariante}.`);
     }
 
+    if (this.subiendoImagenes() || !await this.editor.confirmar('Editar', { titulo: 'Agregar imágenes', mensaje: '¿Confirma guardar las imágenes seleccionadas?', confirmarTexto: 'Guardar' })) return;
     this.subiendoImagenes.set(true);
     this.productoService.agregarImagenesVariante(this.productoId, variante.id, seleccion).subscribe({
       next: (res) => {
@@ -442,9 +464,10 @@ export class ProductoVariantesComponent implements OnInit {
     });
   }
 
-  marcarPrincipalVariante(imagen: ProductoImagen): void {
+  async marcarPrincipalVariante(imagen: ProductoImagen): Promise<void> {
     const variante = this.imagenVariante();
     if (!variante || imagen.productoVarianteId == null || imagen.esPrincipal) return;
+    if (!await this.editor.confirmar('Editar', { titulo: 'Cambiar imagen principal', mensaje: '¿Confirma usar esta imagen como principal?', confirmarTexto: 'Guardar' })) return;
     this.productoService.marcarImagenPrincipalVariante(this.productoId, variante.id, imagen.id).subscribe({
       next: () => this.cargarImagenesVariante(variante, false),
       error: (err) => this.errorMessage.set(err.error?.message ?? 'No se pudo cambiar la imagen principal de la variante.')
@@ -454,7 +477,7 @@ export class ProductoVariantesComponent implements OnInit {
   async eliminarImagenVariante(imagen: ProductoImagen): Promise<void> {
     const variante = this.imagenVariante();
     if (!variante || imagen.productoVarianteId == null) return;
-    const confirmado = await this.alerts.confirmar({
+    const confirmado = await this.editor.confirmar('Editar', {
       titulo: 'Eliminar imagen de variante',
       mensaje: '¿Eliminar esta imagen de la variante? La imagen general del producto seguirá disponible como respaldo.',
       tipo: 'peligro',

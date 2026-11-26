@@ -1,3 +1,4 @@
+import { crearAccionesInstitucionales } from '../../shared/modal-institucional/acciones-institucionales';
 import { MAT_DIALOG_DATA, MatDialogRef, MatDialogModule } from '@angular/material/dialog';
 import { TenantContextService } from '../../core/auth/tenant-context.service';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
@@ -13,7 +14,6 @@ import { Producto, ProductoImagen } from '../../core/models/producto.model';
 import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
 import { ProductoImagenComponent } from '../../shared/producto-imagen/producto-imagen.component';
 import { descargarBlobSeguro } from '../../shared/descarga-segura';
-import { AppAlertService } from '../../shared/alerts/app-alert.service';
 
 @Component({
   selector: 'app-producto-detail',
@@ -24,6 +24,7 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
   styleUrl: './producto-detail.component.scss'
 })
 export class ProductoDetailComponent implements OnInit {
+  private readonly acciones = crearAccionesInstitucionales('Productos');
   readonly modalRef = inject(MatDialogRef<ProductoDetailComponent>, { optional: true });
   private readonly modalData = inject<{ id: number }>(MAT_DIALOG_DATA, { optional: true });
   private readonly destroyRef = inject(DestroyRef);
@@ -41,8 +42,7 @@ export class ProductoDetailComponent implements OnInit {
     private productoService: ProductoService,
     private route: ActivatedRoute,
     private permisosRuntime: PermisosRuntimeService,
-    private snackBar: MatSnackBar,
-    private alerts: AppAlertService
+    private snackBar: MatSnackBar
   ) {
     if (this.modalRef) {
       const contexto = this.tenant.contextoVerificado();
@@ -52,7 +52,7 @@ export class ProductoDetailComponent implements OnInit {
 
   ngOnInit(): void {
     this.puedeExportar.set(this.permisosRuntime.puede('Productos', 'Exportar'));
-    this.puedeEditar.set(!this.modalRef && this.permisosRuntime.puede('Productos', 'Editar'));
+    this.puedeEditar.set(this.permisosRuntime.puede('Productos', 'Editar'));
 
     const id = Number(this.modalRef ? this.modalData?.id : this.route.snapshot.paramMap.get('id'));
     if (this.modalRef && (!Number.isInteger(id) || id <= 0 || !this.permisosRuntime.puede('Productos', 'Ver'))) { this.modalRef.close(); return; }
@@ -74,11 +74,22 @@ export class ProductoDetailComponent implements OnInit {
     });
   }
 
+  async abrirMantenimiento(tipo: 'editar' | 'variantes'): Promise<void> {
+    const p = this.producto();
+    if (!p) return;
+    const guardado = await this.acciones.abrir(tipo === 'editar'
+      ? () => import('./producto-form.component').then(m => m.ProductoFormComponent)
+      : () => import('./producto-variantes.component').then(m => m.ProductoVariantesComponent), 'xl', 'Editar', p.id);
+    if (guardado) this.cargarProducto(p.id);
+  }
+
   async ajustarStockProducto(): Promise<void> {
     const producto = this.producto();
     if (!producto || producto.usaVariantes || this.ajustandoStock()) return;
 
-    const cantidadTexto = await this.alerts.solicitarTexto({
+    const contexto = this.acciones.contexto();
+    if (!this.acciones.vigente(contexto, 'Editar')) return;
+    const cantidadTexto = await this.acciones.solicitarTexto('Editar', {
       titulo: 'Ajustar inventario',
       mensaje: `Stock actual: ${producto.cantidad}. Ingresa la nueva cantidad para este producto.`,
       tipo: 'advertencia',
@@ -93,13 +104,15 @@ export class ProductoDetailComponent implements OnInit {
       return;
     }
 
-    const motivo = await this.alerts.solicitarTexto({
+    if (!this.acciones.vigente(contexto, 'Editar')) return;
+    const motivo = await this.acciones.solicitarTexto('Editar', {
       titulo: 'Motivo del ajuste',
       mensaje: 'Registra un motivo para mantener la trazabilidad del cambio de inventario.',
       tipo: 'advertencia',
       confirmarTexto: 'Aplicar ajuste',
       entrada: { etiqueta: 'Motivo obligatorio', requerida: true }
     });
+    if (!this.acciones.vigente(contexto, 'Editar')) return;
     if (!motivo) {
       this.snackBar.open('El motivo del ajuste es obligatorio.', 'Cerrar', { duration: 5000 });
       return;

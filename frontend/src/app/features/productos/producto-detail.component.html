@@ -34,8 +34,8 @@
                   {{ ajustandoStock() ? 'Ajustando...' : 'Ajustar inventario' }}
                 </button>
               }
-              <a class="action-edit" [routerLink]="['/productos', p.id, 'variantes']" mat-button><mat-icon>tune</mat-icon> Variantes</a>
-              <a class="action-edit" [routerLink]="['/productos', p.id, 'editar']" mat-button><mat-icon>edit</mat-icon> Editar</a>
+              <button class="action-edit" type="button" mat-button (click)="abrirMantenimiento('variantes')"><mat-icon>tune</mat-icon> Variantes</button>
+              <button class="action-edit" type="button" mat-button (click)="abrirMantenimiento('editar')"><mat-icon>edit</mat-icon> Editar</button>
             </div>
           }
         </div>
@@ -56,7 +56,7 @@
 
     <div class="section-heading variants-heading">
       <div><h3>Inventario por color y SKU</h3><p>El total general representa la suma física de todas las variantes no eliminadas. Las variantes inactivas conservan su stock, pero no pueden usarse en nuevas operaciones.</p></div>
-      @if (puedeEditar()) { <a [routerLink]="['/productos', p.id, 'variantes']" mat-button><mat-icon>settings</mat-icon> Administrar</a> }
+      @if (puedeEditar()) { <button type="button" mat-button (click)="abrirMantenimiento('variantes')"><mat-icon>settings</mat-icon> Administrar</button> }
     </div>
     @if (p.variantes.length === 0) {
       <div class="empty-imagenes" role="status"><mat-icon>warehouse</mat-icon><span>Producto legado sin variantes. Puede seguir operando con su stock general.</span></div>
