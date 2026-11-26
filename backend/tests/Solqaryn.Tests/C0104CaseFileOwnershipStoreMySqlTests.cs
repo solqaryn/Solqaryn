@@ -301,6 +301,29 @@ public sealed class C0104CaseFileOwnershipStoreMySqlTests
                 .CountAsync(r => r.EmpresaId == a.Id && r.CorrelationId == committedCorrelation.ToString("N")));
             Assert.False(await dbB.Set<RegistroAuditoria>().AsNoTracking()
                 .AnyAsync(r => r.EmpresaId == b.Id && r.CorrelationId == committedCorrelation.ToString("N")));
+            // The durable boundary itself rejects a missing target before INSERT,
+            // even when invoked directly by a trusted internal caller.
+            var missingLinkOperation = Guid.NewGuid();
+            var validLinkOperation = Guid.NewGuid();
+            await using (var linkTx = await dbA.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted))
+            {
+                Assert.Null(await V5CaseFileAuditReceiptPersistence.AppendEnterpriseInCurrentTransactionAsync(
+                    dbA, auditCandidate, actor, role.Id, role.Id, missingLinkOperation, VerifyFixtureResource,
+                    targetCorrelation: Guid.NewGuid()));
+                Assert.False(dbA.ChangeTracker.HasChanges());
+                Assert.False(await dbA.Set<RegistroAuditoria>().AsNoTracking()
+                    .AnyAsync(r => r.CorrelationId == missingLinkOperation.ToString("N")));
+                Assert.NotNull(await V5CaseFileAuditReceiptPersistence.AppendEnterpriseInCurrentTransactionAsync(
+                    dbA, auditCandidate, actor, role.Id, role.Id, validLinkOperation, VerifyFixtureResource,
+                    targetCorrelation: committedCorrelation));
+                var linkedReceipt = await dbA.Set<RegistroAuditoria>().AsNoTracking()
+                    .SingleAsync(r => r.CorrelationId == validLinkOperation.ToString("N"));
+                using var linkedPayload = System.Text.Json.JsonDocument.Parse(linkedReceipt.ValoresNuevos!);
+                Assert.Equal(committedCorrelation.ToString("N"), linkedPayload.RootElement.GetProperty("TargetCorrelation").GetString());
+                await linkTx.RollbackAsync();
+            }
+            Assert.False(await dbA.Set<RegistroAuditoria>().AsNoTracking()
+                .AnyAsync(r => r.CorrelationId == validLinkOperation.ToString("N")));
             // Real JwtBearer signature validation plus real Oracle grant/receipt locks.
             // Preliminary permission projection and resource mapping are explicit fixtures:
             // this is not a commercial HTTP/DI or authentic-resource certification.

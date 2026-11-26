@@ -173,6 +173,15 @@ public static class V5CaseFileAuditReceiptPersistence
         }
 
         if (!await StillAuthorizedAsync()) return null;
+        // A linked receipt must name an existing, unambiguous receipt in the
+        // same tenant/case/branch. Enforce this at the durable boundary as
+        // well as the authenticated orchestration boundary.
+        long? linkedVersion = null;
+        if (targetCorrelation is Guid linked)
+        {
+            linkedVersion = await ReadReceiptVersionInCurrentTransactionAsync(db, expected, linked, ct);
+            if (linkedVersion is null) return null;
+        }
         // The ownership row is held exclusively until commit/rollback. Reject
         // a previously persisted operation GUID in this narrow API12 case scope;
         // do not return or overwrite a prior receipt or grant. Ordinary audit
@@ -224,6 +233,9 @@ public static class V5CaseFileAuditReceiptPersistence
         };
         if (!await AppendAndVerifyAsync(db, receipt, ct) ||
             !await StillAuthorizedAsync())
+            return null;
+        if (targetCorrelation is Guid linkedAfter &&
+            await ReadReceiptVersionInCurrentTransactionAsync(db, expected, linkedAfter, ct) != linkedVersion)
             return null;
         return receipt.Id;
     }
