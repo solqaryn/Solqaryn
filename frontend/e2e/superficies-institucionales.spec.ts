@@ -14,8 +14,8 @@ async function contexto(page: Page): Promise<void> {
     localStorage.setItem('solqaryn_empresa_solicitada_id', '1');
   });
   await page.route(API+'/permisos/mis-permisos/empresa/*', r => r.fulfill({json:ok({esAdministrador:true,permisos:[]})}));
-  await page.route(url => url.origin === API && ['/categorias','/marcas','/modelos','/colores','/tallas','/almacenes/activos'].includes(url.pathname), r=>r.fulfill({json:ok([])}));
-  await page.route(url => url.origin === API && ['/productos','/transferencias-inventario','/reservas-inventario','/conteos-inventario','/inventario/ajustes'].includes(url.pathname), r=>r.fulfill({json:ok(vacio)}));
+  await page.route(url => url.origin === API && ['/categorias','/marcas','/modelos','/colores','/tallas','/almacenes/activos','/proveedores/activos','/cuentas-por-cobrar'].includes(url.pathname), r=>r.fulfill({json:ok([])}));
+  await page.route(url => url.origin === API && ['/productos','/transferencias-inventario','/reservas-inventario','/conteos-inventario','/inventario/ajustes','/existencias-variante','/ordenes-compra','/recepciones-compra','/periodos-contables'].includes(url.pathname), r=>r.fulfill({json:ok(vacio)}));
 }
 
 for (const viewport of [{width:1440,height:900},{width:390,height:844},{width:320,height:568}]) {
@@ -69,6 +69,40 @@ for (const viewport of [{width:1440,height:900},{width:390,height:844},{width:32
       expect(geometry.contained).toBe(true);
       expect(geometry.overflow).toBe(false);
       await page.screenshot({path:testInfo.outputPath(ruta+'.png'),fullPage:true});
+    }
+  });
+}
+
+for (const viewport of [{width:1440,height:900},{width:390,height:844},{width:320,height:568}]) {
+  test('QA visual: tarjetas de compras y contabilidad ' + viewport.width, async ({page},testInfo) => {
+    await page.setViewportSize(viewport);
+    await contexto(page);
+    const casos = [
+      {ruta:'/ordenes-compra', mensaje:'No se encontraron órdenes', filtros:true},
+      {ruta:'/recepciones-compra', mensaje:'No se encontraron recepciones', filtros:true},
+      {ruta:'/inventario/existencias', mensaje:'No se encontraron existencias', filtros:true},
+      {ruta:'/periodos-contables', mensaje:'No se encontraron períodos', filtros:true},
+      {ruta:'/cuentas-por-cobrar', mensaje:'No hay saldos pendientes.', filtros:false}
+    ];
+    for (const caso of casos) {
+      await page.goto(caso.ruta);
+      const surface = page.locator('.card.app-list-surface');
+      await expect(surface.locator('.app-list-empty').getByText(caso.mensaje,{exact:true})).toBeVisible();
+      if(caso.filtros) await expect(surface.locator('.app-table-filters')).toBeVisible();
+      const geometry=await surface.evaluate(el => {
+        const rect=el.getBoundingClientRect();
+        const empty=el.querySelector('.app-list-empty')!.getBoundingClientRect();
+        const css=getComputedStyle(el);
+        const probe=document.createElement('span');
+        probe.style.backgroundColor=getComputedStyle(document.documentElement).getPropertyValue('--color-bg').trim();
+        document.body.append(probe);const pageColor=getComputedStyle(probe).backgroundColor;probe.remove();
+        return {distinct:css.backgroundColor!==pageColor, border:parseFloat(css.borderTopWidth)>=1 && css.borderTopStyle!=='none', contained:empty.left>=rect.left-1 && empty.right<=rect.right+1, overflow:document.documentElement.scrollWidth>window.innerWidth+1};
+      });
+      expect(geometry.distinct).toBe(true);
+      expect(geometry.border).toBe(true);
+      expect(geometry.contained).toBe(true);
+      expect(geometry.overflow).toBe(false);
+      await page.screenshot({path:testInfo.outputPath(caso.ruta.slice(1).replaceAll('/','-')+'.png'),fullPage:true});
     }
   });
 }

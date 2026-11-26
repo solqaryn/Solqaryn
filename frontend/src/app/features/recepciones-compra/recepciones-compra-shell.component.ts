@@ -22,19 +22,20 @@ import { RecepcionCompraService } from '../../services/recepcion-compra.service'
     <section class="page-shell" aria-labelledby="recepciones-title">
       <header class="page-header">
         <div>
-          <p class="eyebrow">Compras empresariales</p>
+          
           <h1 id="recepciones-title">Recepción de mercancía</h1>
-          <p>Consulta recepciones totales o parciales contra órdenes de compra. El stock físico sólo cambia al confirmar una recepción.</p>
+          <p>Registra y consulta entregas de proveedores. Las existencias se actualizan al confirmar la recepción.</p>
         </div>
         @if (puedeCrear()) {
           <button mat-flat-button type="button" (click)="nuevaRecepcion()"><mat-icon>add_box</mat-icon> Nueva recepción</button>
         }
       </header>
 
+      <div class="card app-list-surface">
       @if (!puedeVer()) {
         <div class="state-panel error" role="alert"><mat-icon>lock</mat-icon><span>No tienes permiso para consultar recepciones de compra.</span></div>
       } @else {
-        <form class="filters" (ngSubmit)="aplicarFiltros()" aria-label="Filtros de recepciones de compra">
+        <form class="filters app-table-filters" (ngSubmit)="aplicarFiltros()" aria-label="Filtros de recepciones de compra">
           <mat-form-field appearance="outline">
             <mat-label>ID orden</mat-label>
             <input matInput type="number" min="1" [(ngModel)]="ordenCompraId" name="ordenCompraId">
@@ -65,11 +66,11 @@ import { RecepcionCompraService } from '../../services/recepcion-compra.service'
         } @else if (error()) {
           <div class="state-panel error" role="alert"><mat-icon>error_outline</mat-icon><span>{{ error() }}</span><button mat-stroked-button type="button" (click)="cargar()">Reintentar</button></div>
         } @else if (recepciones().length === 0) {
-          <div class="state-panel" role="status"><mat-icon>move_to_inbox</mat-icon><span>No hay recepciones que coincidan con los filtros.</span></div>
+          <div class="state-panel app-list-empty" role="status"><mat-icon aria-hidden="true">move_to_inbox</mat-icon><strong>No se encontraron recepciones</strong><p>Cambia los filtros para ampliar la búsqueda.</p></div>
         } @else {
-          <div class="table-wrap">
-            <table>
-              <thead><tr><th>Recepción</th><th>Orden</th><th>Estado</th><th>Fecha</th><th class="numeric">Recibida</th><th class="numeric">Aceptada</th><th class="numeric">Dañada</th><th class="numeric">Faltante</th><th class="numeric">Sobrante</th><th>Acciones</th></tr></thead>
+          <div class="table-wrap app-table-shell" role="region" aria-label="Tabla de recepciones de compra" tabindex="0">
+            <table class="app-data-table">
+              <thead><tr><th>Recepción</th><th>Orden</th><th>Estado</th><th>Fecha</th><th class="numeric app-col-number">Recibida</th><th class="numeric app-col-number">Aceptada</th><th class="numeric app-col-number">Dañada</th><th class="numeric app-col-number">Faltante</th><th class="numeric app-col-number">Sobrante</th><th class="actions-heading">Acciones</th></tr></thead>
               <tbody>
                 @for (item of recepciones(); track item.id) {
                   <tr>
@@ -77,12 +78,12 @@ import { RecepcionCompraService } from '../../services/recepcion-compra.service'
                     <td>{{ item.numeroOrdenCompra || ('#' + item.ordenCompraId) }}</td>
                     <td><span class="status" [attr.data-status]="item.estado">{{ etiquetaEstado(item.estado) }}</span></td>
                     <td>{{ item.fechaRecepcionUtc ? (item.fechaRecepcionUtc | date:'medium') : 'Borrador' }}</td>
-                    <td class="numeric">{{ item.cantidadRecibidaTotal }}</td>
-                    <td class="numeric">{{ item.cantidadAceptadaTotal }}</td>
-                    <td class="numeric">{{ item.cantidadDanadaTotal }}</td>
-                    <td class="numeric">{{ item.cantidadFaltanteTotal }}</td>
-                    <td class="numeric">{{ item.cantidadSobranteTotal }}</td>
-                    <td><button mat-stroked-button type="button" (click)="verDetalle(item.id)"><mat-icon>visibility</mat-icon> Ver</button></td>
+                    <td class="numeric app-col-number">{{ item.cantidadRecibidaTotal }}</td>
+                    <td class="numeric app-col-number">{{ item.cantidadAceptadaTotal }}</td>
+                    <td class="numeric app-col-number">{{ item.cantidadDanadaTotal }}</td>
+                    <td class="numeric app-col-number">{{ item.cantidadFaltanteTotal }}</td>
+                    <td class="numeric app-col-number">{{ item.cantidadSobranteTotal }}</td>
+                    <td class="actions"><button mat-stroked-button type="button" (click)="verDetalle(item.id)"><mat-icon>visibility</mat-icon> Ver</button></td>
                   </tr>
                 }
               </tbody>
@@ -91,11 +92,12 @@ import { RecepcionCompraService } from '../../services/recepcion-compra.service'
           <mat-paginator [length]="totalCount()" [pageIndex]="page - 1" [pageSize]="pageSize" [pageSizeOptions]="[10,20,50,100]" (page)="cambiarPagina($event)" aria-label="Paginación de recepciones de compra"></mat-paginator>
         }
       }
+      </div>
     </section>
   `,
   changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
-    .page-shell{display:grid;gap:1.25rem;max-width:1500px;margin:0 auto}.page-header{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}.eyebrow{margin:0 0 .25rem;text-transform:uppercase;letter-spacing:.08em;font-size:.75rem;font-weight:700;opacity:.7}h1{margin:.1rem 0}.filters{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr)) auto;gap:.75rem;align-items:start}.filter-actions{display:flex;gap:.5rem;align-items:center;padding-top:.25rem}.state-panel{min-height:120px;display:flex;align-items:center;justify-content:center;gap:.75rem;border:1px solid rgba(127,127,127,.18);border-radius:14px}.error{color:var(--mat-sys-error,#b3261e)}.table-wrap{overflow:auto;border:1px solid rgba(127,127,127,.18);border-radius:12px}table{width:100%;border-collapse:collapse;min-width:1100px}th,td{padding:.72rem .75rem;text-align:left;border-bottom:1px solid rgba(127,127,127,.15)}th{font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}.numeric{text-align:right}.status{font-weight:700}@media(max-width:1050px){.filters{grid-template-columns:repeat(2,minmax(160px,1fr))}.filter-actions{grid-column:1/-1}}@media(max-width:680px){.page-header{flex-direction:column}.filters{grid-template-columns:1fr}}
+    .page-shell{display:grid;grid-template-columns:minmax(0,1fr);min-width:0;gap:1.25rem;max-width:1500px;margin:0 auto}.page-header{display:flex;justify-content:space-between;align-items:flex-start;gap:1rem}.eyebrow{margin:0 0 .25rem;text-transform:uppercase;letter-spacing:.08em;font-size:.75rem;font-weight:700;opacity:.7}h1{margin:.1rem 0}.state-panel{min-height:120px;display:flex;align-items:center;justify-content:center;gap:.75rem;border:1px solid rgba(127,127,127,.18);border-radius:14px}.error{color:var(--mat-sys-error,#b3261e)}.table-wrap{overflow:auto;border:1px solid rgba(127,127,127,.18);border-radius:12px}table{width:100%;border-collapse:collapse;min-width:1100px}th,td{padding:.72rem .75rem;text-align:left;border-bottom:1px solid rgba(127,127,127,.15)}th{font-size:.78rem;text-transform:uppercase;letter-spacing:.04em}.numeric{text-align:right}.status{font-weight:700}@media(max-width:680px){.page-header{flex-direction:column}}
   `]
 })
 export class RecepcionesCompraShellComponent implements OnInit {

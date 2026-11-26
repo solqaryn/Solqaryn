@@ -34,7 +34,7 @@ import { PeriodoContableService } from '../../core/services/periodo-contable.ser
       <header class="page__header">
         <div>
           <h1 id="periodos-title">Períodos contables</h1>
-          <p>Administra períodos abiertos y cerrados con control de fechas y permisos.</p>
+          <p>Consulta, crea y cierra períodos contables según tus permisos.</p>
         </div>
         @if (puedeCrear()) {
           <button mat-raised-button color="primary" type="button" (click)="mostrarAlta.set(!mostrarAlta())">
@@ -42,8 +42,9 @@ import { PeriodoContableService } from '../../core/services/periodo-contable.ser
           </button>
         }
       </header>
+      <div class="card app-list-surface">
     
-      <form class="filters" [formGroup]="filtros" (ngSubmit)="aplicarFiltros()" aria-label="Filtros de períodos contables">
+      <form class="filters app-table-filters" [formGroup]="filtros" (ngSubmit)="aplicarFiltros()" aria-label="Filtros de períodos contables">
         <mat-form-field appearance="outline">
           <mat-label>Desde</mat-label>
           <input matInput type="date" formControlName="fechaDesde">
@@ -90,7 +91,7 @@ import { PeriodoContableService } from '../../core/services/periodo-contable.ser
     
       @if (!loading()) {
         @if (periodos().length) {
-          <div class="table-wrap">
+          <div class="table-wrap app-table-shell" role="region" aria-label="Tabla de períodos contables" tabindex="0">
             <table mat-table [dataSource]="periodos()">
               <ng-container matColumnDef="rango">
                 <th mat-header-cell *matHeaderCellDef>Rango</th>
@@ -120,7 +121,7 @@ import { PeriodoContableService } from '../../core/services/periodo-contable.ser
             </table>
           </div>
         } @else {
-          <div class="empty" role="status">No hay períodos contables que coincidan con los filtros.</div>
+          <div class="empty app-list-empty" role="status"><mat-icon aria-hidden="true">date_range</mat-icon><strong>No se encontraron períodos</strong><p>Cambia los filtros para ampliar la búsqueda.</p></div>
         }
         @if (totalPages() > 1) {
           <nav class="pager" aria-label="Paginación">
@@ -130,16 +131,17 @@ import { PeriodoContableService } from '../../core/services/periodo-contable.ser
           </nav>
         }
       }
+      </div>
     </section>
     `,
   changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     .page { padding: 24px; max-width: 1200px; margin: 0 auto; }
-    .page__header, .filters, .create, .pager, .loading { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
+    .page__header, .create, .pager, .loading { display: flex; gap: 16px; align-items: center; flex-wrap: wrap; }
     .page__header { justify-content: space-between; margin-bottom: 20px; }
     .page__header h1 { margin: 0; }
     .page__header p { margin: 4px 0 0; }
-    .filters, .create { margin-bottom: 16px; }
+    .create { margin-bottom: 16px; }
     .table-wrap { overflow-x: auto; }
     table { width: 100%; }
     .loading, .empty { justify-content: center; padding: 32px; text-align: center; }

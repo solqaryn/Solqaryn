@@ -1,3 +1,8 @@
+## 2026-11-25 — QA: segunda revisión institucional de listados y textos
+- Se extiende la tarjeta y scroll institucional a compras, existencias, períodos y cobros; se revisan bancos, asientos y estados financieros, sin modificar dominio.
+- Paginación Material en español mediante proveedor compartido y microcopy sin jerga interna. Se añaden pruebas de nuevas superficies en tres resoluciones.
+- Se corrige la aserción ambigua de Transferencias: espera POST y estado del resumen; conserva cancelación sin escritura, escritura única y permisos. Run anterior 20/22 con 2 fallos de Transferencias. Certificación nueva pendiente de CI y recorrido autenticado.
+
 ## 2026-11-25 — QA: filtros, superficies y reapertura de confirmaciones
 - Se corrige la causa de la regresión de Productos: el estándar flex afecta sólo hijos directos, todos los filtros comparten fila adaptable y desaparece el contenedor vertical incompatible.
 - Transferencias, Reservas, Conteos y Ajustes usan una tarjeta de listado con el token existente fondoTarjetas, filtros comunes, tabla y estado vacío contenido. Se elimina paginación de cero elementos en Transferencias. Se revisan textos de Productos, Almacenes, Ubicaciones, Kardex, Costeo y listados de inventario.

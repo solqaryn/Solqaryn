@@ -1,6 +1,6 @@
 <section class="financial-page" aria-labelledby="financial-title">
   <header>
-    <p class="eyebrow">Finanzas</p>
+    
     <h1 id="financial-title">Estados financieros</h1>
     <p>Genera y consulta información contable por período o rango de fechas.</p>
   </header>
@@ -51,22 +51,22 @@
     <article class="result">
       <header class="result-heading">
         <div>
-          <p class="eyebrow">Resultado</p>
+          
           <h2>{{ r.nombre }}</h2>
         </div>
         <span>{{ r.fechaInicio | date:'mediumDate' }} — {{ r.fechaFin | date:'mediumDate' }}</span>
       </header>
       @if (r.lineas.length) {
-        <div class="table-wrap">
-          <table>
+        <div class="table-wrap app-table-shell" role="region" aria-label="Tabla de estado financiero" tabindex="0">
+          <table class="app-data-table">
             <caption class="sr-only">Detalle de {{ r.nombre }}</caption>
-            <thead><tr><th scope="col">Código</th><th scope="col">Cuenta</th><th scope="col" class="amount">Saldo</th></tr></thead>
+            <thead><tr><th scope="col">Código</th><th scope="col">Cuenta</th><th scope="col" class="amount app-col-number">Saldo</th></tr></thead>
             <tbody>
               @for (linea of r.lineas; track trackLinea($index, linea)) {
                 <tr [class.root]="linea.esRaiz">
                   <td>{{ linea.cuentaCodigo || '—' }}</td>
                   <td>{{ linea.cuentaNombre || 'Sin nombre' }}</td>
-                  <td class="amount">{{ linea.saldo | number:'1.2-2' }}</td>
+                  <td class="amount app-col-number">{{ linea.saldo | number:'1.2-2' }}</td>
                 </tr>
               }
             </tbody>

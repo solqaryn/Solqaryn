@@ -6,7 +6,7 @@
   }
 
   <div class="header-section">
-    <h1>Cuentas Bancarias</h1>
+    <div><h1>Cuentas bancarias</h1><p class="page-subtitle">Administra las cuentas bancarias y consulta su conciliación.</p></div>
     @if (puedeCrear() && !cuentaEnEdicion()) {
       <button mat-raised-button color="primary" type="button" (click)="mostrarFormulario.set(!mostrarFormulario())" [attr.aria-expanded]="mostrarFormulario()" aria-controls="formulario-cuenta">
         {{ mostrarFormulario() ? 'Cancelar' : 'Nueva Cuenta' }}
@@ -73,7 +73,8 @@
     </div>
   }
 
-  <div class="filters-section" role="search" aria-label="Filtros de búsqueda">
+  <div class="card app-list-surface">
+  <div class="filters-section app-table-filters" role="search" aria-label="Filtros de búsqueda">
     <mat-form-field>
       <mat-label>Buscar</mat-label>
       <input matInput [(ngModel)]="search" (ngModelChange)="onSearchChange($event)" aria-label="Buscar cuentas por texto" />
@@ -89,7 +90,7 @@
     <button mat-button type="button" (click)="limpiarFiltros()" aria-label="Limpiar filtros">Limpiar Filtros</button>
   </div>
 
-  <div class="table-container" aria-live="polite">
+  <div class="table-container app-table-shell" role="region" tabindex="0" aria-label="Tabla de cuentas bancarias" aria-live="polite">
     @if (loading()) {
       <div class="loading-shade">
         <mat-spinner aria-label="Cargando cuentas bancarias"></mat-spinner>
@@ -124,6 +125,8 @@
         <div role="status" aria-live="polite">No se encontraron cuentas bancarias.</div>
       }</td></tr>
     </table>
+  </div>
+
   </div>
 
   @if (reconSelectedAccount(); as cuenta) {

@@ -23,9 +23,9 @@ import { ExistenciaVarianteService } from '../../services/existencia-variante.se
     <section class="page" aria-labelledby="existencias-title">
       <header class="header">
         <div>
-          <p class="eyebrow">Inventario empresarial</p>
+          
           <h1 id="existencias-title">Existencias por variante</h1>
-          <p class="subtitle">Stock físico autoritativo por variante, almacén y ubicación.</p>
+          <p class="subtitle">Consulta existencias físicas, reservadas y disponibles por almacén y variante.</p>
         </div>
         <div class="header-actions">
           @if (puedeCrear()) {
@@ -38,8 +38,9 @@ import { ExistenciaVarianteService } from '../../services/existencia-variante.se
           </button>
         </div>
       </header>
+      <div class="card app-list-surface">
     
-      <form class="filters" (ngSubmit)="aplicarFiltros()" aria-label="Filtros de existencias">
+      <form class="filters app-table-filters" (ngSubmit)="aplicarFiltros()" aria-label="Filtros de existencias">
         <mat-form-field appearance="outline"><mat-label>Variante ID</mat-label><input matInput type="number" min="1" name="productoVarianteId" [(ngModel)]="productoVarianteId" /></mat-form-field>
         <mat-form-field appearance="outline"><mat-label>Almacén ID</mat-label><input matInput type="number" min="1" name="almacenId" [(ngModel)]="almacenId" /></mat-form-field>
         <mat-form-field appearance="outline"><mat-label>Ubicación ID</mat-label><input matInput type="number" min="1" name="ubicacionAlmacenId" [(ngModel)]="ubicacionAlmacenId" /></mat-form-field>
@@ -61,18 +62,18 @@ import { ExistenciaVarianteService } from '../../services/existencia-variante.se
     
       @if (!loading() && !error()) {
         @if (existencias().length === 0) {
-          <div class="empty">
-            <mat-icon>warehouse</mat-icon><h2>No hay existencias para los filtros seleccionados</h2><p>Modifica los filtros o registra una existencia para la combinación variante/almacén/ubicación.</p>
+          <div class="empty app-list-empty">
+            <mat-icon>warehouse</mat-icon><h2>No se encontraron existencias</h2><p>Cambia los filtros o registra una nueva existencia.</p>
             @if (puedeCrear()) {
               <button mat-flat-button color="primary" type="button" (click)="nueva()">Crear existencia</button>
             }
           </div>
         }
         @if (existencias().length > 0) {
-          <div class="table-shell">
-            <table>
+          <div class="table-shell app-table-shell" role="region" aria-label="Tabla de existencias" tabindex="0">
+            <table class="app-data-table">
               <caption class="sr-only">Existencias de inventario por variante</caption>
-              <thead><tr><th>Producto / variante</th><th>Almacén / ubicación</th><th>Físico</th><th>Reservado</th><th>Disponible</th><th>Tránsito</th><th>Mín.</th><th>Máx.</th><th>Estado</th><th>Acciones</th></tr></thead>
+              <thead><tr><th>Producto / variante</th><th>Almacén / ubicación</th><th>Físico</th><th>Reservado</th><th>Disponible</th><th>Tránsito</th><th>Mín.</th><th>Máx.</th><th>Estado</th><th class="actions-heading">Acciones</th></tr></thead>
             <tbody>
               @for (item of existencias(); track trackById($index, item)) {
                 <tr>
@@ -86,7 +87,7 @@ import { ExistenciaVarianteService } from '../../services/existencia-variante.se
                     }@if (!item.estaAgotada && !item.tieneStockBajo) {
                     <span class="status ok">Disponible</span>
                   }</td>
-                    <td data-label="Acciones" class="row-actions">
+                    <td data-label="Acciones" class="row-actions actions">
                       <button class="action-view" mat-icon-button type="button" title="Ver detalle" [attr.aria-label]="'Ver existencia ' + item.id" [appConsultaRegistro]="{ titulo: 'Existencia: ' + item.productoNombre, campos: { 'Producto': item.productoNombre, 'Variante': item.varianteSku, 'Almacén': item.almacenCodigo + ' · ' + item.almacenNombre, 'Ubicación': item.ubicacionNombre || 'Raíz de almacén', 'Stock físico': item.stockFisico, 'Reservado': item.stockReservado, 'Disponible': item.stockDisponible, 'En tránsito': item.stockTransito, 'Stock mínimo': item.stockMinimo, 'Stock máximo': item.stockMaximo, 'Estado': item.estaAgotada ? 'Agotado' : item.tieneStockBajo ? 'Bajo mínimo' : 'Disponible', 'Fecha de creación': item.fechaCreacion, 'Fecha de actualización': item.fechaActualizacion } }"><mat-icon>visibility</mat-icon></button>
                       @if (puedeEditar()) {
                       <button mat-button color="primary" type="button" (click)="editar(item)"><mat-icon>tune</mat-icon> Configurar</button>
@@ -97,15 +98,16 @@ import { ExistenciaVarianteService } from '../../services/existencia-variante.se
               }
             </tbody>
           </table>
+          </div>
           <mat-paginator [length]="totalCount()" [pageIndex]="page - 1" [pageSize]="pageSize" [pageSizeOptions]="[10,25,50,100]" showFirstLastButtons (page)="onPageChange($event)" aria-label="Paginación de existencias"></mat-paginator>
-        </div>
       }
     }
+      </div>
     </section>
     `,
   changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
-    :host{display:block}.page{padding:24px;max-width:1500px;margin:0 auto}.header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:24px}.header-actions{display:flex;gap:8px;flex-wrap:wrap}.eyebrow{margin:0 0 4px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.65}h1{margin:0;font-size:clamp(24px,3vw,34px)}.subtitle{margin:6px 0 0;opacity:.72}.filters{display:grid;grid-template-columns:repeat(4,minmax(150px,1fr)) auto;gap:12px;align-items:start;margin-bottom:18px}.filter-actions{display:flex;gap:8px;min-height:56px;align-items:center}.feedback,.loading,.empty{display:flex;align-items:center;justify-content:center;gap:10px;padding:28px;border-radius:12px}.feedback.error{justify-content:flex-start;border:1px solid rgba(244,67,54,.32);background:rgba(244,67,54,.06)}.empty{min-height:220px;flex-direction:column;text-align:center;border:1px dashed rgba(127,127,127,.35)}.empty h2,.empty p{margin:0}.table-shell{overflow-x:auto;border:1px solid rgba(127,127,127,.22);border-radius:12px}table{width:100%;border-collapse:collapse;min-width:1200px}th,td{padding:14px 16px;text-align:left;border-bottom:1px solid rgba(127,127,127,.16);vertical-align:middle}th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;opacity:.72}td small{display:block;margin-top:3px;opacity:.65}.row-actions{display:flex;align-items:center;gap:2px;white-space:nowrap}.status{display:inline-flex;padding:4px 9px;border-radius:999px;font-size:12px;font-weight:700}.status.ok{background:rgba(46,125,50,.14)}.status.bajo{background:rgba(245,124,0,.14)}.status.agotado{background:rgba(198,40,40,.14)}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}@media(max-width:1050px){.filters{grid-template-columns:repeat(2,minmax(0,1fr))}.filter-actions{grid-column:span 2}}@media(max-width:640px){.page{padding:16px}.header{flex-direction:column}.header-actions{width:100%}.filters{grid-template-columns:1fr}.filter-actions{grid-column:auto}}
+    :host{display:block}.page{padding:24px;max-width:1500px;margin:0 auto}.header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;margin-bottom:24px}.header-actions{display:flex;gap:8px;flex-wrap:wrap}.eyebrow{margin:0 0 4px;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:.08em;opacity:.65}h1{margin:0;font-size:clamp(24px,3vw,34px)}.subtitle{margin:6px 0 0;opacity:.72}.feedback,.loading,.empty{display:flex;align-items:center;justify-content:center;gap:10px;padding:28px;border-radius:12px}.feedback.error{justify-content:flex-start;border:1px solid rgba(244,67,54,.32);background:rgba(244,67,54,.06)}.empty{min-height:220px;flex-direction:column;text-align:center;border:0}.empty h2,.empty p{margin:0}.table-shell{overflow-x:auto;border:1px solid rgba(127,127,127,.22);border-radius:12px}table{width:100%;border-collapse:collapse;min-width:1200px}th,td{padding:14px 16px;text-align:left;border-bottom:1px solid rgba(127,127,127,.16);vertical-align:middle}th{font-size:12px;text-transform:uppercase;letter-spacing:.04em;opacity:.72}td small{display:block;margin-top:3px;opacity:.65}.row-actions{display:flex;align-items:center;gap:2px;white-space:nowrap}.status{display:inline-flex;padding:4px 9px;border-radius:999px;font-size:12px;font-weight:700}.status.ok{background:rgba(46,125,50,.14)}.status.bajo{background:rgba(245,124,0,.14)}.status.agotado{background:rgba(198,40,40,.14)}.sr-only{position:absolute;width:1px;height:1px;padding:0;margin:-1px;overflow:hidden;clip:rect(0,0,0,0);white-space:nowrap;border:0}@media(max-width:640px){.page{padding:16px}.header{flex-direction:column}.header-actions{width:100%}}
   `]
 })
 export class ExistenciasVarianteListComponent implements OnInit {

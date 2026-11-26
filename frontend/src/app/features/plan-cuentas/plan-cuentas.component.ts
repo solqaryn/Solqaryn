@@ -35,9 +35,9 @@ interface CuentaRow extends CuentaContable {
     <main class="plan-cuentas" aria-labelledby="plan-cuentas-title">
       <header class="page-header">
         <div>
-          <p class="eyebrow">Finanzas</p>
+          
           <h1 id="plan-cuentas-title">Plan de cuentas</h1>
-          <p class="subtitle">Administra la jerarquía contable sin crear catálogos especulativos.</p>
+          <p class="subtitle">Consulta y organiza las cuentas contables de la empresa.</p>
         </div>
         @if (puedeCrear()) {
           <button mat-flat-button color="primary" type="button" (click)="nuevo()">

@@ -35,9 +35,9 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
     <section class="page-shell" aria-labelledby="ordenes-title">
       <header class="page-header">
         <div>
-          <p class="eyebrow">Compras empresariales</p>
+          
           <h1 id="ordenes-title">Órdenes de compra</h1>
-          <p>Consulta y controla documentos de compra sin afectar inventario hasta la recepción autorizada.</p>
+          <p>Consulta órdenes de compra y su estado de aprobación. Las existencias cambian al confirmar la recepción.</p>
         </div>
         @if (permisosRuntime.puede('Compras', 'Crear')) {
           <button mat-flat-button type="button" (click)="nuevaOrden()">
@@ -47,7 +47,8 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
         }
       </header>
 
-      <form class="filters" (ngSubmit)="aplicarFiltros()" aria-label="Filtros de órdenes de compra">
+      <div class="card app-list-surface">
+      <form class="filters app-table-filters" (ngSubmit)="aplicarFiltros()" aria-label="Filtros de órdenes de compra">
         <mat-form-field appearance="outline">
           <mat-label>Número</mat-label>
           <input matInput [(ngModel)]="numero" name="numero" autocomplete="off">
@@ -93,12 +94,12 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
           <button mat-stroked-button type="button" (click)="cargar()">Reintentar</button>
         </div>
       } @else if (ordenes().length === 0) {
-        <div class="state-panel" role="status"><mat-icon>inbox</mat-icon><span>No hay órdenes que coincidan con los filtros.</span></div>
+        <div class="state-panel app-list-empty" role="status"><mat-icon aria-hidden="true">inbox</mat-icon><strong>No se encontraron órdenes</strong><p>Cambia los filtros para ampliar la búsqueda.</p></div>
       } @else {
-        <div class="table-wrap">
-          <table>
+        <div class="table-wrap app-table-shell" role="region" aria-label="Tabla de órdenes de compra" tabindex="0">
+          <table class="app-data-table">
             <thead>
-              <tr><th>Número</th><th>Proveedor</th><th>Estado</th><th>Fecha esperada</th><th class="numeric">Total</th><th>Acciones</th></tr>
+              <tr><th>Número</th><th>Proveedor</th><th>Estado</th><th>Fecha esperada</th><th class="numeric app-col-number">Total</th><th class="actions-heading">Acciones</th></tr>
             </thead>
             <tbody>
               @for (orden of ordenes(); track orden.id) {
@@ -107,8 +108,8 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
                   <td>{{ orden.proveedorNombre }}</td>
                   <td><span class="status" [attr.data-status]="orden.estado">{{ etiquetaEstado(orden.estado) }}</span></td>
                   <td>{{ orden.fechaEsperadaUtc ? (orden.fechaEsperadaUtc | date:'mediumDate') : '—' }}</td>
-                  <td class="numeric">{{ orden.total | currency:orden.moneda:'symbol-narrow':'1.2-2' }}</td>
-                  <td class="row-actions">
+                  <td class="numeric app-col-number">{{ orden.total | currency:orden.moneda:'symbol-narrow':'1.2-2' }}</td>
+                  <td class="row-actions actions">
                     <button mat-stroked-button type="button" (click)="verDetalle(orden.id)"><mat-icon>visibility</mat-icon> Ver</button>
                     @if (esBorrador(orden) && permisosRuntime.puede('Compras', 'Editar')) {
                       <button mat-stroked-button type="button" (click)="editarOrden(orden.id)"><mat-icon>edit</mat-icon> Editar</button>
@@ -129,6 +130,7 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
         </mat-paginator>
       }
 
+      </div>
       @if (detalleLoading()) {
         <div class="detail-panel state-panel" role="status"><mat-spinner diameter="32"></mat-spinner><span>Cargando detalle…</span></div>
       } @else if (detalleError()) {
@@ -202,19 +204,19 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
   changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     :host { display: block; }
-    .page-shell { display: grid; gap: 1.25rem; }
+    .page-shell { display: grid; grid-template-columns:minmax(0,1fr); min-width:0; gap: 1.25rem; }
     .page-header, .detail-heading { display: flex; justify-content: space-between; gap: 1rem; align-items: flex-start; }
     .page-header h1, .detail-heading h2 { margin: .1rem 0 .35rem; }
-    .page-header p { margin: 0; max-width: 70ch; color: var(--text-secondary, #5f6368); }
+    .page-header p { margin: 0; max-width: 70ch; color: var(--color-text-muted); }
     .eyebrow { margin: 0; font-size: .75rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--primary-color, #3157d5); }
-    .filters { display: grid; grid-template-columns: repeat(5, minmax(140px, 1fr)); gap: .75rem; align-items: start; }
+    
     .filter-actions, .row-actions, .lifecycle-actions { display: flex; gap: .5rem; align-items: center; flex-wrap: wrap; }
-    .filter-actions { grid-column: 1 / -1; }
+    
     .state-panel { min-height: 9rem; display: flex; align-items: center; justify-content: center; gap: .75rem; border: 1px dashed var(--border-color, #d6dae3); border-radius: 1rem; padding: 1rem; }
     .state-panel.error { color: var(--warn-color, #b3261e); }
     .table-wrap { overflow-x: auto; border: 1px solid var(--border-color, #e1e4ea); border-radius: 1rem; }
     table { width: 100%; border-collapse: collapse; min-width: 900px; }
-    th, td { padding: .85rem 1rem; text-align: left; border-bottom: 1px solid var(--border-color, #eceff3); }
+    th, td { padding: .85rem 1rem; text-align: left; border-bottom: 1px solid var(--color-border); }
     th { font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; }
     tr:last-child td { border-bottom: 0; }
     tr.selected { background: var(--surface-variant, #f5f7ff); }
@@ -223,22 +225,22 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
     .status[data-status='Aprobada'], .status[data-status='3'] { background: #e6f4ea; color: #176b36; }
     .status[data-status='Cancelada'], .status[data-status='4'] { background: #fde8e7; color: #9b1c16; }
     .status[data-status='PendienteAprobacion'], .status[data-status='2'] { background: #fff4d6; color: #805900; }
-    .detail-panel { border: 1px solid var(--border-color, #dfe3ea); border-radius: 1rem; padding: 1rem; background: var(--surface-color, #fff); }
+    .detail-panel { border: 1px solid var(--border-color, #dfe3ea); border-radius: 1rem; padding: 1rem; background: var(--color-surface); }
     .summary-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .75rem; margin: 1rem 0; }
     .summary-grid div { padding: .75rem; border-radius: .75rem; background: var(--surface-variant, #f6f7f9); }
-    dt { font-size: .75rem; color: var(--text-secondary, #62666d); }
+    dt { font-size: .75rem; color: var(--color-text-muted); }
     dd { margin: .25rem 0 0; font-weight: 600; }
     .action-feedback { display: flex; align-items: center; gap: .5rem; margin-top: .85rem; padding: .7rem .8rem; border-radius: .75rem; }
     .action-feedback.error { color: #9b1c16; background: #fde8e7; }
     .action-feedback.success { color: #176b36; background: #e6f4ea; }
-    .lifecycle-actions { padding: .85rem 0 1rem; border-top: 1px solid var(--border-color, #eceff3); }
-    .action-progress { display: inline-flex; gap: .45rem; align-items: center; color: var(--text-secondary, #62666d); }
+    .lifecycle-actions { padding: .85rem 0 1rem; border-top: 1px solid var(--color-border); }
+    .action-progress { display: inline-flex; gap: .45rem; align-items: center; color: var(--color-text-muted); }
     .detail-lines { display: grid; gap: .5rem; }
-    .line-card { display: flex; justify-content: space-between; gap: 1rem; padding: .75rem 0; border-top: 1px solid var(--border-color, #eceff3); }
-    .line-card span { display: block; margin-top: .25rem; color: var(--text-secondary, #62666d); }
+    .line-card { display: flex; justify-content: space-between; gap: 1rem; padding: .75rem 0; border-top: 1px solid var(--color-border); }
+    .line-card span { display: block; margin-top: .25rem; color: var(--color-text-muted); }
     .line-totals { text-align: right; }
-    @media (max-width: 900px) { .filters { grid-template-columns: repeat(2, minmax(0, 1fr)); } .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
-    @media (max-width: 600px) { .page-header, .detail-heading, .line-card { flex-direction: column; } .filters, .summary-grid { grid-template-columns: 1fr; } .row-actions { flex-wrap: wrap; } .line-totals { text-align: left; } }
+    @media (max-width: 900px) {  .summary-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); } }
+    @media (max-width: 600px) { .page-header, .detail-heading, .line-card { flex-direction: column; } .summary-grid { grid-template-columns: 1fr; } .row-actions { flex-wrap: wrap; } .line-totals { text-align: left; } }
   `]
 })
 export class OrdenesCompraShellComponent implements OnInit, OnDestroy {

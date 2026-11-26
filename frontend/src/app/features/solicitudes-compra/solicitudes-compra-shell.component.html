@@ -3,7 +3,7 @@
     <div>
       <button class="back-button" mat-button type="button" (click)="volverListado()"><mat-icon>arrow_back</mat-icon> Volver a solicitudes</button>
       <h1 class="page-title">{{ modoFormulario() === 'editar' ? 'Editar solicitud de compra' : 'Nueva solicitud de compra' }}</h1>
-      <p class="page-subtitle">Prepara el borrador documental sin afectar stock, Kardex ni finanzas.</p>
+      <p class="page-subtitle">Prepara la solicitud sin modificar existencias ni registrar movimientos financieros.</p>
     </div>
   </div>
 
@@ -170,7 +170,7 @@
   <div class="header-row">
     <div>
       <h1 class="page-title">Solicitudes de compra</h1>
-      <p class="page-subtitle">Borradores y solicitudes sometidas a decisión antes de generar una compra.</p>
+      <p class="page-subtitle">Consulta, prepara y da seguimiento a las solicitudes de compra.</p>
     </div>
     @if (puede('Crear')) { <button mat-flat-button color="primary" type="button" (click)="abrirNueva()"><mat-icon>add</mat-icon> Nueva solicitud</button> }
   </div>

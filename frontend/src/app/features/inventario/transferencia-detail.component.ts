@@ -113,7 +113,7 @@ type RecepcionLinea = {
             <div class="section-heading">
               <div>
                 <h2>Recepción y discrepancias</h2>
-                <p>Recibida + faltante + dañada debe cerrar exactamente lo despachado. El sobrante se registra aparte.</p>
+                <p>La suma de las unidades recibidas, faltantes y dañadas debe coincidir con lo despachado. Registra los sobrantes por separado.</p>
               </div>
             </div>
             <div class="table-wrap app-table-shell" role="region" tabindex="0" aria-label="Detalle de transferencias">
@@ -144,7 +144,7 @@ type RecepcionLinea = {
           </section>
         }
         <section class="lifecycle">
-          <h2>Acciones de lifecycle</h2>
+          <h2>Acciones de la transferencia</h2>
           <div class="actions">
             @if (transferencia.estado === 'Borrador' && puedeCambiarEstado) {
               <button mat-flat-button color="primary" type="button" (click)="solicitar()" [disabled]="busy || editor.pendiente()">Solicitar</button>

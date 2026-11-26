@@ -1,8 +1,9 @@
 <div class="container">
-  <h2>Asientos Contables</h2>
+  <h1>Asientos contables</h1>
+  <p class="page-subtitle">Consulta y registra operaciones contables.</p>
 
   @if (!mostrarFormulario()) {
-    <div class="actions">
+    <div class="card app-table-filters">
       <mat-form-field appearance="outline">
         <mat-label>Buscar</mat-label>
         <input matInput [(ngModel)]="search" (ngModelChange)="onSearchChange($event)" placeholder="Número de asiento">
@@ -36,7 +37,9 @@
   }
 
   @if (!mostrarFormulario() && !loading()) {
-    <table mat-table [dataSource]="asientos()" class="mat-elevation-z8">
+    <div class="card app-list-surface">
+    <div class="app-table-shell" role="region" aria-label="Tabla de asientos contables" tabindex="0">
+    <table mat-table [dataSource]="asientos()">
       <ng-container matColumnDef="numero">
         <th mat-header-cell *matHeaderCellDef> Número </th>
         <td mat-cell *matCellDef="let a"> {{a.numero}} </td>
@@ -68,11 +71,13 @@
       <tr mat-header-row *matHeaderRowDef="['numero', 'fecha', 'concepto', 'totalDebe', 'totalHaber', 'acciones']"></tr>
       <tr mat-row *matRowDef="let row; columns: ['numero', 'fecha', 'concepto', 'totalDebe', 'totalHaber', 'acciones'];"></tr>
     </table>
+    </div>
     @if (asientos().length === 0) {
-      <div style="text-align: center; padding: 2rem; color: gray;">
+      <div class="app-list-empty" role="status">
         No hay asientos contables que coincidan con los filtros.
       </div>
     }
+    </div>
   }
 
   @if (mostrarFormulario() && !asientoSeleccionado()) {
@@ -169,7 +174,8 @@
       <div><strong>Fecha:</strong> {{ $safeNavigationMigration(asientoSeleccionado()?.fecha) | date:'shortDate' }}</div>
       <div><strong>Concepto:</strong> {{ asientoSeleccionado()?.concepto }}</div>
     </div>
-    <table mat-table [dataSource]="asientoSeleccionado()?.detalles || []" class="mat-elevation-z8">
+    <div class="app-table-shell" role="region" aria-label="Detalle de asiento contable" tabindex="0">
+    <table mat-table [dataSource]="asientoSeleccionado()?.detalles || []">
       <ng-container matColumnDef="cuenta">
         <th mat-header-cell *matHeaderCellDef> Cuenta </th>
         <td mat-cell *matCellDef="let d"> {{d.cuentaCodigo}} - {{d.cuentaNombre}} </td>
@@ -192,6 +198,7 @@
       <tr mat-row *matRowDef="let row; columns: ['cuenta', 'referencia', 'debe', 'haber'];"></tr>
       <tr mat-footer-row *matFooterRowDef="['cuenta', 'referencia', 'debe', 'haber']"></tr>
     </table>
+    </div>
     <div style="margin-top: 2rem;">
       <button mat-button (click)="cancelar()">Volver</button>
     </div>

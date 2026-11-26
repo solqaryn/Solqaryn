@@ -37,6 +37,7 @@ for (const caso of casos) for (const viewport of [{width:1280,height:900},{width
     await page.goto('/inventario/'+caso.ruta);
     const tabla=page.locator('table.app-data-table');
     await expect(tabla).toBeVisible();
+    if(caso.ruta==='transferencias') await expect(page.locator('mat-paginator')).toContainText('Registros por página');
     expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1)).toBe(true);
     await page.getByRole('button',{name:caso.crear,exact:true}).click();
     const modal=page.locator('.solqaryn-modal--xl');
@@ -59,9 +60,16 @@ for (const caso of casos) for (const viewport of [{width:1280,height:900},{width
     await expect(accion).toBeEnabled();
     await accion.click();
     await expect(confirmacion).toBeVisible();
+    const escritura = page.waitForResponse(response => response.url() === API+'/'+caso.api+'/41/'+caso.endpoint && response.request().method()==='POST' && response.ok());
     await confirmacion.getByRole('button',{name:caso.accion,exact:true}).click();
-    await expect(modal.getByText(caso.estado,{exact:true})).toBeVisible();
-    expect(escrituras).toBe(1);
+    await escritura;
+    await expect(confirmacion).toHaveCount(0);
+    await expect.poll(()=>escrituras).toBe(1);
+    if(caso.ruta==='transferencias') {
+      await expect(modal.locator('.summary strong').first()).toHaveText(caso.estado);
+    } else {
+      await expect(modal.getByText(caso.estado,{exact:true})).toBeVisible();
+    }
     await modal.getByRole('button',{name:'Cerrar detalle',exact:true}).click();
     await expect(tabla.getByText(caso.estado,{exact:true})).toBeVisible();
     expect(new URL(page.url()).pathname).toBe('/inventario/'+caso.ruta);

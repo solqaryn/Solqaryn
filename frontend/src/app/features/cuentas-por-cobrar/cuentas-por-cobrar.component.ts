@@ -16,7 +16,7 @@ import { FacturaService } from '../../services/factura.service';
     <section class="page" aria-labelledby="cxc-title">
       <header class="page-header">
         <div>
-          <p class="eyebrow">Facturación</p>
+          
           <h1 id="cxc-title">Cuentas por cobrar</h1>
           <p class="subtitle">Facturas vigentes con saldo pendiente, ordenadas por vencimiento.</p>
         </div>
@@ -40,6 +40,7 @@ import { FacturaService } from '../../services/factura.service';
         </div>
       </div>
     
+      <div class="card app-list-surface">
       @if (loading()) {
         <div class="state" role="status" aria-live="polite">
           <div class="spinner" aria-hidden="true"></div>
@@ -56,15 +57,15 @@ import { FacturaService } from '../../services/factura.service';
       }
     
       @if (!loading() && !errorMessage() && cuentas().length === 0) {
-        <div class="state empty">
+        <div class="state empty app-list-empty">
           <strong>No hay saldos pendientes.</strong>
-          <span>Las facturas activas están al día.</span>
+          <p>No hay facturas vigentes con saldo pendiente.</p>
         </div>
       }
     
       @if (!loading() && !errorMessage() && cuentas().length > 0) {
-        <div class="table-shell">
-          <table>
+        <div class="table-shell app-table-shell" role="region" aria-label="Tabla de cuentas por cobrar" tabindex="0">
+          <table class="app-data-table">
             <thead>
               <tr>
                 <th>Factura</th>
@@ -72,10 +73,10 @@ import { FacturaService } from '../../services/factura.service';
                 <th>Cliente</th>
                 <th>Vencimiento</th>
                 <th>Estado</th>
-                <th class="numeric">Total</th>
-                <th class="numeric">Pagado</th>
-                <th class="numeric">Saldo</th>
-                <th>Acciones</th>
+                <th class="numeric app-col-number">Total</th>
+                <th class="numeric app-col-number">Pagado</th>
+                <th class="numeric app-col-number">Saldo</th>
+                <th class="actions-heading">Acciones</th>
               </tr>
             </thead>
             <tbody>
@@ -94,9 +95,9 @@ import { FacturaService } from '../../services/factura.service';
                     </span>
                   </td>
                   <td data-label="Estado"><span class="status">{{ cuenta.estadoPago || cuenta.estado }}</span></td>
-                  <td data-label="Total" class="numeric">{{ cuenta.moneda }} {{ cuenta.total | number:'1.2-2' }}</td>
-                  <td data-label="Pagado" class="numeric">{{ cuenta.moneda }} {{ cuenta.totalPagado | number:'1.2-2' }}</td>
-                  <td data-label="Saldo" class="numeric balance">{{ cuenta.moneda }} {{ cuenta.saldoPendiente | number:'1.2-2' }}</td>
+                  <td data-label="Total" class="numeric app-col-number">{{ cuenta.moneda }} {{ cuenta.total | number:'1.2-2' }}</td>
+                  <td data-label="Pagado" class="numeric app-col-number">{{ cuenta.moneda }} {{ cuenta.totalPagado | number:'1.2-2' }}</td>
+                  <td data-label="Saldo" class="numeric balance app-col-number">{{ cuenta.moneda }} {{ cuenta.saldoPendiente | number:'1.2-2' }}</td>
                   <td data-label="Acciones" class="actions">
                     <a class="action-view" mat-icon-button title="Ver factura" [attr.aria-label]="'Ver factura ' + cuenta.numeroFactura" [routerLink]="['/facturas', cuenta.id]"><mat-icon>visibility</mat-icon></a>
                     <a class="primary link-button" [routerLink]="['/facturas', cuenta.id, 'pagos']">Pagos</a>
@@ -107,18 +108,19 @@ import { FacturaService } from '../../services/factura.service';
           </table>
         </div>
       }
+      </div>
     </section>
     `,
   changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
     :host { display: block; }
-    .page { display: grid; gap: 1.25rem; }
+    .page { display: grid; grid-template-columns:minmax(0,1fr); min-width:0; gap: 1.25rem; }
     .page-header { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
     .eyebrow { margin: 0 0 .25rem; font-size: .78rem; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; opacity: .65; }
     h1 { margin: 0; font-size: clamp(1.65rem, 2.2vw, 2.25rem); }
     .subtitle { margin: .4rem 0 0; opacity: .72; }
     .summary { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .85rem; }
-    .summary-card, .table-shell, .state { border: 1px solid rgba(127, 127, 127, .25); border-radius: 14px; background: var(--mat-sys-surface, rgba(127,127,127,.04)); }
+    .summary-card, .table-shell, .state { border: 1px solid rgba(127, 127, 127, .25); border-radius: 14px; background: var(--color-surface); }
     .summary-card { padding: 1rem; display: grid; gap: .35rem; }
     .summary-card span { font-size: .82rem; opacity: .7; }
     .summary-card strong { font-size: 1.35rem; }
@@ -144,14 +146,6 @@ import { FacturaService } from '../../services/factura.service';
     .secondary { background: rgba(127,127,127,.14); color: inherit; }
     @media (max-width: 760px) {
       .summary { grid-template-columns: 1fr; }
-      .table-shell { border: 0; overflow: visible; background: transparent; }
-      table, thead, tbody, tr, th, td { display: block; min-width: 0; }
-      thead { display: none; }
-      tbody { display: grid; gap: .8rem; }
-      tr { border: 1px solid rgba(127,127,127,.25); border-radius: 12px; padding: .55rem; }
-      td { display: grid; grid-template-columns: 110px 1fr; gap: .75rem; padding: .55rem; text-align: left !important; }
-      td::before { content: attr(data-label); font-size: .75rem; font-weight: 700; opacity: .65; text-transform: uppercase; }
-      .actions { white-space: normal; }
     }
   `]
 })
