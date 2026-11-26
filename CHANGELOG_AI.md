@@ -1,3 +1,7 @@
+## 2026-11-26 — DEV06 — C03-03.M03.06 — V44/R1/R5
+
+- TASK_ID=6af16bbad26881918c283abe06e1f32a; RUN_ID=8ea34a28-3b10-8331-9a7f-be62c12abcb1; base=9694d076cca89fcbcf9343dcc1a167373401f9ea. Reparar SOURCE_ANCHOR_MISMATCH V19 job139917596979 después de 33/33 JWT/MySQL PASS en 7c7629c3. Ajustar exclusivamente anclas de firma del generador CI de revocación para conservar DenialReadbackFault opcional y liveHandler; cuatro anclas únicas verificadas sobre fixture actual, sin cambiar aserciones, proveedor real, guards ni runtime. V23 foco C01 conserva su corrida por SHA (cancel-in-progress false; ruta C03 no la dispara); no sustituye propiedad/retención empresarial. A0 estático; A1-A4 CI y A5 pendientes. Rollback revert normal.
+
 ## 2026-11-26 — DEV06 — C01-04.M03.06 — V44/R1/R5
 
 - TASK_ID=6af16bbad26881918c283abe06e1f32a; RUN_ID=8ea34a28-3b10-8331-9a7f-be62c12abcb1; base=7c7629c300d13ae560da24bdf03612231b74485e. Reparar SOURCE_ANCHOR_MISMATCH del job 139917596312 (V23), generado por la ampliación del fixture CrearAsync con DenialReadbackFault. Ajustar exclusivamente las dos cadenas de firma del generador CI, conservar parámetro opcional, interceptor, cuatro anclas únicas, aserciones, GitHub HTTP real y guards GH-hosted/MySQL descartable. A0 transformación estática reproducida sobre blob exacto; A1-A4 CI nueva y A5 pendientes. Sin cambios runtime, permisos, esquema ni datos reales. Rollback revert normal.
