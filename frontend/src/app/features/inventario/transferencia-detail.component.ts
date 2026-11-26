@@ -1,3 +1,6 @@
+import { MatDialogModule } from '@angular/material/dialog';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { crearEditorInstitucional } from '../../shared/modal-institucional/acciones-institucionales';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -9,7 +12,6 @@ import { finalize } from 'rxjs';
 import { TransferenciaInventario } from '../../core/models/transferencia-inventario.model';
 import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
 import { TransferenciaInventarioService } from '../../services/transferencia-inventario.service';
-import { AppAlertService } from '../../shared/alerts/app-alert.service';
 
 type RecepcionLinea = {
   recibida: number;
@@ -21,19 +23,22 @@ type RecepcionLinea = {
 @Component({
   selector: 'app-transferencia-detail',
   standalone: true,
-  imports: [CommonModule, FormsModule, MatButtonModule, MatIconModule, MatProgressSpinnerModule],
+  imports: [MatDialogModule, CommonModule, FormsModule, MatButtonModule, MatIconModule, MatProgressSpinnerModule],
   template: `
-    <section class="page" aria-labelledby="transferencia-title">
+    <div [class.app-dialog-layout]="!!editor.ref">
+      @if (editor.ref) { <h2 mat-dialog-title id="transferencia-title">{{ item?.numero || 'Transferencia' }}</h2> }
+      <div [class.app-dialog-layout__body]="!!editor.ref">
+    <section class="page" [class.modal-page]="!!editor.ref" aria-labelledby="transferencia-title">
       <header class="header">
         <div>
           <p class="eyebrow">Inventario empresarial</p>
-          <h1 id="transferencia-title">{{ item?.numero || 'Transferencia' }}</h1>
+          @if (!editor.ref) { <h1 id="transferencia-title">{{ item?.numero || 'Transferencia' }}</h1> }
           @if (item) {
             <p>{{ item.almacenOrigenNombre || ('Almacén #' + item.almacenOrigenId) }} → {{ item.almacenDestinoNombre || ('Almacén #' + item.almacenDestinoId) }}</p>
           }
         </div>
         <div class="header-actions">
-          <button mat-stroked-button type="button" (click)="volver()"><mat-icon>arrow_back</mat-icon>Volver</button>
+          @if (!editor.ref) { <button mat-stroked-button type="button" (click)="volver()"><mat-icon>arrow_back</mat-icon>Volver</button> }
           @if (item?.estado === 'Borrador' && puedeEditar) {
             <button mat-stroked-button type="button" (click)="editar()"><mat-icon>edit</mat-icon>Editar</button>
           }
@@ -82,8 +87,8 @@ type RecepcionLinea = {
         </section>
         <section class="details">
           <h2>Detalle físico</h2>
-          <div class="table-wrap">
-            <table>
+          <div class="table-wrap app-table-shell" role="region" tabindex="0" aria-label="Detalle de transferencias">
+            <table class="app-data-table">
               <thead><tr><th>Variante</th><th>SKU</th><th>Solicitada</th><th>Aprobada</th><th>Despachada</th><th>Recibida</th><th>Faltante</th><th>Dañada</th><th>Sobrante</th></tr></thead>
               <tbody>
                 @for (detalle of transferencia.detalles; track detalle) {
@@ -111,8 +116,8 @@ type RecepcionLinea = {
                 <p>Recibida + faltante + dañada debe cerrar exactamente lo despachado. El sobrante se registra aparte.</p>
               </div>
             </div>
-            <div class="table-wrap">
-              <table>
+            <div class="table-wrap app-table-shell" role="region" tabindex="0" aria-label="Detalle de transferencias">
+              <table class="app-data-table">
                 <thead><tr><th>Variante</th><th>Despachada</th><th>Recibida</th><th>Faltante</th><th>Dañada</th><th>Sobrante</th><th>Control</th></tr></thead>
                 <tbody>
                   @for (detalle of transferencia.detalles; track detalle) {
@@ -166,13 +171,18 @@ type RecepcionLinea = {
         </section>
       }
     </section>
+    
+      </div>
+      @if (editor.ref) { <mat-dialog-actions align="end"><button mat-button type="button" (click)="volver()" [disabled]="busy || editor.pendiente()">Cerrar detalle</button></mat-dialog-actions> }
+    </div>
     `,
   changeDetection: ChangeDetectionStrategy.Eager,
-  styles: [`
+  styles: [`.modal-page{padding:0;min-width:0}
     .page{padding:24px;display:grid;gap:20px}.header{display:flex;justify-content:space-between;gap:16px}.header-actions,.actions{display:flex;gap:10px;flex-wrap:wrap;align-items:center}.eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:12px;font-weight:700;margin:0}.header h1{margin:4px 0}.header p,.section-heading p{margin:0;color:var(--text-secondary,#667085)}.summary{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}.summary div,.timeline,.details,.recepcion,.lifecycle{padding:18px;border:1px solid rgba(0,0,0,.12);border-radius:12px}.summary span{display:block;color:var(--text-secondary,#667085);font-size:12px}.summary strong{display:block;margin-top:6px}.dates{display:flex;gap:14px;flex-wrap:wrap}.table-wrap{overflow:auto}table{width:100%;border-collapse:collapse}th,td{padding:12px;text-align:left;border-bottom:1px solid rgba(0,0,0,.08);white-space:nowrap}.quantity{width:76px;padding:8px;border:1px solid rgba(0,0,0,.2);border-radius:8px}.state{min-height:160px;display:flex;justify-content:center;align-items:center;gap:12px}.error{color:#b42318}.ok{color:#027a48;font-weight:700}@media(max-width:800px){.summary{grid-template-columns:1fr 1fr}.header{flex-direction:column}}@media(max-width:520px){.page{padding:16px}.summary{grid-template-columns:1fr}}
   `]
 })
 export class TransferenciaDetailComponent implements OnInit {
+  readonly editor = crearEditorInstitucional('MovimientosInventario');
   readonly id: number;
   item: TransferenciaInventario | null = null;
   recepcion: Record<number, RecepcionLinea> = {};
@@ -185,13 +195,12 @@ export class TransferenciaDetailComponent implements OnInit {
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly service: TransferenciaInventarioService,
-    private readonly permisos: PermisosRuntimeService,
-    private readonly alerts: AppAlertService
+    private readonly permisos: PermisosRuntimeService
   ) {
-    this.id = Number(this.route.snapshot.paramMap.get('id')) || 0;
+    this.id = Number((this.editor.ref ? this.editor.id : this.route.snapshot.paramMap.get('id'))) || 0;
   }
 
-  ngOnInit(): void { this.cargar(); }
+  ngOnInit(): void { if (!this.editor.valido('Ver') || !Number.isInteger(this.id) || this.id <= 0) { this.error = 'Registro no autorizado o inválido.'; return; } this.cargar(); }
 
   get puedeEditar(): boolean { return this.permisos.puede('MovimientosInventario', 'Editar'); }
   get puedeCambiarEstado(): boolean { return this.permisos.puede('MovimientosInventario', 'CambiarEstado'); }
@@ -206,7 +215,7 @@ export class TransferenciaDetailComponent implements OnInit {
   cargar(): void {
     this.loading = true;
     this.error = '';
-    this.service.getById(this.id).pipe(finalize(() => this.loading = false)).subscribe({
+    this.service.getById(this.id).pipe(takeUntilDestroyed(this.editor.destroyRef), finalize(() => this.loading = false)).subscribe({
       next: response => {
         if (!response.success) { this.error = response.message || 'No se pudo cargar la transferencia.'; return; }
         this.item = response.data;
@@ -225,56 +234,60 @@ export class TransferenciaDetailComponent implements OnInit {
   }
 
   async solicitar(): Promise<void> {
-    const confirmado = await this.alerts.confirmar({
+    if (this.busy || this.loading || this.editor.pendiente() || !(this.item?.estado === 'Borrador')) return;
+    const confirmado = await this.editor.confirmar('CambiarEstado', {
       titulo: 'Solicitar transferencia',
       mensaje: '¿Solicitar esta transferencia? Después de solicitarla ya no podrá editarse como borrador.',
       tipo: 'advertencia',
       confirmarTexto: 'Solicitar'
     });
-    if (!confirmado) return;
+    if (!confirmado || !(this.item?.estado === 'Borrador')) return;
     this.runAction(() => this.service.solicitar(this.id));
   }
 
   async aprobar(): Promise<void> {
+    if (this.busy || this.loading || this.editor.pendiente() || !(this.item?.estado === 'Solicitada')) return;
     const transferencia = this.item;
     if (!transferencia) return;
-    const confirmado = await this.alerts.confirmar({
+    const confirmado = await this.editor.confirmar('Aprobar', {
       titulo: 'Aprobar transferencia',
       mensaje: '¿Aprobar las cantidades solicitadas de esta transferencia?',
       tipo: 'advertencia',
       confirmarTexto: 'Aprobar'
     });
-    if (!confirmado) return;
+    if (!confirmado || !(this.item?.estado === 'Solicitada')) return;
     this.runAction(() => this.service.aprobar(this.id, {
       detalles: transferencia.detalles.map(d => ({ detalleId: d.id, cantidadAprobada: d.cantidadSolicitada }))
     }));
   }
 
   async despachar(): Promise<void> {
+    if (this.busy || this.loading || this.editor.pendiente() || !(this.item?.estado === 'Aprobada')) return;
     const transferencia = this.item;
     if (!transferencia) return;
-    const confirmado = await this.alerts.confirmar({
+    const confirmado = await this.editor.confirmar('Confirmar', {
       titulo: 'Despachar transferencia',
       mensaje: '¿Despachar las cantidades aprobadas? Esta acción afecta stock físico.',
       tipo: 'advertencia',
       confirmarTexto: 'Despachar'
     });
-    if (!confirmado) return;
+    if (!confirmado || !(this.item?.estado === 'Aprobada')) return;
     this.runAction(() => this.service.despachar(this.id, {
       detalles: transferencia.detalles.map(d => ({ detalleId: d.id, cantidadDespachada: d.cantidadAprobada }))
     }));
   }
 
   async recibir(): Promise<void> {
+    if (this.busy || this.loading || this.editor.pendiente() || !(this.item?.estado === 'EnTransito' && this.recepcionValida)) return;
     const transferencia = this.item;
     if (!transferencia || !this.recepcionValida) return;
-    const confirmado = await this.alerts.confirmar({
+    const confirmado = await this.editor.confirmar('Confirmar', {
       titulo: 'Registrar recepción',
       mensaje: '¿Registrar la recepción y sus discrepancias?',
       tipo: 'advertencia',
       confirmarTexto: 'Registrar recepción'
     });
-    if (!confirmado) return;
+    if (!confirmado || !(this.item?.estado === 'EnTransito' && this.recepcionValida)) return;
     this.runAction(() => this.service.recibir(this.id, {
       detalles: transferencia.detalles.map(d => {
         const linea = this.recepcion[d.id];
@@ -290,19 +303,20 @@ export class TransferenciaDetailComponent implements OnInit {
   }
 
   async cancelar(): Promise<void> {
-    const motivo = await this.alerts.solicitarTexto({
+    if (this.busy || this.loading || this.editor.pendiente() || !(!!this.item && !['Recibida', 'Cancelada'].includes(this.item.estado))) return;
+    const motivo = await this.editor.solicitarTexto('Anular', {
       titulo: 'Cancelar transferencia',
       mensaje: 'Indica el motivo obligatorio de cancelación. Esta acción no se puede deshacer.',
       tipo: 'peligro',
       confirmarTexto: 'Cancelar transferencia',
       entrada: { etiqueta: 'Motivo de cancelación', requerida: true }
     });
-    if (!motivo) return;
+    if (!motivo || !(!!this.item && !['Recibida', 'Cancelada'].includes(this.item.estado))) return;
     this.runAction(() => this.service.cancelar(this.id, { motivo }));
   }
 
-  editar(): void { void this.router.navigate(['/inventario/transferencias', this.id, 'editar']); }
-  volver(): void { void this.router.navigate(['/inventario/transferencias']); }
+  async editar(): Promise<void> { if (this.busy || this.loading || this.editor.pendiente() || this.item?.estado !== 'Borrador' || !this.editor.valido('Editar')) return; if (this.editor.ref) { if (await this.editor.abrir(() => import('./transferencia-form.component').then(m => m.TransferenciaFormComponent), 'xl', 'Editar', this.id)) this.cargar(); } else void this.router.navigate(['/inventario/transferencias', this.id, 'editar']); }
+  volver(): void { if (this.busy || this.editor.pendiente()) return; if (this.editor.ref) this.editor.cerrar(true); else void this.router.navigate(['/inventario/transferencias']); }
 
   private prepararRecepcion(transferencia: TransferenciaInventario): void {
     this.recepcion = Object.fromEntries(transferencia.detalles.map(detalle => {
@@ -319,7 +333,7 @@ export class TransferenciaDetailComponent implements OnInit {
   private runAction(operationFactory: () => ReturnType<TransferenciaInventarioService['solicitar']>): void {
     this.busy = true;
     this.actionError = '';
-    operationFactory().pipe(finalize(() => this.busy = false)).subscribe({
+    operationFactory().pipe(takeUntilDestroyed(this.editor.destroyRef), finalize(() => this.busy = false)).subscribe({
       next: response => {
         if (!response.success) { this.actionError = response.message || 'La operación no pudo completarse.'; return; }
         this.item = response.data;

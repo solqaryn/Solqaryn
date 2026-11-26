@@ -1,7 +1,7 @@
+import { crearAccionesInstitucionales } from '../../shared/modal-institucional/acciones-institucionales';
 
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -40,7 +40,7 @@ import { ConteoInventarioService } from '../../services/conteo-inventario.servic
         }
       </header>
     
-      <form class="filters" (ngSubmit)="aplicarFiltros()">
+      <form class="filters app-table-filters" (ngSubmit)="aplicarFiltros()">
         <mat-form-field appearance="outline"><mat-label>Buscar</mat-label><input matInput name="search" [(ngModel)]="search" placeholder="Número, almacén..." /></mat-form-field>
         <mat-form-field appearance="outline"><mat-label>Estado</mat-label><mat-select name="estado" [(ngModel)]="estado"><mat-option [value]="null">Todos</mat-option>@for (item of estados; track item) {
         <mat-option [value]="item.value">{{ item.label }}</mat-option>
@@ -68,9 +68,9 @@ import { ConteoInventarioService } from '../../services/conteo-inventario.servic
     }
     
     @if (!loading && !error && items.length) {
-      <div class="table-wrap">
-        <table>
-          <thead><tr><th>Número</th><th>Tipo</th><th>Estado</th><th>Almacén / ubicación</th><th>Captura</th><th>Diferencias</th><th>Acciones</th></tr></thead>
+      <div class="table-wrap app-table-shell" role="region" tabindex="0" aria-label="conteos">
+        <table class="app-data-table">
+          <thead><tr><th>Número</th><th>Tipo</th><th>Estado</th><th>Almacén / ubicación</th><th>Captura</th><th>Diferencias</th><th class="actions-heading">Acciones</th></tr></thead>
           <tbody>
             @for (item of items; track item) {
               <tr>
@@ -84,8 +84,8 @@ import { ConteoInventarioService } from '../../services/conteo-inventario.servic
               }</td>
               <td>{{ item.cantidadCapturadas }} / {{ item.cantidadLineas }}</td>
               <td><strong [class.diff]="item.cantidadConDiferencia > 0">{{ item.cantidadConDiferencia }}</strong><small>Neto: {{ item.diferenciaNeta }}</small></td>
-              <td class="actions"><button mat-icon-button type="button" aria-label="Ver conteo" (click)="ver(item.id)"><mat-icon>visibility</mat-icon></button>@if (puedeEditar && item.estado === EstadoConteoInventario.Borrador) {
-              <button mat-icon-button type="button" aria-label="Editar conteo" (click)="editar(item.id)"><mat-icon>edit</mat-icon></button>
+              <td class="actions"><button class="action-view" mat-icon-button type="button" aria-label="Ver conteo" (click)="ver(item.id)"><mat-icon>visibility</mat-icon></button>@if (puedeEditar && item.estado === EstadoConteoInventario.Borrador) {
+              <button class="action-edit" mat-icon-button type="button" aria-label="Editar conteo" (click)="editar(item.id)"><mat-icon>edit</mat-icon></button>
             }</td>
           </tr>
         }
@@ -105,6 +105,7 @@ import { ConteoInventarioService } from '../../services/conteo-inventario.servic
   `]
 })
 export class ConteosInventarioListComponent implements OnInit {
+  readonly acciones = crearAccionesInstitucionales('MovimientosInventario');
   readonly EstadoConteoInventario = EstadoConteoInventario;
   items: ConteoInventario[] = [];
   almacenes: Almacen[] = [];
@@ -136,9 +137,7 @@ export class ConteosInventarioListComponent implements OnInit {
 
   constructor(
     private readonly service: ConteoInventarioService,
-    private readonly almacenesService: AlmacenService,
-    private readonly router: Router,
-    private readonly permisos: PermisosRuntimeService
+    private readonly almacenesService: AlmacenService, private readonly permisos: PermisosRuntimeService
   ) {}
 
   ngOnInit(): void { this.cargarAlmacenes(); this.cargar(); }
@@ -164,7 +163,7 @@ export class ConteosInventarioListComponent implements OnInit {
   aplicarFiltros(): void { this.page = 1; this.cargar(); }
   limpiar(): void { this.search = ''; this.estado = null; this.tipo = null; this.almacenId = null; this.page = 1; this.cargar(); }
   cambiarPagina(event: PageEvent): void { this.page = event.pageIndex + 1; this.pageSize = event.pageSize; this.cargar(); }
-  nuevo(): void { void this.router.navigate(['/inventario/conteos/nuevo']); }
-  ver(id: number): void { void this.router.navigate(['/inventario/conteos', id]); }
-  editar(id: number): void { void this.router.navigate(['/inventario/conteos', id, 'editar']); }
+  async nuevo(): Promise<void> { if (await this.acciones.abrir(() => import('./conteo-inventario-form.component').then(m => m.ConteoInventarioFormComponent), 'xl', 'Crear')) this.cargar(); }
+  async ver(id: number): Promise<void> { if (await this.acciones.abrir(() => import('./conteo-inventario-detail.component').then(m => m.ConteoInventarioDetailComponent), 'xl', 'Ver', id)) this.cargar(); }
+  async editar(id: number): Promise<void> { if (this.items.find(item => item.id === id)?.estado !== EstadoConteoInventario.Borrador) return; if (await this.acciones.abrir(() => import('./conteo-inventario-form.component').then(m => m.ConteoInventarioFormComponent), 'xl', 'Editar', id)) this.cargar(); }
 }

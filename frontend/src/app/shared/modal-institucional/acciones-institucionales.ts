@@ -89,6 +89,15 @@ export function crearEditorInstitucional(modulo: string) {
     async confirmar(accion: string, data: AppAlertData): Promise<boolean> {
       return valido(accion) && await acciones.confirmar(accion, data) && valido(accion);
     },
+    pendiente: acciones.pendiente,
+    async solicitarTexto(accion: string, datos: AppAlertData): Promise<string | null> {
+      if (!valido(accion)) return null;
+      const texto = await acciones.solicitarTexto(accion, datos);
+      return valido(accion) ? texto : null;
+    },
+    async abrir(cargar: () => Promise<Type<unknown>>, tamano: TamanoModal, accion: 'Crear' | 'Editar' | 'Ver', id?: number): Promise<boolean> {
+      return valido(accion) && await acciones.abrir(cargar, tamano, accion, id) && valido(accion);
+    },
     cerrar(guardado: boolean): void { ref?.close(guardado); }
   };
 }

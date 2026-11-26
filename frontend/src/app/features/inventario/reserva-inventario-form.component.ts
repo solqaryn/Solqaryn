@@ -1,3 +1,6 @@
+import { MatDialogModule } from '@angular/material/dialog';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { crearEditorInstitucional } from '../../shared/modal-institucional/acciones-institucionales';
 
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormArray, FormBuilder, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
@@ -16,10 +19,13 @@ import { ReservaInventarioService } from '../../services/reserva-inventario.serv
 @Component({
   selector: 'app-reserva-inventario-form',
   standalone: true,
-  imports: [ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressSpinnerModule, MatSelectModule],
+  imports: [MatDialogModule, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressSpinnerModule, MatSelectModule],
   template: `
-    <section class="page" aria-labelledby="reserva-form-title">
-      <header><button mat-button type="button" (click)="volver()"><mat-icon>arrow_back</mat-icon>Reservas</button><p class="eyebrow">Inventario empresarial</p><h1 id="reserva-form-title">{{ editando ? 'Editar reserva' : 'Nueva reserva' }}</h1><p>Selecciona existencias físicas reales y cantidades que quedarán reservadas al activar el documento.</p></header>
+    <div [class.app-dialog-layout]="!!editor.ref">
+      @if (editor.ref) { <h2 mat-dialog-title id="reserva-form-title">{{ editando ? 'Editar reserva' : 'Nueva reserva' }}</h2> }
+      <div [class.app-dialog-layout__body]="!!editor.ref">
+    <section class="page" [class.modal-page]="!!editor.ref" aria-labelledby="reserva-form-title">
+      <header>@if (!editor.ref) { <button mat-button type="button" (click)="volver()"><mat-icon>arrow_back</mat-icon>Reservas</button> }<p class="eyebrow">Inventario empresarial</p>@if (!editor.ref) { <h1 id="reserva-form-title">{{ editando ? 'Editar reserva' : 'Nueva reserva' }}</h1> }<p>Selecciona existencias físicas reales y cantidades que quedarán reservadas al activar el documento.</p></header>
       @if (loading) {
         <div class="state"><mat-spinner diameter="36"></mat-spinner><span>Cargando…</span></div>
       }
@@ -27,7 +33,7 @@ import { ReservaInventarioService } from '../../services/reserva-inventario.serv
         <div class="error" role="alert">{{ error }}</div>
       }
       @if (!loading) {
-        <form [formGroup]="form" (ngSubmit)="guardar()">
+        <form id="reserva-form-title-form" [formGroup]="form" (ngSubmit)="guardar()">
           <section class="card general">
             <mat-form-field appearance="outline"><mat-label>Venta (opcional)</mat-label><input matInput type="number" min="1" formControlName="ventaId" /></mat-form-field>
             <mat-form-field appearance="outline"><mat-label>Fecha de expiración</mat-label><input matInput type="datetime-local" [min]="fechaExpiracionMinima" formControlName="fechaExpiracion" /><mat-hint>Debe ser futura.</mat-hint></mat-form-field>
@@ -56,19 +62,25 @@ import { ReservaInventarioService } from '../../services/reserva-inventario.serv
             </div>
           }
         </section>
-        <footer><button mat-button type="button" (click)="volver()">Cancelar</button><button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || guardando || !hayExistenciasReservables">@if (guardando) {
+        @if (!editor.ref) { <footer><button mat-button type="button" (click)="volver()">Cancelar</button><button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || guardando || !hayExistenciasReservables">@if (guardando) {
         <mat-spinner diameter="20"></mat-spinner>
         }@if (!guardando) {
         <span>Guardar reserva</span>
-      }</button></footer>
+      }</button></footer> }
     </form>
     }
     </section>
+    
+      </div>
+      @if (editor.ref) { <mat-dialog-actions align="end"><button mat-button type="button" (click)="volver()" [disabled]="guardando">Cancelar</button><button mat-flat-button color="primary" type="submit" form="reserva-form-title-form" [disabled]="guardando || loading || !registroListo || form.invalid || !hayExistenciasReservables">Guardar reserva</button></mat-dialog-actions> }
+    </div>
     `,
   changeDetection: ChangeDetectionStrategy.Eager,
-  styles: [`.page{padding:24px;display:grid;gap:18px;max-width:1120px;margin:0 auto}.eyebrow{margin:12px 0 0;text-transform:uppercase;letter-spacing:.08em;font-size:.72rem;font-weight:700;color:var(--primary,#3f51b5)}h1{margin:4px 0}header p{color:#667085}.state{min-height:160px;display:flex;align-items:center;justify-content:center;gap:12px}.error{padding:12px;border-radius:10px;background:#fef3f2;color:#b42318}.card{border:1px solid #e4e7ec;border-radius:12px;padding:18px;background:#fff;display:grid;gap:14px}.general{grid-template-columns:1fr 1fr}.section-title{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.section-title h2{margin:0;font-size:1.1rem}.section-title p{margin:4px 0 0;color:#667085}.line{display:grid;grid-template-columns:minmax(0,3fr) minmax(150px,1fr) auto;gap:10px;align-items:start;border-top:1px solid #eaecf0;padding-top:14px}.physical-select{min-width:0}footer{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}footer button mat-spinner{display:inline-block}@media(max-width:850px){.page{padding:16px}.general,.line{grid-template-columns:1fr 1fr}.line>button{justify-self:start}}@media(max-width:520px){.general,.line{grid-template-columns:1fr}.section-title{flex-direction:column}}`]
+  styles: [`.modal-page{padding:0;min-width:0}.page{padding:24px;display:grid;gap:18px;max-width:1120px;margin:0 auto}.eyebrow{margin:12px 0 0;text-transform:uppercase;letter-spacing:.08em;font-size:.72rem;font-weight:700;color:var(--primary,#3f51b5)}h1{margin:4px 0}header p{color:#667085}.state{min-height:160px;display:flex;align-items:center;justify-content:center;gap:12px}.error{padding:12px;border-radius:10px;background:#fef3f2;color:#b42318}.card{border:1px solid #e4e7ec;border-radius:12px;padding:18px;background:#fff;display:grid;gap:14px}.general{grid-template-columns:1fr 1fr}.section-title{display:flex;justify-content:space-between;gap:12px;align-items:flex-start}.section-title h2{margin:0;font-size:1.1rem}.section-title p{margin:4px 0 0;color:#667085}.line{display:grid;grid-template-columns:minmax(0,3fr) minmax(150px,1fr) auto;gap:10px;align-items:start;border-top:1px solid #eaecf0;padding-top:14px}.physical-select{min-width:0}footer{display:flex;justify-content:flex-end;gap:8px;margin-top:16px}footer button mat-spinner{display:inline-block}@media(max-width:850px){.page{padding:16px}.general,.line{grid-template-columns:1fr 1fr}.line>button{justify-self:start}}@media(max-width:520px){.general,.line{grid-template-columns:1fr}.section-title{flex-direction:column}}`]
 })
 export class ReservaInventarioFormComponent implements OnInit {
+  readonly editor = crearEditorInstitucional('MovimientosInventario');
+  registroListo = false;
   form: FormGroup;
   existencias: ExistenciaVariante[] = [];
   editando = false;
@@ -93,12 +105,14 @@ export class ReservaInventarioFormComponent implements OnInit {
   get hayExistenciasReservables(): boolean { return this.existencias.some(x => x.stockDisponible > 0); }
 
   ngOnInit(): void {
-    const raw = this.route.snapshot.paramMap.get('id');
+    const raw = (this.editor.ref ? this.editor.id : this.route.snapshot.paramMap.get('id'));
     if (raw) {
       this.id = Number(raw);
       if (!Number.isInteger(this.id) || this.id <= 0) { this.error = 'Identificador de reserva inválido.'; this.loading = false; return; }
       this.editando = true;
     }
+    if (!this.editor.valido(this.editando ? 'Editar' : 'Crear')) { this.loading = false; this.error = 'No tiene permiso para este registro.'; return; }
+    this.registroListo = !this.editando;
     this.cargarExistencias();
   }
 
@@ -138,10 +152,11 @@ export class ReservaInventarioFormComponent implements OnInit {
   cargar(): void {
     this.loading = true;
     this.error = '';
-    this.service.getById(this.id).pipe(finalize(() => this.loading = false)).subscribe({
+    this.service.getById(this.id).pipe(takeUntilDestroyed(this.editor.destroyRef), finalize(() => this.loading = false)).subscribe({
       next: r => {
         if (!r.success) { this.error = r.message || 'No se pudo cargar la reserva.'; return; }
         if (r.data.estado !== 'Borrador') { this.error = 'Sólo las reservas en Borrador pueden editarse.'; return; }
+        this.registroListo = true;
         this.detalles.clear();
         r.data.detalles.forEach(d => {
           const existencia = this.existencias.find(x => x.productoVarianteId === d.productoVarianteId && x.almacenId === d.almacenId && (x.ubicacionAlmacenId ?? null) === (d.ubicacionAlmacenId ?? null));
@@ -161,7 +176,9 @@ export class ReservaInventarioFormComponent implements OnInit {
     });
   }
 
-  guardar(): void {
+  async guardar(): Promise<void> {
+    const accion = this.editando ? 'Editar' : 'Crear';
+    if (this.guardando || !this.registroListo || !this.editor.valido(accion)) return;
     if (this.form.invalid || this.detalles.length === 0) { this.form.markAllAsTouched(); return; }
     const raw = this.form.getRawValue();
     const detalles = raw['detalles'].map((d: Record<string, unknown>) => ({ productoVarianteId: Number(d['productoVarianteId']), almacenId: Number(d['almacenId']), ubicacionAlmacenId: d['ubicacionAlmacenId'] ? Number(d['ubicacionAlmacenId']) : null, cantidad: Number(d['cantidad']) }));
@@ -183,15 +200,17 @@ export class ReservaInventarioFormComponent implements OnInit {
     }
     const ventaIdRaw = raw['ventaId'] as number | null;
     const fechaExpiracion = fechaExpiracionRaw ? new Date(fechaExpiracionRaw).toISOString() : null;
+    this.guardando = true;
+    if (!await this.editor.confirmar(accion, { titulo: 'Confirmar guardado', mensaje: '¿Guardar el borrador de reserva?', confirmarTexto: 'Guardar' })) { this.guardando = false; return; }
     const request = this.editando ? this.service.update(this.id, { fechaExpiracion, detalles }) : this.service.create({ ventaId: ventaIdRaw ? Number(ventaIdRaw) : null, fechaExpiracion, detalles });
-    this.guardando = true; this.error = '';
-    request.pipe(finalize(() => this.guardando = false)).subscribe({ next: r => { if (!r.success) { this.error = r.message || 'No se pudo guardar la reserva.'; return; } void this.router.navigate(['/inventario/reservas', r.data.id]); }, error: () => this.error = 'No se pudo guardar la reserva.' });
+    this.error = '';
+    request.pipe(takeUntilDestroyed(this.editor.destroyRef), finalize(() => this.guardando = false)).subscribe({ next: r => { if (!r.success) { this.error = r.message || 'No se pudo guardar la reserva.'; return; } if (this.editor.ref) this.editor.cerrar(true); else void this.router.navigate(['/inventario/reservas', r.data.id]); }, error: () => this.error = 'No se pudo guardar la reserva.' });
   }
 
-  volver(): void { void this.router.navigate(['/inventario/reservas']); }
+  volver(): void { if (this.guardando || this.editor.pendiente()) return; if (this.editor.ref) this.editor.cerrar(false); else void this.router.navigate(['/inventario/reservas']); }
 
   private cargarExistencias(page = 1, acumuladas: ExistenciaVariante[] = []): void {
-    this.existenciaService.getPaged({ page, pageSize: 200, sortBy: 'productoNombre', sortDirection: 'asc' }).subscribe({
+    this.existenciaService.getPaged({ page, pageSize: 200, sortBy: 'productoNombre', sortDirection: 'asc' }).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
       next: response => {
         if (!response.success) { this.error = response.message || 'No se pudieron cargar las existencias físicas.'; this.loading = false; return; }
         const nuevas = [...acumuladas, ...response.data.items];

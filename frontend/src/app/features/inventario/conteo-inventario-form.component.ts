@@ -1,3 +1,6 @@
+import { MatDialogModule } from '@angular/material/dialog';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { crearEditorInstitucional } from '../../shared/modal-institucional/acciones-institucionales';
 
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -12,7 +15,7 @@ import { MatSelectModule } from '@angular/material/select';
 import { finalize } from 'rxjs';
 import { Almacen } from '../../core/models/almacen.model';
 import { Categoria } from '../../core/models/categoria.model';
-import { ConteoInventarioFormValue, TipoConteoInventario } from '../../core/models/conteo-inventario.model';
+import { ConteoInventarioFormValue, TipoConteoInventario, EstadoConteoInventario } from '../../core/models/conteo-inventario.model';
 import { UbicacionAlmacen } from '../../core/models/ubicacion-almacen.model';
 import { AlmacenService } from '../../services/almacen.service';
 import { CategoriaService } from '../../services/categoria.service';
@@ -22,11 +25,14 @@ import { UbicacionAlmacenService } from '../../services/ubicacion-almacen.servic
 @Component({
   selector: 'app-conteo-inventario-form',
   standalone: true,
-  imports: [FormsModule, MatButtonModule, MatCheckboxModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressSpinnerModule, MatSelectModule],
+  imports: [MatDialogModule, FormsModule, MatButtonModule, MatCheckboxModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressSpinnerModule, MatSelectModule],
   template: `
-    <section class="page" aria-labelledby="conteo-form-title">
-      <header><button mat-icon-button type="button" aria-label="Volver" (click)="volver()"><mat-icon>arrow_back</mat-icon></button><div><p class="eyebrow">Conteos físicos</p><h1 id="conteo-form-title">{{ id ? 'Editar borrador' : 'Nuevo conteo' }}</h1><p>Define el alcance físico antes de iniciar el conteo.</p></div></header>
-      <form #form="ngForm" (ngSubmit)="guardar()" class="card" novalidate>
+    <div [class.app-dialog-layout]="!!editor.ref">
+      @if (editor.ref) { <h2 mat-dialog-title id="conteo-form-title">{{ id ? 'Editar borrador' : 'Nuevo conteo' }}</h2> }
+      <div [class.app-dialog-layout__body]="!!editor.ref">
+    <section class="page" [class.modal-page]="!!editor.ref" aria-labelledby="conteo-form-title">
+      <header>@if (!editor.ref) { <button mat-icon-button type="button" aria-label="Volver" (click)="volver()"><mat-icon>arrow_back</mat-icon></button> }<div><p class="eyebrow">Conteos físicos</p>@if (!editor.ref) { <h1 id="conteo-form-title">{{ id ? 'Editar borrador' : 'Nuevo conteo' }}</h1> }<p>Define el alcance físico antes de iniciar el conteo.</p></div></header>
+      <form id="conteo-form-title-form" #form="ngForm" (ngSubmit)="guardar()" class="card" novalidate>
         <div class="grid">
           <mat-form-field appearance="outline"><mat-label>Tipo</mat-label><mat-select required name="tipo" [(ngModel)]="model.tipo" (selectionChange)="sincronizarTipo()">@for (item of tipos; track item) {
           <mat-option [value]="item.value">{{ item.label }}</mat-option>
@@ -57,20 +63,26 @@ import { UbicacionAlmacenService } from '../../services/ubicacion-almacen.servic
     @if (error) {
       <div class="error" role="alert">{{ error }}</div>
     }
-    <div class="actions"><button mat-button type="button" [disabled]="saving" (click)="volver()">Cancelar</button><button mat-flat-button color="primary" type="submit" [disabled]="saving || cargandoCatalogos || form.invalid">@if (saving) {
+    @if (!editor.ref) { <div class="actions"><button mat-button type="button" [disabled]="!registroListo || saving" (click)="volver()">Cancelar</button><button mat-flat-button color="primary" type="submit" [disabled]="!registroListo || saving || cargandoCatalogos || form.invalid">@if (saving) {
     <mat-spinner diameter="20"></mat-spinner>
     }@if (!saving) {
     <span>{{ id ? 'Guardar cambios' : 'Crear conteo' }}</span>
-    }</button></div>
+    }</button></div> }
     </form>
     </section>
+    
+      </div>
+      @if (editor.ref) { <mat-dialog-actions align="end"><button mat-button type="button" (click)="volver()" [disabled]="saving">Cancelar</button><button mat-flat-button color="primary" type="submit" form="conteo-form-title-form" [disabled]="saving || cargandoCatalogos || !registroListo || form.invalid">{{ id ? 'Guardar cambios' : 'Crear conteo' }}</button></mat-dialog-actions> }
+    </div>
     `,
   changeDetection: ChangeDetectionStrategy.Eager,
-  styles: [`
+  styles: [`.modal-page{padding:0;min-width:0}
     .page{max-width:980px;margin:0 auto;padding:24px;display:grid;gap:20px}header{display:flex;align-items:flex-start;gap:12px}header h1{margin:0}header p{margin:5px 0;color:#667085}.eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:.72rem;font-weight:700;color:var(--primary,#3f51b5)!important}.card{display:grid;gap:18px;padding:24px;border:1px solid #e4e7ec;border-radius:14px;background:var(--surface,#fff)}.grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.full{width:100%}.actions{display:flex;justify-content:flex-end;gap:8px}.error{padding:12px;border-radius:8px;background:#fef3f2;color:#b42318}@media(max-width:640px){.page{padding:16px}.grid{grid-template-columns:1fr}.card{padding:16px}}
   `]
 })
 export class ConteoInventarioFormComponent implements OnInit {
+  readonly editor = crearEditorInstitucional('MovimientosInventario');
+  registroListo = false;
   readonly tipos = [
     { value: TipoConteoInventario.General, label: 'General' },
     { value: TipoConteoInventario.Ciclico, label: 'Cíclico' },
@@ -99,13 +111,17 @@ export class ConteoInventarioFormComponent implements OnInit {
   ) {}
 
   ngOnInit(): void {
-    this.cargarCatalogos();
-    const value = Number(this.route.snapshot.paramMap.get('id'));
+    const value = Number((this.editor.ref ? this.editor.id : this.route.snapshot.paramMap.get('id')));
     this.id = Number.isInteger(value) && value > 0 ? value : null;
+    if (!this.editor.valido(this.id ? 'Editar' : 'Crear')) { this.error = 'No tiene permiso para este registro.'; this.cargandoCatalogos = false; return; }
+    this.registroListo = !this.id;
+    this.cargarCatalogos();
     if (!this.id) return;
-    this.service.getById(this.id).subscribe({ next: response => {
+    this.service.getById(this.id).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({ next: response => {
       if (!response.success) { this.error = response.message || 'No se pudo cargar el conteo.'; return; }
       const item = response.data;
+      if (item.estado !== EstadoConteoInventario.Borrador) { this.error = 'Sólo los conteos en borrador pueden editarse.'; return; }
+      this.registroListo = true;
       this.model = { tipo: item.tipo, almacenId: item.almacenId, ubicacionAlmacenId: item.ubicacionAlmacenId, categoriaId: item.categoriaId, esCiego: item.esCiego, observaciones: item.observaciones, productoVarianteIds: item.detalles.map(x => x.productoVarianteId) };
       this.variantesTexto = this.model.productoVarianteIds.join(', ');
       this.cargarUbicaciones(false);
@@ -126,7 +142,9 @@ export class ConteoInventarioFormComponent implements OnInit {
     this.cargarUbicaciones(true);
   }
 
-  guardar(): void {
+  async guardar(): Promise<void> {
+    const accion = this.id ? 'Editar' : 'Crear';
+    if (this.saving || !this.registroListo || !this.editor.valido(accion)) return;
     this.error = '';
     if (!this.model.almacenId || this.model.almacenId < 1) { this.error = 'Selecciona un almacén válido.'; return; }
     if (this.requiereUbicacion && (!this.model.ubicacionAlmacenId || this.model.ubicacionAlmacenId < 1)) { this.error = 'Selecciona una ubicación válida para el conteo por ubicación.'; return; }
@@ -136,22 +154,23 @@ export class ConteoInventarioFormComponent implements OnInit {
     if (tokens.length !== ids.length) { this.error = 'Las variantes deben ser IDs numéricos positivos separados por coma.'; return; }
     const value: ConteoInventarioFormValue = { ...this.model, productoVarianteIds: [...new Set(ids)] };
     this.saving = true;
+    if (!await this.editor.confirmar(accion, { titulo: 'Confirmar guardado', mensaje: '¿Guardar el borrador de conteo?', confirmarTexto: 'Guardar' })) { this.saving = false; return; }
     const request = this.id ? this.service.update(this.id, value) : this.service.create(value);
-    request.pipe(finalize(() => this.saving = false)).subscribe({ next: response => { if (!response.success) { this.error = response.message || 'No se pudo guardar el conteo.'; return; } void this.router.navigate(['/inventario/conteos', response.data.id]); }, error: err => this.error = err?.error?.message || 'No se pudo guardar el conteo.' });
+    request.pipe(takeUntilDestroyed(this.editor.destroyRef), finalize(() => this.saving = false)).subscribe({ next: response => { if (!response.success) { this.error = response.message || 'No se pudo guardar el conteo.'; return; } if (this.editor.ref) this.editor.cerrar(true); else void this.router.navigate(['/inventario/conteos', response.data.id]); }, error: err => this.error = err?.error?.message || 'No se pudo guardar el conteo.' });
   }
 
-  volver(): void { void this.router.navigate(['/inventario/conteos']); }
+  volver(): void { if (this.saving || this.editor.pendiente()) return; if (this.editor.ref) this.editor.cerrar(false); else void this.router.navigate(['/inventario/conteos']); }
 
   private cargarCatalogos(): void {
     this.cargandoCatalogos = true;
     let pendientes = 2;
     const finalizar = () => { pendientes--; if (pendientes === 0) this.cargandoCatalogos = false; };
 
-    this.almacenesService.getActivos().subscribe({
+    this.almacenesService.getActivos().pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
       next: response => { if (response.success) this.almacenes = response.data; else this.error = response.message || 'No se pudieron cargar los almacenes activos.'; finalizar(); },
       error: () => { this.error = 'No se pudieron cargar los almacenes activos.'; finalizar(); }
     });
-    this.categoriasService.getActivas().subscribe({
+    this.categoriasService.getActivas().pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
       next: response => { if (response.success) this.categorias = response.data; else this.error = response.message || 'No se pudieron cargar las categorías activas.'; finalizar(); },
       error: () => { this.error = 'No se pudieron cargar las categorías activas.'; finalizar(); }
     });
@@ -160,7 +179,7 @@ export class ConteoInventarioFormComponent implements OnInit {
   private cargarUbicaciones(limpiarSiFalla: boolean): void {
     if (!this.model.almacenId || this.model.almacenId < 1) { this.ubicaciones = []; return; }
     this.cargandoUbicaciones = true;
-    this.ubicacionesService.getActivas(this.model.almacenId).pipe(finalize(() => this.cargandoUbicaciones = false)).subscribe({
+    this.ubicacionesService.getActivas(this.model.almacenId).pipe(takeUntilDestroyed(this.editor.destroyRef), finalize(() => this.cargandoUbicaciones = false)).subscribe({
       next: response => {
         if (!response.success) { this.ubicaciones = []; if (limpiarSiFalla) this.model.ubicacionAlmacenId = null; this.error = response.message || 'No se pudieron cargar las ubicaciones del almacén.'; return; }
         this.ubicaciones = response.data;

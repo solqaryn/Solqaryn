@@ -1,3 +1,7 @@
+## 2026-11-25 — QA: transferencia, reserva y conteo físico
+- Se reutilizan los formularios, detalles y tablas existentes en modales XL desde sus listados. Se mantienen rutas directas y permisos; no se crea eliminación de documentos de stock cuando no existe operación de dominio.
+- Confirmaciones con revalidación del tenant, permiso y estado, también para captura de conteo. Las solicitudes HTTP se cancelan al destruir el editor. No se modifican API, reglas de stock ni base de datos.
+
 ## 2026-11-25 — QA: coherencia del foco Material
 - Se refuerza el color de la etiqueta activa en el estándar único, manteniendo excepciones para campos inválidos y deshabilitados. La prueba espera la transición de Material y comprueba el mismo color del borde, además de geometría y foco único. No se reduce la exigencia de la regresión.
 

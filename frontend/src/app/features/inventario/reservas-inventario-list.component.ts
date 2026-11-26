@@ -1,7 +1,7 @@
+import { crearAccionesInstitucionales } from '../../shared/modal-institucional/acciones-institucionales';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -29,7 +29,7 @@ import { ReservaInventarioService } from '../../services/reserva-inventario.serv
         }
       </header>
     
-      <form class="filters" (ngSubmit)="aplicarFiltros()">
+      <form class="filters app-table-filters" (ngSubmit)="aplicarFiltros()">
         <mat-form-field appearance="outline"><mat-label>Buscar</mat-label><input matInput name="busqueda" [(ngModel)]="busqueda" placeholder="Número de reserva" /></mat-form-field>
         <mat-form-field appearance="outline"><mat-label>Estado</mat-label><mat-select name="estado" [(ngModel)]="estado"><mat-option [value]="null">Todos</mat-option>@for (item of estados; track item) {
         <mat-option [value]="item">{{ item }}</mat-option>
@@ -59,9 +59,9 @@ import { ReservaInventarioService } from '../../services/reserva-inventario.serv
     }
     
     @if (!loading && !error && items.length) {
-      <div class="table-wrap"><table><thead><tr><th>Número</th><th>Estado</th><th>Venta</th><th>Expira</th><th>Detalle</th><th>Acciones</th></tr></thead><tbody>@for (item of items; track item) {
-      <tr><td><strong>{{ item.numero }}</strong><small>{{ item.fechaCreacion | date:'short' }}</small></td><td><span class="badge">{{ item.estado }}</span></td><td>{{ item.ventaId ? ('#' + item.ventaId) : '—' }}</td><td>{{ item.fechaExpiracion ? (item.fechaExpiracion | date:'short') : 'Sin expiración' }}</td><td>{{ item.detalles.length }} línea(s)<small>{{ totalReservado(item) }} unidades reservadas</small></td><td class="actions"><button mat-icon-button type="button" aria-label="Ver reserva" (click)="ver(item.id)"><mat-icon>visibility</mat-icon></button>@if (puedeEditar && item.estado === 'Borrador') {
-      <button mat-icon-button type="button" aria-label="Editar reserva" (click)="editar(item.id)"><mat-icon>edit</mat-icon></button>
+      <div class="table-wrap app-table-shell" role="region" tabindex="0" aria-label="reservas"><table class="app-data-table"><thead><tr><th>Número</th><th>Estado</th><th>Venta</th><th>Expira</th><th>Detalle</th><th class="actions-heading">Acciones</th></tr></thead><tbody>@for (item of items; track item) {
+      <tr><td><strong>{{ item.numero }}</strong><small>{{ item.fechaCreacion | date:'short' }}</small></td><td><span class="badge">{{ item.estado }}</span></td><td>{{ item.ventaId ? ('#' + item.ventaId) : '—' }}</td><td>{{ item.fechaExpiracion ? (item.fechaExpiracion | date:'short') : 'Sin expiración' }}</td><td>{{ item.detalles.length }} línea(s)<small>{{ totalReservado(item) }} unidades reservadas</small></td><td class="actions"><button class="action-view" mat-icon-button type="button" aria-label="Ver reserva" (click)="ver(item.id)"><mat-icon>visibility</mat-icon></button>@if (puedeEditar && item.estado === 'Borrador') {
+      <button class="action-edit" mat-icon-button type="button" aria-label="Editar reserva" (click)="editar(item.id)"><mat-icon>edit</mat-icon></button>
     }</td></tr>
     }</tbody></table></div>
     }
@@ -74,6 +74,7 @@ import { ReservaInventarioService } from '../../services/reserva-inventario.serv
   styles: [`.page{padding:24px;display:grid;gap:20px}.header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.header h1{margin:0;font-size:1.75rem}.header p{margin:6px 0 0;color:var(--text-secondary,#667085)}.eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:.72rem;font-weight:700;color:var(--primary,#3f51b5)!important}.header button mat-icon{margin-right:6px}.filters{display:grid;grid-template-columns:2fr repeat(5,minmax(140px,1fr)) auto;gap:12px;align-items:start}.filter-actions{display:flex;gap:6px;padding-top:4px}.catalog-warning{display:flex;align-items:center;gap:8px;padding:10px 12px;border-radius:10px;background:#fffaeb;color:#7a2e0e}.state{min-height:180px;display:flex;align-items:center;justify-content:center;gap:12px;border:1px dashed #d0d5dd;border-radius:12px;padding:24px}.state.error{color:#b42318}.state.empty{flex-direction:column;color:#667085}.table-wrap{overflow:auto;border:1px solid #e4e7ec;border-radius:12px}table{width:100%;border-collapse:collapse;min-width:820px}th,td{padding:14px 16px;text-align:left;border-bottom:1px solid #eaecf0;vertical-align:middle}th{font-size:.78rem;text-transform:uppercase;letter-spacing:.04em;color:#667085;background:#f9fafb}td small{display:block;margin-top:3px;color:#667085}.badge{display:inline-flex;border-radius:999px;padding:4px 9px;background:#f2f4f7;font-size:.78rem;font-weight:600}.actions{white-space:nowrap}@media(max-width:1200px){.filters{grid-template-columns:repeat(3,1fr)}.filter-actions{grid-column:1/-1}}@media(max-width:900px){.page{padding:16px}.header{flex-direction:column}.filters{grid-template-columns:1fr 1fr}.filter-actions{grid-column:1/-1}}@media(max-width:560px){.filters{grid-template-columns:1fr}}`]
 })
 export class ReservasInventarioListComponent implements OnInit {
+  readonly acciones = crearAccionesInstitucionales('MovimientosInventario');
   items: ReservaInventario[] = [];
   almacenes: Almacen[] = [];
   loading = false;
@@ -91,7 +92,7 @@ export class ReservasInventarioListComponent implements OnInit {
   expiraHasta: string | null = null;
   readonly estados: EstadoReservaInventario[] = ['Borrador', 'Activa', 'Consumida', 'Liberada', 'Expirada', 'Cancelada'];
 
-  constructor(private readonly service: ReservaInventarioService, private readonly almacenesService: AlmacenService, private readonly router: Router, private readonly permisos: PermisosRuntimeService) {}
+  constructor(private readonly service: ReservaInventarioService, private readonly almacenesService: AlmacenService, private readonly permisos: PermisosRuntimeService) {}
 
   ngOnInit(): void { this.cargarAlmacenes(); this.cargar(); }
   get puedeCrear(): boolean { return this.permisos.puede('MovimientosInventario', 'Crear'); }
@@ -133,9 +134,9 @@ export class ReservasInventarioListComponent implements OnInit {
   limpiar(): void { this.busqueda = ''; this.estado = null; this.ventaId = null; this.almacenId = null; this.expiraDesde = null; this.expiraHasta = null; this.page = 1; this.error = ''; this.errorFiltros = false; this.cargar(); }
   cambiarPagina(event: PageEvent): void { this.page = event.pageIndex + 1; this.pageSize = event.pageSize; this.cargar(); }
   totalReservado(item: ReservaInventario): number { return item.detalles.reduce((total, detalle) => total + detalle.cantidadReservada, 0); }
-  nuevo(): void { void this.router.navigate(['/inventario/reservas/nueva']); }
-  ver(id: number): void { void this.router.navigate(['/inventario/reservas', id]); }
-  editar(id: number): void { void this.router.navigate(['/inventario/reservas', id, 'editar']); }
+  async nuevo(): Promise<void> { if (await this.acciones.abrir(() => import('./reserva-inventario-form.component').then(m => m.ReservaInventarioFormComponent), 'xl', 'Crear')) this.cargar(); }
+  async ver(id: number): Promise<void> { if (await this.acciones.abrir(() => import('./reserva-inventario-detail.component').then(m => m.ReservaInventarioDetailComponent), 'xl', 'Ver', id)) this.cargar(); }
+  async editar(id: number): Promise<void> { if (this.items.find(item => item.id === id)?.estado !== 'Borrador') return; if (await this.acciones.abrir(() => import('./reserva-inventario-form.component').then(m => m.ReservaInventarioFormComponent), 'xl', 'Editar', id)) this.cargar(); }
 
   private parseFecha(value: string | null): Date | null {
     if (!value) return null;

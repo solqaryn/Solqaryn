@@ -1,3 +1,6 @@
+import { MatDialogModule } from '@angular/material/dialog';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { crearEditorInstitucional } from '../../shared/modal-institucional/acciones-institucionales';
 import { CommonModule } from '@angular/common';
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -8,16 +11,18 @@ import { finalize } from 'rxjs';
 import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
 import { ReservaInventario } from '../../core/models/reserva-inventario.model';
 import { ReservaInventarioService } from '../../services/reserva-inventario.service';
-import { AppAlertService } from '../../shared/alerts/app-alert.service';
 
 @Component({
   selector: 'app-reserva-inventario-detail',
   standalone: true,
-  imports: [CommonModule, MatButtonModule, MatIconModule, MatProgressSpinnerModule],
+  imports: [MatDialogModule, CommonModule, MatButtonModule, MatIconModule, MatProgressSpinnerModule],
   template: `
-    <section class="page" aria-labelledby="reserva-title">
+    <div [class.app-dialog-layout]="!!editor.ref">
+      @if (editor.ref) { <h2 mat-dialog-title id="reserva-title">{{ reserva?.numero || 'Reserva' }}</h2> }
+      <div [class.app-dialog-layout__body]="!!editor.ref">
+    <section class="page" [class.modal-page]="!!editor.ref" aria-labelledby="reserva-title">
       <header class="header">
-        <div><button mat-button type="button" (click)="volver()"><mat-icon>arrow_back</mat-icon>Reservas</button><p class="eyebrow">Inventario empresarial</p><h1 id="reserva-title">{{ reserva?.numero || 'Reserva' }}</h1></div>
+        <div>@if (!editor.ref) { <button mat-button type="button" (click)="volver()"><mat-icon>arrow_back</mat-icon>Reservas</button> }<p class="eyebrow">Inventario empresarial</p>@if (!editor.ref) { <h1 id="reserva-title">{{ reserva?.numero || 'Reserva' }}</h1> }</div>
         @if (reserva) {
           <div class="actions">
             @if (puedeEditar && reserva.estado === 'Borrador') {
@@ -56,7 +61,7 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
         @if (mensaje) {
           <div class="message" role="status">{{ mensaje }}</div>
         }
-        <div class="table-wrap"><table><thead><tr><th>SKU / variante</th><th>Almacén</th><th>Ubicación</th><th>Reservado</th><th>Consumido</th><th>Pendiente</th></tr></thead><tbody>@for (detalle of item.detalles; track detalle) {
+        <div class="table-wrap app-table-shell" role="region" tabindex="0" aria-label="Detalle de reservas"><table class="app-data-table"><thead><tr><th>SKU / variante</th><th>Almacén</th><th>Ubicación</th><th>Reservado</th><th>Consumido</th><th>Pendiente</th></tr></thead><tbody>@for (detalle of item.detalles; track detalle) {
         <tr><td><strong>{{ detalle.productoSku || ('Variante #' + detalle.productoVarianteId) }}</strong><small>{{ descripcionProducto(detalle) }}</small></td><td>#{{ detalle.almacenId }}</td><td>{{ detalle.ubicacionAlmacenId ? ('#' + detalle.ubicacionAlmacenId) : 'Sin ubicación' }}</td><td>{{ detalle.cantidadReservada }}</td><td>{{ detalle.cantidadConsumida }}</td><td>{{ detalle.cantidadReservada - detalle.cantidadConsumida }}</td></tr>
       }</tbody></table></div>
       @if (item.motivoLiberacion || item.motivoCancelacion) {
@@ -68,11 +73,16 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
     }
     }
     </section>
+    
+      </div>
+      @if (editor.ref) { <mat-dialog-actions align="end"><button mat-button type="button" (click)="volver()" [disabled]="procesando || editor.pendiente()">Cerrar detalle</button></mat-dialog-actions> }
+    </div>
     `,
   changeDetection: ChangeDetectionStrategy.Eager,
-  styles: [`.page{padding:24px;display:grid;gap:20px}.header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.header h1{margin:4px 0}.eyebrow{margin:12px 0 0;text-transform:uppercase;letter-spacing:.08em;font-size:.72rem;font-weight:700;color:var(--primary,#3f51b5)}.actions{display:flex;flex-wrap:wrap;gap:8px}.actions mat-icon{margin-right:5px}.state{min-height:180px;display:flex;align-items:center;justify-content:center;gap:12px;border:1px dashed #d0d5dd;border-radius:12px}.state.error{color:#b42318}.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.summary div,.audit{padding:14px;border:1px solid #e4e7ec;border-radius:12px;background:#fff}.summary span{display:block;color:#667085;font-size:.78rem;margin-bottom:4px}.message{padding:12px;border-radius:10px;background:#ecfdf3;color:#027a48}.table-wrap{overflow:auto;border:1px solid #e4e7ec;border-radius:12px}table{width:100%;border-collapse:collapse;min-width:780px}th,td{padding:14px 16px;text-align:left;border-bottom:1px solid #eaecf0}th{font-size:.78rem;text-transform:uppercase;color:#667085;background:#f9fafb}td small{display:block;color:#667085;margin-top:3px}.audit p{margin:6px 0 0;color:#475467}@media(max-width:800px){.page{padding:16px}.header{flex-direction:column}.summary{grid-template-columns:1fr 1fr}}@media(max-width:520px){.summary{grid-template-columns:1fr}}`]
+  styles: [`.modal-page{padding:0;min-width:0}.page{padding:24px;display:grid;gap:20px}.header{display:flex;justify-content:space-between;gap:16px;align-items:flex-start}.header h1{margin:4px 0}.eyebrow{margin:12px 0 0;text-transform:uppercase;letter-spacing:.08em;font-size:.72rem;font-weight:700;color:var(--primary,#3f51b5)}.actions{display:flex;flex-wrap:wrap;gap:8px}.actions mat-icon{margin-right:5px}.state{min-height:180px;display:flex;align-items:center;justify-content:center;gap:12px;border:1px dashed #d0d5dd;border-radius:12px}.state.error{color:#b42318}.summary{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.summary div,.audit{padding:14px;border:1px solid #e4e7ec;border-radius:12px;background:#fff}.summary span{display:block;color:#667085;font-size:.78rem;margin-bottom:4px}.message{padding:12px;border-radius:10px;background:#ecfdf3;color:#027a48}.table-wrap{overflow:auto;border:1px solid #e4e7ec;border-radius:12px}table{width:100%;border-collapse:collapse;min-width:780px}th,td{padding:14px 16px;text-align:left;border-bottom:1px solid #eaecf0}th{font-size:.78rem;text-transform:uppercase;color:#667085;background:#f9fafb}td small{display:block;color:#667085;margin-top:3px}.audit p{margin:6px 0 0;color:#475467}@media(max-width:800px){.page{padding:16px}.header{flex-direction:column}.summary{grid-template-columns:1fr 1fr}}@media(max-width:520px){.summary{grid-template-columns:1fr}}`]
 })
 export class ReservaInventarioDetailComponent implements OnInit {
+  readonly editor = crearEditorInstitucional('MovimientosInventario');
   reserva: ReservaInventario | null = null;
   loading = false;
   procesando = false;
@@ -84,10 +94,9 @@ export class ReservaInventarioDetailComponent implements OnInit {
     private readonly route: ActivatedRoute,
     private readonly router: Router,
     private readonly service: ReservaInventarioService,
-    private readonly permisos: PermisosRuntimeService,
-    private readonly alerts: AppAlertService
+    private readonly permisos: PermisosRuntimeService
   ) {}
-  ngOnInit(): void { this.id = Number(this.route.snapshot.paramMap.get('id')); if (!Number.isInteger(this.id) || this.id <= 0) { this.error = 'Identificador de reserva inválido.'; return; } this.cargar(); }
+  ngOnInit(): void { if (!this.editor.valido('Ver')) { this.loading = false; this.error = 'Registro no autorizado.'; return; } this.id = Number((this.editor.ref ? this.editor.id : this.route.snapshot.paramMap.get('id'))); if (!Number.isInteger(this.id) || this.id <= 0) { this.error = 'Identificador de reserva inválido.'; return; } this.cargar(); }
   get puedeEditar(): boolean { return this.permisos.puede('MovimientosInventario', 'Editar'); }
   get puedeConfirmar(): boolean { return this.permisos.puede('MovimientosInventario', 'Confirmar'); }
   get puedeAnular(): boolean { return this.permisos.puede('MovimientosInventario', 'Anular'); }
@@ -98,64 +107,69 @@ export class ReservaInventarioDetailComponent implements OnInit {
     return !Number.isNaN(expiracion) && expiracion <= Date.now();
   }
 
-  cargar(): void { this.loading = true; this.error = ''; this.service.getById(this.id).pipe(finalize(() => this.loading = false)).subscribe({ next: r => { if (!r.success) { this.error = r.message || 'No se pudo cargar la reserva.'; return; } this.reserva = r.data; }, error: () => this.error = 'No se pudo cargar la reserva.' }); }
+  cargar(): void { this.loading = true; this.error = ''; this.service.getById(this.id).pipe(takeUntilDestroyed(this.editor.destroyRef), finalize(() => this.loading = false)).subscribe({ next: r => { if (!r.success) { this.error = r.message || 'No se pudo cargar la reserva.'; return; } this.reserva = r.data; }, error: () => this.error = 'No se pudo cargar la reserva.' }); }
   async activar(): Promise<void> {
-    const confirmado = await this.alerts.confirmar({
+    if (this.procesando || this.loading || this.editor.pendiente() || !(this.reserva?.estado === 'Borrador')) return;
+    const confirmado = await this.editor.confirmar('Confirmar', {
       titulo: 'Activar reserva',
       mensaje: '¿Activar esta reserva y bloquear stock disponible?',
       tipo: 'advertencia',
       confirmarTexto: 'Activar'
     });
-    if (confirmado) this.ejecutar(() => this.service.activar(this.id), 'Reserva activada.');
+    if (confirmado && (this.reserva?.estado === 'Borrador')) this.ejecutar(() => this.service.activar(this.id), 'Reserva activada.');
   }
 
   async consumir(): Promise<void> {
-    const confirmado = await this.alerts.confirmar({
+    if (this.procesando || this.loading || this.editor.pendiente() || !(this.reserva?.estado === 'Activa')) return;
+    const confirmado = await this.editor.confirmar('Confirmar', {
       titulo: 'Consumir reserva',
       mensaje: '¿Consumir definitivamente esta reserva?',
       tipo: 'advertencia',
       confirmarTexto: 'Consumir'
     });
-    if (confirmado) this.ejecutar(() => this.service.consumir(this.id), 'Reserva consumida.');
+    if (confirmado && (this.reserva?.estado === 'Activa')) this.ejecutar(() => this.service.consumir(this.id), 'Reserva consumida.');
   }
 
   async expirar(): Promise<void> {
+    if (this.procesando || this.loading || this.editor.pendiente() || !(this.reserva?.estado === 'Activa' && this.reservaPuedeExpirar)) return;
     if (!this.reservaPuedeExpirar) {
       this.error = 'La reserva todavía no alcanzó su fecha de expiración.';
       return;
     }
-    const confirmado = await this.alerts.confirmar({
+    const confirmado = await this.editor.confirmar('CambiarEstado', {
       titulo: 'Expirar reserva',
       mensaje: '¿Marcar esta reserva como expirada y liberar el stock?',
       tipo: 'advertencia',
       confirmarTexto: 'Expirar'
     });
-    if (confirmado) this.ejecutar(() => this.service.expirar(this.id), 'Reserva expirada.');
+    if (confirmado && (this.reserva?.estado === 'Activa' && this.reservaPuedeExpirar)) this.ejecutar(() => this.service.expirar(this.id), 'Reserva expirada.');
   }
 
   async liberar(): Promise<void> {
-    const motivo = await this.alerts.solicitarTexto({
+    if (this.procesando || this.loading || this.editor.pendiente() || !(this.reserva?.estado === 'Activa')) return;
+    const motivo = await this.editor.solicitarTexto('Anular', {
       titulo: 'Liberar reserva',
       mensaje: 'Indica el motivo para liberar la reserva y devolver el stock disponible.',
       tipo: 'advertencia',
       confirmarTexto: 'Liberar',
       entrada: { etiqueta: 'Motivo de liberación', requerida: true }
     });
-    if (motivo) this.ejecutar(() => this.service.liberar(this.id, motivo), 'Reserva liberada.');
+    if (motivo && (this.reserva?.estado === 'Activa')) this.ejecutar(() => this.service.liberar(this.id, motivo), 'Reserva liberada.');
   }
 
   async cancelar(): Promise<void> {
-    const motivo = await this.alerts.solicitarTexto({
+    if (this.procesando || this.loading || this.editor.pendiente() || !(!!this.reserva && ['Borrador', 'Activa'].includes(this.reserva.estado))) return;
+    const motivo = await this.editor.solicitarTexto('Anular', {
       titulo: 'Cancelar reserva',
       mensaje: 'Indica el motivo de cancelación. Esta acción no se puede deshacer.',
       tipo: 'peligro',
       confirmarTexto: 'Cancelar reserva',
       entrada: { etiqueta: 'Motivo de cancelación', requerida: true }
     });
-    if (motivo) this.ejecutar(() => this.service.cancelar(this.id, motivo), 'Reserva cancelada.');
+    if (motivo && (!!this.reserva && ['Borrador', 'Activa'].includes(this.reserva.estado))) this.ejecutar(() => this.service.cancelar(this.id, motivo), 'Reserva cancelada.');
   }
-  editar(): void { void this.router.navigate(['/inventario/reservas', this.id, 'editar']); }
-  volver(): void { void this.router.navigate(['/inventario/reservas']); }
+  async editar(): Promise<void> { if (this.procesando || this.loading || this.editor.pendiente() || this.reserva?.estado !== 'Borrador' || !this.editor.valido('Editar')) return; if (this.editor.ref) { if (await this.editor.abrir(() => import('./reserva-inventario-form.component').then(m => m.ReservaInventarioFormComponent), 'xl', 'Editar', this.id)) this.cargar(); } else void this.router.navigate(['/inventario/reservas', this.id, 'editar']); }
+  volver(): void { if (this.procesando || this.editor.pendiente()) return; if (this.editor.ref) this.editor.cerrar(true); else void this.router.navigate(['/inventario/reservas']); }
   descripcionProducto(d: ReservaInventario['detalles'][number]): string { return [d.productoMarca, d.productoModelo, d.productoColor, d.productoTalla].filter(Boolean).join(' · '); }
-  private ejecutar(factory: () => ReturnType<ReservaInventarioService['activar']>, ok: string): void { this.procesando = true; this.error = ''; this.mensaje = ''; factory().pipe(finalize(() => this.procesando = false)).subscribe({ next: r => { if (!r.success) { this.error = r.message || 'No se pudo completar la operación.'; return; } this.reserva = r.data; this.mensaje = ok; }, error: () => this.error = 'No se pudo completar la operación.' }); }
+  private ejecutar(factory: () => ReturnType<ReservaInventarioService['activar']>, ok: string): void { this.procesando = true; this.error = ''; this.mensaje = ''; factory().pipe(takeUntilDestroyed(this.editor.destroyRef), finalize(() => this.procesando = false)).subscribe({ next: r => { if (!r.success) { this.error = r.message || 'No se pudo completar la operación.'; return; } this.reserva = r.data; this.mensaje = ok; }, error: () => this.error = 'No se pudo completar la operación.' }); }
 }

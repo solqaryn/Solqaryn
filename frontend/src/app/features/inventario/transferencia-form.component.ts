@@ -1,3 +1,6 @@
+import { MatDialogModule } from '@angular/material/dialog';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
+import { crearEditorInstitucional } from '../../shared/modal-institucional/acciones-institucionales';
 
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
@@ -21,16 +24,19 @@ import { UbicacionAlmacenService } from '../../services/ubicacion-almacen.servic
 @Component({
   selector: 'app-transferencia-form',
   standalone: true,
-  imports: [FormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressSpinnerModule, MatSelectModule],
+  imports: [MatDialogModule, FormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressSpinnerModule, MatSelectModule],
   template: `
-    <section class="page" aria-labelledby="transferencia-form-title">
+    <div [class.app-dialog-layout]="!!editor.ref">
+      @if (editor.ref) { <h2 mat-dialog-title id="transferencia-form-title">{{ editando ? 'Editar transferencia' : 'Nueva transferencia' }}</h2> }
+      <div [class.app-dialog-layout__body]="!!editor.ref">
+    <section class="page" [class.modal-page]="!!editor.ref" aria-labelledby="transferencia-form-title">
       <header class="header">
         <div>
           <p class="eyebrow">Inventario empresarial</p>
-          <h1 id="transferencia-form-title">{{ editando ? 'Editar transferencia' : 'Nueva transferencia' }}</h1>
+          @if (!editor.ref) { <h1 id="transferencia-form-title">{{ editando ? 'Editar transferencia' : 'Nueva transferencia' }}</h1> }
           <p>Selecciona almacenes, variantes y ubicaciones físicas. El lifecycle se ejecuta desde el detalle.</p>
         </div>
-        <button mat-stroked-button type="button" (click)="volver()"><mat-icon>arrow_back</mat-icon>Volver</button>
+        @if (!editor.ref) { <button mat-stroked-button type="button" (click)="volver()"><mat-icon>arrow_back</mat-icon>Volver</button> }
       </header>
     
       @if (loading || catalogLoading) {
@@ -39,7 +45,7 @@ import { UbicacionAlmacenService } from '../../services/ubicacion-almacen.servic
         </div>
       }
       @if (!loading && !catalogLoading) {
-        <form class="card" (ngSubmit)="guardar()">
+        <form id="transferencia-form-title-form" class="card" (ngSubmit)="guardar()">
           <div class="grid two">
             <mat-form-field appearance="outline">
               <mat-label>Almacén origen</mat-label>
@@ -106,9 +112,9 @@ import { UbicacionAlmacenService } from '../../services/ubicacion-almacen.servic
           @if (error) {
             <div class="error" role="alert">{{ error }}</div>
           }
-          <div class="actions">
-            <button mat-stroked-button type="button" (click)="volver()" [disabled]="saving">Cancelar</button>
-            <button mat-flat-button color="primary" type="submit" [disabled]="saving || almacenes.length < 2 || variantes.length === 0">
+          @if (!editor.ref) { <div class="actions">
+            <button mat-stroked-button type="button" (click)="volver()" [disabled]="!registroListo || saving">Cancelar</button>
+            <button mat-flat-button color="primary" type="submit" [disabled]="!registroListo || saving || almacenes.length < 2 || variantes.length === 0">
               @if (saving) {
                 <mat-spinner diameter="20"></mat-spinner>
               }
@@ -116,17 +122,23 @@ import { UbicacionAlmacenService } from '../../services/ubicacion-almacen.servic
                 <span>{{ editando ? 'Guardar cambios' : 'Crear transferencia' }}</span>
               }
             </button>
-          </div>
+          </div> }
         </form>
       }
     </section>
+    
+      </div>
+      @if (editor.ref) { <mat-dialog-actions align="end"><button mat-button type="button" (click)="volver()" [disabled]="saving">Cancelar</button><button mat-flat-button color="primary" type="submit" form="transferencia-form-title-form" [disabled]="saving || loading || catalogLoading || !registroListo || almacenes.length < 2 || variantes.length === 0">{{ editando ? 'Guardar cambios' : 'Crear transferencia' }}</button></mat-dialog-actions> }
+    </div>
     `,
   changeDetection: ChangeDetectionStrategy.Eager,
-  styles: [`
+  styles: [`.modal-page{padding:0;min-width:0}
     .page{padding:24px;display:grid;gap:20px}.header{display:flex;justify-content:space-between;gap:16px}.eyebrow{text-transform:uppercase;letter-spacing:.08em;font-size:12px;font-weight:700;margin:0}.header h1{margin:4px 0}.header p,.details-header p{margin:0;color:var(--text-secondary,#667085)}.card{display:grid;gap:18px;padding:20px;border:1px solid rgba(0,0,0,.12);border-radius:14px}.grid{display:grid;gap:12px}.two{grid-template-columns:1fr 1fr}.detail-grid{grid-template-columns:minmax(260px,1.5fr) minmax(190px,1fr) minmax(190px,1fr) minmax(120px,.6fr) auto;align-items:start}.full{width:100%}.details-header{display:flex;justify-content:space-between;align-items:center;gap:16px}.details-header h2{margin:0}.detail{padding:14px;border:1px solid rgba(0,0,0,.08);border-radius:10px}.actions{display:flex;justify-content:flex-end;gap:10px}.error{color:#b42318}.state{min-height:160px;display:flex;justify-content:center;align-items:center;gap:12px}@media(max-width:1050px){.detail-grid{grid-template-columns:1fr 1fr}.two{grid-template-columns:1fr}}@media(max-width:600px){.page{padding:16px}.header,.details-header{flex-direction:column;align-items:stretch}.detail-grid{grid-template-columns:1fr}}
   `]
 })
 export class TransferenciaFormComponent implements OnInit {
+  readonly editor = crearEditorInstitucional('MovimientosInventario');
+  registroListo = false;
   readonly id: number;
   almacenes: Almacen[] = [];
   ubicaciones: UbicacionAlmacen[] = [];
@@ -145,7 +157,7 @@ export class TransferenciaFormComponent implements OnInit {
     private readonly ubicacionService: UbicacionAlmacenService,
     private readonly productoService: ProductoService
   ) {
-    this.id = Number(this.route.snapshot.paramMap.get('id')) || 0;
+    this.id = Number((this.editor.ref ? this.editor.id : this.route.snapshot.paramMap.get('id'))) || 0;
   }
 
   get editando(): boolean { return this.id > 0; }
@@ -153,19 +165,24 @@ export class TransferenciaFormComponent implements OnInit {
   get ubicacionesDestino(): UbicacionAlmacen[] { return this.ubicaciones.filter(item => item.almacenId === this.model.almacenDestinoId); }
 
   ngOnInit(): void {
+    if (!this.editor.valido(this.editando ? 'Editar' : 'Crear')) { this.error = 'No tiene permiso para este registro.'; this.catalogLoading = false; return; }
+    this.registroListo = !this.editando;
     this.cargarCatalogos();
     if (this.editando) this.cargarTransferencia();
   }
 
-  guardar(): void {
+  async guardar(): Promise<void> {
+    const accion = this.editando ? 'Editar' : 'Crear';
+    if (this.saving || !this.registroListo || !this.editor.valido(accion)) return;
     this.error = '';
     if (!this.esValido()) return;
     this.saving = true;
+    if (!await this.editor.confirmar(accion, { titulo: 'Confirmar guardado', mensaje: '¿Guardar el borrador de transferencia?', confirmarTexto: 'Guardar' })) { this.saving = false; return; }
     const operation = this.editando ? this.service.update(this.id, this.model) : this.service.create(this.model);
-    operation.pipe(finalize(() => this.saving = false)).subscribe({
+    operation.pipe(takeUntilDestroyed(this.editor.destroyRef), finalize(() => this.saving = false)).subscribe({
       next: response => {
         if (!response.success) { this.error = response.message || 'No se pudo guardar la transferencia.'; return; }
-        void this.router.navigate(['/inventario/transferencias', response.data.id]);
+        if (this.editor.ref) this.editor.cerrar(true); else void this.router.navigate(['/inventario/transferencias', response.data.id]);
       },
       error: error => this.error = error?.error?.message || 'No se pudo guardar la transferencia.'
     });
@@ -186,7 +203,7 @@ export class TransferenciaFormComponent implements OnInit {
   agregarDetalle(): void { this.model.detalles.push(this.nuevoDetalle()); }
   quitarDetalle(index: number): void { if (this.model.detalles.length > 1) this.model.detalles.splice(index, 1); }
   trackByIndex(index: number, _detalle?: TransferenciaInventarioDetalleInput): number { return index; }
-  volver(): void { void this.router.navigate(['/inventario/transferencias']); }
+  volver(): void { if (this.saving || this.editor.pendiente()) return; if (this.editor.ref) this.editor.cerrar(false); else void this.router.navigate(['/inventario/transferencias']); }
   etiquetaAlmacen(almacen: Almacen): string { return `${almacen.codigo} — ${almacen.nombre} · ${almacen.sucursalNombre}`; }
   etiquetaUbicacion(ubicacion: UbicacionAlmacen): string { return `${ubicacion.codigo} — ${ubicacion.nombre}`; }
   etiquetaVariante(variante: ProductoVariante): string {
@@ -200,7 +217,7 @@ export class TransferenciaFormComponent implements OnInit {
       almacenes: this.almacenService.getActivos(),
       ubicaciones: this.ubicacionService.getActivas(),
       productos: this.productoService.getPaged({ page: 1, pageSize: 200, activo: true, sortBy: 'Nombre', sortDirection: 'asc' })
-    }).pipe(finalize(() => this.catalogLoading = false)).subscribe({
+    }).pipe(takeUntilDestroyed(this.editor.destroyRef), finalize(() => this.catalogLoading = false)).subscribe({
       next: result => {
         this.almacenes = result.almacenes.success ? result.almacenes.data : [];
         this.ubicaciones = result.ubicaciones.success ? result.ubicaciones.data : [];
@@ -216,10 +233,11 @@ export class TransferenciaFormComponent implements OnInit {
 
   private cargarTransferencia(): void {
     this.loading = true;
-    this.service.getById(this.id).pipe(finalize(() => this.loading = false)).subscribe({
+    this.service.getById(this.id).pipe(takeUntilDestroyed(this.editor.destroyRef), finalize(() => this.loading = false)).subscribe({
       next: response => {
         if (!response.success) { this.error = response.message || 'No se pudo cargar la transferencia.'; return; }
         if (response.data.estado !== 'Borrador') { this.error = 'Sólo las transferencias en borrador pueden editarse.'; return; }
+        this.registroListo = true;
         this.model = {
           almacenOrigenId: response.data.almacenOrigenId,
           almacenDestinoId: response.data.almacenDestinoId,

@@ -1,7 +1,7 @@
+import { crearAccionesInstitucionales } from '../../shared/modal-institucional/acciones-institucionales';
 
 import { Component, OnInit, ChangeDetectionStrategy } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatIconModule } from '@angular/material/icon';
@@ -37,7 +37,7 @@ import { TransferenciaInventarioService } from '../../services/transferencia-inv
         }
       </header>
     
-      <form class="filters" (ngSubmit)="aplicarFiltros()">
+      <form class="filters app-table-filters" (ngSubmit)="aplicarFiltros()">
         <mat-form-field appearance="outline"><mat-label>Número</mat-label><input matInput name="numero" [(ngModel)]="numero" /></mat-form-field>
         <mat-form-field appearance="outline">
           <mat-label>Estado</mat-label>
@@ -67,9 +67,9 @@ import { TransferenciaInventarioService } from '../../services/transferencia-inv
       }
     
       @if (!loading && items.length > 0) {
-        <div class="table-wrap">
-          <table>
-            <thead><tr><th>Número</th><th>Origen</th><th>Destino</th><th>Estado</th><th>Detalles</th><th>Acciones</th></tr></thead>
+        <div class="table-wrap app-table-shell" role="region" tabindex="0" aria-label="transferencias">
+          <table class="app-data-table">
+            <thead><tr><th>Número</th><th>Origen</th><th>Destino</th><th>Estado</th><th>Detalles</th><th class="actions-heading">Acciones</th></tr></thead>
             <tbody>
               @for (item of items; track item) {
                 <tr>
@@ -81,7 +81,7 @@ import { TransferenciaInventarioService } from '../../services/transferencia-inv
                   <td class="actions">
                     <button class="action-view" mat-icon-button type="button" (click)="ver(item.id)" title="Ver detalle" [attr.aria-label]="'Ver transferencia ' + item.id"><mat-icon>visibility</mat-icon></button>
                     @if (puedeEditar && item.estado === 'Borrador') {
-                      <button mat-button type="button" (click)="editar(item.id)">Editar</button>
+                      <button class="action-edit" mat-icon-button type="button" (click)="editar(item.id)" aria-label="Editar transferencia"><mat-icon>edit</mat-icon></button>
                     }
                   </td>
                 </tr>
@@ -100,6 +100,7 @@ import { TransferenciaInventarioService } from '../../services/transferencia-inv
   `]
 })
 export class TransferenciasListComponent implements OnInit {
+  readonly acciones = crearAccionesInstitucionales('MovimientosInventario');
   items: TransferenciaInventario[] = [];
   loading = false;
   error = '';
@@ -121,9 +122,7 @@ export class TransferenciasListComponent implements OnInit {
   ];
 
   constructor(
-    private readonly service: TransferenciaInventarioService,
-    private readonly router: Router,
-    private readonly permisos: PermisosRuntimeService
+    private readonly service: TransferenciaInventarioService, private readonly permisos: PermisosRuntimeService
   ) {}
 
   ngOnInit(): void { this.cargar(); }
@@ -157,7 +156,7 @@ export class TransferenciasListComponent implements OnInit {
   aplicarFiltros(): void { this.page = 1; this.cargar(); }
   limpiar(): void { this.numero = ''; this.estado = null; this.almacenOrigenId = null; this.almacenDestinoId = null; this.page = 1; this.cargar(); }
   cambiarPagina(event: PageEvent): void { this.page = event.pageIndex + 1; this.pageSize = event.pageSize; this.cargar(); }
-  nueva(): void { void this.router.navigate(['/inventario/transferencias/nueva']); }
-  ver(id: number): void { void this.router.navigate(['/inventario/transferencias', id]); }
-  editar(id: number): void { void this.router.navigate(['/inventario/transferencias', id, 'editar']); }
+  async nueva(): Promise<void> { if (await this.acciones.abrir(() => import('./transferencia-form.component').then(m => m.TransferenciaFormComponent), 'xl', 'Crear')) this.cargar(); }
+  async ver(id: number): Promise<void> { if (await this.acciones.abrir(() => import('./transferencia-detail.component').then(m => m.TransferenciaDetailComponent), 'xl', 'Ver', id)) this.cargar(); }
+  async editar(id: number): Promise<void> { if (this.items.find(item => item.id === id)?.estado !== 'Borrador') return; if (await this.acciones.abrir(() => import('./transferencia-form.component').then(m => m.TransferenciaFormComponent), 'xl', 'Editar', id)) this.cargar(); }
 }
