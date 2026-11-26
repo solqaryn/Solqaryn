@@ -313,11 +313,14 @@ test.describe('C07-01.M06.06 navegador real y aislamiento A/B', () => {
 
     // Fixtures CI exclusivos. No se cambia ningún grant, piloto o middleware.
     sql(`INSERT INTO TipoClientes
-      (Codigo,Nombre,NombreNormalizado,ColorHex,Activo,EsSistema,Orden,EsPredeterminado,Eliminado,FechaCreacion,FechaActualizacion)
-      VALUES ('C0701_QUOTE_QA','C0701 Quote QA','C0701_QUOTE_QA','#FFFFFF',1,0,0,0,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
+      (EmpresaId,Codigo,Nombre,NombreNormalizado,ColorHex,Activo,EsSistema,Orden,EsPredeterminado,Eliminado,FechaCreacion,FechaActualizacion)
+      SELECT e.Id,CONCAT('C0701_QUOTE_QA_',e.Id),CONCAT('C0701 Quote QA ',e.Id),
+        CONCAT('C0701_QUOTE_QA_',e.Id),'#FFFFFF',1,0,0,0,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)
+      FROM Empresas e WHERE e.Id IN (1,2);
       INSERT INTO Clientes (EmpresaId,Nombre,Activo,TipoClienteId,FechaCreacion,FechaActualizacion)
       SELECT e.Id,CONCAT('C0701QuoteClient',e.Id),1,t.Id,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)
-      FROM Empresas e CROSS JOIN TipoClientes t WHERE e.Id IN (1,2) AND t.Codigo='C0701_QUOTE_QA';
+      FROM Empresas e JOIN TipoClientes t ON t.EmpresaId=e.Id
+        AND t.Codigo=CONCAT('C0701_QUOTE_QA_',e.Id) WHERE e.Id IN (1,2);
       INSERT INTO Cotizaciones (EmpresaId,Estado,ClienteId,ClienteNombreSnapshot,FechaCreacion,FechaActualizacion)
       SELECT EmpresaId,1,Id,Nombre,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)
       FROM Clientes WHERE Nombre IN ('C0701QuoteClient1','C0701QuoteClient2');
@@ -326,6 +329,7 @@ test.describe('C07-01.M06.06 navegador real y aislamiento A/B', () => {
       FROM Cotizaciones q JOIN Productos p ON p.EmpresaId=q.EmpresaId
       WHERE q.ClienteNombreSnapshot IN ('C0701QuoteClient1','C0701QuoteClient2')
       AND p.Nombre IN ('C0701BrowserTenantA','C0701BrowserTenantB');`);
+    expect(sql("SELECT COUNT(*) FROM Clientes c JOIN TipoClientes t ON t.Id=c.TipoClienteId AND t.EmpresaId=c.EmpresaId WHERE c.Nombre IN ('C0701QuoteClient1','C0701QuoteClient2') AND c.EmpresaId IN (1,2)")).toBe('2');
     const snapshot = () => [
       sql('SELECT Id,EmpresaId,Estado,ClienteId,ClienteNombreSnapshot,FechaActualizacion FROM Cotizaciones ORDER BY Id'),
       sql('SELECT Id,EmpresaId,CotizacionId,ProductoId,Cantidad,PrecioUnitario,FechaActualizacion FROM CotizacionDetalles ORDER BY Id'),

@@ -1,3 +1,7 @@
+## 2026-11-26 | DEV05 | C07-01.M06.06 | R1-RESTAURADA
+- V44R1-J40-EAC6A317-C0701M0606-QUOTE-FIXTURE-FK | Base c43894392a2cf305b4385dceef81930b0275879d; CI job 139786956826 FAIL (6 PASS, 1 FAIL): fixture SQL 1452, FK Clientes/TipoClientes compuesta por EmpresaId. Sembrar un tipo por empresa y unir por EmpresaId/código; comprobar dos vínculos propietarios antes de requests. Sin modificar FK, RBAC, cuarentena, expectativas ni runtime.
+- A0 diff dirigido; A1-A4 nueva CI exact-SHA pendiente; D01/D06 y A5 independiente pendientes. Foco C01-04.M03.06 sin autorización P01/P02/API12 nueva. Preservar CHANGELOG completo.
+
 ## 2026-11-26 | DEV04 | C07-01.M06.06 | R1-RESTAURADA
 - V44R1-J30-2725E846-C0701M0606-QUOTE-HTTP-DENY: prueba HTTP negativa real de duplicación de cotizaciones A/B con JWT firmado, MySQL 8.4 efímero, dos documentos con detalles y control positivo de catálogo; exige 503 exacto/no-store y snapshots SQL intactos, sin recibo comercial exitoso. No cambia autorización, pilotos, runtime, esquema ni datos comerciales. La suite A3 previa 164/164 no acredita HTTP; ejecución del nuevo caso pendiente, D01/D06 y A5 independiente pendientes. Foco C01-04.M03.06 conservado; alternativa acotada por falta de fuente P01/P02/API12 autorizada. Rollback: revert normal en dev.
 
