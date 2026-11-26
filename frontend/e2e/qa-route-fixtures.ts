@@ -17,6 +17,9 @@ export async function prepareRouteFixtures(): Promise<void> {
   const families = {
     common: ['/productos/1', '/productos/1/editar', '/productos/1/variantes',
       '/sucursales/1/editar', '/almacenes/1/editar'],
+    catalogos: ['/categorias/1/editar', '/ubicaciones-almacen/1/editar', '/proveedores/1/editar', '/descuentos/1/editar'],
+    transferencias: ['/inventario/transferencias/1', '/inventario/transferencias/1/editar'],
+    reservas: ['/inventario/reservas/1', '/inventario/reservas/1/editar'],
     inventario: ['/inventario/conteos/1', '/inventario/conteos/1/editar',
       '/inventario/ajustes/1', '/inventario/ajustes/1/editar'],
     sales: ['/ventas/1', '/ventas/1/editar', '/facturas/1', '/facturas/1/pagos'],
@@ -34,6 +37,7 @@ export async function prepareRouteFixtures(): Promise<void> {
   let operation = 0;
   let lastStatus: number | undefined;
   const nonce = Date.now().toString(36);
+  const sku = ('QA-' + nonce).toUpperCase();
   const label = 'QA matriz ' + nonce;
 
   // Do not publish response bodies, credentials or request headers in artifacts.
@@ -86,9 +90,9 @@ export async function prepareRouteFixtures(): Promise<void> {
     if (typeof login.token !== 'string' || !login.token) throw new Error('Login sin JWT');
     auth = { Authorization: 'Bearer ' + login.token, 'X-Empresa-Id': '1' };
     await call('/tenant-context/1');
-    let productoId = 0, varianteId = 0, almacenId = 0;
+    let productoId = 0, varianteId = 0, almacenId = 0, sucursalId = 0;
     await family(families.common, async () => {
-      const sucursalId = idOf(await call('/sucursales', 'POST', { codigo: 'QA-' + nonce, nombre: label, direccion: 'Datos de prueba CI', zonaHoraria: 'America/Tegucigalpa' }));
+      sucursalId = idOf(await call('/sucursales', 'POST', { codigo: 'QA-' + nonce, nombre: label, direccion: 'Datos de prueba CI', zonaHoraria: 'America/Tegucigalpa' }));
       await persisted('/sucursales', sucursalId);
       bind('/sucursales/1/editar', '/sucursales/' + sucursalId + '/editar');
       almacenId = idOf(await call('/almacenes', 'POST', { sucursalId, codigo: 'ALM-' + nonce, nombre: label, tipo: 'Bodega' }));
@@ -98,15 +102,38 @@ export async function prepareRouteFixtures(): Promise<void> {
       productoId = idOf(await call('/productos', 'POST', undefined, {
         Nombre: label, Descripcion: 'Producto representativo de CI', AlmacenInicialId: String(almacenId),
         Cantidad: '30', Costo: '100', Precio: '180', UmbralStockBajo: '2',
-        'Variantes[0].ColorId': String(colorId), 'Variantes[0].Sku': 'QA-' + nonce,
+        'Variantes[0].ColorId': String(colorId), 'Variantes[0].Sku': sku,
         'Variantes[0].Cantidad': '30', 'Variantes[0].Costo': '100', 'Variantes[0].Precio': '180',
         'Variantes[0].UmbralStockBajo': '2', 'Variantes[0].Activo': 'true'
       }));
       await persisted('/productos', productoId);
       const variantes = await call('/productos/' + productoId + '/variantes');
       if (!Array.isArray(variantes)) throw new Error('Variantes no materializadas');
-      varianteId = idOf(variantes.find((v: any) => v.sku === 'QA-' + nonce && v.activo === true));
+      // ProductoVarianteService.NormalizarSku persists uppercase identifiers.
+      const candidatas = variantes.filter((v: any) =>
+        v.sku === sku && v.activo === true && v.esTecnica === false &&
+        Number(v.productoId) === productoId && Number(v.colorId) === colorId && Number(v.cantidad) === 30);
+      if (candidatas.length !== 1) throw new Error('Variante comercial persistida no acreditada');
+      const variante = await call('/productos/' + productoId + '/variantes/' + idOf(candidatas[0]));
+      if (variante.sku !== sku || Number(variante.productoId) !== productoId || variante.activo !== true) {
+        throw new Error('Lectura persistida de variante no coincide');
+      }
+      varianteId = idOf(variante);
       for (const suffix of ['', '/editar', '/variantes']) bind('/productos/1' + suffix, '/productos/' + productoId + suffix);
+    });
+    await family(['/categorias/1/editar'], async () => {
+      const id = idOf(await call('/categorias', 'POST', { nombre: label, descripcion: 'Categoría de CI' }));
+      await persisted('/categorias', id);
+      await call('/categorias/' + id + '/imagenes');
+      bind('/categorias/1/editar', '/categorias/' + id + '/editar');
+    });
+    await family(['/ubicaciones-almacen/1/editar'], async () => {
+      stage = 'almacén de prueba';
+      lastStatus = undefined;
+      if (!almacenId) throw new Error('Almacén no acreditado');
+      const id = idOf(await call('/ubicaciones-almacen', 'POST', { almacenId, codigo: 'UB-' + nonce, nombre: label, tipo: 'Estante' }));
+      await persisted('/ubicaciones-almacen', id);
+      bind('/ubicaciones-almacen/1/editar', '/ubicaciones-almacen/' + id + '/editar');
     });
     function requireStock(): void {
       stage = 'producto y almacén de prueba';
@@ -124,7 +151,33 @@ export async function prepareRouteFixtures(): Promise<void> {
       bind('/inventario/conteos/1', '/inventario/conteos/' + conteoId);
       bind('/inventario/conteos/1/editar', '/inventario/conteos/' + conteoId + '/editar');
     });
+    await family(families.transferencias, async () => {
+      requireStock();
+      const destinoId = idOf(await call('/almacenes', 'POST', { sucursalId, codigo: 'DEST-' + nonce, nombre: label + ' destino', tipo: 'Bodega' }));
+      await persisted('/almacenes', destinoId);
+      const id = idOf(await call('/transferencias-inventario', 'POST', {
+        almacenOrigenId: almacenId, almacenDestinoId: destinoId, observaciones: label,
+        detalles: [{ productoVarianteId: varianteId, cantidadSolicitada: 1 }]
+      }));
+      await persisted('/transferencias-inventario', id);
+      bind('/inventario/transferencias/1', '/inventario/transferencias/' + id);
+      bind('/inventario/transferencias/1/editar', '/inventario/transferencias/' + id + '/editar');
+    });
+    await family(families.reservas, async () => {
+      requireStock();
+      const id = idOf(await call('/reservas-inventario', 'POST', {
+        detalles: [{ productoVarianteId: varianteId, almacenId, cantidad: 1 }]
+      }));
+      await persisted('/reservas-inventario', id);
+      bind('/inventario/reservas/1', '/inventario/reservas/' + id);
+      bind('/inventario/reservas/1/editar', '/inventario/reservas/' + id + '/editar');
+    });
     let clienteId = 0, proveedorId = 0, metodoPago = '';
+    await family(['/proveedores/1/editar'], async () => {
+      proveedorId = idOf(await call('/proveedores', 'POST', { nombre: label, correo: 'proveedor@example.invalid' }));
+      await persisted('/proveedores', proveedorId);
+      bind('/proveedores/1/editar', '/proveedores/' + proveedorId + '/editar');
+    });
     await family([...families.sales, ...families.quotes], async () => {
       clienteId = idOf(await call('/clientes', 'POST', { nombre: label, correo: 'qa@example.invalid' }));
       await persisted('/clientes', clienteId);
@@ -179,10 +232,9 @@ export async function prepareRouteFixtures(): Promise<void> {
     });
     await family(families.purchases, async () => {
       requireStock();
-      proveedorId = idOf(await call('/proveedores', 'POST', { nombre: label, correo: 'proveedor@example.invalid' }));
-      await persisted('/proveedores', proveedorId);
-      stage = 'método de pago de compra';
-      if (!metodoPago) throw new Error('Método de pago ausente');
+      stage = 'proveedor y método de pago de compra';
+      lastStatus = undefined;
+      if (!proveedorId || !metodoPago) throw new Error('Datos de compra ausentes');
       const compraId = idOf(await call('/compras', 'POST', { proveedorId, proveedorNombre: label, metodoPago, estadoPago: 'Pendiente', documentoReferencia: 'QA-' + nonce, notas: label, detalles: [{ productoId, productoVarianteId: varianteId, cantidad: 2, costoUnitario: 100 }] }));
       await persisted('/compras', compraId);
       bind('/compras/1', '/compras/' + compraId);
@@ -218,6 +270,12 @@ export async function prepareRouteFixtures(): Promise<void> {
       const draftInvoiceId = idOf(await call('/facturas-proveedor', 'POST', { ...invoice, numeroFactura: 'QA-B-' + nonce, detalles: [{ ...invoice.detalles[0], cantidadFacturada: 1 }] }));
       await persisted('/facturas-proveedor', draftInvoiceId);
       bind('/facturas-proveedor/1/editar', '/facturas-proveedor/' + draftInvoiceId + '/editar');
+    });
+    // Create the discount after the commercial fixtures, so it cannot change their amounts.
+    await family(['/descuentos/1/editar'], async () => {
+      const id = idOf(await call('/descuentos', 'POST', { nombre: label, codigoPromocional: sku, tipo: 'Porcentaje', valor: 1, acumulable: false }));
+      await persisted('/descuentos', id);
+      bind('/descuentos/1/editar', '/descuentos/' + id + '/editar');
     });
   } finally {
     await api.dispose();

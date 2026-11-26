@@ -145,8 +145,20 @@ async function assertNavigationMode(page: Page, mobile: boolean): Promise<void> 
 }
 
 async function auditFirstSelectOverlay(page: Page, route: string): Promise<void> {
-  const select = page.locator('main mat-select').first();
-  if (await select.count() === 0 || !(await select.isVisible())) return;
+  const firstSelect = page.locator('main mat-select').first();
+  if (await firstSelect.count() === 0 || !(await firstSelect.isVisible())) return;
+  let select = firstSelect;
+  // On the stock edit route, physical identity is deliberately immutable.
+  // Check those controls really are disabled, then exercise an editable select.
+  if (/^\/inventario\/existencias\/\d+\/editar$/.test(route)) {
+    for (const name of ['productoId', 'productoVarianteId', 'almacenId']) {
+      const locked = page.locator('main mat-select[name="' + name + '"]');
+      await expect(locked).toHaveAttribute('aria-disabled', 'true');
+      await expect(locked).toHaveAttribute('aria-expanded', 'false');
+    }
+    select = page.locator('main mat-select[aria-disabled="false"]:visible').first();
+    await expect(select, 'Selector editable de ubicación en ' + route).toBeVisible();
+  }
   await select.click();
   const panel = page.locator('.mat-mdc-select-panel').first();
   await expect(panel, `El select no abrió panel en ${route}`).toBeVisible();
@@ -307,12 +319,28 @@ test.describe('Responsive global — route sweep y regression gate', () => {
           }
           const urlProbada = fixture && 'url' in fixture ? fixture.url : route;
           resultado.urlProbada = urlProbada;
+          let isolated: Page | undefined;
           try {
-            await test.step(route, () => certifyRoute(publico ? guest : page, urlProbada, viewport.mobile, publico ? guestErrors : errors));
+            let target = publico ? guest : page;
+            let routeErrors = publico ? guestErrors : errors;
+            // A late response from a prior page must not be attributed to the next route.
+            // Use the already authenticated browser context; never inject or bypass auth.
+            if (process.env.QA_RESPONSIVE_WIDTHS) {
+              isolated = await target.context().newPage();
+              target = isolated;
+              await target.setViewportSize(size);
+              target.setDefaultTimeout(8000);
+              target.setDefaultNavigationTimeout(12000);
+              routeErrors = [];
+              monitor(target, routeErrors);
+            }
+            await test.step(route, () => certifyRoute(target, urlProbada, viewport.mobile, routeErrors));
             resultado.estado = 'PASS';
           } catch (error) {
             resultado.estado = 'FAIL';
-            resultado.motivo = error instanceof Error ? error.message.slice(0, 700) : 'Falló una comprobación de la ruta.';
+            resultado.motivo = error instanceof Error ? error.message.slice(0, 1600) : 'Falló una comprobación de la ruta.';
+          } finally {
+            if (isolated) await isolated.close();
           }
         }
       } finally {
