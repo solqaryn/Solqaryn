@@ -11469,3 +11469,8 @@
 ## 2026-11-26 — DEV06 — C01-04.M03.06 — V44/R1/R5
 
 - TASK_ID=6af16bbad26881918c283abe06e1f32a; RUN_ID=70a60be6-0810-832e-86f2-69b7399b7895; base 6dd92a5c06f2a0e85f9faf4ba6a6257721d86abe; P12 now verifies the exact historical P02 composite version row under the caller transaction, not merely version <= MAX. Disposable Oracle integration fixture creates a gap and changes a receipt inside rollback, verifies existing version read, rejects missing exact version and forbids linked receipt persistence. No production data, new grants, retention purge, resource mapping, routes or DI changes. A0 source anchors reviewed; CI exact SHA and independent corrective A5 pending. Rollback normal dev revert; preserve original evidence. Prior Oracle 165/165 source jobs 140116911180 and 140120705668, not equivalent to this change.
+
+
+## 2026-11-26 — intervención directa autorizada — C01-04.M03.06
+
+- Materializar integración empresarial real P01/P02/P12/API12 sobre Almacen -> Sucursal -> Empresa, con grant de recurso y de operación bloqueados en SQL, JWT de tenant, permiso técnico de escritura separado y sin asignaciones automáticas. DEV-only DI/rutas explícitas, cuarentena exacta por metadata, respuestas minimizadas, preservación de recibos/versiones. Prueba HTTP/JWT/Oracle MySQL A/A/B y revocación, sin tocar bases reales, estados del plan o Tasks. CI exact-SHA y A5 independiente requeridas; no afirmar LISTO. Revert normal en dev.

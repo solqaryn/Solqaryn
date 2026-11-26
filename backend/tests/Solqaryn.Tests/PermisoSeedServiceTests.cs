@@ -24,7 +24,7 @@ public class PermisoSeedServiceTests
 
         var administrador = await context.Roles.IgnoreQueryFilters().SingleAsync(r => r.EsAdministrador);
         var vendedor = await context.Roles.IgnoreQueryFilters().SingleAsync(r => r.NombreNormalizado == "VENDEDOR");
-        var permisosActivos = await context.Permisos.IgnoreQueryFilters().CountAsync(p => p.Activo && !p.Eliminado && p.Accion != AccionPermiso.ReadAuditCorrelation);
+        var permisosActivos = await context.Permisos.IgnoreQueryFilters().CountAsync(p => p.Activo && !p.Eliminado && p.Accion != AccionPermiso.ReadAuditCorrelation && p.Accion != AccionPermiso.WriteCaseFileVersion);
 
         var grantsAdmin = await context.RolPermisos.CountAsync(rp => rp.RolId == administrador.Id);
         var grantsVendedor = await context.RolPermisos.CountAsync(rp => rp.RolId == vendedor.Id);

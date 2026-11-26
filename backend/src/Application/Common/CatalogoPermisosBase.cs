@@ -157,7 +157,7 @@ public static class CatalogoPermisosBase
             AccionPermiso.Ver, AccionPermiso.Crear, AccionPermiso.Activar,
             AccionPermiso.Desactivar, AccionPermiso.Actualizar, AccionPermiso.Cerrar
         }),
-        (ModuloSistema.Auditoria, new[] { AccionPermiso.Ver, AccionPermiso.Exportar, AccionPermiso.ReadAuditCorrelation }),
+        (ModuloSistema.Auditoria, new[] { AccionPermiso.Ver, AccionPermiso.Exportar, AccionPermiso.ReadAuditCorrelation, AccionPermiso.WriteCaseFileVersion }),
         (ModuloSistema.ReportesAdministrativos, new[] { AccionPermiso.Ver, AccionPermiso.Exportar, AccionPermiso.Imprimir }),
         (ModuloSistema.Configuracion, new[]
         {
@@ -183,7 +183,7 @@ public static class CatalogoPermisosBase
 
     // A catalog entry is not a grant. API12 stays opt-in even for administrators.
     public static bool RequiereGrantExplicito(AccionPermiso accion) =>
-        accion == AccionPermiso.ReadAuditCorrelation;
+        accion is AccionPermiso.ReadAuditCorrelation or AccionPermiso.WriteCaseFileVersion;
 
     public static readonly (ModuloSistema Modulo, AccionPermiso Accion)[] NuevosPermisosAdministrador =
         Definicion.SelectMany(d => d.Acciones.Where(a => !RequiereGrantExplicito(a)).Select(a => (d.Modulo, a))).ToArray();

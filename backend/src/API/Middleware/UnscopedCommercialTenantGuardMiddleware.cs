@@ -128,6 +128,30 @@ public sealed class UnscopedCommercialTenantGuardMiddleware
             return;
         }
 
+        // Exact mapped endpoint metadata, DEV opt-in and signed tenant-session grant.
+        // The consumer independently locks membership, operation, actual warehouse,
+        // branch and case/version in one transaction. No neighboring route is exempted.
+        var caseFile = httpContext.GetEndpoint()?.Metadata
+            .GetMetadata<Solqaryn.API.Security.V5CaseFileEnterpriseEndpoints.Operation>();
+        if (caseFile is not null)
+        {
+            httpContext.Response.Headers.CacheControl = "no-store";
+            var services = httpContext.RequestServices;
+            var environment = services.GetRequiredService<IHostEnvironment>();
+            var config = services.GetRequiredService<IConfiguration>();
+            var consumer = services.GetService<Solqaryn.API.Security.V5CaseFileEnterpriseService>();
+            if (!HttpMethods.IsPost(httpContext.Request.Method) ||
+                !Solqaryn.API.Security.V5CaseFileEnterpriseEndpoints.ShouldMap(environment, config) ||
+                consumer is null ||
+                await consumer.BindTenantAsync(httpContext, caseFile.Permission, httpContext.RequestAborted) is null)
+            {
+                httpContext.Response.StatusCode = StatusCodes.Status403Forbidden;
+                return;
+            }
+            await _next(httpContext);
+            return;
+        }
+
         // Excepción mínima de descubrimiento: GET /permisos/mis-permisos/empresa/{id>0}.
         // No cambia RBAC: MVC exige JWT y PermisoService relee la membresía real
         // del tenant solicitado. Bloquea subrutas, otros verbos y anónimos.

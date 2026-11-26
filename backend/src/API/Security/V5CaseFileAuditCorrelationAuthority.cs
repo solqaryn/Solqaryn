@@ -19,9 +19,16 @@ public sealed class V5CaseFileAuditCorrelationAuthority(
     public sealed record Session(int ActorId, int BaseRoleId, int TenantId,
         int BranchId, int TenantRoleId, long ExpiresUnix);
 
-    public async Task<Session?> ResolveAsync(CancellationToken cancellationToken = default)
+    public Task<Session?> ResolveAsync(CancellationToken cancellationToken = default) =>
+        ResolveForOperationAsync(AccionPermiso.ReadAuditCorrelation, cancellationToken);
+
+    // Internal shared signed-session resolver, never a generic permission bypass.
+    internal async Task<Session?> ResolveForOperationAsync(AccionPermiso operation,
+        CancellationToken cancellationToken = default)
     {
         cancellationToken.ThrowIfCancellationRequested();
+        if (operation is not (AccionPermiso.ReadAuditCorrelation or AccionPermiso.WriteCaseFileVersion))
+            return null;
         var http = accessor.HttpContext;
         if (http is null) return null;
 
@@ -33,7 +40,7 @@ public sealed class V5CaseFileAuditCorrelationAuthority(
         if (session is null || !Matches(http, session)) return null;
 
         // No administrator, generic Auditoria:Ver or platform fallback.
-        var grant = $"{ModuloSistema.Auditoria}:{AccionPermiso.ReadAuditCorrelation}";
+        var grant = $"{ModuloSistema.Auditoria}:{operation}";
         for (var attempt = 0; attempt < 2; attempt++)
         {
             var current = await permissions.GetMisPermisosContextoAsync(

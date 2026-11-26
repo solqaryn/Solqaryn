@@ -97,6 +97,8 @@ builder.Services.AddScoped<ICurrentUserService, CurrentUserService>();
 if (builder.Environment.IsDevelopment())
 {
     // V24 C01-03.M03.06: opt-in DEV route auditing only. No QA/PROD binding.
+    builder.Services.AddScoped<V5CaseFileAuditCorrelationAuthority>();
+    builder.Services.AddScoped<V5CaseFileEnterpriseService>();
     builder.Services.AddScoped<C0103DynamicConfigurationAuditLogger>();
     builder.Services.AddScoped<C0103DurableTenantConfigurationAudit>();
 }
@@ -442,6 +444,10 @@ app.UseMiddleware<UnscopedCommercialTenantGuardMiddleware>();
 app.MapGet("/health", () => Results.Ok(new { status = "ok", service = "Solqaryn API" })).ExcludeFromDescription();
 app.MapGet("/health/ready", async (AppDbContext db, CancellationToken cancellationToken) => { var databaseReady = false; try { databaseReady = await db.Database.CanConnectAsync(cancellationToken); } catch { databaseReady = false; } return databaseReady ? Results.Ok(new { status = "ready", database = "connected" }) : Results.Json(new { status = "not_ready", database = "unavailable" }, statusCode: StatusCodes.Status503ServiceUnavailable); }).ExcludeFromDescription();
 app.MapControllers();
+if (V5CaseFileEnterpriseEndpoints.ShouldMap(app.Environment, app.Configuration))
+{
+    V5CaseFileEnterpriseEndpoints.Map(app);
+}
 // C03-03.M03.03: DEV-only opt-in GET preflight and explicit POST for
 // a strictly persisted audit-read event. Neither grants business permission.
 if (C0303AuditReadOnlyProbeEndpoint.ShouldMap(app.Environment, app.Configuration))

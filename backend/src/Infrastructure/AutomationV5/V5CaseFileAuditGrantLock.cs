@@ -12,9 +12,21 @@ namespace Solqaryn.Infrastructure.AutomationV5;
 /// </summary>
 public static class V5CaseFileAuditGrantLock
 {
-    public static async Task<bool> TryAcquireAsync(AppDbContext db, int actorId,
+    public static Task<bool> TryAcquireAsync(AppDbContext db, int actorId,
         int baseRoleId, int tenantId, int branchId, int tenantRoleId,
-        CancellationToken ct = default)
+        CancellationToken ct = default) =>
+        TryAcquireOperationAsync(db, actorId, baseRoleId, tenantId, branchId, tenantRoleId,
+            AccionPermiso.ReadAuditCorrelation, ct);
+
+    public static Task<bool> TryAcquireWriteAsync(AppDbContext db, int actorId,
+        int baseRoleId, int tenantId, int branchId, int tenantRoleId,
+        CancellationToken ct = default) =>
+        TryAcquireOperationAsync(db, actorId, baseRoleId, tenantId, branchId, tenantRoleId,
+            AccionPermiso.WriteCaseFileVersion, ct);
+
+    private static async Task<bool> TryAcquireOperationAsync(AppDbContext db, int actorId,
+        int baseRoleId, int tenantId, int branchId, int tenantRoleId, AccionPermiso action,
+        CancellationToken ct)
     {
         ct.ThrowIfCancellationRequested();
         var tx = db.Database.CurrentTransaction;
@@ -64,7 +76,7 @@ public static class V5CaseFileAuditGrantLock
             ("@tenantRole", tenantRoleId), ("@branch", branchId),
             ("@scope", (int)AmbitoAutorizacion.Empresa),
             ("@audit", (int)ModuloSistema.Auditoria),
-            ("@correlation", (int)AccionPermiso.ReadAuditCorrelation),
+            ("@correlation", (int)action),
             ("@branches", (int)ModuloSistema.Sucursales),
             ("@view", (int)AccionPermiso.Ver)
         })

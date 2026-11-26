@@ -34,5 +34,7 @@ public enum AccionPermiso
     Cerrar = 28,
     Reabrir = 29,
     // API12: requiere grant explícito, nunca asignado por defecto.
-    ReadAuditCorrelation = 30
+    ReadAuditCorrelation = 30,
+    // P01/P02: independent, explicit case-file version writer; never implied by API12.
+    WriteCaseFileVersion = 31
 }
