@@ -1,3 +1,10 @@
+## 2026-11-26 — QA-FN-05: reanudación de numeraciones y suscripciones
+
+- Run 45878868796 job 140112796616 PASS parciales: productos A/B y variantes, edición propia, rechazo 404 exacto ajeno con readback idéntico, clientes/proveedores A/B CRUD y duplicados, configuración tenant A/B, revocación y limpieza. Falla preparación de secuencias y plan, no endpoints. Migraciones N66C/N69C exigen FechaActualizacion NOT NULL sin default en SecuenciasDocumento y Planes; el fixture omitía ambas.
+- Se corrigen INSERT con ambas fechas UTC, SucursalId NULL explícito, metadatos de columnas obligatorias, código MySQL/SQLSTATE sin exponer stderr ni secretos, readback de fixture y limpieza. Se añaden denegaciones inversas A/B y readback de contadores y suscripciones. Sin cambiar API, DTO, RBAC, esquema ni modo estricto.
+- Reanudación dirigida sólo con verificación de run previo, SHA de runtime a3a730750920f56e0d4250b3d5a223f57da24c90, diff sin cambios de aplicación, marcadores de controles y limpieza. Modo full sigue disponible. No repetir rutas, compilación ni tests ya aprobados; no nuevo Render requerido.
+- Scope exclusivo QA autorizado; DEV 2ec240a9c4845d35b5b5f84bdcb8adf58d7c98cb Scope Lock job 140105587189 PASS; sin cambios DEV/MAIN ni automatizaciones. Rollback por revert de este changeset. Configuración global y UI autenticada siguen pendientes; no certificar por ejecución incompleta.
+
 ## 2026-11-26 — QA-FN-05: certificacion desplegada de edicion comercial
 
 - QA commit a3a730750920f56e0d4250b3d5a223f57da24c90: higiene, compilacion Release, inventario de dependencias sin vulnerabilidades y 2478/2478 pruebas no integracion PASS (run 45878040200 job 140110019656); esquema Oracle EF10 read-only PASS (45878040379).

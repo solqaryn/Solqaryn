@@ -26,7 +26,12 @@ env = dict(os.environ, MYSQL_PWD=os.environ["DB_PASSWORD"])
 args = ["mysql","--protocol=TCP","--ssl-mode=REQUIRED","-h",os.environ["DB_HOST"],"-P",os.environ["DB_PORT"],"-u",os.environ["DB_USER"],os.environ["DB_NAME"],"--batch","--skip-column-names","--raw"]
 def sql(statement, stage):
     result = subprocess.run(args,input=statement,text=True,capture_output=True,env=env,timeout=45)
-    require(result.returncode==0,"SQL stage failed: "+stage)
+    if result.returncode != 0:
+        # Do not print raw SQL, error text or connection details.
+        diagnostic = re.search(r"ERROR ([0-9]{4})(?: \(([A-Z0-9]{5})\))?", result.stderr)
+        code = diagnostic.group(1) if diagnostic else "unknown"
+        state = diagnostic.group(2) if diagnostic and diagnostic.group(2) else "unknown"
+        raise RuntimeError(f"SQL stage failed: {stage}; MySQL code={code}; SQLSTATE={state}")
     return result.stdout.strip()
 require(sql("SELECT DATABASE(), SUBSTRING_INDEX(CURRENT_USER(),'@',1);","identity").split("\t")==["solqaryn_qa","solqaryn_qa_user"],"QA database identity mismatch")
 expected_sha = os.environ.get("EXPECTED_DEPLOYED_SHA", "")
@@ -73,6 +78,27 @@ view_role = grant("ROLES.VER")
 matrix = grant("PERMISOS.ADMINISTRAR")
 commercial_grants = tuple(grant(mod + "." + action) for mod in ("PRODUCTOS", "CLIENTES", "PROVEEDORES") for action in ("VER", "CREAR", "EDITAR", "ACTIVAR", "DESACTIVAR", "ELIMINARLOGICO"))
 configuration_grants = tuple(grant(code) for code in ("CONFIGURACION.VER", "CONFIGURACION.CREAR", "CONFIGURACION.EDITAR", "DASHBOARD.VER", "AUDITORIA.VER"))
+mode = os.environ.get("QA_FN05_MODE","full")
+require(mode in ("full","commercial","remaining"), "Unknown QA FN05 mode")
+if mode == "remaining":
+    require(expected_sha == "a3a730750920f56e0d4250b3d5a223f57da24c90", "Remaining evidence requires exact deployed runtime")
+    require(os.environ.get("QA_FN05_PRIOR_COMMERCIAL_RUN") == "45878868796", "Missing prior commercial evidence")
+    print("QA_FN05_COMMERCIAL_PRIOR_EVIDENCE=45878868796", flush=True)
+
+# Verify required INSERT columns against the live schema, before creating
+# any fixtures. Never alter defaults or disable strict SQL mode.
+seed_columns = {
+    "SecuenciasDocumento": {"EmpresaId","SucursalId","TipoDocumento","UltimoValor","Prefijo","LongitudNumero","Activa","FechaCreacion","FechaActualizacion"},
+    "Planes": {"Codigo","Nombre","Activo","FechaCreacion","FechaActualizacion"},
+    "PlanLimites": {"PlanId","Clave","ValorMaximo"},
+}
+for table, supplied in seed_columns.items():
+    metadata = sql(f"SELECT COLUMN_NAME,IS_NULLABLE,IF(COLUMN_DEFAULT IS NULL,'NONE','DEFAULT'),EXTRA FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='{table}';", "fixture schema "+table)
+    columns = {parts[0]:parts[1:] for parts in (line.split("\t") for line in metadata.splitlines())}
+    require(supplied <= columns.keys(),"Missing fixture columns in "+table)
+    mandatory = {name for name,(nullable,default,extra) in columns.items() if nullable=="NO" and default=="NONE" and "auto_increment" not in extra.lower() and "generated" not in extra.lower()}
+    require(mandatory <= supplied, "Missing required fixture columns in "+table+": "+",".join(sorted(mandatory-supplied)))
+print("QA_FN05_SEQUENCE_PLAN_SCHEMA=PASS",flush=True)
 plan_code = (prefix + "_PLAN").upper()
 require(sql(f"SELECT COUNT(*) FROM Planes WHERE Codigo='{plan_code}';", "test plan collision") == "0", "Fixture plan collision")
 
@@ -223,7 +249,7 @@ try:
     # The previous deployment passed every administrative assertion through
     # QA_FN05_RESET_AUDIT. Resume on the same immutable runtime code instead
     # of resetting passwords again. Full mode remains available for future changes.
-    if os.environ.get("QA_FN05_MODE","full") == "commercial":
+    if mode in ("commercial","remaining"):
         require(expected_sha == "a3a730750920f56e0d4250b3d5a223f57da24c90","Prior administration evidence requires exact QA runtime with verified product-only diff")
         require(os.environ.get("QA_FN05_PRIOR_ADMIN_RUN") == "45872602673","Prior evidence required")
         print("QA_FN05_ADMINISTRATION_PRIOR_EVIDENCE=45872602673",flush=True)
@@ -276,94 +302,98 @@ try:
         require(all(v not in audit for v in (passwords[target],new_target,hashes[target],actual_hash)),"Credential present in audit")
         print("QA_FN05_RESET_AUDIT=PASS",flush=True)
 
-    # Business actions over the real proxy; SQL checks persisted owner only.
-    doc_number = str(1000000000000 + secrets.randbelow(9000000000000))
-    for route, table, form in (("productos","Productos",True),("clientes","Clientes",False),("proveedores","Proveedores",False)):
-        def payload(name):
-            if route == "productos":
-                return {"Nombre":name,"Marca":"","Modelo":"","TipoInventario":1,"EsDestacado":"false","Cantidad":0,"Costo":5,"Precio":10,"UmbralStockBajo":2}
-            if route == "clientes":
-                return {"nombre":name,"identidadORTN":doc_number}
-            return {"nombre":name,"documento":doc_number}
-        def fixture_id(name,token,tenant,suffix):
-            item = data(call("/"+route,"QA_FN05_"+table.upper()+"_CREATE_"+suffix,201,token=token,tenant=tenant,body=payload(name),method="POST",form=form))
-            require(isinstance(item,dict) and type(item.get("id")) is int and item["id"]>0,"Missing created identifier")
-            return item["id"]
-        ca,cb = fixture_id(a,ta,ea,"A"),fixture_id(b,tb,eb,"B")
-        require(ca!=cb,"Catalog fixture identity collision")
-        for item,name,token,tenant,foreign,other in ((ca,a,ta,ea,cb,eb),(cb,b,tb,eb,ca,ea)):
-            tag = "QA_FN05_"+table.upper()+("_A" if tenant==ea else "_B")
-            own = data(call(f"/{route}/{item}",tag+"_READ",token=token,tenant=tenant))
-            require(own.get("id")==item and own.get("nombre")==name,"Owned record mismatch")
-            require(sql(f"SELECT COUNT(*) FROM {table} WHERE Id={item} AND EmpresaId={tenant} AND Nombre='{name}';","persisted owner")=="1","Catalog owner mismatch")
-            listed = data(call("/"+route,tag+"_LIST",token=token,tenant=tenant))
-            rows = listed.get("items") if isinstance(listed,dict) else listed
-            require(isinstance(rows,list) and {x["id"] for x in rows}=={item},"Catalog list is not isolated")
-            call(f"/{route}/{foreign}",tag+"_FOREIGN_READ",(403,404),token=token,tenant=tenant)
-            edit_payload = payload(name)
-            if route == "productos":
-                # The identical body must succeed for an owned product first.
-                own_edit = data(call(f"/{route}/{item}",tag+"_VALID_OWN_EDIT",token=token,tenant=tenant,body=edit_payload,method="PUT",form=form))
-                require(own_edit.get("id")==item and own_edit.get("nombre")==name,"Owned edit did not persist")
-                owner_token = tb if tenant==ea else ta
-                before = data(call(f"/{route}/{foreign}",tag+"_FOREIGN_OWNER_BEFORE",token=owner_token,tenant=other))
-                call(f"/{route}/{foreign}",tag+"_FOREIGN_EDIT",404,token=token,tenant=tenant,body=edit_payload,method="PUT",form=form)
-                after = data(call(f"/{route}/{foreign}",tag+"_FOREIGN_OWNER_AFTER",token=owner_token,tenant=other))
-                require(before==after,"Rejected cross-tenant edit altered product or variants")
-                print(tag+"_FOREIGN_EDIT_UNCHANGED=PASS",flush=True)
+    if mode != "remaining":
+        # Business actions over the real proxy; SQL checks persisted owner only.
+        doc_number = str(1000000000000 + secrets.randbelow(9000000000000))
+        for route, table, form in (("productos","Productos",True),("clientes","Clientes",False),("proveedores","Proveedores",False)):
+            def payload(name):
+                if route == "productos":
+                    return {"Nombre":name,"Marca":"","Modelo":"","TipoInventario":1,"EsDestacado":"false","Cantidad":0,"Costo":5,"Precio":10,"UmbralStockBajo":2}
+                if route == "clientes":
+                    return {"nombre":name,"identidadORTN":doc_number}
+                return {"nombre":name,"documento":doc_number}
+            def fixture_id(name,token,tenant,suffix):
+                item = data(call("/"+route,"QA_FN05_"+table.upper()+"_CREATE_"+suffix,201,token=token,tenant=tenant,body=payload(name),method="POST",form=form))
+                require(isinstance(item,dict) and type(item.get("id")) is int and item["id"]>0,"Missing created identifier")
+                return item["id"]
+            ca,cb = fixture_id(a,ta,ea,"A"),fixture_id(b,tb,eb,"B")
+            require(ca!=cb,"Catalog fixture identity collision")
+            for item,name,token,tenant,foreign,other in ((ca,a,ta,ea,cb,eb),(cb,b,tb,eb,ca,ea)):
+                tag = "QA_FN05_"+table.upper()+("_A" if tenant==ea else "_B")
+                own = data(call(f"/{route}/{item}",tag+"_READ",token=token,tenant=tenant))
+                require(own.get("id")==item and own.get("nombre")==name,"Owned record mismatch")
+                require(sql(f"SELECT COUNT(*) FROM {table} WHERE Id={item} AND EmpresaId={tenant} AND Nombre='{name}';","persisted owner")=="1","Catalog owner mismatch")
+                listed = data(call("/"+route,tag+"_LIST",token=token,tenant=tenant))
+                rows = listed.get("items") if isinstance(listed,dict) else listed
+                require(isinstance(rows,list) and {x["id"] for x in rows}=={item},"Catalog list is not isolated")
+                call(f"/{route}/{foreign}",tag+"_FOREIGN_READ",(403,404),token=token,tenant=tenant)
+                edit_payload = payload(name)
+                if route == "productos":
+                    # The identical body must succeed for an owned product first.
+                    own_edit = data(call(f"/{route}/{item}",tag+"_VALID_OWN_EDIT",token=token,tenant=tenant,body=edit_payload,method="PUT",form=form))
+                    require(own_edit.get("id")==item and own_edit.get("nombre")==name,"Owned edit did not persist")
+                    owner_token = tb if tenant==ea else ta
+                    before = data(call(f"/{route}/{foreign}",tag+"_FOREIGN_OWNER_BEFORE",token=owner_token,tenant=other))
+                    call(f"/{route}/{foreign}",tag+"_FOREIGN_EDIT",404,token=token,tenant=tenant,body=edit_payload,method="PUT",form=form)
+                    after = data(call(f"/{route}/{foreign}",tag+"_FOREIGN_OWNER_AFTER",token=owner_token,tenant=other))
+                    require(before==after,"Rejected cross-tenant edit altered product or variants")
+                    print(tag+"_FOREIGN_EDIT_UNCHANGED=PASS",flush=True)
+                else:
+                    call(f"/{route}/{foreign}",tag+"_FOREIGN_EDIT",(403,404),token=token,tenant=tenant,body=edit_payload,method="PUT",form=form)
+                call(f"/{route}/{foreign}/desactivar",tag+"_FOREIGN_STATE",(403,404),token=token,tenant=tenant,method="PATCH")
+                call(f"/{route}/{foreign}",tag+"_FOREIGN_DELETE",(403,404),token=token,tenant=tenant,method="DELETE")
+                call("/"+route,tag+"_FOREIGN_SELECTOR",403,token=token,tenant=other)
+            if route=="productos":
+                va=sql(f"SELECT Id FROM ProductoVariantes WHERE ProductoId={ca} AND EmpresaId={ea} AND EsTecnica=1 AND Eliminado=0;","variant A")
+                vb=sql(f"SELECT Id FROM ProductoVariantes WHERE ProductoId={cb} AND EmpresaId={eb} AND EsTecnica=1 AND Eliminado=0;","variant B")
+                require(va.isdigit() and vb.isdigit() and va!=vb,"Technical variant owner missing")
+                call(f"/productos/{cb}/variantes/{vb}","QA_FN05_VARIANT_FOREIGN_A",(403,404),token=ta,tenant=ea)
+                call(f"/productos/{ca}/variantes/{va}","QA_FN05_VARIANT_FOREIGN_B",(403,404),token=tb,tenant=eb)
+                print("QA_FN05_VARIANT_OWNERS=PASS",flush=True)
             else:
-                call(f"/{route}/{foreign}",tag+"_FOREIGN_EDIT",(403,404),token=token,tenant=tenant,body=edit_payload,method="PUT",form=form)
-            call(f"/{route}/{foreign}/desactivar",tag+"_FOREIGN_STATE",(403,404),token=token,tenant=tenant,method="PATCH")
-            call(f"/{route}/{foreign}",tag+"_FOREIGN_DELETE",(403,404),token=token,tenant=tenant,method="DELETE")
-            call("/"+route,tag+"_FOREIGN_SELECTOR",403,token=token,tenant=other)
-        if route=="productos":
-            va=sql(f"SELECT Id FROM ProductoVariantes WHERE ProductoId={ca} AND EmpresaId={ea} AND EsTecnica=1 AND Eliminado=0;","variant A")
-            vb=sql(f"SELECT Id FROM ProductoVariantes WHERE ProductoId={cb} AND EmpresaId={eb} AND EsTecnica=1 AND Eliminado=0;","variant B")
-            require(va.isdigit() and vb.isdigit() and va!=vb,"Technical variant owner missing")
-            call(f"/productos/{cb}/variantes/{vb}","QA_FN05_VARIANT_FOREIGN_A",(403,404),token=ta,tenant=ea)
-            call(f"/productos/{ca}/variantes/{va}","QA_FN05_VARIANT_FOREIGN_B",(403,404),token=tb,tenant=eb)
-            print("QA_FN05_VARIANT_OWNERS=PASS",flush=True)
-        else:
-            call("/"+route,"QA_FN05_"+table.upper()+"_DUPLICATE_A",(400,409,422),token=ta,tenant=ea,body=payload(a+"_duplicate"),method="POST")
-        amended=a+"_edited"
-        changed=data(call(f"/{route}/{ca}","QA_FN05_"+table.upper()+"_EDIT_A",token=ta,tenant=ea,body=payload(amended),method="PUT",form=form))
-        require(changed.get("nombre")==amended,"Catalog edit not persisted")
-        for action,state in (("desactivar",False),("activar",True)):
-            result=data(call(f"/{route}/{ca}/{action}","QA_FN05_"+table.upper()+"_"+action.upper(),token=ta,tenant=ea,method="PATCH"))
-            require(result.get("activo") is state,"Catalog status mismatch")
-        unchanged=data(call(f"/{route}/{cb}","QA_FN05_"+table.upper()+"_B_INTACT",token=tb,tenant=eb))
-        require(unchanged.get("nombre")==b and unchanged.get("activo") is True,"Foreign record changed")
-        call(f"/{route}/{ca}","QA_FN05_"+table.upper()+"_DELETE_A",token=ta,tenant=ea,method="DELETE")
-        if route=="productos":
-            call(f"/{route}/{ca}","QA_FN05_PRODUCTOS_DELETED_NOT_READABLE",404,token=ta,tenant=ea)
-            call(f"/{route}/{ca}","QA_FN05_PRODUCTOS_DELETED_NOT_EDITABLE",404,token=ta,tenant=ea,body=payload(amended),method="PUT",form=form)
-            require(sql(f"SELECT COUNT(*) FROM Productos WHERE Id={ca} AND EmpresaId={ea} AND Eliminado=1 AND Activo=0;","product logical delete")=="1","Product history not preserved")
-        else:
-            deleted=data(call(f"/{route}/{ca}","QA_FN05_"+table.upper()+"_INACTIVE_HISTORY",token=ta,tenant=ea))
-            require(deleted.get("id")==ca and deleted.get("activo") is False,"Logical deletion must preserve inactive history")
-            active=data(call(f"/{route}/activos","QA_FN05_"+table.upper()+"_ACTIVE_EXCLUSION",token=ta,tenant=ea))
-            require(isinstance(active,list) and all(x["id"]!=ca for x in active),"Inactive record exposed as active")
-            require(sql(f"SELECT COUNT(*) FROM {table} WHERE Id={ca} AND EmpresaId={ea} AND Activo=0;","logical delete readback")=="1","Inactive record history not preserved")
-        print("QA_FN05_"+table.upper()+"_AB=PASS",flush=True)
-    conf_a=data(call(f"/empresa-configuracion/tenant/{ea}","QA_FN05_CONFIG_A",token=ta,tenant=ea))
-    conf_b=data(call(f"/empresa-configuracion/tenant/{eb}","QA_FN05_CONFIG_B",token=tb,tenant=eb))
-    require(conf_a.get("empresaId")==ea and conf_b.get("empresaId")==eb and conf_a.get("nombre")==a and conf_b.get("nombre")==b,"Config scope mismatch")
-    call(f"/empresa-configuracion/tenant/{eb}","QA_FN05_CONFIG_FOREIGN",403,token=ta,tenant=ea)
-    config_payload={k:conf_a[k] for k in ("nombre","rtn","direccion","moneda","zonaHoraria","impuestosJson","emisionJson","correoRemitente","correoNombreRemitente","version") if k in conf_a}
-    config_payload["direccion"]="QA fixture "+prefix
-    updated=data(call(f"/empresa-configuracion/tenant/{ea}","QA_FN05_CONFIG_EDIT",token=ta,tenant=ea,body=config_payload,method="PUT"))
-    require(updated.get("empresaId")==ea and updated.get("direccion")==config_payload["direccion"] and updated.get("version")==conf_a["version"]+1,"Config mutation mismatch")
-    call(f"/empresa-configuracion/tenant/{eb}","QA_FN05_CONFIG_FOREIGN_EDIT",403,token=ta,tenant=ea,body=config_payload,method="PUT")
-    require(data(call(f"/empresa-configuracion/tenant/{eb}","QA_FN05_CONFIG_B_INTACT",token=tb,tenant=eb))==conf_b,"Foreign config changed")
-    print("QA_FN05_CONFIG_AB=PASS",flush=True)
+                call("/"+route,"QA_FN05_"+table.upper()+"_DUPLICATE_A",(400,409,422),token=ta,tenant=ea,body=payload(a+"_duplicate"),method="POST")
+            amended=a+"_edited"
+            changed=data(call(f"/{route}/{ca}","QA_FN05_"+table.upper()+"_EDIT_A",token=ta,tenant=ea,body=payload(amended),method="PUT",form=form))
+            require(changed.get("nombre")==amended,"Catalog edit not persisted")
+            for action,state in (("desactivar",False),("activar",True)):
+                result=data(call(f"/{route}/{ca}/{action}","QA_FN05_"+table.upper()+"_"+action.upper(),token=ta,tenant=ea,method="PATCH"))
+                require(result.get("activo") is state,"Catalog status mismatch")
+            unchanged=data(call(f"/{route}/{cb}","QA_FN05_"+table.upper()+"_B_INTACT",token=tb,tenant=eb))
+            require(unchanged.get("nombre")==b and unchanged.get("activo") is True,"Foreign record changed")
+            call(f"/{route}/{ca}","QA_FN05_"+table.upper()+"_DELETE_A",token=ta,tenant=ea,method="DELETE")
+            if route=="productos":
+                call(f"/{route}/{ca}","QA_FN05_PRODUCTOS_DELETED_NOT_READABLE",404,token=ta,tenant=ea)
+                call(f"/{route}/{ca}","QA_FN05_PRODUCTOS_DELETED_NOT_EDITABLE",404,token=ta,tenant=ea,body=payload(amended),method="PUT",form=form)
+                require(sql(f"SELECT COUNT(*) FROM Productos WHERE Id={ca} AND EmpresaId={ea} AND Eliminado=1 AND Activo=0;","product logical delete")=="1","Product history not preserved")
+            else:
+                deleted=data(call(f"/{route}/{ca}","QA_FN05_"+table.upper()+"_INACTIVE_HISTORY",token=ta,tenant=ea))
+                require(deleted.get("id")==ca and deleted.get("activo") is False,"Logical deletion must preserve inactive history")
+                active=data(call(f"/{route}/activos","QA_FN05_"+table.upper()+"_ACTIVE_EXCLUSION",token=ta,tenant=ea))
+                require(isinstance(active,list) and all(x["id"]!=ca for x in active),"Inactive record exposed as active")
+                require(sql(f"SELECT COUNT(*) FROM {table} WHERE Id={ca} AND EmpresaId={ea} AND Activo=0;","logical delete readback")=="1","Inactive record history not preserved")
+            print("QA_FN05_"+table.upper()+"_AB=PASS",flush=True)
+        conf_a=data(call(f"/empresa-configuracion/tenant/{ea}","QA_FN05_CONFIG_A",token=ta,tenant=ea))
+        conf_b=data(call(f"/empresa-configuracion/tenant/{eb}","QA_FN05_CONFIG_B",token=tb,tenant=eb))
+        require(conf_a.get("empresaId")==ea and conf_b.get("empresaId")==eb and conf_a.get("nombre")==a and conf_b.get("nombre")==b,"Config scope mismatch")
+        call(f"/empresa-configuracion/tenant/{eb}","QA_FN05_CONFIG_FOREIGN",403,token=ta,tenant=ea)
+        config_payload={k:conf_a[k] for k in ("nombre","rtn","direccion","moneda","zonaHoraria","impuestosJson","emisionJson","correoRemitente","correoNombreRemitente","version") if k in conf_a}
+        config_payload["direccion"]="QA fixture "+prefix
+        updated=data(call(f"/empresa-configuracion/tenant/{ea}","QA_FN05_CONFIG_EDIT",token=ta,tenant=ea,body=config_payload,method="PUT"))
+        require(updated.get("empresaId")==ea and updated.get("direccion")==config_payload["direccion"] and updated.get("version")==conf_a["version"]+1,"Config mutation mismatch")
+        call(f"/empresa-configuracion/tenant/{eb}","QA_FN05_CONFIG_FOREIGN_EDIT",403,token=ta,tenant=ea,body=config_payload,method="PUT")
+        require(data(call(f"/empresa-configuracion/tenant/{eb}","QA_FN05_CONFIG_B_INTACT",token=tb,tenant=eb))==conf_b,"Foreign config changed")
+        print("QA_FN05_CONFIG_AB=PASS",flush=True)
     # Test-only counters and plan; no external billing or real numbering.
     kind=(prefix+"_SEQ").upper()
-    sql(f"""START TRANSACTION;
-INSERT INTO SecuenciasDocumento (EmpresaId,TipoDocumento,UltimoValor,Prefijo,LongitudNumero,Activa,FechaCreacion) VALUES ({ea},'{kind}',0,'QA-',6,1,UTC_TIMESTAMP()),({eb},'{kind}',0,'QA-',6,1,UTC_TIMESTAMP());
-INSERT INTO Planes (Codigo,Nombre,Activo,FechaCreacion) VALUES ('{plan_code}','{prefix}',1,UTC_TIMESTAMP());
+    seed = sql(f"""START TRANSACTION;
+INSERT INTO SecuenciasDocumento (EmpresaId,SucursalId,TipoDocumento,UltimoValor,Prefijo,LongitudNumero,Activa,FechaCreacion,FechaActualizacion) VALUES ({ea},NULL,'{kind}',0,'QA-',6,1,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6)),({eb},NULL,'{kind}',0,'QA-',6,1,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
+INSERT INTO Planes (Codigo,Nombre,Activo,FechaCreacion,FechaActualizacion) VALUES ('{plan_code}','{prefix}',1,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
 SET @plan=LAST_INSERT_ID();
 INSERT INTO PlanLimites (PlanId,Clave,ValorMaximo) VALUES (@plan,'QA_TEST_LIMIT',7);
-COMMIT;""","seed isolated sequence and test plan")
+COMMIT;
+SELECT (SELECT COUNT(*) FROM SecuenciasDocumento WHERE EmpresaId IN ({ea},{eb}) AND TipoDocumento='{kind}' AND SucursalId IS NULL AND UltimoValor=0),(SELECT COUNT(*) FROM Planes p JOIN PlanLimites l ON l.PlanId=p.Id WHERE p.Codigo='{plan_code}' AND l.Clave='QA_TEST_LIMIT' AND l.ValorMaximo=7);""","seed isolated sequence and test plan")
+    require(seed.split("\t")==["2","1"],"Sequence/plan fixture readback failed")
+    print("QA_FN05_SEQUENCE_PLAN_SEED=PASS",flush=True)
     for token,tenant,suffix in ((ta,ea,"A"),(tb,eb,"B")):
         current=data(call(f"/secuencias-documento?empresaId={tenant}&tipoDocumento={kind}","QA_FN05_SEQUENCE_"+suffix+"_READ",token=token,tenant=tenant))
         require(current.get("empresaId")==tenant and current.get("ultimoValor")==0,"Initial counter mismatch")
@@ -372,6 +402,9 @@ COMMIT;""","seed isolated sequence and test plan")
     call(f"/secuencias-documento?empresaId={eb}&tipoDocumento={kind}","QA_FN05_SEQUENCE_FOREIGN",403,token=ta,tenant=ea)
     call("/secuencias-documento/siguiente","QA_FN05_SEQUENCE_FOREIGN_WRITE",403,token=ta,tenant=ea,body={"empresaId":eb,"tipoDocumento":kind})
     require(sql(f"SELECT COUNT(*) FROM SecuenciasDocumento WHERE EmpresaId IN ({ea},{eb}) AND TipoDocumento='{kind}' AND UltimoValor=1;","independent counter readback")=="2","Counter isolation mismatch")
+    call(f"/secuencias-documento?empresaId={ea}&tipoDocumento={kind}","QA_FN05_SEQUENCE_FOREIGN_B",403,token=tb,tenant=eb)
+    call("/secuencias-documento/siguiente","QA_FN05_SEQUENCE_FOREIGN_WRITE_B",403,token=tb,tenant=eb,body={"empresaId":ea,"tipoDocumento":kind})
+    require(sql(f"SELECT COUNT(*) FROM SecuenciasDocumento WHERE EmpresaId IN ({ea},{eb}) AND TipoDocumento='{kind}' AND UltimoValor=1;","final counter readback")=="2","Cross-tenant counter changed")
     print("QA_FN05_SEQUENCE_AB=PASS",flush=True)
     begin=(datetime.datetime.now(datetime.timezone.utc)-datetime.timedelta(minutes=1)).isoformat()
     subs_payload={"planCodigo":plan_code,"inicioUtc":begin}
@@ -390,6 +423,9 @@ COMMIT;""","seed isolated sequence and test plan")
     require(len(set(subscription_ids))==2,"Subscription leaked across companies")
     call(f"/saas/tenants/{eb}/suscripcion","QA_FN05_SUBSCRIPTION_FOREIGN",403,token=ta,tenant=ea)
     call(f"/saas/tenants/{eb}/limites","QA_FN05_LIMITS_FOREIGN",403,token=ta,tenant=ea)
+    call(f"/saas/tenants/{ea}/suscripcion","QA_FN05_SUBSCRIPTION_FOREIGN_B",403,token=tb,tenant=eb)
+    call(f"/saas/tenants/{ea}/limites","QA_FN05_LIMITS_FOREIGN_B",403,token=tb,tenant=eb)
+    require(sql(f"SELECT COUNT(*) FROM Suscripciones s JOIN Planes p ON p.Id=s.PlanId WHERE s.EmpresaId IN ({ea},{eb}) AND p.Codigo='{plan_code}';","subscription owner readback")=="2","Subscription ownership mismatch")
     print("QA_FN05_SUBSCRIPTIONS_AB=PASS",flush=True)
     for token,tenant,suffix in ((ta,ea,"A"),(tb,eb,"B")):
         data(call("/dashboard/resumen","QA_FN05_DASHBOARD_"+suffix,token=token,tenant=tenant))
@@ -424,6 +460,9 @@ DELETE p FROM Productos p JOIN Empresas e ON e.Id=p.EmpresaId WHERE e.Nombre IN 
 DELETE c FROM Clientes c JOIN Empresas e ON e.Id=c.EmpresaId WHERE e.Nombre IN {names};
 DELETE p FROM Proveedores p JOIN Empresas e ON e.Id=p.EmpresaId WHERE e.Nombre IN {names};
 COMMIT;""","cleanup isolated commercial fixture rows")
+        require(sql(f"""SELECT (SELECT COUNT(*) FROM Planes WHERE Codigo='{plan_code}')
++(SELECT COUNT(*) FROM SecuenciasDocumento s JOIN Empresas e ON e.Id=s.EmpresaId WHERE e.Nombre IN {names} AND s.TipoDocumento='{(prefix+"_SEQ").upper()}')
++(SELECT COUNT(*) FROM Suscripciones s JOIN Empresas e ON e.Id=s.EmpresaId WHERE e.Nombre IN {names});""","sequence and plan cleanup readback")=="0","Sequence/subscription fixtures not cleaned")
         print("QA_FN05_COMMERCIAL_CLEANUP=PASS",flush=True)
         sql(f"""START TRANSACTION;
 DELETE ue FROM UsuarioEmpresas ue JOIN Usuarios u ON ue.UsuarioId=u.Id WHERE u.NombreUsuario IN {names};
