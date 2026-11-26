@@ -1,3 +1,8 @@
+## 2026-11-25 — QA: proveedores, descuentos e impuestos migrados
+
+- Formularios reutilizados en modales institucionales M/L, confirmación antes de crear/editar/activar/desactivar/eliminar y revalidación de permisos/contexto. Tabla única con scroll, búsqueda, estado, acciones y pie compartidos. Se preserva estado original del proveedor al editar y se bloquea edición si falla carga. Pruebas del control compartido incluidas en QA CI.
+- Referencias aplicadas: Governance, SKREF-10 Angular y SKREF-03 Impeccable desde pin registrado. Sin cambios de API/datos, DEV ni MAIN. Certificación exact-SHA y visual pendientes.
+
 ## 2026-11-25 — QA: control reutilizable de acciones institucionales
 
 - Adaptador compartido para abrir editores protegidos, confirmar acciones y revalidar contexto/permiso tras la respuesta. Pruebas negativas de cancelación, revocación y cambio de empresa. Sin cambios de API o datos.

@@ -1,9 +1,14 @@
+<div [class.app-dialog-layout]="!!editor.ref">
+@if (editor.ref) { <h2 mat-dialog-title>{{ isEdit() ? 'Editar descuento' : 'Nuevo descuento' }}</h2> }
+<div [class.app-dialog-layout__body]="!!editor.ref">
+@if (!editor.ref) {
 <div class="header-row">
   <a routerLink="/descuentos" mat-icon-button title="Volver"><mat-icon>arrow_back</mat-icon></a>
   <h1 class="page-title">{{ isEdit() ? 'Editar descuento' : 'Nuevo descuento' }}</h1>
 </div>
+}
 
-<form [formGroup]="form" (ngSubmit)="submit()" class="card form-card">
+<form id="descuento-form-institucional" [formGroup]="form" (ngSubmit)="submit()" class="card form-card">
   <div class="grid-2">
     <mat-form-field appearance="outline"><mat-label>Nombre</mat-label><input matInput formControlName="nombre" /></mat-form-field>
     <mat-form-field appearance="outline"><mat-label>Código promocional (opcional)</mat-label><input matInput formControlName="codigoPromocional" /></mat-form-field>
@@ -60,10 +65,20 @@
 
   @if (errorMessage()) { <p class="error">{{ errorMessage() }}</p> }
 
-  <div class="form-actions">
-    <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving()">
+  @if (!editor.ref) {
+<div class="form-actions">
+    <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || form.disabled || loading() || saving()">
       {{ saving() ? 'Guardando...' : 'Guardar' }}
     </button>
     <a routerLink="/descuentos" mat-button>Cancelar</a>
   </div>
+}
 </form>
+</div>
+@if (editor.ref) {
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" [disabled]="saving()" (click)="cancelarModal()">Cancelar</button>
+    <button mat-flat-button color="primary" type="submit" form="descuento-form-institucional" [disabled]="form.invalid || form.disabled || loading() || saving()">{{ saving() ? 'Guardando…' : 'Guardar' }}</button>
+  </mat-dialog-actions>
+}
+</div>

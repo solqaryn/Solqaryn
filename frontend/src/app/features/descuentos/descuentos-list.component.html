@@ -1,24 +1,30 @@
 <div class="header-row">
   <h1 class="page-title">Descuentos</h1>
   @if (puedeCrear()) {
-    <a routerLink="/descuentos/nuevo" mat-flat-button color="primary">
+    <button type="button" (click)="abrirEditor()" mat-flat-button color="primary">
       <mat-icon>add</mat-icon> Nuevo descuento
-    </a>
+    </button>
   }
 </div>
 
 <div class="card">
+  <div class="app-table-filters" aria-label="Filtros del listado">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>Buscar por nombre</mat-label><mat-icon matPrefix>search</mat-icon><input matInput #busqueda [value]="buscar()" (input)="buscar.set(busqueda.value)"></mat-form-field>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>Estado</mat-label><mat-select [value]="estadoFiltro()" (selectionChange)="estadoFiltro.set($event.value)"><mat-option value="todos">Todos</mat-option><mat-option value="activos">Activos</mat-option><mat-option value="inactivos">Inactivos</mat-option></mat-select></mat-form-field>
+    <button mat-stroked-button type="button" (click)="limpiarFiltros()"><mat-icon>filter_alt_off</mat-icon> Limpiar filtros</button>
+  </div>
   @if (loading()) {
     <div class="loading"><mat-spinner></mat-spinner></div>
   } @else {
-    <table class="table table-desktop">
+    <div class="app-table-shell" role="region" aria-label="Tabla de descuentos" tabindex="0">
+    <table class="app-data-table">
       <thead>
         <tr>
-          <th>Nombre</th><th>Código</th><th>Tipo</th><th>Valor</th><th>Vigencia</th><th>Usos</th><th>Estado</th><th>Acciones</th>
+          <th>Nombre</th><th>Código</th><th>Tipo</th><th>Valor</th><th>Vigencia</th><th>Usos</th><th class="app-col-center">Estado</th><th class="actions-heading">Acciones</th>
         </tr>
       </thead>
       <tbody>
-        @for (d of descuentos(); track d.id) {
+        @for (d of visibles(); track d.id) {
           <tr>
             <td>{{ d.nombre }}</td>
             <td>{{ d.codigoPromocional || '—' }}</td>
@@ -30,9 +36,9 @@
               } @else { Sin límite }
             </td>
             <td>{{ d.usosRealizados }}{{ d.limiteTotalUsos ? ' / ' + d.limiteTotalUsos : '' }}</td>
-            <td>
+            <td class="app-col-center">
               @if (puedeCambiarEstado(d)) {
-                <mat-slide-toggle [checked]="d.activo" (change)="toggleActivo(d)" [aria-label]="(d.activo ? 'Desactivar ' : 'Activar ') + d.nombre"></mat-slide-toggle>
+                <mat-slide-toggle [checked]="d.activo" [disabled]="cambiandoEstado()" (change)="toggleActivo(d, $event)" [aria-label]="(d.activo ? 'Desactivar ' : 'Activar ') + d.nombre"></mat-slide-toggle>
               } @else {
                 <span class="badge" [class.success]="d.activo" [class.muted]="!d.activo">
                   {{ d.activo ? 'Activo' : 'Inactivo' }}
@@ -42,7 +48,7 @@
             <td class="actions">
               <button type="button" class="action-view" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver ' + d.nombre" [appConsultaRegistro]="{ titulo: 'Descuento: ' + d.nombre, campos: { 'Nombre': d.nombre, 'Descripción': d.descripcion, 'Código promocional': d.codigoPromocional, 'Tipo': d.tipo, 'Valor': d.valor, 'Inicio': d.fechaInicio, 'Fin': d.fechaFin, 'Monto mínimo': d.montoMinimo, 'Máximo descuento': d.montoMaximoDescuento, 'Cantidad mínima': d.cantidadMinima, 'Requiere aprobación': d.requiereAprobacion, 'Acumulable': d.acumulable, 'Prioridad': d.prioridad, 'Límite total de usos': d.limiteTotalUsos, 'Límite por cliente': d.limiteUsosPorCliente, 'Usos realizados': d.usosRealizados, 'Estado': d.activo ? 'Activo' : 'Inactivo', 'ID de productos': d.productoIds, 'ID de categorías': d.categoriaIds, 'ID de clientes': d.clienteIds, 'ID de roles': d.rolIds, 'Fecha de creación': d.fechaCreacion, 'Fecha de actualización': d.fechaActualizacion } }"><mat-icon>visibility</mat-icon></button>
               @if (puedeEditar()) {
-                <a [routerLink]="['/descuentos', d.id, 'editar']" mat-icon-button title="Editar"><mat-icon>edit</mat-icon></a>
+                <button type="button"  (click)="abrirEditor(d.id)" mat-icon-button title="Editar"><mat-icon>edit</mat-icon></button>
               }
               @if (puedeDuplicar()) {
                 <button mat-icon-button title="Duplicar" (click)="duplicar(d)"><mat-icon>content_copy</mat-icon></button>
@@ -57,34 +63,9 @@
         }
       </tbody>
     </table>
-
-    <div class="cards-mobile">
-      @for (d of descuentos(); track d.id) {
-        <div class="item-card">
-          <div class="item-card-header">
-            <strong>{{ d.nombre }}</strong>
-            @if (puedeCambiarEstado(d)) {
-              <mat-slide-toggle [checked]="d.activo" (change)="toggleActivo(d)" [aria-label]="(d.activo ? 'Desactivar ' : 'Activar ') + d.nombre"></mat-slide-toggle>
-            } @else {
-              <span class="badge" [class.success]="d.activo" [class.muted]="!d.activo">
-                {{ d.activo ? 'Activo' : 'Inactivo' }}
-              </span>
-            }
-          </div>
-          <p class="item-card-desc">{{ d.tipo === 'Porcentaje' ? d.valor + '%' : ('L. ' + d.valor) }} @if (d.codigoPromocional) { · Código: {{ d.codigoPromocional }} }</p>
-          <div class="item-card-meta">
-            <span>{{ d.usosRealizados }}{{ d.limiteTotalUsos ? ' / ' + d.limiteTotalUsos : '' }} usos</span>
-          </div>
-          <div class="item-card-actions">
-              <button type="button" class="action-view" mat-button title="Ver detalle" [attr.aria-label]="'Ver ' + d.nombre" [appConsultaRegistro]="{ titulo: 'Descuento: ' + d.nombre, campos: { 'Nombre': d.nombre, 'Descripción': d.descripcion, 'Código promocional': d.codigoPromocional, 'Tipo': d.tipo, 'Valor': d.valor, 'Inicio': d.fechaInicio, 'Fin': d.fechaFin, 'Monto mínimo': d.montoMinimo, 'Máximo descuento': d.montoMaximoDescuento, 'Cantidad mínima': d.cantidadMinima, 'Requiere aprobación': d.requiereAprobacion, 'Acumulable': d.acumulable, 'Prioridad': d.prioridad, 'Límite total de usos': d.limiteTotalUsos, 'Límite por cliente': d.limiteUsosPorCliente, 'Usos realizados': d.usosRealizados, 'Estado': d.activo ? 'Activo' : 'Inactivo', 'ID de productos': d.productoIds, 'ID de categorías': d.categoriaIds, 'ID de clientes': d.clienteIds, 'ID de roles': d.rolIds, 'Fecha de creación': d.fechaCreacion, 'Fecha de actualización': d.fechaActualizacion } }"><mat-icon>visibility</mat-icon> Ver</button>
-            @if (puedeEditar()) { <a [routerLink]="['/descuentos', d.id, 'editar']" mat-button><mat-icon>edit</mat-icon> Editar</a> }
-            @if (puedeDuplicar()) { <button mat-button (click)="duplicar(d)"><mat-icon>content_copy</mat-icon> Duplicar</button> }
-            @if (puedeEliminar()) { <button mat-button (click)="eliminar(d)"><mat-icon>delete_outline</mat-icon> Eliminar</button> }
-          </div>
-        </div>
-      } @empty {
-        <p class="empty">No hay descuentos registrados.</p>
-      }
     </div>
+    <footer class="app-table-footer" aria-live="polite">{{ visibles().length }} de {{ descuentos().length }} registro(s)</footer>
+
+    
   }
 </div>

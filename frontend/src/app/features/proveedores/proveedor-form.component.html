@@ -1,15 +1,20 @@
+<div [class.app-dialog-layout]="!!editor.ref">
+@if (editor.ref) { <h2 mat-dialog-title>{{ isEdit() ? 'Editar Proveedor' : 'Nuevo Proveedor' }}</h2> }
+<div [class.app-dialog-layout__body]="!!editor.ref">
 <div class="proveedor-form-container">
-  <div class="header">
+  @if (!editor.ref) {
+<div class="header">
     <h1>{{ isEdit() ? 'Editar Proveedor' : 'Nuevo Proveedor' }}</h1>
     <a routerLink="/proveedores" mat-button>
       <mat-icon>arrow_back</mat-icon>
       Volver
     </a>
   </div>
+}
 
-  @if (!saving()) {
+  @if (!loading()) {
     <div class="form-container">
-      <form [formGroup]="form" (ngSubmit)="submit()">
+      <form id="proveedor-form-institucional" [formGroup]="form" (ngSubmit)="submit()">
         <mat-form-field appearance="outline">
           <mat-label>Nombre *</mat-label>
           <input matInput formControlName="nombre" required>
@@ -36,19 +41,29 @@
             {{ errorMessage() }}
           </div>
         }
-        <div class="actions">
-          <button type="submit" mat-raised-button color="primary" [disabled]="form.invalid">
+        @if (!editor.ref) {
+<div class="actions">
+          <button type="submit" mat-raised-button color="primary" [disabled]="form.invalid || form.disabled || loading() || saving()">
             {{ isEdit() ? 'Actualizar' : 'Crear' }}
           </button>
           <a routerLink="/proveedores" mat-button>Cancelar</a>
         </div>
+}
       </form>
     </div>
   } @else {
     <div class="loading-container">
       <mat-spinner></mat-spinner>
-      <p>Guardando...</p>
+      <p>Cargando registro…</p>
     </div>
   }
 
+</div>
+</div>
+@if (editor.ref) {
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" [disabled]="saving()" (click)="cancelarModal()">Cancelar</button>
+    <button mat-flat-button color="primary" type="submit" form="proveedor-form-institucional" [disabled]="form.invalid || form.disabled || loading() || saving()">{{ saving() ? 'Guardando…' : 'Guardar' }}</button>
+  </mat-dialog-actions>
+}
 </div>

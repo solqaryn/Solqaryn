@@ -89,7 +89,7 @@ jobs:
       - name: Regresión de edición y stock inicial de variantes
         run: npm run test:unit -- --include=src/app/features/productos/producto-variantes.component.spec.ts
       - name: Regresión de consulta de registros y catálogo de permisos
-        run: npm run test:unit -- --include=src/app/shared/consulta-registro/consulta-registro.spec.ts --include=src/app/shared/modal-institucional/modal-institucional.spec.ts --include=src/app/features/permisos/permisos-matrix.component.spec.ts
+        run: npm run test:unit -- --include=src/app/shared/consulta-registro/consulta-registro.spec.ts --include=src/app/shared/modal-institucional/modal-institucional.spec.ts --include=src/app/shared/modal-institucional/acciones-institucionales.spec.ts --include=src/app/features/permisos/permisos-matrix.component.spec.ts
       - run: npm run build:prod
       - run: node scripts/validate-environment-routing.mjs
       - name: Regresión de portadas de categorías

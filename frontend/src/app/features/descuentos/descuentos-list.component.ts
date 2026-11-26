@@ -1,26 +1,44 @@
+import { crearAccionesInstitucionales } from '../../shared/modal-institucional/acciones-institucionales';
+import { firstValueFrom } from 'rxjs';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
-import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 import { CommonModule } from '@angular/common';
-import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSlideToggleModule, MatSlideToggleChange } from '@angular/material/slide-toggle';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { DescuentoService } from '../../services/descuento.service';
 import { Descuento } from '../../core/models/descuento.model';
 import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
-import { AppAlertService } from '../../shared/alerts/app-alert.service';
 
 @Component({
   selector: 'app-descuentos-list',
   standalone: true,
-  imports: [ConsultaRegistroDirective, CommonModule, RouterLink, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatSlideToggleModule],
+  imports: [MatFormFieldModule, MatInputModule, MatSelectModule, ConsultaRegistroDirective, CommonModule, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatSlideToggleModule],
   templateUrl: './descuentos-list.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './descuentos-list.component.scss'
 })
 export class DescuentosListComponent implements OnInit {
+  private readonly acciones = crearAccionesInstitucionales('Descuentos');
+  readonly cambiandoEstado = signal(false);
+  readonly buscar = signal('');
+  readonly estadoFiltro = signal<'todos' | 'activos' | 'inactivos'>('todos');
+  readonly visibles = computed(() => {
+    const termino = this.buscar().trim().toLocaleLowerCase('es-HN');
+    return this.descuentos().filter(item => (!termino || item.nombre.toLocaleLowerCase('es-HN').includes(termino)) &&
+      (this.estadoFiltro() === 'todos' || item.activo === (this.estadoFiltro() === 'activos')));
+  });
+  limpiarFiltros(): void { this.buscar.set(''); this.estadoFiltro.set('todos'); }
+
+  async abrirEditor(id?: number): Promise<void> {
+    if (await this.acciones.abrir(() => import('./descuento-form.component').then(m => m.DescuentoFormComponent), 'l', id ? 'Editar' : 'Crear', id)) this.cargar();
+  }
+
   readonly descuentos = signal<Descuento[]>([]);
   readonly loading = signal(true);
   readonly puedeCrear = signal(false);
@@ -33,8 +51,7 @@ export class DescuentosListComponent implements OnInit {
   constructor(
     private service: DescuentoService,
     private permisosRuntime: PermisosRuntimeService,
-    private snackBar: MatSnackBar,
-    private alerts: AppAlertService
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -59,23 +76,23 @@ export class DescuentosListComponent implements OnInit {
     return descuento.activo ? this.puedeDesactivar() : this.puedeActivar();
   }
 
-  toggleActivo(descuento: Descuento): void {
-    if (!this.puedeCambiarEstado(descuento)) return;
-
-    const accion$ = descuento.activo
-      ? this.service.desactivar(descuento.id)
-      : this.service.activar(descuento.id);
-
-    accion$.subscribe({
-      next: () => this.cargar(),
-      error: (err) => this.snackBar.open(err.error?.message ?? 'No se pudo cambiar el estado.', 'Cerrar', { duration: 5000 })
-    });
+  async toggleActivo(descuento: Descuento, evento: MatSlideToggleChange): Promise<void> {
+    evento.source.checked = descuento.activo;
+    if (!this.puedeCambiarEstado(descuento) || this.cambiandoEstado()) return;
+    this.cambiandoEstado.set(true);
+    try {
+      const accion = descuento.activo ? 'Desactivar' : 'Activar';
+      if (!await this.acciones.confirmar(accion, { titulo: accion + ' registro', mensaje: '¿Deseas ' + accion.toLowerCase() + ' «' + descuento.nombre + '»?', confirmarTexto: accion })) return;
+      await firstValueFrom(descuento.activo ? this.service.desactivar(descuento.id) : this.service.activar(descuento.id));
+      this.cargar();
+    } catch { this.snackBar.open('No se pudo cambiar el estado.', 'Cerrar', { duration: 5000 }); }
+    finally { this.cambiandoEstado.set(false); }
   }
 
   async eliminar(descuento: Descuento): Promise<void> {
     if (!this.puedeEliminar()) return;
 
-    const confirmado = await this.alerts.confirmar({
+    const confirmado = await this.acciones.confirmar('EliminarLogico', {
       titulo: 'Eliminar descuento',
       mensaje: `Se eliminará el descuento "${descuento.nombre}".`,
       detalle: 'Dejará de estar disponible para nuevas operaciones.',

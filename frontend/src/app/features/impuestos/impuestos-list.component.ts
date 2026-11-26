@@ -1,26 +1,44 @@
+import { crearAccionesInstitucionales } from '../../shared/modal-institucional/acciones-institucionales';
+import { firstValueFrom } from 'rxjs';
+import { MatFormFieldModule } from '@angular/material/form-field';
+import { MatInputModule } from '@angular/material/input';
+import { MatSelectModule } from '@angular/material/select';
 import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
-import { Component, OnInit, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, signal, computed, ChangeDetectionStrategy } from '@angular/core';
 
-import { RouterLink } from '@angular/router';
 import { MatIconModule } from '@angular/material/icon';
 import { MatButtonModule } from '@angular/material/button';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSlideToggleModule, MatSlideToggleChange } from '@angular/material/slide-toggle';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { ImpuestoService } from '../../services/impuesto.service';
 import { Impuesto } from '../../core/models/impuesto.model';
 import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
-import { AppAlertService } from '../../shared/alerts/app-alert.service';
 
 @Component({
   selector: 'app-impuestos-list',
   standalone: true,
-  imports: [ConsultaRegistroDirective, RouterLink, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatSlideToggleModule],
+  imports: [MatFormFieldModule, MatInputModule, MatSelectModule, ConsultaRegistroDirective, MatIconModule, MatButtonModule, MatProgressSpinnerModule, MatSlideToggleModule],
   templateUrl: './impuestos-list.component.html',
   changeDetection: ChangeDetectionStrategy.Eager,
   styleUrl: './impuestos-list.component.scss'
 })
 export class ImpuestosListComponent implements OnInit {
+  private readonly acciones = crearAccionesInstitucionales('Impuestos');
+  readonly cambiandoEstado = signal(false);
+  readonly buscar = signal('');
+  readonly estadoFiltro = signal<'todos' | 'activos' | 'inactivos'>('todos');
+  readonly visibles = computed(() => {
+    const termino = this.buscar().trim().toLocaleLowerCase('es-HN');
+    return this.impuestos().filter(item => (!termino || item.nombre.toLocaleLowerCase('es-HN').includes(termino)) &&
+      (this.estadoFiltro() === 'todos' || item.activo === (this.estadoFiltro() === 'activos')));
+  });
+  limpiarFiltros(): void { this.buscar.set(''); this.estadoFiltro.set('todos'); }
+
+  async abrirEditor(id?: number): Promise<void> {
+    if (await this.acciones.abrir(() => import('./impuesto-form.component').then(m => m.ImpuestoFormComponent), 'l', id ? 'Editar' : 'Crear', id)) this.cargar();
+  }
+
   readonly impuestos = signal<Impuesto[]>([]);
   readonly loading = signal(true);
   readonly puedeCrear = signal(false);
@@ -33,8 +51,7 @@ export class ImpuestosListComponent implements OnInit {
   constructor(
     private service: ImpuestoService,
     private permisosRuntime: PermisosRuntimeService,
-    private snackBar: MatSnackBar,
-    private alerts: AppAlertService
+    private snackBar: MatSnackBar
   ) {}
 
   ngOnInit(): void {
@@ -59,23 +76,23 @@ export class ImpuestosListComponent implements OnInit {
     return impuesto.activo ? this.puedeDesactivar() : this.puedeActivar();
   }
 
-  toggleActivo(impuesto: Impuesto): void {
-    if (!this.puedeCambiarEstado(impuesto)) return;
-
-    const accion$ = impuesto.activo
-      ? this.service.desactivar(impuesto.id)
-      : this.service.activar(impuesto.id);
-
-    accion$.subscribe({
-      next: () => this.cargar(),
-      error: (err) => this.snackBar.open(err.error?.message ?? 'No se pudo cambiar el estado.', 'Cerrar', { duration: 5000 })
-    });
+  async toggleActivo(impuesto: Impuesto, evento: MatSlideToggleChange): Promise<void> {
+    evento.source.checked = impuesto.activo;
+    if (!this.puedeCambiarEstado(impuesto) || this.cambiandoEstado()) return;
+    this.cambiandoEstado.set(true);
+    try {
+      const accion = impuesto.activo ? 'Desactivar' : 'Activar';
+      if (!await this.acciones.confirmar(accion, { titulo: accion + ' registro', mensaje: '¿Deseas ' + accion.toLowerCase() + ' «' + impuesto.nombre + '»?', confirmarTexto: accion })) return;
+      await firstValueFrom(impuesto.activo ? this.service.desactivar(impuesto.id) : this.service.activar(impuesto.id));
+      this.cargar();
+    } catch { this.snackBar.open('No se pudo cambiar el estado.', 'Cerrar', { duration: 5000 }); }
+    finally { this.cambiandoEstado.set(false); }
   }
 
   async eliminar(impuesto: Impuesto): Promise<void> {
     if (!this.puedeEliminar()) return;
 
-    const confirmado = await this.alerts.confirmar({
+    const confirmado = await this.acciones.confirmar('EliminarLogico', {
       titulo: 'Eliminar impuesto',
       mensaje: `Se eliminará el impuesto "${impuesto.nombre}".`,
       detalle: 'No se aplicará a nuevas operaciones.',

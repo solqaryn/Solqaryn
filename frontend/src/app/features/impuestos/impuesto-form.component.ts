@@ -1,3 +1,6 @@
+import { MatDialogModule } from '@angular/material/dialog';
+import { crearEditorInstitucional } from '../../shared/modal-institucional/acciones-institucionales';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
@@ -18,7 +21,7 @@ function parseIds(texto: string | null | undefined): number[] {
 @Component({
   selector: 'app-impuesto-form',
   standalone: true,
-  imports: [
+  imports: [MatDialogModule, 
     ReactiveFormsModule,
     RouterLink,
     MatFormFieldModule,
@@ -33,6 +36,10 @@ function parseIds(texto: string | null | undefined): number[] {
   styleUrl: './impuesto-form.component.scss'
 })
 export class ImpuestoFormComponent implements OnInit {
+  readonly editor = crearEditorInstitucional('Impuestos');
+  readonly loading = signal(false);
+  cancelarModal(): void { if (!this.saving()) this.editor.cerrar(false); }
+
   private readonly fb = inject(FormBuilder);
   readonly isEdit = signal(false);
   readonly saving = signal(false);
@@ -64,11 +71,14 @@ export class ImpuestoFormComponent implements OnInit {
   constructor(private service: ImpuestoService, private route: ActivatedRoute, private router: Router) {}
 
   ngOnInit(): void {
-    const idParam = this.route.snapshot.paramMap.get('id');
+    const idParam = this.editor.ref ? this.editor.id : this.route.snapshot.paramMap.get('id');
+    if (this.editor.ref && !this.editor.valido(idParam ? 'Editar' : 'Crear')) { this.editor.cerrar(false); return; }
     if (idParam) {
       this.isEdit.set(true);
       this.impuestoId = Number(idParam);
-      this.service.getById(this.impuestoId).subscribe((res) => {
+      this.loading.set(true);
+      this.service.getById(this.impuestoId).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({ next: (res) => {
+        this.loading.set(false);
         const i = res.data;
         this.form.patchValue({
           nombre: i.nombre, codigo: i.codigo, descripcion: i.descripcion,
@@ -83,12 +93,12 @@ export class ImpuestoFormComponent implements OnInit {
         // Codigo es la identidad técnica estable usada por el seed y por
         // snapshots/integraciones. Puede definirse al crear, no renombrarse.
         this.form.controls.codigo.disable({ emitEvent: false });
-      });
+      }, error: () => { this.loading.set(false); this.form.disable(); this.errorMessage.set('No se pudo cargar el registro.'); } });
     }
   }
 
-  submit(): void {
-    if (this.form.invalid) return;
+  async submit(): Promise<void> {
+    if (this.form.invalid || this.form.disabled || this.loading() || this.saving()) return;
     this.saving.set(true);
     this.errorMessage.set(null);
 
@@ -108,9 +118,11 @@ export class ImpuestoFormComponent implements OnInit {
       clienteExentoIds: parseIds(v.clienteExentoIdsTexto), proveedorExentoIds: parseIds(v.proveedorExentoIdsTexto)
     };
 
+    const accion = this.isEdit() ? 'Editar' : 'Crear';
+    if (!await this.editor.confirmar(accion, { titulo: 'Confirmar ' + (this.isEdit() ? 'actualización' : 'creación'), mensaje: '¿Deseas guardar los datos del registro?', confirmarTexto: 'Guardar' })) { this.saving.set(false); return; }
     const request$ = this.isEdit() ? this.service.update(this.impuestoId!, valor) : this.service.create(valor);
-    request$.subscribe({
-      next: () => { this.saving.set(false); this.router.navigate(['/impuestos']); },
+    request$.pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
+      next: () => { this.saving.set(false); if (this.editor.ref) this.editor.cerrar(true); else void this.router.navigate(['/impuestos']); },
       error: (err) => { this.saving.set(false); this.errorMessage.set(err.error?.message ?? 'No se pudo guardar el impuesto.'); }
     });
   }

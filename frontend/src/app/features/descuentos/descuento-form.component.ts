@@ -1,3 +1,6 @@
+import { MatDialogModule } from '@angular/material/dialog';
+import { crearEditorInstitucional } from '../../shared/modal-institucional/acciones-institucionales';
+import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 
 import { ReactiveFormsModule, FormBuilder, Validators } from '@angular/forms';
@@ -18,7 +21,7 @@ function parseIds(texto: string | null | undefined): number[] {
 @Component({
   selector: 'app-descuento-form',
   standalone: true,
-  imports: [
+  imports: [MatDialogModule, 
     ReactiveFormsModule,
     RouterLink,
     MatFormFieldModule,
@@ -33,6 +36,10 @@ function parseIds(texto: string | null | undefined): number[] {
   styleUrl: './descuento-form.component.scss'
 })
 export class DescuentoFormComponent implements OnInit {
+  readonly editor = crearEditorInstitucional('Descuentos');
+  readonly loading = signal(false);
+  cancelarModal(): void { if (!this.saving()) this.editor.cerrar(false); }
+
   private readonly fb = inject(FormBuilder);
   readonly isEdit = signal(false);
   readonly saving = signal(false);
@@ -66,11 +73,14 @@ export class DescuentoFormComponent implements OnInit {
   constructor(private service: DescuentoService, private route: ActivatedRoute, private router: Router) {}
 
   ngOnInit(): void {
-    const idParam = this.route.snapshot.paramMap.get('id');
+    const idParam = this.editor.ref ? this.editor.id : this.route.snapshot.paramMap.get('id');
+    if (this.editor.ref && !this.editor.valido(idParam ? 'Editar' : 'Crear')) { this.editor.cerrar(false); return; }
     if (idParam) {
       this.isEdit.set(true);
       this.descuentoId = Number(idParam);
-      this.service.getById(this.descuentoId).subscribe((res) => {
+      this.loading.set(true);
+      this.service.getById(this.descuentoId).pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({ next: (res) => {
+        this.loading.set(false);
         const d = res.data;
         this.form.patchValue({
           nombre: d.nombre, descripcion: d.descripcion, codigoPromocional: d.codigoPromocional,
@@ -85,12 +95,12 @@ export class DescuentoFormComponent implements OnInit {
           clienteIdsTexto: d.clienteIds.join(', '),
           rolIdsTexto: d.rolIds.join(', ')
         });
-      });
+      }, error: () => { this.loading.set(false); this.form.disable(); this.errorMessage.set('No se pudo cargar el registro.'); } });
     }
   }
 
-  submit(): void {
-    if (this.form.invalid) return;
+  async submit(): Promise<void> {
+    if (this.form.invalid || this.form.disabled || this.loading() || this.saving()) return;
     this.saving.set(true);
     this.errorMessage.set(null);
 
@@ -107,9 +117,11 @@ export class DescuentoFormComponent implements OnInit {
       clienteIds: parseIds(v.clienteIdsTexto), rolIds: parseIds(v.rolIdsTexto)
     };
 
+    const accion = this.isEdit() ? 'Editar' : 'Crear';
+    if (!await this.editor.confirmar(accion, { titulo: 'Confirmar ' + (this.isEdit() ? 'actualización' : 'creación'), mensaje: '¿Deseas guardar los datos del registro?', confirmarTexto: 'Guardar' })) { this.saving.set(false); return; }
     const request$ = this.isEdit() ? this.service.update(this.descuentoId!, valor) : this.service.create(valor);
-    request$.subscribe({
-      next: () => { this.saving.set(false); this.router.navigate(['/descuentos']); },
+    request$.pipe(takeUntilDestroyed(this.editor.destroyRef)).subscribe({
+      next: () => { this.saving.set(false); if (this.editor.ref) this.editor.cerrar(true); else void this.router.navigate(['/descuentos']); },
       error: (err) => { this.saving.set(false); this.errorMessage.set(err.error?.message ?? 'No se pudo guardar el descuento.'); }
     });
   }

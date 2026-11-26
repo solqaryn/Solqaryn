@@ -1,31 +1,37 @@
 <div class="header-row">
   <h1 class="page-title">Impuestos</h1>
   @if (puedeCrear()) {
-    <a routerLink="/impuestos/nuevo" mat-flat-button color="primary">
+    <button type="button" (click)="abrirEditor()" mat-flat-button color="primary">
       <mat-icon>add</mat-icon> Nuevo impuesto
-    </a>
+    </button>
   }
 </div>
 
 <div class="card">
+  <div class="app-table-filters" aria-label="Filtros del listado">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>Buscar por nombre</mat-label><mat-icon matPrefix>search</mat-icon><input matInput #busqueda [value]="buscar()" (input)="buscar.set(busqueda.value)"></mat-form-field>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>Estado</mat-label><mat-select [value]="estadoFiltro()" (selectionChange)="estadoFiltro.set($event.value)"><mat-option value="todos">Todos</mat-option><mat-option value="activos">Activos</mat-option><mat-option value="inactivos">Inactivos</mat-option></mat-select></mat-form-field>
+    <button mat-stroked-button type="button" (click)="limpiarFiltros()"><mat-icon>filter_alt_off</mat-icon> Limpiar filtros</button>
+  </div>
   @if (loading()) {
     <div class="loading"><mat-spinner></mat-spinner></div>
   } @else {
-    <table class="table table-desktop">
+    <div class="app-table-shell" role="region" aria-label="Tabla de impuestos" tabindex="0">
+    <table class="app-data-table">
       <thead>
-        <tr><th>Nombre</th><th>Código</th><th>Tipo</th><th>Tasa/Monto</th><th>Operaciones</th><th>Estado</th><th>Acciones</th></tr>
+        <tr><th>Nombre</th><th>Código</th><th>Tipo</th><th>Tasa/Monto</th><th>Operaciones</th><th class="app-col-center">Estado</th><th class="actions-heading">Acciones</th></tr>
       </thead>
       <tbody>
-        @for (i of impuestos(); track i.id) {
+        @for (i of visibles(); track i.id) {
           <tr>
             <td>{{ i.nombre }}</td>
             <td>{{ i.codigo }}</td>
             <td>{{ i.tipo }}</td>
             <td>{{ i.tipo === 'Porcentaje' ? i.tasa + '%' : ('L. ' + i.montoFijo) }}</td>
             <td>{{ i.operaciones.join(', ') }}</td>
-            <td>
+            <td class="app-col-center">
               @if (puedeCambiarEstado(i)) {
-                <mat-slide-toggle [checked]="i.activo" (change)="toggleActivo(i)" [aria-label]="(i.activo ? 'Desactivar ' : 'Activar ') + i.nombre"></mat-slide-toggle>
+                <mat-slide-toggle [checked]="i.activo" [disabled]="cambiandoEstado()" (change)="toggleActivo(i, $event)" [aria-label]="(i.activo ? 'Desactivar ' : 'Activar ') + i.nombre"></mat-slide-toggle>
               } @else {
                 <span class="badge" [class.success]="i.activo" [class.muted]="!i.activo">
                   {{ i.activo ? 'Activo' : 'Inactivo' }}
@@ -34,7 +40,7 @@
             </td>
             <td class="actions">
               <button type="button" class="action-view" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver ' + i.nombre" [appConsultaRegistro]="{ titulo: 'Impuesto: ' + i.nombre, campos: { 'Nombre': i.nombre, 'Código': i.codigo, 'Descripción': i.descripcion, 'Tipo': i.tipo, 'Tasa': i.tasa, 'Monto fijo': i.montoFijo, 'Inicio': i.fechaInicio, 'Fin': i.fechaFin, 'Incluido en precio': i.incluidoEnPrecio, 'Antes de descuento': i.seCalculaAntesDescuento, 'Acumulativo': i.acumulativo, 'Prioridad': i.prioridad, 'Requiere retención': i.requiereRetencion, 'Estado': i.activo ? 'Activo' : 'Inactivo', 'ID de productos': i.productoIds, 'ID de categorías': i.categoriaIds, 'Operaciones': i.operaciones, 'ID de clientes exentos': i.clienteExentoIds, 'ID de proveedores exentos': i.proveedorExentoIds, 'Fecha de creación': i.fechaCreacion, 'Fecha de actualización': i.fechaActualizacion } }"><mat-icon>visibility</mat-icon></button>
-              @if (puedeEditar()) { <a [routerLink]="['/impuestos', i.id, 'editar']" mat-icon-button title="Editar"><mat-icon>edit</mat-icon></a> }
+              @if (puedeEditar()) { <button type="button"  (click)="abrirEditor(i.id)" mat-icon-button title="Editar"><mat-icon>edit</mat-icon></button> }
               @if (puedeDuplicar()) { <button mat-icon-button title="Duplicar" (click)="duplicar(i)"><mat-icon>content_copy</mat-icon></button> }
               @if (puedeEliminar()) { <button mat-icon-button title="Eliminar" (click)="eliminar(i)"><mat-icon>delete_outline</mat-icon></button> }
             </td>
@@ -44,32 +50,9 @@
         }
       </tbody>
     </table>
-
-    <div class="cards-mobile">
-      @for (i of impuestos(); track i.id) {
-        <div class="item-card">
-          <div class="item-card-header">
-            <strong>{{ i.nombre }}</strong>
-            @if (puedeCambiarEstado(i)) {
-              <mat-slide-toggle [checked]="i.activo" (change)="toggleActivo(i)" [aria-label]="(i.activo ? 'Desactivar ' : 'Activar ') + i.nombre"></mat-slide-toggle>
-            } @else {
-              <span class="badge" [class.success]="i.activo" [class.muted]="!i.activo">
-                {{ i.activo ? 'Activo' : 'Inactivo' }}
-              </span>
-            }
-          </div>
-          <p class="item-card-desc">{{ i.codigo }} · {{ i.tipo === 'Porcentaje' ? i.tasa + '%' : ('L. ' + i.montoFijo) }}</p>
-          <div class="item-card-meta"><span>{{ i.operaciones.join(', ') }}</span></div>
-          <div class="item-card-actions">
-              <button type="button" class="action-view" mat-button title="Ver detalle" [attr.aria-label]="'Ver ' + i.nombre" [appConsultaRegistro]="{ titulo: 'Impuesto: ' + i.nombre, campos: { 'Nombre': i.nombre, 'Código': i.codigo, 'Descripción': i.descripcion, 'Tipo': i.tipo, 'Tasa': i.tasa, 'Monto fijo': i.montoFijo, 'Inicio': i.fechaInicio, 'Fin': i.fechaFin, 'Incluido en precio': i.incluidoEnPrecio, 'Antes de descuento': i.seCalculaAntesDescuento, 'Acumulativo': i.acumulativo, 'Prioridad': i.prioridad, 'Requiere retención': i.requiereRetencion, 'Estado': i.activo ? 'Activo' : 'Inactivo', 'ID de productos': i.productoIds, 'ID de categorías': i.categoriaIds, 'Operaciones': i.operaciones, 'ID de clientes exentos': i.clienteExentoIds, 'ID de proveedores exentos': i.proveedorExentoIds, 'Fecha de creación': i.fechaCreacion, 'Fecha de actualización': i.fechaActualizacion } }"><mat-icon>visibility</mat-icon> Ver</button>
-            @if (puedeEditar()) { <a [routerLink]="['/impuestos', i.id, 'editar']" mat-button><mat-icon>edit</mat-icon> Editar</a> }
-            @if (puedeDuplicar()) { <button mat-button (click)="duplicar(i)"><mat-icon>content_copy</mat-icon> Duplicar</button> }
-            @if (puedeEliminar()) { <button mat-button (click)="eliminar(i)"><mat-icon>delete_outline</mat-icon> Eliminar</button> }
-          </div>
-        </div>
-      } @empty {
-        <p class="empty">No hay impuestos registrados.</p>
-      }
     </div>
+    <footer class="app-table-footer" aria-live="polite">{{ visibles().length }} de {{ impuestos().length }} registro(s)</footer>
+
+    
   }
 </div>

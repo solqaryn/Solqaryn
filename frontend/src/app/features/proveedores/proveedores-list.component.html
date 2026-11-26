@@ -1,25 +1,31 @@
 <div class="header-row">
   <h1 class="page-title">Proveedores</h1>
   @if (puedeCrear()) {
-    <a routerLink="/proveedores/nuevo" mat-flat-button color="primary">
+    <button type="button" (click)="abrirEditor()" mat-flat-button color="primary">
       <mat-icon>add</mat-icon> Nuevo proveedor
-    </a>
+    </button>
   }
 </div>
 
 <div class="card">
+  <div class="app-table-filters" aria-label="Filtros del listado">
+    <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>Buscar por nombre</mat-label><mat-icon matPrefix>search</mat-icon><input matInput #busqueda [value]="buscar()" (input)="buscar.set(busqueda.value)"></mat-form-field>
+    <mat-form-field appearance="outline" subscriptSizing="dynamic"><mat-label>Estado</mat-label><mat-select [value]="estadoFiltro()" (selectionChange)="estadoFiltro.set($event.value)"><mat-option value="todos">Todos</mat-option><mat-option value="activos">Activos</mat-option><mat-option value="inactivos">Inactivos</mat-option></mat-select></mat-form-field>
+    <button mat-stroked-button type="button" (click)="limpiarFiltros()"><mat-icon>filter_alt_off</mat-icon> Limpiar filtros</button>
+  </div>
   @if (loading()) {
     <div class="loading"><mat-spinner></mat-spinner></div>
   } @else {
-    <table class="table table-desktop">
+    <div class="app-table-shell" role="region" aria-label="Tabla de proveedores" tabindex="0">
+    <table class="app-data-table">
       <thead>
         <tr>
           <th>Nombre</th><th>Teléfono</th><th>Documento</th><th>Correo</th>
-          <th>Compras</th><th>Total comprado</th><th>Estado</th><th></th>
+          <th>Compras</th><th>Total comprado</th><th class="app-col-center">Estado</th><th class="actions-heading">Acciones</th>
         </tr>
       </thead>
       <tbody>
-        @for (p of proveedores(); track p.id) {
+        @for (p of visibles(); track p.id) {
           <tr>
             <td>{{ p.nombre }}</td>
             <td>{{ p.telefono || '—' }}</td>
@@ -27,9 +33,9 @@
             <td>{{ p.correo || '—' }}</td>
             <td>{{ p.totalCompras }}</td>
             <td>{{ p.totalComprado | currency:'HNL':'symbol':'1.2-2' }}</td>
-            <td>
+            <td class="app-col-center">
               @if (puedeCambiarEstado(p)) {
-                <mat-slide-toggle [checked]="p.activo" (change)="toggleActivo(p)" [aria-label]="(p.activo ? 'Desactivar ' : 'Activar ') + p.nombre"></mat-slide-toggle>
+                <mat-slide-toggle [checked]="p.activo" [disabled]="cambiandoEstado()" (change)="toggleActivo(p, $event)" [aria-label]="(p.activo ? 'Desactivar ' : 'Activar ') + p.nombre"></mat-slide-toggle>
               } @else {
                 <span class="badge" [class.success]="p.activo" [class.muted]="!p.activo">{{ p.activo ? 'Activo' : 'Inactivo' }}</span>
               }
@@ -37,7 +43,7 @@
             <td class="actions">
               <button type="button" class="action-view" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver ' + p.nombre" [appConsultaRegistro]="{ titulo: 'Proveedor: ' + p.nombre, campos: { 'Nombre': p.nombre, 'Documento': p.documento, 'Teléfono': p.telefono, 'Correo': p.correo, 'Dirección': p.direccion, 'Estado': p.activo ? 'Activo' : 'Inactivo', 'Compras': p.totalCompras, 'Total comprado (HNL)': p.totalComprado, 'Creado por': p.creadoPorNombreUsuario, 'Fecha de creación': p.fechaCreacion } }"><mat-icon>visibility</mat-icon></button>
               @if (puedeEditar()) {
-                <a [routerLink]="['/proveedores', p.id, 'editar']" mat-icon-button title="Editar"><mat-icon>edit</mat-icon></a>
+                <button type="button"  (click)="abrirEditor(p.id)" mat-icon-button title="Editar"><mat-icon>edit</mat-icon></button>
               }
               @if (puedeEliminar()) {
                 <button mat-icon-button title="Eliminar" (click)="eliminar(p)"><mat-icon>delete</mat-icon></button>
@@ -49,38 +55,9 @@
         }
       </tbody>
     </table>
-
-    <div class="cards-mobile">
-      @for (p of proveedores(); track p.id) {
-        <div class="item-card">
-          <div class="item-card-header">
-            <strong>{{ p.nombre }}</strong>
-            @if (puedeCambiarEstado(p)) {
-              <mat-slide-toggle [checked]="p.activo" (change)="toggleActivo(p)" [aria-label]="(p.activo ? 'Desactivar ' : 'Activar ') + p.nombre"></mat-slide-toggle>
-            } @else {
-              <span class="badge" [class.success]="p.activo" [class.muted]="!p.activo">{{ p.activo ? 'Activo' : 'Inactivo' }}</span>
-            }
-          </div>
-          <p class="item-card-desc">{{ p.telefono || p.correo || 'Sin contacto registrado' }}</p>
-          <div class="item-card-meta">
-            <span>{{ p.totalCompras }} compras</span>
-            <span>{{ p.totalComprado | currency:'HNL':'symbol':'1.2-2' }}</span>
-          </div>
-          @if (puedeEditar() || puedeEliminar()) {
-            <div class="item-card-actions">
-              <button type="button" class="action-view" mat-button title="Ver detalle" [attr.aria-label]="'Ver ' + p.nombre" [appConsultaRegistro]="{ titulo: 'Proveedor: ' + p.nombre, campos: { 'Nombre': p.nombre, 'Documento': p.documento, 'Teléfono': p.telefono, 'Correo': p.correo, 'Dirección': p.direccion, 'Estado': p.activo ? 'Activo' : 'Inactivo', 'Compras': p.totalCompras, 'Total comprado (HNL)': p.totalComprado, 'Creado por': p.creadoPorNombreUsuario, 'Fecha de creación': p.fechaCreacion } }"><mat-icon>visibility</mat-icon> Ver</button>
-              @if (puedeEditar()) {
-                <a [routerLink]="['/proveedores', p.id, 'editar']" mat-button><mat-icon>edit</mat-icon> Editar</a>
-              }
-              @if (puedeEliminar()) {
-                <button mat-button type="button" (click)="eliminar(p)"><mat-icon>delete</mat-icon> Eliminar</button>
-              }
-            </div>
-          }
-        </div>
-      } @empty {
-        <p class="empty">No hay proveedores registrados.</p>
-      }
     </div>
+    <footer class="app-table-footer" aria-live="polite">{{ visibles().length }} de {{ proveedores().length }} registro(s)</footer>
+
+    
   }
 </div>
