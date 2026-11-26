@@ -260,14 +260,24 @@ public class FacturaCompartirService : IFacturaCompartirService
             return await EnviarCorreoCoreAsync(facturaId, destinatario, cancellationToken);
 
         if (TryObtenerCorreoProcesado(claveCache, out var procesado))
+        {
+            cancellationToken.ThrowIfCancellationRequested();
+            _ = await ObtenerFacturaCompartibleAsync(facturaId);
+            cancellationToken.ThrowIfCancellationRequested();
             return ClonarComoProcesado(procesado!);
+        }
 
         var bloqueo = CorreoLocks.GetOrAdd(claveCache, _ => new SemaphoreSlim(1, 1));
         await bloqueo.WaitAsync(cancellationToken);
         try
         {
             if (TryObtenerCorreoProcesado(claveCache, out procesado))
+            {
+                cancellationToken.ThrowIfCancellationRequested();
+                _ = await ObtenerFacturaCompartibleAsync(facturaId);
+                cancellationToken.ThrowIfCancellationRequested();
                 return ClonarComoProcesado(procesado!);
+            }
 
             var resultado = await EnviarCorreoCoreAsync(facturaId, destinatario, cancellationToken);
             if (resultado.Exito)

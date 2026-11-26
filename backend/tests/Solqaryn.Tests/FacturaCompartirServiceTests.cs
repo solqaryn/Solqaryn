@@ -252,6 +252,43 @@ public class FacturaCompartirServiceTests
         _repository.Verify(r => r.AddHistorialAsync(It.IsAny<HistorialEnvioFactura>()), Times.Once);
     }
 
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task EnviarPorCorreoAsync_Replay_Revalida_Factura_Actual(bool anulada)
+    {
+        var factura = CrearFactura();
+        var clave = $"qa-replay-{Guid.NewGuid():N}";
+        _facturaService.Setup(s => s.GetByIdAsync(factura.Id)).ReturnsAsync(factura);
+        _pdfService.Setup(s => s.GenerarPdfAsync(factura)).ReturnsAsync(Encoding.UTF8.GetBytes("%PDF-replay"));
+        _emailService.Setup(s => s.EnviarAsync(
+                It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
+                It.IsAny<List<AdjuntoCorreo>>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(new ResultadoEntregaEmail
+            {
+                Exito = true, Codigo = "ENVIADO", Intentos = 1, MessageId = "qa-replay"
+            });
+
+        Assert.True((await _service.EnviarPorCorreoAsync(factura.Id, "cliente@example.com", clave)).Exito);
+
+        if (anulada)
+        {
+            factura.Estado = "Anulada";
+            _facturaService.Setup(s => s.GetByIdAsync(factura.Id)).ReturnsAsync(factura);
+        }
+        else
+        {
+            _facturaService.Setup(s => s.GetByIdAsync(factura.Id)).ReturnsAsync((FacturaDto?)null);
+        }
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            _service.EnviarPorCorreoAsync(factura.Id, "cliente@example.com", clave));
+        _emailService.Verify(s => s.EnviarAsync(
+            It.IsAny<string>(), It.IsAny<string>(), It.IsAny<string>(),
+            It.IsAny<List<AdjuntoCorreo>>(), It.IsAny<CancellationToken>()), Times.Once);
+        _repository.Verify(r => r.AddHistorialAsync(It.IsAny<HistorialEnvioFactura>()), Times.Once);
+    }
+
     [Fact]
     public async Task EnviarPorCorreoAsync_Propaga_Error_Transitorio_Seguro()
     {

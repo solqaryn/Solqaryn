@@ -1,3 +1,6 @@
+## 2026-11-26 | DEV06 | C14-02.M06.06 | R1-RESTAURADA
+- Revalida acceso actual y estado de factura en ambos caminos de replay del correo (antes y después del semáforo), conserva cancelación, idempotencia y autorización del controlador. Reutiliza FacturaRepository/alcance vigente, sin cambios de API, permisos, datos, infraestructura o esquema. Añade dos casos xUnit de revocación de acceso al recurso y anulación tras primer envío, sin duplicar correo ni historial; son pruebas unitarias, no certificación HTTP/JWT/MySQL. C14 A0-A4 integral y A5 siguen pendientes; CI exact-SHA pendiente. Foco C01-04.M03.06 sigue prioritario con impedimento P01/P02/API12/retención ya notificado.
+
 ## 2026-11-26 | DEV05 | C07-01.M06.06 | R1-RESTAURADA
 - Adopta preparación DEV04 AJ5 (run 3fa64842) y añade denegación inversa B→A y confirmación/replay independiente B. Prueba dirigida Oracle EF/MySQL efímero del servicio real ConfirmarAsync, repositorios, auditoría estricta y rollback ante SQLSTATE 45000; fixtures sintéticos, no acredita JWT/RBAC HTTP. Sin modificar runtime, esquema, permisos ni datos reales. CI exact-SHA pendiente; no LISTO/A5. Foco C01-04.M03.06 mantiene prioridad, impedimento P01/P02/API12 y retención ya notificado.
 
