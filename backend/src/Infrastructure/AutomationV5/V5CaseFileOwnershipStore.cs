@@ -154,12 +154,17 @@ public sealed class V5CaseFileOwnershipStore
             ct.ThrowIfCancellationRequested();
 
             // Read back the exact joined P01/P02 receipt before authorization recheck.
+            // Compare token bytes, not PAD SPACE collation equivalence (e.g. a trigger
+            // adding a trailing space to a resource or reason must roll back the write).
             await using (var receipt = Command(tx, """
                 SELECT COUNT(*) FROM V5CaseFileOwnerships o
                 INNER JOIN V5CaseFileVersions v ON v.EmpresaId=o.EmpresaId AND v.ExpedienteId=o.Id
                 WHERE o.EmpresaId=@tenant AND o.Id=@case AND o.SucursalId=@branch
-                  AND o.RecursoTipo=@type AND o.RecursoRef=@ref AND v.Version=@version
-                  AND v.ActorId=@actor AND v.ContentHash=@hash AND v.ReasonCode=@reason
+                  AND CAST(o.RecursoTipo AS BINARY)=CAST(@type AS BINARY)
+                  AND CAST(o.RecursoRef AS BINARY)=CAST(@ref AS BINARY) AND v.Version=@version
+                  AND v.ActorId=@actor
+                  AND CAST(v.ContentHash AS BINARY)=CAST(@hash AS BINARY)
+                  AND CAST(v.ReasonCode AS BINARY)=CAST(@reason AS BINARY)
                 """, ("@tenant", tenant), ("@case", selection.CaseId), ("@branch", a.BranchId),
                 ("@type", selection.ResourceType), ("@ref", selection.ResourceRef),
                 ("@version", next), ("@actor", a.ActorId),
@@ -215,7 +220,10 @@ public sealed class V5CaseFileOwnershipStore
                 : null;
         }
         ct.ThrowIfCancellationRequested();
-        if (_db.AuthorizedCommercialEmpresaId != tenant) return null;
+        if (_db.AuthorizedCommercialEmpresaId != tenant ||
+            (result is not null && (!ValidToken(result.ResourceType, 64) ||
+                !ValidToken(result.ResourceRef, 128) || result.Version <= 0)))
+            return null;
         await tx.CommitAsync(ct);
         return result;
     }

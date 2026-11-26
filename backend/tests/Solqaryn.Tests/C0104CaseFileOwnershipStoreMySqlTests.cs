@@ -106,6 +106,42 @@ public sealed class C0104CaseFileOwnershipStoreMySqlTests
             Assert.Equal("CASEFILE_WRITE_DENIED",
                 (await storeA.AppendAsync(one with { CaseId = 4, ResourceType = "unmapped" })).Code);
             Assert.Null(await storeA.ReadCandidateAsync(a.Id,4,branchA.Id));
+
+            // ascii_bin is PAD SPACE; the durable receipt must compare exact bytes.
+            // Exercise real MySQL trigger-induced divergence in the disposable fixture.
+            var five = one with { CaseId = 5, ResourceRef = "r5" };
+            await setup.Database.ExecuteSqlRawAsync("""
+                CREATE TRIGGER V44C0104TamperOwnership BEFORE INSERT ON V5CaseFileOwnerships
+                FOR EACH ROW SET NEW.RecursoRef = CONCAT(NEW.RecursoRef, ' ')
+                """);
+            try
+            {
+                Assert.Equal("CASEFILE_WRITE_FAILED", (await storeA.AppendAsync(five)).Code);
+                Assert.Null(await storeA.ReadCandidateAsync(a.Id,5,branchA.Id));
+            }
+            finally { await setup.Database.ExecuteSqlRawAsync("DROP TRIGGER V44C0104TamperOwnership"); }
+            Assert.Equal(1L, (await storeA.AppendAsync(five)).Version);
+
+            await setup.Database.ExecuteSqlRawAsync("""
+                CREATE TRIGGER V44C0104TamperReason BEFORE INSERT ON V5CaseFileVersions
+                FOR EACH ROW SET NEW.ReasonCode = CONCAT(NEW.ReasonCode, ' ')
+                """);
+            try
+            {
+                Assert.Equal("CASEFILE_WRITE_FAILED",
+                    (await storeA.AppendAsync(five with { ExpectedVersion = 1 })).Code);
+                Assert.Equal(1L, (await storeA.ReadCandidateAsync(a.Id,5,branchA.Id))!.Version);
+            }
+            finally { await setup.Database.ExecuteSqlRawAsync("DROP TRIGGER V44C0104TamperReason"); }
+            Assert.Equal(2L, (await storeA.AppendAsync(five with { ExpectedVersion = 1 })).Version);
+
+            // Simulate a malformed legacy/externally corrupted candidate only in the fixture.
+            await setup.Database.ExecuteSqlInterpolatedAsync($"""
+                UPDATE V5CaseFileOwnerships SET RecursoRef=CONCAT(RecursoRef, ' ')
+                WHERE EmpresaId={a.Id} AND Id={5}
+                """);
+            Assert.Null(await storeA.ReadCandidateAsync(a.Id,5,branchA.Id));
+            Assert.Equal(1L, (await storeB.ReadCandidateAsync(b.Id,1,branchB.Id))!.Version);
         }
         finally { await setup.Database.EnsureDeletedAsync(); }
     }
