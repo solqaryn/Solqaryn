@@ -1,3 +1,7 @@
+## 2026-11-25 — QA: control reutilizable de acciones institucionales
+
+- Adaptador compartido para abrir editores protegidos, confirmar acciones y revalidar contexto/permiso tras la respuesta. Pruebas negativas de cancelación, revocación y cambio de empresa. Sin cambios de API o datos.
+
 ## 2026-11-25 — QA: categorías y roles en modales institucionales
 
 - Categorías y roles abren creación/edición en modales L/M respectivamente, reutilizan formularios y conservan rutas protegidas. Confirmación previa de guardado y cambio de estado, con permisos revalidados y contexto de empresa verificado. Se preservan galería, rol de sistema y duplicación con nombre confirmado.
