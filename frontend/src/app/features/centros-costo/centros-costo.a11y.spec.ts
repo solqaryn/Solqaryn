@@ -9,7 +9,7 @@ import { CentrosCostoComponent } from './centros-costo.component';
 
 describe('N4.11.G CentroCosto accessibility regression', () => {
   const service = {
-    buscar: vi.fn(() => of({ data: { items: [], total: 0, pagina: 1, tamanoPagina: 100 } })),
+    buscar: vi.fn(() => of({ success: true, message: '', errors: [], data: { items: [], total: 0, pagina: 1, tamanoPagina: 20 } })),
     create: vi.fn(),
     update: vi.fn(),
     cambiarEstado: vi.fn(),
@@ -77,6 +77,19 @@ describe('N4.11.G CentroCosto accessibility regression', () => {
     fixture.detectChanges();
 
     expect(host.querySelector('button[aria-label="Activar Operaciones"]')).not.toBeNull();
+  });
+
+  it('solicita páginas reales y reinicia la búsqueda al cambiar el filtro', () => {
+    const fixture = TestBed.createComponent(CentrosCostoComponent);
+    fixture.detectChanges();
+    expect(service.buscar).toHaveBeenLastCalledWith({ termino: '', pagina: 1, tamanoPagina: 20 });
+    fixture.componentInstance.cambiarPagina({ pageIndex: 1, pageSize: 20, length: 42 });
+    expect(service.buscar).toHaveBeenLastCalledWith({ termino: '', pagina: 2, tamanoPagina: 20 });
+    fixture.componentInstance.termino.set('  Operaciones  ');
+    fixture.componentInstance.buscar();
+    expect(service.buscar).toHaveBeenLastCalledWith({ termino: 'Operaciones', pagina: 1, tamanoPagina: 20 });
+    fixture.componentInstance.limpiar();
+    expect(service.buscar).toHaveBeenLastCalledWith({ termino: '', pagina: 1, tamanoPagina: 20 });
   });
 
   it('announces load errors through an alert role', () => {

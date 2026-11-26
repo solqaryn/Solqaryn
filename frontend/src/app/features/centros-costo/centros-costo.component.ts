@@ -1,6 +1,9 @@
 import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consulta-registro';
 
-import { Component, OnInit, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { Component, OnInit, OnDestroy, inject, signal, ChangeDetectionStrategy } from '@angular/core';
+import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
+import { PAGINADOR_ESPANOL_PROVIDER } from '../../shared/paginador-institucional';
+import { Subscription } from 'rxjs';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -16,21 +19,19 @@ import { CentroCostoService } from '../../services/centro-costo.service';
 import { AppAlertService } from '../../shared/alerts/app-alert.service';
 
 @Component({
+  viewProviders: [PAGINADOR_ESPANOL_PROVIDER],
   selector: 'app-centros-costo',
   standalone: true,
-  imports: [ConsultaRegistroDirective, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressSpinnerModule, MatSelectModule, MatSlideToggleModule],
+  imports: [ConsultaRegistroDirective, ReactiveFormsModule, MatButtonModule, MatFormFieldModule, MatIconModule, MatInputModule, MatProgressSpinnerModule, MatSelectModule, MatSlideToggleModule, MatPaginatorModule],
   template: `
     <section class="page-shell">
       <header class="page-header">
-        <div><p class="eyebrow">Finanzas</p><h1>Centros de costo</h1><p>Administra la clasificación contable por sucursal, departamento, proyecto o unidad de negocio.</p></div>
+        <div><h1 class="page-title">Centros de costo</h1><p class="page-subtitle">Clasifica las operaciones contables por sucursal, departamento, proyecto o unidad de negocio para facilitar su seguimiento.</p></div>
         @if (puedeCrear()) { <button mat-flat-button color="primary" type="button" (click)="nuevo()"><mat-icon>add</mat-icon> Nuevo centro</button> }
       </header>
-      <div class="toolbar" role="search">
-        <mat-form-field appearance="outline"><mat-label>Buscar</mat-label><input matInput [value]="termino()" (input)="actualizarTermino($event)" (keyup.enter)="cargar()" aria-label="Buscar centros de costo"></mat-form-field>
-        <button mat-stroked-button type="button" (click)="cargar()">Aplicar</button>
-      </div>
+
       @if (mostrandoFormulario()) {
-        <form class="editor" [formGroup]="form" (ngSubmit)="guardar()" aria-label="Formulario de centro de costo">
+        <form class="card editor" [formGroup]="form" (ngSubmit)="guardar()" aria-label="Formulario de centro de costo">
           <div class="editor-title"><h2>{{ editandoId() ? 'Editar centro de costo' : 'Nuevo centro de costo' }}</h2><button mat-icon-button type="button" (click)="cancelar()" aria-label="Cerrar formulario"><mat-icon>close</mat-icon></button></div>
           <div class="form-grid">
             <mat-form-field appearance="outline"><mat-label>Código</mat-label><input matInput formControlName="codigo" maxlength="50" autocomplete="off">@if (form.controls.codigo.hasError('required')) { <mat-error>El código es obligatorio.</mat-error> }</mat-form-field>
@@ -44,26 +45,60 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
           <div class="actions"><button mat-button type="button" (click)="cancelar()">Cancelar</button><button mat-flat-button color="primary" type="submit" [disabled]="saving()">@if (saving()) { <mat-spinner diameter="20"></mat-spinner> } @if (!saving()) { <mat-icon>save</mat-icon> }<span>{{ saving() ? 'Guardando…' : 'Guardar' }}</span></button></div>
         </form>
       }
-      <div class="card" aria-live="polite">
-        @if (loading()) { <div class="state"><mat-spinner diameter="38"></mat-spinner><span>Cargando centros de costo…</span></div> }
+      <section class="card app-list-surface" aria-label="Listado de centros de costo">
+        <div class="app-table-filters" role="search" aria-label="Filtros de centros de costo">
+          <mat-form-field appearance="outline" class="search-field"><mat-label>Código o nombre</mat-label><input matInput [value]="termino()" (input)="actualizarTermino($event)" (keyup.enter)="buscar()" aria-label="Buscar centros de costo"></mat-form-field>
+          <div class="filter-actions"><button mat-flat-button color="primary" type="button" (click)="buscar()"><mat-icon>search</mat-icon> Buscar</button><button mat-button type="button" (click)="limpiar()">Limpiar</button></div>
+        </div>
+        @if (loading()) { <div class="state" role="status"><mat-spinner diameter="38"></mat-spinner><span>Cargando centros de costo…</span></div> }
         @else if (errorCarga()) { <div class="state error" role="alert"><mat-icon>error_outline</mat-icon><span>{{ errorCarga() }}</span><button mat-button type="button" (click)="cargar()">Reintentar</button></div> }
-        @else if (items().length === 0) { <div class="state"><mat-icon>account_tree</mat-icon><h2>Sin centros de costo</h2><p>No hay registros para los filtros actuales.</p></div> }
+        @else if (items().length === 0) { <div class="app-list-empty" role="status"><mat-icon aria-hidden="true">account_tree</mat-icon><h2>Sin centros de costo</h2><p>{{ filtroAplicado ? 'No se encontraron centros de costo con ese código o nombre. Cambia la búsqueda.' : 'Los centros de costo registrados aparecerán aquí para su consulta y administración.' }}</p></div> }
         @else {
-          <div class="table-scroll"><table><thead><tr><th>Código</th><th>Nombre</th><th>Tipo</th><th>Sucursal</th><th>Estado</th><th class="right">Acciones</th></tr></thead><tbody>
-          @for (item of items(); track item.id) { <tr [class.inactive]="!item.activo"><td><code>{{ item.codigo }}</code></td><td><strong>{{ item.nombre }}</strong></td><td>{{ tipoNombre(item.tipo) }}</td><td>{{ item.sucursalNombre || item.sucursalCodigo || '—' }}</td><td>@if (puedeCambiarEstado(item)) { <mat-slide-toggle [checked]="item.activo" (change)="cambiarEstado(item)" [aria-label]="(item.activo ? 'Desactivar ' : 'Activar ') + item.nombre"></mat-slide-toggle> } @else { <span class="status" [class.ok]="item.activo">{{ item.activo ? 'Activo' : 'Inactivo' }}</span> }</td><td class="right">
+          <div class="app-table-shell" role="region" aria-label="Tabla de centros de costo" tabindex="0"><table class="app-data-table"><thead><tr><th>Código</th><th>Nombre</th><th>Tipo</th><th>Sucursal</th><th>Estado</th><th class="actions">Acciones</th></tr></thead><tbody>
+          @for (item of items(); track item.id) { <tr [class.inactive]="!item.activo"><td><code>{{ item.codigo }}</code></td><td><strong>{{ item.nombre }}</strong></td><td>{{ tipoNombre(item.tipo) }}</td><td>{{ item.sucursalNombre || item.sucursalCodigo || '—' }}</td><td>@if (puedeCambiarEstado(item)) { <mat-slide-toggle [checked]="item.activo" (change)="cambiarEstado(item)" [aria-label]="(item.activo ? 'Desactivar ' : 'Activar ') + item.nombre"></mat-slide-toggle> } @else { <span class="status" [class.ok]="item.activo">{{ item.activo ? 'Activo' : 'Inactivo' }}</span> }</td><td class="actions">
             <button class="action-view" mat-icon-button type="button" title="Ver detalle" [attr.aria-label]="'Ver ' + item.nombre" [appConsultaRegistro]="{ titulo: 'Centro de costo: ' + item.nombre, campos: { 'Código': item.codigo, 'Nombre': item.nombre, 'Descripción': item.descripcion, 'Tipo': tipoNombre(item.tipo), 'Sucursal': item.sucursalNombre || item.sucursalCodigo, 'Estado': item.activo ? 'Activo' : 'Inactivo', 'Fecha de creación': item.fechaCreacion, 'Fecha de actualización': item.fechaActualizacion } }"><mat-icon>visibility</mat-icon></button>
-            @if (puedeEditar()) { <button mat-icon-button type="button" (click)="editar(item)" [attr.aria-label]="'Editar ' + item.nombre"><mat-icon>edit</mat-icon></button> }
-            @if (puedeEliminar()) { <button mat-icon-button type="button" (click)="eliminar(item)" [attr.aria-label]="'Eliminar ' + item.nombre"><mat-icon>delete_outline</mat-icon></button> }
+            @if (puedeEditar()) { <button class="action-edit" mat-icon-button type="button" (click)="editar(item)" [attr.aria-label]="'Editar ' + item.nombre"><mat-icon>edit</mat-icon></button> }
+            @if (puedeEliminar()) { <button class="action-delete" mat-icon-button type="button" (click)="eliminar(item)" [attr.aria-label]="'Eliminar ' + item.nombre"><mat-icon>delete_outline</mat-icon></button> }
           </td></tr> }
           </tbody></table></div>
         }
-      </div>
+        @if (!loading() && !errorCarga() && total() > 0) {
+          <mat-paginator [length]="total()" [pageIndex]="page - 1" [pageSize]="pageSize" [pageSizeOptions]="[10,20,50,100]" (page)="cambiarPagina($event)" aria-label="Paginación de centros de costo"></mat-paginator>
+        }
+      </section>
     </section>
   `,
   changeDetection: ChangeDetectionStrategy.Eager,
-  styles: [`.page-shell{display:grid;gap:20px}.page-header{display:flex;justify-content:space-between;gap:20px;align-items:flex-start}.page-header h1{margin:2px 0 6px;font-size:clamp(1.6rem,2.5vw,2.2rem)}.page-header p{margin:0;color:var(--text-secondary,#64748b)}.eyebrow{text-transform:uppercase;letter-spacing:.09em;font-weight:700;font-size:.75rem;color:var(--primary,#2563eb)!important}.toolbar{display:flex;gap:10px;align-items:center}.toolbar mat-form-field{min-width:min(420px,70vw)}.editor,.card{background:var(--surface,#fff);border:1px solid var(--border,#e2e8f0);border-radius:16px;padding:20px}.editor-title{display:flex;justify-content:space-between;align-items:center}.form-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.full{width:100%}.actions{display:flex;justify-content:flex-end;gap:10px;margin-top:14px}.state{min-height:220px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;color:var(--text-secondary,#64748b);text-align:center}.error{color:#b91c1c}.table-scroll{overflow:auto}table{width:100%;border-collapse:collapse;min-width:760px}th,td{text-align:left;padding:13px 10px;border-bottom:1px solid var(--border,#e2e8f0)}th{font-size:.75rem;text-transform:uppercase;letter-spacing:.05em;color:var(--text-secondary,#64748b)}.right{text-align:right;white-space:nowrap}.inactive{opacity:.65}.status{padding:3px 8px;border-radius:999px;background:#fee2e2;color:#991b1b}.status.ok{background:#dcfce7;color:#166534}@media(max-width:760px){.page-header{flex-direction:column}.toolbar{align-items:stretch;flex-direction:column}.toolbar mat-form-field{min-width:100%}.form-grid{grid-template-columns:1fr}}`]
+  styles: [`
+    :host { display:block; min-width:0; }
+    .page-shell { display:grid; grid-template-columns:minmax(0,1fr); gap:20px; min-width:0; }
+    .page-header { display:flex; justify-content:space-between; gap:16px; align-items:flex-start; }
+    .page-header > div { min-width:0; }
+    .page-header h1 { margin:0 0 6px; }
+    .page-header p { margin:0; max-width:70ch; color:var(--color-text-muted); }
+    .editor { min-width:0; }
+    .editor-title { display:flex; justify-content:space-between; align-items:center; gap:12px; }
+    .editor-title h2 { margin:0 0 12px; font-size:1.2rem; }
+    .form-grid { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:14px; }
+    .full { width:100%; }
+    td.actions { white-space:nowrap; }
+    .editor > .actions { display:flex; flex-wrap:wrap; justify-content:flex-end; gap:10px; margin-top:14px; }
+    .state { min-height:160px; display:flex; flex-wrap:wrap; align-items:center; justify-content:center; gap:10px; color:var(--color-text-muted); text-align:center; overflow-wrap:anywhere; }
+    .error { color:var(--color-danger); }
+    table { min-width:760px; }
+    td:nth-child(2) { min-width:140px; overflow-wrap:anywhere; }
+    .status { display:inline-flex; padding:3px 8px; border-radius:999px; background:color-mix(in srgb,var(--color-danger) 12%,var(--color-surface)); color:var(--color-text); }
+    .status.ok { background:color-mix(in srgb,var(--color-success) 12%,var(--color-surface)); }
+    @media(max-width:760px) { .page-header { flex-direction:column; } .form-grid { grid-template-columns:minmax(0,1fr); } }
+    @media(max-width:480px) { .editor > .actions { flex-direction:column-reverse; } .editor > .actions button { width:100%; } }
+  `]
 })
-export class CentrosCostoComponent implements OnInit {
+export class CentrosCostoComponent implements OnInit, OnDestroy {
+  readonly total = signal(0);
+  page = 1;
+  pageSize = 20;
+  filtroAplicado = '';
+  private carga?: Subscription;
   private readonly fb = inject(FormBuilder);
   private readonly service = inject(CentroCostoService);
   private readonly snack = inject(MatSnackBar);
@@ -75,7 +110,31 @@ export class CentrosCostoComponent implements OnInit {
   readonly form = this.fb.group({ codigo: ['', [Validators.required, Validators.maxLength(50)]], nombre: ['', [Validators.required, Validators.maxLength(150)]], descripcion: [''], tipo: [TipoCentroCosto.Sucursal, Validators.required], sucursalId: [null as number | null], activo: [true] });
   ngOnInit(): void { this.puedeCrear.set(this.permisosRuntime.puede('Finanzas', 'Crear')); this.puedeEditar.set(this.permisosRuntime.puede('Finanzas', 'Editar')); this.puedeActivar.set(this.permisosRuntime.puede('Finanzas', 'Activar')); this.puedeDesactivar.set(this.permisosRuntime.puede('Finanzas', 'Desactivar')); this.puedeEliminar.set(this.permisosRuntime.puede('Finanzas', 'EliminarLogico')); this.cargar(); }
   actualizarTermino(event: Event): void { this.termino.set((event.target as HTMLInputElement).value); }
-  cargar(): void { this.loading.set(true); this.errorCarga.set(''); this.service.buscar({ termino: this.termino(), pagina: 1, tamanoPagina: 100 }).subscribe({ next: ({ data }) => { this.items.set(data.items ?? []); this.loading.set(false); }, error: () => { this.loading.set(false); this.errorCarga.set('No se pudieron cargar los centros de costo.'); } }); }
+  ngOnDestroy(): void { this.carga?.unsubscribe(); }
+  buscar(): void { this.filtroAplicado = this.termino().trim(); this.page = 1; this.cargar(); }
+  limpiar(): void { this.termino.set(''); this.buscar(); }
+  cambiarPagina(event: PageEvent): void { this.page = event.pageIndex + 1; this.pageSize = event.pageSize; this.cargar(); }
+  cargar(): void {
+    this.carga?.unsubscribe();
+    this.loading.set(true);
+    this.errorCarga.set('');
+    this.carga = this.service.buscar({ termino: this.filtroAplicado, pagina: this.page, tamanoPagina: this.pageSize }).subscribe({
+      next: response => {
+        this.loading.set(false);
+        if (!response.success || !response.data) {
+          this.items.set([]); this.total.set(0);
+          this.errorCarga.set(response.message || 'No se pudieron cargar los centros de costo.');
+          return;
+        }
+        this.items.set(response.data.items ?? []);
+        this.total.set(response.data.total);
+      },
+      error: () => {
+        this.loading.set(false); this.items.set([]); this.total.set(0);
+        this.errorCarga.set('No se pudieron cargar los centros de costo.');
+      }
+    });
+  }
   nuevo(): void { if (!this.puedeCrear()) return; this.editandoId.set(null); this.errorFormulario.set(''); this.form.reset({ codigo: '', nombre: '', descripcion: '', tipo: TipoCentroCosto.Sucursal, sucursalId: null, activo: true }); this.mostrandoFormulario.set(true); }
   editar(item: CentroCosto): void { if (!this.puedeEditar()) return; this.editandoId.set(item.id); this.errorFormulario.set(''); this.form.reset({ codigo: item.codigo, nombre: item.nombre, descripcion: item.descripcion ?? '', tipo: item.tipo, sucursalId: item.sucursalId ?? null, activo: item.activo }); this.mostrandoFormulario.set(true); }
   cancelar(): void { this.mostrandoFormulario.set(false); this.editandoId.set(null); this.errorFormulario.set(''); }
@@ -93,7 +152,7 @@ export class CentrosCostoComponent implements OnInit {
       cancelarTexto: 'Cancelar'
     });
     if (!confirmado) return;
-    this.service.delete(item.id).subscribe({ next: () => this.cargar(), error: () => this.snack.open('No se pudo eliminar el centro de costo.', 'Cerrar', { duration: 3000 }) });
+    this.service.delete(item.id).subscribe({ next: () => { this.page = 1; this.cargar(); }, error: () => this.snack.open('No se pudo eliminar el centro de costo.', 'Cerrar', { duration: 3000 }) });
   }
   tipoNombre(tipo: TipoCentroCosto): string { return this.tipos.find(x => x.value === tipo)?.label ?? String(tipo); }
 }

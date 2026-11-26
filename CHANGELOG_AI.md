@@ -1,3 +1,9 @@
+## 2026-11-25 — QA: listados de Solicitudes y Centros de costo
+- Solicitudes de compra: superficie y filtros compartidos, tabla única con scroll local, acciones según estado/permiso, estado vacío contextual y paginación en español. Se mantienen editor, detalle y transiciones existentes; no se alteran servicios ni API.
+- Centros de costo: filtros dentro de la superficie, listado paginado con total del servicio existente, búsqueda/reinicio, cancelación de lecturas anteriores, estado vacío/error, tabla y tema institucional. Se conservan las acciones y permisos.
+- Se incorporan pruebas unitarias de los dos listados y contrato del servicio de centros de costo a QA CI. La regresión visual autenticada y las pruebas nuevas de navegador siguen pendientes; no se sustituye su evidencia por la unitaria.
+- En 965bfab3 aprobaron las nuevas pruebas de rutas únicas/permisos, build de producción y backend. El fallo documental de scope se reparó en b03c4b3d; validar nuevo HEAD. Sin cambios en DEV, MAIN, contratos, datos ni infraestructura.
+
 ## 2026-11-25 — QA: restauración de higiene documental
 - Se retiran menciones de identidad no vigente de la documentación activa, sin cambiar el validador ni sus patrones. Se conservan los enlaces causales a GitHub y el contrato autorizado. El control de scope detectó el defecto en run 45743625598 / 965bfab3.
 - Comparación de configuración de rutas: 172 inscripciones anteriores, 151 actuales, cero duplicadas, misma primera coincidencia de cada URL; 149 rutas de pantalla, más dos redirecciones. Pendiente gate exact-SHA de Angular.

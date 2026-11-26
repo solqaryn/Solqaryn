@@ -15,15 +15,15 @@ Fecha: 2026-11-25. Alcance exclusivo `qa`. Se retira un hallazgo sólo cuando ex
 - **QA-UI-04** — Revisar microcopy estático y dinámico de todas las rutas. Costeo: 13/13 pruebas sintéticas en 4a556cd6 PASS (motivo histórico, texto comercial, motivo de empresa intacto, paginación y detalle). Pendiente aceptación real y redacción de los demás métodos y módulos.
 
 ## Pendientes funcionales por módulo
-- **QA-FN-01** — Solicitudes de compra duplica tabla/vista móvil: corrección preparada, publicación pendiente de pruebas dirigidas. Órdenes y recepciones: superficies, filtros, creación/edición/detalle y confirmaciones por estado/permiso.
+- **QA-FN-01** — Solicitudes de compra: validar tabla única, filtros y superficie compartidos, estado vacío, paginación, navegación y acciones según estado/permiso; cambio incorporado con pruebas unitarias dirigidas. Pendiente regresión visual de navegador, datos reales, editor y detalle. Órdenes y recepciones: revisar superficies, filtros, formularios y confirmaciones.
 - **QA-FN-02** — Facturas de venta/proveedor, pagos, devoluciones, notas de crédito, cuentas por cobrar y pagar, caja y bancos: acciones legítimas según estado, detalle, editor, cancelación, tablas, paginación y textos.
 - **QA-FN-03** — Inventario: existencias, movimientos, ajustes, costeo, reservas, transferencias, conteos, Kardex, trazabilidad, almacenes y ubicaciones: revisar formularios, listados, confirmaciones, estados y datos dinámicos.
-- **QA-FN-04** — Centros de costo: filtros fuera de tarjeta y truncamiento silencioso a 100 registros sin paginación. Correcciones preparadas, publicación pendiente de pruebas dirigidas. Revisar asientos, plan de cuentas, períodos, estados financieros y reportes.
+- **QA-FN-04** — Centros de costo: validar cambio de filtros a tarjeta institucional, paginación contra API existente (sin límite silencioso de 100), total real, búsqueda y reinicio, estado vacío/error y acciones. Pruebas unitarias y contrato incorporados; pendiente prueba de navegador y validación real. Revisar selector de sucursal, edición, asientos, plan de cuentas, períodos, estados financieros y reportes.
 - **QA-FN-05** — Administración, dashboard, catálogos, productos y variantes, usuarios, roles, clientes, proveedores, permisos, configuración, auditoría y reportes; cobertura integral por ruta, con conservación de RBAC y aislamiento empresarial.
 - **QA-FN-06** — Storefront y cuenta/checkout/carrito: recorrido responsive, texto y estilos; verificar sin afectar la identidad pública de cada empresa.
 
 ## Pendientes de rutas
-- **QA-RT-01** — Comparación estática de 4a556cd6 y 965bfab3: 172 a 151 inscripciones, 21 duplicadas retiradas, 0 duplicadas restantes, misma primera coincidencia por URL; 149 rutas de pantalla y dos redirecciones. Pendiente CI de rutas exact-SHA y navegación autenticada; evaluar paridad/consumidores del componente alternativo de Cuentas por cobrar antes de eliminar código huérfano.
+- **QA-RT-01** — Comparación 4a556cd6 a 965bfab3: 172 a 151 inscripciones, 21 duplicadas retiradas, 0 duplicadas restantes, misma primera coincidencia por URL. Prueba de configuración efectiva y permisos PASS en 45743625598, compilación PASS. Pendiente CI completo de HEAD y navegación autenticada; verificar paridad y consumidores del componente alternativo de Cuentas por cobrar antes de eliminar código huérfano.
 
 ## Certificación final pendiente
 - Diseño/adaptabilidad; fondos/tarjetas/tema; microcopy/traducciones; funcionamiento/modales/acciones; integración/seguridad/despliegues. Cinco auditorías deben corregir hallazgos, repetir pruebas y conservar evidencia del SHA causal.
