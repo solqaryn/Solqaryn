@@ -127,6 +127,15 @@ public sealed class V5UniversalCaseFileAuthorizationGate
             request.ClientSelectedTenantId != evidence.VerifiedTenantId)
             return Deny("CASEFILE_CLIENT_TENANT_OVERRIDE_DENIED");
 
+        // API12 is branch-bound even when a different trusted reader is used.
+        // Nullable branch is valid for legacy timeline preflight, not for an
+        // authenticated enterprise audit correlation.
+        if (request.Action == Rules.CaseAction.ReadAuditCorrelation &&
+            (evidence.Authority?.BranchId is not > 0 ||
+             evidence.Stored?.OwnerBranchId is not > 0 ||
+             evidence.Authority.BranchId != evidence.Stored.OwnerBranchId))
+            return Deny("CASEFILE_BRANCH_MISMATCH");
+
         // The dangerous flags are derived solely from trusted evidence.
         var command = new Rules.Command(
             request.Action,

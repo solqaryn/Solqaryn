@@ -259,6 +259,46 @@ public sealed class V5UniversalCaseFileAuthorizationGateTests
         Assert.Equal("CASEFILE_CURRENT_AUTHORIZATION_REQUIRED", (await gate.EvaluateAsync(request)).Code);
     }
 
+    [Theory]
+    [InlineData(null, null)]
+    [InlineData(null, 5)]
+    [InlineData(5, null)]
+    [InlineData(5, 6)]
+    [InlineData(0, 0)]
+    public async Task AuditCorrelationRejectsMissingOrForeignBranchFromAlternateReader(
+        int? actorBranch, int? storedBranch)
+    {
+        var reader = new Reader
+        {
+            Evidence = ValidEvidence() with
+            {
+                Authority = Authority() with { BranchId = actorBranch },
+                Stored = Stored() with { OwnerBranchId = storedBranch }
+            }
+        };
+        var result = await new Gate(reader).EvaluateAsync(
+            Read() with { Action = Rules.CaseAction.ReadAuditCorrelation });
+        Assert.Equal("CASEFILE_BRANCH_MISMATCH", result.Code);
+        Assert.False(result.RequiresSeparateAuthenticatedAdapter);
+        Assert.False(result.GrantsCaseWrite);
+    }
+
+    [Fact]
+    public async Task OptionalBranchTimelinePreflightRemainsUnchanged()
+    {
+        var reader = new Reader
+        {
+            Evidence = ValidEvidence() with
+            {
+                Authority = Authority() with { BranchId = null },
+                Stored = Stored() with { OwnerBranchId = null }
+            }
+        };
+        var result = await new Gate(reader).EvaluateAsync(Read());
+        Assert.True(result.RequiresSeparateAuthenticatedAdapter);
+        Assert.False(result.GrantsTimelineRead);
+    }
+
     [Fact]
     public async Task LegacyReaderWithoutOperationBindingFailsClosed()
     {
