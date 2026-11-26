@@ -49,7 +49,8 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
     private sealed record QaCheckIdentity(string Check, long CheckId, long CheckSuiteId,
         long AppId, string AppSlug, string Status, string? Conclusion,
         V5UniversalCaseFileQaEvidenceAudit.ProviderJobIdentity? Build = null,
-        V5UniversalCaseFileQaGitHubJobReader.VerifiedCoreBackend? CoreBackend = null);
+        V5UniversalCaseFileQaGitHubJobReader.VerifiedCoreBackend? CoreBackend = null,
+        V5UniversalCaseFileQaGitHubJobReader.VerifiedLegacyBackend? LegacyBackend = null);
 
     private readonly IPlataformaScopeService _scope;
     private readonly ICurrentUserService _current;
@@ -332,8 +333,25 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
             // an arbitrary alias or an unsuccessful historical gate.
             var legacyBackend = checks.Where(c => c.Nombre == DevBackendCheckName).ToArray();
             var coreBackend = checks.Where(c => c.Nombre == CoreBackendCheckName).ToArray();
-            var backendSuccess = legacyBackend.Length == 1 &&
-                legacyBackend[0].Estado == "completed" && legacyBackend[0].Conclusion == "success";
+            var otherRequired = coreBackend.Length <= 1 && ChecksMinimos.All(name =>
+                checks.Count(c => string.Equals(c.Nombre, name, StringComparison.Ordinal)) == 1 &&
+                checks.Any(c => c.Nombre == name && c.Estado == "completed" &&
+                                c.Conclusion == "success"));
+            var backendSuccess = false;
+            if (!failed && !pending && otherRequired && legacyBackend.Length == 1 &&
+                legacyBackend[0].Estado == "completed" && legacyBackend[0].Conclusion == "success")
+            {
+                if (!await VigenteAsync()) return await DenegarAuditadoAsync();
+                var index = identities.FindIndex(x => x.Check == DevBackendCheckName);
+                if (index < 0) return await FalloProveedorAsync("QA_UPSTREAM_CONTRACT");
+                var identity = identities[index];
+                var verified = await new V5UniversalCaseFileQaGitHubJobReader(_clients)
+                    .ReadLegacyBackendFromCheckAsync(sha, identity.CheckId, identity.CheckSuiteId,
+                        legacyBackend[0].UrlEvidencia, upstreamToken);
+                if (verified is null) return await FalloProveedorAsync("QA_UPSTREAM_CONTRACT");
+                identities[index] = identity with { LegacyBackend = verified };
+                backendSuccess = true;
+            }
             if (!failed && !pending && legacyBackend.Length == 0 && coreBackend.Length == 1 &&
                 coreBackend[0].Estado == "completed" && coreBackend[0].Conclusion == "success")
             {
@@ -347,10 +365,7 @@ public sealed class PlataformaQaEvidenciasController : ControllerBase
                 identities[index] = identity with { CoreBackend = verified };
                 backendSuccess = true;
             }
-            var allRequired = backendSuccess && coreBackend.Length <= 1 && ChecksMinimos.All(name =>
-                checks.Count(c => string.Equals(c.Nombre, name, StringComparison.Ordinal)) == 1 &&
-                checks.Any(c => c.Nombre == name && c.Estado == "completed" &&
-                                c.Conclusion == "success"));
+            var allRequired = backendSuccess && otherRequired;
 
             var estado = failed ? "CI_FALLIDA" :
                 pending ? "CI_EN_PROGRESO" :

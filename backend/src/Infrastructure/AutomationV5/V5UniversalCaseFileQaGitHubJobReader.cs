@@ -109,9 +109,29 @@ public sealed class V5UniversalCaseFileQaGitHubJobReader(IHttpClientFactory clie
     public sealed record VerifiedCoreBackend(string SourceSha, long WorkflowId,
         long RunId, int Attempt, long JobId, long CheckRunId, long CheckSuiteId, string Mode);
 
-    public async Task<VerifiedCoreBackend?> ReadCoreBackendFromCheckAsync(
+    public sealed record VerifiedLegacyBackend(string SourceSha, long WorkflowId,
+        long RunId, int Attempt, long JobId, long CheckRunId, long CheckSuiteId, string Mode);
+
+    public Task<VerifiedCoreBackend?> ReadCoreBackendFromCheckAsync(
+        string sha, long checkId, long suiteId, string? detailsUrl, CancellationToken cancellationToken) =>
+        ReadBackendFromCheckAsync(sha, checkId, suiteId, detailsUrl, false, cancellationToken);
+
+    public async Task<VerifiedLegacyBackend?> ReadLegacyBackendFromCheckAsync(
         string sha, long checkId, long suiteId, string? detailsUrl, CancellationToken cancellationToken)
     {
+        var verified = await ReadBackendFromCheckAsync(
+            sha, checkId, suiteId, detailsUrl, true, cancellationToken);
+        return verified is null ? null : new VerifiedLegacyBackend(
+            verified.SourceSha, verified.WorkflowId, verified.RunId, verified.Attempt,
+            verified.JobId, verified.CheckRunId, verified.CheckSuiteId, verified.Mode);
+    }
+
+    private async Task<VerifiedCoreBackend?> ReadBackendFromCheckAsync(
+        string sha, long checkId, long suiteId, string? detailsUrl, bool legacy, CancellationToken cancellationToken)
+    {
+        var expectedName = legacy ? "Backend Release y pruebas" : CoreBackendCheckName;
+        var expectedWorkflow = legacy ? 366460517L : CoreBackendWorkflowId;
+        var expectedPath = legacy ? ".github/workflows/dev-ci.yml" : CoreBackendWorkflowPath;
         cancellationToken.ThrowIfCancellationRequested();
         if (sha.Length != 40 || !sha.All(c => c is >= '0' and <= '9' or >= 'a' and <= 'f') ||
             checkId <= 0 || suiteId <= 0 || !TryJobDetails(detailsUrl, out var runId, out var jobId))
@@ -140,7 +160,7 @@ public sealed class V5UniversalCaseFileQaGitHubJobReader(IHttpClientFactory clie
             var attempt = Number(job, "run_attempt");
             if (attempt is < 1 or > int.MaxValue || (expectedAttempt != 0 && expectedAttempt != attempt) ||
                 Number(job, "run_id") != runId || Str(job, "head_sha") != sha ||
-                Str(job, "head_branch") != "dev" || Str(job, "name") != CoreBackendCheckName ||
+                Str(job, "head_branch") != "dev" || Str(job, "name") != expectedName ||
                 Str(job, "status") != "completed" || Str(job, "conclusion") != "success" ||
                 Str(job, "html_url") != detailsUrl ||
                 !TryCheckId(Str(job, "check_run_url"), out var joinedCheck) || joinedCheck != checkId)
@@ -162,9 +182,9 @@ public sealed class V5UniversalCaseFileQaGitHubJobReader(IHttpClientFactory clie
             if (runDoc is null) return null;
             var run = runDoc.RootElement;
             if (Number(run, "id") != runId || Number(run, "run_attempt") != attempt ||
-                Number(run, "workflow_id") != CoreBackendWorkflowId ||
+                Number(run, "workflow_id") != expectedWorkflow ||
                 Number(run, "check_suite_id") != suiteId ||
-                Str(run, "path") != CoreBackendWorkflowPath || Str(run, "head_sha") != sha ||
+                Str(run, "path") != expectedPath || Str(run, "head_sha") != sha ||
                 Str(run, "head_branch") != "dev" || Str(run, "event") != "push" ||
                 Str(Prop(run, "repository"), "full_name") != Repository ||
                 Str(Prop(run, "head_repository"), "full_name") != Repository)
@@ -181,6 +201,17 @@ public sealed class V5UniversalCaseFileQaGitHubJobReader(IHttpClientFactory clie
                 var matched = steps.EnumerateArray().Where(x => Str(x, "name") == name).ToArray();
                 return matched.Length == 1 && Str(matched[0], "status") == "completed" &&
                     Str(matched[0], "conclusion") == result;
+            }
+            if (legacy)
+            {
+                if (!Step("Run dotnet restore Solqaryn.sln", "success") ||
+                    !Step("Run dotnet build Solqaryn.sln --configuration Release --no-restore", "success") ||
+                    !Step("Run dotnet test Solqaryn.sln --configuration Release --no-build --filter \"Category!=Integration\" --logger \"trx;LogFileName=tests.trx\"", "success"))
+                    return null;
+                ct.ThrowIfCancellationRequested();
+                cancellationToken.ThrowIfCancellationRequested();
+                return new VerifiedCoreBackend(sha, expectedWorkflow, runId, (int)attempt,
+                    jobId, checkId, suiteId, "DEV_BUILD_TEST");
             }
             var fallback = Step(CoreBuildStep, "success") && Step(CoreReuseStep, "skipped");
             var reuse = Step(CoreReuseStep, "success") && Step(CoreBuildStep, "skipped");

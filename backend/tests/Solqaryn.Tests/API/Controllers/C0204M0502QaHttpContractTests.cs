@@ -61,7 +61,7 @@ public sealed class C0204M0502QaHttpContractTests
         Assert.Equal(4, dto.GetProperty("totalChecks").GetInt32());
         Assert.Equal(4, dto.GetProperty("checksExitosos").GetInt32());
         Assert.Equal(4, dto.GetProperty("checks").GetArrayLength());
-        Assert.Equal(1, upstream.Calls);
+        Assert.Equal(4, upstream.Calls);
         Assert.Equal("api.github.com", upstream.LastHost);
 
         using var scope = fixture.Host.Services.CreateScope();
@@ -128,7 +128,7 @@ public sealed class C0204M0502QaHttpContractTests
         }
         using (var revoked = await client.GetAsync(Path))
             Assert.Equal(HttpStatusCode.Forbidden, revoked.StatusCode);
-        Assert.Equal(1, upstream.Calls);
+        Assert.Equal(4, upstream.Calls);
     }
 
     [Fact]
@@ -208,7 +208,7 @@ public sealed class C0204M0502QaHttpContractTests
             Assert.DoesNotContain("private-secret", safeBody);
         }
 
-        Assert.Equal(2, upstream.Calls);
+        Assert.Equal(5, upstream.Calls);
         using var scope = fixture.Host.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var audits = await db.Set<RegistroAuditoria>().ToListAsync();
@@ -255,7 +255,7 @@ public sealed class C0204M0502QaHttpContractTests
             "https://github.com/solqaryn/Solqaryn/actions/runs/123/job/456",
             "https://github.com/solqaryn/Solqaryn/actions/runs/123?token=private-secret",
             "https://private-secret@github.com/solqaryn/Solqaryn/actions/runs/123",
-            "https://github.com:8443/solqaryn/Solqaryn/actions/runs/123"
+            "https://github.com/solqaryn/Solqaryn/actions/runs/124/job/7900"
         }));
         await using var fixture = await CrearAsync(upstream, mysql: true);
         using var client = fixture.Host.GetTestClient();
@@ -274,9 +274,11 @@ public sealed class C0204M0502QaHttpContractTests
             Assert.Equal(4, checks.GetArrayLength());
             Assert.Equal("https://github.com/solqaryn/Solqaryn/actions/runs/123/job/456",
                 checks[0].GetProperty("urlEvidencia").GetString());
-            for (var i = 1; i < checks.GetArrayLength(); i++)
+            for (var i = 1; i < 3; i++)
                 Assert.False(checks[i].TryGetProperty("urlEvidencia", out var url) &&
                     url.ValueKind != JsonValueKind.Null);
+            Assert.Equal("https://github.com/solqaryn/Solqaryn/actions/runs/124/job/7900",
+                checks[3].GetProperty("urlEvidencia").GetString());
         }
         client.DefaultRequestHeaders.Remove(CorrelationIdMiddleware.HeaderName);
 
@@ -402,7 +404,7 @@ public sealed class C0204M0502QaHttpContractTests
         }
         using (var denied = await client.GetAsync(Path))
             Assert.Equal(HttpStatusCode.Forbidden, denied.StatusCode);
-        Assert.Equal(6, upstream.Calls);
+        Assert.Equal(15, upstream.Calls);
         using (var scope = fixture.Host.Services.CreateScope())
         {
             var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
@@ -775,7 +777,7 @@ public sealed class C0204M0502QaHttpContractTests
             using var json = JsonDocument.Parse(await response.Content.ReadAsStringAsync());
             Assert.Equal("SIN_VERIFICAR", json.RootElement.GetProperty("data").GetProperty("estadoA5").GetString());
         }
-        Assert.Equal(5, upstream.Calls);
+        Assert.Equal(8, upstream.Calls);
 
         // A valid-looking check link to another check must not become a build receipt.
         upstream.AdditionalResponses[discovery] = jobs.Replace(checkLink,
@@ -942,8 +944,8 @@ public sealed class C0204M0502QaHttpContractTests
         Assert.Equal(expected, json.RootElement.GetProperty("data").GetProperty("estadoCi").GetString());
         Assert.Equal("SIN_VERIFICAR", json.RootElement.GetProperty("data").GetProperty("estadoA5").GetString());
 
-        // A legacy DEV check is present: no core job/attempt lookup may substitute it.
-        Assert.Equal(1, upstream.Calls);
+        // Only the legacy job may be joined; never substitute the core job.
+        Assert.Equal(expected == "CI_MINIMA_ACREDITADA" ? 4 : 1, upstream.Calls);
         using var scope = fixture.Host.Services.CreateScope();
         var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
         var audit = Assert.Single(await db.Set<RegistroAuditoria>().ToListAsync());
@@ -955,6 +957,33 @@ public sealed class C0204M0502QaHttpContractTests
         Assert.Equal(duplicateCore ? 2 : 1, coreIdentities.Length);
         Assert.All(coreIdentities, x => Assert.True(
             !x.TryGetProperty("CoreBackend", out var receipt) || receipt.ValueKind == JsonValueKind.Null));
+    }
+
+    [Theory]
+    [InlineData("wrong-workflow")]
+    [InlineData("wrong-check")]
+    [InlineData("wrong-step")]
+    [InlineData("invalid-link")]
+    public async Task LegacyBackendRequiresExactBuildProvenance(string scenario)
+    {
+        var payload = Payload();
+        if (scenario == "invalid-link")
+            payload = payload.Replace("https://github.com/solqaryn/Solqaryn/actions/runs/124/job/7900",
+                "https://github.com:8443/solqaryn/Solqaryn/actions/runs/124/job/7900", StringComparison.Ordinal);
+        var upstream = new GitHubFake(payload) { LegacyScenario = scenario };
+        await using var fixture = await CrearAsync(upstream);
+        using var client = fixture.Host.GetTestClient();
+        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue(
+            "Bearer", Token(fixture.GlobalId, "operadorglobal"));
+        using var response = await client.GetAsync(Path);
+        Assert.Equal(HttpStatusCode.ServiceUnavailable, response.StatusCode);
+        Assert.DoesNotContain("CI_MINIMA_ACREDITADA", await response.Content.ReadAsStringAsync());
+        using var scope = fixture.Host.Services.CreateScope();
+        var db = scope.ServiceProvider.GetRequiredService<AppDbContext>();
+        var audit = Assert.Single(await db.Set<RegistroAuditoria>().ToListAsync());
+        Assert.Equal("Error", audit.Resultado);
+        Assert.Equal("QA_UPSTREAM_CONTRACT", audit.Error);
+        Assert.Null(audit.EmpresaId);
     }
 
     private static string Payload(string conclusion = "success", string[]? detailsUrls = null)
@@ -972,7 +1001,7 @@ public sealed class C0204M0502QaHttpContractTests
                 name,
                 status = "completed",
                 conclusion = result,
-                details_url = detailsUrls is null ? "https://github.com/solqaryn/Solqaryn/actions/runs/123/job/456" : detailsUrls[index],
+                details_url = detailsUrls is null ? (index == 3 ? "https://github.com/solqaryn/Solqaryn/actions/runs/124/job/7900" : "https://github.com/solqaryn/Solqaryn/actions/runs/123/job/456") : detailsUrls[index],
                 output = new { summary = "private-secret-not-for-the-response" }
             };
         }
@@ -1126,6 +1155,39 @@ public sealed class C0204M0502QaHttpContractTests
         public StalledQaBody? StalledBody { get; set; }
         public Func<Task>? BeforeResponse { get; set; }
         public Dictionary<string, string> AdditionalResponses { get; } = new(StringComparer.Ordinal);
+        public string? LegacyScenario { get; set; }
+
+        private string? LegacyResponse(string path)
+        {
+            const string run = "/repos/solqaryn/Solqaryn/actions/runs/124";
+            const string details = "https://github.com/solqaryn/Solqaryn/actions/runs/124/job/7900";
+            if (path == run + "/attempts/1")
+                return JsonSerializer.Serialize(new
+                {
+                    id = 124L, run_attempt = 1, workflow_id = LegacyScenario == "wrong-workflow" ? 1L : 366460517L,
+                    check_suite_id = 792L, path = ".github/workflows/dev-ci.yml",
+                    head_sha = Sha, head_branch = "dev", @event = "push",
+                    repository = new { full_name = "solqaryn/Solqaryn" },
+                    head_repository = new { full_name = "solqaryn/Solqaryn" }
+                });
+            if (path != run + "/jobs?filter=all&per_page=100" &&
+                path != run + "/attempts/1/jobs?per_page=100") return null;
+            var steps = new[]
+            {
+                new { name = "Run dotnet restore Solqaryn.sln", status = "completed", conclusion = "success" },
+                new { name = "Run dotnet build Solqaryn.sln --configuration Release --no-restore", status = "completed", conclusion = "success" },
+                new { name = "Run dotnet test Solqaryn.sln --configuration Release --no-build --filter \"Category!=Integration\" --logger \"trx;LogFileName=tests.trx\"", status = "completed", conclusion = LegacyScenario == "wrong-step" ? "skipped" : "success" }
+            };
+            return JsonSerializer.Serialize(new { total_count = 1, jobs = new[] { new
+            {
+                id = 7900L, run_id = 124L, run_attempt = 1,
+                head_sha = Sha, head_branch = "dev", name = "Backend Release y pruebas",
+                status = "completed", conclusion = "success", html_url = details,
+                check_run_url = "https://api.github.com/repos/solqaryn/Solqaryn/check-runs/" +
+                    (LegacyScenario == "wrong-check" ? "460" : "459"),
+                steps
+            } } });
+        }
 
         protected override async Task<HttpResponseMessage> SendAsync(
             HttpRequestMessage request, CancellationToken cancellationToken)
@@ -1140,6 +1202,12 @@ public sealed class C0204M0502QaHttpContractTests
                 return new HttpResponseMessage(StatusCode)
                 {
                     Content = new StringContent(additional, Encoding.UTF8, "application/json")
+                };
+            var legacy = LegacyResponse(request.RequestUri!.PathAndQuery);
+            if (legacy is not null)
+                return new HttpResponseMessage(StatusCode)
+                {
+                    Content = new StringContent(legacy, Encoding.UTF8, "application/json")
                 };
             if (request.RequestUri.AbsolutePath !=
                 "/repos/solqaryn/Solqaryn/commits/" + Sha + "/check-runs")
