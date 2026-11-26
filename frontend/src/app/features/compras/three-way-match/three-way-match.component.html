@@ -3,7 +3,7 @@
     <button mat-icon-button routerLink="../../" aria-label="Volver a Compras">
       <mat-icon>arrow_back</mat-icon>
     </button>
-    <h2>Conciliación Three-way Match</h2>
+    <h1>Conciliación Three-way Match</h1>
   </div>
 
   @if (loading) {
@@ -52,7 +52,7 @@
           }
           @if (result.estado === ThreeWayMatchStatus.Discrepancia && result.discrepancias?.length) {
             <div class="discrepancies-section">
-              <h3>Discrepancias Encontradas</h3>
+              <h2>Discrepancias Encontradas</h2>
               <table mat-table [dataSource]="result.discrepancias" class="mat-elevation-z2">
                 <ng-container matColumnDef="tipo">
                   <th mat-header-cell *matHeaderCellDef> Tipo </th>

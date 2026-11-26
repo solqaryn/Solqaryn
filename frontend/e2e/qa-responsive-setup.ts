@@ -1,5 +1,6 @@
 import { ensureSeedAdminTenantMembershipForCi } from './tenant-bootstrap';
 import verifyRealTenant from './global-setup';
+import { prepareRouteFixtures } from './qa-route-fixtures';
 
 export default async function setup(): Promise<void> {
   const connection = process.env.ConnectionStrings__DefaultConnection || '';
@@ -10,4 +11,5 @@ export default async function setup(): Promise<void> {
   }
   ensureSeedAdminTenantMembershipForCi('1');
   await verifyRealTenant();
+  await prepareRouteFixtures();
 }

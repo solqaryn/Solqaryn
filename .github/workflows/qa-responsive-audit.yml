@@ -9,15 +9,21 @@ on:
       - 'frontend/e2e/qa-responsive-setup.ts'
       - 'frontend/playwright.qa-responsive.config.ts'
       - 'frontend/scripts/serve-qa-audit.mjs'
-      - 'frontend/src/app/testing/qa-responsive-catalog.ts'
+      - 'frontend/e2e/qa-route-fixtures.ts'
+      - 'frontend/src/**'
+      - 'frontend/angular.json'
+      - 'frontend/package.json'
+      - 'frontend/package-lock.json'
+      - 'backend/src/**'
+      - 'backend/tools/Solqaryn.DatabaseBootstrap/**'
   workflow_dispatch:
 
 permissions:
   contents: read
 
 concurrency:
-  group: qa-responsive-${{ github.ref }}-${{ github.sha }}
-  cancel-in-progress: false
+  group: qa-responsive-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   responsive:
@@ -27,7 +33,7 @@ jobs:
     timeout-minutes: 120
     strategy:
       fail-fast: false
-      max-parallel: 2
+      max-parallel: 4
       matrix:
         widths: ['320,360,375,390', '412,414,430,480', '768,1024,1280,1440', '1920,2048,2400,2560']
     services:
@@ -149,7 +155,7 @@ jobs:
               cmp -s dist/solqaryn-frontend/browser/index.html "$RUNNER_TEMP/qa-route-login.html"; then
               curl --fail --silent --show-error --max-time 5 http://127.0.0.1:5005/health/ready > /dev/null
               echo 'QA_LOCAL_FRONTEND_READY=PASS'
-              npx playwright test --config=playwright.qa-responsive.config.ts --workers=1 --retries=0
+              npx playwright test --config=playwright.qa-responsive.config.ts --workers=2 --retries=0
               exit 0
             fi
             sleep 1

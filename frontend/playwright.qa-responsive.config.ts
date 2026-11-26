@@ -15,10 +15,10 @@ export default defineConfig({
   globalSetup: './e2e/qa-responsive-setup.ts',
   timeout: 45_000,
   expect: { timeout: 10_000 },
-  fullyParallel: false,
+  fullyParallel: true,
   forbidOnly: true,
   retries: 0,
-  workers: 1,
+  workers: 2,
   reporter: [['list']],
   use: {
     baseURL,

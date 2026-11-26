@@ -1,6 +1,7 @@
 import { expect, Page, test } from '@playwright/test';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
+import type { RouteFixtureManifest } from './qa-route-fixtures';
 import { REQUIRED_QA_WIDTHS, RESPONSIVE_ROUTES, RESPONSIVE_VIEWPORTS } from '../src/app/testing/qa-responsive-catalog';
 export { RESPONSIVE_ROUTES, RESPONSIVE_VIEWPORTS } from '../src/app/testing/qa-responsive-catalog';
 
@@ -166,6 +167,10 @@ async function auditFirstSelectOverlay(page: Page, route: string): Promise<void>
   await expect(panel).toBeHidden();
 }
 
+function assertNoRouteErrors(route: string, errors: string[]): void {
+  expect(errors, 'Errores definitivos en ' + route + ': ' + errors.join(' | ')).toEqual([]);
+}
+
 async function certifyRoute(page: Page, route: string, mobile: boolean, errors: string[]): Promise<void> {
   errors.length = 0;
   const response = await page.goto(route, { waitUntil: 'domcontentloaded' });
@@ -174,22 +179,35 @@ async function certifyRoute(page: Page, route: string, mobile: boolean, errors: 
   await expect.poll(() => new URL(page.url()).pathname.replace(/\/$/, '') || '/', {
     message: `Ruta solicitada ${route}: no aceptar redirecciones inesperadas`, timeout: 15_000
   }).toBe(esperado);
-  if (esperado === '/login') {
-    await expect(page.locator('form[aria-labelledby="login-title"]')).toBeVisible();
-  } else if (route.startsWith('/tienda')) {
-    await expect(page.locator('main').first()).toBeVisible();
-    await expect(page.locator('main h1').first()).toBeVisible({ timeout: 15_000 });
-  } else {
-    await expect(page.locator('#main-content')).toBeVisible();
-    await expect(page.locator('#main-content h1').first()).toBeVisible({ timeout: 15_000 });
+  assertNoRouteErrors(route, errors);
+  const heading = esperado === '/login' ? page.locator('form[aria-labelledby="login-title"]')
+    : route.startsWith('/tienda') ? page.locator('main h1').first() : page.locator('#main-content h1').first();
+  if (esperado !== '/login') {
+    await expect(route.startsWith('/tienda') ? page.locator('main').first() : page.locator('#main-content')).toBeVisible();
   }
+  // A recorded HTTP/console error is already fatal under the existing contract.
+  // Do not wait another 15s for a heading that cannot load after that error.
+  await expect.poll(async () => errors.length > 0 || await heading.isVisible(), {
+    timeout: 15_000, intervals: [100, 250, 500], message: 'Contenido principal visible en ' + route
+  }).toBe(true);
+  assertNoRouteErrors(route, errors);
+  await expect(heading).toBeVisible();
   // Evitar medir texto durante la descarga de fuentes; sus errores siguen siendo FAIL.
-  await page.evaluate(async () => { await document.fonts.ready; });
+  await page.evaluate(async () => {
+    let timer: ReturnType<typeof setTimeout> | undefined;
+    try {
+      await Promise.race([document.fonts.ready, new Promise<never>((_, reject) => {
+        timer = setTimeout(() => reject(new Error('Fuentes no listas en 10 segundos')), 10_000);
+      })]);
+    } finally { clearTimeout(timer); }
+  });
+  assertNoRouteErrors(route, errors);
   try {
-    await expect.poll(() => bodyOverflow(page), { timeout: 5_000 }).toBeLessThanOrEqual(2);
+    await expect.poll(async () => errors.length > 0 || await bodyOverflow(page) <= 2, { timeout: 5_000 }).toBe(true);
   } catch {
     throw new Error('Desborde de documento en ' + route + ': ' + await overflowDiagnostic(page));
   }
+  assertNoRouteErrors(route, errors);
   if (route.startsWith('/tienda')) await auditGeometry(page, route, mobile);
   if (route !== '/' && !route.startsWith('/tienda') && route !== '/login') {
     await auditGeometry(page, route, mobile);
@@ -221,7 +239,7 @@ async function certifyRoute(page: Page, route: string, mobile: boolean, errors: 
 }
 
 test.describe('Responsive global — route sweep y regression gate', () => {
-  test.describe.configure({ mode: 'default', retries: 0 });
+  test.describe.configure({ mode: process.env.QA_RESPONSIVE_WIDTHS ? 'parallel' : 'default', retries: 0 });
 
   test('el catálogo compartido no repite rutas y cubre los anchos QA', () => {
     expect(new Set(RESPONSIVE_ROUTES).size).toBe(RESPONSIVE_ROUTES.length);
@@ -237,7 +255,9 @@ test.describe('Responsive global — route sweep y regression gate', () => {
       await page.setViewportSize(size);
       page.setDefaultTimeout(8000);
       page.setDefaultNavigationTimeout(12000);
-      const resultados: { ruta: string; estado: 'PASS' | 'FAIL' | 'NOT_RUN'; motivo?: string }[] =
+      const manifest: RouteFixtureManifest = JSON.parse(process.env.QA_ROUTE_FIXTURE_MANIFEST ?? '{}');
+      if (process.env.QA_RESPONSIVE_WIDTHS && !process.env.QA_ROUTE_FIXTURE_MANIFEST) throw new Error('Falta manifest de fixtures reales.');
+      const resultados: { ruta: string; urlProbada?: string; estado: 'PASS' | 'FAIL' | 'NOT_RUN'; motivo?: string }[] =
         RESPONSIVE_ROUTES.map(ruta => ({ ruta, estado: 'NOT_RUN' }));
       const errors: string[] = [];
       const guestErrors: string[] = [];
@@ -279,8 +299,16 @@ test.describe('Responsive global — route sweep y regression gate', () => {
             resultado.motivo = falloLogin;
             continue;
           }
+          const fixture = manifest[route];
+          if (fixture && 'error' in fixture) {
+            resultado.estado = 'FAIL';
+            resultado.motivo = fixture.error;
+            continue;
+          }
+          const urlProbada = fixture && 'url' in fixture ? fixture.url : route;
+          resultado.urlProbada = urlProbada;
           try {
-            await test.step(route, () => certifyRoute(publico ? guest : page, route, viewport.mobile, publico ? guestErrors : errors));
+            await test.step(route, () => certifyRoute(publico ? guest : page, urlProbada, viewport.mobile, publico ? guestErrors : errors));
             resultado.estado = 'PASS';
           } catch (error) {
             resultado.estado = 'FAIL';
