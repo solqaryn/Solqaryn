@@ -7,6 +7,7 @@ import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { TenantContextService } from '../../core/auth/tenant-context.service';
 import { CategoriaService } from '../../services/categoria.service';
 import { CategoriaImagen } from '../../core/models/categoria.model';
+import { modalInstitucional } from '../modal-institucional/modal-institucional';
 
 export type ValorConsulta = string | number | boolean | null | undefined | readonly (string | number)[];
 export interface ConsultaRegistro {
@@ -120,10 +121,9 @@ export class ConsultaRegistroDirective {
     const tenant = this.injector.get(TenantContextService);
     if (!tenant.tieneContextoVerificado()) return;
     const registro = this.appConsultaRegistro();
-    this.injector.get(MatDialog).open(ConsultaRegistroDialog, {
+    this.injector.get(MatDialog).open(ConsultaRegistroDialog, modalInstitucional(registro.categoriaId ? 'l' : 'm', {
       data: { ...registro, campos: { ...registro.campos } },
-      width: '640px', maxWidth: 'calc(100vw - 24px)', maxHeight: 'calc(100dvh - 24px)',
-      autoFocus: 'dialog', restoreFocus: true, closeOnNavigation: true
-    });
+      autoFocus: 'dialog'
+    }));
   }
 }

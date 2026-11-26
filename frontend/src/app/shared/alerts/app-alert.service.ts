@@ -6,6 +6,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatFormFieldModule } from '@angular/material/form-field';
 import { MatInputModule } from '@angular/material/input';
 import { firstValueFrom } from 'rxjs';
+import { modalInstitucional } from '../modal-institucional/modal-institucional';
 
 export type AppAlertKind = 'info' | 'success' | 'warning' | 'error' | 'confirm';
 type LegacyAlertKind = 'advertencia' | 'peligro';
@@ -25,13 +26,11 @@ export interface AppAlertData {
   standalone: true,
   imports: [FormsModule, MatDialogModule, MatButtonModule, MatIconModule, MatFormFieldModule, MatInputModule],
   template: `
-    <section class="app-alert" [class]="'app-alert app-alert--' + tipoNormalizado">
+    <h2 mat-dialog-title>{{ data.titulo }}</h2>
+    <mat-dialog-content class="app-alert" [class]="'app-alert app-alert--' + tipoNormalizado">
       <header>
         <span class="app-alert__icon" aria-hidden="true"><mat-icon>{{ icono }}</mat-icon></span>
-        <div>
-          <h2>{{ data.titulo }}</h2>
-          <p>{{ data.mensaje }}</p>
-        </div>
+        <p>{{ data.mensaje }}</p>
       </header>
 
       @if (data.detalle) {
@@ -52,7 +51,8 @@ export interface AppAlertData {
         </mat-form-field>
       }
 
-      <footer>
+    </mat-dialog-content>
+    <mat-dialog-actions align="end">
         <button class="app-alert__cancel" mat-button type="button" (click)="ref.close(null)">
           {{ data.cancelarTexto || 'Cancelar' }}
         </button>
@@ -65,8 +65,7 @@ export interface AppAlertData {
           (click)="confirmar()">
           {{ data.confirmarTexto || 'Confirmar' }}
         </button>
-      </footer>
-    </section>
+    </mat-dialog-actions>
   `,
   changeDetection: ChangeDetectionStrategy.Eager,
   styles: [`
@@ -77,7 +76,7 @@ export interface AppAlertData {
     }
 
     .app-alert {
-      width: min(100%, 520px);
+      width: 100%;
       padding: clamp(18px, 4vw, 26px);
       background: var(--color-surface);
       color: var(--color-text);
@@ -151,14 +150,14 @@ export interface AppAlertData {
       margin-top: 20px;
     }
 
-    footer {
+    mat-dialog-actions {
       display: flex;
       justify-content: flex-end;
       gap: 10px;
-      margin-top: 22px;
+      margin-top: 0;
     }
 
-    footer button {
+    mat-dialog-actions button {
       min-width: 104px;
       min-height: 42px;
       font-weight: 700;
@@ -204,11 +203,11 @@ export interface AppAlertData {
         font-size: 18px;
       }
 
-      footer {
+      mat-dialog-actions {
         flex-direction: column-reverse;
       }
 
-      footer button {
+      mat-dialog-actions button {
         width: 100%;
       }
     }
@@ -250,26 +249,18 @@ export class AppAlertService {
   constructor(private dialog: MatDialog) {}
 
   async confirmar(data: AppAlertData): Promise<boolean> {
-    const result = await firstValueFrom(this.dialog.open(AppAlertDialogComponent, {
+    const result = await firstValueFrom(this.dialog.open(AppAlertDialogComponent, modalInstitucional('s', {
       data: { ...data, tipo: data.tipo ?? 'confirm' },
-      width: 'min(94vw, 540px)',
-      maxWidth: '94vw',
-      panelClass: 'app-alert-dialog-panel',
-      autoFocus: false,
-      restoreFocus: true
-    }).afterClosed());
+      autoFocus: data.entrada ? 'first-tabbable' : '.app-alert__cancel'
+    })).afterClosed());
     return result === true;
   }
 
   async solicitarTexto(data: AppAlertData): Promise<string | null> {
-    const result = await firstValueFrom(this.dialog.open(AppAlertDialogComponent, {
+    const result = await firstValueFrom(this.dialog.open(AppAlertDialogComponent, modalInstitucional('s', {
       data: { ...data, tipo: data.tipo ?? 'confirm' },
-      width: 'min(94vw, 540px)',
-      maxWidth: '94vw',
-      panelClass: 'app-alert-dialog-panel',
-      autoFocus: false,
-      restoreFocus: true
-    }).afterClosed());
+      autoFocus: data.entrada ? 'first-tabbable' : '.app-alert__cancel'
+    })).afterClosed());
     return typeof result === 'string' && result ? result : null;
   }
 }

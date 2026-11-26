@@ -1,3 +1,8 @@
+## 2026-11-25 — QA: base institucional de modales y tablas
+
+- Cuatro tamaños reutilizables, configuración Material centralizada con bloqueo de cierre accidental, cabecera y pie con color secundario y contraste calculado. Consulta individual y alertas existentes adoptan el estándar.
+- Estilos compartidos para tabla, filtros, encabezados, pie y alineación por columna. Migración de consumidores y revisión visual autenticada pendientes; sin cambios de backend, datos, DEV ni MAIN. Rollback: revertir este changeset en QA.
+
 ## 2026-11-25 — QA: consulta individual y auditoría de acciones administrativas
 
 - Consulta individual reutilizable de solo lectura con campos explícitos, foco de diálogo, cierre al cambiar contexto de empresa/usuario/rol y galería de categorías mediante API existente. Incorporada en catálogos maestros, sucursales, almacenes, ubicaciones, clientes, proveedores, roles, métodos de pago, descuentos, impuestos y registros operativos seleccionados de inventario, finanzas, caja y pagos. Se preservan los permisos de mutación, la protección del último administrador y la eliminación lógica.

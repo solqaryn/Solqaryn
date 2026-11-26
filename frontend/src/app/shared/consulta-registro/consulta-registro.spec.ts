@@ -41,7 +41,7 @@ describe('Consulta de registros', () => {
     button.click();
     expect(open).toHaveBeenCalledTimes(1);
     expect(open).toHaveBeenCalledWith(ConsultaRegistroDialog, expect.objectContaining({
-      data: fixture.componentInstance.registro, restoreFocus: true, closeOnNavigation: true
+      data: fixture.componentInstance.registro, restoreFocus: true, closeOnNavigation: true, disableClose: true, width: '640px'
     }));
     expect(open.mock.calls[0][1].data.campos).not.toBe(fixture.componentInstance.registro.campos);
   });
