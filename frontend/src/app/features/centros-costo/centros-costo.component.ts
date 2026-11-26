@@ -3,7 +3,7 @@ import { ConsultaRegistroDirective } from '../../shared/consulta-registro/consul
 import { Component, OnInit, OnDestroy, inject, signal, ChangeDetectionStrategy } from '@angular/core';
 import { MatPaginatorModule, PageEvent } from '@angular/material/paginator';
 import { PAGINADOR_ESPANOL_PROVIDER } from '../../shared/paginador-institucional';
-import { Subscription } from 'rxjs';
+import { finalize, Subscription } from 'rxjs';
 import { FormBuilder, ReactiveFormsModule, Validators } from '@angular/forms';
 import { MatButtonModule } from '@angular/material/button';
 import { MatFormFieldModule } from '@angular/material/form-field';
@@ -11,7 +11,7 @@ import { MatIconModule } from '@angular/material/icon';
 import { MatInputModule } from '@angular/material/input';
 import { MatProgressSpinnerModule } from '@angular/material/progress-spinner';
 import { MatSelectModule } from '@angular/material/select';
-import { MatSlideToggleModule } from '@angular/material/slide-toggle';
+import { MatSlideToggleChange, MatSlideToggleModule } from '@angular/material/slide-toggle';
 import { MatSnackBar } from '@angular/material/snack-bar';
 import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
 import { CentroCosto, TipoCentroCosto } from '../../core/models/centro-costo.model';
@@ -55,10 +55,10 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
         @else if (items().length === 0) { <div class="app-list-empty" role="status"><mat-icon aria-hidden="true">account_tree</mat-icon><h2>Sin centros de costo</h2><p>{{ filtroAplicado ? 'No se encontraron centros de costo con ese código o nombre. Cambia la búsqueda.' : 'Los centros de costo registrados aparecerán aquí para su consulta y administración.' }}</p></div> }
         @else {
           <div class="app-table-shell" role="region" aria-label="Tabla de centros de costo" tabindex="0"><table class="app-data-table"><thead><tr><th>Código</th><th>Nombre</th><th>Tipo</th><th>Sucursal</th><th>Estado</th><th class="actions">Acciones</th></tr></thead><tbody>
-          @for (item of items(); track item.id) { <tr [class.inactive]="!item.activo"><td><code>{{ item.codigo }}</code></td><td><strong>{{ item.nombre }}</strong></td><td>{{ tipoNombre(item.tipo) }}</td><td>{{ item.sucursalNombre || item.sucursalCodigo || '—' }}</td><td>@if (puedeCambiarEstado(item)) { <mat-slide-toggle [checked]="item.activo" (change)="cambiarEstado(item)" [aria-label]="(item.activo ? 'Desactivar ' : 'Activar ') + item.nombre"></mat-slide-toggle> } @else { <span class="status" [class.ok]="item.activo">{{ item.activo ? 'Activo' : 'Inactivo' }}</span> }</td><td class="actions">
+          @for (item of items(); track item.id) { <tr [class.inactive]="!item.activo"><td><code>{{ item.codigo }}</code></td><td><strong>{{ item.nombre }}</strong></td><td>{{ tipoNombre(item.tipo) }}</td><td>{{ item.sucursalNombre || item.sucursalCodigo || '—' }}</td><td>@if (puedeCambiarEstado(item)) { <mat-slide-toggle [checked]="item.activo" [disabled]="accionEnCurso() !== null" (change)="cambiarEstado(item, $event)" [aria-label]="(item.activo ? 'Desactivar ' : 'Activar ') + item.nombre"></mat-slide-toggle> } @else { <span class="status" [class.ok]="item.activo">{{ item.activo ? 'Activo' : 'Inactivo' }}</span> }</td><td class="actions">
             <button class="action-view" mat-icon-button type="button" title="Ver detalle" [attr.aria-label]="'Ver ' + item.nombre" [appConsultaRegistro]="{ titulo: 'Centro de costo: ' + item.nombre, campos: { 'Código': item.codigo, 'Nombre': item.nombre, 'Descripción': item.descripcion, 'Tipo': tipoNombre(item.tipo), 'Sucursal': item.sucursalNombre || item.sucursalCodigo, 'Estado': item.activo ? 'Activo' : 'Inactivo', 'Fecha de creación': item.fechaCreacion, 'Fecha de actualización': item.fechaActualizacion } }"><mat-icon>visibility</mat-icon></button>
             @if (puedeEditar()) { <button class="action-edit" mat-icon-button type="button" (click)="editar(item)" [attr.aria-label]="'Editar ' + item.nombre"><mat-icon>edit</mat-icon></button> }
-            @if (puedeEliminar()) { <button class="action-delete" mat-icon-button type="button" (click)="eliminar(item)" [attr.aria-label]="'Eliminar ' + item.nombre"><mat-icon>delete_outline</mat-icon></button> }
+            @if (puedeEliminar()) { <button class="action-delete" mat-icon-button type="button" [disabled]="accionEnCurso() !== null" (click)="eliminar(item)" [attr.aria-label]="'Eliminar ' + item.nombre"><mat-icon>delete_outline</mat-icon></button> }
           </td></tr> }
           </tbody></table></div>
         }
@@ -95,6 +95,7 @@ import { AppAlertService } from '../../shared/alerts/app-alert.service';
 })
 export class CentrosCostoComponent implements OnInit, OnDestroy {
   readonly total = signal(0);
+  readonly accionEnCurso = signal<number | null>(null);
   page = 1;
   pageSize = 20;
   filtroAplicado = '';
@@ -138,21 +139,61 @@ export class CentrosCostoComponent implements OnInit, OnDestroy {
   nuevo(): void { if (!this.puedeCrear()) return; this.editandoId.set(null); this.errorFormulario.set(''); this.form.reset({ codigo: '', nombre: '', descripcion: '', tipo: TipoCentroCosto.Sucursal, sucursalId: null, activo: true }); this.mostrandoFormulario.set(true); }
   editar(item: CentroCosto): void { if (!this.puedeEditar()) return; this.editandoId.set(item.id); this.errorFormulario.set(''); this.form.reset({ codigo: item.codigo, nombre: item.nombre, descripcion: item.descripcion ?? '', tipo: item.tipo, sucursalId: item.sucursalId ?? null, activo: item.activo }); this.mostrandoFormulario.set(true); }
   cancelar(): void { this.mostrandoFormulario.set(false); this.editandoId.set(null); this.errorFormulario.set(''); }
-  guardar(): void { const permitido = this.editandoId() ? this.puedeEditar() : this.puedeCrear(); if (!permitido) return; if (this.form.invalid || this.saving()) { this.form.markAllAsTouched(); return; } const raw = this.form.getRawValue(); const sucursalId = raw.sucursalId ? Number(raw.sucursalId) : null; if (raw.tipo === TipoCentroCosto.Sucursal && !sucursalId) { this.errorFormulario.set('Indica la sucursal para crear o editar un centro de tipo Sucursal.'); return; } if (raw.tipo !== TipoCentroCosto.Sucursal && sucursalId) { this.errorFormulario.set('Deja la sucursal vacía cuando el centro tenga otro tipo.'); return; } const base = { codigo: raw.codigo!.trim(), nombre: raw.nombre!.trim(), descripcion: raw.descripcion?.trim() || null, tipo: raw.tipo!, sucursalId }; this.saving.set(true); const request = this.editandoId() ? this.service.update(this.editandoId()!, { ...base, activo: Boolean(raw.activo) }) : this.service.create(base); this.errorFormulario.set(''); request.subscribe({ next: response => { this.saving.set(false); if (!response.success) { this.errorFormulario.set(response.message || 'No se pudo guardar el centro de costo.'); return; } this.cancelar(); this.snack.open('Centro de costo guardado.', 'Cerrar', { duration: 3000 }); this.cargar(); }, error: () => { this.saving.set(false); this.errorFormulario.set('No se pudo guardar el centro de costo.'); } }); }
+  guardar(): void { const permitido = this.editandoId() ? this.puedeEditar() : this.puedeCrear(); if (!permitido || !this.mostrandoFormulario()) return; if (this.form.invalid || this.saving()) { this.form.markAllAsTouched(); return; } const raw = this.form.getRawValue(); const sucursalId = raw.sucursalId == null ? null : Number(raw.sucursalId); if (raw.tipo === TipoCentroCosto.Sucursal && (sucursalId === null || !Number.isInteger(sucursalId) || sucursalId <= 0)) { this.errorFormulario.set('Indica la sucursal para crear o editar un centro de tipo Sucursal.'); return; } if (raw.tipo !== TipoCentroCosto.Sucursal && sucursalId !== null) { this.errorFormulario.set('Deja la sucursal vacía cuando el centro tenga otro tipo.'); return; } const base = { codigo: raw.codigo!.trim(), nombre: raw.nombre!.trim(), descripcion: raw.descripcion?.trim() || null, tipo: raw.tipo!, sucursalId }; this.saving.set(true); const request = this.editandoId() ? this.service.update(this.editandoId()!, { ...base, activo: Boolean(raw.activo) }) : this.service.create(base); this.errorFormulario.set(''); request.subscribe({ next: response => { this.saving.set(false); if (!response.success) { this.errorFormulario.set(response.message || 'No se pudo guardar el centro de costo.'); return; } this.cancelar(); this.snack.open('Centro de costo guardado.', 'Cerrar', { duration: 3000 }); this.cargar(); }, error: () => { this.saving.set(false); this.errorFormulario.set('No se pudo guardar el centro de costo.'); } }); }
   puedeCambiarEstado(item: CentroCosto): boolean { return item.activo ? this.puedeDesactivar() : this.puedeActivar(); }
-  cambiarEstado(item: CentroCosto): void { if (!this.puedeCambiarEstado(item)) return; this.service.cambiarEstado(item.id, !item.activo).subscribe({ next: () => this.cargar(), error: () => this.snack.open('No se pudo cambiar el estado.', 'Cerrar', { duration: 3000 }) }); }
+  cambiarEstado(item: CentroCosto, event?: MatSlideToggleChange): void {
+    // El estado visual representa el último dato confirmado por la API.
+    if (event) event.source.checked = item.activo;
+    if (!this.puedeCambiarEstado(item) || this.accionEnCurso() !== null) return;
+    this.accionEnCurso.set(item.id);
+    this.service.cambiarEstado(item.id, !item.activo)
+      .pipe(finalize(() => this.accionEnCurso.set(null)))
+      .subscribe({
+        next: response => {
+          if (!response.success || !response.data) {
+            this.snack.open(response.message || 'No se pudo cambiar el estado.', 'Cerrar', { duration: 3000 });
+            return;
+          }
+          this.cargar();
+        },
+        error: () => this.snack.open('No se pudo cambiar el estado.', 'Cerrar', { duration: 3000 })
+      });
+  }
   async eliminar(item: CentroCosto): Promise<void> {
-    if (!this.puedeEliminar()) return;
-    const confirmado = await this.alerts.confirmar({
+    if (!this.puedeEliminar() || this.accionEnCurso() !== null) return;
+    this.accionEnCurso.set(item.id);
+    let confirmado: boolean;
+    try {
+      confirmado = await this.alerts.confirmar({
       titulo: 'Eliminar centro de costo',
-      mensaje: `Se eliminará lógicamente el centro ${item.codigo}.`,
+      mensaje: `El centro ${item.codigo} dejará de estar disponible para nuevas operaciones.`,
       detalle: 'El historial relacionado se conservará.',
       tipo: 'peligro',
       confirmarTexto: 'Eliminar',
       cancelarTexto: 'Cancelar'
-    });
-    if (!confirmado) return;
-    this.service.delete(item.id).subscribe({ next: () => { this.page = 1; this.cargar(); }, error: () => this.snack.open('No se pudo eliminar el centro de costo.', 'Cerrar', { duration: 3000 }) });
+      });
+    } catch {
+      this.accionEnCurso.set(null);
+      this.snack.open('No se pudo abrir la confirmación.', 'Cerrar', { duration: 3000 });
+      return;
+    }
+    if (!confirmado || !this.puedeEliminar()) {
+      this.accionEnCurso.set(null);
+      return;
+    }
+    this.service.delete(item.id)
+      .pipe(finalize(() => this.accionEnCurso.set(null)))
+      .subscribe({
+        next: response => {
+          if (!response.success) {
+            this.snack.open(response.message || 'No se pudo eliminar el centro de costo.', 'Cerrar', { duration: 3000 });
+            return;
+          }
+          this.page = 1;
+          this.cargar();
+        },
+        error: () => this.snack.open('No se pudo eliminar el centro de costo.', 'Cerrar', { duration: 3000 })
+      });
   }
   tipoNombre(tipo: TipoCentroCosto): string { return this.tipos.find(x => x.value === tipo)?.label ?? String(tipo); }
 }

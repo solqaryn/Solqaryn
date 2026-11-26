@@ -104,6 +104,38 @@ describe('CuentasPorCobrarComponent', () => {
     expect(host.querySelector('a[href="/ventas/10"]')).not.toBeNull();
   });
 
+  it('limpia información anterior ante sesión caducada 401', () => {
+    const fixture = TestBed.createComponent(CuentasPorCobrarComponent);
+    fixture.detectChanges();
+    const request = http.expectOne(`${environment.apiUrl}/cuentas-por-cobrar`);
+    const factura = { id: 1, ventaId: 10, numeroFactura: 'FAC-PRIVADA-QA', clienteNombre: 'Cliente de prueba', total: 100, totalPagado: 0, saldoPendiente: 100, moneda: 'HNL' } as unknown as Factura;
+    request.flush({ success: true, data: [factura], message: '', errors: [] });
+    fixture.detectChanges();
+    expect(fixture.nativeElement.textContent).toContain('FAC-PRIVADA-QA');
+    fixture.componentInstance.cargar();
+    http.expectOne(`${environment.apiUrl}/cuentas-por-cobrar`).flush({ message: 'Unauthorized' }, { status: 401, statusText: 'Unauthorized' });
+    fixture.detectChanges();
+    expect(fixture.componentInstance.cuentas()).toEqual([]);
+    expect(fixture.componentInstance.errorMessage()).toContain('Vuelve a iniciar sesión');
+    expect(fixture.nativeElement.textContent).not.toContain('FAC-PRIVADA-QA');
+    expect(fixture.nativeElement.textContent).not.toContain('Unauthorized');
+  });
+
+  it('no permite aplicar pagos a saldos cero o negativos ni los marca vencidos', () => {
+    const fixture = TestBed.createComponent(CuentasPorCobrarComponent);
+    fixture.detectChanges();
+    const base = { id: 1, ventaId: 10, numeroFactura: 'FAC-POSITIVA', fechaVencimiento: '2020-01-01T00:00:00Z', clienteNombre: 'Cliente QA', total: 100, totalPagado: 90, saldoPendiente: 10, moneda: 'HNL' } as unknown as Factura;
+    http.expectOne(`${environment.apiUrl}/cuentas-por-cobrar`).flush({ success: true, data: [
+      base, { ...base, id: 2, numeroFactura: 'FAC-CERO', saldoPendiente: 0 }, { ...base, id: 3, numeroFactura: 'FAC-NEGATIVA', saldoPendiente: -5 }
+    ], message: '', errors: [] });
+    fixture.detectChanges();
+    const host: HTMLElement = fixture.nativeElement;
+    expect(host.querySelector('a[href="/facturas/1/pagos"]')).not.toBeNull();
+    expect(host.querySelector('a[href="/facturas/2/pagos"]')).toBeNull();
+    expect(host.querySelector('a[href="/facturas/3/pagos"]')).toBeNull();
+    expect(fixture.componentInstance.totalVencidos()).toBe(1);
+  });
+
   it('no acepta success=false como carga valida', () => {
     const fixture = TestBed.createComponent(CuentasPorCobrarComponent);
     fixture.detectChanges();

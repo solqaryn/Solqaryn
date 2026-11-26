@@ -64,6 +64,7 @@ export class SolicitudesCompraShellComponent implements OnInit, OnDestroy {
   readonly modoFormulario = signal<'nueva' | 'editar' | null>(null);
   readonly guardando = signal(false);
   readonly accionando = signal(false);
+  readonly confirmando = signal(false);
   readonly formError = signal<string | null>(null);
   readonly catalogosLoading = signal(false);
 
@@ -104,20 +105,26 @@ export class SolicitudesCompraShellComponent implements OnInit, OnDestroy {
       const raw = Number(params.get('detalle'));
       const id = Number.isInteger(raw) && raw > 0 ? raw : null;
       const modoRaw = params.get('modo');
-      const modo = modoRaw === 'nueva' || modoRaw === 'editar' ? modoRaw : null;
+      const nueva = modoRaw === 'nueva' && this.puede('Crear');
+      const editar = modoRaw === 'editar' && this.puede('Editar') && id !== null;
 
-      this.detalleId.set(id);
-      this.modoFormulario.set(modo === 'editar' && !id ? null : modo);
+      this.detalleId.set(nueva ? null : id);
+      this.modoFormulario.set(null);
       this.formError.set(null);
+      this.lineas = [];
 
-      if (modo === 'nueva') {
+      if (nueva) {
+        ++this.secuenciaDetalle;
         this.detalleSubscription?.unsubscribe();
         this.detalle.set(null);
+        this.detalleError.set(null);
         this.detalleLoading.set(false);
         this.prepararNueva();
+        this.modoFormulario.set('nueva');
       } else if (id) {
-        this.cargarDetalle(id, modo === 'editar');
+        this.cargarDetalle(id, editar);
       } else {
+        ++this.secuenciaDetalle;
         this.detalleSubscription?.unsubscribe();
         this.detalle.set(null);
         this.detalleError.set(null);
@@ -257,11 +264,19 @@ export class SolicitudesCompraShellComponent implements OnInit, OnDestroy {
   }
 
   guardar(): void {
-    const payload = this.construirPayload();
-    if (!payload) return;
-
+    if (this.guardando()) return;
     const modo = this.modoFormulario();
     const id = this.detalleId();
+    const detalle = this.detalle();
+    if (modo === 'nueva') {
+      if (!this.puede('Crear')) return;
+    } else if (modo === 'editar') {
+      if (!this.puede('Editar') || !id || detalle?.id !== id || detalle.estado !== 'Borrador' || this.detalleLoading()) return;
+    } else {
+      return;
+    }
+    const payload = this.construirPayload();
+    if (!payload) return;
     this.guardando.set(true);
     this.formError.set(null);
 
@@ -286,37 +301,53 @@ export class SolicitudesCompraShellComponent implements OnInit, OnDestroy {
   }
 
   enviar(solicitud: SolicitudCompra): void {
-    if (solicitud.estado !== 'Borrador' || !this.puede('Confirmar')) return;
+    if (!this.puedeActuar(solicitud, 'Borrador', 'Confirmar')) return;
     this.ejecutarAccion(() => this.solicitudService.enviar(solicitud.id), 'No fue posible enviar la solicitud.');
   }
 
   async aprobar(solicitud: SolicitudCompra): Promise<void> {
-    if (solicitud.estado !== 'Solicitada' || !this.puede('Aprobar')) return;
-    const confirmado = await this.alerts.confirmar({
-      titulo: 'Aprobar solicitud de compra',
-      mensaje: `¿Aprobar la solicitud ${solicitud.numeroSolicitud}?`,
-      detalle: 'La solicitud podrá continuar al flujo de orden de compra con sus líneas y costos trazables.',
-      confirmarTexto: 'Aprobar solicitud'
-    });
-    if (!confirmado) return;
+    if (!this.puedeActuar(solicitud, 'Solicitada', 'Aprobar')) return;
+    this.confirmando.set(true);
+    let confirmado: boolean;
+    try {
+      confirmado = await this.alerts.confirmar({
+        titulo: 'Aprobar solicitud de compra',
+        mensaje: `¿Aprobar la solicitud ${solicitud.numeroSolicitud}?`,
+        detalle: 'La solicitud podrá continuar al flujo de orden de compra con sus líneas y costos trazables.',
+        confirmarTexto: 'Aprobar solicitud'
+      });
+    } finally {
+      this.confirmando.set(false);
+    }
+    if (!confirmado || !this.puedeActuar(solicitud, 'Solicitada', 'Aprobar')) return;
     this.ejecutarAccion(() => this.solicitudService.aprobar(solicitud.id), 'No fue posible aprobar la solicitud.');
   }
 
   async rechazar(solicitud: SolicitudCompra): Promise<void> {
-    if (solicitud.estado !== 'Solicitada' || !this.puede('Rechazar')) return;
-    const motivo = await this.alerts.solicitarTexto({
-      titulo: 'Rechazar solicitud de compra',
-      mensaje: `La solicitud ${solicitud.numeroSolicitud} se marcará como rechazada.`,
-      detalle: 'Indica el motivo para conservar la trazabilidad de la decisión.',
-      tipo: 'peligro',
-      entrada: { etiqueta: 'Motivo de rechazo', requerida: true },
-      confirmarTexto: 'Rechazar solicitud'
-    });
-    if (!motivo) {
-      this.detalleError.set('El motivo de rechazo es obligatorio.');
-      return;
+    if (!this.puedeActuar(solicitud, 'Solicitada', 'Rechazar')) return;
+    this.confirmando.set(true);
+    let motivo: string | null;
+    try {
+      motivo = await this.alerts.solicitarTexto({
+        titulo: 'Rechazar solicitud de compra',
+        mensaje: `La solicitud ${solicitud.numeroSolicitud} se marcará como rechazada.`,
+        detalle: 'Indica el motivo para conservar la trazabilidad de la decisión.',
+        tipo: 'peligro',
+        entrada: { etiqueta: 'Motivo de rechazo', requerida: true },
+        confirmarTexto: 'Rechazar solicitud'
+      });
+    } finally {
+      this.confirmando.set(false);
     }
+    if (!motivo?.trim() || !this.puedeActuar(solicitud, 'Solicitada', 'Rechazar')) return;
     this.ejecutarAccion(() => this.solicitudService.rechazar(solicitud.id, motivo), 'No fue posible rechazar la solicitud.');
+  }
+
+  private puedeActuar(solicitud: SolicitudCompra, estado: EstadoSolicitudCompra, permiso: string): boolean {
+    const actual = this.detalle();
+    return !this.confirmando() && !this.accionando() && !this.modoFormulario() &&
+      !this.detalleLoading() && this.detalleId() === solicitud.id &&
+      actual?.id === solicitud.id && actual.estado === estado && solicitud.estado === estado && this.puede(permiso);
   }
 
   costoEstimadoTotal(solicitud: SolicitudCompra): number {
@@ -385,12 +416,15 @@ export class SolicitudesCompraShellComponent implements OnInit, OnDestroy {
         }
         this.detalle.set(res.data);
         if (prepararEdicion) {
-          if (res.data.estado !== 'Borrador') {
+          if (res.data.estado !== 'Borrador' || !this.puede('Editar')) {
             this.modoFormulario.set(null);
-            this.detalleError.set('Solo las solicitudes en Borrador pueden editarse.');
+            this.detalleError.set(res.data.estado !== 'Borrador'
+              ? 'Solo las solicitudes en borrador pueden editarse.'
+              : 'Tu perfil no tiene permiso para editar solicitudes.');
             return;
           }
           this.prepararEdicion(res.data);
+          this.modoFormulario.set('editar');
         }
       },
       error: () => {

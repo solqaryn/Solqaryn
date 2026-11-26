@@ -298,6 +298,7 @@ export class CosteoInventarioComponent implements OnInit {
   }
 
   cambiarPolitica(): void {
+    if (!this.puedeEditar || this.saving || !this.vigente) return;
     this.changeError = '';
     this.changeSuccess = '';
     const motivo = this.motivo.trim();
@@ -310,7 +311,7 @@ export class CosteoInventarioComponent implements OnInit {
       .pipe(finalize(() => this.saving = false))
       .subscribe({
         next: response => {
-          if (!response.success) {
+          if (!response.success || !response.data) {
             this.changeError = response.message || 'No se pudo actualizar la política de costeo.';
             return;
           }

@@ -160,6 +160,24 @@ for (const viewport of viewports) {
       await expect(detalle.getByText(original,{exact:true})).toHaveCount(0);
       await detalle.getByRole('button',{name:'Cerrar',exact:true}).click();
       await expect(detalle).toHaveCount(0);
+      const form = page.locator('.change-form');
+      const metodo = form.getByRole('combobox',{name:'Método',exact:true});
+      const aplicar = form.getByRole('button',{name:'Aplicar política'});
+      await expect(aplicar).toBeDisabled();
+      await metodo.click();
+      await page.getByRole('option',{name:'FIFO',exact:true}).click();
+      await expect(form.getByText(/asigna a las salidas el costo de las entradas más antiguas/)).toBeVisible();
+      await expect(form.getByText(/no modifica las políticas anteriores ni recalcula costos ya registrados/)).toBeVisible();
+      await expect(aplicar).toBeDisabled();
+      await form.getByRole('textbox',{name:'Motivo del cambio'}).fill('Validación visual sin guardar');
+      await expect(aplicar).toBeEnabled();
+      await metodo.click();
+      await page.getByRole('option',{name:'Estándar',exact:true}).click();
+      await expect(form.getByText(/utiliza un costo de referencia establecido/)).toBeVisible();
+      await metodo.click();
+      await page.getByRole('option',{name:'Promedio Ponderado',exact:true}).click();
+      await expect(form.locator('.method-description')).toHaveCount(0);
+      await expect(aplicar).toBeDisabled();
     }
     await page.screenshot({path:testInfo.outputPath('costeo.png'),fullPage:true});
   });
@@ -189,5 +207,18 @@ for (const width of [390, 1440]) {
       await expect(page.locator('.topbar .user-role')).toHaveCSS('background-color','rgb(36, 91, 73)');
       if(width===390) await expect(page.locator('#menu-toggle')).toHaveCSS('color','rgb(255, 255, 255)');
     }
+    // La última ruta usa un listado vacío; recargar con una factura sintética.
+    await page.route(API+'/cuentas-por-cobrar', r=>r.fulfill({json:ok([{
+      id:1, ventaId:2, numeroFactura:'FAC-QA-001', numeroVentaOrigen:'VEN-QA-002',
+      clienteNombre:'Cliente QA', estado:'Emitida', estadoPago:'Pendiente',
+      moneda:'HNL', total:100, totalPagado:25, saldoPendiente:75,
+      fechaVencimiento:'2026-10-01T00:00:00Z'
+    }])}));
+    await page.goto('/cuentas-por-cobrar');
+    const pago = page.getByRole('link',{name:'Pagos de factura FAC-QA-001'});
+    await expect(pago).toHaveCSS('background-color','rgb(36, 91, 73)');
+    await expect(pago).toHaveCSS('color','rgb(255, 255, 255)');
+    await expect(page.getByRole('region',{name:'Tabla de cuentas por cobrar'})).toHaveCSS('overflow-x','auto');
+    expect(await page.evaluate(()=>document.documentElement.scrollWidth<=window.innerWidth+1)).toBe(true);
   });
 }

@@ -105,13 +105,16 @@
 
   @if (detalleLoading()) {
     <div class="state-panel" role="status" aria-live="polite"><mat-spinner diameter="42"></mat-spinner><span>Cargando solicitud…</span></div>
-  } @else if (detalleError()) {
+  } @else if (detalleError() && !detalle()) {
     <div class="state-panel error-panel" role="alert">
       <mat-icon>error_outline</mat-icon><span>{{ detalleError() }}</span>
       <button mat-stroked-button type="button" (click)="recargarDetalle()">Reintentar</button>
     </div>
   } @else if (detalle(); as solicitud) {
     <section class="detail-card" aria-labelledby="solicitud-numero">
+      @if (detalleError()) {
+        <div class="form-alert" role="alert"><mat-icon>error_outline</mat-icon><span>{{ detalleError() }}</span></div>
+      }
       <div class="detail-heading">
         <div>
           <span class="eyebrow">Solicitud</span>
@@ -125,13 +128,13 @@
           <button mat-stroked-button type="button" (click)="abrirEdicion(solicitud.id)"><mat-icon>edit</mat-icon> Editar borrador</button>
         }
         @if (solicitud.estado === 'Borrador' && puede('Confirmar')) {
-          <button mat-flat-button color="primary" type="button" [disabled]="accionando()" (click)="enviar(solicitud)"><mat-icon>send</mat-icon> Enviar</button>
+          <button mat-flat-button color="primary" type="button" [disabled]="accionando() || confirmando()" (click)="enviar(solicitud)"><mat-icon>send</mat-icon> Enviar</button>
         }
         @if (solicitud.estado === 'Solicitada' && puede('Aprobar')) {
-          <button mat-flat-button color="primary" type="button" [disabled]="accionando()" (click)="aprobar(solicitud)"><mat-icon>check_circle</mat-icon> Aprobar</button>
+          <button mat-flat-button color="primary" type="button" [disabled]="accionando() || confirmando()" (click)="aprobar(solicitud)"><mat-icon>check_circle</mat-icon> Aprobar</button>
         }
         @if (solicitud.estado === 'Solicitada' && puede('Rechazar')) {
-          <button mat-stroked-button type="button" [disabled]="accionando()" (click)="rechazar(solicitud)"><mat-icon>cancel</mat-icon> Rechazar</button>
+          <button mat-stroked-button type="button" [disabled]="accionando() || confirmando()" (click)="rechazar(solicitud)"><mat-icon>cancel</mat-icon> Rechazar</button>
         }
       </div>
 
