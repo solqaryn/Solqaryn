@@ -11512,3 +11512,9 @@
 ## 2026-11-26 — DEV02 — C15-04.M05.04 — V44/R1/R5
 
 - TASK_ID=6af16bb9492c8191b8e8c7d606f11507; RUN_ID=fea81956-e57c-832b-872d-f29a6c3f64b8; base 5131082236449f74be1d34f4ddf1c6d9bac793c1. Excepcion R1: foco C02-01.M05.04 VALIDANDO, preferencia durable C03-01.M03.04 DAG NO; mantener foco, continuar WIP propio C15-04.M05.04 sin claim. Checkout: campos nombre y telefono requeridos en Angular pero sin semantica HTML requerida (asterisco aria-hidden). Agregar required nativo a ambos, conservar novalidate y validadores, correo/notas opcionales. Regresion Chromium existente storefront-fase10: comprobar propiedad DOM required verdadera/falsa y conservar validaciones/teclado. A0 diff acotado; A1/A3 prueba de UI pendiente CI, sin afirmar integracion real de pago; A2 sin cambio auth/tenancy/datos; A4 exact-SHA CI pendiente; A5 independiente por otra Task elegible. SKREF03/10 pins consultados. V17 H2297:I2297, R5 directa, rollback revert normal; no QA/main/PROD.
+
+
+## 2026-11-26 — DEV06 — C03-03.M03.06 — V44/R1/R5
+
+- TASK_ID=6af16bbad26881918c283abe06e1f32a; RUN_ID=6b5ab147-b6a0-8320-ba5b-5af59532e161; base 70370a70ee48d7f17855c5ddc96e61d20662b1c8. Excepcion R1: foco C02-01.M05.04 depende de C03-01.M03.04 (DAG425 NO); C03-01.M03.03 sin auditor elegible segun relevo; sin cambiar H/I ni DAG. Adoptado hallazgo DEV03 y paquete DEV05 sobre S05 de C03-03.M02.06.
+- AuditoriaService: best-effort registra AUDIT_WRITE_FAILED con enums Modulo/Accion, sin excepcion ni descripcion libre; conserva persistencia, atribucion y semantica estricta. Prueba dirigida AddAsync/SaveChangesAsync con marcadores sinteticos, logger estructurado y propagacion estricta. A0 diff acotado; A1/A2/A4 CI exact-SHA pendiente; A3 sin cambio de SQL/DI, regresion backend/MySQL pertinente; A5 independiente pendiente. Sin UI, grants, purgas, datos reales ni QA/main/PROD. V17 H523:I523 y R5 directa; rollback revert normal.

@@ -32,9 +32,11 @@ public class AuditoriaService : IAuditoriaService
         {
             await RegistrarCoreAsync(modulo, accion, descripcion, referenciaId, entidad, valoresAnteriores, valoresNuevos, motivo, resultado, error);
         }
-        catch (Exception ex)
+        catch (Exception)
         {
-            _logger.LogError(ex, "No se pudo registrar entrada de auditoría: {Descripcion}", descripcion);
+            // El fallo puede incluir datos privados del consumidor o del proveedor SQL.
+            // El registro operativo conserva solo un codigo fijo y enums, nunca el payload ni la excepcion.
+            _logger.LogError("AUDIT_WRITE_FAILED: {Modulo} {Accion}", modulo, accion);
         }
     }
 

@@ -134,4 +134,61 @@ public sealed class AuditoriaTenantOwnershipTests
 
         Assert.Null(Assert.Single(records).EmpresaId);
     }
+
+    [Theory]
+    [InlineData(false)]
+    [InlineData(true)]
+    public async Task Fallo_best_effort_no_expone_descripcion_ni_excepcion_y_estricto_propaga(bool failOnSave)
+    {
+        const string privateMarker = "SYNTHETIC_PRIVATE_AUDIT_PAYLOAD";
+        const string providerMarker = "SYNTHETIC_PRIVATE_PROVIDER_ERROR";
+        var failure = new InvalidOperationException(providerMarker);
+        var repo = new Mock<IAuditoriaRepository>();
+        repo.Setup(r => r.AddAsync(It.IsAny<RegistroAuditoria>()))
+            .Returns(failOnSave ? Task.CompletedTask : Task.FromException(failure));
+        if (failOnSave)
+            repo.Setup(r => r.SaveChangesAsync()).ThrowsAsync(failure);
+        var logger = new CapturingAuditLogger();
+        var user = new Mock<ICurrentUserService>();
+        var service = new AuditoriaService(repo.Object, user.Object, new HttpContextAccessor(), logger);
+
+        await service.RegistrarAsync(ModuloSistema.Productos, AccionPermiso.Crear, privateMarker,
+            error: privateMarker, valoresNuevos: new { PrivateValue = privateMarker });
+
+        var entry = Assert.Single(logger.Entries);
+        Assert.Equal(LogLevel.Error, entry.Level);
+        Assert.Null(entry.Exception);
+        Assert.Contains("AUDIT_WRITE_FAILED", entry.Message);
+        Assert.DoesNotContain(privateMarker, entry.Message);
+        Assert.DoesNotContain(providerMarker, entry.Message);
+        Assert.Equal(ModuloSistema.Productos, entry.Fields.Single(p => p.Key == "Modulo").Value);
+        Assert.Equal(AccionPermiso.Crear, entry.Fields.Single(p => p.Key == "Accion").Value);
+        Assert.All(entry.Fields, field =>
+        {
+            Assert.DoesNotContain(privateMarker, field.Value?.ToString() ?? "");
+            Assert.DoesNotContain(providerMarker, field.Value?.ToString() ?? "");
+        });
+        repo.Verify(r => r.SaveChangesAsync(), failOnSave ? Times.Once() : Times.Never());
+
+        var strictFailure = await Assert.ThrowsAsync<InvalidOperationException>(() =>
+            service.RegistrarEstrictoAsync(ModuloSistema.Productos, AccionPermiso.Crear, privateMarker));
+        Assert.Same(failure, strictFailure);
+        Assert.Single(logger.Entries);
+    }
+
+    private sealed class CapturingAuditLogger : ILogger<AuditoriaService>
+    {
+        public List<(LogLevel Level, Exception? Exception, string Message,
+            KeyValuePair<string, object?>[] Fields)> Entries { get; } = new();
+
+        public IDisposable? BeginScope<TState>(TState state) where TState : notnull => null;
+        public bool IsEnabled(LogLevel logLevel) => true;
+        public void Log<TState>(LogLevel logLevel, EventId eventId, TState state,
+            Exception? exception, Func<TState, Exception?, string> formatter)
+        {
+            var fields = state is IEnumerable<KeyValuePair<string, object?>> structured
+                ? structured.ToArray() : Array.Empty<KeyValuePair<string, object?>>();
+            Entries.Add((logLevel, exception, formatter(state, exception), fields));
+        }
+    }
 }
