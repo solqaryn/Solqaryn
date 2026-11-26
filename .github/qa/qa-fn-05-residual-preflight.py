@@ -1,4 +1,4 @@
-"""QA FN-05 residual: aggregate-only physical inventory, never migrate or mutate."""
+"""QA FN-05 residual: aggregate-only physical inspection, never migrate or mutate."""
 import os
 import re
 import subprocess
@@ -17,7 +17,7 @@ TARGETS = (
     "Permisos", "RolPermisos", "UsuarioRolesPlataforma",
 )
 # Only candidate tenant-owned tables may drive a future ownership migration.
-# Global catalog definitions, identities, memberships and grants are inventory-only.
+# Global catalog definitions, identities, memberships and grants are inspection-only.
 CANDIDATES = set(TARGETS[:29]) - {"MetodosPago", "Sucursales"}
 V1 = {
     "Productos", "ProductoVariantes", "ProductoImagenes", "Clientes", "Proveedores",

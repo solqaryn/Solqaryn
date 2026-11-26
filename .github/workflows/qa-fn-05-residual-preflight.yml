@@ -11,7 +11,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   residual-preflight:
-    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == '19af145d11cac32e6591fb20c6ded1f6a9eac912'
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == '29565ad638354e92dfffcfb2cc4d30214eab7fd7'
     runs-on: ubuntu-latest
     timeout-minutes: 12
     environment: QA
