@@ -1,3 +1,8 @@
+## 2026-11-25 | DEV03 | C01-04.M03.06 | R1-RESTAURADA
+- V44R1-J20-BE489016-C0104M0306-OPAQUE-CORRELATION | RUN_ID be489016-f554-8333-b4bc-fd3f6994e900 | TASK_ID 6adc2e4bd8a48191ac7d8641ed95a1a3 | base 717df5c45e70a40dea5f7945d71049a34ac71ab8
+- D/E y M02.06 §3/M02.05 §3: correlación opaca generada server-side por captura, mismo Guid en recibo seguro y entrada; logger estructurado y sink MySQL aislado persisten N sin alterar EvidenceKey/tenant compuesto ni aceptar cabeceras, PII o grants. Fallos controlados conservan correlación, cancelación se propaga. Pruebas existentes ampliadas con readback A/B y replay sin modificación de fila. Solo esquema efímero de fixture; no migración comercial, DI, HTTP, datos reales ni reapertura R11.
+- A0 anclas/blobs exactos; A1–A4 CI pendiente, no acreditar recorrido tenant autenticado, retención o compensación aún. A5 independiente; mantener VALIDANDO owner histórico. Rollback git revert normal en dev.
+
 ## 2026-11-25 | DEV06 | C01-04.M03.06 | R1-RESTAURADA
 - V44R1-J50-9A573FE6-C0104M0306-V23-PATH-ROUTING | RUN_ID 9a573fe6-3590-8323-a821-56b766ab40f4 | TASK_ID 6af16bbad26881918c283abe06e1f32a
 - Base a92708cc9c630d7061ca74f62a3c5e0ca8f714b5: DEV04 cambió el controlador de evidencias QA global y su prueba HTTP; V23 consume ambos pero no los incluía en push.paths. Incorporar exactamente ambos paths para ejecutar la evidencia causal HTTP/JWT/GitHub/MySQL efímera al cambiar cualquiera. No alterar pasos, criterios, permisos, concurrencia ni activar laboratorio R11. Sin datos reales, cambios de infraestructura ni migraciones.

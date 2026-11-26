@@ -61,6 +61,8 @@ public sealed class C0104M0306CaseFileQaAuditSafetyTests
         var result = await Capture(new Source(Good()), sink);
         Assert.Equal("CASEFILE_QA_ENVELOPE_WRITTEN_REVIEW_PENDING", result.Code);
         var entry = Assert.Single(sink.Entries);
+        Assert.NotEqual(Guid.Empty, result.CorrelationId);
+        Assert.Equal(result.CorrelationId, entry.CorrelationId);
         Assert.Equal(Id, entry.MicrotaskId);
         Assert.Equal("casefile.timeline", entry.RouteKey);
         Assert.Equal(Sha, entry.SourceSha);
@@ -324,6 +326,9 @@ public sealed class C0104M0306CaseFileQaAuditSafetyTests
         var fromSink = await Capture(new Source(Good()), brokenSink);
         Assert.Equal("CASEFILE_QA_AUDIT_SINK_UNAVAILABLE", fromSink.Code);
         Assert.DoesNotContain("payload", fromSink.Code);
+        Assert.NotEqual(Guid.Empty, fromSource.CorrelationId);
+        Assert.NotEqual(Guid.Empty, fromSink.CorrelationId);
+        Assert.NotEqual(fromSource.CorrelationId, fromSink.CorrelationId);
     }
 
     [Fact]

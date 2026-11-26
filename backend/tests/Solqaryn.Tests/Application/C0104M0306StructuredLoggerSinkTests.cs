@@ -67,6 +67,9 @@ public sealed class C0104M0306StructuredLoggerSinkTests
         var call = Assert.Single(logger.Calls);
         Assert.Equal(LogLevel.Information, call.Level);
         Assert.Equal(1040306, call.EventId);
+        Assert.NotEqual(Guid.Empty, result.CorrelationId);
+        Assert.Contains(call.Fields, p => p.Key == "CorrelationId" &&
+            Equals(p.Value, result.CorrelationId.ToString("N")));
         Assert.Contains(call.Fields, p => p.Key == "MicrotaskId" && Equals(p.Value, Id));
         Assert.Contains(call.Fields, p => p.Key == "SourceSha" && Equals(p.Value, Sha));
         Assert.Contains(call.Fields, p => p.Key == "VerificationClass" &&

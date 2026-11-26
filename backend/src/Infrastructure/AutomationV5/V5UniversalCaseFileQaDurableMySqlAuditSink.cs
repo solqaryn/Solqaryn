@@ -83,10 +83,10 @@ public sealed class V5UniversalCaseFileQaDurableMySqlAuditSink
                 INSERT INTO {Table}
                     (TenantId, CaseFileId, MicrotaskId, RouteKey, SourceSha,
                      CheckName, CheckStatus, CheckConclusion, ObservedUtc,
-                     VerificationClass, EvidenceKey, ProviderWorkflowId, ProviderRunId,
+                     VerificationClass, CorrelationId, EvidenceKey, ProviderWorkflowId, ProviderRunId,
                      ProviderAttempt, ProviderJobId, ProviderCheckRunId, ProviderCheckSuiteId)
                 VALUES (@tenant, @casefile, @task, @route, @sha,
-                        @name, @status, @conclusion, @observed, @class, @key,
+                        @name, @status, @conclusion, @observed, @class, @correlation, @key,
                         @workflow, @run, @attempt, @job, @check, @suite)
                 """;
             Add(cmd, "@tenant", _scopeTenantId);
@@ -99,6 +99,8 @@ public sealed class V5UniversalCaseFileQaDurableMySqlAuditSink
             Add(cmd, "@conclusion", entry.CheckConclusion);
             Add(cmd, "@observed", entry.ObservedAtUtc.UtcDateTime);
             Add(cmd, "@class", entry.VerificationClass);
+            // Correlation is separate from the immutable idempotency key.
+            Add(cmd, "@correlation", entry.CorrelationId.ToString("N"));
             Add(cmd, "@key", EvidenceKey(entry));
             Add(cmd, "@workflow", entry.ProviderJob?.WorkflowId);
             Add(cmd, "@run", entry.ProviderJob?.RunId);
@@ -123,7 +125,7 @@ public sealed class V5UniversalCaseFileQaDurableMySqlAuditSink
     }
 
     private static bool Valid(V5UniversalCaseFileQaEvidenceAudit.SafeAuditEntry? e) =>
-        e is not null && e.MicrotaskId is not null && Microtask.IsMatch(e.MicrotaskId) &&
+        e is not null && e.CorrelationId != Guid.Empty && e.MicrotaskId is not null && Microtask.IsMatch(e.MicrotaskId) &&
         e.SourceSha is not null && Sha.IsMatch(e.SourceSha) &&
         Routes.Contains(e.RouteKey) && V5UniversalCaseFileQaEvidenceAudit.IsAllowedCheck(e.MicrotaskId, e.CheckName) &&
         Statuses.Contains(e.CheckStatus) && Conclusions.Contains(e.CheckConclusion) &&

@@ -66,6 +66,7 @@ public sealed class C0104M0306DurableQaAuditMysql84Tests
                   CheckConclusion VARCHAR(16) NOT NULL,
                   ObservedUtc DATETIME(6) NOT NULL,
                   VerificationClass VARCHAR(64) NOT NULL,
+                  CorrelationId CHAR(32) CHARACTER SET ascii NOT NULL,
                   EvidenceKey CHAR(64) CHARACTER SET ascii NOT NULL,
                   ProviderWorkflowId BIGINT NULL,
                   ProviderRunId BIGINT NULL,
@@ -111,6 +112,24 @@ public sealed class C0104M0306DurableQaAuditMysql84Tests
                 Microtask, "casefile.timeline", Sha, "101", "42");
             Assert.Equal("CASEFILE_QA_AUDIT_SINK_UNAVAILABLE", replay.Code);
             Assert.Equal(1L, await Count(isolated, 101, 42));
+            Assert.NotEqual(Guid.Empty, first.CorrelationId);
+            Assert.NotEqual(Guid.Empty, second.CorrelationId);
+            Assert.NotEqual(first.CorrelationId, second.CorrelationId);
+            Assert.NotEqual(first.CorrelationId, replay.CorrelationId);
+            await using (var correlationDb = new MySqlConnection(isolated))
+            {
+                await correlationDb.OpenAsync();
+                await using var correlation = correlationDb.CreateCommand();
+                correlation.CommandText = $"SELECT TenantId, CorrelationId FROM {Table} WHERE CaseFileId=42 ORDER BY TenantId";
+                await using var reader = await correlation.ExecuteReaderAsync();
+                Assert.True(await reader.ReadAsync());
+                Assert.Equal(101, reader.GetInt32(0));
+                Assert.Equal(first.CorrelationId.ToString("N"), reader.GetString(1));
+                Assert.True(await reader.ReadAsync());
+                Assert.Equal(202, reader.GetInt32(0));
+                Assert.Equal(second.CorrelationId.ToString("N"), reader.GetString(1));
+                Assert.False(await reader.ReadAsync());
+            }
 
             // Caller scope mismatch is rejected BEFORE the durable sink is called.
             var mismatch = await a.CaptureAsync(

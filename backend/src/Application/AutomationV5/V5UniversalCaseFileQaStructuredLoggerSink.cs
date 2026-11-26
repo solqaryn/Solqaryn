@@ -55,10 +55,10 @@ public sealed class V5UniversalCaseFileQaStructuredLoggerSink
         // No tenant, case, user, credential, payload or provider diagnostic.
         _logger.LogInformation(
             new EventId(1040306, "CaseFileQaEvidence"),
-            "CaseFileQaEvidence {MicrotaskId} {RouteKey} {SourceSha} {CheckName} {CheckStatus} {CheckConclusion} {ObservedAtUtc} {VerificationClass} {ProviderWorkflowId} {ProviderRunId} {ProviderAttempt} {ProviderJobId} {ProviderCheckRunId} {ProviderCheckSuiteId}",
+            "CaseFileQaEvidence {MicrotaskId} {RouteKey} {SourceSha} {CheckName} {CheckStatus} {CheckConclusion} {ObservedAtUtc} {VerificationClass} {CorrelationId} {ProviderWorkflowId} {ProviderRunId} {ProviderAttempt} {ProviderJobId} {ProviderCheckRunId} {ProviderCheckSuiteId}",
             entry.MicrotaskId, entry.RouteKey, entry.SourceSha,
             entry.CheckName, entry.CheckStatus, entry.CheckConclusion,
-            entry.ObservedAtUtc, entry.VerificationClass,
+            entry.ObservedAtUtc, entry.VerificationClass, entry.CorrelationId.ToString("N"),
             entry.ProviderJob?.WorkflowId, entry.ProviderJob?.RunId,
             entry.ProviderJob?.Attempt, entry.ProviderJob?.JobId,
             entry.ProviderJob?.CheckRunId, entry.ProviderJob?.CheckSuiteId);
@@ -67,6 +67,7 @@ public sealed class V5UniversalCaseFileQaStructuredLoggerSink
 
     private static bool IsSafe(V5UniversalCaseFileQaEvidenceAudit.SafeAuditEntry? entry) =>
         entry is not null &&
+        entry.CorrelationId != Guid.Empty &&
         entry.MicrotaskId is not null && MicrotaskPattern.IsMatch(entry.MicrotaskId) &&
         entry.SourceSha is not null && ShaPattern.IsMatch(entry.SourceSha) &&
         RouteKeys.Contains(entry.RouteKey) &&
