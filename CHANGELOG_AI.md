@@ -1,3 +1,10 @@
+## 2026-11-27 — QA: ejecutar certificación dirigida sólo después de los gates causales
+
+- Corrección `3d8fa34a564bb10e36115f3e48c5243599aaa9ef` publicada. Scope Lock aprobado, Vercel personal READY `5H35aWotSzhG8KXucB9MJiGk5v2H` con alias QA. Certificación viva general 46038630924 SUCCESS; compilación/pruebas 46038630927 y rutas 46038631193 aún en ejecución al registrar evidencia.
+- Workflow de modales/galerías reanclado al SHA causal: consulta de sólo lectura y espera acotada de los tres runs exactos, aborto si cualquier resultado no es success, comprobación de equivalencia de código y despliegue, sin relanzar gates generales. Prueba real A/B de formularios con captura nativa y diagnóstico seguro; galerías sólo si ambos recorridos aprueban. No se altera código de aplicación, RBAC, datos ni otros entornos. Pendiente resultado; no cerrar sin evidencia.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-27 — QA: captura nativa del formulario institucional de tarifas
 
 - Run 46038088429, job 140638534346: Scope Lock/equivalencia PASS, alta, tabla, detalle, edición, desactivación y activación A PASS; HTTP 200 en simulación específica, fallo en comparación del request con la ciudad introducida (`SHIP_SIMULATE_SPECIFIC_REQUEST_A`); revocación PASS. Galerías no ejecutadas. No se acredita todavía fallo de resolución ni fuga empresarial.
