@@ -203,10 +203,34 @@ export class CostosEnvioComponent {
     this.form.reset({ nombre:'', descripcion:'', departamento:'', ciudad:'', zona:'', modalidad:'', monto:null,
       vigenteDesde:'', vigenteHasta:'', prioridad:1, esPredeterminado:false, activo:true });
   }
-  guardar(): void {
+  private datosNativos(formulario: HTMLFormElement, campos: readonly string[]): FormData | null {
+    const datos = new FormData(formulario);
+    return campos.every(campo => typeof datos.get(campo) === 'string') ? datos : null;
+  }
+
+  guardar(formulario: HTMLFormElement): void {
     const empresa = this.tenant.contextoVerificado();
     if (!empresa || !this.ready() || this.saving() || this.modalTipo !== 'editor' || !this.editor() || !this.modalListo() || this.form.disabled) return;
-    if (this.form.invalid) { this.form.markAllAsTouched(); return; }
+    // Capturar los valores actuales del formulario enviado, también si el navegador
+    // cambió un control nativo sin emitir el evento input al modelo reactivo.
+    const datos = this.datosNativos(formulario, ['nombre','descripcion','departamento','ciudad','zona','modalidad','monto','prioridad','vigenteDesde','vigenteHasta']);
+    const predeterminado = formulario.elements.namedItem('esPredeterminado');
+    const activo = formulario.elements.namedItem('activo');
+    if (!datos || !(predeterminado instanceof HTMLInputElement) || predeterminado.type !== 'checkbox'
+      || predeterminado.disabled || !(activo instanceof HTMLInputElement) || activo.type !== 'checkbox' || activo.disabled) {
+      this.editorError.set('El formulario no está listo. Vuelve a abrirlo antes de guardar.'); return;
+    }
+    const texto = (campo: string) => String(datos.get(campo));
+    const numero = (campo: string) => texto(campo).trim() === '' ? null : Number(texto(campo));
+    this.form.setValue({
+      nombre: texto('nombre'), descripcion: texto('descripcion'), departamento: texto('departamento'),
+      ciudad: texto('ciudad'), zona: texto('zona'), modalidad: texto('modalidad'),
+      monto: numero('monto'), prioridad: numero('prioridad'), vigenteDesde: texto('vigenteDesde'),
+      vigenteHasta: texto('vigenteHasta'), esPredeterminado: predeterminado.checked, activo: activo.checked
+    }, { emitEvent: false });
+    if (this.form.invalid) {
+      this.form.markAllAsTouched(); this.editorError.set('Revisa los campos de la tarifa.'); return;
+    }
     const raw = this.form.getRawValue();
     const monto = raw.monto;
     if (monto === null || !Number.isFinite(monto) || Math.abs(monto * 100 - Math.round(monto * 100)) > 0.000001) {
@@ -262,10 +286,23 @@ export class CostosEnvioComponent {
       error: err => { if (!this.vigente(empresa)) return; this.saving.set(false); this.error.set(err.error?.message ?? 'No se pudo eliminar la tarifa.'); }
     });
   }
-  simular(): void {
+  simular(formulario: HTMLFormElement): void {
     const empresa=this.tenant.contextoVerificado();
-    if (!empresa || !this.ready() || this.modalTipo !== 'simulador' || !this.modalListo() || this.simulador.disabled || this.simulador.invalid || this.simulando()) return;
+    if (!empresa || !this.ready() || this.modalTipo !== 'simulador' || !this.modalListo() || this.simulador.disabled || this.simulando()) return;
     const request = ++this.simulacionRequest;
+    this.simulacion.set(null);
+    const datos = this.datosNativos(formulario, ['departamento','ciudad','zona','modalidad','fecha']);
+    if (!datos) {
+      this.simulacionError.set('El formulario no está listo. Vuelve a abrirlo antes de consultar.'); return;
+    }
+    const texto = (campo: string) => String(datos.get(campo));
+    this.simulador.setValue({
+      departamento: texto('departamento'), ciudad: texto('ciudad'), zona: texto('zona'),
+      modalidad: texto('modalidad'), fecha: texto('fecha')
+    }, { emitEvent: false });
+    if (this.simulador.invalid) {
+      this.simulador.markAllAsTouched(); this.simulacionError.set('Revisa los datos de cobertura.'); return;
+    }
     const raw=this.simulador.getRawValue();
     this.simulacion.set(null); this.simulacionError.set(null); this.simulando.set(true);
     this.service.resolver({ departamento:raw.departamento?.trim() || undefined, ciudad:raw.ciudad?.trim() || undefined,

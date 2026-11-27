@@ -1,3 +1,10 @@
+## 2026-11-27 — QA: captura nativa del formulario institucional de tarifas
+
+- Run 46038088429, job 140638534346: Scope Lock/equivalencia PASS, alta, tabla, detalle, edición, desactivación y activación A PASS; HTTP 200 en simulación específica, fallo en comparación del request con la ciudad introducida (`SHIP_SIMULATE_SPECIFIC_REQUEST_A`); revocación PASS. Galerías no ejecutadas. No se acredita todavía fallo de resolución ni fuga empresarial.
+- Guardado y simulación toman los valores actuales de los controles nativos nombrados del formulario enviado y sincronizan el modelo reactivo antes de validar. El contrato de empresa verificada, validaciones, modal institucional y API se conservan. Campos/controles ausentes impiden la operación. Pruebas visuales reproducen autofill sin evento input en monto y ciudad; diagnóstico vivo distingue formulario, payload ausente/vacío/distinto/JSON inválido, sin imprimir datos. Corrección pendiente de compilación y certificación viva. Sin cambios de backend, datos, infraestructura o permisos.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-27 — QA: reanclar certificación viva de modales y galerías al frontend aprobado
 
 - QA manual autorizada. `1bebff6e03ab325551c0f5e9726a971ed84d516a`: gates 46034010499/46034010450/46034010434 SUCCESS, Scope Lock PASS, 77 pruebas visuales aprobadas (modales 1280/390/320), Vercel personal READY y alias QA asociado. Render personal LIVE `dea277293408751b1b49416a8164e1392e80a483`; diff backend/render vacío.

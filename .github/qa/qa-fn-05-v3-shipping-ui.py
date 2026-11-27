@@ -224,7 +224,7 @@ try:
     ui_env={k:v for k,v in os.environ.items() if k not in ("DB_HOST","DB_PORT","DB_NAME","DB_USER","DB_PASSWORD","BACKUP_PASSPHRASE","MYSQL_PWD","GH_TOKEN","GITHUB_TOKEN","ConnectionStrings__DefaultConnection")}
     ui=subprocess.run(["node",".github/qa/qa-fn-05-v3-browser.mjs"],input=json.dumps(spec),text=True,capture_output=True,timeout=360,env=ui_env)
     for line in ui.stdout.splitlines():
-        if re.fullmatch(r"QA_V3_UI_[A-Z0-9_]+=PASS|QA_V3_UI_SHIP_SIMULATE_[A-Z_]+_HTTP_[AB]=[1-5][0-9]{2}|QA_V3_UI_SHIP_SIMULATE_[A-Z_]+_MISMATCH_[AB]=(FOREIGN_A|OWN_DEFAULT|OWN_SPECIFIC|OTHER)|QA_V3_UI_WHATSAPP_NOT_CONFIGURED|QA_V3_UI_NO_COVERAGE_NOT_PRESENT",line):
+        if re.fullmatch(r"QA_V3_UI_[A-Z0-9_]+=PASS|QA_V3_UI_SHIP_SIMULATE_[A-Z_]+_HTTP_[AB]=[1-5][0-9]{2}|QA_V3_UI_SHIP_SIMULATE_[A-Z_]+_MISMATCH_[AB]=(FOREIGN_A|OWN_DEFAULT|OWN_SPECIFIC|OTHER)|QA_V3_UI_SHIP_SIMULATE_[A-Z_]+_PAYLOAD_[AB]=(EXPECTED|MISSING|EMPTY|MISMATCH|INVALID_JSON)|QA_V3_UI_WHATSAPP_NOT_CONFIGURED|QA_V3_UI_NO_COVERAGE_NOT_PRESENT",line):
             print(line,flush=True)
     if ui.returncode != 0:
         for line in ui.stderr.splitlines():

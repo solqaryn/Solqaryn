@@ -193,6 +193,8 @@ async function shipping(identity,suffix,amount,viewport){
       const input=simulation.locator('input[formcontrolname="ciudad"]');
       await input.fill(city);
       await expect(input).toHaveValue(city);
+      stage='SHIP_SIMULATE_'+label+'_NATIVE_FORM_'+suffix;
+      requireTrue(await input.evaluate(el=>el.form!==null&&new FormData(el.form).get('ciudad')===el.value));
       const button=simulation.getByRole('button',{name:'Resolver tarifa',exact:true});
       await expect(button).toBeEnabled();
       const responsePromise=page.waitForResponse(r=>scopedResponse(r,'/costos-envio/resolver','POST',null,identity.tenant),{timeout:30000});
@@ -202,8 +204,12 @@ async function shipping(identity,suffix,amount,viewport){
       console.log('QA_V3_UI_SHIP_SIMULATE_'+label+'_HTTP_'+suffix+'='+response.status());
       requireTrue(response.status()===200&&response.headers()['x-solqaryn-environment']==='QA');
       stage='SHIP_SIMULATE_'+label+'_REQUEST_'+suffix;
-      const body=response.request().postDataJSON();
-      requireTrue(body?.ciudad===city);
+      let body;
+      try { body=response.request().postDataJSON(); }
+      catch { console.log('QA_V3_UI_SHIP_SIMULATE_'+label+'_PAYLOAD_'+suffix+'=INVALID_JSON'); throw new Error('Invalid request JSON'); }
+      const payloadState=body?.ciudad===city?'EXPECTED':typeof body?.ciudad!=='string'?'MISSING':body.ciudad.trim()===''?'EMPTY':'MISMATCH';
+      console.log('QA_V3_UI_SHIP_SIMULATE_'+label+'_PAYLOAD_'+suffix+'='+payloadState);
+      requireTrue(payloadState==='EXPECTED');
       stage='SHIP_SIMULATE_'+label+'_CONTRACT_'+suffix;
       const result=await response.json();
       requireTrue(result.success===true&&Number.isInteger(result.data?.id));

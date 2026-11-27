@@ -24,42 +24,42 @@
   @if (!predeterminado()) { <p class="notice" role="status">Configure una tarifa general predeterminada. No se aplicará un importe fijo ni se heredarán tarifas de otra empresa.</p> }
 }
 <ng-template #editorModal>
-<form class="app-dialog-layout" [formGroup]="form" (ngSubmit)="guardar()">
+<form #editorFormulario class="app-dialog-layout" [formGroup]="form" (ngSubmit)="guardar(editorFormulario)">
   <h2 mat-dialog-title>{{ editandoId() ? 'Editar costo de envío' : 'Nuevo costo de envío' }}</h2>
   <mat-dialog-content>
   <section class="editor" aria-label="Formulario de tarifa">
     <div class="grid">
       <mat-form-field appearance="outline">
         <mat-label>Nombre</mat-label>
-        <input matInput formControlName="nombre" maxlength="120">
+        <input matInput formControlName="nombre" name="nombre" maxlength="120">
       </mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Departamento</mat-label><input matInput formControlName="departamento" maxlength="120"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Ciudad</mat-label><input matInput formControlName="ciudad" maxlength="120"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Zona</mat-label><input matInput formControlName="zona" maxlength="150"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Modalidad</mat-label><input matInput formControlName="modalidad" maxlength="80"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Departamento</mat-label><input matInput formControlName="departamento" name="departamento" maxlength="120"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Ciudad</mat-label><input matInput formControlName="ciudad" name="ciudad" maxlength="120"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Zona</mat-label><input matInput formControlName="zona" name="zona" maxlength="150"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Modalidad</mat-label><input matInput formControlName="modalidad" name="modalidad" maxlength="80"></mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label>Monto</mat-label>
         <span matTextPrefix>L.&nbsp;</span>
-        <input matInput type="number" min="0" step="0.01" formControlName="monto">
+        <input matInput type="number" min="0" step="0.01" formControlName="monto" name="monto">
       </mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label>Prioridad</mat-label>
-        <input matInput type="number" min="0" formControlName="prioridad">
+        <input matInput type="number" min="0" formControlName="prioridad" name="prioridad">
       </mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label>Vigente desde</mat-label>
-        <input matInput type="datetime-local" formControlName="vigenteDesde">
+        <input matInput type="datetime-local" formControlName="vigenteDesde" name="vigenteDesde">
       </mat-form-field>
       <mat-form-field appearance="outline">
         <mat-label>Vigente hasta</mat-label>
-        <input matInput type="datetime-local" formControlName="vigenteHasta">
+        <input matInput type="datetime-local" formControlName="vigenteHasta" name="vigenteHasta">
       </mat-form-field>
       <mat-form-field appearance="outline" class="full">
         <mat-label>Descripción</mat-label>
-        <textarea matInput rows="2" maxlength="500" formControlName="descripcion"></textarea>
+        <textarea matInput rows="2" maxlength="500" formControlName="descripcion" name="descripcion"></textarea>
       </mat-form-field>
-      <mat-checkbox formControlName="esPredeterminado">Tarifa general predeterminada</mat-checkbox>
-      <mat-checkbox formControlName="activo">Activo</mat-checkbox>
+      <mat-checkbox formControlName="esPredeterminado" name="esPredeterminado">Tarifa general predeterminada</mat-checkbox>
+      <mat-checkbox formControlName="activo" name="activo">Activo</mat-checkbox>
     </div>
     @if (editorError()) { <p class="error" role="alert">{{ editorError() }}</p> }
   </section>
@@ -131,17 +131,17 @@
 </section>
 
 <ng-template #simuladorModal>
-<form class="app-dialog-layout" [formGroup]="simulador" (ngSubmit)="simular()">
+<form #simuladorFormulario class="app-dialog-layout" [formGroup]="simulador" (ngSubmit)="simular(simuladorFormulario)">
   <h2 mat-dialog-title>Simular tarifa</h2>
   <mat-dialog-content>
   <section class="editor" aria-label="Simulación de tarifa">
   <p>Consulta la tarifa que resolvería el servidor para una cobertura y fecha. No modifica datos.</p>
     <div class="grid simulation-grid">
-      <mat-form-field appearance="outline"><mat-label>Departamento</mat-label><input matInput formControlName="departamento"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Ciudad</mat-label><input matInput formControlName="ciudad"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Zona</mat-label><input matInput formControlName="zona"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Modalidad</mat-label><input matInput formControlName="modalidad"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Fecha de consulta (opcional)</mat-label><input matInput type="datetime-local" formControlName="fecha"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Departamento</mat-label><input matInput formControlName="departamento" name="departamento" maxlength="120"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Ciudad</mat-label><input matInput formControlName="ciudad" name="ciudad" maxlength="120"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Zona</mat-label><input matInput formControlName="zona" name="zona" maxlength="150"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Modalidad</mat-label><input matInput formControlName="modalidad" name="modalidad" maxlength="80"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Fecha de consulta (opcional)</mat-label><input matInput type="datetime-local" formControlName="fecha" name="fecha"></mat-form-field>
     </div>
   @if (simulacion(); as tarifa) { <div class="notice" role="status"><strong>{{ tarifa.nombre }} · L. {{ tarifa.monto | number:'1.2-2' }}</strong><p>{{ cobertura(tarifa) }}</p></div> }
   @if (simulacionError()) { <p class="error" role="alert">{{ simulacionError() }}</p> }

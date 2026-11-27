@@ -77,11 +77,16 @@ for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 
     const monto = large.locator('input[formcontrolname="monto"]');
     await expect(monto).toBeEnabled();
     await expect(monto).toHaveValue('25');
-    await monto.fill('46.25');
+    // Simula un valor visible modificado por autofill sin evento input.
+    await monto.evaluate((element: HTMLInputElement) => { element.value = '46.25'; });
     await expect(monto).toHaveValue('46.25');
     const update = page.waitForRequest(r => r.url() === API + '/costos-envio/1' && r.method() === 'PUT');
     await large.getByRole('button', { name: 'Actualizar', exact: true }).click();
-    expect((await update).postDataJSON().monto).toBe(46.25);
+    const updated = (await update).postDataJSON();
+    expect(updated.monto).toBe(46.25);
+    expect(updated.ciudad).toBe('Ciudad QA');
+    expect(updated.activo).toBe(true);
+    expect(updated.esPredeterminado).toBe(false);
     await expect(large).toHaveCount(0);
     await expect(row).toContainText(/46[.,]25/);
     expect(writes).toBe(1);
@@ -100,7 +105,8 @@ for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 
     const ciudad = medium.locator('input[formcontrolname="ciudad"]');
     await expect(ciudad).toBeEnabled();
     for (const [input, nombre] of [['Ciudad QA', 'Tarifa QA'], ['Otra ciudad QA', 'Tarifa general QA']]) {
-      await ciudad.fill(input);
+      if (input === 'Ciudad QA') await ciudad.fill(input);
+      else await ciudad.evaluate((element: HTMLInputElement, value: string) => { element.value = value; }, input);
       await expect(ciudad).toHaveValue(input);
       const resolve = page.waitForRequest(r => r.url() === API + '/costos-envio/resolver' && r.method() === 'POST');
       await medium.getByRole('button', { name: 'Resolver tarifa' }).click();
