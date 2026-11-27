@@ -140,10 +140,10 @@
               @if (!whatsappDisponible()) {
                 <p class="option-warning" role="status">El comercio aún no tiene un WhatsApp válido configurado.</p>
               } @else if (!enlaceWhatsapp()) {
-                <button type="button" class="button primary full" (click)="prepararWhatsapp()" [disabled]="procesando() || !validacionVigente()">Preparar pedido por WhatsApp</button>
+                <button id="checkout-preparar-whatsapp" type="button" class="button primary full" (click)="prepararWhatsapp()" [disabled]="procesando() || !validacionVigente()">Preparar pedido por WhatsApp</button>
               } @else {
                 <p class="prepared"><app-store-icon nombre="check" /> Solicitud preparada con los importes validados.</p>
-                <a class="button primary full" [href]="enlaceWhatsapp()" target="_blank" rel="noopener noreferrer" (click)="confirmarSalidaWhatsapp($event)">Abrir WhatsApp y continuar</a>
+                <a id="checkout-abrir-whatsapp" class="button primary full" [href]="enlaceWhatsapp()" target="_blank" rel="noopener noreferrer" (click)="confirmarSalidaWhatsapp($event)">Abrir WhatsApp y continuar</a>
               }
             </article>
           }

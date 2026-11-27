@@ -140,8 +140,19 @@ export class StorefrontCheckoutComponent implements OnInit {
       this.error.set('No se pudo generar un enlace seguro para WhatsApp. Verifica el número configurado.');
       return;
     }
+    const disparador = this.document.getElementById('checkout-preparar-whatsapp');
+    const transferirFoco = disparador !== null && this.document.activeElement === disparador;
     this.enlaceWhatsapp.set(enlace);
     this.aviso.set('Solicitud preparada. Revisa el resumen y abre WhatsApp para continuar.');
+    if (transferirFoco) {
+      afterNextRender(() => {
+        const activo = this.document.activeElement;
+        // The focused button was replaced by the link; do not steal focus from another control.
+        if (this.enlaceWhatsapp() === enlace && (activo === this.document.body || activo === disparador)) {
+          this.document.getElementById('checkout-abrir-whatsapp')?.focus();
+        }
+      }, { injector: this.injector });
+    }
   }
 
   confirmarSalidaWhatsapp(evento: Event): void {

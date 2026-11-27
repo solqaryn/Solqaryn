@@ -367,6 +367,17 @@ test.describe('Storefront Fase 10 — responsive, UX y accesibilidad', () => {
     await page.keyboard.press('Enter');
     await expect(telefono).toBeFocused();
 
+    await telefono.fill('99999999');
+    const prepararWhatsapp = page.getByRole('button', { name: 'Preparar pedido por WhatsApp', exact: true });
+    await prepararWhatsapp.focus();
+    await page.keyboard.press('Enter');
+    const abrirWhatsapp = page.getByRole('link', { name: 'Abrir WhatsApp y continuar', exact: true });
+    await expect(abrirWhatsapp).toBeVisible();
+    await expect(abrirWhatsapp).toBeFocused();
+    await expect(abrirWhatsapp).toHaveAttribute('target', '_blank');
+    await page.keyboard.press('Tab');
+    await expect(page.getByRole('button', { name: 'Simular continuación segura', exact: true })).toBeFocused();
+
     const controles = await page.locator('.checkout-page input, .checkout-page textarea, .checkout-page button, .checkout-page .button').evaluateAll(elements =>
       elements.filter(element => {
         const rect = element.getBoundingClientRect();
