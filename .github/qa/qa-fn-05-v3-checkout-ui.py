@@ -244,7 +244,7 @@ ORDER BY ((Departamento IS NOT NULL AND TRIM(Departamento)<>'')+(Ciudad IS NOT N
             print(line,flush=True)
     if ui.returncode != 0:
         for line in ui.stderr.splitlines():
-            if re.fullmatch(r"QA_V3_UI_FAILED_STAGE=[A-Z0-9_]+",line):
+            if re.fullmatch(r"QA_V3_UI_(FAILED_STAGE|FAILURE_KIND)=[A-Z0-9_]+",line):
                 print(line,flush=True)
         raise RuntimeError("Browser certification failed; see sanitized stage")
     require("QA_V3_UI_CHECKOUT_QUOTES=PASS" in ui.stdout,"Missing browser checkout certificate")

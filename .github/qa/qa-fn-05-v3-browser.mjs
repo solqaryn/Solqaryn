@@ -76,12 +76,21 @@ async function shipping(identity,suffix,amount,viewport){
     await overflow(page);
     await expect.poll(()=>table.locator('..').evaluate(e=>e.scrollWidth<=e.clientWidth+2||['auto','scroll'].includes(getComputedStyle(e).overflowX))).toBe(true);
     mark('SHIP_TABLE_'+suffix);
-    stage='SHIP_DETAIL_'+suffix;
+    stage='SHIP_DETAIL_OPEN_'+suffix;
     await row(special).getByRole('button',{name:'Ver costo de envío '+special,exact:true}).click();
-    const detail=page.getByRole('dialog');
+    const detail=page.locator('app-consulta-registro-dialog');
     await expect(detail).toBeVisible();
-    await expect(detail).toContainText(special);
-    await page.keyboard.press('Escape');await expect(detail).toHaveCount(0);
+    stage='SHIP_DETAIL_CONTENT_'+suffix;
+    await expect(detail.getByRole('heading',{name:'Costo de envío: '+special,exact:true})).toBeVisible();
+    await expect(detail.getByText('Información de solo lectura',{exact:false})).toBeVisible();
+    const nameField=detail.locator('dl.consulta-campos > div').filter({has:detail.getByText('Nombre',{exact:true})});
+    await expect(nameField.locator('dd')).toHaveText(special);
+    stage='SHIP_DETAIL_CLOSE_POLICY_'+suffix;
+    // modalInstitucional enforces disableClose:true. Escape must not close it.
+    await page.keyboard.press('Escape');
+    await expect(detail).toBeVisible();
+    await detail.getByRole('button',{name:'Cerrar',exact:true}).click();
+    await expect(detail).toHaveCount(0);
     mark('SHIP_DETAIL_'+suffix);
     stage='SHIP_EDIT_'+suffix;
     await row(special).getByRole('button',{name:'Editar costo de envío'}).click();
@@ -151,19 +160,29 @@ async function checkout(viewport,suffix){
   });
   try{
     const page=await c.newPage();page.setDefaultTimeout(20000);
-    stage='CHECKOUT_BOOTSTRAP_'+suffix;
+    stage='CHECKOUT_BOOTSTRAP_HTTP_'+suffix;
     const bootstrap=await page.request.get(base+'/api/tienda/bootstrap');
     requireTrue(bootstrap.status()===200&&bootstrap.headers()['x-solqaryn-environment']==='QA');
-    const body=await bootstrap.json(),config=body.data.identidad;
-    requireTrue(body.success===true&&Number.isInteger(config.id));
+    stage='CHECKOUT_BOOTSTRAP_PUBLIC_CONTRACT_'+suffix;
+    const body=await bootstrap.json(),config=body.data?.identidad;
+    // TiendaIdentidadPublicaDto deliberately does not expose the internal ID.
+    // StorefrontIdentidadService overlays this DTO onto STORE_DEFAULT_CONFIG.id=0.
+    // Match the production cart-key contract without exposing any tenant ID.
+    requireTrue(body.success===true&&config&&typeof config.nombreComercial==='string'&&typeof config.moneda==='string'&&config.moneda.length===3&&!Object.hasOwn(config,'id'));
+    const storageContextId=0;
+    mark('CHECKOUT_BOOTSTRAP_'+suffix);
+    stage='CHECKOUT_EMPTY_STATE_'+suffix;
     await page.goto(base+'/tienda/checkout');
     await expect(page.getByRole('heading',{name:'Tu carrito está vacío'})).toBeVisible();
     mark('CHECKOUT_EMPTY_'+suffix);
-    await page.evaluate(({id,pid,vid})=>localStorage.setItem('storefront:carrito:v2:'+id+':bd',JSON.stringify([{productoId:pid,modeloClave:'variante:'+vid,unidades:2}])),{id:config.id,pid:spec.pid,vid:spec.vid});
+    await page.evaluate(({id,pid,vid})=>localStorage.setItem('storefront:carrito:v2:'+id+':bd',JSON.stringify([{productoId:pid,modeloClave:'variante:'+vid,unidades:2}])),{id:storageContextId,pid:spec.pid,vid:spec.vid});
+    stage='CHECKOUT_CART_REHYDRATION_'+suffix;
     const initial=page.waitForResponse(r=>scopedResponse(r,'/tienda/checkout/validar','POST',200),{timeout:30000});
     await Promise.all([initial,page.reload()]);
     await expect(page.getByRole('heading',{name:'Tu compra',exact:true})).toBeVisible();
+    stage='CHECKOUT_REAL_PRODUCT_'+suffix;
     await expect(page.locator('.summary-lines')).toContainText(spec.product);
+    mark('CHECKOUT_CART_REHYDRATED_'+suffix);
     const section=page.getByRole('region',{name:'Cobertura de envío'});
     const totals=page.locator('.totals');
     const money=value=>new Intl.NumberFormat('es-HN',{style:'currency',currency:config.moneda||'HNL'}).format(value);
@@ -173,15 +192,19 @@ async function checkout(viewport,suffix){
       for(const [field,value] of [['departamento',spec.department],['ciudad',city],['zona',spec.zone],['modalidad',spec.deliveryMode]]){
         await section.locator('input[formcontrolname="'+field+'"]').fill(value);
       }
+      stage='CHECKOUT_'+label+'_STALE_QUOTE_'+suffix;
       await expect(totals).toContainText('Por cotizar');
       await expect(page.getByText('No se puede continuar hasta cotizar el envío.',{exact:false})).toBeVisible();
       const prepare=page.getByRole('button',{name:'Preparar pedido por WhatsApp'});
       if(await prepare.count())await expect(prepare).toBeDisabled();
+      stage='CHECKOUT_'+label+'_API_'+suffix;
       const response=page.waitForResponse(r=>scopedResponse(r,'/tienda/checkout/validar','POST',200),{timeout:30000});
       await Promise.all([response,section.getByRole('button',{name:'Actualizar costo de envío'}).click()]);
       const r=await response;requireTrue(r.headers()['x-solqaryn-environment']==='QA');
       const j=await r.json(),d=j.data;
-      requireTrue(j.success===true&&d.subtotal===200&&d.costoEnvio===amount&&d.total===200+(amount??0)&&d.lineas.length===1&&d.lineas[0].productoId===spec.pid&&d.lineas[0].productoVarianteId===spec.vid&&d.lineas[0].unidades===2);
+      stage='CHECKOUT_'+label+'_SERVER_AMOUNTS_'+suffix;
+      requireTrue(j.success===true&&d.subtotal===200&&d.costoEnvio===amount&&d.total===200+(amount??0)&&d.lineas.length===1&&d.lineas[0].productoId===spec.pid&&d.lineas[0].productoVarianteId===spec.vid&&d.lineas[0].unidades===2&&d.lineas[0].precioUnitario===100&&d.lineas[0].total===200);
+      stage='CHECKOUT_'+label+'_VISIBLE_AMOUNTS_'+suffix;
       await expect(page.getByRole('heading',{name:'Tu compra',exact:true})).toBeVisible();
       if(amount===null){
         await expect(totals).toContainText('Por cotizar');
@@ -195,7 +218,8 @@ async function checkout(viewport,suffix){
         await expect.poll(async()=>norm(await grand.locator('dd').innerText())).toBe(norm(money(200+amount)));
         if(tariff){requireTrue(d.tarifaEnvio===tariff);await expect(totals).toContainText(tariff);}
       }
-      await overflow(page);mark(stage);
+      stage='CHECKOUT_'+label+'_GEOMETRY_'+suffix;
+      await overflow(page);mark('CHECKOUT_'+label+'_'+suffix);
     }
     await quote(spec.cityZero,0,spec.tariffZero,'ZERO');
     await quote(spec.cityPaid,37.25,spec.tariffPaid,'PAID');
@@ -232,5 +256,11 @@ try{
     await checkout({width:1440,height:900},'DESKTOP');
     mark('CHECKOUT_QUOTES');
   }
-}catch(error){console.error('QA_V3_UI_FAILED_STAGE='+stage);process.exitCode=1;}
+}catch(error){
+  // Do not emit error.message, stack, page content or request/response values.
+  const kind=error?.name==='TimeoutError'?'TIMEOUT':error?.matcherResult?'EXPECTATION':error instanceof TypeError?'TYPE_ERROR':'ASSERTION_OR_RUNTIME';
+  console.error('QA_V3_UI_FAILED_STAGE='+stage);
+  console.error('QA_V3_UI_FAILURE_KIND='+kind);
+  process.exitCode=1;
+}
 finally{await browser.close();}
