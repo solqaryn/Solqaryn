@@ -2,6 +2,8 @@ import { expect, Page, test } from '@playwright/test';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
 import type { RouteFixtureManifest } from './qa-route-fixtures';
+import type { ApiResponse } from '../src/app/core/models/api-response.model';
+import type { BancoLookup, MetodoPago } from '../src/app/core/models/metodo-pago.model';
 import { REQUIRED_QA_WIDTHS, RESPONSIVE_ROUTES, RESPONSIVE_VIEWPORTS } from '../src/app/testing/qa-responsive-catalog';
 export { RESPONSIVE_ROUTES, RESPONSIVE_VIEWPORTS } from '../src/app/testing/qa-responsive-catalog';
 
@@ -144,6 +146,33 @@ async function assertNavigationMode(page: Page, mobile: boolean): Promise<void> 
   }
 }
 
+// Wait for the actual browser requests, not a fixture-side catalogue read or
+// an enabled attribute that can precede NgModel/options rendering.
+async function navigateWithPaymentCatalogs(page: Page, route: string) {
+  const metodo = process.env.QA_ROUTE_FIXTURE_PAYMENT_METHOD;
+  if (!metodo) throw new Error('Falta método de pago empresarial acreditado');
+  const waitCatalog = (path: string) => page.waitForResponse(response => {
+    const url = new URL(response.url());
+    return ['localhost', '127.0.0.1'].includes(url.hostname) && url.port === '5005' &&
+      url.pathname === path && response.request().method() === 'GET';
+  }, { timeout: 10_000 });
+  const [methodsResponse, banksResponse, navigation] = await Promise.all([
+    waitCatalog('/metodos-pago/activos'),
+    waitCatalog('/metodos-pago/bancos-activos'),
+    page.goto(route, { waitUntil: 'domcontentloaded' })
+  ]);
+  expect(methodsResponse.ok(), 'HTTP catálogo de métodos de pago: ' + methodsResponse.status()).toBe(true);
+  expect(banksResponse.ok(), 'HTTP catálogo de bancos: ' + banksResponse.status()).toBe(true);
+  const methods: ApiResponse<MetodoPago[]> = await methodsResponse.json();
+  const banks: ApiResponse<BancoLookup[]> = await banksResponse.json();
+  expect(methods.success === true && Array.isArray(methods.data) &&
+    methods.data.some(item => item.activo === true && item.nombre === metodo),
+    'El catálogo recibido por el navegador debe incluir el método empresarial activo acreditado').toBe(true);
+  expect(banks.success === true && Array.isArray(banks.data),
+    'El navegador debe recibir el catálogo de bancos válido, incluso cuando esté vacío').toBe(true);
+  return navigation;
+}
+
 async function auditFirstSelectOverlay(page: Page, route: string): Promise<void> {
   const invoicePayment = /^\/facturas\/\d+\/pagos$/.test(route);
   const firstSelect = page.locator('main mat-select').first();
@@ -157,6 +186,10 @@ async function auditFirstSelectOverlay(page: Page, route: string): Promise<void>
     await expect(select, 'Método de pago de la factura en ' + route).toBeVisible();
     await expect(select, 'Catálogo de pago listo en ' + route).toBeEnabled();
     await expect(select, 'Selector de pago habilitado en ' + route).toHaveAttribute('aria-disabled', 'false');
+    // A selected value is rendered only after real active options are installed.
+    // Waiting for the value avoids clicking during the empty combobox phase.
+    await expect(select.locator('.mat-mdc-select-value-text'),
+      'Método de pago renderizado en ' + route).toHaveText(/\S/);
   }
   // On the stock edit route, physical identity is deliberately immutable.
   // Check those controls really are disabled, then exercise an editable select.
@@ -171,8 +204,21 @@ async function auditFirstSelectOverlay(page: Page, route: string): Promise<void>
   }
   // The arrow is a real pointer target of Material's combobox. Clicking the
   // center of an empty control can hit its floating label instead.
-  await select.locator('.mat-mdc-select-arrow-wrapper').click();
-  const panel = page.locator('.mat-mdc-select-panel').first();
+  let panel = page.locator('.mat-mdc-select-panel').first();
+  if (invoicePayment) {
+    // The rendered value gives the real Material trigger a stable pointer target.
+    await select.locator('.mat-mdc-select-trigger').click();
+    await expect(select, 'Combobox de pago expandido en ' + route).toHaveAttribute('aria-expanded', 'true');
+    const panelId = await select.getAttribute('aria-controls');
+    if (!panelId) throw new Error('El combobox de pago abierto no declara su panel');
+    panel = page.getByRole('listbox').and(page.locator('.mat-mdc-select-panel[id]').filter({
+      has: page.getByRole('option')
+    }));
+    await expect(panel, 'Panel exclusivo de pago en ' + route).toHaveCount(1);
+    await expect(panel, 'Relación accesible del panel de pago en ' + route).toHaveAttribute('id', panelId);
+  } else {
+    await select.locator('.mat-mdc-select-arrow-wrapper').click();
+  }
   await expect(panel, `El select no abrió panel en ${route}`).toBeVisible();
   if (invoicePayment && process.env.QA_RESPONSIVE_WIDTHS) {
     const metodo = process.env.QA_ROUTE_FIXTURE_PAYMENT_METHOD;
@@ -203,7 +249,9 @@ function assertNoRouteErrors(route: string, errors: string[]): void {
 
 async function certifyRoute(page: Page, route: string, mobile: boolean, errors: string[]): Promise<void> {
   errors.length = 0;
-  const response = await page.goto(route, { waitUntil: 'domcontentloaded' });
+  const response = process.env.QA_RESPONSIVE_WIDTHS && /^\/facturas\/\d+\/pagos$/.test(route)
+    ? await navigateWithPaymentCatalogs(page, route)
+    : await page.goto(route, { waitUntil: 'domcontentloaded' });
   expect(response?.ok(), `HTTP no válido en ${route}`).toBe(true);
   const esperado = route === '/' ? '/login' : route;
   await expect.poll(() => new URL(page.url()).pathname.replace(/\/$/, '') || '/', {
