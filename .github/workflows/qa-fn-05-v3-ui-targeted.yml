@@ -1,0 +1,130 @@
+name: QA - FN-05 V3 escritorio y administracion de envios
+on:
+  push:
+    branches: [qa]
+    paths:
+      - '.github/workflows/qa-fn-05-v3-ui-targeted.yml'
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: qa-fn-05-live-admin
+  cancel-in-progress: false
+jobs:
+  checkout:
+    name: Checkout escritorio - recotizacion y diagnostico HTTP
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == 'e4add6fdcc0258bda4225889df993d546fd19e9b'
+    runs-on: ubuntu-latest
+    environment: QA
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verificar identidad, SHA, Scope Lock y evidencia V3
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = refs/heads/qa
+          node scripts/verify-project-scope.mjs
+          git diff --exit-code 77ca9b08b971566218d3a705d69a8f30bdeec9ab HEAD -- backend frontend render.yaml scripts .agents docs/PROJECT_SCOPE_LOCK.md AGENTS.md
+          for run in 46002652072 46002652115; do
+            gh api "repos/solqaryn/Solqaryn/actions/runs/$run" | jq -e '.head_sha == "77ca9b08b971566218d3a705d69a8f30bdeec9ab" and .head_branch == "qa" and .status == "completed" and .conclusion == "success"' >/dev/null
+          done
+          # Preserve the successful catalog certificate; rerun only the two failed UI jobs.
+          gh api repos/solqaryn/Solqaryn/actions/jobs/140568205262 | jq -e '.run_id == 46016571272 and .head_sha == "11089e1a84715dbdc83dcaca8522dc0eb8cac148" and .conclusion == "success"' >/dev/null
+          git diff --exit-code 11089e1a84715dbdc83dcaca8522dc0eb8cac148 HEAD -- .github/qa/qa-fn-05-v3-catalogs-live.py
+          python3 -m py_compile .github/qa/qa-fn-05-v3-shipping-ui.py .github/qa/qa-fn-05-v3-checkout-ui.py
+          # Prior mobile checkpoints and failure provenance: exact run and SHA.
+          gh api repos/solqaryn/Solqaryn/actions/jobs/140574278095 | jq -e '.run_id == 46019247592 and .head_sha == "e4add6fdcc0258bda4225889df993d546fd19e9b" and .conclusion == "failure"' >/dev/null
+          node --check .github/qa/qa-fn-05-v3-browser.mjs
+          echo QA_V3_LIVE_CAUSAL_SCOPE=PASS
+      - name: Instalar cliente MySQL y BCrypt
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y mysql-client apache2-utils
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Preparar navegador Chromium
+        working-directory: frontend
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Validacion viva QA con esquema V3 y fixtures aislados
+        env:
+          EXPECTED_DEPLOYED_SHA: '77ca9b08b971566218d3a705d69a8f30bdeec9ab'
+          DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
+          DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
+          DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}
+          DB_USER: ${{ vars.SOLQARYN_QA_DB_USER }}
+          DB_PASSWORD: ${{ secrets.SOLQARYN_QA_DB_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 .github/qa/qa-commercial-schema-v3.py --live
+          QA_V3_CHECKOUT_VIEWPORT=desktop python3 .github/qa/qa-fn-05-v3-checkout-ui.py
+  shipping:
+    name: Envios UI autenticada y predeterminado A/B
+    needs: checkout
+    if: always() && !cancelled() && github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == 'e4add6fdcc0258bda4225889df993d546fd19e9b'
+    runs-on: ubuntu-latest
+    environment: QA
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verificar identidad, SHA, Scope Lock y evidencia V3
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = refs/heads/qa
+          node scripts/verify-project-scope.mjs
+          git diff --exit-code 77ca9b08b971566218d3a705d69a8f30bdeec9ab HEAD -- backend frontend render.yaml scripts .agents docs/PROJECT_SCOPE_LOCK.md AGENTS.md
+          for run in 46002652072 46002652115; do
+            gh api "repos/solqaryn/Solqaryn/actions/runs/$run" | jq -e '.head_sha == "77ca9b08b971566218d3a705d69a8f30bdeec9ab" and .head_branch == "qa" and .status == "completed" and .conclusion == "success"' >/dev/null
+          done
+          # Preserve the successful catalog certificate; rerun only the two failed UI jobs.
+          gh api repos/solqaryn/Solqaryn/actions/jobs/140568205262 | jq -e '.run_id == 46016571272 and .head_sha == "11089e1a84715dbdc83dcaca8522dc0eb8cac148" and .conclusion == "success"' >/dev/null
+          git diff --exit-code 11089e1a84715dbdc83dcaca8522dc0eb8cac148 HEAD -- .github/qa/qa-fn-05-v3-catalogs-live.py
+          python3 -m py_compile .github/qa/qa-fn-05-v3-shipping-ui.py .github/qa/qa-fn-05-v3-checkout-ui.py
+          # Prior mobile checkpoints and failure provenance: exact run and SHA.
+          gh api repos/solqaryn/Solqaryn/actions/jobs/140574278095 | jq -e '.run_id == 46019247592 and .head_sha == "e4add6fdcc0258bda4225889df993d546fd19e9b" and .conclusion == "failure"' >/dev/null
+          node --check .github/qa/qa-fn-05-v3-browser.mjs
+          echo QA_V3_LIVE_CAUSAL_SCOPE=PASS
+      - name: Instalar cliente MySQL y BCrypt
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y mysql-client apache2-utils
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Preparar navegador Chromium
+        working-directory: frontend
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Validacion viva QA con esquema V3 y fixtures aislados
+        env:
+          EXPECTED_DEPLOYED_SHA: '77ca9b08b971566218d3a705d69a8f30bdeec9ab'
+          DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
+          DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
+          DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}
+          DB_USER: ${{ vars.SOLQARYN_QA_DB_USER }}
+          DB_PASSWORD: ${{ secrets.SOLQARYN_QA_DB_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 .github/qa/qa-commercial-schema-v3.py --live
+          python3 .github/qa/qa-fn-05-v3-shipping-ui.py

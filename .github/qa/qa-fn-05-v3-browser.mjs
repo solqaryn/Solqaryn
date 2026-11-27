@@ -34,7 +34,56 @@ async function login(page,identity){
 }
 function scopedResponse(response,path,method,expected,tenant){
   const url=new URL(response.url());
-  return url.origin===base&&url.pathname===('/api'+path)&&response.request().method()===method&&response.status()===expected&&(!tenant||response.request().headers()['x-empresa-id']===String(tenant));
+  return url.origin===base&&url.pathname===('/api'+path)&&response.request().method()===method&&(expected==null||response.status()===expected)&&(!tenant||response.request().headers()['x-empresa-id']===String(tenant));
+}
+function observeQuoteTraffic(page,label){
+  // Emit only a fixed endpoint label and status; never URL parameters, headers or bodies.
+  function pathKind(req){
+    if(req.method()!=='POST')return null;
+    const url=new URL(req.url());
+    if(url.origin!==base)return null;
+    return ({'/api/tienda/productos/contexto':'CONTEXT','/api/tienda/checkout/validar':'QUOTE'})[url.pathname]||null;
+  }
+  page.on('response',r=>{const kind=pathKind(r.request());if(kind)console.log('QA_V3_UI_HTTP_'+kind+'_'+label()+'='+r.status());});
+  page.on('requestfailed',r=>{const kind=pathKind(r);if(kind)console.log('QA_V3_UI_REQUEST_FAILED_'+kind+'_'+label());});
+}
+async function liveQuote(page,action,label,suffix,allowRateRetry){
+  // Both calls are part of prepararCheckout; an unsuccessful product-context
+  // response prevents the validation POST. Observe either status, not just HTTP 200.
+  for(let attempt=0;attempt<(allowRateRetry?2:1);attempt++){
+    stage='CHECKOUT_'+label+'_CONTEXT_'+suffix;
+    const context=page.waitForResponse(r=>scopedResponse(r,'/tienda/productos/contexto','POST',null),{timeout:45000});
+    const quote=page.waitForResponse(r=>scopedResponse(r,'/tienda/checkout/validar','POST',null),{timeout:65000}).then(response=>({response}),error=>({error}));
+    await action();
+    const cr=await context;
+    let response=cr;
+    if(cr.status()===200){
+      stage='CHECKOUT_'+label+'_QUOTE_'+suffix;
+      const result=await quote;
+      if(result.error)throw result.error;
+      response=result.response;
+    }
+    stage='CHECKOUT_'+label+'_HTTP_'+suffix;
+    if(response.status()===429&&attempt===0&&allowRateRetry){
+      // A real 429, not a generic timeout: respect the existing fixed one-minute
+      // window, verify the UI enters its explicit error state and retry once via UI.
+      const retry=page.getByRole('button',{name:'Reintentar validación',exact:true});
+      await expect(retry).toBeVisible();
+      await expect(page.locator('.totals')).toHaveCount(0);
+      const header=response.headers()['retry-after'];
+      const seconds=header&&/^\d+$/.test(header)?Number(header):60;
+      requireTrue(Number.isSafeInteger(seconds)&&seconds<=120);
+      console.log('QA_V3_UI_RATE_LIMIT_OBSERVED_'+label+'_'+suffix);
+      await new Promise(resolve=>setTimeout(resolve,Math.max(65,seconds+2)*1000));
+      // Avoid a stale waiter from the rejected context request.
+      await quote;
+      action=()=>retry.click();
+      continue;
+    }
+    requireTrue(cr.status()===200&&response.status()===200&&response.headers()['x-solqaryn-environment']==='QA');
+    return response;
+  }
+  throw new Error('Quote retry exhausted');
 }
 async function shipping(identity,suffix,amount,viewport){
   const c=await context(viewport);
@@ -81,10 +130,20 @@ async function shipping(identity,suffix,amount,viewport){
     const detail=page.locator('app-consulta-registro-dialog');
     await expect(detail).toBeVisible();
     stage='SHIP_DETAIL_CONTENT_'+suffix;
+    stage='SHIP_DETAIL_TITLE_'+suffix;
     await expect(detail.getByRole('heading',{name:'Costo de envío: '+special,exact:true})).toBeVisible();
-    await expect(detail.getByText('Información de solo lectura',{exact:false})).toBeVisible();
-    const nameField=detail.locator('dl.consulta-campos > div').filter({has:detail.getByText('Nombre',{exact:true})});
+    stage='SHIP_DETAIL_READONLY_'+suffix;
+    await expect(detail.locator('p.consulta-nota')).toContainText('Información de solo lectura');
+    stage='SHIP_DETAIL_NAME_'+suffix;
+    // The inner locator of has is evaluated RELATIVE to each candidate div.
+    // Do not reuse detail.getByText here: that would search for another dialog inside the div.
+    const nameField=detail.locator('dl.consulta-campos > div').filter({has:page.locator('dt').filter({hasText:/^Nombre$/})});
+    await expect(nameField).toHaveCount(1);
     await expect(nameField.locator('dd')).toHaveText(special);
+    stage='SHIP_DETAIL_PRICE_'+suffix;
+    const priceField=detail.locator('dl.consulta-campos > div').filter({has:page.locator('dt').filter({hasText:/^Monto \(HNL\)$/})});
+    await expect(priceField).toHaveCount(1);
+    await expect(priceField.locator('dd')).toHaveText(String(amount+5));
     stage='SHIP_DETAIL_CLOSE_POLICY_'+suffix;
     // modalInstitucional enforces disableClose:true. Escape must not close it.
     await page.keyboard.press('Escape');
@@ -141,11 +200,21 @@ async function shipping(identity,suffix,amount,viewport){
     await row(special).getByRole('button',{name:'Eliminar costo de envío'}).click();
     const del=page.waitForResponse(r=>scopedResponse(r,'/costos-envio/'+sid,'DELETE',200,identity.tenant),{timeout:30000});
     await Promise.all([del,page.getByRole('dialog').getByRole('button',{name:'Eliminar',exact:true}).click()]);
+    // Require the refreshed table, not its transient absence while loading.
+    await expect(row(def)).toHaveCount(1);
     await expect(row(special)).toHaveCount(0);
     requireTrue(deletes===1);
+    stage='SHIP_DEFAULT_PROTECTION_'+suffix;
+    let defaultWrites=0;
+    page.on('request',r=>{if(['DELETE','PATCH'].includes(r.method())&&new URL(r.url()).pathname.startsWith('/api/costos-envio/'+did))defaultWrites++;});
     await row(def).getByRole('button',{name:'Desactivar costo de envío'}).click();
     await expect(page.getByRole('alert')).toContainText('predeterminada');
     await expect(row(def)).toContainText('Vigente');
+    await row(def).getByRole('button',{name:'Eliminar costo de envío'}).click();
+    await expect(page.getByRole('alert')).toContainText('predeterminada');
+    await expect(row(def)).toHaveCount(1);
+    await expect(page.locator('app-alert-dialog')).toHaveCount(0);
+    requireTrue(defaultWrites===0);
     await overflow(page);
     mark('SHIP_CRUD_DEFAULT_'+suffix);
   } finally {await c.close();}
@@ -160,6 +229,8 @@ async function checkout(viewport,suffix){
   });
   try{
     const page=await c.newPage();page.setDefaultTimeout(20000);
+    let trafficLabel='BOOTSTRAP_'+suffix;
+    observeQuoteTraffic(page,()=>trafficLabel);
     stage='CHECKOUT_BOOTSTRAP_HTTP_'+suffix;
     const bootstrap=await page.request.get(base+'/api/tienda/bootstrap');
     requireTrue(bootstrap.status()===200&&bootstrap.headers()['x-solqaryn-environment']==='QA');
@@ -177,8 +248,8 @@ async function checkout(viewport,suffix){
     mark('CHECKOUT_EMPTY_'+suffix);
     await page.evaluate(({id,pid,vid})=>localStorage.setItem('storefront:carrito:v2:'+id+':bd',JSON.stringify([{productoId:pid,modeloClave:'variante:'+vid,unidades:2}])),{id:storageContextId,pid:spec.pid,vid:spec.vid});
     stage='CHECKOUT_CART_REHYDRATION_'+suffix;
-    const initial=page.waitForResponse(r=>scopedResponse(r,'/tienda/checkout/validar','POST',200),{timeout:30000});
-    await Promise.all([initial,page.reload()]);
+    trafficLabel='INITIAL_'+suffix;
+    await liveQuote(page,()=>page.reload(), 'INITIAL',suffix,false);
     await expect(page.getByRole('heading',{name:'Tu compra',exact:true})).toBeVisible();
     stage='CHECKOUT_REAL_PRODUCT_'+suffix;
     await expect(page.locator('.summary-lines')).toContainText(spec.product);
@@ -197,10 +268,8 @@ async function checkout(viewport,suffix){
       await expect(page.getByText('No se puede continuar hasta cotizar el envío.',{exact:false})).toBeVisible();
       const prepare=page.getByRole('button',{name:'Preparar pedido por WhatsApp'});
       if(await prepare.count())await expect(prepare).toBeDisabled();
-      stage='CHECKOUT_'+label+'_API_'+suffix;
-      const response=page.waitForResponse(r=>scopedResponse(r,'/tienda/checkout/validar','POST',200),{timeout:30000});
-      await Promise.all([response,section.getByRole('button',{name:'Actualizar costo de envío'}).click()]);
-      const r=await response;requireTrue(r.headers()['x-solqaryn-environment']==='QA');
+      trafficLabel=label+'_'+suffix;
+      const r=await liveQuote(page,()=>section.getByRole('button',{name:'Actualizar costo de envío'}).click(),label,suffix,true);
       const j=await r.json(),d=j.data;
       stage='CHECKOUT_'+label+'_SERVER_AMOUNTS_'+suffix;
       requireTrue(j.success===true&&d.subtotal===200&&d.costoEnvio===amount&&d.total===200+(amount??0)&&d.lineas.length===1&&d.lineas[0].productoId===spec.pid&&d.lineas[0].productoVarianteId===spec.vid&&d.lineas[0].unidades===2&&d.lineas[0].precioUnitario===100&&d.lineas[0].total===200);
@@ -252,9 +321,10 @@ try{
     await shipping(spec.b,'B',37.25,{width:1440,height:900});
     mark('SHIPPING_AB');
   }else{
-    await checkout({width:390,height:844},'MOBILE');
+    if(spec.viewportMode!=='desktop'&&spec.viewportMode!=='both')throw new Error('Invalid viewport mode');
+    if(spec.viewportMode==='both')await checkout({width:390,height:844},'MOBILE');
     await checkout({width:1440,height:900},'DESKTOP');
-    mark('CHECKOUT_QUOTES');
+    mark(spec.viewportMode==='desktop'?'CHECKOUT_DESKTOP_QUOTES':'CHECKOUT_QUOTES');
   }
 }catch(error){
   // Do not emit error.message, stack, page content or request/response values.

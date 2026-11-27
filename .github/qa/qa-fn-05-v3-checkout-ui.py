@@ -234,20 +234,23 @@ AND (Ciudad IS NULL OR TRIM(Ciudad)='' OR LOWER(TRIM(Ciudad))=LOWER('{cx}'))
 AND (Zona IS NULL OR TRIM(Zona)='' OR LOWER(TRIM(Zona))=LOWER('{z}'))
 AND (Modalidad IS NULL OR TRIM(Modalidad)='' OR LOWER(TRIM(Modalidad))=LOWER('{mode}'))
 ORDER BY ((Departamento IS NOT NULL AND TRIM(Departamento)<>'')+(Ciudad IS NOT NULL AND TRIM(Ciudad)<>'')+(Zona IS NOT NULL AND TRIM(Zona)<>'')+(Modalidad IS NOT NULL AND TRIM(Modalidad)<>'')) DESC,Prioridad,Id LIMIT 1;""","independent coverage fallback")
-    spec={"mode":"checkout","base":"https://solqarynqa-nu.vercel.app","pid":pid,"vid":vid,"product":pa,
+    viewport_mode=os.environ.get("QA_V3_CHECKOUT_VIEWPORT","both")
+    require(viewport_mode in ("both","desktop"),"Unexpected checkout viewport")
+    spec={"mode":"checkout","viewportMode":viewport_mode,"base":"https://solqarynqa-nu.vercel.app","pid":pid,"vid":vid,"product":pa,
           "department":d,"cityZero":c0,"cityPaid":c1,"cityOther":cx,"zone":z,"deliveryMode":mode,
           "tariffZero":t0,"tariffPaid":t1,"fallback":float(Decimal(fallback)) if fallback else None}
     ui_env={k:v for k,v in os.environ.items() if k not in ("DB_HOST","DB_PORT","DB_NAME","DB_USER","DB_PASSWORD","BACKUP_PASSPHRASE","MYSQL_PWD","GH_TOKEN","GITHUB_TOKEN","ConnectionStrings__DefaultConnection")}
-    ui=subprocess.run(["node",".github/qa/qa-fn-05-v3-browser.mjs"],input=json.dumps(spec),text=True,capture_output=True,timeout=360,env=ui_env)
+    ui=subprocess.run(["node",".github/qa/qa-fn-05-v3-browser.mjs"],input=json.dumps(spec),text=True,capture_output=True,timeout=600,env=ui_env)
     for line in ui.stdout.splitlines():
-        if re.fullmatch(r"QA_V3_UI_[A-Z0-9_]+=PASS|QA_V3_UI_WHATSAPP_NOT_CONFIGURED|QA_V3_UI_NO_COVERAGE_NOT_PRESENT",line):
+        if re.fullmatch(r"QA_V3_UI_[A-Z0-9_]+=PASS|QA_V3_UI_WHATSAPP_NOT_CONFIGURED|QA_V3_UI_NO_COVERAGE_NOT_PRESENT|QA_V3_UI_HTTP_(CONTEXT|QUOTE)_[A-Z0-9_]+=[1-5][0-9]{2}|QA_V3_UI_REQUEST_FAILED_(CONTEXT|QUOTE)_[A-Z0-9_]+|QA_V3_UI_RATE_LIMIT_OBSERVED_[A-Z0-9_]+",line):
             print(line,flush=True)
     if ui.returncode != 0:
         for line in ui.stderr.splitlines():
             if re.fullmatch(r"QA_V3_UI_(FAILED_STAGE|FAILURE_KIND)=[A-Z0-9_]+",line):
                 print(line,flush=True)
         raise RuntimeError("Browser certification failed; see sanitized stage")
-    require("QA_V3_UI_CHECKOUT_QUOTES=PASS" in ui.stdout,"Missing browser checkout certificate")
+    expected_marker="QA_V3_UI_CHECKOUT_DESKTOP_QUOTES=PASS" if viewport_mode=="desktop" else "QA_V3_UI_CHECKOUT_QUOTES=PASS"
+    require(expected_marker in ui.stdout,"Missing browser checkout certificate")
     require(n(f"SELECT COUNT(*) FROM ExistenciasVariante WHERE EmpresaId={owner} AND ProductoVarianteId={vid} AND StockFisico=3 AND StockReservado=0 AND StockTransito=0;","quote non-mutating stock")==1,"Quote mutated stock")
     require(store()[0]==owner,"Public storefront authority changed")
     print("QA_V3_CHECKOUT_BROWSER_REAL_QUOTE=PASS",flush=True)
@@ -271,4 +274,4 @@ COMMIT;""","remove only run-owned checkout fixtures")
             require(n(f"SELECT COUNT(*) FROM {table} WHERE {field} IN ({literal});","fixture cleanup "+table)==0,"Fixture cleanup not verified")
         require(store()[0]==owner,"Storefront ownership changed during cleanup")
         print("QA_CHECKOUT_FIXTURES_REMOVED=PASS",flush=True)
-print("QA_V3_CHECKOUT_VISUAL_CERTIFICATE=PASS",flush=True)
+print("QA_V3_CHECKOUT_DESKTOP_CERTIFICATE=PASS" if viewport_mode=="desktop" else "QA_V3_CHECKOUT_VISUAL_CERTIFICATE=PASS",flush=True)
