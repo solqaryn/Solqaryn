@@ -92,7 +92,38 @@ public sealed class QaCommercialOwnershipV3MySqlTests
                 return(c.Id,discount.Id,tax.Id,count.Id,statement.Id,finance.Id);
             }
             var aa=await Create(a,warehouseA);var bb=await Create(b,warehouseB);
-            accessor.HttpContext!.Items["SOLQARYN_AUTHORIZED_EMPRESA_ID"]=a;
+
+            // The operational catalogue must work with verified membership
+            // read scope alone, without granting an administrative write scope.
+            accessor.HttpContext!.Items.Remove("SOLQARYN_AUTHORIZED_EMPRESA_ID");
+            var readKey = AppDbContext.AuthorizedCommercialReadEmpresaItemKey;
+            accessor.HttpContext.Items[readKey] = a;
+            List<int> methodIdsA;
+            await using (var readA = new AppDbContext(options, httpContextAccessor: accessor))
+            {
+                var methods = await new MetodoPagoRepository(readA).GetActivosAsync();
+                Assert.Equal(4, methods.Count);
+                Assert.All(methods, method => Assert.True(method.Activo && !method.Eliminado));
+                methodIdsA = methods.Select(method => method.Id).ToList();
+                Assert.Null(readA.AuthorizedEmpresaId);
+                Assert.Null(readA.CommercialWriteEmpresaId);
+                Assert.False(readA.CommercialPrivateWriteAuthorized);
+                readA.Add(new MetodoPagoCatalogo { Codigo = "READ_ONLY_DENIED", Nombre = "No autorizado", Tipo = "Efectivo" });
+                await Assert.ThrowsAsync<ForbiddenAccessException>(() => readA.SaveChangesAsync());
+            }
+            accessor.HttpContext.Items[readKey] = b;
+            await using (var readB = new AppDbContext(options, httpContextAccessor: accessor))
+            {
+                var methods = await new MetodoPagoRepository(readB).GetActivosAsync();
+                Assert.Equal(4, methods.Count);
+                Assert.All(methods, method => Assert.DoesNotContain(method.Id, methodIdsA));
+                Assert.Null(await new MetodoPagoRepository(readB).GetByIdAsync(methodIdsA[0]));
+            }
+            accessor.HttpContext.Items.Remove(readKey);
+            await using (var noRead = new AppDbContext(options, httpContextAccessor: accessor))
+                Assert.Empty(await new MetodoPagoRepository(noRead).GetActivosAsync());
+
+            accessor.HttpContext.Items["SOLQARYN_AUTHORIZED_EMPRESA_ID"]=a;
             await using (var read=new AppDbContext(options,httpContextAccessor:accessor))
             {
                 Assert.Null(await new CategoriaRepository(read).GetByIdAsync(bb.Category));

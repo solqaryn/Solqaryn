@@ -18,6 +18,9 @@ public class AppDbContext : DbContext
     // Only internal verified authority, never the raw X-Empresa-Id header.
     public const string PublicStoreTenantItemKey = "SOLQARYN_QA_PUBLIC_STORE_EMPRESA_ID";
     private const string AuthorizedTenantItemKey = "SOLQARYN_AUTHORIZED_EMPRESA_ID";
+    // Read-only lookups authenticated by a verified company membership. This
+    // marker never participates in AuthorizedEmpresaId or write authorization.
+    public const string AuthorizedCommercialReadEmpresaItemKey = "SOLQARYN_AUTHORIZED_EMPRESA_READ_ID";
     // API-created contexts without a request also fail closed. Explicitly constructed
     // maintenance/test contexts without an accessor remain available offline.
     public bool CommercialRequestRequiresTenant => _http is not null;
@@ -27,6 +30,7 @@ public class AppDbContext : DbContext
         return items is not null && items.TryGetValue(key, out var value) && value is int id && id > 0 ? id : null;
     }
     public int? CommercialReadEmpresaId => ContextId(AuthorizedTenantItemKey) ??
+        ContextId(AuthorizedCommercialReadEmpresaItemKey) ??
         ContextId(PublicStoreTenantItemKey) ?? _publicInvoiceEmpresaId;
     public int? AuthorizedEmpresaId => ContextId(AuthorizedTenantItemKey);
     public bool CommercialPrivateWriteAuthorized => AuthorizedEmpresaId.HasValue;

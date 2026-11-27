@@ -389,13 +389,18 @@ export async function prepareRouteFixtures(): Promise<void> {
         bind('/notas-credito-proveedor/1/editar', '/notas-credito-proveedor/' + id + '/editar');
       });
     });
-    // Configuración real de la empresa desechable, después de los documentos comerciales.
+    // The existing legacy costing policy requires the active invoice configuration.
+    // Initialize it via its canonical API in the disposable database rather than
+    // implicitly depending on successful confirmation of a previous sale.
     await family(families.costeo, async () => {
+      const configuracion = await call('/empresa-configuracion/publica');
+      const configuracionId = idOf(configuracion);
       const politica = await call('/costeo-inventario/politica-vigente', 'PUT', {
         metodo: 1, motivo: 'Política representativa de QA aislado'
       });
       const vigente = await call('/costeo-inventario/politica-vigente');
       if (idOf(vigente) !== idOf(politica) || vigente.estaVigente !== true ||
+          Number(vigente.empresaConfiguracionId) !== configuracionId ||
           (vigente.metodo !== 1 && vigente.metodo !== 'PromedioPonderado')) {
         throw new Error('Política de costeo no acreditada');
       }
