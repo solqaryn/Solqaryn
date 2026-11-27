@@ -1,3 +1,7 @@
+## 2026-11-26 — QA-FN-05: ensayo fisico candidato V3 sobre copia restaurada
+
+- Alcance exclusivo QA. Manifest residual de 26 tablas con columna nueva, una galeria conservada con referencia verificada nullable para legado, 48 relaciones compuestas adicionales y 11 claves naturales por empresa. Ensayo sobre respaldo transaccional cifrado restaurado en MySQL loopback desechable, conservacion de hashes de columnas originales, IAM, conteos y FKs, casos SQL A/B de galeria, descuento e impuesto. No aplica DDL al origen ni crea marcador EF. Los controles de aplicacion, filtros, referencias polimorficas, provisiones de catalogos, snapshot y nueva migracion permanecen pendientes. Evidencia causal pendiente; sin cambios de runtime, DEV, MAIN ni infraestructura. MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-26 — QA-FN-05: prueba viva dirigida de tarifas
 
 - Autorizacion expresa exclusiva QA del propietario. Render personal LIVE 7ef2a818; Vercel personal READY 4b5bf096 (equivalencia de codigo funcional). Nuevo gate ejecuta Scope Lock propio de QA, verifica equivalencia de fuentes desplegadas, esquema V2 y CRUD/aislamiento A/B de envios con identidades sinteticas y revocacion en finally. Sin cambio de runtime, migraciones, DEV, MAIN, infraestructura o IAM existente. Resultado pendiente hasta logs y verificacion Render posterior; no declara cierre de checkout publico ni propiedad residual. MAPA_ARQUITECTURA: SIN_CAMBIO.
