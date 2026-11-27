@@ -1,0 +1,114 @@
+"""Read-only comparison of authorized QA source with the locally restored V3 baseline. No mutations."""
+import hashlib
+import json
+import os
+import pathlib
+import re
+import secrets
+import subprocess
+import sys
+
+def require(ok, reason):
+    if not ok:
+        raise RuntimeError(reason)
+
+require(os.environ.get("CI")=="true" and os.environ.get("GITHUB_REF")=="refs/heads/qa","QA-only rehearsal")
+require(sys.argv[1:] in (["source-baseline"],["source-after"]), "Explicit source comparison required")
+require(os.environ.get("GITHUB_REPOSITORY")=="solqaryn/Solqaryn" and os.environ.get("GITHUB_RUN_ATTEMPT")=="1","QA rollout only")
+require(os.environ.get("DB_HOST")=="solqaryn-mysql-solqaryn.h.aivencloud.com" and os.environ.get("DB_PORT")=="14402" and os.environ.get("DB_NAME")=="solqaryn_qa" and os.environ.get("DB_USER")=="solqaryn_qa_user","QA binding mismatch")
+db="solqaryn_qa"
+password=os.environ.get("DB_PASSWORD")
+require(bool(password),"QA authentication required")
+env={k:v for k,v in os.environ.items() if k not in ("BACKUP_PASSPHRASE","MYSQL_PWD")}
+env["MYSQL_PWD"]=password
+args=["mysql","--protocol=TCP","--ssl-mode=REQUIRED","--connect-timeout=12","--init-command=SET SESSION TRANSACTION READ ONLY","-h",os.environ["DB_HOST"],"-P","14402","-u","solqaryn_qa_user","--batch","--raw","--skip-column-names",db]
+def run(sql, label, expected=None):
+    p=subprocess.run(args,input=sql,text=True,capture_output=True,env=env,timeout=90)
+    if expected is not None:
+        m=re.search(r"ERROR ([0-9]+)",p.stderr)
+        require(p.returncode!=0 and m and int(m.group(1)) in expected,label+": expected rejection not observed")
+        return []
+    if p.returncode:
+        m=re.search(r"ERROR ([0-9]+)",p.stderr)
+        raise RuntimeError(label+": SQL error "+(m.group(1) if m else "unknown"))
+    return p.stdout.splitlines()
+def scalar(sql,label):
+    rows=run(sql,label)
+    require(len(rows)==1,label+": expected one row")
+    return rows[0]
+def q(v):
+    require(re.fullmatch(r"[A-Za-z0-9_]+",v) is not None,"Invalid identifier")
+    return "\x60"+v+"\x60"
+def cols(xs): return ", ".join(q(x) for x in xs)
+require(scalar("SELECT DATABASE()","target DB")==db,"Wrong database")
+require(scalar("SELECT SUBSTRING_INDEX(CURRENT_USER(),'@',1)","target user")=="solqaryn_qa_user","Wrong user")
+require(re.fullmatch(r"8\.4\.11(?:-.*)?",scalar("SELECT VERSION()","target version")) is not None,"Wrong MySQL version")
+m=json.loads(pathlib.Path(".github/qa/qa-commercial-v3-ef-manifest.json").read_text())
+tables=m["tableNames"]
+edges=m["edges"]+[m["gallery"]]
+require(len(set(tables))==29 and len(edges)==52 and len(m["keys"])==12 and len(m["triggers"])==10,"Manifest mismatch")
+def columns(t):
+    return run(f"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='{t}' ORDER BY ORDINAL_POSITION","columns "+t)
+def names():
+    return run("SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME","tables")
+def fingerprint(t,c,where=""):
+    projection=", ".join(f"IF({q(x)} IS NULL,'N',CONCAT('V',HEX(CAST({q(x)} AS BINARY))))" for x in c)
+    rows=run(f"SELECT {projection} FROM {q(t)} {where}","fingerprint "+t)
+    return [len(rows),hashlib.sha256(("\n".join(sorted(rows))+"\n").encode()).hexdigest()]
+def fks():
+    return sorted(run("SELECT CONCAT(k.TABLE_NAME,'|',k.CONSTRAINT_NAME,'|',k.COLUMN_NAME,'|',k.REFERENCED_TABLE_NAME,'|',k.REFERENCED_COLUMN_NAME,'|',r.DELETE_RULE,'|',r.UPDATE_RULE) FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE k JOIN INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS r ON r.CONSTRAINT_SCHEMA=k.CONSTRAINT_SCHEMA AND r.TABLE_NAME=k.TABLE_NAME AND r.CONSTRAINT_NAME=k.CONSTRAINT_NAME WHERE k.TABLE_SCHEMA=DATABASE() AND k.REFERENCED_TABLE_NAME IS NOT NULL","FK topology"))
+def index(t,ix,c,unique):
+    actual=run(f"SELECT COLUMN_NAME,NON_UNIQUE FROM INFORMATION_SCHEMA.STATISTICS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='{t}' AND INDEX_NAME='{ix}' ORDER BY SEQ_IN_INDEX","index "+ix)
+    require(actual==[x+"\t"+("0" if unique else "1") for x in c],"Index mismatch "+ix)
+def fk(t,name,c,parent,pc,cascade=False):
+    actual=run(f"SELECT COLUMN_NAME,REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='{t}' AND CONSTRAINT_NAME='{name}' ORDER BY ORDINAL_POSITION","FK "+name)
+    require(actual==[f"{a}\t{parent}\t{b}" for a,b in zip(c,pc)],"FK mismatch "+name)
+    rule=scalar(f"SELECT DELETE_RULE FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME='{t}' AND CONSTRAINT_NAME='{name}'","delete rule")
+    require(rule=="CASCADE" if cascade else rule in ("RESTRICT","NO ACTION"),"Delete rule mismatch "+name)
+fp=pathlib.Path(os.environ["RUNNER_TEMP"])/"qa-v3-fingerprints.json"
+if sys.argv[1]=="source-baseline":
+    orig=json.loads(fp.read_text())
+    require(names()==sorted(orig["columns"]), "Source/restore table set mismatch")
+    require(scalar("SELECT COUNT(*) FROM __EFMigrationsHistory","history")=="111","Source history mismatch")
+    require(scalar("SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261126211000_QaCommercialOwnershipV2'","V2 marker")=="1","V2 marker missing")
+    require(scalar("SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261126223000_QaCommercialOwnershipV3'","V3 marker")=="0","V3 already recorded")
+    for t,c in orig["columns"].items():
+        require(columns(t)==c, "Source column drift "+t)
+        require(fingerprint(t,c)==orig["data"][t], "Source historical data drift "+t)
+    require(fks()==orig["fks"], "Source FK drift")
+    require(scalar("SELECT COUNT(*) FROM INFORMATION_SCHEMA.PROCESSLIST WHERE DB=DATABASE() AND ID<>CONNECTION_ID()","other source sessions")=="0","Concurrent QA sessions detected; refuse migration")
+    print("QA_V3_SOURCE_MATCHES_RESTORED_BACKUP=PASS historical_rows_and_iam=identical other_sessions=0",flush=True)
+
+else:
+    orig=json.loads(fp.read_text())
+    require(names()==sorted(orig["columns"]),"Table set drift")
+    require(scalar("SELECT COUNT(*) FROM __EFMigrationsHistory","history")=="112","Unexpected history")
+    require(scalar("SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261126223000_QaCommercialOwnershipV3'","V3 marker")=="1","Migration missing")
+    for t,c in orig["columns"].items():
+        where=""
+        if t in ("TipoClientes","MetodosPago"):
+            where="WHERE EmpresaId IS NULL"
+        elif t=="__EFMigrationsHistory":
+            where="WHERE MigrationId<>'20261126223000_QaCommercialOwnershipV3'"
+        require(fingerprint(t,c,where)==orig["data"][t],"Historical data changed "+t)
+    require(set(orig["fks"])<=set(fks()),"Original FK drift")
+    for t in tables:
+        require(scalar(f"SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='{t}' AND COLUMN_NAME='EmpresaId' AND IS_NULLABLE='YES' AND DATA_TYPE='int'","owner "+t)=="1","Owner mismatch "+t)
+        index(t,"UX_QAC3_"+t+"_OwnerId",["EmpresaId","Id"],True)
+        fk(t,"FK_QAC3_"+t+"_Empresa",["EmpresaId"],"Empresas",["Id"])
+        if t not in ("TipoClientes","MetodosPago"):
+            require(scalar(f"SELECT COUNT(*) FROM {q(t)} WHERE EmpresaId IS NOT NULL","legacy "+t)=="0","Legacy owner inferred "+t)
+    for e in edges:
+        index(e["child"],e["ix"],e["cc"],False)
+        fk(e["child"],e["fk"],e["cc"],e["parent"],e["pp"],e["cascade"])
+    for k in m["extra"]:
+        index(k["table"],k["index"],k["cols"],True)
+    for k in m["keys"]:
+        index(k["table"],k["index"],["EmpresaUnicidad"]+k["cols"],True)
+        require(scalar(f"SELECT COUNT(*) FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='{k['table']}' AND COLUMN_NAME='EmpresaUnicidad' AND EXTRA LIKE '%STORED GENERATED%' AND IS_NULLABLE='NO'","scope column")=="1","Scope column mismatch")
+    for t in m["triggers"]:
+        require(scalar(f"SELECT COUNT(*) FROM INFORMATION_SCHEMA.TRIGGERS WHERE TRIGGER_SCHEMA=DATABASE() AND TRIGGER_NAME='{t['name']}' AND EVENT_OBJECT_TABLE='{t['table']}' AND EVENT_MANIPULATION='{t['action']}' AND ACTION_TIMING='BEFORE'","trigger "+t["name"])=="1","Missing trigger")
+    require(scalar("SELECT COUNT(*) FROM CategoriasGalerias WHERE CategoriaVerificadaId IS NOT NULL","gallery quarantine")=="0","Historical gallery inferred")
+    require(scalar("SELECT COUNT(*) FROM Empresas e WHERE e.Activa=1 AND (SELECT COUNT(*) FROM TipoClientes t WHERE t.EmpresaId=e.Id AND t.Codigo='SIN_CLASIFICAR' AND t.Activo=1 AND t.Eliminado=0)<>1","customer defaults")=="0","Customer defaults missing")
+    require(scalar("SELECT COUNT(*) FROM Empresas e WHERE e.Activa=1 AND (SELECT COUNT(*) FROM MetodosPago m WHERE m.EmpresaId=e.Id AND m.Codigo IN ('Efectivo','Transferencia','Tarjeta','Otro') AND m.Activo=1 AND m.Eliminado=0)<>4","payment defaults")=="0","Payment defaults missing")
+    print("QA_V3_SOURCE_PRESERVATION=PASS owner_tables=29 gallery=1 scoped_edges=52 natural_keys=12 triggers=10 historical_data_and_iam=preserved history=112",flush=True)
