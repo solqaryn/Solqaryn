@@ -172,19 +172,44 @@ async function shipping(identity,suffix,amount,viewport){
       await expect(row(special)).toContainText(expected?'Vigente':'Inactivo');
       mark(stage);
     }
-    stage='SHIP_SIMULATE_'+suffix;
+    stage='SHIP_SIMULATE_OPEN_'+suffix;
     await page.getByRole('button',{name:'Simular tarifa',exact:true}).click();
     const simulation=page.locator('.solqaryn-modal--m').filter({has:page.locator('section[aria-label="Simulación de tarifa"]')});
-    await simulation.locator('input[formcontrolname="ciudad"]').fill(spec.prefix+'-city');
-    const resolveRate=page.waitForResponse(r=>scopedResponse(r,'/costos-envio/resolver','POST',200,identity.tenant),{timeout:30000});
-    await Promise.all([resolveRate,simulation.getByRole('button',{name:'Resolver tarifa'}).click()]);
-    requireTrue((await (await resolveRate).json()).data.id===sid);
-    await expect(simulation.getByRole('status')).toContainText(special);
-    await simulation.locator('input[formcontrolname="ciudad"]').fill(spec.prefix+'-unknown');
-    const fallback=page.waitForResponse(r=>scopedResponse(r,'/costos-envio/resolver','POST',200,identity.tenant),{timeout:30000});
-    await Promise.all([fallback,simulation.getByRole('button',{name:'Resolver tarifa'}).click()]);
-    requireTrue((await (await fallback).json()).data.id===did);
-    await expect(simulation.getByRole('status')).toContainText(def);
+    await expect(simulation).toBeVisible();
+    async function verifySimulation(city,expectedId,expectedName,expectedAmount,label){
+      stage='SHIP_SIMULATE_'+label+'_INPUT_'+suffix;
+      const input=simulation.locator('input[formcontrolname="ciudad"]');
+      await input.fill(city);
+      await expect(input).toHaveValue(city);
+      const button=simulation.getByRole('button',{name:'Resolver tarifa',exact:true});
+      await expect(button).toBeEnabled();
+      const responsePromise=page.waitForResponse(r=>scopedResponse(r,'/costos-envio/resolver','POST',null,identity.tenant),{timeout:30000});
+      await button.click();
+      const response=await responsePromise;
+      stage='SHIP_SIMULATE_'+label+'_HTTP_'+suffix;
+      console.log('QA_V3_UI_SHIP_SIMULATE_'+label+'_HTTP_'+suffix+'='+response.status());
+      requireTrue(response.status()===200&&response.headers()['x-solqaryn-environment']==='QA');
+      stage='SHIP_SIMULATE_'+label+'_REQUEST_'+suffix;
+      const body=response.request().postDataJSON();
+      requireTrue(body?.ciudad===city);
+      stage='SHIP_SIMULATE_'+label+'_CONTRACT_'+suffix;
+      const result=await response.json();
+      requireTrue(result.success===true&&Number.isInteger(result.data?.id));
+      const actual=result.data;
+      stage='SHIP_SIMULATE_'+label+'_OWNERSHIP_'+suffix;
+      if(actual.id!==expectedId){
+        const foreign=spec.shippingReferenceA?.ids?.includes(actual.id);
+        console.log('QA_V3_UI_SHIP_SIMULATE_'+label+'_MISMATCH_'+suffix+'='+(foreign?'FOREIGN_A':actual.id===did?'OWN_DEFAULT':actual.id===sid?'OWN_SPECIFIC':'OTHER'));
+        throw new Error('Unexpected tariff identity');
+      }
+      stage='SHIP_SIMULATE_'+label+'_AMOUNT_'+suffix;
+      requireTrue(actual.nombre===expectedName&&Number(actual.monto)===expectedAmount);
+      stage='SHIP_SIMULATE_'+label+'_VISIBLE_'+suffix;
+      await expect(simulation.getByRole('status')).toContainText(expectedName);
+      mark('SHIP_SIMULATE_'+label+'_'+suffix);
+    }
+    await verifySimulation(spec.prefix+'-city',sid,special,amount+9,'SPECIFIC');
+    await verifySimulation(spec.prefix+'-unknown',did,def,amount,'FALLBACK');
     await simulation.getByRole('button',{name:'Cerrar',exact:true}).click();
     await expect(simulation).toHaveCount(0);
     mark('SHIP_SIMULATE_'+suffix);
@@ -327,9 +352,15 @@ async function checkout(viewport,suffix){
 }
 try{
   if(spec.mode==='shipping'){
-    await shipping(spec.a,'A',0,{width:390,height:844});
-    await shipping(spec.b,'B',37.25,{width:1440,height:900});
-    mark('SHIPPING_AB');
+    if(spec.shippingViewportMode==='desktop'){
+      requireTrue(Array.isArray(spec.shippingReferenceA?.ids)&&spec.shippingReferenceA.ids.length===2);
+      await shipping(spec.b,'B',37.25,{width:1440,height:900});
+      mark('SHIPPING_DESKTOP_B');
+    }else{
+      await shipping(spec.a,'A',0,{width:390,height:844});
+      await shipping(spec.b,'B',37.25,{width:1440,height:900});
+      mark('SHIPPING_AB');
+    }
   }else{
     if(spec.viewportMode!=='desktop'&&spec.viewportMode!=='both')throw new Error('Invalid viewport mode');
     if(spec.viewportMode==='both')await checkout({width:390,height:844},'MOBILE');

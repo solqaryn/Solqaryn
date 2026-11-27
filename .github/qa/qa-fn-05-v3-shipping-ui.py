@@ -206,20 +206,48 @@ try:
     to=login(operator,passwords[operator],"QA_FN05_ENVIO_LOGIN_OPERATOR")
     for token,eid,label in ((ta,ea,"A"),(tb,eb,"B")):
         api(root+"/predeterminado",label+"_NO_DEFAULT",404,token,eid)
+    desktop_only=os.environ.get("QA_SHIPPING_RETRY_DESKTOP")=="1"
+    reference_a=None
+    if desktop_only:
+        # Recreate only the reference data of A; its authenticated mobile UI
+        # already passed. The desktop B case must face identical coverage in A.
+        first=data(api(root,"A_REFERENCE_DEFAULT",201,ta,ea,{"nombre":prefix+"-A-default","monto":0,"prioridad":1,"activo":True,"esPredeterminado":True},"POST"))
+        second=data(api(root,"A_REFERENCE_SPECIFIC",201,ta,ea,{"nombre":prefix+"-A-specific","ciudad":prefix+"-city","monto":9,"prioridad":1,"activo":True,"esPredeterminado":False},"POST"))
+        reference_a={"ids":[first["id"],second["id"]]}
+        require(all(type(i) is int and i>0 for i in reference_a["ids"]) and len(set(reference_a["ids"]))==2,"Invalid A references")
+        for rid in reference_a["ids"]:
+            require(sql(f"SELECT COUNT(*) FROM CostosEnvio WHERE Id={rid} AND EmpresaId={ea} AND Activo=1 AND Eliminado=0;","A reference owner")=="1","A reference owner mismatch")
     spec={"mode":"shipping","base":"https://solqarynqa-nu.vercel.app","prefix":prefix,
+          "shippingViewportMode":"desktop" if desktop_only else "both","shippingReferenceA":reference_a,
           "a":{"user":a,"password":passwords[a],"tenant":ea},
           "b":{"user":b,"password":passwords[b],"tenant":eb}}
     ui_env={k:v for k,v in os.environ.items() if k not in ("DB_HOST","DB_PORT","DB_NAME","DB_USER","DB_PASSWORD","BACKUP_PASSPHRASE","MYSQL_PWD","GH_TOKEN","GITHUB_TOKEN","ConnectionStrings__DefaultConnection")}
     ui=subprocess.run(["node",".github/qa/qa-fn-05-v3-browser.mjs"],input=json.dumps(spec),text=True,capture_output=True,timeout=360,env=ui_env)
     for line in ui.stdout.splitlines():
-        if re.fullmatch(r"QA_V3_UI_[A-Z0-9_]+=PASS|QA_V3_UI_WHATSAPP_NOT_CONFIGURED|QA_V3_UI_NO_COVERAGE_NOT_PRESENT",line):
+        if re.fullmatch(r"QA_V3_UI_[A-Z0-9_]+=PASS|QA_V3_UI_SHIP_SIMULATE_[A-Z_]+_HTTP_[AB]=[1-5][0-9]{2}|QA_V3_UI_SHIP_SIMULATE_[A-Z_]+_MISMATCH_[AB]=(FOREIGN_A|OWN_DEFAULT|OWN_SPECIFIC|OTHER)|QA_V3_UI_WHATSAPP_NOT_CONFIGURED|QA_V3_UI_NO_COVERAGE_NOT_PRESENT",line):
             print(line,flush=True)
     if ui.returncode != 0:
         for line in ui.stderr.splitlines():
             if re.fullmatch(r"QA_V3_UI_(FAILED_STAGE|FAILURE_KIND)=[A-Z0-9_]+",line):
                 print(line,flush=True)
+        if desktop_only and "QA_V3_UI_FAILED_STAGE=SHIP_SIMULATE_" in ui.stderr:
+            # Read-only diagnosis of the same coverage and still-active B fixtures,
+            # prior to cleanup. Do not print identifiers, amounts, tokens or payloads.
+            for kind,city,expected_name in (("SPECIFIC",prefix+"-city",prefix+"-B-specific"),("FALLBACK",prefix+"-unknown",prefix+"-B-default")):
+                persisted=sql(f"SELECT Id FROM CostosEnvio WHERE EmpresaId={eb} AND Nombre='{expected_name}' AND Activo=1 AND Eliminado=0;","diagnostic B tariff")
+                if not persisted.isdigit():
+                    print("QA_SHIP_DIAG_"+kind+"_PERSISTED_B=MISSING",flush=True)
+                    continue
+                print("QA_SHIP_DIAG_"+kind+"_PERSISTED_B=PASS",flush=True)
+                try:
+                    selected=data(api(root+"/resolver","B_DIAGNOSTIC_"+kind,token=tb,tenant=eb,body={"ciudad":city},method="POST"))
+                    actual=selected.get("id")
+                    result="OWN_EXPECTED" if actual==int(persisted) else ("FOREIGN_A" if actual in reference_a["ids"] else "OTHER")
+                    print("QA_SHIP_DIAG_"+kind+"_API_B="+result,flush=True)
+                except RuntimeError:
+                    print("QA_SHIP_DIAG_"+kind+"_API_B=FAILED",flush=True)
         raise RuntimeError("Browser certification failed; see sanitized stage")
-    require("QA_V3_UI_SHIPPING_AB=PASS" in ui.stdout,"Missing browser shipping certificate")
+    require(("QA_V3_UI_SHIPPING_DESKTOP_B=PASS" if desktop_only else "QA_V3_UI_SHIPPING_AB=PASS") in ui.stdout,"Missing browser shipping certificate")
     for token,eid,label,price in ((ta,ea,"A",0),(tb,eb,"B",37.25)):
         current=data(api(root+"/predeterminado",label+"_DEFAULT_LIVE",token=token,tenant=eid))
         require(current["nombre"]==prefix+"-"+label+"-default","Wrong company default")

@@ -1,3 +1,10 @@
+## 2026-11-27 — QA: aislar el fallo de simulación de envío en escritorio B
+
+- Run 46032724646, job 140620325518: recorrido móvil A completo PASS; escritorio B pasó alta, tabla, detalle, edición, desactivación y activación, falló `SHIP_SIMULATE_B` con `ASSERTION_OR_RUNTIME`. Revocación de fixtures PASS; galerías omitidas por dependencia. El marcador original no identifica todavía tarifa específica frente a predeterminada ni prueba una fuga empresarial.
+- Se conserva evidencia A, se repite exclusivamente escritorio B con referencias A de igual cobertura creadas por API. Se comprueba cuerpo, HTTP, entorno, ID, nombre, monto, presentación y selección específica/predeterminada por separado. Ante un fallo de simulación se contrasta la selección del servidor con persistencia y pertenencia B antes de revocar fixtures, sin imprimir datos de usuario. Galerías se ejecuta sólo si B aprueba. No se modifica la lógica comercial ni se relajan aserciones; diagnóstico causal pendiente.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-27 — QA: certificación causal de modales y galerías A/B
 
 - Confirmados 46030826299, 46030826280 y 46030826511 SUCCESS para `c269caf7a8f95abc637bc37c4ae3ebb550faac78`, Scope Lock aprobado, Vercel personal QA READY para ese SHA y Render personal QA LIVE para `dea277293408751b1b49416a8164e1392e80a483`. Regresión visual institucional aprobada; queda ejecución autenticada dirigida.
