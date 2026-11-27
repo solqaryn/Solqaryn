@@ -1,3 +1,9 @@
+## 2026-11-27 — QA: estabilizar formularios institucionales de costos de envío
+
+- Evidencia: 46032724646 (simulación B) y 46033343350 (edición B) fallaron; revocación de fixtures correcta. Render QA mostró actualización de auditoría sin cambio observado de monto. No se acredita aún la causa definitiva ni una fuga empresarial.
+- Alta/edición y simulación: un solo formulario nativo contiene título, cuerpo y acciones; controles y submit habilitados después de afterOpened, con referencia al modal vigente. Cambios de cobertura invalidan resultados y respuestas anteriores. No se modifica API, permisos, esquema ni reglas tarifarias.
+- Regresión visual en tres viewports ahora exige escritura del monto decimal, consulta con dos coberturas, contenido exacto del request y cancelación sin mutación. Prueba viva distingue entrada, HTTP, request y respuesta de edición. Cierre condicionado a CI, Vercel y nueva certificación funcional A/B; galerías siguen pendientes.
+
 ## 2026-11-27 — QA: aislar el fallo de simulación de envío en escritorio B
 
 - Run 46032724646, job 140620325518: recorrido móvil A completo PASS; escritorio B pasó alta, tabla, detalle, edición, desactivación y activación, falló `SHIP_SIMULATE_B` con `ASSERTION_OR_RUNTIME`. Revocación de fixtures PASS; galerías omitidas por dependencia. El marcador original no identifica todavía tarifa específica frente a predeterminada ni prueba una fuga empresarial.

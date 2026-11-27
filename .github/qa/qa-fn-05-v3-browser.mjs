@@ -157,10 +157,22 @@ async function shipping(identity,suffix,amount,viewport){
     stage='SHIP_EDIT_'+suffix;
     await row(special).getByRole('button',{name:'Editar costo de envío'}).click();
     const editor=form();
-    await editor.locator('input[formcontrolname="monto"]').fill(String(amount+9));
-    const edit=page.waitForResponse(r=>scopedResponse(r,'/costos-envio/'+sid,'PUT',200,identity.tenant),{timeout:30000});
+    const monto=editor.locator('input[formcontrolname="monto"]');
+    stage='SHIP_EDIT_INPUT_'+suffix;
+    await expect(monto).toBeEnabled();
+    await expect(monto).toHaveValue(String(amount+5));
+    await monto.fill(String(amount+9));
+    await expect(monto).toHaveValue(String(amount+9));
+    const edit=page.waitForResponse(r=>scopedResponse(r,'/costos-envio/'+sid,'PUT',null,identity.tenant),{timeout:30000});
     await Promise.all([edit,editor.getByRole('button',{name:'Actualizar',exact:true}).click()]);
-    requireTrue(Number((await (await edit).json()).data.monto)===amount+9);
+    const edited=await edit;
+    stage='SHIP_EDIT_HTTP_'+suffix;
+    requireTrue(edited.status()===200&&edited.headers()['x-solqaryn-environment']==='QA');
+    stage='SHIP_EDIT_REQUEST_'+suffix;
+    requireTrue(Number(edited.request().postDataJSON()?.monto)===amount+9);
+    stage='SHIP_EDIT_RESPONSE_'+suffix;
+    const editedBody=await edited.json();
+    requireTrue(editedBody.success===true&&editedBody.data?.id===sid&&Number(editedBody.data?.monto)===amount+9);
     await expect(editor).toHaveCount(0);
     mark('SHIP_EDIT_'+suffix);
     for(const [action,expected,label] of [['Desactivar',false,'DISABLE'],['Activar',true,'ENABLE']]){

@@ -43,6 +43,7 @@ export class CostosEnvioComponent {
   private modalTipo: 'editor' | 'simulador' | 'historial' | null = null;
   private historialRequest = 0;
   private simulacionRequest = 0;
+  readonly modalListo = signal(false);
   readonly editorError = signal<string | null>(null);
   readonly items = signal<CostoEnvio[]>([]);
   readonly loading = signal(true);
@@ -90,6 +91,13 @@ export class CostosEnvioComponent {
 
   constructor() {
     this.destroyRef.onDestroy(() => this.invalidarModal());
+    this.simulador.valueChanges.pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      // Una respuesta de una cobertura anterior no puede reemplazar la consulta actual.
+      ++this.simulacionRequest;
+      this.simulando.set(false);
+      this.simulacion.set(null);
+      this.simulacionError.set(null);
+    });
     effect(() => {
       const empresa = this.tenant.contextoVerificado();
       untracked(() => {
@@ -106,13 +114,23 @@ export class CostosEnvioComponent {
   }
 
   private abrirModal(tipo: 'editor' | 'simulador' | 'historial', plantilla: TemplateRef<unknown>, tamano: TamanoModal, titulo: string): void {
+    // No aceptar entradas mientras Material adjunta el formulario y estabiliza el foco.
+    this.modalListo.set(false);
+    const controles = tipo === 'editor' ? this.form : tipo === 'simulador' ? this.simulador : null;
+    controles?.disable({ emitEvent: false });
     const ref = this.dialog.open(plantilla, modalInstitucional(tamano, { ariaLabel: titulo, viewContainerRef: this.viewContainerRef }));
     this.modalRef = ref;
     this.modalTipo = tipo;
+    ref.afterOpened().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
+      if (this.modalRef !== ref || this.destroyRef.destroyed) return;
+      controles?.enable({ emitEvent: false });
+      this.modalListo.set(true);
+    });
     ref.afterClosed().pipe(takeUntilDestroyed(this.destroyRef)).subscribe(() => {
       if (this.modalRef !== ref) return;
       this.modalRef = null;
       this.modalTipo = null;
+      this.modalListo.set(false);
       if (tipo === 'editor') this.reiniciarEditor();
       if (tipo === 'simulador') this.reiniciarSimulador();
       if (tipo === 'historial') this.reiniciarHistorial();
@@ -123,6 +141,7 @@ export class CostosEnvioComponent {
     const ref = this.modalRef;
     this.modalRef = null;
     this.modalTipo = null;
+    this.modalListo.set(false);
     ref?.close();
   }
 
@@ -186,7 +205,7 @@ export class CostosEnvioComponent {
   }
   guardar(): void {
     const empresa = this.tenant.contextoVerificado();
-    if (!empresa || !this.ready() || this.saving() || this.modalTipo !== 'editor' || !this.editor()) return;
+    if (!empresa || !this.ready() || this.saving() || this.modalTipo !== 'editor' || !this.editor() || !this.modalListo() || this.form.disabled) return;
     if (this.form.invalid) { this.form.markAllAsTouched(); return; }
     const raw = this.form.getRawValue();
     const monto = raw.monto;
@@ -245,7 +264,7 @@ export class CostosEnvioComponent {
   }
   simular(): void {
     const empresa=this.tenant.contextoVerificado();
-    if (!empresa || !this.ready() || this.modalTipo !== 'simulador' || this.simulador.invalid || this.simulando()) return;
+    if (!empresa || !this.ready() || this.modalTipo !== 'simulador' || !this.modalListo() || this.simulador.disabled || this.simulador.invalid || this.simulando()) return;
     const request = ++this.simulacionRequest;
     const raw=this.simulador.getRawValue();
     this.simulacion.set(null); this.simulacionError.set(null); this.simulando.set(true);

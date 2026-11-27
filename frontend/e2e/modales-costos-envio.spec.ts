@@ -19,13 +19,25 @@ for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 
     await page.route(API + '/permisos/mis-permisos/empresa/*', r => r.fulfill({ json: ok({ esAdministrador: true, permisos: [] }) }));
     await page.route(API + '/costos-envio/administracion', r => r.fulfill({ json: ok([item]) }));
     await page.route(API + '/costos-envio', r => { if (r.request().method() === 'POST') writes++; return r.fulfill({ status: 201, json: ok(item) }); });
-    await page.route(API + '/costos-envio/1', r => { if (['PUT','DELETE'].includes(r.request().method())) writes++; return r.fulfill({ json: ok(item) }); });
+    await page.route(API + '/costos-envio/1', r => {
+      if (r.request().method() === 'PUT') {
+        const body = r.request().postDataJSON();
+        writes++;
+        item = { ...item, ...body };
+      } else if (r.request().method() === 'DELETE') writes++;
+      return r.fulfill({ json: ok(item) });
+    });
     await page.route(API + '/costos-envio/1/estado', r => {
       writes++;
       item = { ...item, activo: r.request().postDataJSON().activo };
       return r.fulfill({ json: ok(item) });
     });
-    await page.route(API + '/costos-envio/resolver', r => r.fulfill({ json: ok(item) }));
+    await page.route(API + '/costos-envio/resolver', r => {
+      const body = r.request().postDataJSON();
+      return r.fulfill({ json: ok(body.ciudad === 'Ciudad QA'
+        ? { ...item, activo: true }
+        : { ...item, id: 2, nombre: 'Tarifa general QA', monto: 37.25, ciudad: '', esPredeterminado: true, activo: true }) });
+    });
     await page.route(API + '/costos-envio/1/historial?*', r => r.fulfill({ json: ok({ items: [{id:1, accion:'Editar', fecha:'2026-11-27T12:00:00Z', nombreUsuario:'QA', descripcion:'Tarifa actualizada'}], page:1, pageSize:20, totalPages:1, totalCount:1 }) }));
     await page.goto('/costos-envio');
     const row = page.getByRole('row').filter({ hasText: 'Tarifa QA' });
@@ -60,20 +72,41 @@ for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 
     await geometry();
     await large.getByRole('button', { name: 'Cancelar' }).click();
     await expect(large).toHaveCount(0);
+    expect(writes).toBe(0);
+    await editar.click();
+    const monto = large.locator('input[formcontrolname="monto"]');
+    await expect(monto).toBeEnabled();
+    await expect(monto).toHaveValue('25');
+    await monto.fill('46.25');
+    await expect(monto).toHaveValue('46.25');
+    const update = page.waitForRequest(r => r.url() === API + '/costos-envio/1' && r.method() === 'PUT');
+    await large.getByRole('button', { name: 'Actualizar', exact: true }).click();
+    expect((await update).postDataJSON().monto).toBe(46.25);
+    await expect(large).toHaveCount(0);
+    await expect(row).toContainText(/46[.,]25/);
+    expect(writes).toBe(1);
     await row.getByRole('button', { name: 'Desactivar costo de envío' }).click();
     await expect(alert).toBeVisible();
     await alert.getByRole('button', { name: 'Cancelar' }).click();
     await expect(alert).toHaveCount(0);
-    expect(writes).toBe(0);
+    expect(writes).toBe(1);
     await row.getByRole('button', { name: 'Desactivar costo de envío' }).click();
     await alert.getByRole('button', { name: 'Desactivar', exact: true }).click();
     await expect(row).toContainText('Inactivo');
-    expect(writes).toBe(1);
+    expect(writes).toBe(2);
     await page.getByRole('button', { name: 'Simular tarifa' }).click();
     await expect(medium.getByRole('heading', { name: 'Simular tarifa' })).toBeVisible();
     await geometry();
-    await medium.getByRole('button', { name: 'Resolver tarifa' }).click();
-    await expect(medium.getByRole('status')).toContainText('Tarifa QA');
+    const ciudad = medium.locator('input[formcontrolname="ciudad"]');
+    await expect(ciudad).toBeEnabled();
+    for (const [input, nombre] of [['Ciudad QA', 'Tarifa QA'], ['Otra ciudad QA', 'Tarifa general QA']]) {
+      await ciudad.fill(input);
+      await expect(ciudad).toHaveValue(input);
+      const resolve = page.waitForRequest(r => r.url() === API + '/costos-envio/resolver' && r.method() === 'POST');
+      await medium.getByRole('button', { name: 'Resolver tarifa' }).click();
+      expect((await resolve).postDataJSON().ciudad).toBe(input);
+      await expect(medium.getByRole('status')).toContainText(nombre);
+    }
     await medium.getByRole('button', { name: 'Cerrar' }).click();
     await expect(medium).toHaveCount(0);
     await row.getByRole('button', { name: 'Ver historial de tarifa' }).click();
@@ -82,7 +115,7 @@ for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 
     await geometry();
     await large.getByRole('button', { name: 'Cerrar' }).click();
     await expect(large).toHaveCount(0);
-    expect(writes).toBe(1);
+    expect(writes).toBe(2);
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   });
 }

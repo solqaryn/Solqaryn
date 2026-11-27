@@ -24,11 +24,10 @@
   @if (!predeterminado()) { <p class="notice" role="status">Configure una tarifa general predeterminada. No se aplicará un importe fijo ni se heredarán tarifas de otra empresa.</p> }
 }
 <ng-template #editorModal>
-<div class="app-dialog-layout">
+<form class="app-dialog-layout" [formGroup]="form" (ngSubmit)="guardar()">
   <h2 mat-dialog-title>{{ editandoId() ? 'Editar costo de envío' : 'Nuevo costo de envío' }}</h2>
   <mat-dialog-content>
   <section class="editor" aria-label="Formulario de tarifa">
-  <form id="costo-envio-form-institucional" [formGroup]="form" (ngSubmit)="guardar()">
     <div class="grid">
       <mat-form-field appearance="outline">
         <mat-label>Nombre</mat-label>
@@ -63,16 +62,15 @@
       <mat-checkbox formControlName="activo">Activo</mat-checkbox>
     </div>
     @if (editorError()) { <p class="error" role="alert">{{ editorError() }}</p> }
-  </form>
   </section>
   </mat-dialog-content>
   <mat-dialog-actions align="end">
     <button mat-button type="button" (click)="cancelar()" [disabled]="saving()">Cancelar</button>
-    <button mat-flat-button color="primary" type="submit" form="costo-envio-form-institucional" [disabled]="form.invalid || saving()">
+    <button mat-flat-button color="primary" type="submit" [disabled]="!modalListo() || form.disabled || form.invalid || saving()">
       {{ saving() ? 'Guardando…' : (editandoId() ? 'Actualizar' : 'Crear') }}
     </button>
   </mat-dialog-actions>
-</div>
+</form>
 </ng-template>
 <section class="card table-card" aria-label="Listado de tarifas">
   <div class="filters">
@@ -133,12 +131,11 @@
 </section>
 
 <ng-template #simuladorModal>
-<div class="app-dialog-layout">
+<form class="app-dialog-layout" [formGroup]="simulador" (ngSubmit)="simular()">
   <h2 mat-dialog-title>Simular tarifa</h2>
   <mat-dialog-content>
   <section class="editor" aria-label="Simulación de tarifa">
   <p>Consulta la tarifa que resolvería el servidor para una cobertura y fecha. No modifica datos.</p>
-  <form id="costo-envio-simulador-institucional" [formGroup]="simulador" (ngSubmit)="simular()">
     <div class="grid simulation-grid">
       <mat-form-field appearance="outline"><mat-label>Departamento</mat-label><input matInput formControlName="departamento"></mat-form-field>
       <mat-form-field appearance="outline"><mat-label>Ciudad</mat-label><input matInput formControlName="ciudad"></mat-form-field>
@@ -146,16 +143,15 @@
       <mat-form-field appearance="outline"><mat-label>Modalidad</mat-label><input matInput formControlName="modalidad"></mat-form-field>
       <mat-form-field appearance="outline"><mat-label>Fecha de consulta (opcional)</mat-label><input matInput type="datetime-local" formControlName="fecha"></mat-form-field>
     </div>
-  </form>
   @if (simulacion(); as tarifa) { <div class="notice" role="status"><strong>{{ tarifa.nombre }} · L. {{ tarifa.monto | number:'1.2-2' }}</strong><p>{{ cobertura(tarifa) }}</p></div> }
   @if (simulacionError()) { <p class="error" role="alert">{{ simulacionError() }}</p> }
   </section>
   </mat-dialog-content>
   <mat-dialog-actions align="end">
     <button mat-button type="button" (click)="cerrarSimulador()">Cerrar</button>
-    <button mat-flat-button color="primary" type="submit" form="costo-envio-simulador-institucional" [disabled]="simulador.invalid || simulando()">{{ simulando() ? 'Consultando…' : 'Resolver tarifa' }}</button>
+    <button mat-flat-button color="primary" type="submit" [disabled]="!modalListo() || simulador.disabled || simulador.invalid || simulando()">{{ simulando() ? 'Consultando…' : 'Resolver tarifa' }}</button>
   </mat-dialog-actions>
-</div>
+</form>
 </ng-template>
 <ng-template #historialModal>
 <div class="app-dialog-layout">
