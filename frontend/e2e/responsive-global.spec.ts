@@ -145,9 +145,19 @@ async function assertNavigationMode(page: Page, mobile: boolean): Promise<void> 
 }
 
 async function auditFirstSelectOverlay(page: Page, route: string): Promise<void> {
+  const invoicePayment = /^\/facturas\/\d+\/pagos$/.test(route);
   const firstSelect = page.locator('main mat-select').first();
-  if (await firstSelect.count() === 0 || !(await firstSelect.isVisible())) return;
+  if (!invoicePayment && (await firstSelect.count() === 0 || !(await firstSelect.isVisible()))) return;
   let select = firstSelect;
+  if (invoicePayment) {
+    // The invoice and its payment/bank catalogues load independently.
+    // A visible arrow is not an enabled Material combobox. Require the real
+    // registration control and wait for its own readiness, not a fixed delay.
+    select = page.locator('main .formulario mat-select').first();
+    await expect(select, 'Método de pago de la factura en ' + route).toBeVisible();
+    await expect(select, 'Catálogo de pago listo en ' + route).toBeEnabled();
+    await expect(select, 'Selector de pago habilitado en ' + route).toHaveAttribute('aria-disabled', 'false');
+  }
   // On the stock edit route, physical identity is deliberately immutable.
   // Check those controls really are disabled, then exercise an editable select.
   if (/^\/inventario\/existencias\/\d+\/editar$/.test(route)) {
@@ -164,6 +174,12 @@ async function auditFirstSelectOverlay(page: Page, route: string): Promise<void>
   await select.locator('.mat-mdc-select-arrow-wrapper').click();
   const panel = page.locator('.mat-mdc-select-panel').first();
   await expect(panel, `El select no abrió panel en ${route}`).toBeVisible();
+  if (invoicePayment && process.env.QA_RESPONSIVE_WIDTHS) {
+    const metodo = process.env.QA_ROUTE_FIXTURE_PAYMENT_METHOD;
+    if (!metodo) throw new Error('Falta método de pago empresarial acreditado');
+    await expect(panel.getByRole('option', { name: metodo, exact: true }),
+      'El método de pago persistido debe aparecer en el selector de la factura').toBeVisible();
+  }
   const geometry = await panel.evaluate((element) => {
     const rect = element.getBoundingClientRect();
     const viewportWidth = document.documentElement.clientWidth;
@@ -389,7 +405,9 @@ test.describe('Responsive global — route sweep y regression gate', () => {
         writeFileSync(path, JSON.stringify({ width: viewport.width, sha: process.env['GITHUB_SHA'] ?? null, resultados }, null, 2));
         await guestContext.close();
       }
-      expect(resultados.filter(resultado => resultado.estado !== 'PASS').map(({ ruta, estado }) => ({ ruta, estado }))).toEqual([]);
+      // Include the precise failure in CI output as well as the JSON artifact.
+      expect(resultados.filter(resultado => resultado.estado !== 'PASS')
+        .map(({ ruta, estado, motivo }) => ({ ruta, estado, motivo }))).toEqual([]);
     });
   }
 });

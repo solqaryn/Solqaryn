@@ -18,7 +18,7 @@ export async function prepareRouteFixtures(): Promise<void> {
     saas: ['/configuracion'],
     common: ['/productos/1', '/productos/1/editar', '/productos/1/variantes',
       '/sucursales/1/editar', '/almacenes/1/editar'],
-    catalogos: ['/categorias/1/editar', '/ubicaciones-almacen/1/editar', '/proveedores/1/editar', '/descuentos/1/editar'],
+    catalogos: ['/categorias/1/editar', '/ubicaciones-almacen/1/editar', '/proveedores/1/editar', '/descuentos/1/editar', '/tipo-clientes/1/editar'],
     transferencias: ['/inventario/transferencias/1', '/inventario/transferencias/1/editar'],
     reservas: ['/inventario/reservas/1', '/inventario/reservas/1/editar'],
     costeo: ['/inventario/costeo'],
@@ -134,6 +134,21 @@ export async function prepareRouteFixtures(): Promise<void> {
       await call('/categorias/' + id + '/imagenes');
       bind('/categorias/1/editar', '/categorias/' + id + '/editar');
     });
+    // V3 quarantines legacy customer types: a numeric ID from the baseline
+    // is not proof of membership in the authorized company. Exercise a real,
+    // editable, non-system record via the same authenticated API as the UI.
+    await family(['/tipo-clientes/1/editar'], async () => {
+      const nombre = label + ' cliente';
+      const id = idOf(await call('/tipo-clientes', 'POST', {
+        nombre, descripcion: 'Tipo de cliente de CI', colorHex: '#355C7D',
+        activo: true, orden: 92, esPredeterminado: false
+      }));
+      const tipo = await persisted('/tipo-clientes', id);
+      if (tipo.nombre !== nombre || tipo.activo !== true || tipo.esSistema !== false) {
+        throw new Error('Tipo de cliente editable de la empresa no acreditado');
+      }
+      bind('/tipo-clientes/1/editar', '/tipo-clientes/' + id + '/editar');
+    });
     await family(['/ubicaciones-almacen/1/editar'], async () => {
       stage = 'almacén de prueba';
       lastStatus = undefined;
@@ -198,6 +213,13 @@ export async function prepareRouteFixtures(): Promise<void> {
         metodoPago = creado.nombre;
       } else { metodoPago = efectivo.nombre; }
       if (!metodoPago) throw new Error('Método de pago no acreditado');
+      // Re-read the active catalogue rather than trusting a creation response.
+      const activos = await call('/metodos-pago/activos');
+      if (!Array.isArray(activos) || !activos.some((m: any) =>
+        m.activo === true && m.nombre === metodoPago && idOf(m) > 0)) {
+        throw new Error('Método de pago empresarial no persistido');
+      }
+      process.env.QA_ROUTE_FIXTURE_PAYMENT_METHOD = metodoPago;
     });
     await family(families.sales, async () => {
       requireStock();
@@ -219,6 +241,7 @@ export async function prepareRouteFixtures(): Promise<void> {
       const factura = await persisted('/facturas', facturaId);
       if (Number(factura.ventaId) !== ventaId) throw new Error('Factura no corresponde a venta');
       bind('/facturas/1', '/facturas/' + facturaId);
+      if (!(Number(factura.saldoPendiente) > 0)) throw new Error('Factura de prueba sin saldo pendiente');
       bind('/facturas/1/pagos', '/facturas/' + facturaId + '/pagos');
       await family(families.devolucionesCliente, async () => {
         const id = idOf(await call('/devoluciones-clientes', 'POST', {

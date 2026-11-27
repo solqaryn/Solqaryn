@@ -42,8 +42,12 @@ for (const modulo of ['ventas', 'compras'] as const) {
       const alerta = page.locator('.solqaryn-modal--s');
       await expect(alerta).toBeVisible();
       await alerta.getByRole('button', {name:'Cancelar',exact:true}).click();
+      // The action controller releases its guard on afterClosed, not on click.
+      // Keep the real transition and wait for completion before the next action.
+      await expect(alerta).toHaveCount(0);
+      await expect(tabla.getByRole('button', { name: 'Eliminar ' + numero, exact: true })).toBeEnabled();
       expect(escrituras).toBe(0);
-      await page.getByRole('button', { name: 'Nueva ' + nombre, exact: false }).click();
+      await page.getByRole('button', { name: 'Nueva ' + nombre, exact: true }).click();
       const form = page.locator('.solqaryn-modal--xl');
       await expect(form.getByRole('heading', {name:'Nueva ' + nombre, exact:true})).toBeVisible();
       await form.getByRole('button', {name:'Cancelar',exact:true}).click();
@@ -57,12 +61,15 @@ for (const modulo of ['ventas', 'compras'] as const) {
       await expect(detalle.getByRole('heading', {name:'Detalle de ' + nombre + ' ' + numero,exact:true})).toBeVisible();
       await detalle.getByRole('button', {name:'Confirmar ' + nombre,exact:true}).click();
       await alerta.getByRole('button', {name:'Cancelar',exact:true}).click();
+      await expect(alerta).toHaveCount(0);
       expect(escrituras).toBe(0);
       await detalle.getByRole('button', {name:'Confirmar ' + nombre,exact:true}).click();
       await alerta.getByRole('button', {name:'Confirmar',exact:true}).click();
+      await expect(alerta).toHaveCount(0);
       await expect(detalle.getByRole('button', {name:'Anular ' + nombre,exact:true})).toBeVisible();
       expect(escrituras).toBe(1);
       await detalle.getByRole('button', {name:'Cerrar',exact:true}).click();
+      await expect(detalle).toHaveCount(0);
       await expect(tabla.getByText('Confirmada',{exact:true})).toBeVisible();
       await expect(tabla.getByRole('button', {name:'Editar ' + numero,exact:true})).toHaveCount(0);
       expect(new URL(page.url()).pathname).toBe('/' + modulo);
