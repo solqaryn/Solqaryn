@@ -44,7 +44,7 @@ require(scalar("SELECT VERSION()","target version").startswith("8.4."),"Wrong My
 require(scalar("SELECT COUNT(*) FROM __EFMigrationsHistory","history")=="111","V2 history mismatch")
 m=json.loads(pathlib.Path(".github/qa/qa-commercial-v3-physical-manifest.json").read_text())
 tables=m["tables"]; edges=m["edges"]; unique=m["unique"]; extra=m["extra"]
-require(len(set(tables))==len(tables)==26 and len(unique)==11,"Manifest mismatch")
+require(len(set(tables))==len(tables)==26 and len(unique)==11 and len(edges)==48 and len(m["originalDeleteRules"])==len(edges),"Manifest mismatch")
 affected=sorted(set(tables)|{x[0] for x in edges}|{x[2] for x in edges}|{"CategoriasGalerias","Roles","Usuarios","Permisos","RolPermisos","UsuarioEmpresas","UsuarioRolesPlataforma","Empresas"})
 def columns(t):
     return run(f"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='{t}' ORDER BY ORDINAL_POSITION","column manifest")
@@ -61,7 +61,7 @@ def rowcounts():
     return {t:scalar(f"SELECT COUNT(*) FROM {q(t)}","row count") for t in ts}
 counts=rowcounts()
 def fk_rows():
-    return run("SELECT CONCAT(TABLE_NAME,'|',CONSTRAINT_NAME,'|',COLUMN_NAME,'|',REFERENCED_TABLE_NAME,'|',REFERENCED_COLUMN_NAME) FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA=DATABASE() AND REFERENCED_TABLE_NAME IS NOT NULL ORDER BY TABLE_NAME,CONSTRAINT_NAME,ORDINAL_POSITION","original FK topology")
+    return run("SELECT CONCAT(k.TABLE_NAME,'|',k.CONSTRAINT_NAME,'|',k.COLUMN_NAME,'|',k.REFERENCED_TABLE_NAME,'|',k.REFERENCED_COLUMN_NAME,'|',r.DELETE_RULE,'|',r.UPDATE_RULE) FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE k JOIN INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS r ON r.CONSTRAINT_SCHEMA=k.CONSTRAINT_SCHEMA AND r.TABLE_NAME=k.TABLE_NAME AND r.CONSTRAINT_NAME=k.CONSTRAINT_NAME WHERE k.TABLE_SCHEMA=DATABASE() AND k.REFERENCED_TABLE_NAME IS NOT NULL ORDER BY k.TABLE_NAME,k.CONSTRAINT_NAME,k.ORDINAL_POSITION","original FK topology and actions")
 original_fks=set(fk_rows())
 def fk_rule(child, cc, parent, pp):
     pairs=set(zip(cc[1:],pp[1:]))
@@ -71,10 +71,26 @@ def fk_rule(child, cc, parent, pp):
         fk,c,p,rule=row.split("\t")
         if fk.startswith(("FK_QACT_","FK_QAC2_","FK_QAC3_")): continue
         matches.setdefault(fk,[set(),rule])[0].add((c,p))
-    rules={v[1] for v in matches.values() if v[0]==pairs}
-    require(len(rules)==1 and next(iter(rules)) in ("CASCADE","RESTRICT","NO ACTION"),"Unreviewed original FK rule: "+child+" -> "+parent)
-    return next(iter(rules))
-rules=[fk_rule(*edge) for edge in edges]
+    rules={("RESTRICT" if v[1]=="NO ACTION" else v[1]) for v in matches.values() if v[0]==pairs}
+    return next(iter(rules)) if len(rules)==1 else "MISSING_OR_AMBIGUOUS"
+
+# Review every existing delete action before any DDL. Never turn a composite
+# tenant FK into SET NULL: that would also null EmpresaId.
+observed=[fk_rule(*edge) for edge in edges]
+expected=m["originalDeleteRules"]
+drift=[f"{i+1}:{edge[0]}->{edge[2]} expected={want} actual={got}" for i,(edge,want,got) in enumerate(zip(edges,expected,observed)) if got!=want]
+require(not drift,"Original FK rule drift: "+"; ".join(drift))
+rules=[]
+for (child,cc,parent,pp),rule in zip(edges,observed):
+    require(rule in ("CASCADE","RESTRICT","SET NULL"),"Unreviewed FK rule")
+    if rule=="SET NULL":
+        require(child=="Productos" and len(cc)==2 and parent in ("Categorias","Marcas","Modelos","Colores","Tallas"),"Unreviewed nullable catalog edge")
+        require(scalar(f"SELECT IS_NULLABLE FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='{child}' AND COLUMN_NAME='{cc[1]}'","nullable original reference")=="YES","SET NULL source is not optional")
+        rules.append("RESTRICT")
+    else:
+        rules.append(rule)
+require(observed.count("SET NULL")==5 and rules.count("SET NULL")==0,"Tenant FK delete policy mismatch")
+print(f"QA_V3_DELETE_RULES=PASS reviewed={len(rules)} legacy_set_null=5 scoped_set_null=0",flush=True)
 for t in tables:
     run(f"ALTER TABLE {q(t)} ADD COLUMN EmpresaId int NULL, ADD UNIQUE INDEX {q('UX_QAC3_'+t+'_OwnerId')} (EmpresaId,Id), ADD CONSTRAINT {q('FK_QAC3_'+t+'_Empresa')} FOREIGN KEY (EmpresaId) REFERENCES Empresas (Id) ON DELETE RESTRICT","owner "+t)
 for t,ix,cc in extra:
@@ -112,6 +128,8 @@ require(original_fks <= set(fk_rows()),"Original foreign keys changed")
 for i,(child,cc,parent,pp) in enumerate(edges,1):
     actual=run(f"SELECT COLUMN_NAME,REFERENCED_TABLE_NAME,REFERENCED_COLUMN_NAME FROM INFORMATION_SCHEMA.KEY_COLUMN_USAGE WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='{child}' AND CONSTRAINT_NAME='FK_QAC3_{i:02d}' ORDER BY ORDINAL_POSITION","verify composite FK")
     require(actual==[f"{c}\t{parent}\t{p}" for c,p in zip(cc,pp)],"Composite FK mismatch")
+    actual_rule=scalar(f"SELECT DELETE_RULE FROM INFORMATION_SCHEMA.REFERENTIAL_CONSTRAINTS WHERE CONSTRAINT_SCHEMA=DATABASE() AND TABLE_NAME='{child}' AND CONSTRAINT_NAME='FK_QAC3_{i:02d}'","verify composite delete action")
+    require(actual_rule==rules[i-1] or (rules[i-1]=="RESTRICT" and actual_rule=="NO ACTION"),"Scoped FK delete rule mismatch")
 require(rowcounts()==counts,"Historical row count changed")
 require(all(digest(t,c)==before[t] for t,c in original.items()),"Historical value or IAM changed")
 print("QA_V3_REHEARSAL_PRESERVED=PASS",flush=True)
@@ -130,6 +148,22 @@ COMMIT;
 SELECT @ea,@eb,@ca,@cb;""","synthetic A/B")[0].split("\t")
 require(len(ids)==4 and all(x.isdigit() and int(x)>0 for x in ids),"Fixture IDs invalid")
 ea,eb,ca,cb=map(int,ids)
+
+# The original optional category FK must remain nullable; the new tenant FK
+# must reject cross-company references without ever changing the product owner.
+pid=int(scalar(f"""INSERT INTO Productos (EmpresaId,Nombre,Marca,Modelo,CategoriaId,TipoInventario,Cantidad,Costo,Precio,UmbralStockBajo,Activo,EsDestacado,Eliminado,FechaCreacion,FechaActualizacion)
+VALUES ({ea},'{prefix}-product','','',{ca},1,1,5,10,1,1,0,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
+SELECT LAST_INSERT_ID();""","product tenant fixture"))
+require(pid>0,"Missing synthetic product ID")
+run(f"UPDATE Productos SET CategoriaId={cb} WHERE Id={pid} AND EmpresaId={ea}","cross-company product category",expected={1452})
+require(scalar(f"SELECT COUNT(*) FROM Productos WHERE Id={pid} AND EmpresaId={ea} AND CategoriaId={ca}","product owner after rejection")=="1","Rejected update changed product owner")
+run(f"UPDATE Categorias SET Activa=0,Eliminada=1 WHERE Id={ca} AND EmpresaId={ea}","logical category deletion")
+require(scalar(f"SELECT COUNT(*) FROM Productos WHERE Id={pid} AND EmpresaId={ea} AND CategoriaId={ca}","owner after soft deletion")=="1","Logical deletion changed product owner")
+run(f"UPDATE Categorias SET Activa=1,Eliminada=0 WHERE Id={ca} AND EmpresaId={ea}","restore synthetic category")
+run(f"UPDATE Productos SET CategoriaId=NULL WHERE Id={pid} AND EmpresaId={ea}","explicit optional detachment")
+require(scalar(f"SELECT COUNT(*) FROM Productos WHERE Id={pid} AND EmpresaId={ea} AND CategoriaId IS NULL","owner after detachment")=="1","Optional detachment removed owner")
+run(f"DELETE FROM Productos WHERE Id={pid} AND EmpresaId={ea} AND Nombre='{prefix}-product'","remove synthetic product")
+print("QA_V3_OPTIONAL_CATEGORY_OWNER_PRESERVED=PASS",flush=True)
 def insert_gallery(e,c,v):
     return f"INSERT INTO CategoriasGalerias (EmpresaId,CategoriaId,CategoriaVerificadaId,Version,ImagenesJson) VALUES ({e},{c},{v},'qa3fixture','[]');"
 run(insert_gallery(ea,ca,ca),"same-company gallery")
