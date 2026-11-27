@@ -16,6 +16,7 @@ import secrets
 import signal
 import subprocess
 import urllib.error
+import urllib.parse
 import urllib.request
 
 def require(ok, label):
@@ -224,6 +225,17 @@ def persisted(eid,cid,gallery):
     raw=sql(f"SELECT ImagenesJson FROM CategoriasGalerias WHERE EmpresaId={eid} AND CategoriaId={cid};","gallery order")
     stored=json.loads(raw)
     require([i["Id"] for i in stored]==image_ids(gallery),"Persisted image order mismatch")
+    require([i["Url"] for i in stored]==[i["url"] for i in gallery["imagenes"]],"Persisted URL mismatch")
+    tenant_folder=f"solqaryn_qa/solqaryn/productos/empresas/{eid}/"
+    for image in stored:
+        public_id=image["PublicId"]
+        url=urllib.parse.urlsplit(image["Url"])
+        path=urllib.parse.unquote(url.path)
+        require(isinstance(public_id,str) and public_id.startswith(tenant_folder),"Cloudinary publicId outside verified QA tenant")
+        require(url.scheme=="https" and url.hostname=="res.cloudinary.com" and url.port in (None,443)
+                and not url.username and not url.password and "/image/upload/" in path
+                and "/"+public_id+"." in path,"Cloudinary URL outside verified QA tenant")
+    print("QA_GALLERY_STORAGE_LOCATORS_VERIFIED=PASS",flush=True)
 
 
 owned=[]
@@ -309,20 +321,27 @@ try:
         persisted(eid,cid,removed)
         require(int(sql(f"SELECT COUNT(*) FROM RegistrosAuditoria WHERE EmpresaId={eid} AND ReferenciaId={cid} AND Entidad='CategoriaGaleria' AND Resultado='Exito';","gallery audit"))>=3,"Gallery audit missing")
     print("QA_GALLERY_OPERATIONS_AB=PASS",flush=True)
+    print("QA_GALLERY_PHYSICAL_DELETE_NOT_CERTIFIED",flush=True)
 finally:
     try:
         # Only records created and verified in this invocation may be cleared.
         # Remove through the service before logically deleting their category;
         # do not delete storage paths directly or mutate other gallery rows.
+        cleanup_failures=0
         for token,eid,cid,route,name in owned:
-            require(sql(f"SELECT COUNT(*) FROM Categorias WHERE Id={cid} AND EmpresaId={eid} AND Nombre='{name}';","cleanup owner")=="1","Fixture ownership changed")
-            state=gallery_read(route,"CLEANUP_READ",token,eid)
-            if image_ids(state):
-                cleared=gallery_write(route,"CLEANUP_EMPTY",token,eid,state["version"],[])
-                require(image_ids(cleared)==[],"Gallery cleanup failed")
-                persisted(eid,cid,cleared)
-            call(f"/categorias/{cid}","QA_GALLERY_CATEGORY_DELETE",200,token=token,tenant=eid,method="DELETE")
-            require(sql(f"SELECT COUNT(*) FROM Categorias WHERE Id={cid} AND EmpresaId={eid} AND Activa=0;","category cleanup")=="1","Fixture category still active")
+            try:
+                require(sql(f"SELECT COUNT(*) FROM Categorias WHERE Id={cid} AND EmpresaId={eid} AND Nombre='{name}';","cleanup owner")=="1","Fixture ownership changed")
+                state=gallery_read(route,"CLEANUP_READ",token,eid)
+                if image_ids(state):
+                    cleared=gallery_write(route,"CLEANUP_EMPTY",token,eid,state["version"],[])
+                    require(image_ids(cleared)==[],"Gallery cleanup failed")
+                    persisted(eid,cid,cleared)
+                call(f"/categorias/{cid}","QA_GALLERY_CATEGORY_DELETE",200,token=token,tenant=eid,method="DELETE")
+                require(sql(f"SELECT COUNT(*) FROM Categorias WHERE Id={cid} AND EmpresaId={eid} AND Activa=0 AND Eliminada=1;","category cleanup")=="1","Fixture category still active")
+            except Exception:
+                cleanup_failures+=1
+                print("QA_GALLERY_FIXTURE_CLEANUP_FAILED",flush=True)
+        require(cleanup_failures==0,"One or more fixture galleries require reconciliation")
     finally:
         if created:
             sql(f"""START TRANSACTION;

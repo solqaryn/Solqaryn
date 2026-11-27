@@ -1,3 +1,11 @@
+## 2026-11-27 — QA: reanclar certificación viva de modales y galerías al frontend aprobado
+
+- QA manual autorizada. `1bebff6e03ab325551c0f5e9726a971ed84d516a`: gates 46034010499/46034010450/46034010434 SUCCESS, Scope Lock PASS, 77 pruebas visuales aprobadas (modales 1280/390/320), Vercel personal READY y alias QA asociado. Render personal LIVE `dea277293408751b1b49416a8164e1392e80a483`; diff backend/render vacío.
+- Corregido workflow residual que fijaba el padre y la evidencia anterior: referencia al frontend causal, comprobación de equivalencia, status Vercel, SHA Render, Scope Lock; prueba autenticada móvil A y escritorio B por cambio causal de ambos formularios, y sólo después galerías. Los scripts mantienen los controles de identidad QA, RBAC, persistencia, cancelación y revocación.
+- Galerías: verificación del PublicId y URL persistidos bajo el prefijo QA de la empresa, retirada lógica comprobada, limpieza independiente de todos los fixtures incluso si uno falla. Borrado físico Cloudinary y límite individual de entrada pendientes; las imágenes públicas de categorías no equivalen a archivos privados. No se cambia aplicación, esquema, secretos ni entornos ajenos. Cierre pendiente de evidencia de ejecución y atestación de deployments posterior.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-27 — QA: estabilizar formularios institucionales de costos de envío
 
 - Evidencia: 46032724646 (simulación B) y 46033343350 (edición B) fallaron; revocación de fixtures correcta. Render QA mostró actualización de auditoría sin cambio observado de monto. No se acredita aún la causa definitiva ni una fuga empresarial.
