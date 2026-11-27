@@ -344,7 +344,8 @@ test.describe('Storefront Fase 10 — responsive, UX y accesibilidad', () => {
 
     const accion = page.getByRole('button', { name: /Simular continuación segura|Preparar pedido por WhatsApp/ }).first();
     await expect(accion).toBeVisible();
-    await accion.click();
+    await accion.focus();
+    await page.keyboard.press('Enter');
 
     const nombre = page.locator('input[formcontrolname="nombre"]');
     const telefono = page.locator('input[formcontrolname="telefono"]');
@@ -357,11 +358,14 @@ test.describe('Storefront Fase 10 — responsive, UX y accesibilidad', () => {
     await expect(nombre).toHaveAttribute('aria-describedby', /nombre-error/);
     await expect(telefono).toHaveAttribute('aria-describedby', /telefono-error/);
 
-    await nombre.focus();
+    // No test-driven focus: the real validation action must focus the first invalid control.
     await expect(nombre).toBeFocused();
     await page.keyboard.press('Tab');
-    const activeTag = await page.evaluate(() => document.activeElement?.tagName);
-    expect(activeTag).toBeTruthy();
+    await expect(telefono).toBeFocused();
+    await nombre.fill('Cliente de prueba');
+    await accion.focus();
+    await page.keyboard.press('Enter');
+    await expect(telefono).toBeFocused();
 
     const controles = await page.locator('.checkout-page input, .checkout-page textarea, .checkout-page button, .checkout-page .button').evaluateAll(elements =>
       elements.filter(element => {

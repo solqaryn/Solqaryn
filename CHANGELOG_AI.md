@@ -11524,3 +11524,8 @@
 
 - TASK_ID=6af16bbad26881918c283abe06e1f32a; RUN_ID=6b5ab147-b6a0-8320-ba5b-5af59532e161; base 7a98b29b6e47a657c7d287f36ae182a28c24f048. Excepcion R1 conserva foco C02-01.M05.04 bloqueado por DAG425; adopta relevo DEV04 C04-02.M03.06 KEY06/G13. C03-03.M03.06 reparado, CI por SHA no cancelable; retencion sin politica aprobada no autoriza purga.
 - Un EventId GUID opaco generado en Application se usa en intento estructurado y en insercion MySQL aislada, sin revelar actor/tenant/contrato ni convertir intento en COMMIT. No cambio de esquema, DI comercial, autorizacion, pagos, contratos ni datos reales. Regresiones xUnit y Oracle MySQL 8.4 efimero comparan EventId aceptado/denegado, mantienen controles de logger y fallo del sink; CI exact-SHA pendiente. A5 ajena pendiente; V17 H631:I631, R5 directa, revert ordinario, solo dev.
+
+## 2026-11-26 — DEV02 — C15-04.M05.04 — V44/R1/R5
+
+- TASK_ID=6af16bb9492c8191b8e8c7d606f11507; RUN_ID=9983a0cd-2b6c-8320-92cb-69d4fff4e3b9; base 1f77f79ea3fec3cfbcad27defe5706e2610757ad; foco colectivo C02-01.M05.04 permanece VALIDANDO por dependencia persistente C03-01.M03.04 con DAG NO e impedimento de independencia A5 precedente; excepción R1 para WIP propio, sin nuevo claim.
+- Checkout: tras validación fallida y render de errores ARIA, dirigir foco al primer control inválido real en orden de formulario. Conservar validadores, permisos, datos, proveedor y flujos de pago. E2E Fase 10 activa por Enter, verifica foco automático y Tab a teléfono, corrige nombre y verifica siguiente inválido; no inyecta foco para pasar la aserción. SKREF-03/10 originales pin revisado; CI GitHub-hosted y A0-A4 globales pendientes; A5 distinta; rollback revert ordinario, solo dev.

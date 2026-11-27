@@ -1,5 +1,5 @@
 import { DOCUMENT } from '@angular/common';
-import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
+import { ChangeDetectionStrategy, Component, DestroyRef, Injector, OnInit, afterNextRender, computed, inject, signal } from '@angular/core';
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
@@ -35,6 +35,7 @@ export class StorefrontCheckoutComponent implements OnInit {
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
   private readonly document = inject(DOCUMENT);
+  private readonly injector = inject(Injector);
 
   readonly identidad = inject(StorefrontIdentidadService);
   readonly carrito = inject(StorefrontCarritoService);
@@ -343,6 +344,12 @@ export class StorefrontCheckoutComponent implements OnInit {
     this.formulario.markAllAsTouched();
     if (this.formulario.invalid) {
       this.error.set('Revisa los datos de contacto marcados antes de continuar.');
+      // Wait until Angular renders aria-invalid and the associated error text.
+      afterNextRender(() => {
+        const campo = (['nombre', 'telefono', 'correo', 'notas'] as const)
+          .find(nombre => this.formulario.controls[nombre].invalid);
+        if (campo) this.document.querySelector<HTMLElement>(`#checkout-principal form [formcontrolname="${campo}"]`)?.focus();
+      }, { injector: this.injector });
       return false;
     }
     this.error.set('');
