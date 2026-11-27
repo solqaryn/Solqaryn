@@ -1,3 +1,7 @@
+## 2026-11-26 — QA-FN-05: prueba viva dirigida de tarifas
+
+- Autorizacion expresa exclusiva QA del propietario. Render personal LIVE 7ef2a818; Vercel personal READY 4b5bf096 (equivalencia de codigo funcional). Nuevo gate ejecuta Scope Lock propio de QA, verifica equivalencia de fuentes desplegadas, esquema V2 y CRUD/aislamiento A/B de envios con identidades sinteticas y revocacion en finally. Sin cambio de runtime, migraciones, DEV, MAIN, infraestructura o IAM existente. Resultado pendiente hasta logs y verificacion Render posterior; no declara cierre de checkout publico ni propiedad residual. MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-26 — QA-FN-05: evidencia de checkout y alcance residual posterior a V2
 
 - Checkout 4b5bf096: backend Release 2505/2505, 0 fallos/omitidas (45901564836 job 140188323253); MySQL A/B público/privado y EF snapshot PASS (45901564759 job 140188323100); verificador físico V2 PASS 31 tablas/53 FKs y 0 escrituras (45901564812 job 140188322773). Corrección estática ae78ccc6: lint PASS, regresiones visuales todavía en ejecución. Frontend Vercel READY 4b5bf096; Render QA todavía LIVE 54ece720, bloqueo de confirmación workspace. No declarar certificación viva de tarifas o checkout.

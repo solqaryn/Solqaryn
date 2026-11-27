@@ -1,0 +1,47 @@
+name: QA - FN-05 envios CRUD autenticado
+on:
+  push:
+    branches: [qa]
+    paths:
+      - '.github/workflows/qa-fn-05-shipping-live.yml'
+      - '.github/qa/qa-fn-05-shipping-live.py'
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: qa-fn-05-live-admin
+  cancel-in-progress: false
+jobs:
+  shipping-live:
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == '7ef2a8181939e57363c374cae498bde2dc122f95' && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    environment: QA
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verify QA scope and deployed source equivalence
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = refs/heads/qa
+          node scripts/verify-project-scope.mjs
+          git diff --exit-code 7ef2a8181939e57363c374cae498bde2dc122f95 HEAD -- backend frontend render.yaml
+          python3 -m py_compile .github/qa/qa-fn-05-shipping-live.py
+      - name: Install SQL and BCrypt clients
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y mysql-client apache2-utils
+      - name: Verify QA schema and exercise shipping A/B
+        env:
+          EXPECTED_DEPLOYED_SHA: '7ef2a8181939e57363c374cae498bde2dc122f95'
+          DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
+          DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
+          DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}
+          DB_USER: ${{ vars.SOLQARYN_QA_DB_USER }}
+          DB_PASSWORD: ${{ secrets.SOLQARYN_QA_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          python3 .github/qa/qa-commercial-schema-v2.py --live
+          python3 .github/qa/qa-fn-05-shipping-live.py
