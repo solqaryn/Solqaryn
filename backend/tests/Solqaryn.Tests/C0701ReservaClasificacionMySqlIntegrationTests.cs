@@ -133,6 +133,21 @@ public sealed class C0701ReservaClasificacionMySqlIntegrationTests
             return dto;
         }
 
+        async Task AssertInventoryLockConflictAsync(AppDbContext stale, Seed seed)
+        {
+            await using var tx = await stale.Database.BeginTransactionAsync();
+            var inventory = new InventarioConcurrencyService(stale,
+                new ProductoRepository(stale), new ProductoVarianteRepository(stale));
+            var conflict = await Assert.ThrowsAsync<BusinessRuleException>(() =>
+                inventory.BloquearYValidarInventarioAsync(new[]
+                {
+                    new Solqaryn.Application.Interfaces.InventarioDemanda(
+                        seed.Products[1], seed.Variants[1], 1)
+                }));
+            Assert.Contains("inventario cambió", conflict.Message, StringComparison.OrdinalIgnoreCase);
+            await tx.RollbackAsync();
+        }
+
         async Task ConfirmWithRenamedLabelsAsync(int tenant, Seed s)
         {
             var access = Access(tenant);
@@ -249,6 +264,7 @@ public sealed class C0701ReservaClasificacionMySqlIntegrationTests
                 }
                 Assert.Equal(TipoInventario.MercaderiaVenta, cached.TipoInventario);
 
+                await AssertInventoryLockConflictAsync(stale, seed);
                 var deniedStale = await Assert.ThrowsAsync<BusinessRuleException>(
                     () => Compose(stale, access).ConfirmarAsync(seed.OrderId, Request(seed)));
                 Assert.Contains("no disponibles para reserva comercial", deniedStale.Message);
@@ -277,6 +293,7 @@ public sealed class C0701ReservaClasificacionMySqlIntegrationTests
                     await writer.SaveChangesAsync();
                 }
                 Assert.True(cached.Activo);
+                await AssertInventoryLockConflictAsync(stale, seed);
                 var deniedVariant = await Assert.ThrowsAsync<BusinessRuleException>(
                     () => Compose(stale, access).ConfirmarAsync(seed.OrderId, Request(seed)));
                 Assert.Contains("no está activa para reservar inventario", deniedVariant.Message);
@@ -288,6 +305,47 @@ public sealed class C0701ReservaClasificacionMySqlIntegrationTests
                     current.Activo = true;
                     await writer.SaveChangesAsync();
                 }
+            }
+
+            // Identical tracked rows must still pass; computed shadow variant keys
+            // must not be mistaken for a conflict. A later quantity change must fail closed.
+            foreach (var (tenant, seed) in new[] { (a, sa), (b, sb) })
+            {
+                var access = Access(tenant);
+                await using var stale = new AppDbContext(options, tenantHttpContextAccessor: access);
+                var product = await stale.Productos.SingleAsync(x => x.Id == seed.Products[1]);
+                var variant = await stale.ProductoVariantes.SingleAsync(x => x.Id == seed.Variants[1]);
+                var quantity = variant.Cantidad;
+                await using (var tx = await stale.Database.BeginTransactionAsync())
+                {
+                    var inventory = new InventarioConcurrencyService(stale,
+                        new ProductoRepository(stale), new ProductoVarianteRepository(stale));
+                    var locked = await inventory.BloquearYValidarInventarioAsync(new[]
+                    {
+                        new Solqaryn.Application.Interfaces.InventarioDemanda(product.Id, variant.Id, 1)
+                    });
+                    Assert.Same(product, locked.Productos[product.Id]);
+                    Assert.Same(variant, locked.Variantes[variant.Id]);
+                    await tx.RollbackAsync();
+                }
+
+                await using (var writer = new AppDbContext(options, tenantHttpContextAccessor: Access(tenant)))
+                {
+                    var current = await writer.ProductoVariantes.SingleAsync(x => x.Id == variant.Id);
+                    current.Cantidad = quantity - 1;
+                    await writer.SaveChangesAsync();
+                }
+                Assert.Equal(quantity, variant.Cantidad);
+                await AssertInventoryLockConflictAsync(stale, seed);
+                await using (var writer = new AppDbContext(options, tenantHttpContextAccessor: Access(tenant)))
+                {
+                    var current = await writer.ProductoVariantes.SingleAsync(x => x.Id == variant.Id);
+                    Assert.Equal(quantity - 1, current.Cantidad);
+                    current.Cantidad = quantity;
+                    await writer.SaveChangesAsync();
+                }
+                await VerifyAsync(a, sa, false);
+                await VerifyAsync(b, sb, false);
             }
 
             // A draft exists before a product is reclassified; its other line stays commercial.

@@ -71,6 +71,11 @@ public class InventarioConcurrencyService : IInventarioConcurrencyService
             .OrderBy(id => id)
             .ToList();
 
+        var productosRastreados = esDeduccion && !incluirEliminados
+            ? _context.ChangeTracker.Entries<Producto>()
+                .Select(e => e.Entity.Id).Where(productoIds.Contains).ToArray()
+            : Array.Empty<int>();
+
         var productos = incluirEliminados
             ? await BloquearProductosIncluyendoEliminadosAsync(productoIds)
             : await _productoRepository.GetByIdsForUpdateAsync(productoIds);
@@ -83,10 +88,37 @@ public class InventarioConcurrencyService : IInventarioConcurrencyService
             .OrderBy(id => id)
             .ToList();
 
+        var variantesRastreadas = esDeduccion && !incluirEliminados
+            ? _context.ChangeTracker.Entries<ProductoVariante>()
+                .Select(e => e.Entity.Id).Where(varianteIds.Contains).ToArray()
+            : Array.Empty<int>();
+
         var variantes = incluirEliminados
             ? await BloquearVariantesIncluyendoEliminadasAsync(varianteIds)
             : await _productoVarianteRepository.GetByIdsForUpdateAsync(varianteIds);
         var variantesMap = variantes.ToDictionary(v => v.Id);
+
+        // A locking query can return an existing EF tracked instance instead of
+        // the current SQL values. Verify the tracked rows before returning mutable stock.
+        if (productosRastreados.Length > 0)
+        {
+            var actuales = await _productoRepository.GetByIdsForReadLockAsync(productosRastreados);
+            if (actuales.Count != productosRastreados.Length ||
+                !actuales.Select(x => x.Id).ToHashSet().SetEquals(productosRastreados) ||
+                actuales.Any(x => !productosMap.TryGetValue(x.Id, out var previa) ||
+                    !CoincidenValoresEscalares(previa, x)))
+                throw new BusinessRuleException("El inventario cambió desde la lectura anterior. Actualice los datos e inténtelo nuevamente.");
+        }
+
+        if (variantesRastreadas.Length > 0)
+        {
+            var actuales = await LeerVariantesVigentesBajoLockAsync(variantesRastreadas);
+            if (actuales.Count != variantesRastreadas.Length ||
+                !actuales.Select(x => x.Id).ToHashSet().SetEquals(variantesRastreadas) ||
+                actuales.Any(x => !variantesMap.TryGetValue(x.Id, out var previa) ||
+                    !CoincidenValoresEscalares(previa, x)))
+                throw new BusinessRuleException("El inventario cambió desde la lectura anterior. Actualice los datos e inténtelo nuevamente.");
+        }
 
         foreach (var productoGrupo in consolidada.GroupBy(x => x.ProductoId))
         {
@@ -123,6 +155,34 @@ public class InventarioConcurrencyService : IInventarioConcurrencyService
         }
 
         return new InventarioLockSet(productosMap, variantesMap, consolidada);
+    }
+
+    private bool CoincidenValoresEscalares<TEntity>(TEntity previa, TEntity actual) where TEntity : class
+    {
+        var valores = _context.Entry(previa).CurrentValues;
+        // The variant's shadow computed keys are derived from mapped CLR fields;
+        // an AsNoTracking entity cannot supply shadow values through its CLR instance.
+        return valores.Properties.Where(p => p.PropertyInfo is not null)
+            .All(p => Equals(valores[p], p.PropertyInfo!.GetValue(actual)));
+    }
+
+    private async Task<List<ProductoVariante>> LeerVariantesVigentesBajoLockAsync(IEnumerable<int> ids)
+    {
+        var tenant = await CommercialTenantSqlLockScope.RequireAsync(_context);
+        var resultado = new List<ProductoVariante>();
+        foreach (var id in ids.Distinct().OrderBy(x => x))
+        {
+            // Same owner predicate and row lock as the existing update query.
+            // No catalogue label reads/locks: only the scalar stock row is compared.
+            var variante = await _context.ProductoVariantes
+                .FromSqlInterpolated(
+                    $"SELECT pv.* FROM ProductoVariantes pv WHERE pv.Id = {id} AND pv.Eliminado = 0 AND ({tenant} IS NULL OR pv.EmpresaId = {tenant}) FOR UPDATE")
+                .AsNoTracking()
+                .FirstOrDefaultAsync();
+            if (variante is not null)
+                resultado.Add(variante);
+        }
+        return resultado;
     }
 
     private async Task<List<Producto>> BloquearProductosIncluyendoEliminadosAsync(IEnumerable<int> ids)
