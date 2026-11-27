@@ -1,7 +1,8 @@
 import { expect, Page, test } from '@playwright/test';
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
-import type { RouteFixtureManifest } from './qa-route-fixtures';
+import { matchesActivePaymentMethod, paymentCatalogDiagnostic } from './qa-route-fixtures';
+import type { PaymentMethodFixture, RouteFixtureManifest } from './qa-route-fixtures';
 import type { ApiResponse } from '../src/app/core/models/api-response.model';
 import type { BancoLookup, MetodoPago } from '../src/app/core/models/metodo-pago.model';
 import { REQUIRED_QA_WIDTHS, RESPONSIVE_ROUTES, RESPONSIVE_VIEWPORTS } from '../src/app/testing/qa-responsive-catalog';
@@ -148,9 +149,7 @@ async function assertNavigationMode(page: Page, mobile: boolean): Promise<void> 
 
 // Wait for the actual browser requests, not a fixture-side catalogue read or
 // an enabled attribute that can precede NgModel/options rendering.
-async function navigateWithPaymentCatalogs(page: Page, route: string) {
-  const metodo = process.env.QA_ROUTE_FIXTURE_PAYMENT_METHOD;
-  if (!metodo) throw new Error('Falta método de pago empresarial acreditado');
+async function navigateWithPaymentCatalogs(page: Page, route: string, paymentMethod: PaymentMethodFixture) {
   const waitCatalog = (path: string) => page.waitForResponse(response => {
     const url = new URL(response.url());
     return ['localhost', '127.0.0.1'].includes(url.hostname) && url.port === '5005' &&
@@ -165,15 +164,16 @@ async function navigateWithPaymentCatalogs(page: Page, route: string) {
   expect(banksResponse.ok(), 'HTTP catálogo de bancos: ' + banksResponse.status()).toBe(true);
   const methods: ApiResponse<MetodoPago[]> = await methodsResponse.json();
   const banks: ApiResponse<BancoLookup[]> = await banksResponse.json();
+  const diagnostic = paymentCatalogDiagnostic(methods.data, paymentMethod);
   expect(methods.success === true && Array.isArray(methods.data) &&
-    methods.data.some(item => item.activo === true && item.nombre === metodo),
-    'El catálogo recibido por el navegador debe incluir el método empresarial activo acreditado').toBe(true);
+    methods.data.filter(item => matchesActivePaymentMethod(item, paymentMethod)).length === 1,
+    'El catálogo del navegador debe incluir la identidad activa acreditada: ' + diagnostic).toBe(true);
   expect(banks.success === true && Array.isArray(banks.data),
     'El navegador debe recibir el catálogo de bancos válido, incluso cuando esté vacío').toBe(true);
   return navigation;
 }
 
-async function auditFirstSelectOverlay(page: Page, route: string): Promise<void> {
+async function auditFirstSelectOverlay(page: Page, route: string, paymentMethod?: PaymentMethodFixture): Promise<void> {
   const invoicePayment = /^\/facturas\/\d+\/pagos$/.test(route);
   const firstSelect = page.locator('main mat-select').first();
   if (!invoicePayment && (await firstSelect.count() === 0 || !(await firstSelect.isVisible()))) return;
@@ -221,9 +221,8 @@ async function auditFirstSelectOverlay(page: Page, route: string): Promise<void>
   }
   await expect(panel, `El select no abrió panel en ${route}`).toBeVisible();
   if (invoicePayment && process.env.QA_RESPONSIVE_WIDTHS) {
-    const metodo = process.env.QA_ROUTE_FIXTURE_PAYMENT_METHOD;
-    if (!metodo) throw new Error('Falta método de pago empresarial acreditado');
-    await expect(panel.getByRole('option', { name: metodo, exact: true }),
+    if (!paymentMethod) throw new Error('Falta identidad de método de pago acreditado en el manifest');
+    await expect(panel.getByRole('option', { name: paymentMethod.nombre, exact: true }),
       'El método de pago persistido debe aparecer en el selector de la factura').toBeVisible();
   }
   const geometry = await panel.evaluate((element) => {
@@ -247,10 +246,12 @@ function assertNoRouteErrors(route: string, errors: string[]): void {
   expect(errors, 'Errores definitivos en ' + route + ': ' + errors.join(' | ')).toEqual([]);
 }
 
-async function certifyRoute(page: Page, route: string, mobile: boolean, errors: string[]): Promise<void> {
+async function certifyRoute(page: Page, route: string, mobile: boolean, errors: string[], paymentMethod?: PaymentMethodFixture): Promise<void> {
   errors.length = 0;
-  const response = process.env.QA_RESPONSIVE_WIDTHS && /^\/facturas\/\d+\/pagos$/.test(route)
-    ? await navigateWithPaymentCatalogs(page, route)
+  const invoicePayment = !!process.env.QA_RESPONSIVE_WIDTHS && /^\/facturas\/\d+\/pagos$/.test(route);
+  if (invoicePayment && !paymentMethod) throw new Error('Falta identidad de método de pago acreditado en el manifest');
+  const response = invoicePayment && paymentMethod
+    ? await navigateWithPaymentCatalogs(page, route, paymentMethod)
     : await page.goto(route, { waitUntil: 'domcontentloaded' });
   expect(response?.ok(), `HTTP no válido en ${route}`).toBe(true);
   const esperado = route === '/' ? '/login' : route;
@@ -335,7 +336,7 @@ async function certifyRoute(page: Page, route: string, mobile: boolean, errors: 
       }
       assertNoRouteErrors(route, errors);
     }
-    await auditFirstSelectOverlay(page, route);
+    await auditFirstSelectOverlay(page, route, paymentMethod);
     if (route === '/ventas/nueva') {
       const priceInputs = page.locator('main input[formcontrolname="precioUnitario"]');
       await expect(priceInputs.first(), 'Debe existir un precio unitario de catálogo').toBeVisible();
@@ -438,7 +439,8 @@ test.describe('Responsive global — route sweep y regression gate', () => {
               routeErrors = [];
               monitor(target, routeErrors);
             }
-            await test.step(route, () => certifyRoute(target, urlProbada, viewport.mobile, routeErrors));
+            await test.step(route, () => certifyRoute(target, urlProbada, viewport.mobile, routeErrors,
+              fixture && 'url' in fixture ? fixture.paymentMethod : undefined));
             resultado.estado = 'PASS';
           } catch (error) {
             resultado.estado = 'FAIL';

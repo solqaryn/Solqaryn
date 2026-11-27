@@ -1,6 +1,30 @@
 import { request as playwrightRequest } from '@playwright/test';
 
-export type RouteFixture = { url: string } | { error: string };
+export type PaymentMethodFixture = Readonly<{ id: number; codigo: string; nombre: string }>;
+export type RouteFixture = { url: string; paymentMethod?: PaymentMethodFixture } | { error: string };
+
+// Use the exact persisted identity, never a name-only match or a legacy enum.
+export function matchesActivePaymentMethod(value: unknown, expected: PaymentMethodFixture): boolean {
+  if (!value || typeof value !== 'object') return false;
+  const item = value as Record<string, unknown>;
+  return item.id === expected.id && item.codigo === expected.codigo &&
+    item.nombre === expected.nombre && item.activo === true;
+}
+
+// Diagnostics expose only counts/types and comparisons of synthetic records.
+export function paymentCatalogDiagnostic(value: unknown, expected: PaymentMethodFixture): string {
+  if (!Array.isArray(value)) return 'catalogueType=' + typeof value;
+  const sameId = value.filter(item => item?.id === expected.id);
+  return JSON.stringify({
+    count: value.length,
+    sameId: sameId.length,
+    matchingCode: value.filter(item => item?.codigo === expected.codigo).length,
+    matchingName: value.filter(item => item?.nombre === expected.nombre).length,
+    activeTypes: [...new Set(value.map(item => typeof item?.activo))],
+    activeTrue: value.filter(item => item?.activo === true).length,
+    exactMatch: sameId.filter(item => matchesActivePaymentMethod(item, expected)).length
+  });
+}
 export type RouteFixtureManifest = Record<string, RouteFixture>;
 export const FIXTURE_ENV = 'QA_ROUTE_FIXTURE_MANIFEST';
 
@@ -77,9 +101,10 @@ export async function prepareRouteFixtures(): Promise<void> {
     if (idOf(row) !== id) throw new Error('Identidad de registro incorrecta');
     return row;
   }
-  function bind(route: string, url: string): void {
+  function bind(route: string, url: string, paymentMethod?: PaymentMethodFixture): void {
     if (!(route in manifest) || !url.startsWith('/') || url.startsWith('//')) throw new Error('Ruta fixture fuera del catálogo');
-    manifest[route] = { url };
+    if (route === '/facturas/1/pagos' && !paymentMethod) throw new Error('Método de pago no acreditado para factura');
+    manifest[route] = paymentMethod ? { url, paymentMethod } : { url };
   }
   async function family(routes: readonly string[], fn: () => Promise<void>): Promise<void> {
     try { await fn(); }
@@ -194,7 +219,8 @@ export async function prepareRouteFixtures(): Promise<void> {
       bind('/inventario/reservas/1', '/inventario/reservas/' + id);
       bind('/inventario/reservas/1/editar', '/inventario/reservas/' + id + '/editar');
     });
-    let clienteId = 0, proveedorId = 0, metodoPago = '';
+    let clienteId = 0, proveedorId = 0;
+    let paymentMethod: PaymentMethodFixture | undefined;
     await family(['/proveedores/1/editar'], async () => {
       proveedorId = idOf(await call('/proveedores', 'POST', { nombre: label, correo: 'proveedor@example.invalid' }));
       await persisted('/proveedores', proveedorId);
@@ -205,26 +231,41 @@ export async function prepareRouteFixtures(): Promise<void> {
       await persisted('/clientes', clienteId);
     });
     await family([...families.sales, ...families.purchases], async () => {
-      const metodos = await call('/metodos-pago/activos');
-      const efectivo = Array.isArray(metodos) ? metodos.find((m: any) => m.codigo === 'EFECTIVO' || m.nombre === 'Efectivo') : undefined;
-      if (!efectivo) {
-        const creado = await call('/metodos-pago', 'POST', { codigo: 'QA_EFECTIVO', nombre: 'Efectivo QA', tipo: 'Efectivo', activo: true, orden: 0, permiteCambio: true });
-        idOf(creado);
-        metodoPago = creado.nombre;
-      } else { metodoPago = efectivo.nombre; }
-      if (!metodoPago) throw new Error('Método de pago no acreditado');
-      // Re-read the active catalogue rather than trusting a creation response.
-      const activos = await call('/metodos-pago/activos');
-      if (!Array.isArray(activos) || !activos.some((m: any) =>
-        m.activo === true && m.nombre === metodoPago && idOf(m) > 0)) {
-        throw new Error('Método de pago empresarial no persistido');
+      // Create a dedicated payment method by the authenticated administrative API.
+      // Never reuse a legacy/default row selected merely by name. All writes
+      // remain inside the guarded disposable MySQL database.
+      const codigo = ('QA_EFECTIVO_' + nonce).toUpperCase();
+      const nombre = 'Efectivo QA ' + nonce;
+      const creado = await call('/metodos-pago', 'POST', {
+        codigo, nombre, tipo: 'Efectivo', activo: true, orden: 0,
+        requiereReferencia: false, requiereBanco: false, permiteCambio: true
+      });
+      const expected: PaymentMethodFixture = { id: idOf(creado), codigo, nombre };
+      if (!matchesActivePaymentMethod(creado, expected)) {
+        console.warn('[qa-fixtures] payment create contract: ' + paymentCatalogDiagnostic([creado], expected));
+        throw new Error('Método creado no coincide con identidad activa solicitada');
       }
-      process.env.QA_ROUTE_FIXTURE_PAYMENT_METHOD = metodoPago;
+      const detalle = await persisted('/metodos-pago', expected.id);
+      if (!matchesActivePaymentMethod(detalle, expected)) {
+        console.warn('[qa-fixtures] payment detail contract: ' + paymentCatalogDiagnostic([detalle], expected));
+        throw new Error('Método de pago no acreditado por lectura persistida');
+      }
+      const activos = await call('/metodos-pago/activos');
+      const diagnostic = paymentCatalogDiagnostic(activos, expected);
+      console.info('[qa-fixtures] payment active catalogue: ' + diagnostic);
+      if (!Array.isArray(activos) || activos.filter(item => matchesActivePaymentMethod(item, expected)).length !== 1) {
+        throw new Error('Método de pago empresarial ausente o ambiguo en catálogo activo');
+      }
+      // Publish only after every check succeeds; failed setup must not
+      // leak a partially initialized name into dependent commercial fixtures.
+      paymentMethod = expected;
+      console.info('[qa-fixtures] QA_PAYMENT_METHOD_IDENTITY=PASS');
     });
     await family(families.sales, async () => {
       requireStock();
       stage = 'cliente y método de pago';
-      if (!clienteId || !metodoPago) throw new Error('Datos base de venta ausentes');
+      if (!clienteId || !paymentMethod) throw new Error('Cliente o método de pago acreditado ausente');
+      const metodoPago = paymentMethod.codigo;
       // Venta presencial de CI: el retiro en mostrador no requiere una tarifa de envío.
       const data = { clienteId, clienteNombre: label, metodoPago, estadoPago: 'Pendiente', notas: label,
         envioExonerado: true, motivoExoneracionEnvio: 'Retiro en mostrador QA',
@@ -240,9 +281,10 @@ export async function prepareRouteFixtures(): Promise<void> {
       const facturaId = idOf(await call('/facturas/venta/' + ventaId));
       const factura = await persisted('/facturas', facturaId);
       if (Number(factura.ventaId) !== ventaId) throw new Error('Factura no corresponde a venta');
+      if (factura.metodoPago !== paymentMethod.nombre) throw new Error('Factura no conserva el método acreditado');
       bind('/facturas/1', '/facturas/' + facturaId);
       if (!(Number(factura.saldoPendiente) > 0)) throw new Error('Factura de prueba sin saldo pendiente');
-      bind('/facturas/1/pagos', '/facturas/' + facturaId + '/pagos');
+      bind('/facturas/1/pagos', '/facturas/' + facturaId + '/pagos', paymentMethod);
       await family(families.devolucionesCliente, async () => {
         const id = idOf(await call('/devoluciones-clientes', 'POST', {
           ventaId, facturaId, observaciones: label, detalles: [
@@ -298,7 +340,8 @@ export async function prepareRouteFixtures(): Promise<void> {
       requireStock();
       stage = 'proveedor y método de pago de compra';
       lastStatus = undefined;
-      if (!proveedorId || !metodoPago) throw new Error('Datos de compra ausentes');
+      if (!proveedorId || !paymentMethod) throw new Error('Proveedor o método de pago acreditado ausente');
+      const metodoPago = paymentMethod.codigo;
       const compraId = idOf(await call('/compras', 'POST', { proveedorId, proveedorNombre: label, metodoPago, estadoPago: 'Pendiente', documentoReferencia: 'QA-' + nonce, notas: label, detalles: [{ productoId, productoVarianteId: varianteId, cantidad: 2, costoUnitario: 100 }] }));
       await persisted('/compras', compraId);
       bind('/compras/1', '/compras/' + compraId);
