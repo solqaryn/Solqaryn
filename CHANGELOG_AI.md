@@ -1,3 +1,11 @@
+## 2026-11-27 — QA: modal institucional de costos de envío y nuevos requisitos de trazabilidad
+
+- Render personal QA LIVE `dep-dc4qgl3l550s73abc590` y Vercel personal QA READY `dpl_A7uLF3hV6ngfbFEVv6ShzddPGc6k`, SHA `dea277293408751b1b49416a8164e1392e80a483`; cuatro gates 46027530182/46027530517/46027530252/46027530434 success. Límite de 15 MB publicado; operación real de galerías sigue pendiente.
+- Costos de envío: crear/editar, simulador e historial usan `modalInstitucional`, cabecera y pie Material, cuerpo con scroll interno, cierre explícito y foco restaurado. Activación/desactivación y eliminación requieren confirmación; guardas de contexto y duplicación, errores del editor dentro del modal, respuestas tardías de simulación/historial descartadas. Se conserva API, permisos, tabla y semántica comercial. Regresión Playwright 1280/390/320 y adaptación de selectores vivos; ejecución y despliegue por certificar.
+- Requisitos del propietario registrados en pendientes QA: galerías selectivas de instalaciones/registros físicos e historial comercial por entidad, sin duplicar auditoría ni documentos. No se implementan ni certifican en este changeset.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-27 — QA-FN-05: límite de 15 MB para galerías de categorías
 
 - Orden expresa del propietario: sólo `qa`. El selector admite originales JPG/PNG/WebP de hasta 15 MiB por foto; se mantiene la optimización de 750 KiB por foto (máximo cinco) para atravesar el proxy existente. El contrato agregado de la galería en API pasa de 4 a 15 MiB; multipart de 16 MiB con margen para metadatos. La validación profunda compartida conserva su límite por archivo de 10 MiB y sus controles de contenido; el navegador transmite imágenes optimizadas. No se amplían otros módulos, no cambian permisos, esquema ni cuentas de infraestructura.

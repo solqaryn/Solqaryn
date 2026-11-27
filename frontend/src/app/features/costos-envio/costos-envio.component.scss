@@ -39,3 +39,15 @@ td small { display:block; margin-top:.2rem; overflow-wrap:anywhere; }
   .card { padding:.75rem; }
   .page-header>button,.actions>button { width:100%; justify-content:center; }
 }
+
+.header-actions { display:flex; align-items:center; gap:.75rem; flex-wrap:wrap; }
+.simulation-grid { grid-template-columns:repeat(2,minmax(0,1fr)); }
+.app-dialog-layout { color:var(--color-text); }
+.app-dialog-layout .editor { min-width:0; }
+.app-dialog-layout .editor p { color:var(--color-text-muted); }
+.app-dialog-layout .error { color:var(--color-text); }
+@media(max-width:600px) {
+  .header-actions { width:100%; }
+  .header-actions>button { flex:1 1 100%; justify-content:center; }
+  .simulation-grid { grid-template-columns:1fr; }
+}

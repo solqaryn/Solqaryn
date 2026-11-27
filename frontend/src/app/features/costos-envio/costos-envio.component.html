@@ -3,7 +3,10 @@
     <h1>Costos de envío</h1>
     <p>Administra tarifas de la empresa activa por departamento, ciudad, zona y modalidad.</p>
   </div>
-  <button mat-flat-button type="button" color="primary" (click)="nuevo()" [disabled]="!ready() || saving()"><mat-icon>add</mat-icon>Nueva tarifa</button>
+  <div class="header-actions">
+    <button mat-stroked-button type="button" (click)="abrirSimulador()" [disabled]="!ready() || saving()"><mat-icon>calculate</mat-icon>Simular tarifa</button>
+    <button mat-flat-button type="button" color="primary" (click)="nuevo()" [disabled]="!ready() || saving()"><mat-icon>add</mat-icon>Nueva tarifa</button>
+  </div>
 </div>
 
 @if (error()) {
@@ -20,10 +23,12 @@
   </section>
   @if (!predeterminado()) { <p class="notice" role="status">Configure una tarifa general predeterminada. No se aplicará un importe fijo ni se heredarán tarifas de otra empresa.</p> }
 }
-@if (ready() && editor()) {
-<section class="card editor" aria-label="Formulario de tarifa">
-  <h2>{{ editandoId() ? 'Editar costo de envío' : 'Nuevo costo de envío' }}</h2>
-  <form [formGroup]="form" (ngSubmit)="guardar()">
+<ng-template #editorModal>
+<div class="app-dialog-layout">
+  <h2 mat-dialog-title>{{ editandoId() ? 'Editar costo de envío' : 'Nuevo costo de envío' }}</h2>
+  <mat-dialog-content>
+  <section class="editor" aria-label="Formulario de tarifa">
+  <form id="costo-envio-form-institucional" [formGroup]="form" (ngSubmit)="guardar()">
     <div class="grid">
       <mat-form-field appearance="outline">
         <mat-label>Nombre</mat-label>
@@ -57,16 +62,18 @@
       <mat-checkbox formControlName="esPredeterminado">Tarifa general predeterminada</mat-checkbox>
       <mat-checkbox formControlName="activo">Activo</mat-checkbox>
     </div>
-    <div class="actions">
-      <button mat-button type="button" (click)="cancelar()" [disabled]="saving()">Cancelar</button>
-      <button mat-flat-button color="primary" type="submit" [disabled]="form.invalid || saving()">
-        @if (saving()) { <mat-spinner diameter="18"></mat-spinner> }
-        {{ editandoId() ? 'Actualizar' : 'Crear' }}
-      </button>
-    </div>
+    @if (editorError()) { <p class="error" role="alert">{{ editorError() }}</p> }
   </form>
-</section>
-}
+  </section>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="cancelar()" [disabled]="saving()">Cancelar</button>
+    <button mat-flat-button color="primary" type="submit" form="costo-envio-form-institucional" [disabled]="form.invalid || saving()">
+      {{ saving() ? 'Guardando…' : (editandoId() ? 'Actualizar' : 'Crear') }}
+    </button>
+  </mat-dialog-actions>
+</div>
+</ng-template>
 <section class="card table-card" aria-label="Listado de tarifas">
   <div class="filters">
     <mat-form-field appearance="outline"><mat-label>Buscar tarifa</mat-label><input matInput [value]="search()" (input)="search.set($any($event.target).value)" [disabled]="!ready()"></mat-form-field>
@@ -113,7 +120,7 @@
           <button type="button" class="action-view" mat-icon-button title="Ver detalle" [attr.aria-label]="'Ver costo de envío ' + item.nombre" [appConsultaRegistro]="{ titulo: 'Costo de envío: ' + item.nombre, campos: { 'Nombre': item.nombre, 'Descripción': item.descripcion, 'Cobertura': cobertura(item), 'Monto (HNL)': item.monto, 'Desde': item.vigenteDesde, 'Hasta': item.vigenteHasta, 'Prioridad': item.prioridad, 'Predeterminado': item.esPredeterminado, 'Activo': item.activo, 'Vigente': item.estaVigente, 'Creación': item.fechaCreacion, 'Actualización': item.fechaActualizacion } }"><mat-icon>visibility</mat-icon></button>
           <button mat-icon-button type="button" (click)="editar(item)" [disabled]="saving()" aria-label="Editar costo de envío"><mat-icon>edit</mat-icon></button>
           <button mat-icon-button type="button" (click)="cambiarEstado(item)" [disabled]="saving()" [attr.aria-label]="item.activo ? 'Desactivar costo de envío' : 'Activar costo de envío'"><mat-icon>{{ item.activo ? 'toggle_off' : 'toggle_on' }}</mat-icon></button>
-          <button mat-icon-button type="button" (click)="verHistorial(item)" aria-label="Ver historial de tarifa"><mat-icon>history</mat-icon></button>
+          <button mat-icon-button type="button" (click)="verHistorial(item)" [disabled]="saving()" aria-label="Ver historial de tarifa"><mat-icon>history</mat-icon></button>
           <button mat-icon-button color="warn" type="button" (click)="eliminar(item)" [disabled]="saving()" aria-label="Eliminar costo de envío"><mat-icon>delete</mat-icon></button>
         </td>
       </ng-container>
@@ -125,27 +132,37 @@
   }
 </section>
 
-@if (ready()) {
-<section class="card editor" aria-label="Simulación de tarifa">
-  <h2>Simular tarifa</h2>
+<ng-template #simuladorModal>
+<div class="app-dialog-layout">
+  <h2 mat-dialog-title>Simular tarifa</h2>
+  <mat-dialog-content>
+  <section class="editor" aria-label="Simulación de tarifa">
   <p>Consulta la tarifa que resolvería el servidor para una cobertura y fecha. No modifica datos.</p>
-  <form [formGroup]="simulador" (ngSubmit)="simular()">
-    <div class="grid">
+  <form id="costo-envio-simulador-institucional" [formGroup]="simulador" (ngSubmit)="simular()">
+    <div class="grid simulation-grid">
       <mat-form-field appearance="outline"><mat-label>Departamento</mat-label><input matInput formControlName="departamento"></mat-form-field>
       <mat-form-field appearance="outline"><mat-label>Ciudad</mat-label><input matInput formControlName="ciudad"></mat-form-field>
       <mat-form-field appearance="outline"><mat-label>Zona</mat-label><input matInput formControlName="zona"></mat-form-field>
       <mat-form-field appearance="outline"><mat-label>Modalidad</mat-label><input matInput formControlName="modalidad"></mat-form-field>
       <mat-form-field appearance="outline"><mat-label>Fecha de consulta (opcional)</mat-label><input matInput type="datetime-local" formControlName="fecha"></mat-form-field>
     </div>
-    <button mat-stroked-button type="submit" [disabled]="simulador.invalid || simulando()">{{ simulando() ? 'Consultando…' : 'Resolver tarifa' }}</button>
   </form>
   @if (simulacion(); as tarifa) { <div class="notice" role="status"><strong>{{ tarifa.nombre }} · L. {{ tarifa.monto | number:'1.2-2' }}</strong><p>{{ cobertura(tarifa) }}</p></div> }
   @if (simulacionError()) { <p class="error" role="alert">{{ simulacionError() }}</p> }
-</section>
-}
-@if (historialItem(); as item) {
-<section class="card" aria-label="Historial de tarifa">
-  <div class="page-header"><h2>Historial: {{ item.nombre }}</h2><button mat-button type="button" (click)="cerrarHistorial()">Cerrar</button></div>
+  </section>
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="cerrarSimulador()">Cerrar</button>
+    <button mat-flat-button color="primary" type="submit" form="costo-envio-simulador-institucional" [disabled]="simulador.invalid || simulando()">{{ simulando() ? 'Consultando…' : 'Resolver tarifa' }}</button>
+  </mat-dialog-actions>
+</div>
+</ng-template>
+<ng-template #historialModal>
+<div class="app-dialog-layout">
+  <h2 mat-dialog-title>Historial: {{ historialItem()?.nombre }}</h2>
+  <mat-dialog-content>
+  @if (historialItem(); as item) {
+  <section aria-label="Historial de tarifa">
   @if (historialLoading()) { <p role="status">Consultando historial…</p> }
   @if (historialError()) { <p class="error" role="alert">{{ historialError() }}</p> }
   @if (historial(); as result) {
@@ -162,5 +179,11 @@
       <span>Página {{ result.page }} de {{ result.totalPages || 1 }}</span>
       <button mat-button type="button" [disabled]="result.page >= result.totalPages" (click)="verHistorial(item,result.page+1)">Siguiente</button></div>
   }
-</section>
-}
+  </section>
+  }
+  </mat-dialog-content>
+  <mat-dialog-actions align="end">
+    <button mat-button type="button" (click)="cerrarHistorial()">Cerrar</button>
+  </mat-dialog-actions>
+</div>
+</ng-template>

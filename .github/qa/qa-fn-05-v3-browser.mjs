@@ -92,7 +92,7 @@ async function shipping(identity,suffix,amount,viewport){
     const table=page.getByRole('table',{name:'Costos de envío de la empresa'});
     const def=spec.prefix+'-'+suffix+'-default',special=spec.prefix+'-'+suffix+'-specific';
     const row=name=>table.getByRole('row').filter({has:page.getByText(name,{exact:true})});
-    const form=()=>page.getByRole('region',{name:'Formulario de tarifa'});
+    const form=()=>page.locator('.solqaryn-modal--l').filter({has:page.locator('section[aria-label="Formulario de tarifa"]')});
     stage='SHIP_LOGIN_'+suffix;
     await login(page,identity);
     const load=page.waitForResponse(r=>scopedResponse(r,'/costos-envio/administracion','GET',200,identity.tenant),{timeout:30000});
@@ -103,7 +103,10 @@ async function shipping(identity,suffix,amount,viewport){
     async function create(name,price,isDefault){
       stage='SHIP_CREATE_'+suffix+(isDefault?'_DEFAULT':'_SPECIFIC');
       await page.getByRole('button',{name:'Nueva tarifa'}).click();
-      const editor=page.locator('section[aria-label="Formulario de tarifa"]');
+      const editor=form();
+      await expect(editor).toBeVisible();
+      await page.keyboard.press('Escape');
+      await expect(editor).toBeVisible();
       await editor.locator('input[formcontrolname="nombre"]').fill(name);
       await editor.locator('input[formcontrolname="monto"]').fill(String(price));
       if(isDefault) await editor.getByRole('checkbox',{name:'Tarifa general predeterminada'}).check();
@@ -153,7 +156,7 @@ async function shipping(identity,suffix,amount,viewport){
     mark('SHIP_DETAIL_'+suffix);
     stage='SHIP_EDIT_'+suffix;
     await row(special).getByRole('button',{name:'Editar costo de envío'}).click();
-    const editor=page.locator('section[aria-label="Formulario de tarifa"]');
+    const editor=form();
     await editor.locator('input[formcontrolname="monto"]').fill(String(amount+9));
     const edit=page.waitForResponse(r=>scopedResponse(r,'/costos-envio/'+sid,'PUT',200,identity.tenant),{timeout:30000});
     await Promise.all([edit,editor.getByRole('button',{name:'Actualizar',exact:true}).click()]);
@@ -163,13 +166,15 @@ async function shipping(identity,suffix,amount,viewport){
     for(const [action,expected,label] of [['Desactivar',false,'DISABLE'],['Activar',true,'ENABLE']]){
       stage='SHIP_'+label+'_'+suffix;
       const state=page.waitForResponse(r=>scopedResponse(r,'/costos-envio/'+sid+'/estado','PATCH',200,identity.tenant),{timeout:30000});
-      await Promise.all([state,row(special).getByRole('button',{name:action+' costo de envío'}).click()]);
+      await row(special).getByRole('button',{name:action+' costo de envío'}).click();
+      await Promise.all([state,page.locator('.solqaryn-modal--s').getByRole('button',{name:action,exact:true}).click()]);
       requireTrue((await (await state).json()).data.activo===expected);
       await expect(row(special)).toContainText(expected?'Vigente':'Inactivo');
       mark(stage);
     }
     stage='SHIP_SIMULATE_'+suffix;
-    const simulation=page.locator('section[aria-label="Simulación de tarifa"]');
+    await page.getByRole('button',{name:'Simular tarifa',exact:true}).click();
+    const simulation=page.locator('.solqaryn-modal--m').filter({has:page.locator('section[aria-label="Simulación de tarifa"]')});
     await simulation.locator('input[formcontrolname="ciudad"]').fill(spec.prefix+'-city');
     const resolveRate=page.waitForResponse(r=>scopedResponse(r,'/costos-envio/resolver','POST',200,identity.tenant),{timeout:30000});
     await Promise.all([resolveRate,simulation.getByRole('button',{name:'Resolver tarifa'}).click()]);
@@ -180,13 +185,18 @@ async function shipping(identity,suffix,amount,viewport){
     await Promise.all([fallback,simulation.getByRole('button',{name:'Resolver tarifa'}).click()]);
     requireTrue((await (await fallback).json()).data.id===did);
     await expect(simulation.getByRole('status')).toContainText(def);
+    await simulation.getByRole('button',{name:'Cerrar',exact:true}).click();
+    await expect(simulation).toHaveCount(0);
     mark('SHIP_SIMULATE_'+suffix);
     stage='SHIP_HISTORY_'+suffix;
     const history=page.waitForResponse(r=>new URL(r.url()).pathname==='/api/costos-envio/'+sid+'/historial'&&r.status()===200,{timeout:30000});
     await Promise.all([history,row(special).getByRole('button',{name:'Ver historial de tarifa'}).click()]);
     await expect(page.getByRole('heading',{name:'Historial: '+special})).toBeVisible();
     await expect(page.locator('section[aria-label="Historial de tarifa"] article').first()).toBeVisible();
-    await page.locator('section[aria-label="Historial de tarifa"]').getByRole('button',{name:'Cerrar'}).click();
+    const historyModal=page.locator('.solqaryn-modal--l').filter({has:page.locator('section[aria-label="Historial de tarifa"]')});
+    await expect(historyModal).toBeVisible();
+    await historyModal.getByRole('button',{name:'Cerrar',exact:true}).click();
+    await expect(historyModal).toHaveCount(0);
     mark('SHIP_HISTORY_'+suffix);
     stage='SHIP_CANCEL_DELETE_'+suffix;
     let deletes=0;
