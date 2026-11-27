@@ -110,6 +110,10 @@ public sealed class C0402M0306DurableAuditMysql84Tests
             Assert.False(await sink.AppendAsync(
                 new C0402ContractAuditEntry("C0402_CONTRACT_PREFLIGHT",
                     "private-leak", true), CancellationToken.None));
+            // Well-shaped but unknown outcomes must not persist caller data.
+            Assert.False(await sink.AppendAsync(
+                new C0402ContractAuditEntry("C0402_CONTRACT_PREFLIGHT",
+                    "SYNTHETIC_PRIVATE_911", false), CancellationToken.None));
             Assert.False(await new C0402IsolatedMySqlContractAuditSink(
                 () => new MySqlConnection(raw)).AppendAsync(
                 new C0402ContractAuditEntry("C0402_CONTRACT_PREFLIGHT",

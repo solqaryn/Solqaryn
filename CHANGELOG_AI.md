@@ -11529,3 +11529,8 @@
 
 - TASK_ID=6af16bb9492c8191b8e8c7d606f11507; RUN_ID=9983a0cd-2b6c-8320-92cb-69d4fff4e3b9; base 1f77f79ea3fec3cfbcad27defe5706e2610757ad; foco colectivo C02-01.M05.04 permanece VALIDANDO por dependencia persistente C03-01.M03.04 con DAG NO e impedimento de independencia A5 precedente; excepción R1 para WIP propio, sin nuevo claim.
 - Checkout: tras validación fallida y render de errores ARIA, dirigir foco al primer control inválido real en orden de formulario. Conservar validadores, permisos, datos, proveedor y flujos de pago. E2E Fase 10 activa por Enter, verifica foco automático y Tab a teléfono, corrige nombre y verifica siguiente inválido; no inyecta foco para pasar la aserción. SKREF-03/10 originales pin revisado; CI GitHub-hosted y A0-A4 globales pendientes; A5 distinta; rollback revert ordinario, solo dev.
+
+
+## 2026-11-26 — DEV04 — C04-02.M03.06 — V44/R1/R5
+
+- TASK_ID=6aeacb7820ac8191b7d768a6f33dfa09 RUN_ID=bd94d4ab-3490-8327-874f-85cbe2a8d2e0. Base 7c9b2266bad4493105727e3aa6d3ef4426c3e6fe. V17 H631:I631. R2: G13 privacy. The isolated durable audit sink accepted arbitrary uppercase outcome codes when candidate=false; enforce exact allowlist of all 25 current preflight outcomes before DB I/O, preserve candidate and GUID checks. MySQL84 regression rejects syntactically valid synthetic private outcome and retains two committed rows. SKREF-11 pin 49f948faa9258a0c61caceaf225e179651397431. No commercial policy, schema, production DI or authorization granted. A0 static diff; A1-A4 exact SHA CI pending; independent A5 pending; VALIDANDO unchanged. Rollback normal dev git revert. R1 exception: collective focus C02-01.M05.04 blocked by DAG425 NO and predecessor independent A5. No QA/main/PROD.

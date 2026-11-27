@@ -22,9 +22,7 @@ public sealed class C0402IsolatedMySqlContractAuditSink(Func<DbConnection> facto
         if (entry is null ||
             entry.EventCode != "C0402_CONTRACT_PREFLIGHT" ||
             !Guid.TryParseExact(entry.EventId, "N", out var eventId) || eventId == Guid.Empty ||
-            entry.OutcomeCode is not { Length: >= 3 and <= 96 } ||
-            !entry.OutcomeCode.All(static c =>
-                c is >= 'A' and <= 'Z' or >= '0' and <= '9' or '_'))
+            !IsAllowedOutcome(entry.OutcomeCode))
             return false;
 
         // The audit outcome is server-controlled; a hostile or buggy caller
@@ -80,6 +78,35 @@ public sealed class C0402IsolatedMySqlContractAuditSink(Func<DbConnection> facto
             return false;
         }
     }
+
+    // Formatting alone does not prevent caller data from entering durable audit.
+    // Only the fixed server preflight outcomes are permitted.
+    private static bool IsAllowedOutcome(string? code) => code is
+        "CLIENT_AUTHORITY_OR_SIDE_EFFECT_DENIED" or
+        "CLIENT_CONTRACT_INTENT_INVALID" or
+        "CLIENT_TENANT_HINT_MISMATCH" or
+        "D01_D02_APPROVAL_REQUIRED" or
+        "D04_RENEWAL_POLICY_OR_FUTURE_PERIOD_REQUIRED" or
+        "D07_D08_APPROVAL_REQUIRED" or
+        "EXPIRY_NOT_SUPPORTED_BY_PERIOD" or
+        "INVALID_STATE_TRANSITION" or
+        "JWT_RBAC_MEMBERSHIP_DENIED" or
+        "LIVE_SERVER_JWT_RBAC_MEMBERSHIP_REQUIRED" or
+        "MOROSITY_OR_TIMEOUT_NOT_VERIFIED" or
+        "REACTIVATION_RECONCILIATION_REQUIRED" or
+        "REAL_AUTHORIZED_ATOMIC_TRANSACTION_AND_POLICY_STILL_REQUIRED" or
+        "RETROACTIVE_TRANSITION_DENIED" or
+        "SAFE_CAUSE_REQUIRED" or
+        "SERVER_ACTOR_SOURCE_UNAVAILABLE" or
+        "SERVER_CONTRACT_SOURCE_UNAVAILABLE" or
+        "SERVER_PREFLIGHT_UNAVAILABLE" or
+        "STALE_OR_INVALID_CONTRACT_VERSION" or
+        "TENANT_OR_RESOURCE_OWNERSHIP_DENIED" or
+        "TERMINAL_CONTRACT_DENIED" or
+        "UNKNOWN_STATE_OR_OPERATION_DENIED" or
+        "UTC_PERIOD_EVIDENCE_INVALID" or
+        "VERIFIED_OWNED_CONTRACT_VERSION_AND_POLICY_REQUIRED" or
+        "VERIFIED_SERVER_CONTEXT_REQUIRED";
 
     private static bool IsIsolated(string connectionString)
     {
