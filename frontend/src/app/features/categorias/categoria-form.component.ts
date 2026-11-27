@@ -12,6 +12,7 @@ import { catchError, forkJoin, of, switchMap, tap, throwError } from 'rxjs';
 import { CategoriaService } from '../../services/categoria.service';
 import { PermisosRuntimeService } from '../../core/auth/permisos-runtime.service';
 import { TenantContextService } from '../../core/auth/tenant-context.service';
+import { MAX_MB_FOTO_CATEGORIA, MAX_BYTES_FOTO_OPTIMIZADA_CATEGORIA, esFotoCategoriaValida } from './categoria-galeria-limites';
 
 interface ImagenCategoriaPreview {
   id?: string;
@@ -48,6 +49,7 @@ export class CategoriaFormComponent implements OnInit, OnDestroy {
   readonly errorGaleria = signal<string | null>(null);
   readonly imagenes = signal<ImagenCategoriaPreview[]>([]);
   readonly maxImagenes = 5;
+  readonly maxMbPorFoto = MAX_MB_FOTO_CATEGORIA;
   private categoriaId: number | null = null;
   private activa = true;
   private version = '';
@@ -126,8 +128,8 @@ export class CategoriaFormComponent implements OnInit, OnDestroy {
     const nuevas: ImagenCategoriaPreview[] = [];
     try {
       for (const archivo of archivos) {
-        if (!['image/jpeg', 'image/png', 'image/webp'].includes(archivo.type) || archivo.size === 0 || archivo.size > 10 * 1024 * 1024) {
-          throw new Error('Selecciona imágenes JPG, PNG o WebP de hasta 10 MB cada una.');
+        if (!esFotoCategoriaValida(archivo)) {
+          throw new Error(`Selecciona imágenes JPG, PNG o WebP de hasta ${this.maxMbPorFoto} MB cada una.`);
         }
         const optimizada = await this.optimizar(archivo);
         if (this.destruido) return;
@@ -146,7 +148,7 @@ export class CategoriaFormComponent implements OnInit, OnDestroy {
   }
 
   private async optimizar(archivo: File): Promise<File> {
-    const limite = 750 * 1024;
+    const limite = MAX_BYTES_FOTO_OPTIMIZADA_CATEGORIA;
     if (archivo.size <= limite) return archivo;
     const bitmap = await createImageBitmap(archivo);
     try {

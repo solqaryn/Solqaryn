@@ -1,3 +1,10 @@
+## 2026-11-27 — QA-FN-05: límite de 15 MB para galerías de categorías
+
+- Orden expresa del propietario: sólo `qa`. El selector admite originales JPG/PNG/WebP de hasta 15 MiB por foto; se mantiene la optimización de 750 KiB por foto (máximo cinco) para atravesar el proxy existente. El contrato agregado de la galería en API pasa de 4 a 15 MiB; multipart de 16 MiB con margen para metadatos. La validación profunda compartida conserva su límite por archivo de 10 MiB y sus controles de contenido; el navegador transmite imágenes optimizadas. No se amplían otros módulos, no cambian permisos, esquema ni cuentas de infraestructura.
+- Regresiones dirigidas: frontera de 15 MiB agregados, rechazo de un byte adicional antes de subir/persistir, validación de originales y presupuesto optimizado. QA CI incorpora prueba frontend. Certificación de ejecución y despliegue pendiente; no se retira QA-FN-05 ni la operación viva de galerías.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-27 — QA-FN-05: cierre funcional vivo de checkout y administración de envíos
 
 - Run 46022223048 SHA 180fe8ed81d816278a24087ee73a436244e0e0eb, success 2/2, jobs 140584469500 checkout escritorio y 140585814172 envíos A/B. Scope Lock y esquema V3 exacto aprobados en ambos: 29 propietarias + galería, 52 relaciones, 12 claves, 10 triggers, historial 112. Readiness Render/proxy aprobado. Móvil ya acreditado por checkpoints del job 140574278095, run 46019247592. Escritorio: bootstrap, vacío, hidratación, cero, pago, sin cobertura, restablecimiento, totales, geometría y canal seguro; 10 HTTP 200 en contexto/validación; QA_V3_CHECKOUT_DESKTOP_CERTIFICATE=PASS, QA_V3_CHECKOUT_BROWSER_REAL_QUOTE=PASS, QA_CHECKOUT_FIXTURES_REMOVED=PASS. Stock no mutado comprobado. WhatsApp no configurado, tarjeta deshabilitada; no se certifica pedido/cobro ERP.

@@ -80,4 +80,54 @@ public sealed class CategoriaGaleriaServiceTests
             new ActualizarCategoriaGaleriaDto { Version = "anterior" }, default));
         _storage.VerifyNoOtherCalls();
     }
+
+    private static IFormFile ImagenConLongitud(long longitud)
+    {
+        var imagen = new Mock<IFormFile>();
+        imagen.SetupGet(x => x.Length).Returns(longitud);
+        imagen.SetupGet(x => x.FileName).Returns("foto.png");
+        imagen.SetupGet(x => x.ContentType).Returns("image/png");
+        return imagen.Object;
+    }
+
+    [Fact]
+    public async Task AceptaQuinceMbAgregados_EnDosFotosValidas()
+    {
+        const long mitad = 15L * 1024 * 1024 / 2;
+        var dto = new ActualizarCategoriaGaleriaDto
+        {
+            Orden = new() { "n:0", "n:1" },
+            Archivos = new() { ImagenConLongitud(mitad), ImagenConLongitud(mitad) }
+        };
+        _storage.SetupSequence(x => x.UploadAsync(_tenant, It.IsAny<IFormFile>(), It.IsAny<CancellationToken>()))
+            .ReturnsAsync(("https://res.cloudinary.com/test/image/upload/a.png", "empresas/7/a"))
+            .ReturnsAsync(("https://res.cloudinary.com/test/image/upload/b.png", "empresas/7/b"));
+        _galerias.Setup(x => x.SaveAsync(It.IsAny<CategoriaGaleria>(), true, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var resultado = await _service.GuardarAsync(_tenant, 4, dto, default);
+
+        Assert.NotNull(resultado);
+        Assert.Equal(2, resultado.Imagenes.Count);
+        _galerias.Verify(x => x.SaveAsync(It.Is<CategoriaGaleria>(g => g.EmpresaId == 7 && g.CategoriaId == 4),
+            true, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Fact]
+    public async Task RechazaQuinceMbMasUnByte_AntesDeSubirOPersistir()
+    {
+        const long mitad = 15L * 1024 * 1024 / 2;
+        var dto = new ActualizarCategoriaGaleriaDto
+        {
+            Orden = new() { "n:0", "n:1" },
+            Archivos = new() { ImagenConLongitud(mitad), ImagenConLongitud(mitad + 1) }
+        };
+
+        var error = await Assert.ThrowsAsync<BusinessRuleException>(() => _service.GuardarAsync(_tenant, 4, dto, default));
+
+        Assert.Contains("15 MB", error.Message);
+        _storage.VerifyNoOtherCalls();
+        _galerias.Verify(x => x.SaveAsync(It.IsAny<CategoriaGaleria>(), It.IsAny<bool>(),
+            It.IsAny<CancellationToken>()), Times.Never);
+    }
 }

@@ -50,7 +50,7 @@
         }
       </div>
       <input #selectorImagenes type="file" accept="image/jpeg,image/png,image/webp" multiple hidden (change)="seleccionarImagenes($event)">
-      <p class="gallery-help">Hasta 10 MB por fotografía. Las imágenes grandes se optimizan antes del envío.</p>
+      <p class="gallery-help">Hasta {{ maxMbPorFoto }} MB por fotografía. Las imágenes grandes se optimizan antes del envío.</p>
     } @else {
       <p class="gallery-help">La edición de fotografías requiere permiso de edición de categorías y una galería disponible.</p>
     }

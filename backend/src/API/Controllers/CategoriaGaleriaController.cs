@@ -26,8 +26,8 @@ public sealed class CategoriaGaleriaController(ICategoriaGaleriaService galerias
 
     [HttpPut]
     [Consumes("multipart/form-data")]
-    [RequestSizeLimit(4_500_000)]
-    [RequestFormLimits(MultipartBodyLengthLimit = 4_500_000)]
+    [RequestSizeLimit(ActualizarCategoriaGaleriaDto.MaxRequestBytes)]
+    [RequestFormLimits(MultipartBodyLengthLimit = ActualizarCategoriaGaleriaDto.MaxRequestBytes)]
     [RequierePermiso(ModuloSistema.Categorias, AccionPermiso.Editar)]
     public async Task<IActionResult> Guardar(int categoriaId, [FromForm] ActualizarCategoriaGaleriaDto dto, CancellationToken cancellationToken)
     {

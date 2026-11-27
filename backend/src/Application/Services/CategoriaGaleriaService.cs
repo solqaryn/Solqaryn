@@ -18,7 +18,6 @@ public sealed class CategoriaGaleriaService(
     ILogger<CategoriaGaleriaService> logger) : ICategoriaGaleriaService
 {
     private const int MaxImagenes = ImagenValidationHelper.MaxImagenes;
-    private const long MaxTotalBytes = 4L * 1024 * 1024;
     private sealed record ImagenPersistida(string Id, string Url, string PublicId);
 
     public async Task<CategoriaGaleriaDto?> ObtenerAsync(StorageTenantContext tenant, int categoriaId, CancellationToken cancellationToken)
@@ -33,8 +32,8 @@ public sealed class CategoriaGaleriaService(
         if (await categorias.GetByIdAsync(categoriaId) is null) return null;
         if (dto.Orden.Count > MaxImagenes || dto.Archivos.Count > MaxImagenes)
             throw new BusinessRuleException("Cada categoría permite un máximo de cinco imágenes.");
-        if (dto.Archivos.Any(a => !ImagenValidationHelper.EsImagenValida(a)) || dto.Archivos.Sum(a => a.Length) > MaxTotalBytes)
-            throw new BusinessRuleException("Utiliza JPG, PNG o WebP válidos; el envío optimizado no puede superar 4 MB.");
+        if (dto.Archivos.Any(a => !ImagenValidationHelper.EsImagenValida(a)) || dto.Archivos.Sum(a => a.Length) > ActualizarCategoriaGaleriaDto.MaxTotalBytes)
+            throw new BusinessRuleException("Utiliza JPG, PNG o WebP válidos; el envío no puede superar 15 MB en total.");
 
         var galeria = await galerias.GetAsync(tenant.EmpresaId, categoriaId, cancellationToken);
         var nueva = galeria is null;

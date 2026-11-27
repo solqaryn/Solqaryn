@@ -105,6 +105,8 @@ jobs:
       - run: npm audit --audit-level=high
       - run: npm audit --omit=dev --audit-level=high
       - run: npm run lint
+      - name: Regresión de límite de galerías de categorías
+        run: npm run test:unit -- --include=src/app/features/categorias/categoria-galeria-limites.spec.ts
       - name: Regresión de nombres de tallas
         run: npm run test:unit -- --include=src/app/features/catalogos-producto/catalogo-producto-list.component.spec.ts
       - name: Regresión de tabla única de Clientes
