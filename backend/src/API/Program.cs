@@ -357,7 +357,11 @@ if (app.Configuration.GetValue<bool>("Database:ApplyMigrationsOnStartup"))
         if (adminRolId <= 0) throw new InvalidOperationException("No existe un rol administrador dinámico activo para SeedAdmin.");
         db.Usuarios.Add(new Usuario { NombreUsuario = adminUsername, NombreCompleto = "Administrador", PasswordHash = BCrypt.Net.BCrypt.HashPassword(adminPassword), RolId = adminRolId, Activo = true, FechaCreacion = DateTime.UtcNow }); await db.SaveChangesAsync();
     }
-    var seedFiscalService = new SeedFiscalService(db); await seedFiscalService.SeedDefaultsAsync();
+    // No use of HTTP authority for startup fiscal maintenance. Explicitly
+    // create an offline context; the service provisions only persisted active
+    // companies and never recreates or reactivates administrative deletions.
+    await using var fiscalDb = new AppDbContext(scope.ServiceProvider.GetRequiredService<DbContextOptions<AppDbContext>>());
+    await new SeedFiscalService(fiscalDb).SeedDefaultsAsync();
 }
 await app.RunAsync();
 

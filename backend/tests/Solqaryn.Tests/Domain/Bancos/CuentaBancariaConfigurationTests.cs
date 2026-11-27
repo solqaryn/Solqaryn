@@ -72,9 +72,13 @@ public sealed class CuentaBancariaConfigurationTests
         Assert.NotNull(entity);
 
         var uniqueIndex = entity.GetIndexes()
-            .SingleOrDefault(i => i.Properties.Select(p => p.Name).SequenceEqual(new[] { nameof(CuentaBancaria.BancoId), nameof(CuentaBancaria.NumeroCuenta) }));
+            .SingleOrDefault(i => i.Properties.Select(p => p.Name).SequenceEqual(new[] { QaCommercialOwnershipV1.ScopeColumn, nameof(CuentaBancaria.BancoId), nameof(CuentaBancaria.NumeroCuenta) }));
         Assert.NotNull(uniqueIndex);
         Assert.True(uniqueIndex.IsUnique);
+        Assert.Equal("UX_CuentasBancarias_BancoId_NumeroCuenta", uniqueIndex.GetDatabaseName());
+        Assert.Equal("COALESCE(`EmpresaId`, 0)", entity.FindProperty(QaCommercialOwnershipV1.ScopeColumn)?.GetComputedColumnSql());
+        Assert.DoesNotContain(entity.GetIndexes(), i => i.IsUnique && i.Properties.Select(p => p.Name).SequenceEqual(new[] { nameof(CuentaBancaria.BancoId), nameof(CuentaBancaria.NumeroCuenta) }));
+        Assert.Contains(entity.GetIndexes(), i => i.IsUnique && i.Properties.Select(p => p.Name).SequenceEqual(new[] { "EmpresaId", "Id" }));
 
         var estadoIndex = entity.GetIndexes()
             .SingleOrDefault(i => i.Properties.Select(p => p.Name).SequenceEqual(new[] { nameof(CuentaBancaria.Estado) }));

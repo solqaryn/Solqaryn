@@ -16,9 +16,37 @@ public class SeedFiscalService
         _context = context;
     }
 
+    // Explicit maintenance context only, never the HTTP-scoped context.
+    // Each company has its own seed; existing fiscal decisions remain untouched.
     public async Task SeedDefaultsAsync()
     {
+        if (_context.CommercialRequestRequiresTenant)
+            throw new InvalidOperationException("La inicialización fiscal requiere un contexto interno sin solicitud HTTP.");
+        var companies = await _context.Set<Empresa>().AsNoTracking()
+            .Where(e => e.Activa).OrderBy(e => e.Id).Select(e => e.Id).ToListAsync();
+        foreach (var empresaId in companies)
+        {
+            if (_context.Database.IsRelational())
+            {
+                await using var transaction = await _context.Database.BeginTransactionAsync();
+                var locked = await _context.Database.SqlQueryRaw<int>(
+                    "SELECT Id AS Value FROM Empresas WHERE Id={0} AND Activa=1 FOR UPDATE", empresaId).ToListAsync();
+                if (locked.Count != 1)
+                    throw new InvalidOperationException("Empresa activa no disponible para inicialización fiscal.");
+                await SeedEmpresaAsync(empresaId);
+                await transaction.CommitAsync();
+            }
+            else
+            {
+                await SeedEmpresaAsync(empresaId);
+            }
+        }
+    }
+
+    private async Task SeedEmpresaAsync(int empresaId)
+    {
         await CrearImpuestoSiNoExisteAsync(
+            empresaId: empresaId,
             codigo: "ISV15",
             nombre: "ISV 15%",
             descripcion: "Impuesto sobre ventas general, incluido en el precio de venta cuando corresponda.",
@@ -29,6 +57,7 @@ public class SeedFiscalService
             operaciones: new[] { OperacionImpuesto.Venta });
 
         await CrearImpuestoSiNoExisteAsync(
+            empresaId: empresaId,
             codigo: "ISC5",
             nombre: "ISC 5%",
             descripcion: "Impuesto selectivo al consumo disponible para compras cuando corresponda.",
@@ -42,6 +71,7 @@ public class SeedFiscalService
     }
 
     private async Task CrearImpuestoSiNoExisteAsync(
+        int empresaId,
         string codigo,
         string nombre,
         string descripcion,
@@ -57,7 +87,7 @@ public class SeedFiscalService
         // índice único de Codigo durante un reinicio de la API.
         var existe = await _context.Impuestos
             .IgnoreQueryFilters()
-            .AnyAsync(i => i.Codigo == codigo);
+            .AnyAsync(i => EF.Property<int?>(i, "EmpresaId") == empresaId && i.Codigo == codigo);
         if (existe) return;
 
         var impuesto = new Impuesto
@@ -83,6 +113,9 @@ public class SeedFiscalService
         };
 
         _context.Impuestos.Add(impuesto);
+        _context.Entry(impuesto).Property("EmpresaId").CurrentValue = empresaId;
+        foreach (var operacion in impuesto.Operaciones)
+            _context.Entry(operacion).Property("EmpresaId").CurrentValue = empresaId;
     }
 
 }

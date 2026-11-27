@@ -1,4 +1,6 @@
 using Solqaryn.Domain.Enums;
+using Solqaryn.Domain.Entities;
+using Microsoft.AspNetCore.Http;
 using Solqaryn.Infrastructure.Persistence;
 using Solqaryn.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
@@ -19,6 +21,9 @@ public class SeedFiscalServiceTests
         var opciones = CrearOpciones($"fiscal-seed-{Guid.NewGuid():N}");
 
         await using var db = new AppDbContext(opciones);
+        var company = new Empresa("QA fiscal A");
+        db.Add(company);
+        await db.SaveChangesAsync();
         var seed = new SeedFiscalService(db);
 
         await seed.SeedDefaultsAsync();
@@ -42,6 +47,8 @@ public class SeedFiscalServiceTests
         Assert.True(isv.Activo);
         Assert.True(isv.IncluidoEnPrecio);
         Assert.Equal(OperacionImpuesto.Venta, Assert.Single(isv.Operaciones).Operacion);
+        Assert.All(impuestos, i => Assert.Equal(company.Id, (int?)db.Entry(i).Property("EmpresaId").CurrentValue));
+        Assert.All(impuestos.SelectMany(i => i.Operaciones), o => Assert.Equal(company.Id, (int?)db.Entry(o).Property("EmpresaId").CurrentValue));
     }
 
     [Fact]
@@ -51,6 +58,8 @@ public class SeedFiscalServiceTests
 
         await using (var primerContexto = new AppDbContext(opciones))
         {
+            primerContexto.Add(new Empresa("QA fiscal"));
+            await primerContexto.SaveChangesAsync();
             await new SeedFiscalService(primerContexto).SeedDefaultsAsync();
 
             var isv = await primerContexto.Impuestos.SingleAsync(i => i.Codigo == "ISV15");
@@ -82,6 +91,8 @@ public class SeedFiscalServiceTests
 
         await using (var primerContexto = new AppDbContext(opciones))
         {
+            primerContexto.Add(new Empresa("QA fiscal"));
+            await primerContexto.SaveChangesAsync();
             await new SeedFiscalService(primerContexto).SeedDefaultsAsync();
             var isc = await primerContexto.Impuestos.SingleAsync(i => i.Codigo == "ISC5");
             isc.Eliminado = true;
@@ -101,5 +112,28 @@ public class SeedFiscalServiceTests
         Assert.True(persistido.Eliminado);
         Assert.False(persistido.Activo);
         Assert.NotNull(persistido.FechaEliminacion);
+    }
+
+    [Fact]
+    public async Task SeedDefaultsAsync_SeparaEmpresas_YNoAdmiteContextoHttp()
+    {
+        var options = CrearOpciones($"fiscal-scope-{Guid.NewGuid():N}");
+        await using var db = new AppDbContext(options);
+        var a = new Empresa("Fiscal A"); var b = new Empresa("Fiscal B");
+        db.AddRange(a,b);
+        await db.SaveChangesAsync();
+        await new SeedFiscalService(db).SeedDefaultsAsync();
+        await new SeedFiscalService(db).SeedDefaultsAsync();
+        var rows = await db.Impuestos.Include(i => i.Operaciones).ToListAsync();
+        Assert.Equal(4, rows.Count);
+        foreach (var id in new[] { a.Id, b.Id })
+        {
+            var owned = rows.Where(i => (int?)db.Entry(i).Property("EmpresaId").CurrentValue == id).ToArray();
+            Assert.Equal(2, owned.Length);
+            Assert.All(owned.SelectMany(i => i.Operaciones), o =>
+                Assert.Equal(id, (int?)db.Entry(o).Property("EmpresaId").CurrentValue));
+        }
+        await using var http = new AppDbContext(options, httpContextAccessor: new HttpContextAccessor());
+        await Assert.ThrowsAsync<InvalidOperationException>(() => new SeedFiscalService(http).SeedDefaultsAsync());
     }
 }

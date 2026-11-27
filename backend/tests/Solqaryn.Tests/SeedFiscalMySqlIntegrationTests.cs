@@ -1,4 +1,5 @@
 using MySql.EntityFrameworkCore.Extensions;
+using Solqaryn.Domain.Entities;
 using Solqaryn.Infrastructure.Persistence;
 using Solqaryn.Infrastructure.Services;
 using Microsoft.EntityFrameworkCore;
@@ -25,6 +26,8 @@ public class SeedFiscalMySqlIntegrationTests
             await using (var inicial = new AppDbContext(opciones))
             {
                 await Phase7MySqlTestDatabase.InitializeFreshAsync(inicial);
+                inicial.Add(new Empresa("QA fiscal"));
+                await inicial.SaveChangesAsync();
                 await new SeedFiscalService(inicial).SeedDefaultsAsync();
 
                 var isc = await inicial.Impuestos.SingleAsync(x => x.Codigo == "ISC5");
@@ -48,6 +51,8 @@ public class SeedFiscalMySqlIntegrationTests
                 Assert.False(persistido.Activo);
                 Assert.NotNull(persistido.FechaEliminacion);
                 Assert.Equal(2, await reinicio.Impuestos.IgnoreQueryFilters().CountAsync());
+                Assert.True(await reinicio.Impuestos.IgnoreQueryFilters().AllAsync(i => EF.Property<int?>(i, "EmpresaId") != null));
+                Assert.True(await reinicio.ImpuestoOperaciones.AllAsync(o => EF.Property<int?>(o, "EmpresaId") != null));
             }
         }
         finally
@@ -68,6 +73,8 @@ public class SeedFiscalMySqlIntegrationTests
             await using (var inicial = new AppDbContext(opciones))
             {
                 await Phase7MySqlTestDatabase.InitializeFreshAsync(inicial);
+                inicial.Add(new Empresa("QA fiscal"));
+                await inicial.SaveChangesAsync();
                 await new SeedFiscalService(inicial).SeedDefaultsAsync();
 
                 var isv = await inicial.Impuestos.SingleAsync(x => x.Codigo == "ISV15");
@@ -89,6 +96,8 @@ public class SeedFiscalMySqlIntegrationTests
                 Assert.False(isv.Activo);
                 Assert.False(isv.IncluidoEnPrecio);
                 Assert.Equal(2, await reinicio.Impuestos.IgnoreQueryFilters().CountAsync());
+                Assert.True(await reinicio.Impuestos.IgnoreQueryFilters().AllAsync(i => EF.Property<int?>(i, "EmpresaId") != null));
+                Assert.True(await reinicio.ImpuestoOperaciones.AllAsync(o => EF.Property<int?>(o, "EmpresaId") != null));
             }
         }
         finally

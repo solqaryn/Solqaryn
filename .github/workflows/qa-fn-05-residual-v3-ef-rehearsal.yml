@@ -156,6 +156,8 @@ jobs:
           python3 .github/qa/qa-commercial-v3-ef-verify.py capture
           pushd backend
           dotnet tool restore
+          dotnet restore src/API/Solqaryn.API.csproj
+          dotnet restore src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj
           dotnet ef migrations has-pending-model-changes --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release
           dotnet ef database update 20261126223000_QaCommercialOwnershipV3 --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release --connection "$ConnectionStrings__DefaultConnection"
           popd

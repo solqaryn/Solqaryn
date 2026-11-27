@@ -24,8 +24,13 @@ public class N17ConteoInventarioPersistenceModelTests
         Assert.Equal("ConteoInventarioDetalles", detalle!.GetTableName());
 
         var numero = Assert.Single(conteo.GetIndexes().Where(i =>
-            i.Properties.Select(p => p.Name).SequenceEqual(new[] { nameof(ConteoInventario.Numero) })));
+            i.Properties.Select(p => p.Name).SequenceEqual(new[] { QaCommercialOwnershipV1.ScopeColumn, nameof(ConteoInventario.Numero) })));
         Assert.True(numero.IsUnique);
+        Assert.Equal("UX_ConteosInventario_Numero", numero.GetDatabaseName());
+        Assert.Equal("COALESCE(`EmpresaId`, 0)", conteo.FindProperty(QaCommercialOwnershipV1.ScopeColumn)?.GetComputedColumnSql());
+        Assert.DoesNotContain(conteo.GetIndexes(), i => i.IsUnique && i.Properties.Select(p => p.Name).SequenceEqual(new[] { nameof(ConteoInventario.Numero) }));
+        Assert.Contains(conteo.GetIndexes(), i => i.IsUnique && i.Properties.Select(p => p.Name).SequenceEqual(new[] { "EmpresaId", "AlmacenId", "Id" }));
+        Assert.Contains(detalle.GetIndexes(), i => i.Properties.Select(p => p.Name).SequenceEqual(new[] { "EmpresaId", "AlmacenId", "ConteoInventarioId" }));
 
         var scopeConteo = Assert.Single(conteo.GetKeys().Where(k =>
             k.Properties.Select(p => p.Name).SequenceEqual(new[]

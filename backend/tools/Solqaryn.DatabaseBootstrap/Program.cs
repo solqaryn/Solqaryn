@@ -154,9 +154,19 @@ if (mode == "fresh" &&
     System.Text.RegularExpressions.Regex.IsMatch(connectionString,
         @"\AServer=127\.0\.0\.1;Port=3306;Database=solqaryn_qa_route_audit;User=root;Password=[^;]+;SslMode=Required;\z"))
 {
+    // This exact disposable QA-only gate also owns the company used by the
+    // authenticated route fixtures. Provision defaults before the API starts.
+    await using var fixtureTransaction = await db.Database.BeginTransactionAsync();
+    if (await db.Set<Solqaryn.Domain.Entities.Empresa>().AnyAsync())
+        throw new InvalidOperationException("QA route fixture expected an empty company catalogue.");
+    var company = new Solqaryn.Domain.Entities.Empresa("CI Tenant 1");
     var plan = new Solqaryn.Domain.Entities.Plan("QA_ROUTE_AUDIT", "Plan de prueba QA");
-    db.Set<Solqaryn.Domain.Entities.Plan>().Add(plan);
+    db.AddRange(company, plan);
     await db.SaveChangesAsync();
+    if (company.Id != 1)
+        throw new InvalidOperationException("QA route fixture company ID mismatch.");
+    await QaCommercialOwnershipV3.ProvisionDefaultsAsync(db, company.Id);
+    await fixtureTransaction.CommitAsync();
     if (plan.Id <= 0 || !await db.Set<Solqaryn.Domain.Entities.Plan>()
             .AsNoTracking().AnyAsync(x => x.Id == plan.Id && x.Codigo == "QA_ROUTE_AUDIT" && x.Activo))
         throw new InvalidOperationException("QA route audit plan was not persisted.");

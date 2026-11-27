@@ -14,6 +14,8 @@ on:
       - 'backend/tests/Solqaryn.Tests/QaCommercialOwnershipMySqlTests.cs'
       - 'backend/tests/Solqaryn.Tests/QaCommercialOwnershipV2MySqlTests.cs'
       - 'backend/tests/Solqaryn.Tests/QaCommercialOwnershipV3MySqlTests.cs'
+      - 'backend/src/Infrastructure/Services/SeedFiscalService.cs'
+      - 'backend/tests/Solqaryn.Tests/SeedFiscalMySqlIntegrationTests.cs'
       - 'backend/src/Infrastructure.Migrations/Migrations/20261126223000_QaCommercialOwnershipV3.cs'
       - 'backend/src/Infrastructure/Persistence/CanonicalMySqlPhysicalContract.cs'
 
@@ -56,7 +58,7 @@ jobs:
         working-directory: backend
         run: |
           set -euo pipefail
-          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter 'FullyQualifiedName~QaCommercialOwnershipMySqlTests|FullyQualifiedName~QaCommercialOwnershipV2MySqlTests|FullyQualifiedName~QaCommercialOwnershipV3MySqlTests' --logger "trx;LogFileName=qa-commercial-ownership.trx"
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter 'FullyQualifiedName~QaCommercialOwnershipMySqlTests|FullyQualifiedName~QaCommercialOwnershipV2MySqlTests|FullyQualifiedName~QaCommercialOwnershipV3MySqlTests|FullyQualifiedName~SeedFiscalMySqlIntegrationTests' --logger "trx;LogFileName=qa-commercial-ownership.trx"
           echo QA_COMMERCIAL_OWNERSHIP_MYSQL=PASS
       - name: Comprobar snapshot y generar migración EF exacta
         working-directory: backend

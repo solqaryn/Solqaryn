@@ -113,12 +113,21 @@ jobs:
           dotnet restore Solqaryn.sln
           dotnet build Solqaryn.sln --configuration Release --no-restore
           dotnet run --project tools/Solqaryn.DatabaseBootstrap/Solqaryn.DatabaseBootstrap.csproj --configuration Release --no-build
-          nohup dotnet run --project src/API/Solqaryn.API.csproj --configuration Release --no-build --no-launch-profile > "$RUNNER_TEMP/qa-route-api.log" 2>&1 &
+          log="$RUNNER_TEMP/qa-route-api.log"
+          nohup dotnet run --project src/API/Solqaryn.API.csproj --configuration Release --no-build --no-launch-profile > "$log" 2>&1 &
+          api_pid=$!
           for attempt in $(seq 1 90); do
-            if curl --fail --silent http://127.0.0.1:5005/health > /dev/null && curl --fail --silent http://127.0.0.1:5005/health/ready > /dev/null; then exit 0; fi
+            if ! kill -0 "$api_pid" 2>/dev/null; then
+              echo 'La API local terminó antes de readiness.' >&2
+              grep -E 'Unhandled exception|Exception:|^[[:space:]]+at |^[[:space:]]*fail:' "$log" | tail -n 60 >&2 || true
+              exit 1
+            fi
+            if curl --fail --silent --max-time 3 http://127.0.0.1:5005/health > /dev/null && curl --fail --silent --max-time 3 http://127.0.0.1:5005/health/ready > /dev/null; then exit 0; fi
             sleep 2
           done
           echo 'La API local no alcanzó readiness.' >&2
+          grep -E 'Unhandled exception|Exception:|^[[:space:]]+at |^[[:space:]]*fail:' "$log" | tail -n 60 >&2 || true
+          kill "$api_pid" 2>/dev/null || true
           exit 1
       - uses: actions/setup-node@v4
         with:
