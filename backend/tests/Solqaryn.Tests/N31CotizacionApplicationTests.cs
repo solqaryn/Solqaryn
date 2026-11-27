@@ -164,6 +164,44 @@ public sealed class N31CotizacionApplicationTests
     }
 
     [Fact]
+    public async Task Crear_usa_etiquetas_de_variante_bloqueada_sin_relectura_rastreada()
+    {
+        _clientes.Setup(x => x.GetByIdAsync(1)).ReturnsAsync(new Cliente { Id = 1, Nombre = "Cliente", Activo = true });
+        _productos.Setup(x => x.GetByIdsForReadLockAsync(It.IsAny<IEnumerable<int>>())).ReturnsAsync(
+            new List<Producto> { new() { Id = 10, Nombre = "Producto", Precio = 25m, Activo = true, TipoInventario = TipoInventario.MercaderiaVenta } });
+        _variantes.Setup(x => x.GetByIdsForReadLockAsync(It.IsAny<IEnumerable<int>>())).ReturnsAsync(
+            new List<ProductoVariante> { new() { Id = 81, ProductoId = 10, Activo = true, Precio = 80m,
+                Marca = new Marca { Nombre = "Marca vigente" }, Modelo = new Modelo { Nombre = "Modelo vigente" },
+                Color = new Color { Nombre = "Color vigente" }, Talla = new Talla { Nombre = "Talla vigente" } } });
+        _variantes.Setup(x => x.GetByIdAsync(81)).ReturnsAsync(new ProductoVariante
+        {
+            Id = 81, ProductoId = 10, Activo = true, Precio = 25m,
+            Marca = new Marca { Nombre = "Marca anterior" }, Modelo = new Modelo { Nombre = "Modelo anterior" },
+            Color = new Color { Nombre = "Color anterior" }, Talla = new Talla { Nombre = "Talla anterior" }
+        });
+        Cotizacion? creada = null;
+        _repository.Setup(x => x.AddAsync(It.IsAny<Cotizacion>()))
+            .Callback<Cotizacion>(x => { x.Id = 77; creada = x; }).Returns(Task.CompletedTask);
+        _repository.Setup(x => x.SaveChangesAsync()).ReturnsAsync(true);
+        _repository.Setup(x => x.GetByIdAsync(77, true)).ReturnsAsync(() => creada);
+
+        var result = await _service.CrearAsync(new CreateCotizacionDto
+        {
+            ClienteId = 1, Detalles = [new CreateCotizacionDetalleDto
+            { ProductoId = 10, ProductoVarianteId = 81, Cantidad = 1m, PrecioUnitario = 25m }]
+        });
+
+        var line = Assert.Single(result.Detalles);
+        Assert.Equal(80m, line.PrecioUnitario);
+        Assert.Equal("Marca vigente", line.ProductoMarcaSnapshot);
+        Assert.Equal("Modelo vigente", line.ProductoModeloSnapshot);
+        Assert.Equal("Color vigente", line.ProductoColorSnapshot);
+        Assert.Equal("Talla vigente", line.ProductoTallaSnapshot);
+        _variantes.Verify(x => x.GetByIdsForReadLockAsync(It.IsAny<IEnumerable<int>>()), Times.Once);
+        _variantes.Verify(x => x.GetByIdAsync(It.IsAny<int>()), Times.Never);
+    }
+
+    [Fact]
     public async Task Enviar_usa_lock_for_update_y_auditoria_estricta()
     {
         var cotizacion = CrearBorradorValido(12);

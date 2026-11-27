@@ -79,9 +79,16 @@ public sealed class C0701CotizacionDuplicacionMySqlIntegrationTests
             }).ToArray();
             db.Productos.AddRange(products);
             await db.SaveChangesAsync();
+            var marca = new Marca { Nombre = "QA Marca " + suffix };
+            var modelo = new Modelo { Nombre = "QA Modelo " + suffix, Marca = marca };
+            var color = new Color { Nombre = "QA Color " + suffix };
+            var talla = new Talla { Nombre = "QA Talla " + suffix };
+            db.AddRange(marca, modelo, color, talla);
+            await db.SaveChangesAsync();
             var variants = products.Select((p, i) => new ProductoVariante
             {
-                ProductoId = p.Id, Sku = "QA_" + suffix + i, Cantidad = 10, Precio = 25m, Costo = 12m
+                ProductoId = p.Id, Sku = "QA_" + suffix + i, Cantidad = 10, Precio = 25m, Costo = 12m,
+                MarcaId = marca.Id, ModeloId = modelo.Id, ColorId = color.Id, TallaId = talla.Id
             }).ToArray();
             db.ProductoVariantes.AddRange(variants);
             await db.SaveChangesAsync();
@@ -91,7 +98,9 @@ public sealed class C0701CotizacionDuplicacionMySqlIntegrationTests
                 var line = new CotizacionDetalle
                 {
                     ProductoId = products[i].Id, Producto = products[i], ProductoVarianteId = variants[i].Id,
-                    ProductoSkuSnapshot = variants[i].Sku, ProductoNombreSnapshot = products[i].Nombre
+                    ProductoSkuSnapshot = variants[i].Sku, ProductoNombreSnapshot = products[i].Nombre,
+                    ProductoMarcaSnapshot = marca.Nombre, ProductoModeloSnapshot = modelo.Nombre,
+                    ProductoColorSnapshot = color.Nombre, ProductoTallaSnapshot = talla.Nombre
                 };
                 line.EstablecerValores(i == 0 ? 2m : 1m, 25m);
                 quote.Detalles.Add(line);
@@ -130,9 +139,11 @@ public sealed class C0701CotizacionDuplicacionMySqlIntegrationTests
             Assert.Equal(original.ClienteNombreSnapshot, copy.ClienteNombreSnapshot);
             Assert.Equal(original.Total, copy.Total);
             var before = original.Detalles.OrderBy(x => x.ProductoId).Select(x =>
-                (x.ProductoId, x.ProductoVarianteId, x.Cantidad, x.PrecioUnitario, x.ProductoSkuSnapshot, x.ProductoNombreSnapshot)).ToArray();
+                (x.ProductoId, x.ProductoVarianteId, x.Cantidad, x.PrecioUnitario, x.ProductoSkuSnapshot, x.ProductoNombreSnapshot,
+                 x.ProductoMarcaSnapshot, x.ProductoModeloSnapshot, x.ProductoColorSnapshot, x.ProductoTallaSnapshot)).ToArray();
             var after = copy.Detalles.OrderBy(x => x.ProductoId).Select(x =>
-                (x.ProductoId, x.ProductoVarianteId, x.Cantidad, x.PrecioUnitario, x.ProductoSkuSnapshot, x.ProductoNombreSnapshot)).ToArray();
+                (x.ProductoId, x.ProductoVarianteId, x.Cantidad, x.PrecioUnitario, x.ProductoSkuSnapshot, x.ProductoNombreSnapshot,
+                 x.ProductoMarcaSnapshot, x.ProductoModeloSnapshot, x.ProductoColorSnapshot, x.ProductoTallaSnapshot)).ToArray();
             Assert.Equal(before, after);
             var receipt = Assert.Single(receipts);
             Assert.Equal(copy.Id, receipt.ReferenciaId);
@@ -314,12 +325,22 @@ public sealed class C0701CotizacionDuplicacionMySqlIntegrationTests
                 }
                 var stalePriceAccess = Access(tenant);
                 await using var stalePrice = new AppDbContext(options, tenantHttpContextAccessor: stalePriceAccess);
-                var cachedVariant = await stalePrice.ProductoVariantes.SingleAsync(x => x.Id == variantId);
+                var cachedVariant = await stalePrice.ProductoVariantes.Include(x => x.Marca).Include(x => x.Modelo)
+                    .Include(x => x.Color).Include(x => x.Talla).SingleAsync(x => x.Id == variantId);
                 Assert.Equal<decimal?>(25m, cachedVariant.Precio);
+                var oldLabels = (cachedVariant.Marca!.Nombre, cachedVariant.Modelo!.Nombre,
+                    cachedVariant.Color!.Nombre, cachedVariant.Talla!.Nombre);
+                var currentLabels = (oldLabels.Item1 + " vigente", oldLabels.Item2 + " vigente",
+                    oldLabels.Item3 + " vigente", oldLabels.Item4 + " vigente");
                 await using (var writer = new AppDbContext(options, tenantHttpContextAccessor: Access(tenant)))
                 {
-                    var variant = await writer.ProductoVariantes.SingleAsync(x => x.Id == variantId);
+                    var variant = await writer.ProductoVariantes.Include(x => x.Marca).Include(x => x.Modelo)
+                        .Include(x => x.Color).Include(x => x.Talla).SingleAsync(x => x.Id == variantId);
                     variant.Precio = 80m;
+                    variant.Marca!.Nombre = currentLabels.Item1;
+                    variant.Modelo!.Nombre = currentLabels.Item2;
+                    variant.Color!.Nombre = currentLabels.Item3;
+                    variant.Talla!.Nombre = currentLabels.Item4;
                     await writer.SaveChangesAsync();
                 }
                 var freshQuote = await Compose(stalePrice, stalePriceAccess).CrearAsync(new CreateCotizacionDto
@@ -328,12 +349,38 @@ public sealed class C0701CotizacionDuplicacionMySqlIntegrationTests
                     Detalles = [new CreateCotizacionDetalleDto { ProductoId = productId, ProductoVarianteId = variantId, Cantidad = 1m, PrecioUnitario = 25m }]
                 });
                 Assert.Equal(80m, freshQuote.Detalles.Single().PrecioUnitario);
+                var freshLine = freshQuote.Detalles.Single();
+                Assert.Equal(currentLabels, (freshLine.ProductoMarcaSnapshot, freshLine.ProductoModeloSnapshot,
+                    freshLine.ProductoColorSnapshot, freshLine.ProductoTallaSnapshot));
+                Assert.Equal(oldLabels, (cachedVariant.Marca!.Nombre, cachedVariant.Modelo!.Nombre,
+                    cachedVariant.Color!.Nombre, cachedVariant.Talla!.Nombre));
+                var edited = await Compose(stalePrice, stalePriceAccess).ActualizarAsync(new UpdateCotizacionDto
+                {
+                    Id = draftId, ClienteId = clientId, Detalles = [new UpdateCotizacionDetalleDto
+                    { Id = lineId, ProductoId = productId, ProductoVarianteId = variantId, Cantidad = 1m, PrecioUnitario = 25m }]
+                });
+                var editedLine = edited.Detalles.Single();
+                Assert.Equal(80m, editedLine.PrecioUnitario);
+                Assert.Equal(currentLabels, (editedLine.ProductoMarcaSnapshot, editedLine.ProductoModeloSnapshot,
+                    editedLine.ProductoColorSnapshot, editedLine.ProductoTallaSnapshot));
                 await using (var verify = new AppDbContext(options, tenantHttpContextAccessor: Access(tenant)))
                 {
                     Assert.Equal(4, await verify.Cotizaciones.CountAsync());
                     var persisted = await verify.Cotizaciones.AsNoTracking().Include(x => x.Detalles).SingleAsync(x => x.Id == freshQuote.Id);
                     Assert.Equal(80m, persisted.Detalles.Single().PrecioUnitario);
+                    var persistedEdit = await verify.Cotizaciones.AsNoTracking().Include(x => x.Detalles).SingleAsync(x => x.Id == draftId);
+                    foreach (var line in new[] { persisted.Detalles.Single(), persistedEdit.Detalles.Single() })
+                    {
+                        Assert.Equal(currentLabels, (line.ProductoMarcaSnapshot, line.ProductoModeloSnapshot,
+                            line.ProductoColorSnapshot, line.ProductoTallaSnapshot));
+                    }
+                    var historical = await verify.Cotizaciones.AsNoTracking().Include(x => x.Detalles)
+                        .Where(x => x.Id == own.QuoteId || x.Id == (tenant == a ? copyA : copyB)).ToListAsync();
+                    Assert.Equal(2, historical.Count);
+                    Assert.All(historical.SelectMany(x => x.Detalles), line => Assert.Equal(oldLabels,
+                        (line.ProductoMarcaSnapshot, line.ProductoModeloSnapshot, line.ProductoColorSnapshot, line.ProductoTallaSnapshot)));
                     Assert.Equal(1, await verify.RegistrosAuditoria.CountAsync(x => x.Entidad == nameof(Cotizacion) && x.ReferenciaId == freshQuote.Id && x.Accion == AccionPermiso.Crear));
+                    Assert.Equal(1, await verify.RegistrosAuditoria.CountAsync(x => x.Entidad == nameof(Cotizacion) && x.ReferenciaId == draftId && x.Accion == AccionPermiso.Editar));
                 }
 
                 // Carrera real: dos conexiones abiertas a la vez. El escritor conserva

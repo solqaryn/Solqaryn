@@ -81,7 +81,7 @@ public sealed class CotizacionService : ICotizacionService
 
             foreach (var detalleDto in dto.Detalles ?? [])
             {
-                cotizacion.Detalles.Add(await CrearDetalleDesdeDtoAsync(catalogo,
+                cotizacion.Detalles.Add(CrearDetalleDesdeDto(catalogo,
                     detalleDto.ProductoId,
                     detalleDto.ProductoVarianteId,
                     detalleDto.Cantidad,
@@ -165,7 +165,7 @@ public sealed class CotizacionService : ICotizacionService
                         ?? throw new BusinessRuleException(
                             $"El detalle {detalleDto.Id.Value} no pertenece a la cotización {cotizacion.Id}.");
 
-                    var snapshot = await CrearDetalleDesdeDtoAsync(catalogo,
+                    var snapshot = CrearDetalleDesdeDto(catalogo,
                         detalleDto.ProductoId,
                         detalleDto.ProductoVarianteId,
                         detalleDto.Cantidad,
@@ -175,7 +175,7 @@ public sealed class CotizacionService : ICotizacionService
                 }
                 else
                 {
-                    cotizacion.Detalles.Add(await CrearDetalleDesdeDtoAsync(catalogo,
+                    cotizacion.Detalles.Add(CrearDetalleDesdeDto(catalogo,
                         detalleDto.ProductoId,
                         detalleDto.ProductoVarianteId,
                         detalleDto.Cantidad,
@@ -435,7 +435,7 @@ public sealed class CotizacionService : ICotizacionService
         return (productos, variantes);
     }
 
-    private async Task<CotizacionDetalle> CrearDetalleDesdeDtoAsync(
+    private static CotizacionDetalle CrearDetalleDesdeDto(
         (Dictionary<int, Producto> Productos, Dictionary<int, ProductoVariante> Variantes) catalogo,
         int productoId,
         int? varianteId,
@@ -454,7 +454,6 @@ public sealed class CotizacionService : ICotizacionService
             throw new BusinessRuleException("El producto no está habilitado para cotización comercial.");
 
         ProductoVariante? variante = null;
-        ProductoVariante? etiquetas = null;
         if (varianteId.HasValue)
         {
             if (!catalogo.Variantes.TryGetValue(varianteId.Value, out variante))
@@ -466,13 +465,8 @@ public sealed class CotizacionService : ICotizacionService
             if (!variante.Activo || variante.Eliminado)
                 throw new BusinessRuleException($"La variante {varianteId.Value} no está disponible.");
 
-            // La consulta de navegación sólo aporta etiquetas descriptivas.
-            // No reemplaza precio, SKU, clasificación, estado ni vínculo bloqueados.
-            etiquetas = await _varianteRepository.GetByIdAsync(varianteId.Value);
-            if (etiquetas is null || etiquetas.Id != variante.Id || etiquetas.ProductoId != variante.ProductoId ||
-                etiquetas.MarcaId != variante.MarcaId || etiquetas.ModeloId != variante.ModeloId ||
-                etiquetas.ColorId != variante.ColorId || etiquetas.TallaId != variante.TallaId)
-                throw new BusinessRuleException("El catálogo cambió; vuelva a consultar el producto.");
+            // Las etiquetas ya proceden de lecturas vigentes bajo los mismos locks.
+            // Evitar una segunda consulta rastreada que pueda recuperar nombres obsoletos.
         }
 
         var detalle = new CotizacionDetalle
@@ -481,10 +475,10 @@ public sealed class CotizacionService : ICotizacionService
             ProductoVarianteId = variante?.Id,
             ProductoSkuSnapshot = variante?.Sku,
             ProductoNombreSnapshot = producto.Nombre,
-            ProductoMarcaSnapshot = etiquetas?.Marca?.Nombre ?? producto.Marca,
-            ProductoModeloSnapshot = etiquetas?.Modelo?.Nombre ?? producto.Modelo,
-            ProductoColorSnapshot = etiquetas?.Color?.Nombre,
-            ProductoTallaSnapshot = etiquetas?.Talla?.Nombre
+            ProductoMarcaSnapshot = variante?.Marca?.Nombre ?? producto.Marca,
+            ProductoModeloSnapshot = variante?.Modelo?.Nombre ?? producto.Modelo,
+            ProductoColorSnapshot = variante?.Color?.Nombre,
+            ProductoTallaSnapshot = variante?.Talla?.Nombre
         };
 
         var precioAutorizado = variante?.Precio ?? producto.Precio;
