@@ -1,0 +1,1039 @@
+{
+  "sourceSha": "eb55d5198b2ab4b865c075f0c2c5285e76c9fb3f",
+  "tableNames": [
+    "Categorias",
+    "Marcas",
+    "Modelos",
+    "Colores",
+    "Tallas",
+    "TipoClientes",
+    "MetodosPago",
+    "Descuentos",
+    "DescuentoCategorias",
+    "DescuentoClientes",
+    "DescuentoProductos",
+    "DescuentoRoles",
+    "HistorialUsoDescuentos",
+    "VentaDescuentos",
+    "Impuestos",
+    "ImpuestoCategorias",
+    "ImpuestoClientes",
+    "ImpuestoOperaciones",
+    "ImpuestoProductos",
+    "ImpuestoProveedores",
+    "HistorialAplicacionImpuestos",
+    "VentaImpuestos",
+    "CompraImpuestos",
+    "ConteosInventario",
+    "ConteoInventarioDetalles",
+    "MatchesConciliacion",
+    "CuentasBancarias",
+    "ConciliacionesBancarias",
+    "MovimientosEstadoCuenta"
+  ],
+  "entities": {
+    "Categorias": "Solqaryn.Domain.Entities.Categoria",
+    "Marcas": "Solqaryn.Domain.Entities.Marca",
+    "Modelos": "Solqaryn.Domain.Entities.Modelo",
+    "Colores": "Solqaryn.Domain.Entities.Color",
+    "Tallas": "Solqaryn.Domain.Entities.Talla",
+    "TipoClientes": "Solqaryn.Domain.Entities.TipoCliente",
+    "MetodosPago": "Solqaryn.Domain.Entities.Catalogos.MetodoPago",
+    "Descuentos": "Solqaryn.Domain.Entities.Descuento",
+    "DescuentoCategorias": "Solqaryn.Domain.Entities.DescuentoCategoria",
+    "DescuentoClientes": "Solqaryn.Domain.Entities.DescuentoCliente",
+    "DescuentoProductos": "Solqaryn.Domain.Entities.DescuentoProducto",
+    "DescuentoRoles": "Solqaryn.Domain.Entities.DescuentoRol",
+    "HistorialUsoDescuentos": "Solqaryn.Domain.Entities.HistorialUsoDescuento",
+    "VentaDescuentos": "Solqaryn.Domain.Entities.VentaDescuento",
+    "Impuestos": "Solqaryn.Domain.Entities.Impuesto",
+    "ImpuestoCategorias": "Solqaryn.Domain.Entities.ImpuestoCategoria",
+    "ImpuestoClientes": "Solqaryn.Domain.Entities.ImpuestoCliente",
+    "ImpuestoOperaciones": "Solqaryn.Domain.Entities.ImpuestoOperacion",
+    "ImpuestoProductos": "Solqaryn.Domain.Entities.ImpuestoProducto",
+    "ImpuestoProveedores": "Solqaryn.Domain.Entities.ImpuestoProveedor",
+    "HistorialAplicacionImpuestos": "Solqaryn.Domain.Entities.HistorialAplicacionImpuesto",
+    "VentaImpuestos": "Solqaryn.Domain.Entities.VentaImpuesto",
+    "CompraImpuestos": "Solqaryn.Domain.Entities.CompraImpuesto",
+    "ConteosInventario": "Solqaryn.Domain.Entities.ConteoInventario",
+    "ConteoInventarioDetalles": "Solqaryn.Domain.Entities.ConteoInventarioDetalle",
+    "MatchesConciliacion": "Solqaryn.Domain.Entities.Bancos.MatchConciliacion",
+    "CuentasBancarias": "Solqaryn.Domain.Entities.Bancos.CuentaBancaria",
+    "ConciliacionesBancarias": "Solqaryn.Domain.Entities.Bancos.ConciliacionBancaria",
+    "MovimientosEstadoCuenta": "Solqaryn.Domain.Entities.Bancos.MovimientoEstadoCuenta",
+    "Productos": "Solqaryn.Domain.Entities.Producto",
+    "ProductoVariantes": "Solqaryn.Domain.Entities.ProductoVariante",
+    "Clientes": "Solqaryn.Domain.Entities.Cliente",
+    "Compras": "Solqaryn.Domain.Entities.Compra",
+    "Ventas": "Solqaryn.Domain.Entities.Venta",
+    "FacturaPagos": "Solqaryn.Domain.Entities.FacturaPago",
+    "MovimientosFinancieros": "Solqaryn.Domain.Entities.MovimientoFinanciero",
+    "Roles": "Solqaryn.Domain.Entities.Rol",
+    "Proveedores": "Solqaryn.Domain.Entities.Proveedor",
+    "AjustesInventario": "Solqaryn.Domain.Entities.AjusteInventario",
+    "CategoriasGalerias": "Solqaryn.Domain.Entities.CategoriaGaleria"
+  },
+  "edges": [
+    {
+      "child": "Productos",
+      "cc": [
+        "EmpresaId",
+        "CategoriaId"
+      ],
+      "parent": "Categorias",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_01",
+      "fk": "FK_QAC3_01"
+    },
+    {
+      "child": "Productos",
+      "cc": [
+        "EmpresaId",
+        "MarcaId"
+      ],
+      "parent": "Marcas",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_02",
+      "fk": "FK_QAC3_02"
+    },
+    {
+      "child": "Productos",
+      "cc": [
+        "EmpresaId",
+        "ModeloId"
+      ],
+      "parent": "Modelos",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_03",
+      "fk": "FK_QAC3_03"
+    },
+    {
+      "child": "Productos",
+      "cc": [
+        "EmpresaId",
+        "ColorId"
+      ],
+      "parent": "Colores",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_04",
+      "fk": "FK_QAC3_04"
+    },
+    {
+      "child": "Productos",
+      "cc": [
+        "EmpresaId",
+        "TallaId"
+      ],
+      "parent": "Tallas",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_05",
+      "fk": "FK_QAC3_05"
+    },
+    {
+      "child": "ProductoVariantes",
+      "cc": [
+        "EmpresaId",
+        "MarcaId"
+      ],
+      "parent": "Marcas",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_06",
+      "fk": "FK_QAC3_06"
+    },
+    {
+      "child": "ProductoVariantes",
+      "cc": [
+        "EmpresaId",
+        "ModeloId"
+      ],
+      "parent": "Modelos",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_07",
+      "fk": "FK_QAC3_07"
+    },
+    {
+      "child": "ProductoVariantes",
+      "cc": [
+        "EmpresaId",
+        "ColorId"
+      ],
+      "parent": "Colores",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_08",
+      "fk": "FK_QAC3_08"
+    },
+    {
+      "child": "ProductoVariantes",
+      "cc": [
+        "EmpresaId",
+        "TallaId"
+      ],
+      "parent": "Tallas",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_09",
+      "fk": "FK_QAC3_09"
+    },
+    {
+      "child": "ProductoVariantes",
+      "cc": [
+        "EmpresaId",
+        "MarcaId",
+        "ModeloId"
+      ],
+      "parent": "Modelos",
+      "pp": [
+        "EmpresaId",
+        "MarcaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_10",
+      "fk": "FK_QAC3_10"
+    },
+    {
+      "child": "Modelos",
+      "cc": [
+        "EmpresaId",
+        "MarcaId"
+      ],
+      "parent": "Marcas",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_11",
+      "fk": "FK_QAC3_11"
+    },
+    {
+      "child": "Clientes",
+      "cc": [
+        "EmpresaId",
+        "TipoClienteId"
+      ],
+      "parent": "TipoClientes",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_12",
+      "fk": "FK_QAC3_12"
+    },
+    {
+      "child": "Compras",
+      "cc": [
+        "EmpresaId",
+        "MetodoPagoId"
+      ],
+      "parent": "MetodosPago",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_13",
+      "fk": "FK_QAC3_13"
+    },
+    {
+      "child": "Ventas",
+      "cc": [
+        "EmpresaId",
+        "MetodoPagoId"
+      ],
+      "parent": "MetodosPago",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_14",
+      "fk": "FK_QAC3_14"
+    },
+    {
+      "child": "FacturaPagos",
+      "cc": [
+        "EmpresaId",
+        "MetodoPagoId"
+      ],
+      "parent": "MetodosPago",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_15",
+      "fk": "FK_QAC3_15"
+    },
+    {
+      "child": "MovimientosFinancieros",
+      "cc": [
+        "EmpresaId",
+        "MetodoPagoId"
+      ],
+      "parent": "MetodosPago",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_16",
+      "fk": "FK_QAC3_16"
+    },
+    {
+      "child": "DescuentoCategorias",
+      "cc": [
+        "EmpresaId",
+        "DescuentoId"
+      ],
+      "parent": "Descuentos",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": true,
+      "ix": "IX_QAC3_17",
+      "fk": "FK_QAC3_17"
+    },
+    {
+      "child": "DescuentoClientes",
+      "cc": [
+        "EmpresaId",
+        "DescuentoId"
+      ],
+      "parent": "Descuentos",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": true,
+      "ix": "IX_QAC3_18",
+      "fk": "FK_QAC3_18"
+    },
+    {
+      "child": "DescuentoProductos",
+      "cc": [
+        "EmpresaId",
+        "DescuentoId"
+      ],
+      "parent": "Descuentos",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": true,
+      "ix": "IX_QAC3_19",
+      "fk": "FK_QAC3_19"
+    },
+    {
+      "child": "DescuentoRoles",
+      "cc": [
+        "EmpresaId",
+        "DescuentoId"
+      ],
+      "parent": "Descuentos",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": true,
+      "ix": "IX_QAC3_20",
+      "fk": "FK_QAC3_20"
+    },
+    {
+      "child": "HistorialUsoDescuentos",
+      "cc": [
+        "EmpresaId",
+        "DescuentoId"
+      ],
+      "parent": "Descuentos",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_21",
+      "fk": "FK_QAC3_21"
+    },
+    {
+      "child": "VentaDescuentos",
+      "cc": [
+        "EmpresaId",
+        "DescuentoId"
+      ],
+      "parent": "Descuentos",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_22",
+      "fk": "FK_QAC3_22"
+    },
+    {
+      "child": "DescuentoCategorias",
+      "cc": [
+        "EmpresaId",
+        "CategoriaId"
+      ],
+      "parent": "Categorias",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_23",
+      "fk": "FK_QAC3_23"
+    },
+    {
+      "child": "DescuentoClientes",
+      "cc": [
+        "EmpresaId",
+        "ClienteId"
+      ],
+      "parent": "Clientes",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_24",
+      "fk": "FK_QAC3_24"
+    },
+    {
+      "child": "DescuentoProductos",
+      "cc": [
+        "EmpresaId",
+        "ProductoId"
+      ],
+      "parent": "Productos",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_25",
+      "fk": "FK_QAC3_25"
+    },
+    {
+      "child": "DescuentoRoles",
+      "cc": [
+        "EmpresaId",
+        "RolId"
+      ],
+      "parent": "Roles",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_26",
+      "fk": "FK_QAC3_26"
+    },
+    {
+      "child": "HistorialUsoDescuentos",
+      "cc": [
+        "EmpresaId",
+        "ClienteId"
+      ],
+      "parent": "Clientes",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_27",
+      "fk": "FK_QAC3_27"
+    },
+    {
+      "child": "HistorialUsoDescuentos",
+      "cc": [
+        "EmpresaId",
+        "VentaId"
+      ],
+      "parent": "Ventas",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_28",
+      "fk": "FK_QAC3_28"
+    },
+    {
+      "child": "VentaDescuentos",
+      "cc": [
+        "EmpresaId",
+        "VentaId"
+      ],
+      "parent": "Ventas",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": true,
+      "ix": "IX_QAC3_29",
+      "fk": "FK_QAC3_29"
+    },
+    {
+      "child": "ImpuestoCategorias",
+      "cc": [
+        "EmpresaId",
+        "ImpuestoId"
+      ],
+      "parent": "Impuestos",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": true,
+      "ix": "IX_QAC3_30",
+      "fk": "FK_QAC3_30"
+    },
+    {
+      "child": "ImpuestoClientes",
+      "cc": [
+        "EmpresaId",
+        "ImpuestoId"
+      ],
+      "parent": "Impuestos",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": true,
+      "ix": "IX_QAC3_31",
+      "fk": "FK_QAC3_31"
+    },
+    {
+      "child": "ImpuestoOperaciones",
+      "cc": [
+        "EmpresaId",
+        "ImpuestoId"
+      ],
+      "parent": "Impuestos",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": true,
+      "ix": "IX_QAC3_32",
+      "fk": "FK_QAC3_32"
+    },
+    {
+      "child": "ImpuestoProductos",
+      "cc": [
+        "EmpresaId",
+        "ImpuestoId"
+      ],
+      "parent": "Impuestos",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": true,
+      "ix": "IX_QAC3_33",
+      "fk": "FK_QAC3_33"
+    },
+    {
+      "child": "ImpuestoProveedores",
+      "cc": [
+        "EmpresaId",
+        "ImpuestoId"
+      ],
+      "parent": "Impuestos",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": true,
+      "ix": "IX_QAC3_34",
+      "fk": "FK_QAC3_34"
+    },
+    {
+      "child": "HistorialAplicacionImpuestos",
+      "cc": [
+        "EmpresaId",
+        "ImpuestoId"
+      ],
+      "parent": "Impuestos",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_35",
+      "fk": "FK_QAC3_35"
+    },
+    {
+      "child": "VentaImpuestos",
+      "cc": [
+        "EmpresaId",
+        "ImpuestoId"
+      ],
+      "parent": "Impuestos",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_36",
+      "fk": "FK_QAC3_36"
+    },
+    {
+      "child": "CompraImpuestos",
+      "cc": [
+        "EmpresaId",
+        "ImpuestoId"
+      ],
+      "parent": "Impuestos",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_37",
+      "fk": "FK_QAC3_37"
+    },
+    {
+      "child": "ImpuestoCategorias",
+      "cc": [
+        "EmpresaId",
+        "CategoriaId"
+      ],
+      "parent": "Categorias",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_38",
+      "fk": "FK_QAC3_38"
+    },
+    {
+      "child": "ImpuestoClientes",
+      "cc": [
+        "EmpresaId",
+        "ClienteId"
+      ],
+      "parent": "Clientes",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_39",
+      "fk": "FK_QAC3_39"
+    },
+    {
+      "child": "ImpuestoProductos",
+      "cc": [
+        "EmpresaId",
+        "ProductoId"
+      ],
+      "parent": "Productos",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_40",
+      "fk": "FK_QAC3_40"
+    },
+    {
+      "child": "ImpuestoProveedores",
+      "cc": [
+        "EmpresaId",
+        "ProveedorId"
+      ],
+      "parent": "Proveedores",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_41",
+      "fk": "FK_QAC3_41"
+    },
+    {
+      "child": "VentaImpuestos",
+      "cc": [
+        "EmpresaId",
+        "VentaId"
+      ],
+      "parent": "Ventas",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": true,
+      "ix": "IX_QAC3_42",
+      "fk": "FK_QAC3_42"
+    },
+    {
+      "child": "CompraImpuestos",
+      "cc": [
+        "EmpresaId",
+        "CompraId"
+      ],
+      "parent": "Compras",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": true,
+      "ix": "IX_QAC3_43",
+      "fk": "FK_QAC3_43"
+    },
+    {
+      "child": "ConteosInventario",
+      "cc": [
+        "EmpresaId",
+        "CategoriaId"
+      ],
+      "parent": "Categorias",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_44",
+      "fk": "FK_QAC3_44"
+    },
+    {
+      "child": "ConteoInventarioDetalles",
+      "cc": [
+        "EmpresaId",
+        "AlmacenId",
+        "ConteoInventarioId"
+      ],
+      "parent": "ConteosInventario",
+      "pp": [
+        "EmpresaId",
+        "AlmacenId",
+        "Id"
+      ],
+      "cascade": true,
+      "ix": "IX_QAC3_45",
+      "fk": "FK_QAC3_45"
+    },
+    {
+      "child": "ConteoInventarioDetalles",
+      "cc": [
+        "EmpresaId",
+        "ProductoVarianteId"
+      ],
+      "parent": "ProductoVariantes",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_46",
+      "fk": "FK_QAC3_46"
+    },
+    {
+      "child": "ConteoInventarioDetalles",
+      "cc": [
+        "EmpresaId",
+        "AjusteInventarioId"
+      ],
+      "parent": "AjustesInventario",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_47",
+      "fk": "FK_QAC3_47"
+    },
+    {
+      "child": "MatchesConciliacion",
+      "cc": [
+        "EmpresaId",
+        "MovimientoFinancieroId"
+      ],
+      "parent": "MovimientosFinancieros",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_48",
+      "fk": "FK_QAC3_48"
+    },
+    {
+      "child": "ConciliacionesBancarias",
+      "cc": [
+        "EmpresaId",
+        "CuentaBancariaId"
+      ],
+      "parent": "CuentasBancarias",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": false,
+      "ix": "IX_QAC3_49",
+      "fk": "FK_QAC3_49"
+    },
+    {
+      "child": "MovimientosEstadoCuenta",
+      "cc": [
+        "EmpresaId",
+        "ConciliacionBancariaId"
+      ],
+      "parent": "ConciliacionesBancarias",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": true,
+      "ix": "IX_QAC3_50",
+      "fk": "FK_QAC3_50"
+    },
+    {
+      "child": "MatchesConciliacion",
+      "cc": [
+        "EmpresaId",
+        "MovimientoEstadoCuentaId"
+      ],
+      "parent": "MovimientosEstadoCuenta",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "cascade": true,
+      "ix": "IX_QAC3_51",
+      "fk": "FK_QAC3_51"
+    }
+  ],
+  "keys": [
+    {
+      "table": "Marcas",
+      "index": "UX_Marcas_Nombre_Activo",
+      "cols": [
+        "NombreActivoUnico"
+      ]
+    },
+    {
+      "table": "Modelos",
+      "index": "UX_Modelos_Marca_Nombre_Activo",
+      "cols": [
+        "NombreMarcaActivoUnico"
+      ]
+    },
+    {
+      "table": "Colores",
+      "index": "UX_Colores_Nombre_Activo",
+      "cols": [
+        "NombreActivoUnico"
+      ]
+    },
+    {
+      "table": "Tallas",
+      "index": "UX_Tallas_Nombre_Activo",
+      "cols": [
+        "NombreActivoUnico"
+      ]
+    },
+    {
+      "table": "TipoClientes",
+      "index": "IX_TipoClientes_Codigo",
+      "cols": [
+        "Codigo"
+      ]
+    },
+    {
+      "table": "TipoClientes",
+      "index": "IX_TipoClientes_EsPredeterminadoUnico",
+      "cols": [
+        "EsPredeterminadoUnico"
+      ]
+    },
+    {
+      "table": "TipoClientes",
+      "index": "IX_TipoClientes_NombreNormalizado",
+      "cols": [
+        "NombreNormalizado"
+      ]
+    },
+    {
+      "table": "MetodosPago",
+      "index": "UX_MetodosPago_Codigo_Normalizado",
+      "cols": [
+        "CodigoNormalizado"
+      ]
+    },
+    {
+      "table": "Descuentos",
+      "index": "IX_Descuentos_CodigoPromocionalNormalizado",
+      "cols": [
+        "CodigoPromocionalNormalizado"
+      ]
+    },
+    {
+      "table": "Impuestos",
+      "index": "IX_Impuestos_Codigo",
+      "cols": [
+        "Codigo"
+      ]
+    },
+    {
+      "table": "ConteosInventario",
+      "index": "UX_ConteosInventario_Numero",
+      "cols": [
+        "Numero"
+      ]
+    },
+    {
+      "table": "CuentasBancarias",
+      "index": "UX_CuentasBancarias_BancoId_NumeroCuenta",
+      "cols": [
+        "BancoId",
+        "NumeroCuenta"
+      ]
+    }
+  ],
+  "extra": [
+    {
+      "table": "Roles",
+      "index": "UX_QAC3_Roles_OwnerId",
+      "cols": [
+        "EmpresaId",
+        "Id"
+      ]
+    },
+    {
+      "table": "Modelos",
+      "index": "UX_QAC3_Modelos_OwnerMarcaId",
+      "cols": [
+        "EmpresaId",
+        "MarcaId",
+        "Id"
+      ]
+    },
+    {
+      "table": "ConteosInventario",
+      "index": "UX_QAC3_Conteos_OwnerAlmacenId",
+      "cols": [
+        "EmpresaId",
+        "AlmacenId",
+        "Id"
+      ]
+    }
+  ],
+  "gallery": {
+    "child": "CategoriasGalerias",
+    "cc": [
+      "EmpresaId",
+      "CategoriaVerificadaId"
+    ],
+    "parent": "Categorias",
+    "pp": [
+      "EmpresaId",
+      "Id"
+    ],
+    "ix": "IX_QAC3_Galeria_Verificada",
+    "fk": "FK_QAC3_Galeria_Verificada",
+    "cascade": false
+  },
+  "triggers": [
+    {
+      "name": "TR_QAC3_Galeria_BI",
+      "table": "CategoriasGalerias",
+      "action": "INSERT",
+      "body": "IF NEW.CategoriaVerificadaId IS NULL OR NEW.CategoriaVerificadaId <> NEW.CategoriaId THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Verified tenant category required'; END IF;"
+    },
+    {
+      "name": "TR_QAC3_ImpuestoDocumento_BI",
+      "table": "HistorialAplicacionImpuestos",
+      "action": "INSERT",
+      "body": "IF NEW.EmpresaId IS NOT NULL AND NOT ((BINARY NEW.DocumentoTipo = BINARY 'Venta' AND EXISTS (SELECT 1 FROM Ventas v WHERE v.Id=NEW.DocumentoId AND v.EmpresaId=NEW.EmpresaId)) OR (BINARY NEW.DocumentoTipo = BINARY 'Compra' AND EXISTS (SELECT 1 FROM Compras c WHERE c.Id=NEW.DocumentoId AND c.EmpresaId=NEW.EmpresaId))) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Document tenant mismatch'; END IF;"
+    },
+    {
+      "name": "TR_QAC3_Conteo_BI",
+      "table": "ConteosInventario",
+      "action": "INSERT",
+      "body": "IF NEW.EmpresaId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Almacenes a JOIN Sucursales s ON s.Id=a.SucursalId WHERE a.Id=NEW.AlmacenId AND s.EmpresaId=NEW.EmpresaId) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Warehouse tenant mismatch'; END IF;"
+    },
+    {
+      "name": "TR_QAC3_ConteoDetalle_BI",
+      "table": "ConteoInventarioDetalles",
+      "action": "INSERT",
+      "body": "IF NEW.EmpresaId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Almacenes a JOIN Sucursales s ON s.Id=a.SucursalId WHERE a.Id=NEW.AlmacenId AND s.EmpresaId=NEW.EmpresaId) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Warehouse tenant mismatch'; END IF;"
+    },
+    {
+      "name": "TR_QAC3_Galeria_BU",
+      "table": "CategoriasGalerias",
+      "action": "UPDATE",
+      "body": "IF NEW.CategoriaVerificadaId IS NULL OR NEW.CategoriaVerificadaId <> NEW.CategoriaId THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Verified tenant category required'; END IF;"
+    },
+    {
+      "name": "TR_QAC3_ImpuestoDocumento_BU",
+      "table": "HistorialAplicacionImpuestos",
+      "action": "UPDATE",
+      "body": "IF NEW.EmpresaId IS NOT NULL AND NOT ((BINARY NEW.DocumentoTipo = BINARY 'Venta' AND EXISTS (SELECT 1 FROM Ventas v WHERE v.Id=NEW.DocumentoId AND v.EmpresaId=NEW.EmpresaId)) OR (BINARY NEW.DocumentoTipo = BINARY 'Compra' AND EXISTS (SELECT 1 FROM Compras c WHERE c.Id=NEW.DocumentoId AND c.EmpresaId=NEW.EmpresaId))) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Document tenant mismatch'; END IF;"
+    },
+    {
+      "name": "TR_QAC3_Conteo_BU",
+      "table": "ConteosInventario",
+      "action": "UPDATE",
+      "body": "IF NEW.EmpresaId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Almacenes a JOIN Sucursales s ON s.Id=a.SucursalId WHERE a.Id=NEW.AlmacenId AND s.EmpresaId=NEW.EmpresaId) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Warehouse tenant mismatch'; END IF;"
+    },
+    {
+      "name": "TR_QAC3_ConteoDetalle_BU",
+      "table": "ConteoInventarioDetalles",
+      "action": "UPDATE",
+      "body": "IF NEW.EmpresaId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Almacenes a JOIN Sucursales s ON s.Id=a.SucursalId WHERE a.Id=NEW.AlmacenId AND s.EmpresaId=NEW.EmpresaId) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Warehouse tenant mismatch'; END IF;"
+    },
+    {
+      "name": "TR_QAC3_Almacen_Conteo_BU",
+      "table": "Almacenes",
+      "action": "UPDATE",
+      "body": "IF NOT (NEW.SucursalId <=> OLD.SucursalId) AND EXISTS (SELECT 1 FROM ConteosInventario c WHERE c.AlmacenId=OLD.Id AND c.EmpresaId IS NOT NULL AND NOT EXISTS (SELECT 1 FROM Sucursales s WHERE s.Id=NEW.SucursalId AND s.EmpresaId=c.EmpresaId)) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Warehouse move would invalidate count owner'; END IF;"
+    },
+    {
+      "name": "TR_QAC3_Sucursal_Conteo_BU",
+      "table": "Sucursales",
+      "action": "UPDATE",
+      "body": "IF NOT (NEW.EmpresaId <=> OLD.EmpresaId) AND EXISTS (SELECT 1 FROM ConteosInventario c JOIN Almacenes a ON a.Id=c.AlmacenId WHERE a.SucursalId=OLD.Id AND c.EmpresaId IS NOT NULL AND NOT (c.EmpresaId <=> NEW.EmpresaId)) THEN SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Branch move would invalidate count owner'; END IF;"
+    }
+  ]
+}

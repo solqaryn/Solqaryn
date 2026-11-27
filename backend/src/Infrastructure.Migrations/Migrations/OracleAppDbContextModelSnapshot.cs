@@ -490,6 +490,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<decimal>("SaldoInicialBanco")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CuentaBancariaId")
@@ -500,6 +503,13 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
 
                     b.HasIndex("CuentaBancariaId", "FechaInicio", "FechaFin")
                         .HasDatabaseName("IX_ConciliacionesBancarias_Cuenta_Periodo");
+
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_ConciliacionesBancarias_OwnerId");
+
+                    b.HasIndex("EmpresaId", "CuentaBancariaId")
+                        .HasDatabaseName("IX_QAC3_49");
 
                     b.ToTable("ConciliacionesBancarias", null, t =>
                         {
@@ -561,6 +571,14 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<decimal>("SaldoInicial")
                         .HasColumnType("decimal(18,2)");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EmpresaUnicidad")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("int")
+                        .HasComputedColumnSql("COALESCE(`EmpresaId`, 0)", true);
+
                     b.HasKey("Id");
 
                     b.HasIndex("BancoId")
@@ -569,7 +587,13 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.HasIndex("Estado")
                         .HasDatabaseName("IX_CuentasBancarias_Estado");
 
-                    b.HasIndex("BancoId", "NumeroCuenta")
+
+
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_CuentasBancarias_OwnerId");
+
+                    b.HasIndex("EmpresaUnicidad", "BancoId", "NumeroCuenta")
                         .IsUnique()
                         .HasDatabaseName("UX_CuentasBancarias_BancoId_NumeroCuenta");
 
@@ -621,6 +645,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<int>("TipoMatch")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("MovimientoFinancieroId")
@@ -629,6 +656,16 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.HasIndex("MovimientoEstadoCuentaId", "MovimientoFinancieroId")
                         .IsUnique()
                         .HasDatabaseName("UX_MatchesConciliacion_MovimientoEstadoCuenta_MovimientoFinancie");
+
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_MatchesConciliacion_OwnerId");
+
+                    b.HasIndex("EmpresaId", "MovimientoFinancieroId")
+                        .HasDatabaseName("IX_QAC3_48");
+
+                    b.HasIndex("EmpresaId", "MovimientoEstadoCuentaId")
+                        .HasDatabaseName("IX_QAC3_51");
 
                     b.ToTable("MatchesConciliacion", null, t =>
                         {
@@ -696,6 +733,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<int>("Tipo")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Estado")
@@ -707,6 +747,13 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.HasIndex("ConciliacionBancariaId", "IdempotencyKey")
                         .IsUnique()
                         .HasDatabaseName("UX_MovimientosEstadoCuenta_Conciliacion_IdempotencyKey");
+
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_MovimientosEstadoCuenta_OwnerId");
+
+                    b.HasIndex("EmpresaId", "ConciliacionBancariaId")
+                        .HasDatabaseName("IX_QAC3_50");
 
                     b.ToTable("MovimientosEstadoCuenta", null, t =>
                         {
@@ -1307,17 +1354,31 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .HasMaxLength(50)
                         .HasColumnType("varchar(50)");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EmpresaUnicidad")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("int")
+                        .HasComputedColumnSql("COALESCE(`EmpresaId`, 0)", true);
+
                     b.HasKey("Id");
 
-                    b.HasIndex("CodigoNormalizado")
-                        .IsUnique()
-                        .HasDatabaseName("UX_MetodosPago_Codigo_Normalizado");
+
 
                     b.HasIndex("Nombre")
                         .HasDatabaseName("IX_MetodosPago_Nombre");
 
                     b.HasIndex("Activo", "Eliminado", "Orden")
                         .HasDatabaseName("IX_MetodosPago_Estado_Orden");
+
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_MetodosPago_OwnerId");
+
+                    b.HasIndex("EmpresaUnicidad", "CodigoNormalizado")
+                        .IsUnique()
+                        .HasDatabaseName("UX_MetodosPago_Codigo_Normalizado");
 
                     b.ToTable("MetodosPago", (string)null);
                 });
@@ -1371,6 +1432,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .HasMaxLength(100)
                         .HasColumnType("varchar(100)");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("Nombre")
@@ -1378,6 +1442,10 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
 
                     b.HasIndex("Eliminada", "Activa")
                         .HasDatabaseName("IX_Categorias_Estado");
+
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_Categorias_OwnerId");
 
                     b.ToTable("Categorias", (string)null);
                 });
@@ -1462,6 +1530,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .IsUnique()
                         .HasDatabaseName("UX_QACT_Clientes_OwnerId");
 
+                    b.HasIndex("EmpresaId", "TipoClienteId")
+                        .HasDatabaseName("IX_QAC3_12");
+
                     b.ToTable("Clientes", (string)null);
                 });
 
@@ -1527,14 +1598,28 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<int>("Orden")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EmpresaUnicidad")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("int")
+                        .HasComputedColumnSql("COALESCE(`EmpresaId`, 0)", true);
+
                     b.HasKey("Id");
 
-                    b.HasIndex("NombreActivoUnico")
-                        .IsUnique()
-                        .HasDatabaseName("UX_Colores_Nombre_Activo");
+
 
                     b.HasIndex("Activo", "Eliminado")
                         .HasDatabaseName("IX_Colores_Estado");
+
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_Colores_OwnerId");
+
+                    b.HasIndex("EmpresaUnicidad", "NombreActivoUnico")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Colores_Nombre_Activo");
 
                     b.ToTable("Colores", (string)null);
                 });
@@ -1685,6 +1770,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
 
                     b.HasIndex("EmpresaId", "ProveedorId")
                         .HasDatabaseName("IX_QACT_003");
+
+                    b.HasIndex("EmpresaId", "MetodoPagoId")
+                        .HasDatabaseName("IX_QAC3_13");
 
                     b.ToTable("Compras", (string)null);
                 });
@@ -1916,11 +2004,24 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .HasPrecision(9, 4)
                         .HasColumnType("decimal(9,4)");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CompraId");
 
                     b.HasIndex("ImpuestoId");
+
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_CompraImpuestos_OwnerId");
+
+                    b.HasIndex("EmpresaId", "ImpuestoId")
+                        .HasDatabaseName("IX_QAC3_37");
+
+                    b.HasIndex("EmpresaId", "CompraId")
+                        .HasDatabaseName("IX_QAC3_43");
 
                     b.ToTable("CompraImpuestos", (string)null);
                 });
@@ -2689,6 +2790,14 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<int?>("UbicacionAlmacenId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EmpresaUnicidad")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("int")
+                        .HasComputedColumnSql("COALESCE(`EmpresaId`, 0)", true);
+
                     b.HasKey("Id");
 
                     b.HasAlternateKey("Id", "AlmacenId")
@@ -2697,9 +2806,7 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.HasIndex("CategoriaId")
                         .HasDatabaseName("IX_ConteosInventario_CategoriaId");
 
-                    b.HasIndex("Numero")
-                        .IsUnique()
-                        .HasDatabaseName("UX_ConteosInventario_Numero");
+
 
                     b.HasIndex("UbicacionAlmacenId")
                         .HasDatabaseName("IX_ConteosInventario_UbicacionAlmacenId");
@@ -2711,6 +2818,21 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
 
                     b.HasIndex("Tipo", "Estado")
                         .HasDatabaseName("IX_ConteosInventario_Tipo_Estado");
+
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_ConteosInventario_OwnerId");
+
+                    b.HasIndex("EmpresaUnicidad", "Numero")
+                        .IsUnique()
+                        .HasDatabaseName("UX_ConteosInventario_Numero");
+
+                    b.HasIndex("EmpresaId", "AlmacenId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_Conteos_OwnerAlmacenId");
+
+                    b.HasIndex("EmpresaId", "CategoriaId")
+                        .HasDatabaseName("IX_QAC3_44");
 
                     b.ToTable("ConteosInventario", (string)null);
                 });
@@ -2801,6 +2923,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .HasColumnType("int")
                         .HasComputedColumnSql("COALESCE(`UbicacionAlmacenId`, 0)", true);
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("AjusteInventarioId")
@@ -2816,6 +2941,19 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.HasIndex("ConteoInventarioId", "ProductoVarianteId", "AlmacenId", "UbicacionNormalizada")
                         .IsUnique()
                         .HasDatabaseName("UX_ConteoDetalles_ClaveFisica");
+
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_ConteoInventarioDetalles_OwnerId");
+
+                    b.HasIndex("EmpresaId", "AlmacenId", "ConteoInventarioId")
+                        .HasDatabaseName("IX_QAC3_45");
+
+                    b.HasIndex("EmpresaId", "ProductoVarianteId")
+                        .HasDatabaseName("IX_QAC3_46");
+
+                    b.HasIndex("EmpresaId", "AjusteInventarioId")
+                        .HasDatabaseName("IX_QAC3_47");
 
                     b.ToTable("ConteoInventarioDetalles", (string)null);
                 });
@@ -3563,11 +3701,25 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .HasPrecision(18, 4)
                         .HasColumnType("decimal(18,4)");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EmpresaUnicidad")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("int")
+                        .HasComputedColumnSql("COALESCE(`EmpresaId`, 0)", true);
+
                     b.HasKey("Id");
 
-                    b.HasIndex("CodigoPromocionalNormalizado")
+
+
+                    b.HasIndex("EmpresaId", "Id")
                         .IsUnique()
-                        .HasFilter("`CodigoPromocionalNormalizado` IS NOT NULL");
+                        .HasDatabaseName("UX_QAC3_Descuentos_OwnerId");
+
+                    b.HasIndex("EmpresaUnicidad", "CodigoPromocionalNormalizado")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Descuentos_CodigoPromocionalNormalizado");
 
                     b.ToTable("Descuentos", (string)null);
                 });
@@ -3590,9 +3742,15 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .HasMaxLength(32)
                         .HasColumnType("varchar(32)");
 
+                    b.Property<int?>("CategoriaVerificadaId")
+                        .HasColumnType("int");
+
                     b.HasKey("EmpresaId", "CategoriaId");
 
                     b.HasIndex("CategoriaId");
+
+                    b.HasIndex("EmpresaId", "CategoriaVerificadaId")
+                        .HasDatabaseName("IX_QAC3_Galeria_Verificada");
 
                     b.ToTable("CategoriasGalerias", (string)null);
                 });
@@ -3609,6 +3767,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<int>("DescuentoId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CategoriaId");
@@ -3616,6 +3777,16 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.HasIndex("DescuentoId", "CategoriaId")
                         .IsUnique()
                         .HasDatabaseName("UX_DescuentoCategorias_Descuento_Categoria");
+
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_DescuentoCategorias_OwnerId");
+
+                    b.HasIndex("EmpresaId", "DescuentoId")
+                        .HasDatabaseName("IX_QAC3_17");
+
+                    b.HasIndex("EmpresaId", "CategoriaId")
+                        .HasDatabaseName("IX_QAC3_23");
 
                     b.ToTable("DescuentoCategorias", (string)null);
                 });
@@ -3632,6 +3803,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<int>("DescuentoId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ClienteId");
@@ -3639,6 +3813,16 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.HasIndex("DescuentoId", "ClienteId")
                         .IsUnique()
                         .HasDatabaseName("UX_DescuentoClientes_Descuento_Cliente");
+
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_DescuentoClientes_OwnerId");
+
+                    b.HasIndex("EmpresaId", "DescuentoId")
+                        .HasDatabaseName("IX_QAC3_18");
+
+                    b.HasIndex("EmpresaId", "ClienteId")
+                        .HasDatabaseName("IX_QAC3_24");
 
                     b.ToTable("DescuentoClientes", (string)null);
                 });
@@ -3655,6 +3839,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<int>("ProductoId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ProductoId");
@@ -3662,6 +3849,16 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.HasIndex("DescuentoId", "ProductoId")
                         .IsUnique()
                         .HasDatabaseName("UX_DescuentoProductos_Descuento_Producto");
+
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_DescuentoProductos_OwnerId");
+
+                    b.HasIndex("EmpresaId", "DescuentoId")
+                        .HasDatabaseName("IX_QAC3_19");
+
+                    b.HasIndex("EmpresaId", "ProductoId")
+                        .HasDatabaseName("IX_QAC3_25");
 
                     b.ToTable("DescuentoProductos", (string)null);
                 });
@@ -3678,6 +3875,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<int>("RolId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("RolId");
@@ -3685,6 +3885,16 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.HasIndex("DescuentoId", "RolId")
                         .IsUnique()
                         .HasDatabaseName("UX_DescuentoRoles_Descuento_Rol");
+
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_DescuentoRoles_OwnerId");
+
+                    b.HasIndex("EmpresaId", "DescuentoId")
+                        .HasDatabaseName("IX_QAC3_20");
+
+                    b.HasIndex("EmpresaId", "RolId")
+                        .HasDatabaseName("IX_QAC3_26");
 
                     b.ToTable("DescuentoRoles", (string)null);
                 });
@@ -5222,6 +5432,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.HasIndex("EmpresaId", "FacturaId")
                         .HasDatabaseName("IX_QACT_010");
 
+                    b.HasIndex("EmpresaId", "MetodoPagoId")
+                        .HasDatabaseName("IX_QAC3_15");
+
                     b.ToTable("FacturaPagos", (string)null);
                 });
 
@@ -5481,11 +5694,21 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .HasPrecision(9, 4)
                         .HasColumnType("decimal(9,4)");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ImpuestoId");
 
                     b.HasIndex("DocumentoTipo", "DocumentoId");
+
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_HistorialAplicacionImpuestos_OwnerId");
+
+                    b.HasIndex("EmpresaId", "ImpuestoId")
+                        .HasDatabaseName("IX_QAC3_35");
 
                     b.ToTable("HistorialAplicacionImpuestos", (string)null);
                 });
@@ -5559,6 +5782,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<int>("VentaId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ClienteId");
@@ -5566,6 +5792,19 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.HasIndex("DescuentoId");
 
                     b.HasIndex("VentaId", "Fecha");
+
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_HistorialUsoDescuentos_OwnerId");
+
+                    b.HasIndex("EmpresaId", "DescuentoId")
+                        .HasDatabaseName("IX_QAC3_21");
+
+                    b.HasIndex("EmpresaId", "ClienteId")
+                        .HasDatabaseName("IX_QAC3_27");
+
+                    b.HasIndex("EmpresaId", "VentaId")
+                        .HasDatabaseName("IX_QAC3_28");
 
                     b.ToTable("HistorialUsoDescuentos", (string)null);
                 });
@@ -5645,10 +5884,25 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<int>("Tipo")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EmpresaUnicidad")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("int")
+                        .HasComputedColumnSql("COALESCE(`EmpresaId`, 0)", true);
+
                     b.HasKey("Id");
 
-                    b.HasIndex("Codigo")
-                        .IsUnique();
+
+
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_Impuestos_OwnerId");
+
+                    b.HasIndex("EmpresaUnicidad", "Codigo")
+                        .IsUnique()
+                        .HasDatabaseName("IX_Impuestos_Codigo");
 
                     b.ToTable("Impuestos", (string)null);
                 });
@@ -5665,6 +5919,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<int>("ImpuestoId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("CategoriaId");
@@ -5672,6 +5929,16 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.HasIndex("ImpuestoId", "CategoriaId")
                         .IsUnique()
                         .HasDatabaseName("UX_ImpuestoCategorias_Impuesto_Categoria");
+
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_ImpuestoCategorias_OwnerId");
+
+                    b.HasIndex("EmpresaId", "ImpuestoId")
+                        .HasDatabaseName("IX_QAC3_30");
+
+                    b.HasIndex("EmpresaId", "CategoriaId")
+                        .HasDatabaseName("IX_QAC3_38");
 
                     b.ToTable("ImpuestoCategorias", (string)null);
                 });
@@ -5688,6 +5955,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<int>("ImpuestoId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ClienteId");
@@ -5695,6 +5965,16 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.HasIndex("ImpuestoId", "ClienteId")
                         .IsUnique()
                         .HasDatabaseName("UX_ImpuestoClientes_Impuesto_Cliente");
+
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_ImpuestoClientes_OwnerId");
+
+                    b.HasIndex("EmpresaId", "ImpuestoId")
+                        .HasDatabaseName("IX_QAC3_31");
+
+                    b.HasIndex("EmpresaId", "ClienteId")
+                        .HasDatabaseName("IX_QAC3_39");
 
                     b.ToTable("ImpuestoClientes", (string)null);
                 });
@@ -5711,11 +5991,21 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<int>("Operacion")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ImpuestoId", "Operacion")
                         .IsUnique()
                         .HasDatabaseName("UX_ImpuestoOperaciones_Impuesto_Operacion");
+
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_ImpuestoOperaciones_OwnerId");
+
+                    b.HasIndex("EmpresaId", "ImpuestoId")
+                        .HasDatabaseName("IX_QAC3_32");
 
                     b.ToTable("ImpuestoOperaciones", (string)null);
                 });
@@ -5732,6 +6022,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<int>("ProductoId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ProductoId");
@@ -5739,6 +6032,16 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.HasIndex("ImpuestoId", "ProductoId")
                         .IsUnique()
                         .HasDatabaseName("UX_ImpuestoProductos_Impuesto_Producto");
+
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_ImpuestoProductos_OwnerId");
+
+                    b.HasIndex("EmpresaId", "ImpuestoId")
+                        .HasDatabaseName("IX_QAC3_33");
+
+                    b.HasIndex("EmpresaId", "ProductoId")
+                        .HasDatabaseName("IX_QAC3_40");
 
                     b.ToTable("ImpuestoProductos", (string)null);
                 });
@@ -5755,6 +6058,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<int>("ProveedorId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ProveedorId");
@@ -5762,6 +6068,16 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.HasIndex("ImpuestoId", "ProveedorId")
                         .IsUnique()
                         .HasDatabaseName("UX_ImpuestoProveedores_Impuesto_Proveedor");
+
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_ImpuestoProveedores_OwnerId");
+
+                    b.HasIndex("EmpresaId", "ImpuestoId")
+                        .HasDatabaseName("IX_QAC3_34");
+
+                    b.HasIndex("EmpresaId", "ProveedorId")
+                        .HasDatabaseName("IX_QAC3_41");
 
                     b.ToTable("ImpuestoProveedores", (string)null);
                 });
@@ -5887,14 +6203,28 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<int>("Orden")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EmpresaUnicidad")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("int")
+                        .HasComputedColumnSql("COALESCE(`EmpresaId`, 0)", true);
+
                     b.HasKey("Id");
 
-                    b.HasIndex("NombreActivoUnico")
-                        .IsUnique()
-                        .HasDatabaseName("UX_Marcas_Nombre_Activo");
+
 
                     b.HasIndex("Activo", "Eliminado")
                         .HasDatabaseName("IX_Marcas_Estado");
+
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_Marcas_OwnerId");
+
+                    b.HasIndex("EmpresaUnicidad", "NombreActivoUnico")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Marcas_Nombre_Activo");
 
                     b.ToTable("Marcas", (string)null);
                 });
@@ -6065,14 +6395,35 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<int>("Orden")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EmpresaUnicidad")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("int")
+                        .HasComputedColumnSql("COALESCE(`EmpresaId`, 0)", true);
+
                     b.HasKey("Id");
 
-                    b.HasIndex("NombreMarcaActivoUnico")
-                        .IsUnique()
-                        .HasDatabaseName("UX_Modelos_Marca_Nombre_Activo");
+
 
                     b.HasIndex("MarcaId", "Activo", "Eliminado")
                         .HasDatabaseName("IX_Modelos_Marca_Estado");
+
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_Modelos_OwnerId");
+
+                    b.HasIndex("EmpresaUnicidad", "NombreMarcaActivoUnico")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Modelos_Marca_Nombre_Activo");
+
+                    b.HasIndex("EmpresaId", "MarcaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_Modelos_OwnerMarcaId");
+
+                    b.HasIndex("EmpresaId", "MarcaId")
+                        .HasDatabaseName("IX_QAC3_11");
 
                     b.ToTable("Modelos", (string)null);
                 });
@@ -6189,6 +6540,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.HasIndex("Estado", "Fecha");
 
                     b.HasIndex("ModuloOrigen", "ReferenciaId");
+
+                    b.HasIndex("EmpresaId", "MetodoPagoId")
+                        .HasDatabaseName("IX_QAC3_16");
 
                     b.ToTable("MovimientosFinancieros", (string)null);
                 });
@@ -7804,6 +8158,21 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .IsUnique()
                         .HasDatabaseName("UX_QACT_Productos_OwnerId");
 
+                    b.HasIndex("EmpresaId", "CategoriaId")
+                        .HasDatabaseName("IX_QAC3_01");
+
+                    b.HasIndex("EmpresaId", "MarcaId")
+                        .HasDatabaseName("IX_QAC3_02");
+
+                    b.HasIndex("EmpresaId", "ModeloId")
+                        .HasDatabaseName("IX_QAC3_03");
+
+                    b.HasIndex("EmpresaId", "ColorId")
+                        .HasDatabaseName("IX_QAC3_04");
+
+                    b.HasIndex("EmpresaId", "TallaId")
+                        .HasDatabaseName("IX_QAC3_05");
+
                     b.ToTable("Productos", (string)null);
                 });
 
@@ -8035,6 +8404,21 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
 
                     b.HasIndex("EmpresaId", "ProductoId")
                         .HasDatabaseName("IX_QACT_001");
+
+                    b.HasIndex("EmpresaId", "MarcaId")
+                        .HasDatabaseName("IX_QAC3_06");
+
+                    b.HasIndex("EmpresaId", "ModeloId")
+                        .HasDatabaseName("IX_QAC3_07");
+
+                    b.HasIndex("EmpresaId", "ColorId")
+                        .HasDatabaseName("IX_QAC3_08");
+
+                    b.HasIndex("EmpresaId", "TallaId")
+                        .HasDatabaseName("IX_QAC3_09");
+
+                    b.HasIndex("EmpresaId", "MarcaId", "ModeloId")
+                        .HasDatabaseName("IX_QAC3_10");
 
                     b.ToTable("ProductoVariantes", null, t =>
                         {
@@ -8779,6 +9163,10 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.HasIndex("Ambito", "Activo")
                         .HasDatabaseName("IX_Roles_Ambito_Activo");
 
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_Roles_OwnerId");
+
                     b.ToTable("Roles", null, t =>
                         {
                             t.HasCheckConstraint("CK_Roles_Ambito", "`Ambito` IN (1, 2)");
@@ -9347,14 +9735,28 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<int>("Orden")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EmpresaUnicidad")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("int")
+                        .HasComputedColumnSql("COALESCE(`EmpresaId`, 0)", true);
+
                     b.HasKey("Id");
 
-                    b.HasIndex("NombreActivoUnico")
-                        .IsUnique()
-                        .HasDatabaseName("UX_Tallas_Nombre_Activo");
+
 
                     b.HasIndex("Activo", "Eliminado")
                         .HasDatabaseName("IX_Tallas_Estado");
+
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_Tallas_OwnerId");
+
+                    b.HasIndex("EmpresaUnicidad", "NombreActivoUnico")
+                        .IsUnique()
+                        .HasDatabaseName("UX_Tallas_Nombre_Activo");
 
                     b.ToTable("Tallas", (string)null);
                 });
@@ -9766,16 +10168,37 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<int>("Orden")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
+                    b.Property<int>("EmpresaUnicidad")
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("int")
+                        .HasComputedColumnSql("COALESCE(`EmpresaId`, 0)", true);
+
                     b.HasKey("Id");
 
-                    b.HasIndex("Codigo")
-                        .IsUnique();
 
-                    b.HasIndex("EsPredeterminadoUnico")
-                        .IsUnique();
 
-                    b.HasIndex("NombreNormalizado")
-                        .IsUnique();
+
+
+
+
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_TipoClientes_OwnerId");
+
+                    b.HasIndex("EmpresaUnicidad", "Codigo")
+                        .IsUnique()
+                        .HasDatabaseName("IX_TipoClientes_Codigo");
+
+                    b.HasIndex("EmpresaUnicidad", "EsPredeterminadoUnico")
+                        .IsUnique()
+                        .HasDatabaseName("IX_TipoClientes_EsPredeterminadoUnico");
+
+                    b.HasIndex("EmpresaUnicidad", "NombreNormalizado")
+                        .IsUnique()
+                        .HasDatabaseName("IX_TipoClientes_NombreNormalizado");
 
                     b.ToTable("TipoClientes", (string)null);
                 });
@@ -10573,6 +10996,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.HasIndex("EmpresaId", "ClienteId")
                         .HasDatabaseName("IX_QACT_004");
 
+                    b.HasIndex("EmpresaId", "MetodoPagoId")
+                        .HasDatabaseName("IX_QAC3_14");
+
                     b.ToTable("Ventas", (string)null);
                 });
 
@@ -10609,11 +11035,24 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<int>("VentaId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("DescuentoId");
 
                     b.HasIndex("VentaId");
+
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_VentaDescuentos_OwnerId");
+
+                    b.HasIndex("EmpresaId", "DescuentoId")
+                        .HasDatabaseName("IX_QAC3_22");
+
+                    b.HasIndex("EmpresaId", "VentaId")
+                        .HasDatabaseName("IX_QAC3_29");
 
                     b.ToTable("VentaDescuentos", (string)null);
                 });
@@ -10754,11 +11193,24 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<int>("VentaId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId")
+                        .HasColumnType("int");
+
                     b.HasKey("Id");
 
                     b.HasIndex("ImpuestoId");
 
                     b.HasIndex("VentaId");
+
+                    b.HasIndex("EmpresaId", "Id")
+                        .IsUnique()
+                        .HasDatabaseName("UX_QAC3_VentaImpuestos_OwnerId");
+
+                    b.HasIndex("EmpresaId", "ImpuestoId")
+                        .HasDatabaseName("IX_QAC3_36");
+
+                    b.HasIndex("EmpresaId", "VentaId")
+                        .HasDatabaseName("IX_QAC3_42");
 
                     b.ToTable("VentaImpuestos", (string)null);
                 });
@@ -13496,6 +13948,267 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .HasForeignKey("EmpresaId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("FK_QACT_RevisionesFinancieras_Empresa");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Categoria", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QAC3_Categorias_Empresa");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Marca", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QAC3_Marcas_Empresa");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Modelo", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QAC3_Modelos_Empresa");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Color", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QAC3_Colores_Empresa");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Talla", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QAC3_Tallas_Empresa");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.TipoCliente", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QAC3_TipoClientes_Empresa");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Catalogos.MetodoPago", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QAC3_MetodosPago_Empresa");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Descuento", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QAC3_Descuentos_Empresa");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.DescuentoCategoria", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QAC3_DescuentoCategorias_Empresa");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.DescuentoCliente", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QAC3_DescuentoClientes_Empresa");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.DescuentoProducto", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QAC3_DescuentoProductos_Empresa");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.DescuentoRol", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QAC3_DescuentoRoles_Empresa");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.HistorialUsoDescuento", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QAC3_HistorialUsoDescuentos_Empresa");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.VentaDescuento", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QAC3_VentaDescuentos_Empresa");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Impuesto", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QAC3_Impuestos_Empresa");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ImpuestoCategoria", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QAC3_ImpuestoCategorias_Empresa");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ImpuestoCliente", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QAC3_ImpuestoClientes_Empresa");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ImpuestoOperacion", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QAC3_ImpuestoOperaciones_Empresa");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ImpuestoProducto", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QAC3_ImpuestoProductos_Empresa");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ImpuestoProveedor", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QAC3_ImpuestoProveedores_Empresa");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.HistorialAplicacionImpuesto", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QAC3_HistorialAplicacionImpuestos_Empresa");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.VentaImpuesto", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QAC3_VentaImpuestos_Empresa");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.CompraImpuesto", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QAC3_CompraImpuestos_Empresa");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ConteoInventario", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QAC3_ConteosInventario_Empresa");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.ConteoInventarioDetalle", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QAC3_ConteoInventarioDetalles_Empresa");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Bancos.MatchConciliacion", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QAC3_MatchesConciliacion_Empresa");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Bancos.CuentaBancaria", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QAC3_CuentasBancarias_Empresa");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Bancos.ConciliacionBancaria", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QAC3_ConciliacionesBancarias_Empresa");
+                });
+
+            modelBuilder.Entity("Solqaryn.Domain.Entities.Bancos.MovimientoEstadoCuenta", b =>
+                {
+                    b.HasOne("Solqaryn.Domain.Entities.Empresa", null)
+                        .WithMany()
+                        .HasForeignKey("EmpresaId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("FK_QAC3_MovimientosEstadoCuenta_Empresa");
                 });
 
 #pragma warning restore 612, 618

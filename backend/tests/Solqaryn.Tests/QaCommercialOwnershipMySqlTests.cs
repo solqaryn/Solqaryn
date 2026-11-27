@@ -20,7 +20,7 @@ public sealed class QaCommercialOwnershipMySqlTests
                 mysql => mysql.MigrationsAssembly("Solqaryn.Infrastructure.Migrations")).Options;
         try
         {
-            int a, b, tipo, legacyId;
+            int a, b, legacyId;
             await using (var setup = new AppDbContext(options))
             {
                 await Phase7MySqlTestDatabase.InitializeFreshAsync(setup);
@@ -32,11 +32,14 @@ public sealed class QaCommercialOwnershipMySqlTests
                 setup.Productos.Add(legacy);
                 await setup.SaveChangesAsync();
                 a = ea.Id; b = eb.Id; legacyId = legacy.Id;
-                tipo = await setup.TipoClientes.Select(t => t.Id).FirstAsync();
+                await using var transaction = await setup.Database.BeginTransactionAsync();
+                await QaCommercialOwnershipV3.ProvisionDefaultsAsync(setup, a);
+                await QaCommercialOwnershipV3.ProvisionDefaultsAsync(setup, b);
+                await transaction.CommitAsync();
             }
 
-            var pa = await CrearCatalogoAsync(options, a, tipo, "A");
-            var pb = await CrearCatalogoAsync(options, b, tipo, "B");
+            var pa = await CrearCatalogoAsync(options, a, "A");
+            var pb = await CrearCatalogoAsync(options, b, "B");
             var accessor = new HttpContextAccessor { HttpContext = new DefaultHttpContext() };
             try
             {
@@ -147,13 +150,14 @@ public sealed class QaCommercialOwnershipMySqlTests
     }
 
     private static async Task<(int Producto,int Variante,int Cliente,int Proveedor)> CrearCatalogoAsync(
-        DbContextOptions<AppDbContext> options, int empresa, int tipo, string suffix)
+        DbContextOptions<AppDbContext> options, int empresa, string suffix)
     {
         var accessor = new HttpContextAccessor { HttpContext = new DefaultHttpContext() };
         accessor.HttpContext.Items["SOLQARYN_AUTHORIZED_EMPRESA_ID"] = empresa;
         try
         {
             await using var db = new AppDbContext(options, httpContextAccessor: accessor);
+            var tipo = await db.TipoClientes.Where(t => t.EsPredeterminado).Select(t => t.Id).SingleAsync();
             var p = new Producto { Nombre = "Producto " + suffix, Costo = 5, Precio = 10 };
             var c = new Cliente { Nombre = "Cliente " + suffix, IdentidadORTN = "0801199900001", TipoClienteId = tipo };
             var s = new Proveedor { Nombre = "Proveedor " + suffix, Documento = "0801199900002" };

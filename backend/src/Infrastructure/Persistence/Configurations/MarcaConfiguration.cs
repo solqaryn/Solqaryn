@@ -19,7 +19,7 @@ public class MarcaConfiguration : IEntityTypeConfiguration<Marca>
         builder.Property(x => x.NombreActivoUnico)
             .HasMaxLength(120)
             .HasComputedColumnSql("IF(Eliminado = 0, LOWER(TRIM(Nombre)), NULL)", stored: true);
-        builder.HasQueryFilter(x => !x.Eliminado);
+        builder.HasQueryFilter(QaCommercialOwnershipV1.SoftDeleteFilter, x => !x.Eliminado);
         builder.HasIndex(x => x.NombreActivoUnico).IsUnique().HasDatabaseName("UX_Marcas_Nombre_Activo");
         builder.HasIndex(x => new { x.Activo, x.Eliminado }).HasDatabaseName("IX_Marcas_Estado");
     }

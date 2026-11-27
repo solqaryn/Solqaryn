@@ -36,6 +36,29 @@ public sealed class EmpresaRepository : IEmpresaRepository
 
     public void Update(Empresa empresa) => Empresas.Update(empresa);
 
-    public async Task<bool> SaveChangesAsync(CancellationToken cancellationToken = default) =>
-        await _context.SaveChangesAsync(cancellationToken) > 0;
+    public async Task<bool> SaveChangesAsync(CancellationToken cancellationToken = default)
+    {
+        var provision = _context.ChangeTracker.Entries<Empresa>()
+            .Where(e => e.Entity.Activa && (e.State == EntityState.Added ||
+                (e.State == EntityState.Modified && e.Property(x => x.Activa).IsModified &&
+                 !e.Property(x => x.Activa).OriginalValue)))
+            .Select(e => e.Entity).ToArray();
+        if (provision.Length == 0 || _context.Database.ProviderName != "MySql.EntityFrameworkCore")
+            return await _context.SaveChangesAsync(cancellationToken) > 0;
+
+        // Provision defaults atomically with company creation or activation.
+        if (_context.Database.CurrentTransaction is not null)
+        {
+            var changed = await _context.SaveChangesAsync(cancellationToken) > 0;
+            foreach (var empresa in provision)
+                await QaCommercialOwnershipV3.ProvisionDefaultsAsync(_context, empresa.Id, cancellationToken);
+            return changed;
+        }
+        await using var transaction = await _context.Database.BeginTransactionAsync(cancellationToken);
+        var saved = await _context.SaveChangesAsync(cancellationToken) > 0;
+        foreach (var empresa in provision)
+            await QaCommercialOwnershipV3.ProvisionDefaultsAsync(_context, empresa.Id, cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
+        return saved;
+    }
 }

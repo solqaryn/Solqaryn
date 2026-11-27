@@ -15,11 +15,12 @@ public static class CanonicalMySqlPhysicalContract
     {
         ArgumentNullException.ThrowIfNull(db);
 
-        await SeedPaymentMethodsAsync(db, cancellationToken);
-        await SeedTipoClientePredeterminadoAsync(db, cancellationToken);
         await EnsureInventarioOriginBridgeAsync(db, cancellationToken);
         await QaCommercialOwnershipV1.InstallFreshPhysicalAsync(db, cancellationToken);
         await QaCommercialOwnershipV2.InstallFreshPhysicalAsync(db, cancellationToken);
+        await QaCommercialOwnershipV3.InstallFreshPhysicalAsync(db, cancellationToken);
+        await SeedPaymentMethodsAsync(db, cancellationToken);
+        await SeedTipoClientePredeterminadoAsync(db, cancellationToken);
     }
 
     public static async Task VerifyAsync(
@@ -29,6 +30,7 @@ public static class CanonicalMySqlPhysicalContract
         ArgumentNullException.ThrowIfNull(db);
         await QaCommercialOwnershipV1.VerifyPhysicalAsync(db, cancellationToken);
         await QaCommercialOwnershipV2.VerifyPhysicalAsync(db, cancellationToken);
+        await QaCommercialOwnershipV3.VerifyPhysicalAsync(db, cancellationToken);
 
         var triggerCount = await db.Database
             .SqlQueryRaw<long>("""
@@ -65,7 +67,7 @@ public static class CanonicalMySqlPhysicalContract
             .SqlQueryRaw<long>("""
                 SELECT COUNT(*) AS Value
                 FROM MetodosPago
-                WHERE CAST(Codigo AS BINARY) IN (
+                WHERE EmpresaId IS NULL AND CAST(Codigo AS BINARY) IN (
                     CAST('Efectivo' AS BINARY),
                     CAST('Transferencia' AS BINARY),
                     CAST('Tarjeta' AS BINARY),
@@ -84,7 +86,7 @@ public static class CanonicalMySqlPhysicalContract
             .SqlQueryRaw<long>("""
                 SELECT COUNT(*) AS Value
                 FROM TipoClientes
-                WHERE Codigo = 'SIN_CLASIFICAR'
+                WHERE EmpresaId IS NULL AND Codigo = 'SIN_CLASIFICAR'
                   AND EsSistema = 1
                   AND EsPredeterminado = 1
                   AND Activo = 1
@@ -112,7 +114,7 @@ public static class CanonicalMySqlPhysicalContract
             WHERE NOT EXISTS (
                 SELECT 1
                 FROM TipoClientes
-                WHERE Codigo = 'SIN_CLASIFICAR'
+                WHERE EmpresaId IS NULL AND Codigo = 'SIN_CLASIFICAR'
             );
             """,
             cancellationToken);
@@ -133,7 +135,7 @@ public static class CanonicalMySqlPhysicalContract
                    UTC_TIMESTAMP(6), 'SOLQARYN-F7', 'SOLQARYN-F7'
              WHERE NOT EXISTS (
                  SELECT 1 FROM MetodosPago
-                  WHERE CAST(Codigo AS BINARY) = CAST('Efectivo' AS BINARY));
+                  WHERE EmpresaId IS NULL AND CAST(Codigo AS BINARY) = CAST('Efectivo' AS BINARY));
 
             INSERT INTO MetodosPago
                 (Codigo, Nombre, Tipo, Activo, RequiereReferencia, RequiereBanco,
@@ -144,7 +146,7 @@ public static class CanonicalMySqlPhysicalContract
                    UTC_TIMESTAMP(6), 'SOLQARYN-F7', 'SOLQARYN-F7'
              WHERE NOT EXISTS (
                  SELECT 1 FROM MetodosPago
-                  WHERE CAST(Codigo AS BINARY) = CAST('Transferencia' AS BINARY));
+                  WHERE EmpresaId IS NULL AND CAST(Codigo AS BINARY) = CAST('Transferencia' AS BINARY));
 
             INSERT INTO MetodosPago
                 (Codigo, Nombre, Tipo, Activo, RequiereReferencia, RequiereBanco,
@@ -155,7 +157,7 @@ public static class CanonicalMySqlPhysicalContract
                    UTC_TIMESTAMP(6), 'SOLQARYN-F7', 'SOLQARYN-F7'
              WHERE NOT EXISTS (
                  SELECT 1 FROM MetodosPago
-                  WHERE CAST(Codigo AS BINARY) = CAST('Tarjeta' AS BINARY));
+                  WHERE EmpresaId IS NULL AND CAST(Codigo AS BINARY) = CAST('Tarjeta' AS BINARY));
 
             INSERT INTO MetodosPago
                 (Codigo, Nombre, Tipo, Activo, RequiereReferencia, RequiereBanco,
@@ -166,7 +168,7 @@ public static class CanonicalMySqlPhysicalContract
                    UTC_TIMESTAMP(6), 'SOLQARYN-F7', 'SOLQARYN-F7'
              WHERE NOT EXISTS (
                  SELECT 1 FROM MetodosPago
-                  WHERE CAST(Codigo AS BINARY) = CAST('Otro' AS BINARY));
+                  WHERE EmpresaId IS NULL AND CAST(Codigo AS BINARY) = CAST('Otro' AS BINARY));
             """,
             cancellationToken);
     }

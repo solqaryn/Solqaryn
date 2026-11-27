@@ -180,7 +180,7 @@ public class CatalogoProductoRepository : ICatalogoProductoRepository
         {
             case TipoCatalogoProducto.Marca:
             {
-                var entidad = await _context.Marcas.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == catalogo.Id);
+                var entidad = await _context.Marcas.IgnoreQueryFilters(new[] { QaCommercialOwnershipV1.SoftDeleteFilter }).FirstOrDefaultAsync(x => x.Id == catalogo.Id);
                 if (entidad is null) return false;
                 entidad.Nombre = catalogo.Nombre;
                 entidad.Descripcion = catalogo.Descripcion;
@@ -191,7 +191,7 @@ public class CatalogoProductoRepository : ICatalogoProductoRepository
             }
             case TipoCatalogoProducto.Modelo:
             {
-                var entidad = await _context.Modelos.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == catalogo.Id);
+                var entidad = await _context.Modelos.IgnoreQueryFilters(new[] { QaCommercialOwnershipV1.SoftDeleteFilter }).FirstOrDefaultAsync(x => x.Id == catalogo.Id);
                 if (entidad is null) return false;
                 entidad.MarcaId = catalogo.CatalogoPadreId
                     ?? throw new InvalidOperationException("Todo modelo normalizado requiere MarcaId.");
@@ -204,7 +204,7 @@ public class CatalogoProductoRepository : ICatalogoProductoRepository
             }
             case TipoCatalogoProducto.Color:
             {
-                var entidad = await _context.Colores.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == catalogo.Id);
+                var entidad = await _context.Colores.IgnoreQueryFilters(new[] { QaCommercialOwnershipV1.SoftDeleteFilter }).FirstOrDefaultAsync(x => x.Id == catalogo.Id);
                 if (entidad is null) return false;
                 entidad.Nombre = catalogo.Nombre;
                 entidad.Descripcion = catalogo.Descripcion;
@@ -216,7 +216,7 @@ public class CatalogoProductoRepository : ICatalogoProductoRepository
             }
             case TipoCatalogoProducto.Talla:
             {
-                var entidad = await _context.Tallas.IgnoreQueryFilters().FirstOrDefaultAsync(x => x.Id == catalogo.Id);
+                var entidad = await _context.Tallas.IgnoreQueryFilters(new[] { QaCommercialOwnershipV1.SoftDeleteFilter }).FirstOrDefaultAsync(x => x.Id == catalogo.Id);
                 if (entidad is null) return false;
                 entidad.Nombre = catalogo.Nombre;
                 entidad.Descripcion = catalogo.Descripcion;

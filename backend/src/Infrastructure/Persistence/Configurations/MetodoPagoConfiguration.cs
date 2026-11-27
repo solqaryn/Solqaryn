@@ -43,6 +43,6 @@ public class MetodoPagoConfiguration : IEntityTypeConfiguration<MetodoPagoCatalo
         builder.HasIndex(x => new { x.Activo, x.Eliminado, x.Orden })
             .HasDatabaseName("IX_MetodosPago_Estado_Orden");
 
-        builder.HasQueryFilter(x => !x.Eliminado);
+        builder.HasQueryFilter(QaCommercialOwnershipV1.SoftDeleteFilter, x => !x.Eliminado);
     }
 }

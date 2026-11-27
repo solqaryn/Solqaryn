@@ -47,6 +47,6 @@ public class TipoClienteConfiguration : IEntityTypeConfiguration<TipoCliente>
         builder.HasIndex(tc => tc.EsPredeterminadoUnico)
             .IsUnique();
 
-        builder.HasQueryFilter(tc => !tc.Eliminado);
+        builder.HasQueryFilter(QaCommercialOwnershipV1.SoftDeleteFilter, tc => !tc.Eliminado);
     }
 }
