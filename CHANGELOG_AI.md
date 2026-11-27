@@ -1,3 +1,7 @@
+## 2026-11-26 — QA: sincronizar gobernanza manual autorizada por el propietario
+
+- Se incorpora en QA la versión instalada de la Skill que separa QA_MANUAL_OWNER de DEV_AUTOMATION; referencia arquitectónica alineada con Angular 22.2.1/.NET 10/EF 10.0.12/Oracle 10.0.9 reales. Autorización explícita en conversación para QA exclusivamente. Se conserva Scope Lock sin modificaciones y se añade un gate dirigido de identidad/stack propio de QA. Se conserva registro/allowlist QA sin ampliar fuentes; DEV, MAIN, runtime de automatizaciones, IAM, código funcional, esquema y despliegues intactos. Pendiente resultado del gate de sincronización. MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-26 — QA-FN-05: cotización viva aprobada e integración candidata EF V3
 
 - Run 45939713972/job 140310970218 SUCCESS sobre Render personal LIVE `7ef2a818` y proxy Vercel QA: cotización cero/pagada/sin cobertura, importes servidor, producto/variante ajenos y stock, fixtures retirados. No pedido/cobro ni cambios a registros comerciales existentes. Retirado ese control del registro.

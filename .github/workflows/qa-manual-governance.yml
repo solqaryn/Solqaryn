@@ -1,0 +1,29 @@
+name: QA - Validar gobernanza manual
+on:
+  push:
+    branches: [qa]
+    paths:
+      - '.agents/skills/solqaryn-project-governance/SKILL.md'
+      - '.agents/skills/solqaryn-project-governance/references/architecture.md'
+      - '.github/workflows/qa-manual-governance.yml'
+permissions:
+  contents: read
+jobs:
+  scope:
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Validar identidad y Scope Lock propio de QA
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = refs/heads/qa
+          node scripts/verify-project-scope.mjs
+          grep -F 'QA_MANUAL_OWNER' .agents/skills/solqaryn-project-governance/SKILL.md
+          node -e 'const p=require("./frontend/package.json");if(p.dependencies["@angular/core"]!=="22.2.1"||p.dependencies["zone.js"]!=="0.16.3")process.exit(1)'
+          grep -F '<TargetFramework>net10.0</TargetFramework>' backend/src/API/Solqaryn.API.csproj
+          grep -F 'Include="Microsoft.EntityFrameworkCore" Version="10.0.12"' backend/src/Infrastructure/Solqaryn.Infrastructure.csproj
+          grep -F 'Include="MySql.EntityFrameworkCore" Version="10.0.9"' backend/src/Infrastructure/Solqaryn.Infrastructure.csproj
+          echo QA_MANUAL_GOVERNANCE=PASS
