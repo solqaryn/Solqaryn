@@ -1,0 +1,108 @@
+name: QA - FN-05 modales y galerias reales A/B
+on:
+  push:
+    branches: [qa]
+    paths:
+      - '.github/workflows/qa-fn-05-modales-galerias-live.yml'
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: qa-fn-05-live-admin
+  cancel-in-progress: false
+jobs:
+  modales:
+    name: Modales de envio autenticados A/B
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == 'c269caf7a8f95abc637bc37c4ae3ebb550faac78'
+    runs-on: ubuntu-latest
+    environment: QA
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verificar alcance y evidencia de versiones desplegadas
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = refs/heads/qa
+          node scripts/verify-project-scope.mjs
+          git diff --exit-code c269caf7a8f95abc637bc37c4ae3ebb550faac78 HEAD -- backend frontend render.yaml scripts .agents docs/PROJECT_SCOPE_LOCK.md AGENTS.md .github/qa/qa-fn-05-v3-browser.mjs
+          git diff --exit-code dea277293408751b1b49416a8164e1392e80a483 HEAD -- backend render.yaml
+          for run in 46030826299 46030826280 46030826511; do
+            gh api "repos/solqaryn/Solqaryn/actions/runs/$run" | jq -e '.head_sha == "c269caf7a8f95abc637bc37c4ae3ebb550faac78" and .head_branch == "qa" and .status == "completed" and .conclusion == "success"' >/dev/null
+          done
+          gh api repos/solqaryn/Solqaryn/actions/runs/46027530182 | jq -e '.head_sha == "dea277293408751b1b49416a8164e1392e80a483" and .head_branch == "qa" and .status == "completed" and .conclusion == "success"' >/dev/null
+          python3 -m py_compile .github/qa/qa-fn-05-v3-shipping-ui.py .github/qa/qa-fn-05-v3-galerias-live.py
+      - name: Preparar cliente MySQL y BCrypt
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y mysql-client apache2-utils
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Preparar navegador
+        working-directory: frontend
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Certificar modales en Vercel QA
+        env:
+          EXPECTED_DEPLOYED_SHA: 'dea277293408751b1b49416a8164e1392e80a483'
+          DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
+          DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
+          DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}
+          DB_USER: ${{ vars.SOLQARYN_QA_DB_USER }}
+          DB_PASSWORD: ${{ secrets.SOLQARYN_QA_DB_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 .github/qa/qa-fn-05-v3-shipping-ui.py
+  galerias:
+    name: Galerias de categorias con persistencia y aislamiento A/B
+    needs: modales
+    if: ${{ github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == 'c269caf7a8f95abc637bc37c4ae3ebb550faac78' && needs.modales.result == 'success' }}
+    runs-on: ubuntu-latest
+    environment: QA
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Verificar alcance y evidencia de versiones desplegadas
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = refs/heads/qa
+          node scripts/verify-project-scope.mjs
+          git diff --exit-code c269caf7a8f95abc637bc37c4ae3ebb550faac78 HEAD -- backend frontend render.yaml scripts .agents docs/PROJECT_SCOPE_LOCK.md AGENTS.md .github/qa/qa-fn-05-v3-browser.mjs
+          git diff --exit-code dea277293408751b1b49416a8164e1392e80a483 HEAD -- backend render.yaml
+          for run in 46030826299 46030826280 46030826511; do
+            gh api "repos/solqaryn/Solqaryn/actions/runs/$run" | jq -e '.head_sha == "c269caf7a8f95abc637bc37c4ae3ebb550faac78" and .head_branch == "qa" and .status == "completed" and .conclusion == "success"' >/dev/null
+          done
+          gh api repos/solqaryn/Solqaryn/actions/runs/46027530182 | jq -e '.head_sha == "dea277293408751b1b49416a8164e1392e80a483" and .head_branch == "qa" and .status == "completed" and .conclusion == "success"' >/dev/null
+          python3 -m py_compile .github/qa/qa-fn-05-v3-shipping-ui.py .github/qa/qa-fn-05-v3-galerias-live.py
+      - name: Preparar cliente MySQL y BCrypt
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y mysql-client apache2-utils
+      - name: Certificar operaciones reales y limpieza de fixtures
+        env:
+          EXPECTED_DEPLOYED_SHA: 'dea277293408751b1b49416a8164e1392e80a483'
+          DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
+          DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
+          DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}
+          DB_USER: ${{ vars.SOLQARYN_QA_DB_USER }}
+          DB_PASSWORD: ${{ secrets.SOLQARYN_QA_DB_PASSWORD }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 .github/qa/qa-fn-05-v3-galerias-live.py

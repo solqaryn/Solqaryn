@@ -1,3 +1,10 @@
+## 2026-11-27 — QA: certificación causal de modales y galerías A/B
+
+- Confirmados 46030826299, 46030826280 y 46030826511 SUCCESS para `c269caf7a8f95abc637bc37c4ae3ebb550faac78`, Scope Lock aprobado, Vercel personal QA READY para ese SHA y Render personal QA LIVE para `dea277293408751b1b49416a8164e1392e80a483`. Regresión visual institucional aprobada; queda ejecución autenticada dirigida.
+- Nuevo gate secuencial de pruebas vivas: modales de envío primero y galería de categorías después, sólo sobre QA, usando identidades sintéticas independientes, verificación de la versión causal, permisos, rechazo A/B y limpieza de fixtures. Galerías: alta, cinco PNG válidos, lectura, orden persistido, versión obsoleta, seis fotos y contenido inválido rechazados, referencias ajenas, retirada, auditoría y revocación de accesos. No se cambia la aplicación ni se aplica migración; la retirada lógica no acredita por sí sola el borrado físico de Cloudinary. Certificación pendiente de resultados y atestación posterior de despliegues.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-27 — QA: modal institucional de costos de envío y nuevos requisitos de trazabilidad
 
 - Render personal QA LIVE `dep-dc4qgl3l550s73abc590` y Vercel personal QA READY `dpl_A7uLF3hV6ngfbFEVv6ShzddPGc6k`, SHA `dea277293408751b1b49416a8164e1392e80a483`; cuatro gates 46027530182/46027530517/46027530252/46027530434 success. Límite de 15 MB publicado; operación real de galerías sigue pendiente.

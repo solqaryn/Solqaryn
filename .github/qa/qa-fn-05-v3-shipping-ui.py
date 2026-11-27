@@ -48,7 +48,7 @@ print("EXPECTED_RENDER_SHA=" + expected_sha, flush=True)
 print("RENDER_SHA_REQUIRES_EXTERNAL_ATTESTATION", flush=True)
 
 
-require(expected_sha == "77ca9b08b971566218d3a705d69a8f30bdeec9ab", "Unexpected deployed SHA")
+require(expected_sha in ("77ca9b08b971566218d3a705d69a8f30bdeec9ab", "dea277293408751b1b49416a8164e1392e80a483"), "Unexpected deployed SHA")
 from decimal import Decimal
 prefix = "qa5" + secrets.token_hex(5)
 a,b,operator,platform = (prefix+x for x in ("A","B","O","P"))
