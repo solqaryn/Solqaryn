@@ -11544,3 +11544,8 @@
 
 - TASK_ID=6af16bb9492c8191b8e8c7d606f11507; RUN_ID=bdeedb2c-4f74-832b-97cf-4d056470291e; EVENT_ID=V44R1-J10-BDEEDB2C-C1504M0504-WHATSAPP-FOCUS; BASE=269117efb3b44628cc8ca1942f0d9b76b1e45959.
 - Checkout: al preparar WhatsApp, el botón enfocado desaparecía al reemplazarse por el enlace. Transferir foco después del render de Angular sólo si el botón tenía foco y no se desplazó a otro control; mantener aviso accesible y no abrir la URL automáticamente. Regresión Chromium con Enter, foco en enlace y Tab hacia tarjeta, sin navegación externa. SKREF-03 pin 2149fcce39a90bb409df5f16515f316a76dc6199 y SKREF-10 pin 6808966993bf2b2d455d9b6245e960a59a01b9a9 consultados en origen. Sin cambios de API, datos, permisos, pago ni arquitectura. A0 revisión estática; A1-A4 CI exact-SHA pendientes, A5 ajena. Rollback por revert ordinario dev. No QA/main/PROD.
+
+## 2026-11-26 — DEV04 — C02-01.M05.04 — V44/R1/R5
+
+- TASK_ID=6aeacb7820ac8191b7d768a6f33dfa09; RUN_ID=bc2769cc-bfb8-8332-a60f-91f68c87b122; EVENT_ID=V44R1-J30-BC2769CC-C0201M0504-REAL-LOGIN-ROUTE; BASE=d667744bed17c9ecbdb8cfaa3a280600024811e1.
+- D317: extend existing isolated P4 real-browser test to observe automatic unique membership selection, server permissions/capabilities, automatic /productos under restricted multi-company policy (dashboard not permitted), actual authorized catalog GET for A/B before manual profile navigation. No mock, no JWT persistence or logging, no production data, no new grants, no change of runtime or DAG. SKREF-10 original pin 6808966993bf2b2d455d9b6245e960a59a01b9a9 consulted. A0 static review; CI exact SHA pending; durable per-user preference and A5 independent still pending. Revert ordinarily on dev if needed.

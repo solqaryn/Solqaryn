@@ -48,6 +48,10 @@ try {
     await page.locator('input[formcontrolname="password"]').fill(password);
     const authenticated = page.waitForResponse(r => matches(r, '/auth/login', 'POST'));
     const verified = page.waitForResponse(r => matches(r, '/tenant-context/' + f.tenant, 'GET'));
+    // C02-01.M05.04: observe the actual automatic login route, before any manual navigation.
+    const memberships = page.waitForResponse(r => matches(r, '/tenant-context/empresas', 'GET'));
+    const permissions = page.waitForResponse(r => matches(r, '/permisos/mis-permisos/empresa/' + f.tenant, 'GET'));
+    const catalog = page.waitForResponse(r => matches(r, '/productos', 'GET'));
     await page.getByRole('button', { name: /Ingresar al sistema/ }).click();
     const login = await authenticated;
     assert.equal(login.status(), 200, 'Real UI login');
@@ -57,6 +61,29 @@ try {
     assert.equal(membership.status(), 200, 'Server verified unique tenant membership');
     assert.equal((await membership.json())?.data?.empresaId, f.tenant);
     await page.waitForFunction(n => localStorage.getItem('solqaryn_empresa_solicitada_id') === String(n), f.tenant);
+    const listed = await memberships;
+    assert.equal(listed.status(), 200, 'Real membership listing');
+    const membershipData = (await listed.json())?.data;
+    assert.ok(Array.isArray(membershipData) && membershipData.length === 1 &&
+      membershipData[0]?.empresaId === f.tenant, 'Exactly one active membership in the isolated fixture');
+    const granted = await permissions;
+    assert.equal(granted.status(), 200, 'Real tenant permission response');
+    const rights = (await granted.json())?.data;
+    assert.ok(rights?.operacionMultiEmpresaRestringida === true &&
+      rights.permisos?.includes('Productos:Ver') &&
+      rights.capacidadesHabilitadas?.includes('Productos:Ver') &&
+      rights.rutasHabilitadas?.includes('productos') &&
+      !rights.rutasHabilitadas?.includes('dashboard'),
+      'Restricted multi-company fixture permits the catalog, not the dashboard');
+    await expect(page).toHaveURL(origin + '/productos', { timeout: 30000 });
+    const loaded = await catalog;
+    assert.equal(loaded.status(), 200, 'Real authorized catalog request');
+    const catalogHeaders = await loaded.request().allHeaders();
+    assert.ok(catalogHeaders.authorization === 'Bearer ' + jwt, 'Signed base JWT on initial route');
+    assert.equal(catalogHeaders['x-empresa-id'], String(f.tenant));
+    await expect(page.getByRole('heading', { name: 'Productos', exact: true })).toBeVisible();
+    console.log('C0201_M0504_REAL_UNIQUE_LOGIN_ROUTE_TENANT_' + f.tenant + '_PASS');
+
     await page.goto(origin + '/perfil');
     const section = page.locator('section[aria-labelledby="sucursal-contextual-titulo"]');
     await expect(section).toBeVisible({ timeout: 30000 });
@@ -181,7 +208,8 @@ try {
       page.off('request', observeStale);
     }
 
-    results.push({ tenant: f.tenant, branch: own, uiLogin: 200, list: 200, issue: 200,
+    results.push({ tenant: f.tenant, branch: own, uiLogin: 200, uniqueMembershipList: 200,
+      initialPermissions: 200, initialAllowedRoute: '/productos', initialCatalog: 200, list: 200, issue: 200,
       resource: 200, foreignBranch: 403, revokedExistingJWT: 403, revokedSelection: 403,
       baseTokenPreserved: true, scopedTokenNotPersisted: true, staleHintDenied: true });
     console.log('C0301_M0303_REAL_BROWSER_TENANT_' + f.tenant + '_PASS');
@@ -191,7 +219,7 @@ try {
   try {
     await writeFile(join(out, 'metrics.json'), JSON.stringify({
       sha: process.env.GITHUB_SHA, mechanism: 'real browser UI + signed JWT + ephemeral Oracle EF MySQL 8.4',
-      scope: 'profile branch consumer, real cross-tenant rejection and branch revocation; no claim of all ERP routes',
+      scope: 'unique membership real automatic authorized catalog navigation, profile branch consumer, cross-tenant rejection and revocation; no durable preference or all ERP routes claimed',
       results
     }, null, 2));
   } finally {
