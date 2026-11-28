@@ -1,0 +1,50 @@
+name: QA - Checkout pedido persistente MySQL
+on:
+  push:
+    branches: [qa]
+    paths:
+      - 'backend/src/API/Controllers/TiendaCuentaController.Checkout.cs'
+      - 'backend/src/Domain/Entities/PedidoVenta.cs'
+      - 'backend/src/Infrastructure/Persistence/AppDbContext.cs'
+      - 'backend/tests/Solqaryn.Tests/QaCheckoutPedidoMySqlTests.cs'
+      - '.github/workflows/qa-checkout-pedido-mysql.yml'
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  checkout:
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa'
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: root
+          MYSQL_ROOT_HOST: '%'
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h localhost -uroot -proot"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - run: |
+          test "$GITHUB_REF" = refs/heads/qa
+          node scripts/verify-project-scope.mjs
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Pedido, replay, importes y acceso A/B
+        working-directory: backend
+        run: dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter 'FullyQualifiedName~QaCheckoutPedidoMySqlTests' --logger "trx;LogFileName=qa-checkout-pedido.trx"
+      - if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-checkout-pedido-trx
+          path: backend/tests/Solqaryn.Tests/TestResults/qa-checkout-pedido.trx
+          retention-days: 14

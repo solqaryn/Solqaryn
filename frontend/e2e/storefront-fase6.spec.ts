@@ -138,6 +138,30 @@ async function llenarComprador(page: Page): Promise<void> {
   await page.getByRole('textbox', { name: 'Notas para el comercio' }).fill('Entregar por la tarde.');
 }
 
+async function mockPedidoPersistido(page: Page, productoId: number, varianteId: number, nombre: string, cantidad: number, precio: number, envio: number, modelo: string | null = null) {
+  let clave = '';
+  const pedido = { id: 1234, estado: 'Borrador', moneda: 'HNL', subtotal: cantidad * precio, costoEnvio: envio,
+    total: cantidad * precio + envio, tarifaEnvio: 'Tarifa general de prueba', fechaUtc: new Date().toISOString(),
+    lineas: [{ productoId, productoVarianteId: varianteId, nombre, modelo, cantidad, precioUnitario: precio, total: cantidad * precio }] };
+  await page.route('**/tienda/cuenta/pedidos/checkout**', async route => {
+    const headers = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*', 'Access-Control-Allow-Methods': 'POST,GET,OPTIONS' };
+    if (route.request().method() === 'OPTIONS') return route.fulfill({ status: 204, headers });
+    const recibida = route.request().headers()['x-storefront-order-key'];
+    expect(recibida).toMatch(/^[a-f0-9]{64}$/);
+    if (route.request().method() === 'POST') {
+      const body = route.request().postDataJSON();
+      expect(body.checkout.items[0]).toMatchObject({ productoId, productoVarianteId: varianteId, unidades: cantidad });
+      expect(body.subtotalEsperado).toBe(pedido.subtotal);
+      expect(body.envioEsperado).toBe(envio);
+      clave = recibida;
+    } else {
+      expect(recibida).toBe(clave);
+    }
+    await route.fulfill({ status: route.request().method() === 'POST' ? 201 : 200, contentType: 'application/json', headers,
+      body: JSON.stringify({ success: true, data: pedido }) });
+  });
+}
+
 test.describe('Storefront Fase 6 — checkout y pedido', () => {
   test.describe.configure({ retries: 0 });
 
@@ -195,6 +219,7 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
     };
 
     await sembrarCarrito(page, 'bd', `variante:${varianteId}`, productoId, 1);
+    await mockPedidoPersistido(page, productoId, varianteId, 'UAT Modelo General', 1, 150, 0);
     let requestContexto: unknown = null;
     await page.route('http://localhost:5005/tienda/productos/contexto', route => {
       requestContexto = route.request().postDataJSON();
@@ -255,6 +280,7 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
 
     await llenarComprador(page);
     await page.getByRole('button', { name: 'Preparar pedido por WhatsApp' }).click();
+    await page.getByRole('button', { name: 'Registrar pedido' }).click();
     const enlace = page.getByRole('link', { name: 'Abrir WhatsApp y continuar' });
     await expect(enlace).toBeVisible();
     const href = await enlace.getAttribute('href');
@@ -279,6 +305,7 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
     await prepararEmpresa(page);
     await sembrarCarrito(page, 'bd', modeloClaveReal, 501, 2);
     await mockCatalogoReal(page, 1750, 3);
+    await mockPedidoPersistido(page, 501, productoVarianteReal, 'Producto Checkout Real', 2, 2100, 37, 'Modelo auditoría');
 
     let requestCheckout: unknown = null;
     await page.route('http://localhost:5005/tienda/checkout/validar', async route => {
@@ -298,6 +325,7 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
             total: 4237,
             lineas: [{
               productoId: 501,
+              productoVarianteId: productoVarianteReal,
               modeloId: 5010,
               nombre: 'Producto Checkout Real',
               modelo: 'Modelo auditoría',
@@ -337,6 +365,8 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
 
     await llenarComprador(page);
     await page.getByRole('button', { name: 'Preparar pedido por WhatsApp' }).click();
+    await expect(page.getByRole('link', { name: 'Abrir WhatsApp y continuar' })).toHaveCount(0);
+    await page.getByRole('button', { name: 'Registrar pedido' }).click();
     const enlace = page.getByRole('link', { name: 'Abrir WhatsApp y continuar' });
     await expect(enlace).toBeVisible();
     const href = await enlace.getAttribute('href');
@@ -345,7 +375,7 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
     expect(destino.origin).toBe('https://wa.me');
     expect(destino.pathname).toBe('/50498765432');
     const mensaje = destino.searchParams.get('text') || '';
-    expect(mensaje).toContain(`🔖 *Referencia:* ${referenciaValidada}`);
+    expect(mensaje).toContain('🔖 *Referencia:* ERP-1234');
     expect(mensaje).toContain('Producto Checkout Real');
     expect(mensaje).toContain('🛍️ *Nueva solicitud de compra — Storefront Checkout Audit*');
     expect(mensaje).toContain('👤 *Cliente*');
@@ -374,22 +404,16 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
     expect(piiAntes.local).not.toContain('99991111');
     expect(piiAntes.recibos).toHaveLength(0);
 
-    page.on('popup', popup => { void popup.close(); });
-    await enlace.click();
-    await expect(page).toHaveURL(new RegExp(`/tienda/pedido/${referenciaValidada}$`));
-    await expect(page.getByRole('heading', { level: 1, name: 'Tu solicitud quedó preparada para WhatsApp' })).toBeVisible();
-    await expect(page.locator('.reference-box')).toContainText(referenciaValidada);
-
-    const reciboRaw = await page.evaluate(ref => sessionStorage.getItem(`storefront:pedido:v1:${ref}`), referenciaValidada);
-    expect(reciboRaw).toBeTruthy();
-    const recibo = JSON.parse(reciboRaw!);
-    expect(Object.keys(recibo).sort()).toEqual(['costoEnvio', 'creadoUtc', 'estado', 'expiraUtc', 'lineas', 'moneda', 'referencia', 'total']);
-    expect(recibo.estado).toBe('whatsapp-preparado');
-    expect(recibo.total).toBe(4237);
-    expect(recibo.costoEnvio).toBe(37);
-    expect(reciboRaw).not.toContain('Cliente Auditoría');
-    expect(reciboRaw).not.toContain('cliente@example.com');
-    expect(reciboRaw).not.toContain('99991111');
+    await page.getByRole('button', { name: 'Ver pedido registrado' }).click();
+    await expect(page).toHaveURL(/\/tienda\/pedido\/erp-1234$/);
+    await expect(page.getByRole('heading', { level: 1, name: 'Tu pedido quedó registrado' })).toBeVisible();
+    await expect(page.locator('.reference-box')).toContainText('erp-1234');
+    await page.reload();
+    await expect(page.getByRole('heading', { level: 1, name: 'Tu pedido quedó registrado' })).toBeVisible();
+    const guardado = await page.evaluate(() => JSON.stringify(Object.entries(sessionStorage)));
+    expect(guardado).not.toContain('Cliente Auditoría');
+    expect(guardado).not.toContain('cliente@example.com');
+    expect(guardado).not.toContain('99991111');
   });
 
   test('QA visual: cotización de envío ausente bloquea la compra; cobertura nueva exige recalcular', async ({ page }) => {
@@ -411,11 +435,8 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
     await expect(preparar).toBeEnabled();
     await llenarComprador(page);
     await preparar.click();
-    const enlace = page.getByRole('link', { name: 'Abrir WhatsApp y continuar' });
+    const enlace = page.getByRole('button', { name: 'Registrar pedido' });
     await expect(enlace).toBeVisible();
-    const mensaje = new URL((await enlace.getAttribute('href'))!).searchParams.get('text') || '';
-    expect(mensaje).toContain('Ciudad de prueba');
-    expect(mensaje).toContain('4,245');
     await page.getByRole('textbox', { name: 'Ciudad', exact: true }).fill('Otra ciudad');
     await expect(enlace).toHaveCount(0);
     await expect(preparar).toBeDisabled();
@@ -434,7 +455,7 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
     await expect(page.getByRole('heading', { name: 'Tu compra' })).toBeVisible();
     await llenarComprador(page);
     const preparar = page.getByRole('button', { name: 'Preparar pedido por WhatsApp' });
-    const enlace = page.getByRole('link', { name: 'Abrir WhatsApp y continuar' });
+    const enlace = page.getByRole('button', { name: 'Registrar pedido' });
     await preparar.click();
     await expect(enlace).toBeVisible();
     await page.getByRole('textbox', { name: 'Nombre completo' }).fill('Cliente actualizado QA');
@@ -442,9 +463,6 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
     await expect(page.getByText('Actualizaste tus datos. Prepara nuevamente la solicitud antes de abrir WhatsApp.')).toBeVisible();
     await preparar.click();
     await expect(enlace).toBeVisible();
-    const mensaje = new URL((await enlace.getAttribute('href'))!).searchParams.get('text') || '';
-    expect(mensaje).toContain('Cliente actualizado QA');
-    expect(mensaje).not.toContain('Cliente Auditoría');
     expect(await page.evaluate(() => Object.keys(sessionStorage).filter(key => key.startsWith('storefront:pedido:')).length)).toBe(0);
   });
 
@@ -457,7 +475,7 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
     await llenarComprador(page);
     await page.getByRole('button', { name: 'Preparar pedido por WhatsApp' }).click();
 
-    const enlace = page.getByRole('link', { name: 'Abrir WhatsApp y continuar' });
+    const enlace = page.getByRole('button', { name: 'Registrar pedido' });
     await expect(enlace).toBeVisible();
     let popups = 0;
     page.on('popup', popup => {
@@ -473,7 +491,7 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
 
     await expect(page).toHaveURL(/\/tienda\/checkout\?fuente=bd$/);
     await expect(page.getByText('La validación del carrito venció antes de abrir WhatsApp. Actualiza precios y existencias para continuar.')).toBeVisible();
-    await expect(page.getByRole('link', { name: 'Abrir WhatsApp y continuar' })).toHaveCount(0);
+    await expect(page.getByRole('button', { name: 'Registrar pedido' })).toHaveCount(0);
     await expect(page.getByRole('button', { name: 'Preparar pedido por WhatsApp' })).toBeDisabled();
     expect(popups).toBe(0);
     const recibos = await page.evaluate(() => Object.keys(sessionStorage).filter(key => key.startsWith('storefront:pedido:')));

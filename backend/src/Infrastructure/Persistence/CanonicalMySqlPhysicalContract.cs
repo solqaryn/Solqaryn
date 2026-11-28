@@ -20,6 +20,7 @@ public static class CanonicalMySqlPhysicalContract
         await QaCommercialOwnershipV2.InstallFreshPhysicalAsync(db, cancellationToken);
         await QaCommercialOwnershipV3.InstallFreshPhysicalAsync(db, cancellationToken);
         await QaCommercialOwnershipV4.InstallFreshPhysicalAsync(db, cancellationToken);
+        await VerifyFreshCheckoutPedidoAsync(db, cancellationToken);
         await SeedPaymentMethodsAsync(db, cancellationToken);
         await SeedTipoClientePredeterminadoAsync(db, cancellationToken);
     }
@@ -99,6 +100,35 @@ public static class CanonicalMySqlPhysicalContract
         if (defaultCustomerTypeSeedCount != 1)
             throw new InvalidOperationException(
                 $"Canonical default customer-type seed mismatch: count={defaultCustomerTypeSeedCount}.");
+    }
+
+    // EnsureCreated already materializes the current EF model. Record V6 only
+    // for a newly bootstrapped schema after checking the actual contract.
+    private static async Task VerifyFreshCheckoutPedidoAsync(AppDbContext db, CancellationToken ct)
+    {
+        var count = await db.Database.SqlQueryRaw<long>("""
+            SELECT COUNT(*) AS Value FROM INFORMATION_SCHEMA.COLUMNS
+            WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='PedidosVenta' AND IS_NULLABLE='YES'
+            AND ((COLUMN_NAME='CostoEnvio' AND COLUMN_TYPE='decimal(18,2)')
+              OR (COLUMN_NAME='MonedaCheckout' AND COLUMN_TYPE='varchar(3)')
+              OR (COLUMN_NAME='TarifaEnvioCheckout' AND COLUMN_TYPE='varchar(120)')
+              OR (COLUMN_NAME='EntregaCheckoutJson' AND COLUMN_TYPE='longtext'))
+            """).SingleAsync(ct);
+        var check = await db.Database.SqlQueryRaw<string>("""
+            SELECT c.CHECK_CLAUSE AS Value FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS t
+            JOIN INFORMATION_SCHEMA.CHECK_CONSTRAINTS c ON c.CONSTRAINT_SCHEMA=t.CONSTRAINT_SCHEMA
+                AND c.CONSTRAINT_NAME=t.CONSTRAINT_NAME
+            WHERE t.CONSTRAINT_SCHEMA=DATABASE() AND t.TABLE_NAME='PedidosVenta'
+                AND t.CONSTRAINT_NAME='CK_PedidosVenta_Checkout_Atomico' AND t.ENFORCED='YES'
+            """).SingleAsync(ct);
+        static string Normalize(string value) =>
+            string.Concat(value.Where(c => !char.IsWhiteSpace(c) && c != '`' && c != '(' && c != ')')).ToLowerInvariant();
+        if (count != 4 || Normalize(check) != Normalize("((`CostoEnvio` IS NULL AND `MonedaCheckout` IS NULL AND `TarifaEnvioCheckout` IS NULL AND `EntregaCheckoutJson` IS NULL) OR (`CostoEnvio` IS NOT NULL AND `CostoEnvio` >= 0 AND `MonedaCheckout` IS NOT NULL AND CHAR_LENGTH(`MonedaCheckout`) = 3 AND `TarifaEnvioCheckout` IS NOT NULL AND `EntregaCheckoutJson` IS NOT NULL AND `CotizacionId` IS NULL))") ||
+            await db.Set<Solqaryn.Domain.Entities.PedidoVenta>().IgnoreQueryFilters().AnyAsync(ct))
+            throw new InvalidOperationException("Fresh checkout schema must match V6 and contain no orders.");
+        await db.Database.ExecuteSqlRawAsync(
+            "INSERT IGNORE INTO `__EFMigrationsHistory` (`MigrationId`,`ProductVersion`) VALUES ({0},{1})",
+            new object[] { "20261128183000_QaCheckoutPedidoV6", "10.0.12" }, ct);
     }
 
     private static async Task SeedTipoClientePredeterminadoAsync(

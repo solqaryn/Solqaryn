@@ -1,3 +1,6 @@
+## 2026-11-28 — QA FN-05 checkout persistente: evidencia dirigida y ensayo V6
+- Prueba MySQL aislada de pedido, replay, divergencia de importes y acceso A/B; E2E de registro antes de WhatsApp y recuperación desde servidor. Ensayo V6 en copia restaurada con huellas de datos y esquema, sin escrituras en Aiven. Bootstrap nuevo verifica las columnas y restricción antes de registrar V6. Pendiente ejecución y certificación; no desplegado.
+
 ## 2026-11-28 — QA-FN-05: conectar interfaz checkout al pedido durable
 
 - La ruta WhatsApp real prepara sin escribir; la acción explícita Registrar pedido envía referencias, cobertura, datos de contacto y aserciones monetarias al endpoint de pedido. Sólo tras confirmación ERP se expone el enlace WhatsApp con referencia ERP real. Demo conserva recibo efímero. El carrito se vacía al salir hacia el pedido, no ante fallo.
