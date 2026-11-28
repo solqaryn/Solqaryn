@@ -35,7 +35,7 @@ public sealed class CategoriaGaleriaServiceTests
         CategoriaGaleria? guardada = null;
         _galerias.Setup(x => x.SaveAsync(It.IsAny<CategoriaGaleria>(), true, It.IsAny<CancellationToken>()))
             .Callback<CategoriaGaleria, bool, CancellationToken>((g, _, _) => guardada = g).Returns(Task.CompletedTask);
-        _storage.Setup(x => x.UploadAsync(_tenant, It.IsAny<IFormFile>(), It.IsAny<CancellationToken>()))
+        _storage.Setup(x => x.UploadCategoriaGaleriaAsync(_tenant, It.IsAny<IFormFile>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync((StorageTenantContext t, IFormFile f, CancellationToken ct) =>
                 ($"https://res.cloudinary.com/test/image/upload/{f.FileName}", $"empresas/7/{f.FileName}"));
         var dto = new ActualizarCategoriaGaleriaDto
@@ -99,7 +99,7 @@ public sealed class CategoriaGaleriaServiceTests
             Orden = new() { "n:0", "n:1" },
             Archivos = new() { ImagenConLongitud(mitad), ImagenConLongitud(mitad) }
         };
-        _storage.SetupSequence(x => x.UploadAsync(_tenant, It.IsAny<IFormFile>(), It.IsAny<CancellationToken>()))
+        _storage.SetupSequence(x => x.UploadCategoriaGaleriaAsync(_tenant, It.IsAny<IFormFile>(), It.IsAny<CancellationToken>()))
             .ReturnsAsync(("https://res.cloudinary.com/test/image/upload/a.png", "empresas/7/a"))
             .ReturnsAsync(("https://res.cloudinary.com/test/image/upload/b.png", "empresas/7/b"));
         _galerias.Setup(x => x.SaveAsync(It.IsAny<CategoriaGaleria>(), true, It.IsAny<CancellationToken>()))
@@ -111,6 +111,29 @@ public sealed class CategoriaGaleriaServiceTests
         Assert.Equal(2, resultado.Imagenes.Count);
         _galerias.Verify(x => x.SaveAsync(It.Is<CategoriaGaleria>(g => g.EmpresaId == 7 && g.CategoriaId == 4),
             true, It.IsAny<CancellationToken>()), Times.Once);
+    }
+
+    [Theory]
+    [InlineData(10L * 1024 * 1024 + 1)]
+    [InlineData(15L * 1024 * 1024)]
+    public async Task AceptaUnaFotoHastaQuinceMb_SoloPorContratoDeGaleria(long longitud)
+    {
+        var dto = new ActualizarCategoriaGaleriaDto
+        {
+            Orden = new() { "n:0" },
+            Archivos = new() { ImagenConLongitud(longitud) }
+        };
+        _storage.Setup(x => x.UploadCategoriaGaleriaAsync(_tenant, dto.Archivos[0], It.IsAny<CancellationToken>()))
+            .ReturnsAsync(("https://res.cloudinary.com/test/image/upload/a.png", "empresas/7/a"));
+        _galerias.Setup(x => x.SaveAsync(It.IsAny<CategoriaGaleria>(), true, It.IsAny<CancellationToken>()))
+            .Returns(Task.CompletedTask);
+
+        var resultado = await _service.GuardarAsync(_tenant, 4, dto, default);
+
+        Assert.NotNull(resultado);
+        Assert.Single(resultado.Imagenes);
+        _storage.Verify(x => x.UploadCategoriaGaleriaAsync(_tenant, dto.Archivos[0], It.IsAny<CancellationToken>()), Times.Once);
+        _storage.Verify(x => x.UploadAsync(It.IsAny<StorageTenantContext>(), It.IsAny<IFormFile>(), It.IsAny<CancellationToken>()), Times.Never);
     }
 
     [Fact]

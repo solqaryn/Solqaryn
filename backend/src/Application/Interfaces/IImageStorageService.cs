@@ -41,6 +41,21 @@ public interface IImageStorageService
     }
 
     /// <summary>
+    /// Carga exclusiva de una galería de categorías: hasta 15 MiB por original,
+    /// validación profunda y sanitización. No amplía el contrato de productos.
+    /// </summary>
+    Task<(string Url, string PublicId)> UploadCategoriaGaleriaAsync(
+        StorageTenantContext tenant,
+        IFormFile file,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(tenant);
+        ArgumentNullException.ThrowIfNull(file);
+        return Task.FromException<(string Url, string PublicId)>(
+            new NotSupportedException("El storage debe implementar la carga tenant-aware de galerías de categorías."));
+    }
+
+    /// <summary>
     /// Contrato tenant-aware de borrado. Nunca debe autorizarse únicamente por
     /// publicId/ruta proporcionados por el cliente.
     /// </summary>

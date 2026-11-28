@@ -72,16 +72,31 @@ public class CloudinaryImageStorageService : IImageStorageService
         return await UploadInternalAsync(file, TenantFolder(tenant), cancellationToken);
     }
 
+    public async Task<(string Url, string PublicId)> UploadCategoriaGaleriaAsync(
+        StorageTenantContext tenant,
+        IFormFile file,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(tenant);
+        ArgumentNullException.ThrowIfNull(file);
+        cancellationToken.ThrowIfCancellationRequested();
+        RegistrarPermitido(tenant, "upload", "TENANT_SCOPE_VERIFIED");
+        return await UploadInternalAsync(file, TenantFolder(tenant), cancellationToken, esGaleriaCategoria: true);
+    }
+
     private async Task<(string Url, string PublicId)> UploadInternalAsync(
         IFormFile file,
         string folder,
-        CancellationToken cancellationToken)
+        CancellationToken cancellationToken,
+        bool esGaleriaCategoria = false)
     {
         cancellationToken.ThrowIfCancellationRequested();
 
         try
         {
-            using var segura = await ImagenUploadSecurity.ProcesarAsync(file);
+            using var segura = esGaleriaCategoria
+                ? await ImagenUploadSecurity.ProcesarGaleriaCategoriaAsync(file, cancellationToken)
+                : await ImagenUploadSecurity.ProcesarAsync(file, cancellationToken);
             cancellationToken.ThrowIfCancellationRequested();
 
             var uploadParams = new ImageUploadParams

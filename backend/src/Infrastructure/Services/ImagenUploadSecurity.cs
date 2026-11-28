@@ -1,4 +1,5 @@
 using Solqaryn.Application.Exceptions;
+using Solqaryn.Application.DTOs;
 using Microsoft.AspNetCore.Http;
 using SkiaSharp;
 
@@ -37,23 +38,43 @@ public static class ImagenUploadSecurity
         public void Dispose() => Contenido.Dispose();
     }
 
-    public static async Task<ImagenSanitizada> ProcesarAsync(
+    public static Task<ImagenSanitizada> ProcesarAsync(
         IFormFile archivo,
-        CancellationToken cancellationToken = default)
+        CancellationToken cancellationToken = default) =>
+        ProcesarAsync(archivo, MaximoBytes, false, cancellationToken);
+
+    public static Task<ImagenSanitizada> ProcesarGaleriaCategoriaAsync(
+        IFormFile archivo,
+        CancellationToken cancellationToken = default) =>
+        ProcesarAsync(archivo, ActualizarCategoriaGaleriaDto.MaxBytesPorImagen, true, cancellationToken);
+
+    private static async Task<ImagenSanitizada> ProcesarAsync(
+        IFormFile archivo, long maximoBytes, bool esGaleriaCategoria, CancellationToken cancellationToken)
     {
         if (archivo is null || archivo.Length <= 0)
             throw new BusinessRuleException("Selecciona una imagen válida.");
 
-        if (archivo.Length > MaximoBytes)
-            throw new BusinessRuleException("La imagen no puede superar 10 MB.");
+        if (archivo.Length > maximoBytes)
+            throw new BusinessRuleException($"La imagen no puede superar {maximoBytes / (1024 * 1024)} MB.");
 
         var extension = Path.GetExtension(archivo.FileName).ToLowerInvariant();
         if (extension is not ".jpg" and not ".jpeg" and not ".png" and not ".webp")
             throw new BusinessRuleException("La imagen debe ser JPG, JPEG, PNG o WEBP.");
 
-        await using var original = new MemoryStream(capacity: (int)Math.Min(archivo.Length, MaximoBytes));
-        await archivo.CopyToAsync(original, cancellationToken);
-        if (original.Length == 0 || original.Length > MaximoBytes)
+        await using var original = new MemoryStream(capacity: (int)Math.Min(archivo.Length, maximoBytes));
+        // No materializar más bytes que el límite aunque la longitud declarada no coincida.
+        await using (var entrada = archivo.OpenReadStream())
+        {
+            var buffer = new byte[64 * 1024];
+            int leidos;
+            while ((leidos = await entrada.ReadAsync(buffer.AsMemory(), cancellationToken)) != 0)
+            {
+                if (original.Length + leidos > maximoBytes)
+                    throw new BusinessRuleException("El tamaño real de la imagen no es válido.");
+                await original.WriteAsync(buffer.AsMemory(0, leidos), cancellationToken);
+            }
+        }
+        if (original.Length == 0)
             throw new BusinessRuleException("El tamaño real de la imagen no es válido.");
 
         original.Position = 0;
@@ -85,7 +106,10 @@ public static class ImagenUploadSecurity
 
         // Re-encode desde píxeles decodificados: no se conservan EXIF/ICC/IPTC/XMP
         // del archivo de entrada antes de persistirlo externamente.
-        using var imagen = SKImage.FromBitmap(bitmap);
+        // Las galerías ya se entregan a 800 px en Cloudinary. Reducir antes del
+        // upload evita que una foto original grande exceda el presupuesto del proveedor.
+        using var reducida = esGaleriaCategoria ? ReducirGaleria(bitmap) : null;
+        using var imagen = SKImage.FromBitmap(reducida ?? bitmap);
         var (formatoSalida, calidad, contentType, extensionSalida) = CrearEncoder(formato);
         using var data = imagen.Encode(formatoSalida, calidad);
         if (data is null || data.Size <= 0)
@@ -99,6 +123,31 @@ public static class ImagenUploadSecurity
             salida,
             $"imagen-{Guid.NewGuid():N}{extensionSalida}",
             contentType);
+    }
+
+    private static SKBitmap? ReducirGaleria(SKBitmap bitmap)
+    {
+        const int maximoLado = 800;
+        var lado = Math.Max(bitmap.Width, bitmap.Height);
+        if (lado <= maximoLado) return null;
+
+        var escala = (double)maximoLado / lado;
+        var ancho = Math.Max(1, (int)Math.Round(bitmap.Width * escala));
+        var alto = Math.Max(1, (int)Math.Round(bitmap.Height * escala));
+        var salida = new SKBitmap(ancho, alto, SKColorType.Rgba8888, SKAlphaType.Premul);
+        try
+        {
+            using var canvas = new SKCanvas(salida);
+            canvas.Clear(SKColors.Transparent);
+            canvas.DrawBitmap(bitmap, new SKRect(0, 0, ancho, alto));
+            canvas.Flush();
+            return salida;
+        }
+        catch
+        {
+            salida.Dispose();
+            throw;
+        }
     }
 
     public static void ValidarDimensiones(int ancho, int alto)

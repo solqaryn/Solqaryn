@@ -7,8 +7,9 @@ public sealed record CategoriaGaleriaDto(string Version, IReadOnlyList<Categoria
 
 public sealed class ActualizarCategoriaGaleriaDto
 {
-    // Límite agregado de galerías; margen para los metadatos multipart.
-    public const long MaxTotalBytes = 15L * 1024 * 1024;
+    // Límite individual y agregado de la galería de categorías.
+    public const long MaxBytesPorImagen = 15L * 1024 * 1024;
+    public const long MaxTotalBytes = MaxBytesPorImagen;
     public const long MaxRequestBytes = MaxTotalBytes + 1024 * 1024;
     public string? Version { get; set; }
     // Cada posición referencia "e:<id persistido>" o "n:<índice del archivo nuevo>".

@@ -32,7 +32,7 @@ public sealed class CategoriaGaleriaService(
         if (await categorias.GetByIdAsync(categoriaId) is null) return null;
         if (dto.Orden.Count > MaxImagenes || dto.Archivos.Count > MaxImagenes)
             throw new BusinessRuleException("Cada categoría permite un máximo de cinco imágenes.");
-        if (dto.Archivos.Any(a => !ImagenValidationHelper.EsImagenValida(a)) || dto.Archivos.Sum(a => a.Length) > ActualizarCategoriaGaleriaDto.MaxTotalBytes)
+        if (dto.Archivos.Any(a => !ImagenValidationHelper.EsImagenGaleriaCategoriaValida(a)) || dto.Archivos.Sum(a => a.Length) > ActualizarCategoriaGaleriaDto.MaxTotalBytes)
             throw new BusinessRuleException("Utiliza JPG, PNG o WebP válidos; el envío no puede superar 15 MB en total.");
 
         var galeria = await galerias.GetAsync(tenant.EmpresaId, categoriaId, cancellationToken);
@@ -72,7 +72,7 @@ public sealed class CategoriaGaleriaService(
                     continue;
                 }
                 var indice = int.Parse(referencia[2..], CultureInfo.InvariantCulture);
-                var (url, publicId) = await storage.UploadAsync(tenant, dto.Archivos[indice], cancellationToken);
+                var (url, publicId) = await storage.UploadCategoriaGaleriaAsync(tenant, dto.Archivos[indice], cancellationToken);
                 var imagen = new ImagenPersistida(Guid.NewGuid().ToString("N"), url, publicId);
                 subidas.Add(imagen);
                 resultado.Add(imagen);

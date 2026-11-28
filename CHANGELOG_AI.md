@@ -1,3 +1,11 @@
+## 2026-11-27 — QA: coherencia del límite individual de galerías de categorías
+
+- Límite exclusivo de categorías: 15 MiB por original y 15 MiB agregados por solicitud, margen multipart existente de 16 MiB. Se añade contrato explícito tenant-aware para carga de galerías, sin fallback al contrato genérico. Productos y perfiles conservan su límite de 10 MiB.
+- Sanitización mantiene firma, extensión/MIME, dimensión 4096 y 16 megapíxeles, lectura acotada al máximo real y recodificación. Sólo para galerías, se reduce a 800 px antes de Cloudinary, en coherencia con la transformación existente; se mantiene el aislamiento por carpeta de empresa/entorno y la optimización del navegador. No se cambian esquema, API pública, permisos ni dependencias.
+- Regresiones dirigidas: PNG válido de 15 MiB con metadata saneada, rechazo de un byte adicional, 10 MiB de productos preservados, reducción proporcional exclusiva de galería y llamada al contrato tenant-aware específico. Certificación de compilación, Render y pruebas vivas pendiente. La eliminación física de storage es otra intervención; no se acredita con este cambio.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-27 — QA: desacoplar simulación de tarifas de la serialización HTML
 
 - Evidencia `3d8fa34`: 46038630927/46038631193/46038630924 SUCCESS; Vercel QA READY, alias confirmado en el despliegue equivalente `b0cc65cf`. Run 46038873000/job 140641174152: preflight PASS, autenticaciones A/B, alta/tabla/detalle/edición/estados A PASS, fallo `SHIP_SIMULATE_SPECIFIC_NATIVE_FORM_A` antes del POST, revocación PASS. No demuestra un fallo del resolver ni fuga empresarial; galerías omitidas.

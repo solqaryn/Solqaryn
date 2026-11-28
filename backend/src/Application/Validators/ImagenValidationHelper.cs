@@ -1,4 +1,5 @@
 using Microsoft.AspNetCore.Http;
+using Solqaryn.Application.DTOs;
 
 namespace Solqaryn.Application.Validators;
 
@@ -22,9 +23,14 @@ public static class ImagenValidationHelper
     /// (magic numbers, dimensiones, megapíxeles, decodificación y recodificación)
     /// se ejecuta en Infraestructura inmediatamente antes de Cloudinary.
     /// </summary>
-    public static bool EsImagenValida(IFormFile archivo)
+    public static bool EsImagenValida(IFormFile archivo) => EsImagenValida(archivo, MaxBytesPorImagen);
+
+    public static bool EsImagenGaleriaCategoriaValida(IFormFile archivo) =>
+        EsImagenValida(archivo, ActualizarCategoriaGaleriaDto.MaxBytesPorImagen);
+
+    private static bool EsImagenValida(IFormFile archivo, long maximoBytes)
     {
-        if (archivo is null || archivo.Length <= 0 || archivo.Length > MaxBytesPorImagen)
+        if (archivo is null || archivo.Length <= 0 || archivo.Length > maximoBytes)
             return false;
 
         var extension = Path.GetExtension(archivo.FileName);
