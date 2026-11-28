@@ -1,3 +1,10 @@
+## 2026-11-28 — QA: pruebas autenticadas dirigidas de bancos y fiscal
+
+- Se incorpora prueba secuencial de bancos y fiscal A/B sobre runtime 7676febf. Fixtures únicos, revocación al finalizar, conservación de documentos/ledger, sin pagos ni mensajes externos. Bancos: cuentas, depósitos idempotentes, importación/replay, coincidencias cruzadas/propias, cierre y registro de retiro/comisión/interés. Fiscal: promociones diferenciadas A/B, impuestos de compra y venta, precio autorizado, rechazo de referencias cruzadas, snapshots e historial persistidos, reintentos y edición posterior de reglas, factura interna vinculada. No afirma cobertura de reapertura, transferencias, ajustes, identidad legal de factura, UI bancaria, pasarela de pago ni checkout; permanecen abiertos. No se certifica por publicar pruebas.
+- Defectos de integración pendientes de intervención: la reapertura bancaria llama Anular sobre Completada (prohibido por el agregado); checkout público sólo cotiza sin persistir pedido y Cotizaciones/PedidosVenta no figuran en la propiedad comercial V1–V3; VentaService.Confirmar usa identidad global EmpresaConfiguracion para cabecera de factura en lugar de Empresa/ConfigEmpresa tenant. No abrir escritura pública ni relajar alcance para certificar. Sin cambios de runtime o esquema en este changeset.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA: cierre de galerías y conteos A/B; avance bancario
 
 - CIERRE QA-FN-05 de los hallazgos 1, 3 y 4: 46148606964 SUCCESS, HEAD fb71af95, jobs 140990003477 (galería A) y 140990003135 (conteos A/B), con Scope Lock y equivalencia de runtime PASS; B previamente SUCCESS en 46148255441/job 140988945744. Runtime 34dc85f4 en Render LIVE dep-dc5d2m6c6qcc738kp8kg y Vercel READY HxY3Rk9qXJkrLyE5wNYZ3H6iSeTm; diff de runtime vacío y cuatro gates causales SUCCESS.

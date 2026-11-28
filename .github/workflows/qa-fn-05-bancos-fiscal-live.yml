@@ -1,0 +1,69 @@
+name: QA - FN-05 bancos y fiscal autenticados A/B
+on:
+  push:
+    branches: [qa]
+    paths:
+      - '.github/workflows/qa-fn-05-bancos-fiscal-live.yml'
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: qa-fn-05-live-admin
+  cancel-in-progress: false
+jobs:
+  residual:
+    name: Certificacion residual ${{ matrix.scope }} A/B
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == '7676febf8c4446b838142155b30c512d3c861f65'
+    runs-on: ubuntu-latest
+    environment: QA
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        scope: [bancos, fiscal]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Scope Lock y equivalencia de runtime aprobado
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = refs/heads/qa
+          node scripts/verify-project-scope.mjs
+          git diff --check "${{ github.event.before }}" HEAD
+          git diff --exit-code 7676febf8c4446b838142155b30c512d3c861f65 HEAD -- backend frontend render.yaml scripts .agents docs/PROJECT_SCOPE_LOCK.md AGENTS.md
+          for run in 46149236995 46149236993 46149237001 46149237012 46149236990; do
+            # Do not start mutations before every exact-SHA gate has passed.
+            deadline=$((SECONDS + 600))
+            while true; do
+              run_json=$(gh api "repos/solqaryn/Solqaryn/actions/runs/$run")
+              jq -e '.head_sha == "7676febf8c4446b838142155b30c512d3c861f65" and .head_branch == "qa"' <<< "$run_json" >/dev/null
+              if jq -e '.status == "completed"' <<< "$run_json" >/dev/null; then
+                jq -e '.conclusion == "success"' <<< "$run_json" >/dev/null
+                break
+              fi
+              test "$SECONDS" -lt "$deadline"
+              sleep 10
+            done
+          done
+          python3 -m py_compile .github/qa/qa-fn-05-bancos-fiscal-live.py
+          echo QA_BF_RUNTIME_EQUIVALENCE=PASS
+      - name: Preparar cliente MySQL y BCrypt
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y mysql-client apache2-utils
+      - name: Pruebas autenticas de documentos internos QA
+        env:
+          EXPECTED_DEPLOYED_SHA: '7676febf8c4446b838142155b30c512d3c861f65'
+          DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
+          DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
+          DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}
+          DB_USER: ${{ vars.SOLQARYN_QA_DB_USER }}
+          DB_PASSWORD: ${{ secrets.SOLQARYN_QA_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          python3 .github/qa/qa-fn-05-bancos-fiscal-live.py "${{ matrix.scope }}"
