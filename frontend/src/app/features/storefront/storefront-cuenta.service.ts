@@ -5,6 +5,7 @@ import { Observable, catchError, defer, map, of, tap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { ApiResponse } from '../../core/models/api-response.model';
 import {
+  CrearPedidoCheckoutRequest,
   TiendaCuentaPerfil,
   TiendaCuentaSesion,
   TiendaDireccionCliente,
@@ -136,6 +137,32 @@ export class StorefrontCuentaService {
         return res.data;
       })
     );
+  }
+
+  crearPedidoCheckout(datos: CrearPedidoCheckoutRequest, clave: string): Observable<TiendaPedidoCuenta> {
+    return this.http.post<ApiResponse<TiendaPedidoCuenta>>(`${this.baseUrl}/pedidos/checkout`, datos, {
+      headers: this.headers().set('X-Storefront-Order-Key', clave)
+    }).pipe(map(res => this.validarPedidoCheckout(res)));
+  }
+
+  pedidoCheckout(id: number, clave?: string): Observable<TiendaPedidoCuenta> {
+    const headers = clave ? this.headers().set('X-Storefront-Order-Key', clave) : this.headers();
+    return this.http.get<ApiResponse<TiendaPedidoCuenta>>(`${this.baseUrl}/pedidos/checkout/${id}`, { headers })
+      .pipe(map(res => this.validarPedidoCheckout(res)));
+  }
+
+  private validarPedidoCheckout(res: ApiResponse<TiendaPedidoCuenta>): TiendaPedidoCuenta {
+    const data = res.data;
+    if (!res.success || !data || !Number.isSafeInteger(data.id) || data.id <= 0 ||
+        !Number.isFinite(data.total) || typeof data.subtotal !== 'number' || !Number.isFinite(data.subtotal) ||
+        typeof data.costoEnvio !== 'number' || !Number.isFinite(data.costoEnvio) || data.costoEnvio < 0 ||
+        Math.abs(data.total - data.subtotal - data.costoEnvio) > 0.005 ||
+        !data.moneda || !/^[A-Z]{3}$/.test(data.moneda) ||
+        !Array.isArray(data.lineas) || !data.lineas.length ||
+        !Number.isFinite(Date.parse(data.fechaUtc))) {
+      throw new Error('No se pudo verificar el pedido registrado.');
+    }
+    return data;
   }
 
   notificaciones(): Observable<TiendaNotificacionPedido[]> {

@@ -3,7 +3,7 @@ import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, injec
 import { takeUntilDestroyed } from '@angular/core/rxjs-interop';
 import { FormControl, FormGroup, ReactiveFormsModule, Validators } from '@angular/forms';
 import { ActivatedRoute, Router } from '@angular/router';
-import { Observable, map, of, switchMap } from 'rxjs';
+import { Observable, from, map, of, switchMap } from 'rxjs';
 import { environment } from '../../../environments/environment';
 import { StorefrontIdentidadService } from './storefront-identidad.service';
 import { construirEnlaceWhatsApp } from '../../core/services/whatsapp-share.service';
@@ -12,9 +12,10 @@ import { StorefrontCarritoService } from './storefront-carrito.service';
 import { mensajeWhatsappCheckout, normalizarDatosComprador, urlCheckoutPermitida } from './storefront-checkout.rules';
 import { STOREFRONT_CONFIG } from './storefront.config';
 import { StorefrontHeaderComponent } from './storefront-header.component';
-import { CheckoutEnvioRequest, CheckoutItemRequest, CheckoutValidado, DatosCompradorCheckout, EstadoConsultaPublica, ReciboPedidoPublico } from './storefront.models';
+import { CheckoutEnvioRequest, CheckoutItemRequest, CheckoutValidado, CrearPedidoCheckoutRequest, DatosCompradorCheckout, EstadoConsultaPublica, ReciboPedidoPublico, TiendaPedidoCuenta } from './storefront.models';
 import { STOREFRONT_PATHS } from './storefront.paths';
 import { StorefrontPedidoService } from './storefront-pedido.service';
+import { StorefrontCuentaService } from './storefront-cuenta.service';
 import { StorefrontService } from './storefront.service';
 import { IconoTiendaComponent } from './storefront.visual';
 
@@ -31,6 +32,7 @@ type IdentidadAgrupacion = { modeloNombre: string | null; marcaNombre: string | 
 export class StorefrontCheckoutComponent implements OnInit {
   private readonly servicio = inject(StorefrontService);
   private readonly pedidos = inject(StorefrontPedidoService);
+  private readonly cuenta = inject(StorefrontCuentaService);
   private readonly router = inject(Router);
   private readonly route = inject(ActivatedRoute);
   private readonly destroyRef = inject(DestroyRef);
@@ -45,6 +47,8 @@ export class StorefrontCheckoutComponent implements OnInit {
   readonly procesando = signal(false);
   readonly validado = signal<CheckoutValidado | null>(null);
   readonly enlaceWhatsapp = signal('');
+  readonly pedidoRegistrado = signal<TiendaPedidoCuenta | null>(null);
+  private registroSolicitud = '';
   readonly envioPendiente = signal(false);
   readonly formularioEnvio = new FormGroup({
     departamento: new FormControl('', { nonNullable:true, validators:[Validators.maxLength(120)] }),
@@ -65,7 +69,7 @@ export class StorefrontCheckoutComponent implements OnInit {
   readonly formulario = new FormGroup({
     nombre: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.minLength(2), Validators.maxLength(120)] }),
     telefono: new FormControl('', { nonNullable: true, validators: [Validators.required, Validators.pattern(/^\+?[0-9 ()-]{8,24}$/)] }),
-    correo: new FormControl('', { nonNullable: true, validators: [Validators.email, Validators.maxLength(160)] }),
+    correo: new FormControl('', { nonNullable: true, validators: [Validators.email, Validators.maxLength(150)] }),
     notas: new FormControl('', { nonNullable: true, validators: [Validators.maxLength(600)] })
   });
 
@@ -106,7 +110,7 @@ export class StorefrontCheckoutComponent implements OnInit {
   }
 
   revalidar(): void {
-    if (this.procesando() || this.estado() === 'loading') return;
+    if (this.procesando() || this.pedidoRegistrado() || this.estado() === 'loading') return;
     if (this.formularioEnvio.invalid) { this.formularioEnvio.markAllAsTouched(); this.error.set('Revisa la cobertura de envío.'); return; }
     this.procesando.set(true);
     this.error.set('');
@@ -125,7 +129,7 @@ export class StorefrontCheckoutComponent implements OnInit {
   }
 
   prepararWhatsapp(): void {
-    if (this.procesando() || this.estado() !== 'success' || !this.permiteWhatsapp() || !this.validarFormulario()) return;
+    if (this.procesando() || this.pedidoRegistrado() || this.estado() !== 'success' || !this.permiteWhatsapp() || !this.validarFormulario()) return;
     const destino = telefonoWhatsapp(this.identidad.config().whatsApp);
     if (!destino) {
       this.error.set('Este comercio no tiene un número de WhatsApp válido configurado.');
@@ -166,6 +170,10 @@ export class StorefrontCheckoutComponent implements OnInit {
       evento.preventDefault();
       return;
     }
+    if (this.pedidoRegistrado()) {
+      this.finalizarPedidoRegistrado();
+      return;
+    }
     if (!this.validacionVigente()) {
       evento.preventDefault();
       this.enlaceWhatsapp.set('');
@@ -173,12 +181,80 @@ export class StorefrontCheckoutComponent implements OnInit {
       this.aviso.set('');
       return;
     }
-    this.guardarRecibo(validado, this.utilizarDatosBaseDatos() ? 'whatsapp-preparado' : 'demo');
+    if (this.utilizarDatosBaseDatos()) {
+      // The real link is not rendered until the server has persisted a draft.
+      evento.preventDefault();
+      this.registrarPedidoWhatsapp(validado);
+      return;
+    }
+    this.guardarRecibo(validado, 'demo');
     queueMicrotask(() => void this.router.navigateByUrl(STOREFRONT_PATHS.pedido(validado.validacionId)));
   }
 
+  private registrarPedidoWhatsapp(validado: CheckoutValidado): void {
+    if (this.procesando() || typeof validado.costoEnvio !== 'number') return;
+    const comprador = this.datosComprador();
+    const envio = this.datosEnvio();
+    const moneda = (this.identidad.config().moneda || 'HNL').toUpperCase();
+    const datos: CrearPedidoCheckoutRequest = {
+      checkout: { items: this.referenciasCheckout(), ...(envio ? { envio } : {}) },
+      ...comprador,
+      subtotalEsperado: validado.subtotal, envioEsperado: validado.costoEnvio, monedaEsperada: moneda,
+      lineasEsperadas: validado.lineas.map(l => ({
+        productoId: l.productoId, productoVarianteId: l.productoVarianteId ?? null,
+        unidades: l.unidades, precioUnitario: l.precioUnitario
+      }))
+    };
+    this.procesando.set(true);
+    this.error.set('');
+    this.formulario.disable({ emitEvent: false });
+    this.formularioEnvio.disable({ emitEvent: false });
+    from(this.pedidos.claveParaSolicitud(datos)).pipe(
+      switchMap(({ clave, registro }) => this.cuenta.crearPedidoCheckout(datos, clave).pipe(
+        map(pedido => ({ pedido, clave, registro }))
+      )),
+      takeUntilDestroyed(this.destroyRef)
+    ).subscribe({
+      next: ({ pedido, clave, registro }) => {
+        this.procesando.set(false);
+        this.registroSolicitud = registro;
+        try {
+          this.pedidos.guardarAccesoPedido(pedido.id, clave);
+        } catch {
+          this.error.set('El pedido fue registrado, pero el navegador no pudo guardar su acceso. Conserva esta referencia y reintenta sin cambiar tus datos.');
+          this.formulario.enable({ emitEvent: false });
+          this.formularioEnvio.enable({ emitEvent: false });
+          return;
+        }
+        const mensaje = mensajeWhatsappCheckout(
+          this.identidad.config().nombreComercial || 'Tienda', comprador, `ERP-${pedido.id}`,
+          pedido.moneda || moneda, validado.lineas, pedido.total, this.enlacesProductos(validado),
+          { monto: pedido.costoEnvio ?? 0, nombre: pedido.tarifaEnvio || '', cobertura: envio }
+        );
+        const enlace = construirEnlaceWhatsApp(telefonoWhatsapp(this.identidad.config().whatsApp), mensaje);
+        this.pedidoRegistrado.set(pedido);
+        this.enlaceWhatsapp.set(enlace);
+        this.aviso.set(`Pedido #${pedido.id} registrado. Está pendiente de confirmación del comercio; no representa un cobro ni una reserva.`);
+      },
+      error: error => {
+        this.procesando.set(false);
+        this.formulario.enable({ emitEvent: false });
+        this.formularioEnvio.enable({ emitEvent: false });
+        this.error.set(this.mensajeError(error, 'No se pudo registrar el pedido. Reintenta con los mismos datos; tu carrito sigue guardado.'));
+      }
+    });
+  }
+
+  finalizarPedidoRegistrado(): void {
+    const pedido = this.pedidoRegistrado();
+    if (!pedido) return;
+    this.carrito.vaciar();
+    if (this.registroSolicitud) this.pedidos.finalizarSolicitud(this.registroSolicitud);
+    queueMicrotask(() => void this.router.navigateByUrl(STOREFRONT_PATHS.pedido(`erp-${pedido.id}`)));
+  }
+
   continuarTarjeta(): void {
-    if (this.procesando() || this.estado() !== 'success' || !this.permiteTarjeta() || !this.validarFormulario()) return;
+    if (this.procesando() || this.pedidoRegistrado() || this.estado() !== 'success' || !this.permiteTarjeta() || !this.validarFormulario()) return;
     const validado = this.validado();
     if (!validado || !this.validacionVigente()) {
       this.error.set('La validación del carrito venció. Actualízala antes de continuar.');

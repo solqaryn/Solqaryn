@@ -299,6 +299,18 @@ export interface DatosCompradorCheckout {
   notas?: string;
 }
 
+export interface CrearPedidoCheckoutRequest {
+  checkout: { items: CheckoutItemRequest[]; envio?: CheckoutEnvioRequest };
+  nombre: string;
+  telefono: string;
+  correo?: string;
+  notas?: string;
+  subtotalEsperado: number;
+  envioEsperado: number;
+  monedaEsperada: string;
+  lineasEsperadas: Array<{ productoId: number; productoVarianteId?: number | null; unidades: number; precioUnitario: number }>;
+}
+
 export interface CheckoutTarjetaRequest {
   validacionId: string;
   items: CheckoutItemRequest[];
@@ -380,6 +392,10 @@ export interface TiendaPedidoCuenta {
   id: number;
   estado: string;
   total: number;
+  subtotal?: number;
+  costoEnvio?: number | null;
+  moneda?: string | null;
+  tarifaEnvio?: string | null;
   fechaUtc: string;
   lineas: TiendaPedidoCuentaLinea[];
 }

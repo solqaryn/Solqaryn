@@ -138,7 +138,7 @@ public sealed partial class TiendaCuentaController
     [EnableRateLimiting("AuthLogin")]
     public async Task<IActionResult> PedidoCheckout(int id, CancellationToken ct)
     {
-        if (_db.CommercialReadEmpresaId is not int empresa || _db.AuthorizedEmpresaId is not null)
+        if (_db.PublicStoreEmpresaId is not int empresa)
             return StatusCode(403, ApiResponse<object>.Fail("No se pudo verificar la empresa de la tienda."));
         var cuenta = await RequerirCuentaAsync();
         if (Request.Headers.ContainsKey(SessionHeader) && cuenta is null) return NoAutorizado();

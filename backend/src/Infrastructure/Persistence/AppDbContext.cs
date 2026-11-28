@@ -37,11 +37,12 @@ public class AppDbContext : DbContext
     private Cliente? _checkoutCliente;
     private bool _checkoutClienteNuevo;
     private PedidoVenta? _checkoutPedido;
+    public int? PublicStoreEmpresaId =>
+        AuthorizedEmpresaId is null && ContextId(PublicStoreTenantItemKey) is int empresa &&
+        CommercialReadEmpresaId == empresa ? empresa : null;
     public int? PublicStoreCheckoutEmpresaId =>
         _http?.HttpContext is { } context && context.Request.Path == "/tienda/cuenta/pedidos/checkout" &&
-        HttpMethods.IsPost(context.Request.Method) && AuthorizedEmpresaId is null &&
-        ContextId(PublicStoreTenantItemKey) is int empresa && CommercialReadEmpresaId == empresa
-            ? empresa : null;
+        HttpMethods.IsPost(context.Request.Method) ? PublicStoreEmpresaId : null;
     public int? CommercialWriteEmpresaId => ContextId(AuthorizedTenantItemKey) ??
         (_http?.HttpContext?.Request.Path.StartsWithSegments("/tienda/cuenta/registrar") == true ?
             ContextId(PublicStoreTenantItemKey) :

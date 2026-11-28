@@ -1,3 +1,9 @@
+## 2026-11-28 — QA-FN-05: conectar interfaz checkout al pedido durable
+
+- La ruta WhatsApp real prepara sin escribir; la acción explícita Registrar pedido envía referencias, cobertura, datos de contacto y aserciones monetarias al endpoint de pedido. Sólo tras confirmación ERP se expone el enlace WhatsApp con referencia ERP real. Demo conserva recibo efímero. El carrito se vacía al salir hacia el pedido, no ante fallo.
+- Acceso de invitado y clave de reintento se conservan sólo en sessionStorage, sin datos de contacto en claro ni clave en URL. Ruta erp-ID consulta API autorizada y no simula estado; perfil autenticado puede recuperar su pedido. Tarjeta conserva configuración fail-closed; no se integra cobro, factura o reserva. Se requiere CI, V6 y certificación desplegada.
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA-FN-05: persistencia del pedido de checkout (backend candidato)
 
 - Se reutiliza PedidoVenta en borrador, sin reserva, factura, cobro ni modificación de inventario. Cliente autenticado por sesión propia o invitado nuevo sin vincular por correo. Revalidación de catálogo, promoción, cantidad y envío; los importes enviados sólo son aserciones de la cotización visual. V6 agrega cuatro columnas nullable y CHECK atómico a PedidosVenta; mantiene V4/V5, relaciones, datos e índices. Idempotencia tenant-first existente con clave derivada de 256 bits y fingerprint, transacción única con cliente invitado y rechazo de payload distinto.

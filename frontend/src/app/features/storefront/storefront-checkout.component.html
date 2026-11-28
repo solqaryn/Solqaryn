@@ -106,7 +106,7 @@
                 <label class="field"><span>Ciudad</span><input formControlName="ciudad" maxlength="120" autocomplete="address-level2"></label>
                 <label class="field"><span>Zona</span><input formControlName="zona" maxlength="150"></label>
                 <label class="field"><span>Modalidad</span><input formControlName="modalidad" maxlength="80"></label>
-                <button type="submit" class="button ghost full field-wide" [disabled]="procesando() || formularioEnvio.invalid">Actualizar costo de envío</button>
+                <button type="submit" class="button ghost full field-wide" [disabled]="procesando() || !!pedidoRegistrado() || formularioEnvio.invalid">Actualizar costo de envío</button>
               </form>
             </section>
           }
@@ -167,11 +167,21 @@
               <div class="payment-title"><app-store-icon nombre="whatsapp" /><div><h3>WhatsApp</h3><p>Envía la solicitud validada directamente al comercio.</p></div></div>
               @if (!whatsappDisponible()) {
                 <p class="option-warning" role="status">El comercio aún no tiene un WhatsApp válido configurado.</p>
+              } @else if (pedidoRegistrado(); as pedido) {
+                <p class="prepared" role="status"><app-store-icon nombre="check" /> Pedido #{{ pedido.id }} registrado, pendiente de confirmación.</p>
+                @if (enlaceWhatsapp()) {
+                  <a class="button primary full" [href]="enlaceWhatsapp()" target="_blank" rel="noopener noreferrer" (click)="confirmarSalidaWhatsapp($event)">Abrir WhatsApp y continuar</a>
+                }
+                <button type="button" class="button ghost full" (click)="finalizarPedidoRegistrado()">Ver pedido registrado</button>
               } @else if (!enlaceWhatsapp()) {
-                <button type="button" class="button primary full" (click)="prepararWhatsapp()" [disabled]="procesando() || !validacionVigente()">Preparar pedido por WhatsApp</button>
+                <button type="button" class="button primary full" (click)="prepararWhatsapp()" [disabled]="procesando() || !!pedidoRegistrado() || !validacionVigente()">Preparar pedido por WhatsApp</button>
               } @else {
                 <p class="prepared"><app-store-icon nombre="check" /> Solicitud preparada con los importes validados.</p>
-                <a class="button primary full" [href]="enlaceWhatsapp()" target="_blank" rel="noopener noreferrer" (click)="confirmarSalidaWhatsapp($event)">Abrir WhatsApp y continuar</a>
+                @if (utilizarDatosBaseDatos()) {
+                  <button type="button" class="button primary full" (click)="confirmarSalidaWhatsapp($event)" [disabled]="procesando()" [attr.aria-busy]="procesando()">{{ procesando() ? 'Registrando pedido…' : 'Registrar pedido' }}</button>
+                } @else {
+                  <a class="button primary full" [href]="enlaceWhatsapp()" target="_blank" rel="noopener noreferrer" (click)="confirmarSalidaWhatsapp($event)">Abrir WhatsApp y continuar</a>
+                }
               }
             </article>
           }
@@ -181,12 +191,12 @@
               <div class="payment-title"><app-store-icon nombre="tarjeta" /><div><h3>Tarjeta</h3><p>La captura de la tarjeta ocurre únicamente en el proveedor de pago seguro.</p></div></div>
               @if (!utilizarDatosBaseDatos()) {
                 <p class="option-warning">Vista previa: no se realizará ningún cobro.</p>
-                <button type="button" class="button ghost full" (click)="continuarTarjeta()" [disabled]="procesando() || !validacionVigente()" [attr.aria-busy]="procesando()">{{ procesando() ? 'Procesando…' : 'Simular continuación segura' }}</button>
+                <button type="button" class="button ghost full" (click)="continuarTarjeta()" [disabled]="procesando() || !!pedidoRegistrado() || !validacionVigente()" [attr.aria-busy]="procesando()">{{ procesando() ? 'Procesando…' : 'Simular continuación segura' }}</button>
               } @else if (!tarjetaConfigurada()) {
                 <p class="option-warning" role="status">Pago con tarjeta no disponible hasta que el comercio configure un proveedor seguro.</p>
                 <button type="button" class="button ghost full" disabled>Tarjeta no disponible</button>
               } @else {
-                <button type="button" class="button primary full" (click)="continuarTarjeta()" [disabled]="procesando() || !validacionVigente()" [attr.aria-busy]="procesando()">{{ procesando() ? 'Abriendo pago seguro…' : 'Ir al pago seguro' }}</button>
+                <button type="button" class="button primary full" (click)="continuarTarjeta()" [disabled]="procesando() || !!pedidoRegistrado() || !validacionVigente()" [attr.aria-busy]="procesando()">{{ procesando() ? 'Abriendo pago seguro…' : 'Ir al pago seguro' }}</button>
               }
             </article>
           }
