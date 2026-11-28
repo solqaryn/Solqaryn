@@ -27,7 +27,7 @@ public sealed class ConciliacionBancariaControllerTests
     {
         var user = new ClaimsPrincipal(new ClaimsIdentity(new Claim[]
         {
-            new Claim(ClaimTypes.NameIdentifier, usuarioId.ToString())
+            new Claim("id", usuarioId.ToString())
         }, "mock"));
 
         return new ConciliacionBancariaController(service)

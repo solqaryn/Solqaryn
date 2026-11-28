@@ -21,7 +21,8 @@ public class ConciliacionBancariaController : ControllerBase
     }
 
     private bool TryGetUsuarioId(out int usuarioId) =>
-        int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out usuarioId) && usuarioId > 0;
+        int.TryParse(User.FindFirstValue("id"), out usuarioId) &&
+        usuarioId > 0 && User.Identity?.IsAuthenticated == true;
 
     [HttpPost("importaciones-estado-cuenta")]
     [RequierePermiso(ModuloSistema.Finanzas, AccionPermiso.Importar)]

@@ -1,3 +1,10 @@
+## 2026-11-28 — QA: causa de HTTP 401 bancario y ensayo V4
+
+- Run 46152019567 acreditó autenticación, provisión sintética, alta de cuenta y revocación; depósito A devolvió 401. JWT emite claim id (sub es nombre de usuario); ambas controladoras bancarias consumían NameIdentifier. Usar exclusivamente id de identidad autenticada y conservar RBAC/tenant; actualizar regresiones de identidad inválida, ausente y no autenticada.
+- Agregar regresión MySQL A/B de cotización/pedido, clave idempotente compartida por empresas, rechazo cruzado e identidad fiscal tenant. Incorporar migración exacta V4 al gate Oracle y ensayo de respaldo cifrado sobre copia loopback, con huellas históricas y esquema/relaciones. Ninguna escritura del ensayo sobre Aiven QA. No afirmar cierre ni desplegar hasta resultados.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA: reapertura bancaria, identidad fiscal y propiedad de documentos comerciales
 
 - Reapertura explícita de la última conciliación completada, conservando movimientos y observaciones de la versión histórica; serialización por cuenta y rechazo de otra conciliación activa. Regresión del agregado.

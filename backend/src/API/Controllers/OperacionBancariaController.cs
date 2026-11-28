@@ -21,7 +21,8 @@ public class OperacionBancariaController : ControllerBase
     }
 
     private bool TryGetUsuarioId(out int usuarioId) =>
-        int.TryParse(User.FindFirstValue(ClaimTypes.NameIdentifier), out usuarioId) && usuarioId > 0;
+        int.TryParse(User.FindFirstValue("id"), out usuarioId) &&
+        usuarioId > 0 && User.Identity?.IsAuthenticated == true;
 
     [HttpPost("deposito")]
     [RequierePermiso(ModuloSistema.Finanzas, AccionPermiso.Crear)]

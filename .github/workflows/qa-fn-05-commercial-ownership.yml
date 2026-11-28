@@ -14,6 +14,7 @@ on:
       - 'backend/tests/Solqaryn.Tests/QaCommercialOwnershipMySqlTests.cs'
       - 'backend/tests/Solqaryn.Tests/QaCommercialOwnershipV2MySqlTests.cs'
       - 'backend/tests/Solqaryn.Tests/QaCommercialOwnershipV3MySqlTests.cs'
+      - 'backend/tests/Solqaryn.Tests/QaCommercialOwnershipV4MySqlTests.cs'
       - 'backend/src/Infrastructure/Services/SeedFiscalService.cs'
       - 'backend/tests/Solqaryn.Tests/SeedFiscalMySqlIntegrationTests.cs'
       - 'backend/src/Infrastructure.Migrations/Migrations/20261126223000_QaCommercialOwnershipV3.cs'
@@ -58,7 +59,7 @@ jobs:
         working-directory: backend
         run: |
           set -euo pipefail
-          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter 'FullyQualifiedName~QaCommercialOwnershipMySqlTests|FullyQualifiedName~QaCommercialOwnershipV2MySqlTests|FullyQualifiedName~QaCommercialOwnershipV3MySqlTests|FullyQualifiedName~SeedFiscalMySqlIntegrationTests' --logger "trx;LogFileName=qa-commercial-ownership.trx"
+          dotnet test tests/Solqaryn.Tests/Solqaryn.Tests.csproj --configuration Release --filter 'FullyQualifiedName~QaCommercialOwnershipMySqlTests|FullyQualifiedName~QaCommercialOwnershipV2MySqlTests|FullyQualifiedName~QaCommercialOwnershipV3MySqlTests|FullyQualifiedName~QaCommercialOwnershipV4MySqlTests|FullyQualifiedName~SeedFiscalMySqlIntegrationTests' --logger "trx;LogFileName=qa-commercial-ownership.trx"
           echo QA_COMMERCIAL_OWNERSHIP_MYSQL=PASS
       - name: Comprobar snapshot y generar migración EF exacta
         working-directory: backend
@@ -74,6 +75,8 @@ jobs:
           test -s "$RUNNER_TEMP/qa-commercial-v2.sql"
           dotnet ef migrations script 20261126211000_QaCommercialOwnershipV2 20261126223000_QaCommercialOwnershipV3 --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release --output "$RUNNER_TEMP/qa-commercial-v3.sql"
           test -s "$RUNNER_TEMP/qa-commercial-v3.sql"
+          dotnet ef migrations script 20261126223000_QaCommercialOwnershipV3 20261128150000_QaCommercialOwnershipV4 --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release --output "$RUNNER_TEMP/qa-commercial-v4.sql"
+          test -s "$RUNNER_TEMP/qa-commercial-v4.sql"
           echo QA_COMMERCIAL_EF_MODEL=PASS
       - if: always()
         uses: actions/upload-artifact@v4

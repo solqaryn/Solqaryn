@@ -92,7 +92,7 @@ public sealed class CotizacionesController : ControllerBase
     [RequierePermiso(ModuloSistema.Ventas, AccionPermiso.Confirmar)]
     public async Task<IActionResult> Convertir(int id)
     {
-        var empresaId = await TenantPermissionContext.RequireEmpresaIdAsync(HttpContext, HttpContext.RequestAborted);
+        var empresaId = TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext);
         await HttpContext.RequestServices.GetRequiredService<IPermisoService>()
             .VerificarPermisoAsync(empresaId, ModuloSistema.Ventas, AccionPermiso.Crear);
         var cotizacion = await _service.ConvertirAsync(id);

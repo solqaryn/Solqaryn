@@ -66,9 +66,11 @@ public sealed class OperacionBancariaControllerTests
         var scenarios = new ClaimsPrincipal[]
         {
             new ClaimsPrincipal(new ClaimsIdentity()),
-            new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "invalid") }, "test")),
-            new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "0") }, "test")),
-            new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "-1") }, "test"))
+            new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, "123") }, "test")),
+            new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("id", "123") })),
+            new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("id", "invalid") }, "test")),
+            new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("id", "0") }, "test")),
+            new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("id", "-1") }, "test"))
         };
 
         foreach (var principal in scenarios)
@@ -115,7 +117,7 @@ public sealed class OperacionBancariaControllerTests
         {
             HttpContext = new DefaultHttpContext
             {
-                User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, usuarioId.ToString()) }, "test"))
+                User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("id", usuarioId.ToString()) }, "test"))
             }
         };
 
@@ -174,7 +176,7 @@ public sealed class OperacionBancariaControllerTests
             {
                 User = new ClaimsPrincipal(new ClaimsIdentity(new[]
                 {
-                    new Claim(ClaimTypes.NameIdentifier, usuarioId.ToString())
+                    new Claim("id", usuarioId.ToString())
                 }, "test"))
             }
         };
@@ -190,7 +192,7 @@ public sealed class OperacionBancariaControllerTests
     public async Task RegistrarRetiro_ConClaimValido_PropagaUsuarioAlServicio()
     {
         const int usuarioId = 37;
-        _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, usuarioId.ToString()) }, "test")) } };
+        _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("id", usuarioId.ToString()) }, "test")) } };
         var dto = new RetiroBancarioDto();
 
         var result = await _controller.RegistrarRetiro(dto);
@@ -203,7 +205,7 @@ public sealed class OperacionBancariaControllerTests
     public async Task RegistrarTransferencia_ConClaimValido_PropagaUsuarioAlServicio()
     {
         const int usuarioId = 37;
-        _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, usuarioId.ToString()) }, "test")) } };
+        _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("id", usuarioId.ToString()) }, "test")) } };
         var dto = new TransferenciaBancariaDto();
 
         var result = await _controller.RegistrarTransferencia(dto);
@@ -216,7 +218,7 @@ public sealed class OperacionBancariaControllerTests
     public async Task RegistrarComision_ConClaimValido_PropagaUsuarioAlServicio()
     {
         const int usuarioId = 37;
-        _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, usuarioId.ToString()) }, "test")) } };
+        _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("id", usuarioId.ToString()) }, "test")) } };
         var dto = new ComisionBancariaDto();
 
         var result = await _controller.RegistrarComision(dto);
@@ -229,7 +231,7 @@ public sealed class OperacionBancariaControllerTests
     public async Task RegistrarInteres_ConClaimValido_PropagaUsuarioAlServicio()
     {
         const int usuarioId = 37;
-        _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, usuarioId.ToString()) }, "test")) } };
+        _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("id", usuarioId.ToString()) }, "test")) } };
         var dto = new InteresBancarioDto();
 
         var result = await _controller.RegistrarInteres(dto);
@@ -242,7 +244,7 @@ public sealed class OperacionBancariaControllerTests
     public async Task RegistrarConciliacion_ConClaimValido_PropagaUsuarioAlServicio()
     {
         const int usuarioId = 37;
-        _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, usuarioId.ToString()) }, "test")) } };
+        _controller.ControllerContext = new ControllerContext { HttpContext = new DefaultHttpContext { User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("id", usuarioId.ToString()) }, "test")) } };
         var dto = new ConciliacionBancariaDto();
 
         var result = await _controller.RegistrarConciliacion(dto);
@@ -269,7 +271,7 @@ public sealed class OperacionBancariaControllerTests
         {
             HttpContext = new DefaultHttpContext
             {
-                User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim(ClaimTypes.NameIdentifier, usuarioId.ToString()) }, "test"))
+                User = new ClaimsPrincipal(new ClaimsIdentity(new[] { new Claim("id", usuarioId.ToString()) }, "test"))
             }
         };
 

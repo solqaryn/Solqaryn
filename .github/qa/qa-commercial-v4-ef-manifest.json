@@ -1,0 +1,289 @@
+{
+  "tableNames": [
+    "Cotizaciones",
+    "CotizacionDetalles",
+    "PedidosVenta",
+    "PedidoVentaDetalles",
+    "ReservasInventario",
+    "ReservaInventarioDetalles",
+    "PreparacionesPedidoVenta",
+    "PreparacionPedidoVentaDetalles"
+  ],
+  "edges": [
+    {
+      "child": "Cotizaciones",
+      "cc": [
+        "EmpresaId",
+        "ClienteId"
+      ],
+      "parent": "Clientes",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "ix": "IX_QAC4_01",
+      "fk": "FK_QAC4_01",
+      "cascade": false
+    },
+    {
+      "child": "CotizacionDetalles",
+      "cc": [
+        "EmpresaId",
+        "CotizacionId"
+      ],
+      "parent": "Cotizaciones",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "ix": "IX_QAC4_02",
+      "fk": "FK_QAC4_02",
+      "cascade": true
+    },
+    {
+      "child": "CotizacionDetalles",
+      "cc": [
+        "EmpresaId",
+        "ProductoId"
+      ],
+      "parent": "Productos",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "ix": "IX_QAC4_03",
+      "fk": "FK_QAC4_03",
+      "cascade": false
+    },
+    {
+      "child": "CotizacionDetalles",
+      "cc": [
+        "EmpresaId",
+        "ProductoId",
+        "ProductoVarianteId"
+      ],
+      "parent": "ProductoVariantes",
+      "pp": [
+        "EmpresaId",
+        "ProductoId",
+        "Id"
+      ],
+      "ix": "IX_QAC4_04",
+      "fk": "FK_QAC4_04",
+      "cascade": false
+    },
+    {
+      "child": "PedidosVenta",
+      "cc": [
+        "EmpresaId",
+        "ClienteId"
+      ],
+      "parent": "Clientes",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "ix": "IX_QAC4_05",
+      "fk": "FK_QAC4_05",
+      "cascade": false
+    },
+    {
+      "child": "PedidosVenta",
+      "cc": [
+        "EmpresaId",
+        "CotizacionId"
+      ],
+      "parent": "Cotizaciones",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "ix": "IX_QAC4_06",
+      "fk": "FK_QAC4_06",
+      "cascade": false
+    },
+    {
+      "child": "PedidoVentaDetalles",
+      "cc": [
+        "EmpresaId",
+        "PedidoVentaId"
+      ],
+      "parent": "PedidosVenta",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "ix": "IX_QAC4_07",
+      "fk": "FK_QAC4_07",
+      "cascade": true
+    },
+    {
+      "child": "PedidoVentaDetalles",
+      "cc": [
+        "EmpresaId",
+        "ProductoId"
+      ],
+      "parent": "Productos",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "ix": "IX_QAC4_08",
+      "fk": "FK_QAC4_08",
+      "cascade": false
+    },
+    {
+      "child": "PedidoVentaDetalles",
+      "cc": [
+        "EmpresaId",
+        "ProductoId",
+        "ProductoVarianteId"
+      ],
+      "parent": "ProductoVariantes",
+      "pp": [
+        "EmpresaId",
+        "ProductoId",
+        "Id"
+      ],
+      "ix": "IX_QAC4_09",
+      "fk": "FK_QAC4_09",
+      "cascade": false
+    },
+    {
+      "child": "ReservasInventario",
+      "cc": [
+        "EmpresaId",
+        "VentaId"
+      ],
+      "parent": "Ventas",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "ix": "IX_QAC4_10",
+      "fk": "FK_QAC4_10",
+      "cascade": false
+    },
+    {
+      "child": "ReservasInventario",
+      "cc": [
+        "EmpresaId",
+        "PedidoVentaId"
+      ],
+      "parent": "PedidosVenta",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "ix": "IX_QAC4_11",
+      "fk": "FK_QAC4_11",
+      "cascade": false
+    },
+    {
+      "child": "ReservaInventarioDetalles",
+      "cc": [
+        "EmpresaId",
+        "ReservaInventarioId"
+      ],
+      "parent": "ReservasInventario",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "ix": "IX_QAC4_12",
+      "fk": "FK_QAC4_12",
+      "cascade": true
+    },
+    {
+      "child": "ReservaInventarioDetalles",
+      "cc": [
+        "EmpresaId",
+        "ProductoVarianteId"
+      ],
+      "parent": "ProductoVariantes",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "ix": "IX_QAC4_13",
+      "fk": "FK_QAC4_13",
+      "cascade": false
+    },
+    {
+      "child": "PreparacionesPedidoVenta",
+      "cc": [
+        "EmpresaId",
+        "PedidoVentaId"
+      ],
+      "parent": "PedidosVenta",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "ix": "IX_QAC4_14",
+      "fk": "FK_QAC4_14",
+      "cascade": false
+    },
+    {
+      "child": "PreparacionesPedidoVenta",
+      "cc": [
+        "EmpresaId",
+        "ReservaInventarioId"
+      ],
+      "parent": "ReservasInventario",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "ix": "IX_QAC4_15",
+      "fk": "FK_QAC4_15",
+      "cascade": false
+    },
+    {
+      "child": "PreparacionPedidoVentaDetalles",
+      "cc": [
+        "EmpresaId",
+        "PreparacionPedidoVentaId"
+      ],
+      "parent": "PreparacionesPedidoVenta",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "ix": "IX_QAC4_16",
+      "fk": "FK_QAC4_16",
+      "cascade": true
+    },
+    {
+      "child": "PreparacionPedidoVentaDetalles",
+      "cc": [
+        "EmpresaId",
+        "ProductoVarianteId"
+      ],
+      "parent": "ProductoVariantes",
+      "pp": [
+        "EmpresaId",
+        "Id"
+      ],
+      "ix": "IX_QAC4_17",
+      "fk": "FK_QAC4_17",
+      "cascade": false
+    }
+  ],
+  "keys": [
+    {
+      "table": "PedidosVenta",
+      "index": "UX_PedidosVenta_IdempotencyKey",
+      "cols": [
+        "IdempotencyKey"
+      ]
+    },
+    {
+      "table": "ReservasInventario",
+      "index": "UX_ReservasInventario_Numero",
+      "cols": [
+        "Numero"
+      ]
+    }
+  ]
+}
