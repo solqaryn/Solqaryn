@@ -1,3 +1,10 @@
+## 2026-11-28 — QA: corrección de fixture bancaria y cobertura de transferencias/ajustes
+
+- Run 46149839595: Scope Lock y fiscal A/B SUCCESS; bancos falló antes de crear cuentas por ausencia de banco activo. Proveer institución claramente sintética, única y revocada al finalizar sólo si el catálogo QA carece de banco activo. Conservar datos históricos y no modificar bancos preexistentes. No sustituye alta real de instituciones.
+- Ampliar las comprobaciones físicas A/B para transferencia de dos partidas, replay/conflicto, rechazo cruzado y ajuste idempotente; relanzar sólo bancos contra runtime 7676febf, preservando equivalencia de código y los cinco gates causales. Reapertura, integración comercial e identidad fiscal siguen abiertas. Sin cambio de runtime, esquema ni despliegue; no afirmar certificado hasta resultado causal.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA: pruebas autenticadas dirigidas de bancos y fiscal
 
 - Se incorpora prueba secuencial de bancos y fiscal A/B sobre runtime 7676febf. Fixtures únicos, revocación al finalizar, conservación de documentos/ledger, sin pagos ni mensajes externos. Bancos: cuentas, depósitos idempotentes, importación/replay, coincidencias cruzadas/propias, cierre y registro de retiro/comisión/interés. Fiscal: promociones diferenciadas A/B, impuestos de compra y venta, precio autorizado, rechazo de referencias cruzadas, snapshots e historial persistidos, reintentos y edición posterior de reglas, factura interna vinculada. No afirma cobertura de reapertura, transferencias, ajustes, identidad legal de factura, UI bancaria, pasarela de pago ni checkout; permanecen abiertos. No se certifica por publicar pruebas.

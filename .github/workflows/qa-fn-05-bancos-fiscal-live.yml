@@ -1,4 +1,4 @@
-name: QA - FN-05 bancos y fiscal autenticados A/B
+name: QA - FN-05 bancos autenticados A/B (catalogo y ledger)
 on:
   push:
     branches: [qa]
@@ -13,7 +13,7 @@ concurrency:
 jobs:
   residual:
     name: Certificacion residual ${{ matrix.scope }} A/B
-    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == '7676febf8c4446b838142155b30c512d3c861f65'
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == 'a8ea8b43d1b929137a1f583ff6a6bf24779ad69f'
     runs-on: ubuntu-latest
     environment: QA
     timeout-minutes: 30
@@ -21,7 +21,7 @@ jobs:
       fail-fast: false
       max-parallel: 1
       matrix:
-        scope: [bancos, fiscal]
+        scope: [bancos]
     steps:
       - uses: actions/checkout@v4
         with:

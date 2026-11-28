@@ -187,6 +187,8 @@ def login(name, password, label, expected=200):
 
 
 created=False
+fixture_bank_code=prefix.upper()+"BANK"
+fixture_bank_created=False
 try:
     wait_ready(backend,"QA_BF_RENDER_READY")
     wait_ready(proxy,"QA_BF_PROXY_READY")
@@ -224,7 +226,19 @@ try:
     def invoke(token,eid,side,path,label,body=None,expected=200,method="POST"):
         return call(path,"QA_BF_"+label+"_"+side,expected,token=token,tenant=eid,body=body,method=method)
     if mode=="bancos":
+        # The catalog is global. Never activate or edit an existing institution.
+        # Supply a clearly labelled, run-owned synthetic bank only if QA is empty.
         bank=sql("SELECT Id FROM Bancos WHERE Activo=1 AND Eliminado=0 ORDER BY Id LIMIT 1;","eligible bank catalog")
+        if not bank:
+            require(sql(f"SELECT COUNT(*) FROM Bancos WHERE Codigo='{fixture_bank_code}';","bank fixture collision")=="0","Bank fixture collision")
+            fixture_bank_created=True
+            bank=sql(f"""START TRANSACTION;
+INSERT INTO Bancos (Codigo,Nombre,Activo,Eliminado,FechaCreacion,FechaActualizacion) VALUES ('{fixture_bank_code}','Institucion sintetica QA {prefix}',1,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
+SET @bank=LAST_INSERT_ID();
+COMMIT;
+SELECT @bank;""","provision synthetic QA bank")
+            require(sql(f"SELECT COUNT(*) FROM Bancos WHERE Id={int(bank)} AND Codigo='{fixture_bank_code}' AND Activo=1 AND Eliminado=0;","bank fixture persisted")=="1","Bank fixture unavailable")
+            print("QA_BF_SYNTHETIC_BANK_PROVISIONED=PASS",flush=True)
         require(bank.isdigit() and int(bank)>0,"No active bank catalog")
         accounts={}
         movements={}
@@ -300,7 +314,32 @@ SELECT @c;""","create isolated reconciliation")
                 invoke(token,eid,side,"/operaciones-bancarias/"+path,tag,op)
                 invoke(token,eid,side,"/operaciones-bancarias/"+path,tag+"_REPLAY",op)
                 require(sql(f"SELECT COUNT(*) FROM MovimientosFinancieros WHERE EmpresaId={eid} AND ReferenciaId={aid} AND ModuloOrigen='Bancos' AND Descripcion='IdempotencyKey: {key}' AND Monto={amount};","bank ledger")=="1","Bank operation missing or duplicated")
+            destination=ident(invoke(token,eid,side,"/cuentas-bancarias","TRANSFER_ACCOUNT_CREATE",{"bancoId":int(bank),"nombre":prefix+side+"T","numeroCuenta":prefix+side+"T","moneda":"HNL","saldoInicial":0},201))
+            owned_record("CuentasBancarias",destination,eid)
+            key=prefix+"-"+side+"-transfer"
+            transfer={"cuentaId":aid,"cuentaDestinoId":destination,"monto":10,"referencia":prefix+side,"idempotencyKey":key}
+            invoke(token,eid,side,"/operaciones-bancarias/transferencia","TRANSFER",transfer)
+            invoke(token,eid,side,"/operaciones-bancarias/transferencia","TRANSFER_REPLAY",transfer)
+            for account,suffix in ((aid,"Egreso"),(destination,"Ingreso")):
+                require(sql(f"SELECT COUNT(*) FROM MovimientosFinancieros WHERE EmpresaId={eid} AND ReferenciaId={account} AND ModuloOrigen='Bancos' AND Descripcion='IdempotencyKey: {key}-{suffix}' AND Monto=10;","transfer persisted")=="1","Transfer leg missing or duplicated")
+            invoke(token,eid,side,"/operaciones-bancarias/transferencia","TRANSFER_CONFLICT",dict(transfer,monto=11),expected=denied)
+            crosskey=prefix+"-"+side+"-transfer-foreign"
+            invoke(token,eid,side,"/operaciones-bancarias/transferencia","TRANSFER_FOREIGN",dict(transfer,cuentaDestinoId=foreign,idempotencyKey=crosskey),expected=denied)
+            require(sql(f"SELECT COUNT(*) FROM MovimientosFinancieros WHERE ModuloOrigen='Bancos' AND Descripcion IN ('IdempotencyKey: {crosskey}-Egreso','IdempotencyKey: {crosskey}-Ingreso');","foreign transfer invariant")=="0","Foreign transfer changed ledger")
+            key=prefix+"-"+side+"-adjust"
+            external=prefix+side+"AJ"
+            adjust={"cuentaBancariaId":aid,"idempotencyKey":key,"diferencias":[{"identificadorExternoTransaccion":external,"diferenciaMonto":4,"motivo":"Ajuste sintetico QA"}]}
+            for label in ("ADJUST","ADJUST_REPLAY"):
+                adjustment=invoke(token,eid,side,"/conciliaciones-bancarias/ajustes",label,adjust)
+                number(adjustment,"ajustesSolicitados",1)
+                require(not adjustment["errores"],"Adjustment returned errors")
+            require(sql(f"SELECT COUNT(*) FROM MovimientosFinancieros WHERE EmpresaId={eid} AND ReferenciaId={aid} AND ModuloOrigen='Bancos' AND Descripcion='IdempotencyKey: {key}-{external}' AND Monto=4;","adjustment persisted")=="1","Adjustment missing or duplicated")
+            cross=invoke(token,eid,side,"/conciliaciones-bancarias/ajustes","ADJUST_FOREIGN",dict(adjust,cuentaBancariaId=foreign,idempotencyKey=key+"-foreign"))
+            number(cross,"ajustesSolicitados",0)
+            require(bool(cross["errores"]),"Foreign adjustment not denied")
+            require(sql(f"SELECT COUNT(*) FROM MovimientosFinancieros WHERE ModuloOrigen='Bancos' AND Descripcion='IdempotencyKey: {key}-foreign-{external}';","foreign adjustment invariant")=="0","Foreign adjustment changed ledger")
             require(sql(f"SELECT COUNT(*) FROM CuentasBancarias WHERE Id={aid} AND EmpresaId={eid} AND SaldoInicial=0;","account opening balance")=="1","Opening balance changed")
+            print("QA_BF_TRANSFER_ADJUST_"+side+"=PASS",flush=True)
             print("QA_BF_BANK_PERSISTENCE_"+side+"=PASS",flush=True)
         invoke(to,eb,"OP","/cuentas-bancarias/"+str(accounts["B"][0]),"ACCOUNT_DENIED",expected=403,method="GET")
         invoke(to,eb,"OP","/conciliaciones-bancarias/importaciones-estado-cuenta","IMPORT_DENIED",{"cuentaBancariaId":accounts["B"][0],"movimientos":[]},expected=403)
@@ -423,6 +462,7 @@ finally:
 UPDATE Descuentos d JOIN Empresas e ON e.Id=d.EmpresaId SET d.Activo=0 WHERE e.Nombre IN {names};
 UPDATE Impuestos i JOIN Empresas e ON e.Id=i.EmpresaId SET i.Activo=0 WHERE e.Nombre IN {names};
 UPDATE CuentasBancarias c JOIN Empresas e ON e.Id=c.EmpresaId SET c.Estado=2 WHERE e.Nombre IN {names};
+UPDATE Bancos SET Activo=0,FechaActualizacion=UTC_TIMESTAMP(6) WHERE Codigo='{fixture_bank_code}' AND Nombre='Institucion sintetica QA {prefix}' AND {int(fixture_bank_created)}=1;
 UPDATE Usuarios SET Activo=0 WHERE NombreUsuario IN {names};
 UPDATE UsuarioEmpresas ue JOIN Usuarios u ON ue.UsuarioId=u.Id SET ue.Activa=0 WHERE u.NombreUsuario IN {names};
 DELETE rp FROM RolPermisos rp JOIN Roles r ON r.Id=rp.RolId WHERE r.Nombre IN {names};
@@ -436,7 +476,8 @@ COMMIT;""","revoke gallery fixtures")
 +(SELECT COUNT(*) FROM Empresas WHERE Nombre IN {names} AND Activa=1)
 +(SELECT COUNT(*) FROM Descuentos d JOIN Empresas e ON e.Id=d.EmpresaId WHERE e.Nombre IN {names} AND d.Activo=1)
 +(SELECT COUNT(*) FROM Impuestos i JOIN Empresas e ON e.Id=i.EmpresaId WHERE e.Nombre IN {names} AND i.Activo=1)
-+(SELECT COUNT(*) FROM CuentasBancarias c JOIN Empresas e ON e.Id=c.EmpresaId WHERE e.Nombre IN {names} AND c.Estado=1);""","gallery cleanup readback")=="0","Fixture authority not revoked")
++(SELECT COUNT(*) FROM CuentasBancarias c JOIN Empresas e ON e.Id=c.EmpresaId WHERE e.Nombre IN {names} AND c.Estado=1)
++(SELECT COUNT(*) FROM Bancos WHERE Codigo='{fixture_bank_code}' AND Nombre='Institucion sintetica QA {prefix}' AND Activo=1 AND {int(fixture_bank_created)}=1);""","gallery cleanup readback")=="0","Fixture authority not revoked")
         print("QA_BF_FIXTURES_REVOKED=PASS",flush=True)
 
 print("QA_BF_"+mode.upper()+"_CERTIFICATE=PASS",flush=True)
