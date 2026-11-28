@@ -1,3 +1,10 @@
+## 2026-11-28 — QA: aislar certificaciones funcionales de saturación concurrente
+
+- Cuatro gates de 34dc85f4 SUCCESS (46147483039, 46147483121, 46147483056, 46147483089); 2535/2535 pruebas backend; Vercel READY HxY3Rk9qXJkrLyE5wNYZ3H6iSeTm y Render LIVE dep-dc5d2m6c6qcc738kp8kg, SHA exacto. Scope Lock y esquema aprobados.
+- Ejecución 46148255441: los jobs gallery-a, conteos fallaron al autenticar. Render registró tres AuthController.Login 200 de 29701,5 / 27800,9 / 31875,8 ms a las 13:11:54 UTC; proxy con timeout 30000 ms devolvió 502. Se conserva el presupuesto de timeout y la autenticación; se fija max-parallel: 1 y se relanzan únicamente los jobs cuyo fallo fue comprobado. No se reejecutan los gates generales aprobados, no se cambian servicios ni esquema. Incidencia de capacidad QA-PERF-AUTH abierta, sin atribuir la causa interna a BCrypt sin medición. No se certifican operaciones que no llegaron a ejecutarse. 
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA: certificación residual separada por empresa y rechazo transaccional
 
 - Se retoma el commit 34dc85f4, con Scope Lock y regresión de hidratación/guardado de galerías aprobados. El workflow residual fija este SHA y comprueba sus cuatro ejecuciones causales SUCCESS y equivalencia del runtime antes de abrir fixtures.

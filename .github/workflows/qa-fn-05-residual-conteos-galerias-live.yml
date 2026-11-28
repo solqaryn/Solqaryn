@@ -13,14 +13,16 @@ concurrency:
 jobs:
   residual:
     name: Certificacion residual ${{ matrix.scope }} A/B
-    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == '34dc85f4b3f8414a6cd334326ee586faba8b8384'
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == '692a06641e201974ae4b548429f0db5ee29da3fd'
     runs-on: ubuntu-latest
     environment: QA
     timeout-minutes: 30
     strategy:
       fail-fast: false
+      # Serializar los fixtures: el backend QA alcanzó el timeout de 30 s del proxy bajo autenticaciones simultáneas.
+      max-parallel: 1
       matrix:
-        scope: [gallery-a, gallery-b, conteos]
+        scope: [gallery-a, conteos]
     steps:
       - uses: actions/checkout@v4
         with:
