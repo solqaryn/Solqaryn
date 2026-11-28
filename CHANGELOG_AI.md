@@ -1,3 +1,9 @@
+## 2026-11-28 — QA FN-05: certificación del checkout comercial durable
+
+- Run 46182209196 SUCCESS: QA_ORDER_CATALOG_CLEANUP=PASS inactive_audit_company=0 y QA_ORDER_FAILED_RUN_CLEANUP_RECOVERY=PASS. Cinco controles del checkout comercial cerrados: ensayo, V6 única, sincronización funcional, pedido real y cierre. Run 46181529540 acreditó borrador ID 3, importes, idempotencia, seguridad A/B y lectura ERP; pedido y fixtures retirados. Render LIVE 88dc7c09, Vercel READY 8c68033e, equivalencia funcional y readiness proxy QA HTTP 200 con DB connected.
+- Evidencia: `docs/evidencias/QA_FN_05_CHECKOUT_PEDIDO_CERTIFICACION_2026-11-28.md`. Certificación acotada al pedido durable; no certifica cobro de tarjeta, factura, reserva, confirmación, recorrido real completo de navegador ni totalidad de QA-FN-05. Cierre documental exclusivo QA. Sin nuevas migraciones, pedidos, cambios de infraestructura ni código funcional.
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA FN-05 recuperacion: integridad del script correctivo
 
 - Corrige el ensamblado textual de la expresion regular de identidad y verifica que existe una sola ruta de recuperacion, una sola ruta funcional original y un solo bloque de limpieza. El gate exige HEAD vivo exacto antes de iniciar recuperacion; mantiene alcance, evidencia anterior, proteccion FK y no recrea pedidos.

@@ -263,3 +263,8 @@ Sanitización de imágenes: `backend/src/Infrastructure/Services/ImagenUploadSec
 - `backend/src/Infrastructure.Migrations/Migrations/20261126170000_QaCommercialOwnershipV1.cs`: migración independiente de QA.
 - `backend/tests/Solqaryn.Tests/QaCommercialOwnershipMySqlTests.cs`: aislamiento A/B, claves y relaciones físicas.
 - `.github/workflows/qa-fn-05-commercial-ownership.yml`: validación dirigida en MySQL descartable.
+
+## QA-FN-05: evidencia del checkout comercial durable
+
+- `docs/evidencias/QA_FN_05_CHECKOUT_PEDIDO_CERTIFICACION_2026-11-28.md`: cierre de los cinco controles QA, migración, despliegues, pedido real, limpieza y límites.
+- `.github/qa/qa-fn-05-pedido-real-live.py` y `.github/workflows/qa-fn-05-pedido-real-live.yml`: prueba y recuperación QA de una sola ejecución; no relanzar mutaciones sin nuevo procedimiento autorizado.
