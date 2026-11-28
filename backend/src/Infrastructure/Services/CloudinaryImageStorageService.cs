@@ -168,8 +168,28 @@ public class CloudinaryImageStorageService : IImageStorageService
                 "El entorno de dev no puede eliminar una imagen que pertenece a Producción.");
         }
 
-        var deleteParams = new DeletionParams(publicId);
-        await _cloudinary.DestroyAsync(deleteParams);
+        var deleteParams = new DeletionParams(publicId) { Invalidate = true };
+        var resultado = await _cloudinary.DestroyAsync(deleteParams);
+        var eliminado = ValidarResultadoEliminacion(resultado?.Result, resultado is null || resultado.Error is not null);
+        // El identificador completo no debe aparecer en los logs. El hash permite
+        // correlacionar una prueba QA con el acuse real del proveedor.
+        var referencia = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(publicId)));
+        _logger?.LogInformation(
+            "CLOUDINARY_DELETE_RECEIPT outcome={Outcome} locator_ref={LocatorRef}",
+            eliminado ? "DELETED" : "ALREADY_ABSENT", referencia);
+    }
+
+    public static bool ValidarResultadoEliminacion(string? resultado, bool errorProveedor)
+    {
+        if (!errorProveedor)
+        {
+            if (string.Equals(resultado, "ok", StringComparison.Ordinal))
+                return true;
+            if (string.Equals(resultado, "not found", StringComparison.Ordinal))
+                return false; // Operación idempotente; no prueba un borrado nuevo.
+        }
+
+        throw new BusinessRuleException("Cloudinary no confirmó la eliminación de la imagen.");
     }
 
     public Task<(Stream Contenido, string ContentType)?> DownloadAsync(string url)

@@ -3953,3 +3953,5 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 MAPA_ARQUITECTURA: SIN_CAMBIO.
 
 - QA 2026-11-28: corregida nomenclatura de los nuevos archivos de certificación residual conforme al Scope Lock, sin cambiar el control ni el runtime desplegado. La ejecución 46145793424 se detuvo en preflight antes de crear datos de prueba.
+
+- QA 2026-11-28: el servicio de imágenes ahora valida el acuse de Cloudinary, solicita invalidación CDN y distingue eliminación nueva de ausencia previa con referencia SHA-256 del locator. Se preserva el aislamiento existente y la reconciliación de galería; añadido test de contrato. Pendiente CI, despliegue y acuse real correlacionado A/B; no se certifica borrado físico todavía.

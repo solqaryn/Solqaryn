@@ -43,4 +43,25 @@ public class CloudinaryEnvironmentIsolationTests
 
         Assert.Contains("Producción", excepcion.Message);
     }
+
+    [Theory]
+    [InlineData("ok", true)]
+    [InlineData("not found", false)]
+    public void Imagenes_ValidaAcuseYNoConfundeAusenciaConEliminacion(string respuesta, bool eliminado)
+    {
+        Assert.Equal(eliminado, CloudinaryImageStorageService.ValidarResultadoEliminacion(respuesta, false));
+    }
+
+    [Theory]
+    [InlineData("ok", true)]
+    [InlineData("not found", true)]
+    [InlineData(null, false)]
+    [InlineData("", false)]
+    [InlineData("error", false)]
+    [InlineData("OK", false)]
+    public void Imagenes_RespuestaNoConfirmadaFallaCerrado(string? respuesta, bool errorProveedor)
+    {
+        Assert.Throws<BusinessRuleException>(() =>
+            CloudinaryImageStorageService.ValidarResultadoEliminacion(respuesta, errorProveedor));
+    }
 }
