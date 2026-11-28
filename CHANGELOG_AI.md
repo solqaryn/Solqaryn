@@ -1,3 +1,9 @@
+## 2026-11-28 — QA: cierre bancario A/B y auditoría posterior a V4
+
+- Run 46161142966 SUCCESS / job 141028500676: QA_BF_BANCOS_CERTIFICATE=PASS; depósitos autenticados A/B (401 resuelto), transferencias y ajustes idempotentes, reaperturas con historial preservado, rechazo cruzado y por RBAC, revocación de fixtures confirmada. Render QA dep-dc5fbd8u01pc738ieneg LIVE sin mantenimiento. Cuatro puntos (incluida aplicación V4 run 46155392630) cerrados con evidencia causal.
+- Run 46161442700: fallo por auditor V3 que esperaba historial 112 después de V4 aplicada. Añadir auditor V4 exacto de sólo lectura, 113 entradas, normalización exclusivamente de FKs/índices autorizados V4, comprobación completa de V1–V3, ocho propietarios, 17 relaciones y dos claves V4; contrastar manifiesto con C# y preservar fingerprints base. No modificar DDL, migraciones previas, datos ni el auditor histórico V3.
+- Checkout/cobro integral continúa abierto; gates del commit b426f3fe pendientes. Scope QA exclusivo. MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA-FN-05: endurecer checkout y límite empresarial de cobros
 
 - Checkout valida la identidad física final (producto/variante), acumula alias, aplica stock total y máximo de unidades, rechaza precio inconsistente y devuelve una sola línea canónica. Regresiones de alias válidos y sobreventa.

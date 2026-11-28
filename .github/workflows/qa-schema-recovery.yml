@@ -10,6 +10,8 @@ on:
       - '.github/qa/qa-commercial-schema.py'
       - '.github/qa/qa-commercial-schema-v2.py'
       - '.github/qa/qa-commercial-schema-v3.py'
+      - '.github/qa/qa-commercial-schema-v4.py'
+      - '.github/qa/qa-commercial-v4-ef-manifest.json'
   workflow_dispatch:
 
 permissions:
@@ -81,6 +83,13 @@ jobs:
           test "$v2_marker" = "0" || test "$v2_marker" = "1"
           v3_marker="$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261126223000_QaCommercialOwnershipV3';")"
           test "$v3_marker" = "0" || test "$v3_marker" = "1"
+          v4_marker="$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261128150000_QaCommercialOwnershipV4';")"
+          test "$v4_marker" = "0" || test "$v4_marker" = "1"
+          if [ "$v4_marker" = "1" ]; then
+            test "$ownership_marker" = "1" && test "$v2_marker" = "1" && test "$v3_marker" = "1"
+            python3 .github/qa/qa-commercial-schema-v4.py --live
+            exit 0
+          fi
           if [ "$v3_marker" = "1" ]; then
             test "$ownership_marker" = "1" && test "$v2_marker" = "1"
             python3 .github/qa/qa-commercial-schema-v3.py --live
