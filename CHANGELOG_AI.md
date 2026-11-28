@@ -1,3 +1,9 @@
+## 2026-11-28 — QA-FN-05: prueba auténtica de cotización y cobro interno ERP
+
+- Certificación de documentos comerciales con empresas, tipos de cliente, clientes e identidad fiscal sintéticos A/B. Conversión persistida/replay, aislamiento de cotizaciones y pedidos, factura con RTN y moneda propios, cobro parcial, saldo completo, actualización Venta/MovimientoFinanciero, anulación conservando histórico, rechazo cruzado y por RBAC. Revocación de fixtures obligatoria. No cargo externo ni pago real.
+- Workflow dedicado usa runtime Render 1c933a47 certificado; equivalencia causal de archivos fiscales/ERP y lista exacta de diferencias de checkout/pago online b426f3fe. No repetir prueba bancaria ni DDL. Esta evidencia no sustituye el vínculo checkout→pedido→venta ni un proveedor de tarjeta real.
+- MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA: cierre bancario A/B y auditoría posterior a V4
 
 - Run 46161142966 SUCCESS / job 141028500676: QA_BF_BANCOS_CERTIFICATE=PASS; depósitos autenticados A/B (401 resuelto), transferencias y ajustes idempotentes, reaperturas con historial preservado, rechazo cruzado y por RBAC, revocación de fixtures confirmada. Render QA dep-dc5fbd8u01pc738ieneg LIVE sin mantenimiento. Cuatro puntos (incluida aplicación V4 run 46155392630) cerrados con evidencia causal.

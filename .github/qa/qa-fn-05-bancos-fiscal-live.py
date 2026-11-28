@@ -2,7 +2,7 @@
 import sys
 import hashlib
 mode = sys.argv[1] if len(sys.argv) == 2 else ""
-if mode not in ("bancos", "fiscal"):
+if mode not in ("bancos", "fiscal", "erp"):
     raise RuntimeError("Explicit QA residual probe required")
 import struct
 import zlib
@@ -74,6 +74,8 @@ grant_codes = (
     else ("CATEGORIAS.CREAR", "METODOSPAGO.CREAR", "DESCUENTOS.CREAR", "DESCUENTOS.EDITAR",
           "IMPUESTOS.CREAR", "IMPUESTOS.EDITAR", "PRODUCTOS.VER", "COMPRAS.VER", "COMPRAS.CREAR",
           "COMPRAS.CONFIRMAR", "VENTAS.VER", "VENTAS.CREAR", "VENTAS.CONFIRMAR"))
+if mode == "erp":
+    grant_codes += ("VENTAS.APROBAR", "FACTURACION.VER", "FACTURACION.APLICAR", "FACTURACION.ANULAR")
 grants = tuple(grant(code) for code in grant_codes)
 
 def new_password():
@@ -419,7 +421,52 @@ SELECT @p,@v;""","create isolated fiscal product").split("\t")
             product,variant=map(int,values)
             require(sql(f"SELECT COUNT(*) FROM Productos p JOIN ProductoVariantes v ON v.ProductoId=p.Id WHERE p.EmpresaId={eid} AND v.EmpresaId={eid} AND p.Id={product} AND v.Id={variant} AND p.CategoriaId={category};","physical fiscal product")=="1","Fiscal fixture ownership mismatch")
             fixtures[side]=(category,method,discount,tax,dp,tp,product,variant,discount_rate,tax_rate)
+        clients={}
+        if mode == "erp":
+            for token,eid,side in identities:
+                key=prefix+side
+                currency="HNL" if side=="A" else "USD"
+                # Synthetic legal identity and explicitly scoped client. No
+                # existing customer, configuration or payment instrument touched.
+                client=sql(f"""START TRANSACTION;
+UPDATE Empresas SET Rtn='{key.upper()}',Direccion='Direccion sintetica {key}' WHERE Id={eid} AND Nombre='{key}';
+INSERT INTO ConfigEmpresas (EmpresaId,Moneda,ZonaHoraria,ImpuestosJson,EmisionJson,Version,FechaCreacion,FechaActualizacion) VALUES ({eid},'{currency}','America/Tegucigalpa','{{}}','{{}}',1,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
+INSERT INTO TipoClientes (EmpresaId,Codigo,Nombre,NombreNormalizado,ColorHex,EsSistema,Activo,Eliminado,Orden,EsPredeterminado,FechaCreacion,FechaActualizacion) VALUES ({eid},'{key}','{key}','{key.upper()}','#FFFFFF',0,1,0,0,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
+SET @tipo=LAST_INSERT_ID();
+INSERT INTO Clientes (EmpresaId,TipoClienteId,Nombre,Activo,FechaCreacion,FechaActualizacion) VALUES ({eid},@tipo,'{key}',1,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
+SET @cliente=LAST_INSERT_ID();
+COMMIT;
+SELECT @cliente;""","create isolated ERP customer")
+                require(client.isdigit() and int(client)>0,"Invalid ERP client")
+                clients[side]=int(client)
+                owned_record("Clientes",int(client),eid)
+            orders={}
+            for token,eid,side in identities:
+                product,variant=fixtures[side][6:8]
+                quote={"clienteId":clients[side],"observaciones":"Solicitud sintetica QA","detalles":[{"productoId":product,"productoVarianteId":variant,"cantidad":2,"precioUnitario":100}]}
+                other="B" if side=="A" else "A"
+                invoke(token,eid,side,"/cotizaciones","QUOTE_FOREIGN_CLIENT",dict(quote,clienteId=clients[other]),expected=denied)
+                qid=ident(data(invoke(token,eid,side,"/cotizaciones","QUOTE_CREATE",quote,201)))
+                owned_record("Cotizaciones",qid,eid)
+                invoke(token,eid,side,f"/cotizaciones/{qid}/enviar","QUOTE_SEND")
+                invoke(token,eid,side,f"/cotizaciones/{qid}/aceptar","QUOTE_ACCEPT")
+                invoke(token,eid,side,f"/cotizaciones/{qid}/convertir","QUOTE_CONVERT")
+                invoke(token,eid,side,f"/cotizaciones/{qid}/convertir","QUOTE_CONVERT_REPLAY")
+                pid=sql(f"SELECT Id FROM PedidosVenta WHERE EmpresaId={eid} AND CotizacionId={qid} AND ClienteId={clients[side]};","persisted order")
+                require(pid.isdigit() and int(pid)>0,"Order missing or duplicated")
+                require(sql(f"SELECT COUNT(*) FROM PedidoVentaDetalles WHERE EmpresaId={eid} AND PedidoVentaId={int(pid)} AND ProductoId={product} AND ProductoVarianteId={variant} AND Cantidad=2 AND PrecioUnitario=100;","order line")=="1","Order line mismatch")
+                pedido=data(invoke(token,eid,side,f"/pedidos-venta/{pid}","ORDER_READ",method="GET"))
+                number(pedido,"total",200)
+                orders[side]=(qid,int(pid))
+                print("QA_ERP_QUOTE_ORDER_"+side+"=PASS",flush=True)
+            for token,eid,side in identities:
+                qid,pid=orders["B" if side=="A" else "A"]
+                invoke(token,eid,side,f"/cotizaciones/{qid}","QUOTE_FOREIGN_READ",expected=(403,404),method="GET")
+                invoke(token,eid,side,f"/pedidos-venta/{pid}","ORDER_FOREIGN_READ",expected=(403,404),method="GET")
+                invoke(token,eid,side,f"/cotizaciones/{qid}/convertir","QUOTE_FOREIGN_CONVERT",expected=denied)
+            print("QA_ERP_QUOTE_ORDER_AB=PASS",flush=True)
         documents={}
+        invoices={}
         for token,eid,side in identities:
             category,method,discount,tax,dp,tp,product,variant,dr,tr=fixtures[side]
             other="B" if side=="A" else "A"
@@ -431,6 +478,8 @@ SELECT @p,@v;""","create isolated fiscal product").split("\t")
             expected_purchase_total=60+expected_purchase_tax
             sale_line={"productoId":product,"productoVarianteId":variant,"cantidad":2,"precioUnitario":1}
             sale={"clienteNombre":"Cliente final","metodoPago":prefix.upper(),"estadoPago":"Pendiente","codigoPromocional":prefix.upper(),"envioExonerado":True,"motivoExoneracionEnvio":"Fixture QA","descuento":9999,"impuesto":9999,"detalles":[sale_line]}
+            if mode == "erp":
+                sale["clienteId"]=clients[side]
             foreign_sale=dict(sale,detalles=[dict(sale_line,productoId=foreign[6],productoVarianteId=foreign[7])])
             invoke(token,eid,side,"/ventas/calcular","SALE_FOREIGN_PRODUCT",foreign_sale,expected=denied)
             invoke(token,eid,side,"/ventas/calcular","SALE_FOREIGN_VARIANT",dict(sale,detalles=[dict(sale_line,productoVarianteId=foreign[7])]),expected=denied)
@@ -487,6 +536,41 @@ SELECT @p,@v;""","create isolated fiscal product").split("\t")
             number(again,"impuesto",expected_purchase_tax)
             number(again,"total",expected_purchase_total)
             verify_history()
+            if mode == "erp":
+                key=prefix+side
+                currency="HNL" if side=="A" else "USD"
+                require(sql(f"SELECT COUNT(*) FROM Facturas WHERE Id={invoice_id} AND EmpresaId={eid} AND EmpresaNombre='{key}' AND EmpresaRTN='{key.upper()}' AND EmpresaDireccion='Direccion sintetica {key}' AND Moneda='{currency}';","invoice legal identity")=="1","Invoice fiscal identity mismatch")
+                invoice=data(invoke(token,eid,side,f"/facturas/{invoice_id}","INVOICE_READ",method="GET"))
+                number(invoice,"saldoPendiente",expected_sale_total)
+                require(invoice["empresaNombre"]==key and invoice["empresaRTN"]==key.upper() and invoice["moneda"]==currency,"Invoice API identity mismatch")
+                partial=40
+                rest=expected_sale_total-partial
+                payment={"monto":partial,"metodoPago":prefix.upper(),"referencia":key+"-P1","observaciones":"Cobro ERP sintetico QA sin cargo externo"}
+                paid=data(invoke(token,eid,side,f"/facturas/{invoice_id}/pagos","PAYMENT_PARTIAL",payment))
+                number(paid,"totalPagado",partial)
+                number(paid,"saldoPendiente",rest)
+                require(paid["estado"]=="ParcialmentePagada","Partial invoice state mismatch")
+                require(sql(f"SELECT COUNT(*) FROM FacturaPagos WHERE EmpresaId={eid} AND FacturaId={invoice_id} AND Monto={partial} AND Anulado=0 AND MetodoPagoId={method};","partial payment physical")=="1","Partial payment missing")
+                require(sql(f"SELECT COUNT(*) FROM Ventas WHERE Id={vid} AND EmpresaId={eid} AND EstadoPago='Parcial';","partial sale payment")=="1","Partial sale state mismatch")
+                full=data(invoke(token,eid,side,f"/facturas/{invoice_id}/pagos","PAYMENT_BALANCE",dict(payment,monto=float(rest),referencia=key+"-P2")))
+                number(full,"totalPagado",expected_sale_total)
+                number(full,"saldoPendiente",0)
+                require(full["estado"]=="Pagada","Paid invoice state mismatch")
+                require(sql(f"SELECT COUNT(*) FROM MovimientosFinancieros WHERE EmpresaId={eid} AND VentaId={vid} AND ModuloOrigen='Venta' AND Estado='Pagado' AND Monto={expected_sale_total};","paid ledger")=="1","Ledger payment synchronization missing")
+                require(sql(f"SELECT COUNT(*) FROM Ventas WHERE Id={vid} AND EmpresaId={eid} AND EstadoPago='Pagado';","paid sale")=="1","Sale payment synchronization missing")
+                invoke(token,eid,side,f"/facturas/{invoice_id}/pagos","PAYMENT_PAID_REJECTED",dict(payment,monto=1,referencia=key+"-EXCESS"),expected=denied)
+                pid=sql(f"SELECT Id FROM FacturaPagos WHERE EmpresaId={eid} AND FacturaId={invoice_id} AND Referencia='{key}-P2' AND Anulado=0;","balance payment identity")
+                require(pid.isdigit(),"Balance payment missing or duplicated")
+                cancelled=data(invoke(token,eid,side,f"/facturas/{invoice_id}/pagos/{pid}/anular","PAYMENT_REVERSE",{"motivo":"Reversion sintetica QA"}))
+                number(cancelled,"totalPagado",partial)
+                number(cancelled,"saldoPendiente",rest)
+                require(cancelled["estado"]=="ParcialmentePagada","Reversal invoice state mismatch")
+                require(sql(f"SELECT COUNT(*) FROM FacturaPagos WHERE EmpresaId={eid} AND FacturaId={invoice_id} AND Id={int(pid)} AND Anulado=1;","reversed payment history")=="1","Reversal lost history")
+                require(sql(f"SELECT COUNT(*) FROM MovimientosFinancieros WHERE EmpresaId={eid} AND VentaId={vid} AND ModuloOrigen='Venta' AND Estado='Pendiente';","reversal ledger")=="1","Ledger not restored")
+                require(sql(f"SELECT COUNT(*) FROM Ventas WHERE Id={vid} AND EmpresaId={eid} AND EstadoPago='Parcial';","reversed sale")=="1","Sale not restored")
+                require(sql(f"SELECT COUNT(*) FROM FacturaPagos WHERE EmpresaId={eid} AND FacturaId={invoice_id};","payment count")=="2","Unexpected duplicate payment")
+                invoices[side]=invoice_id
+                print("QA_ERP_INVOICE_PAYMENT_"+side+"=PASS",flush=True)
             documents[side]=(vid,cid)
             print("QA_BF_FISCAL_SNAPSHOTS_HISTORY_"+side+"=PASS",flush=True)
         for token,eid,side in identities:
@@ -496,6 +580,15 @@ SELECT @p,@v;""","create isolated fiscal product").split("\t")
             invoke(token,eid,side,"/compras/"+str(cid),"PURCHASE_FOREIGN_READ",expected=(403,404),method="GET")
         invoke(to,eb,"OP","/ventas/"+str(documents["B"][0]),"SALE_DENIED",expected=403,method="GET")
         print("QA_BF_FISCAL_SNAPSHOTS_HISTORY_AB=PASS",flush=True)
+        if mode=="erp":
+            for token,eid,side in identities:
+                foreign_invoice=invoices["B" if side=="A" else "A"]
+                invoke(token,eid,side,f"/facturas/{foreign_invoice}","INVOICE_FOREIGN_READ",expected=(403,404),method="GET")
+                invoke(token,eid,side,f"/facturas/{foreign_invoice}/pagos","PAYMENT_FOREIGN",{"monto":1,"metodoPago":prefix.upper(),"referencia":prefix+"-FOREIGN"},expected=denied)
+            invoke(to,eb,"OP",f"/facturas/{invoices['B']}/pagos","PAYMENT_OPERATOR_DENIED",{"monto":1,"metodoPago":prefix.upper()},expected=403)
+            for side in ("A","B"):
+                require(sql(f"SELECT COUNT(*) FROM FacturaPagos WHERE FacturaId={invoices[side]};","final payment count")=="2","Denied payment modified invoice")
+            print("QA_ERP_INTERNAL_COLLECTION_AB=PASS",flush=True)
 
 finally:
     if created:

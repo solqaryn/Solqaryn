@@ -1,0 +1,78 @@
+name: QA - FN-05 cotizacion, factura y cobro ERP autenticados A/B
+on:
+  push:
+    branches: [qa]
+    paths:
+      - '.github/workflows/qa-fn-05-erp-live.yml'
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: qa-fn-05-live-admin
+  cancel-in-progress: false
+jobs:
+  residual:
+    name: Certificacion residual ${{ matrix.scope }} A/B
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.run_attempt == 1 && github.event.before == '6fecc7d3908b0d462144d84ef4816e17b3392da4'
+    runs-on: ubuntu-latest
+    environment: QA
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        scope: [erp]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Scope Lock y equivalencia de runtime aprobado
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = refs/heads/qa
+          node scripts/verify-project-scope.mjs
+          git diff --check "${{ github.event.before }}" HEAD
+          # Target the already deployed fiscal/ERP code. Only exact, independently
+          # enumerated checkout/online-payment changes may differ from it.
+          git diff --exit-code 1c933a47f7c82f08a4c812e79d134fa7ce41f733 HEAD -- backend frontend render.yaml scripts .agents docs/PROJECT_SCOPE_LOCK.md AGENTS.md \
+            ':!backend/src/API/Controllers/PagosOnlineController.cs' \
+            ':!backend/src/API/Controllers/TiendaController.cs' \
+            ':!backend/src/Application/Services/PagoOnlineService.cs' \
+            ':!backend/tests/Solqaryn.Tests/API/Controllers/TiendaControllerCheckoutTests.cs' \
+            ':!backend/tests/Solqaryn.Tests/N78DPagoOnlineServiceTests.cs' \
+            ':!backend/tests/Solqaryn.Tests/QaCheckoutPagoOnlineTenantTests.cs'
+          git diff --exit-code b426f3fe33c3aa9218159876537a0e56641aace1 HEAD -- backend frontend render.yaml scripts .agents docs/PROJECT_SCOPE_LOCK.md AGENTS.md
+          for run in 46155392630; do
+            # Do not start mutations before every exact-SHA gate has passed.
+            deadline=$((SECONDS + 600))
+            while true; do
+              run_json=$(gh api "repos/solqaryn/Solqaryn/actions/runs/$run")
+              jq -e '.head_sha == "1c933a47f7c82f08a4c812e79d134fa7ce41f733" and .head_branch == "qa"' <<< "$run_json" >/dev/null
+              if jq -e '.status == "completed"' <<< "$run_json" >/dev/null; then
+                jq -e '.conclusion == "success"' <<< "$run_json" >/dev/null
+                break
+              fi
+              test "$SECONDS" -lt "$deadline"
+              sleep 10
+            done
+          done
+          python3 -m py_compile .github/qa/qa-fn-05-bancos-fiscal-live.py
+          echo QA_BF_RUNTIME_EQUIVALENCE=PASS
+      - name: Preparar cliente MySQL y BCrypt
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y mysql-client apache2-utils
+      - name: Pruebas autenticas de documentos internos QA
+        env:
+          EXPECTED_DEPLOYED_SHA: '1c933a47f7c82f08a4c812e79d134fa7ce41f733'
+          DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
+          DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
+          DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}
+          DB_USER: ${{ vars.SOLQARYN_QA_DB_USER }}
+          DB_PASSWORD: ${{ secrets.SOLQARYN_QA_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          python3 .github/qa/qa-fn-05-bancos-fiscal-live.py "${{ matrix.scope }}"
