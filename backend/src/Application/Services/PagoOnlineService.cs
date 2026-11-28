@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using System.Security.Cryptography;
 using System.Text;
 using Solqaryn.Application.DTOs;
@@ -11,7 +10,10 @@ namespace Solqaryn.Application.Services;
 
 public sealed class PagoOnlineService : IPagoOnlineService
 {
-    private static readonly ConcurrentDictionary<string, SemaphoreSlim> InicioLocks = new();
+    // Bounded lock stripes avoid removing a semaphore while another request
+    // still holds a reference to it. Durable uniqueness remains in MySQL.
+    private static readonly SemaphoreSlim[] InicioLocks =
+        Enumerable.Range(0, 128).Select(_ => new SemaphoreSlim(1, 1)).ToArray();
 
     private readonly IPagoOnlineRepository _repository;
     private readonly IReadOnlyList<IPagoOnlineProvider> _providers;
@@ -38,7 +40,7 @@ public sealed class PagoOnlineService : IPagoOnlineService
         var moneda = solicitud.Moneda.Trim().ToUpperInvariant();
         var claveHash = CalcularHashIdempotencia(claveIdempotencia);
         var lockKey = $"{solicitud.EmpresaId}:{proveedor}:{claveHash}";
-        var gate = InicioLocks.GetOrAdd(lockKey, _ => new SemaphoreSlim(1, 1));
+        var gate = InicioLocks[(int)((uint)StringComparer.Ordinal.GetHashCode(lockKey) % (uint)InicioLocks.Length)];
 
         await gate.WaitAsync(cancellationToken);
         try
@@ -50,7 +52,16 @@ public sealed class PagoOnlineService : IPagoOnlineService
                 cancellationToken);
 
             if (existente is not null)
+            {
+                if (existente.EmpresaId != solicitud.EmpresaId ||
+                    existente.FacturaId != solicitud.FacturaId ||
+                    existente.Monto != solicitud.Monto ||
+                    !string.Equals(existente.Moneda, moneda, StringComparison.Ordinal) ||
+                    !string.Equals(existente.Proveedor, proveedor, StringComparison.Ordinal))
+                    throw new BusinessRuleException("La clave de idempotencia ya corresponde a otra solicitud de pago.");
+
                 return new InicioPagoOnlineResultadoDto(ToDto(existente), true);
+            }
 
             var factura = await _repository.ObtenerFacturaAsync(solicitud.FacturaId, cancellationToken)
                 ?? throw new ResourceNotFoundException("Factura no encontrada o fuera del alcance del usuario actual.");
@@ -134,8 +145,6 @@ public sealed class PagoOnlineService : IPagoOnlineService
         finally
         {
             gate.Release();
-            if (gate.CurrentCount == 1)
-                InicioLocks.TryRemove(lockKey, out _);
         }
     }
 
@@ -191,8 +200,8 @@ public sealed class PagoOnlineService : IPagoOnlineService
             throw new BusinessRuleException("EmpresaId debe ser positivo.");
         if (solicitud.FacturaId <= 0)
             throw new BusinessRuleException("FacturaId debe ser positivo.");
-        if (solicitud.Monto <= 0)
-            throw new BusinessRuleException("El monto del pago online debe ser positivo.");
+        if (solicitud.Monto <= 0 || solicitud.Monto != decimal.Round(solicitud.Monto, 2))
+            throw new BusinessRuleException("El monto del pago online debe ser positivo y tener como máximo dos decimales.");
         if (string.IsNullOrWhiteSpace(solicitud.Moneda) || solicitud.Moneda.Trim().Length != 3)
             throw new BusinessRuleException("La moneda debe ser un código ISO de tres caracteres.");
         _ = NormalizarProveedor(solicitud.Proveedor);

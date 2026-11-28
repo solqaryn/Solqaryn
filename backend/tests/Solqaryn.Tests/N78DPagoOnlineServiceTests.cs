@@ -138,6 +138,41 @@ public sealed class N78DPagoOnlineServiceTests
         Assert.DoesNotContain(nombres, x => x.Contains("CardNumber", StringComparison.OrdinalIgnoreCase));
     }
 
+    [Theory]
+    [InlineData(42, 100, "HNL")]
+    [InlineData(41, 101, "HNL")]
+    [InlineData(41, 100, "USD")]
+    public async Task IniciarAsync_RechazaReplayConPayloadDistinto(int facturaId, int monto, string moneda)
+    {
+        var existente = new PagoOnline
+        {
+            Id = 95, EmpresaId = 7, FacturaId = 41, Proveedor = "provider-test",
+            Monto = 100m, Moneda = "HNL", Estado = EstadoPagoOnline.Pendiente
+        };
+        var repository = CrearRepositoryBase(() => existente);
+        var provider = new Mock<IPagoOnlineProvider>(MockBehavior.Strict);
+        var service = CrearService(repository.Object, provider.Object);
+
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            service.IniciarAsync(new IniciarPagoOnlineDto(7, facturaId, "provider-test", monto, moneda),
+                "idem-N78D-conflict-0001"));
+
+        provider.VerifyNoOtherCalls();
+        repository.Verify(x => x.AgregarAsync(It.IsAny<PagoOnline>(), It.IsAny<CancellationToken>()), Times.Never);
+        repository.Verify(x => x.GuardarCambiosAsync(It.IsAny<CancellationToken>()), Times.Never);
+    }
+
+    [Fact]
+    public async Task IniciarAsync_RechazaFraccionesInferioresAlCentavo()
+    {
+        var repository = new Mock<IPagoOnlineRepository>(MockBehavior.Strict);
+        await Assert.ThrowsAsync<BusinessRuleException>(() =>
+            CrearService(repository.Object).IniciarAsync(
+                new IniciarPagoOnlineDto(7, 41, "provider-test", 1.001m, "HNL"),
+                "idem-N78D-scale-0001"));
+        repository.VerifyNoOtherCalls();
+    }
+
     private static Mock<IPagoOnlineRepository> CrearRepositoryBase(Func<PagoOnline?> pagoActual)
     {
         var repository = new Mock<IPagoOnlineRepository>();

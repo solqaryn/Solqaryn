@@ -278,6 +278,28 @@ public sealed class TiendaController : ControllerBase
             });
         }
 
+        // Different client aliases (variant ID vs model/brand) can resolve to
+        // the same physical SKU. Enforce limits on the server-resolved identity
+        // before calculating the quote; never count the same stock twice.
+        var normalizadas = new List<CheckoutTiendaLineaDto>(lineas.Count);
+        foreach (var grupo in lineas.GroupBy(l => new { l.ProductoId, l.ProductoVarianteId }))
+        {
+            var primera = grupo.First();
+            var unidades = grupo.Sum(l => l.Unidades);
+            var stock = grupo.Min(l => l.StockDisponible);
+            if (unidades > MaxUnidadesPorLinea)
+                return BadRequest(ApiResponse<CheckoutTiendaValidadoDto>.Fail("La cantidad acumulada de un producto supera el máximo permitido."));
+            if (unidades > stock)
+                return Conflict(ApiResponse<CheckoutTiendaValidadoDto>.Fail("Cambió la existencia disponible de uno de los productos. Actualiza el carrito antes de continuar."));
+            if (grupo.Any(l => l.PrecioUnitario != primera.PrecioUnitario))
+                return Conflict(ApiResponse<CheckoutTiendaValidadoDto>.Fail("Cambió el precio público. Actualiza el carrito antes de continuar."));
+
+            primera.Unidades = unidades;
+            primera.StockDisponible = stock;
+            primera.Total = primera.PrecioUnitario * unidades;
+            normalizadas.Add(primera);
+        }
+        lineas = normalizadas;
         var subtotal = lineas.Sum(linea => linea.Total);
         // The same resolver used by administration is scoped by verified middleware.
         var tarifa = await _costoEnvioService.ResolverAsync(new ResolverCostoEnvioDto

@@ -1,3 +1,10 @@
+## 2026-11-28 — QA-FN-05: endurecer checkout y límite empresarial de cobros
+
+- Checkout valida la identidad física final (producto/variante), acumula alias, aplica stock total y máximo de unidades, rechaza precio inconsistente y devuelve una sola línea canónica. Regresiones de alias válidos y sobreventa.
+- Inicio de pago online exige que la empresa solicitada coincida con el permiso empresarial ya acreditado, rechaza replay con factura/monto/moneda/proveedor distintos y precisión monetaria superior a dos decimales. Lock stripes acotados eliminan la carrera de eliminación de semáforos; se conserva la restricción única de MySQL. Pruebas del límite RBAC y conflictos.
+- Sin migraciones ni cambios de UI/configuración, sin llamadas a proveedor real ni cargos. Impacto API, servicios, consumidores de checkout y pagos; rollback por revert ordinario. El pedido persistido desde checkout, relación con venta/factura, envío/impuestos y conciliación de pago con proveedor real siguen pendientes de integración; no certificar el recorrido completo por estos cambios.
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA: V4 aplicada y certificación bancaria desplegada en ejecución
 
 - Run 46155392630 / job 141010808727 SUCCESS: QA_V4_LIVE_MIGRATION=PASS, restauración de 138 tablas con filas exactas, V4 sobre ocho tablas y 17 relaciones, preservación histórica e IAM, historial 112→113. Artefacto cifrado recuperable 15267678108 verificado y no expirado. V4 aplicada y cerrada; no repetir DDL.

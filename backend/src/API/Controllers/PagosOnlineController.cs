@@ -123,8 +123,11 @@ public sealed class PagosOnlineController : ControllerBase
 
     private async Task<bool> TieneScopeTenantAsync(int empresaId, CancellationToken cancellationToken)
     {
+        // Membership in a second company does not grant permission to operate
+        // it under an action authorized for the selected company.
         if (empresaId <= 0)
             return false;
+        _ = TenantPermissionContext.GetAuthorizedEmpresaId(HttpContext, empresaId);
 
         return await _usuarioScope.ObtenerActualAsync(empresaId, cancellationToken) is not null;
     }

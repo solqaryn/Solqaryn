@@ -339,6 +339,46 @@ public sealed class TiendaControllerCheckoutTests
         envios.VerifyNoOtherCalls();
     }
 
+    [Theory]
+    [InlineData(2, 200)]
+    [InlineData(3, 409)]
+    public async Task Checkout_AcumulaPorVarianteFisicaAunqueSeUsenAliasDistintos(int unidades, int codigo)
+    {
+        var productos = new Mock<IProductoService>(MockBehavior.Strict);
+        productos.Setup(x => x.GetByIdAsync(88)).ReturnsAsync(new ProductoDto
+        {
+            Id = 88, Nombre = "Producto QA", Activo = true,
+            Variantes =
+            {
+                new ProductoVarianteDto
+                {
+                    Id = 881, ProductoId = 88, ModeloId = 17, ModeloNombre = "Modelo",
+                    MarcaNombre = "Marca", Cantidad = 5, Precio = 25m, Activo = true
+                }
+            }
+        });
+        var resultado = await CrearController(productos).ValidarCheckout(new ValidarCheckoutTiendaDto
+        {
+            Items =
+            {
+                new CheckoutTiendaItemRequestDto { ProductoId = 88, ProductoVarianteId = 881, Unidades = 3 },
+                new CheckoutTiendaItemRequestDto { ProductoId = 88, ModeloId = 17, ModeloNombre = "Modelo", MarcaNombre = "Marca", Unidades = unidades }
+            }
+        });
+        if (codigo == 409)
+        {
+            Assert.IsType<ConflictObjectResult>(resultado);
+            return;
+        }
+        var respuesta = Assert.IsType<ApiResponse<CheckoutTiendaValidadoDto>>(Assert.IsType<OkObjectResult>(resultado).Value);
+        var validado = Assert.IsType<CheckoutTiendaValidadoDto>(respuesta.Data);
+        var linea = Assert.Single(validado.Lineas);
+        Assert.Equal(881, linea.ProductoVarianteId);
+        Assert.Equal(5, linea.Unidades);
+        Assert.Equal(125m, linea.Total);
+        Assert.Equal(125m, validado.Total);
+    }
+
     private static TiendaController CrearController(Mock<IProductoService> productos, Mock<ICostoEnvioService>? envios = null)
     {
         var categorias = new Mock<ICategoriaService>(MockBehavior.Strict);
