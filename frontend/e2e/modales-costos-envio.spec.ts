@@ -102,11 +102,22 @@ for (const viewport of [{ width: 1280, height: 900 }, { width: 390, height: 844 
     await page.getByRole('button', { name: 'Simular tarifa' }).click();
     await expect(medium.getByRole('heading', { name: 'Simular tarifa' })).toBeVisible();
     await geometry();
-    const ciudad = medium.locator('input[formcontrolname="ciudad"]');
+    const simulador = medium.locator('form[data-form-contract="shipping-simulator-v2"]');
+    await expect(simulador).toHaveAttribute('data-form-ready', 'true');
+    const ciudad = simulador.locator('input[formcontrolname="ciudad"]');
     await expect(ciudad).toBeEnabled();
     for (const [input, nombre] of [['Ciudad QA', 'Tarifa QA'], ['Otra ciudad QA', 'Tarifa general QA']]) {
       if (input === 'Ciudad QA') await ciudad.fill(input);
-      else await ciudad.evaluate((element: HTMLInputElement, value: string) => { element.value = value; }, input);
+      else {
+        // Reproduce el fallo de serialización nativa y un valor actualizado sin evento input.
+        // El envío usa las referencias del template, no los nombres de FormData.
+        await ciudad.evaluate((element: HTMLInputElement, value: string) => {
+          element.removeAttribute('name');
+          element.value = value;
+        }, input);
+        expect(await ciudad.evaluate((element: HTMLInputElement) =>
+          element.form !== null && new FormData(element.form).get('ciudad') === null)).toBe(true);
+      }
       await expect(ciudad).toHaveValue(input);
       const resolve = page.waitForRequest(r => r.url() === API + '/costos-envio/resolver' && r.method() === 'POST');
       await medium.getByRole('button', { name: 'Resolver tarifa' }).click();

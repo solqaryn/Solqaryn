@@ -113,7 +113,14 @@ async function shipping(identity,suffix,amount,viewport){
       else await editor.locator('input[formcontrolname="ciudad"]').fill(spec.prefix+'-city');
       const write=page.waitForResponse(r=>scopedResponse(r,'/costos-envio','POST',201,identity.tenant),{timeout:30000});
       await Promise.all([write,editor.getByRole('button',{name:'Crear',exact:true}).click()]);
-      const result=await (await write).json(); requireTrue(result.success===true&&Number.isInteger(result.data.id));
+      const response=await write;
+      stage='SHIP_CREATE_REQUEST_'+suffix+(isDefault?'_DEFAULT':'_SPECIFIC');
+      const sent=response.request().postDataJSON();
+      requireTrue(sent?.nombre===name&&Number(sent.monto)===price&&sent.esPredeterminado===isDefault&&sent.activo===true);
+      requireTrue(isDefault?!sent.ciudad:sent.ciudad===spec.prefix+'-city');
+      const result=await response.json(); requireTrue(result.success===true&&Number.isInteger(result.data.id));
+      requireTrue(result.data.nombre===name&&Number(result.data.monto)===price&&result.data.esPredeterminado===isDefault);
+      requireTrue(isDefault?!result.data.ciudad:result.data.ciudad===spec.prefix+'-city');
       await expect(row(name)).toHaveCount(1);
       return result.data.id;
     }
@@ -188,15 +195,21 @@ async function shipping(identity,suffix,amount,viewport){
     await page.getByRole('button',{name:'Simular tarifa',exact:true}).click();
     const simulation=page.locator('.solqaryn-modal--m').filter({has:page.locator('section[aria-label="Simulación de tarifa"]')});
     await expect(simulation).toBeVisible();
+    stage='SHIP_SIMULATE_DEPLOYED_CONTRACT_'+suffix;
+    const simulatorForm=simulation.locator('form[data-form-contract="shipping-simulator-v2"]');
+    await expect(simulatorForm).toHaveCount(1);
+    await expect(simulatorForm).toHaveAttribute('data-form-ready','true');
+    mark('SHIP_SIMULATE_DEPLOYED_CONTRACT_'+suffix);
     async function verifySimulation(city,expectedId,expectedName,expectedAmount,label){
       stage='SHIP_SIMULATE_'+label+'_INPUT_'+suffix;
-      const input=simulation.locator('input[formcontrolname="ciudad"]');
+      const input=simulatorForm.locator('input[formcontrolname="ciudad"]');
+      await expect(input).toHaveCount(1);
+      await expect(input).toBeEnabled();
       await input.fill(city);
       await expect(input).toHaveValue(city);
-      stage='SHIP_SIMULATE_'+label+'_NATIVE_FORM_'+suffix;
-      requireTrue(await input.evaluate(el=>el.form!==null&&new FormData(el.form).get('ciudad')===el.value));
-      const button=simulation.getByRole('button',{name:'Resolver tarifa',exact:true});
+      const button=simulatorForm.getByRole('button',{name:'Resolver tarifa',exact:true});
       await expect(button).toBeEnabled();
+      await expect(input).toHaveValue(city);
       const responsePromise=page.waitForResponse(r=>scopedResponse(r,'/costos-envio/resolver','POST',null,identity.tenant),{timeout:30000});
       await button.click();
       const response=await responsePromise;

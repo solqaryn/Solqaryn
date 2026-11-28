@@ -13,7 +13,7 @@ concurrency:
 jobs:
   modales:
     name: Modales de envio autenticados A/B sobre frontend corregido
-    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == '3d8fa34a564bb10e36115f3e48c5243599aaa9ef'
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == 'b0cc65cfa99c27f2adaf370230bbd9e62dea6df9'
     runs-on: ubuntu-latest
     environment: QA
     timeout-minutes: 30
@@ -30,25 +30,32 @@ jobs:
           set -euo pipefail
           test "$GITHUB_REF" = refs/heads/qa
           node scripts/verify-project-scope.mjs
-          git diff --exit-code 3d8fa34a564bb10e36115f3e48c5243599aaa9ef HEAD -- backend frontend render.yaml scripts .agents docs/PROJECT_SCOPE_LOCK.md AGENTS.md
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           git diff --exit-code dea277293408751b1b49416a8164e1392e80a483 HEAD -- backend render.yaml
-          # Wait read-only for the exact already-started causal gates; never rerun them.
-          deadline=$((SECONDS+720))
-          for run in 46038630927 46038631193 46038630924; do
+          # Los tres gates generales se disparan por este cambio frontend.
+          # Consultar exclusivamente el SHA actual; no volver a ejecutar ninguno.
+          deadline=$((SECONDS+900))
+          for workflow in 'QA - Compilación y pruebas' 'QA - Barrido integral de rutas' 'QA - Certificación viva'; do
             while true; do
-              state="$(gh api "repos/solqaryn/Solqaryn/actions/runs/$run")"
-              jq -e '.head_sha == "3d8fa34a564bb10e36115f3e48c5243599aaa9ef" and .head_branch == "qa"' <<<"$state" >/dev/null
-              if jq -e '.status == "completed"' <<<"$state" >/dev/null; then
+              runs="$(gh api "repos/solqaryn/Solqaryn/actions/runs?branch=qa&head_sha=$GITHUB_SHA&event=push&per_page=100")"
+              state="$(jq -c --arg name "$workflow" --arg sha "$GITHUB_SHA" '[.workflow_runs[] | select(.name == $name and .head_sha == $sha and .head_branch == "qa")] | sort_by(.created_at, .id) | last // empty' <<<"$runs")"
+              if test -n "$state" && jq -e '.status == "completed"' <<<"$state" >/dev/null; then
                 jq -e '.conclusion == "success"' <<<"$state" >/dev/null
-                echo "QA_CAUSAL_GATE_${run}=PASS"
+                jq -r '"QA_CAUSAL_GATE_" + (.id|tostring) + "=PASS"' <<<"$state"
                 break
               fi
-              test "$SECONDS" -lt "$deadline" || { echo "QA_CAUSAL_GATE_${run}=TIMEOUT"; exit 1; }
+              test "$SECONDS" -lt "$deadline" || { echo "QA_CAUSAL_GATE_TIMEOUT"; exit 1; }
               sleep 15
             done
           done
           gh api repos/solqaryn/Solqaryn/actions/runs/46027530182 | jq -e '.head_sha == "dea277293408751b1b49416a8164e1392e80a483" and .head_branch == "qa" and .status == "completed" and .conclusion == "success"' >/dev/null
-          gh api repos/solqaryn/Solqaryn/commits/3d8fa34a564bb10e36115f3e48c5243599aaa9ef/status | jq -e '.statuses | any(.context == "Vercel – solqaryn_qa" and .state == "success")' >/dev/null
+          while true; do
+            status="$(gh api "repos/solqaryn/Solqaryn/commits/$GITHUB_SHA/status" | jq -r '[.statuses[] | select(.context == "Vercel – solqaryn_qa")][0].state // "pending"')"
+            if test "$status" = success; then echo QA_VERCEL_CAUSAL=PASS; break; fi
+            test "$status" != failure && test "$status" != error
+            test "$SECONDS" -lt "$deadline" || { echo QA_VERCEL_CAUSAL_TIMEOUT; exit 1; }
+            sleep 15
+          done
           node --check .github/qa/qa-fn-05-v3-browser.mjs
           python3 -m py_compile .github/qa/qa-fn-05-v3-shipping-ui.py .github/qa/qa-fn-05-v3-galerias-live.py
       - name: Preparar cliente MySQL y BCrypt
@@ -81,7 +88,7 @@ jobs:
   galerias:
     name: Galerias de categorias con persistencia y aislamiento A/B
     needs: modales
-    if: ${{ github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == '3d8fa34a564bb10e36115f3e48c5243599aaa9ef' && needs.modales.result == 'success' }}
+    if: ${{ github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == 'b0cc65cfa99c27f2adaf370230bbd9e62dea6df9' && needs.modales.result == 'success' }}
     runs-on: ubuntu-latest
     environment: QA
     timeout-minutes: 30
@@ -98,25 +105,32 @@ jobs:
           set -euo pipefail
           test "$GITHUB_REF" = refs/heads/qa
           node scripts/verify-project-scope.mjs
-          git diff --exit-code 3d8fa34a564bb10e36115f3e48c5243599aaa9ef HEAD -- backend frontend render.yaml scripts .agents docs/PROJECT_SCOPE_LOCK.md AGENTS.md
+          test "$(git rev-parse HEAD)" = "$GITHUB_SHA"
           git diff --exit-code dea277293408751b1b49416a8164e1392e80a483 HEAD -- backend render.yaml
-          # Wait read-only for the exact already-started causal gates; never rerun them.
-          deadline=$((SECONDS+720))
-          for run in 46038630927 46038631193 46038630924; do
+          # Los tres gates generales se disparan por este cambio frontend.
+          # Consultar exclusivamente el SHA actual; no volver a ejecutar ninguno.
+          deadline=$((SECONDS+900))
+          for workflow in 'QA - Compilación y pruebas' 'QA - Barrido integral de rutas' 'QA - Certificación viva'; do
             while true; do
-              state="$(gh api "repos/solqaryn/Solqaryn/actions/runs/$run")"
-              jq -e '.head_sha == "3d8fa34a564bb10e36115f3e48c5243599aaa9ef" and .head_branch == "qa"' <<<"$state" >/dev/null
-              if jq -e '.status == "completed"' <<<"$state" >/dev/null; then
+              runs="$(gh api "repos/solqaryn/Solqaryn/actions/runs?branch=qa&head_sha=$GITHUB_SHA&event=push&per_page=100")"
+              state="$(jq -c --arg name "$workflow" --arg sha "$GITHUB_SHA" '[.workflow_runs[] | select(.name == $name and .head_sha == $sha and .head_branch == "qa")] | sort_by(.created_at, .id) | last // empty' <<<"$runs")"
+              if test -n "$state" && jq -e '.status == "completed"' <<<"$state" >/dev/null; then
                 jq -e '.conclusion == "success"' <<<"$state" >/dev/null
-                echo "QA_CAUSAL_GATE_${run}=PASS"
+                jq -r '"QA_CAUSAL_GATE_" + (.id|tostring) + "=PASS"' <<<"$state"
                 break
               fi
-              test "$SECONDS" -lt "$deadline" || { echo "QA_CAUSAL_GATE_${run}=TIMEOUT"; exit 1; }
+              test "$SECONDS" -lt "$deadline" || { echo "QA_CAUSAL_GATE_TIMEOUT"; exit 1; }
               sleep 15
             done
           done
           gh api repos/solqaryn/Solqaryn/actions/runs/46027530182 | jq -e '.head_sha == "dea277293408751b1b49416a8164e1392e80a483" and .head_branch == "qa" and .status == "completed" and .conclusion == "success"' >/dev/null
-          gh api repos/solqaryn/Solqaryn/commits/3d8fa34a564bb10e36115f3e48c5243599aaa9ef/status | jq -e '.statuses | any(.context == "Vercel – solqaryn_qa" and .state == "success")' >/dev/null
+          while true; do
+            status="$(gh api "repos/solqaryn/Solqaryn/commits/$GITHUB_SHA/status" | jq -r '[.statuses[] | select(.context == "Vercel – solqaryn_qa")][0].state // "pending"')"
+            if test "$status" = success; then echo QA_VERCEL_CAUSAL=PASS; break; fi
+            test "$status" != failure && test "$status" != error
+            test "$SECONDS" -lt "$deadline" || { echo QA_VERCEL_CAUSAL_TIMEOUT; exit 1; }
+            sleep 15
+          done
           node --check .github/qa/qa-fn-05-v3-browser.mjs
           python3 -m py_compile .github/qa/qa-fn-05-v3-shipping-ui.py .github/qa/qa-fn-05-v3-galerias-live.py
       - name: Preparar cliente MySQL y BCrypt

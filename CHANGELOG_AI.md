@@ -1,3 +1,11 @@
+## 2026-11-27 — QA: desacoplar simulación de tarifas de la serialización HTML
+
+- Evidencia `3d8fa34`: 46038630927/46038631193/46038630924 SUCCESS; Vercel QA READY, alias confirmado en el despliegue equivalente `b0cc65cf`. Run 46038873000/job 140641174152: preflight PASS, autenticaciones A/B, alta/tabla/detalle/edición/estados A PASS, fallo `SHIP_SIMULATE_SPECIFIC_NATIVE_FORM_A` antes del POST, revocación PASS. No demuestra un fallo del resolver ni fuga empresarial; galerías omitidas.
+- El simulador toma los cinco valores desde las referencias explícitas de sus controles, valida el formulario reactivo y conserva las guardas de empresa activa, generación de consulta y ciclo institucional. Se elimina la dependencia de FormData sólo en el simulador; el editor aprobado no cambia. Regresión reproduce una ciudad visible sin serialización por nombre y sin evento input. En vivo se exige marcador de contrato, modal listo, alta con cuerpo y respuesta exactos, payload y tarifa específica/general correctos y pertenencia empresarial. No se reduce la cobertura funcional.
+- Workflow dirigido usa el SHA del propio cambio, espera de forma acotada los tres gates generales ya disparados y el status Vercel del SHA exacto, mantiene equivalencia de backend y entorno QA. Galerías sólo después de modales A/B. Sin cambios de API, datos, seguridad, esquema ni cuentas; rollback por revertir el changeset. Cierre funcional pendiente de evidencia causal.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-27 — QA: ejecutar certificación dirigida sólo después de los gates causales
 
 - Corrección `3d8fa34a564bb10e36115f3e48c5243599aaa9ef` publicada. Scope Lock aprobado, Vercel personal READY `5H35aWotSzhG8KXucB9MJiGk5v2H` con alias QA. Certificación viva general 46038630924 SUCCESS; compilación/pruebas 46038630927 y rutas 46038631193 aún en ejecución al registrar evidencia.

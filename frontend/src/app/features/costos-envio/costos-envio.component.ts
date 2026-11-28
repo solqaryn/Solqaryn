@@ -286,20 +286,14 @@ export class CostosEnvioComponent {
       error: err => { if (!this.vigente(empresa)) return; this.saving.set(false); this.error.set(err.error?.message ?? 'No se pudo eliminar la tarifa.'); }
     });
   }
-  simular(formulario: HTMLFormElement): void {
+  simular(campos: { departamento: string; ciudad: string; zona: string; modalidad: string; fecha: string }): void {
     const empresa=this.tenant.contextoVerificado();
     if (!empresa || !this.ready() || this.modalTipo !== 'simulador' || !this.modalListo() || this.simulador.disabled || this.simulando()) return;
     const request = ++this.simulacionRequest;
     this.simulacion.set(null);
-    const datos = this.datosNativos(formulario, ['departamento','ciudad','zona','modalidad','fecha']);
-    if (!datos) {
-      this.simulacionError.set('El formulario no está listo. Vuelve a abrirlo antes de consultar.'); return;
-    }
-    const texto = (campo: string) => String(datos.get(campo));
-    this.simulador.setValue({
-      departamento: texto('departamento'), ciudad: texto('ciudad'), zona: texto('zona'),
-      modalidad: texto('modalidad'), fecha: texto('fecha')
-    }, { emitEvent: false });
+    // Los valores proceden de las referencias explícitas del template del modal activo.
+    // No se reconstruyen a partir de FormData, nombres HTML ni asociaciones implícitas.
+    this.simulador.setValue(campos, { emitEvent: false });
     if (this.simulador.invalid) {
       this.simulador.markAllAsTouched(); this.simulacionError.set('Revisa los datos de cobertura.'); return;
     }

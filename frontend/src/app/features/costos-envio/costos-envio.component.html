@@ -131,17 +131,18 @@
 </section>
 
 <ng-template #simuladorModal>
-<form #simuladorFormulario class="app-dialog-layout" [formGroup]="simulador" (ngSubmit)="simular(simuladorFormulario)">
+<form class="app-dialog-layout" data-form-contract="shipping-simulator-v2" [attr.data-form-ready]="modalListo() ? 'true' : 'false'" [formGroup]="simulador"
+  (ngSubmit)="simular({ departamento: simDepartamento.value, ciudad: simCiudad.value, zona: simZona.value, modalidad: simModalidad.value, fecha: simFecha.value })">
   <h2 mat-dialog-title>Simular tarifa</h2>
   <mat-dialog-content>
   <section class="editor" aria-label="Simulación de tarifa">
   <p>Consulta la tarifa que resolvería el servidor para una cobertura y fecha. No modifica datos.</p>
     <div class="grid simulation-grid">
-      <mat-form-field appearance="outline"><mat-label>Departamento</mat-label><input matInput formControlName="departamento" name="departamento" maxlength="120"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Ciudad</mat-label><input matInput formControlName="ciudad" name="ciudad" maxlength="120"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Zona</mat-label><input matInput formControlName="zona" name="zona" maxlength="150"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Modalidad</mat-label><input matInput formControlName="modalidad" name="modalidad" maxlength="80"></mat-form-field>
-      <mat-form-field appearance="outline"><mat-label>Fecha de consulta (opcional)</mat-label><input matInput type="datetime-local" formControlName="fecha" name="fecha"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Departamento</mat-label><input matInput #simDepartamento formControlName="departamento" name="departamento" maxlength="120"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Ciudad</mat-label><input matInput #simCiudad formControlName="ciudad" name="ciudad" maxlength="120"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Zona</mat-label><input matInput #simZona formControlName="zona" name="zona" maxlength="150"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Modalidad</mat-label><input matInput #simModalidad formControlName="modalidad" name="modalidad" maxlength="80"></mat-form-field>
+      <mat-form-field appearance="outline"><mat-label>Fecha de consulta (opcional)</mat-label><input matInput type="datetime-local" #simFecha formControlName="fecha" name="fecha"></mat-form-field>
     </div>
   @if (simulacion(); as tarifa) { <div class="notice" role="status"><strong>{{ tarifa.nombre }} · L. {{ tarifa.monto | number:'1.2-2' }}</strong><p>{{ cobertura(tarifa) }}</p></div> }
   @if (simulacionError()) { <p class="error" role="alert">{{ simulacionError() }}</p> }
