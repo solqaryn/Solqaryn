@@ -1,3 +1,8 @@
+## 2026-11-28 — QA-FN-05: diagnóstico físico ERP sin escritura
+
+- Contrastar las restricciones reales de cotizaciones, pedidos, facturas y cobros con sus modelos y los conteos agregados de estados antes de proponer DDL. Solo SELECT sobre QA, transacciones READ ONLY, sin datos personales, sin modificaciones de esquema ni migraciones. Identidad, versión y marcador V4 obligatorios.
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA-FN-05: corregir contratos de checkout y stock fail-closed
 
 - Run 46162593563: fase 9 y control transversal consultaban el controlador previo a la extracción. Comprobar delegación efectiva, servicio de checkout y catálogo público, sin retirar invariantes de precio, promoción ni stock.

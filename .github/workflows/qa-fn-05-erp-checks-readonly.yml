@@ -1,0 +1,65 @@
+name: QA - FN-05 restricciones ERP de solo lectura
+on:
+  push:
+    branches: [qa]
+    paths:
+      - '.github/workflows/qa-fn-05-erp-checks-readonly.yml'
+permissions:
+  contents: read
+concurrency:
+  group: qa-fn-05-live-admin
+  cancel-in-progress: false
+jobs:
+  audit:
+    name: Diagnostico DDL y estados ERP sin escritura
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == 'd34a81fc182b8312432ba158239179cef0abe827' && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    environment: QA
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - name: Verificar alcance
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = refs/heads/qa
+          node scripts/verify-project-scope.mjs
+      - name: Instalar cliente MySQL
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y mysql-client
+      - name: Leer restricciones y conteos agregados
+        env:
+          DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
+          DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
+          DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}
+          DB_USER: ${{ vars.SOLQARYN_QA_DB_USER }}
+          DB_PASSWORD: ${{ secrets.SOLQARYN_QA_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          test "$DB_HOST" = solqaryn-mysql-solqaryn.h.aivencloud.com
+          test "$DB_PORT" = 14402
+          test "$DB_NAME" = solqaryn_qa
+          test "$DB_USER" = solqaryn_qa_user
+          test -n "$DB_PASSWORD"
+          export MYSQL_PWD="$DB_PASSWORD"
+          q() {
+            mysql --protocol=TCP --connect-timeout=12 --ssl-mode=REQUIRED -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --batch --raw --skip-column-names "$DB_NAME" -e "START TRANSACTION READ ONLY; $1 COMMIT;"
+          }
+          test "$(q 'SELECT DATABASE();')" = solqaryn_qa
+          case "$(q 'SELECT VERSION();')" in 8.4.11|8.4.11-*) ;; *) exit 1;; esac
+          test "$(q "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261128150000_QaCommercialOwnershipV4';")" = 1
+          test "$(q 'SELECT COUNT(*) FROM __EFMigrationsHistory;')" = 113
+          echo QA_ERP_SCHEMA_CHECKS_BEGIN
+          q "SELECT tc.TABLE_NAME,tc.CONSTRAINT_NAME,tc.ENFORCED,cc.CHECK_CLAUSE FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS tc JOIN INFORMATION_SCHEMA.CHECK_CONSTRAINTS cc ON cc.CONSTRAINT_SCHEMA=tc.CONSTRAINT_SCHEMA AND cc.CONSTRAINT_NAME=tc.CONSTRAINT_NAME WHERE tc.CONSTRAINT_SCHEMA=DATABASE() AND tc.CONSTRAINT_TYPE='CHECK' AND (tc.TABLE_NAME LIKE 'Cotizacion%' OR tc.TABLE_NAME LIKE 'PedidoVenta%' OR tc.TABLE_NAME LIKE 'Factura%' OR tc.TABLE_NAME LIKE 'Cobro%' OR tc.TABLE_NAME LIKE 'Pago%' OR tc.TABLE_NAME LIKE 'Venta%' OR tc.TABLE_NAME LIKE 'CuentaPorCobrar%') ORDER BY tc.TABLE_NAME,tc.CONSTRAINT_NAME;"
+          echo QA_ERP_SCHEMA_CHECKS_END
+          echo QA_ERP_COTIZACION_ESTADOS_BEGIN
+          q "SELECT Estado,COUNT(*) FROM Cotizaciones GROUP BY Estado ORDER BY Estado;"
+          echo QA_ERP_COTIZACION_ESTADOS_END
+          invalid="$(q 'SELECT COUNT(*) FROM Cotizaciones WHERE Estado IS NULL OR Estado NOT IN (1,2,3,4,5);')"
+          echo "QA_ERP_COTIZACION_ESTADOS_FUERA_MODELO=$invalid"
+          echo QA_ERP_COTIZACION_HISTORIA_BEGIN
+          q "SELECT Estado,COUNT(*),SUM(FechaEnvioUtc IS NOT NULL),SUM(FechaAceptacionUtc IS NOT NULL),SUM(FechaRechazoUtc IS NOT NULL),SUM(FechaConversionUtc IS NOT NULL) FROM Cotizaciones GROUP BY Estado ORDER BY Estado;"
+          echo QA_ERP_COTIZACION_HISTORIA_END
+          echo QA_ERP_DB_WRITES=0
