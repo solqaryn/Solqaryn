@@ -13,7 +13,7 @@ concurrency:
 jobs:
   live:
     name: Certificacion dirigida ${{ matrix.scope }}
-    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == '0d8d89570ccd507996a44c59efa062ad9d757c64' && github.run_attempt == 1
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == '4fcff8ced8bfcfe5e151c932bae74e571bd82116' && github.run_attempt == 1
     runs-on: ubuntu-latest
     timeout-minutes: 45
     environment: QA

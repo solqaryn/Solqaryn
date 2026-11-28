@@ -250,11 +250,11 @@ ORDER BY ((Departamento IS NOT NULL AND TRIM(Departamento)<>'')+(Ciudad IS NOT N
     require(n(f"SELECT COUNT(*) FROM ExistenciasVariante WHERE EmpresaId={owner} AND ProductoVarianteId={vid} AND StockFisico=3 AND StockReservado=0 AND StockTransito=0;","quote non-mutating stock")==1,"Quote mutated stock")
     # Test the exact synthetic variant only, while its denormalized quantity
     # remains 3. Neither zero stock nor missing authoritative rows may sell.
-    sql(f"UPDATE ExistenciasVariante SET StockFisico=0 WHERE EmpresaId={owner} AND ProductoVarianteId={vid} AND StockFisico=3 AND StockReservado=0;","synthetic zero inventory")
+    sql(f"UPDATE ExistenciasVariante SET StockFisico=0 WHERE EmpresaId={owner} AND ProductoVarianteId={vid} AND StockFisico=3 AND StockReservado=0;","synthetic zero existencias")
     require(n(f"SELECT COUNT(*) FROM ExistenciasVariante WHERE EmpresaId={owner} AND ProductoVarianteId={vid} AND StockFisico=0;","zero fixture")==1,"Zero fixture not established")
     call("/tienda/checkout/validar","QA_CHECKOUT_ZERO_AUTHORITATIVE_DENIED",409,body=payload(pid,vid,c0),method="POST")
-    sql(f"DELETE FROM ExistenciasVariante WHERE EmpresaId={owner} AND ProductoVarianteId={vid} AND StockFisico=0 AND StockReservado=0 AND StockTransito=0;","remove synthetic inventory source")
-    require(n(f"SELECT COUNT(*) FROM ExistenciasVariante WHERE EmpresaId={owner} AND ProductoVarianteId={vid};","missing source")==0,"Inventory source remains")
+    sql(f"DELETE FROM ExistenciasVariante WHERE EmpresaId={owner} AND ProductoVarianteId={vid} AND StockFisico=0 AND StockReservado=0 AND StockTransito=0;","remove synthetic existencias source")
+    require(n(f"SELECT COUNT(*) FROM ExistenciasVariante WHERE EmpresaId={owner} AND ProductoVarianteId={vid};","missing source")==0,"existencias source remains")
     require(n(f"SELECT COUNT(*) FROM ProductoVariantes WHERE EmpresaId={owner} AND Id={vid} AND Cantidad=3;","denormalized fixture")==1,"Legacy quantity changed")
     call("/tienda/checkout/validar","QA_CHECKOUT_MISSING_AUTHORITATIVE_DENIED",409,body=payload(pid,vid,c0),method="POST")
     require(store()[0]==owner,"Public storefront authority changed")

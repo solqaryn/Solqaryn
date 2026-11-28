@@ -1,3 +1,8 @@
+## 2026-11-28 — QA-FN-05: recuperación del Scope Lock del ensayo vivo
+
+- Run 46169508679 detenido antes de fixtures por terminología inglesa retirada en comentarios/etiquetas del nuevo probe. Sustituir sólo dicha terminología, conservar invariantes y pin del runtime 0d8d8957, relanzar con nuevo padre exacto. No se modifica el Scope Lock ni el código funcional.
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA-FN-05: V5 aplicada; verificación comercial desplegada
 
 - 46167876969 SUCCESS sobre 0d8d8957: respaldo cifrado recuperable, 138 tablas, historial 114, CHECK 1..5, datos e IAM preservados. Artefacto recuperable 15272700827. No repetir V5. Mantenimiento QA solicitado OFF una vez certificado.
