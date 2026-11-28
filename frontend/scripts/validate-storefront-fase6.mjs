@@ -151,7 +151,7 @@ expect(storefrontService.includes("private readonly urlValidarCheckout = `${this
 expect(storefrontService.includes('this.http.post<ApiResponse<CheckoutValidado>>'), 'La revalidación debe usar POST tipado.');
 expect(storefrontService.includes("!ruta.startsWith('tienda/')") && storefrontService.includes("ruta.includes('..')"), 'El endpoint configurable de tarjeta debe permanecer dentro de la frontera publica /tienda y aceptar solo rutas relativas seguras.');
 expect(storefrontService.includes('checkoutValidado(data)'), 'El cliente debe validar estructuralmente la respuesta de checkout.');
-expect(storefrontService.includes('data.costoEnvio === null') && storefrontService.includes('data.total - data.subtotal - (data.costoEnvio ?? 0)'), 'La respuesta debe distinguir ausencia de tarifa de cero configurado y validar el total.');
+expect(storefrontService.includes('data.costoEnvio === null') && storefrontService.includes('fiscalCheckoutValido(data.fiscal, data.subtotal, data.costoEnvio ?? 0, data.total)'), 'La respuesta debe distinguir ausencia de tarifa de cero configurado y validar el total.');
 
 const checkoutItemBlock = models.match(/export interface CheckoutItemRequest \{([\s\S]*?)\n\}/)?.[1] || '';
 expect(
@@ -190,12 +190,13 @@ for (const required of [
   'string.Equals(variante.MarcaNombre ?? string.Empty, solicitud.MarcaNombre ?? string.Empty, StringComparison.Ordinal)',
   'if (stock <= 0 || stock < solicitud.Unidades)',
   'var precioVigente = oferta?.PrecioOferta ?? precio;',
-  'Total = precioVigente * solicitud.Unidades',
+  'Total = FiscalCheckoutSnapshot.Moneda(precioVigente * solicitud.Unidades)',
   'var subtotal = lineas.Sum(linea => linea.Total)',
   '_costoEnvioService.ResolverAsync(new ResolverCostoEnvioDto',
   'FechaUtc = ahoraUtc',
   'CostoEnvio = costoEnvio',
-  'Total = subtotal + (costoEnvio ?? 0m)',
+  'Total = subtotal + (costoEnvio ?? 0m) + fiscal.ImpuestoAdicional',
+  'CalcularImpuestosCheckoutPublicoAsync',
   'if (limite < expira) expira = limite',
   'Guid.NewGuid().ToString("N")',
   'TimeSpan.FromMinutes(10)'

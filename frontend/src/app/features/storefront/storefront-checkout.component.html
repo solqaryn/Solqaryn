@@ -130,14 +130,22 @@
           </ul>
 
           <dl class="totals">
+            @if (resumen.fiscal; as fiscal) {
+              <div><dt>Productos antes de descuentos</dt><dd>{{ moneda(fiscal.importeProductos) }}</dd></div>
+              <div><dt>Descuentos</dt><dd>−{{ moneda(fiscal.totalDescuento) }}</dd></div>
+            }
             <div><dt>Subtotal</dt><dd>{{ moneda(resumen.subtotal) }}</dd></div>
+            @if (resumen.fiscal; as fiscal) {
+              <div><dt>Impuestos incluidos (informativo)</dt><dd>{{ moneda(fiscal.impuestoIncluido) }}</dd></div>
+              <div><dt>Impuestos adicionales</dt><dd>{{ moneda(fiscal.impuestoAdicional) }}</dd></div>
+            }
             @if (utilizarDatosBaseDatos()) {
               <div><dt>Envío</dt><dd>{{ !envioPendiente() && resumen.costoEnvio != null ? moneda(resumen.costoEnvio) : 'Por cotizar' }}</dd></div>
               @if (!envioPendiente() && resumen.costoEnvio != null) {
                 <div><dt>Tarifa</dt><dd>{{ resumen.tarifaEnvio }}</dd></div>
               }
               @if (envioPendiente() || resumen.costoEnvio == null) {
-                <div class="grand-total"><dt>Subtotal sin envío</dt><dd>{{ moneda(resumen.subtotal) }}</dd></div>
+                <div class="grand-total"><dt>Subtotal sin envío</dt><dd>{{ moneda(resumen.subtotal + (resumen.fiscal?.impuestoAdicional ?? 0)) }}</dd></div>
               } @else {
                 <div class="grand-total"><dt>Total validado</dt><dd>{{ moneda(resumen.total) }}</dd></div>
               }

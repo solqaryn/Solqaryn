@@ -16,6 +16,9 @@ public interface ICalculoService
 
     Task<ResultadoCalculoDto> CalcularVentaTiendaAsync(List<DetalleCalculoInput> detalles, int clienteId, int costoEnvioId);
 
+    Task<List<ImpuestoAplicadoDto>> CalcularImpuestosCheckoutPublicoAsync(
+        List<DetalleCalculoInput> preciosBase, List<DetalleCalculoInput> preciosVigentes, DateTime fechaUtc);
+
     Task<ResultadoCalculoDto> CalcularCompraAsync(
         List<DetalleCalculoInput> detalles,
         int? proveedorId);

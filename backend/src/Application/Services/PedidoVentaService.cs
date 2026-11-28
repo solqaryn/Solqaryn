@@ -474,6 +474,7 @@ public sealed class PedidoVentaService : IPedidoVentaService
         Estado = pedido.Estado,
         Total = pedido.Total,
         Subtotal = pedido.Subtotal,
+        FiscalCheckout = pedido.FiscalCheckout,
         CostoEnvio = pedido.CostoEnvio,
         MonedaCheckout = pedido.MonedaCheckout,
         TarifaEnvioCheckout = pedido.TarifaEnvioCheckout,
@@ -496,7 +497,7 @@ public sealed class PedidoVentaService : IPedidoVentaService
             ProductoTallaSnapshot = x.ProductoTallaSnapshot,
             Cantidad = x.Cantidad,
             PrecioUnitario = x.PrecioUnitario,
-            Total = x.Total
+            Total = pedido.FiscalCheckout is null ? x.Total : Solqaryn.Domain.ValueObjects.FiscalCheckoutSnapshot.Moneda(x.Total)
         }).ToList()
     };
 }

@@ -412,6 +412,7 @@ public sealed partial class TiendaCuentaController : ControllerBase
         Estado = pedido.Estado.ToString(),
         Total = pedido.Total,
         Subtotal = pedido.Subtotal,
+        Fiscal = pedido.FiscalCheckout,
         CostoEnvio = pedido.CostoEnvio,
         Moneda = pedido.MonedaCheckout,
         TarifaEnvio = pedido.TarifaEnvioCheckout,
@@ -424,7 +425,7 @@ public sealed partial class TiendaCuentaController : ControllerBase
             Modelo = x.ProductoModeloSnapshot,
             Cantidad = x.Cantidad,
             PrecioUnitario = x.PrecioUnitario,
-            Total = x.Total
+            Total = pedido.FiscalCheckout is null ? x.Total : Solqaryn.Domain.ValueObjects.FiscalCheckoutSnapshot.Moneda(x.Total)
         }).ToList()
     };
 

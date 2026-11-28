@@ -387,7 +387,8 @@ public class TiendaPublicaTests
             inventario.Object,
             (catalogo ?? new Mock<ICatalogoPublicoService>()).Object,
             (bootstrap ?? new Mock<ITiendaBootstrapService>()).Object,
-            new Mock<ICostoEnvioService>().Object);
+            new Mock<ICostoEnvioService>().Object,
+            global::Solqaryn.Tests.CheckoutFiscalTestSupport.SinImpuestos());
     }
 
     private static void AssertEndpoint(string metodo, string plantilla)

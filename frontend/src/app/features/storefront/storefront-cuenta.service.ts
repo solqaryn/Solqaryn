@@ -1,3 +1,4 @@
+import { fiscalCheckoutValido } from './storefront-checkout.rules';
 import { DOCUMENT } from '@angular/common';
 import { HttpClient, HttpHeaders } from '@angular/common/http';
 import { Injectable, computed, inject, signal } from '@angular/core';
@@ -156,7 +157,7 @@ export class StorefrontCuentaService {
     if (!res.success || !data || !Number.isSafeInteger(data.id) || data.id <= 0 ||
         !Number.isFinite(data.total) || typeof data.subtotal !== 'number' || !Number.isFinite(data.subtotal) ||
         typeof data.costoEnvio !== 'number' || !Number.isFinite(data.costoEnvio) || data.costoEnvio < 0 ||
-        Math.abs(data.total - data.subtotal - data.costoEnvio) > 0.005 ||
+        !fiscalCheckoutValido(data.fiscal, data.subtotal, data.costoEnvio, data.total) ||
         !data.moneda || !/^[A-Z]{3}$/.test(data.moneda) ||
         !Array.isArray(data.lineas) || !data.lineas.length ||
         !Number.isFinite(Date.parse(data.fechaUtc))) {

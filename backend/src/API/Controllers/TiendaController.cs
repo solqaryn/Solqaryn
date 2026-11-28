@@ -21,6 +21,7 @@ public sealed class TiendaController : ControllerBase
     private readonly ICatalogoPublicoService _catalogoPublicoService;
     private readonly ITiendaBootstrapService _bootstrapService;
     private readonly ICostoEnvioService _costoEnvioService;
+    private readonly ICalculoService _calculoService;
 
     public TiendaController(
         IProductoService productoService,
@@ -29,7 +30,8 @@ public sealed class TiendaController : ControllerBase
         IInventarioPublicoService inventarioPublicoService,
         ICatalogoPublicoService catalogoPublicoService,
         ITiendaBootstrapService bootstrapService,
-        ICostoEnvioService costoEnvioService)
+        ICostoEnvioService costoEnvioService,
+        ICalculoService calculoService)
     {
         _productoService = productoService;
         _categoriaService = categoriaService;
@@ -38,6 +40,7 @@ public sealed class TiendaController : ControllerBase
         _catalogoPublicoService = catalogoPublicoService ?? throw new ArgumentNullException(nameof(catalogoPublicoService));
         _bootstrapService = bootstrapService ?? throw new ArgumentNullException(nameof(bootstrapService));
         _costoEnvioService = costoEnvioService ?? throw new ArgumentNullException(nameof(costoEnvioService));
+        _calculoService = calculoService ?? throw new ArgumentNullException(nameof(calculoService));
     }
 
     [HttpGet("bootstrap")]
@@ -125,7 +128,7 @@ public sealed class TiendaController : ControllerBase
     public async Task<IActionResult> ValidarCheckout([FromBody] ValidarCheckoutTiendaDto dto)
     {
         var resultado = await new Solqaryn.Application.Services.CheckoutTiendaService(
-            _productoService, _promocionPublicaService, _inventarioPublicoService, _costoEnvioService).ValidarAsync(dto);
+            _productoService, _promocionPublicaService, _inventarioPublicoService, _costoEnvioService, _calculoService).ValidarAsync(dto);
         if (resultado.Datos is null)
         {
             var fallo = ApiResponse<CheckoutTiendaValidadoDto>.Fail(resultado.Mensaje);

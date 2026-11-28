@@ -1,4 +1,8 @@
+using System.Security.Cryptography;
+using System.Text;
 using Solqaryn.Application.DTOs;
+using Solqaryn.Application.Exceptions;
+using Solqaryn.Domain.ValueObjects;
 using Solqaryn.Application.Interfaces;
 
 namespace Solqaryn.Application.Services;
@@ -8,7 +12,8 @@ public sealed class CheckoutTiendaService(
     IProductoService _productoService,
     IPromocionPublicaService _promocionPublicaService,
     IInventarioPublicoService _inventarioPublicoService,
-    ICostoEnvioService _costoEnvioService) : ICheckoutTiendaService
+    ICostoEnvioService _costoEnvioService,
+    ICalculoService _calculoService) : ICheckoutTiendaService
 {
     private const int MaxLineasCheckout = 50;
     private const int MaxUnidadesPorLinea = 999;
@@ -165,7 +170,7 @@ public sealed class CheckoutTiendaService(
                 PrecioUnitario = precioVigente,
                 PrecioBase = precio,
                 CategoriaId = producto.CategoriaId,
-                Total = precioVigente * solicitud.Unidades
+                Total = FiscalCheckoutSnapshot.Moneda(precioVigente * solicitud.Unidades)
             });
         }
 
@@ -187,11 +192,33 @@ public sealed class CheckoutTiendaService(
 
             primera.Unidades = unidades;
             primera.StockDisponible = stock;
-            primera.Total = primera.PrecioUnitario * unidades;
+            primera.Total = FiscalCheckoutSnapshot.Moneda(primera.PrecioUnitario * unidades);
             normalizadas.Add(primera);
         }
         lineas = normalizadas;
         var subtotal = lineas.Sum(linea => linea.Total);
+        List<DetalleCalculoInput> Bases(bool netas) => lineas.Select(l => new DetalleCalculoInput
+        {
+            ProductoId = l.ProductoId, CategoriaId = l.CategoriaId, Cantidad = l.Unidades,
+            PrecioUnitario = netas ? l.PrecioUnitario : l.PrecioBase
+        }).ToList();
+        FiscalCheckoutSnapshot fiscal;
+        string huellaFiscal;
+        try
+        {
+            var impuestos = await _calculoService.CalcularImpuestosCheckoutPublicoAsync(Bases(false), Bases(true), ahoraUtc);
+            fiscal = new FiscalCheckoutSnapshot(1,
+                lineas.OrderBy(l => l.ProductoId).ThenBy(l => l.ProductoVarianteId)
+                    .Select(l => new FiscalCheckoutLinea(l.ProductoId, l.ProductoVarianteId, l.Unidades,
+                        l.PrecioBase, l.PrecioUnitario)).ToArray(),
+                impuestos.Select(i => new FiscalCheckoutImpuesto(i.ImpuestoId, i.Nombre, i.Codigo,
+                    i.Tasa, i.BaseImponible, i.Monto, i.IncluidoEnPrecio)).ToArray());
+            huellaFiscal = Convert.ToHexString(SHA256.HashData(Encoding.UTF8.GetBytes(fiscal.Serializar()))).ToLowerInvariant();
+        }
+        catch (Exception e) when (e is BusinessRuleException or InvalidOperationException or OverflowException)
+        {
+            return CheckoutTiendaResultado.Conflict("No fue posible validar el desglose fiscal. Contacta al comercio o actualiza el carrito.");
+        }
         // The same resolver used by administration is scoped by verified middleware.
         var tarifa = await _costoEnvioService.ResolverAsync(new ResolverCostoEnvioDto
         {
@@ -210,10 +237,12 @@ public sealed class CheckoutTiendaService(
             ValidacionId = Guid.NewGuid().ToString("N"),
             ExpiraUtc = expira,
             Subtotal = subtotal,
+            Fiscal = fiscal,
+            HuellaFiscal = huellaFiscal,
             CostoEnvio = costoEnvio,
             CostoEnvioId = costoEnvio.HasValue ? tarifa!.Id : null,
             TarifaEnvio = costoEnvio.HasValue ? tarifa!.Nombre : null,
-            Total = subtotal + (costoEnvio ?? 0m),
+            Total = subtotal + (costoEnvio ?? 0m) + fiscal.ImpuestoAdicional,
             Lineas = lineas
         };
 

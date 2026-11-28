@@ -138,10 +138,13 @@ async function llenarComprador(page: Page): Promise<void> {
   await page.getByRole('textbox', { name: 'Notas para el comercio' }).fill('Entregar por la tarde.');
 }
 
-async function mockPedidoPersistido(page: Page, productoId: number, varianteId: number, nombre: string, cantidad: number, precio: number, envio: number, modelo: string | null = null) {
+const fiscalE2e = { version: 1, importeProductos: 4400, subtotal: 4200, totalDescuento: 200, impuestoIncluido: 0, impuestoAdicional: 630,
+  impuestos: [{ nombre: 'Impuesto QA', codigo: 'ISV', monto: 630, incluidoEnPrecio: false }] };
+const huellaFiscalE2e = 'f'.repeat(64);
+async function mockPedidoPersistido(page: Page, productoId: number, varianteId: number, nombre: string, cantidad: number, precio: number, envio: number, modelo: string | null = null, conFiscal = false) {
   let clave = '';
   const pedido = { id: 1234, estado: 'Borrador', moneda: 'HNL', subtotal: cantidad * precio, costoEnvio: envio,
-    total: cantidad * precio + envio, tarifaEnvio: 'Tarifa general de prueba', fechaUtc: new Date().toISOString(),
+    total: cantidad * precio + envio + (conFiscal ? fiscalE2e.impuestoAdicional : 0), fiscal: conFiscal ? fiscalE2e : undefined, tarifaEnvio: 'Tarifa general de prueba', fechaUtc: new Date().toISOString(),
     lineas: [{ productoId, productoVarianteId: varianteId, nombre, modelo, cantidad, precioUnitario: precio, total: cantidad * precio }] };
   await page.route('**/tienda/cuenta/pedidos/checkout**', async route => {
     const headers = { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': '*', 'Access-Control-Allow-Methods': 'POST,GET,OPTIONS' };
@@ -153,6 +156,10 @@ async function mockPedidoPersistido(page: Page, productoId: number, varianteId: 
       expect(body.checkout.items[0]).toMatchObject({ productoId, productoVarianteId: varianteId, unidades: cantidad });
       expect(body.subtotalEsperado).toBe(pedido.subtotal);
       expect(body.envioEsperado).toBe(envio);
+      if (conFiscal) {
+        expect(body.huellaFiscalEsperada).toBe(huellaFiscalE2e);
+        expect(body.totalEsperado).toBe(pedido.total);
+      }
       clave = recibida;
     } else {
       expect(recibida).toBe(clave);
@@ -305,7 +312,7 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
     await prepararEmpresa(page);
     await sembrarCarrito(page, 'bd', modeloClaveReal, 501, 2);
     await mockCatalogoReal(page, 1750, 3);
-    await mockPedidoPersistido(page, 501, productoVarianteReal, 'Producto Checkout Real', 2, 2100, 37, 'Modelo auditoría');
+    await mockPedidoPersistido(page, 501, productoVarianteReal, 'Producto Checkout Real', 2, 2100, 37, 'Modelo auditoría', true);
 
     let requestCheckout: unknown = null;
     await page.route('http://localhost:5005/tienda/checkout/validar', async route => {
@@ -320,9 +327,11 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
             validacionId: referenciaValidada,
             expiraUtc: new Date(Date.now() + 10 * 60 * 1000).toISOString(),
             subtotal: 4200,
+            fiscal: fiscalE2e,
+            huellaFiscal: huellaFiscalE2e,
             costoEnvio: 37,
             tarifaEnvio: 'Tarifa general de prueba',
-            total: 4237,
+            total: 4867,
             lineas: [{
               productoId: 501,
               productoVarianteId: productoVarianteReal,
@@ -359,7 +368,9 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
     await expect(resumen).toContainText('2 ×');
     await expect(resumen).toContainText('2,100');
     await expect(resumen).toContainText('4,200');
-    await expect(resumen).toContainText('4,237');
+    await expect(resumen).toContainText('4,867');
+    await expect(resumen).toContainText('Descuentos');
+    await expect(resumen).toContainText('Impuestos adicionales');
     await expect(resumen).toContainText('Tarifa general de prueba');
     await expect(page.getByRole('button', { name: 'Tarjeta no disponible' })).toBeDisabled();
 
@@ -389,7 +400,8 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
     expect(mensaje).toContain('Subtotal:');
     expect(mensaje).toContain('💰 *TOTAL:');
     expect(mensaje).toContain('4,200');
-    expect(mensaje).toContain('4,237');
+    expect(mensaje).toContain('4,867');
+    expect(mensaje).toContain('Impuestos adicionales');
     expect(mensaje).toContain('Costo de envío:');
     expect(mensaje).toContain('📝 *Nota del cliente*');
     expect(mensaje).toContain('Entregar por la tarde.');
@@ -408,6 +420,8 @@ test.describe('Storefront Fase 6 — checkout y pedido', () => {
     await expect(page).toHaveURL(/\/tienda\/pedido\/erp-1234$/);
     await expect(page.getByRole('heading', { level: 1, name: 'Tu pedido quedó registrado' })).toBeVisible();
     await expect(page.locator('.reference-box')).toContainText('erp-1234');
+    await expect(page.locator('.total-box')).toContainText('Impuestos adicionales');
+    await expect(page.locator('.total-box')).toContainText('4,867');
     await page.reload();
     await expect(page.getByRole('heading', { level: 1, name: 'Tu pedido quedó registrado' })).toBeVisible();
     const guardado = await page.evaluate(() => JSON.stringify(Object.entries(sessionStorage)));

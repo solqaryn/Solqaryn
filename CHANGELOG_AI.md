@@ -1,3 +1,10 @@
+## 2026-11-28 — QA-FN-05 punto 8: fiscalidad del checkout público (candidato)
+
+- Reutiliza cálculo tributario canónico con bases exactas por producto antes/después de promociones públicas. No duplica descuentos, no grava el envío adicional; impuesto incluido informativo e impuesto adicional sumado. Revalida huella SHA-256 y total del resumen antes de crear. No confía en importes del navegador ni concede exenciones no verificadas.
+- Snapshot fiscal versionado dentro del JSON V6 del checkout, campos de entrega conservados, sin DDL ni recálculo de pedidos históricos. Replay histórico conserva fingerprint si las nuevas aserciones son nulas. Desglose en checkout, recibo, WhatsApp y ERP. Cuenta con exención aplicable requiere cotización personalizada. Borrador no consume descuentos, confirma, factura, reserva ni cobra.
+- Regresiones dirigidas de cálculo, snapshot, MySQL con reglas A/B, cambio de impuesto posterior, importes manipulados y navegador. Pendiente CI exacto y certificación desplegada; no se declara cerrado por publicar. QA exclusivamente.
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA FN-05: certificación del checkout comercial durable
 
 - Run 46182209196 SUCCESS: QA_ORDER_CATALOG_CLEANUP=PASS inactive_audit_company=0 y QA_ORDER_FAILED_RUN_CLEANUP_RECOVERY=PASS. Cinco controles del checkout comercial cerrados: ensayo, V6 única, sincronización funcional, pedido real y cierre. Run 46181529540 acreditó borrador ID 3, importes, idempotencia, seguridad A/B y lectura ERP; pedido y fixtures retirados. Render LIVE 88dc7c09, Vercel READY 8c68033e, equivalencia funcional y readiness proxy QA HTTP 200 con DB connected.

@@ -46,7 +46,8 @@ public sealed class TiendaControllerDestacadosTests
             inventario.Object,
             catalogo.Object,
             new Mock<ITiendaBootstrapService>().Object,
-            new Mock<ICostoEnvioService>().Object);
+            new Mock<ICostoEnvioService>().Object,
+            global::Solqaryn.Tests.CheckoutFiscalTestSupport.SinImpuestos());
 
         var result = await controller.GetProductosDestacados(99);
 
@@ -87,7 +88,8 @@ public sealed class TiendaControllerDestacadosTests
             inventario.Object,
             catalogo.Object,
             bootstrap.Object,
-            new Mock<ICostoEnvioService>().Object);
+            new Mock<ICostoEnvioService>().Object,
+            global::Solqaryn.Tests.CheckoutFiscalTestSupport.SinImpuestos());
 
         var result = await controller.GetBootstrap();
 

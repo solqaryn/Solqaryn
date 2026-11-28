@@ -55,6 +55,13 @@
           </section>
 
           <aside class="total-box">
+            @if (pedido.fiscal; as fiscal) {
+              <span>Productos: {{ moneda(fiscal.importeProductos, pedido.moneda) }}</span>
+              <span>Descuentos: −{{ moneda(fiscal.totalDescuento, pedido.moneda) }}</span>
+              <span>Subtotal: {{ moneda(fiscal.subtotal, pedido.moneda) }}</span>
+              <span>Impuestos incluidos: {{ moneda(fiscal.impuestoIncluido, pedido.moneda) }}</span>
+              <span>Impuestos adicionales: {{ moneda(fiscal.impuestoAdicional, pedido.moneda) }}</span>
+            }
             @if (pedido.costoEnvio != null) { <span>Envío: {{ moneda(pedido.costoEnvio, pedido.moneda) }}</span> }
             <span>Total validado</span>
             <strong>{{ moneda(pedido.total, pedido.moneda) }}</strong>

@@ -7,6 +7,8 @@ using Solqaryn.API.Controllers;
 using Solqaryn.Application.Common;
 using Solqaryn.Application.DTOs;
 using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.Services;
+using Solqaryn.Infrastructure.Repositories;
 using Solqaryn.Domain.Entities;
 using Solqaryn.Domain.Enums;
 using Solqaryn.Infrastructure.Persistence;
@@ -48,27 +50,74 @@ public sealed class QaCheckoutPedidoMySqlTests
             await using (var db = new AppDbContext(options, httpContextAccessor: access.Object))
             {
                 tipo = (await db.TipoClientes.SingleAsync(x => x.EsPredeterminado)).Id;
-                var p = new Producto { Nombre = "Producto QA checkout", Precio = 25m, Costo = 10m, Cantidad = 8 };
+                var p = new Producto { Nombre = "Producto QA checkout", Precio = 50m, Costo = 10m, Cantidad = 8 };
                 db.Productos.Add(p);
                 await db.SaveChangesAsync();
                 producto = p.Id;
             }
+            // Real tenant-owned rules: A and B have deliberately different rates.
+            foreach (var tenant in new[] { a, b })
+            {
+                admin.Items["SOLQARYN_AUTHORIZED_EMPRESA_ID"] = tenant;
+                await using var rules = new AppDbContext(options, httpContextAccessor: access.Object);
+                rules.Descuentos.Add(new Descuento { Nombre="Promoción fiscal QA", Tipo=TipoDescuento.Porcentaje,
+                    Valor=tenant==a ? 50m : 10m, Activo=true });
+                rules.Impuestos.Add(new Impuesto { Nombre="Impuesto fiscal QA", Codigo="QA-ISV",
+                    Tipo=TipoImpuesto.Porcentaje, Tasa=tenant==a ? 15m : 99m, Activo=true,
+                    Operaciones={ new ImpuestoOperacion { Operacion=OperacionImpuesto.Venta } } });
+                await rules.SaveChangesAsync();
+            }
+            admin.Items["SOLQARYN_AUTHORIZED_EMPRESA_ID"] = a;
             var resolver = new Mock<ITipoClientePredeterminadoResolver>();
             resolver.Setup(x => x.ResolverIdPredeterminadoAsync()).ReturnsAsync(tipo);
-            var checkout = new Mock<ICheckoutTiendaService>();
-            checkout.Setup(x => x.ValidarAsync(It.IsAny<ValidarCheckoutTiendaDto>()))
-                .ReturnsAsync(CheckoutTiendaResultado.Ok(new CheckoutTiendaValidadoDto
-                {
-                    ExpiraUtc = DateTime.UtcNow.AddHours(1), Subtotal = 50m, CostoEnvio = 7m,
-                    Total = 57m, TarifaEnvio = "Tarifa QA",
-                    Lineas = new() { new() { ProductoId = producto, Nombre = "Producto QA checkout",
-                        Unidades = 2, PrecioUnitario = 25m, Total = 50m, StockDisponible = 8 } }
-                }, "OK"));
+            CheckoutTiendaService ServicioCheckout(AppDbContext db, int tenant)
+            {
+                var productos = new Mock<IProductoService>();
+                if (tenant == a)
+                    productos.Setup(x => x.GetByIdAsync(producto)).ReturnsAsync(new ProductoDto
+                        { Id=producto, Nombre="Producto QA checkout", Activo=true, Precio=50m, Cantidad=8 });
+                var envio = new Mock<ICostoEnvioService>();
+                envio.Setup(x => x.ResolverAsync(It.IsAny<ResolverCostoEnvioDto>()))
+                    .ReturnsAsync(new CostoEnvioDto { Id=1, Nombre="Tarifa QA", Monto=7m, Activo=true });
+                var descuentos = new DescuentoRepository(db);
+                var calculo = new CalculoService(descuentos, new ImpuestoRepository(db), Mock.Of<ICostoEnvioRepository>());
+                return new CheckoutTiendaService(productos.Object, new PromocionPublicaService(descuentos),
+                    Mock.Of<IInventarioPublicoService>(), envio.Object, calculo);
+            }
+            var request = new ValidarCheckoutTiendaDto
+                { Items = new() { new() { ProductoId=producto, Unidades=2 } } };
+            async Task<CheckoutTiendaValidadoDto> CotizarA()
+            {
+                var ctx = new DefaultHttpContext();
+                ctx.Items[AppDbContext.PublicStoreTenantItemKey] = a;
+                ctx.Request.Path = "/tienda/checkout/validar";
+                ctx.Request.Method = "POST";
+                var accessor = new Mock<IHttpContextAccessor>();
+                accessor.SetupGet(x => x.HttpContext).Returns(ctx);
+                await using var db = new AppDbContext(options, httpContextAccessor: accessor.Object);
+                return (await ServicioCheckout(db,a).ValidarAsync(request)).Datos!;
+            }
+            var quote = await CotizarA();
+            Assert.NotNull(quote);
+            Assert.Equal(50m,quote.Subtotal);
+            Assert.Equal(50m,quote.Fiscal!.TotalDescuento);
+            Assert.Equal(7.50m,quote.Fiscal.ImpuestoAdicional);
+            Assert.Equal(64.50m,quote.Total);
+            Assert.Matches("^[a-f0-9]{64}$",quote.HuellaFiscal!);
+            // In B, the exact same fiscal calculator must see only B's 99% rule.
+            admin.Items["SOLQARYN_AUTHORIZED_EMPRESA_ID"] = b;
+            await using (var bd = new AppDbContext(options, httpContextAccessor: access.Object))
+            {
+                var cb = new CalculoService(new DescuentoRepository(bd),new ImpuestoRepository(bd),Mock.Of<ICostoEnvioRepository>());
+                var lineasB = new List<DetalleCalculoInput> { new() { ProductoId=producto, Cantidad=2, PrecioUnitario=25m } };
+                Assert.Equal(49.50m, Assert.Single(await cb.CalcularImpuestosCheckoutPublicoAsync(lineasB,lineasB,DateTime.UtcNow)).Monto);
+            }
+            admin.Items["SOLQARYN_AUTHORIZED_EMPRESA_ID"] = a;
             var dto = new CrearPedidoCheckoutDto
             {
                 Nombre = "Invitado QA", Telefono = "99991111", Correo = "pedido@example.invalid",
                 Checkout = new() { Items = new() { new() { ProductoId = producto, Unidades = 2 } } },
-                SubtotalEsperado = 50m, EnvioEsperado = 7m, MonedaEsperada = "HNL",
+                SubtotalEsperado = 50m, EnvioEsperado = 7m, MonedaEsperada = "HNL", HuellaFiscalEsperada = quote.HuellaFiscal, TotalEsperado = quote.Total,
                 LineasEsperadas = new() { new() { ProductoId = producto, Unidades = 2, PrecioUnitario = 25m } }
             };
             var key = new string('a', 64);
@@ -85,12 +134,14 @@ public sealed class QaCheckoutPedidoMySqlTests
                 var controller = new TiendaCuentaController(db, resolver.Object)
                     { ControllerContext = new ControllerContext { HttpContext = ctx } };
                 return id.HasValue ? await controller.PedidoCheckout(id.Value, default) :
-                    await controller.CrearPedidoCheckout(dto, checkout.Object, default);
+                    await controller.CrearPedidoCheckout(dto, ServicioCheckout(db,tenant), default);
             }
             var primera = Assert.IsType<ObjectResult>(await Call(a, key));
             Assert.Equal(201, primera.StatusCode);
             var pedido = Assert.IsType<ApiResponse<TiendaPedidoCuentaDto>>(primera.Value).Data!;
-            Assert.Equal(57m, pedido.Total);
+            Assert.Equal(64.50m, pedido.Total);
+            Assert.Equal(50m, pedido.Fiscal!.TotalDescuento);
+            Assert.Equal(7.50m, pedido.Fiscal.ImpuestoAdicional);
             Assert.Equal(50m, pedido.Subtotal);
             Assert.Equal(7m, pedido.CostoEnvio);
             Assert.Equal("Borrador", pedido.Estado);
@@ -101,14 +152,36 @@ public sealed class QaCheckoutPedidoMySqlTests
             Assert.IsType<ConflictObjectResult>(await Call(a, key));
             Assert.IsType<ConflictObjectResult>(await Call(a, new string('c', 64)));
             dto.EnvioEsperado = 7m;
-            Assert.IsType<OkObjectResult>(await Call(a, key, pedido.Id));
+            dto.HuellaFiscalEsperada = new string('e',64);
+            Assert.IsType<ConflictObjectResult>(await Call(a, new string('d',64)));
+            dto.HuellaFiscalEsperada = quote.HuellaFiscal;
+            dto.TotalEsperado = 57m;
+            Assert.IsType<ConflictObjectResult>(await Call(a, new string('e',64)));
+            dto.TotalEsperado = quote.Total;
+            await using (var cambios = new AppDbContext(options,httpContextAccessor:access.Object))
+            {
+                var impuesto = await cambios.Impuestos.SingleAsync(i => i.Codigo=="QA-ISV");
+                impuesto.Tasa=20m;
+                await cambios.SaveChangesAsync();
+            }
+            var actualizada = await CotizarA();
+            Assert.Equal(67m,actualizada.Total);
+            Assert.NotEqual(quote.HuellaFiscal,actualizada.HuellaFiscal);
+            Assert.IsType<ConflictObjectResult>(await Call(a,new string('f',64)));
+            var mismo = Assert.IsType<ApiResponse<TiendaPedidoCuentaDto>>(Assert.IsType<OkObjectResult>(await Call(a,key)).Value).Data!;
+            Assert.Equal(64.50m,mismo.Total);
+            var recuperado = Assert.IsType<ApiResponse<TiendaPedidoCuentaDto>>(Assert.IsType<OkObjectResult>(await Call(a, key, pedido.Id)).Value).Data!;
+            Assert.Equal(64.50m, recuperado.Total);
+            Assert.Equal(7.50m, recuperado.Fiscal!.ImpuestoAdicional);
             Assert.IsType<UnauthorizedObjectResult>(await Call(a, null, pedido.Id));
             Assert.IsType<NotFoundObjectResult>(await Call(a, new string('b', 64), pedido.Id));
             Assert.IsType<NotFoundObjectResult>(await Call(b, key, pedido.Id));
             await using var read = new AppDbContext(options);
             var stored = await read.Set<PedidoVenta>().Include(x => x.Detalles).SingleAsync(x => x.Id == pedido.Id);
             Assert.Equal(EstadoPedidoVenta.Borrador, stored.Estado);
-            Assert.Equal(57m, stored.Total);
+            Assert.Equal(64.50m, stored.Total);
+            Assert.Equal(50m, stored.FiscalCheckout!.TotalDescuento);
+            Assert.Equal(7.50m, stored.FiscalCheckout.ImpuestoAdicional);
             Assert.Equal(7m, stored.CostoEnvio);
             Assert.Null(stored.CotizacionId);
             Assert.Single(stored.Detalles);

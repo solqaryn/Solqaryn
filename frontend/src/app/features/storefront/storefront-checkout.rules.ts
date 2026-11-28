@@ -1,5 +1,19 @@
-import { CheckoutEnvioRequest, CheckoutLineaValidada, DatosCompradorCheckout } from './storefront.models';
+import { CheckoutEnvioRequest, CheckoutLineaValidada, DatosCompradorCheckout, FiscalCheckout } from './storefront.models';
 import { normalizarTelefonoWhatsApp } from '../../core/services/whatsapp-share.service';
+
+/** V6 legacy receipts have no fiscal breakdown. New snapshots must reconcile exactly. */
+export function fiscalCheckoutValido(fiscal: FiscalCheckout | null | undefined, subtotal: number, envio: number, total: number): boolean {
+  const igual = (a: number, b: number) => Math.abs(a - b) < 0.005;
+  if (fiscal == null) return igual(total, subtotal + envio);
+  const montos = [fiscal.importeProductos, fiscal.subtotal, fiscal.totalDescuento, fiscal.impuestoIncluido, fiscal.impuestoAdicional];
+  if (fiscal.version !== 1 || !montos.every(m => Number.isFinite(m) && m >= 0) ||
+      !Array.isArray(fiscal.impuestos) || !fiscal.impuestos.every(i => i && Number.isFinite(i.monto) && i.monto > 0 &&
+        typeof i.incluidoEnPrecio === 'boolean' && typeof i.nombre === 'string' && typeof i.codigo === 'string')) return false;
+  return igual(fiscal.subtotal, subtotal) && igual(fiscal.importeProductos - fiscal.totalDescuento, subtotal) &&
+    igual(fiscal.impuestoIncluido, fiscal.impuestos.filter(i => i.incluidoEnPrecio).reduce((s,i) => s+i.monto,0)) &&
+    igual(fiscal.impuestoAdicional, fiscal.impuestos.filter(i => !i.incluidoEnPrecio).reduce((s,i) => s+i.monto,0)) &&
+    igual(total, subtotal + envio + fiscal.impuestoAdicional);
+}
 
 export function urlCheckoutPermitida(url: string, origenesPermitidos: readonly string[]): string {
   try {
@@ -69,7 +83,8 @@ export function mensajeWhatsappCheckout(
   lineas: readonly CheckoutLineaValidada[],
   total: number,
   enlacesProducto: Readonly<Record<number, string>> = {},
-  envio?: { monto: number; nombre: string; cobertura?: CheckoutEnvioRequest }
+  envio?: { monto: number; nombre: string; cobertura?: CheckoutEnvioRequest },
+  fiscal?: FiscalCheckout | null
 ): string {
   const formato = new Intl.NumberFormat('es-HN', { style: 'currency', currency: moneda || 'HNL' });
   const marca = limpiarTextoWhatsapp(comercio || 'Tienda');
@@ -115,6 +130,13 @@ export function mensajeWhatsappCheckout(
     '',
     bloquesProductos,
     '',
+    ...(fiscal ? [
+      `Productos antes de descuentos: ${formato.format(fiscal.importeProductos)}`,
+      `Descuentos aplicados: ${formato.format(fiscal.totalDescuento)}`,
+      `Subtotal productos: ${formato.format(fiscal.subtotal)}`,
+      `Impuestos incluidos (no sumar): ${formato.format(fiscal.impuestoIncluido)}`,
+      `Impuestos adicionales: ${formato.format(fiscal.impuestoAdicional)}`
+    ] : []),
     ...(envio ? [
       '🚚 *Envío*',
       limpiarTextoWhatsapp(envio.nombre),

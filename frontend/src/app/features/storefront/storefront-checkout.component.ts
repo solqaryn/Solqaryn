@@ -153,7 +153,8 @@ export class StorefrontCheckoutComponent implements OnInit {
       this.enlacesProductos(validado),
       this.utilizarDatosBaseDatos() && typeof validado.costoEnvio === 'number'
         ? { monto: validado.costoEnvio, nombre: validado.tarifaEnvio || '', cobertura: this.datosEnvio() }
-        : undefined
+        : undefined,
+      validado.fiscal
     );
     const enlace = construirEnlaceWhatsApp(destino, mensaje);
     if (!enlace) {
@@ -200,6 +201,7 @@ export class StorefrontCheckoutComponent implements OnInit {
       checkout: { items: this.referenciasCheckout(), ...(envio ? { envio } : {}) },
       ...comprador,
       subtotalEsperado: validado.subtotal, envioEsperado: validado.costoEnvio, monedaEsperada: moneda,
+      ...(validado.huellaFiscal ? { huellaFiscalEsperada: validado.huellaFiscal, totalEsperado: validado.total } : {}),
       lineasEsperadas: validado.lineas.map(l => ({
         productoId: l.productoId, productoVarianteId: l.productoVarianteId ?? null,
         unidades: l.unidades, precioUnitario: l.precioUnitario
@@ -229,7 +231,7 @@ export class StorefrontCheckoutComponent implements OnInit {
         const mensaje = mensajeWhatsappCheckout(
           this.identidad.config().nombreComercial || 'Tienda', comprador, `ERP-${pedido.id}`,
           pedido.moneda || moneda, validado.lineas, pedido.total, this.enlacesProductos(validado),
-          { monto: pedido.costoEnvio ?? 0, nombre: pedido.tarifaEnvio || '', cobertura: envio }
+          { monto: pedido.costoEnvio ?? 0, nombre: pedido.tarifaEnvio || '', cobertura: envio }, pedido.fiscal
         );
         const enlace = construirEnlaceWhatsApp(telefonoWhatsapp(this.identidad.config().whatsApp), mensaje);
         this.pedidoRegistrado.set(pedido);

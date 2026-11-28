@@ -162,7 +162,8 @@ public sealed class TiendaControllerExactVariantTests
             inventario.Object,
             (catalogo ?? new Mock<ICatalogoPublicoService>()).Object,
             new Mock<ITiendaBootstrapService>().Object,
-            new Mock<ICostoEnvioService>().Object);
+            new Mock<ICostoEnvioService>().Object,
+            global::Solqaryn.Tests.CheckoutFiscalTestSupport.SinImpuestos());
     }
 
     private static ProductoDto CrearProductoConVariantesAmbiguas() => new()

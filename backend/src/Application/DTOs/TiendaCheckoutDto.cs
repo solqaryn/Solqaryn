@@ -1,3 +1,5 @@
+using Solqaryn.Domain.ValueObjects;
+
 namespace Solqaryn.Application.DTOs;
 
 public sealed class ValidarCheckoutTiendaDto
@@ -30,6 +32,8 @@ public sealed class CheckoutTiendaValidadoDto
     public string ValidacionId { get; set; } = string.Empty;
     public DateTime ExpiraUtc { get; set; }
     public decimal Subtotal { get; set; }
+    public FiscalCheckoutSnapshot? Fiscal { get; set; }
+    public string? HuellaFiscal { get; set; }
     // Null means delivery is not quoted; a configured zero is valid.
     public decimal? CostoEnvio { get; set; }
     [System.Text.Json.Serialization.JsonIgnore]

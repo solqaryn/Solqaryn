@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations.Schema;
+using System.Text.Json.Nodes;
 using Solqaryn.Domain.Common;
 using Solqaryn.Domain.Enums;
 using Solqaryn.Domain.ValueObjects;
@@ -39,12 +41,15 @@ public class PedidoVenta : ConfirmableEntity
     public bool EsEditable => Estado == EstadoPedidoVenta.Borrador;
     public bool EstaConfirmado => Estado == EstadoPedidoVenta.Confirmado;
     public bool EstaAnulado => Estado == EstadoPedidoVenta.Anulado;
-    public decimal Subtotal => _detalles.Sum(x => x.Total);
-    public decimal Total => Subtotal + (CostoEnvio ?? 0m);
+    // Existing V6 JSON envelope: keep delivery fields and historical totals.
+    [NotMapped]
+    public FiscalCheckoutSnapshot? FiscalCheckout => FiscalCheckoutSnapshot.Leer(EntregaCheckoutJson);
+    public decimal Subtotal => FiscalCheckout?.Subtotal ?? _detalles.Sum(x => x.Total);
+    public decimal Total => Subtotal + (CostoEnvio ?? 0m) + (FiscalCheckout?.ImpuestoAdicional ?? 0m);
 
     public static PedidoVenta CrearDesdeCheckout(Cliente cliente,
         IEnumerable<LineaPedidoCheckout> lineas, decimal envio, string moneda,
-        string tarifa, string entregaJson, string? notas, bool invitado)
+        string tarifa, string entregaJson, string? notas, bool invitado, FiscalCheckoutSnapshot? fiscal = null)
     {
         ArgumentNullException.ThrowIfNull(cliente);
         ArgumentNullException.ThrowIfNull(lineas);
@@ -55,6 +60,16 @@ public class PedidoVenta : ConfirmableEntity
             string.IsNullOrWhiteSpace(entregaJson) || entregaJson.Length > 12000 ||
             (notas?.Length ?? 0) > 600)
             throw new InvalidOperationException("El snapshot de checkout no es válido.");
+
+        if (fiscal is not null)
+        {
+            var entrega = JsonNode.Parse(entregaJson) as JsonObject
+                ?? throw new InvalidOperationException("El snapshot de entrega no es válido.");
+            if (entrega.ContainsKey("Fiscal"))
+                throw new InvalidOperationException("El snapshot fiscal debe originarse en el servidor.");
+            entrega["Fiscal"] = JsonNode.Parse(fiscal.Serializar());
+            entregaJson = entrega.ToJsonString();
+        }
 
         var pedido = new PedidoVenta
         {
@@ -201,6 +216,13 @@ public class PedidoVenta : ConfirmableEntity
 
         foreach (var detalle in _detalles)
             detalle.Validar();
+        var fiscal = FiscalCheckout;
+        if (fiscal is not null && (CostoEnvio is null || CotizacionId is not null ||
+            !fiscal.Lineas.Select(l => (l.ProductoId, l.ProductoVarianteId, Cantidad: (decimal)l.Unidades, l.PrecioUnitario))
+                .OrderBy(l => l.ProductoId).ThenBy(l => l.ProductoVarianteId)
+                .SequenceEqual(_detalles.Select(l => (l.ProductoId, l.ProductoVarianteId, l.Cantidad, l.PrecioUnitario))
+                    .OrderBy(l => l.ProductoId).ThenBy(l => l.ProductoVarianteId))))
+            throw new InvalidOperationException("El desglose fiscal no coincide con los detalles del pedido.");
     }
 
     private static void ValidarUsuario(int usuarioId)

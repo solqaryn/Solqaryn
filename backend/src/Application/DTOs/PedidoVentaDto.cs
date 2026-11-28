@@ -14,6 +14,7 @@ public sealed class PedidoVentaDto
     public EstadoPedidoVenta Estado { get; set; }
     public decimal Total { get; set; }
     public decimal Subtotal { get; set; }
+    public Solqaryn.Domain.ValueObjects.FiscalCheckoutSnapshot? FiscalCheckout { get; set; }
     public decimal? CostoEnvio { get; set; }
     public string? MonedaCheckout { get; set; }
     public string? TarifaEnvioCheckout { get; set; }

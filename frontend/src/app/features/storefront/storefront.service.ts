@@ -1,3 +1,4 @@
+import { fiscalCheckoutValido } from './storefront-checkout.rules';
 import { HttpClient, HttpParams } from '@angular/common/http';
 import { Injectable, inject } from '@angular/core';
 import { Observable, map, of, shareReplay, tap, throwError } from 'rxjs';
@@ -197,7 +198,8 @@ export class StorefrontService {
       && data.total >= 0
       && (data.costoEnvio === null || (typeof data.costoEnvio === 'number' && Number.isFinite(data.costoEnvio) && data.costoEnvio >= 0
         && typeof data.tarifaEnvio === 'string' && data.tarifaEnvio.trim().length > 0))
-      && Math.abs(data.total - data.subtotal - (data.costoEnvio ?? 0)) < 0.005
+      && (data.fiscal == null ? data.huellaFiscal == null : typeof data.huellaFiscal === 'string' && /^[a-f0-9]{64}$/.test(data.huellaFiscal))
+      && fiscalCheckoutValido(data.fiscal, data.subtotal, data.costoEnvio ?? 0, data.total)
       && Array.isArray(data.lineas)
       && data.lineas.length > 0
       && data.lineas.every(linea => Number.isSafeInteger(linea.productoId)

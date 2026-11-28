@@ -13,7 +13,7 @@ import { IconoTiendaComponent } from './storefront.visual';
 
 type ReciboPedidoVista = ReciboPedidoPublico | {
   referencia: string; estado: 'pedido-registrado'; estadoErp: string; moneda: string;
-  creadoUtc: string; total: number; costoEnvio?: number;
+  creadoUtc: string; total: number; costoEnvio?: number; fiscal?: TiendaPedidoCuenta['fiscal'];
   lineas: Array<{ productoId: number; productoVarianteId?: number | null; modeloId?: number | null;
     nombre: string; modelo?: string | null; unidades: number; precioUnitario: number; total: number }>;
 };
@@ -85,7 +85,7 @@ export class StorefrontPedidoComponent implements OnInit {
   private mapPedido(pedido: TiendaPedidoCuenta): ReciboPedidoVista {
     return {
       referencia: `erp-${pedido.id}`, estado: 'pedido-registrado', estadoErp: pedido.estado,
-      moneda: pedido.moneda || 'HNL', creadoUtc: pedido.fechaUtc, total: pedido.total,
+      moneda: pedido.moneda || 'HNL', creadoUtc: pedido.fechaUtc, total: pedido.total, fiscal: pedido.fiscal,
       ...(typeof pedido.costoEnvio === 'number' ? { costoEnvio: pedido.costoEnvio } : {}),
       lineas: pedido.lineas.map(l => ({
         productoId: l.productoId, productoVarianteId: l.productoVarianteId, nombre: l.nombre,

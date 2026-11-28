@@ -48,6 +48,7 @@ public sealed class TiendaDireccionGuardarDto
 
 public sealed class TiendaPedidoCuentaDto
 {
+    public Solqaryn.Domain.ValueObjects.FiscalCheckoutSnapshot? Fiscal { get; set; }
     public int Id { get; set; }
     public string Estado { get; set; } = string.Empty;
     public decimal Total { get; set; }
@@ -87,6 +88,11 @@ public sealed class CrearPedidoCheckoutDto
     // Assertions of what the buyer saw; never sources of monetary authority.
     public decimal? SubtotalEsperado { get; set; }
     public decimal? EnvioEsperado { get; set; }
+    // Nulls are omitted to preserve the fingerprint of historical V6 retries.
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public string? HuellaFiscalEsperada { get; set; }
+    [System.Text.Json.Serialization.JsonIgnore(Condition = System.Text.Json.Serialization.JsonIgnoreCondition.WhenWritingNull)]
+    public decimal? TotalEsperado { get; set; }
     public string MonedaEsperada { get; set; } = string.Empty;
     public List<LineaEsperadaPedidoCheckoutDto> LineasEsperadas { get; set; } = new();
 }

@@ -77,14 +77,26 @@ public sealed partial class TiendaCuentaController
                     BadRequest(ApiResponse<object>.Fail(cotizado.Mensaje));
             var moneda = await _db.EmpresaConfiguraciones.AsNoTracking().Where(x => x.Activa)
                 .Select(x => x.Moneda).SingleOrDefaultAsync(ct);
-            if (moneda != dto.MonedaEsperada || datos.CostoEnvio is not decimal envio ||
+            if (moneda is null || moneda != dto.MonedaEsperada || datos.CostoEnvio is not decimal envio ||
+                datos.Fiscal is null || string.IsNullOrEmpty(datos.HuellaFiscal) ||
+                datos.HuellaFiscal != dto.HuellaFiscalEsperada || datos.Total != dto.TotalEsperado ||
                 datos.ExpiraUtc <= DateTime.UtcNow || string.IsNullOrWhiteSpace(datos.TarifaEnvio) ||
                 datos.Subtotal != dto.SubtotalEsperado || envio != dto.EnvioEsperado ||
                 !datos.Lineas.Select(x => (x.ProductoId, x.ProductoVarianteId, x.Unidades, x.PrecioUnitario))
                     .OrderBy(x => x.ProductoId).ThenBy(x => x.ProductoVarianteId)
                     .SequenceEqual(esperadas.Select(x => (x.ProductoId, x.ProductoVarianteId, x.Unidades, x.PrecioUnitario))
                         .OrderBy(x => x.ProductoId).ThenBy(x => x.ProductoVarianteId)))
-                return Conflict(ApiResponse<object>.Fail("Cambió el resumen del pedido. Actualiza precios y envío antes de continuar."));
+                return Conflict(ApiResponse<object>.Fail("Cambió el resumen del pedido. Actualiza precios, impuestos y envío antes de continuar."));
+
+            // Public quote has no verified fiscal customer identity. An authenticated
+            // exempt customer must not be silently charged the public tax rate.
+            if (clienteId.HasValue)
+            {
+                var impuestosAplicados = datos.Fiscal.Impuestos.Select(i => i.ImpuestoId).ToArray();
+                if (impuestosAplicados.Length > 0 && await _db.Impuestos.AsNoTracking().AnyAsync(i =>
+                    impuestosAplicados.Contains(i.Id) && i.ClientesExentos.Any(c => c.ClienteId == clienteId.Value), ct))
+                    return Conflict(ApiResponse<object>.Fail("Tu cuenta requiere una cotización fiscal personalizada. Contacta al comercio."));
+            }
 
             Cliente cliente;
             if (clienteId.HasValue)
@@ -115,7 +127,7 @@ public sealed partial class TiendaCuentaController
             var pedido = PedidoVenta.CrearDesdeCheckout(cliente,
                 datos.Lineas.Select(x => new LineaPedidoCheckout(x.ProductoId, x.ProductoVarianteId,
                     x.Nombre, x.Modelo, x.Sku, x.Unidades, x.PrecioUnitario)),
-                envio, moneda, datos.TarifaEnvio, entrega, notas, clienteId is null);
+                envio, moneda, datos.TarifaEnvio, entrega, notas, clienteId is null, datos.Fiscal);
             pedido.EstablecerIdempotencia(scopedKey, fingerprint);
             _db.AutorizarPedidoCheckout(pedido);
             _db.Set<PedidoVenta>().Add(pedido);

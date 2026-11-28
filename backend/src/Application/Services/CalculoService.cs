@@ -313,6 +313,20 @@ public class CalculoService : ICalculoService
         await _impuestoRepository.SaveChangesAsync();
     }
 
+    // Reuse the fiscal engine without applying storefront discounts a second time.
+    public Task<List<ImpuestoAplicadoDto>> CalcularImpuestosCheckoutPublicoAsync(
+        List<DetalleCalculoInput> preciosBase, List<DetalleCalculoInput> preciosVigentes, DateTime fechaUtc)
+    {
+        if (preciosBase.Count == 0 || preciosBase.Count != preciosVigentes.Count ||
+            !preciosBase.Zip(preciosVigentes).All(p => p.First.ProductoId == p.Second.ProductoId &&
+                p.First.CategoriaId == p.Second.CategoriaId && p.First.Cantidad == p.Second.Cantidad &&
+                p.Second.PrecioUnitario > 0 && p.First.PrecioUnitario >= p.Second.PrecioUnitario))
+            throw new BusinessRuleException("Las bases fiscales del checkout no coinciden.");
+        var bruto = RedondearMoneda(preciosBase.Sum(CalcularSubtotalLinea));
+        return CalcularImpuestosAsync(preciosBase, OperacionImpuesto.Venta, bruto, bruto, 0,
+            clienteId: null, proveedorId: null, detallesNetos: preciosVigentes, fechaUtc: fechaUtc);
+    }
+
     private async Task<List<ImpuestoAplicadoDto>> CalcularImpuestosAsync(
         List<DetalleCalculoInput> detalles,
         OperacionImpuesto operacion,
@@ -320,12 +334,14 @@ public class CalculoService : ICalculoService
         decimal importeProductos,
         decimal totalDescuento,
         int? clienteId,
-        int? proveedorId)
+        int? proveedorId,
+        List<DetalleCalculoInput>? detallesNetos = null, DateTime? fechaUtc = null)
     {
-        var candidatos = await _impuestoRepository.GetVigentesConRelacionesAsync(DateTime.UtcNow, operacion);
+        var candidatos = await _impuestoRepository.GetVigentesConRelacionesAsync(fechaUtc ?? DateTime.UtcNow, operacion);
         var impuestosAplicados = new List<ImpuestoAplicadoDto>();
+        var ordenados = candidatos.OrderBy(i => i.Prioridad);
 
-        foreach (var impuesto in candidatos.OrderBy(i => i.Prioridad))
+        foreach (var impuesto in detallesNetos is null ? ordenados : ordenados.ThenBy(i => i.Id))
         {
             if (operacion == OperacionImpuesto.Venta &&
                 clienteId.HasValue &&
@@ -352,7 +368,10 @@ public class CalculoService : ICalculoService
             // histórica de un impuesto que ya estaba incluido en el precio comercial.
             var importeSujeto = RedondearMoneda(impuesto.IncluidoEnPrecio || impuesto.SeCalculaAntesDescuento
                 ? baseElegibleProductos
-                : Math.Max(0, baseElegibleProductos - descuentoProrrateado));
+                : detallesNetos is not null
+                    ? CalcularBaseElegible(detallesNetos, impuesto.Productos.Select(p => p.ProductoId),
+                        impuesto.Categorias.Select(c => c.CategoriaId))
+                    : Math.Max(0, baseElegibleProductos - descuentoProrrateado));
 
             decimal baseImponible;
             decimal monto;

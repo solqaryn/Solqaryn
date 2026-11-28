@@ -426,6 +426,7 @@ public sealed class TiendaControllerCheckoutTests
             inventario.Object,
             new Mock<ICatalogoPublicoService>().Object,
             new Mock<ITiendaBootstrapService>().Object,
-            (envios ?? new Mock<ICostoEnvioService>()).Object);
+            (envios ?? new Mock<ICostoEnvioService>()).Object,
+            global::Solqaryn.Tests.CheckoutFiscalTestSupport.SinImpuestos());
     }
 }

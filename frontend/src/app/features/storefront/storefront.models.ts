@@ -281,11 +281,23 @@ export interface CheckoutEnvioRequest {
   modalidad?: string;
 }
 
+export interface FiscalCheckout {
+  version: number;
+  importeProductos: number;
+  subtotal: number;
+  totalDescuento: number;
+  impuestoIncluido: number;
+  impuestoAdicional: number;
+  impuestos: Array<{ nombre: string; codigo: string; monto: number; incluidoEnPrecio: boolean }>;
+}
+
 /** Snapshot calculado por el servidor. No equivale a reserva ni a pedido ERP. */
 export interface CheckoutValidado {
   validacionId: string;
   expiraUtc: string;
   subtotal: number;
+  fiscal?: FiscalCheckout | null;
+  huellaFiscal?: string | null;
   costoEnvio?: number | null;
   tarifaEnvio?: string | null;
   total: number;
@@ -307,6 +319,8 @@ export interface CrearPedidoCheckoutRequest {
   notas?: string;
   subtotalEsperado: number;
   envioEsperado: number;
+  huellaFiscalEsperada?: string;
+  totalEsperado?: number;
   monedaEsperada: string;
   lineasEsperadas: Array<{ productoId: number; productoVarianteId?: number | null; unidades: number; precioUnitario: number }>;
 }
@@ -333,6 +347,7 @@ export interface ReciboPedidoPublico {
   creadoUtc: string;
   expiraUtc: string;
   total: number;
+  fiscal?: FiscalCheckout | null;
   costoEnvio?: number;
   moneda: string;
   lineas: CheckoutLineaValidada[];
@@ -393,6 +408,7 @@ export interface TiendaPedidoCuenta {
   estado: string;
   total: number;
   subtotal?: number;
+  fiscal?: FiscalCheckout | null;
   costoEnvio?: number | null;
   moneda?: string | null;
   tarifaEnvio?: string | null;
