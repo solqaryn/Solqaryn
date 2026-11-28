@@ -1,3 +1,9 @@
+## 2026-11-28 — QA-FN-05: corregir harness ERP y verificadores de extracción
+
+- Run 46162271835: fixture fiscal persistido; rechazo del allowlist de verificación SELECT para Clientes. Añadir exclusivamente Clientes y Cotizaciones, conservando comprobación de propietario; relanzar probe sobre runtime desplegado 1c933a47, no atribuir la evidencia a HEAD.
+- Run 46162340256: adaptar las comprobaciones estáticas de fase 4 y 6 al read path y servicio de checkout realmente ejecutados, verificando delegación y los mismos controles de disponibilidad, stock, precio, cobertura y vigencia. Sin relajar invariantes ni tocar UI.
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA-FN-05: cálculo fiscal compartido para checkout
 
 - Extraer validación de carrito, variante, stock, promoción y tarifa a servicio de aplicación reutilizable; mantener ruta pública y contrato JSON, incluyendo regresión de alias físicos. Precio base, categoría y tarifa canónica internos no proceden del cliente ni se serializan.

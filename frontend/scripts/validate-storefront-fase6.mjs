@@ -176,9 +176,9 @@ const envioBack = backendDto.match(/public sealed class CheckoutTiendaEnvioReque
 for (const [block, fields] of [[envioFront, ['departamento','ciudad','zona','modalidad']], [envioBack,['Departamento','Ciudad','Zona','Modalidad']]]) {
   expect(fields.every(field => block.includes(field)) && !/precio|total|stock|monto|costo|empresaId|tarifaId|fecha/i.test(block), 'El envío público acepta exclusivamente cobertura, nunca autoridad monetaria o empresarial.');
 }
+const backendCheckout = await readFile(path.join(repoDir, 'backend/src/Application/Services/CheckoutTiendaService.cs'), 'utf8');
+expect(backendController.includes('[AllowAnonymous]') && backendController.includes('[HttpPost("checkout/validar")]') && backendController.includes('CheckoutTiendaService(') && backendController.includes('.ValidarAsync(dto)'), 'El endpoint público debe delegar la validación al servicio compartido.');
 for (const required of [
-  '[AllowAnonymous]',
-  '[HttpPost("checkout/validar")]',
   '_productoService.GetByIdAsync(solicitud.ProductoId)',
   'producto.Variantes.Where(variante => variante.Activo)',
   'variante.Id == solicitud.ProductoVarianteId.Value',
@@ -197,9 +197,9 @@ for (const required of [
   'Guid.NewGuid().ToString("N")',
   'TimeSpan.FromMinutes(10)'
 ]) {
-  expect(backendController.includes(required), `Backend debe conservar la validación autoritativa: ${required}.`);
+  expect(backendCheckout.includes(required), `Backend debe conservar la validación autoritativa: ${required}.`);
 }
-expect(!backendController.includes('IPedidoVentaService') && !backendController.includes('ICotizacionService'), 'La validación pública no debe saltarse permisos reutilizando servicios administrativos de pedido/cotización.');
+expect(!backendController.includes('IPedidoVentaService') && !backendController.includes('ICotizacionService') && !backendCheckout.includes('IPedidoVentaService') && !backendCheckout.includes('ICotizacionService'), 'La validación pública no debe saltarse permisos reutilizando servicios administrativos de pedido/cotización.');
 
 expect(pedidoService.includes('sessionStorage.setItem'), 'El recibo UX debe persistirse solo en sessionStorage.');
 expect(!pedidoService.includes('localStorage'), 'El recibo UX no debe usar localStorage.');

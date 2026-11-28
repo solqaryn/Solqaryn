@@ -248,7 +248,7 @@ try:
     def number(obj,key,value):
         require(key in obj and Decimal(str(obj[key]))==Decimal(str(value)),"Incorrect "+key)
     def owned_record(table,rid,eid):
-        require(table in ("CuentasBancarias","ConciliacionesBancarias","Categorias","Descuentos","Impuestos","MetodosPago","Compras","Ventas"),"Unexpected fixture table")
+        require(table in ("CuentasBancarias","ConciliacionesBancarias","Categorias","Descuentos","Impuestos","MetodosPago","Compras","Ventas","Clientes","Cotizaciones"),"Unexpected fixture table")
         require(sql(f"SELECT COUNT(*) FROM {table} WHERE Id={rid} AND EmpresaId={eid};","owned record")=="1","Tenant owner not persisted")
     def invoke(token,eid,side,path,label,body=None,expected=200,method="POST"):
         return call(path,"QA_BF_"+label+"_"+side,expected,token=token,tenant=eid,body=body,method=method)

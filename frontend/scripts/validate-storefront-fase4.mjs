@@ -38,6 +38,7 @@ const [
   readFile(path.join(repoDir, 'backend/src/API/Controllers/TiendaController.cs'), 'utf8')
 ]);
 
+const catalogoBackend = await readFile(path.join(repoDir, 'backend/src/Application/Services/CatalogoPublicoService.cs'), 'utf8');
 const failures = [];
 const expect = (condition, message) => { if (!condition) failures.push(message); };
 
@@ -138,7 +139,7 @@ expect(!productScss.includes('--color-background') && !productScss.includes('--c
 
 expect(backendController.includes('[AllowAnonymous]'), 'El controlador público de tienda debe mantenerse anónimo.');
 expect(/\[HttpGet\("productos\/\{slug\}"\)\][\s\S]{0,180}GetProducto\(string slug\)/.test(backendController), 'El backend debe exponer producto público por slug.');
-expect(/producto\s+is\s+null\s+\|\|\s+!producto\.Activo/.test(backendController), 'Producto inexistente o inactivo debe resolverse como no disponible desde la fuente pública.');
+expect(backendController.includes('_catalogoPublicoService.ObtenerDetalleAsync(id,') && /detalle\s+is\s+null\s*\?\s*NotFound/.test(backendController) && /item\s+is\s+null\s+\|\|\s+!item\.Activo/.test(catalogoBackend), 'Producto inexistente o inactivo debe resolverse como no disponible desde la fuente pública.');
 
 if (failures.length) {
   console.error('Fase 4 — validación de detalle público FALLÓ:');

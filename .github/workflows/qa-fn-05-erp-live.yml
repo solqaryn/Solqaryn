@@ -13,7 +13,7 @@ concurrency:
 jobs:
   residual:
     name: Certificacion residual ${{ matrix.scope }} A/B
-    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.run_attempt == 1 && github.event.before == '5b941bcee48a99f7f8e288973810c87b4ff153d9'
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.run_attempt == 1 && github.event.before == '94db0f574a528ced1388a0f4e8e4634197ef40cb'
     runs-on: ubuntu-latest
     environment: QA
     timeout-minutes: 40
@@ -37,14 +37,17 @@ jobs:
           git diff --check "${{ github.event.before }}" HEAD
           # Target the already deployed fiscal/ERP code. Only exact, independently
           # enumerated checkout/online-payment changes may differ from it.
-          git diff --exit-code 1c933a47f7c82f08a4c812e79d134fa7ce41f733 HEAD -- backend frontend render.yaml scripts .agents docs/PROJECT_SCOPE_LOCK.md AGENTS.md \
+          git diff --exit-code 1c933a47f7c82f08a4c812e79d134fa7ce41f733 b426f3fe33c3aa9218159876537a0e56641aace1 -- backend frontend render.yaml scripts .agents docs/PROJECT_SCOPE_LOCK.md AGENTS.md \
             ':!backend/src/API/Controllers/PagosOnlineController.cs' \
             ':!backend/src/API/Controllers/TiendaController.cs' \
             ':!backend/src/Application/Services/PagoOnlineService.cs' \
             ':!backend/tests/Solqaryn.Tests/API/Controllers/TiendaControllerCheckoutTests.cs' \
             ':!backend/tests/Solqaryn.Tests/N78DPagoOnlineServiceTests.cs' \
             ':!backend/tests/Solqaryn.Tests/QaCheckoutPagoOnlineTenantTests.cs'
-          git diff --exit-code b426f3fe33c3aa9218159876537a0e56641aace1 HEAD -- backend frontend render.yaml scripts .agents docs/PROJECT_SCOPE_LOCK.md AGENTS.md
+          git diff --exit-code 94db0f574a528ced1388a0f4e8e4634197ef40cb HEAD -- backend frontend render.yaml scripts .agents docs/PROJECT_SCOPE_LOCK.md AGENTS.md \
+            ':!frontend/scripts/validate-storefront-fase4.mjs' \
+            ':!frontend/scripts/validate-storefront-fase6.mjs'
+          # The probe certifies only the pinned LIVE runtime, not HEAD.
           for run in 46155392630; do
             # Do not start mutations before every exact-SHA gate has passed.
             deadline=$((SECONDS + 600))
