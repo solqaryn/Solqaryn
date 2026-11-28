@@ -12,7 +12,7 @@ concurrency:
   cancel-in-progress: false
 jobs:
   pedido-live:
-    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == 'eb3a0429d26f2e523b73818df9ac3a1352a3a512' && github.run_attempt == 1
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == '5bf6a11078ff6339f3fc34ffd0afe10bec46552d' && github.run_attempt == 1
     runs-on: ubuntu-latest
     timeout-minutes: 25
     environment: QA
@@ -31,6 +31,7 @@ jobs:
           git diff --exit-code 88dc7c095fd63474dfbbe5e7b5ad9d269b8ba5b4 HEAD -- backend frontend render.yaml .agents scripts docs/PROJECT_SCOPE_LOCK.md AGENTS.md
           gh api repos/solqaryn/Solqaryn/actions/runs/46179506984 | jq -e '.head_sha == "88dc7c095fd63474dfbbe5e7b5ad9d269b8ba5b4" and .head_branch == "qa" and .conclusion == "success"' >/dev/null
           gh api repos/solqaryn/Solqaryn/actions/runs/46181529540 | jq -e '.head_sha == "eb3a0429d26f2e523b73818df9ac3a1352a3a512" and .head_branch == "qa" and .status == "completed" and .conclusion == "failure"' >/dev/null
+          test "$(gh api repos/solqaryn/Solqaryn/branches/qa --jq .commit.sha)" = "$GITHUB_SHA"
           python3 -m py_compile .github/qa/qa-fn-05-pedido-real-live.py
       - name: Install QA SQL client
         run: |

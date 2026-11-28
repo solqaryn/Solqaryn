@@ -1,3 +1,8 @@
+## 2026-11-28 — QA FN-05 recuperacion: integridad del script correctivo
+
+- Corrige el ensamblado textual de la expresion regular de identidad y verifica que existe una sola ruta de recuperacion, una sola ruta funcional original y un solo bloque de limpieza. El gate exige HEAD vivo exacto antes de iniciar recuperacion; mantiene alcance, evidencia anterior, proteccion FK y no recrea pedidos.
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA FN-05 pedido real: corregir exclusivamente limpieza de fixtures
 
 - Run 46181529540 sobre eb3a0429d26f2e523b73818df9ac3a1352a3a512: Scope Lock, readiness Render/proxy, cotizacion, pedido real ID 3, persistencia, idempotencia, recibo, ERP A/B, stock y ausencia de efectos enlazados PASS; revocacion/eliminacion IAM y borrado de borrador/cliente PASS. Fallo posterior MySQL 1451/23000 en limpieza conjunta del catalogo sintetico. No repetir pedido ni migracion.
