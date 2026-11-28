@@ -70,6 +70,45 @@ jobs:
           sudo apt-get update
           sudo apt-get install -y mysql-client
 
+      - name: Probar manifiesto con mysqldump real y restauracion local
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          unset DB_HOST DB_PORT DB_NAME DB_USER DB_PASSWORD BACKUP_PASSPHRASE
+          export MYSQL_PWD=solqaryn-ci-qa-disposable-only
+          fixture="$RUNNER_TEMP/qa-checkout-dump-client-fixture.sql"
+          qlocal(){ mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root "$@"; }
+          cleanup(){
+            rm -f "$fixture"
+            qlocal -e 'DROP DATABASE IF EXISTS solqaryn_qa_dump_fixture_restore; DROP DATABASE IF EXISTS solqaryn_qa_dump_fixture;' >/dev/null
+          }
+          trap cleanup EXIT
+          qlocal <<'SQL'
+          CREATE DATABASE solqaryn_qa_dump_fixture CHARACTER SET utf8mb4;
+          CREATE DATABASE solqaryn_qa_dump_fixture_restore CHARACTER SET utf8mb4;
+          USE solqaryn_qa_dump_fixture;
+          CREATE TABLE FilasPrueba (
+            Id INT PRIMARY KEY, Texto TEXT, Binario VARBINARY(32),
+            Calculado INT GENERATED ALWAYS AS (Id+1) STORED
+          ) ENGINE=InnoDB;
+          CREATE TABLE VaciaPrueba (Id INT PRIMARY KEY) ENGINE=InnoDB;
+          INSERT INTO FilasPrueba(Id,Texto,Binario) VALUES
+            (1,CONCAT('comillas ',CHAR(39),', paréntesis ();'),UNHEX('000D0A27')),
+            (2,CONCAT('primera línea',CHAR(10),'INSERT INTO tabla falsa;'),UNHEX('FF005C')),
+            (3,'',NULL);
+          SQL
+          mysqldump --protocol=TCP -h 127.0.0.1 -P 3306 -u root \
+            --single-transaction --skip-lock-tables --no-tablespaces --set-gtid-purged=OFF --skip-extended-insert --hex-blob \
+            --routines --triggers solqaryn_qa_dump_fixture > "$fixture"
+          env -u MYSQL_PWD python3 .github/qa/qa-checkout-v6-verify.py verify-client-dump
+          qlocal solqaryn_qa_dump_fixture_restore < "$fixture"
+          test "$(qlocal -Nse 'SELECT COUNT(*) FROM FilasPrueba' solqaryn_qa_dump_fixture_restore)" = 3
+          test "$(qlocal -Nse 'SELECT COUNT(*) FROM VaciaPrueba' solqaryn_qa_dump_fixture_restore)" = 0
+          query="SELECT Id,HEX(Texto),IFNULL(HEX(Binario),'NULL'),Calculado FROM FilasPrueba ORDER BY Id"
+          test "$(qlocal -Nse "$query" solqaryn_qa_dump_fixture)" = "$(qlocal -Nse "$query" solqaryn_qa_dump_fixture_restore)"
+          echo QA_DUMP_REAL_CLIENT_RESTORE=PASS
+
       - name: Backup transaccional de QA y cifrado AES-256 (sin dump en artefacto)
         id: backup
         shell: bash

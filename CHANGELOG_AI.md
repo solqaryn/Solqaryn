@@ -1,3 +1,9 @@
+## 2026-11-28 — QA checkout: corregir reconocimiento de sentencias del respaldo
+
+- Run 46177508922: Scope Lock y self-test aprobados; dump generado, pero el manifiesto falló en `Invalid single-row dump statement` antes de restaurar. Se elimina la suposición de un formato literal de VALUES y de un terminador en la misma línea. El manifiesto cuenta cabeceras INSERT de la sección exacta (una por fila por --skip-extended-insert); el cliente MySQL valida la sintaxis al restaurar y los conteos exactos de las 138 tablas permanecen obligatorios. Diagnóstico no muestra datos de filas.
+- Regresión de formatos, destino incorrecto, dump truncado, y nuevo ensayo con el mysqldump real del runner sobre dos bases locales desechables: columnas generadas, texto con saltos/comillas, binarios, tabla vacía y comparación exacta de los valores restaurados. Sólo después se lee el respaldo QA. Se mantienen hashes de respaldo, huellas de filas/esquema, IAM, restricciones y migración EF original. Sin cambios en API, frontend, datos vivos ni despliegue manual. Sin migración adicional.
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA checkout: ensayo del respaldo consistente
 - GitHub 46176353879 falló en QA_RESTORE_ROWCOUNT_MISMATCH antes de EF. El control anterior comparaba el dump transaccional con conteos posteriores del origen vivo, que no comparten snapshot. Se conserva el único ensayo de checkout y la misma migración pendiente: manifiesto de las 138 tablas desde el SQL exacto, hash del respaldo y manifiesto, hash del plaintext descifrado, restauración real y conteos locales contra el snapshot. Se mantienen todas las huellas de datos/esquema, IAM, pruebas y guardas. Sin DDL en Aiven y sin migraciones nuevas. Pendiente resultado del ensayo.
 MAPA_ARQUITECTURA: SIN_CAMBIO.

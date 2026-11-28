@@ -13,9 +13,12 @@ def require(ok, reason):
         raise RuntimeError(reason)
 
 require(os.environ.get("CI")=="true" and os.environ.get("GITHUB_REF")=="refs/heads/qa","QA-only rehearsal")
-# --skip-extended-insert yields one complete INSERT per row. Read only
-# table names and counts from the very same transaction-consistent SQL dump.
-# Never query the mutable live database again to compare this snapshot.
+# --skip-extended-insert emits one INSERT statement per exported row.
+# Count statement headers for the current table, not a particular formatting
+# of VALUES or a presumed physical line ending. The real MySQL restore is
+# the SQL parser: any malformed statement must fail the import, and any
+# missing/extra inserted rows must fail the exact count comparison.
+# Never compare this snapshot against later live-source SELECTs.
 def dump_counts(lines):
     structures, counts = set(), {}
     active = None
@@ -36,9 +39,10 @@ def dump_counts(lines):
             active = name
         elif line.startswith(b"UNLOCK TABLES;") or line.startswith(b"-- Table structure for table ") or line.startswith(b"-- Dumping routines") or line.startswith(b"-- Dumping events"):
             active = None
-        elif active is not None and line.startswith(b"INSERT INTO "):
-            expected = b"INSERT INTO " + bytes([96]) + active.encode("ascii") + bytes([96]) + b" VALUES ("
-            require(line.startswith(expected) and line.endswith(b");"), "Invalid single-row dump statement")
+        elif active is not None and re.match(rb"^\s*INSERT\b", line, re.IGNORECASE):
+            header = re.match(rb"^\s*INSERT\s+INTO\s+\x60([A-Za-z0-9_]+)\x60(?=[\s(])", line, re.IGNORECASE)
+            require(header is not None, "Unsupported dump INSERT header in table="+active)
+            require(header[1].decode("ascii") == active, "Dump INSERT targets a different table in section="+active)
             counts[active] += 1
         elif line.startswith(b"-- Dump completed on "):
             complete = True
@@ -50,19 +54,36 @@ if sys.argv[1:] == ["self-test-dump"]:
     fake = [
         b"CREATE TABLE \x60A\x60 (\n", b"-- Dumping data for table \x60A\x60\n",
         b"INSERT INTO \x60A\x60 VALUES (1,'text, (value);');\n",
-        b"INSERT INTO \x60A\x60 VALUES (2,'escaped\\nnewline');\n",
+        b"INSERT INTO \x60A\x60 VALUES(2,'escaped\\nnewline');\n",
+        b"INSERT INTO \x60A\x60 (\x60Id\x60,\x60Texto\x60) VALUES (3,'columns');\n",
+        b"INSERT INTO \x60A\x60 VALUES\n", b"(4,'continued statement');\n",
         b"UNLOCK TABLES;\n", b"CREATE TABLE \x60B\x60 (\n",
         b"-- Dumping data for table \x60B\x60\n", b"UNLOCK TABLES;\n",
         b"-- Dump completed on 2026-11-28\n",
     ]
-    require(dump_counts(fake) == {"A": 2, "B": 0}, "Dump count self-test")
+    require(dump_counts(fake) == {"A": 4, "B": 0}, "Dump count self-test")
     try:
         dump_counts(fake[:-1])
     except RuntimeError:
         pass
     else:
         raise RuntimeError("Truncated dump must be rejected")
+    wrong_target = fake.copy()
+    wrong_target[2] = b"INSERT INTO \x60B\x60 VALUES (1);\n"
+    try:
+        dump_counts(wrong_target)
+    except RuntimeError:
+        pass
+    else:
+        raise RuntimeError("Wrong target must be rejected")
     print("QA_DUMP_MANIFEST_SELF_TEST=PASS", flush=True)
+    sys.exit(0)
+
+if sys.argv[1:] == ["verify-client-dump"]:
+    fixture = pathlib.Path(os.environ["RUNNER_TEMP"]) / "qa-checkout-dump-client-fixture.sql"
+    with fixture.open("rb") as stream:
+        require(dump_counts(stream) == {"FilasPrueba": 3, "VaciaPrueba": 0}, "Actual mysqldump fixture counts differ")
+    print("QA_DUMP_REAL_CLIENT_MANIFEST=PASS", flush=True)
     sys.exit(0)
 
 if sys.argv[1:2] == ["dump-manifest"]:
