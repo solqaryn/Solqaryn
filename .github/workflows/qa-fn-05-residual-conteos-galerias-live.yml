@@ -3,7 +3,7 @@ on:
   push:
     branches: [qa]
     paths:
-      - '.github/workflows/qa-fn-05-residual-inventory-gallery-live.yml'
+      - '.github/workflows/qa-fn-05-residual-conteos-galerias-live.yml'
 permissions:
   contents: read
   actions: read
@@ -13,14 +13,14 @@ concurrency:
 jobs:
   residual:
     name: Certificacion residual ${{ matrix.scope }} A/B
-    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == '1d0a81c937c57d1846cab3b9c1a59e91e76cdf42'
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == '4d80e6109e0e77db1011749ca503e0379e85fb9a'
     runs-on: ubuntu-latest
     environment: QA
     timeout-minutes: 30
     strategy:
       fail-fast: false
       matrix:
-        scope: [gallery, inventory]
+        scope: [gallery, conteos]
     steps:
       - uses: actions/checkout@v4
         with:
@@ -38,7 +38,7 @@ jobs:
           for run in 46112132394 46112132356 46112132405 46112132326 46112132330; do
             gh api "repos/solqaryn/Solqaryn/actions/runs/$run" | jq -e '.head_sha == "1d0a81c937c57d1846cab3b9c1a59e91e76cdf42" and .head_branch == "qa" and .status == "completed" and .conclusion == "success"' >/dev/null
           done
-          python3 -m py_compile .github/qa/qa-fn-05-residual-inventory-gallery-live.py
+          python3 -m py_compile .github/qa/qa-fn-05-residual-conteos-galerias-live.py
           node --check .github/qa/qa-fn-05-gallery-boundary-browser.mjs
           echo QA_RESIDUAL_RUNTIME_EQUIVALENCE=PASS
       - name: Preparar cliente MySQL y BCrypt
@@ -67,4 +67,4 @@ jobs:
           DB_PASSWORD: ${{ secrets.SOLQARYN_QA_DB_PASSWORD }}
         run: |
           set -euo pipefail
-          python3 .github/qa/qa-fn-05-residual-inventory-gallery-live.py "${{ matrix.scope }}"
+          python3 .github/qa/qa-fn-05-residual-conteos-galerias-live.py "${{ matrix.scope }}"

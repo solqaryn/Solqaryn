@@ -3951,3 +3951,5 @@ MAPA_ARQUITECTURA: SIN_CAMBIO.
 - Evidencia: `docs/evidencias/modernizacion/PUNTO_18_CONCURRENCY_STOCK_SEQUENCE_2026-10-04.md`.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+- QA 2026-11-28: corregida nomenclatura de los nuevos archivos de certificación residual conforme al Scope Lock, sin cambiar el control ni el runtime desplegado. La ejecución 46145793424 se detuvo en preflight antes de crear datos de prueba.

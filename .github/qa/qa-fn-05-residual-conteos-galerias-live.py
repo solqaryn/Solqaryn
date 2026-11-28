@@ -1,8 +1,8 @@
-"""Directed QA live boundary and inventory transition probes. Only unique synthetic tenants."""
+"""Directed QA live boundary and conteos transition probes. Only unique synthetic tenants."""
 import sys
 import hashlib
 mode = sys.argv[1] if len(sys.argv) == 2 else ""
-if mode not in ("gallery", "inventory"):
+if mode not in ("gallery", "conteos"):
     raise RuntimeError("Explicit QA residual probe required")
 import struct
 import zlib
@@ -334,8 +334,8 @@ try:
         fixtures={}
         for token,eid,side in identities:
             name=a if side=="A" else b
-            require(sql(f"SELECT COUNT(*) FROM Empresas WHERE Id={eid} AND Nombre='{name}' AND Activa=1;","inventory fixture owner")=="1","Inventory fixture ownership mismatch")
-            require(sql(f"SELECT COUNT(*) FROM Productos WHERE EmpresaId={eid};","inventory fixture empty")=="0","Inventory fixture not empty")
+            require(sql(f"SELECT COUNT(*) FROM Empresas WHERE Id={eid} AND Nombre='{name}' AND Activa=1;","conteos fixture owner")=="1","conteos fixture ownership mismatch")
+            require(sql(f"SELECT COUNT(*) FROM Productos WHERE EmpresaId={eid};","conteos fixture empty")=="0","conteos fixture not empty")
             key=prefix+side
             values=sql(f"""START TRANSACTION;
 INSERT INTO Sucursales (EmpresaId,Codigo,Nombre,Activa,Eliminado,ZonaHoraria,FechaCreacion,FechaActualizacion) VALUES ({eid},'{key}','{key}',1,0,'America/Tegucigalpa',UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
@@ -348,8 +348,8 @@ INSERT INTO ProductoVariantes (EmpresaId,ProductoId,Sku,Cantidad,UmbralStockBajo
 SET @v=LAST_INSERT_ID();
 INSERT INTO ExistenciasVariante (EmpresaId,ProductoVarianteId,AlmacenId,StockFisico,StockReservado,StockTransito,StockMinimo,FechaCreacion,FechaActualizacion) VALUES ({eid},@v,@w,3,0,0,1,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
 COMMIT;
-SELECT @w,@p,@v;""","inventory fixture seed").split("\t")
-            require(len(values)==3 and all(x.isdigit() and int(x)>0 for x in values),"Invalid inventory fixture IDs")
+SELECT @w,@p,@v;""","conteos fixture seed").split("\t")
+            require(len(values)==3 and all(x.isdigit() and int(x)>0 for x in values),"Invalid conteos fixture IDs")
             warehouse,product,variant=map(int,values)
             require(sql(f"SELECT COUNT(*) FROM ExistenciasVariante e JOIN Almacenes al ON al.Id=e.AlmacenId JOIN Sucursales s ON s.Id=al.SucursalId WHERE e.EmpresaId={eid} AND s.EmpresaId={eid} AND e.AlmacenId={warehouse} AND e.ProductoVarianteId={variant} AND e.StockFisico=3;","physical fixture")=="1","Stock ownership mismatch")
             fixtures[side]=(warehouse,product,variant)
@@ -366,7 +366,7 @@ SELECT @w,@p,@v;""","inventory fixture seed").split("\t")
                 where="CantidadContada IS NULL" if captured is None else f"CantidadContada={captured}"
                 require(sql(f"SELECT COUNT(*) FROM ConteoInventarioDetalles WHERE EmpresaId={eid} AND ConteoInventarioId={ident} AND ProductoVarianteId={variant} AND StockEsperadoSnapshot=3 AND SnapshotMaterializado=1 AND {where};","count detail")=="1","Count detail ownership or snapshot mismatch")
         def assert_state(doc,state):
-            require(doc.get("estadoNombre")==state,"Unexpected inventory state")
+            require(doc.get("estadoNombre")==state,"Unexpected conteos state")
         counts={}
         for token,eid,side in identities:
             own=payload(side)
