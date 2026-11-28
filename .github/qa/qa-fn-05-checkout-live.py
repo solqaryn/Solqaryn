@@ -137,7 +137,7 @@ def data(j):
 
 
 from decimal import Decimal
-require(expected_sha=="7ef2a8181939e57363c374cae498bde2dc122f95","Unexpected deployment baseline")
+require(expected_sha=="0d8d89570ccd507996a44c59efa062ad9d757c64","Unexpected deployment baseline")
 def n(query,label):
     value=sql(query,label)
     require(value.isdigit(),label+": expected numeric scalar")
@@ -154,6 +154,7 @@ OR BINARY LOWER(TRIM(e.Nombre))=BINARY LOWER(TRIM(c.NombreVisibleSistema)))) ORD
     raise RuntimeError("Public storefront owner not uniquely established; no fixtures created")
 wait_ready(backend,"QA_CHECKOUT_RENDER_READY")
 wait_ready(proxy,"QA_CHECKOUT_PROXY_READY")
+require(sql("SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261128163400_QaCotizacionEstadoV5';","V5 marker")=="1","V5 absent")
 owner,matched=store()
 # A new B company is active only if A's configured identity is explicit and stable.
 # No modification of the public configuration or any existing business row.
@@ -247,6 +248,15 @@ ORDER BY ((Departamento IS NOT NULL AND TRIM(Departamento)<>'')+(Ciudad IS NOT N
     too_many=payload(pid,vid,c0); too_many["items"][0]["unidades"]=4
     call("/tienda/checkout/validar","QA_CHECKOUT_STOCK_DENIED",409,body=too_many,method="POST")
     require(n(f"SELECT COUNT(*) FROM ExistenciasVariante WHERE EmpresaId={owner} AND ProductoVarianteId={vid} AND StockFisico=3 AND StockReservado=0 AND StockTransito=0;","quote non-mutating stock")==1,"Quote mutated stock")
+    # Test the exact synthetic variant only, while its denormalized quantity
+    # remains 3. Neither zero stock nor missing authoritative rows may sell.
+    sql(f"UPDATE ExistenciasVariante SET StockFisico=0 WHERE EmpresaId={owner} AND ProductoVarianteId={vid} AND StockFisico=3 AND StockReservado=0;","synthetic zero inventory")
+    require(n(f"SELECT COUNT(*) FROM ExistenciasVariante WHERE EmpresaId={owner} AND ProductoVarianteId={vid} AND StockFisico=0;","zero fixture")==1,"Zero fixture not established")
+    call("/tienda/checkout/validar","QA_CHECKOUT_ZERO_AUTHORITATIVE_DENIED",409,body=payload(pid,vid,c0),method="POST")
+    sql(f"DELETE FROM ExistenciasVariante WHERE EmpresaId={owner} AND ProductoVarianteId={vid} AND StockFisico=0 AND StockReservado=0 AND StockTransito=0;","remove synthetic inventory source")
+    require(n(f"SELECT COUNT(*) FROM ExistenciasVariante WHERE EmpresaId={owner} AND ProductoVarianteId={vid};","missing source")==0,"Inventory source remains")
+    require(n(f"SELECT COUNT(*) FROM ProductoVariantes WHERE EmpresaId={owner} AND Id={vid} AND Cantidad=3;","denormalized fixture")==1,"Legacy quantity changed")
+    call("/tienda/checkout/validar","QA_CHECKOUT_MISSING_AUTHORITATIVE_DENIED",409,body=payload(pid,vid,c0),method="POST")
     require(store()[0]==owner,"Public storefront authority changed")
     print("QA_CHECKOUT_LIVE=PASS",flush=True)
 finally:

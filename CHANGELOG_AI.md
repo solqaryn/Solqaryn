@@ -1,3 +1,9 @@
+## 2026-11-28 — QA-FN-05: V5 aplicada; verificación comercial desplegada
+
+- 46167876969 SUCCESS sobre 0d8d8957: respaldo cifrado recuperable, 138 tablas, historial 114, CHECK 1..5, datos e IAM preservados. Artefacto recuperable 15272700827. No repetir V5. Mantenimiento QA solicitado OFF una vez certificado.
+- Pruebas vivas de ERP A/B y cotización pública sobre runtime 0d8d8957 (equivalencia exacta de backend/frontend con cinco gates aprobados); exigir marcador V5, estado convertido persistido, replays de cotización, fiscalidad, cobros, reversión, stock físico cero/ausencia de fuente, denegaciones A/B. Sólo fixtures sintéticos, sin cobros externos. No equivale a integración checkout-pedido ni idempotencia de abonos internos; ambas siguen abiertas. Sin cambios de runtime, arquitectura, DEV o PROD.
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA-FN-05: V5 aplicación única con recuperación y evidencia causal
 
 - SHA e3ef243d: CI 2.549/2.549, barrido integral, Oracle read-only, smoke y ensayo exacto V5 aprobados (46166000244, 46166000158, 46166000191, 46166000134, 46166000275). El ensayo restauró 138 tablas y preservó datos, IAM y demás restricciones; estado 5 permitido, 0/6 rechazados. Aiven aún tiene V4/113 registros.

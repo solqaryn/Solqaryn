@@ -56,7 +56,7 @@ print("EXPECTED_RENDER_SHA=" + expected_sha, flush=True)
 print("RENDER_SHA_REQUIRES_EXTERNAL_ATTESTATION", flush=True)
 
 
-require(expected_sha == "1c933a47f7c82f08a4c812e79d134fa7ce41f733", "Unexpected deployed SHA")
+require(expected_sha == ("0d8d89570ccd507996a44c59efa062ad9d757c64" if mode == "erp" else "1c933a47f7c82f08a4c812e79d134fa7ce41f733"), "Unexpected deployed SHA")
 from decimal import Decimal
 prefix = "qaf" + secrets.token_hex(5)
 a,b,operator,platform = (prefix+x for x in ("A","B","O","P"))
@@ -219,6 +219,9 @@ try:
             time.sleep(5)
     print("QA_BF_MAINTENANCE_OFF_ANONYMOUS_401=PASS",flush=True)
     require(sql("SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261128150000_QaCommercialOwnershipV4';","V4 marker")=="1","V4 absent")
+    if mode == "erp":
+        require(sql("SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261128163400_QaCotizacionEstadoV5';","V5 marker")=="1","V5 absent")
+        require(sql("SELECT COUNT(*) FROM __EFMigrationsHistory;","V5 history")=="114","Unexpected QA history")
     # All identities are synthetic and unique; no existing role or permission is changed.
     statements=["START TRANSACTION;"]
     for suffix,n in (("a",a),("b",b)):
@@ -462,6 +465,7 @@ SELECT @cliente;""","create isolated ERP customer")
                 invoke(token,eid,side,f"/cotizaciones/{qid}/aceptar","QUOTE_ACCEPT")
                 invoke(token,eid,side,f"/cotizaciones/{qid}/convertir","QUOTE_CONVERT")
                 invoke(token,eid,side,f"/cotizaciones/{qid}/convertir","QUOTE_CONVERT_REPLAY")
+                require(sql(f"SELECT COUNT(*) FROM Cotizaciones WHERE EmpresaId={eid} AND Id={qid} AND Estado=5;","converted quote physical")=="1","Converted state not persisted")
                 pid=sql(f"SELECT Id FROM PedidosVenta WHERE EmpresaId={eid} AND CotizacionId={qid} AND ClienteId={clients[side]};","persisted order")
                 require(pid.isdigit() and int(pid)>0,"Order missing or duplicated")
                 require(sql(f"SELECT COUNT(*) FROM PedidoVentaDetalles WHERE EmpresaId={eid} AND PedidoVentaId={int(pid)} AND ProductoId={product} AND ProductoVarianteId={variant} AND Cantidad=2 AND PrecioUnitario=100;","order line")=="1","Order line mismatch")

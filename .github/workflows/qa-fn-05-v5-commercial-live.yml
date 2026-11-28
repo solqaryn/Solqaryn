@@ -1,0 +1,75 @@
+name: QA - FN-05 V5 checkout y documentos ERP vivos
+on:
+  push:
+    branches: [qa]
+    paths:
+      - '.github/workflows/qa-fn-05-v5-commercial-live.yml'
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: qa-fn-05-live-admin
+  cancel-in-progress: false
+jobs:
+  live:
+    name: Certificacion dirigida ${{ matrix.scope }}
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == '0d8d89570ccd507996a44c59efa062ad9d757c64' && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    environment: QA
+    strategy:
+      fail-fast: false
+      max-parallel: 1
+      matrix:
+        scope: [erp, checkout]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Scope y equivalencia del runtime QA
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = refs/heads/qa
+          node scripts/verify-project-scope.mjs
+          git diff --check HEAD^ HEAD
+          git diff --exit-code 0d8d89570ccd507996a44c59efa062ad9d757c64 HEAD -- backend frontend render.yaml scripts .agents docs/PROJECT_SCOPE_LOCK.md AGENTS.md
+          gh api repos/solqaryn/Solqaryn/actions/runs/46167876969 | jq -e '.head_sha == "0d8d89570ccd507996a44c59efa062ad9d757c64" and .head_branch == "qa" and .status == "completed" and .conclusion == "success"' >/dev/null
+          test "$(gh api repos/solqaryn/Solqaryn/branches/qa --jq '.commit.sha')" = "$GITHUB_SHA"
+          python3 -m py_compile .github/qa/qa-fn-05-bancos-fiscal-live.py .github/qa/qa-fn-05-checkout-live.py
+          echo QA_V5_RUNTIME_EQUIVALENCE=PASS
+      - name: Preparar cliente MySQL y BCrypt
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y mysql-client apache2-utils
+      - name: Confirmar servicio operativo antes de crear fixtures
+        run: |
+          set -euo pipefail
+          for base in https://solqaryn.onrender.com https://solqarynqa-nu.vercel.app/api; do
+            ready=false
+            for attempt in $(seq 1 60); do
+              status="$(curl --connect-timeout 10 --max-time 30 -sS -o /dev/null -w '%{http_code}' "$base/cuentas-bancarias" || true)"
+              if [ "$status" = 401 ]; then ready=true; break; fi
+              sleep 10
+            done
+            test "$ready" = true
+          done
+          echo QA_V5_MAINTENANCE_OFF=PASS
+      - name: Certificar exclusivamente datos sinteticos QA
+        env:
+          EXPECTED_DEPLOYED_SHA: '0d8d89570ccd507996a44c59efa062ad9d757c64'
+          DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
+          DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
+          DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}
+          DB_USER: ${{ vars.SOLQARYN_QA_DB_USER }}
+          DB_PASSWORD: ${{ secrets.SOLQARYN_QA_DB_PASSWORD }}
+          SCOPE: ${{ matrix.scope }}
+        run: |
+          set -euo pipefail
+          case "$SCOPE" in
+            erp) python3 .github/qa/qa-fn-05-bancos-fiscal-live.py erp ;;
+            checkout) python3 .github/qa/qa-fn-05-checkout-live.py ;;
+            *) exit 1 ;;
+          esac
