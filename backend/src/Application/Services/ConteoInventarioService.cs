@@ -147,7 +147,7 @@ public sealed class ConteoInventarioService : IConteoInventarioService
                 return;
             }
 
-            detalle.RegistrarConteo(dto.CantidadContada, usuarioId, DateTime.UtcNow);
+            EjecutarReglaConteo(() => detalle.RegistrarConteo(dto.CantidadContada, usuarioId, DateTime.UtcNow));
             MarcarActualizacion(conteo, usuarioId);
             _repository.Update(conteo);
             await _repository.SaveChangesAsync();
@@ -201,7 +201,7 @@ public sealed class ConteoInventarioService : IConteoInventarioService
             {
                 var detalle = detallesPorId[linea.DetalleId];
                 if (detalle.CantidadContada == linea.CantidadContada) continue;
-                detalle.RegistrarConteo(linea.CantidadContada, usuarioId, ahora);
+                EjecutarReglaConteo(() => detalle.RegistrarConteo(linea.CantidadContada, usuarioId, ahora));
                 huboCambios = true;
             }
 
@@ -324,13 +324,27 @@ public sealed class ConteoInventarioService : IConteoInventarioService
                 return;
             }
 
-            accion(conteo, usuarioId, DateTime.UtcNow);
+            EjecutarReglaConteo(() => accion(conteo, usuarioId, DateTime.UtcNow));
             MarcarActualizacion(conteo, usuarioId);
             _repository.Update(conteo);
             await _repository.SaveChangesAsync();
             resultado = conteo;
         });
         return resultado is null ? null : Map(resultado);
+    }
+
+    // Traducir exclusivamente las reglas del agregado. Los fallos de repositorio,
+    // transacción o infraestructura conservan su tratamiento de error interno.
+    private static void EjecutarReglaConteo(Action operacion)
+    {
+        try
+        {
+            operacion();
+        }
+        catch (InvalidOperationException ex)
+        {
+            throw new BusinessRuleException(ex.Message);
+        }
     }
 
     private async Task<List<ConteoInventarioDetalle>> ConstruirDetallesAsync(

@@ -89,14 +89,14 @@ export class CategoriaFormComponent implements OnInit, OnDestroy {
       .pipe(takeUntilDestroyed(this.destroyRef))
       .subscribe({
         next: ({ categoria, galeria }) => {
-          this.loading.set(false);
-          if (!this.contextoValido()) return;
+          if (!this.contextoValido()) { this.loading.set(false); return; }
           this.activa = categoria.data.activa;
           this.form.patchValue({ nombre: categoria.data.nombre, descripcion: categoria.data.descripcion });
           if (galeria?.data) {
             this.version = galeria.data.version;
             this.imagenes.set(galeria.data.imagenes.map(imagen => ({ id: imagen.id, url: imagen.url })));
           }
+          this.loading.set(false);
         },
         error: () => {
           this.loading.set(false);
@@ -118,7 +118,7 @@ export class CategoriaFormComponent implements OnInit, OnDestroy {
     const input = event.target as HTMLInputElement;
     const archivos = Array.from(input.files ?? []);
     input.value = '';
-    if (!archivos.length || this.saving() || this.preparando() || !this.galeriaDisponible() || !this.contextoValido()) return;
+    if (!archivos.length || this.destruido || this.loading() || this.saving() || this.preparando() || !this.galeriaDisponible() || !this.contextoValido()) return;
     if (this.imagenes().length + archivos.length > this.maxImagenes) {
       this.errorGaleria.set('Puedes guardar hasta cinco imágenes por categoría.');
       return;
@@ -135,7 +135,7 @@ export class CategoriaFormComponent implements OnInit, OnDestroy {
         if (this.destruido) return;
         nuevas.push({ archivo: optimizada, url: URL.createObjectURL(optimizada) });
       }
-      if (!this.contextoValido()) return;
+      if (this.destruido || this.loading() || !this.galeriaDisponible() || !this.contextoValido()) return;
       this.imagenes.update(actuales => [...actuales, ...nuevas]);
       this.galeriaModificada = true;
       nuevas.length = 0;
@@ -192,6 +192,11 @@ export class CategoriaFormComponent implements OnInit, OnDestroy {
     if (this.form.invalid || this.form.disabled || this.loading() || this.saving() || this.preparando() || !this.contextoValido()) return;
     this.saving.set(true);
     const contexto = this.tenant.contextoVerificado();
+    // Capturar la selección ya hidratada antes de la confirmación y conservarla
+    // durante la escritura de la categoría y de sus imágenes.
+    const seleccion = [...this.imagenes()];
+    const galeriaModificada = this.galeriaModificada;
+    const version = this.version;
     const confirmado = await this.alerts.confirmar({ titulo: this.isEdit() ? 'Confirmar actualización' : 'Confirmar creación', mensaje: '¿Deseas guardar los datos y fotografías de la categoría?', confirmarTexto: 'Guardar' }).catch(() => false);
     if (!confirmado || this.destruido || !contexto || contexto !== this.tenant.contextoVerificado() || !this.contextoValido() || !this.permisos.puede('Categorias', this.isEdit() ? 'Editar' : 'Crear')) { this.saving.set(false); return; }
     this.errorMessage.set(null);
@@ -209,12 +214,24 @@ export class CategoriaFormComponent implements OnInit, OnDestroy {
       }),
       switchMap(() => {
         if (!this.contextoValido()) return throwError(() => new Error('La empresa activa cambió.'));
-        if (!this.galeriaModificada) return of(null);
+        if (!galeriaModificada) return of(null);
+        if (!this.galeriaDisponible() || !this.permisos.puede('Categorias', 'Editar') || this.version !== version ||
+            this.imagenes().length !== seleccion.length || this.imagenes().some((imagen, i) => imagen !== seleccion[i])) {
+          return throwError(() => new Error('La galería cambió. Vuelve a abrir la categoría antes de guardar.'));
+        }
         const archivos: File[] = [];
-        const orden = this.imagenes().map(imagen => imagen.archivo
+        const orden = seleccion.map(imagen => imagen.archivo
           ? 'n:' + (archivos.push(imagen.archivo) - 1)
           : 'e:' + imagen.id);
-        return this.categoriaService.guardarGaleria(this.categoriaId!, this.version, orden, archivos);
+        return this.categoriaService.guardarGaleria(this.categoriaId!, version, orden, archivos).pipe(
+          tap(res => {
+            const guardadas = res.data?.imagenes;
+            if (!res.success || !res.data?.version || !Array.isArray(guardadas) || guardadas.length !== seleccion.length ||
+                guardadas.some((imagen, i) => !imagen.id || !imagen.url || (seleccion[i].id && imagen.id !== seleccion[i].id))) {
+              throw new Error('No se confirmó la galería completa. Recarga la categoría para verificar las fotografías.');
+            }
+          })
+        );
       }),
       takeUntilDestroyed(this.destroyRef)
     ).subscribe({

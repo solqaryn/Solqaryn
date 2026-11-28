@@ -1,4 +1,8 @@
 using Solqaryn.Application.DTOs;
+using Solqaryn.Application.Exceptions;
+using Solqaryn.API.Middleware;
+using Microsoft.AspNetCore.Http;
+using Microsoft.Extensions.Logging.Abstractions;
 using Solqaryn.Application.Interfaces;
 using Solqaryn.Application.Services;
 using Solqaryn.Domain.Entities;
@@ -41,6 +45,71 @@ public sealed class N17ConteoInventarioIdempotencyTests
         Assert.NotNull(result);
         Assert.Equal(fechaOriginal, detalle.FechaConteo);
         repository.Verify(x => x.Update(It.IsAny<ConteoInventario>()), Times.Never);
+        repository.Verify(x => x.SaveChangesAsync(), Times.Never);
+    }
+
+    [Fact]
+    public async Task Cerrar_SinCapturar_Responde400YSinPersistir()
+    {
+        var (service, repository, _, _) = CrearServicio();
+        var conteo = CrearEnProceso();
+        repository.Setup(x => x.GetByIdForUpdateAsync(10)).ReturnsAsync(conteo);
+        var context = new DefaultHttpContext();
+        context.Response.Body = new MemoryStream();
+        var middleware = new ExceptionHandlingMiddleware(
+            async _ => { await service.CerrarAsync(10); },
+            NullLogger<ExceptionHandlingMiddleware>.Instance);
+
+        await middleware.InvokeAsync(context);
+
+        Assert.Equal(StatusCodes.Status400BadRequest, context.Response.StatusCode);
+        context.Response.Body.Position = 0;
+        using var reader = new StreamReader(context.Response.Body);
+        using var respuesta = System.Text.Json.JsonDocument.Parse(await reader.ReadToEndAsync());
+        Assert.False(respuesta.RootElement.GetProperty("success").GetBoolean());
+        Assert.Contains("Todas las líneas deben estar capturadas", respuesta.RootElement.GetProperty("message").GetString());
+        Assert.Equal(EstadoConteoInventario.EnProceso, conteo.Estado);
+        Assert.Null(conteo.FechaCierre);
+        Assert.Null(conteo.Detalles.Single().Diferencia);
+        repository.Verify(x => x.Update(It.IsAny<ConteoInventario>()), Times.Never);
+        repository.Verify(x => x.SaveChangesAsync(), Times.Never);
+    }
+
+    [Fact]
+    public async Task Aprobar_EnProceso_NoPersiste()
+    {
+        var (service, repository, _, _) = CrearServicio();
+        var conteo = CrearEnProceso();
+        repository.Setup(x => x.GetByIdForUpdateAsync(10)).ReturnsAsync(conteo);
+        await Assert.ThrowsAsync<BusinessRuleException>(() => service.AprobarAsync(10));
+        Assert.Equal(EstadoConteoInventario.EnProceso, conteo.Estado);
+        Assert.Null(conteo.FechaAprobacion);
+        repository.Verify(x => x.SaveChangesAsync(), Times.Never);
+    }
+
+    [Fact]
+    public async Task Cancelar_Aprobado_NoPersiste()
+    {
+        var (service, repository, _, _) = CrearServicio();
+        var conteo = CrearEnProceso();
+        var ahora = new DateTime(2026, 8, 16, 12, 0, 0, DateTimeKind.Utc);
+        conteo.Detalles.Single().RegistrarConteo(8, 7, ahora);
+        conteo.Cerrar(7, ahora);
+        conteo.Aprobar(7, ahora);
+        repository.Setup(x => x.GetByIdForUpdateAsync(10)).ReturnsAsync(conteo);
+        await Assert.ThrowsAsync<BusinessRuleException>(() => service.CancelarAsync(10, "Prueba QA"));
+        Assert.Equal(EstadoConteoInventario.Aprobado, conteo.Estado);
+        Assert.Null(conteo.FechaCancelacion);
+        repository.Verify(x => x.SaveChangesAsync(), Times.Never);
+    }
+
+    [Fact]
+    public async Task ErrorRepositorio_NoSeConvierteEnReglaDeNegocio()
+    {
+        var (service, repository, _, _) = CrearServicio();
+        repository.Setup(x => x.GetByIdForUpdateAsync(10))
+            .ThrowsAsync(new InvalidOperationException("Fallo de infraestructura."));
+        await Assert.ThrowsAsync<InvalidOperationException>(() => service.CerrarAsync(10));
         repository.Verify(x => x.SaveChangesAsync(), Times.Never);
     }
 

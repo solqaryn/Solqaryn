@@ -1,3 +1,11 @@
+## 2026-11-28 — QA: corrección causal de cierre de conteo y guardado de galería
+
+- Ejecución 46146904827: idempotencia física A aprobada; cierre incompleto devolvió 500. Render confirmó InvalidOperationException de ConteoInventario.Cerrar, sin persistencia de cierre. Application traduce exclusivamente las reglas del agregado durante transiciones/captura a BusinessRuleException; middleware existente devuelve 400. Pruebas de contrato HTTP, aprobación/cancelación inválidas, ausencia de persistencia y propagación de errores de repositorio.
+- Galería A: frontera API y selección de originales en UI aprobadas; guardado HTTP 200 con FormData sin selección acreditada y UPDATE de Version sin imágenes. El formulario permitía seleccionar mediante input oculto antes de hidratación y la prueba no esperaba habilitación de la carga. Se bloquea el input y el handler mientras carga, conserva selección/version durante la escritura y valida respuesta completa antes de cerrar. Pruebas de hidratación diferida y respuesta incompleta. La hipótesis de carrera debe verificarse en la nueva certificación real; no se afirma causa exclusiva sin evidencia.
+- Cloudinary: acuse DELETED correlacionado con el hash emitido por job 140984844056 a las 12:56:16 UTC, recurso sintético A. Render LIVE cf3b75c8, Scope Lock y gates generales previos aprobados. No se declara borrado físico A/B ni cierre integral. Sin cambios de schema, contrato HTTP público, rutas, roles, dependencias o arquitectura. El workflow dirigido debe relanzarse tras CI y despliegues del nuevo SHA.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA: diagnóstico causal de certificación residual y verificación de acuses
 
 - Ejecución 46145919035: job 140981847436 acredita API frontera exacta y +1 byte A, selección navegador A; falla guardado UI. Render registra actualización de versión de galería sin carga acreditada. Se evita interceptar multipart del mismo origen en Chromium, se observa FormData real sin alterar payload y se exigen respuesta, cabeceras, tamaño, imagen persistida y lectura DB. Se añaden marcadores de etapa sanitizados; la causa de transporte deberá confirmarse con la nueva ejecución. No se relajan aserciones.
