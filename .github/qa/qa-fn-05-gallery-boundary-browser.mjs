@@ -8,7 +8,7 @@ const chunks=[];
 for await(const chunk of process.stdin) chunks.push(chunk);
 const spec=JSON.parse(Buffer.concat(chunks).toString('utf8'));
 const base='https://solqarynqa-nu.vercel.app';
-if(process.env.GITHUB_REF!=='refs/heads/qa'||process.env.GITHUB_REPOSITORY!=='solqaryn/Solqaryn'||spec.base!==base||!['A','B'].includes(spec.side)||!Number.isSafeInteger(spec.tenant)||spec.tenant<=0||!Number.isSafeInteger(spec.category)||spec.category<=0||!/^qar[0-9a-f]{10}-[AB]-limite$/.test(spec.name)||statSync(spec.good).size!==15*1024*1024||statSync(spec.bad).size!==15*1024*1024+1) throw new Error('QA browser scope');
+if(process.env.GITHUB_REF!=='refs/heads/qa'||process.env.GITHUB_REPOSITORY!=='solqaryn/Solqaryn'||spec.base!==base||!['A','B'].includes(spec.side)||!Number.isSafeInteger(spec.tenant)||spec.tenant<=0||!Number.isSafeInteger(spec.category)||spec.category<=0||!/^qar[0-9a-f]{10}-[AB]-limite$/.test(spec.name)||!(/^[0-9a-fA-F]{32}$/).test(spec.version)||statSync(spec.good).size!==15*1024*1024||statSync(spec.bad).size!==15*1024*1024+1) throw new Error('QA browser scope');
 const browser=await chromium.launch({headless:true});
 let stage='LOGIN';
 const mark=label=>console.log('QA_GALLERY_UI_'+label+'_'+spec.side+'=PASS');
@@ -23,7 +23,8 @@ try {
   });
   // Observe the UI-created FormData without modifying arguments, requests or responses.
   // Do not log form content, headers, tokens, file names or tenant identifiers.
-  await context.addInitScript(()=>{
+  await context.addInitScript(expectedVersion=>{
+    Object.defineProperty(window,'__qaExpectedGalleryVersion',{value:expectedVersion});
     const append=FormData.prototype.append,forms=new WeakMap(),observed=[];
     Object.defineProperty(window,'__qaGalleryForms',{value:observed});
     FormData.prototype.append=function(name,value,...rest){
@@ -31,12 +32,12 @@ try {
       if(!['Version','Orden','Archivos'].includes(name))return result;
       let entry=forms.get(this);
       if(!entry){entry={version:0,order:[],files:[]};forms.set(this,entry);observed.push(entry);}
-      if(name==='Version')entry.version++;
+      if(name==='Version'){entry.version++;entry.versionMatches=typeof value==='string'&&value===window.__qaExpectedGalleryVersion;}
       if(name==='Orden')entry.order.push(typeof value==='string'&&value==='n:0');
       if(name==='Archivos')entry.files.push({blob:value instanceof Blob,size:value instanceof Blob?value.size:0,webp:value instanceof Blob&&value.type==='image/webp'});
       return result;
     };
-  });
+  },spec.version);
   const page=await context.newPage();
   page.setDefaultTimeout(25000);
   await page.goto(base+'/login');
@@ -51,13 +52,22 @@ try {
   await page.goto(base+'/categorias');
   const row=page.getByRole('row').filter({has:page.getByText(spec.name,{exact:true})});
   await expect(row).toHaveCount(1);
+  const hydrated=page.waitForResponse(r=>new URL(r.url()).origin===base&&new URL(r.url()).pathname==='/api/categorias/'+spec.category+'/imagenes'&&r.request().method()==='GET',{timeout:30000});
   await row.locator('button[title="Editar"]').click();
   const dialog=page.getByRole('dialog',{name:'Editar registro'});
   await expect(dialog).toBeVisible();
   await expect(dialog.locator('.gallery-help')).toContainText('Hasta 15 MB por fotografía');
   const input=dialog.locator('input[type=file]');
   const count=dialog.locator('.gallery-count');
+  stage='HYDRATION';
+  const loaded=await hydrated;
+  const gallery=await loaded.json();
+  if(loaded.status()!==200||loaded.headers()['x-solqaryn-environment']!=='QA'||gallery.success!==true||gallery.data?.version!==spec.version||gallery.data?.imagenes?.length!==0)throw new Error('Unexpected initial gallery');
+  await expect(dialog.locator('input[formcontrolname="nombre"]')).toHaveValue(spec.name);
+  await expect(dialog.locator('.gallery-upload')).toBeEnabled();
+  await expect(input).toBeEnabled();
   await expect(count).toHaveText('0 / 5');
+  mark('HYDRATED');
   stage='OVERSIZE';
   await input.setInputFiles(spec.bad);
   await expect(dialog.locator('.category-gallery [role=alert]')).toContainText('hasta 15 MB cada una');
@@ -67,6 +77,9 @@ try {
   await input.setInputFiles(spec.good);
   await expect(count).toHaveText('1 / 5',{timeout:35000});
   await expect(dialog.locator('.category-gallery [role=alert]')).toHaveCount(0);
+  await expect(input).toBeEnabled();
+  await expect(dialog.getByRole('button',{name:'Guardar',exact:true})).toBeEnabled();
+  await expect(dialog.locator('.gallery-item img')).toHaveCount(1);
   mark('EXACT_15_MIB_ACCEPTED');
   stage='SAVE_RESPONSE';
   const write=page.waitForResponse(r=>new URL(r.url()).origin===base&&new URL(r.url()).pathname==='/api/categorias/'+spec.category+'/imagenes'&&r.request().method()==='PUT',{timeout:60000});
@@ -81,7 +94,8 @@ try {
   mark('MULTIPART_AUTHORITY');
   stage='FORMDATA';
   const forms=await page.evaluate(()=>window.__qaGalleryForms);
-  const matches=forms.filter(form=>form.version===1&&form.order.length===1&&form.order[0]===true&&form.files.length===1);
+  const matches=forms.filter(form=>form.version===1&&form.versionMatches===true&&form.order.length===1&&form.order[0]===true&&form.files.length===1);
+  console.log('QA_GALLERY_UI_TOTAL_FORMS_'+spec.side+'='+forms.length);
   console.log('QA_GALLERY_UI_MATCHING_FORMS_'+spec.side+'='+matches.length);
   if(matches.length!==1)throw new Error('UI did not construct expected FormData');
   const file=matches[0].files[0];

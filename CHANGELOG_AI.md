@@ -1,3 +1,11 @@
+## 2026-11-28 — QA: certificación residual separada por empresa y rechazo transaccional
+
+- Se retoma el commit 34dc85f4, con Scope Lock y regresión de hidratación/guardado de galerías aprobados. El workflow residual fija este SHA y comprueba sus cuatro ejecuciones causales SUCCESS y equivalencia del runtime antes de abrir fixtures.
+- Se separan las pruebas de galería A y B en jobs independientes para que una incidencia no oculte la evidencia de la otra empresa. Se espera GET real de galería, versión física, nombre de categoría e input habilitado antes de seleccionar. Se mantiene prueba del original exacto y +1 byte, optimización, multipart, lectura persistida y referencia hash para acuse Cloudinary. Los conteos conservan pruebas cruzadas A/B y exigen HTTP 400 en cierre incompleto/cancelación prohibida y cabecera sin mutar. No se certifica por anticipado.
+- Se conserva evidencia anterior del acuse DELETED de A e idempotencia física A; el cierre definitivo depende de los resultados de los nuevos recorridos y sus acuses. Sólo fixtures QA; sin cambio de runtime, esquema, dependencias, arquitectura, autoridades o automatizaciones.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA: corrección causal de cierre de conteo y guardado de galería
 
 - Ejecución 46146904827: idempotencia física A aprobada; cierre incompleto devolvió 500. Render confirmó InvalidOperationException de ConteoInventario.Cerrar, sin persistencia de cierre. Application traduce exclusivamente las reglas del agregado durante transiciones/captura a BusinessRuleException; middleware existente devuelve 400. Pruebas de contrato HTTP, aprobación/cancelación inválidas, ausencia de persistencia y propagación de errores de repositorio.

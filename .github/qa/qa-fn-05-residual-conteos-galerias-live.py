@@ -2,7 +2,7 @@
 import sys
 import hashlib
 mode = sys.argv[1] if len(sys.argv) == 2 else ""
-if mode not in ("gallery", "conteos"):
+if mode not in ("gallery-a", "gallery-b", "conteos"):
     raise RuntimeError("Explicit QA residual probe required")
 import struct
 import zlib
@@ -56,7 +56,7 @@ print("EXPECTED_RENDER_SHA=" + expected_sha, flush=True)
 print("RENDER_SHA_REQUIRES_EXTERNAL_ATTESTATION", flush=True)
 
 
-require(expected_sha == "cf3b75c8de9289838fac8db68cbe45662de38b4a", "Unexpected deployed SHA")
+require(expected_sha == "34dc85f4b3f8414a6cd334326ee586faba8b8384", "Unexpected deployed SHA")
 from decimal import Decimal
 prefix = "qar" + secrets.token_hex(5)
 a,b,operator,platform = (prefix+x for x in ("A","B","O","P"))
@@ -69,7 +69,7 @@ def grant(code):
     value=sql(f"SELECT Id FROM Permisos WHERE Codigo='{code}' AND Ambito=1 AND Activo=1 AND Eliminado=0;","shipping grant")
     require(value.isdigit(),"Missing unique active shipping permission")
     return int(value)
-grants=tuple(grant("CATEGORIAS."+action) for action in ("VER","CREAR","EDITAR","ACTIVAR","DESACTIVAR","ELIMINARLOGICO")) if mode=="gallery" else tuple(grant("MOVIMIENTOSINVENTARIO."+action) for action in ("VER","CREAR","EDITAR","CAMBIARESTADO","CERRAR","APROBAR","ANULAR"))
+grants=tuple(grant("CATEGORIAS."+action) for action in ("VER","CREAR","EDITAR","ACTIVAR","DESACTIVAR","ELIMINARLOGICO")) if mode.startswith("gallery-") else tuple(grant("MOVIMIENTOSINVENTARIO."+action) for action in ("VER","CREAR","EDITAR","CAMBIARESTADO","CERRAR","APROBAR","ANULAR"))
 def new_password():
     return "Qa!7" + secrets.token_urlsafe(32)
 passwords = {n: new_password() for n in (a,b,operator,platform)}
@@ -273,7 +273,7 @@ try:
 
     identities=((ta,ea,"A"),(tb,eb,"B"))
     denial=(400,403,404,409,422)
-    if mode=="gallery":
+    if mode.startswith("gallery-"):
         def png_size(size):
             image=png((24,90,164))
             def chunk(kind,payload):
@@ -293,7 +293,9 @@ try:
         limit=15*1024*1024
         exact=png_size(limit)
         over=png_size(limit+1)
-        for token,eid,side in identities:
+        selected=[identity for identity in identities if identity[2].lower()==mode[-1]]
+        require(len(selected)==1,"Gallery matrix tenant not selected")
+        for token,eid,side in selected:
             name=prefix+"-"+side+"-limite"
             item=data(call("/categorias","QA_RESIDUAL_GALLERY_CREATE_"+side,201,token=token,tenant=eid,body={"nombre":name,"activa":True},method="POST"))
             cid=item["id"]
@@ -319,7 +321,7 @@ try:
                 bad=pathlib.Path(tmp)/"oversize.png"
                 good.write_bytes(exact)
                 bad.write_bytes(over)
-                spec={"base":"https://solqarynqa-nu.vercel.app","user":a if side=="A" else b,"password":passwords[a if side=="A" else b],"tenant":eid,"side":side,"category":cid,"name":name,"good":str(good),"bad":str(bad)}
+                spec={"base":"https://solqarynqa-nu.vercel.app","user":a if side=="A" else b,"password":passwords[a if side=="A" else b],"tenant":eid,"side":side,"category":cid,"name":name,"version":cleared["version"],"good":str(good),"bad":str(bad)}
                 browser=subprocess.run(["node",".github/qa/qa-fn-05-gallery-boundary-browser.mjs"],input=json.dumps(spec),text=True,capture_output=True,timeout=180)
                 for line in browser.stdout.splitlines():
                     if re.fullmatch(r"QA_GALLERY_UI_[A-Z0-9_]+=(?:PASS|FAIL|[0-9]{1,9})",line):
@@ -330,7 +332,7 @@ try:
             receipts=persisted(eid,cid,state)
             require(len(receipts)==1,"Expected browser receipt reference")
             print("QA_GALLERY_EXPECT_DELETE_UI_"+side+"="+receipts[0],flush=True)
-        print("QA_GALLERY_BOUNDARY_API_AND_BROWSER_AB=PASS",flush=True)
+        print("QA_GALLERY_BOUNDARY_API_AND_BROWSER_"+selected[0][2]+"=PASS",flush=True)
         print("QA_GALLERY_PHYSICAL_DELETE_REQUIRES_RENDER_RECEIPTS",flush=True)
     else:
         # The product/warehouse/stock seed follows the existing QA checkout fixture
@@ -432,7 +434,10 @@ SELECT @w,@p,@v;""","conteos fixture seed").split("\t")
             require(utc_value(repeated.get("fechaInicio"))==persisted_time,"Repeated start returned another persisted timestamp")
             require(persisted_start()==before,"Repeated start mutated persisted timestamp, actor or state")
             print("QA_COUNT_IDEMPOTENT_PHYSICAL_"+side+"=PASS",flush=True)
-            request(path+"/cerrar","INCOMPLETE_CLOSE_DENIED_"+side,token,eid,method="POST",expected=denial)
+            request(path+"/cerrar","INCOMPLETE_CLOSE_DENIED_"+side,token,eid,method="POST",expected=400)
+            require(persisted_start()==before,"Rejected close changed header")
+            require(sql(f"SELECT COUNT(*) FROM ConteosInventario WHERE EmpresaId={eid} AND Id={ident} AND FechaCierre IS NULL AND CerradoPorUsuarioId IS NULL;","rejected close")=="1","Rejected close set a closing date or actor")
+            persisted_count(eid,ident,2,own)
             request(path+"/detalles/"+str(details[other])+"/captura","FOREIGN_LINE_DENIED_"+side,token,eid,{"cantidadContada":99},"PUT",denial)
             persisted_count(eid,ident,2,own)
             quantity=4 if side=="A" else 3
@@ -451,7 +456,9 @@ SELECT @w,@p,@v;""","conteos fixture seed").split("\t")
             approved=request(path+"/aprobar","APPROVE_"+side,token,eid,method="POST")
             assert_state(approved,"Aprobado")
             persisted_count(eid,ident,4,own,quantity)
-            request(path+"/cancelar","APPROVED_CANCEL_DENIED_"+side,token,eid,{"motivo":"Prueba QA"},"POST",denial)
+            request(path+"/cancelar","APPROVED_CANCEL_DENIED_"+side,token,eid,{"motivo":"Prueba QA"},"POST",400)
+            persisted_count(eid,ident,4,own,quantity)
+            require(sql(f"SELECT COUNT(*) FROM ConteosInventario WHERE EmpresaId={eid} AND Id={ident} AND FechaCancelacion IS NULL AND CanceladoPorUsuarioId IS NULL;","rejected cancellation")=="1","Rejected cancellation mutated header")
             if side=="A":
                 adjustment=request(path+"/generar-ajuste","ADJUSTMENT_DRAFT_A",token,eid,method="POST")
                 aid=adjustment["id"]
@@ -510,4 +517,4 @@ COMMIT;""","revoke gallery fixtures")
 +(SELECT COUNT(*) FROM Empresas WHERE Nombre IN {names} AND Activa=1);""","gallery cleanup readback")=="0","Fixture authority not revoked")
             print("QA_GALLERY_FIXTURES_REVOKED=PASS",flush=True)
 
-print("QA_RESIDUAL_"+mode.upper()+"_CERTIFICATE=PASS",flush=True)
+print("QA_RESIDUAL_"+mode.upper().replace("-","_")+"_CERTIFICATE=PASS",flush=True)
