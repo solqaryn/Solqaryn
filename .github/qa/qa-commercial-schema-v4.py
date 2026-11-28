@@ -62,7 +62,16 @@ require(len(v2_tables) == 4 and len(v2_edges) == 5 and len(v2_unique) == 3, "V2 
 require(scalar("SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261126211000_QaCommercialOwnershipV2'") == "1", "V2 migration not recorded")
 require(scalar("SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261126223000_QaCommercialOwnershipV3'") == "1", "V3 migration not recorded")
 require(scalar("SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261128150000_QaCommercialOwnershipV4'") == "1", "V4 migration not recorded")
-require(scalar("SELECT COUNT(*) FROM __EFMigrationsHistory") == "113", "Unexpected migration history")
+v5_marker = scalar("SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261128163400_QaCotizacionEstadoV5'")
+require(v5_marker in ("0", "1"), "Unexpected V5 marker")
+history = 113 + int(v5_marker)
+require(scalar("SELECT COUNT(*) FROM __EFMigrationsHistory") == str(history), "Unexpected migration history")
+quote_check = scalar("SELECT CONCAT(t.ENFORCED,':',c.CHECK_CLAUSE) FROM INFORMATION_SCHEMA.TABLE_CONSTRAINTS t JOIN INFORMATION_SCHEMA.CHECK_CONSTRAINTS c ON c.CONSTRAINT_SCHEMA=t.CONSTRAINT_SCHEMA AND c.CONSTRAINT_NAME=t.CONSTRAINT_NAME WHERE t.CONSTRAINT_SCHEMA=DATABASE() AND t.TABLE_NAME='Cotizaciones' AND t.CONSTRAINT_NAME='CK_Cotizaciones_Estado' AND t.CONSTRAINT_TYPE='CHECK'")
+normalized_check = re.sub(r"[\s`()]", "", quote_check).lower()
+require(normalized_check == ("yes:estadoin1,2,3,4,5" if v5_marker == "1" else "yes:estadoin0,1,2,3,4"), "Quote constraint and migration marker disagree")
+if v5_marker == "1":
+    require(scalar("SELECT COUNT(*) FROM Cotizaciones WHERE Estado IS NULL OR Estado NOT IN (1,2,3,4,5)") == "0", "Invalid persisted quote states")
+print("QA_ERP_COTIZACION_CHECK=" + ("PASS_V5" if v5_marker == "1" else "PENDING_V5"))
 v3 = json.loads(pathlib.Path(".github/qa/qa-commercial-v3-ef-manifest.json").read_text())
 v3_tables = v3["tableNames"]
 v3_edges = v3["edges"] + [v3["gallery"]]
@@ -191,5 +200,5 @@ for e in v4_edges:
     fk(e["child"],e["fk"],e["cc"],e["parent"],e["pp"],"CASCADE" if e["cascade"] else "RESTRICT")
 for (t,ix),cols in v4_unique.items():
     index(t,ix,["EmpresaId",*cols],True)
-print("QA_COMMERCIAL_V4_SCHEMA_EXACT=PASS v1_v2_tables=31 v3_owner_tables=29 gallery=1 v3_edges=52 v3_natural_keys=12 v3_triggers=10 v4_owner_tables=8 v4_edges=17 v4_keys=2 history=113 baseline_preserved=YES")
+print(f"QA_COMMERCIAL_V4_SCHEMA_EXACT=PASS v1_v2_tables=31 v3_owner_tables=29 gallery=1 v3_edges=52 v3_natural_keys=12 v3_triggers=10 v4_owner_tables=8 v4_edges=17 v4_keys=2 history={history} baseline_preserved=YES")
 print("QA_DATABASE_WRITES=0")

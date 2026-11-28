@@ -1,3 +1,10 @@
+## 2026-11-28 — QA-FN-05: preparar migración de reconciliación de estado de cotización
+
+- Run 46165777340 confirmó CHECK físico 0..4, una cotización en estado 3 con fechas coherentes y cero estados fuera del modelo. Modelo/snapshot Oracle ya exigen 1..5. V5 reemplaza el CHECK por uno enforced 1..5 en un único ALTER; no cambia estados históricos, FKs, RBAC, API, ni esquema de propiedad. Down deliberadamente no reinterpreta estados; recuperación mediante respaldo verificado.
+- Ensayo exacto EF sólo en copia local restaurada: compara huellas de todas las filas, columnas, índices, FKs, demás checks y triggers; comprueba 5 permitido y 0/6 rechazados con rollback de prueba. Fuente QA sólo lectura. Auditor V4 conserva su evidencia y distingue V5 pendiente/aplicada. No se ha aplicado V5 a Aiven.
+- Run 46165681382: corregir los dos fixtures que no devolvían existencia autoritativa; conservar el contrato y sus verificaciones de variante exacta, oferta y stock cero. Sin reducir controles.
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA-FN-05: diagnóstico físico ERP sin escritura
 
 - Contrastar las restricciones reales de cotizaciones, pedidos, facturas y cobros con sus modelos y los conteos agregados de estados antes de proponer DDL. Solo SELECT sobre QA, transacciones READ ONLY, sin datos personales, sin modificaciones de esquema ni migraciones. Identidad, versión y marcador V4 obligatorios.

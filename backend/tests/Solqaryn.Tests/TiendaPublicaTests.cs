@@ -106,7 +106,14 @@ public class TiendaPublicaTests
         promociones.Setup(x => x.ResolverAsync(41, 5, 500m, It.IsAny<DateTime>()))
             .ReturnsAsync(new OfertaPublicaDto { PrecioNormal = 500m, PrecioOferta = 400m, Ahorro = 100m, PorcentajeAhorro = 20m, Nombre = "Promo" });
 
-        var controller = CrearController(productos: productos, promociones: promociones);
+        var inventario = new Mock<IInventarioPublicoService>();
+        inventario.Setup(x => x.ObtenerPorVariantesAsync(It.IsAny<IEnumerable<int>>()))
+            .ReturnsAsync(new Dictionary<int, InventarioPublicoVarianteDto>
+            {
+                [401] = new() { ProductoVarianteId = 401, CantidadDisponible = 2, TieneFuenteAutoritativa = true },
+                [402] = new() { ProductoVarianteId = 402, CantidadDisponible = 0, TieneFuenteAutoritativa = true, EstaAgotada = true }
+            });
+        var controller = CrearController(productos: productos, promociones: promociones, inventario: inventario);
         var ok = Assert.IsType<OkObjectResult>(await controller.ValidarCheckout(new ValidarCheckoutTiendaDto
         {
             Items = new List<CheckoutTiendaItemRequestDto>

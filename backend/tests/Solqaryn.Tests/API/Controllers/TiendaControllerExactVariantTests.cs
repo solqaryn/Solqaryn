@@ -150,7 +150,11 @@ public sealed class TiendaControllerExactVariantTests
             .ReturnsAsync((OfertaPublicaDto?)null);
         var inventario = new Mock<IInventarioPublicoService>();
         inventario.Setup(service => service.ObtenerPorVariantesAsync(It.IsAny<IEnumerable<int>>()))
-            .ReturnsAsync(new Dictionary<int, InventarioPublicoVarianteDto>());
+            .ReturnsAsync(new Dictionary<int, InventarioPublicoVarianteDto>
+            {
+                [9001] = new() { ProductoVarianteId = 9001, CantidadDisponible = 3, TieneFuenteAutoritativa = true },
+                [9002] = new() { ProductoVarianteId = 9002, CantidadDisponible = 7, TieneFuenteAutoritativa = true }
+            });
         return new TiendaController(
             productos.Object,
             categorias.Object,
