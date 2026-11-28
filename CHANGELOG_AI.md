@@ -1,3 +1,6 @@
+## 2026-11-28 — QA checkout: contrato público sin login obligatorio
+- Validador MVP actualizado para verificar que la persistencia no exige cuenta, sesión administrativa ni guardas de login; el servicio de cuenta sólo transporta una sesión opcional. Se mantiene compra invitada.
+
 ## 2026-11-28 — QA FN-05 checkout persistente: evidencia dirigida y ensayo V6
 - Prueba MySQL aislada de pedido, replay, divergencia de importes y acceso A/B; E2E de registro antes de WhatsApp y recuperación desde servidor. Ensayo V6 en copia restaurada con huellas de datos y esquema, sin escrituras en Aiven. Bootstrap nuevo verifica las columnas y restricción antes de registrar V6. Pendiente ejecución y certificación; no desplegado.
 

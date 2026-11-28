@@ -104,7 +104,11 @@ expect(checkoutTs.includes('prepararWhatsapp()') && checkoutTs.includes('confirm
   'MVP debe permitir cierre por WhatsApp.');
 expect(checkoutTs.includes("this.identidad.config().nombreComercial || 'Tienda'"),
   'WhatsApp MVP debe usar marca comercial pública.');
-expect(!checkoutTs.includes('StorefrontCuentaService'), 'Cuenta de cliente no debe ser requisito del checkout MVP.');
+expect(!checkoutTs.includes('AuthService') && !checkoutTs.includes('authGuard') && !checkoutTs.includes('permisoGuard') &&
+  checkoutTs.includes('crearPedidoCheckout(datos, clave)') &&
+  !checkoutTs.includes('this.cuenta.perfil()') && !checkoutTs.includes('this.cuenta.restaurar()') &&
+  !checkoutTs.includes('this.cuenta.login('),
+  'Checkout MVP debe conservar invitado sin requerir cuenta ni autenticación administrativa; la cuenta sólo es transporte de sesión opcional.');
 expect(config.includes('endpointCheckoutTarjeta: null'), 'Pasarela debe seguir siendo opcional/fail-closed por defecto.');
 expect(config.includes("export type ModoCarrito = 'whatsapp' | 'tarjeta' | 'ambos'"),
   'La operación debe poder cerrar inicialmente por WhatsApp sin exigir pasarela.');
