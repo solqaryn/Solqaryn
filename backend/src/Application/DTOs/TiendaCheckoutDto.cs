@@ -32,6 +32,8 @@ public sealed class CheckoutTiendaValidadoDto
     public decimal Subtotal { get; set; }
     // Null means delivery is not quoted; a configured zero is valid.
     public decimal? CostoEnvio { get; set; }
+    [System.Text.Json.Serialization.JsonIgnore]
+    public int? CostoEnvioId { get; set; }
     public string? TarifaEnvio { get; set; }
     public decimal Total { get; set; }
     public List<CheckoutTiendaLineaDto> Lineas { get; set; } = new();
@@ -48,5 +50,9 @@ public sealed class CheckoutTiendaLineaDto
     public int Unidades { get; set; }
     public int StockDisponible { get; set; }
     public decimal PrecioUnitario { get; set; }
+    [System.Text.Json.Serialization.JsonIgnore]
+    public decimal PrecioBase { get; set; }
+    [System.Text.Json.Serialization.JsonIgnore]
+    public int? CategoriaId { get; set; }
     public decimal Total { get; set; }
 }

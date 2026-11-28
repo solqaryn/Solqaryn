@@ -1,3 +1,10 @@
+## 2026-11-28 — QA-FN-05: cálculo fiscal compartido para checkout
+
+- Extraer validación de carrito, variante, stock, promoción y tarifa a servicio de aplicación reutilizable; mantener ruta pública y contrato JSON, incluyendo regresión de alias físicos. Precio base, categoría y tarifa canónica internos no proceden del cliente ni se serializan.
+- Incorporar modo explícito CalcularVentaTiendaAsync: envío adicional a precio de productos, base fiscal y descuentos sin prorrateo de envío, sin rol administrativo ni descuentos sujetos a aprobación; conservar modo legacy de venta existente. Requiere cliente y tarifa vigentes. Pruebas comparativas de importes al centavo y tarifa ausente.
+- Preparación para persistencia del pedido con snapshot y cobro ERP; aún no crea un pedido ni una factura desde checkout. No cambia esquema ni realiza cargos. QA exclusivamente; rollback por revert ordinario.
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA: corregir fixture comercial de identidad fiscal
 
 - Run 46161984414: error MySQL 1364 al crear ConfigEmpresas sintética; el modelo Oracle exige CorreoConfigurado no nullable sin valor por defecto. Se incluye 0 explícito y se comprueba previamente el conjunto de columnas obligatorias de las tres tablas de fixture, sin ocultar errores ni modificar datos existentes. Revocación del intento anterior confirmada.

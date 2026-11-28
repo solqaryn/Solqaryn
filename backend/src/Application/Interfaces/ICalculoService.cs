@@ -14,6 +14,8 @@ public interface ICalculoService
         bool envioExonerado = false,
         string? motivoExoneracionEnvio = null);
 
+    Task<ResultadoCalculoDto> CalcularVentaTiendaAsync(List<DetalleCalculoInput> detalles, int clienteId, int costoEnvioId);
+
     Task<ResultadoCalculoDto> CalcularCompraAsync(
         List<DetalleCalculoInput> detalles,
         int? proveedorId);

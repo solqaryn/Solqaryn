@@ -111,6 +111,7 @@ builder.Services.AddScoped<IPermisoCatalogoService, PermisoCatalogoService>();
 builder.Services.AddScoped<IDescuentoRepository, DescuentoRepository>();
 builder.Services.AddScoped<IDescuentoService, DescuentoService>();
 builder.Services.AddScoped<IPromocionPublicaService, PromocionPublicaService>();
+builder.Services.AddScoped<ICheckoutTiendaService, CheckoutTiendaService>();
 builder.Services.AddScoped<ICatalogoPublicoService, CatalogoPublicoService>();
 builder.Services.AddScoped<IWhatsAppPublicoService, WhatsAppPublicoService>();
 builder.Services.AddScoped<ITiendaBootstrapService, TiendaBootstrapService>();

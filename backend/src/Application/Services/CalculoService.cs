@@ -22,18 +22,37 @@ public class CalculoService : ICalculoService
         _costoEnvioRepository = costoEnvioRepository;
     }
 
-    public async Task<ResultadoCalculoDto> CalcularVentaAsync(
+    public Task<ResultadoCalculoDto> CalcularVentaAsync(
         List<DetalleCalculoInput> detalles,
         int? clienteId,
         int? rolIdUsuario,
         string? codigoPromocional,
         int? costoEnvioId = null,
         bool envioExonerado = false,
-        string? motivoExoneracionEnvio = null)
+        string? motivoExoneracionEnvio = null) =>
+        CalcularVentaCoreAsync(detalles, clienteId, rolIdUsuario, codigoPromocional, costoEnvioId,
+            envioExonerado, motivoExoneracionEnvio, esTienda: false);
+
+    public Task<ResultadoCalculoDto> CalcularVentaTiendaAsync(
+        List<DetalleCalculoInput> detalles, int clienteId, int costoEnvioId) =>
+        CalcularVentaCoreAsync(detalles, clienteId, null, null, costoEnvioId,
+            false, null, esTienda: true);
+
+    private async Task<ResultadoCalculoDto> CalcularVentaCoreAsync(
+        List<DetalleCalculoInput> detalles, int? clienteId, int? rolIdUsuario,
+        string? codigoPromocional, int? costoEnvioId, bool envioExonerado,
+        string? motivoExoneracionEnvio, bool esTienda)
     {
-        var importeBruto = RedondearMoneda(detalles.Sum(CalcularSubtotalLinea));
-        var envio = await ResolverEnvioAsync(costoEnvioId, envioExonerado, motivoExoneracionEnvio, importeBruto);
-        var importeProductos = RedondearMoneda(Math.Max(0, importeBruto - envio.Monto));
+        if (esTienda && (clienteId is not > 0 || costoEnvioId is not > 0))
+            throw new BusinessRuleException("El checkout requiere cliente y tarifa vigentes.");
+        var brutoLineas = RedondearMoneda(detalles.Sum(CalcularSubtotalLinea));
+        var envio = await ResolverEnvioAsync(costoEnvioId, envioExonerado, motivoExoneracionEnvio, brutoLineas, esTienda);
+        // El ERP legacy descompone envío incluido. La tienda presenta envío
+        // adicional: no descontarlo del precio de los productos ni prorratear
+        // impuestos/descuentos sobre el envío.
+        var importeBruto = esTienda ? RedondearMoneda(brutoLineas + envio.Monto) : brutoLineas;
+        var importeProductos = esTienda ? brutoLineas : RedondearMoneda(Math.Max(0, importeBruto - envio.Monto));
+        var brutoReglas = esTienda ? importeProductos : importeBruto;
         var cantidadTotal = detalles.Sum(d => d.Cantidad);
         var ahora = DateTime.UtcNow;
         var descuentos = await _descuentoRepository.GetVigentesConRelacionesAsync(ahora);
@@ -47,8 +66,9 @@ public class CalculoService : ICalculoService
         var descuentosAplicados = new List<DescuentoAplicadoDto>();
         decimal totalDescuento = 0;
 
-        foreach (var descuento in descuentos.OrderBy(d => d.Prioridad))
+        foreach (var descuento in descuentos.OrderBy(d => d.Prioridad).ThenBy(d => d.Id))
         {
+            if (esTienda && descuento.RequiereAprobacion) continue;
             if (codigoNormalizado is not null)
             {
                 if (descuento.CodigoPromocionalNormalizado != codigoNormalizado) continue;
@@ -68,7 +88,7 @@ public class CalculoService : ICalculoService
                 detalles,
                 descuento.Productos.Select(p => p.ProductoId),
                 descuento.Categorias.Select(c => c.CategoriaId));
-            var baseElegible = AjustarBaseSinEnvio(baseElegibleBruta, importeBruto, importeProductos);
+            var baseElegible = AjustarBaseSinEnvio(baseElegibleBruta, brutoReglas, importeProductos);
             if (baseElegible <= 0) continue;
 
             if (descuento.LimiteTotalUsos.HasValue &&
@@ -107,7 +127,7 @@ public class CalculoService : ICalculoService
         var impuestosAplicados = await CalcularImpuestosAsync(
             detalles,
             OperacionImpuesto.Venta,
-            importeBruto,
+            brutoReglas,
             importeProductos,
             totalDescuento,
             clienteId,
@@ -147,7 +167,8 @@ public class CalculoService : ICalculoService
         int? costoEnvioId,
         bool exonerado,
         string? motivoExoneracion,
-        decimal importeBruto)
+        decimal importeBruto,
+        bool adicional = false)
     {
         if (exonerado)
         {
@@ -169,7 +190,9 @@ public class CalculoService : ICalculoService
             throw new BusinessRuleException("No existe un costo de envío vigente para aplicar a la venta.");
         if (!costo.EstaVigente(DateTime.UtcNow))
             throw new BusinessRuleException("El costo de envío seleccionado no está vigente.");
-        if (costo.Monto > importeBruto)
+        if (costo.Monto < 0)
+            throw new BusinessRuleException("La tarifa de envío no puede ser negativa.");
+        if (!adicional && costo.Monto > importeBruto)
             throw new BusinessRuleException("El costo de envío no puede superar el total comercial de la venta.");
 
         return new EnvioResuelto
