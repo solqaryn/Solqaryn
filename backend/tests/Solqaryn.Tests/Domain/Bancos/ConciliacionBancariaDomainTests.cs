@@ -61,4 +61,31 @@ public class ConciliacionBancariaDomainTests
         Assert.Equal(EstadoConciliacionBancaria.Completada, conciliacion.Estado);
         Assert.Equal(0, conciliacion.Diferencia);
     }
+
+    [Fact]
+    public void Reabrir_PeriodoCompletado_ConservaHistorialYRechazaRepeticion()
+    {
+        var fecha = DateTime.UtcNow.Date;
+        var anterior = new ConciliacionBancaria(1, fecha.AddDays(-1), fecha, 100, 110, "Original");
+        var mov = new MovimientoEstadoCuenta("REAP-1", fecha, "Credito", "", TipoMovimientoEstadoCuenta.Credito, 10);
+        mov.AgregarMatch(1, 10, TipoMatchConciliacion.Manual);
+        anterior.AgregarMovimiento(mov);
+        anterior.MarcarComoEnProceso();
+        anterior.Completar();
+        Assert.Throws<InvalidOperationException>(() => anterior.Anular("Anulación ordinaria"));
+        Assert.Throws<ArgumentException>(() => anterior.ReabrirComoBorrador(" "));
+        var nueva = anterior.ReabrirComoBorrador("Corrección autorizada");
+        Assert.Equal(EstadoConciliacionBancaria.Anulada, anterior.Estado);
+        Assert.Equal("Original", anterior.Observaciones);
+        Assert.Single(anterior.Movimientos);
+        Assert.Equal(110m, anterior.SaldoConciliado);
+        Assert.Equal(EstadoConciliacionBancaria.Borrador, nueva.Estado);
+        Assert.Empty(nueva.Movimientos);
+        Assert.Equal(anterior.CuentaBancariaId, nueva.CuentaBancariaId);
+        Assert.Equal(anterior.FechaInicio, nueva.FechaInicio);
+        Assert.Equal(anterior.FechaFin, nueva.FechaFin);
+        Assert.Equal(anterior.SaldoFinalBanco, nueva.SaldoFinalBanco);
+        Assert.Throws<InvalidOperationException>(() => anterior.ReabrirComoBorrador("Duplicada"));
+        Assert.Throws<InvalidOperationException>(() => nueva.ReabrirComoBorrador("Sin cierre"));
+    }
 }

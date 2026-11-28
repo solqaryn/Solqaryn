@@ -6,8 +6,8 @@ namespace Solqaryn.Infrastructure.Persistence;
 
 internal static class QaCommercialOwnershipModel
 {
-    internal static IReadOnlyList<QaCommercialOwnershipV1.Owned> OwnedTables { get; } = QaCommercialOwnershipV1.Tables.Concat(QaCommercialOwnershipV2.Tables).Concat(QaCommercialOwnershipV3.Tables).ToArray();
-    private static IReadOnlyList<QaCommercialOwnershipV1.Edge> Relations { get; } = QaCommercialOwnershipV1.Relations.Concat(QaCommercialOwnershipV2.Relations).Concat(QaCommercialOwnershipV3.Relations).ToArray();
+    internal static IReadOnlyList<QaCommercialOwnershipV1.Owned> OwnedTables { get; } = QaCommercialOwnershipV1.Tables.Concat(QaCommercialOwnershipV2.Tables).Concat(QaCommercialOwnershipV3.Tables).Concat(QaCommercialOwnershipV4.Tables).ToArray();
+    private static IReadOnlyList<QaCommercialOwnershipV1.Edge> Relations { get; } = QaCommercialOwnershipV1.Relations.Concat(QaCommercialOwnershipV2.Relations).Concat(QaCommercialOwnershipV3.Relations).Concat(QaCommercialOwnershipV4.Relations).ToArray();
 
     internal static void Configure(ModelBuilder model, AppDbContext db)
     {
@@ -51,6 +51,15 @@ internal static class QaCommercialOwnershipModel
                     .IsUnique().HasDatabaseName(key.Index);
             }
         }
+        foreach (var key in QaCommercialOwnershipV4.UniqueKeys)
+        {
+            var b = model.Entity(OwnedTables.Single(t => t.Table == key.Table).Entity);
+            var existing = b.Metadata.GetIndexes().Single(i => i.IsUnique &&
+                i.Properties.Select(p => p.Name).SequenceEqual(key.Columns));
+            b.Metadata.RemoveIndex(existing.Properties);
+            b.HasIndex(new[] { "EmpresaId" }.Concat(key.Columns).ToArray())
+                .IsUnique().HasDatabaseName(key.Index);
+        }
         foreach (var key in QaCommercialOwnershipV3.ExtraKeys)
         {
             var entity = key.Table == "Roles" ? typeof(Rol) : OwnedTables.Single(t => t.Table == key.Table).Entity;
@@ -64,6 +73,14 @@ internal static class QaCommercialOwnershipModel
             g => !db.CommercialRequestRequiresTenant ||
                 (db.CommercialReadEmpresaId.HasValue && g.EmpresaId == db.CommercialReadEmpresaId &&
                  EF.Property<int?>(g, QaCommercialOwnershipV3.GalleryColumn) == g.CategoriaId));
+        Scope<Cotizacion>(model, db);
+        Scope<CotizacionDetalle>(model, db);
+        Scope<PedidoVenta>(model, db);
+        Scope<PedidoVentaDetalle>(model, db);
+        Scope<ReservaInventario>(model, db);
+        Scope<ReservaInventarioDetalle>(model, db);
+        Scope<PreparacionPedidoVenta>(model, db);
+        Scope<PreparacionPedidoVentaDetalle>(model, db);
         Scope<Producto>(model, db);
         Scope<ProductoVariante>(model, db);
         Scope<ProductoImagen>(model, db);

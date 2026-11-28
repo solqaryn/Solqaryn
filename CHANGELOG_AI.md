@@ -1,3 +1,12 @@
+## 2026-11-28 — QA: reapertura bancaria, identidad fiscal y propiedad de documentos comerciales
+
+- Reapertura explícita de la última conciliación completada, conservando movimientos y observaciones de la versión histórica; serialización por cuenta y rechazo de otra conciliación activa. Regresión del agregado.
+- Emisión de factura y presentación de su marca desde Empresa/ConfigEmpresa autorizada, sin importar identidad ni contactos globales. Se conserva el snapshot fiscal histórico.
+- V4 aditiva para cotizaciones, pedidos, reservas y preparaciones: propiedad nullable histórica sin inferencia, filtros y validación de escritura, FKs compuestas, idempotencia de pedido y numeración de reserva por empresa. El endpoint de conversión ahora delega al servicio transaccional de pedidos y exige permiso Crear además del Confirmar existente.
+- Migración V4 no aplicada: exige gates de compilación, modelo Oracle, ensayo con respaldo QA e integridad A/B antes del único despliegue. Checkout público y cobro integral todavía no certificados. No hay cambios en DEV, MAIN, credenciales ni Skills.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA: corrección de fixture bancaria y cobertura de transferencias/ajustes
 
 - Run 46149839595: Scope Lock y fiscal A/B SUCCESS; bancos falló antes de crear cuentas por ausencia de banco activo. Proveer institución claramente sintética, única y revocada al finalizar sólo si el catálogo QA carece de banco activo. Conservar datos históricos y no modificar bancos preexistentes. No sustituye alta real de instituciones.

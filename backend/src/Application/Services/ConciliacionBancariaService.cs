@@ -329,15 +329,10 @@ public class ConciliacionBancariaService : IConciliacionBancariaService
                     return;
                 }
 
-                conciliacion.Anular(request.MotivoReapertura);
+                if (await _conciliacionRepo.GetActivaByCuentaAsync(request.CuentaBancariaId, cancellationToken) is not null)
+                    throw new InvalidOperationException("La cuenta ya tiene una conciliación activa.");
 
-                var nuevaConciliacion = new ConciliacionBancaria(
-                    conciliacion.CuentaBancariaId,
-                    conciliacion.FechaInicio,
-                    conciliacion.FechaFin,
-                    conciliacion.SaldoInicialBanco,
-                    conciliacion.SaldoFinalBanco,
-                    $"Reapertura de {conciliacion.Id}");
+                var nuevaConciliacion = conciliacion.ReabrirComoBorrador(request.MotivoReapertura);
 
                 _conciliacionRepo.Update(conciliacion);
                 await _conciliacionRepo.AddAsync(nuevaConciliacion, cancellationToken);

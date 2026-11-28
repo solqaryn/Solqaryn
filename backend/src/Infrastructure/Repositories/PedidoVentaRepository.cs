@@ -30,7 +30,7 @@ public sealed class PedidoVentaRepository : IPedidoVentaRepository
     {
         RequerirTransaccion();
         var pedido = await Pedidos
-            .FromSqlInterpolated($"SELECT p.* FROM PedidosVenta p WHERE p.Id = {id} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT p.* FROM PedidosVenta p WHERE p.Id = {id} AND ({!_context.CommercialRequestRequiresTenant} OR p.EmpresaId = {_context.AuthorizedEmpresaId}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
 
@@ -44,7 +44,7 @@ public sealed class PedidoVentaRepository : IPedidoVentaRepository
     {
         RequerirTransaccion();
         var pedido = await Pedidos
-            .FromSqlInterpolated($"SELECT p.* FROM PedidosVenta p WHERE p.CotizacionId = {cotizacionId} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT p.* FROM PedidosVenta p WHERE p.CotizacionId = {cotizacionId} AND ({!_context.CommercialRequestRequiresTenant} OR p.EmpresaId = {_context.AuthorizedEmpresaId}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
 
@@ -58,7 +58,7 @@ public sealed class PedidoVentaRepository : IPedidoVentaRepository
     {
         RequerirTransaccion();
         var pedido = await Pedidos
-            .FromSqlInterpolated($"SELECT p.* FROM PedidosVenta p WHERE p.IdempotencyKey = {idempotencyKey} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT p.* FROM PedidosVenta p WHERE p.IdempotencyKey = {idempotencyKey} AND ({!_context.CommercialRequestRequiresTenant} OR p.EmpresaId = {_context.AuthorizedEmpresaId}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
 

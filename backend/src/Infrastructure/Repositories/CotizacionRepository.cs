@@ -32,7 +32,7 @@ public sealed class CotizacionRepository : ICotizacionRepository
             throw new InvalidOperationException("GetByIdForUpdateAsync requiere una transacción activa.");
 
         var cotizacion = await Cotizaciones
-            .FromSqlInterpolated($"SELECT c.* FROM Cotizaciones c WHERE c.Id = {id} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT c.* FROM Cotizaciones c WHERE c.Id = {id} AND ({!_context.CommercialRequestRequiresTenant} OR c.EmpresaId = {_context.AuthorizedEmpresaId}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
 

@@ -19,6 +19,7 @@ public static class CanonicalMySqlPhysicalContract
         await QaCommercialOwnershipV1.InstallFreshPhysicalAsync(db, cancellationToken);
         await QaCommercialOwnershipV2.InstallFreshPhysicalAsync(db, cancellationToken);
         await QaCommercialOwnershipV3.InstallFreshPhysicalAsync(db, cancellationToken);
+        await QaCommercialOwnershipV4.InstallFreshPhysicalAsync(db, cancellationToken);
         await SeedPaymentMethodsAsync(db, cancellationToken);
         await SeedTipoClientePredeterminadoAsync(db, cancellationToken);
     }
@@ -31,6 +32,7 @@ public static class CanonicalMySqlPhysicalContract
         await QaCommercialOwnershipV1.VerifyPhysicalAsync(db, cancellationToken);
         await QaCommercialOwnershipV2.VerifyPhysicalAsync(db, cancellationToken);
         await QaCommercialOwnershipV3.VerifyPhysicalAsync(db, cancellationToken);
+        await QaCommercialOwnershipV4.VerifyPhysicalAsync(db, cancellationToken);
 
         var triggerCount = await db.Database
             .SqlQueryRaw<long>("""

@@ -20,6 +20,7 @@ public class VentaService : IVentaService
     private readonly VentaKardexMovimientoRegistrar _ventaKardexMovimientoRegistrar;
     private readonly IMovimientoFinancieroRepository _movimientoFinancieroRepository;
     private readonly IEmpresaConfiguracionService _empresaConfiguracionService;
+    private readonly IEmpresaDocumentoIdentity? _empresaDocumentoIdentity;
     private readonly ICalculoService _calculoService;
     private readonly ICurrentUserService _currentUser;
     private readonly IUnitOfWork _unitOfWork;
@@ -41,7 +42,8 @@ public class VentaService : IVentaService
         IUnitOfWork unitOfWork,
         IAuditoriaService auditoria,
         ITipoClientePredeterminadoResolver predeterminadoResolver,
-        IKardexMovimientoWriter? kardexMovimientoWriter = null)
+        IKardexMovimientoWriter? kardexMovimientoWriter = null,
+        IEmpresaDocumentoIdentity? empresaDocumentoIdentity = null)
     {
         _ventaRepository = ventaRepository;
         _clienteRepository = clienteRepository;
@@ -53,6 +55,7 @@ public class VentaService : IVentaService
             kardexMovimientoWriter ?? new KardexMovimientoWriter(movimientoInventarioRepository));
         _movimientoFinancieroRepository = movimientoFinancieroRepository;
         _empresaConfiguracionService = empresaConfiguracionService;
+        _empresaDocumentoIdentity = empresaDocumentoIdentity;
         _calculoService = calculoService;
         _currentUser = currentUser;
         _unitOfWork = unitOfWork;
@@ -177,7 +180,9 @@ public class VentaService : IVentaService
 
     public async Task<VentaDto?> ConfirmarAsync(int id)
     {
-        var empresa = await _empresaConfiguracionService.GetActivaEntidadAsync();
+        var empresa = _empresaDocumentoIdentity is not null
+            ? await _empresaDocumentoIdentity.ObtenerAsync(escritura: true)
+            : await _empresaConfiguracionService.GetActivaEntidadAsync();
 
         await _unitOfWork.ExecuteInTransactionAsync(async () =>
         {
@@ -279,6 +284,7 @@ public class VentaService : IVentaService
                 VentaId = venta.Id,
                 NumeroFactura = CrearNumeroTemporal("FAC"),
                 Estado = EstadoFactura.Emitida,
+                Moneda = empresa.Moneda,
                 EmpresaNombre = empresa.NombreComercial,
                 EmpresaRTN = empresa.RTN,
                 EmpresaTelefono = empresa.Telefono,

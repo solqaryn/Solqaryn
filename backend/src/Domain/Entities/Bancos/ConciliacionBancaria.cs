@@ -72,6 +72,24 @@ public class ConciliacionBancaria : AuditableEntity
         FechaActualizacion = DateTime.UtcNow;
     }
 
+    // La reapertura crea una nueva versión, sin borrar movimientos ni matches históricos.
+    // La anulación ordinaria de un período completado sigue prohibida.
+    public ConciliacionBancaria ReabrirComoBorrador(string motivo)
+    {
+        if (Estado != EstadoConciliacionBancaria.Completada)
+            throw new InvalidOperationException("Solo se puede reabrir la última versión completada.");
+        if (string.IsNullOrWhiteSpace(motivo) || motivo.Trim().Length > 500)
+            throw new ArgumentException("Se requiere un motivo de reapertura de hasta 500 caracteres.", nameof(motivo));
+
+        var nueva = new ConciliacionBancaria(CuentaBancariaId, FechaInicio, FechaFin,
+            SaldoInicialBanco, SaldoFinalBanco, $"Reapertura de {Id}");
+        // El motivo se registra en la auditoría estricta de la transacción.
+        // Preservar las observaciones y los movimientos originales.
+        Estado = EstadoConciliacionBancaria.Anulada;
+        FechaActualizacion = DateTime.UtcNow;
+        return nueva;
+    }
+
     public void Anular(string motivo)
     {
         if (Estado == EstadoConciliacionBancaria.Completada) throw new InvalidOperationException("No se puede anular una conciliación ya completada.");

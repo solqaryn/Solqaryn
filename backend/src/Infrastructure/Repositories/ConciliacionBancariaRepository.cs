@@ -31,8 +31,22 @@ public class ConciliacionBancariaRepository : IConciliacionBancariaRepository
 
     public async Task<ConciliacionBancaria?> GetByPeriodoAsync(int cuentaBancariaId, int mes, int anio, CancellationToken cancellationToken = default)
     {
+        // Serializar la reapertura sobre la cuenta, antes de leer la versión.
+        if (_context.Database.CurrentTransaction is not null &&
+            _context.Database.ProviderName?.Contains("MySql", StringComparison.OrdinalIgnoreCase) == true)
+        {
+            var tenant = _context.AuthorizedEmpresaId;
+            if (_context.CommercialRequestRequiresTenant && tenant is not > 0)
+                throw new ForbiddenAccessException("No hay autoridad empresarial de escritura.");
+            var ids = _context.CommercialRequestRequiresTenant
+                ? await _context.Database.SqlQuery<int>($"SELECT Id AS Value FROM CuentasBancarias WHERE Id = {cuentaBancariaId} AND EmpresaId = {tenant} FOR UPDATE").ToListAsync(cancellationToken)
+                : await _context.Database.SqlQuery<int>($"SELECT Id AS Value FROM CuentasBancarias WHERE Id = {cuentaBancariaId} FOR UPDATE").ToListAsync(cancellationToken);
+            if (ids.Count != 1) return null;
+        }
         return await ConMovimientos()
-            .FirstOrDefaultAsync(c => c.CuentaBancariaId == cuentaBancariaId && c.FechaInicio.Month == mes && c.FechaInicio.Year == anio, cancellationToken);
+            .Where(c => c.CuentaBancariaId == cuentaBancariaId && c.FechaInicio.Month == mes && c.FechaInicio.Year == anio)
+            .OrderByDescending(c => c.Id)
+            .FirstOrDefaultAsync(cancellationToken);
     }
 
     public async Task<ConciliacionBancaria?> GetActivaByCuentaAsync(int cuentaBancariaId, CancellationToken cancellationToken = default)

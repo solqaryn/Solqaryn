@@ -16,6 +16,7 @@ public sealed class CotizacionService : ICotizacionService
     private readonly IAuditoriaService _auditoriaService;
     private readonly ICurrentUserService _currentUserService;
     private readonly IUnitOfWork _unitOfWork;
+    private readonly IPedidoVentaService? _pedidoVentaService;
 
     public CotizacionService(
         ICotizacionRepository repository,
@@ -24,7 +25,8 @@ public sealed class CotizacionService : ICotizacionService
         IProductoVarianteRepository varianteRepository,
         IAuditoriaService auditoriaService,
         ICurrentUserService currentUserService,
-        IUnitOfWork unitOfWork)
+        IUnitOfWork unitOfWork,
+        IPedidoVentaService? pedidoVentaService = null)
     {
         _repository = repository ?? throw new ArgumentNullException(nameof(repository));
         _clienteRepository = clienteRepository ?? throw new ArgumentNullException(nameof(clienteRepository));
@@ -33,6 +35,7 @@ public sealed class CotizacionService : ICotizacionService
         _auditoriaService = auditoriaService ?? throw new ArgumentNullException(nameof(auditoriaService));
         _currentUserService = currentUserService ?? throw new ArgumentNullException(nameof(currentUserService));
         _unitOfWork = unitOfWork ?? throw new ArgumentNullException(nameof(unitOfWork));
+        _pedidoVentaService = pedidoVentaService;
     }
 
     public async Task<CotizacionDto> GetByIdAsync(int id)
@@ -244,12 +247,14 @@ public sealed class CotizacionService : ICotizacionService
             motivo.Trim());
     }
 
-    public Task<CotizacionDto> ConvertirAsync(int id) =>
-        CambiarEstadoAsync(
-            id,
-            AccionPermiso.Aplicar,
-            "Cotización convertida.",
-            static (cotizacion, usuarioId) => cotizacion.Convertir(usuarioId, DateTime.UtcNow));
+    public async Task<CotizacionDto> ConvertirAsync(int id)
+    {
+        if (id <= 0) throw new BusinessRuleException("El identificador de la cotización debe ser mayor que cero.");
+        RequerirUsuario();
+        var pedidos = _pedidoVentaService ?? throw new InvalidOperationException("El servicio de pedidos no está disponible.");
+        await pedidos.CrearDesdeCotizacionAsync(new CreatePedidoVentaDto { CotizacionId = id }, $"cotizacion-{id}");
+        return await GetByIdAsync(id);
+    }
 
     public async Task<CotizacionDto> DuplicarComoBorradorAsync(int id)
     {

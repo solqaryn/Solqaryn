@@ -32,7 +32,7 @@ public sealed class PreparacionPedidoVentaRepository : IPreparacionPedidoVentaRe
     {
         ExigirTransaccion();
         var entity = await Preparaciones
-            .FromSqlInterpolated($"SELECT p.* FROM PreparacionesPedidoVenta p WHERE p.Id = {id} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT p.* FROM PreparacionesPedidoVenta p WHERE p.Id = {id} AND ({!_context.CommercialRequestRequiresTenant} OR p.EmpresaId = {_context.AuthorizedEmpresaId}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
         if (entity is not null)
@@ -44,7 +44,7 @@ public sealed class PreparacionPedidoVentaRepository : IPreparacionPedidoVentaRe
     {
         ExigirTransaccion();
         var entity = await Preparaciones
-            .FromSqlInterpolated($"SELECT p.* FROM PreparacionesPedidoVenta p WHERE p.PedidoVentaId = {pedidoVentaId} FOR UPDATE")
+            .FromSqlInterpolated($"SELECT p.* FROM PreparacionesPedidoVenta p WHERE p.PedidoVentaId = {pedidoVentaId} AND ({!_context.CommercialRequestRequiresTenant} OR p.EmpresaId = {_context.AuthorizedEmpresaId}) FOR UPDATE")
             .AsTracking()
             .FirstOrDefaultAsync();
         if (entity is not null)

@@ -13,6 +13,7 @@ public class FacturaService : IFacturaService
     private readonly IFacturaRepository _repository;
     private readonly IEmpresaConfiguracionService _empresaConfiguracionService;
     private readonly IMovimientoFinancieroRepository? _movimientoFinancieroRepository;
+    private readonly IEmpresaDocumentoIdentity? _empresaDocumentoIdentity;
 
     public FacturaService(IFacturaRepository repository, IEmpresaConfiguracionService empresaConfiguracionService)
         : this(repository, empresaConfiguracionService, null)
@@ -22,11 +23,13 @@ public class FacturaService : IFacturaService
     public FacturaService(
         IFacturaRepository repository,
         IEmpresaConfiguracionService empresaConfiguracionService,
-        IMovimientoFinancieroRepository? movimientoFinancieroRepository)
+        IMovimientoFinancieroRepository? movimientoFinancieroRepository,
+        IEmpresaDocumentoIdentity? empresaDocumentoIdentity = null)
     {
         _repository = repository;
         _empresaConfiguracionService = empresaConfiguracionService;
         _movimientoFinancieroRepository = movimientoFinancieroRepository;
+        _empresaDocumentoIdentity = empresaDocumentoIdentity;
     }
 
     public async Task<FacturaDto?> GetByIdAsync(int id)
@@ -281,8 +284,14 @@ public class FacturaService : IFacturaService
 
     private async Task<FacturaDto> ToDtoAsync(Factura f)
     {
-        var empresa = await _empresaConfiguracionService.GetActivaAsync();
         var dto = ToDto(f);
+        if (_empresaDocumentoIdentity is not null)
+        {
+            var identidad = await _empresaDocumentoIdentity.ObtenerAsync(escritura: false);
+            dto.EmpresaLogoUrl = identidad.LogoUrl;
+            return dto;
+        }
+        var empresa = await _empresaConfiguracionService.GetActivaAsync();
         dto.EmpresaLogoUrl = empresa?.LogoUrl;
         dto.EmpresaEslogan = empresa?.Eslogan;
         dto.EmpresaTextoFactura = empresa?.TextoFactura;
