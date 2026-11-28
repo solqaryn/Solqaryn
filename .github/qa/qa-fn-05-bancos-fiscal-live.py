@@ -428,9 +428,19 @@ SELECT @p,@v;""","create isolated fiscal product").split("\t")
                 currency="HNL" if side=="A" else "USD"
                 # Synthetic legal identity and explicitly scoped client. No
                 # existing customer, configuration or payment instrument touched.
+                # Validate all mandatory columns against the explicit synthetic
+                # insert contract before creating the fixture.
+                mandatory={
+                    "ConfigEmpresas":{"EmpresaId","Moneda","ZonaHoraria","ImpuestosJson","EmisionJson","CorreoConfigurado","Version","FechaCreacion","FechaActualizacion"},
+                    "TipoClientes":{"EmpresaId","Codigo","Nombre","NombreNormalizado","ColorHex","EsSistema","Activo","Eliminado","Orden","EsPredeterminado","FechaCreacion","FechaActualizacion"},
+                    "Clientes":{"EmpresaId","TipoClienteId","Nombre","Activo","FechaCreacion","FechaActualizacion"}
+                }
+                for table,provided in mandatory.items():
+                    required=set(sql(f"SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='{table}' AND IS_NULLABLE='NO' AND COLUMN_DEFAULT IS NULL AND EXTRA NOT LIKE '%auto_increment%' AND EXTRA NOT LIKE '%GENERATED%';","fixture required columns").splitlines())
+                    require(required<=provided,"Synthetic insert missing required columns in "+table+": "+",".join(sorted(required-provided)))
                 client=sql(f"""START TRANSACTION;
 UPDATE Empresas SET Rtn='{key.upper()}',Direccion='Direccion sintetica {key}' WHERE Id={eid} AND Nombre='{key}';
-INSERT INTO ConfigEmpresas (EmpresaId,Moneda,ZonaHoraria,ImpuestosJson,EmisionJson,Version,FechaCreacion,FechaActualizacion) VALUES ({eid},'{currency}','America/Tegucigalpa','{{}}','{{}}',1,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
+INSERT INTO ConfigEmpresas (EmpresaId,Moneda,ZonaHoraria,ImpuestosJson,EmisionJson,CorreoConfigurado,Version,FechaCreacion,FechaActualizacion) VALUES ({eid},'{currency}','America/Tegucigalpa','{{}}','{{}}',0,1,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
 INSERT INTO TipoClientes (EmpresaId,Codigo,Nombre,NombreNormalizado,ColorHex,EsSistema,Activo,Eliminado,Orden,EsPredeterminado,FechaCreacion,FechaActualizacion) VALUES ({eid},'{key}','{key}','{key.upper()}','#FFFFFF',0,1,0,0,0,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));
 SET @tipo=LAST_INSERT_ID();
 INSERT INTO Clientes (EmpresaId,TipoClienteId,Nombre,Activo,FechaCreacion,FechaActualizacion) VALUES ({eid},@tipo,'{key}',1,UTC_TIMESTAMP(6),UTC_TIMESTAMP(6));

@@ -1,3 +1,9 @@
+## 2026-11-28 — QA: corregir fixture comercial de identidad fiscal
+
+- Run 46161984414: error MySQL 1364 al crear ConfigEmpresas sintética; el modelo Oracle exige CorreoConfigurado no nullable sin valor por defecto. Se incluye 0 explícito y se comprueba previamente el conjunto de columnas obligatorias de las tres tablas de fixture, sin ocultar errores ni modificar datos existentes. Revocación del intento anterior confirmada.
+- Relanzar únicamente prueba ERP autenticada A/B contra runtime 1c933a47. Auditoría Oracle V4 run 46161686251 y compilación/barrido b426f3fe SUCCESS. No hay cambio de esquema ni runtime.
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA-FN-05: prueba auténtica de cotización y cobro interno ERP
 
 - Certificación de documentos comerciales con empresas, tipos de cliente, clientes e identidad fiscal sintéticos A/B. Conversión persistida/replay, aislamiento de cotizaciones y pedidos, factura con RTN y moneda propios, cobro parcial, saldo completo, actualización Venta/MovimientoFinanciero, anulación conservando histórico, rechazo cruzado y por RBAC. Revocación de fixtures obligatoria. No cargo externo ni pago real.

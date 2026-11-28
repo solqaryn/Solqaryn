@@ -13,7 +13,7 @@ concurrency:
 jobs:
   residual:
     name: Certificacion residual ${{ matrix.scope }} A/B
-    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.run_attempt == 1 && github.event.before == '6fecc7d3908b0d462144d84ef4816e17b3392da4'
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.run_attempt == 1 && github.event.before == '5b941bcee48a99f7f8e288973810c87b4ff153d9'
     runs-on: ubuntu-latest
     environment: QA
     timeout-minutes: 40
