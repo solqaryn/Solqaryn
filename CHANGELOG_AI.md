@@ -1,3 +1,9 @@
+## 2026-11-28 — QA-FN-05: V5 aplicación única con recuperación y evidencia causal
+
+- SHA e3ef243d: CI 2.549/2.549, barrido integral, Oracle read-only, smoke y ensayo exacto V5 aprobados (46166000244, 46166000158, 46166000191, 46166000134, 46166000275). El ensayo restauró 138 tablas y preservó datos, IAM y demás restricciones; estado 5 permitido, 0/6 rechazados. Aiven aún tiene V4/113 registros.
+- Aplicación única sólo en QA y con mantenimiento confirmado, respaldo cifrado recuperable, restore nuevo, huellas exactas de datos y estructura, cinco gates del SHA padre, compare-and-swap de HEAD, cero sesiones concurrentes y verificación posterior. No se modifica modelo, RBAC, arquitectura, DEV, MAIN ni PROD. Si falla, mantener mantenimiento y recuperación; no reintentar DDL a ciegas.
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA-FN-05: preparar migración de reconciliación de estado de cotización
 
 - Run 46165777340 confirmó CHECK físico 0..4, una cotización en estado 3 con fechas coherentes y cero estados fuera del modelo. Modelo/snapshot Oracle ya exigen 1..5. V5 reemplaza el CHECK por uno enforced 1..5 en un único ALTER; no cambia estados históricos, FKs, RBAC, API, ni esquema de propiedad. Down deliberadamente no reinterpreta estados; recuperación mediante respaldo verificado.
