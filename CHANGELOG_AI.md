@@ -1,3 +1,10 @@
+## 2026-11-28 — QA: despliegue causal y pruebas residuales dirigidas
+
+- GitHub QA `1d0a81c937c57d1846cab3b9c1a59e91e76cdf42`: cinco Quality Gates SUCCESS (46112132394, 46112132356, 46112132405, 46112132326, 46112132330), Scope Lock aprobado, 77/77 regresiones visuales y 5/5 integración MySQL. Vercel QA READY CwVvJyDysxAY4DN47ZgNSr178Cdu y Render QA personal LIVE dep-dc5clbou01pc73899tm0 el 2026-11-28T12:38:31Z, SHA exacto. No se cambió esquema ni configuración.
+- Se incorpora workflow residual específico: originales PNG válidos de 15 MiB y +1 byte por API directa y navegador A/B, optimización multipart y persistencia; conteos A/B con fixtures propios, listado/detalle/edición, estados, captura individual y lote, accesos cruzados, ajuste borrador idempotente, auditoría y stock inalterado. Revocación de autoridades sintéticas; se conserva historial. No se certifica por publicar pruebas. El borrado físico Cloudinary permanece abierto (DestroyAsync no comprobaba resultado). No se repiten modales ni gates generales sin cambio causal.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-27 — QA: certificación causal de modales y galerías; bloqueo empresarial de conteos
 
 - Certificado `0c01a0b91840116dc422d445e3238cb988b400e5`: 46086662625 (77/77 visuales, higiene y backend), 46086662622, 46086662624 y 46086662617 SUCCESS. Vercel personal QA READY `LMnwjP3zAqAW3ytKSv6av1wigEL4`, alias QA y SHA confirmados; Render personal LIVE `dep-dc4qgl3l550s73abc590`, SHA `dea277293408751b1b49416a8164e1392e80a483` comprobado antes y después. Job 140797707168: modales de envío A móvil/B escritorio, payload específico/predeterminado exacto HTTP 200, CRUD, historial, cancelación, protección, operador y selector cruzado, revocación PASS. Retirado hallazgo QA-UI-01 de costos de envío.

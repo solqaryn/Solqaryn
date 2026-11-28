@@ -1,0 +1,70 @@
+name: QA - FN-05 limite real y conteos autenticados A/B
+on:
+  push:
+    branches: [qa]
+    paths:
+      - '.github/workflows/qa-fn-05-residual-inventory-gallery-live.yml'
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: qa-fn-05-live-admin
+  cancel-in-progress: false
+jobs:
+  residual:
+    name: Certificacion residual ${{ matrix.scope }} A/B
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == '1d0a81c937c57d1846cab3b9c1a59e91e76cdf42'
+    runs-on: ubuntu-latest
+    environment: QA
+    timeout-minutes: 30
+    strategy:
+      fail-fast: false
+      matrix:
+        scope: [gallery, inventory]
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Scope Lock y equivalencia de runtime aprobado
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = refs/heads/qa
+          node scripts/verify-project-scope.mjs
+          git diff --check "${{ github.event.before }}" HEAD
+          git diff --exit-code 1d0a81c937c57d1846cab3b9c1a59e91e76cdf42 HEAD -- backend frontend render.yaml scripts .agents docs/PROJECT_SCOPE_LOCK.md AGENTS.md
+          for run in 46112132394 46112132356 46112132405 46112132326 46112132330; do
+            gh api "repos/solqaryn/Solqaryn/actions/runs/$run" | jq -e '.head_sha == "1d0a81c937c57d1846cab3b9c1a59e91e76cdf42" and .head_branch == "qa" and .status == "completed" and .conclusion == "success"' >/dev/null
+          done
+          python3 -m py_compile .github/qa/qa-fn-05-residual-inventory-gallery-live.py
+          node --check .github/qa/qa-fn-05-gallery-boundary-browser.mjs
+          echo QA_RESIDUAL_RUNTIME_EQUIVALENCE=PASS
+      - name: Preparar cliente MySQL y BCrypt
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y mysql-client apache2-utils
+      - uses: actions/setup-node@v4
+        if: matrix.scope == 'gallery'
+        with:
+          node-version: '24.21.0'
+          cache: npm
+          cache-dependency-path: frontend/package-lock.json
+      - name: Preparar Chromium
+        if: matrix.scope == 'gallery'
+        working-directory: frontend
+        run: |
+          npm ci
+          npx playwright install --with-deps chromium
+      - name: Pruebas funcionales reales exclusivamente QA
+        env:
+          EXPECTED_DEPLOYED_SHA: '1d0a81c937c57d1846cab3b9c1a59e91e76cdf42'
+          DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
+          DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
+          DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}
+          DB_USER: ${{ vars.SOLQARYN_QA_DB_USER }}
+          DB_PASSWORD: ${{ secrets.SOLQARYN_QA_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          python3 .github/qa/qa-fn-05-residual-inventory-gallery-live.py "${{ matrix.scope }}"
