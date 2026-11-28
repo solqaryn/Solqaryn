@@ -13,6 +13,11 @@ public sealed class PedidoVentaDto
     public string? Observaciones { get; set; }
     public EstadoPedidoVenta Estado { get; set; }
     public decimal Total { get; set; }
+    public decimal Subtotal { get; set; }
+    public decimal? CostoEnvio { get; set; }
+    public string? MonedaCheckout { get; set; }
+    public string? TarifaEnvioCheckout { get; set; }
+    public string? EntregaCheckoutJson { get; set; }
     public DateTime? FechaConfirmacionUtc { get; set; }
     public int? ConfirmadoPorUsuarioId { get; set; }
     public DateTime? FechaAnulacionUtc { get; set; }

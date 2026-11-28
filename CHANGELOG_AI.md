@@ -1,3 +1,9 @@
+## 2026-11-28 — QA-FN-05: persistencia del pedido de checkout (backend candidato)
+
+- Se reutiliza PedidoVenta en borrador, sin reserva, factura, cobro ni modificación de inventario. Cliente autenticado por sesión propia o invitado nuevo sin vincular por correo. Revalidación de catálogo, promoción, cantidad y envío; los importes enviados sólo son aserciones de la cotización visual. V6 agrega cuatro columnas nullable y CHECK atómico a PedidosVenta; mantiene V4/V5, relaciones, datos e índices. Idempotencia tenant-first existente con clave derivada de 256 bits y fingerprint, transacción única con cliente invitado y rechazo de payload distinto.
+- Nuevo POST/GET tienda/cuenta/pedidos/checkout; autoridad de escritura limitada al grafo exacto de altas, sin otorgar permisos administrativos. Consulta de invitado sólo con prueba de posesión; sin PII en respuesta ni credencial en URL. DTO ERP conserva snapshot de entrega, subtotal y envío. No se ha aplicado V6 ni desplegado; exigir CI, ensayo de copia y prueba viva antes de cerrar.
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA-FN-05: recuperación del Scope Lock del ensayo vivo
 
 - Run 46169508679 detenido antes de fixtures por terminología inglesa retirada en comentarios/etiquetas del nuevo probe. Sustituir sólo dicha terminología, conservar invariantes y pin del runtime 0d8d8957, relanzar con nuevo padre exacto. No se modifica el Scope Lock ni el código funcional.

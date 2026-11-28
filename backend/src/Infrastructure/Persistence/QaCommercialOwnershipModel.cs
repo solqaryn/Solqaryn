@@ -162,7 +162,7 @@ internal static class QaCommercialOwnershipModel
         foreach (var entry in entries)
         {
             if (!db.CommercialPrivateWriteAuthorized &&
-                (entry.Metadata.ClrType != typeof(Cliente) || entry.State != EntityState.Added))
+                (entry.State != EntityState.Added || !db.PermiteAltaComercialTienda(entry.Entity)))
                 throw new ForbiddenAccessException("La autoridad de tienda no permite mutar este recurso.");
             var owner = entry.Property("EmpresaId");
             if (owner.CurrentValue is int supplied && supplied != tenant)

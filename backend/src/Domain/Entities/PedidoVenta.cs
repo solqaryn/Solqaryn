@@ -21,6 +21,12 @@ public class PedidoVenta : ConfirmableEntity
     public string? ClienteDocumentoSnapshot { get; private set; }
     public string? Observaciones { get; private set; }
 
+    // Null for historical ERP orders. Checkout amounts are server snapshots.
+    public decimal? CostoEnvio { get; private set; }
+    public string? MonedaCheckout { get; private set; }
+    public string? TarifaEnvioCheckout { get; private set; }
+    public string? EntregaCheckoutJson { get; private set; }
+
     public EstadoPedidoVenta Estado { get; private set; } = EstadoPedidoVenta.Borrador;
 
     // N3.2.B — coordenadas durables de idempotencia. La unicidad física y la
@@ -33,7 +39,38 @@ public class PedidoVenta : ConfirmableEntity
     public bool EsEditable => Estado == EstadoPedidoVenta.Borrador;
     public bool EstaConfirmado => Estado == EstadoPedidoVenta.Confirmado;
     public bool EstaAnulado => Estado == EstadoPedidoVenta.Anulado;
-    public decimal Total => _detalles.Sum(x => x.Total);
+    public decimal Subtotal => _detalles.Sum(x => x.Total);
+    public decimal Total => Subtotal + (CostoEnvio ?? 0m);
+
+    public static PedidoVenta CrearDesdeCheckout(Cliente cliente,
+        IEnumerable<LineaPedidoCheckout> lineas, decimal envio, string moneda,
+        string tarifa, string entregaJson, string? notas, bool invitado)
+    {
+        ArgumentNullException.ThrowIfNull(cliente);
+        ArgumentNullException.ThrowIfNull(lineas);
+        if (cliente.Id <= 0 || !cliente.Activo || envio < 0m ||
+            decimal.Round(envio, 2) != envio || envio >= 10000000000000000m ||
+            moneda.Length != 3 || moneda.Any(c => c is < 'A' or > 'Z') ||
+            string.IsNullOrWhiteSpace(tarifa) || tarifa.Length > 120 ||
+            string.IsNullOrWhiteSpace(entregaJson) || entregaJson.Length > 12000 ||
+            (notas?.Length ?? 0) > 600)
+            throw new InvalidOperationException("El snapshot de checkout no es válido.");
+
+        var pedido = new PedidoVenta
+        {
+            ClienteId = cliente.Id, Cliente = cliente,
+            ClienteNombreSnapshot = cliente.Nombre,
+            ClienteDocumentoSnapshot = cliente.IdentidadORTN,
+            CostoEnvio = envio, MonedaCheckout = moneda,
+            TarifaEnvioCheckout = tarifa, EntregaCheckoutJson = entregaJson,
+            Observaciones = string.IsNullOrWhiteSpace(notas) ? null : notas.Trim(),
+            CreadoPorNombreUsuario = invitado ? "storefront-invitado" : "storefront-cuenta"
+        };
+        foreach (var linea in lineas)
+            pedido._detalles.Add(PedidoVentaDetalle.CrearDesdeCheckout(linea));
+        pedido.ValidarDocumento();
+        return pedido;
+    }
 
     public static PedidoVenta CrearDesdeCotizacion(Cotizacion cotizacion)
     {
@@ -214,6 +251,27 @@ public class PedidoVentaDetalle : AuditableEntity
     public decimal PrecioUnitario { get; private set; }
     public decimal Total => Cantidad * PrecioUnitario;
 
+    internal static PedidoVentaDetalle CrearDesdeCheckout(LineaPedidoCheckout linea)
+    {
+        if (linea.Cantidad <= 0 || linea.Cantidad > 999 || linea.PrecioUnitario < 0 ||
+            decimal.Round(linea.PrecioUnitario, 4) != linea.PrecioUnitario ||
+            linea.PrecioUnitario >= 100000000000000m || string.IsNullOrWhiteSpace(linea.Nombre))
+            throw new InvalidOperationException("La línea de checkout no es válida.");
+        var detalle = new PedidoVentaDetalle
+        {
+            ProductoId = linea.ProductoId,
+            ProductoVarianteId = linea.ProductoVarianteId,
+            ProductoSkuSnapshot = linea.Sku,
+            ProductoNombreSnapshot = linea.Nombre,
+            ProductoModeloSnapshot = linea.Modelo,
+            Cantidad = linea.Cantidad,
+            PrecioUnitario = linea.PrecioUnitario,
+            CreadoPorNombreUsuario = "storefront-checkout"
+        };
+        detalle.Validar();
+        return detalle;
+    }
+
     internal static PedidoVentaDetalle CrearDesdeCotizacion(CotizacionDetalle detalle)
     {
         ArgumentNullException.ThrowIfNull(detalle);
@@ -248,3 +306,5 @@ public class PedidoVentaDetalle : AuditableEntity
             throw new InvalidOperationException("El precio unitario no puede ser negativo.");
     }
 }
+
+public sealed record LineaPedidoCheckout(int ProductoId, int? ProductoVarianteId, string Nombre, string? Modelo, string? Sku, int Cantidad, decimal PrecioUnitario);

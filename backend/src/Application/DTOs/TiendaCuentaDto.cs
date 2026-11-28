@@ -51,6 +51,10 @@ public sealed class TiendaPedidoCuentaDto
     public int Id { get; set; }
     public string Estado { get; set; } = string.Empty;
     public decimal Total { get; set; }
+    public decimal Subtotal { get; set; }
+    public decimal? CostoEnvio { get; set; }
+    public string? Moneda { get; set; }
+    public string? TarifaEnvio { get; set; }
     public DateTime FechaUtc { get; set; }
     public List<TiendaPedidoCuentaLineaDto> Lineas { get; set; } = new();
 }
@@ -72,4 +76,24 @@ public sealed class TiendaNotificacionPedidoDto
     public string Estado { get; set; } = string.Empty;
     public string Mensaje { get; set; } = string.Empty;
     public DateTime FechaUtc { get; set; }
+}
+public sealed class CrearPedidoCheckoutDto
+{
+    public ValidarCheckoutTiendaDto Checkout { get; set; } = new();
+    public string Nombre { get; set; } = string.Empty;
+    public string Telefono { get; set; } = string.Empty;
+    public string? Correo { get; set; }
+    public string? Notas { get; set; }
+    // Assertions of what the buyer saw; never sources of monetary authority.
+    public decimal? SubtotalEsperado { get; set; }
+    public decimal? EnvioEsperado { get; set; }
+    public string MonedaEsperada { get; set; } = string.Empty;
+    public List<LineaEsperadaPedidoCheckoutDto> LineasEsperadas { get; set; } = new();
+}
+public sealed class LineaEsperadaPedidoCheckoutDto
+{
+    public int ProductoId { get; set; }
+    public int? ProductoVarianteId { get; set; }
+    public int Unidades { get; set; }
+    public decimal PrecioUnitario { get; set; }
 }

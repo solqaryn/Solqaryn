@@ -34,9 +34,50 @@ public class AppDbContext : DbContext
         ContextId(PublicStoreTenantItemKey) ?? _publicInvoiceEmpresaId;
     public int? AuthorizedEmpresaId => ContextId(AuthorizedTenantItemKey);
     public bool CommercialPrivateWriteAuthorized => AuthorizedEmpresaId.HasValue;
+    private Cliente? _checkoutCliente;
+    private bool _checkoutClienteNuevo;
+    private PedidoVenta? _checkoutPedido;
+    public int? PublicStoreCheckoutEmpresaId =>
+        _http?.HttpContext is { } context && context.Request.Path == "/tienda/cuenta/pedidos/checkout" &&
+        HttpMethods.IsPost(context.Request.Method) && AuthorizedEmpresaId is null &&
+        ContextId(PublicStoreTenantItemKey) is int empresa && CommercialReadEmpresaId == empresa
+            ? empresa : null;
     public int? CommercialWriteEmpresaId => ContextId(AuthorizedTenantItemKey) ??
         (_http?.HttpContext?.Request.Path.StartsWithSegments("/tienda/cuenta/registrar") == true ?
-            ContextId(PublicStoreTenantItemKey) : null);
+            ContextId(PublicStoreTenantItemKey) :
+            _checkoutCliente is not null ? PublicStoreCheckoutEmpresaId : null);
+
+    // A verified storefront action may write only its specific new entity graph.
+    // This does not establish administrative authorization or allow updates.
+    public void AutorizarClienteCheckout(Cliente cliente, bool nuevo)
+    {
+        if (PublicStoreCheckoutEmpresaId is not > 0 || _checkoutCliente is not null ||
+            (nuevo ? cliente.Id != 0 : cliente.Id <= 0))
+            throw new ForbiddenAccessException("Autoridad de checkout inválida.");
+        _checkoutCliente = cliente;
+        _checkoutClienteNuevo = nuevo;
+    }
+
+    public void AutorizarPedidoCheckout(PedidoVenta pedido)
+    {
+        if (PublicStoreCheckoutEmpresaId is not > 0 || _checkoutCliente is null ||
+            _checkoutPedido is not null || !ReferenceEquals(pedido.Cliente, _checkoutCliente) ||
+            pedido.ClienteId != _checkoutCliente.Id || pedido.CotizacionId is not null ||
+            !pedido.EsEditable || pedido.CostoEnvio is null ||
+            pedido.IdempotencyKey is null || !pedido.IdempotencyKey.StartsWith("checkout-", StringComparison.Ordinal))
+            throw new ForbiddenAccessException("Pedido de checkout no autorizado.");
+        _checkoutPedido = pedido;
+    }
+
+    internal bool PermiteAltaComercialTienda(object entity)
+    {
+        if (_http?.HttpContext?.Request.Path.StartsWithSegments("/tienda/cuenta/registrar") == true)
+            return entity is Cliente;
+        return PublicStoreCheckoutEmpresaId is > 0 && _checkoutCliente is not null &&
+            ((_checkoutClienteNuevo && ReferenceEquals(entity, _checkoutCliente)) ||
+             (_checkoutPedido is not null && (ReferenceEquals(entity, _checkoutPedido) ||
+                entity is PedidoVentaDetalle detalle && _checkoutPedido.Detalles.Any(x => ReferenceEquals(x, detalle)))));
+    }
     internal void SetPublicInvoiceEmpresa(int empresaId) =>
         _publicInvoiceEmpresaId = empresaId > 0 ? empresaId : throw new ForbiddenAccessException("Empresa inválida.");
 

@@ -7356,6 +7356,10 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<int?>("ConfirmadoPorUsuarioId")
                         .HasColumnType("int");
 
+                    b.Property<decimal?>("CostoEnvio")
+                        .HasPrecision(18, 2)
+                        .HasColumnType("decimal(18,2)");
+
                     b.Property<int?>("CotizacionId")
                         .HasColumnType("int");
 
@@ -7364,6 +7368,9 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
 
                     b.Property<int?>("CreadoPorUsuarioId")
                         .HasColumnType("int");
+
+                    b.Property<string>("EntregaCheckoutJson")
+                        .HasColumnType("longtext");
 
                     b.Property<int>("Estado")
                         .HasColumnType("int");
@@ -7389,12 +7396,20 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .HasMaxLength(128)
                         .HasColumnType("varchar(128)");
 
+                    b.Property<string>("MonedaCheckout")
+                        .HasMaxLength(3)
+                        .HasColumnType("varchar(3)");
+
                     b.Property<string>("MotivoAnulacion")
                         .HasColumnType("longtext");
 
                     b.Property<string>("Observaciones")
                         .HasMaxLength(1000)
                         .HasColumnType("varchar(1000)");
+
+                    b.Property<string>("TarifaEnvioCheckout")
+                        .HasMaxLength(120)
+                        .HasColumnType("varchar(120)");
 
                     b.Property<int?>("EmpresaId").HasColumnType("int");
 
@@ -7418,6 +7433,8 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
 
                     b.ToTable("PedidosVenta", null, t =>
                         {
+                            t.HasCheckConstraint("CK_PedidosVenta_Checkout_Atomico", "((`CostoEnvio` IS NULL AND `MonedaCheckout` IS NULL AND `TarifaEnvioCheckout` IS NULL AND `EntregaCheckoutJson` IS NULL) OR (`CostoEnvio` IS NOT NULL AND `CostoEnvio` >= 0 AND `MonedaCheckout` IS NOT NULL AND CHAR_LENGTH(`MonedaCheckout`) = 3 AND `TarifaEnvioCheckout` IS NOT NULL AND `EntregaCheckoutJson` IS NOT NULL AND `CotizacionId` IS NULL))");
+
                             t.HasCheckConstraint("CK_PedidosVenta_Estado", "`Estado` IN (1, 2, 3)");
 
                             t.HasCheckConstraint("CK_PedidosVenta_Idempotencia_Atomica", "((`IdempotencyKey` IS NULL AND `IdempotencyFingerprint` IS NULL) OR (`IdempotencyKey` IS NOT NULL AND `IdempotencyFingerprint` IS NOT NULL))");

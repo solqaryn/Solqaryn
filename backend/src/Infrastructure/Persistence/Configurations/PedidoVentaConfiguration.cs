@@ -14,6 +14,8 @@ public sealed class PedidoVentaConfiguration : IEntityTypeConfiguration<PedidoVe
             table.HasCheckConstraint(
                 "CK_PedidosVenta_Estado",
                 $"`Estado` IN ({(int)EstadoPedidoVenta.Borrador}, {(int)EstadoPedidoVenta.Confirmado}, {(int)EstadoPedidoVenta.Anulado})");
+            table.HasCheckConstraint("CK_PedidosVenta_Checkout_Atomico",
+                "((`CostoEnvio` IS NULL AND `MonedaCheckout` IS NULL AND `TarifaEnvioCheckout` IS NULL AND `EntregaCheckoutJson` IS NULL) OR (`CostoEnvio` IS NOT NULL AND `CostoEnvio` >= 0 AND `MonedaCheckout` IS NOT NULL AND CHAR_LENGTH(`MonedaCheckout`) = 3 AND `TarifaEnvioCheckout` IS NOT NULL AND `EntregaCheckoutJson` IS NOT NULL AND `CotizacionId` IS NULL))");
             table.HasCheckConstraint(
                 "CK_PedidosVenta_Idempotencia_Atomica",
                 "((`IdempotencyKey` IS NULL AND `IdempotencyFingerprint` IS NULL) OR (`IdempotencyKey` IS NOT NULL AND `IdempotencyFingerprint` IS NOT NULL))");
@@ -26,6 +28,10 @@ public sealed class PedidoVentaConfiguration : IEntityTypeConfiguration<PedidoVe
         builder.Property(p => p.ClienteNombreSnapshot).IsRequired().HasMaxLength(200);
         builder.Property(p => p.ClienteDocumentoSnapshot).HasMaxLength(50);
         builder.Property(p => p.Observaciones).HasMaxLength(1000);
+        builder.Property(p => p.CostoEnvio).HasPrecision(18, 2);
+        builder.Property(p => p.MonedaCheckout).HasMaxLength(3);
+        builder.Property(p => p.TarifaEnvioCheckout).HasMaxLength(120);
+        builder.Property(p => p.EntregaCheckoutJson).HasColumnType("longtext");
         builder.Property(p => p.IdempotencyKey).HasMaxLength(128);
         builder.Property(p => p.IdempotencyFingerprint).HasMaxLength(64).IsFixedLength();
 

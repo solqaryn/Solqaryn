@@ -17,7 +17,7 @@ namespace Solqaryn.API.Controllers;
 [AllowAnonymous]
 [ResponseCache(NoStore = true, Location = ResponseCacheLocation.None)]
 [Route("tienda/cuenta")]
-public sealed class TiendaCuentaController : ControllerBase
+public sealed partial class TiendaCuentaController : ControllerBase
 {
     private const string SessionHeader = "X-Storefront-Session";
     private static readonly TimeSpan SessionLifetime = TimeSpan.FromHours(12);
@@ -411,6 +411,10 @@ public sealed class TiendaCuentaController : ControllerBase
         Id = pedido.Id,
         Estado = pedido.Estado.ToString(),
         Total = pedido.Total,
+        Subtotal = pedido.Subtotal,
+        CostoEnvio = pedido.CostoEnvio,
+        Moneda = pedido.MonedaCheckout,
+        TarifaEnvio = pedido.TarifaEnvioCheckout,
         FechaUtc = pedido.FechaCreacion,
         Lineas = pedido.Detalles.Select(x => new TiendaPedidoCuentaLineaDto
         {
