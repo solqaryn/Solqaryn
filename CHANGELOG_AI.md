@@ -1,3 +1,11 @@
+## 2026-11-28 — QA: diagnóstico causal de certificación residual y verificación de acuses
+
+- Ejecución 46145919035: job 140981847436 acredita API frontera exacta y +1 byte A, selección navegador A; falla guardado UI. Render registra actualización de versión de galería sin carga acreditada. Se evita interceptar multipart del mismo origen en Chromium, se observa FormData real sin alterar payload y se exigen respuesta, cabeceras, tamaño, imagen persistida y lectura DB. Se añaden marcadores de etapa sanitizados; la causa de transporte deberá confirmarse con la nueva ejecución. No se relajan aserciones.
+- Job 140981847235 acredita altas/edición/listado/detalle, RBAC y aislamiento A/B e inicio A; falla comparación textual de fecha. Se exige precisión física datetime(6), lectura SQL previa/posterior idéntica (fecha, actor, actualización y estado), equivalencia UTC de GET/reintento y primera respuesta dentro de un microsegundo. No se certifica mutación o idempotencia por un HTTP 200.
+- SHA cf3b75c8: cuatro gates generales SUCCESS (46146006802, 46146006839, 46146006755, 46146006753), Scope Lock PASS, Vercel QA SUCCESS; se solicitó Render QA dep-dc5csg4ipgvc73bt5jvg. Se registran referencias hash de imágenes sintéticas para correlación independiente del acuse CLOUDINARY_DELETE_RECEIPT DELETED. No se certifica borrado por ausencia lógica. Sin cambios de runtime, esquema, permisos o arquitectura en esta intervención de pruebas.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA: despliegue causal y pruebas residuales dirigidas
 
 - GitHub QA `1d0a81c937c57d1846cab3b9c1a59e91e76cdf42`: cinco Quality Gates SUCCESS (46112132394, 46112132356, 46112132405, 46112132326, 46112132330), Scope Lock aprobado, 77/77 regresiones visuales y 5/5 integración MySQL. Vercel QA READY CwVvJyDysxAY4DN47ZgNSr178Cdu y Render QA personal LIVE dep-dc5clbou01pc73899tm0 el 2026-11-28T12:38:31Z, SHA exacto. No se cambió esquema ni configuración.

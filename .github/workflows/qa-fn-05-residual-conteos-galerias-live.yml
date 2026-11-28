@@ -13,7 +13,7 @@ concurrency:
 jobs:
   residual:
     name: Certificacion residual ${{ matrix.scope }} A/B
-    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == '4d80e6109e0e77db1011749ca503e0379e85fb9a'
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == 'cf3b75c8de9289838fac8db68cbe45662de38b4a'
     runs-on: ubuntu-latest
     environment: QA
     timeout-minutes: 30
@@ -34,12 +34,14 @@ jobs:
           test "$GITHUB_REF" = refs/heads/qa
           node scripts/verify-project-scope.mjs
           git diff --check "${{ github.event.before }}" HEAD
-          git diff --exit-code 1d0a81c937c57d1846cab3b9c1a59e91e76cdf42 HEAD -- backend frontend render.yaml scripts .agents docs/PROJECT_SCOPE_LOCK.md AGENTS.md
-          for run in 46112132394 46112132356 46112132405 46112132326 46112132330; do
-            gh api "repos/solqaryn/Solqaryn/actions/runs/$run" | jq -e '.head_sha == "1d0a81c937c57d1846cab3b9c1a59e91e76cdf42" and .head_branch == "qa" and .status == "completed" and .conclusion == "success"' >/dev/null
+          git diff --exit-code cf3b75c8de9289838fac8db68cbe45662de38b4a HEAD -- backend frontend render.yaml scripts .agents docs/PROJECT_SCOPE_LOCK.md AGENTS.md
+          for run in 46146006802 46146006839 46146006755 46146006753; do
+            gh api "repos/solqaryn/Solqaryn/actions/runs/$run" | jq -e '.head_sha == "cf3b75c8de9289838fac8db68cbe45662de38b4a" and .head_branch == "qa" and .status == "completed" and .conclusion == "success"' >/dev/null
           done
           python3 -m py_compile .github/qa/qa-fn-05-residual-conteos-galerias-live.py
           node --check .github/qa/qa-fn-05-gallery-boundary-browser.mjs
+          gh api repos/solqaryn/Solqaryn/actions/runs/46112132356 | jq -e '.head_sha == "1d0a81c937c57d1846cab3b9c1a59e91e76cdf42" and .head_branch == "qa" and .status == "completed" and .conclusion == "success"' >/dev/null
+          git diff --exit-code 1d0a81c937c57d1846cab3b9c1a59e91e76cdf42 HEAD -- backend/src/Infrastructure/Repositories/ConteoInventarioRepository.cs backend/src/Application/Services/ConteoInventarioService.cs backend/src/Infrastructure/Persistence backend/src/Infrastructure.Migrations
           echo QA_RESIDUAL_RUNTIME_EQUIVALENCE=PASS
       - name: Preparar cliente MySQL y BCrypt
         run: |
@@ -59,7 +61,7 @@ jobs:
           npx playwright install --with-deps chromium
       - name: Pruebas funcionales reales exclusivamente QA
         env:
-          EXPECTED_DEPLOYED_SHA: '1d0a81c937c57d1846cab3b9c1a59e91e76cdf42'
+          EXPECTED_DEPLOYED_SHA: 'cf3b75c8de9289838fac8db68cbe45662de38b4a'
           DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
           DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
           DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}

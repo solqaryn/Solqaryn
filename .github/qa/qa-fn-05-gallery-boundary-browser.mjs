@@ -14,11 +14,28 @@ let stage='LOGIN';
 const mark=label=>console.log('QA_GALLERY_UI_'+label+'_'+spec.side+'=PASS');
 try {
   const context=await browser.newContext({viewport:spec.side==='A'?{width:390,height:844}:{width:1440,height:900},acceptDownloads:false});
-  await context.route('**/*',async route=>{
-    const request=route.request(),url=new URL(request.url());
-    if(url.origin===base){await route.continue();return;}
+  // Never intercept same-origin multipart uploads: Chromium request interception
+  // can re-materialize file-backed request bodies. Keep foreign mutations blocked.
+  await context.route(url=>url.origin!==base,async route=>{
+    const request=route.request();
     if(request.isNavigationRequest()||!['GET','HEAD'].includes(request.method())){await route.abort();return;}
     await route.continue();
+  });
+  // Observe the UI-created FormData without modifying arguments, requests or responses.
+  // Do not log form content, headers, tokens, file names or tenant identifiers.
+  await context.addInitScript(()=>{
+    const append=FormData.prototype.append,forms=new WeakMap(),observed=[];
+    Object.defineProperty(window,'__qaGalleryForms',{value:observed});
+    FormData.prototype.append=function(name,value,...rest){
+      const result=Reflect.apply(append,this,[name,value,...rest]);
+      if(!['Version','Orden','Archivos'].includes(name))return result;
+      let entry=forms.get(this);
+      if(!entry){entry={version:0,order:[],files:[]};forms.set(this,entry);observed.push(entry);}
+      if(name==='Version')entry.version++;
+      if(name==='Orden')entry.order.push(typeof value==='string'&&value==='n:0');
+      if(name==='Archivos')entry.files.push({blob:value instanceof Blob,size:value instanceof Blob?value.size:0,webp:value instanceof Blob&&value.type==='image/webp'});
+      return result;
+    };
   });
   const page=await context.newPage();
   page.setDefaultTimeout(25000);
@@ -51,16 +68,32 @@ try {
   await expect(count).toHaveText('1 / 5',{timeout:35000});
   await expect(dialog.locator('.category-gallery [role=alert]')).toHaveCount(0);
   mark('EXACT_15_MIB_ACCEPTED');
-  stage='SAVE';
+  stage='SAVE_RESPONSE';
   const write=page.waitForResponse(r=>new URL(r.url()).origin===base&&new URL(r.url()).pathname==='/api/categorias/'+spec.category+'/imagenes'&&r.request().method()==='PUT',{timeout:60000});
   await dialog.getByRole('button',{name:'Guardar',exact:true}).click();
   await page.locator('app-alert-dialog .app-alert__confirm').click();
   const response=await write;
-  if(response.status()!==200||response.headers()['x-solqaryn-environment']!=='QA'||response.request().headers()['x-empresa-id']!==String(spec.tenant))throw new Error('Unexpected gallery write');
-  const sent=response.request().postDataBuffer();
-  if(!sent||sent.length>800*1024||!sent.includes(Buffer.from('Content-Type: image/webp')))throw new Error('Optimized multipart not proven');
+  console.log('QA_GALLERY_UI_HTTP_SAVE_'+spec.side+'='+response.status());
+  stage='SAVE_AUTHORITY';
+  const headers=await response.request().allHeaders();
+  if(response.status()!==200||response.headers()['x-solqaryn-environment']!=='QA'||headers['x-empresa-id']!==String(spec.tenant))throw new Error('Unexpected gallery write');
+  if(!/^multipart\/form-data;\s*boundary=.+/i.test(headers['content-type']||''))throw new Error('Missing multipart boundary');
+  mark('MULTIPART_AUTHORITY');
+  stage='FORMDATA';
+  const forms=await page.evaluate(()=>window.__qaGalleryForms);
+  const matches=forms.filter(form=>form.version===1&&form.order.length===1&&form.order[0]===true&&form.files.length===1);
+  console.log('QA_GALLERY_UI_MATCHING_FORMS_'+spec.side+'='+matches.length);
+  if(matches.length!==1)throw new Error('UI did not construct expected FormData');
+  const file=matches[0].files[0];
+  console.log('QA_GALLERY_UI_OPTIMIZED_BYTES_'+spec.side+'='+file.size);
+  if(!file.blob||!file.webp||file.size<=0||file.size>750*1024)throw new Error('Optimized file not proven');
+  mark('OPTIMIZED_FORMDATA');
+  stage='SAVE_BODY';
   const body=await response.json();
-  if(body.success!==true||body.data?.imagenes?.length!==1)throw new Error('Gallery result mismatch');
+  const countSaved=Array.isArray(body.data?.imagenes)?body.data.imagenes.length:999;
+  console.log('QA_GALLERY_UI_SAVED_IMAGES_'+spec.side+'='+countSaved);
+  if(body.success!==true||countSaved!==1)throw new Error('Gallery result mismatch');
+  stage='SAVE_CLOSE';
   await expect(dialog).toHaveCount(0);
   mark('OPTIMIZED_UPLOAD_PERSISTED');
 } catch {

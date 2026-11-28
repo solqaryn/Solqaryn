@@ -56,7 +56,7 @@ print("EXPECTED_RENDER_SHA=" + expected_sha, flush=True)
 print("RENDER_SHA_REQUIRES_EXTERNAL_ATTESTATION", flush=True)
 
 
-require(expected_sha == "1d0a81c937c57d1846cab3b9c1a59e91e76cdf42", "Unexpected deployed SHA")
+require(expected_sha == "cf3b75c8de9289838fac8db68cbe45662de38b4a", "Unexpected deployed SHA")
 from decimal import Decimal
 prefix = "qar" + secrets.token_hex(5)
 a,b,operator,platform = (prefix+x for x in ("A","B","O","P"))
@@ -242,6 +242,7 @@ def persisted(eid,cid,gallery):
                 and not url.username and not url.password and "/image/upload/" in path
                 and "/"+public_id+"." in path,"Cloudinary URL outside verified QA tenant")
     print("QA_GALLERY_STORAGE_LOCATORS_VERIFIED=PASS",flush=True)
+    return [hashlib.sha256(i["PublicId"].encode("utf-8")).hexdigest().upper() for i in stored]
 
 
 owned=[]
@@ -306,11 +307,13 @@ try:
             require(gallery_read(route,"BOUNDARY_UNCHANGED_"+side,token,eid)==initial,"Oversize upload mutated gallery")
             result=gallery_write(route,"API_EXACT_15_MIB_"+side,token,eid,initial["version"],["n:0"],[exact],base=backend)
             require(len(image_ids(result))==1,"Exact-boundary image not persisted")
-            persisted(eid,cid,result)
+            receipts=persisted(eid,cid,result)
+            require(len(receipts)==1,"Expected exact-boundary receipt reference")
             require(gallery_read(route,"BOUNDARY_API_READBACK_"+side,token,eid)==result,"Boundary readback mismatch")
             cleared=gallery_write(route,"BOUNDARY_API_CLEAR_"+side,token,eid,result["version"],[])
             require(image_ids(cleared)==[],"Fixture clear failed")
             persisted(eid,cid,cleared)
+            print("QA_GALLERY_EXPECT_DELETE_API_"+side+"="+receipts[0],flush=True)
             with tempfile.TemporaryDirectory(prefix="solqaryn-qa-gallery-") as tmp:
                 good=pathlib.Path(tmp)/"exact.png"
                 bad=pathlib.Path(tmp)/"oversize.png"
@@ -319,14 +322,16 @@ try:
                 spec={"base":"https://solqarynqa-nu.vercel.app","user":a if side=="A" else b,"password":passwords[a if side=="A" else b],"tenant":eid,"side":side,"category":cid,"name":name,"good":str(good),"bad":str(bad)}
                 browser=subprocess.run(["node",".github/qa/qa-fn-05-gallery-boundary-browser.mjs"],input=json.dumps(spec),text=True,capture_output=True,timeout=180)
                 for line in browser.stdout.splitlines():
-                    if re.fullmatch(r"QA_GALLERY_UI_[A-Z0-9_]+=(?:PASS|FAIL)",line):
+                    if re.fullmatch(r"QA_GALLERY_UI_[A-Z0-9_]+=(?:PASS|FAIL|[0-9]{1,9})",line):
                         print(line,flush=True)
                 require(browser.returncode==0,"Authentic gallery boundary browser failed")
             state=gallery_read(route,"BOUNDARY_UI_READBACK_"+side,token,eid)
             require(len(image_ids(state))==1,"Optimized browser upload did not persist")
-            persisted(eid,cid,state)
+            receipts=persisted(eid,cid,state)
+            require(len(receipts)==1,"Expected browser receipt reference")
+            print("QA_GALLERY_EXPECT_DELETE_UI_"+side+"="+receipts[0],flush=True)
         print("QA_GALLERY_BOUNDARY_API_AND_BROWSER_AB=PASS",flush=True)
-        print("QA_GALLERY_PHYSICAL_DELETE_NOT_CERTIFIED",flush=True)
+        print("QA_GALLERY_PHYSICAL_DELETE_REQUIRES_RENDER_RECEIPTS",flush=True)
     else:
         # The product/warehouse/stock seed follows the existing QA checkout fixture
         # contract. Only the two newly created companies are touched. Stock is
@@ -405,12 +410,28 @@ SELECT @w,@p,@v;""","conteos fixture seed").split("\t")
             own=fixtures[side][2]
             other="B" if side=="A" else "A"
             path="/"+str(ident)
+            def persisted_start():
+                return sql(f"SELECT DATE_FORMAT(FechaInicio,'%Y-%m-%dT%H:%i:%s.%f'),IniciadoPorUsuarioId,DATE_FORMAT(FechaActualizacion,'%Y-%m-%dT%H:%i:%s.%f'),Estado FROM ConteosInventario WHERE EmpresaId={eid} AND Id={ident};","start physical readback")
+            def utc_value(value):
+                require(isinstance(value,str) and re.fullmatch(r"\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d{1,7})?(?:Z|\+00:00)?",value) is not None,"Unexpected UTC timestamp contract")
+                return datetime.datetime.fromisoformat(value.replace("Z","+00:00")).replace(tzinfo=datetime.timezone.utc)
             started=request(path+"/iniciar","START_"+side,token,eid,method="POST")
             assert_state(started,"EnProceso")
             persisted_count(eid,ident,2,own)
+            before=persisted_start()
+            parts=before.split("\t")
+            require(len(parts)==4 and parts[1]==str(ua if side=="A" else ub) and parts[3]=="2","Start physical evidence incomplete")
+            precision=sql("SELECT DATETIME_PRECISION FROM information_schema.COLUMNS WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='ConteosInventario' AND COLUMN_NAME='FechaInicio';","timestamp precision")
+            require(precision=="6","Unexpected physical timestamp precision")
+            persisted_time=utc_value(parts[0])
+            require(abs(utc_value(started.get("fechaInicio"))-persisted_time)<=datetime.timedelta(microseconds=1),"First response differs from persisted timestamp beyond MySQL precision")
+            readback=request(path,"START_READBACK_"+side,token,eid)
+            require(utc_value(readback.get("fechaInicio"))==persisted_time,"Persisted start readback mismatch")
             repeated=request(path+"/iniciar","START_IDEMPOTENT_"+side,token,eid,method="POST")
             assert_state(repeated,"EnProceso")
-            require(started.get("fechaInicio")==repeated.get("fechaInicio"),"Repeated start mutated timestamp")
+            require(utc_value(repeated.get("fechaInicio"))==persisted_time,"Repeated start returned another persisted timestamp")
+            require(persisted_start()==before,"Repeated start mutated persisted timestamp, actor or state")
+            print("QA_COUNT_IDEMPOTENT_PHYSICAL_"+side+"=PASS",flush=True)
             request(path+"/cerrar","INCOMPLETE_CLOSE_DENIED_"+side,token,eid,method="POST",expected=denial)
             request(path+"/detalles/"+str(details[other])+"/captura","FOREIGN_LINE_DENIED_"+side,token,eid,{"cantidadContada":99},"PUT",denial)
             persisted_count(eid,ident,2,own)
