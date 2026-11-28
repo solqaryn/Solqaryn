@@ -1,3 +1,12 @@
+## 2026-11-28 — QA: aplicación única V4 y prearmado de certificación bancaria
+
+- HEAD causal c3bb43b245852f1e04092c7a6f525ca09e44b314: seis gates SUCCESS (46153385655, 46153385642, 46153385653, 46153385697, 46153385759, 46153385698), 2.537 unitarias + 6 integración, ensayo exacto V4 sobre 138 tablas preservadas. Render QA sigue en 7676febf; Vercel QA READY sobre HEAD causal.
+- Solicitud expresa del propietario: aplicar V4 exclusivamente a solqaryn_qa. One-shot con mantenimiento HTTP 503 real, ningún cambio a DEV/MAIN ni mantenimiento del servicio Aiven compartido, backup fresco cifrado (PBKDF2 600000, clave existente de al menos 32 caracteres), restauración verificada, ensayo exacto, comprobación de todas las huellas históricas/IAM y cero sesiones concurrentes. Recuperación: conservar artefacto cifrado 14 días, mantener mantenimiento ante fallo y no repetir DDL ni restaurar destructivamente sin diagnóstico y autorización específica. No declarar aplicado hasta evidencia.
+- Ampliar prueba autenticada A/B para reapertura autorizada, rechazo cruzado y sin permiso, preservación de movimientos/matches y rechazo de duplicados. Se ejecutará sólo tras verificar V4 y SHA LIVE en Render, no contra runtime anterior.
+- Checkout/cobro aún abierto; no simular pagos ni introducir un proveedor ficticio.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA: reparar materialización del snapshot V4
 
 - Jobs 141001834865, 141001835012, 141001835066 y 141001835109 fallaron antes del barrido, con la misma excepción EF al crear el índice PedidoVenta.EmpresaId sin declarar previamente el tipo shadow. La misma causa bloqueó el ensayo V4 (141001740209) y las seis pruebas MySQL (141002260713). Compilación y pruebas previas SUCCESS (46152424751).

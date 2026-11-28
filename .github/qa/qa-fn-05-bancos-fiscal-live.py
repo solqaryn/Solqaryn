@@ -70,7 +70,7 @@ def grant(code):
     require(value.isdigit(),"Missing unique active shipping permission")
     return int(value)
 grant_codes = (
-    ("FINANZAS.VER", "FINANZAS.CREAR", "FINANZAS.IMPORTAR", "FINANZAS.CERRAR") if mode == "bancos"
+    ("FINANZAS.VER", "FINANZAS.CREAR", "FINANZAS.IMPORTAR", "FINANZAS.CERRAR", "FINANZAS.REABRIR") if mode == "bancos"
     else ("CATEGORIAS.CREAR", "METODOSPAGO.CREAR", "DESCUENTOS.CREAR", "DESCUENTOS.EDITAR",
           "IMPUESTOS.CREAR", "IMPUESTOS.EDITAR", "PRODUCTOS.VER", "COMPRAS.VER", "COMPRAS.CREAR",
           "COMPRAS.CONFIRMAR", "VENTAS.VER", "VENTAS.CREAR", "VENTAS.CONFIRMAR"))
@@ -339,10 +339,26 @@ SELECT @c;""","create isolated reconciliation")
             require(bool(cross["errores"]),"Foreign adjustment not denied")
             require(sql(f"SELECT COUNT(*) FROM MovimientosFinancieros WHERE ModuloOrigen='Bancos' AND Descripcion='IdempotencyKey: {key}-foreign-{external}';","foreign adjustment invariant")=="0","Foreign adjustment changed ledger")
             require(sql(f"SELECT COUNT(*) FROM CuentasBancarias WHERE Id={aid} AND EmpresaId={eid} AND SaldoInicial=0;","account opening balance")=="1","Opening balance changed")
+            reopening={"cuentaBancariaId":aid,"mes":now.month,"anio":now.year,"motivoReapertura":"Correccion sintetica QA","idempotencyKey":prefix+"-"+side+"-reopen"}
+            foreign_reopen=invoke(token,eid,side,"/conciliaciones-bancarias/reapertura-periodo","REOPEN_FOREIGN",dict(reopening,cuentaBancariaId=foreign))
+            require(foreign_reopen["exitoso"] is False,"Foreign period reopened")
+            result=invoke(token,eid,side,"/conciliaciones-bancarias/reapertura-periodo","REOPEN",reopening)
+            require(result["exitoso"] is True,"Reopening failed")
+            require(sql(f"SELECT COUNT(*) FROM ConciliacionesBancarias WHERE Id={rid} AND EmpresaId={eid} AND Estado=4 AND SaldoFinalBanco=100 AND Observaciones='{prefix+side}';","historical period")=="1","Original reconciliation not preserved")
+            new_id=sql(f"SELECT Id FROM ConciliacionesBancarias WHERE EmpresaId={eid} AND CuentaBancariaId={aid} AND Estado=1 AND Id<>{rid} AND SaldoFinalBanco=100;","reopened period")
+            require(new_id.isdigit() and int(new_id)>0,"Missing new draft")
+            require(sql(f"SELECT COUNT(*) FROM MovimientosEstadoCuenta WHERE ConciliacionBancariaId={rid} AND EmpresaId={eid};","historical statement")=="1","Historical statement lost")
+            require(sql(f"SELECT COUNT(*) FROM MatchesConciliacion WHERE MovimientoEstadoCuentaId={int(line)} AND EmpresaId={eid} AND MovimientoFinancieroId={movements[side]} AND MontoAplicado=100;","historical match")=="1","Historical match lost")
+            require(sql(f"SELECT COUNT(*) FROM MovimientosEstadoCuenta WHERE ConciliacionBancariaId={int(new_id)} AND EmpresaId={eid};","new draft statement")=="0","Historical matches copied into draft")
+            replay=invoke(token,eid,side,"/conciliaciones-bancarias/reapertura-periodo","REOPEN_REPLAY",reopening)
+            require(replay["exitoso"] is False,"Reopening replay created another draft")
+            require(sql(f"SELECT COUNT(*) FROM ConciliacionesBancarias WHERE EmpresaId={eid} AND CuentaBancariaId={aid};","reopen invariant")=="2","Reopening duplicated versions")
+            print("QA_BF_REOPEN_"+side+"=PASS",flush=True)
             print("QA_BF_TRANSFER_ADJUST_"+side+"=PASS",flush=True)
             print("QA_BF_BANK_PERSISTENCE_"+side+"=PASS",flush=True)
         invoke(to,eb,"OP","/cuentas-bancarias/"+str(accounts["B"][0]),"ACCOUNT_DENIED",expected=403,method="GET")
         invoke(to,eb,"OP","/conciliaciones-bancarias/importaciones-estado-cuenta","IMPORT_DENIED",{"cuentaBancariaId":accounts["B"][0],"movimientos":[]},expected=403)
+        invoke(to,eb,"OP","/conciliaciones-bancarias/reapertura-periodo","REOPEN_DENIED",{"cuentaBancariaId":accounts["B"][0],"mes":now.month,"anio":now.year,"motivoReapertura":"QA"},expected=403)
         print("QA_BF_BANK_IMPORT_MATCH_CLOSE_LEDGER_AB=PASS",flush=True)
     else:
         fixtures={}
