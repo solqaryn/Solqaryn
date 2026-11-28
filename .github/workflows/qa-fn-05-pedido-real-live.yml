@@ -1,0 +1,48 @@
+name: QA - FN-05 pedido real desplegado
+on:
+  push:
+    branches: [qa]
+    paths:
+      - '.github/workflows/qa-fn-05-pedido-real-live.yml'
+permissions:
+  contents: read
+  actions: read
+concurrency:
+  group: qa-fn-05-live-admin
+  cancel-in-progress: false
+jobs:
+  pedido-live:
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == '88dc7c095fd63474dfbbe5e7b5ad9d269b8ba5b4' && github.run_attempt == 1
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    environment: QA
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - name: Scope Lock QA and certified deployed source
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF" = refs/heads/qa
+          node scripts/verify-project-scope.mjs
+          git diff --exit-code 88dc7c095fd63474dfbbe5e7b5ad9d269b8ba5b4 HEAD -- backend frontend render.yaml .agents scripts docs/PROJECT_SCOPE_LOCK.md AGENTS.md
+          gh api repos/solqaryn/Solqaryn/actions/runs/46179506984 | jq -e '.head_sha == "88dc7c095fd63474dfbbe5e7b5ad9d269b8ba5b4" and .head_branch == "qa" and .conclusion == "success"' >/dev/null
+          python3 -m py_compile .github/qa/qa-fn-05-pedido-real-live.py
+      - name: Install QA SQL client and bcrypt
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y mysql-client apache2-utils
+      - name: Deployed checkout, persistence, ERP A/B and exact cleanup
+        env:
+          EXPECTED_DEPLOYED_SHA: '88dc7c095fd63474dfbbe5e7b5ad9d269b8ba5b4'
+          DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
+          DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
+          DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}
+          DB_USER: ${{ vars.SOLQARYN_QA_DB_USER }}
+          DB_PASSWORD: ${{ secrets.SOLQARYN_QA_DB_PASSWORD }}
+        run: |
+          set -euo pipefail
+          python3 .github/qa/qa-fn-05-pedido-real-live.py

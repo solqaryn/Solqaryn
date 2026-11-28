@@ -1,3 +1,9 @@
+## 2026-11-28 — QA FN-05 pedido real desplegado: prueba dirigida
+
+- Aplicacion V6 certificada: run 46179506984, marcador 115, 138 tablas y datos/IAM preservados. Render dep-dc5ik0ajnfac73dbhl9g LIVE y Vercel dpl_As5mzy84pg15YihKFg1FAyv8skJy READY sobre 88dc7c095fd63474dfbbe5e7b5ad9d269b8ba5b4; mantenimiento retirado, health/ready via proxy HTTP 200 y binding QA verificado.
+- Se publica prueba unica del pedido invitado real por proxy QA, cotizacion, aserciones monetarias, idempotencia, recibo y acceso ERP A/B con autoridades temporales solo lectura. Se exige persistencia fisica, ausencia de efectos enlazados y limpieza exacta de fixtures (se preservan registros de auditoria). No confirma, cobra, factura, reserva ni ejecuta DDL. Pendiente resultado de CI y verificacion externa de SHA desplegado. No se modifica el codigo funcional ni DEV/MAIN.
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA checkout: ensayo certificado y aplicacion unica de migracion existente
 
 - Run 46178800298 SUCCESS en 3d97f31a24c03b22b5e4feeccadcd42a8fc75822: cliente MySQL real, respaldo cifrado, restauracion exacta de 138 tablas, datos e IAM preservados, modelo EF sin cambios pendientes, historial 115 en copia. Cero escrituras en origen. Certificado el ensayo.
