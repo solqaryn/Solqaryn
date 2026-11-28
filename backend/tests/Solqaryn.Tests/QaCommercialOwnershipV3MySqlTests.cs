@@ -1,3 +1,4 @@
+using System.Data;
 using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
 using MySql.EntityFrameworkCore.Extensions;
@@ -50,7 +51,7 @@ public sealed class QaCommercialOwnershipV3MySqlTests
                 await QaCommercialOwnershipV3.ProvisionDefaultsAsync(setup,a);
                 await transaction.CommitAsync();
             }
-            async Task<(int Category,int Discount,int Tax,int Count,int BankEntry,int Finance)> Create(int owner,int warehouse)
+            async Task<(int Category,int Discount,int Tax,int Count,int BankEntry,int Finance,int Detail,int Variant)> Create(int owner,int warehouse)
             {
                 accessor.HttpContext!.Items["SOLQARYN_AUTHORIZED_EMPRESA_ID"]=owner;
                 await using var db=new AppDbContext(options,httpContextAccessor:accessor);
@@ -85,11 +86,22 @@ public sealed class QaCommercialOwnershipV3MySqlTests
                 Assert.Single(await db.Descuentos.ToListAsync());
                 Assert.Single(await db.Impuestos.ToListAsync());
                 Assert.Single(await db.CategoriasGalerias.ToListAsync());
+                var product=new Producto { Nombre="Producto para conteo",CategoriaId=c.Id,Costo=3,Precio=5 };
+                db.Productos.Add(product);
+                await db.SaveChangesAsync();
+                var variant=new ProductoVariante { ProductoId=product.Id,Sku="V3-CONTEO" };
+                db.ProductoVariantes.Add(variant);
+                await db.SaveChangesAsync();
+                var detail=new ConteoInventarioDetalle { ConteoInventarioId=count.Id,AlmacenId=warehouse,ProductoVarianteId=variant.Id };
+                detail.MaterializarSnapshot(10);
+                db.Set<ConteoInventarioDetalle>().Add(detail);
+                await db.SaveChangesAsync();
                 Assert.Single(await db.Set<ConteoInventario>().ToListAsync());
+                Assert.Single(await db.Set<ConteoInventarioDetalle>().ToListAsync());
                 Assert.Single(await db.CuentasBancarias.ToListAsync());
                 Assert.Single(await db.Set<MatchConciliacion>().ToListAsync());
                 Assert.False(await db.Categorias.AnyAsync(x=>x.Id==legacy));
-                return(c.Id,discount.Id,tax.Id,count.Id,statement.Id,finance.Id);
+                return(c.Id,discount.Id,tax.Id,count.Id,statement.Id,finance.Id,detail.Id,variant.Id);
             }
             var aa=await Create(a,warehouseA);var bb=await Create(b,warehouseB);
 
@@ -108,6 +120,12 @@ public sealed class QaCommercialOwnershipV3MySqlTests
                 Assert.Null(readA.AuthorizedEmpresaId);
                 Assert.Null(readA.CommercialWriteEmpresaId);
                 Assert.False(readA.CommercialPrivateWriteAuthorized);
+                await using (var tx=await readA.Database.BeginTransactionAsync())
+                {
+                    Assert.NotNull(await new ConteoInventarioRepository(readA).GetByIdAsync(aa.Count));
+                    Assert.Null(await new ConteoInventarioRepository(readA).GetByIdForUpdateAsync(aa.Count));
+                    await tx.RollbackAsync();
+                }
                 readA.Add(new MetodoPagoCatalogo { Codigo = "READ_ONLY_DENIED", Nombre = "No autorizado", Tipo = "Efectivo" });
                 await Assert.ThrowsAsync<ForbiddenAccessException>(() => readA.SaveChangesAsync());
             }
@@ -121,7 +139,51 @@ public sealed class QaCommercialOwnershipV3MySqlTests
             }
             accessor.HttpContext.Items.Remove(readKey);
             await using (var noRead = new AppDbContext(options, httpContextAccessor: accessor))
+            {
                 Assert.Empty(await new MetodoPagoRepository(noRead).GetActivosAsync());
+                await using var tx=await noRead.Database.BeginTransactionAsync();
+                Assert.Null(await new ConteoInventarioRepository(noRead).GetByIdForUpdateAsync(aa.Count));
+                await tx.RollbackAsync();
+            }
+            accessor.HttpContext.Items[AppDbContext.PublicStoreTenantItemKey]=a;
+            await using (var publicScope = new AppDbContext(options, httpContextAccessor: accessor))
+            {
+                await using var tx=await publicScope.Database.BeginTransactionAsync();
+                Assert.Null(await new ConteoInventarioRepository(publicScope).GetByIdForUpdateAsync(aa.Count));
+                await tx.RollbackAsync();
+            }
+            accessor.HttpContext.Items.Remove(AppDbContext.PublicStoreTenantItemKey);
+
+            // A foreign primary key must not acquire or wait on the other
+            // company's row lock. Use the deployed V3 owner index and bound
+            // lock waits in this disposable MySQL database.
+            foreach (var scope in new[] {
+                (Owner:a, Own:aa, Foreign:bb),
+                (Owner:b, Own:bb, Foreign:aa) })
+            {
+                accessor.HttpContext.Items["SOLQARYN_AUTHORIZED_EMPRESA_ID"]=scope.Owner;
+                await using var blocker=new AppDbContext(options);
+                await using var held=await blocker.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+                Assert.NotNull(await new ConteoInventarioRepository(blocker).GetByIdForUpdateAsync(scope.Foreign.Count));
+                await using var scoped=new AppDbContext(options,httpContextAccessor:accessor);
+                await scoped.Database.OpenConnectionAsync();
+                await scoped.Database.ExecuteSqlRawAsync("SET SESSION innodb_lock_wait_timeout = 3");
+                var repo=new ConteoInventarioRepository(scoped);
+                Assert.Null(await repo.GetByIdAsync(scope.Foreign.Count));
+                Assert.False(await scoped.Set<ConteoInventarioDetalle>().AnyAsync(x=>x.Id==scope.Foreign.Detail));
+                await Assert.ThrowsAsync<InvalidOperationException>(()=>repo.GetByIdForUpdateAsync(scope.Own.Count));
+                await using var tx=await scoped.Database.BeginTransactionAsync(IsolationLevel.ReadCommitted);
+                Assert.Null(await repo.GetByIdForUpdateAsync(scope.Foreign.Count));
+                var own=await repo.GetByIdForUpdateAsync(scope.Own.Count);
+                Assert.NotNull(own);
+                var line=Assert.Single(own.Detalles);
+                Assert.Equal(scope.Own.Detail,line.Id);
+                Assert.Equal(scope.Own.Variant,line.ProductoVarianteId);
+                Assert.Equal(10,line.StockEsperadoSnapshot);
+                Assert.Equal(scope.Owner,scoped.Entry(line).Property<int?>("EmpresaId").CurrentValue);
+                await tx.RollbackAsync();
+                await held.RollbackAsync();
+            }
 
             accessor.HttpContext.Items["SOLQARYN_AUTHORIZED_EMPRESA_ID"]=a;
             await using (var read=new AppDbContext(options,httpContextAccessor:accessor))
@@ -153,6 +215,20 @@ public sealed class QaCommercialOwnershipV3MySqlTests
             {
                 cross.Set<ConteoInventario>().Add(new ConteoInventario { Numero="NO",AlmacenId=warehouseB,CategoriaId=aa.Category });
                 await Assert.ThrowsAsync<ForbiddenAccessException>(()=>cross.SaveChangesAsync());
+            }
+            await using (var cross=new AppDbContext(options,httpContextAccessor:accessor))
+            {
+                cross.Set<ConteoInventarioDetalle>().Add(new ConteoInventarioDetalle {
+                    ConteoInventarioId=aa.Count,AlmacenId=warehouseA,ProductoVarianteId=bb.Variant });
+                await Assert.ThrowsAsync<ForbiddenAccessException>(()=>cross.SaveChangesAsync());
+            }
+            await using (var physical=new AppDbContext(options))
+            {
+                var detail=new ConteoInventarioDetalle {
+                    ConteoInventarioId=aa.Count,AlmacenId=warehouseA,ProductoVarianteId=bb.Variant };
+                physical.Set<ConteoInventarioDetalle>().Add(detail);
+                physical.Entry(detail).Property("EmpresaId").CurrentValue=a;
+                await Assert.ThrowsAsync<DbUpdateException>(()=>physical.SaveChangesAsync());
             }
             await using (var cross=new AppDbContext(options,httpContextAccessor:accessor))
             {

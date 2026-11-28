@@ -1,3 +1,11 @@
+## 2026-11-27 — QA: certificación causal de modales y galerías; bloqueo empresarial de conteos
+
+- Certificado `0c01a0b91840116dc422d445e3238cb988b400e5`: 46086662625 (77/77 visuales, higiene y backend), 46086662622, 46086662624 y 46086662617 SUCCESS. Vercel personal QA READY `LMnwjP3zAqAW3ytKSv6av1wigEL4`, alias QA y SHA confirmados; Render personal LIVE `dep-dc4qgl3l550s73abc590`, SHA `dea277293408751b1b49416a8164e1392e80a483` comprobado antes y después. Job 140797707168: modales de envío A móvil/B escritorio, payload específico/predeterminado exacto HTTP 200, CRUD, historial, cancelación, protección, operador y selector cruzado, revocación PASS. Retirado hallazgo QA-UI-01 de costos de envío.
+- Job 140800692445: QA_GALLERY_OPERATIONS_AB y QA_GALLERY_LIVE_CERTIFICATE PASS; cinco imágenes, sexta/archivo inválido rechazados, reordenamiento, versión, persistencia, locators QA por empresa, referencias cruzadas, auditoría, retirada lógica y limpieza/revocación. El propio log marca QA_GALLERY_PHYSICAL_DELETE_NOT_CERTIFIED; se retiran sólo las operaciones acreditadas. Límite individual de 15 MiB del commit padre pendiente de CI/Render y pruebas causales; eliminación física permanece pendiente.
+- Inventario: ConteoInventarioRepository exige autoridad privada empresarial verificada para bloqueo HTTP, sin fallback a autoridad de lectura/pública; consulta SQL parametrizada incluye EmpresaId e Id y utiliza índice propietario V3 existente antes de FOR UPDATE. Contextos offline explícitos conservan su contrato. EF query filters, claves, RBAC y esquema sin cambios. Integración MySQL desechable V3 añade detalles propios, consulta/bloqueo A/B bajo contención de la fila extranjera, ausencia de autorización, permiso sólo lectura/público, transacción requerida y rechazo de escritura de variante ajena por aplicación y FK. Pendiente CI, Render y recorrido autenticado completo; no certificar por el diff. Sin cambio de infraestructura ni migraciones.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-27 — QA: coherencia del límite individual de galerías de categorías
 
 - Límite exclusivo de categorías: 15 MiB por original y 15 MiB agregados por solicitud, margen multipart existente de 16 MiB. Se añade contrato explícito tenant-aware para carga de galerías, sin fallback al contrato genérico. Productos y perfiles conservan su límite de 10 MiB.

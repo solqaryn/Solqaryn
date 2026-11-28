@@ -69,10 +69,17 @@ public sealed class ConteoInventarioRepository : IConteoInventarioRepository
         if (_context.Database.CurrentTransaction is null)
             throw new InvalidOperationException("GetByIdForUpdateAsync requiere una transacción activa.");
 
-        var conteo = await Conteos
-            .FromSqlInterpolated($"SELECT c.* FROM ConteosInventario c WHERE c.Id = {id} FOR UPDATE")
-            .AsTracking()
-            .FirstOrDefaultAsync();
+        // El filtro global de EF no sustituye la restricción del SQL que toma
+        // el bloqueo. Sólo la autoridad empresarial privada verificada puede
+        // bloquear un documento; una membresía de lectura o storefront no basta.
+        var empresaId = _context.AuthorizedEmpresaId;
+        if (_context.CommercialRequestRequiresTenant && empresaId is not > 0)
+            return null;
+
+        var query = _context.CommercialRequestRequiresTenant
+            ? Conteos.FromSqlInterpolated($"SELECT c.* FROM ConteosInventario c FORCE INDEX (UX_QAC3_ConteosInventario_OwnerId) WHERE c.EmpresaId = {empresaId!.Value} AND c.Id = {id} FOR UPDATE")
+            : Conteos.FromSqlInterpolated($"SELECT c.* FROM ConteosInventario c WHERE c.Id = {id} FOR UPDATE");
+        var conteo = await query.AsTracking().FirstOrDefaultAsync();
         if (conteo is null) return null;
 
         await _context.Entry(conteo).Reference(x => x.Almacen).LoadAsync();
