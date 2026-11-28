@@ -8,7 +8,7 @@ const rootDir = path.resolve(frontendDir, '..');
 const readFrontend = name => readFile(path.join(frontendDir, name), 'utf8');
 const readRoot = name => readFile(path.join(rootDir, name), 'utf8');
 
-const [routes, models, catalog, productsTs, productsHtml, detailTs, detailHtml, cartHtml, headerHtml, controller, promoService, existenciaService, existenciaRepository] = await Promise.all([
+const [routes, models, catalog, productsTs, productsHtml, detailTs, detailHtml, cartHtml, headerHtml, controller, checkoutService, catalogoPublico, promoService, existenciaService, existenciaRepository] = await Promise.all([
   readFrontend('src/app/app.routes.ts'),
   readFrontend('src/app/features/storefront/storefront.models.ts'),
   readFrontend('src/app/features/storefront/storefront.catalog.ts'),
@@ -19,6 +19,8 @@ const [routes, models, catalog, productsTs, productsHtml, detailTs, detailHtml, 
   readFrontend('src/app/features/storefront/storefront-carrito.component.html'),
   readFrontend('src/app/features/storefront/storefront-header.component.html'),
   readRoot('backend/src/API/Controllers/TiendaController.cs'),
+  readRoot('backend/src/Application/Services/CheckoutTiendaService.cs'),
+  readRoot('backend/src/Application/Services/CatalogoPublicoService.cs'),
   readRoot('backend/src/Application/Services/PromocionPublicaService.cs'),
   readRoot('backend/src/Application/Services/InventarioPublicoService.cs'),
   readRoot('backend/src/Infrastructure/Repositories/ExistenciaVarianteRepository.cs')
@@ -45,9 +47,9 @@ expect(!productsTs.includes('modelo.stock <= 3') && !detailTs.includes('stock <=
 expect(promoService.includes('GetVigentesConRelacionesAsync'), 'La promoción pública debe reutilizar la autoridad existente de Descuentos.');
 expect(promoService.includes('FechaInicio') && promoService.includes('FechaFin'), 'La vigencia debe validarse en backend.');
 expect(promoService.includes('TipoDescuento.Porcentaje'), 'Solo reglas reproducibles por unidad deben convertirse en precio público.');
-expect(controller.includes('precioVigente = oferta?.PrecioOferta ?? precio'), 'Checkout debe recalcular el mismo precio promocional.');
-expect(controller.includes('stock <= 0 || stock < solicitud.Unidades'), 'Checkout debe bloquear explícitamente stock 0.');
-expect(controller.includes('_inventarioPublicoService.ObtenerPorVariantesAsync'), 'Catálogo y checkout deben consultar la autoridad pública de ExistenciaVariante.');
+expect(controller.includes('CheckoutTiendaService(') && controller.includes('.ValidarAsync(dto)') && checkoutService.includes('precioVigente = oferta?.PrecioOferta ?? precio'), 'Checkout debe recalcular el mismo precio promocional.');
+expect(checkoutService.includes('stock <= 0 || stock < solicitud.Unidades'), 'Checkout debe bloquear explícitamente stock 0.');
+expect(catalogoPublico.includes('_inventario.ObtenerPorVariantesAsync') && checkoutService.includes('_inventarioPublicoService.ObtenerPorVariantesAsync'), 'Catálogo y checkout deben consultar la autoridad pública de ExistenciaVariante.');
 expect(existenciaService.includes('GetOperativasPublicasPorVariantesAsync') && existenciaService.includes('CantidadDisponible = 0'),
   'Una variante sin existencia autoritativa debe fallar cerrada en stock 0.');
 const existenciaPublicQuery = existenciaRepository.split('GetOperativasPublicasPorVariantesAsync')[1]
@@ -63,7 +65,7 @@ expect(existenciaPublicQuery.includes('e.UbicacionAlmacenId == null')
     && existenciaPublicQuery.includes('e.UbicacionAlmacen.Activa')
     && existenciaPublicQuery.includes('!e.UbicacionAlmacen.Eliminado'),
   'El stock público debe excluir ubicaciones internas inactivas o eliminadas sin descartar existencias raíz.');
-expect(!controller.includes('stock = Math.Max(0, varianteSeleccionada.Cantidad);'),
+expect(!checkoutService.includes('varianteSeleccionada.Cantidad') && checkoutService.includes('resumenInventario.TieneFuenteAutoritativa') && checkoutService.includes(': 0;'),
   'Checkout no debe confiar directamente en ProductoVariante.Cantidad cuando existe autoridad de existencias.');
 
 if (failures.length) {

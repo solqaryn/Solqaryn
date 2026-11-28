@@ -68,7 +68,7 @@ public sealed class TiendaControllerCheckoutTests
         };
         var productos = new Mock<IProductoService>(MockBehavior.Strict);
         productos.Setup(service => service.GetByIdAsync(501)).ReturnsAsync(producto);
-        var controller = CrearController(productos);
+        var controller = CrearController(productos, stock: new Dictionary<int, int> { [9001] = 5 });
         var inicio = DateTime.UtcNow;
 
         var result = await controller.ValidarCheckout(new ValidarCheckoutTiendaDto
@@ -143,7 +143,7 @@ public sealed class TiendaControllerCheckoutTests
                 }
             }
         });
-        var controller = CrearController(productos);
+        var controller = CrearController(productos, stock: new Dictionary<int, int> { [7001] = 1 });
 
         var result = await controller.ValidarCheckout(new ValidarCheckoutTiendaDto
         {
@@ -198,7 +198,7 @@ public sealed class TiendaControllerCheckoutTests
                 }
             }
         });
-        var controller = CrearController(productos);
+        var controller = CrearController(productos, stock: new Dictionary<int, int> { [7011] = 5 });
 
         var result = await controller.ValidarCheckout(new ValidarCheckoutTiendaDto
         {
@@ -357,7 +357,7 @@ public sealed class TiendaControllerCheckoutTests
                 }
             }
         });
-        var resultado = await CrearController(productos).ValidarCheckout(new ValidarCheckoutTiendaDto
+        var resultado = await CrearController(productos, stock: new Dictionary<int, int> { [881] = 5 }).ValidarCheckout(new ValidarCheckoutTiendaDto
         {
             Items =
             {
@@ -379,16 +379,46 @@ public sealed class TiendaControllerCheckoutTests
         Assert.Equal(125m, validado.Total);
     }
 
-    private static TiendaController CrearController(Mock<IProductoService> productos, Mock<ICostoEnvioService>? envios = null)
+    [Theory]
+    [InlineData(false, false, 0)]
+    [InlineData(true, false, 9)]
+    [InlineData(true, true, 0)]
+    public async Task Checkout_RechazaVarianteSinExistenciaAutoritativa(bool existeResumen, bool autoritativa, int disponible)
+    {
+        var productos = new Mock<IProductoService>(MockBehavior.Strict);
+        productos.Setup(x => x.GetByIdAsync(99)).ReturnsAsync(new ProductoDto
+        {
+            Id = 99, Nombre = "Producto QA", Activo = true,
+            Variantes = { new ProductoVarianteDto { Id = 991, ProductoId = 99, Cantidad = 50, Precio = 100m, Activo = true } }
+        });
+        var inventario = new Mock<IInventarioPublicoService>(MockBehavior.Strict);
+        var resumen = new Dictionary<int, InventarioPublicoVarianteDto>();
+        if (existeResumen)
+            resumen.Add(991, new InventarioPublicoVarianteDto { ProductoVarianteId = 991, CantidadDisponible = disponible, TieneFuenteAutoritativa = autoritativa });
+        inventario.Setup(x => x.ObtenerPorVariantesAsync(It.IsAny<IEnumerable<int>>())).ReturnsAsync(resumen);
+        var resultado = await CrearController(productos, inventario: inventario).ValidarCheckout(new ValidarCheckoutTiendaDto
+        {
+            Items = { new CheckoutTiendaItemRequestDto { ProductoId = 99, ProductoVarianteId = 991, Unidades = 1 } }
+        });
+        Assert.IsType<ConflictObjectResult>(resultado);
+        inventario.Verify(x => x.ObtenerPorVariantesAsync(It.Is<IEnumerable<int>>(ids => ids.SequenceEqual(new[] { 991 }))), Times.Once);
+    }
+
+    private static TiendaController CrearController(Mock<IProductoService> productos, Mock<ICostoEnvioService>? envios = null, Dictionary<int, int>? stock = null, Mock<IInventarioPublicoService>? inventario = null)
     {
         var categorias = new Mock<ICategoriaService>(MockBehavior.Strict);
         var promociones = new Mock<IPromocionPublicaService>();
         promociones.Setup(service => service.ResolverAsync(
                 It.IsAny<int>(), It.IsAny<int?>(), It.IsAny<decimal>(), It.IsAny<DateTime>()))
             .ReturnsAsync((OfertaPublicaDto?)null);
-        var inventario = new Mock<IInventarioPublicoService>();
-        inventario.Setup(service => service.ObtenerPorVariantesAsync(It.IsAny<IEnumerable<int>>()))
-            .ReturnsAsync(new Dictionary<int, InventarioPublicoVarianteDto>());
+        if (inventario is null)
+        {
+            inventario = new Mock<IInventarioPublicoService>();
+            var resumen = (stock ?? new Dictionary<int, int>()).ToDictionary(
+                item => item.Key,
+                item => new InventarioPublicoVarianteDto { ProductoVarianteId = item.Key, CantidadDisponible = item.Value, TieneFuenteAutoritativa = true });
+            inventario.Setup(service => service.ObtenerPorVariantesAsync(It.IsAny<IEnumerable<int>>())).ReturnsAsync(resumen);
+        }
         return new TiendaController(
             productos.Object,
             categorias.Object,

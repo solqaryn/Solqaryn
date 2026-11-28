@@ -1,3 +1,10 @@
+## 2026-11-28 — QA-FN-05: corregir contratos de checkout y stock fail-closed
+
+- Run 46162593563: fase 9 y control transversal consultaban el controlador previo a la extracción. Comprobar delegación efectiva, servicio de checkout y catálogo público, sin retirar invariantes de precio, promoción ni stock.
+- Checkout de variante: ausencia de resumen autoritativo o stock cero impide continuar; no utilizar cantidad denormalizada. Pruebas explícitas de ausencia de fuente, stock cero, alias físicos y agrupación. Sin cambios de API, esquema, autenticación, RBAC ni dependencias. Revert ordinario como rollback.
+- Run 46162593499 y logs Render: conversión de cotización falla en CK_Cotizaciones_Estado; requiere reconciliación del DDL real con el modelo Oracle y ensayo antes de aplicar cualquier cambio de base. No certificado.
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA-FN-05: corregir harness ERP y verificadores de extracción
 
 - Run 46162271835: fixture fiscal persistido; rechazo del allowlist de verificación SELECT para Clientes. Añadir exclusivamente Clientes y Cotizaciones, conservando comprobación de propietario; relanzar probe sobre runtime desplegado 1c933a47, no atribuir la evidencia a HEAD.

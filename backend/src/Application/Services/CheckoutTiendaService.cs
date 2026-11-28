@@ -115,8 +115,9 @@ public sealed class CheckoutTiendaService(
                 var inventarioVariante = await _inventarioPublicoService.ObtenerPorVariantesAsync(
                     new[] { varianteSeleccionada.Id });
                 stock = inventarioVariante.TryGetValue(varianteSeleccionada.Id, out var resumenInventario)
-                    ? resumenInventario.CantidadDisponible
-                    : Math.Max(0, varianteSeleccionada.Cantidad);
+                    && resumenInventario.TieneFuenteAutoritativa
+                    ? Math.Max(0, resumenInventario.CantidadDisponible)
+                    : 0;
                 precio = varianteSeleccionada.Precio;
                 modelo = varianteSeleccionada.ModeloNombre;
                 sku = varianteSeleccionada.Sku;

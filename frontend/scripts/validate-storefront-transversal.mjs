@@ -67,6 +67,7 @@ const bootstrapService = await readRepo('backend/src/Application/Services/Tienda
 const publicCache = await readRepo('backend/src/Infrastructure/Services/PublicStoreMemoryCache.cs');
 const tenantKeyProvider = await readRepo('backend/src/Infrastructure/Services/PublicStoreTenantKeyProvider.cs');
 const catalogoPublico = await readRepo('backend/src/Application/Services/CatalogoPublicoService.cs');
+const checkoutService = await readRepo('backend/src/Application/Services/CheckoutTiendaService.cs');
 const appDbContext = await readRepo('backend/src/Infrastructure/Persistence/AppDbContext.cs');
 
 // Datos: una frontera publica y reglas comerciales centralizadas.
@@ -86,12 +87,12 @@ expect(catalogoPublico.includes('PublicStoreCacheSegments.Featured') && catalogo
 expect(!catalogoPublico.includes('PublicStoreCacheSegments.Checkout'), 'Cache: checkout no debe introducirse en cache publica.');
 expect(appDbContext.includes('DetectarInvalidacionesStorefront()') && appDbContext.includes('_publicStoreCache?.InvalidateAll'), 'Cache: las escrituras EF relevantes deben invalidar generaciones del storefront.');
 expect(appDbContext.includes('case Empresa:') && appDbContext.includes('case Producto:') && appDbContext.includes('case Categoria:') && appDbContext.includes('case EmpresaConfiguracion:') && appDbContext.includes('case TemaVisual:'), 'Cache: invalidacion debe cubrir tenant, producto, categoria, identidad y tema.');
-expect(controller.includes('_inventarioPublicoService.ObtenerPorVariantesAsync'), 'Datos: stock publico debe venir de InventarioPublicoService.');
-expect(controller.includes('_promocionPublicaService.ResolverAsync'), 'Datos: precio promocional debe venir de PromocionPublicaService.');
+expect(catalogoPublico.includes('_inventario.ObtenerPorVariantesAsync') && checkoutService.includes('_inventarioPublicoService.ObtenerPorVariantesAsync'), 'Datos: stock publico debe venir de InventarioPublicoService.');
+expect(catalogoPublico.includes('_promociones.ResolverAsync') && checkoutService.includes('_promocionPublicaService.ResolverAsync'), 'Datos: precio promocional debe venir de PromocionPublicaService.');
 expect(catalog.includes('export function mapearProducto') && catalog.includes('export function precioVenta'), 'Datos: frontend debe normalizar producto y precio en reglas compartidas.');
 expect(products.includes('mapearProducto') && products.includes('precioVenta'), 'Datos: catalogo debe consumir las reglas compartidas.');
 expect(product.includes('mapearProducto') && product.includes('precioVenta'), 'Datos: detalle debe consumir las reglas compartidas.');
-expect(controller.includes('El cliente nunca envía importes') && controller.includes('precioVigente = oferta?.PrecioOferta ?? precio'), 'Datos: checkout debe recalcular importes en servidor.');
+expect(controller.includes('El cliente nunca envía importes') && controller.includes('CheckoutTiendaService(') && controller.includes('.ValidarAsync(dto)') && checkoutService.includes('precioVigente = oferta?.PrecioOferta ?? precio'), 'Datos: checkout debe recalcular importes en servidor.');
 expect(cartService.includes('Never persist prices, stock, image URLs') || catalog.includes('Never persist prices, stock, image URLs'), 'Datos: persistencia del carrito no debe convertir datos comerciales en autoridad local.');
 
 // Diseno: identidad propia por tokens; ninguna dependencia de marca de referencia.
