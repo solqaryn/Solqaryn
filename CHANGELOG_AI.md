@@ -1,3 +1,19 @@
+## 2026-11-28 — QA: cierre de galerías y conteos A/B; avance bancario
+
+- CIERRE QA-FN-05 de los hallazgos 1, 3 y 4: 46148606964 SUCCESS, HEAD fb71af95, jobs 140990003477 (galería A) y 140990003135 (conteos A/B), con Scope Lock y equivalencia de runtime PASS; B previamente SUCCESS en 46148255441/job 140988945744. Runtime 34dc85f4 en Render LIVE dep-dc5d2m6c6qcc738kp8kg y Vercel READY HxY3Rk9qXJkrLyE5wNYZ3H6iSeTm; diff de runtime vacío y cuatro gates causales SUCCESS.
+- Galerías A/B: original exacto 15 MiB y rechazo +1 byte API/UI, hidratación, multipart real WebP de 562 bytes, HTTP 200, imagen persistida, readback MySQL y revocación. Acuses DELETED Render A: API 5D8FE492CAAB97CCD5F4FC50B79E49865345D88C77C7E74CB1C4FF6115918BCA a las 13:15:35 UTC; UI 819DC7E85E9B19F3A373F5DBDA95EF64F773192472A95503816CDFC642AE51D5 a las 13:15:55 UTC. B: API 52613B72F5187D70D6B74EC5E25D640BDE730D11139AB6D5780650EF5177F4A8 y UI 3DAAF515040D0EE04C54CA1D6C0B1BBF33E4A91F147E55ACC00CE694A4727B9A, 13:12:32/55 UTC. Operaciones base A/B certificadas en 46086662617. Retirar los hallazgos del registro activo.
+- Conteos: alta/edición/listado/detalle A/B, rechazo de referencias ajenas y operador sin permiso, inicio idempotente con igualdad física, cierre incompleto HTTP 400 sin mutación, captura individual/lote, rechazo lote cruzado, cierre/aprobación, ajuste borrador idempotente A, diferencia cero B, cancelación y rechazo de cancelación aprobada, stock inalterado, auditoría y revocación PASS. Mantener QA-FN-03 para flujos no cubiertos; no afirmar confirmación de ajuste ni mutación de stock por esta prueba.
+- Se publica la corrección bancaria preparada en 6f70dfae, junto a su regresión real MySQL. No se declaran aprobadas sus nuevas pruebas antes de la ejecución causal. Permanecen conciliaciones/movimientos, aplicación fiscal, checkout/pedido/cobro y QA-PERF-AUTH (capacidad concurrente, no certificada por ejecución serial).
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
+## 2026-11-28 — QA: materialización del agregado de conciliación bancaria
+
+- Corrección acotada en repositorio: cargar movimientos y matches persistidos para lecturas operativas y paginadas, conservar filtros empresariales, incluir Borrador/EnProceso y rechazar múltiples conciliaciones activas sin seleccionar arbitrariamente. Regresión MySQL en contextos nuevos A/B, saldos, lectura del periodo y ambigüedad con rollback. Sin cambios de contrato, esquema, permisos o arquitectura.
+- Pendientes: ejecutar CI causal y prueba funcional QA de importación, coincidencias, cierre/reapertura, ajustes y consistencia de operaciones bancarias. La reapertura actualmente intenta anular un periodo completado, prohibido por el agregado; no modificar esa semántica contable en este changeset. No certificar por inspección.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA: certificación residual B y corrección de higiene
 
 - Job 140988945744 de 46148255441 SUCCESS sobre runtime 34dc85f4: original PNG exacto 15 MiB y rechazo +1 byte por API y navegador, hidratación, multipart real WebP 562 bytes, HTTP 200, una imagen persistida y readback MySQL. Limpieza y revocación PASS. Render devolvió CLOUDINARY_DELETE_RECEIPT DELETED para las dos referencias hash del job (API 52613B72F5187D70D6B74EC5E25D640BDE730D11139AB6D5780650EF5177F4A8 y UI 3DAAF515040D0EE04C54CA1D6C0B1BBF33E4A91F147E55ACC00CE694A4727B9A) a las 13:12:32 y 13:12:55 UTC. B queda certificado en este alcance; A sigue pendiente.

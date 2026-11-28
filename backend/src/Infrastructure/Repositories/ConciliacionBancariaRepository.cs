@@ -1,4 +1,5 @@
 using Solqaryn.Application.Interfaces;
+using Solqaryn.Application.Exceptions;
 using Solqaryn.Domain.Entities.Bancos;
 using Solqaryn.Infrastructure.Persistence;
 using Microsoft.EntityFrameworkCore;
@@ -15,22 +16,37 @@ public class ConciliacionBancariaRepository : IConciliacionBancariaRepository
         _context = context;
     }
 
+    // Los saldos, estados e idempotencia se calculan sobre todo el agregado.
+    // Mantener los filtros empresariales de EF en cabecera, movimientos y matches.
+    private IQueryable<ConciliacionBancaria> ConMovimientos() =>
+        _context.Set<ConciliacionBancaria>()
+            .Include(c => c.Movimientos)
+            .ThenInclude(m => m.Matches);
+
     public async Task<ConciliacionBancaria?> GetByIdAsync(int id, CancellationToken cancellationToken = default)
     {
-        return await _context.Set<ConciliacionBancaria>()
+        return await ConMovimientos()
             .FirstOrDefaultAsync(c => c.Id == id, cancellationToken);
     }
 
     public async Task<ConciliacionBancaria?> GetByPeriodoAsync(int cuentaBancariaId, int mes, int anio, CancellationToken cancellationToken = default)
     {
-        return await _context.Set<ConciliacionBancaria>()
+        return await ConMovimientos()
             .FirstOrDefaultAsync(c => c.CuentaBancariaId == cuentaBancariaId && c.FechaInicio.Month == mes && c.FechaInicio.Year == anio, cancellationToken);
     }
 
     public async Task<ConciliacionBancaria?> GetActivaByCuentaAsync(int cuentaBancariaId, CancellationToken cancellationToken = default)
     {
-        return await _context.Set<ConciliacionBancaria>()
-            .FirstOrDefaultAsync(c => c.CuentaBancariaId == cuentaBancariaId && c.Estado == EstadoConciliacionBancaria.EnProceso, cancellationToken);
+        var activas = await ConMovimientos()
+            .Where(c => c.CuentaBancariaId == cuentaBancariaId &&
+                (c.Estado == EstadoConciliacionBancaria.Borrador ||
+                 c.Estado == EstadoConciliacionBancaria.EnProceso))
+            .OrderBy(c => c.Id)
+            .Take(2)
+            .ToListAsync(cancellationToken);
+        if (activas.Count > 1)
+            throw new BusinessRuleException("Existe más de una conciliación activa para esta cuenta. Debe resolverse la inconsistencia antes de continuar.");
+        return activas.SingleOrDefault();
     }
 
     public async Task AddAsync(ConciliacionBancaria conciliacion, CancellationToken cancellationToken = default)
@@ -76,6 +92,8 @@ public class ConciliacionBancariaRepository : IConciliacionBancariaRepository
         var totalCount = await query.CountAsync(cancellationToken);
 
         var items = await query
+            .Include(c => c.Movimientos)
+            .ThenInclude(m => m.Matches)
             .Skip((pageNumber - 1) * pageSize)
             .Take(pageSize)
             .ToListAsync(cancellationToken);

@@ -51,7 +51,7 @@ public sealed class QaCommercialOwnershipV3MySqlTests
                 await QaCommercialOwnershipV3.ProvisionDefaultsAsync(setup,a);
                 await transaction.CommitAsync();
             }
-            async Task<(int Category,int Discount,int Tax,int Count,int BankEntry,int Finance,int Detail,int Variant)> Create(int owner,int warehouse)
+            async Task<(int Category,int Discount,int Tax,int Count,int BankEntry,int Finance,int Detail,int Variant,int Reconciliation,int Account)> Create(int owner,int warehouse)
             {
                 accessor.HttpContext!.Items["SOLQARYN_AUTHORIZED_EMPRESA_ID"]=owner;
                 await using var db=new AppDbContext(options,httpContextAccessor:accessor);
@@ -101,9 +101,78 @@ public sealed class QaCommercialOwnershipV3MySqlTests
                 Assert.Single(await db.CuentasBancarias.ToListAsync());
                 Assert.Single(await db.Set<MatchConciliacion>().ToListAsync());
                 Assert.False(await db.Categorias.AnyAsync(x=>x.Id==legacy));
-                return(c.Id,discount.Id,tax.Id,count.Id,statement.Id,finance.Id,detail.Id,variant.Id);
+                return(c.Id,discount.Id,tax.Id,count.Id,statement.Id,finance.Id,detail.Id,variant.Id,reconciliation.Id,account.Id);
             }
             var aa=await Create(a,warehouseA);var bb=await Create(b,warehouseB);
+
+            // A fresh context must load persisted statement lines and matches,
+            // not depend on relationship fix-up from the fixture writer.
+            foreach (var scope in new[] {
+                (Owner:a, Own:aa, Foreign:bb),
+                (Owner:b, Own:bb, Foreign:aa) })
+            {
+                accessor.HttpContext!.Items["SOLQARYN_AUTHORIZED_EMPRESA_ID"]=scope.Owner;
+                await using (var db=new AppDbContext(options,httpContextAccessor:accessor))
+                {
+                    var repo=new ConciliacionBancariaRepository(db);
+                    Assert.Null(await repo.GetByIdAsync(scope.Foreign.Reconciliation));
+                    Assert.Null(await repo.GetActivaByCuentaAsync(scope.Foreign.Account));
+                    var own=await repo.GetByIdAsync(scope.Own.Reconciliation);
+                    Assert.NotNull(own);
+                    var line=Assert.Single(own.Movimientos);
+                    Assert.Equal(scope.Own.BankEntry,line.Id);
+                    Assert.Equal(scope.Own.Finance,Assert.Single(line.Matches).MovimientoFinancieroId);
+                    Assert.Equal(5m,line.MontoConciliado);
+                    Assert.Equal(5m,line.MontoPendiente);
+                    Assert.Equal(5m,own.SaldoConciliado);
+                    Assert.Equal(5m,own.Diferencia);
+                }
+                await using (var db=new AppDbContext(options,httpContextAccessor:accessor))
+                {
+                    var repo=new ConciliacionBancariaRepository(db);
+                    var draft=await repo.GetActivaByCuentaAsync(scope.Own.Account);
+                    Assert.NotNull(draft);
+                    Assert.Equal(EstadoConciliacionBancaria.Borrador,draft.Estado);
+                    Assert.Equal(scope.Own.Reconciliation,draft.Id);
+                    Assert.Equal(5m,Assert.Single(draft.Movimientos).MontoConciliado);
+                }
+                await using (var db=new AppDbContext(options,httpContextAccessor:accessor))
+                {
+                    var repo=new ConciliacionBancariaRepository(db);
+                    var page=await repo.GetPagedAsync(null,null,null,null,1,20);
+                    Assert.Equal(1,page.TotalCount);
+                    var own=Assert.Single(page.Items);
+                    Assert.Equal(scope.Own.Reconciliation,own.Id);
+                    Assert.Equal(5m,own.SaldoConciliado);
+                    Assert.Equal(5m,own.Diferencia);
+                }
+                await using (var db=new AppDbContext(options,httpContextAccessor:accessor))
+                {
+                    var repo=new ConciliacionBancariaRepository(db);
+                    var own=await repo.GetByIdAsync(scope.Own.Reconciliation);
+                    Assert.NotNull(own);
+                    var month=own.FechaInicio.Month;
+                    var year=own.FechaInicio.Year;
+                    db.ChangeTracker.Clear();
+                    Assert.Null(await repo.GetByPeriodoAsync(scope.Foreign.Account,month,year));
+                    var period=await repo.GetByPeriodoAsync(scope.Own.Account,month,year);
+                    Assert.NotNull(period);
+                    Assert.Equal(5m,period.SaldoConciliado);
+                }
+                await using (var db=new AppDbContext(options,httpContextAccessor:accessor))
+                {
+                    await using var tx=await db.Database.BeginTransactionAsync();
+                    var repo=new ConciliacionBancariaRepository(db);
+                    var own=await repo.GetActivaByCuentaAsync(scope.Own.Account);
+                    Assert.NotNull(own);
+                    var otherDate=own.FechaInicio.AddMonths(1);
+                    await repo.AddAsync(new ConciliacionBancaria(scope.Own.Account,otherDate,otherDate,0,0));
+                    await repo.SaveChangesAsync();
+                    db.ChangeTracker.Clear();
+                    await Assert.ThrowsAsync<BusinessRuleException>(()=>repo.GetActivaByCuentaAsync(scope.Own.Account));
+                    await tx.RollbackAsync();
+                }
+            }
 
             // The operational catalogue must work with verified membership
             // read scope alone, without granting an administrative write scope.
