@@ -1,3 +1,11 @@
+## 2026-11-28 — QA: reparar materialización del snapshot V4
+
+- Jobs 141001834865, 141001835012, 141001835066 y 141001835109 fallaron antes del barrido, con la misma excepción EF al crear el índice PedidoVenta.EmpresaId sin declarar previamente el tipo shadow. La misma causa bloqueó el ensayo V4 (141001740209) y las seis pruebas MySQL (141002260713). Compilación y pruebas previas SUCCESS (46152424751).
+- Integrar las ocho declaraciones shadow V4 y sus índices en los bloques iniciales de entidades, antes de referencias; conservar columnas, restricciones, FKs y migración original. Añadir regresión de materialización del snapshot Oracle sin conexión, para detectar este defecto en pruebas unitarias.
+- No se relajan controles ni se aplica migración a QA; los gates causales deben aprobar el nuevo SHA.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA: causa de HTTP 401 bancario y ensayo V4
 
 - Run 46152019567 acreditó autenticación, provisión sintética, alta de cuenta y revocación; depósito A devolvió 401. JWT emite claim id (sub es nombre de usuario); ambas controladoras bancarias consumían NameIdentifier. Usar exclusivamente id de identidad autenticada y conservar RBAC/tenant; actualizar regresiones de identidad inválida, ausente y no autenticada.

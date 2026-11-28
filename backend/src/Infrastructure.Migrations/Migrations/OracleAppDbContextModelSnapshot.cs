@@ -3204,7 +3204,13 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<int?>("RechazadaPorUsuarioId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId", "Id").IsUnique().HasDatabaseName("UX_QACT_Cotizaciones_OwnerId");
+                    b.HasIndex("EmpresaId", "ClienteId").HasDatabaseName("IX_QAC4_01");
+
 
                     b.HasIndex("ClienteId")
                         .HasDatabaseName("IX_Cotizaciones_ClienteId");
@@ -3283,7 +3289,15 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<int?>("ProductoVarianteId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId", "Id").IsUnique().HasDatabaseName("UX_QACT_CotizacionDetalles_OwnerId");
+                    b.HasIndex("EmpresaId", "CotizacionId").HasDatabaseName("IX_QAC4_02");
+                    b.HasIndex("EmpresaId", "ProductoId").HasDatabaseName("IX_QAC4_03");
+                    b.HasIndex("EmpresaId", "ProductoId", "ProductoVarianteId").HasDatabaseName("IX_QAC4_04");
+
 
                     b.HasIndex("ProductoId")
                         .HasDatabaseName("IX_CotizacionDetalles_ProductoId");
@@ -7382,7 +7396,14 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .HasMaxLength(1000)
                         .HasColumnType("varchar(1000)");
 
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId", "Id").IsUnique().HasDatabaseName("UX_QACT_PedidosVenta_OwnerId");
+                    b.HasIndex("EmpresaId", "ClienteId").HasDatabaseName("IX_QAC4_05");
+                    b.HasIndex("EmpresaId", "CotizacionId").HasDatabaseName("IX_QAC4_06");
+
 
                     b.HasIndex("CotizacionId")
                         .IsUnique()
@@ -7470,7 +7491,15 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<int?>("ProductoVarianteId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId", "Id").IsUnique().HasDatabaseName("UX_QACT_PedidoVentaDetalles_OwnerId");
+                    b.HasIndex("EmpresaId", "PedidoVentaId").HasDatabaseName("IX_QAC4_07");
+                    b.HasIndex("EmpresaId", "ProductoId").HasDatabaseName("IX_QAC4_08");
+                    b.HasIndex("EmpresaId", "ProductoId", "ProductoVarianteId").HasDatabaseName("IX_QAC4_09");
+
 
                     b.HasIndex("PedidoVentaId")
                         .HasDatabaseName("IX_PedidoVentaDetalles_PedidoVentaId");
@@ -7918,7 +7947,14 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<int?>("UltimoUsuarioId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId", "Id").IsUnique().HasDatabaseName("UX_QACT_PreparacionesPedidoVenta_OwnerId");
+                    b.HasIndex("EmpresaId", "PedidoVentaId").HasDatabaseName("IX_QAC4_14");
+                    b.HasIndex("EmpresaId", "ReservaInventarioId").HasDatabaseName("IX_QAC4_15");
+
 
                     b.HasIndex("Estado")
                         .HasDatabaseName("IX_PreparacionesPedidoVenta_Estado");
@@ -8001,7 +8037,14 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .HasColumnType("int")
                         .HasComputedColumnSql("COALESCE(`UbicacionAlmacenId`, 0)", true);
 
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId", "Id").IsUnique().HasDatabaseName("UX_QACT_PreparacionPedidoVentaDetalles_OwnerId");
+                    b.HasIndex("EmpresaId", "PreparacionPedidoVentaId").HasDatabaseName("IX_QAC4_16");
+                    b.HasIndex("EmpresaId", "ProductoVarianteId").HasDatabaseName("IX_QAC4_17");
+
 
                     b.HasIndex("AlmacenId")
                         .HasDatabaseName("IX_PreparacionPedidoVentaDetalles_AlmacenId");
@@ -8943,7 +8986,14 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                     b.Property<int?>("VentaId")
                         .HasColumnType("int");
 
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId", "Id").IsUnique().HasDatabaseName("UX_QACT_ReservasInventario_OwnerId");
+                    b.HasIndex("EmpresaId", "VentaId").HasDatabaseName("IX_QAC4_10");
+                    b.HasIndex("EmpresaId", "PedidoVentaId").HasDatabaseName("IX_QAC4_11");
+
 
                     b.HasIndex("EmpresaId", "Numero")
                         .IsUnique()
@@ -9033,7 +9083,14 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .HasColumnType("int")
                         .HasComputedColumnSql("COALESCE(`UbicacionAlmacenId`, 0)", true);
 
+                    b.Property<int?>("EmpresaId").HasColumnType("int");
+
                     b.HasKey("Id");
+
+                    b.HasIndex("EmpresaId", "Id").IsUnique().HasDatabaseName("UX_QACT_ReservaInventarioDetalles_OwnerId");
+                    b.HasIndex("EmpresaId", "ReservaInventarioId").HasDatabaseName("IX_QAC4_12");
+                    b.HasIndex("EmpresaId", "ProductoVarianteId").HasDatabaseName("IX_QAC4_13");
+
 
                     b.HasIndex("ReservaInventarioId")
                         .HasDatabaseName("IX_ReservaInventarioDetalles_ReservaInventarioId");
@@ -14209,71 +14266,6 @@ namespace Solqaryn.Infrastructure.Migrations.Oracle
                         .HasForeignKey("EmpresaId")
                         .OnDelete(DeleteBehavior.Restrict)
                         .HasConstraintName("FK_QAC3_MovimientosEstadoCuenta_Empresa");
-                });
-
-            modelBuilder.Entity("Solqaryn.Domain.Entities.Cotizacion", b =>
-                {
-                    b.Property<int?>("EmpresaId").HasColumnType("int");
-                    b.HasIndex("EmpresaId", "Id").IsUnique().HasDatabaseName("UX_QACT_Cotizaciones_OwnerId");
-                    b.HasIndex("EmpresaId", "ClienteId").HasDatabaseName("IX_QAC4_01");
-                });
-
-            modelBuilder.Entity("Solqaryn.Domain.Entities.CotizacionDetalle", b =>
-                {
-                    b.Property<int?>("EmpresaId").HasColumnType("int");
-                    b.HasIndex("EmpresaId", "Id").IsUnique().HasDatabaseName("UX_QACT_CotizacionDetalles_OwnerId");
-                    b.HasIndex("EmpresaId", "CotizacionId").HasDatabaseName("IX_QAC4_02");
-                    b.HasIndex("EmpresaId", "ProductoId").HasDatabaseName("IX_QAC4_03");
-                    b.HasIndex("EmpresaId", "ProductoId", "ProductoVarianteId").HasDatabaseName("IX_QAC4_04");
-                });
-
-            modelBuilder.Entity("Solqaryn.Domain.Entities.PedidoVenta", b =>
-                {
-                    b.Property<int?>("EmpresaId").HasColumnType("int");
-                    b.HasIndex("EmpresaId", "Id").IsUnique().HasDatabaseName("UX_QACT_PedidosVenta_OwnerId");
-                    b.HasIndex("EmpresaId", "ClienteId").HasDatabaseName("IX_QAC4_05");
-                    b.HasIndex("EmpresaId", "CotizacionId").HasDatabaseName("IX_QAC4_06");
-                });
-
-            modelBuilder.Entity("Solqaryn.Domain.Entities.PedidoVentaDetalle", b =>
-                {
-                    b.Property<int?>("EmpresaId").HasColumnType("int");
-                    b.HasIndex("EmpresaId", "Id").IsUnique().HasDatabaseName("UX_QACT_PedidoVentaDetalles_OwnerId");
-                    b.HasIndex("EmpresaId", "PedidoVentaId").HasDatabaseName("IX_QAC4_07");
-                    b.HasIndex("EmpresaId", "ProductoId").HasDatabaseName("IX_QAC4_08");
-                    b.HasIndex("EmpresaId", "ProductoId", "ProductoVarianteId").HasDatabaseName("IX_QAC4_09");
-                });
-
-            modelBuilder.Entity("Solqaryn.Domain.Entities.ReservaInventario", b =>
-                {
-                    b.Property<int?>("EmpresaId").HasColumnType("int");
-                    b.HasIndex("EmpresaId", "Id").IsUnique().HasDatabaseName("UX_QACT_ReservasInventario_OwnerId");
-                    b.HasIndex("EmpresaId", "VentaId").HasDatabaseName("IX_QAC4_10");
-                    b.HasIndex("EmpresaId", "PedidoVentaId").HasDatabaseName("IX_QAC4_11");
-                });
-
-            modelBuilder.Entity("Solqaryn.Domain.Entities.ReservaInventarioDetalle", b =>
-                {
-                    b.Property<int?>("EmpresaId").HasColumnType("int");
-                    b.HasIndex("EmpresaId", "Id").IsUnique().HasDatabaseName("UX_QACT_ReservaInventarioDetalles_OwnerId");
-                    b.HasIndex("EmpresaId", "ReservaInventarioId").HasDatabaseName("IX_QAC4_12");
-                    b.HasIndex("EmpresaId", "ProductoVarianteId").HasDatabaseName("IX_QAC4_13");
-                });
-
-            modelBuilder.Entity("Solqaryn.Domain.Entities.PreparacionPedidoVenta", b =>
-                {
-                    b.Property<int?>("EmpresaId").HasColumnType("int");
-                    b.HasIndex("EmpresaId", "Id").IsUnique().HasDatabaseName("UX_QACT_PreparacionesPedidoVenta_OwnerId");
-                    b.HasIndex("EmpresaId", "PedidoVentaId").HasDatabaseName("IX_QAC4_14");
-                    b.HasIndex("EmpresaId", "ReservaInventarioId").HasDatabaseName("IX_QAC4_15");
-                });
-
-            modelBuilder.Entity("Solqaryn.Domain.Entities.PreparacionPedidoVentaDetalle", b =>
-                {
-                    b.Property<int?>("EmpresaId").HasColumnType("int");
-                    b.HasIndex("EmpresaId", "Id").IsUnique().HasDatabaseName("UX_QACT_PreparacionPedidoVentaDetalles_OwnerId");
-                    b.HasIndex("EmpresaId", "PreparacionPedidoVentaId").HasDatabaseName("IX_QAC4_16");
-                    b.HasIndex("EmpresaId", "ProductoVarianteId").HasDatabaseName("IX_QAC4_17");
                 });
 
             modelBuilder.Entity("Solqaryn.Domain.Entities.Cotizacion", b =>
