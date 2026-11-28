@@ -1,7 +1,14 @@
+## 2026-11-28 — QA: certificación residual B y corrección de higiene
+
+- Job 140988945744 de 46148255441 SUCCESS sobre runtime 34dc85f4: original PNG exacto 15 MiB y rechazo +1 byte por API y navegador, hidratación, multipart real WebP 562 bytes, HTTP 200, una imagen persistida y readback MySQL. Limpieza y revocación PASS. Render devolvió CLOUDINARY_DELETE_RECEIPT DELETED para las dos referencias hash del job (API 52613B72F5187D70D6B74EC5E25D640BDE730D11139AB6D5780650EF5177F4A8 y UI 3DAAF515040D0EE04C54CA1D6C0B1BBF33E4A91F147E55ACC00CE694A4727B9A) a las 13:12:32 y 13:12:55 UTC. B queda certificado en este alcance; A sigue pendiente.
+- Ejecución 46148527624: el job A pasó Scope Lock, pero git diff --check rechazó un espacio final introducido en la nueva entrada del changelog. Se retira exactamente ese espacio y se mantiene el preflight completo. Relanzamiento serial exclusivo de A y conteos; no se repite B ni se cambia runtime. La causa de rendimiento concurrente continúa abierta.
+
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA: aislar certificaciones funcionales de saturación concurrente
 
 - Cuatro gates de 34dc85f4 SUCCESS (46147483039, 46147483121, 46147483056, 46147483089); 2535/2535 pruebas backend; Vercel READY HxY3Rk9qXJkrLyE5wNYZ3H6iSeTm y Render LIVE dep-dc5d2m6c6qcc738kp8kg, SHA exacto. Scope Lock y esquema aprobados.
-- Ejecución 46148255441: los jobs gallery-a, conteos fallaron al autenticar. Render registró tres AuthController.Login 200 de 29701,5 / 27800,9 / 31875,8 ms a las 13:11:54 UTC; proxy con timeout 30000 ms devolvió 502. Se conserva el presupuesto de timeout y la autenticación; se fija max-parallel: 1 y se relanzan únicamente los jobs cuyo fallo fue comprobado. No se reejecutan los gates generales aprobados, no se cambian servicios ni esquema. Incidencia de capacidad QA-PERF-AUTH abierta, sin atribuir la causa interna a BCrypt sin medición. No se certifican operaciones que no llegaron a ejecutarse. 
+- Ejecución 46148255441: los jobs gallery-a, conteos fallaron al autenticar. Render registró tres AuthController.Login 200 de 29701,5 / 27800,9 / 31875,8 ms a las 13:11:54 UTC; proxy con timeout 30000 ms devolvió 502. Se conserva el presupuesto de timeout y la autenticación; se fija max-parallel: 1 y se relanzan únicamente los jobs cuyo fallo fue comprobado. No se reejecutan los gates generales aprobados, no se cambian servicios ni esquema. Incidencia de capacidad QA-PERF-AUTH abierta, sin atribuir la causa interna a BCrypt sin medición. No se certifican operaciones que no llegaron a ejecutarse.
 
 MAPA_ARQUITECTURA: SIN_CAMBIO.
 
