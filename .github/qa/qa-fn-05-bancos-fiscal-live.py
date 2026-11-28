@@ -56,7 +56,7 @@ print("EXPECTED_RENDER_SHA=" + expected_sha, flush=True)
 print("RENDER_SHA_REQUIRES_EXTERNAL_ATTESTATION", flush=True)
 
 
-require(expected_sha == "7676febf8c4446b838142155b30c512d3c861f65", "Unexpected deployed SHA")
+require(expected_sha == "1c933a47f7c82f08a4c812e79d134fa7ce41f733", "Unexpected deployed SHA")
 from decimal import Decimal
 prefix = "qaf" + secrets.token_hex(5)
 a,b,operator,platform = (prefix+x for x in ("A","B","O","P"))
@@ -192,6 +192,31 @@ fixture_bank_created=False
 try:
     wait_ready(backend,"QA_BF_RENDER_READY")
     wait_ready(proxy,"QA_BF_PROXY_READY")
+    # Health endpoints remain available during maintenance. Wait for actual
+    # authenticated-route availability before creating any synthetic identities.
+    deadline=time.monotonic()+600
+    for base in (backend,proxy):
+        while True:
+            request=urllib.request.Request(base+"/cuentas-bancarias",headers={"Accept":"application/json"},method="GET")
+            try:
+                response=opener.open(request,timeout=30)
+            except urllib.error.HTTPError as error:
+                response=error
+            except (urllib.error.URLError,TimeoutError):
+                require(time.monotonic()<deadline,"QA traffic readiness timeout")
+                time.sleep(5)
+                continue
+            with response:
+                status=response.status
+                if status==401:
+                    if base==proxy:
+                        require(response.headers.get("X-Solqaryn-Environment")=="QA","Incorrect proxy environment")
+                    break
+                require(status in (502,503,504),"Unexpected anonymous banking status "+str(status))
+            require(time.monotonic()<deadline,"QA traffic readiness timeout")
+            time.sleep(5)
+    print("QA_BF_MAINTENANCE_OFF_ANONYMOUS_401=PASS",flush=True)
+    require(sql("SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261128150000_QaCommercialOwnershipV4';","V4 marker")=="1","V4 absent")
     # All identities are synthetic and unique; no existing role or permission is changed.
     statements=["START TRANSACTION;"]
     for suffix,n in (("a",a),("b",b)):

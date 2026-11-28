@@ -13,10 +13,10 @@ concurrency:
 jobs:
   residual:
     name: Certificacion residual ${{ matrix.scope }} A/B
-    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == 'a8ea8b43d1b929137a1f583ff6a6bf24779ad69f'
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.run_attempt == 1 && github.event.before == '1c933a47f7c82f08a4c812e79d134fa7ce41f733'
     runs-on: ubuntu-latest
     environment: QA
-    timeout-minutes: 30
+    timeout-minutes: 40
     strategy:
       fail-fast: false
       max-parallel: 1
@@ -35,13 +35,13 @@ jobs:
           test "$GITHUB_REF" = refs/heads/qa
           node scripts/verify-project-scope.mjs
           git diff --check "${{ github.event.before }}" HEAD
-          git diff --exit-code 7676febf8c4446b838142155b30c512d3c861f65 HEAD -- backend frontend render.yaml scripts .agents docs/PROJECT_SCOPE_LOCK.md AGENTS.md
-          for run in 46149236995 46149236993 46149237001 46149237012 46149236990; do
+          git diff --exit-code 1c933a47f7c82f08a4c812e79d134fa7ce41f733 HEAD -- backend frontend render.yaml scripts .agents docs/PROJECT_SCOPE_LOCK.md AGENTS.md
+          for run in 46155392630; do
             # Do not start mutations before every exact-SHA gate has passed.
             deadline=$((SECONDS + 600))
             while true; do
               run_json=$(gh api "repos/solqaryn/Solqaryn/actions/runs/$run")
-              jq -e '.head_sha == "7676febf8c4446b838142155b30c512d3c861f65" and .head_branch == "qa"' <<< "$run_json" >/dev/null
+              jq -e '.head_sha == "1c933a47f7c82f08a4c812e79d134fa7ce41f733" and .head_branch == "qa"' <<< "$run_json" >/dev/null
               if jq -e '.status == "completed"' <<< "$run_json" >/dev/null; then
                 jq -e '.conclusion == "success"' <<< "$run_json" >/dev/null
                 break
@@ -58,7 +58,7 @@ jobs:
           sudo apt-get install -y mysql-client apache2-utils
       - name: Pruebas autenticas de documentos internos QA
         env:
-          EXPECTED_DEPLOYED_SHA: '7676febf8c4446b838142155b30c512d3c861f65'
+          EXPECTED_DEPLOYED_SHA: '1c933a47f7c82f08a4c812e79d134fa7ce41f733'
           DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
           DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
           DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}

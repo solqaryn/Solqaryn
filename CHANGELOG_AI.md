@@ -1,3 +1,10 @@
+## 2026-11-28 — QA: V4 aplicada y certificación bancaria desplegada en ejecución
+
+- Run 46155392630 / job 141010808727 SUCCESS: QA_V4_LIVE_MIGRATION=PASS, restauración de 138 tablas con filas exactas, V4 sobre ocho tablas y 17 relaciones, preservación histórica e IAM, historial 112→113. Artefacto cifrado recuperable 15267678108 verificado y no expirado. V4 aplicada y cerrada; no repetir DDL.
+- Render personal QA dep-dc5efch5efls73f7jf7g LIVE y Vercel dpl_5URinu3nUKyR1M7ZJM5rhfKqt2QH READY sobre 1c933a47; se solicitó retirar mantenimiento mediante dep-dc5fbd8u01pc738ieneg. La prueba A/B espera tráfico operativo (401 anónimo esperado, no 503) antes de fixtures, comprueba V4, autenticación, transferencia, ajustes y reapertura, y revoca identidades sintéticas. No declarar pruebas desplegadas aprobadas hasta resultados.
+- Scope exclusivamente QA; no cambios de DEV ni skills. Checkout/ERP permanece pendiente.
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA: aplicación única V4 y prearmado de certificación bancaria
 
 - HEAD causal c3bb43b245852f1e04092c7a6f525ca09e44b314: seis gates SUCCESS (46153385655, 46153385642, 46153385653, 46153385697, 46153385759, 46153385698), 2.537 unitarias + 6 integración, ensayo exacto V4 sobre 138 tablas preservadas. Render QA sigue en 7676febf; Vercel QA READY sobre HEAD causal.
