@@ -1,3 +1,9 @@
+## 2026-11-28 — QA FN-05 pedido real: corregir exclusivamente limpieza de fixtures
+
+- Run 46181529540 sobre eb3a0429d26f2e523b73818df9ac3a1352a3a512: Scope Lock, readiness Render/proxy, cotizacion, pedido real ID 3, persistencia, idempotencia, recibo, ERP A/B, stock y ausencia de efectos enlazados PASS; revocacion/eliminacion IAM y borrado de borrador/cliente PASS. Fallo posterior MySQL 1451/23000 en limpieza conjunta del catalogo sintetico. No repetir pedido ni migracion.
+- Recuperacion unica del run fallido: identidad por ventana UTC de creacion, dos auditorias de login exactas y grafo/fingerprint sintetico completo. Catalogo FK vivo por restriccion compuesta, diagnosticos sin valores sensibles, eliminacion solo de IDs identificados en orden dependiente con guardas para todas las FK incluidas cascadas, sin deshabilitarlas. Si una auditoria exige conservar la empresa sintetica, desactivarla y preservar auditoria; cualquier otra referencia no reconocida bloquea certificacion. El procedimiento normal usa la misma limpieza y registra el prefijo no secreto. Se conserva el codigo funcional desplegado. Pendiente resultado del gate correctivo y verificacion de despliegues.
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA FN-05 pedido real desplegado: prueba dirigida
 
 - Aplicacion V6 certificada: run 46179506984, marcador 115, 138 tablas y datos/IAM preservados. Render dep-dc5ik0ajnfac73dbhl9g LIVE y Vercel dpl_As5mzy84pg15YihKFg1FAyv8skJy READY sobre 88dc7c095fd63474dfbbe5e7b5ad9d269b8ba5b4; mantenimiento retirado, health/ready via proxy HTTP 200 y binding QA verificado.
