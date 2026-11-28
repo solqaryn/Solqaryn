@@ -1,3 +1,9 @@
+## 2026-11-28 — QA checkout: ensayo certificado y aplicacion unica de migracion existente
+
+- Run 46178800298 SUCCESS en 3d97f31a24c03b22b5e4feeccadcd42a8fc75822: cliente MySQL real, respaldo cifrado, restauracion exacta de 138 tablas, datos e IAM preservados, modelo EF sin cambios pendientes, historial 115 en copia. Cero escrituras en origen. Certificado el ensayo.
+- Por autorizacion expresa del propietario, aplicar solo 20261128183000_QaCheckoutPedidoV6 en Aiven QA. No se crea otra migracion ni otra implementacion. Procedimiento de una sola ejecucion, padre exacto, gates causales comprobados, mantenimiento obligatorio, nuevo respaldo cifrado recuperable, restore y comparacion SHA256 con el SQL ensayado, huellas exactas origen/restore antes y despues, ausencia de sesiones concurrentes y auditoria de esquema compatible con el marcador. Si falla, mantener mantenimiento y respaldo para diagnostico; no reintentar DDL ni efectuar rollback destructivo. No se solicita sincronizar los despliegues ni probar checkout vivo en este paso.
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA checkout: corregir reconocimiento de sentencias del respaldo
 
 - Run 46177508922: Scope Lock y self-test aprobados; dump generado, pero el manifiesto falló en `Invalid single-row dump statement` antes de restaurar. Se elimina la suposición de un formato literal de VALUES y de un terminador en la misma línea. El manifiesto cuenta cabeceras INSERT de la sección exacta (una por fila por --skip-extended-insert); el cliente MySQL valida la sintaxis al restaurar y los conteos exactos de las 138 tablas permanecen obligatorios. Diagnóstico no muestra datos de filas.

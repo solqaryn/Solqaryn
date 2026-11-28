@@ -1,0 +1,336 @@
+name: QA - FN-05 aplicacion unica migracion checkout existente
+
+on:
+  push:
+    branches: [qa]
+    paths:
+      - '.github/workflows/qa-fn-05-checkout-apply-once.yml'
+
+permissions:
+  contents: read
+  actions: read
+
+concurrency:
+  group: qa-fn-05-live-admin
+  cancel-in-progress: false
+
+jobs:
+  verify-restore:
+    if: github.repository == 'solqaryn/Solqaryn' && github.ref == 'refs/heads/qa' && github.event.before == '3d97f31a24c03b22b5e4feeccadcd42a8fc75822' && github.run_attempt == 1
+    name: QA respaldo recuperable, ensayo y aplicacion del checkout
+    runs-on: ubuntu-latest
+    timeout-minutes: 75
+    environment: QA
+    services:
+      mysql:
+        image: mysql:8.4
+        env:
+          MYSQL_ROOT_PASSWORD: solqaryn-ci-qa-disposable-only
+        ports:
+          - 3306:3306
+        options: >-
+          --health-cmd="mysqladmin ping -h 127.0.0.1 -uroot -psolqaryn-ci-qa-disposable-only --silent"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=12
+    env:
+      DB_HOST: ${{ vars.SOLQARYN_QA_DB_HOST }}
+      DB_PORT: ${{ vars.SOLQARYN_QA_DB_PORT }}
+      DB_NAME: ${{ vars.SOLQARYN_QA_DB_NAME }}
+      DB_USER: ${{ vars.SOLQARYN_QA_DB_USER }}
+      DB_PASSWORD: ${{ secrets.SOLQARYN_QA_DB_PASSWORD }}
+      BACKUP_PASSPHRASE: ${{ secrets.SOLQARYN_QA_BACKUP_PASSPHRASE }}
+    steps:
+      - name: Checkout QA (identidad)
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Guard QA solo Aiven 8.4.11 y secretos
+        shell: bash
+        run: |
+          set -euo pipefail
+          test "$GITHUB_REF_NAME" = "qa"
+          python3 -m py_compile .github/qa/qa-checkout-v6-verify.py .github/qa/qa-checkout-source-verify.py .github/qa/qa-commercial-schema-v4.py
+          python3 .github/qa/qa-checkout-v6-verify.py self-test-dump
+          node scripts/verify-project-scope.mjs
+          test "$DB_HOST" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
+          test "$DB_PORT" = "14402"
+          test "$DB_NAME" = "solqaryn_qa"
+          test "$DB_USER" = "solqaryn_qa_user"
+          test -n "$DB_PASSWORD" && test -n "$BACKUP_PASSPHRASE"
+          test "${#BACKUP_PASSPHRASE}" -ge 32
+          echo "QA_BACKUP_SCOPE=PASS"
+
+      - name: Confirmar SHA y evidencia causal aprobada
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          test "$GITHUB_RUN_ATTEMPT" = 1
+          test "$(git rev-parse HEAD^)" = "3d97f31a24c03b22b5e4feeccadcd42a8fc75822"
+          test "$(gh api repos/solqaryn/Solqaryn/branches/qa --jq '.commit.sha')" = "$GITHUB_SHA"
+          git diff --exit-code 3d97f31a24c03b22b5e4feeccadcd42a8fc75822 HEAD -- backend frontend render.yaml .agents scripts docs/PROJECT_SCOPE_LOCK.md AGENTS.md .github/qa/qa-checkout-v6-verify.py .github/workflows/qa-fn-05-checkout-v6-ef-rehearsal.yml
+          git diff --exit-code d025563a7a45a0598f273ef71f2bf120ef5b5753 HEAD -- backend frontend render.yaml .agents scripts
+          git diff --exit-code feba990aed81ca4c360fb2d9272a4f6b83a5c6a3 HEAD -- backend frontend/src frontend/api frontend/e2e render.yaml .agents scripts
+          for pair in '3d97f31a24c03b22b5e4feeccadcd42a8fc75822:46178800298' 'd025563a7a45a0598f273ef71f2bf120ef5b5753:46176430491' 'd025563a7a45a0598f273ef71f2bf120ef5b5753:46176430512' 'feba990aed81ca4c360fb2d9272a4f6b83a5c6a3:46176353884' 'feba990aed81ca4c360fb2d9272a4f6b83a5c6a3:46176353875' 'feba990aed81ca4c360fb2d9272a4f6b83a5c6a3:46176353844' 'feba990aed81ca4c360fb2d9272a4f6b83a5c6a3:46176353859'; do
+            sha="${pair%:*}"
+            id="${pair#*:}"
+            gh api "repos/solqaryn/Solqaryn/actions/runs/$id" | jq -e --arg sha "$sha" '.head_sha == $sha and .head_branch == "qa" and .status == "completed" and .conclusion == "success"' >/dev/null
+            echo "QA_CHECKOUT_CAUSAL_GATE=PASS run=$id"
+          done
+
+      - name: Instalar cliente MySQL
+        run: |
+          set -euo pipefail
+          sudo apt-get update
+          sudo apt-get install -y mysql-client
+
+      - name: Probar manifiesto con mysqldump real y restauracion local
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          unset DB_HOST DB_PORT DB_NAME DB_USER DB_PASSWORD BACKUP_PASSPHRASE
+          export MYSQL_PWD=solqaryn-ci-qa-disposable-only
+          fixture="$RUNNER_TEMP/qa-checkout-dump-client-fixture.sql"
+          qlocal(){ mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root "$@"; }
+          cleanup(){
+            rm -f "$fixture"
+            qlocal -e 'DROP DATABASE IF EXISTS solqaryn_qa_dump_fixture_restore; DROP DATABASE IF EXISTS solqaryn_qa_dump_fixture;' >/dev/null
+          }
+          trap cleanup EXIT
+          qlocal <<'SQL'
+          CREATE DATABASE solqaryn_qa_dump_fixture CHARACTER SET utf8mb4;
+          CREATE DATABASE solqaryn_qa_dump_fixture_restore CHARACTER SET utf8mb4;
+          USE solqaryn_qa_dump_fixture;
+          CREATE TABLE FilasPrueba (
+            Id INT PRIMARY KEY, Texto TEXT, Binario VARBINARY(32),
+            Calculado INT GENERATED ALWAYS AS (Id+1) STORED
+          ) ENGINE=InnoDB;
+          CREATE TABLE VaciaPrueba (Id INT PRIMARY KEY) ENGINE=InnoDB;
+          INSERT INTO FilasPrueba(Id,Texto,Binario) VALUES
+            (1,CONCAT('comillas ',CHAR(39),', paréntesis ();'),UNHEX('000D0A27')),
+            (2,CONCAT('primera línea',CHAR(10),'INSERT INTO tabla falsa;'),UNHEX('FF005C')),
+            (3,'',NULL);
+          SQL
+          mysqldump --protocol=TCP -h 127.0.0.1 -P 3306 -u root \
+            --single-transaction --skip-lock-tables --no-tablespaces --set-gtid-purged=OFF --skip-extended-insert --hex-blob \
+            --routines --triggers solqaryn_qa_dump_fixture > "$fixture"
+          env -u MYSQL_PWD python3 .github/qa/qa-checkout-v6-verify.py verify-client-dump
+          qlocal solqaryn_qa_dump_fixture_restore < "$fixture"
+          test "$(qlocal -Nse 'SELECT COUNT(*) FROM FilasPrueba' solqaryn_qa_dump_fixture_restore)" = 3
+          test "$(qlocal -Nse 'SELECT COUNT(*) FROM VaciaPrueba' solqaryn_qa_dump_fixture_restore)" = 0
+          query="SELECT Id,HEX(Texto),IFNULL(HEX(Binario),'NULL'),Calculado FROM FilasPrueba ORDER BY Id"
+          test "$(qlocal -Nse "$query" solqaryn_qa_dump_fixture)" = "$(qlocal -Nse "$query" solqaryn_qa_dump_fixture_restore)"
+          echo QA_DUMP_REAL_CLIENT_RESTORE=PASS
+
+      - name: Exigir mantenimiento QA y esquema certificado antes del respaldo
+        run: |
+          set -euo pipefail
+          check_maintenance() {
+            local body code
+            body="$(mktemp)"
+            code="$(curl --connect-timeout 10 --max-time 30 -sS -o "$body" -w '%{http_code}' https://solqaryn.onrender.com/metodos-pago/activos || true)"
+            if [ "$code" = "503" ] && jq -e '.status == 503 and .title == "Servicio temporalmente en mantenimiento"' "$body" >/dev/null 2>&1; then
+              rm -f "$body"
+              return 0
+            fi
+            rm -f "$body"
+            return 1
+          }
+          ready=false
+          for attempt in $(seq 1 90); do
+            if check_maintenance; then ready=true; break; fi
+            sleep 10
+          done
+          test "$ready" = true || { echo QA_CHECKOUT_MAINTENANCE_NOT_CONFIRMED; exit 1; }
+          sleep 30
+          check_maintenance
+          python3 .github/qa/qa-commercial-schema-v4.py --live
+          echo QA_CHECKOUT_MAINTENANCE=PASS
+
+      - name: Backup transaccional de QA y cifrado AES-256 (sin dump en artefacto)
+        id: backup
+        shell: bash
+        run: |
+          set -euo pipefail
+          umask 077
+          folder="$RUNNER_TEMP/solqaryn-qa-oracle-backup"
+          mkdir -p "$folder"
+          dump="$folder/qa.sql"
+          enc="$folder/qa.sql.enc"
+          trap 'rm -f "$dump"' EXIT
+          export MYSQL_PWD="$DB_PASSWORD"
+          version="$(mysql --protocol=TCP --ssl-mode=REQUIRED -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" --batch --skip-column-names "$DB_NAME" -e 'SELECT VERSION();')"
+          case "$version" in 8.4.11|8.4.11-*) ;; *) echo "QA_MYSQL_VERSION_INVALID: se exige 8.4.11; version observada: $version" >&2; exit 1;; esac
+          echo "QA_BACKUP_AIVEN_MYSQL_VERSION=$version"
+          mysqldump --protocol=TCP --ssl-mode=REQUIRED -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" \
+            --single-transaction --skip-lock-tables --no-tablespaces --set-gtid-purged=OFF --skip-extended-insert --hex-blob \
+            --routines --triggers "$DB_NAME" > "$dump"
+          test -s "$dump"
+          env -u DB_PASSWORD -u BACKUP_PASSPHRASE -u MYSQL_PWD python3 .github/qa/qa-checkout-v6-verify.py dump-manifest "$dump" "$folder/qa-rowcounts.json"
+          sha256sum "$dump" | cut -d' ' -f1 > "$folder/qa-plaintext.sha256"
+          openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -salt \
+            -pass env:BACKUP_PASSPHRASE -in "$dump" -out "$enc"
+          test -s "$enc"
+          (cd "$folder"; sha256sum qa.sql.enc qa-rowcounts.json > qa-encrypted.sha256; sha256sum qa.sql.enc > qa-recovery.sha256)
+          rm -f "$dump"
+          trap - EXIT
+          echo "encrypted=$enc" >> "$GITHUB_OUTPUT"
+          echo "QA_BACKUP_ENCRYPTED=PASS"
+          echo "QA_DATABASE_WRITES=0"
+
+      - name: Restore real del respaldo cifrado en MySQL local efímero
+        shell: bash
+        env:
+          ENCRYPTED_FILE: ${{ steps.backup.outputs.encrypted }}
+        run: |
+          set -euo pipefail
+          test -s "$ENCRYPTED_FILE"
+          folder="$(dirname "$ENCRYPTED_FILE")"
+          (cd "$folder"; sha256sum -c qa-encrypted.sha256)
+          actual="$(openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -pass env:BACKUP_PASSPHRASE -in "$ENCRYPTED_FILE" | sha256sum | cut -d' ' -f1)"
+          test "$actual" = "$(cat "$folder/qa-plaintext.sha256")"
+          export MYSQL_PWD=solqaryn-ci-qa-disposable-only
+          mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root \
+            -e 'CREATE DATABASE solqaryn_qa_restore_ephemeral CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
+          # El SQL descifrado fluye directamente a mysql local: no hay fichero SQL en disco.
+          openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 \
+            -pass env:BACKUP_PASSPHRASE -in "$ENCRYPTED_FILE" |
+            mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root solqaryn_qa_restore_ephemeral
+          qlocal(){ mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root -Nse "$1" solqaryn_qa_restore_ephemeral; }
+          # Validate the restored copy against the immutable dump, not later
+          # SELECTs against a live source with independent transactions.
+          env -u DB_HOST -u DB_PORT -u DB_NAME -u DB_USER -u DB_PASSWORD -u BACKUP_PASSPHRASE -u MYSQL_PWD LOCAL_MYSQL_PASSWORD=solqaryn-ci-qa-disposable-only python3 .github/qa/qa-checkout-v6-verify.py verify-restore
+          count="$(qlocal "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE';")"
+          marker="$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")"
+          gallery_marker="$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261125212000_CategoriasGalerias';")"
+          gallery_table="$(qlocal "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='CategoriasGalerias' AND TABLE_TYPE='BASE TABLE';")"
+          history="$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory;")"
+          test "$marker" = "1"
+          case "$gallery_marker:$gallery_table:$count:$history" in
+            1:1:138:114) ;;
+            *) echo 'QA_RESTORE_TABLECOUNT_OR_HISTORY_DRIFT' >&2; exit 1 ;;
+          esac
+          echo "QA_BACKUP_RESTORE=PASS tables=$count history=$history rows_exact=YES oracle_marker=$marker category_gallery=$gallery_marker"
+          echo "QA_ORIGINAL_DB_WRITES=0"
+
+
+      - name: Conservar respaldo recuperable cifrado
+        id: recovery
+        uses: actions/upload-artifact@v4
+        with:
+          name: qa-checkout-pre-migration-encrypted-${{ github.run_id }}
+          path: |
+            ${{ runner.temp }}/solqaryn-qa-oracle-backup/qa.sql.enc
+            ${{ runner.temp }}/solqaryn-qa-oracle-backup/qa-recovery.sha256
+            ${{ runner.temp }}/solqaryn-qa-oracle-backup/qa-plaintext.sha256
+          if-no-files-found: error
+          retention-days: 14
+
+      - uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: '10.0.401'
+      - name: Apply exact EF V6 only to disposable loopback copy
+        shell: bash
+        env:
+          LOCAL_MYSQL_PASSWORD: solqaryn-ci-qa-disposable-only
+        run: |
+          set -euo pipefail
+          unset DB_HOST DB_PORT DB_NAME DB_USER DB_PASSWORD BACKUP_PASSPHRASE
+          export ConnectionStrings__DefaultConnection='Server=127.0.0.1;Port=3306;Database=solqaryn_qa_restore_ephemeral;User=root;Password=solqaryn-ci-qa-disposable-only;SslMode=Disabled;AllowPublicKeyRetrieval=True;'
+          python3 .github/qa/qa-checkout-v6-verify.py capture
+          pushd backend
+          dotnet tool restore
+          dotnet restore src/API/Solqaryn.API.csproj
+          dotnet restore src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj
+          dotnet ef migrations has-pending-model-changes --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release
+          dotnet ef migrations script 20261128163400_QaCotizacionEstadoV5 20261128183000_QaCheckoutPedidoV6 --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release --no-build --output "$RUNNER_TEMP/qa-checkout-v6-exact.sql"
+          test -s "$RUNNER_TEMP/qa-checkout-v6-exact.sql"
+          echo "5b90ddf284272f690084c657b1be22ea8d1085487207bdde0ce1a85fa192da0c  $RUNNER_TEMP/qa-checkout-v6-exact.sql" | sha256sum -c -
+          sha256sum "$RUNNER_TEMP/qa-checkout-v6-exact.sql" > "$RUNNER_TEMP/qa-checkout-v6-exact.sha256"
+          dotnet ef database update 20261128183000_QaCheckoutPedidoV6 --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release --connection "$ConnectionStrings__DefaultConnection"
+          popd
+          python3 .github/qa/qa-checkout-v6-verify.py verify
+      - name: Verificar respaldo publicado y paridad exacta del origen
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RECOVERY_ARTIFACT_ID: ${{ steps.recovery.outputs.artifact-id }}
+        run: |
+          set -euo pipefail
+          [[ "$RECOVERY_ARTIFACT_ID" =~ ^[0-9]+$ ]]
+          gh api "repos/solqaryn/Solqaryn/actions/artifacts/$RECOVERY_ARTIFACT_ID" | jq -e --arg rid "$GITHUB_RUN_ID" '.expired == false and .size_in_bytes > 0 and (.workflow_run.id | tostring) == $rid' >/dev/null
+          test "$(gh api repos/solqaryn/Solqaryn/branches/qa --jq '.commit.sha')" = "$GITHUB_SHA"
+          sha256sum -c "$RUNNER_TEMP/qa-checkout-v6-exact.sha256"
+          check_maintenance() {
+            local body code
+            body="$(mktemp)"
+            code="$(curl --connect-timeout 10 --max-time 30 -sS -o "$body" -w '%{http_code}' https://solqaryn.onrender.com/metodos-pago/activos || true)"
+            if [ "$code" = "503" ] && jq -e '.status == 503 and .title == "Servicio temporalmente en mantenimiento"' "$body" >/dev/null 2>&1; then
+              rm -f "$body"
+              return 0
+            fi
+            rm -f "$body"
+            return 1
+          }
+          check_maintenance
+          python3 .github/qa/qa-commercial-schema-v4.py --live
+          python3 .github/qa/qa-checkout-source-verify.py source-baseline
+          check_maintenance
+          echo "QA_CHECKOUT_RECOVERY_ARTIFACT_VERIFIED=PASS id=$RECOVERY_ARTIFACT_ID"
+
+      - name: Aplicar exactamente la migracion existente en Aiven QA
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          umask 077
+          test "$GITHUB_REPOSITORY" = solqaryn/Solqaryn
+          test "$GITHUB_REF" = refs/heads/qa
+          test "$GITHUB_RUN_ATTEMPT" = 1
+          test "$(gh api repos/solqaryn/Solqaryn/branches/qa --jq '.commit.sha')" = "$GITHUB_SHA"
+          test "$DB_HOST" = solqaryn-mysql-solqaryn.h.aivencloud.com
+          test "$DB_PORT" = 14402
+          test "$DB_NAME" = solqaryn_qa
+          test "$DB_USER" = solqaryn_qa_user
+          check_maintenance() {
+            local body code
+            body="$(mktemp)"
+            code="$(curl --connect-timeout 10 --max-time 30 -sS -o "$body" -w '%{http_code}' https://solqaryn.onrender.com/metodos-pago/activos || true)"
+            if [ "$code" = "503" ] && jq -e '.status == 503 and .title == "Servicio temporalmente en mantenimiento"' "$body" >/dev/null 2>&1; then
+              rm -f "$body"
+              return 0
+            fi
+            rm -f "$body"
+            return 1
+          }
+          check_maintenance
+          export MYSQL_PWD="$DB_PASSWORD"
+          qsource(){ mysql --protocol=TCP --connect-timeout=12 --ssl-mode=REQUIRED --init-command='SET SESSION TRANSACTION READ ONLY' -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -Nse "$1" "$DB_NAME"; }
+          test "$(qsource 'SELECT COUNT(*) FROM __EFMigrationsHistory')" = 114
+          test "$(qsource "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261128163400_QaCotizacionEstadoV5'")" = 1
+          test "$(qsource "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261128183000_QaCheckoutPedidoV6'")" = 0
+          test "$(qsource 'SELECT COUNT(*) FROM INFORMATION_SCHEMA.PROCESSLIST WHERE DB=DATABASE() AND ID<>CONNECTION_ID()')" = 0
+          sha256sum -c "$RUNNER_TEMP/qa-checkout-v6-exact.sha256"
+          export ConnectionStrings__DefaultConnection="$(python3 -c 'import os; p=os.environ["DB_PASSWORD"]; assert "\n" not in p and "\r" not in p; print("Server=solqaryn-mysql-solqaryn.h.aivencloud.com;Port=14402;Database=solqaryn_qa;User=solqaryn_qa_user;Password=\""+p.replace("\"","\"\"")+"\";SslMode=Required;")')"
+          unset MYSQL_PWD
+          printf '::add-mask::%s\n' "$ConnectionStrings__DefaultConnection"
+          echo QA_CHECKOUT_SOURCE_DDL_STARTED
+          pushd backend
+          if ! dotnet ef database update 20261128183000_QaCheckoutPedidoV6 --project src/Infrastructure.Migrations/Solqaryn.Infrastructure.Migrations.csproj --startup-project src/API/Solqaryn.API.csproj --context AppDbContext --configuration Release --no-build > "$RUNNER_TEMP/qa-checkout-apply-private.log" 2>&1; then
+            echo QA_CHECKOUT_SOURCE_DDL_FAILED_KEEP_MAINTENANCE_AND_BACKUP
+            exit 1
+          fi
+          popd
+          unset ConnectionStrings__DefaultConnection
+          python3 .github/qa/qa-checkout-source-verify.py source-after
+          python3 .github/qa/qa-commercial-schema-v4.py --live
+          check_maintenance
+          echo QA_CHECKOUT_LIVE_MIGRATION=PASS
+          echo QA_CHECKOUT_BACKEND_MAINTENANCE_REMAINS_ENABLED
+
+      - name: Remove encrypted temporary backup and fingerprints
+        if: ${{ always() }}
+        run: rm -rf "$RUNNER_TEMP/solqaryn-qa-oracle-backup" "$RUNNER_TEMP/qa-checkout-v6-fingerprints.json" "$RUNNER_TEMP/qa-checkout-v6-exact.sql" "$RUNNER_TEMP/qa-checkout-v6-exact.sha256" "$RUNNER_TEMP/qa-checkout-apply-private.log"
