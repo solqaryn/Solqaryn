@@ -13,7 +13,73 @@ def require(ok, reason):
         raise RuntimeError(reason)
 
 require(os.environ.get("CI")=="true" and os.environ.get("GITHUB_REF")=="refs/heads/qa","QA-only rehearsal")
-require(sys.argv[1:] in (["capture"],["verify"]),"Explicit local-only target required")
+# --skip-extended-insert yields one complete INSERT per row. Read only
+# table names and counts from the very same transaction-consistent SQL dump.
+# Never query the mutable live database again to compare this snapshot.
+def dump_counts(lines):
+    structures, counts = set(), {}
+    active = None
+    complete = False
+    for line in lines:
+        line = line.rstrip(b"\r\n")
+        table = re.fullmatch(rb"CREATE TABLE \x60([A-Za-z0-9_]+)\x60 \(", line)
+        section = re.fullmatch(rb"-- Dumping data for table \x60([A-Za-z0-9_]+)\x60", line)
+        if table:
+            active = None
+            name = table[1].decode("ascii")
+            require(name not in structures, "Duplicate dump table structure")
+            structures.add(name)
+        elif section:
+            name = section[1].decode("ascii")
+            require(name in structures and name not in counts, "Invalid dump data section")
+            counts[name] = 0
+            active = name
+        elif line.startswith(b"UNLOCK TABLES;") or line.startswith(b"-- Table structure for table ") or line.startswith(b"-- Dumping routines") or line.startswith(b"-- Dumping events"):
+            active = None
+        elif active is not None and line.startswith(b"INSERT INTO "):
+            expected = b"INSERT INTO " + bytes([96]) + active.encode("ascii") + bytes([96]) + b" VALUES ("
+            require(line.startswith(expected) and line.endswith(b");"), "Invalid single-row dump statement")
+            counts[active] += 1
+        elif line.startswith(b"-- Dump completed on "):
+            complete = True
+            active = None
+    require(complete and structures == set(counts) and len(counts) > 0, "Incomplete dump structure/data sections")
+    return counts
+
+if sys.argv[1:] == ["self-test-dump"]:
+    fake = [
+        b"CREATE TABLE \x60A\x60 (\n", b"-- Dumping data for table \x60A\x60\n",
+        b"INSERT INTO \x60A\x60 VALUES (1,'text, (value);');\n",
+        b"INSERT INTO \x60A\x60 VALUES (2,'escaped\\nnewline');\n",
+        b"UNLOCK TABLES;\n", b"CREATE TABLE \x60B\x60 (\n",
+        b"-- Dumping data for table \x60B\x60\n", b"UNLOCK TABLES;\n",
+        b"-- Dump completed on 2026-11-28\n",
+    ]
+    require(dump_counts(fake) == {"A": 2, "B": 0}, "Dump count self-test")
+    try:
+        dump_counts(fake[:-1])
+    except RuntimeError:
+        pass
+    else:
+        raise RuntimeError("Truncated dump must be rejected")
+    print("QA_DUMP_MANIFEST_SELF_TEST=PASS", flush=True)
+    sys.exit(0)
+
+if sys.argv[1:2] == ["dump-manifest"]:
+    require(len(sys.argv) == 4, "Explicit dump and manifest paths required")
+    folder = pathlib.Path(os.environ["RUNNER_TEMP"]) / "solqaryn-qa-oracle-backup"
+    dump = pathlib.Path(sys.argv[2])
+    manifest = pathlib.Path(sys.argv[3])
+    require(dump == folder / "qa.sql" and manifest == folder / "qa-rowcounts.json", "Unexpected backup path")
+    with dump.open("rb") as stream:
+        counts = dump_counts(stream)
+    require(len(counts) == 138, "Snapshot table count mismatch")
+    manifest.write_text(json.dumps(counts, sort_keys=True))
+    manifest.chmod(0o600)
+    print("QA_DUMP_SNAPSHOT_MANIFEST=PASS tables=138", flush=True)
+    sys.exit(0)
+
+require(sys.argv[1:] in (["capture"],["verify"],["verify-restore"]),"Explicit local-only target required")
 db="solqaryn_qa_restore_ephemeral"
 password=os.environ.get("LOCAL_MYSQL_PASSWORD")
 require(password=="solqaryn-ci-qa-disposable-only","Disposable credential required")
@@ -63,6 +129,17 @@ def schema():
     }.items():
         result[label]=hashlib.sha256(("\n".join(run(sql,label))+"\n").encode()).hexdigest()
     return result
+if sys.argv[1:] == ["verify-restore"]:
+    manifest = pathlib.Path(os.environ["RUNNER_TEMP"]) / "solqaryn-qa-oracle-backup" / "qa-rowcounts.json"
+    counts = json.loads(manifest.read_text())
+    require(names() == sorted(counts) and len(counts) == 138, "Snapshot table set differs from restored copy")
+    for table, expected in counts.items():
+        require(type(expected) is int and expected >= 0, "Invalid snapshot row count")
+        require(int(scalar("SELECT COUNT(*) FROM "+q(table), "restored row count")) == expected,
+                "QA_RESTORE_ROWCOUNT_MISMATCH table="+table)
+    print("QA_RESTORE_SNAPSHOT_COUNTS=PASS tables=138 rows_exact=YES", flush=True)
+    sys.exit(0)
+
 marker="20261128183000_QaCheckoutPedidoV6"
 fields={"CostoEnvio","MonedaCheckout","TarifaEnvioCheckout","EntregaCheckoutJson"}
 fp=pathlib.Path(os.environ["RUNNER_TEMP"])/"qa-checkout-v6-fingerprints.json"

@@ -54,6 +54,7 @@ jobs:
           set -euo pipefail
           test "$GITHUB_REF_NAME" = "qa"
           python3 -m py_compile .github/qa/qa-checkout-v6-verify.py
+          python3 .github/qa/qa-checkout-v6-verify.py self-test-dump
           node scripts/verify-project-scope.mjs
           test "$DB_HOST" = "solqaryn-mysql-solqaryn.h.aivencloud.com"
           test "$DB_PORT" = "14402"
@@ -85,14 +86,15 @@ jobs:
           case "$version" in 8.4.11|8.4.11-*) ;; *) echo "QA_MYSQL_VERSION_INVALID: se exige 8.4.11; version observada: $version" >&2; exit 1;; esac
           echo "QA_BACKUP_AIVEN_MYSQL_VERSION=$version"
           mysqldump --protocol=TCP --ssl-mode=REQUIRED -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" \
-            --single-transaction --skip-lock-tables --no-tablespaces --set-gtid-purged=OFF \
+            --single-transaction --skip-lock-tables --no-tablespaces --set-gtid-purged=OFF --skip-extended-insert --hex-blob \
             --routines --triggers "$DB_NAME" > "$dump"
           test -s "$dump"
+          env -u DB_PASSWORD -u BACKUP_PASSPHRASE -u MYSQL_PWD python3 .github/qa/qa-checkout-v6-verify.py dump-manifest "$dump" "$folder/qa-rowcounts.json"
           sha256sum "$dump" | cut -d' ' -f1 > "$folder/qa-plaintext.sha256"
           openssl enc -aes-256-cbc -pbkdf2 -iter 600000 -salt \
             -pass env:BACKUP_PASSPHRASE -in "$dump" -out "$enc"
           test -s "$enc"
-          sha256sum "$enc" > "$folder/qa-encrypted.sha256"
+          (cd "$folder"; sha256sum qa.sql.enc qa-rowcounts.json > qa-encrypted.sha256)
           rm -f "$dump"
           trap - EXIT
           echo "encrypted=$enc" >> "$GITHUB_OUTPUT"
@@ -106,6 +108,10 @@ jobs:
         run: |
           set -euo pipefail
           test -s "$ENCRYPTED_FILE"
+          folder="$(dirname "$ENCRYPTED_FILE")"
+          (cd "$folder"; sha256sum -c qa-encrypted.sha256)
+          actual="$(openssl enc -d -aes-256-cbc -pbkdf2 -iter 600000 -pass env:BACKUP_PASSPHRASE -in "$ENCRYPTED_FILE" | sha256sum | cut -d' ' -f1)"
+          test "$actual" = "$(cat "$folder/qa-plaintext.sha256")"
           export MYSQL_PWD=solqaryn-ci-qa-disposable-only
           mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root \
             -e 'CREATE DATABASE solqaryn_qa_restore_ephemeral CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;'
@@ -114,22 +120,10 @@ jobs:
             -pass env:BACKUP_PASSPHRASE -in "$ENCRYPTED_FILE" |
             mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root solqaryn_qa_restore_ephemeral
           qlocal(){ mysql --protocol=TCP -h 127.0.0.1 -P 3306 -u root -Nse "$1" solqaryn_qa_restore_ephemeral; }
-          export MYSQL_PWD="$DB_PASSWORD"
-          qsource(){ mysql --protocol=TCP --ssl-mode=REQUIRED -h "$DB_HOST" -P "$DB_PORT" -u "$DB_USER" -Nse "$1" "$DB_NAME"; }
-          sql="SELECT TABLE_NAME FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE' ORDER BY TABLE_NAME;"
-          tables="$(qsource "$sql")"
-          count=0
-          while IFS= read -r tbl; do
-            test -n "$tbl" || continue
-            [[ "$tbl" =~ ^[A-Za-z0-9_]+$ ]] || { echo 'QA_RESTORE_TABLE_NAME_INVALID' >&2; exit 1; }
-            a="$(qsource "SELECT COUNT(*) FROM \`$tbl\`;")"
-            export MYSQL_PWD=solqaryn-ci-qa-disposable-only
-            b="$(qlocal "SELECT COUNT(*) FROM \`$tbl\`;")"
-            export MYSQL_PWD="$DB_PASSWORD"
-            test "$a" = "$b" || { echo 'QA_RESTORE_ROWCOUNT_MISMATCH' >&2; exit 1; }
-            count=$((count+1))
-          done <<< "$tables"
-          export MYSQL_PWD=solqaryn-ci-qa-disposable-only
+          # Validate the restored copy against the immutable dump, not later
+          # SELECTs against a live source with independent transactions.
+          env -u DB_HOST -u DB_PORT -u DB_NAME -u DB_USER -u DB_PASSWORD -u BACKUP_PASSPHRASE -u MYSQL_PWD LOCAL_MYSQL_PASSWORD=solqaryn-ci-qa-disposable-only python3 .github/qa/qa-checkout-v6-verify.py verify-restore
+          count="$(qlocal "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_TYPE='BASE TABLE';")"
           marker="$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261006111818_OracleBaseline';")"
           gallery_marker="$(qlocal "SELECT COUNT(*) FROM __EFMigrationsHistory WHERE MigrationId='20261125212000_CategoriasGalerias';")"
           gallery_table="$(qlocal "SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES WHERE TABLE_SCHEMA=DATABASE() AND TABLE_NAME='CategoriasGalerias' AND TABLE_TYPE='BASE TABLE';")"

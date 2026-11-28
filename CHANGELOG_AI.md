@@ -1,3 +1,7 @@
+## 2026-11-28 — QA checkout: ensayo del respaldo consistente
+- GitHub 46176353879 falló en QA_RESTORE_ROWCOUNT_MISMATCH antes de EF. El control anterior comparaba el dump transaccional con conteos posteriores del origen vivo, que no comparten snapshot. Se conserva el único ensayo de checkout y la misma migración pendiente: manifiesto de las 138 tablas desde el SQL exacto, hash del respaldo y manifiesto, hash del plaintext descifrado, restauración real y conteos locales contra el snapshot. Se mantienen todas las huellas de datos/esquema, IAM, pruebas y guardas. Sin DDL en Aiven y sin migraciones nuevas. Pendiente resultado del ensayo.
+MAPA_ARQUITECTURA: SIN_CAMBIO.
+
 ## 2026-11-28 — QA checkout: contrato público sin login obligatorio
 - Validador MVP actualizado para verificar que la persistencia no exige cuenta, sesión administrativa ni guardas de login; el servicio de cuenta sólo transporta una sesión opcional. Se mantiene compra invitada.
 
